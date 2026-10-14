@@ -10,3 +10,11 @@ Deferred ideas and loose ends. Date each entry.
   known answer to validate the measures against.
 - 2026-10-14. Allow the causal-importance function Γ to re-fit for a few steps (transport level T2) once the frozen-Γ
   ladder has been scored.
+- 2026-10-14. Transport test round 2 (after `/design`): scale-only k-sparse transport as the null-resistant ladder rung;
+  write edits constrained to span{U_c, u_o}; selectivity on generic Pile text (KL of f_T to f_W0 outside the windows);
+  functional selector (greedy gain or CI on the fine-tune data) instead of Frobenius contribution; k = 1 on `2359`
+  directly; arm A checkpoints at steps 1–5; arm B at a learning rate giving ~0.1 nats held-out effect; unmasked KL
+  (Δ in and out) as the sensitive faithfulness number.
+- 2026-10-14. Arm C (new skill) still not run; it only makes sense once the round-2 null has power.
+- 2026-10-14. Cluster set-up for iterative analysis (user asked 2026-10-14): persistent venv + artifacts + δW files
+  under `/mnt/nw/home/e.agnew/commute`, debug-QoS interactive jobs for model-in-the-loop work.
