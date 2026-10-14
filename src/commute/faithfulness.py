@@ -69,42 +69,52 @@ def transported_components(model: Any, scale: dict[str, tuple[Tensor, Tensor]] |
     return comps
 
 
-@torch.no_grad()
 def faithfulness(model: Any, batches: list[Tensor], n_stoch_draws: int = 2, pgd_steps: int = 20, seed: int = 0,
                  log: Any = print) -> dict[str, float]:
-    from param_decomp.configs import PGDConfig, UniformKSubsetRoutingConfig
-    from param_decomp.metrics.pgd_masked_recon_loss import pgd_recon_loss
+    from param_decomp.configs import PGDMultiBatchConfig, UniformKSubsetRoutingConfig
+    from param_decomp.metrics.pgd_utils import calc_multibatch_pgd_masked_recon_loss
     from param_decomp.metrics.stochastic_recon_subset_loss import (
         stochastic_recon_subset_loss,
     )
     from param_decomp.models.batch_and_loss_fns import recon_loss_kl
     from param_decomp.models.components import make_mask_infos
+    from param_decomp.routing import AllLayersRouter
 
-    torch.manual_seed(seed)
     device = next(model.parameters()).device
-    wd = weight_deltas(model)
-    pgd_cfg = PGDConfig(init="random", step_size=0.1, n_steps=pgd_steps, mask_scope="shared_across_batch")
-    sums = {"stochastic_kl": 0.0, "pgd_kl": 0.0, "ci_masked_kl": 0.0, "unmasked_kl": 0.0}
+    batches = [b.to(device) for b in batches]
+    use_autocast = device.type == "cuda"
+    sums = {"stochastic_kl": 0.0, "ci_masked_kl": 0.0, "unmasked_kl": 0.0}
     n = 0
-    for batch in batches:
-        batch = batch.to(device)
-        ci = compute_ci(model, batch, chunk=batch.shape[0])
-        target_out = ci.logits
-        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.type == "cuda"):
-            s = stochastic_recon_subset_loss(model, "continuous", n_stoch_draws, batch, target_out, ci.g, wd,
-                                             UniformKSubsetRoutingConfig(), recon_loss_kl)
-            p = pgd_recon_loss(model=model, batch=batch, target_out=target_out, ci=ci.g, weight_deltas=wd,
-                               pgd_config=pgd_cfg, reconstruction_loss=recon_loss_kl)
-            out_ci = model(batch, mask_infos=make_mask_infos(ci.g))
-            out_ones = model(batch, mask_infos=make_mask_infos({k: torch.ones_like(g) for k, g in ci.g.items()}))
-        b = batch.shape[0]
-        sums["stochastic_kl"] += float(s) * b
-        sums["pgd_kl"] += float(p) * b
-        sums["ci_masked_kl"] += float(kl_per_position(target_out, out_ci).mean()) * b
-        sums["unmasked_kl"] += float(kl_per_position(target_out, out_ones).mean()) * b
-        n += b
-        del ci, target_out, out_ci, out_ones
-        torch.cuda.empty_cache() if device.type == "cuda" else None
+    with torch.no_grad():
+        wd = weight_deltas(model)
+        torch.manual_seed(seed)
+        for batch in batches:
+            ci = compute_ci(model, batch, chunk=batch.shape[0])
+            target_out = ci.logits
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_autocast):
+                s = stochastic_recon_subset_loss(model, "continuous", n_stoch_draws, batch, target_out, ci.g, wd,
+                                                 UniformKSubsetRoutingConfig(), recon_loss_kl)
+                out_ci = model(batch, mask_infos=make_mask_infos(ci.g))
+                out_ones = model(batch, mask_infos=make_mask_infos({k: torch.ones_like(g) for k, g in ci.g.items()}))
+            b = batch.shape[0]
+            sums["stochastic_kl"] += float(s) * b
+            sums["ci_masked_kl"] += float(kl_per_position(target_out, out_ci).mean()) * b
+            sums["unmasked_kl"] += float(kl_per_position(target_out, out_ones).mean()) * b
+            n += b
+            del ci, target_out, out_ci, out_ones
+            torch.cuda.empty_cache() if use_autocast else None
     res = {k: v / n for k, v in sums.items()}
+    # One adversary shared across every row of every batch (the paper's 128-row scope), gradients accumulated over
+    # the batches before each sign step. The authors' function needs grad mode on (it calls autograd.grad itself).
+    torch.manual_seed(seed)
+    pgd_cfg = PGDMultiBatchConfig(init="random", step_size=0.1, n_steps=pgd_steps, gradient_accumulation_steps=len(batches))
+    with torch.enable_grad(), torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_autocast):
+        p = calc_multibatch_pgd_masked_recon_loss(
+            pgd_config=pgd_cfg, model=model, weight_deltas=wd, create_data_iter=lambda: iter(batches),
+            router=AllLayersRouter(), sampling="continuous", use_delta_component=True, device=str(device),
+            reconstruction_loss=recon_loss_kl)
+    res["pgd_kl"] = float(p.detach())
+    res["pgd_rows"] = n
+    torch.cuda.empty_cache() if use_autocast else None
     log("[faith] " + " ".join(f"{k} {v:.4f}" for k, v in res.items()))
     return res

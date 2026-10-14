@@ -70,6 +70,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--blocks", type=int, nargs="*", default=[0, 1, 2, 3])
     ap.add_argument("--steps", type=int, default=20)
+    ap.add_argument("--compare-authors", action="store_true", help="also run the authors' multibatch PGD on each block, inside and outside torch.no_grad")
     args = ap.parse_args()
     from commute.data import batches, pile_rows
     from commute.vpd import load_component_model
@@ -94,6 +95,38 @@ def main() -> None:
             "row_means_median": float(kl.mean(1).median()),
             "seconds": time.time() - t0,
         }
+        pos_mean = kl.mean(0)  # (512,) mean over rows at each position index
+        top = torch.topk(pos_mean, 5)
+        res["blocks"][blk]["position_index"] = {
+            "top5_indices": top.indices.tolist(),
+            "top5_means": [round(x, 3) for x in top.values.tolist()],
+            "share_of_total_from_top5_indices": float(kl[:, top.indices].sum() / kl.sum()),
+            "mean_at_index_0": float(pos_mean[0]),
+            "mean_over_indices_1_to_511": float(pos_mean[1:].mean()),
+        }
+        if args.compare_authors:
+            from param_decomp.configs import PGDMultiBatchConfig
+            from param_decomp.metrics.pgd_utils import (
+                calc_multibatch_pgd_masked_recon_loss,
+            )
+            from param_decomp.models.batch_and_loss_fns import recon_loss_kl
+            from param_decomp.routing import AllLayersRouter
+
+            from commute.vpd import weight_deltas
+
+            wd = weight_deltas(model)
+            cfg = PGDMultiBatchConfig(init="random", step_size=0.1, n_steps=args.steps, gradient_accumulation_steps=len(bs))
+            cmp = {}
+            for mode in ("enable_grad", "enable_grad_seed1"):
+                torch.manual_seed(0 if mode == "enable_grad" else 1)
+                ctx = torch.enable_grad()
+                t1 = time.time()
+                with ctx, torch.autocast("cuda", dtype=torch.bfloat16):
+                    v = calc_multibatch_pgd_masked_recon_loss(pgd_config=cfg, model=model, weight_deltas=wd, create_data_iter=lambda bs=bs: iter(bs),
+                                                              router=AllLayersRouter(), sampling="continuous", use_delta_component=True,
+                                                              device="cuda", reconstruction_loss=recon_loss_kl)
+                cmp[mode] = {"pgd_kl": float(v), "seconds": time.time() - t1}
+            res["blocks"][blk]["authors_multibatch"] = cmp
         print(blk, json.dumps(res["blocks"][blk]), flush=True)
         OUT.parent.mkdir(parents=True, exist_ok=True)
         OUT.write_text(json.dumps(res, indent=1))
