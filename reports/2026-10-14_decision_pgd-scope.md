@@ -29,6 +29,30 @@ gradients accumulated over sub-batches of 8 before each of the 20 steps of 0.1, 
 val rows 0..127, so that the adversary's scope is the paper's 128 rows. The stochastic, CI-masked and unmasked
 metrics are computed on the same 128 rows (previously 64). Nothing else changes.
 
+## Second calibration: the scope was not the cause
+
+With one adversary shared across 128 rows the metric came out at 8.39 (stochastic 0.245, CI-masked 0.344, unmasked
+0.012 unchanged). Against the number of PGD steps on the same rows: 2 → 0.33, 5 → 0.84, 10 → 2.86, 20 → 8.39; the
+paper's table gives 20 → 0.83, 40 → 1.35, 80 → 3.84, 160 → 25.3, 320 → 40.2, and zero-ablating everything gives
+67.4 in both. Three further checks:
+
+- The paper's run (`s-55ea3f9b`, created 2026-02-25) was trained at commit `85c6b70`. Its PGD code path
+  (`spd/metrics/pgd_utils.py`, the mask interpolation, the loss normalisation, the eval wiring) is functionally
+  identical to the pinned commit `74146b5`: the diff is renames and the loss-function plumbing.
+- W&B logged `eval/loss/PGDReconLoss` 401 times during that run (one random 128-row val batch each, 20 steps of
+  0.1, shared across the batch): 0.652 at the final step, mean 0.82, min 0.59, max 2.24 over the last 100k steps.
+  The paper's 0.927 is in that range. So the paper's number is real and batch-noisy by a factor of 2 to 4.
+- Our 8.4 on val rows 0..127 is far outside that range. What is left is the rows themselves (a heavy-tailed
+  per-position KL could make one block atypical) or the environment (torch 2.8 kernels, one GPU rather than their
+  DDP). `check_pgd.py` measures blocks 1..3 and the per-position distribution on block 0; its result goes in the
+  analysis report.
+
+Decision, second part: the pipeline is not held for this. Prediction 3 is a paired within-harness ratio on the same
+rows and seed; the absolute level of the adversarial metric does not enter it. Faithfulness is averaged over two
+128-row blocks (val rows 0..255), one shared adversary per block, per-block values reported, so that a single
+atypical block cannot carry the number. Prediction 4's gate is read on the stochastic KL (which matches), and the
+adversarial level is reported with this diagnosis beside it.
+
 ## Why this is a repair and not a post-hoc choice
 
 - Prediction 4 exists exactly to catch this: "if not [within 1.5×], the harness is wrong and nothing else is
