@@ -209,9 +209,11 @@ def _model(device: str) -> Any:
 
 
 def _faith_batches(device: str) -> list[torch.Tensor]:
+    """Pile val rows 0..127 in batches of 8: the paper's 128-row evaluation scope for the shared PGD adversary
+    (reports/2026-10-14_decision_pgd-scope.md); predictions.json names rows 0..63."""
     from commute.data import batches, pile_rows
 
-    return [b.to(device) for b in batches(pile_rows("val", 0, 64, log), 8)]
+    return [b.to(device) for b in batches(pile_rows("val", 0, 128, log), 8)]
 
 
 def stage_calibrate(args: argparse.Namespace) -> None:
@@ -489,7 +491,6 @@ def stage_faithfulness(args: argparse.Namespace) -> None:
     tag = f"{arm}{args.tag}"
     model = _model(args.device)
     dev = args.device
-    ft = load(f"finetune_{tag}.json")
     tr = load(f"transport_{tag}.json")
     scored = tr["scored_checkpoint"]
     steps = [scored] if args.only_scored else sorted(int(s) for s in tr["steps"])

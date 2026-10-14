@@ -1,11 +1,14 @@
 """Faithfulness of a decomposition to the model it is supposed to explain, by the authors' metrics.
 
 With the model's target weights and components set to the variant under test (the frozen Gamma
-reads the variant's own activations), per batch of rows: stochastic reconstruction KL
+reads the variant's own activations): stochastic reconstruction KL per batch of rows
 (`StochasticReconSubsetLoss`: uniform-k-subset routing, continuous masks, Delta included under
-its own per-position mask), adversarial PGD KL (`PGDReconLoss`: all layers, 20 steps of 0.1, random
-init, one adversary shared across the batch, Delta included), the CI-masked KL (masks = g, Delta
-excluded) and the unmasked KL (masks = 1, Delta excluded).
+its own per-position mask); adversarial PGD KL with ONE adversary shared across every row of
+every batch (`calc_multibatch_pgd_masked_recon_loss`: all layers, 20 steps of 0.1, random init,
+Delta included, gradients accumulated over the batches), which is the paper's evaluation scope
+(one adversary per 128-row eval batch) on a 24 GB card; the CI-masked KL (masks = g, Delta
+excluded) and the unmasked KL (masks = 1, Delta excluded). See
+reports/2026-10-14_decision_pgd-scope.md for why the per-batch adversary was dropped.
 """
 
 from __future__ import annotations
