@@ -19,6 +19,8 @@ confirmation after they have seen the check; an earlier "go ahead" does not coun
 - `experiments/TRIED.md` = everything tried or dropped, and why we moved on; update it with every experiment.
 - `theory/` = notes and derivations. `notebooks/` = look at results here. `reports/` = dated write-ups
   (`YYYY-MM-DD_<prediction|analysis|plan|review|decision>_<topic>.md`). `backlog.md` = deferred ideas.
+  One plan file per round. `README.md`'s "Current plan" line always names the latest plan, or says where the next
+  round's inputs are collected (one `backlog.md` entry per upcoming round); keep both current.
 - `GOALS.md` = the aim (user-owned). `decisions.md` = working choices, revisable.
 - `artifacts/`, `data/` = downloaded checkpoints and datasets, gitignored, fetched by script. Untrusted: keep our
   scripts out of them and pass paths as arguments.

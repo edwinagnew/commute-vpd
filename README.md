@@ -9,7 +9,7 @@ If it cannot, is that because post-training teaches new capabilities (rather tha
 because parameter decompositions are too brittle to support the question?
 
 The aim: `GOALS.md`. Working choices: `decisions.md`. Everything tried and why we moved on: `experiments/TRIED.md`.
-Current plan: `reports/2026-10-14_plan_transport-test.md`. First result: `reports/2026-10-14_analysis_transport-test.md`
+Current plan: none yet for round 2; its inputs are collected in one `backlog.md` entry ("Round 2 of the transport test"). Round 1's plan: `reports/2026-10-14_plan_transport-test.md`. First result: `reports/2026-10-14_analysis_transport-test.md`
 (2026-10-14: the literal projection fails, functional mimicry is non-specific, the decomposition stays faithful).
 
 ## Layout
