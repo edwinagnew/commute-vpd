@@ -29,7 +29,20 @@ gradients accumulated over sub-batches of 8 before each of the 20 steps of 0.1, 
 val rows 0..127, so that the adversary's scope is the paper's 128 rows. The stochastic, CI-masked and unmasked
 metrics are computed on the same 128 rows (previously 64). Nothing else changes.
 
-## Second calibration: the scope was not the cause
+## Correction (2026-10-14, after pod 3): the scope was the whole cause
+
+The sections below this one record what was believed after pod 2 and are left as written. Pod 3 found that the
+edit described under "Decision" had never reached the function body: the string replacement rewrote the module
+docstring and left `faithfulness()` calling the authors' single-batch `pgd_recon_loss`, one adversary per 8-row
+batch. Pod 2's "multi-batch" calibration therefore re-measured the same per-8-row adversary (8.39 against 8.11). With
+the multi-batch call actually in place (commit `ea4df42`, one adversary shared across 128 rows, gradients
+accumulated over 16 sub-batches), the released decomposition on W0 gives 0.68 and 0.72 on two 128-row blocks against
+the paper's 0.927 and the 0.59 to 2.24 that the paper's run logged over 100 random batches. The authors' function
+and an independent re-implementation agree bit for bit. The code-identity check and the W&B history below stand;
+the "second calibration" paragraph's conclusion that scope was not the cause does not. The paper's adversarial
+number is reproducible.
+
+## Second calibration as read at the time (superseded by the correction above)
 
 With one adversary shared across 128 rows the metric came out at 8.39 (stochastic 0.245, CI-masked 0.344, unmasked
 0.012 unchanged). Against the number of PGD steps on the same rows: 2 → 0.33, 5 → 0.84, 10 → 2.86, 20 → 8.39; the
@@ -59,8 +72,8 @@ Written 2026-10-14 after pod 2 and before pod 3's `check_pgd.py` numbers were se
 stochastic and adversarial. The adversarial ratio is scored as filed only if, on W0, (a) the two 128-row blocks'
 20-step adversarial KL agree within a factor of 2 and (b) the top 1% of positions carry less than half of the mean
 in each block. If either fails, the adversarial ratio is reported but not scored and prediction 3 rests on the
-stochastic ratio alone. Predictions 1a, 1b and 2 do not use the adversarial metric. The title of this report says
-"repair"; the scope change did not close the gap, and the gap is carried into the analysis as an open item.
+stochastic ratio alone. Predictions 1a, 1b and 2 do not use the adversarial metric. (Written when the gap
+was thought open; see the correction above: the gap closed once the scope change actually reached the code.)
 
 ## Why this is a repair and not a post-hoc choice
 

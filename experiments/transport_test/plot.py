@@ -64,7 +64,10 @@ def capture_vs_k(arm: str) -> None:
     ax.set_xticklabels([str(k) for k in ks])
     ax.set_xlabel("k: subcomponents allowed to change")
     ax.set_ylabel("functional capture at the fine-tuned positions")
-    ax.set_ylim(min(-0.1, min(means + top) - 0.05), 1.05)
+    lo = min(means + top)
+    ax.set_ylim(max(-3.0, min(-0.1, lo - 0.05)), 1.05)
+    if lo < -3.0:
+        ax.text(0.02, 0.04, "points below -3 are off scale (k = 30, 100 reach -8 to -32)", transform=ax.transAxes, fontsize=8, color=MUTED)
     where = "emoticon position" if arm == "A" else "all positions"
     ax.set_title(f"Arm {arm}, step {step}: does the update land on a few existing subcomponents?\n(capture = 1 - KL(ft||T)/KL(ft||W0) on held-out data, {where})", fontsize=10)
     ax.grid(True, axis="y")

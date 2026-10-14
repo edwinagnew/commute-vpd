@@ -2,8 +2,9 @@
 
 *2026-10-14, coding agent. Scores `experiments/transport_test/results/predictions.json` (filed 12:49, before any GPU
 run) against the results in `experiments/transport_test/results/`. Figures in `experiments/transport_test/figures/`.
-Deviations from the filed set-up, each made before the measurement it touches: the adversarial metric's scope and a
-code fix (`2026-10-14_decision_pgd-scope.md`), and the window scan size (`2026-10-14_decision_window-scan-size.md`).*
+Deviations from the filed set-up, each made before the measurement it touches: the adversarial metric's scope, one
+adversary per 128 rows as in the paper rather than per 8 (`2026-10-14_decision_pgd-scope.md`, which also records a
+failed edit that delayed the fix by one pod), and the window scan size (`2026-10-14_decision_window-scan-size.md`).*
 
 ## Headline
 
@@ -73,27 +74,27 @@ k ≥ 30 the top-k write edits reproduce the emoticon position but wreck the sur
 
 The k = 1 result is informative on its own: a single write-vector edit on the subcomponent with the largest
 Frobenius contribution (`h.2.attn.k_proj:206`) does nothing, and the top-10 set contains none of the emoticon family
-(it spans eight matrices, mostly layer 0). The paper's manual edit of `2359`'s write vector does produce the behaviour,
-so a k = 1 edit on `2359` chosen by function rather than by Frobenius contribution would very likely capture most of
-it. The Frobenius ranking across matrices is the wrong selector: it is dominated by matrices where δW is large
+(it spans eight matrices, mostly layer 0). The paper's manual edit of `2359`'s write vector does produce the behaviour; a
+k = 1 fitted write edit on `2359` is the first measurement of round 2, not a result of this one. The Frobenius ranking across matrices is the wrong selector: it is dominated by matrices where δW is large
 (the MLP input projections carry 38% of ‖δW‖²) rather than where the function changes.
 
 **Function, pretraining arm (measure 2).** Every transport fitted on 512 training rows makes the held-out model
 further from the fine-tuned one than W0 is (capture −0.09 for T0 functional, −0.16 to −32 for k-sparse edits, the
-random sets likewise). The fine-tune's held-out effect is 0.014 nats; the fits chase training noise larger than that.
-By the filed conditioning rule this is a fail, not an ill-conditioned run, but the honest reading is that the
-functional side of arm B needs a larger effect before it says anything about commuting; the Frobenius side (ratio
-1.5) does not have that problem and fails cleanly.
+random sets likewise). The fine-tune's held-out effect is 0.014 nats. Whether the fits overfit the training rows or
+the α parametrisation cannot represent this update is not settled by what was recorded: training-set capture was
+not measured. That measurement, and a fine-tune with a held-out effect of order 0.1 nats, settle it. By the filed
+conditioning rule this is a fail, not an ill-conditioned run. The Frobenius side (ratio 1.5) does not depend on the
+fit and fails cleanly.
 
 **Faithfulness at W0 + δW (measure 3).** Stochastic ratios are 0.94 to 1.02 for every variant and checkpoint in both
 arms. Adversarial ratios for arm B are 1.05 to 1.18. For arm A at step 10 the null transport gives 2.43 and T0
 2.32, both from block 1 (2.6 against 0.8 for block 0; on W0 the blocks are 0.68 and 0.72); T1 write k=10 gives 1.43;
-at steps 30, 100 and 300 the null transport gives 1.02, 1.14 and 1.27 with larger δW. The unmasked KL of the
-untouched decomposition rises from 0.012 on W0 to 0.034 to 0.063 on the fine-tuned models: Δ absorbs δW and the
-decomposition's own reconstruction of the new model is three to five times worse than of the old, while the stochastic
-metric, which routes through Δ with its own mask, does not see it. The brittleness branch of `GOALS.md` is not
+at steps 30, 100 and 300 the null transport gives 1.02, 1.14 and 1.27 with larger δW. The brittleness branch of `GOALS.md` is not
 supported: no variant loses faithfulness by the stochastic measure, and the adversarial excursion is one block at one
-checkpoint.
+checkpoint. One more number belongs with measure 1 rather than here: the unmasked KL with Δ excluded rises from 0.012
+on W0 to 0.034 to 0.063 on the fine-tuned models under the null transport. With Δ excluded that quantity is close to
+the size of the fine-tune's own effect, and with Δ included it is zero by construction; it says δW went into Δ,
+which is the span result again, not a faithfulness loss.
 
 **Location (measure 4).** At step 10 the emoticon family is where the paper's editing section put it: `2359` second
 in its matrix, with a negative α (δW shrinks `2359`'s direction while adding the `o` push elsewhere), `3382`, `1672`
@@ -115,8 +116,7 @@ update grows, even though the behaviour is saturated from step 10 on.
   missed it.
 - Arm A needs checkpoints at steps 1 to 5; arm B needs a learning rate that gives a held-out effect of order 0.1
   nats before its functional half means anything.
-- Measure 3 should include the unmasked KL (Δ included and excluded) as the sensitive faithfulness number; the
-  stochastic metric is blind to δW moving into Δ.
+- Record training-set capture beside held-out capture, so overfitting and under-parametrisation can be told apart.
 
 None of these are the re-decomposition test or the toy-model calibration in `backlog.md`; they are the next round of
 the same experiment with a better null and selector, and they go through `/design` first.
