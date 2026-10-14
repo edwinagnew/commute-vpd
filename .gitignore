@@ -1,18 +1,18 @@
-.venv/
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
-.claude/*
-*.egg-info/
 
+artifacts/
+.claude/*
 !.claude/CLAUDE.md
 !.claude/skills/
-
 # credentials and per-kernel session notebooks
+data/
+# downloaded checkpoints and datasets (gitignored; fetched by script)
+*.egg-info/
 .env
 .env.local
+.ipynb_checkpoints/
+*.pyc
+__pycache__/
 remote-kernels/
-
-# downloaded checkpoints and datasets (gitignored; fetched by script)
-artifacts/
-data/
+**/results/large/
+results/large/
+.venv/

@@ -1,13 +1,30 @@
 [project]
 name = "commute"
 version = "0.1.0"
-description = "Add your description here"
+description = "Can a small post-training gradient update be commuted past a VPD parameter decomposition?"
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = []
-
-[project.scripts]
-commute = "commute:main"
+requires-python = "==3.13.*"
+dependencies = [
+    # Goodfire's param-decomp, pinned to commit 74146b5 (head of the vpd-paper branch on 2026-10-14).
+    # A read-only clone for reference lives at ../param-decomp (outside this repo).
+    "param-decomp @ git+https://github.com/goodfire-ai/param-decomp.git@74146b555f3eb3cd2bc639c3789fd3b7a099094a",
+    # Pinned to the authors' lockfile at that commit (as vpd-audit does); wandb >= 0.30 breaks
+    # their wandb_utils import.
+    "torch==2.8.0",
+    "pydantic==2.11.10",
+    "wandb==0.23.1",
+    "transformers==4.57.3",
+    "datasets==4.4.2",
+    "huggingface_hub==0.36.0",
+    "numpy==2.4.0",
+    # Ours.
+    "einops==0.8.1",
+    "pyyaml==6.0.3",
+    "matplotlib==3.10.7",
+    "pandas==2.3.3",
+    "pyarrow==22.0.0",
+    "tqdm==4.67.1",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.9,<0.13.0"]
@@ -15,6 +32,10 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "pytest>=8.4",
     "pyright>=1.1.414",
     "ruff>=0.17.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

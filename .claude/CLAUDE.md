@@ -45,7 +45,8 @@ confirmation after they have seen the check; an earlier "go ahead" does not coun
 - Credentials (`WANDB_API_KEY`, `RUNPOD_API_KEY`, `HF_TOKEN`) come from the shell. Never write them into a repo file;
   if one is missing, name the variable and stop.
 - External code: Goodfire's `param-decomp` (`vpd-paper` branch; `main` has moved on) is used through a pinned
-  dependency or submodule, never copied in.
+  dependency (git pin to commit `74146b5` in `pyproject.toml`), never copied in. A read-only clone for browsing lives
+  at `../param-decomp` (outside this repo, user's choice 2026-10-14); keep it at the pinned commit.
 
 ## Commands
 ```

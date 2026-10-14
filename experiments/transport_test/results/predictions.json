@@ -1,0 +1,79 @@
+{
+ "about": "transport_test: can a small fine-tune delta-W of Goodfire's 4-layer 67M Pile model be written as a small change to a few existing subcomponents of the released VPD decomposition (s-55ea3f9b), with the causal-importance function Gamma and the residual Delta left untouched, so that the transported decomposition still explains the fine-tuned model? Plan and design check: reports/2026-10-14_plan_transport-test.md (confirmed by the user 2026-10-14). Filed before any transport measurement was run. A learning-rate pilot that looked only at held-out P(o) and ||dW||/||W|| at the checkpoints is allowed before the main run and is recorded in setup.pilot.",
+ "filed": "2026-10-14 12:49:44",
+ "predictions": [
+  {
+   "claim": "In the most favourable case (a one-subcomponent expression of the behaviour is known to exist), most of the fine-tune's effect is a write-vector change to ten or fewer existing subcomponents.",
+   "conditioning": "scorable only if the fine-tune's effect is real: KL(f_ft || f_W0) at index 20 >= 0.1 nats and held-out P(o) rose by at least 0.2 over W0",
+   "id": "1a_emoticon_capture",
+   "measure": "arm A, scored checkpoint, T1_write k=10: capture at index 20 of the held-out windows, and the same for null_random k=10 (mean over 5 seeds)",
+   "null": "capture_top10 - capture_random10 < 0.1 (the decomposition carries no information about where the update went); between 0.1 and 0.3 is a partial result, not a pass",
+   "pass": "capture_top10 >= 0.5 AND capture_top10 - capture_random10 >= 0.3",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The update lands on the paper's emoticon subcomponents.",
+   "id": "1b_emoticon_location",
+   "measure": "arm A, scored checkpoint, T0_frobenius: rank of h.2.mlp.down_proj:2359 and its five siblings (1672, 2623, 3290, 3327, 3382) among the alive subcomponents of h.2.mlp.down_proj by Frobenius contribution, and their share of the matrix's fitted norm",
+   "note": "A fine-tune may route the behaviour elsewhere and still commute cleanly; this says where the update went, not whether the claim holds",
+   "prediction": "at least one of the six is in the top 5 of h.2.mlp.down_proj",
+   "scored": false
+  },
+  {
+   "claim": "A pure 'strengthen' update lies in the span of the alive subcomponents far more than a random direction does, and scale-only reweighting recovers most of its functional effect.",
+   "conditioning": "(ii) scorable only if KL(f_ft || f_W0) on held-out rows >= 0.005 nats; otherwise the arm is reported as ill-conditioned and rerun at a larger learning rate (dated report)",
+   "id": "2_pretraining_arm",
+   "measure": "arm B at step 100: (i) pooled T0_frobenius fraction of delta-W on the alive span, against the same for arm N (Gaussian, norm-matched, mean of 3 seeds); (ii) T0_functional capture on the held-out rows",
+   "pass": "(i) fraction_B >= 10 * fraction_N AND (ii) capture >= 0.5",
+   "prediction": "pass on (i); (ii) is the uncertain half, predicted to pass",
+   "scored": true
+  },
+  {
+   "claim": "The frozen decomposition, transported, is still faithful to the fine-tuned model: the update does not break the decomposition.",
+   "fail_reading": "a ratio above 2 at a checkpoint whose max per-matrix ||dW||/||W|| is below 0.05 is the brittleness branch; also report the null transport's ratios, which separate 'the update itself breaks faithfulness' from 'the transport does'",
+   "id": "3_not_brittle",
+   "measure": "stochastic_kl and pgd_kl of the T1_write k=10 (arm A) and T0_functional (arm B) transported decompositions at W0 + delta-W at the scored checkpoints, against our own values for the released decomposition on W0 with the same rows and seed (calibration); the paper's 0.238 and 0.927 are reported beside them",
+   "pass": "both ratios (transported / calibration) <= 2.0 for both arms",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "id": "4_calibration",
+   "measure": "stochastic_kl and pgd_kl of the released decomposition on W0 with our rows, batches and seed",
+   "prediction": "within a factor of 1.5 of the paper's 0.238 and 0.927; if not, the harness is wrong and nothing else is scored until it is fixed",
+   "scored": false
+  }
+ ],
+ "reported_not_scored": [
+  "per-matrix ||dW||/||W0|| at every checkpoint, both arms",
+  "capture against k for T1_write and T1_read (k = 1, 3, 10, 30, 100) and the null, every checkpoint",
+  "T0 Frobenius fraction on the full dictionary (all 38 912) as well as the alive set",
+  "faithfulness of the null transport and of the fine-tuned model under the untouched decomposition at every checkpoint",
+  "arm A off-target capture (the other 40 positions) and off-target KL of f_T to f_W0"
+ ],
+ "setup": {
+  "alive": "mean g over 256 Pile val rows (rows 2048..2303, 131k positions) above 1e-6, the paper's rule; the per-layer counts are reported against the paper's 3709 / 848 / 1943 / 3472",
+  "arm_A": "full-weight Adam fine-tune of the 24 matrices on the training windows: cross-entropy on token `o` at index 20 plus 1.0 * KL(reference || fine-tuned) averaged over the other 40 positions; batch 32 windows, grad clip 1.0, checkpoints at steps 10, 30, 100, 300. Learning rate: 3e-5 first; if held-out P(o) has not reached 0.5 by step 300, the run is kept as results/finetune_A_lr3e-5.json and the arm is rerun at 1e-4, which is then the scored run (the rule is fixed here so that no choice is made after seeing transport results)",
+  "arm_B": "full-weight Adam fine-tune on fresh Pile train rows 8192..13 000 (16 rows of 512 per step, each row seen once), lr 1e-5, grad clip 1.0, checkpoints at 10, 30, 100, 300; held-out = val rows 64..127",
+  "arm_N": "Gaussian delta-W with the per-matrix Frobenius norm of arm A's scored checkpoint, 3 seeds",
+  "capture": "capture = 1 - KL(f_ft || f_T) / KL(f_ft || f_W0), each KL averaged over the stated positions of the held-out data; f_ft is the fine-tuned model, f_T the transported one, f_W0 the original. Arm A: at index 20 of the held-out windows (primary) and at the other 40 positions (off-target, reported). Arm B: all positions of the held-out rows. Also reported for A: mean P(o) under f_T",
+  "decomposed_matrices": "the 24 matrices h.{0..3}.{mlp.c_fc, mlp.down_proj, attn.q_proj, attn.k_proj, attn.v_proj, attn.o_proj}; embeddings, unembedding and RMSNorm weights are frozen in every fine-tune",
+  "emoticon_windows": "positions in Pile train rows 0..4095 at which g(h.2.mlp.down_proj:2359) > 0.5, with the 20 tokens either side (41 tokens); if fewer than 200 windows, the threshold drops to 0.1 and this is recorded. Held-out = windows whose source row index is divisible by 5",
+  "faithfulness_batches": "Pile val rows 0..63 in batches of 8; stochastic KL with 2 draws per batch, PGD 20 steps of 0.1 with random init and one adversary per batch (Delta included in both); the same rows and seed for every variant",
+  "faithfulness_of_transport": "target weights W0 + delta-W, components transported, Delta recomputed as W_target - sum of components (so it absorbs what the transport leaves), Gamma frozen; the four metrics above. Variants: null transport (components unchanged) at every checkpoint; T0_functional and T1_write k=10 at the scored checkpoint",
+  "model": "goodfire/spd/runs/t-9d2b8f02 (4 layers, 67M, Pile), decomposition goodfire/spd/runs/s-55ea3f9b, loaded with param-decomp at commit 74146b5, bf16 autocast on one 24 GB GPU",
+  "pilot": "none: the learning-rate rule above replaces a pilot",
+  "scored_checkpoint": {
+   "A": "the first checkpoint at which held-out mean P(o) at index 20 is at least 0.5; if none, step 300",
+   "B": "step 100 (step 300 reported)"
+  },
+  "transports": {
+   "T0_frobenius": "per matrix, least squares of delta-W on {U_c V_c^T : c alive}; reports the captured fraction per matrix and pooled (weighted by ||dW_m||^2), and alpha",
+   "T0_functional": "alpha on all alive subcomponents, Adam lr 1e-2 for 150 steps on the arm's training data (windows for A, train rows for B), initialised at the Frobenius alpha",
+   "T1_read": "the mirror image (delta-V_c free, U_c fixed) at the same k, reported, not scored",
+   "T1_write": "delta-U_c free (V_c fixed) on the set S of the k subcomponents with the largest Frobenius contribution |alpha_c| ||U_c|| ||V_c||, k in {1, 3, 10, 30, 100}; Adam lr 1e-2, 150 steps, zero init, on the training data",
+   "null_random": "T1_write with S replaced by k alive subcomponents drawn uniformly from the same matrices (matched counts per matrix), 5 seeds; the mean over seeds is the null"
+  }
+ }
+}
