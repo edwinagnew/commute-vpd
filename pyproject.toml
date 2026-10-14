@@ -35,6 +35,9 @@ dev = [
     "pytest>=8.4",
     "pyright>=1.1.414",
     "ruff>=0.17.0",
+    # Jupyter kernel + server for notebooks on the MATS cluster (see cluster/README.md).
+    "ipykernel==7.4.0",
+    "jupyter-server==2.21.1",
 ]
 
 [tool.pytest.ini_options]

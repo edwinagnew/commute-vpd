@@ -22,6 +22,8 @@ confirmation after they have seen the check; an earlier "go ahead" does not coun
 - `GOALS.md` = the aim (user-owned). `decisions.md` = working choices, revisable.
 - `artifacts/`, `data/` = downloaded checkpoints and datasets, gitignored, fetched by script. Untrusted: keep our
   scripts out of them and pass paths as arguments.
+- `cluster/` = MATS Slurm scripts: venv setup job, `sync.sh` up/down, and `jupyter.sh` (a cluster-GPU kernel for VS
+  Code). Read `cluster/README.md` first.
 
 ## Rules
 - No `sys.path` manipulation and no scripts at the repo root. Everything imports from the editable install (`uv sync`).
@@ -33,6 +35,9 @@ confirmation after they have seen the check; an earlier "go ahead" does not coun
 - Notebooks: short description before each figure, analysis after. Names in words, one question per figure, in its
   title. Lead with "could it do it?" (absolute) and "does it match the prediction?" (side by side).
 - Concerns about existing claims go in a review report, not inline boxes.
+- An edit to measurement code (anything in `src/commute/` or a `run.py` stage) is not done until you have re-read
+  the edited function body and a CPU test in `tests/` (or a logged assertion in the run) shows the new path runs.
+  Never launch a paid run on an unverified string replacement. Name a bug's cause only after the fix moves the number.
 - Pin dependency versions in `pyproject.toml`. Compute choices follow `../guides/GPU_Platforms_Guide.md`.
 - Anything that trains or fine-tunes a model, or runs more than one benchmark forward pass, goes to a GPU, never local
   CPU. MATS cluster first: `ssh e.agnew@185.141.218.207` (the address that works for this user; the parent

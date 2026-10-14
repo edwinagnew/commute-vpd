@@ -42,6 +42,31 @@ and an independent re-implementation agree bit for bit. The code-identity check 
 the "second calibration" paragraph's conclusion that scope was not the cause does not. The paper's adversarial
 number is reproducible.
 
+## Erratum (2026-10-14, code audit after round 1)
+
+An audit of the commits and pod logs (`results/large/logs/`) corrects four statements in this report and one made in
+chat:
+
+- **Only the scope of the adversary moved the number.** In chat, the session's lead agent said "a grad-disabled
+  decorator corrupted the PGD attack". That was wrong. `faithfulness()` carried `@torch.no_grad()`, but the authors'
+  single-batch PGD loop enables gradients internally, so the per-8-row runs (8.11, 8.39) were correct per-8-row
+  numbers. The multi-batch helper has no such guard: under the decorator it raises an error
+  (`faith_gradmode.log`), it does not return a wrong value. Commit `ea4df42` made grad mode explicit so that the new
+  call could run at all; that change did not lower the number.
+- **"Second calibration as read at the time", below.** These statements are false as written:
+  - "With one adversary shared across 128 rows the metric came out at 8.39". That run used one adversary per 8 rows.
+  - The step table (2 / 5 / 10 / 20 → 0.33 / 0.84 / 2.86 / 8.39). It compares per-8-row numbers with the paper's
+    128-row table.
+  - "What is left is the rows themselves … or the environment". Neither was the cause.
+- **Commit `6773167`'s message** says the code switched to the multi-batch PGD. Only the module docstring changed.
+- **"Agree bit for bit" above is overstated.**
+  - They agree bit for bit on block 0 (0.68064266). On block 1 they differ in the 7th digit.
+  - The "independent" loop (`check_pgd.py`) reuses the authors' mask-construction and initialisation helpers. Only
+    the loop and the gradient accumulation are independent.
+
+None of these change a scored result. The current path is covered by `tests/test_faithfulness_invariants.py`, which
+fails on the code at `d0ed6c5`.
+
 ## Second calibration as read at the time (superseded by the correction above)
 
 With one adversary shared across 128 rows the metric came out at 8.39 (stochastic 0.245, CI-masked 0.344, unmasked

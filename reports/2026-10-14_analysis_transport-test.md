@@ -6,6 +6,8 @@ Deviations from the filed set-up, each made before the measurement it touches: t
 adversary per 128 rows as in the paper rather than per 8 (`2026-10-14_decision_pgd-scope.md`, which also records a
 failed edit that delayed the fix by one pod), and the window scan size (`2026-10-14_decision_window-scan-size.md`).*
 
+> **Review 2026-10-14:** a code audit found no bug that changes a scored verdict, but corrects two readings below (the arm-B fits failed to optimise rather than overfit; arm A's span fraction relative to random grows to 10× by step 300) and five numbers. See `2026-10-14_review_round1-audit.md`.
+
 ## Headline
 
 Two of the three scored predictions reversed. In parameter space the fine-tune updates are **not** in the span of the
