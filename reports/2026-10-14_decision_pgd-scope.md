@@ -53,6 +53,15 @@ rows and seed; the absolute level of the adversarial metric does not enter it. F
 atypical block cannot carry the number. Prediction 4's gate is read on the stochastic KL (which matches), and the
 adversarial level is reported with this diagnosis beside it.
 
+## Reading rule for the adversarial half of prediction 3 (fixed before the diagnostic reports)
+
+Written 2026-10-14 after pod 2 and before pod 3's `check_pgd.py` numbers were seen. Prediction 3 has two ratios,
+stochastic and adversarial. The adversarial ratio is scored as filed only if, on W0, (a) the two 128-row blocks'
+20-step adversarial KL agree within a factor of 2 and (b) the top 1% of positions carry less than half of the mean
+in each block. If either fails, the adversarial ratio is reported but not scored and prediction 3 rests on the
+stochastic ratio alone. Predictions 1a, 1b and 2 do not use the adversarial metric. The title of this report says
+"repair"; the scope change did not close the gap, and the gap is carried into the analysis as an open item.
+
 ## Why this is a repair and not a post-hoc choice
 
 - Prediction 4 exists exactly to catch this: "if not [within 1.5×], the harness is wrong and nothing else is
