@@ -208,18 +208,29 @@ def _model(device: str) -> Any:
     return model
 
 
-def _faith_batches(device: str) -> list[torch.Tensor]:
-    """Pile val rows 0..127 in batches of 8: the paper's 128-row evaluation scope for the shared PGD adversary
-    (reports/2026-10-14_decision_pgd-scope.md); predictions.json names rows 0..63."""
+FAITH_BLOCKS = 2  # blocks of 128 Pile val rows (rows 0..255), one shared PGD adversary per block
+
+
+def _faith_blocks(device: str) -> list[list[torch.Tensor]]:
+    """Blocks of 128 Pile val rows in sub-batches of 8: the paper's 128-row scope for the shared PGD adversary
+    (reports/2026-10-14_decision_pgd-scope.md); predictions.json names rows 0..63 in batches of 8."""
     from commute.data import batches, pile_rows
 
-    return [b.to(device) for b in batches(pile_rows("val", 0, 128, log), 8)]
+    return [[b.to(device) for b in batches(pile_rows("val", 128 * i, 128, log), 8)] for i in range(FAITH_BLOCKS)]
+
+
+def _faith(model: Any, blocks: list[list[torch.Tensor]]) -> dict[str, Any]:
+    """Faithfulness per block and the mean over blocks (the scored number)."""
+    from commute.faithfulness import faithfulness
+
+    per = [faithfulness(model, b, log=log) for b in blocks]
+    keys = [k for k in per[0] if k != "pgd_rows"]
+    return {**{k: sum(f[k] for f in per) / len(per) for k in keys}, "blocks": per}
 
 
 def stage_calibrate(args: argparse.Namespace) -> None:
     from commute import vpd
     from commute.data import batches, pile_rows
-    from commute.faithfulness import faithfulness
 
     model = _model(args.device)
     rows = pile_rows("val", 2048, 256, log)
@@ -232,7 +243,7 @@ def stage_calibrate(args: argparse.Namespace) -> None:
         per_layer[f"layer_{vpd.layer_of(k)}"] = per_layer.get(f"layer_{vpd.layer_of(k)}", 0) + int(m.sum())
     log(f"alive per layer {per_layer} total {sum(per_layer.values())} ({time.time() - t0:.0f} s)")
     t0 = time.time()
-    faith = faithfulness(model, _faith_batches(args.device), log=log)
+    faith = _faith(model, _faith_blocks(args.device))
     out = {
         "alive_per_layer": per_layer,
         "alive_per_module": {k: int(m.sum()) for k, m in alive.items()},
@@ -485,7 +496,7 @@ def _fit_sparse(model: Any, T: Any, S: dict[str, torch.Tensor], kind: str, ref_e
 
 def stage_faithfulness(args: argparse.Namespace) -> None:
     from commute import vpd
-    from commute.faithfulness import faithfulness, model_state, transported_components
+    from commute.faithfulness import model_state, transported_components
 
     arm = args.arm
     tag = f"{arm}{args.tag}"
@@ -497,7 +508,7 @@ def stage_faithfulness(args: argparse.Namespace) -> None:
     W0 = vpd.target_weights(model)
     alive = torch.load(LARGE / "alive.pt", weights_only=False)["alive"]
     alive_idx = {k: torch.nonzero(m, as_tuple=True)[0].to(dev) for k, m in alive.items()}
-    fb = _faith_batches(dev)
+    fb = _faith_blocks(dev)
     cal = load("calibration.json")["faithfulness_W0"]
     results: dict[str, Any] = {"arm": arm, "scored_checkpoint": scored, "calibration_W0": cal, "steps": {}}
     for step in steps:
@@ -505,7 +516,7 @@ def stage_faithfulness(args: argparse.Namespace) -> None:
         W1 = {k: (W0[k] + dW[k].to(dev)) for k in W0}
         r: dict[str, Any] = {}
         with model_state(model, target=W1):
-            r["null_transport"] = faithfulness(model, fb, log=log)
+            r["null_transport"] = _faith(model, fb)
         if step != scored:
             results["steps"][step] = {k: {**f, "ratio_to_calibration": {m: f[m] / cal[m] for m in ("stochastic_kl", "pgd_kl")}} for k, f in r.items()}
             dump(f"faithfulness_{tag}.json", results)
@@ -513,13 +524,13 @@ def stage_faithfulness(args: argparse.Namespace) -> None:
         alpha = torch.load(LARGE / tag / f"alpha_T0_step{step}.pt", weights_only=True)
         comps = transported_components(model, scale={k: (alive_idx[k], alpha[k].to(dev)) for k in alpha})
         with model_state(model, target=W1, components=comps):
-            r["T0_functional"] = faithfulness(model, fb, log=log)
+            r["T0_functional"] = _faith(model, fb)
         p = LARGE / tag / f"T1write_k10_s{step}.pt"
         if p.is_file():
             e = torch.load(p, weights_only=True)
             comps = transported_components(model, dU={k: (e["S"][k].to(dev), e["dU"][k].to(dev)) for k in e["S"]})
             with model_state(model, target=W1, components=comps):
-                r["T1_write_k10"] = faithfulness(model, fb, log=log)
+                r["T1_write_k10"] = _faith(model, fb)
         for name, f in list(r.items()):
             r[name] = {**f, "ratio_to_calibration": {m: f[m] / cal[m] for m in ("stochastic_kl", "pgd_kl")}}
         results["steps"][step] = r
