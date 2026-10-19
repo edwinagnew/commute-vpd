@@ -63,8 +63,10 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   Every analysis report opens with a plain-words paragraph (three sentences, no symbols: what was done, what was found,
   what it means for `GOALS.md`) and ends with a "Not run" list.
 - Results are committed (small summaries); anything over ~1 MB per run goes in the gitignored `results/large/`.
-- Notebooks: short description before each figure, analysis after; one question per figure, in its title. Lead
-  with "could it do it?" (absolute) and "does it match the prediction?" (side by side).
+- **Every write-up (notebook, analysis report, result message, notebook-writing brief) follows `/writeup`**
+  (`.claude/skills/writeup/SKILL.md`): the answer first in 80 plain words, the experiment as a story, one figure
+  per claim with its reference on the same axes, about two numbers and no codes per sentence, and
+  `check.py` run on the file before it is called done.
 - Concerns about existing claims go in a review report, not inline boxes.
 - Compute follows `../guides/GPU_Platforms_Guide.md`. Training, fine-tuning, or more than one benchmark forward pass
   goes to a GPU, never local CPU. MATS cluster first (`ssh e.agnew@185.141.218.207`, account `c11`, partition
