@@ -1,0 +1,55 @@
+{
+ "blind_to": {
+  "ci_masked / unmasked": "deterministic, so no seed spread; their null is the gated-off control (G1), which must read ~0 under ci_masked and ~1 under unmasked",
+  "coverage": "second-order effects of training (it is a first-step quantity); whether the pull-back's actual update ends up where the gradient started is not assumed, only predicted",
+  "pgd (shared adversary)": "per-window attacks; the adversary is one source shared across all held-out windows",
+  "retained (trigger-local)": "damage elsewhere in the window and outside it. Cover: kl_other at the trigger-local harness, and the Pile ratios at the high-coverage tasks of rungs 0 and 2"
+ },
+ "experiment": "task_ladder (round 3)",
+ "filed": "2026-10-15 12:34:08",
+ "gates": {
+  "G0_noise": "noise.json: Pile ratio spread on W0 over harness seeds 0, 1, 2 (max/min per metric) and local retained spread over harness seeds 0, 1, 2 on the emoticon pull-back (seed 0) at step 10, plus the optimiser-seed difference |retained_ci(seed 0) - retained_ci(seed 1)| =: d_opt. Reported; sets the P1 margin m = max(0.15, 3 d_opt). If m > 0.5 the design has no power and P1 is unscorable",
+  "G1_positive_control_low": "for every task, the gated-off pull-back at step 10: if it learns (held-out P(target) >= 0.5) then retained_ci_masked <= 0.2 and retained_unmasked >= 0.7 are REQUIRED, else the harness does not separate placement and nothing below is scored. If it does not learn, the control is inconclusive for that task (reported) and that task is excluded from P1/P2",
+  "G1b_positive_control_high": "noise stage, emoticon task: the gated-ON pull-back (trainable set = alive components with gbar_c >= 0.5 at the trigger) at step 10: if it learns (P(target) >= 0.5) then retained_ci_masked >= 0.7 x retained_unmasked is REQUIRED (the CI-masked metric can read high when the update is placed where Gamma looks), else nothing is scored. If it does not learn, G1b is inconclusive: reported, and P1/P2 are scored with that caveat",
+  "G2_design_power": "each first-batch rung's two tasks differ in coverage by >= 0.15; a rung that does not is reported and excluded from P1"
+ },
+ "not_run_placeholder": "The analysis report ends with a 'Not run' list: arms the question implies but this round did not do (e.g. rungs 3 and 4, LoRA through the pull-back, SGD or sparse pull-back (concentration test), Gamma update).",
+ "plan": "reports/2026-10-15_plan_task-ladder.md",
+ "predictions": {
+  "P1_coverage_effect": {
+   "claim": "Within a rung (matched rarity), the pull-back's CI-masked retained at the trigger is higher for the high-coverage task than for the low-coverage task.",
+   "measure": "retained_ci_masked(pull-back, step 10, held-out) for the two tasks of each scorable rung",
+   "null": "high - low >= m in at most 1 rung, or the sign is reversed in 2 or more",
+   "pass": "high - low >= m in at least 2 of the 3 first-batch rungs (m from G0)",
+   "predicted": "pass"
+  },
+  "P2_rarity_does_not_matter_where_covered": {
+   "claim": "Inside training stays faithful at the trigger wherever Gamma covers the gradient, however rare the target was: the high-coverage task of every first-batch rung retains at least as much as the emoticon reference.",
+   "measure": "retained_ci_masked(pull-back, step 10) of each rung's high-coverage task against the emoticon task's",
+   "null": "at least one scorable rung's high-coverage task < 0.8 x emoticon (the rung where inside training first fails is reported as the limit)",
+   "pass": "every scorable rung's high-coverage task >= 0.8 x emoticon",
+   "predicted": "pass for rungs 0 and 1; uncertain for rung 2 (filed as pass)"
+  }
+ },
+ "reported_not_scored": [
+  "W fine-tune and pull-back curves (held-out P(target), kl_other, rel_norm_max) per task",
+  "do-nothing (target W0 + dW_ft step 10, components unchanged): retained under all variants",
+  "pull-back step 30: all variants",
+  "stochastic, pgd_all, pgd_trigger retained and kl_other for every state",
+  "Pile ratios for the pull-back at step 10 on the high-coverage tasks of rungs 0 and 2",
+  "baseline P on the held-out windows (20-token context) beside the mined full-context baseline",
+  "L0 and max gbar at the trigger per task"
+ ],
+ "setup": {
+  "W_finetune": "round 1's arm A recipe with the task's target: Adam lr 3e-5, batch 32, CE at the trigger + 1.0 x KL to W0 elsewhere in the window, clip 1, seed 0, 30 steps, checkpoints 1, 3, 10, 30",
+  "coverage": "fixed before training. G_k = grad of mean CE(target at trigger) w.r.t. W_k over the training windows; e_c = ||G v_c||^2 + ||G^T u_c||^2 over alive c; gbar_c = mean Gamma g_c at the trigger over the training windows; coverage = sum_c gbar_c e_c / sum_c e_c pooled over the 24 matrices (src/commute/ladder.py). Reported only: L0 (alive c with gbar_c > 0.5) and max gbar_c",
+  "local_harness": "src/commute/local_faith.local_faithfulness on the held-out windows: variants target, ci_masked, unmasked, stochastic (4 draws), pgd_all, pgd_trigger (20 steps of 0.1, one adversary shared across windows); kl_trigger, kl_other, lo_trigger per variant. retained_v = (lo_v(state) - lo_v(W0)) / (lo_target(state) - lo_target(W0)) at the trigger",
+  "model": "released 67M Pile model + VPD decomposition (s-55ea3f9b); Gamma frozen; alive set = round 1's alive.pt",
+  "pile_harness": "src/commute/faithfulness.faithfulness, 2 blocks of 128 Pile val rows 0..255, ratios to W0 in the same job (stochastic, PGD, CI-masked, unmasked)",
+  "pullback": "Adam lr 1e-5 on all alive (U, V), Delta and Gamma fixed, same loss/batch/clip/seed, 30 steps, states at 10 and 30 written to results/large/<task>/pullback/ (src/commute/pullback.train)",
+  "pullback_gated_off": "the same, trainable set = alive components with gbar_c <= 0.01 at the trigger (positive control: the update is placed where Gamma is not looking)",
+  "scored_step": 10,
+  "tasks": "trigger -> target single tokens. Triggers: the 40 most frequent word-like tokens (leading space, letters only) with >= 400 occurrences at positions 20..491 of Pile train rows 0..32767. Baseline P(v | t) = mean over occurrences of the model's next-token probability of v (full-row context). Rung r = decade of the baseline: 0: [0.1, 1), 1: [0.01, 0.1), 2: [1e-3, 0.01), 3: [1e-4, 1e-3), 4: < 1e-4. First batch: rungs 0, 1, 2. Per (trigger, rung) the word-like target closest to the rung's log-centre is the candidate; per rung the candidates with the highest and the lowest coverage are the two tasks. Reference rung: the emoticon task (round 1's windows, target `o`).",
+  "windows": "41 tokens, trigger at index 20, up to 500 per task, split by source row (every 5th row held out), as round 1"
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "blind_to": {
+  "e_delta": "~0 by construction for the pull-back (Delta frozen); informative only for arms that let Delta move",
+  "r": "whether the components carry the behaviour: do-nothing has r ~ 0.5 with e_gate = -r and e_delta = 1; read r beside e_gate and e_delta",
+  "shares": "everything away from the trigger (cover: kl_other, Pile ratios, as the plan); unstable for small gains, so not scored for a task whose gain < 1.0 (log-odds)"
+ },
+ "experiment": "task_ladder (round 3), amendment 1: the route split",
+ "filed": "2026-10-16 09:56:35",
+ "gates": {
+  "G0_noise": "as filed, plus d_opt per share (optimiser seeds 0 vs 1, emoticon pull-back, step 10): m_d = max(0.15, 3 d_opt(d)), m_r = max(0.15, 3 d_opt(r + i))",
+  "G1_replaced": "gated-off pull-back, step 10, every task: if it learns (held-out P(target) >= 0.5) then d <= 0.2 AND e_delta <= 0.3 REQUIRED, else P1, P2, A1, A2 not scored. Replaces 'retained_ci_masked <= 0.2', which re-gating alone fails. Not learned: task excluded",
+  "G1b_replaced": "noise stage, emoticon: gated-on pull-back (gbar_c >= 0.5 at the trigger) restricted to h.3.mlp.down_proj, step 10. Logged: max |g1 - g0| (must be <= 1e-4, beside the logged GPU repeat noise of g at W0; else FAIL). If it learns (P >= 0.5): d >= 0.7 x (1 - e_delta) REQUIRED, else d-based scores (A1) not scored. Not learned: inconclusive, A1 carries the caveat. The all-matrix gated-on arm is reported, not scored",
+  "G3_identities": "logged for every split: |share_sum - 1| < 1e-6; do-nothing |d|, |i| and |e_delta - 1| < tol, tol = max(1e-4, 10 x the measured GPU repeat noise of the log-odds at W0 / gain). A violation stops scoring",
+  "G4_reproduces": "if the emoticon held-out set has 73 windows (the concentration test's): emoticon pull-back step 30 CI-masked P(o) with C0 and G1 within 0.02 of 0.535, and with C1 and G1 within 0.02 of 0.635. A miss is reported and its cause found before the analysis is written"
+ },
+ "measure": "src/commute/local_faith.route_split on the held-out windows at the trigger. L(C, G) = mean trigger log-odds of the target token of the masked model (Delta out) with components C (C0 released, C1 state) and gates G (G0 = Gamma on W0's activations, G1 = on the state's); U unmasked, T target; gain = T1 - T0. Shares (/ gain): d = L(C1,G0) - L(C0,G0); r = L(C0,G1) - L(C0,G0); i = L(C1,G1) - L(C1,G0) - L(C0,G1) + L(C0,G0); e_gate = (U1 - L(C1,G1)) - (U0 - L(C0,G0)); e_delta = (T1 - U1) - (T0 - U0). Sum = 1 exactly. retained_ci_masked = d + r + i, retained_unmasked = 1 - e_delta. Absolute shares, not ratios",
+ "plan": "reports/2026-10-16_prediction_ladder-routes-amendment.md (amends reports/2026-10-15_plan_task-ladder.md before anything ran; predictions.json is not edited)",
+ "predictions": {
+  "A1_coverage_predicts_direct": {
+   "measure": "d(pull-back, step 10) of each scorable rung's high- and low-coverage task",
+   "null": "<= 1 rung",
+   "pass": "high - low >= m_d in >= 2 of 3 first-batch rungs",
+   "predicted": "null (emoticon pull-back d ~ 0.03 from the concentration test: Adam spreads the update)"
+  },
+  "A2_inside_route_is_regating": {
+   "measure": "pull-back, step 10, every task that learns (P >= 0.5) with gain >= 1.0: r + i vs d",
+   "null": "on <= 3 of the 6",
+   "pass": "r + i >= d + m_r on >= 5 of the 6 ladder tasks AND on emoticon",
+   "predicted": "pass"
+  },
+  "P1_P2": "as filed in predictions.json, scored on retained_ci_masked (= d + r + i), with G1 and G1b replaced"
+ },
+ "reported_not_scored": [
+  "all five shares and the four L cells (log-odds and P) per arm, state and task",
+  "coverage against each share",
+  "the old G1 rule's outcome beside the new one"
+ ]
+}

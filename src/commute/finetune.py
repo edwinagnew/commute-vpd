@@ -61,6 +61,7 @@ class ArmAConfig:
     checkpoints: tuple[int, ...] = (10, 30, 100, 300)
     grad_clip: float = 1.0
     seed: int = 0
+    optimizer: str = "adam"  # "adam" (round 1) or "sgd" (plain, no momentum: delta-W is a sum of clipped gradients)
 
 
 @dataclass
@@ -125,11 +126,15 @@ def eval_arm_b(net: nn.Module, ref: nn.Module, rows: Tensor, device: str, batch:
 
 
 def _run(model: Any, params: dict[str, nn.Parameter], lr: float, grad_clip: float, steps: int,
-         checkpoints: tuple[int, ...], loss_fn: Any, eval_fn: Any, log: Any) -> FinetuneResult:
+         checkpoints: tuple[int, ...], loss_fn: Any, eval_fn: Any, log: Any, optimizer: str = "adam") -> FinetuneResult:
     W0 = target_weights(model)
     for p in params.values():
         p.requires_grad_(True)
-    opt = torch.optim.Adam(list(params.values()), lr=lr, betas=(0.9, 0.999), weight_decay=0.0)
+    if optimizer == "adam":
+        opt = torch.optim.Adam(list(params.values()), lr=lr, betas=(0.9, 0.999), weight_decay=0.0)
+    else:
+        assert optimizer == "sgd", optimizer
+        opt = torch.optim.SGD(list(params.values()), lr=lr, momentum=0.0, weight_decay=0.0)
     res = FinetuneResult(deltas={})
     t0 = time.time()
     try:
@@ -172,7 +177,7 @@ def finetune_arm_a(model: Any, train: Windows, heldout: Windows, cfg: ArmAConfig
     def eval_fn() -> dict[str, float]:
         return eval_arm_a(net, ref, heldout, cfg.o_token, device)
 
-    return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log)
+    return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log, cfg.optimizer)
 
 
 def finetune_arm_b(model: Any, train_rows: Tensor, heldout_rows: Tensor, cfg: ArmBConfig, device: str, log: Any = print) -> FinetuneResult:
@@ -192,3 +197,86 @@ def finetune_arm_b(model: Any, train_rows: Tensor, heldout_rows: Tensor, cfg: Ar
         return eval_arm_b(net, ref, heldout_rows, device)
 
     return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log)
+
+
+# ----------------------------------------------------------------------------- LoRA (arm A data)
+
+
+@dataclass
+class LoraConfig:
+    modules: tuple[str, ...]
+    rank: int
+    lr: float = 1e-3
+    steps: int = 100
+    checkpoints: tuple[int, ...] = (1, 2, 3, 5, 10, 30, 100)
+    seed: int = 0
+
+
+def lora_factors(linears: dict[str, nn.Linear], rank: int, seed: int) -> dict[str, tuple[nn.Parameter, nn.Parameter]]:
+    """(B (d_out, r) = 0, A (r, d_in) ~ N(0, 1/d_in)) per module: the standard init, delta-W = B A = 0 at start."""
+    gen = torch.Generator().manual_seed(seed)
+    out = {}
+    for k, lin in linears.items():
+        d_out, d_in = lin.weight.shape
+        A = torch.randn(rank, d_in, generator=gen) / d_in**0.5
+        out[k] = (nn.Parameter(torch.zeros(d_out, rank, device=lin.weight.device)), nn.Parameter(A.to(lin.weight.device)))
+    return out
+
+
+def lora_hooks(linears: dict[str, nn.Linear], factors: dict[str, tuple[nn.Parameter, nn.Parameter]]) -> list[Any]:
+    """Forward hooks making each linear compute (W0 + B A) x; returns the handles."""
+    handles = []
+    for k, lin in linears.items():
+        B, A = factors[k]
+
+        def hook(_m: nn.Module, args: tuple[Any, ...], out: Tensor, B: Tensor = B, A: Tensor = A) -> Tensor:
+            x = args[0]
+            return out + F.linear(F.linear(x.to(A.dtype), A), B).to(out.dtype)
+
+        handles.append(lin.register_forward_hook(hook))
+    return handles
+
+
+def lora_delta(factors: dict[str, tuple[nn.Parameter, nn.Parameter]], all_keys: list[str], W0: dict[str, Tensor]) -> dict[str, Tensor]:
+    """delta-W for all 24 matrices: B A on the LoRA modules, zero elsewhere (fp32, CPU)."""
+    return {k: (factors[k][0].detach().float() @ factors[k][1].detach().float()).cpu() if k in factors
+            else torch.zeros_like(W0[k]).cpu() for k in all_keys}
+
+
+def finetune_lora_arm_a(model: Any, train: Windows, heldout: Windows, a_cfg: ArmAConfig, cfg: LoraConfig, device: str,
+                        log: Any = print) -> FinetuneResult:
+    """Arm A's loss, batch, clip and sampling, with a LoRA on cfg.modules; the target weights never change."""
+    ref = copy.deepcopy(model.target_model).eval().requires_grad_(False)
+    net = model.target_model
+    W0 = target_weights(model)
+    linears = {k: target_linear(model, k) for k in cfg.modules}
+    factors = lora_factors(linears, cfg.rank, cfg.seed)
+    params = [p for f in factors.values() for p in f]
+    opt = torch.optim.Adam(params, lr=cfg.lr, betas=(0.9, 0.999), weight_decay=0.0)
+    gen = torch.Generator().manual_seed(a_cfg.seed)
+    res = FinetuneResult(deltas={})
+    handles = lora_hooks(linears, factors)
+    t0 = time.time()
+    try:
+        for step in range(1, cfg.steps + 1):
+            opt.zero_grad(set_to_none=True)
+            idx = torch.randint(0, len(train), (a_cfg.batch,), generator=gen)
+            loss, info = arm_a_loss(net, ref, train.tokens[idx].to(device), a_cfg, train.half)
+            loss.backward()
+            gn = torch.nn.utils.clip_grad_norm_(params, a_cfg.grad_clip)
+            opt.step()
+            res.log.append({"step": step, "loss": float(loss), "grad_norm": float(gn), **info})
+            if step in cfg.checkpoints:
+                d = lora_delta(factors, module_keys(model), W0)
+                res.deltas[step] = d
+                ev = eval_arm_a(net, ref, heldout, a_cfg.o_token, device)
+                ev["rel_norm_max"] = max(relative_norms(d, {k: w.cpu() for k, w in W0.items()}).values())
+                ev["elapsed_s"] = time.time() - t0
+                res.evals[step] = ev
+                log(f"[lora r{cfg.rank}] checkpoint {step}: loss {float(loss):.4f} "
+                    + " ".join(f"{k} {v:.4f}" if isinstance(v, float) else f"{k} {v}" for k, v in ev.items()))
+    finally:
+        for h in handles:
+            h.remove()
+    assert all(torch.equal(target_linear(model, k).weight.float(), W0[k]) for k in cfg.modules)
+    return res

@@ -167,9 +167,12 @@ class CI:
 
 
 def compute_ci(model: Any, batch: Tensor, chunk: int = CI_CHUNK) -> CI:
-    """g and the target logits for a batch of token ids (B, 512), exactly as the authors do:
-    clean forward caching the inputs of the 24 matrices, then Gamma with `sampling='continuous'`."""
-    assert batch.ndim == 2 and batch.shape[1] == SEQ_LEN, tuple(batch.shape)
+    """g and the target logits for a batch of token ids (B, T), T <= 512, exactly as the authors do:
+    clean forward caching the inputs of the 24 matrices, then Gamma with `sampling='continuous'`.
+    Gamma reads each position's own pre-weight activations, so a 41-token window is as valid an input as a
+    512-token row (the model is causal with rotary positions; `n_ctx` 512 is a maximum). Relaxed from `== SEQ_LEN`
+    on 2026-10-15 for the task-local harness (`local_faith.py`)."""
+    assert batch.ndim == 2 and 1 <= batch.shape[1] <= SEQ_LEN, tuple(batch.shape)
     keys = module_keys(model)
     g_parts: dict[str, list[Tensor]] = {k: [] for k in keys}
     logit_parts: list[Tensor] = []
@@ -195,7 +198,7 @@ def mean_ci(model: Any, batches: list[Tensor]) -> dict[str, Tensor]:
         ci = compute_ci(model, b)
         for k in keys:
             sums[k] += ci.g[k].sum(dim=(0, 1), dtype=torch.float64).cpu()
-        n += b.shape[0] * SEQ_LEN
+        n += b.shape[0] * b.shape[1]
         del ci
     return {k: s / n for k, s in sums.items()}
 
