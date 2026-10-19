@@ -1,0 +1,136 @@
+{
+ "about": "recruit_test: the concentration test's amendment 2 found that every PULL-BACK arm, with its delta-W put into Delta, makes the frozen Gamma switch on the same 135-250 pre-existing subcomponents at the emoticon trigger (Jaccard 0.59-0.88), which carry about half of the re-gating effect. That compared our map against our map. Here the real updates are measured the same way: the W fine-tune (round 1's recipe), a LoRA on the paper's site, against a seed-to-seed noise floor and two fine-tunes to a different target token at the same trigger (the null with power). Filed before any arm was trained.",
+ "blind_to": {
+  "S_on / jaccard": "gates that move by less than thr at the trigger, and any re-gating away from the trigger position. Positive control: the different-target nulls (P0) must come out well below the seed-to-seed floor (G0); if they do not, the metric cannot separate recruitment from a generic trigger-position response.",
+  "natural_o": "contexts in which `o` is predicted but not emitted, and position-specific gating; the contrast is a mean over heterogeneous contexts, so S_nat is biased towards subcomponents that fire in all of them.",
+  "r": "everything away from the trigger; a bigger gain inflates nothing because shares are \u00f7 gain, but shares are unstable below 1 nat of gain (not scored then). Control: the G3 identities.",
+  "recovery": "non-additivity: S_on's hybrid can recover more or less than the sum of its members. Control: the random same-size set, which must stay near 0."
+ },
+ "gates": [
+  {
+   "id": "G0_seed_floor",
+   "if_fail": "the switched-on set is not a property of the update; P0, P1, P3c, R1, R2 are reported, not scored",
+   "rule": "J(ft_s0, ft_s1) at 0.3 >= 0.5"
+  },
+  {
+   "id": "G3_identities",
+   "rule": "for every arm with gain >= 1 nat: |d| and |i| < tol, |e_delta - 1| < tol, tol = max(1e-4, 10 x repeat noise \u00f7 gain); share_sum = 1 within 1e-6"
+  },
+  {
+   "id": "G4_reproduces_amendment_2",
+   "if_fail": "the cause is found before the analysis is written",
+   "rule": "pullback_adam: |n_on(0.3) - 135| <= 20 and |L01 - L00 - 5.8926| <= 0.3"
+  },
+  {
+   "id": "G5_lora_locality",
+   "if_fail": "FAIL: the locality argument is wrong",
+   "rule": "lora_r8: max |dg| over all matrices in layers <= 2 is <= max(1e-6, 10 x the gate repeat noise at W0) (Gamma reads raw matrix inputs; h.2.mlp.down_proj's output first enters layer 3). Gate repeat noise = max |g - g'| over two W0 forwards, logged"
+  },
+  {
+   "id": "G6_arms_learn",
+   "if_fail": "the arm is reported, not scored",
+   "rule": "ft_s0, ft_s1, lora_r8 (matched checkpoint): held-out P(`o`) >= 0.9; null_a, null_b: held-out P(target) >= 0.5 at the scored step"
+  }
+ ],
+ "measurements": {
+  "S_on": "subcomponents with dg > thr, thr in (0.1, 0.3, 0.5); scored at 0.3. S_off: dg < -thr (reported).",
+  "dg": "per alive subcomponent, mean over the 73 held-out windows of g_state - g_W0 at the trigger (recruit.trigger_dg); dead subcomponents fixed at 0.",
+  "jaccard": "|A \u2229 B| / |A \u222a B| of S_on at the same threshold; nan if both empty. J_{>=3}: restricted to layers 3+.",
+  "natural_o": "on Pile val rows 2048..2304, positions whose next token is `o`; nat_dg = mean W0 gate at those positions - mean gate over all positions (recruit.ContrastAcc); S_nat = nat_dg > thr. Run only if >= 200 such positions exist.",
+  "recovery": "hybrid gates = W0's at every subcomponent except S_on, which take the state's gates at every position; recovery = (lo_hybrid - L00) / (L01 - L00), components C0, Delta out. Random control: a set of the same size per matrix drawn from the alive subcomponents outside S_on (seed 0).",
+  "repeat_noise": "W0's route cells computed twice; |T0 - T0'| sets G3's tolerance (10x noise \u00f7 gain, floor 1e-4).",
+  "routes": "local_faith.route_split with the released components as C0 and C1: cells L00, L01, L10, L11, U0, U1, T0, T1 in mean held-out trigger log-odds of the arm's target token; shares d, r, i, e_gate, e_delta (\u00f7 gain)."
+ },
+ "not_scored_reported": "all shares and cells for every arm; r for every LoRA checkpoint; S_on sizes at every threshold; S_off sizes; per-layer counts; full Jaccard matrix at every threshold; the top 15 of each S_on by dg; recovery for every arm; the null targets chosen and their W0 probabilities",
+ "predictions": [
+  {
+   "claim": "The switched-on set depends on WHAT is learned, not just that the trigger position was perturbed.",
+   "id": "P0_target_specific",
+   "if_null": "re-gating is a generic frozen-Gamma response to a perturbed trigger; the reveal reading of the concentration test weakens and Gamma updating moves up",
+   "measure": "J(ft_s0, null_a) and J(ft_s0, null_b) at 0.3",
+   "null": "either > J(ft_s0, ft_s1) - 0.15",
+   "pass": "both <= J(ft_s0, ft_s1) - 0.3",
+   "predicted": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The real W fine-tune switches on the same subcomponents as the pull-back map did.",
+   "id": "P1_real_update_recruits_the_maps_set",
+   "measure": "J(ft_s0, pullback_adam) at 0.3",
+   "null": "< 0.3",
+   "pass": ">= 0.5",
+   "predicted": "pass",
+   "scored": true
+  },
+  {
+   "claim": "Half of the real fine-tune's trigger effect is reproduced by re-gating the W0 components alone.",
+   "id": "P2_regating_share_of_the_real_update",
+   "measure": "r of ft_s0 (gain >= 1 nat required)",
+   "null": "< 0.15",
+   "pass": ">= 0.3",
+   "predicted": "pass (about 0.5, like the pull-back's do-nothing)",
+   "scored": true
+  },
+  {
+   "claim": "A single-matrix LoRA at layer 2 recruits the same downstream set and gets a comparable re-gating share.",
+   "id": "P3_lora_regates_downstream",
+   "measure": "(b) r of lora_r8 at the matched checkpoint; (c) J_(>=3)(lora_r8, ft_s0) at 0.3",
+   "null": "(b) < 0.15 or (c) < 0.2",
+   "pass": "(b) >= 0.3 and (c) >= 0.4",
+   "predicted": "pass",
+   "scored": true
+  },
+  {
+   "claim": "ft_s0's switched-on set carries the re-gating effect (as amendment 2's B1 found for the pull-back arms).",
+   "id": "P4_set_carries_the_regating",
+   "measure": "recovery(ft_s0, 0.3) and its random same-size control",
+   "null": "recovery < 0.2",
+   "pass": "recovery >= 0.4 and control < 0.1",
+   "predicted": "pass",
+   "scored": true
+  },
+  {
+   "claim": "A Frobenius-matched random delta-W is a null without power: it neither learns nor re-gates.",
+   "id": "P5_random_dw_is_inert",
+   "measure": "random_dw: gain and n_on(0.3)",
+   "null": "gain >= 1 or n_on >= 30",
+   "pass": "gain < 1 nat and n_on < 10",
+   "predicted": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The switched-on set overlaps the subcomponents W0 gates on where `o` is the next token, above chance.",
+   "conditional_on": "natural-o positions >= 200",
+   "id": "R1_recruited_set_is_o_machinery_above_chance",
+   "measure": "J(S_on ft_s0, S_nat) at 0.3 against the mean J of 20 random same-size sets",
+   "null": "< 1.5 x",
+   "pass": ">= 3 x the random mean (and S_nat non-empty)",
+   "predicted": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The real fine-tune's set overlaps the natural `o` machinery more than the different-target nulls' sets do.",
+   "conditional_on": "natural-o positions >= 200",
+   "id": "R2_o_machinery_is_target_specific",
+   "measure": "J(S_on ft_s0, S_nat) - max over nulls of J(S_on null, S_nat), at 0.3",
+   "null": "< 0.05",
+   "pass": ">= 0.1",
+   "predicted": "null (the natural-o contrast is dominated by context features, not by the trigger's machinery)",
+   "scored": true
+  }
+ ],
+ "setup": {
+  "arms": {
+   "ft_s0": "W fine-tune, arm A recipe (Adam lr 3e-05, batch 32, clip 1, kl_lambda 1, all 24 matrices), seed 0, step 10",
+   "ft_s1": "same, optimiser/sampling seed 1 (the seed-to-seed noise floor of the switched-on set)",
+   "lora_r8": "LoRA rank 8 on h.2.mlp.down_proj only (the paper's site), Adam lr 0.001, arm A loss and sampling, checkpoints (1, 2, 3, 5, 10, 30, 100); SCORED AT STEP 10 (the fine-tune's step count and the lift test's scored LoRA checkpoint; by the old curves P(o) 0.9994 vs the fine-tune's 0.9977). Every checkpoint is reported, and the checkpoint closest to ft_s0 in held-out log-odds of `o` is logged for reference",
+   "null_a": "same recipe and windows, seed 0, target token = the plain token whose mean W0 probability at the trigger (over the train windows) is the closest ABOVE P_W0(`o`); step 10 if held-out P(target) >= 0.5 else step 30",
+   "null_b": "as null_a with the closest plain token BELOW P_W0(`o`)",
+   "pullback_adam": "reference: Adam pull-back on all alive (U, V), lr 1e-05, 30 steps (the concentration test's adam_all arm), its delta-W put into Delta: amendment 2's do_nothing arm, reproduced",
+   "random_dw": "Gaussian delta-W with ft_s0's per-matrix Frobenius norm, seed 0 (expected inert: reported, P5)"
+  },
+  "placement": "every arm: target W = W0 + delta-W, released components unchanged, Gamma frozen (reads the new activations), Delta out of the masked model. Hence d = i = 0 and e_Delta = 1 exactly (G3).",
+  "plain_token": "ladder.plain_mask: decodes to a word-like string (letters, optional leading space)",
+  "windows": "round 1's emoticon windows (experiments/transport_test/results/large/windows.pt): train for the fine-tunes, the 73 held-out ones for every measurement; trigger at index 20; target token 80 (`o`)."
+ }
+}

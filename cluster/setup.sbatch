@@ -26,7 +26,7 @@ if ! command -v uv >/dev/null; then
 fi
 uv --version
 uv python install 3.13
-uv sync --locked                       # default groups include dev (ipykernel, jupyter-server)
+uv sync --locked --no-default-groups --group dev --group gpu   # gpu: CUDA torch (default group cpu is the laptop build)
 
 .venv/bin/python - <<'PY'
 import torch, ipykernel, jupyter_server

@@ -50,6 +50,14 @@ def batches(rows: Tensor, size: int) -> list[Tensor]:
     return [rows[s : s + size] for s in range(0, rows.shape[0], size)]
 
 
+def target_tokens(token: int | Tensor, toks: Tensor, half: int) -> Tensor:
+    """The target token of each window, (B,) int64 on `toks`' device: one id for every window, or a (V,) lookup table
+    read at the token at `half` (the key -> value tasks of experiments/kv_task; `kv.KVTask.table`)."""
+    if isinstance(token, int):
+        return torch.full((toks.shape[0],), token, device=toks.device, dtype=torch.long)
+    return token.to(toks.device)[toks[:, half]]
+
+
 @dataclass
 class Windows:
     tokens: Tensor  # (N, 2 * half + 1) int64; the causally-important token sits at index `half`

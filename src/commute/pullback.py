@@ -14,17 +14,36 @@ from torch import Tensor, nn
 
 
 class Offsets(nn.Module):
-    def __init__(self, uv: dict[str, tuple[Tensor, Tensor]]):
-        """uv[k] = (U_A (d_out, n), V_A (d_in, n)), float32 on the target device."""
+    """Trainable offsets (dU, dV) to the alive columns of each matrix in `uv` (U_A (d_out, n), V_A (d_in, n), float32
+    on the target device). `rank=None`: free offsets, zero init (rounds 2 and 3). `rank=r`: dU = P S^T and dV = Q T^T
+    with P (d_out, r), Q (d_in, r) zero-initialised and S, T (n, r) ~ N(0, 1/n) (the LoRA pattern: the product starts
+    at 0 with a non-zero gradient), so the change is confined to r output and r input directions and the weight change
+    dU V_A^T + U_A dV^T + dU dV^T has rank <= 2r. Added 2026-10-19 for lora_commute."""
+
+    def __init__(self, uv: dict[str, tuple[Tensor, Tensor]], rank: int | None = None, seed: int = 0):
         super().__init__()
         self.keys = list(uv)
+        self.rank = rank
         self.U = {k: u for k, (u, _) in uv.items()}
         self.V = {k: v for k, (_, v) in uv.items()}
-        self.dU = nn.ParameterDict({k.replace(".", "-"): nn.Parameter(torch.zeros_like(u)) for k, (u, _) in uv.items()})
-        self.dV = nn.ParameterDict({k.replace(".", "-"): nn.Parameter(torch.zeros_like(v)) for k, (_, v) in uv.items()})
+        gen = torch.Generator().manual_seed(seed)
+        self.p = nn.ParameterDict()
+        for k, (u, v) in uv.items():
+            key = k.replace(".", "-")
+            if rank is None:
+                self.p[f"{key}__dU"], self.p[f"{key}__dV"] = nn.Parameter(torch.zeros_like(u)), nn.Parameter(torch.zeros_like(v))
+                continue
+            n = u.shape[1]
+            for side, d in (("U", u.shape[0]), ("V", v.shape[0])):
+                self.p[f"{key}__P{side}"] = nn.Parameter(torch.zeros(d, rank, device=u.device, dtype=u.dtype))
+                S = torch.randn(n, rank, generator=gen) / max(n, 1) ** 0.5
+                self.p[f"{key}__S{side}"] = nn.Parameter(S.to(u.device, u.dtype))
 
     def d(self, k: str) -> tuple[Tensor, Tensor]:
-        return self.dU[k.replace(".", "-")], self.dV[k.replace(".", "-")]
+        key = k.replace(".", "-")
+        if self.rank is None:
+            return self.p[f"{key}__dU"], self.p[f"{key}__dV"]
+        return self.p[f"{key}__PU"] @ self.p[f"{key}__SU"].T, self.p[f"{key}__PV"] @ self.p[f"{key}__SV"].T
 
     def extra(self, k: str, x: Tensor) -> Tensor:
         dU, dV = self.d(k)
@@ -73,8 +92,8 @@ def components_with(model: Any, alive: dict[str, Tensor],
     from commute.vpd import component_weights
 
     comps = component_weights(model)
-    for k, (U, V) in comps.items():
-        U, V = U.clone(), V.clone()
+    for k in states:  # matrices absent from `states` keep their released components
+        U, V = comps[k][0].clone(), comps[k][1].clone()
         U[alive[k]] = states[k][0].T.to(U.dtype).to(U.device)
         V[:, alive[k]] = states[k][1].to(V.dtype).to(V.device)
         comps[k] = (U, V)
@@ -87,13 +106,15 @@ class PullbackConfig:
     steps: int = 30
     save_steps: tuple[int, ...] = (10, 30)
     grad_clip: float = 1.0
+    rank: int | None = None  # None: free offsets on every alive column; r: LoRA-shaped offsets (Offsets docstring)
 
 
 def train(model: Any, uv: dict[str, tuple[Tensor, Tensor]], train_tokens: Tensor, heldout: Any, a_cfg: Any,
           cfg: PullbackConfig, device: str, W0: dict[str, Tensor], save_dir: Path | None = None,
           log: Any = print) -> tuple[list[dict[str, Any]], dict[int, dict[str, tuple[Tensor, Tensor, Tensor]]]]:
-    """Adam on the alive (U, V) offsets with arm A's loss (`a_cfg`: ArmAConfig, its o_token is the target token,
-    its batch, seed, grad_clip and kl_lambda apply), held-out eval every step. Returns the per-step curve and, at
+    """Adam on the alive (U, V) offsets of the matrices in `uv` (only those are hooked; the others keep W0) with arm A's
+    loss (`a_cfg`: ArmAConfig, its o_token is the target token, its batch, seed, grad_clip and kl_lambda apply),
+    held-out eval every step. Returns the per-step curve and, at
     cfg.save_steps, per matrix (delta-W, U_A', V_A') on CPU; the same are written to save_dir/state_step{n}.pt.
     The target weights are never written; the model is unchanged on return (hooks removed)."""
     import copy
@@ -104,7 +125,7 @@ def train(model: Any, uv: dict[str, tuple[Tensor, Tensor]], train_tokens: Tensor
     net = model.target_model
     ref = copy.deepcopy(net).eval().requires_grad_(False)
     linears = {k: vpd.target_linear(model, k) for k in uv}
-    off = Offsets(uv)
+    off = Offsets(uv, cfg.rank, seed=a_cfg.seed)
     params = list(off.parameters())
     opt = torch.optim.Adam(params, lr=cfg.lr, betas=(0.9, 0.999), weight_decay=0.0)
     gen = torch.Generator().manual_seed(a_cfg.seed)
@@ -125,7 +146,10 @@ def train(model: Any, uv: dict[str, tuple[Tensor, Tensor]], train_tokens: Tensor
             curve.append({"step": step, "loss": float(loss), "grad_norm": float(gn), "rel_norm_max": rel,
                           **{f"train_{k}": v for k, v in info.items()}, **{f"heldout_{k}": v for k, v in ev.items()}})
             if step in cfg.save_steps:
-                st = {k: (off.delta_w(k).cpu(), *(t.cpu() for t in off.lifted(k))) for k in uv}
+                st: dict[str, tuple[Tensor, Tensor, Tensor]] = {}
+                for k in uv:
+                    U2, V2 = off.lifted(k)
+                    st[k] = (off.delta_w(k).cpu(), U2.cpu(), V2.cpu())
                 states[step] = st
                 if save_dir is not None:
                     save_dir.mkdir(parents=True, exist_ok=True)

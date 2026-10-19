@@ -22,6 +22,10 @@ a single measurement, or outside the current stage. That is fine as long as the 
    - **Which working decisions does it rely on or depart from?** Check `decisions.md`. Flag any departure.
    - **What result would change what we do next?** If no outcome would change anything, the proposal is not worth
      running.
+   - **What are the numbers, and what should each read?** List every number the run will report (keep it to the few
+     the predictions use, plus one positive control). Give each one's expected value at W0, for the do-nothing
+     reference and for the control. Cut any number that no prediction or decision uses, and any without an expected
+     value. If this list is long, the experiment is too big: split it or drop arms.
 3. Restate the project goal in one or two sentences and how the proposal serves it. Put that and the answers above
    to the user, then stop and wait for their confirmation before writing theory notes, code or predictions. A
    subagent cannot wait for approval, so it returns this check as the first part of its report and does not start

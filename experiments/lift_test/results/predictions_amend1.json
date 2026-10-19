@@ -1,0 +1,38 @@
+{
+ "about": "Amendment 1 to lift_test predictions (reports/2026-10-14_prediction_lift-test-amendment.md). The original results/predictions.json is unchanged and stays scored as filed (P1 reversed; P2's L_F term unscorable; P3 failed). P2' and P3' are new predictions, filed before either was run, motivated by what the first runs showed: the do-nothing map passes the masked KLs and L_F cannot see delta-W against ||Delta_0||^2 = 67.9, and the filed pull-back lr grid moved the weights 3-100x more than the W fine-tune.",
+ "filed": "2026-10-14 17:06:50",
+ "predictions": [
+  {
+   "claim": "The Euclidean lift of a small fine-tune is a faithful decomposition of the fine-tuned model, and its components carry the update better than leaving them unchanged.",
+   "id": "2prime_lift_faithful",
+   "measure": "at each rerun checkpoint 1, 2, 3, 5, 10: ratios r = metric / metric(W0) for the lift and for do-nothing; gap_recovered = (r_nothing - r_lift) / (r_nothing - 1) on unmasked_kl (Delta excluded)",
+   "pass": "at every scorable checkpoint: stochastic and PGD ratios of the lift <= 1.5 AND gap_recovered >= 0.5",
+   "prediction": "pass",
+   "reported": [
+    "ci_masked_kl ratios",
+    "||Delta' - Delta_0||^2 / ||dW||^2 per checkpoint"
+   ],
+   "scorable": "a checkpoint is scorable only if r_nothing(unmasked_kl) - 1 >= 0.2; the prediction is scorable only if at least one checkpoint is",
+   "scored": true
+  },
+  {
+   "claim": "Post-training done in the decomposition at a step size matched to the W fine-tune reproduces the behaviour without extra off-target damage and keeps the decomposition faithful.",
+   "id": "3prime_pullback_matched",
+   "measure": "the selected pull-back run: held-out P(o) per step; held-out kl_other at step 10; stochastic and PGD ratios at step 10 (also reported at step 30)",
+   "pass": "held-out P(o) >= 0.9 by step 10 AND held-out kl_other at step 10 <= 2 x 0.0550 (the W fine-tune rerun's value at step 10) AND stochastic and PGD ratios <= 1.5 at step 10",
+   "prediction": "pass",
+   "reported": [
+    "max per-matrix ||dW|| / ||W0|| at steps 1, 2, 3, 5, 10, 30 against the W fine-tune's"
+   ],
+   "scored": true
+  }
+ ],
+ "setup": {
+  "do_nothing": "components unchanged, target weights W0 + dW (Delta = Delta_0 + dW)",
+  "euclidean_lift": "per matrix, dU, dV = lift.euclidean_lift(dW, basis(U_A, V_A, tol 1e-6)); components U[alive] = (U_A + dU)^T, V[:, alive] = V_A + dV; target weights W0 + dW, so Delta = Delta_0 + O(dW) - dU dV^T",
+  "faithfulness": "round 1's harness (2 blocks of 128 Pile val rows 0..255; stochastic, PGD 20 x 0.1 one adversary per block, CI-masked and unmasked KL with Delta excluded); ratios to the released decomposition on W0 recomputed in the same job",
+  "pullback": "Adam on the alive (U, V) offsets (src/commute/pullback.py), Delta_0 and dead columns fixed, arm A's loss, windows, batch 32, clip 1, seed 0; lr in {1e-5, 2e-5, 3e-5}; 30 steps; held-out eval every step",
+  "pullback_selection": "among lrs with held-out P(o) >= 0.9 at step 30, the one with the lowest held-out kl_other at step 30; if none, the highest held-out P(o) at step 30",
+  "updates": "the arm A rerun (Adam, lr 3e-5, round 1's recipe), checkpoints 1, 2, 3, 5, 10 (results/large/A_rerun/dW_step*.pt; s* = 1, evals in results/pullback.json)"
+ }
+}

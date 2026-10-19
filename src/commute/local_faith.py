@@ -33,6 +33,7 @@ from typing import Any
 import torch
 from torch import Tensor
 
+from commute.data import target_tokens
 from commute.identity import log_odds
 from commute.vpd import compute_ci, kl_per_position, module_keys, weight_deltas
 
@@ -45,16 +46,19 @@ def masked_logits(model: Any, batch: Tensor, masks: dict[str, Tensor], wd: dict[
     """Forward with per-(position, component) masks; Delta included under `delta_masks` (B, T) when given."""
     from param_decomp.models.components import make_mask_infos
 
-    wdm = None if delta_masks is None else {k: (wd[k], delta_masks[k]) for k in masks}
+    wdm = None
+    if delta_masks is not None:
+        assert wd is not None
+        wdm = {k: (wd[k], delta_masks[k]) for k in masks}
     use_autocast = batch.is_cuda
     with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_autocast):
         out = model(batch, mask_infos=make_mask_infos(masks, weight_deltas_and_masks=wdm))
     return out[0] if isinstance(out, tuple) else out
 
 
-def stats(target_logits: Tensor, logits: Tensor, half: int, token: int) -> dict[str, Tensor]:
+def stats(target_logits: Tensor, logits: Tensor, half: int, token: int | Tensor) -> dict[str, Tensor]:
     """Per-window (B,) statistics: KL(target || variant) at the trigger, mean KL over the other positions, and
-    the variant's log-odds of `token` at the trigger."""
+    the variant's log-odds of `token` (one id, or (B,) ids) at the trigger."""
     kl = kl_per_position(target_logits, logits)  # (B, T)
     keep = torch.ones(kl.shape[1], dtype=torch.bool, device=kl.device)
     keep[half] = False
@@ -76,10 +80,11 @@ class _Acc:
         return out
 
 
-def _pgd(model: Any, cached: list[tuple[Tensor, Any]], wd: dict[str, Tensor], half: int, token: int, objective: str,
+def _pgd(model: Any, cached: list[tuple[Tensor, Any, Tensor]], wd: dict[str, Tensor], half: int, objective: str,
          steps: int, step_size: float, seed: int, acc: _Acc, name: str) -> None:
     """The authors' PGD (`pgd_utils.calc_multibatch_pgd_masked_recon_loss`): one random-init source per matrix shared
-    across every window, gradients summed over the batches, sign steps clamped to [0, 1]; then the final stats."""
+    across every window, gradients summed over the batches, sign steps clamped to [0, 1]; then the final stats.
+    `cached` holds (batch, its CI, its (B,) target tokens)."""
     keys = module_keys(model)
     device = cached[0][0].device
     torch.manual_seed(seed)
@@ -93,7 +98,7 @@ def _pgd(model: Any, cached: list[tuple[Tensor, Any]], wd: dict[str, Tensor], ha
 
     for _ in range(steps):
         grads = {k: torch.zeros_like(adv[k]) for k in keys}
-        for batch, ci in cached:
+        for batch, ci, _ in cached:
             with torch.enable_grad():
                 comp, dm = masks_of(ci, batch)
                 logits = masked_logits(model, batch, comp, wd, dm)
@@ -106,43 +111,45 @@ def _pgd(model: Any, cached: list[tuple[Tensor, Any]], wd: dict[str, Tensor], ha
             for k in keys:
                 adv[k].add_(step_size * grads[k].sign()).clamp_(0.0, 1.0)
     with torch.no_grad():
-        for batch, ci in cached:
+        for batch, ci, tgt in cached:
             comp, dm = masks_of(ci, batch)
-            acc.add(name, stats(ci.logits, masked_logits(model, batch, comp, wd, dm), half, token))
+            acc.add(name, stats(ci.logits, masked_logits(model, batch, comp, wd, dm), half, tgt))
 
 
-def local_faithfulness(model: Any, windows: Tensor, half: int, token: int, n_stoch_draws: int = 4, pgd_steps: int = 20,
+def local_faithfulness(model: Any, windows: Tensor, half: int, token: int | Tensor, n_stoch_draws: int = 4, pgd_steps: int = 20,
                        pgd_step_size: float = 0.1, seed: int = 0, batch_size: int = 64, log: Any = print) -> dict[str, Any]:
-    """windows: (N, T) token ids with the trigger at index `half`; `token` the target token. Returns, per variant in
-    VARIANTS, the mean over windows of kl_trigger, kl_other and lo_trigger, plus n_windows. Deterministic in `seed`;
-    the model is left untouched (no parameter is written)."""
+    """windows: (N, T) token ids with the trigger at index `half`; `token` the target token, or a (V,) lookup table read
+    at the trigger (`data.target_tokens`). Returns, per variant in VARIANTS, the mean over windows of kl_trigger,
+    kl_other and lo_trigger, plus n_windows. Deterministic in `seed`; the model is left untouched (no parameter is
+    written)."""
     keys = module_keys(model)
     device = next(model.parameters()).device
     acc = _Acc()
-    cached: list[tuple[Tensor, Any]] = []
+    cached: list[tuple[Tensor, Any, Tensor]] = []
     with torch.no_grad():
         wd = weight_deltas(model)
         torch.manual_seed(seed)
         for s in range(0, windows.shape[0], batch_size):
             batch = windows[s : s + batch_size].to(device)
+            tgt = target_tokens(token, batch, half)
             ci = compute_ci(model, batch, chunk=batch.shape[0])
             B, T = batch.shape
             acc.n += B
-            acc.add("target", stats(ci.logits, ci.logits, half, token))
-            acc.add("ci_masked", stats(ci.logits, masked_logits(model, batch, ci.g, None, None), half, token))
+            acc.add("target", stats(ci.logits, ci.logits, half, tgt))
+            acc.add("ci_masked", stats(ci.logits, masked_logits(model, batch, ci.g, None, None), half, tgt))
             ones = {k: torch.ones_like(ci.g[k]) for k in keys}
-            acc.add("unmasked", stats(ci.logits, masked_logits(model, batch, ones, None, None), half, token))
+            acc.add("unmasked", stats(ci.logits, masked_logits(model, batch, ones, None, None), half, tgt))
             draws = {st: torch.zeros(B, device=device, dtype=torch.float64) for st in STATS}
             for _ in range(n_stoch_draws):
                 comp = {k: ci.g[k] + (1 - ci.g[k]) * torch.rand_like(ci.g[k]) for k in keys}
                 dm = {k: torch.rand(B, T, device=device, dtype=ci.g[k].dtype) for k in keys}
-                st = stats(ci.logits, masked_logits(model, batch, comp, wd, dm), half, token)
+                st = stats(ci.logits, masked_logits(model, batch, comp, wd, dm), half, tgt)
                 for name in STATS:
                     draws[name] += st[name].double()
             acc.add("stochastic", {name: v / n_stoch_draws for name, v in draws.items()})
-            cached.append((batch, ci))
-    _pgd(model, cached, wd, half, token, "all", pgd_steps, pgd_step_size, seed, acc, "pgd_all")
-    _pgd(model, cached, wd, half, token, "trigger", pgd_steps, pgd_step_size, seed, acc, "pgd_trigger")
+            cached.append((batch, ci, tgt))
+    _pgd(model, cached, wd, half, "all", pgd_steps, pgd_step_size, seed, acc, "pgd_all")
+    _pgd(model, cached, wd, half, "trigger", pgd_steps, pgd_step_size, seed, acc, "pgd_trigger")
     del cached
     if device.type == "cuda":
         torch.cuda.empty_cache()
@@ -183,30 +190,36 @@ def _batches(windows: Tensor, batch_size: int) -> list[slice]:
     return [slice(s, s + batch_size) for s in range(0, windows.shape[0], batch_size)]
 
 
-def route_cells(model: Any, windows: Tensor, half: int, token: int, batch_size: int = 64) -> dict[str, Any]:
+def _p_of(logits: Tensor, tgt: Tensor) -> Tensor:
+    """(B,) probability of each row's target token."""
+    return torch.softmax(logits.float(), -1).gather(1, tgt[:, None]).squeeze(1)
+
+
+def route_cells(model: Any, windows: Tensor, half: int, token: int | Tensor, batch_size: int = 64) -> dict[str, Any]:
     """Under the model's current state: Gamma's gates per batch (kept on CPU, for the other state's cross cells) and the
-    mean over windows of the trigger log-odds of `token` for the target (T), unmasked (U) and CI-masked (L) models,
-    plus the CI-masked mean P(token) (`p_L`)."""
+    mean over windows of the trigger log-odds of `token` (one id, or a (V,) lookup table) for the target (T), unmasked
+    (U) and CI-masked (L) models, plus their mean P(token) (`p_T`, `p_U`, `p_L`)."""
     keys = module_keys(model)
     device = next(model.parameters()).device
     gates: list[dict[str, Tensor]] = []
-    sums = {"T": 0.0, "U": 0.0, "L": 0.0, "p_L": 0.0}
+    sums = {"T": 0.0, "U": 0.0, "L": 0.0, "p_T": 0.0, "p_U": 0.0, "p_L": 0.0}
     with torch.no_grad():
         for sl in _batches(windows, batch_size):
             batch = windows[sl].to(device)
+            tgt = target_tokens(token, batch, half)
             ci = compute_ci(model, batch, chunk=batch.shape[0])
             gates.append({k: ci.g[k].cpu() for k in keys})
             ones = {k: torch.ones_like(ci.g[k]) for k in keys}
             lm = masked_logits(model, batch, ci.g, None, None)[:, half]
-            sums["T"] += float(log_odds(ci.logits[:, half], token).double().sum())
-            sums["U"] += float(log_odds(masked_logits(model, batch, ones, None, None)[:, half], token).double().sum())
-            sums["L"] += float(log_odds(lm, token).double().sum())
-            sums["p_L"] += float(torch.softmax(lm.float(), -1)[:, token].double().sum())
+            um = masked_logits(model, batch, ones, None, None)[:, half]
+            for name, lg in (("T", ci.logits[:, half]), ("U", um), ("L", lm)):
+                sums[name] += float(log_odds(lg, tgt).double().sum())
+                sums[f"p_{name}"] += float(_p_of(lg, tgt).double().sum())
     n = windows.shape[0]
     return {"gates": gates, **{k: v / n for k, v in sums.items()}}
 
 
-def masked_lo(model: Any, windows: Tensor, half: int, token: int, gates: list[dict[str, Tensor]],
+def masked_lo(model: Any, windows: Tensor, half: int, token: int | Tensor, gates: list[dict[str, Tensor]],
               batch_size: int = 64) -> tuple[float, float]:
     """Mean trigger log-odds and mean P(token) of the masked model (Delta out) with the CURRENT components and the given
     gate pattern (from `route_cells`, same windows and batch size)."""
@@ -214,17 +227,20 @@ def masked_lo(model: Any, windows: Tensor, half: int, token: int, gates: list[di
     lo = p = 0.0
     with torch.no_grad():
         for sl, g in zip(_batches(windows, batch_size), gates, strict=True):
-            lm = masked_logits(model, windows[sl].to(device), {k: v.to(device) for k, v in g.items()}, None, None)[:, half]
-            lo += float(log_odds(lm, token).double().sum())
-            p += float(torch.softmax(lm.float(), -1)[:, token].double().sum())
+            batch = windows[sl].to(device)
+            tgt = target_tokens(token, batch, half)
+            lm = masked_logits(model, batch, {k: v.to(device) for k, v in g.items()}, None, None)[:, half]
+            lo += float(log_odds(lm, tgt).double().sum())
+            p += float(_p_of(lm, tgt).double().sum())
     return lo / windows.shape[0], p / windows.shape[0]
 
 
-def route_split(model: Any, windows: Tensor, half: int, token: int, base: dict[str, Any],
+def route_split(model: Any, windows: Tensor, half: int, token: int | Tensor, base: dict[str, Any],
                 components0: dict[str, tuple[Tensor, Tensor]], batch_size: int = 64) -> dict[str, Any]:
     """The five shares for the model's current state (target W1, components C1). `base` = `route_cells` at W0 with the
-    released components `components0` (C0). Returns the four L cells, U and T at both ends, the gain, the shares (nan
-    if |gain| < 1e-6), `scorable` (gain >= MIN_GAIN), and max |g1 - g0| over all matrices and positions."""
+    released components `components0` (C0). Returns the four L cells, U and T at both ends (log-odds, and mean P(token)
+    under `p_cells`), the gain, the shares (nan if |gain| < 1e-6), `scorable` (gain >= MIN_GAIN), and max |g1 - g0| over
+    all matrices and positions."""
     from commute.faithfulness import model_state
 
     cur = route_cells(model, windows, half, token, batch_size)
@@ -239,5 +255,6 @@ def route_split(model: Any, windows: Tensor, half: int, token: int, base: dict[s
     max_dg = max(float((g1[k] - g0[k]).abs().max()) for g0, g1 in zip(base["gates"], cur["gates"], strict=True) for k in g0)
     return {"cells": {"L00": L00, "L01": L01, "L10": L10, "L11": L11, "U0": base["U"], "U1": cur["U"], "T0": base["T"],
                       "T1": cur["T"]},
-            "p_cells": {"L00": base["p_L"], "L01": p01, "L10": p10, "L11": cur["p_L"]},
+            "p_cells": {"L00": base["p_L"], "L01": p01, "L10": p10, "L11": cur["p_L"], "T0": base["p_T"], "T1": cur["p_T"],
+                        "U0": base["p_U"], "U1": cur["p_U"]},
             "gain": gain, "shares": shares, "share_sum": sum(shares.values()), "scorable": gain >= MIN_GAIN, "max_dg": max_dg}

@@ -130,7 +130,9 @@ Deferred ideas and loose ends. Date each entry.
   residual) plus per-component ledger entries (`theory/component_identity.md`) counts as which verdict is not written
   down anywhere, and neither is what a recruited subcomponent must have done *before* the update for "recruit" to mean
   more than "any perturbation switches these on". Output wanted: a short decision report fixing the mapping, ideally
-  before the ladder's routes are scored.
+  before the ladder's routes are scored. 2026-10-19: first data for it in `reports/2026-10-19_analysis_key-value-task.md`:
+  the identity control is carried by re-switching (r 0.76–0.80), the random cipher by subcomponents Γ does not switch on
+  (e_gate 0.75–0.86), in one format; under frozen Γ the sparsity loss cannot tell maps apart (it reads W′ only).
 - 2026-10-19. **From the recruit test** (`reports/2026-10-19_analysis_recruit-test.md`). (a) Is the recruited set the model's
   existing `o` machinery at W₀? Needs about 600 Pile val rows for 200 positions whose next token is `o` (256 rows gave 96),
   or a better definition of "natural" than next-token identity. (b) The switched-off set (about 130 subcomponents per arm)
@@ -140,3 +142,15 @@ Deferred ideas and loose ends. Date each entry.
   `o` and for the different-target nulls (0.55 to 0.60): r measures how much a trigger-local behaviour can be routed
   through existing gates at all, so the ladder's P2 (coverage predicts r) should be read with that in mind.
 - 2026-10-19. **From the task ladder** (`reports/2026-10-19_analysis_task-ladder.md`). (a) Round 4: Γ updating vs constrained placement (sparse/sibling pull-back, pull-back against Γ's values) on the rung-2 tasks, where e_gate dominates; needs `/design`. (b) A G1b that learns (more steps or larger lr on the 21 gated-on `h.3.mlp.down_proj` components) before any "d is small" claim. (c) Rungs 3 and 4, once d has somewhere to go. (d) PGD check: **done 2026-10-19** (`reports/2026-10-19_review_pgd-local.md`): retained_pgd has no power (seed spread 55–88 nats against 4–15 nat gains, sign flips) and stays reported-only; the window adversaries saturate because the windows are alike (one context for a shared mask), not because of the position count. Open, needs `/design`: the 128-document Pile adversary read at the task windows' trigger, the one remaining test of "fragile at the trigger". (e) Switched-on set and cross-task Jaccard (amendment's reported list) never implemented. (f) Why r2_t275's step-10 kl_other is 0.82 (0.49 at W₀). (g) Merge the nested `results/results/large/` into `results/large/`.
+- 2026-10-19. **Reading-A coverage gaps** (`reports/2026-10-19_decision_success-criterion.md`). Pile faithfulness
+  ratios (stochastic, PGD, CI-masked, unmasked) exist for the pull-back on emoticon and on two of the six ladder tasks
+  only; the rare-word task `r2_t359` read PGD 1.53, above round 2's 1.5 line. Run them on the other four (states must
+  be regenerated: never saved). VPD's importance-minimality (sparsity) loss has never been computed as a metric on any
+  updated decomposition; add it beside the four ratios.
+
+- **LoRA with a non-random read side** (2026-10-19, from the LoRA commute test, `reports/2026-10-19_analysis_lora-commute.md`). **Dropped 2026-10-19** at `/design` (`reports/2026-10-19_review_lora-failure-and-fixes.md`, 3.1, `TRIED.md`): the write-only half of `pb_r`, already measured; the L40 rerun of the lift is folded into `experiments/lora_matched` as its control.
+  A LoRA's A factor stays near its random init (|cos| 0.92–0.98 at the scored step), so its inexpressible share sits at the
+  isotropic null and its lift leaves a third of the behaviour in Δ. Candidate arm: train A before B, or initialise A from the
+  matrix's alive read vectors, then lift; the test is whether the inexpressible share drops below W₀'s own 0.13–0.21 and e_Δ
+  towards the full-weight lift's 0.085. Also pending: a 5-minute L40 rerun of round 2's lift at step 10 to close the 4090-vs-L40
+  PGD miss (7.3 vs 5.4). Through `/design`.

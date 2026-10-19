@@ -90,6 +90,19 @@ def tokenizer() -> Any:
     return AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
 
 
+def sparsity_config() -> dict[str, float]:
+    """The released run's importance-minimality loss as it stood at the END of its training (`final_config.yaml`):
+    p is the annealed final value when annealing was on (2.0 -> 0.4 over the run), beta and eps as configured.
+    Read from the file so the numbers are never copied by hand."""
+    import yaml
+
+    cfg = yaml.safe_load((env.VPD_DIR / DECOMP_RUN / "final_config.yaml").read_text())
+    im = next(c for c in cfg["loss_metric_configs"] if c["classname"] == "ImportanceMinimalityLoss")
+    annealed = im.get("p_anneal_final_p") is not None and im.get("p_anneal_start_frac", 1.0) < 1.0
+    return {"pnorm": float(im["p_anneal_final_p"] if annealed else im["pnorm"]), "beta": float(im["beta"]),
+            "eps": float(im.get("eps", 1e-12))}
+
+
 # ----------------------------------------------------------------------------- accessors
 
 _LAYER_RE = re.compile(r"^h\.(\d+)\.")

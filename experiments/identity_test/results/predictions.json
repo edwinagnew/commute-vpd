@@ -1,0 +1,43 @@
+{
+ "about": "identity_test: for the round-2 updates of Goodfire's 67M Pile model and its VPD decomposition s-55ea3f9b (Gamma frozen, Delta fixed), are the subcomponents that carry the emoticon update still the same subcomponents? Filed before any identity measurement was run. Round 2 showed the pull-back (lr 1e-5) is faithful at steps 10 and 30 and the Euclidean lift is PGD-fragile (reports/2026-10-14_analysis_lift-test.md).",
+ "filed": "2026-10-15 10:11:27",
+ "predictions": [
+  {
+   "claim": "The subcomponents that carry the pull-back's update are still the same subcomponents.",
+   "id": "1_identity_kept",
+   "measure": "state pullback_s30, its 20 selected subcomponents. A subcomponent keeps identity if r_self >= 0.9 AND rank == 1 AND write_cos >= floor_j - 0.1",
+   "null": "<= 10 of 20 keep identity",
+   "pass": ">= 18 of 20 keep identity",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The pull-back's behavioural update is carried by a few subcomponents.",
+   "id": "2_update_concentrated",
+   "measure": "state pullback_s30: reverting the 10 subcomponents with the largest revert-one drop together; fraction of gain removed = (log-odds(state) - log-odds(reverted)) / gain",
+   "null": "fraction removed < 0.2 (diffuse)",
+   "pass": "fraction removed >= 0.5",
+   "prediction": "fail (Adam spreads the update over all alive U, V; round 1 found 10 random subcomponents as good as the top 10)",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": [
+  "the same measures for pullback_s10 and the three lift states (pull-back vs lift at matched norm)",
+  "whether 2359 or a sibling is among the 10 largest revert-one drops, and its change statistics",
+  "fraction removed for k in (1, 3, 10, 20, 30, 100, 300, 1000) and for all alive subcomponents"
+ ],
+ "setup": {
+  "bank": "Pile val rows 512..543 (16 384 positions) plus the 73 held-out windows (2 993 positions)",
+  "gamma_profile": "reported only: |Pearson| of j's g over the Pile bank before vs after (upstream drift only, since Gamma reads raw activations), and |Pearson(g_j, |x . v_j|)| before and after",
+  "gauge_free_change": "|cos(u, u2)|, |cos(v, v2)|, ||u2|| ||v2|| / (||u|| ||v||), ||u2 v2^T - u v^T|| / ||u v^T||",
+  "null_group": "for each selected subcomponent, one random alive subcomponent of the same matrix with |revert-one| below that matrix's median (seed 0): drift from upstream changes only",
+  "read_signature": "x . v over the bank, x the matrix's input under W0 (before, v) or the state (after, v2). r_self = |Pearson(after_j, before_j)|; rank of j among all alive before-profiles of the same matrix by |Pearson| with after_j; top-100 Jaccard by |x . v|",
+  "revert_one": "for every alive subcomponent j, the drop in held-out mean log-odds of `o` at the trigger position (73 windows, fp32) when j alone is reverted to its W0 value (u2 v2^T -> u v^T), weights otherwise at the state. gain = log-odds(state) - log-odds(W0)",
+  "selected": "the K_SEL = 20 subcomponents with the largest revert-one drop, per state",
+  "states": {
+   "lift_s2, lift_s3, lift_s10": "Euclidean lift (tol 1e-6) of the arm A W fine-tune rerun (lr 3e-5, seed 0) at steps 2, 3, 10, regenerated and checked against pullback.json. Steps 2 and 3 match pull-back steps 10 and 30 by max ||dW||/||W0|| (0.0053 vs 0.0051; 0.0065 vs 0.0066). Step 10 is where the lift's PGD ratio was 5.4",
+   "pullback_s10, pullback_s30": "Adam on alive (U, V) offsets, lr 1e-5, arm A's loss, windows, batch, clip and seed (round 2 P3'), regenerated; held-out P(o) checked against pullback2.json"
+  },
+  "write_signature": "ablation effect: mean over j's top-64 Pile-bank positions (by |x . v| at W0) of log-softmax(full) - log-softmax(j ablated), a vocabulary vector; before at W0 with (u, v), after at the state with (u2, v2), same positions. write_cos = cosine(before, after). floor_j = cosine of the W0 effect over even-ranked vs odd-ranked positions (split half)"
+ }
+}

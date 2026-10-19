@@ -1,0 +1,48 @@
+{
+ "about": "concentration_test: the round-2 pull-back (Adam, all alive U, V, Gamma frozen, Delta fixed) spreads the emoticon update over thousands of subcomponents (identity test: top 10 by revert-one remove 1.6% of the log-odds gain; 2359 unchanged). Is that the optimiser, and can the behaviour be learned inside the decomposition by moving a few subcomponents, or only 2359 and its siblings? Filed before any arm was trained.",
+ "filed": "2026-10-15 12:07:09",
+ "predictions": [
+  {
+   "claim": "Adam is why the pull-back's update is diffuse: with plain SGD it concentrates.",
+   "id": "1_sgd_concentrated",
+   "measure": "sgd_all selected run at step 30: fraction of the log-odds gain removed by reverting the 10 largest revert-one drops together",
+   "null": "< 0.2",
+   "pass": ">= 0.5",
+   "prediction": "fail",
+   "scorable_if": "sgd_all learns (lr rule finds an lr)",
+   "scored": true
+  },
+  {
+   "claim": "Moving only 10 subcomponents learns the behaviour faithfully.",
+   "id": "2_top10_inside",
+   "measure": "top10 selected run at step 30",
+   "pass": "learns by the lr rule AND Pile stochastic, PGD and CI-masked ratios <= 1.5 AND trigger-local CI-masked P(o) >= 0.8 x target P(o)",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The paper's emoticon subcomponents (2359 and five siblings) suffice: the label is usable for learning.",
+   "id": "3_siblings_inside",
+   "measure": "siblings selected run at step 30",
+   "pass": "as prediction 2",
+   "prediction": "pass",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": [
+  "top1 and top100; adam_all and sgd_all on every measure (first trigger-local numbers for the round-2 pull-back)",
+  "rank of 2359 and its siblings in |dL/ds_c|",
+  "identity of moved subcomponents, with the positive controls",
+  "gamma vs update for adam_all and sgd_all"
+ ],
+ "setup": {
+  "arms": "pull-back with arm A's loss, windows, batch 32, clip 1, seed 0, 30 steps. adam_all: Adam lr 1e-5 on all alive (U, V) (round 2). sgd_all: plain SGD on all alive, lr in {0.3, 1, 3, 10, 30}. topK (K = 1, 10, 100): Adam on the K alive subcomponents with the largest |dL/ds_c| (below), lr in {1e-5 .. 1e-3}. siblings: Adam on h.2.mlp.down_proj 2359, 1672, 2623, 3290, 3327, 3382 only, same lrs. Unselected columns get zero gradient (checked: their offsets stay exactly 0)",
+  "gamma_vs_update": "reported: mean g at the trigger per alive subcomponent at W0; share of the summed positive revert-one drop carried by subcomponents with mean g > 0.5 there; Spearman of drop vs g",
+  "identity": "as identity_test (read r_self >= 0.9, rank 1, write_cos >= floor - 0.1) for the moved subcomponents (masked arms) or the 20 largest drops (all-arms). Positive control, a gate: on W0, replacing one subcomponent's v with another alive v of the same matrix, and its u with a random direction of the same norm, must each fail keeps_identity; otherwise identity numbers are reported as uninformative. Also reported: rotating v by 20 and 45 degrees",
+  "lr_rule": "per arm, among lrs with held-out P(o) >= 0.9 at step 30 and held-out KL elsewhere <= 0.110, the lowest KL elsewhere; if none, the highest P(o), and the arm is marked 'did not learn'",
+  "pile_faithfulness": "round 1's harness (Pile val rows 0..255; stochastic, PGD, CI-masked, unmasked), target W0 + dW, alive columns at (U2, V2). Ratios to the decomposition on W0, seed 0. Noise floor: W0 with adversary seeds 0, 1, 2, filed with the results",
+  "revert_one": "as identity_test: drop in held-out mean log-odds of o when one subcomponent alone is reverted. Blind to: redundancy (joint effects beyond the greedy top-k); evaluated at the trigger only",
+  "top_k_selection": "gauge-free first-order importance at W0: s_c scales subcomponent c (B_c -> (1 + s_c) B_c); dL/ds_c = u_c^T G_W v_c with G_W the gradient of arm A's loss on all 365 training windows",
+  "trigger_local": "held-out windows (73 x 41 tokens), trigger at index 20. Component model with the state's weights, masks = frozen Gamma's g (CI-masked, Delta excluded) and masks = 1 (unmasked, Delta excluded): mean P(o) at the trigger, KL(target || model) at the trigger and at the other 40. Blind to: positions outside these windows. Positive control: do-nothing (target W0 + dW of adam_all, components at W0) must give CI-masked P(o) < 0.5 x target P(o), else the trigger-local criterion is unscorable"
+ }
+}

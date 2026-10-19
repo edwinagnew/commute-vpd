@@ -35,6 +35,40 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
 - **Canonical update:** LoRA, plus full-weight fine-tunes.
 - **Γ:** frozen for now (see `decisions.md`), although updating it may turn out to be essential.
 
+## Terms (the definitions both of us hold; 2026-10-19, after a chat found three of them had drifted)
+
+- **Φ** maps (D, δW) to D', for one update step. Along training, Φ is applied at every step and the question is whether
+  the error accumulates; the run is the limit, not the object. Experiments to 2026-10-19 scored finished 10-step runs
+  one-shot; see `reports/2026-10-19_decision_success-criterion.md`.
+- **Pull-back:** the same fine-tune run on the alive (U, V) with Γ and Δ frozen. One SGD step moves W by
+  K(G) = UUᵀG + GVVᵀ, the part of the gradient the pieces can express. It consumes the training step, so it needs the
+  loss and data. Runs so far used Adam on (U, V), not SGD.
+- **Lift:** the weight change δW written as the smallest first-order change (dU, dV) of the alive pieces, with the
+  obstruction O(δW) left in Δ. It consumes the weight difference, so it is the only Φ that applies to a LoRA handed
+  over as BA.
+- **Faithful (weak version):** D' passes VPD's own checks on W + δW about as well as D passes them on W (stochastic-mask,
+  adversarial-mask, CI-masked and unmasked reconstruction KL, and the sparsity loss), with Δ not absorbing δW. The
+  route split (direct, re-gating, interaction, masked-off, residual) describes mechanism and does not decide this.
+- **Γ, the gate:** one network reading every matrix's input at every position. An edit in one layer moves CI values in
+  others.
+- **Small:** measured by a step sweep, never assumed.
+
+## Where an update goes (mechanism hypotheses, user-approved 2026-10-16; they do not decide the weak version, 2026-10-19)
+
+Under a map Φ, the change in the new model's behaviour splits exactly into five routes: (a) **direct**, the changed
+subcomponents at the old gates; (b) **re-gating**, the frozen Γ gating differently on the new activations; (c) their
+**interaction**; (d) **masked off**, carried by subcomponents Γ does not gate on; (e) **residual**, not carried by the
+subcomponents at all. A sixth route, Γ's own parameters, is zero while Γ is frozen. The weak version holds when (d) and
+(e) are small. Measurement: `reports/2026-10-16_prediction_ladder-routes-amendment.md`.
+The weak version itself is decided by VPD's checks on D' (`reports/2026-10-19_decision_success-criterion.md`); a small
+direct share (a) is a finding about mechanism, not a failure of Φ.
+
+- **Strengthen:** (a) dominates. Post-training sharpens subcomponents that already do the job.
+- **Reveal:** (b) + (c) dominate. The update is a small change that Γ amplifies by switching on subcomponents that
+  already exist. The concentration test points this way on the emoticon task.
+- **Create:** (e) dominates when Δ may move. When it may not, (d) dominates or inside training fails to learn.
+- **Brittle:** the split is unstable across seeds or across small changes to Φ.
+
 ## Not the goal
 
 - Improving VPD itself, or re-deriving its training recipe.

@@ -6,7 +6,7 @@ using a cluster GPU as the Jupyter kernel for notebooks open in VS Code on the l
 
 - Login (controller, for submitting jobs and light file operations only): `ssh e.agnew@185.141.218.207`
 - Slurm: account `c11`, partition `compute`. Repo copy: `/mnt/nw/home/e.agnew/commute` (NFS, persistent),
-  with venv `.venv` (Python 3.13, `uv sync --locked`), `artifacts/` (VPD decomposition + target model) and
+  with venv `.venv` (Python 3.13, `uv sync --locked --no-default-groups --group dev --group gpu`: CUDA torch; the laptop default is the CPU build), `artifacts/` (VPD decomposition + target model) and
   `experiments/*/results/large/`.
 - Caches and temp files go to `/ephemeral/$USER` (`env.sh`). That includes `HF_HOME`, so the tokenizer and dataset
   caches can be re-downloaded and do not count as results.
@@ -14,12 +14,12 @@ using a cluster GPU as the Jupyter kernel for notebooks open in VS Code on the l
 | File | Where it runs | What it does |
 | --- | --- | --- |
 | `env.sh` | cluster | `source` it: caches/TMPDIR → `/ephemeral/$USER`, uv on PATH |
-| `setup.sbatch` | GPU node | (re)builds `.venv` with `uv sync --locked`, checks torch/CUDA, runs `gpu-sanity.sh` |
+| `setup.sbatch` | GPU node | (re)builds `.venv` with the `gpu` torch group, checks torch/CUDA, runs `gpu-sanity.sh` |
 | `gpu-sanity.sh` | GPU node | the GPU guide's sanity script (topology file moved off `/tmp`) |
 | `jupyter.sbatch` | GPU node | Jupyter server on 1 GPU; writes `.jupyter-session` (node, port, token; mode 600, gitignored) |
 | `jupyter.sh` | laptop | `start` / `connect` / `status` / `stop` the Jupyter job |
 | `kernel_check.py` | laptop | smoke test: starts a kernel through the tunnel, runs `torch.cuda.get_device_name()` |
-| `sync.sh` | laptop | `up` (tree incl. `results/large/`), `artifacts`, `down` (results, figures, logs) |
+| `sync.sh` | laptop | `up` (tree incl. `results/large/`), `artifacts`, `down` (results minus `results/large/`, figures, logs), `large` (`results/large/` on demand) |
 
 Slurm logs go to `cluster/logs/<job-name>-<jobid>.out` on the cluster, and every job appends a line to
 `cluster/logs/jobs.log`. Note that `sacct` and `sacctmgr` do not work from the controller (slurmdbd refuses the
@@ -34,6 +34,12 @@ connection; checked 2026-10-14). Use `squeue` and `scontrol show job <id>` inste
 
 The handbook gives both 1 h and 2 h for debug, and both 24 h and 7 days for normal. The values above are
 what the scheduler enforces, and jobs over the limit are rejected when you submit them.
+
+`sbatch --test-only` is useless for `debug` jobs: it ignores the QoS priority. On 2026-10-19 (13:58, ~90 jobs
+pending) it put a 20-min debug job's start 24 h away, while the two debug smoke jobs submitted that hour (22366,
+22368) started 6 min and 3 min after submission. For `normal` jobs it is the only estimate there is (the same
+query put a 2-h normal job 16 days out). Policy: wait at most 30 min for a start, then RunPod
+(`.claude/agents/pod-runner.md`).
 
 ## Notebook in VS Code on a cluster GPU
 

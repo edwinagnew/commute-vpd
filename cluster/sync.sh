@@ -4,8 +4,10 @@
 #   cluster/sync.sh up         # code + results (incl. gitignored results/large/) -> cluster; never deletes or
 #                              # overwrites a newer file there
 #   cluster/sync.sh artifacts  # artifacts/ (VPD decomposition + target model, ~3.2 GB) -> cluster
-#   cluster/sync.sh down       # experiments/*/results + figures, cluster/logs <- cluster; never deletes, never
-#                              # overwrites a newer local file (notebooks stay local: VS Code edits them here)
+#   cluster/sync.sh down       # experiments/*/results (minus results/large/) + figures, cluster/logs <- cluster;
+#                              # never deletes, never overwrites a newer local file (notebooks stay local)
+#   cluster/sync.sh large      # experiments/*/results/large/ <- cluster, on demand (GBs; the cluster copy is
+#                              # the durable one, the laptop needn't keep it)
 #
 # After `up` with a changed pyproject.toml/uv.lock, rebuild the venv on a GPU node: sbatch cluster/setup.sbatch.
 set -euo pipefail
@@ -29,11 +31,18 @@ artifacts)
 down)
     rsync -a --update --info=stats1 --prune-empty-dirs \
         --include='/experiments/' --include='/experiments/*/' \
+        --exclude='/experiments/*/results/large/' \
         --include='/experiments/*/results/***' --include='/experiments/*/figures/***' \
         --include='/cluster/' --include='/cluster/logs/***' \
         --exclude='.ipynb_checkpoints/' --exclude='*' \
         "$HOST:$REMOTE/" ./
     ;;
+large)
+    rsync -a --update --info=stats1 --prune-empty-dirs \
+        --include='/experiments/' --include='/experiments/*/' --include='/experiments/*/results/' \
+        --include='/experiments/*/results/large/***' --exclude='*' \
+        "$HOST:$REMOTE/" ./
+    ;;
 *)
-    sed -n '2,10p' "$0"; exit 1 ;;
+    sed -n '2,12p' "$0"; exit 1 ;;
 esac

@@ -1,0 +1,87 @@
+{
+ "about": "lora_matched (2026-10-19): rank-8 LoRA on all 24 decomposed matrices (the standard placement) and the full-weight fine-tune, both Euclidean-lifted onto the released subcomponents and both measured do-nothing, on the emoticon task. Repairs round 4's confound (LoRA on one badly-read matrix vs fine-tune on all 24): does a LoRA placed the way LoRAs are placed commute as well as a full-weight update? Design: reports/2026-10-19_review_lora-failure-and-fixes.md section 3.2, confirmed by the user. Filed before any arm was trained.",
+ "blind_to": {
+  "Pile PGD ratio": "a trigger-specific attack (the adversary is shared over 65k Pile positions holding ~3 triggers); the 20-step search is chaotic across GPUs (round 4's 35% miss), so only differences well over 35% are read",
+  "controls": "G2 (the lifted state is the fine-tune's model exactly), G4 (the harness reproduces round 2), the seed pair for m, the W0 seeds for f",
+  "d, r, e_delta": "everything away from the trigger (cover: kl_other and the Pile ratios)",
+  "inexpressible": "nothing about behaviour: an inexpressible part can still be redundant (round 2's review)"
+ },
+ "expected_at": {
+  "W0": "every Pile ratio 1 by construction; floor f about 0.035 (round 4)",
+  "control_ft_lift_step10": "e_delta 0.085, Delta change 0.36, pooled inexpressible 0.27 (null 0.53), Pile PGD ratio 5.41 (round 2, L40; round 4 on a 4090 read 7.31)",
+  "do_nothing": "e_delta 1, Delta change 1, d 0; Pile PGD ratio 2.18 (ft, round 2) / 1.4-2.5 (LoRA)"
+ },
+ "gates": [
+  {
+   "id": "G0_floor",
+   "rule": "m = max(0.1, 3 x max |Delta d|, |Delta r| between the lifts of LoRA seeds 0 and 1 at their scored steps); f = PGD floor as above"
+  },
+  {
+   "id": "G1_arms_learn",
+   "if_fail": "the arm is reported, not scored",
+   "rule": "the LoRA (each seed) reaches P(o) >= 0.9 at some checkpoint; the ft has P(o) >= 0.9 at step 10"
+  },
+  {
+   "id": "G2_lift_exact",
+   "if_fail": "the lift or the Delta bookkeeping is wrong; stop",
+   "rule": "for every lift: |P(o) of the lifted state's target model - the fine-tune's held-out P(o)| <= 1e-3 and |sum of shares - 1| <= 1e-6"
+  },
+  {
+   "id": "G4_reproduces",
+   "if_fail": "if they land near round 4's 2.49 and 7.31 instead, the GPU is not the cause and the code changed since round 2 (faithfulness.py, local_faith.py) is the suspect; find it before the analysis",
+   "reported_beside": "round 4's 4090 numbers",
+   "rule": "ft do-nothing and lift Pile PGD ratios at step 10 within 25% of round 2's 2.18 and 5.41 (L40)"
+  }
+ ],
+ "measurements": {
+  "cos_init": "per matrix, mean |cos| of A's rows with their initialisation, at every checkpoint",
+  "inexpressible": "lift.weighted_fractions with Sigma = E[a a^T] of the matrix's input over the train windows: the share of the update's output energy no first-order change of the alive subcomponents can express; per matrix with its isotropic null, and pooled by energy over the non-saturated matrices (round 4's rule, so the fine-tune reads 0.27 against a null of 0.53)",
+  "pgd_floor": "f = max/min - 1 of the W0 PGD KL over the 3 adversary seeds; 'within 3 floors' = ratio <= 1 + 3 f",
+  "pile": "faithfulness.pile_faithfulness (2 blocks of 128 val rows 0..255, one adversary per block, 20 steps of 0.1; stochastic, PGD, CI-masked, unmasked KL); ratio = arm / W0 under adversary seed 0",
+  "routes": "local_faith.route_split on the held-out windows: d, r, i, e_gate, e_delta (sum to 1), gain in nats"
+ },
+ "predictions": [
+  {
+   "arm": "lora seed 0, scored step",
+   "id": "M1_read_side_stays_random",
+   "null": "pooled inexpressible / pooled null <= 0.6 (the fine-tune's 0.51)",
+   "pass": "pooled inexpressible / pooled null >= 0.8",
+   "predicted": "pass: A moves little from its random init in the 10-30 steps it takes to learn (round 4: |cos| 0.92-0.98), so on every non-saturated matrix the update is as inexpressible as an isotropic one",
+   "reported": "per-matrix inexpressible, null and read_out; mean |cos| of A with its init at the scored step",
+   "scored": true
+  },
+  {
+   "arm": "lora seed 0 lift, scored step",
+   "id": "M2_lift_leaves_it_in_delta",
+   "null": "e_delta <= 0.2 (the fine-tune's lift: 0.085)",
+   "pass": "e_delta >= 0.3 (round 4's one-site LoRA: 0.33-0.43)",
+   "predicted": "pass, from M1: what the subcomponents cannot read of a random-read LoRA stays in Delta and carries its share of the behaviour; the four saturated matrices (38% of the fine-tune's energy) are the reason it may fall short",
+   "scored": true
+  },
+  {
+   "arm": "Pile PGD ratio of the lora seed 0 lift (scored step) vs the ft lift (step 10)",
+   "id": "C2m_lora_lift_fragile_like_ft",
+   "noise": "the two lines sit more than 35% from each other and from the references, so the 4090-vs-L40 miss cannot flip them",
+   "null": "lora lift <= 2 and e_delta <= 0.2 (a LoRA update is expressible and survives where the fine-tune's does not; reopens round 4's C2)",
+   "pass": "lora lift >= 5 (fine-tune-like: the lift's fragility belongs to 24-matrix lifted states, not to the update)",
+   "predicted": "pass, weakly: round 4's fragility grew with how much was lifted (one matrix 2.0, 24 matrices 5.4-7.3); between 2 and 5 is neither and is read against the ft lift's own number in the same job",
+   "scored": true
+  },
+  {
+   "arm": "d of the lora lift (scored step) vs the ft lift (step 10)",
+   "id": "C1m_direct_share_flat",
+   "null": "d(lora lift) - d(ft lift) >= m",
+   "pass": "|d(lora lift) - d(ft lift)| < m (the mechanism reading of rounds 3-4: d is 0.05-0.11 whatever the update or map)",
+   "predicted": "pass",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "P(o) and kl_other at every LoRA checkpoint (kl_other at the scored step beside the fine-tune's 0.053); the step-100 lift and do-nothing (no Pile); the do-nothing Pile ratios; Delta change; per-matrix inexpressible shares of both updates with each matrix's share of the update's energy; seed 1's numbers",
+ "setup": {
+  "W0": "the released decomposition under round 2's Pile harness with adversary seeds (0, 1, 2)",
+  "ft": "full-weight fine-tune, arm A recipe (Adam lr 3e-05, all 24 matrices, seed 0), measured at step 10 (round 2's and round 4's matched step)",
+  "lift": "lift.lift_state: Euclidean (minimum-norm) lift of each matrix's delta-W onto its alive subcomponents, tol 1e-6; target weights W0 + delta-W, so Delta moves by O(delta-W) - dU dV^T",
+  "lora": "rank 8 on all 24 matrices, B = 0 and A ~ N(0, 1/d_in) per matrix (seed 0), Adam lr 0.001, arm A's loss (CE on `o` at the trigger + KL elsewhere), batch 32, clip 1, 100 steps, checkpoints (1, 2, 3, 5, 10, 30, 100). Scored step = the first checkpoint with held-out P(o) >= 0.9; step 100 reported (no Pile). Seed 1 repeated (init and batches), measured at its own scored step, no Pile",
+  "windows": "round 1's emoticon windows (365 train, 73 held-out, trigger at index 20, target token `o`)"
+ }
+}

@@ -59,12 +59,13 @@ def cosine(a: Tensor, b: Tensor) -> float:
     return float((a @ b) / (a.norm() * b.norm()).clamp_min(1e-300))
 
 
-def log_odds(logits: Tensor, token: int) -> Tensor:
-    """log p(token) - log(1 - p(token)), exact as logit_token - logsumexp(other logits): no saturation at p ~ 1."""
+def log_odds(logits: Tensor, token: int | Tensor) -> Tensor:
+    """log p(token) - log(1 - p(token)), exact as logit_token - logsumexp(other logits): no saturation at p ~ 1.
+    `token` is one id for every row, or a tensor of ids shaped like `logits` without its last dimension."""
     lg = logits.float()
-    other = lg.clone()
-    other[..., token] = float("-inf")
-    return lg[..., token] - torch.logsumexp(other, -1)
+    idx = torch.as_tensor(token, device=lg.device, dtype=torch.long).expand(lg.shape[:-1]).unsqueeze(-1)
+    other = lg.scatter(-1, idx, float("-inf"))
+    return lg.gather(-1, idx).squeeze(-1) - torch.logsumexp(other, -1)
 
 
 class Edit:

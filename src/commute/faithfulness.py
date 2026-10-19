@@ -20,6 +20,7 @@ import torch
 from torch import Tensor
 
 from commute.vpd import (
+    CI_CHUNK,
     component_weights,
     compute_ci,
     kl_per_position,
@@ -118,3 +119,59 @@ def faithfulness(model: Any, batches: list[Tensor], n_stoch_draws: int = 2, pgd_
     torch.cuda.empty_cache() if use_autocast else None
     log("[faith] " + " ".join(f"{k} {v:.4f}" for k, v in res.items()))
     return res
+
+
+# ----------------------------------------------------------------------------- round 2's Pile harness
+# Added 2026-10-19 (lora_commute; the lift test and the ladder had these lines in their run.py).
+
+PILE_ROWS = 256  # val rows 0..255; blocks of 128 rows, one adversary per block
+
+
+def pile_blocks(n_rows: int = PILE_ROWS, log: Any = print) -> list[list[Tensor]]:
+    from commute.data import batches, pile_rows
+
+    rows = pile_rows("val", 0, n_rows, log)
+    return [batches(rows[s : s + 128], 8) for s in range(0, rows.shape[0], 128)]
+
+
+def pile_faithfulness(model: Any, blocks: list[list[Tensor]], seed: int = 0, pgd_steps: int = 20, log: Any = print) -> dict[str, float]:
+    """`faithfulness` per block, mean over blocks (the ratios of rounds 1-3 are of these means)."""
+    per = [faithfulness(model, b, seed=seed, pgd_steps=pgd_steps, log=log) for b in blocks]
+    return {k: sum(p[k] for p in per) / len(per) for k in per[0] if k != "pgd_rows"}
+
+
+# ----------------------------------------------------------------------------- VPD's sparsity loss
+# Added 2026-10-19 (kv_task; `reports/2026-10-19_decision_success-criterion.md` lists it as the one VPD check never run
+# on an updated decomposition).
+
+
+def sparsity_loss(model: Any, batches: list[Tensor], pnorm: float, beta: float, eps: float = 1e-12,
+                  chunk: int = CI_CHUNK) -> float:
+    """VPD's importance-minimality loss (`ImportanceMinimalityLoss`) of the model's current state on the given rows:
+    per component the mean over positions of (upper-leaky CI + eps)^p, summed over components with the authors'
+    beta * log2(1 + sum) term, summed over matrices. Deterministic (continuous CI, no sampling). It is a sum over
+    components and its log term depends on the number of positions, so compare states only on identical rows.
+    Uses the authors' update/compute pair directly: the CI values come out of the bf16 autocast forward and are cast to
+    float32 before the power and the sums (the Metric class would sum in bf16)."""
+    from param_decomp.metrics.importance_minimality_loss import (
+        _importance_minimality_loss_compute,
+        _importance_minimality_loss_update,
+    )
+
+    device = next(model.parameters()).device
+    sums: dict[str, Tensor] = {}
+    n = 0
+    with torch.no_grad():
+        for batch in batches:
+            for s in range(0, batch.shape[0], chunk):
+                sub = batch[s : s + chunk].to(device)
+                with torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.type == "cuda"):
+                    out = model(sub, cache_type="input")
+                    ci = model.calc_causal_importances(out.cache, sampling="continuous", detach_inputs=False)
+                upper = {k: v.float() for k, v in ci.upper_leaky.items()}
+                part, m = _importance_minimality_loss_update(upper, pnorm, eps, 1.0, None, 1.0, 1.0)
+                for k, v in part.items():
+                    sums[k] = sums[k] + v if k in sums else v
+                n += m
+                del out, ci, upper
+    return float(_importance_minimality_loss_compute(sums, n, beta, world_size=1))

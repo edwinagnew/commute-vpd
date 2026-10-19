@@ -39,6 +39,24 @@ dev = [
     "ipykernel==7.4.0",
     "jupyter-server==2.21.1",
 ]
+# Which torch build: `cpu` on the laptop (default; no GPU there, saves ~4.6 GB of CUDA wheels), `gpu` on the
+# cluster (`uv sync --locked --no-default-groups --group dev --group gpu`, see cluster/setup.sbatch). `gpu` is
+# the plain PyPI wheel (CUDA 12.8), the same build the cluster venv had before the split.
+cpu = ["torch==2.8.0", "torchvision==0.23.0"]  # torchvision: param-decomp pulls it in; the PyPI wheel is CUDA-built
+gpu = ["torch==2.8.0", "torchvision==0.23.0"]
+
+[tool.uv]
+default-groups = ["dev", "cpu"]
+conflicts = [[{ group = "cpu" }, { group = "gpu" }]]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", group = "cpu" }]
+torchvision = [{ index = "pytorch-cpu", group = "cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

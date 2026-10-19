@@ -1,0 +1,57 @@
+{
+ "about": "lift_test (round 2): for a small fine-tune delta-W of Goodfire's 4-layer 67M Pile model, does a simple map (no extra network trained; user, 2026-10-14) put delta-W on the alive subcomponents of the released VPD decomposition s-55ea3f9b, Gamma frozen and Delta held at Delta_0, so that the result is a faithful decomposition of W0 + delta-W (the weak version, GOALS.md)? Definitions: theory/commuting_updates.md. Plan: reports/2026-10-14_plan_lift-test.md. Filed before any round-2 measurement was run. Round 1's delta-W checkpoints (experiments/transport_test/results/large/{A,B}/dW_step*.pt) exist and their norms are known from round 1; their obstruction fractions have not been computed.",
+ "filed": "2026-10-14 16:22:31",
+ "predictions": [
+  {
+   "claim": "Almost all of a small fine-tune can be expressed by first-order changes to the alive subcomponents.",
+   "id": "1_obstruction_small",
+   "measure": "pooled omega (tol 1e-6) over the non-saturated matrices, and the pooled Gaussian null over the same matrices, at round 1's arm A step 10 and at the rerun's steps 1, 2, 3, 5, 10",
+   "null": "omega >= 0.8 * null (the update is no better aligned with the alive read/write spaces than noise)",
+   "pass": "at every one of these checkpoints: omega <= 0.1 AND omega <= 0.5 * null",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The Euclidean lift of a small fine-tune is a faithful decomposition of the fine-tuned model.",
+   "id": "2_lift_faithful",
+   "measure": "Euclidean map at the rerun's arm A checkpoints 1, 2, 3, 5, 10: ratios of L_F, stochastic KL and PGD KL to the released decomposition on W0",
+   "null": "brittleness: a stochastic or PGD ratio > 3 at a checkpoint where the L_F ratio <= 1.5",
+   "pass": "all three ratios <= 1.5 at every checkpoint",
+   "prediction": "pass",
+   "sanity": "the do-nothing map has L_F ratio > 1.5 at step 10; if not, delta-W is too small against Delta_0 for L_F to separate maps, and the L_F part of this prediction is reported as unscorable",
+   "scored": true
+  },
+  {
+   "claim": "Post-training can be done in the decomposition: training U_A, V_A on the fine-tune's loss reproduces the behaviour and keeps the decomposition faithful.",
+   "conditioning": "scorable only if the rerun reaches held-out P(o) >= 0.9 by step 10 (defines s*)",
+   "id": "3_pullback_replay",
+   "measure": "scored pull-back run: held-out mean P(o) at each step 1..30; faithfulness ratios (stochastic, PGD) at step min(3 s*, 30)",
+   "pass": "held-out P(o) >= 0.9 by step 3 s* AND stochastic and PGD ratios <= 1.5 at that step",
+   "prediction": "pass",
+   "scored": true
+  }
+ ],
+ "setup": {
+  "arm_A_rerun": "round 1's arm A recipe (365 emoticon windows, full-weight Adam on the 24 matrices, lr 3e-5, batch 32, CE on `o` at index 20 + 1.0 * KL on the other 40 positions, grad clip 1, seed 0) rerun with checkpoints at steps 1, 2, 3, 5, 10, 30; s* = the first of these with held-out mean P(o) >= 0.9",
+  "decomposition": "U, V of the 24 matrices read from s-55ea3f9b/model_400000.pth; alive = round 1's mask (experiments/transport_test/results/large/alive.pt: mean g over Pile val rows 2048..2303 > 1e-6, 9 881 alive). Theory convention U_A = U[alive].T (d_out, n), V_A = V[:, alive] (d_in, n); all linear algebra in float64",
+  "faithfulness": "round 1's harness (src/commute/faithfulness.py; 2 blocks of 128 Pile val rows, stochastic KL with 2 draws per batch, PGD 20 steps of 0.1 with one adversary per block, Delta included in both). Target weights W0 + dW, components replaced by the lifted ones, Gamma frozen; Delta is whatever param-decomp computes (W_target - sum of all components), so whatever the lift leaves stays in Delta and is charged to L_F. Ratios are to the released decomposition on W0 in the same harness, same rows and seed. L_F = sum_m ||Delta_m||_F^2 (the ratio needs no normaliser)",
+  "gaussian_null": "per matrix (1 - r_U/d_out)(1 - r_V/d_in); pooled with the same weights ||dW_m||^2 as the real update (the expected pooled omega if each dW_m were replaced by an isotropic matrix of the same norm)",
+  "maps": {
+   "do_nothing": "components unchanged (Delta absorbs dW)",
+   "euclidean": "minimum-norm first-order lift dU = X V_A, dV = X^T U_A with X = K^+ (dW - O(dW)), tol 1e-6 (theory section 5.1 instance 1; src/commute/lift.py)",
+   "locality": "theory section 5.1 instance 2, lambda fixed by the rule in the stage-1 code before stage 1 runs; reported, not scored",
+   "pullback": "Adam on (U_A, V_A) of all 24 matrices (dead columns and Delta_0 fixed; target weights = sigma(d) + Delta_0), arm A's loss, windows, batch, clip and seed; lr in {1e-4, 3e-4, 1e-3}, 30 steps each; the lr with the highest held-out P(o) at step 30 is the scored one (rule fixed now)"
+  },
+  "non_saturated": "matrices with r_U < d_out and r_V < d_in at tol = 1e-6; omega is identically 0 on the others, where s_min of d sigma is reported instead",
+  "obstruction_fraction": "omega_m = ||P_U^perp dW_m P_V^perp||_F^2 / ||dW_m||_F^2; pooled omega = sum_m ||O(dW_m)||^2 / sum_m ||dW_m||^2 over a stated set of matrices",
+  "rank_rule": "a singular value of U_A or V_A counts as non-zero if it exceeds tol * the largest singular value of that matrix; tol = 1e-6 is scored, 1e-3 and 1e-2 are reported",
+  "reported_not_scored": [
+   "omega, ranks and s_min for round 1's checkpoints of both arms (steps 10..300)",
+   "omega for arm B rerun at a learning rate giving ~0.1 nats held-out KL, and for LoRAs of rank 1 and 8 on h.2.mlp.down_proj trained on arm A's data",
+   "omega for the gradient-shaped null (Corollary 2: same per-example errors and inputs, coefficients randomised)",
+   "Euclidean lift size ||(dU, dV)|| / ||(U_A, V_A)|| beside ||dW|| / ||W0|| (gauge-dependent: released gauge)",
+   "L_I and the CI-masked and unmasked KLs (Delta in and out) for every map",
+   "locality residual rho for the Euclidean and locality lifts"
+  ]
+ }
+}

@@ -13,7 +13,7 @@ default-runtime = "runpod"
 # Default: "remote-kernels"
 # The provider shows "<name>-<generated id>"; set it to "commute-<experiment>" before start() so pods read
 # commute-<experiment>-<id> at RunPod (the start() label is local display only).
-name = "commute-transport_test"
+name = "commute"
 
 # Budget cap in dollars, per Claude session. Prefer setting
 # REMOTE_KERNELS_BUDGET in .claude/settings.json's env section over this
@@ -58,7 +58,7 @@ inherit-env = ["HF_TOKEN", "WANDB_API_KEY"]
 
 # sync() sends the project's files, honoring .gitignore. Extra paths to
 # include anyway:
-# sync-include = ["data/small-dataset/"]
+sync-include = ["experiments/transport_test/results/large/alive.pt", "experiments/transport_test/results/large/windows.pt", "experiments/recruit_test/results/large/ft_s0_dg.pt"]
 
 # Commands run over SSH once the machine is reachable, on any runtime (e.g.
 # install packages). Compare [vast] onstart, which runs as root at first boot.
@@ -67,8 +67,11 @@ inherit-env = ["HF_TOKEN", "WANDB_API_KEY"]
 # Explicit environment variables to set on the machine. When the same
 # variable comes from several sources, later ones win: env-file,
 # inherit-env, then [env].
-# [env]
-# MY_VAR = "value"
+# Where a pod keeps things that are not the synced tree (all on the container disk, lost at terminate):
+[env]
+COMMUTE_CACHE_DIR = "/root/artifacts"   # VPD decomposition + target model, fetched from W&B by commute.vpd.fetch()
+HF_HOME = "/root/hf"                    # tokenizer + dataset caches
+UV_CACHE_DIR = "/root/uv"
 
 # RunPod runtime configuration. Known fields are typed; any extra fields are
 # passed through to RunPod's pod-create API (kebab-case is converted to
@@ -115,7 +118,11 @@ cleanup = "terminate"
 
 # GPU types to try, in order of preference.
 # Default: ["NVIDIA GeForce RTX 4090"]
-gpu-type-ids = ["NVIDIA GeForce RTX 4090", "NVIDIA L40S"]
+# Cheapest adequate card first (the model is 67M; every run so far fit in < 24 GB). Tried in order within the pinned
+# data center. Secure-cloud prices 2026-10-19: A5000 $0.27, 3090 $0.50, RTX PRO 4000 Blackwell $0.57, A40 $0.59 (48 GB),
+# RTX PRO 4500 $0.72 (32 GB), 4090 $0.89, L40S $1.09 (48 GB). A run that needs more memory or speed passes
+# start(gpu_type="NVIDIA L40S") (or another name from this list) instead of editing this line.
+gpu-type-ids = ["NVIDIA RTX A5000", "NVIDIA GeForce RTX 3090", "NVIDIA RTX PRO 4000 Blackwell", "NVIDIA A40", "NVIDIA RTX PRO 4500 Blackwell", "NVIDIA GeForce RTX 4090", "NVIDIA L40S"]
 
 # Container image to run on the machine.
 # Default: "runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04"
@@ -141,7 +148,13 @@ gpu-type-ids = ["NVIDIA GeForce RTX 4090", "NVIDIA L40S"]
 # Network volume ID (optional, for persistent data across pod terminations).
 # Must be in the same datacenter as the pod — pin one via a passthrough
 # field, e.g. data-center-ids = ["EU-RO-1"].
-# network-volume-id = "vol_abc123"
+# Network volume 697hr92me8 (50 GB, EU-RO-1, created 2026-10-19) is NOT used: remote-kernels 0.3.8 makes the volume
+# mount its working directory (sync target, kernel cwd and its own lease file), so the second pod on the volume reads
+# the first pod's lease, fences itself and self-destructs; and MooseFS is slow for small files (uv sync 576 s vs 61 s,
+# import torch 20-45 s). See reports/2026-10-19_decision_pod-policy.md section 3. Re-enable only with a plugin
+# version that has a separate workdir option for RunPod.
+# network-volume-id = "697hr92me8"
+# data-center-ids = ["EU-RO-1"]
 
 # Cloud type: "SECURE" or "COMMUNITY".
 # COMMUNITY is cheaper but may have less reliable availability. SSH is not

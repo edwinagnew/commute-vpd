@@ -1,0 +1,37 @@
+{
+ "about": "Amendment 1 to concentration_test (reports/2026-10-15_prediction_concentration-amendment.md). The original predictions.json is unchanged. The trigger-local control failed its filed rule: do-nothing's CI-masked P(o) was 0.535 (needed < 0.498) because the frozen Gamma reads the fine-tuned activations and its gates alone move the component model towards `o`. This amendment fixes the gates to W0: Gamma's g is computed from the W0 model's activations, so only the components can carry the update. Filed before the amended measure was run.",
+ "filed": "2026-10-15 13:20:47",
+ "predictions": [
+  {
+   "claim": "The six labelled subcomponents carry the learned behaviour under the original gating.",
+   "id": "A1_siblings_w0_gated",
+   "measure": "siblings arm, W0-gated CI-masked P(o) at the trigger",
+   "pass": ">= 0.8 x target P(o)",
+   "prediction": "pass (the windows were chosen where 2359 has g > 0.5 at W0)",
+   "scored": true
+  },
+  {
+   "claim": "As A1 for the top-10 arm.",
+   "id": "A2_top10_w0_gated",
+   "measure": "top10 arm, same",
+   "pass": ">= 0.8 x target P(o)",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The diffuse Adam update is not carried by the components Gamma gates on at W0.",
+   "id": "A3_adam_all_w0_gated",
+   "measure": "adam_all arm, same",
+   "pass": "< 0.5 x target P(o)",
+   "prediction": "pass",
+   "scored": true
+  }
+ ],
+ "setup": {
+  "control": "do-nothing (target W0 + dW of adam_all, components at W0) under W0 gates must give P(o) < 0.5 x target (it is W0's own CI-masked model, 0.0045 in concentration.json), else unscorable",
+  "reported": "W0-gated numbers for every arm; mean g at the trigger (W0) of each moved subcomponent in the masked arms; W0-gated KL at the trigger of W0's own decomposition is 0.519 (concentration.json), the baseline imperfection at the trigger",
+  "state_gated": "as the original trigger_local (g from the state's activations), recomputed for comparison",
+  "states": "each arm's selected run retrained with the same lr, seed and recipe; held-out P(o) at step 30 must match concentration.json within 0.01 (logged)",
+  "w0_gated": "g = frozen Gamma on the W0 model's activations over the held-out windows; component model with the state's components, masks = g, Delta excluded; target = the state's model. Mean P(o) at the trigger, KL(target || model) at the trigger and at the other 40 positions"
+ }
+}

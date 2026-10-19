@@ -1,0 +1,121 @@
+{
+ "about": "lora_commute (2026-10-19): fine-tune the emoticon -> `o` behaviour as a LoRA on h.2.mlp.down_proj and commute it past the released decomposition with the maps on hand (Euclidean lift of the finished delta-W; pull-back = training the subcomponents, here confined to the LoRA's matrix and rank), beside the full-weight fine-tune under the same maps. The user's question: is a LoRA update easier to decompose than a normal fine-tuning update (instinct: yes). Plan reports/2026-10-19_plan_lora-lift-and-pullback.md plus its addendum. Filed before any arm was trained.",
+ "blind_to": {
+  "Pile PGD ratio": "a trigger-specific attack (the adversary is shared over 65k Pile positions holding ~3 triggers; cover: round 2's calibration, the W0 floor); the task-local adversary has no power (review above)",
+  "controls": "G2 for the lift (the state must be the LoRA's model exactly), the lr rule for the pull-back (it must learn), the W0 seeds for the PGD floor, the reproduction gates G4 for the harness",
+  "d, r, e_delta": "everything away from the trigger (cover: the LoRA's kl_other and the Pile ratios)",
+  "moved": "changes spread below 1% (the identity test's regime)"
+ },
+ "gates": [
+  {
+   "id": "G0_floor",
+   "rule": "m = max(0.1, 3 x max |Delta d|, |Delta r| between seeds 0 and 1 of pb_8 (step 30) and lift_8 (scored step)); f = PGD floor as above"
+  },
+  {
+   "id": "G1_arms_learn",
+   "if_fail": "the arm is reported, not scored; its failure is a result",
+   "rule": "every LoRA_r reaches P(o) >= 0.9 at some checkpoint; every pb_r finds an lr by the rule"
+  },
+  {
+   "id": "G2_lift_exact",
+   "if_fail": "the lift or the Delta bookkeeping is wrong; stop",
+   "reported_beside": "P(o) of the lifted components alone (U1; round 2's liftable part gave 0.954 vs 0.999 for LoRA_8 step 10)",
+   "rule": "for every lift: |P(o) of the lifted state's target model - the fine-tune's held-out P(o)| <= 1e-3 and |sum of shares - 1| <= 1e-6"
+  },
+  {
+   "id": "G4_reproduces",
+   "if_fail": "find the cause before the analysis",
+   "rule": "nothing_ft and lift_ft Pile PGD ratios at step 10 within 25% of 2.18 and 5.41 (round 2); pb_all d and r at step 10 within 0.05 of 0.025 and 0.53 (ladder); nothing LoRA_8 r at step 10 within 0.05 of 0.54 (recruit)"
+  }
+ ],
+ "measurements": {
+  "S_on": "recruit.switched at 0.3: alive subcomponents whose mean trigger gate rises by > 0.3; Jaccard with the ft do-nothing arm's set (and with the recruit test's ft_s0 file if present)",
+  "inexpressible": "lift.weighted_fractions with Sigma = E[a a^T] of the matrix's input over the train windows: the share of the update's output energy no first-order change of the alive subcomponents can express; per matrix for the LoRA, pooled by energy over the non-saturated matrices for ft",
+  "local": "local_faith.local_faithfulness: reported only (its adversaries saturate; reports/2026-10-19_review_pgd-local.md)",
+  "moved": "subcomponents whose rank-1 matrix changes by more than 1% of its norm (identity.change_stats); the top 20 by ||Delta(u v^T)|| for P5",
+  "pgd_floor": "f = max/min - 1 of the W0 PGD KL over the 3 adversary seeds; 'within 3 floors' = ratio <= 1 + 3 f",
+  "pile": "faithfulness.pile_faithfulness (2 blocks of 128 val rows 0..255, one adversary per block, 20 steps of 0.1; stochastic, PGD, CI-masked, unmasked KL with Delta in/out as in rounds 1-3); ratio = arm / W0 seed 0",
+  "routes": "local_faith.route_split on the held-out windows: d, r, i, e_gate, e_delta (sum to 1), gain in nats; P(o) of the target (T1) and of the components alone unmasked (U1)"
+ },
+ "predictions": [
+  {
+   "arm": "lift_1 at its scored step",
+   "id": "P1_smallest_lora_commutes",
+   "null": "d < 0.2",
+   "pass": "d >= 0.5 and e_delta <= 0.2",
+   "predicted": "pass",
+   "reported": "the step-100 lift against the same thresholds; if d differs from the scored step by more than m, said beside A's cosine with its initialisation",
+   "scored": true
+  },
+  {
+   "arm": "lift_r at scored steps, r = 1 vs 32",
+   "expected_inexpressible": "round 2 found 0.40 (r1 step 30), 0.41 (r8 step 10), 0.30 (r8 step 100) against a null of 0.42 on this matrix: the LoRA's read side is near its random init",
+   "id": "P2_stops_with_rank",
+   "null": "|d(lift_1) - d(lift_32)| <= m",
+   "pass": "d(lift_1) - d(lift_32) > m and inexpressible(32) > inexpressible(1)",
+   "predicted": "pass",
+   "scored": true
+  },
+  {
+   "arm": "lift_r at scored steps, Pile PGD ratio",
+   "id": "P3_lift_breaks_adversarially",
+   "note": "the plan filed this on the task-local pgd_trigger ratio; that adversary saturates at W0 (review 2026-10-19), so the Pile adversary that found round 2's fragility is used instead",
+   "null": "all of lift_1, lift_4, lift_8, lift_32 <= 1 + 3 f",
+   "pass": "lift_8 and lift_32 >= 1.5 and lift_1 <= 1 + 3 f",
+   "predicted": "pass",
+   "scored": true
+  },
+  {
+   "arm": "pb_r at step 30, every rank that learns",
+   "id": "P4_inside_route_carries_it_when_confined",
+   "null": "d < 0.1 at every learned rank",
+   "pass": "d >= 0.3 at every learned rank",
+   "predicted": "pass (the most likely to fail)",
+   "scored": true
+  },
+  {
+   "arm": "lift_8 (scored step) vs pb_8 (step 30)",
+   "id": "P5_same_subcomponents",
+   "null": "<= 3 shared",
+   "pass": ">= 8 of the top 20 by ||Delta(u v^T)|| shared",
+   "predicted": "null",
+   "scored": true
+  },
+  {
+   "arm": "lift_8 (scored step) vs lift_ft (step 10)",
+   "id": "C1_lora_lifts_better_than_ft",
+   "null": "d(lift_8) - d(lift_ft) <= 0",
+   "pass": "d(lift_8) - d(lift_ft) >= m",
+   "predicted": "pass (the user's instinct)",
+   "scored": true
+  },
+  {
+   "arm": "Pile PGD ratio, lift_8 vs lift_ft (step 10)",
+   "id": "C2_lora_lift_less_fragile_than_ft",
+   "null": "lift_8 > 1.5",
+   "pass": "lift_8 <= 1.5 and lift_ft > 1.5",
+   "predicted": "pass (the user's instinct; uncertain)",
+   "scored": true
+  },
+  {
+   "arm": "pb_full vs pb_all, step 30",
+   "id": "C3_confined_pullback_beats_all_matrix",
+   "null": "d(pb_full) - d(pb_all) <= 0",
+   "pass": "d(pb_full) - d(pb_all) >= m",
+   "predicted": "pass",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "every arm's full route split, task-local harness, retained shares, moved counts, S_on sizes and Jaccards; the LoRA's cosine with its initialisation per checkpoint; the realised rank of every pull-back's delta-W; pb_r at step 10; the lr sweeps; Pile ratios of pb_r, pb_full and the do-nothing arms",
+ "setup": {
+  "LoRA_r": "rank r in (1, 4, 8, 32) on h.2.mlp.down_proj, Adam lr 0.001, arm A's loss, batch 32, clip 1, 100 steps, checkpoints (10, 30, 100). Scored step = the first checkpoint with held-out P(o) >= 0.9 (rank 1 reaches 0.22 at step 10 and 0.99 at step 30 in round 2); the step-100 state is the finished LoRA, reported against the same thresholds. Measured do-nothing (delta-W in Delta) and lifted",
+  "W0": "the released decomposition under round 2's Pile harness with adversary seeds (0, 1, 2)",
+  "ft": "full-weight fine-tune, arm A recipe (Adam lr 3e-05, all 24 matrices, seed 0), checkpoints (10, 100); do-nothing and lifted on all 24 matrices (round 2's lift). Step 10 is the matched step",
+  "lift": "lift.lift_state: Euclidean (minimum-norm) lift of the matrix's delta-W onto its alive subcomponents, tol 1e-6; target weights W0 + delta-W, so Delta moves by O(delta-W) - dU dV^T",
+  "pb_all": "free offsets on all 24 matrices, lr 1e-05 fixed (the ladder's emoticon arm), 30 steps",
+  "pb_full": "the same with free offsets on every alive subcomponent of h.2.mlp.down_proj",
+  "pb_r": "pullback.train on h.2.mlp.down_proj only with rank-r offsets dU = P S^T, dV = Q T^T (weight change rank <= 2r), Adam, 30 steps, lr the smallest in (1e-05, 3e-05, 0.0001, 0.0003, 0.001) with held-out P(o) >= 0.9 and kl_other <= 0.11 at the last step (amendment 1's rule); none passing = did not learn (reported at the lr with the highest P(o))",
+  "seeds": "LoRA_8 and pb_8 (at the lr selected for seed 0) repeated with optimiser/init seed 1",
+  "windows": "round 1's emoticon windows (365 train, 73 held-out, trigger at index 20, target token `o`)"
+ }
+}

@@ -18,7 +18,7 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
 
-from commute.data import Windows
+from commute.data import Windows, target_tokens
 from commute.vpd import (
     kl_per_position,
     module_keys,
@@ -28,7 +28,7 @@ from commute.vpd import (
 )
 
 
-def decomposed_params(model: Any) -> dict[str, nn.Parameter]:
+def decomposed_params(model: Any) -> dict[str, Tensor]:
     return {k: target_linear(model, k).weight for k in module_keys(model)}
 
 
@@ -53,7 +53,7 @@ def logits_of(net: nn.Module, tokens: Tensor) -> Tensor:
 
 @dataclass
 class ArmAConfig:
-    o_token: int
+    o_token: int | Tensor  # the target: one token, or a (V,) lookup table read at the token at `half` (data.target_tokens)
     kl_lambda: float = 1.0
     lr: float = 3e-5
     batch: int = 32
@@ -79,30 +79,31 @@ class FinetuneResult:
     deltas: dict[int, dict[str, Tensor]]  # step -> module -> delta-W (fp32, CPU)
     log: list[dict[str, Any]] = field(default_factory=list)
     evals: dict[int, dict[str, float]] = field(default_factory=dict)
+    factors: dict[int, dict[str, tuple[Tensor, Tensor]]] = field(default_factory=dict)  # LoRA only: step -> module -> (B, A), CPU
 
 
 def arm_a_loss(net: nn.Module, ref: nn.Module, toks: Tensor, cfg: ArmAConfig, half: int) -> tuple[Tensor, dict[str, float]]:
     logits = logits_of(net, toks)  # (b, L, V)
     with torch.no_grad():
         ref_logits = logits_of(ref, toks)
-    target = torch.full((toks.shape[0],), cfg.o_token, device=toks.device)
+    target = target_tokens(cfg.o_token, toks, half)
     ce = F.cross_entropy(logits[:, half], target)
     kl = kl_per_position(ref_logits, logits)  # (b, L), KL(ref || ft)
     keep = torch.ones(toks.shape[1], dtype=torch.bool, device=toks.device)
     keep[half] = False
     kl_other = kl[:, keep].mean()
     loss = ce + cfg.kl_lambda * kl_other
-    p_o = torch.softmax(logits[:, half], -1)[:, cfg.o_token].mean()
+    p_o = torch.softmax(logits[:, half], -1).gather(1, target[:, None]).mean()
     return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
 
 
 @torch.no_grad()
-def eval_arm_a(net: nn.Module, ref: nn.Module, w: Windows, o_token: int, device: str, batch: int = 64) -> dict[str, float]:
+def eval_arm_a(net: nn.Module, ref: nn.Module, w: Windows, o_token: int | Tensor, device: str, batch: int = 64) -> dict[str, float]:
     p_o, kl_other, ce_o, n = 0.0, 0.0, 0.0, 0
     for s in range(0, len(w), batch):
         toks = w.tokens[s : s + batch].to(device)
         lg, rl = logits_of(net, toks), logits_of(ref, toks)
-        p = torch.softmax(lg[:, w.half], -1)[:, o_token]
+        p = torch.softmax(lg[:, w.half], -1).gather(1, target_tokens(o_token, toks, w.half)[:, None]).squeeze(1)
         kl = kl_per_position(rl, lg)
         keep = torch.ones(toks.shape[1], dtype=torch.bool, device=device)
         keep[w.half] = False
@@ -125,7 +126,7 @@ def eval_arm_b(net: nn.Module, ref: nn.Module, rows: Tensor, device: str, batch:
     return {"ce": ce / n, "kl_to_ref": kl / n, "n": n}
 
 
-def _run(model: Any, params: dict[str, nn.Parameter], lr: float, grad_clip: float, steps: int,
+def _run(model: Any, params: dict[str, Tensor], lr: float, grad_clip: float, steps: int,
          checkpoints: tuple[int, ...], loss_fn: Any, eval_fn: Any, log: Any, optimizer: str = "adam") -> FinetuneResult:
     W0 = target_weights(model)
     for p in params.values():
@@ -269,6 +270,7 @@ def finetune_lora_arm_a(model: Any, train: Windows, heldout: Windows, a_cfg: Arm
             if step in cfg.checkpoints:
                 d = lora_delta(factors, module_keys(model), W0)
                 res.deltas[step] = d
+                res.factors[step] = {k: (B.detach().float().cpu().clone(), A.detach().float().cpu().clone()) for k, (B, A) in factors.items()}
                 ev = eval_arm_a(net, ref, heldout, a_cfg.o_token, device)
                 ev["rel_norm_max"] = max(relative_norms(d, {k: w.cpu() for k, w in W0.items()}).values())
                 ev["elapsed_s"] = time.time() - t0

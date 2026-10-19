@@ -1,0 +1,60 @@
+{
+ "control": {
+  "arm": "every pull-back and do-nothing state",
+  "id": "C1_sparsity_trigger_power",
+  "predicted": "pass",
+  "rule": "sparsity ratio at the trigger of the held-out windows > 1 + 3 f_trig",
+  "why": "the concentration test counted 150-200 subcomponents switched on at the trigger; if this fails, P4 says nothing about the metric"
+ },
+ "filed": "2026-10-19, before the run; plan reports/2026-10-19_plan_reading-a-coverage.md",
+ "gate": {
+  "id": "G1_reproduces",
+  "rule": "every seed-0 pull-back's held-out P(target) and kl_other at step 10 within 0.01 of the ladder's curve; r2_t359 seed 0's Pile PGD ratio within 25% of 1.532 (L40). Fails: nothing below is scored (the states are not the ladder's)"
+ },
+ "measurements": {
+  "blind_to": "every Pile number is blind to the trigger (about 3 trigger positions in 131k); the trigger is covered by the ladder's task-local harness (not rerun) and by C1 here",
+  "floors": "W0, same card, same job: f_seed = max/min - 1 over adversary seeds 0, 1, 2 (stochastic, PGD); f_block = |block0 - block1| / mean at seed 0 (CI-masked, unmasked, sparsity: deterministic under Gamma frozen); f_trig = |half A - half B| / mean of the held-out windows at W0. 'Within the floor' = ratio <= 1 + 3 f",
+  "pile": "round 2's harness, val rows 0..255 in two 128-row blocks, one shared PGD adversary per block (20 steps of 0.1, seed 0), stochastic (2 draws), CI-masked and unmasked KL; each as a ratio to W0 on the same rows",
+  "sparsity": "VPD's importance-minimality loss at the released run's end-of-training setting (p 0.4, beta 0.5, eps 1e-12; faithfulness.sparsity_loss) on the same rows, ratio to W0",
+  "sparsity_trigger": "the same loss on the upper-leaky CI values at the trigger position of the task's held-out windows, ratio to W0"
+ },
+ "predictions": [
+  {
+   "arm": "pull-back, r0_t352, r1_t534, r1_t588",
+   "bears_on": "reading A on common-word tasks (r0_t588 read PGD 1.09)",
+   "id": "P1_rung01_pass",
+   "predicted": "pass",
+   "rule": "each of the four KL ratios <= 1 + 3 f and PGD <= 1.5, on all three tasks"
+  },
+  {
+   "arm": "pull-back, r2_t275",
+   "bears_on": "reading A on rare-word tasks",
+   "id": "P2_rung2_over_floor",
+   "predicted": "pass (expected >= 1.3: the largest off-target kl_other on the ladder)",
+   "rule": "PGD ratio > 1 + 3 f_seed(pgd)"
+  },
+  {
+   "arm": "pull-back, r2_t359, seeds 0, 1, 2",
+   "bears_on": "whether the one recorded failure is seed noise",
+   "id": "P3_r2_t359_excess_real",
+   "predicted": "pass",
+   "reported": "the decision's three-way rule on the 1.5 line: all above = fails reading A on this task; all below = the 1.53 was noise; split = mean and spread, no verdict. Also the state-level PGD floor (max/min - 1)",
+   "rule": "all three PGD ratios > 1 + 3 f_seed(pgd)"
+  },
+  {
+   "arm": "every pull-back and do-nothing state",
+   "bears_on": "the third VPD loss; read with C1 (blind, not broken)",
+   "id": "P4_sparsity_pile_within_floor",
+   "predicted": "pass",
+   "rule": "Pile sparsity ratio within 1 +/- 3 f_block(sparsity)"
+  },
+  {
+   "arm": "do-nothing vs pull-back, seed 0, five tasks",
+   "bears_on": "'Delta not absorbing delta-W' is what the pull-back buys",
+   "id": "P5_delta_absorbs",
+   "predicted": "pass (round 2: 2.18 vs 1.03)",
+   "rule": "do-nothing PGD ratio > pull-back PGD ratio on every task"
+  }
+ ],
+ "states": "per task, step 10 of the ladder's recipe: do-nothing (arm-A fine-tune, delta-W in Delta, released components, Gamma frozen) and the Adam pull-back on all alive (U, V) with Delta and Gamma frozen; seed = batch order"
+}

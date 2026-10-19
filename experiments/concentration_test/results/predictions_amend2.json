@@ -1,0 +1,38 @@
+{
+ "about": "Amendment 2 to concentration_test (reports/2026-10-15_prediction_gating-amendment.md). Amendment 1 found that the arms explain the behaviour at the trigger only with Gamma re-gating on the fine-tuned activations (CI-masked P(o) 0.98 state-gated, <= 0.37 with W0's gates), and do-nothing reaches 0.535 state-gated with every component at W0. Question: which subcomponents switch on, and do they already push towards `o` at W0 (the 'reveal' reading)? Filed before the measure was run.",
+ "filed": "2026-10-15 13:50:27",
+ "predictions": [
+  {
+   "claim": "The subcomponents that switch on at the trigger account for the re-gating effect.",
+   "id": "B1_switched_on_set_explains",
+   "measure": "recovery with S_on for do_nothing, top10 and siblings",
+   "pass": ">= 0.5 in each of the three, AND the negative control < 0.2 in each",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The update reveals one existing mechanism: different updates switch on the same subcomponents.",
+   "id": "B2_same_machinery",
+   "measure": "Jaccard of S_on between do_nothing and siblings, and between do_nothing and top10",
+   "pass": ">= 0.3 for both",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The switched-on subcomponents already push towards `o` at W0.",
+   "id": "B3_already_writes_o",
+   "measure": "switch-on effect: mean over the S_on union against the null",
+   "pass": "mean(S_on) > mean(null) + 3 standard errors of the difference AND mean(S_on) > 0",
+   "prediction": "pass",
+   "scored": true
+  }
+ ],
+ "setup": {
+  "dg": "per subcomponent, mean over the 73 held-out windows of g at the trigger under the state's gates minus under W0's gates. S_on = alive subcomponents with dg > 0.3 (0.1 and 0.5 reported)",
+  "lo_masked": "mean log-odds of `o` at the trigger of the component model (the state's components, Delta excluded) under given masks",
+  "overlap": "Jaccard of S_on between arms",
+  "recovery": "hybrid masks = W0's g everywhere except S_on, which take the state's g (all positions). recovery = (lo(hybrid) - lo(W0 gates)) / (lo(state gates) - lo(W0 gates)). Negative control: S_on replaced by the same number per matrix of random alive subcomponents with |dg| < 0.05 (seed 0); positive control: all subcomponents take the state's g (recovery 1 by construction)",
+  "states": "arms retrained exactly as amendment 1 (reproduced to 0.0 there); do_nothing = target W0 + dW of adam_all with components at W0",
+  "switch_on_effect": "at W0 (W0 target, W0 components, W0 gates), set one subcomponent's mask to 1 at every position: change in lo. For the union of S_on over arms (up to 300 by dg) and a null of 300 random alive subcomponents with |dg| < 0.05 in every arm (seed 0)"
+ }
+}
