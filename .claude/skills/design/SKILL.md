@@ -50,3 +50,6 @@ check or to proceed without confirmation.
 
 When the proposal is trained, dropped or shelved, add it to `experiments/TRIED.md`: what it found, and why we
 moved on. If a working decision changed, update `decisions.md`. Never edit `GOALS.md` without the user's approval.
+Then update the research log (`docs/research_log/README.md`): a dropped proposal goes in Mistakes → "Dropped at
+design", a changed decision in the timeline and the sub-question it bears on, and a new experiment gets its E-code and
+card when it is run. Republish.

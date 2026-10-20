@@ -5,7 +5,7 @@ costs nothing: "not convinced by 1 but do if it doesn't slow things down"). Code
 predictions filed in its `results/predictions.json`. Codex adversarial review run on the diff: two findings, both fixed
 (the trigger floor's denominator is now the mean of the two halves; a failed gate G1 returns no verdicts). Nothing
 skipped. The sparsity loss itself (`faithfulness.sparsity_loss`, `vpd.sparsity_config`) was written by the parallel
-key-value-task session the same afternoon and is called, not copied. Run handed to a pod-runner agent on RunPod.
+key-value-task session the same afternoon and is called, not copied. Run done 2026-10-19 on a RunPod L40S (38 min, $0.70): `reports/2026-10-19_analysis_reading-a-coverage.md`.
 Source: `reports/2026-10-19_decision_success-criterion.md` ("Not run"), `backlog.md` "Reading-A coverage gaps".*
 
 ## Design check (`/design`)

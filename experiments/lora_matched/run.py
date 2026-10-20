@@ -11,7 +11,7 @@ confirmed by the user 2026-10-19). Here both updates live on the same 24 matrice
   ft     the full-weight fine-tune at step 10 (arm A, Adam lr 3e-5): the positive control, and the L40 rerun of round 2's
          lift (Pile PGD ratio 5.41) that round 4's 4090 run missed (7.31)
 Each update is measured do-nothing (delta-W in Delta) and Euclidean-lifted (`commute.harness`): the route split at the
-trigger, Delta's share of the update, the inexpressible share per matrix and pooled, and round 2's Pile ratios against
+trigger, Delta's share of the update, the outside_share share per matrix and pooled, and round 2's Pile ratios against
 the 3-seed W0 floor.
 
 Stages:
@@ -88,7 +88,7 @@ PREDICTIONS: dict[str, Any] = {
                 "Seed 1 repeated (init and batches), measured at its own scored step, no Pile",
         "ft": f"full-weight fine-tune, arm A recipe (Adam lr {FT_LR}, all 24 matrices, seed 0), measured at step {FULL.ft_steps} "
               "(round 2's and round 4's matched step)",
-        "lift": "lift.lift_state: Euclidean (minimum-norm) lift of each matrix's delta-W onto its alive subcomponents, tol 1e-6; "
+        "lift": "split.split_state: Euclidean (minimum-norm) lift of each matrix's delta-W onto its alive subcomponents, tol 1e-6; "
                 "target weights W0 + delta-W, so Delta moves by O(delta-W) - dU dV^T",
         "W0": f"the released decomposition under round 2's Pile harness with adversary seeds {FULL.pile_seeds}",
     },
@@ -97,7 +97,7 @@ PREDICTIONS: dict[str, Any] = {
         "pile": "faithfulness.pile_faithfulness (2 blocks of 128 val rows 0..255, one adversary per block, 20 steps of 0.1; "
                 "stochastic, PGD, CI-masked, unmasked KL); ratio = arm / W0 under adversary seed 0",
         "pgd_floor": "f = max/min - 1 of the W0 PGD KL over the 3 adversary seeds; 'within 3 floors' = ratio <= 1 + 3 f",
-        "inexpressible": "lift.weighted_fractions with Sigma = E[a a^T] of the matrix's input over the train windows: the share "
+        "inexpressible": "split.weighted_fractions with Sigma = E[a a^T] of the matrix's input over the train windows: the share "
                          "of the update's output energy no first-order change of the alive subcomponents can express; per matrix "
                          "with its isotropic null, and pooled by energy over the non-saturated matrices (round 4's rule, so the "
                          "fine-tune reads 0.27 against a null of 0.53)",
@@ -105,7 +105,7 @@ PREDICTIONS: dict[str, Any] = {
     },
     "expected_at": {
         "do_nothing": "e_delta 1, Delta change 1, d 0; Pile PGD ratio 2.18 (ft, round 2) / 1.4-2.5 (LoRA)",
-        "control_ft_lift_step10": "e_delta 0.085, Delta change 0.36, pooled inexpressible 0.27 (null 0.53), Pile PGD ratio 5.41 "
+        "control_ft_lift_step10": "e_delta 0.085, Delta change 0.36, pooled outside_share 0.27 (null 0.53), Pile PGD ratio 5.41 "
                                   "(round 2, L40; round 4 on a 4090 read 7.31)",
         "W0": "every Pile ratio 1 by construction; floor f about 0.035 (round 4)",
     },
@@ -113,7 +113,7 @@ PREDICTIONS: dict[str, Any] = {
         "d, r, e_delta": "everything away from the trigger (cover: kl_other and the Pile ratios)",
         "Pile PGD ratio": "a trigger-specific attack (the adversary is shared over 65k Pile positions holding ~3 triggers); the "
                           "20-step search is chaotic across GPUs (round 4's 35% miss), so only differences well over 35% are read",
-        "inexpressible": "nothing about behaviour: an inexpressible part can still be redundant (round 2's review)",
+        "inexpressible": "nothing about behaviour: an outside_share part can still be redundant (round 2's review)",
         "controls": "G2 (the lifted state is the fine-tune's model exactly), G4 (the harness reproduces round 2), the seed "
                     "pair for m, the W0 seeds for f",
     },
@@ -131,10 +131,10 @@ PREDICTIONS: dict[str, Any] = {
     ],
     "predictions": [
         {"id": "M1_read_side_stays_random", "scored": True, "arm": "lora seed 0, scored step",
-         "pass": "pooled inexpressible / pooled null >= 0.8", "null": "pooled inexpressible / pooled null <= 0.6 (the fine-tune's 0.51)",
+         "pass": "pooled outside_share / pooled null >= 0.8", "null": "pooled outside_share / pooled null <= 0.6 (the fine-tune's 0.51)",
          "predicted": "pass: A moves little from its random init in the 10-30 steps it takes to learn (round 4: |cos| 0.92-0.98), "
-                      "so on every non-saturated matrix the update is as inexpressible as an isotropic one",
-         "reported": "per-matrix inexpressible, null and read_out; mean |cos| of A with its init at the scored step"},
+                      "so on every non-saturated matrix the update is as outside_share as an isotropic one",
+         "reported": "per-matrix outside_share, null and read_out; mean |cos| of A with its init at the scored step"},
         {"id": "M2_lift_leaves_it_in_delta", "scored": True, "arm": "lora seed 0 lift, scored step",
          "pass": "e_delta >= 0.3 (round 4's one-site LoRA: 0.33-0.43)", "null": "e_delta <= 0.2 (the fine-tune's lift: 0.085)",
          "predicted": "pass, from M1: what the subcomponents cannot read of a random-read LoRA stays in Delta and carries its share "
@@ -211,7 +211,7 @@ def lora_arm(ctx: Any, S: Sizes, seed: int, pile: bool) -> dict[str, Any]:
     rec: dict[str, Any] = {"evals": res.evals, "scored_step": scored, "learned": scored is not None, "steps": {},
                            "cos_init": {s: {"mean": sum(c.values()) / len(c), "per_matrix": c} for s, c in cos.items()}}
     for step in sorted({scored or S.lora_ckpts[-1], S.lora_ckpts[-1]}):
-        rec["steps"][str(step)] = harness.nothing_and_lift(ctx, f"{name}_step{step}", res.deltas[step], res.evals[step]["p_o"],
+        rec["steps"][str(step)] = harness.nothing_and_split(ctx, f"{name}_step{step}", res.deltas[step], res.evals[step]["p_o"],
                                                           pile and step == scored, log)
         log(f"[{name} step {step}] cos_init mean {rec['cos_init'][step]['mean']:.3f} kl_other {res.evals[step]['kl_other']:.4f}")
     return rec
@@ -225,7 +225,7 @@ def ft_arm(ctx: Any, S: Sizes, pile: bool) -> dict[str, Any]:
     res = finetune_arm_a(ctx.model, ctx.train, ctx.held, a_cfg(ctx.token, S.ft_steps, (S.ft_steps,), 0), ctx.device, log)
     ev = res.evals[S.ft_steps]
     return {"evals": res.evals, "step": S.ft_steps, "learned": ev["p_o"] >= P_LEARN,
-            "measured": harness.nothing_and_lift(ctx, f"ft_step{S.ft_steps}", res.deltas[S.ft_steps], ev["p_o"], pile, log)}
+            "measured": harness.nothing_and_split(ctx, f"ft_step{S.ft_steps}", res.deltas[S.ft_steps], ev["p_o"], pile, log)}
 
 
 # ----------------------------------------------------------------------------- the run and the score

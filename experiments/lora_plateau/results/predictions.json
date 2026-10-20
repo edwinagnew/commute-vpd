@@ -1,0 +1,74 @@
+{
+ "about": "lora_plateau (2026-10-19): round 5's rank-8 LoRA on all 24 matrices (same recipe, seed 0) trained to 1000 steps. Does the read factor A ever become data-shaped, so that the update becomes expressible by the released subcomponents, or does the LoRA's update stay as inexpressible as a random one for its whole training? And the step-matched Pile comparison round 5 left open: the lift's Pile ratios at steps 10, 100 and 1000. Design check confirmed by the user 2026-10-19. Filed before training.",
+ "blind_to": {
+  "Pile PGD ratio": "a trigger-specific attack; the 20-step search is chaotic across GPUs, so the run is read on the L40 only",
+  "controls": "G2 (the lifted state is the LoRA's model exactly); round 5's fine-tune numbers on the same GPU type and harness, not rerun",
+  "in_alive": "the write side: a read side in the alive span can still write outside col U_A",
+  "ratio": "nothing about behaviour: an inexpressible part can still be redundant; and the four saturated matrices are left out, so energy moving onto them lowers nothing here"
+ },
+ "expected_at": {
+  "W0": "every Pile ratio 1 by construction; floor f about 0.21 (round 5, L40), so within 3 floors = ratio <= 1.63",
+  "control": "the fine-tune's data-shaped read side at step 10: ratio 0.51, lift PGD 5.41, do-nothing 2.18, e_delta 0.09 (round 5, L40)",
+  "random_read_side": "in_alive = r_v / d_in per matrix; ratio 1",
+  "step_2_and_100": "ratio 0.86 and 0.82, |cos| 1.000 and 0.973, e_delta 0.22 and 0.11 (round 5; the trajectory must pass through them)"
+ },
+ "gates": [
+  {
+   "id": "G1_learned",
+   "if_fail": "reported, not scored",
+   "rule": "held-out P(o) >= 0.9 at some checkpoint (round 5: step 2)"
+  },
+  {
+   "id": "G2_lift_exact",
+   "if_fail": "the lift or the Delta bookkeeping is wrong; stop",
+   "rule": "for every lift: |P(o) of the lifted state - the LoRA's held-out P(o)| <= 1e-3 and |sum of shares - 1| <= 1e-6"
+  },
+  {
+   "id": "G3_plateau",
+   "if_fail": "P1 is scored at the last checkpoint anyway and the miss is reported: the plateau was not reached",
+   "rule": "plateau ratio >= 0.9 (the training loss fell by less than 10% between the last two checkpoint intervals) and P(o) >= 0.9 at the last two checkpoints"
+  }
+ ],
+ "measurements": {
+  "cos_init": "per matrix, mean |cos| of A's rows with their initialisation, at every checkpoint",
+  "inexpressible": "harness.inexpressible at every checkpoint: per matrix with its isotropic null, pooled by energy over the non-saturated matrices; the tracked number is ratio = pooled / pooled null, since the null moves with the energy mix",
+  "pile_steps": "at steps (10, 100, 1000): do-nothing and lifted route split, Delta's share of ||delta-W||^2, and the Pile ratios (2 x 128 val rows, 20 PGD steps of 0.1), each divided by W0's under adversary seed 0",
+  "plateau": "mean training loss over the steps between the last two checkpoints, divided by the mean over the steps between the two before; held-out P(o) and kl_other at every checkpoint",
+  "read_side": "lift.read_side_overlaps of delta-W at every checkpoint: in_alive = the share of ||delta-W||_F^2 whose read side lies in the alive read span (a random read side gives r_v / d_in), pooled by energy over the non-saturated matrices"
+ },
+ "predictions": [
+  {
+   "arm": "step 1000",
+   "id": "P1_read_side_stays_random",
+   "null": "ratio <= 0.6 (the fine-tune's 0.51: A became data-shaped)",
+   "pass": "ratio >= 0.8 (as at steps 2 and 100)",
+   "predicted": "pass: between steps 2 and 100 A moved 3% and the ratio moved 0.04 the other way; Adam at lr 1e-3 on a factor whose gradient is B^T-weighted barely moves A once B has learned, so the read side stays random to the plateau",
+   "reported": "ratio, pooled in_alive and |cos| at every checkpoint; per-matrix in_alive against r_v / d_in",
+   "scored": true
+  },
+  {
+   "arm": "LoRA lift at step 10 (the fine-tune's matched step)",
+   "id": "P2_lift_survives_step_matched",
+   "null": "Pile PGD ratio >= 5 (fragile like the fine-tune's lift: round 5's C2m direction was the step, not the update)",
+   "pass": "Pile PGD ratio <= 2 and e_delta <= 0.2 (the lifted LoRA state survives the adversary where the fine-tune's lift reads 5.41)",
+   "predicted": "pass: at step 2 the LoRA's update was already twice the fine-tune's step-10 update in relative norm and its lift read 1.13, so the fine-tune lift's fragility is not the update's size; what the LoRA's lift leaves in Delta is the random-read part, and the subcomponents move by what they can read",
+   "reported": "the do-nothing ratio at the same step (the floor the lift is read against); the same numbers at step 100",
+   "scored": true
+  },
+  {
+   "arm": "LoRA lift at step 1000",
+   "id": "P3_lift_survives_at_plateau",
+   "null": "Pile PGD ratio >= 5",
+   "pass": "Pile PGD ratio <= 2 and e_delta <= 0.2",
+   "predicted": "pass, weakly: the same mechanism as P2 at an update 3-5 times larger; if P2 passes and P3 reads >= 5, the fragility is the update's size after all and arrives between steps 10 and 1000",
+   "reported": "the do-nothing ratio at the plateau; Delta's share of ||delta-W||^2",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "P(o), kl_other, loss and relative norm per checkpoint; the per-matrix tables; the route split at the Pile steps",
+ "setup": {
+  "W0": "the released decomposition under round 2's Pile harness with adversary seeds (0, 1, 2)",
+  "lift": "lift.lift_state, Euclidean, tol 1e-6, at the Pile steps only",
+  "lora": "as lora_matched: rank 8 on all 24 matrices, B = 0 and A ~ N(0, 1/d_in) (seed 0), Adam lr 0.001, arm A's loss, batch 32, clip 1, 1000 steps, checkpoints (1, 2, 3, 5, 10, 30, 100, 300, 1000); no fine-tune arm (round 5's numbers are the reference)"
+ }
+}

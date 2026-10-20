@@ -1,4 +1,4 @@
-"""CPU checks of the task-local harness (local_faith.py) and the importable pull-back trainer (pullback.train) on
+"""CPU checks of the task-local harness (local_faith.py) and the importable pull-back trainer (component_training.train) on
 the tiny ComponentModel from test_faithfulness_invariants. Windows are (N, 41) with the trigger at index 20."""
 
 from __future__ import annotations
@@ -9,8 +9,8 @@ import pytest
 import torch
 from test_faithfulness_invariants import KEYS, VOCAB, C, D, make_model
 
+from commute import component_training, vpd
 from commute import local_faith as LF
-from commute import pullback, vpd
 from commute.data import Windows
 from commute.faithfulness import model_state
 from commute.finetune import ArmAConfig
@@ -177,16 +177,16 @@ def test_pullback_train_moves_alive_columns_saves_states_and_restores(model, tmp
 
 def _pullback_check(model, tmp_path):
     alive = {k: torch.ones(C, dtype=torch.bool) for k in KEYS}
-    uv = pullback.alive_uv(model, alive)
+    uv = component_training.alive_uv(model, alive)
     for k in KEYS:
         assert uv[k][0].shape == (D, C) and uv[k][1].shape == (D, C)
     W0 = vpd.target_weights(model)
     w = windows(n=12)
     held = Windows(w[:4], torch.zeros(4), torch.arange(4), torch.full((4,), HALF), HALF)
     a_cfg = ArmAConfig(o_token=TOKEN, lr=0.0, batch=4, steps=3, seed=0)
-    cfg = pullback.PullbackConfig(lr=1e-2, steps=3, save_steps=(2, 3))
+    cfg = component_training.TrainConfig(lr=1e-2, steps=3, save_steps=(2, 3))
     before = model(w[:2]).detach().clone()
-    curve, states = pullback.train(model, uv, w[4:], held, a_cfg, cfg, "cpu", W0, save_dir=tmp_path, log=lambda *_: None)
+    curve, states = component_training.train(model, uv, w[4:], held, a_cfg, cfg, "cpu", W0, save_dir=tmp_path, log=lambda *_: None)
     assert [c["step"] for c in curve] == [1, 2, 3] and set(states) == {2, 3}
     assert (tmp_path / "state_step2.pt").is_file() and (tmp_path / "state_step3.pt").is_file()
     st = torch.load(tmp_path / "state_step3.pt", weights_only=False)
@@ -200,7 +200,7 @@ def _pullback_check(model, tmp_path):
     assert all(torch.equal(vpd.target_weights(model)[k], W0[k]) for k in KEYS)
     assert torch.equal(model(w[:2]), before)
     # the state evaluates: components_with writes it back and the unmasked components equal W0 + dW
-    comps = pullback.components_with(model, alive, {k: (st[k][1], st[k][2]) for k in KEYS})
+    comps = component_training.components_with(model, alive, {k: (st[k][1], st[k][2]) for k in KEYS})
     target = {k: W0[k] + st[k][0] for k in KEYS}
     with model_state(model, target=target, components=comps):
         for k in KEYS:
@@ -288,14 +288,14 @@ def test_pullback_on_one_matrix_only_leaves_the_others_and_the_gates(model, tmp_
     W0 = vpd.target_weights(model)
     with model_state(model, components=exact_components(W0)):
         mask = {"fc1": torch.zeros(C, dtype=torch.bool), "fc2": torch.ones(C, dtype=torch.bool)}
-        uv = pullback.alive_uv(model, mask)
+        uv = component_training.alive_uv(model, mask)
         assert uv["fc1"][0].shape == (D, 0)
         w = windows(n=12)
         held = Windows(w[:4], torch.zeros(4), torch.arange(4), torch.full((4,), HALF), HALF)
         a_cfg = ArmAConfig(o_token=TOKEN, lr=0.0, batch=4, steps=2, seed=0)
-        _, states = pullback.train(model, uv, w[4:], held, a_cfg, pullback.PullbackConfig(lr=1e-2, steps=2, save_steps=(2,)),
+        _, states = component_training.train(model, uv, w[4:], held, a_cfg, component_training.TrainConfig(lr=1e-2, steps=2, save_steps=(2,)),
                                    "cpu", W0, save_dir=tmp_path, log=lambda *_: None)
         st = states[2]
         assert torch.count_nonzero(st["fc1"][0]) == 0 and float(st["fc2"][0].norm()) > 0
-        comps = pullback.components_with(model, mask, {k: (st[k][1], st[k][2]) for k in st})
+        comps = component_training.components_with(model, mask, {k: (st[k][1], st[k][2]) for k in st})
         assert torch.equal(comps["fc1"][0], vpd.component_weights(model)["fc1"][0])

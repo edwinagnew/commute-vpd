@@ -1,4 +1,4 @@
-"""Pull-back replay (theory section 5.3): post-train the alive subcomponents instead of W.
+"""Component training (theory section 5.3; called the pull-back until 2026-10-20): post-train the alive subcomponents instead of W.
 
 Per matrix, alive columns U_A (d_out, n), V_A (d_in, n) get trainable offsets dU, dV (zero init); dead columns and
 Delta_0 stay fixed, so the target weight is W0 + (U_A + dU)(V_A + dV)^T - U_A V_A^T and Delta stays Delta_0 exactly.
@@ -55,7 +55,7 @@ class Offsets(nn.Module):
         U, V = self.U[k], self.V[k]
         return ((U + dU) @ (V + dV).T - U @ V.T).detach()
 
-    def lifted(self, k: str) -> tuple[Tensor, Tensor]:
+    def components(self, k: str) -> tuple[Tensor, Tensor]:
         dU, dV = self.d(k)
         return (self.U[k] + dU).detach(), (self.V[k] + dV).detach()
 
@@ -101,7 +101,7 @@ def components_with(model: Any, alive: dict[str, Tensor],
 
 
 @dataclass
-class PullbackConfig:
+class TrainConfig:
     lr: float = 1e-5  # round 2's selected learning rate (amendment 1)
     steps: int = 30
     save_steps: tuple[int, ...] = (10, 30)
@@ -110,7 +110,7 @@ class PullbackConfig:
 
 
 def train(model: Any, uv: dict[str, tuple[Tensor, Tensor]], train_tokens: Tensor, heldout: Any, a_cfg: Any,
-          cfg: PullbackConfig, device: str, W0: dict[str, Tensor], save_dir: Path | None = None,
+          cfg: TrainConfig, device: str, W0: dict[str, Tensor], save_dir: Path | None = None,
           log: Any = print) -> tuple[list[dict[str, Any]], dict[int, dict[str, tuple[Tensor, Tensor, Tensor]]]]:
     """Adam on the alive (U, V) offsets of the matrices in `uv` (only those are hooked; the others keep W0) with arm A's
     loss (`a_cfg`: ArmAConfig, its o_token is the target token, its batch, seed, grad_clip and kl_lambda apply),
@@ -148,14 +148,14 @@ def train(model: Any, uv: dict[str, tuple[Tensor, Tensor]], train_tokens: Tensor
             if step in cfg.save_steps:
                 st: dict[str, tuple[Tensor, Tensor, Tensor]] = {}
                 for k in uv:
-                    U2, V2 = off.lifted(k)
+                    U2, V2 = off.components(k)
                     st[k] = (off.delta_w(k).cpu(), U2.cpu(), V2.cpu())
                 states[step] = st
                 if save_dir is not None:
                     save_dir.mkdir(parents=True, exist_ok=True)
                     torch.save(st, save_dir / f"state_step{step}.pt")
             if step in (1, 2, 3, 5, 10, 20, 30) or step == cfg.steps:
-                log(f"[pullback lr {cfg.lr:g}] step {step}: loss {float(loss):.4f} held-out P(target) {ev['p_o']:.4f} "
+                log(f"[component training lr {cfg.lr:g}] step {step}: loss {float(loss):.4f} held-out P(target) {ev['p_o']:.4f} "
                     f"kl_other {ev['kl_other']:.4f} rel_norm_max {rel:.4f}")
     finally:
         for h in handles:

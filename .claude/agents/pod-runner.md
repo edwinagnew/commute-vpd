@@ -56,9 +56,12 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of setup) before 
 - QoS: `debug` (≤ 2 h, 1 GPU, high priority) for smoke runs and short checks, `normal` (≤ 24 h) otherwise. Request only
   what the job uses (1 GPU, ~8–16 CPUs, ≤ 64 GB RAM unless the brief says more) and a realistic `--time`, ~1.5×
   the expected runtime.
-- Code goes up with `cluster/sync.sh up` from the laptop. If `pyproject.toml` or `uv.lock` changed, first
-  `sbatch cluster/setup.sbatch` and wait for it. Never run a bare `uv run` or `uv sync` there (`UV_NO_SYNC=1` keeps the
-  CUDA torch).
+- Code goes up with `cluster/sync.sh up` from the laptop. It excludes `results/large/` (since 2026-10-20; before that
+  it sent every state file and a 17.8 MB upload took 13 min on the laptop's ~35 KB/s uplink) and should finish in under
+  a minute. If its stats line shows more than a few MB being sent, stop and look at what is going up before waiting.
+  Gitignored inputs under `results/large/` go up with `cluster/sync.sh up-large`, only when the brief says they are
+  missing on the cluster. If `pyproject.toml` or `uv.lock` changed, first `sbatch cluster/setup.sbatch` and wait for it.
+  Never run a bare `uv run` or `uv sync` there (`UV_NO_SYNC=1` keeps the CUDA torch).
 - Smoke run: `srun --partition=compute --account=c11 --qos=debug --gres=gpu:1 --cpus-per-task=8 --mem=32G
   --time=00:20:00 bash -c 'source cluster/env.sh && cd $COMMUTE_REPO && .venv/bin/python experiments/<name>/run.py
   ... --smoke'`. Or submit the experiment's sbatch on `debug`.
@@ -128,11 +131,30 @@ switch to RunPod, a stage overruns its estimate by more than half, or a retry. O
 
 ## Waiting
 
-Tokens are spent per turn, not per minute, so wait in few, long steps. On the cluster, use a background Bash loop
-that exits when the job leaves `squeue` (or Monitor with an until-condition), not repeated short checks. Give the
-loop a second exit: the job still `PENDING` when the queue cap (above) has passed, so you come back in time to
-`scancel` and switch to RunPod. On RunPod,
-use `wait()` with a long timeout, plus a log-tail read every 10–20 min for long stages. Foreground `sleep` is blocked.
+Tokens are spent per turn, not per minute, so wait in few, long steps, but every wait must have a hard end. On the
+cluster, the wait is **one ssh command that runs the loop on the controller**, under `timeout`, started with
+`run_in_background`:
+
+    timeout <cap + 60 seconds> ssh -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 \
+      e.agnew@185.141.218.207 \
+      "timeout <cap seconds> bash -c 'while squeue -h -j <jobid> | grep -q .; do sleep 30; done'; squeue -h -j <jobid>; \
+       tail -5 /mnt/nw/home/e.agnew/commute/cluster/logs/<job-name>-<jobid>.out"
+
+While the job is still queued, cap each wait at 5 minutes and re-arm, so that a message from the user in your tab is
+seen within minutes (2026-10-20: a runner sat in one long queue wait and did not answer the user, who then cancelled the
+job by hand). Once the job runs, a wait may be the whole expected run time. The cap is the queue cap plus 1.5× the expected run time; the outer `timeout` covers a stalled ssh connection. It
+returns within 30 s of the job leaving the queue, or at the cap with the job's state printed, so you never miss the
+finish. Every other ssh you run (a queue check, a log tail) also gets `timeout 30 ssh -o BatchMode=yes -o
+ConnectTimeout=10 ...` (on 2026-10-20 a laptop-side loop that re-ran ssh
+every few minutes hung on a stalled connection and the runner noticed a 1.5-min job 40 min late). Never loop ssh
+calls from the laptop, never `pkill` by pattern (it killed the runner's own shell), and never poll with
+foreground `sleep` (it is blocked). If the command returns with the job still `PENDING`, the cap has passed:
+`scancel` and follow the brief's RunPod rule. On RunPod, use `wait()` with a long timeout, plus a log-tail read
+every 10–20 min for long stages.
+
+A smoke and its scored run can be one agent when the brief says "smoke, then scored if clean": submit the scored job
+as soon as the smoke's log ends without a traceback and its result file has the expected keys, without waiting for
+the lead. That saves a second queue wait and a second `sync.sh up`.
 
 ## Report
 
@@ -141,4 +163,6 @@ End with a short report for the lead (the user reads it too, so lead with the ac
   long it had waited;
 - every output file now on the laptop, with its path (sha256 for files that came from a pod);
 - the headline numbers the run printed to its log, copied verbatim, without interpretation;
-- anything that went wrong or was skipped, and what is still running or still billing (should be nothing).
+- anything that went wrong or was skipped, and what is still running or still billing (should be nothing). Before
+  the report, confirm no background shell of yours is still alive; a hand-back with your own work still running
+  leaves the lead unsure whether you are done.

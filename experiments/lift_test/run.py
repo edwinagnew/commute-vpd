@@ -144,7 +144,7 @@ PREDICTIONS_AMEND: dict[str, Any] = {
         "faithfulness": "round 1's harness (2 blocks of 128 Pile val rows 0..255; stochastic, PGD 20 x 0.1 one adversary per "
                         "block, CI-masked and unmasked KL with Delta excluded); ratios to the released decomposition on W0 "
                         "recomputed in the same job",
-        "euclidean_lift": "per matrix, dU, dV = lift.euclidean_lift(dW, basis(U_A, V_A, tol 1e-6)); components U[alive] = "
+        "least_squares_split": "per matrix, dU, dV = split.least_squares_split(dW, basis(U_A, V_A, tol 1e-6)); components U[alive] = "
                           "(U_A + dU)^T, V[:, alive] = V_A + dV; target weights W0 + dW, so Delta = Delta_0 + O(dW) - dU dV^T",
         "do_nothing": "components unchanged, target weights W0 + dW (Delta = Delta_0 + dW)",
         "pullback": "Adam on the alive (U, V) offsets (src/commute/pullback.py), Delta_0 and dead columns fixed, arm A's loss, "
@@ -243,7 +243,7 @@ def load_decomposition() -> tuple[dict[str, torch.Tensor], dict[str, tuple[torch
 
 
 def stage_obstruction(args: argparse.Namespace) -> None:
-    from commute import lift
+    from commute import split
 
     require_predictions()
     W0, UV, alive = load_decomposition()
@@ -254,17 +254,17 @@ def stage_obstruction(args: argparse.Namespace) -> None:
     bases: dict[tuple[str, float], Any] = {}
     delta0_sq = 0.0
     for k in W0:
-        U_A, V_A = lift.alive_uv(*UV[k], alive[k])
+        U_A, V_A = split.alive_uv(*UV[k], alive[k])
         U, V = UV[k]
         delta0_sq += float(((W0[k] - U.T @ V.T).double() ** 2).sum())
         d_out, d_in = W0[k].shape
         per_matrix[k] = {"d_out": d_out, "d_in": d_in, "n_alive": int(alive[k].sum())}
-        svd_u, svd_v = lift.full_svd(U_A), lift.full_svd(V_A)
+        svd_u, svd_v = split.full_svd(U_A), split.full_svd(V_A)
         for tol in TOLS:
-            b = lift.basis_from(svd_u, svd_v, tol)
+            b = split.basis_from(svd_u, svd_v, tol)
             bases[(k, tol)] = (b, U_A, V_A)
-            per_matrix[k][f"tol{tol:g}"] = {"r_u": b.r_u, "r_v": b.r_v, "null": lift.gaussian_null(b, d_out, d_in),
-                                           "dsigma_smin": lift.dsigma_smin(b),
+            per_matrix[k][f"tol{tol:g}"] = {"r_u": b.r_u, "r_v": b.r_v, "null": split.gaussian_null(b, d_out, d_in),
+                                           "dsigma_smin": split.dsigma_smin(b),
                                            "s_u_max": float(b.s.max()), "s_v_max": float(b.t.max())}
         log(f"basis {k} ({d_out}x{d_in}, {per_matrix[k]['n_alive']} alive): r_u {per_matrix[k]['tol1e-06']['r_u']} "
             f"r_v {per_matrix[k]['tol1e-06']['r_v']} ({time.time() - t0:.0f} s)")
@@ -292,11 +292,11 @@ def stage_obstruction(args: argparse.Namespace) -> None:
                 if rec["dW_sq"][k] == 0:  # e.g. a LoRA leaves the other matrices untouched; weight 0 in the pools
                     r["omega"][k] = 0.0
                     continue
-                r["omega"][k] = lift.obstruction_fraction(M, b)
+                r["omega"][k] = split.obstruction_fraction(M, b)
                 if tol == TOLS[0]:
-                    dU, dV = lift.euclidean_lift(M, b, U_A, V_A)
-                    liftable = M - lift.obstruction(M, b)
-                    r["lift_residual"][k] = float((lift.dsigma(dU, dV, U_A, V_A) - liftable).norm() / M.norm())
+                    dU, dV = split.least_squares_split(M, b, U_A, V_A)
+                    liftable = M - split.obstruction(M, b)
+                    r["lift_residual"][k] = float((split.dsigma(dU, dV, U_A, V_A) - liftable).norm() / M.norm())
                     r["lift_rel_size"][k] = float(torch.sqrt((dU**2).sum() + (dV**2).sum())
                                                   / torch.sqrt((U_A**2).sum() + (V_A**2).sum()))
             for label, ks in (("all", list(W0)), ("non_saturated", non_sat)):
@@ -327,7 +327,12 @@ def stage_lora(args: argparse.Namespace) -> None:
     from dataclasses import asdict
 
     from commute import vpd
-    from commute.finetune import ArmAConfig, LoraConfig, finetune_lora_arm_a, relative_norms
+    from commute.finetune import (
+        ArmAConfig,
+        LoraConfig,
+        finetune_lora_arm_a,
+        relative_norms,
+    )
 
     require_predictions()
     t0 = time.time()
@@ -398,7 +403,7 @@ def input_second_moments(model: Any, batches: list[torch.Tensor], device: str) -
 
 def stage_weighted(args: argparse.Namespace) -> None:
     """Input-weighted obstruction for every delta-W checkpoint and for W0 itself, on Pile and on the windows."""
-    from commute import lift, vpd
+    from commute import split, vpd
     from commute.data import batches, pile_rows
 
     require_predictions()
@@ -410,25 +415,25 @@ def stage_weighted(args: argparse.Namespace) -> None:
     W0, UV, alive = load_decomposition()
     bases, non_sat = {}, []
     for k in W0:
-        U_A, V_A = lift.alive_uv(*UV[k], alive[k])
-        bases[k] = lift.basis(U_A, V_A, TOLS[0])
+        U_A, V_A = split.alive_uv(*UV[k], alive[k])
+        bases[k] = split.basis(U_A, V_A, TOLS[0])
         if bases[k].r_u < W0[k].shape[0] and bases[k].r_v < W0[k].shape[1]:
             non_sat.append(k)
     paths = sorted(ROUND1.glob("[AB]/dW_step*.pt")) + sorted(LARGE.glob("*/dW_step*.pt"))
     items = [("W0", W0)] + [(f"{p.parent.name}/{p.stem}", None) for p in paths]
     out: dict[str, Any] = {"non_saturated": non_sat, "read_out": {}, "updates": {}}
     for d, S in sig.items():
-        out["read_out"][d] = {k: lift.weighted_fractions(W0[k], bases[k], S[k])["read_out"] for k in W0}
+        out["read_out"][d] = {k: split.weighted_fractions(W0[k], bases[k], S[k])["read_out"] for k in W0}
     for (name, M), p in zip(items, [None] + paths):
         M = M if M is not None else torch.load(p, map_location="cpu", weights_only=False)
-        rec: dict[str, Any] = {"omega": {k: lift.obstruction_fraction(M[k], bases[k]) for k in W0 if M[k].any()}}
+        rec: dict[str, Any] = {"omega": {k: split.obstruction_fraction(M[k], bases[k]) for k in W0 if M[k].any()}}
         fro = {k: float((M[k].double() ** 2).sum()) for k in W0}
         for d, S in sig.items():
             per = {}
             for k in W0:
                 if not M[k].any():
                     continue
-                w = lift.weighted_fractions(M[k], bases[k], S[k])
+                w = split.weighted_fractions(M[k], bases[k], S[k])
                 den = float(((M[k].double() @ S[k]) * M[k].double()).sum())
                 per[k] = {**w, "energy": den}
             rec[d] = per
@@ -446,10 +451,10 @@ def stage_weighted(args: argparse.Namespace) -> None:
 
 
 def _bases_gpu(device: str) -> tuple[dict[str, torch.Tensor], dict[str, Any], dict[str, Any], dict[str, torch.Tensor]]:
-    from commute import lift
+    from commute import split
 
     W0, UV, alive = load_decomposition()
-    bases = {k: lift.basis(*lift.alive_uv(*UV[k], alive[k]), TOLS[0]) for k in W0}
+    bases = {k: split.basis(*split.alive_uv(*UV[k], alive[k]), TOLS[0]) for k in W0}
     return W0, UV, bases, alive
 
 
@@ -494,7 +499,7 @@ def stage_projected(args: argparse.Namespace) -> None:
     W0 + dW, on the held-out windows (P(o), KL at the `o` position and elsewhere) and on Pile val rows 256..319."""
     import copy
 
-    from commute import lift, vpd
+    from commute import split, vpd
     from commute.data import batches, pile_rows
 
     require_predictions()
@@ -513,7 +518,7 @@ def stage_projected(args: argparse.Namespace) -> None:
     for name in names:
         root = ROUND1 if name[0] in "AB" and name[1] == "/" else LARGE
         dW = torch.load(root / f"{name}.pt", map_location="cpu", weights_only=False)
-        O = {k: lift.obstruction(dW[k], bases[k]).float() for k in W0}
+        O = {k: split.obstruction(dW[k], bases[k]).float() for k in W0}
         rec: dict[str, Any] = {}
         with torch.no_grad():
             for k in W0:
@@ -582,7 +587,7 @@ def _pullback_runs(model: Any, uv: dict[str, tuple[torch.Tensor, torch.Tensor]],
     at save_steps, per matrix (delta-W, U_A', V_A') on CPU."""
     import copy
 
-    from commute import pullback, vpd
+    from commute import component_training, vpd
     from commute.finetune import arm_a_loss, eval_arm_a
 
     net = model.target_model
@@ -591,11 +596,11 @@ def _pullback_runs(model: Any, uv: dict[str, tuple[torch.Tensor, torch.Tensor]],
     runs: dict[str, Any] = {}
     states: dict[float, dict[int, Any]] = {}
     for lr in lrs:
-        off = pullback.Offsets(uv)
+        off = component_training.Offsets(uv)
         params = list(off.parameters())
         opt = torch.optim.Adam(params, lr=lr, betas=(0.9, 0.999), weight_decay=0.0)
         gen = torch.Generator().manual_seed(cfg.seed)
-        handles = pullback.hooks(linears, off)
+        handles = component_training.hooks(linears, off)
         curve = []
         states[lr] = {}
         try:
@@ -611,7 +616,7 @@ def _pullback_runs(model: Any, uv: dict[str, tuple[torch.Tensor, torch.Tensor]],
                 curve.append({"step": step, "loss": float(loss), "grad_norm": float(gn), "rel_norm_max": rel,
                               **{f"train_{k}": v for k, v in info.items()}, **{f"heldout_{k}": v for k, v in ev.items()}})
                 if step in save_steps:
-                    states[lr][step] = {k: (off.delta_w(k).cpu(), *(t.cpu() for t in off.lifted(k))) for k in uv}
+                    states[lr][step] = {k: (off.delta_w(k).cpu(), *(t.cpu() for t in off.components(k))) for k in uv}
                 if step in (1, 2, 3, 5, 10, 20, 30):
                     log(f"[pullback lr {lr:g}] step {step}: loss {float(loss):.4f} held-out P(o) {ev['p_o']:.4f} "
                         f"kl_other {ev['kl_other']:.4f} rel_norm_max {rel:.4f}")
@@ -749,12 +754,12 @@ def lift_components(W0: dict[str, torch.Tensor], UV: dict[str, tuple[torch.Tenso
                     alive: dict[str, torch.Tensor], bases: dict[str, Any], dW: dict[str, torch.Tensor]) -> dict[str, Any]:
     """Euclidean lift of dW per matrix (float64, CPU): returns per matrix (U_A + dU, V_A + dV) and the expected
     Delta' - Delta_0 = O(dW) - dU dV^T for target weights W0 + dW."""
-    from commute import lift
+    from commute import split
 
     out = {}
     for k in W0:
-        U_A, V_A = lift.alive_uv(*UV[k], alive[k])
-        U2, V2, dd = lift.lifted_with_delta_change(dW[k], bases[k], U_A, V_A)
+        U_A, V_A = split.alive_uv(*UV[k], alive[k])
+        U2, V2, dd = split.split_with_delta_change(dW[k], bases[k], U_A, V_A)
         out[k] = {"lifted": (U2, V2), "delta_change": dd}
     return out
 

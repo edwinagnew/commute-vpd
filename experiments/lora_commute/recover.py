@@ -30,7 +30,7 @@ ARM = re.compile(r"^\S+ \[(?P<name>[^\]]+)\] gain (?P<gain>\S+) d (?P<d>\S+) r (
                  r"e_delta (?P<e_delta>\S+) sum (?P<sum>\S+) \| P\(o\) target (?P<T1>\S+) unmasked (?P<U1>\S+) ci (?P<L11>\S+) "
                  r"\| Delta change (?P<dc>\S+) n_on (?P<n_on>\d+)(?: moved (?P<moved>\d+)/(?P<ntr>\d+))?(?: \| pile (?P<pile>\{.*\}))?$")
 LR = re.compile(r"^\S+ \[(?P<name>[^\]]+)\] lr rule: (?P<status>selected|NONE PASSES; reporting) lr (?P<lr>\S+) (?P<sweep>\{.*\})$")
-G2 = re.compile(r"^\S+ \[(?P<name>\S+) step (?P<step>\d+)\] G2 (?P<g2>\{.*\}) inexpressible (?P<inex>\S+) \(null (?P<null>\S+)\) cos_init (?P<cos>\S+)$")
+G2 = re.compile(r"^\S+ \[(?P<name>\S+) step (?P<step>\d+)\] G2 (?P<g2>\{.*\}) outside_share (?P<inex>\S+) \(null (?P<null>\S+)\) cos_init (?P<cos>\S+)$")
 LOCAL = re.compile(r"(\w+): kl_t (\S+) kl_o (\S+) lo (\S+)")
 
 

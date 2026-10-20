@@ -1,0 +1,19 @@
+{
+  "env": {
+    "REMOTE_KERNELS_BUDGET": "20"
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/research_log_check.sh",
+            "timeout": 15,
+            "statusMessage": "Checking the research log is current"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -41,7 +41,8 @@ def ratios_per_task(out: dict) -> Figure:
     ax.axhline(PGD_LINE, color="k", lw=0.8, ls="--", label="round 2's PGD line 1.5")
     ax.axhline(1, color="k", lw=0.5)
     ax.set_xticks(np.arange(len(names)), names, fontsize=8)
-    ax.set_ylabel("ratio to W0 (same rows)")
+    ax.set_yscale("log")
+    ax.set_ylabel("ratio to W0 (same rows, log scale)")
     ax.set_title("Does the step-10 pull-back pass VPD's checks on every task? (dotted: W0 + 3 floors)", fontsize=10)
     ax.legend(fontsize=6, ncol=2, loc="upper left")
     ax = axes[1]

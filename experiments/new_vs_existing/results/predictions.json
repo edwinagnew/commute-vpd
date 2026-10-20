@@ -1,0 +1,72 @@
+{
+ "G1_all_learn": {
+  "predicted": "pass",
+  "rule": "every fine-tune (4 tasks x 2 seeds) reaches held-out P(target) >= 0.5 within 300 steps; a state that does not is dropped from every class range and the round is flagged"
+ },
+ "G2_lift_exact": {
+  "predicted": "pass",
+  "rule": "the lifted state's target model has the fine-tune's held-out P(target) to 1e-3 and its route shares sum to 1 to 1e-6, on every state"
+ },
+ "G3_random_null": {
+  "predicted": "pass",
+  "rule": "a Gaussian delta-W with the fine-tune's per-matrix norms reads pooled inexpressible share / isotropic null within [0.9, 1.1] on every state"
+ },
+ "P1_inexpressible": {
+  "blind_to": "whether the expressible part does anything (round 2: the inexpressible part alone also partly carries the behaviour)",
+  "control": "G3's random delta-W reads 1",
+  "number": "pooled input-weighted inexpressible share of the fine-tune's delta-W / its isotropic null (harness.inexpressible_of)",
+  "predicted": "pass",
+  "rule": "separates, existing lower (expected existing <= 0.7, new >= 0.85)"
+ },
+ "P2_residual_share": {
+  "blind_to": "everything away from the trigger",
+  "control": "do-nothing reads e_delta = 1 by construction",
+  "number": "e_delta of the Euclidean-lifted state: the share of the held-out log-odds gain at the trigger that stays in Delta",
+  "predicted": "pass (no separation)",
+  "rule": "does NOT separate (the key-value round read 0.13 identity, 0.18 random, 0.13 one-pair random)"
+ },
+ "P3_relevance_W0": {
+  "blind_to": "for the new tasks W0's target probability is ~1e-6, so k_lo near 1 is also what no signal reads; the random sets' spread is the floor. Reported beside: the KL version (k_kl), and the same ablations in the fine-tuned model (does T carry the trained behaviour)",
+  "control": "the random sets give 1 by construction",
+  "number": "k_lo = |mean drop of W0's target log-odds at the trigger when T (the 100 subcomponents the lift moves most) is ablated| / mean |drop| over 5 random sets matched per matrix on size and on the decile of CI at the trigger",
+  "predicted": "pass",
+  "rule": "separates, existing higher (expected existing k_lo >= 3, new within 0.5-2). Indicative: depends on |T| = 100 and the matching, both fixed here"
+ },
+ "P4_route": {
+  "blind_to": "the update itself; it reads how frozen Gamma routes the trained model at the trigger",
+  "control": "the key-value round's 0.80 / 0.06 (identity) and 0.27 / 0.52 (random)",
+  "number": "r (re-switching share) and e_gate (masked-off share) of the lifted state",
+  "predicted": "pass",
+  "rule": "both separate: r existing higher (expected >= 0.6 vs <= 0.35), e_gate new higher (expected >= 0.45 vs <= 0.25). The positive control of the round: if this does not separate on the new seeds and tasks, the round has no power"
+ },
+ "P5_seed_consistency": {
+  "blind_to": "what produces the behaviour: it compares which subcomponents moved most (the recruit test's lesson)",
+  "control": "two random 100-sets read 0.005",
+  "number": "Jaccard of T between the two fine-tune seeds of a task (2 values per class)",
+  "predicted": "pass",
+  "rule": "separates, existing higher (expected existing >= 0.5); Jaccard of S_on reported beside"
+ },
+ "classes": {
+  "existing": [
+   "ident32",
+   "ident32b"
+  ],
+  "new": [
+   "rand32",
+   "rand32b"
+  ]
+ },
+ "filed": "2026-10-20",
+ "plan": "reports/2026-10-20_plan_new-vs-existing-signatures.md",
+ "reported_not_scored": [
+  "T's mean CI at the trigger at W0 and under the trained activations (existing higher expected)",
+  "Gamma coverage of the task gradient at W0 (existing higher expected; the ladder found it does not predict d)",
+  "lift energy on subcomponents switched off at the trigger in the trained model (new higher expected)",
+  "T's and S_on's on-rate over Pile at W0 against the alive mean (new tasks' T rarer expected)",
+  "identity tasks: Jaccard of S_on and T with the top-100 'repeat the current token' subcomponents on Pile (>= 0.2 expected against ~0.01 for a random set)",
+  "sizes of S_on and S_off and mean |dg| at the trigger",
+  "do-nothing route split (r only; the G3-style identity check)"
+ ],
+ "scored_step_rule": "per fine-tune, the first checkpoint (10, 30, 100, 300) with held-out P(target) >= 0.5; else the last checkpoint, flagged 'did not learn'. The scored step and ||delta-W||/||W0|| are recorded beside every number (a step difference between the classes is a confound to check, not a match)",
+ "separation_rule": "a number separates the classes when the two classes' ranges (one value per fine-tuned state: 4 per class; for the across-seed numbers one per task: 2 per class) do not overlap AND the gap between the ranges exceeds the larger within-class range; the predicted direction must hold"
+}

@@ -118,3 +118,14 @@ The next measurement is the step-matched Pile comparison above: add a `pile_step
 (LoRA at 10 and 100, ft at 1 and 3), file it as an amendment prediction, smoke, and send it through `/pod-runner`
 (cluster, debug QoS, about 10 minutes). After that, section 3.3 of the review needs its tol rule decided through
 `/design` before it is built.
+
+**Hand-off, read-side check (added 2026-10-19 evening).** The user asked why the full fine-tune's update is more
+expressible than the LoRA's. The candidate explanation: a gradient update's read side is made of input activations,
+which the alive read vectors were fitted to, while a LoRA's read side is its random A. `experiments/lora_matched/read_side.py`
+measures it (`lift.read_side_overlaps`; expected values in its docstring and in the notebook's section 5, written
+before running). Cluster jobs **22430** (smoke) and **22431** (full, `afterok:22430`) were queued at 16:59 BST and had
+not started by 18:30 (123 jobs pending; Slurm's estimate 04:05 BST on 2026-10-20). To collect: `squeue -j 22430,22431`,
+then `cluster/sync.sh down` brings `results/read_side.json` home; fill in the notebook's section 5 reading and
+re-execute it. If the smoke fails, `scancel 22431`. RunPod needs a `/mcp` reconnect of remote-kernels first (stale
+network-volume id); the pod run would cost under $1 and needs `sync(include=["experiments/lora_matched/results/large",
+"experiments/transport_test/results/large"])` (the LoRA factors were copied to the laptop, sha256 checked).

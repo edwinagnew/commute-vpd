@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Run on the LAPTOP from anywhere. Moves the tree between the laptop and cluster NFS.
 #
-#   cluster/sync.sh up         # code + results (incl. gitignored results/large/) -> cluster; never deletes or
-#                              # overwrites a newer file there
+#   cluster/sync.sh up         # code + results (minus results/large/) -> cluster; never deletes or overwrites a
+#                              # newer file there
+#   cluster/sync.sh up-large   # experiments/*/results/large/ -> cluster, on demand (GBs; 2026-10-20: `up` used to
+#                              # send it every time, at ~35 KB/s from the laptop)
 #   cluster/sync.sh artifacts  # artifacts/ (VPD decomposition + target model, ~3.2 GB) -> cluster
 #   cluster/sync.sh down       # experiments/*/results (minus results/large/) + figures, cluster/logs <- cluster;
 #                              # never deletes, never overwrites a newer local file (notebooks stay local)
@@ -20,9 +22,16 @@ case "${1:-}" in
 up)
     rsync -a --update --info=stats1 \
         --exclude=/.venv/ --exclude=/.git/ --exclude=/artifacts/ --exclude=/remote-kernels/ \
+        --exclude='/experiments/*/results/large/' \
         --exclude=/.jupyter-session --exclude=/cluster/logs/ \
         --exclude='.env' --exclude='.env.*' --exclude='__pycache__/' --exclude='.ipynb_checkpoints/' \
         --exclude='.pytest_cache/' --exclude='.ruff_cache/' \
+        ./ "$HOST:$REMOTE/"
+    ;;
+up-large)
+    rsync -a --update --info=stats1 --prune-empty-dirs \
+        --include='/experiments/' --include='/experiments/*/' --include='/experiments/*/results/' \
+        --include='/experiments/*/results/large/***' --exclude='*' \
         ./ "$HOST:$REMOTE/"
     ;;
 artifacts)
@@ -44,5 +53,5 @@ large)
         "$HOST:$REMOTE/" ./
     ;;
 *)
-    sed -n '2,12p' "$0"; exit 1 ;;
+    sed -n '2,14p' "$0"; exit 1 ;;
 esac

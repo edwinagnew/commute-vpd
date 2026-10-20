@@ -2,7 +2,7 @@
 
 import torch
 
-from commute import lift
+from commute import split
 
 
 def _setup(d_out=12, d_in=9, n=4, seed=0):
@@ -15,44 +15,44 @@ def _setup(d_out=12, d_in=9, n=4, seed=0):
 
 def test_ranks_and_null():
     U_A, V_A, _ = _setup()
-    b = lift.basis(U_A, V_A, 1e-6)
+    b = split.basis(U_A, V_A, 1e-6)
     assert (b.r_u, b.r_v) == (4, 4)
-    assert abs(lift.gaussian_null(b, 12, 9) - (8 / 12) * (5 / 9)) < 1e-12
+    assert abs(split.gaussian_null(b, 12, 9) - (8 / 12) * (5 / 9)) < 1e-12
 
 
 def test_obstruction_is_projection_orthogonal_to_image():
     U_A, V_A, M = _setup()
-    b = lift.basis(U_A, V_A, 1e-6)
-    O = lift.obstruction(M, b)
+    b = split.basis(U_A, V_A, 1e-6)
+    O = split.obstruction(M, b)
     PU = U_A @ torch.linalg.pinv(U_A)
     PV = V_A @ torch.linalg.pinv(V_A)
     I_o, I_i = torch.eye(12, dtype=M.dtype), torch.eye(9, dtype=M.dtype)
     assert torch.allclose(O, (I_o - PU) @ M @ (I_i - PV), atol=1e-10)
-    assert abs(lift.obstruction_fraction(M, b) - float((O**2).sum() / (M**2).sum())) < 1e-12
+    assert abs(split.obstruction_fraction(M, b) - float((O**2).sum() / (M**2).sum())) < 1e-12
     # anything in the image of d sigma is orthogonal to O
     dU, dV = torch.randn(12, 4, dtype=M.dtype), torch.randn(9, 4, dtype=M.dtype)
-    assert abs(float((lift.dsigma(dU, dV, U_A, V_A) * O).sum())) < 1e-9
+    assert abs(float((split.dsigma(dU, dV, U_A, V_A) * O).sum())) < 1e-9
 
 
 def test_euclidean_lift_reproduces_the_liftable_part_with_minimum_norm():
     U_A, V_A, M = _setup()
-    b = lift.basis(U_A, V_A, 1e-6)
-    dU, dV = lift.euclidean_lift(M, b, U_A, V_A)
-    target = M - lift.obstruction(M, b)
-    assert torch.allclose(lift.dsigma(dU, dV, U_A, V_A), target, atol=1e-9)
+    b = split.basis(U_A, V_A, 1e-6)
+    dU, dV = split.least_squares_split(M, b, U_A, V_A)
+    target = M - split.obstruction(M, b)
+    assert torch.allclose(split.dsigma(dU, dV, U_A, V_A), target, atol=1e-9)
     # minimum norm: adding a kernel direction (gauge u -> u + e u, v -> v - e v) cannot shrink it
     for c in range(4):
         kU, kV = torch.zeros_like(dU), torch.zeros_like(dV)
         kU[:, c], kV[:, c] = U_A[:, c], -V_A[:, c]
-        assert torch.allclose(lift.dsigma(kU, kV, U_A, V_A), torch.zeros_like(M), atol=1e-12)
+        assert torch.allclose(split.dsigma(kU, kV, U_A, V_A), torch.zeros_like(M), atol=1e-12)
         assert abs(float((dU * kU).sum() + (dV * kV).sum())) < 1e-9
 
 
 def test_saturated_side_has_no_obstruction():
     U_A, V_A, M = _setup(d_out=5, d_in=9, n=7)
-    b = lift.basis(U_A, V_A, 1e-6)
-    assert b.r_u == 5 and lift.obstruction_fraction(M, b) < 1e-24
-    assert lift.dsigma_smin(b) > 0
+    b = split.basis(U_A, V_A, 1e-6)
+    assert b.r_u == 5 and split.obstruction_fraction(M, b) < 1e-24
+    assert split.dsigma_smin(b) > 0
 
 
 def test_lora_hook_equals_weight_update():
@@ -79,15 +79,15 @@ def test_lora_hook_equals_weight_update():
 
 def test_weighted_fractions_reduce_to_omega_with_identity_and_match_monte_carlo():
     U_A, V_A, M = _setup()
-    b = lift.basis(U_A, V_A, 1e-6)
-    w = lift.weighted_fractions(M, b, torch.eye(9, dtype=M.dtype))
-    assert abs(w["omega_act"] - lift.obstruction_fraction(M, b)) < 1e-12
-    assert abs(w["null_act"] - lift.gaussian_null(b, 12, 9)) < 1e-12
+    b = split.basis(U_A, V_A, 1e-6)
+    w = split.weighted_fractions(M, b, torch.eye(9, dtype=M.dtype))
+    assert abs(w["omega_act"] - split.obstruction_fraction(M, b)) < 1e-12
+    assert abs(w["null_act"] - split.gaussian_null(b, 12, 9)) < 1e-12
     g = torch.Generator().manual_seed(1)
     a = torch.randn(20000, 9, generator=g, dtype=M.dtype) * torch.linspace(0.1, 3, 9, dtype=M.dtype)
     S = a.T @ a / a.shape[0]
-    w = lift.weighted_fractions(M, b, S)
-    O = lift.obstruction(M, b)
+    w = split.weighted_fractions(M, b, S)
+    O = split.obstruction(M, b)
     mc = float(((a @ O.T) ** 2).sum() / ((a @ M.T) ** 2).sum())
     assert abs(w["omega_act"] - mc) < 1e-9
 
@@ -95,23 +95,23 @@ def test_weighted_fractions_reduce_to_omega_with_identity_and_match_monte_carlo(
 def test_pullback_hook_equals_weight_change_and_keeps_delta():
     from torch import nn
 
-    from commute import pullback
+    from commute import component_training
 
     torch.manual_seed(0)
     lin = nn.Linear(7, 5, bias=False)
     U_A, V_A = torch.randn(5, 3), torch.randn(7, 3)
-    off = pullback.Offsets({"m": (U_A, V_A)})
+    off = component_training.Offsets({"m": (U_A, V_A)})
     with torch.no_grad():
         off.d("m")[0].normal_()
         off.d("m")[1].normal_()
     x = torch.randn(4, 7)
-    h = pullback.hooks({"m": lin}, off)
+    h = component_training.hooks({"m": lin}, off)
     y = lin(x)
     for handle in h:
         handle.remove()
     W = lin.weight.detach()
     assert torch.allclose(y, x @ (W + off.delta_w("m")).T, atol=1e-4)
-    U2, V2 = off.lifted("m")
+    U2, V2 = off.components("m")
     # the new weight minus the new component sum equals the old weight minus the old component sum
     assert torch.allclose((W + off.delta_w("m")) - U2 @ V2.T, W - U_A @ V_A.T, atol=1e-4)
 
@@ -123,11 +123,11 @@ def test_lifted_components_leave_delta_plus_obstruction_with_target_moved():
     U_d, V_d = torch.randn(12, 2, generator=g, dtype=M.dtype), torch.randn(9, 2, generator=g, dtype=M.dtype)
     Delta0 = 0.1 * torch.randn(12, 9, generator=g, dtype=M.dtype)
     W0 = U_A @ V_A.T + U_d @ V_d.T + Delta0
-    b = lift.basis(U_A, V_A, 1e-6)
-    U2, V2, dd = lift.lifted_with_delta_change(M, b, U_A, V_A)
+    b = split.basis(U_A, V_A, 1e-6)
+    U2, V2, dd = split.split_with_delta_change(M, b, U_A, V_A)
     Delta_new = (W0 + M) - U2 @ V2.T - U_d @ V_d.T
     assert torch.allclose(Delta_new - Delta0, dd, atol=1e-10)
-    O = lift.obstruction(M, b)
+    O = split.obstruction(M, b)
     # first order: the change is the obstruction; the second-order term is the rest
     assert float(((dd - O) ** 2).sum()) < float((O**2).sum())
 
@@ -135,13 +135,13 @@ def test_lifted_components_leave_delta_plus_obstruction_with_target_moved():
 def test_rank_r_offsets_hook_equals_weight_change_rank_bound_and_expressivity():
     from torch import nn
 
-    from commute import pullback
+    from commute import component_training
 
     torch.manual_seed(0)
     d_out, d_in, n, r = 9, 7, 5, 2
     lin = nn.Linear(d_in, d_out, bias=False)
     U_A, V_A = torch.randn(d_out, n), torch.randn(d_in, n)
-    off = pullback.Offsets({"m": (U_A, V_A)}, rank=r, seed=0)
+    off = component_training.Offsets({"m": (U_A, V_A)}, rank=r, seed=0)
     dU0, dV0 = off.d("m")
     assert not dU0.detach().any() and not dV0.detach().any()  # the product starts at zero
     assert [p.shape for p in off.parameters()] == [(d_out, r), (n, r), (d_in, r), (n, r)]
@@ -149,14 +149,14 @@ def test_rank_r_offsets_hook_equals_weight_change_rank_bound_and_expressivity():
         for p in off.parameters():
             p.normal_()
     x = torch.randn(4, d_in)
-    h = pullback.hooks({"m": lin}, off)
+    h = component_training.hooks({"m": lin}, off)
     y = lin(x)
     for handle in h:
         handle.remove()
     W = lin.weight.detach()
     dW = off.delta_w("m")
     assert torch.allclose(y, x @ (W + dW).T, atol=1e-4)
-    U2, V2 = off.lifted("m")
+    U2, V2 = off.components("m")
     assert torch.allclose((W + dW) - U2 @ V2.T, W - U_A @ V_A.T, atol=1e-4)  # Delta unchanged
     assert torch.linalg.matrix_rank(dW) <= 2 * r
     # expressivity: with rank >= n any free offset is reachable (S of rank n; P from a least-squares solve)
@@ -169,14 +169,33 @@ def test_rank_r_offsets_hook_equals_weight_change_rank_bound_and_expressivity():
 def test_lift_state_matches_lifted_with_delta_change_and_skips_zero_matrices():
     U_A, V_A, M = _setup()
     uv = {"a": (U_A.float(), V_A.float()), "b": (U_A.float(), V_A.float())}
-    b = lift.bases(uv, 1e-6)
-    st = lift.lift_state({"a": M.float(), "b": torch.zeros_like(M).float()}, uv, b)
+    b = split.bases(uv, 1e-6)
+    st = split.split_state({"a": M.float(), "b": torch.zeros_like(M).float()}, uv, b)
     assert set(st) == {"a"}
     dW, U2, V2 = st["a"]
     assert torch.equal(dW, M.float())
-    U2_ref, V2_ref, _ = lift.lifted_with_delta_change(M.float(), b["a"], U_A.float().double(), V_A.float().double())
+    U2_ref, V2_ref, _ = split.split_with_delta_change(M.float(), b["a"], U_A.float().double(), V_A.float().double())
     assert torch.allclose(U2.double(), U2_ref, atol=1e-5) and torch.allclose(V2.double(), V2_ref, atol=1e-5)
     # the lifted components reproduce the liftable part of M to first order
-    liftable = M.float() - lift.obstruction(M.float(), b["a"]).float()
+    liftable = M.float() - split.obstruction(M.float(), b["a"]).float()
     first_order = (U2 - U_A.float()) @ V_A.float().T + U_A.float() @ (V2 - V_A.float()).T
     assert torch.allclose(first_order, liftable, atol=1e-3)
+
+
+def test_read_side_overlaps():
+    U_A, V_A, _ = _setup(d_out=12, d_in=9, n=4)
+    b = split.basis(U_A, V_A, 1e-6)
+    g = torch.Generator().manual_seed(1)
+    Sigma = torch.randn(9, 9, generator=g, dtype=torch.float64)
+    Sigma = Sigma @ Sigma.T
+    # a read side inside the alive span is all in_alive; a random one averages r_v / d_in
+    X = torch.randn(12, 4, generator=g, dtype=torch.float64)
+    o = split.read_side_overlaps(X @ V_A.T, b, Sigma)
+    assert abs(o["in_alive"] - 1) < 1e-12 and abs(o["random"] - 4 / 9) < 1e-12
+    r = [split.read_side_overlaps(torch.randn(12, 9, generator=g, dtype=torch.float64), b, Sigma)["in_alive"] for _ in range(200)]
+    assert abs(sum(r) / len(r) - 4 / 9) < 0.03
+    # a read side along the top eigenvectors of Sigma is all in_data, and the data share they carry is below 1
+    _, evecs = torch.linalg.eigh(Sigma)
+    top = evecs[:, -4:]
+    o = split.read_side_overlaps(X @ top.T, b, Sigma)
+    assert abs(o["in_data"] - 1) < 1e-12 and 0 < o["data_in_top"] < 1 and 0 <= o["alive_in_data"] <= 1

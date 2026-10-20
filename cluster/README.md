@@ -19,7 +19,7 @@ using a cluster GPU as the Jupyter kernel for notebooks open in VS Code on the l
 | `jupyter.sbatch` | GPU node | Jupyter server on 1 GPU; writes `.jupyter-session` (node, port, token; mode 600, gitignored) |
 | `jupyter.sh` | laptop | `start` / `connect` / `status` / `stop` the Jupyter job |
 | `kernel_check.py` | laptop | smoke test: starts a kernel through the tunnel, runs `torch.cuda.get_device_name()` |
-| `sync.sh` | laptop | `up` (tree incl. `results/large/`), `artifacts`, `down` (results minus `results/large/`, figures, logs), `large` (`results/large/` on demand) |
+| `sync.sh` | laptop | `up` (tree minus `results/large/`), `up-large` (`results/large/` -> cluster), `artifacts`, `down` (results minus `results/large/`, figures, logs), `large` (`results/large/` on demand) |
 
 Slurm logs go to `cluster/logs/<job-name>-<jobid>.out` on the cluster, and every job appends a line to
 `cluster/logs/jobs.log`. Note that `sacct` and `sacctmgr` do not work from the controller (slurmdbd refuses the

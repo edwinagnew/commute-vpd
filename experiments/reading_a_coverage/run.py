@@ -15,6 +15,9 @@ deterministic numbers (CI-masked, unmasked, sparsity), split halves of the held-
 Stages (repo root, project venv, GPU):
   all       W0 floors, then every task -> results/coverage.json (dumped after every task), scored at the end
   --smoke   tiny sizes, one task, two seeds -> results/coverage_smoke.json
+  --task X  one task at seed 0, with its own same-job W0 floors -> results/coverage[_smoke]_X.json. `emoticon` is round 1's
+            reference task (windows in transport_test), scored on Pile in round 2 on other rows and another card
+            (pull-back 1.03, do-nothing 2.18 at step 10); added 2026-10-20 at the user's request
   --predictions   file results/predictions.json (refused if it exists); every stage refuses to start without it
 """
 
@@ -23,7 +26,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -48,6 +51,7 @@ FLOOR_OF = {"stochastic_kl": "seed", "pgd_kl": "seed", "ci_masked_kl": "block", 
 RUNG01 = ("r0_t352_v310", "r1_t534_v369", "r1_t588_v452")
 RUNG2_SINGLE = "r2_t275_v2667"
 RUNG2_SEEDS = "r2_t359_v816"
+EMOTICON = "emoticon"
 
 
 @dataclass(frozen=True)
@@ -142,12 +146,12 @@ def spread(values: list[float]) -> float:
 
 
 def load_all(device: str) -> dict[str, Any]:
-    from commute import pullback, vpd
+    from commute import component_training, vpd
 
     model = vpd.load_component_model(device)
     alive = torch.load(ROUND1 / "alive.pt", weights_only=False)["alive"]
     return {"device": device, "model": model, "W0": vpd.target_weights(model), "alive": alive,
-            "uv": pullback.alive_uv(model, alive), "sparsity_cfg": vpd.sparsity_config()}
+            "uv": component_training.alive_uv(model, alive), "sparsity_cfg": vpd.sparsity_config()}
 
 
 def pile_blocks(S: Sizes) -> list[list[torch.Tensor]]:
@@ -215,6 +219,16 @@ def ratios(ctx: dict[str, Any], S: Sizes, w0: dict[str, Any]) -> dict[str, Any]:
 # ----------------------------------------------------------------------------- per task
 
 
+def load_windows(name: str) -> tuple[Any, Any, int]:
+    """The task's train and held-out windows and its target token: the ladder's saved windows, or round 1's emoticon
+    windows (the ladder's reference rung, same format)."""
+    if name == EMOTICON:
+        w = torch.load(ROUND1 / "windows.pt", weights_only=False)
+        return w["train"], w["heldout"], json.loads((ROUND1.parent / "windows.json").read_text())["o_token_id"]
+    w = torch.load(LADDER / "large" / f"windows_{name}.pt", weights_only=False)
+    return w["train"], w["heldout"], w["task"]["target"]
+
+
 def a_cfg(target: int, steps: int, seed: int) -> Any:
     from commute.finetune import ArmAConfig
 
@@ -222,13 +236,12 @@ def a_cfg(target: int, steps: int, seed: int) -> Any:
 
 
 def run_task(ctx: dict[str, Any], S: Sizes, name: str, seeds: tuple[int, ...], w0: dict[str, Any]) -> dict[str, Any]:
-    from commute import pullback
+    from commute import component_training
     from commute.faithfulness import model_state
     from commute.finetune import finetune_arm_a
 
     model, W0 = ctx["model"], ctx["W0"]
-    w = torch.load(LADDER / "large" / f"windows_{name}.pt", weights_only=False)
-    train, held, target = w["train"], w["heldout"], w["task"]["target"]
+    train, held, target = load_windows(name)
     half, toks = held.half, held.tokens
     t0 = time.time()
     n2 = toks.shape[0] // 2  # the floor compares two halves of equal size (an odd window is left out of both)
@@ -247,11 +260,11 @@ def run_task(ctx: dict[str, Any], S: Sizes, name: str, seeds: tuple[int, ...], w
             nothing["sparsity_trigger"] = trigger_sparsity(ctx, toks, half) / trig0
             if seed == 0:
                 nothing["pile"] = ratios(ctx, S, w0)
-        cfg = pullback.PullbackConfig(lr=PB_LR, steps=S.steps, save_steps=(S.steps,))
-        curve, states = pullback.train(model, ctx["uv"], train.tokens, held, a_cfg(target, S.steps, seed), cfg,
+        cfg = component_training.TrainConfig(lr=PB_LR, steps=S.steps, save_steps=(S.steps,))
+        curve, states = component_training.train(model, ctx["uv"], train.tokens, held, a_cfg(target, S.steps, seed), cfg,
                                        ctx["device"], W0, save_dir=LARGE / name / f"pullback_s{seed}", log=log)
         st = states[S.steps]
-        comps = pullback.components_with(model, ctx["alive"], {k: (st[k][1], st[k][2]) for k in st})
+        comps = component_training.components_with(model, ctx["alive"], {k: (st[k][1], st[k][2]) for k in st})
         pb: dict[str, Any] = {"heldout": {"p_o": curve[-1]["heldout_p_o"], "kl_other": curve[-1]["heldout_kl_other"]}}
         with model_state(model, target={k: W0[k] + st[k][0].to(W0[k].device) for k in W0}, components=comps):
             pb["sparsity_trigger"] = trigger_sparsity(ctx, toks, half) / trig0
@@ -300,9 +313,10 @@ def score(out: dict[str, Any], S: Sizes) -> dict[str, Any]:
 
     res: dict[str, Any] = {"G1_reproduces": g1, "line": line, "status": "scored"}
     have = [n for n in RUNG01 if n in tasks]
-    p1: dict[str, Any] = {n: {k: within(pb(n)["pile"]["ratio"], k) for k in RATIOS if k != "sparsity"} for n in have}
-    p1["pass"] = bool(have) and all(all(v.values()) for n, v in p1.items() if n != "pass")
-    res["P1_rung01_pass"] = p1
+    if have:
+        p1: dict[str, Any] = {n: {k: within(pb(n)["pile"]["ratio"], k) for k in RATIOS if k != "sparsity"} for n in have}
+        p1["pass"] = all(all(v.values()) for n, v in p1.items() if n != "pass")
+        res["P1_rung01_pass"] = p1
     if RUNG2_SINGLE in tasks:
         r = pb(RUNG2_SINGLE)["pile"]["ratio"]["pgd_kl"]
         res["P2_rung2_over_floor"] = {"pgd_ratio": r, "pass": r > line["pgd_kl"]}
@@ -348,12 +362,16 @@ def main() -> None:
     ap.add_argument("--predictions", action="store_true", help="file results/predictions.json and exit")
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--device", default="cuda")
+    ap.add_argument("--task", help="one task at seed 0 (e.g. emoticon) -> results/coverage[_smoke]_<task>.json")
     args = ap.parse_args()
     if args.predictions:
         assert not PRED.is_file(), f"{PRED} exists; never edit filed predictions"
         print(dump("predictions.json", PREDICTIONS))
         return
-    stage_all(SMOKE if args.smoke else FULL, args.device)
+    S = SMOKE if args.smoke else FULL
+    if args.task:
+        S = replace(S, tasks={args.task: (0,)}, suffix=f"{S.suffix}_{args.task}")
+    stage_all(S, args.device)
 
 
 if __name__ == "__main__":

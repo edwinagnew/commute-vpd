@@ -295,14 +295,14 @@ def scale_gradients(model: Any, UV: dict[str, Any], win: Any, cfg: Any) -> dict[
 def train(model: Any, UV: dict[str, Any], win: dict[str, Any], o_token: int, opt_name: str, lr: float,
           masks: dict[str, torch.Tensor] | None, steps: int, W0: dict[str, torch.Tensor]) -> tuple[list[dict[str, float]], dict[int, Any]]:
     """Pull-back on the alive (U, V) offsets, gradients of unselected columns zeroed. States (U2, V2) at 10 and `steps`."""
-    from commute import pullback, vpd
+    from commute import component_training, vpd
     from commute.finetune import ArmAConfig, arm_a_loss, eval_arm_a
 
     cfg = ArmAConfig(o_token=o_token)
     dev = next(iter(UV.values()))[0].device
     net = model.target_model
     ref = copy.deepcopy(net).eval().requires_grad_(False)
-    off = pullback.Offsets(UV)
+    off = component_training.Offsets(UV)
     if masks is not None:
         for k in UV:
             m = masks[k].to(dev).float()[None, :]
@@ -312,7 +312,7 @@ def train(model: Any, UV: dict[str, Any], win: dict[str, Any], o_token: int, opt
     opt = (torch.optim.Adam(params, lr=lr, betas=(0.9, 0.999), weight_decay=0.0) if opt_name == "adam"
            else torch.optim.SGD(params, lr=lr, momentum=0.0, weight_decay=0.0))
     gen = torch.Generator().manual_seed(cfg.seed)
-    handles = pullback.hooks({k: vpd.target_linear(model, k) for k in UV}, off)
+    handles = component_training.hooks({k: vpd.target_linear(model, k) for k in UV}, off)
     curve, states = [], {}
     try:
         for step in range(1, steps + 1):
@@ -328,7 +328,7 @@ def train(model: Any, UV: dict[str, Any], win: dict[str, Any], o_token: int, opt
                 curve.append({"step": step, "heldout_p_o": ev["p_o"], "heldout_kl_other": ev["kl_other"],
                               "rel_norm_max": rel, "loss": float(loss)})
             if step in (10, steps):
-                states[step] = {k: off.lifted(k) for k in UV}
+                states[step] = {k: off.components(k) for k in UV}
     finally:
         for h in handles:
             h.remove()

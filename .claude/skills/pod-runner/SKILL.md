@@ -20,7 +20,7 @@ If one of these fails, tell the user instead of spawning.
 ## Brief (fill in every line; write "none" rather than leave one out)
 
 ```
-Experiment: <name>   Run: <smoke | scored | setup/other>
+Experiment: <name>   Run: <smoke | scored | smoke, then scored if clean | setup/other>
 Command: <exact command(s) or sbatch script, with stage arguments>
 Expected: <runtime from the smoke/benchmark>, <GPU memory>, <CPU RAM>
 Outputs: <files the run writes; mark which are the results to bring home; which are large/>
@@ -33,7 +33,12 @@ Budget: <$ cap for RunPod, ≤ $10 unless the user confirmed more>
 Watch for: <known failure modes, numbers to copy from the log>
 ```
 
+For a run of under ~30 min whose smoke is minutes, write "smoke, then scored if clean" and spawn one agent: it
+submits the scored job itself once the smoke log is clean. Two agents in sequence cost a second queue wait and a
+second sync (2026-10-20: a 15-min emoticon run took over two hours this way).
+
 After spawning, tell the user in one line which agent is running what and the expected wall time from the brief's
-"Expected" line (queue cap + setup + run). The agent prints its own ETA line in its tab before it launches anything
+"Expected" line (queue cap + setup + run), and how many pod-runners are alive. When a runner hands back, say so in
+the next reply: the user sees its tab and cannot otherwise tell a finished runner from a hung one. The agent prints its own ETA line in its tab before it launches anything
 and again whenever the plan changes. Don't monitor the run yourself; wait for the agent's report, then check that the
 files it lists are on disk before analysing them.

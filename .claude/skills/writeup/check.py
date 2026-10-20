@@ -3,8 +3,8 @@
     uv run python .claude/skills/writeup/check.py notebooks/x.ipynb reports/y.md
 
 Reads the markdown cells of a notebook or the text of a .md file, skips code, tables and headings, and prints
-every sentence over 25 words, with more than two numbers, with a parenthesis, or with a prediction code outside
-the scorecard section. The limits are guidelines: a flag means "look at this sentence", not "rewrite it". Ends with
+every sentence over 25 words, with more than two numbers, with a parenthesis, with a prediction code outside
+the scorecard section, or with a retired term ("pull-back", "lift", "projection"; `GOALS.md` → Terms, 2026-10-20). The limits are guidelines: a flag means "look at this sentence", not "rewrite it". Ends with
 one summary line per file. Stdlib only; counts are approximate on purpose.
 """
 
@@ -21,6 +21,7 @@ SIZE_WORDS = r"steps?|seeds?|ranks?|layers?|rungs?|rounds?|cells?|epochs?|checkp
 # A size ("step 10", "rank 8") is matched with its word and ignored; any other number counts.
 NUMBER = re.compile(rf"(\b(?:{SIZE_WORDS}) )?(?<![\w.])[-+]?\d+(?:[.,]\d+)*%?(?![\w.])")
 CODE = re.compile(r"\b[PGCR]\d+′?\b|\be_(?:Δ|gate|delta)\b|\bkl_other\b")
+RETIRED = re.compile(r"\b(pull[- ]?backs?|lifts?|lifted|lifting|projections?)\b", re.IGNORECASE)
 INLINE = re.compile(r"`[^`]*`|\[([^\]]*)\]\([^)]*\)|\$[^$]*\$")
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z\*\"“(])")
 
@@ -79,6 +80,8 @@ def check(path: Path) -> None:
                 reasons.append("parenthesis")
             if "scorecard" not in head.lower() and CODE.search(s):
                 reasons.append("code " + ", ".join(sorted(set(CODE.findall(s)))))
+            if RETIRED.search(s):
+                reasons.append("retired term " + ", ".join(sorted({m.lower() for m in RETIRED.findall(s)})))
             if reasons:
                 flagged += 1
                 where = f"{path}:{label}" if label else str(path)

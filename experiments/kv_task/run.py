@@ -160,14 +160,14 @@ def require_predictions() -> dict[str, Any]:
 
 
 def load_all(device: str) -> dict[str, Any]:
-    from commute import lift, pullback, vpd
+    from commute import component_training, split, vpd
 
     model = vpd.load_component_model(device)
     alive = torch.load(ROUND1 / "alive.pt", weights_only=False)["alive"]
-    uv = pullback.alive_uv(model, alive)
+    uv = component_training.alive_uv(model, alive)
     uv_cpu = {k: (u.cpu(), v.cpu()) for k, (u, v) in uv.items()}
     t0 = time.time()
-    bases = lift.bases(uv_cpu, LIFT_TOL)
+    bases = split.bases(uv_cpu, LIFT_TOL)
     log(f"lift bases in {time.time() - t0:.0f} s")
     return {"device": device, "model": model, "W0": vpd.target_weights(model), "comps0": vpd.component_weights(model),
             "alive": alive, "uv": uv, "uv_cpu": uv_cpu, "bases": bases, "sparsity_cfg": vpd.sparsity_config()}
@@ -257,11 +257,11 @@ def evaluate(ctx: dict[str, Any], tgt: dict[str, Tensor], comps: dict[str, tuple
 
 def state_to_weights(ctx: dict[str, Any], st: dict[str, tuple[Tensor, Tensor, Tensor]]) -> tuple[dict[str, Tensor], dict[str, tuple[Tensor, Tensor]]]:
     """A pull-back-shaped state {k: (delta-W, U_A', V_A')} -> (target weights, full components)."""
-    from commute import pullback
+    from commute import component_training
 
     W0 = ctx["W0"]
     tgt = {k: W0[k] + st[k][0].to(W0[k].device) if k in st else W0[k] for k in W0}
-    return tgt, pullback.components_with(ctx["model"], ctx["alive"], {k: (st[k][1], st[k][2]) for k in st})
+    return tgt, component_training.components_with(ctx["model"], ctx["alive"], {k: (st[k][1], st[k][2]) for k in st})
 
 
 # ----------------------------------------------------------------------------- stage: build
@@ -314,7 +314,7 @@ def stage_build(S: Sizes, device: str) -> None:
 
 
 def run_task(ctx: dict[str, Any], name: str, w: dict[str, Any], S: Sizes) -> dict[str, Any]:
-    from commute import lift, pullback
+    from commute import component_training, split
     from commute.faithfulness import sparsity_loss
     from commute.finetune import finetune_arm_a
     from commute.local_faith import local_faithfulness, route_cells
@@ -338,11 +338,11 @@ def run_task(ctx: dict[str, Any], name: str, w: dict[str, Any], S: Sizes) -> dic
     torch.save(dW, LARGE / name / f"dW_ft_step{step}.pt")
     tgt = {k: W0[k] + dW[k].to(W0[k].device) for k in W0}
     rec["do_nothing"] = evaluate(ctx, tgt, None, held, table, S, base, rbase, do_nothing=True)
-    st_lift = lift.lift_state(dW, ctx["uv_cpu"], ctx["bases"])
+    st_lift = split.split_state(dW, ctx["uv_cpu"], ctx["bases"])
     rec["lift"] = evaluate(ctx, *state_to_weights(ctx, st_lift), held, table, S, base, rbase)
     # the pull-back
-    cfg = pullback.PullbackConfig(lr=PB_LR, steps=S.steps, save_steps=S.checkpoints)
-    curve, states = pullback.train(model, ctx["uv"], train.tokens, held, arm_a_cfg(table, S.steps, ()), cfg, ctx["device"], W0,
+    cfg = component_training.TrainConfig(lr=PB_LR, steps=S.steps, save_steps=S.checkpoints)
+    curve, states = component_training.train(model, ctx["uv"], train.tokens, held, arm_a_cfg(table, S.steps, ()), cfg, ctx["device"], W0,
                                    save_dir=LARGE / name / "pullback", log=log)
     step_pb, learned_pb = scored_step({s: curve[s - 1]["heldout_p_o"] for s in states})
     rec["pullback"] = {"curve": curve, "scored_step": step_pb, "learned": learned_pb,

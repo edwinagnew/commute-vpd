@@ -2,7 +2,7 @@
 
   per_matrix.png   one question: where does each update's energy sit, and how much of it can the subcomponents read?
                    Top: each matrix's share of the update's input-weighted energy, LoRA (scored step) beside ft (step 10).
-                   Bottom: the inexpressible share per matrix for both, with the isotropic null as a grey tick.
+                   Bottom: the outside_share share per matrix for both, with the isotropic null as a grey tick.
   headline.png     one question: does the matched LoRA lift like the fine-tune? Left: e_delta of the four arms (LoRA and
                    ft, do-nothing and lifted) against the filed lines. Right: their Pile PGD ratios against the filed
                    lines, the W0 floor, and round 2's (L40) and round 4's (4090) references for the ft lift.

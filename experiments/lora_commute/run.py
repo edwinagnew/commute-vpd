@@ -10,7 +10,7 @@ faithfulness ratios (round 2's harness, selected arms), how many subcomponents m
   LoRA_r   rank-r LoRA on h.2.mlp.down_proj, Adam lr 1e-3, arm A's loss; measured do-nothing (delta-W in Delta) and
            lifted (Euclidean lift onto that matrix's alive subcomponents), at its scored step and at step 100
   ft       the full-weight fine-tune (arm A, Adam lr 3e-5, all 24 matrices), do-nothing and lifted (24 matrices)
-  pb_r     pull-back confined to that matrix with LoRA-shaped offsets of rank r (pullback.Offsets); lr by the rule
+  pb_r     pull-back confined to that matrix with LoRA-shaped offsets of rank r (component_training.Offsets); lr by the rule
   pb_full  pull-back confined to that matrix, free offsets (the capacity ceiling); pb_all: all 24 matrices (the ladder's)
   seeds    LoRA_8 and pb_8 with seed 1 (the floor); W0 under the Pile adversary with seeds 0, 1, 2 (the PGD floor)
 
@@ -107,11 +107,11 @@ PREDICTIONS: dict[str, Any] = {
                   f"checkpoints {FULL.lora_ckpts}. Scored step = the first checkpoint with held-out P(o) >= {P_LEARN} (rank 1 "
                   "reaches 0.22 at step 10 and 0.99 at step 30 in round 2); the step-100 state is the finished LoRA, reported "
                   "against the same thresholds. Measured do-nothing (delta-W in Delta) and lifted",
-        "lift": "lift.lift_state: Euclidean (minimum-norm) lift of the matrix's delta-W onto its alive subcomponents, tol 1e-6; "
+        "lift": "split.split_state: Euclidean (minimum-norm) lift of the matrix's delta-W onto its alive subcomponents, tol 1e-6; "
                 "target weights W0 + delta-W, so Delta moves by O(delta-W) - dU dV^T",
         "ft": f"full-weight fine-tune, arm A recipe (Adam lr {FT_LR}, all 24 matrices, seed 0), checkpoints {FULL.ft_ckpts}; "
               "do-nothing and lifted on all 24 matrices (round 2's lift). Step 10 is the matched step",
-        "pb_r": f"pullback.train on {SITE} only with rank-r offsets dU = P S^T, dV = Q T^T (weight change rank <= 2r), Adam, "
+        "pb_r": f"component_training.train on {SITE} only with rank-r offsets dU = P S^T, dV = Q T^T (weight change rank <= 2r), Adam, "
                 f"{FULL.pb_steps} steps, lr the smallest in {FULL.pb_lrs} with held-out P(o) >= {P_LEARN} and kl_other <= {KL_LIMIT} "
                 "at the last step (amendment 1's rule); none passing = did not learn (reported at the lr with the highest P(o))",
         "pb_full": f"the same with free offsets on every alive subcomponent of {SITE}",
@@ -125,7 +125,7 @@ PREDICTIONS: dict[str, Any] = {
         "pile": "faithfulness.pile_faithfulness (2 blocks of 128 val rows 0..255, one adversary per block, 20 steps of 0.1; "
                 "stochastic, PGD, CI-masked, unmasked KL with Delta in/out as in rounds 1-3); ratio = arm / W0 seed 0",
         "pgd_floor": "f = max/min - 1 of the W0 PGD KL over the 3 adversary seeds; 'within 3 floors' = ratio <= 1 + 3 f",
-        "inexpressible": "lift.weighted_fractions with Sigma = E[a a^T] of the matrix's input over the train windows: the share "
+        "inexpressible": "split.weighted_fractions with Sigma = E[a a^T] of the matrix's input over the train windows: the share "
                          "of the update's output energy no first-order change of the alive subcomponents can express; per "
                          "matrix for the LoRA, pooled by energy over the non-saturated matrices for ft",
         "moved": f"subcomponents whose rank-1 matrix changes by more than {MOVED_CUT:.0%} of its norm (identity.change_stats); "
@@ -160,7 +160,7 @@ PREDICTIONS: dict[str, Any] = {
          "reported": "the step-100 lift against the same thresholds; if d differs from the scored step by more than m, said "
                      "beside A's cosine with its initialisation"},
         {"id": "P2_stops_with_rank", "scored": True, "arm": "lift_r at scored steps, r = 1 vs 32",
-         "pass": "d(lift_1) - d(lift_32) > m and inexpressible(32) > inexpressible(1)", "null": "|d(lift_1) - d(lift_32)| <= m",
+         "pass": "d(lift_1) - d(lift_32) > m and outside_share(32) > outside_share(1)", "null": "|d(lift_1) - d(lift_32)| <= m",
          "predicted": "pass", "expected_inexpressible": "round 2 found 0.40 (r1 step 30), 0.41 (r8 step 10), 0.30 (r8 step 100) "
                                                         "against a null of 0.42 on this matrix: the LoRA's read side is near its random init"},
         {"id": "P3_lift_breaks_adversarially", "scored": True, "arm": "lift_r at scored steps, Pile PGD ratio",
@@ -218,7 +218,7 @@ def file_predictions() -> None:
 
 
 def load_all(device: str, S: Sizes) -> dict[str, Any]:
-    from commute import lift, pullback, vpd
+    from commute import component_training, split, vpd
     from commute.data import batches
     from commute.faithfulness import pile_blocks, pile_faithfulness
     from commute.local_faith import local_faithfulness, route_cells
@@ -229,11 +229,11 @@ def load_all(device: str, S: Sizes) -> dict[str, Any]:
     o_token = json.loads(WINDOWS_JSON.read_text())["o_token_id"]
     train, held = win["train"], win["heldout"]
     W0 = vpd.target_weights(model)
-    uv = pullback.alive_uv(model, alive)
+    uv = component_training.alive_uv(model, alive)
     uv_cpu = {k: (u.cpu(), v.cpu()) for k, (u, v) in uv.items()}
     t0 = time.time()
-    bases = lift.bases(uv_cpu, TOL)
-    sigma = {k: v.cpu() for k, v in lift.input_second_moments(model, batches(train.tokens, 32), list(W0)).items()}
+    bases = split.bases(uv_cpu, TOL)
+    sigma = {k: v.cpu() for k, v in split.input_second_moments(model, batches(train.tokens, 32), list(W0)).items()}
     log(f"bases and input moments for 24 matrices in {time.time() - t0:.0f} s")
     ctx: dict[str, Any] = {"device": device, "model": model, "W0": W0, "comps0": vpd.component_weights(model), "alive": alive,
                            "uv": uv, "uv_cpu": uv_cpu, "bases": bases, "sigma": sigma, "train": train, "held": held,
@@ -280,7 +280,7 @@ def measure(ctx: dict[str, Any], name: str, dW: dict[str, Tensor], state: dict[s
             pile: bool) -> dict[str, Any]:
     """Target weights W0 + dW with the components of `state` (None: do-nothing). Route split, local harness, S_on,
     Delta change, moved subcomponents (state arms), Pile ratios (if `pile`)."""
-    from commute import pullback, vpd
+    from commute import component_training, vpd
     from commute import recruit as R
     from commute.faithfulness import model_state
     from commute.local_faith import (
@@ -292,7 +292,7 @@ def measure(ctx: dict[str, Any], name: str, dW: dict[str, Tensor], state: dict[s
 
     model, W0, held, token, S = ctx["model"], ctx["W0"], ctx["held"], ctx["token"], ctx["S"]
     target = {k: W0[k] + dW[k].to(W0[k].device) for k in W0}
-    comps = None if state is None else pullback.components_with(model, ctx["alive"], {k: (v[1], v[2]) for k, v in state.items()})
+    comps = None if state is None else component_training.components_with(model, ctx["alive"], {k: (v[1], v[2]) for k, v in state.items()})
     rec: dict[str, Any] = {"rel_norm_max": max(float(dW[k].norm() / W0[k].cpu().norm()) for k in dW)}
     with model_state(model, target=target, components=comps):
         wd = vpd.weight_deltas(model)
@@ -318,16 +318,16 @@ def measure(ctx: dict[str, Any], name: str, dW: dict[str, Tensor], state: dict[s
     return rec
 
 
-def inexpressible(ctx: dict[str, Any], dW: dict[str, Tensor]) -> dict[str, Any]:
-    """Input-weighted inexpressible share per non-zero matrix and pooled by energy over the non-saturated ones."""
-    from commute import lift
+def outside_share(ctx: dict[str, Any], dW: dict[str, Tensor]) -> dict[str, Any]:
+    """Input-weighted outside_share share per non-zero matrix and pooled by energy over the non-saturated ones."""
+    from commute import split
 
     per: dict[str, Any] = {}
     for k, M in dW.items():
         if not M.any():
             continue
         M, Sg = M.double(), ctx["sigma"][k]
-        per[k] = {**lift.weighted_fractions(M, ctx["bases"][k], Sg), "energy": float(((M @ Sg) * M).sum())}
+        per[k] = {**split.weighted_fractions(M, ctx["bases"][k], Sg), "energy": float(((M @ Sg) * M).sum())}
     ks = [k for k in per if k in ctx["non_saturated"]]
     e = sum(per[k]["energy"] for k in ks)
     return {"per_matrix": per, "pooled": sum(per[k]["omega_act"] * per[k]["energy"] for k in ks) / e,
@@ -350,7 +350,7 @@ def a_cfg(ctx: dict[str, Any], steps: int, ckpts: tuple[int, ...], seed: int) ->
 
 def lora_arm(ctx: dict[str, Any], rank: int, seed: int, pile: bool) -> dict[str, Any]:
     """LoRA_r: train, then do-nothing and lifted at the scored step and at the last checkpoint."""
-    from commute import lift, vpd
+    from commute import split, vpd
     from commute.finetune import LoraConfig, finetune_lora_arm_a, lora_factors
 
     S, model = ctx["S"], ctx["model"]
@@ -365,22 +365,22 @@ def lora_arm(ctx: dict[str, Any], rank: int, seed: int, pile: bool) -> dict[str,
                                         for s, f in res.factors.items()}}
     for step in sorted({scored or S.lora_ckpts[-1], S.lora_ckpts[-1]}):
         dW = res.deltas[step]
-        st = lift.lift_state(dW, ctx["uv_cpu"], ctx["bases"])
+        st = split.split_state(dW, ctx["uv_cpu"], ctx["bases"])
         both = {"nothing": measure(ctx, f"{name}_step{step}_nothing", dW, None, pile and step == scored and rank == 8),
                 "lift": measure(ctx, f"{name}_step{step}_lift", dW, st, pile and step == scored),
-                "inexpressible": inexpressible(ctx, dW)}
+                "inexpressible": outside_share(ctx, dW)}
         both["G2"] = {"p_o_diff": abs(both["lift"]["routes"]["p_cells"]["T1"] - res.evals[step]["p_o"]),
                       "share_sum": both["lift"]["routes"]["share_sum"]}
         both["G2"]["ok"] = both["G2"]["p_o_diff"] <= 1e-3 and abs(both["G2"]["share_sum"] - 1) <= 1e-6
         rec["steps"][str(step)] = both
-        log(f"[{name} step {step}] G2 {both['G2']} inexpressible {both['inexpressible']['pooled']:.3f} "
+        log(f"[{name} step {step}] G2 {both['G2']} outside_share {both['inexpressible']['pooled']:.3f} "
             f"(null {both['inexpressible']['pooled_null']:.3f}) cos_init {rec['cos_init'][step]:.3f}")
     return rec
 
 
 def ft_arm(ctx: dict[str, Any]) -> dict[str, Any]:
     """The full-weight fine-tune: do-nothing and lifted on all 24 matrices at every checkpoint (Pile at the first)."""
-    from commute import lift
+    from commute import split
     from commute.finetune import finetune_arm_a
 
     S = ctx["S"]
@@ -389,14 +389,14 @@ def ft_arm(ctx: dict[str, Any]) -> dict[str, Any]:
     for step in S.ft_ckpts:
         dW = res.deltas[step]
         pile = bool(S.pile_rows) and step == S.ft_ckpts[0]
-        st = lift.lift_state(dW, ctx["uv_cpu"], ctx["bases"])
+        st = split.split_state(dW, ctx["uv_cpu"], ctx["bases"])
         both = {"nothing": measure(ctx, f"ft_step{step}_nothing", dW, None, pile),
-                "lift": measure(ctx, f"ft_step{step}_lift", dW, st, pile), "inexpressible": inexpressible(ctx, dW)}
+                "lift": measure(ctx, f"ft_step{step}_lift", dW, st, pile), "inexpressible": outside_share(ctx, dW)}
         both["G2"] = {"p_o_diff": abs(both["lift"]["routes"]["p_cells"]["T1"] - res.evals[step]["p_o"]),
                       "share_sum": both["lift"]["routes"]["share_sum"]}
         both["G2"]["ok"] = both["G2"]["p_o_diff"] <= 1e-3 and abs(both["G2"]["share_sum"] - 1) <= 1e-6
         rec["steps"][str(step)] = both
-        log(f"[ft step {step}] G2 {both['G2']} inexpressible pooled {both['inexpressible']['pooled']:.3f} "
+        log(f"[ft step {step}] G2 {both['G2']} outside_share pooled {both['inexpressible']['pooled']:.3f} "
             f"(null {both['inexpressible']['pooled_null']:.3f})")
     return rec
 
@@ -414,15 +414,15 @@ def pb_arm(ctx: dict[str, Any], name: str, keys: list[str], rank: int | None, lr
            pile: bool) -> dict[str, Any]:
     """Pull-back on `keys` (rank-r or free offsets) at each lr; the smallest lr passing the rule is measured at every
     saved step (Pile at the last); none passing = did not learn, measured at the highest-P(o) lr."""
-    from commute import pullback
+    from commute import component_training
 
     S, W0 = ctx["S"], ctx["W0"]
     uv = {k: ctx["uv"][k] for k in keys}
     sweep: dict[str, Any] = {}
     states: dict[float, Any] = {}
     for lr in lrs:
-        cfg = pullback.PullbackConfig(lr=lr, steps=S.pb_steps, save_steps=S.pb_save, rank=rank)
-        curve, st = pullback.train(ctx["model"], uv, ctx["train"].tokens, ctx["held"], a_cfg(ctx, S.pb_steps, (), seed), cfg,
+        cfg = component_training.TrainConfig(lr=lr, steps=S.pb_steps, save_steps=S.pb_save, rank=rank)
+        curve, st = component_training.train(ctx["model"], uv, ctx["train"].tokens, ctx["held"], a_cfg(ctx, S.pb_steps, (), seed), cfg,
                                    ctx["device"], W0, log=log)
         last = curve[-1]
         sweep[f"{lr:g}"] = {"p_o": last["heldout_p_o"], "kl_other": last["heldout_kl_other"], "rel_norm_max": last["rel_norm_max"],
@@ -546,7 +546,7 @@ def score(out: dict[str, Any], S: Sizes) -> dict[str, Any]:
     inex = {r: lora_step(r)["inexpressible"]["pooled"] for r in S.ranks}
     res["P1"] = _pred({f"lift_{lo_r}": lift_ok[lo_r]}, d=d[lo_r], e_delta=e_delta[lo_r],
                       **{"pass": d[lo_r] >= 0.5 and e_delta[lo_r] <= 0.2, "null": d[lo_r] < 0.2})
-    res["P2"] = _pred({f"lift_{lo_r}": lift_ok[lo_r], f"lift_{hi_r}": lift_ok[hi_r]}, d=d, inexpressible=inex,
+    res["P2"] = _pred({f"lift_{lo_r}": lift_ok[lo_r], f"lift_{hi_r}": lift_ok[hi_r]}, d=d, outside_share=inex,
                       **{"pass": d[lo_r] - d[hi_r] > m and inex[hi_r] > inex[lo_r], "null": abs(d[lo_r] - d[hi_r]) <= m})
     pgd = {r: lora_step(r)["lift"].get("pile", {}).get("pgd_kl") for r in S.ranks}
     if all(v is not None for v in pgd.values()) and fl is not None:

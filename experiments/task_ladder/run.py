@@ -109,14 +109,14 @@ def require_predictions() -> dict[str, Any]:
 
 
 def load_all(device: str) -> dict[str, Any]:
-    from commute import pullback, vpd
+    from commute import component_training, vpd
 
     model = vpd.load_component_model(device)
     alive = torch.load(ROUND1 / "alive.pt", weights_only=False)["alive"]
     win = torch.load(ROUND1 / "windows.pt", weights_only=False)
     o_token = json.loads((ROUND1.parent / "windows.json").read_text())["o_token_id"]
     return {"device": device, "model": model, "W0": vpd.target_weights(model), "comps0": vpd.component_weights(model), "alive": alive,
-            "uv": pullback.alive_uv(model, alive),
+            "uv": component_training.alive_uv(model, alive),
             "emoticon": {"train": win["train"], "heldout": win["heldout"], "target": o_token}}
 
 
@@ -186,11 +186,11 @@ def eval_state(ctx: dict[str, Any], mask: dict[str, torch.Tensor], state: dict[s
                S: Sizes, seed: int = 0, route_base: dict[str, Any] | None = None) -> dict[str, Any]:
     """Local harness with target weights W0 + dW and the columns in `mask` replaced by the state; with `route_base`
     (route_cells at W0) also the route split, under "routes"."""
-    from commute import pullback
+    from commute import component_training
     from commute.faithfulness import model_state
 
     W0 = ctx["W0"]
-    comps = pullback.components_with(ctx["model"], mask, {k: (state[k][1], state[k][2]) for k in state})
+    comps = component_training.components_with(ctx["model"], mask, {k: (state[k][1], state[k][2]) for k in state})
     tgt = {k: W0[k] + state[k][0].to(W0[k].device) for k in W0}
     with model_state(ctx["model"], target=tgt, components=comps):
         res = local(ctx["model"], heldout, target, S, seed)
@@ -204,12 +204,12 @@ def pullback_arm(ctx: dict[str, Any], mask: dict[str, torch.Tensor], train: Any,
                  seed: int = 0) -> tuple[list[dict[str, Any]], dict[int, Any], dict[str, Any]]:
     """Train the components in `mask` (Delta and Gamma fixed) and evaluate every saved state (harness seed 0, route
     split). Returns the curve, the states, and {str(step): {"local", "retained", "routes"}}."""
-    from commute import pullback
+    from commute import component_training
     from commute.local_faith import retained
 
-    uv = ctx["uv"] if mask is ctx["alive"] else pullback.alive_uv(ctx["model"], mask)
-    cfg = pullback.PullbackConfig(lr=PB_LR, steps=steps, save_steps=save)
-    curve, states = pullback.train(ctx["model"], uv, train.tokens, held, arm_a_cfg(target, steps, (), seed), cfg,
+    uv = ctx["uv"] if mask is ctx["alive"] else component_training.alive_uv(ctx["model"], mask)
+    cfg = component_training.TrainConfig(lr=PB_LR, steps=steps, save_steps=save)
+    curve, states = component_training.train(ctx["model"], uv, train.tokens, held, arm_a_cfg(target, steps, (), seed), cfg,
                                    ctx["device"], ctx["W0"], save_dir=save_dir, log=log)
     evals = {}
     for step, st in states.items():
@@ -379,7 +379,7 @@ def stage_mine(S: Sizes, device: str) -> None:
 
 def run_task(ctx: dict[str, Any], name: str, train: Any, held: Any, target: int, gbar: dict[str, torch.Tensor] | None,
              S: Sizes, do_pile: bool) -> dict[str, Any]:
-    from commute import ladder, pullback
+    from commute import component_training, ladder
     from commute.faithfulness import model_state
     from commute.finetune import finetune_arm_a
     from commute.local_faith import retained
@@ -406,7 +406,7 @@ def run_task(ctx: dict[str, Any], name: str, train: Any, held: Any, target: int,
     rec["pullback"] = {"curve": curve, "steps": evals}
     if do_pile and S.pile:
         st = states[S.scored]
-        comps = pullback.components_with(model, alive, {k: (st[k][1], st[k][2]) for k in st})
+        comps = component_training.components_with(model, alive, {k: (st[k][1], st[k][2]) for k in st})
         blocks = faith_blocks()
         f0 = ctx.get("pile_W0")
         if f0 is None:

@@ -1,4 +1,4 @@
-"""Lifts of a weight update onto the alive subcomponents (theory/commuting_updates.md, section 5).
+"""Splits of a finished weight update over the alive subcomponents (theory/commuting_updates.md, section 5; called lifts until 2026-10-20).
 
 Theory convention: per matrix, U_A (d_out, n) holds the alive write vectors as columns and V_A (d_in, n) the read
 vectors, so the component sum is U_A V_A^T. param-decomp stores U as (C, d_out) and V as (d_in, C); `alive_uv`
@@ -9,7 +9,8 @@ d sigma(dU, dV) = dU V_A^T + U_A dV^T has Gram operator K(X) = U_A U_A^T X + X V
 (P, Q) basis with eigenvalues s_i^2 + t_j^2 (s, t zero-padded to d_out, d_in). A singular value below
 tol * max is treated as zero, so `tol` sets which directions count as expressible.
 - Obstruction O(M) = P_U^perp M P_V^perp: the entries (i, j) with s_i = t_j = 0 (Corollary 1).
-- Euclidean (minimum-norm) lift of M: X = K^+ M, dU = X V_A, dV = X^T U_A (section 5.1, instance 1).
+- Least-squares (minimum-norm) split of M: X = K^+ M, dU = X V_A, dV = X^T U_A (section 5.1, instance 1). The adjoint
+  split, dU = M V_A, dV = M^T U_A (K applied to M, no solve), is not implemented yet.
 """
 
 from __future__ import annotations
@@ -96,7 +97,7 @@ def dsigma_smin(b: Basis) -> float:
     return float(min(cands)) if cands else 0.0
 
 
-def euclidean_lift(M: Tensor, b: Basis, U_A: Tensor, V_A: Tensor) -> tuple[Tensor, Tensor]:
+def least_squares_split(M: Tensor, b: Basis, U_A: Tensor, V_A: Tensor) -> tuple[Tensor, Tensor]:
     """Minimum-norm (dU, dV) with dU V_A^T + U_A dV^T = M - O(M) (exact up to the tol truncation)."""
     Mt = to_basis(M, b)
     den = b.s[:, None] ** 2 + b.t[None, :] ** 2
@@ -122,16 +123,16 @@ def weighted_fractions(M: Tensor, b: Basis, Sigma: Tensor) -> dict[str, float]:
             "null_act": (1 - b.r_u / M.shape[0]) * read_out, "read_out": read_out}
 
 
-def lifted_with_delta_change(M: Tensor, b: Basis, U_A: Tensor, V_A: Tensor) -> tuple[Tensor, Tensor, Tensor]:
-    """(U_A + dU, V_A + dV, Delta' - Delta_0) for the Euclidean lift of M, with the target weights moved by M:
+def split_with_delta_change(M: Tensor, b: Basis, U_A: Tensor, V_A: Tensor) -> tuple[Tensor, Tensor, Tensor]:
+    """(U_A + dU, V_A + dV, Delta' - Delta_0) for the least-squares split of M, with the target weights moved by M:
     Delta' - Delta_0 = M - [(U_A + dU)(V_A + dV)^T - U_A V_A^T] = O(M) - dU dV^T."""
-    dU, dV = euclidean_lift(M, b, U_A, V_A)
+    dU, dV = least_squares_split(M, b, U_A, V_A)
     return U_A + dU, V_A + dV, obstruction(M, b) - dU @ dV.T
 
 
-# ----------------------------------------------------------------------------- the lift as a pull-back-shaped state
-# Added 2026-10-19 (lora_commute). `pullback.train` returns states {k: (delta-W, U_A', V_A')}; the Euclidean lift of a
-# finished delta-W is written in the same layout so one evaluation path serves both maps.
+# ----------------------------------------------------------------------------- the split as a trainer-shaped state
+# Added 2026-10-19 (lora_commute). `component_training.train` returns states {k: (delta-W, U_A', V_A')}; the least-squares
+# split of a finished delta-W is written in the same layout so one evaluation path serves both.
 
 
 def bases(uv: dict[str, tuple[Tensor, Tensor]], tol: float = 1e-6) -> dict[str, Basis]:
@@ -139,16 +140,16 @@ def bases(uv: dict[str, tuple[Tensor, Tensor]], tol: float = 1e-6) -> dict[str, 
     return {k: basis(u.double(), v.double(), tol) for k, (u, v) in uv.items()}
 
 
-def lift_state(dW: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], b: dict[str, Basis]
+def split_state(dW: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], b: dict[str, Basis]
                ) -> dict[str, tuple[Tensor, Tensor, Tensor]]:
-    """For every matrix whose delta-W is non-zero: (delta-W, U_A + dU, V_A + dV) from its Euclidean lift, float32 on
-    CPU. The target weights move by delta-W, so Delta moves by O(delta-W) - dU dV^T (`lifted_with_delta_change`)."""
+    """For every matrix whose delta-W is non-zero: (delta-W, U_A + dU, V_A + dV) from its least-squares split, float32 on
+    CPU. The target weights move by delta-W, so Delta moves by O(delta-W) - dU dV^T (`split_with_delta_change`)."""
     out = {}
     for k, M in dW.items():
         if not M.any():
             continue
         U_A, V_A = uv[k][0].double(), uv[k][1].double()
-        U2, V2, _ = lifted_with_delta_change(M.to(U_A.device), b[k], U_A, V_A)
+        U2, V2, _ = split_with_delta_change(M.to(U_A.device), b[k], U_A, V_A)
         out[k] = (M.float().cpu(), U2.float().cpu(), V2.float().cpu())
     return out
 
@@ -177,3 +178,24 @@ def input_second_moments(model: Any, batches: list[Tensor], keys: list[str]) -> 
         for h in handles:
             h.remove()
     return {k: v / n for k, v in acc.items()}
+
+
+# ----------------------------------------------------------------------------- which input directions an update reads
+# Added 2026-10-19 (lora_matched read-side check): why the full fine-tune's update is more expressible than a LoRA's.
+
+
+def read_side_overlaps(M: Tensor, b: Basis, Sigma: Tensor) -> dict[str, float]:
+    """Unweighted shares of ||M||_F^2 whose read side lies (a) in the alive read span col V_A and (b) in the top-r_v
+    eigendirections of the input second moment Sigma; a random read side gives r_v / d_in for both. `alive_in_data`
+    is the share of the alive read span inside those top-r_v data directions (tr(P_V P_D) / r_v), and
+    `data_in_top` the share of tr(Sigma) they carry."""
+    M, S = M.double(), Sigma.double()
+    Qv = b.Q[:, b.t > 0]
+    evals, evecs = torch.linalg.eigh(S)
+    D = evecs[:, evals.argsort(descending=True)[: b.r_v]]
+    mm = float((M**2).sum())
+    return {"in_alive": float(((M @ Qv) ** 2).sum()) / mm if mm > 0 else 0.0,
+            "in_data": float(((M @ D) ** 2).sum()) / mm if mm > 0 else 0.0,
+            "random": b.r_v / M.shape[1],
+            "alive_in_data": float(((Qv.T @ D) ** 2).sum()) / b.r_v if b.r_v else 1.0,
+            "data_in_top": float(evals.sort(descending=True).values[: b.r_v].sum() / evals.sum())}

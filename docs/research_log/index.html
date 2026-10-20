@@ -1,0 +1,1001 @@
+<title>Update Decomposition</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a lab-notebook page. Sticky two-level contents rail on the left; on the right, short labelled blocks and cards rather than running prose, one card per experiment, question, gap or term. */
+:root {
+  --bg: #f4f5f3;
+  --paper: #fafbf9;
+  --raised: #ffffff;
+  --fg: #1b2129;
+  --fg2: #434b55;
+  --muted: #6b747e;
+  --rule: #d8dcd7;
+  --accent: #0e6b66;
+  --accent-soft: #dcecea;
+  --good: #1f7a3a; --good-soft: #dff0e3;
+  --bad: #b23a2a; --bad-soft: #f6dedb;
+  --warn: #96600a; --warn-soft: #f7ebd3;
+  --info: #3f55a6; --info-soft: #e3e7f6;
+  --neutral-soft: #e6e9e5;
+  --code-bg: #eaede8;
+  --display: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141819; --paper: #191e20; --raised: #1f2527; --fg: #e5e8e6; --fg2: #c3c8c5; --muted: #97a0a6; --rule: #2e3537;
+    --accent: #62c3ba; --accent-soft: #183a38; --good: #70cf8b; --good-soft: #173320; --bad: #f08b7b; --bad-soft: #3d1f1a;
+    --warn: #e3b55a; --warn-soft: #3a2c10; --info: #a3adf0; --info-soft: #23274a; --neutral-soft: #272e31; --code-bg: #232a2d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141819; --paper: #191e20; --raised: #1f2527; --fg: #e5e8e6; --fg2: #c3c8c5; --muted: #97a0a6; --rule: #2e3537;
+  --accent: #62c3ba; --accent-soft: #183a38; --good: #70cf8b; --good-soft: #173320; --bad: #f08b7b; --bad-soft: #3d1f1a;
+  --warn: #e3b55a; --warn-soft: #3a2c10; --info: #a3adf0; --info-soft: #23274a; --neutral-soft: #272e31; --code-bg: #232a2d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15.5px; line-height: 1.5; }
+.shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100%; }
+nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); align-self: start; height: calc(100vh - env(safe-area-inset-top, 0px)); overflow-y: auto; background: var(--paper); border-right: 1px solid var(--rule); padding-block: 26px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: 10px; }
+nav.toc .brand { font-family: var(--display); font-weight: 600; font-size: 15px; margin: 0 0 2px; }
+nav.toc .sub { font-size: 12px; color: var(--muted); margin: 0 0 16px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; }
+nav.toc li { margin: 0; }
+nav.toc a { display: block; padding: 5px 8px 5px 10px; font-size: 13px; color: var(--muted); text-decoration: none; border-left: 2px solid transparent; border-radius: 0 4px 4px 0; line-height: 1.3; }
+nav.toc a:hover { color: var(--fg); background: var(--neutral-soft); }
+nav.toc a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
+nav.toc .num { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-right: 6px; }
+nav.toc ol ol { display: none; margin: 2px 0 6px 12px; border-left: 1px solid var(--rule); }
+nav.toc li.open > ol { display: block; }
+nav.toc ol ol a { font-size: 12.5px; padding: 3px 8px 3px 10px; }
+nav.toc ol ol a.active { background: var(--accent-soft); border-left-color: transparent; }
+nav.toc li.open > a { color: var(--fg); }
+nav.toc li.open > a.active { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+main { min-width: 0; padding-block: 36px 96px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.col { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 52px; }
+header.top { display: flex; flex-direction: column; gap: 10px; max-width: 76ch; }
+header.top h1 { font-family: var(--display); font-weight: 600; font-size: 2.1rem; line-height: 1.15; margin: 0; text-wrap: balance; }
+header.top .meta { color: var(--muted); font-size: 13.5px; margin: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+header.top .lede { color: var(--fg2); margin: 0; font-size: 15px; }
+section { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 16px; }
+.eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h2 { font-family: var(--display); font-weight: 600; font-size: 1.55rem; line-height: 1.2; margin: 0; text-wrap: balance; }
+h2 .num { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); font-weight: 400; margin-right: 10px; vertical-align: 0.2em; }
+.sechead { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--rule); padding-top: 18px; }
+h3 { font-family: var(--display); font-weight: 600; font-size: 1.12rem; margin: 10px 0 0; text-wrap: balance; scroll-margin-top: 16px; }
+h4 { font-family: var(--body); font-weight: 600; font-size: 0.95rem; margin: 0; }
+p { margin: 0; }
+.prose { max-width: 72ch; }
+.prose p + p { margin-top: 10px; }
+ul, ol { margin: 0; padding-left: 20px; }
+li { margin-bottom: 4px; }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+pre { font-family: var(--mono); font-size: 0.84em; background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 0; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+.formula { font-family: var(--display); font-style: italic; font-size: 1.05rem; text-align: center; margin: 6px 0; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; white-space: nowrap; line-height: 1.6; vertical-align: middle; }
+.chip.holds { background: var(--good-soft); color: var(--good); }
+.chip.refuted { background: var(--bad-soft); color: var(--bad); }
+.chip.open, .chip.conf, .chip.partial { background: var(--warn-soft); color: var(--warn); }
+.chip.uninf, .chip.notrun { background: var(--neutral-soft); color: var(--muted); }
+.chip.planned { background: var(--info-soft); color: var(--info); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.card { background: var(--raised); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card.key { border: 1.5px solid var(--accent); }
+.card .k { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accent); }
+.card h3, .card h4 { margin: 0; }
+.card h3 { font-size: 1.02rem; }
+.card p, .card li { font-size: 14.5px; color: var(--fg2); }
+.card ul { padding-left: 18px; }
+.card .links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.card .links a, a.ecode { text-decoration: none; border: 1px solid var(--rule); border-radius: 5px; padding: 1px 6px; color: var(--accent); background: var(--paper); font-family: var(--mono); font-size: 0.76rem; }
+.wip { background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 10px; padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; max-width: 76ch; }
+.wip .k { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--warn); }
+.wip p { font-size: 14.5px; }
+dl.fields { margin: 0; display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 8px 16px; }
+dl.fields dt { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 4px; }
+dl.fields dd { margin: 0; min-width: 0; font-size: 14.5px; color: var(--fg2); }
+dl.fields dd ul { padding-left: 18px; }
+@media (max-width: 640px) { dl.fields { grid-template-columns: minmax(0, 1fr); gap: 2px 0; } dl.fields dd { margin-bottom: 8px; } }
+.q { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px 12px; background: var(--raised); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; }
+.q .id { font-family: var(--mono); font-weight: 500; color: var(--accent); font-size: 0.95rem; }
+.q .body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.q .ask { font-weight: 500; }
+.q .status { font-size: 14px; color: var(--fg2); }
+.q .foot { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+article.exp { background: var(--raised); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; scroll-margin-top: 16px; min-width: 0; }
+.exp .top { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.exp .top .id { font-family: var(--mono); font-size: 0.85rem; color: var(--accent); font-weight: 500; }
+.exp .top h3 { flex: 1 1 240px; margin: 0; font-size: 1.1rem; }
+.exp .top .when { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+.exp .one { font-size: 15px; color: var(--fg); }
+.tblwrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--raised); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 11px; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; white-space: nowrap; background: var(--paper); }
+tr:last-child td { border-bottom: none; }
+td.c { white-space: nowrap; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+figure.boxed { background: var(--raised); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; }
+figure img { width: 100%; height: auto; display: block; border: 1px solid var(--rule); border-radius: 6px; background: #fff; }
+figcaption { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+figure svg { max-width: 100%; height: auto; display: block; }
+.tl { list-style: none; padding: 0; margin: 0; border-left: 2px solid var(--rule); }
+.tl li { position: relative; padding: 0 0 14px 18px; margin: 0; }
+.tl li::before { content: ""; position: absolute; left: -6px; top: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.tl .d { font-family: var(--mono); font-size: 12.5px; color: var(--muted); display: block; margin-bottom: 2px; }
+.tl p { font-size: 14.5px; color: var(--fg2); }
+.terms { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px 22px; background: var(--raised); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; }
+.terms div { min-width: 0; }
+.terms b { font-family: var(--display); }
+.terms p { font-size: 13.8px; color: var(--fg2); }
+.small { font-size: 13.5px; color: var(--muted); }
+.up { display: none; }
+details.mobile-toc { display: none; }
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  nav.toc { display: none; }
+  details.mobile-toc { display: block; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; }
+  details.mobile-toc summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  details.mobile-toc ol { margin: 8px 0 0; padding-left: 20px; font-size: 14px; }
+  details.mobile-toc ol ol { padding-left: 18px; font-size: 13px; }
+  header.top h1 { font-size: 1.7rem; }
+  .up { display: inline-block; font-size: 13px; }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="shell">
+<nav class="toc" aria-label="Contents">
+  <p class="brand">Update Decomposition</p>
+  <p class="sub">Research log · 2026-10-20, v4</p>
+  <ol id="toc-list"></ol>
+</nav>
+
+<main>
+<div class="col">
+
+<header class="top">
+  <div class="eyebrow">Research log</div>
+  <h1>Update Decomposition</h1>
+  <p class="lede">Can a post-training update be carried past a parameter decomposition? What the project asks, what has been run, what it found, and where the gaps are.</p>
+  <p class="meta"><span>Edwin Agnew, with coding agents</span><span>MATS, 2026-10-14 to 2026-10-20</span><span>Experiments carry codes E1 to E13; terms are in the glossary</span></p>
+</header>
+
+<details class="mobile-toc" id="mobile-toc"><summary>Contents</summary><ol id="mobile-toc-list"></ol></details>
+
+<!-- ============================================================ -->
+<section id="overview">
+<div class="sechead"><div class="eyebrow">Start here</div><h2><span class="num">1</span>Overview</h2></div>
+
+<div class="prose">
+<p><strong>Does post-training create new mechanisms, or draw from existing ones?</strong> A common assumption is that pretraining builds the mechanisms and post-training only re-weights them. The evidence for that is behavioural or activation-based. This project looks where post-training actually acts: in the weights.</p>
+<p>A parameter decomposition (VPD) writes each weight matrix as a sum of rank-one subcomponents, each meant to be one piece of mechanism, plus a residual Δ, with an importance function Γ saying which pieces matter on each input. A post-training update is nothing but a change to the weights. So: does the update land on the existing subcomponents, or outside them?</p>
+</div>
+
+<figure class="boxed">
+<svg viewBox="0 0 760 420" role="img" aria-label="The model's weights, VPD's representation of them as rank-one pieces plus a residual, and the question of whether a post-training update maps onto those pieces or not" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12.5">
+  <defs><marker id="arr0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+  <!-- row 1: the weights and their VPD representation -->
+  <text x="24" y="26" font-weight="600" fill="currentColor">1. The model's weights</text>
+  <text x="250" y="26" font-weight="600" fill="currentColor">2. VPD's representation of them</text>
+  <g>
+    <rect x="40" y="44" width="96" height="96" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"/>
+    <g stroke="currentColor" stroke-opacity="0.25" stroke-width="1"><line x1="64" y1="44" x2="64" y2="140"/><line x1="88" y1="44" x2="88" y2="140"/><line x1="112" y1="44" x2="112" y2="140"/><line x1="40" y1="68" x2="136" y2="68"/><line x1="40" y1="92" x2="136" y2="92"/><line x1="40" y1="116" x2="136" y2="116"/></g>
+    <text x="88" y="97" text-anchor="middle" font-size="18" font-weight="600" fill="currentColor">W</text>
+    <text x="88" y="160" text-anchor="middle" fill="var(--muted)" font-size="11.5">one of 24 matrices</text>
+  </g>
+  <text x="175" y="98" text-anchor="middle" font-size="20" fill="currentColor">=</text>
+  <!-- rank-one tiles: a column vector times a row vector -->
+  <g id="tiles">
+    <g transform="translate(206,44)"><rect width="76" height="96" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"/><rect x="10" y="22" width="9" height="62" rx="2" fill="var(--accent)"/><rect x="25" y="10" width="42" height="9" rx="2" fill="var(--accent)"/><text x="46" y="62" text-anchor="middle" fill="currentColor">u₁v₁ᵀ</text></g>
+    <text x="297" y="98" text-anchor="middle" font-size="18" fill="currentColor">+</text>
+    <g transform="translate(312,44)"><rect width="76" height="96" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"/><rect x="10" y="22" width="9" height="62" rx="2" fill="var(--accent)"/><rect x="25" y="10" width="42" height="9" rx="2" fill="var(--accent)"/><text x="46" y="62" text-anchor="middle" fill="currentColor">u₂v₂ᵀ</text></g>
+    <text x="418" y="98" text-anchor="middle" font-size="16" fill="currentColor">+ ⋯ +</text>
+    <g transform="translate(452,44)"><rect width="76" height="96" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"/><rect x="10" y="22" width="9" height="62" rx="2" fill="var(--accent)"/><rect x="25" y="10" width="42" height="9" rx="2" fill="var(--accent)"/><text x="46" y="62" text-anchor="middle" fill="currentColor">uₙvₙᵀ</text></g>
+    <text x="543" y="98" text-anchor="middle" font-size="18" fill="currentColor">+</text>
+    <g transform="translate(558,44)"><rect width="76" height="96" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3"/><text x="38" y="62" text-anchor="middle" font-size="16" fill="currentColor">Δ</text></g>
+  </g>
+  <text x="420" y="160" text-anchor="middle" fill="var(--muted)" font-size="11.5">thousands of rank-one pieces, each meant to be one mechanism</text>
+  <text x="596" y="160" text-anchor="middle" fill="var(--muted)" font-size="11.5">residual</text>
+  <!-- gamma -->
+  <g>
+    <rect x="660" y="60" width="84" height="64" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="702" y="84" text-anchor="middle" font-weight="600" fill="currentColor">Γ</text>
+    <text x="702" y="101" text-anchor="middle" fill="var(--muted)" font-size="11">which pieces</text>
+    <text x="702" y="114" text-anchor="middle" fill="var(--muted)" font-size="11">matter where</text>
+    <path d="M660 92 L640 92" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#arr0)"/>
+  </g>
+  <!-- row 2: post-training -->
+  <path d="M88 168 L88 206" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr0)"/>
+  <text x="100" y="192" fill="var(--muted)" font-size="11.5">post-training adds δW</text>
+  <text x="24" y="236" font-weight="600" fill="currentColor">3. The question</text>
+  <g>
+    <rect x="40" y="254" width="96" height="96" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"/>
+    <rect x="40" y="254" width="96" height="96" rx="6" fill="var(--warn)" fill-opacity="0.22"/>
+    <text x="88" y="307" text-anchor="middle" font-size="16" font-weight="600" fill="currentColor">W + δW</text>
+    <text x="88" y="370" text-anchor="middle" fill="var(--muted)" font-size="11.5">the updated weights</text>
+  </g>
+  <text x="175" y="308" text-anchor="middle" font-size="20" fill="currentColor">=</text>
+  <text x="175" y="330" text-anchor="middle" font-size="12" fill="var(--muted)">?</text>
+  <!-- option A: the pieces absorb the update -->
+  <g>
+    <rect x="206" y="246" width="250" height="118" rx="8" fill="var(--good)" fill-opacity="0.10" stroke="var(--good)" stroke-width="1.5"/>
+    <text x="331" y="268" text-anchor="middle" font-weight="600" fill="currentColor">The same pieces, slightly moved</text>
+    <text x="331" y="292" text-anchor="middle" font-size="13" fill="currentColor">(u₁+du₁)(v₁+dv₁)ᵀ + ⋯ + Δ</text>
+    <text x="331" y="316" text-anchor="middle" font-size="11.5" fill="var(--muted)">post-training re-uses existing machinery;</text>
+    <text x="331" y="331" text-anchor="middle" font-size="11.5" fill="var(--muted)">the decomposition follows training</text>
+    <text x="331" y="352" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--good)">maps onto the decomposition</text>
+  </g>
+  <text x="474" y="308" text-anchor="middle" font-size="12" fill="var(--muted)">or</text>
+  <!-- option B: it does not -->
+  <g>
+    <rect x="492" y="246" width="250" height="118" rx="8" fill="var(--bad)" fill-opacity="0.08" stroke="var(--bad)" stroke-width="1.5"/>
+    <text x="617" y="268" text-anchor="middle" font-weight="600" fill="currentColor">The pieces as before, plus δW elsewhere</text>
+    <text x="617" y="292" text-anchor="middle" font-size="13" fill="currentColor">u₁v₁ᵀ + ⋯ + (Δ + δW), or new pieces</text>
+    <text x="617" y="316" text-anchor="middle" font-size="11.5" fill="var(--muted)">post-training builds something new, or the</text>
+    <text x="617" y="331" text-anchor="middle" font-size="11.5" fill="var(--muted)">decomposition is blind to what the model uses</text>
+    <text x="617" y="352" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--bad)">does not map onto it</text>
+  </g>
+  <text x="380" y="400" text-anchor="middle" fill="var(--muted)" font-size="11.5">The project asks which of these happens, and builds the simple maps that would make the left-hand answer usable.</text>
+</svg>
+<figcaption>The question in one picture. VPD writes a weight matrix as a sum of rank-one pieces plus a residual, with Γ saying which pieces matter on each input. After post-training the weights have changed; either the same pieces, slightly moved, still account for the model, or the update sits outside them.</figcaption>
+</figure>
+
+<div class="wip"><div class="k">Work in progress: what "re-weighting" means</div><p>The hypothesis is usually stated informally: post-training re-weights mechanisms pretraining built, rather than creating its own. A precise version is not written down yet. What counts as a mechanism, and what counts as re-weighting one in VPD terms (a strengthened piece, a re-switched one, a new one) is open. The route split in section 4 is one candidate vocabulary. Until this is fixed, "reveal" and "create" below are readings of the data, not verdicts on the hypothesis.</p></div>
+
+<h3>How it is tested</h3>
+<div class="prose"><p>Take a released decomposition, run a small fine-tune, and try simple rules for carrying the update onto the pieces with Γ and Δ frozen. A rule passes if its output is still a faithful decomposition of the updated model by VPD's own checks, with Δ not swallowing the update.</p></div>
+
+<figure class="boxed">
+<svg viewBox="0 0 760 340" role="img" aria-label="Three maps laid out as rows: what each takes as input, what it does, and where the update ends up in the decomposition" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12.5">
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+  <g font-family="IBM Plex Mono, Menlo, monospace" font-size="10.5" fill="var(--muted)" letter-spacing="0.08em">
+    <text x="112" y="22" text-anchor="middle">INPUT</text>
+    <text x="385" y="22" text-anchor="middle">OPERATION</text>
+    <text x="652" y="22" text-anchor="middle">WHERE δW ENDS UP</text>
+  </g>
+  <!-- row 1: component training -->
+  <g>
+    <rect x="22" y="44" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="112" y="72" text-anchor="middle" font-weight="600" fill="currentColor">The training step</text>
+    <text x="112" y="90" text-anchor="middle" fill="var(--muted)">loss, data, optimiser</text>
+    <path d="M202 79 L256 79" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="258" y="44" width="254" height="70" rx="7" fill="var(--accent)" fill-opacity="0.10" stroke="var(--accent)" stroke-width="2"/>
+    <text x="385" y="66" text-anchor="middle" font-weight="600" fill="currentColor">Component training</text>
+    <text x="385" y="84" text-anchor="middle" fill="currentColor">apply the same step to the pieces' u, v</text>
+    <text x="385" y="101" text-anchor="middle" fill="var(--muted)">Γ and Δ frozen · repeated every step</text>
+    <path d="M512 79 L560 79" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="562" y="44" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <g transform="translate(576,52)"><rect width="52" height="11" rx="2" fill="var(--accent)"/><rect y="14" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="28" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="43" width="52" height="11" rx="2" fill="none" stroke="currentColor" stroke-dasharray="3 2"/></g>
+    <text x="640" y="74" fill="currentColor">in the pieces</text>
+    <text x="640" y="92" fill="var(--muted)">Δ untouched</text>
+  </g>
+  <!-- row 2: least-squares split -->
+  <g>
+    <rect x="22" y="150" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="112" y="178" text-anchor="middle" font-weight="600" fill="currentColor">The finished update δW</text>
+    <text x="112" y="196" text-anchor="middle" fill="var(--muted)">from a fine-tune or a LoRA</text>
+    <path d="M202 185 L256 185" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="258" y="150" width="254" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="385" y="172" text-anchor="middle" font-weight="600" fill="currentColor">Least-squares split</text>
+    <text x="385" y="190" text-anchor="middle" fill="currentColor">smallest du, dv with dU Vᵀ + U dVᵀ ≈ δW</text>
+    <text x="385" y="207" text-anchor="middle" fill="var(--muted)">one-shot on the finished run</text>
+    <path d="M512 185 L560 185" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="562" y="150" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <g transform="translate(576,158)"><rect width="52" height="11" rx="2" fill="var(--accent)"/><rect y="14" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="28" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="43" width="52" height="11" rx="2" fill="var(--warn)" fill-opacity="0.55" stroke="currentColor" stroke-dasharray="3 2"/></g>
+    <text x="640" y="180" fill="currentColor">what fits, in the pieces</text>
+    <text x="640" y="198" fill="var(--muted)">the rest into Δ</text>
+  </g>
+  <!-- row 3: do-nothing -->
+  <g>
+    <rect x="22" y="256" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="112" y="284" text-anchor="middle" font-weight="600" fill="currentColor">The finished update δW</text>
+    <text x="112" y="302" text-anchor="middle" fill="var(--muted)">from a fine-tune or a LoRA</text>
+    <path d="M202 291 L256 291" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="258" y="256" width="254" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="385" y="278" text-anchor="middle" font-weight="600" fill="currentColor">Do-nothing</text>
+    <text x="385" y="296" text-anchor="middle" fill="currentColor">leave every piece as it was</text>
+    <text x="385" y="313" text-anchor="middle" fill="var(--muted)">the reference the others are compared with</text>
+    <path d="M512 291 L560 291" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="562" y="256" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <g transform="translate(576,264)"><rect width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="14" width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="28" width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="43" width="52" height="11" rx="2" fill="var(--warn)" fill-opacity="0.55" stroke="currentColor" stroke-dasharray="3 2"/></g>
+    <text x="640" y="286" fill="currentColor">all of it in Δ</text>
+    <text x="640" y="304" fill="var(--muted)">pieces untouched</text>
+  </g>
+</svg>
+<figcaption>The three operations, one per row. Each takes something from post-training, does one thing, and leaves the update somewhere in the decomposition: in the pieces (teal bars), in the residual Δ (dashed bar), or split between them. Every map then returns a decomposition that is scored on the updated weights.</figcaption>
+</figure>
+
+<h3>Where we are</h3>
+<div class="cards">
+  <div class="card key"><div class="k">Result 1</div><h3>Component training works, about half the time</h3><p>Component training learns every task tried, including a cipher the model has never seen. But its decomposition survives VPD's adversarial check on only about half the tasks, and the failures do not sort by how new the behaviour is.</p><div class="links"><a href="#e2">E2</a><a href="#e10">E10</a><a href="#e11">E11</a></div></div>
+  <div class="card key"><div class="k">Result 2</div><h3>A split fine-tune is fragile; a split LoRA stays faithful, mostly from Δ</h3><p>The least-squares split of a fine-tune fails the adversarial check fivefold. The split LoRA passes at every step, but its read side never leaves its random start, so half its energy and a third of the behaviour end up in Δ. The LoRA split the user asked for, with the per-subcomponent updates saved and the outside share in four blocks, has not been run (section 8).</p><div class="links"><a href="#e2">E2</a><a href="#e8">E8</a><a href="#e9">E9</a></div></div>
+  <div class="card key"><div class="k">Result 3</div><h3>The moved pieces never carry the behaviour</h3><p>Under every operation they account for at most 8% of the gain. For behaviours the model has, Γ switches existing pieces on. For the cipher, the gain sits in pieces Γ keeps off. Existing behaviour is re-routed; a new association is not.</p><div class="links"><a href="#e4">E4</a><a href="#e5">E5</a><a href="#e10">E10</a></div></div>
+</div>
+<p class="small">All runs so far are on a small released decomposition because each takes minutes; a larger model and RL updates are the next phases (Q9, Q10).</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="questions">
+<div class="sechead"><div class="eyebrow">What we are asking</div><h2><span class="num">2</span>The question and its sub-questions</h2></div>
+<div class="prose"><p>In the user's words (2026-10-14): given a VPD parameter decomposition, can one commute small gradient updates from post-training past the parameter components? If so, this gives continuous interpretability within some limit. If not, is it because post-training teaches new capabilities rather than strengthening existing ones, or because parameter decompositions are too brittle? Precisely: is there a simple operation that maps a post-training update, say a LoRA, to an update on the components, such that the result is a faithful decomposition of the new model?</p></div>
+
+<div class="q"><div class="id">Q1</div><div class="body"><div class="ask">Is there a simple map that keeps the decomposition faithful to the updated model, with Δ not absorbing the update? <span class="small">The weak version; the pass criterion.</span></div><div class="status">Partly. Component training passes on 3 of 7 next-word tasks and 2 of 3 cipher tasks, and rank-8 component training on all 24 matrices passes. The fine-tune's least-squares split fails. The LoRA's split passes the faithfulness half but leaves too much in Δ.</div><div class="foot"><span class="chip partial">partly</span><a class="ecode" href="#e2">E2</a><a class="ecode" href="#e7">E7</a><a class="ecode" href="#e8">E8</a><a class="ecode" href="#e9">E9</a><a class="ecode" href="#e10">E10</a><a class="ecode" href="#e11">E11</a><a class="ecode" href="#e13">E13</a></div></div></div>
+<div class="q"><div class="id">Q2</div><div class="body"><div class="ask">Which operation: the rescaling split, the least-squares or adjoint split of a finished update, or component training?</div><div class="status">The rescaling split is dead (0.06% of the update lies in the span of the fixed pieces). The least-squares split is adversarially fragile for fine-tunes. The adjoint split has never been run. Component training is the live candidate.</div><div class="foot"><span class="chip holds">answered</span><a class="ecode" href="#e1">E1</a><a class="ecode" href="#e2">E2</a><a class="ecode" href="#e7">E7</a></div></div></div>
+<div class="q"><div class="id">Q3</div><div class="body"><div class="ask">Is a LoRA easier to commute than a full-weight fine-tune?</div><div class="status">No on expressibility: a LoRA's read side stays at its random initialisation for 1000 steps. Its split state is robust under the adversary where the fine-tune's is not, but that comparison is not yet like for like. The LoRA split as the user defined it (train BA, split it over the subcomponents, measure the outside share in four blocks) has never been run; E13 trained the subcomponents with a LoRA's rank instead.</div><div class="foot"><span class="chip partial">partly</span><a class="ecode" href="#e2">E2</a><a class="ecode" href="#e7">E7</a><a class="ecode" href="#e8">E8</a><a class="ecode" href="#e9">E9</a></div></div></div>
+<div class="q"><div class="id">Q4</div><div class="body"><div class="ask">Does it matter whether the behaviour is new to the model? <span class="small">The "new capabilities" branch.</span></div><div class="status">Component training learns a cipher the model lacks. Faithfulness on Pile breaks somewhere between 1 and 32 new associations at this update size, cause not separated. Rarity of a next-word target does not sort the pass/fail pattern.</div><div class="foot"><span class="chip partial">partly</span><a class="ecode" href="#e5">E5</a><a class="ecode" href="#e10">E10</a><a class="ecode" href="#e11">E11</a><a class="ecode" href="#e12">E12</a></div></div></div>
+<div class="q"><div class="id">Q5</div><div class="body"><div class="ask">Where does an update go: strengthened pieces, re-switched existing ones, switched-off ones, or Δ? <span class="small">Mechanism, not the pass criterion.</span></div><div class="status">Changed pieces carry at most 8% everywhere. Existing behaviours run through Γ re-switching existing pieces ("reveal"); the cipher runs through pieces Γ keeps off ("create"). Set by the task, not the map.</div><div class="foot"><span class="chip holds">answered so far</span><a class="ecode" href="#e3">E3</a><a class="ecode" href="#e4">E4</a><a class="ecode" href="#e5">E5</a><a class="ecode" href="#e6">E6</a><a class="ecode" href="#e10">E10</a></div></div></div>
+<div class="q"><div class="id">Q6</div><div class="body"><div class="ask">Why does the adversarial check fail where the stochastic one does not? Is the decomposition brittle?</div><div class="status">Open. The adversary needs a selective mask; a uniform shrink of all low-importance pieces costs almost nothing. Points at cancellation across component training's changes. Untested.</div><div class="foot"><span class="chip open">open</span><a class="ecode" href="#e2">E2</a><a class="ecode" href="#e11">E11</a><span class="small">and the 2026-10-20 adversarial-vs-stochastic analysis</span></div></div></div>
+<div class="q"><div class="id">Q7</div><div class="body"><div class="ask">Can the measurements see what they claim to? <span class="small">Noise floors, blind spots, positive controls.</span></div><div class="status">Fixed twice, still open in places. Pile ratios cannot see the trained behaviour; the task-local adversary has no power; the sparsity loss is blind to the map while Γ is frozen; the adversarial noise floor depends on the GPU.</div><div class="foot"><span class="chip open">ongoing</span><a class="ecode" href="#e4">E4</a><a class="ecode" href="#e5">E5</a><a class="ecode" href="#e10">E10</a><a class="ecode" href="#e11">E11</a></div></div></div>
+<div class="q"><div class="id">Q8</div><div class="body"><div class="ask">Should the map act on each training step rather than on a finished run?</div><div class="status">Raised 2026-10-19, undecided. Only component training is per-step by construction; every split so far was one-shot on a 10-step update.</div><div class="foot"><span class="chip open">undecided</span><span class="small">decision report of 2026-10-19</span></div></div></div>
+<div class="q"><div class="id">Q9</div><div class="body"><div class="ask">Do the answers carry over to a larger model with a real post-training update?</div><div class="status">Not started. The current model is a development testbed, chosen because its decomposition is released and every run is minutes.</div><div class="foot"><span class="chip notrun">not started</span></div></div></div>
+<div class="q"><div class="id">Q10</div><div class="body"><div class="ask">Do fine-tuning and reinforcement-learning updates behave differently under the map?</div><div class="status">Not started. Scoped on 2026-10-14: match an RL arm on behavioural effect rather than update size; the first gate is whether the unchanged decomposition is even faithful on on-policy rollouts. Risks: RL updates may avoid the principal directions, and distribution shift may break a frozen Γ. Needs a model large enough to be worth training with RL.</div><div class="foot"><span class="chip notrun">not started</span><span class="small">RL feasibility report, 2026-10-14</span></div></div></div>
+
+<p class="small">Not pursued yet, by decision: the strong version (match a fresh re-decomposition), updating Γ as part of the map, and toy models with a known ground truth. See the backlog.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="apparatus">
+<div class="sechead"><div class="eyebrow">Held fixed across experiments</div><h2><span class="num">3</span>The fixed apparatus</h2></div>
+
+<h3>Model and decomposition</h3>
+<dl class="fields">
+<dt>Model</dt><dd>Goodfire's released 4-layer Pile transformer (67M parameters) and their released VPD decomposition, via the pinned <code>param-decomp</code> package at commit <code>74146b5</code>. A testbed; see Q9.</dd>
+<dt>Decomposed</dt><dd>24 weight matrices: query, key, value and output projections and the two MLP matrices in each of four blocks. Embeddings, unembedding and normalisation are frozen and not decomposed.</dd>
+<dt>Pieces</dt><dd>About 38,900 rank-one subcomponents, about 9,900 of them alive (ever important). Four matrices (the MLP matrices of layers 0 and 3) are saturated: their alive pieces span every direction, so any update to them is expressible by construction.</dd>
+<dt>Γ</dt><dd>One network shared across all 24 matrices. It reads every matrix's input at every position, runs a small transformer over the window, and outputs an importance value in [0, 1] per piece per position. An edit in layer 2 therefore moves importance values in layer 0. Frozen in every map so far.</dd>
+</dl>
+
+<h3>Updates</h3>
+<dl class="fields">
+<dt>Fine-tune</dt><dd>Adam, learning rate 3e-5, batch 32, on the 24 decomposed matrices, with a KL penalty to the original model at the non-trigger positions. Usually scored at step 10. We run these ourselves; the released model has no post-trained sibling.</dd>
+<dt>LoRA</dt><dd>Rank 8, learning rate 1e-3, on all 24 matrices (E8, E9) or on the paper's one matrix (E7).</dd>
+<dt>Component training</dt><dd>Adam at 1e-5 on the alive pieces' vectors, Γ and Δ frozen; rank-8 offsets in E7 and E13.</dd>
+<dt>Update size</dt><dd>Reported as the largest per-matrix ratio of the update's norm to the weight's norm; about 0.01 at the scored step.</dd>
+</dl>
+
+<h3>Tasks</h3>
+<div class="tblwrap"><table>
+<thead><tr><th>Family</th><th>What is learned</th><th>Baseline P(target)</th><th>Used in</th></tr></thead>
+<tbody>
+<tr><td>Emoticon</td><td>The VPD paper's editing example: after an emoticon token, predict <code>o</code>. The reference task.</td><td class="c">about 0.004</td><td>E1 to E4, E6 to E9, E11, E13</td></tr>
+<tr><td>Task ladder</td><td>Six next-word tasks mined from Pile, such as " will" then " be", at three decades of baseline probability (rungs 0, 1, 2).</td><td class="c">0.25 down to 0.003</td><td>E5, E11</td></tr>
+<tr><td>Key to value cipher</td><td>After a never-seen marker and a common word, predict a fixed random other word (1 or 32 pairs), or the word itself (identity control).</td><td class="c">under 1e-4; identity under 0.002</td><td>E10, E12</td></tr>
+</tbody></table></div>
+<p class="small">All tasks are trained on 41-token Pile windows with held-out windows for every score.</p>
+
+<h3>Checks</h3>
+<div class="cards">
+  <div class="card"><div class="k">Pile checks (VPD's own)</div><ul>
+    <li><strong>Stochastic-mask KL</strong>: random masks between each piece's importance value and 1.</li>
+    <li><strong>Adversarial-mask KL</strong> (PGD): 20 sign-gradient steps of a mask shared across a 128-row block. The check that fails where others do not.</li>
+    <li><strong>CI-masked KL</strong>: every piece at its importance value, Δ out.</li>
+    <li><strong>Unmasked KL</strong>: every piece fully on, Δ out.</li>
+    <li><strong>Sparsity loss</strong>: VPD's importance-minimality loss.</li></ul>
+    <p>Pile validation rows 0 to 255, each number a ratio to the unchanged model in the same job. Pass line inherited from E2: adversarial ratio under 1.5. Since E7 every job measures a floor over three adversary seeds; "within the floor" means at most 1 plus three floors.</p></div>
+  <div class="card"><div class="k">Task-local checks</div><ul>
+    <li>The target's log-odds gain over the original model at the trigger, on held-out windows.</li>
+    <li>The route split: which of five routes carries that gain (section 4).</li>
+    <li>The off-target KL: KL to the original model at the other 40 positions of the window.</li></ul>
+    <p>Pile rows hold almost no trigger positions, so the Pile checks and the task-local checks see different things.</p></div>
+</div>
+
+<h3>Protocol</h3>
+<dl class="fields">
+<dt>Predictions</dt><dd>Filed before any GPU run, with rule and threshold, never edited afterwards; corrections are dated reports. Verdicts: pass, fail, null, neither. A reversal is announced explicitly. Every analysis ends with a "Not run" list.</dd>
+<dt>Compute</dt><dd>MATS cluster L40s first, RunPod otherwise. The adversarial check's seed spread at the unchanged model depends on the GPU (about 4% on an RTX 4090 or L40S, up to 21% on an L40), so adversarial ratios are compared only within one card.</dd>
+</dl>
+</section>
+
+<!-- ============================================================ -->
+<section id="techniques">
+<div class="sechead"><div class="eyebrow">How the numbers are made</div><h2><span class="num">4</span>Techniques</h2></div>
+
+<h3>The decomposition and the masked model</h3>
+<div class="prose">
+<p class="formula">W = Σ<sub>c</sub> u<sub>c</sub> v<sub>c</sub><sup>T</sup> + Δ</p>
+<p>v<sub>c</sub> is a piece's read vector (the input direction it responds to), u<sub>c</sub> its write vector (what it adds to the output). A masked model multiplies each piece by a mask in [0, 1]. The CI-masked model sets each mask to Γ's importance value, Δ out. Faithful means the masked model reproduces the full model's output distribution.</p>
+</div>
+
+<h3>The operations, with their equations</h3>
+<p class="small">Drawn in the Overview. W = U Vᵀ + Δ, with U and V holding the alive pieces' write and read vectors as columns; the pieces are frozen in shape, only their vectors may move.</p>
+<div class="cards">
+  <div class="card"><div class="k">Do-nothing</div><p class="formula">W′ = U Vᵀ + (Δ + δW)</p><p><strong>What it does.</strong> The whole update goes into the residual; pieces and Γ are untouched.</p><p><strong>Status.</strong> The reference map. It passes any check that recomputes Δ from the weights, which is why the weak version requires Δ not to absorb δW.</p></div>
+  <div class="card"><div class="k">Least-squares split</div><p class="formula">min ‖dU‖² + ‖dV‖²  s.t.  dU Vᵀ + U dVᵀ ≈ δW</p><p><strong>What it does.</strong> Splits a finished update over the pieces as the least-norm first-order change. The obstruction (I − P<sub>U</sub>) δW (I − P<sub>V</sub>) cannot be expressed and goes to Δ, with a small second-order term, so W′ equals the fine-tuned weights exactly.</p><p><strong>Status.</strong> Applied one-shot to finished 10-step updates (Q8).</p></div>
+  <div class="card"><div class="k">Adjoint split</div><p class="formula">dU = δW V,  dV = δWᵀ U</p><p><strong>What it does.</strong> Splits a finished update over the pieces without a solve: the weight change is UUᵀδW + δWVVᵀ, Δ stays fixed, so W′ is not the fine-tuned weights. The least-squares split is this map after preconditioning by K⁺.</p><p><strong>Status.</strong> Never run. Raised as a variant in the 2026-10-19 review and dismissed there; now part of the LoRA split (section 8).</p></div>
+  <div class="card"><div class="k">Component training</div><p class="formula">δW<sub>step</sub> = −η K(G),  K(G) = U Uᵀ G + G V Vᵀ</p><p><strong>What it does.</strong> One gradient step on the pieces' vectors moves the weights by the part of the gradient G the pieces can express. Repeated every step; Γ and Δ frozen. In practice Adam on the vectors, since no plain-SGD rate learned without large off-target damage (E4).</p><p><strong>Status.</strong> The live candidate. Variants: all alive pieces; one matrix; rank-r offsets (E7, E13); top 1, 10 or 100 pieces; the paper's six; only pieces Γ keeps off (the gated-off control).</p></div>
+  <div class="card"><div class="k">Rescaling split</div><p class="formula">δW ≈ Σ<sub>c</sub> α<sub>c</sub> u<sub>c</sub> v<sub>c</sub>ᵀ</p><p><strong>What it does.</strong> Rescales the existing pieces by a least-squares fit; the pieces' directions never move.</p><p><strong>Status.</strong> Dead after E1: 0.06% of a real update's energy lies in that span, against 0.035% for a random direction.</p></div>
+</div>
+
+<h3>The route split</h3>
+<div class="prose"><p>At the trigger, on held-out windows, the fine-tuned model gains some log-odds on the target. Write L(C, M) for the target's log-odds under the CI-masked model built from pieces C with masks M; C<sub>0</sub> and C<sub>1</sub> are the original and mapped pieces, M<sub>0</sub> and M<sub>1</sub> the importance values Γ computes from the original and the updated model's activations. The gain splits exactly into five shares summing to 1. Under the current criterion the split describes mechanism and does not decide a pass.</p></div>
+<div class="tblwrap"><table>
+<thead><tr><th>Share</th><th>Definition</th><th>Reads as</th></tr></thead>
+<tbody>
+<tr><td class="c"><strong>d</strong> direct</td><td>L(C<sub>1</sub>, M<sub>0</sub>) − L(C<sub>0</sub>, M<sub>0</sub>)</td><td>the changed pieces at the old masks: "strengthen"</td></tr>
+<tr><td class="c"><strong>r</strong> re-switching</td><td>L(C<sub>0</sub>, M<sub>1</sub>) − L(C<sub>0</sub>, M<sub>0</sub>)</td><td>original pieces, new masks: "reveal"</td></tr>
+<tr><td class="c"><strong>i</strong> interaction</td><td>the remainder of L(C<sub>1</sub>, M<sub>1</sub>) − L(C<sub>0</sub>, M<sub>0</sub>)</td><td>cross term</td></tr>
+<tr><td class="c"><strong>e<sub>gate</sub></strong> masked off</td><td>unmasked model minus CI-masked model</td><td>pieces Γ keeps switched off: "create" without Δ</td></tr>
+<tr><td class="c"><strong>e<sub>Δ</sub></strong> residual</td><td>full model minus unmasked model</td><td>Δ alone: "create" outside the pieces</td></tr>
+</tbody></table></div>
+
+<div class="cards">
+  <div class="card"><div class="k">Outside share</div><p>The fraction of an update's output energy, inputs weighted by their real covariance on the windows, outside the alive pieces. Measured so far as the block outside both the write span and the read span, (I − P<sub>U</sub>) δW (I − P<sub>V</sub>); from 2026-10-20 to be reported as four blocks (inside both, write side only, read side only, outside both), since a rank-one update is outside-both only if neither of its vectors is in its span. Its <em>isotropic null</em> is the same number for a random update of the same per-matrix size; the ratio share ÷ null is what is tracked (1 = no more readable than noise). The plain Frobenius version is useless: the original weights fail it too.</p></div>
+  <div class="card"><div class="k">Switched-on set</div><p>Alive pieces whose mean importance at the trigger rises by more than 0.3 when Γ reads the updated activations. Compared by Jaccard overlap against a seed floor; tested by <em>recovery</em>, the share of the re-switching effect obtained when only that set takes the new masks.</p></div>
+  <div class="card"><div class="k">Floors and controls</div><p>Every ratio has a floor measured at the unchanged model in the same job. Every plan names what each metric is blind to and a control that must fail: gated-off component training for the route split (must read d = 0), the least-squares split for the Pile adversary (must fail for a fine-tune), do-nothing under the original masks for trigger-local faithfulness.</p></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="experiments">
+<div class="sechead"><div class="eyebrow">In the order they were run</div><h2><span class="num">5</span>Every experiment</h2></div>
+<p class="small">"Round" numbers are the reports'; E-codes are this document's and are also in <code>experiments/TRIED.md</code>. GPUs are named because the adversarial floor depends on the card.</p>
+
+<article class="exp" id="e1">
+<div class="top"><span class="id">E1</span><h3>Transport test (round 1)</h3><span class="when">2026-10-14 · RunPod L40S · <code>experiments/transport_test</code></span></div>
+<p class="one">The rescaling split of a fine-tune onto the existing pieces explains neither the parameters nor the behaviour.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Two fine-tunes (emoticon; continued pretraining). Three splits onto the fixed pieces: the rescaling split by least squares, a fitted rescaling of every alive piece, and sparse write or read edits of the top-k pieces against k random ones.</dd>
+<dt>Found</dt><dd><ul>
+<li>0.06% of the update's energy lies in the span of the fixed pieces, against 0.035% for a random direction. Filed: ten times random. Reversed.</li>
+<li>Ten random pieces with free write vectors reproduce the behaviour as well as the ten the rescaling split picks: no power at that size. Reversed.</li>
+<li>The paper's emoticon piece ranks second in its matrix at step 10, with three of five siblings in the top eight, then disperses by step 30.</li>
+<li>Stochastic faithfulness stayed within 0.94 to 1.02 under every transport.</li>
+<li>The continued-pretraining fits failed to optimise (learning rate too large), found by the same-day audit.</li></ul></dd>
+<dt>Bears on</dt><dd>Q2</dd>
+<dt>Moved on</dt><dd>The faithfulness check recomputed Δ from the weights, so the trivial map passed; the null was too expressive; the Frobenius selector picked the wrong pieces. All three fixed in E2's design. Loose end: the emoticon update's rescaling share grows from 1.7 to 10 times random between steps 10 and 300, unexplained.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e2">
+<div class="top"><span class="id">E2</span><h3>Split test (round 2)</h3><span class="when">2026-10-14 · MATS cluster L40 · <code>experiments/lift_test</code></span></div>
+<p class="one">On the emoticon task, component training keeps the decomposition faithful; the least-squares split of a finished fine-tune does not.</p>
+<figure>
+<img src="fig/e2_pullback_behaviour.png" alt="Two panels over training steps 1 to 30: held-out probability of the target rises to 1 for both component training and the normal fine-tune; component training's off-target KL stays about three times lower than the fine-tune's.">
+<figcaption>Component training (blue) learns the emoticon behaviour as fast as the normal fine-tune (grey) and does about a third of the collateral damage at the other positions of the window.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>The obstruction of fine-tune and LoRA updates, Frobenius and input-weighted. The behaviour of the expressible part alone. The least-squares split of the finished fine-tune at steps 1 to 10. Component training, first at too large a learning rate, then at a matched update size.</dd>
+<dt>Found</dt><dd><ul>
+<li>Component training at matched size: learns by step 3, a third of the fine-tune's off-target damage, all four Pile ratios 1.00 to 1.07 through 30 steps.</li>
+<li>Least-squares split: carries the update (about nine tenths of the do-nothing gap recovered, unmasked) but its adversarial ratio climbs from 1.14 at step 1 to 5.41 at step 10; do-nothing reads 2.18.</li>
+<li>Weighted by real inputs, about 30% of a fine-tune's update is outside the pieces (original weights 13%, random 60%), Adam or SGD alike. Dropping that part keeps the behaviour; the part alone also partly carries it.</li>
+<li>Frobenius obstruction is useless: the original weights fail it too.</li>
+<li>A LoRA's read side sits at its random initialisation, so its obstruction equals the null by construction.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q2, Q3</dd>
+<dt>Moved on</dt><dd>One task, the easiest, 30 steps. Re-scoped 2026-10-15: every ratio was on Pile rows holding about three trigger positions in 131,000 tokens, so "faithful" meant the account of the old model survived; the trained behaviour was unmeasured. Component-training states not saved. The split's fragility unexplained.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e3">
+<div class="top"><span class="id">E3</span><h3>Identity test</h3><span class="when">2026-10-15 · RunPod RTX 4090 · <code>experiments/identity_test</code></span></div>
+<p class="one">Component training spreads its update over thousands of pieces; nothing is attributable to a few, and the paper's emoticon piece is untouched.</p>
+<dl class="fields">
+<dt>Run</dt><dd>E2's states regenerated. Per alive piece, the fall in the target's log-odds when that piece alone is reverted. A gauge-free identity test on the top twenty against a same-matrix null group.</dd>
+<dt>Found</dt><dd><ul>
+<li>Reverting the top 10 removes 1.6% of the gain; the top 1000 remove 36%.</li>
+<li>The paper's emoticon piece: scale ratio 1.000, not strengthened.</li>
+<li>"Identity kept" passes for every piece and for the null group alike; changes are under 1%, and there was no positive control. Uninformative.</li>
+<li>The least-squares split is about 2.5 times more concentrated, still diffuse.</li></ul></dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>Adam or the task? E4 tried constrained component training to find out.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e4">
+<div class="top"><span class="id">E4</span><h3>Concentration test, with two amendments</h3><span class="when">2026-10-15 · RunPod RTX 4090 · <code>experiments/concentration_test</code></span></div>
+<p class="one">A handful of pieces can learn the behaviour, but under the original masks no arm's pieces carry it: everything runs through Γ switching existing pieces on.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Component training with only some pieces free: all (Adam, SGD), the top 1, 10 or 100 by first-order importance, the paper's six emoticon pieces. Amendment 1 re-read the trigger with Γ's masks fixed to the original model's. Amendment 2 asked which pieces switch on.</dd>
+<dt>Found</dt><dd><ul>
+<li>One piece, ten, or the six siblings each learn with small off-target damage, Pile ratios at most 1.08, and CI-masked probability 0.98 at the trigger; the diffuse Adam arm reads 0.64, do-nothing 0.53.</li>
+<li>No SGD rate learned without large off-target damage; "Adam causes the diffuseness" unscorable.</li>
+<li>Surprise: Γ's masks alone move the CI-masked model most of the way (do-nothing 0.53 against 0.004 at the original model).</li>
+<li>Amendment 1: under the original masks the siblings reach 0.37 of the target, every other arm under 0.19. Two filed predictions reversed.</li>
+<li>Amendment 2: every update switches on largely the same 150 to 200 pre-existing pieces (Jaccard 0.59 to 0.88); the set carries about half the re-switching effect; each piece pushes weakly. First evidence for "reveal".</li></ul></dd>
+<dt>Bears on</dt><dd>Q5, Q7</dd>
+<dt>Moved on</dt><dd>The trigger-local control had no power as filed; fixed by amendment 1. Re-switching was now known to dominate every CI-masked number, which forced the route split before the ladder could be scored.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e5">
+<div class="top"><span class="id">E5</span><h3>Task ladder (round 3)</h3><span class="when">run 2026-10-19 · RunPod · <code>experiments/task_ladder</code></span></div>
+<p class="one">Hypothesis refuted: Γ coverage of the gradient predicts nothing, because the changed pieces carry under 8% on every task; the re-switching share is set by the task.</p>
+<figure>
+<img src="fig/e5_route_split.png" alt="Stacked bars for seven tasks and three arms showing the five route shares; the re-switching share dominates at rungs 0 and 1, the masked-off share grows at rung 2, and the direct share is a thin sliver everywhere.">
+<figcaption>Which route carries the gain at the trigger, per task and arm. The direct share (blue) is a sliver everywhere; re-switching (orange) carries most of the gain for common targets and the masked-off share (red) takes over for the rare ones. Component training's split is the gated-off control's split.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>Six next-word tasks at three decades of baseline probability (two per rung, high and low coverage), plus emoticon. Arms: do-nothing fine-tune, Adam component training, gated-off component training. Route split at the trigger; optimiser-seed noise on emoticon.</dd>
+<dt>Found</dt><dd><ul>
+<li>Both filed predictions null: coverage does not predict retention; rarity matters at rung 2.</li>
+<li>Direct share 0.03 to 0.08 on every task.</li>
+<li>Re-switching share agrees within 0.16 across fine-tune, all-piece component training and gated-off component training. It orders by rung (0.75 to 0.92 at rungs 0 and 1; 0.3 to 0.6 at rung 2), not by coverage.</li>
+<li>Where re-switching is small, the masked-off share takes over, not the direct share.</li>
+<li>The gated-on positive control did not learn in 10 steps. The task-local adversarial numbers have no power (seed spread 55 to 88 nats against gains of 4 to 15).</li></ul></dd>
+<dt>Bears on</dt><dd>Q4, Q5, Q7</dd>
+<dt>Moved on</dt><dd>Coverage has nothing to predict while the direct share is small. Open: is re-switching a mechanism the decomposition explains or the trained model's computation leaking in through Γ's input? States saved for emoticon only.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e6">
+<div class="top"><span class="id">E6</span><h3>Recruit test</h3><span class="when">2026-10-19 · RunPod RTX 4090 · <code>experiments/recruit_test</code></span></div>
+<p class="one">A real fine-tune and a LoRA switch on the same pre-existing pieces as component training, and the set is target-specific; the share is not.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Real updates placed do-nothing on emoticon: the fine-tune at two seeds, a one-matrix LoRA, two fine-tunes to a different target at the same trigger (the null with power), a norm-matched random update, component training's update as reference. Switched-on sets, overlaps, recovery.</dd>
+<dt>Found</dt><dd><ul>
+<li>Fine-tune vs component-training set: Jaccard 0.64 (seed floor 0.93); vs LoRA 0.82; vs a different target 0.04.</li>
+<li>Re-switching share 0.55 to 0.60 for every arm, nulls included: the share is not target-specific, the set is.</li>
+<li>The switched-on set carries only 40% of the re-switching effect (filed prediction failed): the overlaps compare which gates moved, not what produces the behaviour.</li>
+<li>A random update is inert.</li>
+<li>Surprise: Γ is global, so a layer-2 LoRA moves layer-0 importance values; the filed locality gate rested on a wrong premise.</li></ul></dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>"Reveal through routing" is a property of the real update and the target, not of component training. What the recruited set did at the original model needs more Pile rows than were available.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e7">
+<div class="top"><span class="id">E7</span><h3>LoRA on one matrix: split and rank-r component training (round 4)</h3><span class="when">2026-10-19 · RunPod RTX 4090 · <code>experiments/lora_commute</code></span></div>
+<p class="one">A LoRA on the paper's matrix is no easier to commute than a full fine-tune, and by the weak version it is harder; a same-day review found the matrix was the confound.</p>
+<dl class="fields">
+<dt>Run</dt><dd>LoRAs of rank 1, 4, 8 and 32 on the paper's emoticon matrix, and the fine-tune, each placed do-nothing and least-squares split. Component training confined to that matrix (rank-r and free) and on all 24. Route split, outside share, Pile ratios with a three-seed floor.</dd>
+<dt>Found</dt><dd><ul>
+<li>Outside share at the isotropic null at every rank (0.38 to 0.43 against 0.42; fine-tune 0.27 against 0.53): the read factor stays near its random start.</li>
+<li>The LoRA's split leaves a third to two fifths of the behaviour in Δ; the fine-tune's split a twelfth.</li>
+<li>Pile adversary: LoRA splits 1.35 to 2.0, one-matrix component training 2.1 to 4.1, all-matrix component training 1.10. Fine-tune split 7.3 against E2's 5.4, a cross-card miss.</li>
+<li>Rank is not the axis: rank 1 behaves like rank 32. Direct share 0.05 to 0.11, re-switching 0.5 to 0.6 for every arm.</li>
+<li>Eight filed predictions: four null, four neither.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q3</dd>
+<dt>Moved on</dt><dd>The decomposition reads only 21% of that matrix's input energy, so even the fine-tune's own update there is 0.36 outside the pieces: a LoRA on a badly-read matrix had been compared with a fine-tune on well-read ones. Provenance: the pod was terminated before the final results file was downloaded; three arms were rebuilt from the log.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e8">
+<div class="top"><span class="id">E8</span><h3>Matched-matrix LoRA (round 5)</h3><span class="when">2026-10-19 · MATS cluster L40 · <code>experiments/lora_matched</code></span></div>
+<p class="one">With the LoRA on all 24 matrices, its split state passes the Pile adversary where the fine-tune's fails fivefold in the same job, but at a different step of training.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Rank-8 LoRA on all 24 matrices beside the fine-tune, both do-nothing and least-squares split through a shared harness. The fine-tune's split rerun on an L40 as the control for E7's cross-card miss. Two LoRA seeds.</dd>
+<dt>Found</dt><dd><ul>
+<li>Read side still random (pooled outside share 0.86 of the null; cosine with initialisation 1.000).</li>
+<li>The split leaves 0.22 of the behaviour in Δ (one-matrix LoRA: 0.33 to 0.43). Seed 0 puts 60% of its energy on the saturated matrices; seed 1 only 25% yet leaves the same share in Δ, so that explanation fits one seed.</li>
+<li>Split LoRA adversarial ratio 1.13 at step 2; fine-tune's split 5.41 at step 10 in the same job. Filed as "fragile too"; reversed in direction.</li>
+<li>Cross-card miss closed: the L40 reproduces E2's 2.18 and 5.41 to three digits; E7's 7.31 was the RTX 4090's search. The L40's floor is 21%.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q3</dd>
+<dt>Moved on</dt><dd>The LoRA learned at step 2, where E2 had found the fine-tune's split near the floor too (1.14 at step 1), so the comparison is at different training points. The read-side check (cluster jobs 22430, 22431) has no result file on disk.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e9">
+<div class="top"><span class="id">E9</span><h3>LoRA to its plateau</h3><span class="when">2026-10-19 · RunPod L40S · <code>experiments/lora_plateau</code></span></div>
+<p class="one">Training the LoRA ten times longer never makes it readable; its split state stays under the pass line but leaves a third of the behaviour in Δ at the plateau.</p>
+<figure>
+<img src="fig/e9_pile.png" alt="Left: Pile adversarial ratio of the do-nothing and split LoRA states at steps 10, 100 and 1000, all between 1.0 and 1.3, far under the fine-tune split's 5.4 reference line. Right: the share of the behaviour left in Delta by the split, 0.19, 0.11 and 0.31.">
+<figcaption>Left: the split LoRA stays far under the fine-tune split's reference (5.4, from E8 on an L40) at every step, though above this card's three-floor band at steps 10 and 100 and always slightly worse than doing nothing. Right: the share of the behaviour the split leaves in Δ dips and then rises to a third.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>E8's LoRA to 1000 steps. At nine checkpoints: outside share against its null, read factor's overlap with the alive read span, cosine with its initialisation. Do-nothing and split states through the Pile harness at steps 10, 100 and 1000.</dd>
+<dt>Found</dt><dd><ul>
+<li>Read factor moves 10% in 1000 steps; outside share ÷ null 0.82 to 1.02 throughout.</li>
+<li>Energy migrates to the two layer-3 attention matrices the decomposition reads worst: 62% of the update outside the pieces at the plateau.</li>
+<li>Split adversarial ratio 1.26, 1.22, 1.07 (do-nothing 1.17, 1.09, 1.04): under the filed line of 2 and the fine-tune's 5.41, but above this card's band of 1.14 at two steps and always worse than doing nothing.</li>
+<li>Behaviour in Δ 0.19, 0.11, 0.31; Δ's share of the update's energy rises to 0.54.</li>
+<li>Unmasked, the split pieces alone do not reproduce the model on Pile (1.2 to 1.35).</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q3</dd>
+<dt>Moved on</dt><dd>"More steps make the read side data-shaped" is closed. Open: the fine-tune control on the same card; the seed spread of the Δ share at the plateau (one seed, one run).</dd>
+</dl>
+</article>
+
+<article class="exp" id="e10">
+<div class="top"><span class="id">E10</span><h3>Key to value cipher (round 6)</h3><span class="when">2026-10-19 · MATS cluster L40 · <code>experiments/kv_task</code></span></div>
+<p class="one">Component training learns a behaviour the model lacks and stays faithful for one new pair and for the identity control, but not for 32 pairs; reveal and create show up as different routes.</p>
+<dl class="fields">
+<dt>Run</dt><dd>After a never-seen marker, a common word is followed by a fixed random other word (1 or 32 pairs) or by itself (identity control). Per task: fine-tune placed do-nothing, its least-squares split as metric control, component training up to 300 steps scored at the first checkpoint that learned. Task-local harness, route split, Pile ratios, sparsity loss.</dd>
+<dt>Found</dt><dd><ul>
+<li>Everything learned; component training in 10 steps for one pair, 30 for 32.</li>
+<li>Component training's adversarial ratio 1.20 (one pair), 1.19 (identity), 2.81 (32 pairs; filed pass, reversed). Least-squares splits 1.73, 9.4, 38.9.</li>
+<li>Identity: re-switching share 0.76 to 0.80. Random maps: masked-off share 0.75 to 0.86. The same route split for component training and do-nothing: a property of the task.</li>
+<li>The sparsity loss prints identical values for do-nothing and the split: with Γ frozen it reads the weights only. Its filed rule also mis-set its floor.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q4, Q5, Q7</dd>
+<dt>Moved on</dt><dd>Parked by the user ("trying to do too much at once"). The 32-pair failure's cause is not separated: update size, off-target damage (five times the identity's), the number of associations, or the scored step. The matched-size check on the saved states is a ten-minute job not yet run.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e11">
+<div class="top"><span class="id">E11</span><h3>Reading-A coverage, with the emoticon rerun</h3><span class="when">2026-10-19, rerun 2026-10-20 · RunPod L40S; cluster L40 · <code>experiments/reading_a_coverage</code></span></div>
+<p class="one">Component training's decomposition fails VPD's adversarial check on three of five ladder tasks, and leaving the update outside the pieces is more robust on four of five.</p>
+<figure>
+<img src="fig/e11_ratios_per_task.png" alt="Grouped bars on a log scale for five ladder tasks showing each Pile check as a ratio to the original model for component training and do-nothing; the adversarial ratio of component training is above the 1.5 line on three tasks, and the do-nothing's unmasked ratio is far above 1 on every task.">
+<figcaption>Step-10 component training on the five ladder tasks under VPD's checks, each a ratio to the unchanged model. The adversarial ratio (orange) breaks the 1.5 line on three tasks and is worse than doing nothing (hatched) on four. Component training's unmasked ratio (red) stays at 1 where do-nothing's is 4 to 18: that is what keeping Δ fixed buys.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>The ladder's step-10 component training and fine-tune regenerated on the five ladder tasks without Pile numbers (one at three seeds), a gate tying them to the ladder's curves, all five checks with same-job floors. Emoticon rerun on the same harness the next day.</dd>
+<dt>Found</dt><dd><ul>
+<li>Component training's adversarial ratios 2.73, 2.24, 1.16, 6.74, and 1.38 to 1.55 over three seeds.</li>
+<li>Three of five filed predictions failed, all one way: component training's pieces are less robust than filed, on common-word tasks and against do-nothing alike.</li>
+<li>Stochastic, CI-masked and unmasked checks mostly within the floor: blind to what the adversary finds. Sparsity loss moves under 1%.</li>
+<li>Patterns, not causes: the excess orders with component training's off-target KL, which is 1.8 to 2.5 times the fine-tune's at the same step; the fine-tune alone breaks 1.5 on three tasks.</li>
+<li>Emoticon rerun reproduced E2 (1.03, 2.18) and found the unchanged model's own adversary spread can reach 21% in one job.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q4, Q6, Q7</dd>
+<dt>Moved on</dt><dd>"About as well" is not a general property of Adam component training even on tasks the model does: 3 of 7 hold, 1 at the line, 3 fail, not sorted by rung. Next design question: matched off-target KL instead of matched steps; cancellation across the changed pieces. The 2026-10-20 review corrected several counts in the report.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e12">
+<div class="top"><span class="id">E12</span><h3>New-versus-existing signatures (round 7)</h3><span class="when">2026-10-20 · <code>experiments/new_vs_existing</code></span></div>
+<p class="one">A step back from commuting the update: only the route split tells a new mechanism from an existing one; every number read off the update itself looks the same in both classes.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Two copy tasks and two random-mapping tasks in the cipher format, 32 pairs each, two fine-tune seeds each. Full fine-tunes only; the least-squares split used where a per-piece account of the update is needed.</dd>
+<dt>Found</dt><dd><ul>
+<li>Re-switching share 0.76 to 0.80 for copying against 0.27 to 0.29 for the random maps; masked-off share 0.03 to 0.11 against 0.45 to 0.53. Reproduces E10 to three digits.</li>
+<li>Outside share ÷ null 0.59 to 0.63 in both classes; the Δ share and the seed overlap of the moved pieces do not separate them either.</li>
+<li>The pieces the split moves most are busy ones at the original model, disjoint from the set Γ switches on; Γ switches on 107 to 139 pieces for copying against 21 to 51 for the maps.</li></ul></dd>
+<dt>Bears on</dt><dd>Q4, Q5</dd>
+<dt>Moved on</dt><dd>Report: <code>reports/2026-10-20_analysis_new-vs-existing-signatures.md</code>. Open: the moved set by relative change; what the copy tasks' switched-on layer-2 attention set does at the original model.</dd>
+</dl>
+</article>
+
+<article class="exp" id="e13">
+<div class="top"><span class="id">E13</span><h3>Rank-8 component training on all 24 matrices</h3><span class="when">2026-10-20 · MATS cluster L40 · files deleted 2026-10-20</span></div>
+<p class="one">Component training with a LoRA's rank on every matrix keeps the decomposition faithful; confined to one matrix it does not. No LoRA is trained in it, so it does not answer the LoRA-split question (section 8).</p>
+<dl class="fields">
+<dt>Run</dt><dd>Rank-8 offsets dU = P Sᵀ, dV = Q Tᵀ on all 24 matrices, Γ and Δ frozen, emoticon, 30 steps, two seeds; the same on the paper's matrix only as the positive control; free component training on all 24; a rank-8 LoRA split and placed do-nothing. Pile checks with three adversary seeds.</dd>
+<dt>Found</dt><dd><ul>
+<li>Adversarial ratio 1.14 and 1.28 on all 24 matrices (floor 1.00 to 1.21); free component training 1.06; the split LoRA 1.13, reproducing E8.</li>
+<li>Confined to one matrix: 4.52 (E7: 4.06). The single matrix, not the rank, was E7's failure.</li>
+<li>Δ untouched by construction; the split LoRA leaves 0.40 of its energy and 0.22 of the behaviour in Δ.</li>
+<li>Direct share 0.03 to 0.05, re-switching about 0.6, as everywhere.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1</dd>
+<dt>Moved on</dt><dd>The terminology review of the same day found this was the fifth run to answer the LoRA-split question with component training instead. The user's question is the LoRA split (backlog). At the user's request the experiment's directory, notebook, report and Slurm script were deleted on 2026-10-20; this card and TRIED's row E13 are the record.</dd>
+</dl>
+</article>
+
+<h3>Analyses and reviews without a GPU run</h3>
+<div class="tblwrap"><table>
+<thead><tr><th>Date</th><th>What</th><th>Outcome</th></tr></thead>
+<tbody>
+<tr><td class="c">2026-10-14</td><td>Round-1 code audit</td><td>No bug changes a verdict; two readings corrected; 35 CPU tests added.</td></tr>
+<tr><td class="c">2026-10-14</td><td>Theory note; RL feasibility</td><td>Splits, obstruction and locality formalised (not yet reviewed by the user). RL arm: match on behavioural effect; first gate is faithfulness on on-policy rollouts.</td></tr>
+<tr><td class="c">2026-10-15</td><td>Faithfulness-scope review</td><td>Pile ratios cannot see the trained behaviour; no noise floor existed; component training had never been run with a LoRA's rank; states were not saved. Led to the task-local harness and the "blind to" rule.</td></tr>
+<tr><td class="c">2026-10-16</td><td>Route-split amendment</td><td>The five shares; gated-off component training as control.</td></tr>
+<tr><td class="c">2026-10-19</td><td>Task-local adversary review</td><td>The shared adversary saturates on alike windows; the number has no power.</td></tr>
+<tr><td class="c">2026-10-19</td><td>Success-criterion decision</td><td>Reading A is the criterion, the route split is mechanism; corrected "passes on every task"; raised step-versus-run.</td></tr>
+<tr><td class="c">2026-10-19</td><td>Update-map variants review</td><td>Component training is not a rescaling; letting Δ take the leftover of an adjoint step each step was dismissed as a worse preimage. That dismissed variant is the user's adjoint split (2026-10-20 review).</td></tr>
+<tr><td class="c">2026-10-19</td><td>LoRA failure and fixes review</td><td>E7's site confound; read-side LoRA arm dropped; E8 designed.</td></tr>
+<tr><td class="c">2026-10-19</td><td>Pod policy decision</td><td>30-minute cluster wait, then RunPod; pods terminated, never stopped.</td></tr>
+<tr><td class="c">2026-10-20</td><td>Adversarial vs stochastic analysis</td><td>From existing numbers: the adversary's damage needs a selective mask; cancellation is the lead candidate; five tests ranked by value per hour.</td></tr>
+<tr><td class="c">2026-10-20</td><td>Review of the 2026-10-19 write-ups</td><td>Claims in three reports not supported by their result files; notebooks corrected.</td></tr>
+<tr><td class="c">2026-10-20</td><td>Terminology review</td><td>Fixed the names of the operations in <code>GOALS.md</code>, found the LoRA split never built while five runs did component training, and listed nine claims that change with the meaning. <code>reports/2026-10-20_review_terminology.md</code>. The old names are in the changelog.</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ============================================================ -->
+<section id="claims">
+<div class="sechead"><div class="eyebrow">The audit</div><h2><span class="num">6</span>Every claim, with its status</h2></div>
+<p class="small"><span class="chip holds">holds</span> every run agrees and the measurement has power · <span class="chip partial">qualified</span> holds within a stated limit · <span class="chip refuted">refuted</span> · <span class="chip uninf">uninformative</span> the test had no power · <span class="chip open">open</span> suggestive, untested.</p>
+<div class="tblwrap"><table>
+<thead><tr><th>Claim</th><th>Status</th><th>Evidence</th><th>From</th></tr></thead>
+<tbody>
+<tr><td>A finished update is a rescaling of the existing pieces (the rescaling split; the VPD paper's proposal)</td><td><span class="chip refuted">refuted</span></td><td>0.06% in the span; random 0.035%</td><td>E1</td></tr>
+<tr><td>About 70% of a fine-tune's update, by input weight, is expressible, and the rest is not needed for the behaviour</td><td><span class="chip holds">holds</span></td><td>obstruction 0.3 (weights 0.13, random 0.6); the expressible part keeps the behaviour</td><td>E2</td></tr>
+<tr><td>The least-squares split of a finished fine-tune gives an adversarially fragile decomposition</td><td><span class="chip holds">holds</span></td><td>5.41 at step 10, reproduced on the L40 twice</td><td>E2, E7, E8</td></tr>
+<tr><td>Component training keeps the decomposition faithful on Pile</td><td><span class="chip refuted">refuted as general</span></td><td>holds on emoticon, two ladder tasks, two cipher tasks; at the line on one; fails on three ladder tasks and the 32-pair cipher; rank-8 offsets on all 24 matrices pass</td><td>E2, E4, E10, E11, E13</td></tr>
+<tr><td>Component training does less off-target damage than the fine-tune</td><td><span class="chip partial">task-dependent</span></td><td>a third on emoticon; 1.8 to 2.5 times on the ladder tasks</td><td>E2, E11</td></tr>
+<tr><td>Keeping Δ fixed is what component training buys</td><td><span class="chip holds">holds</span></td><td>unmasked ratio 0.96 to 1.03 where do-nothing reads 4 to 18</td><td>E11</td></tr>
+<tr><td>A LoRA is easier to commute than a fine-tune</td><td><span class="chip refuted">refuted on expressibility</span></td><td>read side random for 1000 steps; share at the null at every rank and step</td><td>E2, E7, E8, E9</td></tr>
+<tr><td>A split LoRA survives the adversary where a split fine-tune does not</td><td><span class="chip partial">confounded</span></td><td>1.13 at step 2 and 1.26 at step 10 vs 5.41; different training points, then different cards with no fine-tune arm</td><td>E8, E9</td></tr>
+<tr><td>Component training's update is attributable to a few pieces</td><td><span class="chip refuted">refuted</span></td><td>top 10 carry 1.6%, top 1000 36%</td><td>E3</td></tr>
+<tr><td>Sparse component training (one piece, ten, or the paper's six) learns emoticon and stays faithful on Pile</td><td><span class="chip partial">holds, emoticon only</span></td><td>Pile ratios at most 1.08; CI-masked 0.98 at the trigger</td><td>E4</td></tr>
+<tr><td>The changed pieces carry the behaviour at the original masks (large direct share)</td><td><span class="chip refuted">refuted</span></td><td>at most 0.08 for every operation, task, rank and step</td><td>E4 to E10</td></tr>
+<tr><td>Γ coverage of the gradient predicts retention</td><td><span class="chip refuted">refuted</span></td><td>both predictions null; the channel it could move carries under 8%</td><td>E5</td></tr>
+<tr><td>Rarity of the target does not matter</td><td><span class="chip refuted">refuted at rung 2</span></td><td>0.34 retained on the rare high-coverage task; but rung does not sort the Pile failures</td><td>E5, E11</td></tr>
+<tr><td>The re-switching share is set by the task, not the update or the operation</td><td><span class="chip holds">holds</span></td><td>three training methods agree within 0.16; same for the target and different-target nulls at one trigger</td><td>E5, E6, E10</td></tr>
+<tr><td>Same target, same switched-on set; different target, different set</td><td><span class="chip holds">holds</span></td><td>Jaccard 0.64 to 0.88 within, 0.04 across, floor 0.93</td><td>E4, E6</td></tr>
+<tr><td>The switched-on set is what produces the behaviour</td><td><span class="chip refuted">refuted</span></td><td>carries 40 to 64% of the re-switching effect</td><td>E4, E6</td></tr>
+<tr><td>Reveal and create show up as different routes</td><td><span class="chip partial">holds, one format, one seed</span></td><td>identity 0.76 to 0.80 re-switching; random maps 0.75 to 0.86 masked-off</td><td>E10</td></tr>
+<tr><td>Component training learns behaviours the model lacks</td><td><span class="chip holds">holds</span></td><td>1 and 32 random pairs in 10 and 30 steps</td><td>E10</td></tr>
+<tr><td>VPD's sparsity loss can tell operations apart</td><td><span class="chip refuted">refuted while Γ is frozen</span></td><td>identical for do-nothing and the split to machine precision</td><td>E10, E11</td></tr>
+<tr><td>Every piece keeps its identity under component training</td><td><span class="chip uninf">uninformative</span></td><td>null group passes equally; no positive control</td><td>E3</td></tr>
+<tr><td>The task-local adversary measures fragility at the trigger</td><td><span class="chip uninf">no power</span></td><td>seed spread 55 to 88 nats against gains of 4 to 15</td><td>E5</td></tr>
+<tr><td>Adversarial ratios can be compared across GPUs</td><td><span class="chip refuted">refuted</span></td><td>floors 3.5%, 4.6%, 21% on three cards, same code</td><td>E7, E8, E9</td></tr>
+<tr><td>The adversary's excess at component-training states is cancellation across the changed pieces</td><td><span class="chip open">open</span></td><td>selective masks do 50 to 300 times the damage of a uniform shrink; no direct test</td><td>analysis 2026-10-20</td></tr>
+<tr><td>Re-switching is a mechanism, not a leak through Γ's input</td><td><span class="chip open">open</span></td><td>target-specific sets lean to mechanism; the leak was never tested</td><td>E5, E6</td></tr>
+<tr><td>The emoticon update's rescaling share grows relative to random with training</td><td><span class="chip open">unexplained</span></td><td>1.7 to 10 times by step 300; one run</td><td>E1 audit</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ============================================================ -->
+<section id="timeline">
+<div class="sechead"><div class="eyebrow">Seven days</div><h2><span class="num">7</span>Timeline</h2></div>
+<ul class="tl">
+<li><span class="d">2026-10-14</span><p>Question posed and made precise. Decisions: weak version as target, Γ frozen, LoRA the canonical update, "simple" means no trained network. E1 runs and two of three predictions reverse; the audit finds no verdict-changing bug. Theory note written. E2 runs: component training passes, the least-squares split fails adversarially.</p></li>
+<li><span class="d">2026-10-15</span><p>"Lots of red flags" in E2's reading. The faithfulness-scope review finds the Pile checks blind to the trained behaviour. E3 and E4 run. The task-local harness is built; every plan must state what each metric is blind to and name a control. New-skill test and toy testbed dropped; ladder planned; two rank-r component-training arms defined, neither of them the LoRA split.</p></li>
+<li><span class="d">2026-10-16</span><p>Route-split amendment: five shares summing to one; gated-off component training as control.</p></li>
+<li><span class="d">2026-10-19</span><p>E5 refutes its hypothesis; the task-local adversary has no power. E6 runs. Reading A fixed as the criterion after the scored numbers had drifted to reading B. E7 runs, every prediction misses, the site confound is found. E8 closes the cross-card miss. Pod policy decided. E10, E11 and E9 run. Read-side LoRA arm dropped.</p></li>
+<li><span class="d">2026-10-20</span><p>Emoticon rerun on E11's harness reproduces E2. Adversarial-versus-stochastic analysis. Write-ups review lists unsupported claims. E12 designed, filed and run. E13 run. The terminology review fixes the operations' names in GOALS and finds the LoRA split never built. This log written and revised.</p></li>
+</ul>
+</section>
+
+<!-- ============================================================ -->
+<section id="gaps">
+<div class="sechead"><div class="eyebrow">What a critical reader should raise</div><h2><span class="num">8</span>Gaps and inconsistencies</h2></div>
+
+<h3>The criterion and the comparisons</h3>
+<div class="cards">
+  <div class="card"><h4>The pass line has no anchor</h4><p>"About as well" is read as an adversarial ratio under 1.5, a line inherited from E2's filing. On the L40 the unchanged model's own floor reached 21%, so the line sits inside the noise band. Two of seven ladder verdicts depend on which side of it a number falls.</p></div>
+  <div class="card"><h4>"Δ not absorbing δW" has no threshold</h4><p>The split LoRA's residual share (0.22 to 0.31 of the behaviour, half the energy) is judged by feel. The split fine-tune's 0.09 was read as acceptable, 0.22 as "the open reading". GOALS fixes no number.</p></div>
+  <div class="card"><h4>LoRA vs fine-tune was never like for like</h4><p>E8 scores the LoRA at step 2 and the fine-tune at step 10; at step 2 the fine-tune's split was also near the floor. E9 compares an L40S run with an L40 reference and ran no fine-tune arm. "A LoRA splits better" is unproven, though repeated in two reports.</p></div>
+  <div class="card"><h4>Component training is not "the same fine-tune"</h4><p>Adam on the pieces at another learning rate, half the weight movement, and on the ladder tasks about twice the off-target damage at the same step, which the adversarial excess orders with. On emoticon the sign flips (a third of the damage). Unexplained.</p></div>
+  <div class="card"><h4>Step or run</h4><p>The least-squares split is applied one-shot to a 10-step update, a first-order map on a non-small change; only component training matches the "continuous" framing. The per-step split was discussed and not built.</p></div>
+</div>
+
+<h3>Measurement</h3>
+<div class="cards">
+  <div class="card"><h4>Nothing measures faithfulness at the trigger with power</h4><p>Pile checks see the old model's account; the task-local adversary saturates. What remains is the route split, dominated by re-switching, whose status as mechanism or leak is unresolved. "Faithful to W + δW" has only been checked on text where the trained behaviour does not occur.</p></div>
+  <div class="card"><h4>Four checks, not five</h4><p>The sparsity loss follows the weights only while Γ is frozen. Reading A was recorded as five checks; the correction is proposed and not yet in the decisions file.</p></div>
+  <div class="card"><h4>Seeds</h4><p>E9: one LoRA seed. E10: one bijection, one adversary seed per state. E5: optimiser-seed noise on emoticon only. The Δ-share rise at the plateau and the 32-pair failure rest on single runs.</p></div>
+  <div class="card"><h4>Sparse component training never tried off emoticon</h4><p>E4 found one-piece or ten-piece component training faithful where the diffuse one was marginal; E11's failures are all for the diffuse arm. A cheap, untested question.</p></div>
+  <div class="card"><h4>Two readings of re-switching</h4><p>E6: the share is "not target-specific" (0.55 to 0.60). E10: it runs 0.12 to 0.80 across tasks. Reconciled as: set by what the existing gates can route at a given trigger and format, not by which target is learned there. Easy to trip on.</p></div>
+</div>
+
+<h3>The record</h3>
+<div class="cards">
+  <div class="card"><h4>The user's LoRA question was never built</h4><p>Since 2026-10-14 the user has asked, at least eight times, to train a LoRA, split its BA over the subcomponents and measure what lies outside. Each session answered either that the least-squares split already covered it, or built component training with a LoRA's rank (E7's one-matrix arms, E13). The outside share was computed in E7 to E9 as a side number. The per-subcomponent split was never saved, the adjoint split never computed. The LoRA split is now the current plan.</p></div>
+  <div class="card"><h4>Reports with unsupported claims</h4><p>The 2026-10-20 review: E9's "at the floor at every step" (five floors above at two steps, and worse than doing nothing throughout), E8's saturated-matrix explanation (one seed), E11's counts. Notebooks corrected; reports not. This log uses the corrected values.</p></div>
+  <div class="card"><h4>Lost or unsaved data</h4><p>E2's component-training states never saved. E5's states saved for emoticon only. E7's final results file lost with the pod, rebuilt from the log. E8's read-side jobs have no result file on disk.</p></div>
+  <div class="card"><h4>GOALS still speaks reading B</h4><p>"Where an update goes" reads a large direct share as "strengthen". The 2026-10-19 decision proposed marking that section as mechanism hypotheses; the edit was not made.</p></div>
+  <div class="card"><h4>Re-weighting is undefined</h4><p>Every "reveal" and "create" reading uses the route split informally. What a recruited piece must have done before the update for "recruit" to mean more than "any perturbation switches these on" is written nowhere.</p></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="backlog">
+<div class="sechead"><div class="eyebrow">Deferred, by what it would settle</div><h2><span class="num">9</span>Backlog</h2></div>
+<p class="small">Everything here goes through the design check before it is built. <code>backlog.md</code> has the dated entries.</p>
+<div class="cards">
+  <div class="card"><div class="k">Maps not yet run</div><ul>
+    <li><strong>LoRA split.</strong> The user's request since 2026-10-14: train a rank-r LoRA to completion, take its least-squares and adjoint splits over the subcomponents, save the per-subcomponent updates, report the outside share in four blocks with its null. No training: the LoRA factors of E7, E8 and E9 are on disk.</li>
+    <li><strong>Adjoint split</strong> of the saved fine-tune and LoRA updates, beside the least-squares one.</li>
+    <li><strong>Per-step split</strong> with the bases updated as training goes; the honest "continuous". Needs a tolerance rule; replayable on the saved emoticon fine-tune.</li>
+    <li><strong>Δ trainable on the obstruction only.</strong> Only at the first task pure component training fails to learn.</li>
+    <li><strong>Updating Γ.</strong> "Fiddly but may well be essential." Also the only thing that makes the sparsity loss discriminate.</li>
+    <li><strong>The strong version:</strong> warm-start a fresh VPD run on the updated weights against a zero-update warm start and the cross-seed baseline.</li></ul></div>
+  <div class="card"><div class="k">Measurements that settle an open question</div><ul>
+    <li><strong>Matched off-target KL</strong> instead of matched steps for component training vs fine-tune.</li>
+    <li><strong>Cancellation tests</strong> on the saved E11 states (CPU, about an hour): coherence of the per-piece changes; a random half-revert.</li>
+    <li><strong>Stochastic check with all layers routed</strong>, one argument change.</li>
+    <li><strong>Save the adversary's mask</strong>; bin by layer and importance; restrict to the changed pieces.</li>
+    <li><strong>More adversary seeds</strong> before another verdict near 1.5; state-level floors on every task.</li>
+    <li><strong>The Pile adversary read at the trigger</strong>, the one remaining test of "fragile at the trigger".</li>
+    <li><strong>Fine-tune control on the L40S</strong> at step 10; the Δ-share seed spread at the plateau.</li>
+    <li><strong>Read-side check:</strong> collect or rerun cluster jobs 22430 and 22431.</li></ul></div>
+  <div class="card"><div class="k">Tasks and arms</div><ul>
+    <li><strong>Cipher follow-up:</strong> Pile harness on the saved identity states at steps 100 and 300 (matched size) and the 32-pair states at 100 and 300; then the number of pairs between 1 and 32; a second bijection; a LoRA on these tasks.</li>
+    <li><strong>Sparse or sibling component training</strong> on the ladder tasks the diffuse one fails.</li>
+    <li><strong>A gated-on control that learns</strong>, before any further "direct share is small" claim.</li>
+    <li><strong>Rungs 3 and 4</strong> once the direct share has somewhere to go.</li>
+    <li><strong>E12 follow-ups</strong>: the moved set by relative change; the copy tasks' switched-on attention set.</li></ul></div>
+  <div class="card"><div class="k">Mechanism and definitions</div><ul>
+    <li><strong>Define re-weighting, recruit and create in VPD terms.</strong> E10 gives the first data.</li>
+    <li><strong>Is the recruited set the model's existing machinery?</strong> Needs about 600 Pile rows for 200 natural occurrences.</li>
+    <li><strong>The switched-off set</strong> (about 130 pieces per arm) is unexamined.</li>
+    <li><strong>Does an update load on the pieces Γ rates important for the task?</strong> Never measured directly.</li>
+    <li><strong>Flaw of the update or of the decomposition?</strong> A seed-consistency test was rejected as not answering it.</li></ul></div>
+  <div class="card"><div class="k">Next phases</div><ul>
+    <li><strong>A larger model</strong> with a real post-trained sibling (Q9). Every harness here is written against the released decomposition and needs re-validating on a new one.</li>
+    <li><strong>RL updates</strong> at matched behavioural effect (Q10).</li>
+    <li><strong>Toy ground truth</strong> on the repository's small models.</li>
+    <li><strong>Housekeeping:</strong> merge the nested ladder results directory; note "four checks" in decisions; mark GOALS's "where an update goes" as hypotheses.</li></ul></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="mistakes">
+<div class="sechead"><div class="eyebrow">So they are not repeated</div><h2><span class="num">10</span>What did not work, and mistakes made</h2></div>
+<div class="cards">
+  <div class="card"><div class="k">Measurements that were blind or wrong</div><ul>
+    <li><strong>A faithfulness check that let Δ absorb the update</strong> (E1): the trivial map passed. Δ is frozen in every later map.</li>
+    <li><strong>Frobenius measures</strong> (E1, E2): the original weights fail them too. Replaced by input-weighted versions.</li>
+    <li><strong>A null that wins by expressivity</strong> (E1): ten random pieces with free write vectors realise a one-logit push.</li>
+    <li><strong>Pile-only faithfulness for two rounds</strong>: about three trigger positions in 131,000 tokens. Led to the task-local harness and the "blind to" rule.</li>
+    <li><strong>No noise floor</strong> until E7; the 1.5 line was filed without one, and the spread turned out GPU-dependent.</li>
+    <li><strong>A trigger-local control with no power</strong> (E4 as filed); fixed by reading under the original masks.</li>
+    <li><strong>Predictions left filed on a metric dominated by re-switching</strong> (E5): the amendment said so and did not withdraw them.</li>
+    <li><strong>Task-local adversaries that saturate</strong> (E5): one shared mask over alike windows.</li>
+    <li><strong>The sparsity loss as a fifth check</strong> (E10, E11): reads the weights only; its rule used block spread of a deterministic quantity as a floor.</li>
+    <li><strong>An identity metric with no positive control</strong> (E3).</li></ul></div>
+  <div class="card"><div class="k">Premises that were wrong</div><ul>
+    <li><strong>Per-matrix locality of Γ</strong> (E6, parts of E5): Γ is one transformer over all 24 matrices' inputs.</li>
+    <li><strong>"A LoRA is easier to decompose"</strong> (E7): its read side is random by construction and stays so.</li>
+    <li><strong>The paper's matrix as the LoRA site</strong> (E7): the decomposition reads 21% of its input energy.</li>
+    <li><strong>The first component-training learning-rate grid</strong> (E2): steps 3 to 100 times the fine-tune's, adversarial ratio 41; redone at matched size.</li>
+    <li><strong>Comparing adversarial ratios across GPUs</strong> (E7 vs E2): a 35% miss that was the card.</li></ul></div>
+  <div class="card"><div class="k">Dropped at design</div><ul>
+    <li>Appending the LoRA as a new piece with its own gate: assumes every update is a new capability.</li>
+    <li>The new-skill test as planned on 2026-10-14: its falsifier had no power.</li>
+    <li>A read-side LoRA initialised in the alive read span: the write-only half of a space already measured.</li>
+    <li>Toy ground-truth testbeds: a toy transformer needs its own VPD run.</li>
+    <li>A seed-consistency test of the obstruction: does not separate "noisy update" from "blind decomposition".</li></ul></div>
+  <div class="card"><div class="k">Operational</div><ul>
+    <li>E7's pod terminated before the final file was downloaded; three arms rebuilt from the log. Rule: download each arm as written, verify checksums, then terminate.</li>
+    <li>The ladder left 1.4 GB for one download; a RunPod resume moved the SSH port mid-transfer; the states were lost. Rule: save only what the analysis reads, in small dtypes.</li>
+    <li>Downloading a directory nested it.</li>
+    <li>E2's component-training states never saved; E5's for emoticon only. Rule: every trained state is written at the save steps.</li>
+    <li>A null target mis-selected by an argmin over an all-infinite tensor (E6).</li>
+    <li>Write-ups the user called unreadable ("I have no idea what is going on"). Led to the write-up skill; the 2026-10-20 review then found overclaims in three reports written under the old habits.</li></ul></div>
+  <div class="card"><div class="k">Words</div><ul>
+    <li><strong>"Pull-back" entered as the assistant's word</strong> on 2026-10-14, for training the pieces, in reply to a user asking for a map of a finished update. The theory note recorded it as "what 'pull back' meant in chat"; GOALS fixed it on 2026-10-19.</li>
+    <li><strong>The files overrode the user.</strong> The user restated their meaning at least eight times over 2026-10-15 to 20 and corrected one plan explicitly; each fresh session read the files, found a definition with no LoRA in it, and corrected the user with it. Five runs answered "LoRA pull-back" with component training.</li>
+    <li><strong>Three meanings per word.</strong> "Lift": path lifting, any first-order preimage, the one-shot least-norm solve. "Pull-back": the loss covector's pull-back, training the pieces, the adjoint applied to a finished update. Both retired on 2026-10-20. Rule: when the user's words and a file's definition disagree, flag it and get explicit acknowledgement; never pick a side silently.</li></ul></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="glossary">
+<div class="sechead"><div class="eyebrow">Terms, in the sense this project uses them</div><h2><span class="num">11</span>Glossary</h2></div>
+<div class="terms">
+<div><b>Adversarial check (PGD ratio)</b><p>VPD's adversarial-mask reconstruction KL: 20 sign-gradient steps find the mask, shared across a 128-row block, that does the most damage. As a ratio to the unchanged model. The check that fails where the others do not.</p></div>
+<div><b>Adjoint split</b><p>A finished update split over the pieces as dU = δW V, dV = δWᵀ U, with no solve; weight change UUᵀδW + δWVVᵀ, Δ fixed. Never run.</p></div>
+<div><b>Alive piece</b><p>A subcomponent whose importance ever exceeds a small threshold; about 9,900 of 38,900. Only alive pieces are trained or split onto.</p></div>
+<div><b>Causal importance (CI)</b><p>Γ's output for one piece at one position, in [0, 1].</p></div>
+<div><b>CI-masked model</b><p>Every piece multiplied by its importance value, Δ out.</p></div>
+<div><b>Commute</b><p>Carry a weight update over to the decomposition by a simple operation, so that mapping then checking agrees with fine-tuning then decomposing.</p></div>
+<div><b>Component training</b><p>Train the alive pieces' vectors on the fine-tune loss with Γ and Δ frozen; Adam, many steps. One SGD step moves the weights by UUᵀG + GVVᵀ. Rank-r component training limits the offsets to a LoRA's rank (E7, E13).</p></div>
+<div><b>Coverage</b><p>Share of the first component-training step's squared update on high-importance pieces at the trigger. E5's predictor; dropped.</p></div>
+<div><b>Create, reveal, strengthen, brittle</b><p>GOALS's mechanism hypotheses. Strengthen: the changed pieces carry it (direct share). Reveal: Γ switches existing pieces on (re-switching). Create: the behaviour lives in Δ or in pieces Γ keeps off. Brittle: the split is unstable across seeds or small changes to the map.</p></div>
+<div><b>Δ, the residual</b><p>The part of each matrix not covered by the pieces. Frozen in every map; the do-nothing placement puts the whole update here.</p></div>
+<div><b>Direct share, d</b><p>Gain carried by the changed pieces at the original importance values. At most 0.08 in every run.</p></div>
+<div><b>Do-nothing placement</b><p>The update in Δ, pieces and Γ untouched. The reference operation.</p></div>
+<div><b>Emoticon task</b><p>The VPD paper's hand-editing example: after an emoticon token, predict <code>o</code>. The reference task.</p></div>
+<div><b>Expressible, obstruction, outside share</b><p>An update is expressible to the extent a first-order change of the alive pieces can produce it. The obstruction is the part outside both the write span and the read span. The outside share weights it by real inputs; its isotropic null is the same number for a random update. From 2026-10-20 reported as four blocks: inside both, write side only, read side only, outside both.</p></div>
+<div><b>Floor</b><p>Seed-to-seed or block-to-block spread of a ratio at the unchanged model, same job. "Within the floor" = at most 1 plus three floors.</p></div>
+<div><b>Γ (gamma)</b><p>The importance function: one transformer over all 24 matrices' inputs at all positions, one importance value per piece per position. Frozen throughout.</p></div>
+<div><b>Gated-off component training</b><p>Only pieces Γ keeps off at the trigger may move. The control for the route split: must read d = 0.</p></div>
+<div><b>Least-squares split</b><p>A finished weight change written as the least-norm first-order change to the alive pieces, obstruction left in Δ, so the weights equal the fine-tuned ones.</p></div>
+<div><b>LoRA split</b><p>Train a rank-r LoRA to completion, split its BA over the subcomponents (least-squares and adjoint), save the per-subcomponent updates, report the outside share in four blocks. Not yet run.</p></div>
+<div><b>LoRA</b><p>A low-rank update, read factor A (random start) times write factor B (zero start). The user's canonical post-training update.</p></div>
+<div><b>Masked-off share, e<sub>gate</sub></b><p>What the unmasked model gains beyond the CI-masked one: behaviour in pieces Γ keeps off.</p></div>
+<div><b>Off-target KL</b><p>KL from a state to the original model at the 40 non-trigger positions of the held-out windows. The measure of collateral change; <code>kl_other</code> in the code.</p></div>
+<div><b>Pile checks</b><p>The four reconstruction ratios and the sparsity loss on Pile validation rows. Blind to the trained behaviour.</p></div>
+<div><b>Rescaling split</b><p>A finished update written as a rescaling of the fixed pieces, δW ≈ Σ α<sub>c</sub> u<sub>c</sub> v<sub>c</sub>ᵀ. Dead after E1.</p></div>
+<div><b>Reading A, reading B</b><p>A: the weak version as written; the criterion. B: the changed pieces carry the behaviour at the old masks; a mechanism reading no map has passed.</p></div>
+<div><b>Recovery</b><p>Share of the re-switching effect obtained when only the switched-on set takes the new masks.</p></div>
+<div><b>Residual share, e<sub>Δ</sub></b><p>What the full model gains beyond the unmasked one: Δ alone. 1 for do-nothing by construction.</p></div>
+<div><b>Re-switching share, r</b><p>Gain carried by the original pieces under the importance values Γ computes from the updated activations. Dominates every CI-masked number for behaviours the model has.</p></div>
+<div><b>Re-weighting hypothesis</b><p>The informal claim that post-training re-weights mechanisms pretraining built rather than creating new ones. A precise VPD-level definition is work in progress (section 1).</p></div>
+<div><b>Retained share</b><p>d + r + i: what the CI-masked model keeps of the gain.</p></div>
+<div><b>Route split</b><p>The exact five-way split of the trigger gain into direct, re-switching, interaction, masked-off and residual shares. Mechanism only. Not to be confused with the split of an update over the pieces.</p></div>
+<div><b>Split</b><p>Writing a finished update as per-subcomponent updates (dU<sub>c</sub>, dV<sub>c</sub>) plus a remainder outside the pieces. Least-squares, adjoint and rescaling are the three ways to choose it.</p></div>
+<div><b>Rung</b><p>Decade of a next-word task's baseline probability: 0 is 0.1 to 1, 1 is 0.01 to 0.1, 2 is 0.001 to 0.01. Rungs 3 and 4 not run.</p></div>
+<div><b>Saturated matrix</b><p>One whose alive pieces span every direction on one side, so every update to it is expressible. Four of 24.</p></div>
+<div><b>Scored step</b><p>The checkpoint a filed prediction is read at: usually 10, or the first at which held-out P(target) crosses a filed line.</p></div>
+<div><b>Sparsity loss</b><p>VPD's importance-minimality loss at the released run's end setting. Blind to the operation while Γ is frozen.</p></div>
+<div><b>Stochastic check</b><p>VPD's stochastic-mask reconstruction KL: random masks between importance and 1 on a random subset of matrices per position. Flat in every run.</p></div>
+<div><b>Subcomponent, piece</b><p>A rank-one matrix u v<sup>T</sup> in one weight matrix. The unit of the decomposition.</p></div>
+<div><b>Switched-on set</b><p>Alive pieces whose mean importance at the trigger rises by more than 0.3 under the updated activations. About 150 to 200 per arm on emoticon.</p></div>
+<div><b>Trigger, target</b><p>The position where the task applies and the token taught there.</p></div>
+<div><b>Unmasked model</b><p>Every piece fully on, Δ out. Says whether the pieces alone reproduce the model.</p></div>
+<div><b>VPD</b><p>Goodfire's parameter decomposition method (Bushnaq, Braun, Clive-Griffin et al., 2026), used unchanged.</p></div>
+<div><b>W<sub>0</sub>, W + δW, D, D′</b><p>Original weights, fine-tuned weights, released decomposition, mapped decomposition.</p></div>
+<div><b>Weak and strong versions</b><p>Weak: D′ is faithful to the updated model with Δ not absorbing the update. Strong: D′ matches a fresh re-decomposition. Only the weak version is in play.</p></div>
+<div><b>Windows</b><p>41-token Pile contexts holding one trigger, split into training and held-out sets.</p></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="repo">
+<div class="sechead"><div class="eyebrow">Repository <code>~/work/mats/commute</code></div><h2><span class="num">12</span>Where things live</h2></div>
+<dl class="fields">
+<dt>Read first</dt><dd><code>README.md</code> (state of play), <code>GOALS.md</code> (the question, user-owned), <code>decisions.md</code> (working choices with dates and reasons), <code>experiments/TRIED.md</code> (every experiment, with E-codes, and why we moved on).</dd>
+<dt>Experiments</dt><dd><code>experiments/&lt;name&gt;/</code>: <code>run.py</code>, <code>plot.py</code>, <code>results/</code> with <code>predictions.json</code> and the scored JSON, <code>figures/</code>. Over 1 MB goes to the gitignored <code>results/large/</code>.</dd>
+<dt>Reports</dt><dd><code>reports/YYYY-MM-DD_&lt;plan|prediction|analysis|review|decision&gt;_&lt;topic&gt;.md</code>. The analysis reports are the record; this log is the explanation.</dd>
+<dt>Notebooks</dt><dd><code>notebooks/</code>, rewritten 2026-10-20 for E8, E9, E11 with corrected values.</dd>
+<dt>Shared code</dt><dd><code>src/commute/</code>: <code>component_training.py</code>, <code>split.py</code>, <code>faithfulness.py</code> (Pile checks), <code>local_faith.py</code> (route split), <code>harness.py</code> (shared measurement path since E8), <code>recruit.py</code>, <code>kv.py</code>, <code>ladder.py</code>, <code>signatures.py</code> (E12).</dd>
+<dt>Theory</dt><dd><code>theory/</code>: splits and obstruction formalised; component identity; reveal-versus-create literature; the project proposal.</dd>
+<dt>Cluster</dt><dd><code>cluster/</code>: one Slurm script per experiment, <code>sync.sh</code>, <code>README.md</code>. States not in git are on the cluster NFS under <code>/mnt/nw/home/e.agnew/commute/experiments/&lt;name&gt;/results/large/</code>.</dd>
+<dt>Reproduce</dt><dd><pre><code>make sync                                           # editable install
+make test                                           # CPU tests
+uv run python experiments/&lt;name&gt;/run.py --smoke     # two-step dry run
+sbatch cluster/&lt;name&gt;.sbatch                        # scored run (account c11, partition compute)
+cluster/sync.sh down                                # small results home; `large` for the states</code></pre></dd>
+</dl>
+</section>
+
+<!-- ============================================================ -->
+<section id="changelog">
+<div class="sechead"><div class="eyebrow">This document</div><h2><span class="num">13</span>Changelog</h2></div>
+<div class="tblwrap"><table>
+<thead><tr><th>Version</th><th>When</th><th>Changes</th></tr></thead>
+<tbody>
+<tr><td class="c">4</td><td class="c">2026-10-20</td><td>Old names removed from the body; this row is their only record. Before 2026-10-20 the reports, notebooks and figure files say "pull-back" for component training, "lift" or "Euclidean lift" for the least-squares split, "LoRA-shaped pull-back" or "LoRA pull-back" for rank-r component training, "projection" or "transport" for the rescaling split, "inexpressible share" or "obstruction fraction ω" for the outside share, and "re-gating" for re-switching. Code: <code>pullback.py</code> became <code>component_training.py</code>, <code>lift.py</code> became <code>split.py</code>; E2's directory is still <code>experiments/lift_test</code>. The "Words" card in section 10 says how the drift happened. Diagram text in the three-operations figure shortened to fit.</td></tr>
+<tr><td class="c">3</td><td class="c">2026-10-20</td><td>Terminology: "pull-back", "lift" and "projection" replaced throughout by component training, least-squares split, adjoint split and rescaling split; "inexpressible share" by outside share; glossary entries for the new names and one for the retired words. E12 marked run with its results; E13 added as rank-8 component training (its files then deleted at the user's request; this card is the record). The user's unbuilt LoRA split recorded in Results, Q3, Gaps, Backlog and Mistakes; the adjoint split added to the operations.</td></tr>
+<tr><td class="c">2</td><td class="c">2026-10-20</td><td>Card layout; Overview rewritten around the question with two diagrams; re-weighting hypothesis marked as work in progress; Q9 (larger model) and Q10 (RL) added; costs removed; nested contents.</td></tr>
+<tr><td class="c">1</td><td class="c">2026-10-20</td><td>First version, consolidating GOALS, decisions, TRIED, the backlog and 40 reports as of the emoticon rerun and the E12 filing. Uses the 2026-10-20 review's corrected values.</td></tr>
+</tbody></table></div>
+<p class="small">Figures are the experiments' own, unchanged (file names keep the old words): E2 <code>lift_test/figures/pullback_behaviour.png</code>, E5 <code>task_ladder/figures/route_split.png</code>, E9 <code>lora_plateau/figures/pile.png</code>, E11 <code>reading_a_coverage/figures/ratios_per_task.png</code>.</p>
+</section>
+
+</div>
+</main>
+</div>
+
+<script>
+(function () {
+  function slug(t) { return t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48); }
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main section[id]'));
+  var outline = sections.map(function (sec, i) {
+    var h2 = sec.querySelector('h2');
+    var subs = Array.prototype.slice.call(sec.querySelectorAll('h3')).filter(function (h3) { return !h3.closest('.card') || h3.closest('.exp'); }).map(function (h3) {
+      var host = h3.closest('.exp[id]');
+      var id = host ? host.id : (h3.id || (sec.id + '-' + slug(h3.textContent)));
+      if (!host) h3.id = id;
+      return { id: id, label: h3.textContent.trim(), el: host || h3 };
+    });
+    return { id: sec.id, num: i + 1, label: h2 ? h2.textContent.replace(/^\d+\s*/, '').trim() : sec.id, el: sec, subs: subs };
+  });
+  function render(listEl, withNums) {
+    outline.forEach(function (s) {
+      var li = document.createElement('li'), a = document.createElement('a');
+      a.href = '#' + s.id;
+      if (withNums) { var n = document.createElement('span'); n.className = 'num'; n.textContent = s.num; a.appendChild(n); }
+      a.appendChild(document.createTextNode(s.label)); li.appendChild(a);
+      if (s.subs.length) {
+        var ol = document.createElement('ol');
+        s.subs.forEach(function (sub) { var sli = document.createElement('li'), sa = document.createElement('a'); sa.href = '#' + sub.id; sa.textContent = sub.label; sli.appendChild(sa); ol.appendChild(sli); });
+        li.appendChild(ol);
+      }
+      listEl.appendChild(li);
+    });
+  }
+  render(document.getElementById('toc-list'), true);
+  render(document.getElementById('mobile-toc-list'), false);
+
+  var toc = document.getElementById('toc-list');
+  var topLis = Array.prototype.slice.call(toc.children);
+  var topLinks = topLis.map(function (li) { return li.querySelector(':scope > a'); });
+  var subLinks = {};
+  Array.prototype.slice.call(toc.querySelectorAll('ol a')).forEach(function (a) { subLinks[a.getAttribute('href').slice(1)] = a; });
+  var cur = { sec: null, sub: null };
+  function update() {
+    var y = window.scrollY + 120, si = 0;
+    for (var i = 0; i < outline.length; i++) if (outline[i].el.offsetTop <= y) si = i;
+    var s = outline[si], sub = null;
+    for (var j = 0; j < s.subs.length; j++) if (s.subs[j].el.offsetTop <= y) sub = s.subs[j].id;
+    if (s.id === cur.sec && sub === cur.sub) return;
+    cur = { sec: s.id, sub: sub };
+    topLis.forEach(function (li, k) { li.classList.toggle('open', k === si); topLinks[k].classList.toggle('active', k === si && !sub); });
+    Object.keys(subLinks).forEach(function (id) { subLinks[id].classList.toggle('active', id === sub); });
+    var act = toc.querySelector('a.active');
+    if (act) { var nav = toc.parentNode, r = act.getBoundingClientRect(), nr = nav.getBoundingClientRect(); if (r.top < nr.top + 40 || r.bottom > nr.bottom - 40) act.scrollIntoView({ block: 'center' }); }
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+
+  // Link E-code references in tables, cards and field lists.
+  var scopes = document.querySelectorAll('#claims td:last-child, #apparatus td:last-child, .exp dd, .card p, .card li, .q .status, .terms p');
+  Array.prototype.slice.call(scopes).forEach(function (cell) {
+    var walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT), nodes = [], n;
+    while ((n = walker.nextNode())) if (/\bE\d{1,2}\b/.test(n.nodeValue) && !n.parentNode.closest('a')) nodes.push(n);
+    nodes.forEach(function (tn) {
+      var frag = document.createDocumentFragment(), re = /\bE(\d{1,2})\b/g, last = 0, m, txt = tn.nodeValue;
+      while ((m = re.exec(txt))) {
+        frag.appendChild(document.createTextNode(txt.slice(last, m.index)));
+        var a = document.createElement('a'); a.href = '#e' + m[1]; a.textContent = m[0]; frag.appendChild(a);
+        last = m.index + m[0].length;
+      }
+      frag.appendChild(document.createTextNode(txt.slice(last)));
+      tn.parentNode.replaceChild(frag, tn);
+    });
+  });
+
+  sections.forEach(function (sec) { var a = document.createElement('a'); a.className = 'up'; a.href = '#mobile-toc'; a.textContent = '↑ Contents'; sec.appendChild(a); });
+  var mt = document.getElementById('mobile-toc');
+  mt.addEventListener('click', function (e) { if (e.target.tagName === 'A') mt.removeAttribute('open'); });
+  if (location.hash) { var t = document.getElementById(location.hash.slice(1)); if (t) t.scrollIntoView(); }
+})();
+</script>

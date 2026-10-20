@@ -13,9 +13,23 @@ parameter decompositions are too brittle? Read `README.md` first, then `GOALS.md
 `.claude/skills/design/SKILL.md` if it won't load). A high-level design choice needs the user's confirmation after
 they have seen the check; an earlier "go ahead" does not count. Subagents return the check instead of building.
 
+**Terms.** `GOALS.md` → Terms is the vocabulary (component training, least-squares split, adjoint split, rescaling
+split, outside share, do-nothing, LoRA split); its "old names" column decodes older reports. "Pull-back", "lift" and
+"projection" are retired: not in new prose or code (`.claude/skills/writeup/check.py` flags them). When the user's words
+and a file's definition of a term disagree, the user's words win: say so at once, give both readings in one line each,
+and get the user's explicit acknowledgement of which holds before designing or running anything. Never pick a side
+silently. A plan restates the user's request in the Terms' words, and it is that restatement the user confirms
+(2026-10-20, `reports/2026-10-20_review_terminology.md`).
+
 ## Layout (one line each)
 - `experiments/<name>/` = `run.py` + `plot.py` + `results/` (incl. `predictions.json`) + `figures/`.
 - `experiments/TRIED.md` = everything tried or dropped, and why we moved on; update it with every experiment.
+- `docs/research_log/index.html` = the research log, published as the artifact "Update Decomposition" (URL and
+  publish recipe in `docs/research_log/README.md`): sub-questions, experiments E1–E13, claims with status, gaps,
+  backlog, glossary. **Updating it is part of the research flow**: every analysis report, decision report, new
+  `TRIED.md` row or dropped proposal ends with the matching edit to the log and a republish, in the same session. A
+  Stop hook (`.claude/hooks/research_log_check.sh`) blocks the session's end once while the record is newer than the
+  log. Read the live artifact before editing; another session may have published.
 - `theory/` notes. `notebooks/` look at results. `reports/` dated write-ups
   (`YYYY-MM-DD_<prediction|analysis|plan|review|decision>_<topic>.md`). `backlog.md` deferred ideas. `README.md`'s
   "Current plan" line names the latest plan; keep it current.
@@ -34,7 +48,7 @@ process do not get there; less code does.
   Delete dead arms, flags and filed-prediction text that the run no longer reads.
 - **One config.** Every size that differs between the full run and `--smoke` lives in one frozen dataclass whose
   `__post_init__` asserts the sizes agree (see `experiments/task_ladder/run.py`). No `x if args.smoke else y`.
-- **No copying between experiments.** Shared steps (fine-tune, pull-back, evaluation) live in `src/commute/` and are
+- **No copying between experiments.** Shared steps (fine-tune, component training, the split, evaluation) live in `src/commute/` and are
   called. Finished experiments' `run.py` stay as they ran; do not use them as templates. Aim for run scripts of
   ~300 lines and functions of under ~50 lines; split a function rather than add a branch to it.
 - **Read the existing code critically.** It was written fast. Follow its interfaces, not its habits.

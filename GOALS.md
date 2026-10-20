@@ -22,8 +22,8 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
 
 - **The map.** A simple operation Φ takes the decomposition D of W (subcomponents {U_c, V_c}, causal-importance
   function Γ, residual Δ) and an update δW, and returns D' = Φ(D, δW) for W + δW. "Simple" excludes re-fitting the
-  decomposition. Examples: projecting δW onto the subcomponents; pulling the update back through W = Σ_c U_c V_cᵀ,
-  i.e. applying the same training step to U and V instead of W.
+  decomposition. Examples (Terms below): the rescaling split, the least-squares or adjoint split of a finished δW, and
+  component training (the same training step applied to U and V instead of W).
 - **Weak version (current target).** D' is a faithful decomposition of W + δW. The *components* must carry the new
   model: Δ may not absorb δW. Otherwise the trivial map "leave everything, put δW in Δ" passes. In VPD terms, D'
   scores on W + δW about as well as D scores on W, under the same losses (weight reconstruction by the components,
@@ -35,18 +35,38 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
 - **Canonical update:** LoRA, plus full-weight fine-tunes.
 - **Γ:** frozen for now (see `decisions.md`), although updating it may turn out to be essential.
 
-## Terms (the definitions both of us hold; 2026-10-19, after a chat found three of them had drifted)
+## Terms (2026-10-20; the user's wording, after `reports/2026-10-20_review_terminology.md`)
 
-- **Φ** maps (D, δW) to D', for one update step. Along training, Φ is applied at every step and the question is whether
+"Pull-back" and "lift" each carried three meanings between 2026-10-14 and 2026-10-20 and are retired. The user's
+"pull-back" always meant: split a finished update over the subcomponents and see what is left outside. The files had
+fixed it as "train the subcomponents on the loss" and overrode the user for days. Rule (`.claude/CLAUDE.md`): when the
+user's words and a file's definition disagree, the user's words win; flag it, get explicit acknowledgement, fix the file.
+
+W = U Vᵀ + Δ per matrix; U and V hold the alive subcomponents' write and read vectors as columns; Γ and Δ are frozen in
+every operation below.
+
+| Term | Consumes | What it does | Code | Old names |
+|---|---|---|---|---|
+| **Component training** | the loss and data | train the alive (U, V); Adam, many steps. One SGD step moves W by UUᵀG + GVVᵀ, G the weight gradient | `component_training.train` | pull-back, pull-back replay, inside training |
+| **Rank-r component training** | the loss and data | component training with rank-r offsets dU = P Sᵀ, dV = Q Tᵀ | `component_training.Offsets(rank=r)` | LoRA-shaped pull-back, "LoRA pull-back" as run in E7 and E13, pb_r |
+| **Split** of a finished update | a finished δW: a fine-tune difference or a LoRA's BA | write δW as per-subcomponent updates (dU_c, dV_c) with dU Vᵀ + U dVᵀ ≈ δW, plus a remainder outside the subcomponents | `split.py` | the user's "pull-back"; "decompose BA"; "distribute a LoRA over the decomposition" |
+| **Least-squares split** | a finished δW | the split with the least-norm (dU, dV); the remainder O(δW) = (I − P_U) δW (I − P_V) goes to Δ, so W′ equals the fine-tuned weights | `split.least_squares_split`, `split.split_state` | lift, Euclidean lift |
+| **Adjoint split** | a finished δW | dU = δW V, dV = δWᵀ U; weight change UUᵀδW + δWVVᵀ, Δ fixed, W′ ≠ the fine-tuned weights | not implemented | "pull-back of δW", variant (b) of the 2026-10-19 variants review |
+| **Rescaling split** | a finished δW | δW ≈ Σ α_c u_c v_cᵀ, directions fixed | `transport.py` | projection, transport T0 |
+| **Do-nothing** | a finished δW | δW into Δ; subcomponents and Γ untouched. The reference | — | do-nothing placement |
+| **LoRA split** | — | train a rank-r LoRA to completion, take its splits, report the outside share and the per-subcomponent updates | not yet run | "LoRA pull-back" as the user meant it |
+
+Measurements, not methods:
+
+- **Outside share:** the energy of δW outside the subcomponents, input-weighted, with the same number for a random
+  update of the same size as its null. Reported as four blocks: inside on both sides P_U δW P_V; write side inside only
+  P_U δW (I − P_V); read side inside only (I − P_U) δW P_V; outside both (I − P_U) δW (I − P_V), the obstruction. A
+  rank-1 update b aᵀ is outside-both only if neither b nor a is in its span, so the strict reading is the first block.
+  Old names: obstruction fraction ω, inexpressible share. Code: `split.weighted_fractions` (outside-both only, so far).
+- **Φ** maps (D, δW) to D′ for one update step. Along training, Φ is applied at every step and the question is whether
   the error accumulates; the run is the limit, not the object. Experiments to 2026-10-19 scored finished 10-step runs
   one-shot; see `reports/2026-10-19_decision_success-criterion.md`.
-- **Pull-back:** the same fine-tune run on the alive (U, V) with Γ and Δ frozen. One SGD step moves W by
-  K(G) = UUᵀG + GVVᵀ, the part of the gradient the pieces can express. It consumes the training step, so it needs the
-  loss and data. Runs so far used Adam on (U, V), not SGD.
-- **Lift:** the weight change δW written as the smallest first-order change (dU, dV) of the alive pieces, with the
-  obstruction O(δW) left in Δ. It consumes the weight difference, so it is the only Φ that applies to a LoRA handed
-  over as BA.
-- **Faithful (weak version):** D' passes VPD's own checks on W + δW about as well as D passes them on W (stochastic-mask,
+- **Faithful (weak version):** D′ passes VPD's own checks on W + δW about as well as D passes them on W (stochastic-mask,
   adversarial-mask, CI-masked and unmasked reconstruction KL, and the sparsity loss), with Δ not absorbing δW. The
   route split (direct, re-gating, interaction, masked-off, residual) describes mechanism and does not decide this.
 - **Γ, the gate:** one network reading every matrix's input at every position. An edit in one layer moves CI values in
@@ -66,7 +86,7 @@ direct share (a) is a finding about mechanism, not a failure of Φ.
 - **Strengthen:** (a) dominates. Post-training sharpens subcomponents that already do the job.
 - **Reveal:** (b) + (c) dominate. The update is a small change that Γ amplifies by switching on subcomponents that
   already exist. The concentration test points this way on the emoticon task.
-- **Create:** (e) dominates when Δ may move. When it may not, (d) dominates or inside training fails to learn.
+- **Create:** (e) dominates when Δ may move. When it may not, (d) dominates or component training fails to learn.
 - **Brittle:** the split is unstable across seeds or across small changes to Φ.
 
 ## Not the goal

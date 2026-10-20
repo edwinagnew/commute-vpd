@@ -7,10 +7,10 @@ occurrences, of the model's next-token probability of v at the trigger. Rungs ar
 being the most probable ("lower" rungs = behaviours the model already has to a degree; rung 4 = never).
 
 Coverage (the ladder's x-axis, fixed before any training) is the gated gradient fraction: with G_k = dL/dW_k the
-gradient of the target's cross-entropy at the trigger, the pull-back moves alive component c by (G v_c, G^T u_c);
+gradient of the target's cross-entropy at the trigger, one SGD step of component training moves alive component c by (G v_c, G^T u_c);
 its energy is e_c = ||G v_c||^2 + ||G^T u_c||^2; coverage = sum_c gbar_c e_c / sum_c e_c, pooled over the 24 matrices,
 where gbar_c is the mean of Gamma's g_c at the trigger over the training windows. It is the share of the first
-pull-back step's energy that sits in components Gamma gates on at the trigger. Reported, not scored: the number
+component-training step's energy that sits in components Gamma gates on at the trigger. Reported, not scored: the number
 of alive components with gbar_c > 0.5 at the trigger (L0) and max gbar_c.
 """
 
@@ -23,7 +23,7 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 
-from commute.data import Windows
+from commute.data import Windows, target_tokens
 from commute.vpd import SEQ_LEN, compute_ci, module_keys
 
 # Rung r holds baselines in [RUNGS[r], RUNGS[r - 1]); rung 0 is [0.1, 1), rung 4 is everything below 1e-4.
@@ -94,7 +94,7 @@ def plain_mask(decode: Any, vocab: int) -> Tensor:
     def ok(v: int) -> bool:
         try:
             return plain_token(decode([v]))
-        except Exception:  # an id past the tokenizer's range (the logit dimension can exceed it)
+        except (IndexError, KeyError, ValueError, TypeError):  # an id past the tokenizer's range (the logit dimension can exceed it)
             return False
 
     return torch.tensor([ok(v) for v in range(vocab)])
@@ -143,7 +143,7 @@ def windows_for_trigger(rows: Tensor, trigger: int, half: int, max_n: int, seed:
     return Windows(toks, torch.zeros(len(r_idx)), r_idx.clone(), t_idx.clone(), half)
 
 
-def coverage_from(G: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], gbar: dict[str, Tensor]) -> dict[str, float]:
+def coverage_from(G: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], gbar: dict[str, Tensor]) -> dict[str, Any]:
     """The gated gradient fraction from per-matrix G (d_out, d_in), alive (U_A (d_out, n), V_A (d_in, n)) and
     gbar (n,) mean g at the trigger. Pooled over matrices by energy; also the per-matrix values."""
     num = den = 0.0
@@ -179,9 +179,10 @@ def trigger_gbar(model: Any, uv_alive_index: dict[str, Tensor], toks: Tensor, ha
     return {"gbar": gbar, "l0_trigger": float((allg > 0.5).sum()), "max_gbar": float(allg.max())}
 
 
-def trigger_gradient(model: Any, toks: Tensor, half: int, token: int, batch: int = 32) -> dict[str, Tensor]:
-    """G_k = d/dW_k of the mean cross-entropy of `token` at the trigger over the windows (fp32, CPU). The target
-    weights are restored to the same values; only their .grad is used."""
+def trigger_gradient(model: Any, toks: Tensor, half: int, token: int | Tensor, batch: int = 32) -> dict[str, Tensor]:
+    """G_k = d/dW_k of the mean cross-entropy of `token` (one id, or a (V,) lookup table read at the trigger token;
+    `data.target_tokens`) at the trigger over the windows (fp32, CPU). The target weights are restored to the same
+    values; only their .grad is used."""
     from commute.finetune import decomposed_params, logits_of
 
     params = decomposed_params(model)
@@ -195,10 +196,11 @@ def trigger_gradient(model: Any, toks: Tensor, half: int, token: int, batch: int
             b = toks[s : s + batch].to(device)
             with torch.enable_grad():
                 lg = logits_of(model.target_model, b)
-                loss = F.cross_entropy(lg[:, half], torch.full((b.shape[0],), token, device=device), reduction="sum")
+                loss = F.cross_entropy(lg[:, half], target_tokens(token, b, half), reduction="sum")
                 loss.backward()
             n += b.shape[0]
-        G = {k: (p.grad.detach().float() / n).cpu() for k, p in params.items()}
+        assert all(p.grad is not None for p in params.values())
+        G = {k: (p.grad.detach().float() / n).cpu() for k, p in params.items() if p.grad is not None}
     finally:
         for p in params.values():
             p.grad = None

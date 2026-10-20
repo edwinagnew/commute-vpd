@@ -71,13 +71,14 @@ the same 80-word rule.
 
 ## Terms and equations
 
-- Use VPD's words: subcomponent, causal importance, Γ, CI-masked, Δ, target model. Use `GOALS.md`'s "Terms"
-  wording for pull-back, lift and faithful. Not "gate", "re-gating", "piece", "route": say which subcomponents Γ
+- Use VPD's words: subcomponent, causal importance, Γ, CI-masked, Δ, target model. Use `GOALS.md`'s Terms:
+  component training, least-squares split, adjoint split, outside share, do-nothing, faithful. Never "pull-back",
+  "lift" or "projection" (retired 2026-10-20; `check.py` flags them). Not "gate", "re-gating", "piece", "route": say which subcomponents Γ
   switches on, or which mask multiplies what.
 - Define a term in the sentence that first uses it, with its formula in `$...$` and what 0 and 1 mean. If a
   section needs more than four symbols, open it with a one-line-per-symbol list, never a dense paragraph.
-- Equations go inline where the concept appears, not in a separate maths section. "The lift is the least-norm
-  $(dU, dV)$ with $dU V^\top + U dV^\top \approx \delta W$" beats "the closest first-order answer".
+- Equations go inline where the concept appears, not in a separate maths section. "The least-squares split is the
+  least-norm $(dU, dV)$ with $dU V^\top + U dV^\top \approx \delta W$" beats "the closest first-order answer".
 - No notation reuse: a symbol means one thing in the whole notebook.
 
 ## Sentence rules
@@ -121,7 +122,10 @@ the breaks so they are seen rather than missed; look at each flagged sentence an
 4. Cold-reader pass: read each markdown cell with only the figure above it and ask what was done, what was seen,
    why it matters. Rewrite any cell that fails one.
 5. Execute the notebook top to bottom and commit it executed.
-6. A subagent that writes a notebook gets the "Sentence rules", "Figure rules" and "Terms" sections verbatim in
+6. Update the research log (`docs/research_log/README.md`: the experiment's card, the claims table, the
+   sub-question status, the timeline, a changelog row) and republish it. The write-up is not done until the log
+   says what it says.
+7. A subagent that writes a notebook gets the "Sentence rules", "Figure rules" and "Terms" sections verbatim in
    its brief. The lead writes the answer paragraph and every "Reading it" paragraph itself: summaries handed to
    subagents drifted into shorthand every time.
 
@@ -129,17 +133,17 @@ the breaks so they are seen rather than missed; look at each flagged sentence an
 
 Before, from `notebooks/lora_plateau.ipynb` cell 8: 94 words, 14 numbers, 2 parentheses, 3 history pointers.
 
-> **Could it do it? (faithfulness half)** Yes, at every step. The lifted state reads 1.26, 1.22 and 1.07 under
+> **Could it do it? (faithfulness half)** Yes, at every step. The split state reads 1.26, 1.22 and 1.07 under
 > the Pile adversary (stochastic and CI-masked 0.996–1.009), within one to three W₀ floors on this card, where
-> round 5's fine-tune lift at step 10 read 5.41 on the L40. The do-nothing placements sit at the floor too (1.17,
+> round 5's split fine-tune at step 10 read 5.41 on the L40. The do-nothing placements sit at the floor too (1.17,
 > 1.09, 1.04; the fine-tune's read 2.18): the LoRA update itself disturbs W₀'s decomposition less than the
 > fine-tune's at every size, with a relative update four to eight times larger.
 
 After:
 
-> **Reading it.** Yes: the lifted LoRA stays faithful at every step we checked. The figure plots the adversarial
-> faithfulness ratio of the lifted state at steps 10, 100 and 1000. The grey band is the unchanged model's noise
-> floor, and all three points sit inside it. The dashed line is the full fine-tune's lifted state at the same
+> **Reading it.** Yes: the split LoRA stays faithful at every step we checked. The figure plots the adversarial
+> faithfulness ratio of the split state at steps 10, 100 and 1000. The grey band is the unchanged model's noise
+> floor, and all three points sit inside it. The dashed line is the full fine-tune's split state at the same
 > step, which read five times the floor. Leaving the LoRA update outside the subcomponents altogether also stays
 > inside the band. So a LoRA update disturbs the decomposition less than a fine-tune of the same length does,
 > even though it moves the weights further.

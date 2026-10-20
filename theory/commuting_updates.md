@@ -19,6 +19,11 @@ quantities in §7 are candidates for round 2 and go through `/design` before any
 
 ---
 
+*2026-10-20 note on words. This note uses "lift" in its geometric sense (any (δU, δV) realising a weight change) and
+"pull-back" for the pull-back of the loss covector. The project's vocabulary is `GOALS.md` → Terms: Definition 3's
+Euclidean lift is the **least-squares split**; the adjoint $d\sigma^*$ applied to a finished δW is the **adjoint
+split**; §5.3's gradient pull-back is **component training**. See `reports/2026-10-20_review_terminology.md`.*
+
 ## 1. Objects
 
 Fix a network architecture and a finite set $\mathcal M$ of decomposed linear maps (here the 24 matrices
@@ -211,7 +216,11 @@ $\|L_d(\xi)\|\le\|\xi\|/s_{\min}$, where $s_{\min}$ is the smallest non-zero sin
 alive $u_c$ or $v_c$ are nearly collinear, a small δW may need a large component change. That would break A2 in
 $\mathcal D$ even though it holds in $\mathcal W$. $s_{\min}$ is a property of $d_0$ alone and can be computed once.
 
-### 5.3 The gradient pull-back (what "pull back" meant in chat)
+### 5.3 The gradient pull-back (now "component training")
+
+*2026-10-20: the heading used to say "what 'pull back' meant in chat". That was the assistant's reading, not the user's;
+the user's "pull-back" is the split of a finished update (§5.1, the adjoint or the least-squares preimage). Every run of
+this operation used Adam for 10 to 300 steps, so the SGD step analysed below describes none of them exactly.*
 
 Given A7, let ℓ be the post-training loss on $\mathcal W$. The covector $d\ell$ pulls back along
 $W=\sigma(d)+\Delta_0$ to $\sigma^*d\ell$ on $\mathcal D$; this is the differential-geometric pull-back, not the
@@ -232,8 +241,9 @@ vectors, with eigenvalues $s_i^2+t_j^2$. An eigenvalue is zero iff $s_i=t_j=0$, 
 $\operatorname{col}P_U^\perp\otimes\operatorname{col}P_V^\perp$. ∎
 
 **Consequences.**
-- The pull-back does not map a given δW (e.g. a LoRA's $BA$) to a component update. It replays the post-training
-  problem on $\mathcal D$, so it needs ℓ and ν.
+- Component training does not map a given δW (e.g. a LoRA's $BA$) to a component update; it replays the post-training
+  problem on $\mathcal D$, so it needs ℓ and ν. A given δW is mapped by $d\sigma^*$ (the adjoint split, $K$ applied
+  to δW) or by $d\sigma^+$ (the least-squares split); the two differ by the preconditioner $K^+$.
 - It is weight-faithful by construction, since Δ is fixed. Whether it reaches the same behaviour as the
   $\mathcal W$-trained model is an empirical question. Its trajectory differs from the fine-tune's even to first
   order, because $K\ne\mathrm{id}$.
@@ -242,7 +252,7 @@ $\operatorname{col}P_U^\perp\otimes\operatorname{col}P_V^\perp$. ∎
 
 ## 6. Paths, the categorical pull-back, and the strong version
 
-**6.1 Path lifting (the "lift" in the user's sense).** Let $\gamma:[0,1]\to\mathcal W$ be a post-training trajectory
+**6.1 Path lifting.** *(2026-10-20: the heading used to say "the 'lift' in the user's sense"; the experiments never built path lifting, and "lift" in them meant Definition 3's one-shot Euclidean lift, now the least-squares split.)* Let $\gamma:[0,1]\to\mathcal W$ be a post-training trajectory
 with $\gamma(0)=W_0$. The weak version along training asks for a diagonal filler $\tilde\gamma$ in the square below,
 staying in $R_\kappa$ for all $t$:
 

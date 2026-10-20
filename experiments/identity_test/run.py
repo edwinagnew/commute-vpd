@@ -144,17 +144,17 @@ def pullback_states(model: Any, UV: dict[str, Any], win: dict[str, Any], o_token
     """Round 2's selected pull-back (lr 1e-5), states (U2, V2) at PB_STEPS."""
     import copy
 
-    from commute import pullback, vpd
+    from commute import component_training, vpd
     from commute.finetune import ArmAConfig, arm_a_loss, eval_arm_a
 
     cfg = ArmAConfig(o_token=o_token)
     net = model.target_model
     ref = copy.deepcopy(net).eval().requires_grad_(False)
-    off = pullback.Offsets(UV)
+    off = component_training.Offsets(UV)
     params = list(off.parameters())
     opt = torch.optim.Adam(params, lr=PB_LR, betas=(0.9, 0.999), weight_decay=0.0)
     gen = torch.Generator().manual_seed(cfg.seed)
-    handles = pullback.hooks({k: vpd.target_linear(model, k) for k in UV}, off)
+    handles = component_training.hooks({k: vpd.target_linear(model, k) for k in UV}, off)
     states, curve = {}, []
     try:
         for step in range(1, max(PB_STEPS) + 1):
@@ -170,7 +170,7 @@ def pullback_states(model: Any, UV: dict[str, Any], win: dict[str, Any], o_token
                 curve.append({"step": step, "heldout_p_o": ev["p_o"], "rel_norm_max": rel})
                 log(f"[pullback] step {step}: held-out P(o) {ev['p_o']:.4f} rel_norm_max {rel:.5f}")
             if step in PB_STEPS:
-                states[step] = {k: off.lifted(k) for k in UV}
+                states[step] = {k: off.components(k) for k in UV}
     finally:
         for h in handles:
             h.remove()
@@ -180,7 +180,7 @@ def pullback_states(model: Any, UV: dict[str, Any], win: dict[str, Any], o_token
 def lift_states(model: Any, UV: dict[str, Any], win: dict[str, Any], o_token: int, device: str,
                 keys: list[str]) -> tuple[dict[int, Any], dict[int, Any]]:
     """W fine-tune rerun (arm A, checkpoints 1..10), then the Euclidean lift of dW at LIFT_STEPS."""
-    from commute import lift
+    from commute import split
     from commute.finetune import ArmAConfig, finetune_arm_a
 
     cfg = ArmAConfig(o_token=o_token, steps=max(LIFT_STEPS), checkpoints=(1, 2, 3, 5, 10))
@@ -189,9 +189,9 @@ def lift_states(model: Any, UV: dict[str, Any], win: dict[str, Any], o_token: in
     t0 = time.time()
     for k in keys:
         U_A, V_A = UV[k][0].double().cpu(), UV[k][1].double().cpu()
-        b = lift.basis(U_A, V_A, 1e-6)
+        b = split.basis(U_A, V_A, 1e-6)
         for s in LIFT_STEPS:
-            U2, V2, _ = lift.lifted_with_delta_change(res.deltas[s][k].double(), b, U_A, V_A)
+            U2, V2, _ = split.split_with_delta_change(res.deltas[s][k].double(), b, U_A, V_A)
             states.setdefault(s, {})[k] = (U2.float().to(device), V2.float().to(device))
     log(f"[lift] bases and lifts in {time.time() - t0:.0f} s")
     return states, {s: {"dW": res.deltas[s], **res.evals[s]} for s in LIFT_STEPS}

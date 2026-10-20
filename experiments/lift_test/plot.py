@@ -71,7 +71,7 @@ def obstruction() -> None:
 
 
 def projected() -> None:
-    """Does the behaviour survive if the inexpressible part of the update is dropped?"""
+    """Does the behaviour survive if the outside_share part of the update is dropped?"""
     p = load("projected.json")["updates"]
     rows = [("Adam\nstep 10", "A/dW_step10"), ("Adam\nstep 300", "A/dW_step300"), ("SGD\nstep 10", "SGD_lr0.3/dW_step10"),
             ("LoRA r8\nstep 10", "LoRA_r8/dW_step10")]

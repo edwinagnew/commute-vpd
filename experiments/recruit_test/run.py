@@ -317,7 +317,7 @@ def natural_o(ctx: dict[str, Any], smoke: bool) -> dict[str, Any]:
 
 
 def stage_all(args: argparse.Namespace) -> None:
-    from commute import pullback, vpd
+    from commute import component_training, vpd
     from commute import recruit as R
     from commute.finetune import (
         ArmAConfig,
@@ -409,12 +409,12 @@ def stage_all(args: argparse.Namespace) -> None:
 
     # reference: the pull-back map's delta-W in Delta (amendment 2's do_nothing)
     pb_steps = 2 if smoke else PB_STEPS
-    uv = pullback.alive_uv(model, alive)
-    curve, states = pullback.train(model, uv, train.tokens, held, a_cfg(o_token, pb_steps, ()),
-                                   pullback.PullbackConfig(lr=PB_LR, steps=pb_steps, save_steps=(pb_steps,)), dev, W0, log=log)
+    uv = component_training.alive_uv(model, alive)
+    curve, states = component_training.train(model, uv, train.tokens, held, a_cfg(o_token, pb_steps, ()),
+                                   component_training.TrainConfig(lr=PB_LR, steps=pb_steps, save_steps=(pb_steps,)), dev, W0, log=log)
     st = states[pb_steps]
     dW_pb = {k: st[k][0].cpu().float() for k in W0}
-    assert all(dW_pb[k].shape == W0[k].shape for k in W0), "pullback.train state layout changed"
+    assert all(dW_pb[k].shape == W0[k].shape for k in W0), "component_training.train state layout changed"
     rec = measure_arm(ctx, "pullback_adam", dW_pb, o_token, base)
     rec.update({"step": pb_steps, "curve_tail": curve[-2:], "learned": curve[-1]["heldout_p_o"] >= 0.9})
     out["arms"]["pullback_adam"] = rec

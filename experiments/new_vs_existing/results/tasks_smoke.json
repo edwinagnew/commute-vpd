@@ -1,0 +1,133 @@
+{
+ "marker": 93,
+ "marker_count": 0,
+ "marker_str": "|",
+ "n_rows": 64,
+ "tasks": {
+  "ident2": {
+   "K": 2,
+   "baseline": {
+    "310": 0.0003530524556936143,
+    "326": 0.0002504764170225826
+   },
+   "baseline_max": 0.0003530524556936143,
+   "cls": "existing",
+   "entries": [
+    "' is' -> ' is'",
+    "' that' -> ' that'"
+   ],
+   "heldout_keys_missing": [
+    310
+   ],
+   "identity_baseline": {
+    "310": 0.0003530524556936143,
+    "326": 0.0002504764170225826
+   },
+   "keys": [
+    310,
+    326
+   ],
+   "n_heldout": 2,
+   "n_train": 14,
+   "rule": "identity",
+   "values": [
+    310,
+    326
+   ]
+  },
+  "ident2b": {
+   "K": 2,
+   "baseline": {
+    "323": 2.4470824683930914e-05,
+    "342": 1.4878642062399194e-05
+   },
+   "baseline_max": 2.4470824683930914e-05,
+   "cls": "existing",
+   "entries": [
+    "' with' -> ' with'",
+    "' for' -> ' for'"
+   ],
+   "heldout_keys_missing": [
+    342
+   ],
+   "identity_baseline": {
+    "323": 2.4470824683930914e-05,
+    "342": 1.4878642062399194e-05
+   },
+   "keys": [
+    342,
+    323
+   ],
+   "n_heldout": 2,
+   "n_train": 14,
+   "rule": "identity",
+   "values": [
+    342,
+    323
+   ]
+  },
+  "rand2": {
+   "K": 2,
+   "baseline": {
+    "310": 1.450418798043529e-05,
+    "326": 8.88210212224294e-06
+   },
+   "baseline_max": 1.450418798043529e-05,
+   "cls": "new",
+   "entries": [
+    "' is' -> ' been'",
+    "' that' -> ' than'"
+   ],
+   "heldout_keys_missing": [
+    310
+   ],
+   "identity_baseline": {
+    "310": 0.0003530524556936143,
+    "326": 0.0002504764170225826
+   },
+   "keys": [
+    310,
+    326
+   ],
+   "n_heldout": 2,
+   "n_train": 14,
+   "rule": "bijection",
+   "values": [
+    644,
+    685
+   ]
+  },
+  "rand2b": {
+   "K": 2,
+   "baseline": {
+    "323": 9.678660296685848e-05,
+    "342": 2.5476344077901558e-05
+   },
+   "baseline_max": 9.678660296685848e-05,
+   "cls": "new",
+   "entries": [
+    "' with' -> ' can'",
+    "' for' -> ' how'"
+   ],
+   "heldout_keys_missing": [
+    342
+   ],
+   "identity_baseline": {
+    "323": 2.4470824683930914e-05,
+    "342": 1.4878642062399194e-05
+   },
+   "keys": [
+    342,
+    323
+   ],
+   "n_heldout": 2,
+   "n_train": 14,
+   "rule": "bijection",
+   "values": [
+    476,
+    849
+   ]
+  }
+ },
+ "vocab": 50277
+}
