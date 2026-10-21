@@ -84,6 +84,14 @@ def load_component_model(device: str = "cuda") -> Any:
     return model
 
 
+def run_config() -> Any:
+    """The released decomposition's `Config` (param-decomp's pydantic object, from its final_config.yaml): the loss
+    stack with its coefficients, the sampling, the optimizer settings. Read from the file, never copied by hand."""
+    from param_decomp.models.component_model import ParamDecompRunInfo
+
+    return ParamDecompRunInfo.from_path(env.VPD_DIR / DECOMP_RUN / DECOMP_FILES[0]).config
+
+
 def tokenizer() -> Any:
     from transformers import AutoTokenizer
 

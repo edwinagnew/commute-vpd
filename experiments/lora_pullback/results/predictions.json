@@ -1,0 +1,76 @@
+{
+ "about": "lora_pullback (2026-10-20): the pull-back with LoRA-shaped rank-8 offsets on all 24 decomposed matrices, on the emoticon task, under round 2's Pile adversary. Round 4 ran it on one matrix only (Pile PGD ratio 2.1-4.1) while the free all-matrix pull-back sat at the floor (1.10): is the fragility the rank constraint or the confinement? The user's question ('I want to test lora pullback'), backlog entry 2026-10-20; design check confirmed by the user 2026-10-20. Filed before any arm was trained.",
+ "blind_to": {
+  "Pile PGD ratio": "a trigger-specific attack (the adversary is shared over 65k Pile positions holding ~3 triggers); the 20-step search is chaotic across GPUs, so cross-card comparisons are reported only",
+  "controls": "G3 (the harness sees a fragile state on this card), G4 (same-card references reproduce)",
+  "seed pair": "two seeds give a spread, not a distribution; a verdict needs both seeds on the same side of a line"
+ },
+ "expected_at": {
+  "W0": "every ratio 1 by construction; floor f 0.05-0.21",
+  "control pb_r8_site": ">= 1.5 (round 4: 4.06 on a 4090; 4090 PGD read 35% above the L40 on round 2's lift)",
+  "lora lift / do-nothing": "PGD 1.128 / 1.166 (round 5, same card and code)",
+  "pb_all": "PGD ratio about 1.07 (round 2, L40), P(o) about 0.996, kl_other about 0.009"
+ },
+ "gates": [
+  {
+   "id": "G0_floor",
+   "rule": "f from W0's 3 seeds; state spread s = |PGD ratio(pb_r8_all seed 0) - (seed 1)|"
+  },
+  {
+   "id": "G1_arms_learn",
+   "if_fail": "the arm is reported, not scored",
+   "rule": "pb_r8_all finds an lr by the rule and seed 1 reaches P(o) >= 0.9 at it; pb_r8_site, pb_all and the LoRA reach P(o) >= 0.9"
+  },
+  {
+   "id": "G2_delta_fixed",
+   "if_fail": "the pull-back's state bookkeeping is wrong; stop",
+   "rule": "every pull-back's Delta change <= 1e-3 of ||delta-W||^2"
+  },
+  {
+   "id": "G3_control_power",
+   "if_fail": "the harness does not see round 4's fragile state on this card: P1 and P2 are reported, not scored",
+   "rule": "pb_r8_site PGD ratio >= 1.5"
+  },
+  {
+   "id": "G4_reproduces",
+   "if_fail": "find the cause before the analysis; on another card G4 is reported, not applied",
+   "rule": "on an L40 only: LoRA lift PGD ratio within 5% of 1.128 (same code, seed and card as round 5); pb_all within 25% of 1.07 (round 2)"
+  }
+ ],
+ "measurements": {
+  "delta_change": "harness.measure's share of ||delta-W||^2 that Delta absorbed: 0 by construction for every pull-back",
+  "kl_other": "held-out KL to W0 away from the trigger at the scored step, reported beside every PGD ratio (the reading-A round found PGD excess ordering with kl_other)",
+  "pgd_floor": "f = max/min - 1 of W0's PGD KL over the 3 adversary seeds (round 5 on an L40: 0.21)",
+  "pile": "faithfulness.pile_faithfulness (2 blocks of 128 val rows 0..255, one adversary per block, 20 steps of 0.1); ratio = state / W0 under adversary seed 0; the PGD ratio is the scored number",
+  "routes": "local_faith.route_split at the trigger: reported, not scored (mechanism, not the pass criterion)"
+ },
+ "predictions": [
+  {
+   "arm": "pb_r8_all, seeds 0 and 1, last step",
+   "id": "P1_lora_shaped_pullback_faithful",
+   "neither": "otherwise (between the lines, or the seeds on opposite sides)",
+   "null": "both seeds' PGD ratio >= 2.0 (round 4's one-matrix range)",
+   "pass": "both seeds' PGD ratio < 1.5",
+   "predicted": "pass: spread over 24 matrices at the lr rule's smallest passing lr, each matrix moves far less than round 4's single matrix did, and the free all-matrix pull-back with the same support sits at the floor",
+   "reported": "kl_other beside the ratio, against pb_all's and the LoRA's; if null, whether its kl_other exceeds pb_all's",
+   "scored": true
+  },
+  {
+   "arm": "pb_r8_site vs pb_r8_all seed 0",
+   "id": "P2_confinement_not_rank",
+   "null": "PGD(pb_r8_site) - PGD(pb_r8_all) < max(0.5, 3 s)",
+   "pass": "PGD(pb_r8_site) - PGD(pb_r8_all) >= max(0.5, 3 s)",
+   "predicted": "pass: round 4's fragility came from putting the whole update on one matrix the decomposition reads badly (21% of its input energy), not from the rank-8 shape",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "every arm's P(o), kl_other, rel_norm_max, stochastic/CI-masked/unmasked Pile ratios and route shares; the pb_r8_all lr sweep; pb_all vs pb_r8_all (rank constraint at matched support); the LoRA lift beside the LoRA-shaped pull-back (the two maps on a LoRA-shaped update)",
+ "setup": {
+  "W0": "the released decomposition under round 2's Pile harness with adversary seeds (0, 1, 2)",
+  "lora": "rank-8 LoRA on all 24 matrices, lr 0.001, checkpoints (1, 2, 3, 5, 10), scored at the first with P(o) >= 0.9; lifted (lift.lift_state) and do-nothing, as round 5",
+  "pb_all": "free offsets on all 24 matrices, lr 1e-05 (round 2's and the ladder's arm), 30 steps",
+  "pb_r8_all": "pullback.train on all 24 matrices with rank-8 offsets dU = P S^T, dV = Q T^T (P, Q zero init; S, T ~ N(0, 1/n)), Gamma and Delta frozen, arm A's loss, batch 32, clip 1, Adam, 30 steps; lr = the smallest in (1e-05, 3e-05, 0.0001, 0.0003, 0.001) with held-out P(o) >= 0.9 and kl_other <= 0.11 at the last step (round 4's rule; none passing = did not learn, reported at the highest-P(o) lr). Seed 1 (offset init and batches) repeated at seed 0's lr",
+  "pb_r8_site": "the same on h.2.mlp.down_proj only, lr 0.0003 (round 4's selected lr for pb_r8, Pile PGD 4.06 on a 4090)",
+  "windows": "round 1's emoticon windows (365 train, 73 held-out, trigger at index 20, target token `o`)"
+ }
+}

@@ -11,11 +11,11 @@ The current testbed is Goodfire's released 4-layer 67M Pile model and its releas
 the decomposition exists and every run takes minutes. A larger model with a real post-trained sibling is the next phase.
 
 **Research log (read this first):** https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu. The one document for bringing
-someone up to speed: the question and sub-questions Q1–Q9, the apparatus, the techniques, every experiment E1–E13, every
+someone up to speed: the question and sub-questions Q1–Q11, the apparatus, the techniques, every experiment E1–E19, every
 claim with its status, the timeline, gaps, backlog, mistakes and glossary. It is the explanation; the files below are the
 record. Source: `docs/research_log/index.html`, publish recipe and update checklist in `docs/research_log/README.md`.
-Updating it is part of the research flow: every analysis report, decision and new `TRIED.md` row ends with the matching
-edit to the log and a republish; a Stop hook blocks a session's end once while the record is newer than the log.
+Updating it is part of the research flow: every analysis report, decision and new `TRIED.md` row queues a line in
+`docs/research_log/PENDING.md`, flushed into the log and republished before the session ends.
 
 The aim: `GOALS.md`. Working choices: `decisions.md`. Everything tried and why we moved on: `experiments/TRIED.md`.
 Success criterion (2026-10-19): GOALS's weak version as written; the route split is a mechanism reading
@@ -28,24 +28,44 @@ Older reports say "pull-back" for component training and "lift" for the least-sq
 meant the split of a finished update, and that request was never built as asked
 (`reports/2026-10-20_review_terminology.md`).
 
-- Component training (training the subcomponents' vectors on the loss, Γ and Δ frozen) learns every task tried,
-  including one the model lacks, but its decomposition passes VPD's adversarial check on 3 of 7 next-word tasks, sits at
+- Component training with Adam (training the subcomponents' vectors on the loss, Γ and Δ frozen; lr 1e-5, chosen on
+  emoticon and never re-tuned) learns every task tried, including one the model lacks, but its decomposition passes VPD's adversarial check on 3 of 7 next-word tasks, sits at
   the line on 1 and fails on 3 (E11), and fails for 32 new associations where 1 passes (E10). Leaving the update in Δ is
-  more robust under the adversary on 4 of 5 tasks checked. Rank-8 component training on all 24 matrices stays faithful
-  (E13).
+  more robust under the adversary on 4 of 5 tasks checked. Rank-8 component training with Adam on all 24 matrices stays
+  faithful (E13). Plain SGD also learns emoticon within the off-target limit (E4 follow-up), measured at a smaller size
+  of change than Adam's; a matched comparison is running (item 2 of
+  `reports/2026-10-21_review_sgd-finding-influence.md`). Its faithfulness has not been measured, so whether the failures
+  are the operation's or Adam's is open. Component training is optimiser-agnostic (the run's optimiser, either SGD or
+  Adam), and comparing the two on the same tasks is a priority subgoal (`GOALS.md`, user 2026-10-21).
 - The least-squares split of a finished full-weight fine-tune is adversarially fragile (ratio 5.4, reproduced; E2, E8).
   The split of a LoRA stays under the pass line to 1000 steps but its read side never leaves its random initialisation,
   so by the plateau over half of the update's energy and a third of the behaviour sit in Δ (E8, E9). The like-for-like
   comparison with a fine-tune on one card at one step has not been run.
-- Whatever the operation, the changed subcomponents carry at most 8% of a new behaviour; the rest runs through the
+- Under every operation route-split so far (Adam component training and splits of finished updates; no SGD state yet),
+  the changed subcomponents carry at most 8% of a new behaviour; the rest runs through the
   frozen Γ re-switching existing subcomponents for behaviours the model has, and through subcomponents Γ keeps off for
   the cipher it lacks (E4–E6, E10).
 - Outside share of a LoRA (E9): 0.48 to 0.71 of its energy against 0.55 to 0.76 for a random update, at every step; a
   fine-tune reads 0.27 against 0.53 (E8). The LoRA sits outside the subcomponents about as much as noise does.
 
-Current plan: the **LoRA split** (the user's request since 2026-10-14; `reports/2026-10-20_review_terminology.md` §7),
-through `/design`: no training, the saved LoRA factors of E7, E8 and E9, both splits, the per-subcomponent updates
-saved, the outside share as four blocks with its null. Also open, all through `/design`: the matched-off-target-KL
+Current plan (2026-10-21, `reports/2026-10-21_analysis_cancellation.md` → What next): E17 found the adversary's excess is not cancellation among the changes but the original subcomponents the stale box leaves maskable; next the complement revert and the mask binned by layer and importance (same hook framework), then E18 (`reports/2026-10-21_plan_regating-leak.md`), the re-gating line's first control.
+Previous: Current plan (2026-10-21, `reports/2026-10-21_decision_regating-main-line.md`): E16 (`experiments/split_comparison`) is
+analysed (`reports/2026-10-21_analysis_split-comparison.md`); finish the E15 v2 control; then **re-gating** becomes the main line, starting
+with whether it is a mechanism or a leak through Γ's input. The commute question stays open, second. Earlier plan: the **Γ refit** (`reports/2026-10-20_plan_gamma-refit.md`; code `experiments/gamma_refit`,
+`src/commute/gamma.py`; analysis `reports/2026-10-20_analysis_gamma-refit.md`, E15). Two of six refits ran on 2026-10-20
+(the benchmark read 2.3 s/step, six times the plan's arithmetic, so one refit fit the cap): the least-squares split's
+adversarial ratio went 7.0 → 24 → 23 → 7.6 → 1.06 over 3 000 Pile-only refit steps while the sparsity loss rose to 1.60×
+W₀'s (the filed "cheating" branch) and the refit's own loss rose throughout. Stage 0 (no training) found the
+subcomponents the adversary turns down are singly inert at both W₀ and the split state (median ablation ratio 0.98), so
+the fragility is a joint effect, the cancellation reading. The W₀ control under the same refit then failed its filed
+prediction (adversarial ratio 2.6 → 3.5 → 6.3 → 2.6 with every other check within 8%): the recipe drifts on its own, so
+the split's fall is not a repair. A second protocol (a 300-step adversary warm-up, then the released end lr 5e-6;
+`reports/2026-10-21_plan_gamma-refit-protocol.md`) failed the same control by step 100 (2.1, then 7.8 at step 300) while
+the refit's own attacker stayed flat at 0.42 nats against the harness's 0.70, so neither recipe can be read on an
+updated state. E15 is ongoing (user, 2026-10-21, `reports/2026-10-21_decision_gamma-refit-reopened.md`): a retraining with an attacker matched to the
+harness's, its W₀ control first. Next: the cancellation tests on the saved split state and the re-gating line. The **LoRA split** (E14, `reports/2026-10-20_analysis_lora-split.md`) ran 2026-10-20: the fine-tune is inside only on
+the read side, the LoRA on neither, and the scaled adjoint split state keeps 93% of the step-10 fine-tune's behaviour at the
+faithfulness floor; its per-subcomponent pieces were lost with the pod and the split stage is to be rerun on the cluster. Also open, all through `/design`: the matched-off-target-KL
 component-training comparison, the key → value matched-size check on the saved states, the adversarial-vs-stochastic
 cancellation tests, E12's follow-ups (`reports/2026-10-20_analysis_new-vs-existing-signatures.md`).
 
@@ -57,6 +77,7 @@ cancellation tests, E12's follow-ups (`reports/2026-10-20_analysis_new-vs-existi
 | E2 | Round 2: splits and component training on emoticon | `experiments/lift_test` | `reports/2026-10-14_analysis_lift-test.md` |
 | E3 | Identity test | `experiments/identity_test` | `reports/2026-10-15_analysis_identity-test.md` |
 | E4 | Concentration test, two amendments | `experiments/concentration_test` | `reports/2026-10-15_analysis_concentration-test.md` |
+| E4 follow-up | Plain-SGD component training at small rates | `experiments/sgd_grid` | `reports/2026-10-21_analysis_sgd-grid.md` |
 | E5 | Task ladder (round 3) | `experiments/task_ladder` | `reports/2026-10-19_analysis_task-ladder.md` |
 | E6 | Recruit test | `experiments/recruit_test` | `reports/2026-10-19_analysis_recruit-test.md` |
 | E7 | LoRA on one matrix, split and rank-r component training (round 4) | `experiments/lora_commute` | `reports/2026-10-19_analysis_lora-commute.md` |
@@ -66,6 +87,11 @@ cancellation tests, E12's follow-ups (`reports/2026-10-20_analysis_new-vs-existi
 | E11 | Reading-A coverage, emoticon rerun | `experiments/reading_a_coverage` | `reports/2026-10-19_analysis_reading-a-coverage.md` |
 | E12 | New-vs-existing signatures (round 7) | `experiments/new_vs_existing` | `reports/2026-10-20_analysis_new-vs-existing-signatures.md` |
 | E13 | Rank-8 component training on all 24 matrices (run as "LoRA pull-back"; not the user's LoRA question) | files deleted 2026-10-20 at the user's request | finding kept in `experiments/TRIED.md` row E13 and the research log |
+| E14 | LoRA split study: LoRA and fine-tune under one table | `experiments/lora_split` | `reports/2026-10-20_analysis_lora-split.md` |
+| E15 | Γ refit: let Γ see the updated model (two refits of six, a second W₀ protocol, stage 0; ongoing: being fixed, 2026-10-21) | `experiments/gamma_refit` | `reports/2026-10-20_analysis_gamma-refit.md` |
+| E16 | The five operations side by side (gate failed; predictions unscored) | `experiments/split_comparison` | `reports/2026-10-21_analysis_split-comparison.md` |
+| E17 | Cancellation tests (control failed; predictions unscored) | `experiments/cancellation` | `reports/2026-10-21_analysis_cancellation.md` |
+| E19 | Step split along the fine-tune's path | `experiments/step_split` | `reports/2026-10-21_analysis_step-split.md` |
 
 The 2026-10-20 review (`reports/2026-10-20_review_2026-10-19-write-ups.md`) lists claims in the E8, E9 and E11 reports
 that their result files do not support; the notebooks and the log use the corrected values, the reports stand as written.

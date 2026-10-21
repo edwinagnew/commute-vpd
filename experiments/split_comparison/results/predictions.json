@@ -1,0 +1,65 @@
+{
+ "design": "reports/2026-10-21_plan_split-comparison.md (design confirmed by the user 2026-10-21)",
+ "filed": "2026-10-21",
+ "gates": [
+  {
+   "id": "G1_reproduce_E14",
+   "if_fail": "the harness, the fine-tune or the card changed the reference; stop and find out before reading P1-P3",
+   "rule": "for ft and lora24 at steps 10, 100, 1000: do-nothing, least-squares and adjoint Pile PGD ratios within max(0.15, 3 f) absolute of E14's (lora_split.json part2), and the adjoint state's held-out P(target) within 0.05 absolute of E14's"
+  },
+  {
+   "id": "G2_split_state",
+   "if_fail": "that step is reported, not scored",
+   "rule": "harness G2 per update and step"
+  }
+ ],
+ "predictions": [
+  {
+   "arm": "rescaling state of ft and lora24, every step",
+   "blind_to": "the Pile checks do not see the trained behaviour; P(target) does not see off-target damage",
+   "id": "P1_rescaling_state",
+   "null": "P(target) >= 0.05 at some step (rescaling existing subcomponents carries the behaviour)",
+   "pass": "Pile PGD ratio <= 1 + 3 f, held-out P(target) < 0.05 (baseline about 0.004) and pooled R <= 0.1, every step, both updates (absolute thresholds)",
+   "predicted": "pass: E14's rescaling share was 2-7% of the update's energy; a 0.1 or smaller copy keeps the model at W0",
+   "scored": true
+  },
+  {
+   "arm": "free (paired with ft) and rank-8 (paired with lora24)",
+   "blind_to": "as P1",
+   "id": "P2_component_training",
+   "null": "P(target) < 0.9 at step 100, or PGD ratio >= 1.5 at step 10 or 100",
+   "pass": "held-out P(target) >= 0.9 at steps 100 and 1000, and Pile PGD ratio < 1.5 at steps 10 and 100, both variants (absolute); step 1000's PGD ratio is a first reading, no threshold",
+   "predicted": "pass: E2 free 0.95 by step 3 and PGD 1.03-1.07 at 10-30; E13 rank-8 PGD 1.14-1.28 at 30",
+   "scored": true
+  },
+  {
+   "arm": "component training's weight change, both variants, every step",
+   "blind_to": "anything inside the subcomponents' first-order reach; it checks the block, not the behaviour",
+   "id": "C1_positive_control",
+   "null": "> 0.01: the block code or the training hook is wrong (first-order changes cannot reach the block)",
+   "pass": "pooled outside-both block <= 0.01 of its input-weighted energy (absolute share)",
+   "predicted": "pass: only dU dV^T reaches it, second order in a small change",
+   "scored": true
+  },
+  {
+   "arm": "every state of both pairs at every step whose gain > 1 nat",
+   "blind_to": "the Pile; reads the trigger windows only",
+   "id": "P3_no_direct_route",
+   "null": "d > 0.15 for some such state",
+   "pass": "route split direct share d <= 0.15 (absolute)",
+   "predicted": "pass: E13 and E14 read d 0.00-0.08",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "step 1000's component-training PGD ratio; stochastic, CI-masked and unmasked ratios; Delta's share; r; the four blocks and outside-both / null per update; the updates' and component training's off-target KL from their own held-out evals (not measured for the split states)",
+ "setup": {
+  "R": "reproduced share, energy-pooled over the non-zero matrices: adjoint = split.adjoint_scale's second value; rescaling = split.rescaling_share; 1 for do-nothing and least-squares by construction",
+  "blocks": "split.block_table of each update and each component-training weight change (U+dU)(V+dV)^T - UV^T, pooled over all 24 matrices by input-weighted energy",
+  "measure": "harness.measure: route split (d, r) and gain at the trigger, held-out P(target), Delta's share of ||delta-W||^2, Pile ratios to W0 (256 rows, 20 PGD steps); floor f = max/min - 1 of W0's PGD KL over adversary seeds (0, 1, 2)",
+  "states": "do-nothing and least-squares split (harness.nothing_and_split); scaled adjoint split (split.adjoint_state); rescaling split (split.rescaling_state: u_c <- (1 + alpha_c) u_c, alpha the input-weighted least-squares fit of delta-W by sum_c alpha_c u_c v_c^T, Delta fixed); component training paired with ft: free, lr 1e-5; with lora24: Offsets(rank=8), lr 1e-4; Gamma and Delta frozen, seed 0, states at the same steps",
+  "updates": {
+   "ft": "emoticon full fine-tune, arm A (Adam lr 3e-05, 24 matrices, seed 0), delta-W at (10, 100, 1000)",
+   "lora24": "E9's rank-8 LoRA on all 24 matrices, B A from the saved factors at (10, 100, 1000)"
+  }
+ }
+}

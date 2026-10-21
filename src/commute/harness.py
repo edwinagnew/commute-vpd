@@ -107,8 +107,9 @@ def measure(ctx: Context, name: str, dW: dict[str, Tensor], state: State | None,
     rec: dict[str, Any] = {"rel_norm_max": max(float(dW[k].norm() / W0[k].cpu().norm()) for k in dW)}
     with model_state(model, target=target, components=comps):
         wd = vpd.weight_deltas(model)
-        rec["delta_change_frac"] = (sum(float(((wd[k] - ctx.wd0[k]).double() ** 2).sum()) for k in wd)
-                                    / sum(float((dW[k].double() ** 2).sum()) for k in dW))
+        energy = sum(float((dW[k].double() ** 2).sum()) for k in dW)  # 0 for W0 itself (gamma_refit's control)
+        rec["delta_change_frac"] = (sum(float(((wd[k] - ctx.wd0[k]).double() ** 2).sum()) for k in wd) / energy
+                                    if energy else float("nan"))
         rec["routes"] = route_split(model, held.tokens, held.half, ctx.token, ctx.rbase, ctx.comps0)
         if pile:
             rec["pile"] = pile_ratios(ctx, log)

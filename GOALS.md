@@ -34,6 +34,9 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   existing ones, or because parameter decompositions are too brittle?
 - **Canonical update:** LoRA, plus full-weight fine-tunes.
 - **Γ:** frozen for now (see `decisions.md`), although updating it may turn out to be essential.
+- **Optimiser (priority subgoal, user 2026-10-21):** compare SGD and Adam on the same tasks, both as the
+  component-training optimiser and as the fine-tune optimiser whose update the splits consume. Until that comparison
+  is run, no verdict on component training or on a split counts as a property of the operation rather than of Adam.
 
 ## Terms (2026-10-20; the user's wording, after `reports/2026-10-20_review_terminology.md`)
 
@@ -47,22 +50,29 @@ every operation below.
 
 | Term | Consumes | What it does | Code | Old names |
 |---|---|---|---|---|
-| **Component training** | the loss and data | train the alive (U, V); Adam, many steps. One SGD step moves W by UUᵀG + GVVᵀ, G the weight gradient | `component_training.train` | pull-back, pull-back replay, inside training |
+| **Component training** | the loss and data | train the alive (U, V) with the run's optimiser, either SGD or Adam. One SGD step moves W by UUᵀG + GVVᵀ, G the weight gradient | `component_training.train` | pull-back, pull-back replay, inside training |
 | **Rank-r component training** | the loss and data | component training with rank-r offsets dU = P Sᵀ, dV = Q Tᵀ | `component_training.Offsets(rank=r)` | LoRA-shaped pull-back, "LoRA pull-back" as run in E7 and E13, pb_r |
 | **Split** of a finished update | a finished δW: a fine-tune difference or a LoRA's BA | write δW as per-subcomponent updates (dU_c, dV_c) with dU Vᵀ + U dVᵀ ≈ δW, plus a remainder outside the subcomponents | `split.py` | the user's "pull-back"; "decompose BA"; "distribute a LoRA over the decomposition" |
 | **Least-squares split** | a finished δW | the split with the least-norm (dU, dV); the remainder O(δW) = (I − P_U) δW (I − P_V) goes to Δ, so W′ equals the fine-tuned weights | `split.least_squares_split`, `split.split_state` | lift, Euclidean lift |
-| **Adjoint split** | a finished δW | dU = δW V, dV = δWᵀ U; weight change UUᵀδW + δWVVᵀ, Δ fixed, W′ ≠ the fine-tuned weights | not implemented | "pull-back of δW", variant (b) of the 2026-10-19 variants review |
+| **Adjoint split** | a finished δW | dU = δW V, dV = δWᵀ U; weight change K(δW) = UUᵀδW + δWVVᵀ, Δ fixed, W′ ≠ the fine-tuned weights. Applied as a state with a per-matrix scale c = argmin ‖(c K(δW) − δW) Σ^½‖ (user-confirmed 2026-10-20) | `split.adjoint_split`, `split.adjoint_scale` | "pull-back of δW", variant (b) of the 2026-10-19 variants review |
+| **Step split** | the fine-tune's path, step by step | at every step, the scaled adjoint split of that step's weight change S_t against the current (U, V); the remainder goes to Δ; U, V carry forward, so W′ equals the fine-tuned weights at every step. With U, V held at W₀ and c fixed it equals the one-shot adjoint split plus its remainder (linearity), so it can differ only through the bases' rotation, which may be negligible (user, 2026-10-21; E19) | `split.StepSplit`, `split.adjoint_step` | variant (b) of the 2026-10-19 variants review, per step with updated bases |
 | **Rescaling split** | a finished δW | δW ≈ Σ α_c u_c v_cᵀ, directions fixed | `transport.py` | projection, transport T0 |
 | **Do-nothing** | a finished δW | δW into Δ; subcomponents and Γ untouched. The reference | — | do-nothing placement |
-| **LoRA split** | — | train a rank-r LoRA to completion, take its splits, report the outside share and the per-subcomponent updates | not yet run | "LoRA pull-back" as the user meant it |
+| **LoRA split** | — | train a rank-r LoRA to completion, take its splits, report the outside share and the per-subcomponent updates | `experiments/lora_split` (2026-10-20) | "LoRA pull-back" as the user meant it |
 
 Measurements, not methods:
 
-- **Outside share:** the energy of δW outside the subcomponents, input-weighted, with the same number for a random
-  update of the same size as its null. Reported as four blocks: inside on both sides P_U δW P_V; write side inside only
-  P_U δW (I − P_V); read side inside only (I − P_U) δW P_V; outside both (I − P_U) δW (I − P_V), the obstruction. A
-  rank-1 update b aᵀ is outside-both only if neither b nor a is in its span, so the strict reading is the first block.
-  Old names: obstruction fraction ω, inexpressible share. Code: `split.weighted_fractions` (outside-both only, so far).
+- **Outside share:** the energy of δW outside the subcomponents, input-weighted (E‖δW a‖² over the task's inputs a),
+  with the same number for a random update of the same size as its null. Reported as four blocks that sum to one
+  (user-confirmed 2026-10-20, `reports/2026-10-20_plan_lora-split.md` question 1): the write side split by P_U
+  (inside col U) and I − P_U; the read side by writing the input a = a₁ + a₂, a₁ the part linearly predictable from what
+  the subcomponents read (E[a | Vᵀa]) and a₂ the uncorrelated rest. Inside both: P_U δW a₁; write side only:
+  P_U δW a₂; read side only: (I − P_U) δW a₁; outside both: (I − P_U) δW a₂, what no first-order change of the
+  subcomponents reproduces on the data. The null is exact in expectation. A rank-1 update b aᵀ is outside-both only if
+  neither b nor a is in its span, so the strict reading is the first block. The algebraic outside-both block
+  (I − P_U) δW (I − P_V), input-weighted, is E2 to E9's number and is kept beside the four for continuity.
+  Old names: obstruction fraction ω, inexpressible share. Code: `split.four_blocks` (the four, with the null),
+  `split.weighted_fractions` (the algebraic block), `split.rescaling_share` (the strictest span, span{u_c v_cᵀ}).
 - **Φ** maps (D, δW) to D′ for one update step. Along training, Φ is applied at every step and the question is whether
   the error accumulates; the run is the limit, not the object. Experiments to 2026-10-19 scored finished 10-step runs
   one-shot; see `reports/2026-10-19_decision_success-criterion.md`.

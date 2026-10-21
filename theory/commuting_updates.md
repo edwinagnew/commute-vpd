@@ -219,8 +219,10 @@ $\mathcal D$ even though it holds in $\mathcal W$. $s_{\min}$ is a property of $
 ### 5.3 The gradient pull-back (now "component training")
 
 *2026-10-20: the heading used to say "what 'pull back' meant in chat". That was the assistant's reading, not the user's;
-the user's "pull-back" is the split of a finished update (§5.1, the adjoint or the least-squares preimage). Every run of
-this operation used Adam for 10 to 300 steps, so the SGD step analysed below describes none of them exactly.*
+the user's "pull-back" is the split of a finished update (§5.1, the adjoint or the least-squares preimage). Most runs of
+this operation used Adam, for 10 to 1000 steps, and the SGD step below describes them only loosely. E4's SGD arm and
+its 2026-10-21 follow-up ran plain SGD for 30 steps, which is this step repeated. Since 2026-10-21 the operation is
+defined with the run's optimiser, either SGD or Adam (`GOALS.md` → Terms), so this section describes its SGD form.*
 
 Given A7, let ℓ be the post-training loss on $\mathcal W$. The covector $d\ell$ pulls back along
 $W=\sigma(d)+\Delta_0$ to $\sigma^*d\ell$ on $\mathcal D$; this is the differential-geometric pull-back, not the

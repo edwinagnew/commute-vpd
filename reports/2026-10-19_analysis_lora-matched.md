@@ -13,7 +13,7 @@ like for like, because the LoRA learned at step 2 and the fine-tune's lift was a
 *2026-10-19, coding agent. Design: `reports/2026-10-19_review_lora-failure-and-fixes.md` section 3.2 (confirmed by the
 user). Predictions `experiments/lora_matched/results/predictions.json` (filed before the run, unchanged); results
 `results/lora_matched.json`; code `experiments/lora_matched/run.py` on the shared `src/commute/harness.py`; figures
-`experiments/lora_matched/figures/`; notebook `notebooks/lora_matched.ipynb` (figures and every number, executed). MATS cluster, one L40: smoke job 22368 (85 s), scored job 22371 (18 min), $0.
+`experiments/lora_matched/figures/`; notebook `notebooks/E08_lora_matched.ipynb` (figures and every number, executed). MATS cluster, one L40: smoke job 22368 (85 s), scored job 22371 (18 min), $0.
 Codex adversarial review of the new code before the run: approved, no findings.*
 
 **Terms.** *Lift*: the finished weight change written as the minimum-norm change (dU, dV) to each matrix's alive

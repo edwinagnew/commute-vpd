@@ -127,7 +127,10 @@ def eval_arm_b(net: nn.Module, ref: nn.Module, rows: Tensor, device: str, batch:
 
 
 def _run(model: Any, params: dict[str, Tensor], lr: float, grad_clip: float, steps: int,
-         checkpoints: tuple[int, ...], loss_fn: Any, eval_fn: Any, log: Any, optimizer: str = "adam") -> FinetuneResult:
+         checkpoints: tuple[int, ...], loss_fn: Any, eval_fn: Any, log: Any, optimizer: str = "adam",
+         on_step: Any = None) -> FinetuneResult:
+    """The training loop. `on_step(step, params)`, if given, is called after every optimizer step, before that step's
+    checkpoint, with the live parameters (step_split reads every step's weights there)."""
     W0 = target_weights(model)
     for p in params.values():
         p.requires_grad_(True)
@@ -145,6 +148,8 @@ def _run(model: Any, params: dict[str, Tensor], lr: float, grad_clip: float, ste
             loss.backward()
             gn = torch.nn.utils.clip_grad_norm_(list(params.values()), grad_clip)
             opt.step()
+            if on_step is not None:
+                on_step(step, params)
             res.log.append({"step": step, "loss": float(loss), "grad_norm": float(gn), **info})
             if step % 10 == 0 or step == 1:
                 log(f"[ft] step {step}: loss {float(loss):.4f} " + " ".join(f"{k} {v:.4f}" for k, v in info.items()))
@@ -164,7 +169,8 @@ def _run(model: Any, params: dict[str, Tensor], lr: float, grad_clip: float, ste
     return res
 
 
-def finetune_arm_a(model: Any, train: Windows, heldout: Windows, cfg: ArmAConfig, device: str, log: Any = print) -> FinetuneResult:
+def finetune_arm_a(model: Any, train: Windows, heldout: Windows, cfg: ArmAConfig, device: str, log: Any = print,
+                   on_step: Any = None) -> FinetuneResult:
     ref = copy.deepcopy(model.target_model).eval().requires_grad_(False)
     params = decomposed_params(model)
     gen = torch.Generator().manual_seed(cfg.seed)
@@ -178,7 +184,7 @@ def finetune_arm_a(model: Any, train: Windows, heldout: Windows, cfg: ArmAConfig
     def eval_fn() -> dict[str, float]:
         return eval_arm_a(net, ref, heldout, cfg.o_token, device)
 
-    return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log, cfg.optimizer)
+    return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log, cfg.optimizer, on_step)
 
 
 def finetune_arm_b(model: Any, train_rows: Tensor, heldout_rows: Tensor, cfg: ArmBConfig, device: str, log: Any = print) -> FinetuneResult:
@@ -242,6 +248,13 @@ def lora_delta(factors: dict[str, tuple[nn.Parameter, nn.Parameter]], all_keys: 
     """delta-W for all 24 matrices: B A on the LoRA modules, zero elsewhere (fp32, CPU)."""
     return {k: (factors[k][0].detach().float() @ factors[k][1].detach().float()).cpu() if k in factors
             else torch.zeros_like(W0[k]).cpu() for k in all_keys}
+
+
+def saved_lora_updates(path: Any, all_keys: list[str], W0: dict[str, Tensor], steps: tuple[int, ...]) -> dict[int, dict[str, Tensor]]:
+    """B A per matrix (zeros where the LoRA has no factors) at `steps` from a saved {step: {matrix: (B, A)}} file, as
+    lora_split's `lora_updates` (2026-10-21, moved here for split_comparison)."""
+    factors = torch.load(path, weights_only=False)
+    return {s: lora_delta(factors[s], all_keys, W0) for s in steps}
 
 
 def finetune_lora_arm_a(model: Any, train: Windows, heldout: Windows, a_cfg: ArmAConfig, cfg: LoraConfig, device: str,

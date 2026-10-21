@@ -1,0 +1,30 @@
+{
+ "about": "sgd_grid: E4's SGD arm found no lr that learns emoticon within the off-target limit, but its grid started at 0.3, which overshoots on step 1. Same arm, smaller lrs. Filed before any run.",
+ "filed": "2026-10-21 14:16:16",
+ "predictions": [
+  {
+   "claim": "Some lr in the grid learns within E4's limit.",
+   "id": "S1_sgd_learns",
+   "measure": "the lr rule finds an lr",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "E4's P1: with plain SGD the update concentrates.",
+   "id": "S2_sgd_concentrated",
+   "measure": "top-10 fraction removed at the selected lr",
+   "null": "< 0.2",
+   "pass": ">= 0.5",
+   "prediction": "fail",
+   "scorable_if": "S1 passes",
+   "scored": true
+  }
+ ],
+ "setup": {
+  "concentration": "E4's P1 measure at the selected lr: fraction of the held-out log-odds gain removed by reverting the 10 largest revert-one drops together. Blind to redundancy beyond the greedy top 10 and to positions outside the trigger. Reference reads from E4: Adam all 0.016 (diffuse), Adam top-10 arm 0.997 (the measure reads high when the update is concentrated). One seed; no noise floor",
+  "control": "runs first and alone: lr 0.3 for 2 steps must reproduce E4's sgd_all held-out KL elsewhere at steps 1 and 2 within 5% (8.59, 1.47) and P(o) < 0.05 at step 2 (E4: 0.009); otherwise the run stops before the grid. E4 ran on a 4090, this on an L40",
+  "expected": "P(o) at W0 ~0.005, KL elsewhere 0 at step 0. Too small an lr: P(o) < 0.9 at step 30 with small KL. Too large: E4's pattern (P(o) ~1 at step 1 with KL elsewhere > 1, oscillating)",
+  "lr_rule": "E4's: among lrs with held-out P(o) >= 0.9 and held-out KL elsewhere <= 0.110 at step 30, the lowest KL elsewhere; if none, the highest P(o), marked 'did not learn'",
+  "training": "E4's sgd_all: plain SGD (no momentum) on all alive (U, V) offsets, Gamma and Delta frozen, arm A's loss, batch 32, clip 1, seed 0, 30 steps; lr in {0.001, 0.003, 0.01, 0.03, 0.1}"
+ }
+}

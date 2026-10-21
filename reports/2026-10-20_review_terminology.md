@@ -97,7 +97,7 @@ Each is true under one letter and false or unproven under another.
 3. "The pull-back was never run on a LoRA" / "LoRA pull-back on all 24 matrices (never run)" (`README.md`:39;
    `reports/2026-10-15_review_faithfulness-scope.md`:46; `reports/2026-10-19_analysis_recruit-test.md`:10;
    research log Q3 and Record). Stale under F (E13 ran it), and never says which meaning.
-4. "Projection is dead (0.06%)" (research log Q2; `notebooks/transport_test_round1.ipynb`). True for D only; the
+4. "Projection is dead (0.06%)" (research log Q2; `notebooks/E01_transport_test.ipynb`). True for D only; the
    user has used "projection" for B and C.
 5. "The pull-back is not a projection; letting Δ take the leftover each step is a lift with a worse preimage"
    (`reports/2026-10-19_review_update-map-variants.md`; decisions log). Variant (b) there is B applied per step to

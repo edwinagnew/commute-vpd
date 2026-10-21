@@ -6,7 +6,7 @@
 > `backlog.md`. Needs a new `/design` pass once those are done.
 
 *2026-10-14, coding agent. Round 3. Design check below; awaiting the user's confirmation. Nothing has been filed or
-run. Round 2 (`reports/2026-10-14_analysis_lift-test.md`, notebook `notebooks/lift_test_round2.ipynb`) found that
+run. Round 2 (`reports/2026-10-14_analysis_lift-test.md`, notebook `notebooks/E02_lift_test.ipynb`) found that
 post-training **inside** the decomposition (the pull-back: train the alive U, V with Δ and Γ fixed) stays faithful,
 while translating a finished update from **outside** does not. That was shown only for a behaviour the model already
 has, over 30 steps. Experiment directory: `experiments/new_skill/`.*

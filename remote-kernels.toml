@@ -13,7 +13,7 @@ default-runtime = "runpod"
 # Default: "remote-kernels"
 # The provider shows "<name>-<generated id>"; set it to "commute-<experiment>" before start() so pods read
 # commute-<experiment>-<id> at RunPod (the start() label is local display only).
-name = "commute-lora_pullback-2"
+name = "commute-sgd_grid"
 
 # Budget cap in dollars, per Claude session. Prefer setting
 # REMOTE_KERNELS_BUDGET in .claude/settings.json's env section over this
@@ -118,11 +118,10 @@ cleanup = "terminate"
 
 # GPU types to try, in order of preference.
 # Default: ["NVIDIA GeForce RTX 4090"]
-# Cheapest adequate card first (the model is 67M; every run so far fit in < 24 GB). Tried in order within the pinned
-# data center. Secure-cloud prices 2026-10-19: A5000 $0.27, 3090 $0.50, RTX PRO 4000 Blackwell $0.57, A40 $0.59 (48 GB),
-# RTX PRO 4500 $0.72 (32 GB), 4090 $0.89, L40S $1.09 (48 GB). A run that needs more memory or speed passes
-# start(gpu_type="NVIDIA L40S") (or another name from this list) instead of editing this line.
-gpu-type-ids = ["NVIDIA RTX A5000", "NVIDIA GeForce RTX 3090", "NVIDIA RTX PRO 4000 Blackwell", "NVIDIA A40", "NVIDIA RTX PRO 4500 Blackwell", "NVIDIA GeForce RTX 4090", "NVIDIA L40S"]
+# Fast cards only, tried in order (user, 2026-10-20: results sooner beat dollars saved; the old cheapest-first list
+# placed A5000s). Secure-cloud prices 2026-10-19: 4090 $0.89, L40S $1.09 (48 GB); check others at
+# https://gpus.skypilot.co/. Runs over ~1 h pass start(gpu_type="NVIDIA H100 80GB HBM3") instead of editing this line.
+gpu-type-ids = ["NVIDIA GeForce RTX 4090", "NVIDIA GeForce RTX 5090", "NVIDIA L40S", "NVIDIA H100 80GB HBM3"]
 
 # Container image to run on the machine.
 # Default: "runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04"

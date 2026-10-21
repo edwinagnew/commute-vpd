@@ -199,3 +199,247 @@ def read_side_overlaps(M: Tensor, b: Basis, Sigma: Tensor) -> dict[str, float]:
             "random": b.r_v / M.shape[1],
             "alive_in_data": float(((Qv.T @ D) ** 2).sum()) / b.r_v if b.r_v else 1.0,
             "data_in_top": float(evals.sort(descending=True).values[: b.r_v].sum() / evals.sum())}
+
+
+# ----------------------------------------------------------------------------- the LoRA split study (2026-10-20)
+# Added for experiments/lora_split: the outside share as four blocks that sum to one with their exact null, the
+# rescaling share (the strictest span), the adjoint split with its data-fitted scale, and the energy of each
+# subcomponent's piece of a split.
+
+
+def read_moments(b: Basis, Sigma: Tensor) -> tuple[Tensor, Tensor]:
+    """Split the input second moment Sigma = E[a a^T] into the part of a that is linearly predictable from what the alive
+    subcomponents read, a1 = E[a | V_A^T a] = Sigma Q (Q^T Sigma Q)^-1 Q^T a (Q an orthonormal basis of col V_A), and the
+    uncorrelated rest a2 = a - a1: (Sigma_1, Sigma_2) with Sigma_1 + Sigma_2 = Sigma and E[a1 a2^T] = 0."""
+    S = Sigma.double()
+    Q = b.Q[:, b.t > 0]
+    if Q.shape[1] == 0:
+        return torch.zeros_like(S), S
+    SQ = S @ Q
+    S1 = SQ @ torch.linalg.pinv(Q.T @ SQ, hermitian=True, rtol=1e-10) @ SQ.T  # the pseudoinverse keeps E[a1 a2^T] = 0 exactly
+    return S1, S - S1
+
+
+def weighted_energy(A: Tensor, S: Tensor) -> float:
+    """||A S^1/2||_F^2 = tr(A S A^T)."""
+    return float(((A @ S) * A).sum())
+
+
+def four_blocks(M: Tensor, b: Basis, Sigma: Tensor) -> dict[str, float]:
+    """The input-weighted energy of M, E||M a||^2 with E[a a^T] = Sigma, as four shares that sum to one: the write side
+    split by P_U (inside col U_A) and P_U^perp, the read side by a = a1 + a2 (`read_moments`). `in_in`: write and read
+    inside; `in_out`: write inside only; `out_in`: read inside only; `out_out`: what no first-order change of the alive
+    subcomponents reproduces on the data. `null_*`: the same shares for an update with iid isotropic entries, exact in
+    expectation: (r_U / d_out or 1 - r_U / d_out) x (tr Sigma_1 / tr Sigma or tr Sigma_2 / tr Sigma)."""
+    M = M.double()
+    S1, S2 = read_moments(b, Sigma)
+    Pu = b.P[:, b.s > 0]
+    Mi = Pu @ (Pu.T @ M)
+    Mo = M - Mi
+    total = weighted_energy(M, S1 + S2)
+    w_in, r_in = b.r_u / M.shape[0], float(torch.trace(S1) / torch.trace(S1 + S2))
+    out = {"in_in": weighted_energy(Mi, S1), "in_out": weighted_energy(Mi, S2), "out_in": weighted_energy(Mo, S1), "out_out": weighted_energy(Mo, S2)}
+    out = {k: v / total for k, v in out.items()}
+    out.update({"null_in_in": w_in * r_in, "null_in_out": w_in * (1 - r_in),
+                "null_out_in": (1 - w_in) * r_in, "null_out_out": (1 - w_in) * (1 - r_in)})
+    return out
+
+
+def rescaling_alpha(M: Tensor, U_A: Tensor, V_A: Tensor, Sigma: Tensor) -> tuple[Tensor, Tensor]:
+    """The rescaling split's coefficients: alpha = argmin ||(sum_c alpha_c u_c v_c^T - M) Sigma^1/2||_F, from the Gram
+    (U^T U) o (V^T Sigma V) and the right side u_c^T M Sigma v_c (float64). Returns (alpha, right side)."""
+    M, S, U_A, V_A = M.double(), Sigma.double(), U_A.double(), V_A.double()
+    G = (U_A.T @ U_A) * (V_A.T @ S @ V_A)
+    rhs = torch.diagonal(U_A.T @ M @ S @ V_A)
+    return torch.linalg.pinv(G, hermitian=True, rtol=1e-10) @ rhs, rhs
+
+
+def rescaling_share(M: Tensor, U_A: Tensor, V_A: Tensor, Sigma: Tensor) -> float:
+    """Share of M's input-weighted energy inside span{u_c v_c^T}: the weighted least-squares fit of M by sum_c alpha_c u_c
+    v_c^T (the rescaling split, directions fixed). The reproduced share R of `rescaling_state`."""
+    alpha, rhs = rescaling_alpha(M, U_A, V_A, Sigma)
+    return float(alpha @ rhs) / weighted_energy(M.double(), Sigma.double())
+
+
+def rescaling_state(dW: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], sigma: dict[str, Tensor]
+                    ) -> tuple[dict[str, Tensor], dict[str, tuple[Tensor, Tensor, Tensor]]]:
+    """The rescaling split as a state (2026-10-21, split_comparison): per non-zero matrix u_c <- (1 + alpha_c) u_c with
+    alpha = `rescaling_alpha`, v_c fixed, so the target moves by sum_c alpha_c u_c v_c^T (not by M) and Delta stays
+    fixed. Same return shape as `adjoint_state`: that weight change per matrix (zero where M is) and the state
+    (delta-W, U_A', V_A') of the non-zero ones, float32 on CPU."""
+    dW_r, state = {}, {}
+    for k, M in dW.items():
+        if not M.any():
+            dW_r[k] = torch.zeros_like(M)
+            continue
+        U_A, V_A = uv[k][0].double(), uv[k][1].double()
+        alpha = rescaling_alpha(M, U_A, V_A, sigma[k])[0]
+        dW_r[k] = ((U_A * alpha) @ V_A.T).float().cpu()
+        state[k] = (dW_r[k], (U_A * (1 + alpha)).float().cpu(), V_A.float().cpu())
+    return dW_r, state
+
+
+def block_table(dW: dict[str, Tensor], bases: dict[str, Basis], sigma: dict[str, Tensor], non_saturated: list[str]
+                ) -> dict[str, Any]:
+    """`four_blocks` (with its null) and the input-weighted energy of every non-zero matrix, pooled by energy over all
+    matrices and over the non-saturated ones, with outside-both / its null for each pooling (2026-10-21)."""
+    per = {k: {**four_blocks(M, bases[k], sigma[k]), "energy": weighted_energy(M.double(), sigma[k].double())}
+           for k, M in dW.items() if M.any()}
+
+    def pool(keys: list[str]) -> dict[str, float] | None:
+        e = sum(per[k]["energy"] for k in keys)
+        if not keys or e <= 0:
+            return None
+        p = {f: sum(per[k][f] * per[k]["energy"] for k in keys) / e for f in per[keys[0]] if f != "energy"}
+        p["out_out_ratio"] = p["out_out"] / p["null_out_out"] if p["null_out_out"] > 0 else float("nan")
+        return p
+
+    return {"per_matrix": per, "pooled_all": pool(list(per)), "pooled_ns": pool([k for k in per if k in non_saturated])}
+
+
+def adjoint_split(M: Tensor, U_A: Tensor, V_A: Tensor) -> tuple[Tensor, Tensor]:
+    """dU = M V_A, dV = M^T U_A: the user's pull-back. Its weight change is K(M) = U_A U_A^T M + M V_A V_A^T, not M."""
+    M = M.double()
+    return M @ V_A, M.T @ U_A
+
+
+def adjoint_scale(M: Tensor, U_A: Tensor, V_A: Tensor, Sigma: Tensor) -> tuple[float, float]:
+    """The scale c that best matches the adjoint split's weight change K(M) to M on the data, c = argmin ||(c K(M) - M)
+    Sigma^1/2||_F, and the share of M's weighted energy that c K(M) reproduces (the squared weighted cosine of K(M) and M).
+    K depends on the gauge of (U_A, V_A); the released decomposition fixes it."""
+    M, S = M.double(), Sigma.double()
+    K = dsigma(*adjoint_split(M, U_A, V_A), U_A, V_A)
+    kk, mm, km = weighted_energy(K, S), weighted_energy(M, S), float(((K @ S) * M).sum())
+    return km / kk, km * km / (kk * mm)
+
+
+def adjoint_state(dW: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], sigma: dict[str, Tensor]
+                  ) -> tuple[dict[str, Tensor], dict[str, tuple[Tensor, Tensor, Tensor]]]:
+    """The scaled adjoint split as a state (2026-10-20, from lora_split's part 2): per non-zero matrix the pieces
+    c (M V_A, M^T U_A) with c = `adjoint_scale`, so the target moves by c K(M) (`dsigma` of the pieces), not by M, and
+    Delta stays fixed. Returns that weight change per matrix (zero where M is) and the state (delta-W, U_A', V_A') of
+    the non-zero ones, float32 on CPU."""
+    dW_adj, state = {}, {}
+    for k, M in dW.items():
+        if not M.any():
+            dW_adj[k] = torch.zeros_like(M)
+            continue
+        U_A, V_A = uv[k][0].double(), uv[k][1].double()
+        aU, aV = adjoint_split(M, U_A, V_A)
+        c = adjoint_scale(M, U_A, V_A, sigma[k])[0]
+        aU, aV = c * aU, c * aV
+        dW_adj[k] = dsigma(aU, aV, U_A, V_A).float().cpu()
+        state[k] = (dW_adj[k], (U_A + aU).float().cpu(), (V_A + aV).float().cpu())
+    return dW_adj, state
+
+
+def piece_energies(dU: Tensor, dV: Tensor, U_A: Tensor, V_A: Tensor, Sigma: Tensor) -> Tensor:
+    """||dB_c Sigma^1/2||_F^2 per alive subcomponent, dB_c = dU_c v_c^T + u_c dV_c^T: how much of a split each
+    subcomponent's piece carries on the data."""
+    S = Sigma.double()
+    dU, dV = dU.double(), dV.double()
+    SV, SdV = S @ V_A, S @ dV
+    return ((dU * dU).sum(0) * (V_A * SV).sum(0) + 2 * (U_A * dU).sum(0) * (V_A * SdV).sum(0)
+            + (U_A * U_A).sum(0) * (dV * SdV).sum(0))
+
+
+def n_half(energies: Tensor) -> int:
+    """How many of the largest pieces carry half of the total."""
+    e = energies.sort(descending=True).values
+    return int((e.cumsum(0) < e.sum() / 2).sum()) + 1
+
+
+def random_like(M: Tensor, Sigma: Tensor, seed: int) -> Tensor:
+    """An update with iid Gaussian entries and M's input-weighted energy: the null for the measured (not analytic) shares."""
+    g = torch.Generator().manual_seed(seed)
+    G = torch.randn(M.shape, generator=g, dtype=torch.float64)
+    return G * (weighted_energy(M.double(), Sigma) / weighted_energy(G, Sigma)) ** 0.5
+
+
+# ----------------------------------------------------------------------------- the step split (2026-10-21)
+# Added for experiments/step_split (the user's "step split"): the scaled adjoint split applied to every optimizer step of a
+# run against the current (U_A, V_A), which then carry forward; each step's remainder, including the second-order term
+# dU dV^T, goes to Delta, so the component sum plus Delta is the run's weights at every step. Gamma frozen.
+
+
+def adjoint_step(S: Tensor, U_A: Tensor, V_A: Tensor, Sigma: Tensor) -> tuple[Tensor, Tensor, Tensor, dict[str, float]]:
+    """One step S of one matrix: pieces dU = c S V_A, dV = c S^T U_A with c = argmin ||(c K(S) - S) Sigma^1/2||_F (as
+    `adjoint_scale`), against the bases given, in S's dtype and device. Returns the pieces, the second-order term dU dV^T
+    (which the components also take, so Delta books it), and as input-weighted energies: the step's (`step`), the
+    first-order change c K(S) (`first`) and the second-order term (`second`), with c and R (the share of S that c K(S)
+    reproduces). A step with no first-order image (K(S) = 0, S outside both spans) gets zero pieces: all of it to Delta."""
+    A, B = S @ V_A, S.T @ U_A
+    K = dsigma(A, B, U_A, V_A)
+    KS = K @ Sigma
+    kk, km, mm = float((KS * K).sum()), float((KS * S).sum()), weighted_energy(S, Sigma)
+    # K(S) at rounding level (S outside both spans) would make c = km / kk a ratio of rounding noise: treat it as zero.
+    # The bound is 10 eps times a bound on ||K(S)|| (||U||^2 + ||V||^2) ||S||; a real step's K(S) is ~1/d of that, d <= 3072.
+    rounding = 10 * torch.finfo(S.dtype).eps * float(U_A.norm() ** 2 + V_A.norm() ** 2) * float(S.norm())
+    if float(K.norm()) <= rounding or mm <= 0:
+        z = torch.zeros_like(S)
+        return torch.zeros_like(A), torch.zeros_like(B), z, {"c": 0.0, "R": 0.0, "step": mm, "first": 0.0, "second": 0.0}
+    c = km / kk
+    dU, dV = c * A, c * B
+    second = dU @ dV.T
+    return dU, dV, second, {"c": c, "R": km * km / (kk * mm), "step": mm, "first": c * c * kk,
+                            "second": weighted_energy(second, Sigma)}
+
+
+class StepSplit:
+    """The step split along one run. `step(W)` reads the run's current weights per matrix, takes S = W - W_prev and
+    splits it with `adjoint_step`: against the current (U_A, V_A) if `carry` (the step split), else against W0's (the
+    fixed-bases variant, whose pieces sum to the one-shot adjoint split when c is the same every step). Either way the
+    pieces accumulate into U_A, V_A and Delta is the remainder W - U_A V_A^T. `uv`, `sigma`: theory layout and input
+    second moments per matrix; `W0`: the run's starting weights. All state in `dtype` on `device`."""
+
+    def __init__(self, uv: dict[str, tuple[Tensor, Tensor]], sigma: dict[str, Tensor], W0: dict[str, Tensor], carry: bool,
+                 dtype: torch.dtype, device: str) -> None:
+        def put(t: Tensor) -> Tensor:
+            return t.detach().to(device=device, dtype=dtype).clone()
+
+        self.carry = carry
+        self.U0, self.V0 = {k: put(u) for k, (u, _) in uv.items()}, {k: put(v) for k, (_, v) in uv.items()}
+        self.dU, self.dV = {k: torch.zeros_like(u) for k, u in self.U0.items()}, {k: torch.zeros_like(v) for k, v in self.V0.items()}
+        self.sigma = {k: put(sigma[k]) for k in uv}
+        self.W0 = {k: put(W0[k]) for k in uv}
+        self.W = {k: w.clone() for k, w in self.W0.items()}
+        self.second = {k: torch.zeros_like(w) for k, w in self.W0.items()}  # sum over steps of dU dV^T (carry only)
+
+    @torch.no_grad()
+    def step(self, W: dict[str, Tensor]) -> dict[str, float]:
+        """Split one step of every matrix; pooled energies over the matrices, the largest per-matrix second/first, the range
+        of c, and how many matrices' steps had no first-order image (`adjoint_step`'s zero pieces)."""
+        tot = {"step": 0.0, "first": 0.0, "second": 0.0}
+        worst, cs = 0.0, []
+        for k in self.W:
+            w = W[k].detach().to(self.W[k].dtype)
+            S = w - self.W[k]
+            self.W[k] = w.clone()
+            U, V = (self.U0[k] + self.dU[k], self.V0[k] + self.dV[k]) if self.carry else (self.U0[k], self.V0[k])
+            dU, dV, second, st = adjoint_step(S, U, V, self.sigma[k])
+            self.dU[k] += dU
+            self.dV[k] += dV
+            if self.carry:
+                self.second[k] += second
+            for f in tot:
+                tot[f] += st[f]
+            worst = max(worst, st["second"] / st["first"] if st["first"] > 0 else 0.0)
+            cs.append(st["c"])
+        return {**tot, "second_over_first": tot["second"] / tot["first"] if tot["first"] > 0 else 0.0,
+                "second_over_first_max": worst, "c_min": min(cs), "c_max": max(cs), "n_zeroed": sum(c == 0 for c in cs)}
+
+    def delta_change(self) -> dict[str, Tensor]:
+        """Delta - Delta_0 = (W - W0) - (U_A V_A^T - U_A0 V_A0^T), with the component change written as
+        dU V0^T + U0 dV^T + dU dV^T (no cancellation against the full products)."""
+        return {k: (self.W[k] - self.W0[k]) - (self.dU[k] @ self.V0[k].T + self.U0[k] @ self.dV[k].T + self.dU[k] @ self.dV[k].T)
+                for k in self.W}
+
+    def state(self) -> dict[str, tuple[Tensor, Tensor, Tensor]]:
+        """(delta-W, U_A', V_A') per matrix, float32 on CPU: harness.State."""
+        return {k: ((self.W[k] - self.W0[k]).float().cpu(), (self.U0[k] + self.dU[k]).float().cpu(),
+                    (self.V0[k] + self.dV[k]).float().cpu()) for k in self.W}
+
+    def piece_change_max(self) -> float:
+        """The largest relative change of any alive write or read vector, max_c ||dU_c|| / ||U0_c|| (and V)."""
+        return max(max(float((self.dU[k].norm(dim=0) / self.U0[k].norm(dim=0)).max()),
+                       float((self.dV[k].norm(dim=0) / self.V0[k].norm(dim=0)).max())) for k in self.W)

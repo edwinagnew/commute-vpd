@@ -1,0 +1,50 @@
+{
+ "design": "reports/2026-10-21_plan_gamma-refit-protocol.md (design check confirmed by the user 2026-10-21). E15's refit as filed took the unchanged model off the floor (P1 failed: PGD ratio 2.57 / 3.53 / 6.27 / 2.63, sparsity 0.94 to 1.09); the protocol is changed in two places and tested on W0 alone before any state arm",
+ "filed": "2026-10-21",
+ "gates": [
+  {
+   "id": "G0_benchmark",
+   "rule": "twenty steps timed at the full batch (ten at lr 0, ten training); seconds per step and the projected hours for w0_P are recorded; the cap (about $10) is confirmed from it"
+  },
+  {
+   "id": "G2_w0_identity",
+   "if_fail": "the harness is not reproducible on its own W0; stop",
+   "rule": "w0 at step 0 (released Gamma): every Pile ratio within 0.02 of 1 and sparsity ratio within 0.001 of 1"
+  }
+ ],
+ "predictions": [
+  {
+   "arm": "w0_P, every checkpoint",
+   "id": "P1_w0_control_v2",
+   "null": "drifts again. The same as E15's control (2.6 to 6.3): the released Gamma is not at rest on the objective as reconstructed, Gamma updating is shelved. Less, or only late, with W1 failing (the adversary still rising at 300): the warm-up is too short, K is raised once to 1000; a second failure shelves Gamma updating",
+   "pass": "PGD ratio <= 1 + 3 f and sparsity ratio in [0.99, 1.01] at every checkpoint",
+   "predicted": "pass: with a warmed adversary and the end-of-schedule rate the refit is the released run's own end state, and a converged Gamma random-walks within the floor",
+   "scored": true
+  },
+  {
+   "arm": "w0_P, the warm-up curve",
+   "id": "W1_adversary_warmed",
+   "null": "still rising by more than 5% per 100 steps: the adversary has not converged in 300 steps; P1 is read with that caveat and K is raised once",
+   "pass": "the persistent-adversary term's mean over warm-up steps 201-300 is within 5% of its mean over steps 101-200",
+   "predicted": "pass; the plateau value is reported (expected at or above about 0.6 nats: the harness's 20-step attacker reaches 0.70 at W0, and the persistent one has more freedom, one source per slot and position)",
+   "scored": true
+  },
+  {
+   "arm": "w0_P, Gamma steps 1 and 2",
+   "id": "W2_no_spike",
+   "null": "a spike like E15's step 2 (20x): the moments did not warm up, or the end rate is still too hot",
+   "pass": "the importance-minimality term on Gamma steps 1 and 2 is within 20% of its mean over the last 10 warm-up steps",
+   "predicted": "pass: Adam's first step is lr x m/sqrt(v), not a sign step, once the moments hold 300 steps of gradients",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "stochastic and CI-masked ratios at every checkpoint (expected within 0.02 of 1, as in E15); the three loss terms over the warm-up and the training (the persistent term expected flat after the warm-up, within 10% of its plateau; the importance term within 5% of its warm-up mean at steps 2991-3000); the benchmark's seconds per step and peak memory; mean CI per checkpoint and the trigger gates at steps 0 and 3000 (large/)",
+ "setup": {
+  "arms": "w0_P only (`refit --v2 --only w0_P`); the states and stage 0 are remade under the _v2 suffix by prep (same seeds)",
+  "blind_to": "W0 alone says nothing about any state; the Pile checks are blind to the trigger; the warm-up curve is the persistent adversary's own loss, not the harness's attacker. Positive control for the harness: step 0 (the released Gamma) must read 1.000 (G2). The filed null of E15's P1 (the control's drift curve) is the reference for every number below",
+  "early_stop": "the runner kills the run if the control's PGD ratio is above 1 + 3 f at both step 100 and step 300 (the protocol has failed as E15's did; about $3 spent); the JSON written at those checkpoints is the result",
+  "harness": "as E15: harness.measure at step 0 and every checkpoint, the W0 floor over 3 adversary seeds under the released Gamma, the sparsity loss ratio",
+  "noise": "f = max/min - 1 of W0's PGD KL over the three adversary seeds (E15: 0.075, line 1.22); the importance term moves about 8% step to step at W0 (E15: 854 at step 1, 922 at step 5)",
+  "protocol": "gamma.refit with warmup 300: the first 300 steps run the full step with Gamma's lr at 0 (the persistent adversary takes its steps and AdamW accumulates its moments; Gamma does not move), then Gamma trains at lr 5e-06 (the released ci_fn end-of-schedule value), constant, with the warmed moments. Everything else as E15: batch 64 in micro-batches of 8, released loss stack minus faithfulness, 3000 Gamma steps, checkpoints (100, 300, 1000, 3000) counted from the first Gamma step, the same seeded row order, bf16 autocast"
+ }
+}

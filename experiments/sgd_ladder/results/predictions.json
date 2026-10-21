@@ -1,0 +1,52 @@
+{
+ "about": "sgd_ladder (item 3a of reports/2026-10-21_review_sgd-finding-influence.md; plan reports/2026-10-21_plan_sgd-ladder.md): component training at step 10 on emoticon and E11's five ladder tasks with plain SGD (rate by E4's rule from 0.003, 0.01, 0.03, 0.1) and Adam at 1e-6 and 3e-6, beside E11's Adam 1e-5 states (re-read) and the do-nothing fine-tune, scored on the Pile harness in the same job. One shard per task, each with its own W0. Filed before any run",
+ "arm_verdict": "learned and stochastic and PGD both 'pass' -> pass; either 'fail' -> fail; else inconclusive; not learned -> 'did not learn' (counts as neither)",
+ "expected": {
+  "W0": "PGD KL 0.69, floor 0.05 to 0.21",
+  "adam_1e-5_E11": "emoticon 1.03 / 1.00 / 0.016 (pass); r0_t352 2.73 / 0.98 / 0.200 (fail); r1_t534 2.24 / 1.00 / 0.232 (fail); r1_t588 1.16 / 1.04 / 0.146 (pass); r2_t275 6.74 / 1.75 / 0.508 (fail); r2_t359 1.55 / 1.03 / 0.188 (inconclusive). The failing three are the harness's positive control: they should read 'fail' again",
+  "adam_1e-6": "does not learn by step 10 (a tenth of the 1e-5 arm's per-step change); Pile ratios near 1",
+  "adam_3e-6": "open; if it learns, KL elsewhere below Adam 1e-5's",
+  "do_nothing_E11": "PGD / stochastic / KL elsewhere: emoticon 2.18 / 1.00 / 0.055; r0_t352 1.58 / 1.00 / 0.105; r1_t534 2.17 / 1.01 / 0.122; r1_t588 1.22 / 0.98 / 0.083; r2_t275 2.26 / 1.02 / 0.203; r2_t359 1.24 / 1.02 / 0.091 (reported; reproduced under G1)",
+  "sgd_emoticon": "sgd_grid at step 10: rate 0.01 selected (P 0.980, KL elsewhere 0.011); if sgd_faith passes, PGD near 1"
+ },
+ "filed": "2026-10-21 15:34:48",
+ "gates": {
+  "C1_control": "after training, before any new arm is measured: the re-read Adam 1e-5 state's PGD ratio within 25% of E11's (so it reads 'fail' again on the three failing tasks: the harness's positive control). Fails: the shard stops",
+  "G0_w0": "first in every shard: W0's seed-0 PGD KL within 10% of 0.69, CI-masked KL within 2% of 0.348, PGD floor <= 0.25 (faith_score.w0_check). Fails: the shard stops",
+  "G1_references_reproduce": "before training: the regenerated do-nothing and the re-read Adam 1e-5 state read E11's held-out P and KL elsewhere to 0.01. Fails: the shard stops"
+ },
+ "measurements": {
+  "kl_other": "held-out KL elsewhere (all positions but the trigger) of the target model against W0, nats, absolute. At W0: 0. Blind to Pile text and to the decomposition",
+  "noise_floor": "f = W0's PGD max/min - 1 over adversary seeds 0, 1, 2 in the same shard (0.046 on the L40S, 0.209 on the L40). commute.faith_score.verdict: pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f), inconclusive between (about 1.24 to 1.81 on the L40: a reading within about 0.3 of 1.5 decides nothing on this card). One batch-order seed per state; E11's state-level PGD spread on r2_t359 was 0.128 Each reading uses its own same-job W0 floor: the stochastic verdict the stochastic seed spread, the PGD verdict the PGD spread (amended before the run, 2026-10-21, after the Codex review: one shared PGD band would have let stochastic ratios up to about 1.24 pass on the L40).",
+  "p_target": "held-out mean P(target) at the trigger, absolute. At W0: the task's baseline (emoticon 0.005)",
+  "pile": "harness.measure: Pile val rows 0..255 in two 128-row blocks, one PGD adversary per block (20 steps of 0.1, seed 0), stochastic (2 draws); each a ratio to this shard's W0 under seed 0 (relative). Scored: stochastic and adversarial (PGD). At W0: 1 by definition (absolute PGD 0.69, stochastic 0.248). Blind to the trigger (about 3 trigger positions in 131k) and to damage the 20-step adversary does not find",
+  "route_split": "local_faith.route_split at the trigger of the held-out windows: shares d, r, i, e_gate, e_delta (absolute, sum 1); reported, not scored. Undefined at W0; do-nothing reads e_delta near 1. Blind to anything off the trigger"
+ },
+ "predictions": [
+  {
+   "decision": "yes -> item 3b (steps 100 and 1000, both optimisers, H100 when available); only 'inconclusive' -> those states rerun with more adversary seeds or on an H100 before 3b is decided; no -> the frozen-Gamma failure holds across optimisers at step 10 and re-gating stays the main line",
+   "id": "Q1_failing_task_passes",
+   "kind": "two-sided question, no direction filed",
+   "rule": "on r0_t352, r1_t534 or r2_t275 (Adam 1e-5 failed in E11), some new arm (selected SGD, Adam 1e-6, Adam 3e-6) reads 'pass'"
+  },
+  {
+   "id": "P2_sgd_learns",
+   "predicted": "pass",
+   "rule": "the rate rule finds an SGD rate on every task",
+   "why": "sgd_grid: 0.01 to 0.1 learn emoticon by step 10. Scope: a fail is reported with the grid's range"
+  },
+  {
+   "id": "P3_sgd_less_damage",
+   "predicted": "pass",
+   "rule": "on every task where SGD learned, its KL elsewhere < the re-read Adam 1e-5's",
+   "why": "emoticon at step 10: 0.011 against 0.016; the update is smaller (not matched)"
+  }
+ ],
+ "rate_rule": "E4's, per task, at step 10: among SGD rates with held-out P(target) >= 0.9 and KL elsewhere <= 2 x the do-nothing's (this shard; emoticon 0.110 as in E4), the least KL elsewhere; if none, the highest P, 'did not learn'. Adam arms are fixed rates. An arm 'learned' if it meets both conditions",
+ "reported_not_scored": [
+  "route-split shares and trigger ratios of every state",
+  "CI-masked and unmasked ratios",
+  "every SGD rate's step-10 P and KL elsewhere",
+  "largest relative change per matrix"
+ ]
+}

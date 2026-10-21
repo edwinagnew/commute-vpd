@@ -12,7 +12,8 @@ memory of this conversation, so the brief has to stand on its own. Write it from
 names the run.
 
 Before spawning, check that:
-- for a scored run, `experiments/<name>/results/predictions.json` exists and the code has passed a smoke run;
+- for a scored run, `experiments/<name>/results/predictions.json` exists; a separate smoke only when the rule in
+  `.claude/CLAUDE.md` asks for one (a paid run over ~30 min, or an expensive late stage);
 - `make lint` is clean on the changed files, and the Codex review was run if measurement code changed.
 
 If one of these fails, tell the user instead of spawning.
@@ -25,16 +26,16 @@ Command: <exact command(s) or sbatch script, with stage arguments>
 Expected: <runtime from the smoke/benchmark>, <GPU memory>, <CPU RAM>
 Outputs: <files the run writes; mark which are the results to bring home; which are large/>
 Inputs not in git: <gitignored files the run needs, or none>
-Platform: cluster (default), RunPod allowed if the cluster has not started it within 30 min (or <shorter cap>)
-          | RunPod required because <reason>
+Platform: by expected run time (default): ≤ 30 min → cluster debug, RunPod if no start within 10 min;
+          longer → RunPod directly, card 4090 or faster (H100 for runs over ~1 h) | cluster only because <reason>
 Pod: fresh (default) | reuse an idle commute pod of this session if status() shows one | keep running after,
      the next run follows within ~1 h
-Budget: <$ cap for RunPod, ≤ $10 unless the user confirmed more>
+Budget: <$ cap for RunPod: what is left of the session's REMOTE_KERNELS_BUDGET ($40), less ~15% headroom>
 Watch for: <known failure modes, numbers to copy from the log>
 ```
 
-For a run of under ~30 min whose smoke is minutes, write "smoke, then scored if clean" and spawn one agent: it
-submits the scored job itself once the smoke log is clean. Two agents in sequence cost a second queue wait and a
+By default write "scored" (the scored run is its own smoke, `.claude/CLAUDE.md`). Where a smoke is required, write
+"smoke, then scored if clean" and spawn one agent: it submits the scored job itself once the smoke log is clean. Two agents in sequence cost a second queue wait and a
 second sync (2026-10-20: a 15-min emoticon run took over two hours this way).
 
 After spawning, tell the user in one line which agent is running what and the expected wall time from the brief's

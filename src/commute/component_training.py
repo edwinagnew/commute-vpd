@@ -107,12 +107,14 @@ class TrainConfig:
     save_steps: tuple[int, ...] = (10, 30)
     grad_clip: float = 1.0
     rank: int | None = None  # None: free offsets on every alive column; r: LoRA-shaped offsets (Offsets docstring)
+    optimizer: str = "adam"  # "adam" or "sgd" (sgd_grid, 2026-10-21)
+    momentum: float = 0.0  # SGD only; 0.0 is plain SGD (sgd_matched, 2026-10-21)
 
 
 def train(model: Any, uv: dict[str, tuple[Tensor, Tensor]], train_tokens: Tensor, heldout: Any, a_cfg: Any,
           cfg: TrainConfig, device: str, W0: dict[str, Tensor], save_dir: Path | None = None,
           log: Any = print) -> tuple[list[dict[str, Any]], dict[int, dict[str, tuple[Tensor, Tensor, Tensor]]]]:
-    """Adam on the alive (U, V) offsets of the matrices in `uv` (only those are hooked; the others keep W0) with arm A's
+    """Adam (or SGD with cfg.momentum, cfg.optimizer) on the alive (U, V) offsets of the matrices in `uv` (only those are hooked; the others keep W0) with arm A's
     loss (`a_cfg`: ArmAConfig, its o_token is the target token, its batch, seed, grad_clip and kl_lambda apply),
     held-out eval every step. Returns the per-step curve and, at
     cfg.save_steps, per matrix (delta-W, U_A', V_A') on CPU; the same are written to save_dir/state_step{n}.pt.
@@ -127,7 +129,9 @@ def train(model: Any, uv: dict[str, tuple[Tensor, Tensor]], train_tokens: Tensor
     linears = {k: vpd.target_linear(model, k) for k in uv}
     off = Offsets(uv, cfg.rank, seed=a_cfg.seed)
     params = list(off.parameters())
-    opt = torch.optim.Adam(params, lr=cfg.lr, betas=(0.9, 0.999), weight_decay=0.0)
+    assert cfg.optimizer in ("adam", "sgd"), cfg.optimizer
+    opt = (torch.optim.Adam(params, lr=cfg.lr, betas=(0.9, 0.999), weight_decay=0.0) if cfg.optimizer == "adam"
+           else torch.optim.SGD(params, lr=cfg.lr, momentum=cfg.momentum, weight_decay=0.0))
     gen = torch.Generator().manual_seed(a_cfg.seed)
     handles = hooks(linears, off)
     curve: list[dict[str, Any]] = []

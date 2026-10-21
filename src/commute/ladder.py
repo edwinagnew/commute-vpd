@@ -12,6 +12,9 @@ its energy is e_c = ||G v_c||^2 + ||G^T u_c||^2; coverage = sum_c gbar_c e_c / s
 where gbar_c is the mean of Gamma's g_c at the trigger over the training windows. It is the share of the first
 component-training step's energy that sits in components Gamma gates on at the trigger. Reported, not scored: the number
 of alive components with gbar_c > 0.5 at the trigger (L0) and max gbar_c.
+
+Coverage describes a plain-SGD first step, while every ladder arm trained with Adam, so E5's coverage predictions
+compare a predictor and an outcome from different optimisers (`reports/2026-10-21_review_sgd-finding-influence.md`).
 """
 
 from __future__ import annotations

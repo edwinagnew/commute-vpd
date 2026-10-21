@@ -1,0 +1,80 @@
+{
+  "status": "filed",
+  "status_note": "Filed 2026-10-21 after the user confirmed the plan and predictions in chat. Never edited after the run; changes go in a dated report.",
+  "filed": "2026-10-21",
+  "design": "reports/2026-10-21_plan_step-split.md",
+  "setup": {
+    "update": "emoticon full fine-tune, arm A (Adam lr 3e-5, batch 32, clip 1.0, seed 0, 24 matrices), 1000 steps, as E14/E16",
+    "step_split": "after every optimizer step t, per matrix, S_t = W_t - W_(t-1); pieces dU = c_t S_t V, dV = c_t S_t^T U against the CURRENT alive (U, V), c_t = argmin ||(c K(S_t) - S_t) Sigma^1/2|| on W0's train-window input moments (split.adjoint_step); U, V carry forward; Delta = W_t - U V^T takes the remainder incl. dU dV^T; Gamma frozen (split.StepSplit, carry=True, float32 on the GPU)",
+    "fixed_bases": "the same with the split taken against W0's (U, V) every step (carry=False); consistency numbers only, not through the harness",
+    "references": "do-nothing and the one-shot least-squares split of the same fine-tune at the same steps, same card (harness.nothing_and_split)",
+    "measure": "harness.measure at steps 10, 100, 1000: route split (d, r, e_delta) and held-out P(target), Delta's share of ||delta-W||^2 (delta_change_frac), Pile ratios to W0 under attacker seed 0 (256 rows, 20 PGD steps); floor f = max/min - 1 of W0's PGD KL over attacker seeds 0, 1, 2; line 1 + 3 f",
+    "split_numbers": "per scored step: Delta share unweighted and input-weighted for the step split, the fixed-bases variant and the one-shot adjoint split (1 - R); the accumulated second-order term's input-weighted energy over the Delta change's; the largest relative change of any u_c or v_c; split.block_table of the Delta change and of the update; per step: second-order / first-order energy, pooled and worst matrix"
+  },
+  "control_first": {
+    "id": "C0_W0_floor",
+    "arm": "W0 under the Pile harness, attacker seeds 0, 1, 2, before anything else",
+    "rule": "f <= 0.15 (absolute); otherwise the run stops before the fine-tune",
+    "expected": "f about 0.075 (E16, H100); an L40 may differ, which is why it is re-measured",
+    "blind_to": "anything about the step split; it checks only that the harness is as stable as before"
+  },
+  "gates": [
+    {
+      "id": "C1_out_out_kept",
+      "rule": "at every scored step |E_oo(Delta change) / E_oo(delta-W) - 1| <= 0.01, E_oo the absolute input-weighted outside-both energy against W0's bases (absolute tolerance)",
+      "expected": "<= 1e-3: first-order changes of the components cannot reach the block; only the second-order term and the bases' rotation can",
+      "if_fail": "the block code, the split's bookkeeping or the hook is wrong; P1-P4 unscored",
+      "blind_to": "everything inside the subcomponents' first-order reach"
+    },
+    {
+      "id": "G2_exact",
+      "rule": "at every scored step the step-split state's held-out P(target) within 1e-3 of the fine-tune's own eval, route shares sum to 1 within 1e-6, and harness delta_change_frac within 1e-3 of the split's own unweighted Delta share",
+      "expected": "differences <= 1e-5: the target weights are the fine-tune's by construction",
+      "if_fail": "the state is not the fine-tune's model; P1-P4 unscored"
+    },
+    {
+      "id": "G1_reading_E16",
+      "rule": "do-nothing and least-squares PGD ratios within max(0.15, 3 f) of E16's at the same steps",
+      "expected": "may fail at step 10 (E16 itself missed E14 there across cards: 6.96 vs 5.24); reported, not blocking: the same-card references are the ones read"
+    }
+  ],
+  "predictions": [
+    {
+      "id": "P1_second_order",
+      "scored": true,
+      "pass": "every step's pooled second-order / first-order input-weighted energy <= 1e-4, and at every scored step the accumulated second-order term's energy <= 1e-3 of the Delta change's (absolute)",
+      "null": "either bound exceeded: the per-step map is not first order at this step size",
+      "predicted": "pass: per-step ratio about 1e-6 (the pieces move u, v by ~1e-3 per step, squared), accumulated share 1e-5 to 1e-4",
+      "noise_floor": "float32 rounding, ~1e-7 relative",
+      "blind_to": "whether a small second-order term matters for behaviour; it is booked to Delta either way, so the weights stay exact"
+    },
+    {
+      "id": "P2_bases_little",
+      "scored": true,
+      "pass": "the largest relative change of any u_c or v_c <= 0.1 at step 1000, and at every scored step the step split's input-weighted Delta share within 0.05 (absolute) of the fixed-bases variant's and of the one-shot adjoint split's (1 - R)",
+      "null": "a gap > 0.05: carrying the bases forward, or refitting c per step, moves what the components take",
+      "predicted": "pass, low confidence on the piece size (depends on the gauge of U, V): Delta share weighted about 0.42 / 0.58 / 0.69 at steps 10 / 100 / 1000 for all three (E16's adjoint R 0.58 / 0.42 / 0.31); piece change 0.01-0.05",
+      "noise_floor": "fixed-bases vs one-shot pieces differ only by the spread of c across steps (0 when every step is proportional, tests/test_step_split.py)",
+      "blind_to": "behaviour: the fixed-bases variant is not scored by the harness"
+    },
+    {
+      "id": "P3_delta_route_rises",
+      "scored": true,
+      "pass": "the step split's route share e_delta <= 0.3 at step 10 and >= 0.5 at step 1000, and >= the least-squares split's e_delta at every scored step (absolute)",
+      "null": "e_delta < 0.5 at step 1000: refitting every step keeps the behaviour in the components, unlike the one-shot adjoint split",
+      "predicted": "pass: the step split is E16's adjoint state plus a remainder in Delta; that state's P(target) fell 0.93 / 0.60 / 0.10, so the remainder carries the behaviour late in training; least-squares e_delta 0.09 / 0.16 / 0.28",
+      "noise_floor": "route shares are deterministic given the state; across cards the fine-tune differs slightly (E16 G1)",
+      "blind_to": "the Pile; reads the trigger windows only"
+    },
+    {
+      "id": "P4_pile_between",
+      "scored": true,
+      "pass": "at every scored step the step split's Pile PGD ratio lies within [min - 3 f, max + 3 f] of the do-nothing and least-squares ratios at that step",
+      "null": "outside that band",
+      "predicted": "pass: E16 do-nothing 2.52 / 1.14 / 1.50, least-squares 6.96 / 1.48 / 2.11",
+      "noise_floor": "f, about 0.075",
+      "blind_to": "the trained behaviour (the Pile checks do not see it)"
+    }
+  ],
+  "reported_not_scored": "stochastic, CI-masked and unmasked ratios; d, r; the four blocks of the Delta change and of the update with outside-both / null; c range per step; the number of matrix-steps with no first-order image (expected 0)"
+}

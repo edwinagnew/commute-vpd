@@ -1,0 +1,59 @@
+{
+ "about": "sgd_faith (item 1 of reports/2026-10-21_review_sgd-finding-influence.md): faithfulness of sgd_grid's saved plain-SGD emoticon state (lr 0.01, 30 steps) on the Pile harness, E4's trigger-local masked checks and the route split, with Adam lr 1e-5 at 30 steps as the reference scored by the same code in the same job. Filed before any run; plan reports/2026-10-21_plan_sgd-faithfulness.md",
+ "control": {
+  "id": "C1_adam_control",
+  "predicted": "pass",
+  "rule": "Adam's stochastic, PGD and CI-masked ratios <= 1.5 (E4 on a 4090: 1.003, 1.067, 1.003); state_gated within 0.05 of 0.637 (E4 amendment 1); w0_gated < 0.5 (0.0064); d within 0.02 of 0.031 and r within 0.05 of 0.508 (ladder emoticon, step 30)",
+  "runs": "after G0, before the SGD state; fails: stop before SGD"
+ },
+ "filed": "2026-10-21 15:21:17",
+ "gates": {
+  "G0_w0": "runs first: W0's seed-0 PGD KL within 10% of 0.69, CI-masked KL within 2% of 0.348, PGD floor <= 0.25. Fails: the run stops, nothing scored",
+  "G1_adam_reproduces": "the regenerated Adam state's held-out P(o) and KL elsewhere at step 30 within 0.01 of 0.9961 and 0.0091 (E4 adam_all, ladder emoticon). Fails: stop before SGD",
+  "G2_sgd_is_saved_state": "the loaded SGD state's target P(o) at the trigger within 0.01 of 0.9909 and its largest ||delta-W|| / ||W0|| within 1% of 0.002637 (sgd_grid.json, lr 0.01, step 30). Fails: SGD unscored"
+ },
+ "measurements": {
+  "noise_floors": "PGD: W0 max/min - 1 over adversary seeds 0, 1, 2 in this job (0.209 on the L40 before), so a PGD ratio inside 1.5 / (1 + f) .. 1.5 (1 + f) (about 1.24 to 1.81) is reported as not decisive on this card. Stochastic: same, about 0.002. CI-masked, unmasked, trigger ratios and shares: deterministic under Gamma frozen; bf16 vs fp32 reruns move them by about 0.01 (ladder vs E16 shares at step 10: r 0.528 vs 0.529, d 0.025 vs 0.026)",
+  "pile": "round 2's harness (harness.measure): Pile val rows 0..255 in two 128-row blocks, one PGD adversary per block (20 sign steps of 0.1, seed 0), stochastic (2 draws), CI-masked and unmasked KL; each a ratio to W0 under seed 0 in this job. Expected at W0: 1 by definition (absolute: PGD 0.69, CI-masked 0.348, stochastic 0.248, unmasked 0.012). Blind to the trigger (about 3 trigger positions in 131k)",
+  "relative_vs_absolute": "Pile numbers are ratios to W0 (relative); trigger ratios and shares are absolute",
+  "route_split": "local_faith.route_split: shares of the target's log-odds gain at the trigger, d (changed components at W0's gates), r (re-gating), i, e_gate, e_delta; they sum to 1. Undefined at W0 (no gain); not scored below a gain of 1. Blind to which pieces moved and to anything off the trigger",
+  "trigger_local": "E4 amendment 1's measure, read from the route split's cells on the 73 held-out windows: mean P(o) at the trigger of the CI-masked model (state's components, Delta out) over the target model's, with Gamma's gates from the state's activations (state_gated, cell L11) and from W0's (w0_gated, cell L10). At W0: 0.39 (0.0044 / 0.0115, no behaviour to carry). Blind to positions outside the windows and to damage on Pile"
+ },
+ "predictions": [
+  {
+   "confidence": "genuinely open: E4's overshooting SGD state (lr 0.3) read PGD 24.9. This state's largest relative change is 0.0026 against Adam's 0.0066 and its KL elsewhere 0.0065 against 0.0091, which points to a pass, but SGD faithfulness has never been measured at a learning rate that learns cleanly",
+   "id": "P1_sgd_pile",
+   "measure": "SGD state's stochastic, PGD and CI-masked Pile ratios",
+   "pass": "all three <= 1.5",
+   "predicted": "pass"
+  },
+  {
+   "id": "P2_sgd_state_gated",
+   "measure": "SGD state's state_gated trigger ratio",
+   "pass": ">= 0.8 (E4's 'inside' line; Adam reads 0.637, E4's lr-0.3 SGD state 0.999)",
+   "predicted": "pass",
+   "why": "plain SGD's step follows the gradient, which is largest on the pieces the trigger's activations read, the same pieces Gamma switches on there; Adam's per-coordinate scaling spreads the change onto pieces Gamma leaves off (Adam's e_gate 0.445). Open"
+  },
+  {
+   "id": "P3_sgd_w0_gated",
+   "measure": "SGD state's w0_gated trigger ratio",
+   "pass": "< 0.5",
+   "predicted": "pass",
+   "why": "the behaviour still needs re-gating, as for every state so far (E4's lr-0.3 SGD state 0.188)"
+  },
+  {
+   "id": "P4_sgd_direct_share",
+   "measure": "SGD state's route-split share d",
+   "pass": "> 0.1 (the research log's Result 3 row says the moved pieces carry a tenth or less)",
+   "predicted": "pass",
+   "scorable_if": "SGD gain >= 1",
+   "why": "reverting SGD's top 10 pieces removes 0.16 of its gain against 0.016 for Adam (sgd_grid). Open"
+  }
+ ],
+ "reported_not_scored": [
+  "r, i, e_gate, e_delta for both states",
+  "unmasked Pile ratio",
+  "Delta change share (0 for component training)",
+  "PGD ratio against 1 + 3 f"
+ ]
+}

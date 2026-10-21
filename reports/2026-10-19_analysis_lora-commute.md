@@ -12,7 +12,7 @@ whether they pass or fail that line is unresolved. The LoRA lift is less fragile
 7.3). The all-matrix pull-back stays at the floor (1.10), as in round 2. On the mechanism reading nothing distinguishes the LoRA from the fine-tune: the changed
 subcomponents carry 0.05–0.11 of the gain for every arm and re-gating carries 0.5–0.6 for every arm. Of eight filed
 predictions four are null (P1, P2, P5, C2), four neither (P3, P4, C1, C3), none pass. Figures and every number:
-`notebooks/lora_commute.ipynb`.
+`notebooks/E07_lora_commute.ipynb`.
 
 *2026-10-19, coding agent. Plan `reports/2026-10-19_plan_lora-lift-and-pullback.md` with its addendum of the same day;
 predictions `experiments/lora_commute/results/predictions.json` (filed before the run, unchanged); results
@@ -127,7 +127,7 @@ spread (3.5%) is the floor used, against a 35% reproduction miss on one state.
 - The Jaccard overlaps of the switched-on sets (computed on the pod, lost with the final JSON).
 - Any task other than emoticon; Γ updating.
 
-**Hand-off.** A new session should start from this report and `notebooks/lora_commute.ipynb`. The one experiment this
+**Hand-off.** A new session should start from this report and `notebooks/E07_lora_commute.ipynb`. The one experiment this
 run points at is the read-side arm above (a LoRA whose A is not random), through `/design`; the G4 miss should be
 closed by a 5-minute L40 rerun of round 2's lift at step 10 before any PGD number from a 4090 is compared with one from
 the cluster again.

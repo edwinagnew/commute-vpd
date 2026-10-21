@@ -20,34 +20,33 @@ whether RunPod is allowed if the cluster queue is slow. If something is missing,
 `run.py`, its `results/predictions.json` and the plan named in `README.md`'s "Current plan" line. If that still leaves
 the command or the outputs unclear, stop and ask; don't guess.
 
-Refuse a scored run if `experiments/<name>/results/predictions.json` is missing, or if the code has not passed a
-smoke run. Say so and stop.
+Refuse a scored run if `experiments/<name>/results/predictions.json` is missing. Say so and stop. A scored run of
+code that has never run is normal (`.claude/CLAUDE.md`: the scored run is its own smoke): watch its first stage
+closely, and on a code error stop and report the traceback rather than resubmit.
 
 ## Choosing where to run
 
-Default to the MATS cluster. It is free, and most commute runs are single-GPU scripts of minutes to a few hours,
-which is exactly what it is for. A run that is just "python experiments/<name>/run.py <stage>" on one GPU goes to the
-cluster unless there is a reason not to. Use RunPod only when:
+The user wants results as soon as possible; compute is cheap next to waiting. Pick the platform that gets the
+results home first, counting set-up and queue, not the one with the lowest $/h.
 
-- the brief asks for it (interactive kernel work, or a package or container the cluster can't provide), or
-- the queue blocks the job: no start within **30 min** of submission (the brief may set a shorter cap, never a longer
-  one without the user). For short runs the cap is the run's own expected time, floored at 10 min: a 3-min smoke
-  waits 10 min, a 20-min check waits 20 min, anything longer waits 30 min.
+- **Quick runs go to the cluster's `debug` QoS:** smoke runs and checks expected to take **≤ 30 min** on one GPU.
+  The cluster needs no set-up (venv and VPD files are there) and debug jobs have started 3–6 min after submission
+  (2026-10-19). Submit at once and wait at most **10 min** for a start; then `scancel` and go to RunPod. Do **not**
+  use `sbatch --test-only` for debug jobs: it ignores debug's priority and predicted a 24-h wait for jobs that started
+  in 3–6 min.
+- **Everything else goes straight to RunPod:** runs over ~30 min, anything needing the `normal` QoS, multi-stage
+  scored runs. Don't try the cluster first: `normal` jobs have been estimated days out (16 days for a 2-h job,
+  2026-10-19), and a ~5-min pod set-up beats any queue wait. RunPod is pre-authorised for these within the budget;
+  don't return to the lead to ask.
+- **Smoke, then scored, where the scored run goes to RunPod:** run the smoke on the same pod, then the scored run. One
+  set-up instead of a cluster sync plus a pod set-up.
+- The brief can override either way (e.g. "cluster: needs a file only on /mnt/nw").
 
-How to tell, by QoS:
-- **`debug` (run ≤ 2 h, 1 GPU):** submit at once and wait. Do **not** use `sbatch --test-only` for debug jobs: it
-  ignores debug's priority (1000 vs 0) and is wildly pessimistic. On 2026-10-19 it predicted a start 24 h away while
-  the two debug smoke jobs submitted that hour (22366, 22368) started 6 min and 3 min after submission with ~90 jobs
-  pending.
-- **`normal` (run > 2 h):** `sbatch --test-only ...` is the only signal. If its estimated start is more than 30 min
-  away, the queue is blocked (on 2026-10-19 the estimate for a 2-h normal job was 16 days).
+When you abandon a queued cluster job: `scancel` it first, then `start()` the pod, and put both IDs in the report.
+Never leave the cluster job queued as a fallback: it would start later and run the experiment twice.
 
-When the cap passes: `scancel` the pending job first, then `start()` the pod, and put both IDs in the report. Never
-leave the cluster job queued as a fallback: it would start later and run the experiment twice. If the brief does not
-pre-authorise RunPod, return to the lead with the numbers instead of starting a pod.
-
-Estimate the RunPod cost (rate × expected hours, plus ~10 min of setup) before `start()`. Over $10, stop and ask: the
-30-min rule routes long scored runs to RunPod too, and a 6-h run on a 4090 is ~$5–6, a 12-h run is over the cap.
+Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before `start()`. Over the brief's budget
+(at most what is left of the session's $40 `REMOTE_KERNELS_BUDGET`, less ~15% headroom), stop and ask.
 
 ## MATS cluster
 
@@ -90,10 +89,17 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of setup) before 
   alone, and never `attach(force=true)`.
 - Otherwise set `name = "commute-<experiment>"` in `remote-kernels.toml` so the pod shows as
   `commute-<experiment>-<id>`, then `start()`. SECURE cloud, `cleanup = "terminate"`: nothing on the pod survives.
-  The GPU comes from `gpu-type-ids` (cheapest adequate card first, A5000 → 3090 → RTX PRO 4000 → A40 → RTX PRO 4500 →
-  4090 → L40S; the 67M model fits any of them). A run that the brief says needs more memory or speed passes
-  `start(gpu_type="NVIDIA L40S")` (or another name from that list); don't edit the list for one run. Report which card
-  was placed and its $/h: stock in Secure cloud is thin and you often get a dearer card than the first choice.
+  Pick the card for speed, not price: the default list in `gpu-type-ids` starts at the 4090 and only goes up. Don't
+  pass a smaller or older card (A5000, 3090, A40, RTX PRO 4000/4500) to save money; a slower run costs the user more
+  than the dollars saved. For a run expected to take over ~1 h on a 4090, start an H100
+  (`start(gpu_type="NVIDIA H100 80GB HBM3")`) when the cost estimate fits the budget, and say in the ETA line which
+  card and why. Report which card was placed and its $/h: Secure-cloud stock is thin, so the first choice is often
+  taken. If `start()` fails on a GPU type name, report the exact error rather than falling back to a small card.
+- On a pod, `nproc` reports the host's CPUs (96) while the container's cgroup allows far fewer (7.65 on the
+  2026-10-20 lora_split pod), so PyTorch's CPU stages oversubscribe and crawl. Before any CPU-heavy stage, set
+  `OMP_NUM_THREADS` and `MKL_NUM_THREADS` to the cgroup's count, rounded down: quota ÷ period from
+  `/sys/fs/cgroup/cpu.max` (or `cpu.cfs_quota_us ÷ cpu.cfs_period_us` on cgroup v1). The split tables went from
+  64–82 s to 22 s each.
 - A fresh pod costs about 5 min before the experiment starts (measured 2026-10-19 on a 4090: 43 s to the first cell,
   `uv sync` 1–2 min with the 847 MB CUDA torch, `vpd.fetch()` 140 s for 3.2 GB). The `[env]` table in
   `remote-kernels.toml` already sets `COMMUTE_CACHE_DIR`, `HF_HOME` and `UV_CACHE_DIR` to `/root/...`; the venv is
@@ -113,7 +119,7 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of setup) before 
   parent directory, because downloading a directory nests it. Look at the local layout after the first download.
 - Before `terminate()`: download the final results file, check its sha256 on both sides, then terminate. Terminate as
   soon as the run is done or dead, unless the brief says "keep the pod running for the next run": then leave it
-  running, and the report says so, with the pod ID, the hourly rate and the time it went idle. A kept pod costs
+  running, and the report says so, with the pod ID, the hourly rate and the time it went idle. A kept 4090 pod costs
   about $0.89/h idle; a fresh one costs ~5 min and ~$0.10 of setup.
 - If the plugin loses the pod (connection refused, port moved), stop and report at once. Don't retry in a loop while
   it bills.
@@ -123,7 +129,8 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of setup) before 
 The user follows this agent's tab, so before the first `sbatch`, `srun` or `start()`, write one line in your reply
 text (not only in a tool call) of the form
 
-    ETA: cluster debug queue 3–30 min + run ~12 min → results by ~15:40; if no start by 15:28, RunPod (+~10 min setup, ~$0.30)
+    ETA: cluster debug queue 3–10 min + run ~12 min → results by ~15:30; if no start by 15:18, RunPod 4090 (+~5 min setup, ~$0.30)
+    ETA: RunPod 4090, set-up ~5 min + run ~2 h → results by ~17:45, ~$2
 
 with the run time taken from the brief's "Expected" line (or the smoke's timing) and the clock times computed from
 `date`. Print a fresh ETA line whenever the plan changes: the job starts (now a firm end time), the cap passes and you

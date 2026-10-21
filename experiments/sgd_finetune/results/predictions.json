@@ -1,0 +1,98 @@
+{
+ "about": "sgd_finetune: items 5 and 7 of reports/2026-10-21_review_sgd-finding-influence.md. Plan reports/2026-10-21_plan_sgd-finetune.md. Filed before any run.",
+ "filed": "2026-10-21 15:35:37",
+ "gates": {
+  "G0_w0": "runs first: faith_score.w0_check (seed-0 PGD within 10% of 0.69, CI-masked within 2% of 0.348, PGD floor <= 0.25; 0.209 on the L40). Fails: stop, nothing scored",
+  "G1_adam_reproduces": "Adam fine-tune's held-out P(o) and KL elsewhere at step 10 within 0.01 of 0.9993 and 0.0554 (E16). Fails: stop before the Pile states",
+  "G2_sgd_state": "the saved SGD fine-tune's do-nothing target P(o) at the trigger within 0.01 of stage rate's held-out P(o) (float16 storage). Fails: SGD rows reported, not scored",
+  "R0_rate": "stage split runs only if stage rate finds a passing SGD rate; if none, the null is reported with the grid's range (0.001 to 0.1 at step 10) and the experiment stops"
+ },
+ "predictions": [
+  {
+   "blind_to": "faithfulness (the split stage reads it)",
+   "expected": "W0: P(o) 0.004, KL 0. 0.001 too small (P(o) < 0.9; component training at 0.001 read 0.064 at step 10). 0.1 too large (E2: KL elsewhere 0.60 at step 10). Adam reference: P(o) 0.9993, KL 0.0554",
+   "id": "R1_sgd_rate",
+   "measure": "E4's rule over the five rates at step 10",
+   "noise_floor": "one seed; none measured",
+   "pass": "some rate passes",
+   "predicted": "pass, at 0.01 or 0.03",
+   "relative_vs_absolute": "absolute",
+   "stage": "rate"
+  },
+  {
+   "blind_to": "what the outside part does to behaviour or faithfulness; per-matrix differences under the pooling",
+   "expected": "W0: undefined (delta-W 0). Null: 1 by definition. Do-nothing: same as the update (a property of delta-W). Adam reference: 0.0336 / 0.155 = 0.217 (E16 step 10)",
+   "id": "P1_outside_share",
+   "item": 7,
+   "measure": "outside-both block over its null (split.block_table pooled_all out_out_ratio), SGD fine-tune / Adam fine-tune, same job",
+   "noise_floor": "deterministic given delta-W; no seed floor. Adam's own ratio moves 0.22 -> 0.33 between steps 10 and 100 (E16), the scale of a recipe change",
+   "pass": "SGD / Adam <= 0.8 ('lower'); >= 1.25 is 'higher'; between is 'alike' (TRIED's E2 line)",
+   "predicted": "lower: an SGD step's read side lies in the inputs' span weighted by their variance, what V reads; Adam's per-coordinate step spreads onto low-variance input directions. Open",
+   "relative_vs_absolute": "relative (SGD over Adam)",
+   "stage": "split"
+  },
+  {
+   "blind_to": "the trigger (about 3 positions in 131k)",
+   "expected": "W0: 1. Do-nothing: below Adam's in-job value (Adam 2.2 to 2.5). Adam reference: 5.2 to 7.0 (E8 L40, E14, E16)",
+   "id": "P2_least_squares_sgd",
+   "item": 7,
+   "measure": "SGD fine-tune's least-squares split, Pile PGD ratio",
+   "noise_floor": "the W0 floor f, through the verdict's band",
+   "pass": "verdict 'fail' (>= 1.5 (1 + f))",
+   "predicted": "pass (the split is fragile under SGD too). Open: the SGD update is smaller than Adam's",
+   "relative_vs_absolute": "ratio to the same-job W0",
+   "stage": "split"
+  },
+  {
+   "blind_to": "as P2; and the behaviour (P(o) reported)",
+   "expected": "W0: 1. Adam reference: PGD 1.06, stochastic 0.99 (E14, E16)",
+   "id": "P3_adjoint_sgd",
+   "item": 7,
+   "measure": "SGD fine-tune's scaled adjoint split, Pile PGD and stochastic ratios",
+   "noise_floor": "as P2; stochastic its own floor",
+   "pass": "both verdicts 'pass'",
+   "predicted": "pass",
+   "relative_vs_absolute": "ratio to the same-job W0",
+   "stage": "split"
+  },
+  {
+   "blind_to": "as P2",
+   "expected": "W0: ratios 1, P(o) 0.004. Adam reference (component training 1e-5, step 10, E16): PGD 1.03, stochastic 1.00, P(o) 0.9998",
+   "id": "P4_ct_sgd",
+   "item": 5,
+   "measure": "SGD component training at the matched rate: Pile PGD and stochastic ratios, target P(o) at the trigger",
+   "noise_floor": "as P2",
+   "pass": "both verdicts 'pass' and P(o) >= 0.9",
+   "predicted": "pass",
+   "relative_vs_absolute": "ratios relative to W0; P(o) absolute",
+   "stage": "split"
+  },
+  {
+   "blind_to": "scale (a cosine); behaviour; per-matrix spread under pooling",
+   "expected": "W0: undefined. 1 at step 1 with equal rates and no clipping (first order). Adam: not recorded",
+   "id": "P5_ct_is_adjoint",
+   "item": 5,
+   "measure": "input-weighted cosine, pooled over the 24 matrices, of the component-training weight change with K(delta-W) = U U^T delta-W + delta-W V V^T of the same-optimiser fine-tune (unscaled adjoint split)",
+   "noise_floor": "deterministic; one seed",
+   "pass": "SGD cosine >= 0.9 and above Adam's (Adam component training 1e-5 against K of the Adam fine-tune)",
+   "predicted": "pass: one plain-SGD step of component training is the adjoint split of the fine-tune's step at the same point; path, clipping and the rate differ only at second order over 10 small steps. Adam's per-coordinate scaling acts on different coordinates in the two parameterisations",
+   "relative_vs_absolute": "absolute",
+   "stage": "split"
+  }
+ ],
+ "reported_not_scored": [
+  "do-nothing Pile ratios of both fine-tunes",
+  "the four blocks of both fine-tunes",
+  "P(o), gain and route shares d, r of every state",
+  "the adjoint states' reproduced share R",
+  "CI-masked and unmasked ratios",
+  "the component-training rate grid"
+ ],
+ "setup": {
+  "adam_finetune": "Adam 3e-05 (E14, E16), regenerated in the split job",
+  "harness": "harness.measure: Pile rows 0..255, PGD 20 steps, ratios to W0 under adversary seed 0 in the same job; floor f = max/min - 1 of W0's PGD KL over seeds (0, 1); faith_score.verdict: pass <= 1.5/(1+f), fail >= 1.5(1+f), inconclusive between (about 1.24 to 1.81 on the L40's f 0.21). Stochastic uses its own floor (about 0.002)",
+  "sgd_component_training": "plain SGD on the alive (U, V), Gamma and Delta frozen, 10 steps, rate from (0.003, 0.01, 0.03, 0.1, 0.3) whose largest ||delta-W|| / ||W0|| over matrices at step 10 is nearest the selected SGD fine-tune's (|log ratio|)",
+  "sgd_finetune": "plain SGD (no momentum) at (0.001, 0.003, 0.01, 0.03, 0.1); E4's rule: held-out P(o) >= 0.9 and KL elsewhere <= 0.11 at step 10, the lowest KL elsewhere among those",
+  "task": "emoticon arm A (CE on o at the trigger + KL elsewhere), batch 32, clip 1, seed 0, 10 steps, 24 matrices"
+ }
+}

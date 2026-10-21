@@ -66,8 +66,8 @@ def per_matrix(out: dict[str, Any], path: Path) -> None:
 
 def headline(out: dict[str, Any], path: Path) -> None:
     lora, ft, step = records(out)
-    arms = [("LoRA nothing", "LoRA", lora["nothing"]), (f"LoRA lift (step {step})", "LoRA", lora["lift"]),
-            ("ft nothing", "ft", ft["nothing"]), (f"ft lift (step {out['ft']['step']})", "ft", ft["lift"])]
+    arms = [("LoRA, do-nothing", "LoRA", lora["nothing"]), (f"LoRA, split (step {step})", "LoRA", lora["lift"]),
+            ("fine-tune, do-nothing", "ft", ft["nothing"]), (f"fine-tune, split (step {out['ft']['step']})", "ft", ft["lift"])]
     fig, (left, right) = plt.subplots(1, 2, figsize=(11, 4.2))
     x = list(range(len(arms)))
     labels = [a[0] for a in arms]
@@ -76,22 +76,22 @@ def headline(out: dict[str, Any], path: Path) -> None:
     for y, txt in ((0.2, "M2 null (<= 0.2)"), (0.3, "M2 pass (>= 0.3)")):
         left.axhline(y, color=GREY, linewidth=1, linestyle="--")
         left.text(len(arms) - 0.5, y, txt, ha="right", va="bottom", fontsize=8, color=GREY)
-    left.set_ylabel("e_delta (trigger gain outside the subcomponents)")
+    left.set_ylabel("e_delta (share of the trigger gain left in Delta)")
     left.set_title("How much of the behaviour stays in Delta?", fontsize=10)
     if all("pile" in a[2] for a in arms):
         right.bar(x, [a[2]["pile"]["pgd_kl"] for a in arms], color=colors, width=0.6, linewidth=0)
         fl = out["W0"]["pgd_floor"]
         lines = [(1 + 3 * fl, "W0 + 3 floors"), (2, "C2m null (<= 2)"), (5, "C2m pass (>= 5)"),
-                 (out["ref"]["lift_ft_pgd_ratio"], "ft lift, round 2 (L40)"), (out["ref"]["round4_4090"]["lift_ft_pgd_ratio"], "ft lift, round 4 (4090)")]
+                 (out["ref"]["lift_ft_pgd_ratio"], "fine-tune split, round 2 (L40)"), (out["ref"]["round4_4090"]["lift_ft_pgd_ratio"], "fine-tune split, round 4 (4090)")]
         for y, txt in lines:
             right.axhline(y, color=GREY, linewidth=1, linestyle="--")
             right.text(-0.4, y, txt, ha="left", va="bottom", fontsize=8, color=GREY)
         right.set_ylabel("Pile PGD KL, ratio to W0")
-        right.set_title("Is the lifted state adversarially faithful?", fontsize=10)
+        right.set_title("Is the split state adversarially faithful?", fontsize=10)
     for ax in (left, right):
         ax.set_xticks(x, labels, rotation=20, ha="right", fontsize=9)
         ax.spines[["top", "right"]].set_visible(False)
-    fig.suptitle("Does the matched LoRA lift like the fine-tune?")
+    fig.suptitle("Does the matched LoRA split like the fine-tune?")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)

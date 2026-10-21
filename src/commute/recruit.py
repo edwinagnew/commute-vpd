@@ -144,3 +144,57 @@ class ContrastAcc:
             d = (mean_on - mean_all).float()
             out[k] = torch.where(alive[k].cpu().bool(), d, torch.zeros_like(d))
         return out
+
+
+# ----------------------------------------------------------------------------- trigger-only gate patterns (E18)
+# Added 2026-10-21 for `experiments/regating_leak` (reports/2026-10-21_plan_regating-leak.md). Each pattern is W0's gates
+# everywhere except the trigger position, where it writes per-window values `trig[b][key]` (B, C).
+
+TrigVals = list[dict[str, Tensor]]
+
+
+def at_trigger(gates: Gates, half: int) -> TrigVals:
+    """Each window's own gates at the trigger position."""
+    return [{k: v[:, half] for k, v in g.items()} for g in gates]
+
+
+def shifted(gates_base: Gates, half: int, shift: dict[str, Tensor]) -> TrigVals:
+    """Each window's base gates at the trigger plus one shared (C,) shift per matrix, clipped to [0, 1]."""
+    return [{k: (v[:, half].float() + shift[k].float()).clamp(0.0, 1.0) for k, v in g.items()} for g in gates_base]
+
+
+def constant(gates_base: Gates, half: int, vec: dict[str, Tensor]) -> TrigVals:
+    """The same (C,) vector per matrix at the trigger of every window: no per-window term at all."""
+    return [{k: vec[k].float().expand(v.shape[0], -1) for k, v in g.items()} for g in gates_base]
+
+
+def with_trigger(gates_base: Gates, half: int, trig: TrigVals) -> Gates:
+    """The base gate pattern with `trig` written at the trigger position (every other position untouched)."""
+    out: Gates = []
+    for g0, t in zip(gates_base, trig, strict=True):
+        h = {}
+        for k, v in g0.items():
+            v = v.clone()
+            v[:, half] = t[k].to(v.device, v.dtype)
+            h[k] = v
+        out.append(h)
+    return out
+
+
+def mean_change(mean_state: dict[str, Tensor], mean_base: dict[str, Tensor], alive: dict[str, Tensor]) -> dict[str, Tensor]:
+    """Per subcomponent, mean trigger gate under the state minus under W0 (float32, CPU); dead subcomponents set to 0."""
+    return {k: torch.where(alive[k].cpu().bool(), (v.float() - mean_base[k].float()).cpu(), torch.zeros(v.shape))
+            for k, v in mean_state.items()}
+
+
+def moved(shift: dict[str, Tensor], sel: Sel, dest: Sel) -> dict[str, Tensor]:
+    """A shift that is zero except at `dest`, whose members take the values `shift` has at `sel`'s members, matrix by
+    matrix in order: as much switching-on as `sel` gets, put on other subcomponents (the random null)."""
+    out = {}
+    for k, v in shift.items():
+        m = torch.zeros_like(v)
+        d = dest.get(k)
+        if d is not None and d.numel():
+            m[d] = v[sel[k][: d.numel()]]
+        out[k] = m
+    return out

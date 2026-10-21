@@ -2,7 +2,7 @@
 
 **Takeaway.** On the emoticon task, the decomposition can follow post-training if the training happens inside it
 (pull-back: faithful at every metric through 30 steps, P3′ passed), but not if a finished fine-tune is translated
-onto it afterwards (lift: adversarial ratio 5.4 by step 10, P2′ reversed). Notebook: `notebooks/lift_test_round2.ipynb`.
+onto it afterwards (lift: adversarial ratio 5.4 by step 10, P2′ reversed). Notebook: `notebooks/E02_lift_test.ipynb`.
 
 *2026-10-14, coding agent. Round 2 of `reports/2026-10-14_plan_lift-test.md`. Predictions filed before each
 run (`results/predictions.json`, then `results/predictions_amend1.json`). Cluster jobs 20266, 20268, 20281, 20288,

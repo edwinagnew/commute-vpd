@@ -11,6 +11,11 @@ Deferred ideas and loose ends. Date each entry.
   known answer to validate the measures against.
 - 2026-10-14. Updating Γ as part of Φ (user, 2026-10-14: "very fiddly but may well be essential"). Ignored for now;
   revisit once the frozen-Γ maps are understood. Simplest form: let Γ re-fit for a few steps.
+  2026-10-20: started as E15 (`experiments/gamma_refit`); the refit as filed fails its W₀ control (adversarial 2.6–6.3 at
+  every checkpoint). 2026-10-21: the protocol fix (adversary warm-up, lr 5e-6) failed the W₀ control too (2.1 at step
+  100, 7.8 at 300; `reports/2026-10-21_plan_gamma-refit-protocol.md`). Shelved, then reopened by the user the same day
+  (`reports/2026-10-21_decision_gamma-refit-reopened.md`): **ongoing, being fixed**. The refit's attacker plateaus at 0.42 nats where the harness's
+  reaches 0.70 on the same Γ; the fix is a matched attacker, its W₀ control run first.
 - 2026-10-14. **Round 2 inputs** (planned 2026-10-14 as round 2, `reports/2026-10-14_plan_lift-test.md`; the k-sparse
   nulls, selectors, span{U_c, u_o} edits and k = 1 on `2359` were dropped from it and stay here). Sources: "What this changes" in
   `reports/2026-10-14_analysis_transport-test.md` and in `reports/2026-10-14_review_round1-audit.md`, and §7 of
@@ -95,7 +100,8 @@ Deferred ideas and loose ends. Date each entry.
     optimiser seeds). Not yet measured.
   - **Component training against Γ's values:** the identity test showed Adam component training spreads its update over thousands of
     components, so a per-component comparison is moot; the functional version (CI-masked retained at the trigger
-    against Γ's coverage of the gradient) is the ladder's claim.
+    against Γ's coverage of the gradient) is the ladder's claim. For plain SGD (E4 follow-up) the top 100 carry about
+    half the gain, so the per-subcomponent version is worth doing on that state.
   - **Save every trained state: done** in `component_training.train` (states written at the save steps).
   - **"Blind to" line per metric: done** as a rule in `.claude/CLAUDE.md`; the ladder's predictions carry one.
 - 2026-10-15. **Round 3 = the task ladder** (`reports/2026-10-15_plan_task-ladder.md`, confirmed by the user; done, see the 2026-10-19 entry). Deferred
@@ -170,7 +176,8 @@ Deferred ideas and loose ends. Date each entry.
   "LoRA component training" in answer to the user's repeated request ("I feel like I've said a million times i want to test lora
   pullback"), but no LoRA is trained in it; it answered the 2026-10-15 backlog definition, not the user's
   (`reports/2026-10-20_review_terminology.md` §3). The user's request is the next entry.
-- 2026-10-20. **Split study: LoRA and fine-tune under one table** (the user's request since 2026-10-14, never built;
+- 2026-10-20. **Split study: LoRA and fine-tune under one table** — **run 2026-10-20 as E14**: `reports/2026-10-20_plan_lora-split.md`,
+  `reports/2026-10-20_analysis_lora-split.md`, `experiments/lora_split` (the per-subcomponent pieces were lost with the pod; rerun the split stage on the cluster) (the user's request since 2026-10-14, never built before;
   `reports/2026-10-20_review_terminology.md` §7; user 2026-10-20: "train a rank r lora matrix AB, possibly to completion.
   Then split it into a sum of updates on subcomponents. Study how much lies outside the span of the subcomponents").
   Decision (user, 2026-10-20): "outside" is measured against the first-order span dU Vᵀ + U dVᵀ, for now.
@@ -216,3 +223,52 @@ Deferred ideas and loose ends. Date each entry.
   Γ does not switch on, 0.75–0.86), i.e. reuse vs create read off the data. Next, through `/design`: state the
   definition precisely (share and set, with a null) and check it against the existing ladder, key-value and recruit
   results before any new run; the decision on adding it to `GOALS.md` is the user's.
+- 2026-10-21. **The unused contrast: one-shot adjoint vs component training** (direction review,
+  `reports/2026-10-21_decision_regating-main-line.md`). One SGD step of component training moves W by
+  K(G) = UUᵀG + GVVᵀ, which is the adjoint split of that step's gradient. Yet the scaled adjoint state of a finished
+  10-step fine-tune stays at the adversarial floor (E14), while Adam component training over the same steps fails on
+  about half the tasks (E11). If the per-step operator is the same, the difference is in how the steps accumulate:
+  the optimiser (Adam's per-coordinate scaling breaks the K structure), the per-step loss re-reading the changed
+  pieces, or the scale c. Plain SGD now learns emoticon within the limit (E4 follow-up, 2026-10-21), so the optimiser
+  branch can be tested directly; until then nothing points at it more than at the other two. Cheap separating checks,
+  in order: (1) plain-SGD component training (rate 0.01 works on emoticon, E4 follow-up) at the SGD fine-tune's size
+  of change, against the adjoint state of that fine-tune, same card. The SGD fine-tune itself still needs a rate
+  check: E2's ran at 0.1 to 1, with off-target KL of 0.27 or more;
+  (2) the coherence statistic from the cancellation tests on the adjoint state vs component training's state;
+  (3) component training with VPD's stochastic and adversarial reconstruction terms added to its loss. (3) may not
+  count as "simple" under GOALS (no re-fitting); the user's call. Through `/design`.
+  2026-10-21: E19 (`reports/2026-10-21_analysis_step-split.md`) bears on the scale-c branch: the adjoint split
+  applied per Adam step with c refit each step accumulates to an input-weighted Δ share of 1.38 at step 1000 against
+  0.69 one-shot, while rotating U, V changed nothing.
+- 2026-10-21. **Do-nothing fails the adversarial check: a per-update reference for every verdict** (same review).
+  Do-nothing reads 2.18 on emoticon (E2, E8, E11), 2.29 on E14's card, 1.58, 2.17 and 2.26 on three of five ladder tasks (E11); the
+  LoRA's do-nothing passes (1.04–1.22). The 1.5 line conflates "the update's Pile effect sits outside the pieces" with
+  "the pieces are fragile". Every adversarial verdict should be read against the same update's do-nothing on the same
+  card, and the criterion needs an anchor (that reference, or a re-decomposition baseline). Changing reading A is the
+  user's decision.
+- 2026-10-21. **One rerun, two questions: do changed subcomponents keep their meaning, and does component training
+  find the fine-tune's solution?** (user, 2026-10-21, folded into one entry because both need the same states, which
+  E16 did not save.) Needs `/design` sign-off (new measurement, new GPU states). Cost: about 30 min on an L40, $0.
+  - **States, saved this time:** emoticon at steps 100 and 1000 on one card: free component training (E16's recipe),
+    the step split (E19), the least-squares split, do-nothing, and a second fine-tune seed (the noise floor for the
+    comparison in (b)).
+  - **(a) Meaning.** E3 kept identity 20/20 only trivially: changes of 0.2–1.3% of u vᵀ, the null group matched,
+    and there was no positive control. Now the vectors move more (E19: up to 12.7% by step 1000). Look at the top 20
+    subcomponents by revert-one attribution, against 20 random alive ones from the same matrices. Gauge-free per
+    subcomponent:
+    - Jaccard overlap of the held-out Pile inputs it fires on (mask value above a threshold);
+    - the angle of u and the cosine of the ablation effects on the inputs where it fires;
+    - overlap of its top 50 activating Pile contexts.
+    Expected: W₀ 1. Do-nothing: angle 1, Jaccard below 1 only through drift in the earlier layers (a finding if it
+    shows). Positive control first: synthetic v rotations of 5°, 13° and 45°, and a v swap, at the real changes'
+    size; the Jaccard must drop at 13°, otherwise stop. Noise floor: two halves of the Pile rows.
+  - **(b) Same solution?** Component training is "the analogue, not the same update" (E16). Compare it with the
+    fine-tune's δW:
+    - input-weighted cosine of the two weight changes;
+    - Pile KL between the two trained models, beside each one's KL to W₀;
+    - overlap of the subcomponents that carry the gain.
+    Reference: the two fine-tune seeds against each other.
+  - **What it changes:** if the subcomponents carrying the gain lose their inputs or their action while the random
+    group doesn't, faithfulness is not enough evidence for "interpretable along training", and identity tracking is
+    needed. If they keep both, and (b) shows component training near the fine-tune's solution, E16's best result
+    gets the support it is missing. Related: `theory/component_identity.md`, E3, E4's identity controls.

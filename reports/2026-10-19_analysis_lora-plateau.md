@@ -15,7 +15,7 @@ something the subcomponents can read.
 *2026-10-19, coding agent. Design check confirmed by the user 2026-10-19 (learning rate as in round 5, Pile folded in, seed 0
 only). Predictions `experiments/lora_plateau/results/predictions.json` (filed before training, unchanged); results
 `results/lora_plateau.json`; code `experiments/lora_plateau/run.py` on the shared `src/commute/harness.py`; figures
-`experiments/lora_plateau/figures/`; notebook `notebooks/lora_plateau.ipynb` (figures and every number, executed). Codex
+`experiments/lora_plateau/figures/`; notebook `notebooks/E09_lora_plateau.ipynb` (figures and every number, executed). Codex
 adversarial review of the new code before the run: approved, no findings. Smoke on a RunPod A5000 (251 s, $0.05); scored run
 on a RunPod L40S (1872 s, $0.70) because the cluster's 8 GPUs were held by two `normal` jobs with 10 and 19 hours left
 (cluster jobs 22429 and 22665 submitted and cancelled after the policy's wait).*

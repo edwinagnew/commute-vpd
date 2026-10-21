@@ -3,7 +3,7 @@
 *2026-10-19, coding agent. Plan `reports/2026-10-19_plan_reading-a-coverage.md`; predictions filed before the run in
 `experiments/reading_a_coverage/results/predictions.json`; results `results/coverage.json` (sha256 24c8fb13…), states (2.3 GB, sha256-checked) in
 `/mnt/nw/home/e.agnew/commute/experiments/reading_a_coverage/results/large/` on the cluster NFS (`cluster/sync.sh large` brings them back; the laptop copy was deleted 2026-10-19), log `results/large/logs/scored.log`, code as ran in `results/large/code_as_ran/`. Figures
-`experiments/reading_a_coverage/figures/`, notebook `notebooks/reading_a_coverage.ipynb`. RunPod L40S, 38 min, $0.70.*
+`experiments/reading_a_coverage/figures/`, notebook `notebooks/E11_reading_a_coverage.ipynb`. RunPod L40S, 38 min, $0.70.*
 
 We regenerated the ten-step pull-back and the plain fine-tune on the five ladder tasks that had no Pile numbers,
 checked that they are the ladder's own states, and scored each on the four Pile reconstruction checks and on VPD's
@@ -191,5 +191,5 @@ verdict here (emoticon's pull-back 1.03 is inside every band, the do-nothing 2.1
 near 1.5 on three adversary seeds (r2_t359's 1.38–1.55) is less decided than the five-task floor suggested. The
 seed floor should be measured with more seeds before another round reads a verdict off the 1.5 line.
 
-Notebook updated (`notebooks/reading_a_coverage.ipynb`): emoticon joins every figure as the reference task, and the
+Notebook updated (`notebooks/E11_reading_a_coverage.ipynb`): emoticon joins every figure as the reference task, and the
 first figure shows the stochastic check beside the adversarial one (user request 2026-10-20).

@@ -38,8 +38,8 @@ what the scheduler enforces, and jobs over the limit are rejected when you submi
 `sbatch --test-only` is useless for `debug` jobs: it ignores the QoS priority. On 2026-10-19 (13:58, ~90 jobs
 pending) it put a 20-min debug job's start 24 h away, while the two debug smoke jobs submitted that hour (22366,
 22368) started 6 min and 3 min after submission. For `normal` jobs it is the only estimate there is (the same
-query put a 2-h normal job 16 days out). Policy: wait at most 30 min for a start, then RunPod
-(`.claude/agents/pod-runner.md`).
+query put a 2-h normal job 16 days out). Policy (2026-10-20): only runs of ≤ 30 min come here, on
+`debug`, with at most 10 min of waiting for a start; longer runs go straight to RunPod (`.claude/agents/pod-runner.md`).
 
 ## Notebook in VS Code on a cluster GPU
 

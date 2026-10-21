@@ -78,16 +78,21 @@ def route_split(out: dict[str, Any], path: Path) -> None:
     plt.close(fig)
 
 
+# Legend names in the current terms (GOALS.md -> Terms); the row keys keep the run's names.
+DISPLAY = {"ft lift": "fine-tune, least-squares split", "ft nothing": "fine-tune, do-nothing",
+           "pb_full": "component training, one matrix, full rank", "pb_all": "component training, all matrices"}
+
+
 def vs_rank(out: dict[str, Any], path: Path) -> None:
     S = out["sizes"]
     rows = arms(out)
     ranks = S["ranks"]
     fig, axes = plt.subplots(1, 2, figsize=(10, 4))
     ax = axes[0]
-    ax.plot(ranks, [rows[f"lift_{r}"]["routes"]["shares"]["d"] for r in ranks], "o-", label="lift_r (LoRA lifted)")
-    ax.plot(ranks, [rows[f"pb_r{r}"]["routes"]["shares"]["d"] for r in ranks], "s-", label="pb_r (rank-r pull-back)")
+    ax.plot(ranks, [rows[f"lift_{r}"]["routes"]["shares"]["d"] for r in ranks], "o-", label="split LoRA, rank r")
+    ax.plot(ranks, [rows[f"pb_r{r}"]["routes"]["shares"]["d"] for r in ranks], "s-", label="rank-r component training")
     for name, ls in (("ft lift", "--"), ("pb_full", ":"), ("pb_all", "-.")):
-        ax.axhline(rows[name]["routes"]["shares"]["d"], ls=ls, color="k", lw=1, label=name)
+        ax.axhline(rows[name]["routes"]["shares"]["d"], ls=ls, color="k", lw=1, label=DISPLAY[name])
     ax.set_xscale("log", base=2)
     ax.set_xticks(ranks)
     ax.set_xticklabels([str(r) for r in ranks])
@@ -98,13 +103,13 @@ def vs_rank(out: dict[str, Any], path: Path) -> None:
     ax = axes[1]
     have = [r for r in ranks if "pile" in rows[f"lift_{r}"]]
     if have:
-        ax.plot(have, [rows[f"lift_{r}"]["pile"]["pgd_kl"] for r in have], "o-", label="lift_r")
+        ax.plot(have, [rows[f"lift_{r}"]["pile"]["pgd_kl"] for r in have], "o-", label="split LoRA, rank r")
     have_pb = [r for r in ranks if "pile" in rows[f"pb_r{r}"]]
     if have_pb:
-        ax.plot(have_pb, [rows[f"pb_r{r}"]["pile"]["pgd_kl"] for r in have_pb], "s-", label="pb_r")
+        ax.plot(have_pb, [rows[f"pb_r{r}"]["pile"]["pgd_kl"] for r in have_pb], "s-", label="rank-r component training")
     for name, ls in (("ft lift", "--"), ("ft nothing", (0, (1, 1))), ("pb_full", ":"), ("pb_all", "-.")):
         if "pile" in rows[name]:
-            ax.axhline(rows[name]["pile"]["pgd_kl"], ls=ls, color="k", lw=1, label=name)
+            ax.axhline(rows[name]["pile"]["pgd_kl"], ls=ls, color="k", lw=1, label=DISPLAY[name])
     ax.axhline(1.5, color="r", lw=0.8, label="1.5 (fails)")
     if out["W0"]["pgd_floor"] is not None:
         ax.axhline(1 + 3 * out["W0"]["pgd_floor"], color="g", lw=0.8, label="W0 + 3 floors")
@@ -113,7 +118,7 @@ def vs_rank(out: dict[str, Any], path: Path) -> None:
     ax.set_xticklabels([str(r) for r in ranks])
     ax.set_xlabel("rank r")
     ax.set_ylabel("Pile PGD KL ratio to W0")
-    ax.set_title("Is the lifted decomposition adversarially fragile?")
+    ax.set_title("Is the split decomposition adversarially fragile?")
     ax.legend(fontsize=7)
     fig.tight_layout()
     fig.savefig(path, dpi=130)

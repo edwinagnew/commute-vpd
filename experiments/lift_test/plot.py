@@ -108,15 +108,15 @@ def inside_vs_outside() -> None:
     for ax, metric, title in ((axes[0], "pgd_kl", "Adversarial (PGD) masks"),
                               (axes[1], "stochastic_kl", "Random (stochastic) masks")):
         ax.plot(steps, [lf[str(s)]["ratios"][metric]["lift"] for s in steps], "-o", color=ORANGE, lw=2, ms=6,
-                label="outside: fine-tune W, then lift the update")
+                label="least-squares split of the fine-tune")
         ax.plot(steps, [lf[str(s)]["ratios"][metric]["do_nothing"] for s in steps], "--o", color=MUTED, lw=2, ms=6,
-                label="outside: fine-tune W, leave the update in Δ")
+                label="do-nothing: the fine-tune's update left in Δ")
         pts = {10: pb["pullback_step10"][metric], 30: pb["pullback_step30"][metric]}
         if (RESULTS / "pullback2_early.json").is_file():  # steps 1-10 of the same run, measured afterwards
             early = load("pullback2_early.json")["ratios"]
             pts.update({int(k.rsplit("step", 1)[1]): v[metric] for k, v in early.items() if int(k.rsplit("step", 1)[1]) < 10})
         ps = sorted(pts)
-        ax.plot(ps, [pts[s] for s in ps], "-o", color=BLUE, lw=2, ms=6, label="inside: train the subcomponents (pull-back)")
+        ax.plot(ps, [pts[s] for s in ps], "-o", color=BLUE, lw=2, ms=6, label="component training")
         ax.axhline(1.5, color=MUTED, lw=1, ls=":")
         ax.text(30, 1.5, "pass ≤ 1.5", va="bottom", ha="right", color=MUTED, fontsize=8)
         ax.set_xscale("log")
@@ -127,7 +127,7 @@ def inside_vs_outside() -> None:
         ax.grid(axis="y")
     axes[1].set_ylim(0.8, 1.6)
     axes[0].legend(frameon=False, loc="upper left", fontsize=8)
-    fig.suptitle("Does the decomposition stay faithful when post-training happens inside it, or outside it?")
+    fig.suptitle("Component training stays faithful under both checks; the least-squares split fails the adversarial one")
     save(fig, "inside_vs_outside.png")
 
 
@@ -141,8 +141,8 @@ def pullback_behaviour() -> None:
     for ax, key_c, key_r, ylab in ((a, "heldout_p_o", "p_o", "held-out P(o)"),
                                    (b, "heldout_kl_other", "kl_other", "KL to W₀ elsewhere in the window (nats)")):
         ax.plot([c["step"] for c in curve], [c[key_c] for c in curve], "-", color=BLUE, lw=2,
-                label="inside: pull-back, lr 1e-5")
-        ax.plot(rs, [rerun[s][key_r] for s in rs], "-o", color=MUTED, lw=2, ms=6, label="outside: W fine-tune (Adam 3e-5)")
+                label="component training, lr 1e-5")
+        ax.plot(rs, [rerun[s][key_r] for s in rs], "-o", color=MUTED, lw=2, ms=6, label="normal fine-tune (Adam 3e-5)")
         ax.set_xlabel("training step")
         ax.set_ylabel(ylab)
         ax.grid(axis="y")
@@ -150,7 +150,7 @@ def pullback_behaviour() -> None:
     a.set_title("Behaviour learned", fontsize=10)
     b.set_title("Off-target damage", fontsize=10)
     a.legend(frameon=False, loc="lower right", fontsize=8)
-    fig.suptitle("Does training inside the decomposition learn the behaviour as well as a normal fine-tune?")
+    fig.suptitle("Component training learns the behaviour as fast as a normal fine-tune, with less damage elsewhere")
     save(fig, "pullback_behaviour.png")
 
 

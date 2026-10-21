@@ -1,0 +1,73 @@
+{
+ "about": "sgd_matched: is plain SGD's ten-times-less-diffuse update (sgd_grid) a property of the optimiser or of its smaller size of change? Adam and SGD with momentum 0.9 at the rate matching plain SGD lr 0.01's largest relative change per matrix. Filed before any run.",
+ "filed": "2026-10-21 15:18:25",
+ "predictions": [
+  {
+   "claim": "Adam's diffuseness is the optimiser, not the size of change.",
+   "expected": "Adam ~0.02 vs SGD 0.156",
+   "fail": ">= 0.67",
+   "id": "P1_adam_diffuse_at_matched_size",
+   "measure": "top-10 fraction removed, Adam matched / plain SGD (relative)",
+   "pass": "< 0.33",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "The same holds at top 100.",
+   "expected": "Adam ~0.1 vs SGD 0.476",
+   "fail": ">= 0.75",
+   "id": "P2_top100_same_direction",
+   "measure": "top-100 fraction removed, Adam matched / plain SGD (relative)",
+   "pass": "< 0.5",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "At equal size of change Adam buys less log-odds gain.",
+   "fail": ">= 1.0",
+   "id": "P3_adam_less_gain_per_change",
+   "measure": "held-out log-odds gain, Adam matched / plain SGD (relative; SGD gain 10.84)",
+   "pass": "< 0.75",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "SGD's 'less damage' was size: at matched size Adam's KL elsewhere is not larger.",
+   "fail": ">= 1.5",
+   "id": "P4_kl_elsewhere_not_worse_for_adam",
+   "measure": "step-30 KL elsewhere, Adam matched / plain SGD (relative; SGD 0.0065)",
+   "pass": "< 1.5",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "Momentum keeps the gradient's direction, so it concentrates like SGD.",
+   "expected": "~0.156",
+   "fail": "< 0.33",
+   "id": "P5_momentum_like_sgd",
+   "measure": "top-10 fraction removed, momentum matched / plain SGD (relative)",
+   "pass": "in [0.5, 2]",
+   "prediction": "pass",
+   "scored": true
+  },
+  {
+   "claim": "Momentum's KL elsewhere is about plain SGD's.",
+   "fail": "outside [0.33, 3]",
+   "id": "P6_momentum_kl_like_sgd",
+   "measure": "step-30 KL elsewhere, momentum matched / plain SGD (relative)",
+   "pass": "in [0.5, 2]",
+   "prediction": "pass",
+   "scored": true
+  }
+ ],
+ "setup": {
+  "W0": "P(o) ~0.005, KL elsewhere 0, rel_norm_max 0, log-odds -5.017 (sgd_grid)",
+  "concentration": "sgd_grid's measure at each matched state: fraction of the held-out log-odds gain removed by reverting the 1, 10 and 100 largest revert-one drops together. Positive control: E4's Adam top-10 arm reads 0.997. Blind to redundancy beyond the greedy top k, to positions outside the trigger and to seed noise (one seed; no seed noise floor; ratios inside [0.67, 1.5] are read as 'same')",
+  "control": "runs first and alone: plain SGD lr 0.01 must reproduce sgd_grid.json within 5% relative on step-30 P(o) 0.991, KL elsewhere 0.0065, rel_norm_max 0.00264 and on top-10 0.156 and top-100 0.476; otherwise the run stops before the grids. Differs from sgd_grid only by job (same L40 cluster, same code path, no lr 0.3 run before it; the trainer seeds its own generator)",
+  "expected": "Adam matched near lr 4e-6 (Adam's size of change is close to linear in lr): P(o) 0.3 to 0.99, log-odds gain ~3 to 8 (not scored beyond P3). Momentum matched near lr 1e-3 (momentum 0.9 is about a tenfold rate after ~10 steps): P(o) > 0.9",
+  "kl_elsewhere": "held-out KL elsewhere at step 30 (sgd_grid's metric). Blind to Pile and to the trigger position",
+  "match_rule": "per grid, the lr whose step-30 rel_norm_max is closest to the reference's in |log ratio|; 'matched' if within 15% relative. If not matched, P1 to P4 for that arm are unscorable",
+  "size_of_change": "rel_norm_max = max over matrices of |delta W|_F / |W0|_F at step 30 (sgd_grid's 0.0026 and E4's Adam 0.0066)",
+  "training": "sgd_grid's recipe: component training on all alive (U, V), Gamma and Delta frozen, arm A's loss, batch 32, clip 1 (active on every step), seed 0, 30 steps. Arms: (b) plain SGD lr 0.01 (reference and control); (a) Adam lr in {2e-6, 3e-6, 3.5e-6, 4e-6, 5e-6, 7e-6, 1e-5}; (c) SGD momentum 0.9 lr in {1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3}"
+ }
+}

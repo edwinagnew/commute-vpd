@@ -1,0 +1,12 @@
+{
+  "experiment": "step_split (E19), amendment 1: the W0 control's stop line on the L40",
+  "filed": "2026-10-21",
+  "authority": "user, 2026-10-21 in chat: 'amend and rerun on the L40 now'; filed before the rerun",
+  "cause": "the scored run (cluster L40, job 28108) stopped at C0: W0 PGD floor f = 0.2088 > 0.15. The 0.15 line was set from E16's H100 floor (0.075); the L40 floor is 0.209 to three digits in E8, E11 and job 28108 (deterministic per card: 4090 0.035, L40S 0.046, H100 0.075, A5000 0.122). Nothing was scored.",
+  "changes": {
+    "C0_W0_floor": "rule becomes f <= 0.25 (absolute); expected f = 0.209 on the L40. Still stops a broken harness.",
+    "P4_pile_between": "unchanged as written; noted weak on this card: with f = 0.209 the band is +-0.63 around do-nothing and least-squares, so a pass says little",
+    "G1_reading_E16": "unchanged (reported, not blocking); tol max(0.15, 3f) = 0.63 on the L40, and the card differs from E16's H100"
+  },
+  "unchanged": "P1_second_order, P2_bases_little, P3_delta_route_rises, C1_out_out_kept, G2_exact: scored as filed; none of them uses the adversary floor"
+}

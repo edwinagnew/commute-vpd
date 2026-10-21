@@ -1,0 +1,79 @@
+{
+ "design": "reports/2026-10-20_plan_lora-split.md (design check confirmed by the user 2026-10-20, as recommended)",
+ "filed": "2026-10-20",
+ "gates": [
+  {
+   "id": "G1_reproduce_E9",
+   "if_fail": "the factor loading or the harness changed; stop and find out",
+   "rule": "lora24's algebraic pooled outside-both share at the part-2 steps equals E9's (lora_plateau.json pile_steps[step].inexpressible.pooled) within 0.003"
+  },
+  {
+   "id": "G2_split_state",
+   "if_fail": "that step is reported, not scored",
+   "rule": "harness G2: the least-squares split state's P(o) equals the update's to 1e-3 and the route shares sum to 1 to 1e-6, every part-2 step"
+  }
+ ],
+ "predictions": [
+  {
+   "arm": "lora24, every step, non-saturated pooling",
+   "id": "P1_lora_at_null_both_sides",
+   "null": "write_in ratio >= 1.5 at some step >= 10 (B learned a direction col U writes) or read_in ratio >= 1.5 (A became readable)",
+   "pass": "read_in ratio <= 1.2 and write_in ratio <= 1.3 at every step",
+   "predicted": "pass: E9's outside-both ratio 0.82-1.02 at every step leaves little room for either side to be well inside",
+   "scored": true
+  },
+  {
+   "arm": "ft, steps 10 to 1000, non-saturated pooling",
+   "id": "P2_finetune_inside",
+   "null": "out_out ratio >= 0.8 at some step >= 10",
+   "pass": "out_out ratio <= 0.7 at every step from 10 on, and read_in ratio >= 1.3 and write_in ratio >= 1.3 at step 10",
+   "predicted": "pass: E8 read 0.27 against 0.53 (0.51) at step 10 under the algebraic share; the trend along steps is the reading",
+   "scored": true
+  },
+  {
+   "arm": "ft and lora24, every step, pooled over all 24",
+   "id": "P3_nothing_is_rescaled",
+   "null": "ft >= 10 x at some step (the update strengthens existing pieces)",
+   "pass": "rescaling share <= 3 x its random-draw null for both updates at every step",
+   "predicted": "pass: E1 read 0.06% against 0.035% for a fine-tune (1.7 x)",
+   "scored": true
+  },
+  {
+   "arm": "site rows, every rank and step on h.2.mlp.down_proj",
+   "id": "P4_rank_is_not_the_axis",
+   "null": "the rank-32 run's ratio differs from the rank-1 run's by more than 0.3 at step 100",
+   "pass": "out_out ratio in [0.8, 1.2] for every run and step",
+   "predicted": "pass: E7's algebraic shares were 0.38-0.43 against 0.42 at every rank",
+   "scored": true
+  },
+  {
+   "arm": "the scaled adjoint state, part-2 steps, ft and lora24",
+   "expected": "P(o) tracks R: the LoRA's state (R near 1 - out_out, about 0.4) loses the behaviour, the fine-tune's keeps most of it; first reading, no threshold",
+   "id": "P5_adjoint_behaviour",
+   "reported": "held-out P(o) against the update's, the reproduced share R and the scale c per matrix, the standing table",
+   "scored": false
+  },
+  {
+   "arm": "least-squares split states at the part-2 steps, one card",
+   "id": "P6_pile_matched_card",
+   "null": "ft's split <= 1 + 3 f at step 10 (E8's 5.41 was the card) or lora24's > 1 + 3 f at some step",
+   "pass": "lora24's Pile PGD ratio <= 1 + 3 f at steps 10, 100 and 1000 and ft's >= 2 at step 10",
+   "predicted": "pass: E9 (L40S) 1.26, 1.22, 1.07; E8 and E2 (L40) 5.41; ft at steps 100 and 1000 reported",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "n_half of both splits against the random draws; c and R per matrix; part 2's route split and Delta share; the adjoint state's Delta change (second order in c, expected small); the per-matrix tables; the fine-tune's P(o) and kl_other per step",
+ "setup": {
+  "algebraic": "split.weighted_fractions, the standing outside-both share with its null (E2 to E9), for continuity",
+  "blocks": "split.four_blocks: input-weighted energy of delta-W split by P_U on the write side and, on the read side, by the part of the input predictable from what the alive subcomponents read (a1) against the uncorrelated rest (a2); sums to one; null = exact expectation for an isotropic random update. Pooled by energy over all 24 matrices and over the 20 non-saturated ones (the scored pooling, as E8 and E9)",
+  "part2": "harness.nothing_and_split and harness.measure of the adjoint state at steps (10, 100, 1000): route split at the trigger, Delta's share of ||delta-W||^2, Pile ratios (256 val rows, 20 PGD steps, W0 floor over adversary seeds (0, 1, 2)); the adjoint state's held-out P(o) against the update's",
+  "ratio": "a block's pooled share divided by its pooled null; read_in = in_in + out_in, write_in = in_in + in_out",
+  "rescaling": "split.rescaling_share, the weighted least-squares fit by sum_c alpha_c u_c v_c^T; null = mean over 2 Gaussian draws of the same per-matrix weighted energy",
+  "splits": "least-squares (split.least_squares_split) and adjoint (split.adjoint_split, scaled per matrix by split.adjoint_scale); n_half = number of subcomponents over all matrices carrying half the summed piece energy (split.piece_energies), against the same for the random draws",
+  "updates": {
+   "ft": "emoticon full fine-tune, arm A recipe (Adam lr 3e-05, all 24 matrices, seed 0), delta-W kept at steps (1, 2, 3, 5, 10, 30, 100, 300, 1000)",
+   "lora24": "E9's rank-8 LoRA on all 24 matrices, BA from the saved factors at steps (1, 2, 3, 5, 10, 30, 100, 300, 1000)",
+   "site": "E7's LoRAs ('r1_s0', 'r4_s0', 'r8_s0', 'r32_s0', 'r8_s1') on h.2.mlp.down_proj at steps (10, 30, 100)"
+  }
+ }
+}

@@ -42,15 +42,16 @@ STATS = ("kl_trigger", "kl_other", "lo_trigger")
 
 
 def masked_logits(model: Any, batch: Tensor, masks: dict[str, Tensor], wd: dict[str, Tensor] | None,
-                  delta_masks: dict[str, Tensor] | None) -> Tensor:
-    """Forward with per-(position, component) masks; Delta included under `delta_masks` (B, T) when given."""
+                  delta_masks: dict[str, Tensor] | None, autocast: bool = True) -> Tensor:
+    """Forward with per-(position, component) masks; Delta included under `delta_masks` (B, T) when given. bf16
+    autocast on CUDA unless `autocast` is False (fp32, for comparing with fp32 hooked forwards: cancel.py)."""
     from param_decomp.models.components import make_mask_infos
 
     wdm = None
     if delta_masks is not None:
         assert wd is not None
         wdm = {k: (wd[k], delta_masks[k]) for k in masks}
-    use_autocast = batch.is_cuda
+    use_autocast = autocast and batch.is_cuda
     with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_autocast):
         out = model(batch, mask_infos=make_mask_infos(masks, weight_deltas_and_masks=wdm))
     return out[0] if isinstance(out, tuple) else out
@@ -258,3 +259,17 @@ def route_split(model: Any, windows: Tensor, half: int, token: int | Tensor, bas
             "p_cells": {"L00": base["p_L"], "L01": p01, "L10": p10, "L11": cur["p_L"], "T0": base["p_T"], "T1": cur["p_T"],
                         "U0": base["p_U"], "U1": cur["p_U"]},
             "gain": gain, "shares": shares, "share_sum": sum(shares.values()), "scorable": gain >= MIN_GAIN, "max_dg": max_dg}
+
+
+def trigger_mean_gates(model: Any, windows: Tensor, half: int, batch_size: int = 64) -> dict[str, Tensor]:
+    """Mean over windows of Gamma's gates at the trigger position, per matrix (C,) float32 on CPU, under the model's
+    current state (no per-window gates kept: for the training windows of E18's shared pattern)."""
+    keys = module_keys(model)
+    device = next(model.parameters()).device
+    sums = {k: torch.zeros(model.module_to_c[k], dtype=torch.float64) for k in keys}
+    with torch.no_grad():
+        for sl in _batches(windows, batch_size):
+            ci = compute_ci(model, windows[sl].to(device), chunk=windows[sl].shape[0])
+            for k in keys:
+                sums[k] += ci.g[k][:, half].double().sum(0).cpu()
+    return {k: (v / windows.shape[0]).float() for k, v in sums.items()}

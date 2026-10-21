@@ -15,7 +15,7 @@ edit moves layer-0 gates too), and one null target was mis-selected by a bug (st
 *2026-10-19, coding agent. Plan `reports/2026-10-19_plan_recruit-test.md`; predictions
 `experiments/recruit_test/results/predictions.json` (filed before the run, re-filed twice before the run for the LoRA
 checkpoint rule and the G5 tolerance); results `results/recruit.json`, per-arm dg vectors in `results/large/`. RunPod 4090
-pod `commute-recruit-1`, $0.26, 106 s for the full run. Driven by a fork from the user's session. Figures and the full write-up for reading: `notebooks/recruit_test.ipynb`.*
+pod `commute-recruit-1`, $0.26, 106 s for the full run. Driven by a fork from the user's session. Figures and the full write-up for reading: `notebooks/E06_recruit_test.ipynb`.*
 
 **Terms.** *Pull-back*: training the subcomponents' (U, V) on the fine-tune loss with Γ and Δ fixed (our map Φ).
 *Do-nothing placement*: δW is added to the target weights and left in Δ; the components are unchanged, so the only thing

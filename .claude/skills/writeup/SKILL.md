@@ -10,7 +10,7 @@ description: Use when writing or revising any results write-up in commute - a no
 The user's verdicts on past write-ups, in both this project and feature_wars: "one of the most unreadable things
 I've ever seen", "i have no idea what is going on", "your notebook summaries are getting increasingly bad",
 "sounds important but is not a real sentence", "the bullets following the graph seem to try and wiggle their way
-out of it", "fixing doesn't mean adding tons of waffle. just writing clearly!". Open `notebooks/lora_plateau.ipynb`
+out of it", "fixing doesn't mean adding tons of waffle. just writing clearly!". Open `notebooks/E09_lora_plateau.ipynb`
 cell 8 or the title of `reports/2026-10-19_analysis_lora-plateau.md` to see the shape of it: a 36-word title; a
 "plain-words paragraph" of three 60-word sentences carrying fifteen numbers; a glossary of twelve coined terms
 before the first result; "P3 neither, flagged" and "round 5's C2 reopened" in place of what happened; a 1×4
@@ -28,7 +28,7 @@ of our approach." After each section they must be able to say what was done, wha
 | layer | job | length |
 |---|---|---|
 | chat message | the answer, the one surprise, where to look, the one decision needed | a few lines |
-| notebook `notebooks/<experiment>.ipynb` | the explanation: figures and the story around them | about a thousand words of prose |
+| notebook `notebooks/E<NN>_<experiment>.ipynb` | the explanation: figures and the story around them | about a thousand words of prose |
 | report `reports/<date>_analysis_<topic>.md` | the record: every number, the scoring, provenance, "Not run" | as long as it needs |
 
 Write the notebook first. The report is the notebook plus the full tables and the scoring. The chat message is
@@ -118,20 +118,21 @@ the breaks so they are seen rather than missed; look at each flagged sentence an
    each claim the figure that shows it. A claim without a figure gets one or is cut.
 2. Write sections 3–11, then the figures, then the "Reading it" paragraphs, then the answer paragraph.
 3. Run the checker and rewrite the flagged sentences that are dense:
-   `uv run python .claude/skills/writeup/check.py notebooks/<name>.ipynb reports/<file>.md`
+   `uv run python .claude/skills/writeup/check.py notebooks/E<NN>_<name>.ipynb reports/<file>.md`
 4. Cold-reader pass: read each markdown cell with only the figure above it and ask what was done, what was seen,
    why it matters. Rewrite any cell that fails one.
 5. Execute the notebook top to bottom and commit it executed.
-6. Update the research log (`docs/research_log/README.md`: the experiment's card, the claims table, the
-   sub-question status, the timeline, a changelog row) and republish it. The write-up is not done until the log
-   says what it says.
+6. Queue the research-log update: append a line to `docs/research_log/PENDING.md` naming the write-up and the log
+   sections it changes (the experiment's card, the claims table, the sub-question status, the timeline). The
+   write-up is done when the line is queued; the log says what it says after the next flush
+   (`docs/research_log/README.md` → "Batched updates"), which happens before the session ends.
 7. A subagent that writes a notebook gets the "Sentence rules", "Figure rules" and "Terms" sections verbatim in
    its brief. The lead writes the answer paragraph and every "Reading it" paragraph itself: summaries handed to
    subagents drifted into shorthand every time.
 
 ## One rewrite, to calibrate
 
-Before, from `notebooks/lora_plateau.ipynb` cell 8: 94 words, 14 numbers, 2 parentheses, 3 history pointers.
+Before, from `notebooks/E09_lora_plateau.ipynb` cell 8: 94 words, 14 numbers, 2 parentheses, 3 history pointers.
 
 > **Could it do it? (faithfulness half)** Yes, at every step. The split state reads 1.26, 1.22 and 1.07 under
 > the Pile adversary (stochastic and CI-masked 0.996–1.009), within one to three W₀ floors on this card, where

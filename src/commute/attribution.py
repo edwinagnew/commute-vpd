@@ -54,6 +54,35 @@ def revert_one(model: Any, UV: dict[str, Any], st: dict[str, Any], toks: torch.T
     return out
 
 
+
+def concentration(model: Any, UV: dict[str, Any], st: dict[str, Any], W0: dict[str, torch.Tensor], win: Any,
+                  o_token: int, limit: int | None, log: Any = print) -> dict[str, Any]:
+    """E4's P1 measure: fraction of the held-out log-odds gain removed by reverting the top 1/10/100 revert-one drops
+    together (from sgd_grid, 2026-10-21)."""
+    from commute.faithfulness import model_state
+
+    keys = list(UV)
+    toks, half = win["heldout"].tokens.to(next(iter(UV.values()))[0].device), win["heldout"].half
+    W = {k: W0[k] + (st[k][0] @ st[k][1].T - UV[k][0] @ UV[k][1].T) for k in keys}
+    lo_W0 = heldout_log_odds(model, toks, half, o_token)
+    with model_state(model, target=W):
+        lo = heldout_log_odds(model, toks, half, o_token)
+        drop = revert_one(model, UV, st, toks, half, o_token, lo, keys, limit=limit)
+    gain = lo - lo_W0
+    own = [(k, j) for k in keys for j in range(len(drop[k]))]
+    top = [own[i] for i in torch.cat([drop[k] for k in keys]).argsort(descending=True).tolist()]
+    frac = {}
+    for n in (1, 10, 100):
+        sel: dict[str, list[int]] = {}
+        for k, j in top[:n]:
+            sel.setdefault(k, []).append(j)
+        with model_state(model, target=reverted_weights(W, UV, st, {k: torch.tensor(v) for k, v in sel.items()})):
+            frac[str(n)] = (lo - heldout_log_odds(model, toks, half, o_token)) / gain
+    log(f"[concentration] log-odds W0 {lo_W0:.3f} state {lo:.3f}; fraction removed by top 1/10/100: "
+        f"{', '.join(f'{v:.3f}' for v in frac.values())}")
+    return {"log_odds_W0": lo_W0, "log_odds_state": lo, "gain": gain, "fraction_removed": frac,
+            "top10": [{"key": k, "alive_col": j, "drop": float(drop[k][j])} for k, j in top[:10]]}
+
 def reverted_weights(W: dict[str, torch.Tensor], UV: dict[str, Any], st: dict[str, Any],
                      sel: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
     """Weights W with the subcomponents sel[k] (alive positions) reverted: minus U2 dV^T + dU V^T on those columns."""

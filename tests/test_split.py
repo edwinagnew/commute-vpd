@@ -199,3 +199,128 @@ def test_read_side_overlaps():
     top = evecs[:, -4:]
     o = split.read_side_overlaps(X @ top.T, b, Sigma)
     assert abs(o["in_data"] - 1) < 1e-12 and 0 < o["data_in_top"] < 1 and 0 <= o["alive_in_data"] <= 1
+
+
+# ----------------------------------------------------------------------------- the LoRA split study (2026-10-20)
+
+
+def _sigma(d_in=9, seed=1):
+    g = torch.Generator().manual_seed(seed)
+    X = torch.randn(40, d_in, generator=g, dtype=torch.float64)
+    return X.T @ X / 40
+
+
+def test_four_blocks_sum_to_one_and_controls():
+    U_A, V_A, M = _setup()
+    S = _sigma()
+    b = split.basis(U_A, V_A, 1e-6)
+    f = split.four_blocks(M, b, S)
+    assert abs(sum(f[k] for k in ("in_in", "in_out", "out_in", "out_out")) - 1) < 1e-10
+    assert abs(sum(f[k] for k in f if k.startswith("null_")) - 1) < 1e-10
+    # inside the first-order span: nothing outside both; a rescaling of the pieces is inside on both sides
+    dU, dV = torch.randn(12, 4, dtype=M.dtype), torch.randn(9, 4, dtype=M.dtype)
+    assert split.four_blocks(split.dsigma(dU, dV, U_A, V_A), b, S)["out_out"] < 1e-10
+    R = U_A @ torch.diag(torch.randn(4, dtype=M.dtype)) @ V_A.T
+    assert abs(split.four_blocks(R, b, S)["in_in"] - 1) < 1e-10
+    assert abs(split.rescaling_share(R, U_A, V_A, S) - 1) < 1e-8
+    # the obstruction reads one on out_out only when the read sides are uncorrelated under Sigma, so test with Sigma = I
+    O = split.obstruction(M, b)
+    assert abs(split.four_blocks(O, b, torch.eye(9, dtype=M.dtype))["out_out"] - 1) < 1e-10
+
+
+def test_null_matches_random_draws():
+    U_A, V_A, M = _setup(d_out=30, d_in=25, n=6)
+    S = _sigma(25)
+    b = split.basis(U_A, V_A, 1e-6)
+    f = split.four_blocks(M, b, S)
+    draws = [split.four_blocks(split.random_like(M, S, s), b, S) for s in range(200)]
+    for k in ("in_in", "in_out", "out_in", "out_out"):
+        assert abs(sum(d[k] for d in draws) / 200 - f["null_" + k]) < 0.02, k
+    assert abs(split.weighted_energy(split.random_like(M, S, 0), S) - split.weighted_energy(M, S)) < 1e-9
+
+
+def test_adjoint_split_and_scale():
+    U_A, V_A, M = _setup()
+    S = _sigma()
+    dU, dV = split.adjoint_split(M, U_A, V_A)
+    assert torch.allclose(split.dsigma(dU, dV, U_A, V_A), U_A @ U_A.T @ M + M @ V_A @ V_A.T, atol=1e-10)
+    c, share = split.adjoint_scale(M, U_A, V_A, S)
+    K = split.dsigma(dU, dV, U_A, V_A)
+    best = min(split.weighted_energy(x * K - M, S) for x in torch.linspace(c - 0.1, c + 0.1, 201).tolist())
+    assert abs(split.weighted_energy(c * K - M, S) - best) < 1e-9 and 0 < share < 1
+    # for M already of the form K(X) scaled, the adjoint reproduces it exactly only if K is the identity; check the
+    # bound share <= 1 - out_out instead
+    assert share <= 1 - split.four_blocks(M, split.basis(U_A, V_A, 1e-6), S)["out_out"] + 1e-10
+
+
+def test_piece_energies_and_n_half():
+    U_A, V_A, M = _setup()
+    S = _sigma()
+    b = split.basis(U_A, V_A, 1e-6)
+    dU, dV = split.least_squares_split(M, b, U_A, V_A)
+    e = split.piece_energies(dU, dV, U_A, V_A, S)
+    for c in range(4):
+        dB = dU[:, c : c + 1] @ V_A[:, c : c + 1].T + U_A[:, c : c + 1] @ dV[:, c : c + 1].T
+        assert abs(float(e[c]) - split.weighted_energy(dB, S)) < 1e-9
+    assert split.n_half(torch.tensor([1.0, 1.0, 1.0, 1.0])) == 2
+    assert split.n_half(torch.tensor([10.0, 1.0, 1.0])) == 1
+
+
+def test_read_moments_are_uncorrelated_even_with_a_zero_variance_read_direction():
+    U_A, V_A, _ = _setup()
+    S = _sigma()
+    # kill the variance along the first alive read vector: Sigma is singular inside the read span
+    v = V_A[:, 0] / V_A[:, 0].norm()
+    Pperp = torch.eye(9, dtype=S.dtype) - v[:, None] * v[None, :]
+    S = Pperp @ S @ Pperp
+    b = split.basis(U_A, V_A, 1e-6)
+    S1, S2 = split.read_moments(b, S)
+    assert torch.allclose(S1 + S2, S, atol=1e-12)
+    Q = b.Q[:, b.t > 0]
+    # a1 = Pi a with Pi = S Q (Q^T S Q)^+ Q^T; the cross moment E[a2 a1^T] = (I - Pi) S Pi^T must vanish
+    Pi = S @ Q @ torch.linalg.pinv(Q.T @ S @ Q, hermitian=True, rtol=1e-10) @ Q.T
+    assert float(((torch.eye(9, dtype=S.dtype) - Pi) @ S @ Pi.T).abs().max()) < 1e-10
+    # Sigma_1 is the moment of a1 and the null uses its trace
+    assert torch.allclose(Pi @ S @ Pi.T, S1, atol=1e-10)
+    f = split.four_blocks(torch.randn(12, 9, dtype=S.dtype), b, S)
+    assert abs(sum(f[k] for k in ("in_in", "in_out", "out_in", "out_out")) - 1) < 1e-10
+
+
+def test_rescaling_state_reproduces_an_exact_rescaling_and_keeps_delta():
+    U_A, V_A, _ = _setup()
+    S = _sigma()
+    alpha = torch.tensor([0.3, -0.2, 0.0, 1.5], dtype=torch.float64)
+    M = (U_A * alpha) @ V_A.T  # exactly sum_c alpha_c u_c v_c^T
+    a, _ = split.rescaling_alpha(M, U_A, V_A, S)
+    assert torch.allclose(a, alpha, atol=1e-8)
+    assert abs(split.rescaling_share(M, U_A, V_A, S) - 1) < 1e-9
+    dW = {"a": M.float(), "z": torch.zeros(5, 3)}
+    uv = {"a": (U_A.float(), V_A.float()), "z": (torch.randn(5, 2), torch.randn(3, 2))}
+    dW_r, state = split.rescaling_state(dW, uv, {"a": S, "z": torch.eye(3, dtype=torch.float64)})
+    assert set(state) == {"a"} and not dW_r["z"].any()
+    assert torch.allclose(dW_r["a"].double(), M, atol=1e-5)
+    Wd, U2, V2 = state["a"]
+    # the components move by exactly the target move, so Delta is unchanged; v_c are untouched
+    assert torch.allclose(U2.double() @ V2.double().T - U_A @ V_A.T, Wd.double(), atol=1e-5)
+    assert torch.equal(V2, V_A.float())
+    # a generic update: R in (0, 1) and the state's move is the weighted least-squares fit
+    M2 = torch.randn(12, 9, generator=torch.Generator().manual_seed(5), dtype=torch.float64)
+    R = split.rescaling_share(M2, U_A, V_A, S)
+    fit = (U_A * split.rescaling_alpha(M2, U_A, V_A, S)[0]) @ V_A.T
+    assert 0 < R < 1 and abs(split.weighted_energy(fit, S) / split.weighted_energy(M2, S) - R) < 1e-9
+
+
+def test_block_table_puts_first_order_component_changes_outside_both_only_at_second_order():
+    U_A, V_A, _ = _setup()
+    S = _sigma()
+    b = split.basis(U_A, V_A, 1e-6)
+    g = torch.Generator().manual_seed(3)
+    dU, dV = torch.randn(12, 4, generator=g, dtype=torch.float64), torch.randn(9, 4, generator=g, dtype=torch.float64)
+    first = split.dsigma(dU, dV, U_A, V_A)
+    t = split.block_table({"a": first, "z": torch.zeros(12, 9)}, {"a": b, "z": b}, {"a": S, "z": S}, ["a"])
+    assert set(t["per_matrix"]) == {"a"} and t["pooled_all"]["out_out"] < 1e-12
+    assert t["pooled_ns"] == t["pooled_all"] and t["pooled_all"]["out_out_ratio"] < 1e-10
+    eps = 1e-2
+    full = (U_A + eps * dU) @ (V_A + eps * dV).T - U_A @ V_A.T  # component training's weight change
+    oo = split.block_table({"a": full}, {"a": b}, {"a": S}, [])["pooled_all"]["out_out"]
+    assert 0 < oo < 10 * eps**2

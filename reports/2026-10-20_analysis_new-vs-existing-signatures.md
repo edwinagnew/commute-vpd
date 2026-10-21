@@ -3,7 +3,7 @@
 *2026-10-20, coding agent. Plan: `reports/2026-10-20_plan_new-vs-existing-signatures.md`. Predictions:
 `experiments/new_vs_existing/results/predictions.json`, filed before the run and scored as filed. Results:
 `experiments/new_vs_existing/results/{tasks,new_vs_existing}.json`; figures in `experiments/new_vs_existing/figures/`;
-the explanation is `notebooks/new_vs_existing.ipynb`. Provenance at the end.*
+the explanation is `notebooks/E12_new_vs_existing.ipynb`. Provenance at the end.*
 
 We taught the model two things it can already do, repeating a word, and two things it cannot, an arbitrary word-to-word
 mapping, and looked for any per-subcomponent number that tells the two apart. Nothing about the weight update does. It

@@ -48,15 +48,15 @@ def dots(ax: Any, tasks: dict[str, Any], get: Any, per_task: bool = False) -> No
 def separation_figure(out: dict[str, Any], suffix: str) -> None:
     tasks = out["tasks"]
     panels = [
-        ("Update outside the subcomponents\n(outside_share share / isotropic null)", lambda r: r["inexpressible"]["ratio"], False,
+        ("Outside share of the update\n(÷ isotropic null; a random update reads 1)", lambda r: r["inexpressible"]["ratio"], False,
          [(1.0, "random update reads 1")]),
-        ("Behaviour left in Δ after the lift\n(share of the log-odds gain)", lambda r: r["routes_lift"]["shares"]["e_delta"], False,
+        ("Behaviour left in Δ by the least-squares split\n(share of the log-odds gain)", lambda r: r["routes_lift"]["shares"]["e_delta"], False,
          [(KV_REFERENCE["existing"]["e_delta"], "key-value round, identity"), (KV_REFERENCE["new"]["e_delta"], "key-value round, 32 random pairs")]),
         ("Were the moved subcomponents doing the job at W₀?\n(ablation effect of T ÷ CI-matched random sets)", lambda r: r["relevance_W0"]["k_lo"], False,
          [(1.0, "random sets read 1")]),
-        ("Route: Γ switches existing subcomponents on\n(share r)", lambda r: r["routes_lift"]["shares"]["r"], False,
+        ("Re-switching share r\n(gain carried by existing pieces Γ switches on)", lambda r: r["routes_lift"]["shares"]["r"], False,
          [(KV_REFERENCE["existing"]["r"], "key-value round, identity"), (KV_REFERENCE["new"]["r"], "key-value round, 32 random pairs")]),
-        ("Route: carried by switched-off subcomponents\n(share e_gate)", lambda r: r["routes_lift"]["shares"]["e_gate"], False,
+        ("Masked-off share e_gate\n(gain carried by pieces Γ keeps off)", lambda r: r["routes_lift"]["shares"]["e_gate"], False,
          [(KV_REFERENCE["existing"]["e_gate"], "key-value round, identity"), (KV_REFERENCE["new"]["e_gate"], "key-value round, 32 random pairs")]),
         ("Do two seeds move the same subcomponents?\n(Jaccard of the top-100 sets)", lambda t: t["across_seeds"]["jaccard_T"], True,
          [(float(np.mean([t["across_seeds"]["jaccard_random_T"] for t in tasks.values()])), "two random sets")]),
@@ -78,6 +78,39 @@ def separation_figure(out: dict[str, Any], suffix: str) -> None:
     fig.savefig(FIGURES / f"separation{suffix}.png", dpi=150)
     print(FIGURES / f"separation{suffix}.png")
 
+
+def route_figure(out: dict[str, Any], suffix: str) -> None:
+    """The research log's Overview figure (2026-10-20): the two route shares that separate the classes beside the one
+    update-side number that does not. Current terms only."""
+    tasks = out["tasks"]
+    panels = [
+        ("Outside share of the update\n(÷ isotropic null; a random update reads 1)", lambda r: r["inexpressible"]["ratio"],
+         [(1.0, "random update")]),
+        ("Re-switching share r\n(gain carried by existing pieces Γ switches on)", lambda r: r["routes_lift"]["shares"]["r"],
+         [(KV_REFERENCE["existing"]["r"], "E10 identity"), (KV_REFERENCE["new"]["r"], "E10 32 pairs")]),
+        ("Masked-off share e_gate\n(gain carried by pieces Γ keeps off)", lambda r: r["routes_lift"]["shares"]["e_gate"],
+         [(KV_REFERENCE["existing"]["e_gate"], "E10 identity"), (KV_REFERENCE["new"]["e_gate"], "E10 32 pairs")]),
+    ]
+    fig, axes = plt.subplots(1, len(panels), figsize=(3.6 * len(panels), 3.9))
+    for ax, (title, get, refs) in zip(axes, panels):
+        dots(ax, tasks, get)
+        for y, label in refs:
+            ax.axhline(y, color=GREY, lw=0.8, ls="--")
+            ax.text(1.95, y, label, fontsize=7, color=GREY, ha="right", va="bottom")
+        ax.set_title(title, fontsize=9)
+        ax.set_xlim(-0.6, 2.0)
+        ax.set_ylim(0, 1.05)
+        ax.grid(axis="y", lw=0.3, alpha=0.5)
+        for side in ("top", "right"):
+            ax.spines[side].set_visible(False)
+    axes[0].plot([], [], "o", color="w", mec="k", label="seed 0")
+    axes[0].plot([], [], "s", color="w", mec="k", label="seed 1")
+    axes[0].legend(fontsize=7.5, loc="upper left")
+    fig.suptitle("A behaviour the model has (copy tasks) against one it lacks (random mappings): "
+                 "the update looks the same, the route differs", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(FIGURES / f"route_separation{suffix}.png", dpi=150)
+    print(FIGURES / f"route_separation{suffix}.png")
 
 def relevance_figure(out: dict[str, Any], suffix: str) -> None:
     """Per state: the drop in the target's log-odds at the trigger when T is ablated, against the random sets, at W0
@@ -167,6 +200,7 @@ def main() -> None:
     out = json.loads((RESULTS / f"new_vs_existing{suffix}.json").read_text())
     FIGURES.mkdir(exist_ok=True)
     separation_figure(out, suffix)
+    route_figure(out, suffix)
     relevance_figure(out, suffix)
     landing_figure(out, suffix)
     gamma_figure(out, suffix)
