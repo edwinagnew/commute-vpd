@@ -1,0 +1,19 @@
+<article class="exp missed" id="e11">
+<div class="top"><span class="id">E11</span><span class="chip refuted">missed</span><h3>Reading-A coverage, with the emoticon rerun</h3><span class="when">2026-10-19, rerun 2026-10-20 · RunPod L40S; cluster L40 · <code>experiments/reading_a_coverage</code></span></div>
+<p class="one">Adam component training's decomposition fails VPD's adversarial check on three of five ladder tasks, and leaving the update outside the pieces is more robust on four of five.</p>
+<figure>
+<img src="fig/e11_ratios_per_task.png" alt="Grouped bars on a log scale for five ladder tasks showing each Pile check as a ratio to the original model for component training and do-nothing; the adversarial ratio of component training is above the 1.5 line on three tasks, and the do-nothing's unmasked ratio is far above 1 on every task.">
+<figcaption>Step-10 component training on the five ladder tasks under VPD's checks, each a ratio to the unchanged model. The adversarial ratio (orange) breaks the 1.5 line on three tasks and is worse than doing nothing (hatched) on four. Component training's unmasked ratio (red) stays at 1 where do-nothing's is 4 to 18: that is what keeping Δ fixed buys.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>The ladder's step-10 component training and fine-tune regenerated on the five ladder tasks without Pile numbers (one at three seeds), a gate tying them to the ladder's curves, all five checks with same-job floors. Emoticon rerun on the same harness the next day.</dd>
+<dt>Found</dt><dd><ul>
+<li>Component training's adversarial ratios on the five ladder tasks: " it" then " is" 2.73, " which" then " was" 2.24, " will" then " have" 1.16, " in" then " Fig" 6.74, " we" then " just" 1.38 to 1.55 over three seeds. With emoticon (1.03, E2 and the rerun) and " will" then " be" (1.09, E5) that is the seven-task count: 3 hold, 1 at the line, 3 fail.</li>
+<li>Three of five filed predictions failed, all one way: component training's pieces are less robust than filed, on common-word tasks and against do-nothing alike.</li>
+<li>Stochastic, CI-masked and unmasked checks mostly within the floor: blind to what the adversary finds. Sparsity loss moves under 1%.</li>
+<li>Patterns, not causes: the excess orders with component training's off-target KL, which is 1.8 to 2.5 times the fine-tune's at the same step; the fine-tune alone breaks 1.5 on three tasks.</li>
+<li>Emoticon rerun reproduced E2 (1.03, 2.18) and found the unchanged model's own adversary spread can reach 21% in one job.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q4, Q6, Q7</dd>
+<dt>Moved on</dt><dd>"About as well" is not a general property of Adam component training even on tasks the model does: 3 of 7 hold, 1 at the line, 3 fail, not sorted by rung. Next design question: matched off-target KL instead of matched steps; cancellation across the changed pieces. The 2026-10-20 review corrected several counts in the report. E21: at steps 100 and 1,000 the same Adam rate passes " it" then " is" and " which" then " was", which fail here at step 10, so these verdicts are step-10 readings.</dd>
+</dl>
+</article>

@@ -1,0 +1,18 @@
+<article class="exp mixed" id="e10">
+<div class="top"><span class="id">E10</span><span class="chip partial">mixed</span><h3>Key to value cipher (round 6)</h3><span class="when">2026-10-19 · MATS cluster L40 · <code>experiments/kv_task</code></span></div>
+<p class="one">Component training learns a behaviour the model lacks and stays faithful for one new pair and for the identity control, but not for 32 pairs; reveal and create show up as different routes.</p>
+<figure>
+<img src="fig/e10_reading_a.png" alt="Four bar panels for the three cipher tasks (identity, one random pair, 32 random pairs) under do-nothing, the least-squares split and component training. The CI-masked model retains about 0.8 of the gain on the identity task and 0.1 to 0.3 on the others under every map. The Pile adversarial ratio, on a log scale, is near 1.2 for component training on the identity and one-pair tasks and 2.8 on 32 pairs, where the split reads 39 and do-nothing 5.">
+<figcaption>Component training (blue), the least-squares split (red) and do-nothing (grey) at their scored steps on the three cipher tasks. The Pile adversarial ratio (second panel, log scale) stays near 1.2 for one pair and for the identity control but reaches 2.8 for 32 pairs, where the split reads 39. The CI-masked model retains the same share of the gain under every map (first panel), as the route split says it should.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>After a never-seen marker, a common word is followed by a fixed random other word (1 or 32 pairs) or by itself (identity control). Per task: fine-tune placed do-nothing, its least-squares split as metric control, component training up to 300 steps scored at the first checkpoint that learned. Task-local harness, route split, Pile ratios, sparsity loss.</dd>
+<dt>Found</dt><dd><ul>
+<li>Everything learned; component training in 10 steps for one pair, 30 for 32.</li>
+<li>Component training's adversarial ratio 1.20 (one pair), 1.19 (identity), 2.81 (32 pairs; filed pass, reversed), each from one adversary seed and read against E7's three-seed floor from an RTX 4090 (1 plus three floors = 1.11), not this card's. Least-squares splits 1.73, 9.4, 38.9.</li>
+<li>Identity: re-switching share 0.76 to 0.80. Random maps: masked-off share 0.75 to 0.86 under component training, which leaves nothing in Δ; the split fine-tune reads 0.52 masked-off with 0.18 in Δ on 32 pairs, and 0.73 with 0.13 on one pair. The CI-masked model retains the same share under every map: a property of the task.</li>
+<li>The sparsity loss prints identical values for do-nothing and the split: with Γ frozen it reads the weights only. Its filed rule also mis-set its floor.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q4, Q5, Q7</dd>
+<dt>Moved on</dt><dd>Parked by the user ("trying to do too much at once"). The 32-pair failure's cause is not separated: update size, off-target damage (five times the identity's), the number of associations, or the scored step. The matched-size check on the saved states is a ten-minute job not yet run. E21 found the 32-pair failure is Adam's rate: at 3.3e-6 and 1e-6 Adam learns the 32 pairs and passes (1.09, 1.05). SGD fails both 32-pair tasks, at a smaller change than Adam passes with.</dd>
+</dl>
+</article>

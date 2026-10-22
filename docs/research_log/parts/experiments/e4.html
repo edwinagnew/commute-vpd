@@ -1,0 +1,20 @@
+<article class="exp surprise" id="e4">
+<div class="top"><span class="id">E4</span><span class="chip surprise">surprise</span><h3>Concentration test, with two amendments</h3><span class="when">2026-10-15 · RunPod RTX 4090 · <code>experiments/concentration_test</code></span></div>
+<p class="one">A handful of pieces can learn the behaviour, but under the original masks no arm's pieces carry it: everything runs through Γ switching existing pieces on.</p>
+<figure>
+<img src="fig/e4_sgd_lr_grid.png" alt="Two panels against the plain-SGD learning rate, log axis, 0.001 to 30. Left: held-out probability of the target at step 30 is above the 0.9 line from 0.003 to 3 and collapses at 10 and 30; 0.001 reaches 0.64. Right: off-target KL at step 30 is under the 0.110 limit from 0.001 to 0.1, lowest at 0.01, and between 0.48 and 7.7 on E4's grid of 0.3 to 30.">
+<figcaption>Follow-up, 2026-10-21. Plain SGD on the pieces' vectors learns within the off-target limit at every rate from 0.003 to 0.1 (circles). E4's grid (squares) began at 0.3, already over the limit, which is why it read as "no rate works". The orange line is Adam.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>Component training with only some pieces free: all (Adam; plain SGD at rates 0.3 to 30), the top 1, 10 or 100 by first-order importance, the paper's six emoticon pieces. Amendment 1 re-read the trigger with Γ's masks fixed to the original model's. Amendment 2 asked which pieces switch on.</dd>
+<dt>Found</dt><dd><ul>
+<li>One piece, ten, or the six siblings each learn with small off-target damage, Pile ratios at most 1.08, and CI-masked probability 0.98 at the trigger; the diffuse Adam arm reads 0.64, do-nothing 0.53.</li>
+<li>Plain SGD on the vectors: no rate in the grid learned without large off-target damage, so the runs after this used Adam. Contradicted on 2026-10-21: the grid started above the working range (Follow-up, below).</li>
+<li>Surprise: Γ's masks alone move the CI-masked model most of the way (do-nothing 0.53 against 0.004 at the original model).</li>
+<li>Amendment 1: under the original masks the siblings reach 0.37 of the target, every other arm at most 0.19. Two filed predictions reversed.</li>
+<li>Amendment 2: every update switches on largely the same 150 to 200 pre-existing pieces (Jaccard 0.59 to 0.88); the set carries about half the re-switching effect; each piece pushes weakly. First evidence for "reveal".</li></ul></dd>
+<dt>Bears on</dt><dd>Q5, Q7</dd>
+<dt>Moved on</dt><dd>The trigger-local control had no power as filed; fixed by amendment 1. Re-switching was now known to dominate every CI-masked number, which forced the route split before the ladder could be scored.</dd>
+<dt>Follow-up</dt><dd>2026-10-21 · MATS cluster L40 · <code>experiments/sgd_grid</code> · <code>reports/2026-10-21_analysis_sgd-grid.md</code>. At rates from 0.003 to 0.1 plain SGD learns within the off-target limit (figure). Its update is still diffuse: reverting the top ten pieces removes 0.16 of the gain, so E4's P1 scores fail, as filed. Both numbers were measured at a smaller size of change than Adam's, so no comparison with Adam is drawn here. The matched comparison and the state's faithfulness ran in E21: the SGD state passes the Pile adversarial check, and at matched size Adam's change is about seven times more diffuse.</dd>
+</dl>
+</article>

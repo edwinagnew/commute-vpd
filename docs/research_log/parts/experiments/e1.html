@@ -1,0 +1,15 @@
+<article class="exp missed" id="e1">
+<div class="top"><span class="id">E1</span><span class="chip refuted">missed</span><h3>Transport test (round 1)</h3><span class="when">2026-10-14 · RunPod L40S · <code>experiments/transport_test</code></span></div>
+<p class="one">The rescaling split of a fine-tune onto the existing pieces explains neither the parameters nor the behaviour.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Two fine-tunes (emoticon; continued pretraining). Three splits onto the fixed pieces: the rescaling split by least squares, a fitted rescaling of every alive piece, and sparse write or read edits of the top-k pieces against k random ones.</dd>
+<dt>Found</dt><dd><ul>
+<li>0.06% of the emoticon update's energy lies in the span of the fixed pieces (0.05% for continued pretraining, the arm the prediction was filed for), against 0.035% for a random direction. Filed: ten times random. Reversed.</li>
+<li>Ten random pieces with free write vectors reproduce the behaviour as well as the ten the rescaling split picks: no power at that size. Reversed.</li>
+<li>The paper's emoticon piece ranks second in its matrix at step 10, with three of five siblings in the top eight, then disperses by step 30.</li>
+<li>Stochastic faithfulness stayed within 0.94 to 1.02 under every transport.</li>
+<li>The continued-pretraining fits failed to optimise (learning rate too large), found by the same-day audit.</li></ul></dd>
+<dt>Bears on</dt><dd>Q2</dd>
+<dt>Moved on</dt><dd>The faithfulness check recomputed Δ from the weights, so the trivial map passed; the null was too expressive; the Frobenius selector picked the wrong pieces. All three fixed in E2's design. Loose end: the emoticon update's rescaling share grows from 1.7 to 10 times random between steps 10 and 300, unexplained.</dd>
+</dl>
+</article>

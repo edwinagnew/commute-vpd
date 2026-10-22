@@ -1,0 +1,19 @@
+<article class="exp void" id="e7">
+<div class="top"><span class="id">E7</span><span class="chip uninf">no answer</span><h3>LoRA on one matrix: split and rank-r component training (round 4)</h3><span class="when">2026-10-19 · RunPod RTX 4090 · <code>experiments/lora_commute</code></span></div>
+<p class="one">Takeaway: where a LoRA sits matters, its rank does not. Confined to the paper's one matrix, which the decomposition reads poorly, the LoRA's split reads above this card's noise floor at every rank from 1 to 32 and over the 1.5 line at rank 8 (right panel); spread over all 24 matrices it stays under the 1.5 line (E8; E16's first figure, left panel). So this run's "a LoRA is harder" is about the matrix, not about LoRAs.</p>
+<figure>
+<img src="fig/e7_vs_rank.png" alt="Two panels against LoRA rank 1, 4, 8 and 32. Left: the direct share of the trigger gain for the split LoRA and for rank-r component training, all between 0.07 and 0.11 with no trend. Right: the Pile adversarial ratio, with one-matrix component training between 2 and 4, the split LoRA between 1.4 and 2, and the fine-tune's split at 7.3.">
+<figcaption>Rank is not the axis. Left: the direct share of the trigger gain for the split LoRA (blue) and rank-r component training (orange) stays between 0.07 and 0.11 from rank 1 to 32. Right: the Pile adversarial ratio of the same states, with one-matrix component training at 2 to 4 and the split LoRA at 1.4 to 2, against 7.3 for the fine-tune's split on this card.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>LoRAs of rank 1, 4, 8 and 32 on the paper's emoticon matrix, and the fine-tune, each placed do-nothing and least-squares split. Component training confined to that matrix (rank-r and free) and on all 24. Route split, outside share, Pile ratios with a three-seed floor.</dd>
+<dt>Found</dt><dd><ul>
+<li>Outside share at the isotropic null at every rank (0.38 to 0.43 against 0.42; fine-tune 0.27 against 0.53): the read factor stays near its random start.</li>
+<li>The LoRA's split leaves a third to two fifths of the behaviour in Δ; the fine-tune's split a twelfth.</li>
+<li>Pile adversary: LoRA splits 1.35 to 2.0, one-matrix component training 2.1 to 4.1, all-matrix component training 1.10. Fine-tune split 7.3 against E2's 5.4, a cross-card miss.</li>
+<li>Rank is not the axis: rank 1 behaves like rank 32. Direct share 0.05 to 0.11, re-switching 0.5 to 0.6 for every arm.</li>
+<li>Eight filed predictions: four null, four neither.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q3</dd>
+<dt>Moved on</dt><dd>The decomposition reads only 21% of that matrix's input energy, so even the fine-tune's own update there is 0.36 outside the pieces: a LoRA on a badly-read matrix had been compared with a fine-tune on well-read ones. A later run (E13, section 11) confirmed it: component training confined to that matrix fails (4.52) and on all 24 passes. Provenance: the pod was terminated before the final results file was downloaded; three arms were rebuilt from the log.</dd>
+</dl>
+</article>

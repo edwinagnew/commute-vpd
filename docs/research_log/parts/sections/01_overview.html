@@ -1,0 +1,154 @@
+<section id="overview">
+<div class="sechead"><div class="eyebrow">Start here</div><h2><span class="num">1</span>Overview</h2></div>
+
+<div class="prose">
+<p><strong>Does post-training create new mechanisms, or draw from existing ones?</strong> A common assumption is that pretraining builds the mechanisms and post-training only re-weights them. The evidence for that is behavioural or activation-based. This project looks where post-training actually acts: in the weights.</p>
+<p>A parameter decomposition (VPD) writes each weight matrix as a sum of rank-one subcomponents, each meant to be one piece of mechanism, plus a residual Δ, with an importance function Γ saying which pieces matter on each input. A post-training update is nothing but a change to the weights. So: does the update land on the existing subcomponents, or outside them?</p>
+</div>
+
+<figure class="boxed">
+<svg viewBox="0 0 760 318" role="img" aria-label="The model's weights, VPD's representation of them as rank-one pieces plus a residual with Γ choosing which pieces matter, and the post-training update δW with three arrows, each marked with a question mark, into the pieces, into the residual and into Γ's switching" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12.5">
+  <defs><marker id="arr0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+  <!-- row 1: the weights and their VPD representation -->
+  <text x="24" y="26" font-weight="600" fill="currentColor">1. The model's weights</text>
+  <text x="250" y="26" font-weight="600" fill="currentColor">2. VPD's representation: rank-one pieces, one mechanism each</text>
+  <g>
+    <rect x="40" y="44" width="96" height="96" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"/>
+    <g stroke="currentColor" stroke-opacity="0.25" stroke-width="1"><line x1="64" y1="44" x2="64" y2="140"/><line x1="88" y1="44" x2="88" y2="140"/><line x1="112" y1="44" x2="112" y2="140"/><line x1="40" y1="68" x2="136" y2="68"/><line x1="40" y1="92" x2="136" y2="92"/><line x1="40" y1="116" x2="136" y2="116"/></g>
+    <text x="88" y="97" text-anchor="middle" font-size="18" font-weight="600" fill="currentColor">W</text>
+    <text x="88" y="160" text-anchor="middle" fill="var(--muted)" font-size="11.5">one of 24 matrices</text>
+  </g>
+  <text x="175" y="98" text-anchor="middle" font-size="20" fill="currentColor">=</text>
+  <!-- rank-one tiles: a column vector times a row vector -->
+  <g id="tiles">
+    <g transform="translate(206,44)"><rect width="76" height="96" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"/><rect x="10" y="22" width="9" height="62" rx="2" fill="var(--accent)"/><rect x="25" y="10" width="42" height="9" rx="2" fill="var(--accent)"/><text x="46" y="62" text-anchor="middle" fill="currentColor">u₁v₁ᵀ</text></g>
+    <text x="297" y="98" text-anchor="middle" font-size="18" fill="currentColor">+</text>
+    <g transform="translate(312,44)"><rect width="76" height="96" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"/><rect x="10" y="22" width="9" height="62" rx="2" fill="var(--accent)"/><rect x="25" y="10" width="42" height="9" rx="2" fill="var(--accent)"/><text x="46" y="62" text-anchor="middle" fill="currentColor">u₂v₂ᵀ</text></g>
+    <text x="418" y="98" text-anchor="middle" font-size="16" fill="currentColor">+ ⋯ +</text>
+    <g transform="translate(452,44)"><rect width="76" height="96" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="currentColor" stroke-width="1.2"/><rect x="10" y="22" width="9" height="62" rx="2" fill="var(--accent)"/><rect x="25" y="10" width="42" height="9" rx="2" fill="var(--accent)"/><text x="46" y="62" text-anchor="middle" fill="currentColor">uₙvₙᵀ</text></g>
+    <text x="543" y="98" text-anchor="middle" font-size="18" fill="currentColor">+</text>
+    <g transform="translate(558,44)"><rect width="76" height="96" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3"/><text x="38" y="56" text-anchor="middle" font-size="16" fill="currentColor">Δ</text><text x="38" y="76" text-anchor="middle" font-size="11" fill="var(--muted)">residual</text></g>
+  </g>
+  <!-- gamma -->
+  <g>
+    <rect x="660" y="60" width="84" height="64" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="702" y="84" text-anchor="middle" font-weight="600" fill="currentColor">Γ</text>
+    <text x="702" y="101" text-anchor="middle" fill="var(--muted)" font-size="11">which pieces</text>
+    <text x="702" y="114" text-anchor="middle" fill="var(--muted)" font-size="11">matter where</text>
+    <path d="M660 92 L640 92" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#arr0)"/>
+  </g>
+  <!-- row 2: post-training adds δW; where does it go? -->
+  <path d="M88 168 L88 230" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr0)"/>
+  <text x="80" y="204" text-anchor="end" fill="var(--muted)" font-size="11.5">post-training</text>
+  <g>
+    <rect x="40" y="240" width="96" height="56" rx="6" fill="var(--warn)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"/>
+    <text x="88" y="266" text-anchor="middle" font-size="17" font-weight="600" fill="currentColor">+ δW</text>
+    <text x="88" y="284" text-anchor="middle" fill="var(--muted)" font-size="11">the update</text>
+  </g>
+  <text x="334" y="198" text-anchor="end" font-weight="600" fill="currentColor">3. The question:</text>
+  <text x="334" y="214" text-anchor="end" font-weight="600" fill="currentColor">where does δW land?</text>
+  <!-- trunk and three risers, each with a question mark -->
+  <g fill="none" stroke="var(--warn)" stroke-width="1.6">
+    <path d="M136 268 L702 268"/>
+    <path d="M350 268 L350 148" marker-end="url(#arr0)"/>
+    <path d="M596 268 L596 148" marker-end="url(#arr0)"/>
+    <path d="M702 268 L702 132" marker-end="url(#arr0)"/>
+  </g>
+  <g font-weight="600" font-size="14" fill="var(--warn)">
+    <circle cx="350" cy="200" r="10" fill="var(--raised)" stroke="var(--warn)" stroke-width="1.4"/><text x="350" y="205" text-anchor="middle">?</text>
+    <circle cx="596" cy="200" r="10" fill="var(--raised)" stroke="var(--warn)" stroke-width="1.4"/><text x="596" y="205" text-anchor="middle">?</text>
+    <circle cx="702" cy="200" r="10" fill="var(--raised)" stroke="var(--warn)" stroke-width="1.4"/><text x="702" y="205" text-anchor="middle">?</text>
+  </g>
+  <g fill="currentColor" font-size="11.5">
+    <text x="350" y="290" text-anchor="middle">onto the existing pieces,</text>
+    <text x="350" y="304" text-anchor="middle">moving or strengthening them</text>
+    <text x="596" y="290" text-anchor="middle">into the residual Δ</text>
+    <text x="702" y="290" text-anchor="middle">into which pieces</text>
+    <text x="702" y="304" text-anchor="middle">Γ switches on</text>
+  </g>
+</svg>
+<figcaption>The question in one picture. VPD writes a weight matrix as a sum of rank-one pieces plus a residual, with Γ saying which pieces matter on each input. Post-training adds δW to the weights. The project asks where that update lands: on the pieces themselves, in the residual, or in which pieces Γ switches on, where Γ, frozen as it is, reads the updated model's activations. The arrows are left open on purpose; the Results below say which the data favour so far.</figcaption>
+</figure>
+
+<div class="wip"><div class="k">Work in progress: what "re-weighting" means</div><p>The hypothesis is usually stated informally: post-training re-weights mechanisms pretraining built, rather than creating its own. A precise version is not written down yet. What counts as a mechanism, and what counts as re-weighting one in VPD terms (a strengthened piece, a re-switched one, a new one) is open. The grid in section 4 is one operationalisation, adopted for now: re-weighting as the reading where the update leaves the subcomponents as they were and Γ switches them on differently, measured by the re-switching share. Until this is fixed, "reveal" and "create" below are readings of the data, not verdicts on the hypothesis.</p></div>
+
+<h3>How it is tested</h3>
+<div class="prose"><p>Take a released decomposition, run a small fine-tune, and try simple rules for carrying the update onto the pieces with Γ and Δ frozen. A rule passes if its output is still a faithful decomposition of the updated model by VPD's own checks, with Δ not swallowing the update.</p></div>
+
+<figure class="boxed">
+<svg viewBox="0 0 760 340" role="img" aria-label="Three maps laid out as rows: what each takes as input, what it does, and where the update ends up in the decomposition" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12.5">
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+  <g font-family="IBM Plex Mono, Menlo, monospace" font-size="10.5" fill="var(--muted)" letter-spacing="0.08em">
+    <text x="112" y="22" text-anchor="middle">INPUT</text>
+    <text x="385" y="22" text-anchor="middle">OPERATION</text>
+    <text x="652" y="22" text-anchor="middle">WHERE δW ENDS UP</text>
+  </g>
+  <!-- row 1: component training -->
+  <g>
+    <rect x="22" y="44" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="112" y="72" text-anchor="middle" font-weight="600" fill="currentColor">The training step</text>
+    <text x="112" y="90" text-anchor="middle" fill="var(--muted)">loss, data, optimiser</text>
+    <path d="M202 79 L256 79" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="258" y="44" width="254" height="70" rx="7" fill="var(--accent)" fill-opacity="0.10" stroke="var(--accent)" stroke-width="2"/>
+    <text x="385" y="66" text-anchor="middle" font-weight="600" fill="currentColor">Component training</text>
+    <text x="385" y="84" text-anchor="middle" fill="currentColor">apply the same step to the pieces' u, v</text>
+    <text x="385" y="101" text-anchor="middle" fill="var(--muted)">Γ and Δ frozen · repeated every step</text>
+    <path d="M512 79 L560 79" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="562" y="44" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <g transform="translate(576,52)"><rect width="52" height="11" rx="2" fill="var(--accent)"/><rect y="14" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="28" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="43" width="52" height="11" rx="2" fill="none" stroke="currentColor" stroke-dasharray="3 2"/></g>
+    <text x="640" y="74" fill="currentColor">in the pieces</text>
+    <text x="640" y="92" fill="var(--muted)">Δ untouched</text>
+  </g>
+  <!-- row 2: least-squares split -->
+  <g>
+    <rect x="22" y="150" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="112" y="178" text-anchor="middle" font-weight="600" fill="currentColor">The finished update δW</text>
+    <text x="112" y="196" text-anchor="middle" fill="var(--muted)">from a fine-tune or a LoRA</text>
+    <path d="M202 185 L256 185" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="258" y="150" width="254" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="385" y="172" text-anchor="middle" font-weight="600" fill="currentColor">Least-squares split</text>
+    <text x="385" y="190" text-anchor="middle" fill="currentColor">smallest du, dv with dU Vᵀ + U dVᵀ ≈ δW</text>
+    <text x="385" y="207" text-anchor="middle" fill="var(--muted)">one-shot on the finished run</text>
+    <path d="M512 185 L560 185" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="562" y="150" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <g transform="translate(576,158)"><rect width="52" height="11" rx="2" fill="var(--accent)"/><rect y="14" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="28" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="43" width="52" height="11" rx="2" fill="var(--warn)" fill-opacity="0.55" stroke="currentColor" stroke-dasharray="3 2"/></g>
+    <text x="640" y="180" fill="currentColor">what fits, in the pieces</text>
+    <text x="640" y="198" fill="var(--muted)">the rest into Δ</text>
+  </g>
+  <!-- row 3: do-nothing -->
+  <g>
+    <rect x="22" y="256" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="112" y="284" text-anchor="middle" font-weight="600" fill="currentColor">The finished update δW</text>
+    <text x="112" y="302" text-anchor="middle" fill="var(--muted)">from a fine-tune or a LoRA</text>
+    <path d="M202 291 L256 291" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="258" y="256" width="254" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="385" y="278" text-anchor="middle" font-weight="600" fill="currentColor">Do-nothing</text>
+    <text x="385" y="296" text-anchor="middle" fill="currentColor">leave every piece as it was</text>
+    <text x="385" y="313" text-anchor="middle" fill="var(--muted)">the reference the others are compared with</text>
+    <path d="M512 291 L560 291" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="562" y="256" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <g transform="translate(576,264)"><rect width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="14" width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="28" width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="43" width="52" height="11" rx="2" fill="var(--warn)" fill-opacity="0.55" stroke="currentColor" stroke-dasharray="3 2"/></g>
+    <text x="640" y="286" fill="currentColor">all of it in Δ</text>
+    <text x="640" y="304" fill="var(--muted)">pieces untouched</text>
+  </g>
+</svg>
+<figcaption>The three operations, one per row. Each takes something from post-training, does one thing, and leaves the update somewhere in the decomposition: in the pieces (teal bars), in the residual Δ (dashed bar), or split between them. Every map then returns a decomposition that is scored on the updated weights.</figcaption>
+</figure>
+
+<h3>Where we are</h3>
+<div class="cards">
+  <div class="card key"><div class="k">Result 1</div><h3>Adam component training keeps the decomposition faithful while it learns, on about half the tasks</h3><p>Training the subcomponents themselves with Adam, Γ and Δ frozen, learns every task tried, including a cipher the model has never seen (E10). On the emoticon task it is the only operation that keeps both the behaviour and VPD's adversarial check to step 1000 with Δ untouched (E16, first figure). Caveats: across nine tasks it passes the adversarial check on four (figure below), the failures do not sort by how new the behaviour is, and it is trained in place of the update rather than mapping a finished one. Every task used Adam at one learning rate, read at step 10. Comparing SGD and Adam (E21) says that matters: Adam's failures came while it was still damaging the model's other predictions, and at steps 100 and 1,000 the same rate passes two of the failing word tasks; a lower rate passes the 32-pair cipher. The verdicts are not an artefact of the adversary's short search: under the VPD paper's step rule each one tried reads the same at 160 steps as at 20 (E20, third amendment).</p><div class="links"><a href="#e2">E2</a><a href="#e10">E10</a><a href="#e11">E11</a><a href="#e16">E16</a><a href="#e21">E21</a></div></div>
+  <div class="card key"><div class="k">Result 2</div><h3>No split of a finished update keeps the behaviour and faithfulness with Δ untouched</h3><p>All five operations on emoticon, on one card (E16, first figure): the least-squares split keeps the behaviour but puts a large part of the update in Δ, and for the fine-tune fails the adversarial check. The adjoint split stays faithful but loses most of the behaviour by step 1000. The rescaling split keeps none of it. Splitting every step of the fine-tune instead, with the pieces moving along, does no better: more of the behaviour stays in Δ than under the least-squares split (E19, first figure). A fine-tune 4.7 times smaller, SGD or Adam, passes the adversarial check under both do-nothing and the least-squares split, but the split still leaves 0.25 to 0.32 of the change in Δ, so the result holds at that size too (E21, third figure).</p><div class="links"><a href="#e16">E16</a><a href="#e19">E19</a><a href="#e21">E21</a></div></div>
+  <div class="card key"><div class="k">Result 3</div><h3>The moved subcomponents never carry the behaviour</h3><p>Under every operation route-split so far they carry about a tenth of the gain on the target or less (E5's figure, E16's second figure). For common next words and copying, Γ switching existing subcomponents on carries most of it (E5, E12); for a new association, subcomponents Γ keeps off do (E10, E12). Emoticon and the rarest next words sit between.</p><div class="links"><a href="#e5">E5</a><a href="#e7">E7</a><a href="#e10">E10</a><a href="#e12">E12</a><a href="#e16">E16</a></div></div>
+</div>
+<figure>
+<img src="fig/overview_component_training.png" alt="Dot plot, one row per task (emoticon, five next-word tasks, three cipher tasks), adversarial ratio on a log axis with a dashed pass line at 1.5. Component training passes on emoticon (1.03), will-have (1.16), the copy control (1.19) and one new pair (1.20), and fails on we-just (1.55), which-was (2.2), it-is (2.7), 32 new pairs (2.8) and in-Fig (6.7). Hollow circles for the same task's fine-tune with its update left in Δ range from 1.06 to 8.1.">
+<figcaption>Adam component training at its usual rate on the nine tasks it was scored on (E10, E11), at step 10 on the word tasks, one seed each; E21's later steps and lower rates are not in this figure; over three seeds " we" then " just" is at the line (E11). Every task was learned: held-out probability of the target 0.85 or more. Green passes VPD's adversarial check, orange fails; hollow circles are the same task's fine-tune with its update left in Δ, for reference. The ladder tasks ran on one card and emoticon and the cipher on another with larger noise, so compare within a row.</figcaption>
+</figure>
+<p class="small">All runs so far are on a small released decomposition because each takes minutes; a larger model and RL updates are the next phases (Q9, Q10).</p>
+<figure>
+<img src="fig/e12_route_separation.png" alt="Three panels, each with four markers for the copy tasks (existing behaviour, blue) and four for the random-mapping tasks (new behaviour, orange). Left: the outside share of the update divided by its isotropic null is about 0.6 for both classes. Middle: the re-switching share is about 0.8 for copying and 0.28 for the maps. Right: the masked-off share is about 0.05 for copying and 0.5 for the maps.">
+<figcaption>Early signs of promise (E12). A behaviour the model already has (copy tasks, blue) and one it lacks (random mappings, orange) look the same when the update is measured directly, left, but take different routes: the existing behaviour's gain runs through Γ switching existing pieces on, middle, and the new one's through pieces Γ keeps off, right, on every task and seed.</figcaption>
+</figure>
+<div class="wip"><div class="k">Current direction (since 2026-10-21): re-gating is the main line</div><p><strong>The claim so far.</strong> On a 67M model, narrow post-training updates are mostly carried by re-gating (the frozen Γ switching existing pieces on); no split of a finished update with Γ frozen keeps the decomposition adversarially faithful, and Adam component training, at one learning rate and read at step 10, fails on about half the tasks (at steps 100 and 1,000 it passes two of them, E21); and the adversarial failure is not cancellation among the changes: the part of the changes the adversary removes carries at most 7% of its extra damage (E17, second figure), nor is it in the original subcomponents: removing the adversary's share of them costs no more than at the original model on three of four failing states (E20, first figure). The excess is the interaction between the adversary's removal of the alive subcomponents and of the dead ones; Δ alone is negligible (E20, fourth figure).</p><p><strong>What that changes.</strong> Both runs that were in flight have been read. The five operations side by side on one card (E16): only component training keeps the floor and the behaviour with Δ untouched at steps 10, 100 and 1,000, and no split of a finished update does; its reproduction gate failed, so its predictions are unscored as filed. The Γ refit (E15) failed its control twice and is being fixed. Now the main sub-question is Q5: what re-gating is and whether it can be trusted. Its first test is whether re-gating is a mechanism or Γ passing through computation already in its input. The commute question, Q1, stays open and comes second. Since then the cancellation tests have run (E17, E20) and the first re-gating control has run (E18): one fixed pattern of importance values gives back most of the switching effect and no leak is seen, but the filed test failed on the two word tasks, in a band the plan did not interpret. Its first amendment traced the miss to how a fixed change meets each input's own values. The user did not back that as a mechanism: it is the leading hypothesis, H, to be tested harder, and in the third amendment H's claim to be enough on its own failed as filed (E18). E20's second amendment seemed to find the 20-step adversary far from converged; its third, run with the VPD paper's step rule, found every verdict tried reads the same from 20 to 160 steps, so the verdicts stand as read. A fourth amendment to E18 found the input-varying part of H's failure mostly an averaging baseline; the user now holds as a working hypothesis that one fixed change carries most of the switching effect and inputs' own variation adds a few hundredths. E4's ruling-out of plain SGD turned out to rest on a grid that started too high (section 11), so component training's failures may be Adam's rather than the operation's. Comparing SGD and Adam component training is a priority subgoal since the same day (Q11, section 6); it is analysed (E21): neither the optimiser nor the size decides alone. A scope review then found most of the failures above measured on two large updates, the Adam 3e-5 fine-tune and Adam 1e-5 component training at step 10; at a smaller or later update most of them pass, so the case against maps with Γ frozen rests on fewer, narrower failures: " in" then " Fig" under every arm, SGD component training at step 1,000, SGD on two ciphers, and the least-squares split's share in Δ at any size (<code>reports/2026-10-22_review_large-update-scope.md</code>).</p><p><strong>What would move us back.</strong> Any map, including component training under SGD or under Adam at another rate, that keeps the floor and the behaviour with Δ fixed at steps 100 and 1,000, not only 10, on the tasks that fail now; re-gating shown to be a leak; or a larger model where the moved pieces do carry the behaviour. The first is met: Adam component training at its usual rate is at the floor with the behaviour at steps 100 and 1,000 on " it" then " is", " which" then " was" and emoticon (E21). Whether the main line moves is the user's decision, not yet taken. Decision: <code>reports/2026-10-21_decision_regating-main-line.md</code>.</p></div>
+</section>

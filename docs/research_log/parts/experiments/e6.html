@@ -1,0 +1,19 @@
+<article class="exp mixed" id="e6">
+<div class="top"><span class="id">E6</span><span class="chip partial">mixed</span><h3>Recruit test</h3><span class="when">2026-10-19 · RunPod RTX 4090 · <code>experiments/recruit_test</code></span></div>
+<p class="one">A real fine-tune and a LoRA switch on the same pre-existing subcomponents as component training, and which ones depends on the target. How much of the gain runs through switching does not.</p>
+<figure>
+<img src="fig/e6_overlap.png" alt="Two bar panels for five updates. Left: Jaccard overlap of each update's switched-on set with the fine-tune's: second fine-tune seed 0.93, LoRA 0.82, component training 0.64, fine-tunes to two other targets 0.04 and 0.05. Right: re-switching share of each update's own gain, 0.51 to 0.61 for all five.">
+<figcaption>Left: which subcomponents Γ switches on is shared by every update that teaches the same token (blue) and almost disjoint from updates teaching another token at the same position (orange). Right: the share of the gain that runs through that switching is about 0.55 for all of them.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>Real updates placed do-nothing on emoticon: the fine-tune at two seeds, a one-matrix LoRA, two fine-tunes to a different target at the same trigger (the null with power), a norm-matched random update, component training's update as reference. Switched-on sets, overlaps, recovery.</dd>
+<dt>Found</dt><dd><ul>
+<li>Fine-tune vs component-training set: Jaccard 0.64 (seed floor 0.93); vs LoRA 0.82; vs a different target 0.04.</li>
+<li>Re-switching share 0.51 to 0.61 for every arm, nulls included: the share is not target-specific, the set is.</li>
+<li>The switched-on set carries only 40% of the re-switching effect (filed prediction failed): the overlaps compare which gates moved, not what produces the behaviour.</li>
+<li>A random update is inert.</li>
+<li>Surprise: Γ is global, so a layer-2 LoRA moves layer-0 importance values; the filed locality gate rested on a wrong premise.</li></ul></dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>"Reveal through routing" is a property of the real update and the target, not of component training. What the recruited set did at the original model needs more Pile rows than were available.</dd>
+</dl>
+</article>

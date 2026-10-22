@@ -1,0 +1,149 @@
+<title>Γ and Weight Updates</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column; two threads side by side on wide screens, stacked on phones. */
+:root {
+  --bg: #f6f7f9; --fg: #1b2230; --muted: #5a6475; --line: #d9dee6; --panel: #ffffff;
+  --accent: #1f6f78;
+  --open: #9a5b00; --open-bg: #fbefd9;
+  --holds: #23703f; --holds-bg: #e1f2e6;
+  --refuted: #a3322c; --refuted-bg: #f8e2e0;
+  --display: "Source Serif 4", Georgia, serif;
+  --body: "Public Sans", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161d; --fg: #e3e7ee; --muted: #9aa4b4; --line: #2b323e; --panel: #1a1f28;
+  --accent: #6cc3cc;
+  --open: #f0b75e; --open-bg: #3a2c14; --holds: #7fd39b; --holds-bg: #15301f; --refuted: #f08a82; --refuted-bg: #3b1b19;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161d; --fg: #e3e7ee; --muted: #9aa4b4; --line: #2b323e; --panel: #1a1f28;
+  --accent: #6cc3cc;
+  --open: #f0b75e; --open-bg: #3a2c14; --holds: #7fd39b; --holds-bg: #15301f; --refuted: #f08a82; --refuted-bg: #3b1b19;
+  color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); }
+main { max-width: 860px; margin: 0 auto; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 36px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: 2.1rem; font-weight: 650; }
+h2 { font-size: 1.35rem; font-weight: 650; }
+h3 { font-size: 1.05rem; font-weight: 650; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.eyebrow { font: 500 0.72rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header { display: grid; gap: 12px; }
+.lede { font-size: 1.08rem; }
+.meta { color: var(--muted); font-size: 0.88rem; }
+section { display: grid; gap: 14px; }
+.threads { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.thread { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.thread .q { color: var(--muted); font-size: 0.9rem; }
+ul.obs { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+ul.obs li { display: grid; grid-template-columns: 4.6rem 1fr; gap: 10px; align-items: baseline; }
+ul.obs li > span:last-child { min-width: 0; }
+.e { font: 500 0.75rem var(--mono); }
+.chip { display: inline-block; font: 500 0.7rem var(--mono); letter-spacing: 0.04em; padding: 1px 7px; border-radius: 3px; white-space: nowrap; }
+.chip.open { color: var(--open); background: var(--open-bg); }
+.chip.holds { color: var(--holds); background: var(--holds-bg); }
+.chip.refuted { color: var(--refuted); background: var(--refuted-bg); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-top: 1px solid var(--line); }
+th { font: 500 0.72rem var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-top: none; }
+td:first-child { min-width: 13rem; }
+.where { border-left: 3px solid var(--accent); padding-left: 16px; display: grid; gap: 10px; }
+.where ol { margin: 0; padding-left: 1.2rem; display: grid; gap: 8px; max-width: 68ch; }
+footer { color: var(--muted); font-size: 0.85rem; }
+figure { margin: 0; display: grid; gap: 8px; background: #ffffff; border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+figure img { display: block; width: 100%; height: auto; }
+figcaption { color: #3d4656; font-size: 0.86rem; line-height: 1.5; max-width: 72ch; }
+figcaption b { color: #1b2230; }
+</style>
+
+<main>
+<header>
+  <div class="eyebrow">Update Decomposition · Γ summary · 2026-10-21</div>
+  <h1>Γ and weight updates</h1>
+  <p class="lede">Most of what an update does to the decomposition is done through Γ, not through the subcomponents it changes. Γ switching existing subcomponents on carries most of the gain on tasks the model already does, and subcomponents Γ keeps off carry it on new ones. What we cannot yet say is whether that switching is a real mechanism or the updated model's computation leaking in through Γ's input, and whether Γ can be retrained to keep a split update faithful.</p>
+  <p class="meta">A short companion to the <a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu" target="_blank" rel="noopener">Update Decomposition Log</a>. Every experiment code links to its card there.</p>
+</header>
+
+<section>
+  <h2>Why Γ is in the way</h2>
+  <p>VPD writes each weight matrix as rank-one subcomponents plus a residual Δ, and Γ is the importance function that says which subcomponents matter on each input. Γ reads the model's activations. So after a fine-tune, Γ sees the updated model and changes which subcomponents it switches on, even if the subcomponents themselves are left exactly as they were (the do-nothing reference). Every question below comes from that one fact: Γ is part of how the update shows up, and also part of how faithfulness is judged.</p>
+</section>
+
+<section>
+  <h2>Two threads</h2>
+  <div class="threads">
+    <div class="thread">
+      <div class="eyebrow">Q5 · main line</div>
+      <h3>Γ as the route the update takes</h3>
+      <p class="q">Where does an update's gain go: strengthened subcomponents, re-switched existing ones, ones Γ keeps off, or Δ?</p>
+      <ul class="obs">
+        <li><a class="e" href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e4" target="_blank" rel="noopener">E4</a><span>Under the original masks no arm's subcomponents carry emoticon; Γ's masks alone move the masked model most of the way. Every update switches on largely the same 150–200 existing subcomponents.</span></li>
+        <li><a class="e" href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e5" target="_blank" rel="noopener">E5</a><span>The changed subcomponents carry under 8% of the gain on every ladder task. Re-switching carries most of it for common next words; Γ-off subcomponents take over for rare ones.</span></li>
+        <li><a class="e" href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e6" target="_blank" rel="noopener">E6</a><span>Same target, same switched-on set; a different target, a different set. That set carries only about half the re-switching effect.</span></li>
+        <li><a class="e" href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e12" target="_blank" rel="noopener">E12</a><span>Copy tasks go through re-switching ("reveal"), random maps through Γ-off subcomponents ("create"). Only the route split tells them apart.</span></li>
+        <li><span class="e">SGD</span><span>The first SGD component-training state is faithful and also mostly re-gating (2026-10-21, queued for the log). So far this is not an Adam artefact.</span></li>
+      </ul>
+    </div>
+    <div class="thread">
+      <div class="eyebrow">Q6 · Q1</div>
+      <h3>Γ as a stale judge</h3>
+      <p class="q">Does the adversarial check fail because the released Γ no longer fits the updated model?</p>
+      <ul class="obs">
+        <li><a class="e" href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e15" target="_blank" rel="noopener">E15 · 0</a><span>Not in the simple sense. The subcomponents the adversary turns down are inert one at a time at both models, but together they do twice the damage. The fragility is a joint effect.</span></li>
+        <li><a class="e" href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e17" target="_blank" rel="noopener">E17</a><span>Not cancellation either. Removing the adversary's share of the changes explains under a tenth of its damage. The rest is inferred to come from masking original subcomponents the updated model now leans on.</span></li>
+        <li><a class="e" href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e15" target="_blank" rel="noopener">E15</a><span>Retraining Γ brought the split fine-tune to the floor, but the same retraining knocked the unchanged model off it (up to 6.3), under two recipes. Its own attacker is weaker than the check's, 0.42 against 0.70 nats.</span></li>
+        <li><a class="e" href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e10" target="_blank" rel="noopener">E10</a><span>VPD's sparsity loss cannot tell operations apart while Γ is frozen: do-nothing and the split read identically.</span></li>
+      </ul>
+    </div>
+  </div>
+  <figure>
+    <img src="fig/e12_route_separation.png" alt="Three panels, each with four markers for the copy tasks (existing behaviour, blue) and four for the random-mapping tasks (new behaviour, orange). Left: the outside share of the update divided by its isotropic null is about 0.6 for both classes. Middle: the re-switching share is about 0.8 for copying and 0.28 for the maps. Right: the masked-off share is about 0.05 for copying and 0.5 for the maps.">
+    <figcaption><b>The route thread in one figure (E12, from the log's Overview).</b> A behaviour the model already has (copy tasks, blue) and one it lacks (random mappings, orange) look the same when the update is measured directly, left. They take different routes through Γ: the existing behaviour's gain runs through Γ switching existing subcomponents on, middle, and the new one's through subcomponents Γ keeps off, right.</figcaption>
+  </figure>
+  <figure>
+    <img src="fig/e6_overlap.png" alt="Two bar panels for five updates. Left: Jaccard overlap of each update's switched-on set with the fine-tune's: second fine-tune seed 0.93, LoRA 0.82, component training 0.64, fine-tunes to two other targets 0.04 and 0.05. Right: re-switching share of each update's own gain, 0.51 to 0.61 for all five.">
+    <figcaption><b>Γ responds to what is taught, not how (E6).</b> Left: the subcomponents Γ switches on at the trigger are largely the same for every update that teaches emoticon, whether a second fine-tune seed, a LoRA or component training (blue), and almost disjoint from fine-tunes teaching another token at the same position (orange). Right: about half of each update's gain runs through that switching, whatever the update.</figcaption>
+  </figure>
+  <p>The threads may meet. E17's analysis raised the possibility that the original subcomponents the adversary removes are the same set Γ switches on at the trigger. If so, the switching that carries the gain is also what makes the decomposition fragile. No run has measured that overlap yet; E18 reads it as an unscored extra.</p>
+</section>
+
+<section>
+  <h2>Claims about Γ</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Claim</th><th>Status</th><th>Basis</th></tr></thead>
+    <tbody>
+      <tr><td>The re-switching share is set by the task, not by the update or the operation</td><td><span class="chip holds">holds</span></td><td>Three training methods agree within 0.16 (<a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e5" target="_blank" rel="noopener">E5</a>)</td></tr>
+      <tr><td>Reveal and create show up as different routes</td><td><span class="chip holds">holds, one format</span></td><td>Re-switching 0.76–0.80 for copying against 0.27–0.29 for random maps (<a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e12" target="_blank" rel="noopener">E12</a>)</td></tr>
+      <tr><td>Γ's coverage of the gradient predicts retention</td><td><span class="chip refuted">refuted</span></td><td>Coverage acts on the changed subcomponents, which carry little (<a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e5" target="_blank" rel="noopener">E5</a>)</td></tr>
+      <tr><td>The switched-on set is what produces the behaviour</td><td><span class="chip refuted">refuted</span></td><td>It carries 40–64% of the re-switching effect (<a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e6" target="_blank" rel="noopener">E6</a>)</td></tr>
+      <tr><td>Stale importance values explain the split fine-tune's fragility</td><td><span class="chip refuted">refuted, one state</span></td><td>Γ already rates the attacked subcomponents near zero at both models (<a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e15" target="_blank" rel="noopener">E15</a>)</td></tr>
+      <tr><td>Re-switching is a mechanism, not a leak through Γ's input</td><td><span class="chip open">open</span></td><td>Target-specific sets lean to mechanism; the leak was never tested (<a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e18" target="_blank" rel="noopener">E18</a>)</td></tr>
+      <tr><td>Retraining Γ alone makes the split fine-tune faithful again</td><td><span class="chip open">open</span></td><td>No recipe yet keeps the unchanged model at the floor (<a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e15" target="_blank" rel="noopener">E15</a>)</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="where">
+  <div class="eyebrow">Where this leaves us</div>
+  <h2>Three tests decide it</h2>
+  <ol>
+    <li><strong>Mechanism or leak</strong> (<a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e18" target="_blank" rel="noopener">E18</a>, built, predictions filed, not run). On do-nothing states, apply the changed importance values only at the trigger, as one shared pattern, or as another task's pattern, and see how much of the re-switching effect returns. A leak drops the main line back to Q1; a mechanism makes re-gating the project's main result and a candidate signal for monitoring post-training.</li>
+    <li><strong>What the adversary leans on</strong> (E20, built, not run). Remove the adversary's share of the original subcomponents with the changes kept, binned by layer and by importance at W₀. This measures what E17 only inferred, and checks whether it is Γ's switched-on set.</li>
+    <li><strong>A Γ refit that leaves W₀ alone</strong> (<a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#e15" target="_blank" rel="noopener">E15</a>, reopened 2026-10-21). An attacker matched to the check's, tested on the unchanged model first. Until W₀ stays at the floor, nothing the refit does to an updated model can be read.</li>
+  </ol>
+  <p>Behind all three: every route split so far is of Adam states or finished updates, so <a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#q11" target="_blank" rel="noopener">Q11</a> (SGD against Adam) has to run before any of this counts as a property of the operation.</p>
+</section>
+
+<footer>Sources: the log's <a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#questions" target="_blank" rel="noopener">questions</a>, <a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#claims" target="_blank" rel="noopener">claims</a> and <a href="https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu#next" target="_blank" rel="noopener">what's next</a>; reports/2026-10-21_decision_regating-main-line.md, reports/2026-10-20_analysis_gamma-refit.md, reports/2026-10-21_analysis_cancellation.md.</footer>
+</main>

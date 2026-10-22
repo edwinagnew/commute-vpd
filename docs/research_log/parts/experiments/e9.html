@@ -1,0 +1,19 @@
+<article class="exp mixed" id="e9">
+<div class="top"><span class="id">E9</span><span class="chip partial">mixed</span><h3>LoRA to its plateau</h3><span class="when">2026-10-19 · RunPod L40S · <code>experiments/lora_plateau</code></span></div>
+<p class="one">Training the LoRA ten times longer never makes it readable; its split state stays under the pass line but leaves a third of the behaviour in Δ at the plateau.</p>
+<figure>
+<img src="fig/e9_pile.png" alt="Left: Pile adversarial ratio of the do-nothing and split LoRA states at steps 10, 100 and 1000, all between 1.0 and 1.3, far under the fine-tune split's 5.4 reference line. Right: the share of the behaviour left in Delta by the split, 0.19, 0.11 and 0.31.">
+<figcaption>Left: the split LoRA stays far under the fine-tune split's reference (5.4, from E8 on an L40) at every step, though above this card's three-floor band at steps 10 and 100 and always slightly worse than doing nothing. Right: the share of the behaviour the split leaves in Δ dips and then rises to a third.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>E8's LoRA to 1000 steps. At nine checkpoints: outside share against its null, read factor's overlap with the alive read span, cosine with its initialisation. Do-nothing and split states through the Pile harness at steps 10, 100 and 1000.</dd>
+<dt>Found</dt><dd><ul>
+<li>Read factor moves 10% in 1000 steps; outside share ÷ null 0.82 to 1.02 throughout.</li>
+<li>Energy migrates to the two layer-3 attention matrices the decomposition reads worst: 62% of the update outside the pieces at the plateau.</li>
+<li>Split adversarial ratio 1.26, 1.22, 1.07 (do-nothing 1.17, 1.09, 1.04): under the filed line of 2 and the fine-tune's 5.41, but above this card's band of 1.14 at two steps and always worse than doing nothing.</li>
+<li>Behaviour in Δ 0.19, 0.11, 0.31; Δ's share of the update's energy rises to 0.54.</li>
+<li>Unmasked, the split pieces alone do not reproduce the model on Pile (1.2 to 1.35).</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q3</dd>
+<dt>Moved on</dt><dd>"More steps make the read side data-shaped" is closed. The fine-tune control on one card was run in E14. Open: the seed spread of the Δ share at the plateau (one seed, one run).</dd>
+</dl>
+</article>

@@ -1,0 +1,14 @@
+<article class="exp void" id="e3">
+<div class="top"><span class="id">E3</span><span class="chip uninf">no answer</span><h3>Identity test</h3><span class="when">2026-10-15 · RunPod RTX 4090 · <code>experiments/identity_test</code></span></div>
+<p class="one">Component training with Adam spreads its update over thousands of subcomponents: reverting the ten that matter most removes under 2% of the gain. The subcomponent VPD's authors edited by hand for this same behaviour is not strengthened at all.</p>
+<dl class="fields">
+<dt>Run</dt><dd>E2's states regenerated. Per alive piece, the fall in the target's log-odds when that piece alone is reverted. A gauge-free identity test on the top twenty against a same-matrix null group.</dd>
+<dt>Found</dt><dd><ul>
+<li>Reverting the top 10 removes 1.6% of the gain; the top 1000 remove 36%.</li>
+<li>The paper's emoticon piece: scale ratio 1.000, not strengthened.</li>
+<li>"Identity kept" passes for every piece and for the null group alike; changes are under 1%, and there was no positive control. Uninformative.</li>
+<li>The least-squares split is about 2.5 times more concentrated, still diffuse.</li></ul></dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>Adam or the task? E4 tried constrained component training and plain SGD; the SGD half was answered only by E4's 2026-10-21 follow-up (its card).</dd>
+</dl>
+</article>

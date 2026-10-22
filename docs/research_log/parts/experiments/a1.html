@@ -1,0 +1,11 @@
+<article class="exp held" id="a1">
+<div class="top"><span class="id">A1</span><span class="chip holds">finding, no GPU</span><h3>Why the adversary breaks decompositions the random masks pass</h3><span class="when">2026-10-20 · from existing numbers · <code>reports/2026-10-20_analysis_adversarial-vs-stochastic.md</code></span></div>
+<p class="one">VPD's adversarial check fails component training on three of five ladder tasks while the random-mask check barely moves. The adversary needs a selective mask: turning every subcomponent down together costs almost nothing, while its chosen mask does fifty to three hundred times the damage. That points at cancellation: the update is spread over many subcomponents whose changes only add up correctly together.</p>
+<dl class="fields">
+<dt>Found</dt><dd><ul>
+<li>The random-mask check masks about half the matrices at a time with random strengths, so a weakness that needs several specific subcomponents masked together is rarely sampled.</li>
+<li>On " which" then " was": every subcomponent at its importance value costs 0.017 nats more than at the original model; the adversary's mask costs 0.87.</li></ul></dd>
+<dt>Bears on</dt><dd>Q6</dd>
+<dt>Moved on</dt><dd>Two direct tests of cancellation designed (section 6); E15's stage 0 then pointed the same way on the split fine-tune. E17 ran both and refuted it: the selective mask's damage is not in the changes. E20 found it is not in the original subcomponents either; its amendment put it in the interaction between removing the alive and the dead subcomponents.</dd>
+</dl>
+</article>

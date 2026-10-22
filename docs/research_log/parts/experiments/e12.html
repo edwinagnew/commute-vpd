@@ -1,0 +1,17 @@
+<article class="exp mixed" id="e12">
+<div class="top"><span class="id">E12</span><span class="chip partial">mixed</span><h3>New-versus-existing signatures (round 7)</h3><span class="when">2026-10-20 · RunPod secure pod, card not recorded · <code>experiments/new_vs_existing</code></span></div>
+<p class="one">A step back from commuting the update: only the route split tells a new mechanism from an existing one; every number read off the update itself looks the same in both classes.</p>
+<figure>
+<img src="fig/e12_separation.png" alt="Six panels, one per candidate measurement, each with four markers for the copy tasks and four for the random-mapping tasks. The outside share (about 0.6), the behaviour left in Delta (0.12 to 0.24), the relevance of the moved pieces (4 to 54, all far above the random floor of 1) and the seed overlap (0.68 to 0.78) put both classes in overlapping or equally high ranges; the re-switching share is near 0.8 for copying and 0.28 for the maps, and the masked-off share near 0.05 for copying and 0.5 for the maps.">
+<figcaption>The full set of six candidate numbers, one marker per fine-tuned state (two tasks and two seeds per class); the Overview shows three of these panels. The outside share, the behaviour the split leaves in Δ, and the seed overlap of the moved pieces put the copy tasks and the random mappings in the same range, and the moved pieces are busy ones at the original model in both classes (the filed rule needed the new class near the random floor of 1). Only the two route shares separate the classes, and E10's split states (dashed) sit within a few hundredths of each cluster.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>Two copy tasks and two random-mapping tasks in the cipher format, 32 pairs each, two fine-tune seeds each. Full fine-tunes only; the least-squares split used where a per-piece account of the update is needed.</dd>
+<dt>Found</dt><dd><ul>
+<li>Re-switching share 0.76 to 0.80 for copying against 0.27 to 0.29 for the random maps; masked-off share 0.03 to 0.11 against 0.45 to 0.53, for the least-squares split of each fine-tune, which leaves 0.12 to 0.24 in Δ. The first copy state reproduces E10's identity run to three digits, and E10's split 32-pair state (0.52 masked-off) sits inside the maps' cluster; E10's 0.75 to 0.86 is component training's, with Δ empty.</li>
+<li>Outside share ÷ null 0.59 to 0.63 in both classes; the Δ share and the seed overlap of the moved pieces do not separate them either.</li>
+<li>The pieces the split moves most are busy ones at the original model, disjoint from the set Γ switches on; Γ switches on 107 to 139 pieces for copying against 21 to 51 for the maps.</li></ul></dd>
+<dt>Bears on</dt><dd>Q4, Q5</dd>
+<dt>Moved on</dt><dd>Report: <code>reports/2026-10-20_analysis_new-vs-existing-signatures.md</code>. Open: the moved set by relative change; what the copy tasks' switched-on layer-2 attention set does at the original model.</dd>
+</dl>
+</article>

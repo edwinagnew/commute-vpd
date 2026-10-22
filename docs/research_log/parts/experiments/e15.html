@@ -1,0 +1,18 @@
+<article class="exp mixed" id="e15">
+<div class="top"><span class="id">E15</span><span class="chip open">ongoing: being fixed</span><h3>Γ refit: let Γ see the updated model</h3><span class="when">2026-10-20 to 21 · RunPod H100 · <code>experiments/gamma_refit</code></span></div>
+<p class="one">We want to know whether retraining Γ on the updated model makes a split decomposition faithful again. The measurement went wrong: the same retraining on the unchanged model, which should leave it as faithful as it was, made it up to six times less faithful, so nothing it does to the updated model can be read as a repair. We are working on a retraining that leaves the unchanged model alone.</p>
+<figure>
+<img src="fig/e15_pgd_vs_step.png" alt="Pile reconstruction KL ratios of the least-squares split state (orange) and of the unchanged model under the same refit (blue) against the refit step, log axes, with a grey floor band from 1 to 1.22. The adversarial ratio reads 7 under the released Γ, 24 at step 100, 23 at 300, 7.6 at 1000 and 1.06 at 3000; the stochastic and CI-masked ratios stay near 1 throughout. The unchanged model reads 1 at step 0, then 2.6, 3.5, 6.3 and 2.6, with its stochastic and CI-masked ratios near 1.">
+<figcaption>What went wrong. The adversarial ratio of the split fine-tune (orange) and of the unchanged model (blue) while Γ is retrained. The split ends in the grey band, but the unchanged model leaves it at the first checkpoint, so the retraining moves the number on its own.</figcaption>
+</figure>
+<figure>
+<img src="fig/e15_stage0_ablation.png" alt="Three log-log panels, do-nothing, least-squares split and component training, each plotting single-piece ablation KL at the state against the same at the original model for three groups of 48 pieces. Every point lies on the diagonal; the dotted 2× line is empty. Titles give the adversary's damage ratio: 1.36, 1.94 and 1.10.">
+<figcaption>What stands, from before any retraining. The subcomponents the adversary turns down, removed one at a time, do the same small damage at the updated model as at the original (every point on the diagonal), yet together they do twice the damage. The fragility is a joint effect, not Γ's importance values going stale (Q6).</figcaption>
+</figure>
+<dl class="fields">
+<dt>Measuring</dt><dd>The least-squares split of a 10-step fine-tune fails VPD's adversarial check sevenfold. Hold the subcomponents and Δ fixed, retrain Γ on VPD's own objective, and re-run the check.</dd>
+<dt>Went wrong</dt><dd>The split state reached the floor after 3,000 steps, but only with VPD's sparsity loss 60% above the original model's: Γ rated more subcomponents important. The control on the unchanged model left the floor (2.6 to 6.3) while every other check held. A second recipe failed the same way (7.8 by step 300). Likely cause: the retraining's own adversary is weaker than the check's (0.42 against 0.70 nats on the released Γ), so the retraining never sees the damage the check measures.</dd>
+<dt>Now</dt><dd>A retraining whose adversary matches the check's, tested on the unchanged model first. Reopened by the user on 2026-10-21 after a same-day shelving: <code>reports/2026-10-21_decision_gamma-refit-reopened.md</code>. Report: <code>reports/2026-10-20_analysis_gamma-refit.md</code>; second recipe: <code>reports/2026-10-21_plan_gamma-refit-protocol.md</code>. Scope, 2026-10-22 review (<code>reports/2026-10-22_review_large-update-scope.md</code>): the refit's control failure is about the recipe and stands; the split it set out to repair is the large Adam fine-tune's, whose failure a small fine-tune does not share (E21).</dd>
+<dt>Bears on</dt><dd>Q1, Q6</dd>
+</dl>
+</article>

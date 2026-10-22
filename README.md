@@ -11,9 +11,9 @@ The current testbed is Goodfire's released 4-layer 67M Pile model and its releas
 the decomposition exists and every run takes minutes. A larger model with a real post-trained sibling is the next phase.
 
 **Research log (read this first):** https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu. The one document for bringing
-someone up to speed: the question and sub-questions Q1–Q11, the apparatus, the techniques, every experiment E1–E19, every
+someone up to speed: the question and sub-questions Q1–Q11, the apparatus, the techniques, every experiment E1–E20, every
 claim with its status, the timeline, gaps, backlog, mistakes and glossary. It is the explanation; the files below are the
-record. Source: `docs/research_log/index.html`, publish recipe and update checklist in `docs/research_log/README.md`.
+record. Four pages (main, experiments, glossary, changelog) built from `docs/research_log/parts/`; layout, publish recipe and update checklist in `docs/research_log/README.md`.
 Updating it is part of the research flow: every analysis report, decision and new `TRIED.md` row queues a line in
 `docs/research_log/PENDING.md`, flushed into the log and republished before the session ends.
 
@@ -48,7 +48,8 @@ meant the split of a finished update, and that request was never built as asked
 - Outside share of a LoRA (E9): 0.48 to 0.71 of its energy against 0.55 to 0.76 for a random update, at every step; a
   fine-tune reads 0.27 against 0.53 (E8). The LoRA sits outside the subcomponents about as much as noise does.
 
-Current plan (2026-10-21, `reports/2026-10-21_analysis_cancellation.md` → What next): E17 found the adversary's excess is not cancellation among the changes but the original subcomponents the stale box leaves maskable; next the complement revert and the mask binned by layer and importance (same hook framework), then E18 (`reports/2026-10-21_plan_regating-leak.md`), the re-gating line's first control.
+Current plan, SGD-vs-Adam line (2026-10-21, `reports/2026-10-21_plan_sgd-analysis-handoff.md`): seven runs of the SGD-finding review are in and unanalysed; at steps 100 and 1000 Adam component training passes the adversarial check on the ladder tasks it failed at step 10, which may meet the re-gating decision's move-back bullet (the user's call).
+Current plan (2026-10-21, Amendment 2 sections of `reports/2026-10-21_plan_cancellation-complement.md` and `reports/2026-10-21_plan_regating-leak.md`): E20 Amendment 1 put the adversary's excess in the interaction of its alive and dead removals and found its 20-step search beaten at W₀; next, W₀'s levels at the updated models and a stronger adversary. E18 Amendment 1 argues the mechanism reading; the user keeps it a leading hypothesis only (`reports/2026-10-21_decision_mechanism-reading.md`); next, a random null for the whole shared change.
 Previous: Current plan (2026-10-21, `reports/2026-10-21_decision_regating-main-line.md`): E16 (`experiments/split_comparison`) is
 analysed (`reports/2026-10-21_analysis_split-comparison.md`); finish the E15 v2 control; then **re-gating** becomes the main line, starting
 with whether it is a mechanism or a leak through Γ's input. The commute question stays open, second. Earlier plan: the **Γ refit** (`reports/2026-10-20_plan_gamma-refit.md`; code `experiments/gamma_refit`,
@@ -91,7 +92,10 @@ cancellation tests, E12's follow-ups (`reports/2026-10-20_analysis_new-vs-existi
 | E15 | Γ refit: let Γ see the updated model (two refits of six, a second W₀ protocol, stage 0; ongoing: being fixed, 2026-10-21) | `experiments/gamma_refit` | `reports/2026-10-20_analysis_gamma-refit.md` |
 | E16 | The five operations side by side (gate failed; predictions unscored) | `experiments/split_comparison` | `reports/2026-10-21_analysis_split-comparison.md` |
 | E17 | Cancellation tests (control failed; predictions unscored) | `experiments/cancellation` | `reports/2026-10-21_analysis_cancellation.md` |
+| E18 | Mechanism or leak (filed shared pattern failed on 2 of 3 tasks; no leak seen) | `experiments/regating_leak` | `reports/2026-10-21_analysis_regating-leak.md` |
 | E19 | Step split along the fine-tune's path | `experiments/step_split` | `reports/2026-10-21_analysis_step-split.md` |
+| E20 | Complement revert: excess not in the original subcomponents | `experiments/cancellation_complement` | `reports/2026-10-21_analysis_cancellation-complement.md` |
+| E21 | SGD vs Adam: the SGD-review runs (Q11; analysis pending) | `experiments/sgd_{faith,matched,finetune,ladder,ladder_long,kv}` | not yet written; hand-off `reports/2026-10-21_plan_sgd-analysis-handoff.md` |
 
 The 2026-10-20 review (`reports/2026-10-20_review_2026-10-19-write-ups.md`) lists claims in the E8, E9 and E11 reports
 that their result files do not support; the notebooks and the log use the corrected values, the reports stand as written.

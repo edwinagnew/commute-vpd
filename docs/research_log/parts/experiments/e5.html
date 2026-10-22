@@ -1,0 +1,20 @@
+<article class="exp missed" id="e5">
+<div class="top"><span class="id">E5</span><span class="chip refuted">missed</span><h3>Task ladder (round 3)</h3><span class="when">run 2026-10-19 · RunPod RTX 4090 (named in the pod's smoke log) · <code>experiments/task_ladder</code></span></div>
+<p class="one">We predicted that tasks whose gradient lands mostly on subcomponents Γ marks as important ("coverage") would keep more of the behaviour in the decomposition. Coverage predicts nothing, because the moved subcomponents carry under 8% of the gain on the target on every task. What carries it is Γ switching existing subcomponents on, by an amount set by the task.</p>
+<figure>
+<img src="fig/e5_route_split.png" alt="Stacked bars for four tasks (emoticon and one per rung), two per task (component training, and the gated-off control hatched), each split into the five routes named in words; the re-weight share dominates at rungs 0 and 1, the pieces Γ keeps off take over at rung 2, and the strengthen share is a thin sliver everywhere. A black tick per task marks the fine-tune's re-weight share.">
+<figcaption>Which route carries the gain at the trigger for component training (plain bars) and the gated-off control (hatched) at step 10, on emoticon and one task per rung; the other three tasks read the same way and are in the results file. The strengthened pieces (blue) are a sliver everywhere; re-weighting by Γ (orange) carries most of the gain for common targets, and pieces Γ keeps off (red) take over for the rare ones. The two arms' stacks match, and the fine-tune's re-weight share (black tick) sits within 0.16 of both. The fine-tune's other gain sits in Δ by construction, so its stack is not drawn.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>Six next-word tasks at three decades of baseline probability (two per rung, high and low coverage), plus emoticon. Arms: do-nothing fine-tune, Adam component training, gated-off component training. Route split at the trigger; optimiser-seed noise on emoticon.</dd>
+<dt>Found</dt><dd><ul>
+<li>Both filed predictions null: coverage does not predict retention; rarity matters at rung 2.</li>
+<li>Direct share 0.03 to 0.08 on every task.</li>
+<li>Re-switching share agrees within 0.16 across fine-tune, all-piece component training and gated-off component training. It orders by rung (0.75 to 0.92 at rungs 0 and 1; 0.3 to 0.6 at rung 2), not by coverage.</li>
+<li>Where re-switching is small, the masked-off share takes over, not the direct share.</li>
+<li>The gated-on positive control did not learn in 10 steps. The task-local adversarial numbers have no power (seed spread 55 to 88 nats against gains of 4 to 15).</li>
+<li>Pile checks on two tasks only: " will" then " be" reads 1.09 on the adversary and " we" then " just" 1.53. The first is the seventh next-word verdict behind Q1's "3 of 7", tabulated on E11's card.</li></ul></dd>
+<dt>Bears on</dt><dd>Q4, Q5, Q7</dd>
+<dt>Moved on</dt><dd>Coverage has nothing to predict while the direct share is small. Open: is re-switching a mechanism the decomposition explains or the trained model's computation leaking in through Γ's input? States saved for emoticon only.</dd>
+</dl>
+</article>

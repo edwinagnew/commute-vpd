@@ -1,0 +1,19 @@
+<article class="exp surprise" id="e14">
+<div class="top"><span class="id">E14</span><span class="chip surprise">reversal</span><h3>The LoRA split study: LoRA and fine-tune under one table</h3><span class="when">2026-10-20 · RunPod RTX A5000 · <code>experiments/lora_split</code></span></div>
+<p class="one">Which side of the subcomponents does each update miss? The fine-tune reads what the subcomponents read but writes where they do not; the LoRA misses on both sides. Its Pile results are repeated, with more operations, in E16.</p>
+<figure>
+<img src="fig/e14_sides.png" alt="Two panels against the training step on a log axis, both with a dashed line at 1 for a random update. Left, the read side: the full fine-tune sits at 1.32 at every step from 1 to 1000; the rank-8 LoRA on 24 matrices sits between 1.0 and 1.15 except for 1.32 at step 100; grey crosses for the one-matrix LoRAs sit at 1.4. Right, the write side: both updates sit between 0.96 and 1.0 through step 30; the fine-tune rises to 1.34 at step 1000 and the LoRA falls to 0.84 to 0.89.">
+<figcaption>How much of each update's effect lies in what the subcomponents read (left) and in what they write (right), divided by the same share for a random update of the same size; 1 means no better aligned than random. The fine-tune is inside on the read side from its first step and at random on the write side until step 1000; the LoRA is at random on both.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>No new LoRA: E9's rank-8 LoRA on all 24 matrices and E7's one-matrix LoRAs read back; a fresh emoticon fine-tune kept at nine steps from 1 to 1000. Per update, the share of its effect on real inputs that falls inside what the subcomponents read and inside what they write, each against a random update of the same size.</dd>
+<dt>Found</dt><dd><ul>
+<li>Fine-tune: read side 1.3 times random at every step; write side at random until step 1000 (1.34). Predicted inside on both sides; the write side reversed.</li>
+<li>LoRA: at random on both sides at every step but one (read side 1.32 at step 100).</li>
+<li>One-matrix LoRAs of rank 1 to 32 all sit in the same place: rank does not matter.</li>
+<li>The fine-tune's rescaling share climbs from 2 to 9.6 times random by step 1000, reproducing E1's unexplained climb.</li>
+<li>The splits' and adjoint state's Pile numbers: reproduced and extended in E16.</li></ul></dd>
+<dt>Bears on</dt><dd>Q3</dd>
+<dt>Moved on</dt><dd>Report: <code>reports/2026-10-20_analysis_lora-split.md</code>; notebook <code>notebooks/E14_lora_split.ipynb</code>. Not explained: why a gradient's output directions avoid what the subcomponents write. Scope, 2026-10-22 review (<code>reports/2026-10-22_review_large-update-scope.md</code>): the fine-tune here is the large Adam 3e-5 one. A fine-tune 4.7 times smaller passes do-nothing and the least-squares split (E21), so the LoRA-against-fine-tune contrast and do-nothing's failure hold only for the large update at step 10; the outside-share and rescaling series are untested on other updates. An SGD fine-tune sits further inside (outside share 0.034 against 0.218), which strengthens the expressibility refutation.</dd>
+</dl>
+</article>

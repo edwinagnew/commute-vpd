@@ -1,0 +1,18 @@
+<article class="exp surprise" id="e8">
+<div class="top"><span class="id">E8</span><span class="chip surprise">surprise</span><h3>Matched-matrix LoRA (round 5)</h3><span class="when">2026-10-19 · MATS cluster L40 · <code>experiments/lora_matched</code></span></div>
+<p class="one">With the LoRA on all 24 matrices, its split state passes the Pile adversary where the fine-tune's fails fivefold in the same job. That reverses E7 and our filed prediction: a LoRA's read side is random, so we expected its split to be at least as fragile. The two were scored at different steps here; E14 and E16 repeat it at matched steps on one card, and the split LoRA stays far below the split fine-tune (E16's first figure, left panel).</p>
+<figure>
+<img src="fig/e8_headline.png" alt="Two bar panels comparing do-nothing and the least-squares split for the LoRA at step 2 and the fine-tune at step 10. Left: the share of the trigger gain left in Delta is 1 for both do-nothing states, 0.22 for the split LoRA and 0.09 for the split fine-tune. Right: the Pile adversarial ratio is about 1.1 for both LoRA states, 2.2 for the fine-tune's do-nothing and 5.4 for its split.">
+<figcaption>The matched comparison on one L40. Left: the share of the trigger gain the least-squares split leaves in Δ, 0.22 for the LoRA at step 2 against 0.09 for the fine-tune at step 10; do-nothing reads 1 by construction. Right: the Pile adversarial ratio of the same states, 1.13 for the split LoRA and 5.41 for the split fine-tune. The dashed lines are the filed thresholds and the earlier rounds' values.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>Rank-8 LoRA on all 24 matrices beside the fine-tune, both do-nothing and least-squares split through a shared harness. The fine-tune's split rerun on an L40 as the control for E7's cross-card miss. Two LoRA seeds.</dd>
+<dt>Found</dt><dd><ul>
+<li>Read side still random (pooled outside share 0.86 of the null; cosine with initialisation 1.000).</li>
+<li>The split leaves 0.22 of the behaviour in Δ (one-matrix LoRA: 0.33 to 0.43). Seed 0 puts 60% of its energy on the saturated matrices; seed 1 only 25% yet leaves the same share in Δ, so that explanation fits one seed.</li>
+<li>Split LoRA adversarial ratio 1.13 at step 2; fine-tune's split 5.41 at step 10 in the same job. Filed as "fragile too"; reversed in direction.</li>
+<li>Cross-card miss closed: the L40 reproduces E2's 2.18 and 5.41 to three digits; E7's 7.31 was the RTX 4090's search. The L40's floor is 21%.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q3</dd>
+<dt>Moved on</dt><dd>The LoRA learned at step 2, where E2 had found the fine-tune's split near the floor too (1.14 at step 1), so the comparison is at different training points. The read-side check (cluster jobs 22430, 22431) has no result file on disk.</dd>
+</dl>
+</article>

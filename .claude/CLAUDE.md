@@ -25,13 +25,14 @@ silently. A plan restates the user's request in the Terms' words, and it is that
 ## Layout (one line each)
 - `experiments/<name>/` = `run.py` + `plot.py` + `results/` (incl. `predictions.json`) + `figures/`.
 - `experiments/TRIED.md` = everything tried or dropped, and why we moved on; update it with every experiment.
-- `docs/research_log/index.html` = the research log, published as the artifact "Update Decomposition Log" (URL and
-  publish recipe in `docs/research_log/README.md`): sub-questions, experiments E1–E13, claims with status, gaps,
-  backlog, glossary. **Updating it is part of the research flow**, batched since 2026-10-21 (user): every analysis
+- `docs/research_log/parts/` = the research log's source, one file per section and per experiment card, built by
+  `docs/research_log/build.py` into four pages (main, experiments, glossary, changelog) and published as the artifact
+  "Update Decomposition Log" (URL, layout and publish recipe in `docs/research_log/README.md`). Edit only the parts a
+  change touches; grep, don't read whole sections. **Updating it is part of the research flow**, batched since 2026-10-21 (user): every analysis
   report, decision report, new `TRIED.md` row, dropped proposal or changed claim appends a line to
   `docs/research_log/PENDING.md` when it is written; the queue is applied and republished before the session ends
-  (recipe and completeness check in `docs/research_log/README.md`). Read the live artifact before editing; another
-  session may have published.
+  (recipe and completeness check in `docs/research_log/README.md`). Run its `--check` against the live pages before
+  editing; another session may have published.
 - `theory/` notes. `notebooks/` look at results. `reports/` dated write-ups
   (`YYYY-MM-DD_<prediction|analysis|plan|review|decision>_<topic>.md`). `backlog.md` deferred ideas. `README.md`'s
   "Current plan" line names the latest plan; keep it current.
