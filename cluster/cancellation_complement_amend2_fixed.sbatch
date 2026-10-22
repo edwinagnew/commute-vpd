@@ -1,0 +1,29 @@
+#!/bin/bash
+# Complement revert (E20), amendment 2, stage amend2_fixed. Plan:
+# reports/2026-10-21_plan_cancellation-complement.md -> Amendment 2.
+#   cd /mnt/nw/home/e.agnew/commute
+#   sbatch cluster/cancellation_complement_amend2_fixed.sbatch    # ~4 min: W0's saved levels at W0 (control C1 first), then at the eight states, one fp32 masked pass each
+# Before that: `cluster/sync.sh up`, results/predictions_amend2.json filed, and amendment 1's
+# results/complement_amend1.json and results/large/sources/*.pt present (both stages read them). Inputs on NFS as E20:
+# experiments/reading_a_coverage/results/large/<task>/pullback_s0/state_step10.pt (and dW_ft_step10_s0.pt for the
+# splits), experiments/transport_test/results/large/{alive.pt, windows.pt}, artifacts/.
+#SBATCH --job-name=commute-complement-a2-fixed
+#SBATCH --partition=compute
+#SBATCH --account=c11
+#SBATCH --qos=debug
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=48G
+#SBATCH --time=00:15:00
+#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+
+set -euo pipefail
+source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+cd "$COMMUTE_REPO"
+echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=amend2_fixed" >> cluster/logs/jobs.log
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
+R=experiments/cancellation_complement/results
+test -f $R/predictions_amend2.json || { echo "file the predictions first (run.py --predictions amend2_fixed)"; exit 1; }
+test -f $R/complement_amend1.json || { echo "amendment 1's complement_amend1.json missing"; exit 1; }
+test -f $R/large/sources/W0.pt || { echo "amendment 1's saved sources missing (results/large/sources/)"; exit 1; }
+.venv/bin/python experiments/cancellation_complement/run.py amend2_fixed

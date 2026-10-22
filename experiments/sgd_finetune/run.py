@@ -14,7 +14,12 @@ unscaled adjoint weight change K(delta-W) of the same-optimiser fine-tune. Then 
 SGD component training, SGD do-nothing and least-squares split, Adam do-nothing and least-squares split, Adam adjoint
 split. results/split.json is written after every stage.
 
-Usage (repo root):  run.py --predictions | run.py rate | run.py split
+Stage `adam_matched` (amendment, results/predictions_amend1.json; needs stage split's results): W0 floor first, the
+Adam 3e-5 fine-tune reproducing E16 (G1) next, then Adam fine-tunes (the split stage's recipe) at ADAM_LRS; the rate whose step-10 rel_norm_max is closest to the SGD
+fine-tune's is the matched Adam fine-tune (matched within 15%). Its do-nothing and least-squares split, adjoint split
+and four blocks, the same functions as split. -> results/adam_matched.json after every stage.
+
+Usage (repo root):  run.py --predictions | run.py rate | run.py split | run.py adam_matched
 """
 
 from __future__ import annotations
@@ -35,6 +40,7 @@ RESULTS = HERE / "results"
 LARGE = RESULTS / "large"
 PRED = RESULTS / "predictions.json"
 RATE_JSON, SPLIT_JSON = RESULTS / "rate.json", RESULTS / "split.json"
+AMEND1, ADAM_MATCHED_JSON = RESULTS / "predictions_amend1.json", RESULTS / "adam_matched.json"
 ROUND1 = HERE.parent / "transport_test" / "results" / "large"
 WINDOWS_JSON = HERE.parent / "transport_test" / "results" / "windows.json"
 
@@ -47,6 +53,10 @@ TOL = 1e-6  # split.bases tolerance, as E14 and E16
 PILE_ROWS, PILE_PGD_STEPS, PILE_SEEDS = 256, 20, (0, 1)  # seeds 0 and 1 gave the L40's whole 0.209 floor (E19 job 28108)
 ADAM_REF = {"p_o": 0.9993, "kl_other": 0.0554}  # E16 split_comparison.json, ft step 10
 REPRO_TOL = 0.01  # absolute
+# Amendment: Adam's step-10 size of change is about proportional to its rate (3e-5 -> 0.0112); the SGD fine-tune's
+# 0.00238 is 0.21x of it, so 0.1x to 0.4x of ADAM_FT_LR brackets it with room on both sides.
+ADAM_LRS = (3e-6, 4.5e-6, 6e-6, 8e-6, 1.2e-5)
+MATCH_TOL = 0.15  # |rel_norm_max / SGD's - 1|
 
 PREDICTIONS: dict[str, Any] = {
     "about": "sgd_finetune: items 5 and 7 of reports/2026-10-21_review_sgd-finding-influence.md. Plan "
@@ -239,14 +249,47 @@ def adjoint_change(ctx: Any, dW: dict[str, Tensor]) -> dict[str, Tensor]:
                             *(x.double() for x in ctx.uv_cpu[k])) for k, M in dW.items()}
 
 
-def stop(out: dict[str, Any], why: str) -> None:
+def stop(path: Path, out: dict[str, Any], why: str) -> None:
     out["stopped"] = why
-    dump(SPLIT_JSON, out)
+    dump(path, out)
     sys.exit(why)
 
 
+def w0_first(ctx: Any, path: Path, out: dict[str, Any], t0: float) -> None:
+    """G0: W0 under the Pile harness at its known values, else stop with nothing scored."""
+    from commute import faith_score
+
+    out["W0"] = faith_score.w0_check(ctx.pile)
+    log(f"[stage W0] {time.time() - t0:.0f} s; {out['W0']}")
+    dump(path, out)
+    if not out["W0"]["pass"]:
+        stop(path, out, "W0 is not at its known values: nothing scored")
+
+
+def adjoint(ctx: Any, name: str, dW: dict[str, Tensor]) -> dict[str, Any]:
+    """The scaled adjoint split of dW, measured with the Pile ratios."""
+    from commute import harness, split
+
+    dW_adj, st = split.adjoint_state(dW, ctx.uv_cpu, ctx.sigma)
+    return harness.measure(ctx, f"{name}_adjoint", dW_adj, st, True, log)
+
+
+def nothing_and_ls(ctx: Any, name: str, dW: dict[str, Tensor], p_o: float) -> dict[str, Any]:
+    """dW measured do-nothing and least-squares split, with the Pile ratios."""
+    from commute import harness
+
+    ns = harness.nothing_and_split(ctx, name, dW, p_o, True, log)
+    return {"nothing": ns["nothing"], "least_squares": {**ns["lift"], "G2": ns["G2"]}}
+
+
+def blocks(ctx: Any, dW: dict[str, Tensor]) -> dict[str, float]:
+    from commute import split
+
+    return split.block_table(dW, ctx.bases, ctx.sigma, ctx.non_saturated)["pooled_all"]
+
+
 def stage_split(args: argparse.Namespace) -> None:
-    from commute import faith_score, harness, split
+    from commute import harness
 
     rate = json.loads(RATE_JSON.read_text())
     if not rate.get("passed"):
@@ -254,12 +297,8 @@ def stage_split(args: argparse.Namespace) -> None:
     t0 = time.time()
     ctx = load(args.device, pile=True)
     out: dict[str, Any] = {"device": torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu",
-                           "rate": {k: rate[k] for k in ("selected_lr", "ct_matched_lr")},
-                           "W0": faith_score.w0_check(ctx.pile)}
-    log(f"[stage W0] {time.time() - t0:.0f} s; {out['W0']}")
-    dump(SPLIT_JSON, out)
-    if not out["W0"]["pass"]:
-        stop(out, "W0 is not at its known values: nothing scored")
+                           "rate": {k: rate[k] for k in ("selected_lr", "ct_matched_lr")}}
+    w0_first(ctx, SPLIT_JSON, out, t0)
 
     adam_dW, adam_ev = finetune(ctx, ADAM_FT_LR, "adam")
     g1 = {"p_o": adam_ev["p_o"], "kl_other": adam_ev["kl_other"]}
@@ -270,23 +309,16 @@ def stage_split(args: argparse.Namespace) -> None:
     out["G1_adam_reproduces"] = g1
     out["finetune_eval"] = {n: ev for n, (_, ev) in ft.items()}
     out["ct_eval"] = {n: ev for n, (ev, _) in ct.items()}
-    out["blocks"] = {n: split.block_table(dW, ctx.bases, ctx.sigma, ctx.non_saturated)["pooled_all"] for n, (dW, _) in ft.items()}
+    out["blocks"] = {n: blocks(ctx, dW) for n, (dW, _) in ft.items()}
     out["cosine"] = {n: weighted_cosine({k: v[0] for k, v in ct[n][1].items()}, adjoint_change(ctx, ft[n][0]), ctx.sigma)
                      for n in ft}
     log(f"[stage cheap] {time.time() - t0:.0f} s; G1 {g1}; blocks {out['blocks']}; cosine {out['cosine']}")
     dump(SPLIT_JSON, out)
     if not g1["pass"]:
-        stop(out, "the Adam fine-tune does not reproduce E16's step 10: Pile states not run")
+        stop(SPLIT_JSON, out, "the Adam fine-tune does not reproduce E16's step 10: Pile states not run")
 
     out["states"] = {"sgd": {}, "adam": {}}
-
-    def adjoint(n: str) -> None:
-        dW_adj, st = split.adjoint_state(ft[n][0], ctx.uv_cpu, ctx.sigma)
-        out["states"][n]["adjoint"] = harness.measure(ctx, f"{n}_adjoint", dW_adj, st, True, log)
-
-    def nothing_and_ls(n: str) -> None:
-        ns = harness.nothing_and_split(ctx, n, ft[n][0], ft[n][1]["p_o"], True, log)
-        out["states"][n].update(nothing=ns["nothing"], least_squares={**ns["lift"], "G2": ns["G2"]})
+    states = out["states"]
 
     def ct_state() -> None:
         st = ct["sgd"][1]
@@ -294,10 +326,11 @@ def stage_split(args: argparse.Namespace) -> None:
 
     # The paired rows first (adjoint split of each fine-tune, then item 5's component training), so a timeout loses
     # only the least-squares rows, which have recorded Adam references (Codex review, 2026-10-21).
-    for name, fn in (("sgd adjoint", lambda: adjoint("sgd")), ("adam adjoint", lambda: adjoint("adam")),
+    for name, fn in (("sgd adjoint", lambda: states["sgd"].update(adjoint=adjoint(ctx, "sgd", ft["sgd"][0]))),
+                     ("adam adjoint", lambda: states["adam"].update(adjoint=adjoint(ctx, "adam", ft["adam"][0]))),
                      ("sgd component training", ct_state),
-                     ("sgd nothing + least squares", lambda: nothing_and_ls("sgd")),
-                     ("adam nothing + least squares", lambda: nothing_and_ls("adam"))):
+                     ("sgd nothing + least squares", lambda: states["sgd"].update(nothing_and_ls(ctx, "sgd", ft["sgd"][0], ft["sgd"][1]["p_o"]))),
+                     ("adam nothing + least squares", lambda: states["adam"].update(nothing_and_ls(ctx, "adam", ft["adam"][0], ft["adam"][1]["p_o"])))):
         fn()
         out["score"] = score(out)
         dump(SPLIT_JSON, out)
@@ -307,21 +340,21 @@ def stage_split(args: argparse.Namespace) -> None:
     log(f"wrote {SPLIT_JSON} ({out['seconds']:.0f} s); score {json.dumps(out['score'], indent=1)}")
 
 
-def score(out: dict[str, Any]) -> dict[str, Any]:
-    """The filed rules (results/predictions.json) on whatever states are measured so far."""
+def pile_row(rec: dict[str, Any], w0: dict[str, Any]) -> dict[str, Any]:
+    """A state's Pile ratios with verdicts, each against its own W0 floor (PGD: pgd_floor; stochastic: stochastic_floor)."""
     from commute.faith_score import verdict
 
-    f, fs = out["W0"]["pgd_floor"], out["W0"]["stochastic_floor"]
+    p = rec["pile"]
+    return {"pgd": p["pgd_kl"], "stochastic": p["stochastic_kl"], "pgd_verdict": verdict(p["pgd_kl"], w0["pgd_floor"]),
+            "stochastic_verdict": verdict(p["stochastic_kl"], w0["stochastic_floor"]),
+            "p_o": rec["routes"]["p_cells"]["T1"], "gain": rec["routes"]["gain"]}
+
+
+def score(out: dict[str, Any]) -> dict[str, Any]:
+    """The filed rules (results/predictions.json) on whatever states are measured so far."""
     st, sgd = out["states"], out["states"]["sgd"]
     sc: dict[str, Any] = {"G0_w0": out["W0"]["pass"], "G1_adam_reproduces": out["G1_adam_reproduces"]["pass"]}
-
-    def pile(rec: dict[str, Any]) -> dict[str, Any]:
-        p = rec["pile"]
-        return {"pgd": p["pgd_kl"], "stochastic": p["stochastic_kl"], "pgd_verdict": verdict(p["pgd_kl"], f),
-                "stochastic_verdict": verdict(p["stochastic_kl"], fs), "p_o": rec["routes"]["p_cells"]["T1"],
-                "gain": rec["routes"]["gain"]}
-
-    sc["table"] = {f"{n}_{op}": pile(rec) for n in st for op, rec in st[n].items()}
+    sc["table"] = {f"{n}_{op}": pile_row(rec, out["W0"]) for n in st for op, rec in st[n].items()}
     rel = out["blocks"]["sgd"]["out_out_ratio"] / out["blocks"]["adam"]["out_out_ratio"]
     sc["P1_outside_share"] = {"sgd_over_adam": rel, "outcome": "lower" if rel <= 0.8 else "higher" if rel >= 1.25 else "alike",
                               "pass": rel <= 0.8}
@@ -339,10 +372,80 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
     return sc
 
 
+def adam_grid(ctx: Any, out: dict[str, Any], target: float) -> dict[str, Tensor]:
+    """Adam fine-tunes at ADAM_LRS (dumped after each); returns the delta-W whose step-10 rel_norm_max is closest to
+    `target` (|log ratio|), recorded in out["match"]. The control first: the split stage's Adam fine-tune reproduces E16."""
+    e = finetune(ctx, ADAM_FT_LR, "adam")[1]
+    out["G1_adam_reproduces"] = {"p_o": e["p_o"], "kl_other": e["kl_other"], "rel_norm_max": e["rel_norm_max"],
+                                 "pass": all(abs(e[k] - ADAM_REF[k]) <= REPRO_TOL for k in ADAM_REF)}
+    log(f"[control adam ft lr {ADAM_FT_LR:g}] {out['G1_adam_reproduces']}")
+    if not out["G1_adam_reproduces"]["pass"]:
+        stop(ADAM_MATCHED_JSON, out, "the Adam fine-tune does not reproduce E16's step 10: nothing scored")
+    deltas, out["grid"] = {}, {}
+    for lr in ADAM_LRS:
+        key = f"{lr:g}"
+        deltas[key], out["grid"][key] = finetune(ctx, lr, "adam")
+        e = out["grid"][key]
+        log(f"[adam ft lr {key}] P(o) {e['p_o']:.4f} KL elsewhere {e['kl_other']:.4f} rel_norm_max {e['rel_norm_max']:.5f}")
+        dump(ADAM_MATCHED_JSON, out)
+    key = min(out["grid"], key=lambda k: abs(math.log(out["grid"][k]["rel_norm_max"] / target)))
+    e = out["grid"][key]
+    rel = e["rel_norm_max"] / target - 1
+    out["match"] = {"lr": key, "target": target, "rel_diff": rel, "matched": abs(rel) <= MATCH_TOL,
+                    "learned": e["p_o"] >= P_MIN, "p_o": e["p_o"], "kl_other": e["kl_other"]}
+    log(f"[match] {out['match']}")
+    dump(ADAM_MATCHED_JSON, out)
+    return deltas[key]
+
+
+def stage_adam_matched(args: argparse.Namespace) -> None:
+    if not AMEND1.is_file():
+        sys.exit(f"file {AMEND1} by hand first (the amendment's predictions)")
+    ref = json.loads(SPLIT_JSON.read_text())
+    t0 = time.time()
+    ctx = load(args.device, pile=True)
+    out: dict[str, Any] = {"device": torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu",
+                           "reference": {"sgd_rel_norm_max": ref["finetune_eval"]["sgd"]["rel_norm_max"],
+                                         "out_out_ratio": {n: b["out_out_ratio"] for n, b in ref["blocks"].items()}}}
+    w0_first(ctx, ADAM_MATCHED_JSON, out, t0)
+    dW = adam_grid(ctx, out, out["reference"]["sgd_rel_norm_max"])
+    out["states"] = {}
+    name = "adam_matched"
+    for stage, fn in (("nothing + least squares", lambda: out["states"].update(nothing_and_ls(ctx, name, dW, out["match"]["p_o"]))),
+                      ("adjoint", lambda: out["states"].update(adjoint=adjoint(ctx, name, dW))),
+                      ("blocks", lambda: out.update(blocks=blocks(ctx, dW)))):
+        fn()
+        out["score"] = score_amend1(out)
+        dump(ADAM_MATCHED_JSON, out)
+        log(f"[stage {stage}] {time.time() - t0:.0f} s")
+    out["seconds"] = time.time() - t0
+    dump(ADAM_MATCHED_JSON, out)
+    log(f"wrote {ADAM_MATCHED_JSON} ({out['seconds']:.0f} s); score {json.dumps(out['score'], indent=1)}")
+
+
+def score_amend1(out: dict[str, Any]) -> dict[str, Any]:
+    """The rules of results/predictions_amend1.json on whatever is measured so far."""
+    m = out["match"]
+    flags = [s for s, bad in (("unmatched", not m["matched"]), ("did not learn", not m["learned"])) if bad]
+    sc: dict[str, Any] = {"G0_w0": out["W0"]["pass"], "G1_adam_reproduces": True, "flags": flags,
+                          "table": {op: pile_row(rec, out["W0"]) for op, rec in out["states"].items()}}
+    reading = {"fail": "the optimiser carries the difference", "pass": "the size of change carries it"}
+    for pid, op in (("A1_nothing", "nothing"), ("A2_least_squares", "least_squares")):
+        if op in sc["table"]:
+            v = sc["table"][op]["pgd_verdict"]
+            sc[pid] = {"verdict": v, "reading": reading.get(v, "inconclusive"), "flags": flags}
+    if "blocks" in out:
+        r, refs = out["blocks"]["out_out_ratio"], out["reference"]["out_out_ratio"]
+        vs_sgd, vs_adam = r / refs["sgd"], r / refs["adam"]
+        sc["A3_outside_share"] = {"ratio": r, "over_sgd": vs_sgd, "over_adam_full": vs_adam, "flags": flags,
+                                  "outcome": "like SGD" if vs_sgd <= 1.25 else "like Adam-full" if vs_adam >= 0.8 else "between"}
+    return sc
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--predictions", action="store_true")
-    ap.add_argument("stage", nargs="?", choices=["rate", "split"])
+    ap.add_argument("stage", nargs="?", choices=["rate", "split", "adam_matched"])
     ap.add_argument("--device", default="cuda")
     args = ap.parse_args()
     if args.predictions:
@@ -350,7 +453,7 @@ def main() -> None:
     elif args.stage is not None:
         if not PRED.is_file():
             sys.exit("file the predictions first: run.py --predictions")
-        {"rate": stage_rate, "split": stage_split}[args.stage](args)
+        {"rate": stage_rate, "split": stage_split, "adam_matched": stage_adam_matched}[args.stage](args)
     else:
         ap.print_help()
 

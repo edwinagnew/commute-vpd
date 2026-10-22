@@ -1,0 +1,59 @@
+{
+ "amends": "results/predictions.json (stays as filed); plan reports/2026-10-21_plan_cancellation-complement.md -> Amendment 1, from reports/2026-10-21_analysis_cancellation-complement.md -> What next (approved by the user)",
+ "filed": "2026-10-21",
+ "gates": [
+  {
+   "id": "G1_closure",
+   "if_fail": "stop",
+   "rule": "as E20, per model"
+  },
+  {
+   "id": "G2_reproduces_E20",
+   "if_fail": "stop",
+   "rule": "F_all, F_both, F_orig within 0.001 relative of results/complement.json, per model; |F_hooks_all - F_all| <= 0.0001 (every block removed at the adversary's fractions through the alive and dead caches); at W0 also |F_dense_fix - F_dense| and |F_dead_fix - F_dead| <= 1e-06"
+  }
+ ],
+ "predictions": [
+  {
+   "arm": [
+    "ct r0_t352_v310",
+    "ct r1_t534_v369",
+    "ct r2_t275_v2667",
+    "ls emoticon"
+   ],
+   "id": "P4_only_jointly",
+   "null": "a block alone (reading 1, 2 or 3) or the dead-with-Delta' pair carries R",
+   "pass": "reading 4 on >= 3 of 4 scored states",
+   "predicted": "pass, low confidence: Delta and the dead subcomponents are near-inert alone at W0 and unchanged by component training, and E15 stage 0 saw the alive subcomponents matter only jointly",
+   "scored": true
+  },
+  {
+   "arm": [
+    "ct r0_t352_v310",
+    "ct r1_t534_v369",
+    "ct r2_t275_v2667",
+    "ls emoticon"
+   ],
+   "id": "P5_levels_unchanged",
+   "null": "the adversary sets different levels at the state (reading 1 possible)",
+   "pass": "|d mean(1 - a_Delta)| <= 0.1 and |d mean dead (1 - a)| <= 0.1 on >= 3 of 4 scored states",
+   "predicted": "pass: sign steps drive every level to a bound wherever the gradient keeps its sign, so W0's adversary already removes most of Delta (W0 mean 1 - a_Delta >= 0.8, reported)",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "every part (D, K, P, J, D_fix, K_fix) and level on all eight states and W0; per-matrix 1 - a_Delta; the dead block's mean removed fraction; W0's mean 1 - a_Delta (expected >= 0.8)",
+ "setup": {
+  "blind_to": "Pile rows only; KL is not additive (P and J absorb it); for the least-squares state Delta' is not W0's Delta, so D there also reads the update moved into Delta'; the fixed-level arms hold a, not g; one adversary seed; no fixed-level arm for the alive removal",
+  "expected_by_reading": {
+   "1_removes_more": "D or K >= 0.25 R and the larger; its _fix <= 0.5 of it; that block's level up by >= 0.1; J < 0.5 R",
+   "2_same_removal_costs_more": "D the largest, D_fix > 0.5 D; Delta' level within 0.1; J < 0.5 R",
+   "3_dead_carry_more": "K the largest, K_fix > 0.5 K; dead level within 0.1 (the removed fraction may rise through g); J < 0.5 R",
+   "4_only_jointly": "J >= 0.5 R; D, K, P each small; levels within 0.1",
+   "W0": "D = K = P = J = 0 by construction; F_dense_fix = F_dense and F_dead_fix = F_dead (same sources)"
+  },
+  "noise": "E20 reproduced E17 to ratio 1.00 on the same card, so the arms are deterministic up to fp32 order; one adversary seed (E11 f = 0.075); thresholds are coarse (halves of R, 0.1 in level)",
+  "numbers": "Reverts over the hooks of state_blocks with the alive blocks kept: F_dead (each dead subcomponent's (1 - g)(1 - a) removed), F_dense (1 - a_Delta of Delta' removed), F_rest (both), F_dense_fix and F_dead_fix (the same at W0's levels a, with the model's own g). Per state against W0: D = dF_dense, K = dF_dead, P = d(F_rest - F_dense - F_dead), J = d(F_all - F_both - F_rest) with F_orig for F_both at W0, so E20's R = D + K + P + J exactly; D_fix = F_dense_fix(s) - F_dense(W0), K_fix = F_dead_fix(s) - F_dead(W0). Levels: mean over matrices of 1 - a_Delta, mean of 1 - a over the dead subcomponents pooled, and the dead block's mean removed fraction (1 - g)(1 - a)",
+  "reading": "per state with R > 0: J >= 0.5 R -> 4 (only jointly with the alive removal); else the largest of D, K, P: P -> dead with Delta'; D -> 1 if D_fix <= 0.5 D (W0's levels take most of it away: the adversary removes more) else 2 (the same removal costs more); K -> 1 if K_fix <= 0.5 K else 3 (the dead subcomponents carry more)",
+  "same_as_E20": "W0 first, then the same eight states in the same order, the same 128 Pile val rows, the same adversary (seed 0, 20 steps), every E20 number recomputed; the adversary's sources saved per model"
+ }
+}

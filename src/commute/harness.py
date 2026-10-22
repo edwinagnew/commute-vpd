@@ -78,6 +78,20 @@ def load(device: str, alive_path: Path, windows_path: Path, o_token: int, tol: f
     return ctx
 
 
+def with_windows(ctx: Context, windows: dict[str, Any], token: int) -> Context:
+    """The context with a task's train and held-out windows (`windows["train"]`, `windows["heldout"]`), its target
+    token and W0's route-split cells on those windows. The Pile blocks, W0's Pile readings, the bases and the input
+    moments are kept (the last two came from the windows `load` read). Added 2026-10-21 for sgd_ladder_long; the same
+    step lives as `task_context` in experiments/sgd_ladder and experiments/sgd_kv, which stay as they ran."""
+    from dataclasses import replace
+
+    from commute.local_faith import route_cells
+
+    held = windows["heldout"]
+    return replace(ctx, train=windows["train"], held=held, token=token,
+                   rbase=route_cells(ctx.model, held.tokens, held.half, token))
+
+
 def pgd_floor(ctx: Context) -> float | None:
     """f = max / min - 1 of W0's PGD KL over the adversary seeds; 'within 3 floors' = ratio <= 1 + 3 f."""
     if not ctx.pile:

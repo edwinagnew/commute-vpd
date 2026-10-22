@@ -1,0 +1,52 @@
+{
+ "about": "sgd_kv (item 4 of reports/2026-10-21_review_sgd-finding-influence.md; plan reports/2026-10-21_plan_sgd-kv.md): component training on E10's key-to-value tasks rand1, ident32, rand32 with plain SGD (rate by E4's rule from 0.003, 0.01, 0.03, 0.1) and Adam at 3.33e-6 and 1e-6 (E10's 1e-5 / 3 and / 10), beside E10's Adam 1e-5 states (re-read) on E10's recipe (300 steps, checkpoints 10/30/100/300, each arm scored at its first checkpoint with held-out P(target) >= 0.5), scored on the Pile harness in the same job. One shard per task, each with its own W0. Filed before any run",
+ "arm_verdict": "learned and stochastic and PGD both 'pass' -> pass; either 'fail' -> fail; else inconclusive; not learned -> 'did not learn' (counts as neither)",
+ "expected": {
+  "W0": "PGD KL 0.69, floors 0.05 to 0.21",
+  "adam_1e-5_E10": "scored step / P / KL elsewhere / PGD / stochastic: rand32 30 / 0.847 / 0.355 / 2.81 / 1.24 (fail); ident32 30 / 0.971 / 0.069 / 1.19 / 1.01 (pass); rand1 10 / 1.000 / 0.069 / 1.20 / 1.03 (pass). rand32 is the harness's positive control: it should read 'fail' again",
+  "adam_1e-6": "learns by step 300 on rand1, may not learn on ident32 and rand32 (a tenth of the 1e-5 arm's step); Pile ratios near 1",
+  "adam_3.33e-6": "learns by step 100 on every task; KL elsewhere below Adam 1e-5's; rand32 open (Q1)",
+  "finetune_E10": "scored step / P / KL elsewhere: rand32 10 / 0.585 / 0.696; ident32 10 / 0.960 / 0.189; rand1 10 / 0.998 / 0.040 (reproduced under G1)",
+  "sgd": "learns on every task (sgd_grid: 0.01 learned emoticon by step 10); scored step 10 or 30 on rand1, 30 or 100 on ident32 and rand32; KL elsewhere below Adam 1e-5's; Pile ratios on rand32 open (Q1)"
+ },
+ "filed": "2026-10-21 15:51:41",
+ "gates": {
+  "C1_control": "after training, before any new arm is measured: E10's Adam 1e-5 state's PGD ratio within 25% of E10's. On rand32 (2.81) this makes it read 'fail' again: the harness's positive control. Fails: the shard stops",
+  "G0_w0": "first in every shard: W0's seed-0 PGD KL within 10% of 0.69, CI-masked KL within 2% of 0.348, PGD floor <= 0.25 (faith_score.w0_check). Fails: the shard stops",
+  "G1_references_reproduce": "before training: the regenerated fine-tune reaches its scored step at E10's, and it and the E10 Adam 1e-5 state read E10's held-out P and KL elsewhere at that step to 0.01. Fails: the shard stops"
+ },
+ "measurements": {
+  "kl_other": "held-out KL elsewhere (all positions but the key) of the target model against W0, nats, absolute. At W0: 0. Blind to Pile text and to the decomposition",
+  "noise_floor": "f = W0's max/min - 1 over adversary seeds 0, 1, 2 in the same shard, per reading (stochastic_floor for the stochastic ratio, pgd_floor for PGD; PGD 0.209 on the L40). commute.faith_score.verdict: pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f), inconclusive between (PGD about 1.24 to 1.81 on the L40). One batch-order seed per state",
+  "p_target": "held-out mean P(table[key]) at the key, absolute. At W0: below 1e-4 on rand1/rand32 (E10's build gate), at most 0.002 on ident32",
+  "pile": "harness.measure: Pile val rows 0..255 in two 128-row blocks, one PGD adversary per block (20 steps, seed 0), stochastic; each a ratio to this shard's W0 under seed 0 (relative). Scored: stochastic and adversarial (PGD). At W0: 1 by definition (absolute PGD 0.69, stochastic 0.248; E10 read 0.692, 0.248). Blind to the trained behaviour (the marker token never occurs in Pile) and to damage the 20-step adversary does not find",
+  "route_split": "local_faith.route_split at the key on the held-out windows: shares d, r, i, e_gate, e_delta (absolute, sum 1); reported, not scored. Undefined at W0. Blind to anything off the key"
+ },
+ "predictions": [
+  {
+   "decision": "yes -> E10's 'new capability' failure was an Adam/rate artefact: the frozen-Gamma failure on a behaviour the model lacks is withdrawn as evidence; only 'inconclusive' -> those states rerun with more adversary seeds or on an H100 before deciding; no (every learned new arm fails) -> the failure holds across optimisers and rates on this task",
+   "id": "Q1_rand32_passes",
+   "kind": "two-sided question, no direction filed",
+   "rule": "on rand32, some new arm (selected SGD, Adam 3.33e-6, Adam 1e-6) learns and reads 'pass'"
+  },
+  {
+   "id": "P2_sgd_learns",
+   "predicted": "pass",
+   "rule": "the rate rule finds an SGD rate on every task",
+   "why": "sgd_grid: 0.01 to 0.1 learn emoticon by step 10. Scope: a fail is reported with the grid's range"
+  },
+  {
+   "id": "P3_sgd_less_damage",
+   "predicted": "pass",
+   "rule": "on every task where SGD learned, its KL elsewhere at its scored step < the re-read Adam 1e-5 state's at its scored step",
+   "why": "emoticon at step 10: 0.011 against 0.016; the update is smaller (not matched)"
+  }
+ ],
+ "rate_rule": "E4's, per task: each SGD rate scored at its first checkpoint with held-out P >= 0.5; among rates that reach it with KL elsewhere <= 2 x the regenerated fine-tune's at its scored step (E10: rand32 0.696 -> 1.391, ident32 0.189 -> 0.378, rand1 0.040 -> 0.080), the least KL elsewhere; if none, the highest P, 'did not learn'. Adam arms are fixed rates. A new arm 'learned' if it meets both conditions",
+ "reported_not_scored": [
+  "route-split shares of every state",
+  "CI-masked and unmasked Pile ratios",
+  "every SGD rate's P and KL elsewhere at every checkpoint",
+  "largest relative change per matrix"
+ ]
+}

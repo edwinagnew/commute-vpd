@@ -127,9 +127,10 @@ def cache_state(model: Any, batches: list[Tensor], alive: dict[str, Tensor]) -> 
 
 
 @torch.no_grad()
-def revert_kl(rev: Reverter | Remover, cached: Cached, weights_of: Any) -> float:
+def revert_kl(rev: Reverter | Remover, cached: list[tuple[Tensor, Tensor, Any]], weights_of: Any) -> float:
     """Mean KL per position, over the cached batches, between the state's logits and the hooked forward with the weights
-    `weights_of(g)` (g the batch's alive gates per matrix; returns a dict or a float)."""
+    `weights_of(g)` (g the batch's cached gates: per matrix, alive or dead, or a pair of both; returns a dict or a
+    float)."""
     tot = n = 0.0
     for batch, ref, g in cached:
         lg = rev.logits(batch, weights_of(g))
@@ -274,8 +275,9 @@ def state_blocks(model: Any, alive: dict[str, Tensor], pieces: Pieces) -> dict[s
 
 @torch.no_grad()
 def cache_adversary(model: Any, batches: list[Tensor], alive: dict[str, Tensor], sources: dict[str, Tensor]
-                    ) -> tuple[Cached, float, dict[str, Any]]:
-    """As `cache_state` (the state's fp32 logits, g at the alive subcomponents), and in the same pass F_all: the mean KL
+                    ) -> tuple[Cached, Cached, float, dict[str, Any]]:
+    """As `cache_state` (the state's fp32 logits, g at the alive subcomponents), the same cache with g at the dead
+    subcomponents instead (E20 amendment 1; the batches and logits are shared), and in the same pass F_all: the mean KL
     from the state to its adversary-masked forward in fp32 (mask g + (1 - g) a over all C subcomponents, Delta' under
     a[-1]; sources (C + 1,) per matrix). Also returns the first batch's masked logits and the removed fraction of every
     block, as weights for `Remover` over `state_blocks` (gate G1: the hooks reproduce the masked forward). Take it
@@ -284,25 +286,64 @@ def cache_adversary(model: Any, batches: list[Tensor], alive: dict[str, Tensor],
     wd = vpd.weight_deltas(model)
     a = {k: s.to(device).float() for k, s in sources.items()}
     out: Cached = []
+    dead: Cached = []
     tot = n = 0.0
     first: dict[str, Any] = {}
     for i, b in enumerate(batches):
         b = b.to(device)
-        B, T = b.shape
-        ci = vpd.compute_ci(model, b, chunk=B)
-        g = {k: ci.g[k].float() for k in a}
-        masks = {k: g[k] + (1 - g[k]) * a[k][:-1] for k in a}
-        ref = fwd(model.target_model, b)
-        lg = masked_logits(model, b, masks, wd, {k: a[k][-1].expand(B, T) for k in a}, autocast=False).float()
+        g, masks, ref, lg = _masked_batch(model, b, a, wd)
         tot += float(vpd.kl_per_position(ref, lg).double().sum())
-        n += B * T
+        n += b.numel()
         out.append((b, ref, {k: g[k][..., alive[k].to(device)] for k in alive}))
+        dead.append((b, ref, {k: g[k][..., ~alive[k].to(device)] for k in alive}))
         if i == 0:
             first = {"batch": b, "masked_logits": lg,
                      "weights": {k: [0.0, 1 - masks[k][..., alive[k].to(device)], 1 - masks[k][..., ~alive[k].to(device)],
                                      1 - float(a[k][-1])] for k in a}}
-        del ci, masks
-    return out, tot / n, first
+        del masks
+    return out, dead, tot / n, first
+
+
+@torch.no_grad()
+def _masked_batch(model: Any, b: Tensor, a: dict[str, Tensor], wd: dict[str, Tensor]
+                  ) -> tuple[dict[str, Tensor], dict[str, Tensor], Tensor, Tensor]:
+    """One batch under the model's current state: Gamma's g over all C subcomponents, the adversary's mask
+    g + (1 - g) a[:-1], the state's fp32 logits, and the fp32 masked logits with Delta' under a[-1]."""
+    B, T = b.shape
+    ci = vpd.compute_ci(model, b, chunk=B)
+    g = {k: ci.g[k].float() for k in a}
+    masks = {k: g[k] + (1 - g[k]) * a[k][:-1] for k in a}
+    ref = fwd(model.target_model, b)
+    lg = masked_logits(model, b, masks, wd, {k: a[k][-1].expand(B, T) for k in a}, autocast=False).float()
+    return g, masks, ref, lg
+
+
+@torch.no_grad()
+def masked_kl(model: Any, batches: list[Tensor], sources: dict[str, Tensor]) -> float:
+    """`cache_adversary`'s F_all without the caches: the mean KL over every position from the model's current state to
+    its fp32 masked forward under `sources` (any levels: the model's own adversary's, W0's, a search's; E20 amendment
+    2). Gamma's g is always the current model's."""
+    device = next(model.parameters()).device
+    wd = vpd.weight_deltas(model)
+    a = {k: s.to(device).float() for k, s in sources.items()}
+    tot = n = 0.0
+    for b in batches:
+        b = b.to(device)
+        _, _, ref, lg = _masked_batch(model, b, a, wd)
+        tot += float(vpd.kl_per_position(ref, lg).double().sum())
+        n += b.numel()
+    return tot / n
+
+
+def alive_whole(sources: dict[str, Tensor], alive: dict[str, Tensor]) -> dict[str, Tensor]:
+    """`sources` with every alive subcomponent's level set to 1 (kept whole whatever g); the dead subcomponents and
+    Delta' keep theirs. At W0 under W0's adversary its masked KL is amendment 1's F_rest (1.075 nats)."""
+    out = {}
+    for k, s in sources.items():
+        s = s.clone().float()
+        s[:-1][alive[k].cpu()] = 1.0
+        out[k] = s
+    return out
 
 
 def arm(wf: Any, orig: float, new: float, sel: dict[str, Tensor] | None = None) -> Any:
@@ -364,3 +405,49 @@ def bin_means(cached: Cached, wf: Any, bins: Bins) -> dict[str, float]:
                 tot[name] += float(x.double().sum())
                 cnt[name] += x.numel()
     return {b: tot[b] / cnt[b] if cnt[b] else float("nan") for b in bins}
+
+
+# ----------------------------------------------------------------------------- E20 amendment 1: splitting the rest
+# reports/2026-10-21_plan_cancellation-complement.md -> Amendment 1. The dead block and Delta' alone and together, at the
+# model's own adversary levels or at W0's, over the dead cache of `cache_adversary`.
+
+
+def dead_weights(sources: dict[str, Tensor], alive: dict[str, Tensor], device: str | torch.device) -> Any:
+    """g -> per matrix (1 - g_c)(1 - a_c) over the dead subcomponents (g the dead cache's gates), a from `sources`."""
+    a = {k: s[:-1][~alive[k].cpu()].float().to(device) for k, s in sources.items()}
+    return lambda g: {k: (1 - g[k]) * (1 - a[k]) for k in g}
+
+
+def rest_arm(sources: dict[str, Tensor], alive: dict[str, Tensor], device: str | torch.device, dead: bool, dense: bool
+             ) -> Any:
+    """weights_of for `revert_kl` over the dead cache and a `Remover` of `state_blocks`: the alive blocks kept, the
+    adversary's fraction (1 - g)(1 - a) of each dead subcomponent removed if `dead`, 1 - a_Delta of Delta' if `dense`.
+    The levels a come from `sources`: the model's own, or W0's for the fixed-level arms (g stays the model's)."""
+    wf = dead_weights(sources, alive, device)
+    r = {k: 1 - float(s[-1]) for k, s in sources.items()}
+
+    def weights_of(g: dict[str, Tensor]) -> dict[str, list[Weight]]:
+        w = wf(g) if dead else {}
+        return {k: [0.0, 0.0, w.get(k, 0.0), r[k] if dense else 0.0] for k in g}
+
+    return weights_of
+
+
+def levels(sources: dict[str, Tensor], alive: dict[str, Tensor]) -> dict[str, Any]:
+    """The adversary's levels as removed fractions: 1 - a_Delta per matrix and its mean over matrices, and the mean of
+    1 - a over every dead subcomponent pooled (Gamma's g not included)."""
+    dense = {k: 1 - float(s[-1]) for k, s in sources.items()}
+    dead = torch.cat([1 - sources[k][:-1][~alive[k].cpu()].double() for k in sorted(sources)])
+    return {"dense": dense, "dense_mean": sum(dense.values()) / len(dense), "dead_mean": float(dead.mean())}
+
+
+def all_blocks_arm(sources: dict[str, Tensor], alive: dict[str, Tensor], device: str | torch.device) -> Any:
+    """weights_of over (alive g, dead g) pairs: every block at the adversary's removed fraction, the hooks' version of
+    the adversary's masked forward (its KL over all batches is F_all; the dead cache's check)."""
+    wf, rest = adversary_weights(sources, alive, device), rest_arm(sources, alive, device, True, True)
+
+    def weights_of(gg: tuple[dict[str, Tensor], dict[str, Tensor]]) -> dict[str, list[Weight]]:
+        w, r = wf(gg[0]), rest(gg[1])
+        return {k: [0.0, w[k], *r[k][2:]] for k in w}
+
+    return weights_of

@@ -1,0 +1,31 @@
+{
+ "arms": {
+  "resid, resid_noclip, mean_W0": "amendment 3's own remainder and W0's mean gates, repeated (the gate)",
+  "resid_donor": "clip(g1(pi(x)) - s): window x gets another window's remainder; mean over 5 derangements",
+  "resid_donor_noclip": "g1(pi(x)) - s, unclipped"
+ },
+ "blind_to": "information that a derangement keeps (windows alike, emoticon's gain spread 1.2 nats); whether the remainder works with the fixed change present (only alone); the clip (unclipped reported)",
+ "expected": "D near 1 if the remainder carries no window information. Reference values: amendment 3's mismatched W0 gates g0(pi(x)) recover 0.01 to 0.06 (what mismatching costs with no update), its mismatched own values 0.89 to 1.00",
+ "filed": "2026-10-22, before the amendment ran; earlier predictions stand unedited (A3_P1 failed as filed). Plan: reports/2026-10-21_plan_regating-leak.md -> Amendment 4; user's choice B, 2026-10-22",
+ "gates": [
+  {
+   "id": "A4_gate",
+   "if_fail": "stop",
+   "rule": "G1, amendment 2's trig/shared/noclip (a3_gate) and amendment 3's resid, resid_noclip and mean_W0 reproduced within 1e-06"
+  }
+ ],
+ "measure": "D = R_resid_donor / R_resid, per task and seed (relative); also reported: R_resid_donor - R_mean_W0",
+ "noise": "5 derangements; their spread is reported; amendment 3's donor spread was a few hundredths",
+ "notation": "as amendment 3: g1(x) the state's gates at the trigger of held-out window x, s the fixed change, pi a derangement of the held-out windows (recruit.derangement seeds 0..4), R = rho / rho_trig",
+ "predictions": [
+  {
+   "between": "0.5 < D < 0.8: some window information",
+   "id": "A4_P1_remainder_not_window_specific",
+   "null": "D <= 0.5 on some state: the window's own remainder carries window-specific information, a leak in part (c) of H",
+   "pass": "D >= 0.8 on every scorable task-seed state (gap >= 0.5)",
+   "predicted": "pass, moderate confidence: another window's whole values recover 0.89 to 1.00, and the remainder beats W0's mean gates by 0.00 to 0.07 only",
+   "scored": true
+  }
+ ],
+ "question": "amendment 3's remainder clip(g1(x) - s) recovers 0.16 to 0.31 of the switching effect (A3_P1 failed). Does it carry anything specific to window x? If not, the window it comes from does not matter"
+}

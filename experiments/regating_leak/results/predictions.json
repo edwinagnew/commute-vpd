@@ -1,0 +1,55 @@
+{
+ "blind_to": {
+  "J_nat": "how 'natural' positions are defined (next-token identity; contexts where the target is predicted but not emitted); E6 flagged it as weak on emoticon",
+  "recovery": "trigger windows only; interactions between gate changes at different positions (rho_trig measures how much sits at the trigger). Positive control for the leak reading: rho_trig itself (per-window values do recover). Null: the random moved shift"
+ },
+ "expected": {
+  "J_nat_random": "about |S_on| / 9881 / 2, about 0.01",
+  "W0_gates": "recovery 0 exactly (trig with W0's gates; shared with a zero shift)",
+  "r": "emoticon 0.60, r1_t534 0.75, r2_t359 0.28 (seed 1 within ~0.05 of seed 0)",
+  "random": "about 0"
+ },
+ "filed": "2026-10-21, before any run; plan reports/2026-10-21_plan_regating-leak.md (Predictions, build notes)",
+ "gate": {
+  "id": "G1_reproduce",
+  "if_fail": "stop; nothing below is run",
+  "rule": "seed 0: |r - ref| <= 0.05 on emoticon (ref 0.5965, E6 ft_s0) and <= 0.1 on r1_t534 (ref 0.7461) and r2_t359 (ref 0.2844; E5's do-nothing at step 10, the delta-W E11 regenerated); gain >= 1; recovery with W0's gates |.| <= 1e-6"
+ },
+ "measurements": {
+  "J_nat": "Jaccard of S_on (seed 0) with the top-|S_on| alive subcomponents by W0's gate contrast (mean g at positions whose next token is the target minus mean g over all positions) on Pile ('val', 0, 600); random: mean Jaccard of 20 random_like sets with the same top set",
+  "r": "(L01 - L00) / (T1 - T0) on the held-out windows' trigger log-odds of the target; L = CI-masked model, C0",
+  "random": "S_on = alive subcomponents whose shared change > 0.3; the shared change's values on S_on moved onto 20 random same-size-per-matrix sets outside S_on (recruit.random_like seeds 0..19), recovery mean",
+  "recovery": "(lo_pattern - L00) / (L01 - L00); every pattern is W0's gates except at the trigger position",
+  "rho_cross": "the null fine-tune's shared change, read at this task's target and divided by this task's gap",
+  "rho_mean": "the state's mean trigger gates over the training windows, for every window (reported; rho_mean_W0, the same with W0's mean, is its reference)",
+  "rho_shared": "W0's per-window trigger gates + mean over the training windows of (state - W0) trigger gates (alive subcomponents; dead 0), clipped to [0, 1]",
+  "rho_trig": "the state's own per-window gates at the trigger"
+ },
+ "predictions": [
+  {
+   "id": "P1_trigger_carries",
+   "predicted": "pass",
+   "rule": "rho_trig >= 0.7 on every task and seed"
+  },
+  {
+   "id": "P2_shared_pattern",
+   "leak": "rho_shared <= 0.3 rho_trig",
+   "predicted": "pass on emoticon with confidence; pass on the ladder tasks with low confidence; a fail on the ladder tasks only is the mixed branch",
+   "rule": "rho_shared >= 0.7 rho_trig on every task and seed, and the random mean <= 0.1"
+  },
+  {
+   "id": "P3_task_specific",
+   "predicted": "pass",
+   "rule": "rho_cross <= 0.1 on every task and seed"
+  },
+  {
+   "conditional_on": ">= 200 natural positions in 600 rows for the task",
+   "id": "P4_natural_machinery",
+   "predicted": "pass on the ladder tasks, uncertain on emoticon",
+   "rule": "J_nat (seed 0) >= 3 x the random mean on every task"
+  }
+ ],
+ "reported_not_scored": "rho_mean and rho_mean_W0; |S_on| per task and seed, by layer; Jaccard of S_on across seeds and with the null's S_on; the null's held-out P(' http'); J_nat at seed 1; the adversary's turned-down share (source < 0.5) of S_on vs of all alive, at the state and at W0 (20 steps, seed 0, Pile ('val', 0, 64))",
+ "scorable": "P1 to P3 read only the task-seed states with gain >= 1.0 nat and re-gating gap L01 - L00 >= 0.5 nats (the others are reported); P4 reads only tasks with >= 200 natural positions, and is unscored if none has",
+ "states": "do-nothing placement of the step-10 arm-A fine-tune (Adam 3e-5, batch 32, 10 steps): target W0 + delta-W, released subcomponents C0, Gamma frozen, Delta out of the masked model. Seed 0 = E11's saved delta-W, seed 1 trained in the job. Null: the same recipe to ' http' (token 3944), seed 0. Tasks emoticon (target 'o'), r1_t534_v369 (' which' -> ' was'), r2_t359_v816 (' we' -> ' just')"
+}

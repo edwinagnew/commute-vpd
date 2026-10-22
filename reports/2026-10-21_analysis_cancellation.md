@@ -15,6 +15,8 @@ the adversary removes explains under a tenth of its extra damage, no more than a
 from what the adversary does to the original subcomponents. That last step is inferred, not yet measured; a follow-up
 that measures it is being built.
 
+*Note 2026-10-21, after E20: measured directly, the inference above is refuted. The original subcomponents carry none of the excess on three of the four failing states and a fifth on r2 t275; most of it sits in the adversary's mask on the dead subcomponents and Δ. See `reports/2026-10-21_analysis_cancellation-complement.md`.*
+
 ## The question
 
 VPD checks a decomposition by masking subcomponents and measuring how far the output moves, as a KL divergence from the
@@ -184,6 +186,8 @@ text. The adversary is free to remove those. That is an inference from the remai
 the same hook framework, being built now, removes the adversary's fractions of the original subcomponents while keeping
 the changes whole. If most of $X$ appears there, the reading becomes a measurement. If little does, the damage lies in
 how the two halves interact.
+
+*Note 2026-10-21, after E20: measured directly, the inference above is refuted. The original subcomponents carry none of the excess on three of the four failing states and a fifth on r2 t275; most of it sits in the adversary's mask on the dead subcomponents and Δ. See `reports/2026-10-21_analysis_cancellation-complement.md`.*
 
 ## What we learned
 

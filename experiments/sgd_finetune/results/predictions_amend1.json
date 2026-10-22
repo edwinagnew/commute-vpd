@@ -1,0 +1,26 @@
+{
+ "filed": "2026-10-21",
+ "amends": "results/predictions.json, which stands unedited",
+ "why": "P2 reversed: the SGD fine-tune (lr 0.01, step 10; rel_norm_max 0.00238, KL elsewhere 0.015, P(o) 0.973) read do-nothing 1.12 and least-squares 1.16 Pile PGD ratios (pass), where the Adam fine-tune (3e-5; rel_norm_max 0.0112, KL elsewhere 0.055) read 2.18 and 5.41 (fail), jobs 28193 and 28198. The two differ in optimiser and in size of change (4.7x), so the reversal cannot be put on either. Matched-size Adam control approved by the user 2026-10-21.",
+ "change": "Stage adam_matched of run.py: W0 floor first (faith_score.w0_check; stop if it fails); then the Adam 3e-5 fine-tune as control (G1: P(o) and KL elsewhere within 0.01 of E16's 0.9993 and 0.0554; stop if not); then Adam full fine-tunes with split's recipe (emoticon arm A, batch 32, clip 1, seed 0, 10 steps, 24 matrices) at lr 3e-6, 4.5e-6, 6e-6, 8e-6, 1.2e-5 (0.1x to 0.4x of 3e-5; Adam's size of change at fixed steps is about proportional to lr, so 0.21x is expected to match). On the matched one: do-nothing and least-squares split, adjoint split, the four blocks, with the same functions as split. Results in results/adam_matched.json.",
+ "match_rule": "the grid rate whose step-10 rel_norm_max is closest to the SGD fine-tune's 0.00238 (|log ratio|); matched if within 15%. If none is, recorded 'unmatched' and the closest is still scored. Learned if its held-out P(o) at step 10 >= 0.9; if not, its verdicts are reported flagged 'did not learn'.",
+ "verdict": "faith_score.verdict against the same-job W0 floor of each reading: PGD ratios against pgd_floor (pass <= 1.5/(1+f), fail >= 1.5(1+f), inconclusive between), stochastic against stochastic_floor.",
+ "predictions": [
+  {"id": "A1_nothing", "measure": "matched Adam fine-tune, do-nothing, Pile PGD ratio",
+   "decision": "fail means the optimiser carries the difference from SGD; pass means the size of change does; inconclusive decides nothing",
+   "predicted": "open. Size reading: about SGD's 1.12 (pass). Optimiser reading: near the Adam-full 2.18 (fail). The do-nothing ratio need not scale linearly with size, so an in-between inconclusive is plausible",
+   "expected": "W0: 1. SGD reference 1.12; Adam-full reference 2.18 (job 28198)",
+   "blind_to": "the trigger (about 3 positions in 131k); behaviour (P(o) reported)", "noise_floor": "the W0 PGD floor f, through the verdict's band"},
+  {"id": "A2_least_squares", "measure": "matched Adam fine-tune, least-squares split, Pile PGD ratio",
+   "decision": "as A1",
+   "predicted": "open. Size reading: about SGD's 1.16 (pass). Optimiser reading: fail, as Adam-full's 5.41; Adam's outside-both share (A3) is what least squares cannot place, so A2 follows A3",
+   "expected": "W0: 1. SGD 1.16; Adam-full 5.41",
+   "blind_to": "as A1", "noise_floor": "as A1"},
+  {"id": "A3_outside_share", "measure": "outside-both block over its null (split.block_table pooled_all out_out_ratio) of the matched Adam fine-tune",
+   "decision": "'like SGD' if <= 1.25 x SGD's 0.034 (size carries it); 'like Adam-full' if >= 0.8 x Adam-full's 0.218 (the optimiser carries it); 'between' otherwise",
+   "predicted": "open, leaning 'like Adam-full': a share is a ratio of energies, so to first order it does not depend on the size of change; Adam's per-coordinate step spreads onto low-variance input directions at any rate",
+   "expected": "W0: undefined. Null: 1. SGD 0.034; Adam-full 0.218 (job 28198)",
+   "blind_to": "what the outside part does to behaviour or faithfulness; per-matrix differences under the pooling", "noise_floor": "deterministic given delta-W"}
+ ],
+ "reported_not_scored": ["the Adam rate grid (P(o), KL elsewhere, rel_norm_max per rate)", "adjoint split PGD and stochastic ratios", "stochastic ratios of do-nothing and least squares", "G2 of the least-squares state"]
+}

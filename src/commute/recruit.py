@@ -158,9 +158,15 @@ def at_trigger(gates: Gates, half: int) -> TrigVals:
     return [{k: v[:, half] for k, v in g.items()} for g in gates]
 
 
+def added(gates_base: Gates, half: int, shift: dict[str, Tensor]) -> TrigVals:
+    """Each window's base gates at the trigger plus one shared (C,) shift per matrix, not clipped (values may leave
+    [0, 1]; E18 amendment 1's arm that isolates the clip)."""
+    return [{k: v[:, half].float() + shift[k].float() for k, v in g.items()} for g in gates_base]
+
+
 def shifted(gates_base: Gates, half: int, shift: dict[str, Tensor]) -> TrigVals:
-    """Each window's base gates at the trigger plus one shared (C,) shift per matrix, clipped to [0, 1]."""
-    return [{k: (v[:, half].float() + shift[k].float()).clamp(0.0, 1.0) for k, v in g.items()} for g in gates_base]
+    """`added`, clipped to [0, 1]."""
+    return [{k: v.clamp(0.0, 1.0) for k, v in t.items()} for t in added(gates_base, half, shift)]
 
 
 def constant(gates_base: Gates, half: int, vec: dict[str, Tensor]) -> TrigVals:
@@ -198,3 +204,59 @@ def moved(shift: dict[str, Tensor], sel: Sel, dest: Sel) -> dict[str, Tensor]:
             m[d] = v[sel[k][: d.numel()]]
         out[k] = m
     return out
+
+
+def shuffled(shift: dict[str, Tensor], alive: dict[str, Tensor], seed: int) -> dict[str, Tensor]:
+    """The shift's values permuted among each matrix's alive subcomponents (every entry, one torch generator per draw,
+    matrices in dict order); dead subcomponents stay 0. Keeps each matrix's set of values, loses which subcomponent
+    gets which (E18 amendment 2's null for the whole shift)."""
+    gen = torch.Generator().manual_seed(seed)
+    out = {}
+    for k, v in shift.items():
+        idx = alive[k].cpu().bool().nonzero().flatten()
+        m = torch.zeros_like(v)
+        m[idx] = v[idx][torch.randperm(idx.numel(), generator=gen)]
+        out[k] = m
+    return out
+
+
+def in_range(shift: dict[str, Tensor], alive: dict[str, Tensor], lo: float, hi: float) -> Sel:
+    """Alive subcomponents with lo < shift <= hi."""
+    return {k: (alive[k].cpu().bool() & (v > lo) & (v <= hi)).nonzero().flatten() for k, v in shift.items()}
+
+
+# ----------------------------------------------------------------------------- amendment 3 (E18, 2026-10-21)
+# Arms that the leading hypothesis H can fail (reports/2026-10-21_plan_regating-leak.md -> Amendment 3): the updated
+# model's own trigger values with the fixed change removed, another window's values, the change's two signs.
+
+
+def plus(trig: TrigVals, shift: dict[str, Tensor], clip: bool) -> TrigVals:
+    """Trigger values plus one (C,) shift per matrix, clipped to [0, 1] if `clip` (`added` and `shifted` for any
+    trigger values, e.g. the state's own: plus(at_trigger(g1), -s) is the residual g1(x) - s)."""
+    out = [{k: v.float() + shift[k].float() for k, v in t.items()} for t in trig]
+    return [{k: v.clamp(0.0, 1.0) for k, v in t.items()} for t in out] if clip else out
+
+
+def derangement(n: int, seed: int) -> Tensor:
+    """A random permutation of range(n) with no fixed point (one cycle through a random order), n >= 2."""
+    order = torch.randperm(n, generator=torch.Generator().manual_seed(seed))
+    perm = torch.empty(n, dtype=torch.long)
+    perm[order] = order.roll(-1)
+    return perm
+
+
+def permuted(trig: TrigVals, perm: Tensor) -> TrigVals:
+    """Window i gets window perm[i]'s trigger values; the batch layout is kept."""
+    sizes = [next(iter(t.values())).shape[0] for t in trig]
+    cat = {k: torch.cat([t[k] for t in trig])[perm] for k in trig[0]}
+    return [dict(zip(cat, vals, strict=True)) for vals in zip(*(v.split(sizes) for v in cat.values()), strict=True)]
+
+
+def signed(shift: dict[str, Tensor], positive: bool) -> dict[str, Tensor]:
+    """The shift's positive (turned-up) or negative (turned-down) entries, 0 elsewhere."""
+    return {k: v.clamp(min=0.0) if positive else v.clamp(max=0.0) for k, v in shift.items()}
+
+
+def on_pool(shift: dict[str, Tensor], pool: dict[str, Tensor]) -> dict[str, Tensor]:
+    """The shift on the `pool` (bool per matrix) only, 0 elsewhere."""
+    return {k: torch.where(pool[k].cpu().bool(), v, torch.zeros_like(v)) for k, v in shift.items()}

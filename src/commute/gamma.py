@@ -216,16 +216,20 @@ def mask_kl(model: Any, batches: list[Tensor], sources: Sources) -> float:
     return _mask_kl(model, _cache(model, batches), vpd.weight_deltas(model), adv)
 
 
-def pgd_sources(model: Any, batches: list[Tensor], steps: int, step_size: float = 0.1, seed: int = 0) -> tuple[Sources, float]:
+def pgd_sources(model: Any, batches: list[Tensor], steps: int, step_size: float = 0.1, seed: int = 0,
+                init: Sources | None = None) -> tuple[Sources, float]:
     """The authors' adversary (`faithfulness.faithfulness`'s PGD) with its sources kept: one source per matrix shared
     across every row of every batch, random init, `steps` sign steps of `step_size` on the mean KL over all positions,
-    gradients summed over the batches. Returns the sources and the KL they reach."""
+    gradients summed over the batches. Returns the sources and the KL they reach. `init` (sources as returned) starts
+    the steps there instead of at the seed's random draw; the steps keep no other state, so `steps` = a + b equals a
+    steps then b steps from their result."""
     keys = vpd.module_keys(model)
     device = next(model.parameters()).device
     cached = _cache(model, batches)
     wd = vpd.weight_deltas(model)
     torch.manual_seed(seed)
-    adv = {k: torch.rand(1, 1, model.module_to_c[k] + 1, device=device).requires_grad_(True) for k in keys}
+    adv = {k: (torch.rand(1, 1, model.module_to_c[k] + 1, device=device) if init is None
+               else init[k].to(device).float().reshape(1, 1, -1).clone()).requires_grad_(True) for k in keys}
     for _ in range(steps):
         grads = {k: torch.zeros_like(adv[k]) for k in keys}
         for batch, ci in cached:

@@ -107,3 +107,97 @@ def test_precede_mask_and_contrast():
     expect = g["a"][m].mean(0) - g["a"].reshape(-1, 3).mean(0)
     assert torch.allclose(res[:2], expect[:2], atol=1e-6) and res[2] == 0
     assert acc.n_on == 3 and acc.n_all == 8
+
+
+def test_trigger_patterns():
+    """E18's trigger-only patterns: identities at W0, the clip, the constant, and the moved null."""
+    g0 = [{"a": torch.rand(2, 5, 3), "b": torch.rand(2, 5, 2)}, {"a": torch.rand(1, 5, 3), "b": torch.rand(1, 5, 2)}]
+    g1 = [{k: torch.rand_like(v) for k, v in g.items()} for g in g0]
+    h = 2
+    same = R.with_trigger(g0, h, R.at_trigger(g0, h))
+    zero = R.with_trigger(g0, h, R.shifted(g0, h, {"a": torch.zeros(3), "b": torch.zeros(2)}))
+    swap = R.with_trigger(g0, h, R.at_trigger(g1, h))
+    for b in range(2):
+        for k in ("a", "b"):
+            assert torch.equal(same[b][k], g0[b][k]) and torch.equal(zero[b][k], g0[b][k])
+            keep = torch.arange(5) != h
+            assert torch.equal(swap[b][k][:, keep], g0[b][k][:, keep]) and torch.equal(swap[b][k][:, h], g1[b][k][:, h])
+    big = R.with_trigger(g0, h, R.shifted(g0, h, {"a": torch.tensor([2.0, -2.0, 0.0]), "b": torch.zeros(2)}))
+    assert torch.all(big[0]["a"][:, h, 0] == 1) and torch.all(big[0]["a"][:, h, 1] == 0)
+    assert torch.equal(big[0]["a"][:, h, 2], g0[0]["a"][:, h, 2])
+    vec = {"a": torch.tensor([0.1, 0.2, 0.3]), "b": torch.tensor([0.4, 0.5])}
+    const = R.with_trigger(g0, h, R.constant(g0, h, vec))
+    assert all(torch.allclose(const[b]["a"][i, h], vec["a"]) for b in range(2) for i in range(const[b]["a"].shape[0]))
+    alive = {"a": torch.tensor([True, True, False]), "b": torch.tensor([True, True])}
+    d = R.mean_change({"a": torch.tensor([0.9, 0.1, 0.7]), "b": torch.tensor([0.5, 0.5])},
+                      {"a": torch.tensor([0.1, 0.1, 0.1]), "b": torch.tensor([0.0, 0.5])}, alive)
+    assert torch.allclose(d["a"], torch.tensor([0.8, 0.0, 0.0])) and torch.allclose(d["b"], torch.tensor([0.5, 0.0]))
+    on = R.switched(d, 0.3)
+    mv = R.moved(d, on, {"a": torch.tensor([1]), "b": torch.tensor([1])})
+    assert torch.allclose(mv["a"], torch.tensor([0.0, 0.8, 0.0])) and torch.allclose(mv["b"], torch.tensor([0.0, 0.5]))
+    assert sorted(mv) == ["a", "b"] and R.moved(d, on, {})["a"].abs().sum() == 0
+
+
+
+def test_added_is_shifted_before_the_clip():
+    """E18 amendment 1: `added` keeps out-of-range values, `shifted` is its clip, and moved(shift, on, on) keeps the
+    shift on S_on only."""
+    g0 = [{"a": torch.tensor([[[0.2, 0.9, 0.0], [0.5, 0.1, 0.8]]])}]  # (B=1, T=2, C=3)
+    shift = {"a": torch.tensor([0.5, 0.4, -0.3])}
+    raw, cl = R.added(g0, 1, shift)[0]["a"], R.shifted(g0, 1, shift)[0]["a"]
+    assert torch.allclose(raw, torch.tensor([[1.0, 0.5, 0.5]])) and torch.allclose(cl, raw)
+    raw0 = R.added(g0, 0, shift)[0]["a"]
+    assert torch.allclose(raw0, torch.tensor([[0.7, 1.3, -0.3]]))
+    assert torch.allclose(R.shifted(g0, 0, shift)[0]["a"], torch.tensor([[0.7, 1.0, 0.0]]))
+    assert torch.equal(R.added(g0, 0, {"a": torch.zeros(3)})[0]["a"], g0[0]["a"][:, 0])
+    on = R.switched(shift, 0.3)
+    assert torch.allclose(R.moved(shift, on, on)["a"], torch.tensor([0.5, 0.4, 0.0]))
+
+def test_trigger_mean_gates_matches_route_cells(model):
+    w = windows(n=7)
+    cells = LF.route_cells(model, w, HALF, TOKEN, batch_size=3)
+    mean = LF.trigger_mean_gates(model, w, HALF, batch_size=4)
+    for k, v in R.cat_gates(cells["gates"]).items():
+        assert torch.allclose(mean[k], v[:, HALF].float().mean(0), atol=1e-6)
+
+
+def test_shuffled_and_in_range():
+    """E18 amendment 2: the shuffle permutes the alive entries only (same values per matrix, dead stay 0, a fixed seed
+    repeats), and in_range picks alive entries with lo < s <= hi."""
+    shift = {"a": torch.tensor([0.5, -0.2, 0.0, 0.05, 0.3]), "b": torch.tensor([0.4, 0.1])}
+    alive = {"a": torch.tensor([True, True, False, True, True]), "b": torch.tensor([True, True])}
+    p = R.shuffled(shift, alive, 3)
+    assert p["a"][2] == 0 and torch.equal(p["a"][alive["a"]].sort().values, shift["a"][alive["a"]].sort().values)
+    assert torch.equal(p["b"].sort().values, shift["b"].sort().values)
+    assert all(torch.equal(p[k], R.shuffled(shift, alive, 3)[k]) for k in p)
+    assert any(not torch.equal(R.shuffled(shift, alive, i)["a"], shift["a"]) for i in range(5))
+    sel = R.in_range(shift, alive, 0.01, 0.3)
+    assert sel["a"].tolist() == [3, 4] and sel["b"].tolist() == [1]
+    assert R.in_range(shift, alive, -0.01, 0.01)["a"].tolist() == []  # entry 2 is dead
+
+
+def test_amend3_helpers():
+    """E18 amendment 3: plus generalises added/shifted, derangements have no fixed point, permuted hands each window its
+    donor's values in the same batch layout, signed and on_pool split the shift."""
+    g0 = [{"a": torch.rand(3, 4, 5)}, {"a": torch.rand(2, 4, 5)}]
+    shift = {"a": torch.tensor([0.5, -0.4, 0.0, 0.2, -0.1])}
+    t = R.at_trigger(g0, 1)
+    assert all(torch.equal(x["a"], y["a"]) for x, y in zip(R.plus(t, shift, False), R.added(g0, 1, shift), strict=True))
+    assert all(torch.equal(x["a"], y["a"]) for x, y in zip(R.plus(t, shift, True), R.shifted(g0, 1, shift), strict=True))
+    for seed in range(5):
+        p = R.derangement(5, seed)
+        assert sorted(p.tolist()) == list(range(5)) and not bool((p == torch.arange(5)).any())
+        pt = R.permuted(t, p)
+        assert [x["a"].shape[0] for x in pt] == [3, 2]
+        assert torch.equal(torch.cat([x["a"] for x in pt]), torch.cat([x["a"] for x in t])[p])
+    assert torch.equal(R.signed(shift, True)["a"], torch.tensor([0.5, 0.0, 0.0, 0.2, 0.0]))
+    assert torch.equal(R.signed(shift, False)["a"], torch.tensor([0.0, -0.4, 0.0, 0.0, -0.1]))
+    assert torch.equal(R.on_pool(shift, {"a": torch.tensor([True, True, False, False, True])})["a"],
+                       torch.tensor([0.5, -0.4, 0.0, 0.0, -0.1]))
+
+
+def test_masked_lo_windows_averages_to_masked_lo(model):
+    w = windows(n=7)
+    g = LF.route_cells(model, w, HALF, TOKEN, batch_size=3)["gates"]
+    per = LF.masked_lo_windows(model, w, HALF, TOKEN, g, batch_size=3)
+    assert per.shape == (7,) and float(per.mean()) == pytest.approx(LF.masked_lo(model, w, HALF, TOKEN, g, 3)[0], abs=1e-9)

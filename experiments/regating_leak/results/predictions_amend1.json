@@ -1,0 +1,41 @@
+{
+ "arms": {
+  "S_on": "clip(g0(x) + s on S_on, 0 elsewhere), S_on = alive with s > 0.3 (reported: is the off-S_on shift what costs)",
+  "mean_W0": "m0 for every window (E18's reference, repeated; = mean_s with s = 0)",
+  "mean_s": "m0 + s for every window (alive: m1; dead: m0): differs from noclip only by g0(x) - m0, and from mean only on dead subcomponents (m0 instead of m1)",
+  "noclip": "g0(x) + s, not clipped (recruit.added): differs from shared only by the clip",
+  "trig, shared, mean": "E18's, repeated (the gate reads shared and mean)"
+ },
+ "blind_to": "the decomposition is a path (shared -> noclip -> mean_s -> mean); with interactions the shares depend on the order. Trigger position and held-out windows only, as E18",
+ "expected": {
+  "W0_gates": "noclip with s = 0 recovers 0 to 1e-6; S_on and shared with s = 0 likewise (E18's G1); mean_s with s = 0 is mean_W0, not 0 (E18: 0.10 to 0.28)",
+  "f_dead": "about 0 (dead subcomponents' gates are near 0 at W0 and the state)",
+  "repeat": "trig, shared, mean, mean_W0 within 0.02 of E18"
+ },
+ "filed": "2026-10-21, before the amendment ran; E18's own predictions.json stands unedited. Plan: reports/2026-10-21_plan_regating-leak.md -> Amendment 1; analysis reports/2026-10-21_analysis_regating-leak.md",
+ "gate": {
+  "id": "A1_repeat",
+  "if_fail": "stop; no new arm is run",
+  "rule": "G1 as E18; and |rho_shared - E18| <= 0.02 and |rho_mean - E18| <= 0.02 on every task and seed; noclip with s = 0 recovers |.| <= 1e-6"
+ },
+ "measurements": {
+  "D": "R_mean - R_shared, the gap to explain (E18: emoticon 0.19, r1_t534 0.53, r2_t359 0.49)",
+  "R_x": "rho_x / rho_trig, rho = recovery (lo - L00) / (L01 - L00) on the held-out windows, as E18's P2",
+  "f": "f_clip = (R_noclip - R_shared) / D, f_variation = (R_mean_s - R_noclip) / D, f_dead = (R_mean - R_mean_s) / D; they sum to 1 exactly",
+  "f_variation_W0": "R_mean_W0 / D: the part of f_variation that W0's own per-window variation costs with no shift (mean_s - noclip at s = 0); f_variation - f_variation_W0 = how much the variation interacts with s"
+ },
+ "noise": "E18's two seeds agree within 0.02 on R_shared and R_mean; the readings' thresholds sit 0.25 of R from each other on the word tasks",
+ "predictions": [
+  {
+   "clip": "f_clip >= 0.5: R_noclip >= R_shared + 0.5 D (r1_t534 about >= 0.67, r2_t359 >= 0.87); the filed pattern's construction lowers it, the mechanism reading stands",
+   "dead": "f_dead >= 0.5: R_mean_s near R_noclip, R_mean well above",
+   "id": "A1_P1_what_lowers_shared",
+   "predicted": "variation on both word tasks, medium confidence: a switched-on subcomponent with W0 gates near 1 in some windows and near 0 in others gets s added half-way in the off windows; the clip only acts on windows already near 1. f_clip within +/- 0.2; f_dead within +/- 0.1",
+   "rule": "on every task-seed state with D >= 0.3 (the word tasks): the reading is each term with f >= 0.5 (clip, variation, dead); 'split' if none",
+   "variation": "f_variation >= 0.5: R_noclip stays near R_shared, R_mean_s near R_mean; the shift added to each window's own W0 gates does worse than the same mean for every window"
+  }
+ ],
+ "question": "E18's filed shared pattern clip(g0(x) + s) recovered 0.40 and 0.62 of rho_trig on the word tasks where the unscored mean pattern m1 (= m0 + s on alive subcomponents) recovered 0.94 and 1.11. Which difference lowers rho_shared: the clip, W0's per-window variation g0(x) - m0, or the dead subcomponents (shared keeps g0(x) there, mean uses m1)?",
+ "reported_not_scored": "emoticon (D about 0.19); R_S_on (expected within 0.1 of R_shared if the off-S_on shift is inert); f_variation - f_variation_W0 (predicted > 0.2, low confidence: the shift interacts with the per-window variation); |S_on|",
+ "states": "as E18 (same tasks, seeds 0 and 1, do-nothing placement); seed 1 retrained with the same seed"
+}

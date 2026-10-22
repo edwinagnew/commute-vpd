@@ -1,0 +1,81 @@
+{
+ "arms": {
+  "down_perm": "s- on P permuted among P (recruit.shuffled with P as the pool, seeds 0..19), clipped: the same turn-down values on other subcomponents that are on",
+  "down_pool": "clip(g0(x) + s-) with s- kept only on the pool P = alive subcomponents with m0 >= 0.1 (the subcomponents on enough at the trigger to be turned down; every s <= -m0, so all s <= -0.1 are in P)",
+  "mean, mean_W0": "m1 and m0 for every window: amendment 1's, repeated (the additivity grid)",
+  "mismatch": "window x gets g1(pi(x)) at the trigger, pi a derangement of the held-out windows (recruit.derangement seeds 0..4); mismatch_W0: g0(pi(x)), its reference",
+  "pile": "clip(g0(x) + s) at position `half` of Pile rows ('val', 0, 64) cut to the task's window length, W0's gates elsewhere (reported)",
+  "resid": "clip(g1(x) - s): the state's own values with the fixed change removed, the input-varying part kept",
+  "resid_held": "clip(g1(x) - s_held): the same with the held-out mean change removed (a purely input-varying remainder; reported)",
+  "resid_noclip": "g1(x) - s, not clipped (the grid's missing cell; values below 0 flip a subcomponent's sign)",
+  "trig, shared, noclip": "g1(x); clip(g0(x) + s); g0(x) + s: amendment 2's, repeated (the gate)",
+  "up, down": "clip(g0(x) + s+), clip(g0(x) + s-); also not clipped (up_noclip, down_noclip)",
+  "up_perm": "s+ permuted among the alive subcomponents (seeds 0..19), clipped"
+ },
+ "blind_to": {
+  "all": "trigger position (Pile arm aside) and held-out windows only; one model, three tasks",
+  "halves": "the shuffles keep each matrix's values (and the pool), so they cannot see whether the split across matrices matters; down_perm cannot separate identity when P is not much larger than the strongly turned-down set (n_down_strong / n_pool reported)",
+  "mismatch": "the level is blind to a leak that carries a per-window strength (it averages out over the derangement): c_own vs c_donor reads that; the level mixes in what mismatching costs with no update (mismatch_W0)",
+  "resid": "a leak that acts only together with the fixed change (the grid's v1 cell, 1 - R_resid_noclip, reads that); the clip removes negative remainders (windows that switched less than average)"
+ },
+ "expected": {
+  "W0": "with no update (g1 = g0, s = 0) resid, resid_noclip, resid_held, up, down, down_pool, the perms and pile all read 0; mismatch reads mismatch_W0, not 0; the per-window gains a(x) average to rho_trig x gap exactly (checked)",
+  "c_null": "about 0 +/- 0.1 (73 to 106 windows)",
+  "pile_ratio": "low-confidence guess <= 0.3 (the change raises the target in context)",
+  "repeat": "trig, shared, noclip equal amendment 2's to 1e-6; mean and mean_W0 equal amendment 1's (0.92/0.91, 0.94/0.94, 1.11/1.15; 0.11/0.10, 0.24/0.24, 0.27/0.29)",
+  "survival": "low-confidence guess 0.5 to 0.9"
+ },
+ "filed": "2026-10-21, before the amendment ran; E18's, amendment 1's and amendment 2's predictions stand unedited. Plan: reports/2026-10-21_plan_regating-leak.md -> Amendment 3; decision reports/2026-10-21_decision_mechanism-reading.md",
+ "gate": {
+  "id": "A3_repeat",
+  "if_fail": "stop; no new arm is run",
+  "rule": "G1 as E18; and |rho - amendment 2| <= 1e-06 for trig, shared and noclip on every task and seed"
+ },
+ "hypothesis": "H: after a narrow fine-tune, the switching effect at the trigger is carried by one change to Gamma's importance values that is (a) the same for every input, (b) specific to which subcomponents receive it, and (c) enough on its own: the part of the updated model's values that varies with the input adds nothing. A leak is the failure of (c). Every scored arm below is one H can fail",
+ "measurements": {
+  "R_mismatch": "mean over the 5 derangements of R",
+  "R_x": "rho_x / rho_trig, rho = recovery (lo - L00) / (L01 - L00) on the held-out windows, as amendments 1 and 2",
+  "c_own, c_donor": "per window, the masked gain b(x) = lo(x) - lo00(x) under the mismatched values; a(x) the same under its own values. c_own = corr(b, a), c_donor = corr(b, a o pi) (the donor's own gain); mean over derangements. c_null = corr(a, a o pi), the chance level",
+  "grid": "the effect of s at three backgrounds, if effects add: none (R_mean - R_mean_W0), W0's own variation (R_noclip), the state's own variation (1 - R_resid_noclip)",
+  "pile_ratio": "(lo_pile with s - lo_pile with W0's gates) / (rho_shared x gap): the change's effect in nats on Pile rows as a share of its effect at the trigger",
+  "ratio_half": "mean over the 20 draws of R_perm divided by the unshuffled R of the same half (down: down_pool)",
+  "survival": "R_down / R_down_noclip: the share of the unclipped turned-down recovery (amendment 2's bins) left once no value may go below 0, i.e. once sign flips are removed"
+ },
+ "noise": "seeds agree within 0.02 on the unshuffled R; amendment 2's shuffle sd 0.02 to 0.04; correlations over 73 to 106 windows have a chance spread of about 0.1 (c_null reported); 5 derangements",
+ "notation": "g0(x), g1(x): W0's and the state's gates at the trigger of held-out window x; m0, m1: their means over the training windows; s = m1 - m0 on alive subcomponents (0 on dead), the fixed change; s_held: the same mean change over the held-out windows; s+ = max(s, 0) (turned up), s- = min(s, 0) (turned down); clip = clip to [0, 1]. Every pattern is W0's gates everywhere except the trigger position",
+ "predictions": [
+  {
+   "fails": "(c), necessity of the fixed part",
+   "id": "A3_P1_fixed_part_needed",
+   "predicted": "pass on emoticon, medium confidence; on the word tasks medium-low (their fixed change leaves 0.5 and 0.2 of rho_trig unexplained, some of which could sit in the remainder alone)",
+   "rule": "R_resid <= 0.15 reads 'H' (the input-varying part alone does nothing); >= 0.3 reads 'leak'; between otherwise. Pass: 'H' on every scorable state. Absolute, in shares of rho_trig"
+  },
+  {
+   "fails": "(a), the same for every input",
+   "id": "A3_P2_other_windows_values",
+   "predicted": "pass, medium confidence (the mean pattern, with no per-window term, reads 0.91 to 1.15)",
+   "rule": "R_mismatch >= 0.8 reads 'H' (another window's values do about as well as the own ones); <= 0.5 reads 'own window needed'; between otherwise. Pass: 'H' on every scorable state (|R_mismatch_W0| <= 0.2)"
+  },
+  {
+   "fails": "(a)/(c) for a leak that carries a per-window strength",
+   "id": "A3_P3_gain_follows_recipient",
+   "predicted": "pass, medium-high confidence; 'recipient' on the word tasks (varied contexts), possibly 'neither' on emoticon (windows alike)",
+   "rule": "c_donor - c_own >= 0.2 reads 'donor' (the masked gain travels with the values: a leak); c_own - c_donor >= 0.2 reads 'recipient'; 'neither' otherwise. Pass: no state reads 'donor'"
+  },
+  {
+   "fails": "(b) for the turned-down half",
+   "id": "A3_P4_down_identity",
+   "predicted": "pass, medium-low confidence: turning down any active subcomponents could lower competing tokens generically",
+   "rule": "ratio_half(down_pool) <= 0.2 reads 'identity'; >= 0.5 'bulk'; between otherwise. Pass: 'identity' on every state with R_down_pool >= 0.1. Relative to the unshuffled down_pool"
+  },
+  {
+   "fails": "(b) for the turned-up half",
+   "id": "A3_P5_up_identity",
+   "predicted": "pass, high confidence (E18's random set on S_on and amendment 2's shuffle: <= 0.01)",
+   "rule": "as A3_P4 for s+ (up_perm against up), on every state with R_up >= 0.1"
+  }
+ ],
+ "reported_not_scored": "R_resid_noclip, R_resid_held; the grid (does s's effect depend on the background: the reference subtraction's additivity); R_mismatch_W0 and c_null; R_up, R_down clipped and not, survival, R_up + R_down against R_shared and the unclipped halves against R_noclip; pool sizes; pile_ratio",
+ "scorable": "states with gap >= 0.5 nats (all six in amendments 1 and 2); A3_P2 also needs |R_mismatch_W0| <= 0.2; A3_P4 needs R_down_pool >= 0.1 and A3_P5 R_up >= 0.1 (otherwise reported)",
+ "states": "as E18 and amendments 1 and 2 (three tasks, seeds 0 and 1, do-nothing placement); seed 1 retrained with the same seed"
+}

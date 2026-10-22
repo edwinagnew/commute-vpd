@@ -78,6 +78,35 @@ def fig_blocks(sp: dict) -> None:
     fig.savefig(FIGURES / "blocks.png", dpi=130)
 
 
+def fig_matched(sp: dict, am: dict) -> None:
+    """Amendment 1: Pile PGD ratio of the do-nothing and least-squares states against the fine-tune's size of change,
+    for the SGD fine-tune, the size-matched Adam fine-tune and the full-size Adam fine-tune, on the same axes."""
+    f = sp["W0"]["pgd_floor"]
+    runs = (("SGD 0.01", sp["score"]["table"], "sgd_", sp["finetune_eval"]["sgd"]["rel_norm_max"]),
+            ("Adam 3e-6, matched size", am["score"]["table"], "", am["states"]["nothing"]["rel_norm_max"]),
+            ("Adam 3e-5", sp["score"]["table"], "adam_", sp["finetune_eval"]["adam"]["rel_norm_max"]))
+    fig, ax = plt.subplots(figsize=(6.5, 4.2))
+    ax.axhspan(LINE / (1 + f), LINE * (1 + f), color="0.88", lw=0, label="inconclusive on this card")
+    ax.axhline(1, color="k", ls=":", lw=0.8, label="original model = 1")
+    for op, m, name in (("nothing", "s", "do-nothing"), ("least_squares", "D", "least-squares split")):
+        xs = [r[3] for r in runs]
+        ys = [r[1][r[2] + op]["pgd"] for r in runs]
+        ax.plot(xs, ys, "-", color="0.6", lw=0.8)
+        ax.scatter(xs, ys, marker=m, c=["C0", "C1", "C1"], s=50, zorder=3)
+        ax.scatter([], [], marker=m, color="0.4", label=name)
+    for name, c in (("SGD fine-tune", "C0"), ("Adam fine-tune", "C1")):
+        ax.scatter([], [], color=c, label=name)
+    for name, table, prefix, x in runs:
+        ax.annotate(name, (x, table[prefix + "least_squares"]["pgd"]), textcoords="offset points", xytext=(4, 6),
+                    fontsize=7)
+    ax.set(xscale="log", yscale="log", xlabel="size of change: largest ‖δW‖/‖W₀‖, step 10",
+           ylabel="adversarial Pile KL / W₀'s (20-step adversary)")
+    ax.legend(fontsize=7)
+    fig.suptitle("Emoticon fine-tunes: does the optimiser or the size of change decide the verdict?", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(FIGURES / "matched.png", dpi=130)
+
+
 def main() -> None:
     FIGURES.mkdir(exist_ok=True)
     fig_rate(json.loads((RESULTS / "rate.json").read_text()))
@@ -86,6 +115,8 @@ def main() -> None:
         if "states" in sp:
             fig_pile(sp)
             fig_blocks(sp)
+            if (RESULTS / "adam_matched.json").is_file():
+                fig_matched(sp, json.loads((RESULTS / "adam_matched.json").read_text()))
 
 
 if __name__ == "__main__":

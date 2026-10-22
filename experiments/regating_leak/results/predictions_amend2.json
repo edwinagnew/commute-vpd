@@ -1,0 +1,41 @@
+{
+ "arms": {
+  "bins": "g0(x) + s restricted to the alive subcomponents with s in one bin, not clipped; edges (-0.1, -0.01, 0.01, 0.03, 0.1, 0.3) (reported)",
+  "noclip_perm": "g0(x) + s_perm, not clipped, the same draws",
+  "shared_perm": "clip(g0(x) + s_perm) at the trigger, s_perm = s's values permuted among each matrix's alive subcomponents (recruit.shuffled, seeds 0..19; dead stay 0)",
+  "trig, shared, noclip": "amendment 1's, repeated: the gate and the unshuffled references"
+ },
+ "blind_to": "the shuffle keeps each matrix's values and their sum, so it cannot tell whether which matrix (layer, attention or MLP) gets how much matters; it also moves negative values onto subcomponents that are off at the trigger (clipped to no effect in shared_perm, a sign flip in noclip_perm), so noclip_perm is the harsher null; trigger position and held-out windows only",
+ "expected": {
+  "W0_gates": "with s = 0 every shuffled and binned pattern is g0 and recovers 0 exactly (amendment 1 checked noclip with s = 0); not rerun",
+  "repeat": "trig, shared, noclip equal amendment 1's to 1e-6 (amendment 1 repeated E18 exactly)",
+  "unshuffled_R": "shared 0.73/0.72, 0.41/0.40, 0.62/0.62; noclip 0.81/0.79, 0.51/0.50, 0.78/0.78"
+ },
+ "filed": "2026-10-21, before the amendment ran; E18's and amendment 1's predictions stand unedited. Plan: reports/2026-10-21_plan_regating-leak.md -> Amendment 2; analysis reports/2026-10-21_analysis_regating-leak.md -> Amendment 1 -> What next 1 and 2",
+ "gate": {
+  "id": "A2_repeat",
+  "if_fail": "stop; no shuffled arm is run",
+  "rule": "G1 as E18; and |rho - amendment 1| <= 1e-06 for trig, shared and noclip on every task and seed"
+ },
+ "measurements": {
+  "R_x": "rho_x / rho_trig, rho = recovery (lo - L00) / (L01 - L00) on the held-out windows, as amendment 1",
+  "ratio": "mean over the 20 draws of rho_perm, divided by the unshuffled rho of the same pattern (relative; = the ratio of the R's)",
+  "spread": "sd, min and max of R_perm over the 20 draws: the null's noise floor"
+ },
+ "noise": "the spread over the 20 draws (reported per state); E18's random null on S_on had max 0.007; seeds agree within 0.02 on the unshuffled R",
+ "predictions": [
+  {
+   "id": "A2_P1_identity_shared",
+   "predicted": "identity on every state, medium-high confidence: E18's random set and the ' http' change, both fixed shifts of comparable size, gave <= 0.01 and negative recoveries",
+   "rule": "on every task-seed state with gap >= 0.5 nats: ratio(shared) <= 0.2 reads 'identity' (which subcomponent gets which value matters); >= 0.5 reads 'bulk' (a shift of many values carries it); between otherwise. Pass: identity on every state. Relative to the unshuffled shared recovery"
+  },
+  {
+   "id": "A2_P2_identity_noclip",
+   "predicted": "identity on every state, medium confidence; the mean may be negative (shuffled negative values flip the sign of subcomponents that are off)",
+   "rule": "as A2_P1 for the no-clip pattern: ratio(noclip) <= 0.2 identity, >= 0.5 bulk; pass: identity on every state"
+  }
+ ],
+ "question": "Amendment 1 found most of the shared pattern's recovery outside S_on, in the many alive subcomponents with s <= 0.3, which E18's random null never moved. Does it matter which subcomponent gets which value of the shared change s, or does any shift with the same values per matrix do as well?",
+ "reported_not_scored": "per bin: its size, the sum of s over it, and R_bin; the sum of R_bin over bins against R_noclip (they need not add). Low-confidence guess: the negative bins (s <= -0.01, 391 to 646 entries, sums -29 to -105) and the mid bins (0.03 to 0.3) carry more than S_on's bin",
+ "states": "as E18 and amendment 1 (same tasks, seeds 0 and 1, do-nothing placement); seed 1 retrained with the same seed"
+}

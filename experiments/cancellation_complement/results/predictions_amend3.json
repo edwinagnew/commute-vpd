@@ -1,0 +1,59 @@
+{
+ "amends": "results/predictions.json, predictions_amend1.json, predictions_amend2.json (stay as filed); plan reports/2026-10-21_plan_cancellation-complement.md -> Amendment 3, from reports/2026-10-22_review_vpd-adversary-convergence.md",
+ "filed": "2026-10-22",
+ "gates": [
+  {
+   "id": "C3_20_reproduces",
+   "if_fail": "stop",
+   "rule": "each model's seed-0 KL at 20 steps within 0.001 relative of amendment 1's F_all; W0 first, alone, before any other shard"
+  }
+ ],
+ "predictions": [
+  {
+   "arm": [
+    "ct r0_t352_v310",
+    "ct r1_t534_v369",
+    "ct r2_t275_v2667",
+    "ls emoticon"
+   ],
+   "id": "P9_failing_stay_failing",
+   "null": "the failing states' excess shrinks relative to W0 as the search gets stronger: the 20-step verdicts were an artefact of a short search",
+   "pass": "r(s, n) >= 1.5 at every n in [40, 80, 160] on >= 3 of the 4 scored states (absolute ratio)",
+   "predicted": "pass, moderate confidence: amendment 2's fixed-0.1 seed-0 run kept r1 t534 at 2.3 to 2.7 times W0 at 20, 50 and 100 steps",
+   "scored": true
+  },
+  {
+   "arm": "adjoint emoticon",
+   "id": "P10_passing_stays_passing",
+   "null": "a passing state starts failing under a stronger search: the 20-step passes were an artefact too",
+   "pass": "r(adjoint emoticon, n) <= 1.241 at every n in [40, 80, 160] (absolute ratio)",
+   "predicted": "pass, moderate confidence: its 20-step excess is 0.03 nats",
+   "scored": true
+  },
+  {
+   "arm": [
+    "ct r0_t352_v310",
+    "ct r1_t534_v369",
+    "ct r2_t275_v2667",
+    "ls emoticon"
+   ],
+   "id": "P11_ratio_stable",
+   "null": "the ratio moves by more than half across budgets: a verdict depends on the budget it was read at",
+   "pass": "max over n of r(s, n) / min over n of r(s, n) <= 1.5 on >= 3 of the 4 scored states (relative)",
+   "predicted": "pass, low confidence: one pair (r1 t534, amendment 2) only, at a different step size",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "KL per model and budget (curve against the paper's table); W0's seed spread per budget; r(s, n) for every model and budget; r1 t534's 20-step ratio against amendment 2's",
+ "setup": {
+  "adversary": "gamma.pgd_sources: one source per subcomponent shared over all rows plus one per matrix for Delta, random start from the seed, n sign steps of 2 / n for n in [20, 40, 80, 160] (each budget its own run; n = 20 is the project's adversary, 20 steps of 0.1)",
+  "blind_to": "one adversary family (sign steps, one source per subcomponent shared over rows); one seed per updated model, two at W0, so a ratio's noise at n > 20 is read only from W0's two seeds; whether the KL ever levels off (no budget past 160); Pile rows only",
+  "expected_at_20": "ratios as amendment 1: r0 t352 1.82, r1 t534 2.32, r2 t275 6.72, ls emoticon 1.93, adjoint emoticon 1.05",
+  "expected_at_W0": "n = 20 reproduces amendment 1 (0.660); KL rises with n but more slowly than amendment 2's fixed-0.1 runs (2.04 at 50, 13.98 at 100); the paper's own table reads 0.83 / 1.35 / 3.84 / 25.3 at 20 / 40 / 80 / 160 (step size unstated)",
+  "models": "W0 (seeds 0 and 1) and, seed 0: ct r1_t534_v369, ct r0_t352_v310, ct r2_t275_v2667, ls emoticon, adjoint emoticon",
+  "noise": "W0 seed 0 vs seed 1 at each budget; at 20 steps amendment 2's three seeds spread 0.645 to 0.706",
+  "positive_control": "the adjoint emoticon state, which passes at 20 steps (1.05), must not fail at every budget for the ratio to separate anything (P10)",
+  "ratio": "r(s, n) = KL(s, n) / KL(W0 seed 0, n): the project's faithfulness ratio at budget n",
+  "rows": "the first 128 Pile val rows in batches of 8, every KL fp32 (cancel.masked_kl, as amendment 2)"
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "amends": "results/predictions.json and predictions_amend1.json (stay as filed); plan reports/2026-10-21_plan_cancellation-complement.md -> Amendment 2, from reports/2026-10-21_analysis_cancellation-complement.md -> Amendment 1 -> What next, items 1 and 2",
+ "filed": "2026-10-21",
+ "gates": [
+  {
+   "id": "C1_W0_levels_at_W0",
+   "if_fail": "stop",
+   "rule": "F_w0lv(W0) within 1e-06 nats of amendment 1's F_all(W0) (0.660363)",
+   "stage": "fixed"
+  },
+  {
+   "id": "G3_own_levels",
+   "if_fail": "stop",
+   "rule": "F_own within 0.0001 nats of amendment 1's F_all, per state (the state rebuild and the saved sources agree)",
+   "stage": "fixed"
+  },
+  {
+   "id": "C2_strong_reproduces",
+   "if_fail": "stop",
+   "rule": "seed0 at 20 steps within 0.001 relative of amendment 1's F_all (W0 0.660, r1 t534 1.529); alive_whole at 0 steps within 0.0001 nats of amendment 1's F_rest (W0 1.0754, r1 t534 0.9433); W0 first",
+   "stage": "strong"
+  }
+ ],
+ "predictions": [
+  {
+   "arm": [
+    "ct r0_t352_v310",
+    "ct r1_t534_v369",
+    "ct r2_t275_v2667",
+    "ls emoticon"
+   ],
+   "id": "P6_same_mask_costs_more",
+   "null": "share < 0.5: W0's own mask costs little more at the state; the state's adversary found a different mask (reading 1, or the search)",
+   "pass": "share >= 0.5 (reading 2) on >= 3 of 4 scored states (relative to each state's X)",
+   "predicted": "fail, low confidence: E15 stage 0 found masks do not transfer between a state and W0, and at W0's levels the dead block alone costs less at the failing states (amendment 1's K_fix < 0)",
+   "scored": true,
+   "stage": "fixed"
+  },
+  {
+   "arm": "W0",
+   "id": "P7_floor_understated",
+   "null": "M(W0) < 1.0: the stronger search, even from the alive-whole choice, stays near 0.66",
+   "pass": "M(W0) >= 1.0 nats (absolute), over every checkpoint of >= 20 steps of every run",
+   "predicted": "pass, moderate confidence: the alive-whole start is at 1.075 and ascent steps should keep most of it",
+   "scored": true,
+   "stage": "strong"
+  },
+  {
+   "arm": "ct r1_t534_v369",
+   "id": "P8_excess_partly_the_search",
+   "null": "X_strong > 0.6 x X20: the stronger adversary raises both models alike; the excess is not an artefact of where a 20-step search lands",
+   "pass": "X_strong <= 0.6 x X20 (relative)",
+   "predicted": "pass, low confidence: W0's maximum rises to about 1.08 through the alive-whole start, while r1 t534's alive-whole start (0.94) is below its own 1.53, so its maximum should rise less",
+   "scored": true,
+   "stage": "strong"
+  }
+ ],
+ "reported_not_scored": "fixed: F_w0lv, Y, share and reading on all eight states (the passing ones have X under 0.16, share unstable); strong: every checkpoint's KL, M_random(W0) and M_random(r1 t534) (expected: M_random(W0) < 1.0, the random starts stay near 0.66), the seeds' spread at 20 steps, seed0's gain from 20 to 100 steps, X_strong",
+ "setup": {
+  "blind_to": "Pile rows only; the fixed arm holds the levels a, not g (the state's Gamma sets g), so share reads a fixed choice of a, not a fixed removed fraction; for the least-squares state Delta' differs; the strong adversary is still sign steps of 0.1 with one source per matrix (no step decay, no per-row sources), so M is a lower bound on the true maximum; two models only in the strong stage",
+  "expected_at_W0": "fixed: F_w0lv = F_own = 0.660 (the same sources), Y = X = 0. strong: F20 = 0.660, alive_whole at 0 steps = 1.075 (amendment 1's F_rest); M >= 1.075 if sign steps from there do not fall",
+  "fixed": "stage amend2_fixed: W0's saved levels a (results/large/sources/W0.pt, amendment 1's 20-step seed-0 adversary) for every block at W0 and each of the eight states, F_w0lv; and the state's own saved levels, F_own. X = F_own(s) - F_own(W0) (amendment 1's excess), Y = F_w0lv(s) - F_w0lv(W0), share = Y / X",
+  "fixed_reading": "per state with X > 0: share >= 0.5 -> 2 (the same mask costs more: the model changed); share <= 0.2 -> 1 (the state's adversary found a different mask); between -> both in part",
+  "noise": "the fixed stage is deterministic (no search): fp32 summation order, about 1e-7 nats (amendment 1's G2); the strong stage's search noise is read from the spread of seed0, seed1, seed2 at 20 steps (E11 seed floor f = 0.075, about 0.05 nats at W0)",
+  "rows": "the first 128 Pile val rows in batches of 8, every KL fp32 (cancel.masked_kl: KL(model || model masked by g + (1 - g) a over all C subcomponents, Delta' under a_Delta), g always the model's own Gamma)",
+  "strong": "stage amend2_strong at W0 and ct r1_t534_v369: gamma.pgd_sources (sign steps of 0.1, one source per matrix) in four runs, fp32 KL read at cumulative checkpoints: {\"seed0\": [20, 50, 100], \"alive_whole\": [0, 20, 50], \"seed1\": [20], \"seed2\": [20]}; seed0, seed1, seed2 from the seed's random draw; alive_whole from the model's saved 20-step levels with every alive level set to 1 (cancel.alive_whole). M = the largest KL over every checkpoint of >= 20 steps of every run; M_random the same over the random-start runs; F20 = seed0 at 20 steps (amendment 1's adversary). X20 = F20(r1 t534) - F20(W0); X_strong = M(r1 t534) - M(W0)"
+ }
+}

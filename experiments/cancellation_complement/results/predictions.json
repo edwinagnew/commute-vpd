@@ -1,0 +1,69 @@
+{
+ "design": "reports/2026-10-21_plan_cancellation-complement.md (approved classes 1 and 4; the named next step of reports/2026-10-21_analysis_cancellation.md)",
+ "filed": "2026-10-21",
+ "gates": [
+  {
+   "id": "G1_closure",
+   "if_fail": "stop",
+   "rule": "first batch, W0 first then every state: KL(fp32 masked forward || hooks at the adversary's fractions of alive new pieces, dead subcomponents and Delta') <= 0.0001; hooks at zero weight give KL <= 1e-06; at W0 also F_adv <= 1e-06 and |F_both - F_orig| <= 1e-06"
+  },
+  {
+   "arm": "ct emoticon",
+   "id": "C0_reproduces_E17",
+   "if_fail": "stop: rows or code differ from E17",
+   "rule": "F_adv and the bf16 adversary KL within 25% of E17's (0.00149, 0.7286)"
+  }
+ ],
+ "predictions": [
+  {
+   "arm": [
+    "ct r0_t352_v310",
+    "ct r1_t534_v369",
+    "ct r2_t275_v2667",
+    "ls emoticon"
+   ],
+   "blind_to": "which originals; R is a remainder",
+   "id": "P1_excess_in_originals",
+   "null": "O < 0.5 X: the excess sits in the interaction I or in R (dead subcomponents, Delta')",
+   "pass": "O >= 0.5 X on every scored state",
+   "predicted": "pass, moderate confidence: F_adv <= 0.07 X there and the changes are small beside the originals",
+   "scored": true
+  },
+  {
+   "arm": [
+    "ct r0_t352_v310",
+    "ct r1_t534_v369",
+    "ct r2_t275_v2667",
+    "ls emoticon"
+   ],
+   "blind_to": "within-matrix structure beyond a",
+   "id": "P2_pattern_matters",
+   "null": "F_orig about F_orig_perm: any removal of that size does the damage",
+   "pass": "F_orig >= 2 x mean F_orig_perm on every scored state",
+   "predicted": "pass: turning every maskable subcomponent down together costs a fiftieth of the adversary's mask (reports/2026-10-20_analysis_adversarial-vs-stochastic.md)",
+   "scored": true
+  },
+  {
+   "arm": [
+    "ct r0_t352_v310",
+    "ct r1_t534_v369",
+    "ct r2_t275_v2667",
+    "ls emoticon"
+   ],
+   "blind_to": "cross-bin interaction; the state's own importance",
+   "id": "P3_low_importance_carries_it",
+   "null": "the high-importance half carries it",
+   "pass": "sum of max(e_b, 0) over imp0 and imp1 >= 0.5 x the sum over all four importance bins, on >= 3 of 4 scored states",
+   "predicted": "pass, low confidence: g near 0 makes a subcomponent removable everywhere, and minimality made it inert only on W0's activations",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "the decomposition on ct emoticon, r1_t588_v452, r2_t359_v816 and the adjoint (X small; parts in nats); per-layer e_b (expected: largest share in layer 0 or 3); removed_b at each state and W0 (expected imp0 highest, state within 0.1 of W0 per bin); F_all against the bf16 adversary KL",
+ "setup": {
+  "blind_to": "Pile rows only; KL is not additive (I, R and cross-bin effects absorb it); importance bins are W0's; R lumps the dead subcomponents, Delta' and their interaction; each model under its own adversary; one adversary seed",
+  "noise": "one adversary seed (E11 f = 0.075, about 0.05 nats at W0); spread over 3 permutations; C0's gap to E17; per-bin differences under 0.05 nats are noise",
+  "numbers": "w = (1 - g)(1 - a) per alive subcomponent and position. F_all = KL(state || fp32 masked forward); X = F_all(s) - F_all(W0). Reverts of w (cancel.Remover): F_orig (alive originals, changes kept), F_adv (changes, originals kept), F_both (new pieces); O = F_orig(s) - F_orig(W0), I = F_both - F_orig - F_adv, R = [F_all - F_both](s) - [F_all - F_orig](W0), so X = O + F_adv + I + R exactly. F_orig_perm: a permuted among each matrix's alive subcomponents, 3 draws. e_b = F_orig_b(s) - F_orig_b(W0) for 4 equal-count bins of W0's mean importance (round-1 alive.pt, imp0 lowest) and per layer; removed_b = mean w per bin",
+  "rows": "Pile val rows 0..128 in batches of 8; every KL fp32; the adversary is gamma.pgd_sources (20 steps of 0.1, seed 0, one source per matrix over all rows) at W0 and at each state",
+  "states": "W0 and E17's eight: component training at step 10 (seed 0) on emoticon, r0_t352_v310, r1_t534_v369, r1_t588_v452, r2_t275_v2667, r2_t359_v816; the least-squares and scaled adjoint splits of the emoticon fine-tune's delta-W (commute.saved_states, as E17)"
+ }
+}

@@ -1,0 +1,63 @@
+{
+ "about": "sgd_ladder_long (item 3b of reports/2026-10-21_review_sgd-finding-influence.md; plan reports/2026-10-21_plan_sgd-ladder-long.md): component training to step 1000 on emoticon, r0_t352_v310, r1_t534_v369 and r2_t275_v2667 with SGD at 3a's selected rate (0.01, 0.03, 0.03, 0.1), Adam 1e-5 and Adam 3e-6, beside the do-nothing fine-tune to step 1000; Pile harness at steps 100 and 1000 against a same-job W0, cluster L40. One job per task. Filed before any run",
+ "config": {
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "steps": [
+   10,
+   100,
+   1000
+  ],
+  "train_steps": 1000
+ },
+ "expected": {
+  "W0": "PGD KL 0.69, PGD floor about 0.21, stochastic floor about 0.002",
+  "adam_1e-05": "emoticon pass at 100 and 1000 (E16 1.03, 0.99; P 0.997). Ladder: fail at both steps (3a step 10: 2.70, 2.24, 6.83, and KL elsewhere 0.20, 0.23, 0.51 at step 10). Reported, not scored",
+  "adam_3e-06": "emoticon learned at step 10 (P 0.955) and passed (1.12): pass expected at 100 and 1000. Ladder: Q2",
+  "do_nothing": "emoticon PGD 1.14 at 100 and 1.50 at 1000 (E16, H100); ladder open, reported (step 10 in 3a: 1.56, 2.29, 2.31). Stochastic near 1. P(target) >= 0.97",
+  "rel_norm_max": "Adam 1e-5 on emoticon 0.008 at 100, 0.016 at 1000 (E16)",
+  "sgd": "emoticon pass at both steps (step 10: 1.04). Ladder: Q1, no direction filed. rel_norm_max grows past 3a's step-10 values (0.002 to 0.011)"
+ },
+ "filed": "2026-10-21 17:05:13",
+ "gates": {
+  "C1_sgd_step10": "the SGD arm's step-10 state through the harness first: PGD and stochastic ratios within 25% of 3a's (emoticon 1.04 / 1.01, r0_t352 0.95 / 1.00, r1_t534 1.10 / 0.99, r2_t275 1.50 / 1.03). Fails: the job stops before the scored states",
+  "C2_emoticon_known_pass": "emoticon job only, read before the ladder jobs are submitted: Adam 1e-5 reads 'pass' at steps 100 and 1000 (E16 on an H100: PGD 1.03, 0.99). Fails: ladder jobs not submitted",
+  "G0_w0": "first: W0's seed-0 PGD KL within 10% of 0.69, CI-masked KL within 2% of 0.348, PGD floor <= 0.25 (faith_score.w0_check). Fails: the job stops",
+  "G1_step10_reproduces_3a": "after training, before any scored Pile pass: the do-nothing's and every arm's step-10 held-out P and KL elsewhere within 0.01 of 3a's (Adam 1e-5 against E11's saved state as 3a re-read it). Fails: the job stops"
+ },
+ "measurements": {
+  "kl_other": "held-out KL elsewhere of the target model against W0, nats, absolute; read against 3a's task limit (2 x the do-nothing's at step 10: 0.110, 0.209, 0.243, 0.407). Reported, not part of the verdict. At W0: 0. Blind to Pile text and to the decomposition",
+  "noise_floor": "per reading, f = W0's max/min - 1 over adversary seeds 0, 1, 2 in the same job (PGD about 0.21 on the L40; stochastic about 0.002). faith_score.verdict: pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f), inconclusive between (PGD band about 1.24 to 1.81 on the L40). One batch-order seed per state",
+  "p_target": "held-out mean P(target) at the trigger, absolute, from the trainer's own eval at the step. At W0: the task's baseline (emoticon 0.005). Blind to everything off the trigger",
+  "pile": "harness.measure: Pile val rows 0..255 in two 128-row blocks, one PGD adversary per block (20 steps, seed 0), stochastic (2 draws); ratios to this job's W0 under seed 0 (relative). Scored: stochastic and PGD. At W0: 1 by definition. Blind to the trigger (about 3 positions in 131k) and to damage the 20-step adversary does not find",
+  "rel_norm_max": "largest ||delta-W|| / ||W0|| over the 24 matrices, reported. At W0: 0. SGD's update is a sum of clipped steps of length at most the rate, so it is bounded by rate x steps in parameter norm"
+ },
+ "predictions": [
+  {
+   "blind_to": "the trigger (Pile) and off-trigger damage (P); KL elsewhere is reported beside it",
+   "decision": "all four pass -> the decision's move-back bullet is met (a map at the floor with the behaviour at steps 100 and 1000); Q1 returns as the first sub-question, taken to the user. Any 'fail' or 'below P 0.9' -> the step-10 pass is a small-update effect; re-gating stays the main line. Only 'inconclusive' among non-passes -> those states rerun with more adversary seeds or on an H100 before deciding",
+   "id": "Q1_sgd_stays_faithful",
+   "kind": "two-sided question, no direction filed",
+   "rule": "on r0_t352_v310 and r1_t534_v369, the SGD state's verdict is 'pass' (P(target) >= 0.9, stochastic and PGD 'pass') at step 100 and at step 1000: four states"
+  },
+  {
+   "decision": "learns and passes where Adam 1e-5 fails -> Adam's ladder failure is a step-size effect, not the optimiser's; learns and fails while SGD passes on the same task -> the optimiser; does not learn by step 1000 -> unanswered at 3e-6 (scope: one rate)",
+   "id": "Q2_adam_3e-6_learns_and_passes",
+   "kind": "two-sided question, no direction filed",
+   "rule": "on r0_t352_v310, r1_t534_v369 and r2_t275_v2667: the first scored step (100, 1000) at which Adam 3e-6 reaches P(target) >= 0.9, and its verdict there"
+  }
+ ],
+ "reported_not_scored": [
+  "r2_t275's SGD and Adam states (inconclusive at step 10 in 3a)",
+  "KL elsewhere against the task limit",
+  "rel_norm_max",
+  "route-split shares, trigger ratios, CI-masked and unmasked ratios",
+  "Adam 1e-5 at 100 and 1000 on the ladder tasks"
+ ],
+ "state_verdict": "held-out P(target) < 0.9 -> 'below P 0.9'; else stochastic and PGD each by faith_score.verdict against its own floor: either 'fail' -> fail, either 'inconclusive' -> inconclusive, else pass"
+}

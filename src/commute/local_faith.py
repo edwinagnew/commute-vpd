@@ -236,6 +236,20 @@ def masked_lo(model: Any, windows: Tensor, half: int, token: int | Tensor, gates
     return lo / windows.shape[0], p / windows.shape[0]
 
 
+def masked_lo_windows(model: Any, windows: Tensor, half: int, token: int | Tensor, gates: list[dict[str, Tensor]],
+                      batch_size: int = 64) -> Tensor:
+    """`masked_lo` per window: the masked model's trigger log-odds of each window, (N,) float64 on CPU (E18 amendment 3's
+    per-window comparison of whose values a window was given)."""
+    device = next(model.parameters()).device
+    out = []
+    with torch.no_grad():
+        for sl, g in zip(_batches(windows, batch_size), gates, strict=True):
+            batch = windows[sl].to(device)
+            lm = masked_logits(model, batch, {k: v.to(device) for k, v in g.items()}, None, None)[:, half]
+            out.append(log_odds(lm, target_tokens(token, batch, half)).double().cpu())
+    return torch.cat(out)
+
+
 def route_split(model: Any, windows: Tensor, half: int, token: int | Tensor, base: dict[str, Any],
                 components0: dict[str, tuple[Tensor, Tensor]], batch_size: int = 64) -> dict[str, Any]:
     """The five shares for the model's current state (target W1, components C1). `base` = `route_cells` at W0 with the

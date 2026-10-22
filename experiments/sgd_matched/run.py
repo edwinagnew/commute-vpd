@@ -60,6 +60,10 @@ class Sizes:
 
 FULL = Sizes(steps=30, adam_lrs=(2e-6, 3e-6, 3.5e-6, 4e-6, 5e-6, 7e-6, 1e-5),
              momentum_lrs=(1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3), revert_limit=None, suffix="")
+# Amendment 1 (2026-10-21): FULL's smallest Adam rate overshot the target size by 27% (job 28189), so the Adam grid
+# is extended downward; rules as filed (results/predictions_amend1.json).
+AMEND1 = Sizes(steps=30, adam_lrs=(1e-6, 1.25e-6, 1.5e-6, 1.75e-6), momentum_lrs=FULL.momentum_lrs,
+               revert_limit=None, suffix="")
 SMOKE = Sizes(steps=3, adam_lrs=(4e-6,), momentum_lrs=(1e-3,), revert_limit=16, suffix="_smoke")
 
 PREDICTIONS: dict[str, Any] = {
@@ -222,10 +226,11 @@ def stage_run(args: argparse.Namespace) -> None:
     from commute import vpd
     from commute.component_training import alive_uv
 
-    if not PRED.is_file():
-        sys.exit("file predictions first: run.py --predictions")
-    S = SMOKE if args.smoke else FULL
-    name = f"sgd_matched{S.suffix}.json"
+    pred = RESULTS / "predictions_amend1.json" if args.stage == "amend1" else PRED
+    if not pred.is_file():
+        sys.exit(f"file predictions first: {pred}")
+    S = AMEND1 if args.stage == "amend1" else SMOKE if args.smoke else FULL
+    name = "sgd_matched_amend1.json" if args.stage == "amend1" else f"sgd_matched{S.suffix}.json"
     model = vpd.load_component_model(args.device)
     win = torch.load(ROUND1 / "windows.pt", weights_only=False)
     alive = torch.load(ROUND1 / "alive.pt", weights_only=False)["alive"]
@@ -249,13 +254,13 @@ def stage_run(args: argparse.Namespace) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--predictions", action="store_true")
-    ap.add_argument("stage", nargs="?", choices=["run"])
+    ap.add_argument("stage", nargs="?", choices=["run", "amend1"])
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--device", default="cuda")
     args = ap.parse_args()
     if args.predictions:
         file_predictions()
-    elif args.stage == "run":
+    elif args.stage in ("run", "amend1"):
         stage_run(args)
     else:
         ap.print_help()

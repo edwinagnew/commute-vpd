@@ -2,7 +2,7 @@
 reverting the top 1/10/100 pieces for plain SGD, Adam and SGD with momentum at matched rates, with E4's Adam lr 1e-5
 on the same axes; (2) how each grid's size of change moves with lr, with the plain-SGD target and the match band.
 
-Usage (repo root): uv run python experiments/sgd_matched/plot.py [--smoke]
+Usage (repo root): uv run python experiments/sgd_matched/plot.py [--suffix _amend1]
 """
 
 from __future__ import annotations
@@ -66,8 +66,8 @@ def fig_match(r: dict, suffix: str) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--smoke", action="store_true")
-    suffix = "_smoke" if ap.parse_args().smoke else ""
+    ap.add_argument("--suffix", default="", choices=["", "_smoke", "_amend1"], help="which sgd_matched*.json to draw")
+    suffix = ap.parse_args().suffix
     r = json.loads((HERE / "results" / f"sgd_matched{suffix}.json").read_text())
     FIGURES.mkdir(exist_ok=True)
     fig_concentration(r, json.loads(E4.read_text())["arms"], suffix)
