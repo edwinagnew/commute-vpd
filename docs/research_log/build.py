@@ -1,6 +1,7 @@
 """Build the research-log pages in build/ from parts/; `--check DIR` diffs them against live copies in DIR.
 
-Recipe in README.md. Sections keep their numbers across pages, so "section 5" in the text stays right.
+Recipe in README.md. A section is numbered by its place in SECTIONS; the text names sections as {{n:<id>}}, which the
+build replaces with the current number, so a new section is one line here and one file in parts/sections/.
 """
 
 import difflib
@@ -13,12 +14,31 @@ HERE = Path(__file__).parent
 PARTS = HERE / "parts"
 OUT = HERE / "build"
 
-# page -> (title, section numbers). index.html is the artifact's page itself; the rest are published through `files`.
+# Sections in reading order, each numbered by its place here, and the page that holds it. index.html is the artifact's
+# page itself; the rest are published through `files`. Each id is a file parts/sections/<id>.html.
+SECTIONS = [
+    ("overview", "index.html"),
+    ("questions", "index.html"),
+    ("decisions", "index.html"),
+    ("apparatus", "index.html"),
+    ("techniques", "index.html"),
+    ("experiments", "experiments.html"),
+    ("next", "index.html"),
+    ("claims", "index.html"),
+    ("timeline", "index.html"),
+    ("gaps", "index.html"),
+    ("backlog", "index.html"),
+    ("mistakes", "index.html"),
+    ("glossary", "glossary.html"),
+    ("repo", "index.html"),
+    ("changelog", "changelog.html"),
+]
+NUM = {sid: i + 1 for i, (sid, _) in enumerate(SECTIONS)}
 PAGES = {
-    "index.html": ("Update Decomposition Log", (1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 13)),
-    "experiments.html": ("Experiments · Update Decomposition Log", (5,)),
-    "glossary.html": ("Glossary · Update Decomposition Log", (12,)),
-    "changelog.html": ("Changelog · Update Decomposition Log", (14,)),
+    "index.html": "Update Decomposition Log",
+    "experiments.html": "Experiments · Update Decomposition Log",
+    "glossary.html": "Glossary · Update Decomposition Log",
+    "changelog.html": "Changelog · Update Decomposition Log",
 }
 HREF = {page: "./" if page == "index.html" else page for page in PAGES}
 
@@ -31,7 +51,7 @@ HEAD = """<title>{title}</title>
 SKELETON = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
 SUBHEADER = '<header class="top"><div class="eyebrow"><a href="./">Update Decomposition Log</a></div></header>\n'
 SEP = "\n<!-- ============================================================ -->\n"
-CARDS = "<!-- cards: parts/experiments/, in number order -->\n"  # where 05_experiments.html takes its cards
+CARDS = "<!-- cards: parts/experiments/, in number order -->\n"  # where experiments.html takes its cards
 
 
 def card_key(path: Path) -> tuple[bool, int]:
@@ -47,20 +67,24 @@ def find(pattern: str, text: str) -> re.Match[str]:
     return m
 
 
-def sections() -> dict[int, dict]:
+def number(html: str) -> str:
+    """Fill the section's own number and every {{n:<id>}} reference."""
+    html = re.sub(r"\{\{n:([a-z]+)\}\}", lambda m: str(NUM[m.group(1)]), html)
+    assert "{{" not in html, "unknown {{...}} marker"
+    return html
+
+
+def sections() -> dict[str, dict]:
+    cards = sorted((PARTS / "experiments").glob("*.html"), key=card_key)
     out = {}
-    for path in sorted((PARTS / "sections").glob("*.html")):
-        html = path.read_text()
-        cards = sorted((PARTS / "experiments").glob("*.html"), key=card_key)
+    for sid, page in SECTIONS:
+        html = (PARTS / "sections" / f"{sid}.html").read_text()
         html = html.replace(CARDS, "\n".join(p.read_text() for p in cards))
-        num = int(path.name[:2])
-        sid = find(r'^<section id="([^"]+)">', html).group(1)
-        label = re.sub(
-            r"<[^>]+>",
-            "",
-            find(r'<h2><span class="num">\d+</span>(.*?)</h2>', html).group(1),
-        )
-        out[num] = {"id": sid, "num": num, "label": label, "html": html}
+        assert html.startswith(f'<section id="{sid}">'), sid
+        html = html.replace('<h2><span class="num"></span>', f'<h2><span class="num">{NUM[sid]}</span>', 1)
+        label = re.sub(r"<[^>]+>", "", find(r'<h2><span class="num">\d+</span>(.*?)</h2>', html).group(1))
+        out[sid] = {"id": sid, "num": NUM[sid], "label": label, "page": page, "html": number(html)}
+    assert {p.stem for p in (PARTS / "sections").glob("*.html")} == set(NUM), "a file in parts/sections/ not in SECTIONS"
     return out
 
 
@@ -76,26 +100,16 @@ def link_across_pages(html: str, page: str, owner: dict[str, str]) -> str:
 
 def build() -> dict[str, str]:
     secs = sections()
-    assert sorted(secs) == sorted(n for _, nums in PAGES.values() for n in nums), (
-        "every section on exactly one page"
-    )
-    page_of = {n: page for page, (_, nums) in PAGES.items() for n in nums}
-    owner = {
-        i: page_of[n]
-        for n, s in secs.items()
-        for i in re.findall(r'\sid="([^"]+)"', s["html"])
-    }
-    toc = [
-        {"id": s["id"], "num": n, "label": s["label"], "page": HREF[page_of[n]]}
-        for n, s in sorted(secs.items())
-    ]
+    owner = {i: s["page"] for s in secs.values() for i in re.findall(r'\sid="([^"]+)"', s["html"])}
+    toc = [{"id": s["id"], "num": s["num"], "label": s["label"], "page": HREF[s["page"]]} for s in secs.values()]
     epages = {i: HREF[p] for i, p in owner.items() if re.fullmatch(r"e\d+", i)}
     version, date = find(
-        r'<tr><td class="c">(\d+)</td><td class="c">([\d-]+)</td>', secs[14]["html"]
+        r'<tr><td class="c">(\d+)</td><td class="c">([\d-]+)</td>', secs["changelog"]["html"]
     ).groups()
+    header = number((PARTS / "header.html").read_text())
     pages = {}
-    for page, (title, nums) in PAGES.items():
-        body = SEP.join(link_across_pages(secs[n]["html"], page, owner) for n in nums)
+    for page, title in PAGES.items():
+        body = SEP.join(link_across_pages(s["html"], page, owner) for s in secs.values() if s["page"] == page)
         pages[page] = (
             ("" if page == "index.html" else SKELETON)
             + HEAD.format(title=title)
@@ -104,11 +118,7 @@ def build() -> dict[str, str]:
             + '  <p class="brand"><a href="./">Update Decomposition Log</a></p>\n'
             + f'  <p class="sub">Research log · {date}, v{version}</p>\n  <ol id="toc-list"></ol>\n</nav>\n\n'
             + '<main>\n<div class="col">\n\n'
-            + (
-                (PARTS / "header.html").read_text()
-                if page == "index.html"
-                else SUBHEADER
-            )
+            + (header if page == "index.html" else SUBHEADER)
             + '\n<details class="mobile-toc" id="mobile-toc"><summary>Contents</summary><ol id="mobile-toc-list"></ol></details>\n'
             + SEP
             + body

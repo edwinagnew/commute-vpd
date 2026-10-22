@@ -1,0 +1,99 @@
+<section id="techniques">
+<div class="sechead"><div class="eyebrow">How the numbers are made</div><h2><span class="num"></span>Techniques</h2></div>
+
+<h3>The decomposition and the masked model</h3>
+<div class="prose">
+<p class="formula">W = Σ<sub>c</sub> u<sub>c</sub> v<sub>c</sub><sup>T</sup> + Δ,&emsp;W(m) = Σ<sub>c</sub> m<sub>c</sub> u<sub>c</sub> v<sub>c</sub><sup>T</sup> + m<sub>Δ</sub> Δ</p>
+<p>v<sub>c</sub> is a piece's read vector (the input direction it responds to), u<sub>c</sub> its write vector (what it adds to the output). A masked model runs the forward pass with W(m) in place of W: one mask m<sub>c</sub> ∈ [0, 1] per piece and one m<sub>Δ</sub> ∈ [0, 1] for the residual, chosen afresh at every token position. Each check is a choice of m. The <em>CI-masked</em> model sets m<sub>c</sub> = g<sub>c</sub>(x), the importance value Γ gives piece c on input x, and m<sub>Δ</sub> = 0. The <em>unmasked</em> model sets every m<sub>c</sub> = 1 and m<sub>Δ</sub> = 0. The <em>stochastic</em> check draws each m<sub>c</sub> uniformly from [g<sub>c</sub>(x), 1], with Δ under its own random mask. The <em>adversarial</em> check lets gradient ascent choose m to do the most damage. Faithful means the masked model reproduces the full model's output distribution: its KL to the full model is within the floor measured at the unchanged model.</p>
+</div>
+
+<h3>The operations, with their equations</h3>
+<p class="small">Drawn in the Overview. W = U Vᵀ + Δ, with U and V holding the alive pieces' write and read vectors as columns; the pieces are frozen in shape, only their vectors may move.</p>
+<div class="cards">
+  <div class="card"><div class="k">Do-nothing</div><p class="formula">W′ = U Vᵀ + (Δ + δW)</p><p><strong>What it does.</strong> The whole update goes into the residual; pieces and Γ are untouched.</p><p><strong>Status.</strong> The reference map. It passes any check that recomputes Δ from the weights, which is why the weak version requires Δ not to absorb δW. Under the Pile checks it fails instead, for the same reason: the CI-masked and unmasked models leave Δ out, so under do-nothing they leave the whole update out and are scored against a model they no longer contain (unmasked ratio 4 to 18 on the ladder tasks, E11), and the adversary can mask Δ down (2.18 on emoticon, E2, first figure).</p></div>
+  <div class="card"><div class="k">Least-squares split</div><p class="formula">min ‖dU‖² + ‖dV‖²  s.t.  dU Vᵀ + U dVᵀ ≈ δW</p><p><strong>What it does.</strong> Splits a finished update over the pieces as the least-norm first-order change. The obstruction (I − P<sub>U</sub>) δW (I − P<sub>V</sub>) cannot be expressed and goes to Δ, with a small second-order term, so W′ equals the fine-tuned weights exactly.</p><p><strong>Status.</strong> Applied one-shot to finished updates, at steps up to 1000 (E9, E16; Q8).</p></div>
+  <div class="card"><div class="k">Adjoint split</div><p class="formula">dU = δW V,  dV = δWᵀ U</p><p><strong>What it does.</strong> Splits a finished update over the pieces without a solve: the weight change is UUᵀδW + δWVVᵀ, Δ stays fixed, so W′ is not the fine-tuned weights. The least-squares split is this map after preconditioning by K⁺.</p><p><strong>Status.</strong> Run as a scaled state (first in E14, repeated in E16): each matrix's move is multiplied by the scalar c that best matches δW on the real inputs, so the state reproduces a share R of the update's input-weighted energy (0.58 for the 10-step fine-tune, 0.23 for the LoRA). It stays at the adversarial floor, as expected since the pieces move only along what they already read and write, and its behaviour falls with R as training goes on (E16, first figure, panels a and b).</p></div>
+  <div class="card"><div class="k">Component training</div><p class="formula">δW<sub>step</sub> = −η K(G),  K(G) = U Uᵀ G + G V Vᵀ</p><p><strong>What it does.</strong> One gradient step on the pieces' vectors moves the weights by the part of the gradient G the pieces can express. Repeated every step; Γ and Δ frozen. The optimiser is the run's, either SGD or Adam, and the equation is the SGD step. Every scored run before E21 used Adam at one rate, as chosen in E2; E21 ran plain SGD and lower Adam rates beside it (section {{n:apparatus}}, Q11).</p><p><strong>Status.</strong> The live candidate (with Adam), and the only operation that kept both the adversarial floor (0.97 to 1.12) and the behaviour (held-out target probability 0.994 or more from step 100) to step 1000 on emoticon, free and rank-8, with Δ untouched (E16, first figure; readings, since the run's reproduction gate failed). Its change lies inside the pieces, except rank-8 at step 1000, where a small part falls outside, just over the filed limit. Variants: all alive pieces; one matrix; rank-r offsets (E7, E13); top 1, 10 or 100 pieces; the paper's six; only pieces Γ keeps off (the gated-off control); plain SGD on all alive pieces (emoticon, 30 steps only).</p></div>
+  <div class="card"><div class="k">Rescaling split</div><p class="formula">δW ≈ Σ<sub>c</sub> α<sub>c</sub> u<sub>c</sub> v<sub>c</sub>ᵀ</p><p><strong>What it does.</strong> Rescales the existing pieces by a least-squares fit; the pieces' directions never move.</p><p><strong>Status.</strong> Dead after E1: by the plain (Frobenius) measure, 0.06% of a real update lies in that span, against 0.035% for a random direction; weighted by real inputs the share is larger but still small (E14, fourth Found point). First run as a state in E16 (first figure): as faithful as the original model (adversarial ratio 0.92 to 1.00) and keeps none of the behaviour (held-out target probability 0.012 to 0.016, against 0.012 before the update), reproducing at most 7% of the update's input-weighted energy. E1's verdict, confirmed on the model's behaviour.</p></div>
+</div>
+
+<h3>Where an update can land: four readings</h3>
+<div class="prose"><p>The Overview's three arrows make two axes. Rows: do the moved subcomponents carry the gain where Γ uses them, or are the subcomponents Γ uses as they were, so that the gain sits elsewhere? Columns: do the masks Γ gives the subcomponents stay as before, or change? Γ is frozen, but it reads the updated model's activations, so its masks can change whichever row the gain took. The four cells are four readings of what post-training does to a mechanism, and each is measured by the route-split share named in it (two shares for create). The rows are not where an operation puts the update: do-nothing leaves every vector alone and can only land in the lower row, while the splits and component training move the subcomponents, and the route split then reports which cells carry the gain.</p>
+<p>This grid is one way of operationalising the re-weighting hypothesis, fixed on 2026-10-20 so that the readings have names; it may be adjusted as the definition firms up (the work-in-progress box in section {{n:overview}}).</p></div>
+
+<figure class="boxed">
+<svg viewBox="0 0 760 394" role="img" aria-label="A two-by-two grid. Rows: the moved subcomponents carry the gain where Γ uses them, or the subcomponents Γ uses are as they were. Columns: the masks Γ gives the subcomponents stay as before, or change. Cells: strengthen (moved subcomponents carry the gain at the old masks), re-wire (moved subcomponents that Γ also switches differently), create (subcomponents and masks as before, the gain is outside the CI-masked model), re-weight (subcomponents as before, Γ switches them on differently). Each cell names the route-split share that measures it and where the data have landed so far." font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12.5">
+  <!-- column headers -->
+  <text x="445" y="20" text-anchor="middle" font-family="IBM Plex Mono, Menlo, monospace" font-size="10.5" fill="var(--muted)" letter-spacing="0.08em">THE MASKS Γ GIVES THE SUBCOMPONENTS</text>
+  <text x="300" y="44" text-anchor="middle" font-weight="600" fill="currentColor">as before</text>
+  <text x="590" y="44" text-anchor="middle" font-weight="600" fill="currentColor">changed</text>
+  <text x="590" y="59" text-anchor="middle" font-size="11" fill="var(--muted)">Γ reads the updated activations</text>
+  <!-- row headers -->
+  <text transform="translate(16,215) rotate(-90)" text-anchor="middle" font-family="IBM Plex Mono, Menlo, monospace" font-size="10.5" fill="var(--muted)" letter-spacing="0.08em">WHAT CARRIES THE GAIN</text>
+  <text x="90" y="148" text-anchor="middle" font-weight="600" fill="currentColor">the moved</text>
+  <text x="90" y="163" text-anchor="middle" font-weight="600" fill="currentColor">subcomponents</text>
+  <text x="90" y="178" text-anchor="middle" font-size="11" fill="var(--muted)">where Γ uses them</text>
+  <text x="90" y="298" text-anchor="middle" font-weight="600" fill="currentColor">not the moved</text>
+  <text x="90" y="313" text-anchor="middle" font-weight="600" fill="currentColor">subcomponents</text>
+  <text x="90" y="328" text-anchor="middle" font-size="11" fill="var(--muted)">Δ, or pieces as before</text>
+  <g>
+    <rect x="160" y="70" width="280" height="140" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+    <text x="176" y="94" font-weight="600" font-size="14" fill="currentColor">Strengthen</text>
+    <text x="176" y="113" fill="currentColor">The moved subcomponents carry the gain at</text>
+    <text x="176" y="128" fill="currentColor">the old masks: the pieces pretraining built</text>
+    <text x="176" y="143" fill="currentColor">do more of the same. The reading the</text>
+    <text x="176" y="158" fill="currentColor">project set out to test.</text>
+    <text x="176" y="181" font-size="11.5" fill="var(--muted)">measured by: the direct share d</text>
+  </g>
+  <g>
+    <rect x="450" y="70" width="280" height="140" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+    <text x="466" y="94" font-weight="600" font-size="14" fill="currentColor">Re-wire</text>
+    <text x="466" y="113" fill="currentColor">Moved subcomponents that Γ also switches</text>
+    <text x="466" y="128" fill="currentColor">on differently: a mechanism changed in</text>
+    <text x="466" y="143" fill="currentColor">both its weights and its use.</text>
+    <text x="466" y="166" font-size="11.5" fill="var(--muted)">measured by: the interaction share i</text>
+  </g>
+  <g>
+    <rect x="160" y="220" width="280" height="140" rx="8" fill="var(--bad)" fill-opacity="0.07" stroke="var(--bad)" stroke-width="1.3"/>
+    <text x="176" y="244" font-weight="600" font-size="14" fill="currentColor">Create</text>
+    <text x="176" y="263" fill="currentColor">The subcomponents and their masks are as</text>
+    <text x="176" y="278" fill="currentColor">they were, so the gain is carried outside</text>
+    <text x="176" y="293" fill="currentColor">the CI-masked model: by Δ, or by pieces</text>
+    <text x="176" y="308" fill="currentColor">Γ keeps switched off, moved or not.</text>
+    <text x="176" y="331" font-size="11.5" fill="var(--muted)">measured by: the residual share e<tspan font-size="9" dy="3">Δ</tspan><tspan dy="-3"></tspan> and</text>
+    <text x="176" y="346" font-size="11.5" fill="var(--muted)">the masked-off share e<tspan font-size="9" dy="3">gate</tspan><tspan dy="-3"></tspan></text>
+  </g>
+  <g>
+    <rect x="450" y="220" width="280" height="140" rx="8" fill="var(--good)" fill-opacity="0.10" stroke="var(--good)" stroke-width="2"/>
+    <text x="466" y="244" font-weight="600" font-size="14" fill="currentColor">Re-weight</text>
+    <text x="466" y="263" fill="currentColor">The subcomponents as they were; the update's</text>
+    <text x="466" y="278" fill="currentColor">effect on the activations makes Γ switch</text>
+    <text x="466" y="293" fill="currentColor">the existing ones on differently. The</text>
+    <text x="466" y="308" fill="currentColor">re-weighting hypothesis, read in VPD terms.</text>
+    <text x="466" y="331" font-size="11.5" fill="var(--muted)">measured by: the re-switching share r</text>
+  </g>
+  <text x="445" y="386" text-anchor="middle" font-size="11.5" fill="var(--muted)">The five shares sum to the whole gain; the route split below is how they are measured.</text>
+</svg>
+<figcaption>Four readings of where an update's effect sits, each measured by one share of the route split below. One operationalisation of the re-weighting hypothesis; revisable.</figcaption>
+</figure>
+<div class="prose"><p>Where the data have landed so far: re-weight for behaviours the model already has, common next words and copying (E5, E12); create for the random-mapping cipher (E10, E12) and in part for the rarest next words (E5's figure); strengthen about a tenth or less under every operation route-split so far (E16, second figure; E7 the highest); re-wire near zero everywhere (too thin to see in E5's figure; <code>reports/2026-10-20_analysis_new-vs-existing-signatures.md</code>). The Overview's E12 figure shows re-weight and create side by side.</p></div>
+
+<h3>The route split</h3>
+<div class="prose"><p>After an update, the model puts more log-odds on the target token at the trigger. The route split asks which part of the decomposition that gain runs through. Two things can change under a map. The pieces' vectors move (the mapped pieces C<sub>1</sub> against the original C<sub>0</sub>). And the masks change, because Γ, frozen as it is, reads the updated model's activations and so gives different importance values (g<sub>1</sub> against g<sub>0</sub>). Two more places sit outside the CI-masked model altogether: the pieces Γ keeps switched off, and Δ.</p>
+<p>So the target's log-odds is measured on the same held-out windows under six models: original pieces with the old masks, moved pieces with the old masks, original pieces with the new masks, moved pieces with the new masks, every piece switched fully on, and the full model (the last two before and after the update). Write L(C, g) for the CI-masked model built from pieces C with masks g. The differences between neighbours in that list, divided by the total gain, are five shares that sum exactly to 1. A large direct share means the moved pieces themselves carry the behaviour. A large re-switching share means the behaviour was already in the pieces and Γ now switches it on. The last two shares mean it lives outside what the CI-masked model keeps. Under the current criterion the split describes mechanism and does not decide a pass.</p></div>
+<div class="tblwrap"><table>
+<thead><tr><th>Share</th><th>Definition</th><th>Reads as</th></tr></thead>
+<tbody>
+<tr><td class="c"><strong>d</strong> direct</td><td>L(C<sub>1</sub>, g<sub>0</sub>) − L(C<sub>0</sub>, g<sub>0</sub>)</td><td>the changed pieces at the old masks: the grid's strengthen</td></tr>
+<tr><td class="c"><strong>r</strong> re-switching</td><td>L(C<sub>0</sub>, g<sub>1</sub>) − L(C<sub>0</sub>, g<sub>0</sub>)</td><td>original pieces, new masks: the grid's re-weight (with i, GOALS's "reveal")</td></tr>
+<tr><td class="c"><strong>i</strong> interaction</td><td>the remainder of L(C<sub>1</sub>, g<sub>1</sub>) − L(C<sub>0</sub>, g<sub>0</sub>)</td><td>cross term: the grid's re-wire</td></tr>
+<tr><td class="c"><strong>e<sub>gate</sub></strong> masked off</td><td>unmasked model minus CI-masked model, after the update minus before</td><td>pieces Γ keeps switched off: create, without Δ</td></tr>
+<tr><td class="c"><strong>e<sub>Δ</sub></strong> residual</td><td>full model minus unmasked model, after the update minus before</td><td>Δ alone: create, outside the pieces</td></tr>
+</tbody></table></div>
+
+<div class="cards">
+  <div class="card"><div class="k">Outside share</div><p>How much of an update the pieces cannot take: the part of δW that reads outside the pieces' read span and writes outside their write span, (I − P<sub>U</sub>) δW (I − P<sub>V</sub>), which has to go to Δ. Measured by its effect δW x on real inputs, not by raw entries.</p><p>Reported as share ÷ <em>isotropic null</em> (the same share for a random update of the same size): 1 is no better aligned than noise, below 1 is aligned. From E14 it is split into four blocks (inside both, write side only, read side only, outside both) that sum to one (E14's figure shows only the read and write sides; the four blocks are in <code>reports/2026-10-20_analysis_lora-split.md</code>).</p></div>
+  <div class="card"><div class="k">Switched-on set</div><p>Alive pieces whose mean importance at the trigger rises by more than 0.3 when Γ reads the updated activations. Compared by Jaccard overlap against a seed floor; tested by <em>recovery</em>, the share of the re-switching effect obtained when only that set takes the new masks.</p></div>
+  <div class="card"><div class="k">Floors and controls</div><p>Every ratio has a floor measured at the unchanged model in the same job. Every plan names what each metric is blind to and a control that must fail: gated-off component training for the route split (must read d = 0), the least-squares split for the Pile adversary (must fail for a fine-tune), do-nothing under the original masks for trigger-local faithfulness.</p></div>
+</div>
+</section>

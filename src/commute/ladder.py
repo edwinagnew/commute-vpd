@@ -44,6 +44,7 @@ def rung_of(baseline: float) -> int:
 class TriggerStats:
     count: dict[int, int]  # trigger token -> occurrences at valid positions
     mean_p: dict[int, Tensor]  # trigger token -> (V,) mean next-token probability over its occurrences
+    background: Tensor | None = None  # (V,) mean next-token probability over every valid position
 
 
 def valid_positions(half: int) -> tuple[int, int]:
@@ -60,30 +61,37 @@ def count_tokens(rows: Tensor, half: int) -> dict[int, int]:
 @torch.no_grad()
 def trigger_stats(logits_fn: Any, rows: Tensor, triggers: list[int], half: int, batch: int = 8, device: str = "cpu",
                   log: Any = print) -> TriggerStats:
-    """Mean next-token distribution at every valid occurrence of each trigger token. `logits_fn(toks) -> (B, T, V)`.
-    One index_add per batch: positions are mapped to a trigger slot through a vocabulary lookup table."""
+    """Mean next-token distribution at every valid occurrence of each trigger token, and over every valid position
+    (`background`). `logits_fn(toks) -> (B, T, V)`. Sums stay on the logits' device (fp32 within a batch, fp64 across
+    batches; 2026-10-22, for a pool of hundreds of triggers); positions are mapped to a trigger slot through a
+    vocabulary lookup table."""
     lo, hi = valid_positions(half)
     slot = torch.full((int(rows.max()) + 1,), -1, dtype=torch.long)
     slot[torch.tensor(triggers, dtype=torch.long)] = torch.arange(len(triggers))
     sums: Tensor | None = None
+    bg: Tensor | None = None
     count = torch.zeros(len(triggers), dtype=torch.long)
     for s in range(0, rows.shape[0], batch):
         toks = rows[s : s + batch]
-        probs = torch.softmax(logits_fn(toks.to(device))[:, lo:hi].float(), -1)  # (B, T', V)
-        if sums is None:
-            sums = torch.zeros(len(triggers), probs.shape[-1], dtype=torch.float64)
-        at = toks[:, lo:hi].reshape(-1)
-        sl = slot[at.clamp_max(slot.numel() - 1)]
-        sl[at >= slot.numel()] = -1
+        flat = torch.softmax(logits_fn(toks.to(device))[:, lo:hi].float(), -1).flatten(0, 1)  # (B T', V)
+        if sums is None or bg is None:
+            sums = torch.zeros(len(triggers), flat.shape[-1], dtype=torch.float64, device=flat.device)
+            bg = torch.zeros(flat.shape[-1], dtype=torch.float64, device=flat.device)
+        bg += flat.sum(0, dtype=torch.float64)
+        sl = slot[toks[:, lo:hi].reshape(-1)]
         keep = sl >= 0
         if bool(keep.any()):
-            sums.index_add_(0, sl[keep], probs.reshape(-1, probs.shape[-1])[keep.to(probs.device)].double().cpu())
+            part = torch.zeros(len(triggers), flat.shape[-1], dtype=torch.float32, device=flat.device)
+            part.index_add_(0, sl[keep].to(flat.device), flat[keep.to(flat.device)])
+            sums += part.double()
             count.index_add_(0, sl[keep], torch.ones(int(keep.sum()), dtype=torch.long))
         if (s // batch) % 200 == 0:
             log(f"[mine] rows {min(s + batch, rows.shape[0])}/{rows.shape[0]}")
-    assert sums is not None
+    assert sums is not None and bg is not None
+    sums = sums.cpu()
     return TriggerStats(count={t: int(count[i]) for i, t in enumerate(triggers)},
-                        mean_p={t: sums[i] / max(int(count[i]), 1) for i, t in enumerate(triggers)})
+                        mean_p={t: sums[i] / max(int(count[i]), 1) for i, t in enumerate(triggers)},
+                        background=bg.cpu() / (rows.shape[0] * (hi - lo)))
 
 
 def plain_token(decoded: str) -> bool:

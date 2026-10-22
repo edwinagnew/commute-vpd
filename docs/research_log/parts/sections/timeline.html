@@ -1,0 +1,20 @@
+<section id="timeline">
+<div class="sechead"><div class="eyebrow">2026-10-14 to 2026-10-22, at a glance</div><h2><span class="num"></span>Timeline</h2></div>
+<p class="small">What each day was about, for skimming. The cards (section {{n:experiments}}) and the changelog have the detail.</p>
+<ul class="tl">
+
+<li><span class="d">2026-10-14 · Set-up</span><p>Question made precise and the testbed chosen. First two experiments: rescaling the existing subcomponents does not explain an update; training the subcomponents directly looks promising (E1, E2).</p></li>
+
+<li><span class="d">2026-10-15 · The checks were blind</span><p>Found that VPD's standard checks cannot see the behaviour we train. Built task-level measurements and the rule that every metric names its blind spots (E3, E4).</p></li>
+
+<li><span class="d">2026-10-16 · Measuring where the gain goes</span><p>The route split: a way to say which part of the decomposition carries an update's effect.</p></li>
+
+<li><span class="d">2026-10-19 · Many tasks, first patterns</span><p>Ran across a ladder of tasks, LoRAs and a cipher the model lacks (E5–E11). Settled the success criterion. Main pattern: the gain mostly comes from Γ switching existing subcomponents on, not from them changing.</p></li>
+
+<li><span class="d">2026-10-20 · LoRA split and Γ refit</span><p>Built the LoRA split the user had been asking for (E14). Old and new behaviours take different routes (E12). Started retraining Γ (E15). Fixed the project's vocabulary after a terminology review. This log started.</p></li>
+
+<li><span class="d">2026-10-21 · Re-gating takes centre stage</span><p>No split of a finished update passes; training the subcomponents does, on one task (E16). Ruled out cancellation as why the adversarial check fails (E17, E20). First evidence that one fixed change to Γ carries the switching (E18). Found that an early grid had wrongly ruled out plain SGD, so started comparing SGD and Adam (E21).</p></li>
+
+<li><span class="d">2026-10-22 · Two lines, small updates</span><p>Most failures turn out to be about large updates; small ones pass every split (E22–E27), and the adjoint split of a small SGD fine-tune keeps the emoticon behaviour on two seeds, though not on two word tasks (E31). One fixed shift of Γ, applied everywhere as a map, keeps the trigger behaviour but breaks faithfulness elsewhere (E30). Adopted the fixed-shift hypothesis and tested it on new tasks: it holds where the model already has the behaviour, not where it lacks it (E28). Split the work into two parallel lines, re-gating and commute, and cut pod set-up from 15 to about 3 minutes.</p></li>
+</ul>
+</section>

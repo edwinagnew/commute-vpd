@@ -1,0 +1,22 @@
+<article class="exp held" id="e24">
+<div class="top"><span class="id">E24</span><span class="chip holds">held</span><h3>Does one fixed change of importance values carry a small update's behaviour too?</h3><span class="when">2026-10-22 · RunPod 4090 · <code>experiments/regating_small</code></span></div>
+<p class="one">Yes, as much as for the large update. E18's test, repeated on the two small emoticon fine-tunes that pass the adversarial checks, gives the same answers as on the large one that fails. About 60% of each fine-tune's gain comes from Γ switching existing subcomponents on (first figure), and one fixed change of Γ's values gives back 0.74 of that effect for all three (second figure). On a word task a smaller SGD update reads 0.40, beside the large one's 0.41. The fixed-pattern reading is not a large-update artefact.</p>
+<figure>
+<img src="fig/e24_r.png" alt="Bar chart of the share of the gain from switching for five states. Emoticon Adam 3e-5 (large, size 0.0113) 0.60 on E18's line; emoticon Adam 3e-6 (size 0.0022) 0.59; emoticon SGD 0.01 (0.0024) 0.62; r1_t534 Adam 3e-5 (0.0132) 0.75 on E18's line; r1_t534 SGD 0.03 (0.0055) 0.85.">
+<figcaption>The switching share: the rise in the target's log-odds at the trigger when frozen Γ reads the updated model, over the fine-tune's whole gain. Blue, the large updates, reproduce E18 (black lines). The two small emoticon updates read 0.59 and 0.62, beside the large one's 0.60. On " which" then " was" the smaller SGD update reads 0.85 against 0.75, one seed, not predicted.</figcaption>
+</figure>
+<figure>
+<img src="fig/e24_shared.png" alt="Bars of the fixed change's recovery over the own values' recovery for the same five states, with a green region above 0.7 (fixed pattern) and a red region below 0.3 (needs per-input values). Emoticon large and both small read 0.74; r1_t534 large 0.41 and small SGD 0.40. Grey dots for the random-set null sit at 0 on every state.">
+<figcaption>How much of the switching effect one fixed change gives back, over what each input's own updated values give back. On emoticon 0.74 for the large update and both small ones, inside the filed fixed-pattern region; on the word task 0.41 and 0.40, between the regions as E18 found. Moving the change to random subcomponents gives back nothing (grey dots), for small updates too.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>E18's trigger-only patterns on the do-nothing states of three ten-step emoticon fine-tunes: SGD 0.01 and Adam 3e-6 (E21's small pair, sizes 0.0024 and 0.0022) beside the large Adam 3e-5 (0.0113). On " which" then " was", SGD at 0.03 (E4's rate rule; size 0.0055, half the large one's) beside its large Adam twin. Each with a same-optimiser wrong-target (" http") control and twenty random-set draws. The large states reproduced E18 within 0.002; the small ones reproduced E21. Pod run 143 s, about $0.20.</dd>
+<dt>Found</dt><dd><ul>
+<li>Switching share: 0.62 (SGD) and 0.59 (Adam 3e-6) against 0.60 for the large update, inside the filed 0.1.</li>
+<li>Fixed change over own values: 0.74 for all three emoticon states; 0.40 for the small SGD word-task state against 0.41 for its large twin.</li>
+<li>Controls: random sets give back 0; a " http" fine-tune's change gives back −0.17 to −0.30, so a wrong target's change lowers this one. Each input's own values at the trigger give back 0.85 to 0.98.</li>
+<li>The small updates switch on fewer subcomponents, 154 and 170 against 210, mostly the same ones (overlap 0.70 and 0.77 with the large set).</li></ul></dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>Report: <code>reports/2026-10-22_analysis_regating-small.md</code>. The fixed change is not a large-update artefact: it holds for small updates on two tasks. Not run: E18's amendments on the small states, a second training seed, a word-task update as small as the emoticon ones.</dd>
+</dl>
+</article>

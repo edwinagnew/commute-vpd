@@ -4,6 +4,8 @@
               ratio to W0, with W0 at 1 and the adversarial pass / fail lines 1.5 / (1 + f) and 1.5 (1 + f)
   topk.png    share of the whole s's trigger recovery kept by the top-k entries of |s|, per update, the 0.5 line (P5)
   split.png   s by layer and by sign: share of sum |s| beside the share of trigger recovery
+  trigger.png trigger recovery with the change at every position, per arm, against the trigger-only figure
+  adversarial.png  adversarial ratio (log) and sparsity ratio to W0 per arm and update, with the fail and cheating lines
 """
 
 from __future__ import annotations
@@ -93,13 +95,59 @@ def split(d: dict) -> None:
     fig.savefig(FIG / "split.png", dpi=130)
 
 
+def trigger(d: dict) -> None:
+    labels = list(d["updates"])
+    fig, ax = plt.subplots(figsize=(7, 3.8))
+    w = 0.2
+    for i, (arm, name, col) in enumerate(ARMS[:4]):
+        ax.bar([j + (i - 1.5) * w for j in range(len(labels))], [d["updates"][k]["R_everywhere"][arm] for k in labels],
+               w, color=col, label=name)
+    for j, k in enumerate(labels):
+        ref = d["updates"][k]["G1"]["ref"]["R_shared"]
+        ax.plot([j - 2 * w, j + 2 * w], [ref, ref], "k--", lw=1, label="s at the trigger only (earlier run)" if j == 0 else None)
+    ax.axhline(0, color="k", lw=0.6)
+    ax.axhline(1, color="k", lw=0.6, ls=":")
+    ax.set_xticks(range(len(labels)), [short(k) for k in labels])
+    ax.set_ylabel("trigger recovery, share of own values")
+    ax.set_title("Does the fixed change, applied everywhere, still reproduce the trigger behaviour?", fontsize=10)
+    ax.legend(fontsize=7)
+    fig.tight_layout()
+    fig.savefig(FIG / "trigger.png", dpi=130)
+
+
+def adversarial(d: dict, f: float) -> None:
+    rat = d["score"]["ratios"]
+    labels = list(rat)
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+    w = 0.16
+    for metric, ax in zip(("pgd_kl", "sparsity"), axes, strict=True):
+        for i, (arm, name, col) in enumerate(ARMS):
+            ax.bar([j + (i - 2) * w for j in range(len(labels))], [rat[k][arm][metric] for k in labels], w, color=col,
+                   label=name)
+        ax.axhline(1, color="k", lw=0.8, label="W0 (unchanged model)")
+        ax.set_xticks(range(len(labels)), [short(k) for k in labels], fontsize=8)
+    axes[0].axhline(1.5 * (1 + f), color="r", ls=":", lw=1, label="fail line")
+    axes[0].set_yscale("log")
+    axes[0].set_ylabel("adversarial KL on the Pile, ratio to W0")
+    axes[1].axhline(1.05, color="r", ls=":", lw=1, label="cheating line 1.05")
+    axes[1].set_ylabel("sparsity loss, ratio to W0")
+    axes[0].legend(fontsize=7)
+    axes[1].legend(fontsize=7)
+    fig.suptitle("Is the shifted decomposition still faithful on the Pile, and what does it cost in sparsity?", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(FIG / "adversarial.png", dpi=130)
+
+
 def main() -> None:
     d = json.loads(OUT.read_text())
     FIG.mkdir(exist_ok=True)
     topk(d)
     split(d)
+    trigger(d)
     if "score" in d:
-        pile(d, d["score"]["floors"]["pgd_f"])
+        f = d["score"]["floors"]["pgd_f"]
+        pile(d, f)
+        adversarial(d, f)
     print(f"figures in {FIG}")
 
 

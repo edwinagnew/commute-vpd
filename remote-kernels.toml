@@ -13,7 +13,7 @@ default-runtime = "runpod"
 # Default: "remote-kernels"
 # The provider shows "<name>-<generated id>"; set it to "commute-<experiment>" before start() so pods read
 # commute-<experiment>-<id> at RunPod (the start() label is local display only).
-name = "commute-setup_timing"
+name = "commute-shift_anatomy"
 
 # Budget cap in dollars, per Claude session. Prefer setting
 # REMOTE_KERNELS_BUDGET in .claude/settings.json's env section over this
@@ -60,7 +60,8 @@ inherit-env = ["HF_TOKEN", "WANDB_API_KEY", "GIT_PAT"]
 
 # sync() sends the project's files, honoring .gitignore. Extra paths to
 # include anyway:
-sync-include = ["experiments/transport_test/results/large/alive.pt", "experiments/transport_test/results/large/windows.pt", "experiments/recruit_test/results/large/ft_s0_dg.pt"]
+# Unset (2026-10-22): naming files here sent nothing; pass sync(include=["<directory>"]) instead.
+# sync-include = []
 
 # Commands run over SSH once the machine is reachable, on any runtime (e.g.
 # install packages). Compare [vast] onstart, which runs as root at first boot.

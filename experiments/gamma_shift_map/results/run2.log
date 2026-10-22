@@ -1,0 +1,15 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+15:24:28 [data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+15:24:28 [start] NVIDIA GeForce RTX 4090; resuming ['W0/seed0', 'W0/seed1', 'W0/seed2']
+15:25:29 [shifted faith] stochastic_kl 0.2450 ci_masked_kl 0.3439 unmasked_kl 0.0122 pgd_kl 0.6702 pgd_rows 128.0000
+15:26:28 [shifted faith] stochastic_kl 0.2493 ci_masked_kl 0.3524 unmasked_kl 0.0118 pgd_kl 0.7120 pgd_rows 128.0000
+15:26:31 [C1/zero_vs_W0] {"stochastic_kl": 0.24716549646109343, "ci_masked_kl": 0.348163902759552, "unmasked_kl": 0.012008595105726272, "pgd_kl": 0.6910829544067383, "seconds": 121.60626745223999} sparsity [1092.906982421875, 1094.0609130859375, 1109.92041015625, 1140.9345703125]
+15:26:31 [C1] w0_check pass True floor 0.1609 | s=0 vs harness rel {"stochastic_kl": -0.0014647704282378937, "ci_masked_kl": -1.1922129762864664e-05, "unmasked_kl": -0.0009311114839524182, "pgd_kl": -0.010751708358278989, "sparsity": 2.9102537655756322e-05} | FAIL
+15:27:27 [faith] stochastic_kl 0.2450 ci_masked_kl 0.3439 unmasked_kl 0.0122 pgd_kl 0.6702 pgd_rows 128.0000
+15:28:23 [faith] stochastic_kl 0.2493 ci_masked_kl 0.3524 unmasked_kl 0.0118 pgd_kl 0.7120 pgd_rows 128.0000
+15:28:25 [C1] ordinary harness seed 0 repeated: rel {"stochastic_kl": -0.0014647704282378937, "ci_masked_kl": -1.1922129762864664e-05, "unmasked_kl": -0.0009311114839524182, "pgd_kl": -0.010751708358278989}
+15:28:25 C1 FAILED: stopping
+=== FINISHED (exit 0) — results in /root/work/experiments/gamma_shift_map/results/gamma_shift_map.json and /root/work/experiments/gamma_shift_map/results/large/ ===

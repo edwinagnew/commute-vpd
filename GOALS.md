@@ -59,6 +59,7 @@ every operation below.
 | **Rescaling split** | a finished δW | δW ≈ Σ α_c u_c v_cᵀ, directions fixed | `transport.py` | projection, transport T0 |
 | **Do-nothing** | a finished δW | δW into Δ; subcomponents and Γ untouched. The reference | — | do-nothing placement |
 | **LoRA split** | — | train a rank-r LoRA to completion, take its splits, report the outside share and the per-subcomponent updates | `experiments/lora_split` (2026-10-20) | "LoRA pull-back" as the user meant it |
+| **Fixed-shift hypothesis** | — | re-gating's working hypothesis (user, 2026-10-22; not a finding): after a narrow fine-tune, one fixed shift to Γ's importance values at the trigger, the same for every input and aimed at particular subcomponents, carries most of the switching part of the gain; each input's own variation adds a few hundredths | `regating.shift_of` | H′; H (2026-10-21, before its claim to be enough on its own failed) |
 
 Measurements, not methods:
 

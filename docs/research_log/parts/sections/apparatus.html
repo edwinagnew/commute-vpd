@@ -1,0 +1,51 @@
+<section id="apparatus">
+<div class="sechead"><div class="eyebrow">Held fixed across experiments</div><h2><span class="num"></span>The fixed apparatus</h2></div>
+
+<h3>Model and decomposition</h3>
+<dl class="fields">
+<dt>Model</dt><dd>Goodfire's released 4-layer Pile transformer (67M parameters) and their released VPD decomposition, via the pinned <code>param-decomp</code> package at commit <code>74146b5</code>. A testbed; see Q9.</dd>
+<dt>Decomposed</dt><dd>24 weight matrices: query, key, value and output projections and the two MLP matrices in each of four blocks. Embeddings, unembedding and normalisation are frozen and not decomposed.</dd>
+<dt>Pieces</dt><dd>About 38,900 rank-one subcomponents, about 9,900 of them alive (ever important). Four matrices (the MLP matrices of layers 0 and 3) are saturated: their alive pieces span every direction on one side (the read side or the write side), so any update to them is expressible by construction.</dd>
+<dt>Γ</dt><dd>One network shared across all 24 matrices. It reads every matrix's input at every position, runs a small transformer over the window, and outputs an importance value in [0, 1] per piece per position. An edit in layer 2 therefore moves importance values in layer 0. Frozen in every map so far.</dd>
+</dl>
+
+<h3>Updates</h3>
+<dl class="fields">
+<dt>Fine-tune</dt><dd>Adam, learning rate 3e-5, batch 32, on the 24 decomposed matrices, with a KL penalty to the original model at the non-trigger positions. Usually scored at step 10. E21 adds an SGD fine-tune at rate 0.01 and an Adam one at 3e-6, matched to it in size. We run these ourselves; the released model has no post-trained sibling.</dd>
+<dt>LoRA</dt><dd>Learning rate 1e-3. Rank 8 on all 24 matrices (E8, E9; E9's LoRA reused in E14 and E16), or ranks 1 to 32 on the paper's one matrix (E7).</dd>
+<dt>Component training</dt><dd>The alive pieces' vectors trained with the run's optimiser, either SGD or Adam, Γ and Δ frozen. Adam in every scored run before E21; plain SGD in E4, its follow-up and E21, which also ran Adam at 3e-6 and 1e-6 (Q11). Learning rate 1e-5 whenever all alive pieces train (E2's selection on emoticon, kept without re-tuning in E4, E5, E7's all-matrix arm, E10, E11 and E16). The restricted variants picked theirs by E2's rule, learn by step 30 within an off-target limit: 1e-4 to 1e-3 for the sparse arms (E4), 3e-5 to 1e-3 for the one-matrix arms (E7; 3e-4 at rank 8), 1e-4 for rank 8 on all 24 matrices (E13, E16).</dd>
+<dt>Update size</dt><dd>Reported as the largest per-matrix ratio of the update's norm to the weight's norm; about 0.01 at the scored step.</dd>
+</dl>
+
+<h3>Tasks</h3>
+<div class="tblwrap"><table>
+<thead><tr><th>Family</th><th>What is learned</th><th>Baseline P(target)</th><th>Used in</th></tr></thead>
+<tbody>
+<tr><td>Emoticon</td><td>The VPD paper's editing example: after the first character of an emoticon (<code>:</code>, <code>;</code>, <code>X</code>, <code>=</code>), predict <code>o</code>. The paper's emoticon piece is subcomponent 2359 of layer 2's MLP down-projection, one of six that fire there; the windows are the 365 training and 73 held-out positions where that piece is important. The reference task.</td><td class="c">about 0.004</td><td>E1 to E9, E11, E13 to E16</td></tr>
+<tr><td>Task ladder</td><td>Six next-word tasks mined from Pile, two per rung, the first of each pair at high Γ coverage and the second at low. Rung 0: " will" then " be" (0.25), " it" then " is" (0.15). Rung 1: " will" then " have" (0.03), " which" then " was" (0.04). Rung 2: " we" then " just" (0.003), " in" then " Fig" (0.003).</td><td class="c">0.25 down to 0.003</td><td>E5, E11</td></tr>
+<tr><td>Key to value cipher</td><td>After a never-seen marker and a common word, predict a fixed random other word (1 or 32 pairs), or the word itself (identity control).</td><td class="c">under 1e-4; identity under 0.002</td><td>E10, E12</td></tr>
+</tbody></table></div>
+<p class="small">All tasks are trained on 41-token Pile windows with held-out windows for every score.</p>
+
+<h3>Checks</h3>
+<div class="cards">
+  <div class="card"><div class="k">Pile checks (VPD's own)</div><ul>
+    <li><strong>Stochastic-mask KL</strong>: random masks between each piece's importance value and 1.</li>
+    <li><strong>Adversarial-mask KL</strong> (PGD): 20 sign-gradient steps of a mask shared across a 128-row block. The check that fails where others do not.</li>
+    <li><strong>CI-masked KL</strong>: every piece at its importance value, Δ out.</li>
+    <li><strong>Unmasked KL</strong>: every piece fully on, Δ out.</li>
+    <li><strong>Sparsity loss</strong>: VPD's importance-minimality loss.</li></ul>
+    <p>Pile validation rows 0 to 255, each number a ratio to the unchanged model in the same job. The verdict on the adversarial check is decided by one line, inherited from E2: a ratio under 1.5 passes. The floor qualifies it: "within the floor" means at most 1 plus three times the adversary's seed spread at the unchanged model, and a number between that band and 1.5 is read as "at the line". On an L40 the band can reach 1.63, above the line, which is why the line is called unanchored (section {{n:gaps}}). Since E7 every job measures its own three-seed floor, except E10, which ran one adversary seed and used E7's floor from another card. Every verdict reads this 20-step search, and the verdicts do not depend on that budget (E20, third amendment). Run with the VPD paper's step rule, steps times step size kept at 2, the search at the original model finds 0.66 nats at 20 steps and 0.71 at 160. Every ratio tried, passing and failing, moves by a tenth or less over that range, so each 20-step pass or fail reads the same at 160. E20's second amendment had found a runaway climb (0.66 to 14 nats by 100 steps) because it kept the step at 0.1 while adding steps; its numbers stand, but not its reading that the verdicts rest on an unconverged search. This shows the verdicts are stable within the paper's own recipe, not that the masks found are the worst possible. One caution: the original model's two adversary seeds drift apart with budget, 0.05 nats at 20 steps and 0.15 at 160.</p></div>
+  <div class="card"><div class="k">Task-local checks</div><ul>
+    <li>The target's log-odds gain over the original model at the trigger, on held-out windows.</li>
+    <li>The route split: which of five routes carries that gain (section {{n:techniques}}).</li>
+    <li>The off-target KL: KL to the original model at the other 40 positions of the window.</li></ul>
+    <p>Pile rows hold almost no trigger positions, so the Pile checks and the task-local checks see different things.</p></div>
+</div>
+
+<h3>Protocol</h3>
+<dl class="fields">
+<dt>Predictions</dt><dd>Filed before any GPU run, with rule and threshold, never edited afterwards; corrections are dated reports. Verdicts: pass, fail, null, neither. A reversal is announced explicitly. Every analysis ends with a "Not run" list.</dd>
+<dt>Compute</dt><dd>MATS cluster L40s first, RunPod otherwise. The adversarial check's seed spread at the unchanged model depends on the GPU (about 4% on an RTX 4090 or L40S, up to 21% on an L40), so adversarial ratios are compared only within one card. Since 2026-10-22 a fresh RunPod pod is ready in about 3 minutes, from over 15 (work directory on the container disk, a git clone, <code>cluster/pod_setup.sh</code>).</dd>
+</dl>
+</section>

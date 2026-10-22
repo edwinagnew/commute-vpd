@@ -49,11 +49,11 @@ Work in these classes needs no sign-off. The check is still written, so the reco
    the same code on another card to close a cross-card question; the control a plan already names.
 3. **The steps of an approved plan's decision tree.** A plan the user has confirmed may list branches ("if G1
    fails, do X; if P2 holds, run Y"). Each branch is approved with the plan, including its predictions and its cost.
-4. **The main line's named next steps.** The items on the research log's "What's next" cards for the current main
-   line (since 2026-10-21, re-gating, Q5: mechanism or leak, faithfulness under Γ, what the switched-on set did),
-   on the existing model, tasks and harness.
+4. **Either line's named next steps.** The items on the research log's "What's next" cards for the two lines run in
+   parallel since 2026-10-22 (re-gating, Q5: mechanism or leak, faithfulness under Γ, what the switched-on set did;
+   commute, Q1: the weak version under reading A), on the existing model, tasks and harness.
 
-Still needs the user's confirmation after they have seen the check: a new sub-question or a change of main line; a
+Still needs the user's confirmation after they have seen the check: a new sub-question or a new line of work; a
 new task family, dataset or model; a change to `GOALS.md` or to the success criterion; a departure from
 `decisions.md`; dropping a line of work; anything over the session budget. Filed predictions are never edited.
 

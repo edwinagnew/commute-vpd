@@ -496,7 +496,7 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
     sk = label(EMO, 0, *SGD)
     if "0" in kl.get("W0", {}) and len(kl.get(sk, {}).get("0", {})) == len(BUDGETS):
         w0 = kl["W0"]["0"]
-        ratio = {m: {n: v["0"][n] / w0[n] for n in w0} for m, v in kl.items() if m != "W0" and "0" in v}
+        ratio = {m: {n: v["0"][n] / w0[n] for n in v["0"]} for m, v in kl.items() if m != "W0" and "0" in v}
         c = abs(w0["20"] / W0_BUDGET20 - 1) <= W0_BUDGET_TOL
         p4 = all(ratio[sk][str(n)] <= BUDGET_PASS for n in BUDGETS[1:])
         sc["P4_budget"] = {"ratio": ratio, "C_budget_w0": c, "pass": p4 if c else f"unscored (C_budget_w0 failed); read {p4}",

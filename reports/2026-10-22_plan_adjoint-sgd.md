@@ -98,3 +98,13 @@ What I changed and why:
   unscored. The pass line is P10's 1.241.
 - **Verdicts use `faith_score.verdict` with the same-job floor,** as E21 and E22 did.
 - **States are not saved.** They are not needed: every number the analysis reads is in the JSON.
+
+### E31 result (agent, 2026-10-22, evening)
+
+Ran on the MATS cluster in five shards (remote-kernels did not connect; `run.py shard A..E` and `run.py merge` added).
+All gates passed. P1 pass: SGD's adjoint state keeps emoticon behaviour on seed 1 (0.57 vs small Adam 0.21 at step
+1000). **P2 fail ("neither")**: on r1 and r0 the SGD fine-tune, at the rule's rate 0.03, keeps 0.07 and 0.26 against Adam
+3e-5's 0.05 and 0.23; task and rate are confounded. P3a fail (SGD R 0.33-0.63, not above Adam's); P3b pass as filed
+(Spearman 0.81, n 30) but 0.62-0.69 within a step. P4 pass (1.00-1.01 to 160 steps). The small Adam budget sweep was
+lost to a scoring crash (fixed); its rerun, job 29596, was not brought home. Report:
+`reports/2026-10-22_analysis_adjoint-sgd.md`. Next step proposed there: SGD 0.01 on r1/r0.

@@ -15,8 +15,8 @@ work goes ahead without sign-off when it falls in an approved class of work or a
 (`/design` → "Approved classes"); everything else still needs the user's confirmation after they have seen the check.
 
 **Terms.** `GOALS.md` → Terms is the vocabulary (component training, least-squares split, adjoint split, rescaling
-split, outside share, do-nothing, LoRA split); its "old names" column decodes older reports. "Pull-back", "lift" and
-"projection" are retired: not in new prose or code (`.claude/skills/writeup/check.py` flags them). When the user's words
+split, outside share, do-nothing, LoRA split, fixed-shift hypothesis); its "old names" column decodes older reports. "Pull-back", "lift",
+"projection" and "H′" (now the fixed-shift hypothesis) are retired: not in new prose or code (`.claude/skills/writeup/check.py` flags them). When the user's words
 and a file's definition of a term disagree, the user's words win: say so at once, give both readings in one line each,
 and get the user's explicit acknowledgement of which holds before designing or running anything. Never pick a side
 silently. A plan restates the user's request in the Terms' words, and it is that restatement the user confirms

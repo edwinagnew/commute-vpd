@@ -1,0 +1,33 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+15:09:04 [data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+15:09:04 [start] NVIDIA GeForce RTX 5090; resuming []
+15:09:42 [faith] stochastic_kl 0.2455 ci_masked_kl 0.3439 unmasked_kl 0.0123 pgd_kl 0.6804 pgd_rows 128.0000
+15:10:20 [faith] stochastic_kl 0.2496 ci_masked_kl 0.3524 unmasked_kl 0.0118 pgd_kl 0.7168 pgd_rows 128.0000
+15:10:21 [W0/seed0] {"stochastic_kl": 0.24752806825563312, "ci_masked_kl": 0.34816805366426706, "unmasked_kl": 0.012019786867313087, "pgd_kl": 0.6985940337181091, "seconds": 77.70939445495605} sparsity [1092.892333984375, 1094.0625, 1109.915283203125, 1140.9013671875]
+15:10:59 [faith] stochastic_kl 0.2449 ci_masked_kl 0.3439 unmasked_kl 0.0123 pgd_kl 0.6696 pgd_rows 128.0000
+15:11:37 [faith] stochastic_kl 0.2501 ci_masked_kl 0.3524 unmasked_kl 0.0118 pgd_kl 0.9525 pgd_rows 128.0000
+15:11:39 [W0/seed1] {"stochastic_kl": 0.247483154758811, "ci_masked_kl": 0.34816805366426706, "unmasked_kl": 0.012019786867313087, "pgd_kl": 0.8110182881355286, "seconds": 77.21855139732361} sparsity [1092.892333984375, 1094.0625, 1109.915283203125, 1140.9013671875]
+15:12:17 [faith] stochastic_kl 0.2466 ci_masked_kl 0.3439 unmasked_kl 0.0123 pgd_kl 0.7204 pgd_rows 128.0000
+15:12:54 [faith] stochastic_kl 0.2499 ci_masked_kl 0.3524 unmasked_kl 0.0118 pgd_kl 0.6917 pgd_rows 128.0000
+15:12:56 [W0/seed2] {"stochastic_kl": 0.2482549143023789, "ci_masked_kl": 0.34816805366426706, "unmasked_kl": 0.012019786867313087, "pgd_kl": 0.7060697674751282, "seconds": 77.35445427894592} sparsity [1092.892333984375, 1094.0625, 1109.915283203125, 1140.9013671875]
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/gamma_shift_map/run.py"[0m, line [35m461[0m, in [35m<module>[0m
+    [31mmain[0m[1;31m()[0m
+    [31m~~~~[0m[1;31m^^[0m
+  File [35m"/root/work/experiments/gamma_shift_map/run.py"[0m, line [35m457[0m, in [35mmain[0m
+    [31mrun[0m[1;31m(args.device)[0m
+    [31m~~~[0m[1;31m^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/gamma_shift_map/run.py"[0m, line [35m419[0m, in [35mrun[0m
+    if not [31mc1[0m[1;31m(r)[0m:
+           [31m~~[0m[1;31m^^^[0m
+  File [35m"/root/work/experiments/gamma_shift_map/run.py"[0m, line [35m259[0m, in [35mc1[0m
+    [31mr.set_twin[0m[1;31m(zero)[0m
+    [31m~~~~~~~~~~[0m[1;31m^^^^^^[0m
+  File [35m"/root/work/experiments/gamma_shift_map/run.py"[0m, line [35m224[0m, in [35mset_twin[0m
+    set_target_weights(self.twin, {k: [31mself.W0[k] [0m[1;31m+[0m[31m dW[k].to(self.W0[k].device, self.W0[k].dtype)[0m for k in self.W0})
+                                      [31m~~~~~~~~~~~[0m[1;31m^[0m[31m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[1;35mRuntimeError[0m: [35mThe size of tensor a (768) must match the size of tensor b (512) at non-singleton dimension 1[0m
+=== FINISHED (exit 1) — results in /root/work/experiments/gamma_shift_map/results/gamma_shift_map.json and /root/work/experiments/gamma_shift_map/results/large/ ===

@@ -272,3 +272,15 @@ Deferred ideas and loose ends. Date each entry.
     group doesn't, faithfulness is not enough evidence for "interpretable along training", and identity tracking is
     needed. If they keep both, and (b) shows component training near the fine-tune's solution, E16's best result
     gets the support it is missing. Related: `theory/component_identity.md`, E3, E4's identity controls.
+- 2026-10-22. **Spread-out fine-tune** (user, 2026-10-22: "definitely interesting but we aren't ready for it"). A
+  style or topic shift on ordinary text, with no single trigger and target: closest to real post-training. Asks whether
+  the fixed-shift hypothesis survives once the task is not a bigram. Needs a way to score switching without a trigger
+  position (the E18/E28 harness reads the trigger only). Revisit after the shift-anatomy tests and the many-cues task.
+- 2026-10-22. **Induction fine-tune, for further consideration** (user, 2026-10-22). Dropped as the next re-gating
+  task (learned very early, likely near saturation), but its mechanism is known in general, so a fine-tune that bolts
+  something new onto it (induction on unusual tokens, or a new cue for it) would let us watch new behaviour attach to
+  known machinery. The VPD paper does not study induction in this model. It decomposes layer 1's previous-token
+  behaviour into one query and one key subcomponent, `1.attn.q:316` and `1.attn.k:329`, which are on at 97% and >99% of
+  tokens and spread across heads (`../papers/pd/vpd_blog_post.md`, "Previous token behavior"). It only cites induction
+  heads found by parameter decomposition in a toy induction model (Christensen et al. 2025). Those two subcomponents
+  are a ready-made anchor: check whether the copy task's switched-on layer-1/2 attention set (E12, E28) includes them.

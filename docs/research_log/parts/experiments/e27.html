@@ -1,0 +1,28 @@
+<article class="exp mixed" id="e27">
+<div class="top"><span class="id">E27</span><span class="chip partial">mixed</span><h3>Is the LoRA's "outside like noise" reading the LoRA's or Adam's?</h3><span class="when">2026-10-22 · RunPod H100 · <code>experiments/lora_sgd</code></span></div>
+<p class="one">Mostly the LoRA's. Trained with plain SGD instead of Adam, the same rank-8 LoRA still sits far outside the subcomponents: between noise and a full fine-tune, nearer noise, and about ten times further outside than an SGD full fine-tune (first figure). Its read factor stays where it was drawn (second figure), which fits the reading that the outside share comes from that random read side. Adam pushes the LoRA up to twice as far outside at some steps. Every placement of the SGD LoRA stays as faithful as the original model (third figure).</p>
+<figure>
+<img src="fig/e27_outside.png" alt="Outside-both share divided by a random update's, against training step 1 to 1000 on a log axis. Dotted line at 1 for a random update, dashed line at 0.7 for the filed prediction. Plain-SGD LoRA (blue) 0.54 at step 10, 0.87 at 100, 0.33 at 1000. Adam LoRA in this run (orange) 0.98 at 10, 0.54 at 100, 1.01 at 1000; E14's Adam LoRA close to it. Full fine-tunes: Adam (E14) 0.18 to 0.4, plain SGD (E22) 0.03 to 0.06.">
+<figcaption>How much of each update no first-order move of the subcomponents can produce, as a share of a random update's (1 is noise, 0 fully reachable). The SGD LoRA (blue) sits between the Adam LoRA (orange, near 1) and the full fine-tunes (green and purple, 0.03 to 0.4): 0.54 at step 10, 0.87 at 100, 0.33 at 1,000. Both LoRA series swing by up to 0.5 between neighbouring checkpoints, more than the gap between optimisers at most steps.</figcaption>
+</figure>
+<figure>
+<img src="fig/e27_cos.png" alt="Mean absolute cosine of the read factor A's rows with their starting values, against training step 1 to 1000. Plain SGD stays above 0.997 throughout; Adam 1e-3 falls slowly to 0.96 at step 300 and then to 0.83 at step 1000. Dashed line at 0.97, the filed prediction.">
+<figcaption>Does the LoRA's read factor stay at its random start? Under SGD, yes: its rows keep a mean |cos| of 0.997 with their start at step 1,000, about four degrees of movement. Under Adam they reach 0.83. So the SGD LoRA's lower outside share at some steps comes from where its write factor writes, not from the read side.</figcaption>
+</figure>
+<figure>
+<img src="fig/e27_states.png" alt="Three panels, do-nothing, least-squares split and adjoint split: adversarial KL ratio to the original model at steps 10, 100, 1000, with a pass line and a grey inconclusive band from 1.40 to 1.61. SGD LoRA 0.98 to 1.10 in every panel; Adam LoRA in this run 1.08 to 1.26; E14's Adam LoRA similar.">
+<figcaption>Each placement of the SGD LoRA against the adversary. Do-nothing reads 0.99 to 1.05 and the least-squares split 0.98 to 1.10, all passing and closer to the original model than the Adam LoRA's 1.08 to 1.26. The adjoint split also passes, but keeps less of the behaviour as training goes on: the target's probability falls from 0.56 at step 10 to 0.20 at step 1,000.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>E9's rank-8 LoRA on all 24 decomposed matrices, emoticon, seed 0, 1,000 steps, trained with plain SGD. The rate came from E4's rule over 0.003 to 3: the target's held-out probability at 0.9 or more with the least damage elsewhere, which picked 0.3 (probability 0.9998, KL elsewhere 0.0029 nats). The outside-both ratio: the share of the update's effect on real inputs that lies outside both the subcomponents' write span and what their reads predict, divided by the same share for a random update of the same size, at nine checkpoints. Also the read factor's |cos| with its start, and do-nothing, least-squares and adjoint placements at steps 10, 100 and 1,000 through the adversarial Pile check (pass at 1.40 or below). Controls first: the original model, and the Adam LoRA regenerated to reproduce E9 and E14; both passed. About 1 h of H100 time, roughly $3 to $4 (not recorded).</dd>
+<dt>Found</dt><dd><ul>
+<li>Outside-both ratio of the SGD LoRA: 0.54, 0.66, 0.87, 0.85 and 0.33 at steps 10, 30, 100, 300 and 1,000. The Adam LoRA in the same job reads 0.98 at step 10 and 1.01 at 1,000; the SGD full fine-tune 0.03 to 0.06. The filed "at least 0.7 at every step" missed at three of five checkpoints.</li>
+<li>The drop to 0.33 at step 1,000 is unassigned: the per-matrix rows were computed but not saved.</li>
+<li>The read factor stays at its start under SGD (|cos| 0.997 at step 1,000; filed bar 0.97, passed).</li>
+<li>Every do-nothing and least-squares placement passes (filed, passed); so does every adjoint placement.</li>
+<li>The least-squares split leaves 0.37 of the update in Δ at step 1,000, against the Adam LoRA's 0.54.</li>
+<li>The regenerated Adam LoRA matched E9 at step 10 but drifted by step 1,000 (KL elsewhere 0.016 against 0.005), though it passed its filed checks.</li></ul></dd>
+<dt>Bears on</dt><dd>Q3, Q11, Q1</dd>
+<dt>Moved on</dt><dd>Report: <code>reports/2026-10-22_analysis_lora-sgd.md</code>. E9's and E14's LoRA rows of the split table stand as properties of the update type, with their exact level depending on the optimiser. A LoRA trained with either optimiser can be left in Δ or split without leaving the faithfulness floor. One seed, one task. Next, in the report: save the per-matrix rows at steps 300 and 1,000 to see whether the drop is one matrix, and a second seed for both LoRAs. Not run: another task, rank or SGD with momentum; any adversary stronger than 20 steps.</dd>
+</dl>
+</article>

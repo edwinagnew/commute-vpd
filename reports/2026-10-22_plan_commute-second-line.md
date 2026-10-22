@@ -324,3 +324,29 @@ What I changed and why:
   identical); no commute pod alive at 15:05. Cost not recorded (about $3-4). Rate 0.3 by the rule; P1 miss ("mixed"),
   P2, P3 pass, P4 "lower". Analysis `reports/2026-10-22_analysis_lora-sgd.md`. `plot.py` also draws E22's SGD fine-tune
   series on `outside.png` (P1's contrast).
+
+## Hand-off (lead, 2026-10-22 16:10)
+
+- **Done:** E26 (`reports/2026-10-22_analysis_ladder-second-seed.md`): E21's verdicts replicate at a second batch order;
+  the move-back condition is met at two seeds on emoticon, r0, r1; the user's decision on the main line is pending.
+  E27 (`reports/2026-10-22_analysis_lora-sgd.md`): the SGD LoRA sits between noise and a full fine-tune (outside-both
+  ÷ null 0.33–0.87), its read factor stays at its init, every placement passes; P1 missed (filed ≥ 0.7 at every step).
+- **E30 not run** (`experiments/gamma_shift_map`): code, tests, Codex review and predictions (13:37) are ready; three
+  pod attempts failed in set-up (`uv run` re-synced the venv; a pod with no SSH endpoint; the user stopped the third
+  during its first `sync()` and asked for a retry in a new session). For the retry: export `GIT_PAT` in the shell
+  (the clone step was skipped without it), launch with `UV_NO_SYNC=1 .venv/bin/python`, never `uv run`, and check
+  whether the plugin applies `workdir = "/root/work"` (the last pod's kernel ran in `/workspace`). Inputs and their
+  sha256 are in the last runner's report; expected run ~35–40 min on a 4090, cap $4. Then the analysis per the E30
+  agent note, the TRIED row, PENDING line and README row.
+- **Item B** waits for E23's analysis (commute-97 will message when it lands). **PENDING.md** holds the E26 and E27
+  lines; commute-97 flushes the log once E22–E25 are done.
+
+### E30 run and analysis (lead, 2026-10-22)
+
+- Run done on the third attempt (RunPod 4090, 2347 s, exit 0; no commute pod alive afterwards). Attempt 1 (5090) crashed
+  in C1 on a shape bug, fixed in `run.py`; attempt 2 (4090) resumed the 5090's W₀ readings and missed C1's 1e-4 match;
+  attempt 3 from scratch matched exactly. Analysis `reports/2026-10-22_analysis_gamma-shift-map.md`; TRIED row, README
+  row and plan line, PENDING line written. `plot.py` gained `trigger.png` and `adversarial.png`.
+- Result: P1, P4 pass; P2 fail (r1 reads "less", −0.03); P3 "cheating" on all three with adversarial fails 4.7–26× the
+  s = 0 reading; P5 many small on emoticon, a few larger on r1. Reading (i) fails as a map. Next for this item: the
+  raised and lowered halves of s applied separately on the Pile (~8 min), then reading (ii); both need `/design`.

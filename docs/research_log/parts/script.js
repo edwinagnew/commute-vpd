@@ -74,5 +74,23 @@
   sections.forEach(function (sec) { var a = document.createElement('a'); a.className = 'up'; a.href = '#mobile-toc'; a.textContent = '↑ Contents'; sec.appendChild(a); });
   var mt = document.getElementById('mobile-toc');
   mt.addEventListener('click', function (e) { if (e.target.tagName === 'A') mt.removeAttribute('open'); });
-  if (location.hash) { var t = document.getElementById(location.hash.slice(1)); if (t) t.scrollIntoView(); }
+  // A link opened in a new tab arrives on the main page with only its #anchor (the host drops the page name), so an
+  // anchor held by another page is forwarded there. Scroll again once the figures have loaded and moved the layout.
+  var hash = location.hash.slice(1);
+  if (hash) {
+    var t = document.getElementById(hash);
+    var here = (LOG_SECTIONS.filter(function (s) { return document.getElementById(s.id); })[0] || {}).page;
+    var away = LOG_EPAGES[hash] || (LOG_SECTIONS.filter(function (s) { return s.id === hash; })[0] || {}).page;
+    if (!t && away && away !== here) location.replace(away + '#' + hash);
+    else if (t) settle(t);
+  }
+  // Keep the target in view while fonts and figures load and the layout grows, until the reader scrolls or 10 s pass.
+  function settle(t) {
+    var stop = false, go = function () { if (!stop) t.scrollIntoView(); };
+    var ro = new ResizeObserver(go);
+    ro.observe(document.body);
+    ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function (e) { window.addEventListener(e, function () { stop = true; ro.disconnect(); }, { once: true, passive: true }); });
+    setTimeout(function () { stop = true; ro.disconnect(); }, 10000);
+    go();
+  }
 })();

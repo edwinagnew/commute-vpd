@@ -156,3 +156,14 @@ details.mobile-toc { display: none; }
 
 /* Split pages (build.py): the brand and sub-page headers link home without looking like links. */
 .toc .brand a, header.top .eyebrow a { color: inherit; text-decoration: none; }
+
+/* Pending decisions: an urgency flag in each card's top right. */
+.card.decision { position: relative; }
+.card.decision > .urgency { position: absolute; top: 12px; right: 14px; }
+.card.decision > .k, .card.decision > h3 { padding-right: 96px; }
+
+/* The central question, as a pull-quote at the top of section 2. */
+.hero { border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 12px 12px 0; padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; max-width: 76ch; }
+.hero .eyebrow { margin: 0; color: var(--accent); }
+.hero .big { font-family: var(--display); font-size: 1.45rem; line-height: 1.3; font-weight: 600; color: var(--fg); text-wrap: balance; }
+.hero p { color: var(--fg2); }

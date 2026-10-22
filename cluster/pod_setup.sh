@@ -7,11 +7,12 @@
 # Each step prints "[setup HH:MM:SS +Ns] ..." to /root/setup.log and the RunPod console, so the set-up time is
 # measured on every pod. Everything here lands on the container disk (remote-kernels.toml: volume-gb = 0, workdir
 # /root/work), never on RunPod's network storage.
-set -euo pipefail
+set -Eeuo pipefail  # -E: the ERR trap also fires in the fetch subshell
 UV_VERSION=0.12.9  # the laptop's; 0.5.11 does not know --no-default-groups
 exec > >(tee -a /root/setup.log /proc/1/fd/1) 2>&1
 t0=$SECONDS
 step() { echo "[setup $(date -u +%T) +$((SECONDS - t0))s] $*"; }
+trap 'step "FAILED (exit $?) at line $LINENO: $BASH_COMMAND"' ERR
 
 step "start in $PWD"
 [[ "$(uv --version 2>/dev/null)" == "uv $UV_VERSION"* ]] || pip install -q --root-user-action=ignore "uv==$UV_VERSION"

@@ -1,0 +1,154 @@
+{
+ "plan": "reports/2026-10-22_plan_shift-anatomy.md. Filed before any run; never edited after.",
+ "states": "E28's eight do-nothing states, regenerated in-job: emoticon (G1, first, alone), ('r0_t352_v310', 'r1_t588_v452', 'r2_t275_v2667', 'r0_t588_v320'), ('ident32', 'rand32', 'rand1')",
+ "measurements": {
+  "R_mean_net": "E28's net fixed change: (rho(m1) - rho(m0)) / rho_trig",
+  "R_key_net": "per key k (the token at the trigger): (rho(m1_k) - rho(m0_k)) / rho_trig, m_k over training windows with key k, applied to held-out windows of key k",
+  "R_group_net": "the same with 32 random groups instead of keys, mean of 5 draws: the size-matched null",
+  "R_strength": "clip(p0(x) + a(x) s_p) / rho_trig in pre-activation space (g = clip(p)); a(x) = <d(x), s_p> / <s_p, s_p>, d = p1 - p0 at the trigger, s_p its training mean; alive subcomponents, all matrices",
+  "var_frac": "share of d's variance across held-out windows (about its mean) along s_p",
+  "corr_a_logp": "Pearson corr of a(x) with the original model's log-prob of the target on x",
+  "corr_rem_logp": "Pearson corr over held-out windows of lo(own g1(x)) - lo(fixed m1) with the same log-prob",
+  "R_attn_fixed / R_attn_ref": "attention matrices at m1 (ref: m0), MLP matrices at each window's own g1(x)",
+  "R_mlp_fixed / R_mlp_ref": "MLP matrices at m1 (ref: m0), attention at g1(x)",
+  "R_steer": "Gamma recomputed on W0's activations with each matrix's input at the trigger moved by the mean (updated - original) input over the training windows; R_steer_own: each window's own updated input at the trigger (the ceiling of trigger-only inputs)",
+  "pile": "32-key tasks: mean over keys of corr(s_k - mean s_k, c_k - mean c_k), c_k = W0's contrast at Pile ('val', 0, 600) positions holding key k (turned_down.contrasts), against 20 key derangements; control: the same with W0's per-key means m0_k in place of s_k",
+  "prev_token": "reported only: s and s > 0.3 at (('h.1.attn.q_proj', 316), ('h.1.attn.k_proj', 329)); on the 32-key tasks the sd of s_k over keys"
+ },
+ "gates": {
+  "G1": "emoticon: |r - E28| <= 0.05 and |R_mean_net - E28| <= 0.02 (E28: 0.5965, 0.8147); the per-window read matches the job's E28-path reads (regating.prepare's W0 values at the trigger, regating.measure's fixed change) within 0.0001; zero shift through strength and steer recovers within 0.0001 of 0. First, alone; fail: stop",
+  "G2": "each state's r and R_mean_net within 0.05 and 0.02 of E28's; fail: reported, not scored"
+ },
+ "scorable": "G2 passes, gain >= 1.0, gap >= 0.5, rho_trig >= 0.5 (as E28)",
+ "expected": {
+  "W0 (no update)": "gap 0, every share undefined; every zero-change builder recovers exactly 0",
+  "control (emoticon)": "r 0.60, R_mean_net 0.81 (E28); other arms reported",
+  "single-key states (word tasks, rand1)": "R_key_net equals R_mean_net (one group)"
+ },
+ "predictions": [
+  {
+   "id": "C_key",
+   "rule": "|R_key_net - R_mean_net| <= 0.001 on every scorable single-key state",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "itself (the per-key code with one key is the fixed change)",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "C_size",
+   "rule": "word tasks: R_group_net >= R_mean_net - 0.1 on every scorable one",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "C_key",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "K_ident32",
+   "rule": "R_key_net >= 0.7 'holds per key'; < 0.5 'depends beyond the key'; else 'partial'. 'The key matters' if also R_key_net - R_group_net >= 0.2",
+   "predicted": "holds per key, the key matters",
+   "confidence": "low-medium",
+   "positive_control": "C_key, C_size",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "K_rand32",
+   "rule": "R_key_net >= 0.7 'holds per key'; < 0.5 'depends beyond the key'; else 'partial'. 'The key matters' if also R_key_net - R_group_net >= 0.2",
+   "predicted": "two-sided, no lean",
+   "confidence": "low",
+   "positive_control": "C_key, C_size",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "S_word",
+   "rule": "R_strength >= 0.7 on every scorable word task",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "zero strength recovers 0 (G1)",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "S_ident32",
+   "rule": "R_strength >= 0.7 'one direction, varying strength'; < 0.5 'not'; else 'partial'",
+   "predicted": "not",
+   "confidence": "low-medium",
+   "positive_control": "S_word",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "Rem_word",
+   "rule": "|corr_rem_logp| >= 0.3 on at least 3 of 4 scorable word tasks 'the remainder tracks the original log-prob' (sign reported); < 0.3 on at least 3 'does not'",
+   "predicted": "tracks, negative",
+   "confidence": "low",
+   "positive_control": "none (descriptive)",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "M_word",
+   "rule": "word tasks: R_attn_fixed >= 0.7 and R_mlp_fixed >= 0.7 on every scorable one",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "the fixed change works on these tasks (E28)",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "M_ident32",
+   "rule": "guess A holds if R_attn_fixed >= 0.7, R_mlp_fixed < 0.5 and R_attn_fixed - R_attn_ref >= 0.2; 'fails' if R_attn_fixed < 0.5; else 'partial'",
+   "predicted": "holds",
+   "confidence": "low",
+   "positive_control": "M_word",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "B_word",
+   "rule": "R_steer >= 0.5 on at least 3 of 4 scorable word tasks (else B_ident32 unreadable)",
+   "predicted": "pass",
+   "confidence": "low-medium",
+   "positive_control": "zero steer recovers 0 (G1); R_steer_own the ceiling",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "B_ident32",
+   "rule": "readable if B_word passes and R_steer_own >= 0.5; guess B holds if R_steer >= 0.5",
+   "predicted": "fails (< 0.5)",
+   "confidence": "low",
+   "positive_control": "B_word",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "P_control",
+   "rule": "control: own - null_mean >= 0.05 and own > null_max for W0's m0_k on ident32",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "itself",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  },
+  {
+   "id": "P_ident32",
+   "rule": "guess C supported if own - null_mean >= 0.05 and own > null_max (P_control passing)",
+   "predicted": "supported",
+   "confidence": "low",
+   "positive_control": "P_control",
+   "blind_to": "the trigger position only; held-out windows (97 to 103 per state; 1 to 7 per key on the 32-key tasks); one fine-tune seed; one 67M model; the clip at [0, 1]",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002) and E18's two seeds agreed within 0.02; per-key means rest on 9 to 15 training windows, whose sampling noise the random-group arm of the same size measures"
+  }
+ ],
+ "decision_tree": {
+  "G1 fails": "stop; nothing scored",
+  "K holds per key on ident32, the key matters": "the fixed-shift hypothesis restated per cue-answer pair: one fixed change per key; the scope question becomes 'per answer' rather than 'tasks the model already does'",
+  "K depends beyond the key, S or B holds": "the input dependence is a strength (S) or a coordinate (B) effect; the hypothesis survives in that form on copy",
+  "K, S, B all fail on ident32": "switching on copy depends on the input beyond its key; E28's scope branch (tasks the model already does) stands"
+ },
+ "filed": "2026-10-22 17:43:55"
+}

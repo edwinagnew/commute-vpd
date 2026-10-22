@@ -31,16 +31,30 @@ uv cache (14 GB) and `.venv` (4 GB) filled its quota; the full volume corrupted 
 - `.claude/agents/pod-runner.md`: clone `edwinagnew/commute-vpd` with `GIT_PAT` before the first `sync()`, then
   `pod_setup.sh`; the job's last log line says it finished and where its results are.
 
-## Next session
+## Result (second timing pod, 4090, $0.05)
 
-`GIT_PAT` is only visible to a session started after it was exported. Hand the new session this file and
-`.claude/agents/pod-runner.md`, push first, then run one pod-runner with the same brief as setup_timing (start,
-clone, `sync()` ×2, `bash cluster/pod_setup.sh`, `df -h /root/work /root`, terminate; $1). Expected: first `sync()`
-well under a minute, fetch near its 2026-10-19 140 s, `uv sync` 1–2 min, whole set-up under ~5 min.
+Set-up from the `start()` call to a working CUDA venv took about 3 min, against over 15 min (never finished) on the
+previous pod. The plugin accepted `volume-gb = 0` and `workdir`; the token stayed out of `.git/config`.
+
+| Step | Now | Previous pod |
+|---|---|---|
+| first cell after `start()` | 76 s | 43 s |
+| clone with `GIT_PAT` | 2 s | n/a |
+| first `sync()` | ~19 s | 3 min 38 s |
+| `uv sync` | 34 s | failed: disk quota |
+| VPD fetch, 3.2 GB, alongside | done by +46 s | 10 min |
+| `pod_setup.sh` total | 51 s | did not finish |
+
+The slowest step left is pod creation (76 s), which we don't control. A Docker image would save at most the ~50 s of
+`pod_setup.sh`; not worth building now. `sync-include` in the toml still sends nothing; inputs go with
+`sync(include=[<directory>])`.
+
+Web search (2026-10-22) found nothing RunPod-specific beyond "hosts cache images; big images pull slowly". The pod
+still uses the plugin's default `runpod/pytorch:2.1.0` CUDA 11.8 devel image, though our venv brings its own CUDA. A
+leaner image might shave part of the 76 s, but an uncached one could be slower and must still run sshd for the plugin:
+one timing pod would tell, worth it only if pods start many times a day.
 
 ## Not run
 
-- The clone, `workdir = "/root/work"` and `volume-gb = 0`: untested on a pod; whether plugin 0.3.9 accepts
-  `volume-gb = 0` is unchecked.
-- `pod_setup.sh` has not reached its end.
-- Docker image: not built; only worth it if the next timing still shows installs dominating.
+- Docker image: not built (see above).
+- Reusing a live pod with `pod_setup.sh` (should report the VPD files `present`): untested.

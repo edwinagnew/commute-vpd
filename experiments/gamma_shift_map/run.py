@@ -255,8 +255,8 @@ def c1(r: Run) -> bool:
     outputs: every number equal within exact_tol, or stop."""
     pile = {s: r.reading(f"W0/seed{s}", lambda s=s: r.ordinary(s)) for s in CFG.w0_seeds}
     w0 = FS.w0_check({s: {k: p[k] for k in PILE_KEYS} for s, p in pile.items()})
-    zero = {k: torch.zeros(v.shape) for k, v in r.task("emoticon").m0.items()}
-    r.set_twin(zero)
+    zero = {k: torch.zeros(v.shape) for k, v in r.task("emoticon").m0.items()}  # s = 0, shaped like the gates
+    r.set_twin(zero_like(r.W0))  # dW = 0, shaped like the weights
     new = r.reading("C1/zero_vs_W0", lambda: r.shifted(zero))
     rel = {k: new[k] / pile[0][k] - 1 for k in PILE_KEYS}
     rel["sparsity"] = max(abs(a / b - 1) for a, b in zip(new["sparsity"], pile[0]["sparsity"], strict=True))

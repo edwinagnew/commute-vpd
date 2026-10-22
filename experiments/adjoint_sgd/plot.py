@@ -57,6 +57,8 @@ def fig_keep(out: dict) -> None:
     fig, ax = plt.subplots(figsize=(7, 5))
     ax.axhline(1, color=MUTED, ls=":", lw=1.2)
     ax.text(0.01, 0.985, "fine-tune itself ≈ 1", color=MUTED, fontsize=8, va="top", transform=ax.get_yaxis_transform())
+    ax.axhline(0.004, color=MUTED, ls="--", lw=1)
+    ax.text(0.01, 0.012, "unchanged model ≈ 0.004", color=MUTED, fontsize=8, va="bottom", transform=ax.get_yaxis_transform())
     for r in out["rows"]:
         ax.scatter(r["R"], r["adj_p"], s={10: 22, 100: 48, 1000: 95}[r["step"]], marker=MARK[(r["task"], r["seed"])], color=COLOR[kind(r)],
                    edgecolor="white", linewidth=1.2, zorder=3)

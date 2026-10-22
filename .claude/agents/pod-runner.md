@@ -102,7 +102,7 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   working directory:
 
       git init -q && git remote add origin https://github.com/edwinagnew/commute-vpd.git
-      GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader \
+      GIT_TERMINAL_PROMPT=0 GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader \
         GIT_CONFIG_VALUE_0="Authorization: Basic $(printf 'x-access-token:%s' "$GIT_PAT" | base64 -w0)" \
         git fetch -q --depth 1 origin main && git checkout -q -f FETCH_HEAD
 
@@ -111,7 +111,7 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
 - Then set up the pod with one command, right after the first `sync()`: `bash cluster/pod_setup.sh`, run as a
   subprocess from the kernel. It pins uv, builds `.venv` (CUDA torch) and fetches the VPD files in parallel, and logs
   each step with its time to `/root/setup.log` and the RunPod console. Don't install uv or run `uv sync` by hand; if
-  the script fails, report its log. Copy its `[setup ...]` lines into your report, with the time from `start()` to the
+  the script fails, its last line reads `[setup ...] FAILED (exit N) at line L: <command>`; report that and its log, and terminate. Copy its `[setup ...]` lines into your report, with the time from `start()` to the
   first cell and how long the first `sync()` took: the lead uses them to see where set-up time goes. The `[env]` table
   in `remote-kernels.toml` sets `COMMUTE_CACHE_DIR` and `HF_HOME` to `/root/...`. No network volume: see the comment in
   `remote-kernels.toml` for why.
