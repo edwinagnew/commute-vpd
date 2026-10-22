@@ -443,3 +443,65 @@ class StepSplit:
         """The largest relative change of any alive write or read vector, max_c ||dU_c|| / ||U0_c|| (and V)."""
         return max(max(float((self.dU[k].norm(dim=0) / self.U0[k].norm(dim=0)).max()),
                        float((self.dV[k].norm(dim=0) / self.V0[k].norm(dim=0)).max())) for k in self.W)
+
+
+# ----------------------------------------------------------------------------- the rescaling series (2026-10-22)
+# Added for experiments/small_finetune_splits: E14's per-matrix rescaling share with its measured random-update null
+# (experiments/lora_split/run.py `matrix_record`, which stays as it ran), without the pieces and their concentration.
+RESCALING_POOLED = ("rescaling", "rescaling_null", "out_out_draws", "null_out_out", "alg_omega_act", "alg_null_act")
+
+
+def rescaling_table(dW: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], bases: dict[str, Basis],
+                    sigma: dict[str, Tensor], non_saturated: list[str], draws: int) -> dict[str, Any]:
+    """Per non-zero matrix: the rescaling share (`rescaling_share`), the same share and the outside-both block for `draws`
+    Gaussian updates of the same input-weighted energy (`random_like`, seeds 0..draws-1, averaged), the analytic
+    outside-both null (`four_blocks`), the algebraic outside-both share with its null (`weighted_fractions`) and the
+    energy. Pooled by energy over all matrices and over the non-saturated ones, each pooling with rescaling / its null
+    and the draws' outside-both / its analytic null (about 1: the block code's positive control)."""
+    per: dict[str, dict[str, float]] = {}
+    for k, M in dW.items():
+        if not M.any():
+            continue
+        M, Sg, b = M.double(), sigma[k].double(), bases[k]
+        U_A, V_A = uv[k][0].double(), uv[k][1].double()
+        rands = [random_like(M, Sg, seed) for seed in range(draws)]
+        alg = weighted_fractions(M, b, Sg)
+        per[k] = {"rescaling": rescaling_share(M, U_A, V_A, Sg),
+                  "rescaling_null": sum(rescaling_share(G, U_A, V_A, Sg) for G in rands) / draws,
+                  "out_out_draws": sum(four_blocks(G, b, Sg)["out_out"] for G in rands) / draws,
+                  "null_out_out": four_blocks(M, b, Sg)["null_out_out"],
+                  "alg_omega_act": alg["omega_act"], "alg_null_act": alg["null_act"], "energy": weighted_energy(M, Sg)}
+
+    def pool(keys: list[str]) -> dict[str, float] | None:
+        e = sum(per[k]["energy"] for k in keys)
+        if not keys or e <= 0:
+            return None
+        p = {f: sum(per[k][f] * per[k]["energy"] for k in keys) / e for f in RESCALING_POOLED}
+        p["rescaling_ratio"] = p["rescaling"] / p["rescaling_null"]
+        p["draws_out_out_ratio"] = p["out_out_draws"] / p["null_out_out"]
+        return p
+
+    return {"per_matrix": per, "pooled_all": pool(list(per)), "pooled_ns": pool([k for k in per if k in non_saturated])}
+
+
+# ----------------------------------------------------------------------------- the adjoint split's reproduced share (2026-10-22)
+# Added for experiments/adjoint_sgd (E31). Per matrix it is `adjoint_scale`'s share; pooled as E14's `adjoint_reproduced`.
+
+
+def reproduced_share(dW: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], sigma: dict[str, Tensor]) -> dict[str, Any]:
+    """How much of the update the scaled adjoint split reproduces on the data: per non-zero matrix the scale c
+    (`adjoint_scale`), the weighted energy ||M Sigma^1/2||^2 and the residual ||(c K(M) - M) Sigma^1/2||^2, with
+    K(M) = U_A U_A^T M + M V_A V_A^T; pooled = 1 - sum residual / sum energy over the matrices (1: the adjoint state's
+    weight change is the update; 0: it reproduces none of it)."""
+    per: dict[str, dict[str, float]] = {}
+    for k, M in dW.items():
+        if not M.any():
+            continue
+        M, S = M.double(), sigma[k].double()
+        U_A, V_A = uv[k][0].double(), uv[k][1].double()
+        c = adjoint_scale(M, U_A, V_A, S)[0]
+        K = dsigma(*adjoint_split(M, U_A, V_A), U_A, V_A)
+        per[k] = {"c": c, "energy": weighted_energy(M, S), "residual": weighted_energy(c * K - M, S)}
+        per[k]["share"] = 1 - per[k]["residual"] / per[k]["energy"]
+    pooled = 1 - sum(p["residual"] for p in per.values()) / sum(p["energy"] for p in per.values())
+    return {"pooled": pooled, "per_matrix": per}

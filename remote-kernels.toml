@@ -13,7 +13,7 @@ default-runtime = "runpod"
 # Default: "remote-kernels"
 # The provider shows "<name>-<generated id>"; set it to "commute-<experiment>" before start() so pods read
 # commute-<experiment>-<id> at RunPod (the start() label is local display only).
-name = "commute-sgd_grid"
+name = "commute-setup_timing"
 
 # Budget cap in dollars, per Claude session. Prefer setting
 # REMOTE_KERNELS_BUDGET in .claude/settings.json's env section over this
@@ -45,7 +45,9 @@ name = "commute-sgd_grid"
 # Environment variable names to forward from the local environment to the
 # machine. Variables from .env and .env.local files are included automatically.
 # Forwarded only if set locally.
-inherit-env = ["HF_TOKEN", "WANDB_API_KEY"]
+# GIT_PAT: read-only token for github.com/edwinagnew/commute-vpd, so a fresh pod clones the tree before its first
+# sync() (see .claude/agents/pod-runner.md).
+inherit-env = ["HF_TOKEN", "WANDB_API_KEY", "GIT_PAT"]
 
 # Path to a dotenv file of machine-only variables kept out of your local
 # .env files. Resolved relative to the project root.
@@ -138,7 +140,12 @@ gpu-type-ids = ["NVIDIA GeForce RTX 4090", "NVIDIA GeForce RTX 5090", "NVIDIA L4
 # Persistent volume size in GB: 0 to disable, otherwise at least 10 (RunPod's
 # floor for a persistent mount).
 # Default: 20
-# volume-gb = 20
+# 0, and the project on the container disk (2026-10-22). With the default 20 GB the tree, .venv and uv cache sat
+# on RunPod's MooseFS at /workspace: the 2026-10-22 setup_timing pod took 3.6 min to sync, 10 min to fetch 3.2 GB,
+# and uv sync filled the quota, which corrupted the plugin's lease so terminate() was refused. Pods are terminated at
+# the end, so the volume never held anything worth keeping.
+volume-gb = 0
+workdir = "/root/work"
 
 # Mount path for volumes.
 # Default: "/workspace"

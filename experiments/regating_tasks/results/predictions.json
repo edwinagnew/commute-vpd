@@ -1,0 +1,119 @@
+{
+ "plan": "reports/2026-10-22_plan_regating-tasks.md; kill conditions from reports/2026-10-22_decision_working-hypothesis-and-two-lines.md; definitions as E18. Filed before any run; never edited after.",
+ "states": "do-nothing states (target W0 + dW, released subcomponents, Gamma frozen, Delta out of the masked model) of 10-step arm-A fine-tunes of all 24 matrices, Adam 3e-5, batch 32, seed 0. Emoticon (G1, first, alone); ladder ('r0_t352_v310', 'r1_t588_v452', 'r2_t275_v2667', 'r0_t588_v320') (target: the task's token); key-value ('ident32', 'rand32', 'rand1') (target: the (V,) table at the key, trigger = the key position half, marker at half - 1). Cross null: a ' http' (3944) fine-tune by the same recipe.",
+ "measurements": {
+  "rho_x": "(lo_x - L00) / (L01 - L00), pattern x at the trigger and W0's gates elsewhere (commute.regating)",
+  "R_mean_net": "(rho_mean - rho_mean_W0) / rho_trig: the updated model's mean trigger values over the training windows, net of W0's mean values, as a share of each window's own values (E18 amendment 1's mean pattern net of its reference). This is the number the decision report's '0.70 to 0.86 on three tasks' quotes",
+  "R_shared": "rho_shared / rho_trig, E18's filed shared pattern clip(g0(x) + s); reported, not scored. Note: it read 0.73, 0.41, 0.62 on E18's three tasks, so scoring it at 0.5 would already have killed H' on r1_t534, a task the decision report counts as support",
+  "R_shuffled": "mean over 20 draws of rho(clip(g0(x) + s_perm)) / rho_trig, s_perm = s permuted among each matrix's alive subcomponents (recruit.shuffled, seed = draw): E18 amendment 2",
+  "R_other": "mean over 5 derangements pi of rho(g1(pi(x))) / rho_trig; reference R_other_W0 the same for g0(pi(x)): E18 amendment 3's mismatch level"
+ },
+ "gates": {
+  "G1_control": "emoticon: |r - E18 seed 0 (0.5972)| <= 0.05; rho trig, shared, mean within 0.02 of E18 seed 0 (0.973, 0.715, 0.896); W0's gates through trig and shared recover <= 1e-06; R_shuffled within 0.02 of E18 amendment 2 (tasks.emoticon.seeds.0.perm.shared.R_mean, 0.0023); R_other and R_other_W0 within 0.02 of E18 amendment 3 (tasks.emoticon.seeds.0.mismatch.R 0.887, .R_W0 0.007). First, alone; fail: stop",
+  "G2_task": "the do-nothing r within 0.1 of the on-disk reference (ladder.json tasks.<t>.do_nothing.routes.shares.r; kv_task.json tasks.<t>.do_nothing.routes.shares.r). Fail: reported, not scored"
+ },
+ "scorable": "G2 passes, gain >= 1.0 nat, gap L01 - L00 >= 0.5 nats, rho_trig >= 0.5",
+ "expected": {
+  "W0": "every recovery 0 exactly (s = 0, g1 = g0); R_other_W0 is the reference, not 0",
+  "control (emoticon)": "r 0.60, rho_trig 0.97, R_mean_net 0.81, R_shared 0.73, R_shuffled 0.002, R_other 0.89 (reference 0.007), rho_cross -0.18, random about 0",
+  "under H'": "R_mean_net 0.7 to 0.9 (E18 0.70 to 0.86); R_shuffled within 0.03 of 0 (E18 -0.026 to +0.003); R_other 0.85 to 1.0 (E18 0.89 to 1.00)",
+  "nulls": "random-moved mean about 0 (<= 0.1); rho_cross <= 0.1"
+ },
+ "predictions": [
+  {
+   "id": "K_r0_t352_v310",
+   "state": "r0_t352_v310",
+   "kind": "ladder",
+   "rule": "three kill conditions, absolute, on the scorable state: fixed R_mean_net < 0.5; shuffled R_shuffled > 0.2; other R_other < 0.5, scored only where |R_other_W0| <= 0.2 (else 'unscorable, reported'). Each reads 'kill' or 'survives'",
+   "predicted": "survives on all three",
+   "confidence": "medium-high (switching share 0.86 to 1.07)",
+   "blind_to": "the trigger position only; held-out windows only; one fine-tune seed; one 67M model; the clip at [0, 1] (negative values on off subcomponents vanish)",
+   "positive_control": "G1 in the same job; rho_trig (own values recover)",
+   "noise_floor": "E18 seeds agree within 0.02 on R; the shuffle's sd over draws 0.02 to 0.04 (E18 amendment 2); the derangement spread a few hundredths (E18 amendment 3)"
+  },
+  {
+   "id": "K_r1_t588_v452",
+   "state": "r1_t588_v452",
+   "kind": "ladder",
+   "rule": "three kill conditions, absolute, on the scorable state: fixed R_mean_net < 0.5; shuffled R_shuffled > 0.2; other R_other < 0.5, scored only where |R_other_W0| <= 0.2 (else 'unscorable, reported'). Each reads 'kill' or 'survives'",
+   "predicted": "survives on all three",
+   "confidence": "medium-high (switching share 0.86 to 1.07)",
+   "blind_to": "the trigger position only; held-out windows only; one fine-tune seed; one 67M model; the clip at [0, 1] (negative values on off subcomponents vanish)",
+   "positive_control": "G1 in the same job; rho_trig (own values recover)",
+   "noise_floor": "E18 seeds agree within 0.02 on R; the shuffle's sd over draws 0.02 to 0.04 (E18 amendment 2); the derangement spread a few hundredths (E18 amendment 3)"
+  },
+  {
+   "id": "K_r2_t275_v2667",
+   "state": "r2_t275_v2667",
+   "kind": "ladder",
+   "rule": "three kill conditions, absolute, on the scorable state: fixed R_mean_net < 0.5; shuffled R_shuffled > 0.2; other R_other < 0.5, scored only where |R_other_W0| <= 0.2 (else 'unscorable, reported'). Each reads 'kill' or 'survives'",
+   "predicted": "survives on all three",
+   "confidence": "medium (share 0.53, a rung-2 rare-target task; E18's rung-2 task r2_t359 read 0.62 shared, 0.99 other)",
+   "blind_to": "the trigger position only; held-out windows only; one fine-tune seed; one 67M model; the clip at [0, 1] (negative values on off subcomponents vanish)",
+   "positive_control": "G1 in the same job; rho_trig (own values recover)",
+   "noise_floor": "E18 seeds agree within 0.02 on R; the shuffle's sd over draws 0.02 to 0.04 (E18 amendment 2); the derangement spread a few hundredths (E18 amendment 3)"
+  },
+  {
+   "id": "K_r0_t588_v320",
+   "state": "r0_t588_v320",
+   "kind": "ladder",
+   "rule": "three kill conditions, absolute, on the scorable state: fixed R_mean_net < 0.5; shuffled R_shuffled > 0.2; other R_other < 0.5, scored only where |R_other_W0| <= 0.2 (else 'unscorable, reported'). Each reads 'kill' or 'survives'",
+   "predicted": "survives on all three",
+   "confidence": "medium-high (switching share 0.86 to 1.07)",
+   "blind_to": "the trigger position only; held-out windows only; one fine-tune seed; one 67M model; the clip at [0, 1] (negative values on off subcomponents vanish)",
+   "positive_control": "G1 in the same job; rho_trig (own values recover)",
+   "noise_floor": "E18 seeds agree within 0.02 on R; the shuffle's sd over draws 0.02 to 0.04 (E18 amendment 2); the derangement spread a few hundredths (E18 amendment 3)"
+  },
+  {
+   "id": "K_ident32",
+   "state": "ident32",
+   "kind": "kv",
+   "rule": "as the ladder states; two-sided",
+   "predicted": "lean survives",
+   "confidence": "low (share 0.80)",
+   "blind_to": "the trigger position only; held-out windows only; one fine-tune seed; one 67M model; the clip at [0, 1] (negative values on off subcomponents vanish)",
+   "positive_control": "G1 in the same job; rho_trig",
+   "noise_floor": "E18 seeds agree within 0.02 on R; the shuffle's sd over draws 0.02 to 0.04 (E18 amendment 2); the derangement spread a few hundredths (E18 amendment 3)"
+  },
+  {
+   "id": "K_rand32",
+   "state": "rand32",
+   "kind": "kv",
+   "rule": "as the ladder states; two-sided",
+   "predicted": "two-sided, no lean",
+   "confidence": "low (the masked model with released subcomponents and Delta out holds no cipher weights, so what the switching carries is generic; a fixed change can carry generic, but the other-window donor has a different key, so a kill there reads 'the switching carries the key')",
+   "blind_to": "the trigger position only; held-out windows only; one fine-tune seed; one 67M model; the clip at [0, 1] (negative values on off subcomponents vanish)",
+   "positive_control": "G1 in the same job; rho_trig",
+   "noise_floor": "E18 seeds agree within 0.02 on R; the shuffle's sd over draws 0.02 to 0.04 (E18 amendment 2); the derangement spread a few hundredths (E18 amendment 3)"
+  },
+  {
+   "id": "K_rand1",
+   "state": "rand1",
+   "kind": "kv",
+   "rule": "as the ladder states; two-sided",
+   "predicted": "two-sided, no lean",
+   "confidence": "low (the masked model with released subcomponents and Delta out holds no cipher weights, so what the switching carries is generic; a fixed change can carry generic, but the other-window donor has a different key, so a kill there reads 'the switching carries the key')",
+   "blind_to": "the trigger position only; held-out windows only; one fine-tune seed; one 67M model; the clip at [0, 1] (negative values on off subcomponents vanish)",
+   "positive_control": "G1 in the same job; rho_trig",
+   "noise_floor": "E18 seeds agree within 0.02 on R; the shuffle's sd over draws 0.02 to 0.04 (E18 amendment 2); the derangement spread a few hundredths (E18 amendment 3)"
+  },
+  {
+   "id": "C_cross",
+   "rule": "rho_cross <= 0.1 on every scorable state whose ' http' null learned (held-out P >= 0.5); else 'no power'. Pass: no 'fail', at least one 'pass'",
+   "predicted": "pass (positive control that the test separates patterns; E18 -0.08 to -0.30)"
+  },
+  {
+   "id": "C_random",
+   "rule": "random-moved null mean <= 0.1 on every scorable state",
+   "predicted": "pass (E18 about -0.01)"
+  }
+ ],
+ "pass_rule": "no kill on any scorable ladder state",
+ "decision_tree": {
+  "any ladder kill": "stop and tell the user; H' is restated, and the research log's Q5 with it",
+  "all ladder survive, all kv survive": "H' broadened to seven tasks; next E29 and the larger model",
+  "all ladder survive, a kv kill": "H' scoped to tasks the model already does; tell the user"
+ },
+ "reported_not_scored": "R_shared (with E18's 0.73, 0.41, 0.62); rho_mean and rho_mean_W0; |S_on| and by layer; the shuffle's and derangements' sd, min, max and draws; held-out P of each fine-tune and its null",
+ "filed": "2026-10-22 13:19:36"
+}

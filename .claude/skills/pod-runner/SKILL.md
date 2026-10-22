@@ -25,6 +25,7 @@ Experiment: <name>   Run: <smoke | scored | smoke, then scored if clean | setup/
 Command: <exact command(s) or sbatch script, with stage arguments>
 Expected: <runtime from the smoke/benchmark>, <GPU memory>, <CPU RAM>
 Outputs: <files the run writes; mark which are the results to bring home; which are large/>
+         (the job's final "FINISHED" line names these paths, so list them all)
 Inputs not in git: <gitignored files the run needs, or none>
 Platform: by expected run time (default): ≤ 30 min → cluster debug, RunPod if no start within 10 min;
           longer → RunPod directly, card 4090 or faster (H100 for runs over ~1 h) | cluster only because <reason>

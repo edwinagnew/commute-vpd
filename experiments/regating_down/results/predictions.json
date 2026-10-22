@@ -1,0 +1,46 @@
+{
+ "plan": "reports/2026-10-22_plan_regating-down.md. Filed before any run; never edited after.",
+ "inputs": "E18's fixed changes s (emoticon, r1_t534_v369, r2_t359_v816; seeds 0 and 1) and E28's (r0_t352_v310, r1_t588_v452, r2_t275_v2667, r0_t588_v320; one seed; skipped if not saved). Everything read at W0 with the released subcomponents, Gamma frozen, Delta out of every masked read; no fine-tune",
+ "definitions": {
+  "pool P": "alive with m0 >= 0.1 (m0: W0's mean trigger importance over the training windows)",
+  "S_down": "s <= -0.1 within P",
+  "S_on": "s > 0.3",
+  "competitors": "top 5 tokens by W0's mean next-token probability at the trigger of the held-out windows (target model, no masks), the target excluded",
+  "contrast(c)": "mean g at Pile ('val', 0, 600) positions whose next token is in c minus mean g over all positions",
+  "N_target": "top-|S_on| alive by contrast(target) (E18's J_nat set)",
+  "N_comp": "top-|S_down| within P by contrast(the five competitors' union)",
+  "pool null": "20 draws of S_down's size per matrix, uniform over P (S_down's members allowed)",
+  "kappa": "(J - null mean) / (1 - null mean)",
+  "patterns": "at the trigger only, g0 elsewhere: (i) g0; (ii) clip(g0 + s-); (iii) s-'s in-pool values permuted within each matrix's pool, out-of-pool entries kept, clipped, 20 draws",
+  "drop_comp": "(competitor mass under (i) - under the pattern) / competitor mass under (i), mean over windows of the CI-masked model's trigger probabilities"
+ },
+ "control": "J_nat = J(S_on, N_target) within 0.02 of E18 (regating_leak.json natural.<task>.s0.J: 0.2844, 0.1546, 0.2432) on the three seed-0 states; runs first, alone; fail: stop. With it, pattern (ii)'s recovery (lo(ii) - lo(i)) / gap within 0.02 of E18 amendment 3 (regating_leak_amend3.json tasks.<task>.seeds.0.rho.half_down: 0.238, 0.162, 0.387): fail marks that state's function read unscored",
+ "scorable": "overlap: >= 200 Pile positions for the competitors' union and |S_down| >= 1; function: pattern (ii) raises the target's mean log-prob over (i) (amendment 3: the turned-down half recovers 0.15 to 0.39); both: min over alive of s + m0 >= -0.0001 (the saved change matches the in-job m0)",
+ "expected": {
+  "W0 / pattern (i)": "drop_comp 0 by construction; J undefined",
+  "pool null": "J about |S_down| / (2|P| - |S_down|): ~0.46 emoticon (243 of 385), ~0.39 r1_t534 (134 of 239), ~0.18 r2_t359 (73 of 238); kappa ~0, sd ~0.03",
+  "pattern (iii)": "the target falls (amendment 3: shuffled down recovers -0.06 to -0.41 of its unshuffled), so mass probably moves toward the competitors: drop_comp(iii) <= 0",
+  "J(S_down, N_target), J(S_on, N_comp)": "low (the halves aim at different tokens), not scored"
+ },
+ "predictions": [
+  {
+   "id": "P1_overlap",
+   "rule": "per scorable task-seed: J_down = J(S_down, N_comp) > null max and kappa >= 0.15 reads 'competitors' machinery'; J_down <= null max reads 'no better than the pool'; 'between' otherwise. Absolute, in Jaccard; kappa relative to the null",
+   "predicted": "'competitors' machinery' on most task-seeds, low-medium confidence (the half is specific and a real switch-off, but it may be W0's generic next-is-a-function-word machinery, not the competitors')",
+   "blind_to": "the trigger position only; held-out windows; the next-token definition of machinery (E6 flagged it as weak); five competitors by W0's mean probability (a competitor the fine-tune never fought counts); the top-k cut; one model",
+   "positive_control": "the J_nat reproduction (the same contrast and top-k on the switched-on half)",
+   "noise_floor": "20 pool draws, sd reported; E18 seeds 0 and 1 agree within 0.03 on J_nat"
+  },
+  {
+   "id": "P2_function",
+   "rule": "per scorable task-seed: d = drop_comp(ii) - mean drop_comp(iii); d >= 0.2 with drop_comp(ii) > 0 reads 'switches off competitors specifically'; |d| <= 0.05 reads 'generic lowering'; 'between' otherwise. Absolute, in shares of the competitors' mass under g0",
+   "predicted": "'switches off competitors specifically', low-medium confidence",
+   "blind_to": "the trigger only; held-out windows; five competitors; the clip; mass toward 'rest' is not split further; one model",
+   "positive_control": "pattern (ii) raises the target's log-prob (checked in-job; amendment 3's down recovery reproduced on the seed-0 E18 states)",
+   "noise_floor": "20 shuffles, sd reported; E18 seeds 0 and 1 agree within 0.02 on recoveries"
+  }
+ ],
+ "reported_not_scored": "competitor strings and mean probabilities; |P|, |S_down|, |S_on| and S_down by layer; J(S_down, N_target); J(S_on, N_comp); J_nat on every task-seed; under (ii) where the removed competitor mass goes (target vs rest); the ratio J_down / null mean",
+ "decision_tree": "both 'competitors' on most task-seeds: H' gains a mechanism sentence (switch on the target's machinery, switch off its competitors'), next the same read on the larger model; both 'generic/pool': the turned-down half is a generic lowering and the switched-on half carries the specific part; mixed: report, no action. Only a control failure stops the line",
+ "filed": "2026-10-22 13:22:38"
+}

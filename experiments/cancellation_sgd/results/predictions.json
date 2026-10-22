@@ -1,0 +1,129 @@
+{
+ "design": "reports/2026-10-22_plan_small-update-reruns.md -> E23 (approved class 1: GPU passes of existing measurements on saved states; the user's instruction 2026-10-22); parents E17, E20 with amendments 1 and 3",
+ "filed": "2026-10-22 12:28:27",
+ "gates": [
+  {
+   "id": "W0_pile",
+   "if_fail": "stop the shard",
+   "rule": "faith_score.w0_check: W0's seed-0 PGD KL within 10% of 0.69, CI-masked within 2% of 0.348, floor <= 0.25; per stage-A shard, first"
+  },
+  {
+   "id": "G0_W0_reproduces_E20",
+   "if_fail": "stop the shard",
+   "rule": "W0 seed 0: F_all, F_orig, F_dead, F_dense, F_rest within 0.001 relative of E20 amendment 1's W0; F_adv, F_full <= 1e-6; |F_both - F_orig| <= 1e-6; |F_hooks_all - F_all| <= 1e-4; closure G1 ok"
+  },
+  {
+   "id": "C1_reproduces_E21",
+   "if_fail": "state skipped; the control: stop",
+   "rule": "per state: the harness's adversarial ratio (256 rows, seed 0, this job's W0) gives E21's verdict under faith_score.verdict with this job's floor, and is within 25% of E21's ratio"
+  },
+  {
+   "id": "G1_hooks",
+   "if_fail": "stop the shard",
+   "rule": "per model: E20's closure (hooks at zero <= 1e-06, at the adversary's fractions <= 0.0001 nats on the first batch) and E17's identity |F_full - kl_to_w0| <= 0.0001"
+  },
+  {
+   "id": "C3_budget_reproduces",
+   "if_fail": "stop the shard",
+   "rule": "stage B: each model's seed-0 KL at 20 steps within 0.001 relative of stage A's F_all (W0: shard 0's)"
+  }
+ ],
+ "predictions": [
+  {
+   "arm": "sgd r0 @100",
+   "id": "P0_control_no_excess",
+   "if_fail": "shard 0 stops; P1, P2 unscored",
+   "null": "a passing state shows an excess: the decomposition reads something other than the verdict",
+   "pass": "|X|, |R| and |J| each <= band (f x F_all(W0)), absolute nats; measured first in shard 0",
+   "predicted": "pass: E21's ratio 0.92 puts X near -0.05 nats; E20's passing states had R and J under 0.12",
+   "scored": true
+  },
+  {
+   "arm": [
+    "sgd r0 @1000",
+    "sgd r1 @1000",
+    "sgd rand32",
+    "sgd ident32",
+    "sgd r2 @100"
+   ],
+   "decision": "holds on >= 4 of 5 -> E20's account (the excess is the joint removal of alive and dead blocks, not the originals, the changes or Delta') generalises to SGD and the key-to-value failures; on <= 1 -> it is particular to the Adam step-10 states; 2-3 -> mixed, per state",
+   "id": "P1_E20_account",
+   "kind": "two-sided question",
+   "lean": "holds, low confidence: E20 read '4' on all eight states, passing ones included",
+   "rule": "per failing state, E20's account holds iff X > band, R >= 0.5 X, amendment 1's reading is '4' (J >= 0.5 R) and |D| <= 0.05 X (Delta' negligible)",
+   "scored": true
+  },
+  {
+   "arm": [
+    "sgd r0 @1000",
+    "sgd r1 @1000",
+    "sgd rand32",
+    "sgd ident32",
+    "sgd r2 @100"
+   ],
+   "decision": "holds on >= 4 of 5 -> no cancellation among the changes on these failures either; <= 1 -> the SGD failures are cancellation-like, unlike Adam's",
+   "id": "P2_E17_readings",
+   "kind": "two-sided question",
+   "lean": "holds, low confidence: SGD's component training is near its adjoint split (cosine 0.957), whose kappa was 2.4 and h 0.32 in E17",
+   "rule": "per failing state, E17's readings hold iff kappa >= 1 (null within 0.1 of 1), h <= 0.5 and F_adv <= 0.2 X",
+   "scored": true
+  },
+  {
+   "arm": [
+    "sgd r0 @1000",
+    "sgd r1 @1000"
+   ],
+   "id": "P3_sgd_stays_failing",
+   "null": "the SGD ratios fall toward Adam's as the search gets stronger: the late SGD fail is a budget artefact",
+   "pass": "r(s, n) >= 1.5 at every n in [40, 80, 160] on both SGD step-1000 states (absolute ratio; amendment 3's P9 twin)",
+   "predicted": "pass, moderate confidence: amendment 2 kept r1 t534 (Adam step 10) at 2.3 to 2.7 times W0 to 100 steps",
+   "scored": true
+  },
+  {
+   "arm": [
+    "adam r0 @1000",
+    "adam r1 @1000"
+   ],
+   "id": "P4_adam_stays_passing",
+   "null": "a passing state starts failing under a stronger search",
+   "pass": "r(s, n) <= 1.241 at every n in [40, 80, 160] on both Adam step-1000 states (absolute ratio; amendment 3's P10 twin; the positive control of stage B)",
+   "predicted": "pass, moderate confidence: E21 read 1.07 and 0.95 at 20 steps",
+   "scored": true
+  },
+  {
+   "arm": [
+    "sgd r0 @1000",
+    "sgd r1 @1000",
+    "adam r0 @1000",
+    "adam r1 @1000"
+   ],
+   "id": "P5_ratio_stable",
+   "null": "a verdict depends on the budget it was read at",
+   "pass": "max over n of r(s, n) / min over n <= 1.5 on >= 3 of the 4 step-1000 states (relative; P11 twin)",
+   "predicted": "pass, low confidence",
+   "scored": true
+  }
+ ],
+ "reported_not_scored": "every part on all states, the Adam twins' parts beside the SGD failures; null_parts; levels; kappa, h, F_adv / F_perm per state; KL per model and budget; W0 seed spread per budget; r(s, n) for every budget",
+ "setup": {
+  "blind_to": "Pile rows only, never the trigger; one adversary family (sign steps, one source per subcomponent over all rows) and one seed per state; KL is not additive (I, P, J absorb it); the parts say where the adversary's mask costs more, not why; no budget past 160",
+  "expected_at_W0": "stage A seed 0 = E20 amendment 1's W0: F_all 0.6604, F_orig 0.4868, F_dead 1.0701, F_dense 0.0068, F_rest 1.0754, F_adv = F_full = 0, F_both = F_orig; stage B: 0.660 at 20 steps rising to about 0.71 at 160 (amendment 3 shard 0 was running; not read here beyond 20 steps)",
+  "expected_states": "C1: E21's ratios (256 rows): control 0.92 pass; SGD r0, r1 @1000 2.82, 3.00 fail; Adam r0, r1 @1000 1.07, 0.95 pass; rand32 4.16, ident32 2.37, r2 @100 5.20 fail. At 128 rows X of the failing states about (ratio - 1) x 0.66 nats; passing states and the control |X| < band",
+  "floor": "the Pile harness at W0 (256 rows, 20 steps, adversary seeds [0, 1, 2]) in each stage-A job: f = max/min - 1 of W0's PGD KL (0.209 on the L40); band = f x F_all(W0, 128 rows), about 0.14 nats",
+  "noise": "stage A: W0 under adversary seed 1 decomposed against seed 0 (null_parts: W0's own revert noise, one draw) and the band; stage B: W0 seed 0 vs seed 1 per budget (amendment 3: 0.66 vs 0.71 at 20, 0.71 vs 0.86 at 160); one adversary seed per state",
+  "positive_control": "sgd r0 @100 (passes E21 at 0.92, the same task and optimiser as the step-1000 failure): its excess X, R and J lie within the band (P0); stage B's: the Adam twins stay passing (P4)",
+  "rebuild": "saved_states.offsets_state: U2 = U + dU, V2 = V + dV (bf16 offsets), delta-W = U2 V2^T - U V^T; the rebuilt state differs from the trained one by the offsets' bf16 rounding (gate C1 reads its effect)",
+  "stage_A": "Pile val rows 0..128 in batches of 8, every KL fp32; per model its own adversary (gamma.pgd_sources, 20 sign steps of 0.1, seed 0); commute.excess.measure: E17's coherence, F_full, F_half (3 halves), F_adv, F_perm (3); E20's F_all, F_orig, F_both and amendment 1's F_dead, F_dense, F_rest and the fixed-level arms at this job's W0 levels. Parts (excess.parts): X = F_all(s) - F_all(W0) = O + F_adv + I + R, R = D + K + P + J exactly; reading by amendment 1's rule",
+  "stage_B": "E20 amendment 3's recipe: gamma.pgd_sources with n sign steps of 2 / n for n in [20, 40, 80, 160], each budget its own run from the seed's random start, seed 0 (W0 also seed 1), fp32 cancel.masked_kl on the same 128 rows; r(s, n) = KL(s, n) / KL(W0 seed 0, n)"
+ },
+ "states": {
+  "adam r0 @1000": "experiments/sgd_ladder_long/results/large/r0_t352_v310/adam_1e-05_step1000.pt (E21: ('long', 'r0_t352_v310', 'adam_1e-05', 1000))",
+  "adam r1 @1000": "experiments/sgd_ladder_long/results/large/r1_t534_v369/adam_1e-05_step1000.pt (E21: ('long', 'r1_t534_v369', 'adam_1e-05', 1000))",
+  "sgd ident32": "experiments/sgd_kv/results/large/ident32/sgd_0.003.pt (E21: ('kv', 'ident32', 'sgd_0.003'))",
+  "sgd r0 @100": "experiments/sgd_ladder_long/results/large/r0_t352_v310/sgd_0.03_step100.pt (E21: ('long', 'r0_t352_v310', 'sgd_0.03', 100))",
+  "sgd r0 @1000": "experiments/sgd_ladder_long/results/large/r0_t352_v310/sgd_0.03_step1000.pt (E21: ('long', 'r0_t352_v310', 'sgd_0.03', 1000))",
+  "sgd r1 @1000": "experiments/sgd_ladder_long/results/large/r1_t534_v369/sgd_0.03_step1000.pt (E21: ('long', 'r1_t534_v369', 'sgd_0.03', 1000))",
+  "sgd r2 @100": "experiments/sgd_ladder_long/results/large/r2_t275_v2667/sgd_0.1_step100.pt (E21: ('long', 'r2_t275_v2667', 'sgd_0.1', 100))",
+  "sgd rand32": "experiments/sgd_kv/results/large/rand32/sgd_0.01.pt (E21: ('kv', 'rand32', 'sgd_0.01'))"
+ }
+}

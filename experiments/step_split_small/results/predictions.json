@@ -1,0 +1,82 @@
+{
+  "status": "filed",
+  "filed": "2026-10-22",
+  "status_note": "Filed by the E25 agent before the run under the user's 2026-10-22 instruction (plan reports/2026-10-22_plan_small-update-reruns.md, approved class 2). Never edited after the run; changes go in a dated report.",
+  "design": "reports/2026-10-22_plan_small-update-reruns.md -> E25 step_split_small and Agent notes; parent E19 reports/2026-10-21_plan_step-split.md",
+  "setup": {
+    "paths": "emoticon full fine-tune, arm A (batch 32, clip 1.0, seed 0, 24 matrices), 1000 steps: plain SGD lr 0.01 and Adam lr 3e-6 (E21's matched pair, experiments/sgd_finetune)",
+    "step_split": "as E19: after every optimizer step, per matrix, S_t = W_t - W_(t-1) split by split.StepSplit (carry=True): pieces c_t (S_t V, S_t^T U) against the current alive (U, V), c_t refitted each step on W0's input moments, Delta takes the rest incl. dU dV^T; the fixed-bases twin (carry=False) beside it for consistency numbers only; float32 on the GPU; Gamma frozen",
+    "references": "do-nothing and the one-shot least-squares split (split.split_state) of the same delta-W, same job",
+    "measure": "harness.measure at steps 10, 100, 1000 per path: route split (e_delta, unmasked P(target) U1), held-out P(target) T1, Delta's share of ||delta-W||^2 (delta_change_frac), Pile ratios to W0 at adversary seed 0 (256 rows, 20 PGD steps)",
+    "floor_and_verdict": "f = max/min - 1 of W0's PGD KL over adversary seeds 0, 1 (same job); faith_score.verdict: pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f), inconclusive between",
+    "split_numbers": "commute.step_split.numbers per scored step: Delta share plain and input-weighted for carried bases, fixed bases and the one-shot adjoint split (1 - R); largest relative change of any write/read vector (carried, fixed); accumulated second-order share of Delta's weighted change"
+  },
+  "control_first": {
+    "id": "C0_W0",
+    "arm": "W0 under the Pile harness at adversary seeds 0 and 1, before any fine-tune",
+    "rule": "faith_score.w0_check: seed-0 PGD KL within 10% of 0.69 (relative), CI-masked within 2% of 0.348 (relative), floor f <= 0.25 (absolute); otherwise the job stops with nothing scored",
+    "expected": "PGD 0.69, CI-masked 0.348; f 0.21 on an L40, 0.075 on E16's H100, unknown on the RunPod card",
+    "blind_to": "anything about the updates; it checks the harness only"
+  },
+  "positive_control": {
+    "id": "C1_step1_identity",
+    "rule": "after optimizer step 1, per path, max over matrices of ||dU_carry - dU_fixed|| / ||dU_fixed|| (and V) <= 1e-6 (absolute)",
+    "expected": "exactly 0: both split the same step against W0's bases",
+    "if_fail": "the step split's carrying is wrong; P1 unscored",
+    "blind_to": "every later step, where carried and fixed bases differ by construction"
+  },
+  "gates": [
+    {
+      "id": "G1_rel_norm",
+      "rule": "per path, step-10 rel_norm_max within 1% (relative) of sgd_finetune's: SGD 0.0023841 (results/split.json finetune_eval.sgd), Adam 3e-6 0.0022342 (results/adam_matched.json grid['3e-06'])",
+      "expected": "within 0.1% (only bf16 kernels differ between cards)",
+      "if_fail": "the job stops: the path is not E21's update",
+      "blind_to": "the direction of delta-W"
+    },
+    {
+      "id": "G1_nothing",
+      "rule": "per path, step-10 do-nothing adversarial ratio within max(f, 0.209) (absolute) of sgd_finetune's: SGD 1.1217, Adam 3e-6 1.0847 (both read on the L40 under its floor 0.209; as E22's G1)",
+      "expected": "about 1.1 on any card; a miss with G1_rel_norm met is the card's floor, read and reported, not a stop",
+      "blind_to": "the trained behaviour"
+    },
+    {
+      "id": "G2_exact",
+      "rule": "per path and step: the step-split state's held-out P(target) T1 within 1e-3 of the fine-tune's own eval; route shares sum to 1 within 1e-6; harness delta_change_frac within 1e-3 of step_split.numbers' delta_share",
+      "expected": "all met (E19 met all nine)",
+      "if_fail": "the state is not the fine-tuned model; P1 unscored",
+      "blind_to": "where inside the model the behaviour runs"
+    }
+  ],
+  "predictions": [
+    {
+      "id": "P1_sgd_delta_share_lower",
+      "kind": "directional",
+      "claim": "Delta's share of ||delta-W||^2 under the step split is lower on the SGD path than on the Adam 3e-6 path at every scored step",
+      "rule": "delta_change_frac(step split, SGD) < delta_change_frac(step split, Adam 3e-6) at steps 10, 100 and 1000 (absolute comparison, no margin; the shares are deterministic given the state)",
+      "why": "an SGD step is a clipped gradient and SGD component training reproduces its adjoint split (cosine 0.957, E21 sgd_finetune P5), so each SGD step should be closer to what the pieces can take; Adam rescales coordinates and spreads the step (outside share 0.157 vs SGD's 0.034 at step 10)",
+      "expected": "SGD about 0.4-0.9, Adam 3e-6 about 0.9-1.2 (E19's large Adam path read 1.03, 1.05, 1.21)",
+      "null": "the per-step scale refit decides the share whatever the optimiser: SGD at or above Adam at some step",
+      "noise_floor": "card-to-card differences in the fine-tune (bf16 kernels), about 1e-3 of the share",
+      "blind_to": "where the behaviour runs and the Pile"
+    },
+    {
+      "id": "P2_step1000_verdict",
+      "kind": "two-sided",
+      "claim": "the step-split state's adversarial verdict at step 1000 on each small path, beside E19's large-path fail (2.67)",
+      "rule": "faith_score.verdict(Pile PGD ratio of the step-split state at step 1000, f); outcome per path: 'fails like E19' (fail), 'passes, unlike E19' (pass), 'inconclusive'",
+      "expected": "no direction filed: the small do-nothing states pass at step 10 (E21) but the step split's Delta held more energy than the update on the large path by step 1000",
+      "noise_floor": "f from the same job's W0 seeds; one adversary seed per state",
+      "blind_to": "the trained behaviour; a 20-step adversary only (E20 Amendment 2: far from its maximum)"
+    },
+    {
+      "id": "P3_behaviour_in_pieces",
+      "kind": "two-sided",
+      "claim": "the behaviour kept in the pieces under the step split, against the least-squares split of the same delta-W",
+      "rule": "per path and step: P(target) with every component on and Delta out (route split p_cells U1) for the step-split state minus the same for the least-squares state; outcome 'same' if |diff| < 0.05 (absolute), else 'less in the pieces' or 'more in the pieces'. e_delta of both states reported beside it (E19's reading), not scored",
+      "expected": "no direction filed. E19's large path: U1 0.966 / 0.942 / 0.806 for the step split against 0.998 / 0.995 / 0.984 for least squares (this rule would read 'same', 'less', 'less'); e_delta 0.31 / 0.37 / 0.61 against 0.09 / 0.15 / 0.31",
+      "noise_floor": "deterministic given the state; card differences about 1e-3",
+      "blind_to": "the Pile; what Delta's change does when it is left in"
+    }
+  ],
+  "reported_not_scored": "do-nothing and least-squares verdicts at every step; the plain and weighted Delta shares for fixed bases and the one-shot adjoint split (E19: per-step scale refit pushed the weighted share to 1.38 at step 1000 against 0.69 one-shot); piece_change_max (E19 0.037 / 0.048 / 0.127); second-order shares (E19 <= 1e-7); stochastic, CI-masked and unmasked Pile ratios"
+}

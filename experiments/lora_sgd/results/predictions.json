@@ -1,0 +1,118 @@
+{
+ "about": "E27 lora_sgd. Plan reports/2026-10-22_plan_commute-second-line.md, Item C and the E27 agent note (class 3, a named item of the user's 2026-10-22 decision). Is the LoRA's 'outside like noise' reading (E9, E14) the LoRA's parametrisation or Adam's? Filed before the run.",
+ "config": {
+  "adam_lr": 0.001,
+  "adam_steps": [
+   10,
+   1000
+  ],
+  "ckpts": [
+   1,
+   2,
+   3,
+   5,
+   10,
+   30,
+   100,
+   300,
+   1000
+  ],
+  "null_draws": 2,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "rank": 8,
+  "seed": 0,
+  "sgd_lrs": [
+   0.003,
+   0.01,
+   0.03,
+   0.1,
+   0.3,
+   1.0,
+   3.0
+  ],
+  "sgd_steps": [
+   10,
+   100,
+   1000
+  ],
+  "tol": 1e-06
+ },
+ "filed": "2026-10-22 13:15:17",
+ "gates": {
+  "C1_w0": "first, alone: faith_score.w0_check (seed-0 PGD within 10% of 0.69, CI-masked within 2% of 0.348, floor <= 0.25). Fails: stop, nothing scored",
+  "C2_draws_at_null": "the random draws' outside-both / its analytic null in [0.85, 1.15] at every row (pooled_ns): the block code's positive control",
+  "C3_adjoint_keeps_delta": "positive control: the adjoint states' Delta change fraction <= 0.01 (0 by construction up to the second-order term; E14 6e-6 to 3e-4)",
+  "G1_adam_reproduces": "the regenerated Adam LoRA: do-nothing and least-squares PGD ratios within max(f, 0.209) relative of E9's {'nothing': {10: 1.1726, 1000: 1.0419}, 'least_squares': {10: 1.2551, 1000: 1.072}}; outside-both / null at step 10 within 0.1 of E14's 0.979; held-out P(target) >= 0.99 at 1000. Fails: stop",
+  "harness_G2": "per least-squares state: P(target) equals the LoRA's to 1e-3 and the route shares sum to 1"
+ },
+ "predictions": [
+  {
+   "blind_to": "what the outside part does to behaviour; per-matrix spread under pooling; the four saturated matrices",
+   "expected": "W0: undefined. Random draws: 1 (C2). Adam LoRA (E14): {1: 0.835, 2: 0.702, 3: 0.664, 5: 0.762, 10: 0.979, 30: 1.066, 100: 0.539, 300: 0.849, 1000: 0.954}; note 0.54 at step 100, below this rule. SGD fine-tune (E21, E22): 0.03-0.06",
+   "id": "P1_outside_like_noise",
+   "measure": "outside-both share / its null (pooled_ns) of the selected SGD LoRA at every checkpoint from step 10",
+   "noise_floor": "deterministic given delta-W; one training seed. The Adam series moves 0.54-1.07 between checkpoints",
+   "outcomes": "all >= 0.7: 'parametrisation' (the LoRA's outside share is its random read factor, E14's LoRA/fine-tune contrast is not Adam's); any < 0.3: 'optimiser' (like the SGD fine-tune, E14's LoRA rows are Adam's); else 'mixed'",
+   "pass": "all >= 0.7",
+   "positive_control": "C2; the in-job Adam LoRA's series (G1 at step 10)",
+   "predicted": "pass ('parametrisation'): A barely moves under either optimiser, so the read side stays random",
+   "relative_vs_absolute": "ratio to the analytic random-update null"
+  },
+  {
+   "blind_to": "A's norm; which directions A gained",
+   "expected": "1 at step 1 (B = 0, A's first gradient zero: the code's check); Adam 0.90 at 1000 (E9)",
+   "id": "P2_read_factor_stays",
+   "measure": "mean |cos| of the SGD LoRA's A rows with their init at step 1000",
+   "noise_floor": "deterministic; one seed",
+   "pass": ">= 0.97",
+   "positive_control": "1.000 at step 1",
+   "predicted": "pass: under SGD A's gradient is B^T G x, small while B is small",
+   "relative_vs_absolute": "absolute"
+  },
+  {
+   "blind_to": "the trigger (about 3 positions in 131k Pile tokens); damage the 20-step adversary does not find",
+   "expected": "W0: 1. Adam LoRA in-job at 10 and 1000 (G1)",
+   "id": "P3_states_pass",
+   "measure": "verdict of the SGD LoRA's do-nothing and least-squares states at steps 10, 100, 1000",
+   "noise_floor": "W0's seed spread f, through the verdict band; one training seed",
+   "pass": "all six 'pass'",
+   "positive_control": "G1 (the Adam LoRA's states reproduce in the same job)",
+   "predicted": "pass, as Adam's (E9/E14: do-nothing 1.17 / 1.09 / 1.04, least squares 1.26 / 1.22 / 1.07)",
+   "relative_vs_absolute": "ratio to the same-job W0"
+  },
+  {
+   "blind_to": "whether the part left in Delta matters to behaviour",
+   "expected": "Adam 0.54 at 1000 (E14 0.542); adjoint state 0 (C3)",
+   "id": "P4_delta_share",
+   "measure": "Delta's share of ||delta-W||^2 under the least-squares split at step 1000, SGD LoRA vs the in-job Adam LoRA",
+   "noise_floor": "deterministic given delta-W; one seed",
+   "pass": "none: two-sided. 'higher' (SGD >= Adam + 0.1), 'lower' (SGD <= Adam - 0.1), 'same' (within 0.1)",
+   "positive_control": "C3",
+   "predicted": "no direction filed",
+   "relative_vs_absolute": "absolute difference of shares"
+  }
+ ],
+ "reported_not_scored": [
+  "the grid's P(target), KL elsewhere and rel_norm_max at every checkpoint",
+  "stochastic ratios",
+  "the adjoint states' verdicts and P(target)",
+  "rescaling / null along steps",
+  "pooled_all",
+  "the Adam LoRA's series beside the SGD one",
+  "the least-squares states' Delta share at 10 and 100"
+ ],
+ "setup": {
+  "adam": "E9's recipe, Adam lr 0.001; states at (10, 1000)",
+  "lora": "rank 8 on all 24 matrices, B = 0 and A ~ N(0, 1/d_in) (seed 0), arm A's loss (CE on o at the trigger + KL elsewhere), batch 32, clip 1, 1000 steps, factors kept at (1, 2, 3, 5, 10, 30, 100, 300, 1000)",
+  "series": "at all of (1, 2, 3, 5, 10, 30, 100, 300, 1000): split.block_table (four input-weighted blocks with their analytic null; outside-both / null pooled over the non-saturated matrices, E14's rule), split.rescaling_table (2 draws), lora_readouts.cos_with_init (mean |cos| of A's rows with their init, mean over matrices), rel_norm_max",
+  "sgd_grid": "plain SGD (momentum 0) at (0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0); E4's rule at step 1000: held-out P(target) >= 0.9 and KL elsewhere <= 2 x E9's 0.00476 = 0.00952, the least KL among those. Fallbacks, flagged: none within the KL limit -> the least KL among those with P >= 0.9; none reaches 0.9 -> the highest P",
+  "states": "SGD at (10, 100, 1000): do-nothing and least-squares split (harness.nothing_and_split), scaled adjoint split (split.adjoint_state), each through harness.measure: Pile ratios to W0 (256 rows, 20 PGD steps), held-out P(target), Delta's share of ||delta-W||^2",
+  "verdict": "faith_score.verdict on the PGD ratio to the same-job W0 (adversary seed 0): pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f), inconclusive between; f = max/min - 1 of W0's PGD KL over adversary seeds 0, 1, 2 in this job (L40 0.21 -> 1.24 / 1.81; H100 about 0.075 -> 1.40 / 1.61)"
+ }
+}

@@ -217,6 +217,8 @@ class LoraConfig:
     steps: int = 100
     checkpoints: tuple[int, ...] = (1, 2, 3, 5, 10, 30, 100)
     seed: int = 0
+    optimizer: str = "adam"  # "adam" (E7-E9) or "sgd" (lora_sgd, 2026-10-22)
+    momentum: float = 0.0  # SGD only; 0.0 is plain SGD
 
 
 def lora_factors(linears: dict[str, nn.Linear], rank: int, seed: int) -> dict[str, tuple[nn.Parameter, nn.Parameter]]:
@@ -266,7 +268,9 @@ def finetune_lora_arm_a(model: Any, train: Windows, heldout: Windows, a_cfg: Arm
     linears = {k: target_linear(model, k) for k in cfg.modules}
     factors = lora_factors(linears, cfg.rank, cfg.seed)
     params = [p for f in factors.values() for p in f]
-    opt = torch.optim.Adam(params, lr=cfg.lr, betas=(0.9, 0.999), weight_decay=0.0)
+    assert cfg.optimizer in ("adam", "sgd"), cfg.optimizer
+    opt = (torch.optim.Adam(params, lr=cfg.lr, betas=(0.9, 0.999), weight_decay=0.0) if cfg.optimizer == "adam"
+           else torch.optim.SGD(params, lr=cfg.lr, momentum=cfg.momentum, weight_decay=0.0))
     gen = torch.Generator().manual_seed(a_cfg.seed)
     res = FinetuneResult(deltas={})
     handles = lora_hooks(linears, factors)

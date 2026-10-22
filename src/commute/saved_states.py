@@ -49,3 +49,20 @@ def split_states(model: Any, uv: dict[str, tuple[Tensor, Tensor]], e11: Path, ro
     dW_adj, adj = split.adjoint_state(dW, uv_cpu, sigma)
     return {"ls": ({k: v[0] for k, v in ls.items()}, {k: (v[1], v[2]) for k, v in ls.items()}),
             "adjoint": (dW_adj, {k: (v[1], v[2]) for k, v in adj.items()})}
+
+
+def offsets_state(path: Path, uv: dict[str, tuple[Tensor, Tensor]]) -> Update:
+    """A component-training state saved by `arms.save_offsets` (bf16 offsets (dU, dV) to the alive columns at W0, the
+    format of sgd_ladder_long and sgd_kv), rebuilt on the CPU: U2 = U + dU, V2 = V + dV and delta-W = U2 V2^T - U V^T
+    (float64, stored float32). `uv` = the alive (U, V) at W0 in theory layout (`component_training.alive_uv`). The
+    rebuilt state differs from the trained one by the bf16 rounding of the offsets (gate C1 of E23 reads its effect)."""
+    st = torch.load(path, weights_only=False)
+    assert st["layout"] == "theory (d_out, n), (d_in, n)", st["layout"]
+    dW: dict[str, Tensor] = {}
+    uv2: dict[str, tuple[Tensor, Tensor]] = {}
+    for k, (dU, dV) in st["offsets"].items():
+        U, V = (t.detach().cpu().float() for t in uv[k])
+        U2, V2 = U + dU.float(), V + dV.float()
+        uv2[k] = (U2, V2)
+        dW[k] = (U2.double() @ V2.double().T - U.double() @ V.double().T).float()
+    return dW, uv2

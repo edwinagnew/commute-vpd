@@ -1,0 +1,65 @@
+{
+ "plan": "reports/2026-10-22_plan_small-update-reruns.md -> E24 and its Agent notes; definitions as E18 (reports/2026-10-21_plan_regating-leak.md). Filed before any run; never edited after.",
+ "states": "do-nothing states (target W0 + dW, released subcomponents C0, Gamma frozen, Delta out of the masked model) of 10-step arm-A fine-tunes of all 24 matrices, seed 0, batch 32: emoticon with Adam 3e-5 (large, E18's state), SGD 0.01 and Adam 3e-6 (small, E21's matched pair, size 0.0024 and 0.0022). Extra: r1_t534_v369 with the SGD rate E4's rule picks from (0.001, 0.003, 0.01, 0.03, 0.1) (P >= 0.9, KL elsewhere <= 0.24302), beside its Adam 3e-5 state; skipped, with the grid recorded, if no rate passes",
+ "measurements": {
+  "r": "(L01 - L00) / (T1 - T0), held-out windows' trigger log-odds of the target; L = CI-masked model with C0",
+  "recovery rho_x": "(lo_x - L00) / (L01 - L00) with pattern x at the trigger and W0's gates elsewhere (commute.regating)",
+  "trig": "each window's own state gates",
+  "shared": "clip(g0(x) + s), s = mean over the TRAINING windows of state minus W0 trigger gates, alive only",
+  "mean": "m1 for every window (mean_W0: m0, reported)",
+  "cross": "clip(g0(x) + s_null), s_null from a ' http' (3944) fine-tune by the SAME optimiser and rate",
+  "random": "s's values on S_on (s > 0.3) moved onto a random same-size-per-matrix set outside S_on, 20 draws",
+  "R_shared": "rho_shared / rho_trig"
+ },
+ "gates": {
+  "G1_large_reproduces": "emoticon Adam 3e-5: |r - E18 seed 0 (0.5972)| <= 0.05; rho trig, shared, mean within 0.02 of E18 seed 0 (0.973, 0.715, 0.896); gain >= 1.0; W0's gates through trig and shared recover <= 1e-06. Runs first, alone; fail: stop, nothing else run",
+  "G2_small_reproduce": "held-out P(o) within 0.01 of E21 (SGD 0.973, Adam 3e-6 0.971) and r within 0.05 of sgd_finetune's do-nothing route split (0.617, 0.594). Fail: that state is reported, not scored",
+  "G3_extra_large": "r1_t534 Adam 3e-5: r within 0.1 of E18 (0.7457), rho within 0.02. Fail: the extra task's SGD state is not run"
+ },
+ "scorable": "gain >= 1.0 nat, gap L01 - L00 >= 0.5 nats (as E18), and rho_trig >= 0.5 for P2",
+ "expected": {
+  "W0": "recovery of W0's own gates 0 exactly; r undefined",
+  "large (control, in-job)": "r 0.60, rho_trig 0.97, R_shared 0.73, rho_mean 0.90 (mean_W0 0.10), rho_cross -0.18, random mean -0.01, |S_on| 210 (E18 seed 0)",
+  "small r": "about 0.6 (sgd_finetune's route split already read 0.617 and 0.594: P1 is close to a reproduction)",
+  "small R_shared": "two-sided (P2)",
+  "cross": "<= 0.1 (E18: -0.08 to -0.30)",
+  "random": "about 0",
+  "|S_on|": "fewer than the large state's 210 (a smaller update moves the gates less); low confidence"
+ },
+ "predictions": [
+  {
+   "id": "P1_r",
+   "rule": "per small emoticon state: |r_small - r_large(in-job)| <= 0.1 reads 'same', below 'lower', above 'higher'. Pass: 'same' on both. Absolute difference of shares",
+   "predicted": "same on both, high confidence (recorded 0.617 and 0.594 against 0.597; E21: the SGD state's trigger share with Gamma on the original activations was 0.01, so the switching carries the small update too)",
+   "blind_to": "where the switching happens (the patterns read that); the Pile",
+   "positive_control": "the large state, G1",
+   "noise_floor": "E18 seeds 0 and 1 differ by 0.012 in r"
+  },
+  {
+   "id": "P2_shared",
+   "rule": "per small emoticon state: R_shared >= 0.7 with random mean <= 0.1 reads 'fixed pattern' (H: one fixed change carries it); <= 0.3 reads 'per-window' (small updates need each window's own values); 'between' otherwise. Pass: 'fixed pattern' on both. Absolute, in shares of rho_trig; R_shared minus the large state's reported",
+   "predicted": "two-sided as the plan asks; lean 'fixed pattern' on both, medium-low confidence (emoticon windows are alike; the large state read 0.73, just over the bar, so a smaller shift could land 'between')",
+   "blind_to": "the trigger position only; whether the additive model g0(x) + s is the right fixed pattern (E18 amendment 1: W0's per-window variation lowers it; rho_mean is reported for that); one seed",
+   "positive_control": "rho_trig (the own values recover); the large state's R_shared 0.73 in the same job",
+   "noise_floor": "E18 seeds agree within 0.02 on R_shared; the random null's spread about 0.01"
+  },
+  {
+   "id": "P2x_extra",
+   "rule": "r1_t534's SGD state (if run) reads as P2; pass: the same reading as its large Adam state in the same job",
+   "predicted": "same as the large ('between', E18 0.41), low confidence",
+   "blind_to": "as P2",
+   "positive_control": "the task's large state, G3",
+   "noise_floor": "as P2"
+  },
+  {
+   "id": "C_cross",
+   "rule": "rho_cross <= 0.1 on every scorable state (large and small, both tasks); a state whose ' http' null has held-out P < 0.5 reads 'no power'. Pass: no 'fail' and at least one 'pass'",
+   "predicted": "pass (positive control that the test separates patterns; E18 read -0.08 to -0.30)",
+   "blind_to": "other wrong targets",
+   "positive_control": "is itself the control",
+   "noise_floor": "E18 seeds agree within 0.01 on rho_cross"
+  }
+ ],
+ "reported_not_scored": "rho_mean and rho_mean_W0; |S_on| and by layer; J(S_on small, S_on large); J_nat on Pile ('val', 0, 600) with its random null; the null's held-out P(' http'); the r1_t534 rate grid",
+ "filed": "2026-10-22 12:26:33"
+}

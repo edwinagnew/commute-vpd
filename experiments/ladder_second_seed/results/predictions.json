@@ -1,0 +1,83 @@
+{
+ "about": "ladder_second_seed (E26; item A of reports/2026-10-22_plan_commute-second-line.md): E21's sgd_ladder_long recipe with batch-order seed 1 (ArmAConfig.seed; free offsets start at zero, so it is the only training randomness). Per task in r0_t352_v310, r1_t534_v369, r2_t275_v2667: SGD at 3a's rate (0.03, 0.03, 0.1) and Adam 1e-5, 1000 steps, Pile harness at steps 100 and 1000 against a same-job W0. Seed 0 regenerated in-job and scored at 1000 as the gate. RunPod H100. Filed before any run",
+ "config": {
+  "adam_lr": 1e-05,
+  "gate_tol": 0.25,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "seed": 1,
+  "sgd_lr": {
+   "r0_t352_v310": 0.03,
+   "r1_t534_v369": 0.03,
+   "r2_t275_v2667": 0.1
+  },
+  "steps": [
+   100,
+   1000
+  ],
+  "train_steps": 1000
+ },
+ "controls": {
+  "C1_w0": "first, once per job: W0's seed-0 PGD KL within 10% of 0.69, CI-masked KL within 2% of 0.348, PGD floor <= 0.25 (faith_score.w0_check). Expected: pass, PGD floor about 0.075 on the H100. Fails: the job stops, nothing trained"
+ },
+ "filed": "2026-10-22 13:11:48",
+ "gates": {
+  "G1_seed0_reproduces_E21": "per task, before any seed-1 state: the seed-0 SGD and Adam 1e-5 arms regenerated in-job and scored at step 1000; each one's PGD ratio within 25% (relative) of E21's and the same state_verdict. Expected (E21, L40): r0 SGD 2.82 fail, Adam 1.07 pass; r1 SGD 3.00 fail, Adam 0.95 pass; r2 SGD 38.0 fail, Adam 1.34 'below P 0.9' (P 0.78). Fails on r0 or r1: that task's P1/P2 readings are unscored, the run continues. r2: reported, not gated"
+ },
+ "measurements": {
+  "kl_other": "held-out KL elsewhere against W0, nats, absolute; reported against E21's task limits (0.209, 0.243, 0.407). Not part of the verdict. At W0: 0",
+  "p_target": "held-out mean P(target) at the trigger from the trainer's own eval at the step, absolute. At W0: the task's baseline (well below 0.9). Line 0.9. Blind to everything off the trigger",
+  "pgd": "adversarial ratio: harness.measure's 20-step PGD KL on Pile val rows 0..255 (two 128-row blocks, adversary seed 0) over this job's W0 under seed 0, relative. At W0: 1. Blind to the trigger and to damage the 20-step adversary does not find. Noise floor f = W0's max/min - 1 over adversary seeds 0, 1, 2 in the job (about 0.075 on an H100 in E16, 0.21 on the L40)",
+  "rel_norm_max": "largest ||delta-W|| / ||W0|| over the 24 matrices, reported. At W0: 0. Seed 0 at 1000 on r0/r1: SGD 0.017, Adam 0.018; seed 1 expected within about 10% of these (same rate, same steps)",
+  "stochastic": "stochastic-mask KL ratio (2 draws), same rows and reference. At W0: 1; expected near 1 for every state (E21: 0.97 to 1.01 on r0/r1). Floor about 0.002"
+ },
+ "predictions": [
+  {
+   "blind_to": "the trigger (Pile ratio) and off-trigger damage (P); KL elsewhere reported beside it",
+   "decision": "replicates (with P2 replicates) -> the move-back condition is met at two seeds; the user decides whether Q1 returns to first place. One-seed pass -> the condition is not met",
+   "id": "P1_adam_replicates",
+   "kind": "two-sided, named outcomes, no direction filed",
+   "outcomes": {
+    "one-seed pass": "any 'fail' or 'below P 0.9'",
+    "replicates": "all four 'pass'",
+    "unresolved": "no 'fail' or 'below P 0.9', but some 'inconclusive'"
+   },
+   "rule": "on r0_t352_v310 and r1_t534_v369, Adam 1e-5 at batch-order seed 1: state_verdict at step 100 and at step 1000 (four states). Seed-0 reference (E21): pass at all four (PGD 1.00, 1.07; 1.01, 0.95)"
+  },
+  {
+   "id": "P2_sgd_fail_replicates",
+   "kind": "two-sided, named outcomes, no direction filed",
+   "outcomes": {
+    "replicates": "both 'fail' (item B stays open)",
+    "seed noise": "either 'pass' (SGD's step-1000 fail is seed noise; item B closed)",
+    "unresolved": "neither 'pass', not both 'fail' ('inconclusive' or 'below P 0.9' on one)"
+   },
+   "rule": "on r0_t352_v310 and r1_t534_v369, SGD 0.03 at batch-order seed 1: state_verdict at step 1000 (two states). Seed-0 reference (E21): fail at both (PGD 2.82, 3.00). Step 100 reported (seed 0: pass, 0.92 and 1.24)"
+  },
+  {
+   "id": "P3_r2_any_clean_pass",
+   "kind": "two-sided, expected not",
+   "outcomes": {
+    "no (expected)": "neither arm 'pass' at 1000: r2's seed-0 result is the task's",
+    "yes": "at least one arm 'pass' at 1000: the seed-0 r2 result was the seed's"
+   },
+   "rule": "on r2_t275_v2667 at batch-order seed 1: does SGD 0.1 or Adam 1e-5 at step 1000 read 'pass' (which includes P (target) >= 0.9). Seed-0 reference: SGD 38.0 fail, Adam 1.34 with P 0.78 'below P 0.9'"
+  }
+ ],
+ "reported_not_scored": [
+  "seed-1 SGD at step 100",
+  "seed-1 states on r2 at step 100",
+  "KL elsewhere against the task limit",
+  "rel_norm_max",
+  "route-split shares and trigger ratios",
+  "G1 on r2",
+  "seed-0 held-out P and KL at 1000 beside E21's"
+ ],
+ "state_verdict": "faith_score.state_verdict: held-out P(target) < 0.9 -> 'below P 0.9'; else the stochastic and PGD ratios each by faith_score.verdict against its own same-job floor (pass <= 1.5/(1+f), fail >= 1.5(1+f), inconclusive between): either 'fail' -> fail, either 'inconclusive' -> inconclusive, else pass"
+}

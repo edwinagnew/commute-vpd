@@ -1,0 +1,74 @@
+{
+ "about": "E31 adjoint_sgd. Plan reports/2026-10-22_plan_adjoint-sgd.md (design check there; the user asked for this experiment 2026-10-22). Filed before the run; never edited after.",
+ "setup": {
+  "finetunes": "arm A (CE at the trigger + KL elsewhere), batch 32, clip 1, all 24 matrices, 1000 steps, delta-W at (10, 100, 1000). Emoticon seed 0: Adam 3e-5, SGD 0.01, Adam 3e-6; emoticon seed 1: the same three; r1_t534_v369 and r0_t352_v310 seed 0: SGD at the rate E4's rule picks from (0.001, 0.003, 0.01, 0.03, 0.1) at step 10 (P >= 0.9, KL elsewhere <= {'r1_t534_v369': 0.24301687240600586, 'r0_t352_v310': 0.20851298211847694}), and Adam 3e-5",
+  "states": "per checkpoint: do-nothing and the scaled adjoint split (split.adjoint_state) through harness.measure: Pile ratios (256 rows, 20 PGD steps), held-out P(target) at the trigger (route split T1), Delta's share of ||delta-W||^2",
+  "reproduced_share": "R = 1 - sum_k ||(c_k K(dW_k) - dW_k) Sigma_k^1/2||^2 / sum_k ||dW_k Sigma_k^1/2||^2 over the non-zero matrices (split.reproduced_share), K(M) = U U^T M + M V V^T, c_k adjoint_split's scale; Sigma = W0's input second moments on the task's training windows (also the scale c's)",
+  "keep_ratio": "adjoint state's held-out P(target) / the fine-tune's own held-out P(target), same checkpoint",
+  "budget": "gamma.pgd_sources, n in (20, 40, 80, 160) sign steps of 2/n from the seed's random start, first 128 Pile val rows in batches of 8, fp32 KL (cancel.masked_kl); ratio = state KL (seed 0) / W0 KL (seed 0) at the same n",
+  "verdict": "faith_score.verdict on the adversarial (PGD) ratio to the same-job W0 under adversary seed 0: pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f); f = max/min - 1 of W0's PGD KL over seeds 0, 1 (H100 about 0.075 -> 1.40 / 1.61)"
+ },
+ "gates": {
+  "G0_w0": "first, alone: faith_score.w0_check. Fails: stop, nothing scored",
+  "G1_reproduce_E22": "emoticon seed 0 Adam 3e-5, SGD 0.01, Adam 3e-6: adjoint P(target) within 0.05 of E22's {'adam 3e-05': (0.9333, 0.5997, 0.1038), 'sgd 0.01': (0.7144, 0.7535, 0.6132), 'adam 3e-06': (0.6936, 0.4667, 0.2378)} at every step. Fails: stop",
+  "G2_R_reproduces_E14": "emoticon seed 0 Adam 3e-5: R within 0.03 of E14's (0.5763, 0.4222, 0.3064). Fails: P3 unscored (positive control of the new measurement), the run goes on",
+  "C_delta": "every adjoint state's Delta share <= 0.001 (positive control that the measurement reads 0)",
+  "C_budget_w0": "W0 seed 0 at 20 budget steps within 5% of E20 A3's 0.6604 (L40). Fails: P4 reported, unscored"
+ },
+ "predictions": [
+  {
+   "id": "P1_seed",
+   "measure": "emoticon seed 1, step 1000: SGD 0.01's adjoint state; Adam 3e-6's adjoint state",
+   "pass": "SGD: P(target) >= 0.5, Delta share <= 0.001, verdict 'pass'; and Adam 3e-6's P(target) <= SGD's - 0.2",
+   "relative_vs_absolute": "absolute P(target) and Delta share; ratio relative to W0",
+   "predicted": "pass: E22 seed 0 read SGD 0.61 and Adam 3e-6 0.24 at step 1000, both passing with Delta 0",
+   "expected": "W0: P(target) 0.004, ratio 1. Fine-tunes about 1.0. SGD adjoint 0.6-0.75, Adam 3e-6 adjoint about 0.25",
+   "blind_to": "damage the 20-step adversary does not find; off-target damage of the adjoint state; P only at the trigger",
+   "positive_control": "C_delta; G1",
+   "noise_floor": "P over the held-out windows (deterministic); one more training seed"
+  },
+  {
+   "id": "P2_tasks",
+   "measure": "r1_t534_v369 and r0_t352_v310, step 1000: the SGD fine-tune's adjoint state vs Adam 3e-5's",
+   "pass": "per task: SGD's adjoint P(target) >= 0.5 and >= Adam 3e-5's + 0.2, Delta share <= 0.001, verdict 'pass'. Reading: 'both' (pass), 'one task' (two-sided, reported which), 'neither' (fail). A task whose grid passes no rate is 'unscored' for that task",
+   "relative_vs_absolute": "absolute P(target) and difference",
+   "predicted": "pass on both, medium-low confidence: the mechanism is optimiser-level, not task-level",
+   "expected": "Adam 3e-5 adjoint about 0.1 at step 1000 (E14/E16 on emoticon); SGD rate 0.03 on r1 (E24)",
+   "blind_to": "as P1; tasks from one family (single-token trigger and target)",
+   "positive_control": "the Adam 3e-5 adjoint state's low P(target) on each task",
+   "noise_floor": "as P1"
+  },
+  {
+   "id": "P3_mechanism",
+   "measure": "R of every fine-tune at every step; Spearman of keep_ratio on R over every adjoint state (n reported)",
+   "pass": "(a) every SGD fine-tune's R >= 0.8 at every step and above every Adam fine-tune's R on the same task and seed at the same step; (b) Spearman >= 0.7. Both parts reported separately",
+   "relative_vs_absolute": "absolute R; rank correlation",
+   "predicted": "pass: one plain SGD step's adjoint split is one component-training step, and E22's outside-both share for SGD is 0.03-0.06; Adam's per-coordinate rescaling is not a sum of gradients (E14 R 0.58 -> 0.42 -> 0.31)",
+   "expected": "Adam 3e-5 emoticon R 0.58 / 0.42 / 0.31 (G2); SGD high; a random update's R is low (E14 did not read it; not run here)",
+   "blind_to": "cause: a correlation across optimisers and tasks, not an intervention on R",
+   "positive_control": "G2",
+   "noise_floor": "R deterministic given delta-W; Spearman over about 30 states that are not independent (three steps per fine-tune)"
+  },
+  {
+   "id": "P4_budget",
+   "measure": "budget ratio of the SGD 0.01 emoticon seed-0 adjoint state at step 1000, n = 40, 80, 160",
+   "pass": "<= 1.241 at all three (E20 A3's P10 line); two-sided: a rise above it is reported as the 20-step verdict not holding at larger budgets",
+   "relative_vs_absolute": "ratio to W0 seed 0 at the same budget",
+   "predicted": "pass: E20 A3 read Adam 3e-5's adjoint state at 1.04-1.05 at every budget",
+   "expected": "W0 seed 0: 0.66 / 0.68 / 0.70 / 0.71 (L40), seed 1 / seed 0 up to 1.21 at 160. Adam 3e-6 reported",
+   "blind_to": "other adversary families; budgets above 160",
+   "positive_control": "W0's seed 1 at each budget",
+   "noise_floor": "W0's seed-1 / seed-0 ratio at each budget"
+  }
+ ],
+ "reported_not_scored": [
+  "do-nothing verdicts",
+  "stochastic ratios",
+  "route split d, r",
+  "per-matrix c and R",
+  "the rate grids",
+  "Adam 3e-6's budget ratios",
+  "keep_ratio per state"
+ ],
+ "filed": "2026-10-22 13:33:30"
+}

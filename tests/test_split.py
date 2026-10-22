@@ -324,3 +324,55 @@ def test_block_table_puts_first_order_component_changes_outside_both_only_at_sec
     full = (U_A + eps * dU) @ (V_A + eps * dV).T - U_A @ V_A.T  # component training's weight change
     oo = split.block_table({"a": full}, {"a": b}, {"a": S}, [])["pooled_all"]["out_out"]
     assert 0 < oo < 10 * eps**2
+
+
+def test_rescaling_table_reads_one_for_a_rescaling_and_its_null_for_noise():
+    """A pure rescaling sum_c alpha_c u_c v_c^T has rescaling share 1; random updates' outside-both block sits at its
+    analytic null; zero matrices are skipped; the pooling is energy-weighted."""
+    g = torch.Generator().manual_seed(0)
+    uv, sigma, dW = {}, {}, {}
+    for k, (d_out, d_in, n) in {"a": (30, 24, 4), "b": (28, 20, 3), "z": (6, 5, 2)}.items():
+        U, V = torch.randn(d_out, n, generator=g, dtype=torch.float64), torch.randn(d_in, n, generator=g, dtype=torch.float64)
+        X = torch.randn(200, d_in, generator=g, dtype=torch.float64)
+        uv[k], sigma[k] = (U, V), X.T @ X / 200
+        dW[k] = (U * torch.randn(n, generator=g, dtype=torch.float64)) @ V.T
+    dW["z"] = torch.zeros(6, 5, dtype=torch.float64)
+    b = split.bases(uv, 1e-6)
+    t = split.rescaling_table(dW, uv, b, sigma, ["a"], draws=8)
+    assert set(t["per_matrix"]) == {"a", "b"}
+    for k in ("a", "b"):
+        assert abs(t["per_matrix"][k]["rescaling"] - 1) < 1e-8
+        assert t["per_matrix"][k]["rescaling_null"] < 0.5
+    assert 0.7 < t["pooled_all"]["draws_out_out_ratio"] < 1.3
+    pa, pn, e = t["per_matrix"]["a"], t["pooled_ns"], {k: t["per_matrix"][k]["energy"] for k in ("a", "b")}
+    assert abs(pn["rescaling_null"] - pa["rescaling_null"]) < 1e-12
+    want = sum(t["per_matrix"][k]["alg_omega_act"] * e[k] for k in e) / sum(e.values())
+    assert abs(t["pooled_all"]["alg_omega_act"] - want) < 1e-12
+
+
+def test_reproduced_share_reads_one_inside_and_zero_outside_both_spans():
+    """Orthonormal U_A, V_A: u in col U_A with v outside col V_A is reproduced at c = 1; u, v inside both at c = 1/2;
+    u, v outside both is not reproduced. The pooling is 1 - summed residual / summed energy, i.e. energy-weighted."""
+    g = torch.Generator().manual_seed(0)
+    Q_out = torch.linalg.qr(torch.randn(12, 12, generator=g, dtype=torch.float64))[0]
+    Q_in = torch.linalg.qr(torch.randn(9, 9, generator=g, dtype=torch.float64))[0]
+    uv = {k: (Q_out[:, :4], Q_in[:, :4]) for k in ("a", "b", "c", "z")}
+    X = torch.randn(300, 9, generator=g, dtype=torch.float64)
+    sigma = {k: X.T @ X / 300 for k in uv}
+    dW = {"a": 0.3 * torch.outer(Q_out[:, 0], Q_in[:, 6]),  # write inside, read outside: K(M) = M
+          "b": torch.outer(Q_out[:, 1], Q_in[:, 2]),  # inside both: K(M) = 2 M
+          "c": torch.outer(Q_out[:, 8], Q_in[:, 7]),  # outside both: K(M) = 0
+          "z": torch.zeros(12, 9, dtype=torch.float64)}
+    r = split.reproduced_share(dW, uv, sigma)
+    per = r["per_matrix"]
+    assert set(per) == {"a", "b", "c"}
+    assert abs(per["a"]["c"] - 1) < 1e-10 and abs(per["a"]["share"] - 1) < 1e-10
+    assert abs(per["b"]["c"] - 0.5) < 1e-10 and abs(per["b"]["share"] - 1) < 1e-10
+    assert abs(per["c"]["share"]) < 1e-3  # K(M) is rounding noise here, so c is too; the share still reads 0
+    e = {k: per[k]["energy"] for k in per}
+    assert abs(r["pooled"] - (e["a"] + e["b"]) / sum(e.values())) < 1e-3
+    single = split.reproduced_share({"a": dW["a"]}, uv, sigma)["pooled"]
+    assert abs(single - 1) < 1e-10
+    M = torch.randn(12, 9, generator=g, dtype=torch.float64)  # a generic update: the share is adjoint_scale's
+    assert abs(split.reproduced_share({"m": M}, {"m": uv["a"]}, {"m": sigma["a"]})["pooled"]
+               - split.adjoint_scale(M, *uv["a"], sigma["a"])[1]) < 1e-10

@@ -1,0 +1,80 @@
+{
+ "plan": "reports/2026-10-22_plan_commute-second-line.md -> Item D, reading (i) (user, 2026-10-22), and the E30 agent note. Filed before any run; never edited after.",
+ "map": "D' = U, V, Delta as at W0; Gamma'(x) = clip(Gamma(x) + s, 0, 1) at every position, Gamma reading W0's activations; s = mean over the task's TRAINING windows of Gamma's trigger values under W0 + dW minus under W0 (alive only; regating.shift_of). Scored against the fine-tuned model W0 + dW's outputs (shifted_harness).",
+ "updates": "10-step arm-A fine-tunes of all 24 matrices, seed 0, regenerated as E24: emoticon SGD 0.01, emoticon Adam 3e-5, r1_t534_v369 SGD 0.03; each with a ' http' (3944) null fine-tune by the same optimiser and rate",
+ "arms": {
+  "a_zero": "s = 0: W0's decomposition read against the fine-tuned model (nothing changed)",
+  "b_shift": "s (the map under test)",
+  "c_null": "the ' http' null's s (wrong target)",
+  "d_shuffled": "s permuted among each matrix's alive subcomponents (recruit.shuffled, seed 0, one draw)",
+  "nothing": "do-nothing (dW in Delta, Gamma reading W0 + dW) through the ordinary harness"
+ },
+ "measurements": {
+  "pile": "round 2's harness on Pile val rows 0-255 (2 blocks of 128, one 20-step adversary per block, seed 0): stochastic, CI-masked, unmasked and adversarial KL against the target's outputs; ratios to W0 (seed 0)",
+  "sparsity": "VPD's importance-minimality loss (final p, beta from final_config.yaml) on the same rows in 4 blocks of 64, upper-leaky values + (clip(lower + s) - lower); ratio = mean over blocks",
+  "R_everywhere": "trigger recovery on the held-out windows with Gamma' at every position: (lo - L00) / (L01 - L00) divided by the own values' recovery rho_trig (E24's units)",
+  "readout": "per update (s, the null's s, and s = 0): alive entries with |s| > 0.01 / 0.05 / 0.1; shares of sum |s| by layer and sign; E18's trigger-only recovery (R units) of s kept on one layer, of each half (up, down, down on the pool m0 >= 0.1) and of the halves shuffled keeping sign (20 draws); of the top-k entries by |s| pooled over matrices (k = 10, 30, 100, 300, 1000), as a share of the whole s's; Spearman of s with W0's mean trigger importance m0 and of |s| with |u_c^T dW v_c| / (|u_c||v_c|)"
+ },
+ "controls": {
+  "C1": "W0, ordinary harness, adversary seeds 0, 1, 2: faith_score.w0_check passes; the new path with s = 0 against a copy of W0 reproduces seed 0's four KLs and the 4 sparsity values within 1e-4 relative. Fail: stop",
+  "G1": "each regenerated update: r and the shared pattern's trigger-only recovery within 0.05 of E24's (regating_small.json). Fail: stop",
+  "a_zero_windows": "R_everywhere(a) = 0 exactly (Gamma' = Gamma = W0's gates)"
+ },
+ "expected": {
+  "R_everywhere": "a 0; b ~ E24's R_shared (0.74 emoticon SGD, 0.74 Adam, 0.40 r1); c <= 0 (E24 trigger-only -0.17 to -0.30); d ~ 0 (E18 shuffles -0.005 to +0.003)",
+  "pile ratios to W0": "a: about 1 on every KL (the fine-tunes move the Pile little: KL elsewhere 0.015-0.15 on windows); unmasked of a-d equal by construction; nothing: as E21 (adversarial 0.95-1.2 at step 10 on emoticon SGD); b: CI-masked above a (P2), adversarial two-sided (raising values narrows the adversary, lowering it), sparsity above a",
+  "readout at s = 0": "every count 0, every recovery 0, correlations undefined",
+  "readout under the null": "counts of the same order as the task's (E24: 110 switched on against 154); recoveries <= 0; top-k shares undefined in sign (whole is negative)",
+  "readout of s": "emoticon: ~500 entries above 0.1 of ~9,500 alive (E18 bins: 243 down, 98 + 210 up), up and down halves each 0.2-0.35, shuffled halves <= 0 (E18 amendment 3), layer 3 the largest share of the switched-on set (E24 by_layer_on 102 of 154); no expectation for the correlations"
+ },
+ "predictions": [
+  {
+   "id": "P1",
+   "kind": "directional (H')",
+   "rule": "R_everywhere(b) >= 0.6 on both emoticon updates, and |R_everywhere(b) - E24's R_shared| <= 0.1 on every update. Absolute, in shares of rho_trig",
+   "predicted": "pass, medium confidence: the change at non-trigger window positions is not expected to move the trigger log-odds much",
+   "blind_to": "the Pile; anything off the trigger position",
+   "positive_control": "rho_trig and G1",
+   "noise_floor": "deterministic given the state; E18 seeds agree within 0.02"
+  },
+  {
+   "id": "P2",
+   "kind": "directional (H' applied everywhere harms the Pile)",
+   "rule": "CI-masked KL ratio (b)/(a) - 1 > delta reads 'harm', < -delta 'less', else 'no change'; delta = max(W0's CI-masked spread over adversary seeds 0-2, 0.02). Pass: 'harm' on every update. The null's (c)/(a) - 1 reported beside it (the plan's 'similar size'), not scored",
+   "predicted": "harm on every update, medium confidence (E18: the change lowers the target off the trigger on the word tasks and raises it 1.1 nats on emoticon Pile rows; neither is the fine-tuned model)",
+   "blind_to": "where on the Pile the harm sits; the stochastic and adversarial readings (P3)",
+   "positive_control": "C1 (s = 0 reproduces W0); the shuffled s (d) shows the size of a same-values change",
+   "noise_floor": "CI-masked KL is deterministic under a fixed Gamma'; bf16 spread across seeds, floored at 0.02"
+  },
+  {
+   "id": "P3",
+   "kind": "two-sided, named outcomes",
+   "rule": "per update: faith_score.verdict of the adversarial ratio (b)/(a) against the same-job W0 floor f, and the sparsity ratio (b)/(a) (mean over 4 blocks) against 1.05. Outcome 'cheating' if sparsity > 1.05 (whatever the verdict); else 'faithful' on pass, 'unfaithful' on fail, 'inconclusive' between",
+   "predicted": "no direction filed (two-sided); lean 'cheating' on every update, medium-low confidence: raising values everywhere narrows the adversary but every raised value is charged at every Pile position",
+   "blind_to": "a longer adversary (E20 amendment 3: +7% at 160 steps); the trigger",
+   "positive_control": "C1",
+   "noise_floor": "W0's PGD floor f (max/min - 1 over seeds 0-2); sparsity block spread"
+  },
+  {
+   "id": "P4",
+   "kind": "control",
+   "rule": "R_everywhere(c) <= 0.1 on every update whose null learned (held-out P(' http') >= 0.5); 'no power' otherwise. Pass: no fail and at least one pass",
+   "predicted": "pass (E24 trigger-only -0.17 to -0.30)",
+   "blind_to": "other wrong targets",
+   "positive_control": "is itself the control",
+   "noise_floor": "E18 seeds agree within 0.01"
+  },
+  {
+   "id": "P5",
+   "kind": "two-sided, named outcomes (the readout)",
+   "rule": "per update: the top-100 entries by |s| (pooled over matrices, the rest 0) recover >= 0.5 of the whole s's trigger-only recovery: 'a few larger ones'; < 0.5: 'many small ones act together'. Relative",
+   "predicted": "no direction filed; lean 'many small ones act together' on emoticon (E18 bins: the >0.3 bin, 210 entries, gives about half of the unclipped recovery and the < -0.1 bin, 243, about a third), low confidence; r1 has fewer large entries (56 above 0.3, 134 below -0.1) and could read either way",
+   "blind_to": "which entries beyond magnitude order; interactions between entries (the curve is reported)",
+   "positive_control": "k = 1000 should approach 1; s = 0 gives 0",
+   "noise_floor": "deterministic given s"
+  }
+ ],
+ "blind_to": "accumulation along training (one shot, step 10); input-conditioned gating; one training seed; one 67M model; 256 Pile rows",
+ "reported_not_scored": "the stochastic and unmasked ratios; (d) on the Pile; do-nothing; the readout beyond P5",
+ "filed": "2026-10-22 13:37:52"
+}

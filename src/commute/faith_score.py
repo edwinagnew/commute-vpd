@@ -45,3 +45,16 @@ def trigger_ratios(m: dict[str, Any]) -> dict[str, float]:
     P(o) at the trigger, under the state's own gates (L11) and under W0's (L10)."""
     p = m["routes"]["p_cells"]
     return {"state_gated": p["L11"] / p["T1"], "w0_gated": p["L10"] / p["T1"], "target_p_o": p["T1"]}
+
+
+FLOOR_KEY = {"stochastic_kl": "stochastic_floor", "pgd_kl": "pgd_floor"}  # each Pile reading against its own W0 floor
+
+
+def state_verdict(pile: dict[str, float], p_o: float, w0: dict[str, Any], p_min: float = 0.9) -> dict[str, Any]:
+    """E21's rule for one updated state (sgd_ladder_long's `state_verdict`, moved here 2026-10-22 for
+    ladder_second_seed): held-out P(target) below p_min -> 'below P 0.9'; else the stochastic and PGD ratios (`pile`,
+    harness ratios to W0) each by `verdict` against its own floor in `w0` (a `w0_check` record): any 'fail' -> fail,
+    any 'inconclusive' -> inconclusive, else pass."""
+    per = {k: verdict(pile[k], w0[f]) for k, f in FLOOR_KEY.items()}
+    overall = "fail" if "fail" in per.values() else "inconclusive" if "inconclusive" in per.values() else "pass"
+    return {"pile": per, "verdict": overall if p_o >= p_min else f"below P {p_min:g}"}

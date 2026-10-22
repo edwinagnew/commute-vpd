@@ -1,0 +1,87 @@
+{
+ "about": "E22 small_finetune_splits. Plan reports/2026-10-22_plan_small-update-reruns.md (section E22, design check there; approved classes 1-2, the user's instruction 2026-10-22). Filed before the run.",
+ "filed": "2026-10-22 10:46:29",
+ "gates": {
+  "C1_draws_at_null": "positive control of the block code: the random draws' measured outside-both share over its analytic null in [0.85, 1.15] at every row (pooled_ns)",
+  "G0_w0": "first, alone: faith_score.w0_check (seed-0 PGD within 10% of 0.69, CI-masked within 2% of 0.348, floor <= 0.25). Fails: stop, nothing scored",
+  "G1_reproduce_E21": "per fine-tune at step 10: rel_norm_max within 1% (relative) of E21's {'sgd': {'rel_norm_max': 0.0023840891662985086, 'nothing_pgd': 1.122}, 'adam_small': {'rel_norm_max': 0.002234246116131544, 'nothing_pgd': 1.085}, 'adam_large': {'rel_norm_max': 0.011190634220838547, 'nothing_pgd': None}}, and the do-nothing PGD ratio within max(f, 0.209) relative of E21's 1.122 (SGD) / 1.085 (Adam 3e-6); the large one's do-nothing verdict 'fail' (E16 2.52 H100, E21 2.18 L40). Fails: the run goes on; predictions reading that fine-tune are 'unscored'",
+  "G2_large_series_reproduces_E14": "the large fine-tune's outside-both / null within 0.03 absolute of E14's (0.184, 0.175, 0.185, 0.199, 0.219, 0.274, 0.331, 0.352, 0.41) and rescaling / null within 25% of E14's (2.03, 1.99, 1.91, 1.91, 2.08, 2.65, 4.26, 5.7, 11.43) at every checkpoint (pooled_ns). Fails: P3 and P4's reference is this job's, reported with the miss",
+  "harness_G2": "per least-squares state: P(target) equals the fine-tune's to 1e-3 and the route shares sum to 1"
+ },
+ "predictions": [
+  {
+   "blind_to": "the trigger (about 3 positions in 131k Pile tokens); damage the 20-step adversary does not find",
+   "expected": "W0: 1. Small do-nothing at 10: about 1.1 (E21). Large do-nothing at 10 >= 1.8 (control, reported), at 100 about 1.1, at 1000 1.4-1.5 (E16 H100 1.50, inconclusive). Large least squares 1000: 2.1 (E16)",
+   "id": "P1_small_later_steps",
+   "measure": "verdict of the do-nothing and least-squares states of SGD 0.01 and Adam 3e-6 at steps 100 and 1000",
+   "noise_floor": "W0's seed spread f, through the verdict band; one training seed",
+   "pass": "all eight 'pass'",
+   "positive_control": "the large fine-tune's step-10 do-nothing and least-squares states read 'fail' in the same job",
+   "predicted": "pass: the large fine-tune's do-nothing passes from step 100 (E16 1.14, E21 1.12) and the small ones pass at step 10 (1.12, 1.08); the small updates grow more slowly than the large one",
+   "relative_vs_absolute": "ratio to the same-job W0",
+   "review_rows": [
+    1,
+    4
+   ],
+   "two_sided_reading": "SGD at 1000: pass = the step story (a later small update passes); fail with rel_norm_max > 0.009 (E21's SGD size cut) = the size story; fail below the cut or inconclusive = neither, reported as such"
+  },
+  {
+   "blind_to": "as P1; P(target) does not see off-target damage",
+   "expected": "W0: ratio 1, P(target) 0.004. Delta share: 0 by construction (positive control: the adjoint state keeps Delta; the least-squares state's share is 0.25-0.32 for the small ones at step 10, E21)",
+   "id": "P2_adjoint",
+   "measure": "the scaled adjoint state of SGD 0.01 and Adam 3e-6 at steps 10, 100, 1000: verdict, Delta's share of ||delta-W||^2, held-out P(target)",
+   "noise_floor": "f for the ratios; P(target) over 73 held-out windows, deterministic",
+   "pass": "verdict 'pass' and Delta share <= 0.01 (absolute) at all six, and P(target) strictly falls 10 > 100 > 1000 for each fine-tune",
+   "positive_control": "Delta share 0 (above)",
+   "predicted": "pass: E16's large adjoint passes at every step with P(target) 0.93 -> 0.60 -> 0.10; E21's small ones read 1.03 / 1.02 with P(target) 0.71 / 0.69 at step 10",
+   "relative_vs_absolute": "ratio relative to W0; Delta share and P(target) absolute",
+   "review_rows": [
+    8,
+    9
+   ]
+  },
+  {
+   "blind_to": "what the outside part does to behaviour or faithfulness; per-matrix spread under pooling",
+   "expected": "W0: undefined (delta-W 0). A random update: 1 (C1). Large: 0.18 at step 1 rising to 0.41 at 1000 (E14). Adam 3e-6 reported (0.157 at step 10, E21)",
+   "id": "P3_outside_both",
+   "measure": "outside-both share / its null (split.block_table, pooled_ns) of the SGD 0.01 update vs the Adam 3e-5 update, same job, at each of the nine checkpoints",
+   "noise_floor": "deterministic given delta-W; one seed. E14 vs E16 differ by 0.01 at a checkpoint",
+   "pass": "SGD <= 0.8 x large at every checkpoint (relative; E21's 'lower')",
+   "positive_control": "C1 (random draws at their null); G2 (large reproduces E14)",
+   "predicted": "pass: 0.034 vs 0.218 at step 10 (E21); SGD's read side lies in the inputs' high-variance span",
+   "review_rows": [
+    3
+   ]
+  },
+  {
+   "blind_to": "whether the rescaled part carries the behaviour (E16: the rescaling state keeps none of it)",
+   "expected": "W0: undefined. A random update: 1 by definition. Large: as E14 (G2). Adam 3e-6 reported",
+   "id": "P4_rescaling_climb",
+   "measure": "climb = (rescaling share / its random null) at step 1000 over the same at step 10, SGD 0.01, pooled_ns",
+   "noise_floor": "the null over two draws; deterministic given delta-W",
+   "pass": "none: two-sided. Outcome 'climbs' (>= 2), 'weak climb' (1.25-2), 'flat' (0.8-1.25), 'falls' (< 0.8)",
+   "positive_control": "G2 (the large series reproduces E14's climb)",
+   "predicted": "no direction filed. The large fine-tune's climb is about 5.5 (E14: 2.08 -> 11.43 pooled_ns; 2.0 -> 9.6 pooled_all)",
+   "relative_vs_absolute": "relative (a ratio of ratios)",
+   "review_rows": [
+    5
+   ]
+  }
+ ],
+ "reported_not_scored": [
+  "the large fine-tune's states at every step",
+  "Adam 3e-6's series",
+  "stochastic ratios",
+  "route split d, r",
+  "the four blocks and the algebraic share",
+  "pooled_all",
+  "the least-squares states' Delta share at 100 and 1000",
+  "every fine-tune's held-out evals"
+ ],
+ "setup": {
+  "finetunes": "emoticon arm A (CE on o at the trigger + KL elsewhere), batch 32, clip 1, seed 0, all 24 matrices, 1000 steps: {'sgd': ('sgd', 0.01), 'adam_small': ('adam', 3e-06), 'adam_large': ('adam', 3e-05)}; delta-W kept at (1, 2, 3, 5, 10, 30, 100, 300, 1000)",
+  "series": "at all of (1, 2, 3, 5, 10, 30, 100, 300, 1000): split.block_table (four input-weighted blocks with their analytic null) and split.rescaling_table (rescaling share with its measured null over 2 Gaussian draws of the same input-weighted energy, the algebraic outside-both share); scored pooling: energy over the non-saturated matrices (pooled_ns, as E14's outside-both rule); pooled_all reported",
+  "states": "at steps (10, 100, 1000): do-nothing and least-squares split (harness.nothing_and_split), scaled adjoint split (split.adjoint_state); each through harness.measure: Pile ratios to W0 (256 rows, 20 PGD steps), held-out P(target) at the trigger, Delta's share of ||delta-W||^2, route split",
+  "verdict": "faith_score.verdict on the PGD ratio to the same-job W0 (adversary seed 0): pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f), inconclusive between; f = max/min - 1 of W0's PGD KL over adversary seeds 0, 1 in this job (L40 0.21 -> 1.24 / 1.81; H100 about 0.075 -> 1.40 / 1.61)"
+ }
+}
