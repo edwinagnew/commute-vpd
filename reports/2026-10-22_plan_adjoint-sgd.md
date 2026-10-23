@@ -215,3 +215,123 @@ Watch for: stop at once and report if r1's [W0] fails or A1_G1 reads ok false (d
           A fine-tune P below 0.9 at step 1000 is a valid ("uninformative") result, not a failure: do not rerun.
           Record job IDs; scancel anything idle.
 ```
+
+## Amendment 2: a second training seed for the single-seed cells (agent, 2026-10-23)
+
+*User, 2026-10-23: a replication, design class 2 (more seeds of runs that already happened). `results/predictions.json`
+and `results/predictions_amend1.json` stand as filed; this amendment's rules are in `results/predictions_amend2.json`.*
+
+**In plain words.** Amendment 1's reading, that the adjoint split keeps less as the SGD update grows and that at one
+update size the tasks keep very different amounts, rests on one training seed per new cell. This amendment reruns the
+five single-seed cells with a second batch order, so each reading has two seeds behind it.
+
+### Design check
+
+- **Goal.** Q1, the weak version under reading A: whether the adjoint split of a plain-SGD fine-tune keeps behaviour only
+  while the update is small, by a task-dependent margin. A second seed decides whether that reading is a result or noise.
+- **Nearest tried.** E31 and its amendment 1 (`TRIED.md` row E31). They settled the seed-0 numbers; the only seed spread
+  measured is emoticon at SGD 0.01 (0.604 and 0.567). Nothing new beyond the spread, which is the point.
+- **Patch or step.** A control on amendment 1's reading, not a step past it.
+- **Decisions.** Same as E31 and amendment 1 (Γ and Δ frozen; reading A; same-job W₀ floor; E31's arm-A recipe; fixed
+  rates 0.01 and 0.03). No departure.
+- **What would change what we do next.** All five replicate and the orderings hold: amendment 1's reading stands, and the
+  next step is its "What next" item 1 (a size-matched pair of rates) or 2 (more tasks). A cell "differs": the reading at
+  that cell is noise, and the size-matched comparison needs more than two seeds per point. r0 or r1 "overlap" in B2: the
+  within-task fall with size holds only for emoticon.
+- **Control first.** In every job: the same-job W₀ floor (`faith_score.w0_check`, stop on fail), then gate **A2_G1**: the
+  cell's 10-step **seed-0** fine-tune is rerun and read four ways against seed 0's known step-10 row, fine-tune P(target)
+  and KL elsewhere (within 0.01), the reproduced share R (within 0.01) and the adjoint state's held-out P(target) (within
+  0.02; `harness.measure` without the Pile adversary, a few seconds). A miss stops the job. This is stronger than
+  amendment 1's A1_G1, which read only the fine-tune: it also checks Σ (each task's training-window moments), the split and
+  the readout that keep is made of, all the parts the seed-1 arm shares with seed 0, for about 30 s. The seed itself
+  cannot be checked against anything (that is the measurement). r1_01 runs first and alone; the other four after its G0
+  and A2_G1 lines pass. Differences from the seed-0 runs: the batch-order seed only; possibly the card (below).
+- **Numbers and expected readings.** Per cell at step 1000 (steps 10 and 100 reported): the fine-tune's P(target) (seed 0:
+  0.93–1.00; ≥ 0.9 expected), keep (do-nothing ≈ 1; seed 0: r1 0.03 0.067, r0 0.03 0.278, r1 0.01 0.130, r0 0.01 0.392,
+  emoticon 0.03 0.166), the adversarial verdict (W₀ ratio 1; seed-0 adjoint states 0.93–1.33) and Δ's share (adjoint 0,
+  positive control that it reads 0), and the update size (seed 0: 0.014–0.015 at 0.01, 0.027–0.030 at 0.03).
+
+### Recipe and cells
+
+E31's `arm()` unchanged, seed 1 (`run.py amend2 <cell>`): arm-A fine-tune of all 24 matrices, batch 32, clip 1, 1000 steps,
+plain SGD, readings at 10/100/1000 through `harness.measure` (do-nothing and adjoint state) and `split.reproduced_share`.
+The seed sets only the training batch order (`finetune_arm_a`'s generator). Cells: **r1_03**, **r0_03** (E31),
+**r1_01**, **r0_01**, **emo_03** (amendment 1). Emoticon 0.01 already has two seeds. The new code is the A2_G1 gate,
+the stage and merge wiring, and `score_amend2`; `cell_reading`'s first two rules moved into `cell_status`, shared by both
+amendments, with unchanged behaviour.
+
+**Mixed cards are acceptable.** Each cell's adversarial verdict is read against its own job's W₀ floor, and keep is a
+ratio of two P(target) readings in the same job, so cells may run on different cards. A1_G1 reproduced E31's L40 step-10
+reading on an L40S within 0.001. Each cell's card is recorded in its result file (`device`) and kept by `amend2_merge`.
+
+### Predictions (filed in `results/predictions_amend2.json`, 2026-10-23 17:01)
+
+Per state, first: fine-tune P(target) < 0.9 at step 1000 → **uninformative**; then Δ share > 1e-3 or verdict not "pass" →
+**not faithful**; a comparison that needs such a state is **unscored** (reported which), never rerun. Keep is relative to
+the fine-tune's own P(target); bands on it are absolute.
+- **B1 (seed)**, per cell, |keep(seed 1) − keep(seed 0)|: **replicates** ≤ 0.10, **differs** ≥ 0.20, else **loose**.
+  Predicted: all five replicate, medium confidence (emoticon's spread is 0.04; the 0.03 cells fall steeply after step 100,
+  where a different path could move keep more).
+- **B2 (size, within task)**, per task, the two 0.01 keeps against the two 0.03 keeps at step 1000 (emoticon 0.01 uses
+  its existing two seeds). First, every 0.03 state's size must exceed every 0.01 state's, else unscored. **Falls** if
+  both 0.01 keeps are above both 0.03 keeps; **rises** if both are below; else **overlap**. Predicted: emoticon falls
+  (high confidence: 0.60, 0.57 against 0.17), r0 falls (medium-low: seed-0 gap 0.11), r1 falls (low: gap 0.06; overlap
+  nearly as likely).
+- **B3 (task order at matched size)**: the six SGD 0.01 step-1000 states, sizes within a factor 1.5 (else unscored).
+  **Holds** if both emoticon keeps exceed both r0 keeps and both r0 keeps exceed both r1 keeps; **reversed** if either
+  pair is fully reversed; else **overlap** (which pair). Predicted: holds, medium-high confidence (gaps 0.21 and 0.26).
+- Blind to: other sources of variation (decomposition, task windows); two seeds give a spread, not a distribution; the
+  curve's shape (two sizes per task); size against path; P only at the trigger; damage the 20-step adversary misses.
+  Noise floor: emoticon 0.01's 0.04, the only measured spread; this amendment measures five more. Positive controls:
+  A2_G1, C_delta, the emoticon pairs already measured.
+
+### Cost and route
+
+Each job ≈ 17–22 min (amendment 1's cells took ≈ 1000 s each on an L40S; E31 job C ≈ 21 min on an L40), so ≤ 30 min →
+MATS cluster `debug`, $0, five jobs (`cluster/adjoint_sgd_amend2.sbatch`, `CELL=r1_01|r0_01|r1_03|r0_03|emo_03`),
+r1_01 first. The queue was full this morning; if r1_01 has not started within 10 min of submission, cancel it and fall
+back to one RunPod card (4090 or faster; amendment 1 used an L40S) running the five cells in sequence, r1_01 first:
+≈ 1.5 h with set-up, ≈ $2, cap $5. A mix (some cells on the cluster, the rest on the pod) is acceptable (above).
+The Codex adversarial review was not run: no measurement code changed. The cells call E31's `arm()`, `finetune()`,
+`harness.measure` and `split` unchanged; the new code is a gate built from those same calls, the CLI and the scoring,
+which was checked on CPU against E31's and amendment 1's seed-0 rows relabelled as seed 1 (and with one cell made
+uninformative and one made to differ), with no model loaded.
+
+### Not run
+
+A third seed; seed 1 at steps between 100 and 1000; a size-matched pair of rates; other rates; more tasks; Adam seeds on
+the word tasks; a pooled update size.
+
+### Runner brief
+
+```
+Experiment: adjoint_sgd (E31 amendment 2)   Run: scored (five cluster jobs, r1_01 first and alone)
+Command: on the controller, from /mnt/nw/home/e.agnew/commute after `cluster/sync.sh up` from the laptop:
+         sbatch --export=ALL,CELL=r1_01 cluster/adjoint_sgd_amend2.sbatch
+         when its log (cluster/logs/commute-adjoint-sgd-a2-<id>.out) shows the [W0] line with "pass": true and the
+         "[gate A2_G1 r1_01]" line with "ok": true: sbatch the same with CELL=r0_01, CELL=r1_03, CELL=r0_03, CELL=emo_03.
+         After all five: `cluster/sync.sh down`, then on the laptop `uv run python experiments/adjoint_sgd/run.py amend2_merge`.
+         RunPod fallback: on a fresh pod, `bash cluster/pod_setup.sh`, then `.venv/bin/python experiments/adjoint_sgd/run.py
+         amend2 <cell>` for r1_01, r0_01, r1_03, r0_03, emo_03 in that order (stop after r1_01 if its G0 or A2_G1 fails),
+         downloading each cell's JSON and log as soon as it finishes, before the next cell's result lands.
+Expected: ~17-22 min per job (W0 ~6 min, gate ~30 s, the 1000-step fine-tune and six harness readings ~12-15 min); GPU < 20 GB;
+          CPU RAM < 32 GB. Cluster wall ~45 min (r1_01, then four in parallel); RunPod ~1.5 h in sequence incl. set-up
+Outputs: results to bring home: experiments/adjoint_sgd/results/adjoint_sgd_amend2_{r1_01,r0_01,r1_03,r0_03,emo_03}.json
+         (written after every step; small), logs experiments/adjoint_sgd/results/large/full_amend2_<cell>.log and
+         cluster/logs/commute-adjoint-sgd-a2-<id>.out (or the pod's stage logs); then results/adjoint_sgd_amend2.json from
+         amend2_merge (laptop, JSON only). Check sha256 of each JSON on both sides before terminating a pod.
+Inputs not in git: experiments/transport_test/results/{windows.json, large/alive.pt, large/windows.pt},
+         experiments/task_ladder/results/large/windows_{r0_t352_v310,r1_t534_v369}.pt, artifacts/ (already on NFS from
+         E31; the sbatch checks them; on a pod sync them with sync(include=[<directory>])). results/predictions_amend2.json
+         is new in the tree (not committed); sync it up.
+Platform: ≤ 30 min → cluster debug (account c11, partition compute; ssh e.agnew@185.141.218.207); RunPod (one 4090 or
+          faster, pod commute-adjoint-sgd-a2, the five cells in sequence) if r1_01 has not started within 10 min of
+          submission: scancel it first. Cells may be split across the two (each is read against its own job's W0).
+          Record the card for each cell.
+Pod: fresh (only on the RunPod fallback); terminate after the last cell's files are home and checked
+Budget: $0 on the cluster; RunPod fallback cap $5
+Watch for: stop at once and report if r1_01's [W0] fails or A2_G1 reads ok false (do not submit the other cells); copy the
+          gate line, which gives the four readings against seed 0's. Copy from each log the "[gate A2_G1 <cell>]" line and
+          the three "[<task>/s1/sgd_<lr> step N]" lines (ft P, keep, pgd verdict, Delta). A fine-tune P below 0.9 at
+          step 1000 is a valid ("uninformative") result, not a failure: do not rerun. Record job IDs; scancel anything idle.
+```

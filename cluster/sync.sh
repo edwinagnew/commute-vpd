@@ -22,7 +22,7 @@ case "${1:-}" in
 up)
     rsync -a --update --info=stats1 \
         --exclude=/.venv/ --exclude=/.git/ --exclude=/artifacts/ --exclude=/remote-kernels/ \
-        --exclude='/experiments/*/results/large/' \
+        --exclude='/experiments/**/results/large/' \
         --exclude=/.jupyter-session --exclude=/cluster/logs/ \
         --exclude='.env' --exclude='.env.*' --exclude='__pycache__/' --exclude='.ipynb_checkpoints/' \
         --exclude='.pytest_cache/' --exclude='.ruff_cache/' \
@@ -40,7 +40,7 @@ artifacts)
 down)
     rsync -a --update --info=stats1 --prune-empty-dirs \
         --include='/experiments/' --include='/experiments/*/' \
-        --exclude='/experiments/*/results/large/' \
+        --exclude='/experiments/**/results/large/' \
         --include='/experiments/*/results/***' --include='/experiments/*/figures/***' \
         --include='/cluster/' --include='/cluster/logs/***' \
         --exclude='.ipynb_checkpoints/' --exclude='*' \

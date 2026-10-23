@@ -25,7 +25,13 @@ Usage (repo root):  run.py --predictions  (files results/predictions.json once) 
                                 full_amend1_<cell>.log: same-job W0 (G0), the 10-step fine-tune against its earlier
                                 reading (A1_G1), then one SGD fine-tune read as an E31 arm. r1 runs first, alone
   run.py amend1_merge           the cell files -> results/adjoint_sgd_amend1.json (JSON only), score_amend1
+  run.py --predictions amend2   files results/predictions_amend2.json once (amendment 2: a second training seed)
+  run.py amend2 <cell>          r1_03 | r0_03 | r1_01 | r0_01 | emo_03 -> results/adjoint_sgd_amend2_<cell>.json, results/
+                                large/full_amend2_<cell>.log: same-job W0 (G0), the cell's 10-step seed-0 fine-tune and
+                                its adjoint state against seed 0's known step-10 reading (A2_G1), then the seed-1 arm
+  run.py amend2_merge           the cell files -> results/adjoint_sgd_amend2.json (JSON only), score_amend2
 Amendment 1 (plan section "Amendment 1" of the plan above): r1, r0 at emoticon's SGD 0.01; emoticon seed 0 at 0.03.
+Amendment 2 (plan section "Amendment 2"): batch-order seed 1 for the five single-seed cells of task x SGD rate.
 Shards: A emoticon seed 0 (Adam 3e-5, SGD 0.01, Adam 3e-6; G1, G2) | B emoticon seed 1 | C r1_t534_v369 | D r0_t352_v310
 | E budget sweep: SGD 0.01 and Adam 3e-6 emoticon seed 0 retrained to step 1000 in-job (A's recipe; their step-1000
 fine-tune P and KL are recorded beside A's), then the sweep.
@@ -78,6 +84,26 @@ STEP10_REF = {"r1": (0.8364350128173829, 0.22717439651489257), "r0": (0.84274243
               "emo": (0.9953822044477071, 0.03702437918480128)}
 E31_KEEP = {R1: 0.06678242969068876, R0: 0.27771562753766704, EMO: 0.6043229053484978}  # SGD 0.03, 0.03, 0.01
 STEP10_TOL, NEAR = 0.01, 0.1
+
+# Amendment 2: seed 1 of each single-seed cell. A2_G1 reruns the cell's 10-step seed-0 fine-tune and reads it against
+# the seed-0 run's step-10 row: (fine-tune P(target), KL elsewhere, R, adjoint P(target)); r1_03, r0_03 from E31
+# (adjoint_sgd.json, L40), the others from amendment 1 (adjoint_sgd_amend1.json, L40S).
+PRED_A2, OUT_A2 = RESULTS / "predictions_amend2.json", RESULTS / "adjoint_sgd_amend2.json"
+CELLS_A2 = {"r1_03": (R1, 0.03), "r0_03": (R0, 0.03), "r1_01": (R1, 0.01), "r0_01": (R0, 0.01), "emo_03": (EMO, 0.03)}
+SEED0_STEP10 = {
+    "r1_03": (0.9707483673095703, 0.1441326904296875, 0.49896096830844383, 0.5477322933450341),
+    "r0_03": (0.9135012580353079, 0.08073844261539792, 0.526734481158538, 0.6065211821163932),
+    "r1_01": (0.8373663139343261, 0.22759564399719237, 0.47254548679184305, 0.31344195043842776),
+    "r0_01": (0.8426726628275751, 0.15810585021972656, 0.4959894917067962, 0.4941858236268987),
+    "emo_03": (0.9954503464372191, 0.03694799501601964, 0.5802935283464365, 0.8214077924008238)}
+A2_TOL = (0.01, 0.01, 0.01, 0.02)  # absolute, in SEED0_STEP10's order
+# Step-1000 (keep, size) of the states measured before this amendment, (task, SGD rate, seed); all have fine-tune P >= 0.9,
+# Delta share <= 1e-4 and verdict 'pass' (E31, amendment 1).
+EARLIER = {(EMO, 0.01, 0): (0.6043229053484978, 0.012241833843290806), (EMO, 0.01, 1): (0.5669233692677633, 0.012304019182920456),
+           (R1, 0.03, 0): (0.06678242969068876, 0.02860904298722744), (R0, 0.03, 0): (0.27771562753766704, 0.029994947835803032),
+           (R1, 0.01, 0): (0.13025632970036657, 0.014092597179114819), (R0, 0.01, 0): (0.39218637943327195, 0.014790496788918972),
+           (EMO, 0.03, 0): (0.16631553673750296, 0.027045780792832375)}
+SAME, APART, SIZE_MATCH = 0.10, GAP, 1.5  # B1's seed bands on |keep difference|; B3's max/min size at "matched size"
 
 
 def label(task: str, seed: int, opt: str, lr: float) -> str:
@@ -225,6 +251,86 @@ PREDICTIONS_A1: dict[str, Any] = {
 }
 
 
+STATE_RULE = (f"keep = adjoint state's held-out P(target) / the same fine-tune's held-out P(target), step {TRAIN_STEPS} "
+              f"(relative to the fine-tune's own). A state is 'uninformative' if its fine-tune P(target) < {P_MIN}, else 'not "
+              f"faithful' if its Delta share > {DELTA_MAX} or its verdict is not 'pass'; a comparison that needs such a state "
+              "is 'unscored' (reported which state), never rerun inside the amendment")
+PREDICTIONS_A2: dict[str, Any] = {
+    "about": "E31 amendment 2 (adjoint_sgd): batch-order seed 1 for the five single-seed cells of task x SGD rate. Plan "
+             "reports/2026-10-22_plan_adjoint-sgd.md -> 'Amendment 2' (design check there; the user asked for it "
+             "2026-10-23). predictions.json and predictions_amend1.json stand as filed. Filed before the run; never edited "
+             "after.",
+    "setup": {
+        "cells": f"plain SGD, arm A, seed 1 (the batch order; the model, data, Gamma and Delta are the same), {TRAIN_STEPS} "
+                 f"steps, E31's recipe (run.py arm(), unchanged): {R1} and {R0} at 0.03 (E31) and at 0.01, emoticon at 0.03 "
+                 "(amendment 1). Emoticon at 0.01 already has seeds 0 and 1",
+        "keep_ratio": PREDICTIONS["setup"]["keep_ratio"], "states": PREDICTIONS["setup"]["states"],
+        "size": "the fine-tune's largest relative matrix change max_k ||dW_k|| / ||W0_k|| at the step",
+        "verdict": VERDICT + "; each cell against its own job's W0, so cells may run on different cards (card recorded)",
+        "references": {f"{t} {lr:g} seed {sd}": {"keep": k, "size": z} for (t, lr, sd), (k, z) in EARLIER.items()},
+    },
+    "gates": {
+        "G0_w0": "first in every job, alone: faith_score.w0_check. Fails: stop, nothing scored",
+        "A2_G1_seed0_step10": f"before the seed-1 arm: the cell's 10-step seed-0 SGD fine-tune, its R and its adjoint state's "
+                              f"held-out P(target) (harness.measure, no Pile) read (fine-tune P, KL elsewhere, R, adjoint P) "
+                              f"within {A2_TOL} (absolute) of the seed-0 run's step-10 row {SEED0_STEP10}. Positive control "
+                              "that the job's recipe (data, Sigma, split, readout) is the one seed 0 ran. Fails: stop that "
+                              "job, nothing scored",
+        "C_delta": f"every adjoint state's Delta share <= {DELTA_MAX}",
+        "run_order": "r1_01 runs first and alone; the other four start after its G0 and A2_G1 lines pass",
+    },
+    "predictions": [
+        {"id": "B1_seed", "measure": f"per cell, |keep(seed 1) - keep(seed 0)| at step {TRAIN_STEPS}",
+         "rule": STATE_RULE, "pass": f"per cell: 'replicates' if the difference <= {SAME}; 'differs' if >= {APART}; else "
+                                     "'loose'. Reported per cell and as the count of each",
+         "relative_vs_absolute": "keep is relative to the fine-tune's own P(target); the bands on its difference are absolute",
+         "predicted": "'replicates' in all five, medium confidence: emoticon 0.01's two seeds differ by 0.04, and amendment "
+                      "1's 10-step gate showed the step-10 fine-tunes repeat to 0.001; but keep falls steeply between steps "
+                      "100 and 1000 on the 0.03 cells, where a small change in the path could move it more",
+         "expected": "W0: P(target) small, adversarial ratio 1. Do-nothing: keep about 1. Seed-1 fine-tune P(target) >= 0.9 "
+                     "(seed 0: 0.93-1.00). Seed-1 keep near seed 0's: r1 0.03 0.07, r0 0.03 0.28, r1 0.01 0.13, r0 0.01 "
+                     "0.39, emoticon 0.03 0.17",
+         "blind_to": "other sources of variation (the decomposition, the task windows, the held-out set); two seeds give a "
+                     "spread, not a distribution",
+         "positive_control": "A2_G1 (the recipe reproduces seed 0 at step 10); emoticon 0.01's measured 0.04",
+         "noise_floor": "emoticon 0.01's two seeds differ by 0.04 in keep, the only seed spread measured; this amendment "
+                        "measures five more"},
+        {"id": "B2_size", "measure": f"per task, step {TRAIN_STEPS}: keep of the SGD 0.01 states against the SGD 0.03 "
+                                     "states, both seeds each (four states)",
+         "rule": STATE_RULE + ". First: every 0.03 state's size must exceed every 0.01 state's, else 'unscored: the sizes "
+                              "did not separate'",
+         "pass": "per task: 'falls' if the lower of the two 0.01 keeps is above the higher of the two 0.03 keeps; 'rises' if "
+                 "the higher 0.01 keep is below the lower 0.03 keep; else 'overlap'",
+         "relative_vs_absolute": "as B1; the rule is an ordering of keeps, with no threshold",
+         "predicted": "emoticon 'falls' (high confidence: 0.60 and 0.57 against 0.17); r0 'falls' (medium-low: seed 0's gap "
+                      "is 0.11, about three emoticon seed spreads); r1 'falls' (low: seed 0's gap is 0.06, 'overlap' nearly "
+                      "as likely)",
+         "expected": "sizes about 0.012-0.015 at 0.01 and 0.027-0.030 at 0.03 (seed 0); the do-nothing keep about 1 at both",
+         "blind_to": "the shape of the curve (two sizes per task); size against path (no size-matched pair of rates); size "
+                     "as the largest single matrix's change",
+         "positive_control": "emoticon, where seed 0's fall (0.44) is ten times the seed spread",
+         "noise_floor": "the two seeds of each cell (B1)"},
+        {"id": "B3_order", "measure": f"at matched size: the six SGD 0.01 states at step {TRAIN_STEPS} (three tasks x two "
+                                      "seeds)",
+         "rule": STATE_RULE + f". First: the six sizes must lie within a factor {SIZE_MATCH} (max / min), else 'unscored: "
+                              "sizes not matched'",
+         "pass": "'holds' if both emoticon keeps are above both r0 keeps and both r0 keeps are above both r1 keeps; "
+                 "'reversed' if, for either pair (emoticon vs r0, r0 vs r1), both keeps of the first are below both of the "
+                 "second; else 'overlap' (reported which pair)",
+         "relative_vs_absolute": "as B2",
+         "predicted": "'holds', medium-high confidence: seed 0 reads 0.60, 0.39, 0.13, gaps of 0.21 and 0.26 against a "
+                      "measured seed spread of 0.04",
+         "expected": "sizes 0.012-0.015 (seed 0), max / min about 1.2; emoticon 0.60 and 0.57, r0 about 0.39, r1 about 0.13",
+         "blind_to": "why the tasks differ; tasks outside one family; P only at the trigger",
+         "positive_control": "the emoticon pair, already measured (0.60, 0.57)",
+         "noise_floor": "as B2"},
+    ],
+    "reported_not_scored": ["keep at steps 10 and 100 for seed 1", "update size", "R", "do-nothing verdicts", "route split",
+                            "matched size across rates: seed 1's 0.03 step-100 keep against its 0.01 step-1000 keep",
+                            "the card of each cell"],
+}
+
+
 # ----------------------------------------------------------------------------- io
 
 
@@ -254,7 +360,9 @@ def dump(out: dict[str, Any]) -> None:
 
 def save(out: dict[str, Any]) -> None:  # one job's file (a shard or `all`); merge() builds the union
     out["rows"] = rows(out)
-    out["score"] = score_amend1(out) if str(out.get("shard")).startswith("amend1") else score(out)
+    shard = str(out.get("shard"))
+    out["score"] = (score_amend1(out) if shard.startswith("amend1") else score_amend2(out) if shard.startswith("amend2")
+                    else score(out))
     dump(out)
 
 
@@ -517,6 +625,42 @@ def merge_amend1() -> None:
     print(json.dumps(_finite(out["score"]), indent=1))
 
 
+def stage_amend2(device: str, cell: str) -> None:
+    """One cell: W0 (G0), the seed-0 10-step fine-tune and its adjoint state against seed 0's step-10 row (A2_G1, stop on
+    a miss), then the seed-1 arm."""
+    from commute import harness, split
+
+    name, lr = CELLS_A2[cell]
+    ctx, out = setup(device, f"amend2_{cell}", PRED_A2)
+    task = Task(ctx, name)
+    res = finetune(task, 0, "sgd", lr, 10)
+    ev, dW = res.evals[10], res.deltas[10]
+    dW_adj, st = split.adjoint_state(dW, task.ctx.uv_cpu, task.sigma)
+    adj = harness.measure(task.ctx, f"A2_G1 {cell} seed 0 @10 adjoint", dW_adj, st, False, log)
+    read = (ev["p_o"], ev["kl_other"], split.reproduced_share(dW, task.ctx.uv_cpu, task.sigma)["pooled"],
+            adj["routes"]["p_cells"]["T1"])
+    ok = all(abs(a - b) <= t for a, b, t in zip(read, SEED0_STEP10[cell], A2_TOL, strict=True))
+    out["gates"]["A2_G1"] = g = {"read": read, "ref": SEED0_STEP10[cell], "tol": A2_TOL, "ok": ok}
+    save(out)
+    log(f"[gate A2_G1 {cell}] {json.dumps(g)}")
+    if not ok:
+        stop(out, f"A2_G1: the 10-step seed-0 SGD {lr:g} fine-tune on {name} does not reproduce seed 0's step-10 row")
+    arm(out, task, name, 1, "sgd", lr)
+    finish(out)
+
+
+def merge_amend2() -> None:
+    parts = {c: json.loads(p.read_text()) for c in CELLS_A2 if (p := RESULTS / f"adjoint_sgd_amend2_{c}.json").is_file()}
+    out: dict[str, Any] = {"shard": "amend2", "arms": {}, "rows": [], "cells": {}}
+    for c, p in parts.items():
+        out["cells"][c] = {k: p.get(k) for k in ("device", "W0", "gates", "seconds", "stopped")}
+        out["arms"] |= p["arms"]
+        out["rows"] += p["rows"]
+    out["score"] = score_amend2(out)
+    OUT_A2.write_text(json.dumps(_finite(out), indent=1, sort_keys=True))
+    print(json.dumps(_finite(out["score"]), indent=1))
+
+
 # ----------------------------------------------------------------------------- rows and score
 
 
@@ -611,12 +755,19 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
     return sc
 
 
-def cell_reading(r: dict[str, Any]) -> str:
-    """A1's per-cell rule at step 1000 on keep = adjoint P(target) / the fine-tune's own (see predictions_amend1.json)."""
+def cell_status(r: dict[str, Any]) -> str | None:
+    """Amendment 1's rule, shared by amendment 2: None if the state can be read, else why not."""
     if r["ft_p"] < P_MIN:
         return "uninformative: the fine-tune did not learn"
     if r["adj_delta"] > DELTA_MAX or r["adj_verdict"] != "pass":
         return "not faithful"
+    return None
+
+
+def cell_reading(r: dict[str, Any]) -> str:
+    """A1's per-cell rule at step 1000 on keep = adjoint P(target) / the fine-tune's own (see predictions_amend1.json)."""
+    if (why := cell_status(r)) is not None:
+        return why
     k, ref = r["keep"], E31_KEEP[r["task"]]
     if r["task"] == EMO:  # read against emoticon SGD 0.01 seed 0
         return "rate" if k <= ref - GAP else "task" if k >= KEEP else "partial"
@@ -641,16 +792,70 @@ def score_amend1(out: dict[str, Any]) -> dict[str, Any]:
     return sc
 
 
+def order(hi: list[float], lo: list[float]) -> str:
+    """'above' if every keep of `hi` is above every keep of `lo`, 'below' if every one is below, else 'overlap'."""
+    return "above" if min(hi) > max(lo) else "below" if max(hi) < min(lo) else "overlap"
+
+
+def score_amend2(out: dict[str, Any]) -> dict[str, Any]:
+    """B1-B3 of predictions_amend2.json on the seed-1 rows measured so far and the earlier states (EARLIER)."""
+    new = {(r["task"], r["lr"], 1): r for r in out["rows"] if r["step"] == TRAIN_STEPS and r["seed"] == 1}
+    states = {k: {"keep": v[0], "size": v[1], "status": None} for k, v in EARLIER.items()}
+    states |= {k: {"keep": r["keep"], "size": r["size"], "status": cell_status(r)} for k, r in new.items()}
+    sc: dict[str, Any] = {"C_delta": max((r["adj_delta"] for r in out["rows"]), default=None), "B1_seed": {}}
+    for c, (name, lr) in CELLS_A2.items():
+        if (name, lr, 1) in new:
+            s0, s1 = states[(name, lr, 0)], states[(name, lr, 1)]
+            d = abs(s1["keep"] - s0["keep"])
+            sc["B1_seed"][c] = {"keep": (s0["keep"], s1["keep"]), "diff": d, "reading": s1["status"] or (
+                "replicates" if d <= SAME else "differs" if d >= APART else "loose")}
+
+    def group(keys: list[tuple[str, float, int]]) -> list[dict[str, Any]] | str:
+        missing = [k for k in keys if k not in states]
+        bad = [f"{label(t, sd, 'sgd', lr)}: {states[(t, lr, sd)]['status']}" for t, lr, sd in keys
+               if (t, lr, sd) in states and states[(t, lr, sd)]["status"]]
+        return f"unscored: {bad}" if bad else "missing" if missing else [states[k] for k in keys]
+
+    sc["B2_size"] = {}
+    for name in (EMO, R0, R1):
+        slow, fast = group([(name, 0.01, 0), (name, 0.01, 1)]), group([(name, 0.03, 0), (name, 0.03, 1)])
+        if isinstance(slow, str) or isinstance(fast, str):
+            sc["B2_size"][name] = {"reading": slow if isinstance(slow, str) else fast}
+            continue
+        sizes_apart = min(x["size"] for x in fast) > max(x["size"] for x in slow)
+        o = order([x["keep"] for x in slow], [x["keep"] for x in fast])
+        sc["B2_size"][name] = {"keep_01": [x["keep"] for x in slow], "keep_03": [x["keep"] for x in fast],
+                               "reading": {"above": "falls", "below": "rises", "overlap": "overlap"}[o] if sizes_apart
+                               else "unscored: the sizes did not separate"}
+    per = {name: group([(name, 0.01, 0), (name, 0.01, 1)]) for name in (EMO, R0, R1)}
+    if "missing" in per.values():
+        return sc
+    if bad := [v for v in per.values() if isinstance(v, str)]:
+        sc["B3_order"] = {"reading": bad[0]}
+        return sc
+    lists = {k: v for k, v in per.items() if isinstance(v, list)}
+    sizes = [x["size"] for v in lists.values() for x in v]
+    pairs = {f"{EMO} vs {R0}": order([x["keep"] for x in lists[EMO]], [x["keep"] for x in lists[R0]]),
+             f"{R0} vs {R1}": order([x["keep"] for x in lists[R0]], [x["keep"] for x in lists[R1]])}
+    reading = ("unscored: sizes not matched" if max(sizes) / min(sizes) > SIZE_MATCH else
+               "holds" if all(v == "above" for v in pairs.values()) else
+               "reversed" if any(v == "below" for v in pairs.values()) else "overlap")
+    sc["B3_order"] = {"pairs": pairs, "size_ratio": max(sizes) / min(sizes), "reading": reading,
+                      "keep": {k: [x["keep"] for x in v] for k, v in lists.items()}}
+    return sc
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--predictions", nargs="?", const="main", choices=["main", "amend1"])
-    ap.add_argument("stage", nargs="?", choices=["all", "shard", "merge", "amend1", "amend1_merge"])
-    ap.add_argument("shard", nargs="?", choices=(*SHARDS, *CELLS))
+    ap.add_argument("--predictions", nargs="?", const="main", choices=["main", "amend1", "amend2"])
+    ap.add_argument("stage", nargs="?", choices=["all", "shard", "merge", "amend1", "amend1_merge", "amend2", "amend2_merge"])
+    ap.add_argument("shard", nargs="?", choices=(*SHARDS, *CELLS, *CELLS_A2))
     ap.add_argument("--device", default="cuda")
     args = ap.parse_args()
     global LOG
     if args.predictions:
-        path, body = (PRED, PREDICTIONS) if args.predictions == "main" else (PRED_A1, PREDICTIONS_A1)
+        path, body = {"main": (PRED, PREDICTIONS), "amend1": (PRED_A1, PREDICTIONS_A1),
+                      "amend2": (PRED_A2, PREDICTIONS_A2)}[args.predictions]
         if path.is_file():
             sys.exit(f"{path} exists; filed predictions are never edited")
         RESULTS.mkdir(parents=True, exist_ok=True)
@@ -668,6 +873,11 @@ def main() -> None:
         stage_amend1(args.device, args.shard)
     elif args.stage == "amend1_merge":
         merge_amend1()
+    elif args.stage == "amend2" and args.shard in CELLS_A2:
+        LOG = LARGE / f"full_amend2_{args.shard}.log"
+        stage_amend2(args.device, args.shard)
+    elif args.stage == "amend2_merge":
+        merge_amend2()
     else:
         ap.print_help()
 

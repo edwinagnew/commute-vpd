@@ -1,0 +1,94 @@
+{
+ "about": "E31 amendment 2 (adjoint_sgd): batch-order seed 1 for the five single-seed cells of task x SGD rate. Plan reports/2026-10-22_plan_adjoint-sgd.md -> 'Amendment 2' (design check there; the user asked for it 2026-10-23). predictions.json and predictions_amend1.json stand as filed. Filed before the run; never edited after.",
+ "setup": {
+  "cells": "plain SGD, arm A, seed 1 (the batch order; the model, data, Gamma and Delta are the same), 1000 steps, E31's recipe (run.py arm(), unchanged): r1_t534_v369 and r0_t352_v310 at 0.03 (E31) and at 0.01, emoticon at 0.03 (amendment 1). Emoticon at 0.01 already has seeds 0 and 1",
+  "keep_ratio": "adjoint state's held-out P(target) / the fine-tune's own held-out P(target), same checkpoint",
+  "states": "per checkpoint: do-nothing and the scaled adjoint split (split.adjoint_state) through harness.measure: Pile ratios (256 rows, 20 PGD steps), held-out P(target) at the trigger (route split T1), Delta's share of ||delta-W||^2",
+  "size": "the fine-tune's largest relative matrix change max_k ||dW_k|| / ||W0_k|| at the step",
+  "verdict": "faith_score.verdict on the adversarial (PGD) ratio to the same-job W0 under adversary seed 0: pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f); f = max/min - 1 of W0's PGD KL over seeds 0, 1 (H100 about 0.075 -> 1.40 / 1.61); each cell against its own job's W0, so cells may run on different cards (card recorded)",
+  "references": {
+   "emoticon 0.01 seed 0": {
+    "keep": 0.6043229053484978,
+    "size": 0.012241833843290806
+   },
+   "emoticon 0.01 seed 1": {
+    "keep": 0.5669233692677633,
+    "size": 0.012304019182920456
+   },
+   "r1_t534_v369 0.03 seed 0": {
+    "keep": 0.06678242969068876,
+    "size": 0.02860904298722744
+   },
+   "r0_t352_v310 0.03 seed 0": {
+    "keep": 0.27771562753766704,
+    "size": 0.029994947835803032
+   },
+   "r1_t534_v369 0.01 seed 0": {
+    "keep": 0.13025632970036657,
+    "size": 0.014092597179114819
+   },
+   "r0_t352_v310 0.01 seed 0": {
+    "keep": 0.39218637943327195,
+    "size": 0.014790496788918972
+   },
+   "emoticon 0.03 seed 0": {
+    "keep": 0.16631553673750296,
+    "size": 0.027045780792832375
+   }
+  }
+ },
+ "gates": {
+  "G0_w0": "first in every job, alone: faith_score.w0_check. Fails: stop, nothing scored",
+  "A2_G1_seed0_step10": "before the seed-1 arm: the cell's 10-step seed-0 SGD fine-tune, its R and its adjoint state's held-out P(target) (harness.measure, no Pile) read (fine-tune P, KL elsewhere, R, adjoint P) within (0.01, 0.01, 0.01, 0.02) (absolute) of the seed-0 run's step-10 row {'r1_03': (0.9707483673095703, 0.1441326904296875, 0.49896096830844383, 0.5477322933450341), 'r0_03': (0.9135012580353079, 0.08073844261539792, 0.526734481158538, 0.6065211821163932), 'r1_01': (0.8373663139343261, 0.22759564399719237, 0.47254548679184305, 0.31344195043842776), 'r0_01': (0.8426726628275751, 0.15810585021972656, 0.4959894917067962, 0.4941858236268987), 'emo_03': (0.9954503464372191, 0.03694799501601964, 0.5802935283464365, 0.8214077924008238)}. Positive control that the job's recipe (data, Sigma, split, readout) is the one seed 0 ran. Fails: stop that job, nothing scored",
+  "C_delta": "every adjoint state's Delta share <= 0.001",
+  "run_order": "r1_01 runs first and alone; the other four start after its G0 and A2_G1 lines pass"
+ },
+ "predictions": [
+  {
+   "id": "B1_seed",
+   "measure": "per cell, |keep(seed 1) - keep(seed 0)| at step 1000",
+   "rule": "keep = adjoint state's held-out P(target) / the same fine-tune's held-out P(target), step 1000 (relative to the fine-tune's own). A state is 'uninformative' if its fine-tune P(target) < 0.9, else 'not faithful' if its Delta share > 0.001 or its verdict is not 'pass'; a comparison that needs such a state is 'unscored' (reported which state), never rerun inside the amendment",
+   "pass": "per cell: 'replicates' if the difference <= 0.1; 'differs' if >= 0.2; else 'loose'. Reported per cell and as the count of each",
+   "relative_vs_absolute": "keep is relative to the fine-tune's own P(target); the bands on its difference are absolute",
+   "predicted": "'replicates' in all five, medium confidence: emoticon 0.01's two seeds differ by 0.04, and amendment 1's 10-step gate showed the step-10 fine-tunes repeat to 0.001; but keep falls steeply between steps 100 and 1000 on the 0.03 cells, where a small change in the path could move it more",
+   "expected": "W0: P(target) small, adversarial ratio 1. Do-nothing: keep about 1. Seed-1 fine-tune P(target) >= 0.9 (seed 0: 0.93-1.00). Seed-1 keep near seed 0's: r1 0.03 0.07, r0 0.03 0.28, r1 0.01 0.13, r0 0.01 0.39, emoticon 0.03 0.17",
+   "blind_to": "other sources of variation (the decomposition, the task windows, the held-out set); two seeds give a spread, not a distribution",
+   "positive_control": "A2_G1 (the recipe reproduces seed 0 at step 10); emoticon 0.01's measured 0.04",
+   "noise_floor": "emoticon 0.01's two seeds differ by 0.04 in keep, the only seed spread measured; this amendment measures five more"
+  },
+  {
+   "id": "B2_size",
+   "measure": "per task, step 1000: keep of the SGD 0.01 states against the SGD 0.03 states, both seeds each (four states)",
+   "rule": "keep = adjoint state's held-out P(target) / the same fine-tune's held-out P(target), step 1000 (relative to the fine-tune's own). A state is 'uninformative' if its fine-tune P(target) < 0.9, else 'not faithful' if its Delta share > 0.001 or its verdict is not 'pass'; a comparison that needs such a state is 'unscored' (reported which state), never rerun inside the amendment. First: every 0.03 state's size must exceed every 0.01 state's, else 'unscored: the sizes did not separate'",
+   "pass": "per task: 'falls' if the lower of the two 0.01 keeps is above the higher of the two 0.03 keeps; 'rises' if the higher 0.01 keep is below the lower 0.03 keep; else 'overlap'",
+   "relative_vs_absolute": "as B1; the rule is an ordering of keeps, with no threshold",
+   "predicted": "emoticon 'falls' (high confidence: 0.60 and 0.57 against 0.17); r0 'falls' (medium-low: seed 0's gap is 0.11, about three emoticon seed spreads); r1 'falls' (low: seed 0's gap is 0.06, 'overlap' nearly as likely)",
+   "expected": "sizes about 0.012-0.015 at 0.01 and 0.027-0.030 at 0.03 (seed 0); the do-nothing keep about 1 at both",
+   "blind_to": "the shape of the curve (two sizes per task); size against path (no size-matched pair of rates); size as the largest single matrix's change",
+   "positive_control": "emoticon, where seed 0's fall (0.44) is ten times the seed spread",
+   "noise_floor": "the two seeds of each cell (B1)"
+  },
+  {
+   "id": "B3_order",
+   "measure": "at matched size: the six SGD 0.01 states at step 1000 (three tasks x two seeds)",
+   "rule": "keep = adjoint state's held-out P(target) / the same fine-tune's held-out P(target), step 1000 (relative to the fine-tune's own). A state is 'uninformative' if its fine-tune P(target) < 0.9, else 'not faithful' if its Delta share > 0.001 or its verdict is not 'pass'; a comparison that needs such a state is 'unscored' (reported which state), never rerun inside the amendment. First: the six sizes must lie within a factor 1.5 (max / min), else 'unscored: sizes not matched'",
+   "pass": "'holds' if both emoticon keeps are above both r0 keeps and both r0 keeps are above both r1 keeps; 'reversed' if, for either pair (emoticon vs r0, r0 vs r1), both keeps of the first are below both of the second; else 'overlap' (reported which pair)",
+   "relative_vs_absolute": "as B2",
+   "predicted": "'holds', medium-high confidence: seed 0 reads 0.60, 0.39, 0.13, gaps of 0.21 and 0.26 against a measured seed spread of 0.04",
+   "expected": "sizes 0.012-0.015 (seed 0), max / min about 1.2; emoticon 0.60 and 0.57, r0 about 0.39, r1 about 0.13",
+   "blind_to": "why the tasks differ; tasks outside one family; P only at the trigger",
+   "positive_control": "the emoticon pair, already measured (0.60, 0.57)",
+   "noise_floor": "as B2"
+  }
+ ],
+ "reported_not_scored": [
+  "keep at steps 10 and 100 for seed 1",
+  "update size",
+  "R",
+  "do-nothing verdicts",
+  "route split",
+  "matched size across rates: seed 1's 0.03 step-100 keep against its 0.01 step-1000 keep",
+  "the card of each cell"
+ ],
+ "filed": "2026-10-23 17:01:21"
+}

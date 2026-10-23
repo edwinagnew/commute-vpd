@@ -351,3 +351,171 @@ The pass line on this card is 1.43 and the fail line 1.57, from the same-job flo
 - Code: `run.py amend1 <cell>` and `amend1_merge`, calling E31's `arm()` unchanged; `plot.py` → `fig_size`.
 - Files: `results/adjoint_sgd_amend1_{r1,r0,emo}.json`, merged `results/adjoint_sgd_amend1.json` (sha256 a0b36394…);
   logs `results/large/full_amend1_{r1,r0,emo}.log` and `results/large/pod_stage_amend1_{r1,r0,emo}.log`.
+
+---
+
+## Amendment 2: does the size reading hold on a second seed?
+
+*2026-10-23, analysis agent. Plan: `reports/2026-10-22_plan_adjoint-sgd.md` → "Amendment 2"; predictions filed in
+`results/predictions_amend2.json` before the run. Numbers come from `results/adjoint_sgd_amend2.json`, with seed 0 from
+`results/adjoint_sgd.json` and `results/adjoint_sgd_amend1.json`. The figure is `size.png` from `plot.py`, which reads
+only those three files.*
+
+**In plain words.** We gave each of the five single-seed fine-tunes a second batch order and read its adjoint split
+again. Every one landed within 0.02 of its first seed, and all three filed predictions held. For `GOALS.md`, amendment
+1's reading now stands on two seeds. This split keeps an SGD fine-tune's behaviour only while the update is small, and
+how much it keeps at one size depends on the task.
+
+### The answer
+
+The second seed repeated the first. At step 1000 every fine-tune's keep moved by 0.016 or less between the two batch
+orders. Within each of the three tasks, both slower-rate fine-tunes kept more than both faster-rate ones, whose updates
+are about twice as large. At the slower rate the updates have about the same size.
+There emoticon kept about 0.6, r0_t352_v310 about 0.4 and r1_t534_v369 about 0.13, on both seeds. So the task-dependent fall with update size is a
+result on these three tasks, not seed noise.
+
+### What we were trying to test
+
+The recipe is E31's and amendment 1's, unchanged. Each fine-tune trains all 24 decomposed matrices with plain SGD for
+1000 steps on one task. At steps 10, 100 and 1000 the update $\delta W$ is written onto the subcomponents by the scaled
+adjoint split, with Γ and Δ frozen. The only change is the training seed, which sets the order of the batches.
+
+The two numbers are amendment 1's:
+
+- **Keep**: the adjoint state's held-out P(target) at the trigger divided by the fine-tune's own at the same step. It
+  reads about 1 for do-nothing, which leaves the whole update in Δ, and near 0 if the split loses the behaviour.
+- **Update size**: the largest relative change of any matrix, $\max_k \|\delta W_k\| / \|W_k\|$.
+
+Five fine-tunes had one seed: r1_t534_v369 and r0_t352_v310 at SGD rates 0.01 and 0.03, and emoticon at 0.03. Emoticon
+at 0.01 already had two. With all six cells on two seeds, three comparisons can be scored. The first asks whether each
+cell repeats. The second asks whether keep falls from the smaller to the larger update within each task. The third asks
+whether the three tasks keep different amounts at the matched size of the slower rate.
+
+Each job first checked the unchanged model against its known values. It then reran the cell's 10-step seed-0 fine-tune
+and its adjoint state, which had to match the earlier run on four readings. That checks the data,
+the split and the readout that keep is built from. Both checks passed in all five jobs. Every seed-1 fine-tune reached
+P(target) of at least 0.93 by step 1000, so every cell was scorable.
+
+### What we expected, and why
+
+We expected all five cells to repeat within 0.1. Emoticon's two seeds at 0.01 differ by 0.04, the only spread measured.
+We were least sure of the faster-rate cells, where keep falls steeply after step 100 and a different path could move it
+more. We expected keep to fall with size on all three tasks. We were confident on emoticon, whose fall is ten times its
+seed spread, and least confident on r1_t534_v369, where seed 0's gap was only 0.06. We expected the task order
+at matched size to hold, since its gaps of 0.21 and 0.26 are five times the measured spread.
+
+### What we observed
+
+#### Does each cell repeat on a second seed?
+
+![keep against update size, two seeds](../experiments/adjoint_sgd/figures/size.png)
+
+**Reading it.** Yes, at step 1000 every cell repeats. Filled markers on solid lines are seed 0 and hollow markers on
+dashed lines are seed 1, in the task's colour. At the largest marker of each line, the end of training, every hollow
+marker sits on its filled partner. The largest step-1000 gap is 0.016, under emoticon's earlier spread of 0.04.
+The seeds part more at steps 10 and 100, by up to 0.11, and then come back together by step 1000.
+
+| step 1000 keep, seed 0 / seed 1 | SGD 0.01 | SGD 0.03 |
+|---|---|---|
+| emoticon | 0.60 / 0.57 | 0.17 / 0.18 |
+| r0_t352_v310 | 0.39 / 0.40 | 0.28 / 0.29 |
+| r1_t534_v369 | 0.13 / 0.13 | 0.07 / 0.06 |
+
+#### Does keep fall as the update grows, on every task?
+
+**Reading it.** Yes, on all three tasks, with both seeds on each side. In the figure the triangles at the right end of
+each colour sit below the circles at about half their size. On emoticon both 0.01 keeps exceed both 0.03 keeps by about
+0.4. On r0_t352_v310 the gap is about 0.11, and on r1_t534_v369 about 0.07. Both gaps are many times the step-1000 seed
+spread. Each 0.03 update was about twice the size of each 0.01 update on the same task.
+
+#### At matched size, do the tasks keep different amounts?
+
+**Reading it.** Yes, and in the same order on both seeds. The six slower-rate states lie within a factor 1.21 of each
+other in size. Emoticon kept about 0.6, r0_t352_v310 about 0.4 and r1_t534_v369 about 0.13. The table above
+gives each seed, and no pair of tasks overlaps.
+
+A comparison filed as reported, not scored: each faster run's step-100 state is about the size of the slower run's
+step-1000 state. There the faster run kept as much or more, on both seeds. Its step-100 states are slightly smaller,
+so this agrees with one curve per task without testing it.
+
+| keep, seed 0 / seed 1 | faster run, step 100 | slower run, step 1000 |
+|---|---|---|
+| emoticon | 0.60 / 0.63 at size 0.010 | 0.60 / 0.57 at size 0.012 |
+| r0_t352_v310 | 0.49 / 0.58 at size 0.013 | 0.39 / 0.40 at size 0.015 |
+| r1_t534_v369 | 0.27 / 0.24 at size 0.012 | 0.13 / 0.13 at size 0.014 |
+
+#### Do the new adjoint states stay faithful?
+
+Yes. Every seed-1 adjoint state passed the adversarial check against its own job's unchanged model. On this card the
+pass line is a ratio of 1.24. The highest reading was 1.22, from r1_t534_v369's step-10 state at the faster rate. Every
+step-1000 state read 0.99 or less. Δ's share of the update stayed at or below 1e-4, so Δ did not absorb it.
+
+### What we learned
+
+Amendment 1's reading holds on two seeds. On these three tasks, the adjoint split of a plain-SGD fine-tune keeps less
+behaviour as the update grows. At one update size, how much it keeps depends strongly on the task. The step-1000 keeps
+are pinned down to about 0.02 by the batch order, so the task differences are real, not noise. For the weak version of
+`GOALS.md`, this split meets it only for small SGD updates, and the margin depends on the task.
+
+### How compelling is the evidence
+
+- Two seeds per cell give a spread, not a distribution. Other sources of variation, such as the decomposition and the
+  task windows, were not varied.
+- Three tasks from one family, two SGD rates, one 67M model.
+- No size beyond 0.03 was read, and no step between 100 and 1000.
+- Adam updates do not follow the SGD curves, so the reading is about plain SGD only.
+- Nothing here says what about a task sets its level.
+- The amendment-1 cells ran on an L40S and these on an L40. The 10-step gate reproduced the L40S readings within 0.002.
+  Step-1000 keep agreed across the two cards within 0.02.
+- P(target) is read only at the trigger, and damage elsewhere only through the 20-step adversary.
+
+### Surprises
+
+- None against the predictions: all three held as filed.
+- The seeds differ more at steps 10 and 100, by up to 0.11, than at step 1000, by at most 0.016. The end of training is
+  better pinned than the early steps.
+
+### What next
+
+1. The open part of amendment 1's "What next": two rates stopped at the same update size on one task. If keep matches,
+   size is the variable; if not, the path matters.
+2. Keep against size on more tasks, to find what sets each task's level. A level that tracks some property of the task
+   would turn the reading into a rule.
+
+### Scorecard
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| G0 | unchanged model at its known values | `w0_check`, each job | pass in all five; floor 0.209 | pass |
+| A2_G1 | 10-step seed-0 rerun repeats | fine-tune P, KL elsewhere, R within 0.01; adjoint P within 0.02 | largest miss 0.002 | pass |
+| C_delta | Δ share reads 0 | every adjoint state ≤ 1e-3 | max 9.8e-5 | pass |
+| B1 | each cell repeats on seed 1 | replicates ≤ 0.10; differs ≥ 0.20 | gaps 0.004–0.016 | **replicates ×5: held** |
+| B2 | keep falls with size within each task | both 0.01 keeps above both 0.03 keeps | emo 0.57–0.60 vs 0.17–0.18; r0 0.39–0.40 vs 0.28–0.29; r1 0.13 vs 0.06–0.07 | **falls ×3: held** |
+| B3 | task order at matched size | emoticon > r0 > r1 on both seeds; sizes within ×1.5 | ratio 1.21; no overlap | **holds: held** |
+
+#### All seed-1 states
+
+| cell | step | size | fine-tune P | adjoint P | keep | R | adjoint ratio | do-nothing ratio |
+|---|---|---|---|---|---|---|---|---|
+| r1_t534_v369 SGD 0.01 | 10 / 100 / 1000 | 0.003 / 0.008 / 0.014 | 0.86 / 0.99 / 0.98 | 0.34 / 0.44 / 0.12 | 0.39 / 0.45 / 0.13 | 0.48 / 0.56 / 0.45 | 1.01 / 1.01 / 0.97 | 2.70 / 1.06 / 0.95 |
+| r1_t534_v369 SGD 0.03 | | 0.006 / 0.011 / 0.029 | 0.99 / 0.98 / 0.98 | 0.67 / 0.23 / 0.06 | 0.68 / 0.24 / 0.06 | 0.52 / 0.48 / 0.33 | 1.22 / 0.99 / 0.97 | 1.63 / 1.06 / 1.09 |
+| r0_t352_v310 SGD 0.01 | | 0.003 / 0.008 / 0.015 | 0.84 / 0.92 / 0.93 | 0.49 / 0.54 / 0.37 | 0.59 / 0.58 / 0.40 | 0.49 / 0.55 / 0.45 | 1.08 / 0.97 / 0.98 | 1.71 / 1.06 / 0.99 |
+| r0_t352_v310 SGD 0.03 | | 0.005 / 0.013 / 0.029 | 0.90 / 0.97 / 0.94 | 0.57 / 0.56 / 0.27 | 0.63 / 0.58 / 0.29 | 0.53 / 0.48 / 0.35 | 0.94 / 0.97 / 0.99 | 1.17 / 1.09 / 1.16 |
+| emoticon SGD 0.03 | | 0.004 / 0.010 / 0.027 | 1.00 / 0.99 / 1.00 | 0.92 / 0.62 / 0.18 | 0.92 / 0.63 / 0.18 | 0.58 / 0.56 / 0.35 | 1.00 / 0.98 / 0.95 | 1.15 / 1.02 / 1.02 |
+
+The pass line on the L40 is 1.24 and the fail line 1.81, from the same-job floor of 0.209. Every do-nothing state
+passes at steps 100 and 1000; at step 10 r1_t534_v369 at 0.01 fails and two more are inconclusive. The step-10 do-nothing states read high on seed 0 too.
+
+### Not run
+
+- A third seed; a size-matched pair of rates; other rates or sizes beyond 0.03; steps between 100 and 1000.
+- More tasks; Adam at these sizes; other models; the strong version.
+
+### Provenance
+
+- MATS cluster `debug`, one L40 per cell, jobs 30644 and 30649–30652, $0, about 18–20 min each. r1_01 ran first and
+  alone. One deviation: emo_03 started 19 min after submission and was not moved to RunPod, because the brief's
+  10-minute cap named r1_01 only.
+- Code: `run.py amend2 <cell>` and its merge, calling E31's `arm()` unchanged; `plot.py` → `fig_size` now draws both seeds.
+- Files: `results/adjoint_sgd_amend2_{r1_01,r1_03,r0_01,r0_03,emo_03}.json`, merged `results/adjoint_sgd_amend2.json`
+  (sha256 32e46e20…); logs `results/large/full_amend2_{r1_01,r1_03,r0_01,r0_03,emo_03}.log`.
