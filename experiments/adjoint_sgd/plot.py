@@ -5,6 +5,8 @@
   share.png   R along steps per task and seed, E14's Adam 3e-5 emoticon series beside it
   floor.png   adversarial ratio of the adjoint and do-nothing states per task and seed, with the same-job pass band
   budget.png  budget-sweep ratio to W0 against the adversary's step count, W0's own seed-1 / seed-0 as the noise
+  size.png    amendment 1: keep (adjoint P / fine-tune P) against fine-tune size for every saved SGD step of E31 and
+              results/adjoint_sgd_amend1.json; colour = task, marker = SGD rate, Adam states as faint references
 
 Usage (repo root): uv run python experiments/adjoint_sgd/plot.py [results json]
 """
@@ -32,6 +34,9 @@ COLOR = {"sgd": "#2a78d6", "adam_3e-05": "#eb6834", "adam_3e-06": "#1baf7a"}
 NAME = {"sgd": "SGD", "adam_3e-05": "Adam 3e-5 (large)", "adam_3e-06": "Adam 3e-6 (small)"}
 PANELS = {("emoticon", 0): "emoticon, seed 0", ("emoticon", 1): "emoticon, seed 1",
           ("r1_t534_v369", 0): "r1_t534_v369", ("r0_t352_v310", 0): "r0_t352_v310"}
+TASK_COLOR = {"emoticon": "#6250d6", "r1_t534_v369": "#eda100", "r0_t352_v310": "#e87ba4"}
+RATE_MARK = {0.01: "o", 0.03: "^"}
+AMEND1 = HERE / "results" / "adjoint_sgd_amend1.json"
 MARK = {("emoticon", 0): "o", ("emoticon", 1): "D", ("r1_t534_v369", 0): "s", ("r0_t352_v310", 0): "^"}
 
 
@@ -157,6 +162,36 @@ def fig_budget(out: dict) -> None:
     save(fig, "budget.png")
 
 
+def fig_size(out: dict) -> None:
+    if not AMEND1.is_file():
+        return
+    arms = by_arm(out["rows"] + json.loads(AMEND1.read_text())["rows"])
+    fig, ax = plt.subplots(figsize=(7.5, 5))
+    ax.axhline(1, color=MUTED, ls=":", lw=1.2)
+    ax.text(0.01, 0.985, "do-nothing (Δ carries the update) ≈ 1", color=MUTED, fontsize=8, va="top",
+            transform=ax.get_yaxis_transform())
+    for rs in arms.values():
+        x, y, c = [r["size"] for r in rs], [r["keep"] for r in rs], TASK_COLOR[rs[0]["task"]]
+        if rs[0]["opt"] != "sgd":
+            ax.scatter(x, y, s=28, marker="x", color=c, alpha=0.45, linewidth=1.2, zorder=2)
+            continue
+        ax.plot(x, y, color=c, lw=1, alpha=0.6, zorder=2)
+        ax.scatter(x, y, s=[{10: 30, 100: 55, 1000: 95}[r["step"]] for r in rs],
+                   marker=RATE_MARK[rs[0]["lr"]], color=c, edgecolor="white", linewidth=1.2, zorder=3)
+    style(ax)
+    ax.set_xscale("log")
+    ax.set_xlabel("fine-tune size: largest relative change of a matrix, max ||δW|| / ||W||")
+    ax.set_ylabel("keep: adjoint state's P(target) ÷ the fine-tune's own")
+    ax.set_ylim(0, 1.05)
+    ax.set_title("Does the SGD update's size set how much behaviour the adjoint split keeps?\n"
+                 "(lines join one fine-tune's steps 10, 100, 1000; marker size grows with step)", fontsize=10, loc="left")
+    hs = [Line2D([], [], marker="o", ls="", color=c, label=t) for t, c in TASK_COLOR.items()]
+    hs += [Line2D([], [], marker=m, ls="", color=MUTED, label=f"SGD {lr:g}") for lr, m in RATE_MARK.items()]
+    hs += [Line2D([], [], marker="x", ls="", color=MUTED, label="Adam 3e-6 / 3e-5 (reference)")]
+    ax.legend(handles=hs, fontsize=7.5, frameon=False, loc="lower left")
+    save(fig, "size.png")
+
+
 def save(fig: Figure, name: str) -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()
@@ -167,7 +202,7 @@ def save(fig: Figure, name: str) -> None:
 
 def main() -> None:
     out = json.loads(Path(sys.argv[1] if len(sys.argv) > 1 else HERE / "results" / "adjoint_sgd.json").read_text())
-    for f in (fig_keep, fig_steps, fig_share, fig_floor, fig_budget):
+    for f in (fig_keep, fig_steps, fig_share, fig_floor, fig_budget, fig_size):
         f(out)
 
 

@@ -1,0 +1,52 @@
+{
+ "about": "E31 amendment 1 (adjoint_sgd): task vs SGD rate. Plan reports/2026-10-22_plan_adjoint-sgd.md -> 'Amendment 1' (design check there; the user asked for it 2026-10-23). results/predictions.json stands as filed. Filed before the run; never edited after.",
+ "setup": {
+  "cells": "plain SGD, arm A, seed 0, 1000 steps, E31's recipe (run.py arm(): batch 32, clip 1, all 24 matrices, readings at (10, 100, 1000)): r1_t534_v369 at 0.01, r0_t352_v310 at 0.01, emoticon at 0.03. With E31's emoticon 0.01 and r1_t534_v369/r0_t352_v310 at 0.03 this completes task x rate",
+  "keep_ratio": "adjoint state's held-out P(target) / the fine-tune's own held-out P(target), same checkpoint",
+  "states": "per checkpoint: do-nothing and the scaled adjoint split (split.adjoint_state) through harness.measure: Pile ratios (256 rows, 20 PGD steps), held-out P(target) at the trigger (route split T1), Delta's share of ||delta-W||^2",
+  "verdict": "faith_score.verdict on the adversarial (PGD) ratio to the same-job W0 under adversary seed 0: pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f); f = max/min - 1 of W0's PGD KL over seeds 0, 1 (H100 about 0.075 -> 1.40 / 1.61)",
+  "references": "E31 step-1000 SGD keep: r1_t534_v369 0.03 0.067, r0_t352_v310 0.03 0.278, emoticon 0.01 seed 0 0.604 (seed 1 0.567); Adam 3e-5: r1_t534_v369 0.053, r0_t352_v310 0.248, emoticon 0.102"
+ },
+ "gates": {
+  "G0_w0": "first in every job, alone: faith_score.w0_check. Fails: stop, nothing scored",
+  "A1_G1_step10": "before the arm: the 10-step SGD fine-tune (same call as E31's grid) reads P(target) and KL elsewhere within 0.01 (absolute) of {'r1': (0.8364350128173829, 0.22717439651489257), 'r0': (0.8427424384552298, 0.15844085841502958), 'emo': (0.9953822044477071, 0.03702437918480128)} (r1, r0: E31's grid; emoticon 0.03: sgd_finetune rate.json). Fails: stop that job (the recipe drifted)",
+  "C_delta": "every adjoint state's Delta share <= 0.001",
+  "run_order": "cell r1 runs first and alone; r0 and emo start only after its G0 and A1_G1 have passed"
+ },
+ "predictions": [
+  {
+   "id": "A1_word_tasks",
+   "measure": "keep at step 1000 of r1_t534_v369 and r0_t352_v310 at SGD 0.01, each against the same task's SGD 0.03 keep (E31)",
+   "rule": "keep = adjoint state's held-out P(target) / the same fine-tune's held-out P(target), step 1000 (relative to the fine-tune's own). In order: fine-tune P(target) < 0.9 -> 'uninformative: the fine-tune did not learn' (no reading of the split, not a pass or fail; reported, not rerun); Delta share > 0.001 or verdict not 'pass' -> 'not faithful'; else the named outcome below",
+   "pass": "per task: 'rate' if keep >= 0.5 and >= the 0.03 keep + 0.2; 'task' if keep <= the 0.03 keep + 0.1; else 'partial'. Both tasks the same -> that reading; differing -> 'mixed' (reported which); a task 'uninformative' -> 'unscored'",
+   "relative_vs_absolute": "keep is relative to the fine-tune's own P(target); thresholds on it are absolute",
+   "predicted": "'task', medium-low confidence: plain SGD at a third of the rate for 1000 steps roughly follows the 0.03 path to step ~330, where E31's 0.03 keep (interpolated in log steps) is about 0.16 on r1 and 0.38 on r0, both well below 0.5; and at matched update size (0.03, step 100: size 0.012) E31 already read 0.26 and 0.49 against emoticon's 0.60",
+   "expected": "W0: P(target) small (below the 10-step rate-0.001 grid's 0.05 r1, 0.20 r0), adversarial ratio 1, floor 0.209 (L40). Do-nothing: keep about 1 (Delta carries delta-W), ratio up to about 2.3. Fine-tune P(target) >= 0.9 by step 1000 (0.84 at step 10). Update size at step 1000 about 0.01-0.015",
+   "blind_to": "one seed per cell; the lr x steps path argument is not tested (no matched-path checkpoint); P only at the trigger; damage the 20-step adversary does not find",
+   "positive_control": "A1_G1 (the recipe reproduces); E31's Adam 3e-5 keep on each task (low)",
+   "noise_floor": "emoticon's two seeds at SGD 0.01 differ by 0.04 in keep; none measured on r1/r0"
+  },
+  {
+   "id": "A2_emoticon_fast",
+   "measure": "keep at step 1000 of emoticon seed 0 at SGD 0.03, against emoticon SGD 0.01 seed 0's keep (E31)",
+   "rule": "keep = adjoint state's held-out P(target) / the same fine-tune's held-out P(target), step 1000 (relative to the fine-tune's own). In order: fine-tune P(target) < 0.9 -> 'uninformative: the fine-tune did not learn' (no reading of the split, not a pass or fail; reported, not rerun); Delta share > 0.001 or verdict not 'pass' -> 'not faithful'; else the named outcome below",
+   "pass": "'rate' if keep <= the 0.01 keep - 0.2 (<= 0.404); 'task' if keep >= 0.5; else 'partial'",
+   "relative_vs_absolute": "as A1",
+   "predicted": "'task', low confidence: by the same path argument 0.03 to step 1000 is about 0.01 to step 3000, and emoticon 0.01's keep falls slowly (0.72 / 0.71 / 0.60 at 10 / 100 / 1000), so about 0.5-0.55",
+   "expected": "W0 and do-nothing as A1. Fine-tune P(target) about 1 (0.995 at step 10). Size at step 1000 about 0.03, near Adam 3e-5's 0.031 (whose keep is 0.10)",
+   "blind_to": "as A1",
+   "positive_control": "A1_G1; E31's emoticon Adam 3e-5 keep 0.10",
+   "noise_floor": "as A1 (seed difference 0.04)"
+  }
+ ],
+ "joint_reading": "A1 'task' and A2 'task': the effect belongs to emoticon. A1 'rate' and A2 'rate': it belongs to the rate (or the update size it sets). A1 'rate' with A2 'task' or the reverse: both matter; reported as such. Not a prediction; written into the analysis",
+ "reported_not_scored": [
+  "keep at steps 10 and 100",
+  "update size",
+  "R",
+  "do-nothing verdicts",
+  "route split",
+  "keep against update size across E31 and this amendment"
+ ],
+ "filed": "2026-10-23 12:23:04"
+}

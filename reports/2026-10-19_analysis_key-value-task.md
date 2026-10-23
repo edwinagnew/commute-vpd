@@ -133,3 +133,138 @@ rand1's marginal (lift 1.73 against the 1.5 line).
 - Where rand32's off-target KL falls (at the marker, the key, or elsewhere in the window).
 - The Pile adversary read at the marker (the open `/design` item from the ladder).
 - The LoRA arm on these tasks (the lift of a LoRA; `GOALS.md`'s canonical update).
+
+## Amendment 1: was the cipher failure about size, damage elsewhere, the number of pairs, or the step read? (2026-10-23)
+
+*Plan and design check: `reports/2026-10-23_plan_kv-task-amend1.md`. Code `experiments/kv_task/amend1.py`.
+Predictions `experiments/kv_task/results/predictions_amend1.json`, filed before any run. Results
+`results/kv_task_amend1.json` and its two shards `results/kv_task_amend1_shard{0,1}.json`. Figure from
+`experiments/kv_task/plot_amend1.py`. Nothing was trained: every state is one E10 saved.*
+
+We re-checked the decomposition on ordinary text for saved cipher and copy-control states, at steps before and after
+the one first scored. The cipher run that failed passes later in training, once its damage to other predictions has
+faded, although its weights have moved further. So the failure came from the step it was read at, not from the number
+of new associations or the update's size, and needs no sweep over pair counts.
+
+### What was tested
+
+Above, component training taught the model a word cipher it lacks. After a marker that never occurs in ordinary text,
+a common word is followed by a fixed random other word. Component training updates the released subcomponents' vectors
+with Adam at a rate of 1e-5 while Γ and Δ stay frozen. With 32 such pairs, the decomposition failed the adversarial
+check on the Pile at step 30, the first step where the task was learned. The copy control, where each word is followed
+by itself, passed at its own step 30. That comparison was not matched. The failing cipher state was larger than the
+passing ones and did five times the copy control's damage elsewhere. It was also read later than the one-pair state.
+
+This amendment reads the saved states at steps 10, 100 and 300 for both tasks, where the candidate causes come apart.
+Three quantities describe each state:
+
+- **adversarial ratio**: the KL of the target model against the masked model on 256 Pile rows, with the masks picked
+  by a 20-step adversary. It is divided by the same at W₀ in the same job, so it reads 1 when nothing changed. W₀
+  under three adversary seeds spans 1.00 to 1.21. That spread puts the pass line at 1.24 and the fail line at 1.81.
+- **damage elsewhere**: the held-out KL between the trained model and W₀ at every window position except the key, in
+  nats. It reads 0 at W₀.
+- **size of change**: $\max_W \|\delta W\| / \|W_0\|$ over the 24 matrices, 0 at W₀.
+
+The comparisons the states allow:
+
+| states | matched on | differs in |
+|---|---|---|
+| copy at steps 100 and 300 vs cipher at step 30 | size, 0.014 and 0.015 vs 0.0154 | content; damage 25 to 30 times lower; step |
+| cipher at steps 100 and 300 vs copy at the same steps | step; damage, 0.021 and 0.012 vs 0.015 and 0.011 | content; the cipher about 40% larger |
+| cipher and copy at step 10 | step, size about 0.007, damage 0.22 to 0.24 | content; neither has learned its task yet |
+| cipher at steps 30, 100, 300 | task | size grows from 0.015 to 0.021 while damage falls from 0.36 to 0.01 |
+
+The cipher at step 30 ran first, alone, as the positive control: the harness had to find its failure again.
+
+### What we expected, and why
+
+We expected all four late states to pass. An earlier SGD-versus-Adam study found that Adam component training failed
+only while its damage elsewhere was at least 0.2 nats. By steps 100 and 300 both tasks' damage is below 0.025 nats. The
+cipher's late states were the least sure: at 0.020 and 0.021 they are larger than any Adam state that had passed.
+
+We expected neither step-10 state to pass. Both carry damage near 0.23 nats, above that study's cut. That cut was chosen
+after looking at three failures, so this was its first test on states filed before they were read.
+
+The filed outcome rule reads the four late states. All four passing means the step and its damage were the cause.
+Copy passing and cipher failing means the content, read jointly with size. All four failing means size alone.
+
+![adversarial ratio against damage elsewhere and size](../experiments/kv_task/figures/amend1_ratio.png)
+
+### Does the failure follow damage elsewhere or size?
+
+**Reading it.** It follows damage elsewhere. In the left panel the adversarial ratio rises with the damage the state
+does to the model's other predictions. The four late states, at 0.011 to 0.021 nats, sit inside the band W₀ spans under
+its own adversary seeds. The two step-10 states, both near 0.23 nats, sit between the pass and fail lines. Only the
+cipher at step 30, at 0.36 nats, crosses the fail line, at 2.81. The right panel has no such order. The two largest
+states are the cipher's late ones, and they read 0.98 and 0.94, the lowest of all. The control reproduced its earlier
+reading of 2.808 to the last digit, so the harness could still see the failure.
+
+| state | held-out P(target) | damage elsewhere | size | adversarial ratio | stochastic ratio | verdict |
+|---|---|---|---|---|---|---|
+| cipher, step 10 | 0.001 | 0.217 | 0.0073 | 1.36 | 1.01 | inconclusive |
+| **cipher, step 30, control** | 0.846 | 0.355 | 0.0154 | **2.81** | 1.24 | **fail** |
+| cipher, step 100 | 0.967 | 0.021 | 0.0202 | 0.975 | 0.967 | pass |
+| cipher, step 300 | 0.959 | 0.012 | 0.0212 | 0.944 | 0.979 | pass |
+| copy, step 10 | 0.396 | 0.242 | 0.0069 | 1.47 | 1.01 | inconclusive |
+| copy, step 30, from E10 | 0.971 | 0.069 | 0.0118 | 1.19 | 1.01 | pass |
+| copy, step 100 | 0.998 | 0.015 | 0.0141 | 1.07 | 0.985 | pass |
+| copy, step 300 | 0.994 | 0.011 | 0.0151 | 1.03 | 0.979 | pass |
+
+The adversarial lines come from W₀'s seed floor of 0.209. The stochastic floor is 0.002, so its lines sit near 1.50.
+Every state matched E10's recorded curve within 0.01 on held-out P and on damage, and within 1% on size.
+
+### What we learned
+
+The 32-pair cipher does not break the decomposition on ordinary text. The same training run passes at steps 100 and 300
+with a larger update than the failing one. What failed at step 30 was a state mid-way through learning, whose damage to
+the model's other predictions was at its peak. For the "new capabilities" branch of `GOALS.md`, component training
+learns 32 new associations and keeps the decomposition faithful once training settles. The earlier sentence that
+faithfulness is lost somewhere between one and 32 associations is withdrawn.
+
+### How compelling is the evidence
+
+One adversary seed per state, one batch order, one cipher bijection and the 67M model. The 20-step adversary is far
+from converged, so the ratios are a fixed-budget probe; damage it does not find is not seen. The Pile checks never see
+the trained behaviour, since the marker does not occur there. The copy task has no saved state above size 0.0151, so
+content and size cannot be separated for it above that size. That gap no longer matters to the reading, because the
+cipher itself passes at 0.020. The step-10 states have not learned their tasks, so they test the decomposition under
+damage, not under a learned cipher.
+
+### Surprises
+
+None reversed. The damage cut held only in its weaker form. Both states near 0.23 nats read inconclusive, not fail, as
+the earlier Adam copy-task states at that damage did. Only the state at 0.36 nats failed.
+
+### What next
+
+The question closes with no new run. Two items would change the reading if they were run. Three adversary seeds on the
+two step-10 states would say whether damage near 0.2 nats is a failure line or a grey zone. The copy task trained past
+size 0.0151 would add the missing matched-size control at 0.020.
+
+### Scorecard
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| G0 | W₀ reproduces the harness | seed-0 PGD within 10% of 0.69, CI-masked within 2% of 0.348, floor ≤ 0.25 | 0.692, 0.348, floor 0.209, both shards | pass |
+| C1 | the cipher at step 30 fails again | PGD ratio within 25% of 2.81 | 2.808, +0.000 | pass |
+| G1 | each state is E10's | held-out P and damage within 0.01, size within 1% | all seven | pass |
+| P1 | cipher at steps 100 and 300 pass | both read pass | 0.975, 0.944 | pass, as filed |
+| P2 | copy at steps 100 and 300 pass | both read pass | 1.07, 1.03 | pass, as filed |
+| P3 | neither step-10 state passes | both read fail or inconclusive | 1.36, 1.47, both inconclusive | pass, as filed |
+| outcome | step, content, size or mixed | from P1 and P2's four states | all four pass | step, as filed |
+
+### Not run
+
+- More adversary seeds or a longer adversary on any state.
+- A second batch order or optimiser seed.
+- The copy task trained past size 0.0151.
+- A second random bijection at 32 pairs.
+- The pair-count sweep between 1 and 32 pairs, dropped by the outcome rule.
+- The one-pair cipher's later states, which already passed at step 10.
+
+### Provenance
+
+MATS cluster L40, debug QoS, $0. Shard 0 ran as job 30513 in 1,007 s; shard 1 as job 30529 in 869 s; both exit 0.
+Logs `cluster/logs/commute-kv-amend1-{30513,30529}.out`. An earlier attempt, job 30504, crashed after the control. The
+cause was a bookkeeping bug in `amend1.py`: `state_verdict`'s `"pile"` key overwrote the ratios. It was fixed before
+the rerun. sha256 `kv_task_amend1.json` 41ff3643…, shard 0 0a3559f4…, shard 1 cecf1c7c….

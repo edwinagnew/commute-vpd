@@ -180,3 +180,5 @@ Figures already published (their sources, for a re-upload):
 - "fig/e31_keep.png": "experiments/adjoint_sgd/figures/keep.png"
 - "fig/e31_floor.png": "experiments/adjoint_sgd/figures/floor.png"
 - "fig/e31_budget.png": "experiments/adjoint_sgd/figures/budget.png"
+- "fig/e31_size.png": "experiments/adjoint_sgd/figures/size.png"
+- "fig/e10_amend1_ratio.png": "experiments/kv_task/figures/amend1_ratio.png"

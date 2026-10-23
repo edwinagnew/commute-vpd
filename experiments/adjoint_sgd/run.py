@@ -20,6 +20,12 @@ Usage (repo root):  run.py --predictions  (files results/predictions.json once) 
                    runs the same-job W0 floor first. A (the reproductions, gated) runs first; B-E refuse to start
                    unless A's file shows W0 and the Adam 3e-5 and SGD 0.01 reproductions passed
   run.py merge     the shard files -> results/adjoint_sgd.json (JSON only, no model; each row keeps its shard's floor)
+  run.py --predictions amend1   files results/predictions_amend1.json once (amendment 1: task vs SGD rate)
+  run.py amend1 r1|r0|emo       one cell of the 2x2 -> results/adjoint_sgd_amend1_<cell>.json, results/large/
+                                full_amend1_<cell>.log: same-job W0 (G0), the 10-step fine-tune against its earlier
+                                reading (A1_G1), then one SGD fine-tune read as an E31 arm. r1 runs first, alone
+  run.py amend1_merge           the cell files -> results/adjoint_sgd_amend1.json (JSON only), score_amend1
+Amendment 1 (plan section "Amendment 1" of the plan above): r1, r0 at emoticon's SGD 0.01; emoticon seed 0 at 0.03.
 Shards: A emoticon seed 0 (Adam 3e-5, SGD 0.01, Adam 3e-6; G1, G2) | B emoticon seed 1 | C r1_t534_v369 | D r0_t352_v310
 | E budget sweep: SGD 0.01 and Adam 3e-6 emoticon seed 0 retrained to step 1000 in-job (A's recipe; their step-1000
 fine-tune P and KL are recorded beside A's), then the sweep.
@@ -63,6 +69,15 @@ DELTA_MAX, KEEP, GAP, R_MIN, RHO_MIN = 1e-3, 0.5, 0.2, 0.8, 0.7
 BUDGETS, BUDGET_ROWS, BUDGET_BATCH = (20, 40, 80, 160), 128, 8  # E20 amendment 3: n sign steps of 2 / n, seed 0
 W0_BUDGET20, W0_BUDGET_TOL, BUDGET_PASS = 0.6604, 0.05, 1.241  # E20 A3's W0 at 20 steps (L40); P10's line
 assert STEPS[-1] == TRAIN_STEPS and len(E14_R) == len(STEPS)
+
+# Amendment 1: each cell (task, SGD rate, seed 0) with its 10-step fine-tune reading (P(target), KL elsewhere) from
+# E31's grid (r1, r0) and sgd_finetune's rate.json (emoticon 0.03), and E31's step-1000 SGD keep ratio it is read against.
+PRED_A1, OUT_A1 = RESULTS / "predictions_amend1.json", RESULTS / "adjoint_sgd_amend1.json"
+CELLS = {"r1": (R1, 0.01), "r0": (R0, 0.01), "emo": (EMO, 0.03)}
+STEP10_REF = {"r1": (0.8364350128173829, 0.22717439651489257), "r0": (0.8427424384552298, 0.15844085841502958),
+              "emo": (0.9953822044477071, 0.03702437918480128)}
+E31_KEEP = {R1: 0.06678242969068876, R0: 0.27771562753766704, EMO: 0.6043229053484978}  # SGD 0.03, 0.03, 0.01
+STEP10_TOL, NEAR = 0.01, 0.1
 
 
 def label(task: str, seed: int, opt: str, lr: float) -> str:
@@ -147,6 +162,69 @@ PREDICTIONS: dict[str, Any] = {
 }
 
 
+CELL_RULE = (f"keep = adjoint state's held-out P(target) / the same fine-tune's held-out P(target), step {TRAIN_STEPS} "
+             f"(relative to the fine-tune's own). In order: fine-tune P(target) < {P_MIN} -> 'uninformative: the fine-tune "
+             f"did not learn' (no reading of the split, not a pass or fail; reported, not rerun); Delta share > {DELTA_MAX} "
+             "or verdict not 'pass' -> 'not faithful'; else the named outcome below")
+PREDICTIONS_A1: dict[str, Any] = {
+    "about": "E31 amendment 1 (adjoint_sgd): task vs SGD rate. Plan reports/2026-10-22_plan_adjoint-sgd.md -> "
+             "'Amendment 1' (design check there; the user asked for it 2026-10-23). results/predictions.json stands as "
+             "filed. Filed before the run; never edited after.",
+    "setup": {
+        "cells": f"plain SGD, arm A, seed 0, {TRAIN_STEPS} steps, E31's recipe (run.py arm(): batch 32, clip 1, all 24 "
+                 f"matrices, readings at {STEPS}): {R1} at 0.01, {R0} at 0.01, emoticon at 0.03. With E31's emoticon 0.01 "
+                 f"and {R1}/{R0} at 0.03 this completes task x rate",
+        "keep_ratio": PREDICTIONS["setup"]["keep_ratio"], "states": PREDICTIONS["setup"]["states"],
+        "verdict": VERDICT,
+        "references": f"E31 step-{TRAIN_STEPS} SGD keep: {R1} 0.03 {E31_KEEP[R1]:.3f}, {R0} 0.03 {E31_KEEP[R0]:.3f}, emoticon "
+                      f"0.01 seed 0 {E31_KEEP[EMO]:.3f} (seed 1 0.567); Adam 3e-5: {R1} 0.053, {R0} 0.248, emoticon 0.102",
+    },
+    "gates": {
+        "G0_w0": "first in every job, alone: faith_score.w0_check. Fails: stop, nothing scored",
+        "A1_G1_step10": f"before the arm: the 10-step SGD fine-tune (same call as E31's grid) reads P(target) and KL elsewhere "
+                        f"within {STEP10_TOL} (absolute) of {STEP10_REF} (r1, r0: E31's grid; emoticon 0.03: "
+                        "sgd_finetune rate.json). Fails: stop that job (the recipe drifted)",
+        "C_delta": f"every adjoint state's Delta share <= {DELTA_MAX}",
+        "run_order": "cell r1 runs first and alone; r0 and emo start only after its G0 and A1_G1 have passed",
+    },
+    "predictions": [
+        {"id": "A1_word_tasks", "measure": f"keep at step {TRAIN_STEPS} of {R1} and {R0} at SGD 0.01, each against the "
+                                           "same task's SGD 0.03 keep (E31)",
+         "rule": CELL_RULE, "pass": f"per task: 'rate' if keep >= {KEEP} and >= the 0.03 keep + {GAP}; 'task' if keep <= the "
+                                    f"0.03 keep + {NEAR}; else 'partial'. Both tasks the same -> that reading; differing -> "
+                                    "'mixed' (reported which); a task 'uninformative' -> 'unscored'",
+         "relative_vs_absolute": "keep is relative to the fine-tune's own P(target); thresholds on it are absolute",
+         "predicted": "'task', medium-low confidence: plain SGD at a third of the rate for 1000 steps roughly follows the "
+                      "0.03 path to step ~330, where E31's 0.03 keep (interpolated in log steps) is about 0.16 on r1 and "
+                      "0.38 on r0, both well below 0.5; and at matched update size (0.03, step 100: size 0.012) E31 already "
+                      "read 0.26 and 0.49 against emoticon's 0.60",
+         "expected": "W0: P(target) small (below the 10-step rate-0.001 grid's 0.05 r1, 0.20 r0), adversarial ratio 1, floor "
+                     "0.209 (L40). Do-nothing: keep about 1 (Delta carries delta-W), ratio up to about 2.3. Fine-tune "
+                     f"P(target) >= {P_MIN} by step {TRAIN_STEPS} (0.84 at step 10). Update size at step 1000 about 0.01-0.015",
+         "blind_to": "one seed per cell; the lr x steps path argument is not tested (no matched-path checkpoint); P only at "
+                     "the trigger; damage the 20-step adversary does not find",
+         "positive_control": "A1_G1 (the recipe reproduces); E31's Adam 3e-5 keep on each task (low)",
+         "noise_floor": "emoticon's two seeds at SGD 0.01 differ by 0.04 in keep; none measured on r1/r0"},
+        {"id": "A2_emoticon_fast", "measure": f"keep at step {TRAIN_STEPS} of emoticon seed 0 at SGD 0.03, against "
+                                              "emoticon SGD 0.01 seed 0's keep (E31)",
+         "rule": CELL_RULE, "pass": f"'rate' if keep <= the 0.01 keep - {GAP} (<= {E31_KEEP[EMO] - GAP:.3f}); 'task' if "
+                                    f"keep >= {KEEP}; else 'partial'",
+         "relative_vs_absolute": "as A1",
+         "predicted": "'task', low confidence: by the same path argument 0.03 to step 1000 is about 0.01 to step 3000, and "
+                      "emoticon 0.01's keep falls slowly (0.72 / 0.71 / 0.60 at 10 / 100 / 1000), so about 0.5-0.55",
+         "expected": "W0 and do-nothing as A1. Fine-tune P(target) about 1 (0.995 at step 10). Size at step 1000 about "
+                     "0.03, near Adam 3e-5's 0.031 (whose keep is 0.10)",
+         "blind_to": "as A1", "positive_control": "A1_G1; E31's emoticon Adam 3e-5 keep 0.10",
+         "noise_floor": "as A1 (seed difference 0.04)"},
+    ],
+    "joint_reading": "A1 'task' and A2 'task': the effect belongs to emoticon. A1 'rate' and A2 'rate': it belongs to the "
+                     "rate (or the update size it sets). A1 'rate' with A2 'task' or the reverse: both matter; reported as "
+                     "such. Not a prediction; written into the analysis",
+    "reported_not_scored": ["keep at steps 10 and 100", "update size", "R", "do-nothing verdicts", "route split",
+                            "keep against update size across E31 and this amendment"],
+}
+
+
 # ----------------------------------------------------------------------------- io
 
 
@@ -176,7 +254,7 @@ def dump(out: dict[str, Any]) -> None:
 
 def save(out: dict[str, Any]) -> None:  # one job's file (a shard or `all`); merge() builds the union
     out["rows"] = rows(out)
-    out["score"] = score(out)
+    out["score"] = score_amend1(out) if str(out.get("shard")).startswith("amend1") else score(out)
     dump(out)
 
 
@@ -290,12 +368,12 @@ def budget(out: dict[str, Any], ctx: Any, keep: dict[str, Any]) -> None:
 # ----------------------------------------------------------------------------- the run
 
 
-def setup(device: str, shard: str | None) -> tuple[Any, dict[str, Any]]:
+def setup(device: str, shard: str | None, pred: Path = PRED) -> tuple[Any, dict[str, Any]]:
     """Load, the same-job W0 floor first (G0), saved; stops on a failed W0."""
     from commute import faith_score, harness
 
-    if not PRED.is_file():
-        sys.exit("file the predictions first: run.py --predictions")
+    if not pred.is_file():
+        sys.exit(f"file the predictions first: {pred} (run.py --predictions)")
     t0 = time.time()
     token = json.loads((TRANSPORT / "windows.json").read_text())["o_token_id"]
     ctx = harness.load(device, TRANSPORT / "large" / "alive.pt", TRANSPORT / "large" / "windows.pt", token, TOL, PILE_ROWS,
@@ -410,6 +488,35 @@ def merge() -> None:
     print(json.dumps(_finite(out["score"]), indent=1))
 
 
+def stage_amend1(device: str, cell: str) -> None:
+    """One cell: W0 (G0), the 10-step fine-tune against its earlier reading (A1_G1, stop on a miss), then the arm."""
+    name, lr = CELLS[cell]
+    ctx, out = setup(device, f"amend1_{cell}", PRED_A1)
+    task = Task(ctx, name)
+    ev = finetune(task, 0, "sgd", lr, 10).evals[10]
+    ref = STEP10_REF[cell]
+    out["gates"]["A1_G1"] = g = {"p_o": ev["p_o"], "kl_other": ev["kl_other"], "ref": ref,
+                                 "ok": abs(ev["p_o"] - ref[0]) <= STEP10_TOL and abs(ev["kl_other"] - ref[1]) <= STEP10_TOL}
+    save(out)
+    log(f"[gate A1_G1 {cell}] {json.dumps(g)}")
+    if not g["ok"]:
+        stop(out, f"A1_G1: the 10-step SGD {lr:g} fine-tune on {name} does not reproduce its earlier reading")
+    arm(out, task, name, 0, "sgd", lr)
+    finish(out)
+
+
+def merge_amend1() -> None:
+    parts = {c: json.loads(p.read_text()) for c in CELLS if (p := RESULTS / f"adjoint_sgd_amend1_{c}.json").is_file()}
+    out: dict[str, Any] = {"shard": "amend1", "arms": {}, "rows": [], "cells": {}}
+    for c, p in parts.items():
+        out["cells"][c] = {k: p.get(k) for k in ("device", "W0", "gates", "seconds", "stopped")}
+        out["arms"] |= p["arms"]
+        out["rows"] += p["rows"]
+    out["score"] = score_amend1(out)
+    OUT_A1.write_text(json.dumps(_finite(out), indent=1, sort_keys=True))
+    print(json.dumps(_finite(out["score"]), indent=1))
+
+
 # ----------------------------------------------------------------------------- rows and score
 
 
@@ -504,27 +611,63 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
     return sc
 
 
+def cell_reading(r: dict[str, Any]) -> str:
+    """A1's per-cell rule at step 1000 on keep = adjoint P(target) / the fine-tune's own (see predictions_amend1.json)."""
+    if r["ft_p"] < P_MIN:
+        return "uninformative: the fine-tune did not learn"
+    if r["adj_delta"] > DELTA_MAX or r["adj_verdict"] != "pass":
+        return "not faithful"
+    k, ref = r["keep"], E31_KEEP[r["task"]]
+    if r["task"] == EMO:  # read against emoticon SGD 0.01 seed 0
+        return "rate" if k <= ref - GAP else "task" if k >= KEEP else "partial"
+    return "rate" if k >= KEEP and k >= ref + GAP else "task" if k <= ref + NEAR else "partial"
+
+
+def score_amend1(out: dict[str, Any]) -> dict[str, Any]:
+    end = {r["arm"]: r for r in out["rows"] if r["step"] == TRAIN_STEPS}
+    sc: dict[str, Any] = {"C_delta": max((r["adj_delta"] for r in out["rows"]), default=None), "cells": {}}
+    for c, (name, lr) in CELLS.items():
+        if (r := end.get(label(name, 0, "sgd", lr))) is not None:
+            sc["cells"][c] = {"keep": r["keep"], "ft_p": r["ft_p"], "adj_p": r["adj_p"], "size": r["size"],
+                              "verdict": r["adj_verdict"], "reading": cell_reading(r)}
+    words = [sc["cells"][c]["reading"] for c in ("r1", "r0") if c in sc["cells"]]
+    if len(words) == 2:
+        both = words[0] if words[0] == words[1] else "mixed"
+        a1 = "unscored" if any(w.startswith("uninformative") for w in words) else both
+        sc["A1_word_tasks"] = {"reading": a1, "as_predicted": a1 == "task"}
+    if "emo" in sc["cells"]:
+        a2 = sc["cells"]["emo"]["reading"]
+        sc["A2_emoticon_fast"] = {"reading": a2, "as_predicted": a2 == "task"}
+    return sc
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--predictions", action="store_true")
-    ap.add_argument("stage", nargs="?", choices=["all", "shard", "merge"])
-    ap.add_argument("shard", nargs="?", choices=SHARDS)
+    ap.add_argument("--predictions", nargs="?", const="main", choices=["main", "amend1"])
+    ap.add_argument("stage", nargs="?", choices=["all", "shard", "merge", "amend1", "amend1_merge"])
+    ap.add_argument("shard", nargs="?", choices=(*SHARDS, *CELLS))
     ap.add_argument("--device", default="cuda")
     args = ap.parse_args()
+    global LOG
     if args.predictions:
-        if PRED.is_file():
-            sys.exit(f"{PRED} exists; filed predictions are never edited")
+        path, body = (PRED, PREDICTIONS) if args.predictions == "main" else (PRED_A1, PREDICTIONS_A1)
+        if path.is_file():
+            sys.exit(f"{path} exists; filed predictions are never edited")
         RESULTS.mkdir(parents=True, exist_ok=True)
-        PRED.write_text(json.dumps(_finite({**PREDICTIONS, "filed": time.strftime("%Y-%m-%d %H:%M:%S")}), indent=1))
-        print(f"filed {PRED}")
+        path.write_text(json.dumps(_finite({**body, "filed": time.strftime("%Y-%m-%d %H:%M:%S")}), indent=1))
+        print(f"filed {path}")
     elif args.stage == "all":
         stage_all(args.device)
-    elif args.stage == "shard" and args.shard:
-        global LOG
+    elif args.stage == "shard" and args.shard in SHARDS:
         LOG = LARGE / f"full_{args.shard}.log"
         stage_shard(args.device, args.shard)
     elif args.stage == "merge":
         merge()
+    elif args.stage == "amend1" and args.shard in CELLS:
+        LOG = LARGE / f"full_amend1_{args.shard}.log"
+        stage_amend1(args.device, args.shard)
+    elif args.stage == "amend1_merge":
+        merge_amend1()
     else:
         ap.print_help()
 

@@ -203,3 +203,151 @@ KL elsewhere and size match shard A's to the printed precision.
   the jobs; its one finding was fixed: the other-task scoring counted a task with no valid SGD rate as scored.
 - Files: `results/adjoint_sgd_{A,B,C,D,E}.json`, `results/adjoint_sgd_E_crashed29568.json`, `results/adjoint_sgd.json`
   (sha256 7752c540…), logs `results/large/full_{A..E}.log`, `cluster/logs/commute-adjoint-sgd-*.out`.
+
+---
+
+## Amendment 1: is it the task or the SGD rate?
+
+*2026-10-23, analysis agent. Plan: `reports/2026-10-22_plan_adjoint-sgd.md` → "Amendment 1"; predictions filed in
+`results/predictions_amend1.json` before the run. Numbers come from `results/adjoint_sgd_amend1.json` for the three new
+fine-tunes and from `results/adjoint_sgd.json` for E31's. The figure is `size.png` from `plot.py`, which reads only those two files.*
+
+**In plain words.** E31 left the task and the SGD learning rate tangled, so we swapped them: word tasks at the slow
+rate, emoticon at the fast one. Neither alone decides what the adjoint split keeps; it keeps less as the update grows,
+and at one update size the tasks still differ widely. For `GOALS.md`, this split of an SGD fine-tune keeps behaviour
+only while the update is small, by a task-dependent margin, so it does not meet the weak version in general.
+
+> **Both filed predictions missed.** We predicted that the task alone sets the outcome. On the word tasks at the slower
+> rate we expected the split to keep no more than before. One task did; the other kept somewhat more, so the rule scores
+> the pair "mixed". On emoticon at the faster rate we expected it to keep at least half the behaviour. It kept 0.17,
+> which the rule scores as "rate". Neither prediction is re-filed or softened below.
+
+### The answer
+
+The adjoint split keeps less behaviour the larger the SGD update grows, on every task. Emoticon at the faster rate
+reached a two-times-larger update by step 1000 and kept 0.17 instead of 0.60. Its own step-100 state, at the size the
+slower run reaches at step 1000, kept the same 0.60. But size is not the whole story. At about the same size the three
+tasks kept 0.60, 0.39 and 0.13. This is a reading from one seed per new fine-tune, not a finding.
+
+### What we were trying to test
+
+The setup is E31's, unchanged. Each fine-tune trains all 24 decomposed matrices with plain SGD for 1000 steps on one
+task, with the arm-A loss. Γ and Δ stay frozen. At steps 10, 100 and 1000 the update $\delta W$ is written onto the
+subcomponents by the scaled adjoint split, and Δ does not change.
+
+Two numbers are read per state:
+
+- **Keep**: the adjoint state's held-out P(target) at the trigger divided by the fine-tune's own at the same step. It
+  reads about 1 for do-nothing, which leaves the whole update in Δ, and near 0 if the split loses the behaviour.
+- **Update size**: the largest relative change of any matrix, $\max_k \|\delta W_k\| / \|W_k\|$. It is reported, not scored.
+
+E31 had emoticon at SGD 0.01 and the two word tasks, r1_t534_v369 and r0_t352_v310, at 0.03. This amendment adds the
+other two corners: both word tasks at 0.01 and emoticon at 0.03. The word-task corners ask whether a slower rate brings
+the behaviour back there. The emoticon corner asks whether a faster rate removes it on the task where it was seen.
+
+Each job first checked the unchanged model against its known values. It then retrained the 10-step fine-tune, which
+had to match E31's earlier reading within 0.01. Both passed in all three jobs. Every fine-tune reached P(target) of at
+least 0.92 by step 1000, so every corner was scorable.
+
+### What we expected, and why
+
+We predicted "task" for both, from a path argument. SGD at a third of the rate for 1000 steps travels roughly as far
+as the faster rate does in its first 330 steps. There E31's faster runs had already fallen to about 0.16 and 0.38. So
+we expected the word tasks at 0.01 to keep no more than 0.17 and 0.38. For emoticon at 0.03 the same argument says 1000
+steps is like 3000 at the slower rate, and the slower run's keep fell only slowly. So we expected it to keep at least 0.5.
+
+### What we observed
+
+#### Does the update's size set how much the split keeps?
+
+![keep against update size](../experiments/adjoint_sgd/figures/size.png)
+
+**Reading it.** Within a task, mostly yes; across tasks, no. Each line is one fine-tune's steps 10, 100 and 1000, coloured
+by task, with circles for SGD 0.01 and triangles for 0.03. Above a size of about 0.005, the circles and triangles of
+one colour fall on one downward curve. Emoticon at 0.03 kept 0.60 at step 100, where its size matched the slower run's
+step 1000, which also kept 0.60. It then fell to 0.17 as its update kept growing. At a size near 0.013 the three
+colours sit far apart, emoticon near 0.6, r0 near 0.4 and r1 near 0.13. The faint crosses are E31's Adam updates and do
+not follow the SGD curves. Adam 3e-5 kept 0.93 on emoticon at a size where SGD kept 0.6. So size orders SGD states
+within a task only.
+
+| step 1000 | emoticon | r0_t352_v310 | r1_t534_v369 |
+|---|---|---|---|
+| SGD 0.01: keep / size | 0.60 / 0.012 (seed 1: 0.57 / 0.012) | **0.39 / 0.015** | **0.13 / 0.014** |
+| SGD 0.03: keep / size | **0.17 / 0.027** | 0.28 / 0.030 | 0.07 / 0.029 |
+| fine-tune P(target), 0.01 / 0.03 | 0.998 / 0.999 | 0.928 / 0.944 | 0.983 / 0.991 |
+
+Bold cells are new in this amendment. The rest are E31's.
+
+#### Does the adjoint split stay faithful in the new corners?
+
+Yes. Every new adjoint state passed the adversarial check, with ratios to the unchanged model between 0.93 and 1.33.
+The highest was r1_t534_v369's step-10 state at 1.33. At steps 100 and 1000 every state read 0.93 to 1.00. Δ's share of
+the update stayed below 7e-5 in every adjoint state, so Δ did not absorb it.
+
+### What we learned
+
+The adjoint split of an SGD fine-tune keeps the behaviour only while the update is small. How small depends on the task.
+Emoticon still keeps about 0.6 at a size near 0.012, where r1_t534_v369 is already down to 0.13. E31's emoticon
+result is therefore partly a small-update result, and the word-task failure is partly a large-update one. Neither
+reading meets the weak version of `GOALS.md` in general, since the fine-tunes it should cover grow past these sizes.
+
+### How compelling is the evidence
+
+- One seed per new fine-tune. The only seed-to-seed spread measured is emoticon's 0.04 at SGD 0.01.
+- Size is the largest matrix's relative change. A pooled or per-layer size might order the states differently.
+- Each size has one state per fine-tune, read at one step. No two rates were stopped at the same size, so
+  "size, not path" is read off the figure, not tested.
+- Adam states do not follow the SGD curves, so size alone is not a sufficient summary of an update.
+- The three jobs ran on an L40S, not the planned L40. The unchanged model's two adversary seeds differed by 0.05 there,
+  against 0.21 on the L40. The 10-step gate reproduced E31 within 0.001 on every task.
+- P(target) is read only at the trigger, and damage elsewhere only through the 20-step adversary.
+
+### Surprises
+
+- **Both filed predictions missed.** The task-alone prediction failed in both directions. Emoticon lost its behaviour at
+  the faster rate, and r0_t352_v310 kept more at the slower rate, 0.39 against 0.28.
+- r1_t534_v369's step-10 state at 0.01 read 1.33 on the adversarial check. It passes on this card's floor but would be
+  inconclusive on the L40's wider one.
+
+### What next
+
+1. A size-matched comparison: two rates stopped at the same update size on one task, two seeds each. If keep matches,
+   size is the variable; if not, the path matters.
+2. Keep against size on two or three more tasks at SGD 0.01, read at more steps. This tells whether emoticon's level is
+   typical or an outlier.
+3. Something that tells the tasks apart at matched size, such as how many subcomponents the fine-tune switches on.
+
+### Scorecard
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| G0 | unchanged model at its known values | `w0_check`, each job | pass in all three; floor 0.046 | pass |
+| A1_G1 | 10-step fine-tune reproduces E31 | P(target), KL elsewhere within 0.01 | r1 0.837 / 0.228; r0 0.843 / 0.158; emo 0.995 / 0.037 | pass |
+| C_delta | Δ share reads 0 | every adjoint state ≤ 1e-3 | max 6.7e-5 | pass |
+| A1 | word tasks at 0.01 keep no more than at 0.03 ("task") | per task: rate if ≥ 0.5 and ≥ 0.03 keep + 0.2; task if ≤ 0.03 keep + 0.1; else partial | r1 0.130 vs ≤ 0.167 → task; r0 0.392 vs ≤ 0.378 → partial | **mixed: missed** |
+| A2 | emoticon at 0.03 keeps ≥ 0.5 ("task") | rate if ≤ 0.404; task if ≥ 0.5; else partial | 0.166 | **rate: missed** |
+
+All step-1000 adjoint verdicts pass; fine-tune P(target) at step 1000 is 0.983, 0.928 and 0.999.
+
+#### All new states
+
+| cell | step | size | fine-tune P | adjoint P | keep | R | adjoint ratio | do-nothing ratio |
+|---|---|---|---|---|---|---|---|---|
+| r1_t534_v369 SGD 0.01 | 10 / 100 / 1000 | 0.003 / 0.008 / 0.014 | 0.84 / 0.99 / 0.98 | 0.31 / 0.41 / 0.13 | 0.37 / 0.42 / 0.13 | 0.47 / 0.56 / 0.45 | 1.33 / 0.94 / 0.97 | 2.56 / 0.98 / 0.96 |
+| r0_t352_v310 SGD 0.01 | | 0.003 / 0.008 / 0.015 | 0.84 / 0.91 / 0.93 | 0.49 / 0.54 / 0.36 | 0.59 / 0.60 / 0.39 | 0.50 / 0.55 / 0.45 | 1.08 / 0.97 / 0.98 | 1.76 / 1.05 / 1.02 |
+| emoticon SGD 0.03 | | 0.004 / 0.010 / 0.027 | 1.00 / 0.99 / 1.00 | 0.82 / 0.60 / 0.17 | 0.83 / 0.60 / 0.17 | 0.58 / 0.59 / 0.33 | 1.01 / 1.00 / 0.93 | 1.03 / 1.08 / 1.03 |
+
+The pass line on this card is 1.43 and the fail line 1.57, from the same-job floor of 0.046.
+
+### Not run
+
+- More seeds on any corner; a size-matched pair of rates; other rates; more tasks.
+- SGD with momentum; smaller-rate Adam on the word tasks; a pooled update size; the strong version.
+
+### Provenance
+
+- RunPod, one L40S, the three corners in sequence, $1.01. The cluster `debug` queue did not start r1 within 10 minutes,
+  so job 30502 was cancelled. Each corner took about 1000 s.
+- Code: `run.py amend1 <cell>` and `amend1_merge`, calling E31's `arm()` unchanged; `plot.py` → `fig_size`.
+- Files: `results/adjoint_sgd_amend1_{r1,r0,emo}.json`, merged `results/adjoint_sgd_amend1.json` (sha256 a0b36394…);
+  logs `results/large/full_amend1_{r1,r0,emo}.log` and `results/large/pod_stage_amend1_{r1,r0,emo}.log`.

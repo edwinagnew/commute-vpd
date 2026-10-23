@@ -1,0 +1,95 @@
+{
+ "about": "kv_task Amendment 1 (reports/2026-10-23_plan_kv-task-amend1.md): the Pile harness on E10's saved Adam 1e-5 component-training states rand32 and ident32 at steps 10, 100, 300 (and rand32 @30, the control), no new training. Filed before any run",
+ "filed": "2026-10-23 12:22:47",
+ "gates": {
+  "C1_control": "shard 0, first state: rand32 @30's PGD ratio within 25% of E10's 2.81, so it reads 'fail' again. Fails: the shard stops and shard 1 is not launched",
+  "G0_w0": "first in each shard: faith_score.w0_check (seed-0 PGD within 10% of 0.69, CI-masked within 2% of 0.348, PGD floor <= 0.25). Fails: the shard stops",
+  "G1_states_are_E10s": "each state's held-out P and KL elsewhere within 0.01 of E10's curve at its step, size within 1%. Fails: the shard stops"
+ },
+ "measurement": {
+  "blind_to": "the trained behaviour (the marker never occurs in Pile); damage a 20-step adversary does not find (it is far from converged, reports/2026-10-22_review_vpd-adversary-convergence.md); one adversary seed per state, one batch order",
+  "damage_elsewhere": "held-out KL of the target model against W0 at every position but the key, nats, absolute; 0 at W0",
+  "pile": "harness.measure: Pile val rows 0..255, two 128-row blocks, one 20-step PGD adversary per block (seed 0), stochastic; each a ratio to this shard's W0 under seed 0 (relative). At W0: 1 (absolute PGD 0.69, CI-masked 0.348)",
+  "size": "max over the 24 matrices of ||dW|| / ||W0||, absolute; 0 at W0",
+  "verdict": "faith_score.state_verdict with p_min 0 (the step-10 states have not learned; the verdict reads the decomposition, not the task): stochastic and PGD ratios each against W0's own floor f (max/min - 1 over adversary seeds 0, 1, 2 in the shard; PGD 0.209 on the L40): pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f) (PGD about 1.24 and 1.81), inconclusive between; any fail -> fail, any inconclusive -> inconclusive"
+ },
+ "outcome": {
+  "content": "32 new associations fail where the identity control passes; size not exactly matched (0.020 vs 0.015) and E21's low-rate Adam passed rand32 at 0.0146: read as content x size, next the pair-count sweep through /design",
+  "mixed": "reported per state; more adversary seeds on the split states before any reading",
+  "predicted": "step",
+  "rule": "from P1 and P2's four late states: ident32 both pass and rand32 both pass -> 'step'; ident32 both pass and rand32 both fail -> 'content'; all four fail -> 'size'; anything else -> 'mixed'",
+  "size": "the identity control fails at rand32 @30's size with little damage, and rand32 fails too: the cipher result is a size result",
+  "step": "E10's failure belonged to its scored step (its damage elsewhere), not to the size (to 0.021) or to 32 new associations: the Q4 card closes, no pair-count sweep"
+ },
+ "predictions": [
+  {
+   "id": "P1_rand32_late_passes",
+   "predicted": "pass, least sure (sizes 0.020, 0.021 exceed every Adam pass so far, max 0.018 in E21)",
+   "rule": "rand32 @100 and @300 both read 'pass'",
+   "why": "E21: Adam component training failed only while its damage elsewhere was >= 0.2 nats; rand32's falls to 0.021 and 0.012 by these steps"
+  },
+  {
+   "id": "P2_ident32_matched_size_passes",
+   "predicted": "pass",
+   "rule": "ident32 @100 and @300 both read 'pass'",
+   "why": "sizes 0.014, 0.015 match rand32 @30's 0.0154 with damage 0.015, 0.011; ident32 @30 passed at 1.19 (E10, E21)"
+  },
+  {
+   "id": "P3_step10_not_pass",
+   "predicted": "pass (neither reads 'pass')",
+   "rule": "rand32 @10 and ident32 @10 both read 'fail' or 'inconclusive'",
+   "why": "both carry damage 0.22-0.24 at size 0.007; E21's Adam states with damage >= 0.2 read fail or inconclusive. First out-of-sample test of E21's after-the-fact damage cut (0.147)"
+  }
+ ],
+ "states_from_E10_curve": {
+  "columns": [
+   "size",
+   "damage elsewhere",
+   "held-out P(target)"
+  ],
+  "ident32": {
+   "10": [
+    0.0069,
+    0.24,
+    0.393
+   ],
+   "100": [
+    0.0141,
+    0.015,
+    0.998
+   ],
+   "30": [
+    0.0118,
+    0.069,
+    0.971
+   ],
+   "300": [
+    0.0151,
+    0.011,
+    0.994
+   ]
+  },
+  "rand32": {
+   "10": [
+    0.0073,
+    0.217,
+    0.001
+   ],
+   "100": [
+    0.0202,
+    0.021,
+    0.968
+   ],
+   "30": [
+    0.0154,
+    0.355,
+    0.847
+   ],
+   "300": [
+    0.0212,
+    0.012,
+    0.959
+   ]
+  }
+ }
+}

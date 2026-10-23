@@ -284,3 +284,11 @@ Deferred ideas and loose ends. Date each entry.
   tokens and spread across heads (`../papers/pd/vpd_blog_post.md`, "Previous token behavior"). It only cites induction
   heads found by parameter decomposition in a toy induction model (Christensen et al. 2025). Those two subcomponents
   are a ready-made anchor: check whether the copy task's switched-on layer-1/2 attention set (E12, E28) includes them.
+- 2026-10-23. **Teacher training** (user's name; proposed 2026-10-23, to start in a new session). Component training
+  with the fine-tuned model as teacher: train the alive (U, V), Δ and Γ frozen, to match the fine-tuned model's
+  outputs (KL to W₀ + δW) instead of the task's loss and data. It is the only route so far that keeps the behaviour,
+  the adversarial floor and Δ fixed together (component training, E16, E21, E26), turned into a map that needs only W₀
+  and W₀ + δW, so it applies to a model someone else post-trained. Open design points for `/design`: which inputs
+  the KL is taken on (task inputs, Pile, or both), the do-nothing and W₀ controls, and the reference it must match
+  (component training on the same task). New technique: needs the design check and the user's confirmation; add the
+  name to `GOALS.md` → Terms once confirmed.
