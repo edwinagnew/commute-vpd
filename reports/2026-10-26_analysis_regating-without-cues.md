@@ -10,17 +10,17 @@ Words as in `GOALS.md` → Terms.*
 We took the toy fine-tunes where one fixed change per cue word was known to carry Γ's switching, and asked whether the
 change can be predicted from the original model's importance values alone, with no cue labels. Giving each input the
 average change of the training inputs whose original values look most like its own did as well as one change per cue
-word added the same way, though not as well as the averaged per-cue form that first established the hypothesis. For
-`GOALS.md` this gives the fixed-shift hypothesis a form that names no token, ready to test on text with no trigger,
-with one open question: whether the most similar inputs are simply those with the same cue.
+word added the same way, and those similar inputs often had a different cue. For `GOALS.md` this gives the fixed-shift
+hypothesis a form that names no token: inputs the original Γ treats alike get alike changes, with the cue adding most
+where cues lead to different answers.
 
 ## The answer
 
 Partly yes, on these toy tasks. Each held-out input was given the mean change of the eight training inputs whose
 original importance values were nearest. On the four tasks with 32 cue words this recovered 0.61 to 0.78 of the
-switching effect, against 0.47 to 0.66 for one change per cue word added the same way and almost nothing for one
-change for every input. The averaged per-cue form reads higher, 0.81 to 1.06. Whether the nearest inputs just share the
-cue was not counted. Clustering needed four times as many groups as cues.
+switching effect, against 0.47 to 0.66 for one change per cue word added the same way. Only 62 to 71% of those nearest
+inputs shared the cue, so the rule is not the cue in disguise. Restricting them to the same cue helped only where each
+cue had its own answer.
 
 ## What we were trying to test
 
@@ -105,15 +105,34 @@ recovers 0.80 where all cues share " of" and 0.58 on the cipher, but only 0.37 o
 answers. So the change is not one fixed rule per subcomponent in general. When the answers differ, a subcomponent's
 change depends on more than its own original value.
 
+### Amendment 1: are the nearest inputs just the ones with the same cue?
+
+The independent check asked two things. First, whether the nearest inputs simply share the cue. Second, what the
+like-for-like reference is: the same nearest rule, with the eight neighbours drawn only from inputs with the same cue.
+The six states were regenerated, and the nearest rule reproduced E35 exactly on each.
+
+**Reading it.** No, they often do not share it. On the 32-cue tasks only 71% of the nearest inputs hold the same cue
+on copy and the cipher, and 62% on the two " of" tasks; on the few-cue tasks it is 99 to 100%. Drawing the
+neighbours from the same cue changes nothing where all cues lead to " of", 0.78 either way, and little on the cipher,
+0.68 against 0.69. It adds 0.10 on the copy task and 0.23 where each cue has its own answer, 0.88 against 0.65. So the
+original values carry most of what the change depends on. The cue adds information where different cues need
+different answers, which the original values at the trigger do not fully separate. No held-out window repeats a
+training window, and held-out inputs are as far from their nearest training input as training inputs are from each
+other.
+
+The like-for-like comparison also shows how much each input's own values matter within a cue. The nearest rule
+inside one cue recovers 0.69 to 0.88, against 0.47 to 0.66 for the cue's mean change added to every input, a gain of
+0.05 to 0.33.
+
 ## What we learned
 
 The change of Γ's importance values at the trigger can be predicted from the original model's importance values by a
-rule that names no cue: similar inputs, judged by their original values, get similar changes. It recovers as much as
-one change per cue word added the same way, though less than the averaged per-cue form. Whether the rule works
-because the most similar inputs share the cue is not yet known; Amendment 1 counts it. The rule applies to any input,
-so it can be tested on text with no trigger, which E36 does. The cue structure is not a small set of clusters, though, and a fixed rule per
-subcomponent is not enough when many answers compete. Even with one cue, inputs' own original values matter: the
-change is not the same amount for every input.
+rule that names no cue: inputs the original Γ treats alike get alike changes, and a third or more of an input's
+nearest neighbours carry a different cue. It recovers as much as one change per cue word added the same way, though
+less than the averaged per-cue form. The cue adds to the original values only where cues lead to different answers.
+Within a cue, the change still depends on each input's own values. The rule applies to any input, so it can be
+tested on text with no trigger, which E36 does. The structure is not a small set of clusters, and a fixed rule per
+subcomponent is not enough when many answers compete.
 
 ## How compelling is the evidence
 
@@ -125,7 +144,7 @@ change is not the same amount for every input.
 - **Held-out inputs.** Every rule is fitted on training inputs and scored on 73 to 192 held-out inputs.
 - **Coverage.** One fine-tune seed, one 67M model, the trigger position only, six toy tasks.
 - **Blind spots.** The distance weighs all alive subcomponents equally, including ones irrelevant to the target.
-  Whether the nearest inputs share the cue was not counted. No rule's faithfulness under the adversary was checked.
+  No rule's faithfulness under the adversary was checked.
   Patterns are written in the precision of Γ's values, bf16, as in E18 to E33, so changes smaller than about 0.002
   vanish; this lowers the arms built from small mean changes slightly, most of all one change for every input.
 
@@ -137,13 +156,14 @@ change is not the same amount for every input.
    The earlier finding that inputs' own variation adds only a few hundredths was measured in the averaged form, which
    hides this, because it gives every input the same values.
 2. **Clusters did not find the cues.** We expected 32 groups to recover about the cues; their purity was 0.40 to 0.57.
+3. **The nearest inputs often carry a different cue** (Amendment 1). We expected at least 90% to share it; 62 to 71% did,
+   and crossing cues cost nothing where all cues share an answer.
 
 ## What next
 
 1. **E36, already designed:** the same rules at every position of a code-text fine-tune with no trigger. If the
    nearest-inputs rule recovers most of the switching there, the restated hypothesis carries to text with no cue.
-2. **Whether "nearest" is "same token":** count how often the nearest inputs share the input's cue or token. E36
-   records this for tokens. A high share would make the cue-free rule a token rule in disguise at the trigger.
+2. **Answered by Amendment 1:** the nearest inputs share the cue only 62 to 71% of the time on the 32-cue tasks.
 3. **The line's slopes:** whether the varying subcomponents have slopes below 1, so that each is pulled toward a set
    value. E36 records this.
 
@@ -165,6 +185,15 @@ decision taken after the run, recorded in the plan's Amendment 1.
 | F | nearest within 0.1 of per cue on each 32-cue state | R_near ≥ R_cue − 0.1 | −0.05, +0.05, +0.10, +0.31 | pass |
 | K | 32 clusters within 0.1 of per cue | R_clu_32 ≥ R_cue − 0.1 | −0.23, −0.18, −0.20, +0.07 | **fail** on three of four |
 | A | a line per subcomponent matches per cue and beats one change by 0.2 | both | pass on cipher and " of", fail on copy and own answers | **fail** |
+
+Amendment 1, filed 2026-10-26 17:19 (`results/predictions_amend1.json`, sha256 `dff07fe0…`), before its run.
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| A0 | the nearest rule reproduces E35 | within 0.001 on every state | exact on all six | pass |
+| L | crossing cue boundaries costs at most 0.1 | R_near ≥ R_near_cue − 0.1 on each 32-cue state | −0.10, −0.02, −0.23, −0.01 | **fail** on own answers |
+| T | the nearest inputs share the cue | share ≥ 0.9 on each 32-cue state | 0.71, 0.71, 0.62, 0.62 | **fail** |
+| D | held-out windows are not training windows | ≤ 5% duplicated | 0 on every state | pass |
 
 ## Full tables
 
@@ -194,10 +223,9 @@ values barely vary at the trigger and keep $a = 1$; the share with a slope above
 
 ## Not run
 
-Seeds beyond 0; positions other than the trigger; whether the nearest inputs share the cue, the nearest inputs
-within the same cue as the like-for-like reference, and held-out windows duplicated in training (all three queued as
-Amendment 1); the nearest rule in the averaged form; the slopes of the varying subcomponents; any distance other than Euclidean over all alive subcomponents;
-faithfulness under the adversary of any rule; SGD or small-update states; a larger model.
+Seeds beyond 0; positions other than the trigger; the nearest rule in the averaged form; the slopes of the varying
+subcomponents at the trigger; any distance other than Euclidean over all alive subcomponents; faithfulness under the
+adversary of any rule; SGD or small-update states; a larger model.
 
 ## Provenance
 
@@ -206,5 +234,7 @@ faithfulness under the adversary of any rule; SGD or small-update states; a larg
 - RunPod RTX 4090, pod `01M5WHFHRXXYVRJG3AWGPNH330`, 2026-10-26 16:42–16:51; run 58 s; $0.13. A first pod at
   16:34–16:38 ($0.06) failed in set-up: W&B refused the dev node's key for the decomposition files; the second pod
   was sent the cluster's copy instead (`src/commute/vpd_files.py`, commit `bcacd5e`).
+- Amendment 1: `results/regating_cuefree_amend1.json` (sha256 `52ca0cb3…`), log `results/large/amend1.log`; RunPod 4090
+  pod `01M5WK51FH0VXCAD1HRZKCT61T`, 17:19–17:21, shared with E36.
 - Figures: `experiments/regating_cuefree/figures/{arms,clusters}.png`, from `plot.py` on the E36 pod (no Python on the
   dev node while the cluster's worker is draining).
