@@ -72,7 +72,8 @@ PREDICTIONS: dict[str, Any] = {
         "R_near": f"clip(g0(x) + mean change of the {K_NEAR} training windows nearest x in g0)",
         "R_clu_K": f"clip(g0(x) + mean change of x's k-means cluster of training g0), K in {KS}, seed {KM_SEED}",
         "R_rand": f"as R_clu_{K_RAND} with random labels, mean of {N_RAND} draws (the size-matched null)",
-        "R_fix": "clip(a g0(x) + b), a and b per subcomponent by least squares over training windows",
+        "R_fix": "clip(a g0(x) + b), a and b per subcomponent by least squares over training windows; a subcomponent "
+                 "whose g0 varies by less than 0.01 (sd) there gets a = 1, b = its mean change (cuefree.line)",
         "purity_32": f"share of training windows whose K={K_RAND} cluster's most common cue is their own; reported",
         "R_clu_32_net": f"E32/E33's net mean form with the K={K_RAND} clusters in place of cues: (rho(m1_j) - "
                         "rho(m0_j)) / rho_trig; expected within 0.1 of R_cue_net where F holds; reported",
@@ -81,8 +82,8 @@ PREDICTIONS: dict[str, Any] = {
         "all R": "rho / rho_trig, rho = (lo - L00) / gap at the trigger, W0's values elsewhere (commute.regating)",
     },
     "gates": {
-        "G1": f"emoticon: |r - E32| <= {R_TOL}, |R_shared_net - E32| <= {NET_TOL}, R_shared within {SAME_TOL} of "
-              f"rho_shared / rho_trig from regating.measure, own updated values within {ZERO_TOL} of rho_trig, and a "
+        "G1": f"emoticon: |r - E32| <= {R_TOL}, |R_shared_net - E32| and |R_cue_net - E32| <= {NET_TOL}, R_shared "
+              f"within {SAME_TOL} of rho_shared / rho_trig from regating.measure, own updated values within {ZERO_TOL} of rho_trig, and a "
               f"zero change (shift and re-weighting a = 1, b = 0) recovering within {ZERO_TOL} of 0. First, alone; "
               "fail: stop",
         "G2": f"every other state: r within {R_TOL} and R_shared_net, R_cue_net within {NET_TOL} of E32's (word, kv) or "

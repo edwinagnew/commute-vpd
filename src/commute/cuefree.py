@@ -6,8 +6,8 @@ The change d = g1 - g0 is kept on alive subcomponents only (0 on dead, as `recru
 clip(g0(x) + c(x), 0, 1), with c fitted on training rows only, except the fixed re-weighting clip(a g0(x) + b):
   groups   c(x) = mean d over the training rows with x's label (cue word, k-means cluster of g0, or a random label)
   near     c(x) = mean d over the `k` training rows nearest x in g0 (Euclidean over alive subcomponents, all matrices)
-  refit    per subcomponent, least squares g1 ~ a g0 + b over training rows; where g0 is constant over them, a = 1 and
-           b = mean d; dead subcomponents a = 1, b = 0
+  refit    per subcomponent, least squares g1 ~ a g0 + b over training rows; where g0 varies by less than 0.01 (sd)
+           over them, a = 1 and b = mean d (`line`); dead subcomponents a = 1, b = 0
 """
 
 from __future__ import annotations
@@ -97,17 +97,25 @@ def purity(lab: Tensor, truth: Tensor) -> float:
     return hits / lab.numel()
 
 
-def refit(g0_tr: Vals, g1_tr: Vals, alive: dict[str, Tensor],
-          tol: float = 1e-8) -> tuple[dict[str, Tensor], dict[str, Tensor]]:
-    """(a, b) per matrix, (C,) each: the per-subcomponent least-squares line g1 ~ a g0 + b over the training rows."""
+FLAT_VAR = 1e-4  # a subcomponent whose g0 varies by less than 0.01 (sd) over the fit rows gets no slope of its own
+
+
+def line(x: Tensor, y: Tensor) -> tuple[Tensor, Tensor]:
+    """Per column of (N, C) rows, least squares y ~ a x + b; a column with var(x) <= FLAT_VAR gets a = 1, b = mean
+    change (its few varying rows would otherwise set a slope of any size)."""
+    x, y = x.double(), y.double()
+    mx, my = x.mean(0), y.mean(0)
+    var, cov = ((x - mx) ** 2).mean(0), ((x - mx) * (y - my)).mean(0)
+    flatline = var <= FLAT_VAR
+    a = torch.where(flatline, 1.0, cov / var.clamp_min(FLAT_VAR))
+    return a.float(), torch.where(flatline, my - mx, my - a * mx).float()
+
+
+def refit(g0_tr: Vals, g1_tr: Vals, alive: dict[str, Tensor]) -> tuple[dict[str, Tensor], dict[str, Tensor]]:
+    """(a, b) per matrix, (C,) each: the per-subcomponent `line` g1 ~ a g0 + b over the training rows."""
     a, b = {}, {}
     for k, x in g0_tr.items():
-        x, y = x.double(), g1_tr[k].double()
-        mx, my = x.mean(0), y.mean(0)
-        var, cov = ((x - mx) ** 2).mean(0), ((x - mx) * (y - my)).mean(0)
-        flatline = var <= tol
-        ak = torch.where(flatline, 1.0, cov / var.clamp_min(tol))
-        bk = torch.where(flatline, my - mx, my - ak * mx)
+        ak, bk = line(x, g1_tr[k])
         live = alive[k].cpu().bool()
         a[k] = torch.where(live, ak, 1.0).float()
         b[k] = torch.where(live, bk, 0.0).float()
