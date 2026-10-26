@@ -3,22 +3,21 @@
 *2026-10-26, lead agent (overnight). Plan and design check: `reports/2026-10-26_plan_regating-without-cues.md` (E36,
 Amendments 1 and 3). Code: `experiments/regating_spread/run.py` and `amend1.py`, shared steps in
 `src/commute/spread.py` and `src/commute/cuefree.py`. Follows E35, `reports/2026-10-26_analysis_regating-without-cues.md`.
-Exploration, provisional until an independent check. Words as in `GOALS.md` → Terms.*
+Exploration, provisional. An independent check (a fresh Opus agent, 2026-10-26) found the numbers and scoring right and
+the first headline too strong; this version takes its points. Words as in `GOALS.md` → Terms.*
 
-We fine-tuned the model on text with no trigger and no target token and asked two things: how much of the gain comes
-from Γ switching the existing subcomponents, and whether that switching can be predicted at each position from the
-original model's importance values there. On lowercased Pile text, switching carried most of the gain, and the change
-at each position followed the positions with the most similar original values far better than it followed the
-current token. For `GOALS.md` this is the first sign, outside toy tasks, that post-training re-weights existing
-subcomponents according to the original model's own importance values.
+We fine-tuned the model on text with no trigger and no target token and asked whether Γ's switching at each position
+can be predicted from the original model's importance values there. On lowercased Pile text, the positions with the most
+similar original values predicted it better than every other rule, but below the filed bar after the first ten steps,
+so by the filed rule the cue-free form did not hold once the fine-tune had trained for longer. For `GOALS.md` the
+restatement without cues is supported on toy tasks and only partly on running text.
 
 ## The answer
 
-Mostly yes. A fine-tune on lowercased Pile text raised held-out log-probability by 0.07 to 0.13 nats per token, and Γ's
-switching carried 0.79 to 1.05 of that gain. Giving each position the mean change of the eight training positions with
-the nearest original importance values recovered 0.51 to 0.72 of the switching. One change per current token recovered
-0.24 to 0.32, and one change everywhere almost nothing. A fixed line per subcomponent failed as training went on. A first
-attempt, on code-like text, did not learn.
+Partly. On a fine-tune of lowercased Pile text, giving each position the mean change of the eight training positions
+with the nearest original importance values recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51. The filed
+bar was 0.6, so it held only early. It beat every other rule: 32 groups of the original values recovered 0.32 to 0.45,
+one change per current token 0.24 to 0.32. By the filed tree, the change depends on more than a position's own values.
 
 ## What we were trying to test
 
@@ -61,80 +60,83 @@ capitals never come. Its training rows are used once each over 300 steps; it is 
 
 ## What we observed
 
-### Does switching carry the gain of a fine-tune with no trigger?
+### How much of the gain does switching carry, and what does that show?
 
-**Reading it.** Yes. On lowercase text the switching share was 1.05 at step 10, 0.90 at step 100 and 0.79 at step 300,
-while the gain grew from 0.07 to 0.13 nats per token. So the fine-tune's improvement is reproduced, almost entirely
-early and four-fifths later, by the original subcomponents with Γ reading the fine-tuned model. On the code-like run
-the share was also about 0.8, but of a loss rather than a gain, so it says only that switching carries whatever the
-update does.
+**Reading it.** Most of it, but that alone shows little. On lowercase text the switching share was 1.05 at step 10, 0.90
+at step 100 and 0.79 at step 300, while the gain grew from 0.07 to 0.13 nats per token. The code-like fine-tune, which
+learned nothing and made held-out text worse, gave a share of about 0.8 as well. So a share near 0.8 is what any small
+update of these kinds gives here; it does not by itself show that the fine-tune re-weighted subcomponents to learn.
 
 ### Does the change follow the original values, the current token, or neither?
 
 ![arms](../experiments/regating_spread/figures/amend1/arms.png)
 
-**Reading it.** It follows the original values. The 8 most similar positions, green, recover 0.72 at step 10 and about
-0.5 later. One change per current token, blue, recovers 0.24 to 0.32, and one change everywhere, grey, 0.03 to 0.07.
-Only a third of the 8 nearest positions hold the position's own token, so the rule does not reduce to the token. The
-recovery falls with training while the switching share stays high: as the update grows, more of each position's change
-depends on something its nearest neighbours do not share.
+**Reading it.** The original values predict it best, though only about half of it after step 10. The 8 most similar
+positions, green, recover 0.72 at step 10, then 0.54 and 0.51, below the filed 0.6 at both later steps. One change per
+current token, blue, recovers 0.24 to 0.32, and one change everywhere, grey, 0.03 to 0.07. The token rule is a weak
+baseline: only 90 tokens had enough fitted positions, and every other position got the overall change. A third of the
+8 nearest positions hold the position's own token, far above the few percent expected by chance, so the nearest
+positions are strongly but not wholly the same token.
 
 ### How many groups does the switching need?
 
 ![clusters](../experiments/regating_spread/figures/amend1/clusters.png)
 
-**Reading it.** Many. Recovery rises steadily with the number of k-means groups, from 0.12 to 0.16 at 8 groups to
-0.44 to 0.64 at 512, and stays below the 8 most similar positions at every step. Random groups match one change
-everywhere to within 0.002. There is no small set of conditions here: the change varies smoothly with the original
-values.
+**Reading it.** Many. Recovery rises with the number of k-means groups, from 0.12 to 0.16 at 8 groups to 0.44 to
+0.64 at 512, and stays below the 8 most similar positions at every step. Already at 32 groups the original values beat
+the 90 token groups, 0.32 to 0.45 against 0.24 to 0.32, the fairer comparison of the two. Random groups match one
+change everywhere to within 0.002. There is no small set of conditions here.
 
 ### Is it one fixed line per subcomponent?
 
 **Reading it.** No. The line recovers 0.39 at step 10, 0.14 at step 100 and −0.01 at step 300, against one change
-everywhere's 0.03 to 0.07. On the code-like run, whose update was noise, it recovered about half. The slopes barely
-move from 1: the median slope among subcomponents whose values vary is 0.94 to 0.96. So the change is not a fixed
-function of each subcomponent's own value; it depends on the whole pattern.
+everywhere's 0.03 to 0.07. On the code-like run it recovered about half of a switching that carried no learning. The
+slopes barely move from 1: the median among subcomponents whose values vary is 0.94 to 0.96.
 
 ## What we learned
 
-On a fine-tune with no trigger and no target token, most of the gain comes from Γ switching the existing
-subcomponents, and the change at each position is predicted best by the positions whose original importance values look
-most alike. That is the cue-free form of the fixed-shift hypothesis E35 found on toy tasks, now on running text: inputs
-the original Γ treats alike get alike changes. It recovers about half to seven-tenths of the switching, twice what the
-current token predicts. What it misses grows with training. A fixed shift, a small set of conditions or a fixed rule
-per subcomponent all fail here.
+By the filed rule, the cue-free form held at step 10 and failed at steps 100 and 300: every rule fell below its bar,
+which the filed tree reads as a change that depends on more than a position's own original values, with Γ's input or
+neighbouring positions as the next place to look. Within that, the ordering is clear and the same at every step: the
+original values predict the change better than the current token, a few groups or a fixed rule per subcomponent. What
+the nearest rule misses grows as the fine-tune trains. A high switching share is not evidence of learned re-weighting
+on its own, since an update that learned nothing gave the same share.
 
 ## How compelling is the evidence
 
 - **Controls.** At every step a zero change left the masked model's log-probability exactly where it was, and Γ's own
-  values on alive subcomponents reproduced the full switching to within 0.000005. Every log-probability was computed in
-  float32.
+  values on alive subcomponents reproduced the full switching to within 0.000005. The masked model's log-probabilities
+  were computed in float32; the target model's and Γ's values come from bf16, which does not matter at these gains.
 - **Nulls.** Random groups land within 0.002 of one change everywhere at every step.
-- **Held-out positions.** Every rule is fitted at positions of training rows and scored on 64 held-out rows, 32,704
-  positions.
+- **Held-out positions.** Every rule is fitted at positions of the first 64 training rows, which the fine-tune saw in
+  its first eight steps, and scored on 64 held-out rows, 32,704 positions. Held-out rows repeating training rows were
+  not checked.
 - **Coverage.** One fine-tune seed, one style, one 67M model. Lowercasing is a style spread over every position but
   synthetic in form; the more natural task, code-like text, did not learn.
 - **Blind spots.** The distance weighs every alive subcomponent equally. The nearest rule draws from 16,384 fitted
-  positions; more might raise it, and that was not tested. Patterns are written at every position at once, so effects
-  passing between positions through attention are included, not separated. No predicted pattern was checked for
-  faithfulness under the adversary.
+  positions; more might raise it, and that was not tested. The token rule covers only 90 tokens, and how many held-out
+  positions they cover was not counted. Patterns are written at every position at once, so effects passing between
+  positions through attention are included, not separated. No predicted pattern was checked for faithfulness under the
+  adversary.
 
 ## Surprises
 
-1. **The line per subcomponent collapsed with training.** We predicted it would beat one change everywhere by 0.1. It
-   did at step 10, by 0.32, then fell to −0.01 by step 300.
-2. **The code-like fine-tune did not learn.** Its training loss stayed between 1.3 and 1.8 and held-out text got
-   worse by 0.05 to 0.07 nats per token. The rows chosen were mostly LaTeX and maths. The model is already at its optimum
-   on Pile text of this kind, and Adam at this rate with batches of eight adds noise.
-3. **The 8 most similar positions missed the filed 0.6 by 0.1 at step 300**, though they beat everything else.
+1. **The cue-free form held only early.** We predicted the nearest rule would recover at least 0.6. It recovered 0.72 at
+   step 10, then 0.54 and 0.51, missing at steps 100 and 300.
+2. **The line per subcomponent collapsed with training.** We predicted it would beat one change everywhere by 0.1. It
+   did at step 10, by 0.32; it missed by 0.002 at step 100 and fell to −0.01 by step 300.
+3. **The code-like fine-tune did not learn.** Its training loss showed no trend and held-out text got worse by 0.05 to
+   0.07 nats per token. The rows chosen were mostly LaTeX and maths. Why is untested: the same recipe learned lowercase
+   text.
 
 ## What next
 
-1. **More fitted positions for the nearest rule.** Cheap. If recovery rises well above 0.5 with 64,000 positions, the
-   shortfall is sampling, not the hypothesis.
-2. **A domain fine-tune that learns**, with far more rows and a gentler rate, or the larger model's real post-trained
-   sibling. A pending-decision card in the log holds this choice.
-3. **What the misses are**: whether the positions where the nearest rule fails are where the gain is largest.
+1. **The filed branch: what else the change depends on.** Γ reads every position's input, so the next place to look is
+   Γ's input at the position or at neighbouring positions; a rule fitted on those, against the nearest rule here.
+2. **Cheap checks first.** More fitted positions for the nearest rule, to see whether the shortfall is sampling; the
+   nearest rule restricted to the same token, the like-for-like reference E35 used; and the token rule's coverage.
+3. **A fine-tune of a real behaviour that learns**, or the larger model's post-trained sibling, before any restatement
+   is adopted. A pending-decision card in the log holds this choice.
 
 ## Scorecard
 
@@ -153,6 +155,9 @@ the run, scored at step 300; steps 10 and 100 read by the same rules.
 | P_K | 512 groups within 0.1 of the nearest rule | R_clu_512 ≥ R_near − 0.1 | 0.442 vs 0.505 | pass | pass, pass |
 | N | random groups match one change | within 0.05 | 0.0007 apart | pass | pass, pass |
 
+By the filed decision tree, step 300 falls in the branch "all fail": the nearest rule under 0.6, the token rule under
+0.6 and the line under its bar, read as "the change at a position depends on more than its own original values; next
+space: Γ's input". The ordering of the rules is a secondary reading.
 E36, the code-like run, filed 2026-10-26 17:20 (`results/predictions.json`, sha256 `f93a0727…`): gate G failed at both
 steps, gains −0.052 and −0.065, so every prediction is unscorable and P_r reads fail by its rule. The filed tree read
 "G fails at both steps" as "re-gating carries little", which does not apply: switching carried 0.77 to 0.82 of the
@@ -171,7 +176,8 @@ Shares of the switching, at every held-out position. Lowercase run first, code-l
 | code-like, 100 | −0.065 | 0.77 | 0.003 | 0.032 | 0.231 | 0.501 | 0.020 | 0.031 | 0.045 | 0.086 | 0.004 | 0.35 |
 
 Lowercase: the original model's held-out log-probability −3.146 nats per token, the masked model's −3.445; 90 tokens
-had at least 20 fitted positions. 88% of alive subcomponents vary at the fitted positions; the median slope among them
+had at least 20 fitted positions. The share of nearest positions holding the same token depends only on the original
+model's values, so it is the same at every step. 88% of alive subcomponents vary at the fitted positions; the median slope among them
 falls from 0.96 to 0.94 with training, and under 1% have a slope below 0.5. The fine-tune's held-out cross-entropy was
 3.075, 3.035 and 3.016 at the three steps, its KL from the original model 0.15 to 0.29. Code-like: the selected rows
 were the top 5% of 20,480 by the share of tokens with code punctuation, a cut of 0.30, mostly LaTeX and maths; held-out
@@ -179,8 +185,9 @@ cross-entropy 1.648 and 1.661, training loss without trend.
 
 ## Not run
 
-Seeds beyond 0; more than 16,384 fitted positions or other numbers of neighbours; any distance but Euclidean over all
-alive subcomponents; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA updates;
+Seeds beyond 0; more than 16,384 fitted positions or other numbers of neighbours; the nearest rule restricted to the
+same token; how many held-out positions the token rule covers; held-out rows repeating training rows; a rule on Γ's
+input or on neighbouring positions; any distance but Euclidean over all alive subcomponents; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA updates;
 a larger model.
 
 ## Provenance

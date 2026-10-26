@@ -18,8 +18,8 @@ where cues lead to different answers.
 
 Partly yes, on these toy tasks. Each held-out input was given the mean change of the eight training inputs whose
 original importance values were nearest. On the four tasks with 32 cue words this recovered 0.61 to 0.78 of the
-switching effect, against 0.47 to 0.66 for one change per cue word added the same way. Only 62 to 71% of those nearest
-inputs shared the cue, so the rule is not the cue in disguise. Restricting them to the same cue helped only where each
+switching effect, against 0.47 to 0.66 for one change per cue word added the same way. 62 to 71% of those nearest inputs
+shared the cue, far above the 3% chance with 32 cues but well short of all of them. Restricting them to the same cue helped only where each
 cue had its own answer.
 
 ## What we were trying to test
@@ -111,8 +111,8 @@ The independent check asked two things. First, whether the nearest inputs simply
 like-for-like reference is: the same nearest rule, with the eight neighbours drawn only from inputs with the same cue.
 The six states were regenerated, and the nearest rule reproduced E35 exactly on each.
 
-**Reading it.** No, they often do not share it. On the 32-cue tasks only 71% of the nearest inputs hold the same cue
-on copy and the cipher, and 62% on the two " of" tasks; on the few-cue tasks it is 99 to 100%. Drawing the
+**Reading it.** Mostly, not wholly. On the 32-cue tasks 71% of the nearest inputs hold the same cue on copy and the
+cipher, and 62% on the two " of" tasks, against about 3% by chance; on the few-cue tasks it is 99 to 100%. Drawing the
 neighbours from the same cue changes nothing where all cues lead to " of", 0.78 either way, and little on the cipher,
 0.68 against 0.69. It adds 0.10 on the copy task and 0.23 where each cue has its own answer, 0.88 against 0.65. So the
 original values carry most of what the change depends on. The cue adds information where different cues need
