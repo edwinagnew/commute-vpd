@@ -102,6 +102,8 @@ DEFAULTS, VARIANTS, LONG = ("harness_b0", "harness_b1", "budget"), ("start", "ro
 P2_READINGS = {"budget.bf16": ("readout", "start"), "start": ("start", "readout")}
 P3_PAIRS = {"budget.bf16": "budget", "start": "budget", "start.bf16": "budget", "rows256": "budget",
             "rows256.bf16": "budget", "harness_b0": "harness", "budget160.bf16": "budget160", "harness160_b0": "budget160"}
+# Reported only, added after filing (review of a16d366); kept out of Amend5 so the filed `amend5` config still matches.
+IDENTITY_TOL = 0.07  # start.bf16 / harness_b0 within this at W0 and at the teacher: the two loops are one loop
 
 
 def _harness(model: Any, bs: list[Any], steps: int) -> dict[str, float]:
@@ -181,6 +183,22 @@ def g1(job: Any, out: dict[str, Any], repro: dict[str, Any]) -> None:
                         f"budget {r['budget']:.4f}")
 
 
+def zero_step(job: Any, out: dict[str, Any]) -> None:
+    """Reported only (review of a16d366): W0 on block 0 at 0 steps, the harness's code against pgd_sources from the
+    harness's start. Both are then the KL at the same random start, so they should agree to ~1e-6."""
+    from commute import gamma
+    from commute.faithfulness import harness_pgd
+
+    if "zero_step" in out:
+        return
+    m, b0 = job.ctx.model, job.ctx.blocks[0]
+    h = harness_pgd(m, b0, 0, AM.seed)
+    s = gamma.pgd_sources(m, b0, 0, seed=AM.seed, init=gamma.harness_start(m, AM.seed))[1]
+    out["zero_step"] = {"harness": h, "pgd_sources_from_harness_start": s, "rel_diff": s / h - 1}
+    log(f"[zero_step W0] {json.dumps(out['zero_step'], default=float)}")
+    dump(OUT5, out)
+
+
 def copy_path(arm: str, seed: int) -> Any:
     return LARGE / AM.task / f"amend5_{arm}_{AM.teacher}_seed{seed}_step{CFG.steps[-1]}.pt"
 
@@ -249,9 +267,11 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
         p4 = {"seeds": s, "pass": all(v >= AM.same_way for v in s.values()),
               "reading": "same way" if all(v >= AM.same_way for v in s.values())
               else "one of many" if any(v < AM.many for v in s.values()) else "between"}
-    return {"ratios": r, "w0": w,
-            "identity_start_bf16_over_harness_b0": {st: f["start.bf16"] / f["harness_b0"] for st, f in by_state.items()
-                                                    if "start.bf16" in f},
+    identity = {st: f["start.bf16"] / f["harness_b0"] for st, f in by_state.items() if "start.bf16" in f}
+    named = [v["implicates"] for v in p2.values()]
+    return {"ratios": r, "w0": w, "identity_start_bf16_over_harness_b0": identity,
+            "identity_ok": set(identity) == {"W0", "teacher"} and all(abs(v - 1) <= IDENTITY_TOL for v in identity.values()),
+            "implicates_agree": None not in named and len(set(named)) == 1,
             "P1": {"pass": all(p1.values()), "per": p1},
             "P2": {"pass": any(v["to_harness"] or v["to_budget"] for v in p2.values()), "per": p2},
             "P3": {"pass": all(p3.values()), "per": p3}, "P4": p4}
@@ -383,6 +403,7 @@ def amend5(device: str) -> None:
 
     part1(job, out, "teacher", DEFAULTS, nothing)
     g1(job, out, repro)
+    zero_step(job, out)
     part1(job, out, "W0", VARIANTS, w0)
     part1(job, out, "teacher", VARIANTS, nothing)
     net = teacher.teacher_net(tctx.model, dW)
@@ -395,7 +416,11 @@ def amend5(device: str) -> None:
     out["score"] = score(out)
     out["done"] = True
     dump(OUT5, out)
-    log("[score] " + json.dumps(out["score"], default=float))
+    sc = out["score"]
+    log("[score] " + json.dumps(sc, default=float))
+    log(f"[score] P2 {sc['P2']['pass']} (as filed); reported beside it: implicates "
+        f"{ {k: v['implicates'] for k, v in sc['P2']['per'].items()} } agree {sc['implicates_agree']}; identity_ok "
+        f"{sc['identity_ok']} {json.dumps(sc['identity_start_bf16_over_harness_b0'], default=float)}")
     log("done")
 
 

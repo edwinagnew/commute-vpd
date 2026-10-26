@@ -57,6 +57,7 @@ def test_score_reads_the_harness_readout_moving_the_budget():
     assert p2["start"]["to_budget"] and p2["start"]["implicates"] == "readout"
     assert s["P4"]["pass"] and s["P4"]["reading"] == "same way"
     assert abs(s["identity_start_bf16_over_harness_b0"]["teacher"] - 1) < 1e-12
+    assert s["identity_ok"] and s["implicates_agree"]
 
 
 def test_score_reads_each_miss():
@@ -66,6 +67,7 @@ def test_score_reads_each_miss():
     s = a5.score(_results({"rows256": 0.6, "budget.bf16": 4 / 9.24, "start": 4 / 9.24}, {"A": 0.9, "B": 0.4}))
     assert not s["P1"]["pass"] and not s["P1"]["per"]["rows256_vs_budget"] and s["P1"]["per"]["harness_b0_vs_harness"]
     assert not s["P2"]["pass"] and all(v["implicates"] is None for v in s["P2"]["per"].values())
+    assert not s["implicates_agree"]
     assert s["P4"]["reading"] == "one of many" and not s["P4"]["pass"]
     # S from H's start lands at the harness: the start carries it
     s = a5.score(_results({"start": 1.5 / 9.24}, {"A": 0.7, "B": 0.9}))
