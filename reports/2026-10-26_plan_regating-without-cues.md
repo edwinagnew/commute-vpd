@@ -165,3 +165,22 @@ training, and a nearest-distance ratio. Predictions, filed by `amend1.py --predi
 nearest-within-cue − 0.1 on every 32-cue state (medium-low); T, the neighbours share the cue at ≥ 0.9 (medium); D,
 duplicates ≤ 5% (medium). Class 1 (new arms on regenerated states). Runs on E36's pod, about a minute, no extra cost
 beyond pod time.
+
+## Amendment 3 (2026-10-26, after E36): a fine-tune that learns, lowercase text
+
+**What happened.** E36 ran cleanly but is unreadable: the code-like fine-tune made held-out text worse, a gain of
+−0.052 nats per token at step 10 and −0.065 at step 100, so gate G failed at both steps and no prediction was scored.
+Its training loss did not fall either, 1.33 at step 1 and between 1.31 and 1.83 afterwards: the model is already at its
+optimum on Pile text of this kind, and Adam at 3e-5 with batch 8 adds noise. The row rule also chose mostly LaTeX and
+maths, not code. The filed tree's branch for "G fails at both steps" read it as "re-gating carries little", which does
+not apply: switching carried 0.77 to 0.82 of the (negative) change.
+
+**Design check, short.** Same goal and class as E36: the re-gating card's named next step, a fine-tune with no single
+trigger. The change: a spread-out behaviour the model can learn quickly, a style rather than a domain. Pile text is
+lowercased; the fine-tune learns that capitals never come, which moves predictions at many positions with no trigger
+and no target token. Nearest tried: E36 (did not learn). It is synthetic in form, a shortcoming a pending-decision card
+records, along with the alternatives (a gentler domain fine-tune with far more rows; a real post-trained model pair at
+the larger model, Q9). Arms, gates and rules are E36's unchanged, read at steps 10, 100 and 300 and scored at 300;
+`experiments/regating_spread/amend1.py`, predictions filed by `amend1.py --predictions` before the run. The measurement
+code is E36's, reviewed; only the row construction is new (decode, lowercase, re-encode, cut into 512-token rows), so
+no separate code review was run. Cost: one RunPod 4090 with the VPD files sent, about 20 minutes, under $0.5.
