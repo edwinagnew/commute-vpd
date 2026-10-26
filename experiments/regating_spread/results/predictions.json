@@ -1,0 +1,98 @@
+{
+ "plan": "reports/2026-10-26_plan_regating-without-cues.md, E36 and Amendment 1 (filed after E35 was read). Filed before any run; never edited after.",
+ "task": "Pile rows ('train' (0, 20480), 'val' (0, 8192)); a token is marked if its text contains one of '{}[]();=<>_\\\\'; rows kept: code share >= the training stream's top-0.05 cut (cut >= 0.12); 800 training rows, 64 held-out rows",
+ "finetune": "finetune.finetune_arm_b: all 24 matrices, next-token loss at every position, Adam 3e-05, batch 8, fresh rows each step, seed 0; states read at steps (10, 100); scored at step 100, step 10 read by the same rules and reported",
+ "measurements": {
+  "gain, gap, r": "T = target model's mean next-token log-prob over held-out positions 0..510; L = the masked model's (released subcomponents, Delta out) with a pattern at every position; gain = T1 - T0, gap = L(g1) - L(g0), r = gap / gain",
+  "R_<arm>": "(L(pattern) - L(g0)) / gap; patterns clip(g0 + c) on alive subcomponents, fitted at 16384 random positions of the first 64 training rows: shared (one mean change), token (mean change at fit positions with the same current token, >= 20 of them, else shared), near (mean change of the 8 fit positions nearest in g0), clu_K (k-means of fit g0, K in (8, 32, 128, 512)), fix (clip(a g0 + b) per subcomponent, cuefree.line)",
+  "R_rand": "random labels at K = 128, mean of 3 draws: the null for clu",
+  "near_same_token": "share of each held-out position's 8 nearest fit positions holding its own token; reported",
+  "slopes": "share of alive subcomponents whose fit g0 varies (var > cuefree.FLAT_VAR), the median slope a among them and the share with a < 0.5; reported"
+ },
+ "gates": {
+  "S": "selection: cut >= 0.12, >= 800 training and >= 64 held-out rows; fail: stop",
+  "C0": "at step 10, first: |L(zero) - L(g0)| <= 0.0001 x max(gap, 0.001) and |L(own alive) - L(g1)| <= max(0.02 x gap, 0.001 nats per token); fail: stop. Reported at later steps, not a scoring condition",
+  "G": "a step is scorable only if gain >= 0.02 nats per token and r >= 0.1"
+ },
+ "expected": {
+  "W0 (no update)": "gap 0, every share undefined; zero change recovers exactly 0",
+  "control": "L(zero) = L(g0) exactly; L(own alive) within the C0 tolerance of L(g1) (dead subcomponents keep W0's values)",
+  "near_same_token": "lean >= 0.5: the current token dominates Gamma's values at a position",
+  "slopes": "lean: median slope among varying subcomponents below 1 (each pulled towards a set point, E35's line reading on one-cue tasks)",
+  "K curve": "R_clu_K rising with K, from about R_shared"
+ },
+ "predictions": [
+  {
+   "id": "P_r",
+   "rule": "step 100 scorable and r >= 0.3",
+   "predicted": "pass",
+   "confidence": "low-medium",
+   "positive_control": "G (the fine-tune learned); E28's tasks the model already does read 0.5 to 1.1",
+   "blind_to": "one fine-tune seed and one held-out set of 64 rows; one 67M model; one domain (code-like text chosen by a punctuation rule); every predicted change is a mean over fit positions, blind to variation among them; Euclidean distance over every alive subcomponent weighs ones irrelevant to the text equally; patterns are written at every position at once, so effects through attention between positions are included, not separated",
+   "noise_floor": "the states are deterministic per seed; Gamma's values come from bf16 autocast, but every pattern and every L is scored in float32, so rounding moves R far less than the 1e-4 / gap it would under bf16; the random-group arm (3 draws at K = 128) measures what averaging over groups does alone; E35 (the same arms at the trigger) reproduced E32/E33 within 0.0013"
+  },
+  {
+   "id": "P_shared",
+   "rule": "R_shared < 0.5",
+   "predicted": "pass",
+   "confidence": "medium-low",
+   "positive_control": "N",
+   "blind_to": "one fine-tune seed and one held-out set of 64 rows; one 67M model; one domain (code-like text chosen by a punctuation rule); every predicted change is a mean over fit positions, blind to variation among them; Euclidean distance over every alive subcomponent weighs ones irrelevant to the text equally; patterns are written at every position at once, so effects through attention between positions are included, not separated",
+   "noise_floor": "the states are deterministic per seed; Gamma's values come from bf16 autocast, but every pattern and every L is scored in float32, so rounding moves R far less than the 1e-4 / gap it would under bf16; the random-group arm (3 draws at K = 128) measures what averaging over groups does alone; E35 (the same arms at the trigger) reproduced E32/E33 within 0.0013"
+  },
+  {
+   "id": "P_near",
+   "rule": "R_near >= 0.6 and R_near >= R_shared + 0.2",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "E35: the nearest arm recovered 0.61 to 0.92 at the trigger on six states",
+   "blind_to": "one fine-tune seed and one held-out set of 64 rows; one 67M model; one domain (code-like text chosen by a punctuation rule); every predicted change is a mean over fit positions, blind to variation among them; Euclidean distance over every alive subcomponent weighs ones irrelevant to the text equally; patterns are written at every position at once, so effects through attention between positions are included, not separated",
+   "noise_floor": "the states are deterministic per seed; Gamma's values come from bf16 autocast, but every pattern and every L is scored in float32, so rounding moves R far less than the 1e-4 / gap it would under bf16; the random-group arm (3 draws at K = 128) measures what averaging over groups does alone; E35 (the same arms at the trigger) reproduced E32/E33 within 0.0013"
+  },
+  {
+   "id": "P_token",
+   "rule": "R_near >= R_token - 0.1",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "P_near",
+   "blind_to": "one fine-tune seed and one held-out set of 64 rows; one 67M model; one domain (code-like text chosen by a punctuation rule); every predicted change is a mean over fit positions, blind to variation among them; Euclidean distance over every alive subcomponent weighs ones irrelevant to the text equally; patterns are written at every position at once, so effects through attention between positions are included, not separated",
+   "noise_floor": "the states are deterministic per seed; Gamma's values come from bf16 autocast, but every pattern and every L is scored in float32, so rounding moves R far less than the 1e-4 / gap it would under bf16; the random-group arm (3 draws at K = 128) measures what averaging over groups does alone; E35 (the same arms at the trigger) reproduced E32/E33 within 0.0013"
+  },
+  {
+   "id": "P_fix",
+   "rule": "R_fix >= R_shared + 0.1",
+   "predicted": "pass",
+   "confidence": "low-medium",
+   "positive_control": "E35: the line recovered 0.96 and 1.02 on the two few-cue states",
+   "blind_to": "one fine-tune seed and one held-out set of 64 rows; one 67M model; one domain (code-like text chosen by a punctuation rule); every predicted change is a mean over fit positions, blind to variation among them; Euclidean distance over every alive subcomponent weighs ones irrelevant to the text equally; patterns are written at every position at once, so effects through attention between positions are included, not separated",
+   "noise_floor": "the states are deterministic per seed; Gamma's values come from bf16 autocast, but every pattern and every L is scored in float32, so rounding moves R far less than the 1e-4 / gap it would under bf16; the random-group arm (3 draws at K = 128) measures what averaging over groups does alone; E35 (the same arms at the trigger) reproduced E32/E33 within 0.0013"
+  },
+  {
+   "id": "P_K",
+   "rule": "R_clu_512 >= R_near - 0.1",
+   "predicted": "pass",
+   "confidence": "low",
+   "positive_control": "N",
+   "blind_to": "one fine-tune seed and one held-out set of 64 rows; one 67M model; one domain (code-like text chosen by a punctuation rule); every predicted change is a mean over fit positions, blind to variation among them; Euclidean distance over every alive subcomponent weighs ones irrelevant to the text equally; patterns are written at every position at once, so effects through attention between positions are included, not separated",
+   "noise_floor": "the states are deterministic per seed; Gamma's values come from bf16 autocast, but every pattern and every L is scored in float32, so rounding moves R far less than the 1e-4 / gap it would under bf16; the random-group arm (3 draws at K = 128) measures what averaging over groups does alone; E35 (the same arms at the trigger) reproduced E32/E33 within 0.0013"
+  },
+  {
+   "id": "N",
+   "rule": "|R_rand - R_shared| <= 0.05",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "C0",
+   "blind_to": "one fine-tune seed and one held-out set of 64 rows; one 67M model; one domain (code-like text chosen by a punctuation rule); every predicted change is a mean over fit positions, blind to variation among them; Euclidean distance over every alive subcomponent weighs ones irrelevant to the text equally; patterns are written at every position at once, so effects through attention between positions are included, not separated",
+   "noise_floor": "the states are deterministic per seed; Gamma's values come from bf16 autocast, but every pattern and every L is scored in float32, so rounding moves R far less than the 1e-4 / gap it would under bf16; the random-group arm (3 draws at K = 128) measures what averaging over groups does alone; E35 (the same arms at the trigger) reproduced E32/E33 within 0.0013"
+  }
+ ],
+ "decision_tree": {
+  "S or C0 fails": "stop; nothing scored",
+  "G fails at both steps": "re-gating carries little of a spread-out fine-tune's gain: a card on the line's scope",
+  "P_near holds": "the restated hypothesis ('positions the original Gamma treats alike are re-gated alike') holds with no trigger: provisional until an independent check; next, the larger model (Q9)",
+  "P_near fails, R_token holds (R_token >= NEAR_MIN)": "the current token carries what the original values do not: card",
+  "P_near and R_token fail, P_fix holds": "the per-subcomponent set-point form: card",
+  "all fail": "the change at a position depends on more than its own original values (context, neighbouring positions): card (next space: Gamma's input)"
+ },
+ "filed": "2026-10-26 17:20:56"
+}

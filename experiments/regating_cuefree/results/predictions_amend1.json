@@ -1,0 +1,42 @@
+{
+ "plan": "reports/2026-10-26_plan_regating-without-cues.md, Amendment 2. Filed before the run; never edited after.",
+ "measurements": {
+  "R_near": "run.py's nearest rule again (8 training windows nearest in g0); gate A0",
+  "R_near_cue": "the same with the 8 nearest drawn from training windows with the window's own cue (not on emoticon, whose rarer trigger tokens have fewer than 8 training windows)",
+  "same_cue": "share of the 8 nearest training windows (unrestricted) holding the window's cue; reported",
+  "dup": "share of held-out windows whose tokens equal a training window's",
+  "dist_ratio": "median held-out distance to the nearest training window over the median training distance to the nearest other training window; reported"
+ },
+ "gates": {
+  "A0": "every state: |R_near - E35's R_near| <= 0.001; emoticon first; fail: stop"
+ },
+ "predictions": [
+  {
+   "id": "L",
+   "rule": "every 32-cue state: R_near >= R_near_cue - 0.1",
+   "predicted": "pass",
+   "confidence": "medium-low",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; copy and the cipher share one window set, the two 32-cue ' of' states another, so the four 32-cue states are two input sets"
+  },
+  {
+   "id": "T",
+   "rule": "every 32-cue state: same_cue >= 0.9 ('the nearest windows share the cue')",
+   "predicted": "pass",
+   "confidence": "medium",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; copy and the cipher share one window set, the two 32-cue ' of' states another, so the four 32-cue states are two input sets"
+  },
+  {
+   "id": "D",
+   "rule": "every state: dup <= 0.05; a state failing it is unreadable for L",
+   "predicted": "pass",
+   "confidence": "medium",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; copy and the cipher share one window set, the two 32-cue ' of' states another, so the four 32-cue states are two input sets"
+  }
+ ],
+ "decision_tree": {
+  "L and T hold": "the original values carry the cue; the nearest rule is the per-cue rule plus each input's own dependence on its values: worded so in E35's report",
+  "L holds, T fails": "the nearest rule groups across cues without loss: the cue is not the unit",
+  "L fails": "knowing the cue adds beyond the original values: the cue-free rule loses where cues mix"
+ },
+ "filed": "2026-10-26 17:19:17"
+}
