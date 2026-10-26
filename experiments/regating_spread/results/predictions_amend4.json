@@ -1,0 +1,49 @@
+{
+ "plan": "reports/2026-10-26_plan_regating-without-cues.md, Amendment 6. Filed before the run; never edited after.",
+ "measurements": {
+  "R_near_g0": "Amendment 3's nearest rule on 262,144 positions (8 neighbours, original values); gate A0",
+  "R_near_resid": "the same rule, nearest in the original model's attention inputs of the 4 layers, each layer scaled to unit length (3,072 values)",
+  "R_token": "mean change per current token with >= 20 fitted positions, else the overall mean",
+  "R_position": "mean change per index in the row",
+  "R_near_g0_by_bucket": "near_g0's recovery within position buckets ((0, 32), (32, 128), (128, 511)); reported",
+  "cov_token": "share of held-out positions whose token the token rule covers; reported",
+  "dup": "share of held-out positions inside a 16-token span that also occurs in the training rows"
+ },
+ "gates": {
+  "A0": "every step: |R_near_g0 - Amendment 3's R_near262| <= 0.02; fail: stop"
+ },
+ "predictions": [
+  {
+   "id": "R1",
+   "rule": "step 300: R_near_resid >= R_near_g0 - 0.05 ('the original values are not special: the context itself predicts the change as well')",
+   "predicted": "pass",
+   "confidence": "low"
+  },
+  {
+   "id": "R2",
+   "rule": "R_position < 0.3 at every step ('position in the row does not carry it')",
+   "predicted": "pass",
+   "confidence": "medium"
+  },
+  {
+   "id": "R3",
+   "rule": "R_token <= R_near_g0 - 0.2 at every step ('the token stays far behind at the same sample size')",
+   "predicted": "pass",
+   "confidence": "medium"
+  },
+  {
+   "id": "D",
+   "rule": "dup <= 0.02; above it the nearest rule's large-sample result is unreadable",
+   "predicted": "pass",
+   "confidence": "medium"
+  }
+ ],
+ "decision_tree": {
+  "R1 holds": "similar contexts get similar changes, by any rich summary: the restatement says 'inputs the model treats alike', with \u0393's values one sufficient summary",
+  "R1 fails": "\u0393's original values predict the change better than the context they are computed from: the restatement can say 'inputs the original \u0393 treats alike'",
+  "R2 fails": "position in the row carries much of the switching: the result is partly an artefact of row cuts",
+  "R3 fails": "the token rule closes the gap once it covers more positions: the cue reading returns",
+  "D fails": "near-duplicate text inflates the large-sample result: rescore without those positions"
+ },
+ "filed": "2026-10-26 18:38:12"
+}
