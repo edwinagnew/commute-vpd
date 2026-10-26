@@ -22,3 +22,10 @@ fleet_transcript() {  # fleet_transcript ROLE -> path, or nothing when the agent
   done
   [[ -n "$sid" ]] && echo "$HOME/.claude/projects/$(tr '/.' '--' <<< "$FLEET_AGENTS/$1")/$sid.jsonl"
 }
+
+# ROLE's task file, written by the user with fleet/start and reread by the agent every iteration. The lead's is
+# FLEET_DATA/tonight (the original, single-agent file); every other role has its own under its agent folder, so two
+# agents never read the same task (2026-10-26).
+fleet_task_file() {  # fleet_task_file ROLE -> path
+  if [[ "$1" == lead ]]; then echo "$FLEET_DATA/tonight"; else echo "$FLEET_DATA/agents/$1/task"; fi
+}

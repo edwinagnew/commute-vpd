@@ -1,18 +1,25 @@
 #!/usr/bin/env bash
-# Start the lead agent on a task, in one command. Run it in an ssh shell on the dev node; the agent keeps running
-# after the shell closes.
-#   fleet/start "what to work on"   e.g. fleet/start "run the decision tree in reports/plans/2026-10-23_plan_teacher-training.md"
-#   fleet/start                     no task: the agent does only analysis of what already exists (/design, class 1)
-# The task goes in FLEET_DATA/tonight, which the agent rereads every iteration, so editing that file redirects it.
-# Then: fleet/check to see how it is doing, fleet/stop to end it.
+# Start an agent on a task, in one command. Run it from this clone in an ssh shell on the dev node; the agent keeps
+# running after the shell closes.
+#   fleet/start "what to work on"            the lead, e.g. fleet/start "run the decision tree in reports/plans/<plan>.md"
+#   fleet/start -r lead-2 "what to work on"  a second agent with the lead's brief (fleet/roles/lead.md), its own clone,
+#                                            task file, memory and budget; for a line of work the lead is not on
+#   fleet/start                              no task: the agent does only analysis of what already exists (/design, class 1)
+# The task goes in the role's task file (fleet/fleet.sh, fleet_task_file: FLEET_DATA/tonight for the lead,
+# FLEET_DATA/agents/<role>/task otherwise), which the agent rereads every iteration, so editing it redirects the agent.
+# Then: fleet/check to see how each agent is doing, fleet/stop to end them.
 set -euo pipefail
 [[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
 here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 source "$here/fleet.sh"
+role=lead
+if [[ "${1:-}" == -r ]]; then role=${2:?fleet/start -r ROLE "task"}; shift 2; fi
+task=$(fleet_task_file "$role")
+mkdir -p "$(dirname "$task")"
 if [[ $# -gt 0 ]]; then
-  printf '%s\n' "$*" > "$FLEET_DATA/tonight"; echo "task: $*"
+  printf '%s\n' "$*" > "$task"; echo "task for $role ($task): $*"
 else
-  : > "$FLEET_DATA/tonight"; echo "task: none (analysis of existing results only)"
+  : > "$task"; echo "task for $role: none (analysis of existing results only)"
 fi
-"$here/up" lead
+"$here/up" "$role"
 echo "Started. Check on it with: fleet/check    Watch it live: tmux attach -t $FLEET_SESSION (leave with Ctrl-b d)"

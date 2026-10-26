@@ -26,8 +26,9 @@ ahead=$(git -C "$repo" rev-list --count origin/main..HEAD 2>/dev/null || echo 0)
 dirty=$(git -C "$repo" status --porcelain | wc -l)
 [[ "$dirty" != 0 ]] && echo "uncommitted: $dirty file(s) changed"
 
-echo "--- task ($FLEET_DATA/tonight; written by the user, may change between iterations)"
-if [[ -s "$FLEET_DATA/tonight" ]]; then cat "$FLEET_DATA/tonight"; else echo "none: analysis of what exists only (class 1)"; fi
+task=$(fleet_task_file "$role")
+echo "--- task ($task; written by the user with fleet/start, may change between iterations)"
+if [[ -s "$task" ]]; then cat "$task"; else echo "none: analysis of what exists only (class 1)"; fi
 
 echo "--- handoff ($adir/handoff.md)"
 if [[ -s "$adir/handoff.md" ]]; then cat "$adir/handoff.md"; else echo "none yet: this is the role's first iteration"; fi

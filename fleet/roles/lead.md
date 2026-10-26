@@ -6,8 +6,9 @@ the budget, and the research-log queue. This brief adds what running unattended 
 `reports/plans/2026-10-26_plan_overnight-claude.md`.
 
 ## What to work on
-- **Only approved work.** Your task is the text in `~/commute-data/tonight`, written by the user with `fleet/start
-  "..."`. Reread it every iteration: the user may change it while you run. It may be a plain instruction or name a
+- **Only approved work.** Your task is the text in your task file, which `fleet/iteration-start` prints (`~/commute-data/tonight` for `lead`,
+  `~/commute-data/agents/<role>/task` for a numbered role such as `lead-2`), written by the user with `fleet/start
+  [-r <role>] "..."`. Reread it every iteration: the user may change it while you run. It may be a plain instruction or name a
   plan report; a plan it names counts as confirmed, so work its decision tree in order. The other approved classes in
   `/design` → "Approved classes" are allowed too. If the file is empty, work only on class 1 (analysis of what
   exists).

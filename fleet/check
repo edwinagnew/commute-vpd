@@ -2,7 +2,7 @@
 # One screen on how the agents are doing. Safe to run any time; it changes nothing.
 #   fleet/check
 # For each agent: its state (working, waiting on its subagents or jobs, idle, waiting for you, interrupted, stopped), when it
-# last did anything, and a one-sentence summary (fleet/summarize, every 15 min). Then the task, the Slurm jobs, the
+# last did anything, its task and a one-sentence summary (fleet/summarize, every 15 min). Then the Slurm jobs, the
 # commute-* pods on RunPod with their cost, and the latest commits.
 set -uo pipefail
 [[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
@@ -56,6 +56,8 @@ for role in $windows; do
     subs+="   subagent running: $(jq -r '"\(.description) (\(.agentType))"' "$m"), last wrote $(ago "$(stat -c %Y "${m%.meta.json}.jsonl")")"$'\n'
   done
   echo "== $role: $(state "$role" "$t")"
+  task=$(head -c 300 "$(fleet_task_file "$role")" 2>/dev/null)
+  echo "   task: ${task:-none (analysis of existing results only)}"
   printf '%s' "$subs"
   # The agent's last step (a tool call or message), not the file's time: bookkeeping lines also touch the file.
   if [[ -n "$t" ]]; then
@@ -75,8 +77,6 @@ for role in $windows; do
 done
 
 "$(dirname "$(readlink -f "$0")")/check-keys" | cut -d' ' -f2-
-task=$(head -c 300 "$FLEET_DATA/tonight" 2>/dev/null)
-echo "task: ${task:-none (analysis of existing results only)}"
 
 echo "Slurm jobs:${jobs:+$'\n'}${jobs:- none}"
 # A drained or down node takes no new jobs (fleet/cpu-run, cluster runs) until an admin resumes it.
