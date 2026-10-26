@@ -72,8 +72,7 @@ for role in "${roles[@]}"; do
   # The keys reach this window's command only: never .bashrc, never tmux's global environment.
   # Scratchpads on /ephemeral (fleet/fleet.sh), recreated after a reboot.
   tmp=""; [[ -n "${CLAUDE_CODE_TMPDIR:-}" ]] && tmp="mkdir -p $(printf %q "$CLAUDE_CODE_TMPDIR"); export CLAUDE_CODE_TMPDIR=$(printf %q "$CLAUDE_CODE_TMPDIR"); "
-  # The keys are read again at every restart of Claude, so a changed key reaches the agent at its next restart.
-  cmd="while :; do set -a; source $(printf %q "$FLEET_SECRETS"); set +a; ${tmp}${scope}claude --permission-mode auto --model 'opus[1m]' --effort $effort -n $FLEET_PREFIX-$role $(printf %q "$prompt"); echo 'restarting in 60s'; sleep 60; done"
+  cmd="set -a; source $(printf %q "$FLEET_SECRETS"); set +a; while :; do ${tmp}${scope}claude --permission-mode auto --model 'opus[1m]' --effort $effort -n $FLEET_PREFIX-$role $(printf %q "$prompt"); echo 'restarting in 60s'; sleep 60; done"
   if tmux has-session -t "$session" 2>/dev/null; then
     tmux new-window -d -t "$session" -n "$role" -c "$FLEET_AGENTS/$role" "$cmd"
   else
