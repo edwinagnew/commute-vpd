@@ -39,3 +39,13 @@ def test_nearest_change_and_clusters() -> None:
     c = S.fit_clusters(X, D, 2, 0)
     lab = S.assign(torch.tensor([[0.05, 0.0], [0.95, 1.0]]), c.cent)
     assert sorted(c.change[lab].flatten().tolist()) == [2.0, 15.0]
+
+
+def test_nearest_within_label_falls_back_when_too_few() -> None:
+    X = torch.tensor([[0.0], [0.1], [5.0], [5.1]])
+    lab_x = torch.tensor([7, 3, 3, 7])
+    Y = torch.tensor([[0.05], [5.05]])
+    # label 3 has two rows in X: row 0 of Y must take X rows 1 and 2, not its nearer neighbour X row 0
+    assert sorted(S.nearest(X, Y, 2, same=(lab_x, torch.tensor([3, 7])))[0].tolist()) == [1, 2]
+    # label 9 has no rows: that Y row looks everywhere
+    assert sorted(S.nearest(X, Y, 2, same=(lab_x, torch.tensor([9, 9])))[1].tolist()) == [2, 3]

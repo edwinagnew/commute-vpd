@@ -184,3 +184,18 @@ the larger model, Q9). Arms, gates and rules are E36's unchanged, read at steps 
 `experiments/regating_spread/amend1.py`, predictions filed by `amend1.py --predictions` before the run. The measurement
 code is E36's, reviewed; only the row construction is new (decode, lowercase, re-encode, cut into 512-token rows), so
 no separate code review was run. Cost: one RunPod 4090 with the VPD files sent, about 20 minutes, under $0.5.
+
+## Amendment 4 (2026-10-26, after E36's independent check): E36 Amendment 2, cheap checks
+
+The check found E36's scoring right and the reading too strong: by the filed tree, step 300 falls in "all fail", and
+the comparison with the current token was weak (the token rule covers only 90 tokens) and not like for like. Two
+questions decide how to read that branch before anything else is designed. Is the nearest rule's shortfall sampling,
+since it drew on only 16,384 fitted positions? And does restricting the neighbours to the same token help, as
+restricting to the cue did on E35's own-answer state? `experiments/regating_spread/amend2.py` regenerates Amendment 1's
+lowercase fine-tune (gate: the 16,384-position nearest rule reproduces Amendment 1 within 0.02 at every step) and
+adds the nearest rule on 65,536 positions, the nearest rule within the same token, and the token rule's coverage.
+Predictions filed by `amend2.py --predictions` before the run: S, more positions add at least 0.1 at step 300 (predicted
+to fail, low-medium); W, restricting to the token adds at most 0.05 (predicted to hold, low). Class 1 (new reads of a
+regenerated state). The filed branch's own next step, a rule on Γ's input or on neighbouring positions, is a new
+design and goes to the user through the pending card, not run here. Cost: one RunPod 4090 with the VPD files sent,
+about 15 minutes, under $0.3.

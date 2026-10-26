@@ -78,9 +78,18 @@ def target_logp(logits: Tensor, rows: Tensor) -> float:
 # ----------------------------------------------------------------------------- predicted changes, flat rows
 
 
-def nearest(X: Tensor, Y: Tensor, k: int) -> Tensor:
-    """(len(Y), k) indices of each row of Y's k nearest rows of X (all on one device)."""
-    return torch.cat([_sqdist(Y[s : s + CHUNK], X).topk(k, largest=False).indices for s in range(0, Y.shape[0], CHUNK)])
+def nearest(X: Tensor, Y: Tensor, k: int, same: tuple[Tensor, Tensor] | None = None) -> Tensor:
+    """(len(Y), k) indices of each row of Y's k nearest rows of X (all on one device). With `same` = (labels of X,
+    labels of Y), a row of Y whose label has at least k rows in X looks only among those; other rows look everywhere."""
+    out = []
+    for s in range(0, Y.shape[0], CHUNK):
+        d2 = _sqdist(Y[s : s + CHUNK], X)
+        if same is not None:
+            lab_x, lab_y = same[0], same[1][s : s + CHUNK]
+            enough = torch.bincount(lab_x, minlength=int(lab_y.max()) + 1)[lab_y] >= k
+            d2 = d2.masked_fill((lab_y[:, None] != lab_x[None, :]) & enough[:, None], float("inf"))
+        out.append(d2.topk(k, largest=False).indices)
+    return torch.cat(out)
 
 
 def nearest_change(Dch: Tensor, idx: Tensor) -> Tensor:
