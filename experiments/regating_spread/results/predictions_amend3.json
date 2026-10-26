@@ -1,0 +1,31 @@
+{
+ "plan": "reports/2026-10-26_plan_regating-without-cues.md, Amendment 5. Filed before the run; never edited after.",
+ "measurements": {
+  "R_near16, R_near65": "Amendments 1 and 2's nearest rule; gate A0 against Amendment 2",
+  "R_near262": "the nearest rule (8 neighbours) on all positions of the first 512 rows",
+  "R_near262_k32": "the same with 32 neighbours; reported"
+ },
+ "gates": {
+  "A0": "every step: R_near16 and R_near65 within 0.02 of Amendment 2's; fail: stop"
+ },
+ "predictions": [
+  {
+   "id": "M",
+   "rule": "step 300: R_near262 >= R_near65 + 0.03 ('still rising')",
+   "predicted": "pass",
+   "confidence": "medium"
+  },
+  {
+   "id": "B",
+   "rule": "R_near262 >= 0.7 at every step ('the restated form recovers most of the switching')",
+   "predicted": "fail (step 300 near 0.65)",
+   "confidence": "low"
+  }
+ ],
+ "decision_tree": {
+  "B holds": "with enough fitted positions the rule recovers most of the switching on running text: the filed 'all fail' at step 300 was sampling; evidence for option (a) of the pending card",
+  "M holds, B fails": "still rising but short: the sampling curve is reported; the restatement stays partial",
+  "M fails": "the curve has flattened below the bar: the change depends on more than the original values at the position (the filed branch), and the next space is \u0393's input or neighbouring positions"
+ },
+ "filed": "2026-10-26 18:14:55"
+}
