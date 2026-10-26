@@ -86,8 +86,6 @@ sinfo -h -p compute -N -o '%N|%T|%E|%H' 2>/dev/null | sort -u | while IFS='|' re
     *) echo "cluster: $node ${st^^}, NOT TAKING JOBS since ${since/T/ } ($reason); ask a MATS admin to resume it" ;;
   esac
 done
-# Reminder until the venv is rebuilt in FLEET_DATA (user, 2026-10-26): it still lives in the retired sync copy.
-[[ "$(readlink -f "$FLEET_DATA/venv")" == "$HOME/commute/"* ]] && echo "REMINDER: the venv still lives in ~/commute. Once the cluster takes jobs, ask Claude to rebuild it in $FLEET_DATA; then delete ~/commute"
 
 # Pods from the RunPod API; the key is the shared MATS account's, so keep only this project's pods.
 key=${RUNPOD_API_KEY:-$(set -a; source "$FLEET_SECRETS" 2>/dev/null; echo "${RUNPOD_API_KEY:-}")}
