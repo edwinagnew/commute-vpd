@@ -478,3 +478,54 @@ the gate, so it was re-referenced to E27's H100 readings (tolerance 0.001 each) 
 `results/predictions_amend3_filed-1050_g1-e9.json`; the refiled `predictions_amend3.json` has the same P1-P3. The
 stopped run's file is `results/large/teacher_training_amend3_g1-e9-stop.json`. P2's bar is now the in-job adjoint P
 (0.234 on this card) plus 0.5. Rerun as the same brief.
+
+## Amendment 5 (2026-10-26, lead-2): why the two adversaries disagree, and is a copy unique?
+
+*Options 2 and 3 of `reports/decisions/2026-10-26_decision_next-while-waiting.md`, run by the user's task for lead-2
+(2026-10-26). Class 1 (re-reads of E34's states with the existing harness and budget measure); the r1 SGD teacher and
+its copies are regenerated because E34's saved states are not on the dev node.*
+
+**Design check.** *Goal:* Q1 under reading A; every adversarial verdict in the project rests on these two measures,
+and the larger-model run will use one of them. *Nearest tried:* E34 Amendment 4 (the budget sweep reads the r1 SGD
+teacher at 9.2 where the harness reads 1.59, same 20 steps, same step size, no cause found); E20 Amendment 3 (the
+budget sweep itself). *Patch or step:* a patch on the apparatus, not a new question. *Decisions relied on:* Γ frozen,
+Δ fixed; none departed from. *What changes what we do:* if the rows carry the gap, the 1.241 line is re-derived on
+256 rows before the budget measure is used again; if the adversary's code path carries it (precision, readout, how
+the masks are built), the measure that misreads is named and the project's "inconclusive" and "pass" verdicts that
+rest on it are listed for re-reading; if the two copies at two batch orders point different ways, "the copy" is not a
+unique placement and the larger-model write-up says so. *Control first:* W₀ through the harness (floor 0.075 within
+5%), then the regenerated r1 SGD teacher must reproduce E34 (P within 0.01 of 0.983, size within 0.002 of 0.0287,
+harness ratio within 0.01 of 1.588, budget ratio at 20 steps within 5% of 9.24) before any variant is read.
+
+**Part 1, the disagreement.** One claim: *the gap is in how the adversary is computed, not in which rows it sees.*
+Null: the rows carry it. Before writing code, list every difference between the harness's path
+(`faithfulness.faithfulness` → the authors' `calc_multibatch_pgd_masked_recon_loss`) and the budget's
+(`gamma.pgd_sources` + `cancel.masked_kl`): rows and blocks, precision (bf16 autocast against fp32), the readout
+(the authors' final objective against a separate forward), how the masks and Δ's mask are built, which CI (lower-leaky
+or not), the random start. Each difference that could matter gets one reading that changes it alone, at W₀ and at the
+teacher's do-nothing state, adversary seed 0, 20 steps. At least:
+- *rows*: the harness's two 128-row blocks read separately (block 0 is the budget's rows); the budget sweep on the
+  first 128 rows and on all 256 in one adversary;
+- *readout*: the budget adversary's own objective (`pgd_sources`' returned KL) beside `masked_kl` under the same
+  sources;
+- *precision*: the budget adversary and its readout under the harness's bf16 autocast;
+- *budget*: the harness's adversary at 160 steps of 2/160 beside the budget sweep's 160 (E34 A4: 10.45).
+Every reading is a ratio to W₀ under the same reading. Predictions: **P1 (rows do not carry it)**: on the teacher,
+the budget sweep on 256 rows is within 25% of its 128-row ratio, and the harness's block 0 is within 25% of its
+two-block ratio (25% = the copies' batch-order spread, Amendment 4). **P2 (it is in the code path)**: at least one
+single-difference reading moves the teacher's budget ratio to within 25% of the harness's 1.59, or the harness's to
+within 25% of 9.24. Low confidence on which; no prediction names it. **P3 (W₀ agrees)**: at W₀ every variant's KL is
+within 10% of its own default's (the measures agreed on W₀ within 0.04 nats in Amendment 4). Blind to: other
+adversary families, other teachers, adversary seeds past 0. Noise: the budget measure's own 7% at 20 steps (A4's C1b).
+
+**Part 2, uniqueness.** Arms A (task text) and B (Pile text) of the r1 SGD teacher, each trained at batch-order seeds
+0 and 1 with E34's recipe, 1,000 steps. Read: the cosine between the two seeds' weight changes per arm
+(`finetune.cosines`, the "all" entry), each copy's cosine with δW (E34: 0.08 to 0.22) and the cosine between arms A
+and B at seed 0, with the random-direction null. Expected: **P4**: the two seeds' copies point the same way, cosine
+≥ 0.8 per arm (medium; the end states moved by 0.005 in P(target) in Amendment 4, but nothing has read the weights).
+Below 0.5 on either arm means a copy is one of many behaviourally equal placements. Reported, no prediction: A against
+B. Blind to: placements that are equal up to a reparametrisation of the subcomponents (the cosine is on the weight
+change, which is gauge-free).
+
+**Cost.** One teacher, four 1,000-step copies, about ten adversary reads: about 20 min on an H100 or L40. Cluster
+`debug` QoS first (job ≤ 30 min), RunPod H100 if not started in 10 min. Cap $3.
