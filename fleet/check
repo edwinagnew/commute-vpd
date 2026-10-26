@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One screen on how the agents are doing. Safe to run any time; it changes nothing.
 #   fleet/check
-# For each agent: its state (working, asleep until its next wake-up, waiting for you, interrupted, stopped), when it
+# For each agent: its state (working, waiting on its subagents or jobs, idle, waiting for you, interrupted, stopped), when it
 # last did anything, and a one-sentence summary (fleet/summarize, every 15 min). Then the task, the Slurm jobs, the
 # commute-* pods on RunPod with their cost, and the latest commits.
 set -uo pipefail
@@ -28,16 +28,16 @@ state() {  # state ROLE TRANSCRIPT
     echo "INTERRUPTED: type 'carry on' in its window (tmux attach -t $FLEET_SESSION, leave with Ctrl-b d)"; return
   fi
   # Between turns with a ScheduleWakeup still in the future: say what it waits on. A finishing subagent or background
-  # command wakes it at once; the wake-up time is only the latest it looks again.
+  # command wakes it at once; the check-in is the backstop for a stuck subagent or a frozen pod.
   local last wake
   last=$(jq -r 'select(.type == "assistant") | .timestamp as $t | .message.content[]?
     | select(.type == "tool_use" and .name == "ScheduleWakeup") | "\($t) \(.input.delaySeconds // 0)"' "$2" 2>/dev/null | tail -1)
   if [[ -n "$last" ]]; then
     wake=$(( $(date -d "${last% *}" +%s) + ${last#* } ))
     if (( wake > now - 120 )); then
-      if [[ -n "$subs" ]]; then echo "waiting on its subagents (below); looks again by $(date -d @"$wake" +%H:%M) at the latest"
-      elif [[ -n "$jobs" ]]; then echo "waiting on its Slurm jobs (below); looks again at $(date -d @"$wake" +%H:%M)"
-      else echo "IDLE until $(date -d @"$wake" +%H:%M): nothing running for it to wait on"; fi
+      if [[ -n "$subs" ]]; then echo "waiting on its subagents (below); next check-in $(date -d @"$wake" +%H:%M)"
+      elif [[ -n "$jobs" ]]; then echo "waiting on its Slurm jobs (below); next check-in $(date -d @"$wake" +%H:%M)"
+      else echo "IDLE: nothing running for it to wait on; next check-in $(date -d @"$wake" +%H:%M)"; fi
       return
     fi
   fi
