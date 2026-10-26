@@ -126,6 +126,8 @@ change is not the same amount for every input.
 - **Coverage.** One fine-tune seed, one 67M model, the trigger position only, six toy tasks.
 - **Blind spots.** The distance weighs all alive subcomponents equally, including ones irrelevant to the target.
   Whether the nearest inputs share the cue was not counted. No rule's faithfulness under the adversary was checked.
+  Patterns are written in the precision of Γ's values, bf16, as in E18 to E33, so changes smaller than about 0.002
+  vanish; this lowers the arms built from small mean changes slightly, most of all one change for every input.
 
 ## Surprises
 

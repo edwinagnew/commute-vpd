@@ -49,23 +49,25 @@ def to_flat(g: Gates, lay: Layout) -> Tensor:
 
 
 def with_alive(g: Gates, x: Tensor, lay: Layout) -> Gates:
-    """g with each matrix's alive entries replaced by the matching columns of the flat rows x (B * T, D)."""
+    """g in float32 with each matrix's alive entries replaced by the matching columns of the flat rows x (B * T, D)
+    (float32, so changes below bf16's step survive)."""
     out = {}
     for k in lay.keys:
-        v = g[k].clone()
+        v = g[k].float().clone()
         B, T, _ = v.shape
         s = lay.start[k]
-        v[:, :, lay.idx[k]] = x[:, s : s + lay.idx[k].numel()].reshape(B, T, -1).to(v.dtype)
+        v[:, :, lay.idx[k]] = x[:, s : s + lay.idx[k].numel()].reshape(B, T, -1).float()
         out[k] = v
     return out
 
 
 def masked_logp(model: Any, rows: Tensor, gates: Gates) -> float:
-    """Sum over positions 0 .. T-2 of the masked model's log-probability of the next token (Delta out)."""
+    """Sum over positions 0 .. T-2 of the masked model's log-probability of the next token (Delta out), in float32:
+    under bf16 autocast the rounding of each pattern's logits would move R by about 1e-4 / gap (E36 review)."""
     from commute.local_faith import masked_logits
 
     with torch.no_grad():
-        lg = masked_logits(model, rows, gates, None, None)[:, :-1].float()
+        lg = masked_logits(model, rows, {k: v.float() for k, v in gates.items()}, None, None, autocast=False)[:, :-1]
     return float(torch.log_softmax(lg, -1).gather(2, rows[:, 1:, None]).double().sum())
 
 

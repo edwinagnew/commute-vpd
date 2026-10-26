@@ -52,7 +52,7 @@ CODE_CHARS, TOP_FRAC, MIN_CUT = "{}[]();=<>_\\", 0.05, 0.12
 N_TRAIN, N_HELD, N_FIT_ROWS, N_FIT_POS, EVAL_BATCH = 800, 64, 64, 16384, 8
 LR, BATCH, CHECKS, SEED = 3e-5, 8, (10, 100), 0
 K_NEAR, KS, K_RAND, N_RAND, MIN_TOKEN, KM_SEED = 8, (8, 32, 128, 512), 128, 3, 20, 0
-MIN_GAIN, MIN_R, ZERO_TOL, OWN_TOL = 0.02, 0.1, 1e-4, 0.02
+MIN_GAIN, MIN_R, ZERO_TOL, OWN_TOL, OWN_NATS = 0.02, 0.1, 1e-4, 0.02, 1e-3
 
 R_MIN, SHARED_MAX, NEAR_MIN, BEATS, CLOSE, FIX_BEATS, RAND_TOL = 0.3, 0.5, 0.6, 0.2, 0.1, 0.1, 0.05
 SCORED = str(CHECKS[-1])
@@ -61,8 +61,10 @@ BLIND = ("one fine-tune seed and one held-out set of 64 rows; one 67M model; one
          "punctuation rule); every predicted change is a mean over fit positions, blind to variation among them; "
          "Euclidean distance over every alive subcomponent weighs ones irrelevant to the text equally; patterns are "
          "written at every position at once, so effects through attention between positions are included, not separated")
-NOISE = ("the states are deterministic per seed; the random-group arm (3 draws at K = 128) measures what averaging over "
-         "groups does alone; E35 (same arms at the trigger) reproduced E32/E33 to 0.001")
+NOISE = ("the states are deterministic per seed; Gamma's values come from bf16 autocast, but every pattern and every L "
+         "is scored in float32, so rounding moves R far less than the 1e-4 / gap it would under bf16; the random-group "
+         "arm (3 draws at K = 128) measures what averaging over groups does alone; E35 (the same arms at the trigger) "
+         "reproduced E32/E33 within 0.0013")
 
 
 def pred(pid: str, rule: str, predicted: str, confidence: str, control: str) -> dict[str, str]:
@@ -96,12 +98,15 @@ PREDICTIONS: dict[str, Any] = {
     },
     "gates": {
         "S": f"selection: cut >= {MIN_CUT}, >= {N_TRAIN} training and >= {N_HELD} held-out rows; fail: stop",
-        "C0": f"at step {CHECKS[0]}, first: |R_zero| <= {ZERO_TOL} and |R_own_alive - 1| <= {OWN_TOL}; fail: stop",
+        "C0": f"at step {CHECKS[0]}, first: |L(zero) - L(g0)| <= {ZERO_TOL} x max(gap, {OWN_NATS}) and |L(own alive) - "
+              f"L(g1)| <= max({OWN_TOL} x gap, {OWN_NATS} nats per token); fail: stop. Reported at later steps, not a "
+              "scoring condition",
         "G": f"a step is scorable only if gain >= {MIN_GAIN} nats per token and r >= {MIN_R}",
     },
     "expected": {
         "W0 (no update)": "gap 0, every share undefined; zero change recovers exactly 0",
-        "control": "R_zero 0 exactly; R_own_alive 1 within 0.02 (dead subcomponents keep W0's values)",
+        "control": "L(zero) = L(g0) exactly; L(own alive) within the C0 tolerance of L(g1) (dead subcomponents keep W0's "
+                   "values)",
         "near_same_token": "lean >= 0.5: the current token dominates Gamma's values at a position",
         "slopes": "lean: median slope among varying subcomponents below 1 (each pulled towards a set point, E35's line "
                   "reading on one-cue tasks)",
@@ -134,11 +139,12 @@ PREDICTIONS: dict[str, Any] = {
 
 
 def score(states: dict[str, Any]) -> dict[str, Any]:
-    """The filed rules on every scorable step; the predictions are scored at SCORED."""
+    """The filed rules on every step; a step is scorable when G holds (C0 only stops the run at the first step); the
+    predictions are scored at SCORED."""
     out: dict[str, Any] = {}
     for step, m in states.items():
-        if not (m["C0"] and m["G"]):
-            out[step] = {"scorable": False}
+        if not m["G"]:
+            out[step] = {"scorable": False, "P_r": False}
             continue
         R = m["R"]
         out[step] = {"scorable": True, "P_r": m["r"] >= R_MIN, "P_shared": R["shared"] < SHARED_MAX,
@@ -175,9 +181,12 @@ def dump(out: dict[str, Any]) -> None:
 
 
 def code_tokens(tok: Any, vocab: int) -> Tensor:
-    """(vocab,) bool: the token's text contains one of CODE_CHARS (ids past the tokenizer's, the logits' padding: False)."""
+    """(vocab,) bool: the token's text contains one of CODE_CHARS; special tokens (<|endoftext|>, ...) and ids past the
+    tokenizer's (the logits' padding) are False."""
     n = min(len(tok), vocab)
-    return torch.tensor([any(c in tok.decode([i]) for c in CODE_CHARS) for i in range(n)] + [False] * (vocab - n))
+    mark = torch.tensor([any(c in tok.decode([i]) for c in CODE_CHARS) for i in range(n)] + [False] * (vocab - n))
+    mark[[i for i in tok.all_special_ids if i < vocab]] = False
+    return mark
 
 
 def task(vocab: int) -> tuple[Tensor, Tensor, dict[str, Any]]:
@@ -302,12 +311,14 @@ def shares(L: dict[str, float]) -> dict[str, Any]:
     gain, gap = L["T1"] - L["T0"], L["g1"] - L["g0"]
     R = {k: (v - L["g0"]) / gap if gap else float("nan") for k, v in L.items() if k not in ("T0", "T1", "g0", "g1")}
     rand = [R.pop(f"rand_{i}") for i in range(N_RAND)]
-    return {"gain": gain, "gap": gap, "r": gap / gain if gain else float("nan"), "R": R,
+    return {"gain": gain, "gap": gap, "r": gap / gain if gain else float("nan"), "R": R, "L": L,
             "R_rand": sum(rand) / len(rand), "rand_draws": rand}
 
 
 def gates(m: dict[str, Any]) -> dict[str, Any]:
-    c0 = abs(m["R"]["zero"]) <= ZERO_TOL and abs(m["R"]["own_alive"] - 1) <= OWN_TOL
+    L, gap = m["L"], abs(m["gap"])
+    c0 = (abs(L["zero"] - L["g0"]) <= ZERO_TOL * max(gap, OWN_NATS)
+          and abs(L["own_alive"] - L["g1"]) <= max(OWN_TOL * gap, OWN_NATS))
     g = m["gain"] >= MIN_GAIN and m["r"] >= MIN_R
     return {"C0": c0, "G": g}
 

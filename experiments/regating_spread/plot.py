@@ -46,9 +46,9 @@ def arms(st: dict[str, Any], out: Path) -> None:
     w = 0.2
     for j, (key, label, color) in enumerate(ARMS):
         x = np.arange(len(steps)) + (j - 1.5) * w
-        ax.bar(x, [st[s]["R"][key] for s in steps], w, color=color, label=label)
+        ax.bar(x, [float(st[s]["R"][key]) for s in steps], w, color=color, label=label)
     style(ax)
-    ax.set_xticks(range(len(steps)), [f"step {s}\nswitching share r {st[s]['r']:.2f}" for s in steps], fontsize=8.5)
+    ax.set_xticks(range(len(steps)), [f"step {s}\nswitching share r {float(st[s]['r']):.2f}" for s in steps], fontsize=8.5)
     ax.legend(fontsize=8, frameon=False, loc="upper left", ncol=2)
     ax.set_title("Code fine-tune, every position: how much of the switching each rule recovers", fontsize=10)
     fig.tight_layout()
@@ -60,9 +60,10 @@ def clusters(st: dict[str, Any], out: Path) -> None:
     for s, color in zip(sorted(st, key=int), ("#e87ba4", "#2a78d6"), strict=False):
         m = st[s]
         Ks = sorted(int(k[4:]) for k in m["R"] if k.startswith("clu_"))
-        ax.plot([1, *Ks], [m["R"]["shared"]] + [m["R"][f"clu_{K}"] for K in Ks], "o-", color=color, label=f"step {s}")
-        ax.axhline(m["R"]["near"], color=color, ls="--", lw=1)
-        ax.axhline(m["R"]["token"], color=color, ls=":", lw=1)
+        R = {k: float(v) for k, v in m["R"].items()}  # a non-finite value is stored as the string "nan"
+        ax.plot([1, *Ks], [R["shared"]] + [R[f"clu_{K}"] for K in Ks], "o-", color=color, label=f"step {s}")
+        ax.axhline(R["near"], color=color, ls="--", lw=1)
+        ax.axhline(R["token"], color=color, ls=":", lw=1)
     style(ax)
     ax.set_xscale("log", base=2)
     ax.set_xlabel("number of k-means groups of the original values (1 = one change everywhere)")
