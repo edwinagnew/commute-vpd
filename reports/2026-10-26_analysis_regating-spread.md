@@ -17,7 +17,8 @@ restatement without cues is supported on toy tasks and only partly on running te
 Partly. On a fine-tune of lowercased Pile text, giving each position the mean change of the eight training positions
 with the nearest original importance values recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51. The filed
 bar was 0.6, so it held only early. It beat every other rule: 32 groups of the original values recovered 0.32 to 0.45,
-one change per current token 0.24 to 0.32. By the filed tree, the change depends on more than a position's own values.
+one change per current token 0.24 to 0.32. With four times as many fitted positions it recovered 0.80, 0.67 and 0.58,
+so part of the miss was sampling; the token added nothing to it.
 
 ## What we were trying to test
 
@@ -129,12 +130,45 @@ on its own, since an update that learned nothing gave the same share.
    0.07 nats per token. The rows chosen were mostly LaTeX and maths. Why is untested: the same recipe learned lowercase
    text.
 
+## Amendment 2: is the shortfall sampling, and does the token add anything?
+
+*Plan: Amendment 4 of the plan. `experiments/regating_spread/amend2.py`, predictions filed 2026-10-26 18:05
+(`results/predictions_amend2.json`, sha256 `eab5cad2…`) before the run; results `results/regating_spread_amend2.json`.
+RunPod 4090, 58 s, $0.09.*
+
+The lowercase fine-tune was regenerated, and the 16,384-position nearest rule reproduced Amendment 1 exactly at every
+step. Two questions came from the independent check. Does the nearest rule miss because it drew on too few positions?
+And does restricting the neighbours to the same token help, as restricting to the cue did on one toy state?
+
+**Reading it.** Partly sampling, and the token adds nothing. With four times as many fitted positions, 65,536, the
+nearest rule recovers 0.80, 0.67 and 0.58 at steps 10, 100 and 300, against 0.72, 0.54 and 0.51. That clears the filed
+0.6 at step 100 but not at step 300, where the gain was 0.08 against the filed 0.1, so the sampling prediction fails as
+filed while the rule keeps improving with more data. Drawing the eight neighbours only from positions with the same
+token changes recovery by 0.02 or less at every step. The token rule itself covers only 38% of held-out positions; the
+rest fell back on one change everywhere.
+
+| step | nearest, 16,384 positions | nearest, 65,536 | nearest within token, 16,384 |
+|---|---|---|---|
+| 10 | 0.715 | 0.801 | 0.699 |
+| 100 | 0.543 | 0.671 | 0.534 |
+| 300 | 0.505 | 0.581 | 0.507 |
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| A0 | the 16,384-position rule reproduces Amendment 1 | within 0.02 at every step | exact | pass |
+| S | more positions add at least 0.1 at step 300 | R_near65 ≥ R_near16 + 0.1 | +0.076 | fail, as predicted |
+| W | restricting to the token adds at most 0.05 | R_near16 ≥ R_near16_tok − 0.05 | −0.002 | pass, as predicted |
+
+So the filed "all fail" at step 300 is in part a sampling shortfall, and the token carries nothing the original values
+do not. Whether more positions still would close the gap is not known: the curve had not flattened.
+
 ## What next
 
-1. **The filed branch: what else the change depends on.** Γ reads every position's input, so the next place to look is
-   Γ's input at the position or at neighbouring positions; a rule fitted on those, against the nearest rule here.
-2. **Cheap checks first.** More fitted positions for the nearest rule, to see whether the shortfall is sampling; the
-   nearest rule restricted to the same token, the like-for-like reference E35 used; and the token rule's coverage.
+1. **More fitted positions again**, all 262,144 positions of 512 training rows, on an H100. If the nearest rule
+   reaches 0.7 at every step, the restatement holds on running text and the filed miss was sampling.
+2. **The filed branch: what else the change depends on.** Γ reads every position's input, so the next place to look is
+   Γ's input at the position or at neighbouring positions; a rule fitted on those, against the nearest rule here. A
+   new design: it goes to the user through the pending card.
 3. **A fine-tune of a real behaviour that learns**, or the larger model's post-trained sibling, before any restatement
    is adopted. A pending-decision card in the log holds this choice.
 
@@ -185,8 +219,8 @@ cross-entropy 1.648 and 1.661, training loss without trend.
 
 ## Not run
 
-Seeds beyond 0; more than 16,384 fitted positions or other numbers of neighbours; the nearest rule restricted to the
-same token; how many held-out positions the token rule covers; held-out rows repeating training rows; a rule on Γ's
+Seeds beyond 0; more than 65,536 fitted positions or other numbers of neighbours; held-out rows repeating training
+rows; a rule on Γ's
 input or on neighbouring positions; any distance but Euclidean over all alive subcomponents; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA updates;
 a larger model.
 

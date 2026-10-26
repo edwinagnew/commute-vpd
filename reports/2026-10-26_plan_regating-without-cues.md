@@ -199,3 +199,14 @@ to fail, low-medium); W, restricting to the token adds at most 0.05 (predicted t
 regenerated state). The filed branch's own next step, a rule on Γ's input or on neighbouring positions, is a new
 design and goes to the user through the pending card, not run here. Cost: one RunPod 4090 with the VPD files sent,
 about 15 minutes, under $0.3.
+
+## Amendment 5 (2026-10-26, after E36 Amendment 2): the sampling curve
+
+Amendment 2 found the nearest rule still rising with the number of fitted positions: 0.72 to 0.80 at step 10, 0.54 to
+0.67 at step 100, 0.51 to 0.58 at step 300, from 16,384 to 65,536 positions. Whether the filed "all fail" at step 300
+is sampling or a real dependence on more than the original values decides the pending card, so
+`experiments/regating_spread/amend3.py` reads the same rule on all 262,144 positions of 512 training rows, with 8 and
+32 neighbours, on the regenerated lowercase fine-tune (gate: the 16,384- and 65,536-position rules reproduce Amendment
+2 within 0.02). Predictions filed by `amend3.py --predictions` before the run: M, still rising, at least 0.03 more than
+65,536 positions give at step 300 (medium); B, at least 0.7 at every step (predicted to fail, low). Class 1. About 35
+GB of GPU memory, so an H100; about 20 minutes with set-up and upload, under $1.5.
