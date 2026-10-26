@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Run one command on the cluster's worker as a CPU-only Slurm job, never on the shared dev node (from mats-fleet).
+#   fleet/cpu-run [-c CPUS] [--mem MEM] [-t TIME] [--] COMMAND [ARG ...]
+# Defaults: 1 CPU, 2G of memory and 30 minutes, in --qos=debug (a --time over 2 hours uses the default QOS). The
+# command runs in the current folder with this shell's environment, its output streams back as it is written, and
+# standard input is passed through, so a heredoc works:
+#   fleet/cpu-run python3 - <<'EOF'
+#   ...
+#   EOF
+# A job starts in about half a second when the worker has room; one that cannot start within 60 seconds is given up,
+# with Slurm's reason: "Requested nodes are busy" means the worker has no room for the job right now, so ask for
+# less with --mem or try again later. When the partition's node is drained or down, nothing can start until an
+# admin resumes it; fleet/cpu-run says so at once
+# rather than waiting. /ephemeral is local to each machine, so the job sees the worker's /ephemeral, not this one's:
+# run from your clone or the data folder, and keep the files the command reads and writes there. Inside a Slurm job
+# the command runs in place.
+set -euo pipefail
+# -h or --help prints the comment above.
+[[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
+cpus=1 mem=2G time=00:30:00
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -c|--cpus) cpus=$2; shift 2 ;;
+    --mem) mem=$2; shift 2 ;;
+    -t|--time) time=$2; shift 2 ;;
+    --) shift; break ;;
+    *) break ;;
+  esac
+done
+[[ $# -gt 0 ]] || { echo "usage: fleet/cpu-run [-c CPUS] [--mem MEM] [-t TIME] [--] COMMAND [ARG ...]" >&2; exit 2; }
+[[ -n "${SLURM_JOB_ID:-}" ]] && exec "$@"
+[[ "$PWD" == /ephemeral || "$PWD" == /ephemeral/* ]] \
+  && { echo "cpu-run: $PWD is on /ephemeral, which is local to this machine; run from your clone or the data folder" >&2; exit 2; }
+# A drained or down node takes no new jobs, whatever they ask for.
+states=$(sinfo -h -p compute -o %T 2>/dev/null | sort -u | paste -sd, -)
+[[ -n "$states" && ! "$states" =~ (idle|mixed|allocated|completing|planned)($|,) ]] \
+  && { echo "cpu-run: the compute partition's node is $states (sinfo -p compute), so no job can start there until an admin resumes it. Python cannot run on the dev node either: do other work, or run it on a RunPod pod through /pod-runner." >&2; exit 3; }
+for arg in "$@"; do
+  [[ "$arg" == /ephemeral/* || "$arg" == *=/ephemeral/* ]] \
+    && echo "cpu-run: warning: $arg is on /ephemeral; the job sees the worker's /ephemeral, not this machine's" >&2
+done
+# Minutes in a Slurm time (MM, MM:SS, HH:MM:SS, D-HH, D-HH:MM or D-HH:MM:SS), to choose the QOS.
+minutes() {
+  local t=$1 d=0 a b c
+  if [[ $t == *-* ]]; then
+    d=${t%%-*}; IFS=: read -r a b c <<< "${t#*-}"; echo $(( 10#$d * 1440 + 10#$a * 60 + 10#${b:-0} ))
+  else
+    IFS=: read -r a b c <<< "$t"
+    if [[ -n $c ]]; then echo $(( 10#$a * 60 + 10#$b )); else echo $(( 10#$a )); fi
+  fi
+}
+qos=(--qos=debug)
+(( $(minutes "$time") > 120 )) && qos=()
+exec srun --partition=compute --account=c11 "${qos[@]}" --cpus-per-task="$cpus" --mem="$mem" --time="$time" --immediate=60 \
+  --job-name="$FLEET_PREFIX-cpu-run" --quiet -- "$@"
