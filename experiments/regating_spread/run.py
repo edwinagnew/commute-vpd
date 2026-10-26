@@ -1,5 +1,5 @@
 """regating_spread (E36): does a cue-free form of the fixed-shift hypothesis hold on a fine-tune with no trigger?
-Plan: reports/2026-10-26_plan_regating-without-cues.md (E36, and Amendment 1, which files these predictions). Shared
+Plan: reports/plans/2026-10-26_plan_regating-without-cues.md (E36, and Amendment 1, which files these predictions). Shared
 steps in commute.spread (every-position values and patterns) and commute.cuefree (k-means).
 
 Task: code-like Pile text, the TOP_FRAC of rows with the most tokens containing one of CODE_CHARS. Fine-tune: all
@@ -73,7 +73,7 @@ def pred(pid: str, rule: str, predicted: str, confidence: str, control: str) -> 
 
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-26_plan_regating-without-cues.md, E36 and Amendment 1 (filed after E35 was read). Filed "
+    "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md, E36 and Amendment 1 (filed after E35 was read). Filed "
             "before any run; never edited after.",
     "task": f"Pile rows ('train' {ROWS_TRAIN[1:]}, 'val' {ROWS_HELD[1:]}); a token is marked if its text contains one "
             f"of {CODE_CHARS!r}; rows kept: code share >= the training stream's top-{TOP_FRAC} cut (cut >= {MIN_CUT}); "

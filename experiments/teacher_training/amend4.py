@@ -1,6 +1,6 @@
 """teacher_training Amendment 4 (2026-10-26): a second batch order, read under a longer adversary. Plan:
-reports/2026-10-23_plan_teacher-training.md -> "Amendment 4" (binding); E34's references in
-reports/2026-10-23_analysis_teacher-training.md -> "Full readings".
+reports/plans/2026-10-23_plan_teacher-training.md -> "Amendment 4" (binding); E34's references in
+reports/analyses/2026-10-23_analysis_teacher-training.md -> "Full readings".
 
 E34's six teachers are regenerated (run.Job.teacher, fine-tune seed 0). Arms A (task windows) and B (Pile rows) are
 retrained at batch-order seed 1, the only training randomness, and read at step 1000 through the harness (20-step
@@ -84,7 +84,7 @@ AM = Amend4()
 LAST = str(CFG.steps[-1])
 
 PREDICTIONS: dict[str, Any] = {
-    "about": "teacher_training Amendment 4 (reports/2026-10-23_plan_teacher-training.md -> 'Amendment 4'): E34's six "
+    "about": "teacher_training Amendment 4 (reports/plans/2026-10-23_plan_teacher-training.md -> 'Amendment 4'): E34's six "
              "teachers regenerated (fine-tune seed 0); arms A (task windows, Adam 1e-5, batch 32) and B (Pile train rows "
              "from 32,768, batch 8, plain mean KL, Adam 1e-5) retrained at batch-order seed 1 for 1000 steps and read "
              "at step 1000 through the harness; then E20 Amendment 3's budget sweep (128 Pile val rows, batches of 8, "

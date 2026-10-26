@@ -1,5 +1,5 @@
 #!/bin/bash
-# Cancellation tests (E17) on E11's saved states. Plan: reports/2026-10-21_plan_cancellation.md.
+# Cancellation tests (E17) on E11's saved states. Plan: reports/plans/2026-10-21_plan_cancellation.md.
 #   cd ~/commute-agents/<role>
 #   sbatch --gres=none --cpus-per-task=16 cluster/cancellation.sbatch all --smoke --device cpu   # CPU smoke, no GPU queue
 #   sbatch cluster/cancellation.sbatch all --smoke    # GPU smoke, ~5 min: two tasks, 8 rows, 2 adversary steps

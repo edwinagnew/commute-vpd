@@ -1,4 +1,4 @@
-"""Figures and scorecard for teacher_training, read from the run's JSONs only (plan: reports/2026-10-23_plan_teacher-training.md).
+"""Figures and scorecard for teacher_training, read from the run's JSONs only (plan: reports/plans/2026-10-23_plan_teacher-training.md).
 
   faithful.png    adversarial ratio at steps 100 and 1000 of arms A and B per task and teacher, beside the teacher's
                   do-nothing reading and this job's pass and fail lines (P1, P5); hollow: P(target) below 0.9

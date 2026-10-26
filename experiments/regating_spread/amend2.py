@@ -1,5 +1,5 @@
 """regating_spread (E36) Amendment 2: is the nearest rule's shortfall on lowercase text sampling, and how does it compare
-like for like with the token? Plan: reports/2026-10-26_plan_regating-without-cues.md -> Amendment 4 (from E36's
+like for like with the token? Plan: reports/plans/2026-10-26_plan_regating-without-cues.md -> Amendment 4 (from E36's
 independent check). Amendment 1's lowercase fine-tune is regenerated (same rows, recipe and seed) and read at its
 steps; per step, at every held-out position:
   near16      run.py's nearest rule on the same 16,384 fitted positions of the first 64 training rows (gate A0:
@@ -36,7 +36,7 @@ REPRO_TOL, SAMPLING_GAIN, LIKE_TOL = 0.02, 0.1, 0.05
 SCORED = str(CHECKS[-1])
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-26_plan_regating-without-cues.md, Amendment 4. Filed before the run; never edited after.",
+    "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md, Amendment 4. Filed before the run; never edited after.",
     "measurements": {k: v.strip() for k, v in (
         ("near16", "the nearest rule on Amendment 1's 16,384 fitted positions; gate A0"),
         ("near65", f"the nearest rule on all positions of the first {N_BIG_ROWS} training rows (65,536)"),

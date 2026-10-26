@@ -23,6 +23,6 @@
 <li>The least-squares split leaves 0.37 of the update in Δ at step 1,000, against the Adam LoRA's 0.54.</li>
 <li>The regenerated Adam LoRA matched E9 at step 10 but drifted by step 1,000 (KL elsewhere 0.016 against 0.005), though it passed its filed checks.</li></ul></dd>
 <dt>Bears on</dt><dd>Q3, Q11, Q1</dd>
-<dt>Moved on</dt><dd>Report: <code>reports/2026-10-22_analysis_lora-sgd.md</code>. E9's and E14's LoRA rows of the split table stand as properties of the update type, with their exact level depending on the optimiser. A LoRA trained with either optimiser can be left in Δ or split without leaving the faithfulness floor. One seed, one task. Next, in the report: save the per-matrix rows at steps 300 and 1,000 to see whether the drop is one matrix, and a second seed for both LoRAs. Not run: another task, rank or SGD with momentum; any adversary stronger than 20 steps.</dd>
+<dt>Moved on</dt><dd>Report: <code>reports/analyses/2026-10-22_analysis_lora-sgd.md</code>. E9's and E14's LoRA rows of the split table stand as properties of the update type, with their exact level depending on the optimiser. A LoRA trained with either optimiser can be left in Δ or split without leaving the faithfulness floor. One seed, one task. Next, in the report: save the per-matrix rows at steps 300 and 1,000 to see whether the drop is one matrix, and a second seed for both LoRAs. Not run: another task, rank or SGD with momentum; any adversary stronger than 20 steps.</dd>
 </dl>
 </article>

@@ -1,5 +1,5 @@
 """adjoint_sgd (E31): does the adjoint split of a plain-SGD fine-tune keep behaviour, the floor and Delta together?
-Plan: reports/2026-10-22_plan_adjoint-sgd.md (design check, mechanism hypothesis, P1-P4) and its Agent notes.
+Plan: reports/plans/2026-10-22_plan_adjoint-sgd.md (design check, mechanism hypothesis, P1-P4) and its Agent notes.
 
 Arm-A fine-tunes of all 24 matrices to 1000 steps. At steps 10, 100 and 1000 each update is read four ways: the
 fine-tune's own held-out P(target) and size; the reproduced share R (split.reproduced_share: how much of delta-W the
@@ -113,7 +113,7 @@ def label(task: str, seed: int, opt: str, lr: float) -> str:
 VERDICT = ("faith_score.verdict on the adversarial (PGD) ratio to the same-job W0 under adversary seed 0: pass <= 1.5 / "
            "(1 + f), fail >= 1.5 (1 + f); f = max/min - 1 of W0's PGD KL over seeds 0, 1 (H100 about 0.075 -> 1.40 / 1.61)")
 PREDICTIONS: dict[str, Any] = {
-    "about": "E31 adjoint_sgd. Plan reports/2026-10-22_plan_adjoint-sgd.md (design check there; the user asked for this "
+    "about": "E31 adjoint_sgd. Plan reports/plans/2026-10-22_plan_adjoint-sgd.md (design check there; the user asked for this "
              "experiment 2026-10-22). Filed before the run; never edited after.",
     "setup": {
         "finetunes": f"arm A (CE at the trigger + KL elsewhere), batch 32, clip 1, all 24 matrices, {TRAIN_STEPS} steps, "
@@ -193,7 +193,7 @@ CELL_RULE = (f"keep = adjoint state's held-out P(target) / the same fine-tune's 
              f"did not learn' (no reading of the split, not a pass or fail; reported, not rerun); Delta share > {DELTA_MAX} "
              "or verdict not 'pass' -> 'not faithful'; else the named outcome below")
 PREDICTIONS_A1: dict[str, Any] = {
-    "about": "E31 amendment 1 (adjoint_sgd): task vs SGD rate. Plan reports/2026-10-22_plan_adjoint-sgd.md -> "
+    "about": "E31 amendment 1 (adjoint_sgd): task vs SGD rate. Plan reports/plans/2026-10-22_plan_adjoint-sgd.md -> "
              "'Amendment 1' (design check there; the user asked for it 2026-10-23). results/predictions.json stands as "
              "filed. Filed before the run; never edited after.",
     "setup": {
@@ -257,7 +257,7 @@ STATE_RULE = (f"keep = adjoint state's held-out P(target) / the same fine-tune's
               "is 'unscored' (reported which state), never rerun inside the amendment")
 PREDICTIONS_A2: dict[str, Any] = {
     "about": "E31 amendment 2 (adjoint_sgd): batch-order seed 1 for the five single-seed cells of task x SGD rate. Plan "
-             "reports/2026-10-22_plan_adjoint-sgd.md -> 'Amendment 2' (design check there; the user asked for it "
+             "reports/plans/2026-10-22_plan_adjoint-sgd.md -> 'Amendment 2' (design check there; the user asked for it "
              "2026-10-23). predictions.json and predictions_amend1.json stand as filed. Filed before the run; never edited "
              "after.",
     "setup": {

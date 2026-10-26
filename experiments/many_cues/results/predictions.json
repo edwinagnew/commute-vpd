@@ -1,5 +1,5 @@
 {
- "plan": "reports/2026-10-22_plan_many-cues.md. Filed before any run; never edited after.",
+ "plan": "reports/plans/2026-10-22_plan_many-cues.md. Filed before any run; never edited after.",
  "states": "emoticon (G1, first, alone); r1_t588_v452 (one cue, one answer); 'many' (K cues, each its own answer); 'one' (the same K cues, one answer); K = 32 (at least 16, else the job stops after mining)",
  "mining": "Pile ('train', 0, 32768) rows; pool = the 600 most frequent word-like tokens with >= 100 occurrences; a pair qualifies if the target is word-like, not the trigger, baseline in [0.001, 1.0) and >= 5.0 x the target's background probability; target = most qualifying triggers; cues = qualifying triggers by occurrence count, each with >= 30 training and >= 4 held-out windows (up to 60 windows, split by row as the ladder, held-out capped at 6) and a distinct matched other target (many_cues.alternative)",
  "measurements": {

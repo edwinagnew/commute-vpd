@@ -1,7 +1,7 @@
 #!/bin/bash
 # E18 amendment 2: a random null for the whole shared change (the shift shuffled over each matrix's alive
 # subcomponents, 20 draws, clipped and not) and the no-clip shift by bins of its size.
-# Plan: reports/2026-10-21_plan_regating-leak.md -> Amendment 2.
+# Plan: reports/plans/2026-10-21_plan_regating-leak.md -> Amendment 2.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/regating_leak_amend2.sbatch     # ~2-4 min on an L40: G1 + the exact repeat of amendment 1 (stops on a fail), then the arms
 # Before: `cluster/sync.sh up`; results/predictions_amend2.json filed; results/regating_leak_amend1.json (the gate's

@@ -1,4 +1,4 @@
-"""Figure and scorecard for teacher_training Amendment 3, a LoRA teacher (plan: reports/2026-10-23_plan_teacher-training.md
+"""Figure and scorecard for teacher_training Amendment 3, a LoRA teacher (plan: reports/plans/2026-10-23_plan_teacher-training.md
 -> "Amendment 3"), read from the run's JSONs only.
 
   amend3.png             top: held-out P(target) at step 1000 of the teacher, its scaled adjoint split and the copies

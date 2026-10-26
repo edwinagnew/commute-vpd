@@ -1,6 +1,6 @@
 """What the fixed change of Gamma's importance values is made of (E32, `experiments/shift_anatomy`).
 
-Plan: reports/2026-10-22_plan_shift-anatomy.md. Definitions as E28 (`commute.regating`): every pattern is W0's values
+Plan: reports/plans/2026-10-22_plan_shift-anatomy.md. Definitions as E28 (`commute.regating`): every pattern is W0's values
 everywhere except the trigger position, scored as recovery rho = (lo - L00) / gap and as R = rho / rho_trig.
 
 Per-window reads at the trigger (`trigger_read`) are (N, C) or (N, d_in) per matrix, fp32 on CPU; `to_trig` cuts them

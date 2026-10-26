@@ -1,7 +1,7 @@
 """kv_task (round 5): can post-training inside the decomposition learn a behaviour the model lacks, and is the result
 still a faithful decomposition (GOALS's weak version, reading A)?
 
-Plan: reports/2026-10-19_plan_key-value-task.md. Tasks (src/commute/kv.py): after a marker token M, a key word x is
+Plan: reports/plans/2026-10-19_plan_key-value-task.md. Tasks (src/commute/kv.py): after a marker token M, a key word x is
 followed by table[x]. rand1 and rand32: a random bijection from K keys onto K other word-like tokens, a word-level
 substitution cipher. ident32: table[x] = x, the matched-format control (a behaviour the model partly has). Per task:
   finetune    the W fine-tune of the 24 matrices (arm A's loss with a per-window target): the learnability reference;
@@ -51,7 +51,7 @@ LIFT_TOL = 1e-6
 
 PREDICTIONS: dict[str, Any] = {
     "filed": "2026-10-19",
-    "plan": "reports/2026-10-19_plan_key-value-task.md",
+    "plan": "reports/plans/2026-10-19_plan_key-value-task.md",
     "scored_step_rule": "per arm, the first checkpoint (10, 30, 100, 300) with held-out P(target) >= 0.5; else the last "
                         "checkpoint, flagged 'did not learn'",
     "G1_finetune_learns": {
@@ -93,7 +93,7 @@ PREDICTIONS: dict[str, Any] = {
         "blind_to": "damage outside the trigger (kl_other and the Pile ratios carry that)",
         "positive_control": "ident32 itself (a behaviour the model partly has)"},
     "reported_not_scored": ["route split (d, r, i, e_gate, e_delta): mechanism only under reading A; e_delta = 0 by "
-                            "construction for the pull-back", "task-local PGD (no power, reports/2026-10-19_review_pgd-local.md)",
+                            "construction for the pull-back", "task-local PGD (no power, reports/reviews/2026-10-19_review_pgd-local.md)",
                             "rand1 on P5 (one bigram: the ladder's territory)", "per-entry held-out P(value) at the scored step"],
 }
 

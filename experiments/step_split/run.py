@@ -1,4 +1,4 @@
-"""step_split (E19): the step split along the emoticon fine-tune's own path (plan: reports/2026-10-21_plan_step-split.md).
+"""step_split (E19): the step split along the emoticon fine-tune's own path (plan: reports/plans/2026-10-21_plan_step-split.md).
 
 The fine-tune is E14/E16's (arm A, Adam 3e-5, seed 0, 1000 steps). After every optimizer step t, per decomposed matrix, the
 actual weight step S_t is split by `split.StepSplit`: the components take the scaled adjoint part c (S_t V, S_t^T U)

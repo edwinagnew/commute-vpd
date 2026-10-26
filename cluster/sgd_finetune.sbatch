@@ -1,5 +1,5 @@
 #!/bin/bash
-# sgd_finetune: SGD fine-tune rate, then splits and SGD component training (reports/2026-10-21_plan_sgd-finetune.md).
+# sgd_finetune: SGD fine-tune rate, then splits and SGD component training (reports/plans/2026-10-21_plan_sgd-finetune.md).
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_finetune.sbatch rate     # ~5 min on an L40
 #   sbatch cluster/sgd_finetune.sbatch split    # ~23 min on an L40; only if rate passed

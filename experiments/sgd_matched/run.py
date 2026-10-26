@@ -1,4 +1,4 @@
-"""SGD vs Adam at a matched size of change (item 2 of reports/2026-10-21_review_sgd-finding-influence.md).
+"""SGD vs Adam at a matched size of change (item 2 of reports/reviews/2026-10-21_review_sgd-finding-influence.md).
 
 sgd_grid found plain SGD (lr 0.01) ten times less diffuse than Adam (lr 1e-5) on emoticon component training, but
 its update is smaller: largest relative change per matrix at step 30 (`rel_norm_max`, logged by
@@ -6,7 +6,7 @@ component_training.train) 0.0026 against Adam's 0.0066. Here Adam and SGD with m
 lr grid and the rate whose step-30 rel_norm_max is closest to plain SGD's is read with the same revert-one
 concentration measure and KL elsewhere.
 
-Plan and design check: reports/2026-10-21_plan_sgd-matched.md.
+Plan and design check: reports/plans/2026-10-21_plan_sgd-matched.md.
 
 Stages:
   --predictions   file results/predictions.json (refuses to overwrite)

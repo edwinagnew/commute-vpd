@@ -1,5 +1,5 @@
 #!/bin/bash
-# H' kill tests on seven new tasks (E28). Plan: reports/2026-10-22_plan_regating-tasks.md.
+# H' kill tests on seven new tasks (E28). Plan: reports/plans/2026-10-22_plan_regating-tasks.md.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/regating_tasks.sbatch     # ~4-6 min on an L40: G1 (emoticon vs E18, the moved arms too) first, stops the job on a fail
 # Before that: `cluster/sync.sh up` and predictions filed (results/predictions.json). Gitignored inputs on NFS:

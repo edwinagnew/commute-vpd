@@ -1,6 +1,6 @@
 #!/bin/bash
 # E30 amendment 1: the raised and the lowered half of the fixed change, each applied everywhere (emoticon SGD 0.01).
-# Plan: reports/2026-10-22_plan_commute-second-line.md -> "Amendment 1 to E30".
+# Plan: reports/plans/2026-10-22_plan_commute-second-line.md -> "Amendment 1 to E30".
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/gamma_shift_map_amend1.sbatch   # ~18 min on a 4090 (8 Pile readings of ~2 min); C1 first, stops on a fail
 # Before: `cluster/sync.sh up`; results/predictions_amend1.json filed; results/gamma_shift_map.json (E30, committed);

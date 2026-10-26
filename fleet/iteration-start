@@ -3,7 +3,8 @@
 #   fleet/iteration-start ROLE
 # Prints, in order: a restart request; the pull's result and any unpushed commits; the role's handoff note (what it
 # was doing, what's next); its live Slurm jobs; where to see its pods; the research-log queue's length; and, for the
-# lead, the agents waiting at a prompt. Exits 1 when the pull did not finish.
+# lead, report files outside reports/<type>/, experiments without a notebook and the agents waiting at a prompt.
+# Exits 1 when the pull did not finish.
 set -uo pipefail
 source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
 role=${1:?usage: fleet/iteration-start ROLE}
@@ -38,6 +39,16 @@ pending=$(grep -c '^- ' "$repo/docs/research_log/PENDING.md" 2>/dev/null || true
 echo "--- research log: ${pending:-0} queued line(s) in docs/research_log/PENDING.md"
 if [[ ${role%-[0-9]*} == lead && ${pending:-0} != 0 ]]; then
   echo "    Flush them (a clerk in the background) before the next experiment's analysis: fleet/roles/lead.md, step 3."
+fi
+if [[ ${role%-[0-9]*} == lead ]]; then
+  # Reports live in reports/<type>/; experiments from E35 on have a notebook (user, 2026-10-26).
+  stray=$(find "$repo/reports" -maxdepth 1 -type f -name '*.md' -printf '%f ')
+  [[ -n "$stray" ]] && echo "    reports/ top level: $stray-> git mv each into reports/<type>/ (CLAUDE.md, Layout)."
+  missing=""
+  for e in $(grep -o '^| E[0-9]*' "$repo/experiments/TRIED.md" | grep -o '[0-9]*' | sort -un); do
+    (( 10#$e >= 35 )) && ! compgen -G "$repo/notebooks/E${e}_*.ipynb" > /dev/null && missing+=" E$e"
+  done
+  [[ -n "$missing" ]] && echo "    no notebook for:$missing -> /writeup, notebook with the report (fleet/roles/lead.md, step 3)."
 fi
 if [[ ${role%-[0-9]*} == lead && -s "$FLEET_DATA/blocked.txt" ]]; then
   echo "--- agents waiting at a prompt ($FLEET_DATA/blocked.txt):"; cat "$FLEET_DATA/blocked.txt"

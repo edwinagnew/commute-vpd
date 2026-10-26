@@ -1,6 +1,6 @@
 """Many cues, one answer (E33, `experiments/many_cues`): mining the task and the per-cue bookkeeping.
 
-Plan: reports/2026-10-22_plan_many-cues.md. A pair (trigger t, target v) *qualifies* when v is word-like, v != t, the
+Plan: reports/plans/2026-10-22_plan_many-cues.md. A pair (trigger t, target v) *qualifies* when v is word-like, v != t, the
 original model's mean next-token probability of v at t's occurrences (its baseline) lies in rungs 0 to 2 of the task
 ladder ([1e-3, 1)), and that baseline is at least OVER_BG times v's background probability over every position (t is a
 cue for v, not a word after which v is merely common). The target is the word-like token with the most qualifying

@@ -1,6 +1,6 @@
 # Pod-runner brief: teacher_training Amendment 4 (scored)
 
-Plan: `reports/2026-10-23_plan_teacher-training.md` → "Amendment 4: a second batch order, read under a longer
+Plan: `reports/plans/2026-10-23_plan_teacher-training.md` → "Amendment 4: a second batch order, read under a longer
 adversary". Predictions: `experiments/teacher_training/results/predictions_amend4.json` (the run refuses to start
 without it, or if its `config` or `amend4` differ from `run.py`'s `CFG` and `amend4.py`'s `AM`).
 

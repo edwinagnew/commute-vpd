@@ -1,5 +1,5 @@
 """The task ladder: trigger -> target tasks mined from Pile at graded baseline probability, their windows, and the
-pre-training coverage number (`reports/2026-10-15_plan_task-ladder.md`).
+pre-training coverage number (`reports/plans/2026-10-15_plan_task-ladder.md`).
 
 A task is (trigger token t, target token v). Its windows are the 41-token spans centred on occurrences of t in Pile
 train rows (same format as the emoticon windows: trigger at index `half`). Its baseline is the mean, over the
@@ -14,7 +14,7 @@ component-training step's energy that sits in components Gamma gates on at the t
 of alive components with gbar_c > 0.5 at the trigger (L0) and max gbar_c.
 
 Coverage describes a plain-SGD first step, while every ladder arm trained with Adam, so E5's coverage predictions
-compare a predictor and an outcome from different optimisers (`reports/2026-10-21_review_sgd-finding-influence.md`).
+compare a predictor and an outcome from different optimisers (`reports/reviews/2026-10-21_review_sgd-finding-influence.md`).
 """
 
 from __future__ import annotations

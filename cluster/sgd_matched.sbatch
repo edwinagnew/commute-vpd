@@ -1,5 +1,5 @@
 #!/bin/bash
-# SGD matched: plain SGD vs Adam vs SGD+momentum at a matched size of change (reports/2026-10-21_plan_sgd-matched.md).
+# SGD matched: plain SGD vs Adam vs SGD+momentum at a matched size of change (reports/plans/2026-10-21_plan_sgd-matched.md).
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_matched.sbatch run --smoke    # smoke, ~3 min
 #   sbatch cluster/sgd_matched.sbatch run            # scored, ~10 min on an L40

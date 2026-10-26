@@ -1,4 +1,4 @@
-"""Cancellation tests (E17, reports/2026-10-21_plan_cancellation.md): do the per-subcomponent changes a split or component
+"""Cancellation tests (E17, reports/plans/2026-10-21_plan_cancellation.md): do the per-subcomponent changes a split or component
 training writes cancel each other?
 
 A state gives, per matrix, the alive subcomponents before (U, V) and after (U2, V2) in theory layout (U (d_out, n), V
@@ -204,7 +204,7 @@ def gauge_mixed(pieces: Pieces, energy_ratio: float, seed: int, steps: int = 40)
 
 
 # ----------------------------------------------------------------------------- the complement revert (E20)
-# reports/2026-10-21_plan_cancellation-complement.md. The adversary's masked forward replaces each target linear's output
+# reports/plans/2026-10-21_plan_cancellation-complement.md. The adversary's masked forward replaces each target linear's output
 # W' x by sum_c m_c (x . v'_c) u'_c + m_D Delta' x over all C subcomponents, m = g + (1 - g) a and m_D = a[-1], so it
 # removes sum_c (1 - g_c)(1 - a_c) (x . v'_c) u'_c + (1 - a[-1]) Delta' x. Per matrix that removal is four blocks: the
 # alive originals u_c v_c^T, the alive new pieces u'_c v'_c^T (new minus originals = the changes), the dead
@@ -408,7 +408,7 @@ def bin_means(cached: Cached, wf: Any, bins: Bins) -> dict[str, float]:
 
 
 # ----------------------------------------------------------------------------- E20 amendment 1: splitting the rest
-# reports/2026-10-21_plan_cancellation-complement.md -> Amendment 1. The dead block and Delta' alone and together, at the
+# reports/plans/2026-10-21_plan_cancellation-complement.md -> Amendment 1. The dead block and Delta' alone and together, at the
 # model's own adversary levels or at W0's, over the dead cache of `cache_adversary`.
 
 

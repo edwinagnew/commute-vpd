@@ -1,6 +1,6 @@
 """Task ladder (round 3): does the decomposition predict which post-training updates it can follow?
 
-Plan: reports/2026-10-15_plan_task-ladder.md, amended by reports/2026-10-16_prediction_ladder-routes-amendment.md.
+Plan: reports/plans/2026-10-15_plan_task-ladder.md, amended by reports/predictions/2026-10-16_prediction_ladder-routes-amendment.md.
 Trigger -> target tasks mined from Pile at graded baseline probability (rungs = decades), two per rung (highest and
 lowest Gamma coverage), plus the emoticon task as the reference rung. Per task: W fine-tune (do-nothing reference),
 pull-back (Adam on all alive U, V), gated-off pull-back (positive control), each evaluated with the task-local harness

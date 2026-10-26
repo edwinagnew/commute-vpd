@@ -1,6 +1,6 @@
 ---
 name: project-teacher-training
-description: "Teacher training (E34, started 2026-10-23): component training with the fine-tuned model as KL teacher; Amendments 2-4 (loophole g>0.1, LoRA teacher, seed 1 + 160-step adversary) launched 2026-10-26; plan reports/2026-10-23_plan_teacher-training.md"
+description: "Teacher training (E34, started 2026-10-23): component training with the fine-tuned model as KL teacher; Amendments 2-4 (loophole g>0.1, LoRA teacher, seed 1 + 160-step adversary) launched 2026-10-26; plan reports/plans/2026-10-23_plan_teacher-training.md"
 metadata:
   node_type: memory
   type: project
@@ -17,7 +17,7 @@ User choices (2026-10-23): two input arms, task windows (arm A, E21's trigger-pl
 (arm B, uniform mean); teachers left to the lead (E31's six fine-tunes, regenerated in-job since none are saved);
 go-ahead to build, file predictions and run on an H100 (~$6-8) without another stop, check in only on a control failure or a
 reversed prediction. Δ stays frozen in the first run; a Δ-free variant is backlog material. Plan:
-`reports/2026-10-23_plan_teacher-training.md` (its "Lead's decisions" section is the final word on open points).
+`reports/plans/2026-10-23_plan_teacher-training.md` (its "Lead's decisions" section is the final word on open points).
 
 **Why:** the first map from δW alone that could meet the weak version; the user wants it taken to the larger model next
 week if it works.

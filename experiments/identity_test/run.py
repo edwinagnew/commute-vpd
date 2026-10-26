@@ -1,7 +1,7 @@
 """Identity test: after post-training inside the decomposition (pull-back) or a lift from outside, are the
 subcomponents that carry the update still the same subcomponents?
 
-Plan and design check: reports/2026-10-15_plan_identity-test.md (test 1, confirmed by the user 2026-10-15).
+Plan and design check: reports/plans/2026-10-15_plan_identity-test.md (test 1, confirmed by the user 2026-10-15).
 Identity claims: theory/component_identity.md (same contexts, same action; Gamma is frozen and reads the raw
 pre-weight activations, so its own profile can only drift through upstream weights and is reported, not scored).
 
@@ -56,7 +56,7 @@ PREDICTIONS: dict[str, Any] = {
         "identity_test: for the round-2 updates of Goodfire's 67M Pile model and its VPD decomposition s-55ea3f9b (Gamma "
         "frozen, Delta fixed), are the subcomponents that carry the emoticon update still the same subcomponents? "
         "Filed before any identity measurement was run. Round 2 showed the pull-back (lr 1e-5) is faithful at steps 10 "
-        "and 30 and the Euclidean lift is PGD-fragile (reports/2026-10-14_analysis_lift-test.md)."
+        "and 30 and the Euclidean lift is PGD-fragile (reports/analyses/2026-10-14_analysis_lift-test.md)."
     ),
     "setup": {
         "states": {

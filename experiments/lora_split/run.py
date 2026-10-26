@@ -1,4 +1,4 @@
-"""lora_split: the LoRA split study. Every saved update through one split table (plan: reports/2026-10-20_plan_lora-split.md).
+"""lora_split: the LoRA split study. Every saved update through one split table (plan: reports/plans/2026-10-20_plan_lora-split.md).
 
 Train nothing new for the LoRAs. The updates are the rank-8 LoRA on all 24 matrices at nine steps to 1000 (E9's saved
 factors), the one-matrix LoRAs of ranks 1 to 32 at steps 10, 30, 100 (E7's), and the emoticon full fine-tune re-run
@@ -73,7 +73,7 @@ SMOKE = Sizes(ft_steps=3, ckpts=(1, 2, 3), pile_steps=(2, 3), pile_rows=8, pile_
 
 PREDICTIONS: dict[str, Any] = {
     "filed": "2026-10-20",
-    "design": "reports/2026-10-20_plan_lora-split.md (design check confirmed by the user 2026-10-20, as recommended)",
+    "design": "reports/plans/2026-10-20_plan_lora-split.md (design check confirmed by the user 2026-10-20, as recommended)",
     "setup": {
         "updates": {"ft": f"emoticon full fine-tune, arm A recipe (Adam lr {FT_LR}, all 24 matrices, seed 0), delta-W kept at steps "
                           f"{FULL.ckpts}",

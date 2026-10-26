@@ -1,5 +1,5 @@
-"""PGD check for the task-local harness, at W0 only (hand-off: reports/2026-10-19_analysis_task-ladder.md,
-"Reported, not scored"; report: reports/2026-10-19_review_pgd-local.md).
+"""PGD check for the task-local harness, at W0 only (hand-off: reports/analyses/2026-10-19_analysis_task-ladder.md,
+"Reported, not scored"; report: reports/reviews/2026-10-19_review_pgd-local.md).
 
 Why both shared adversaries saturate the trigger (KL 15-46 nats at W0) while the same adversary on 128 Pile rows reads
 0.69. Every number is `local_faithfulness` (src/commute/local_faith.py) on a window set, so the harness is measured as

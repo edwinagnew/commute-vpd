@@ -1,7 +1,7 @@
 {
  "filed": "2026-10-21 16:05:00",
  "amends": "results/predictions.json (filed 2026-10-21 15:18), which stands unedited",
- "why": "In job 28189 the Adam grid's smallest rate, 2e-6, gave rel_norm_max 0.00334 against plain SGD lr 0.01's 0.00264 (27% over; the match rule needs 15%), so P1 to P4 were unscorable. The best value sat at the grid's edge, so the grid is extended downward before any null is written (reports/2026-10-21_review_sgd-finding-influence.md, process).",
+ "why": "In job 28189 the Adam grid's smallest rate, 2e-6, gave rel_norm_max 0.00334 against plain SGD lr 0.01's 0.00264 (27% over; the match rule needs 15%), so P1 to P4 were unscorable. The best value sat at the grid's edge, so the grid is extended downward before any null is written (reports/reviews/2026-10-21_review_sgd-finding-influence.md, process).",
  "change": "Adam grid 1e-6, 1.25e-6, 1.5e-6, 1.75e-6 (stage amend1). Everything else as filed: steps 30, batch 32, the control, the match rule (closest step-30 rel_norm_max, matched within 15%), the momentum grid rerun unchanged.",
  "predictions": "P1 to P4 as filed in predictions.json, same rules, thresholds and expected values, scored on the amended Adam match. P5 and P6 (momentum) were scored in job 28189 and are not rescored.",
  "expected": "rel_norm_max falls with the rate; one of the four lands within 15% of 0.00264. Indicative from job 28189, not a prediction: Adam at 2e-6 read top-10 0.13 and KL elsewhere 1.8 times plain SGD's.",

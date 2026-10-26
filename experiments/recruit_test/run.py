@@ -1,7 +1,7 @@
 """Recruit test: does the REAL update (a W fine-tune, a LoRA) recruit the same pre-existing subcomponents through the
 frozen Gamma that our pull-back map does, and is that set specific to the target token?
 
-Plan and design check: reports/2026-10-19_plan_recruit-test.md (confirmed by the user 2026-10-19, "go for it").
+Plan and design check: reports/plans/2026-10-19_plan_recruit-test.md (confirmed by the user 2026-10-19, "go for it").
 Every arm is a do-nothing placement: target W = W0 + delta-W, components unchanged, Gamma frozen, Delta out of the
 masked model. So d = i = 0 and e_Delta = 1 by construction (logged, G3); the measurements are the re-gating share r,
 the switched-on set S_on at the trigger (mean g_state - g_W0 > thr over the 73 held-out emoticon windows) and the

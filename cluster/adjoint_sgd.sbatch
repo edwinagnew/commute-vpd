@@ -1,6 +1,6 @@
 #!/bin/bash
 # adjoint_sgd (E31): the adjoint split of SGD and Adam fine-tunes, in shards on the L40 (remote-kernels was down
-# 2026-10-22). Plan: reports/2026-10-22_plan_adjoint-sgd.md. Each shard runs its own same-job W0 floor first.
+# 2026-10-22). Plan: reports/plans/2026-10-22_plan_adjoint-sgd.md. Each shard runs its own same-job W0 floor first.
 #   cd ~/commute-agents/<role>
 #   sbatch --export=ALL,SHARD=A cluster/adjoint_sgd.sbatch    # the reproductions (gated) FIRST, ~45 min
 #   then SHARD=B|C|D|E (~30-45 min each); they refuse to start until results/adjoint_sgd_A.json shows W0 and the

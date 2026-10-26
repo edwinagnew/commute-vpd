@@ -1,5 +1,5 @@
 #!/bin/bash
-# Complement revert (E20) on E11's saved states. Plan: reports/2026-10-21_plan_cancellation-complement.md.
+# Complement revert (E20) on E11's saved states. Plan: reports/plans/2026-10-21_plan_cancellation-complement.md.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/cancellation_complement.sbatch all    # ~12 min: W0 (gate first) and eight states, 128 rows
 # Before that: `cluster/sync.sh up` and predictions filed (results/predictions.json). Inputs on NFS:

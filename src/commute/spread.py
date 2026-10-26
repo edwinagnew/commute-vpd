@@ -1,6 +1,6 @@
 """Gamma's values and patterns at every position, for a fine-tune with no trigger (E36, `experiments/regating_spread`).
 
-Plan: reports/2026-10-26_plan_regating-without-cues.md. E35's arms (`commute.cuefree`) carried from one trigger position
+Plan: reports/plans/2026-10-26_plan_regating-without-cues.md. E35's arms (`commute.cuefree`) carried from one trigger position
 to every position of whole rows. Values are kept as *flat* rows: one row per (sequence, position), the alive
 subcomponents of every matrix concatenated in sorted key order (`shift_anatomy.flat`'s order), (N, D) float32.
 A pattern is W0's values g0 at every position with the alive entries replaced by clip(g0 + c) or clip(a g0 + b); dead

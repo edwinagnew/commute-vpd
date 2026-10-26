@@ -158,7 +158,7 @@ workdir = "/root/work"
 # Network volume 697hr92me8 (50 GB, EU-RO-1, created 2026-10-19) is NOT used: remote-kernels 0.3.8 makes the volume
 # mount its working directory (sync target, kernel cwd and its own lease file), so the second pod on the volume reads
 # the first pod's lease, fences itself and self-destructs; and MooseFS is slow for small files (uv sync 576 s vs 61 s,
-# import torch 20-45 s). See reports/2026-10-19_decision_pod-policy.md section 3. Re-enable only with a plugin
+# import torch 20-45 s). See reports/decisions/2026-10-19_decision_pod-policy.md section 3. Re-enable only with a plugin
 # version that has a separate workdir option for RunPod.
 # network-volume-id = "697hr92me8"
 # data-center-ids = ["EU-RO-1"]

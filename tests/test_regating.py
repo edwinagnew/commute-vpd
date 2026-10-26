@@ -1,5 +1,5 @@
 """CPU checks of regating.py (E18's patterns, moved for E24) on the tiny ComponentModel of test_faithfulness_invariants:
-the five patterns match the definitions in reports/2026-10-21_plan_regating-leak.md (shared = W0's gates + the clipped
+the five patterns match the definitions in reports/plans/2026-10-21_plan_regating-leak.md (shared = W0's gates + the clipped
 mean change over the TRAINING windows; mean; cross; random on S_on, 20 draws), and W0's own gates recover 0."""
 
 from __future__ import annotations

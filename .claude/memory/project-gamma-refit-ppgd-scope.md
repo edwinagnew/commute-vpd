@@ -8,7 +8,7 @@ metadata:
   modified: 2026-10-20T15:47:03.154Z
 ---
 
-The Γ refit (`src/commute/gamma.py`, built 2026-10-20 from `reports/2026-10-20_plan_gamma-refit.md`) trains Γ alone on
+The Γ refit (`src/commute/gamma.py`, built 2026-10-20 from `reports/plans/2026-10-20_plan_gamma-refit.md`) trains Γ alone on
 the released loss stack minus faithfulness. The released config's persistent-PGD adversary has scope
 `per_batch_per_position` (one source per row-and-position slot of the 64-row batch, one step per optimizer step). With
 micro-batches of 8, a single state stepped per micro-batch would give the adversary 8× the updates per Γ step; the code

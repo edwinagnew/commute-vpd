@@ -1,6 +1,6 @@
 """Figures for regating_tasks (E28) from results/regating_tasks.json (JSON only; no model).
 
-One figure per kill condition of H' (reports/2026-10-22_decision_working-hypothesis-and-two-lines.md), the seven new
+One figure per kill condition of H' (reports/decisions/2026-10-22_decision_working-hypothesis-and-two-lines.md), the seven new
 states beside E18's three seed-0 readings (recorded in the run's `refs.E18_seed0`, read from E18's JSONs), each with
 the kill line and the range H' predicts:
   fixed.png      the updated model's mean trigger values net of W0's (R_mean_net), as a share of each window's own

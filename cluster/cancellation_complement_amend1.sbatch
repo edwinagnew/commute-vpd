@@ -1,6 +1,6 @@
 #!/bin/bash
 # Complement revert (E20), amendment 1: R split into the dead block and Delta'. Plan:
-# reports/2026-10-21_plan_cancellation-complement.md -> Amendment 1.
+# reports/plans/2026-10-21_plan_cancellation-complement.md -> Amendment 1.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/cancellation_complement_amend1.sbatch    # ~10 min: W0 (gates first) and eight states, 128 rows
 # Before that: `cluster/sync.sh up`, results/predictions_amend1.json filed, and E20's results/complement.json present

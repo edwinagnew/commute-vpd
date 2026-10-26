@@ -1,5 +1,5 @@
 {
- "about": "Amendment 1 to concentration_test (reports/2026-10-15_prediction_concentration-amendment.md). The original predictions.json is unchanged. The trigger-local control failed its filed rule: do-nothing's CI-masked P(o) was 0.535 (needed < 0.498) because the frozen Gamma reads the fine-tuned activations and its gates alone move the component model towards `o`. This amendment fixes the gates to W0: Gamma's g is computed from the W0 model's activations, so only the components can carry the update. Filed before the amended measure was run.",
+ "about": "Amendment 1 to concentration_test (reports/predictions/2026-10-15_prediction_concentration-amendment.md). The original predictions.json is unchanged. The trigger-local control failed its filed rule: do-nothing's CI-masked P(o) was 0.535 (needed < 0.498) because the frozen Gamma reads the fine-tuned activations and its gates alone move the component model towards `o`. This amendment fixes the gates to W0: Gamma's g is computed from the W0 model's activations, so only the components can carry the update. Filed before the amended measure was run.",
  "filed": "2026-10-15 13:20:47",
  "predictions": [
   {

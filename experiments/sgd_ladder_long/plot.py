@@ -1,11 +1,11 @@
-"""Figures for the SGD-vs-Adam analysis (reports/2026-10-22_analysis_sgd-vs-adam.md). JSON only.
+"""Figures for the SGD-vs-Adam analysis (reports/analyses/2026-10-22_analysis_sgd-vs-adam.md). JSON only.
 
 (1) figures/size_damage.png: every state scored on the Pile harness in the SGD review (sgd_ladder, sgd_ladder_long,
     sgd_kv, sgd_finetune, sgd_faith), its adversarial ratio against its size of change (left) and its held-out KL
     elsewhere (right), with the same-job W0 band. Prints how well one threshold on each separates passes from fails.
 (2) figures/steps.png: on each ladder task, the adversarial ratio of each arm at steps 10, 100 and 1000.
 
-Every reading here is a 20-step adversary's: see reports/2026-10-21_analysis_cancellation-complement.md, Amendment 2.
+Every reading here is a 20-step adversary's: see reports/analyses/2026-10-21_analysis_cancellation-complement.md, Amendment 2.
 
 Usage (repo root): uv run python experiments/sgd_ladder_long/plot.py
 """

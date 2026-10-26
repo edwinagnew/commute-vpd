@@ -1,6 +1,6 @@
 #!/bin/bash
 # Reading-A coverage on one task (2026-10-20: the emoticon task, at the user's request). Plan:
-# reports/2026-10-19_plan_reading-a-coverage.md; the five-task run itself went to RunPod on 2026-10-19.
+# reports/plans/2026-10-19_plan_reading-a-coverage.md; the five-task run itself went to RunPod on 2026-10-19.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/reading_a_coverage.sbatch --task emoticon            # scored, ~15 min on an L40
 #   sbatch cluster/reading_a_coverage.sbatch --task emoticon --smoke    # smoke, ~5 min

@@ -1,5 +1,5 @@
 {
- "about": "E31 adjoint_sgd. Plan reports/2026-10-22_plan_adjoint-sgd.md (design check there; the user asked for this experiment 2026-10-22). Filed before the run; never edited after.",
+ "about": "E31 adjoint_sgd. Plan reports/plans/2026-10-22_plan_adjoint-sgd.md (design check there; the user asked for this experiment 2026-10-22). Filed before the run; never edited after.",
  "setup": {
   "finetunes": "arm A (CE at the trigger + KL elsewhere), batch 32, clip 1, all 24 matrices, 1000 steps, delta-W at (10, 100, 1000). Emoticon seed 0: Adam 3e-5, SGD 0.01, Adam 3e-6; emoticon seed 1: the same three; r1_t534_v369 and r0_t352_v310 seed 0: SGD at the rate E4's rule picks from (0.001, 0.003, 0.01, 0.03, 0.1) at step 10 (P >= 0.9, KL elsewhere <= {'r1_t534_v369': 0.24301687240600586, 'r0_t352_v310': 0.20851298211847694}), and Adam 3e-5",
   "states": "per checkpoint: do-nothing and the scaled adjoint split (split.adjoint_state) through harness.measure: Pile ratios (256 rows, 20 PGD steps), held-out P(target) at the trigger (route split T1), Delta's share of ||delta-W||^2",

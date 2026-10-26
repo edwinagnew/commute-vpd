@@ -1,5 +1,5 @@
 #!/bin/bash
-# Mechanism or leak (E18). Plan: reports/2026-10-21_plan_regating-leak.md (build notes there).
+# Mechanism or leak (E18). Plan: reports/plans/2026-10-21_plan_regating-leak.md (build notes there).
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/regating_leak.sbatch     # ~12 min on an L40: G1 first (stops the job on a fail), three tasks, Pile stages
 # No separate smoke: G1 (reproduce r, W0's gates recover 0) runs first and alone and stops the job in its first minutes.

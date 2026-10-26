@@ -147,7 +147,7 @@ class ContrastAcc:
 
 
 # ----------------------------------------------------------------------------- trigger-only gate patterns (E18)
-# Added 2026-10-21 for `experiments/regating_leak` (reports/2026-10-21_plan_regating-leak.md). Each pattern is W0's gates
+# Added 2026-10-21 for `experiments/regating_leak` (reports/plans/2026-10-21_plan_regating-leak.md). Each pattern is W0's gates
 # everywhere except the trigger position, where it writes per-window values `trig[b][key]` (B, C).
 
 TrigVals = list[dict[str, Tensor]]
@@ -226,7 +226,7 @@ def in_range(shift: dict[str, Tensor], alive: dict[str, Tensor], lo: float, hi: 
 
 
 # ----------------------------------------------------------------------------- amendment 3 (E18, 2026-10-21)
-# Arms that the leading hypothesis H can fail (reports/2026-10-21_plan_regating-leak.md -> Amendment 3): the updated
+# Arms that the leading hypothesis H can fail (reports/plans/2026-10-21_plan_regating-leak.md -> Amendment 3): the updated
 # model's own trigger values with the fixed change removed, another window's values, the change's two signs.
 
 

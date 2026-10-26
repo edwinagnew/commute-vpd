@@ -1,6 +1,6 @@
 """regating_small (E24): does a fixed pattern of importance values recover the switching effect of a SMALL update?
-Plan: reports/2026-10-22_plan_small-update-reruns.md -> E24 (and its Agent notes); E18's definitions in
-reports/2026-10-21_plan_regating-leak.md. Shared steps in commute.regating (E18's logic, moved).
+Plan: reports/plans/2026-10-22_plan_small-update-reruns.md -> E24 (and its Agent notes); E18's definitions in
+reports/plans/2026-10-21_plan_regating-leak.md. Shared steps in commute.regating (E18's logic, moved).
 
 Do-nothing states of 10-step arm-A fine-tunes on emoticon (seed 0): the large Adam 3e-5 one (E18's state, the gate and
 the in-job reference) and the two small ones of E21 (SGD 0.01; Adam 3e-6, matched in size). Per state, on the held-out
@@ -53,8 +53,8 @@ SAME_R, FIXED, PER_WINDOW, CROSS_MAX, RANDOM_MAX, NULL_LEARNED = 0.1, 0.7, 0.3, 
 NAT_ROWS = ("val", 0, 600)
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-22_plan_small-update-reruns.md -> E24 and its Agent notes; definitions as E18 "
-            "(reports/2026-10-21_plan_regating-leak.md). Filed before any run; never edited after.",
+    "plan": "reports/plans/2026-10-22_plan_small-update-reruns.md -> E24 and its Agent notes; definitions as E18 "
+            "(reports/plans/2026-10-21_plan_regating-leak.md). Filed before any run; never edited after.",
     "states": "do-nothing states (target W0 + dW, released subcomponents C0, Gamma frozen, Delta out of the masked model) of "
               "10-step arm-A fine-tunes of all 24 matrices, seed 0, batch 32: emoticon with Adam 3e-5 (large, E18's state), "
               "SGD 0.01 and Adam 3e-6 (small, E21's matched pair, size 0.0024 and 0.0022). Extra: r1_t534_v369 with the "

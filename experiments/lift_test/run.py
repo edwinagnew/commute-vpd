@@ -1,6 +1,6 @@
 """The lift test: can a simple map carry a fine-tune onto the decomposition, with Delta held fixed?
 
-Plan and design check: reports/2026-10-14_plan_lift-test.md (confirmed by the user 2026-10-14).
+Plan and design check: reports/plans/2026-10-14_plan_lift-test.md (confirmed by the user 2026-10-14).
 
 Stages (JSON into results/, large tensors into results/large/):
   --predictions         file results/predictions.json (refuses to overwrite)
@@ -43,7 +43,7 @@ PREDICTIONS: dict[str, Any] = {
         "(no extra network trained; user, 2026-10-14) put delta-W on the alive subcomponents of the released VPD "
         "decomposition s-55ea3f9b, Gamma frozen and Delta held at Delta_0, so that the result is a faithful "
         "decomposition of W0 + delta-W (the weak version, GOALS.md)? Definitions: theory/commuting_updates.md. Plan: "
-        "reports/2026-10-14_plan_lift-test.md. Filed before any round-2 measurement was run. Round 1's delta-W "
+        "reports/plans/2026-10-14_plan_lift-test.md. Filed before any round-2 measurement was run. Round 1's delta-W "
         "checkpoints (experiments/transport_test/results/large/{A,B}/dW_step*.pt) exist and their norms are known "
         "from round 1; their obstruction fractions have not been computed."
     ),
@@ -132,7 +132,7 @@ PRED_AMEND = RESULTS / "predictions_amend1.json"
 
 PREDICTIONS_AMEND: dict[str, Any] = {
     "about": (
-        "Amendment 1 to lift_test predictions (reports/2026-10-14_prediction_lift-test-amendment.md). The original "
+        "Amendment 1 to lift_test predictions (reports/predictions/2026-10-14_prediction_lift-test-amendment.md). The original "
         "results/predictions.json is unchanged and stays scored as filed (P1 reversed; P2's L_F term unscorable; P3 "
         "failed). P2' and P3' are new predictions, filed before either was run, motivated by what the first runs showed: "
         "the do-nothing map passes the masked KLs and L_F cannot see delta-W against ||Delta_0||^2 = 67.9, and the filed "

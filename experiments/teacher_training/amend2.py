@@ -1,5 +1,5 @@
 """teacher_training Amendment 2 (2026-10-26): is Amendment 1's Pile-only result carried by the rows where the emoticon
-trigger subcomponent was partly on? Plan: reports/2026-10-23_plan_teacher-training.md -> "Amendment 2".
+trigger subcomponent was partly on? Plan: reports/plans/2026-10-23_plan_teacher-training.md -> "Amendment 2".
 
 One new arm-B variant on emoticon, both teachers (SGD 0.01, Adam 3e-5, regenerated as in E34): B-dropped-0.1, Amendment
 1's B-dropped with the threshold on h.2.mlp.down_proj:2359's g at W0 lowered from 0.5 to 0.1. Every row with a position
@@ -198,7 +198,7 @@ def amend2(device: str) -> None:
 
 
 PREDICTIONS: dict[str, Any] = {
-    "about": "teacher_training Amendment 2 (reports/2026-10-23_plan_teacher-training.md -> 'Amendment 2'; approved classes 3 "
+    "about": "teacher_training Amendment 2 (reports/plans/2026-10-23_plan_teacher-training.md -> 'Amendment 2'; approved classes 3 "
              "and 4, the loophole Amendment 1's design check named). Emoticon only, both teachers (SGD 0.01, Adam 3e-5; "
              "arm-A fine-tunes of all 24 matrices to step 1000, seed 0, regenerated in-job as in E34). One arm-B variant per "
              "teacher, B-dropped-0.1: Amendment 1's B-dropped with the threshold on the trigger subcomponent's g at W0 "

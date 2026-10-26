@@ -1,6 +1,6 @@
 #!/bin/bash
 # E18 amendment 1: why the shared pattern recovers less than the mean pattern on the word tasks (clip, per-window
-# variation, or dead subcomponents). Plan: reports/2026-10-21_plan_regating-leak.md -> Amendment 1.
+# variation, or dead subcomponents). Plan: reports/plans/2026-10-21_plan_regating-leak.md -> Amendment 1.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/regating_leak_amend1.sbatch     # ~4 min on an L40: G1 + the E18 repeat gate (stops on a fail), then the arms
 # No Pile stages (natural, adversary) are rerun. Before: `cluster/sync.sh up`; results/predictions_amend1.json filed;

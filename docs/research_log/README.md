@@ -75,7 +75,7 @@ least once a day:
    ```
    last=$(grep -o '<td class="c">20[0-9-]*</td>' docs/research_log/parts/sections/changelog.html \
           | head -1 | grep -o '20[0-9-]*')        # date of the newest changelog row
-   ls reports/ | awk -v d="$last" '$0 >= d'      # every report dated on or after it
+   ls reports/*/ | awk -v d="$last" '$0 >= d'    # every report dated on or after it
    for e in $(grep -o '^| E[0-9]*' experiments/TRIED.md | grep -o 'E[0-9]*' | sort -u); do
      grep -rq "id=\"e${e#E}\"" docs/research_log/parts || echo "missing card: $e"; done
    ```

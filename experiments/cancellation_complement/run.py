@@ -1,5 +1,5 @@
 """cancellation_complement (E20): is the adversary's excess in the original subcomponents? E17's revert with the roles
-swapped. Plan: reports/2026-10-21_plan_cancellation-complement.md (approved classes 1 and 4).
+swapped. Plan: reports/plans/2026-10-21_plan_cancellation-complement.md (approved classes 1 and 4).
 
 Per state (E17's eight, rebuilt by `commute.saved_states`) and at W0, on the first 128 Pile val rows: the state's own
 adversary (gamma.pgd_sources, as E17), its fp32 masked KL F_all, and `cancel.Remover` reverts of the adversary's fraction
@@ -82,8 +82,8 @@ OUT_A3 = RESULTS / "complement_amend3.json"
 
 PREDICTIONS: dict[str, Any] = {
     "filed": "2026-10-21",
-    "design": "reports/2026-10-21_plan_cancellation-complement.md (approved classes 1 and 4; the named next step of "
-              "reports/2026-10-21_analysis_cancellation.md)",
+    "design": "reports/plans/2026-10-21_plan_cancellation-complement.md (approved classes 1 and 4; the named next step of "
+              "reports/analyses/2026-10-21_analysis_cancellation.md)",
     "setup": {
         "states": f"W0 and E17's eight: component training at step {STEP} (seed 0) on emoticon, r0_t352_v310, r1_t534_v369, "
                   "r1_t588_v452, r2_t275_v2667, r2_t359_v816; the least-squares and scaled adjoint splits of the emoticon "
@@ -119,7 +119,7 @@ PREDICTIONS: dict[str, Any] = {
         {"id": "P2_pattern_matters", "arm": list(SCORED), "scored": True, "pass": "F_orig >= 2 x mean F_orig_perm on every scored state",
          "null": "F_orig about F_orig_perm: any removal of that size does the damage",
          "predicted": "pass: turning every maskable subcomponent down together costs a fiftieth of the adversary's mask "
-                      "(reports/2026-10-20_analysis_adversarial-vs-stochastic.md)", "blind_to": "within-matrix structure beyond a"},
+                      "(reports/analyses/2026-10-20_analysis_adversarial-vs-stochastic.md)", "blind_to": "within-matrix structure beyond a"},
         {"id": "P3_low_importance_carries_it", "arm": list(SCORED), "scored": True,
          "pass": "sum of max(e_b, 0) over imp0 and imp1 >= 0.5 x the sum over all four importance bins, on >= 3 of 4 scored states",
          "null": "the high-importance half carries it",
@@ -133,8 +133,8 @@ PREDICTIONS: dict[str, Any] = {
 
 PREDICTIONS_AMEND1: dict[str, Any] = {
     "filed": "2026-10-21",
-    "amends": "results/predictions.json (stays as filed); plan reports/2026-10-21_plan_cancellation-complement.md -> "
-              "Amendment 1, from reports/2026-10-21_analysis_cancellation-complement.md -> What next (approved by the user)",
+    "amends": "results/predictions.json (stays as filed); plan reports/plans/2026-10-21_plan_cancellation-complement.md -> "
+              "Amendment 1, from reports/analyses/2026-10-21_analysis_cancellation-complement.md -> What next (approved by the user)",
     "setup": {
         "same_as_E20": "W0 first, then the same eight states in the same order, the same 128 Pile val rows, the same "
                        "adversary (seed 0, 20 steps), every E20 number recomputed; the adversary's sources saved per model",
@@ -190,8 +190,8 @@ PREDICTIONS_AMEND1: dict[str, Any] = {
 PREDICTIONS_AMEND2: dict[str, Any] = {
     "filed": "2026-10-21",
     "amends": "results/predictions.json and predictions_amend1.json (stay as filed); plan "
-              "reports/2026-10-21_plan_cancellation-complement.md -> Amendment 2, from "
-              "reports/2026-10-21_analysis_cancellation-complement.md -> Amendment 1 -> What next, items 1 and 2",
+              "reports/plans/2026-10-21_plan_cancellation-complement.md -> Amendment 2, from "
+              "reports/analyses/2026-10-21_analysis_cancellation-complement.md -> Amendment 1 -> What next, items 1 and 2",
     "setup": {
         "rows": f"the first {ROWS} Pile val rows in batches of {BATCH}, every KL fp32 (cancel.masked_kl: KL(model || model "
                 "masked by g + (1 - g) a over all C subcomponents, Delta' under a_Delta), g always the model's own Gamma)",
@@ -253,8 +253,8 @@ PREDICTIONS_AMEND2: dict[str, Any] = {
 PREDICTIONS_AMEND3: dict[str, Any] = {
     "filed": "2026-10-22",
     "amends": "results/predictions.json, predictions_amend1.json, predictions_amend2.json (stay as filed); plan "
-              "reports/2026-10-21_plan_cancellation-complement.md -> Amendment 3, from "
-              "reports/2026-10-22_review_vpd-adversary-convergence.md",
+              "reports/plans/2026-10-21_plan_cancellation-complement.md -> Amendment 3, from "
+              "reports/reviews/2026-10-22_review_vpd-adversary-convergence.md",
     "setup": {
         "rows": f"the first {ROWS} Pile val rows in batches of {BATCH}, every KL fp32 (cancel.masked_kl, as amendment 2)",
         "adversary": f"gamma.pgd_sources: one source per subcomponent shared over all rows plus one per matrix for Delta, "

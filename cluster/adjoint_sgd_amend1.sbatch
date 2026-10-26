@@ -1,5 +1,5 @@
 #!/bin/bash
-# adjoint_sgd (E31) amendment 1: task vs SGD rate. Plan: reports/2026-10-22_plan_adjoint-sgd.md -> "Amendment 1".
+# adjoint_sgd (E31) amendment 1: task vs SGD rate. Plan: reports/plans/2026-10-22_plan_adjoint-sgd.md -> "Amendment 1".
 # One cell per job, each ~22 min on an L40 (W0 ~6 min, the 10-step gate, one 1000-step fine-tune read at 10/100/1000):
 #   cd ~/commute-agents/<role>
 #   sbatch --export=ALL,CELL=r1 cluster/adjoint_sgd_amend1.sbatch    # FIRST, alone

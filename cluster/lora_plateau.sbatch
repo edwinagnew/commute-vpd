@@ -1,6 +1,6 @@
 #!/bin/bash
 # lora_plateau: round 5's LoRA to 1000 steps, the inexpressible share against A's movement, Pile at steps 10, 100, 1000.
-# Design check confirmed by the user 2026-10-19 (after reports/2026-10-19_analysis_lora-matched.md). One job; the arguments go to run.py:
+# Design check confirmed by the user 2026-10-19 (after reports/analyses/2026-10-19_analysis_lora-matched.md). One job; the arguments go to run.py:
 #   cd ~/commute-agents/<role>
 #   sbatch --job-name=commute-lora_plateau-smoke --time=00:20:00 cluster/lora_plateau.sbatch all --smoke
 #   sbatch cluster/lora_plateau.sbatch all

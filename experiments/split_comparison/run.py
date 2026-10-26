@@ -1,4 +1,4 @@
-"""split_comparison (E16): the five operations side by side on one card (plan: reports/2026-10-21_plan_split-comparison.md).
+"""split_comparison (E16): the five operations side by side on one card (plan: reports/plans/2026-10-21_plan_split-comparison.md).
 
 Two updates of the emoticon task at steps 10, 100 and 1000: the full fine-tune (arm A, Adam 3e-5, seed 0, re-run with
 delta-W kept, as E14) and E9's rank-8 LoRA on all 24 matrices (saved factors). On each update four states: do-nothing,
@@ -63,7 +63,7 @@ SMOKE = Sizes(steps=(2, 3), train_steps=3, pile_rows=8, pile_pgd_steps=2, pile_s
 
 PREDICTIONS: dict[str, Any] = {
     "filed": "2026-10-21",
-    "design": "reports/2026-10-21_plan_split-comparison.md (design confirmed by the user 2026-10-21)",
+    "design": "reports/plans/2026-10-21_plan_split-comparison.md (design confirmed by the user 2026-10-21)",
     "setup": {
         "updates": {"ft": f"emoticon full fine-tune, arm A (Adam lr {FT_LR}, 24 matrices, seed 0), delta-W at {FULL.steps}",
                     "lora24": f"E9's rank-8 LoRA on all 24 matrices, B A from the saved factors at {FULL.steps}"},

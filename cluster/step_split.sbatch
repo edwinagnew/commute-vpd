@@ -1,5 +1,5 @@
 #!/bin/bash
-# step_split (E19): the step split along the emoticon fine-tune (plan: reports/2026-10-21_plan_step-split.md). The
+# step_split (E19): the step split along the emoticon fine-tune (plan: reports/plans/2026-10-21_plan_step-split.md). The
 # arguments go to run.py:
 #   cd ~/commute-agents/<role>
 #   sbatch --job-name=commute-step_split-smoke --time=00:20:00 cluster/step_split.sbatch all --smoke

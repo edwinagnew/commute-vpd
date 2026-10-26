@@ -1,5 +1,5 @@
 """ladder_second_seed (E26): do E21's ladder verdicts (Adam 1e-5 passes at steps 100 and 1000 on r0 and r1, SGD fails
-at 1000) hold under a second batch-order seed? Item A of reports/2026-10-22_plan_commute-second-line.md.
+at 1000) hold under a second batch-order seed? Item A of reports/plans/2026-10-22_plan_commute-second-line.md.
 
 E21's recipe (experiments/sgd_ladder_long: arm A's loss, batch 32, clip 1, Gamma and Delta frozen; free offsets start
 at zero, so ArmAConfig.seed, the batch order, is the only training randomness), two arms per task: SGD at 3a's rate and

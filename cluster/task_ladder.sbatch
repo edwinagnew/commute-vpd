@@ -1,5 +1,5 @@
 #!/bin/bash
-# Task ladder (round 3). Plan: reports/2026-10-15_plan_task-ladder.md. One stage per job, chained, so that an overrun of
+# Task ladder (round 3). Plan: reports/plans/2026-10-15_plan_task-ladder.md. One stage per job, chained, so that an overrun of
 # one stage never loses another (the three together sit near the 2 h debug limit):
 #   cd ~/commute-agents/<role>
 #   J1=$(sbatch --parsable cluster/task_ladder.sbatch noise)

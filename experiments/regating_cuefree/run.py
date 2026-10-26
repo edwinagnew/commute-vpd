@@ -1,6 +1,6 @@
 """regating_cuefree (E35): is the per-cue change of Gamma's importance values visible in the original values?
-Plan: reports/2026-10-26_plan_regating-without-cues.md. Definitions: commute.cuefree's docstring; E28's in
-reports/2026-10-22_plan_regating-tasks.md. Shared steps in commute.regating, commute.shift_anatomy, commute.cuefree.
+Plan: reports/plans/2026-10-26_plan_regating-without-cues.md. Definitions: commute.cuefree's docstring; E28's in
+reports/plans/2026-10-22_plan_regating-tasks.md. Shared steps in commute.regating, commute.shift_anatomy, commute.cuefree.
 
 Do-nothing states as E28 makes them (10-step arm-A Adam 3e-5 fine-tunes of all 24 matrices, seed 0; released
 subcomponents, Gamma frozen, Delta out of the masked model), regenerated in-job. At the trigger only, each held-out
@@ -63,7 +63,7 @@ def pred(pid: str, rule: str, predicted: str, confidence: str, control: str) -> 
 
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-26_plan_regating-without-cues.md. Filed before any run; never edited after.",
+    "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md. Filed before any run; never edited after.",
     "states": f"{CONTROL} (G1, first, alone); {WORD} (one cue); {KV_TASKS} (E32); {CUE_STATES} (E33). The four 32-cue "
               f"states are {MULTI}",
     "measurements": {

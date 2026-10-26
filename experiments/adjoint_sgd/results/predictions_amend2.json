@@ -1,5 +1,5 @@
 {
- "about": "E31 amendment 2 (adjoint_sgd): batch-order seed 1 for the five single-seed cells of task x SGD rate. Plan reports/2026-10-22_plan_adjoint-sgd.md -> 'Amendment 2' (design check there; the user asked for it 2026-10-23). predictions.json and predictions_amend1.json stand as filed. Filed before the run; never edited after.",
+ "about": "E31 amendment 2 (adjoint_sgd): batch-order seed 1 for the five single-seed cells of task x SGD rate. Plan reports/plans/2026-10-22_plan_adjoint-sgd.md -> 'Amendment 2' (design check there; the user asked for it 2026-10-23). predictions.json and predictions_amend1.json stand as filed. Filed before the run; never edited after.",
  "setup": {
   "cells": "plain SGD, arm A, seed 1 (the batch order; the model, data, Gamma and Delta are the same), 1000 steps, E31's recipe (run.py arm(), unchanged): r1_t534_v369 and r0_t352_v310 at 0.03 (E31) and at 0.01, emoticon at 0.03 (amendment 1). Emoticon at 0.01 already has seeds 0 and 1",
   "keep_ratio": "adjoint state's held-out P(target) / the fine-tune's own held-out P(target), same checkpoint",

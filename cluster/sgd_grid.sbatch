@@ -1,5 +1,5 @@
 #!/bin/bash
-# SGD grid: E4's plain-SGD arm at lr 0.001-0.1 (reports/2026-10-21_plan_sgd-grid.md).
+# SGD grid: E4's plain-SGD arm at lr 0.001-0.1 (reports/plans/2026-10-21_plan_sgd-grid.md).
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_grid.sbatch run --smoke    # smoke, ~3 min
 #   sbatch cluster/sgd_grid.sbatch run            # scored, ~15 min on an L40

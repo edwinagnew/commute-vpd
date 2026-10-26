@@ -1,5 +1,5 @@
 #!/bin/bash
-# Re-gating patterns on small updates (E24). Plan: reports/2026-10-22_plan_small-update-reruns.md -> E24 (Agent notes).
+# Re-gating patterns on small updates (E24). Plan: reports/plans/2026-10-22_plan_small-update-reruns.md -> E24 (Agent notes).
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/regating_small.sbatch     # ~5-8 min on an L40: G1 (large state vs E18) first, stops the job on a fail
 # Before that: `cluster/sync.sh up` and predictions filed (results/predictions.json). Inputs on NFS:

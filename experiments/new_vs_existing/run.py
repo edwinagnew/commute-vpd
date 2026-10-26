@@ -1,6 +1,6 @@
 """new_vs_existing (round 7): what in the subcomponents tells a new mechanism from an existing one?
 
-Plan: reports/2026-10-20_plan_new-vs-existing-signatures.md. Four key -> value tasks in one format (src/commute/kv.py):
+Plan: reports/plans/2026-10-20_plan_new-vs-existing-signatures.md. Four key -> value tasks in one format (src/commute/kv.py):
 two "existing" (M x -> x: the model has copying machinery) and two "new" (M x -> pi(x), a random bijection), each a
 full-weight fine-tune of the 24 matrices at two seeds, scored at its first checkpoint with held-out P(target) >= P_LEARN.
 Per fine-tuned state (src/commute/signatures.py, harness.py, local_faith.py, recruit.py, ladder.py):
@@ -50,7 +50,7 @@ G_ON = 0.5  # "on": g above this
 
 PREDICTIONS: dict[str, Any] = {
     "filed": "2026-10-20",
-    "plan": "reports/2026-10-20_plan_new-vs-existing-signatures.md",
+    "plan": "reports/plans/2026-10-20_plan_new-vs-existing-signatures.md",
     "classes": {"existing": ["ident32", "ident32b"], "new": ["rand32", "rand32b"]},
     "scored_step_rule": "per fine-tune, the first checkpoint (10, 30, 100, 300) with held-out P(target) >= 0.5; else the "
                         "last checkpoint, flagged 'did not learn'. The scored step and ||delta-W||/||W0|| are recorded "

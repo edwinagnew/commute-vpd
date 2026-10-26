@@ -1,5 +1,5 @@
 """regating_spread (E36) Amendment 3: does the nearest rule keep improving with more fitted positions? Plan:
-reports/2026-10-26_plan_regating-without-cues.md -> Amendment 5. Amendment 1's lowercase fine-tune is regenerated (same
+reports/plans/2026-10-26_plan_regating-without-cues.md -> Amendment 5. Amendment 1's lowercase fine-tune is regenerated (same
 rows, recipe and seed) and read at its steps; per step, at every held-out position, the nearest rule (mean change of
 the K fitted positions nearest in the original values) on:
   near16      Amendment 1's 16,384 positions of the first 64 training rows (gate A0, with near65)
@@ -34,7 +34,7 @@ K_WIDE, REPRO_TOL, BAR, STILL_RISING = 32, 0.02, 0.7, 0.03
 SCORED = str(CHECKS[-1])
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-26_plan_regating-without-cues.md, Amendment 5. Filed before the run; never edited after.",
+    "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md, Amendment 5. Filed before the run; never edited after.",
     "measurements": {
         "R_near16, R_near65": "Amendments 1 and 2's nearest rule; gate A0 against Amendment 2",
         "R_near262": f"the nearest rule ({K_NEAR} neighbours) on all positions of the first {ROWS['near262']} rows",

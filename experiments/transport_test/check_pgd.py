@@ -1,4 +1,4 @@
-"""Diagnostic for the adversarial-KL gap (reports/2026-10-14_decision_pgd-scope.md): is the 20-step shared-adversary
+"""Diagnostic for the adversarial-KL gap (reports/decisions/2026-10-14_decision_pgd-scope.md): is the 20-step shared-adversary
 KL of the released decomposition on W0 a property of our rows or of our environment?
 
 Measures, with the same settings as faithfulness.py (20 steps of 0.1, random init, Delta included, one adversary per
