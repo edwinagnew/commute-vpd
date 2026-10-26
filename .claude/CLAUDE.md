@@ -57,7 +57,8 @@ process do not get there; less code does.
   called. Finished experiments' `run.py` stay as they ran; do not use them as templates. Aim for run scripts of
   ~300 lines and functions of under ~50 lines; split a function rather than add a branch to it.
 - **Read the existing code critically.** It was written fast. Follow its interfaces, not its habits.
-- `make lint` (ruff + pyright) is clean on any file you touch.
+- `make lint` (ruff + pyright) is clean on any file you touch, when it can run. If `fleet/cpu-run` says the worker is
+  drained or down, commit unlinted and lint later; never start a pod just to lint (user, 2026-10-26).
 - **The scored run is its own smoke** (user, 2026-10-21). Stages run cheapest first, the W₀ control first, and each
   writes its results as it finishes, so a code error stops the job in its first minutes. A separate smoke only when a
   failure is expensive: a paid run over ~30 min, or an expensive stage that starts only after a long one (smoke that

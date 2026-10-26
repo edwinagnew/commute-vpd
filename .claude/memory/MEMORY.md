@@ -50,3 +50,4 @@
 - [Raise decisions often](feedback-raise-decisions-often.md) — user values pending-decision cards for understanding; raise scope/reading choices even if handed back (2026-10-22)
 - [Never leave a job unwatched](feedback-never-leave-a-job-unwatched.md) — a runner hand-back with a live job means spawn a fresh watcher at once, not a cancel-or-wait choice (2026-10-22)
 - [Teacher training (E34)](project-teacher-training.md) — works on all six teachers incl. Pile-only; Amendments 2-4 done 2026-10-26 (loophole rows lower Pile-only copies a little, LoRA teacher copied from task text only, seed 1 + 160-step adversary all hold); next the larger model
+- [model-router ports on shared VM](model-router-shared-vm-ports.md) — ours on 8788/8318; unwired until Codex quota resets ~2026-11-18
