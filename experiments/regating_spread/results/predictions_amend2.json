@@ -1,0 +1,36 @@
+{
+ "plan": "reports/2026-10-26_plan_regating-without-cues.md, Amendment 4. Filed before the run; never edited after.",
+ "measurements": {
+  "near16": "the nearest rule on Amendment 1's 16,384 fitted positions; gate A0",
+  "near65": "the nearest rule on all positions of the first 128 training rows (65,536)",
+  "near16_tok": "near16 with neighbours restricted to positions holding the same token where >= 8 exist",
+  "coverage": "shares of held-out positions whose token has >= 20 and >= 8 fitted positions"
+ },
+ "gates": {
+  "A0": "every step: |near16 - Amendment 1's R_near| <= 0.02; step 10 first; fail: stop"
+ },
+ "predictions": [
+  {
+   "id": "S",
+   "rule": "step 300: R_near65 >= R_near16 + 0.1 ('the shortfall is partly sampling')",
+   "predicted": "fail (more positions add under 0.1)",
+   "confidence": "low-medium"
+  },
+  {
+   "id": "W",
+   "rule": "step 300: R_near16 >= R_near16_tok - 0.05 ('restricting to the token adds nothing')",
+   "predicted": "pass",
+   "confidence": "low"
+  }
+ ],
+ "expected": {
+  "coverage": "the token rule's share well under 1: only 90 tokens had 20 fitted positions",
+  "W0": "gap 0, shares undefined"
+ },
+ "decision_tree": {
+  "S holds": "the nearest rule's miss at steps 100 and 300 is partly sampling: rescore E36's reading with more positions before any restatement",
+  "S fails": "the miss is not sampling: the change depends on more than the original values at the position",
+  "W fails": "the token adds information beyond the original values, as the cue did on E35's own-answer state"
+ },
+ "filed": "2026-10-26 18:05:45"
+}
