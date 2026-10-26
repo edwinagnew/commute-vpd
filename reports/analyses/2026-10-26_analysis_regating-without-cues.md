@@ -127,7 +127,7 @@ inside one cue recovers 0.69 to 0.88, against 0.47 to 0.66 for the cue's mean ch
 ## What we learned
 
 The change of Γ's importance values at the trigger can be predicted from the original model's importance values by a
-rule that names no cue: inputs the original Γ treats alike get alike changes, and a third or more of an input's
+rule that names no cue: inputs the original Γ treats alike get alike changes, and close to a third of an input's
 nearest neighbours carry a different cue. It recovers as much as one change per cue word added the same way, though
 less than the averaged per-cue form. The cue adds to the original values only where cues lead to different answers.
 Within a cue, the change still depends on each input's own values. The rule applies to any input, so it can be

@@ -118,14 +118,14 @@ on its own, since an update that learned nothing gave the same share.
 - **Nulls.** Random groups land within 0.002 of one change everywhere at every step.
 - **Held-out positions.** The scored rules are fitted at positions of the first 64 training rows, which the fine-tune
   saw in its first eight steps; Amendment 3's 512 rows include 432 it had not seen at step 10. Every rule is scored on
-  64 held-out rows from another split, 32,704 positions. Near-duplicate text between them was not checked; one
-  duplicated held-out row would be worth about 0.004.
+  64 held-out rows from another split, 32,704 positions. No held-out position lies inside a 16-token span that also
+  occurs in the 512 fitted rows (Amendment 4).
 - **Coverage.** One fine-tune seed, one style, one 67M model. Lowercasing is a style spread over every position but
   synthetic in form; the more natural task, code-like text, did not learn.
-- **Blind spots.** The distance weighs every alive subcomponent equally. The nearest rule rises with every fourfold increase in
-  fitted positions and had not flattened at 262,144, so its endpoint is not known. Recovery by position in the row was
-  not measured; early positions have little context and may carry much of the gain. The token rule covers only 90 tokens, and how many held-out
-  positions they cover was not counted. Patterns are written at every position at once, so effects passing between
+- **Blind spots.** The distance weighs every alive subcomponent equally. The nearest rule rises with every fourfold
+  increase in fitted positions and had not flattened at 262,144, so its endpoint is not known. Recovery is similar
+  across the row, 0.70 to 0.90 in each part (Amendment 4). The token rule covers 38% of held-out positions at 16,384
+  fitted positions and 71% at 262,144. Patterns are written at every position at once, so effects passing between
   positions through attention are included, not separated. No predicted pattern was checked for faithfulness under the
   adversary.
 
