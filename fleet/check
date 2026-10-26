@@ -27,22 +27,36 @@ state() {  # state ROLE TRANSCRIPT
   if grep -q 'Interrupted' <<< "$body"; then
     echo "INTERRUPTED: type 'carry on' in its window (tmux attach -t $FLEET_SESSION, leave with Ctrl-b d)"; return
   fi
-  # Asleep if its last ScheduleWakeup is still in the future.
+  # Between turns with a ScheduleWakeup still in the future: say what it waits on. A finishing subagent or background
+  # command wakes it at once; the wake-up time is only the latest it looks again.
   local last wake
   last=$(jq -r 'select(.type == "assistant") | .timestamp as $t | .message.content[]?
     | select(.type == "tool_use" and .name == "ScheduleWakeup") | "\($t) \(.input.delaySeconds // 0)"' "$2" 2>/dev/null | tail -1)
   if [[ -n "$last" ]]; then
     wake=$(( $(date -d "${last% *}" +%s) + ${last#* } ))
-    if (( wake > now - 120 )); then echo "asleep until $(date -d @"$wake" +%H:%M) (its next wake-up)"; return; fi
+    if (( wake > now - 120 )); then
+      if [[ -n "$subs" ]]; then echo "waiting on its subagents (below); looks again by $(date -d @"$wake" +%H:%M) at the latest"
+      elif [[ -n "$jobs" ]]; then echo "waiting on its Slurm jobs (below); looks again at $(date -d @"$wake" +%H:%M)"
+      else echo "IDLE until $(date -d @"$wake" +%H:%M): nothing running for it to wait on"; fi
+      return
+    fi
   fi
   echo "STOPPED: idle with no wake-up scheduled (tmux attach -t $FLEET_SESSION and tell it to carry on)"
 }
 
 windows=$(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null)
 [[ -n "$windows" ]] || echo "agents: NONE RUNNING (start with fleet/start \"task\")"
+jobs=$(squeue -u "$USER" -h -o '   %i %j %T for %M (limit %l) %R' 2>/dev/null)
 for role in $windows; do
   t=$(fleet_transcript "$role")
+  # Its subagents still running: Claude Code marks a subagent's meta.json "finished": true when it ends.
+  subs=""
+  for m in "${t%.jsonl}"/subagents/*.meta.json; do
+    [[ -f "$m" && "$(jq -r .finished "$m")" != true ]] || continue
+    subs+="   subagent running: $(jq -r '"\(.description) (\(.agentType))"' "$m"), last wrote $(ago "$(stat -c %Y "${m%.meta.json}.jsonl")")"$'\n'
+  done
   echo "== $role: $(state "$role" "$t")"
+  printf '%s' "$subs"
   # The agent's last step (a tool call or message), not the file's time: bookkeeping lines also touch the file.
   if [[ -n "$t" ]]; then
     step=$(jq -r 'select(.type == "assistant" and .timestamp) | .timestamp as $ts | .message.content[]?
@@ -64,7 +78,6 @@ done
 task=$(head -c 300 "$FLEET_DATA/tonight" 2>/dev/null)
 echo "task: ${task:-none (analysis of existing results only)}"
 
-jobs=$(squeue -u "$USER" -h -o '   %i %j %T for %M (limit %l) %R' 2>/dev/null)
 echo "Slurm jobs:${jobs:+$'\n'}${jobs:- none}"
 # A drained or down node takes no new jobs (fleet/cpu-run, cluster runs) until an admin resumes it.
 sinfo -h -p compute -N -o '%N|%T|%E|%H' 2>/dev/null | sort -u | while IFS='|' read -r node st reason since; do
@@ -73,6 +86,8 @@ sinfo -h -p compute -N -o '%N|%T|%E|%H' 2>/dev/null | sort -u | while IFS='|' re
     *) echo "cluster: $node ${st^^}, NOT TAKING JOBS since ${since/T/ } ($reason); ask a MATS admin to resume it" ;;
   esac
 done
+# Reminder until the venv is rebuilt in FLEET_DATA (user, 2026-10-26): it still lives in the retired sync copy.
+[[ "$(readlink -f "$FLEET_DATA/venv")" == "$HOME/commute/"* ]] && echo "REMINDER: the venv still lives in ~/commute. Once the cluster takes jobs, ask Claude to rebuild it in $FLEET_DATA; then delete ~/commute"
 
 # Pods from the RunPod API; the key is the shared MATS account's, so keep only this project's pods.
 key=${RUNPOD_API_KEY:-$(set -a; source "$FLEET_SECRETS" 2>/dev/null; echo "${RUNPOD_API_KEY:-}")}
