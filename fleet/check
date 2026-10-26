@@ -41,8 +41,7 @@ state() {  # state ROLE TRANSCRIPT
 windows=$(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null)
 [[ -n "$windows" ]] || echo "agents: NONE RUNNING (start with fleet/start \"task\")"
 for role in $windows; do
-  key=$(tr '/.' '--' <<< "$FLEET_AGENTS/$role")
-  t=$(ls -t "$HOME/.claude/projects/$key"/*.jsonl 2>/dev/null | head -1)
+  t=$(fleet_transcript "$role")
   echo "== $role: $(state "$role" "$t")"
   # The agent's last step (a tool call or message), not the file's time: bookkeeping lines also touch the file.
   if [[ -n "$t" ]]; then

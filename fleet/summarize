@@ -9,8 +9,7 @@ export PATH="$HOME/.local/bin:/usr/bin:$PATH"   # cron's PATH has no claude
 roles=("$@")
 (( ${#roles[@]} )) || mapfile -t roles < <(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null)
 for role in "${roles[@]}"; do
-  key=$(tr '/.' '--' <<< "$FLEET_AGENTS/$role")
-  t=$(ls -t "$HOME/.claude/projects/$key"/*.jsonl 2>/dev/null | head -1)
+  t=$(fleet_transcript "$role")
   out="$FLEET_DATA/agents/$role/summary"
   [[ -n "$t" ]] || continue
   [[ -f "$out" && ! "$t" -nt "$out" ]] && continue

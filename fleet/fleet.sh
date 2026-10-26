@@ -10,3 +10,15 @@ if [[ -d /ephemeral ]]; then
   export CLAUDE_CODE_TMPDIR="$FLEET_SCRATCH/claude-tmp"
   mkdir -p "$CLAUDE_CODE_TMPDIR" 2>/dev/null || true
 fi
+
+# The transcript of ROLE's running agent: the live Claude process named FLEET_PREFIX-ROLE (fleet/up's -n) gives its
+# session id in ~/.claude/sessions/<pid>.json. Not the newest file in the clone's project folder: a person's own
+# Claude session in the same clone writes there too, and fleet/check then reported that session (2026-10-26).
+fleet_transcript() {  # fleet_transcript ROLE -> path, or nothing when the agent is not running
+  local f pid sid=""
+  for f in "$HOME"/.claude/sessions/*.json; do
+    [[ "$(jq -r .name "$f" 2>/dev/null)" == "$FLEET_PREFIX-$1" ]] || continue
+    pid=$(jq -r .pid "$f"); kill -0 "$pid" 2>/dev/null && sid=$(jq -r .sessionId "$f")
+  done
+  [[ -n "$sid" ]] && echo "$HOME/.claude/projects/$(tr '/.' '--' <<< "$FLEET_AGENTS/$1")/$sid.jsonl"
+}
