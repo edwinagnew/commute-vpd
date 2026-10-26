@@ -10,16 +10,17 @@ We fine-tuned the model on text with no trigger and no target token and asked wh
 can be predicted from the original model's importance values there. On lowercased Pile text, the positions with the most
 similar original values predicted it better than every other rule. With the planned sample of fitted positions it fell
 below the filed bar after the first ten steps; with sixteen times as many it recovered three-quarters or more at every
-step. The same rule on the residual stream does as well, so the
-switching follows how the original model represents the context. For `GOALS.md` this supports the form "positions the
-original model treats alike get alike changes" on one synthetic style of running text.
+step. The same rule on the original model's attention inputs, which Γ itself
+reads, does about as well. For `GOALS.md` this supports the form "positions the original model treats alike get alike
+changes" on one synthetic style of running text; whether a summary of the text the model did not produce would do as
+well is the next check.
 
 ## The answer
 
 Yes, once enough positions are compared. On a fine-tune of lowercased Pile text, each position was given the mean
 change of the eight training positions with the nearest original importance values. Fitted on 16,384 positions this
 recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51, under the filed 0.6. Fitted on all 262,144 it recovered
-0.89, 0.78 and 0.76, and the same rule on the residual stream about as much. At the same sample size the current token
+0.89, 0.78 and 0.76, and the same rule on the attention inputs Γ reads about as much. At the same sample size the current token
 recovers about a third, and position in the row almost nothing.
 
 ## What we were trying to test
@@ -101,9 +102,10 @@ slopes barely move from 1: the median among subcomponents whose values vary is 0
 In the scored run, with 16,384 fitted positions, the cue-free form held at step 10 and failed at steps 100 and 300 by
 the filed rule. Amendments 2 and 3 showed that miss was sampling: with all 262,144 positions the rule recovers 0.76 to
 0.89 of the switching at every step. So on running text with no trigger, values predicted from the positions with the most similar original
-importance values recover most of the switching effect. Amendment 4 found the residual stream does as well, so the
-rule is "positions the original model represents alike get alike changes", with Γ's original values one sufficient
-summary of the context, not a privileged one. At the same sample size the current token recovers about a third and
+importance values recover most of the switching effect. Amendment 4 found them predicted about as well, within 0.02, from the
+original model's attention inputs, which Γ reads, so Γ's original values are one sufficient summary of the context, not
+a privileged one. Both come from the original model; whether a summary of the text that the model did not produce
+would do as well is not yet tested. At the same sample size the current token recovers about a third and
 position in the row almost nothing; at 16,384 positions the original values also beat a few groups and a fixed rule per
 subcomponent. A tenth to a quarter of the switching remains unexplained, more of it later in training. A high switching share is not evidence of learned re-weighting
 on its own, since an update that learned nothing gave the same share.
@@ -211,20 +213,22 @@ RunPod H100 NVL, 98 s, $0.44.*
 
 Amendment 3's check asked whether the original importance values matter, or whether a nearest rule on any rich summary
 of the context would do as well with 262,144 positions. So the same rule was fitted, on the same positions, in a second
-space: the residual stream, each layer's attention input under the original model, the values Γ itself reads for the
+space: each layer's attention input under the original model, the values Γ itself reads for the
 query, key and value matrices. The token rule and a rule per position in the row were refitted on the full sample.
 
 ![sampling](../../experiments/regating_spread/figures/sampling.png)
 
-**Reading it.** The space does not matter, the token stays far behind, and position carries nothing. The residual
-stream recovers 0.87, 0.78 and 0.74 at steps 10, 100 and 300, against 0.89, 0.78 and 0.76 for the original importance
+**Reading it.** The two spaces do about equally well, the token stays far behind, and position carries nothing. The
+attention inputs recover 0.87, 0.78 and 0.74 at steps 10, 100 and 300, against 0.89, 0.78 and 0.76 for the original importance
 values. With the full sample the token rule covers 71% of positions and recovers 0.33 to 0.42, and the rule per
 position in the row 0.04 to 0.07. The nearest rule recovers 0.70 to 0.90 in every part of the row, early positions
-included, so the result is not an artefact of where rows were cut. No held-out position lies inside a 16-token span
-that also occurs in the fitted rows. So the switching follows how the original model represents the context, and Γ's
-original values are one sufficient summary of it, not a privileged one.
+included, so it does not rest on the starts of rows; the ends of rows, which Γ also sees as edges, are pooled into the
+last part. No held-out position lies inside a 16-token span
+that also occurs in the fitted rows. So Γ's original values predict the change no better than Γ's own input from the
+original model: one sufficient summary of the context, not a privileged one. The gaps, 0.02, are the size of the gain
+from 8 to 32 neighbours, and one seed and one set of held-out rows cannot separate them further.
 
-| step | nearest, original values | nearest, residual stream | token | position in row |
+| step | nearest, original values | nearest, attention inputs | token | position in row |
 |---|---|---|---|---|
 | 10 | 0.886 | 0.869 | 0.416 | 0.069 |
 | 100 | 0.776 | 0.777 | 0.344 | 0.046 |
@@ -236,20 +240,24 @@ switching): 0.86, 0.87 and 0.90 at step 10 for positions 0 to 31, 32 to 127 and 
 
 | id | claim | rule | read | verdict |
 |---|---|---|---|---|
-| A0 | the nearest rule on the original values reproduces Amendment 3 | within 0.02 at every step | exact to 0.0001 | pass |
-| R1 | the residual stream does as well | R_near_resid ≥ R_near_g0 − 0.05 at step 300 | −0.018 | pass, as predicted |
+| A0 | the nearest rule on the original values reproduces Amendment 3 | within 0.02 at every step | exact | pass |
+| R1 | the attention inputs Γ reads do as well | R_near_resid ≥ R_near_g0 − 0.05 at step 300 | −0.018 | pass, as predicted |
 | R2 | position alone carries little | R_position < 0.3 at every step | 0.04 to 0.07 | pass, as predicted |
 | R3 | the token stays at least 0.2 behind | R_token ≤ R_near_g0 − 0.2 at every step | 0.43 to 0.47 behind | pass, as predicted |
 | D | no near-duplicate text | ≤ 2% of held-out positions | 0 | pass, as predicted |
 
-By the filed decision tree, "R1 holds" reads: similar contexts get similar changes, by any rich summary of the context,
-so the restatement says "inputs the original model treats alike", with Γ's values one sufficient summary.
+By the filed decision tree, "R1 holds" reads: similar contexts get similar changes, so the restatement says "inputs the
+original model treats alike", with Γ's values one sufficient summary. The independent check added that both spaces come
+from the original model, so a summary it did not produce is the test that would separate "how the model represents the
+context" from "similar text"; that is Amendment 5. The token rule left 29% of positions on the overall mean, so its
+deficit mixes too little information with too little coverage.
 
 ## What next
 
 1. **Done as Amendment 3:** with all 262,144 positions the rule reaches 0.76 to 0.89 at every step. Next on this: what
    the remaining tenth to quarter depends on, and whether the curve flattens with yet more positions.
-2. **Done as Amendment 4:** the residual stream does as well as the original values. What the remaining tenth to quarter
+2. **Done as Amendment 4:** Γ's own input from the original model does as well as its values. Amendment 5 tries a summary
+   of the text the model did not produce. What the remaining tenth to quarter
    depends on, neighbouring positions for example, is a new design and goes to the user through the pending card.
 3. **A fine-tune of a real behaviour that learns**, or the larger model's post-trained sibling, before any restatement
    is adopted. A pending-decision card in the log holds this choice.
@@ -302,8 +310,7 @@ cross-entropy 1.648 and 1.661, training loss without trend.
 ## Not run
 
 Seeds beyond 0, and any second set of held-out rows; more than 262,144 fitted positions; numbers of neighbours other
-than 8 and 32; groups and the line refitted on 262,144 positions; a null space for the nearest rule, such as a random
-projection; residual summaries other than the attention inputs; any distance but Euclidean; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA
+than 8 and 32; groups and the line refitted on 262,144 positions; a summary of the text the model did not produce (Amendment 5); residual summaries other than the attention inputs; any distance but Euclidean; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA
 updates; a larger model.
 
 ## Provenance
