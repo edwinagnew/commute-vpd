@@ -1,0 +1,18 @@
+<article class="exp mixed" id="e35">
+<div class="top"><span class="id">E35</span><span class="chip partial">mixed</span><h3>Can the per-cue change be predicted without naming the cue?</h3><span class="when">2026-10-26 · RunPod RTX 4090 · <code>experiments/regating_cuefree</code></span></div>
+<p class="one">Largely, yes. Giving each input the mean change of the eight training inputs whose original importance values are nearest recovers 0.61 to 0.78 of the switching on the four 32-cue tasks, as much as one change per cue added the same way, 0.47 to 0.66 (figure). Those nearest inputs share the cue only 62 to 71% of the time, and restricting them to the same cue helps only where each cue has its own answer. Groups found by clustering and a fixed line per subcomponent fall short with many cues.</p>
+<figure>
+<img src="fig/e35_arms.png" alt="Bars for six toy states, four rules each: one change for every input, one change per cue word, the 8 most similar inputs, a line per subcomponent. One cue: 0.71, 0.71, 0.90, 1.02. Emoticon: 0.74, 0.79, 0.92, 0.96. Copy: 0.01, 0.66, 0.61, 0.37. Cipher: 0.04, 0.63, 0.68, 0.58. 32 cues, own answers: 0.05, 0.55, 0.65, 0.37. 32 cues, one answer: 0.13, 0.47, 0.78, 0.80.">
+<figcaption>Is the per-cue change visible in the original importance values? Mostly. Each held-out input gets its own original values plus a predicted change; 1 is its own updated values. The rule that names no cue, green, matches or beats one change per cue word, blue, on every 32-cue task but copy, where it is 0.05 short. One change for every input, grey, recovers almost nothing there.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>E32's and E33's six do-nothing states regenerated, reproducing them within 0.0013. At the trigger, each held-out input gets its own original values plus a change fitted on training inputs: one change for all, one per cue word, the mean change of the 8 nearest training inputs by original values, k-means groups of the original values (8, 32, 128, with random groups as the null), and a least-squares line per subcomponent. The additive form is used because it can be carried to every position of a text; E32 and E33's averaged form reads higher. Amendment 1 counted how often the nearest inputs share the cue, the nearest rule within one cue, and duplicates. 58 s and 68 s.</dd>
+<dt>Found</dt><dd><ul>
+<li>The nearest rule matches or beats one change per cue on three of the four 32-cue tasks and is 0.05 short on copy. The averaged per-cue form, 0.81 to 1.06, stays higher.</li>
+<li>The nearest inputs share the cue 71% (copy, cipher) and 62% (the " of" cues) of the time, against a filed 90%. Restricted to the same cue they recover the same where all cues share " of", 0.78, and 0.23 more where each cue has its own answer.</li>
+<li>Surprise: on the one-cue task the cue-free rules beat one shared change by 0.19 and 0.31, where no difference was filed. The change depends on each input's own values even with one cue.</li>
+<li>k-means at 32 groups misses, 0.35 to 0.53, purity 0.40 to 0.57; 128 groups reach the per-cue level. The line works with few cues, 0.96 and 1.02, and partly with many, 0.37 to 0.80.</li></ul></dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>Report: <code>reports/2026-10-26_analysis_regating-without-cues.md</code>, checked by an independent agent, which found the numbers right and the first headline too strong; the report was reworded. The cue-free rule went to E36, a fine-tune with no trigger. Not run: seeds beyond 0, other positions, faithfulness under the adversary.</dd>
+</dl>
+</article>
