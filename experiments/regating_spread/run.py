@@ -2,7 +2,7 @@
 Plan: reports/2026-10-26_plan_regating-without-cues.md (E36, and Amendment 1, which files these predictions). Shared
 steps in commute.spread (every-position values and patterns) and commute.cuefree (k-means).
 
-Task: code-like Pile text, rows in which at least CODE_SHARE of the tokens contain one of CODE_CHARS. Fine-tune: all
+Task: code-like Pile text, the TOP_FRAC of rows with the most tokens containing one of CODE_CHARS. Fine-tune: all
 24 matrices, next-token loss at every position (finetune.finetune_arm_b: Adam LR, batch BATCH, fresh rows each step),
 read at the steps in CHECKS. Do-nothing states as E28: released subcomponents, Gamma frozen and reading the updated
 model, Delta out of the masked model.
@@ -46,8 +46,8 @@ LARGE = RESULTS / "large"
 PRED, OUT = RESULTS / "predictions.json", RESULTS / "regating_spread.json"
 TRANSPORT = EXP / "transport_test" / "results"
 
-ROWS_TRAIN, ROWS_HELD = ("train", 0, 16384), ("val", 0, 8192)
-CODE_CHARS, CODE_SHARE, SHARE_LO, SHARE_HI = "{}[];=<>_\\", 0.15, 0.01, 0.3
+ROWS_TRAIN, ROWS_HELD = ("train", 0, 20480), ("val", 0, 8192)
+CODE_CHARS, TOP_FRAC, MIN_CUT = "{}[]();=<>_\\", 0.05, 0.12
 N_TRAIN, N_HELD, N_FIT_ROWS, N_FIT_POS, EVAL_BATCH = 800, 64, 64, 16384, 8
 LR, BATCH, CHECKS, SEED = 3e-5, 8, (10, 100), 0
 K_NEAR, KS, K_RAND, N_RAND, MIN_TOKEN, KM_SEED = 8, (8, 32, 128, 512), 128, 3, 20, 0
@@ -88,25 +88,23 @@ def code_tokens(tok: Any, vocab: int) -> Tensor:
     return torch.tensor([any(c in tok.decode([i]) for c in CODE_CHARS) for i in range(n)] + [False] * (vocab - n))
 
 
-def select(rows: Tensor, mark: Tensor) -> Tensor:
-    return mark[rows].float().mean(1) >= CODE_SHARE
-
-
 def task(vocab: int) -> tuple[Tensor, Tensor, dict[str, Any]]:
-    """(training rows, held-out rows, the selection's record): code-like rows of the two Pile ranges."""
+    """(training rows, held-out rows, the selection's record). A row's code share is the fraction of its tokens that
+    `code_tokens` marks; the rows kept are those at or above the training stream's top-TOP_FRAC cut, in both ranges."""
     from commute import vpd
     from commute.data import pile_rows
 
     tok = vpd.tokenizer()
     mark = code_tokens(tok, vocab)
     tr_all, he_all = pile_rows(*ROWS_TRAIN, log=log), pile_rows(*ROWS_HELD, log=log)
-    tr, he = tr_all[select(tr_all, mark)], he_all[select(he_all, mark)]
-    info = {"share_train": tr.shape[0] / tr_all.shape[0], "share_held": he.shape[0] / he_all.shape[0],
-            "n_train": tr.shape[0], "n_held": he.shape[0], "marked_tokens": int(mark.sum()),
+    share_tr, share_he = mark[tr_all].float().mean(1), mark[he_all].float().mean(1)
+    cut = float(torch.quantile(share_tr, 1 - TOP_FRAC))
+    tr, he = tr_all[share_tr >= cut], he_all[share_he >= cut]
+    info = {"cut": cut, "median_share": float(share_tr.median()), "n_train": tr.shape[0], "n_held": he.shape[0],
+            "marked_tokens": int(mark.sum()),
             "samples": [tok.decode(he[i, :120].tolist()) for i in range(min(3, he.shape[0]))]}
-    ok = (SHARE_LO <= info["share_train"] <= SHARE_HI and tr.shape[0] >= N_TRAIN and he.shape[0] >= N_HELD)
-    info["S"] = ok
-    log(f"[select] {json.dumps({k: v for k, v in info.items() if k != 'samples'})} | {'ok' if ok else 'FAIL'}")
+    info["S"] = cut >= MIN_CUT and tr.shape[0] >= N_TRAIN and he.shape[0] >= N_HELD
+    log(f"[select] {json.dumps({k: v for k, v in info.items() if k != 'samples'})} | {'ok' if info['S'] else 'FAIL'}")
     for s in info["samples"]:
         log("[select] sample: " + s.replace("\n", "\\n")[:400])
     return tr[:N_TRAIN], he[:N_HELD], info
