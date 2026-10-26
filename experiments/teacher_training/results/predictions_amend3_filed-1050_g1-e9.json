@@ -1,0 +1,117 @@
+{
+ "about": "teacher_training Amendment 3 (reports/2026-10-23_plan_teacher-training.md -> 'Amendment 3: a LoRA teacher'; class 3/4, user 2026-10-26 'implement the amendments'). Tasks emoticon, r1_t534_v369, r0_t352_v310. The teacher is E9's LoRA regenerated in-job: rank 8 on all 24 matrices, B = 0 and A ~ N(0, 1/d_in) at seed 0, Adam 1e-3, 1,000 steps, arm A's loss, batch 32 and clip 1 (finetune.finetune_lora_arm_a); delta-W = B A per matrix at step 1000. Students: E34's arms A (the task's training windows, arm_a_loss's weighting, Adam 1e-5, batch 32) and B (Pile train rows from 32,768, 8,192 rows, batch 8 of 512 tokens, plain mean KL, Adam 1e-5), 1,000 steps, batch-order seed 0, scored at steps 100 and 1000 through E34's harness. E34's predictions.json stands unedited. Filed before any run",
+ "amend3": {
+  "e14_adjoint_p": 0.063,
+  "e14_adjoint_tol": 0.05,
+  "e9": [
+   0.9999,
+   0.0048,
+   0.09
+  ],
+  "e9_tol": [
+   0.01,
+   0.005,
+   0.005
+  ],
+  "lora_lr": 0.001,
+  "lora_seed": 0,
+  "null_seed": 0,
+  "p2_margin": 0.5,
+  "rank": 8,
+  "tasks": [
+   "emoticon",
+   "r1_t534_v369",
+   "r0_t352_v310"
+  ],
+  "teacher_p_min": 0.9
+ },
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, adversary seeds 0, 1, 2), faith_score.w0_check, as E34. Expected: pass, floor about 0.075 on an H100. Fails: stop, nothing trained",
+  "G1": "the emoticon LoRA teacher, before any student: at step 1000 its held-out P(target) within 0.01 of E9's 0.9999, KL elsewhere within 0.005 of E9's 0.0048, size (rel_norm_max) within 0.005 of E9's 0.0900 (lora_plateau.json checkpoints['1000']['eval']; the same recipe and seed), and its scaled adjoint state's held-out P(target) within 0.05 of E14's 0.063 (lora_split.json part2.lora24['1000'].adjoint, p_cells T1). All absolute. Fails: stop with the four numbers (the recipe does not reproduce)",
+  "task_gate": "per task, after its teacher's reading: a LoRA teacher with held-out P(target) < 0.9 at step 1000 is reported (its reading, gap, do-nothing and adjoint states) and its arms skipped; the run goes on to the next task. A skip, not a stop: r0 and r1 have no LoRA reference"
+ },
+ "expected": {
+  "LoRA teacher, emoticon": "E9 at step 1000: P 0.9999, KL elsewhere 0.0048, size 0.0900. Its do-nothing state's adversarial ratio about 1.04 (E14, L40; not gated), its scaled adjoint state's P 0.063 (E14)",
+  "LoRA teachers, r0 and r1": "no reference; the task gate reads them. r0's trigger is the hardest (E34's teachers 0.94)",
+  "W0": "P(target) 0.004 emoticon, 0.15 r0, 0.04 r1; every ratio 1; teacher gap = the LoRA's whole effect (about 5 nats on emoticon: W0's P 0.004 at the trigger)",
+  "arm A": "as E34's arm-A copies: P 0.92-1.0 at both steps, 'pass' at 0.93-1.30, gap under 4% of W0's",
+  "arm B": "as E34's arm-B copies at step 1000: P 0.90-0.98 and 'pass'; at step 100 0.34-0.85, still learning",
+  "damage": "the LoRA's own KL elsewhere is about 0.005, below E34's teachers' 0.007-0.078, so the student's damage / the teacher's is not read as a ratio (E34's P6); both are reported"
+ },
+ "filed": "2026-10-26 10:50:55",
+ "measurements": {
+  "adjoint": "the scaled adjoint state is read without the Pile harness (as E34): P(target), teacher gap, damage, size, Delta's share",
+  "cosine": "finetune.cosines(student delta-W, LoRA delta-W) per matrix and over the 24 matrices concatenated (float64), for the step-1000 arm-A and arm-B students. References per task: the scaled adjoint state of the same delta-W (split.adjoint_state, Sigma = W0's input second moments on the task's training windows) and the null, finetune.random_direction(delta-W, seed 0), expected about 0 (|cos| < 0.01). Blind to the part of delta-W that does nothing on the data; positive control: arm A's cosine against the null's",
+  "seven numbers": "per state as E34 (run.record): adversarial and stochastic ratios to this job's W0 with faith_score.state_verdict, held-out P(target), teacher gap, damage elsewhere, size, Delta's share; definitions, expected W0 and do-nothing values and blind-to lines as in predictions.json. Both scored steps (100, 1000) are read through the harness, so P at step 100 is the harness reading as in E34",
+  "teacher reading": "the LoRA's own held-out P(target), KL elsewhere and size at step 1000 from finetune_lora_arm_a's checkpoint eval (E9's measurement); its step-100 P(target) logged"
+ },
+ "not_run": [
+  "other LoRA ranks, rates or seeds; a LoRA on fewer than the 24 matrices",
+  "arm S (plain SGD) on a LoRA teacher; a mixed arm",
+  "more than one batch-order seed; a longer adversary (Amendment 4 reads those for the full-weight teachers)",
+  "r2_t275_v2667"
+ ],
+ "predictions": [
+  {
+   "blind_to": "one seed, one adversary budget, three trigger tasks, one LoRA rank and rate",
+   "id": "P1_A_passes",
+   "outcomes": {
+    "all": "every learnt task passes at both steps",
+    "none": "no task does",
+    "some": "named tasks pass at both; a fail says teacher training is specific to full-weight updates"
+   },
+   "pass": "holds on every such task",
+   "predicted": "holds on all (E34: Adam arm A passed on all six teachers)",
+   "rule": "arm A student of each task whose LoRA teacher learnt (P(target) >= 0.9 at step 1000): state_verdict 'pass' and held-out P(target) >= 0.9 at step 100 and at step 1000"
+  },
+  {
+   "blind_to": "the adjoint state's damage (not part of the rule); one seed",
+   "id": "P2_A_above_adjoint",
+   "pass": ">= 0.5",
+   "predicted": "holds (E34: every copy sat within 0.08 of its teacher where the split lost 0.4-0.9)",
+   "rule": "emoticon: the step-1000 arm-A student's held-out P(target) minus the LoRA's scaled adjoint state's held-out P(target) in this job (E14: 0.063), absolute"
+  },
+  {
+   "blind_to": "one seed, one adversary budget, three trigger tasks, one LoRA rank and rate",
+   "id": "P3_B_learnt",
+   "kind": "two-sided, filed with a lean",
+   "lean": "learnt on every task (E34: every arm-B copy read P >= 0.90 and 'pass' at step 1000, emoticon included)",
+   "outcomes": {
+    "between": "reported per task",
+    "learnt": "the Pile-only map copies a LoRA too",
+    "neither": "a LoRA's changes on ordinary text do not pin down the update: the Pile-only result was specific to full-weight teachers"
+   },
+   "rule": "arm B student of each task whose LoRA teacher learnt, at step 1000: held-out P(target) and state_verdict; category per task as Amendment 1's P1: 'learnt' (P >= 0.9 and 'pass'), 'neither' (P < 0.5), 'between' (anything else); overall 'learnt' if every such task is, 'neither' if every one is, else 'between'"
+  }
+ ],
+ "reported_not_scored": [
+  "the students' cosines with the LoRA's delta-W, beside the adjoint state's and the null's, and every per-matrix cosine",
+  "damage elsewhere of every state (the LoRA's own damage, about 0.005, is too small for E34's P6 ratio)",
+  "the r0 and r1 LoRA teachers' own readings, do-nothing and adjoint states (no reference exists); the task gate",
+  "the emoticon LoRA teacher's do-nothing adversarial ratio against E14's 1.04 (read on an L40)",
+  "teacher gap of every state; Delta's share; the step-100 states beyond P1"
+ ]
+}

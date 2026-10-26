@@ -1,0 +1,87 @@
+{
+ "C1": {
+  "claim": "the unchanged model reads its known Pile values",
+  "rule": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, adversary seeds 0, 1, 2), faith_score.w0_check, as E34. Expected: pass, floor about 0.075 on an H100. Fails: stop, nothing trained",
+  "read": {
+   "pgd_floor": 0.07481641823118812,
+   "stochastic_floor": 0.0010943289248412924,
+   "pgd_rel": 0.012784113054690183,
+   "ci_rel": 0.00048291282835366545
+  },
+  "verdict": "pass"
+ },
+ "G1": {
+  "claim": "the emoticon LoRA teacher reproduces E27's H100 regeneration",
+  "rule": "the emoticon LoRA teacher, before any student: at step 1000 its held-out P(target) within 0.001 of 0.99992, KL elsewhere within 0.001 of 0.01625, size (rel_norm_max) within 0.001 of 0.11968: E27's regeneration of the same recipe on an H100 (lora_sgd.json evals.adam['1000']), which the first run of this amendment reproduced to 1e-9. E9's own factors on an L40S read 0.9999 / 0.0048 / 0.0900 and their adjoint state kept P 0.063 (E14); the first filing gated on those and stopped at 11:13 (results/predictions_amend3_filed-1050_g1-e9.json). The in-job adjoint state's P(target) is reported beside E14's 0.063, not gated. Fails: stop with the three numbers",
+  "read": {
+   "read": {
+    "damage": 0.01624569725500394,
+    "p_target": 0.99991550184276,
+    "size": 0.1196831464767456
+   },
+   "reference": {
+    "damage": 0.01625,
+    "p_target": 0.99992,
+    "size": 0.11968
+   },
+   "adjoint_p_target": [
+    0.23400245953912605,
+    0.063
+   ]
+  },
+  "verdict": "pass"
+ },
+ "task_gate": {
+  "claim": "every LoRA teacher learnt its task",
+  "rule": "per task, after its teacher's reading: a LoRA teacher with held-out P(target) < 0.9 at step 1000 is reported (its reading, gap, do-nothing and adjoint states) and its arms skipped; the run goes on to the next task. A skip, not a stop: r0 and r1 have no LoRA reference",
+  "read": {
+   "emoticon": 0.99991550184276,
+   "r1_t534_v369": 0.9991864395141602,
+   "r0_t352_v310": 0.9848435781534436
+  },
+  "verdict": "learnt: ['emoticon', 'r1_t534_v369', 'r0_t352_v310']; skipped: []"
+ },
+ "P1": {
+  "claim": "the task-text copy passes at both steps on every learnt task",
+  "rule": "arm A student of each task whose LoRA teacher learnt (P(target) >= 0.9 at step 1000): state_verdict 'pass' and held-out P(target) >= 0.9 at step 100 and at step 1000",
+  "read": {
+   "emoticon": true,
+   "r1_t534_v369": true,
+   "r0_t352_v310": true
+  },
+  "verdict": "pass"
+ },
+ "P2": {
+  "claim": "on emoticon the task-text copy keeps 0.5 more P(target) than the adjoint split",
+  "rule": "emoticon: the step-1000 arm-A student's held-out P(target) minus the LoRA's scaled adjoint state's held-out P(target) in this job (E14: 0.063), absolute",
+  "read": {
+   "pass": true,
+   "A": 0.9980442621936537,
+   "adjoint": 0.23400245953912605,
+   "e14_adjoint": 0.063
+  },
+  "verdict": "pass"
+ },
+ "P3": {
+  "claim": "the Pile-text copy learns every task (lean)",
+  "rule": "arm B student of each task whose LoRA teacher learnt, at step 1000: held-out P(target) and state_verdict; category per task as Amendment 1's P1: 'learnt' (P >= 0.9 and 'pass'), 'neither' (P < 0.5), 'between' (anything else); overall 'learnt' if every such task is, 'neither' if every one is, else 'between'",
+  "read": {
+   "emoticon": {
+    "category": "between",
+    "p_target": 0.5667248360098225,
+    "pgd": 0.9533678915572708
+   },
+   "r1_t534_v369": {
+    "category": "between",
+    "p_target": 0.8753031158447265,
+    "pgd": 0.9084108125609339
+   },
+   "r0_t352_v310": {
+    "category": "between",
+    "p_target": 0.5209847237299947,
+    "pgd": 1.295543309449973
+   }
+  },
+  "verdict": "between: lean missed"
+ }
+}

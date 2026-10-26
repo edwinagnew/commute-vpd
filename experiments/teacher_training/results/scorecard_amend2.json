@@ -1,0 +1,95 @@
+{
+ "C1": {
+  "claim": "the unchanged model reads its known Pile values",
+  "rule": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, adversary seeds 0, 1, 2), faith_score.w0_check, as E34. Expected: pass, floor about 0.075 on an H100. Fails: stop, nothing trained",
+  "read": {
+   "pgd_floor": 0.07481641823118812,
+   "stochastic_floor": 0.0010943289248412924,
+   "pgd_rel": 0.012784113054690183,
+   "ci_rel": 0.00048291282835366545
+  },
+  "verdict": "pass"
+ },
+ "G1_sgd": {
+  "claim": "the regenerated sgd teacher reads Amendment 1's reproduction",
+  "rule": "per teacher, before its student trains: the regenerated teacher's held-out P(target) within 0.01 and size of change within 0.002 of Amendment 1's reproduction reading (SGD: P 0.9980, size 0.0122; Adam: P 0.9996, size 0.0321). Expected: identical (same seed, code path and card). Fails: stop",
+  "read": {
+   "p_target": [
+    0.9979975190881181,
+    0.9979975190881181
+   ],
+   "size": [
+    0.01219291239976883,
+    0.01219291239976883
+   ]
+  },
+  "verdict": "pass"
+ },
+ "G1_adam": {
+  "claim": "the regenerated adam teacher reads Amendment 1's reproduction",
+  "rule": "per teacher, before its student trains: the regenerated teacher's held-out P(target) within 0.01 and size of change within 0.002 of Amendment 1's reproduction reading (SGD: P 0.9980, size 0.0122; Adam: P 0.9996, size 0.0321). Expected: identical (same seed, code path and card). Fails: stop",
+  "read": {
+   "p_target": [
+    0.9996110837753505,
+    0.9996110837753505
+   ],
+   "size": [
+    0.03208973631262779,
+    0.03208973631262779
+   ]
+  },
+  "verdict": "pass"
+ },
+ "P1_sgd": {
+  "claim": "the partly-on rows carried the Pile-only result",
+  "rule": "per teacher, B-dropped-0.1's held-out P(target) at step 1000 against Amendment 1's B-dropped (0.937 SGD, 0.892 Adam, full-precision values copied into the results file): |difference| <= 0.03 -> 'not carried'; a fall of more than 0.10 -> 'carried in part'; anything else -> 'between'",
+  "read": {
+   "p_target": [
+    0.8718070461325449,
+    0.9368784656263378
+   ],
+   "verdict": [
+    "below P 0.9",
+    "pass"
+   ]
+  },
+  "verdict": "between"
+ },
+ "P1_adam": {
+  "claim": "the partly-on rows carried the Pile-only result",
+  "rule": "per teacher, B-dropped-0.1's held-out P(target) at step 1000 against Amendment 1's B-dropped (0.937 SGD, 0.892 Adam, full-precision values copied into the results file): |difference| <= 0.03 -> 'not carried'; a fall of more than 0.10 -> 'carried in part'; anything else -> 'between'",
+  "read": {
+   "p_target": [
+    0.8438778707425888,
+    0.8924295869592118
+   ],
+   "verdict": [
+    "below P 0.9",
+    "below P 0.9"
+   ]
+  },
+  "verdict": "between"
+ },
+ "P2_sgd": {
+  "claim": "the copy's cosine with delta-W is unchanged",
+  "rule": "per teacher, the cosine over the 24 matrices of B-dropped-0.1's delta-W with the teacher's delta-W within 0.02 of Amendment 1's B-dropped (0.078 SGD, 0.218 Adam), absolute",
+  "read": {
+   "cos": [
+    0.07516304489744673,
+    0.0782693093304595
+   ]
+  },
+  "verdict": "pass"
+ },
+ "P2_adam": {
+  "claim": "the copy's cosine with delta-W is unchanged",
+  "rule": "per teacher, the cosine over the 24 matrices of B-dropped-0.1's delta-W with the teacher's delta-W within 0.02 of Amendment 1's B-dropped (0.078 SGD, 0.218 Adam), absolute",
+  "read": {
+   "cos": [
+    0.21584048551693372,
+    0.21748646953896938
+   ]
+  },
+  "verdict": "pass"
+ }
+}

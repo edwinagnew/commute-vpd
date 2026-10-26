@@ -1,0 +1,188 @@
+{
+ "about": "teacher_training Amendment 4 (reports/2026-10-23_plan_teacher-training.md -> 'Amendment 4'): E34's six teachers regenerated (fine-tune seed 0); arms A (task windows, Adam 1e-5, batch 32) and B (Pile train rows from 32,768, batch 8, plain mean KL, Adam 1e-5) retrained at batch-order seed 1 for 1000 steps and read at step 1000 through the harness; then E20 Amendment 3's budget sweep (128 Pile val rows, batches of 8, n sign steps of 2/n for n in 20, 160, adversary seed 0) at W0 (seeds 0, 1), each teacher's do-nothing state and each seed-1 student. RunPod H100. Filed before any run",
+ "amend4": {
+  "budget_batch": 8,
+  "budget_pass": 1.241,
+  "budget_rows": 128,
+  "budgets": [
+   20,
+   160
+  ],
+  "e34": {
+   "emoticon": {
+    "adam": {
+     "A": [
+      0.9968,
+      0.9591
+     ],
+     "B": [
+      0.9021,
+      1.0493
+     ]
+    },
+    "sgd": {
+     "A": [
+      0.9985,
+      0.9421
+     ],
+     "B": [
+      0.9603,
+      0.8954
+     ]
+    }
+   },
+   "r0_t352_v310": {
+    "adam": {
+     "A": [
+      0.9212,
+      1.0806
+     ],
+     "B": [
+      0.908,
+      1.3659
+     ]
+    },
+    "sgd": {
+     "A": [
+      0.9417,
+      1.2964
+     ],
+     "B": [
+      0.9188,
+      1.1252
+     ]
+    }
+   },
+   "r1_t534_v369": {
+    "adam": {
+     "A": [
+      0.9944,
+      0.9676
+     ],
+     "B": [
+      0.9828,
+      1.1308
+     ]
+    },
+    "sgd": {
+     "A": [
+      0.9963,
+      1.0038
+     ],
+     "B": [
+      0.9742,
+      1.0277
+     ]
+    }
+   }
+  },
+  "g1_e34": [
+   0.983,
+   0.0287
+  ],
+  "g1_p_tol": 0.01,
+  "g1_size_tol": 0.002,
+  "inconclusive": [
+   [
+    "r1_t534_v369",
+    "sgd"
+   ],
+   [
+    "r1_t534_v369",
+    "adam"
+   ],
+   [
+    "emoticon",
+    "adam"
+   ]
+  ],
+  "p_tol": 0.05,
+  "ratio_tol": 0.25,
+  "seed": 1,
+  "w0_budget_seeds": [
+   0,
+   1
+  ]
+ },
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1_w0": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary) on adversary seeds 0, 1, 2; faith_score.w0_check. Expected: pass, floor about 0.075 on an H100 (pass <= 1.40, fail >= 1.61). Fails: stop, nothing trained",
+  "C1b_w0_budget": "before any state: the budget sweep at W0 under adversary seeds 0 and 1 at 20 and 160 steps. No gate (W0's ratio to itself is 1). Reported: KL(seed 1) / KL(seed 0) per budget, the noise floor of the budget measure (E31 on the L40: 1.07 at 20 steps, 1.21 at 160; E20 A3: W0 seed 0 0.660 at 20, 0.709 at 160)",
+  "G1_r1_sgd_teacher": "the first teacher regenerated (r1_t534_v369, SGD 0.03, seed 0, step 1000) reproduces E34's reading: held-out P(target) within 0.01 of 0.983 and size within 0.002 of 0.0287 (E34 also read damage 0.056). Fails: stop before any student"
+ },
+ "expected": {
+  "W0": "1 on every ratio; P(target) 0.004 emoticon, 0.15 r0, 0.04 r1",
+  "budget_time": "E31 on the L40: 20 steps 33 s, 160 steps a further 226 s per state; an H100 about half",
+  "do_nothing": "the teacher: E34's reproduction readings (P 0.94-1.0, damage 0.008-0.076, size 0.012-0.034), its harness verdict (pass r0 both, emoticon SGD; inconclusive r1 both, emoticon Adam), Delta share 1",
+  "seed_1_copies": "within the noise of E34's seed-0 copies (P 0.90-1.0, adversarial 0.90-1.37, all 'pass')"
+ },
+ "filed": "2026-10-26 10:51:33",
+ "measurements": {
+  "budget": "gamma.pgd_sources(model, batches, n, step_size=2/n, seed=0) on the first 128 Pile val rows in batches of 8, then cancel.masked_kl under the sources found; n in (20, 160), each its own run from the seed's random start. Ratio = KL(state) / KL(W0, adversary seed 0) at the same n, relative. W0: 1 by definition; do-nothing: the teacher's own reading (no reference: E34 read the teachers only under the 256-row 20-step harness, 0.98-1.59). Pass line 1.241 (E20 A3's P10). Blind to other adversary families (per-row masks, restarts), budgets past 160, one adversary seed per state. Positive control: the three teachers E34 read inconclusive (r1 SGD 1.59, r1 Adam 1.52, emoticon Adam 1.50) should sit above 1.241 at 20 steps. Noise: W0 seed 1 / seed 0 per budget (C1b)",
+  "harness": "E34's seven per state at step 1000 (run.record through read_state, pile=True): adversarial and stochastic ratio to this job's W0 (256 Pile val rows, 20-step adversary, seed 0), verdict (faith_score.state_verdict against the same-job floor, p_min 0.9), held-out P(target), teacher gap, damage elsewhere, size, Delta's share. Definitions and expected values as results/predictions.json",
+  "p_target_100": "P(target) at step 100 from the training curve's free held-out reading (curve[99]['heldout_p_o'], arm A's eval against W0 at every step); the step-100 state is not saved or read by the harness"
+ },
+ "not_run": [
+  "seed-0 students under the long adversary (arm B's were not saved; arm A's saved states would take over an hour to upload)",
+  "harness reads at steps 10 and 100 (P at 100 comes from the free reading only)",
+  "arm S (plain SGD) at seed 1",
+  "a second fine-tune seed; a second adversary seed on any state but W0",
+  "budgets past 160; other adversary families",
+  "LoRA teachers (Amendment 3); the trigger-free Pile arm (Amendments 1, 2)"
+ ],
+ "predictions": [
+  {
+   "id": "P1_replication",
+   "predicted": "holds, 12 of 12 (E34: 12 of 12 at seed 0)",
+   "report": "the count passing of 12 and each failing copy's verdict and P",
+   "rule": "every seed-1 copy (arms A and B of the six teachers, twelve states) at step 1000: state_verdict 'pass' and held-out P(target) >= 0.9"
+  },
+  {
+   "id": "P2_noise_floor",
+   "kind": "two-sided",
+   "predicted": "holds for all 12; reported: the count holding of 12 and the largest P gap and ratio gap (the project's first seed-to-seed spreads for teacher training)",
+   "rule": "per copy against E34's seed-0 reading of the same (task, teacher, arm) at step 1000 (amend4.e34): |P(seed 1) - P(seed 0)| <= 0.05 and |adversarial ratio(seed 1) / ratio(seed 0) - 1| <= 0.25",
+   "why": "E34's seed-0 readings sit at P 0.90-1.0 and ratio 0.90-1.37; the harness's W0 seed floor is 0.075"
+  },
+  {
+   "id": "P3a_long_adversary_copies",
+   "predicted": "holds, 12 of 12 (E20 A3: the passing adjoint state stayed at 1.05 from 20 to 160; E31 P4)",
+   "rule": "every seed-1 copy at step 1000: budget ratio at 160 steps <= 1.241"
+  },
+  {
+   "id": "P3b_long_adversary_teachers",
+   "predicted": "holds for all three at both budgets (E34: teachers 1.50-1.59 against copies 0.96-1.13 under the 20-step harness)",
+   "rule": "each of the three teachers E34 read inconclusive (r1 SGD, r1 Adam, emoticon Adam): its do-nothing state's budget ratio is above both of its copies' at 20 steps and at 160 steps"
+  }
+ ],
+ "reported_not_scored": [
+  "C1b: W0's seed-1 / seed-0 budget ratio per budget",
+  "each teacher's reproduction reading against E34's (G1 gates only the first)",
+  "teacher gap, damage, size, stochastic ratio and Delta share of every state",
+  "the do-nothing states' budget ratios of the three teachers E34 read pass (r0 both, emoticon SGD)",
+  "budget ratios at 20 steps of the copies (P3a reads 160)",
+  "the largest P and ratio gaps of P2, as the project's first seed-to-seed spreads for teacher training"
+ ]
+}

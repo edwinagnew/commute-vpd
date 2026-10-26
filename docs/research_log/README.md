@@ -189,3 +189,4 @@ Figures already published (their sources, for a re-upload):
 - "fig/e34_amend1.png": "experiments/teacher_training/figures/amend1.png"
 - "fig/e34_amend3.png": "experiments/teacher_training/figures/amend3.png"
 - "fig/e31_scaled.png": "experiments/adjoint_sgd/figures/scaled.png"
+- "fig/e34_amend4.png": "experiments/teacher_training/figures/amend4.png"
