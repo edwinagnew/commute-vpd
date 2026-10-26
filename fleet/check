@@ -1,26 +1,72 @@
 #!/usr/bin/env bash
-# One screen on how the agents are doing: running or not, a prompt waiting for you, the task, the handoff note's
-# "Now" and "Next", the latest commits, and Slurm jobs. Safe to run any time; it changes nothing.
+# One screen on how the agents are doing. Safe to run any time; it changes nothing.
 #   fleet/check
+# For each agent: its state (working, asleep until its next wake-up, waiting for you, interrupted, stopped), when it
+# last did anything, and a one-sentence summary (fleet/summarize, every 15 min). Then the task, the Slurm jobs, the
+# commute-* pods on RunPod with their cost, and the latest commits.
 set -uo pipefail
 [[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
-here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-source "$here/fleet.sh"
-roles=$(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null | paste -sd' ')
-echo "running: ${roles:-NOTHING (start with fleet/start)}"
-[[ -s "$FLEET_DATA/blocked.txt" ]] && { echo "WAITING FOR YOU (tmux attach -t $FLEET_SESSION):"; sed 's/^/  /' "$FLEET_DATA/blocked.txt"; }
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
+now=$(date +%s)
+ago() { local m=$(( (now - $1) / 60 )); (( m < 60 )) && echo "${m} min ago" || echo "$(( m / 60 )) h $(( m % 60 )) min ago"; }
+
+# What the agent's window shows: the lines above its input box, and whether it is mid-turn.
+state() {  # state ROLE TRANSCRIPT
+  local pane body
+  pane=$(tmux capture-pane -p -t "$FLEET_SESSION:$1" 2>/dev/null | grep -v '^\s*$')
+  if [[ "$(tmux display -p -t "$FLEET_SESSION:$1" '#{pane_current_command}' 2>/dev/null)" == bash ]] \
+     && grep -q 'restarting in 60s' <<< "$(tail -3 <<< "$pane")"; then
+    echo "RESTARTING (Claude exited; back within a minute)"; return
+  fi
+  if grep -qE 'Do you want to (proceed|make this edit|create)|Allow Claude to|trust this folder|❯ 1\. Yes|Enter to select' <<< "$(tail -25 <<< "$pane")"; then
+    echo "WAITING FOR YOU at a prompt or question (tmux attach -t $FLEET_SESSION)"; return
+  fi
+  grep -q 'esc to interrupt' <<< "$(tail -3 <<< "$pane")" && { echo "working"; return; }
+  # Idle. Interrupted if the last thing above the input box is the interruption notice.
+  body=$(sed '/^─/,$d' <<< "$pane" | grep -vE '^\s*(⎿  Tip:|›)' | tail -4)
+  if grep -q 'Interrupted' <<< "$body"; then
+    echo "INTERRUPTED: type 'carry on' in its window (tmux attach -t $FLEET_SESSION, leave with Ctrl-b d)"; return
+  fi
+  # Asleep if its last ScheduleWakeup is still in the future.
+  local last wake
+  last=$(jq -r 'select(.type == "assistant") | .timestamp as $t | .message.content[]?
+    | select(.type == "tool_use" and .name == "ScheduleWakeup") | "\($t) \(.input.delaySeconds // 0)"' "$2" 2>/dev/null | tail -1)
+  if [[ -n "$last" ]]; then
+    wake=$(( $(date -d "${last% *}" +%s) + ${last#* } ))
+    if (( wake > now - 120 )); then echo "asleep until $(date -d @"$wake" +%H:%M) (its next wake-up)"; return; fi
+  fi
+  echo "STOPPED: idle with no wake-up scheduled (tmux attach -t $FLEET_SESSION and tell it to carry on)"
+}
+
+windows=$(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null)
+[[ -n "$windows" ]] || echo "agents: NONE RUNNING (start with fleet/start \"task\")"
+for role in $windows; do
+  key=$(tr '/.' '--' <<< "$FLEET_AGENTS/$role")
+  t=$(ls -t "$HOME/.claude/projects/$key"/*.jsonl 2>/dev/null | head -1)
+  echo "== $role: $(state "$role" "$t")"
+  [[ -n "$t" ]] && echo "   last activity $(ago "$(stat -c %Y "$t")")"
+  s="$FLEET_DATA/agents/$role/summary"
+  [[ -s "$s" ]] && echo "   $(cut -d' ' -f1 "$s"): $(cut -d' ' -f2- "$s")"
+done
+
 task=$(head -c 300 "$FLEET_DATA/tonight" 2>/dev/null)
-echo "task: ${task:-none (analysis only)}"
-note="$FLEET_DATA/agents/lead/handoff.md"
-if [[ -s "$note" ]]; then
-  echo "--- lead's note, updated $(date -r "$note" '+%a %H:%M')"
-  # Only the "Now" and "Next" sections, at most 12 lines each.
-  awk '/^## /{show = tolower($0) ~ /^## (now|next)/; n = 0} show && n++ < 12' "$note"
+echo "task: ${task:-none (analysis of existing results only)}"
+
+jobs=$(squeue -u "$USER" -h -o '   %i %j %T for %M (limit %l) %R' 2>/dev/null)
+echo "Slurm jobs:${jobs:+$'\n'}${jobs:- none}"
+
+# Pods from the RunPod API; the key is the shared MATS account's, so keep only this project's pods.
+key=${RUNPOD_API_KEY:-$(set -a; source "$FLEET_SECRETS" 2>/dev/null; echo "${RUNPOD_API_KEY:-}")}
+if [[ -n "$key" ]]; then
+  pods=$(curl -s -m 15 -H "Authorization: Bearer $key" -H 'Content-Type: application/json' https://api.runpod.io/graphql \
+    -d '{"query":"query { myself { pods { name desiredStatus costPerHr machine { gpuDisplayName } runtime { uptimeInSeconds } } } }"}' \
+    | jq -r '.data.myself.pods[]? | select(.name | startswith("'"$FLEET_PREFIX"'-")) | select(.desiredStatus != "TERMINATED")
+      | "   \(.name) \(.desiredStatus) \(.machine.gpuDisplayName // "?") $\(.costPerHr)/h, up \((.runtime.uptimeInSeconds // 0) / 60 | floor) min"' 2>/dev/null)
+  echo "RunPod pods:${pods:+$'\n'}${pods:- none}"
 else
-  echo "--- lead's note: none yet (written at the end of its first iteration)"
+  echo "RunPod pods: unknown (no key in $FLEET_SECRETS)"
 fi
-echo "--- latest commits"
-git -C "$FLEET_AGENTS/lead" log --format='  %ad %s' --date=format:'%a %H:%M' -6 2>/dev/null
-jobs=$(squeue -u "$USER" -h -o '  %i %j %T %M' 2>/dev/null)
-echo "--- Slurm jobs: ${jobs:+$'\n'}${jobs:-none}"
-echo "--- pods: see the RunPod console (named commute-...)"
+unset key
+
+echo "latest commits:"
+git -C "$FLEET_AGENTS/lead" log --format='   %ad %s' --date=format:'%a %H:%M' -3 2>/dev/null | cut -c1-140

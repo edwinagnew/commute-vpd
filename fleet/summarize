@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Write a one-sentence summary of what each running agent is doing to FLEET_DATA/agents/<role>/summary, for
+# fleet/check. Run by cron every 15 minutes. It asks Haiku (a few hundred tokens, ~2 s) about the last 40 steps of the
+# agent's newest transcript, and only when the transcript changed since the last summary.
+#   fleet/summarize [ROLE ...]   default: every window in the tmux session
+set -uo pipefail
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
+export PATH="$HOME/.local/bin:/usr/bin:$PATH"   # cron's PATH has no claude
+roles=("$@")
+(( ${#roles[@]} )) || mapfile -t roles < <(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null)
+for role in "${roles[@]}"; do
+  key=$(tr '/.' '--' <<< "$FLEET_AGENTS/$role")
+  t=$(ls -t "$HOME/.claude/projects/$key"/*.jsonl 2>/dev/null | head -1)
+  out="$FLEET_DATA/agents/$role/summary"
+  [[ -n "$t" ]] || continue
+  [[ -f "$out" && ! "$t" -nt "$out" ]] && continue
+  # The agent's words, its tool calls (by their descriptions) and the user's messages, newest last.
+  steps=$(jq -r 'select(.type == "assistant" or .type == "user") | .type as $who | .message.content as $c
+    | if ($c | type) == "string" then "USER: \($c[0:300])"
+      else $c[]? | if .type == "text" then "\($who | ascii_upcase): \(.text[0:400])"
+        elif .type == "tool_use" then "TOOL \(.name): \((.input.description // .input.command // .input.prompt // .input) | tostring | .[0:200])"
+        else empty end end' "$t" 2>/dev/null | tail -40)
+  [[ -n "$steps" ]] || continue
+  mkdir -p "$(dirname "$out")"
+  s=$(cd "$FLEET_DATA/logs" && timeout 120 claude -p --model haiku --tools "" --strict-mcp-config \
+      --setting-sources project --no-session-persistence \
+      "Below is the recent activity of an autonomous research agent (USER lines are its human). In ONE plain sentence of at most 25 words, say what it is doing right now and why. No preamble." <<< "$steps" 2>/dev/null | tr '\n' ' ')
+  [[ -n "${s// }" ]] && echo "$(date '+%H:%M') ${s% }" > "$out"
+done
