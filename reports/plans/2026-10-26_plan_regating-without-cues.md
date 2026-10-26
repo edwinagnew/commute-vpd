@@ -249,3 +249,10 @@ position in the row too, since at the row's start the text summary holds the who
 Predictions filed by `amend6.py --predictions` before the run: T3, even the whole preceding text at least 0.1 below the
 original values at step 300 (low); T4, the whole text above the 4-token summary by more than the noise floor (medium).
 Class 1. An H100, under $1.
+
+Code review of `amend6.py` (fresh Opus agent, before filing; no crash or mis-scoring found), applied before the
+predictions were filed: the 4-token summary is a fourth space in this run, gated against Amendment 5 with the original
+values, so T4 compares within the run; a positive control C_full (the joined space at least the 4-token summary minus
+0.05 at every step) must hold for T3 and T4 to be read; the bag weights each token by its inverse frequency in the
+fitted rows, since raw counts let frequent tokens fill it, which would have tilted T3 towards passing; that bag
+neighbours may be adjacent positions of one fitted row goes in the blind-to line.

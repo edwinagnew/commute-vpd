@@ -1,0 +1,39 @@
+{
+ "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md, Amendment 8. Filed before the run; never edited after.",
+ "measurements": {
+  "R_<space>": "recovery of the switching over all held-out positions with the 8-nearest rule in each space",
+  "R_<space>_by_bucket": "the same within position buckets ((0, 32), (32, 128), (128, 511)), each normalised by its own gap",
+  "text4": "amend5's 4-token decayed summary, the same seeded tables",
+  "prefix_bag": "bag of every token from the row's start to the position, each adding log(positions / (1 + count)) over the fitted rows to its hashed signed coordinate, unit length",
+  "text_full": "prefix_bag joined with text4, each half scaled to length 1/sqrt(2)"
+ },
+ "gates": {
+  "A0": "every step: |R_near_g0 - Amendment 5's| <= 0.02 and |R_text4 - Amendment 5's R_near_text4| <= 0.02; fail: stop",
+  "C_full": "positive control for the joined space: at every step R_text_full >= R_text4 - 0.05 (it holds the 4-token summary as half its length, so it should do about as well); fail: T3 and T4 unreadable"
+ },
+ "noise_floor": "8 against 32 neighbours moved R by about 0.014; differences below it are not read",
+ "predictions": [
+  {
+   "id": "T3",
+   "rule": "step 300: R_text_full <= R_near_g0 - 0.1 ('even with the whole preceding text, the text predicts the change worse than the original model's view')",
+   "predicted": "pass",
+   "confidence": "low",
+   "blind_to": "one hashing (4,096 signed coordinates); a bag that ignores order beyond the last 4 tokens, weighted by inverse frequency; equal weight for the two halves; a bag changes little between adjacent positions, so a held-out position's 8 bag neighbours may be neighbouring positions of one fitted row, fewer independent contexts than 8; one seed and one held-out set",
+   "positive_control": "C_full"
+  },
+  {
+   "id": "T4",
+   "rule": "step 300: R_text_full >= R_text4 + 0.014 ('the whole preceding text adds to the last few tokens')",
+   "predicted": "pass",
+   "confidence": "medium",
+   "blind_to": "one hashing (4,096 signed coordinates); a bag that ignores order beyond the last 4 tokens, weighted by inverse frequency; equal weight for the two halves; a bag changes little between adjacent positions, so a held-out position's 8 bag neighbours may be neighbouring positions of one fitted row, fewer independent contexts than 8; one seed and one held-out set",
+   "positive_control": "C_full"
+  }
+ ],
+ "reported": "the bucket recoveries: at positions 0-31 the text summary holds the whole prefix, as the model's view does, so a gap there is the model's learned similarity rather than more context",
+ "decision_tree": {
+  "T3 holds": "the original model's view predicts the change better than the whole preceding text: the restatement 'positions the original model treats alike get alike changes' stands as worded",
+  "T3 fails": "with the whole preceding text, the text predicts as well: the restatement is 'similar contexts get similar changes', and the model's view adds nothing measurable"
+ },
+ "filed": "2026-10-26 19:31:52"
+}

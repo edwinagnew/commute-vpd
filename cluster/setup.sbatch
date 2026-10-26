@@ -28,7 +28,7 @@ uv --version
 uv python install 3.13
 uv sync --locked --no-default-groups --group dev --group gpu   # gpu: CUDA torch (default group cpu is the laptop build)
 
-.venv/bin/python - <<'PY'
+"${UV_PROJECT_ENVIRONMENT:-.venv}/bin/python" - <<'PY'
 import torch, ipykernel, jupyter_server
 print("torch", torch.__version__, "cuda build", torch.version.cuda, "available", torch.cuda.is_available())
 print("device", torch.cuda.get_device_name(0))
@@ -42,6 +42,6 @@ echo "== sshd/pam on node:"
 grep -H pam_slurm /etc/pam.d/* 2>/dev/null || echo "no pam_slurm* entry readable in /etc/pam.d"
 (command -v ss >/dev/null && ss -ltn | grep -E ':22\s') || echo "nothing listening on :22 (or ss missing)"
 
-PATH="$COMMUTE_REPO/.venv/bin:$PATH" EXPECTED_GPUS=1 EXPECTED_GPU_NAME=L40 PERSISTENT_PATH="$COMMUTE_REPO" \
+PATH="${UV_PROJECT_ENVIRONMENT:-$COMMUTE_REPO/.venv}/bin:$PATH" EXPECTED_GPUS=1 EXPECTED_GPU_NAME=L40 PERSISTENT_PATH="$COMMUTE_REPO" \
     bash cluster/gpu-sanity.sh || echo "gpu-sanity exit $?"
 echo "== done $(date -Is)"
