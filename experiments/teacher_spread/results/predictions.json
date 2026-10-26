@@ -1,0 +1,138 @@
+{
+ "plan": "reports/plans/2026-10-26_plan_teacher-spread.md (E37). Filed before any run; never edited after.",
+ "controls": {
+  "C1": "first, alone: W0 under the harness on adversary seeds 0, 1, 2; faith_score.w0_check and the PGD floor within 5% of the card's known floor ({'NVIDIA H100 80GB HBM3': 0.0748, 'NVIDIA L40': 0.2088, 'NVIDIA GeForce RTX 4090': 0.0354}); a card not listed stops",
+  "C2": "the teacher regenerated; held-out gain logp_teacher - logp_W0 within 0.005 of 0.1301 and >= 0.02 nats per token; else stop before any copy",
+  "C3": "after the do-nothing read: its logp within 0.0001 of the teacher net's (C2) and its gap within 0.0001 of 0, nats per token; else stop before the copies"
+ },
+ "expected": {
+  "W0": "s 0, gap share 1, damage 0, harness and budget ratios 1 by definition, logp about -3.146; the gap is KL(teacher || W0), which E36 did not read: E36 read the other direction, KL(W0 || teacher), 0.29 at step 300, so the gap is expected of the same order, 0.2 to 0.4 nats per token",
+  "do-nothing": "s 1 and gap 0 by construction (the readout's check), damage = the teacher's own (no reference; E36 did not read plain text), harness: lean above the line (size 0.049 against E34's teachers' 0.012-0.034, which read 0.98-1.59)",
+  "adjoint": "s below 0.5 (E34 kept 0.06-0.26 of P(target) on the word tasks), harness at or under the line (a smaller change inside the subcomponents' span; E20 A3's adjoint state read 1.05)",
+  "copies": "s >= 0.9, gap share <= 0.1, harness pass, damage within 0.5-2x the teacher's, size about half the teacher's, cosine with delta-W 0.08-0.3 (E34) against a null of about 1e-4"
+ },
+ "predictions": [
+  {
+   "id": "P1",
+   "rule": "lower_s0: s >= 0.9",
+   "predicted": "holds",
+   "confidence": "medium",
+   "blind_to": "the mean over held-out positions: where the gain sits",
+   "positive_control": "do-nothing reads 1; C2",
+   "noise_floor": "states are deterministic per seed up to bf16 kernels (E36's teacher regenerated within 2e-4 in held-out loss across cards); the copies' batch-order spread is read in this run (lower_s0 against lower_s1); E34 A4's was 0.005 in P(target) for task-text copies, 0.032 for Pile-text copies, and up to 25% in the harness ratio"
+  },
+  {
+   "id": "P2",
+   "rule": "lower_s0: gap / gap_W0 <= 0.1",
+   "predicted": "holds",
+   "confidence": "medium-low",
+   "blind_to": "a mean dominated by the highest-KL positions",
+   "positive_control": "do-nothing reads 0, W0 reads 1",
+   "noise_floor": "states are deterministic per seed up to bf16 kernels (E36's teacher regenerated within 2e-4 in held-out loss across cards); the copies' batch-order spread is read in this run (lower_s0 against lower_s1); E34 A4's was 0.005 in P(target) for task-text copies, 0.032 for Pile-text copies, and up to 25% in the harness ratio"
+  },
+  {
+   "id": "P3",
+   "rule": "lower_s0: harness verdict 'pass' on the PGD and stochastic ratios against the same-job floors (faith_score.verdict: pass at or under 1.5 / (1 + floor), 1.40 on an H100)",
+   "predicted": "holds",
+   "confidence": "medium",
+   "blind_to": "other adversary families and budgets; E34 A4 found this harness lenient on fine-tunes, not on copies",
+   "positive_control": "W0's three adversary seeds (C1)",
+   "noise_floor": "states are deterministic per seed up to bf16 kernels (E36's teacher regenerated within 2e-4 in held-out loss across cards); the copies' batch-order spread is read in this run (lower_s0 against lower_s1); E34 A4's was 0.005 in P(target) for task-text copies, 0.032 for Pile-text copies, and up to 25% in the harness ratio"
+  },
+  {
+   "id": "P4",
+   "rule": "lower_s0: 0.5 <= damage / damage_do-nothing <= 2.0",
+   "predicted": "holds",
+   "confidence": "medium",
+   "blind_to": "plain Pile text only",
+   "positive_control": "W0 reads 0",
+   "noise_floor": "states are deterministic per seed up to bf16 kernels (E36's teacher regenerated within 2e-4 in held-out loss across cards); the copies' batch-order spread is read in this run (lower_s0 against lower_s1); E34 A4's was 0.005 in P(target) for task-text copies, 0.032 for Pile-text copies, and up to 25% in the harness ratio"
+  },
+  {
+   "id": "P5",
+   "rule": "adjoint: s < 0.5",
+   "predicted": "holds",
+   "confidence": "medium",
+   "blind_to": "as P1",
+   "positive_control": "the copies' s",
+   "noise_floor": "states are deterministic per seed up to bf16 kernels (E36's teacher regenerated within 2e-4 in held-out loss across cards); the copies' batch-order spread is read in this run (lower_s0 against lower_s1); E34 A4's was 0.005 in P(target) for task-text copies, 0.032 for Pile-text copies, and up to 25% in the harness ratio"
+  },
+  {
+   "id": "P6",
+   "rule": "plain_s0: s >= 0.9",
+   "predicted": "holds",
+   "confidence": "low",
+   "blind_to": "as P1; the plain rows are nearly the same documents as the lowercase ones",
+   "positive_control": "lower_s0",
+   "noise_floor": "states are deterministic per seed up to bf16 kernels (E36's teacher regenerated within 2e-4 in held-out loss across cards); the copies' batch-order spread is read in this run (lower_s0 against lower_s1); E34 A4's was 0.005 in P(target) for task-text copies, 0.032 for Pile-text copies, and up to 25% in the harness ratio"
+  },
+  {
+   "id": "P7",
+   "rule": "cosine(lower_s0, lower_s1) of the weight changes >= 0.8; below 0.5 reads 'one of many placements'",
+   "predicted": "holds",
+   "confidence": "medium-low",
+   "blind_to": "function: two copies equal in weights are equal in function, not the reverse",
+   "positive_control": "comparison on the same axes: cosine(lower_s0, plain_s0), the same teacher copied from other text; null: a random direction's cosine with delta-W, about 1e-4; E34 Amendment 5 reads P7 on a trigger teacher",
+   "noise_floor": "states are deterministic per seed up to bf16 kernels (E36's teacher regenerated within 2e-4 in held-out loss across cards); the copies' batch-order spread is read in this run (lower_s0 against lower_s1); E34 A4's was 0.005 in P(target) for task-text copies, 0.032 for Pile-text copies, and up to 25% in the harness ratio"
+  }
+ ],
+ "reported": "every state's numbers; the anchor reading pgd(copy) / pgd(do-nothing) for the pending anchor decision; the budget adversary (E20 A3; gamma.pgd_sources, 20 sign steps of 0.1, seed 0, then cancel.masked_kl on the first 128 Pile val rows in batches of 8) as a ratio to W0's, at W0, do-nothing, adjoint, lower_s0 and plain_s0, read in case E34 Amendment 5 finds the 20-step harness lenient on fine-tunes; |s(lower_s0) - s(lower_s1)|; cosines with delta-W; size; mean train KL over steps 451-500 and 951-1000 and its drop; peak GPU memory",
+ "decision_tree": {
+  "C1, C2 or C3 fails": "stop; nothing scored",
+  "P1 and P3 hold": "teacher training validated end to end on a broad update; the larger model starts with it. P7 below 0.5 adds a card: the placement is one of many before it is called interpretable",
+  "P1 fails": "train KL still falling by over 10% from steps 451-500 to 951-1000: under-trained, rerun longer. Otherwise a narrow-task property; next: frozen Gamma (E15) or the span ('create')",
+  "P1 holds, P3 fails": "the same branch; the gap and damage profile (P2, P4) say which",
+  "P6": "holds: a copy from ordinary text carries a style, as from Pile text in E34; fails: the larger model's copy needs text like the post-training data"
+ },
+ "config": {
+  "rows_train": [
+   "train",
+   0,
+   4096
+  ],
+  "rows_held": [
+   "val",
+   0,
+   256
+  ],
+  "n_held": 64,
+  "ft_lr": 3e-05,
+  "ft_batch": 8,
+  "ft_steps": 300,
+  "ft_seed": 0,
+  "e36_gain": 0.1301,
+  "gain_tol": 0.005,
+  "min_gain": 0.02,
+  "copy_lr": 1e-05,
+  "copy_batch": 8,
+  "copy_steps": 1000,
+  "copies": [
+   [
+    "lower",
+    0
+   ],
+   [
+    "plain",
+    0
+   ],
+   [
+    "lower",
+    1
+   ]
+  ],
+  "n_sigma_rows": 256,
+  "pile_rows": 256,
+  "pile_pgd_steps": 20,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "floor_tol": 0.05,
+  "budget_rows": 128,
+  "budget_steps": 20,
+  "eval_batch": 8,
+  "null_seed": 0
+ },
+ "filed": "2026-10-26 19:53:47"
+}

@@ -40,9 +40,15 @@ RESULTS, LARGE = HERE / "results", HERE / "results" / "large"
 PRED, OUT = RESULTS / "predictions.json", RESULTS / "teacher_spread.json"
 TRANSPORT = HERE.parent / "transport_test" / "results"
 # W0's harness floor (max / min - 1 of the PGD KL over adversary seeds 0-2) per card, from earlier full harness runs:
-# H100 E34 and its amendments, L40 lora_matched and cancellation_sgd, 4090 gamma_shift_map
+# H100 E34 and its amendments, L40 lora_matched and cancellation_sgd, 4090 gamma_shift_map. Exact names: no H100 PCIe
+# or H100 NVL full harness run exists in the repo, so those cards stop at C1
 KNOWN_FLOOR = {"NVIDIA H100 80GB HBM3": 0.0748, "NVIDIA L40": 0.2088, "NVIDIA GeForce RTX 4090": 0.0354}
 S_MIN, GAP_MAX, DAMAGE_BAND, ADJ_MAX, COS_SAME, COS_MANY = 0.9, 0.10, (0.5, 2.0), 0.5, 0.8, 0.5
+# C3: the do-nothing state's logp and KL against the teacher net, in nats per token. The same weights through the same
+# bf16 kernels on the same batches should agree to float rounding; 1e-4 (s within 1e-3) allows non-deterministic
+# kernels, and sits under E36's cross-card reproduction of 2e-4.
+C3_TOL = 1e-4
+FALLING = 0.10  # reported: train KL still falling if (mid - end) / mid exceeds this; a P1 miss then reads under-trained
 
 
 @dataclass(frozen=True)
@@ -162,9 +168,9 @@ class Job:
         ft = finetune_arm_b(ctx.model, self.lower, self.held, cfg, ctx.device, log)
         self.dW = ft.deltas[CFG.ft_steps]
         self.t_net, self.w0_net = teacher.teacher_net(ctx.model, self.dW), teacher.teacher_net(ctx.model, {})
-        gain = (mean_logp(self.t_net, self.held, ctx.device, CFG.eval_batch)
-                - mean_logp(self.w0_net, self.held, ctx.device, CFG.eval_batch))
-        c2 = {"gain": gain, "e36": CFG.e36_gain, "finetune_eval": ft.evals[CFG.ft_steps],
+        lt, l0 = (mean_logp(n, self.held, ctx.device, CFG.eval_batch) for n in (self.t_net, self.w0_net))
+        gain = lt - l0
+        c2 = {"gain": gain, "logp_teacher": lt, "e36": CFG.e36_gain, "finetune_eval": ft.evals[CFG.ft_steps],
               "pass": abs(gain - CFG.e36_gain) <= CFG.gain_tol and gain >= CFG.min_gain}
         log(f"[C2] held-out gain {gain:.4f} (E36 {CFG.e36_gain}) pass {c2['pass']} | {json.dumps(c2['finetune_eval'])}")
         return c2
@@ -217,28 +223,30 @@ def copy_state(job: Job, text: str, seed: int) -> dict[str, Any]:
     t0 = time.time()
     curve, st = copy_on_rows(job.ctx, job.t_net, job.lower if text == "lower" else job.plain, CFG.copy_lr,
                              CFG.copy_batch, CFG.copy_steps, seed, log)
-    log(f"[copy {text} seed {seed}] trained in {time.time() - t0:.0f} s; train KL at steps 1, 100, {CFG.copy_steps}: "
-        + " ".join(f"{curve[i]['loss']:.4f}" for i in (0, 99, CFG.copy_steps - 1)) + f"; peak {peak_gb():.1f} GB")
+    h = CFG.copy_steps // 2  # mean train KL over the 50 steps ending at the half-way step and at the last step
+    kl = {"train_kl_mid": sum(c["loss"] for c in curve[h - 50 : h]) / 50, "train_kl_end": sum(c["loss"] for c in curve[-50:]) / 50}
+    log(f"[copy {text} seed {seed}] trained in {time.time() - t0:.0f} s; train KL step 1 {curve[0]['loss']:.4f}, steps "
+        f"{h - 49}-{h} {kl['train_kl_mid']:.4f}, last 50 {kl['train_kl_end']:.4f}; peak {peak_gb():.1f} GB")
     arms.save_offsets(copy_path(text, seed), job.ctx.uv_cpu, st, {"text": text, "seed": seed, "step": CFG.copy_steps})
     rec = read(job, f"{text}_s{seed}", {k: v[0] for k, v in st.items()}, {k: (v[1], v[2]) for k, v in st.items()}, True,
                budget=seed == 0)
-    rec["train_kl_last"] = curve[-1]["loss"]
-    return rec
+    return rec | kl
 
 
 def uniqueness(job: Job) -> dict[str, Any]:
-    """The cosine between the two batch orders' lowercase copies, both rebuilt from their saved bf16 offsets, with the
-    random direction's cosine with delta-W as the null."""
+    """The cosine between the two batch orders' lowercase copies, rebuilt from their saved bf16 offsets; beside it the
+    cosine between the lowercase and plain copies (same teacher, other text: the reference) and the random
+    direction's cosine with delta-W (the null)."""
     from commute.finetune import cosines, random_direction
     from commute.saved_states import offsets_state
 
-    d0, _ = offsets_state(copy_path("lower", 0), job.ctx.uv_cpu)
-    d1, _ = offsets_state(copy_path("lower", 1), job.ctx.uv_cpu)
-    c = cosines(d1, d0)
+    d = {(t, s): offsets_state(copy_path(t, s), job.ctx.uv_cpu)[0] for t, s in CFG.copies}
+    c = cosines(d[("lower", 1)], d[("lower", 0)])
     rec = {"cos": c["all"], "cos_min_matrix": min(c["per_matrix"].values()),
+           "cos_lower_plain": cosines(d[("plain", 0)], d[("lower", 0)])["all"],
            "null": cosines(random_direction(job.dW, CFG.null_seed), job.dW)["all"]}
     log(f"[uniqueness] cosine between batch orders {rec['cos']:.4f} (lowest matrix {rec['cos_min_matrix']:.4f}); "
-        f"null {rec['null']:.5f}")
+        f"lowercase against plain copy {rec['cos_lower_plain']:.4f}; null {rec['null']:.5f}")
     return rec
 
 
@@ -279,6 +287,10 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
         sc |= {"P1": c["s"] >= S_MIN, "P2": c["gap_share"] <= GAP_MAX,
                "P3": all(v == "pass" for v in c["verdict"].values()),
                "P4": DAMAGE_BAND[0] <= c["damage_over_teacher"] <= DAMAGE_BAND[1]}
+    for n in ("lower_s0", "plain_s0"):  # reported: is the copy still learning at its end?
+        if n in st:
+            drop = (st[n]["train_kl_mid"] - st[n]["train_kl_end"]) / st[n]["train_kl_mid"]
+            sc[f"{n}_train_kl_drop"], sc[f"{n}_still_falling"] = drop, drop > FALLING
     if "adjoint" in d:
         sc["P5"] = d["adjoint"]["s"] < ADJ_MAX
     if "plain_s0" in d:
@@ -308,6 +320,9 @@ def run(device: str) -> None:
     out = json.loads(OUT.read_text()) if OUT.is_file() else {"card": job.card, "states": {}}
     if out["card"] != job.card:
         sys.exit(f"{OUT} was written on {out['card']}; this job runs on {job.card}. Move the file aside to start again")
+    for t, s in CFG.copies:  # a resumed copy state needs its offsets for the cosines
+        if f"{t}_s{s}" in out["states"] and not copy_path(t, s).is_file():
+            sys.exit(f"{OUT} holds {t}_s{s} but {copy_path(t, s)} is missing: bring it back from the earlier run first")
     out |= {"C1": {k: v for k, v in w0.items() if k != "pile"}, "W0_pile": w0["pile"], "status": "running"}
     dump(out)
     if not w0["pass"]:
@@ -330,6 +345,13 @@ def run(device: str) -> None:
             dump(out)
             log(f"[score] {json.dumps({k: v for k, v in out['score'].items() if k != 'derived'})} "
                 f"{name}: {json.dumps(out['score'].get('derived', {}).get(name, {}), default=float)}")
+        if name == "do-nothing":  # the readout's check: the do-nothing state is the teacher
+            dn = states[name]
+            out["C3"] = {"logp_minus_teacher": dn["logp"] - out["C2"]["logp_teacher"], "gap": dn["gap"]}
+            out["C3"]["pass"] = abs(out["C3"]["logp_minus_teacher"]) <= C3_TOL and abs(dn["gap"]) <= C3_TOL
+            log(f"[C3] {json.dumps(out['C3'])}")
+            if not out["C3"]["pass"]:
+                halt(out, "C3: the do-nothing state does not read as the teacher")
     out["uniqueness"] = uniqueness(job)
     out["score"] = score(out)
     out["status"] = "done"
@@ -355,10 +377,13 @@ PREDICTIONS: dict[str, Any] = {
               f"within {CFG.floor_tol:.0%} of the card's known floor ({KNOWN_FLOOR}); a card not listed stops",
         "C2": f"the teacher regenerated; held-out gain logp_teacher - logp_W0 within {CFG.gain_tol} of {CFG.e36_gain} "
               f"and >= {CFG.min_gain} nats per token; else stop before any copy",
+        "C3": f"after the do-nothing read: its logp within {C3_TOL} of the teacher net's (C2) and its gap within "
+              f"{C3_TOL} of 0, nats per token; else stop before the copies",
     },
     "expected": {
-        "W0": "s 0, gap share 1 (gap about 0.3 nats per token: E36 read KL(W0 || teacher) 0.29), damage 0, harness "
-              "ratio 1 by definition, logp about -3.146",
+        "W0": "s 0, gap share 1, damage 0, harness and budget ratios 1 by definition, logp about -3.146; the gap is "
+              "KL(teacher || W0), which E36 did not read: E36 read the other direction, KL(W0 || teacher), 0.29 at "
+              "step 300, so the gap is expected of the same order, 0.2 to 0.4 nats per token",
         "do-nothing": "s 1 and gap 0 by construction (the readout's check), damage = the teacher's own (no reference; "
                       "E36 did not read plain text), harness: lean above the line (size 0.049 against E34's teachers' "
                       "0.012-0.034, which read 0.98-1.59)",
@@ -380,24 +405,25 @@ PREDICTIONS: dict[str, Any] = {
              "plain Pile text only", "W0 reads 0"),
         pred("P5", f"adjoint: s < {ADJ_MAX}", "medium", "as P1", "the copies' s"),
         pred("P6", f"plain_s0: s >= {S_MIN}", "low",
-             "as P1; the plain rows are the same documents as the lowercase ones", "lower_s0"),
+             "as P1; the plain rows are nearly the same documents as the lowercase ones", "lower_s0"),
         pred("P7", f"cosine(lower_s0, lower_s1) of the weight changes >= {COS_SAME}; below {COS_MANY} reads 'one of "
                    "many placements'", "medium-low",
              "function: two copies equal in weights are equal in function, not the reverse",
-             "random direction's cosine with delta-W (null, about 1e-4); E34 Amendment 5 reads the same on a trigger "
-             "teacher"),
+             "comparison on the same axes: cosine(lower_s0, plain_s0), the same teacher copied from other text; "
+             "null: a random direction's cosine with delta-W, about 1e-4; E34 Amendment 5 reads P7 on a trigger teacher"),
     ],
     "reported": ("every state's numbers; the anchor reading pgd(copy) / pgd(do-nothing) for the pending anchor decision; "
                  "the budget adversary (E20 A3; gamma.pgd_sources, 20 sign steps of 0.1, seed 0, then cancel.masked_kl "
                  "on the first 128 Pile val rows in batches of 8) as a ratio to W0's, at W0, do-nothing, adjoint, "
                  "lower_s0 and plain_s0, read in case E34 Amendment 5 finds the 20-step harness lenient on fine-tunes; "
-                 "|s(lower_s0) - s(lower_s1)|; cosines with delta-W; size; train KL; peak GPU memory"),
+                 "|s(lower_s0) - s(lower_s1)|; cosines with delta-W; size; mean train KL over steps 451-500 and "
+                 "951-1000 and its drop; peak GPU memory"),
     "decision_tree": {
-        "C1 or C2 fails": "stop; nothing scored",
+        "C1, C2 or C3 fails": "stop; nothing scored",
         "P1 and P3 hold": "teacher training validated end to end on a broad update; the larger model starts with it. "
                           "P7 below 0.5 adds a card: the placement is one of many before it is called interpretable",
-        "P1 fails": "teacher training's passes are a narrow-task property; next: frozen Gamma (E15's refit) or the "
-                    "subcomponents' span ('create' reading)",
+        "P1 fails": "train KL still falling by over 10% from steps 451-500 to 951-1000: under-trained, rerun "
+                    "longer. Otherwise a narrow-task property; next: frozen Gamma (E15) or the span ('create')",
         "P1 holds, P3 fails": "the same branch; the gap and damage profile (P2, P4) say which",
         "P6": "holds: a copy from ordinary text carries a style, as from Pile text in E34; fails: the larger model's "
               "copy needs text like the post-training data",
