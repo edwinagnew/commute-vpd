@@ -50,6 +50,8 @@ for role in $windows; do
         elif .type == "text" then "\($ts)\twrote: \(.text | gsub("\n"; " ") | .[0:90])" else empty end' "$t" 2>/dev/null | tail -1)
     [[ -n "$step" ]] && echo "   last step $(ago "$(date -d "${step%%$'\t'*}" +%s)"): ${step#*$'\t'}"
   fi
+  r="$FLEET_DATA/agents/$role/restart-requested"
+  [[ -f "$r" ]] && echo "   restart pending ($(cat "$r")); it restarts once the agent reaches a safe point"
   s="$FLEET_DATA/agents/$role/summary"
   [[ -s "$s" ]] && echo "   $(cut -d' ' -f1 "$s"): $(cut -d' ' -f2- "$s")"
 done
