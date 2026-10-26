@@ -8,17 +8,17 @@ the first headline too strong; this version takes its points. Words as in `GOALS
 
 We fine-tuned the model on text with no trigger and no target token and asked whether Γ's switching at each position
 can be predicted from the original model's importance values there. On lowercased Pile text, the positions with the most
-similar original values predicted it better than every other rule, but below the filed bar after the first ten steps,
-so by the filed rule the cue-free form did not hold once the fine-tune had trained for longer. For `GOALS.md` the
-restatement without cues is supported on toy tasks and only partly on running text.
+similar original values predicted it better than every other rule. With the planned sample of fitted positions it fell
+below the filed bar after the first ten steps; with sixteen times as many it recovered three-quarters or more at every
+step. For `GOALS.md` the restatement without cues, inputs the original Γ treats alike get alike changes, holds on the toy
+tasks and on this one synthetic style of running text.
 
 ## The answer
 
-Partly. On a fine-tune of lowercased Pile text, giving each position the mean change of the eight training positions
-with the nearest original importance values recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51. The filed
-bar was 0.6, so it held only early. It beat every other rule: 32 groups of the original values recovered 0.32 to 0.45,
-one change per current token 0.24 to 0.32. With four times as many fitted positions it recovered 0.80, 0.67 and 0.58,
-so part of the miss was sampling; the token added nothing to it.
+Yes, once enough positions are compared. On a fine-tune of lowercased Pile text, each position was given the mean
+change of the eight training positions with the nearest original importance values. Fitted on 16,384 positions this
+recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51, under the filed 0.6. Fitted on all 262,144 it recovered
+0.89, 0.78 and 0.76. Every other rule did worse, and the current token added nothing.
 
 ## What we were trying to test
 
@@ -96,11 +96,12 @@ slopes barely move from 1: the median among subcomponents whose values vary is 0
 
 ## What we learned
 
-By the filed rule, the cue-free form held at step 10 and failed at steps 100 and 300: every rule fell below its bar,
-which the filed tree reads as a change that depends on more than a position's own original values, with Γ's input or
-neighbouring positions as the next place to look. Within that, the ordering is clear and the same at every step: the
-original values predict the change better than the current token, a few groups or a fixed rule per subcomponent. What
-the nearest rule misses grows as the fine-tune trains. A high switching share is not evidence of learned re-weighting
+In the scored run, with 16,384 fitted positions, the cue-free form held at step 10 and failed at steps 100 and 300 by
+the filed rule. Amendments 2 and 3 showed that miss was sampling: with all 262,144 positions the rule recovers 0.76 to
+0.89 of the switching at every step. So on running text with no trigger, the change of Γ's values at a position is
+largely a function of the original model's importance values there, which is the restatement without cues. The
+current token adds nothing to it, and the original values predict the change better than a few groups or a fixed rule
+per subcomponent. A tenth to a quarter of the switching remains unexplained, more of it later in training. A high switching share is not evidence of learned re-weighting
 on its own, since an update that learned nothing gave the same share.
 
 ## How compelling is the evidence
@@ -129,6 +130,8 @@ on its own, since an update that learned nothing gave the same share.
 3. **The code-like fine-tune did not learn.** Its training loss showed no trend and held-out text got worse by 0.05 to
    0.07 nats per token. The rows chosen were mostly LaTeX and maths. Why is untested: the same recipe learned lowercase
    text.
+4. **With all positions the rule cleared the bar** (Amendment 3). We predicted it would stay under 0.7 at step 300;
+   it recovered 0.76, so the first surprise above was a sampling shortfall.
 
 ## Amendment 2: is the shortfall sampling, and does the token add anything?
 
@@ -162,10 +165,41 @@ rest fell back on one change everywhere.
 So the filed "all fail" at step 300 is in part a sampling shortfall, and the token carries nothing the original values
 do not. Whether more positions still would close the gap is not known: the curve had not flattened.
 
+## Amendment 3: where does the sampling curve end?
+
+*Plan: Amendment 5 of the plan. `experiments/regating_spread/amend3.py`, predictions filed 2026-10-26 18:14
+(`results/predictions_amend3.json`, sha256 `af874f67…`) before the run; results `results/regating_spread_amend3.json`.
+RunPod H100, 85 s, $0.30.*
+
+The lowercase fine-tune was regenerated on an H100, and the 16,384- and 65,536-position rules reproduced Amendment 2
+within 0.008 at every step. The same nearest rule was then fitted on all 262,144 positions of 512 training rows.
+
+**Reading it.** Something unexpected, in the hypothesis's favour: the curve kept rising, and with the full sample the
+rule recovers most of the switching at every step. With 262,144 positions it recovers 0.89, 0.78 and 0.76 at steps
+10, 100 and 300, and 0.90, 0.79 and 0.78 with 32 neighbours. We predicted it would still be under 0.7 at step 300.
+Each fourfold increase in positions added about 0.08 to 0.18, so the filed "all fail" at step 300 was a sampling
+shortfall, not a sign that the change depends on something the original values do not show. A tenth to a quarter of
+the switching remains unexplained, more of it later in training.
+
+| step | 16,384 positions | 65,536 | 262,144 | 262,144, 32 neighbours |
+|---|---|---|---|---|
+| 10 | 0.719 | 0.808 | 0.886 | 0.902 |
+| 100 | 0.542 | 0.673 | 0.776 | 0.789 |
+| 300 | 0.508 | 0.584 | 0.762 | 0.776 |
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| A0 | the smaller samples reproduce Amendment 2 | within 0.02 at every step | within 0.008 | pass |
+| M | still rising at step 300 | R_near262 ≥ R_near65 + 0.03 | +0.178 | pass, as predicted |
+| B | the rule recovers at least 0.7 at every step | R_near262 ≥ 0.7 | 0.886, 0.776, 0.762 | **pass, reversing the filed lean** |
+
+By the filed decision tree, "B holds" reads: with enough fitted positions the rule recovers most of the switching on
+running text, and the filed miss at step 300 was sampling; evidence for restating the hypothesis without cues.
+
 ## What next
 
-1. **More fitted positions again**, all 262,144 positions of 512 training rows, on an H100. If the nearest rule
-   reaches 0.7 at every step, the restatement holds on running text and the filed miss was sampling.
+1. **Done as Amendment 3:** with all 262,144 positions the rule reaches 0.76 to 0.89 at every step. Next on this: what
+   the remaining tenth to quarter depends on, and whether the curve flattens with yet more positions.
 2. **The filed branch: what else the change depends on.** Γ reads every position's input, so the next place to look is
    Γ's input at the position or at neighbouring positions; a rule fitted on those, against the nearest rule here. A
    new design: it goes to the user through the pending card.
