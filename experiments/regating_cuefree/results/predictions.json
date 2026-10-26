@@ -1,0 +1,91 @@
+{
+ "plan": "reports/2026-10-26_plan_regating-without-cues.md. Filed before any run; never edited after.",
+ "states": "emoticon (G1, first, alone); r1_t588_v452 (one cue); ('ident32', 'rand32') (E32); ('many', 'one') (E33). The four 32-cue states are ('ident32', 'rand32', 'many', 'one')",
+ "measurements": {
+  "R_shared": "clip(g0(x) + s), s = mean change over all training windows (E18's filed arm)",
+  "R_cue": "clip(g0(x) + s_k), s_k = mean change over training windows whose trigger token is x's",
+  "R_near": "clip(g0(x) + mean change of the 8 training windows nearest x in g0)",
+  "R_clu_K": "clip(g0(x) + mean change of x's k-means cluster of training g0), K in (8, 32, 128), seed 0",
+  "R_rand": "as R_clu_32 with random labels, mean of 5 draws (the size-matched null)",
+  "R_fix": "clip(a g0(x) + b), a and b per subcomponent by least squares over training windows; a subcomponent whose g0 varies by less than 0.01 (sd) there gets a = 1, b = its mean change (cuefree.line)",
+  "purity_32": "share of training windows whose K=32 cluster's most common cue is their own; reported",
+  "R_clu_32_net": "E32/E33's net mean form with the K=32 clusters in place of cues: (rho(m1_j) - rho(m0_j)) / rho_trig; expected within 0.1 of R_cue_net where F holds; reported",
+  "R_shared_net / R_cue_net": "E32/E33's net mean forms, (rho(m1) - rho(m0)) / rho_trig over all windows or per cue: gates only",
+  "all R": "rho / rho_trig, rho = (lo - L00) / gap at the trigger, W0's values elsewhere (commute.regating)"
+ },
+ "gates": {
+  "G1": "emoticon: |r - E32| <= 0.05, |R_shared_net - E32| and |R_cue_net - E32| <= 0.02, R_shared within 0.001 of rho_shared / rho_trig from regating.measure, own updated values within 0.0001 of rho_trig, and a zero change (shift and re-weighting a = 1, b = 0) recovering within 0.0001 of 0. First, alone; fail: stop",
+  "G2": "every other state: r within 0.05 and R_shared_net, R_cue_net within 0.02 of E32's (word, kv) or E33's (cues); fail: reported, not scored"
+ },
+ "scorable": "G2 passes, gain >= 1.0, gap >= 0.5, rho_trig >= 0.5 (as E28)",
+ "expected": {
+  "W0 (no update)": "gap 0, every share undefined; every zero-change builder recovers exactly 0",
+  "control (emoticon)": "r 0.597, R_shared_net 0.815, R_cue_net 0.901 (10 trigger tokens), R_shared 0.737 (E32); the cue-free arms reported",
+  "one cue (r1_t588_v452)": "r 0.904, R_shared_net 0.916, R_shared 0.708 (E32); R_cue = R_shared",
+  "32-cue states": "R_shared 0.01 to 0.16 (E32, E33 filed arms); R_cue between R_shared and R_cue_net"
+ },
+ "predictions": [
+  {
+   "id": "C_one",
+   "rule": "r1_t588_v452: |R_cue - R_shared| <= 0.001; fail: stop",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "itself (one cue: per cue is the shared change)",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; every predicted change is a mean over training windows, so within-group variation is not modelled; Euclidean distance over every alive subcomponent weighs subcomponents irrelevant to the target equally",
+   "noise_floor": "the states are deterministic per seed (E33 reproduced E28 within 0.002); the random-group arm (5 draws, same K) measures what averaging fewer windows does alone"
+  },
+  {
+   "id": "C",
+   "rule": "r1_t588_v452: |R_near - R_shared| <= 0.1 and |R_clu_8 - R_shared| <= 0.1",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "C_one",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; every predicted change is a mean over training windows, so within-group variation is not modelled; Euclidean distance over every alive subcomponent weighs subcomponents irrelevant to the target equally",
+   "noise_floor": "the states are deterministic per seed (E33 reproduced E28 within 0.002); the random-group arm (5 draws, same K) measures what averaging fewer windows does alone"
+  },
+  {
+   "id": "N",
+   "rule": "every scorable state: |R_rand - R_shared| <= 0.1; a 32-cue state failing it is unreadable for K",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "C_one",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; every predicted change is a mean over training windows, so within-group variation is not modelled; Euclidean distance over every alive subcomponent weighs subcomponents irrelevant to the target equally",
+   "noise_floor": "the states are deterministic per seed (E33 reproduced E28 within 0.002); the random-group arm (5 draws, same K) measures what averaging fewer windows does alone"
+  },
+  {
+   "id": "F",
+   "rule": "every scorable 32-cue state: R_near >= R_cue - 0.1",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "C",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; every predicted change is a mean over training windows, so within-group variation is not modelled; Euclidean distance over every alive subcomponent weighs subcomponents irrelevant to the target equally",
+   "noise_floor": "the states are deterministic per seed (E33 reproduced E28 within 0.002); the random-group arm (5 draws, same K) measures what averaging fewer windows does alone"
+  },
+  {
+   "id": "K",
+   "rule": "every scorable 32-cue state readable by N: R_clu_32 >= R_cue - 0.1",
+   "predicted": "pass",
+   "confidence": "medium-low",
+   "positive_control": "N",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; every predicted change is a mean over training windows, so within-group variation is not modelled; Euclidean distance over every alive subcomponent weighs subcomponents irrelevant to the target equally",
+   "noise_floor": "the states are deterministic per seed (E33 reproduced E28 within 0.002); the random-group arm (5 draws, same K) measures what averaging fewer windows does alone"
+  },
+  {
+   "id": "A",
+   "rule": "every scorable 32-cue state: R_fix >= R_cue - 0.1 and R_fix >= R_shared + 0.2",
+   "predicted": "pass",
+   "confidence": "low",
+   "positive_control": "C",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; every predicted change is a mean over training windows, so within-group variation is not modelled; Euclidean distance over every alive subcomponent weighs subcomponents irrelevant to the target equally",
+   "noise_floor": "the states are deterministic per seed (E33 reproduced E28 within 0.002); the random-group arm (5 draws, same K) measures what averaging fewer windows does alone"
+  }
+ ],
+ "decision_tree": {
+  "G1 or C_one fails": "stop; nothing scored",
+  "F and K pass": "the change is a function of the original values: E36 tests the nearest and cluster arms at every position of a fine-tune with no trigger",
+  "A passes too": "one fixed rule per subcomponent: E36's headline test",
+  "F fails, R_cue holds": "the cue is not visible in Gamma's values at the trigger: card for the user (next space: Gamma's input); E36 leads with the per-token arm",
+  "R_cue < 0.5 on the 32-cue states": "the shift form loses what the mean form had: E36 leads with R_fix"
+ },
+ "filed": "2026-10-26 16:48:26"
+}
