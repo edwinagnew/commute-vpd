@@ -36,6 +36,9 @@ squeue -u "$USER" -h -o '%i %j %T %M/%l %R' 2>/dev/null || echo "squeue failed"
 echo "--- pods: call the remote-kernels status() tool. A live pod-runner subagent or unwatched pod forbids restart-ready."
 pending=$(grep -c '^- ' "$repo/docs/research_log/PENDING.md" 2>/dev/null || true)
 echo "--- research log: ${pending:-0} queued line(s) in docs/research_log/PENDING.md"
+if [[ ${role%-[0-9]*} == lead && ${pending:-0} != 0 ]]; then
+  echo "    Flush them (a clerk in the background) before the next experiment's analysis: fleet/roles/lead.md, step 3."
+fi
 if [[ ${role%-[0-9]*} == lead && -s "$FLEET_DATA/blocked.txt" ]]; then
   echo "--- agents waiting at a prompt ($FLEET_DATA/blocked.txt):"; cat "$FLEET_DATA/blocked.txt"
 fi

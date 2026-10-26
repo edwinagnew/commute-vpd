@@ -43,8 +43,22 @@ is linked to its own page.
 Every choice that waits on the user is a card in `parts/sections/decisions.html`, not a line buried in a report or
 a chat message. A card says what the choice is about in plain words (no reliance on terms defined only in reports),
 what the evidence says, the options with what each changes, and why it matters, then links the reports, notebooks and
-cards. Each card carries an urgency flag in its top right (`<span class="chip … urgency">`): Blocking (red, planned runs cannot go ahead), Soon (amber, decides one line's next step) or No rush (grey); re-rate the flags when the plans change. When the user decides, the card is removed, the decision goes into `decisions.md` and the changelog row names
+cards. Each card carries an urgency flag in its top right (`<span class="chip … urgency">`): Blocking (red, planned runs cannot go ahead), Soon (amber, decides one line's next step) or No rush (grey); re-rate the flags when the plans change. Under the flag, one line says what runs next on that line and when: "Running:
+<what>", "Due to run: <what>, <when or on what condition>", or "Nothing runs until this is decided" (user,
+2026-10-26). Starting, finishing or dropping a run changes that line, and the change is queued like any other. When the user decides, the card is removed, the decision goes into `decisions.md` and the changelog row names
 it. Adding or removing a card is a `PENDING.md` line like any other change.
+
+## Main-page length (temporary, user 2026-10-26)
+
+The main page had grown too long to read (about 20,000 words on 2026-10-26). Until the user lifts this, a flush may
+not make it longer: what it adds, it takes out elsewhere, by rewriting a superseded box or folding a card that a newer
+result replaced. The changelog, glossary, mistakes and experiments pages are exempt; they grow (the cards each
+within the length below). Measure before and
+after each flush:
+```
+cat $(ls docs/research_log/parts/sections/*.html | grep -v -E '/(changelog|glossary|mistakes|experiments)\.html') \
+    docs/research_log/parts/header.html | sed 's/<[^>]*>/ /g' | wc -w      # at most 20,000
+```
 
 ## Batched updates (since 2026-10-21, user)
 
@@ -74,7 +88,11 @@ least once a day:
 
 1. **Every experiment**: a new file `parts/experiments/eN.html` holding one `<article class="exp" id="eN">` card
    (code, name, date, machine, directory; an outcome chip of one or two words: held, missed, mixed, surprise, no answer, ongoing, unscored; one-sentence verdict; Run / Found / Bears on / Moved on), or the Moved-on
-   field of an existing one. Figures: copy the experiment's own PNG into the `files` map below under
+   field of an existing one. **Found** is three bullets at most, each one plain sentence a colleague can read
+   cold: what came out and whether it was expected, at most two numbers, no filed-prediction bookkeeping (that lives
+   in the report). An amendment rewrites the bullets to the experiment's current answer instead of adding one per
+   amendment; **Moved on** is three sentences at most plus the report link (user, 2026-10-26: the Found lists had
+   become unreadable). A flush that touches a card brings it to this length. Figures: copy the experiment's own PNG into the `files` map below under
    `fig/eN_<name>.png`.
 2. **Every claim, with its status** (`claims.html`): add, re-chip or re-word rows. Statuses: holds,
    partial/qualified, refuted, uninformative, open.
