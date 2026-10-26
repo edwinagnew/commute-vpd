@@ -350,3 +350,61 @@ What I changed and why:
 - Result: P1, P4 pass; P2 fail (r1 reads "less", −0.03); P3 "cheating" on all three with adversarial fails 4.7–26× the
   s = 0 reading; P5 many small on emoticon, a few larger on r1. Reading (i) fails as a map. Next for this item: the
   raised and lowered halves of s applied separately on the Pile (~8 min), then reading (ii); both need `/design`.
+
+## Amendment 1 to E30: the raised and the lowered half of s, each applied everywhere (agent, 2026-10-22)
+
+**Design check (approved class 4: the commute line's named next step, E30's "What next" 1; user-approved run).**
+- *Goal*: Q1 weak version. Scores the next candidate map, "raise Γ's values everywhere, lower them only at the
+  trigger": on the Pile, where trigger positions are rare, that map is the raised half applied everywhere.
+- *Nearest tried*: E30 (whole s everywhere: adversarial 8.0× s = 0, sparsity 3.10×; s shuffled: 1.11×, 3.13×). New:
+  each half's adversarial, CI-masked and sparsity readings on its own.
+- *Patch or step*: a patch on E30 that decides between two next maps.
+- *Decisions*: as E30 (Γ frozen except the closed-form offset, user-confirmed for Item D). No departure.
+- *What changes next*: see the routes below. **Honest note**: the adversarial outcome is largely implied already. The
+  masks range over [Γ′, 1], so the lowered half's range contains the whole s's (which failed 8×) and the raised half's
+  is contained in s = 0's; only the 20-step adversary's approximation can break that. The readings that are not implied
+  are the raised half's sparsity (the decisive one for the raise-everywhere map; E30's shuffle suggests ~3×, i.e.
+  cheating), the CI-masked KL per half, and each half's trigger recovery applied everywhere.
+- *Control first*: C1 alone (W₀ ordinary harness, adversary seeds 0, 1, 2, `w0_check`; the shifted path at s = 0
+  against a copy of W₀ equal to 1e-4). **Early stop**: any C1 failure stops the job (the script exits with status
+  "stopped at C1"). Then G1: the regenerated fine-tune's r, ρ_trig, ρ_shared within 0.05 of E30's (stop otherwise).
+  Positive control for the adversary: the whole s, read last in the same job, must fail again.
+
+**Arms** (emoticon SGD 0.01, 10 steps, seed 0): s = 0, s₊ = max(s, 0), s₋ = min(s, 0), s; the Pile in that order.
+Plus one cheap readout with no adversary: how far s₋ lowers Γ's values on the Pile, Σ_c min(Γ_c(x), |s_c|) averaged
+over positions, against the lowered half of E30's shuffled s (E30's candidate says the real lowered entries sit on
+subcomponents that are on at many Pile positions).
+
+**Numbers and expected values** (ratios are to the s = 0 arm in the same job):
+
+| number | expected |
+|---|---|
+| C1 rel. difference (4 KLs, sparsity) | 0.0; W₀ floor f 0.035 on a 4090, ~0.21 on an L40 |
+| G1 differences (r 0.616, ρ_trig 0.977, ρ_shared 0.724) | 0.0 same card type, ≤ 0.01 across |
+| trigger recovery everywhere, R | s = 0: 0; s: 0.748; s₊ ≈ 0.39, s₋ ≈ 0.24 (E30's trigger-only halves) |
+| adversarial ratio | s ≈ 8; s₋ ≥ s's (≈ 8 or more); s₊ ≤ ~1 |
+| CI-masked ratio | s 1.12; s₊, s₋ each 0.95–1.15, no direction |
+| stochastic ratio (not scored) | s 1.09; halves 0.95–1.10 |
+| sparsity ratio | s 3.10; s₊ ≈ 3.1; s₋ < 1 |
+| opened(s₋) ÷ opened(shuffled s₋) | ≥ 3 |
+
+**Predictions** (`experiments/gamma_shift_map/results/predictions_amend1.json`, written by `halves.py --predictions`):
+P1 (central): verdicts of s₋ ÷ 0 and s₊ ÷ 0 against 1.5/(1+f) and 1.5(1+f), in-job f; lean "lowered half" (s₋ fails,
+s₊ passes), high confidence; "no power" if s does not fail. P2: each half's trigger recovery everywhere within 0.1 of
+E30's trigger-only figure; lean pass. P3: s₊'s sparsity ratio > 1.05 reads "cheating"; lean cheating (~3.1). P4: the
+opened ratio ≥ 3; lean "premise holds", medium.
+
+**Routes**: lowered half and s₊ not cheating → the raise-everywhere, lower-at-trigger map; lowered half and s₊ cheating
+→ no fixed raise-everywhere map, next reading (ii) (s only where the trigger is); both halves fail → reading (ii);
+raised half fails → candidate wrong and containment broken, check the adversary first; neither alone → reading (ii).
+
+**Run**: `experiments/gamma_shift_map/halves.py` (shared bench moved from E30's `run.py` into
+`src/commute/shift_map.py`, E30's behaviour unchanged; `shift_readout.opened`). 8 Pile readings at E30's ~115–120 s
+each, plus ~1.5 min of loading, fine-tune and trigger readings: about 18 min on a 4090. Cluster `debug` first
+(`cluster/gamma_shift_map_amend1.sbatch`), RunPod 4090 if not started within 10 min. Output
+`results/gamma_shift_map_amend1.json`, log `results/large/full_amend1.log`.
+
+Predictions filed 2026-10-22 19:17:37, sha256 a9db0c2d609cbdebf4dd173f53845748a1a1752f5cd53576d198d12f3ffad6c6. The
+Codex adversarial review could not run (Codex usage limit); the code was re-read by its author instead, and CPU tests cover
+`score()` (partial and complete results) and `shift_readout.opened`. `make lint` clean on the touched files; `make test`
+192 passed.

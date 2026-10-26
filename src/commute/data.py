@@ -95,6 +95,25 @@ def emoticon_windows(model: Any, rows: Tensor, key: str, threshold: float, half:
     return Windows(torch.stack(toks), torch.stack(gs), torch.tensor(rs), torch.tensor(ps), half)
 
 
+def subcomponent_g(model: Any, rows: Tensor, key: str, chunk: int = 16) -> Tensor:
+    """g of subcomponent `key` at every position of `rows` (N, T), float32 on CPU: the quantity `emoticon_windows`
+    thresholds (its trigger is where g > threshold; the model's prediction there is the target)."""
+    name, idx = parse_key(key)
+    return torch.cat([compute_ci(model, rows[s : s + chunk], chunk=chunk).g[name][..., idx].float().cpu()
+                      for s in range(0, rows.shape[0], chunk)])
+
+
+def replace_rows(rows: Tensor, hit: Tensor, spare: Tensor, spare_hit: Tensor) -> Tensor:
+    """`rows` with each row where `hit` (N,) is true replaced, in order, by the next row of `spare` where `spare_hit` is
+    false. The other rows keep their index, so a seeded sampler draws them as before (Amendment 1's B-dropped)."""
+    clean = spare[~spare_hit]
+    n = int(hit.sum())
+    assert clean.shape[0] >= n, f"{n} rows to replace, {clean.shape[0]} clean spare rows"
+    out = rows.clone()
+    out[hit] = clean[:n]
+    return out
+
+
 def split_windows(w: Windows, heldout_every: int = 5) -> tuple[Windows, Windows]:
     """Held-out = windows from every `heldout_every`-th source row (split by row, not by window)."""
     held = (w.row % heldout_every) == 0

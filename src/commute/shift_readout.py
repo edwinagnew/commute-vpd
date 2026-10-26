@@ -77,3 +77,11 @@ def write_energy(uv: dict[str, tuple[Tensor, Tensor]], dW: dict[str, Tensor]) ->
         U, V, M = U.double().cpu(), V.double().cpu(), dW[k].double().cpu()
         out[k] = (((U @ M) * V.T).sum(1).abs() / (U.norm(dim=1) * V.norm(dim=0)).clamp_min(1e-30)).float()
     return out
+
+
+def opened(g: dict[str, Tensor], shift: Shift) -> Tensor:
+    """Per position, summed over every matrix's subcomponents: how far the shift's turned-down entries lower Gamma's
+    values, g - clip(g + min(s, 0), 0, 1) = min(g, |s|) where s < 0. The adversary's range [Gamma', 1] widens by this
+    much; a turned-down entry on a subcomponent already at 0 opens nothing (E30 amendment 1). g: (..., C) per matrix."""
+    per = [torch.minimum(v.float(), (-shift[k].to(v.device).float()).clamp(min=0.0)).sum(-1) for k, v in g.items()]
+    return torch.stack(per).sum(0)

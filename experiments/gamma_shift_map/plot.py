@@ -6,6 +6,8 @@
   split.png   s by layer and by sign: share of sum |s| beside the share of trigger recovery
   trigger.png trigger recovery with the change at every position, per arm, against the trigger-only figure
   adversarial.png  adversarial ratio (log) and sparsity ratio to W0 per arm and update, with the fail and cheating lines
+  halves.png  amendment 1 (results/gamma_shift_map_amend1.json): per half of s applied everywhere, trigger recovery,
+              adversarial ratio and sparsity ratio to s = 0, with the pass / fail and cheating lines
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "results" / "gamma_shift_map.json"
+AMEND1 = HERE / "results" / "gamma_shift_map_amend1.json"
 FIG = HERE / "figures"
 ARMS = (("a_zero", "s = 0", "#9e9e9e"), ("b_shift", "shifted (s)", "#1f77b4"), ("c_null", "' http' s", "#ff7f0e"),
         ("d_shuffled", "s shuffled", "#8c564b"), ("nothing", "do-nothing", "#2ca02c"))
@@ -138,6 +141,27 @@ def adversarial(d: dict, f: float) -> None:
     fig.savefig(FIG / "adversarial.png", dpi=130)
 
 
+def halves(a: dict) -> None:
+    arms = (("zero", "s = 0"), ("up", "raised half"), ("down", "lowered half"), ("shift", "whole s"))
+    rat, lines = a["score"]["ratios"], a["score"]["lines"]
+    panels = ((a["R_everywhere"], "trigger recovery, share of own values"),
+              ({k: rat[k]["pgd_kl"] for k, _ in arms}, "adversarial KL on the Pile, ratio to s = 0"),
+              ({k: rat[k]["sparsity"] for k, _ in arms}, "sparsity loss, ratio to s = 0"))
+    fig, axes = plt.subplots(1, 3, figsize=(12, 3.8))
+    for (vals, ylabel), ax in zip(panels, axes, strict=True):
+        ax.bar(range(len(arms)), [vals[k] for k, _ in arms], color=["#9e9e9e", "#d62728", "#1f77b4", "#7f7f7f"])
+        ax.set_xticks(range(len(arms)), [n for _, n in arms], fontsize=8)
+        ax.set_ylabel(ylabel, fontsize=8)
+    axes[1].axhline(lines[0], color="g", ls=":", lw=1, label=f"pass line {lines[0]:.2f}")
+    axes[1].axhline(lines[1], color="r", ls=":", lw=1, label=f"fail line {lines[1]:.2f}")
+    axes[2].axhline(1.05, color="r", ls=":", lw=1, label="cheating line 1.05")
+    axes[1].legend(fontsize=7)
+    axes[2].legend(fontsize=7)
+    fig.suptitle("Which half of the fixed change, applied everywhere, breaks the Pile? (emoticon SGD 0.01)", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(FIG / "halves.png", dpi=130)
+
+
 def main() -> None:
     d = json.loads(OUT.read_text())
     FIG.mkdir(exist_ok=True)
@@ -148,6 +172,8 @@ def main() -> None:
         f = d["score"]["floors"]["pgd_f"]
         pile(d, f)
         adversarial(d, f)
+    if AMEND1.exists():
+        halves(json.loads(AMEND1.read_text()))
     print(f"figures in {FIG}")
 
 

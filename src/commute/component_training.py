@@ -113,12 +113,15 @@ class TrainConfig:
 
 def train(model: Any, uv: dict[str, tuple[Tensor, Tensor]], train_tokens: Tensor, heldout: Any, a_cfg: Any,
           cfg: TrainConfig, device: str, W0: dict[str, Tensor], save_dir: Path | None = None,
-          log: Any = print) -> tuple[list[dict[str, Any]], dict[int, dict[str, tuple[Tensor, Tensor, Tensor]]]]:
+          log: Any = print, loss_fn: Any = None
+          ) -> tuple[list[dict[str, Any]], dict[int, dict[str, tuple[Tensor, Tensor, Tensor]]]]:
     """Adam (or SGD with cfg.momentum, cfg.optimizer) on the alive (U, V) offsets of the matrices in `uv` (only those are hooked; the others keep W0) with arm A's
     loss (`a_cfg`: ArmAConfig, its o_token is the target token, its batch, seed, grad_clip and kl_lambda apply),
     held-out eval every step. Returns the per-step curve and, at
     cfg.save_steps, per matrix (delta-W, U_A', V_A') on CPU; the same are written to save_dir/state_step{n}.pt.
-    The target weights are never written; the model is unchanged on return (hooks removed)."""
+    The target weights are never written; the model is unchanged on return (hooks removed).
+    `loss_fn(net, toks) -> (loss, info)` replaces arm A's loss (teacher training, 2026-10-23); batches of a_cfg.batch
+    rows are drawn from `train_tokens` either way, and the held-out reading stays arm A's against W0."""
     import copy
 
     from commute import vpd
@@ -137,11 +140,13 @@ def train(model: Any, uv: dict[str, tuple[Tensor, Tensor]], train_tokens: Tensor
     curve: list[dict[str, Any]] = []
     states: dict[int, dict[str, tuple[Tensor, Tensor, Tensor]]] = {}
     half = heldout.half
+    if loss_fn is None:
+        loss_fn = lambda n, toks: arm_a_loss(n, ref, toks, a_cfg, half)
     try:
         for step in range(1, cfg.steps + 1):
             opt.zero_grad(set_to_none=True)
             idx = torch.randint(0, train_tokens.shape[0], (a_cfg.batch,), generator=gen)
-            loss, info = arm_a_loss(net, ref, train_tokens[idx].to(device), a_cfg, half)
+            loss, info = loss_fn(net, train_tokens[idx].to(device))
             loss.backward()
             gn = torch.nn.utils.clip_grad_norm_(params, cfg.grad_clip)
             opt.step()

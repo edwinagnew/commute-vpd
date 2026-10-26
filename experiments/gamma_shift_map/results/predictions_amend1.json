@@ -1,0 +1,79 @@
+{
+ "plan": "reports/2026-10-22_plan_commute-second-line.md -> 'Amendment 1 to E30' (approved class 4: the commute line's named next step, E30's 'What next' 1). Filed before any run; E30's predictions.json stands unedited.",
+ "update": "emoticon, arm-A SGD 0.01, 10 steps, seed 0, regenerated as E30 (E30 G1: regeneration matched to 0.0)",
+ "arms": {
+  "zero": "s = 0 (the reference every ratio divides by)",
+  "up": "s+ = max(s, 0) everywhere",
+  "down": "s- = min(s, 0) everywhere",
+  "shift": "the whole s everywhere (E30's b_shift, repeated in-job)"
+ },
+ "measurements": {
+  "pile": "E30's: shifted_harness on Pile val rows 0-255 (2 blocks of 128, one 20-step adversary per block, seed 0) against W0 + dW's outputs; ratios x / zero of the adversarial (pgd), CI-masked and stochastic KL; sparsity ratio = mean over 4 blocks of 64 of x / zero",
+  "R_everywhere": "E30's: trigger recovery on the held-out windows with Gamma' at every position, as a share of the own values' recovery rho_trig",
+  "opened": "mean over the 256 Pile rows' positions of sum_c min(Gamma_c(x), |s_c|) over s's lowered entries (shift_readout.opened; Gamma reading W0), for s- and for the lowered half of E30's shuffled s (recruit.shuffled(s, alive, 0), the arm that barely moved the adversary)"
+ },
+ "controls": {
+  "C1": "first and alone: W0, ordinary harness, adversary seeds 0, 1, 2: faith_score.w0_check passes; the shifted path at s = 0 against a copy of W0 reproduces seed 0's four KLs and 4 sparsity values within 1e-4 relative. Fail: stop (early-stop rule)",
+  "G1": "the regenerated update's r, rho_trig and rho_shared within 0.05 of E30's (gamma_shift_map.json). Fail: stop",
+  "PC": "positive control: the whole s fails the adversarial verdict again (E30: 8.0x zero). If it does not, P1 reads 'no power'"
+ },
+ "expected": {
+  "C1": "rel 0.0 on all five (E30: 0.0); W0 floor f 0.035 on a 4090, about 0.21 on an L40",
+  "G1": "differences 0.0 on the same card type, <= 0.01 across cards; r 0.616, rho_trig 0.977, rho_shared 0.724",
+  "R_everywhere": "zero 0 exactly; shift 0.748 (E30); up ~ 0.39 and down ~ 0.24 (E30's trigger-only halves)",
+  "pgd ratio to zero": "shift ~ 8 (E30 8.0); down >= shift's (its adversary range contains the whole s's: the raised entries only narrow the range [Gamma', 1]), so ~8 or more; up <= ~1 (its range is contained in zero's); the 20-step adversary is approximate, so containment is expected, not guaranteed",
+  "CI-masked ratio to zero": "shift 1.12 (E30); up and down each 0.95 to 1.15, no direction",
+  "stochastic ratio to zero": "shift 1.09 (E30); up and down each 0.95 to 1.10, not scored",
+  "sparsity ratio to zero": "shift 3.10 (E30); up ~3.1 (E30's shuffled s, the same raised values elsewhere: 3.13); down below 1 (lowered values are charged less)",
+  "opened": "s- several times its shuffled version: E30's candidate says the real lowered entries sit on subcomponents that are on at many Pile positions and the shuffled ones mostly on subcomponents at 0"
+ },
+ "predictions": [
+  {
+   "id": "P1",
+   "kind": "two-sided, named outcomes (the central reading)",
+   "rule": "faith_score.verdict of down / zero and of up / zero (adversarial KL, one seed each) against the same-job W0 floor f: pass at or below 1.5 / (1 + f), fail at or above 1.5 (1 + f). Outcome 'lowered half' if down fails and up passes; 'both halves' if both fail; 'raised half' if up fails and down passes; 'neither alone' if both pass; 'inconclusive' otherwise; 'no power' if PC does not fail. Relative to zero",
+   "predicted": "'lowered half', high confidence: down's adversary range contains the whole s's (which failed 8x) and up's is contained in zero's",
+   "blind_to": "where on the Pile the damage sits; a stronger adversary; the other two E30 updates",
+   "positive_control": "PC (the whole s fails again in this job)",
+   "noise_floor": "the same-job W0 floor f (max/min - 1 over adversary seeds 0-2; E30 0.035 on a 4090)"
+  },
+  {
+   "id": "P2",
+   "kind": "directional",
+   "rule": "|R_everywhere(up) - E30's trigger-only R_halves.up| <= 0.1 and the same for down. Absolute, R units",
+   "predicted": "pass, medium-high confidence: E30 found everywhere = trigger-only within 0.05 for the whole s",
+   "blind_to": "the Pile",
+   "positive_control": "R_everywhere(shift) ~ 0.748 and zero = 0",
+   "noise_floor": "deterministic given the state; cross-card bf16 <= 0.01"
+  },
+  {
+   "id": "P3",
+   "kind": "directional",
+   "rule": "sparsity ratio up / zero (mean over 4 blocks) > 1.05: 'cheating'; else 'not cheating'. Relative",
+   "predicted": "'cheating', high confidence (~3.1: every raised value is charged at every Pile position)",
+   "blind_to": "whether a smaller raised set keeps the trigger recovery",
+   "positive_control": "shift / zero ~ 3.10 (E30)",
+   "noise_floor": "sparsity block spread (E30 0.044)"
+  },
+  {
+   "id": "P4",
+   "kind": "directional (E30's candidate's premise)",
+   "rule": "opened(s-) / opened(lowered half of shuffled s) >= 3.0: 'premise holds'; else 'premise fails'. Relative",
+   "predicted": "'premise holds', medium confidence",
+   "blind_to": "whether the adversary uses the opened range on those subcomponents (P1 reads that)",
+   "positive_control": "opened(0) = 0 by construction",
+   "noise_floor": "deterministic"
+  }
+ ],
+ "routes": {
+  "lowered half, up not cheating": "next: the map that raises everywhere and lowers only at the trigger",
+  "lowered half, up cheating": "the raised half is charged at every position too: no fixed raise-everywhere map; next: reading (ii), s applied only where the trigger is",
+  "both halves": "the damage is not only the lowered half; next: reading (ii)",
+  "raised half": "the candidate is wrong and containment is broken: check the adversary before any map",
+  "neither alone": "the halves act together; next: reading (ii)",
+  "inconclusive or no power": "stop and report"
+ },
+ "blind_to": "the other two E30 updates; one training seed; one adversary seed per arm; 256 Pile rows; the 67M model",
+ "reported_not_scored": "CI-masked and stochastic ratios; down's sparsity ratio; down / shift (containment)",
+ "filed": "2026-10-22 19:17:37"
+}

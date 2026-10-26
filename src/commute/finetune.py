@@ -36,6 +36,17 @@ def relative_norms(dW: dict[str, Tensor], W0: dict[str, Tensor]) -> dict[str, fl
     return {k: float(dW[k].norm() / W0[k].norm()) for k in dW}
 
 
+def cosines(a: dict[str, Tensor], b: dict[str, Tensor]) -> dict[str, Any]:
+    """cos(a_k, b_k) per matrix of `b`, and "all" over the matrices concatenated (float64; a matrix missing from `a`
+    counts as zero). Amendment 1 of teacher_training: a student's weight change against the teacher's delta-W."""
+    dots = {k: float((a[k].double().cpu() * b[k].double().cpu()).sum()) if k in a else 0.0 for k in b}
+    na = {k: float(a[k].double().norm()) if k in a else 0.0 for k in b}
+    nb = {k: float(b[k].double().norm()) for k in b}
+    per = {k: dots[k] / (na[k] * nb[k]) if na[k] * nb[k] > 0 else 0.0 for k in b}
+    total = sum(v**2 for v in na.values()) ** 0.5 * sum(v**2 for v in nb.values()) ** 0.5
+    return {"all": sum(dots.values()) / total if total > 0 else 0.0, "per_matrix": per}
+
+
 def random_direction(dW: dict[str, Tensor], seed: int) -> dict[str, Tensor]:
     gen = torch.Generator().manual_seed(seed)
     out = {}
@@ -82,6 +93,15 @@ class FinetuneResult:
     factors: dict[int, dict[str, tuple[Tensor, Tensor]]] = field(default_factory=dict)  # LoRA only: step -> module -> (B, A), CPU
 
 
+def arm_a_weighting(at_trigger: Tensor, kl: Tensor, half: int, kl_lambda: float) -> tuple[Tensor, Tensor]:
+    """Arm A's weighting of a window batch: the trigger term (a scalar, already the batch mean) plus kl_lambda times the
+    mean of `kl` (b, L) over every position but `half`. Returns (loss, that mean). Shared with teacher.teacher_loss."""
+    keep = torch.ones(kl.shape[1], dtype=torch.bool, device=kl.device)
+    keep[half] = False
+    kl_other = kl[:, keep].mean()
+    return at_trigger + kl_lambda * kl_other, kl_other
+
+
 def arm_a_loss(net: nn.Module, ref: nn.Module, toks: Tensor, cfg: ArmAConfig, half: int) -> tuple[Tensor, dict[str, float]]:
     logits = logits_of(net, toks)  # (b, L, V)
     with torch.no_grad():
@@ -89,10 +109,7 @@ def arm_a_loss(net: nn.Module, ref: nn.Module, toks: Tensor, cfg: ArmAConfig, ha
     target = target_tokens(cfg.o_token, toks, half)
     ce = F.cross_entropy(logits[:, half], target)
     kl = kl_per_position(ref_logits, logits)  # (b, L), KL(ref || ft)
-    keep = torch.ones(toks.shape[1], dtype=torch.bool, device=toks.device)
-    keep[half] = False
-    kl_other = kl[:, keep].mean()
-    loss = ce + cfg.kl_lambda * kl_other
+    loss, kl_other = arm_a_weighting(ce, kl, half, cfg.kl_lambda)
     p_o = torch.softmax(logits[:, half], -1).gather(1, target[:, None]).mean()
     return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
 

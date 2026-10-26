@@ -92,6 +92,21 @@ def with_windows(ctx: Context, windows: dict[str, Any], token: int) -> Context:
                    rbase=route_cells(ctx.model, held.tokens, held.half, token))
 
 
+def task_context(ctx: Context, windows_path: Path | None) -> tuple[Context, dict[str, Tensor]]:
+    """A task's context (`with_windows` on the windows file, its target token from `windows["task"]["target"]`) and W0's
+    input second moments on its training windows (CPU; the Sigma of `split.adjoint_state`). `None` keeps `load`'s
+    windows and moments (emoticon). Added 2026-10-23 for teacher_training; the same step is adjoint_sgd's `Task`, which
+    stays as it ran."""
+    from commute import split
+    from commute.data import batches
+
+    if windows_path is None:
+        return ctx, ctx.sigma
+    w = torch.load(windows_path, weights_only=False)
+    moments = split.input_second_moments(ctx.model, batches(w["train"].tokens, 32), list(ctx.W0))
+    return with_windows(ctx, w, w["task"]["target"]), {k: v.cpu() for k, v in moments.items()}
+
+
 def pgd_floor(ctx: Context) -> float | None:
     """f = max / min - 1 of W0's PGD KL over the adversary seeds; 'within 3 floors' = ratio <= 1 + 3 f."""
     if not ctx.pile:

@@ -16,7 +16,6 @@ experiments/task_ladder/results/large/windows_r1_t534_v369.pt; E24's committed J
 from __future__ import annotations
 
 import argparse
-import copy
 import json
 import math
 import sys
@@ -31,8 +30,8 @@ from torch import Tensor
 from commute import faith_score as FS
 from commute import recruit as R
 from commute import regating as G
+from commute import shift_map as SM
 from commute import shift_readout as SR
-from commute import shifted_harness as SH
 
 HERE = Path(__file__).resolve().parent
 RESULTS, EXP = HERE / "results", HERE.parent
@@ -70,7 +69,7 @@ class Config:
 CFG = Config()
 E24_KEY = {"emoticon/sgd_0.01": ("states", "sgd_0.01"), "emoticon/adam_3e-05": ("states", "adam_3e-05"),
            "r1_t534_v369/sgd_0.03": ("extra", "sgd_0.03")}
-PILE_KEYS = ("stochastic_kl", "ci_masked_kl", "unmasked_kl", "pgd_kl")
+PILE_KEYS = SM.PILE_KEYS
 P1_MIN, P1_NEAR = 0.6, 0.1  # P1: emoticon R >= 0.6; every update within 0.1 of E24's trigger-only R_shared
 CI_MIN_FLOOR = 0.02  # P2's delta: max(W0's CI-masked spread over adversary seeds, faith_score.W0_CI_TOL)
 CHEAT, NULL_LEARNED, P4_MAX, P5_LINE = 1.05, 0.5, 0.1, 0.5
@@ -194,97 +193,20 @@ def e24_ref(label: str) -> dict[str, float]:
     return {"r": st["r"], "rho_shared": st["rho"]["shared"], "R_shared": st["R_shared"], "rho_trig": st["rho"]["trig"]}
 
 
-class Run:
+class Run(SM.Bench):
     def __init__(self, device: str, out: dict[str, Any]) -> None:
+        super().__init__(device, out, TRANSPORT, LADDER, CFG.pile_rows, CFG.sparsity_block, CFG.pgd_steps, log, dump)
         from commute import vpd
-        from commute.faithfulness import pile_blocks
 
-        self.device, self.out = device, out
-        self.model = vpd.load_component_model(device)
-        self.W0 = vpd.target_weights(self.model)
         self.uv = {k: (u.float().cpu(), v.float().cpu()) for k, (u, v) in vpd.component_weights(self.model).items()}
-        alive = torch.load(TRANSPORT / "large" / "alive.pt", weights_only=False)["alive"]
-        self.alive = {k: v.cpu().bool() for k, v in alive.items()}
-        self.blocks = pile_blocks(CFG.pile_rows, log)
-        rows = torch.cat([torch.cat(b) for b in self.blocks])
-        self.sp_blocks = [[rows[s : s + CFG.sparsity_block]] for s in range(0, rows.shape[0], CFG.sparsity_block)]
-        sp = vpd.sparsity_config()
-        self.sp_cfg = (sp["pnorm"], sp["beta"], sp["eps"])
-        self.twin = copy.deepcopy(self.model)  # holds the weights D' is scored against
-        self.tasks: dict[str, G.Task] = {}
-
-    def task(self, name: str) -> G.Task:
-        if name not in self.tasks:
-            self.tasks[name] = G.prepare(self.model, name, *G.load_windows(name, TRANSPORT, LADDER))
-        return self.tasks[name]
-
-    def set_twin(self, dW: dict[str, Tensor]) -> None:
-        from commute.vpd import set_target_weights
-
-        set_target_weights(self.twin, {k: self.W0[k] + dW[k].to(self.W0[k].device, self.W0[k].dtype) for k in self.W0})
-
-    def reading(self, name: str, fn: Any) -> dict[str, Any]:
-        """A Pile reading, computed once (a rerun reads it back from the results file)."""
-        done = self.out.setdefault("pile", {})
-        if name not in done:
-            t0 = time.time()
-            done[name] = {**fn(), "seconds": time.time() - t0}
-            log(f"[{name}] {json.dumps({k: v for k, v in done[name].items() if k != 'sparsity'})} sparsity "
-                f"{done[name]['sparsity']}")
-            dump(self.out)
-        return done[name]
-
-    def ordinary(self, seed: int) -> dict[str, Any]:
-        from commute.faithfulness import pile_faithfulness, sparsity_loss
-
-        return {**pile_faithfulness(self.model, self.blocks, seed, CFG.pgd_steps, log),
-                "sparsity": [sparsity_loss(self.model, b, *self.sp_cfg) for b in self.sp_blocks]}
-
-    def shifted(self, shift: dict[str, Tensor]) -> dict[str, Any]:
-        """D' with this shift against the twin's weights."""
-        return {**SH.shifted_pile(self.model, self.twin, self.blocks, shift, 0, CFG.pgd_steps, log),
-                "sparsity": [SH.shifted_sparsity_loss(self.model, b, shift, *self.sp_cfg) for b in self.sp_blocks]}
 
 
-def zero_like(shift: dict[str, Tensor]) -> dict[str, Tensor]:
-    return {k: torch.zeros_like(v) for k, v in shift.items()}
+zero_like = SM.zero_like
+trigger_cells = SM.trigger_cells
 
 
 def c1(r: Run) -> bool:
-    """W0 through the ordinary harness (three adversary seeds, w0_check) and the new path at s = 0 against W0's own
-    outputs: every number equal within exact_tol, or stop."""
-    pile = {s: r.reading(f"W0/seed{s}", lambda s=s: r.ordinary(s)) for s in CFG.w0_seeds}
-    w0 = FS.w0_check({s: {k: p[k] for k in PILE_KEYS} for s, p in pile.items()})
-    zero = {k: torch.zeros(v.shape) for k, v in r.task("emoticon").m0.items()}  # s = 0, shaped like the gates
-    r.set_twin(zero_like(r.W0))  # dW = 0, shaped like the weights
-    new = r.reading("C1/zero_vs_W0", lambda: r.shifted(zero))
-    rel = {k: new[k] / pile[0][k] - 1 for k in PILE_KEYS}
-    rel["sparsity"] = max(abs(a / b - 1) for a, b in zip(new["sparsity"], pile[0]["sparsity"], strict=True))
-    ok = bool(w0["pass"]) and all(abs(v) <= CFG.exact_tol for v in rel.values())
-    sp = pile[0]["sparsity"]
-    r.out["C1"] = {"w0_check": {k: v for k, v in w0.items() if k != "pile"}, "rel": rel, "ok": ok,
-                   "ci_floor": FS.seed_floor(pile, "ci_masked_kl"), "sparsity_block_spread": max(sp) / min(sp) - 1}
-    log(f"[C1] w0_check pass {w0['pass']} floor {w0['pgd_floor']:.4f} | s=0 vs harness rel {json.dumps(rel)} | "
-        f"{'ok' if ok else 'FAIL'}")
-    if not ok:  # diagnostic only: is the ordinary harness itself reproducible in this job?
-        again = r.ordinary(0)
-        r.out["C1"]["harness_repeat_rel"] = {k: again[k] / pile[0][k] - 1 for k in PILE_KEYS}
-        log(f"[C1] ordinary harness seed 0 repeated: rel {json.dumps(r.out['C1']['harness_repeat_rel'])}")
-    dump(r.out)
-    return ok
-
-
-def trigger_cells(r: Run, t: G.Task, dW: dict[str, Tensor], s: dict[str, Tensor]) -> dict[str, Any]:
-    """E24's readings of the do-nothing state at the trigger: r, gap, own values' and the shared pattern's recovery."""
-    from commute.local_faith import route_cells
-
-    with G.state_of(r.model, r.W0, dW):
-        cur = route_cells(r.model, t.held.tokens, t.half, t.target, G.BATCH)
-    gap, gain = cur["L"] - t.base["L"], cur["T"] - t.base["T"]
-    g0, h = t.base["gates"], t.half
-    rho_trig = G.recovery(r.model, t, R.at_trigger(cur["gates"], h), gap)
-    return {"r": G.div(gap, gain), "gap": gap, "gain": gain, "rho_trig": rho_trig,
-            "rho_shared": G.recovery(r.model, t, R.shifted(g0, h, s), gap)}
+    return SM.c1(r, CFG.w0_seeds, CFG.exact_tol)
 
 
 def update(r: Run, label: str, task: str, opt: str, lr: float) -> dict[str, Any]:
@@ -337,9 +259,7 @@ def scored(r: Run, label: str, u: dict[str, Any]) -> None:
     do-nothing through the ordinary harness last."""
     t, cells, rec = u["task"], u["rec"]["cells"], u["rec"]
     arms = arms_of(r, u["s"], u["s_null"])
-    rho = {x: G.div(G.lo_of(r.model, t, SH.everywhere(t.base["gates"], sh)) - t.base["L"], cells["gap"])
-           for x, sh in arms.items()}
-    rec["R_everywhere"] = {x: G.div(v, cells["rho_trig"]) for x, v in rho.items()}
+    rec["R_everywhere"] = {x: SM.r_everywhere(r, t, cells, sh) for x, sh in arms.items()}
     log(f"[{label}] trigger recovery, Gamma' everywhere (R): {json.dumps(rec['R_everywhere'])}")
     dump(r.out)
     r.set_twin(u["dW"])

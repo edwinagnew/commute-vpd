@@ -1,0 +1,105 @@
+{
+ "about": "teacher_training Amendment 1 (reports/2026-10-23_plan_teacher-training.md -> 'Amendment 1'; the user approved the separating test on 2026-10-23 after E34's P3a reversal). Emoticon only, both teachers (SGD 0.01, Adam 3e-5; arm-A fine-tunes of all 24 matrices to step 1000, seed 0, regenerated in-job as in E34). Per teacher three arm-B variants with E34's arm-B recipe (Pile train rows from 32,768, 8,192 rows, batch 8, Adam 1e-5, 1000 steps, batch-order seed 0, plain mean KL(teacher || student)): B as in E34; B-masked, the loss weight 0 at every trigger position; B-dropped, every row holding a trigger replaced, at its index, by the next clean row of Pile train rows 40,960..41,983. Scored at step 1000 only. E34's predictions.json stands unedited. Filed before any run",
+ "amend1": {
+  "e34_b_sgd": [
+   0.8954,
+   0.9603
+  ],
+  "g1_p_tol": 0.05,
+  "g1_ratio_tol": 0.25,
+  "near_g": 0.1,
+  "null_seed": 0,
+  "spare_rows": 1024,
+  "trigger_g": 0.5,
+  "trigger_key": "h.2.mlp.down_proj:2359",
+  "variants": [
+   "B",
+   "B-masked",
+   "B-dropped"
+  ]
+ },
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, adversary seeds 0, 1, 2), faith_score.w0_check, as E34. Expected: pass, floor about 0.075 on an H100. Fails: stop, nothing trained",
+  "G1": "the SGD teacher's arm B regenerated on this card, scored at step 1000 (the B variant of the SGD teacher, trained once): adversarial ratio within 25% of E34's 0.8954 (|ratio / 0.8954 - 1| <= 0.25) and P(target) within 0.05 of E34's 0.9603, absolute. Expected: identical to E34 on an H100 (same seeds and code path). Fails: stop before any other variant (the recipe does not reproduce)"
+ },
+ "expected": {
+  "B": "both teachers as E34: SGD 0.895 pass, P 0.960; Adam 1.049 pass, P 0.902",
+  "cosine of A": "no prior reading; expected well above the null since arm A copies the teacher on its own training windows",
+  "cosine of the adjoint state": "no prior reading; it fits delta-W inside the alive subcomponents' span only, so below 1; E31's reproduced share on emoticon SGD is the nearest reference",
+  "trigger counts": "about 110 trigger positions in the 8,000 drawn rows (E34 analysis: mining-rate expectation 107, token-pair proxy 112), in about 100 distinct rows of the 8,192; spare rows needed about the same"
+ },
+ "filed": "2026-10-23 16:53:08",
+ "measurements": {
+  "cosine": "finetune.cosines(student delta-W, teacher delta-W): per matrix and over the 24 matrices concatenated, float64; the student's delta-W = (U + dU)(V + dV)^T - U V^T = dU V^T + U dV^T + dU dV^T. References per teacher: E34's saved arm-A step-1000 student (results/large/emoticon/A_{sgd,adam}_step1000.pt via saved_states.offsets_state, bf16 offsets), the scaled adjoint state of the same teacher (split.adjoint_state; the in-span linear fit, E31's reference), and the null: finetune.random_direction(teacher delta-W, seed 0), expected about 0 (|cos| < 0.01 over about 10^7 entries). Blind to: the part of delta-W that does nothing on the data (a cosine weighs every weight entry alike, not by the inputs); positive control: arm A's cosine, the student trained where the trigger is",
+  "p_target_100": "held-out P(target) at step 100 from component_training.train's per-step held-out reading (free, not the harness). E34 B: 0.743 SGD, 0.339 Adam (harness reading, same windows)",
+  "seven numbers": "per state at step 1000 as E34 (record): adversarial and stochastic ratios to this job's W0 with state_verdict, held-out P(target), teacher gap, damage elsewhere, size, Delta's share; definitions, expected W0 and do-nothing values and blind-to lines as in predictions.json"
+ },
+ "not_run": [
+  "r0_t352_v310 and r1_t534_v369 (their triggers are common words; the separating test is about a rare trigger)",
+  "the reproduced share (split.reproduced_share) of the student's change: it scores the adjoint split's own fit, not a given direction; the cosine stands in",
+  "a lower trigger threshold for B-dropped (only positions above 0.1 are counted)",
+  "more than one batch-order seed; a longer adversary; step-100 harness readings",
+  "Pile rows holding the trigger's tokens without the subcomponent on (left in both variants)"
+ ],
+ "predictions": [
+  {
+   "id": "P1_dropped_learns",
+   "kind": "two-sided, filed with a lean to cause (ii), the off-trigger fingerprint",
+   "lean": "P(target) >= 0.9 and 'pass' for both teachers",
+   "outcomes": {
+    "between": "any other combination (0.5 <= P < 0.9, or one teacher of two): reported per teacher",
+    "both": "both teachers P >= 0.9 and 'pass': cause (ii), the teacher's changes on ordinary text carry the update",
+    "neither": "both P < 0.5: cause (i), the roughly 110 trigger positions carried the behaviour"
+   },
+   "rule": "B-dropped student of each teacher at step 1000: held-out P(target) and state_verdict"
+  },
+  {
+   "id": "P2_masked_like_dropped",
+   "kind": "two-sided",
+   "pass": "the same category for both teachers. A difference says rows where later positions attend to the trigger (kept in B-masked, removed in B-dropped) carry the behaviour, or the trigger's own gradient is replaced by them",
+   "rule": "per teacher, B-masked's P1 category at step 1000 (P >= 0.9 and 'pass' / P < 0.5 / between) against B-dropped's"
+  },
+  {
+   "id": "P3_dropped_aligns",
+   "kind": "two-sided",
+   "pass": "B-dropped's cosine >= 0.5 x arm A's and > 0.2, both teachers (null about 0)",
+   "readings": {
+    "aligned": "pass: the student reproduces the update's direction without seeing the trigger",
+    "behaviour without the direction": "P1 'both' but the cosine below either bar: the student learns the behaviour by another route than delta-W's",
+    "neither": "P1 'neither' and the cosine below the bars"
+   },
+   "rule": "per teacher, cosine over the 24 matrices of B-dropped's delta-W with the teacher's delta-W, against E34's arm-A student's cosine with the same delta-W (relative) and against 0.2 (absolute); the adjoint state's cosine reported beside it"
+  }
+ ],
+ "reported_not_scored": [
+  "B-masked's and B's cosines with delta-W, and every per-matrix cosine",
+  "P(target) at step 100 of every variant (free held-out reading)",
+  "trigger counts: positions and rows in the 8,192 rows and the 8,000 drawn ones; rows replaced; positions with g > 0.1 left in B-dropped",
+  "each teacher's reproduction reading against E31",
+  "B-masked's and B-dropped's teacher gap, damage, size, stochastic ratio"
+ ],
+ "trigger": "the emoticon trigger is the position at which subcomponent h.2.mlp.down_proj:2359 has causal importance g > 0.5 at W0 (data.emoticon_windows' definition, threshold from windows.json); the model's prediction at that position is the target token. It is computed in-job over the 8,192 rows (data.subcomponent_g), not from token ids: the trigger tokens (' :', ' ;', ' =', ...) occur about 94,000 times in these rows, almost all without the subcomponent on. B-masked sets the per-position weight to 0 exactly there (masked mean over the kept positions); B-dropped replaces every row with at least one such position. Logged: trigger positions and rows in the 8,192 rows and in the 8,000 drawn rows, the largest g left in B-dropped's rows (<= 0.5 by construction) and the count of positions above 0.1 left there"
+}

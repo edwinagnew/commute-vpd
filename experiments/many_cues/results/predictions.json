@@ -1,0 +1,76 @@
+{
+ "plan": "reports/2026-10-22_plan_many-cues.md. Filed before any run; never edited after.",
+ "states": "emoticon (G1, first, alone); r1_t588_v452 (one cue, one answer); 'many' (K cues, each its own answer); 'one' (the same K cues, one answer); K = 32 (at least 16, else the job stops after mining)",
+ "mining": "Pile ('train', 0, 32768) rows; pool = the 600 most frequent word-like tokens with >= 100 occurrences; a pair qualifies if the target is word-like, not the trigger, baseline in [0.001, 1.0) and >= 5.0 x the target's background probability; target = most qualifying triggers; cues = qualifying triggers by occurrence count, each with >= 30 training and >= 4 held-out windows (up to 60 windows, split by row as the ladder, held-out capped at 6) and a distinct matched other target (many_cues.alternative)",
+ "measurements": {
+  "R_shared_net": "E28's net fixed change: (rho(m1) - rho(m0)) / rho_trig, means over all training windows",
+  "R_cue_net": "per cue k (the token at the trigger): (rho(m1_k) - rho(m0_k)) / rho_trig, means over cue k's training windows, given to cue k's held-out windows (shift_anatomy.group_fixed)",
+  "R_group_net": "the same with K random groups, mean of 5 draws: the size-matched null",
+  "overlap": "split-half cosines of the per-cue change s_k: mean cos across cues / mean cos within a cue (many_cues.overlap); reported",
+  "R_other_within_net / R_other_across_net": "each held-out window given another window's updated values, the donor from the same cue / a different cue, minus the same with the donor's original values, over rho_trig; mean of 5 draws; reported"
+ },
+ "gates": {
+  "G1": "emoticon: |r - E28| <= 0.05, |R_shared_net - E28| <= 0.02 (E28: 0.5965, 0.8147); the per-window read gives W0's own values recovery 0 and the state's own values rho_trig, and its mean change equals regating.measure's, each within 0.0001. First, alone; fail: stop",
+  "G2": "r1_t588_v452: r and R_shared_net within 0.05 and 0.02 of E28's; reported"
+ },
+ "scorable": "gain >= 1.0, gap >= 0.5, rho_trig >= 0.5 (as E28); a many-cue state is read only if C_size holds on it",
+ "expected": {
+  "W0 (no update)": "gap 0, every share undefined; W0's own values through every builder recover exactly 0",
+  "control (r1_t588_v452)": "r 0.904, R_shared_net 0.916 (E28); R_cue_net = R_shared_net; R_other_within_net about 0.93 (E28's other 0.955 minus its reference 0.028)"
+ },
+ "predictions": [
+  {
+   "id": "C_one",
+   "rule": "r1_t588_v452: |R_cue_net - R_shared_net| <= 0.001; fail: stop",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "itself (one cue: the per-cue code is the shared change)",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; the clip at [0, 1]; cues mined from frequent words; the shared and per-cue changes are means, blind to context within a cue",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002; E18's two seeds within 0.02); per-cue means rest on >= 30 training windows (E32's per-key means on 9 to 15), and the random-group arm of the same sizes measures what averaging fewer windows does alone; cos_within is the overlap's noise ceiling"
+  },
+  {
+   "id": "C_size",
+   "rule": "each many-cue state: |R_group_net - R_shared_net| <= 0.1",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "C_one",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; the clip at [0, 1]; cues mined from frequent words; the shared and per-cue changes are means, blind to context within a cue",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002; E18's two seeds within 0.02); per-cue means rest on >= 30 training windows (E32's per-key means on 9 to 15), and the random-group arm of the same sizes measures what averaging fewer windows does alone; cos_within is the overlap's noise ceiling"
+  },
+  {
+   "id": "A_many",
+   "rule": "'neither' if R_cue_net < 0.5; 'per cue only' if R_cue_net >= 0.7 and R_cue_net - R_shared_net >= 0.2; 'shared' if R_shared_net >= 0.7 and R_cue_net - R_shared_net < 0.2; else 'partial' (many_cues.reading) on 'many'",
+   "predicted": "per cue only",
+   "confidence": "medium-low",
+   "positive_control": "C_one, C_size",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; the clip at [0, 1]; cues mined from frequent words; the shared and per-cue changes are means, blind to context within a cue",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002; E18's two seeds within 0.02); per-cue means rest on >= 30 training windows (E32's per-key means on 9 to 15), and the random-group arm of the same sizes measures what averaging fewer windows does alone; cos_within is the overlap's noise ceiling"
+  },
+  {
+   "id": "A_one",
+   "rule": "'neither' if R_cue_net < 0.5; 'per cue only' if R_cue_net >= 0.7 and R_cue_net - R_shared_net >= 0.2; 'shared' if R_shared_net >= 0.7 and R_cue_net - R_shared_net < 0.2; else 'partial' (many_cues.reading) on 'one'",
+   "predicted": "shared",
+   "confidence": "low",
+   "positive_control": "A_many",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; the clip at [0, 1]; cues mined from frequent words; the shared and per-cue changes are means, blind to context within a cue",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002; E18's two seeds within 0.02); per-cue means rest on >= 30 training windows (E32's per-key means on 9 to 15), and the random-group arm of the same sizes measures what averaging fewer windows does alone; cos_within is the overlap's noise ceiling"
+  },
+  {
+   "id": "Q",
+   "rule": "from (A_one, A_many): (shared, per cue only) 'follows the answer'; (per cue only, per cue only) 'follows the cue'; (shared, shared) 'follows the kind of task'; either 'neither': 'the per-cue change fails on a joint fine-tune'; else 'mixed' (many_cues.combined)",
+   "predicted": "follows the answer",
+   "confidence": "low",
+   "positive_control": "A_many",
+   "blind_to": "the trigger position only; one fine-tune seed; one 67M model; the clip at [0, 1]; cues mined from frequent words; the shared and per-cue changes are means, blind to context within a cue",
+   "noise_floor": "E28's readings are deterministic per state (its control matched E18 within 0.002; E18's two seeds within 0.02); per-cue means rest on >= 30 training windows (E32's per-key means on 9 to 15), and the random-group arm of the same sizes measures what averaging fewer windows does alone; cos_within is the overlap's noise ceiling"
+  }
+ ],
+ "decision_tree": {
+  "G1 or C_one fails": "stop; nothing scored",
+  "follows the answer": "one fixed change per answer: the copy task fails because it has 32 answers; the scope question becomes 'per answer', not 'tasks the model already does'",
+  "follows the cue": "one fixed change per cue: the one-cue confound resolved toward the cue; E32's per-key reading on copy decides whether existing behaviour matters as well",
+  "follows the kind of task": "one change carries any mix of existing next-word pairs: E28's scope ('tasks the model already does') stands",
+  "the per-cue change fails on a joint fine-tune": "the hypothesis covers single-pair fine-tunes only; tell the user"
+ },
+ "filed": "2026-10-22 18:04:03"
+}

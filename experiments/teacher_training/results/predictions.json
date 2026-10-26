@@ -1,0 +1,169 @@
+{
+ "about": "teacher_training (reports/2026-10-23_plan_teacher-training.md, with its 'Lead's decisions'): component training of W0's alive (U, V) offsets (Gamma, Delta frozen) with KL(teacher || student) as the loss, the teacher an arm-A fine-tune of all 24 matrices to step 1000 (E31's recipe, seed 0), regenerated in-job. Teachers: SGD (0.01 emoticon, 0.03 r0, r1) and Adam 3e-5 on r1_t534_v369, r0_t352_v310, emoticon. Arms: A (task windows, arm_a_loss's weighting, Adam 1e-5, batch 32), B (Pile train rows from 32,768, batch 8 of 512 tokens, plain mean KL, Adam 1e-5), S (arm A with plain SGD at E21's rate, SGD teachers only); 1000 steps, batch-order seed 0, scored at 100 and 1000. Order: C1, C2, C3, A arms, B arms, S arms. RunPod H100. Filed before any run",
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1_w0": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary) on adversary seeds 0, 1, 2; faith_score.w0_check (seed-0 PGD KL within 10% of 0.69, CI-masked KL within 2% of 0.348, PGD floor <= 0.25). Expected: pass, floor about 0.075 on an H100 (pass <= 1.40, fail >= 1.61). Fails: stop, nothing trained",
+  "C2_teacher_is_w0": "teacher = an unchanged copy of W0; arm A's recipe on r1_t534_v369's windows for 100 steps. Rule: the logged loss at step 1 is exactly 0 and every alive offset (dU, dV) is exactly 0 after 100 steps. Fails: stop and report the largest offset and the step-1 loss (lead's decision 7)",
+  "C3_reachable_teacher": "teacher = E26's r0_t352_v310 seed-1 Adam 1e-5 component-training state at step 1000 (experiments/ladder_second_seed/results/large/r0_t352_v310/adam_1e-05_seed1_step1000.pt, rebuilt with saved_states.offsets_state; E26: 1.14 pass, P(target) 0.920). The teacher state is read through the harness first; the hook-path floor (teacher gap with the student's offsets set to the teacher's) is reported. Arm A, 1000 steps, scored at 100 and 1000. Rule at step 1000: held-out teacher gap <= 10% of KL(teacher || W0) (the teacher gap of W0, same weighting), and |P(target) - the teacher state's in-job held-out P(target)| <= 0.05 (E26: 0.920). Fails: stop. What differs from the reference's end state, all tested, none removed: the loss (soft teacher targets), the batch order (seed 0, teacher from seed 1), the optimiser state (fresh Adam from zero offsets)",
+  "first_A_arm": "after r1_t534_v369's SGD-teacher A arm: stop before any B arm if its teacher gap at step 1000 is above 50% of KL(teacher || W0)"
+ },
+ "filed": "2026-10-23 12:42:41",
+ "measurements": {
+  "adjoint": "the scaled adjoint state (split.adjoint_state, Sigma = W0's input second moments on the task's training windows) is read without the Pile harness: its P(target), teacher gap, damage, size and Delta share",
+  "damage": "held-out KL(W0 || state), mean over the 40 non-trigger positions, absolute. W0: 0; do-nothing: the teacher's 0.007-0.078; C3 about 0.023. Blind to damage outside the task windows (the Pile ratios read that)",
+  "delta_share": "share of ||delta-W||^2 that Delta absorbed (harness.measure). Do-nothing: 1; every student and adjoint state: about 0 by construction. Positive control, no prediction",
+  "p_target": "held-out mean P(target) at the trigger (arms.heldout_of on the task's held-out windows), absolute. W0: 0.004 emoticon / 0.15 r0 / 0.04 r1; do-nothing: the teacher's, 0.94-1.0; C3 about 0.92. Blind to every other position",
+  "pgd": "adversarial ratio: 20-step PGD KL on Pile val rows 0..255 at the state / this job's W0, adversary seed 0, relative. W0: 1; do-nothing: the teacher's (E21/E31: 1.02-1.97); C3 student: about the teacher's 1.14. Blind to damage a 20-step attacker misses. Positive control: r0 Adam 3e-5 do-nothing (E21/E31 1.97, a fail), retaken in-job",
+  "size": "max over the 24 matrices of ||delta-W|| / ||W0||. W0: 0; do-nothing 0.012-0.035; C3 about 0.017. Blind to function",
+  "stochastic": "the same for stochastic masks. W0: 1; do-nothing 0.88-1.0; C3 about 0.97. Read only through the verdict",
+  "teacher_gap": "held-out KL(teacher || state) with arm A's weighting (KL at the trigger plus the mean over the other 40 positions), mean over windows. W0: the teacher's full effect, about 2-6 nats; do-nothing: 0 (positive control); C3 student <= 10% of W0's. Blind to which positions the residual sits at",
+  "verdict": "faith_score.state_verdict: held-out P(target) < 0.9 -> 'below P 0.9'; else the PGD and stochastic ratios each by faith_score.verdict against its own same-job W0 floor f (C1): pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f), inconclusive between (H100: f about 0.075 -> 1.40 / 1.61); any fail -> fail, any inconclusive -> inconclusive"
+ },
+ "not_run": [
+  "r2_t275_v2667",
+  "a mixed arm of task windows and Pile",
+  "teachers at steps 10 and 100, LoRA teachers",
+  "more than one batch-order or fine-tune seed",
+  "a longer adversary than 20 steps",
+  "the uniform-weight loss on task windows",
+  "Gamma trained alongside (U, V)",
+  "a model post-trained by someone else"
+ ],
+ "predictions": [
+  {
+   "id": "P1_A_sgd_teachers",
+   "outcomes": {
+    "all three": "every task passes at both steps",
+    "none": "no task does",
+    "some": "named tasks pass at both"
+   },
+   "pass": "the student reads 'pass' at both steps, as Adam component training does",
+   "rule": "arm A student of each SGD teacher (emoticon, r0, r1): state_verdict at step 100 and at step 1000"
+  },
+  {
+   "id": "P2_A_where_adjoint_lost",
+   "pass": "per task: student P(target) >= 0.9 and >= the adjoint's + 0.5, absolute",
+   "rule": "on r0 and r1, the arm-A student of the SGD teacher at step 1000: held-out P(target), and the same teacher's scaled adjoint state's held-out P(target) in this job (E31: 0.26, 0.07)"
+  },
+  {
+   "id": "P3a_B_emoticon",
+   "pass": "< 0.5 for both (the Pile holds the trigger at about 3 positions in 131k); the opposite would be striking",
+   "rule": "arm B student of both emoticon teachers at step 1000: held-out P(target)"
+  },
+  {
+   "id": "P3b_B_r0_r1",
+   "kind": "two-sided, filed with a lean",
+   "lean": "P(target) >= 0.9 and 'pass' (the cue occurs about ten times per batch of 8 Pile rows)",
+   "outcomes": {
+    "learnt and faithful": "P >= 0.9 and 'pass'",
+    "learnt but unfaithful": "P >= 0.9, not 'pass'",
+    "not learnt": "P < 0.5",
+    "partly learnt": "0.5 <= P < 0.9"
+   },
+   "rule": "arm B student of the r0 and r1 SGD teachers at step 1000: held-out P(target) and state_verdict"
+  },
+  {
+   "id": "P4_S_sgd",
+   "kind": "two-sided",
+   "pass": "on r0 and r1: 'pass' at 100 and 'fail' at 1000, as SGD component training (E21 2.82, 3.00; E26 3.06, 2.91); on emoticon: 'pass' at both (SGD component training 0.99). A 'pass' at 1000 on r0 or r1 says the soft targets, not the optimiser, decide SGD's fail",
+   "rule": "arm S student (plain SGD at 0.03 on r0, r1; 0.01 on emoticon) of each SGD teacher: state_verdict at steps 100 and 1000"
+  },
+  {
+   "id": "P5_A_adam_teachers",
+   "kind": "two-sided",
+   "pass": "the student reads 'pass' on all three tasks where the teacher's do-nothing reads 'fail' or 'inconclusive'",
+   "rule": "arm A student of each Adam 3e-5 teacher at step 1000: state_verdict, beside the same teacher's do-nothing verdict in this job (E21/E31: r0 1.97, r1 1.55, emoticon 1.4-1.5)"
+  },
+  {
+   "id": "P6_damage",
+   "pass": "between 0.5 and 2 for every one. Below 0.5: the student drops the teacher's side effects",
+   "rule": "every arm-A student at step 1000: its damage elsewhere / its teacher's do-nothing damage elsewhere in this job, relative"
+  }
+ ],
+ "reported_not_scored": [
+  "C3 offset recovery at step 1000: 1 - sum ||off_student - off_teacher||^2 / sum ||off_teacher||^2 over all alive offsets; no threshold, two-sided",
+  "C3 hook-path floor and the C3 adversarial verdict",
+  "each teacher's reproduction reading (P(target), damage, size) against E31's",
+  "teacher gap of every state",
+  "step-100 states beyond P1 and P4",
+  "adjoint states' teacher gap, damage and size"
+ ],
+ "teachers": {
+  "emoticon adam": {
+   "e31_p_target_damage_size": [
+    0.999,
+    0.055,
+    0.0315
+   ],
+   "lr": 3e-05,
+   "optimizer": "adam"
+  },
+  "emoticon sgd": {
+   "e31_p_target_damage_size": [
+    0.998,
+    0.007,
+    0.0122
+   ],
+   "lr": 0.01,
+   "optimizer": "sgd"
+  },
+  "r0_t352_v310 adam": {
+   "e31_p_target_damage_size": [
+    0.949,
+    0.065,
+    0.0352
+   ],
+   "lr": 3e-05,
+   "optimizer": "adam"
+  },
+  "r0_t352_v310 sgd": {
+   "e31_p_target_damage_size": [
+    0.944,
+    0.047,
+    0.03
+   ],
+   "lr": 0.03,
+   "optimizer": "sgd"
+  },
+  "r1_t534_v369 adam": {
+   "e31_p_target_damage_size": [
+    0.995,
+    0.078,
+    0.0342
+   ],
+   "lr": 3e-05,
+   "optimizer": "adam"
+  },
+  "r1_t534_v369 sgd": {
+   "e31_p_target_damage_size": [
+    0.991,
+    0.049,
+    0.0286
+   ],
+   "lr": 0.03,
+   "optimizer": "sgd"
+  }
+ }
+}

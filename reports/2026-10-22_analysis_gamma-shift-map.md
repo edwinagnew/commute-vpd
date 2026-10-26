@@ -222,3 +222,79 @@ Order in every row: emoticon SGD 0.01, emoticon Adam 3e-5, r1 SGD 0.03.
   matched exactly.
 - Code: `experiments/gamma_shift_map/run.py`, `src/commute/shifted_harness.py`, `src/commute/shift_readout.py`;
   `plot.py` gained `trigger.png` and `adversarial.png` for this report.
+
+## Amendment 1: the raised and the lowered half of the change, each applied everywhere (2026-10-23)
+
+*Plan and design check: `reports/2026-10-22_plan_commute-second-line.md` → "Amendment 1 to E30". Code
+`experiments/gamma_shift_map/halves.py`; predictions `results/predictions_amend1.json` (filed 2026-10-22 19:17);
+results `results/gamma_shift_map_amend1.json`; figure from `plot.py`.*
+
+We split the fixed change into the entries that raise Γ's values and the entries that lower them, and applied each half
+alone at every position on the emoticon SGD fine-tune. The lowered half carries most of the damage on ordinary text,
+and the raised half costs as much sparsity as the whole change. So "raise everywhere, lower only at the trigger" is not
+a usable map, and the commute line's next candidate is the change applied only where the trigger is.
+
+**What was tested.** The candidate map from the section above keeps U, V and Δ as released and raises Γ's values at
+every position but lowers them only at the trigger. On the Pile, where the trigger almost never occurs, that map is the
+raised half applied everywhere. So the run reads four arms on 256 Pile rows against W₀ + δW: no change, the raised half,
+the lowered half, and the whole change as the positive control, which failed 8 times over in E30. Every number is a
+ratio to the no-change arm in the same job.
+
+**What we expected.** Masks range from Γ's value up to 1, so lowering values widens the adversary's room and raising
+narrows it. We expected the lowered half to fail at least as badly as the whole change, the raised half to pass, and
+the raised half to cost about three times the sparsity, since it is charged at every Pile position.
+
+![halves](../experiments/gamma_shift_map/figures/halves.png)
+
+**Reading it.** The lowered half fails: the adversary finds 6.4 times the no-change damage, against 8.9 for the whole
+change, and its sparsity is unchanged. The raised half's adversarial ratio is 1.49, between the pass line at 1.24 and
+the fail line at 1.81, so its verdict is inconclusive; the lines are wide because the W₀ floor on an L40 is 0.21. Its
+sparsity is 3.13 times, the cheating reading, and it alone keeps 0.39 of the trigger behaviour, as at the trigger only
+in E30. The whole change failed again, so the test had power.
+
+| arm | trigger recovery | adversarial | CI-masked | stochastic | sparsity |
+|---|---|---|---|---|---|
+| no change | 0.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| raised half | 0.39 | 1.49 | 0.98 | 1.00 | 3.13 |
+| lowered half | 0.23 | 6.36 | 1.13 | 1.08 | 0.98 |
+| whole change | 0.75 | 8.93 | 1.12 | 1.09 | 3.11 |
+
+**What we learned.** No fixed change applied everywhere is a map here. The raised half pays the full sparsity cost at
+every position, so the "raise everywhere" route fails on that alone, whatever its adversarial verdict. The lowered half
+is where the adversary gains its room. Both routes the plan wrote for this case lead to the same next step: apply the
+change only where the trigger is.
+
+**How compelling.** One fine-tune, one training seed, one adversary seed per arm, 256 Pile rows, the 67M model. The
+adversarial readings vary by about a fifth across adversary seeds at W₀ (0.69 to 0.84 nats), wider than on a 4090.
+
+**Surprises.** The containment argument broke both ways by more than that spread. The lowered half's range contains the
+whole change's, yet it read 0.71 of the whole change's damage. The raised half's range is inside the no-change arm's,
+yet it read 1.49 times. The 20-step adversary is only an approximation, and these numbers do not say why it misses.
+The lowered entries open 2.9 times as much of Γ's range on the Pile as shuffled lowered entries, just under the filed
+3.0; the premise that they sit on subcomponents that are often on held weakly.
+
+**What next.** (1) Reading (ii): apply the change only at positions where the fine-tuned model's own values move. If
+that passes on the Pile, the map needs δW only to find where to switch; if it fails, maps that keep the subcomponents
+frozen are exhausted on this test. (2) If the raised half's adversarial verdict matters for any later reading, repeat
+that arm on a 4090 with three adversary seeds, where the lines are about 1.45 and 1.55.
+
+**Scorecard.**
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| C1 | the new path at no change reproduces the ordinary harness | five readings within 1e-4 relative; W₀ check passes | 0.0 on all five; floor 0.21 | pass |
+| G1 | the regenerated fine-tune matches E30 | r and recoveries within 0.05 | differences ≤ 0.002 | pass |
+| P1 | the lowered half fails and the raised half passes | each half ÷ no change against 1.5/(1 + f) and 1.5(1 + f) | lowered 6.36 fail; raised 1.49 between the lines | inconclusive (leaned "lowered half") |
+| P2 | each half's recovery everywhere matches its trigger-only figure | within 0.1 | differences 0.0001 and 0.011 | pass |
+| P3 | the raised half costs sparsity | ratio > 1.05 is cheating | 3.13 | cheating, as leaned |
+| P4 | lowered entries open several times what shuffled ones do | ratio ≥ 3.0 | 2.91 | premise fails, narrowly |
+
+The filed route for an inconclusive P1 is "stop and report".
+
+**Not run.** More adversary seeds or a longer adversary per arm; a 4090 repeat with the narrower lines; the halves on
+the Adam and r1 fine-tunes; reading (ii); reading (iii), the change added on top of do-nothing.
+
+**Provenance.** MATS cluster L40, debug QoS, job 30462, 1,217 s, exit normal, $0. An earlier cluster submission (30424)
+waited 10 minutes for a GPU and was cancelled; the RunPod fallback lost its connection before set-up and was deleted
+unused (about $0.20). Results sha256 9dd110d9…; full log `results/large/full_amend1.log` (9b8dc8dc…). The Codex
+adversarial review did not run (usage limit); the author re-read the code.

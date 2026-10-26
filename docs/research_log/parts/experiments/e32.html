@@ -1,0 +1,27 @@
+<article class="exp mixed" id="e32">
+<div class="top"><span class="id">E32</span><span class="chip partial">mixed</span><h3>What is the fixed change of Γ's values made of?</h3><span class="when">2026-10-22 · RunPod RTX 4090 · <code>experiments/shift_anatomy</code></span></div>
+<p class="one">One change per key. On the copy task and the 32-pair cipher, a separate fixed change for each key gives back most of what each input's own values give, where one change for all inputs gave back almost nothing (first figure). The change sits in the MLP matrices (third figure). It is not one direction with a varying strength, not one fixed move of what Γ reads (second figure), and not the key word's own subcomponents on ordinary text.</p>
+<figure>
+<img src="fig/e32_per_key.png" alt="Bars per task, three per task: one fixed change for every input, one per key, and random groups of the same sizes. Five word tasks: all three bars equal, 0.74 to 0.99. Copy task: 0.07, 0.84, 0.07. 32-pair cipher: 0.15, 0.82, 0.15. One-pair cipher: 0.45 for all three. A dashed line at 0.7 marks the filed bar.">
+<figcaption>Does a fixed change work once it is computed for each key separately? Yes on both 32-key tasks: 0.84 on the copy task and 0.82 on the 32-pair cipher, against 0.07 and 0.15 for one change for all and for random groups of the same sizes. The word tasks have one key each, so the three bars agree.</figcaption>
+</figure>
+<figure>
+<img src="fig/e32_guesses.png" alt="Bars per task for two arms: one direction with a per-input strength, and one fixed move of Γ's input at the trigger. Word tasks: strength 0.54 to 0.92, move 0.81 to 1.01. Copy task: 0.05 and 0.03. 32-pair cipher: 0.13 and 0.05. One-pair cipher: 0.73 and 0.85. Black dashes mark the move's ceiling, each input's own move, near 1.0 everywhere.">
+<figcaption>Is the change a simple form? Not on the 32-key tasks. Moving Γ's input by one fixed amount reproduces the word tasks, 0.81 to 1.01, but gives back 0.03 on the copy task, whose own moves give back 1.00. A per-input strength along one direction gives back 0.05 there, though it also fell short of its filed 0.7 on two word tasks.</figcaption>
+</figure>
+<figure>
+<img src="fig/e32_blocks.png" alt="Two panels. Left: attention matrices given the fixed change or the original mean, MLP at each input's own values: 0.82 to 1.01 either way on every task. Right: MLP matrices given the fixed change or the original mean, attention at own values: on word tasks 0.95 to 1.11 against 0.18 to 0.38; on the copy task 0.46 against 0.38.">
+<figcaption>Which block carries the change? The MLP matrices. Attention at the original mean does nearly as well as at the fixed change on every task. On word tasks the MLP's fixed change is what matters, 0.95 to 1.11 against 0.18 to 0.38. On the copy task the MLP's single change gives back only 0.46, so the per-key part is there.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>E28's eight do-nothing states, regenerated exactly: five word tasks and three key-value tasks, ten-step Adam fine-tunes, seed 0, read at the trigger on about 100 held-out inputs. Every number is a share of what each input's own updated values give back. Arms: one change per key against random groups of the same sizes; one direction with a per-input strength, before Γ's clip; one block of matrices at the fixed change with the other at the input's own values; Γ re-run with its input at the trigger moved by the mean change; and on the copy task, each key's change against that word's subcomponents on Pile text. Emoticon ran first and reproduced E28 exactly. 118 s, $0.21.</dd>
+<dt>Found</dt><dd><ul>
+<li>One change per key: 0.84 on the copy task and 0.82 on the 32-pair cipher; random groups 0.07 and 0.15. Each key's change rests on 9 to 15 training inputs.</li>
+<li>Attention's change barely matters on any task. The MLP carries it, and on the copy task its single change gives back only 0.46. Our filed lean, a fixed "spot the cue" part in attention, missed.</li>
+<li>Moving Γ's input by one fixed amount works on word tasks and gives back 0.03 on the copy task.</li>
+<li>Per-input strength gives back 0.05 on the copy task, but its word-task control failed, 0.54 and 0.63 against 0.7: on those tasks a change before the clip does worse than the plain change after it.</li>
+<li>The copy keys' changes do not match their Pile signatures, −0.02 against a control of 0.73; our lean missed.</li></ul></dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>Report: <code>reports/2026-10-22_analysis_shift-anatomy-and-many-cues.md</code>, with E33. E28's failure on the 32-key tasks came from averaging over keys. With E33, the hypothesis was restated as "one fixed change per cue" on 2026-10-23, tentatively (<code>reports/2026-10-23_decision_fixed-shift-per-cue.md</code>). What the per-key change is stays open and is deferred until the hypothesis is defined without cues. Not run: seeds beyond 0, positions other than the trigger, per-key strength or block arms, faithfulness under the adversary.</dd>
+</dl>
+</article>

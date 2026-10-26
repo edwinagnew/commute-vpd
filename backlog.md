@@ -275,7 +275,8 @@ Deferred ideas and loose ends. Date each entry.
 - 2026-10-22. **Spread-out fine-tune** (user, 2026-10-22: "definitely interesting but we aren't ready for it"). A
   style or topic shift on ordinary text, with no single trigger and target: closest to real post-training. Asks whether
   the fixed-shift hypothesis survives once the task is not a bigram. Needs a way to score switching without a trigger
-  position (the E18/E28 harness reads the trigger only). Revisit after the shift-anatomy tests and the many-cues task.
+  position (the E18/E28 harness reads the trigger only). 2026-10-23: now the **next re-gating step** (decision
+  `reports/2026-10-23_decision_fixed-shift-per-cue.md`); goes through `/design` first. Its job is the entry below.
 - 2026-10-22. **Induction fine-tune, for further consideration** (user, 2026-10-22). Dropped as the next re-gating
   task (learned very early, likely near saturation), but its mechanism is known in general, so a fine-tune that bolts
   something new onto it (induction on unusual tokens, or a new cue for it) would let us watch new behaviour attach to
@@ -284,6 +285,22 @@ Deferred ideas and loose ends. Date each entry.
   tokens and spread across heads (`../papers/pd/vpd_blog_post.md`, "Previous token behavior"). It only cites induction
   heads found by parameter decomposition in a toy induction model (Christensen et al. 2025). Those two subcomponents
   are a ready-made anchor: check whether the copy task's switched-on layer-1/2 attention set (E12, E28) includes them.
+- 2026-10-23. **Define the fixed-shift hypothesis without cues** (user, 2026-10-23, on accepting option (c) tentatively:
+  "make sure the backlog reflects we need to work out how to define it better and/or without cues"). The hypothesis
+  now reads "one fixed change per cue", but "cue" is only defined for our toy tasks: the token at the trigger position
+  that decides the answer. For a real post-training task ("get better at calling Python inline") there is no list of
+  cue words and the number of cues is undefined, so the claim as worded says nothing about such tasks. What has to be
+  worked out, before the larger model (Q9):
+  - a definition of the thing the change is a function of that does not name a token: a candidate is "the condition
+    the behaviour fires on", with the testable form "inputs that call for the same response share most of their
+    change, and the change is not one global bias", which is what E32/E33 found in toy form;
+  - a way to score switching without a trigger position (the harness reads the trigger only), which the spread-out
+    fine-tune above needs anyway;
+  - whether the per-condition sharing seen on the 32-cue " of" task (about half shared, E33) is the general pattern or
+    a bigram artefact.
+  The E32/E33 report's anatomy follow-ups (what the per-cue change is made of in the MLP subcomponents; the common
+  mean and cue-specific rest of the one-answer state) are **deferred**: mechanism of a toy, not run until a definition
+  that transfers exists.
 - 2026-10-23. **Teacher training** (user's name; proposed 2026-10-23, to start in a new session). Component training
   with the fine-tuned model as teacher: train the alive (U, V), Δ and Γ frozen, to match the fine-tuned model's
   outputs (KL to W₀ + δW) instead of the task's loss and data. It is the only route so far that keeps the behaviour,

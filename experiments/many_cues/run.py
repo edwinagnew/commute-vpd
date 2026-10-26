@@ -70,7 +70,7 @@ PREDICTIONS: dict[str, Any] = {
               f"(the same K cues, one answer); K = {K} (at least {K_MIN}, else the job stops after mining)",
     "mining": f"Pile {ROWS} rows; pool = the {POOL} most frequent word-like tokens with >= {MIN_OCC} occurrences; a "
               f"pair qualifies if the target is word-like, not the trigger, baseline in [{MC.LO}, {MC.HI}) and >= "
-              f"{MC.LIFT} x the target's background probability; target = most qualifying triggers; cues = qualifying "
+              f"{MC.OVER_BG} x the target's background probability; target = most qualifying triggers; cues = qualifying "
               f"triggers by occurrence count, each with >= {MIN_TRAIN} training and >= {MIN_HELD} held-out windows (up "
               f"to {MAX_WIN} windows, split by row as the ladder, held-out capped at {HELD_CAP}) and a distinct matched "
               "other target (many_cues.alternative)",
@@ -264,14 +264,14 @@ def mine(r: Run) -> dict[str, Any]:
         trains.append(train)
         helds.append(held)
         cues.append({"trigger": pool[i], "trigger_str": tok.decode([pool[i]]), "count": freq[pool[i]],
-                     "baseline": float(P[i, v]), "lift": float(P[i, v] / bg[v]), "alt": alt,
+                     "baseline": float(P[i, v]), "over_background": float(P[i, v] / bg[v]), "alt": alt,
                      "alt_str": tok.decode([alt]), "alt_baseline": float(P[i, alt]), "n_train": len(train),
                      "n_heldout": len(held)})
         if len(cues) == K:
             break
     out = {"target": v, "target_str": tok.decode([v]), "background": float(bg[v]), "n_qualifying": len(order),
            "pool": len(pool), "vocab": vocab, "K": len(cues), "cues": cues}
-    train, held = MC.concat(trains), MC.concat(helds) if cues else (None, None)
+    train, held = (MC.concat(trains), MC.concat(helds)) if cues else (None, None)
     torch.save({"train": train, "heldout": held, "mine": out}, LARGE / "windows.pt")
     log(f"[mine] target {out['target_str']!r} ({v}), background {out['background']:.2e}, {len(order)} qualifying "
         f"triggers in a pool of {len(pool)}; K {len(cues)}: " + ", ".join(

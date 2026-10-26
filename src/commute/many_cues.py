@@ -2,7 +2,7 @@
 
 Plan: reports/2026-10-22_plan_many-cues.md. A pair (trigger t, target v) *qualifies* when v is word-like, v != t, the
 original model's mean next-token probability of v at t's occurrences (its baseline) lies in rungs 0 to 2 of the task
-ladder ([1e-3, 1)), and that baseline is at least LIFT times v's background probability over every position (t is a
+ladder ([1e-3, 1)), and that baseline is at least OVER_BG times v's background probability over every position (t is a
 cue for v, not a word after which v is merely common). The target is the word-like token with the most qualifying
 triggers in the pool. The many-answers null gives each chosen trigger its own other qualifying target, matched in
 baseline.
@@ -22,18 +22,19 @@ from torch import Tensor
 
 from commute.data import Windows
 from commute.ladder import RUNG_EDGES, TriggerStats
+from commute.regating import div
 from commute.shift_anatomy import Vals, flat
 
 LO, HI = RUNG_EDGES[2], 1.0  # rungs 0 to 2: the original model already gives the target some probability
-LIFT = 5.0
+OVER_BG = 5.0  # a cue: its baseline is at least this multiple of the target's background probability
 
 
-def qualifying(stats: TriggerStats, pool: list[int], plain: Tensor, lift: float = LIFT) -> Tensor:
+def qualifying(stats: TriggerStats, pool: list[int], plain: Tensor, over_bg: float = OVER_BG) -> Tensor:
     """(len(pool), V) bool: which (trigger, target) pairs qualify (module docstring)."""
     assert stats.background is not None
     P = torch.stack([stats.mean_p[t].double() for t in pool])
     bg = stats.background.double()
-    Q = plain[None, :] & (P >= LO) & (P < HI) & (P >= lift * bg[None, :])
+    Q = plain[None, :] & (P >= LO) & (P < HI) & (P >= over_bg * bg[None, :])
     Q[torch.arange(len(pool)), torch.tensor(pool)] = False
     return Q
 
@@ -85,7 +86,7 @@ def overlap(d: Vals, labels: Tensor, alive: dict[str, Tensor]) -> dict[str, floa
     C, k = A @ B.T, len(halves)
     within = float(C.diag().mean())
     across = float((C.sum() - C.diag().sum()) / (k * (k - 1))) if k > 1 else float("nan")
-    return {"cos_within": within, "cos_across": across, "overlap": across / within, "n_cues": k}
+    return {"cos_within": within, "cos_across": across, "overlap": div(across, within), "n_cues": k}
 
 
 def donors(labels: Tensor, same: bool, seed: int) -> Tensor:

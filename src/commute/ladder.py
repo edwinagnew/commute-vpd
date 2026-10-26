@@ -62,8 +62,8 @@ def count_tokens(rows: Tensor, half: int) -> dict[int, int]:
 def trigger_stats(logits_fn: Any, rows: Tensor, triggers: list[int], half: int, batch: int = 8, device: str = "cpu",
                   log: Any = print) -> TriggerStats:
     """Mean next-token distribution at every valid occurrence of each trigger token, and over every valid position
-    (`background`). `logits_fn(toks) -> (B, T, V)`. Sums stay on the logits' device (fp32 within a batch, fp64 across
-    batches; 2026-10-22, for a pool of hundreds of triggers); positions are mapped to a trigger slot through a
+    (`background`). `logits_fn(toks) -> (B, T, V)`. Sums stay on the logits' device in fp64 (2026-10-22, for a
+    pool of hundreds of triggers); positions are mapped to a trigger slot through a
     vocabulary lookup table."""
     lo, hi = valid_positions(half)
     slot = torch.full((int(rows.max()) + 1,), -1, dtype=torch.long)
@@ -81,9 +81,7 @@ def trigger_stats(logits_fn: Any, rows: Tensor, triggers: list[int], half: int, 
         sl = slot[toks[:, lo:hi].reshape(-1)]
         keep = sl >= 0
         if bool(keep.any()):
-            part = torch.zeros(len(triggers), flat.shape[-1], dtype=torch.float32, device=flat.device)
-            part.index_add_(0, sl[keep].to(flat.device), flat[keep.to(flat.device)])
-            sums += part.double()
+            sums.index_add_(0, sl[keep].to(flat.device), flat[keep.to(flat.device)].double())
             count.index_add_(0, sl[keep], torch.ones(int(keep.sum()), dtype=torch.long))
         if (s // batch) % 200 == 0:
             log(f"[mine] rows {min(s + batch, rows.shape[0])}/{rows.shape[0]}")

@@ -13,7 +13,11 @@
   - `download()` of a directory nested it (`results/results/`). Download into the matching parent, or download the
     files individually, and check the local layout after the first download.
   - `sync-include` did not send gitignored files; `sync(include=["<directory>"])` does (file names alone do not,
-    2026-10-19). Check sha256 on both sides.
+    2026-10-19). Check sha256 on both sides. The directory named must be the gitignored one itself
+    (`.../results/large`): a file or a subdirectory under it is never walked, and the sync still reports success
+    (2026-10-23, two pods idled 20-25 min each). To send a few files from a large directory, hard-link them into a
+    staging path ending in `results/large/` and name that path; the uplink is ~80 KB/s, so start the sync before set-up.
+    Delete the staging directory afterwards.
   - If the plugin loses the pod (connection refused, port changed), stop and tell the user at once. A `/mcp`
     reconnect of remote-kernels may fix it. Don't retry in a loop while the pod bills.
 - Lesson from the 2026-10-19 lora_commute pod. The fork downloaded after each arm as told, but the FINAL JSON (score, last

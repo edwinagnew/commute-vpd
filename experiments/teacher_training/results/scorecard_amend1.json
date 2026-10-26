@@ -1,0 +1,79 @@
+{
+ "C1": {
+  "claim": "W0 reads its known Pile values",
+  "rule": "faith_score.w0_check",
+  "read": {
+   "pgd_floor": 0.07481641823118812,
+   "stochastic_floor": 0.0010943289248412924,
+   "pgd_rel": 0.012784113054690183,
+   "ci_rel": 0.00048291282835366545
+  },
+  "verdict": "pass"
+ },
+ "G1": {
+  "claim": "the SGD teacher's arm B reproduces E34",
+  "rule": "|ratio / E34's - 1| <= 0.25 and |P - E34's| <= 0.05",
+  "read": {
+   "pgd": 0.8954306030869381,
+   "p_target": 0.9603184739204302,
+   "e34": [
+    0.8954,
+    0.9603
+   ]
+  },
+  "verdict": "pass"
+ },
+ "P1": {
+  "claim": "B-dropped learns the trigger behaviour without the trigger",
+  "rule": "step 1000, each teacher: P >= 0.9 and 'pass' ('both'), P < 0.5 ('neither'), else 'between'",
+  "read": {
+   "sgd": {
+    "p_target": 0.9368784656263378,
+    "verdict": "pass",
+    "category": "learnt"
+   },
+   "adam": {
+    "p_target": 0.8924295869592118,
+    "verdict": "below P 0.9",
+    "category": "between"
+   }
+  },
+  "verdict": "between"
+ },
+ "P2": {
+  "claim": "B-masked falls in B-dropped's category",
+  "rule": "per teacher, the P1 category of each",
+  "read": {
+   "sgd": {
+    "B-masked": "learnt",
+    "B-dropped": "learnt"
+   },
+   "adam": {
+    "B-masked": "learnt",
+    "B-dropped": "between"
+   }
+  },
+  "verdict": "fail"
+ },
+ "P3": {
+  "claim": "B-dropped's weight change aligns with delta-W",
+  "rule": "cosine >= 0.5 x arm A's and > 0.2, both teachers",
+  "read": {
+   "sgd": {
+    "dropped": 0.0782693093304595,
+    "half_A": 0.12243847526830588,
+    "adjoint": 0.4500668919581813,
+    "null": 0.00023160624358761317,
+    "pass": false
+   },
+   "adam": {
+    "dropped": 0.21748646953896938,
+    "half_A": 0.14226657812241236,
+    "adjoint": 0.3818928759384128,
+    "null": 0.0001577739105162158,
+    "pass": true
+   }
+  },
+  "verdict": "fail: one of two (adam passes)"
+ }
+}

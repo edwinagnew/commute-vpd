@@ -38,3 +38,10 @@ def test_spearman_and_write_energy():
     dW = torch.tensor([[0.5, 7.0], [7.0, -0.25]])
     e = SR.write_energy({"m": (U, V)}, {"m": dW})["m"]
     assert torch.allclose(e, torch.tensor([0.5, 0.25]))
+
+
+def test_opened_counts_only_turned_down_entries_on_live_values():
+    g = {"h.0.mlp.c_fc": torch.tensor([[0.9, 0.05, 0.0, 0.5]]), "h.3.attn.q_proj": torch.tensor([[0.04, 1.0, 0.3]])}
+    o = SR.opened(g, S)  # c_fc: -0.2 on 0.05 opens 0.05; q_proj: -0.06 on 0.04 opens 0.04; raised entries open nothing
+    assert o.shape == (1,) and math.isclose(float(o[0]), 0.09, rel_tol=1e-6)
+    assert float(SR.opened(g, {k: v.clamp(min=0.0) for k, v in S.items()})[0]) == 0.0

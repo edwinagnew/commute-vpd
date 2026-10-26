@@ -1,0 +1,143 @@
+{
+ "C1": {
+  "claim": "W0 reads its known Pile values",
+  "rule": "faith_score.w0_check",
+  "read": {
+   "pgd_floor": 0.07481641823118812,
+   "stochastic_floor": 0.0010943289248412924,
+   "pgd_rel": 0.012784113054690183,
+   "ci_rel": 0.00048291282835366545
+  },
+  "verdict": "pass"
+ },
+ "C2": {
+  "claim": "teacher = W0 leaves the student at W0",
+  "rule": "step-1 loss == 0 and every offset == 0",
+  "read": {
+   "loss_step1": 0.0,
+   "max_offset": 0.0
+  },
+  "verdict": "pass"
+ },
+ "C3": {
+  "claim": "a reachable teacher is recovered",
+  "rule": "step 1000: gap <= 0.1 x W0's and |P - teacher's| <= 0.05",
+  "read": {
+   "gap_share": 0.005012578424883208,
+   "p_student": 0.9306195453532691,
+   "p_teacher": 0.9209545839180067,
+   "offset_recovery": 0.7610339077480537,
+   "hook_floor": 0.0007023513961348284
+  },
+  "verdict": "pass"
+ },
+ "P1": {
+  "claim": "arm A of the SGD teachers is faithful",
+  "rule": "state_verdict 'pass' at 100 and 1000, per task",
+  "read": {
+   "r1_t534_v369": [
+    "pass",
+    "pass"
+   ],
+   "r0_t352_v310": [
+    "pass",
+    "pass"
+   ],
+   "emoticon": [
+    "pass",
+    "pass"
+   ]
+  },
+  "verdict": "all three"
+ },
+ "P2": {
+  "claim": "arm A keeps the behaviour the adjoint split lost",
+  "rule": "r0, r1 SGD, step 1000: P >= 0.9 and >= adjoint's + 0.5",
+  "read": {
+   "r0_t352_v310": {
+    "student": 0.9416753157828618,
+    "adjoint": 0.2571786584205998
+   },
+   "r1_t534_v369": {
+    "student": 0.996295051574707,
+    "adjoint": 0.06316884517669678
+   }
+  },
+  "verdict": "pass"
+ },
+ "P3a": {
+  "claim": "arm B does not learn emoticon from the Pile",
+  "rule": "emoticon B, step 1000: P < 0.5, both teachers",
+  "read": {
+   "sgd": 0.9603184739204302,
+   "adam": 0.9021159916707914
+  },
+  "verdict": "fail"
+ },
+ "P3b": {
+  "claim": "arm B learns the r0/r1 cue from the Pile, faithfully (lean)",
+  "rule": "r0, r1 SGD B, step 1000: P and verdict",
+  "read": {
+   "r0_t352_v310": {
+    "p_target": 0.9188321678383836,
+    "verdict": "pass"
+   },
+   "r1_t534_v369": {
+    "p_target": 0.9741713333129883,
+    "verdict": "pass"
+   }
+  },
+  "verdict": "{\"r0_t352_v310\": \"learnt and faithful\", \"r1_t534_v369\": \"learnt and faithful\"}"
+ },
+ "P4": {
+  "claim": "arm S fails at 1000 on r0, r1 as SGD component training",
+  "rule": "S: pass, fail on r0, r1; pass, pass on emoticon",
+  "read": {
+   "r1_t534_v369": [
+    "pass",
+    "fail"
+   ],
+   "r0_t352_v310": [
+    "fail",
+    "fail"
+   ],
+   "emoticon": [
+    "pass",
+    "pass"
+   ]
+  },
+  "verdict": "fail"
+ },
+ "P5": {
+  "claim": "arm A of the Adam teachers passes where the teacher does not",
+  "rule": "step 1000: 'pass' on every task whose do-nothing reads fail or inconclusive",
+  "read": {
+   "r1_t534_v369": {
+    "student": "pass",
+    "do_nothing": "inconclusive"
+   },
+   "r0_t352_v310": {
+    "student": "pass",
+    "do_nothing": "pass"
+   },
+   "emoticon": {
+    "student": "pass",
+    "do_nothing": "inconclusive"
+   }
+  },
+  "verdict": "pass"
+ },
+ "P6": {
+  "claim": "arm A copies the teacher's damage elsewhere",
+  "rule": "damage / teacher's in [0.5, 2], every A at 1000",
+  "read": {
+   "r1_t534_v369 sgd": 0.9087426487262249,
+   "r1_t534_v369 adam": 0.5538899507854059,
+   "r0_t352_v310 sgd": 0.9539813704017148,
+   "r0_t352_v310 adam": 0.5273886903108838,
+   "emoticon sgd": 1.4784883564615077,
+   "emoticon adam": 0.32934287079542185
+  },
+  "verdict": "fail"
+ }
+}

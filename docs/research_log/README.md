@@ -182,3 +182,6 @@ Figures already published (their sources, for a re-upload):
 - "fig/e31_budget.png": "experiments/adjoint_sgd/figures/budget.png"
 - "fig/e31_size.png": "experiments/adjoint_sgd/figures/size.png"
 - "fig/e10_amend1_ratio.png": "experiments/kv_task/figures/amend1_ratio.png"
+- "fig/e34_behaviour.png": "experiments/teacher_training/figures/behaviour.png"
+- "fig/e34_faithful.png": "experiments/teacher_training/figures/faithful.png"
+- "fig/e34_amend1.png": "experiments/teacher_training/figures/amend1.png"

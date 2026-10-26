@@ -62,3 +62,20 @@ def test_score_reads_the_rules(tmp_path):
     plot.OUT, plot.FIG = path, tmp_path / "figures"
     plot.main()
     assert {p.name for p in (tmp_path / "figures").iterdir()} == {"pile.png", "topk.png", "split.png", "trigger.png", "adversarial.png"}
+
+
+def test_halves_score_reads_the_rules():
+    """Amendment 1 (halves.py): score() on a synthetic results dict, partial and complete, against E30's committed JSON."""
+    h = _load("gamma_shift_map_halves", EXP / "halves.py")
+    lab = h.CFG.label
+    out = {"C1": {"w0_check": {"pgd_floor": 0.035}}, "R_everywhere": {"zero": 0.0, "up": 0.40, "down": 0.25, "shift": 0.75},
+           "opened": {"down": 0.9, "shuffled_down": 0.1}, "pile": {f"{lab}/zero": _reading(0.36, 0.83, 1100.0)}}
+    sc = h.score(out)
+    assert sc["P2"]["pass"] is True and sc["P4"]["reading"] == "premise holds" and "P1" not in sc
+    out["pile"].update({f"{lab}/up": _reading(0.37, 0.80, 3400.0), f"{lab}/down": _reading(0.38, 7.0, 1000.0),
+                        f"{lab}/shift": _reading(0.40, 6.7, 3420.0)})
+    sc = h.score(out)
+    assert sc["P1"]["outcome"] == "lowered half" and sc["P3"]["reading"] == "cheating"
+    assert sc["route"] == h.PREDICTIONS["routes"]["lowered half, up cheating"]
+    out["pile"][f"{lab}/shift"] = _reading(0.40, 0.9, 3420.0)  # the positive control passes: no power
+    assert h.score(out)["P1"]["outcome"] == "no power"

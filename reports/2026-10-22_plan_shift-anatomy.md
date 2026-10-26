@@ -162,3 +162,16 @@ would silently change a number. Fixed from its list:
 Skipped: rounding of the steering move to the cache's dtype. Γ casts its input to bf16 anyway.
 
 Predictions filed 2026-10-22 17:43:55, sha256 `1dc6755ebd8b5198e9988f004166005ef5c5904ba2b1bba6e24aeca3ebf1537c`.
+
+## Hand-off (2026-10-22, lead)
+
+Ran clean on a RunPod 4090 (118 s, $0.21; cluster debug job 29618 did not start in 10 min and was cancelled). G1 and
+G2 passed on all eight states. Results: `experiments/shift_anatomy/results/shift_anatomy.json`, log
+`results/large/full.log` (sha256 in the runner's report: json 0afad63a…a4b5, log 8c4ba160…c19c). Next: a fresh
+session writes `reports/2026-10-22_analysis_shift-anatomy.md` by `/writeup`, scores each filed prediction from the JSON,
+adds the E32 row to `TRIED.md`, queues the log card in `docs/research_log/PENDING.md`, and updates the pending scope
+decision card (re-gating line) with the per-key result. The lead's first read, to be checked against the JSON: the
+fixed change holds per key on copy and the 32-pair cipher (0.84, 0.81, against 0.07 for random groups); the steering
+arm, the strength arm and the Pile-signature test all fail on copy while working (or having power) on word tasks; in
+the attention/MLP split, the attention matrices' change barely matters on any task and the MLP matrices carry the
+switching, so the filed ident32 attention prediction (reference ≥ 0.2 lower) reads as a miss.

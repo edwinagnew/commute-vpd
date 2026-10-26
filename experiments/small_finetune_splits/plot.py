@@ -5,6 +5,9 @@
                   share of the change left in Delta, along steps
   outside.png     outside-both share / its random-update null along the nine checkpoints, E14's large series beside it
   rescaling.png   rescaling share / its random-update null along the nine checkpoints, E14's large series beside it
+  blocks.png      where each update's input-weighted energy lies at steps 10/100/1000: the four blocks (inside both
+                  spans, write side only, read side only, outside both), a random update of the same size beside each,
+                  and the rescaling part of the inside-both block as a dark sliver (added 2026-10-23)
 
 Usage (repo root): uv run python experiments/small_finetune_splits/plot.py [results json]
 """
@@ -20,6 +23,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
+from matplotlib.patches import Patch
 from matplotlib.ticker import NullFormatter, ScalarFormatter
 
 HERE = Path(__file__).resolve().parent
@@ -32,6 +36,8 @@ OPS = {"nothing": "do-nothing", "least_squares": "least-squares split", "adjoint
 E14_OUT_OUT = (0.184, 0.175, 0.185, 0.199, 0.219, 0.274, 0.331, 0.352, 0.410)
 E14_RESCALING = (2.03, 1.99, 1.91, 1.91, 2.08, 2.65, 4.26, 5.70, 11.43)
 INK, MUTED = "#0b0b0b", "#8a8984"
+BLOCKS = {"in_in": ("inside both spans", "#2a78d6"), "in_out": ("write side only", "#9cc3ee"),
+          "out_in": ("read side only (new write directions)", "#f2c4ab"), "out_out": ("outside both", "#eb6834")}
 
 
 def style(ax: Axes) -> None:
@@ -114,12 +120,49 @@ def fig_series(out: dict, block: str, key: str, ref: tuple[float, ...], name: st
     fig.savefig(FIGURES / name, dpi=130)
 
 
+def fig_blocks(out: dict) -> None:
+    """Stacked shares per update and step (solid), the random null beside (hatched); outside-both labelled."""
+    steps = ["10", "100", "1000"]
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4.2), sharey=True)
+    for ax, (ft, label) in zip(axes, NAMES.items(), strict=True):
+        for i, st in enumerate(steps):
+            b = out["series"][ft][st]["blocks"]["pooled_ns"]
+            resc = out["series"][ft][st]["rescaling"]["pooled_ns"]["rescaling"]
+            base = base_null = 0.0
+            for key, (name, color) in BLOCKS.items():
+                ax.bar(i - 0.21, b[key], 0.4, bottom=base, color=color, edgecolor="white", lw=1,
+                       label=name if (ft == "sgd" and i == 0) else None)
+                ax.bar(i + 0.21, b["null_" + key], 0.4, bottom=base_null, color=color, edgecolor="white", lw=1,
+                       hatch="//", alpha=0.55)
+                base, base_null = base + b[key], base_null + b["null_" + key]
+            ax.bar(i - 0.21, resc, 0.4, bottom=0, color=INK, edgecolor="white", lw=1,
+                   label="of which: rescaling existing subcomponents" if (ft == "sgd" and i == 0) else None)
+            ax.text(i - 0.21, 1.012, f"{100 * b['out_out']:.1f}%", ha="center", va="bottom", fontsize=8.5, color=INK)
+            ax.text(i + 0.21, 1.012, f"{100 * b['null_out_out']:.0f}%", ha="center", va="bottom", fontsize=8.5,
+                    color=MUTED)
+        ax.set(xticks=range(3), xticklabels=steps, xlabel="fine-tune step", title=label, ylim=(0, 1.09))
+        ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+        for sp in ("top", "right"):
+            ax.spines[sp].set_visible(False)
+        ax.grid(True, axis="y", color="#e6e5e0", lw=0.6)
+        ax.set_axisbelow(True)
+    axes[0].set_ylabel("share of the update's input-weighted energy")
+    handles, labels = axes[0].get_legend_handles_labels()
+    handles.append(Patch(facecolor="#d9d8d3", edgecolor="white", hatch="//", label="random update of the same size"))
+    fig.legend(handles, labels + [handles[-1].get_label()], fontsize=8, ncol=3, loc="lower center", frameon=False)
+    fig.suptitle("Where does each fine-tune's energy lie, over the subcomponents' spans? "
+                 "(numbers: the outside-both share, solid bar vs random)", fontsize=11)
+    fig.tight_layout(rect=(0, 0.1, 1, 1))
+    fig.savefig(FIGURES / "blocks.png", dpi=130)
+
+
 def main() -> None:
     path = Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "results" / "small_finetune_splits.json"
     out = json.loads(path.read_text())
     FIGURES.mkdir(exist_ok=True)
     fig_placements(out)
     fig_adjoint(out)
+    fig_blocks(out)
     fig_series(out, "blocks", "out_out_ratio", E14_OUT_OUT, "outside.png", "outside-both share ÷ its null",
                "How much of each fine-tune lies where no subcomponent reaches?")
     fig_series(out, "rescaling", "rescaling_ratio", E14_RESCALING, "rescaling.png", "rescaling share ÷ its null",
