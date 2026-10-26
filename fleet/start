@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Start the lead agent on a task, in one command. Run it in an ssh shell on the dev node; the agent keeps running
+# after the shell closes.
+#   fleet/start "what to work on"   e.g. fleet/start "run the decision tree in reports/2026-10-23_plan_teacher-training.md"
+#   fleet/start                     no task: the agent does only analysis of what already exists (/design, class 1)
+# The task goes in FLEET_DATA/tonight, which the agent rereads every iteration, so editing that file redirects it.
+# Then: fleet/check to see how it is doing, fleet/stop to end it.
+set -euo pipefail
+[[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
+here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "$here/fleet.sh"
+if [[ $# -gt 0 ]]; then
+  printf '%s\n' "$*" > "$FLEET_DATA/tonight"; echo "task: $*"
+else
+  : > "$FLEET_DATA/tonight"; echo "task: none (analysis of existing results only)"
+fi
+"$here/up" lead
+echo "Started. Check on it with: fleet/check    Watch it live: tmux attach -t $FLEET_SESSION (leave with Ctrl-b d)"

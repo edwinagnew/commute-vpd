@@ -14,6 +14,12 @@ export PATH="$HOME/.local/bin:/usr/bin:$PATH"   # cron's PATH has neither claude
 # XDG_RUNTIME_DIR, without which systemd-run --user cannot reach the user's manager (mats-fleet, 21 October 2026).
 MEM_MAX=8G SLICE=commute.slice TOTAL_MEM_MAX=16G
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+# Without linger, systemd stops the user's manager, and the scopes the agents run in, soon after the last ssh session
+# closes: the agents would die when the laptop disconnects.
+if [[ "${1:-}" != stop && "${1:-}" != status && "$(loginctl show-user "$(id -un)" -p Linger --value 2>/dev/null)" != yes ]]; then
+  echo "up: linger is off, so the agents would stop when your ssh session closes. Run once: loginctl enable-linger" >&2
+  exit 1
+fi
 if systemd-run --user --scope --quiet true 2>/dev/null \
    && systemctl --user set-property --runtime "$SLICE" MemoryMax="$TOTAL_MEM_MAX" 2>/dev/null; then
   scope="systemd-run --user --scope --quiet --slice=$SLICE -p MemoryMax=$MEM_MAX -- "

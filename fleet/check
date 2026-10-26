@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# One screen on how the agents are doing: running or not, a prompt waiting for you, the task, the handoff note's
+# "Now" and "Next", the latest commits, and Slurm jobs. Safe to run any time; it changes nothing.
+#   fleet/check
+set -uo pipefail
+[[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
+here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "$here/fleet.sh"
+roles=$(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null | paste -sd' ')
+echo "running: ${roles:-NOTHING (start with fleet/start)}"
+[[ -s "$FLEET_DATA/blocked.txt" ]] && { echo "WAITING FOR YOU (tmux attach -t $FLEET_SESSION):"; sed 's/^/  /' "$FLEET_DATA/blocked.txt"; }
+task=$(head -c 300 "$FLEET_DATA/tonight" 2>/dev/null)
+echo "task: ${task:-none (analysis only)}"
+note="$FLEET_DATA/agents/lead/handoff.md"
+if [[ -s "$note" ]]; then
+  echo "--- lead's note, updated $(date -r "$note" '+%a %H:%M')"
+  # Only the "Now" and "Next" sections, at most 12 lines each.
+  awk '/^## /{show = tolower($0) ~ /^## (now|next)/; n = 0} show && n++ < 12' "$note"
+else
+  echo "--- lead's note: none yet (written at the end of its first iteration)"
+fi
+echo "--- latest commits"
+git -C "$FLEET_AGENTS/lead" log --format='  %ad %s' --date=format:'%a %H:%M' -6 2>/dev/null
+jobs=$(squeue -u "$USER" -h -o '  %i %j %T %M' 2>/dev/null)
+echo "--- Slurm jobs: ${jobs:+$'\n'}${jobs:-none}"
+echo "--- pods: see the RunPod console (named commute-...)"

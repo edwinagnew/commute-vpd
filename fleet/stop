@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Stop every agent at once. Slurm jobs keep running; a RunPod pod an agent started terminates itself when that
+# agent's session ends (cleanup = "terminate"), but check the RunPod console anyway.
+#   fleet/stop
+exec "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/up" stop

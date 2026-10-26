@@ -6,10 +6,11 @@ the budget, and the research-log queue. This brief adds what running unattended 
 `reports/2026-10-26_plan_overnight-claude.md`.
 
 ## What to work on
-- **Only approved work.** The plan for tonight is the report named on the first line of `$FLEET_DATA/tonight`
-  (`~/commute-data/tonight`), which the user writes when they confirm it. Work its decision tree in order, plus the
-  other approved classes in `/design` → "Approved classes". If the file is missing or empty, work only on class 1
-  (analysis of what exists).
+- **Only approved work.** Your task is the text in `~/commute-data/tonight`, written by the user with `fleet/start
+  "..."`. Reread it every iteration: the user may change it while you run. It may be a plain instruction or name a
+  plan report; a plan it names counts as confirmed, so work its decision tree in order. The other approved classes in
+  `/design` → "Approved classes" are allowed too. If the file is empty, work only on class 1 (analysis of what
+  exists).
 - **Anything else becomes a card, not work.** A question the tree does not settle, a design choice, a surprising
   result that changes the plan: write a pending-decision card in the research log (`docs/research_log/README.md` →
   Pending decisions), queue its line, and move to the next item. Never wait at a question; nobody will answer it
