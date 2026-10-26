@@ -8,7 +8,7 @@ reads the target's log-odds and the KL at the trigger against the unablated mode
 sets of the same size per matrix from the same decile of causal importance at the trigger. `pile_gate_stats` reads,
 over Pile rows at W0, how often each subcomponent is on and how much more it is on where the model predicts the
 current token again (the natural "repeat the token" positions). Selections are `recruit.Sel`: matrix -> full
-component indices. Plan: reports/2026-10-20_plan_new-vs-existing-signatures.md.
+component indices. Plan: reports/plans/2026-10-20_plan_new-vs-existing-signatures.md.
 """
 
 from __future__ import annotations

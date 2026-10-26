@@ -10,7 +10,7 @@ metadata:
 
 E4 (2026-10-15) tried plain-SGD component training at rates 0.3–30, reported "no SGD learning rate works", and every
 run for six days used Adam on that basis. The 2026-10-21 grid at 0.001–0.1 found SGD works at 0.003–0.1. The review
-`reports/2026-10-21_review_sgd-finding-influence.md` traces what the wrong premise propped up (the "no frozen-Γ map
+`reports/reviews/2026-10-21_review_sgd-finding-influence.md` traces what the wrong premise propped up (the "no frozen-Γ map
 stays faithful" half of the main-line claim) and ranks the re-runs.
 
 **Why:** a coarse grid whose best value fails at an edge, in the direction of that edge, has not tested the claim; and

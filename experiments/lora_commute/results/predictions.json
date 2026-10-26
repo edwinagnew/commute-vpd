@@ -1,5 +1,5 @@
 {
- "about": "lora_commute (2026-10-19): fine-tune the emoticon -> `o` behaviour as a LoRA on h.2.mlp.down_proj and commute it past the released decomposition with the maps on hand (Euclidean lift of the finished delta-W; pull-back = training the subcomponents, here confined to the LoRA's matrix and rank), beside the full-weight fine-tune under the same maps. The user's question: is a LoRA update easier to decompose than a normal fine-tuning update (instinct: yes). Plan reports/2026-10-19_plan_lora-lift-and-pullback.md plus its addendum. Filed before any arm was trained.",
+ "about": "lora_commute (2026-10-19): fine-tune the emoticon -> `o` behaviour as a LoRA on h.2.mlp.down_proj and commute it past the released decomposition with the maps on hand (Euclidean lift of the finished delta-W; pull-back = training the subcomponents, here confined to the LoRA's matrix and rank), beside the full-weight fine-tune under the same maps. The user's question: is a LoRA update easier to decompose than a normal fine-tuning update (instinct: yes). Plan reports/plans/2026-10-19_plan_lora-lift-and-pullback.md plus its addendum. Filed before any arm was trained.",
  "blind_to": {
   "Pile PGD ratio": "a trigger-specific attack (the adversary is shared over 65k Pile positions holding ~3 triggers; cover: round 2's calibration, the W0 floor); the task-local adversary has no power (review above)",
   "controls": "G2 for the lift (the state must be the LoRA's model exactly), the lr rule for the pull-back (it must learn), the W0 seeds for the PGD floor, the reproduction gates G4 for the harness",
@@ -31,7 +31,7 @@
  "measurements": {
   "S_on": "recruit.switched at 0.3: alive subcomponents whose mean trigger gate rises by > 0.3; Jaccard with the ft do-nothing arm's set (and with the recruit test's ft_s0 file if present)",
   "inexpressible": "lift.weighted_fractions with Sigma = E[a a^T] of the matrix's input over the train windows: the share of the update's output energy no first-order change of the alive subcomponents can express; per matrix for the LoRA, pooled by energy over the non-saturated matrices for ft",
-  "local": "local_faith.local_faithfulness: reported only (its adversaries saturate; reports/2026-10-19_review_pgd-local.md)",
+  "local": "local_faith.local_faithfulness: reported only (its adversaries saturate; reports/reviews/2026-10-19_review_pgd-local.md)",
   "moved": "subcomponents whose rank-1 matrix changes by more than 1% of its norm (identity.change_stats); the top 20 by ||Delta(u v^T)|| for P5",
   "pgd_floor": "f = max/min - 1 of the W0 PGD KL over the 3 adversary seeds; 'within 3 floors' = ratio <= 1 + 3 f",
   "pile": "faithfulness.pile_faithfulness (2 blocks of 128 val rows 0..255, one adversary per block, 20 steps of 0.1; stochastic, PGD, CI-masked, unmasked KL with Delta in/out as in rounds 1-3); ratio = arm / W0 seed 0",

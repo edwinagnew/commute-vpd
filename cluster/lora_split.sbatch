@@ -1,7 +1,7 @@
 #!/bin/bash
 # lora_split: every saved LoRA and a re-run fine-tune through one split table (four blocks, rescaling share, both splits'
 # pieces), then part 2 (do-nothing, least-squares and scaled adjoint split states on Pile at steps 10, 100, 1000).
-# Design check confirmed by the user 2026-10-20 (reports/2026-10-20_plan_lora-split.md). The arguments go to run.py:
+# Design check confirmed by the user 2026-10-20 (reports/plans/2026-10-20_plan_lora-split.md). The arguments go to run.py:
 #   cd ~/commute-agents/<role>
 #   sbatch --job-name=commute-lora_split-smoke --time=00:25:00 cluster/lora_split.sbatch all --smoke
 #   sbatch cluster/lora_split.sbatch all

@@ -1,5 +1,5 @@
 #!/bin/bash
-# What the turned-down half of re-gating's fixed change does, read at W0 (E29). Plan: reports/2026-10-22_plan_regating-down.md.
+# What the turned-down half of re-gating's fixed change does, read at W0 (E29). Plan: reports/plans/2026-10-22_plan_regating-down.md.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/regating_down.sbatch      # ~3-5 min on an L40: the J_nat control first, stops the job on a fail
 # Before that: `cluster/sync.sh up` and predictions filed (results/predictions.json). Inputs on NFS (gitignored):

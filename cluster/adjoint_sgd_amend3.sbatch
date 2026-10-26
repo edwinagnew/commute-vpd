@@ -1,5 +1,5 @@
 #!/bin/bash
-# adjoint_sgd (E31) amendment 3: the unscaled adjoint split beside the scaled one. Plan: reports/2026-10-22_plan_adjoint-sgd.md
+# adjoint_sgd (E31) amendment 3: the unscaled adjoint split beside the scaled one. Plan: reports/plans/2026-10-22_plan_adjoint-sgd.md
 # -> "Amendment 3". One emoticon seed-0 fine-tune per job, ~20 min (W0 ~6 min, the 1000-step fine-tune, six harness readings):
 #   cd ~/commute-agents/<role>
 #   sbatch --export=ALL,CELL=sgd cluster/adjoint_sgd_amend3.sbatch     # FIRST, alone

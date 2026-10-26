@@ -14,7 +14,7 @@
   "G4_reproduces": "if the emoticon held-out set has 73 windows (the concentration test's): emoticon pull-back step 30 CI-masked P(o) with C0 and G1 within 0.02 of 0.535, and with C1 and G1 within 0.02 of 0.635. A miss is reported and its cause found before the analysis is written"
  },
  "measure": "src/commute/local_faith.route_split on the held-out windows at the trigger. L(C, G) = mean trigger log-odds of the target token of the masked model (Delta out) with components C (C0 released, C1 state) and gates G (G0 = Gamma on W0's activations, G1 = on the state's); U unmasked, T target; gain = T1 - T0. Shares (/ gain): d = L(C1,G0) - L(C0,G0); r = L(C0,G1) - L(C0,G0); i = L(C1,G1) - L(C1,G0) - L(C0,G1) + L(C0,G0); e_gate = (U1 - L(C1,G1)) - (U0 - L(C0,G0)); e_delta = (T1 - U1) - (T0 - U0). Sum = 1 exactly. retained_ci_masked = d + r + i, retained_unmasked = 1 - e_delta. Absolute shares, not ratios",
- "plan": "reports/2026-10-16_prediction_ladder-routes-amendment.md (amends reports/2026-10-15_plan_task-ladder.md before anything ran; predictions.json is not edited)",
+ "plan": "reports/predictions/2026-10-16_prediction_ladder-routes-amendment.md (amends reports/plans/2026-10-15_plan_task-ladder.md before anything ran; predictions.json is not edited)",
  "predictions": {
   "A1_coverage_predicts_direct": {
    "measure": "d(pull-back, step 10) of each scorable rung's high- and low-coverage task",

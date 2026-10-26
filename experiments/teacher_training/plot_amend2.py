@@ -1,5 +1,5 @@
 """Figure and scorecard for teacher_training Amendment 2, dropping the rows where the emoticon trigger is partly on
-(plan: reports/2026-10-23_plan_teacher-training.md -> "Amendment 2"), read from the JSONs only.
+(plan: reports/plans/2026-10-23_plan_teacher-training.md -> "Amendment 2"), read from the JSONs only.
 
   amend2.png             top: held-out P(target) of the Pile-text copy per emoticon teacher in its four versions, in
                          order of how much trigger text is removed (B, B-masked, B-dropped at 0.5, B-dropped at 0.1;

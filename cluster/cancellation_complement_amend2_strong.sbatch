@@ -1,6 +1,6 @@
 #!/bin/bash
 # Complement revert (E20), amendment 2, stage amend2_strong. Plan:
-# reports/2026-10-21_plan_cancellation-complement.md -> Amendment 2.
+# reports/plans/2026-10-21_plan_cancellation-complement.md -> Amendment 2.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/cancellation_complement_amend2_strong.sbatch    # ~12-14 min: the stronger adversary at W0 (control C2 first), then r1 t534; 190 sign steps per model
 # Before that: `cluster/sync.sh up`, results/predictions_amend2.json filed, and amendment 1's

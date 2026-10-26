@@ -22,7 +22,7 @@ quantities in §7 are candidates for round 2 and go through `/design` before any
 *2026-10-20 note on words. This note uses "lift" in its geometric sense (any (δU, δV) realising a weight change) and
 "pull-back" for the pull-back of the loss covector. The project's vocabulary is `GOALS.md` → Terms: Definition 3's
 Euclidean lift is the **least-squares split**; the adjoint $d\sigma^*$ applied to a finished δW is the **adjoint
-split**; §5.3's gradient pull-back is **component training**. See `reports/2026-10-20_review_terminology.md`.*
+split**; §5.3's gradient pull-back is **component training**. See `reports/reviews/2026-10-20_review_terminology.md`.*
 
 ## 1. Objects
 

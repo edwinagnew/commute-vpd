@@ -1,8 +1,8 @@
 """Concentration test: is the pull-back's diffuse update an optimiser artefact, and can the emoticon behaviour be
 learned inside the decomposition by moving only a few subcomponents (or only the paper's emoticon subcomponents)?
 
-Plan and design check: reports/2026-10-15_plan_concentration-test.md (confirmed by the user 2026-10-15).
-Measurement scope follows reports/2026-10-15_review_faithfulness-scope.md: faithfulness on Pile cannot see the
+Plan and design check: reports/plans/2026-10-15_plan_concentration-test.md (confirmed by the user 2026-10-15).
+Measurement scope follows reports/reviews/2026-10-15_review_faithfulness-scope.md: faithfulness on Pile cannot see the
 trigger, so trigger-local metrics on the held-out windows are added, with do-nothing as their positive control, and a
 three-seed noise floor for the Pile metrics on W0.
 
@@ -13,9 +13,9 @@ Stages:
   --predictions-amend   file results/predictions_amend1.json (refuses to overwrite)
   --predictions-amend2  file results/predictions_amend2.json (refuses to overwrite)
   gating          GPU: which subcomponents switch on at the trigger, and do they already push towards `o` at W0
-                  -> results/amend2.json (reports/2026-10-15_prediction_gating-amendment.md)
+                  -> results/amend2.json (reports/predictions/2026-10-15_prediction_gating-amendment.md)
   amend           GPU: retrain each arm's selected run; trigger-local CI-masked P(o) with Gamma's gates computed on
-                  W0's activations -> results/amend1.json (reports/2026-10-15_prediction_concentration-amendment.md)
+                  W0's activations -> results/amend1.json (reports/predictions/2026-10-15_prediction_concentration-amendment.md)
 
 Usage (repo root):  uv run python experiments/concentration_test/run.py all
 """
@@ -146,7 +146,7 @@ PRED_AMEND = RESULTS / "predictions_amend1.json"
 
 PREDICTIONS_AMEND: dict[str, Any] = {
     "about": (
-        "Amendment 1 to concentration_test (reports/2026-10-15_prediction_concentration-amendment.md). The original "
+        "Amendment 1 to concentration_test (reports/predictions/2026-10-15_prediction_concentration-amendment.md). The original "
         "predictions.json is unchanged. The trigger-local control failed its filed rule: do-nothing's CI-masked P(o) was "
         "0.535 (needed < 0.498) because the frozen Gamma reads the fine-tuned activations and its gates alone move the "
         "component model towards `o`. This amendment fixes the gates to W0: Gamma's g is computed from the W0 model's "
@@ -186,7 +186,7 @@ GATING_ARMS = ("do_nothing", "adam_all", "top1", "top10", "siblings")
 
 PREDICTIONS_AMEND2: dict[str, Any] = {
     "about": (
-        "Amendment 2 to concentration_test (reports/2026-10-15_prediction_gating-amendment.md). Amendment 1 found that "
+        "Amendment 2 to concentration_test (reports/predictions/2026-10-15_prediction_gating-amendment.md). Amendment 1 found that "
         "the arms explain the behaviour at the trigger only with Gamma re-gating on the fine-tuned activations (CI-masked "
         "P(o) 0.98 state-gated, <= 0.37 with W0's gates), and do-nothing reaches 0.535 state-gated with every "
         "component at W0. Question: which subcomponents switch on, and do they already push towards `o` at W0 (the "

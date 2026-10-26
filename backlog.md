@@ -13,12 +13,12 @@ Deferred ideas and loose ends. Date each entry.
   revisit once the frozen-Γ maps are understood. Simplest form: let Γ re-fit for a few steps.
   2026-10-20: started as E15 (`experiments/gamma_refit`); the refit as filed fails its W₀ control (adversarial 2.6–6.3 at
   every checkpoint). 2026-10-21: the protocol fix (adversary warm-up, lr 5e-6) failed the W₀ control too (2.1 at step
-  100, 7.8 at 300; `reports/2026-10-21_plan_gamma-refit-protocol.md`). Shelved, then reopened by the user the same day
-  (`reports/2026-10-21_decision_gamma-refit-reopened.md`): **ongoing, being fixed**. The refit's attacker plateaus at 0.42 nats where the harness's
+  100, 7.8 at 300; `reports/plans/2026-10-21_plan_gamma-refit-protocol.md`). Shelved, then reopened by the user the same day
+  (`reports/decisions/2026-10-21_decision_gamma-refit-reopened.md`): **ongoing, being fixed**. The refit's attacker plateaus at 0.42 nats where the harness's
   reaches 0.70 on the same Γ; the fix is a matched attacker, its W₀ control run first.
-- 2026-10-14. **Round 2 inputs** (planned 2026-10-14 as round 2, `reports/2026-10-14_plan_lift-test.md`; the k-sparse
+- 2026-10-14. **Round 2 inputs** (planned 2026-10-14 as round 2, `reports/plans/2026-10-14_plan_lift-test.md`; the k-sparse
   nulls, selectors, span{U_c, u_o} edits and k = 1 on `2359` were dropped from it and stay here). Sources: "What this changes" in
-  `reports/2026-10-14_analysis_transport-test.md` and in `reports/2026-10-14_review_round1-audit.md`, and §7 of
+  `reports/analyses/2026-10-14_analysis_transport-test.md` and in `reports/reviews/2026-10-14_review_round1-audit.md`, and §7 of
   `theory/commuting_updates.md`.
   - From the user (2026-10-14):
     - test component training, i.e. apply the post-training step to U and V instead of W;
@@ -50,7 +50,7 @@ Deferred ideas and loose ends. Date each entry.
   - RL updates may avoid principal directions, so they could have a high ω;
   - on-policy distribution shift may break a frozen Γ;
   - errors may accumulate over long runs.
-  Feasibility and fairness scoped in `reports/2026-10-14_analysis_rl-feasibility.md` (2026-10-14): match on
+  Feasibility and fairness scoped in `reports/analyses/2026-10-14_analysis_rl-feasibility.md` (2026-10-14): match on
   behavioural effect rather than ‖δW‖; first gate is faithfulness of the unchanged decomposition on on-policy rollouts.
 - 2026-10-14. **Component-training variant: let Δ take what the pieces cannot** (user's question; analysis by a coding agent, not
   run). The question was whether the leftover Δ could absorb the part of each gradient G that the pieces do not take.
@@ -79,18 +79,18 @@ Deferred ideas and loose ends. Date each entry.
     weights then move the way LoRA wants. Against: whatever Δ absorbs can accumulate over steps, so the pieces may
     end up carrying little and nothing is learned about the decomposition. Measure that accumulation
     (‖Δ − Δ₀‖² / ‖δW‖² along training) if this arm is run. 2026-10-16: this arm is the one that makes the
-    residual share e_Δ of the route split informative (`reports/2026-10-16_prediction_ladder-routes-amendment.md`);
+    residual share e_Δ of the route split informative (`reports/predictions/2026-10-16_prediction_ladder-routes-amendment.md`);
     the functional version of the accumulation check is e_Δ along training.
-    2026-10-19: pros and cons of (a) and (b) against the run maps in `reports/2026-10-19_review_update-map-variants.md`
+    2026-10-19: pros and cons of (a) and (b) against the run maps in `reports/reviews/2026-10-19_review_update-map-variants.md`
     (drop (b): the adjoint split applied per step. 2026-10-20: (b) one-shot on a finished update is the user's map, see the LoRA split entry; (a) only at the first rung Δ-fixed component training fails).
 - 2026-10-15. **Round 3 (new skill) shelved** by the user: too much about the emoticon case is not understood yet.
-  Plan kept at `reports/2026-10-14_plan_new-skill-test.md`.
+  Plan kept at `reports/plans/2026-10-14_plan_new-skill-test.md`.
 - 2026-10-15. **Is the part of an update outside the subcomponents a flaw of the update or of the decomposition?**
   (user). The two readings to separate: LoRA (or the optimiser) is inherently noisy, or VPD inherently misses some
   structure the model uses. A seed-consistency test of the obstruction was proposed and rejected by the user as not
   addressing this. Needs a design that separates the two directly.
 - 2026-10-15. **Measurement fixes required before any new round** (user: "something that needs to be fixed";
-  `reports/2026-10-15_review_faithfulness-scope.md`). Status after the same day's harness work:
+  `reports/reviews/2026-10-15_review_faithfulness-scope.md`). Status after the same day's harness work:
   - **Task-local faithfulness: done** (`src/commute/local_faith.py`, `tests/test_local_faith.py`): the variants on
     held-out windows with the trigger separate, plus a trigger-objective PGD; scored as *retained* (each variant's own
     log-odds gain over W₀ divided by the target's). **Correction:** do-nothing cannot be the positive control for the
@@ -104,13 +104,13 @@ Deferred ideas and loose ends. Date each entry.
     half the gain, so the per-subcomponent version is worth doing on that state.
   - **Save every trained state: done** in `component_training.train` (states written at the save steps).
   - **"Blind to" line per metric: done** as a rule in `.claude/CLAUDE.md`; the ladder's predictions carry one.
-- 2026-10-15. **Round 3 = the task ladder** (`reports/2026-10-15_plan_task-ladder.md`, confirmed by the user; done, see the 2026-10-19 entry). Deferred
+- 2026-10-15. **Round 3 = the task ladder** (`reports/plans/2026-10-15_plan_task-ladder.md`, confirmed by the user; done, see the 2026-10-19 entry). Deferred
   from it: rungs 3 and 4 (rare and never; rung 4 is the shelved new-skill test's question), a per-window PGD adversary,
   Pile side-effect checks at every rung.
 - 2026-10-15. **Rank-r component training on the LoRA's matrix** (then called "LoRA through component training"; run on one matrix in
   `experiments/lora_commute` 2026-10-19 and on all 24 in E13. **2026-10-20: this was never the user's LoRA question**, which
   is the LoRA split entry of 2026-10-20 below; the 2026-10-15 definition came from three agent-offered readings, none of
-  them the user's, `reports/2026-10-20_review_terminology.md`). **Defined via `/design`
+  them the user's, `reports/reviews/2026-10-20_review_terminology.md`). **Defined via `/design`
   (user, 2026-10-15): arms (i) + (ii)**, both on `h.2.mlp.down_proj` alone, with Γ and Δ frozen.
   - (i) Same matrix: train only that matrix's alive offsets, W′ = (U + dU)(V + dV)ᵀ + Δ; the other 23 matrices are
     frozen. This matches the LoRA's support but not its capacity.
@@ -136,10 +136,10 @@ Deferred ideas and loose ends. Date each entry.
   residual) plus per-component ledger entries (`theory/component_identity.md`) counts as which verdict is not written
   down anywhere, and neither is what a recruited subcomponent must have done *before* the update for "recruit" to mean
   more than "any perturbation switches these on". Output wanted: a short decision report fixing the mapping, ideally
-  before the ladder's routes are scored. 2026-10-19: first data for it in `reports/2026-10-19_analysis_key-value-task.md`:
+  before the ladder's routes are scored. 2026-10-19: first data for it in `reports/analyses/2026-10-19_analysis_key-value-task.md`:
   the identity control is carried by re-switching (r 0.76–0.80), the random cipher by subcomponents Γ does not switch on
   (e_gate 0.75–0.86), in one format; under frozen Γ the sparsity loss cannot tell maps apart (it reads W′ only).
-- 2026-10-19. **From the recruit test** (`reports/2026-10-19_analysis_recruit-test.md`). (a) Is the recruited set the model's
+- 2026-10-19. **From the recruit test** (`reports/analyses/2026-10-19_analysis_recruit-test.md`). (a) Is the recruited set the model's
   existing `o` machinery at W₀? Needs about 600 Pile val rows for 200 positions whose next token is `o` (256 rows gave 96),
   or a better definition of "natural" than next-token identity. (b) The switched-off set (about 130 subcomponents per arm)
   is unexamined. (c) Γ is a global shared transformer over all 24 matrices' inputs and all positions: every "blind to"
@@ -147,9 +147,9 @@ Deferred ideas and loose ends. Date each entry.
   per-layer or per-matrix locality arguments should be re-checked against that (G1b still holds). (d) r was the same for
   `o` and for the different-target nulls (0.55 to 0.60): r measures how much a trigger-local behaviour can be routed
   through existing gates at all, so the ladder's P2 (coverage predicts r) should be read with that in mind.
-- 2026-10-19. **From the task ladder** (`reports/2026-10-19_analysis_task-ladder.md`). (a) Round 4: Γ updating vs constrained placement (sparse/sibling component training, component training against Γ's values) on the rung-2 tasks, where e_gate dominates; needs `/design`. (b) A G1b that learns (more steps or larger lr on the 21 gated-on `h.3.mlp.down_proj` components) before any "d is small" claim. (c) Rungs 3 and 4, once d has somewhere to go. (d) PGD check: **done 2026-10-19** (`reports/2026-10-19_review_pgd-local.md`): retained_pgd has no power (seed spread 55–88 nats against 4–15 nat gains, sign flips) and stays reported-only; the window adversaries saturate because the windows are alike (one context for a shared mask), not because of the position count. Open, needs `/design`: the 128-document Pile adversary read at the task windows' trigger, the one remaining test of "fragile at the trigger". (e) Switched-on set and cross-task Jaccard (amendment's reported list) never implemented. (f) Why r2_t275's step-10 kl_other is 0.82 (0.49 at W₀). (g) Merge the nested `results/results/large/` into `results/large/`.
-- 2026-10-19. **Reading-A coverage gaps** (`reports/2026-10-19_decision_success-criterion.md`). **Done 2026-10-19**
-  (`reports/2026-10-19_analysis_reading-a-coverage.md`): Pile ratios and the sparsity loss on all five remaining ladder tasks,
+- 2026-10-19. **From the task ladder** (`reports/analyses/2026-10-19_analysis_task-ladder.md`). (a) Round 4: Γ updating vs constrained placement (sparse/sibling component training, component training against Γ's values) on the rung-2 tasks, where e_gate dominates; needs `/design`. (b) A G1b that learns (more steps or larger lr on the 21 gated-on `h.3.mlp.down_proj` components) before any "d is small" claim. (c) Rungs 3 and 4, once d has somewhere to go. (d) PGD check: **done 2026-10-19** (`reports/reviews/2026-10-19_review_pgd-local.md`): retained_pgd has no power (seed spread 55–88 nats against 4–15 nat gains, sign flips) and stays reported-only; the window adversaries saturate because the windows are alike (one context for a shared mask), not because of the position count. Open, needs `/design`: the 128-document Pile adversary read at the task windows' trigger, the one remaining test of "fragile at the trigger". (e) Switched-on set and cross-task Jaccard (amendment's reported list) never implemented. (f) Why r2_t275's step-10 kl_other is 0.82 (0.49 at W₀). (g) Merge the nested `results/results/large/` into `results/large/`.
+- 2026-10-19. **Reading-A coverage gaps** (`reports/decisions/2026-10-19_decision_success-criterion.md`). **Done 2026-10-19**
+  (`reports/analyses/2026-10-19_analysis_reading-a-coverage.md`): Pile ratios and the sparsity loss on all five remaining ladder tasks,
   states saved on the cluster NFS (`/mnt/nw/home/e.agnew/commute/experiments/reading_a_coverage/results/large/` on the cluster NFS, 2.3 GB; `cluster/sync.sh large`). The component training fails the adversarial check on r0_t352 (2.73),
   r1_t534 (2.24) and r2_t275 (6.74); r2_t359's 1.53 is real (3 seeds 1.38–1.55). Open, through `/design`: (a) matched
   kl_other instead of matched steps (component training's off-target KL is 1.6–2.5× the fine-tune's at step 10 and the PGD
@@ -157,14 +157,14 @@ Deferred ideas and loose ends. Date each entry.
   the excess sits in the subcomponents Γ switches on at the trigger; (d) state-level PGD floors (block spread at the
   component-training states is 2–3× W₀'s). The sparsity loss stays reported-only while Γ is frozen (follows W′ only).
 
-- **LoRA with a non-random read side** (2026-10-19, from the LoRA commute test, `reports/2026-10-19_analysis_lora-commute.md`). **Dropped 2026-10-19** at `/design` (`reports/2026-10-19_review_lora-failure-and-fixes.md`, 3.1, `TRIED.md`): the write-only half of `pb_r`, already measured; the L40 rerun of the split is folded into `experiments/lora_matched` as its control.
+- **LoRA with a non-random read side** (2026-10-19, from the LoRA commute test, `reports/analyses/2026-10-19_analysis_lora-commute.md`). **Dropped 2026-10-19** at `/design` (`reports/reviews/2026-10-19_review_lora-failure-and-fixes.md`, 3.1, `TRIED.md`): the write-only half of `pb_r`, already measured; the L40 rerun of the split is folded into `experiments/lora_matched` as its control.
   A LoRA's A factor stays near its random init (|cos| 0.92–0.98 at the scored step), so its outside share sits at the
   isotropic null and its least-squares split leaves a third of the behaviour in Δ. Candidate arm: train A before B, or initialise A from the
   matrix's alive read vectors, then split; the test is whether the outside share drops below W₀'s own 0.13–0.21 and e_Δ
   towards the full-weight split's 0.085. Also pending: a 5-minute L40 rerun of round 2's least-squares split at step 10 to close the 4090-vs-L40
   PGD miss (7.3 vs 5.4). Through `/design`.
 
-- 2026-10-19. **Key → value task follow-up (round 6, `reports/2026-10-19_analysis_key-value-task.md`; parked by the user:
+- 2026-10-19. **Key → value task follow-up (round 6, `reports/analyses/2026-10-19_analysis_key-value-task.md`; parked by the user:
   "trying to do too much at once").** (a) The matched-size Pile check: round 2's Pile harness on the saved component training
   states (cluster NFS, `experiments/kv_task/results/large/<task>/pullback/state_step{100,300}.pt`) for ident32 at steps
   100/300 (‖δW‖/‖W₀‖ 0.0141/0.0151, matching rand32's scored 0.0154) and rand32 at 100/300. Separates update size from the
@@ -175,10 +175,10 @@ Deferred ideas and loose ends. Date each entry.
 - 2026-10-20. **Rank-8 component training on all 24 matrices: run 2026-10-20 (TRIED E13; its files were deleted 2026-10-20 at the user's request, TRIED's row is the record): faithful, Pile PGD 1.14/1.28, Δ untouched; one-matrix control 4.5.** It was run under the name
   "LoRA component training" in answer to the user's repeated request ("I feel like I've said a million times i want to test lora
   pullback"), but no LoRA is trained in it; it answered the 2026-10-15 backlog definition, not the user's
-  (`reports/2026-10-20_review_terminology.md` §3). The user's request is the next entry.
-- 2026-10-20. **Split study: LoRA and fine-tune under one table** — **run 2026-10-20 as E14**: `reports/2026-10-20_plan_lora-split.md`,
-  `reports/2026-10-20_analysis_lora-split.md`, `experiments/lora_split` (the per-subcomponent pieces were lost with the pod; rerun the split stage on the cluster) (the user's request since 2026-10-14, never built before;
-  `reports/2026-10-20_review_terminology.md` §7; user 2026-10-20: "train a rank r lora matrix AB, possibly to completion.
+  (`reports/reviews/2026-10-20_review_terminology.md` §3). The user's request is the next entry.
+- 2026-10-20. **Split study: LoRA and fine-tune under one table** — **run 2026-10-20 as E14**: `reports/plans/2026-10-20_plan_lora-split.md`,
+  `reports/analyses/2026-10-20_analysis_lora-split.md`, `experiments/lora_split` (the per-subcomponent pieces were lost with the pod; rerun the split stage on the cluster) (the user's request since 2026-10-14, never built before;
+  `reports/reviews/2026-10-20_review_terminology.md` §7; user 2026-10-20: "train a rank r lora matrix AB, possibly to completion.
   Then split it into a sum of updates on subcomponents. Study how much lies outside the span of the subcomponents").
   Decision (user, 2026-10-20): "outside" is measured against the first-order span dU Vᵀ + U dVᵀ, for now.
   Train nothing for the LoRAs: load the saved factors (E7 ranks 1 to 32 on one matrix, step 100; E8 rank 8 on 24
@@ -201,7 +201,7 @@ Deferred ideas and loose ends. Date each entry.
     same split table on the same task, steps, matrices and card, so the techniques read side by side instead of one
     number per experiment.
 
-- 2026-10-20. Why the adversary moves and the stochastic check does not (`reports/2026-10-20_analysis_adversarial-vs-stochastic.md`,
+- 2026-10-20. Why the adversary moves and the stochastic check does not (`reports/analyses/2026-10-20_analysis_adversarial-vs-stochastic.md`,
   "Hand-off"). From existing data: the adversary's extra damage at the component-training states needs a selective mask; turning
   every maskable subcomponent down together costs 50–300× less. That is the signature of changes that cancel across
   component training's subcomponents (brittleness), with stale Γ as the enabling condition. Next, through `/design`: the
@@ -224,7 +224,7 @@ Deferred ideas and loose ends. Date each entry.
   definition precisely (share and set, with a null) and check it against the existing ladder, key-value and recruit
   results before any new run; the decision on adding it to `GOALS.md` is the user's.
 - 2026-10-21. **The unused contrast: one-shot adjoint vs component training** (direction review,
-  `reports/2026-10-21_decision_regating-main-line.md`). One SGD step of component training moves W by
+  `reports/decisions/2026-10-21_decision_regating-main-line.md`). One SGD step of component training moves W by
   K(G) = UUᵀG + GVVᵀ, which is the adjoint split of that step's gradient. Yet the scaled adjoint state of a finished
   10-step fine-tune stays at the adversarial floor (E14), while Adam component training over the same steps fails on
   about half the tasks (E11). If the per-step operator is the same, the difference is in how the steps accumulate:
@@ -237,7 +237,7 @@ Deferred ideas and loose ends. Date each entry.
   (2) the coherence statistic from the cancellation tests on the adjoint state vs component training's state;
   (3) component training with VPD's stochastic and adversarial reconstruction terms added to its loss. (3) may not
   count as "simple" under GOALS (no re-fitting); the user's call. Through `/design`.
-  2026-10-21: E19 (`reports/2026-10-21_analysis_step-split.md`) bears on the scale-c branch: the adjoint split
+  2026-10-21: E19 (`reports/analyses/2026-10-21_analysis_step-split.md`) bears on the scale-c branch: the adjoint split
   applied per Adam step with c refit each step accumulates to an input-weighted Δ share of 1.38 at step 1000 against
   0.69 one-shot, while rotating U, V changed nothing.
 - 2026-10-21. **Do-nothing fails the adversarial check: a per-update reference for every verdict** (same review).
@@ -276,7 +276,7 @@ Deferred ideas and loose ends. Date each entry.
   style or topic shift on ordinary text, with no single trigger and target: closest to real post-training. Asks whether
   the fixed-shift hypothesis survives once the task is not a bigram. Needs a way to score switching without a trigger
   position (the E18/E28 harness reads the trigger only). 2026-10-23: now the **next re-gating step** (decision
-  `reports/2026-10-23_decision_fixed-shift-per-cue.md`); goes through `/design` first. Its job is the entry below.
+  `reports/decisions/2026-10-23_decision_fixed-shift-per-cue.md`); goes through `/design` first. Its job is the entry below.
 - 2026-10-22. **Induction fine-tune, for further consideration** (user, 2026-10-22). Dropped as the next re-gating
   task (learned very early, likely near saturation), but its mechanism is known in general, so a fine-tune that bolts
   something new onto it (induction on unusual tokens, or a new cue for it) would let us watch new behaviour attach to

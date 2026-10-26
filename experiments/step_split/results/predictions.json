@@ -2,7 +2,7 @@
   "status": "filed",
   "status_note": "Filed 2026-10-21 after the user confirmed the plan and predictions in chat. Never edited after the run; changes go in a dated report.",
   "filed": "2026-10-21",
-  "design": "reports/2026-10-21_plan_step-split.md",
+  "design": "reports/plans/2026-10-21_plan_step-split.md",
   "setup": {
     "update": "emoticon full fine-tune, arm A (Adam lr 3e-5, batch 32, clip 1.0, seed 0, 24 matrices), 1000 steps, as E14/E16",
     "step_split": "after every optimizer step t, per matrix, S_t = W_t - W_(t-1); pieces dU = c_t S_t V, dV = c_t S_t^T U against the CURRENT alive (U, V), c_t = argmin ||(c K(S_t) - S_t) Sigma^1/2|| on W0's train-window input moments (split.adjoint_step); U, V carry forward; Delta = W_t - U V^T takes the remainder incl. dU dV^T; Gamma frozen (split.StepSplit, carry=True, float32 on the GPU)",

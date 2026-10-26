@@ -1,5 +1,5 @@
 """regating_spread (E36) Amendment 4: are Γ's original values the right space, or would any summary of the context do?
-Plan: reports/2026-10-26_plan_regating-without-cues.md -> Amendment 6 (from Amendment 3's independent check).
+Plan: reports/plans/2026-10-26_plan_regating-without-cues.md -> Amendment 6 (from Amendment 3's independent check).
 Amendment 1's lowercase fine-tune is regenerated and read at its steps. Every rule is fitted on all 262,144 positions of
 the first 512 training rows and gives each held-out position its original values plus a predicted change, clipped:
   near_g0     the mean change of the 8 fitted positions nearest in the original values (Amendment 3's near262; gate A0)
@@ -38,7 +38,7 @@ REPRO_TOL, SPACE_TOL, POS_MAX, TOKEN_GAP, DUP_MAX = 0.02, 0.05, 0.3, 0.2, 0.02  
 SCORED = str(CHECKS[-1])
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-26_plan_regating-without-cues.md, Amendment 6. Filed before the run; never edited after.",
+    "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md, Amendment 6. Filed before the run; never edited after.",
     "measurements": {
         "R_near_g0": "Amendment 3's nearest rule on 262,144 positions (8 neighbours, original values); gate A0",
         "R_near_resid": "the same rule, nearest in the original model's attention inputs of the 4 layers, each layer "

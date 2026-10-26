@@ -1,5 +1,5 @@
 """gamma_shift_map (E30): subcomponents frozen, Gamma's values shifted by one fixed change, scored on the Pile.
-Plan: reports/2026-10-22_plan_commute-second-line.md -> Item D, reading (i), and its E30 agent note.
+Plan: reports/plans/2026-10-22_plan_commute-second-line.md -> Item D, reading (i), and its E30 agent note.
 
 D' = U, V, Delta as at W0; Gamma'(x) = clip(Gamma(x) + s, 0, 1) at every position, Gamma reading W0's activations;
 s = E18's fixed change (`regating.shift_of`: mean trigger values over the task's training windows under W0 + dW minus
@@ -75,7 +75,7 @@ CI_MIN_FLOOR = 0.02  # P2's delta: max(W0's CI-masked spread over adversary seed
 CHEAT, NULL_LEARNED, P4_MAX, P5_LINE = 1.05, 0.5, 0.1, 0.5
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-22_plan_commute-second-line.md -> Item D, reading (i) (user, 2026-10-22), and the E30 agent "
+    "plan": "reports/plans/2026-10-22_plan_commute-second-line.md -> Item D, reading (i) (user, 2026-10-22), and the E30 agent "
             "note. Filed before any run; never edited after.",
     "map": "D' = U, V, Delta as at W0; Gamma'(x) = clip(Gamma(x) + s, 0, 1) at every position, Gamma reading W0's "
            "activations; s = mean over the task's TRAINING windows of Gamma's trigger values under W0 + dW minus under W0 "

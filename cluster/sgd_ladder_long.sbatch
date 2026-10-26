@@ -1,6 +1,6 @@
 #!/bin/bash
 # sgd_ladder_long: SGD (3a's rate), Adam 1e-5 and Adam 3e-6 component training to step 1000 on emoticon and three ladder
-# tasks, Pile harness at steps 100 and 1000, one task per job (reports/2026-10-21_plan_sgd-ladder-long.md).
+# tasks, Pile harness at steps 100 and 1000, one task per job (reports/plans/2026-10-21_plan_sgd-ladder-long.md).
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_ladder_long.sbatch --task emoticon          # the control, first and alone; ~41 min on an L40
 #   for t in r0_t352_v310 r1_t534_v369 r2_t275_v2667; do sbatch cluster/sgd_ladder_long.sbatch --task $t; done

@@ -1,6 +1,6 @@
 #!/bin/bash
 # sgd_kv: SGD and low-rate Adam component training on E10's key-to-value tasks, one task per shard
-# (reports/2026-10-21_plan_sgd-kv.md). About 22 min per shard on an L40.
+# (reports/plans/2026-10-21_plan_sgd-kv.md). About 22 min per shard on an L40.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_kv.sbatch --shard 0                              # rand32 first and alone (its control must read 'fail')
 #   for n in 1 2; do sbatch cluster/sgd_kv.sbatch --shard $n; done      # once shard 0 is past its control

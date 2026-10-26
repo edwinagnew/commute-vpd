@@ -38,7 +38,7 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   component-training optimiser and as the fine-tune optimiser whose update the splits consume. Until that comparison
   is run, no verdict on component training or on a split counts as a property of the operation rather than of Adam.
 
-## Terms (2026-10-20; the user's wording, after `reports/2026-10-20_review_terminology.md`)
+## Terms (2026-10-20; the user's wording, after `reports/reviews/2026-10-20_review_terminology.md`)
 
 "Pull-back" and "lift" each carried three meanings between 2026-10-14 and 2026-10-20 and are retired. The user's
 "pull-back" always meant: split a finished update over the subcomponents and see what is left outside. The files had
@@ -66,7 +66,7 @@ Measurements, not methods:
 
 - **Outside share:** the energy of δW outside the subcomponents, input-weighted (E‖δW a‖² over the task's inputs a),
   with the same number for a random update of the same size as its null. Reported as four blocks that sum to one
-  (user-confirmed 2026-10-20, `reports/2026-10-20_plan_lora-split.md` question 1): the write side split by P_U
+  (user-confirmed 2026-10-20, `reports/plans/2026-10-20_plan_lora-split.md` question 1): the write side split by P_U
   (inside col U) and I − P_U; the read side by writing the input a = a₁ + a₂, a₁ the part linearly predictable from what
   the subcomponents read (E[a | Vᵀa]) and a₂ the uncorrelated rest. Inside both: P_U δW a₁; write side only:
   P_U δW a₂; read side only: (I − P_U) δW a₁; outside both: (I − P_U) δW a₂, what no first-order change of the
@@ -77,7 +77,7 @@ Measurements, not methods:
   `split.weighted_fractions` (the algebraic block), `split.rescaling_share` (the strictest span, span{u_c v_cᵀ}).
 - **Φ** maps (D, δW) to D′ for one update step. Along training, Φ is applied at every step and the question is whether
   the error accumulates; the run is the limit, not the object. Experiments to 2026-10-19 scored finished 10-step runs
-  one-shot; see `reports/2026-10-19_decision_success-criterion.md`.
+  one-shot; see `reports/decisions/2026-10-19_decision_success-criterion.md`.
 - **Faithful (weak version):** D′ passes VPD's own checks on W + δW about as well as D passes them on W (stochastic-mask,
   adversarial-mask, CI-masked and unmasked reconstruction KL, and the sparsity loss), with Δ not absorbing δW. The
   route split (direct, re-gating, interaction, masked-off, residual) describes mechanism and does not decide this.
@@ -91,8 +91,8 @@ Under a map Φ, the change in the new model's behaviour splits exactly into five
 subcomponents at the old gates; (b) **re-gating**, the frozen Γ gating differently on the new activations; (c) their
 **interaction**; (d) **masked off**, carried by subcomponents Γ does not gate on; (e) **residual**, not carried by the
 subcomponents at all. A sixth route, Γ's own parameters, is zero while Γ is frozen. The weak version holds when (d) and
-(e) are small. Measurement: `reports/2026-10-16_prediction_ladder-routes-amendment.md`.
-The weak version itself is decided by VPD's checks on D' (`reports/2026-10-19_decision_success-criterion.md`); a small
+(e) are small. Measurement: `reports/predictions/2026-10-16_prediction_ladder-routes-amendment.md`.
+The weak version itself is decided by VPD's checks on D' (`reports/decisions/2026-10-19_decision_success-criterion.md`); a small
 direct share (a) is a finding about mechanism, not a failure of Φ.
 
 - **Strengthen:** (a) dominates. Post-training sharpens subcomponents that already do the job.

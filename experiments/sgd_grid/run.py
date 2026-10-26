@@ -2,7 +2,7 @@
 learning rate, and if so is its update concentrated? E4 (concentration_test) left this unscorable: its SGD grid started
 at 0.3, which already overshoots on step 1 (P(o) 1.0, KL elsewhere 8.6, then P(o) 0.009 on step 2).
 
-Plan and design check: reports/2026-10-21_plan_sgd-grid.md. E4's data, lr rule and revert-one measure; training is
+Plan and design check: reports/plans/2026-10-21_plan_sgd-grid.md. E4's data, lr rule and revert-one measure; training is
 commute.component_training.train with optimizer="sgd" (the same loop E4's train ran).
 
 Stages:

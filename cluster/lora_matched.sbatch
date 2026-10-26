@@ -1,6 +1,6 @@
 #!/bin/bash
 # lora_matched: rank-8 LoRA on all 24 matrices vs the full-weight fine-tune, both lifted (design: section 3.2 of
-# reports/2026-10-19_review_lora-failure-and-fixes.md). One job; the arguments go to run.py:
+# reports/reviews/2026-10-19_review_lora-failure-and-fixes.md). One job; the arguments go to run.py:
 #   cd ~/commute-agents/<role>
 #   sbatch --job-name=commute-lora_matched-smoke --time=00:20:00 cluster/lora_matched.sbatch all --smoke
 #   sbatch cluster/lora_matched.sbatch all

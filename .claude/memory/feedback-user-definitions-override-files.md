@@ -12,7 +12,7 @@ Since 2026-10-14 the user has meant by "pull-back" (and "LoRA pull-back"): train
 possibly to completion), split it into per-subcomponent updates, and measure how much lies outside the span of the
 subcomponents. By "lift" they mean the least-squares way of choosing that split. They never asked for "train the
 subcomponents on the loss", which is what GOALS Terms (2026-10-19), the theory note and five "LoRA pull-back" runs
-(E7 pb_r, E13) built. Audit: `reports/2026-10-20_review_terminology.md`.
+(E7 pb_r, E13) built. Audit: `reports/reviews/2026-10-20_review_terminology.md`.
 
 **Why:** "pull back" entered as the assistant's word on 2026-10-14; the file definitions then overrode the user's
 repeated corrections (at least eight restatements over 2026-10-15 to 20), and each fresh session "corrected" the user

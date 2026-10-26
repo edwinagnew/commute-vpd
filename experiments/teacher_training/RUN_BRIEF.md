@@ -1,6 +1,6 @@
 # Pod-runner brief: teacher_training (scored)
 
-Plan: `reports/2026-10-23_plan_teacher-training.md`. Predictions: `experiments/teacher_training/results/predictions.json`
+Plan: `reports/plans/2026-10-23_plan_teacher-training.md`. Predictions: `experiments/teacher_training/results/predictions.json`
 (the run refuses to start without it, or if its `config` differs from `run.py`'s `Config`).
 
 ```

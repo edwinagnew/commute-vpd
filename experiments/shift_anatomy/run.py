@@ -1,6 +1,6 @@
 """shift_anatomy (E32): what is the fixed change of Gamma's importance values made of, on E28's eight states?
-Plan: reports/2026-10-22_plan_shift-anatomy.md. Definitions: commute.shift_anatomy's docstring; E28's in
-reports/2026-10-22_plan_regating-tasks.md. Shared steps in commute.regating (E28's states) and commute.shift_anatomy.
+Plan: reports/plans/2026-10-22_plan_shift-anatomy.md. Definitions: commute.shift_anatomy's docstring; E28's in
+reports/plans/2026-10-22_plan_regating-tasks.md. Shared steps in commute.regating (E28's states) and commute.shift_anatomy.
 
 E28's do-nothing states, regenerated exactly as E28 does (10-step arm-A Adam 3e-5 fine-tunes of all 24 matrices, seed 0;
 released subcomponents, Gamma frozen, Delta out of the masked model). Emoticon first and alone: it must reproduce E28's
@@ -58,7 +58,7 @@ def pred(pid: str, rule: str, predicted: str, confidence: str, control: str) -> 
 
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-22_plan_shift-anatomy.md. Filed before any run; never edited after.",
+    "plan": "reports/plans/2026-10-22_plan_shift-anatomy.md. Filed before any run; never edited after.",
     "states": f"E28's eight do-nothing states, regenerated in-job: {CONTROL} (G1, first, alone), {WORD}, {KV_TASKS}",
     "measurements": {
         "R_mean_net": "E28's net fixed change: (rho(m1) - rho(m0)) / rho_trig",

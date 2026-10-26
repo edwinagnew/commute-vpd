@@ -11,7 +11,7 @@ The user's verdicts on past write-ups, in both this project and feature_wars: "o
 I've ever seen", "i have no idea what is going on", "your notebook summaries are getting increasingly bad",
 "sounds important but is not a real sentence", "the bullets following the graph seem to try and wiggle their way
 out of it", "fixing doesn't mean adding tons of waffle. just writing clearly!". Open `notebooks/E09_lora_plateau.ipynb`
-cell 8 or the title of `reports/2026-10-19_analysis_lora-plateau.md` to see the shape of it: a 36-word title; a
+cell 8 or the title of `reports/analyses/2026-10-19_analysis_lora-plateau.md` to see the shape of it: a 36-word title; a
 "plain-words paragraph" of three 60-word sentences carrying fifteen numbers; a glossary of twelve coined terms
 before the first result; "P3 neither, flagged" and "round 5's C2 reopened" in place of what happened; a 1×4
 panel figure and a 17-column table where one plot would do; the GPU and a sha256 at the top where the question
@@ -29,7 +29,7 @@ of our approach." After each section they must be able to say what was done, wha
 |---|---|---|
 | chat message | the answer, the one surprise, where to look, the one decision needed | a few lines |
 | notebook `notebooks/E<NN>_<experiment>.ipynb` | the explanation: figures and the story around them | about a thousand words of prose |
-| report `reports/<date>_analysis_<topic>.md` | the record: every number, the scoring, provenance, "Not run" | as long as it needs |
+| report `reports/analyses/<date>_analysis_<topic>.md` | the record: every number, the scoring, provenance, "Not run" | as long as it needs |
 
 Write the notebook first. The report is the notebook plus the full tables and the scoring. The chat message is
 the notebook's answer paragraph cut to the bone. Update an existing notebook rather than adding a new one when
@@ -118,7 +118,7 @@ the breaks so they are seen rather than missed; look at each flagged sentence an
    each claim the figure that shows it. A claim without a figure gets one or is cut.
 2. Write sections 3–11, then the figures, then the "Reading it" paragraphs, then the answer paragraph.
 3. Run the checker and rewrite the flagged sentences that are dense:
-   `uv run python .claude/skills/writeup/check.py notebooks/E<NN>_<name>.ipynb reports/<file>.md`
+   `uv run python .claude/skills/writeup/check.py notebooks/E<NN>_<name>.ipynb reports/analyses/<file>.md`
 4. Cold-reader pass: read each markdown cell with only the figure above it and ask what was done, what was seen,
    why it matters. Rewrite any cell that fails one.
 5. Execute the notebook top to bottom and commit it executed.

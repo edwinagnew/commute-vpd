@@ -8,7 +8,7 @@ every batch (`calc_multibatch_pgd_masked_recon_loss`: all layers, 20 steps of 0.
 Delta included, gradients accumulated over the batches), which is the paper's evaluation scope
 (one adversary per 128-row eval batch) on a 24 GB card; the CI-masked KL (masks = g, Delta
 excluded) and the unmasked KL (masks = 1, Delta excluded). See
-reports/2026-10-14_decision_pgd-scope.md for why the per-batch adversary was dropped.
+reports/decisions/2026-10-14_decision_pgd-scope.md for why the per-batch adversary was dropped.
 """
 
 from __future__ import annotations
@@ -141,7 +141,7 @@ def pile_faithfulness(model: Any, blocks: list[list[Tensor]], seed: int = 0, pgd
 
 
 # ----------------------------------------------------------------------------- VPD's sparsity loss
-# Added 2026-10-19 (kv_task; `reports/2026-10-19_decision_success-criterion.md` lists it as the one VPD check never run
+# Added 2026-10-19 (kv_task; `reports/decisions/2026-10-19_decision_success-criterion.md` lists it as the one VPD check never run
 # on an updated decomposition).
 
 

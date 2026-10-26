@@ -1,6 +1,6 @@
 """Cue-free models of the change of Gamma's importance values (E35 `experiments/regating_cuefree`; E36 to follow).
 
-Plan: reports/2026-10-26_plan_regating-without-cues.md. Inputs are per-row values (one row per window at the trigger,
+Plan: reports/plans/2026-10-26_plan_regating-without-cues.md. Inputs are per-row values (one row per window at the trigger,
 or per position), (N, C) per matrix, fp32 CPU (`shift_anatomy.Vals`): g0 under W0 and g1 under the do-nothing state.
 The change d = g1 - g0 is kept on alive subcomponents only (0 on dead, as `recruit.mean_change`). Every pattern is
 clip(g0(x) + c(x), 0, 1), with c fitted on training rows only, except the fixed re-weighting clip(a g0(x) + b):

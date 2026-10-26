@@ -1,6 +1,6 @@
 """regating_down (E29): what do the subcomponents the fine-tune turns down at the trigger do, read at W0?
-Plan: reports/2026-10-22_plan_regating-down.md. Definitions: commute.turned_down's docstring; E18's in
-reports/2026-10-21_plan_regating-leak.md (Amendment 3: the pool, the strong turned-down set, the within-pool shuffle).
+Plan: reports/plans/2026-10-22_plan_regating-down.md. Definitions: commute.turned_down's docstring; E18's in
+reports/plans/2026-10-21_plan_regating-leak.md (Amendment 3: the pool, the strong turned-down set, the within-pool shuffle).
 
 Per task-seed, from a saved fixed change s (E18's three tasks x seeds 0, 1; E28's four ladder tasks where saved), at W0:
   overlap   J(S_down, N_comp) against same-size draws from the pool; N_comp = top-|S_down| pool members by W0's Pile
@@ -49,7 +49,7 @@ KAPPA_COMP = 0.15  # E18's switched-on overlap with the target's machinery read 
 SPECIFIC, GENERIC = 0.2, 0.05
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-22_plan_regating-down.md. Filed before any run; never edited after.",
+    "plan": "reports/plans/2026-10-22_plan_regating-down.md. Filed before any run; never edited after.",
     "inputs": "E18's fixed changes s (emoticon, r1_t534_v369, r2_t359_v816; seeds 0 and 1) and E28's (r0_t352_v310, "
               "r1_t588_v452, r2_t275_v2667, r0_t588_v320; one seed; skipped if not saved). Everything read at W0 with the "
               "released subcomponents, Gamma frozen, Delta out of every masked read; no fine-tune",

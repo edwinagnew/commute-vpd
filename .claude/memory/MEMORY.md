@@ -21,7 +21,7 @@
 - [Describe methods by their filed definition](feedback-describe-methods-by-their-filed-definition.md) — reuse GOALS/artifact wording for pull-back, lift; paraphrases read as curveballs
 - [Success criterion: reading A](project-success-criterion-reading-a.md) — since 2026-10-19 the weak version as written; route split is mechanism, not the pass criterion
 - [Write-ups explain, not record](feedback-writeups-explain-not-record.md) — notebooks were unreadable; use /writeup: answer first, story, one figure per claim, about two numbers per sentence as a guideline, check.py
-- [LoRA pull-back wanted](project-lora-pullback-wanted.md) — the user's "pull-back" = adjoint split, "lift" = least squares; the LoRA split study built 2026-10-20 as experiments/lora_split (plan reports/2026-10-20_plan_lora-split.md)
+- [LoRA pull-back wanted](project-lora-pullback-wanted.md) — the user's "pull-back" = adjoint split, "lift" = least squares; the LoRA split study built 2026-10-20 as experiments/lora_split (plan reports/plans/2026-10-20_plan_lora-split.md)
 - [Research log artifact](reference-research-log-artifact.md) — "Update Decomposition" log, four pages built from docs/research_log/parts/ since 2026-10-22; republish to its URL
 - [Larger model next; title "Update Decomposition"](project-larger-model-next.md) — 67M is a temporary testbed; write-ups titled Update Decomposition, not Commute
 - [Motivation: re-weighting hypothesis](project-motivation-reweighting-hypothesis.md) — open write-ups with the re-weighting hypothesis and post-training monitoring (theory/TOC2 -EA.pdf), not the testbed model

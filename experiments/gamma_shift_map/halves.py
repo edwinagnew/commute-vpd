@@ -1,5 +1,5 @@
 """gamma_shift_map amendment 1 (E30a): the raised and the lowered half of the fixed change, each applied everywhere.
-Plan: reports/2026-10-22_plan_commute-second-line.md -> "Amendment 1 to E30". E30's run.py and predictions stand.
+Plan: reports/plans/2026-10-22_plan_commute-second-line.md -> "Amendment 1 to E30". E30's run.py and predictions stand.
 
 E30 applied Gamma'(x) = clip(Gamma(x) + s, 0, 1) at every position and the adversary found 8x the s = 0 damage on
 emoticon SGD 0.01, while s shuffled barely moved it. Here, on that update only: s = 0, the raised half s+ = max(s, 0),
@@ -65,7 +65,7 @@ CFG = Config()
 P2_NEAR, CHEAT, P4_LINE = 0.1, 1.05, 3.0
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-22_plan_commute-second-line.md -> 'Amendment 1 to E30' (approved class 4: the commute line's "
+    "plan": "reports/plans/2026-10-22_plan_commute-second-line.md -> 'Amendment 1 to E30' (approved class 4: the commute line's "
             "named next step, E30's 'What next' 1). Filed before any run; E30's predictions.json stands unedited.",
     "update": "emoticon, arm-A SGD 0.01, 10 steps, seed 0, regenerated as E30 (E30 G1: regeneration matched to 0.0)",
     "arms": {"zero": "s = 0 (the reference every ratio divides by)", "up": "s+ = max(s, 0) everywhere",

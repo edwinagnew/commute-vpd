@@ -1,7 +1,7 @@
 """Reading-A coverage: VPD's own checks on the Adam pull-back's step-10 states for the ladder tasks that lack them.
 
-Plan: reports/2026-10-19_plan_reading-a-coverage.md (design check confirmed by the user 2026-10-19; additions 2 and 3
-accepted, the block floor kept because it is free). Source: reports/2026-10-19_decision_success-criterion.md.
+Plan: reports/plans/2026-10-19_plan_reading-a-coverage.md (design check confirmed by the user 2026-10-19; additions 2 and 3
+accepted, the block floor kept because it is free). Source: reports/decisions/2026-10-19_decision_success-criterion.md.
 
 Per task (the ladder's saved windows, experiments/task_ladder/results/large/windows_<task>.pt): the arm-A fine-tune
 to the scored step (the do-nothing reference, delta-W in Delta) and the Adam pull-back on all alive (U, V) to the
@@ -77,7 +77,7 @@ FULL = Sizes(steps=10, pile_rows=256, pgd_steps=20, w0_seeds=(0, 1, 2), suffix="
 SMOKE = Sizes(steps=2, pile_rows=16, pgd_steps=2, w0_seeds=(0, 1), suffix="_smoke", tasks={RUNG2_SEEDS: (0, 1)})
 
 PREDICTIONS: dict[str, Any] = {
-    "filed": "2026-10-19, before the run; plan reports/2026-10-19_plan_reading-a-coverage.md",
+    "filed": "2026-10-19, before the run; plan reports/plans/2026-10-19_plan_reading-a-coverage.md",
     "states": "per task, step 10 of the ladder's recipe: do-nothing (arm-A fine-tune, delta-W in Delta, released components, "
               "Gamma frozen) and the Adam pull-back on all alive (U, V) with Delta and Gamma frozen; seed = batch order",
     "measurements": {

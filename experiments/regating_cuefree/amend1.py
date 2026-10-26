@@ -1,5 +1,5 @@
 """regating_cuefree (E35) Amendment 1: is "nearest in the original values" the cue in disguise, and is its comparison
-with one change per cue like for like? Plan: reports/2026-10-26_plan_regating-without-cues.md -> Amendment 2 (from
+with one change per cue like for like? Plan: reports/plans/2026-10-26_plan_regating-without-cues.md -> Amendment 2 (from
 E35's independent check). States, fine-tunes and the nearest rule are run.py's; per state this adds:
   R_near      run.py's rule again: the mean change of the 8 training windows nearest in g0 (gate A0: reproduces E35)
   R_near_cue  the same, with the 8 nearest drawn from training windows with the window's own cue: per cue plus each
@@ -35,7 +35,7 @@ REPRO_TOL, CLOSE, SAME_LEAN, DUP_MAX = 1e-3, 0.1, 0.9, 0.05
 BLIND = ("the trigger position only; one fine-tune seed; one 67M model; copy and the cipher share one window set, the "
          "two 32-cue ' of' states another, so the four 32-cue states are two input sets")
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-26_plan_regating-without-cues.md, Amendment 2. Filed before the run; never edited after.",
+    "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md, Amendment 2. Filed before the run; never edited after.",
     "measurements": {
         "R_near": "run.py's nearest rule again (8 training windows nearest in g0); gate A0",
         "R_near_cue": "the same with the 8 nearest drawn from training windows with the window's own cue (not on "

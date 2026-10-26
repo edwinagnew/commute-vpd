@@ -1,5 +1,5 @@
 """sgd_ladder: does SGD component training, or Adam at a lower rate, pass the Pile harness on a ladder task where Adam
-at 1e-5 failed? Item 3a of reports/2026-10-21_review_sgd-finding-influence.md; plan reports/2026-10-21_plan_sgd-ladder.md.
+at 1e-5 failed? Item 3a of reports/reviews/2026-10-21_review_sgd-finding-influence.md; plan reports/plans/2026-10-21_plan_sgd-ladder.md.
 
 Per task (emoticon and the five ladder tasks E11 scored), all at step 10 of E11's recipe (arm A's loss, batch 32, clip
 1, batch-order seed 0, Gamma and Delta frozen). Stages, cheapest first, each dumped as it finishes (the scored run is
@@ -71,8 +71,8 @@ CFG = Config(steps=10, sgd_lrs=(0.003, 0.01, 0.03, 0.1), adam_lrs=(1e-6, 3e-6), 
              pile_seeds=(0, 1, 2), shards=tuple((t,) for t in TASKS))
 
 PREDICTIONS: dict[str, Any] = {
-    "about": "sgd_ladder (item 3a of reports/2026-10-21_review_sgd-finding-influence.md; plan "
-             "reports/2026-10-21_plan_sgd-ladder.md): component training at step 10 on emoticon and E11's five ladder tasks "
+    "about": "sgd_ladder (item 3a of reports/reviews/2026-10-21_review_sgd-finding-influence.md; plan "
+             "reports/plans/2026-10-21_plan_sgd-ladder.md): component training at step 10 on emoticon and E11's five ladder tasks "
              "with plain SGD (rate by E4's rule from 0.003, 0.01, 0.03, 0.1) and Adam at 1e-6 and 3e-6, beside E11's Adam "
              "1e-5 states (re-read) and the do-nothing fine-tune, scored on the Pile harness in the same job. One shard per "
              "task, each with its own W0. Filed before any run",

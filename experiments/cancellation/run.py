@@ -1,5 +1,5 @@
 """cancellation (E17): do the per-subcomponent changes of a split or of component training cancel each other?
-Plan: reports/2026-10-21_plan_cancellation.md (approved class 1; the named next step after E15).
+Plan: reports/plans/2026-10-21_plan_cancellation.md (approved class 1; the named next step after E15).
 
 States, all from E11's saved files (experiments/reading_a_coverage/results/large/<task>/): component training's step-10
 state on six tasks, and for emoticon the least-squares split and the scaled adjoint split rebuilt from the fine-tune's
@@ -70,8 +70,8 @@ SMOKE = Sizes(tasks=(EMOTICON, "r2_t275_v2667"), rows=8, batch=4, pgd_steps=2, n
 
 PREDICTIONS: dict[str, Any] = {
     "filed": "2026-10-21",
-    "design": "reports/2026-10-21_plan_cancellation.md (approved class 1: analysis of saved states; the named next step of "
-              "reports/2026-10-20_analysis_gamma-refit.md)",
+    "design": "reports/plans/2026-10-21_plan_cancellation.md (approved class 1: analysis of saved states; the named next step of "
+              "reports/analyses/2026-10-20_analysis_gamma-refit.md)",
     "setup": {
         "states": f"E11's component training at step {STEP} (seed 0) on {', '.join(TASKS)}; the least-squares split "
                   f"(split.split_state) and the scaled adjoint split (split.adjoint_state, input moments over the emoticon "

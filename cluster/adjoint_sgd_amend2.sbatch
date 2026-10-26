@@ -1,5 +1,5 @@
 #!/bin/bash
-# adjoint_sgd (E31) amendment 2: seed 1 of the five single-seed cells. Plan: reports/2026-10-22_plan_adjoint-sgd.md ->
+# adjoint_sgd (E31) amendment 2: seed 1 of the five single-seed cells. Plan: reports/plans/2026-10-22_plan_adjoint-sgd.md ->
 # "Amendment 2". One cell per job, each ~17-22 min (W0 ~6 min, the 10-step seed-0 control, one 1000-step seed-1
 # fine-tune read at 10/100/1000):
 #   cd ~/commute-agents/<role>

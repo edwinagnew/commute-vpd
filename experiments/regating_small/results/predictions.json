@@ -1,5 +1,5 @@
 {
- "plan": "reports/2026-10-22_plan_small-update-reruns.md -> E24 and its Agent notes; definitions as E18 (reports/2026-10-21_plan_regating-leak.md). Filed before any run; never edited after.",
+ "plan": "reports/plans/2026-10-22_plan_small-update-reruns.md -> E24 and its Agent notes; definitions as E18 (reports/plans/2026-10-21_plan_regating-leak.md). Filed before any run; never edited after.",
  "states": "do-nothing states (target W0 + dW, released subcomponents C0, Gamma frozen, Delta out of the masked model) of 10-step arm-A fine-tunes of all 24 matrices, seed 0, batch 32: emoticon with Adam 3e-5 (large, E18's state), SGD 0.01 and Adam 3e-6 (small, E21's matched pair, size 0.0024 and 0.0022). Extra: r1_t534_v369 with the SGD rate E4's rule picks from (0.001, 0.003, 0.01, 0.03, 0.1) (P >= 0.9, KL elsewhere <= 0.24302), beside its Adam 3e-5 state; skipped, with the grid recorded, if no rate passes",
  "measurements": {
   "r": "(L01 - L00) / (T1 - T0), held-out windows' trigger log-odds of the target; L = CI-masked model with C0",

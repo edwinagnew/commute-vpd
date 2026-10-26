@@ -1,7 +1,7 @@
 """cancellation_sgd (E23): where does the adversary's extra damage sit on the component-training failures that persist
 after E21 (SGD at step 1000, the key-to-value SGD states, r2 at step 100), beside their passing twins (Adam 1e-5 at step
 1000, SGD r0 at step 100), and do the step-1000 verdicts hold at larger adversary budgets? Plan:
-reports/2026-10-22_plan_small-update-reruns.md -> E23 (approved class 1, the user's instruction 2026-10-22).
+reports/plans/2026-10-22_plan_small-update-reruns.md -> E23 (approved class 1, the user's instruction 2026-10-22).
 
 States: E21's saved bf16 offsets (sgd_ladder_long, sgd_kv; cluster NFS), rebuilt by `saved_states.offsets_state`.
 Stage A (`revert --shard N`), per shard, cheapest and control first, results dumped after every model:
@@ -64,7 +64,7 @@ SHARE, DENSE_SHARE, ADV_SHARE = 0.5, 0.05, 0.2  # E20's and E17's readings, as f
 
 
 PREDICTIONS: dict[str, Any] = {
-    "design": "reports/2026-10-22_plan_small-update-reruns.md -> E23 (approved class 1: GPU passes of existing "
+    "design": "reports/plans/2026-10-22_plan_small-update-reruns.md -> E23 (approved class 1: GPU passes of existing "
               "measurements on saved states; the user's instruction 2026-10-22); parents E17, E20 with amendments 1 and 3",
     "states": {n: f"{p.relative_to(EXP.parent)} (E21: {ref})" for n, (p, ref) in STATES.items()},
     "setup": {

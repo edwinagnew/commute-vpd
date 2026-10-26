@@ -1,6 +1,6 @@
 """What the turned-down half of re-gating's fixed change does, read at W0 only (E29, `experiments/regating_down`).
 
-Plan: reports/2026-10-22_plan_regating-down.md. E18's fixed change s (mean over the training windows of the updated
+Plan: reports/plans/2026-10-22_plan_regating-down.md. E18's fixed change s (mean over the training windows of the updated
 model's trigger importance values minus W0's; 0 on dead subcomponents) has a turned-down half that carries as much of
 the switching effect as the switched-on set (E18 amendments 2 and 3). This module asks whether the subcomponents it
 lowers are the ones W0 uses for the task's competing tokens, and whose probability lowering them moves.

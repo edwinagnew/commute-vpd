@@ -1,6 +1,6 @@
 """lora_commute: is a LoRA update easier to commute past the decomposition than a full-weight fine-tune?
 
-Plan: reports/2026-10-19_plan_lora-lift-and-pullback.md (confirmed by the user 2026-10-19) and its addendum of the same
+Plan: reports/plans/2026-10-19_plan_lora-lift-and-pullback.md (confirmed by the user 2026-10-19) and its addendum of the same
 day (the user's framing: "is it easier to decompose a LoRA update than a normal fine-tuning update"; the full-weight
 comparator arms, the scored-step rule, and the Pile adversary for P3).
 
@@ -99,7 +99,7 @@ PREDICTIONS: dict[str, Any] = {
         "the released decomposition with the maps on hand (Euclidean lift of the finished delta-W; pull-back = training the "
         "subcomponents, here confined to the LoRA's matrix and rank), beside the full-weight fine-tune under the same maps. "
         "The user's question: is a LoRA update easier to decompose than a normal fine-tuning update (instinct: yes). Plan "
-        "reports/2026-10-19_plan_lora-lift-and-pullback.md plus its addendum. Filed before any arm was trained."
+        "reports/plans/2026-10-19_plan_lora-lift-and-pullback.md plus its addendum. Filed before any arm was trained."
     ),
     "setup": {
         "windows": "round 1's emoticon windows (365 train, 73 held-out, trigger at index 20, target token `o`)",
@@ -132,7 +132,7 @@ PREDICTIONS: dict[str, Any] = {
                  f"the top {TOP_K} by ||Delta(u v^T)|| for P5",
         "S_on": f"recruit.switched at {DG_THR}: alive subcomponents whose mean trigger gate rises by > {DG_THR}; Jaccard with the "
                 "ft do-nothing arm's set (and with the recruit test's ft_s0 file if present)",
-        "local": "local_faith.local_faithfulness: reported only (its adversaries saturate; reports/2026-10-19_review_pgd-local.md)",
+        "local": "local_faith.local_faithfulness: reported only (its adversaries saturate; reports/reviews/2026-10-19_review_pgd-local.md)",
     },
     "blind_to": {
         "d, r, e_delta": "everything away from the trigger (cover: the LoRA's kl_other and the Pile ratios)",

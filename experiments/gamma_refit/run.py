@@ -1,5 +1,5 @@
 """gamma_refit: does the frozen Gamma describe the updated model, or is it the thing that breaks?
-Plan: reports/2026-10-20_plan_gamma-refit.md (design check revised with the user 2026-10-20; the user's choices:
+Plan: reports/plans/2026-10-20_plan_gamma-refit.md (design check revised with the user 2026-10-20; the user's choices:
 emoticon only, fresh states on one H100, arm P for all five states and arm M for the fine-tune's split, full Gamma,
 sweep to 3 000 steps, stage-0 attribution diagnostic first).
 
@@ -19,7 +19,7 @@ Stages (results/predictions.json must exist; `--predictions` files it once):
           --only ls_P,w0_P runs those refits alone (a budgeted resume); the score is written once all six are in
   all     prep, then refit
   --smoke tiny sizes -> *_smoke files
-  --v2    the protocol fix (reports/2026-10-21_plan_gamma-refit-protocol.md, user-confirmed 2026-10-21): 300 steps at
+  --v2    the protocol fix (reports/plans/2026-10-21_plan_gamma-refit-protocol.md, user-confirmed 2026-10-21): 300 steps at
           lr 0 so the persistent adversary and AdamW's moments warm up, then Gamma at the released end-of-schedule lr
           5e-6 -> *_v2 files, predictions_v2.json; run with `--only w0_P` first (the control must pass before any state)
 Inputs: experiments/transport_test/results/large/{alive.pt, windows.pt} and results/windows.json (round 1).
@@ -86,7 +86,7 @@ SMOKE = Sizes(ft_steps=3, ct_steps=3, pile_rows=8, pile_pgd_steps=2, pile_seeds=
 
 PREDICTIONS: dict[str, Any] = {
     "filed": "2026-10-20",
-    "design": "reports/2026-10-20_plan_gamma-refit.md (design check revised with the user 2026-10-20; emoticon only, fresh states, "
+    "design": "reports/plans/2026-10-20_plan_gamma-refit.md (design check revised with the user 2026-10-20; emoticon only, fresh states, "
               "arm P for all five states and arm M for the fine-tune's split, full Gamma, sweep to 3000 steps, stage 0 first)",
     "setup": {
         "update": f"emoticon full fine-tune, arm A recipe (Adam lr {FT_LR}, all 24 matrices, seed 0), step {FULL.ft_steps}",
@@ -166,7 +166,7 @@ PREDICTIONS: dict[str, Any] = {
 
 PREDICTIONS_V2: dict[str, Any] = {
     "filed": "2026-10-21",
-    "design": "reports/2026-10-21_plan_gamma-refit-protocol.md (design check confirmed by the user 2026-10-21). E15's refit as filed "
+    "design": "reports/plans/2026-10-21_plan_gamma-refit-protocol.md (design check confirmed by the user 2026-10-21). E15's refit as filed "
               "took the unchanged model off the floor (P1 failed: PGD ratio 2.57 / 3.53 / 6.27 / 2.63, sparsity 0.94 to 1.09); the "
               "protocol is changed in two places and tested on W0 alone before any state arm",
     "setup": {

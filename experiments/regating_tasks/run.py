@@ -1,6 +1,6 @@
 """regating_tasks (E28): do the working hypothesis H' and its three kill conditions hold on tasks it was never read on?
-Plan: reports/2026-10-22_plan_regating-tasks.md; kill conditions from
-reports/2026-10-22_decision_working-hypothesis-and-two-lines.md; definitions as E18 (reports/2026-10-21_plan_regating-leak.md,
+Plan: reports/plans/2026-10-22_plan_regating-tasks.md; kill conditions from
+reports/decisions/2026-10-22_decision_working-hypothesis-and-two-lines.md; definitions as E18 (reports/plans/2026-10-21_plan_regating-leak.md,
 Amendments 2 and 3). Shared steps in commute.regating (E18's logic, moved).
 
 Do-nothing states (target W0 + dW, released subcomponents, Gamma frozen, Delta out of the masked model) of 10-step arm-A
@@ -65,8 +65,8 @@ CONFIDENCE = {"r0_t352_v310": _WORD, "r1_t588_v452": _WORD, "r0_t588_v320": _WOR
 CONFIDENCE["rand1"] = CONFIDENCE["rand32"]
 
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-22_plan_regating-tasks.md; kill conditions from "
-            "reports/2026-10-22_decision_working-hypothesis-and-two-lines.md; definitions as E18. Filed before any run; "
+    "plan": "reports/plans/2026-10-22_plan_regating-tasks.md; kill conditions from "
+            "reports/decisions/2026-10-22_decision_working-hypothesis-and-two-lines.md; definitions as E18. Filed before any run; "
             "never edited after.",
     "states": "do-nothing states (target W0 + dW, released subcomponents, Gamma frozen, Delta out of the masked model) of "
               "10-step arm-A fine-tunes of all 24 matrices, Adam 3e-5, batch 32, seed 0. Emoticon (G1, first, alone); "

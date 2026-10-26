@@ -1,4 +1,4 @@
-"""teacher_training Amendment 3 (2026-10-26): a LoRA teacher. Plan: reports/2026-10-23_plan_teacher-training.md ->
+"""teacher_training Amendment 3 (2026-10-26): a LoRA teacher. Plan: reports/plans/2026-10-23_plan_teacher-training.md ->
 "Amendment 3: a LoRA teacher" (design check under "Amendments 2-4").
 
 E34 copied full-weight fine-tunes; the user's canonical update is a LoRA. Per task (emoticon first, then r1, r0) the
@@ -70,7 +70,7 @@ class Amend3:
 AM = Amend3()
 CAT = {"learnt": "P(target) >= 0.9 and 'pass'", "neither": "P(target) < 0.5", "between": "anything else"}
 PREDICTIONS: dict[str, Any] = {
-    "about": "teacher_training Amendment 3 (reports/2026-10-23_plan_teacher-training.md -> 'Amendment 3: a LoRA teacher'; "
+    "about": "teacher_training Amendment 3 (reports/plans/2026-10-23_plan_teacher-training.md -> 'Amendment 3: a LoRA teacher'; "
              "class 3/4, user 2026-10-26 'implement the amendments'). Tasks emoticon, r1_t534_v369, r0_t352_v310. The teacher "
              "is E9's LoRA regenerated in-job: rank 8 on all 24 matrices, B = 0 and A ~ N(0, 1/d_in) at seed 0, Adam 1e-3, "
              "1,000 steps, arm A's loss, batch 32 and clip 1 (finetune.finetune_lora_arm_a); delta-W = B A per matrix at step "

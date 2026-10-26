@@ -1,6 +1,6 @@
 #!/bin/bash
 # sgd_ladder: SGD and low-rate Adam component training on E11's ladder tasks at step 10, one task per shard
-# (reports/2026-10-21_plan_sgd-ladder.md). Runs only after sgd_faith's control has passed.
+# (reports/plans/2026-10-21_plan_sgd-ladder.md). Runs only after sgd_faith's control has passed.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_ladder.sbatch --shard 0                                # emoticon first and alone, ~22 min on an L40
 #   for n in 1 2 3 4 5; do sbatch cluster/sgd_ladder.sbatch --shard $n; done  # once shard 0 has finished clean

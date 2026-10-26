@@ -1,8 +1,8 @@
 {
   "status": "filed",
   "filed": "2026-10-22",
-  "status_note": "Filed by the E25 agent before the run under the user's 2026-10-22 instruction (plan reports/2026-10-22_plan_small-update-reruns.md, approved class 2). Never edited after the run; changes go in a dated report.",
-  "design": "reports/2026-10-22_plan_small-update-reruns.md -> E25 step_split_small and Agent notes; parent E19 reports/2026-10-21_plan_step-split.md",
+  "status_note": "Filed by the E25 agent before the run under the user's 2026-10-22 instruction (plan reports/plans/2026-10-22_plan_small-update-reruns.md, approved class 2). Never edited after the run; changes go in a dated report.",
+  "design": "reports/plans/2026-10-22_plan_small-update-reruns.md -> E25 step_split_small and Agent notes; parent E19 reports/plans/2026-10-21_plan_step-split.md",
   "setup": {
     "paths": "emoticon full fine-tune, arm A (batch 32, clip 1.0, seed 0, 24 matrices), 1000 steps: plain SGD lr 0.01 and Adam lr 3e-6 (E21's matched pair, experiments/sgd_finetune)",
     "step_split": "as E19: after every optimizer step, per matrix, S_t = W_t - W_(t-1) split by split.StepSplit (carry=True): pieces c_t (S_t V, S_t^T U) against the current alive (U, V), c_t refitted each step on W0's input moments, Delta takes the rest incl. dU dV^T; the fixed-bases twin (carry=False) beside it for consistency numbers only; float32 on the GPU; Gamma frozen",

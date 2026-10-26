@@ -1,6 +1,6 @@
 #!/bin/bash
 # kv_task Amendment 1: the Pile harness on E10's saved Adam 1e-5 states, no training
-# (reports/2026-10-23_plan_kv-task-amend1.md). About 18 min (shard 0) and 15 min (shard 1) on an L40.
+# (reports/plans/2026-10-23_plan_kv-task-amend1.md). About 18 min (shard 0) and 15 min (shard 1) on an L40.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/kv_task_amend1.sbatch --shard 0      # rand32: W0, the control rand32@30 first, then 100, 300, 10
 #   sbatch cluster/kv_task_amend1.sbatch --shard 1      # ident32 100, 300, 10; once shard 0's log shows "[control] ... PASS"

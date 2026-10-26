@@ -1,4 +1,4 @@
-"""Gamma refit: let the gate see the updated model (reports/2026-10-20_plan_gamma-refit.md, 2026-10-20).
+"""Gamma refit: let the gate see the updated model (reports/plans/2026-10-20_plan_gamma-refit.md, 2026-10-20).
 
 With the target weights and components set to a state (W0 + delta-W with the components of a split or of component
 training; U, V and Delta fixed), train every parameter of Gamma (`model.ci_fn`, the global shared transformer) on the

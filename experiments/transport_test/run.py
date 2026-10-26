@@ -35,7 +35,7 @@ PREDICTIONS: dict[str, Any] = {
         "transport_test: can a small fine-tune delta-W of Goodfire's 4-layer 67M Pile model be written as a small "
         "change to a few existing subcomponents of the released VPD decomposition (s-55ea3f9b), with the causal-"
         "importance function Gamma and the residual Delta left untouched, so that the transported decomposition "
-        "still explains the fine-tuned model? Plan and design check: reports/2026-10-14_plan_transport-test.md "
+        "still explains the fine-tuned model? Plan and design check: reports/plans/2026-10-14_plan_transport-test.md "
         "(confirmed by the user 2026-10-14). Filed before any transport measurement was run. A learning-rate pilot "
         "that looked only at held-out P(o) and ||dW||/||W|| at the checkpoints is allowed before the main run and is "
         "recorded in setup.pilot."
@@ -213,7 +213,7 @@ FAITH_BLOCKS = 2  # blocks of 128 Pile val rows (rows 0..255), one shared PGD ad
 
 def _faith_blocks(device: str) -> list[list[torch.Tensor]]:
     """Blocks of 128 Pile val rows in sub-batches of 8: the paper's 128-row scope for the shared PGD adversary
-    (reports/2026-10-14_decision_pgd-scope.md); predictions.json names rows 0..63 in batches of 8."""
+    (reports/decisions/2026-10-14_decision_pgd-scope.md); predictions.json names rows 0..63 in batches of 8."""
     from commute.data import batches, pile_rows
 
     return [[b.to(device) for b in batches(pile_rows("val", 128 * i, 128, log), 8)] for i in range(FAITH_BLOCKS)]

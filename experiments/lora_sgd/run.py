@@ -1,5 +1,5 @@
 """lora_sgd (E27): the rank-8 LoRA on all 24 matrices trained with plain SGD, through E14's table, beside the Adam LoRA.
-Plan: reports/2026-10-22_plan_commute-second-line.md, "Item C" and the E27 agent note (parents E9, E14, E4's rate rule).
+Plan: reports/plans/2026-10-22_plan_commute-second-line.md, "Item C" and the E27 agent note (parents E9, E14, E4's rate rule).
 
 Order, each stage writing results/lora_sgd.json as it finishes:
   1. W0 under the Pile harness, adversary seeds 0, 1, 2 (faith_score.w0_check); stop if it fails.
@@ -97,7 +97,7 @@ VERDICT = ("faith_score.verdict on the PGD ratio to the same-job W0 (adversary s
            "(L40 0.21 -> 1.24 / 1.81; H100 about 0.075 -> 1.40 / 1.61)")
 E14_LORA_OUT_OUT = {1: 0.835, 2: 0.702, 3: 0.664, 5: 0.762, 10: 0.979, 30: 1.066, 100: 0.539, 300: 0.849, 1000: 0.954}
 PREDICTIONS: dict[str, Any] = {
-    "about": "E27 lora_sgd. Plan reports/2026-10-22_plan_commute-second-line.md, Item C and the E27 agent note (class 3, a "
+    "about": "E27 lora_sgd. Plan reports/plans/2026-10-22_plan_commute-second-line.md, Item C and the E27 agent note (class 3, a "
              "named item of the user's 2026-10-22 decision). Is the LoRA's 'outside like noise' reading (E9, E14) the "
              "LoRA's parametrisation or Adam's? Filed before the run.",
     "setup": {

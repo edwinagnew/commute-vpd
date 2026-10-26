@@ -1,4 +1,4 @@
-"""The task ladder's amended scoring (reports/2026-10-16_prediction_ladder-routes-amendment.md) on synthetic records:
+"""The task ladder's amended scoring (reports/predictions/2026-10-16_prediction_ladder-routes-amendment.md) on synthetic records:
 the new G1 rule passes a gated-off control that re-gating pushes over the old rule, G1b/G3/G4 gate as filed, and A1/A2
 count as filed. run.py is loaded from its path (it is a script, not a package module)."""
 

@@ -3,7 +3,7 @@
 You are the agent that keeps `commute` moving overnight, while the user is away. `.claude/CLAUDE.md` is already in
 your context and its rules hold: `/design`, predictions before runs, `/pod-runner` for every GPU run, `/writeup`,
 the budget, and the research-log queue. This brief adds what running unattended changes. Plan:
-`reports/2026-10-26_plan_overnight-claude.md`.
+`reports/plans/2026-10-26_plan_overnight-claude.md`.
 
 ## What to work on
 - **Only approved work.** Your task is the text in `~/commute-data/tonight`, written by the user with `fleet/start
@@ -31,11 +31,13 @@ budget, which parallel pods spend faster.
 1. `fleet/iteration-start lead`. Read its output; act on a restart request or a blocked agent first.
 2. Do the next items, in parallel where they are independent. GPU runs go through one background `pod-runner` per
    run. Slurm jobs you wait on with `fleet/wait-job JOBID...` in the background, never by polling `squeue`.
-3. **Log as you go.** When an experiment's analysis report is written, flush `PENDING.md` and republish before
-   starting the next experiment's analysis (a `clerk` can do it in the background). Keep it small: the experiment's
-   card (rewritten, not appended), one timeline line, the "Running / Due to run" line of the pending-decision cards
-   it touches, and the other sections above the cards only for a checked claim or a new pending decision. Keep to
-   the main-page length rule (`docs/research_log/README.md`). The user should never find a finished experiment in `reports/` that is absent from the log.
+3. **Log as you go.** An experiment's analysis report and its notebook `notebooks/E<NN>_<name>.ipynb` are written
+   together (`/writeup`; an amendment updates the same notebook), and the log card links both. Then flush `PENDING.md`
+   and republish before starting the next experiment's analysis (a `clerk` can do it in the background). Keep it
+   small: the experiment's card (rewritten, not appended), one timeline line, the "Running / Due to run" line of the
+   pending-decision cards it touches, and the other sections above the cards only for a checked claim or a new
+   pending decision. Keep to the main-page length rule (`docs/research_log/README.md`). The user should never find a
+   finished experiment in `reports/` that is absent from the log or has no notebook.
 4. Commit, then `git pull --no-rebase` and `git push`. The pre-push hook refuses keys; never bypass it.
 5. Rewrite your handoff note: `fleet/handoff lead set "Now" <<'EOF'` (and "Tried", "Next", "Avoid"), about one
    screen in all, so a fresh session can carry on from it alone.
@@ -58,7 +60,7 @@ else notifies; it waits for the morning.
 ## Morning (on trial since 2026-10-26)
 Before 08:00 (the dev node's clock), or once the night's work is done:
 1. Flush anything still in `docs/research_log/PENDING.md` and republish the log (`docs/research_log/README.md` → How to publish).
-2. Write `reports/YYYY-MM-DD_digest_overnight.md`, one screen at most, following `/writeup` and linking the log's
+2. Write `reports/digests/YYYY-MM-DD_digest_overnight.md`, one screen at most, following `/writeup` and linking the log's
    cards for detail: what ran, what it found, the pending
    decisions, the money spent (remote-kernels `status()` and the session budget), and anything in
    `~/commute-data/blocked.txt`.

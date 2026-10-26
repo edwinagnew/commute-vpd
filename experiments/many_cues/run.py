@@ -1,6 +1,6 @@
 """many_cues (E33): does the fixed change of Gamma's importance values follow the cue or the answer?
-Plan: reports/2026-10-22_plan_many-cues.md. Definitions: commute.many_cues's docstring; E28's arms in
-reports/2026-10-22_plan_regating-tasks.md. Shared steps in commute.regating, commute.shift_anatomy, commute.many_cues.
+Plan: reports/plans/2026-10-22_plan_many-cues.md. Definitions: commute.many_cues's docstring; E28's arms in
+reports/plans/2026-10-22_plan_regating-tasks.md. Shared steps in commute.regating, commute.shift_anatomy, commute.many_cues.
 
 Do-nothing states as E28 makes them (10-step arm-A Adam 3e-5 fine-tunes of all 24 matrices, seed 0; released
 subcomponents, Gamma frozen, Delta out of the masked model). Stages, cheapest first, results written after each:
@@ -65,7 +65,7 @@ READING_RULE = (f"'neither' if R_cue_net < {FAILS}; 'per cue only' if R_cue_net 
                 f"R_shared_net >= {GAP}; 'shared' if R_shared_net >= {WORKS} and R_cue_net - R_shared_net < {GAP}; else "
                 f"'partial' (many_cues.reading)")
 PREDICTIONS: dict[str, Any] = {
-    "plan": "reports/2026-10-22_plan_many-cues.md. Filed before any run; never edited after.",
+    "plan": "reports/plans/2026-10-22_plan_many-cues.md. Filed before any run; never edited after.",
     "states": f"{CONTROL} (G1, first, alone); {WORD} (one cue, one answer); 'many' (K cues, each its own answer); 'one' "
               f"(the same K cues, one answer); K = {K} (at least {K_MIN}, else the job stops after mining)",
     "mining": f"Pile {ROWS} rows; pool = the {POOL} most frequent word-like tokens with >= {MIN_OCC} occurrences; a "

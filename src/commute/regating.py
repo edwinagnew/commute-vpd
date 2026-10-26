@@ -2,7 +2,7 @@
 
 Moved 2026-10-22 from `experiments/regating_leak/run.py` (E18's scored stage: `load_task`, `finetune`, `state_of`,
 `lo_of`, `stage_g1`, `patterns`, `stage_task`, `stage_natural`) for E24 (`experiments/regating_small`). The logic is
-E18's; that run.py stays as it ran. Plan: reports/2026-10-21_plan_regating-leak.md.
+E18's; that run.py stays as it ran. Plan: reports/plans/2026-10-21_plan_regating-leak.md.
 
 A do-nothing state: target W0 + dW, released subcomponents C0, Gamma frozen, Delta out of the masked model. On a task's
 held-out windows, with W0's gates everywhere except the trigger position, the masked model's trigger log-odds of the
@@ -180,7 +180,7 @@ def j_nat(on: R.Sel, contrast: dict[str, Tensor], alive: dict[str, Tensor], n_ra
 
 # ----------------------------------------------------------------------------- E28 (2026-10-22): the kill tests
 # E18 Amendments 2 and 3's shuffled-change and other-window arms, moved from `experiments/regating_leak/run.py` for
-# `experiments/regating_tasks` (plan: reports/2026-10-22_plan_regating-tasks.md). The logic is E18's; that run.py stays
+# `experiments/regating_tasks` (plan: reports/plans/2026-10-22_plan_regating-tasks.md). The logic is E18's; that run.py stays
 # as it ran. R = rho / rho_trig throughout.
 
 N_DERANGE = 5  # E18 amendment 3's derangement draws

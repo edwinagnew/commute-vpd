@@ -1,4 +1,4 @@
-"""Teacher training (reports/2026-10-23_plan_teacher-training.md): component training whose loss is the KL from a frozen
+"""Teacher training (reports/plans/2026-10-23_plan_teacher-training.md): component training whose loss is the KL from a frozen
 teacher's next-token distribution to the student's, KL(teacher || student), in place of arm A's target and W0.
 
 The teacher is the target model at W0 + delta-W. With `half` (task windows) the loss has arm A's weighting

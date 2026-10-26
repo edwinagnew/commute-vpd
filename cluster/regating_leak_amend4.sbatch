@@ -1,6 +1,6 @@
 #!/bin/bash
 # E18 amendment 4: does the remainder carry window-specific information? Each window gets another window's remainder.
-# Plan: reports/2026-10-21_plan_regating-leak.md -> Amendment 4.
+# Plan: reports/plans/2026-10-21_plan_regating-leak.md -> Amendment 4.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/regating_leak_amend4.sbatch     # ~3-5 min on an L40: G1 + amendment 3's gate and remainder (stops on a fail), then the arms
 # Before: `cluster/sync.sh up`; results/predictions_amend4.json filed; results/regating_leak_amend{2,3}.json (the gate's

@@ -1,6 +1,6 @@
 """Flag prose that goes past the write-up skill's sentence guidelines.
 
-    uv run python .claude/skills/writeup/check.py notebooks/x.ipynb reports/y.md
+    uv run python .claude/skills/writeup/check.py notebooks/x.ipynb reports/analyses/y.md
 
 Reads the markdown cells of a notebook or the text of a .md file, skips code, tables and headings, and prints
 every sentence over 25 words, with more than two numbers, with a parenthesis, with a prediction code outside

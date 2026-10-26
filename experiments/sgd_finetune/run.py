@@ -1,5 +1,5 @@
-"""sgd_finetune: items 5 and 7 of reports/2026-10-21_review_sgd-finding-influence.md (plan:
-reports/2026-10-21_plan_sgd-finetune.md). Emoticon, arm A, 10 steps (the Adam fine-tune's scored step in E14 and E16).
+"""sgd_finetune: items 5 and 7 of reports/reviews/2026-10-21_review_sgd-finding-influence.md (plan:
+reports/plans/2026-10-21_plan_sgd-finetune.md). Emoticon, arm A, 10 steps (the Adam fine-tune's scored step in E14 and E16).
 
 Stage `rate`: plain-SGD full fine-tunes of the 24 matrices (finetune.finetune_arm_a, optimizer "sgd") at five rates;
 E4's rule picks one (held-out P(o) >= 0.9 and KL elsewhere <= 0.110, the lowest KL elsewhere). Its delta-W is saved
@@ -59,8 +59,8 @@ ADAM_LRS = (3e-6, 4.5e-6, 6e-6, 8e-6, 1.2e-5)
 MATCH_TOL = 0.15  # |rel_norm_max / SGD's - 1|
 
 PREDICTIONS: dict[str, Any] = {
-    "about": "sgd_finetune: items 5 and 7 of reports/2026-10-21_review_sgd-finding-influence.md. Plan "
-             "reports/2026-10-21_plan_sgd-finetune.md. Filed before any run.",
+    "about": "sgd_finetune: items 5 and 7 of reports/reviews/2026-10-21_review_sgd-finding-influence.md. Plan "
+             "reports/plans/2026-10-21_plan_sgd-finetune.md. Filed before any run.",
     "setup": {
         "task": "emoticon arm A (CE on o at the trigger + KL elsewhere), batch 32, clip 1, seed 0, 10 steps, 24 matrices",
         "sgd_finetune": f"plain SGD (no momentum) at {SGD_LRS}; E4's rule: held-out P(o) >= {P_MIN} and KL elsewhere <= "

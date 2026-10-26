@@ -1,5 +1,5 @@
 #!/bin/bash
-# What the fixed change is made of, on E28's eight states (E32). Plan: reports/2026-10-22_plan_shift-anatomy.md.
+# What the fixed change is made of, on E28's eight states (E32). Plan: reports/plans/2026-10-22_plan_shift-anatomy.md.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/shift_anatomy.sbatch     # ~4-8 min on an L40: G1 (emoticon vs E28) first, stops the job on a fail
 # Before that: `cluster/sync.sh up` and predictions filed (results/predictions.json). Gitignored inputs on NFS:

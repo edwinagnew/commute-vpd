@@ -1,5 +1,5 @@
 """step_split_small (E25): E19's step split along the two small emoticon fine-tunes of E21 (plan:
-reports/2026-10-22_plan_small-update-reruns.md, "E25 step_split_small").
+reports/plans/2026-10-22_plan_small-update-reruns.md, "E25 step_split_small").
 
 The paths: arm A on emoticon, seed 0, all 24 decomposed matrices, plain SGD at 0.01 and Adam at 3e-6 (E21's matched
 pair, `experiments/sgd_finetune`), 1000 steps each. After every optimizer step `split.StepSplit` splits the actual weight

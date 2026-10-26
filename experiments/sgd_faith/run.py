@@ -1,5 +1,5 @@
 """sgd_faith: is the saved plain-SGD emoticon component-training state faithful? Item 1 of
-reports/2026-10-21_review_sgd-finding-influence.md; plan reports/2026-10-21_plan_sgd-faithfulness.md.
+reports/reviews/2026-10-21_review_sgd-finding-influence.md; plan reports/plans/2026-10-21_plan_sgd-faithfulness.md.
 
 The SGD state is sgd_grid's selected one (plain SGD, lr 0.01, 30 steps, saved as {matrix: (delta-W, U_A', V_A')}).
 The reference is Adam component training at lr 1e-5 for the same 30 steps (E4's adam_all, the ladder's emoticon
@@ -70,10 +70,10 @@ FULL = Sizes(adam_steps=30, pile_rows=256, pile_pgd_steps=20, pile_seeds=(0, 1, 
 SMOKE = Sizes(adam_steps=2, pile_rows=8, pile_pgd_steps=2, pile_seeds=(0, 1), enforce=False, suffix="_smoke")
 
 PREDICTIONS: dict[str, Any] = {
-    "about": "sgd_faith (item 1 of reports/2026-10-21_review_sgd-finding-influence.md): faithfulness of sgd_grid's saved "
+    "about": "sgd_faith (item 1 of reports/reviews/2026-10-21_review_sgd-finding-influence.md): faithfulness of sgd_grid's saved "
              "plain-SGD emoticon state (lr 0.01, 30 steps) on the Pile harness, E4's trigger-local masked checks and the "
              "route split, with Adam lr 1e-5 at 30 steps as the reference scored by the same code in the same job. "
-             "Filed before any run; plan reports/2026-10-21_plan_sgd-faithfulness.md",
+             "Filed before any run; plan reports/plans/2026-10-21_plan_sgd-faithfulness.md",
     "measurements": {
         "pile": "round 2's harness (harness.measure): Pile val rows 0..255 in two 128-row blocks, one PGD adversary per "
                 "block (20 sign steps of 0.1, seed 0), stochastic (2 draws), CI-masked and unmasked KL; each a ratio to "

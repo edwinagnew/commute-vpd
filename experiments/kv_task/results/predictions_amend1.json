@@ -1,5 +1,5 @@
 {
- "about": "kv_task Amendment 1 (reports/2026-10-23_plan_kv-task-amend1.md): the Pile harness on E10's saved Adam 1e-5 component-training states rand32 and ident32 at steps 10, 100, 300 (and rand32 @30, the control), no new training. Filed before any run",
+ "about": "kv_task Amendment 1 (reports/plans/2026-10-23_plan_kv-task-amend1.md): the Pile harness on E10's saved Adam 1e-5 component-training states rand32 and ident32 at steps 10, 100, 300 (and rand32 @30, the control), no new training. Filed before any run",
  "filed": "2026-10-23 12:22:47",
  "gates": {
   "C1_control": "shard 0, first state: rand32 @30's PGD ratio within 25% of E10's 2.81, so it reads 'fail' again. Fails: the shard stops and shard 1 is not launched",
@@ -7,7 +7,7 @@
   "G1_states_are_E10s": "each state's held-out P and KL elsewhere within 0.01 of E10's curve at its step, size within 1%. Fails: the shard stops"
  },
  "measurement": {
-  "blind_to": "the trained behaviour (the marker never occurs in Pile); damage a 20-step adversary does not find (it is far from converged, reports/2026-10-22_review_vpd-adversary-convergence.md); one adversary seed per state, one batch order",
+  "blind_to": "the trained behaviour (the marker never occurs in Pile); damage a 20-step adversary does not find (it is far from converged, reports/reviews/2026-10-22_review_vpd-adversary-convergence.md); one adversary seed per state, one batch order",
   "damage_elsewhere": "held-out KL of the target model against W0 at every position but the key, nats, absolute; 0 at W0",
   "pile": "harness.measure: Pile val rows 0..255, two 128-row blocks, one 20-step PGD adversary per block (seed 0), stochastic; each a ratio to this shard's W0 under seed 0 (relative). At W0: 1 (absolute PGD 0.69, CI-masked 0.348)",
   "size": "max over the 24 matrices of ||dW|| / ||W0||, absolute; 0 at W0",

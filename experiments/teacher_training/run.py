@@ -1,4 +1,4 @@
-"""teacher_training: component training with a fine-tuned model as teacher. Plan: reports/2026-10-23_plan_teacher-training.md
+"""teacher_training: component training with a fine-tuned model as teacher. Plan: reports/plans/2026-10-23_plan_teacher-training.md
 (design check, arms, controls, the seven numbers, P1-P6; its "Lead's decisions" fix the arm order A, B, S).
 
 The student is W0's alive (U, V) with trainable offsets (component_training.train, Gamma and Delta frozen); its loss is

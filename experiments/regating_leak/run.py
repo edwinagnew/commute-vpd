@@ -1,6 +1,6 @@
 """regating_leak (E18): is re-gating a fixed switch pattern the original subcomponents turn into the behaviour, or do
 the per-window gate values carry the updated model's computation past the decomposition (a leak)?
-Plan: reports/2026-10-21_plan_regating-leak.md (approved class 4; build notes there, 2026-10-21).
+Plan: reports/plans/2026-10-21_plan_regating-leak.md (approved class 4; build notes there, 2026-10-21).
 
 Do-nothing states (target W0 + delta-W, released subcomponents C0, Gamma frozen, Delta out of the masked model) of the
 step-10 fine-tunes on three tasks, seeds 0 (E11's saved delta-W) and 1 (trained here). On each task's held-out windows,
@@ -71,7 +71,7 @@ BATCH = 64
 PATTERNS = ("trig", "shared", "mean", "cross")
 
 PREDICTIONS: dict[str, Any] = {
-    "filed": "2026-10-21, before any run; plan reports/2026-10-21_plan_regating-leak.md (Predictions, build notes)",
+    "filed": "2026-10-21, before any run; plan reports/plans/2026-10-21_plan_regating-leak.md (Predictions, build notes)",
     "states": "do-nothing placement of the step-10 arm-A fine-tune (Adam 3e-5, batch 32, 10 steps): target W0 + delta-W, "
               "released subcomponents C0, Gamma frozen, Delta out of the masked model. Seed 0 = E11's saved delta-W, seed 1 "
               "trained in the job. Null: the same recipe to ' http' (token 3944), seed 0. Tasks emoticon (target 'o'), "
@@ -130,7 +130,7 @@ OUT_A1 = "regating_leak_amend1.json"
 E18_TOL, MIN_D, F_READ = 0.02, 0.3, 0.5
 PREDICTIONS_A1: dict[str, Any] = {
     "filed": "2026-10-21, before the amendment ran; E18's own predictions.json stands unedited. Plan: "
-             "reports/2026-10-21_plan_regating-leak.md -> Amendment 1; analysis reports/2026-10-21_analysis_regating-leak.md",
+             "reports/plans/2026-10-21_plan_regating-leak.md -> Amendment 1; analysis reports/analyses/2026-10-21_analysis_regating-leak.md",
     "question": "E18's filed shared pattern clip(g0(x) + s) recovered 0.40 and 0.62 of rho_trig on the word tasks where the "
                 "unscored mean pattern m1 (= m0 + s on alive subcomponents) recovered 0.94 and 1.11. Which difference lowers "
                 "rho_shared: the clip, W0's per-window variation g0(x) - m0, or the dead subcomponents (shared keeps g0(x) "
@@ -188,7 +188,7 @@ A2_TOL, IDENTITY, BULK = 1e-6, 0.2, 0.5
 BIN_EDGES = (-math.inf, -0.1, -0.01, 0.01, 0.03, 0.1, 0.3, math.inf)
 PREDICTIONS_A2: dict[str, Any] = {
     "filed": "2026-10-21, before the amendment ran; E18's and amendment 1's predictions stand unedited. Plan: "
-             "reports/2026-10-21_plan_regating-leak.md -> Amendment 2; analysis reports/2026-10-21_analysis_regating-leak.md "
+             "reports/plans/2026-10-21_plan_regating-leak.md -> Amendment 2; analysis reports/analyses/2026-10-21_analysis_regating-leak.md "
              "-> Amendment 1 -> What next 1 and 2",
     "question": "Amendment 1 found most of the shared pattern's recovery outside S_on, in the many alive subcomponents with "
                 "s <= 0.3, which E18's random null never moved. Does it matter which subcomponent gets which value of the "
@@ -248,7 +248,7 @@ MIS_SAME, MIS_DROP, MIS_W0_MAX = 0.8, 0.5, 0.2  # mismatched-window R: H if >= M
 CORR_MARGIN, MIN_HALF = 0.2, 0.1
 PREDICTIONS_A3: dict[str, Any] = {
     "filed": "2026-10-21, before the amendment ran; E18's, amendment 1's and amendment 2's predictions stand unedited. Plan: "
-             "reports/2026-10-21_plan_regating-leak.md -> Amendment 3; decision reports/2026-10-21_decision_mechanism-reading.md",
+             "reports/plans/2026-10-21_plan_regating-leak.md -> Amendment 3; decision reports/decisions/2026-10-21_decision_mechanism-reading.md",
     "hypothesis": "H: after a narrow fine-tune, the switching effect at the trigger is carried by one change to Gamma's "
                   "importance values that is (a) the same for every input, (b) specific to which subcomponents receive "
                   "it, and (c) enough on its own: the part of the updated model's values that varies with the input adds "
@@ -1061,7 +1061,7 @@ OUT_A4 = "regating_leak_amend4.json"
 SAME_INFO, OWN_NEEDED = 0.8, 0.5  # D = R(donor remainder) / R(own remainder): no window information if >= SAME_INFO
 PREDICTIONS_A4: dict[str, Any] = {
     "filed": "2026-10-22, before the amendment ran; earlier predictions stand unedited (A3_P1 failed as filed). Plan: "
-             "reports/2026-10-21_plan_regating-leak.md -> Amendment 4; user's choice B, 2026-10-22",
+             "reports/plans/2026-10-21_plan_regating-leak.md -> Amendment 4; user's choice B, 2026-10-22",
     "question": "amendment 3's remainder clip(g1(x) - s) recovers 0.16 to 0.31 of the switching effect (A3_P1 failed). "
                 "Does it carry anything specific to window x? If not, the window it comes from does not matter",
     "notation": "as amendment 3: g1(x) the state's gates at the trigger of held-out window x, s the fixed change, pi a "

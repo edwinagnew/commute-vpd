@@ -1,5 +1,5 @@
 """Task-local faithfulness: the faithfulness variants evaluated on short windows, at the trigger position
-separately from the rest of the window (`reports/2026-10-15_review_faithfulness-scope.md`, section 1).
+separately from the rest of the window (`reports/reviews/2026-10-15_review_faithfulness-scope.md`, section 1).
 
 Why. The Pile harness (`faithfulness.py`) averages over ~131k positions of which ~3 are triggers, so it cannot
 see whether a trained behaviour is carried by the components. Here every window holds one trigger at index
@@ -173,7 +173,7 @@ def retained(res: dict[str, Any], base: dict[str, Any]) -> dict[str, float]:
 
 
 # ----------------------------------------------------------------------------- the route split
-# Added 2026-10-16 (`reports/2026-10-16_prediction_ladder-routes-amendment.md`). Which route the target's log-odds gain
+# Added 2026-10-16 (`reports/predictions/2026-10-16_prediction_ladder-routes-amendment.md`). Which route the target's log-odds gain
 # at the trigger takes. With L(C, G) the masked log-odds (components C, gate pattern G, Delta out), U the unmasked and
 # T the target's, subscripts 0 = W0 and 1 = the state, every term over gain = T1 - T0:
 #   d       L(C1,G0) - L(C0,G0)                        the changed components at the old gates

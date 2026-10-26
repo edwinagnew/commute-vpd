@@ -1,6 +1,6 @@
 #!/bin/bash
 # Complement revert (E20), amendment 2, stage amend2_fixed. Plan:
-# reports/2026-10-21_plan_cancellation-complement.md -> Amendment 2.
+# reports/plans/2026-10-21_plan_cancellation-complement.md -> Amendment 2.
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/cancellation_complement_amend2_fixed.sbatch    # ~4 min: W0's saved levels at W0 (control C1 first), then at the eight states, one fp32 masked pass each
 # Before that: `cluster/sync.sh up`, results/predictions_amend2.json filed, and amendment 1's

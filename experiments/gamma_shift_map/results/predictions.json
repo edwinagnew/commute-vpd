@@ -1,5 +1,5 @@
 {
- "plan": "reports/2026-10-22_plan_commute-second-line.md -> Item D, reading (i) (user, 2026-10-22), and the E30 agent note. Filed before any run; never edited after.",
+ "plan": "reports/plans/2026-10-22_plan_commute-second-line.md -> Item D, reading (i) (user, 2026-10-22), and the E30 agent note. Filed before any run; never edited after.",
  "map": "D' = U, V, Delta as at W0; Gamma'(x) = clip(Gamma(x) + s, 0, 1) at every position, Gamma reading W0's activations; s = mean over the task's TRAINING windows of Gamma's trigger values under W0 + dW minus under W0 (alive only; regating.shift_of). Scored against the fine-tuned model W0 + dW's outputs (shifted_harness).",
  "updates": "10-step arm-A fine-tunes of all 24 matrices, seed 0, regenerated as E24: emoticon SGD 0.01, emoticon Adam 3e-5, r1_t534_v369 SGD 0.03; each with a ' http' (3944) null fine-tune by the same optimiser and rate",
  "arms": {

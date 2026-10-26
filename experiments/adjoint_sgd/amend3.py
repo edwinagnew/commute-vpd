@@ -1,5 +1,5 @@
 """adjoint_sgd (E31) amendment 3 (2026-10-26): the unscaled adjoint split beside the scaled one.
-Plan: reports/2026-10-22_plan_adjoint-sgd.md -> "Amendment 3". Research-log decision card "decision-unscaled-adjoint".
+Plan: reports/plans/2026-10-22_plan_adjoint-sgd.md -> "Amendment 3". Research-log decision card "decision-unscaled-adjoint".
 
 E31's three emoticon seed-0 fine-tunes (SGD 0.01, Adam 3e-6, Adam 3e-5), retrained to step 1000 with E31's recipe. At
 steps 10, 100 and 1000 each update is placed two ways, Delta fixed in both: the scaled adjoint state (split.adjoint_state,
@@ -52,7 +52,7 @@ SAME, KL_X = 0.05, 2.0  # D1's band on |keep difference|; D2's factor on KL else
 
 PREDICTIONS_A3: dict[str, Any] = {
     "about": "E31 amendment 3 (adjoint_sgd): the unscaled adjoint split (c = 1) beside the scaled one, on E31's three "
-             "emoticon seed-0 fine-tunes at steps 10, 100, 1000. Plan reports/2026-10-22_plan_adjoint-sgd.md -> "
+             "emoticon seed-0 fine-tunes at steps 10, 100, 1000. Plan reports/plans/2026-10-22_plan_adjoint-sgd.md -> "
              "'Amendment 3'. Earlier prediction files stand as filed. Filed before the run; never edited.",
     "readout": "per state: keep = held-out P(target) / the fine-tune's own; KL elsewhere = KL(W0 || state) at held-out "
                "non-trigger positions (the fine-tune's kl_other readout); the Pile adversarial ratio and its verdict "

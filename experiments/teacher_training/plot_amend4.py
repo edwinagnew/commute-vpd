@@ -1,5 +1,5 @@
 """Figure and scorecard for teacher_training Amendment 4, a second batch order read under a longer adversary (plan:
-reports/2026-10-23_plan_teacher-training.md -> "Amendment 4"), read from the run's JSONs only.
+reports/plans/2026-10-23_plan_teacher-training.md -> "Amendment 4"), read from the run's JSONs only.
 
   amend4.png             left: held-out P(target) at step 1000 of every seed-1 copy against E34's seed-0 copy of the same
                          teacher and arm, with the filed tolerance band; right: the budget adversary's ratio to W0 of every

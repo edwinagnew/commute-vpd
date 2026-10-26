@@ -18,7 +18,7 @@ So the **adjoint split** (dU = δW V, dV = δWᵀ U, Δ fixed) is their pull-bac
 The adjoint split's weight change K(δW) is not δW, so it is applied with a per-matrix least-squares scale c on the data
 (user-confirmed 2026-10-20).
 
-**Status (2026-10-20):** built as `experiments/lora_split` (plan `reports/2026-10-20_plan_lora-split.md`, design check
+**Status (2026-10-20):** built as `experiments/lora_split` (plan `reports/plans/2026-10-20_plan_lora-split.md`, design check
 confirmed "as recommended"): no new LoRA training, E7 and E9's saved factors plus a re-run emoticon fine-tune at the same
 nine steps; outside share as four input-weighted blocks that sum to one (read side split by E[a | Vᵀa]; GOALS Terms
 updated), rescaling share, both splits' pieces saved, part 2 on Pile at steps 10/100/1000 on one card.

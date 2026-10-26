@@ -3,7 +3,7 @@ the full-weight fine-tune.
 
 Round 4 (`experiments/lora_commute`) compared a LoRA on one matrix the decomposition barely reads (h.2.mlp.down_proj:
 79% of its input energy outside the alive read span) against a fine-tune whose energy sits on matrices it reads well,
-so it could not separate the LoRA from its site (`reports/2026-10-19_review_lora-failure-and-fixes.md`, section 3.2,
+so it could not separate the LoRA from its site (`reports/reviews/2026-10-19_review_lora-failure-and-fixes.md`, section 3.2,
 confirmed by the user 2026-10-19). Here both updates live on the same 24 matrices and go through the same map.
 
   lora   rank-8 LoRA on all 24 matrices, Adam lr 1e-3, arm A's loss, 100 steps; scored at the first checkpoint with
@@ -77,7 +77,7 @@ PREDICTIONS: dict[str, Any] = {
         "lora_matched (2026-10-19): rank-8 LoRA on all 24 decomposed matrices (the standard placement) and the full-weight "
         "fine-tune, both Euclidean-lifted onto the released subcomponents and both measured do-nothing, on the emoticon task. "
         "Repairs round 4's confound (LoRA on one badly-read matrix vs fine-tune on all 24): does a LoRA placed the way LoRAs "
-        "are placed commute as well as a full-weight update? Design: reports/2026-10-19_review_lora-failure-and-fixes.md "
+        "are placed commute as well as a full-weight update? Design: reports/reviews/2026-10-19_review_lora-failure-and-fixes.md "
         "section 3.2, confirmed by the user. Filed before any arm was trained."
     ),
     "setup": {

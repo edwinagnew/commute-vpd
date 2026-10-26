@@ -1,5 +1,5 @@
 """small_finetune_splits (E22): the splits of a small fine-tune at later steps, beside the large one, on one card.
-Plan: reports/2026-10-22_plan_small-update-reruns.md, section "E22" (parents E14 part 1 and E16).
+Plan: reports/plans/2026-10-22_plan_small-update-reruns.md, section "E22" (parents E14 part 1 and E16).
 
 Three emoticon fine-tunes (arm A, seed 0, all 24 matrices, 1000 steps): SGD 0.01 and Adam 3e-6 (E21's matched pair)
 and Adam 3e-5 (the large reference). Order, each writing results/small_finetune_splits.json as it finishes:
@@ -80,7 +80,7 @@ VERDICT = ("faith_score.verdict on the PGD ratio to the same-job W0 (adversary s
            "1.5 (1 + f), inconclusive between; f = max/min - 1 of W0's PGD KL over adversary seeds 0, 1 in this job "
            "(L40 0.21 -> 1.24 / 1.81; H100 about 0.075 -> 1.40 / 1.61)")
 PREDICTIONS: dict[str, Any] = {
-    "about": "E22 small_finetune_splits. Plan reports/2026-10-22_plan_small-update-reruns.md (section E22, design check "
+    "about": "E22 small_finetune_splits. Plan reports/plans/2026-10-22_plan_small-update-reruns.md (section E22, design check "
              "there; approved classes 1-2, the user's instruction 2026-10-22). Filed before the run.",
     "setup": {
         "finetunes": "emoticon arm A (CE on o at the trigger + KL elsewhere), batch 32, clip 1, seed 0, all 24 matrices, "

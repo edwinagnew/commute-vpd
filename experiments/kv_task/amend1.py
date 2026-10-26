@@ -1,5 +1,5 @@
 """kv_task Amendment 1 (2026-10-23): is E10's cipher failure about the update's size, its damage elsewhere, the number
-of new associations, or the scored step? Plan: reports/2026-10-23_plan_kv-task-amend1.md (Q4 of the research log).
+of new associations, or the scored step? Plan: reports/plans/2026-10-23_plan_kv-task-amend1.md (Q4 of the research log).
 
 No new training. E10's saved Adam 1e-5 component-training states (results/large/<task>/pullback/state_step<n>.pt,
 cluster NFS) go through the Pile harness (harness.measure, 256 val rows, 20-step adversary, seed 0) as ratios to a
@@ -45,7 +45,7 @@ GATE_TOL, SIZE_TOL, CONTROL_TOL = 0.01, 0.01, 0.25  # absolute on P and KL elsew
 LATE, EARLY = (100, 300), 10
 
 PREDICTIONS: dict[str, Any] = {
-    "about": "kv_task Amendment 1 (reports/2026-10-23_plan_kv-task-amend1.md): the Pile harness on E10's saved Adam 1e-5 "
+    "about": "kv_task Amendment 1 (reports/plans/2026-10-23_plan_kv-task-amend1.md): the Pile harness on E10's saved Adam 1e-5 "
              "component-training states rand32 and ident32 at steps 10, 100, 300 (and rand32 @30, the control), no new "
              "training. Filed before any run",
     "measurement": {
@@ -61,7 +61,7 @@ PREDICTIONS: dict[str, Any] = {
         "damage_elsewhere": "held-out KL of the target model against W0 at every position but the key, nats, absolute; "
                             "0 at W0",
         "blind_to": "the trained behaviour (the marker never occurs in Pile); damage a 20-step adversary does not find "
-                    "(it is far from converged, reports/2026-10-22_review_vpd-adversary-convergence.md); one adversary "
+                    "(it is far from converged, reports/reviews/2026-10-22_review_vpd-adversary-convergence.md); one adversary "
                     "seed per state, one batch order",
     },
     "states_from_E10_curve": {"rand32": {"10": [0.0073, 0.217, 0.001], "30": [0.0154, 0.355, 0.847],

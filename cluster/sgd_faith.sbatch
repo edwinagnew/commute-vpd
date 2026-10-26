@@ -1,5 +1,5 @@
 #!/bin/bash
-# sgd_faith: faithfulness of sgd_grid's saved SGD emoticon state beside Adam (reports/2026-10-21_plan_sgd-faithfulness.md).
+# sgd_faith: faithfulness of sgd_grid's saved SGD emoticon state beside Adam (reports/plans/2026-10-21_plan_sgd-faithfulness.md).
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_faith.sbatch --sgd-state experiments/sgd_grid/results/large/state_lr0.01.pt --smoke   # ~4 min
 #   sbatch cluster/sgd_faith.sbatch --sgd-state experiments/sgd_grid/results/large/state_lr0.01.pt           # ~16 min on an L40

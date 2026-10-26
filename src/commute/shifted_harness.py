@@ -1,6 +1,6 @@
 """The Pile harness for a decomposition whose importance values are shifted by one fixed vector (E30, gamma_shift_map).
 
-Reading (i) of `reports/2026-10-22_plan_commute-second-line.md` -> Item D. The decomposition D' keeps U, V and Delta as
+Reading (i) of `reports/plans/2026-10-22_plan_commute-second-line.md` -> Item D. The decomposition D' keeps U, V and Delta as
 at W0 (the model's own state: target weights W0, released components), and its importance function is
     Gamma'(x) = clip(Gamma(x) + s, 0, 1)   at every position,
 with Gamma reading W0's activations and s one (C,) vector per matrix (E18's fixed change, `regating.shift_of`). D' is

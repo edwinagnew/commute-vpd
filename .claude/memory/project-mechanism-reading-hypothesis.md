@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-User, 2026-10-21: the E18 "mechanism reading" (re-gating is a fixed, input-independent change to Γ's values) is not precise or supported enough to back; it is the leading hypothesis, to be tested aggressively. Stated as H with three parts — (a) same for every input, (b) identity-specific, (c) sufficient (the input-varying part adds nothing; a leak = failure of (c)) — in `reports/2026-10-21_decision_mechanism-reading.md`.
+User, 2026-10-21: the E18 "mechanism reading" (re-gating is a fixed, input-independent change to Γ's values) is not precise or supported enough to back; it is the leading hypothesis, to be tested aggressively. Stated as H with three parts — (a) same for every input, (b) identity-specific, (c) sufficient (the input-varying part adds nothing; a leak = failure of (c)) — in `reports/decisions/2026-10-21_decision_mechanism-reading.md`.
 
 **Why:** fixed-pattern recoveries rested on an untested additivity assumption and nulls that covered only part of the change.
 **How to apply:** in write-ups say "leading hypothesis", name which part of H a result bears on; design arms H could fail. Related: [[feedback-flag-qualitative-surprises-loudly]], [[project-gamma-refit-e15-status]].

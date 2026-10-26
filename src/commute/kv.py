@@ -4,7 +4,7 @@ A window is a 41-token Pile span with the token at `half - 1` replaced by a mark
 drawn from K word-like tokens; the target at `half` is table[x]. `bijection`: the table is a random bijection from the
 keys onto K other word-like tokens, a word-level substitution cipher (cf. Halawi et al. 2024, Walnut53). `identity`:
 table[x] = x, the matched-format control. The table is the `token` argument of the harness (`data.target_tokens`).
-Plan: reports/2026-10-19_plan_key-value-task.md.
+Plan: reports/plans/2026-10-19_plan_key-value-task.md.
 """
 
 from __future__ import annotations

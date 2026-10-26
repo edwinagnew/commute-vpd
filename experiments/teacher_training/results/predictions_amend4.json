@@ -1,5 +1,5 @@
 {
- "about": "teacher_training Amendment 4 (reports/2026-10-23_plan_teacher-training.md -> 'Amendment 4'): E34's six teachers regenerated (fine-tune seed 0); arms A (task windows, Adam 1e-5, batch 32) and B (Pile train rows from 32,768, batch 8, plain mean KL, Adam 1e-5) retrained at batch-order seed 1 for 1000 steps and read at step 1000 through the harness; then E20 Amendment 3's budget sweep (128 Pile val rows, batches of 8, n sign steps of 2/n for n in 20, 160, adversary seed 0) at W0 (seeds 0, 1), each teacher's do-nothing state and each seed-1 student. RunPod H100. Filed before any run",
+ "about": "teacher_training Amendment 4 (reports/plans/2026-10-23_plan_teacher-training.md -> 'Amendment 4'): E34's six teachers regenerated (fine-tune seed 0); arms A (task windows, Adam 1e-5, batch 32) and B (Pile train rows from 32,768, batch 8, plain mean KL, Adam 1e-5) retrained at batch-order seed 1 for 1000 steps and read at step 1000 through the harness; then E20 Amendment 3's budget sweep (128 Pile val rows, batches of 8, n sign steps of 2/n for n in 20, 160, adversary seed 0) at W0 (seeds 0, 1), each teacher's do-nothing state and each seed-1 student. RunPod H100. Filed before any run",
  "amend4": {
   "budget_batch": 8,
   "budget_pass": 1.241,

@@ -1,5 +1,5 @@
 """regating_spread (E36) Amendment 1: the same every-position arms on a fine-tune that learns, a lowercase-text style.
-Plan: reports/2026-10-26_plan_regating-without-cues.md -> Amendment 3. E36's code-like fine-tune did not learn (held-out
+Plan: reports/plans/2026-10-26_plan_regating-without-cues.md -> Amendment 3. E36's code-like fine-tune did not learn (held-out
 gain -0.05 to -0.07 nats per token, gate G failed at both steps), so nothing was scored. Here the task is a style with
 no trigger and no target token: Pile text lowercased. Rows: 'train' and 'val' rows decoded, lowercased, re-encoded,
 joined with end-of-text and cut into 512-token rows. Everything else is run.py's (fine-tune recipe, fit, arms, gates,
@@ -28,7 +28,7 @@ N_TRAIN = CHECKS[-1] * BATCH  # finetune_arm_b takes fresh rows every step
 SCORED = str(CHECKS[-1])
 
 AMEND: dict[str, Any] = {
-    "plan": "reports/2026-10-26_plan_regating-without-cues.md, Amendment 3. Filed before the run; never edited after.",
+    "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md, Amendment 3. Filed before the run; never edited after.",
     "why": "E36's code-like fine-tune did not learn (gain -0.052 and -0.065, G failed at both steps); nothing scored",
     "task": f"Pile rows {ROWS_TRAIN} and {ROWS_HELD}, each decoded, lowercased, re-encoded, joined with end-of-text "
             f"and cut into 512-token rows; {N_TRAIN} training rows (fresh each step), {N_HELD} held-out rows",

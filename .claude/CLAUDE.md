@@ -20,7 +20,7 @@ split, outside share, do-nothing, LoRA split, fixed-shift hypothesis); its "old 
 and a file's definition of a term disagree, the user's words win: say so at once, give both readings in one line each,
 and get the user's explicit acknowledgement of which holds before designing or running anything. Never pick a side
 silently. A plan restates the user's request in the Terms' words, and it is that restatement the user confirms
-(2026-10-20, `reports/2026-10-20_review_terminology.md`).
+(2026-10-20, `reports/reviews/2026-10-20_review_terminology.md`).
 
 ## Layout (one line each)
 - `experiments/<name>/` = `run.py` + `plot.py` + `results/` (incl. `predictions.json`) + `figures/`.
@@ -33,13 +33,14 @@ silently. A plan restates the user's request in the Terms' words, and it is that
   `docs/research_log/PENDING.md` when it is written; the queue is applied and republished before the session ends
   (recipe and completeness check in `docs/research_log/README.md`). Run its `--check` against the live pages before
   editing; another session may have published.
-- `theory/` notes. `notebooks/` look at results. `reports/` dated write-ups
-  (`YYYY-MM-DD_<prediction|analysis|plan|review|decision>_<topic>.md`). `backlog.md` deferred ideas. `README.md`'s
-  "Current plan" line names the latest plan; keep it current.
+- `theory/` notes. `notebooks/E<NN>_<name>.ipynb` explain results, one per experiment. `reports/<type>/` dated
+  write-ups, one subdirectory per type (`plans/ analyses/ reviews/ decisions/ predictions/ digests/`), each file
+  `YYYY-MM-DD_<type>_<topic>.md`; nothing at the top of `reports/` (user, 2026-10-26). `backlog.md` deferred ideas.
+  `README.md`'s "Current plan" line names the latest plan; keep it current.
 - `GOALS.md` = the aim (user-owned). `decisions.md` = working choices, revisable.
 - `src/commute/` = everything shared between experiments. `artifacts/`, `data/` = downloads, gitignored, untrusted
   (keep our scripts out of them, pass paths as arguments). `cluster/` = Slurm scripts; read `cluster/README.md`.
-- `fleet/` = the harness that runs agents on the cluster (plan: `reports/2026-10-26_plan_overnight-claude.md`). On
+- `fleet/` = the harness that runs agents on the cluster (plan: `reports/plans/2026-10-26_plan_overnight-claude.md`). On
   the dev node, Python, tests and lint run only through `fleet/cpu-run` (a hook refuses them otherwise).
 
 ## Writing code
