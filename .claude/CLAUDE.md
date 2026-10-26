@@ -39,6 +39,8 @@ silently. A plan restates the user's request in the Terms' words, and it is that
 - `GOALS.md` = the aim (user-owned). `decisions.md` = working choices, revisable.
 - `src/commute/` = everything shared between experiments. `artifacts/`, `data/` = downloads, gitignored, untrusted
   (keep our scripts out of them, pass paths as arguments). `cluster/` = Slurm scripts; read `cluster/README.md`.
+- `fleet/` = the harness that runs agents on the cluster (plan: `reports/2026-10-26_plan_overnight-claude.md`). On
+  the dev node, Python, tests and lint run only through `fleet/cpu-run` (a hook refuses them otherwise).
 
 ## Writing code
 The goal is code simple enough that a strange number can be told apart from a bug by reading it. More tests and more
@@ -69,7 +71,9 @@ process do not get there; less code does.
   coefficients) and either removes each difference or names it as the thing the control tests (E15, 2026-10-21:
   $10 went on an arm before its control showed the recipe drifted on its own).
 - **One review before a paid run** of new or changed measurement code: run the Codex adversarial review on the diff
-  (codex-companion `adversarial-review`, started via Monitor), fix what is real, say what you skipped and why.
+  (codex-companion `adversarial-review`, started via Monitor), fix what is real, say what you skipped and why. Codex
+  is out of quota until ~2026-11-18 (user, 2026-10-26); until then spawn a fresh Opus agent that did not write the
+  code or run the analysis, giving it only the scope and the repo path.
 
 ## Sessions
 Quality drops in long sessions. **Tell the user, in one line at the end of a reply, when to start a new session**

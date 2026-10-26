@@ -1,5 +1,68 @@
 {
   "env": {
     "REMOTE_KERNELS_BUDGET": "40"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(fleet/*)",
+      "Bash(sbatch *)",
+      "Bash(squeue*)",
+      "Bash(scontrol show*)",
+      "Bash(scancel *)",
+      "Bash(sinfo*)",
+      "Bash(git add *)",
+      "Bash(git checkout --ours *)",
+      "Bash(git checkout --theirs *)",
+      "Bash(git commit *)",
+      "Bash(git diff*)",
+      "Bash(git fetch*)",
+      "Bash(git log*)",
+      "Bash(git merge --abort)",
+      "Bash(git mv *)",
+      "Bash(git pull *)",
+      "Bash(git pull)",
+      "Bash(git push *)",
+      "Bash(git push)",
+      "Bash(git restore *)",
+      "Bash(git rm *)",
+      "Bash(git show*)",
+      "Bash(git stash*)",
+      "Bash(git status*)",
+      "mcp__plugin_remote-kernels_remote-kernels__*"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean*)",
+      "Bash(env)",
+      "Bash(printenv*)",
+      "Read(~/.config/commute/**)",
+      "Read(~/.git-credentials)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/agent-model.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/no-compute-on-node.py\""
+          }
+        ]
+      }
+    ]
   }
 }

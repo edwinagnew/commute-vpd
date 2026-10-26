@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Refuses a push whose commit messages or added lines contain a private string: the fixed strings in
+# .githooks/private-patterns.txt, or any key value in the secrets file or git's credential store (from mats-fleet's
+# pre-push, 2026-10-26). Removed and context lines are already on the remote, so only added lines are checked.
+set -euo pipefail
+
+repo="$(git rev-parse --show-toplevel)"
+zero="0000000000000000000000000000000000000000"
+patterns="$(mktemp)"
+trap 'rm -f "$patterns"' EXIT
+grep -v -e '^#' -e '^[[:space:]]*$' "$repo/.githooks/private-patterns.txt" > "$patterns" || true
+# Key values: the right-hand side of each NAME=value line, and the password in each credential URL.
+secrets="$HOME/.config/commute/secrets.env"
+[[ -r "$secrets" ]] && sed -nE "s/^(export +)?[A-Za-z_]+=[\"']?([^\"' ]{8,})[\"']?.*/\2/p" "$secrets" >> "$patterns"
+[[ -r "$HOME/.git-credentials" ]] && sed -nE 's#^[a-z]+://[^:]*:([^@]{8,})@.*#\1#p' "$HOME/.git-credentials" >> "$patterns"
+
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ "$local_sha" == "$zero" ]] && continue   # branch deletion
+  if [[ "$remote_sha" == "$zero" ]] || ! git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
+    range=("$local_sha" --not --remotes)
+  else
+    range=("$remote_sha..$local_sha")
+  fi
+  # Line numbers only, never the matched text: a hit may be a key.
+  hits="$( { git log --format='commit %h message: %B' "${range[@]}";
+             git log -p --cc -U0 --format='commit %h diff:' "${range[@]}" -- . ':(exclude).githooks/private-patterns.txt' \
+               | grep -E '^(commit |\+)' | grep -v '^+++ '; } \
+           | grep -n -i -F -f "$patterns" | cut -d: -f1 | head -20 | paste -sd, - || true)"
+  if [[ -n "$hits" ]]; then
+    echo "pre-push: private strings in the commits being pushed to $remote_ref (lines $hits of 'git log -p'); push refused." >&2
+    status=1
+  fi
+done
+exit $status
