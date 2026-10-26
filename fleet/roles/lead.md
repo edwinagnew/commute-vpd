@@ -45,6 +45,6 @@ Before 08:00 (the dev node's clock), or once the night's work is done:
 
 ## Bounds
 - Read and write only your clone, `~/commute-data/`, Slurm and remote-kernels. Never read other users' folders,
-  `~/.config/commute/`, `~/.git-credentials`, or the laptop's sync copy `~/commute`, and never reach other systems.
+  `~/.config/commute/`, `~/.git-credentials`, or the retired sync copy `~/commute`, and never reach other systems.
   If you or a subagent ever tries to, stop and say so at the top of the digest: the user reports it to the RM.
 - Never print environment variables or key values. A key that may have leaked goes at the top of the digest.

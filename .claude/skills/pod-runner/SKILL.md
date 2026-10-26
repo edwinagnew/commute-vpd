@@ -14,7 +14,7 @@ names the run.
 Before spawning, check that:
 - for a scored run, `experiments/<name>/results/predictions.json` exists; a separate smoke only when the rule in
   `.claude/CLAUDE.md` asks for one (a paid run over ~30 min, or an expensive late stage);
-- `make lint` is clean on the changed files, and the adversarial review was run if measurement code changed.
+- `make lint` is clean on the changed files (skipped while the worker is down), and the adversarial review was run if measurement code changed.
 
 If one of these fails, tell the user instead of spawning.
 

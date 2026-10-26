@@ -47,7 +47,7 @@ name = "commute-teacher_training"
 # Forwarded only if set locally.
 # GIT_PAT: read-only token for github.com/edwinagnew/commute-vpd, so a fresh pod clones the tree before its first
 # sync() (see .claude/agents/pod-runner.md).
-inherit-env = ["HF_TOKEN", "WANDB_API_KEY", "GIT_PAT"]
+inherit-env = ["WANDB_API_KEY", "GIT_PAT"]   # no HF_TOKEN: the tokenizer is public (MATS security guide, 2026-10-26)
 
 # Path to a dotenv file of machine-only variables kept out of your local
 # .env files. Resolved relative to the project root.

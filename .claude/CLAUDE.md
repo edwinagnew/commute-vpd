@@ -112,7 +112,7 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
 - Budget: the session's `REMOTE_KERNELS_BUDGET` (`.claude/settings.json`; $40, user 2026-10-21) is the limit, with no
   per-run sign-off below it. Plan to stay ~15% under it: the plugin terminates machines when it is hit. Anything more
   needs the user's explicit confirmation. Benchmark a slice first.
-- Credentials (`WANDB_API_KEY`, `RUNPOD_API_KEY`, `HF_TOKEN`) come from the shell, never a repo file; if one is
+- Credentials (`WANDB_API_KEY`, `RUNPOD_API_KEY`) come from the shell, never a repo file; if one is
   missing, name the variable and stop.
 - Pin dependency versions in `pyproject.toml`. Goodfire's `param-decomp` is a pinned dependency (commit `74146b5`,
   `vpd-paper` branch), never copied in; the read-only clone at `../param-decomp` stays at that commit.
