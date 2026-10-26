@@ -47,7 +47,7 @@ for role in $windows; do
   # The agent's last step (a tool call or message), not the file's time: bookkeeping lines also touch the file.
   if [[ -n "$t" ]]; then
     step=$(jq -r 'select(.type == "assistant" and .timestamp) | .timestamp as $ts | .message.content[]?
-      | if .type == "tool_use" then "\($ts)\t\(.name): \((.input.description // .input.command // "") | tostring | .[0:90])"
+      | if .type == "tool_use" then "\($ts)\t\(.name): \((.input.description // .input.command // .input.file_path // .input.pattern // .input.prompt // "") | tostring | .[0:90])"
         elif .type == "text" then "\($ts)\twrote: \(.text | gsub("\n"; " ") | .[0:90])" else empty end' "$t" 2>/dev/null | tail -1)
     [[ -n "$step" ]] && echo "   last step $(ago "$(date -d "${step%%$'\t'*}" +%s)"): ${step#*$'\t'}"
   fi
