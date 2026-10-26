@@ -161,6 +161,10 @@ details.mobile-toc { display: none; }
 .card.decision { position: relative; }
 .card.decision > .urgency { position: absolute; top: 12px; right: 14px; }
 .card.decision > .k, .card.decision > h3 { padding-right: 96px; }
+/* Techniques: a status flag (Best, Discarded, ...) in each operation card's top right. */
+.card.flagged { position: relative; }
+.card.flagged > .urgency { position: absolute; top: 12px; right: 14px; }
+.card.flagged > .k { padding-right: 96px; }
 
 /* The central question, as a pull-quote at the top of section 2. */
 .hero { border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 12px 12px 0; padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; max-width: 76ch; }

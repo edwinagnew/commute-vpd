@@ -24,4 +24,12 @@
   arms) and a late extra file were still not on disk when the machine was terminated; the run's log saved the numbers.
   Before `terminate()`: download the final results file, verify its sha256 on both sides, then terminate. Make the run
   print every scored number to the log as well, so a lost file is a summary loss, not a run loss.
+- Lesson from the 2026-10-26 teacher-training amendments (three pods lost, ~$9 of reruns). With `cleanup =
+  "terminate"` the machine terminates itself when the session disconnects (plugin README, "Automatic cleanup"). Two
+  pods died within a minute of a runner rewriting `remote-kernels.toml` and starting a third; one died 75 min into a
+  run with no config change; one survived a WebSocket closure because its runner opened a new kernel within two
+  minutes. Rules: never edit `remote-kernels.toml` while a machine of the session runs (label pods through `start()`'s
+  argument); no `execute()` or `wait()` over 5 min, re-arm instead; on a WebSocket closure, `status(instance=...)`
+  then `create_kernel(instance=...)` at once; download each stage as it is written; pass `instance` to every
+  machine-scoped call when several machines run.
 - Stop or terminate machines as soon as they are idle. The $40/session `REMOTE_KERNELS_BUDGET` is the budget and the backstop that terminates machines.

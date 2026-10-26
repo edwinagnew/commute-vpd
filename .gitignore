@@ -9,7 +9,15 @@ data/
 # downloaded checkpoints and datasets (gitignored; fetched by script)
 *.egg-info/
 .env
-.env.local
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+secrets.env
+service-account*.json
+*-sa.json
+*credentials*.json
 .ipynb_checkpoints/
 *.pyc
 __pycache__/

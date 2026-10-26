@@ -1,0 +1,25 @@
+{
+ "about": "E31 amendment 3 (adjoint_sgd): the unscaled adjoint split (c = 1) beside the scaled one, on E31's three emoticon seed-0 fine-tunes at steps 10, 100, 1000. Plan reports/2026-10-22_plan_adjoint-sgd.md -> 'Amendment 3'. Earlier prediction files stand as filed. Filed before the run; never edited.",
+ "readout": "per state: keep = held-out P(target) / the fine-tune's own; KL elsewhere = KL(W0 || state) at held-out non-trigger positions (the fine-tune's kl_other readout); the Pile adversarial ratio and its verdict against the same-job W0 floor; Delta's share",
+ "rules": {
+  "status": "a state with fine-tune P(target) < 0.9 is 'uninformative'; Delta share > 1e-3 is 'not faithful'; a comparison that needs such a state is 'unscored'",
+  "D1_behaviour": "per (fine-tune, step), d = keep(unscaled) - keep(scaled): 'same' if |d| <= 0.05, 'higher' if d > 0.05, 'lower' if d < -0.05; absolute",
+  "D2_off_target": "per (fine-tune, step): 'costlier' if KL elsewhere(unscaled) >= 2.0 x KL elsewhere(scaled), 'cheaper' if <= scaled / 2.0, else 'similar'; relative",
+  "D3_adversary": "per (fine-tune, step): the unscaled state's verdict (pass / inconclusive / fail)",
+  "reading": "'scale is a detail' if every D1 is 'same', every D2 'similar' and every D3 'pass'; otherwise 'the scale does work', naming which of D1-D3 moved"
+ },
+ "predicted": {
+  "D1": "'higher' or 'same' at most states, low confidence: K is positive semi-definite, so to first order the unscaled move raises the target logit by more than the scaled one (fitted c is mostly below 1). 'lower' at step 1000 of Adam 3e-5 (largest overshoot) is the main alternative",
+  "D2": "'costlier' at all nine states, medium-high confidence: the unscaled move is 1.2-2.8x the fitted size in the median matrix and up to 18x in some (E31's c and share), and damage grows faster than the move",
+  "D3": "'pass' at all SGD and Adam 3e-6 states; Adam 3e-5 at 100 and 1000 'inconclusive' or 'fail' as likely as 'pass', low confidence",
+  "reading": "'the scale does work', through D2 (and possibly D3)"
+ },
+ "expected": {
+  "W0": "the same-job floor at its known values (G0)",
+  "do_nothing": "keep 1; KL elsewhere = the fine-tune's kl_other (E31: 0.003-0.06 on emoticon)",
+  "control": "the scaled state reads E31's step-10 row (A3_G1); E31's scaled keeps at 10/100/1000: SGD 0.74, 0.72, 0.60; Adam 3e-6 0.71, 0.48, 0.24; Adam 3e-5 0.93, 0.57, 0.10; verdict pass everywhere"
+ },
+ "blind_to": "P(target) only at the trigger; KL elsewhere only on the emoticon held-out windows, not the Pile; damage the 20-step adversary misses; one seed, one task; any scale between c and 1",
+ "noise_floor": "reruns of a fine-tune and its scaled state repeated within 0.002 in keep (E31 amendment 2); seed spread 0.04 in keep; the adversary's same-job floor f",
+ "filed": "2026-10-26 12:25:34"
+}

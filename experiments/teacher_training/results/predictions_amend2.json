@@ -1,0 +1,102 @@
+{
+ "about": "teacher_training Amendment 2 (reports/2026-10-23_plan_teacher-training.md -> 'Amendment 2'; approved classes 3 and 4, the loophole Amendment 1's design check named). Emoticon only, both teachers (SGD 0.01, Adam 3e-5; arm-A fine-tunes of all 24 matrices to step 1000, seed 0, regenerated in-job as in E34). One arm-B variant per teacher, B-dropped-0.1: Amendment 1's B-dropped with the threshold on the trigger subcomponent's g at W0 lowered from 0.5 to 0.1, every row with a position above 0.1 replaced at its index by the next spare row (Pile train rows 40,960..43,007) that is clean at 0.1. E34's arm-B recipe (Pile train rows from 32,768, 8,192 rows, batch 8, Adam 1e-5, 1000 steps, batch-order seed 0, plain mean KL(teacher || student)), scored at step 1000 only. Amendment 1's references are read from results/teacher_training_amend1.json, not recomputed. predictions.json and predictions_amend1.json stand unedited. Filed before any run",
+ "amend2": {
+  "cos_tol": 0.02,
+  "drop_g": 0.1,
+  "full_g": 0.5,
+  "g1_p_tol": 0.01,
+  "g1_size_tol": 0.002,
+  "p_fall": 0.1,
+  "p_same": 0.03,
+  "ref_cos": [
+   0.078,
+   0.218
+  ],
+  "ref_p": [
+   0.937,
+   0.892
+  ],
+  "ref_p100": [
+   0.195,
+   0.08
+  ],
+  "spare_rows": 2048,
+  "trigger_key": "h.2.mlp.down_proj:2359",
+  "variant": "B-dropped-0.1"
+ },
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, adversary seeds 0, 1, 2), faith_score.w0_check, as E34. Expected: pass, floor about 0.075 on an H100. Fails: stop, nothing trained",
+  "G1": "per teacher, before its student trains: the regenerated teacher's held-out P(target) within 0.01 and size of change within 0.002 of Amendment 1's reproduction reading (SGD: P 0.9980, size 0.0122; Adam: P 0.9996, size 0.0321). Expected: identical (same seed, code path and card). Fails: stop"
+ },
+ "expected": {
+  "size": "0.016 (SGD teacher's copy), 0.020 (Adam teacher's copy), as every Amendment 1 copy",
+  "teacher gap at W0": "5.01 (SGD), 5.09 (Adam), as E34",
+  "trigger counts": "Amendment 1: 90 positions in 63 rows above 0.5, 58 rows drawn, 45 positions above 0.1 left in its dropped rows. So above 0.1 about 130-170 positions in about 90-120 rows; about 1% of the 2,048 spare rows hit at 0.1 (about 20-30)"
+ },
+ "filed": "2026-10-26 10:49:07",
+ "measurements": {
+  "blind_to": "no P(target) noise floor across batch orders yet (Amendment 4 supplies one): a 0.03 band is a judgement, not a measured floor; one seed; emoticon only; the cosine weighs every entry alike",
+  "cosine": "finetune.cosines(student delta-W, teacher delta-W) over the 24 matrices concatenated (float64), as Amendment 1. Its references per teacher are Amendment 1's, copied: arm A 0.245 / 0.285, adjoint 0.450 / 0.382, null 0.0002, B-dropped 0.078 / 0.218. Blind to: the part of delta-W that does nothing on the data (every entry weighs alike); positive control: arm A's cosine",
+  "p_target": "held-out P(target) at step 1000 through the harness (arms.heldout_of), absolute. W0 0.004; the teachers 0.998 and 1.000; Amendment 1's B-dropped 0.937 (SGD) and 0.892 (Adam)",
+  "p_target_100": "held-out P(target) at step 100 from component_training.train's per-step held-out reading (free, not the harness). Amendment 1's B-dropped: 0.195 SGD, 0.080 Adam",
+  "seven numbers": "per state at step 1000 as E34 (record): adversarial and stochastic ratios to this job's W0 with state_verdict, P(target), teacher gap, damage elsewhere, size, Delta's share",
+  "trigger counts": "positions and rows of the 8,192 arm-B rows with the trigger subcomponent's g > 0.1 and > 0.5 at W0 (data.subcomponent_g), rows drawn by the seeded sampler in 1,000 batches of 8, spare rows with g > 0.1, the largest g left after replacement (<= 0.1 by construction)"
+ },
+ "not_run": [
+  "a masked version at 0.1 (Amendment 1: masking and dropping read alike)",
+  "thresholds below 0.1; rows holding the trigger's tokens with the subcomponent off",
+  "a second batch order or a longer adversary (Amendment 4); r0 and r1; a LoRA teacher (Amendment 3)",
+  "the step-100 harness reading"
+ ],
+ "predictions": [
+  {
+   "id": "P1_loophole",
+   "kind": "two-sided, filed with a lean to 'not carried'",
+   "lean": "'not carried' for both teachers: Amendment 1 showed removing the 90 full triggers moved the end state by about 0.02 while only slowing the first 100 steps; 45 partly-on positions should move it less",
+   "readings": {
+    "between": "reported per teacher; Amendment 4's noise floor decides whether the shift is real",
+    "carried in part": "a weak form of the trigger suffices: the Pile-only claim is withdrawn to 'rare occurrences suffice'",
+    "not carried": "the partly-on rows did not carry the behaviour: the Pile-only claim stands with no form of the trigger in the copying text"
+   },
+   "reported": "state_verdict beside each P (Amendment 1's B-dropped: pass SGD, 'below P 0.9' Adam)",
+   "rule": "per teacher, B-dropped-0.1's held-out P(target) at step 1000 against Amendment 1's B-dropped (0.937 SGD, 0.892 Adam, full-precision values copied into the results file): |difference| <= 0.03 -> 'not carried'; a fall of more than 0.10 -> 'carried in part'; anything else -> 'between'"
+  },
+  {
+   "fail": "outside 0.02 for either teacher: reported with its sign; a fall with P1 'carried in part' says the partly-on rows pulled the copy towards delta-W",
+   "id": "P2_cosine_unchanged",
+   "kind": "two-sided",
+   "pass": "within 0.02 for both teachers: the copy finds the same weight change whether or not the partly-on rows are in its text",
+   "rule": "per teacher, the cosine over the 24 matrices of B-dropped-0.1's delta-W with the teacher's delta-W within 0.02 of Amendment 1's B-dropped (0.078 SGD, 0.218 Adam), absolute"
+  }
+ ],
+ "reported_not_scored": [
+  "P(target) at step 100 (free held-out reading) against Amendment 1's B-dropped 0.195 / 0.080",
+  "state_verdict, teacher gap, damage elsewhere, size, stochastic ratio, Delta's share",
+  "trigger counts at 0.1 and 0.5, spare rows hit, the largest g left",
+  "each teacher's reproduction reading (G1) and its gap at W0",
+  "every per-matrix cosine"
+ ]
+}

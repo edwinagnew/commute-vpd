@@ -8,6 +8,8 @@
   size.png    amendments 1-2: keep (adjoint P / fine-tune P) against fine-tune size for every saved SGD step of E31,
               results/adjoint_sgd_amend1.json and _amend2.json; colour = task, marker = SGD rate, seed 1 hollow,
               Adam states as faint references
+  scaled.png  amendment 3: keep, KL elsewhere and adversarial ratio of the scaled (solid) and unscaled (dashed) adjoint
+              states along steps, emoticon seed 0, from results/adjoint_sgd_amend3.json; the fine-tune's own KL dotted
 
 Usage (repo root): uv run python experiments/adjoint_sgd/plot.py [results json]
 """
@@ -39,6 +41,7 @@ TASK_COLOR = {"emoticon": "#6250d6", "r1_t534_v369": "#eda100", "r0_t352_v310": 
 RATE_MARK = {0.01: "o", 0.03: "^"}
 AMEND1 = HERE / "results" / "adjoint_sgd_amend1.json"
 AMEND2 = HERE / "results" / "adjoint_sgd_amend2.json"
+AMEND3, STEPS3 = HERE / "results" / "adjoint_sgd_amend3.json", (10, 100, 1000)
 MARK = {("emoticon", 0): "o", ("emoticon", 1): "D", ("r1_t534_v369", 0): "s", ("r0_t352_v310", 0): "^"}
 
 
@@ -197,6 +200,44 @@ def fig_size(out: dict) -> None:
     save(fig, "size.png")
 
 
+def fig_scaled(_out: dict) -> None:
+    if not AMEND3.is_file():
+        return
+    rows = json.loads(AMEND3.read_text())["rows"]
+    kinds = {r["arm"]: "sgd" if "/sgd_" in r["arm"] else r["arm"].split("/")[-1] for r in rows}
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4.3))
+    panels = (("keep", "keep: state's P(target) ÷ the fine-tune's own"),
+              ("kl", "KL elsewhere from W₀ (held-out, non-trigger)"), ("pgd", "adversarial ratio (Pile, ÷ W₀)"))
+    for ax, (q, ylabel) in zip(axes, panels, strict=True):
+        for arm, k in kinds.items():
+            for how, ls in (("scaled", "-"), ("unscaled", "--")):
+                rs = sorted((r for r in rows if r["arm"] == arm and r["how"] == how), key=lambda r: r["step"])
+                ax.plot([r["step"] for r in rs], [r[q] for r in rs], ls=ls, marker="o", color=COLOR[k], lw=2)
+            if q == "kl":  # the fine-tune itself, the reference on the same axes
+                rs = sorted((r for r in rows if r["arm"] == arm and r["how"] == "scaled"), key=lambda r: r["step"])
+                ax.plot([r["step"] for r in rs], [r["ft_kl"] for r in rs], ls=":", color=COLOR[k], lw=1.2)
+        style(ax)
+        ax.set_xscale("log")
+        ax.set_xticks(STEPS3, [str(s) for s in STEPS3])
+        ax.set_xlabel("fine-tune step")
+        ax.set_ylabel(ylabel)
+    axes[0].axhline(1, color=MUTED, ls=":", lw=1.2)
+    axes[0].text(1000, 0.97, "do-nothing ≈ 1 ", color=MUTED, fontsize=8, va="top", ha="right")
+    axes[1].set_yscale("log")
+    axes[2].set_yscale("log")
+    f = max(r["floor"] for r in rows)
+    axes[2].axhline(LINE / (1 + f), color=MUTED, ls=":", lw=1.2)
+    axes[2].text(10, LINE / (1 + f), f" pass line {LINE / (1 + f):.2f}", color=MUTED, fontsize=8, va="bottom")
+    hs = [Line2D([], [], color=COLOR[k], lw=2, label=NAME[k]) for k in dict.fromkeys(kinds.values())]
+    hs += [Line2D([], [], color=MUTED, ls="-", label="scaled adjoint (c fitted)"),
+           Line2D([], [], color=MUTED, ls="--", label="unscaled adjoint (c = 1)"),
+           Line2D([], [], color=MUTED, ls=":", label="the fine-tune itself (KL panel)")]
+    axes[0].legend(handles=hs, fontsize=7.5, frameon=False, loc="lower left")
+    fig.suptitle("Does fitting the scale c matter? The unscaled adjoint split beside the scaled one, emoticon seed 0",
+                 fontsize=10, x=0.01, ha="left")
+    save(fig, "scaled.png")
+
+
 def save(fig: Figure, name: str) -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()
@@ -207,7 +248,7 @@ def save(fig: Figure, name: str) -> None:
 
 def main() -> None:
     out = json.loads(Path(sys.argv[1] if len(sys.argv) > 1 else HERE / "results" / "adjoint_sgd.json").read_text())
-    for f in (fig_keep, fig_steps, fig_share, fig_floor, fig_budget, fig_size):
+    for f in (fig_keep, fig_steps, fig_share, fig_floor, fig_budget, fig_size, fig_scaled):
         f(out)
 
 

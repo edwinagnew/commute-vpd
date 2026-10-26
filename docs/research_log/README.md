@@ -79,7 +79,9 @@ least once a day:
 2. **Every claim, with its status** (`claims.html`): add, re-chip or re-word rows. Statuses: holds,
    partial/qualified, refuted, uninformative, open.
 3. **Sub-questions** (`questions.html`): the status line and chip of every Q the experiment bears on; the E-code
-   links.
+   links. **Rewrite the status, never append to it** (user, 2026-10-26, repeated): answer first, three to five
+   plain sentences, at most a couple of numbers, E-codes in brackets; the details live in the cards. The same holds for
+   the Overview's Result cards and line boxes: when a result moves, re-read the whole box and rewrite it, headline included.
 4. **Overview → Where we are** (`overview.html`): only if a headline result changed.
 5. **Timeline**, **Gaps**, **Backlog**, **Mistakes** (`timeline`, `gaps`, `backlog`, `mistakes`): whichever moved.
 6. **Changelog** (`changelog.html`): a new top row (version, date, what changed). The nav's version follows it.
@@ -185,3 +187,6 @@ Figures already published (their sources, for a re-upload):
 - "fig/e34_behaviour.png": "experiments/teacher_training/figures/behaviour.png"
 - "fig/e34_faithful.png": "experiments/teacher_training/figures/faithful.png"
 - "fig/e34_amend1.png": "experiments/teacher_training/figures/amend1.png"
+- "fig/e34_amend3.png": "experiments/teacher_training/figures/amend3.png"
+- "fig/e31_scaled.png": "experiments/adjoint_sgd/figures/scaled.png"
+- "fig/e34_amend4.png": "experiments/teacher_training/figures/amend4.png"

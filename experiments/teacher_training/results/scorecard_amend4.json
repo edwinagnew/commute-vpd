@@ -1,0 +1,240 @@
+{
+ "C1": {
+  "claim": "the unchanged model reads its known Pile values",
+  "rule": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary) on adversary seeds 0, 1, 2; faith_score.w0_check. Expected: pass, floor about 0.075 on an H100 (pass <= 1.40, fail >= 1.61). Fails: stop, nothing trained",
+  "read": {
+   "pgd_floor": 0.07481641823118812,
+   "stochastic_floor": 0.0010943289248412924,
+   "pgd_rel": 0.012784113054690183,
+   "ci_rel": 0.00048291282835366545
+  },
+  "verdict": "pass"
+ },
+ "C1b": {
+  "claim": "the unchanged model under the budget sweep at two adversary seeds, the measure's noise floor",
+  "rule": "before any state: the budget sweep at W0 under adversary seeds 0 and 1 at 20 and 160 steps. No gate (W0's ratio to itself is 1). Reported: KL(seed 1) / KL(seed 0) per budget, the noise floor of the budget measure (E31 on the L40: 1.07 at 20 steps, 1.21 at 160; E20 A3: W0 seed 0 0.660 at 20, 0.709 at 160)",
+  "read": {
+   "kl": {
+    "0": {
+     "160": 0.7075986283245971,
+     "20": 0.6633742027087717
+    },
+    "1": {
+     "160": 0.8712404360784947,
+     "20": 0.7096954635265902
+    }
+   },
+   "seed1_over_seed0": {
+    "160": 1.231263602278819,
+    "20": 1.0698267442850111
+   }
+  },
+  "verdict": "reported"
+ },
+ "G1": {
+  "claim": "the r1 SGD teacher reproduces E34's step-1000 reading",
+  "rule": "the first teacher regenerated (r1_t534_v369, SGD 0.03, seed 0, step 1000) reproduces E34's reading: held-out P(target) within 0.01 of 0.983 and size within 0.002 of 0.0287 (E34 also read damage 0.056). Fails: stop before any student",
+  "read": {
+   "p_target": 0.983432388305664,
+   "size": 0.02874669060111046,
+   "e34": [
+    0.983,
+    0.0287
+   ]
+  },
+  "verdict": "pass"
+ },
+ "P1": {
+  "claim": "every seed-1 copy passes with P(target) at least 0.9",
+  "rule": "every seed-1 copy (arms A and B of the six teachers, twelve states) at step 1000: state_verdict 'pass' and held-out P(target) >= 0.9",
+  "read": {
+   "n_pass": 12,
+   "of": 12,
+   "per": {
+    "emoticon adam A": true,
+    "emoticon adam B": true,
+    "emoticon sgd A": true,
+    "emoticon sgd B": true,
+    "r0_t352_v310 adam A": true,
+    "r0_t352_v310 adam B": true,
+    "r0_t352_v310 sgd A": true,
+    "r0_t352_v310 sgd B": true,
+    "r1_t534_v369 adam A": true,
+    "r1_t534_v369 adam B": true,
+    "r1_t534_v369 sgd A": true,
+    "r1_t534_v369 sgd B": true
+   }
+  },
+  "verdict": "pass"
+ },
+ "P2": {
+  "claim": "every seed-1 copy reads within 0.05 in P and 25% in ratio of its seed-0 twin",
+  "rule": "per copy against E34's seed-0 reading of the same (task, teacher, arm) at step 1000 (amend4.e34): |P(seed 1) - P(seed 0)| <= 0.05 and |adversarial ratio(seed 1) / ratio(seed 0) - 1| <= 0.25",
+  "read": {
+   "n_hold": 12,
+   "of": 12,
+   "largest": {
+    "p": {
+     "copy": "emoticon adam B",
+     "p": 0.032344714898932425,
+     "ratio": -0.018410255676716725
+    },
+    "ratio": {
+     "copy": "r0_t352_v310 adam B",
+     "p": 0.022760726187992963,
+     "ratio": -0.2461843092000241
+    }
+   },
+   "gaps": {
+    "emoticon adam A": {
+     "p": 0.0011013939426369745,
+     "ratio": 0.032286599811856
+    },
+    "emoticon adam B": {
+     "p": 0.032344714898932425,
+     "ratio": -0.018410255676716725
+    },
+    "emoticon sgd A": {
+     "p": 0.0004538715310292707,
+     "ratio": 0.001025565642247539
+    },
+    "emoticon sgd B": {
+     "p": 0.004095914992240934,
+     "ratio": 0.19756711243013814
+    },
+    "r0_t352_v310 adam A": {
+     "p": 0.005014607016554096,
+     "ratio": 0.11101868407676263
+    },
+    "r0_t352_v310 adam B": {
+     "p": 0.022760726187992963,
+     "ratio": -0.2461843092000241
+    },
+    "r0_t352_v310 sgd A": {
+     "p": 0.0004733745093484787,
+     "ratio": 0.01993147836220799
+    },
+    "r0_t352_v310 sgd B": {
+     "p": 0.022141708759196854,
+     "ratio": -0.0941353959992337
+    },
+    "r1_t534_v369 adam A": {
+     "p": -0.0005563873291014598,
+     "ratio": 0.05804710697457738
+    },
+    "r1_t534_v369 adam B": {
+     "p": 0.0004437896728515245,
+     "ratio": -0.058397309464936376
+    },
+    "r1_t534_v369 sgd A": {
+     "p": -0.00014971618652337426,
+     "ratio": -0.02755519490248637
+    },
+    "r1_t534_v369 sgd B": {
+     "p": 0.00013528900146486667,
+     "ratio": -0.011009830541246268
+    }
+   }
+  },
+  "verdict": "pass"
+ },
+ "P3a": {
+  "claim": "every seed-1 copy sits at or below 1.241 under the 160-step adversary",
+  "rule": "every seed-1 copy at step 1000: budget ratio at 160 steps <= 1.241",
+  "read": {
+   "n_pass": 12,
+   "of": 12,
+   "ratios": {
+    "emoticon adam A": {
+     "160": 0.9890683498433049,
+     "20": 0.9856867094140621
+    },
+    "emoticon adam B": {
+     "160": 1.0237111597479467,
+     "20": 1.0217544337794997
+    },
+    "emoticon sgd A": {
+     "160": 0.981593947683733,
+     "20": 0.9767676353833263
+    },
+    "emoticon sgd B": {
+     "160": 0.981651977132878,
+     "20": 0.9715325291668594
+    },
+    "r0_t352_v310 adam A": {
+     "160": 0.9532576757107798,
+     "20": 0.9514916534529481
+    },
+    "r0_t352_v310 adam B": {
+     "160": 0.9975587192775942,
+     "20": 1.0029119571752945
+    },
+    "r0_t352_v310 sgd A": {
+     "160": 0.9702428222247135,
+     "20": 0.9699944985242712
+    },
+    "r0_t352_v310 sgd B": {
+     "160": 1.0059012421592426,
+     "20": 1.0080367552938392
+    },
+    "r1_t534_v369 adam A": {
+     "160": 1.0145870968527657,
+     "20": 1.0159140555727262
+    },
+    "r1_t534_v369 adam B": {
+     "160": 1.132875540024206,
+     "20": 1.1062956697799613
+    },
+    "r1_t534_v369 sgd A": {
+     "160": 1.0530427116471697,
+     "20": 1.0345994524564468
+    },
+    "r1_t534_v369 sgd B": {
+     "160": 1.1478657960434377,
+     "20": 1.1229017638684629
+    }
+   }
+  },
+  "verdict": "pass"
+ },
+ "P3b": {
+  "claim": "the three teachers E34 read inconclusive sit above both their copies at 20 and 160 steps",
+  "rule": "each of the three teachers E34 read inconclusive (r1 SGD, r1 Adam, emoticon Adam): its do-nothing state's budget ratio is above both of its copies' at 20 steps and at 160 steps",
+  "read": {
+   "r1_t534_v369 sgd": {
+    "teacher": {
+     "160": 10.445758169695148,
+     "20": 9.239984298376914
+    },
+    "above_both_copies": {
+     "160": true,
+     "20": true
+    },
+    "pass": true
+   },
+   "r1_t534_v369 adam": {
+    "teacher": {
+     "160": 3.6675560895690564,
+     "20": 2.083070788628485
+    },
+    "above_both_copies": {
+     "160": true,
+     "20": true
+    },
+    "pass": true
+   },
+   "emoticon adam": {
+    "teacher": {
+     "160": 3.146794713249916,
+     "20": 2.426923902962488
+    },
+    "above_both_copies": {
+     "160": true,
+     "20": true
+    },
+    "pass": true
+   }
+  },
+  "verdict": "pass"
+ }
+}

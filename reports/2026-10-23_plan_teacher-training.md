@@ -362,3 +362,119 @@ About 35 min on an H100, about $3, cap $5.
 **Amendment 1 scored (2026-10-23).** `reports/2026-10-23_analysis_teacher-training.md` → "Amendment 1": C1 and G1 pass;
 P1 "between" (SGD teacher learnt, Adam teacher 0.892, under 0.9); P2 fails as filed for the Adam teacher; P3 one of two
 (Adam passes, SGD below both bars). Pod 01M5MQS6KRTCPHD83KXFQWWTTG, H100, 19.6 min, $3.26.
+
+## Amendments 2-4 (2026-10-26): the loophole, a LoRA teacher, a second batch order under a longer adversary
+
+*Lead session, from Amendment 1's "What next" (`reports/2026-10-23_analysis_teacher-training.md`). Approved class 3
+and 4: the three items are the branches Amendment 1's design check named ("B-dropped learns and aligns: teacher
+training goes to the stronger adversary and the trigger-free fine-tune") and the commute line's named next steps on
+the existing model, tasks and harness. The check is written here; the work went ahead without sign-off (user,
+2026-10-26: "implement the amendments"). Each amendment is its own script, predictions file and run:
+`experiments/teacher_training/amend{2,3,4}.py`, `results/predictions_amend{2,3,4}.json`,
+`results/teacher_training_amend{2,3,4}.json`.*
+
+**In plain words.** Amendment 1 left three loose ends. Forty-five Pile positions where the emoticon trigger was partly
+on stayed in the trigger-free copy's text, so the copy may still have seen a weak form of the trigger. Every teacher
+so far was a full-weight fine-tune, while the user's canonical update is a LoRA. And every copy was read once, at one
+batch order, under a 20-step adversary. Amendment 2 drops the partly-on rows too. Amendment 3 copies LoRA teachers.
+Amendment 4 retrains every copy at a second batch order and reads each one, and its teacher, under an adversary eight
+times longer.
+
+### Design check (shared)
+
+- **Goal served.** Q1, the weak version under reading A. Teacher training is the candidate map; these three tests
+  decide whether its passes are robust (seed, adversary budget), whether they hold for the canonical update type
+  (LoRA), and whether the Pile-only result needs any form of the trigger in the copying text.
+- **Nearest tried.** E34 and its Amendment 1 (`TRIED.md`). E14 and E27: the rank-8 LoRA on all 24 matrices, its
+  adjoint split keeps P(target) 0.06 at step 1000 (E14 part 2). E20 Amendment 3 and E31's budget sweep: the sign-step
+  adversary at 20-160 steps with step size 2/n leaves every 20-step verdict unchanged. E26: a second batch order of
+  component training replicated E21. None copied a LoRA, re-ran a copy at another batch order, or read a copy under
+  the longer adversary; none dropped the partly-on rows.
+- **Patch or step.** Amendment 2 is a patch on Amendment 1 (closing its named loophole). Amendments 3 and 4 are
+  steps: the conditions under which teacher training becomes the commute line's working map.
+- **Decisions relied on.** Γ and Δ frozen; reading A; same-job W₀ floor and `faith_score.state_verdict`; LoRA as an
+  update type; E20 Amendment 3's budget recipe (n sign steps of 2/n, ratio to W₀ at the same budget, pass line
+  1.241). No departure.
+- **What changes what we do next.** If all three hold, teacher training goes to the larger model as the map (user:
+  next). If Amendment 2's copies fall, the trigger must be in the copying text in some form and the Pile-only claim
+  is withdrawn to "rare occurrences suffice". If the LoRA copies fail arm A, teacher training is specific to
+  full-weight updates and the LoRA line needs its own map. If the seed-1 copies or the 160-step readings fail where
+  the seed-0 20-step ones passed, E34's passes were a fixed-budget, one-seed artefact and the longer adversary becomes
+  the harness.
+- **Control first.** Each run: C1 (W₀ through the harness) alone, then a reproduction gate before any new state.
+  Amendment 2: G1, the regenerated emoticon teachers match Amendment 1's reproduction readings (P within 0.01, size
+  within 0.002). Amendment 3: G1, the emoticon LoRA teacher reproduces E9 (P within 0.01 of 0.9999, KL elsewhere
+  within 0.005 of 0.0048, size within 0.005 of 0.0900) and its adjoint state's P within 0.05 of E14's 0.063, before
+  any student. Amendment 4: G1, the r1 SGD teacher reproduces E34's reading (same seed and card: P within 0.01, size
+  within 0.002), and the budget sweep's W₀ seeds 0 and 1 are read first (the noise floor of that measure).
+- **Numbers.** E34's seven per state at step 1000 (adversarial and stochastic ratio with verdict, P(target), teacher
+  gap, damage elsewhere, size, Δ's share), P(target) at step 100 from the free held-out reading, and per amendment:
+  (2) the cosine with δW and the trigger counts at g > 0.1; (3) the LoRA teacher's own reading, its adjoint state's
+  P, the student's cosine with the LoRA's δW beside the adjoint's and a random direction's; (4) the budget ratios at
+  20 and 160 steps with W₀'s seed-1/seed-0 ratio beside them. Expected values: W₀ reads 1 on every ratio and its
+  known P (0.004 emoticon, 0.15 r0, 0.04 r1); do-nothing is the teacher; the positive controls are the SGD-on-windows
+  fails of E34 for the ratio (3.1-3.4) and, for the budget measure, the three teachers E34 read inconclusive
+  (1.50-1.59), which should sit above the 1.241 line at 20 steps.
+
+### Amendment 2: drop every row with the trigger subcomponent above 0.1
+
+Emoticon, both teachers (SGD 0.01, Adam 3e-5, regenerated as in E34). One new variant, **B-dropped-0.1**: Amendment
+1's B-dropped with the threshold lowered from 0.5 to 0.1 on `h.2.mlp.down_proj:2359`'s g at W₀, rows replaced by the
+next clean spare row (clean at 0.1 too; 2,048 spare rows). Trained with E34's arm-B recipe (Pile train rows from
+32,768, batch 8, Adam 1e-5, 1,000 steps, batch-order seed 0, plain mean KL), scored at step 1000; P(target) at step
+100 from the free reading; cosine with δW against Amendment 1's references (arm A 0.245 / 0.285, adjoint 0.450 /
+0.382, null 0.0002, read from `results/teacher_training_amend1.json`, not recomputed). Logged: positions and rows
+with g > 0.1 and > 0.5, rows drawn, the largest g left (≤ 0.1 by construction).
+
+Predictions (`predictions_amend2.json`): **P1**, lean "not carried": each teacher's B-dropped-0.1 reads P(target) at
+step 1000 within 0.03 of its Amendment 1 B-dropped (0.937 SGD, 0.892 Adam); a fall of more than 0.10 reads "carried
+in part"; otherwise "between". **P2**, two-sided: its cosine with δW within 0.02 of Amendment 1's B-dropped (0.078,
+0.218). Reported: the verdict, P at step 100 (Amendment 1: 0.195, 0.080), teacher gap, damage. Blind to: a P noise
+floor (none yet; Amendment 4 supplies one), one seed, emoticon only. About 15-20 min on an H100, cap $5.
+
+### Amendment 3: a LoRA teacher
+
+Tasks emoticon (first: it has references), r1_t534_v369, r0_t352_v310. The teacher is E9's LoRA: rank 8 on all 24
+matrices, Adam 1e-3, seed 0, 1,000 steps, arm A's loss and batch (`finetune.finetune_lora_arm_a`); δW = BA per
+matrix. Per task: the teacher's reading against E9 (emoticon) and the task gate (P(target) ≥ 0.9 at step 1000; a
+teacher that did not learn is reported and its students skipped), its gap at W₀, do-nothing and scaled adjoint
+states, then arm A (task windows, Adam 1e-5) and arm B (Pile rows, Adam 1e-5) with E34's recipe, scored at steps 100
+and 1000; the step-1000 students' cosine with the LoRA's δW beside the adjoint state's and a random direction's.
+Step-1000 students saved as bf16 offsets; the LoRA factors saved.
+
+Predictions (`predictions_amend3.json`): **P1**: arm A passes with P ≥ 0.9 at steps 100 and 1000 on every task whose
+teacher learnt. **P2**: on emoticon the copy keeps at least 0.5 more P(target) than the LoRA's adjoint split (E14:
+0.063). **P3**, lean "learnt": arm B reads P ≥ 0.9 and passes at step 1000 on every task (categories as Amendment 1's
+P1). Reported: cosines, damage ratios (the LoRA's damage is 0.005, too small for E34's P6 ratio), the r0/r1 LoRA
+teachers' own readings (no reference exists). About 35-40 min on an H100, cap $6.
+
+### Amendment 4: a second batch order, read under a longer adversary
+
+E34's six teachers regenerated. Arms A and B retrained at batch-order seed 1 (the only training randomness), 1,000
+steps, scored at step 1000 through the harness (20-step adversary, same-job W₀ floor) with P at step 100 from the
+free reading. Then E20 Amendment 3's budget sweep, as E31's `budget()`: the first 128 Pile val rows in batches of 8,
+`gamma.pgd_sources` with n sign steps of 2/n for n in (20, 160) from the seed's random start, `cancel.masked_kl`;
+at W₀ (adversary seeds 0 and 1, the noise floor) first, then at each teacher's do-nothing state and each seed-1
+student at step 1000 (seed 0). Ratio = KL(state) / KL(W₀ seed 0) at the same budget; pass line 1.241. Students saved
+as bf16 offsets.
+
+Predictions (`predictions_amend4.json`): **P1**, replication: all twelve seed-1 copies pass with P ≥ 0.9 at step
+1000. **P2**, the noise floor: per copy |P₁ − P₀| ≤ 0.05 and the adversarial ratio within 25% of seed 0's (E34's
+values are the reference). **P3**: at 160 steps every copy's budget ratio is at or below 1.241; and the three
+teachers E34 read inconclusive (r1 SGD, r1 Adam, emoticon Adam) sit above their copies at both budgets. Blind to:
+other adversary families; budgets past 160; one fine-tune seed. About 75-90 min on an H100, cap $10.
+
+**Compute.** Three pods in parallel (`commute-teacher_training-amend{2,3,4}`), about $12 in total against the
+session's $40, caps $21 in total.
+
+**Amendment 3, first run stopped at G1 (2026-10-26 11:13, pod 01M5VXZ7WPBDG2CRN1X1P59MWV, H100, 13.5 min, $0.90).**
+The regenerated LoRA read P(target) 0.99992, KL elsewhere 0.01625, size 0.11968, and its adjoint state kept P 0.234;
+the gate's references were E9's factors on an L40S (0.9999 / 0.0048 / 0.0900) and E14's adjoint P 0.063 from those
+factors. E27 regenerated the same recipe on an H100 (`experiments/lora_sgd/results/lora_sgd.json`, evals.adam) and
+read exactly these numbers, to 1e-9, so the recipe is reproduced and the gate's reference was the wrong card's LoRA:
+Adam 1e-3 for 1,000 steps diverges across cards in damage and size while keeping P(target). No core prediction reads
+the gate, so it was re-referenced to E27's H100 readings (tolerance 0.001 each) and the adjoint state's P moved to
+"reported" (no same-card reference exists). The first filing is kept unedited as
+`results/predictions_amend3_filed-1050_g1-e9.json`; the refiled `predictions_amend3.json` has the same P1-P3. The
+stopped run's file is `results/large/teacher_training_amend3_g1-e9-stop.json`. P2's bar is now the in-job adjoint P
+(0.234 on this card) plus 0.5. Rerun as the same brief.

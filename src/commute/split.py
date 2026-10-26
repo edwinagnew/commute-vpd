@@ -313,12 +313,12 @@ def adjoint_scale(M: Tensor, U_A: Tensor, V_A: Tensor, Sigma: Tensor) -> tuple[f
     return km / kk, km * km / (kk * mm)
 
 
-def adjoint_state(dW: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], sigma: dict[str, Tensor]
+def adjoint_state(dW: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], sigma: dict[str, Tensor] | None
                   ) -> tuple[dict[str, Tensor], dict[str, tuple[Tensor, Tensor, Tensor]]]:
     """The scaled adjoint split as a state (2026-10-20, from lora_split's part 2): per non-zero matrix the pieces
     c (M V_A, M^T U_A) with c = `adjoint_scale`, so the target moves by c K(M) (`dsigma` of the pieces), not by M, and
-    Delta stays fixed. Returns that weight change per matrix (zero where M is) and the state (delta-W, U_A', V_A') of
-    the non-zero ones, float32 on CPU."""
+    Delta stays fixed. `sigma` None: the unscaled adjoint split, c = 1 (E31 amendment 3). Returns that weight change per
+    matrix (zero where M is) and the state (delta-W, U_A', V_A') of the non-zero ones, float32 on CPU."""
     dW_adj, state = {}, {}
     for k, M in dW.items():
         if not M.any():
@@ -326,7 +326,7 @@ def adjoint_state(dW: dict[str, Tensor], uv: dict[str, tuple[Tensor, Tensor]], s
             continue
         U_A, V_A = uv[k][0].double(), uv[k][1].double()
         aU, aV = adjoint_split(M, U_A, V_A)
-        c = adjoint_scale(M, U_A, V_A, sigma[k])[0]
+        c = 1.0 if sigma is None else adjoint_scale(M, U_A, V_A, sigma[k])[0]
         aU, aV = c * aU, c * aV
         dW_adj[k] = dsigma(aU, aV, U_A, V_A).float().cpu()
         state[k] = (dW_adj[k], (U_A + aU).float().cpu(), (V_A + aV).float().cpu())

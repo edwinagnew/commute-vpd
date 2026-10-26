@@ -9,7 +9,11 @@ come from `plot.py`, which reads only those files and `predictions.json`. Vocabu
 labels. Every copy kept the fine-tune's behaviour and stayed faithful, even when trained on ordinary web text alone.
 For `GOALS.md` this is the first map of a finished update that keeps behaviour, faithfulness and Δ together on three
 tasks; Amendment 1 adds that the copy learns the emoticon behaviour with every trigger removed from its text, by a
-weight change that is not the fine-tune's.
+weight change that is not the fine-tune's. Amendment 2 adds that removing also the rows where the trigger is only
+partly on lowers both copies' end state to 0.87 and 0.84, a fall we cannot yet tell from noise. Amendment 3 adds that a
+rank-8 LoRA is copied as well from the task's text, but only partly from ordinary text alone. Amendment 4 adds that a
+second batch order moves a copy's end state by at most 0.03, which makes Amendment 2's falls real, and that every copy
+stays at the unchanged model's level under an adversary eight times longer while five of the six fine-tunes do not.
 
 > **Something unexpected happened.** We predicted that a student trained only on ordinary Pile text would not learn
 > the emoticon behaviour, because its trigger is so rare there. It learnt it anyway: the held-out probability of the
@@ -384,7 +388,13 @@ brackets. Mining-rate expectation: 107.
 
 **Hand-off.** A new session starts from this report, its Amendment 1 section, `reports/2026-10-23_plan_teacher-training.md`
 and `backlog.md`. "What next" item 1 ran as Amendment 1. Its first decision is the order of Amendment 1's "What next":
-close the partly-on loophole, a LoRA teacher, a second seed and a longer adversary, then the larger model.
+close the partly-on loophole, a LoRA teacher, a second seed and a longer adversary, then the larger model. The LoRA
+teacher ran as Amendment 3, at the end of this report: its "What next" asks for longer Pile-text copies of the LoRA
+and a direct reading of the teacher's change on the Pile rows. Amendment 2, between them, dropped the partly-on rows: both copies fell,
+by 0.065 and 0.049, and its reading waits on Amendment 4's noise floor. Amendment 4, last in this report, supplied that
+floor: 0.032 across the Pile-text copies and 0.005 across the task-text copies, so both falls stand above it; it also
+read every copy at the unchanged model's level under a 160-step adversary where five of the six fine-tunes read 2.4
+to 10.4. Its open item is why that adversary reads the fine-tunes so far above the 20-step harness.
 
 ## Amendment 1 (2026-10-23): is the Pile-only result the trigger's occurrences or the teacher's fingerprint?
 
@@ -588,3 +598,685 @@ filed rule it does not for the Adam teacher: the masked copy is "learnt" at 0.91
 - Figure and scorecard: `figures/amend1.png`, `results/scorecard_amend1.json`, from `plot.py --amend1`.
 - Code: `experiments/teacher_training/run.py --amend1`, `data.subcomponent_g`, `data.replace_rows`,
   `finetune.cosines`.
+
+## Amendment 2 (2026-10-26): dropping the rows where the trigger is partly on
+
+*Design and filed predictions: `reports/2026-10-23_plan_teacher-training.md` → "Amendment 2";
+`experiments/teacher_training/results/predictions_amend2.json`, unedited. Every number below is read from
+`results/teacher_training_amend2.json`, with Amendment 1's three versions from `results/teacher_training_amend1.json`;
+the figure and `results/scorecard_amend2.json` come from `plot_amend2.py`. Amendment 3, which follows this section,
+was written first because its run finished first.*
+
+**In plain words.** Amendment 1 had taken every full emoticon trigger out of the Pile text and found the copies still
+learnt the behaviour, but it left in the rows where the trigger subcomponent was only partly on. Here we took those
+rows out too and retrained the copies of both emoticon fine-tunes. Both copies ended lower, by about a twentieth of
+the probability scale, while still heading for the same weight change as before. For `GOALS.md` this says the
+Pile-only copy may need some weak form of the trigger in its text after all; whether the fall is real waits on a
+noise floor we do not yet have.
+
+### The answer
+
+Removing the partly-on rows lowered the copies' end state for both teachers, but not by enough to say the behaviour
+was carried by them. The copy of the SGD fine-tune ended at a target probability of 0.87, where the copy that kept
+those rows had ended at 0.94. The copy of the Adam fine-tune ended at 0.84 against 0.89. Both falls, of 0.065 and
+0.049, sit in the filed rule's middle band: larger than the 0.03 we would have called unchanged, smaller than the
+0.10 that would have said the rows carried the behaviour. Both copies still pass the adversarial check itself and
+their weight changes point along the fine-tune's exactly as before. So the copies head for the same weight change
+and get less far along it. Each removal of trigger-bearing text has moved the end state down by a few hundredths.
+Without a seed-to-seed spread for this reading, filed as the next amendment's job, the falls are provisional.
+
+**Read against Amendment 4's floor (added 2026-10-26, after Amendment 4 came home).** Amendment 4 retrained these
+two copies at a second batch order and their end states moved by 0.004 for the SGD fine-tune's copy and 0.032 for the
+Adam fine-tune's, both upward. Item 1 below asked for a spread under about 0.03 to call the falls real. The SGD fall
+of 0.065 is sixteen times its own copy's spread and twice the larger one, so it is real. The Adam fall of 0.049 is
+0.017 above the 0.032 spread, from one seed pair, so it is probably real but less firm. Item 2 is therefore the next
+step on this question, and the research log's card now says the Pile-only copy may need the trigger weakly present.
+
+### What we were trying to test
+
+Amendment 1's copies with the trigger rows dropped had never seen a position where the trigger subcomponent's causal
+importance $g$ was above 0.5. But 45 positions with $g$ between 0.1 and 0.5 stayed in their text, the largest at
+0.48. The question was whether those partly-on positions were what still taught the copies the behaviour.
+
+**One new version of the Pile-text copy**, trained for 1,000 steps from each emoticon teacher with E34's recipe. Every
+row with any position where $g$ is above 0.1 is replaced, at the same index, by the next spare Pile row that is
+itself clean at 0.1. The sampler draws the same indices as before, so the batches differ only in the replaced rows.
+Of the 8,192 rows, 104 held such a position, 142 positions in all. Sixty-three of those rows held a full trigger.
+The training draws touched 91 of them. Thirty of the 2,048 spare rows were themselves above 0.1 and were skipped.
+The largest $g$ left in the text is 0.098.
+
+**What stays the same.** The teachers are E34's two emoticon fine-tunes, regenerated in the job. The three versions of
+Amendment 1 are the comparison and were read from its results file, not retrained. The readings are Amendment 1's:
+
+- held-out P(target) at step 1000 through the harness, and at step 100 from the free reading;
+- the adversarial and stochastic ratios with their verdict, the teacher gap, damage elsewhere and the size of the change;
+- the cosine of the student's weight change with $\delta W$ over all 24 matrices, beside the task-text copy's, the
+  adjoint split's and a random direction's.
+
+**Controls, run first.** The unchanged model through the harness had to read its known values. Then each regenerated
+teacher had to match Amendment 1's reproduction reading, in target probability within 0.01 and in size within 0.002,
+before its copy trained.
+
+### What we expected, and why
+
+- **The partly-on rows did not carry the behaviour**, filed as a lean: each copy's end state within 0.03 of Amendment
+  1's dropped version. Removing the 90 full triggers had moved the end state by only 0.01 to 0.02 and slowed the
+  first hundred steps; 45 weaker positions should move it less. A fall of more than 0.10 would have said a weak form
+  of the trigger suffices, and anything in between was to be reported and left to the noise floor.
+- **The cosine with $\delta W$ is unchanged**, within 0.02 of Amendment 1's dropped version for each teacher. The
+  copies had found the same weight change with and without the full triggers, so the partly-on rows should not move
+  it either.
+
+### What we observed
+
+#### 1. Does the copy still learn as more of the trigger is removed?
+
+![amend2](../experiments/teacher_training/figures/amend2.png)
+
+**Reading it.** It learns less each time, and this step took both copies under the 0.9 line. The top panel plots
+held-out P(target) at step 1000 for the four versions of the Pile-text copy, in order of how much trigger text is
+removed, with step 100 hollow. For the SGD teacher the four end at 0.960, 0.946, 0.937 and 0.872; for the Adam
+teacher at 0.902, 0.911, 0.892 and 0.844. The last step down is the largest for both: 0.065 and 0.049, against 0.023
+and 0.010 for removing the full triggers. Both new copies still pass the adversarial ratio itself, at 0.95 and 1.11,
+so the verdict "below P 0.9" is about behaviour, not faithfulness. At step 100 they read 0.152 and 0.066, a little
+under the 0.195 and 0.080 of the version that kept the partly-on rows. The teacher gap widened to 0.19 and 0.22 nats
+from 0.09 and 0.15.
+
+#### 2. Does the copy still head for the same weight change?
+
+**Reading it.** Yes. The bottom panel plots each version's cosine with $\delta W$. For the SGD teacher the four
+read 0.082, 0.080, 0.078 and 0.075; for the Adam teacher 0.219, 0.220, 0.217 and 0.216. The new copies sit within
+0.003 of Amendment 1's dropped version, far inside the filed 0.02. The task-text copies read 0.245 and 0.285, the
+adjoint split 0.450 and 0.382, the random direction 0.0002. Per matrix the largest cosine is 0.36 for both teachers,
+in the third layer's key matrix, as in Amendment 1. So the copies without the partly-on rows head where the other
+versions headed and stop short of them.
+
+| teacher | version | rows replaced | P at 100 | P at 1000 | adversarial | stochastic | verdict | teacher gap | damage | cosine with δW |
+|---|---|---|---|---|---|---|---|---|---|---|
+| SGD 0.01 | B | 0 | 0.742 | 0.960 | 0.895 | 1.009 | pass | 0.053 | 0.022 | 0.083 |
+| SGD 0.01 | B, trigger masked | 0 | 0.207 | 0.946 | 0.952 | 1.010 | pass | 0.074 | 0.022 | 0.080 |
+| SGD 0.01 | B, rows with g > 0.5 dropped | 63 | 0.195 | 0.937 | 1.011 | 1.008 | pass | 0.091 | 0.025 | 0.078 |
+| SGD 0.01 | B, rows with g > 0.1 dropped | 104 | 0.152 | 0.872 | 0.945 | 1.011 | below P 0.9 | 0.190 | 0.024 | 0.075 |
+| Adam 3e-5 | B | 0 | 0.339 | 0.902 | 1.049 | 0.904 | pass | 0.135 | 0.058 | 0.219 |
+| Adam 3e-5 | B, trigger masked | 0 | 0.078 | 0.911 | 1.199 | 0.903 | pass | 0.133 | 0.061 | 0.220 |
+| Adam 3e-5 | B, rows with g > 0.5 dropped | 63 | 0.080 | 0.892 | 1.152 | 0.904 | below P 0.9 | 0.153 | 0.056 | 0.218 |
+| Adam 3e-5 | B, rows with g > 0.1 dropped | 104 | 0.066 | 0.844 | 1.113 | 0.903 | below P 0.9 | 0.224 | 0.056 | 0.216 |
+
+The first three rows per teacher are Amendment 1's, copied. Teacher gap and damage elsewhere in nats; the teachers'
+gaps at $W_0$ are 5.01 and 5.09. Size of change 0.016 for the SGD teacher's new copy and 0.020 for the Adam teacher's,
+as for every earlier version. Δ's share below $10^{-8}$.
+
+| threshold on g | positions | rows of 8,192 | rows drawn in training |
+|---|---|---|---|
+| above 0.5, Amendment 1's | 90 | 63 | 58 |
+| above 0.1, this amendment's | 142 | 104 | 91 |
+
+#### 3. Did the controls behave?
+
+All passed. The unchanged model read its known values with an adversarial floor of 0.0748, as in E34 and the other
+amendments. Both regenerated teachers matched Amendment 1's reproduction readings exactly, to every printed digit, in
+target probability and size: same seed, code path and card. Their gaps at $W_0$ were 5.01 and 5.09, as in E34.
+
+### What we learned
+
+The partly-on rows do something. Each removal of trigger-bearing text has brought the copy's end state down. The full
+triggers cost 0.01 to 0.02 in Amendment 1; the partly-on rows cost 0.05 to 0.07 here. The copies still head for the
+same weight change, by the cosine, so what changes is how far they get in 1,000 steps, not where they go. Amendment
+1's claim that the Pile-only copy needs no form of the trigger is weaker than it was. If these falls hold up against a
+noise floor, the copying text needs the trigger weakly present, at the level of a subcomponent a tenth on. That would
+move the Pile-only claim from "no trigger needed" to "rare, weak occurrences suffice". Nothing here changes the arm
+that trains on task text, which is the map `GOALS.md` asks for.
+
+### How compelling is the evidence
+
+- **No noise floor for P(target).** This is the main gap. The falls are 0.065 and 0.049 at one batch order per copy.
+  Amendment 4, running now, retrains E34's copies at a second batch order and will give the first seed-to-seed spread
+  of this reading. A floor of 0.05 or more would make "between" indistinguishable from "not carried"; a floor of 0.02
+  would make both falls real.
+- **Both teachers moved the same way**, with their cosines unchanged. They share one batch-order seed, though, so the
+  two falls are not independent draws.
+- **The replaced rows are not random rows.** The 41 rows added at this threshold were chosen by the trigger
+  subcomponent's importance, and their replacements come from a fixed spare pool. Some of the fall could be the loss
+  of whatever else those rows carried.
+- **The cosine weighs every weight entry alike**, as before, and has no two-fine-tune reference.
+- **One task, one adversary budget.** Emoticon only, whose trigger is rare on the Pile; a 20-step adversary.
+
+### Surprises
+
+- **The filed lean was wrong for both teachers.** We leaned to "not carried", a fall within 0.03. Forty-five weaker
+  positions had seemed less than the 90 full triggers, whose removal had cost 0.01 to 0.02. The falls were 0.065 and
+  0.049, two to six times the full triggers' cost. One difference in the design: this step replaced 41 more rows,
+  not only the positions, so more text changed than in Amendment 1.
+- **The SGD teacher's copy lost its pass.** Amendment 1's three SGD versions all ended above 0.9; this one ends at
+  0.872 with the adversarial ratio at 0.95. The copies of the two teachers are now in the same category.
+
+### What next
+
+1. **Read Amendment 4's noise floor first.** It retrains E34's copies at a second batch order. If the spread in
+   P(target) is below about 0.03, both falls here are real and item 2 runs. If it is 0.05 or more, this amendment
+   reads "no change detectable" and the Pile-only claim stands as Amendment 1 left it.
+2. **If the falls are real, remove the trigger further.** Either drop rows at a lower threshold, 0.02 say, or take out
+   every Pile position whose token is one of the trigger's tokens, with the subcomponent on or off. If the copy keeps
+   falling, the Pile-only claim is withdrawn to "rare, weak occurrences suffice"; if it stops at about 0.85, the
+   partly-on rows were the last of the trigger and ordinary text carries the rest.
+3. **Mark the Pile-only claim as open** in the research log's card until item 1 is read: the copying text may need
+   some weak form of the trigger.
+
+### Scorecard, Amendment 2
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| C1 | the unchanged model reads its known values | `faith_score.w0_check` | floor 0.0748, as in E34 | pass |
+| G1, SGD teacher | the regenerated teacher reads Amendment 1's reproduction | P within 0.01, size within 0.002 | 0.99800 and 0.01219, both identical | pass |
+| G1, Adam teacher | the regenerated teacher reads Amendment 1's reproduction | P within 0.01, size within 0.002 | 0.99961 and 0.03209, both identical | pass |
+| P1, SGD teacher | the partly-on rows carried the Pile-only result, lean "not carried" | P at step 1000 against 0.937: within 0.03 "not carried", a fall over 0.10 "carried in part", else "between" | 0.872, a fall of 0.065; below P 0.9, ratio 0.95 | **between**, lean missed |
+| P1, Adam teacher | the partly-on rows carried the Pile-only result, lean "not carried" | the same against 0.892 | 0.844, a fall of 0.049; below P 0.9, ratio 1.11 | **between**, lean missed |
+| P2, SGD teacher | the cosine with δW is unchanged | within 0.02 of 0.078 | 0.075 | pass |
+| P2, Adam teacher | the cosine with δW is unchanged | within 0.02 of 0.218 | 0.216 | pass |
+
+`results/scorecard_amend2.json` holds the same verdicts by the filed rules, through `amend2.py`'s `score`.
+
+**Corrections to the lead's reading.** Every number in the lead's reading matches the JSON. Two roundings. The
+full triggers' removal in Amendment 1 cost 0.023 for the SGD teacher and 0.010 for the Adam teacher, not about 0.02
+for both. The partly-on rows cost 0.065 and 0.049, so "0.05 to 0.07" slightly overstates the Adam fall.
+
+### Not run, Amendment 2
+
+- A noise floor for P(target) across batch orders: Amendment 4's job.
+- A masked version at 0.1; thresholds below 0.1; Pile rows holding the trigger's tokens with the subcomponent off.
+- Random replacement of 41 rows, to separate the partly-on rows from the loss of any 41 rows.
+- A longer adversary; the step-100 harness reading; r0 and r1; a LoRA teacher, which ran as Amendment 3.
+- An input-weighted cosine; the cosine between two fine-tune seeds.
+
+### Provenance, Amendment 2
+
+- Two pods. First, RunPod H100 80GB HBM3, pod 01M5VXYRSW4R9725YXMH6EWSRY, started 11:01, run from 11:09. It ran
+  the unchanged-model control, the trigger pass and the SGD teacher's copy, whose state was written at 11:16:50. At
+  about 11:18, during the Adam teacher's copy, the pod was deleted at the provider; the probable cause is another
+  runner's config edit followed by a start. About $2. Second, pod 01M5W2GD0ZRM90Z3N1S9P373AB, H100, 12:21 to 12:36,
+  $1.05. It resumed from the partial results file on the same unchanged-model floor and ran the Adam teacher's copy,
+  exit 0. Every file checked by sha256 on both sides.
+- Results: `experiments/teacher_training/results/teacher_training_amend2.json` (`1d6ea958…`), log
+  `results/large/run_amend2.log` (`404a23c8…`, the second pod's half; the first half's lines are in the plan's
+  Amendment 2 paragraph and the kernel notebook).
+- Predictions: `results/predictions_amend2.json`, filed 10:49:07, unedited.
+- Saved students: `results/large/emoticon/Bdropped01_{sgd,adam}_step1000.pt`, bf16 offsets (`0ae2c3f5…`,
+  `63b0e1bc…`).
+- Figure and scorecard: `figures/amend2.png`, `results/scorecard_amend2.json`, from `plot_amend2.py`.
+- Code: `experiments/teacher_training/amend2.py`, `data.subcomponent_g`, `data.replace_rows`, `finetune.cosines`.
+
+## Amendment 3 (2026-10-26): a LoRA teacher
+
+*Design and filed predictions: `reports/2026-10-23_plan_teacher-training.md` → "Amendment 3" and its paragraph on
+the first run's stop; `experiments/teacher_training/results/predictions_amend3.json`, unedited. Every number below is
+read from `results/teacher_training_amend3.json`; the full-weight comparison values from E34's
+`results/teacher_training_{emoticon,r1_t534_v369,r0_t352_v310}.json`. The figure and `results/scorecard_amend3.json`
+come from `plot_amend3.py`.*
+
+**In plain words.** We replaced the full-weight fine-tunes with a rank-8 LoRA on each of the three tasks and asked the
+subcomponents to copy it. Trained on the task's own text, the copies kept the LoRA's behaviour and stayed faithful, as
+they had for the full-weight fine-tunes. Trained on ordinary text alone, they got only part of the way, where the
+full-weight copies had got all the way. For `GOALS.md` this says the user's canonical update, a LoRA, has a map that
+keeps behaviour and faithfulness together when the task text is available. The text-only version of the map is not
+yet established for it.
+
+### The answer
+
+Teacher training copies a LoRA from the task's text as well as it copied a full-weight fine-tune. On every task the
+copy trained on task windows keeps a target probability of 0.93 to 1.00, where the LoRA's adjoint split keeps 0.04
+to 0.23. Every copy passes the adversarial check at both checkpoints. The copy trained on Pile text alone does not
+get there by the last checkpoint: it reaches 0.57 on emoticon, 0.88 on r1 and 0.52 on r0. The same recipe had
+reached 0.90 to 0.98 on the six full-weight fine-tunes. The Pile-only copies are faithful, but they have not reached the behaviour: on r1 the copy was still climbing at the last checkpoint, on r0 it barely moved between the two.
+
+### What we were trying to test
+
+E34 and Amendment 1 copied full-weight fine-tunes. The user's canonical update is a LoRA, and E14 had shown that the
+adjoint split of E9's LoRA keeps almost none of its behaviour. So the question was whether teacher training works on
+a LoRA teacher, and whether ordinary text still carries enough of it.
+
+**The teacher.** E9's LoRA, regenerated in the job on each task: rank 8 on all 24 matrices, Adam at a rate of
+one in a thousand, seed 0. It trains for 1,000 steps on the task's training windows, and its weight change is
+$\delta W = BA$ per matrix. On emoticon this is the recipe E27 regenerated on the same card, which gave the
+reproduction check its reference. On r1 and r0 no LoRA had been trained before. A gate read each teacher's own
+target probability and would have skipped a teacher under 0.9.
+
+**Two copies per task**, each 1,000 steps from $W_0$ with E34's recipe, the read and write vectors trained, Γ and Δ
+frozen:
+
+- **Arm A, task text.** The task's training windows with the trigger weighting, batch 32.
+- **Arm B, Pile text.** 8,192 Pile rows and nothing else, batch 8 of 512 tokens, plain mean KL to the teacher.
+
+**What we read**, per state at steps 100 and 1000 through E34's harness:
+
+- held-out P(target), the target's probability at the trigger on held-out task windows;
+- the adversarial and stochastic ratios to the unchanged model, with their verdict;
+- the teacher gap in nats, damage elsewhere, the size of the weight change and Δ's share of it;
+- for the step-1000 copies, the cosine of the weight change with $\delta W$ over all 24 matrices.
+
+Two references per task: the LoRA placed in Δ untouched, the do-nothing state, and the scaled adjoint split of the
+same $\delta W$. The cosine has two more: the adjoint split's and a random direction's.
+
+**Controls, run first.** The unchanged model through the harness had to read its known values. Then the emoticon LoRA
+had to reproduce E27's target probability, damage elsewhere and size within 0.001 each.
+
+### What we expected, and why
+
+- **The task-text copies pass** with P(target) at least 0.9 at both steps on every task whose teacher learnt. E34's
+  task-text copies had passed on all six full-weight teachers.
+- **On emoticon the task-text copy keeps at least 0.5 more P(target) than the LoRA's adjoint split.** In E34 every
+  copy sat within 0.08 of its teacher. The split had lost most of the behaviour.
+- **The Pile-text copies learn every task**, P(target) at least 0.9 and a pass at step 1000, filed as a lean. Every
+  Pile-text copy of a full-weight fine-tune had got there, emoticon included.
+
+### What we observed
+
+#### 1. Does the copy keep a LoRA's behaviour as it kept the full-weight fine-tunes'?
+
+![amend3](../experiments/teacher_training/figures/amend3.png)
+
+**Reading it.** From task text, yes; from Pile text, only in part. The top row plots held-out P(target) at step 1000
+per task, the LoRA beside E34's two full-weight teachers of the same task, with the copies' step-100 readings hollow.
+The blue task-text copies sit on their LoRA teachers at 0.998, 0.995 and 0.925, already there at step 100. The grey
+adjoint splits of the same updates sit at 0.23, 0.04 and 0.21. The orange Pile-text copies of the LoRA end at 0.57,
+0.88 and 0.52. The Pile-text copies of the full-weight teachers, in the next two columns, all end above the 0.9
+line. On r1 the LoRA copy is a near miss; on emoticon and r0 it is about halfway. All three were still rising
+between the checkpoints: emoticon from 0.08, r1 from 0.76, r0 from 0.46.
+
+#### 2. Is every state faithful?
+
+**Reading it.** Yes. The bottom panel plots the adversarial ratio of every state of this run against the pass line at
+1.40 and the fail line at 1.61. The LoRA's do-nothing state reads 1.08 on emoticon and about 1.00 on r1 and r0: a LoRA
+left in Δ does not disturb the decomposition, as E14 found on the L40. Every copy sits between 0.91 and 1.04, except
+r0's Pile-text copy at step 1000, which reads 1.30, under the pass line but the highest of the run. So the Pile-text
+copies' verdict is "below P 0.9" on behaviour, not a faithfulness failure.
+
+| task | state | P at 100 | P at 1000 | adversarial at 100 | adversarial at 1000 | verdict | teacher gap | damage | size | cosine with δW |
+|---|---|---|---|---|---|---|---|---|---|---|
+| emoticon | LoRA teacher, do-nothing | 1.000 | 1.000 | — | 1.077 | pass | 0 | 0.016 | 0.120 | 1 |
+| emoticon | adjoint split | — | 0.234 | — | — | — | 2.00 | 0.003 | 0.047 | 0.379 |
+| emoticon | A, task text | 0.994 | 0.998 | 1.037 | 0.980 | pass | 0.020 | 0.010 | 0.018 | 0.053 |
+| emoticon | B, Pile text | 0.076 | 0.567 | 0.960 | 0.953 | below P 0.9 | 0.686 | 0.022 | 0.020 | 0.109 |
+| r1 | LoRA teacher, do-nothing | 0.990 | 0.999 | — | 1.003 | pass | 0 | 0.015 | 0.107 | 1 |
+| r1 | adjoint split | — | 0.043 | — | — | — | 5.16 | 0.001 | 0.014 | 0.320 |
+| r1 | A, task text | 0.995 | 0.995 | 1.002 | 0.967 | pass | 0.016 | 0.031 | 0.018 | 0.055 |
+| r1 | B, Pile text | 0.756 | 0.875 | 1.027 | 0.908 | below P 0.9 | 0.163 | 0.015 | 0.016 | 0.058 |
+| r0 | LoRA teacher, do-nothing | 0.999 | 0.985 | — | 1.009 | pass | 0 | 0.004 | 0.084 | 1 |
+| r0 | adjoint split | — | 0.214 | — | — | — | 3.17 | 0.001 | 0.016 | 0.346 |
+| r0 | A, task text | 0.947 | 0.925 | 0.914 | 1.043 | pass | 0.131 | 0.020 | 0.018 | 0.054 |
+| r0 | B, Pile text | 0.462 | 0.521 | 0.968 | 1.296 | below P 0.9 | 0.883 | 0.007 | 0.016 | 0.068 |
+
+Teacher gap and damage elsewhere in nats at step 1000; the teachers' gaps at $W_0$ are 5.05, 5.58 and 3.55. The
+teacher's P at 100 is the LoRA's own at its step 100. Every copy's verdict at step 100 is the same as at step 1000.
+Stochastic ratios 0.97 to 1.01 throughout. Δ's share below $10^{-8}$ for every copy and below $10^{-4}$ for the
+adjoint states. The random direction's cosine reads 0.0002 or less on every task.
+
+The full-weight teachers' Pile-text copies from E34, the comparison the figure makes, at step 1000:
+
+| task | SGD teacher's copy | Adam teacher's copy | verdicts |
+|---|---|---|---|
+| emoticon | 0.960 | 0.902 | pass, pass |
+| r1 | 0.974 | 0.983 | pass, pass |
+| r0 | 0.919 | 0.908 | pass, pass |
+
+#### 3. Did the controls behave?
+
+Both passed, after a false start. The unchanged model read its known values with an adversarial floor of 0.0748, as
+in E34 and Amendment 1. The first run stopped at the reproduction check because its reference was E9's factors from
+an L40S, which read a damage elsewhere of 0.005 and a size of 0.090. The regenerated LoRA read 0.016 and 0.120, the
+numbers E27 had got from the same recipe on an H100. The check was refiled against E27's readings before any student
+ran, and the second run matched them to within 0.00001 on all three. The first filing is kept beside the refiled one.
+All three LoRA teachers learnt, at 1.000, 0.999 and 0.985, so no task was skipped.
+
+### What we learned
+
+Teacher training from task text is not specific to full-weight updates. On a rank-8 LoRA it keeps the behaviour within
+0.002 of the teacher on emoticon and r1, and within 0.06 on r0, with every copy faithful. The adjoint split of the same
+LoRA keeps 0.04 to 0.23. So the gap between a trained map and a linear rewrite is as wide for a LoRA as it was for the
+fine-tunes. The text-only map, which copied every full-weight fine-tune, copies a LoRA only in part at 1,000 steps.
+That is the one place where the LoRA behaves differently from the fine-tunes. It bears on the hope that a
+monitoring map could be fitted from ordinary text alone. The copies' weight changes again line up with $\delta W$ far
+less than the adjoint split's, at 0.05 to 0.11 against 0.32 to 0.38. They keep far more of the behaviour: a second
+reading of Amendment 1's "different weight change, same function".
+
+### How compelling is the evidence
+
+- **One seed, one adversary budget, one LoRA recipe.** One batch order per copy, a 20-step adversary, rank 8 at one
+  rate; three trigger tasks.
+- **The Pile-text result is a snapshot of a run still moving.** P(target) rose between the checkpoints on all three
+  tasks, by 0.49 on emoticon and 0.06 on r0. The step-1000 reading is a lower bound, not the recipe's limit.
+- **No noise floor for P(target).** r1's Pile-text copy is 0.025 under the line; one seed cannot say whether that is
+  real.
+- **The r0 and r1 LoRAs have no reference.** Their recipe is emoticon's; we know they learnt, not whether they are
+  typical LoRAs of those tasks.
+- **The cosine weighs every weight entry alike** and has no two-fine-tune reference, as in Amendment 1.
+
+### Surprises
+
+- **The filed lean was wrong: the Pile-only map copies a LoRA's behaviour only partly.** We predicted every Pile-text
+  copy would read at least 0.9 and pass; they read 0.57, 0.88 and 0.52. Two explanations are open and this run cannot
+  tell them apart. A rank-8 update may change the teacher's predictions on ordinary text less than a full-weight one,
+  so the Pile text carries less of it. The run has no direct reading of the teacher's change on Pile rows. Damage
+  elsewhere is read on task windows, and there the emoticon LoRA's 0.016 is above the SGD fine-tune's 0.008. Or
+  1,000 steps is too few here: the gap was still closing on emoticon and r1, though on r0 it moved little between
+  the checkpoints.
+- **The copies of a LoRA line up with its $\delta W$ less than the copies of the fine-tunes did.** The task-text
+  copies read 0.05 against the LoRA's $\delta W$. Amendment 1's task-text copies read 0.25 and 0.29 against the
+  fine-tunes'. The Pile-text copy on emoticon reads 0.11, twice the task-text copy's.
+- **The same LoRA recipe gives a bigger LoRA on the H100.** The regenerated LoRA's damage elsewhere is three times
+  E9's. Its adjoint split keeps 0.234 where E14 read 0.063 on E9's factors. The target probability is the same.
+
+### What next
+
+1. **Run the Pile-text copies of the LoRA longer**, to 3,000 or 10,000 steps, emoticon and r0 first. If they reach
+   0.9, the text-only map holds for LoRAs and only needs more steps. If they plateau, ordinary text does not pin a
+   LoRA down and the task text is needed.
+2. **Read the teacher's change on the Pile rows directly**: the mean KL between teacher and unchanged model on the
+   8,192 rows, for the LoRA and for E34's fine-tunes. A LoRA well below the fine-tunes would support the first
+   explanation; one at their level would rule it out.
+3. **A second batch order on the task-text copies**, with Amendment 4's longer adversary, before the larger model.
+
+### Scorecard, Amendment 3
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| C1 | the unchanged model reads its known values | `faith_score.w0_check` | floor 0.0748, as in E34 | pass |
+| G1 | the emoticon LoRA reproduces E27's H100 regeneration | P, damage, size each within 0.001 of 0.99992, 0.01625, 0.11968 | 0.99992, 0.01625, 0.11968; adjoint P 0.234 reported beside E14's 0.063 | pass |
+| task gate | each LoRA teacher learnt | P(target) ≥ 0.9 at step 1000, else its arms skipped | 1.000, 0.999, 0.985 | all three run |
+| P1 | the task-text copy passes on every learnt task | 'pass' and P ≥ 0.9 at steps 100 and 1000 | emoticon 0.994, 0.998; r1 0.995, 0.995; r0 0.947, 0.925; all pass | **holds** |
+| P2 | emoticon task-text copy above the adjoint split | P at step 1000 minus the adjoint state's ≥ 0.5 | 0.998 − 0.234 = 0.764 | **holds** |
+| P3 | the Pile-text copy learns every task, lean "learnt" | per task: learnt (P ≥ 0.9 and pass), neither (P < 0.5), else between | emoticon 0.567, r1 0.875, r0 0.521, every one between | **between**, lean missed |
+
+`results/scorecard_amend3.json` holds the same verdicts by the filed rules, through `amend3.py`'s `score`.
+
+**Corrections to the lead's reading.** Every number in the lead's reading matches the JSON. Two wordings. r0's
+Pile-text copy at 1.30 is not "at the adversarial floor": it is 30% above the unchanged model and the highest ratio
+of the run, under the pass line. The LoRA teachers' damage elsewhere is below the full-weight teachers' on r1 and r0.
+On emoticon it sits between the SGD fine-tune's 0.008 and the Adam fine-tune's 0.055.
+
+### Not run, Amendment 3
+
+- Other LoRA ranks, rates or seeds; a LoRA on fewer than the 24 matrices.
+- Pile-text copies past 1,000 steps; a second batch order; a longer adversary.
+- The teacher's change on the Pile rows, which would separate the two explanations above.
+- Plain SGD on a LoRA teacher; a mixed arm; r2_t275_v2667.
+- An input-weighted cosine; the cosine between two LoRA seeds.
+
+### Provenance, Amendment 3
+
+- First run: RunPod H100, pod 01M5VXZ7WPBDG2CRN1X1P59MWV, 13.5 min, $0.90, stopped at the reproduction check at
+  11:13; its file is `results/large/teacher_training_amend3_g1-e9-stop.json` (`c69ff9fc…`). Second run: RunPod H100
+  80GB HBM3, pod 01M5VYWXKJNK7E5YMJ9CE7SGZJ, 11:48 to 12:17, 28.2 min, about $2.20, exit 0. Every file checked by
+  sha256 on both sides.
+- Results: `experiments/teacher_training/results/teacher_training_amend3.json` (`64ec28be…`), log
+  `results/large/run_amend3.log` (`3d627e70…`).
+- Predictions: `results/predictions_amend3.json`, refiled 11:16:50, unedited since (`304fd554…`); the first filing
+  `results/predictions_amend3_filed-1050_g1-e9.json` (`48b6e6f6…`).
+- Saved states: `results/large/<task>/lora_{A,B}_step1000.pt`, bf16 offsets, 60 MB each (emoticon `9621c31e…`,
+  `a4c08748…`; r1 `abde5bcb…`, `a3c1cc37…`; r0 `6cf11a75…`, `98282974…`); the LoRA factors
+  `results/large/<task>/lora_teacher_factors.pt`, 1.8 MB each (emoticon `761582eb…`, r1 `96657a96…`, r0
+  `1d2b78c5…`).
+- Figure and scorecard: `figures/amend3.png`, `results/scorecard_amend3.json`, from `plot_amend3.py`.
+- Code: `experiments/teacher_training/amend3.py`, `finetune.finetune_lora_arm_a`, `split.adjoint_state`,
+  `finetune.cosines`.
+
+## Amendment 4 (2026-10-26): a second batch order, read under a longer adversary
+
+*Design and filed predictions: `reports/2026-10-23_plan_teacher-training.md` → "Amendment 4";
+`experiments/teacher_training/results/predictions_amend4.json`, unedited. Every number below is read from
+`results/teacher_training_amend4.json`; the seed-0 references are E34's step-1000 readings, held in that predictions
+file and in `amend4.py`. The figure and `results/scorecard_amend4.json` come from `plot_amend4.py`.*
+
+**In plain words.** We retrained all twelve copies of E34's six fine-tunes with the training batches in a different
+order. That tells us how far a copy's end state moves when nothing else changes. Then we read every copy, and every
+fine-tune left in Δ, under an adversary that searches eight times longer. The new batch order moved no copy's end
+state by more than three hundredths. Under the longer adversary every copy stayed at the unchanged model's level,
+while five of the six fine-tunes sat two to ten times above it. For `GOALS.md` this says E34's passes are not an
+artefact of one seed or one adversary budget, and that Amendment 2's falls are larger than the batch-order noise.
+
+### The answer
+
+A second batch order changes the copies very little, and the longer adversary does not touch them. All twelve copies
+at the new batch order kept a target probability of at least 0.93 and passed the faithfulness check, as E34's had.
+The largest move in target probability was 0.032, on the emoticon Adam teacher's Pile-text copy; no task-text copy
+moved by more than 0.005. Under 160 adversary steps instead of 20, every copy read between 0.95 and 1.15 times the
+unchanged model, inside the unchanged model's own spread across adversary seeds of 1.23. The three teachers E34 had
+read inconclusive read 3.1 to 10.4 under the same adversary. The two r0 teachers that the 20-step check had passed
+read 2.4 and 2.6. So the batch-order floor for a Pile-text copy's end state is 0.032, and Amendment 2's falls of 0.065
+and 0.049 are both above it.
+
+### What we were trying to test
+
+E34's passes rested on one batch order per copy and one 20-step adversary per state. Two questions followed. How far
+does a copy's end state move when only the batch order changes? That number is the noise floor Amendment 2 needs. And
+do the passes survive an adversary that searches much longer, since E20 had shown the 20-step reading is far from
+converged?
+
+**The copies.** E34's six teachers were regenerated in the job. On each of emoticon, r0 and r1 there is one fine-tune
+with plain SGD and one with Adam, both at seed 0 and read at step 1000. From each teacher two copies were trained for 1,000 steps with
+E34's recipe. The task-text copy trains on the fine-tune's own windows with the trigger weighting; the Pile-text copy
+trains on 8,192 Pile rows with a plain mean KL. The only change from E34 is the batch-order seed, 1 instead of 0. The
+offsets start at zero whatever the seed, so the batch order is the only thing that differs between a copy and its E34
+twin.
+
+**The seed floor.** For each copy we take the difference between its held-out P(target) at step 1000 and its E34
+twin's. We also take the relative difference between their adversarial ratios under E34's 20-step harness. The
+largest of these differences is the seed floor: a smaller change in the reading cannot be told from a change of
+batch order.
+
+**The longer adversary.** E20 Amendment 3's budget sweep. On the first 128 Pile validation rows, in batches of 8, the
+mask adversary takes $n$ sign steps of size $2/n$ from a random start, for $n$ of 20 and of 160. The KL from the
+state to its masked forward under the masks found is read. The ratio is that KL over the unchanged model's at the
+same $n$ under the same adversary seed, so 1 means no worse than the unchanged model. The pass line is 1.241, E20
+Amendment 3's. The noise of this measure is the unchanged model under a second adversary seed over the first: 1.070
+at 20 steps and 1.231 at 160. At 20 steps it shares the harness's step size of 0.1. It differs in rows, 128 against
+the harness's 256, and in reading the KL under the found masks in its own forward pass rather than from the
+adversary's objective.
+
+**References.** Each teacher's do-nothing state, the fine-tune left in Δ, under the same sweep. The three teachers
+E34 read inconclusive are the positive control: they should sit above the line. The unchanged model under adversary
+seeds 0 and 1 was read first.
+
+**Controls, run first.** The unchanged model through the harness had to read its known values. Then the r1 SGD
+teacher had to reproduce E34's reading, in target probability within 0.01 and in size within 0.002, before any copy
+trained.
+
+### What we expected, and why
+
+- **Every copy at the new batch order passes** with P(target) at least 0.9, as all twelve had at seed 0.
+- **Each copy reads within 0.05 in P(target) and within 25% in adversarial ratio of its E34 twin.** We had no
+  seed-to-seed spread for a trained copy, only the harness's own adversary-seed floor of 0.075, and filed a generous
+  band.
+- **Every copy sits at or below 1.241 under the 160-step adversary.** In E20 Amendment 3 and E31 the passing states
+  stayed where they were between 20 and 160 steps, at 1.05 and 1.00.
+- **The three teachers E34 read inconclusive sit above both of their copies at both budgets.** Under the 20-step
+  harness they read 1.50 to 1.59 against their copies' 0.96 to 1.13.
+
+### What we observed
+
+#### 1. How far does a copy move when only the batch order changes?
+
+![amend4](../experiments/teacher_training/figures/amend4.png)
+
+**Reading it.** By at most 0.032 in target probability, and every copy still passes. The left panel plots each copy's
+held-out P(target) at the new batch order against its E34 twin's, with the filed band of 0.05 shaded. The blue
+task-text copies sit on the diagonal: the largest move is 0.005, on the r0 Adam teacher's copy. The orange Pile-text
+copies all sit above the diagonal, by 0.0001 to 0.032: every one read higher at the new batch order. The largest move
+is the emoticon Adam teacher's Pile-text copy, from 0.902 to 0.934; the emoticon SGD teacher's moved by 0.004. The
+adversarial ratio under the 20-step harness moved more. The Pile-text copies moved by up to 25% and the task-text
+copies by up to 11%. The largest move was the r0 Adam teacher's Pile-text copy, from 1.37 to 1.03. The step-100
+readings of the emoticon Pile-text copies swung far more than their end states, by 0.20 for the SGD teacher's copy
+and 0.19 for the Adam teacher's; the table below has them.
+
+**The seed floor Amendment 2 needs.** For the emoticon Pile-text copies, the batch-order spread in P(target) at step
+1000 is 0.004 for the SGD teacher's copy and 0.032 for the Adam teacher's. For the task-text copies it is 0.005 at
+most, on any task. Amendment 2's falls, 0.065 for the SGD teacher and 0.049 for the Adam teacher, both exceed the
+larger spread of 0.032. The SGD fall is twice the floor. The Adam fall is 0.017 above it, from one seed pair, so it is
+the less firm of the two. Both falls also run against the batch-order move, which raised every Pile-text copy.
+Amendment 2's step-100 differences, under 0.05, sit inside that swing of 0.2 and say nothing.
+
+#### 2. Do the copies stay at the unchanged model's level under a longer adversary, where the teachers do not?
+
+**Reading it.** Yes, every one, and the teachers sit far above them. The right panel plots the budget adversary's
+ratio to the unchanged model for each teacher's do-nothing state and its two copies, at 20 steps hollow and 160 steps
+filled, on a log axis. The twelve copies read 0.95 to 1.15 at both budgets. All sit under the pass line at 1.241 and
+under the unchanged model's own second-seed reading of 1.23 at 160 steps. The highest are the two r1 Pile-text
+copies, at 1.13 and 1.15. Going from 20 to 160 steps moved no copy by more than 3%. The three teachers E34 had read
+inconclusive read 2.1 to 9.2 at 20 steps and 3.1 to 10.4 at 160. The two r0 teachers, which E34's harness had passed,
+read 1.7 to 2.6 under this adversary: above the line at both budgets. Only the emoticon SGD teacher, the smallest
+update at a size of 0.012, sits at 1.00 with its copies. The longer adversary widens the gap: the teachers rose by
+13% to 76% between the budgets, the copies by 3% at most.
+
+Every copy at step 1000, seed 0 from E34 beside seed 1 from this run. P(target) is held out; the adversarial ratio is
+the 20-step harness's; the budget columns are the budget adversary's ratio for the seed-1 copy.
+
+| task | teacher | copy | P at 1000, seed 0 | seed 1 | P at 100, seed 0 | seed 1 | adversarial, seed 0 | seed 1 | budget 20 | budget 160 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| r1 | SGD | task text | 0.996 | 0.996 | 0.995 | 0.995 | 1.004 | 0.976 | 1.035 | 1.053 |
+| r1 | SGD | Pile text | 0.974 | 0.974 | 0.854 | 0.871 | 1.028 | 1.016 | 1.123 | 1.148 |
+| r1 | Adam | task text | 0.994 | 0.994 | 0.993 | 0.995 | 0.968 | 1.024 | 1.016 | 1.015 |
+| r1 | Adam | Pile text | 0.983 | 0.983 | 0.834 | 0.848 | 1.131 | 1.065 | 1.106 | 1.133 |
+| r0 | SGD | task text | 0.942 | 0.942 | 0.950 | 0.948 | 1.296 | 1.322 | 0.970 | 0.970 |
+| r0 | SGD | Pile text | 0.919 | 0.941 | 0.795 | 0.829 | 1.125 | 1.019 | 1.008 | 1.006 |
+| r0 | Adam | task text | 0.921 | 0.926 | 0.949 | 0.950 | 1.081 | 1.201 | 0.951 | 0.953 |
+| r0 | Adam | Pile text | 0.908 | 0.931 | 0.833 | 0.853 | 1.366 | 1.030 | 1.003 | 0.998 |
+| emoticon | SGD | task text | 0.999 | 0.999 | 0.993 | 0.988 | 0.942 | 0.943 | 0.977 | 0.982 |
+| emoticon | SGD | Pile text | 0.960 | 0.964 | 0.743 | 0.540 | 0.895 | 1.072 | 0.972 | 0.982 |
+| emoticon | Adam | task text | 0.997 | 0.998 | 0.994 | 0.991 | 0.959 | 0.990 | 0.986 | 0.989 |
+| emoticon | Adam | Pile text | 0.902 | 0.934 | 0.339 | 0.152 | 1.049 | 1.030 | 1.022 | 1.024 |
+
+Every seed-1 copy's verdict is "pass". Between the seeds the teacher gap moved by at most 0.03 nats, damage elsewhere
+by at most 0.009 nats and the size of the change by at most 0.001. The stochastic ratios read 0.88 to 1.01. Δ's share
+is below $10^{-8}$ throughout.
+
+The six teachers' do-nothing states: the size of the fine-tune, its adversarial ratio and verdict under E34's
+20-step harness, identical to E34's, and its ratio under the budget adversary at 20 and 160 steps.
+
+| task | teacher | size | harness ratio | verdict | budget 20 | budget 160 | rise, 20 to 160 |
+|---|---|---|---|---|---|---|---|
+| r1 | SGD | 0.029 | 1.588 | inconclusive | 9.24 | 10.45 | 13% |
+| r1 | Adam | 0.033 | 1.522 | inconclusive | 2.08 | 3.67 | 76% |
+| r0 | SGD | 0.030 | 1.121 | pass | 2.09 | 2.61 | 25% |
+| r0 | Adam | 0.034 | 1.353 | pass | 1.68 | 2.41 | 43% |
+| emoticon | SGD | 0.012 | 0.984 | pass | 1.00 | 1.00 | 0% |
+| emoticon | Adam | 0.032 | 1.499 | inconclusive | 2.43 | 3.15 | 30% |
+
+The unchanged model under the budget adversary, KL in nats, beside E20 Amendment 3's L40 readings of the same thing:
+
+| adversary seed | 20 steps | 160 steps | E20 Amendment 3, 20 | 160 |
+|---|---|---|---|---|
+| 0 | 0.663 | 0.708 | 0.660 | 0.709 |
+| 1 | 0.710 | 0.871 | 0.706 | 0.857 |
+| seed 1 over seed 0 | 1.070 | 1.231 | 1.070 | 1.209 |
+
+#### 3. Did the controls behave?
+
+All passed. The unchanged model read its known values with an adversarial floor of 0.0748, as in E34 and the other
+amendments. The r1 SGD teacher read a target probability of 0.9834 and a size of 0.02875 against E34's 0.983 and
+0.0287. All six teachers matched E34's target probability, damage elsewhere and size to every printed digit, and
+their do-nothing states' harness ratios matched E34's within 0.001. So the differences between the seed-1 copies and
+E34's are the batch order's alone. The unchanged model under the budget adversary matched E20 Amendment 3's L40
+readings within 0.015 nats at every budget and seed.
+
+### What we learned
+
+E34's passes are not a one-seed or one-budget artefact. A copy's end state moves by at most 0.005 on task text and
+0.032 on Pile text when the batch order changes, and every copy passes at both orders. Under an adversary eight times
+longer every copy stays within the unchanged model's own seed spread, while five of the six fine-tunes it copies sit
+2.4 to 10.4 times above the unchanged model. So a copy made by teacher training is more faithful than the same
+update left in Δ, under both adversary budgets and on five of six teachers. That is the condition the shared design
+check set for carrying teacher training to the larger model as the map, for full-weight updates. The text-only map
+for a LoRA stays open from Amendment 3. For Amendment 2, the floor of 0.032 makes its falls of 0.065 and 0.049 real
+rather than provisional. What that does to the Pile-only claim is the business of its item 2. One more number for
+the project: the harness ratio of a trained copy moves by up to 25% between batch orders, three times the unchanged
+model's adversary-seed floor. So a difference under 25% between two copies' harness ratios is not a finding.
+
+### How compelling is the evidence
+
+- **One seed pair per copy.** A floor from two batch orders is a lower bound on the spread; a third order could widen
+  it. Both of Amendment 2's falls are at least 1.5 times it, and in the opposite direction to the whole seed move.
+- **One adversary family and one adversary seed per state.** Sign steps to 160, from one random start; only the
+  unchanged model was read under a second seed.
+- **The budget measure's own noise is 23% at 160 steps**, nearly the pass line's 24% margin. A state at 1.2 could be
+  noise. Every copy sits under 1.15 and every teacher but one above 2.4, so the verdicts do not depend on it.
+- **The budget sweep and the harness disagree on the teachers**, by up to six times at the same 20 steps; see
+  Surprises. They agree on the copies.
+- **The seed-0 copies were not read under the longer adversary.** The comparison is seed-1 copies against seed-0
+  teachers, both under adversary seed 0.
+- **Three trigger tasks, one model.** Emoticon, r0 and r1 on the 67M model, full-weight teachers only.
+
+### Surprises
+
+- **The budget adversary reads the teachers far above the 20-step harness, at the same 20 steps.** The r1 SGD
+  teacher reads 9.2 here against 1.59 under E34's harness. The two r0 teachers, which the harness passed, read 1.7 and
+  2.1, above the 1.241 line at 20 steps already. The two measures share the step size and agree on the unchanged
+  model within 0.04 nats, so the difference is in what the adversary finds on these states. They differ in rows, 128
+  against 256, and in how the KL under the found masks is read. We have no cause. No prediction turns on it, since
+  the copies read the same under both, but the harness's "inconclusive" and "pass" on these fine-tunes look lenient.
+- **Every Pile-text copy read higher at the new batch order**, six of six, by 0.0001 to 0.032; the task-text copies
+  split four up and two down, none by more than 0.005. Seed 0 may be the unlucky order for the Pile text.
+- **The emoticon Pile-text copies' step-100 readings swung by 0.2** between batch orders while their end states moved
+  by 0.03 or less. The early part of a Pile-text copy's learning depends on which rows come first; the end state
+  hardly does. Amendment 1's and Amendment 2's step-100 comparisons sit inside this swing.
+- **The r0 Adam teacher's Pile-text copy moved from 1.37 to 1.03** in the harness ratio, a 25% move at the edge of the
+  filed tolerance. The harness ratio is a noisier reading of a trained copy than of the unchanged model.
+
+### What next
+
+1. **Locate the disagreement between the budget adversary and the harness on the teachers.** Read the r1 SGD teacher
+   under the budget sweep on 256 rows, then under the harness's adversary at 160 steps. If the rows carry it, the pass
+   line of 1.241 needs re-deriving on 256 rows before the budget measure is used again. If the KL readout carries it,
+   one of the two measures misreads the teachers and every "inconclusive" verdict in the project needs re-reading.
+2. **Amendment 2's item 2.** Its falls are real by this floor, so a lower threshold, or every trigger token removed,
+   decides whether the Pile-only claim is withdrawn to "rare, weak occurrences suffice".
+3. **The larger model**, with teacher training as the map. The task-text copies have now passed at two batch orders
+   and two adversary budgets on all six fine-tunes, and at one of each on three LoRAs.
+
+### Scorecard, Amendment 4
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| C1 | the unchanged model reads its known values | `faith_score.w0_check` | floor 0.0748, as in E34 | pass |
+| C1b | the budget measure's noise floor | the unchanged model, adversary seed 1 over seed 0, per budget; reported | 1.070 at 20 steps, 1.231 at 160 | reported |
+| G1 | the r1 SGD teacher reproduces E34 | P within 0.01 of 0.983, size within 0.002 of 0.0287 | 0.9834, 0.02875 | pass |
+| P1 | every seed-1 copy passes with P ≥ 0.9 | `state_verdict` 'pass' and P ≥ 0.9 at step 1000, twelve copies | 12 of 12; P 0.926 to 0.999, harness ratios 0.94 to 1.32 | **holds** |
+| P2 | each copy within 0.05 in P and 25% in ratio of its seed-0 twin | two-sided, per copy | 12 of 12; largest P gap 0.032, emoticon Adam teacher's Pile-text copy; largest ratio gap 24.6%, r0 Adam teacher's Pile-text copy | **holds** |
+| P3a | every copy at or below 1.241 at 160 steps | budget ratio at 160 steps | 12 of 12; 0.953 to 1.148 | **holds** |
+| P3b | the three inconclusive teachers above both their copies at 20 and 160 steps | per teacher, both budgets | r1 SGD 9.24 and 10.45, r1 Adam 2.08 and 3.67, emoticon Adam 2.43 and 3.15, against copies at or below 1.15 | **holds** |
+
+`results/scorecard_amend4.json` holds the same verdicts by the filed rules, through `amend4.py`'s `score`.
+
+**Corrections to the lead's reading.** Every number in the lead's reading matches the JSON. One rounding: the largest
+task-text move in P(target) is 0.00501, which "at most 0.005" rounds down.
+
+### Not run, Amendment 4
+
+- The seed-0 copies under the longer adversary: the Pile-text ones were not saved. A third batch order; a second
+  fine-tune seed; a second adversary seed on any state but the unchanged model.
+- Budgets past 160; other adversary families; the budget sweep on 256 rows and the harness's adversary at 160 steps,
+  which would locate the disagreement on the teachers.
+- Harness reads at steps 10 and 100; P(target) at 100 is the training loop's free reading.
+- The plain-SGD copies at a second batch order; the LoRA teachers of Amendment 3 and the trigger-free Pile arms of
+  Amendments 1 and 2 at a second batch order or under the longer adversary.
+
+### Provenance, Amendment 4
+
+- Three pods, each a RunPod H100 80GB HBM3; the run resumed from its results file on the same unchanged-model floor
+  each time. The first, from 11:02, ran the unchanged-model control, the budget sweep at the unchanged model under
+  both adversary seeds and the r1 SGD reproduction check, and was lost at about 11:12. The second, from 12:20, re-read
+  those from the file and ran both r1 teachers with their four copies, the last written at 12:50, and was lost. The
+  third ran from 13:45 to 14:46, r0 and emoticon and the scoring, exit 0; its log is the one kept. The third pod was
+  machine 01M5W7AE3YYX5ZCW7N09ZQX55D, about $4.1; the first two cost about $5 between them, and all three were
+  lost or ended within the session's $40 budget (spend at the end of the run $21.17). The kernel records are
+  `remote-kernels/20261026-{110234,122055,134553}_amend4_*.ipynb`. The two losses were session disconnects, which
+  terminate the pod under the project's cleanup setting; the rules written from them are in `CLAUDE.md`. Every
+  file checked by sha256 on both sides.
+- Results: `experiments/teacher_training/results/teacher_training_amend4.json` (`90f9c674…`), log
+  `results/large/run_amend4.log` (`77bcd5d8…`, the third pod).
+- Predictions: `results/predictions_amend4.json`, filed 10:51:33, unedited (`594e59eb…`).
+- Saved students: `results/large/<task>/{A,B}_{sgd,adam}_seed1_step1000.pt`, bf16 offsets, 60 MB each (r1
+  `5b9d32f9…`, `faaaee6e…`, `9a98ef85…`, `d5e30aea…`; r0 `0d6b15a2…`, `6ebf4ca2…`, `ed7a0567…`, `31689e8a…`; emoticon
+  `88ce6c03…`, `886bb580…`, `8f9c1b98…`, `4e1f9497…`; order SGD task text, SGD Pile text, Adam task text, Adam Pile
+  text).
+- Figure and scorecard: `figures/amend4.png`, `results/scorecard_amend4.json`, from `plot_amend4.py`.
+- Code: `experiments/teacher_training/amend4.py`, `gamma.pgd_sources`, `cancel.masked_kl`,
+  `component_training.train`.

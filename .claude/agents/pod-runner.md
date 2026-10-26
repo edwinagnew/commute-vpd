@@ -84,8 +84,16 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   attached, `attach()` is only for a stopped machine), `sync()` the tree, re-run `bash cluster/pod_setup.sh` (seconds
   when nothing changed: the VPD files report `present`), and re-copy the gitignored inputs the brief lists. A pod owned by another session is not yours: leave it
   alone, and never `attach(force=true)`.
-- Otherwise set `name = "commute-<experiment>"` in `remote-kernels.toml` so the pod shows as
-  `commute-<experiment>-<id>`, then `start()`. SECURE cloud, `cleanup = "terminate"`: nothing on the pod survives.
+- Otherwise `start()` with the pod label given as `start()`'s own label argument (display-only); never edit
+  `remote-kernels.toml` while any machine of the session is running. **The machine terminates itself when the session
+  disconnects** (plugin README, "Automatic cleanup", with `cleanup = "terminate"`): on 2026-10-26 three pods of one
+  session were "confirmed deleted at the provider" within a minute of a kernel WebSocket closure (two right after a
+  runner rewrote the config and started a third pod; one 75 min into a run with no config change), while a fourth
+  survived a closure because its runner made a new kernel within two minutes. So keep the connection alive: no
+  `execute()` or `wait()` longer than 5 min, re-arm instead; on "WebSocket connection closed", call
+  `status(instance=...)` at once and, if the machine is Running, `create_kernel(instance=...)` immediately; download
+  every stage's outputs as they are written (per teacher or per task, not per run). With several machines active,
+  pass `instance` to every machine-scoped call, and never touch a machine you did not start. SECURE cloud, `cleanup = "terminate"`: nothing on the pod survives.
   Pick the card for speed, not price: the default list in `gpu-type-ids` starts at the 4090 and only goes up. Don't
   pass a smaller or older card (A5000, 3090, A40, RTX PRO 4000/4500) to save money; a slower run costs the user more
   than the dollars saved. For a run expected to take over ~1 h on a 4090, start an H100
