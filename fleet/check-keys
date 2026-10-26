@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Check that the keys in FLEET_SECRETS work for what the runs do, not only that they log in: W&B must be able to read
+# the decomposition run in goodfire/spd (2026-10-26: a valid key without access to it failed the E35 pod with a 403,
+# seen only by attaching to tmux), and RunPod must answer. Prints "keys: ok" or one line per problem; exits 1 on a
+# problem. Writes the result to FLEET_DATA/keys.txt for fleet/check. fleet/up runs it before starting an agent.
+#   fleet/check-keys
+set -uo pipefail
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
+WANDB_ENTITY=goodfire WANDB_PROJECT=spd WANDB_RUN=s-55ea3f9b   # src/commute/vpd_files.py: WANDB_PROJECT, DECOMP_RUN
+problems=()
+# The keys stay in this subshell and reach curl through its config on stdin, never the command line.
+out=$(
+  set -a; source "$FLEET_SECRETS" 2>/dev/null; set +a
+  if [[ -z "${WANDB_API_KEY:-}" ]]; then echo "WANDB_API_KEY is not set in $FLEET_SECRETS"
+  else
+    run=$(curl -s -m 20 -K - https://api.wandb.ai/graphql -H 'Content-Type: application/json' \
+      -d '{"query":"{ project(name: \"'$WANDB_PROJECT'\", entityName: \"'$WANDB_ENTITY'\") { run(name: \"'$WANDB_RUN'\") { name } } }"}' \
+      <<< "user = \"api:$WANDB_API_KEY\"" | jq -r '.data.project.run.name // empty' 2>/dev/null)
+    [[ "$run" == "$WANDB_RUN" ]] || echo "WANDB_API_KEY cannot read $WANDB_ENTITY/$WANDB_PROJECT/$WANDB_RUN (wrong key, or its account lacks access to $WANDB_ENTITY)"
+  fi
+  if [[ -z "${RUNPOD_API_KEY:-}" ]]; then echo "RUNPOD_API_KEY is not set in $FLEET_SECRETS"
+  else
+    id=$(curl -s -m 20 -K - https://api.runpod.io/graphql -H 'Content-Type: application/json' \
+      -d '{"query":"query { myself { id } }"}' <<< "header = \"Authorization: Bearer $RUNPOD_API_KEY\"" \
+      | jq -r '.data.myself.id // empty' 2>/dev/null)
+    [[ -n "$id" ]] || echo "RUNPOD_API_KEY is refused by RunPod"
+  fi
+)
+[[ -n "$out" ]] && mapfile -t problems <<< "$out"
+{
+  if (( ${#problems[@]} )); then printf "keys: PROBLEM: %s\n" "${problems[@]}"; else echo "keys: ok"; fi
+} | sed "s/^/$(date '+%H:%M') /" | tee "$FLEET_DATA/keys.txt"
+(( ${#problems[@]} == 0 ))

@@ -23,6 +23,6 @@ for role in "${roles[@]}"; do
   mkdir -p "$(dirname "$out")"
   s=$(cd "$FLEET_DATA/logs" && timeout 120 claude -p --model haiku --tools "" --strict-mcp-config \
       --setting-sources project --no-session-persistence \
-      "Below is the recent activity of an autonomous research agent (USER lines are its human). In ONE plain sentence of at most 25 words, say what it is doing right now and why. No preamble." <<< "$steps" 2>/dev/null | tr '\n' ' ')
+      "Below is the recent activity of an autonomous research agent (USER lines are its human). In ONE plain sentence of at most 25 words, say what it is doing right now and why. If it hit a failure or says it needs the human (a key, an access, a decision), start with \"PROBLEM:\" and name it instead. No preamble." <<< "$steps" 2>/dev/null | tr '\n' ' ')
   [[ -n "${s// }" ]] && echo "$(date '+%H:%M') ${s% }" > "$out"
 done

@@ -50,12 +50,17 @@ for role in $windows; do
         elif .type == "text" then "\($ts)\twrote: \(.text | gsub("\n"; " ") | .[0:90])" else empty end' "$t" 2>/dev/null | tail -1)
     [[ -n "$step" ]] && echo "   last step $(ago "$(date -d "${step%%$'\t'*}" +%s)"): ${step#*$'\t'}"
   fi
+  started=$(jq -r --arg n "$FLEET_PREFIX-$role" 'select(.name == $n) | .startedAt / 1000 | floor' \
+    "$HOME"/.claude/sessions/*.json 2>/dev/null | sort -n | tail -1)
+  (( $(stat -c %Y "$FLEET_SECRETS") > ${started:-0} )) \
+    && echo "   KEYS CHANGED since it started at $(date -d @"${started:-0}" +%H:%M): it still has the old ones until its next restart"
   r="$FLEET_DATA/agents/$role/restart-requested"
   [[ -f "$r" ]] && echo "   restart pending ($(cat "$r")); it restarts once the agent reaches a safe point"
   s="$FLEET_DATA/agents/$role/summary"
   [[ -s "$s" ]] && echo "   $(cut -d' ' -f1 "$s"): $(cut -d' ' -f2- "$s")"
 done
 
+"$(dirname "$(readlink -f "$0")")/check-keys" | cut -d' ' -f2-
 task=$(head -c 300 "$FLEET_DATA/tonight" 2>/dev/null)
 echo "task: ${task:-none (analysis of existing results only)}"
 
