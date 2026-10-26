@@ -1,7 +1,7 @@
 #!/bin/bash
 # adjoint_sgd (E31) amendment 1: task vs SGD rate. Plan: reports/2026-10-22_plan_adjoint-sgd.md -> "Amendment 1".
 # One cell per job, each ~22 min on an L40 (W0 ~6 min, the 10-step gate, one 1000-step fine-tune read at 10/100/1000):
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch --export=ALL,CELL=r1 cluster/adjoint_sgd_amend1.sbatch    # FIRST, alone
 #   once its log shows G0 ([W0] ... "pass": true) and "[gate A1_G1 r1]" ok: CELL=r0 and CELL=emo
 #   afterwards (laptop): run.py amend1_merge
@@ -15,10 +15,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=00:40:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 : "${CELL:?set CELL=r1|r0|emo via --export}"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS cell=$CELL" >> cluster/logs/jobs.log

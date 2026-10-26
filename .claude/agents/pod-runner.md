@@ -175,7 +175,7 @@ cluster, the wait is **one ssh command that runs the loop on the controller**, u
     timeout <cap + 60 seconds> ssh -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 \
       e.agnew@185.141.218.207 \
       "timeout <cap seconds> bash -c 'while squeue -h -j <jobid> | grep -q .; do sleep 30; done'; squeue -h -j <jobid>; \
-       tail -5 /mnt/nw/home/e.agnew/commute/cluster/logs/<job-name>-<jobid>.out"
+       tail -5 /mnt/nw/home/e.agnew/commute-data/cluster-logs/<job-name>-<jobid>.out"
 
 While the job is still queued, cap each wait at 5 minutes and re-arm, so that a message from the user in your tab is
 seen within minutes (2026-10-20: a runner sat in one long queue wait and did not answer the user, who then cancelled the

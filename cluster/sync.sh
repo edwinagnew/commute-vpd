@@ -13,6 +13,9 @@
 #
 # After `up` with a changed pyproject.toml/uv.lock, rebuild the venv on a GPU node: sbatch cluster/setup.sbatch.
 set -euo pipefail
+echo "sync.sh is retired (2026-10-26): the cluster works from git clones under ~/commute-agents, with big files in
+~/commute-data. Move code with git push/pull; fetch a large result with scp from ~/commute-data/results-large." >&2
+exit 1
 
 HOST=${COMMUTE_CLUSTER:-e.agnew@185.141.218.207}
 REMOTE=/mnt/nw/home/e.agnew/commute

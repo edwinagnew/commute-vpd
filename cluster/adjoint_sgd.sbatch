@@ -1,7 +1,7 @@
 #!/bin/bash
 # adjoint_sgd (E31): the adjoint split of SGD and Adam fine-tunes, in shards on the L40 (remote-kernels was down
 # 2026-10-22). Plan: reports/2026-10-22_plan_adjoint-sgd.md. Each shard runs its own same-job W0 floor first.
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch --export=ALL,SHARD=A cluster/adjoint_sgd.sbatch    # the reproductions (gated) FIRST, ~45 min
 #   then SHARD=B|C|D|E (~30-45 min each); they refuse to start until results/adjoint_sgd_A.json shows W0 and the
 #   Adam 3e-5 and SGD 0.01 reproductions passed. Afterwards (laptop): run.py merge.
@@ -15,10 +15,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=01:05:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 : "${SHARD:?set SHARD=A|B|C|D|E via --export}"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS shard=$SHARD" >> cluster/logs/jobs.log

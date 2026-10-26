@@ -1,7 +1,7 @@
 #!/bin/bash
 # Reading-A coverage on one task (2026-10-20: the emoticon task, at the user's request). Plan:
 # reports/2026-10-19_plan_reading-a-coverage.md; the five-task run itself went to RunPod on 2026-10-19.
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch cluster/reading_a_coverage.sbatch --task emoticon            # scored, ~15 min on an L40
 #   sbatch cluster/reading_a_coverage.sbatch --task emoticon --smoke    # smoke, ~5 min
 # Before that: `cluster/sync.sh up` and predictions filed (results/predictions.json).
@@ -14,10 +14,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=00:40:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

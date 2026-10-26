@@ -1,6 +1,6 @@
 #!/bin/bash
 # What the fixed change is made of, on E28's eight states (E32). Plan: reports/2026-10-22_plan_shift-anatomy.md.
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch cluster/shift_anatomy.sbatch     # ~4-8 min on an L40: G1 (emoticon vs E28) first, stops the job on a fail
 # Before that: `cluster/sync.sh up` and predictions filed (results/predictions.json). Gitignored inputs on NFS:
 # experiments/transport_test/results/{windows.json, large/alive.pt, large/windows.pt};
@@ -15,11 +15,11 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
 #SBATCH --time=00:20:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-trap 'echo "=== FINISHED (exit $?) — results in /mnt/nw/home/e.agnew/commute/experiments/shift_anatomy/results/shift_anatomy.json, /mnt/nw/home/e.agnew/commute/experiments/shift_anatomy/results/large/full.log ==="' EXIT
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+trap 'echo "=== FINISHED (exit $?) — results in $COMMUTE_REPO/experiments/shift_anatomy/results/shift_anatomy.json, $COMMUTE_REPO/experiments/shift_anatomy/results/large/full.log ==="' EXIT
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

@@ -192,7 +192,7 @@ def load_kv_windows(name: str, kv_results: Path) -> tuple[Windows, Windows, Tens
     path = kv_results / "large" / f"windows_{name}.pt"
     if not path.is_file():
         raise FileNotFoundError(f"{path} is missing: E10's key-value windows live on the cluster NFS "
-                                "(/mnt/nw/home/e.agnew/commute/experiments/kv_task/results/large/)")
+                                "(/mnt/nw/home/e.agnew/commute-data/results-large/kv_task/)")
     w = torch.load(path, weights_only=False)
     return w["train"], w["heldout"], w["table"]
 

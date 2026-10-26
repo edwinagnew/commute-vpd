@@ -49,6 +49,7 @@ clone() {
     [[ -e "$mem" ]] && mv "$mem" "$mem.old-$(date +%s)"
     ln -s "$d/.claude/memory" "$mem"
   fi
+  "$d/fleet/link-data" "$d"
 }
 
 for role in "${roles[@]}"; do

@@ -1,7 +1,7 @@
 #!/bin/bash
 # sgd_ladder: SGD and low-rate Adam component training on E11's ladder tasks at step 10, one task per shard
 # (reports/2026-10-21_plan_sgd-ladder.md). Runs only after sgd_faith's control has passed.
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_ladder.sbatch --shard 0                                # emoticon first and alone, ~22 min on an L40
 #   for n in 1 2 3 4 5; do sbatch cluster/sgd_ladder.sbatch --shard $n; done  # once shard 0 has finished clean
 # Shards: 0 emoticon, 1 r0_t352_v310, 2 r1_t534_v369, 3 r1_t588_v452, 4 r2_t275_v2667, 5 r2_t359_v816.
@@ -16,10 +16,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=00:30:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

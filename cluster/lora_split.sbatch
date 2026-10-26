@@ -2,7 +2,7 @@
 # lora_split: every saved LoRA and a re-run fine-tune through one split table (four blocks, rescaling share, both splits'
 # pieces), then part 2 (do-nothing, least-squares and scaled adjoint split states on Pile at steps 10, 100, 1000).
 # Design check confirmed by the user 2026-10-20 (reports/2026-10-20_plan_lora-split.md). The arguments go to run.py:
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch --job-name=commute-lora_split-smoke --time=00:25:00 cluster/lora_split.sbatch all --smoke
 #   sbatch cluster/lora_split.sbatch all
 #   sbatch --job-name=commute-lora_split-pieces --time=00:40:00 cluster/lora_split.sbatch pieces   # table + pieces only, ~15 min
@@ -18,10 +18,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
 #SBATCH --time=01:45:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

@@ -1,7 +1,7 @@
 #!/bin/bash
 # adjoint_sgd (E31) amendment 3: the unscaled adjoint split beside the scaled one. Plan: reports/2026-10-22_plan_adjoint-sgd.md
 # -> "Amendment 3". One emoticon seed-0 fine-tune per job, ~20 min (W0 ~6 min, the 1000-step fine-tune, six harness readings):
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch --export=ALL,CELL=sgd cluster/adjoint_sgd_amend3.sbatch     # FIRST, alone
 #   once its log shows G0 ([W0] ... "pass": true) and "[gate A3_G1 ...]" "ok": true: CELL=small, CELL=big
 #   afterwards (laptop): experiments/adjoint_sgd/amend3.py --merge
@@ -15,10 +15,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=00:40:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 : "${CELL:?set CELL=sgd|small|big via --export}"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS cell=$CELL" >> cluster/logs/jobs.log

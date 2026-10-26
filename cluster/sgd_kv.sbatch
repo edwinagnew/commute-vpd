@@ -1,7 +1,7 @@
 #!/bin/bash
 # sgd_kv: SGD and low-rate Adam component training on E10's key-to-value tasks, one task per shard
 # (reports/2026-10-21_plan_sgd-kv.md). About 22 min per shard on an L40.
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_kv.sbatch --shard 0                              # rand32 first and alone (its control must read 'fail')
 #   for n in 1 2; do sbatch cluster/sgd_kv.sbatch --shard $n; done      # once shard 0 is past its control
 # Shards: 0 rand32, 1 ident32, 2 rand1.
@@ -17,10 +17,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=00:30:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

@@ -1,7 +1,7 @@
 #!/bin/bash
 # lora_plateau: round 5's LoRA to 1000 steps, the inexpressible share against A's movement, Pile at steps 10, 100, 1000.
 # Design check confirmed by the user 2026-10-19 (after reports/2026-10-19_analysis_lora-matched.md). One job; the arguments go to run.py:
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch --job-name=commute-lora_plateau-smoke --time=00:20:00 cluster/lora_plateau.sbatch all --smoke
 #   sbatch cluster/lora_plateau.sbatch all
 # Before that: `cluster/sync.sh up` from the laptop, predictions filed (results/predictions.json).
@@ -14,10 +14,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=00:55:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

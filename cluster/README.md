@@ -5,9 +5,11 @@ using a cluster GPU as the Jupyter kernel for notebooks open in VS Code on the l
 `../../guides/mats_cluster_handbook.md`; this file covers only what is specific to this project.
 
 - Login (controller, for submitting jobs and light file operations only): `ssh e.agnew@185.141.218.207`
-- Slurm: account `c11`, partition `compute`. Repo copy: `/mnt/nw/home/e.agnew/commute` (NFS, persistent),
-  with venv `.venv` (Python 3.13, `uv sync --locked --no-default-groups --group dev --group gpu`: CUDA torch; the laptop default is the CPU build), `artifacts/` (VPD decomposition + target model) and
-  `experiments/*/results/large/`.
+- Slurm: account `c11`, partition `compute`. Code: one git clone per agent, `/mnt/nw/home/e.agnew/commute-agents/<role>`
+  (NFS, persistent). Submit every sbatch from the clone root: jobs source `$SLURM_SUBMIT_DIR/cluster/env.sh`, which
+  sets `COMMUTE_REPO` to that clone. The big gitignored files are shared in `/mnt/nw/home/e.agnew/commute-data` and
+  linked into each clone by `fleet/link-data`: venv `.venv` (Python 3.13, `uv sync --locked --no-default-groups --group dev --group gpu`: CUDA torch; the laptop default is the CPU build), `artifacts/` (VPD decomposition + target model),
+  `cluster/logs/` and `experiments/*/results/large/`.
 - Caches and temp files go to `/ephemeral/$USER` (`env.sh`). That includes `HF_HOME`, so the tokenizer and dataset
   caches can be re-downloaded and do not count as results.
 
@@ -19,7 +21,7 @@ using a cluster GPU as the Jupyter kernel for notebooks open in VS Code on the l
 | `jupyter.sbatch` | GPU node | Jupyter server on 1 GPU; writes `.jupyter-session` (node, port, token; mode 600, gitignored) |
 | `jupyter.sh` | laptop | `start` / `connect` / `status` / `stop` the Jupyter job |
 | `kernel_check.py` | laptop | smoke test: starts a kernel through the tunnel, runs `torch.cuda.get_device_name()` |
-| `sync.sh` | laptop | `up` (tree minus `results/large/`), `up-large` (`results/large/` -> cluster), `artifacts`, `down` (results minus `results/large/`, figures, logs), `large` (`results/large/` on demand) |
+| `sync.sh` | laptop | retired 2026-10-26: code moves by git; big files stay in `commute-data` |
 
 Slurm logs go to `cluster/logs/<job-name>-<jobid>.out` on the cluster, and every job appends a line to
 `cluster/logs/jobs.log`. Note that `sacct` and `sacctmgr` do not work from the controller (slurmdbd refuses the
@@ -53,11 +55,11 @@ query put a 2-h normal job 16 days out). Policy (2026-10-20): only runs of ≤ 3
 4. When you are done: `cluster/jupyter.sh stop`. Closing VS Code or the tunnel does **not** free the GPU.
 
 The notebook file stays on the laptop, and VS Code saves it there. The kernel runs on the node with its working
-directory under `/mnt/nw/home/e.agnew/commute`, so code reads and writes the **cluster** copy of the tree
-(`artifacts/`, `experiments/*/results/`). Run `cluster/sync.sh up` first if the code changed, and
-`cluster/sync.sh down` to bring results back. `src/commute` is an editable install, so after an `up` the next
-kernel restart picks up the new code. If `pyproject.toml` or `uv.lock` changed, rebuild the venv with
-`ssh e.agnew@185.141.218.207 'cd /mnt/nw/home/e.agnew/commute && sbatch cluster/setup.sbatch'`.
+directory under the cluster clone (`COMMUTE_CLUSTER_REPO`, default `commute-agents/lead`), so code reads and
+writes that clone's tree (`artifacts/`, `experiments/*/results/`). Push the code first and `git pull` in the clone;
+commit results there to bring them back. `src/commute` is an editable install, so after a pull the next kernel
+restart picks up the new code. If `pyproject.toml` or `uv.lock` changed, rebuild the venv with
+`ssh e.agnew@185.141.218.207 'cd /mnt/nw/home/e.agnew/commute-agents/lead && sbatch cluster/setup.sbatch'`.
 
 The kernel's working directory follows the notebook's relative path (for example, `notebooks/` on the cluster), so
 in cells use `commute.env.REPO_ROOT` / `env.VPD_DIR` or absolute `/mnt/nw/...` paths rather than relative ones.

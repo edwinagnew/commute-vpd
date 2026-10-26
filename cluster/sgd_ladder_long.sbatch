@@ -1,7 +1,7 @@
 #!/bin/bash
 # sgd_ladder_long: SGD (3a's rate), Adam 1e-5 and Adam 3e-6 component training to step 1000 on emoticon and three ladder
 # tasks, Pile harness at steps 100 and 1000, one task per job (reports/2026-10-21_plan_sgd-ladder-long.md).
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch cluster/sgd_ladder_long.sbatch --task emoticon          # the control, first and alone; ~41 min on an L40
 #   for t in r0_t352_v310 r1_t534_v369 r2_t275_v2667; do sbatch cluster/sgd_ladder_long.sbatch --task $t; done
 #                                                                 # once emoticon's G1, C1 and C2 have passed
@@ -17,10 +17,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=01:05:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

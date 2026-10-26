@@ -1,7 +1,7 @@
 #!/bin/bash
 # step_split (E19): the step split along the emoticon fine-tune (plan: reports/2026-10-21_plan_step-split.md). The
 # arguments go to run.py:
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch --job-name=commute-step_split-smoke --time=00:20:00 cluster/step_split.sbatch all --smoke
 #   sbatch cluster/step_split.sbatch all            # needs results/predictions.json with "status": "filed"
 #   sbatch cluster/step_split.sbatch all --resume   # after a lost job: re-runs the fine-tune, scores the missing states
@@ -19,10 +19,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
 #SBATCH --time=00:55:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

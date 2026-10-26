@@ -1,7 +1,7 @@
 #!/bin/bash
 # E30 amendment 1: the raised and the lowered half of the fixed change, each applied everywhere (emoticon SGD 0.01).
 # Plan: reports/2026-10-22_plan_commute-second-line.md -> "Amendment 1 to E30".
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch cluster/gamma_shift_map_amend1.sbatch   # ~18 min on a 4090 (8 Pile readings of ~2 min); C1 first, stops on a fail
 # Before: `cluster/sync.sh up`; results/predictions_amend1.json filed; results/gamma_shift_map.json (E30, committed);
 # experiments/transport_test/results/{windows.json, large/alive.pt, large/windows.pt} on NFS. Same card for the whole run:
@@ -14,10 +14,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
 #SBATCH --time=00:45:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

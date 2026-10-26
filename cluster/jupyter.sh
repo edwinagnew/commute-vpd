@@ -7,11 +7,11 @@
 #   cluster/jupyter.sh status                # your jobs + the current session file (token hidden)
 #   cluster/jupyter.sh stop                  # scancel the session's job
 #
-# Env: COMMUTE_CLUSTER (default e.agnew@185.141.218.207), LOCAL_PORT (default: same as the remote port).
+# Env: COMMUTE_CLUSTER (default e.agnew@185.141.218.207), COMMUTE_CLUSTER_REPO (default the lead clone), LOCAL_PORT (default: same as the remote port).
 set -euo pipefail
 
 HOST=${COMMUTE_CLUSTER:-e.agnew@185.141.218.207}
-REPO=/mnt/nw/home/e.agnew/commute
+REPO=${COMMUTE_CLUSTER_REPO:-/mnt/nw/home/e.agnew/commute-agents/lead}   # a clone on the cluster
 SESSION=$REPO/.jupyter-session
 
 session() { ssh -o BatchMode=yes "$HOST" "cat $SESSION 2>/dev/null" || true; }

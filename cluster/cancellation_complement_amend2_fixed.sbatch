@@ -1,7 +1,7 @@
 #!/bin/bash
 # Complement revert (E20), amendment 2, stage amend2_fixed. Plan:
 # reports/2026-10-21_plan_cancellation-complement.md -> Amendment 2.
-#   cd /mnt/nw/home/e.agnew/commute
+#   cd ~/commute-agents/<role>
 #   sbatch cluster/cancellation_complement_amend2_fixed.sbatch    # ~4 min: W0's saved levels at W0 (control C1 first), then at the eight states, one fp32 masked pass each
 # Before that: `cluster/sync.sh up`, results/predictions_amend2.json filed, and amendment 1's
 # results/complement_amend1.json and results/large/sources/*.pt present (both stages read them). Inputs on NFS as E20:
@@ -15,10 +15,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
 #SBATCH --time=00:15:00
-#SBATCH --output=/mnt/nw/home/e.agnew/commute/cluster/logs/%x-%j.out
+#SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-source /mnt/nw/home/e.agnew/commute/cluster/env.sh
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=amend2_fixed" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

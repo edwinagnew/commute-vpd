@@ -2,7 +2,7 @@
 # Code, venv and results live on NFS; caches and temp files on the node's disposable /ephemeral.
 # Never point anything at /tmp (MATS cluster handbook).
 
-export COMMUTE_REPO=/mnt/nw/home/e.agnew/commute
+export COMMUTE_REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # the clone this file is in
 _eph=/ephemeral/$USER
 
 export TMPDIR=$_eph/tmp
