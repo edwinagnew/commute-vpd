@@ -131,6 +131,7 @@ def main() -> None:
     train, held, _ = task()
     ft = finetune_arm_b(r.model, train, held, ArmBConfig(lr=LR, batch=BATCH, steps=CHECKS[-1], checkpoints=CHECKS,
                                                          seed=SEED), a.device, log)
+    out["finetune"], out["device"] = ft.evals, torch.cuda.get_device_name()
     for step in CHECKS:
         f = fitted(r, train[:N_BIG_ROWS], ft.deltas[step])
         m = evaluate(r, held, ft.deltas[step], f)
