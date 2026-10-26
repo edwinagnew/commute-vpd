@@ -127,3 +127,28 @@ Sketch; its predictions are filed after E35 is read, in an amendment to this pla
 
 Seeds beyond 0; Γ's input (residual activations) as the space for grouping; faithfulness under the adversary of any
 predicted pattern; a second spread-out domain; SGD or LoRA updates; the larger model.
+
+## Amendment 1 (2026-10-26, after E35; files E36's predictions)
+
+**E35 in one paragraph** (analysis: `reports/2026-10-26_analysis_regating-without-cues.md`). With no cue labels, the
+mean change of the 8 training windows whose original values are nearest recovered 0.61 to 0.78 of the switching on
+the four 32-cue states, as much as or more than one change per cue in the same form (0.47 to 0.66), where one shared
+change gives 0.01 to 0.13 (F held). k-means groups did not line up with cues (purity 0.40 to 0.57 at 32 groups) and
+needed about 128 to reach the per-cue level (K failed). One line per subcomponent recovered 0.96 and 1.02 on the two
+few-cue states and 0.37 to 0.80 on the 32-cue ones (A failed). On the one-cue state the cue-free arms beat the shared
+change by 0.19 (nearest) and 0.31 (line), where C expected no difference.
+
+**What changes for E36.**
+- The nearest arm is the headline test (P_near), the line arm second (P_fix); the K curve is read, with P_K at 512.
+- Rows: the 5% of the first 20,480 'train' rows with the highest share of tokens holding one of `{}[]();=<>_\`,
+  the same cut applied to 'val' rows 0..8,191 (a fixed share threshold could select too few rows; the cut must be
+  at least 0.12). Parentheses are added to the plan's character set.
+- Two descriptive numbers: the share of each position's nearest fit positions holding its own token (is "nearest in
+  the original values" just "same token"?), and the slopes of the line arm among subcomponents whose values vary
+  (a median below 1 reads as each subcomponent pulled towards a set point).
+- Predictions, gates and decision tree: `experiments/regating_spread/run.py` → `PREDICTIONS`, filed on the pod by
+  `run.py --predictions` before the run: P_r (r ≥ 0.3), P_shared (R_shared < 0.5), P_near (R_near ≥ 0.6 and ≥
+  R_shared + 0.2), P_token (R_near ≥ R_token − 0.1), P_fix (R_fix ≥ R_shared + 0.1), P_K (R_clu_512 ≥ R_near − 0.1),
+  N (|R_rand − R_shared| ≤ 0.05); scored at step 100, step 10 read by the same rules.
+- Cost: a RunPod 4090, sent the VPD files as E35's second pod was (W&B refuses this node's key): about 10 min of
+  set-up and upload, a few minutes of run; under $1.

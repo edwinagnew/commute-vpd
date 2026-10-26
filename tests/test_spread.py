@@ -34,8 +34,8 @@ def test_group_change_and_token_table() -> None:
 def test_nearest_change_and_clusters() -> None:
     X = torch.tensor([[0.0, 0.0], [0.1, 0.0], [1.0, 1.0], [0.9, 1.0]])
     D = torch.tensor([[1.0], [3.0], [10.0], [20.0]])
-    assert torch.allclose(S.nearest_change(X, D, torch.tensor([[0.0, 0.05], [1.0, 0.9]]), 2),
-                          torch.tensor([[2.0], [15.0]]))
+    idx = S.nearest(X, torch.tensor([[0.0, 0.05], [1.0, 0.9]]), 2)
+    assert torch.allclose(S.nearest_change(D, idx), torch.tensor([[2.0], [15.0]]))
     c = S.fit_clusters(X, D, 2, 0)
     lab = S.assign(torch.tensor([[0.05, 0.0], [0.95, 1.0]]), c.cent)
     assert sorted(c.change[lab].flatten().tolist()) == [2.0, 15.0]

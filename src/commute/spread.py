@@ -76,13 +76,14 @@ def target_logp(logits: Tensor, rows: Tensor) -> float:
 # ----------------------------------------------------------------------------- predicted changes, flat rows
 
 
-def nearest_change(X: Tensor, Dch: Tensor, Y: Tensor, k: int) -> Tensor:
-    """For each row of Y, the mean change Dch of its k nearest rows of X (all on one device)."""
-    out = []
-    for s in range(0, Y.shape[0], CHUNK):
-        idx = _sqdist(Y[s : s + CHUNK], X).topk(k, largest=False).indices
-        out.append(Dch[idx].mean(1))
-    return torch.cat(out)
+def nearest(X: Tensor, Y: Tensor, k: int) -> Tensor:
+    """(len(Y), k) indices of each row of Y's k nearest rows of X (all on one device)."""
+    return torch.cat([_sqdist(Y[s : s + CHUNK], X).topk(k, largest=False).indices for s in range(0, Y.shape[0], CHUNK)])
+
+
+def nearest_change(Dch: Tensor, idx: Tensor) -> Tensor:
+    """For each row of `idx` (from `nearest`), the mean change Dch of those rows."""
+    return torch.cat([Dch[idx[s : s + CHUNK]].mean(1) for s in range(0, idx.shape[0], CHUNK)])
 
 
 def group_change(Dch: Tensor, lab: Tensor, n: int) -> Tensor:
