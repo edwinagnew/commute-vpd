@@ -66,6 +66,13 @@ echo "task: ${task:-none (analysis of existing results only)}"
 
 jobs=$(squeue -u "$USER" -h -o '   %i %j %T for %M (limit %l) %R' 2>/dev/null)
 echo "Slurm jobs:${jobs:+$'\n'}${jobs:- none}"
+# A drained or down node takes no new jobs (fleet/cpu-run, cluster runs) until an admin resumes it.
+sinfo -h -p compute -N -o '%N|%T|%E|%H' 2>/dev/null | sort -u | while IFS='|' read -r node st reason since; do
+  case "$st" in
+    idle|mixed|allocated|completing) echo "cluster: $node $st, taking jobs" ;;
+    *) echo "cluster: $node ${st^^}, NOT TAKING JOBS since ${since/T/ } ($reason); ask a MATS admin to resume it" ;;
+  esac
+done
 
 # Pods from the RunPod API; the key is the shared MATS account's, so keep only this project's pods.
 key=${RUNPOD_API_KEY:-$(set -a; source "$FLEET_SECRETS" 2>/dev/null; echo "${RUNPOD_API_KEY:-}")}
