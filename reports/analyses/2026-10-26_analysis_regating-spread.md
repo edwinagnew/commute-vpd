@@ -1,7 +1,7 @@
 # Does the cue-free form of the fixed-shift hypothesis hold on a fine-tune with no trigger? (E36, analysis)
 
 *2026-10-26, lead agent (overnight). Plan and design check: `reports/plans/2026-10-26_plan_regating-without-cues.md` (E36,
-Amendments 1 and 3 to 6). Code: `experiments/regating_spread/run.py` and `amend1.py` to `amend4.py`, shared steps in
+Amendments 1 and 3 to 7). Code: `experiments/regating_spread/run.py` and `amend1.py` to `amend5.py`, shared steps in
 `src/commute/spread.py` and `src/commute/cuefree.py`. Follows E35, `reports/analyses/2026-10-26_analysis_regating-without-cues.md`.
 Exploration, provisional. Independent checks (fresh Opus agents, 2026-10-26) of the first run and of Amendment 3 found the
 numbers and scoring right and the headlines too strong each time; this version takes their points. Words as in `GOALS.md` → Terms.*
@@ -11,9 +11,9 @@ can be predicted from the original model's importance values there. On lowercase
 similar original values predicted it better than every other rule. With the planned sample of fitted positions it fell
 below the filed bar after the first ten steps; with sixteen times as many it recovered three-quarters or more at every
 step. The same rule on the original model's attention inputs, which Γ itself
-reads, does about as well. For `GOALS.md` this supports the form "positions the original model treats alike get alike
-changes" on one synthetic style of running text; whether a summary of the text the model did not produce would do as
-well is the next check.
+reads, does about as well. A summary of the text alone, which the model did not produce, does about a quarter worse. For
+`GOALS.md` this supports the form "positions the original model treats alike get alike changes" on one synthetic style
+of running text.
 
 ## The answer
 
@@ -21,7 +21,7 @@ Yes, once enough positions are compared. On a fine-tune of lowercased Pile text,
 change of the eight training positions with the nearest original importance values. Fitted on 16,384 positions this
 recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51, under the filed 0.6. Fitted on all 262,144 it recovered
 0.89, 0.78 and 0.76, and the same rule on the attention inputs Γ reads about as much. At the same sample size the current token
-recovers about a third, and position in the row almost nothing.
+recovers about a third, a summary of the surrounding text about a half, and position in the row almost nothing.
 
 ## What we were trying to test
 
@@ -104,8 +104,8 @@ the filed rule. Amendments 2 and 3 showed that miss was sampling: with all 262,1
 0.89 of the switching at every step. So on running text with no trigger, values predicted from the positions with the most similar original
 importance values recover most of the switching effect. Amendment 4 found them predicted about as well, within 0.02, from the
 original model's attention inputs, which Γ reads, so Γ's original values are one sufficient summary of the context, not
-a privileged one. Both come from the original model; whether a summary of the text that the model did not produce
-would do as well is not yet tested. At the same sample size the current token recovers about a third and
+a privileged one. A summary of the text that the model did not produce recovers about a half, 0.23 to 0.35 less
+(Amendment 5), so what predicts the change is how the original model treats the position, not the text alone. At the same sample size the current token recovers about a third and
 position in the row almost nothing; at 16,384 positions the original values also beat a few groups and a fixed rule per
 subcomponent. A tenth to a quarter of the switching remains unexplained, more of it later in training. A high switching share is not evidence of learned re-weighting
 on its own, since an update that learned nothing gave the same share.
@@ -252,13 +252,49 @@ from the original model, so a summary it did not produce is the test that would 
 context" from "similar text"; that is Amendment 5. The token rule left 29% of positions on the overall mean, so its
 deficit mixes too little information with too little coverage.
 
+## Amendment 5: does the model's view of the context matter, or only the text?
+
+*Plan: Amendment 7 of the plan. `experiments/regating_spread/amend5.py`, predictions filed 2026-10-26 19:06
+(`results/predictions_amend5.json`, sha256 `aa96a068…`) before the run; results `results/regating_spread_amend5.json`.
+RunPod H100, 80 s, $0.85.*
+
+Amendment 4's check pointed out that Γ's values and the attention inputs both come from the original model, so they
+cannot tell "positions the original model treats alike" from "positions with similar text". This run fits the same
+nearest rule, on the same 262,144 positions, on a summary of the text the model did not produce: each of the current
+and 15 preceding tokens, or 3, hashed with its offset to one of 4,096 signed coordinates, weighted towards recent
+tokens. As a positive control, the 4-token summary had to do at least as well as the current-token rule, which it did
+at every step.
+
+**Reading it.** The model's view matters. The text summaries recover 0.53, 0.54 and 0.50 of the switching with 16
+tokens, and 0.56, 0.52 and 0.49 with 4, at steps 10, 100 and 300. The original importance values recover 0.88, 0.77
+and 0.76, 0.23 to 0.35 more at every step. The text rules beat the current token, 0.33 to 0.42, so they carry real
+information, and about 69% of their neighbours hold the same token. So positions that look alike as text get partly
+alike changes, but positions the original model treats alike get much more alike ones.
+
+| step | nearest, original values | nearest, text of 16 tokens | nearest, text of 4 tokens | token rule (Amendment 4) |
+|---|---|---|---|---|
+| 10 | 0.881 | 0.534 | 0.563 | 0.416 |
+| 100 | 0.774 | 0.542 | 0.522 | 0.344 |
+| 300 | 0.761 | 0.503 | 0.491 | 0.334 |
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| A0 | the nearest rule on the original values reproduces Amendment 4 | within 0.02 at every step | within 0.005 | pass |
+| C_text | the 4-token text summary is at least as good as the token rule | ≥ token − 0.05 at every step | +0.15 to +0.18 | pass |
+| T1 | the text summary predicts the change worse than the original values | text16 ≤ g0 − 0.1 at step 300 | −0.26 | pass, as predicted |
+| T2 | more preceding text helps | text16 ≥ text4 at step 300 | +0.011 | pass, as predicted |
+
+By the filed decision tree, "T1 holds" reads: the original model's view of the context predicts the change better than
+the text, so the restatement "positions the original model treats alike get alike changes" is about the model, not the
+text. One hashing, one pair of windows and one decay were tried; a richer text summary might close part of the gap.
+
 ## What next
 
 1. **Done as Amendment 3:** with all 262,144 positions the rule reaches 0.76 to 0.89 at every step. Next on this: what
    the remaining tenth to quarter depends on, and whether the curve flattens with yet more positions.
-2. **Done as Amendment 4:** Γ's own input from the original model does as well as its values. Amendment 5 tries a summary
-   of the text the model did not produce. What the remaining tenth to quarter
-   depends on, neighbouring positions for example, is a new design and goes to the user through the pending card.
+2. **Done as Amendments 4 and 5:** Γ's own input from the original model does as well as its values, and a summary of
+   the text alone does a quarter worse. What the remaining tenth to quarter depends on, and a richer text summary as a
+   harder null, are new designs and go to the user through the pending card.
 3. **A fine-tune of a real behaviour that learns**, or the larger model's post-trained sibling, before any restatement
    is adopted. A pending-decision card in the log holds this choice.
 
@@ -310,7 +346,8 @@ cross-entropy 1.648 and 1.661, training loss without trend.
 ## Not run
 
 Seeds beyond 0, and any second set of held-out rows; more than 262,144 fitted positions; numbers of neighbours other
-than 8 and 32; groups and the line refitted on 262,144 positions; a summary of the text the model did not produce (Amendment 5); residual summaries other than the attention inputs; any distance but Euclidean; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA
+than 8 and 32; groups and the line refitted on 262,144 positions; text summaries other than one hashing with windows of 4 and 16 tokens; residual summaries other than the attention
+inputs; any distance but Euclidean; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA
 updates; a larger model.
 
 ## Provenance
@@ -322,3 +359,7 @@ updates; a larger model.
   4090 pod `01M5WMD4MVMXKVM315293SSZ3H`, 17:39–17:41, run 90 s, $0.12; GPU memory read 17.4 GB.
 - Figures: `experiments/regating_spread/figures/amend1/{arms,clusters}.png` and `figures/{arms,clusters}.png` for the
   code-like run, from `plot.py`.
+- Amendments 2 to 5: `results/regating_spread_amend{2,3,4,5}.json` (sha256 `b902b33e…`, `b095be7b…`, `1e543800…`,
+  `39983bc6…`), logs `results/large/amend{2,3,4,5}.log`; RunPod RTX 4090 (58 s, $0.09), H100 80GB HBM3 (85 s, $0.30),
+  H100 NVL (98 s, $0.44, after three refused starts of the HBM3), H100 80GB HBM3 (80 s, $0.85).
+- Figure `experiments/regating_spread/figures/sampling.png` from `plot_sampling.py`.
