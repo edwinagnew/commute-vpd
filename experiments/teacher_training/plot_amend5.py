@@ -116,14 +116,14 @@ def fig_cosines(res: Rec, pred: Rec, out: Path) -> None:
     ax.axvline(same, color="g", ls="--", lw=0.8)
     ax.axvline(many, color=INK, ls=":", lw=0.8)
     ax.text(same + 0.01, len(rows) - 0.4, f"filed 'same way' line {same}", fontsize=7, color="g", va="bottom")
-    ax.text(many - 0.01, len(rows) - 0.4, f"below {many}: one of many placements", fontsize=7, ha="right", va="bottom")
+    ax.text(many - 0.01, len(rows) - 0.4, f"below {many}: the filed rule's \"one of many\"", fontsize=7, ha="right", va="bottom")
     ax.set_yticks(range(len(rows)), [r[0] for r in rows], fontsize=7.5)
     ax.invert_yaxis()
     ax.set_xlim(0, 1.05)
     ax.set_ylim(len(rows) - 0.3, -0.9)
     ax.set_xlabel("cosine between weight changes, all 24 matrices together")
     ax.set_title("Does a second batch order give the same copy?\nOn task text nearly; on Pile text not: the two "
-                 "Pile-text copies share\nthe behaviour but point 65 degrees apart", fontsize=9, loc="left")
+                 "Pile-text copies reach\nthe same target probability, but their total weight changes point 65 degrees apart", fontsize=9, loc="left")
     ax.grid(True, axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
     for s in ("top", "right"):

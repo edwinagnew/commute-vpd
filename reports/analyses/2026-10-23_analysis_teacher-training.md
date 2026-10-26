@@ -15,8 +15,8 @@ rank-8 LoRA is copied as well from the task's text, but only partly from ordinar
 second batch order moves a copy's end state by at most 0.03, which makes Amendment 2's falls real, and that every copy
 stays at the unchanged model's level under an adversary eight times longer while five of the six fine-tunes do not.
 Amendment 5 adds that the two adversaries' six-fold disagreement on one fine-tune comes from their random starting
-points, so a one-start verdict on a fine-tune can be lenient, and that two Pile-text copies at two batch orders behave
-alike but point well apart.
+points, so a one-start verdict on a fine-tune can be lenient, and that two Pile-text copies at two batch orders reach
+the same target probability but point well apart.
 
 > **Something unexpected happened.** We predicted that a student trained only on ordinary Pile text would not learn
 > the emoticon behaviour, because its trigger is so rare there. It learnt it anyway: the held-out probability of the
@@ -1286,6 +1286,9 @@ task-text move in P(target) is 0.00501, which "at most 0.005" rounds down.
 
 ## Amendment 5 (2026-10-26): why the two adversaries disagree, and is a copy unique?
 
+*Independently checked 2026-10-26 (`reports/reviews/2026-10-26_review_teacher-training-amend5.md`); corrections
+applied.*
+
 *Design and filed predictions: `reports/plans/2026-10-23_plan_teacher-training.md` → "Amendment 5";
 `experiments/teacher_training/results/predictions_amend5.json`, filed 20:03:20, unedited. Every number below is read
 from `results/teacher_training_amend5.json` and its log `results/large/run_amend5.log`; the scoring is the run's own,
@@ -1296,16 +1299,17 @@ changing one difference between them at a time, and we retrained two copies of t
 order. The whole gap followed the adversary's random starting point, while the rows, the arithmetic precision and an
 eight times longer search changed little, and the unchanged model read nearly the same from either start. For
 `GOALS.md` this means a faithfulness verdict from one adversary start is a lower bound on the worst case and may be
-lenient, and that a copy trained on ordinary text is one of several weight changes with the same behaviour rather than
-a unique map.
+lenient, and that two copies trained on ordinary text can reach the same target probability by quite different weight
+changes.
 
 ### The answer
 
 The two adversaries disagree because they start from different random points. Rows, readout precision and step budget
 change little. On the r1 SGD fine-tune left in Δ, the budget code reads about 9 times the unchanged model from its own
 start. Started where the harness starts, it reads about 1.7, as the harness does. The unchanged model reads nearly the
-same from either start. So a one-start verdict on a fine-tune can understate the worst case several-fold.
-Separately, two Pile-text copies at two batch orders behave alike, but their weight changes point well apart.
+same from either start. With two starts we cannot say which reading is typical, but a one-start verdict on a fine-tune
+can understate the worst case several-fold. Separately, two Pile-text copies with the same target probability have
+weight changes that point well apart.
 
 ### What we were trying to test
 
@@ -1366,7 +1370,7 @@ ratio, before any variant was read.
   $W_0$ within 0.04 nats in Amendment 4.
 - **The two copies at two batch orders point the same way**, cosine at least 0.8 for both arms, at medium confidence.
   Their target probabilities moved by under 0.005 in Amendment 4, though nothing had read the weights. Below 0.5 on
-  either arm, by the filed rule, a copy is one of many weight changes with the same behaviour.
+  either arm, the filed rule reads "one of many": a copy is one of many weight changes that behave alike.
 
 ### What we observed
 
@@ -1374,7 +1378,7 @@ ratio, before any variant was read.
 
 ![amend5](../../experiments/teacher_training/figures/amend5.png)
 
-**Reading it.** The start carries all of it. The figure plots the KL each reading reaches on one log axis, hollow at
+**Reading it.** On these two draws, the start carries all of it. The figure plots the KL each reading reaches on one log axis, hollow at
 the unchanged model and filled at the teacher, grouped by the random start the search took. From the harness's start,
 every reading puts the teacher at 1.08 to 1.27 nats, 1.58 to 1.67 times the unchanged model. That holds whichever code
 runs the search, which rows it sees, which readout is used and how many steps it takes. From the budget code's start,
@@ -1411,7 +1415,8 @@ blocks; its ratio, 1.588, is that mean over $W_0$'s mean.
 points sit in a narrow band. At 20 steps on rows 1 to 128, $W_0$ reads 0.663 to 0.679 nats from either start, a
 spread of 2.4%. At the teacher the two starts differ by a factor of 5.4. Seven of the eight filed comparisons at $W_0$ agree
 within 4.3%. The one miss is at 160 steps, where the harness's start reads 0.786 nats and the budget code's 0.708.
-That is 11% apart, against the filed 10%. Those two readings differ only in the start. Amendment 4 had measured the
+That is 11% apart, against the filed 10%. Those two readings differ in the start, and in code and readout
+differences that the identity and readout checks put at 4% or less. Amendment 4 had measured the
 budget code's spread between two adversary seeds at 160 steps as 23%, so this miss sits inside known noise. At the
 teacher the same pair differs by a factor of 5.8.
 
@@ -1421,14 +1426,20 @@ teacher the same pair differs by a factor of 5.8.
 
 **Reading it.** Nearly, for the task-text copy; not for the Pile-text copy. The figure plots each cosine as a
 lollipop against the filed lines at 0.8 and 0.5. The two task-text copies have a cosine of 0.91, about 24 degrees
-apart. The two Pile-text copies have a cosine of 0.43, about 65 degrees apart, below the filed 0.5. By the filed rule
-a Pile-text copy is one of many weight changes with the same behaviour. Their behaviour is the same: held-out target
-probability 0.974 at both batch orders, and 0.996 for both task-text copies. Each Pile-text copy lines up with
-$\delta W$ to the same degree, 0.17 and 0.16, and each task-text copy 0.26 and 0.25. The task-text and Pile-text
-copies at batch order 0 have a cosine of 0.27. A random direction reads at most 0.0002 against any of them. The
-caveat: the cosine is on the total weight change, so two copies that spread the same change differently over the
-subcomponents would read 1. That blind spot can hide a difference, not create one, so 0.43 is an upper bound on how
-alike the two Pile-text placements are.
+apart. The two Pile-text copies have a cosine of 0.43, about 65 degrees apart, below the filed 0.5, which the filed
+rule reads as "one of many". Their target probability is the same: 0.974 at both batch orders, and 0.996 for both
+task-text copies. Nothing else about the copies' behaviour was read. Each Pile-text copy lines up with $\delta W$ to
+the same degree, 0.17 and 0.16, and each task-text copy 0.26 and 0.25. The task-text and Pile-text copies at batch
+order 0 have a cosine of 0.27. A random direction reads at most 0.0002 against any of them.
+
+The cosine has two blind spots, and they pull in opposite directions. It cannot see two copies that spread one total
+change differently over the subcomponents, which hides differences. It also weighs directions that change no
+behaviour the same as directions that carry it. The Pile-text copies train at batch 8, against 32 for the task-text
+copies, so seed-specific drift with no effect on behaviour could lower their cosine on its own. So 0.43 bounds how
+alike the two total weight changes are, not how alike the placements of the behaviour are. One untested fit is
+consistent with such drift. If each copy is a shared part plus independent seed noise, the Pile-text copies' shared
+part is about 0.65 of each copy's length. That shared part would line up with $\delta W$ at about 0.25, as the
+task-text copies' shared part does at about 0.27.
 
 | copy | batch order | P(target) at 100 | at 1000 | cosine with $\delta W$ |
 |---|---|---|---|---|
@@ -1452,11 +1463,20 @@ fine-tune left in Δ, one start finds masks that raise the KL to 6.1 nats and th
 longer search did not close that gap. Both are valid searches, so each reading is only a lower bound on the worst
 masks. A verdict from one start can therefore be lenient: the higher reading, 9.2, is far above every line, where the
 harness read it inconclusive at 1.59. The unchanged model barely noticed the start, so the
-sensitivity belongs to this state, not to the search alone. Which other verdicts it touches was not
-tested here. In E37 the two starts agreed on a broad fine-tune's do-nothing state, 3.91 against 3.92. The copies in
-Amendment 4 passed from both starts. For the larger model, a Pile-text copy is one of several weight changes
-with the same behaviour. Any claim about where such a copy puts the update needs two batch orders behind it. The
-task-text copy is close to unique.
+sensitivity belongs to this state, not to the search alone.
+
+Amendment 4's data already bear on other states. It read all six of its fine-tunes left in Δ through the harness and
+through the budget code, so from both starts. The budget code's start read higher on five and lower on none. The r0
+SGD fine-tune, which the harness passed at 1.12, read 2.09 there, above the budget code's pass line of 1.241. The r0
+Adam fine-tune, also passed, read 1.35 and 1.68. Two caveats: those readings also differ in rows, which moved the ratio
+by 10% here, and all six use the same pair of draws. So they cannot tell a weak harness draw from a wide spread over
+starts. Still, they make "one-start verdicts may be lenient" hold on more than one state, and it reaches a pass. In
+E37 the two starts agreed on a broad fine-tune's do-nothing state, 3.91 against 3.92, and Amendment 4's copies passed
+from both.
+
+For the larger model: two Pile-text copies with the same target probability have total weight changes at cosine 0.43,
+and whether that difference carries behaviour is untested. Any claim about where such a copy puts the update needs two
+batch orders behind it. The task-text copy is close to unique.
 
 ### How compelling is the evidence
 
@@ -1469,7 +1489,10 @@ task-text copy is close to unique.
 - **One teacher and one task for the copies**, one pair of batch orders per arm. E37's lowercase copies, trained on
   the teacher's own 2,400 rows rather than ordinary Pile text, read 0.93 between batch orders.
 - **What the cosine is blind to.** It cannot see two copies that spread the same total change differently over the
-  subcomponents, so it can only overstate how alike two copies are.
+  subcomponents, which overstates how alike they are. It weighs directions with no effect on behaviour like those
+  that carry it, which can understate how alike the behaviour's placements are.
+- **"Same behaviour" is one number.** Only held-out target probability was read on the copies; damage elsewhere and
+  the KL to the teacher on Pile were not.
 
 ### Surprises
 
@@ -1478,7 +1501,8 @@ task-text copy is close to unique.
   many"; the task-text pair read 0.91. Their target probabilities agree to 0.0004, and each lines up with the
   fine-tune equally. Why the Pile-text copies differ was not tested.
 - **Missed narrowly: at $W_0$ the harness at 160 steps read 11% above the budget code at 160 steps**, against the filed
-  10%. The two differ only in the start; Amendment 4's seed spread at 160 steps was 23%.
+  10%. They differ in the start; their code and readout differences read 4% or less. Amendment 4's seed spread at
+  160 steps was 23%.
 - **The random start, not the rows or the readout, carries a six-fold gap.** Amendment 4's report had suspected the
   rows or the readout. The same search reads one state at 1.6 or 9.2, depending on the random numbers each matrix
   starts from. A longer search did not bring the lower start up.
@@ -1492,8 +1516,9 @@ task-text copy is close to unique.
    if they move, they are re-read before the larger-model run uses the harness.
 2. **How many starts are needed.** Read $W_0$ and the r1 SGD teacher from about eight starts, to see whether 1.6 or 9.2
    is the typical reading. A wide spread at the teacher and a narrow one at $W_0$ would set the number of restarts.
-3. **The larger-model write-up states that a Pile-text copy is not unique.** A third batch order, or a per-matrix
-   cosine, would say whether the two copies differ everywhere or in a few matrices.
+3. **Whether the Pile-text copies' difference carries behaviour.** Per-matrix cosines and norms on the saved offsets,
+   on CPU, would say whether the two copies differ everywhere or in a few matrices. Until then the larger-model
+   write-up says two such copies can differ widely in their total weight change.
 
 ### Scorecard, Amendment 5
 
@@ -1502,7 +1527,7 @@ task-text copy is close to unique.
 | C1 | the unchanged model reads its known values | `faith_score.w0_check`, floor 0.075 within 5% | 0.0748 | pass |
 | G1 | the regenerated teacher reproduces E34 and Amendment 4 | P within 0.01 of 0.983, size within 0.002 of 0.0287, harness ratio within 0.01 of 1.588, budget ratio within 5% of 9.24 | 0.9834, 0.02875, 1.5884, 9.240 | pass |
 | P1 | the rows do not carry the gap | on the teacher, rows256 within 25% of budget and harness_b0 within 25% of harness | 10.19 against 9.24, +10%; 1.595 against 1.588, +0.4% | **holds** |
-| P2 | one difference in the code path carries it | budget.bf16 or start within 25% of the harness's or the budget's ratio | start 1.667, 5% from the harness's 1.588; budget.bf16 9.219, 0.2% from the budget's 9.240; both implicate the start | **holds** |
+| P2 | one difference in the code path carries it | budget.bf16 or start within 25% of the harness's or the budget's ratio | start 1.667, 5% from the harness's 1.588, points at the start; budget.bf16 9.219, 0.2% from the budget's 9.240, rules out the readout but, by the filed rule, could not have failed | **holds** on the start reading |
 | P3 | at $W_0$ every variant within 10% of its default | eight pairs, relative | seven within 4.3%; harness160_b0 0.786 against budget160 0.708, +11.1% | **fails**, narrowly |
 | P4 | the copies at two batch orders point the same way | cosine ≥ 0.8 on both arms; < 0.5 on either reads "one of many" | task text 0.913, Pile text 0.429 | **fails**: "one of many" |
 
@@ -1526,10 +1551,10 @@ the JSON.
 - More than two random starts on any state; adversary seeds past 0; other adversary families.
 - The harness at 160 steps on block 2; the budget code from the harness's start at 160 steps; the harness from the
   budget code's start, since the authors' function takes no initial sources.
-- Any other teacher or state under both starts, including the r0 teachers the harness passed and Amendment 4's budget
-  code read at 1.7 to 2.6.
+- Any other state from both starts on the same rows; Amendment 4 read its six fine-tunes from both starts, but on
+  different rows and with one pair of draws.
 - Harness or budget readings of the four copies; damage elsewhere and teacher gap of the copies.
-- A third batch order; per-matrix cosines; the Pile-text copies' cosine at step 100.
+- A third batch order; per-matrix cosines and norms; the Pile-text copies' cosine at step 100.
 
 ### Provenance, Amendment 5
 
