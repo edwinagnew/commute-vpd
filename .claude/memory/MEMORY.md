@@ -1,0 +1,52 @@
+- [Inherits feature_wars conventions](project-inherits-feature-wars-conventions.md) — started 2026-10-14; full memory set lives in the feature_wars project dir
+- [Design against goals](feedback-design-against-goals.md) — /design check always written; since 2026-10-21 no sign-off inside approved classes or a confirmed decision tree
+- [Concise design checks](feedback-concise-design-check.md) — a line or two per question
+- [Resolve, don't complicate](feedback-resolve-dont-complicate.md) — one-sentence claim, the null, 2–3 separating predictions; apparatus in reports/
+- [Pre-registration scoring rigour](feedback-prereg-scoring-rigor.md) — predictions.json fixes rules and thresholds; don't assert causes of residuals
+- [Never refile predictions](feedback-never-refile-predictions.md) — a filed prediction stands; a miss gets its cause worked out, never an offer to flip it
+- [Flag qualitative surprises loudly](feedback-flag-qualitative-surprises-loudly.md) — reversal of a filed prediction gets an explicit announcement and a check-in
+- [Big runs on GPU](feedback-big-runs-on-gpu.md) — anything training more than one benchmark net goes to cluster/RunPod
+- [Compute budget: $40 per session](feedback-compute-budget.md) — REMOTE_KERNELS_BUDGET, confirmed 2026-10-21; no per-run sign-off below it, ~15% headroom, confirm above
+- [Never touch credential files](feedback-never-touch-credential-files.md) — name the missing variable, let the user fix the shell
+- [MATS cluster](project-mats-cluster.md) — ssh e.agnew@185.141.218.207, account c11; only for runs ≤ 30 min since 2026-10-20
+- [One subagent per run](feedback-one-subagent-per-pod.md) — every pod/cluster run goes to a pod-runner agent (Opus) via /pod-runner, not a fork; smoke + scored = one agent; waits run on the controller under timeout (2026-10-20)
+- [Pod progress visible](feedback-pod-progress-visible.md) — tee stage logs to the RunPod console; log reads every 1-2 min with a 3-min stall rule and a set-up deadline, never blind sleep loops
+- [Define terms when reporting](feedback-define-terms-when-reporting.md) — VPD terms only, define coined ones; per measurement: quantity, held fixed, varied; say which claim each result bears on
+- [Verify before announcing a cause](feedback-verify-before-announcing-a-cause.md) — re-read edited measurement code, test the new path ran; no root cause until the number moves
+- [Short chat replies](feedback-short-chat-replies.md) — substance in reports/; chat gets a few lines and the one decision
+- [Check metric power before claiming](feedback-check-metric-power-before-claiming.md) — "blind to" line + positive control per metric; "Not run" list per report; save states; grep code before saying what was run
+- [Better code, not more checks](feedback-better-code-not-more-checks.md) — simplify the structure that allowed a bug; no extra layers of tests or rules
+- [Say when to start a new session](feedback-tell-user-when-to-start-new-session.md) — one line at the end of a reply, with the file to hand over
+- [Avoid over-using "gating"](feedback-avoid-overusing-gating.md) — say what Γ does to a subcomponent in plain words; keep r as a defined short name
+- [Describe methods by their filed definition](feedback-describe-methods-by-their-filed-definition.md) — reuse GOALS/artifact wording for pull-back, lift; paraphrases read as curveballs
+- [Success criterion: reading A](project-success-criterion-reading-a.md) — since 2026-10-19 the weak version as written; route split is mechanism, not the pass criterion
+- [Write-ups explain, not record](feedback-writeups-explain-not-record.md) — notebooks were unreadable; use /writeup: answer first, story, one figure per claim, about two numbers per sentence as a guideline, check.py
+- [LoRA pull-back wanted](project-lora-pullback-wanted.md) — the user's "pull-back" = adjoint split, "lift" = least squares; the LoRA split study built 2026-10-20 as experiments/lora_split (plan reports/2026-10-20_plan_lora-split.md)
+- [Research log artifact](reference-research-log-artifact.md) — "Update Decomposition" log, four pages built from docs/research_log/parts/ since 2026-10-22; republish to its URL
+- [Larger model next; title "Update Decomposition"](project-larger-model-next.md) — 67M is a temporary testbed; write-ups titled Update Decomposition, not Commute
+- [Motivation: re-weighting hypothesis](project-motivation-reweighting-hypothesis.md) — open write-ups with the re-weighting hypothesis and post-training monitoring (theory/TOC2 -EA.pdf), not the testbed model
+- [User definitions override files](feedback-user-definitions-override-files.md) — "pull-back" = split a finished update over subcomponents; file definitions drifted and overrode the user for days; restate requests as operations and confirm
+- [Update the research log after every experiment](feedback-update-research-log-each-experiment.md) — batched since 2026-10-21: queue in docs/research_log/PENDING.md, flush before session end after the completeness check
+- [Same table for every update type](feedback-same-table-for-every-update-type.md) — less ad hoc: LoRA, fine-tune and null through the same split measurements on the same task/steps/card (2026-10-20)
+- [Results fast: RunPod default](feedback-results-fast-runpod-default.md) — ≤ 30 min → cluster debug (10-min cap); longer → RunPod 4090+/H100, never small cards (2026-10-20)
+- [Γ refit adversary scope](project-gamma-refit-ppgd-scope.md) — one persistent-PGD state per micro-batch slot; ~15 GB of sources at batch 64, H100 only
+- [Cache as you go](feedback-cache-as-you-go.md) — long runs dump after every checkpoint and resume; small overrun OK when the user says so (2026-10-20)
+- [E15 Γ refit status](project-gamma-refit-e15-status.md) — ONGOING (reopened by user 2026-10-21): two protocols took W₀ off the floor; the refit's attacker (0.42 nats) is weaker than the harness's (0.70); next: cancellation tests, re-gating line
+- [Plots over tables](feedback-plots-over-tables.md) — lead write-ups with comparison figures; keep tables as reference (2026-10-21)
+- [Research log style](feedback-research-log-style.md) — headlines that name the figure; define every number; uninformative runs out of section 5; ongoing cards short
+- [Don't block on unimportant checks](feedback-dont-block-on-unimportant-checks.md) — a failed gate no core prediction reads: amend and rerun; check in if it might bear on the result (2026-10-21)
+- [Scope a grid null](feedback-scope-a-grid-null.md) — report a grid failure with its range, never "no value works"; E4 SGD null steered six days of Adam-only runs (2026-10-21)
+- [Concurrent sessions share the tree](project-concurrent-sessions-share-the-tree.md) — re-read shared files right before editing; another session flushed the log mid-session (2026-10-21)
+- [No local model smoke](feedback-no-local-model-smoke.md) — writer agents never load the model locally; parallel CPU smokes OOM-killed the laptop (2026-10-21)
+- [Scored run is its own smoke](feedback-scored-run-is-its-own-smoke.md) — no routine smokes since 2026-10-21; W₀ control first is the smoke; separate smoke only for expensive failures
+- [Mechanism reading = hypothesis](project-mechanism-reading-hypothesis.md) — now "the fixed-shift hypothesis" (was H, H′), working hypothesis not finding; test aggressively
+- [No scattered SGD caveats in the log](feedback-log-no-scattered-sgd-caveats.md) — fold rescoped results into each card; name the SGD re-runs at most twice in the whole log (2026-10-21/22)
+- [Plain approval requests](feedback-plain-approval-requests.md) — open with observation, technique with symbols named, exact question (2026-10-22)
+- [Pending decisions live in the log](feedback-pending-decisions-in-log.md) — section 3 cards, each a coherent plain question with evidence and options; removed once decided (2026-10-22)
+- [Rename everywhere](feedback-rename-everywhere.md) — a renamed term changes in every living file at once, old name into check.py RETIRED; H′ → fixed-shift hypothesis (2026-10-22)
+- [Log is high level](feedback-log-high-level.md) — sections above the cards say what was learned or decided, plainly; timeline = headline + 2-4 sentences per day; rewrite Q/Result boxes, never append (user, repeated 2026-10-22, 2026-10-26)
+- [User reads log and chat only](feedback-user-reads-log-and-chat-only.md) — never assume a report was read; state-of-play line + three plain sentences per request (2026-10-22)
+- [Two parallel lines, no main line](project-two-parallel-lines.md) — since 2026-10-22 re-gating and commute run in parallel; class 4 = either line's next steps
+- [Raise decisions often](feedback-raise-decisions-often.md) — user values pending-decision cards for understanding; raise scope/reading choices even if handed back (2026-10-22)
+- [Never leave a job unwatched](feedback-never-leave-a-job-unwatched.md) — a runner hand-back with a live job means spawn a fresh watcher at once, not a cancel-or-wait choice (2026-10-22)
+- [Teacher training (E34)](project-teacher-training.md) — works on all six teachers incl. Pile-only; Amendments 2-4 done 2026-10-26 (loophole rows lower Pile-only copies a little, LoRA teacher copied from task text only, seed 1 + 160-step adversary all hold); next the larger model
