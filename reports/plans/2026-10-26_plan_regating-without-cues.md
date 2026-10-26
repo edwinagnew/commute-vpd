@@ -231,7 +231,9 @@ Amendment 4 found Γ's original values predicted the change no better than Γ's 
 check pointed out that both come from the original model, so the test that separates "how the original model treats a
 position" from "similar text gets similar changes" is the same nearest rule on a summary of the text the model did not
 produce. `experiments/regating_spread/amend5.py` regenerates the lowercase fine-tune and fits, on all 262,144 positions,
-the nearest rule on Γ's original values (gate: reproduces Amendment 4 within 0.02) and on hashed (token, offset) features
+the nearest rule on Γ's original values (gate: reproduces Amendment 4 within 0.02) and on hashed (token, offset) features,
+with bucket and sign drawn per (token, offset) from a seeded generator, as a positive control required to do at least
+as well as Amendment 4's token rule with 4 tokens, and reporting how often its neighbours share the current token;
 of the current and 15, or 3, preceding tokens. Predictions filed by `amend5.py --predictions` before the run: T1, the
 16-token text summary at least 0.1 below the original values at step 300 (medium-low); T2, 16 tokens at least as good as
 4 (medium). Class 1. An H100, about $0.4.
