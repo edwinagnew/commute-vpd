@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Wait for Slurm jobs to finish, then print how each ended and the last lines of its log (from mats-fleet's
+# ci/wait-job). Run it in the background (Bash with run_in_background): you are notified when it exits, and the wait
+# costs no turns, where polling squeue costs a full turn each time.
+#   fleet/wait-job JOBID [JOBID ...]
+# sacct does not work from the dev node, so the end state comes from scontrol, which forgets a job a few minutes
+# after it ends: the check runs every 30 seconds to catch it. Exits 0 only if every job COMPLETED with exit code 0.
+set -uo pipefail
+[[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
+(( $# > 0 )) || { echo "usage: fleet/wait-job JOBID [JOBID ...]"; exit 2; }
+declare -A state exitc log
+pending=("$@")
+while (( ${#pending[@]} > 0 )); do
+  still=()
+  for j in "${pending[@]}"; do
+    info=$(scontrol show job "$j" 2>/dev/null | tr ' ' '\n')
+    s=$(sed -n 's/^JobState=//p' <<< "$info")
+    [[ -n "$s" ]] && { state[$j]=$s; exitc[$j]=$(sed -n 's/^ExitCode=//p' <<< "$info"); log[$j]=$(sed -n 's/^StdOut=//p' <<< "$info"); }
+    case "$s" in PENDING|RUNNING|CONFIGURING|COMPLETING|SUSPENDED|REQUEUED|RESIZING) still+=("$j") ;; esac
+  done
+  pending=("${still[@]+"${still[@]}"}")
+  (( ${#pending[@]} > 0 )) && sleep 30
+done
+failed=0
+for j in "$@"; do
+  s=${state[$j]:-UNKNOWN}
+  echo "job $j: ${s}, exit code ${exitc[$j]:-?}"
+  [[ $s == COMPLETED && ${exitc[$j]:-} == 0:0 ]] || failed=$((failed + 1))
+  if [[ -n "${log[$j]:-}" && -f "${log[$j]}" ]]; then
+    echo "  last lines of ${log[$j]}:"; tail -n 8 "${log[$j]}" | cut -c1-160 | sed 's/^/  /'
+  fi
+done
+(( $# > 1 )) && echo "$# jobs: $(( $# - failed )) completed, $failed not"
+(( failed == 0 ))

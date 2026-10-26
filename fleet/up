@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Start the agents: one Claude session per role, in a window of the tmux session FLEET_SESSION, each in its own clone
+# FLEET_AGENTS/<role>/ (fleet/fleet.conf). Each runs /loop in auto permission mode and is restarted a minute after it
+# exits; its state is in the repository and its handoff note, not in the session. Ported from mats-fleet's ci/fleet-up.
+#   fleet/up [ROLE ...]   start the given roles (default: the lines of FLEET_DATA/roster, else lead); windows already
+#                         running are left alone. A numbered role (worker-2) uses its base role's brief.
+#   fleet/up status       list the windows
+#   fleet/up stop         end every agent
+set -euo pipefail
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
+export PATH="$HOME/.local/bin:/usr/bin:$PATH"   # cron's PATH has neither claude nor uv
+# Each agent and everything it starts runs in its own cgroup scope capped at MEM_MAX, and all agents share the slice
+# SLICE capped at TOTAL_MEM_MAX: the dev node (62G) is shared with mats-fleet's ~13 agents. cron sets no
+# XDG_RUNTIME_DIR, without which systemd-run --user cannot reach the user's manager (mats-fleet, 21 October 2026).
+MEM_MAX=8G SLICE=commute.slice TOTAL_MEM_MAX=16G
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+if systemd-run --user --scope --quiet true 2>/dev/null \
+   && systemctl --user set-property --runtime "$SLICE" MemoryMax="$TOTAL_MEM_MAX" 2>/dev/null; then
+  scope="systemd-run --user --scope --quiet --slice=$SLICE -p MemoryMax=$MEM_MAX -- "
+else
+  echo "up: WARNING: systemd-run --user is unavailable, so agents start without the memory caps" >&2
+  scope=""
+fi
+session=$FLEET_SESSION
+case "${1:-start}" in
+  stop) tmux kill-session -t "$session" 2>/dev/null && echo "up: agents stopped" || echo "up: not running"; exit 0 ;;
+  status) tmux list-windows -t "$session" -F '#W' 2>/dev/null || echo "up: not running"; exit 0 ;;
+  start) shift || true ;;
+esac
+roles=(lead)
+[[ -s "$FLEET_DATA/roster" ]] && mapfile -t roles < <(grep -v '^\s*\(#\|$\)' "$FLEET_DATA/roster")
+[[ $# -gt 0 ]] && roles=("$@")
+[[ -r "$FLEET_SECRETS" ]] || { echo "up: $FLEET_SECRETS is missing" >&2; exit 1; }
+remote=$(git -C "$(dirname "$(readlink -f "$0")")/.." remote get-url origin)
+mkdir -p "$FLEET_AGENTS"
+
+clone() {
+  local d="$FLEET_AGENTS/$1"
+  [[ -d "$d/.git" ]] || git clone -q "$remote" "$d"
+  # Merge, never rebase (plan section 3); --autostash keeps the uncommitted work of an agent stopped mid-task.
+  git -C "$d" pull -q --no-rebase --autostash 2>/dev/null || echo "up: could not update $1; starting it on its current state"
+  git -C "$d" config core.hooksPath .githooks
+  # Memory lives in the repository (plan section 4): Claude Code's memory folder for this clone points at it.
+  local key mem
+  key=$(tr '/.' '--' <<< "$d")
+  mem="$HOME/.claude/projects/$key/memory"
+  if [[ -d "$d/.claude/memory" && ! -L "$mem" ]]; then
+    mkdir -p "$(dirname "$mem")"
+    [[ -e "$mem" ]] && mv "$mem" "$mem.old-$(date +%s)"
+    ln -s "$d/.claude/memory" "$mem"
+  fi
+}
+
+for role in "${roles[@]}"; do
+  if tmux list-windows -t "$session" -F '#W' 2>/dev/null | grep -qx "$role"; then
+    echo "up: $role already running"; continue
+  fi
+  clone "$role"
+  file=${role%-[0-9]*}
+  [[ -f "$FLEET_AGENTS/$role/fleet/roles/$file.md" ]] || { echo "up: no fleet/roles/$file.md for $role; skipped"; continue; }
+  effort=high; [[ $role == lead ]] && effort=xhigh
+  mkdir -p "$FLEET_DATA/agents/$role"
+  prompt="/loop You are the $role agent working on commute. Start each iteration with fleet/iteration-start $role: it pulls, says whether a restart was requested (if so, follow fleet/roles/$file.md, Restarts, first), and shows your handoff note, your live Slurm jobs and the research-log queue. Read fleet/roles/$file.md once per session and again after a compaction. Then do the next item, commit, and push (git pull --no-rebase, then git push). End every iteration by rewriting your handoff note (fleet/handoff $role). While waiting on Slurm jobs run fleet/wait-job JOBID... in the background; wake-ups at least 20 minutes apart while waiting, 60 minutes when idle."
+  # The keys reach this window's command only: never .bashrc, never tmux's global environment.
+  # Scratchpads on /ephemeral (fleet/fleet.sh), recreated after a reboot.
+  tmp=""; [[ -n "${CLAUDE_CODE_TMPDIR:-}" ]] && tmp="mkdir -p $(printf %q "$CLAUDE_CODE_TMPDIR"); export CLAUDE_CODE_TMPDIR=$(printf %q "$CLAUDE_CODE_TMPDIR"); "
+  cmd="set -a; source $(printf %q "$FLEET_SECRETS"); set +a; while :; do ${tmp}${scope}claude --permission-mode auto --model 'opus[1m]' --effort $effort -n $FLEET_PREFIX-$role $(printf %q "$prompt"); echo 'restarting in 60s'; sleep 60; done"
+  if tmux has-session -t "$session" 2>/dev/null; then
+    tmux new-window -d -t "$session" -n "$role" -c "$FLEET_AGENTS/$role" "$cmd"
+  else
+    tmux new-session -d -s "$session" -n "$role" -c "$FLEET_AGENTS/$role" "$cmd"
+  fi
+  echo "up: started $role at effort $effort"
+  # A clone Claude Code has not seen waits at its folder trust prompt until someone answers it.
+  jq -e --arg p "$FLEET_AGENTS/$role" '.projects[$p].hasTrustDialogAccepted' "$HOME/.claude.json" >/dev/null 2>&1 \
+    || echo "up: $role's clone is not trusted yet; answer the trust prompt in its window (tmux attach -t $session)"
+done
