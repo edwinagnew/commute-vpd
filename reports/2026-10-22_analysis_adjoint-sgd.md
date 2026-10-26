@@ -519,3 +519,115 @@ passes at steps 100 and 1000; at step 10 r1_t534_v369 at 0.01 fails and two more
 - Code: `run.py amend2 <cell>` and its merge, calling E31's `arm()` unchanged; `plot.py` → `fig_size` now draws both seeds.
 - Files: `results/adjoint_sgd_amend2_{r1_01,r1_03,r0_01,r0_03,emo_03}.json`, merged `results/adjoint_sgd_amend2.json`
   (sha256 32e46e20…); logs `results/large/full_amend2_{r1_01,r1_03,r0_01,r0_03,emo_03}.log`.
+
+## Amendment 3: does fitting the scale c matter? (agent, 2026-10-26)
+
+### The answer
+
+Yes, but not in the way we expected. The plain adjoint split, with no fitted scale, keeps the whole behaviour on every
+emoticon fine-tune where the scaled one loses most of it. It pays for that with off-target damage: one and a half to
+thirty times the fine-tune's own, and for the largest update a decomposition that fails the adversarial check badly.
+So the fitted scale trades behaviour for harmlessness. It is not a small correction, and neither version is a simple
+map that both keeps the behaviour and leaves the rest of the model alone.
+
+### What we were trying to test
+
+The adjoint split moves each subcomponent's read and write vectors along the update, $dU = \delta W V$, $dV = \delta W^\top U$,
+with Δ fixed. The weights then change by $K(\delta W) = UU^\top\delta W + \delta W VV^\top$, which is not δW and is usually
+larger. Every adjoint state so far multiplied each matrix's move by a number c fitted on the task's inputs so that $cK(\delta W)$
+matches δW as closely as possible (the scaled adjoint split). The plain move (c = 1, the unscaled adjoint split) had never been
+scored. We reran E31's three emoticon seed-0 fine-tunes: plain SGD at 0.01, a small Adam update (3e-6) and a large one (3e-5).
+At steps 10, 100 and 1,000 we placed each update both ways and read three things:
+- **keep:** the state's held-out probability of the target over the fine-tune's own (1 for do-nothing);
+- **KL elsewhere:** the KL from the original model to the state's model at held-out positions other than the trigger.
+  This is the fine-tune's own off-target readout, so the fine-tune itself is the reference on the same axis;
+- **the adversarial ratio:** a 20-step attack on the subcomponent masks on Pile text, over the same at the original model.
+
+Control first, in every job: the original model at its known values, then the step-10 scaled state against E31's row. All
+three passed: adjoint P(target) within 0.002, the reproduced share within 0.0002, and the KL readout on the fine-tune equal to
+its own `kl_other`.
+
+### What we expected, and why
+
+Fitted c is mostly below 1 (median 0.2 to 0.6 per matrix), so the plain move is 1.2 to 2.8 times the fitted one in a typical
+matrix and up to 18 times in the worst. We filed (medium-high confidence) that it would cost at least twice the scaled state's
+off-target KL at every state. With low confidence we filed that it would keep as much behaviour or more, because K never points
+against δW, so a bigger step goes further along the update's direction. With low confidence we also filed that only the large
+Adam update might fail the adversary. The user expected the plain split to do poorly overall.
+
+### What we observed
+
+![scaled](../experiments/adjoint_sgd/figures/scaled.png)
+
+**Reading it.** The plain split keeps all of the behaviour, while the scaled split loses most of it as training goes on (left).
+The dashed lines sit at 1.00 to 1.03 in eight of nine states, against the solid lines' 0.10 to 0.93; only the large Adam update
+at step 1,000 drops to 0.31, and the scaled split there keeps 0.10. Off target (middle), every plain state costs more than its
+scaled twin, 2.5 to 24 times. Every plain state also costs more than the fine-tune itself (dotted): 1.3 to 2.2 times for SGD,
+3.5 to 16 times for small Adam, 3 to 32 times for large Adam. The scaled states stay below the fine-tune's own cost except large
+Adam at step 1,000. On the adversarial check (right), the SGD and small-Adam plain states pass (at most 1.38, against a pass line
+of 1.40). The large-Adam plain states fail at every step: 2.4, 2.3 and 19.3, with KL elsewhere reaching 1.75 nats at step 1,000.
+Δ's share stays at most 1.2e-4 in every state.
+
+| fine-tune | step | keep scaled | keep plain | KL elsewhere scaled | plain | fine-tune | adversarial scaled | plain |
+|---|---|---|---|---|---|---|---|---|
+| SGD 0.01 | 10 | 0.735 | 1.017 | 0.0065 | 0.0240 | 0.0155 | 1.00 | 1.05 |
+| | 100 | 0.760 | 1.008 | 0.0032 | 0.0080 | 0.0060 | 1.00 | 0.99 |
+| | 1000 | 0.614 | 1.002 | 0.0046 | 0.0176 | 0.0080 | 0.97 | 1.04 |
+| Adam 3e-6 | 10 | 0.714 | 1.028 | 0.0102 | 0.1052 | 0.0302 | 1.02 | 1.38 |
+| | 100 | 0.470 | 1.007 | 0.0015 | 0.0131 | 0.0026 | 0.99 | 0.95 |
+| | 1000 | 0.239 | 1.004 | 0.0018 | 0.0384 | 0.0023 | 1.00 | 1.03 |
+| Adam 3e-5 | 10 | 0.934 | 0.999 | 0.0251 | 0.1782 | 0.0554 | 1.06 | 2.40 |
+| | 100 | 0.600 | 1.000 | 0.0352 | 0.4297 | 0.0456 | 0.92 | 2.32 |
+| | 1000 | 0.104 | 0.312 | 0.0721 | 1.7482 | 0.0547 | 0.95 | 19.31 |
+
+### What we learned
+
+The fitted scale is doing real work, and it is a trade, not a fix. Scaling the move down to match δW on the data removes the
+off-target overshoot, and that same shrink is where the scaled split's behaviour is lost (E31's falling keep). So the scaled
+split's record should be described as "fitted to each update", and the falling keep along training is in large part a size
+effect of c, not a sign that the direction misses the behaviour. The plain split shows the direction alone is enough to carry
+the behaviour. Neither version yet meets the weak version, which needs the behaviour kept and the rest of the model unharmed.
+
+### How compelling is the evidence
+
+One task (emoticon), one seed, three fine-tunes, three steps each. The control reproduced E31 closely and the readout check was
+exact. KL elsewhere is read on the emoticon held-out windows only, not on Pile text; P(target) only at the trigger. No scale between
+c and 1 was tried, so we do not know whether some middle scale keeps the behaviour with damage no worse than the fine-tune's.
+Run on one H100 rather than E31's L40; each verdict is read against its own job's floor (0.075).
+
+### Surprises
+
+Something unexpected happened. The user expected the plain split to do poorly. It keeps the behaviour completely, better than
+the scaled split everywhere, and its failure is off-target damage, not lost behaviour. The filed predictions had leaned this way
+(D1 "higher or same", low confidence), so no filed prediction reversed. The large-Adam plain state at step 1,000 also lost
+behaviour (0.31), the alternative the filing named.
+
+### What next
+
+1. A scale sweep between c and 1 (for example c, 2c, 4c, 1, or one global scale) on the same three fine-tunes. If some scale
+   keeps keep near 1 with KL elsewhere at or below the fine-tune's own, the adjoint split plus one tuned number is a candidate
+   map. If keep and damage rise together everywhere, the adjoint direction itself carries the off-target harm.
+2. KL elsewhere on Pile text, which is the off-target measure the weak version cares about, for the scaled and plain states.
+
+### Scorecard
+
+Rules in `results/predictions_amend3.json` (filed 2026-10-26 before the run).
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| D1 | plain keeps as much or more behaviour | per state, plain minus scaled keep; same within 0.05 | higher in all 9 (+0.07 to +0.77) | as filed ("higher or same at most") |
+| D2 | plain costs at least twice the off-target KL | per state, ratio ≥ 2 | 2.5 to 24, all 9 costlier | as filed |
+| D3 | plain passes except perhaps large Adam at 100 and 1000 | the plain state's verdict | SGD and small Adam pass (6); large Adam fails at 10, 100, 1000 | as filed, except step 10 also fails |
+| reading | "the scale does work" | not all D1 same, D2 similar, D3 pass | the scale does work (D1, D2, D3) | as filed |
+
+### Not run
+
+A scale between c and 1; one global scale; KL elsewhere on Pile text; the word tasks; seed 1; the LoRA updates; a cluster run (the
+only node was draining, job 32257 cancelled unstarted).
+
+### Provenance
+
+`experiments/adjoint_sgd/amend3.py`, `results/adjoint_sgd_amend3_{sgd,small,big}.json`, merged `results/adjoint_sgd_amend3.json`,
+logs `results/large/full_amend3_*.log`; figure `figures/scaled.png` (`plot.py`). RunPod H100 80GB, pod
+`commute-adjoint_sgd-amend3`, 12:35 to 13:02 on 2026-10-26, $1.97; cells about 17 to 22 min each, sha256 checked on both sides.
+Codex adversarial review not run: Codex was out of quota; the new code was re-read by hand and its scoring checked on CPU.

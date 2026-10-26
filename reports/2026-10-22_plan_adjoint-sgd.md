@@ -335,3 +335,63 @@ Watch for: stop at once and report if r1_01's [W0] fails or A2_G1 reads ok false
           the three "[<task>/s1/sgd_<lr> step N]" lines (ft P, keep, pgd verdict, Delta). A fine-tune P below 0.9 at
           step 1000 is a valid ("uninformative") result, not a failure: do not rerun. Record job IDs; scancel anything idle.
 ```
+
+## Amendment 3: the unscaled adjoint split beside the scaled one (agent, 2026-10-26)
+
+*User, 2026-10-26: "Run some quick experiments comparing scaled and unscaled as an amendment to the relevant
+experiment … we need at least one graph confirming that." This takes option (a) of the research log's pending card
+"Score the unscaled adjoint split beside the scaled one?". Earlier prediction files stand; this amendment's rules are in
+`results/predictions_amend3.json` (filed 2026-10-26).*
+
+**In plain words.** Every adjoint state so far multiplied each matrix's move by a fitted number c, because the plain
+move has the wrong size. This amendment scores the plain move (c = 1) beside the fitted one on the same three emoticon
+fine-tunes, to show how much of the scaled split's record comes from fitting c.
+
+**Restated in the Terms' words.** For E31's emoticon seed-0 fine-tunes (SGD 0.01, Adam 3e-6, Adam 3e-5) at steps 10,
+100 and 1000, place the update by the adjoint split with Δ fixed, once with c fitted per matrix (the scaled adjoint
+split, as in E31) and once with c = 1 (the unscaled adjoint split, weight change K(δW)), and read both states the same way.
+
+### Design check
+
+- **Goal.** Q1, the weak version under reading A: whether the adjoint split is a simple map, or one fitted to each update.
+- **Nearest tried.** E31 and E14 scored only the scaled state. E31's saved c (median 0.2–0.6 per matrix, 0.04 to 2.5 over
+  all matrices) says the unscaled move is 1.2–2.8 times the fitted size in the median matrix, and up to 18 times. Nothing
+  has scored it.
+- **Patch or step.** A control on the scaled split's claim, design class 2 (a control the plan's own pending card names).
+- **Decisions.** Same as E31 (Γ and Δ frozen; reading A; same-job W₀ floor; E31's arm-A recipe). No departure.
+- **What would change what we do next.** If the unscaled split matches the scaled one on all three readings, the scale is a
+  detail and the adjoint split is a fixed map. If not, write-ups call the scaled split "fitted to each update", and the
+  decision card closes either way.
+- **Control first.** In every job, first the same-job W₀ floor (stop on fail). Then gate **A3_G1** at step 10: the scaled
+  state rereads E31's row (adjoint P(target) within 0.02, reproduced share within 0.01), and the new KL readout applied to
+  the fine-tune itself equals the fine-tune's own `kl_other` (within 1e-4). A miss stops the job. The SGD job runs first and
+  alone; the two Adam jobs start after its A3_G1 passes. Differences from E31's end state: none in recipe (same seed, rates,
+  windows, Σ); the card may differ, and each job is read against its own floor.
+- **Numbers and expected readings.** Per state: keep (held-out P(target) over the fine-tune's own; do-nothing 1; E31's
+  scaled keeps SGD 0.74, 0.72, 0.60, Adam 3e-6 0.71, 0.48, 0.24, Adam 3e-5 0.93, 0.57, 0.10); KL elsewhere, the KL from W₀
+  to the state's model at held-out non-trigger positions, the fine-tune's `kl_other` readout (W₀ 0; the fine-tune 0.003 to
+  0.06; positive control A3_G1); the adversarial ratio and verdict (W₀ 1; scaled 0.95 to 1.08); Δ's share (0 by construction).
+
+### Predictions (filed in `results/predictions_amend3.json`)
+
+Per (fine-tune, step), unscaled against scaled: **D1** keep difference, "same" within 0.05 absolute, else "higher" or
+"lower"; **D2** KL elsewhere, "costlier" at 2× or more, "cheaper" at half or less, else "similar"; **D3** the unscaled
+verdict. Reading: "scale is a detail" only if every D1 is same, every D2 similar and every D3 pass. Predicted: D2 costlier
+at all nine (medium-high); D1 higher or same at most states (low: K is positive semi-definite, so to first order the larger
+move pushes the target further), lower at Adam 3e-5 step 1000 the main alternative; D3 pass except perhaps the large Adam
+update at 100 and 1000 (low). Blind to: P(target) only at the trigger; KL elsewhere only on emoticon windows; damage the
+20-step adversary misses; one seed and one task; any scale between c and 1. Noise floor: reruns repeat within 0.002 in keep;
+seed spread 0.04.
+
+### Recipe, cost and route
+
+`experiments/adjoint_sgd/amend3.py <cell>` (cells `sgd`, `small`, `big`), `cluster/adjoint_sgd_amend3.sbatch`. New code:
+`split.adjoint_state(..., sigma=None)` for c = 1, the `kl_elsewhere` readout (`finetune.eval_arm_a` on the state's target
+weights), the gate and the scoring (checked on CPU on synthetic rows). Each job ≈ 20 min, so the MATS cluster's `debug`
+QoS, $0; RunPod fallback (one 4090 or faster, the three cells in sequence, ≈ 1.2 h, ≈ $1.5, cap $4) if the SGD job has
+not started within 10 min.
+
+### Not run
+
+A sweep of scales between c and 1; a single global c; the word tasks; the second seed; the least-squares split unscaled
+(it has no scale).
