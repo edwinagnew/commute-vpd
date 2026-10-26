@@ -1,0 +1,38 @@
+{
+ "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md, Amendment 7. Filed before the run; never edited after.",
+ "measurements": {
+  "R_near_g0": "the nearest rule on \u0393's original values, 262,144 positions, 8 neighbours; gate A0",
+  "R_near_text16": "the same rule on hashed (token, offset) features of the current and 15 preceding tokens, 4096 signed coordinates, weight 0.8 ** offset, unit length",
+  "R_near_text4": "the same over the current and 3 preceding tokens",
+  "same_token_near_text<w>": "share of the 8 text neighbours holding the position's own token; reported",
+  "hashing": "bucket and sign per (token, offset) drawn from a seeded generator (seed 0)"
+ },
+ "gates": {
+  "A0": "every step: |R_near_g0 - Amendment 4's| <= 0.02; fail: stop",
+  "C_text": "positive control for the text space: at every step R_near_text4 >= Amendment 4's token rule - 0.05 (the 4-token summary holds the current token, so it should do at least as well); fail: T1 and T2 unreadable"
+ },
+ "predictions": [
+  {
+   "id": "T1",
+   "rule": "step 300: R_near_text16 <= R_near_g0 - 0.1 ('the surface text predicts the change worse than the original model's view of the context')",
+   "predicted": "pass",
+   "confidence": "medium-low",
+   "blind_to": "one hashing of the text, one window pair, one decay; one seed and one held-out set",
+   "positive_control": "near_g0 reproducing Amendment 4 (A0); the token rule's 0.33 there as a floor a text rule should clear"
+  },
+  {
+   "id": "T2",
+   "rule": "step 300: R_near_text16 >= R_near_text4 ('more preceding text helps')",
+   "predicted": "pass",
+   "confidence": "medium",
+   "blind_to": "as T1",
+   "positive_control": "as T1"
+  }
+ ],
+ "noise_floor": "Amendment 4 reproduced Amendment 3 exactly on the same card type; 8 against 32 neighbours moved R by about 0.014, the scale below which differences between spaces are not read",
+ "decision_tree": {
+  "T1 holds": "the original model's view of the context predicts the change better than the text: the restatement 'positions the original model treats alike get alike changes' is about the model, not the text",
+  "T1 fails": "the surface text predicts as well: the restatement is 'similar text gets similar changes', and the model's representation adds nothing measurable to it"
+ },
+ "filed": "2026-10-26 19:06:09"
+}

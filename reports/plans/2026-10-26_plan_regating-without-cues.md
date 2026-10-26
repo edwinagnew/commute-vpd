@@ -231,7 +231,21 @@ Amendment 4 found Γ's original values predicted the change no better than Γ's 
 check pointed out that both come from the original model, so the test that separates "how the original model treats a
 position" from "similar text gets similar changes" is the same nearest rule on a summary of the text the model did not
 produce. `experiments/regating_spread/amend5.py` regenerates the lowercase fine-tune and fits, on all 262,144 positions,
-the nearest rule on Γ's original values (gate: reproduces Amendment 4 within 0.02) and on hashed (token, offset) features
+the nearest rule on Γ's original values (gate: reproduces Amendment 4 within 0.02) and on hashed (token, offset) features,
+with bucket and sign drawn per (token, offset) from a seeded generator, as a positive control required to do at least
+as well as Amendment 4's token rule with 4 tokens, and reporting how often its neighbours share the current token;
 of the current and 15, or 3, preceding tokens. Predictions filed by `amend5.py --predictions` before the run: T1, the
 16-token text summary at least 0.1 below the original values at step 300 (medium-low); T2, 16 tokens at least as good as
 4 (medium). Class 1. An H100, about $0.4.
+
+## Amendment 8 (2026-10-26, after Amendment 5's independent check): the whole preceding text as the null
+
+Amendment 5's check found its text summary in effect about four tokens long, with 83% of its weight there, while the
+original model's view is computed from the whole preceding row, so its comparison mixed the amount of context with how
+the model treats it. `experiments/regating_spread/amend6.py` regenerates the lowercase fine-tune and fits, on all
+262,144 positions, the nearest rule on Γ's original values (gate: reproduces Amendment 5 within 0.02), on an undecayed
+bag of every preceding token in the row, and on that bag joined with the 4-token summary; recovery is reported by
+position in the row too, since at the row's start the text summary holds the whole prefix as the model does.
+Predictions filed by `amend6.py --predictions` before the run: T3, even the whole preceding text at least 0.1 below the
+original values at step 300 (low); T4, the whole text above the 4-token summary by more than the noise floor (medium).
+Class 1. An H100, under $1.

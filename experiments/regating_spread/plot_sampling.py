@@ -3,7 +3,8 @@
 Every number is a share of Γ's switching recovered at every held-out position of the lowercase-text fine-tune (R):
 0 = the original model's importance values everywhere, 1 = Γ's values on the fine-tuned model.
   sampling.png  the nearest rule on the original importance values against the number of fitted positions (16,384,
-                65,536, 262,144), one line per read step; at 262,144 the same rule on the residual stream (diamonds);
+                65,536, 262,144), one line per read step; at 262,144 the same rule on the attention inputs Γ reads
+                (diamonds) and on a 16-token text summary the model did not produce (triangles);
                 the token rule and the rule per position in the row, refitted on 262,144, as dotted and dashed lines
 
 Usage (repo root):  uv run python experiments/regating_spread/plot_sampling.py [--results DIR] [--figures DIR]
@@ -33,10 +34,12 @@ def main() -> None:
     a = ap.parse_args()
     a2 = json.loads((a.results / "regating_spread_amend2.json").read_text())["states"]
     a4 = json.loads((a.results / "regating_spread_amend4.json").read_text())["states"]
+    a5 = json.loads((a.results / "regating_spread_amend5.json").read_text())["states"]
     fig, ax = plt.subplots(figsize=(7, 4.4))
     for s, color in STEPS:
         ax.plot(NS, [a2[s]["R_near16"], a2[s]["R_near65"], a4[s]["R_near_g0"]], "o-", color=color, label=f"step {s}")
         ax.plot([NS[-1]], [a4[s]["R_near_resid"]], "D", color=color, mec="black", mew=0.5, ms=7)
+        ax.plot([NS[-1]], [a5[s]["R_near_text16"]], "^", color=color, mec="black", mew=0.5, ms=7)
         ax.axhline(a4[s]["R_token"], color=color, ls=":", lw=1)
         ax.axhline(a4[s]["R_position"], color=color, ls="--", lw=1)
     ax.spines[["top", "right"]].set_visible(False)
@@ -51,6 +54,7 @@ def main() -> None:
     ax.set_ylabel("share of the switching effect recovered")
     ax.plot([], [], "o-", color=MUTED, label="8 nearest, original importance values")
     ax.plot([], [], "D", color=MUTED, mec="black", mew=0.5, label="8 nearest, attention inputs Γ reads")
+    ax.plot([], [], "^", color=MUTED, mec="black", mew=0.5, label="8 nearest, text of 16 tokens")
     ax.plot([], [], ":", color=MUTED, label="one change per current token (262,144)")
     ax.plot([], [], "--", color=MUTED, label="one change per position in the row (262,144)")
     ax.legend(fontsize=7.5, frameon=False, loc="center right")
