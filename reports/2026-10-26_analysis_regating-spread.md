@@ -1,24 +1,26 @@
 # Does the cue-free form of the fixed-shift hypothesis hold on a fine-tune with no trigger? (E36, analysis)
 
 *2026-10-26, lead agent (overnight). Plan and design check: `reports/2026-10-26_plan_regating-without-cues.md` (E36,
-Amendments 1 and 3). Code: `experiments/regating_spread/run.py` and `amend1.py`, shared steps in
+Amendments 1 and 3 to 5). Code: `experiments/regating_spread/run.py`, `amend1.py`, `amend2.py` and `amend3.py`, shared steps in
 `src/commute/spread.py` and `src/commute/cuefree.py`. Follows E35, `reports/2026-10-26_analysis_regating-without-cues.md`.
-Exploration, provisional. An independent check (a fresh Opus agent, 2026-10-26) found the numbers and scoring right and
-the first headline too strong; this version takes its points. Words as in `GOALS.md` → Terms.*
+Exploration, provisional. Independent checks (fresh Opus agents, 2026-10-26) of the first run and of Amendment 3 found the
+numbers and scoring right and the headlines too strong each time; this version takes their points. Words as in `GOALS.md` → Terms.*
 
 We fine-tuned the model on text with no trigger and no target token and asked whether Γ's switching at each position
 can be predicted from the original model's importance values there. On lowercased Pile text, the positions with the most
 similar original values predicted it better than every other rule. With the planned sample of fitted positions it fell
 below the filed bar after the first ten steps; with sixteen times as many it recovered three-quarters or more at every
-step. For `GOALS.md` the restatement without cues, inputs the original Γ treats alike get alike changes, holds on the toy
-tasks and on this one synthetic style of running text.
+step. For `GOALS.md` this supports the form "inputs the original Γ treats alike get alike changes" on one synthetic
+style of running text, with one open question: whether the original values are special, or any rich summary of the
+context would do as well.
 
 ## The answer
 
 Yes, once enough positions are compared. On a fine-tune of lowercased Pile text, each position was given the mean
 change of the eight training positions with the nearest original importance values. Fitted on 16,384 positions this
 recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51, under the filed 0.6. Fitted on all 262,144 it recovered
-0.89, 0.78 and 0.76. Every other rule did worse, and the current token added nothing.
+0.89, 0.78 and 0.76. The other rules, compared only on 16,384 positions, did worse there, and restricting to the current
+token added nothing.
 
 ## What we were trying to test
 
@@ -98,10 +100,12 @@ slopes barely move from 1: the median among subcomponents whose values vary is 0
 
 In the scored run, with 16,384 fitted positions, the cue-free form held at step 10 and failed at steps 100 and 300 by
 the filed rule. Amendments 2 and 3 showed that miss was sampling: with all 262,144 positions the rule recovers 0.76 to
-0.89 of the switching at every step. So on running text with no trigger, the change of Γ's values at a position is
-largely a function of the original model's importance values there, which is the restatement without cues. The
-current token adds nothing to it, and the original values predict the change better than a few groups or a fixed rule
-per subcomponent. A tenth to a quarter of the switching remains unexplained, more of it later in training. A high switching share is not evidence of learned re-weighting
+0.89 of the switching at every step. So on running text with no trigger, values predicted from the positions with the most similar original
+importance values recover most of the switching effect: similar contexts, judged by Γ's original values, get similar
+changes. Whether those values are the right space, rather than one rich summary of the context among others, is not
+shown: the same rule was not run on Γ's input or on token and position at the same sample size. At 16,384 positions
+restricting to the current token added nothing, and the original values beat a few groups and a fixed rule per
+subcomponent. A tenth to a quarter of the switching remains unexplained, more of it later in training. A high switching share is not evidence of learned re-weighting
 on its own, since an update that learned nothing gave the same share.
 
 ## How compelling is the evidence
@@ -110,13 +114,15 @@ on its own, since an update that learned nothing gave the same share.
   values on alive subcomponents reproduced the full switching to within 0.000005. The masked model's log-probabilities
   were computed in float32; the target model's and Γ's values come from bf16, which does not matter at these gains.
 - **Nulls.** Random groups land within 0.002 of one change everywhere at every step.
-- **Held-out positions.** Every rule is fitted at positions of the first 64 training rows, which the fine-tune saw in
-  its first eight steps, and scored on 64 held-out rows, 32,704 positions. Held-out rows repeating training rows were
-  not checked.
+- **Held-out positions.** The scored rules are fitted at positions of the first 64 training rows, which the fine-tune
+  saw in its first eight steps; Amendment 3's 512 rows include 432 it had not seen at step 10. Every rule is scored on
+  64 held-out rows from another split, 32,704 positions. Near-duplicate text between them was not checked; one
+  duplicated held-out row would be worth about 0.004.
 - **Coverage.** One fine-tune seed, one style, one 67M model. Lowercasing is a style spread over every position but
   synthetic in form; the more natural task, code-like text, did not learn.
-- **Blind spots.** The distance weighs every alive subcomponent equally. The nearest rule draws from 16,384 fitted
-  positions; more might raise it, and that was not tested. The token rule covers only 90 tokens, and how many held-out
+- **Blind spots.** The distance weighs every alive subcomponent equally. The nearest rule rises with every fourfold increase in
+  fitted positions and had not flattened at 262,144, so its endpoint is not known. Recovery by position in the row was
+  not measured; early positions have little context and may carry much of the gain. The token rule covers only 90 tokens, and how many held-out
   positions they cover was not counted. Patterns are written at every position at once, so effects passing between
   positions through attention are included, not separated. No predicted pattern was checked for faithfulness under the
   adversary.
@@ -178,7 +184,8 @@ within 0.008 at every step. The same nearest rule was then fitted on all 262,144
 rule recovers most of the switching at every step. With 262,144 positions it recovers 0.89, 0.78 and 0.76 at steps
 10, 100 and 300, and 0.90, 0.79 and 0.78 with 32 neighbours. We predicted it would still be under 0.7 at step 300.
 Each fourfold increase in positions added about 0.08 to 0.18, so the filed "all fail" at step 300 was a sampling
-shortfall, not a sign that the change depends on something the original values do not show. A tenth to a quarter of
+shortfall, which is how the filed tree reads it. The curve had not flattened, and a nearest rule on any rich summary of
+the context might improve the same way; that comparison is Amendment 4. A tenth to a quarter of
 the switching remains unexplained, more of it later in training.
 
 | step | 16,384 positions | 65,536 | 262,144 | 262,144, 32 neighbours |
@@ -253,10 +260,11 @@ cross-entropy 1.648 and 1.661, training loss without trend.
 
 ## Not run
 
-Seeds beyond 0; more than 65,536 fitted positions or other numbers of neighbours; held-out rows repeating training
-rows; a rule on Γ's
-input or on neighbouring positions; any distance but Euclidean over all alive subcomponents; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA updates;
-a larger model.
+Seeds beyond 0, and any second set of held-out rows; more than 262,144 fitted positions; the nearest rule on Γ's input,
+or on token and position, at the same sample size; the token rule, groups and the line refitted on 262,144 positions;
+recovery by position in the row; near-duplicate text between training and held-out rows; any distance but Euclidean
+over all alive subcomponents; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA
+updates; a larger model.
 
 ## Provenance
 

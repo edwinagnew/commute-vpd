@@ -210,3 +210,17 @@ is sampling or a real dependence on more than the original values decides the pe
 2 within 0.02). Predictions filed by `amend3.py --predictions` before the run: M, still rising, at least 0.03 more than
 65,536 positions give at step 300 (medium); B, at least 0.7 at every step (predicted to fail, low). Class 1. About 35
 GB of GPU memory, so an H100; about 20 minutes with set-up and upload, under $1.5.
+
+## Amendment 6 (2026-10-26, after Amendment 3's independent check): is Γ's original-value space special?
+
+Amendment 3 found the nearest rule recovering 0.76 to 0.89 of the switching with 262,144 fitted positions. Its check
+pointed out that a nearest rule on any rich summary of the context may improve that way, so the result shows "similar
+contexts get similar changes" and not yet "inputs the original Γ treats alike". It also asked for the other rules at
+the same sample size, position in the row, and near-duplicate text. `experiments/regating_spread/amend4.py` regenerates
+the lowercase fine-tune and fits, on all 262,144 positions: the nearest rule on the original values (gate: reproduces
+Amendment 3 within 0.01), the same rule on the residual stream (each layer's attention input, the values Γ reads for
+the query, key and value matrices, under the original model), the token rule, and a rule per position in the row; it
+reports recovery by position bucket, the token rule's coverage, and the share of held-out positions inside a 16-token
+span also found in the training rows. Predictions filed by `amend4.py --predictions` before the run: R1, the residual
+stream does as well within 0.05 at step 300 (low); R2, position alone under 0.3 (medium); R3, the token rule at least
+0.2 behind (medium); D, under 2% duplicated (medium). Class 1. An H100, about $0.4.
