@@ -1,0 +1,224 @@
+{
+ "device": "NVIDIA GeForce RTX 4090",
+ "finetune": {
+  "10": {
+   "ce": 3.0753954982570937,
+   "elapsed_s": 1.1785848140716553,
+   "kl_to_ref": 0.1500807572156191,
+   "n": 64,
+   "rel_norm_max": 0.012946135364472866
+  },
+  "100": {
+   "ce": 3.0349123482601517,
+   "elapsed_s": 5.766261339187622,
+   "kl_to_ref": 0.23688446171581745,
+   "n": 64,
+   "rel_norm_max": 0.03161368891596794
+  },
+  "300": {
+   "ce": 3.0155939449302838,
+   "elapsed_s": 15.351283073425293,
+   "kl_to_ref": 0.2903392296284437,
+   "n": 64,
+   "rel_norm_max": 0.04885350167751312
+  }
+ },
+ "score": {
+  "10": {
+   "N": true,
+   "P_K": true,
+   "P_fix": true,
+   "P_near": true,
+   "P_r": true,
+   "P_shared": true,
+   "P_token": true,
+   "scorable": true
+  },
+  "100": {
+   "N": true,
+   "P_K": true,
+   "P_fix": false,
+   "P_near": false,
+   "P_r": true,
+   "P_shared": true,
+   "P_token": true,
+   "scorable": true
+  },
+  "300": {
+   "N": true,
+   "P_K": true,
+   "P_fix": false,
+   "P_near": false,
+   "P_r": true,
+   "P_shared": true,
+   "P_token": true,
+   "scorable": true
+  }
+ },
+ "seconds": 90.10612463951111,
+ "states": {
+  "10": {
+   "C0": true,
+   "G": true,
+   "L": {
+    "T0": -3.1457579643257385,
+    "T1": -3.0753956310513413,
+    "clu_128": -3.4045532233633518,
+    "clu_32": -3.4113876422088554,
+    "clu_512": -3.3969792349312824,
+    "clu_8": -3.432881439558503,
+    "fix": -3.415632164602188,
+    "g0": -3.4445396629105463,
+    "g1": -3.3706785245667765,
+    "near": -3.3917291445852427,
+    "own_alive": -3.370678448863641,
+    "rand_0": -3.439476405044285,
+    "rand_1": -3.4395229505804816,
+    "rand_2": -3.43944821343797,
+    "shared": -3.4394822171795747,
+    "token": -3.421027413374922,
+    "zero": -3.4445396629105463
+   },
+   "R": {
+    "clu_128": 0.5413731827566316,
+    "clu_32": 0.4488425367531218,
+    "clu_512": 0.6439168017950759,
+    "clu_8": 0.1578397464954131,
+    "fix": 0.3913762901109789,
+    "near": 0.7149973519160935,
+    "own_alive": 1.0000010249386486,
+    "shared": 0.06847235020171005,
+    "token": 0.31833045174841457,
+    "zero": 0.0
+   },
+   "R_rand": 0.06846820944048639,
+   "gain": 0.07036233327439723,
+   "gap": 0.07386113834376973,
+   "n_tokens_kept": 90,
+   "near_same_token": 0.3257179260253906,
+   "r": 1.0497255407339598,
+   "rand_draws": [
+    0.0685510402330286,
+    0.06792086396929714,
+    0.06893272411913343
+   ],
+   "slopes": {
+    "a_below_half_varying": 0.006315305829048157,
+    "a_median_varying": 0.9625687003135681,
+    "share_varying": 0.8813884854316711
+   }
+  },
+  "100": {
+   "C0": true,
+   "G": true,
+   "L": {
+    "T0": -3.1457579643257385,
+    "T1": -3.0348810691031702,
+    "clu_128": -3.404311083949248,
+    "clu_32": -3.4109649141206964,
+    "clu_512": -3.394818878700606,
+    "clu_8": -3.4326499890141853,
+    "fix": -3.430587308333358,
+    "g0": -3.4445396629105463,
+    "g1": -3.345018757703468,
+    "near": -3.390525797231411,
+    "own_alive": -3.345018728275029,
+    "rand_0": -3.4404012190958837,
+    "rand_1": -3.4405998324178113,
+    "rand_2": -3.440609857860036,
+    "shared": -3.4403466039665522,
+    "token": -3.4201036571865493,
+    "zero": -3.4445396629105463
+   },
+   "R": {
+    "clu_128": 0.4042223980739798,
+    "clu_32": 0.3373637802026539,
+    "clu_512": 0.49960140642293926,
+    "clu_8": 0.11946910924515329,
+    "fix": 0.14019521374084032,
+    "near": 0.5427388905551647,
+    "own_alive": 1.0000002957010765,
+    "shared": 0.042132443784241205,
+    "token": 0.24553640939209415,
+    "zero": 0.0
+   },
+   "R_rand": 0.04021962130442769,
+   "gain": 0.11087689522256827,
+   "gap": 0.09952090520707824,
+   "n_tokens_kept": 90,
+   "near_same_token": 0.3257179260253906,
+   "r": 0.8975801947493692,
+   "rand_draws": [
+    0.04158366331226067,
+    0.03958796882461162,
+    0.03948723177641078
+   ],
+   "slopes": {
+    "a_below_half_varying": 0.007922838442027569,
+    "a_median_varying": 0.9458513259887695,
+    "share_varying": 0.8813884854316711
+   }
+  },
+  "300": {
+   "C0": true,
+   "G": true,
+   "L": {
+    "T0": -3.1457579643257385,
+    "T1": -3.0157012549312503,
+    "clu_128": -3.4065987484043663,
+    "clu_32": -3.411769308533498,
+    "clu_512": -3.399277959890733,
+    "clu_8": -3.4324611733190498,
+    "fix": -3.4459967305253283,
+    "g0": -3.4445396629105463,
+    "g1": -3.342178039675004,
+    "near": -3.3928387746404267,
+    "own_alive": -3.3421779545485912,
+    "rand_0": -3.441098991175516,
+    "rand_1": -3.441126400914409,
+    "rand_2": -3.4410924116797132,
+    "shared": -3.4410319673923433,
+    "token": -3.419653985784496,
+    "zero": -3.4445396629105463
+   },
+   "R": {
+    "clu_128": 0.3706556549897108,
+    "clu_32": 0.3201429729347012,
+    "clu_512": 0.442174533669348,
+    "clu_8": 0.11799822247545744,
+    "fix": -0.014234510637147731,
+    "near": 0.5050807776968482,
+    "own_alive": 1.0000008316242932,
+    "shared": 0.03426768164990374,
+    "token": 0.24311530375779794,
+    "zero": 0.0
+   },
+   "R_rand": 0.03354507492290879,
+   "gain": 0.1300567093944882,
+   "gap": 0.10236162323554243,
+   "n_tokens_kept": 90,
+   "near_same_token": 0.3257179260253906,
+   "r": 0.7870537684069724,
+   "rand_draws": [
+    0.033612907125484794,
+    0.03334513353977541,
+    0.03367718410346618
+   ],
+   "slopes": {
+    "a_below_half_varying": 0.009874842129647732,
+    "a_median_varying": 0.9360970258712769,
+    "share_varying": 0.8813884854316711
+   }
+  }
+ },
+ "status": "done",
+ "task": {
+  "n_held": 64,
+  "n_train": 2400,
+  "samples": [
+   " have spaced-apart portions defining outer flow passages therebetween. the primary ridges of at least one plate of each pair include ribs extending across the width of at least one primary ridge of the at least one plate and distributed along the length of the primary ridge. these ribs are located between and separated from the openings formed in the primary ridge and form cross-over passages so that the cross-over passages of each plate pair permit the secondary heat exchanging fluid to flow transversely across its respective primary ridges and through its respective inner flow passage.\nagain, this heat exchanger preferably includes flow augmentation means",
+   "<|endoftext|>app_name@/plugins\n\nlegacy_start() {\n  /etc/init.d/@app_name@ stop || :\n\n  # cleanup init's mess if it fails to stop\n  pidfile=/var/run/@app_name@.pid\n  start-stop-daemon --stop --retry 5 --quiet --pidfile $pidfile --name rackspace-monit --signal kill\n\n  # start only if we find a config file in place\n  if [ -f /etc/@app_name@.cfg ]; then",
+   "41 &[**-0.2**]{}1775 &[**0.2**]{}6485 &[**0.34**]{}287\\\n1 &84139 &[**-0.2**]{}2011 &[**0.2**]{}6071 &[**0.34**]{}120\\\n1 &299690 &[**-0.21**]{}847 &[**0.2**]{}6942 &[**0.34**]{}687\\\n\\\nn &n & $\\re (fc_0)$ & $\\im (fc_0)$ & $|fc_0|$\\\n2 & 1884 &[**-"
+  ]
+ }
+}
