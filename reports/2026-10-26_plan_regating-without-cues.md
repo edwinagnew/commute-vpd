@@ -218,7 +218,7 @@ pointed out that a nearest rule on any rich summary of the context may improve t
 contexts get similar changes" and not yet "inputs the original Γ treats alike". It also asked for the other rules at
 the same sample size, position in the row, and near-duplicate text. `experiments/regating_spread/amend4.py` regenerates
 the lowercase fine-tune and fits, on all 262,144 positions: the nearest rule on the original values (gate: reproduces
-Amendment 3 within 0.01), the same rule on the residual stream (each layer's attention input, the values Γ reads for
+Amendment 3 within 0.02), the same rule on the residual stream (each layer's attention input, the values Γ reads for
 the query, key and value matrices, under the original model), the token rule, and a rule per position in the row; it
 reports recovery by position bucket, the token rule's coverage, and the share of held-out positions inside a 16-token
 span also found in the training rows. Predictions filed by `amend4.py --predictions` before the run: R1, the residual

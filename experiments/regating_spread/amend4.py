@@ -34,7 +34,7 @@ PRED, OUT = RESULTS / "predictions_amend4.json", RESULTS / "regating_spread_amen
 AMEND3 = RESULTS / "regating_spread_amend3.json"
 N_ROWS, NGRAM, CHUNK = 8 * N_FIT_ROWS, 16, 1024
 BUCKETS = ((0, 32), (32, 128), (128, 511))
-REPRO_TOL, SPACE_TOL, POS_MAX, TOKEN_GAP, DUP_MAX = 0.01, 0.05, 0.3, 0.2, 0.02
+REPRO_TOL, SPACE_TOL, POS_MAX, TOKEN_GAP, DUP_MAX = 0.02, 0.05, 0.3, 0.2, 0.02  # A0: Amendment 3 ran on an H100
 SCORED = str(CHECKS[-1])
 
 PREDICTIONS: dict[str, Any] = {
@@ -123,6 +123,7 @@ def evaluate(r: Run, held: Tensor, dW: dict[str, Tensor], f: dict[str, Any]) -> 
     from commute.vpd import compute_ci
 
     pos: dict[str, Tensor] = {}
+    cov = 0.0
     for s in range(0, held.shape[0], 8):
         batch = held[s : s + 8].to(r.device)
         ci0 = compute_ci(r.model, batch)
@@ -139,9 +140,9 @@ def evaluate(r: Run, held: Tensor, dW: dict[str, Tensor], f: dict[str, Any]) -> 
             L[name] = masked_logp_pos(r.model, batch, S.with_alive(ci0.g, (x0 + c).clamp(0.0, 1.0), r.lay))
         for k, v in L.items():
             pos[k] = pos.get(k, 0.0) + v
-        pos["cov"] = pos.get("cov", 0.0) + float((f["token"].row_of[toks] < f["token"].n_tokens).float().sum())
+        cov += float((f["token"].row_of[toks] < f["token"].n_tokens).float().sum())
         del ci0, ci1
-    cov = float(pos.pop("cov")) / held.numel()
+    cov /= held.numel()
     tot = {k: float(v.sum()) for k, v in pos.items()}
     gap = tot["g1"] - tot["g0"]
     out: dict[str, Any] = {f"R_{k}": (v - tot["g0"]) / gap for k, v in tot.items() if k not in ("g0", "g1")}
@@ -158,7 +159,7 @@ def fitted(r: Run, rows: Tensor, dW: dict[str, Tensor]) -> dict[str, Any]:
     tok = rows.to(r.device).flatten()
     T = rows.shape[1]
     lab = torch.arange(T, device=r.device).repeat(rows.shape[0])
-    return {"X": X, "Xn": (X * X).sum(1), "D": D, "Z": Z, "Zn": (Z * Z).sum(1),
+    return {"X": X, "Xn": torch.einsum("ij,ij->i", X, X), "D": D, "Z": Z, "Zn": torch.einsum("ij,ij->i", Z, Z),
             "token": S.fit_tokens(tok, D, r.vocab, MIN_TOKEN), "position": S.group_change(D, lab, T)}
 
 
