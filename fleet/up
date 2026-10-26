@@ -47,6 +47,8 @@ clone() {
   # Merge, never rebase (plan section 3); --autostash keeps the uncommitted work of an agent stopped mid-task.
   git -C "$d" pull -q --no-rebase --autostash 2>/dev/null || echo "up: could not update $1; starting it on its current state"
   git -C "$d" config core.hooksPath .githooks
+  # Pushes reuse the user's stored GitHub login (git reads it; agents never open it). Added 2026-10-26 after lead-2 could not push.
+  git -C "$d" config credential.helper store
   # Memory lives in the repository (plan section 4): Claude Code's memory folder for this clone points at it.
   local key mem
   key=$(tr '/.' '--' <<< "$d")
