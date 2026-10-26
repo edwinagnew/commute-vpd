@@ -1,15 +1,16 @@
-"""Figures for teacher_spread (E37), read from results/teacher_spread.json only. Plan:
+"""Figures for teacher_spread (E37), read from results/teacher_spread.json and, for the harness's two row blocks, the
+run log's numbers held in BLOCK_KL. Plan:
 reports/plans/2026-10-26_plan_teacher-spread.md; analysis: reports/analyses/2026-10-26_analysis_teacher-spread.md.
 
   behaviour_faithful.png  behaviour kept s against the harness's PGD ratio to W0 for every state, with the behaviour
                           bar, the harness's pass and fail lines, W0's adversary-seed spread and the do-nothing level
-  adversaries.png         the harness's PGD ratio beside the budget adversary's ratio per state, with each one's line
-                          and E34's copies of trigger fine-tunes as the reference band
+  blocks.png              the harness's PGD ratio per block of 128 rows and the budget reading on block 1's rows, per
+                          state, with the pass and fail lines, E34's copies' range and each state's damage on Pile
   placement.png           cosines between weight changes: the two batch orders, the lowercase and plain copies, each
                           state with the fine-tune's delta-W, and the random direction, against P7's lines and E34's
                           copies' range
 
-Usage (repo root): fleet/cpu-run uv run python experiments/teacher_spread/plot.py
+Usage (repo root): fleet/cpu-run .venv/bin/python experiments/teacher_spread/plot.py
 """
 
 from __future__ import annotations
@@ -41,8 +42,11 @@ STYLE: dict[str, dict[str, Any]] = {
     "lower_s1": {"name": "copy, lowercase text, 2nd batch order", "c": "#2a78d6", "m": "o", "fill": False},
 }
 S_MIN, COS_SAME, COS_MANY = 0.9, 0.8, 0.5  # the filed P1/P6 and P7 lines (predictions.json)
-BUDGET_LINE, BUDGET_NOISE = 1.241, 1.070  # E20 A3's budget pass line; W0 seed 1 over seed 0 at 20 steps (E34 A4)
-E34_COPIES_RATIO = (0.895, 1.37)  # E34 A4 table: the twelve Adam copies at two batch orders, harness and budget
+# The harness averages its PGD KL over two blocks of 128 rows; per-block KLs (nats) from results/large/run.log's two
+# "[faith]" lines before each state line (W0: adversary seed 0). The JSON keeps only their mean.
+BLOCK_KL = {"W0": (0.6794, 0.7182), "do-nothing": (2.6551, 4.1483), "adjoint": (0.7439, 0.7290),
+            "lower_s0": (1.1500, 1.9263), "lower_s1": (1.1262, 1.5076), "plain_s0": (1.0866, 1.3392)}
+E34_COPIES_RATIO = (0.895, 1.37)  # E34 A4 table: the twelve Adam copies' harness ratios at two batch orders
 E34_COPIES_COS = (0.075, 0.285)  # E34 A1/A2's copies' cosine with delta-W (emoticon teachers)
 
 
@@ -85,7 +89,7 @@ def behaviour_faithful(r: dict[str, Any]) -> None:
     ax.text(0.02, pass_l * 0.99, f"pass line {pass_l:.2f}", fontsize=7, color=PASS_C, va="top")
     ax.text(0.02, fail_l * 1.01, f"fail line {fail_l:.2f}; between the lines: inconclusive", fontsize=7, color=FAIL_C,
             va="bottom")
-    ax.text(0.02, dn * 0.98, f"do-nothing's level {dn:.2f}: below it passes if judged against do-nothing", fontsize=7,
+    ax.text(0.02, dn * 0.98, f"do-nothing {dn:.2f}, high by construction: the adversary can switch off Δ, which holds δW", fontsize=7,
             color=INK, va="top")
     ax.text(S_MIN - 0.01, 0.86, f"behaviour bar {S_MIN}", fontsize=7, color=MUTED, ha="right")
     for n, (dx, dy) in {"lower_s0": (-8, 4), "lower_s1": (8, -3), "plain_s0": (-8, 2), "adjoint": (-8, 4)}.items():
@@ -108,50 +112,51 @@ def behaviour_faithful(r: dict[str, Any]) -> None:
     plt.close(fig)
 
 
-def adversaries(r: dict[str, Any]) -> None:
+def blocks(r: dict[str, Any]) -> None:
+    """Each state's harness ratio per block of 128 rows, beside the budget reading (the same search on block 1's rows,
+    its KL read in fp32 under the masks found); x labels carry each state's damage on plain Pile text."""
     st, d = r["states"], r["score"]["derived"]
     pass_l, fail_l = lines(r)
-    order = ["W0", "adjoint", "plain_s0", "lower_s0", "lower_s1", "do-nothing"]
+    order = ["W0", "adjoint", "plain_s0", "lower_s1", "lower_s0", "do-nothing"]
     fig, ax = plt.subplots(figsize=(7.2, 4.6))
     ax.axhspan(*E34_COPIES_RATIO, color=BAND, lw=0)
     ax.axhline(pass_l, color=PASS_C, ls="--", lw=0.9)
     ax.axhline(fail_l, color=FAIL_C, ls="--", lw=0.9)
-    ax.axhline(BUDGET_LINE, color=PASS_C, ls=":", lw=1.1)
     for x, n in enumerate(order):
         c = STYLE[n]["c"]
-        h = 1.0 if n == "W0" else st[n]["pile"]["pgd_kl"]
-        ax.scatter(x - 0.12, h, s=55, marker="o", color=c, zorder=4)
-        ax.text(x - 0.2, h, f"{h:.2f}", fontsize=7, ha="right", va="center")
-        if "budget_ratio" in d[n]:
-            b = d[n]["budget_ratio"]
-            ax.scatter(x + 0.12, b, s=55, marker="D", facecolors="white", edgecolors=c, linewidths=1.5, zorder=4)
-            ax.text(x + 0.2, b, f"{b:.2f}", fontsize=7, ha="left", va="center")
+        b1, b2 = (1.0, 1.0) if n == "W0" else (k / w for k, w in zip(BLOCK_KL[n], BLOCK_KL["W0"], strict=True))
+        ax.plot([x - 0.15, x + 0.15], [b1, b2], color=c, lw=1, alpha=0.5)
+        ax.scatter(x - 0.15, b1, s=50, marker="o", color=c, zorder=4)
+        ax.scatter(x + 0.15, b2, s=50, marker="^", color=c, zorder=4)
+        ax.text(x + 0.22, b2, f"{b2:.2f}", fontsize=7, ha="left", va="center")
+        if "budget_ratio" in d[n] and n != "W0":
+            ax.scatter(x - 0.15, d[n]["budget_ratio"], s=70, marker="D", facecolors="none", edgecolors=INK, lw=0.9,
+                       zorder=5)
+        ax.text(x - 0.22, b1, f"{b1:.2f}", fontsize=7, ha="right", va="center")
     n = len(order)
-    ax.text(n - 0.45, E34_COPIES_RATIO[0] * 1.01, "E34's copies of trigger fine-tunes, either adversary",
-            fontsize=7, color=MUTED, ha="right", va="bottom")
-    ax.text(n - 0.45, pass_l * 1.01, f"harness pass line {pass_l:.2f}", fontsize=7, color=PASS_C, ha="right",
-            va="bottom")
-    ax.text(n - 0.45, fail_l * 1.01, f"harness fail line {fail_l:.2f}", fontsize=7, color=FAIL_C, ha="right",
-            va="bottom")
-    ax.text(-0.45, BUDGET_LINE * 1.01, f"budget pass line {BUDGET_LINE}", fontsize=7, color=PASS_C, va="bottom")
-    ax.scatter([], [], marker="o", color=INK, label="harness: 20 steps, 256 rows, mean PGD KL")
-    ax.scatter([], [], marker="D", facecolors="white", edgecolors=INK,
-               label="budget adversary: 20 steps, 128 rows, KL under the masks found")
-    ax.set_xticks(range(n), ["unchanged\nmodel", "adjoint\nsplit", "copy,\nplain text", "copy,\nlowercase",
-                             "copy, lowercase,\n2nd order", "do-nothing"], fontsize=8)
+    ax.text(n - 0.45, E34_COPIES_RATIO[0] * 1.01, "E34's copies of trigger fine-tunes", fontsize=7, color=MUTED,
+            ha="right", va="bottom")
+    ax.text(n - 0.45, pass_l * 0.99, f"pass line {pass_l:.2f}", fontsize=7, color=PASS_C, ha="right", va="top")
+    ax.text(n - 0.45, fail_l * 1.01, f"fail line {fail_l:.2f}", fontsize=7, color=FAIL_C, ha="right", va="bottom")
+    ax.scatter([], [], marker="o", color=INK, label="harness, rows 0-127")
+    ax.scatter([], [], marker="^", color=INK, label="harness, rows 128-255")
+    ax.scatter([], [], marker="D", facecolors="none", edgecolors=INK, label="budget reading: same search on rows 0-127")
+    names = {"W0": "unchanged\nmodel", "adjoint": "adjoint\nsplit", "plain_s0": "copy,\nplain text",
+             "lower_s1": "copy, lower-\ncase, order 1", "lower_s0": "copy,\nlowercase", "do-nothing": "do-nothing"}
+    ax.set_xticks(range(n), [f"{names[k]}\ndamage {st[k]['damage']:.2f}" for k in order], fontsize=7.5)
     ax.set_xlim(-0.6, n - 0.4)
     ax.set_yscale("log")
     ax.yaxis.set_minor_formatter(NullFormatter())
     ax.set_yticks([1, 1.5, 2, 3, 4, 5], ["1", "1.5", "2", "3", "4", "5"])
-    ax.set_ylim(0.85, 6.0)
-    ax.set_ylabel("ratio to the unchanged model under the same adversary")
-    ax.set_title("Is the copies' failure the harness's alone?\n"
-                 "No: the budget adversary also puts them above its line, a little lower than the harness",
+    ax.set_ylim(0.85, 6.5)
+    ax.set_ylabel("PGD KL over the unchanged model's, same rows")
+    ax.set_title("Does the copies' failure sit in one half of the rows?\n"
+                 "No: both halves put the lowercase copies over the fail line",
                  fontsize=9, loc="left")
     ax.legend(fontsize=7, loc="upper left", frameon=False)
     style(ax)
     fig.tight_layout()
-    fig.savefig(FIG / "adversaries.png", dpi=150)
+    fig.savefig(FIG / "blocks.png", dpi=150)
     plt.close(fig)
 
 
@@ -195,7 +200,7 @@ def main() -> None:
     assert r["status"] == "done", r["status"]
     FIG.mkdir(exist_ok=True)
     behaviour_faithful(r)
-    adversaries(r)
+    blocks(r)
     placement(r)
     print(f"wrote {sorted(p.name for p in FIG.glob('*.png'))}")
 
