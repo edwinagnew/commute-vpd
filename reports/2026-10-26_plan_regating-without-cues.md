@@ -152,3 +152,16 @@ change by 0.19 (nearest) and 0.31 (line), where C expected no difference.
   N (|R_rand − R_shared| ≤ 0.05); scored at step 100, step 10 read by the same rules.
 - Cost: a RunPod 4090, sent the VPD files as E35's second pod was (W&B refuses this node's key): about 10 min of
   set-up and upload, a few minutes of run; under $1.
+
+## Amendment 2 (2026-10-26, after E35's independent check): E35 Amendment 1
+
+The check (a fresh Opus agent) found E35's numbers and verdicts right and three gaps in what the headline can claim.
+The nearest-inputs rule is not like for like with the per-cue rule, because it also lets the change depend on each
+input's own values. Its neighbours may simply share the cue. Held-out windows duplicated in training were not ruled
+out. `experiments/regating_cuefree/amend1.py` regenerates the six states (gate: the nearest rule reproduces E35 within
+0.001, emoticon first) and adds the nearest rule restricted to training windows with the same cue (the like-for-like
+reference), the share of the eight neighbours holding the window's cue, the share of held-out windows duplicated in
+training, and a nearest-distance ratio. Predictions, filed by `amend1.py --predictions` before the run: L, nearest ≥
+nearest-within-cue − 0.1 on every 32-cue state (medium-low); T, the neighbours share the cue at ≥ 0.9 (medium); D,
+duplicates ≤ 5% (medium). Class 1 (new arms on regenerated states). Runs on E36's pod, about a minute, no extra cost
+beyond pod time.

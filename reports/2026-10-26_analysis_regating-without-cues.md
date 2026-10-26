@@ -1,23 +1,26 @@
 # Can the change in Γ's importance values be predicted without naming a cue? (E35, analysis)
 
 *2026-10-26, lead agent (overnight). Plan and design check: `reports/2026-10-26_plan_regating-without-cues.md`
-(E35; Amendment 1 for what it changed in E36). Code: `experiments/regating_cuefree/run.py`, shared steps in
-`src/commute/cuefree.py`. Figures from `experiments/regating_cuefree/plot.py`. Exploration, provisional: no
-independent check yet. Words as in `GOALS.md` → Terms.*
+(E35; Amendment 1 for what it changed in E36, Amendment 2 for the follow-up checks). Code:
+`experiments/regating_cuefree/run.py`, shared steps in `src/commute/cuefree.py`. Figures from
+`experiments/regating_cuefree/plot.py`. Exploration, provisional. An independent check (a fresh Opus agent,
+2026-10-26) found the numbers and verdicts right and the headline worded too strongly; this version takes its points.
+Words as in `GOALS.md` → Terms.*
 
 We took the toy fine-tunes where one fixed change per cue word was known to carry Γ's switching, and asked whether the
-change can be predicted from the original model's importance values alone, with no cue labels. It can: giving each
-input the average change of the training inputs whose original values look most like its own does as well as one
-change per cue word, and better where cues share an answer. For `GOALS.md` this gives the fixed-shift hypothesis a
-form that names no token, ready to test on text with no trigger.
+change can be predicted from the original model's importance values alone, with no cue labels. Giving each input the
+average change of the training inputs whose original values look most like its own did as well as one change per cue
+word added the same way, though not as well as the averaged per-cue form that first established the hypothesis. For
+`GOALS.md` this gives the fixed-shift hypothesis a form that names no token, ready to test on text with no trigger,
+with one open question: whether the most similar inputs are simply those with the same cue.
 
 ## The answer
 
-Yes, at least on these toy tasks. Each held-out input was given the mean change of the eight training inputs whose
+Partly yes, on these toy tasks. Each held-out input was given the mean change of the eight training inputs whose
 original importance values were nearest. On the four tasks with 32 cue words this recovered 0.61 to 0.78 of the
-switching effect. One change per cue word, applied the same way, recovered 0.47 to 0.66, and one change for every
-input almost nothing. Groups found by clustering the original values needed four times as many groups as there are
-cues. One straight line per subcomponent worked on tasks with few cues and only partly with many.
+switching effect, against 0.47 to 0.66 for one change per cue word added the same way and almost nothing for one
+change for every input. The averaged per-cue form reads higher, 0.81 to 1.06. Whether the nearest inputs just share the
+cue was not counted. Clustering needed four times as many groups as cues.
 
 ## What we were trying to test
 
@@ -29,11 +32,14 @@ fine-tuned model instead of the original. Every number below is a *recovery*: th
 set of importance values gives back, where 0 is the original model's values and 1 is each input's own updated values.
 All values are at the trigger only; every other position keeps the original model's values.
 
-**The states.** Six do-nothing states, regenerated exactly from E32 and E33:
+**The states.** Six do-nothing states, regenerated from E32 and E33 and reproducing their numbers within 0.0013:
 
 - two with few cue words: " will" followed by " have", one cue; and the emoticon task, ten trigger tokens;
 - four with 32 cues: the copy task, where each of 32 key words is followed by itself; a cipher of 32 random word
   pairs; and 32 cue words for " of", fine-tuned either toward their own 32 answers or all toward " of".
+
+The four 32-cue states are two sets of inputs: copy and the cipher share one, and the two " of" states share another.
+Each set was fine-tuned toward two targets, so the four results are two independent input sets, not four.
 
 **The rules.** Every rule gives a held-out input $x$ its own original values $g_0(x)$ plus a predicted change $c(x)$,
 clipped to $[0, 1]$. The change is fitted on training inputs only, from $d = g_1 - g_0$, the difference between the
@@ -43,7 +49,9 @@ fine-tuned and original values. Each rule rules out something:
 - *One change per cue word*: the mean $d$ over training inputs with $x$'s cue word. This is the current hypothesis,
   and the reference.
 - *Nearest inputs*: the mean $d$ of the eight training inputs whose original values, over all alive subcomponents,
-  are nearest $x$'s. It names no cue. If it matches the per-cue rule, the cue is visible in the original values.
+  are nearest $x$'s. It names no cue. It is not like for like with the per-cue rule: it also lets the change depend
+  on each input's own values, which the per-cue rule cannot, so a match does not by itself show that the cue is
+  visible in the original values.
 - *Clusters*: the mean $d$ of $x$'s group, with groups found by k-means on the training inputs' original values, at 8,
   32 and 128 groups. Random groups of the same sizes are its null.
 - *A line per subcomponent*: each subcomponent's new value is $a\,g_0 + b$, with its own $a$ and $b$ fitted by least
@@ -51,7 +59,7 @@ fine-tuned and original values. Each rule rules out something:
   It names no cue and uses no other subcomponent.
 
 **One difference from E32 and E33.** Those runs gave every input of a cue the same values and subtracted what that
-averaging does to the original values. That form reads higher, 0.82 to 1.06 per cue, but it erases each input's own
+averaging does to the original values. That form reads higher, 0.81 to 1.06 per cue, but it erases each input's own
 values, so it cannot be carried to every position of a text. Here every rule adds a change to the input's own values,
 the form E36 needs at every position.
 
@@ -71,18 +79,19 @@ the form E36 needs at every position.
 
 ![arms](../experiments/regating_cuefree/figures/arms.png)
 
-**Reading it.** Yes. On all four 32-cue tasks the nearest-inputs rule, green, recovers 0.61 to 0.78. One change per
-cue word, blue, recovers 0.47 to 0.66, and one change for every input, grey, 0.01 to 0.13. The nearest-inputs rule
-falls short of the per-cue rule only on the copy task, by 0.05. It beats it by 0.31 where all 32 cues lead to " of",
-so inputs with different cues but similar original values were helped by each other's changes. One caveat: E32's
-and E33's per-cue numbers in their own form are higher, 0.82 to 1.06, and no rule here reaches them on the 32-cue
-tasks.
+**Reading it.** Yes, against the per-cue rule added the same way. On all four 32-cue tasks the nearest-inputs rule,
+green, recovers 0.61 to 0.78. One change per cue word, blue, recovers 0.47 to 0.66, and one change for every input,
+grey, 0.01 to 0.13. The nearest-inputs rule falls short of the per-cue rule only on the copy task, by 0.05, and beats
+it by 0.31 where all 32 cues lead to " of". Two explanations fit that gain: inputs with different cues sharing
+changes, or each input's change depending on its own values, as on the one-cue task below; this run cannot tell them
+apart. E32's and E33's per-cue numbers in their averaged form are higher, 0.81 to 1.06, and no rule here reaches them
+on the 32-cue tasks.
 
 ### Do groups found without labels line up with the cues?
 
 ![clusters](../experiments/regating_cuefree/figures/clusters.png)
 
-**Reading it.** No, not at the number of cues. At 32 k-means groups the four 32-cue tasks recover 0.35 to 0.54,
+**Reading it.** No, not at the number of cues. At 32 k-means groups the four 32-cue tasks recover 0.35 to 0.53,
 below the per-cue rule's 0.47 to 0.66 on three of the four. A group's most common cue covers only 40 to 57% of its
 inputs. With 128 groups recovery reaches 0.49 to 0.70, within 0.06 of the per-cue level or above it on all four. Random
 groups of 32 sit at the one-change level, within 0.01, so the gain comes from grouping by original values. The
@@ -98,10 +107,11 @@ change depends on more than its own original value.
 
 ## What we learned
 
-The change of Γ's importance values at the trigger can be predicted from the original model's importance values,
-with no cue named: similar inputs, judged by their original values, get similar changes, recovering as much as one
-change per cue word. That is a form of the fixed-shift hypothesis that applies to any input, so it can be tested on
-text with no trigger, which E36 does. The cue structure is not a small set of clusters, though, and a fixed rule per
+The change of Γ's importance values at the trigger can be predicted from the original model's importance values by a
+rule that names no cue: similar inputs, judged by their original values, get similar changes. It recovers as much as
+one change per cue word added the same way, though less than the averaged per-cue form. Whether the rule works
+because the most similar inputs share the cue is not yet known; Amendment 1 counts it. The rule applies to any input,
+so it can be tested on text with no trigger, which E36 does. The cue structure is not a small set of clusters, though, and a fixed rule per
 subcomponent is not enough when many answers compete. Even with one cue, inputs' own original values matter: the
 change is not the same amount for every input.
 
@@ -139,6 +149,10 @@ change is not the same amount for every input.
 
 Filed 2026-10-26 16:48 (`experiments/regating_cuefree/results/predictions.json`, sha256 `2e3df9b2…`), before the run.
 
+The filed decision tree had no branch for the nearest-inputs rule holding while the clusters failed, and its "per cue
+below 0.5" branch was met on one state, the 32 cues for " of". Making the nearest rule E36's headline test is a
+decision taken after the run, recorded in the plan's Amendment 1.
+
 | id | claim | rule | read | verdict |
 |---|---|---|---|---|
 | G1 | emoticon reproduces E32; zero change recovers 0 | r, net forms, filed arm, zero checks | all differences 0.0 | pass |
@@ -160,12 +174,12 @@ All are shares of each held-out input's own updated values' recovery, at the tri
 | emoticon | 0.60 | 0.737 | 0.795 | 0.925 | 0.839 | 0.877 | 0.922 | 0.729 | 0.955 |
 | copy, 32 keys | 0.80 | 0.014 | 0.655 | 0.610 | 0.197 | 0.429 | 0.624 | 0.018 | 0.368 |
 | cipher, 32 pairs | 0.27 | 0.039 | 0.633 | 0.679 | 0.218 | 0.449 | 0.698 | 0.042 | 0.580 |
-| 32 cues, own answers | 0.78 | 0.055 | 0.546 | 0.647 | 0.180 | 0.347 | 0.487 | 0.055 | 0.367 |
+| 32 cues, own answers | 0.78 | 0.055 | 0.546 | 0.647 | 0.180 | 0.347 | 0.486 | 0.055 | 0.367 |
 | 32 cues, " of" | 1.10 | 0.128 | 0.465 | 0.776 | 0.325 | 0.535 | 0.651 | 0.129 | 0.796 |
 
 | state | per cue, mean form | 32 groups, mean form | one change, mean form | cluster purity at 32 | training / held-out inputs |
 |---|---|---|---|---|---|
-| " will" → " have" | 0.917 | 0.970 | 0.917 | 1.00 | 401 / 99 |
+| " will" → " have" | 0.916 | 0.970 | 0.916 | 1.00 | 401 / 99 |
 | emoticon | 0.901 | 0.952 | 0.815 | 0.96 | 365 / 73 |
 | copy | 0.842 | 0.487 | 0.067 | 0.57 | 403 / 97 |
 | cipher | 0.815 | 0.499 | 0.148 | 0.57 | 403 / 97 |
@@ -178,8 +192,9 @@ values barely vary at the trigger and keep $a = 1$; the share with a slope above
 
 ## Not run
 
-Seeds beyond 0; positions other than the trigger; whether the nearest inputs share the cue; the nearest rule in the
-mean form; the slopes of the varying subcomponents; any distance other than Euclidean over all alive subcomponents;
+Seeds beyond 0; positions other than the trigger; whether the nearest inputs share the cue, the nearest inputs
+within the same cue as the like-for-like reference, and held-out windows duplicated in training (all three queued as
+Amendment 1); the nearest rule in the averaged form; the slopes of the varying subcomponents; any distance other than Euclidean over all alive subcomponents;
 faithfulness under the adversary of any rule; SGD or small-update states; a larger model.
 
 ## Provenance

@@ -43,14 +43,34 @@ def _sqdist(a: Tensor, b: Tensor) -> Tensor:
     return (a * a).sum(1, keepdim=True) - 2 * a @ b.T + (b * b).sum(1)[None, :]
 
 
-def nearest(g0_tr: Vals, g0_he: Vals, d_tr: Vals, alive: dict[str, Tensor], k: int, device: str) -> Vals:
-    """Each held-out row gets the mean d of its k nearest training rows in g0."""
+def neighbours(g0_tr: Vals, g0_he: Vals, alive: dict[str, Tensor], k: int, device: str,
+               same: tuple[Tensor, Tensor] | None = None) -> tuple[Tensor, Tensor]:
+    """(indices, squared distances), (N_he, k) each on CPU: each held-out row's k nearest training rows in g0. With
+    `same` = (training labels, held-out labels), only training rows with the held-out row's label count."""
     X = flat(g0_tr, alive).to(device)
     Y = flat(g0_he, alive)
-    idx = torch.cat([_sqdist(Y[s : s + CHUNK].to(device), X).topk(k, largest=False).indices.cpu()
-                     for s in range(0, Y.shape[0], CHUNK)])
+    idx, dist = [], []
+    for s in range(0, Y.shape[0], CHUNK):
+        d2 = _sqdist(Y[s : s + CHUNK].to(device), X)
+        if same is not None:
+            lab_tr, lab_he = (t.to(device) for t in same)
+            d2 = d2.masked_fill(lab_he[s : s + CHUNK, None] != lab_tr[None, :], float("inf"))
+        top = d2.topk(k, largest=False)
+        assert torch.isfinite(top.values).all(), f"a held-out row has fewer than {k} training rows with its label"
+        idx.append(top.indices.cpu())
+        dist.append(top.values.cpu())
+    return torch.cat(idx), torch.cat(dist)
+
+
+def mean_at(d_tr: Vals, idx: Tensor) -> Vals:
+    """Each held-out row gets the mean d of the training rows `idx` names (N_he, k)."""
     blocks = range(0, idx.shape[0], CHUNK)
     return {m: torch.cat([v[idx[s : s + CHUNK]].mean(1) for s in blocks]) for m, v in d_tr.items()}
+
+
+def nearest(g0_tr: Vals, g0_he: Vals, d_tr: Vals, alive: dict[str, Tensor], k: int, device: str) -> Vals:
+    """Each held-out row gets the mean d of its k nearest training rows in g0."""
+    return mean_at(d_tr, neighbours(g0_tr, g0_he, alive, k, device)[0])
 
 
 def kmeans(X: Tensor, K: int, seed: int, iters: int = 50) -> Tensor:
