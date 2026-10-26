@@ -1,0 +1,122 @@
+{
+ "about": "teacher_training Amendment 5 (reports/plans/2026-10-23_plan_teacher-training.md -> 'Amendment 5'). Part 1: the harness's adversary (H: faithfulness.harness_pgd, the authors' calc_multibatch_pgd_masked_recon_loss) and the budget sweep's (S: gamma.pgd_sources + cancel.masked_kl) read at W0 and at the regenerated r1_t534_v369 SGD teacher's do-nothing state (fine-tune seed 0, step 1000), adversary seed 0, each variant changing one difference (amend5.py's docstring lists them with file:line). Part 2: arms A and B of that teacher at batch-order seeds 0 and 1, E34's recipe, 1000 steps; cosines of the weight changes. Filed before any run",
+ "amend5": {
+  "c1_floor": 0.075,
+  "c1_floor_tol": 0.05,
+  "g1_budget": 9.24,
+  "g1_budget_tol": 0.05,
+  "g1_harness": 1.588,
+  "g1_harness_tol": 0.01,
+  "g1_p_size": [
+   0.983,
+   0.0287
+  ],
+  "g1_p_tol": 0.01,
+  "g1_size_tol": 0.002,
+  "long_steps": 160,
+  "many": 0.5,
+  "move_tol": 0.25,
+  "null_seed": 0,
+  "rows_tol": 0.25,
+  "same_way": 0.8,
+  "seed": 0,
+  "steps": 20,
+  "student_seeds": [
+   0,
+   1
+  ],
+  "task": "r1_t534_v369",
+  "teacher": "sgd",
+  "w0_tol": 0.1
+ },
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1_w0": "first, alone: W0 under the Pile harness (256 rows, 20 steps, adversary seeds 0, 1, 2); faith_score.w0_check passes and its PGD floor (max/min - 1 over the seeds) is 0.075 within 5% relative (A4 on an H100: 0.0748). Fails: stop, nothing read",
+  "G1_teacher": "after W0's and the teacher's default readings, before any variant: the teacher reproduces E34 (held-out P(target) within 0.01 of 0.983, size within 0.002 of 0.0287, harness ratio within 0.01 absolute of 1.588) and A4 (budget ratio at 20 steps within 5% relative of 9.24). Fails: stop. Reported beside it: W0's harness reading rebuilt per block against the job's C1 reading of the same seed (expected 0 to GPU nondeterminism: harness_pgd is faithfulness's PGD, split out)"
+ },
+ "expected": {
+  "W0": "ratio 1 on every reading by definition. KL on an H100: harness 0.699 (A4 C1, seed 0; blocks unknown singly); budget 0.663 (A4 C1b); budget.bf16, start (fp32), start.bf16, rows256 (both readouts) within 10% of budget; harness_b0 within 10% of harness; budget160 0.708 (A4 C1b); budget160.bf16 and harness160_b0 within 10% of budget160 (but W0's seed-to-seed spread at 160 steps was 23%, A4 C1b)",
+  "copies": "P(target) at 1000 about 0.996 (arm A) and 0.974 (arm B) at seed 0 (E34), within 0.05 at seed 1 (A4: within 0.03)",
+  "noise": "the budget measure's own 7% at 20 steps and 23% at 160 (A4 C1b, W0 seed 1 / seed 0); the harness's seed floor 0.075 (C1); one adversary seed per reading here",
+  "teacher": "harness 1.588 (E34), budget 9.24 (A4), budget160 10.45 (A4); P(target) 0.983, size 0.0287, damage 0.056; the variants: P1-P2",
+  "time": "H100: load and C1 ~3 min; defaults and G1 ~3 min; variants ~2 min; Part 2 ~10 min (B streams Pile train rows first, ~3 min, unless cached); the 160-step readings ~9 min"
+ },
+ "filed": "2026-10-26 20:03:20",
+ "measurements": {
+  "KL": "every reading is a mean KL in nats over every position of its rows, from the state's own logits to its logits under the adversary's masks (g + (1 - g) a on the subcomponents, a alone on Delta); held fixed: Gamma, Delta, the Pile val rows, adversary seed 0; varied: one item of the docstring's list per reading. Ratio = KL(teacher) / KL(W0) under the same reading, relative",
+  "budget": "S on block 0 at 20 steps of 2/20 from pgd_sources' sorted-order start; fp32 = cancel.masked_kl (S's readout, A4's number), budget.bf16 = pgd_sources' own KL under the same sources (H's readout)",
+  "budget160": "S at 160 steps of 2/160 on block 0, both readouts (A4's long reading)",
+  "cosines": "finetune.cosines 'all' (the matrices concatenated, float64) of weight changes rebuilt from the saved bf16 offsets: seed 1 against seed 0 per arm, each copy against delta-W, arm A against arm B at seed 0, and a random direction (finetune.random_direction, seed 0) against delta-W and each arm's seed-0 copy. Blind to placements equal up to a reparametrisation of the subcomponents (the cosine is on the weight change, which is gauge-free). No positive control; the null is the floor (Amendment 1: 0.0002). Expected with delta-W: 0.08-0.22 (the plan's E34 range); no noise floor for the seed cosine exists yet (this is the first)",
+  "harness": "H on blocks 0 and 1 (rows 0-127, 128-255, batches of 8) at 20 steps of 0.1, the mean of the blocks (the harness's pgd_kl); harness_b0 = block 0 alone (S's rows)",
+  "harness160_b0": "H at 160 steps of 2/160 on block 0 (S's rows; one block to keep the job near 30 min)",
+  "p_target": "each copy's held-out P(target) at steps 100 and 1000 from the training curve's free reading",
+  "rows256": "S on all 256 rows in one adversary (32 batches of 8), both readouts",
+  "start": "S from H's start (gamma.harness_start as pgd_sources' init); start (fp32) = S's readout; start.bf16 = H's readout, which is H's loop on block 0 rebuilt from S's code (the identity: should equal harness_b0)"
+ },
+ "not_run": [
+  "H at 160 steps on block 1 (one block, to keep the job near 30 min)",
+  "S from H's start at 160 steps; H with S's start (calc_multibatch takes no initial sources)",
+  "adversary seeds past 0; other adversary families; other teachers and tasks",
+  "harness reads (verdicts) of the copies; budgets past 160"
+ ],
+ "predictions": [
+  {
+   "blind_to": "rows past 256; other adversary seeds",
+   "confidence": "medium (the plan's one claim; its null is that the rows carry it)",
+   "id": "P1_rows_do_not_carry_it",
+   "predicted": "holds",
+   "rule": "on the teacher: |ratio(rows256) / ratio(budget) - 1| <= 0.25 (fp32 readout) and |ratio(harness_b0) / ratio(harness) - 1| <= 0.25; both must hold",
+   "why": "25% = the copies' batch-order spread (Amendment 4)"
+  },
+  {
+   "blind_to": "the rows item (P1) and the 160-step readings, reported only; other adversary families",
+   "confidence": "medium that one moves it; low on which (no prediction names it)",
+   "id": "P2_in_the_code_path",
+   "predicted": "holds",
+   "report": "each reading's ratio, which reference it lands near, and the difference that implicates: budget.bf16 near the harness or start (fp32) near the budget implicates the readout; budget.bf16 near the budget or start (fp32) near the harness implicates the start (amend5.P2_READINGS)",
+   "rule": "on the teacher, at least one single-difference reading, budget.bf16 (S with H's readout; also H's block 0 with S's start) or start (fp32) (S from H's start; also H's block 0 with S's readout), has a ratio within 25% relative of this job's harness ratio (gated to 1.588 +- 0.01) or of its budget ratio (gated to 9.24 +- 5%)"
+  },
+  {
+   "confidence": "high (A4: the two measures agreed on W0 within 0.04 nats)",
+   "id": "P3_w0_agrees",
+   "noise": "7% at 20 steps, 23% at 160 (A4 C1b)",
+   "predicted": "holds for all eight",
+   "rule": "at W0, every variant's KL within 10% relative of its own default's: budget.bf16, start (fp32), start.bf16, rows256, rows256.bf16 against budget; harness_b0 against harness; budget160.bf16 and harness160_b0 against budget160"
+  },
+  {
+   "blind_to": "reparametrisations of the subcomponents; one teacher, one task",
+   "confidence": "medium (the end states moved by 0.005 in P(target) in Amendment 4, but nothing has read the weights)",
+   "id": "P4_copies_point_the_same_way",
+   "predicted": "same way",
+   "rule": "cosine between the seed-0 and seed-1 copies' weight changes, 'all' entry, per arm: >= 0.8 on both arms reads 'same way' (pass); < 0.5 on either arm reads 'one of many' (a copy is one of many behaviourally equal placements); otherwise 'between'"
+  }
+ ],
+ "reported_not_scored": [
+  "the identity: start.bf16 / harness_b0 at W0 and at the teacher (H's loop rebuilt from S's code; expected 1 to GPU nondeterminism; a gap means the docstring's list missed a difference)",
+  "the teacher's 160-step ratios (budget160 both readouts, harness160_b0) against A4's 10.45",
+  "each copy's cosine with delta-W, arm A against arm B at seed 0, the nulls; P(target) of each copy",
+  "harness_b1's ratio"
+ ]
+}

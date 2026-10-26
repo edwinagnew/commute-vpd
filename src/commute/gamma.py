@@ -247,6 +247,16 @@ def pgd_sources(model: Any, batches: list[Tensor], steps: int, step_size: float 
     return {k: adv[k].flatten().cpu() for k in keys}, _mask_kl(model, cached, wd, adv)
 
 
+def harness_start(model: Any, seed: int = 0) -> Sources:
+    """The harness's random start (`faithfulness.harness_pgd`): the uniform draws calc_multibatch_pgd_masked_recon_loss
+    makes after torch.manual_seed(seed), one (C + 1,) vector per matrix in model.target_module_paths order. `pgd_sources`
+    draws in sorted order, so the same seed starts each matrix from different numbers; pass this as its `init` to start
+    where the harness does. Added 2026-10-26 (teacher_training Amendment 5)."""
+    device = next(model.parameters()).device
+    torch.manual_seed(seed)
+    return {k: torch.rand(1, 1, model.module_to_c[k] + 1, device=device).flatten().cpu() for k in model.target_module_paths}
+
+
 def adversary_groups(sources: Sources, change: dict[str, Tensor], alive: dict[str, Tensor], k: int, seed: int) -> dict[str, Sel]:
     """Three sets of `k` alive subcomponents over all matrices, by the adversary's sources and the state's per-subcomponent
     change (`change[k]`: (C,), gauge-free relative change of u v^T, 0 for dead ones): `down_changed`, the most changed

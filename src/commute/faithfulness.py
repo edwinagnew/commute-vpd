@@ -72,14 +72,12 @@ def transported_components(model: Any, scale: dict[str, tuple[Tensor, Tensor]] |
 
 def faithfulness(model: Any, batches: list[Tensor], n_stoch_draws: int = 2, pgd_steps: int = 20, seed: int = 0,
                  log: Any = print) -> dict[str, float]:
-    from param_decomp.configs import PGDMultiBatchConfig, UniformKSubsetRoutingConfig
-    from param_decomp.metrics.pgd_utils import calc_multibatch_pgd_masked_recon_loss
+    from param_decomp.configs import UniformKSubsetRoutingConfig
     from param_decomp.metrics.stochastic_recon_subset_loss import (
         stochastic_recon_subset_loss,
     )
     from param_decomp.models.batch_and_loss_fns import recon_loss_kl
     from param_decomp.models.components import make_mask_infos
-    from param_decomp.routing import AllLayersRouter
 
     device = next(model.parameters()).device
     batches = [b.to(device) for b in batches]
@@ -105,20 +103,37 @@ def faithfulness(model: Any, batches: list[Tensor], n_stoch_draws: int = 2, pgd_
             del ci, target_out, out_ci, out_ones
             torch.cuda.empty_cache() if use_autocast else None
     res = {k: v / n for k, v in sums.items()}
-    # One adversary shared across every row of every batch (the paper's 128-row scope), gradients accumulated over
-    # the batches before each sign step. The authors' function needs grad mode on (it calls autograd.grad itself).
+    res["pgd_kl"] = harness_pgd(model, batches, pgd_steps, seed)
+    res["pgd_rows"] = n
+    log("[faith] " + " ".join(f"{k} {v:.4f}" for k, v in res.items()))
+    return res
+
+
+def harness_pgd(model: Any, batches: list[Tensor], pgd_steps: int = 20, seed: int = 0, step_size: float = 0.1) -> float:
+    """The PGD half of `faithfulness`: one adversary shared across every row of every batch (the paper's 128-row
+    scope), the authors' calc_multibatch_pgd_masked_recon_loss under bf16 autocast (random start after
+    torch.manual_seed(seed), `pgd_steps` sign steps of `step_size`, gradients accumulated over the batches), returning
+    its own final objective. Split out of `faithfulness` 2026-10-26 (teacher_training Amendment 5) to read it per block
+    and at other step sizes; `faithfulness` calls it with step size 0.1, as before."""
+    from param_decomp.configs import PGDMultiBatchConfig
+    from param_decomp.metrics.pgd_utils import calc_multibatch_pgd_masked_recon_loss
+    from param_decomp.models.batch_and_loss_fns import recon_loss_kl
+    from param_decomp.routing import AllLayersRouter
+
+    device = next(model.parameters()).device
+    batches = [b.to(device) for b in batches]
+    use_autocast = device.type == "cuda"
+    wd = weight_deltas(model)
+    # The authors' function needs grad mode on (it calls autograd.grad itself).
     torch.manual_seed(seed)
-    pgd_cfg = PGDMultiBatchConfig(init="random", step_size=0.1, n_steps=pgd_steps, gradient_accumulation_steps=len(batches))
+    pgd_cfg = PGDMultiBatchConfig(init="random", step_size=step_size, n_steps=pgd_steps, gradient_accumulation_steps=len(batches))
     with torch.enable_grad(), torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_autocast):
         p = calc_multibatch_pgd_masked_recon_loss(
             pgd_config=pgd_cfg, model=model, weight_deltas=wd, create_data_iter=lambda: iter(batches),
             router=AllLayersRouter(), sampling="continuous", use_delta_component=True, device=str(device),
             reconstruction_loss=recon_loss_kl)
-    res["pgd_kl"] = float(p.detach())
-    res["pgd_rows"] = n
     torch.cuda.empty_cache() if use_autocast else None
-    log("[faith] " + " ".join(f"{k} {v:.4f}" for k, v in res.items()))
-    return res
+    return float(p.detach())
 
 
 # ----------------------------------------------------------------------------- round 2's Pile harness
