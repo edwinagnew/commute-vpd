@@ -256,3 +256,30 @@ values, so T4 compares within the run; a positive control C_full (the joined spa
 0.05 at every step) must hold for T3 and T4 to be read; the bag weights each token by its inverse frequency in the
 fitted rows, since raw counts let frequent tokens fill it, which would have tilted T3 towards passing; that bag
 neighbours may be adjacent positions of one fitted row goes in the blind-to line.
+
+## Amendment 9 (2026-10-26, after Amendment 6's independent check): is it only each value's room to move?
+
+Amendment 6's check (`reports/reviews/2026-10-26_review_regating-spread-amend6.md`) found no bug, but named a threat to
+the restatement "positions the original model treats alike get alike changes": every rule adds its predicted change to
+the position's own original values and clips to [0, 1], so a value's change is bounded by [−g0, 1 − g0], and neighbours
+with similar original values respect the query's bounds while text neighbours need not. If that is the whole of the
+original values' edge, the finding is "values move towards where they have room", not a statement about which positions
+the model treats alike. Amendment 1's straight-line rule per subcomponent (clip(a g0 + b), "fix") already recovered
+−0.01 at step 300, so only a curved function of each value alone is left. `experiments/regating_spread/amend7.py`
+regenerates the lowercase fine-tune and fits, on all 262,144 positions: the nearest rule on Γ's original values (gate
+A0: reproduces Amendment 6 within 0.02) and a value-bin rule that predicts each subcomponent's change from its own
+original value alone (the mean change over fitted positions whose value for that subcomponent falls in the same one of
+16 bins, equal-count bins per subcomponent), which uses no joint structure and no context. Positive control C_bin: the
+bin rule at least the straight-line rule minus 0.05 (it can express any such line up to bin width). Reported only: the
+4-token text rule with 32 neighbours, to size the cost of the 8-neighbour cap where text neighbours tie.
+Prediction filed by `amend7.py --predictions` before the run: B1, the bin rule at least 0.3 below the nearest rule on
+the original values at step 300 (medium-high). Decision tree: B1 holds → the original values' edge is not each value's
+room to move, and the restatement goes to the user with Amendment 6's caveat on context length; B1 fails → the
+restatement is withdrawn in favour of "values move towards where they have room", and the user gets a card.
+
+Design check: goal Q5 (the decision card decision-cuefree asks the user to adopt the restatement; this closes the one
+threat to it that is cheap to close). Nearest tried: Amendment 1's "fix" rule (straight line per subcomponent).
+Patch or step: a patch, the null its check named. Decisions relied on: as above, no departure. Control first: A0 at
+step 10 stops the run. Class 1 (a new rule on the existing harness and states). An H100, under $1. Not run here: an
+order-keeping summary of the whole preceding text (Amendment 6's bag scored like random neighbours, so the amount of
+context is still untested beyond positions 0-31).
