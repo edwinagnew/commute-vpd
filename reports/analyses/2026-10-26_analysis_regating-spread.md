@@ -11,9 +11,9 @@ can be predicted from the original model's importance values there. On lowercase
 similar original values predicted it better than every other rule. With the planned sample of fitted positions it fell
 below the filed bar after the first ten steps; with sixteen times as many it recovered three-quarters or more at every
 step. The same rule on the original model's attention inputs, which Γ itself
-reads, does about as well. A summary of the text alone, which the model did not produce, does about a quarter worse. For
-`GOALS.md` this supports the form "positions the original model treats alike get alike changes" on one synthetic style
-of running text.
+reads, does about as well. A summary of the last few tokens alone, which the model did not produce, does about a quarter
+worse. For `GOALS.md` this supports the form "positions the original model treats alike get alike changes, more than
+positions that share their last few tokens" on one synthetic style of running text.
 
 ## The answer
 
@@ -21,7 +21,7 @@ Yes, once enough positions are compared. On a fine-tune of lowercased Pile text,
 change of the eight training positions with the nearest original importance values. Fitted on 16,384 positions this
 recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51, under the filed 0.6. Fitted on all 262,144 it recovered
 0.89, 0.78 and 0.76, and the same rule on the attention inputs Γ reads about as much. At the same sample size the current token
-recovers about a third, a summary of the surrounding text about a half, and position in the row almost nothing.
+recovers about a third, a summary of the last few tokens about a half, and position in the row almost nothing.
 
 ## What we were trying to test
 
@@ -104,8 +104,10 @@ the filed rule. Amendments 2 and 3 showed that miss was sampling: with all 262,1
 0.89 of the switching at every step. So on running text with no trigger, values predicted from the positions with the most similar original
 importance values recover most of the switching effect. Amendment 4 found them predicted about as well, within 0.02, from the
 original model's attention inputs, which Γ reads, so Γ's original values are one sufficient summary of the context, not
-a privileged one. A summary of the text that the model did not produce recovers about a half, 0.23 to 0.35 less
-(Amendment 5), so what predicts the change is how the original model treats the position, not the text alone. At the same sample size the current token recovers about a third and
+a privileged one. A summary of the last few tokens, which the model did not produce, recovers about a half, 0.23 to
+0.35 less (Amendment 5). So the original model's view of the position predicts the change better than its recent
+text; whether a summary of the whole preceding text would close the gap is not yet tested, since the model sees the
+whole prefix and the text summary in effect about four tokens. At the same sample size the current token recovers about a third and
 position in the row almost nothing; at 16,384 positions the original values also beat a few groups and a fixed rule per
 subcomponent. A tenth to a quarter of the switching remains unexplained, more of it later in training. A high switching share is not evidence of learned re-weighting
 on its own, since an update that learned nothing gave the same share.
@@ -262,14 +264,17 @@ Amendment 4's check pointed out that Γ's values and the attention inputs both c
 cannot tell "positions the original model treats alike" from "positions with similar text". This run fits the same
 nearest rule, on the same 262,144 positions, on a summary of the text the model did not produce: each of the current
 and 15 preceding tokens, or 3, hashed with its offset to one of 4,096 signed coordinates, weighted towards recent
-tokens. As a positive control, the 4-token summary had to do at least as well as the current-token rule, which it did
-at every step.
+tokens. As a floor, the 4-token summary had to do at least as well as the current-token rule, which it did at every
+step; that shows the text space carries the current token's information, not that it could reach the original values
+if the text were enough.
 
-**Reading it.** The model's view matters. The text summaries recover 0.53, 0.54 and 0.50 of the switching with 16
+**Reading it.** The model's view predicts more than the last few tokens do. The text summaries recover 0.53, 0.54 and 0.50 of the switching with 16
 tokens, and 0.56, 0.52 and 0.49 with 4, at steps 10, 100 and 300. The original importance values recover 0.88, 0.77
 and 0.76, 0.23 to 0.35 more at every step. The text rules beat the current token, 0.33 to 0.42, so they carry real
-information, and about 69% of their neighbours hold the same token. So positions that look alike as text get partly
-alike changes, but positions the original model treats alike get much more alike ones.
+information, and about 69% of their neighbours hold the same token. So positions that end in similar text get partly
+alike changes, and positions the original model treats alike get much more alike ones. With the weighting used, 83% of
+the 16-token summary rests on its last 4 tokens, so the two windows are nearly the same summary, while the model's
+view is computed from the whole preceding row.
 
 | step | nearest, original values | nearest, text of 16 tokens | nearest, text of 4 tokens | token rule (Amendment 4) |
 |---|---|---|---|---|
@@ -280,13 +285,15 @@ alike changes, but positions the original model treats alike get much more alike
 | id | claim | rule | read | verdict |
 |---|---|---|---|---|
 | A0 | the nearest rule on the original values reproduces Amendment 4 | within 0.02 at every step | within 0.005 | pass |
-| C_text | the 4-token text summary is at least as good as the token rule | ≥ token − 0.05 at every step | +0.15 to +0.18 | pass |
+| C_text | the 4-token text summary is at least as good as the token rule (a floor) | ≥ token − 0.05 at every step | +0.15 to +0.18 | pass |
 | T1 | the text summary predicts the change worse than the original values | text16 ≤ g0 − 0.1 at step 300 | −0.26 | pass, as predicted |
-| T2 | more preceding text helps | text16 ≥ text4 at step 300 | +0.011 | pass, as predicted |
+| T2 | more preceding text helps | text16 ≥ text4 at step 300 | +0.011, −0.030 at step 10 | pass by the rule, below the 0.014 noise floor |
 
 By the filed decision tree, "T1 holds" reads: the original model's view of the context predicts the change better than
 the text, so the restatement "positions the original model treats alike get alike changes" is about the model, not the
-text. One hashing, one pair of windows and one decay were tried; a richer text summary might close part of the gap.
+text. The independent check narrowed that: the text summary saw in effect about four tokens and the model the whole
+prefix, so what is shown is "more than positions sharing their last few tokens". A summary of the whole preceding text
+is the fairer null; that is Amendment 6.
 
 ## What next
 
