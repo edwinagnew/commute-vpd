@@ -1,7 +1,7 @@
 # Does the cue-free form of the fixed-shift hypothesis hold on a fine-tune with no trigger? (E36, analysis)
 
 *2026-10-26, lead agent (overnight). Plan and design check: `reports/plans/2026-10-26_plan_regating-without-cues.md` (E36,
-Amendments 1 and 3 to 7). Code: `experiments/regating_spread/run.py` and `amend1.py` to `amend5.py`, shared steps in
+Amendments 1 and 3 to 8). Code: `experiments/regating_spread/run.py` and `amend1.py` to `amend6.py`, shared steps in
 `src/commute/spread.py` and `src/commute/cuefree.py`. Follows E35, `reports/analyses/2026-10-26_analysis_regating-without-cues.md`.
 Exploration, provisional. Independent checks (fresh Opus agents, 2026-10-26) of the first run and of Amendment 3 found the
 numbers and scoring right and the headlines too strong each time; this version takes their points. Words as in `GOALS.md` → Terms.*
@@ -12,8 +12,10 @@ similar original values predicted it better than every other rule. With the plan
 below the filed bar after the first ten steps; with sixteen times as many it recovered three-quarters or more at every
 step. The same rule on the original model's attention inputs, which Γ itself
 reads, does about as well. A summary of the last few tokens alone, which the model did not produce, does about a quarter
-worse. For `GOALS.md` this supports the form "positions the original model treats alike get alike changes, more than
-positions that share their last few tokens" on one synthetic style of running text.
+worse, and adding a bag of every earlier token in the row did not help. That bag scored like rules that use no context
+at all, so whether a better summary of the whole preceding text would close the gap is still open. For `GOALS.md` this
+supports the form "positions the original model treats alike get alike changes, more than positions that share their
+last few tokens" on one synthetic style of running text.
 
 ## The answer
 
@@ -21,7 +23,8 @@ Yes, once enough positions are compared. On a fine-tune of lowercased Pile text,
 change of the eight training positions with the nearest original importance values. Fitted on 16,384 positions this
 recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51, under the filed 0.6. Fitted on all 262,144 it recovered
 0.89, 0.78 and 0.76, and the same rule on the attention inputs Γ reads about as much. At the same sample size the current token
-recovers about a third, a summary of the last few tokens about a half, and position in the row almost nothing.
+recovers about a third, a summary of the last few tokens about a half, and position in the row almost nothing. Adding
+the whole preceding text, as a bag of tokens, left the text summary at about a half; the bag alone recovered nothing.
 
 ## What we were trying to test
 
@@ -106,8 +109,9 @@ importance values recover most of the switching effect. Amendment 4 found them p
 original model's attention inputs, which Γ reads, so Γ's original values are one sufficient summary of the context, not
 a privileged one. A summary of the last few tokens, which the model did not produce, recovers about a half, 0.23 to
 0.35 less (Amendment 5). So the original model's view of the position predicts the change better than its recent
-text; whether a summary of the whole preceding text would close the gap is not yet tested, since the model sees the
-whole prefix and the text summary in effect about four tokens. At the same sample size the current token recovers about a third and
+text. Amendment 6 tried a bag of every preceding token as the whole preceding text. It carried no usable signal, so
+whether a better whole-prefix summary would close the gap is still open. At the first 32 positions of a row, where the
+bag does hold the whole prefix, the text recovers 0.48 against the original values' 0.74. At the same sample size the current token recovers about a third and
 position in the row almost nothing; at 16,384 positions the original values also beat a few groups and a fixed rule per
 subcomponent. A tenth to a quarter of the switching remains unexplained, more of it later in training. A high switching share is not evidence of learned re-weighting
 on its own, since an update that learned nothing gave the same share.
@@ -142,6 +146,8 @@ on its own, since an update that learned nothing gave the same share.
    text.
 4. **With all positions the rule cleared the bar** (Amendment 3). We predicted it would stay under 0.7 at step 300;
    it recovered 0.76, so the first surprise above was a sampling shortfall.
+5. **The whole preceding text added nothing to the last four tokens** (Amendment 6). We predicted, at medium
+   confidence, that it would add more than the noise floor; it fell 0.02 below them, and the bag alone recovered nothing.
 
 ## Amendment 2: is the shortfall sampling, and does the token add anything?
 
@@ -295,6 +301,85 @@ text. The independent check narrowed that: the text summary saw in effect about 
 prefix, so what is shown is "more than positions sharing their last few tokens". A summary of the whole preceding text
 is the fairer null; that is Amendment 6.
 
+## Amendment 6: does a summary of the whole preceding text close the gap?
+
+*Plan: Amendment 8 of the plan. `experiments/regating_spread/amend6.py`, predictions filed 2026-10-26 19:31
+(`results/predictions_amend6.json`, sha256 `f9b54f7d…`, commit `11eb4fd`) before the run; results
+`results/regating_spread_amend6.json`. RunPod H100 PCIe, run 123 s. Independent check (fresh Opus agent, read-only):
+`reports/reviews/2026-10-26_review_regating-spread-amend6.md`.*
+
+We asked whether a summary of everything earlier in the row predicts the change as well as the original model's view
+does. It does not, and the whole preceding text added nothing to the last four tokens, against our prediction. But the
+summary we built carried no usable signal of its own, so this run says little about whether more context would close
+the gap. Only the start of rows, where the summary does hold the whole prefix, bears on that.
+
+Amendment 5's text summary rested in effect on the last four tokens, while the model sees the whole row up to the
+position. So this run fits the same nearest rule, on the same 262,144 positions, in three text spaces the model did not
+produce. The first is the 4-token summary again. The second is a bag of every token from the row's start to the
+position, each weighted by how rare it is in the fitted rows. The bag is hashed to 4,096 signed coordinates and scaled
+to unit length. The third joins the bag with the 4-token summary, each half given equal length. The original importance
+values were refitted as the reference. As a positive control, the joined space had to stay within 0.05 of the 4-token
+summary at every step, since it holds that summary as half its length; it did. Both reference spaces reproduced
+Amendment 5 within the 0.02 allowed: the original values within 0.009, the 4-token summary within 0.0196.
+
+![amend6](../../experiments/regating_spread/figures/amend6.png)
+
+**Reading it.** The whole preceding text, as a bag, neither brings the text up to the model's view nor adds to the last
+four tokens. At step 300 the joined space recovers 0.49 of the switching, against 0.76 for the original values. The
+4-token summary alone recovers 0.51. We predicted the joined space would beat it by more than the noise floor of 0.014;
+it fell 0.020 below it, a miss. The bag alone recovers 0.05 at step 10 and −0.05 at step 300. That is the level of rules
+that use no context at all: random groups read 0.03 to 0.07, and one change per position in the row about the same. So the bag
+never stood in for the whole preceding text, and the joined space is in effect the 4-token summary again. The gap to the
+original values therefore repeats Amendment 5's finding rather than testing how much context the text needs.
+
+**The start of rows.** At positions 0 to 31 the bag does hold the whole prefix the model sees, so this part bears most on
+context length. There the joined space recovers 0.48 and the original values 0.74, a gap about as wide as elsewhere in
+the row. Even there the bag ignores order beyond the last four tokens and weights tokens by rarity, so it is a weak
+summary of a short prefix.
+
+**The miss, read narrowly.** "The whole preceding text adds nothing to the last four tokens" is supported. "It makes them
+worse" is not: the drop of 0.020 is the size of the 4-token summary's own shift between this run and Amendment 5,
+0.0196. So the filed noise floor understates how much the text spaces move between runs. Possible causes of the miss,
+none measured:
+
+- the bag drowns the current token. At unit length the current token holds about one over the square root of the
+  number of distinct tokens in the bag. Yet the current token alone recovers about a third, and 69% of the 4-token
+  summary's neighbours share it;
+- a bag changes little between adjacent positions, so a held-out position's 8 bag neighbours may be neighbouring
+  positions of one fitted row, fewer independent contexts than 8;
+- rows are cut from a stream of documents, so a row's start is not a document's start and the bag mixes the end of one
+  document with the next;
+- in the joined space the bag's spread of distances reorders the 4-token summary's near-ties;
+- hash collisions with opposite signs.
+
+| step | original values | 4-token text | bag of the whole prefix | bag joined with 4-token text |
+|---|---|---|---|---|
+| 10 | 0.890 | 0.564 | 0.050 | 0.564 |
+| 100 | 0.779 | 0.525 | 0.029 | 0.513 |
+| 300 | 0.762 | 0.511 | −0.046 | 0.491 |
+
+At step 300 by position in the row, each part normalised by its own share of the switching:
+
+| positions | original values | 4-token text | bag of the whole prefix | bag joined with 4-token text |
+|---|---|---|---|---|
+| 0 to 31 | 0.744 | 0.517 | 0.042 | 0.483 |
+| 32 to 127 | 0.702 | 0.464 | −0.026 | 0.451 |
+| 128 to 511 | 0.798 | 0.534 | −0.077 | 0.514 |
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| A0 | original values and 4-token text reproduce Amendment 5 | each within 0.02 at every step | within 0.009 and 0.0196 | pass |
+| C_full | the joined space keeps the 4-token summary's recovery (positive control) | ≥ text4 − 0.05 at every step | 0.000, −0.012, −0.020 | pass |
+| T3 | even the whole preceding text predicts worse than the original values | text_full ≤ g0 − 0.1 at step 300 | −0.271 | pass, as predicted |
+| T4 | the whole preceding text adds to the last four tokens | text_full ≥ text4 + 0.014 at step 300 | −0.020 | **fail**, predicted pass |
+
+By the filed decision tree, the branch where even the whole preceding text falls 0.1 short of the original values reads:
+the restatement "positions the original model treats alike get alike changes" stands as worded. The independent check
+narrowed that. The prediction held, but against a bag that carries no signal, so it repeats Amendment 5's comparison and
+says nothing about context length. The only evidence here on context length is the start of rows. The check also
+raised open threats to the restatement, not measured and listed under "Not run". The original values may have an edge
+in the clip; text neighbours are cut to 8 where hundreds tie; and no order-keeping summary of the whole prefix was tried.
+
 ## What next
 
 1. **Done as Amendment 3:** with all 262,144 positions the rule reaches 0.76 to 0.89 at every step. Next on this: what
@@ -302,7 +387,11 @@ is the fairer null; that is Amendment 6.
 2. **Done as Amendments 4 and 5:** Γ's own input from the original model does as well as its values, and a summary of
    the text alone does a quarter worse. What the remaining tenth to quarter depends on, and a richer text summary as a
    harder null, are new designs and go to the user through the pending card.
-3. **A fine-tune of a real behaviour that learns**, or the larger model's post-trained sibling, before any restatement
+3. **Tried as Amendment 6:** a bag of the whole preceding text carried no usable signal. A summary of the whole prefix
+   that keeps order and the current token is still the harder null. A check of the clip's edge for the original
+   values would say whether the remaining gap is about the model at all. If either closes most of the gap, the
+   restatement becomes "similar contexts get similar changes".
+4. **A fine-tune of a real behaviour that learns**, or the larger model's post-trained sibling, before any restatement
    is adopted. A pending-decision card in the log holds this choice.
 
 ## Scorecard
@@ -357,6 +446,20 @@ than 8 and 32; groups and the line refitted on 262,144 positions; text summaries
 inputs; any distance but Euclidean; the rules' faithfulness under the adversary; a domain fine-tune that learns; SGD or LoRA
 updates; a larger model.
 
+From Amendment 6 and its independent check, none measured:
+
+- a summary of the whole prefix that keeps order and the current token: the bag weighted like the 4-token summary's
+  current token, longer windows without decay, or another model's embedding;
+- a positive control showing a whole-prefix summary can carry long-range context at all;
+- a check of the clip's edge for the original values. The predicted values are clipped to $[0, 1]$, so a position's
+  change is bounded by $[-g_0, 1 - g_0]$; neighbours with similar $g_0$ have changes that respect the query's bounds,
+  text neighbours do not. Predicting from the neighbours' values on the fine-tuned model, clipped to the query's
+  bounds, or scoring only subcomponents far from 0 and 1, would separate the two;
+- ties in the text spaces: a held-out position may have hundreds of exactly tied text neighbours, of which 8 are kept
+  arbitrarily. Neither the tie counts, nor whether the bag's 8 neighbours come from one fitted row, were measured;
+- a replicate of the text spaces, whose run-to-run shift of 0.02 exceeds the filed noise floor;
+- other hashings and other weights for the two halves of the joined space.
+
 ## Provenance
 
 - Code-like run: `experiments/regating_spread/results/regating_spread.json` (sha256 `1b45dcb7…`), log
@@ -370,3 +473,7 @@ updates; a larger model.
   `39983bc6…`), logs `results/large/amend{2,3,4,5}.log`; RunPod RTX 4090 (58 s, $0.09), H100 80GB HBM3 (85 s, $0.30),
   H100 NVL (98 s, $0.44, after three refused starts of the HBM3), H100 80GB HBM3 (80 s, $0.85).
 - Figure `experiments/regating_spread/figures/sampling.png` from `plot_sampling.py`.
+- Amendment 6: `results/regating_spread_amend6.json` (sha256 `27583c8f…`), predictions `results/predictions_amend6.json`
+  (sha256 `f9b54f7d…`); RunPod H100 PCIe, run 123 s, 19:32–19:34. Log downloaded as `results/amend6_dl/amend6.log`;
+  pod id and cost are in the runner's hand-back, not this file. Figure `figures/amend6.png` from `plot_amend6.py`. Independent
+  check `reports/reviews/2026-10-26_review_regating-spread-amend6.md`.
