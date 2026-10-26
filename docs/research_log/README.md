@@ -208,3 +208,7 @@ Figures already published (their sources, for a re-upload):
 - "fig/e34_amend3.png": "experiments/teacher_training/figures/amend3.png"
 - "fig/e31_scaled.png": "experiments/adjoint_sgd/figures/scaled.png"
 - "fig/e34_amend4.png": "experiments/teacher_training/figures/amend4.png"
+- "fig/e34_amend5.png": "experiments/teacher_training/figures/amend5.png"
+- "fig/e34_amend5_cos.png": "experiments/teacher_training/figures/amend5_cos.png"
+- "fig/e37_behaviour_faithful.png": "experiments/teacher_spread/figures/behaviour_faithful.png"
+- "fig/e37_placement.png": "experiments/teacher_spread/figures/placement.png"
