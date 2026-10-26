@@ -224,3 +224,14 @@ reports recovery by position bucket, the token rule's coverage, and the share of
 span also found in the training rows. Predictions filed by `amend4.py --predictions` before the run: R1, the residual
 stream does as well within 0.05 at step 300 (low); R2, position alone under 0.3 (medium); R3, the token rule at least
 0.2 behind (medium); D, under 2% duplicated (medium). Class 1. An H100, about $0.4.
+
+## Amendment 7 (2026-10-26, after Amendment 4's independent check): a summary the model did not produce
+
+Amendment 4 found Γ's original values predicted the change no better than Γ's own input from the original model. Its
+check pointed out that both come from the original model, so the test that separates "how the original model treats a
+position" from "similar text gets similar changes" is the same nearest rule on a summary of the text the model did not
+produce. `experiments/regating_spread/amend5.py` regenerates the lowercase fine-tune and fits, on all 262,144 positions,
+the nearest rule on Γ's original values (gate: reproduces Amendment 4 within 0.02) and on hashed (token, offset) features
+of the current and 15, or 3, preceding tokens. Predictions filed by `amend5.py --predictions` before the run: T1, the
+16-token text summary at least 0.1 below the original values at step 300 (medium-low); T2, 16 tokens at least as good as
+4 (medium). Class 1. An H100, about $0.4.
