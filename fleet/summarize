@@ -18,7 +18,7 @@ for role in "${roles[@]}"; do
   steps=$(jq -r 'select(.type == "assistant" or .type == "user") | .type as $who | .message.content as $c
     | if ($c | type) == "string" then "USER: \($c[0:300])"
       else $c[]? | if .type == "text" then "\($who | ascii_upcase): \(.text[0:400])"
-        elif .type == "tool_use" then "TOOL \(.name): \((.input.description // .input.command // .input.prompt // .input) | tostring | .[0:200])"
+        elif .type == "tool_use" then "TOOL \(.name): \((.input.description // .input.command // .input.file_path // .input.pattern // .input.prompt // .input) | tostring | .[0:200])"
         else empty end end' "$t" 2>/dev/null | tail -40)
   [[ -n "$steps" ]] || continue
   mkdir -p "$(dirname "$out")"
