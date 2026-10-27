@@ -8,6 +8,7 @@ read by writing it with `faithfulness.model_state` first. The task text is E36 A
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 import torch
@@ -79,3 +80,38 @@ def copy_states(ctx: Any, teacher_net: nn.Module, rows: Tensor, lr: float, batch
     cfg = component_training.TrainConfig(lr=lr, steps=steps, save_steps=save_steps, optimizer="adam")
     return component_training.train(ctx.model, ctx.uv, rows, ctx.held, a_cfg, cfg, ctx.device, ctx.W0, log=log, init=init,
                                     loss_fn=lambda n, toks: teacher.teacher_loss(n, teacher_net, toks, None))
+
+
+@dataclass(frozen=True)
+class Refs:
+    """What a state is read against: the fine-tune it copies and W0 (frozen nets, `teacher.teacher_net`), the held-out
+    task rows (logp and gap) and the held-out plain Pile rows (damage)."""
+
+    teacher: nn.Module
+    w0: nn.Module
+    held: Tensor
+    plain_held: Tensor
+    batch: int = 8
+
+
+def read_state(ctx: Any, refs: Refs, dW: dict[str, Tensor], uv2: dict[str, tuple[Tensor, Tensor]] | None, pile: bool,
+               log: Any = print) -> dict[str, Any]:
+    """E37's reading of one state (experiments/teacher_spread/run.py `read`, which stays as it ran, without its budget
+    adversary and cosine; moved here 2026-10-27 for broad_fragility): the target weights W0 + dW (`dW` holds every
+    matrix) with the alive (U, V) of `uv2` (None: the released ones). logp (`mean_logp` on the held-out task rows), gap
+    KL(teacher || state) on them, damage KL(W0 || state) on the plain rows, and, if `pile`, the Pile harness ratios to
+    W0 (`harness.pile_ratios`). `ctx`: a `harness.Context`."""
+    from commute import harness
+    from commute.component_training import components_with
+    from commute.faithfulness import model_state
+
+    dev, b = ctx.device, refs.batch
+    target = {k: ctx.W0[k] + dW[k].to(ctx.W0[k].device) for k in ctx.W0}
+    comps = None if uv2 is None else components_with(ctx.model, ctx.alive, uv2)
+    with model_state(ctx.model, target=target, components=comps):
+        net = ctx.model.target_model
+        rec: dict[str, Any] = {"logp": mean_logp(net, refs.held, dev, b), "gap": mean_kl(refs.teacher, net, refs.held, dev, b),
+                               "damage": mean_kl(refs.w0, net, refs.plain_held, dev, b)}
+        if pile:
+            rec["pile"] = harness.pile_ratios(ctx, log)
+    return rec
