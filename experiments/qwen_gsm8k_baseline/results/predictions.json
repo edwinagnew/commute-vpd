@@ -1,0 +1,86 @@
+{
+ "plan": "reports/plans/2026-10-27_plan_qwen-port-and-baseline.md, Part 2. Filed 2026-10-27 before any run; never edited after.",
+ "state": "Qwen/Qwen3-1.7B at revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e, unchanged, bf16 weights; chat template with enable_thinking=False and run.py's INSTRUCTION; GSM8K main test (openai/gsm8k revision 740312add88f781978c0658806c59bc2815b9866), 1,319 prompts",
+ "measurements": {
+  "strict": "commute.gsm8k: the number in the last 'The answer is N' (case-sensitive, optional '$', thousands commas, decimals) equals the gold integer after '####', compared as decimals (18.00 equals 18)",
+  "lenient": "commute.gsm8k: the last number anywhere in the response equals the gold integer, same number rule",
+  "greedy_strict, greedy_lenient": "share of the k greedy responses graded correct (k = 1,319 unless the time budget stops stage 1 early; k is recorded)",
+  "lenient_minus_strict_abs": "|greedy_lenient - greedy_strict|; reported beside it: strict_lenient_disagreement, the share of responses where the two grades differ, and no_strict_answer_share",
+  "share_total_le_512": "share of greedy responses whose prompt tokens (chat template included) plus response tokens (up to and including the end token) are <= 512; percentiles p50/p90/p95/p99/max reported",
+  "truncation_share": "share of greedy responses with no end token within 512 new tokens",
+  "sample_disagreement": "8 samples at temperature 0.7, top_p 1.0, top_k off, seed 0, on the first 256 test prompts: share of prompts with at least one strict-correct and at least one strict-incorrect sample",
+  "mean_sample_accuracy": "mean strict accuracy over those 2,048 samples; reported",
+  "control_strict": "the strict grader on the 1,319 gold solutions rewritten by commute.gsm8k.gold_as_response (calculator tags <<...>> removed, '#### N' replaced by 'The answer is N.')"
+ },
+ "gates": {
+  "G0": "control_strict == 1.000; runs first, before the model loads; fail: stop"
+ },
+ "expected": {
+  "W0 (this is the unchanged model; no update)": "every number below is a W0 reading; there is no do-nothing reference because nothing is changed",
+  "positive control": "control_strict 1.000, control_lenient 1.000"
+ },
+ "predictions": [
+  {
+   "id": "P0",
+   "rule": "control_strict == 1.000",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "itself (the grader on text known to be correct and in format)",
+   "blind_to": "format errors the model makes that the gold text does not (bold markup, words for numbers, units after the number); those show as strict/lenient disagreement",
+   "noise_floor": "deterministic; none"
+  },
+  {
+   "id": "P1",
+   "rule": "0.60 <= greedy_strict <= 0.75 (absolute)",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "P0",
+   "blind_to": "contamination of the GSM8K test set in Qwen's training data; correct reasoning with a misformatted answer (counted wrong by strict); one prompt wording; bf16 weights",
+   "noise_floor": "binomial standard error at 0.65 over 1,319 prompts is about 0.013; the one outside non-thinking greedy evaluation (2510.07880) read 0.653 with its own extraction and a 2k cap"
+  },
+  {
+   "id": "P2",
+   "rule": "|greedy_lenient - greedy_strict| <= 0.05 (absolute); a larger gap means the prompt needs work before the first fine-tune",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "P0 (both graders agree on the gold text)",
+   "blind_to": "cancelling disagreements (strict right and lenient wrong on some, the reverse on others); strict_lenient_disagreement is reported for that",
+   "noise_floor": "paired on the same responses; about 0.006 at a 5% disagreement rate"
+  },
+  {
+   "id": "P3",
+   "rule": "share_total_le_512 >= 0.95",
+   "predicted": "pass",
+   "confidence": "medium-high",
+   "positive_control": "the gold solutions measured on CPU (scoping report section 2): prompt mean 88 tokens, gold mean 92",
+   "blind_to": "sampled responses' lengths (sample_truncation_share is reported); thinking mode",
+   "noise_floor": "binomial, about 0.005 at 0.97"
+  },
+  {
+   "id": "P4",
+   "rule": "truncation_share < 0.02",
+   "predicted": "pass",
+   "confidence": "medium-high",
+   "positive_control": "P3",
+   "blind_to": "responses that end within the cap but loop or ramble",
+   "noise_floor": "binomial, about 0.003 at 0.01"
+  },
+  {
+   "id": "P5",
+   "rule": "0.20 <= sample_disagreement <= 0.50 (absolute)",
+   "predicted": "pass",
+   "confidence": "medium-low",
+   "positive_control": "none on this model; well above 0 is what an RL update needs to learn from",
+   "blind_to": "other temperatures; prompts past the first 256; lenient grading",
+   "noise_floor": "binomial over 256 prompts, about 0.03 at 0.35"
+  }
+ ],
+ "reported": "control_lenient; greedy_lenient; strict_lenient_disagreement; no_strict_answer_share; length percentiles; response_mean; mean_sample_accuracy; sample_truncation_share; first-batch throughput and projected time; k and k_prompts; peak GPU memory",
+ "decision_tree": {
+  "P0 fails": "stop; fix the grader",
+  "P1 above 0.75 or near ceiling": "too little headroom for the first experiment; change the task or prompt (scoping report section 1 variants)",
+  "P2 fails": "change the prompt (format losses) before the first fine-tune; the greedy responses show which formats strict misses",
+  "P3 or P4 fails": "the 512-token window does not hold the answers; shorten the instruction or cap the answer length before the first fine-tune",
+  "P5 below 0.20": "little within-prompt variance for RL; the SFT on human solutions is unaffected"
+ }
+}
