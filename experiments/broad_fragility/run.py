@@ -6,12 +6,13 @@ Settings are E37 Amendment 1's (experiments/teacher_spread): the released 67M de
 the check = the Pile harness's 20-step mask adversary from one random start on 256 Pile val rows (adversary seed 0) as
 a ratio over the unchanged decomposition in the same job; logp, gap and damage on E37's rows (`row_copy.read_state`);
 s = (logp - logp_W0) / (logp_teacher - logp_W0), the behaviour kept. The trained state is E37's lowercase copy at batch
-order 0, step 1,000, rebuilt from its saved bf16 offsets (`saved_states.offsets_state`).
+order 0, step 1,000, retrained in-job as E37 Amendment 1's arm 1 (`row_copy.copy_on_rows`), read in fp32 from memory
+and saved as bf16 offsets (`arms.save_offsets`) for later analysis.
 
 Stages, in order, each read written to results/broad_fragility.json as it finishes (a rerun repeats stage 0, which
 builds the job, and skips the stages already done):
   stage 0  (i) W0 on adversary seeds 0-2: spread, and seed 0's PGD KL per block against E37's; (ii) E37's Adam
-           fine-tune regenerated (its held-out gain) and the trained state read; (iii) revert-all. Any miss stops.
+           fine-tune regenerated (its held-out gain), the trained state trained, saved and read; (iii) revert-all. Any miss stops.
   move     Test 1: random moves of the alive U, V with the trained state's per-matrix size (`fragility.random_move`),
            noise seeds 0 and 1 at x1, seed 0 at x0.5
   revert   Test 2: the trained state with released U, V on one layer, on the attention or the MLP matrices, or on a half
@@ -24,7 +25,7 @@ builds the job, and skips the stages already done):
   lora     the same with a rank-8 LoRA on all 24 matrices trained with Adam
 
 Usage (repo root, project venv):  run.py --predictions                 files results/predictions.json (once)
-                                  run.py [--device cuda] [--state PATH]  the run (GPU); refuses without that file
+                                  run.py [--device cuda]                 the run (GPU); refuses without that file
 """
 
 from __future__ import annotations
@@ -45,7 +46,6 @@ HERE = Path(__file__).resolve().parent
 RESULTS, LARGE = HERE / "results", HERE / "results" / "large"
 PRED, OUT = RESULTS / "predictions.json", RESULTS / "broad_fragility.json"
 TRANSPORT = HERE.parent / "transport_test" / "results"
-STATE = HERE.parent / "teacher_spread" / "results" / "large" / "copy_lower_seed0_step1000.pt"
 UV = dict[str, tuple[Tensor, Tensor]]
 
 
@@ -92,7 +92,7 @@ class Config:
         assert (self.pile_rows, self.pile_pgd_steps, self.pile_seeds[0]) == (256, 20, 0)
         assert len(self.e37_blocks) == self.pile_rows // 128
         assert sorted(x for _, x in self.moves) == [0.5, 1.0, 1.0] and (0, 0.5) in self.moves
-        assert (self.copy_steps, self.copy_seed) == (1000, 0)  # the saved trained state's step and batch order
+        assert (self.copy_steps, self.copy_seed) == (1000, 0)  # E37's lower_s0: its step and batch order
 
 
 CFG = Config()
@@ -205,25 +205,33 @@ def stage0_w0(job: Job, out: dict[str, Any]) -> None:
         halt(out, "stage 0 (i): W0 is not at E37's readings on this card")
 
 
-def stage0_trained(job: Job, out: dict[str, Any], path: Path) -> tuple[dict[str, Tensor], UV]:
-    """(ii): E37's Adam fine-tune regenerated (the teacher of s and gap), then the saved trained state read."""
+def stage0_trained(job: Job, out: dict[str, Any]) -> tuple[dict[str, Tensor], UV]:
+    """(ii): E37's Adam fine-tune regenerated (the teacher of s and gap), then E37's teacher training on it (amend1's
+    arm 1 to step 1000), saved as bf16 offsets and read in fp32 from memory."""
+    from commute.arms import save_offsets
     from commute.finetune import ArmBConfig, finetune_arm_b
-    from commute.saved_states import offsets_state
+    from commute.row_copy import copy_on_rows
 
     ctx, c = job.ctx, out["stage0"]
     cfg = ArmBConfig(lr=CFG.ft_lr, batch=CFG.ft_batch, steps=CFG.ft_steps, checkpoints=(CFG.ft_steps,), seed=0)
     job.dW_adam = finetune_arm_b(ctx.model, job.lower, job.held, cfg, ctx.device, log).deltas[CFG.ft_steps]
     c["gain"] = job.add_teacher("adam", job.dW_adam)
-    meta = {k: v for k, v in torch.load(path, weights_only=False).items() if k in ("text", "seed", "step")}
-    assert meta == {"text": "lower", "seed": CFG.copy_seed, "step": CFG.copy_steps}, meta
-    dW, uv2 = offsets_state(path, ctx.uv_cpu)
-    tr = read(job, out, "trained", "adam", dW, uv2)
+    t0 = time.time()
+    curve, st = copy_on_rows(ctx, job.refs["adam"].teacher, job.lower, CFG.copy_lr, CFG.copy_batch, CFG.copy_steps,
+                             CFG.copy_seed, log)
+    kl = {"train_kl_step1": curve[0]["loss"], "train_kl_end": sum(x["loss"] for x in curve[-50:]) / 50}
+    log(f"[trained] {time.time() - t0:.0f} s; {json.dumps(kl)}")
+    path = LARGE / f"trained_step{CFG.copy_steps}.pt"
+    save_offsets(path, ctx.uv_cpu, st, {"arm": "adam", "text": "lower", "seed": CFG.copy_seed, "step": CFG.copy_steps})
+    log(f"[saved] {path.name}")
+    dW, uv2 = {k: v[0] for k, v in st.items()}, {k: (v[1], v[2]) for k, v in st.items()}
+    tr = read(job, out, "trained", "adam", dW, uv2, kl)
     c["ii"] = (abs(c["gain"] - CFG.e36_gain) <= CFG.gain_tol and abs(tr["check"] / CFG.e37_check - 1) <= CFG.check_tol
                and abs(tr["s"] - CFG.e37_s) <= CFG.s_tol)
     log(f"[stage0 ii] gain {c['gain']:.4f} (E37 {CFG.e36_gain}) check {tr['check']:.4f} (E37 {CFG.e37_check}) "
         f"s {tr['s']:.4f} (E37 {CFG.e37_s}) pass {c['ii']}")
     if not c["ii"]:
-        halt(out, "stage 0 (ii): the regenerated fine-tune or the saved trained state does not read as in E37")
+        halt(out, "stage 0 (ii): the regenerated fine-tune or its teacher training does not read as in E37")
     return dW, uv2
 
 
@@ -413,12 +421,12 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
 # ----------------------------------------------------------------------------- main
 
 
-def run(device: str, state: Path) -> None:
+def run(device: str) -> None:
     if not PRED.is_file():
         sys.exit(f"file the predictions first: {PRED} (run.py --predictions)")
     filed = json.loads(PRED.read_text())["config"]
     assert filed == json.loads(json.dumps(asdict(CFG))), f"predictions were filed for another config: {filed}"
-    for f in (TRANSPORT / "large" / "alive.pt", TRANSPORT / "large" / "windows.pt", state):
+    for f in (TRANSPORT / "large" / "alive.pt", TRANSPORT / "large" / "windows.pt"):
         if not f.is_file():
             sys.exit(f"missing input (gitignored): {f}")
     job = Job(device)
@@ -427,7 +435,7 @@ def run(device: str, state: Path) -> None:
         sys.exit(f"{OUT} was written on {out['card']}; this job runs on {job.card}. Move the file aside to start again")
     out["status"] = "running"
     stage0_w0(job, out)
-    dW_tr, uv2_tr = stage0_trained(job, out, state)
+    dW_tr, uv2_tr = stage0_trained(job, out)
     stage0_revert_all(job, out, uv2_tr)
     stages: list[tuple[str, Any]] = [
         ("move", lambda: moves(job, out, dW_tr)), ("revert", lambda: reverts(job, out, uv2_tr)),
@@ -475,8 +483,8 @@ PREDICTIONS: dict[str, Any] = {
     "controls": {
         "stage0_i": f"first, alone: W0's PGD spread over seeds 0-2 <= {CFG.spread_max} and seed 0's PGD KL per block "
                     f"within {CFG.block_tol:.0%} of {CFG.e37_blocks}; else stop",
-        "stage0_ii": f"E37's Adam fine-tune regenerated: held-out gain within {CFG.gain_tol} of {CFG.e36_gain}; the saved "
-                     f"trained state read: check within {CFG.check_tol:.0%} of {CFG.e37_check} and s within "
+        "stage0_ii": f"E37's Adam fine-tune regenerated: held-out gain within {CFG.gain_tol} of {CFG.e36_gain}; E37's teacher "
+                     f"training retrained in-job (amend1's arm 1 to step 1000) and read: check within {CFG.check_tol:.0%} of {CFG.e37_check} and s within "
                      f"{CFG.s_tol} of {CFG.e37_s}; else stop",
         "stage0_iii": f"revert-all: |check - 1| <= this job's W0 spread and |s| <= {CFG.s_tol}; else stop",
     },
@@ -531,6 +539,5 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--predictions", action="store_true", help="file results/predictions.json and exit")
     ap.add_argument("--device", default="cuda")
-    ap.add_argument("--state", type=Path, default=STATE, help="E37's saved trained state (gitignored)")
     a = ap.parse_args()
-    file_predictions() if a.predictions else run(a.device, a.state)
+    file_predictions() if a.predictions else run(a.device)

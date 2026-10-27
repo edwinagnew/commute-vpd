@@ -10,7 +10,7 @@
  },
  "controls": {
   "stage0_i": "first, alone: W0's PGD spread over seeds 0-2 <= 0.1 and seed 0's PGD KL per block within 1% of (0.6794, 0.7182); else stop",
-  "stage0_ii": "E37's Adam fine-tune regenerated: held-out gain within 0.005 of 0.1301; the saved trained state read: check within 3% of 2.2011 and s within 0.01 of 0.998; else stop",
+  "stage0_ii": "E37's Adam fine-tune regenerated: held-out gain within 0.005 of 0.1301; E37's teacher training retrained in-job (amend1's arm 1 to step 1000) and read: check within 3% of 2.2011 and s within 0.01 of 0.998; else stop",
   "stage0_iii": "revert-all: |check - 1| <= this job's W0 spread and |s| <= 0.01; else stop"
  },
  "expected": {
@@ -166,5 +166,5 @@
   "p3_max": 0.6,
   "p4_margin": 0.2
  },
- "filed": "2026-10-27 15:29:42"
+ "filed": "2026-10-27 15:32:25"
 }
