@@ -6,6 +6,12 @@
 # import this clone's own src/ (pytest's pythonpath; pyright adds src/ itself).
 export UV_NO_SYNC := 1
 
+# pyright's node.js: the cluster worker cannot build one (nodeenv fails there, 2026-10-27), so use the working copy in
+# the shared artifacts folder when the clone has it.
+ifneq ($(wildcard artifacts/pyright-cache/pyright-python/nodeenv/bin),)
+export PYRIGHT_PYTHON_CACHE_DIR ?= $(CURDIR)/artifacts/pyright-cache
+endif
+
 # Python files changed since the last commit (tracked and untracked); override with `make lint FILES="a.py b.py"`.
 FILES ?= $(shell { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep '\.py$$' | grep -v '/results/' | sort -u)
 
