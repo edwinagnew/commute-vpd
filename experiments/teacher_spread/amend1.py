@@ -11,8 +11,9 @@ Each read is `run.read` with the budget adversary off: logp, gap, damage, and th
 (the check ratio is the PGD one). `score` derives s, the verdicts against C1's floors, and P1-P3.
 
 Stages, each written to results/amend1.json as it finishes and skipped on a rerun: load and C1, rows and teacher (C2),
-W0, do-nothing (C3), arm 3's step 0, arm 1, arm 3, G2, M0, arm 2. C1-C3 stop the run; G2 and M0 stop arm 2 only. Arm 3
-runs before M0 and arm 2 because it is cheaper and arm 2's memory and step time are not known.
+W0, do-nothing (C3), a 3-step probe of the masked trainer (time and memory), arm 3's step 0, arm 1, arm 3, G2, M0, arm 2.
+C1-C3 stop the run; G2 and M0 stop arm 2 only. Arm 3 runs before M0 and arm 2 because it is cheaper and arm 2's
+memory and step time are not known.
 
 Usage (repo root, project venv):  amend1.py --predictions   files results/amend1_predictions.json (the lead, once)
                                   amend1.py [--device cuda]  the run (GPU); refuses without the predictions file
@@ -40,6 +41,7 @@ from run import (
     Job,
     adjoint,
     log,
+    peak_gb,
     read,
 )
 from torch import Tensor
@@ -161,8 +163,9 @@ def g2(job: Job, out: dict[str, Any]) -> None:
     toks = job.lower[torch.randint(0, job.lower.shape[0], (CFG.copy_batch,), generator=gen)].to(job.ctx.device)
     with torch.no_grad():
         kl = float(student_kl(job.ctx.model, job.t_net, toks, job.ctx.wd0))
+        path = float(student_kl(job.ctx.model, job.w0_net, toks, job.ctx.wd0))  # the two forward paths alone, about 0
     ref = out["train"]["arm1"]["kl_step1"]
-    out["G2"] = {"kl": kl, "arm1_kl_step1": ref, "pass": abs(kl - ref) <= AM.g2_tol}
+    out["G2"] = {"kl": kl, "arm1_kl_step1": ref, "path_kl": path, "pass": abs(kl - ref) <= AM.g2_tol}
     log(f"[G2] {json.dumps(out['G2'])}")
 
 
@@ -174,14 +177,40 @@ def masked(job: Job, out: dict[str, Any], name: str, teacher_net: Any, steps: in
     t0, reads = time.time(), tuple(n for n in AM.arm2_reads if n <= steps)
     cfg = MaskedConfig(lr=CFG.copy_lr, batch=CFG.copy_batch, steps=steps, warmup=AM.warmup, save_steps=reads, coeff=coeff)
     curve, st = train(job.ctx.model, teacher_net, job.lower, job.ctx.alive, job.ctx.uv, cfg, log)
-    sec = (time.time() - t0) / (AM.warmup + steps)
-    out["train"][name] = {"kl_step1": curve[0]["kl"], "coeff": coeff, "sec_per_step": sec, "seconds": time.time() - t0}
-    log(f"[{name}] trained in {time.time() - t0:.0f} s ({sec:.3f} s per step); teacher KL at loop step 1 {curve[0]['kl']:.4f}")
+    tr = out["train"][name] = {"kl_step1": curve[0]["kl"], "coeff": coeff, "train_seconds": time.time() - t0,
+                               "sec_per_step": (time.time() - t0) / (AM.warmup + steps),
+                               "masked_warmup_end": masked_terms(curve, 0)}  # the 50 warm-up steps' means
+    log(f"[{name}] trained in {tr['train_seconds']:.0f} s ({tr['sec_per_step']:.3f} s per step); teacher KL at loop step 1 "
+        f"{curve[0]['kl']:.4f}; masked terms at the warm-up's end {json.dumps(tr['masked_warmup_end'])}")
     if name == "arm2":  # M0 is read, not kept
         save(job, name, steps, st[steps])
     for n in reads:
-        put(out, f"{name}_{n}", read_state(job, f"{name}_{n}", st[n]) | {"train_kl": kl_before(curve, n, "kl")})
-    return time.time() - t0
+        put(out, f"{name}_{n}", read_state(job, f"{name}_{n}", st[n])
+            | {"train_kl": kl_before(curve, n, "kl"), "masked_terms": masked_terms(curve, n)})
+    tr["seconds"] = time.time() - t0  # reads included
+    tr["per_read"] = (tr["seconds"] - tr["train_seconds"]) / len(reads)
+    return tr["seconds"]
+
+
+def masked_terms(curve: list[dict[str, Any]], n: int) -> dict[str, float]:
+    """The masked losses' means over the 50 steps ending at step n: did they fall?"""
+    return {k: kl_before(curve, n, k) for k in ("StochasticReconSubsetLoss", "PersistentPGDReconLoss")}
+
+
+def probe(job: Job, out: dict[str, Any]) -> None:
+    """The masked trainer for 3 warm-up steps at lr 0 (nothing moves; the model is restored): its seconds per step
+    and peak memory on this card, before the long arms. Stops nothing unless it crashes."""
+    from commute.masked_teacher import MaskedConfig, train
+
+    if torch.cuda.is_available():
+        torch.cuda.reset_peak_memory_stats()
+    t0 = time.time()
+    train(job.ctx.model, job.t_net, job.lower, job.ctx.alive, job.ctx.uv,
+          MaskedConfig(lr=CFG.copy_lr, batch=CFG.copy_batch, steps=0, warmup=3, save_steps=()), log)
+    sec = (time.time() - t0) / 3
+    out["probe"] = {"sec_per_step": sec, "peak_gb": peak_gb(),
+                    "m0_arm2_train_minutes": sec * (2 * AM.warmup + AM.m0_steps + max(AM.arm2_reads)) / 60}
+    log(f"[probe] {json.dumps(out['probe'])}")
 
 
 def m0(job: Job, out: dict[str, Any]) -> None:
@@ -203,8 +232,7 @@ def m0(job: Job, out: dict[str, Any]) -> None:
     else:
         return
     tr = out["train"][rec["attempts"][-1]["name"]]
-    per_read = (tr["seconds"] - tr["sec_per_step"] * (AM.warmup + AM.m0_steps))  # one read at M0
-    projected = tr["sec_per_step"] * (AM.warmup + max(AM.arm2_reads)) + per_read * len(AM.arm2_reads)
+    projected = tr["sec_per_step"] * (AM.warmup + max(AM.arm2_reads)) + tr["per_read"] * len(AM.arm2_reads)
     full = (spent + projected) / 60 <= AM.m0_arm2_minutes
     rec |= {"minutes_spent": spent / 60, "arm2_projected_minutes": projected / 60,
             "arm2_steps": max(AM.arm2_reads) if full else AM.m0_steps}
@@ -270,7 +298,8 @@ def branch(d: dict[str, Any], sc: dict[str, Any]) -> str:
         return "arm 1 a solution at 4000: under-training explains E37; plain teacher training for the larger model"
     if sc.get("arm1_still_falling"):
         return "arm 1 not a solution and still falling: extend arm 1 to 16000 steps"
-    found = [a for a in ("arm2", "arm3") if d.get(f"{a}_2000", {}).get("solution")]
+    last = {"arm2": "arm2_2000" if "arm2_2000" in d else "arm2_1000", "arm3": "arm3_2000"}  # arm 2 cut by the time rule
+    found = [s for s in last.values() if d.get(s, {}).get("solution")]
     if found:
         return "arm 1 flat; a solution in " + " and ".join(found) + ": card to the user"
     return "arm 1 flat, no solution read: card with option (d) and the anchor question"
@@ -321,6 +350,7 @@ def run(device: str) -> None:
         ("W0", lambda: put(out, "W0", read(job, "W0", {k: torch.zeros_like(v) for k, v in job.dW.items()}, None, False,
                                            budget=False))),
         ("do-nothing", lambda: stage_nothing(job, out)),
+        ("probe", lambda: probe(job, out)),
         ("arm3_0", lambda: arm3_start(job, out, adj())),
         ("arm1", lambda: arm_copy(job, out, "arm1", AM.arm1_reads, AM.arm1_saves, None)),
         ("arm3", lambda: arm_copy(job, out, "arm3", AM.arm3_reads, AM.arm3_reads[-1:],

@@ -1,0 +1,162 @@
+{
+ "plan": "reports/plans/2026-10-26_plan_teacher-spread.md, Amendment 1 (2026-10-27). Filed before the run; never edited.",
+ "definitions": {
+  "s": "(logp_state - logp_W0) / (logp_do-nothing - logp_W0), mean next-token log-probability on 64 held-out lowercase rows",
+  "check ratio": "the Pile harness's PGD KL (calc_multibatch_pgd_masked_recon_loss, one random start, seed 0, 20 steps of 0.1, 256 val rows) over C1's W0 at seed 0; the stochastic ratio likewise",
+  "verdict": "faith_score.verdict against C1's floors f: pass at or under 1.5 / (1 + f), fail at or over 1.5 (1 + f)",
+  "solution": "s >= 0.9 and verdict 'pass' on the check and stochastic ratios",
+  "train KL": "mean teacher KL over the 50 training steps ending at the read"
+ },
+ "controls": {
+  "C1": "first, alone: run.py's (W0 on adversary seeds 0-2, floor within 5% of 0.0748 on an H100 80GB HBM3); stop",
+  "C2": "run.py's: the regenerated teacher's held-out gain within 0.005 of 0.1301; stop",
+  "C3": "run.py's: the do-nothing state's logp within 0.0001 of the teacher net's and gap within 0.0001; stop",
+  "R1": "reported, not a stop: arm 1 at step 1000 reproduces E37's lower_s0 (s 0.998 +- 0.003, check 2.20 +- 15%)",
+  "arm3_0": "reported: arm 3's start reproduces E37's adjoint state (s 0.804, check 1.05)",
+  "G2": "arm 2's student at W0 on arm 1's first batch within 0.001 of arm 1's step-1 train KL (E37: 0.290); a miss stops arm 2 (and M0) only",
+  "M0": "before arm 2, alone: arm 2's recipe with the teacher at W0, 1000 steps; damage <= 0.02 and check ratio <= 1.4, else retry once with both coefficients at 0.05, else arm 2 is not run",
+  "time rule": "M0's time plus arm 2's projection over 40.0 min: arm 2 stops at 1000 steps"
+ },
+ "expected": {
+  "W0": "s 0, damage 0, check ratio 1 by definition (C1), logp about -3.146, gap about 0.272",
+  "do-nothing": "s 1 and gap 0 by construction, damage 0.235; harness not read (4.87 in E37)",
+  "arm1": "R1 as above; train KL 0.0110 at step 1000, falling; check ratio falling with steps or flat near 2",
+  "arm3": "step 0: s 0.80, check 1.05, damage 0.05; then s rising towards 1 and damage towards 0.23",
+  "M0": "damage <= 0.02, check ratio 0.7-1.4, teacher KL at loop step 1 about 0",
+  "arm2": "s >= 0.9, damage about 0.23, stochastic ratio below arm 1's (about 1.09)"
+ },
+ "predictions": [
+  {
+   "id": "P1",
+   "rule": "arm 1 at step 4000 still fails: its check-ratio verdict is 'fail' (ratio >= 1.5 (1 + f))",
+   "predicted": "holds",
+   "confidence": "medium-low",
+   "blind_to": "other adversaries (out of scope, 2026-10-27)",
+   "positive_control": "R1",
+   "noise_floor": "W0's harness floor over adversary seeds 0-2 (0.075 on this card, C1) and E37's batch-order spread of the check ratio, 14% (lower_s0 2.20, lower_s1 1.88); states are deterministic per seed up to bf16 kernels"
+  },
+  {
+   "id": "P2",
+   "rule": "arm 2 at step 2000 is a solution: s >= 0.9 and verdict 'pass' on the check and stochastic ratios; not scored if arm 2 did not reach step 2000",
+   "predicted": "holds",
+   "confidence": "low-medium",
+   "blind_to": "it partly trains on what the stochastic ratio reads; its check ratio is also reported over M0's",
+   "positive_control": "M0",
+   "noise_floor": "W0's harness floor over adversary seeds 0-2 (0.075 on this card, C1) and E37's batch-order spread of the check ratio, 14% (lower_s0 2.20, lower_s1 1.88); states are deterministic per seed up to bf16 kernels"
+  },
+  {
+   "id": "P3",
+   "rule": "arm 3 ends where arm 1 does: at step 2000, s >= 0.9 and its check ratio within 25% of arm 1's at step 2000",
+   "predicted": "holds",
+   "confidence": "medium-low",
+   "blind_to": "where in weight space the two end (no cosine in this run)",
+   "positive_control": "arm 3's step-0 read reproduces E37's adjoint state",
+   "noise_floor": "W0's harness floor over adversary seeds 0-2 (0.075 on this card, C1) and E37's batch-order spread of the check ratio, 14% (lower_s0 2.20, lower_s1 1.88); states are deterministic per seed up to bf16 kernels"
+  }
+ ],
+ "reported": "every read's logp, gap, damage, harness ratios, size, cosine with delta-W and train KL; R1 against E37; arm 1's train KL drop from 2000 to 4000; arm 2's check ratio over M0's; M0 below 0.85; peak memory",
+ "decision_tree": {
+  "C1-C3 fail": "stop, nothing scored",
+  "M0 or G2 fails": "arms 1 and 3 stand; arm 2 reported as not run",
+  "arm 1 a solution at 4000": "under-training explains E37; plain teacher training for the larger model, trained until the train KL falls under 10% per doubling and read at each doubling",
+  "arm 1 not a solution, train KL still falling >= 10% from 2000 to 4000 and the ratio falling": "extend arm 1 to 16000 steps",
+  "arm 1 not a solution and flat": "arm 2 a solution: card, masked teacher training (M0's ratio beside it); arm 3 a solution: card, the adjoint start; neither: card with option (d) and the anchor question for broad updates"
+ },
+ "config": {
+  "rows_train": [
+   "train",
+   0,
+   4096
+  ],
+  "rows_held": [
+   "val",
+   0,
+   256
+  ],
+  "n_held": 64,
+  "ft_lr": 3e-05,
+  "ft_batch": 8,
+  "ft_steps": 300,
+  "ft_seed": 0,
+  "e36_gain": 0.1301,
+  "gain_tol": 0.005,
+  "min_gain": 0.02,
+  "copy_lr": 1e-05,
+  "copy_batch": 8,
+  "copy_steps": 1000,
+  "copies": [
+   [
+    "lower",
+    0
+   ],
+   [
+    "plain",
+    0
+   ],
+   [
+    "lower",
+    1
+   ]
+  ],
+  "n_sigma_rows": 256,
+  "pile_rows": 256,
+  "pile_pgd_steps": 20,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "floor_tol": 0.05,
+  "budget_rows": 128,
+  "budget_steps": 20,
+  "eval_batch": 8,
+  "null_seed": 0
+ },
+ "amend1": {
+  "arm1_reads": [
+   1000,
+   2000,
+   4000
+  ],
+  "arm1_saves": [
+   1000,
+   4000
+  ],
+  "arm3_reads": [
+   1000,
+   2000
+  ],
+  "arm2_reads": [
+   1000,
+   2000
+  ],
+  "m0_steps": 1000,
+  "warmup": 50,
+  "g2_tol": 0.001,
+  "m0_damage_max": 0.02,
+  "m0_check_max": 1.4,
+  "m0_retry_coeff": 0.05,
+  "m0_arm2_minutes": 40.0,
+  "p3_tol": 0.25,
+  "under": 0.85,
+  "e37": [
+   [
+    "R1_s",
+    0.998
+   ],
+   [
+    "R1_check",
+    2.2
+   ],
+   [
+    "adjoint_s",
+    0.804
+   ],
+   [
+    "adjoint_check",
+    1.05
+   ]
+  ]
+ },
+ "filed": "2026-10-27 11:12:18"
+}
