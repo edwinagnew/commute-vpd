@@ -1,0 +1,123 @@
+{
+ "plan": "reports/plans/2026-10-27_plan_qwen-fresh-numbers.md. Filed 2026-10-27 before any run; never edited after.",
+ "state": "Qwen/Qwen3-1.7B at revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e, unchanged, bf16 weights; prompt, chat template (enable_thinking=False), greedy decoding, batches of 128, 512 new tokens and graders exactly as experiments/qwen_gsm8k_baseline (commute.qwen_eval, commute.gsm8k)",
+ "sets": {
+  "gsm8k": "openai/gsm8k main test, revision 740312add88f781978c0658806c59bc2815b9866, all 1,319, index order (the same-job reference)",
+  "plus": "qintongli/GSM-Plus test, revision 3b708db57b96a16e8e3368ed2956990c0809440e, perturbation_type 'numerical substitution': 1,319 items, each mapped to its GSM8K test problem by exact seed_question text (all 1,319 map, one to one, seed_answer equals the GSM8K gold on all; checked on CPU 2026-10-27); gold = the 'answer' field; 117 golds are not integers",
+  "symbolic": "apple/GSM-Symbolic main test, revision 93b5b3758d9d9841ffe81d6cd2ae2b030685b078: the released instances 0-11 of each of the 100 templates (1,200 items; the release has 50 per template and no generator); original_id is the GSM8K test index of the template's source question (original_question equals the GSM8K question on all 5,000 rows; checked on CPU 2026-10-27); all golds integers"
+ },
+ "measurements": {
+  "fits": "prompt tokens (chat template included) + response tokens (to and including the end token) <= 512",
+  "dropped rule (primary, decisions.md 2026-10-27)": "an answer that does not fit leaves the score; a pair leaves when either side does; a template leaves when its GSM8K original does not fit, and keeps only its fitting instances",
+  "capped rule (reported beside)": "every answer kept, graded on its first 512 - prompt tokens (commute.qwen_eval capped_response)",
+  "D_plus": "over GSM8K test problems i where both the GSM8K answer and the GSM-Plus answer fit and the GSM-Plus gold is an integer: mean(strict_gsm8k_i - strict_plus_i), absolute. Paired SE = sqrt(b + c - (b - c)^2 / n) / n, b = GSM8K right and GSM-Plus wrong, c = the reverse. Reported beside it: the same on all answers (decimal golds included), on the lenient grader, and under the capped rule",
+  "D_sym": "over templates t whose GSM8K original fits and that have at least one fitting instance: mean over t of (strict_original_t - share of t's fitting instances strict-right), absolute; SE = stdev over templates / sqrt(T). The originals' strict scores come from the same job's GSM8K arm. Reported beside it: lenient, capped, the originals' own accuracy",
+  "gap_x": "lenient minus strict accuracy on set x's fitting answers (x = gsm8k, plus, symbolic)",
+  "control": "the GSM8K arm's strict accuracy over all its answers (as the baseline scored it), and the share of its responses identical to experiments/qwen_gsm8k_baseline/results/large/greedy.jsonl"
+ },
+ "gates": {
+  "G0": "strict grader on each set's gold solution rewritten to end 'The answer is N.' (commute.gsm8k.gold_as_response; GSM-Plus: its solution body with the answer field) == 1.000 on all three sets; runs before the model loads; fail: stop",
+  "G1": "|strict_all(GSM8K arm) - 997/1319| <= 0.012 (one binomial SE of the baseline) OR identical_to_baseline_share == 1.000; runs first and alone among the model arms; fail: stop, nothing else is read",
+  "G2 (power)": "n(D_plus) >= 1000 and T(D_sym) >= 80; otherwise the verdict is 'underpowered' and no reading is made"
+ },
+ "rules": {
+  "plus_verdict": "D_plus <= 0.02: capability; D_plus >= 0.05: memorisation; strictly between: ambiguous; no pairs: no reading. Negative values (fresh set easier) count as capability",
+  "symbolic_verdict": "D_sym <= 0.03: capability; D_sym >= 0.08: memorisation; strictly between: ambiguous; no templates: no reading",
+  "verdict": "underpowered if G2 fails; else 'conflict' if one of plus_verdict and symbolic_verdict is capability and the other memorisation; else plus_verdict (the powered measure; D_sym's SE is about 0.045)",
+  "format_same_on_every_set": "max(|gap_plus - gap_gsm8k|, |gap_symbolic - gap_gsm8k|) <= 0.02",
+  "edge cases checked on CPU before filing (2026-10-27)": "empty pools give diff None, verdict 'no reading', overall 'underpowered'; D exactly at a cut takes the inclusive side (0.02 capability, 0.05 memorisation); zero discordant pairs give SE 0; one template gives SE None; a template whose original is over-long, or with no fitting instance, is left out; a template with no mapped seed cannot occur (all 100 map; the run asserts it); a decimal-gold pair is left out of D_plus and kept in the all-answers number"
+ },
+ "expected": {
+  "W0 (this is the unchanged model; no update)": "every number is a W0 reading; there is no do-nothing reference",
+  "G0": "1.000 on all three sets",
+  "G1": "strict_all 0.756 and identical share 1.000 on an L40 with the baseline's torch 2.8.0 and transformers 4.57.3; on another card identical share may fall below 1 and strict_all should stay within 0.012",
+  "gsm8k strict, dropped": "about 0.777 (the baseline's 1,257 fitting answers)",
+  "D_plus": "about 0.03 (0.00 to 0.05): substituted numbers make some problems harder for any model, and GSM-Plus's gold answers carry some errors; both push D_plus up without memory",
+  "D_sym": "about 0.05 (0.00 to 0.10): Multilingual GSM-Symbolic measured 0.089 for this model on the same 100 originals under another prompt; the GSM-Symbolic paper's English gap across models is a few points",
+  "gap_x": "about 0.02 to 0.03 on every set"
+ },
+ "predictions": [
+  {
+   "id": "P0",
+   "rule": "G0 passes",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "itself (the grader on text known to be right and in format)",
+   "blind_to": "format errors the model makes that gold text does not",
+   "noise_floor": "deterministic; none"
+  },
+  {
+   "id": "P1",
+   "rule": "G1 passes",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "itself: the saved baseline answers",
+   "blind_to": "nothing the later arms depend on, except that a pass by the SE branch alone means per-problem answers moved and the saved baseline is no longer the reference (the same-job arm is)",
+   "noise_floor": "greedy is deterministic on a fixed card and software; binomial SE 0.012 across cards"
+  },
+  {
+   "id": "P2",
+   "rule": "G2 passes (n(D_plus) >= 1000 and T(D_sym) >= 80, dropped rule)",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "the baseline: 95.3% of GSM8K answers fit; prompts on GSM-Plus and GSM-Symbolic are the same length as GSM8K's (mean 113 and 116 tokens against 113)",
+   "blind_to": "which problems are dropped (the long ones, mostly wrong); the capped reading is reported for that",
+   "noise_floor": "counts; none"
+  },
+  {
+   "id": "P3",
+   "rule": "D_plus < 0.05 (plus_verdict is not memorisation), dropped rule, integer golds",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "none on this model: no set is known to be memorised by it. G1 shows the apparatus reproduces the baseline; it does not show the gap can detect memory",
+   "blind_to": "memory of a problem's method rather than its numbers (that transfers to new numbers and reads as capability); difficulty changed by the new numbers and GSM-Plus label errors (both read as memory); GSM-Plus itself being in Qwen3's training data (public since 2024-02; shrinks the gap)",
+   "noise_floor": "paired SE about 0.013 at n about 1,150 and 20% discordant pairs"
+  },
+  {
+   "id": "P4",
+   "rule": "D_plus <= 0.02 (plus_verdict is capability), dropped rule, integer golds",
+   "predicted": "fail (ambiguous zone)",
+   "confidence": "low",
+   "positive_control": "as P3",
+   "blind_to": "as P3",
+   "noise_floor": "as P3"
+  },
+  {
+   "id": "P5",
+   "rule": "D_sym < 0.08 (symbolic_verdict is not memorisation), dropped rule",
+   "predicted": "pass",
+   "confidence": "low",
+   "positive_control": "as P3",
+   "blind_to": "as P3, and: the 100 source questions may be easier than GSM8K test as a whole (reported: the originals' own accuracy against the full set); the released instances are public since 2024-10 (arXiv) and 2024-12 (Hugging Face), before Qwen3's release, so they are not guaranteed unseen (they carry a canary string)",
+   "noise_floor": "SE about 0.045: 100 binary originals dominate it; more instances per template would not shrink it"
+  },
+  {
+   "id": "P6",
+   "rule": "format_same_on_every_set",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "the baseline's GSM8K gap 0.027 (all answers)",
+   "blind_to": "format losses that hit the strict and lenient graders alike (words for numbers, units glued to the number)",
+   "noise_floor": "each gap's SE about 0.005; a difference of two about 0.007"
+  },
+  {
+   "id": "P7",
+   "rule": "verdict is 'capability' or 'ambiguous' (not 'memorisation', 'conflict' or 'underpowered')",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "as P3",
+   "blind_to": "as P3 and P5",
+   "noise_floor": "as P3 and P5"
+  }
+ ],
+ "reported": "every set's k, fits share, truncation share, strict and lenient under both rules; D_plus on all answers, lenient and capped; D_sym lenient and capped, the originals' accuracy; paired counts b and c; peak GPU memory; batch times",
+ "decision_tree": {
+  "P0 fails": "stop; fix the grader or the set's gold mapping",
+  "P1 fails": "stop; compare card and software with the baseline's; no arm is read",
+  "P2 fails": "report both rules; ask the user whether the capped reading decides",
+  "verdict capability": "keep GSM8K as the RL task (card decision-qwen-baseline, headroom half); score every update on GSM-Plus beside GSM8K test",
+  "verdict ambiguous or conflict": "run the prefix test of the headroom report on Qwen3-1.7B-Base (complete each GSM8K test question from its first 60%; GSM8K train is its positive control, fresh instances its floor) before deciding",
+  "verdict memorisation": "raise with the user: score updates on fresh sets only, or change the task (headroom report section 3)",
+  "P6 fails": "the format loss is set-specific; read the strict-wrong lenient-right answers of the set that differs before any prompt change"
+ }
+}

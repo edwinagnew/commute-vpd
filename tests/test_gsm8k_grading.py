@@ -1,4 +1,6 @@
-from commute.gsm8k import gold_answer, gold_as_response, grade
+from decimal import Decimal
+
+from commute.gsm8k import gold_answer, gold_as_response, gold_number, grade
 
 SOLUTION = "She pays 2*3=<<2*3=6>>6 dollars.\nThen 6+1,994=<<6+1994=2000>>2000.\n#### 2,000"
 
@@ -31,3 +33,11 @@ def test_no_answer_and_format_misses() -> None:
     g = grade("Total: 10-3 = **7**", 7)  # no "The answer is"; "10-3" is not -3
     assert not g["strict"] and g["lenient"]
     assert not grade("the answer is 7.", 7)["strict"]  # strict is case-sensitive
+
+
+def test_decimal_gold() -> None:  # GSM-Plus has answers such as 4.5 and 48.33
+    sol = "Half of 9 is 9 / 2 = 4.5 cups.\n#### $4.5"
+    assert gold_number(sol) == Decimal("4.5")
+    assert gold_as_response(sol).endswith("The answer is 4.5.")
+    assert grade(gold_as_response(sol), gold_number(sol))["strict"]
+    assert not grade("The answer is 48.3.", Decimal("48.33"))["strict"]

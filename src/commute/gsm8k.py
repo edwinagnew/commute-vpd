@@ -1,7 +1,8 @@
 """GSM8K answers and grading: pure, deterministic functions of the text (no model, no randomness).
 
-strict: the number in the last "The answer is N" of the response equals the gold integer.
-lenient: the last number anywhere in the response equals the gold integer.
+strict: the number in the last "The answer is N" of the response equals the gold number.
+lenient: the last number anywhere in the response equals the gold number.
+Gold numbers are integers on GSM8K and GSM-Symbolic, and sometimes decimals on GSM-Plus ("4.5"); comparison is exact.
 Numbers may carry thousands commas, a leading "$", a minus sign and decimals ("18.00" equals 18); a minus counts only
 when it is not preceded by a word character or ")" ("10-3" reads 10 and 3, not -3).
 """
@@ -26,10 +27,15 @@ def gold_answer(solution: str) -> int:
     return int(solution.split("####")[-1].strip().replace(",", ""))
 
 
+def gold_number(solution: str) -> Decimal:
+    """The number after "####" in a GSM8K-style solution (GSM8K, GSM-Plus, GSM-Symbolic), commas and a "$" stripped."""
+    return number(solution.split("####")[-1].strip().lstrip("$"))
+
+
 def gold_as_response(solution: str) -> str:
     """The gold solution in the instructed format: calculator tags removed, '#### N' replaced by 'The answer is N.'"""
     body = _CALC.sub("", solution.split("####")[0]).rstrip()
-    return f"{body}\nThe answer is {gold_answer(solution)}."
+    return f"{body}\nThe answer is {gold_number(solution)}."
 
 
 def strict_pred(text: str) -> str | None:
@@ -42,7 +48,7 @@ def lenient_pred(text: str) -> str | None:
     return hits[-1] if hits else None
 
 
-def grade(text: str, gold: int) -> dict[str, str | bool | None]:
+def grade(text: str, gold: int | Decimal) -> dict[str, str | bool | None]:
     s, ln = strict_pred(text), lenient_pred(text)
     return {"strict_pred": s, "lenient_pred": ln,
             "strict": s is not None and number(s) == gold,
