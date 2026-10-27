@@ -32,4 +32,9 @@
   argument); no `execute()` or `wait()` over 5 min, re-arm instead; on a WebSocket closure, `status(instance=...)`
   then `create_kernel(instance=...)` at once; download each stage as it is written; pass `instance` to every
   machine-scoped call when several machines run.
+- Lesson from the 2026-10-26 E36 Amendment 6 pod (~$40 lost) and E34 Amendment 5 pod (idle 40 min). Each
+  `results/large/` is a symlink into `~/commute-data/results-large/`, outside the project: `download()` there is
+  refused, and the `mv` into it waits at a permission prompt, all night when nobody is there. Terminate the moment the
+  results JSON's sha256 matches, before any local file move. Download large files to a project path (e.g.
+  `results/<run>_dl/`) and move them into `large/` after the pod is gone.
 - Stop or terminate machines as soon as they are idle. The $40/session `REMOTE_KERNELS_BUDGET` is the budget and the backstop that terminates machines.

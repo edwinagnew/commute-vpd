@@ -53,3 +53,4 @@
 - [model-router ports on shared VM](model-router-shared-vm-ports.md) — ours on 8788/8318; unwired until Codex quota resets ~2026-11-18
 - [Venv move pending](project-venv-move-pending.md) — REMIND the user once the cluster takes jobs: rebuild venv out of ~/commute, then they delete it
 - [Overnight harness reporting](feedback-overnight-harness-reporting.md) — more subagents/parallel; log each experiment before the next; pending cards carry a run line; temporary 20k-word main-page cap (2026-10-26)
+- [Terminate before local moves](feedback-terminate-before-local-moves.md) — pod off once the result sha256 matches; mv into results/large symlink blocked a prompt overnight, ~$40 lost (2026-10-26)
