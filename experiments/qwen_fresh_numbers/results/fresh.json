@@ -1,0 +1,141 @@
+{
+ "model": "Qwen/Qwen3-1.7B",
+ "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+ "weights": "bfloat16 (no update is read here)",
+ "instruction": "Solve the problem step by step. Then end your response with one final line of exactly this form: The answer is N.\nwhere N is the final numerical answer, written as a plain number.",
+ "max_new_tokens": 512,
+ "window": 512,
+ "batch": 128,
+ "symbolic_per_template": 12,
+ "datasets": {
+  "openai/gsm8k": "740312add88f781978c0658806c59bc2815b9866",
+  "qintongli/GSM-Plus (numerical substitution)": "3b708db57b96a16e8e3368ed2956990c0809440e",
+  "apple/GSM-Symbolic main": "93b5b3758d9d9841ffe81d6cd2ae2b030685b078"
+ },
+ "card": "NVIDIA L40",
+ "torch": "2.8.0+cu128",
+ "transformers": "4.57.3",
+ "job": "39129",
+ "status": "finished",
+ "grader_control": {
+  "gsm8k_control_strict": 1.0,
+  "plus_control_strict": 1.0,
+  "symbolic_control_strict": 1.0
+ },
+ "control": {
+  "k": 1319,
+  "strict_all": 0.7558756633813495,
+  "identical_to_baseline_share": 1.0,
+  "pass": true
+ },
+ "gsm8k": {
+  "k": 1319,
+  "fits_share": 0.9529946929492039,
+  "truncation_share": 0.012130401819560273,
+  "strict_dropped": 0.7772474144789181,
+  "lenient_dropped": 0.7947494033412887,
+  "strict_capped": 0.7437452615617892,
+  "lenient_capped": 0.7672479150871873
+ },
+ "plus": {
+  "k": 1319,
+  "fits_share": 0.9363153904473086,
+  "truncation_share": 0.022744503411675512,
+  "strict_dropped": 0.7384615384615385,
+  "lenient_dropped": 0.7530364372469636,
+  "strict_capped": 0.6921910538286581,
+  "lenient_capped": 0.711144806671721
+ },
+ "readings_dropped": {
+  "plus_paired": {
+   "n": 1107,
+   "gsm8k_only": 117,
+   "variant_only": 74,
+   "diff": 0.03884372177055104,
+   "se": 0.012429732302166539
+  },
+  "plus_paired_all_answers": {
+   "n": 1214,
+   "gsm8k_only": 136,
+   "variant_only": 80,
+   "diff": 0.04612850082372323,
+   "se": 0.012033601325135245
+  },
+  "plus_paired_lenient": {
+   "n": 1107,
+   "gsm8k_only": 113,
+   "variant_only": 69,
+   "diff": 0.03974706413730804,
+   "se": 0.01212806109739512
+  },
+  "symbolic_by_template": {
+   "templates": 94,
+   "diff": 0.008016333548248449,
+   "se": 0.03843812568191112,
+   "originals": 0.8085106382978723
+  },
+  "symbolic_by_template_lenient": {
+   "templates": 94,
+   "diff": 0.018654631420588874,
+   "se": 0.03600780040803288,
+   "originals": 0.8297872340425532
+  },
+  "plus_verdict": "ambiguous",
+  "symbolic_verdict": "capability",
+  "verdict": "ambiguous",
+  "lenient_minus_strict": {
+   "gsm8k": 0.017501988862370643,
+   "plus": 0.014574898785425061,
+   "symbolic": 0.00989208633093519
+  },
+  "format_same_on_every_set": true
+ },
+ "readings_capped": {
+  "plus_paired": {
+   "n": 1202,
+   "gsm8k_only": 135,
+   "variant_only": 83,
+   "diff": 0.04326123128119801,
+   "se": 0.012220004144309491
+  },
+  "plus_paired_all_answers": {
+   "n": 1319,
+   "gsm8k_only": 157,
+   "variant_only": 89,
+   "diff": 0.05155420773313116,
+   "se": 0.011806087134821062
+  },
+  "plus_paired_lenient": {
+   "n": 1202,
+   "gsm8k_only": 139,
+   "variant_only": 81,
+   "diff": 0.048252911813643926,
+   "se": 0.01226102487658692
+  },
+  "symbolic_by_template": {
+   "templates": 100,
+   "diff": 0.01833333333333334,
+   "se": 0.03853700831799233,
+   "originals": 0.76
+  },
+  "symbolic_by_template_lenient": {
+   "templates": 100,
+   "diff": 0.024166666666666677,
+   "se": 0.03612655070089493,
+   "originals": 0.78
+  },
+  "plus_verdict": "ambiguous",
+  "symbolic_verdict": "capability",
+  "verdict": "ambiguous"
+ },
+ "symbolic": {
+  "k": 1200,
+  "fits_share": 0.9266666666666666,
+  "truncation_share": 0.019166666666666665,
+  "strict_dropped": 0.7985611510791367,
+  "lenient_dropped": 0.8084532374100719,
+  "strict_capped": 0.7416666666666667,
+  "lenient_capped": 0.7558333333333334
+ },
+ "peak_gpu_gb": 14.2925705909729
+}
