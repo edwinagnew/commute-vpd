@@ -1,7 +1,7 @@
 # Does the cue-free form of the fixed-shift hypothesis hold on a fine-tune with no trigger? (E36, analysis)
 
 *2026-10-26, lead agent (overnight). Plan and design check: `reports/plans/2026-10-26_plan_regating-without-cues.md` (E36,
-Amendments 1 and 3 to 8). Code: `experiments/regating_spread/run.py` and `amend1.py` to `amend6.py`, shared steps in
+Amendments 1 and 3 to 9). Code: `experiments/regating_spread/run.py` and `amend1.py` to `amend7.py`, shared steps in
 `src/commute/spread.py` and `src/commute/cuefree.py`. Follows E35, `reports/analyses/2026-10-26_analysis_regating-without-cues.md`.
 Exploration, provisional. Independent checks (fresh Opus agents, 2026-10-26) of the first run and of Amendment 3 found the
 numbers and scoring right and the headlines too strong each time; this version takes their points. Words as in `GOALS.md` → Terms.*
@@ -13,9 +13,12 @@ below the filed bar after the first ten steps; with sixteen times as many it rec
 step. The same rule on the original model's attention inputs, which Γ itself
 reads, does about as well. A summary of the last few tokens alone, which the model did not produce, does about a quarter
 worse, and adding a bag of every earlier token in the row did not help. That bag scored like rules that use no context
-at all, so whether a better summary of the whole preceding text would close the gap is still open. For `GOALS.md` this
-supports the form "positions the original model treats alike get alike changes, more than positions that share their
-last few tokens" on one synthetic style of running text.
+at all, so whether a better summary of the whole preceding text would close the gap is still open. Predicting each
+subcomponent's change from its own original value alone, which sets how far it can move before it is clipped, did far
+worse than the nearest rule, so its success needs the values taken together. A rule joining the text with each value's
+room to move was not run, so whether the original values beat the text for reasons beyond that room is open. For
+`GOALS.md` this supports, with those two caveats, the form "positions the original model treats alike get alike
+changes, more than positions that share their last few tokens" on one synthetic style of running text.
 
 ## The answer
 
@@ -25,6 +28,7 @@ recovered 0.72 of Γ's switching at step 10, then 0.54 and 0.51, under the filed
 0.89, 0.78 and 0.76, and the same rule on the attention inputs Γ reads about as much. At the same sample size the current token
 recovers about a third, a summary of the last few tokens about a half, and position in the row almost nothing. Adding
 the whole preceding text, as a bag of tokens, left the text summary at about a half; the bag alone recovered nothing.
+Each subcomponent's own original value alone recovers 0.18 at most by step 300, so room to move is not the whole story.
 
 ## What we were trying to test
 
@@ -111,7 +115,10 @@ a privileged one. A summary of the last few tokens, which the model did not prod
 0.35 less (Amendment 5). So the original model's view of the position predicts the change better than its recent
 text. Amendment 6 tried a bag of every preceding token as the whole preceding text. It carried no usable signal, so
 whether a better whole-prefix summary would close the gap is still open. At the first 32 positions of a row, where the
-bag does hold the whole prefix, the text recovers 0.48 against the original values' 0.74. At the same sample size the current token recovers about a third and
+bag does hold the whole prefix, the text recovers 0.48 against the original values' 0.74. Amendment 7 predicted each
+subcomponent's change from its own original value alone, which bounds how far it can move. That recovered 0.18 at most
+at step 300, against 0.76, so the nearest rule needs how the values sit together, not just each value's room to move.
+Whether text neighbours kept within each value's room would match the original values was not tested. At the same sample size the current token recovers about a third and
 position in the row almost nothing; at 16,384 positions the original values also beat a few groups and a fixed rule per
 subcomponent. A tenth to a quarter of the switching remains unexplained, more of it later in training. A high switching share is not evidence of learned re-weighting
 on its own, since an update that learned nothing gave the same share.
@@ -148,6 +155,9 @@ on its own, since an update that learned nothing gave the same share.
    it recovered 0.76, so the first surprise above was a sampling shortfall.
 5. **The whole preceding text added nothing to the last four tokens** (Amendment 6). We predicted, at medium
    confidence, that it would add more than the noise floor; it fell 0.02 below them, and the bag alone recovered nothing.
+6. **The equal-count bins collapsed to two for most subcomponents** (Amendment 7). For at least half the subcomponents,
+   fifteen sixteenths of fitted positions hold a value of exactly 0. That two-level rule still recovered more than 16
+   equal-width bins at steps 100 and 300, while fitting the training positions slightly worse than the line.
 
 ## Amendment 2: is the shortfall sampling, and does the token add anything?
 
@@ -380,6 +390,140 @@ says nothing about context length. The only evidence here on context length is t
 raised open threats to the restatement, not measured and listed under "Not run". The original values may have an edge
 in the clip; text neighbours are cut to 8 where hundreds tie; and no order-keeping summary of the whole prefix was tried.
 
+## Amendment 7: is the original values' edge only each value's room to move?
+
+*Plan: Amendment 9 of the plan. `experiments/regating_spread/amend7.py`, predictions filed 2026-10-27 10:54
+(`results/predictions_amend7.json`, sha256 `f8fb7f2a…`, commit `51b9aa2`) before the run; results
+`results/regating_spread_amend7.json`. RunPod H100 80GB HBM3, run 94 s, $0.33. Code review before filing:
+`reports/reviews/2026-10-27_review_amend7-code.md`. Independent check of the result (fresh Opus agent, read-only):
+`reports/reviews/2026-10-27_review_regating-spread-amend7.md`; it found the scoring right and narrowed the reading.*
+
+We asked whether the nearest rule on the original values wins only because each value can move just so far before it
+is clipped. Predicting each subcomponent's change from its own original value alone recovered at most a fifth of the
+switching by the last step, against three quarters for the nearest rule. So "values move towards where they have room"
+is not the whole story, but this run did not test whether text neighbours kept within each value's room would do as
+well as the original values, so the restatement goes to the user with that caveat open.
+
+**The threat.** Every rule adds its predicted change to the position's own original values $g_0$ and clips the result
+to $[0, 1]$, so a value's change is bounded by $[-g_0, 1 - g_0]$. A value at 0 can only rise and a value at 1 can only
+fall. Positions with similar original values share those bounds, while positions with similar text need not. If that
+were the whole of the edge, a rule that knows each value on its own would do as well as the nearest rule. Amendment 1's
+straight line per subcomponent, $\mathrm{clip}(a\,g_0 + b)$, already fell to nothing by step 300, but a curve might not.
+
+**The rules.** A *value-bin rule* treats each alive subcomponent on its own. It sorts the fitted positions by that
+subcomponent's original value into 16 bins. A held-out position's change for that subcomponent is the mean change of
+the fitted positions in the bin its own value falls in. It uses no other subcomponent's value and no text. Two binnings
+were run, after the code review: 16 equal-width bins on $[0, 1]$, and 16 bins holding equal numbers of fitted positions.
+All rules were refitted on the same 262,144 positions as Amendment 6:
+
+- the nearest rule on the original values, the reference, gated to reproduce Amendment 6 within 0.02;
+- the two value-bin rules;
+- the straight line per subcomponent, as the bin rules' positive control;
+- the 4-token text summary with 32 neighbours instead of 8, reported only, to size the cost of keeping 8 neighbours where
+  many text neighbours tie.
+
+**The controls.** Inside each bin a bin rule has slope 1. The fitted lines have slopes near 1, median 0.94 to 0.96, so
+a bin rule can follow each line closely and should do at least as well. Two checks
+hold it to that at every step. Its recovery must be no more than 0.05 below the line's. Its mean squared error of
+the change, on the fitted positions, must be at most the line's. The second check matters at step 300, where the line
+recovers about nothing and the first would pass a broken bin rule. The prediction is read when at least one bin rule
+passes both checks at every step. It then reads the better recovery of the two, so a failing rule can only make the
+prediction harder to pass.
+
+![amend7](../../experiments/regating_spread/figures/amend7.png)
+
+**Reading it.** No: each value's room to move, on its own, explains little of the nearest rule's success. At step 300 the better bin rule recovers
+0.18 of the switching and the nearest rule 0.76. We predicted the bin rules would sit at least 0.3 below the
+nearest rule, under 0.46; the better one sits 0.59 below. The bin rules start near the straight line at step 10 and fall
+with it, staying 0.05 to 0.15 above it. So a curve per subcomponent adds a little to a line, and most of the switching
+is left to how the values sit together, or to context. The equal-width rule, the one that passed both controls,
+recovers 0.12 at step 300, further still below.
+
+**What the bin rules are blind to.**
+
+- *Joint structure, by design.* Each subcomponent's change depends on its own original value only. Anything that
+  depends on two subcomponents' values together, or on the text, is out of reach. That is the null.
+- *Variation inside a bin.* The change is one number per bin. Equal-width bins cannot follow a change that varies
+  within a sixteenth of the value range.
+- *Most of the range, for equal-count bins.* The median top edge of the equal-count bins over subcomponents is exactly 0.
+  So for at least half the subcomponents, at least fifteen sixteenths of fitted positions hold a value of exactly 0.
+  Their 16 equal-count bins collapse to two, "exactly 0" and "above 0", and every active value shares one change. The
+  code review predicted this; it is stronger than predicted.
+- *Spread at one value.* A bin rule gives the mean change at a value. Where a value rises at some positions and falls at
+  others, the rule predicts about no change. That spread is what joint structure or context would have to explain.
+- *Why text loses.* The text rule's prediction is clipped at the held-out position. Its neighbours' changes were never
+  limited to that position's room to move. So this run does not say how much of the gap between text and original
+  values is bounds. The independent check calls this the main limit; see "What this does not settle" below.
+- *An exact-zero bin with fine bins above it.* Equal-count bins separate exactly 0 but lump every positive value
+  together. Equal-width bins resolve the positive range but put 0 in one bin with values up to a sixteenth. No rule run
+  has both.
+- *Keeping the change sparse.* Each bin predicts its mean change, which switches every zero-valued position on a
+  little. The nearest rule averages eight real change vectors and leaves most entries at zero. A per-value rule that
+  keeps zeros at zero, such as the bin median, was not run.
+
+**The equal-count rule's failed fit check.** At steps 100 and 300 the two-level equal-count rule fitted the training
+positions slightly worse than the line, by 0.2% and 0.6% in mean squared error. The equal-width rule fitted them 3 to 5%
+better at every step. Yet on held-out positions the equal-count rule recovered more than the equal-width rule at both
+of those steps, by 0.03 and 0.05. The two scores weigh errors differently: one is squared error of the
+change, the other is the gain in log-probability. One difference that could matter is that equal-count bins separate
+exactly 0 from small values, while equal-width bins put both in the bottom bin. That was not tested.
+
+**More positions help the line too.** Refitted on sixteen times as many positions, the straight line recovers 0.50 at
+step 10 and 0.02 at step 300. Amendment 1's smaller fit gave 0.39 and −0.01.
+
+**Text with 32 neighbours.** The 4-token text summary with 32 neighbours recovers 0.57 at step 10 and 0.53 at step 300.
+Amendment 6's 8-neighbour version read 0.56 and 0.51; more neighbours add at most 0.03 at any step. The text spaces moved by up to 0.02
+between runs with the same code, so the cap of 8 neighbours costs at most about 0.03. The gap from text to the original
+values at step 300 is 0.24, so the cap does not explain it.
+
+| step | nearest, original values | equal-width bins | equal-count bins | straight line | 4-token text, 32 neighbours |
+|---|---|---|---|---|---|
+| 10 | 0.886 | 0.562 | 0.546 | 0.495 | 0.569 |
+| 100 | 0.776 | 0.270 | 0.299 | 0.202 | 0.554 |
+| 300 | 0.762 | 0.123 | 0.176 | 0.024 | 0.525 |
+
+Mean squared error of the change on the fitted positions, as each rule applies it, $\mathrm{clip}(g_0 + c) - g_0$:
+
+| step | equal-width bins | equal-count bins | straight line |
+|---|---|---|---|
+| 10 | 0.001128 | 0.001167 | 0.001186 |
+| 100 | 0.001573 | 0.001631 | 0.001628 |
+| 300 | 0.001654 | 0.001718 | 0.001707 |
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| A0 | the nearest rule on the original values reproduces Amendment 6 | within 0.02 at every step | within 0.004 | pass |
+| C_bin | each bin rule recovers at least the line's share (positive control) | ≥ R_fix − 0.05 at every step | +0.05 to +0.15 | pass, both rules |
+| C_fit | each bin rule fits the fitted positions at least as well as the line (positive control) | mse ≤ mse_fix at every step | equal-width 3 to 5% lower; equal-count 0.2% and 0.6% higher at steps 100, 300 | equal-width pass; equal-count **fail** |
+| B1 | each value alone recovers far less than the nearest rule | max(R_bin16q, R_bin16w) ≤ R_near_g0 − 0.3 at step 300 | 0.176 against a bar of 0.462 | pass, as predicted; readable, since the equal-width rule passed both controls |
+
+**What this does not settle.** The independent check found the scoring right and no unfair edge in the code, but
+narrowed the reading. The threat Amendment 6's check named was about the gap between the original values and the text
+summary: text neighbours may lose only because their changes ignore the held-out position's bounds. This run asked a
+weaker question, whether each value's room with no context at all can match the original values. It cannot. But the bin
+rules know the bounds and no context, while the text rule knows context and not the bounds, and no rule used both. Two
+such rules were named and not run. One adds the bin rule's change to the text neighbours' change left over after their
+own bin means. The other averages, per subcomponent, only text neighbours whose value falls in the held-out position's
+bin. The two recoveries, 0.18 and 0.53, sum to about the original values' 0.76, though recovery need not add. So a
+rival reading survives: "similar text gets similar changes, within each value's room to move". This run does not tell
+it apart from "positions the original model treats alike get alike changes".
+
+By the filed decision tree, "B1 holds" reads: the original values' edge is not each value's room to move. Narrowed by
+the check, what B1 supports is that the nearest rule's success needs the values of many subcomponents together, and
+that "values move towards where they have room" is not the whole story. The restatement goes to the user with two
+caveats, not as established. First, Amendment 6's caveat on context length: the text null it beats is a summary of the
+last four tokens, and no working summary of the whole preceding text was built. Second, the rule joining text with each
+value's room was not run. The B1 reading does not rest on the rule that failed its fit check: without it the best bin
+rule is 0.12.
+
+Not run, for this amendment: a rule joining text neighbours with each value's room to move, in either form above; a
+per-value rule with an exact-zero bin and fine bins above it, or one that keeps the change sparse at zero values; bins
+finer than a sixteenth, or a smooth curve per subcomponent; a rule on the values of one matrix or one layer jointly,
+without context; a rule from each value plus a count of how many subcomponents are on at the position; recovery scored
+only on subcomponents far from 0 and 1; the 8-neighbour text rule in the same run as the 32-neighbour one; why
+equal-count bins recover more than equal-width bins while fitting worse; a planted per-value change as a control of
+the bin code in recovery; a second seed or held-out set.
+
 ## What next
 
 1. **Done as Amendment 3:** with all 262,144 positions the rule reaches 0.76 to 0.89 at every step. Next on this: what
@@ -388,10 +532,13 @@ in the clip; text neighbours are cut to 8 where hundreds tie; and no order-keepi
    the text alone does a quarter worse. What the remaining tenth to quarter depends on, and a richer text summary as a
    harder null, are new designs and go to the user through the pending card.
 3. **Tried as Amendment 6:** a bag of the whole preceding text carried no usable signal. A summary of the whole prefix
-   that keeps order and the current token is still the harder null. A check of the clip's edge for the original
-   values would say whether the remaining gap is about the model at all. If either closes most of the gap, the
-   restatement becomes "similar contexts get similar changes".
-4. **A fine-tune of a real behaviour that learns**, or the larger model's post-trained sibling, before any restatement
+   that keeps order and the current token is still the harder null. If it closes most of the gap, the restatement
+   becomes "similar contexts get similar changes".
+4. **Done as Amendment 7:** each value's room to move, as any function of each value on its own, recovers 0.18 at most
+   at step 300 against the nearest rule's 0.76. The restatement goes to the user with two caveats: context length, and
+   the untested rule joining text neighbours with each value's room to move. If that joined rule matched the original
+   values, the restatement would become "similar text gets similar changes, within each value's room".
+5. **A fine-tune of a real behaviour that learns**, or the larger model's post-trained sibling, before any restatement
    is adopted. A pending-decision card in the log holds this choice.
 
 ## Scorecard
@@ -453,12 +600,17 @@ From Amendment 6 and its independent check, none measured:
 - a positive control showing a whole-prefix summary can carry long-range context at all;
 - a check of the clip's edge for the original values. The predicted values are clipped to $[0, 1]$, so a position's
   change is bounded by $[-g_0, 1 - g_0]$; neighbours with similar $g_0$ have changes that respect the query's bounds,
-  text neighbours do not. Predicting from the neighbours' values on the fine-tuned model, clipped to the query's
-  bounds, or scoring only subcomponents far from 0 and 1, would separate the two;
+  text neighbours do not. Amendment 7 ran one half: a function of each value alone does far worse. The other half,
+  text neighbours limited to the query's bounds, or scoring only subcomponents far from 0 and 1, is still not run;
 - ties in the text spaces: a held-out position may have hundreds of exactly tied text neighbours, of which 8 are kept
   arbitrarily. Neither the tie counts, nor whether the bag's 8 neighbours come from one fitted row, were measured;
 - a replicate of the text spaces, whose run-to-run shift of 0.02 exceeds the filed noise floor;
 - other hashings and other weights for the two halves of the joined space.
+
+From Amendment 7 and its independent check: a rule joining text neighbours with each value's room to move; a per-value
+rule with an exact-zero bin and fine bins, or one that keeps the change sparse; a smooth curve per subcomponent; a rule
+on one matrix's or one layer's values jointly, without context; each value plus a count of active subcomponents; the
+8-neighbour text rule in the same run as the 32-neighbour one; why equal-count bins recover more while fitting worse.
 
 ## Provenance
 
@@ -477,3 +629,7 @@ From Amendment 6 and its independent check, none measured:
   (sha256 `f9b54f7d…`); RunPod H100 PCIe, run 123 s, 19:32–19:34. Log downloaded as `results/amend6_dl/amend6.log`;
   pod id and cost are in the runner's hand-back, not this file. Figure `figures/amend6.png` from `plot_amend6.py`. Independent
   check `reports/reviews/2026-10-26_review_regating-spread-amend6.md`.
+- Amendment 7: `results/regating_spread_amend7.json` (sha256 `5bca7fce…`), predictions `results/predictions_amend7.json`
+  (sha256 `f8fb7f2a…`, filed 2026-10-27 10:54, commit `51b9aa2`), log `results/large/amend7.log`; RunPod H100 80GB HBM3,
+  run 94 s, 10:58–11:00, $0.33. Figure `figures/amend7.png` from `plot_amend7.py`. Code review before filing
+  `reports/reviews/2026-10-27_review_amend7-code.md`; independent check `reports/reviews/2026-10-27_review_regating-spread-amend7.md`.
