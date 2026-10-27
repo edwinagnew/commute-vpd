@@ -4,13 +4,13 @@
 <div class="cards">
   <div class="card"><div class="k">Maps not yet run</div><ul>
     <li><strong>LoRA split: run as E14.</strong> Remaining: rerun the split stage on the cluster to recover the per-subcomponent updates, lost with the pod.</li>
-    <li><strong>Teacher training</strong> (user, 2026-10-23). Component training with the fine-tuned model as teacher, Γ and Δ frozen, so the map needs only the original and the fine-tuned model. Ran as E34 and E37; its follow-ups are in section {{n:next}}.</li>
+    <li><strong>Teacher training</strong> (user, 2026-10-23): ran as E34 and E37; its follow-ups are in section {{n:next}}.</li>
     <li><strong>Scaled adjoint state as a map (from E14).</strong> A second seed and two more tasks ran in E31: an SGD fine-tune's behaviour is kept only while the update is small. The unscaled variant ran as E31 Amendment 3: it keeps the behaviour but damages the rest of the model. Remaining: a scale between c and 1, its off-target damage on Pile text, the cipher tasks; through the design check.</li>
     <li><strong>Where a fine-tune writes (from E14).</strong> Its output directions against the dead pieces' span and against the write directions of the pieces Γ switches on at the trigger; through the design check.</li>
     <li><strong>Per-step split: run as E19, dropped for now.</strong> Remaining, through the design check: each matrix's scale and accumulated pieces per step, to find where the cancellation comes from. The step split of small SGD and Adam fine-tunes ran as E25.</li>
-    <li><strong>The unused contrast (2026-10-21).</strong> One SGD step of component training is the adjoint split of that step's gradient, yet the one-shot scaled adjoint state stays at the floor (E14) while Adam component training fails on three of five ladder tasks (E11). One hypothesis, not a finding: Adam builds cancelling changes. Check: plain SGD component training against the SGD fine-tune's scaled adjoint state.</li>
+    <li><strong>The unused contrast (2026-10-21).</strong> Adam component training fails on three of five ladder tasks (E11) though one SGD step is the adjoint split of its gradient; perhaps Adam builds cancelling changes. Check: plain SGD against the SGD fine-tune's scaled adjoint state.</li>
     <li><strong>Δ trainable on the obstruction only.</strong> Only at the first task pure component training fails to learn.</li>
-    <li><strong>Updating Γ: E15, being fixed.</strong> Two protocols took the unchanged model off the floor, and the refit's attacker (0.42 nats) is weaker than the harness's (0.70), so the objective as reconstructed cannot hold the floor. Reopened by the user on 2026-10-21; the fix being worked on is an attacker matched to the harness's, which is re-deriving VPD's recipe. The sparsity loss does discriminate once Γ moves: 1.60 on the split against 1.09 on the control.</li>
+    <li><strong>Updating Γ: E15, being fixed.</strong> Two protocols took the unchanged model off the floor; the refit's attacker (0.42 nats) is weaker than the harness's (0.70). Reopened 2026-10-21; the fix is an attacker matched to the harness's. The sparsity loss does discriminate once Γ moves: 1.60 on the split against 1.09 on the control.</li>
     <li><strong>The strong version:</strong> warm-start a fresh VPD run on the updated weights against a zero-update warm start and the cross-seed baseline.</li></ul></div>
   <div class="card"><div class="k">Measurements that settle an open question</div><ul>
     <li><strong>Matched off-target KL</strong> instead of matched steps for component training vs fine-tune.</li>
@@ -21,22 +21,17 @@
     <li><strong>More adversary seeds</strong> before another verdict near 1.5; state-level floors on every task.</li>
     <li><strong>The Pile adversary read at the trigger</strong>, the one remaining test of "fragile at the trigger".</li>
     <li><strong>The Δ-share seed spread at the LoRA's plateau</strong> (E9; the fine-tune control on one card was run in E14).</li>
-    <li><strong>Read-side check:</strong> collect or rerun cluster jobs 22430 and 22431.</li>
     <li><strong>E16's gate miss (from E16).</strong> Build the step-10 least-squares state from one saved fine-tune update and read it on an RTX A5000 and an H100: if it follows the card, step-10 comparisons need a same-card reference.</li>
     <li><strong>E16's control miss (from E16).</strong> Compute dU dVᵀ for rank-8 component training at step 1000; no GPU if the offsets were saved.</li>
     <li><strong>The split states' off-target damage and every state's sparsity loss (from E16).</strong> Not measured; the sparsity loss is part of the weak version.</li>
-    <li><strong>SGD against Adam: run as E21.</strong> Remaining: an H100 re-read of the near-line verdicts. Done: E17's statistics on the SGD states, as E23; a second batch order on r0, r1 and r2 as E26. Analysed (<code>reports/analyses/2026-10-22_analysis_sgd-vs-adam.md</code>); from it, the size rule for SGD and the damage rule for Adam tested on new states.</li>
-    <li><strong>The adversary's budget: done as E20's third amendment.</strong> Under the paper's step rule every verdict tried holds from 20 to 160 steps. The same sweep on E21's step-1,000 SGD and Adam states on r0 t352 and r1 t534 ran in E23 and holds. Left: a second seed on the updated models; another kind of search (per-row masks, restarts).</li>
-    <li><strong>Small updates through E14 to E19's measurements: run as E22 to E25.</strong> Placements at steps 100 and 1,000 (E22), E17's and E20's decompositions on the failures that persist (E23), E18's fixed-pattern test (E24) and E19's step split (E25) on small SGD and Adam updates.</li></ul></div>
-  <div class="card"><div class="k">Tasks and arms</div><ul>
-    <li><strong>Cipher follow-up: run as E10's amendment.</strong> The 32-pair failure belonged to its scored step, so no pair-count sweep. Remaining: three adversary seeds on the step-10 states; the identity control past size 0.015; a LoRA on these tasks.</li>
+    <li><strong>SGD against Adam: run as E21.</strong> Remaining: an H100 re-read of the near-line verdicts.</li>
+    <li><strong>The adversary's budget.</strong> Holds from 20 to 160 steps under the paper's step rule (E20, E23). Left: a second seed on the updated models; per-row masks, restarts.</li>
     <li><strong>Sparse or sibling component training</strong> on the ladder tasks Adam's diffuse one fails; plain SGD ran there in E21.</li>
     <li><strong>Component training on a task the model lacks (from E16).</strong> E16's pass is on emoticon, a behaviour the model nearly has; on the 32-pair cipher component training read 2.81 at its scored step but passes once training settles (E10, amendment). Through the design check.</li>
     <li><strong>A gated-on control that learns</strong>, before any further "direct share is small" claim.</li>
     <li><strong>Rungs 3 and 4</strong> once the direct share has somewhere to go.</li>
     <li><strong>E12 follow-ups</strong>: the moved set by relative change; the copy tasks' switched-on attention set.</li>
     <li><strong>A spread-out fine-tune</strong> (user, 2026-10-22: interesting, not yet): a style or topic shift on ordinary text with no single trigger, the closest to real post-training. Asks whether the fixed-shift hypothesis survives beyond one next-word pair; needs a way to score switching without a trigger position. No longer the re-gating line's next step since 2026-10-27.</li>
-    <li><strong>Define the fixed-shift hypothesis without cues</strong> (user, 2026-10-23): de-prioritised with the hypothesis on 2026-10-27 (user), as are E35 and E36's open items; the cue-free form is not carried forward.</li>
     <li><strong>Induction, for further consideration</strong> (user, 2026-10-22): a fine-tune that adds something new to a known mechanism would show new behaviour attaching to known machinery. Cheap first check: whether the copy task's switched-on set includes the one query and one key subcomponent the VPD paper decomposes in layer 1.</li></ul></div>
   <div class="card"><div class="k">Mechanism and definitions</div><ul>
     <li><strong>Define re-weighting, recruit and create in VPD terms.</strong> E10 gives the first data.</li>
