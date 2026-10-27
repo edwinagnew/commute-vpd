@@ -1,0 +1,38 @@
+{
+ "plan": "reports/plans/2026-10-26_plan_regating-without-cues.md, Amendment 9 and its code review. Filed before the run; never edited after.",
+ "measurements": {
+  "R_<rule>": "recovery of the switching over all held-out positions; every rule adds its predicted change to the position's original values and clips to [0, 1]",
+  "near_g0": "mean change of the 8 fitted positions nearest in \u0393's original values (Amendment 6's rule)",
+  "bin16q": "per alive subcomponent independently, 16 equal-count bins of its original value over the fitted positions; the change is the mean change of the fitted positions in the held-out value's bin (ties go whole into one bin; an empty bin takes the nearest non-empty bin below, else above; a constant subcomponent gets one bin)",
+  "bin16w": "the same with 16 equal-width bins on [0, 1] (edges i/16)",
+  "fix": "clip(a g0 + b) per subcomponent by least squares over the fitted positions (Amendment 1's straight-line rule, cuefree.line)",
+  "text4_k32": "Amendment 6's 4-token text summary with 32 neighbours; reported",
+  "mse_<rule>": "mean squared error of the change on the fitted positions, the change as the rule applies it, clip(g0 + c) - g0, over every alive subcomponent; for C_fit",
+  "top_edge_q_median": "median over subcomponents of the top equal-count edge; reported, to show how coarse bin16q was"
+ },
+ "gates": {
+  "A0": "every step: |R_near_g0 - Amendment 6's R_near_g0| <= 0.02; fail: stop",
+  "C_bin": "positive control, per bin rule: at every step R_<bin rule> >= R_fix - 0.05 (within a bin a bin rule has slope 1, so it can follow a straight line of slope a up to (1 - a) x the bin's width)",
+  "C_fit": "positive control, per bin rule: at every step mse_<bin rule> <= mse_fix on the fitted positions (C_bin alone would pass a broken bin rule at step 300, where the line recovers about -0.01)",
+  "readable": "B1 is readable when at least one bin rule passes both C_bin and C_fit at every step (a piecewise-constant bin rule can lose to a line on fitted error for real reasons, a wide equal-count top bin); it then reads the best R over all bin rules, passing or not, so dropping a rule can never help B1 pass; if neither passes both: B1 unreadable"
+ },
+ "noise_floor": "8 against 32 neighbours moved R by about 0.014; differences below it are not read",
+ "predictions": [
+  {
+   "id": "B1",
+   "rule": "step 300: max(R_bin16q, R_bin16w) <= R_near_g0 - 0.3 ('each subcomponent's change predicted from its own original value alone, its room to move, recovers far less than the nearest rule on all the original values', read on the better of the two bin rules, passing or not); recorded as 'unreadable' unless at least one bin rule passes both C_bin and C_fit at every step",
+   "predicted": "pass",
+   "confidence": "medium-high",
+   "blind_to": "two binnings (16 equal-count bins per subcomponent and 16 equal-width bins on [0, 1]), each bin's change a mean over the fitted positions in it, so blind to variation within a bin; subcomponents treated independently by design, so a rule from the values of one matrix jointly but no context is not run; one seed and one held-out set",
+   "positive_control": "C_bin, C_fit"
+  }
+ ],
+ "decision_tree": {
+  "A0 fails": "stop; nothing scored",
+  "neither bin rule passes both C_bin and C_fit": "B1 unreadable: no bin rule reaches the straight line it should contain",
+  "one bin rule fails a control": "B1 still read on the best R over both bin rules; the failing rule is reported",
+  "B1 holds": "the original values' edge is not each value's room to move, and the restatement 'positions the original model treats alike get alike changes' goes to the user with Amendment 6's caveat on context length",
+  "B1 fails": "the restatement is withdrawn in favour of 'values move towards where they have room', and the user gets a card"
+ },
+ "filed": "2026-10-27 10:54:27"
+}
