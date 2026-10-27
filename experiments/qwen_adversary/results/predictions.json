@@ -1,0 +1,41 @@
+{
+  "plan": "reports/plans/2026-10-27_plan_qwen-adversary-128.md",
+  "filed": "2026-10-27, before any run of experiments/qwen_adversary/run.py",
+  "quantities": {
+    "adv4": "mean over seeds 0,1,2 of the 20-step adversary's KL (nats, mean over every position of every row) on rows 0-3 (the qwen_port text rows), recomputed in this job",
+    "adv128": "the same adversary on all 128 rows, one shared source per site, seeds 0,1,2; adv128_mean = mean of the 3 readings",
+    "spread128": "max/min - 1 over the 3 adv128 readings; infinite if min < 1e-6 or fewer than 3 readings exist",
+    "ratio": "adv128_mean / adv4 (both from this job)",
+    "ci128": "KL(clean || masked) with m = g, delta off, mean over every position of the 128 rows",
+    "ceiling128": "KL(clean || uniform over the 151936 logits), mean over every position of the 128 rows"
+  },
+  "control": {
+    "rule": "adv4 in [10, 30]",
+    "basis": "torch fp32 seeds 0-2 read 21.7, 27.7, 7.1 (mean 18.8); JAX 18.5, 20.0, 24.9",
+    "if_fails": "stop before the 128-row stage: the apparatus does not reproduce the 4-row reading"
+  },
+  "references": {
+    "ci128": {"expected": [0.05, 0.3], "basis": "0.13-0.18 per text row on the 4 port rows"},
+    "ceiling128": {"expected": [7.0, 11.0], "basis": "ln 151936 = 11.93 minus the clean entropy (cross-entropy 2.6-3.5 on the port rows)"}
+  },
+  "predictions": {
+    "P1_block_size": {
+      "claim": "the 4-row reading is high because one source over 4 rows can be tailored to them",
+      "rule": "ratio < 0.25",
+      "null": "ratio > 0.5 (block size is not the main cause)",
+      "between": "0.25 <= ratio <= 0.5: partial, reported as such",
+      "expected_absolute": "adv128_mean of about 1-5 nats"
+    },
+    "P2_spread": {
+      "rule": "spread128 < 0.25",
+      "basis": "the testbed's stop rule for 'read more rows per block'"
+    }
+  },
+  "reading": {
+    "usable_one_start": "adv128_mean < 0.5 * ceiling128 and spread128 < 0.25",
+    "usable_three_starts": "adv128_mean < 0.5 * ceiling128 and 0.25 <= spread128 < 1",
+    "unusable_at_this_size": "adv128_mean >= 0.5 * ceiling128 (the adversary drives the masked model at W0 at least halfway to a uniform output, so an update cannot be read against it) or spread128 >= 1",
+    "note": "exactly one branch holds for any finite or infinite spread128 and any adv128_mean; unusable goes to a pending-decision card for the user"
+  },
+  "edge_cases_checked": "spread128 with a zero or missing reading -> infinite -> unusable; ceiling128 cannot be 0 (vocabulary 151936, entropy far below ln V); ratio with adv4 = 0 cannot arise because the control requires adv4 >= 10; ties at a threshold fall to the stricter branch as written (< vs >=)"
+}

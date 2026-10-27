@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import math
 import os
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -349,22 +349,26 @@ def stochastic_masks(g: dict[str, Tensor], gen: torch.Generator) -> tuple[dict[s
 # ----------------------------------------------------------------------------- adversary
 
 
+RowInputs = Callable[[int], tuple[dict[str, Tensor], Tensor]]  # row index -> (g, clean logits), any device
+
+
 def _source_kl(
-    model: Any, rows: list[Tensor], comps: Components, gs: list[dict[str, Tensor]], cleans: list[Tensor],
+    model: Any, rows: list[Tensor], comps: Components, inputs: RowInputs,
     src: dict[str, Tensor], dsrc: dict[str, Tensor], grad: bool,
 ) -> float:
     """Mean KL(clean ‖ masked) over every position of every row under m = g + (1 − g) s, d = s_Δ, one source per
     site shared by all rows and positions; with `grad`, accumulates the sources' gradients row by row."""
     n = sum(r.numel() for r in rows)
     total = 0.0
-    for tokens, g_cpu, clean_cpu in zip(rows, gs, cleans, strict=True):
+    for i, tokens in enumerate(rows):
         dev = tokens.device
+        g_any, clean_any = inputs(i)
         with torch.set_grad_enabled(grad):
-            g = {s: v.to(dev, comps.dtype) for s, v in g_cpu.items()}
+            g = {s: v.to(dev, comps.dtype) for s, v in g_any.items()}
             masks = {s: g[s] + (1 - g[s]) * src[s] for s in SITES}
             deltas = {s: dsrc[s].expand(tokens.shape) for s in SITES}
             logits = masked_logits(model, tokens, comps, masks, deltas)
-            loss = kl_per_position(clean_cpu.to(dev), logits).sum() / n
+            loss = kl_per_position(clean_any.to(dev), logits).sum() / n
             if grad:
                 loss.backward()
         total += float(loss)
@@ -375,18 +379,28 @@ def pgd_kl(
     model: Any, rows: list[Tensor], comps: Components, gs: list[dict[str, Tensor]], cleans: list[Tensor],
     seed: int, steps: int = PGD_STEPS, step_size: float = PGD_STEP_SIZE,
 ) -> float:
+    """`pgd_kl_rows` with every row's g and clean logits held in memory (any device), one entry per row."""
+    assert len(gs) == len(cleans) == len(rows), (len(gs), len(cleans), len(rows))
+    return pgd_kl_rows(model, rows, comps, lambda i: (gs[i], cleans[i]), seed, steps, step_size)
+
+
+def pgd_kl_rows(
+    model: Any, rows: list[Tensor], comps: Components, inputs: RowInputs,
+    seed: int, steps: int = PGD_STEPS, step_size: float = PGD_STEP_SIZE,
+) -> float:
     """The config's evaluation adversary (recon_eval.py:104-139,194-251; adversary.py:316-349): one U(0, 1) source per
     site of shape [C] plus one Δ scalar, shared by every row and position, `steps` sign steps of `step_size` up the
-    mean KL, clipped to [0, 1]; returns the KL at the final sources. `gs` and `cleans` are per row (any device)."""
+    mean KL, clipped to [0, 1]; returns the KL at the final sources. `inputs(i)` gives row i's g and clean logits,
+    read once per pass, so a caller can recompute them instead of holding all rows (`importances`)."""
     dev, dt = rows[0].device, comps.dtype
     gen = torch.Generator(device=dev).manual_seed(seed)
     src = {s: torch.rand(C[parse_site(s)[1]], generator=gen, device=dev, dtype=dt).requires_grad_() for s in SITES}
     dsrc = {s: torch.rand((), generator=gen, device=dev, dtype=dt).requires_grad_() for s in SITES}
     for _ in range(steps):
-        _source_kl(model, rows, comps, gs, cleans, src, dsrc, grad=True)
+        _source_kl(model, rows, comps, inputs, src, dsrc, grad=True)
         with torch.no_grad():
             for p in (*src.values(), *dsrc.values()):
                 assert p.grad is not None
                 p.add_(step_size * p.grad.sign()).clamp_(0, 1)
                 p.grad = None
-    return _source_kl(model, rows, comps, gs, cleans, src, dsrc, grad=False)
+    return _source_kl(model, rows, comps, inputs, src, dsrc, grad=False)
