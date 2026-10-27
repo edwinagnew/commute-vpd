@@ -45,6 +45,7 @@ from torch import Tensor
 HERE = Path(__file__).resolve().parent
 RESULTS, LARGE = HERE / "results", HERE / "results" / "large"
 PRED, OUT = RESULTS / "predictions.json", RESULTS / "broad_fragility.json"
+LOG = LARGE / "run.log"  # amend1.py points OUT and LOG at its own files
 TRANSPORT = HERE.parent / "transport_test" / "results"
 UV = dict[str, tuple[Tensor, Tensor]]
 
@@ -102,7 +103,7 @@ def log(msg: str) -> None:
     line = f"{time.strftime('%H:%M:%S')} {msg}"
     print(line, flush=True)
     LARGE.mkdir(parents=True, exist_ok=True)
-    with (LARGE / "run.log").open("a") as f:
+    with LOG.open("a") as f:
         f.write(line + "\n")
 
 
@@ -336,10 +337,12 @@ def lora_ft(job: Job, lr: float) -> Any:
 FINETUNE = {"sgd": (sgd_ft, CFG.sgd_lrs), "lora": (lora_ft, CFG.lora_lrs)}
 
 
-def pick_rate(job: Job, out: dict[str, Any], arm: str) -> dict[str, Tensor] | None:
+def pick_rate(job: Job, out: dict[str, Any], arm: str, lrs: tuple[float, ...] = ()) -> dict[str, Tensor] | None:
     """The grid; the rate whose held-out gain is nearest the Adam fine-tune's among those that did not diverge (a
-    non-finite training loss, or a gain not above 0). Returns its delta-W, None if every rate diverged."""
-    fn, lrs = FINETUNE[arm]
+    non-finite training loss, or a gain not above 0). Returns its delta-W, None if every rate diverged. `lrs` replaces
+    the arm's grid in CFG (amend1.py)."""
+    fn, grid_lrs = FINETUNE[arm]
+    lrs = lrs or grid_lrs
     grid, dWs = {}, {}
     for lr in lrs:
         ft = fn(job, lr)
@@ -355,13 +358,13 @@ def pick_rate(job: Job, out: dict[str, Any], arm: str) -> dict[str, Tensor] | No
     return None if lr is None else dWs[lr]
 
 
-def other_update(job: Job, out: dict[str, Any], arm: str) -> None:
+def other_update(job: Job, out: dict[str, Any], arm: str, lrs: tuple[float, ...] = ()) -> None:
     """Test 3 for one arm: rate, shape, then do-nothing, the scaled adjoint split and teacher training read."""
     from commute import split
     from commute.arms import save_offsets
     from commute.row_copy import copy_on_rows
 
-    ctx, dW = job.ctx, pick_rate(job, out, arm)
+    ctx, dW = job.ctx, pick_rate(job, out, arm, lrs)
     if dW is None:
         return
     rec = out["shape"][arm]

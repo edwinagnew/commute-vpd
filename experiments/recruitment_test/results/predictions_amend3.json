@@ -1,0 +1,34 @@
+{
+ "amendment": "E38 Amendment 3, the restore test (card decision-e38-specific, option (a), approved by the user in chat 2026-10-27). Plan: reports/plans/2026-10-27_plan_e38-amend3.md. Filed before amend3.py was written. Earlier predictions files are unchanged.",
+ "states": "Amendment 2's cached states (results/large/states/, sha256 in results/amend2_stage0.json): 3 tasks x seeds 0, 1, plus each task's ' http' null (for its recruited set). A state with G < 1 nat is unscored.",
+ "definitions": {
+  "restore X": "at W1, at the trigger position only, each decomposed matrix's output gains sum over c in X of ((x0 - x) . v_c) u_c; x = its input in this pass, x0 = its input at the trigger in W0's pass on the same window",
+  "rho_r(X)": "(T1 - lo(W1, X restored)) / G",
+  "sets": "S; null_minus_S = the ' http' state's recruited set minus S; random_i = recruit.random_like(S, alive, i), i = 0..19; active_i = per layer, |S in that layer| pieces drawn with seed i from alive pieces not in S with task.m0 >= 0.5 (>= 0.2 for a state where a layer's pool at 0.5 is too small; recorded)"
+ },
+ "controls (run first on every state; any fail stops the job)": {
+  "R0": "restore the empty set: |lo - T1| <= 1e-5",
+  "R1": "restore S in a W0 pass: |lo - T0| <= 1e-4",
+  "R2": "every decomposed matrix's whole trigger output replaced by its W0 output: |lo - T0| <= 1e-2",
+  "R3": "restore S: max |logit difference| at positions before the trigger <= 1e-4",
+  "expected": "all pass"
+ },
+ "P9 (main): is S specific among pieces active at the trigger?": {
+  "seed rule": "'specific' if rho_r(S) >= 0.10, rho_r(S) exceeds all 20 active rho_r, and rho_r(S) >= rho_r(null_minus_S) + 0.05; 'not' if rho_r(S) < 0.05 or rho_r(S) exceeds fewer than 18 of the 20 active rho_r; else 'unclear'",
+  "task rule": "the two seeds' common class, else 'seeds disagree'",
+  "reading": "'specific' if >= 2 tasks 'specific'; 'not specific' if >= 2 tasks 'not'; else 'outside the tree'",
+  "expected": "'not specific': S's restored share sits inside the matched active sets' range on at least two tasks",
+  "confidence": "low",
+  "basis": "Amendment 2's busy set read D 0.78-1.10, far above S, and the ' http' null's set 0.10-0.14; the census (60-96% of S target-enriched against 2-8% random) argues the other way"
+ },
+ "P10: S against random sets": {
+  "rule": "rho_r(S) exceeds all 20 random rho_r and rho_r(S) >= 0.10, on both seeds of emoticon and ' which'",
+  "expected": "pass",
+  "confidence": "medium"
+ },
+ "reported, with expected value": {
+  "rho_r(S)": "between 0.10 and 0.50 on emoticon and ' which'; below 0.10 on ' we'; low confidence",
+  "active pool threshold": "0.5 on every state, low confidence"
+ },
+ "filed": "2026-10-27"
+}
