@@ -16,7 +16,7 @@ LoRA passes is untested.
 Detail: log card E39; `reports/analyses/2026-10-27_analysis_broad-fragility.md` (independently checked,
 `reports/reviews/2026-10-27_review_broad-fragility-analysis.md`); notebook `notebooks/E39_broad_fragility.ipynb`.
 
-**Pending decision for you.** The log's new "Soon" card `decision-lora-passes` (log v65; `decision-broad-fragile`, which
+**Pending decision for you.** The log's new "Soon" card `decision-lora-passes` (log v65; it replaces `decision-broad-fragile`, which
 you decided): whether to look into why the LoRA passes, or accept that broad updates are messier and move on (e.g. to
 the larger model). No run is proposed.
 
