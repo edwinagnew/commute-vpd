@@ -17,7 +17,9 @@
     (`.../results/large`): a file or a subdirectory under it is never walked, and the sync still reports success
     (2026-10-23, two pods idled 20-25 min each). To send a few files from a large directory, hard-link them into a
     staging path ending in `results/large/` and name that path; the uplink is ~80 KB/s, so start the sync before set-up.
-    Delete the staging directory afterwards.
+    Delete the staging directory afterwards. Since `fleet/link-data`, every `results/large` is a symlink and arrives
+    on the pod dangling (2026-10-27): always stage by hard link, and replace the symlink on the pod with the real
+    directory. The W&B fetch of `artifacts/vpd` works again (2026-10-27, ~45 MB/s, 65 s).
   - If the plugin loses the pod (connection refused, port changed), stop and tell the user at once. A `/mcp`
     reconnect of remote-kernels may fix it. Don't retry in a loop while the pod bills.
 - Lesson from the 2026-10-19 lora_commute pod. The fork downloaded after each arm as told, but the FINAL JSON (score, last
