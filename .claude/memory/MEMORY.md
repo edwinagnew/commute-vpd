@@ -55,3 +55,4 @@
 - [Terminate before local moves](feedback-terminate-before-local-moves.md) — pod off once the result sha256 matches; mv into results/large symlink blocked a prompt overnight, ~$40 lost (2026-10-26)
 - [No ambiguous shorthand](feedback-no-ambiguous-shorthand.md) — never "the copy"; say "the decomposition after teacher training" vs "the fine-tuned model" (2026-10-27)
 - [Qwen3-1.7B line](project-qwen-line.md) — qwen-decomp-lead since 2026-10-27; decomposition p-e9fcffd5 (JAX, 47 GB) at artifacts/qwen3-1.7b-p-e9fcffd5; plan before spend; discuss in the lead window
+- [Don't ask for cheap recommended checks](feedback-dont-ask-for-cheap-recommended-checks.md) — a $0 minutes-long check a report recommends: run it, FYI only (2026-10-27)
