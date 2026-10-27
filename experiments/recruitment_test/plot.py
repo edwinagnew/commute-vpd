@@ -441,4 +441,83 @@ def fig_routing(s2: dict[str, Any]) -> None:
     )
     axes[0].text(-0.4, 0.32, "filed bar 0.3", fontsize=7)
     axes[1].set_ylabel(
-        "cosine of the mean input change at the t
+        "cosine of the mean input change at the trigger\nwith the target's natural direction"
+    )
+    axes[2].set_xticks(x, [lab for _, lab in mats], rotation=45, ha="right", fontsize=8)
+    axes[0].legend(frameon=False, fontsize=7, loc="lower left", ncol=4)
+    axes[0].set_ylim(-0.65, 0.75)
+    fig.suptitle(
+        "Does the fine-tune move each matrix's input at the trigger toward where the original model predicts "
+        "the target?",
+        fontsize=10,
+    )
+    save(fig, "routing.png")
+
+
+def fig_census(s3: dict[str, Any], big: dict[str, Any]) -> None:
+    fig, ax = plt.subplots(figsize=(8.5, 4.2))
+    rng = np.random.default_rng(0)
+    for i, t in enumerate(TASKS):
+        s = np.array([p["on_rate"] for p in s3["tasks"][t]["pieces_S"]])
+        r = np.array([p["on_rate"] for sel in big[t] for p in sel])
+        r = r[r > 0]
+        ax.scatter(
+            np.log10(r),
+            i + 0.18 + rng.uniform(-0.1, 0.1, len(r)),
+            s=5,
+            color=MUTED,
+            alpha=0.5,
+            label="five random sets of the same size" if i == 0 else None,
+        )
+        ax.scatter(
+            np.log10(s),
+            i - 0.18 + rng.uniform(-0.1, 0.1, len(s)),
+            s=9,
+            color=BLUE,
+            label="recruited set, seed 0" if i == 0 else None,
+        )
+        for y, v, c in ((i - 0.18, np.median(s), BLUE), (i + 0.18, np.median(r), INK)):
+            ax.plot([np.log10(v)] * 2, [y - 0.15, y + 0.15], color=c, lw=2)
+            ax.text(
+                np.log10(v),
+                y + 0.17,
+                f"median {100 * v:.1f}%",
+                fontsize=7,
+                ha="center",
+                color=c,
+            )
+    ax.set_yticks(
+        range(len(TASKS)),
+        [f"{NAME[t]}\n{len(s3['tasks'][t]['pieces_S'])} pieces" for t in TASKS],
+        fontsize=8,
+    )
+    tick = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1]
+    ax.set_xticks(np.log10(tick), [f"{100 * v:g}%" for v in tick])
+    ax.set_xlabel(
+        "share of Pile positions where the piece's causal importance exceeds 0.5 (original model)"
+    )
+    ax.set_title(
+        "Are the recruited pieces rare specialists? How often each is on in ordinary text",
+        fontsize=10,
+    )
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.grid(axis="x", color=GRID, lw=0.6)
+    ax.invert_yaxis()
+    ax.legend(frameon=False, fontsize=7, loc="upper left", bbox_to_anchor=(0.0, 1.0))
+    save(fig, "census.png")
+
+
+def main() -> None:
+    s1, s2, s3 = load(1), load(2), load(3)
+    big = json.loads((RES / "large" / "stage3_pieces.json").read_text())
+    fig_recruitment(s1["states"])
+    fig_w0(s1["states"])
+    fig_offtarget(s1["states"])
+    fig_topk(s1["states"])
+    fig_routing(s2)
+    fig_census(s3, big)
+    print(f"wrote {sorted(p.name for p in FIG.glob('*.png'))}")
+
+
+if __name__ == "__main__":
+    main()
