@@ -1,0 +1,58 @@
+{
+ "amendment": "E38 Amendment 2 (card decision-e38-recruited-before, option (a), approved by the user 2026-10-27). Plan: reports/plans/2026-10-27_plan_e38-amend2.md. Filed 2026-10-27 before amend2.py was written. predictions.json and predictions_amend1.json are unchanged.",
+ "states": "E38's nine states regenerated in-job (3 tasks x seeds 0, 1, and the ' http' null at seed 0), E38's stage-0 checks unchanged. Scored states: the six task-seed states; a state with gain G < 1 nat is unscored.",
+ "definitions": {
+  "rho_ft(X)": "(T1 - lo(W1 without X)) / G",
+  "rho_0(X)": "(T0 - lo(W0 without X)) / G, the same state's G",
+  "D(X)": "rho_ft(X) - rho_0(X)",
+  "positions": "'all' = ablated_weights (E38's removal); 'trigger' = the rank-1 outputs of X subtracted at position half only, by forward hooks; both computed for every set",
+  "sets": "S; null = the ' http' state's recruited set, whole; random_i = recruit.random_like(S, alive, i), i = 0..19; busy = top |S| alive by W0 trigger importance (control only)",
+  "census target ratio": "per piece with >= 50 on-positions (g > 0.5) over Pile val rows 0..2000 at W0: (on-positions whose next token is the target / on-positions) / (positions whose next token is the target / positions)"
+ },
+ "controls (stage 0, run first, any fail stops the job)": {
+  "C0": "E38's stage-0 checks (T0, T1 within 0.02 x E18's gain, held-out P, recruited set Jaccard >= 0.95) pass on every state",
+  "C1": "the hook at every position reproduces ablated_weights removal of S: |lo difference| <= 1e-3 at W0 and at W1, every task-seed",
+  "C2": "trigger-only removal of S leaves every position before the trigger unchanged: max |logit difference| <= 1e-4",
+  "C3": "trigger-only removal of the empty set: |lo difference| <= 1e-5",
+  "C4": "trigger-only removal of the busy set from W0 moves the trigger by >= 1 nat of KL on emoticon (|busy| >= 100)",
+  "expected": "all pass"
+ },
+ "P5 (main): does the fine-tune route gain through S beyond S's existing push? trigger-only removal": {
+  "seed rule": "'through' if D(S) >= 0.10 and D(S) exceeds all 20 random D; 'not' if D(S) < 0.05 or D(S) exceeds fewer than 18 of the 20 random D; else 'unclear'",
+  "task rule": "the two seeds' common class, else 'seeds disagree'",
+  "reading": "'through' if >= 2 tasks 'through'; 'not through' if >= 2 tasks 'not'; else 'outside the tree'",
+  "expected": "'through' on emoticon and ' which', 'not' on ' we'; reading 'through'. D(S) between 0.10 and 0.35 on emoticon and ' which'",
+  "confidence": "medium-low",
+  "basis": "E38's all-position difference read +0.25 (emoticon), +0.16 to +0.23 (' which'), -0.04 to -0.07 (' we'), without the random-difference control",
+  "absolute": "D is absolute in units of G"
+ },
+ "P5_all (same rule, all-position removal)": {
+  "expected": "the same task classes as P5",
+  "confidence": "medium-low"
+ },
+ "P5_null": {
+  "rule": "|D(null)| <= 0.10 on every scored state, trigger-only",
+  "expected": "pass",
+  "confidence": "medium"
+ },
+ "P6: S's existing push acts at the trigger": {
+  "rule": "rho_0(S), trigger-only, >= 0.10 on every scored state",
+  "expected": "pass (E38 all-position: 0.13 to 0.27)",
+  "confidence": "medium"
+ },
+ "P7: trigger-only removal of S is specific": {
+  "rule": "kl_other of trigger-only S removal from W1 <= 3 x the fine-tune's own kl_other, on both seeds of >= 2 tasks",
+  "expected": "pass. Blind spot: the 20 positions before the trigger read KL 0 by construction, so this is about half the after-trigger mean",
+  "confidence": "medium-low"
+ },
+ "P8: the census, S enriched for the target": {
+  "rule": "median census target ratio over S (seed 0) >= 2 x the median over the five census random sets' pieces pooled (random_like seeds 0..4, as E38), on >= 2 tasks",
+  "positive control": "the top-|S| alive pieces by W0's mean importance at Pile positions preceding the target minus its mean over all positions (recruit.ContrastAcc, same Pile rows): median ratio >= 2 x random on every task; if it fails on a task, P8 is unscored there",
+  "expected": "pass on emoticon and ' which'; control passes on all three",
+  "confidence": "medium-low"
+ },
+ "reported, with expected value": {
+  "W0 trigger importance of S": "fraction of S with W0 mean trigger importance (task.m0) < 0.1: expected between 0.3 and 0.9 on every task, low confidence"
+ },
+ "filed": "2026-10-27 15:35"
+}
