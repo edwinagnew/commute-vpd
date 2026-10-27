@@ -8,7 +8,7 @@
 # HF Qwen/Qwen3-1.7B@70d244cc (downloaded to the node's /ephemeral HF cache if absent, ~4 GB).
 # Output: experiments/qwen_port/results/torch_check.json after every stage; the log ends "FINISHED <path>".
 # Expected on one L40: HF download + target ~2 min, check 0 ~1 min, U/V to host + Γ to GPU (54 GB read from NFS)
-# ~5-10 min, checks 1-2 ~1 min, check 3 ~1 min, check 4 (3 seeds x 21 passes over 8 rows, fp32) ~4-6 min: ~15-20 min.
+# ~5-10 min, checks 1-2 ~1 min, check 3 ~1 min, check 4 (3 seeds x 21 passes over the 4 text rows, fp32) ~4-6 min: ~15-20 min.
 # Peak GPU memory ~34 GB (stages 1-2); host ~45 GB.
 #SBATCH --job-name=commute-qwen_torch_check
 #SBATCH --partition=compute
@@ -23,6 +23,7 @@
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
+trap 'echo "=== FINISHED (exit $?) — results in $COMMUTE_REPO/experiments/qwen_port/results/torch_check.json ==="' EXIT
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 test -f experiments/qwen_port/results/tokens.json || { echo "missing results/tokens.json (make_tokens.py)"; exit 1; }
