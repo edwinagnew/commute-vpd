@@ -34,8 +34,11 @@ spends the $10/session budget.
 **commute set-up (2026-10-14).**
 - **Location (since 2026-10-26):** one git clone per agent under `/mnt/nw/home/e.agnew/commute-agents/<role>`;
   `artifacts/`, `.venv`, `cluster/logs` and `results/large/` are symlinks (`~/commute-agents/fleet/link-data`) into
-  `/mnt/nw/home/e.agnew/commute-data`. The old rsync copy `/mnt/nw/home/e.agnew/commute` is retired (it still holds
-  the venv, which `commute-data/venv` links to until a rebuild). Submit sbatch from the clone root.
+  `/mnt/nw/home/e.agnew/commute-data`; the venv is `commute-data/venv-py313` (`commute-data/venv` links to it). The
+  old rsync copy `/mnt/nw/home/e.agnew/commute` was deleted 2026-10-27; its never-committed leftovers (lora_pullback
+  and lora_matched read-side scripts, old remote-kernels ledger) are in `commute-data/commute-old-leftovers.tgz`.
+  Old reports citing `/mnt/nw/home/e.agnew/commute/experiments/<exp>/results/large/` now mean
+  `commute-data/results-large/<exp>/`. Submit sbatch from the clone root.
 - **Jupyter from VS Code:** `cluster/jupyter.sh start|connect|stop`. Paste the printed localhost URL into VS Code's
   "Existing Jupyter Server".
 - **Why a relay:** the controller cannot reach the node's ports (only slurmd's 6818). `connect` therefore relays
