@@ -27,8 +27,9 @@ Controls. C_bin: each bin rule's R at least fix's - 0.05 at every step. Within a
 from a line of slope a by up to (1 - a) x the bin's width; fitted slopes have median 0.94 to 0.96, so this is small for
 equal-width bins (width 1/16) but can be large in a wide equal-count top bin. C_fit: at every step, each bin rule's mean
 squared error of the change on the fitted positions at most the line's, the change taken as each rule applies it,
-clip(g0 + c) - g0 (the line recovers about -0.01 at step 300, where C_bin alone would pass a broken bin rule). B1 is read
-only if both controls hold for both bin rules at every step; otherwise it is recorded as "unreadable".
+clip(g0 + c) - g0 (the line recovers about -0.01 at step 300, where C_bin alone would pass a broken bin rule). B1 is
+readable when at least one bin rule passes both controls at every step, and it then reads the best R over all bin rules,
+passing or not, so dropping a rule can never help B1 pass; if neither passes both, B1 is recorded as "unreadable".
 Expected (gap = 0 at W0, where every R is undefined and every fitted change is 0, so every rule returns g0 and every
 mean squared error is 0):
   near_g0           Amendment 6's 0.89, 0.78, 0.76 at steps 10, 100, 300 (the same code and positions; A0 tolerance 0.02)
@@ -96,24 +97,29 @@ PREDICTIONS: dict[str, Any] = {
                              "bin16q was",
     },
     "gates": {"A0": f"every step: |R_near_g0 - Amendment 6's R_near_g0| <= {REPRO_TOL}; fail: stop",
-              "C_bin": f"positive control for the bin rules: at every step R_bin16q and R_bin16w >= R_fix - {BIN_TOL} "
-                       "(within a bin a bin rule has slope 1, so it can follow a straight line of slope a up to (1 - a) "
-                       "x the bin's width); fail: B1 unreadable",
-              "C_fit": "positive control for the bin rules: at every step mse_bin16q and mse_bin16w <= mse_fix on the "
-                       "fitted positions (C_bin alone would pass a broken bin rule at step 300, where the line recovers "
-                       "about -0.01); fail: B1 unreadable"},
+              "C_bin": f"positive control, per bin rule: at every step R_<bin rule> >= R_fix - {BIN_TOL} (within a "
+                       "bin a bin rule has slope 1, so it can follow a straight line of slope a up to (1 - a) x the "
+                       "bin's width)",
+              "C_fit": "positive control, per bin rule: at every step mse_<bin rule> <= mse_fix on the fitted positions "
+                       "(C_bin alone would pass a broken bin rule at step 300, where the line recovers about -0.01)",
+              "readable": "B1 is readable when at least one bin rule passes both C_bin and C_fit at every step (a "
+                          "piecewise-constant bin rule can lose to a line on fitted error for real reasons, a wide "
+                          "equal-count top bin); it then reads the best R over all bin rules, passing or not, so "
+                          "dropping a rule can never help B1 pass; if neither passes both: B1 unreadable"},
     "noise_floor": f"8 against 32 neighbours moved R by about {NOISE}; differences below it are not read",
     "predictions": [
         {"id": "B1", "rule": f"step {SCORED}: max(R_bin16q, R_bin16w) <= R_near_g0 - {BIN_GAP} ('each subcomponent's "
                              "change predicted from its own original value alone, its room to move, recovers far less "
                              "than the nearest rule on all the original values', read on the better of the two bin "
-                             "rules); recorded as 'unreadable' unless C_bin and C_fit hold for both bin rules at every "
-                             "step",
+                             "rules, passing or not); recorded as 'unreadable' unless at least one bin rule passes both "
+                             "C_bin and C_fit at every step",
          "predicted": "pass", "confidence": "medium-high", "blind_to": BLIND, "positive_control": "C_bin, C_fit"},
     ],
     "decision_tree": {
         "A0 fails": "stop; nothing scored",
-        "C_bin or C_fit fails": "B1 unreadable: a bin rule does not reach the straight line it should contain",
+        "neither bin rule passes both C_bin and C_fit": "B1 unreadable: no bin rule reaches the straight line it "
+                                                        "should contain",
+        "one bin rule fails a control": "B1 still read on the best R over both bin rules; the failing rule is reported",
         "B1 holds": "the original values' edge is not each value's room to move, and the restatement 'positions the "
                     "original model treats alike get alike changes' goes to the user with Amendment 6's caveat on "
                     "context length",
@@ -219,16 +225,19 @@ def fitted(r: Run, rows: Tensor, dW: dict[str, Tensor], tables: tuple[Tensor, Te
             "text4_n": torch.einsum("ij,ij->i", text4, text4), **fit_columns(X, D)}
 
 
-def controls(m: dict[str, Any]) -> dict[str, bool]:
-    return {"C_bin": all(m[f"R_{k}"] >= m["R_fix"] - BIN_TOL for k in BIN_RULES),
-            "C_fit": all(m[f"mse_{k}"] <= m["mse_fix"] for k in BIN_RULES)}
+def controls(m: dict[str, Any]) -> dict[str, dict[str, bool]]:
+    """Per bin rule: C_bin (R at least the line's - BIN_TOL) and C_fit (fitted mean squared error at most the line's)."""
+    return {"C_bin": {k: m[f"R_{k}"] >= m["R_fix"] - BIN_TOL for k in BIN_RULES},
+            "C_fit": {k: m[f"mse_{k}"] <= m["mse_fix"] for k in BIN_RULES}}
 
 
 def score(states: dict[str, Any]) -> dict[str, Any]:
-    """B1 on the better bin rule at SCORED; 'unreadable' unless C_bin and C_fit held at every step."""
-    s, ok = states[SCORED], all(m["C_bin"] and m["C_fit"] for m in states.values())
-    best = max(s[f"R_{k}"] for k in BIN_RULES)
-    return {"controls_hold": ok, "best_bin_R": best, "B1": (best <= s["R_near_g0"] - BIN_GAP) if ok else "unreadable"}
+    """B1 at SCORED on the best R over all bin rules; readable when at least one bin rule passed both controls at
+    every step, else 'unreadable'."""
+    passing = [k for k in BIN_RULES if all(m["C_bin"][k] and m["C_fit"][k] for m in states.values())]
+    s, best = states[SCORED], max(states[SCORED][f"R_{k}"] for k in BIN_RULES)
+    return {"passing_controls": passing, "best_bin_R": best,
+            "B1": (best <= s["R_near_g0"] - BIN_GAP) if passing else "unreadable"}
 
 
 def main() -> None:
