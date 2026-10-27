@@ -22,3 +22,4 @@ unset _eph
 export PATH=$HOME/.local/bin:$PATH        # uv lives in ~/.local/bin (NFS home)
 export PYTHONPATH=$COMMUTE_REPO/src${PYTHONPATH:+:$PYTHONPATH}   # this clone's code: the shared venv's commute.pth names whichever clone synced last
 export UV_NO_SYNC=1                       # a bare `uv run` would swap in the default (CPU) torch; rebuild via setup.sbatch
+export COMMUTE_QWEN_DIR=/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch   # Qwen3-1.7B decomposition as fp32 safetensors (experiments/qwen_port/convert.py; index.json)
