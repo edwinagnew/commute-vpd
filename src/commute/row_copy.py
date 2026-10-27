@@ -61,11 +61,21 @@ def copy_on_rows(ctx: Any, teacher_net: nn.Module, rows: Tensor, lr: float, batc
     position. Returns the curve and the state at `steps`. `component_training.train` also reads arm A's held-out
     windows against W0 at every step; it is given `ctx.held` and `ctx.token`, as E34's Pile-text arm was, and that
     reading is not used here."""
+    curve, states = copy_states(ctx, teacher_net, rows, lr, batch, (steps,), seed, log)
+    return curve, states[steps]
+
+
+def copy_states(ctx: Any, teacher_net: nn.Module, rows: Tensor, lr: float, batch: int, save_steps: tuple[int, ...],
+                seed: int, log: Any = print, init: dict[str, tuple[Tensor, Tensor]] | None = None
+                ) -> tuple[list[dict[str, Any]], dict[int, State]]:
+    """`copy_on_rows` to the last of `save_steps`, returning the state at each of them (E37 Amendment 1). The batch
+    draws do not depend on the save steps, so a longer run continues a shorter one's draws. `init`: the offsets'
+    start, (dU, dV) per matrix (`component_training.Offsets`), None for W0's (U, V)."""
     from commute import component_training, teacher
     from commute.finetune import ArmAConfig
 
+    steps = max(save_steps)
     a_cfg = ArmAConfig(o_token=ctx.token, batch=batch, steps=steps, checkpoints=(steps,), seed=seed)
-    cfg = component_training.TrainConfig(lr=lr, steps=steps, save_steps=(steps,), optimizer="adam")
-    curve, states = component_training.train(ctx.model, ctx.uv, rows, ctx.held, a_cfg, cfg, ctx.device, ctx.W0, log=log,
-                                             loss_fn=lambda n, toks: teacher.teacher_loss(n, teacher_net, toks, None))
-    return curve, states[steps]
+    cfg = component_training.TrainConfig(lr=lr, steps=steps, save_steps=save_steps, optimizer="adam")
+    return component_training.train(ctx.model, ctx.uv, rows, ctx.held, a_cfg, cfg, ctx.device, ctx.W0, log=log, init=init,
+                                    loss_fn=lambda n, toks: teacher.teacher_loss(n, teacher_net, toks, None))

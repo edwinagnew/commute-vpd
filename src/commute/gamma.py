@@ -62,40 +62,64 @@ def load_gamma(model: Any, state: dict[str, Tensor]) -> None:
     model.ci_fn.load_state_dict({k: v.to(device=device, dtype=torch.float32) for k, v in state.items()})
 
 
+@dataclass
+class LossSetup:
+    """The released run's masked losses as a trainer uses them (`loss_setup`)."""
+
+    cfgs: list[Any]  # loss configs, each with its coefficient
+    ppgd: dict[Any, list[Any]]  # per persistent-PGD config, one PersistentPGDState per micro-batch slot
+    sampling: Any
+    n_mask_samples: int
+    use_delta: bool
+    autocast: bool
+    recon: Any  # param-decomp's KL reconstruction loss
+
+
+def loss_setup(model: Any, keep: Any, micro: int, slots: int, seed: int, coeff: float | None = None) -> LossSetup:
+    """The released run's loss configs that `keep(config)` admits, at their released coefficients or, given `coeff`,
+    all at that one; its sampling, mask samples, Delta and autocast settings; then torch.manual_seed(seed) (the
+    adversary's initial sources and the stochastic masks) and the persistent adversaries. Moved out of `Refit` on
+    2026-10-27 for `masked_teacher`, unchanged."""
+    from param_decomp.configs import (
+        PersistentPGDReconLossConfig,
+        PersistentPGDReconSubsetLossConfig,
+    )
+    from param_decomp.models.batch_and_loss_fns import recon_loss_kl
+    from param_decomp.persistent_pgd import PersistentPGDState
+
+    rc = vpd.run_config()
+    cfgs = [c if coeff is None else c.model_copy(update={"coeff": coeff}) for c in rc.loss_metric_configs if keep(c)]
+    device = next(model.parameters()).device
+    torch.manual_seed(seed)
+    # The released scope is per_batch_per_position: one source per (row, position) slot of the 64-row batch, stepped
+    # once per optimizer step. One state per micro-batch slot keeps that under gradient accumulation.
+    ppgd = {c: [PersistentPGDState(model.module_to_c, (micro, vpd.SEQ_LEN), device, rc.use_delta_component, c, recon_loss_kl)
+                for _ in range(slots)]
+            for c in cfgs if isinstance(c, PersistentPGDReconLossConfig | PersistentPGDReconSubsetLossConfig)}
+    # The adversary's lr is never scheduled here (no update_lr call): the released schedule is constant after its
+    # 2.5% warm-up, so its end-of-schedule value is start_val, which is what a fresh PGD optimizer holds.
+    assert all(c.optimizer.lr_schedule.fn_type == "constant" for c in ppgd), [c.optimizer for c in ppgd]
+    return LossSetup(cfgs, ppgd, rc.sampling, rc.n_mask_samples, rc.use_delta_component, rc.autocast_bf16, recon_loss_kl)
+
+
 class Refit:
     """One refit of Gamma on the model's current state. `step(rows)` is one optimizer step."""
 
     def __init__(self, model: Any, cfg: RefitConfig):
-        from param_decomp.configs import (
-            FaithfulnessLossConfig,
-            PersistentPGDReconLossConfig,
-            PersistentPGDReconSubsetLossConfig,
-        )
-        from param_decomp.models.batch_and_loss_fns import recon_loss_kl
-        from param_decomp.persistent_pgd import PersistentPGDState
+        from param_decomp.configs import FaithfulnessLossConfig
 
         rc = vpd.run_config()
         self.model, self.cfg = model, cfg
         self.device = next(model.parameters()).device
-        self.loss_cfgs = [c for c in rc.loss_metric_configs if not isinstance(c, FaithfulnessLossConfig)]
-        self.sampling, self.n_mask_samples = rc.sampling, rc.n_mask_samples
-        self.use_delta, self.autocast = rc.use_delta_component, rc.autocast_bf16
-        self.recon = recon_loss_kl
         params = gamma_params(model)
         assert params and all(p.dtype == torch.float32 for p in params)
         oc = rc.ci_fn_optimizer
         self.opt = torch.optim.AdamW(params, lr=cfg.lr, betas=oc.betas, weight_decay=oc.weight_decay)
         self.clip = oc.grad_clip_norm
         self.wd = vpd.weight_deltas(model)  # the state's Delta; constant while U, V and the target weights are fixed
-        torch.manual_seed(cfg.seed)  # the adversary's initial sources and the stochastic masks
-        # The released scope is per_batch_per_position: one source per (row, position) slot of the 64-row batch, stepped
-        # once per optimizer step. One state per micro-batch slot keeps that under gradient accumulation.
-        self.ppgd = {c: [PersistentPGDState(model.module_to_c, (cfg.micro, vpd.SEQ_LEN), self.device, self.use_delta, c, self.recon)
-                         for _ in range(cfg.batch // cfg.micro)]
-                     for c in self.loss_cfgs if isinstance(c, PersistentPGDReconLossConfig | PersistentPGDReconSubsetLossConfig)}
-        # The adversary's lr is never scheduled here (no update_lr call): the released schedule is constant after its
-        # 2.5% warm-up, so its end-of-schedule value is start_val, which is what a fresh PGD optimizer holds.
-        assert all(c.optimizer.lr_schedule.fn_type == "constant" for c in self.ppgd), [c.optimizer for c in self.ppgd]
+        L = loss_setup(model, lambda c: not isinstance(c, FaithfulnessLossConfig), cfg.micro, cfg.batch // cfg.micro, cfg.seed)
+        self.loss_cfgs, self.ppgd, self.recon = L.cfgs, L.ppgd, L.recon
+        self.sampling, self.n_mask_samples, self.use_delta, self.autocast = L.sampling, L.n_mask_samples, L.use_delta, L.autocast
 
     def step(self, rows: Tensor) -> dict[str, float]:
         """Gradients accumulated over the micro-batches (each micro-batch's own persistent adversary takes its step),
