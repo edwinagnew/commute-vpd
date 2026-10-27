@@ -283,3 +283,11 @@ Patch or step: a patch, the null its check named. Decisions relied on: as above,
 step 10 stops the run. Class 1 (a new rule on the existing harness and states). An H100, under $1. Not run here: an
 order-keeping summary of the whole preceding text (Amendment 6's bag scored like random neighbours, so the amount of
 context is still untested beyond positions 0-31).
+
+Code review of `amend7.py` (fresh Opus agent, `reports/reviews/2026-10-27_review_amend7-code.md`, before filing; no
+crash found), applied before the predictions are filed: most subcomponents' values sit near zero, so equal-count bins
+put all 15 edges among near-zero values and give every active value one shared change; the run adds 16 equal-width
+bins on [0, 1] and B1 reads the better of the two bin rules (median top edge of the equal-count bins reported); if the
+control fails, B1 is recorded as unreadable, not as failed; and a second control, C_fit, requires each bin rule's mean
+squared error of the change on the fitted positions to be at most the straight line's at every step, since the line
+recovers about −0.01 at step 300 and C_bin alone would pass a broken bin rule.
