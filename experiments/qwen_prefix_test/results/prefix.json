@@ -1,0 +1,22 @@
+{
+ "model": "Qwen/Qwen3-1.7B-Base",
+ "revision": "ea980cb0a6c2ae4b936e82123acc929f1cec04c1",
+ "weights": "bfloat16",
+ "prefix_share": 0.6,
+ "slack": 8,
+ "batch": 128,
+ "datasets": {
+  "openai/gsm8k": "740312add88f781978c0658806c59bc2815b9866",
+  "danish-foundation-models/multilingual-gsm-symbolic eng test_synthetic": "75ce20d919d93ba78340adc6f70d2120f3ca3ce3"
+ },
+ "card": "NVIDIA L40",
+ "torch": "2.8.0+cu128",
+ "transformers": "4.57.3",
+ "job": "39181",
+ "status": "stopped: copy control below 0.9",
+ "copy": {
+  "k": 256,
+  "em": 0.5390625,
+  "se": 0.031154486603416544
+ }
+}
