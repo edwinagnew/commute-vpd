@@ -9,7 +9,7 @@
 #SBATCH --account=c11
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
-#SBATCH --time=08:00:00
+#SBATCH --time=02:00:00   # ~1 h at the W&B upload's 19 MB/s; a short limit backfills sooner
 #SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
