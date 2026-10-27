@@ -1,0 +1,6 @@
+{
+ "amends": "results/predictions_amend3.json, its controls only: adds R4. Filed 2026-10-27 before any run of amend3.py, after code review found that no filed control exercises a nonzero restore correction on the real model (R0 restores nothing, R1 has x = x0, R2 replaces whole outputs). Earlier files unchanged.",
+ "R4": "restore S at W1 with x0 replaced by 0: the hook then subtracts S's trigger outputs, which is Amendment 2's trigger-only removal; its lo must match recruitment.removed_at(S) at W1 (Amendment 2's validated path) within 1e-2 on every task-seed state. Any fail stops the job like R0-R3.",
+ "expected": "pass",
+ "filed": "2026-10-27"
+}
