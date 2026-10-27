@@ -307,7 +307,7 @@ def shape(job: Job, dW: dict[str, Tensor]) -> dict[str, Any]:
     from commute import harness
     from commute.fragility import mean_stable_rank
 
-    o = harness.outside_share(job.ctx, dW)
+    o = harness.outside_share_of(dW, job.ctx.bases, job.sigma, job.ctx.non_saturated)  # the lowercase rows, not ctx.sigma
     return {"stable_rank": mean_stable_rank(dW), "outside_share": o["pooled"], "outside_null": o["pooled_null"]}
 
 

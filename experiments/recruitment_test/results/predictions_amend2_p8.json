@@ -1,0 +1,8 @@
+{
+ "amends": "results/predictions_amend2.json, P8's rule only (and its positive control's). Filed 2026-10-27 before any run of amend2.py; predictions_amend2.json is unchanged.",
+ "why the filed rule was wrong": "found by the code's writer before any run: most pieces have no target hits at their on-positions, so the random sets' median target ratio is 0 and any set passes 'median >= 2 x random median'. The rule has no power.",
+ "new rule": "a piece is 'target-enriched' when it has >= 50 on-positions, >= 5 on-positions whose next token is the target, and census target ratio >= 3. P8: the fraction of S (seed 0) pieces that are target-enriched is >= 2 x the fraction over the five census random sets' pieces pooled, and >= 0.10, on >= 2 tasks.",
+ "positive control (same rule)": "the contrast control set's target-enriched fraction >= 2 x random and >= 0.10 on a task, else P8 is unscored on that task.",
+ "expected": "unchanged: pass on emoticon and ' which'; control passes on all three. Confidence medium-low.",
+ "filed": "2026-10-27 16:00"
+}

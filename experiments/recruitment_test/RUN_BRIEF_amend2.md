@@ -3,7 +3,8 @@
 Plan: `reports/plans/2026-10-27_plan_e38-amend2.md`. Code: `experiments/recruitment_test/amend2.py` (its docstring
 and `Cfg` give every rule and expected value; shared steps in `src/commute/{recruitment,census}.py`). Predictions:
 `experiments/recruitment_test/results/predictions_amend2.json`, filed and committed (0064bd5) before the code; the run
-refuses to start without it. Never edit it.
+refuses to start without it. P8's rule was re-filed before any run in `results/predictions_amend2_p8.json`
+(target-enriched fractions instead of medians); the run refuses to start without that file too. Never edit either.
 
 ```
 Experiment: recruitment_test   Run: Amendment 2, scored (stage 0 is the control and its own smoke; it runs alone first)
@@ -31,7 +32,7 @@ Inputs not in git (every results/large is a symlink: stage by hard link into a p
           experiments/regating_leak/results/large/{emoticon,r1_t534_v369,r2_t359_v816}_s{0,1}_shift.pt
           artifacts/vpd: let pod_setup.sh fetch it from W&B (works since 2026-10-27, ~65 s).
           Pile val rows 0..2000 stream in-job (commute.data.pile_rows).
-          Tracked and arriving with the plain sync(): run.py, amend2.py, results/predictions_amend2.json,
+          Tracked and arriving with the plain sync(): run.py, amend2.py, results/predictions_amend2.json, results/predictions_amend2_p8.json,
           experiments/regating_leak/results/regating_leak.json, experiments/transport_test/results/windows.json, src/commute/.
 Platform: RunPod RTX 4090 (E38 ran there; cluster GPU jobs were broken on 2026-10-27 by the shared venv). Pod
           commute-recruitment_test-amend2-<id>, label through start()'s argument; set up with `bash cluster/pod_setup.sh`.
@@ -50,7 +51,7 @@ Budget: $0.60 cap; expect ~$0.20.
 | Stage 0 | `[a2 stage0] PASS` | PASS |
 | Stage 1, per state | `[a2 stage1 <task>/s<k>] T0 ... T1 ... G ...` then a `trigger` and an `all` line | G 10-14 nats; the `all` line's S rho_ft equals E38's rho_S (stage1.json: 0.50, 0.54, 0.32, 0.36, 0.17, 0.22) to ~1e-3 |
 | Stage 1 | `[a2 stage1] P5 ...`, `P5_all ...`, `P5_null ... P6 ... P7 ...` | readings, not stop rules |
-| Stage 2 | `[census] rows ...`, `[a2 stage2 <task>] ... control True ...`, `[a2 stage2] ... P8 {...}` | control True on all three |
+| Stage 2 | `[census] rows ...`, `[a2 stage2 <task>] ... control True ...`, `[a2 stage2] ... P8 {...}` | control True on all three (its target-enriched fraction >= 2x random and >= 0.10) |
 
 ## Stop rules
 
