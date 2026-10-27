@@ -229,3 +229,4 @@ Figures already published (their sources, for a re-upload):
 - "fig/e39_moves.png": "experiments/broad_fragility/figures/moves.png"
 - "fig/e39_reverts.png": "experiments/broad_fragility/figures/reverts.png"
 - "fig/e39_shape.png": "experiments/broad_fragility/figures/shape.png"
+- "fig/e39_amend1_rank.png": "experiments/broad_fragility/figures/amend1_rank.png"
