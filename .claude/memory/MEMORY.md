@@ -54,3 +54,4 @@
 - [Venv move pending](project-venv-move-pending.md) — REMIND the user once the cluster takes jobs: rebuild venv out of ~/commute, then they delete it
 - [Overnight harness reporting](feedback-overnight-harness-reporting.md) — more subagents/parallel; log each experiment before the next; pending cards carry a run line; temporary 20k-word main-page cap (2026-10-26)
 - [Terminate before local moves](feedback-terminate-before-local-moves.md) — pod off once the result sha256 matches; mv into results/large symlink blocked a prompt overnight, ~$40 lost (2026-10-26)
+- [No ambiguous shorthand](feedback-no-ambiguous-shorthand.md) — never "the copy"; say "the decomposition after teacher training" vs "the fine-tuned model" (2026-10-27)
