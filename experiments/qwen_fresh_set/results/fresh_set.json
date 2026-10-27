@@ -1,0 +1,120 @@
+{
+ "model": "Qwen/Qwen3-1.7B",
+ "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+ "weights": "bfloat16 (no update is read here)",
+ "instruction": "Solve the problem step by step. Then end your response with one final line of exactly this form: The answer is N.\nwhere N is the final numerical answer, written as a plain number.",
+ "max_new_tokens": 512,
+ "window": 512,
+ "batch": 128,
+ "mgs_per_template": 10,
+ "gsm1k_overlap_max": 0.5,
+ "datasets": {
+  "openai/gsm8k": "740312add88f781978c0658806c59bc2815b9866",
+  "ScaleAI/gsm1k": "bc09569d09a614b9b530edc7f076fb214ac10493",
+  "danish-foundation-models/multilingual-gsm-symbolic eng test_synthetic": "75ce20d919d93ba78340adc6f70d2120f3ca3ce3"
+ },
+ "card": "NVIDIA L40",
+ "torch": "2.8.0+cu128",
+ "transformers": "4.57.3",
+ "job": "39230",
+ "status": "finished",
+ "grader_control": {
+  "gsm8k_control_strict": 1.0,
+  "gsm1k_control_strict": 1.0,
+  "mgs_control_strict": 1.0
+ },
+ "gsm8k": {
+  "k": 1319,
+  "k_fits": 1257,
+  "fits_share": 0.9529946929492039,
+  "truncation_share": 0.012130401819560273,
+  "strict_dropped": 0.7772474144789181,
+  "lenient_dropped": 0.7947494033412887,
+  "strict_all": 0.7558756633813495,
+  "strict_capped": 0.7437452615617892,
+  "lenient_capped": 0.7672479150871873
+ },
+ "control": {
+  "k": 1319,
+  "strict_all": 0.7558756633813495,
+  "identical_to_baseline_share": 1.0,
+  "pass": true
+ },
+ "gsm1k": {
+  "k": 1197,
+  "k_fits": 1030,
+  "fits_share": 0.860484544695071,
+  "truncation_share": 0.03258145363408521,
+  "strict_dropped": 0.7815533980582524,
+  "lenient_dropped": 0.7951456310679612,
+  "strict_all": 0.7109440267335004,
+  "strict_capped": 0.6758563074352548,
+  "lenient_capped": 0.6967418546365914
+ },
+ "readings": {
+  "D_1k": {
+   "n_gsm8k": 1257,
+   "n": 1030,
+   "gsm8k": 0.7772474144789181,
+   "other": 0.7815533980582524,
+   "diff": -0.004305983579334316,
+   "se": 0.017420987619342382
+  },
+  "D_1k_all_answers": {
+   "n_gsm8k": 1319,
+   "n": 1197,
+   "gsm8k": 0.7558756633813495,
+   "other": 0.7109440267335004,
+   "diff": 0.04493163664784905,
+   "se": 0.017651658271698782
+  },
+  "D_1k_capped": {
+   "n_gsm8k": 1319,
+   "n": 1197,
+   "gsm8k": 0.7437452615617892,
+   "other": 0.6758563074352548,
+   "diff": 0.0678889541265344,
+   "se": 0.018097352936490365
+  },
+  "D_1k_lenient": {
+   "n_gsm8k": 1257,
+   "n": 1030,
+   "gsm8k": 0.7947494033412887,
+   "other": 0.7951456310679612,
+   "diff": -0.0003962277266724712,
+   "se": 0.016968094351869804
+  },
+  "D_mgs": {
+   "templates": 94,
+   "diff": 0.010076832151300232,
+   "se": 0.035149528453159065,
+   "originals": 0.8085106382978723
+  },
+  "D_mgs_capped": {
+   "templates": 100,
+   "diff": 0.014999999999999998,
+   "se": 0.034622786914651656,
+   "originals": 0.76
+  },
+  "verdict": "same",
+  "mgs_zone": "same",
+  "cause": "not needed",
+  "lenient_minus_strict": {
+   "gsm8k": 0.017501988862370723,
+   "gsm1k": 0.013592233009708738
+  },
+  "format_same": true
+ },
+ "mgs": {
+  "k": 1000,
+  "k_fits": 941,
+  "fits_share": 0.941,
+  "truncation_share": 0.015,
+  "strict_dropped": 0.7906482465462275,
+  "lenient_dropped": 0.8034006376195537,
+  "strict_all": 0.771,
+  "strict_capped": 0.745,
+  "lenient_capped": 0.761
+ },
+ "peak_gpu_gb": 15.610086441040039
+}
