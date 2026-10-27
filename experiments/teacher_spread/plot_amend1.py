@@ -4,8 +4,10 @@ analysis: reports/analyses/2026-10-26_analysis_teacher-spread.md -> "Amendment 1
 
   amend1_steps.png  top: the check ratio (harness PGD KL over W0's) against teacher-training steps for arm 1 (from W0's
                     subcomponents) and arm 3 (from the scaled adjoint split), with W0's 1 and seed spread, the pass and
-                    fail lines, E37's second batch order and do-nothing, and M0/M0b at their step 1000; bottom: the
-                    held-out gap to the fine-tuned model, KL(fine-tuned || state), for the same reads
+                    fail lines, E37's second batch order and do-nothing, and M0/M0b at their step 1000; middle: the
+                    held-out gap to the fine-tuned model, KL(fine-tuned || state), for the same reads; bottom: the
+                    training KL, single logged steps from results/large/amend1_run.log (arm 1's run first, then
+                    arm 3's) and the 50-step means before each read from the JSON
   amend1_m0.png     check ratio against damage elsewhere, KL(W0 || state) on plain Pile: M0 and M0b against M0's filed
                     region around W0, beside every teacher-trained read and do-nothing
 
@@ -15,6 +17,7 @@ Usage (repo root): ~/commute-agents/fleet/cpu-run uv run python experiments/teac
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -126,12 +129,55 @@ def panel_gap(ax: Axes, a: dict[str, Any]) -> None:
     style(ax)
 
 
-def fig_steps(a: dict[str, Any], e37: dict[str, Any]) -> None:
-    fig, (top, bot) = plt.subplots(2, 1, figsize=(8.6, 7.6), sharex=True, gridspec_kw={"height_ratios": (1.7, 1)})
+def logged_steps(log: Path) -> dict[str, tuple[list[int], list[float]]]:
+    """Single-step training KL from the run log's "[component training ...] step N: loss X" lines: arm 1's run, then
+    arm 3's (the step count restarts between them)."""
+    runs: list[tuple[list[int], list[float]]] = []
+    for m in re.finditer(r"\[component training lr [^\]]+\] step (\d+): loss ([\d.]+)", log.read_text()):
+        n, v = int(m.group(1)), float(m.group(2))
+        if not runs or n < runs[-1][0][-1]:
+            runs.append(([], []))
+        runs[-1][0].append(n)
+        runs[-1][1].append(v)
+    assert len(runs) == 2, f"expected arm 1's and arm 3's runs in {log}, found {len(runs)}"
+    return dict(zip(("arm1", "arm3"), runs, strict=True))
+
+
+def panel_train(ax: Axes, a: dict[str, Any], log: Path) -> None:
+    st = a["states"]
+    for arm, (x, y) in logged_steps(log).items():
+        s = ARM[arm]
+        ax.plot(x, y, color=s["c"], ls=s["ls"], lw=0.8, alpha=0.5, zorder=3)
+        ax.scatter(x, y, s=14, marker=s["m"], facecolors="white", edgecolors=s["c"], lw=0.8, zorder=4)
+        reads = sorted(int(n.split("_")[1]) for n in st if n.startswith(arm + "_") and "train_kl" in st[n])
+        means = [st[f"{arm}_{r}"]["train_kl"] for r in reads]
+        ax.scatter(reads, means, s=50, marker=s["m"], color=s["c"], zorder=5)
+        for r, v in zip(reads, means, strict=True):
+            ax.annotate(f"{v:.4f}", (r, v), xytext=(6, 6 if arm == "arm1" else -12), textcoords="offset points",
+                        fontsize=7)
+    k2, k4 = st["arm1_2000"]["train_kl"], st["arm1_4000"]["train_kl"]
+    ax.text(3000, 0.12, f"arm 1's 50-step mean fell {1 - k4 / k2:.0%} from step 2,000 to 4,000;\n"
+            "the plan calls a run flat below a 10% fall per doubling", fontsize=7, ha="center", color=INK)
+    ax.scatter([], [], s=14, marker="o", facecolors="white", edgecolors=INK, label="single logged steps")
+    ax.scatter([], [], s=50, marker="o", color=INK, label="mean of the 50 steps before each read")
+    ax.legend(fontsize=7, loc="upper right", bbox_to_anchor=(1.0, 0.72), frameon=False)
+    ax.set_yscale("log")
+    ax.set_ylim(0.002, 0.5)
+    ax.set_xlabel("teacher-training steps (Adam 1e-5, batches of 8 lowercase rows)")
+    ax.set_ylabel("training KL:\nKL(fine-tuned ‖ student) on the batch")
+    ax.set_title("And the training KL is still falling at step 4,000", fontsize=9, loc="left")
+    style(ax)
+
+
+def fig_steps(a: dict[str, Any], e37: dict[str, Any], log: Path) -> None:
+    fig, (top, mid, bot) = plt.subplots(3, 1, figsize=(8.6, 10.2), sharex=True,
+                                        gridspec_kw={"height_ratios": (1.7, 1, 1)})
     panel_check(top, a, e37)
-    panel_gap(bot, a)
-    bot.set_title("Meanwhile the gap to the fine-tuned model on held-out lowercase text keeps falling", fontsize=9,
+    panel_gap(mid, a)
+    mid.set_xlabel("")
+    mid.set_title("Meanwhile the gap to the fine-tuned model on held-out lowercase text keeps falling", fontsize=9,
                   loc="left")
+    panel_train(bot, a, log)
     fig.tight_layout()
     fig.savefig(FIG / "amend1_steps.png", dpi=150)
     plt.close(fig)
@@ -169,7 +215,8 @@ def fig_m0(a: dict[str, Any], e37: dict[str, Any]) -> None:
     ax.set_xlabel("damage elsewhere: KL(W₀ ‖ state) on held-out plain Pile rows, nats per token")
     ax.set_ylabel("check ratio: adversary's KL over\nthe unchanged decomposition's")
     ax.set_title("With nothing to copy, does the masked recipe leave the decomposition where it was?\n"
-                 "No: it barely changes the model, yet the check reads higher than after copying the fine-tune",
+                 "No: it barely changes the model's predictions, yet the check reads higher than after copying the "
+                 "fine-tune",
                  fontsize=9, loc="left")
     ax.legend(fontsize=7, loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=2, frameon=False, columnspacing=1.0)
     style(ax)
@@ -184,7 +231,7 @@ def main() -> None:
     assert a["status"] == "done", a["status"]
     a["amend1"] = json.loads((HERE / "results" / "amend1_predictions.json").read_text())["amend1"]
     FIG.mkdir(exist_ok=True)
-    fig_steps(a, e37)
+    fig_steps(a, e37, HERE / "results" / "large" / "amend1_run.log")
     fig_m0(a, e37)
     print(f"wrote {FIG / 'amend1_steps.png'} and {FIG / 'amend1_m0.png'}")
 

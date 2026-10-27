@@ -2,7 +2,7 @@
 
 *Independently checked 2026-10-26 (`reports/reviews/2026-10-26_review_teacher-spread.md`); corrections applied.*
 
-*Amendment 1 (2026-10-27), training longer and two other fixes, is the last section; not yet independently checked.*
+*Amendment 1 (2026-10-27), training longer and two other fixes, is the last section; independently checked 2026-10-27, corrections applied.*
 
 *2026-10-26, analysis agent for the lead. Plan: `reports/plans/2026-10-26_plan_teacher-spread.md`. Experiment
 `experiments/teacher_spread`. Every number below is read from `results/teacher_spread.json` or, where marked, from the
@@ -336,7 +336,8 @@ order's.
 → "Amendment 1 (2026-10-27)"; `experiments/teacher_spread/results/amend1_predictions.json`, filed 2026-10-27 11:12:18,
 unedited. Every number below is read from `results/amend1.json`, except the per-block readings and the training-loss
 terms, which come from `results/large/amend1_run.log`, and E37's own states, from `results/teacher_spread.json`.
-Figures from `plot_amend1.py`. Code: `amend1.py`, `src/commute/masked_teacher.py`. Not yet independently checked.*
+Figures from `plot_amend1.py`. Code: `amend1.py`, `src/commute/masked_teacher.py`. Independently checked 2026-10-27
+(`reports/reviews/2026-10-27_review_teacher-spread-amend1-analysis.md`); corrections applied.*
 
 **In plain words.** We trained the subcomponents to imitate the lowercase fine-tune for four times longer, and also
 from a start that passes the adversarial check. Both ended about twice as fragile as the original decomposition, above
@@ -354,7 +355,8 @@ decomposition "the copy"; this section does not.
 Training longer does not bring the trained decomposition under the pass line, and neither does starting it from the
 adjoint split. It reads 2.2 times the original decomposition's adversarial damage at step 1,000 and again at step
 4,000, while its gap to the fine-tuned model keeps shrinking. Started from the adjoint split, which passes, training
-climbs to the same place within a thousand steps. The masked-loss fix was not run. Its control, the same recipe with
+crosses the fail line within a thousand steps and is level with the longer run by step 2,000. The masked-loss fix was
+not run. Its control, the same recipe with
 nothing to copy, raised the adversarial reading more than copying the fine-tune did.
 
 ### What we were trying to test
@@ -419,16 +421,19 @@ forward pass at $W_0$ had to reproduce the longer run's first training loss.
 
 **Reading it.** No. In the top panel the longer run, blue, reads 2.20, 1.89 and 2.23 at steps 1,000, 2,000 and
 4,000. Every read sits above the red fail line. The adjoint-start run, purple, begins at 1.05 inside the unchanged
-model's band. It climbs to 1.76 by step 1,000 and 1.84 by step 2,000, within 3% of the longer run at the same step.
-The hollow blue circle is E37's second batch order at step 1,000, 1.88. So the longer run's movement between reads is
-the size of the batch-order spread. The bottom panel shows the gap to the fine-tuned model still shrinking on both
-runs. It falls by about a fifth to a quarter per doubling of steps, to 0.0072 nats at step 4,000. The trained
-decomposition gets closer to the fine-tuned model without getting less fragile.
+model's band. It climbs to 1.76 by step 1,000, a fifth below the longer run. By step 2,000 it reads 1.84, within 3%
+of the longer run. The hollow blue circle is E37's second batch order at step 1,000, 1.88. So the longer run's
+movement between reads is the size of the batch-order spread. The middle panel shows the gap to the fine-tuned model
+still shrinking on both runs. It falls by about a fifth to a quarter per doubling of steps, to 0.0072 nats at step
+4,000. The bottom panel shows the training KL still falling too. The trained decomposition gets closer to the
+fine-tuned model without getting less fragile.
 
 The behaviour stays kept throughout: the share of the gain sits between 0.98 and 1.02 at every trained read. Damage
 on plain Pile text sits at the fine-tuned model's level, 0.234 to 0.244 against 0.235. The stochastic ratio passes
 everywhere, at 1.08 to 1.09. Starting from the adjoint split only delays the rise. Its damage climbs from 0.05 to 0.24
-over the same thousand steps that its check climbs from 1.05 to 1.76.
+over the same thousand steps that its check climbs from 1.05 to 1.76. That rests on one read after the start, so the
+timing is coarse. Damage on ordinary text is also not the whole story. The masked control's retry, in section 2,
+fails the check at 3.14 with damage of only 0.007, a thirtieth of these runs'.
 
 **Against do-nothing.** E37 read the fine-tune left in Δ at 4.87 on the same card, with the same unchanged-model
 reading. Every trained read here is 0.36 to 0.46 of that. That comparison is inflated by construction, since the
@@ -472,11 +477,19 @@ first block rose from 1.69 to 2.02 between steps 2,000 and 4,000.
 | adjoint-start run | 1,000 | 1.125 | 1.332 | 1.66 | 1.85 |
 | adjoint-start run | 2,000 | 1.191 | 1.375 | 1.75 | 1.91 |
 
-**Is the longer run still learning?** Partly. Its training KL rose 3% from step 1,000 to step 2,000, then fell 44% to
-step 4,000. Its held-out gap fell 17% and then 26% over the same two doublings. The filed tree sends a run on to
-16,000 steps only if the training KL fell by at least 10% and the check also fell. The check rose, from 1.89 to 2.23,
-so that branch did not fire. The training KL is a 50-step mean of noisy batches, and the log shows one step near 2,000
-at 0.019; read alone, it says little.
+**Is the longer run still learning?** Yes, by its loss. Its 50-step training KL rose 3% from step 1,000 to step
+2,000, then fell 44% to step 4,000. The single logged steps fall steadily from 0.0085 at step 2,500 to 0.0038 at step
+4,000; the step-2,000 value of 0.019 is one noisy batch, and arm 3 shows the same batch. The held-out gap fell 17% and
+then 26% over the same two doublings.
+
+**This outcome falls between the filed branches.** The extend branch sends the run on to 16,000 steps when the
+training KL falls by at least 10% and the check also falls. The last branch needs the run to be flat, which the plan
+defines as a training KL falling less than 10% per doubling. Here the loss kept falling and the check did not, so
+neither condition holds. The run's code labels every case that is not "extend" as "flat", so its branch label is a
+default, not the filed tree's verdict. Taking the last branch is our judgement: the extend branch was there to catch a
+check that falls with training, and over four times the steps it did not. That judgement is weak. The check moved +1%
+from step 1,000 to 4,000, and three reads with a 14% batch-order spread cannot tell a flat check from a slow fall. The
+card therefore keeps extending to 16,000 steps as an option.
 
 #### 2. With nothing to copy, does the masked recipe leave the decomposition where it was?
 
@@ -500,12 +513,13 @@ to 0.26 in the retry. The teacher KL went from 0.0007 to 0.019 at the released w
 run does not say why. The rise could come from the adversary strengthening faster than the subcomponents adapt, from
 the frozen Γ, or from a fault in the new trainer. None of these was tested.
 
-**The same pattern as E15's control.** E15 refit Γ against VPD's released losses with a persistent adversary.
+**The same pattern as E15's control.** E15 refit Γ against VPD's released loss stack with a persistent adversary.
 Its unchanged-model control also left the floor. Under the first recipe it read 2.57 by step 100; under the second, 7.76
 by step 300. Its persistent adversary's loss also rose, from 0.42 to 0.63. The masked control trains $U$ and $V$
-instead of Γ, on two of the same losses, set up by the same code, now `gamma.loss_setup`. It reads the same way.
-Training against these losses at the unchanged model has now moved the check every time we have tried it. Whether
-the losses, the set-up or our use of it is responsible is untested.
+instead of Γ, on two of the same losses, set up by the same code, now `gamma.loss_setup`. It reads the same way. The
+two differ in what they train, the optimiser and the batch size. Training against our set-up of VPD's losses at the
+unchanged model has now moved the check every time we have tried it. Whether the losses, the set-up or our use of it
+is responsible is untested.
 
 | state | behaviour kept | damage | check | stochastic | CI-masked | size | adversary loss | random-mask loss | teacher KL |
 |---|---|---|---|---|---|---|---|---|---|
@@ -522,18 +536,22 @@ readings matched E37's to every digit. The regenerated fine-tuned model's held-o
 against E36's 0.1301. Leaving the fine-tune in Δ read exactly as the fine-tuned model. The longer run's first read
 reproduced E37's trained decomposition: behaviour kept 0.998, and a check 1.0005 times E37's. The adjoint-start run's
 first read reproduced E37's adjoint split: behaviour kept 0.804, and a check 0.999 times E37's. The masked trainer's
-first loss at $W_0$ matched the longer run's, 0.2901 against 0.2902. Its two forward paths differ by 0.0007 nats at the
-unchanged model, so the masked control's rise did not come from a mismatch at the start.
+first loss at $W_0$ matched the longer run's, 0.2901 against 0.2902. So the masked control's rise did not come from a
+mismatch in the first step's loss. Its forward path and the plain one still differ by a KL of 0.0007 nats at the
+unchanged model. Adam takes steps of about the learning rate whatever the gradient's size, so a small steady gradient
+from that difference could drive drift. The control with the masked weights at zero would test that. Two of the
+recipe's loss readings also point at the training loop. Its random-mask loss, which has no adversary in it, rose by
+a quarter while being minimised. Its total loss nearly doubled, in both the first attempt and the retry.
 
 ### What we learned
 
 On this broad fine-tune, teacher training lands on a decomposition about twice as fragile as the original under the
 paper's check. Training four times longer does not change that, and neither does starting from a decomposition that
 passes. What changes with training is how closely the trained decomposition matches the fine-tuned model, and that
-does not carry the check with it. The adjoint start passes only while it does a fifth of the fine-tuned model's damage
-on ordinary text. Both trained decompositions failed once they reached the fine-tuned model's damage. The one fix
-aimed at fragility itself could not be tested. Its recipe raised the check at the unchanged model, as E15's refit
-recipe did.
+does not carry the check with it. The adjoint start passed while it did a fifth of the fine-tuned model's damage on
+ordinary text. By its next read, a thousand steps on, it did as much damage as the fine-tuned model and failed. That does not make damage the
+cause. The masked control's retry failed the check at 3.14 with a thirtieth of that damage. The one fix aimed at
+fragility itself could not be tested. Its recipe raised the check at the unchanged model, as E15's refit recipe did.
 
 ### How compelling is the evidence
 
@@ -547,35 +565,42 @@ recipe did.
 - **One fine-tune, one batch order, one adversary seed, one synthetic style.** The adjoint-start run used one start
   only. Nothing here was read on a second broad fine-tune.
 - **The masked control is one recipe at two weights.** Adam scales its steps, so tenfold smaller weights need not give
-  tenfold smaller changes. A run with the masked weights at zero, which separates the trainer from the losses, was not
-  run.
+  tenfold smaller changes. A run with the masked weights at zero was not run. It would say whether the masked terms or
+  the rest of the loop move $U$ and $V$ off the floor. It would not separate VPD's losses from our set-up of them.
 
 ### Surprises
 
 - **The masked recipe's control moved far off the unchanged model.** We expected its check at 0.7 to 1.4 and read
   3.84, and 3.14 at a tenth of the weights. That is higher than any decomposition trained on the fine-tuned model,
   with a tenth of the damage or less. Its own training losses rose rather than fell. We have no tested cause.
-- **The longer run is not flat by the plan's own word.** The plan's table calls a run flat when its training KL falls
-  under 10% per doubling. It fell 44% from step 2,000 to 4,000, and the gap kept falling. The tree's branch for
-  "falling" also needs the check to fall. It rose, so the run's code reported the branch for "flat". The check, not
-  the loss, is what stopped moving.
+- **The longer run's outcome is not covered by the filed tree.** The plan calls a run flat when its training KL falls
+  under 10% per doubling. It fell 44% from step 2,000 to 4,000, and the gap kept falling, but the check did not fall.
+  The tree has a branch for both falling and one for both flat, not for this. The run's code reported "flat" by
+  default. Taking the last branch is our judgement, set out in section 1.
 - **The adjoint-start run's behaviour overshot** to 1.02 of the fine-tuned model's gain at step 1,000, before 0.99 at
   step 2,000. Small, and inside the spread of the behaviour measure across reads.
 
 ### What next
 
-The filed tree reaches its last branch: no arm is a solution, and the longer run's check did not keep falling. A card
-therefore goes to the user with option (d) and the anchor question for broad updates. Its draft is
+No arm is a solution, and the longer run's outcome falls between the filed branches. We read it as the last branch,
+a card to the user with option (d) and the anchor question for broad updates, and add the extend branch as an option.
+That reading is our judgement, not the tree's verdict. The card's draft is
 `reports/decisions/2026-10-27_decision_e37-amend1-card-draft.md`.
 
-1. **Option (d): does the frozen Γ limit the trained decomposition, or the subcomponents' span?** The Γ test is
-   E15's refit, about $9 per state. Training against VPD's losses at the unchanged model has now failed three times,
-   twice in E15 and once here, so a cheap control comes first. The masked control with the masked weights at zero,
-   about $1 with set-up, would show whether the trainer or the losses move the check.
-2. **The anchor question for broad updates.** Every trained read here is 0.36 to 0.46 of the fine-tuned model left in
+1. **Extend the longer run to 16,000 steps**, about $1.5, the filed extend branch. Its training KL is still falling,
+   and three reads cannot rule out a slow fall in the check. A check falling under the fail line by 16,000 steps would
+   put under-training back as the explanation. A check still near 2 would close it.
+2. **Option (d): does the frozen Γ limit the trained decomposition, or the subcomponents' span?** The Γ test is
+   E15's refit, about $9 per state. Training against our set-up of VPD's losses at the unchanged model has now failed
+   three times, twice in E15 and once here, so a cheap control comes first. The masked control with the masked weights
+   at zero, about $1 with set-up, would say whether the masked terms or the rest of the loop move $U$ and $V$ off the
+   floor.
+3. **The anchor question for broad updates.** Every trained read here is 0.36 to 0.46 of the fine-tuned model left in
    Δ. Judged against that, as option b of card `decision-pass-anchor` proposes, all pass; judged by the fixed line,
-   all fail. A decision here settles what the larger model's run is scored against.
-3. **The larger model with teacher training as it is**, its check reported against both references, if the user
+   all fail. A cheap control would inform it, about $1. Move $U$ and $V$ at random by the retry's size, 0.018, and read
+   the check. That would show whether the check punishes any move of the subcomponents away from the released
+   solution that is not adjoint-like. A decision here settles what the larger model's run is scored against.
+4. **The larger model with teacher training as it is**, its check reported against both references, if the user
    counts about twice the original as acceptable for a broad update. A result there that also reads about twice would
    say this is the norm for broad updates rather than a property of this toy fine-tune.
 
@@ -599,12 +624,14 @@ job's floor of 0.0748.
 | P2 | arm 2 at step 2,000 is a solution | s ≥ 0.9 and "pass" on check and stochastic | arm 2 not run: its control failed twice | **not scored** |
 | P3 | arm 3 ends where arm 1 does | at 2,000, s ≥ 0.9 and check within 25% of arm 1's | s 0.990; check 1.836 against 1.894, −3.1% | **holds** |
 | reported | arm 1 still falling, the tree's extend branch | train KL fall ≥ 10% from 2,000 to 4,000 and check falling | KL −44%, check +18% | does not fire |
-| reported | branch reached | the filed tree | "arm 1 flat, no solution read: card with option (d) and the anchor question" | — |
+| reported | arm 1 flat, the tree's last branch | train KL fall < 10% per doubling | KL −44% from 2,000 to 4,000 | does not hold |
+| reported | branch taken | no filed branch fits; the code's default label | "arm 1 flat, no solution read: card with option (d) and the anchor question", taken as the analyst's judgement, with extending added to the card | — |
 
 ### Not run, Amendment 1
 
 - Arm 2, masked teacher training on the fine-tuned model, since its control failed twice; no saved state for it.
-- The masked control with the masked weights at zero, which would separate the trainer from the losses.
+- The masked control with the masked weights at zero, which would separate the masked terms from the rest of the loop.
+- A random move of $U$ and $V$ by the retry's size, read under the check.
 - A coefficient sweep beyond the one retry; arms 2 and 3 combined; Γ trained with the subcomponents, E15's refit.
 - The longer run past step 4,000; the adjoint-start run past step 2,000; either at a second batch order.
 - A second adversary seed or start on any trained state; a longer adversary; other adversary families.
@@ -623,3 +650,6 @@ job's floor of 0.0748.
   `amend1_arm3_step2000.pt` `d532048d…`.
 - Code `experiments/teacher_spread/amend1.py`, `src/commute/masked_teacher.py`; brief `RUN_BRIEF_amend1.md`; figures
   `figures/amend1_steps.png` and `figures/amend1_m0.png` from `plot_amend1.py`.
+- In `amend1.json`, `score.arm3_0_over_e37.s` is a difference from E37's 0.804, here 0.0001, not a ratio like the
+  `check` beside it. `amend1.py` stays as it ran.
+- Independent check: `reports/reviews/2026-10-27_review_teacher-spread-amend1-analysis.md`; findings 1-5 and 7 applied.
