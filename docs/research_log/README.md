@@ -112,7 +112,18 @@ fine anywhere: the build points them at the right page.
 
 ## How to publish
 
-From a Claude Code session, with the Artifact tool, after `python3 docs/research_log/build.py`:
+From a Claude Code session, with the Artifact tool, in one try (2026-10-27; before that it took 3 or 4):
+
+1. `git pull --no-rebase`, then `python3 docs/research_log/build.py`, so the build has every other session's changes.
+2. Right before every publish, not just a session's first: one read that covers the page and every already-published
+   file you will pass. It saves them to disk, so nothing large comes into context. Pass only `url` and `paths`:
+
+   ```
+   Artifact read
+     url:    https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu
+     paths:  ["index.html", "experiments.html", "glossary.html", "changelog.html", "style.css", "script.js"]
+   ```
+3. Publish at once:
 
 ```
 Artifact publish
@@ -130,10 +141,10 @@ Artifact publish
 Files already published stay unless passed as `null`. The nav's version line is on every page, so a flush that adds a
 changelog row publishes all four pages and both assets; new figures are added to the map.
 
-The publisher requires that a session has viewed the live page before it accepts a publish. The first publish of a
-session is refused and hands over the live `index.html` (about 130 KB) to read in full. That is the one fixed cost per
-session; once `--check` says "same", the read is a formality. Publishing from the same session again needs no
-further read.
+The publisher refuses a page the session has not viewed, and any file already on the artifact that the session has
+not read or listed, or that changed since it did. Step 2's read covers both. Several sessions publish this log, so a
+refusal usually means another one published in between: repeat steps 2 and 3. Never resend the refused call
+unchanged; that is refused too.
 
 Figures already published (their sources, for a re-upload):
 - "fig/overview_component_training.png": "docs/research_log/component_training_tasks.png"
