@@ -1,0 +1,15 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+16:48:52 [a3 start] on NVIDIA L40; cfg Cfg(n_random=20, n_active=20, m0_active=0.5, m0_active_low=0.2, empty_tol=1e-05, w0_tol=0.0001, whole_tol=0.01, pre_tol=0.0001, removal_tol=0.01, min_gain=1.0, p10_tasks=('emoticon', 'r1_t534_v369'), rho_S_range=(0.1, 0.5))
+16:49:03 [a3 controls emoticon/s0] T0 -5.0229 T1 8.4070 |S| 210 | R0 lo - T1 0.0 | R1 lo - T0 0.0 | R2 lo - T0 0.0 | R3 max |logit diff| pre 0.0 at 11.047 | R4 lo 1.7139 removed_at 1.7092 diff 0.00467 | {"R0": true, "R1": true, "R2": true, "R3": true, "R4": true} ok
+16:49:04 [a3 controls emoticon/s1] T0 -5.0229 T1 8.6684 |S| 213 | R0 lo - T1 0.0 | R1 lo - T0 0.0 | R2 lo - T0 0.0 | R3 max |logit diff| pre 0.0 at 10.000 | R4 lo 1.4586 removed_at 1.4584 diff 0.000233 | {"R0": true, "R1": true, "R2": true, "R3": true, "R4": true} ok
+16:49:04 [a3 controls emoticon/null] T0 -5.0229 T1 -14.7510 |S| 130 | R0 lo - T1 0.0 | R1 lo - T0 0.0 | R2 lo - T0 0.0 | R3 max |logit diff| pre 0.0 at 5.656 | R4 n/a (null) | {"R0": true, "R1": true, "R2": true, "R3": true} ok
+16:49:04 [a3 controls r1_t534_v369/s0] T0 -5.5448 T1 4.7441 |S| 56 | R0 lo - T1 0.0 | R1 lo - T0 0.0 | R2 lo - T0 0.0 | R3 max |logit diff| pre 0.0 at 5.844 | R4 lo 1.3858 removed_at 1.3797 diff 0.00612 | {"R0": true, "R1": true, "R2": true, "R3": true, "R4": true} ok
+16:49:04 [a3 controls r1_t534_v369/s1] T0 -5.5448 T1 5.3235 |S| 62 | R0 lo - T1 0.0 | R1 lo - T0 0.0 | R2 lo - T0 0.0 | R3 max |logit diff| pre 0.0 at 5.281 | R4 lo 1.2730 removed_at 1.2804 diff -0.00741 | {"R0": true, "R1": true, "R2": true, "R3": true, "R4": true} ok
+16:49:05 [a3 controls r1_t534_v369/null] T0 -5.5448 T1 -13.6022 |S| 225 | R0 lo - T1 0.0 | R1 lo - T0 0.0 | R2 lo - T0 0.0 | R3 max |logit diff| pre 0.0 at 12.938 | R4 n/a (null) | {"R0": true, "R1": true, "R2": true, "R3": true} ok
+16:49:05 [a3 controls r2_t359_v816/s0] T0 -6.9110 T1 5.6240 |S| 23 | R0 lo - T1 0.0 | R1 lo - T0 0.0 | R2 lo - T0 0.0 | R3 max |logit diff| pre 0.0 at 2.771 | R4 lo 3.4941 removed_at 3.5014 diff -0.00725 | {"R0": true, "R1": true, "R2": true, "R3": true, "R4": true} ok
+16:49:05 [a3 controls r2_t359_v816/s1] T0 -6.9110 T1 5.2828 |S| 21 | R0 lo - T1 0.0 | R1 lo - T0 0.0 | R2 lo - T0 0.0 | R3 max |logit diff| pre 0.0 at 2.705 | R4 lo 2.6790 removed_at 2.6595 diff 0.0195 | {"R0": true, "R1": true, "R2": true, "R3": true, "R4": false} FAIL
+16:49:06 [a3 controls r2_t359_v816/null] T0 -6.9110 T1 -13.2840 |S| 165 | R0 lo - T1 0.0 | R1 lo - T0 0.0 | R2 lo - T0 0.0 | R3 max |logit diff| pre 0.0 at 7.656 | R4 n/a (null) | {"R0": true, "R1": true, "R2": true, "R3": true} ok
+16:49:06 [a3 controls] FAIL: stop and report (43 s)
