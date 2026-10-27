@@ -6,7 +6,7 @@
 <dt>Model</dt><dd>Goodfire's released 4-layer Pile transformer (67M parameters) and their released VPD decomposition, via the pinned <code>param-decomp</code> package at commit <code>74146b5</code>. A testbed; see Q9.</dd>
 <dt>Decomposed</dt><dd>24 weight matrices: query, key, value and output projections and the two MLP matrices in each of four blocks. Embeddings, unembedding and normalisation are frozen and not decomposed.</dd>
 <dt>Pieces</dt><dd>About 38,900 rank-one subcomponents, about 9,900 of them alive (ever important). Four matrices (the MLP matrices of layers 0 and 3) are saturated: their alive pieces span every direction on one side (the read side or the write side), so any update to them is expressible by construction.</dd>
-<dt>Γ</dt><dd>One network shared across all 24 matrices. It reads every matrix's input at every position, runs a small transformer over the window, and outputs an importance value in [0, 1] per piece per position. An edit in layer 2 therefore moves importance values in layer 0. Frozen in every map so far.</dd>
+<dt>Γ</dt><dd>One network shared across all 24 matrices. It reads every matrix's input at every position, runs a small transformer over the window, and outputs an importance value in [0, 1] per piece per position. An edit in layer 2 therefore moves importance values in layer 0. Its attention is not causal, so the value at a position also depends on the tokens after it (section {{n:gaps}}). Frozen in every map so far.</dd>
 </dl>
 
 <h3>Updates</h3>
