@@ -212,3 +212,6 @@ Figures already published (their sources, for a re-upload):
 - "fig/e34_amend5_cos.png": "experiments/teacher_training/figures/amend5_cos.png"
 - "fig/e37_behaviour_faithful.png": "experiments/teacher_spread/figures/behaviour_faithful.png"
 - "fig/e37_placement.png": "experiments/teacher_spread/figures/placement.png"
+- "fig/e38_w0.png": "experiments/recruitment_test/figures/w0.png"
+- "fig/e38_amend2_D.png": "experiments/recruitment_test/figures/amend2_D.png"
+- "fig/e38_amend2_census.png": "experiments/recruitment_test/figures/amend2_census.png"
