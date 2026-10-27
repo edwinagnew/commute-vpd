@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # For fleet/check, write to FLEET_DATA/agents/<role>/: "summary", one sentence on what each running agent is doing
 # (from the last 40 steps of its transcript, only when the transcript changed), and "title", a name of at most 60
-# characters for its task (only when the task file changed). Run by cron every 15 minutes and by fleet/start. Each is
+# characters for its task (only when the task file changed). Run by cron every 30 minutes and by fleet/start. Each is
 # one Haiku call (a few hundred tokens, ~2 s). Problems are not summarised here; agents record them with fleet/problem.
 #   fleet/summarize [ROLE ...]   default: every window in the tmux session
 set -uo pipefail

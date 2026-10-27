@@ -15,11 +15,9 @@ fi
 # session id in ~/.claude/sessions/<pid>.json. Not the newest file in the clone's project folder: a person's own
 # Claude session in the same clone writes there too, and fleet/check then reported that session (2026-10-26).
 fleet_transcript() {  # fleet_transcript ROLE -> path, or nothing when the agent is not running
-  local f pid sid=""
-  for f in "$HOME"/.claude/sessions/*.json; do
-    [[ "$(jq -r .name "$f" 2>/dev/null)" == "$FLEET_PREFIX-$1" ]] || continue
-    pid=$(jq -r .pid "$f"); kill -0 "$pid" 2>/dev/null && sid=$(jq -r .sessionId "$f")
-  done
+  local pid s sid=""
+  while read -r pid s; do kill -0 "$pid" 2>/dev/null && sid=$s; done \
+    < <(jq -r --arg n "$FLEET_PREFIX-$1" 'select(.name == $n) | "\(.pid) \(.sessionId)"' "$HOME"/.claude/sessions/*.json 2>/dev/null)
   [[ -n "$sid" ]] && echo "$HOME/.claude/projects/$(tr '/.' '--' <<< "$FLEET_AGENTS/$1")/$sid.jsonl"
 }
 

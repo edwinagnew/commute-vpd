@@ -23,7 +23,7 @@ row() {  # row LABEL TEXT: "  label   text", wrapped under the text
 needs=()   # lines for NEEDS YOU, filled while the agents are read
 
 # What the agent's window shows, as "short status|what the user should do" (the second part empty when nothing).
-state() {  # state ROLE TRANSCRIPT NSUBS
+state() {  # state ROLE NSUBS (reads $recent, the transcript's tail)
   local pane body last wake
   pane=$(tmux capture-pane -p -t "$FLEET_SESSION:$1" 2>/dev/null | grep -v '^\s*$')
   if [[ "$(tmux display -p -t "$FLEET_SESSION:$1" '#{pane_current_command}' 2>/dev/null)" == bash ]] \
@@ -42,12 +42,12 @@ state() {  # state ROLE TRANSCRIPT NSUBS
   # Between turns with a ScheduleWakeup still in the future. A finishing subagent or background command wakes it at
   # once; the check-in is the backstop for a stuck subagent or a frozen pod.
   last=$(jq -r 'select(.type == "assistant") | .timestamp as $t | .message.content[]?
-    | select(.type == "tool_use" and .name == "ScheduleWakeup") | "\($t) \(.input.delaySeconds // 0)"' "$2" 2>/dev/null | tail -1)
+    | select(.type == "tool_use" and .name == "ScheduleWakeup") | "\($t) \(.input.delaySeconds // 0)"' <<< "$recent" 2>/dev/null | tail -1)
   if [[ -n "$last" ]]; then
     wake=$(( $(date -d "${last% *}" +%s) + ${last#* } ))
     if (( wake > now - 120 )); then
       local next; next="next check-in $(date -d @"$wake" +%H:%M)"
-      if (( $3 )); then echo "waiting on $3 agent$( (( $3 > 1 )) && echo s) · $next|"
+      if (( $2 )); then echo "waiting on $2 agent$( (( $2 > 1 )) && echo s) · $next|"
       elif [[ -n "$jobs" ]]; then echo "waiting on Slurm jobs · $next|"
       else echo "idle, nothing running for it · $next|"; fi
       return
@@ -63,23 +63,31 @@ blocks=""
 for role in $windows; do
   t=$(fleet_transcript "$role")
   adir="$FLEET_DATA/agents/$role"
-  # Its subagents still running: Claude Code marks a subagent's meta.json "finished": true when it ends.
+  # Only the transcript's tail is read: whole transcripts are megabytes on the network disk, and every iteration
+  # schedules a wake-up, so the last one is well inside it.
+  recent=$([[ -n "$t" ]] && tail -n 3000 "$t")
+  # Its subagents still running: Claude Code marks a subagent's meta.json "finished": true when it ends, but not when
+  # it is interrupted, so a transcript ending in the interruption notice also counts as ended (2026-10-27: an E34
+  # pod-runner interrupted at 23:28 showed as stale all morning). One jq for all the meta files.
   subs=""; nsubs=0
-  for m in "${t%.jsonl}"/subagents/*.meta.json; do
-    [[ -f "$m" && "$(jq -r .finished "$m")" != true ]] || continue
+  metas=("${t%.jsonl}"/subagents/*.meta.json)
+  [[ -f "${metas[0]}" ]] || metas=()
+  while IFS=$'\t' read -r m desc; do
+    [[ -n "$m" ]] || continue
+    tail -n 1 "${m%.meta.json}.jsonl" 2>/dev/null | grep -q '\[Request interrupted' && continue
     nsubs=$(( nsubs + 1 ))
-    d=$(jq -r .description "$m"); (( ${#d} > 34 )) && d="${d:0:33}…"
+    d=$desc; (( ${#d} > 34 )) && d="${d:0:33}…"
     d+=" "; while (( ${#d} < 37 )); do d+="·"; done
     w=$(stat -c %Y "${m%.meta.json}.jsonl" 2>/dev/null || stat -c %Y "$m")
     line="$d $(ago "$w")"
     if (( now - w > STALE_MIN * 60 )); then
       line+="  ⚠ stale"
-      needs+=("$role: its agent \"$(jq -r .description "$m")\" has been silent $(ago "$w"); probably dead. If it ran a pod, check the pod is not idling.")
+      needs+=("$role: its agent \"$desc\" has been silent $(ago "$w"); probably dead. If it ran a pod, check the pod is not idling.")
     fi
     subs+="$line"$'\n'
-  done
+  done < <( (( ${#metas[@]} )) && jq -r 'select(.finished != true) | [input_filename, .description] | @tsv' "${metas[@]}" 2>/dev/null)
 
-  st=$(state "$role" "$t" "$nsubs")
+  st=$(state "$role" "$nsubs")
   [[ -n "${st#*|}" ]] && needs+=("$role: ${st#*|}")
   status=${st%%|*}
   # The agent's last step (a tool call or message), not the file's time: bookkeeping lines also touch the file.
@@ -87,7 +95,7 @@ for role in $windows; do
   if [[ -n "$t" ]]; then
     step=$(jq -r 'select(.type == "assistant" and .timestamp) | .timestamp as $ts | .message.content[]?
       | if .type == "tool_use" then "\($ts)\t\(.name): \((.input.description // .input.command // .input.file_path // .input.pattern // .input.prompt // "") | tostring | .[0:90])"
-        elif .type == "text" then "\($ts)\twrote: \(.text | gsub("\n"; " ") | .[0:90])" else empty end' "$t" 2>/dev/null | tail -1)
+        elif .type == "text" then "\($ts)\twrote: \(.text | gsub("\n"; " ") | .[0:90])" else empty end' <<< "$recent" 2>/dev/null | tail -1)
     if [[ "$status" == working && -n "$step" ]]; then
       a=$(ago "$(date -d "${step%%$'\t'*}" +%s)"); status+=" · last step ${a/#now/just now}"; [[ "$a" == now ]] || status+=" ago"
     fi
@@ -125,7 +133,10 @@ for role in $windows; do
 done
 
 # Compute, read before printing so its problems reach NEEDS YOU.
-keys=$("$here/check-keys" | cut -d' ' -f2-)
+# Keys change rarely: reuse check-keys' last result (FLEET_DATA/keys.txt) for 30 min, unless the secrets changed since.
+kf="$FLEET_DATA/keys.txt"
+if [[ -s "$kf" && "$kf" -nt "$FLEET_SECRETS" ]] && (( now - $(stat -c %Y "$kf") < 1800 )); then keys=$(cut -d' ' -f2- "$kf")
+else keys=$("$here/check-keys" | cut -d' ' -f2-); fi
 [[ "$keys" == "keys: ok" ]] || while read -r k; do needs+=("${k#keys: PROBLEM: }"); done <<< "$keys"
 # A drained or down node takes no new jobs (fleet/cpu-run, cluster runs) until an admin resumes it.
 cluster=()
