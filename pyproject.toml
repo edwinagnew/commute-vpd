@@ -49,9 +49,12 @@ gpu = ["torch==2.8.0", "torchvision==0.23.0"]
 default-groups = ["dev", "cpu"]
 conflicts = [[{ group = "cpu" }, { group = "gpu" }]]
 
+# The CPU index only off Linux (the laptop is a Mac). On Linux the default `cpu` group gets the PyPI CUDA wheel, the
+# same as `gpu`: the cluster's clones share one venv, and a bare `uv run` there reinstalled CPU torch and broke every
+# GPU job (2026-10-27, twice).
 [tool.uv.sources]
-torch = [{ index = "pytorch-cpu", group = "cpu" }]
-torchvision = [{ index = "pytorch-cpu", group = "cpu" }]
+torch = [{ index = "pytorch-cpu", group = "cpu", marker = "sys_platform != 'linux'" }]
+torchvision = [{ index = "pytorch-cpu", group = "cpu", marker = "sys_platform != 'linux'" }]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
