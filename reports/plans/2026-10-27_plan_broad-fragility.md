@@ -49,7 +49,7 @@ is attempted here; a fix would be a new plan.
 Shared settings are E37 Amendment 1's: the released 67M decomposition, Γ and Δ frozen, the check = 20-step mask
 adversary from one random start on 256 Pile rows (adversary seed 0), ratio over the unchanged decomposition in the
 same job; behaviour kept, gap, damage as in E37. Pass ≤ 1.40, fail ≥ 1.61. Saved state read: E37's lowercase copy at
-seed 0, step 1,000 (`copy_lower_seed0_step1000.pt`, check 2.20), called *the trained state* below.
+seed 0, step 1,000 (check 2.20; retrained in the job by the same recipe, which reproduced it exactly in Amendment 1), called *the trained state* below.
 
 **Stage 0, controls, alone, with an early stop.** (i) The unchanged model through the check at adversary seeds 0, 1,
 2: spread ≤ 0.10 and readings within 1% of E37's (0.679 and 0.718 per block). (ii) The trained state loaded and read:
