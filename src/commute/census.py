@@ -121,7 +121,11 @@ def class_shares(table: dict[tuple[str, int], dict[str, Any]], sel: Sel, target:
 # read; positions 0..T-2 of each row, as `Census`. The target ratio of a piece is (its on-positions followed by the
 # target / its on-positions) / (positions followed by the target / positions), None for a rare piece (< MIN_ON).
 
-P8_RATIO = 2.0  # P8 and its control: median ratio over the set >= 2 x the median over the random sets' pieces
+# P8 as amended before any run (results/predictions_amend2_p8.json): a piece is target-enriched with >= MIN_ON
+# on-positions, >= MIN_HITS of them followed by the target and target ratio >= MIN_RATIO; a set passes when its
+# enriched fraction (over all its pieces, rare ones counting as not enriched) is >= P8_TIMES x the pooled random sets'
+# and >= P8_MIN. The same rule for the contrast control, which unscores a task when it fails.
+MIN_HITS, MIN_RATIO, P8_TIMES, P8_MIN = 5, 3.0, 2.0, 0.10
 
 
 class TargetCounts:
@@ -155,6 +159,14 @@ class TargetCounts:
         out = [self.ratio(k, int(c), token) for k, v in sel.items() for c in v.tolist()]
         return [r for r in out if r is not None]
 
+    def enriched(self, k: str, c: int, token: int) -> bool:
+        r = self.ratio(k, c, token)
+        return r is not None and int(self.next[k][c, self.ids.index(token)]) >= MIN_HITS and r >= MIN_RATIO
+
+    def flags(self, sel: Sel, token: int) -> list[bool]:
+        """Target-enriched or not, for every piece of `sel` (rare pieces are not)."""
+        return [self.enriched(k, int(c), token) for k, v in sel.items() for c in v.tolist()]
+
     def pieces(self, sel: Sel) -> dict[str, dict[str, Any]]:
         """'matrix:index' -> n_on and the next-token counts at `ids`, for the pieces of `sel` (what the JSON keeps)."""
         return {f"{k}:{int(c)}": {"n_on": int(self.n_on[k][c]), "next": self.next[k][c].tolist()}
@@ -179,17 +191,27 @@ def target_census(model: Any, rows: Tensor, ids: list[int], masks: dict[str, Ten
     return counts, accs
 
 
-def p8_task(r_S: list[float], r_random: list[float], r_control: list[float]) -> dict[str, Any]:
-    """One task's P8: medians over S's, the pooled random sets' and the control set's non-rare pieces; the control
-    passes with median >= P8_RATIO x random's, and P8 is scored only where it does. `random_median_zero` flags that
-    the bar is then 0 and any set passes it."""
+def p8_task(counts: TargetCounts, S: Sel, random: list[Sel], control: Sel, token: int) -> dict[str, Any]:
+    """One task's P8 (amended rule): target-enriched fractions of S, of the random sets' pieces pooled and of the
+    control; the control passing scores the task, S passing is P8 there. Median target ratios over the non-rare
+    pieces are reported only."""
     import statistics
+
+    def frac(x: list[bool]) -> float:
+        return sum(x) / len(x) if x else float("nan")
 
     def med(x: list[float]) -> float:
         return statistics.median(x) if x else float("nan")
 
-    m_S, m_r, m_c = med(r_S), med(r_random), med(r_control)
-    control = m_c >= P8_RATIO * m_r
-    return {"median_S": m_S, "median_random": m_r, "median_control": m_c, "n": [len(r_S), len(r_random), len(r_control)],
-            "control_ok": control, "pass": (m_S >= P8_RATIO * m_r) if control else "unscored",
-            "random_median_zero": m_r == 0}
+    def passes(f: float, f_random: float) -> bool:
+        return f >= P8_TIMES * f_random and f >= P8_MIN
+
+    f_S, f_c = frac(counts.flags(S, token)), frac(counts.flags(control, token))
+    f_r = frac([x for s in random for x in counts.flags(s, token)])
+    control_ok = passes(f_c, f_r)
+    r_S, r_c = counts.ratios(S, token), counts.ratios(control, token)
+    r_r = [x for s in random for x in counts.ratios(s, token)]
+    return {"frac_S": f_S, "frac_random": f_r, "frac_control": f_c, "control_ok": control_ok,
+            "pass": passes(f_S, f_r) if control_ok else "unscored",
+            "median_S": med(r_S), "median_random": med(r_r), "median_control": med(r_c),
+            "n_nonrare": [len(r_S), len(r_r), len(r_c)]}

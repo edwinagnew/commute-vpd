@@ -1,6 +1,7 @@
 """recruitment_test (E38) Amendment 2: how much of the fine-tune runs through the recruited set S beyond its existing
 push. Plan: reports/plans/2026-10-27_plan_e38-amend2.md; predictions results/predictions_amend2.json (filed before this
-code, never edited). States, sets and readouts are E38's (run.py, commute.recruitment); this adds removal at the
+code, never edited) and results/predictions_amend2_p8.json (P8's rule, re-filed before any run). States, sets and
+readouts are E38's (run.py, commute.recruitment); this adds removal at the
 trigger position only (`recruitment.removal_hooks`), every removal from W0 as well as W1, and the target census
 (`census.target_census`).
 
@@ -55,6 +56,7 @@ from commute.regating import Task
 from commute.signatures import ablated_weights, top_by
 
 PRED = RESULTS / "predictions_amend2.json"
+PRED_P8 = RESULTS / "predictions_amend2_p8.json"  # P8's rule as amended before any run (census.p8_task)
 OUT0, OUT1, OUT2 = RESULTS / "amend2_stage0.json", RESULTS / "amend2.json", RESULTS / "amend2_census.json"
 
 
@@ -279,17 +281,17 @@ def stage2(run: Run) -> dict[str, Any]:
         S = run.S(f"{n}/s0")
         rand = [R.random_like(S, run.alive, i) for i in range(CFG.n_census_random)]
         ctrl = top_by(accs[n].result(run.alive), run.alive, R.size(S))
-        rec = CE.p8_task(counts.ratios(S, tgt[n]), [x for s in rand for x in counts.ratios(s, tgt[n])],
-                         counts.ratios(ctrl, tgt[n]))
+        rec = CE.p8_task(counts, S, rand, ctrl, tgt[n])
         rec.update(target=tgt[n], n_precede=accs[n].n_on, J_control_S=R.jaccard(ctrl, S),
                    sets={"S": piece_keys(S), "control": piece_keys(ctrl), "random": [piece_keys(x) for x in rand]})
         for sel in (S, ctrl, *rand):
             out["pieces"].update(counts.pieces(sel))
         out["tasks"][n] = rec
-        log(f"[a2 stage2 {n}] target {tgt[n]} ({accs[n].n_on} positions precede it) | median ratio S "
-            f"{rec['median_S']:.3f} random {rec['median_random']:.3f} control {rec['median_control']:.3f} | non-rare n "
-            f"(S, random, control) {rec['n']} | J(control, S) {rec['J_control_S']:.3f} | control {rec['control_ok']} | "
-            f"P8 {rec['pass']} | random median 0: {rec['random_median_zero']}")
+        log(f"[a2 stage2 {n}] target {tgt[n]} ({accs[n].n_on} positions precede it) | target-enriched fraction S "
+            f"{rec['frac_S']:.3f} random {rec['frac_random']:.3f} control {rec['frac_control']:.3f} | control "
+            f"{rec['control_ok']} | P8 {rec['pass']} | median ratio (reported) S {rec['median_S']:.3f} random "
+            f"{rec['median_random']:.3f} control {rec['median_control']:.3f}, non-rare n {rec['n_nonrare']} | "
+            f"J(control, S) {rec['J_control_S']:.3f}")
     scored = [v["pass"] for v in out["tasks"].values() if v["control_ok"]]
     out["P8"] = {"per_task": {n: v["pass"] for n, v in out["tasks"].items()}, "pass": sum(x is True for x in scored) >= RT.N_TASKS,
                  "control_on_every_task": all(v["control_ok"] for v in out["tasks"].values())}
@@ -313,8 +315,9 @@ def main() -> None:
     ap.add_argument("--stages", type=stages_arg, required=True, help="0 alone first; then 1,2 (or 0,1,2 in one job)")
     ap.add_argument("--device", default="cuda")
     args = ap.parse_args()
-    if not PRED.is_file():
-        sys.exit(f"file the predictions first: {PRED}")
+    for p in (PRED, PRED_P8):
+        if not p.is_file():
+            sys.exit(f"file the predictions first: {p}")
     s0 = read_json(OUT0)
     if 0 not in args.stages and not (s0 and s0.get("pass") is True):
         sys.exit(f"stage 0 has not passed ({OUT0}): run --stages 0 first")
