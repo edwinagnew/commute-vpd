@@ -93,6 +93,9 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
 - Predictions are filed in `results/predictions.json` before running; the run refuses to start without it. Never
   edit them after the run; add a dated report instead. A prediction fixes its measurement rule, thresholds, and
   relative vs absolute; the plan states what each metric is blind to, its positive control, and its noise floor.
+  Before filing, run each rule against its edge cases (an empty or one-element pool, a zero denominator, ties, a
+  case no branch covers) and fix it then: E38 Amendments 2 and 3 each filed a rule that was degenerate or incomplete,
+  found only by the code writer, at a round trip each (2026-10-27).
   Every analysis report opens with a plain-words paragraph (three sentences, no symbols: what was done, what was found,
   what it means for `GOALS.md`) and ends with a "Not run" list.
 - Results are committed (small summaries); anything over ~1 MB per run goes in the gitignored `results/large/`.

@@ -136,7 +136,9 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   sha256 on both sides and the remote layout.
 - Tee each stage's log into the container's stdout (`/proc/1/fd/1`) so the user can follow it in the RunPod console.
   Run long stages with `execute(background=true)` or a subprocess, never as one long blocking `execute()`.
-- Download each stage's outputs as soon as they are written, while the next stage runs. Download into the matching
+- Download each stage's outputs as soon as they are written, while the next stage runs, and the last stage's the
+  moment it finishes, before any check or report: on 2026-10-27 a pod's SSH dropped ~30 s after E39 finished, and its
+  final JSON came home only because the user copied it by hand. Download into the matching
   parent directory, because downloading a directory nests it. Look at the local layout after the first download.
 - `results/large/` is a link outside the project: `download()` into it is refused, and moving a file into it can wait
   at a permission prompt for hours. Download large files to `results/<run>_dl/` and leave the move to the lead.

@@ -392,11 +392,12 @@ def _python_here(text, roots, depth=0):
 here = call.get("cwd") or "."
 if not os.environ.get("SLURM_JOB_ID") and (
         why := _python_here(command, [here, _top(here), os.environ.get("CLAUDE_PROJECT_DIR") or here])):
-    print(f"No Python runs directly on the shared dev node, not even a heredoc that reads one file: {why}. Put "
+    print(f"No Python runs directly on the shared dev node, not even a heredoc that reads one file: {why}. To read "
+          "JSON, use jq, which runs here. Otherwise put "
           "~/commute-agents/fleet/cpu-run in front of the command to run it on the cluster's worker through Slurm. It starts in "
           "about a second, passes standard input through (~/commute-agents/fleet/cpu-run python3 - <<'EOF' works) and asks for 1 CPU, "
           "2G of memory and 30 minutes unless you give -c, --mem or -t. The job cannot see /ephemeral, so keep its "
-          "files in your clone or commute-data. jq reads JSON here. GPU runs go through /pod-runner.",
+          "files in your clone or commute-data. GPU runs go through /pod-runner.",
           file=sys.stderr)
     sys.exit(2)
 sys.exit(0)
