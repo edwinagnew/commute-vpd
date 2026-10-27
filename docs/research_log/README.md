@@ -226,6 +226,8 @@ Figures already published (their sources, for a re-upload):
 - "fig/e38_w0.png": "experiments/recruitment_test/figures/w0.png"
 - "fig/e38_amend2_D.png": "experiments/recruitment_test/figures/amend2_D.png"
 - "fig/e38_amend2_census.png": "experiments/recruitment_test/figures/amend2_census.png"
+- "fig/e38_amend3_restore.png": "experiments/recruitment_test/figures/amend3_restore.png"
+- "fig/e38_amend3_confound.png": "experiments/recruitment_test/figures/amend3_confound.png"
 - "fig/e39_moves.png": "experiments/broad_fragility/figures/moves.png"
 - "fig/e39_reverts.png": "experiments/broad_fragility/figures/reverts.png"
 - "fig/e39_shape.png": "experiments/broad_fragility/figures/shape.png"
