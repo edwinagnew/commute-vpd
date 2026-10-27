@@ -16,7 +16,7 @@
 <tr><td class="c">U, V</td><td>the alive pieces' write and read vectors, one column per piece; the pieces are frozen in shape, only these vectors may move</td></tr>
 <tr><td class="c">δW</td><td>a finished update to W, from a fine-tune or a LoRA</td></tr>
 <tr><td class="c">dU, dV</td><td>what a map adds to U and V; the weights then change by dU Vᵀ + U dVᵀ, to first order</td></tr>
-<tr><td class="c">K(M) = UUᵀM + MVVᵀ</td><td>the weight change from moving the pieces by dU = M V, dV = Mᵀ U: the part of M the pieces can express, at a size that is not M's. M is the gradient in component training and δW in the adjoint splits</td></tr>
+<tr><td class="c">K(M) = UUᵀM + MVVᵀ</td><td>the weight change from moving the pieces by dU = M V, dV = Mᵀ U: the part of M the pieces can express, at a size that is not M's. M is the gradient in component training and δW in the adjoint splits. One plain-SGD step of component training changes the weights by −ηK(G), which is the adjoint split of the fine-tune's own step −ηG; the two differ only over a run. The adjoint split applies K once, open loop, to an update made along the fine-tune's path, so what K distorts stays; component training applies K to each step's gradient at its own current weights, so later steps correct it. Under Adam, component training's step is not a multiple of K(G) at all.</td></tr>
 <tr><td class="c">Γ</td><td>VPD's importance network, which switches pieces on per input; frozen under every map below</td></tr>
 </tbody></table></div>
 <div class="cards">
