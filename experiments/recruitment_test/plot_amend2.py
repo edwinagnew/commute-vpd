@@ -271,4 +271,59 @@ def fig_census(fr: dict[str, dict[str, float]]) -> None:
         for b, (key, lab, c) in enumerate(bars):
             v = fr[n][key]
             ax.bar(
-                i + (b - 1.5) * w, v, w * 0.92, color=c, label=lab if i == 0 else N
+                i + (b - 1.5) * w, v, w * 0.92, color=c, label=lab if i == 0 else None
+            )
+            ax.text(i + (b - 1.5) * w, v + 0.01, f"{v:.2f}", ha="center", fontsize=7)
+        bar = max(2 * fr[n]["random"], 0.10)
+        ax.plot(
+            [i - 2 * w, i + 2 * w],
+            [bar] * 2,
+            color=INK,
+            ls="--",
+            lw=1,
+            label="filed bar: 2 × random and ≥ 0.10" if i == 0 else None,
+        )
+    ax.set_xticks(range(len(TASKS)), [NAME[n] for n in TASKS], fontsize=8)
+    ax.set_ylim(0, 1.05)
+    ax.set_ylabel(
+        "fraction of the set's subcomponents that are\ntarget-enriched in Pile text (original model)"
+    )
+    ax.set_title(
+        "Are the recruited subcomponents the ones the original model uses before the target?",
+        fontsize=10,
+    )
+    style(ax, zero=False)
+    ax.legend(
+        frameon=False,
+        fontsize=7,
+        loc="upper center",
+        ncol=2,
+        bbox_to_anchor=(0.5, -0.1),
+    )
+    save(fig, "amend2_census.png")
+
+
+def main() -> None:
+    st, ce = load("amend2.json")["states"], load("amend2_census.json")
+    fig_D(st)
+    fig_shares(st)
+    fr = census_fracs(ce)
+    fig_census(fr)
+    for k in keys():  # the derived numbers the analysis quotes
+        D = st[k]["D"]["trigger"]
+        rr = np.array(D["random"])
+        print(
+            f"{k}: D(S) {D['S']:+.3f} D(null) {D['null']:+.3f} D(S)-D(null) {D['S'] - D['null']:+.3f} | random D "
+            f"mean {rr.mean():+.3f} sd {rr.std(ddof=1):.3f} max {rr.max():+.3f} | null above {int((D['null'] > rr).sum())}/20"
+        )
+    for n, v in fr.items():
+        print(
+            n,
+            json.dumps(
+                {a: round(b, 4) if isinstance(b, float) else b for a, b in v.items()}
+            ),
+        )
+
+
+if __name__ == "__main__":
+    main()
