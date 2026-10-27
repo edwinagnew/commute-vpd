@@ -291,3 +291,7 @@ bins on [0, 1] and B1 reads the better of the two bin rules (median top edge of 
 control fails, B1 is recorded as unreadable, not as failed; and a second control, C_fit, requires each bin rule's mean
 squared error of the change on the fitted positions to be at most the straight line's at every step, since the line
 recovers about −0.01 at step 300 and C_bin alone would pass a broken bin rule.
+Scoring rule settled after the fixes (lead, 2026-10-27): a piecewise-constant bin rule can lose to a line on fitted
+error for real reasons (a wide equal-count top bin), so B1 is readable when at least one bin rule passes both C_bin
+and C_fit at every step, and it reads the best R over all bin rules, passing or not, so that dropping a rule can never
+help B1 pass.
