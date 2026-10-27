@@ -18,11 +18,7 @@ through a pod-runner; `ln -sfn venv-py313 ~/commute-data/venv`; once a job has r
 `~/commute` (old venv plus PDFs already copied to `~/commute-data/lit_review_pdfs`). Also delete `cluster/sync.sh`
 and the `~/commute` mention in `fleet/roles/lead.md`. Delete this memory when done.
 
-**Status 2026-10-26 19:25 UTC:** build queued as Slurm 32273 (GPUs busy, est. start 20:48); 32287 swaps the link
-atomically afterok. Next session: check the tail of `cluster/logs/commute-venv-swap-32287.out` (FINISHED, readlink →
-venv-py313). If good: tell the user `rm -rf ~/commute` is safe (nothing unique in it, checked 2026-10-26), drop the
-`~/commute` line in `fleet/roles/lead.md` and the `sync.sh` row in `cluster/README.md`, delete this memory.
-`cluster/sync.sh` is already deleted (77fa552).
+**Status 2026-10-27 11:20 UTC:** 32273 timed out at 40 min mid-install (venv-py313 partial, 6.1 GB); the swap never ran, so ~/commute-data/venv still -> ~/commute/.venv and ~/commute must NOT be deleted yet. Rebuild resubmitted by a pod-runner with --time 1:50; it swaps the link only if the log ends clean and a check job imports commute from the clones. Then: tell the user `rm -rf ~/commute` is safe, drop the ~/commute line in fleet/roles/lead.md and the sync.sh row in cluster/README.md, delete this memory. cluster/sync.sh is already deleted (77fa552).
 
 **Why:** the user finds the many venv folders confusing and wants one place; the reminder belongs in memory, not in
 `fleet/check` (user, 2026-10-26).
