@@ -83,6 +83,7 @@ class ArmBConfig:
     checkpoints: tuple[int, ...] = (10, 30, 100, 300)
     grad_clip: float = 1.0
     seed: int = 0
+    optimizer: str = "adam"  # "adam" or "sgd" (plain, no momentum; broad_fragility, 2026-10-27)
 
 
 @dataclass
@@ -212,18 +213,22 @@ def finetune_arm_b(model: Any, train_rows: Tensor, heldout_rows: Tensor, cfg: Ar
     assert n_batches >= cfg.steps, f"need {cfg.steps * cfg.batch} fresh train rows, have {train_rows.shape[0]}"
 
     def loss_fn(step: int) -> tuple[Tensor, dict[str, float]]:
-        toks = train_rows[(step - 1) * cfg.batch : step * cfg.batch].to(device)
-        lg = logits_of(net, toks)
-        ce = F.cross_entropy(lg[:, :-1].reshape(-1, lg.shape[-1]), toks[:, 1:].reshape(-1))
-        return ce, {"ce": float(ce)}
+        return next_token_ce(net, train_rows[(step - 1) * cfg.batch : step * cfg.batch].to(device))
 
     def eval_fn() -> dict[str, float]:
         return eval_arm_b(net, ref, heldout_rows, device)
 
-    return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log)
+    return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log, cfg.optimizer)
 
 
-# ----------------------------------------------------------------------------- LoRA (arm A data)
+def next_token_ce(net: nn.Module, toks: Tensor) -> tuple[Tensor, dict[str, float]]:
+    """Arm B's loss: mean next-token cross-entropy over every position of the rows."""
+    lg = logits_of(net, toks)
+    ce = F.cross_entropy(lg[:, :-1].reshape(-1, lg.shape[-1]), toks[:, 1:].reshape(-1))
+    return ce, {"ce": float(ce)}
+
+
+# ----------------------------------------------------------------------------- LoRA (arms A and B)
 
 
 @dataclass
@@ -276,11 +281,10 @@ def saved_lora_updates(path: Any, all_keys: list[str], W0: dict[str, Tensor], st
     return {s: lora_delta(factors[s], all_keys, W0) for s in steps}
 
 
-def finetune_lora_arm_a(model: Any, train: Windows, heldout: Windows, a_cfg: ArmAConfig, cfg: LoraConfig, device: str,
-                        log: Any = print) -> FinetuneResult:
-    """Arm A's loss, batch, clip and sampling, with a LoRA on cfg.modules; the target weights never change."""
-    ref = copy.deepcopy(model.target_model).eval().requires_grad_(False)
-    net = model.target_model
+def _lora_run(model: Any, cfg: LoraConfig, grad_clip: float, loss_fn: Any, eval_fn: Any, log: Any) -> FinetuneResult:
+    """The LoRA loop of arms A and B: factors on cfg.modules (`lora_factors`), cfg.optimizer at cfg.lr,
+    `loss_fn(step) -> (loss, info)`, the gradient clipped at `grad_clip`, `eval_fn()` and the factors at
+    cfg.checkpoints. The target weights never change."""
     W0 = target_weights(model)
     linears = {k: target_linear(model, k) for k in cfg.modules}
     factors = lora_factors(linears, cfg.rank, cfg.seed)
@@ -288,24 +292,22 @@ def finetune_lora_arm_a(model: Any, train: Windows, heldout: Windows, a_cfg: Arm
     assert cfg.optimizer in ("adam", "sgd"), cfg.optimizer
     opt = (torch.optim.Adam(params, lr=cfg.lr, betas=(0.9, 0.999), weight_decay=0.0) if cfg.optimizer == "adam"
            else torch.optim.SGD(params, lr=cfg.lr, momentum=cfg.momentum, weight_decay=0.0))
-    gen = torch.Generator().manual_seed(a_cfg.seed)
     res = FinetuneResult(deltas={})
     handles = lora_hooks(linears, factors)
     t0 = time.time()
     try:
         for step in range(1, cfg.steps + 1):
             opt.zero_grad(set_to_none=True)
-            idx = torch.randint(0, len(train), (a_cfg.batch,), generator=gen)
-            loss, info = arm_a_loss(net, ref, train.tokens[idx].to(device), a_cfg, train.half)
+            loss, info = loss_fn(step)
             loss.backward()
-            gn = torch.nn.utils.clip_grad_norm_(params, a_cfg.grad_clip)
+            gn = torch.nn.utils.clip_grad_norm_(params, grad_clip)
             opt.step()
             res.log.append({"step": step, "loss": float(loss), "grad_norm": float(gn), **info})
             if step in cfg.checkpoints:
                 d = lora_delta(factors, module_keys(model), W0)
                 res.deltas[step] = d
                 res.factors[step] = {k: (B.detach().float().cpu().clone(), A.detach().float().cpu().clone()) for k, (B, A) in factors.items()}
-                ev = eval_arm_a(net, ref, heldout, a_cfg.o_token, device)
+                ev = eval_fn()
                 ev["rel_norm_max"] = max(relative_norms(d, {k: w.cpu() for k, w in W0.items()}).values())
                 ev["elapsed_s"] = time.time() - t0
                 res.evals[step] = ev
@@ -316,3 +318,31 @@ def finetune_lora_arm_a(model: Any, train: Windows, heldout: Windows, a_cfg: Arm
             h.remove()
     assert all(torch.equal(target_linear(model, k).weight.float(), W0[k]) for k in cfg.modules)
     return res
+
+
+def finetune_lora_arm_a(model: Any, train: Windows, heldout: Windows, a_cfg: ArmAConfig, cfg: LoraConfig, device: str,
+                        log: Any = print) -> FinetuneResult:
+    """Arm A's loss, batch, clip and sampling, with a LoRA on cfg.modules; the target weights never change."""
+    ref = copy.deepcopy(model.target_model).eval().requires_grad_(False)
+    net = model.target_model
+    gen = torch.Generator().manual_seed(a_cfg.seed)
+
+    def loss_fn(step: int) -> tuple[Tensor, dict[str, float]]:
+        idx = torch.randint(0, len(train), (a_cfg.batch,), generator=gen)
+        return arm_a_loss(net, ref, train.tokens[idx].to(device), a_cfg, train.half)
+
+    return _lora_run(model, cfg, a_cfg.grad_clip, loss_fn, lambda: eval_arm_a(net, ref, heldout, a_cfg.o_token, device), log)
+
+
+def finetune_lora_arm_b(model: Any, train_rows: Tensor, heldout_rows: Tensor, cfg: LoraConfig, batch: int, device: str,
+                        grad_clip: float = 1.0, log: Any = print) -> FinetuneResult:
+    """Arm B's loss (`next_token_ce`), batches (`batch` rows per step, each row once, in order), clip and held-out
+    reading, with a LoRA on cfg.modules (added 2026-10-27 for broad_fragility); the target weights never change."""
+    ref = copy.deepcopy(model.target_model).eval().requires_grad_(False)
+    net = model.target_model
+    assert train_rows.shape[0] // batch >= cfg.steps, f"need {cfg.steps * batch} fresh train rows, have {train_rows.shape[0]}"
+
+    def loss_fn(step: int) -> tuple[Tensor, dict[str, float]]:
+        return next_token_ce(net, train_rows[(step - 1) * batch : step * batch].to(device))
+
+    return _lora_run(model, cfg, grad_clip, loss_fn, lambda: eval_arm_b(net, ref, heldout_rows, device), log)
