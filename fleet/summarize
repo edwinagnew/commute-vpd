@@ -1,14 +1,25 @@
 #!/usr/bin/env bash
-# Write a one-sentence summary of what each running agent is doing to FLEET_DATA/agents/<role>/summary, for
-# fleet/check. Run by cron every 15 minutes. It asks Haiku (a few hundred tokens, ~2 s) about the last 40 steps of the
-# agent's newest transcript, and only when the transcript changed since the last summary.
+# For fleet/check, write to FLEET_DATA/agents/<role>/: "summary", one sentence on what each running agent is doing
+# (from the last 40 steps of its transcript, only when the transcript changed), and "title", a name of at most 60
+# characters for its task (only when the task file changed). Run by cron every 15 minutes and by fleet/start. Each is
+# one Haiku call (a few hundred tokens, ~2 s). Problems are not summarised here; agents record them with fleet/problem.
 #   fleet/summarize [ROLE ...]   default: every window in the tmux session
 set -uo pipefail
 source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
 export PATH="$HOME/.local/bin:/usr/bin:$PATH"   # cron's PATH has no claude
 roles=("$@")
 (( ${#roles[@]} )) || mapfile -t roles < <(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null)
+haiku() {  # haiku PROMPT < TEXT -> one line
+  (cd "$FLEET_DATA/logs" && timeout 120 claude -p --model haiku --tools "" --strict-mcp-config \
+    --setting-sources project --no-session-persistence "$1" 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')
+}
 for role in "${roles[@]}"; do
+  task=$(fleet_task_file "$role"); title="$FLEET_DATA/agents/$role/title"
+  if [[ ! -s "$task" ]]; then rm -f "$title"
+  elif [[ ! -f "$title" || "$task" -nt "$title" ]]; then
+    s=$(haiku "Below is the task a human gave an autonomous research agent. Write a title for it of at most 60 characters, in the form \"<line of work>: <goal>\", e.g. \"Re-gating: restate the fixed-shift hypothesis without cues\". Only the title, no quotes." < "$task")
+    [[ -n "${s// }" ]] && { mkdir -p "$(dirname "$title")"; echo "$s" > "$title"; }
+  fi
   t=$(fleet_transcript "$role")
   out="$FLEET_DATA/agents/$role/summary"
   [[ -n "$t" ]] || continue
@@ -21,8 +32,6 @@ for role in "${roles[@]}"; do
         else empty end end' "$t" 2>/dev/null | tail -40)
   [[ -n "$steps" ]] || continue
   mkdir -p "$(dirname "$out")"
-  s=$(cd "$FLEET_DATA/logs" && timeout 120 claude -p --model haiku --tools "" --strict-mcp-config \
-      --setting-sources project --no-session-persistence \
-      "Below is the recent activity of an autonomous research agent (USER lines are its human). In ONE plain sentence of at most 25 words, say what it is doing right now and why. If it hit a failure or says it needs the human (a key, an access, a decision), start with \"PROBLEM:\" and name it instead. No preamble." <<< "$steps" 2>/dev/null | tr '\n' ' ')
-  [[ -n "${s// }" ]] && echo "$(date '+%H:%M') ${s% }" > "$out"
+  s=$(haiku "Below is the recent activity of an autonomous research agent (USER lines are its human). In ONE plain sentence of at most 20 words, starting with a lower-case verb (e.g. \"drafting the E37 plan to ...\"), say what it is doing right now and why. No preamble." <<< "$steps")
+  [[ -n "${s// }" ]] && echo "$(date '+%H:%M') $s" > "$out"
 done

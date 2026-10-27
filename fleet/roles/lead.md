@@ -60,6 +60,10 @@ can make, a result that reverses a filed prediction, a lost pod or job, or spend
 thing as a Blocking card in the log's pending decisions, so it is there whether or not the notification arrives. Nothing
 else notifies; it waits for the morning.
 
+Record the same events, and any failure the user should know about (a lost pod, an overrun, a broken key), with
+`fleet/problem <role> "one line"`; it shows under NEEDS YOU in `fleet/check` until you run `fleet/problem <role> fixed N
+"how, with the commit"`. Close it the moment it is fixed: an open problem that is already fixed reads as unfixed.
+
 ## Morning (on trial since 2026-10-26)
 Before 08:00 (the dev node's clock), or once the night's work is done:
 1. Flush anything still in `docs/research_log/PENDING.md` and republish the log (`docs/research_log/README.md` → How to publish).

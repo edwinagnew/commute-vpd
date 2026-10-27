@@ -1,104 +1,170 @@
 #!/usr/bin/env bash
 # One screen on how the agents are doing. Safe to run any time; it changes nothing.
 #   fleet/check
-# For each agent: its state (working, waiting on its subagents or jobs, idle, waiting for you, interrupted, stopped), when it
-# last did anything, its task and a one-sentence summary (fleet/summarize, every 15 min). Then the Slurm jobs, the
-# commute-* pods on RunPod with their cost, and the latest commits.
+# Top: NEEDS YOU, what only the user can act on (an agent at a prompt, interrupted or stopped; a problem an agent
+# recorded with fleet/problem and has not fixed; a subagent silent for over 2 h; a key or cluster problem). Then per
+# agent: its task's title (fleet/summarize), its status, what it is doing now, its running subagents, problems fixed in
+# the last 2 h. Then the latest commits, then compute: Slurm jobs, the cluster, the commute-* pods with their cost, keys.
 set -uo pipefail
 [[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
-source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
+here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "$here/fleet.sh"
 now=$(date +%s)
-ago() { local m=$(( (now - $1) / 60 )); (( m < 60 )) && echo "${m} min ago" || echo "$(( m / 60 )) h $(( m % 60 )) min ago"; }
+cols=$(tput cols 2>/dev/null || echo 120); (( cols > 160 )) && cols=160
+STALE_MIN=120   # a pod-runner re-arms its wait every 5 min, so a subagent silent this long has died or hung
+ago() {  # ago EPOCH -> "now", "11 min", "2 h 5 min", "11 h"
+  local m=$(( (now - $1) / 60 ))
+  if (( m < 1 )); then echo now; elif (( m < 60 )); then echo "$m min"
+  elif (( m < 600 )); then echo "$(( m / 60 )) h $(( m % 60 )) min"; else echo "$(( m / 60 )) h"; fi
+}
+row() {  # row LABEL TEXT: "  label   text", wrapped under the text
+  fold -s -w $(( cols - 10 )) <<< "$2" | sed "1s/^/  $(printf '%-7s' "$1") /; 2,\$s/^/          /"
+}
+needs=()   # lines for NEEDS YOU, filled while the agents are read
 
-# What the agent's window shows: the lines above its input box, and whether it is mid-turn.
-state() {  # state ROLE TRANSCRIPT
-  local pane body
+# What the agent's window shows, as "short status|what the user should do" (the second part empty when nothing).
+state() {  # state ROLE TRANSCRIPT NSUBS
+  local pane body last wake
   pane=$(tmux capture-pane -p -t "$FLEET_SESSION:$1" 2>/dev/null | grep -v '^\s*$')
   if [[ "$(tmux display -p -t "$FLEET_SESSION:$1" '#{pane_current_command}' 2>/dev/null)" == bash ]] \
      && grep -q 'restarting in 60s' <<< "$(tail -3 <<< "$pane")"; then
-    echo "RESTARTING (Claude exited; back within a minute)"; return
+    echo "restarting (Claude exited; back within a minute)|"; return
   fi
   if grep -qE 'Do you want to (proceed|make this edit|create)|Allow Claude to|trust this folder|❯ 1\. Yes|Enter to select' <<< "$(tail -25 <<< "$pane")"; then
-    echo "WAITING FOR YOU at a prompt or question (tmux attach -t $FLEET_SESSION)"; return
+    echo "waiting for you at a prompt|waiting at a prompt or question: tmux attach -t $FLEET_SESSION"; return
   fi
-  grep -q 'esc to interrupt' <<< "$(tail -3 <<< "$pane")" && { echo "working"; return; }
+  grep -q 'esc to interrupt' <<< "$(tail -3 <<< "$pane")" && { echo "working|"; return; }
   # Idle. Interrupted if the last thing above the input box is the interruption notice.
   body=$(sed '/^─/,$d' <<< "$pane" | grep -vE '^\s*(⎿  Tip:|›)' | tail -4)
   if grep -q 'Interrupted' <<< "$body"; then
-    echo "INTERRUPTED: type 'carry on' in its window (tmux attach -t $FLEET_SESSION, leave with Ctrl-b d)"; return
+    echo "interrupted|interrupted: type 'carry on' in its window (tmux attach -t $FLEET_SESSION, leave with Ctrl-b d)"; return
   fi
-  # Between turns with a ScheduleWakeup still in the future: say what it waits on. A finishing subagent or background
-  # command wakes it at once; the check-in is the backstop for a stuck subagent or a frozen pod.
-  local last wake
+  # Between turns with a ScheduleWakeup still in the future. A finishing subagent or background command wakes it at
+  # once; the check-in is the backstop for a stuck subagent or a frozen pod.
   last=$(jq -r 'select(.type == "assistant") | .timestamp as $t | .message.content[]?
     | select(.type == "tool_use" and .name == "ScheduleWakeup") | "\($t) \(.input.delaySeconds // 0)"' "$2" 2>/dev/null | tail -1)
   if [[ -n "$last" ]]; then
     wake=$(( $(date -d "${last% *}" +%s) + ${last#* } ))
     if (( wake > now - 120 )); then
-      if [[ -n "$subs" ]]; then echo "waiting on its subagents (below); next check-in $(date -d @"$wake" +%H:%M)"
-      elif [[ -n "$jobs" ]]; then echo "waiting on its Slurm jobs (below); next check-in $(date -d @"$wake" +%H:%M)"
-      else echo "IDLE: nothing running for it to wait on; next check-in $(date -d @"$wake" +%H:%M)"; fi
+      local next; next="next check-in $(date -d @"$wake" +%H:%M)"
+      if (( $3 )); then echo "waiting on $3 agent$( (( $3 > 1 )) && echo s) · $next|"
+      elif [[ -n "$jobs" ]]; then echo "waiting on Slurm jobs · $next|"
+      else echo "idle, nothing running for it · $next|"; fi
       return
     fi
   fi
-  echo "STOPPED: idle with no wake-up scheduled (tmux attach -t $FLEET_SESSION and tell it to carry on)"
+  echo "stopped|stopped: idle with no wake-up scheduled; tmux attach -t $FLEET_SESSION and tell it to carry on"
 }
 
 windows=$(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null)
-[[ -n "$windows" ]] || echo "agents: NONE RUNNING (start with fleet/start \"task\")"
-jobs=$(squeue -u "$USER" -h -o '   %i %j %T for %M (limit %l) %R' 2>/dev/null)
+[[ -n "$windows" ]] || needs+=("no agents running (start one with fleet/start \"task\")")
+jobs=$(squeue -u "$USER" -h -o '%i %j %T for %M (limit %l) %R' 2>/dev/null)
+blocks=""
 for role in $windows; do
   t=$(fleet_transcript "$role")
+  adir="$FLEET_DATA/agents/$role"
   # Its subagents still running: Claude Code marks a subagent's meta.json "finished": true when it ends.
-  subs=""
+  subs=""; nsubs=0
   for m in "${t%.jsonl}"/subagents/*.meta.json; do
     [[ -f "$m" && "$(jq -r .finished "$m")" != true ]] || continue
-    subs+="   subagent running: $(jq -r '"\(.description) (\(.agentType))"' "$m"), last wrote $(ago "$(stat -c %Y "${m%.meta.json}.jsonl")")"$'\n'
+    nsubs=$(( nsubs + 1 ))
+    d=$(jq -r .description "$m"); (( ${#d} > 34 )) && d="${d:0:33}…"
+    d+=" "; while (( ${#d} < 37 )); do d+="·"; done
+    w=$(stat -c %Y "${m%.meta.json}.jsonl" 2>/dev/null || stat -c %Y "$m")
+    line="$d $(ago "$w")"
+    if (( now - w > STALE_MIN * 60 )); then
+      line+="  ⚠ stale"
+      needs+=("$role: its agent \"$(jq -r .description "$m")\" has been silent $(ago "$w"); probably dead. If it ran a pod, check the pod is not idling.")
+    fi
+    subs+="$line"$'\n'
   done
-  echo "== $role: $(state "$role" "$t")"
-  task=$(head -c 300 "$(fleet_task_file "$role")" 2>/dev/null)
-  echo "   task: ${task:-none (analysis of existing results only)}"
-  printf '%s' "$subs"
+
+  st=$(state "$role" "$t" "$nsubs")
+  [[ -n "${st#*|}" ]] && needs+=("$role: ${st#*|}")
+  status=${st%%|*}
   # The agent's last step (a tool call or message), not the file's time: bookkeeping lines also touch the file.
+  step=""
   if [[ -n "$t" ]]; then
     step=$(jq -r 'select(.type == "assistant" and .timestamp) | .timestamp as $ts | .message.content[]?
       | if .type == "tool_use" then "\($ts)\t\(.name): \((.input.description // .input.command // .input.file_path // .input.pattern // .input.prompt // "") | tostring | .[0:90])"
         elif .type == "text" then "\($ts)\twrote: \(.text | gsub("\n"; " ") | .[0:90])" else empty end' "$t" 2>/dev/null | tail -1)
-    [[ -n "$step" ]] && echo "   last step $(ago "$(date -d "${step%%$'\t'*}" +%s)"): ${step#*$'\t'}"
+    if [[ "$status" == working && -n "$step" ]]; then
+      a=$(ago "$(date -d "${step%%$'\t'*}" +%s)"); status+=" · last step ${a/#now/just now}"; [[ "$a" == now ]] || status+=" ago"
+    fi
   fi
+
+  title=$(cat "$adir/title" 2>/dev/null)
+  if [[ -z "$title" ]]; then
+    title=$(head -1 "$(fleet_task_file "$role")" 2>/dev/null)
+    (( ${#title} > 60 )) && title="${title:0:59}…"
+  fi
+  blocks+=$'\n'"$(printf '%-8s%s' "$role" "${title:-no task: analysis of existing results only}")"$'\n'
+  blocks+="$(row status "$status")"$'\n'
+  if [[ -s "$adir/summary" ]]; then
+    blocks+="$(row now "$(cut -d' ' -f2- "$adir/summary") ($(cut -d' ' -f1 "$adir/summary"))")"$'\n'
+  elif [[ -n "$step" ]]; then
+    blocks+="$(row now "${step#*$'\t'}")"$'\n'
+  fi
+  [[ -n "$subs" ]] && blocks+="$(row agents "${subs%$'\n'}")"$'\n'
+
+  # Problems the agent recorded (fleet/problem): open ones need the user, fixed ones show for 2 h.
+  if [[ -s "$adir/problems" ]]; then
+    while IFS=$'\t' read -r n opened fixed what how; do
+      if [[ "$fixed" == - ]]; then needs+=("$role: $what (since $(date -d @"$opened" +%H:%M))")
+      elif (( now - fixed < 7200 )); then blocks+="$(row fixed "$what → ${how:-fixed} ($(date -d @"$fixed" +%H:%M))")"$'\n'
+      fi
+    done < "$adir/problems"
+  fi
+
   started=$(jq -r --arg n "$FLEET_PREFIX-$role" 'select(.name == $n) | .startedAt / 1000 | floor' \
     "$HOME"/.claude/sessions/*.json 2>/dev/null | sort -n | tail -1)
   (( $(stat -c %Y "$FLEET_SECRETS") > ${started:-0} )) \
-    && echo "   KEYS CHANGED since it started at $(date -d @"${started:-0}" +%H:%M): it still has the old ones until its next restart"
-  r="$FLEET_DATA/agents/$role/restart-requested"
-  [[ -f "$r" ]] && echo "   restart pending ($(cat "$r")); it restarts once the agent reaches a safe point"
-  s="$FLEET_DATA/agents/$role/summary"
-  [[ -s "$s" ]] && echo "   $(cut -d' ' -f1 "$s"): $(cut -d' ' -f2- "$s")"
+    && blocks+="$(row note "keys changed since it started at $(date -d @"${started:-0}" +%H:%M); it has the old ones until its next restart")"$'\n'
+  [[ -f "$adir/restart-requested" ]] \
+    && blocks+="$(row note "restart pending ($(cat "$adir/restart-requested")); it restarts at its next safe point")"$'\n'
 done
 
-"$(dirname "$(readlink -f "$0")")/check-keys" | cut -d' ' -f2-
-
-echo "Slurm jobs:${jobs:+$'\n'}${jobs:- none}"
+# Compute, read before printing so its problems reach NEEDS YOU.
+keys=$("$here/check-keys" | cut -d' ' -f2-)
+[[ "$keys" == "keys: ok" ]] || while read -r k; do needs+=("${k#keys: PROBLEM: }"); done <<< "$keys"
 # A drained or down node takes no new jobs (fleet/cpu-run, cluster runs) until an admin resumes it.
-sinfo -h -p compute -N -o '%N|%T|%E|%H' 2>/dev/null | sort -u | while IFS='|' read -r node st reason since; do
+cluster=()
+while IFS='|' read -r node st reason since; do
   case "$st" in
-    idle|mixed|allocated|completing) echo "cluster: $node $st, taking jobs" ;;
-    *) echo "cluster: $node ${st^^}, NOT TAKING JOBS since ${since/T/ } ($reason); ask a MATS admin to resume it" ;;
+    idle|mixed|allocated|completing) cluster+=("$node taking jobs") ;;
+    *) cluster+=("$node ${st^^}"); needs+=("cluster: $node ${st^^} since ${since/T/ } ($reason); ask a MATS admin to resume it") ;;
   esac
-done
-
+done < <(sinfo -h -p compute -N -o '%N|%T|%E|%H' 2>/dev/null | sort -u)
 # Pods from the RunPod API; the key is the shared MATS account's, so keep only this project's pods.
 key=${RUNPOD_API_KEY:-$(set -a; source "$FLEET_SECRETS" 2>/dev/null; echo "${RUNPOD_API_KEY:-}")}
+pods="?"
 if [[ -n "$key" ]]; then
   pods=$(curl -s -m 15 -H "Authorization: Bearer $key" -H 'Content-Type: application/json' https://api.runpod.io/graphql \
     -d '{"query":"query { myself { pods { name desiredStatus costPerHr machine { gpuDisplayName } runtime { uptimeInSeconds } } } }"}' \
     | jq -r '.data.myself.pods[]? | select(.name | startswith("'"$FLEET_PREFIX"'-")) | select(.desiredStatus != "TERMINATED")
-      | "   \(.name) \(.desiredStatus) \(.machine.gpuDisplayName // "?") $\(.costPerHr)/h, up \((.runtime.uptimeInSeconds // 0) / 60 | floor) min"' 2>/dev/null)
-  echo "RunPod pods:${pods:+$'\n'}${pods:- none}"
-else
-  echo "RunPod pods: unknown (no key in $FLEET_SECRETS)"
+      | "\(.name)  \(.desiredStatus)  \(.machine.gpuDisplayName // "?")  $\(.costPerHr)/h, up \((.runtime.uptimeInSeconds // 0) / 60 | floor) min"' 2>/dev/null)
 fi
 unset key
 
-echo "latest commits:"
-git -C "$FLEET_AGENTS/lead" log --format='   %ad %s' --date=format:'%a %H:%M' -3 2>/dev/null | cut -c1-140
+echo "CHECK  $(date '+%a %d %b %H:%M')"
+if (( ${#needs[@]} )); then
+  echo; echo "NEEDS YOU"
+  for n in "${needs[@]}"; do fold -s -w $(( cols - 4 )) <<< "$n" | sed '1s/^/  ! /; 2,$s/^/    /'; done
+fi
+printf '%s' "$blocks"
+
+echo; echo "COMMITS"
+git -C "$FLEET_AGENTS/lead" log --no-merges --format='  %ad  %s' --date=format:'%a %H:%M' -3 2>/dev/null | cut -c1-$(( cols - 1 ))
+
+# One line when nothing runs; a line per pod and per job otherwise.
+echo
+parts=()
+[[ "$pods" == "?" ]] && parts+=("RunPod: unknown (no key in $FLEET_SECRETS)")
+[[ -z "$pods" ]] && parts+=("RunPod: no pods")
+[[ -z "$jobs" ]] && parts+=("Slurm: none")
+parts+=("cluster: ${cluster[*]:-unknown}" "${keys/: / }")
+summary=""; for p in "${parts[@]}"; do summary+="${summary:+ · }$p"; done
+echo "COMPUTE  $summary"
+[[ -n "$pods" && "$pods" != "?" ]] && sed 's/^/  pod  /' <<< "$pods"
+[[ -n "$jobs" ]] && sed 's/^/  job  /' <<< "$jobs"
+exit 0

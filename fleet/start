@@ -22,4 +22,5 @@ else
   : > "$task"; echo "task for $role: none (analysis of existing results only)"
 fi
 "$here/up" "$role"
+"$here/summarize" "$role" &> /dev/null &   # the task's title for fleet/check, without waiting for cron
 echo "Started. Check on it with: fleet/check    Watch it live: tmux attach -t $FLEET_SESSION (leave with Ctrl-b d)"

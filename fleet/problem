@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# An agent's open problems, for fleet/check: an open one shows under NEEDS YOU until the agent marks it fixed; a fixed
+# one shows under its agent for two hours, then drops. Replaces the summarizer's "PROBLEM:" sentence, which stayed on
+# screen after the problem was fixed (2026-10-27).
+#   fleet/problem ROLE "what is wrong, in one line"   open one; prints its number
+#   fleet/problem ROLE fixed N "how, with the commit"  mark number N fixed
+#   fleet/problem ROLE                                 list them
+# File: FLEET_DATA/agents/ROLE/problems, one tab-separated line per problem: N, opened (epoch), fixed (epoch or -),
+# what, how.
+set -euo pipefail
+[[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
+role=${1:?usage: fleet/problem ROLE ["what" | fixed N "how"]}
+f="$FLEET_DATA/agents/$role/problems"
+mkdir -p "$(dirname "$f")"; touch "$f"
+if (( $# == 1 )); then
+  awk -F'\t' '{ printf "%s  %s  %s%s\n", $1, ($3 == "-" ? "OPEN " : "fixed"), $4, ($5 != "" ? "  -> " $5 : "") }' "$f"
+elif [[ "$2" == fixed ]]; then
+  n=${3:?usage: fleet/problem ROLE fixed N "how"}; how=${4:?usage: fleet/problem ROLE fixed N "how"}
+  grep -q "^$n	" "$f" || { echo "no problem $n for $role" >&2; exit 1; }
+  awk -F'\t' -v OFS='\t' -v n="$n" -v t="$(date +%s)" -v how="${how//$'\t'/ }" \
+    '$1 == n { $3 = t; $5 = how } { print }' "$f" > "$f.new" && mv "$f.new" "$f"
+else
+  n=$(( $(cut -f1 "$f" | sort -n | tail -1) + 1 ))
+  printf '%s\t%s\t-\t%s\t\n' "$n" "$(date +%s)" "${2//$'\t'/ }" >> "$f"
+  echo "$n"
+fi
