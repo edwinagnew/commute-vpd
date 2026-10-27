@@ -138,3 +138,138 @@ this task; the larger model.
 
 **Hand-off.** The lead reviews this plan and `run.py`, runs the fresh-agent review of the new code, files the
 predictions with `run.py --predictions`, and hands the run to `/pod-runner`.
+
+## Amendment 1 (2026-10-27): train longer, and two other fixes, read under the paper's check
+
+*Design agent for the lead, after the user chose option (a) of card `decision-broad-copy` and asked for other fixes
+besides more training (`decisions.md`, last two rows). Not yet built: code, predictions file and review follow.*
+
+**In plain words.** E37's decomposition after teacher training (below, "the trained decomposition") kept all of the
+fine-tuned model's gain on lowercase text but read 2.20 times the original decomposition under the paper's adversarial
+check, and it was still learning. This run trains it four times longer, reading the check along the way, and tries two
+other fixes in the same job: adding VPD's own masked-reconstruction losses to the training, and starting from the
+adjoint split, which passes. One H100 hour, about $4.
+
+**The request in the Terms' words.** Teacher of E37 (E36's lowercase fine-tune, W₀ + δW, regenerated). Run **teacher
+training** (component training of the alive (U, V), loss KL(teacher ‖ student), Γ and Δ frozen) on E37's 2,400
+lowercase rows past step 1,000, and read the Pile harness (the paper's check: `calc_multibatch_pgd_masked_recon_loss`,
+one random start, seed 0, 20 steps of 0.1; fixed by the user, `decisions.md`) at several steps. Beside it, two variants
+of teacher training on the same rows, each read the same way.
+
+### Design check
+
+- **Goal.** Q1, the weak version under reading A, for a broad update: whether teacher training, the commute line's
+  map for the larger model, gives a faithful decomposition when the update acts at every position.
+- **Nearest tried.** E37 (fails at step 1,000, still learning); E34 and amendments (trigger teachers, all pass); E15
+  (Γ refit: its W₀ control drifted off the floor twice, 1 → 2.6 and 7.8). Nothing in `TRIED.md` or `backlog.md` has
+  trained the subcomponents against VPD's masked losses or warm-started teacher training.
+- **Patch or step.** A patch on E37, and the step the larger-model run waits on.
+- **Decisions.** Keeps Γ frozen, Δ fixed, reading A, the paper's check as fixed on 2026-10-27. Arm 2 changes teacher
+  training's loss; adopting it for the larger model would be the user's call (tree below). Covered by the user's
+  2026-10-27 decision to try other fixes in this run.
+- **What changes what we do.** Arm 1 passing keeps plain teacher training for the larger model; arm 2 or 3 passing
+  changes the recipe; nothing passing sends card option (d) or the anchor question back to the user.
+- **Control first.** C1 (W₀ under the harness, three seeds, known floor 0.0748) alone, stopping on a miss; then C2,
+  C3 as in E37. Arm 1's step-1,000 read reproduces E37. Arm 2 has its own control, M0, run before it.
+
+### Arms, in run order (all on the lowercase rows, Adam 1e-5, batch 8, batch order 0)
+
+1. **Longer.** E37's recipe to step 4,000; read at 1,000, 2,000, 4,000 (each doubling). *Could lower the reading:*
+   E37's training KL still fell 36% over its second 500 steps, and the filed tree calls that under-trained. *What
+   differs from E37's end state:* nothing in the recipe. Same rows, seed and batch draws (the draw generator is
+   untouched by the extra save steps), constant learning rate, so steps 1,001 on continue E37's optimizer state with no
+   schedule position or moment reset. Only kernel non-determinism differs: the step-1,000 read is the check (R1).
+2. **Masked losses** ("masked teacher training"). The teacher KL plus VPD's own two reconstruction losses at their
+   released coefficients (`StochasticReconSubsetLoss` 0.5: masks drawn from Γ's importances as g + (1 − g)·u;
+   `PersistentPGDReconLoss` 0.5: a persistent adversary over the same mask range), read through param-decomp's
+   `compute_losses` exactly as `gamma.Refit.step` does, with U, V trainable instead of Γ. Their target is the student's
+   own unmasked output, as in VPD. 2,000 steps after 50 warm-up steps at learning rate 0 (E15 protocol v2: the
+   persistent adversary is flat by step 50); read at 1,000 and 2,000. *Could lower the reading:* these losses penalise
+   exactly what the check probes, the output's sensitivity to turning down subcomponents Γ marks unimportant, while the
+   teacher KL holds the behaviour; they are what makes the released decomposition pass. *Differs from arm 1:* U, V are
+   trained as the component model's own parameters (gradients zeroed on dead columns), and the student's forward runs
+   through the components with every mask at 1 and Δ₀, not through hooks: the same function. Gate G2: its step-1 teacher
+   KL equals arm 1's (0.290) within 1e-3. The masked losses read lowercase rows; the check reads plain Pile rows.
+3. **Adjoint start.** Teacher training from the scaled adjoint split's (U′, V′) (E37: keeps 0.80 of the gain, passes
+   at 1.05, damage 0.05) instead of W₀'s, 2,000 steps; read at 0, 1,000, 2,000. *Could lower the reading:* if the
+   failure is where teacher training puts the change, a start inside the passing region may end at a placement that
+   passes. If it ends where arm 1 does, the failure goes with the teacher's change on ordinary text, which the E37
+   analysis named and did not test. *Differs from the adjoint state:* nothing at step 0 (read reproduces E37's); Adam's
+   moments start at zero, as intended.
+
+**M0, arm 2's control, run alone before arm 2:** arm 2's recipe with the teacher set to W₀ (δW = 0), 1,000 steps. The
+teacher KL then only holds the model in place, so M0 shows what the masked losses do on their own. Early stop: damage
+above 0.02 nats or the check above 1.40 means the recipe drifts on its own, as E15's did; retry once with both
+coefficients at 0.05, then skip arm 2 if it still misses.
+
+**Not chosen.** *Small offsets* (decay toward the start, lower lr): the trained decomposition is already 0.75 of the
+fine-tuned model's size, Adam's verdicts tracked damage elsewhere rather than size (E21), and a lower rate only slows
+arm 1. *Mixing plain Pile rows:* the trained decomposition already reproduces the fine-tuned model's change on plain
+Pile (0.996 of its damage) and the plain-text arm's 1.74 lies inside the batch-order spread. *Γ refit* (option d, about
+$9 per state): its W₀ control has not yet held the floor, so a reading would not be interpretable; it stays the next
+step if this run passes nothing.
+
+### Numbers (each state; `run.read` with the budget adversary off)
+
+| number | definition | W₀ | do-nothing | control | arms, expected |
+|---|---|---|---|---|---|
+| s, behaviour kept | (L_state − L_W₀)/(L_teacher − L_W₀) on 64 held-out lowercase rows | 0 | 1 | R1: 0.998 ± 0.003; arm 3 step 0: 0.804 | ≥ 0.9 |
+| damage | KL(W₀ ‖ state) on 64 plain Pile val rows, nats | 0 | 0.235 | M0 ≤ 0.02 | about 0.23; arm 3 rises from 0.05 |
+| check ratio | harness PGD KL over C1's W₀ seed 0; pass ≤ 1.5/(1+f), fail ≥ 1.5(1+f), f from C1 (1.40, 1.61) | 1 | not read (4.87 in E37) | R1: 2.20 ± 15%; M0 0.7–1.4; arm 3 step 0: 1.05 | see P1–P3 |
+| stochastic ratio | the harness's stochastic KL, in the filed verdict with the check ratio | 1 | not read | — | about 1.1; arm 2 lower |
+| train KL | mean teacher KL over the 50 steps before each read | — | — | arm 1 at 1,000: 0.0110 | falling; "flat" below 10% per doubling |
+
+### Predictions (to be filed in `results/amend1_predictions.json`; the run refuses without it)
+
+Noise floor: W₀'s three-seed spread (0.075) and E37's batch-order spread of the check ratio, 14%.
+
+- **P1** arm 1 at step 4,000 still fails: check ratio ≥ 1.5(1+f). Medium-low. Blind to other adversaries (out of scope).
+  Control: R1.
+- **P2** arm 2 at step 2,000 passes with the behaviour: s ≥ 0.9 and verdict "pass" on the check and stochastic ratios.
+  Low-medium. Partly trains on what the stochastic ratio reads; the check ratio is also reported over M0's.
+- **P3** arm 3 ends where arm 1 does: at step 2,000, s ≥ 0.9 and its check ratio within 25% of arm 1's at step 2,000.
+  Medium-low. Control: its step-0 read reproduces E37's adjoint state.
+- Stops: C1–C3 as E37; G2 and M0 stop arm 2 only. R1 is reported, not a stop: arm 1's later reads compare with its own
+  step-1,000 read. A "solution" below means s ≥ 0.9 and verdict "pass".
+
+### Decision tree
+
+- **C1–C3 fail:** stop, nothing scored. **M0 or G2 fails:** arms 1 and 3 stand; arm 2 is reported as not run.
+- **Arm 1 is a solution at 4,000:** under-training explains E37; the larger model keeps plain teacher training, trained
+  until the training KL falls under 10% per doubling and read at each doubling.
+- **Arm 1 not a solution, training KL still falling ≥ 10% from 2,000 to 4,000 and the ratio falling:** under-training
+  is not ruled out; extend arm 1 to 16,000 steps (about $1.5), this tree's branch.
+- **Arm 1 not a solution and flat:** arm 2 a solution → card to the user: masked teacher training as the map for the
+  larger model, with M0's ratio beside it (if M0 reads under 0.85, part of the margin is the losses lowering the check
+  on any decomposition). Arm 3 a solution → card: the adjoint start as the recipe. Neither → the failure goes with the
+  fine-tuned model's change on ordinary text (P3 says whether the start mattered); card to the user with option (d)
+  and the anchor question for broad updates.
+
+### Code, memory, time, cost, routing
+
+- **Code.** `experiments/teacher_spread/amend1.py` (~200 lines), importing `run.Job` (load, C1, rows, teacher),
+  `run.read` (budget off) and `run.adjoint`. Shared: `row_copy.copy_on_rows` and `component_training.train` as they
+  are, with two small additions: a `save_steps` tuple for `copy_on_rows` (arm 1), and an `init` offsets argument for
+  `component_training.Offsets`/`train` (arm 3, ~6 lines). New: `src/commute/masked_teacher.py` (~100 lines, arm 2 and
+  M0), with the loss-config and persistent-adversary set-up moved out of `gamma.Refit.__init__` into one helper both
+  call; KL through `teacher.kl_exact_zero`. Fresh-Opus review of the diff before the run (Codex out of quota).
+- **Memory.** E37 peaked at 30.5 GB. Arm 2 adds Γ's forward and the persistent adversary's per-position sources at
+  batch 8 (8 × 512 × 38,936 floats, ~0.6 GB, with its optimizer ~2 GB): 40–50 GB estimated.
+- **Time.** From E37's log: load and C1 3.5 min; teacher and the W₀/do-nothing reads 1 min; arm 1 6.5 min training
+  plus three reads at ~1 min; arm 3 about 6.5 min with its reads. Arm 2's step time is unknown (Γ's forward plus two
+  masked forwards per step), estimated 0.3–0.6 s: M0 and arm 2 together 18–33 min with reads. The runner times M0's
+  first 50 steps; if M0 plus arm 2 would pass 40 min, arm 2 stops at 1,000 steps. Total 40–55 min, plus about 7 min
+  of set-up.
+- **Cost.** E37's pod ran at about $4/h: $3–4.5, up to $5.5 with M0's retry. Runner's cap $8.
+- **Routing.** Over 30 min: RunPod "NVIDIA H100 80GB HBM3" directly, via `/pod-runner` (pod
+  `commute-teacher_spread-a1`); other H100s have no known floor and stop at C1. Inputs as E37
+  (`transport_test/results/large/{alive,windows}.pt`). Download `results/amend1.json` after every stage and the four
+  saved offset files as written (arm 1 at 1,000 and 4,000, arms 2 and 3 at their ends, bf16, 60 MB each); before
+  terminating, check the JSON's sha256 on both sides. Every number also goes to the log.
+
+### Not run
+
+A second fine-tune seed or batch order; the plain-text arm longer; the check at other starts or longer (out of scope,
+2026-10-27); a coefficient sweep for arm 2 beyond M0's one retry; arm 2 with Γ trained (E15); arms 2 and 3 combined;
+decay toward the start; mixed text; the budget adversary; the anchor rule; the larger model. After the run, on CPU:
+the cosine between arm 1's step-1,000 offsets and E37's saved ones (expected ≥ 0.99).
