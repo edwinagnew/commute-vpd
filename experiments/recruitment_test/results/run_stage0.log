@@ -1,0 +1,24 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+13:41:38 [start] stages [0] on NVIDIA GeForce RTX 4090; cfg Cfg(tasks=('emoticon', 'r1_t534_v369', 'r2_t359_v816'), seeds=(0, 1), null_token=3944, lr=3e-05, steps=10, thr=0.3, n_random=20, top_k=(25, 50, 100, 200, 400), t_tol=0.02, p_tol=0.01, jaccard_min=0.95, size_tol=0.05, empty_tol=1e-05, path_tol=0.001, busy_kl_min=1.0, busy_min_n=100, min_gain=1.0, pile=('val', 0, 2000), min_nat=200, n_census_random=5, trigger_share=0.1, census_ratio=3.0)
+13:41:39 [stage0 emoticon] T0 -5.0217 (E18 -5.0229) | ok
+/root/work/src/commute/finetune.py:114: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+13:41:40 [ft] step 1: loss 5.3360 ce_o 5.3360 kl_other 0.0000 p_o 0.0113
+13:41:40 [ft] step 10: loss 0.0742 ce_o 0.0049 kl_other 0.0693 p_o 0.9954
+13:41:40 [ft] checkpoint 10: p_o 0.9993 ce_o 0.0007 kl_other 0.0531 n 73 rel_norm_max 0.0113 elapsed_s 0.8266
+13:41:41 [stage0 emoticon/s0] T1 8.4757 (E18 8.4070) | P 0.9993 (E18 0.9993) | kl_other 0.0531 | |S| 210 saved 210 J 1.0000 | FAIL
+13:41:41 [ft] step 1: loss 4.9326 ce_o 4.9326 kl_other 0.0000 p_o 0.0140
+13:41:41 [ft] step 10: loss 0.0954 ce_o 0.0006 kl_other 0.0948 p_o 0.9994
+13:41:42 [ft] checkpoint 10: p_o 0.9995 ce_o 0.0005 kl_other 0.0661 n 73 rel_norm_max 0.0109 elapsed_s 0.5639
+13:41:42 [stage0 emoticon/s1] T1 8.5439 (E18 8.6684) | P 0.9995 (E18 0.9995) | kl_other 0.0661 | |S| 211 saved 213 J 0.9906 | FAIL
+13:41:43 [ft] step 1: loss 6.6851 ce_o 6.6851 kl_other 0.0000 p_o 0.0060
+13:41:43 [ft] step 10: loss 0.0799 ce_o 0.0094 kl_other 0.0705 p_o 0.9910
+13:41:43 [ft] checkpoint 10: p_o 0.9980 ce_o 0.0020 kl_other 0.0597 n 73 rel_norm_max 0.0105 elapsed_s 0.5358
+13:41:44 [stage0 emoticon/null] T1 nan (E18 nan) | P 0.9980 (E18 0.9981) | kl_other 0.0597 | |S| 128 saved 130 J 0.9846 | ok
+13:41:44 [stage0 emoticon] empty removal diffs [0.0, 0.0] restore 0.00e+00 | busy |210| from W0: KL trigger 11.6761 kl_other 9.9243 lo -12.4248 (T0 -5.0217) | path diffs T0 0.00e+00 T1 [0.0, 0.0] | ok
+13:41:44 [stage0] FAIL: stop and fix
+=== FINISHED (exit 1) — results in /root/work/experiments/recruitment_test/results/ (stage*.json, run_stage0.log) ===

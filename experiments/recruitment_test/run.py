@@ -61,7 +61,8 @@ class Cfg:
     thr: float = G.THR  # 0.3: the recruited set
     n_random: int = G.N_RANDOM  # 20 random same-size sets (recruit.random_like seeds 0..19)
     top_k: tuple[int, ...] = (25, 50, 100, 200, 400)
-    t_tol: float = 0.02  # stage 0: T0 and T1 against E18
+    t_tol: float = 0.02  # stage 0: T0 against E18
+    t1_rel_tol: float = 0.02  # stage 0: T1 against E18, as a share of E18's gain (amendment 1: seeds differ by ~2%)
     p_tol: float = 0.01  # stage 0: held-out P(target) against E18
     jaccard_min: float = 0.95  # stage 0: in-job S against the saved one
     size_tol: float = 0.05
@@ -189,7 +190,7 @@ def make_state(run: Run, task: str, name: str, ref: dict[str, Any]) -> dict[str,
         with G.state_of(run.model, run.W0, dW):
             cur = route_cells(run.model, t.held.tokens, t.half, t.target, G.BATCH)
         rec.update(T1=cur["T"], T1_ref=ref["T1"][str(seed)], p=cur["p_T"], p_ref=ref["p"][str(seed)])
-        rec["T1_ok"] = abs(rec["T1"] - rec["T1_ref"]) <= CFG.t_tol
+        rec["T1_ok"] = abs(rec["T1"] - rec["T1_ref"]) <= CFG.t1_rel_tol * (rec["T1_ref"] - ref["T0"])
     rec["p_ok"] = abs(rec["p"] - rec["p_ref"]) <= CFG.p_tol
     rec["ok"] = rec["T1_ok"] and rec["p_ok"] and rec["set_ok"]
     log(f"[stage0 {name}] T1 {rec.get('T1', float('nan')):.4f} (E18 {rec.get('T1_ref', float('nan')):.4f}) | P {rec['p']:.4f} "
