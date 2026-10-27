@@ -1,0 +1,152 @@
+{
+ "plan": "E39 Amendment 1: Test 3's SGD arm on the grid {0.003, 0.01, 0.03, 0.1}, after E39's {0.3, 1, 3} all diverged (gains -0.14, -2.38, -3.58). Filed before any run; never edited after.",
+ "definitions": {
+  "check": "the check ratio: Pile harness PGD KL (one random start, adversary seed 0, 20 steps of 0.1, 256 val rows) over W0's at seed 0 in the same job; fixed lines: pass <= 1.4, fail >= 1.61",
+  "s": "behaviour kept, (logp - logp_W0) / (logp_teacher - logp_W0), mean next-token log-probability on 64 held-out lowercase rows; the teacher is the fine-tune the state was trained from (Adam for tests 1-2)",
+  "share of excess removed": "(r_trained - r_revert) / (r_trained - 1), r the check ratio, r_trained this job's",
+  "stable rank": "||dW||_F^2 / ||dW||_2^2 per matrix, mean over the 24 matrices",
+  "random move": "per matrix, Gaussian noise on the alive U and V, each side's noise rescaled to that side's Frobenius norm, one scale per matrix solved so ||U'V'^T - UV^T|| = the multiple times the trained state's ||delta-W|| (so the relative change matches); Delta fixed",
+  "rate rule": "per arm, among grid rates that did not diverge (a non-finite training loss or a held-out gain not above 0) the one whose held-out gain is nearest the Adam fine-tune's in this job; none: that arm's P5-P7 are not scored",
+  "grid": "SGD rates [0.003, 0.01, 0.03, 0.1], otherwise E39's Test 3 recipe"
+ },
+ "controls": {
+  "stage0_i": "first, alone: W0's PGD spread over seeds 0-2 <= 0.1 and seed 0's PGD KL per block within 1% of (0.6794, 0.7182); else stop",
+  "stage0_ii": "E37's Adam fine-tune regenerated: held-out gain within 0.005 of 0.1301; E37's teacher training retrained in-job (amend1's arm 1 to step 1000) and read: check within 3% of 2.2011 and s within 0.01 of 0.998; else stop"
+ },
+ "expected": {
+  "stage0": "spread about 0.075, blocks 0.6794 and 0.7182, Adam gain 0.1300, trained check 2.2011, s 0.998 (E39's H100)",
+  "grid": "gain rises with the rate up to the divergence edge (lr 0.3 read -0.14); the chosen rate 0.03 or 0.1 (E39's lr 0.3 moved the weights 0.17 relative, Adam 0.049)",
+  "stable rank": "SGD below Adam's 28.5 (P5)",
+  "do-nothing": "check >= 1.61 (P7; Adam's read 4.87 in E37)",
+  "adjoint": "check about 1.0-1.2 (Adam's scaled adjoint split read 1.05 in E37), s below 1",
+  "teacher training": "check >= 1.61 (P6; Adam's 2.20)"
+ },
+ "predictions": [
+  {
+   "id": "P5_sgd",
+   "rule": "stable rank (mean over matrices) of the SGD and of the LoRA fine-tune each below the Adam fine-tune's",
+   "expected": "yes; the less diffuse premise",
+   "confidence": "high",
+   "blind_to": "where the update acts in input space",
+   "positive_control": "LoRA <= 8 by construction",
+   "noise_floor": "W0's spread over adversary seeds 0-2 (0.075 on E37's H100, read again in stage 0); E37's batch-order spread of the check ratio, 14% (2.20 and 1.88); a share of excess removed is a difference of two such ratios, so shares under 0.2 apart are not separated",
+   "scope": "the SGD fine-tune only; E39 scored the LoRA half",
+   "copied_from": "results/predictions.json P5 (filed 2026-10-27 15:32:25)"
+  },
+  {
+   "id": "P6_sgd",
+   "rule": "teacher-trained check (E37's recipe, 1000 steps) >= 1.61 for SGD and for LoRA, each",
+   "expected": "fail like Adam",
+   "confidence": "medium-low",
+   "blind_to": "gain matched by held-out log-probability only; one rate, one seed",
+   "positive_control": "E37's Adam state (stage 0 ii)",
+   "noise_floor": "W0's spread over adversary seeds 0-2 (0.075 on E37's H100, read again in stage 0); E37's batch-order spread of the check ratio, 14% (2.20 and 1.88); a share of excess removed is a difference of two such ratios, so shares under 0.2 apart are not separated",
+   "scope": "the SGD fine-tune only; E39 scored the LoRA half",
+   "copied_from": "results/predictions.json P6 (filed 2026-10-27 15:32:25)"
+  },
+  {
+   "id": "P7_sgd",
+   "rule": "do-nothing check >= 1.61 for the SGD and the LoRA fine-tune",
+   "expected": "fail (update in Delta)",
+   "confidence": "high",
+   "blind_to": "as P6",
+   "positive_control": "E37's Adam do-nothing (4.87)",
+   "noise_floor": "W0's spread over adversary seeds 0-2 (0.075 on E37's H100, read again in stage 0); E37's batch-order spread of the check ratio, 14% (2.20 and 1.88); a share of excess removed is a difference of two such ratios, so shares under 0.2 apart are not separated",
+   "scope": "the SGD fine-tune only; E39 scored the LoRA half",
+   "copied_from": "results/predictions.json P7 (filed 2026-10-27 15:32:25)"
+  },
+  {
+   "id": "P8",
+   "rule": "the chosen SGD rate's held-out gain within 30% of this job's Adam fine-tune gain, |gain_sgd / gain_adam - 1| <= 0.3 (relative); false when every grid rate diverged",
+   "expected": "yes: a rate in 0.003-0.1 reaches 0.091-0.169",
+   "confidence": "medium",
+   "blind_to": "the gain is mean log-probability on 64 held-out lowercase rows only; one batch order",
+   "positive_control": "the Adam fine-tune's gain regenerated in stage 0 (ii), 0.1301 in E37",
+   "noise_floor": "Adam's gain reproduced to 0.0001 across jobs (0.1300, 0.1301); the batch-order spread of the gain was not measured"
+  }
+ ],
+ "config": {
+  "amend1": {
+   "sgd_lrs": [
+    0.003,
+    0.01,
+    0.03,
+    0.1
+   ],
+   "p8_tol": 0.3
+  },
+  "run": {
+   "rows_train": [
+    "train",
+    0,
+    4096
+   ],
+   "rows_held": [
+    "val",
+    0,
+    256
+   ],
+   "n_held": 64,
+   "ft_lr": 3e-05,
+   "ft_batch": 8,
+   "ft_steps": 300,
+   "copy_lr": 1e-05,
+   "copy_batch": 8,
+   "copy_steps": 1000,
+   "copy_seed": 0,
+   "n_sigma_rows": 256,
+   "pile_rows": 256,
+   "pile_pgd_steps": 20,
+   "pile_seeds": [
+    0,
+    1,
+    2
+   ],
+   "eval_batch": 8,
+   "e37_blocks": [
+    0.6794,
+    0.7182
+   ],
+   "block_tol": 0.01,
+   "spread_max": 0.1,
+   "e36_gain": 0.1301,
+   "gain_tol": 0.005,
+   "e37_check": 2.2011,
+   "check_tol": 0.03,
+   "e37_s": 0.998,
+   "s_tol": 0.01,
+   "moves": [
+    [
+     0,
+     1.0
+    ],
+    [
+     1,
+     1.0
+    ],
+    [
+     0,
+     0.5
+    ]
+   ],
+   "half_seed": 0,
+   "sgd_lrs": [
+    0.3,
+    1.0,
+    3.0
+   ],
+   "lora_lrs": [
+    0.0001,
+    0.0003,
+    0.001
+   ],
+   "lora_rank": 8,
+   "lora_seed": 0,
+   "pass_line": 1.4,
+   "fail_line": 1.61,
+   "p3_max": 0.6,
+   "p4_margin": 0.2
+  }
+ },
+ "filed": "2026-10-27 16:33:16"
+}
