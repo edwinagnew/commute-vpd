@@ -15,8 +15,20 @@
     "if_fails": "stop before the 128-row stage: the apparatus does not reproduce the 4-row reading"
   },
   "references": {
-    "ci128": {"expected": [0.05, 0.3], "basis": "0.13-0.18 per text row on the 4 port rows"},
-    "ceiling128": {"expected": [7.0, 11.0], "basis": "ln 151936 = 11.93 minus the clean entropy (cross-entropy 2.6-3.5 on the port rows)"}
+    "ci128": {
+      "expected": [
+        0.05,
+        0.3
+      ],
+      "basis": "0.13-0.18 per text row on the 4 port rows"
+    },
+    "ceiling128": {
+      "expected": [
+        7,
+        11
+      ],
+      "basis": "ln 151936 = 11.93 minus the clean entropy (cross-entropy 2.6-3.5 on the port rows)"
+    }
   },
   "predictions": {
     "P1_block_size": {
@@ -37,5 +49,13 @@
     "unusable_at_this_size": "adv128_mean >= 0.5 * ceiling128 (the adversary drives the masked model at W0 at least halfway to a uniform output, so an update cannot be read against it) or spread128 >= 1",
     "note": "exactly one branch holds for any finite or infinite spread128 and any adv128_mean; unusable goes to a pending-decision card for the user"
   },
-  "edge_cases_checked": "spread128 with a zero or missing reading -> infinite -> unusable; ceiling128 cannot be 0 (vocabulary 151936, entropy far below ln V); ratio with adv4 = 0 cannot arise because the control requires adv4 >= 10; ties at a threshold fall to the stricter branch as written (< vs >=)"
+  "edge_cases_checked": "spread128 with a zero or missing reading -> infinite -> unusable; ceiling128 cannot be 0 (vocabulary 151936, entropy far below ln V); ratio with adv4 = 0 cannot arise because the control requires adv4 >= 10; ties at a threshold fall to the stricter branch as written (< vs >=)",
+  "addendum_1": {
+    "filed": "2026-10-27, after the fresh-Opus review of 5cf3919, before any run",
+    "stage0_recompute_check": {
+      "rule": "KL(clean || m = g, delta off) per row on rows 0-3, this run vs experiments/qwen_port/results/torch_check.json check3.torch_fp32.ci.per_row[:4] (0.18042, 0.18063, 0.12965, 0.14991): every |diff| <= 1e-3",
+      "if_fails": "stop before the control: the recomputed g, clean logits or masked forward differ from the port check"
+    },
+    "non_finite": "a NaN or infinite 128-row reading makes spread128 infinite and the reading unusable_at_this_size (the original note did not cover NaN)"
+  }
 }
