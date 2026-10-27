@@ -20,4 +20,5 @@ mkdir -p "$TMPDIR" "$HF_HOME" "$PIP_CACHE_DIR" "$XDG_CACHE_HOME" "$UV_CACHE_DIR"
 unset _eph
 
 export PATH=$HOME/.local/bin:$PATH        # uv lives in ~/.local/bin (NFS home)
+export PYTHONPATH=$COMMUTE_REPO/src${PYTHONPATH:+:$PYTHONPATH}   # this clone's code: the shared venv's commute.pth names whichever clone synced last
 export UV_NO_SYNC=1                       # a bare `uv run` would swap in the default (CPU) torch; rebuild via setup.sbatch
