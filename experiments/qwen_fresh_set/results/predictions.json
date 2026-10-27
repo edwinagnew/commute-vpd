@@ -1,0 +1,125 @@
+{
+ "plan": "reports/plans/2026-10-28_plan_qwen-fresh-set.md. Filed 2026-10-28 before any run; never edited after.",
+ "state": "Qwen/Qwen3-1.7B at revision 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e, unchanged, bf16 weights; prompt, chat template (enable_thinking=False), greedy decoding, batches of 128, 512 new tokens and graders exactly as experiments/qwen_fresh_numbers (commute.qwen_eval.score, commute.gsm8k)",
+ "sets": {
+  "gsm8k": "openai/gsm8k main test, revision 740312add88f781978c0658806c59bc2815b9866, all 1,319, index order (the control and the same-job reference)",
+  "gsm1k": "ScaleAI/gsm1k test, revision bc09569d09a614b9b530edc7f076fb214ac10493 (published on Hugging Face 2025-03-31; problems written by hand in 2024 and held private until then): 1,205 rows, index order, minus the 8 rows (102, 164, 388, 591, 628, 871, 938, 1050) that share half or more of their lower-cased word 8-grams with any GSM8K train or test question, 4 of them exact copies of GSM8K train questions; 1,197 kept (checked on CPU 2026-10-28). Gold = the 'answer' field, a bare integer on all 1,205 rows",
+  "mgs": "danish-foundation-models/multilingual-gsm-symbolic, config eng, split test_synthetic, revision 75ce20d919d93ba78340adc6f70d2120f3ca3ce3 (generated 2026, published 2026-04-22): 20 variants of each of 100 GSM8K test templates, the same 100 as apple/GSM-Symbolic; the first 10 of each template in file order (1,000 items), instance-major order; source_id is the GSM8K test index of the template's original; gold = the 'answer' solution text ending '#### N' (10 of 2,000 golds are not integers)"
+ },
+ "measurements": {
+  "fits": "prompt tokens (chat template included) + response tokens (to and including the end token) <= 512",
+  "dropped rule (primary, decisions.md 2026-10-27)": "an answer that does not fit leaves the score; for D_mgs a template leaves when its GSM8K original does not fit, and keeps only its fitting variants",
+  "beside it": "all answers (each graded on its whole response, up to 512 new tokens: the definition of the 0.756) and capped (each graded on its first 512 - prompt tokens)",
+  "D_1k": "strict accuracy on GSM8K test's fitting answers minus strict accuracy on GSM1k's fitting answers, absolute, unpaired. SE = sqrt(p1(1-p1)/n1 + p2(1-p2)/n2). Reported beside: the same on all answers, capped, and lenient",
+  "D_mgs": "over templates t whose GSM8K original fits and that have at least one fitting variant: mean over t of (strict_original_t - share of t's fitting variants strict-right), absolute; SE = stdev over templates / sqrt(T). The originals' scores come from the same job's GSM8K arm. Reported beside: capped, and the originals' own accuracy",
+  "gap_x": "lenient minus strict accuracy on set x's fitting answers (x = gsm8k, gsm1k)",
+  "control": "the GSM8K arm's strict accuracy over all its answers (as the baseline scored it), and the share of its responses identical to experiments/qwen_gsm8k_baseline/results/large/greedy.jsonl"
+ },
+ "gates": {
+  "G0": "strict grader on each set's gold rewritten to end 'The answer is N.' (commute.gsm8k.gold_as_response; GSM1k gold given as '#### N') == 1.000 on all three sets; runs before the model loads; fail: stop",
+  "G1": "the GSM8K arm reached all 1,319 answers AND (|strict_all - 997/1319| <= 0.012, one binomial SE of the baseline, OR identical_to_baseline_share == 1.000); runs first and alone among the model arms; fail: stop, nothing else is read",
+  "G2 (power)": "D_1k needs >= 900 fitting GSM1k answers, else verdict 'underpowered'; D_mgs needs >= 80 templates, else mgs_zone 'underpowered'"
+ },
+ "rules": {
+  "verdict": "from D_1k, rounded to 9 decimal places: <= 0.04: 'same'; >= 0.08: 'much lower'; strictly between: 'ambiguous'; G2 fails for GSM1k (including no answers): 'underpowered'. Negative values (GSM1k easier) count as 'same'",
+  "mgs_zone": "from D_mgs, rounded to 9 places: <= 0.03: 'same'; >= 0.08: 'much lower'; strictly between: 'ambiguous'; fewer than 80 templates (including none): 'underpowered'",
+  "cause (read only when verdict is 'much lower')": "mgs_zone 'much lower': 'points to memory of GSM8K test items'; mgs_zone 'same' or 'ambiguous': 'not separated: memory of methods, or harder problems'; mgs_zone 'underpowered': 'no reading'. Any other verdict: 'not needed'",
+  "format_same": "|gap_gsm1k - gap_gsm8k| <= 0.02; None if either set has no fitting answer",
+  "edge cases checked on CPU before filing (2026-10-28)": "no GSM1k answers, or none fitting: diff None, verdict 'underpowered'; 899 fitting answers: 'underpowered'; a difference of exactly 0.04 (0.75 - 0.71, which floats compute as 0.040000000000000036) reads 'same', and exactly 0.08 reads 'much lower', after rounding; GSM1k easier (D_1k = -0.15) reads 'same'; zero variance gives SE 0; one template gives SE None; a template whose original does not fit, or with no fitting variant, leaves; 79 templates gives mgs_zone 'underpowered' and cause 'no reading'; each cause branch reached with synthetic records; a GSM8K arm cut short by its time budget fails G1"
+ },
+ "expected": {
+  "W0 (this is the unchanged model; no update)": "every number is a W0 reading; there is no do-nothing reference",
+  "G0": "1.000 on all three sets (read on CPU 2026-10-28: 1,319, 1,197 and 1,000 of each)",
+  "G1": "strict_all 0.756 and identical share 1.000 on an L40 with torch 2.8.0 and transformers 4.57.3, as in job 39129",
+  "gsm8k strict, dropped": "0.777 over 1,257 fitting answers (job 39129)",
+  "gsm1k": "fits share about 0.92 (prompts are 130 tokens against GSM8K's 113); strict dropped about 0.73 (0.67 to 0.79)",
+  "D_1k": "about 0.05 (0.00 to 0.10): GSM1k's questions are longer (59 words against 46), and the GSM1k paper found gaps of a few points for many open models; the same model lost 0.039 on GSM-Plus's new numbers",
+  "D_mgs": "about 0.02 (0.00 to 0.09): the 2024 GSM-Symbolic instances of the same 100 templates read 0.008 under this harness (job 39129); the Multilingual GSM-Symbolic paper read 0.089 for this model on these 2,000 variants under another prompt",
+  "gap_x": "about 0.02 on both sets (GSM8K read 0.018 in job 39129)",
+  "verdict": "'ambiguous', leaning toward the 'same' cut"
+ },
+ "predictions": [
+  {
+   "id": "P0",
+   "rule": "G0 passes",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "itself (the grader on text known to be right and in format)",
+   "blind_to": "format errors the model makes that gold text does not; for GSM1k it checks only that every gold parses (its gold has no solution text)",
+   "noise_floor": "deterministic; none"
+  },
+  {
+   "id": "P1",
+   "rule": "G1 passes",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "itself: the saved baseline answers",
+   "blind_to": "nothing the later arms depend on, except that a pass by the SE branch alone means per-problem answers moved and the same-job arm, not the saved baseline, is the reference",
+   "noise_floor": "greedy is deterministic on a fixed card and software; binomial SE 0.012 across cards"
+  },
+  {
+   "id": "P2",
+   "rule": "G2 passes for both sets (>= 900 fitting GSM1k answers, >= 80 MGS templates)",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "job 39129: 95.3% of GSM8K answers fit, 94 of 100 templates kept",
+   "blind_to": "which answers are dropped (the long ones, mostly wrong, and more of them on GSM1k's longer prompts); the all-answers reading is reported for that",
+   "noise_floor": "counts; none"
+  },
+  {
+   "id": "P3",
+   "rule": "D_1k < 0.08 (verdict is not 'much lower' or 'underpowered'), dropped rule",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "none on this model: no set is known to be memorised by it. G1 shows the apparatus reproduces the baseline; it does not show the gap can detect memory",
+   "blind_to": "GSM1k being harder or easier than GSM8K test (its authors matched human solve rate, solution steps and answer size, but its questions are longer), which reads as memory or as its absence; wrong GSM1k labels (rate unknown), which read as memory; GSM1k in Qwen3's training data (published 2025-03-31, four weeks before Qwen3's release; a sample of problems was public in 2024), which shrinks the gap; more long, mostly wrong answers dropped on GSM1k, which shrinks the gap under the dropped rule (the all-answers reading is beside it)",
+   "noise_floor": "SE about 0.018 (about 1,257 and 1,100 fitting answers at 0.78 and 0.73)"
+  },
+  {
+   "id": "P4",
+   "rule": "D_1k <= 0.04 (verdict is 'same'), dropped rule",
+   "predicted": "fail (ambiguous zone)",
+   "confidence": "low",
+   "positive_control": "as P3",
+   "blind_to": "as P3",
+   "noise_floor": "as P3"
+  },
+  {
+   "id": "P5",
+   "rule": "D_mgs < 0.08 (mgs_zone is not 'much lower' or 'underpowered'), dropped rule",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "as P3",
+   "blind_to": "memory of a problem's method rather than its numbers, which carries to new numbers and reads as no gap; new numbers that change difficulty, which read as memory; the 100 originals may be easier than GSM8K test as a whole (job 39129: 0.809 against 0.777)",
+   "noise_floor": "SE about 0.04: the 100 binary originals dominate it (0.038 in job 39129); more variants per template would not shrink it"
+  },
+  {
+   "id": "P6",
+   "rule": "format_same",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "job 39129: GSM8K's gap 0.018 against GSM-Plus's 0.015 and GSM-Symbolic's 0.010",
+   "blind_to": "format losses that hit the strict and lenient graders alike (words for numbers, units glued to the number)",
+   "noise_floor": "each gap's SE about 0.004; a difference of two about 0.006"
+  },
+  {
+   "id": "P7",
+   "rule": "verdict is 'same' or 'ambiguous'",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "as P3",
+   "blind_to": "as P3",
+   "noise_floor": "as P3"
+  }
+ ],
+ "reported": "every set's k, fitting count, fits share, truncation share, strict and lenient accuracy under the dropped, all-answers and capped rules; D_1k on all answers, capped and lenient; D_mgs capped and the originals' accuracy; peak GPU memory; batch times",
+ "decision_tree": {
+  "P0 fails": "stop; fix the grader or the gold mapping",
+  "P1 fails": "stop; compare card and software with job 39129's; nothing is read",
+  "P2 fails for GSM1k": "report every reading; ask the user whether the all-answers reading decides",
+  "verdict same": "the 0.756 is ability and GSM8K is sound: keep GSM8K (train on its train split, score on its test split) and score every update on GSM1k beside it. Card decision-qwen-baseline: headroom half closes on keep; the prefix test is not needed for this decision",
+  "verdict ambiguous": "keep GSM8K train as the training set; a pending-decision card for the user: GSM8K test or GSM1k as the primary held-out score (both scored on every update either way)",
+  "verdict much lower": "GSM1k becomes the held-out score, GSM8K test beside it; training stays on GSM8K train, since GSM1k has no training split. A pending-decision card for the user, with the cause line: 'points to memory of GSM8K test items', or 'not separated'. Separating method memory from harder problems needs a reference model of similar GSM8K accuracy scored on both sets (not run)",
+  "P6 fails": "the format loss differs on GSM1k; read its strict-wrong, lenient-right answers and give D_1k_lenient's zone beside the verdict before any decision"
+ }
+}
