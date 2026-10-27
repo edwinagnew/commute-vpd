@@ -26,7 +26,8 @@ cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 # The shared .venv's editable install (commute.pth) points at whichever clone last ran `uv sync` (commute-lead's on
-# 2026-10-27), which lacks commute.recruitment, routing and census: put this clone's src first.
+# 2026-10-27), which lacks commute.recruitment, routing and census: put this clone's src first. TEMPORARY: remove once
+# the shared venv no longer pins one clone.
 export PYTHONPATH="$COMMUTE_REPO/src${PYTHONPATH:+:$PYTHONPATH}"
 test -f experiments/recruitment_test/results/predictions.json || { echo "file the predictions first (results/predictions.json)"; exit 1; }
 .venv/bin/python experiments/recruitment_test/run.py "$@"

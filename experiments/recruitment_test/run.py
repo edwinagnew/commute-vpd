@@ -66,6 +66,8 @@ class Cfg:
     jaccard_min: float = 0.95  # stage 0: in-job S against the saved one
     size_tol: float = 0.05
     empty_tol: float = 1e-5  # stage 0: removing nothing
+    path_tol: float = 1e-3  # stage 0: the full-model logits path (stages 1+) against route_cells (E18's path); amended
+                             # before any run, 2026-10-27, after code review
     busy_kl_min: float = 1.0  # stage 0: removing the busy set from W0 moves the trigger by >= 1 nat of KL
     busy_min_n: int = 100  # ... checked where the busy set has >= 100 pieces (emoticon); reported on the small sets
     min_gain: float = 1.0  # a state's removed shares are scorable only with G >= 1 nat (E18's rule)
@@ -196,8 +198,9 @@ def make_state(run: Run, task: str, name: str, ref: dict[str, Any]) -> dict[str,
     return rec
 
 
-def apparatus(run: Run, task: str) -> dict[str, Any]:
-    """Removing nothing returns each state's T1 (and W0's T0 after the states); removing the busy set (top-|S| alive by
+def apparatus(run: Run, task: str, route_T1: dict[str, float]) -> dict[str, Any]:
+    """Removing nothing returns each state's T1 (and W0's T0 after the states); the full-model path's T0 and T1 agree
+    with route_cells' (t.base["T"], `route_T1`) to 1e-3; removing the busy set (top-|S| alive by
     W0's mean trigger importance over the training windows, |S| of seed 0) from W0 moves the trigger by >= 1 nat."""
     t, model = run.tasks[task], run.model
     held, h, tok = t.held.tokens, t.half, int(t.target)
@@ -211,16 +214,20 @@ def apparatus(run: Run, task: str) -> dict[str, Any]:
             ref1 = RT.window_logits(model, held)
             T1 = RT.readout(model, held, h, tok, ref1)["lo"]
         e = RT.removed(model, W, run.comps, empty, held, h, tok, ref1)
-        out["empty"][name] = {"T1_path": T1, "T1_empty": e["lo"], "diff": e["lo"] - T1, "kl_other": e["kl_other"]}
+        out["empty"][name] = {"T1_path": T1, "T1_empty": e["lo"], "diff": e["lo"] - T1, "kl_other": e["kl_other"],
+                              "path_diff": T1 - route_T1[name]}
         del ref1
     busy = top_by(t.m0, run.alive, R.size(run.S(f"{task}/s0")))
     b = RT.removed(model, run.W0, run.comps, busy, held, h, tok, ref0)
     out["restore_diff"] = RT.readout(model, held, h, tok, ref0)["lo"] - T0
     out["busy"] = {"n": R.size(busy), **b, "ok": R.size(busy) < CFG.busy_min_n or b["kl_trigger"] >= CFG.busy_kl_min}
     out["empty_ok"] = all(abs(v["diff"]) <= CFG.empty_tol for v in out["empty"].values()) and abs(out["restore_diff"]) <= CFG.empty_tol
+    out["T0_path_diff"] = T0 - t.base["T"]
+    out["path_ok"] = abs(out["T0_path_diff"]) <= CFG.path_tol and all(abs(v["path_diff"]) <= CFG.path_tol for v in out["empty"].values())
     log(f"[stage0 {task}] empty removal diffs {[round(v['diff'], 8) for v in out['empty'].values()]} restore "
         f"{out['restore_diff']:.2e} | busy |{out['busy']['n']}| from W0: KL trigger {b['kl_trigger']:.4f} kl_other "
-        f"{b['kl_other']:.4f} lo {b['lo']:.4f} (T0 {T0:.4f}) | {'ok' if out['empty_ok'] and out['busy']['ok'] else 'FAIL'}")
+        f"{b['kl_other']:.4f} lo {b['lo']:.4f} (T0 {T0:.4f}) | path diffs T0 {out['T0_path_diff']:.2e} T1 {[round(v['path_diff'], 6) for v in out['empty'].values()]} | "
+        f"{'ok' if out['empty_ok'] and out['busy']['ok'] and out['path_ok'] else 'FAIL'}")
     return out
 
 
@@ -233,8 +240,8 @@ def stage0(run: Run) -> dict[str, Any]:
         log(f"[stage0 {n}] T0 {rec['T0']:.4f} (E18 {rec['T0_ref']:.4f}) | {'ok' if rec['T0_ok'] else 'FAIL'}")
         for name in names(n):
             out["states"][name] = make_state(run, n, name, refs[n])
-        rec["apparatus"] = a = apparatus(run, n)
-        rec["ok"] = rec["T0_ok"] and all(out["states"][x]["ok"] for x in names(n)) and a["empty_ok"] and a["busy"]["ok"]
+        rec["apparatus"] = a = apparatus(run, n, {x: out["states"][x]["T1"] for x in names(n)[:-1]})
+        rec["ok"] = rec["T0_ok"] and all(out["states"][x]["ok"] for x in names(n)) and a["empty_ok"] and a["busy"]["ok"] and a["path_ok"]
         out["tasks"][n] = rec
         dump(0, out)
         if not rec["ok"]:
@@ -260,20 +267,24 @@ def stage1_state(run: Run, task: str, name: str, ref0: list[Tensor], T0: float) 
             **{f"top{k}": top_by(run.shift[name], alive, k) for k in CFG.top_k}}
     reads = {k: RT.removed(model, W, run.comps, v, held, h, tok, ref1) for k, v in sets.items()}
     rnd = [RT.removed(model, W, run.comps, R.random_like(S, alive, i), held, h, tok, ref1) for i in range(CFG.n_random)]
+    nsub = [RT.removed(model, W, run.comps, RT.subset_like(S, sets["null"], i), held, h, tok, ref1) for i in range(CFG.n_random)]
     w0 = RT.removed(model, run.W0, run.comps, S, held, h, tok, ref0)
     del ref1
     g = gain if gain >= CFG.min_gain else 0.0  # unscorable state: every share nan, so it neither passes nor fails a bar
     rho = {k: RT.share(T1, r["lo"], g) for k, r in reads.items()}
     rr = [RT.share(T1, r["lo"], g) for r in rnd]
+    rn = [RT.share(T1, r["lo"], g) for r in nsub]  # the null's set cut to |S| per matrix: reported, not scored
     rec = {"T0": T0, "T1": T1, "gain": gain, "scorable": gain >= CFG.min_gain, "kl_ft": own["kl_other"],
            "kl_ft_trigger": own["kl_trigger"], "n": {k: R.size(v) for k, v in sets.items()}, "by_layer_S": R.by_layer(S),
            "J_busy_S": R.jaccard(sets["busy"], S), "J_null_S": R.jaccard(sets["null"], S), "rho": rho,
            "kl_other": {k: r["kl_other"] for k, r in reads.items()}, "kl_trigger": {k: r["kl_trigger"] for k, r in reads.items()},
            "random": {"rho": rr, "kl_other": [r["kl_other"] for r in rnd]}, "rho_S": rho["S"], "random_mean": sum(rr) / len(rr),
-           "random_max": max(rr), "rho_null": rho["null"], "rho_S_W0": RT.share(T0, w0["lo"], g), "kl_other_S_W0": w0["kl_other"]}
+           "random_max": max(rr), "rho_null": rho["null"], "rho_S_W0": RT.share(T0, w0["lo"], g), "kl_other_S_W0": w0["kl_other"],
+           "null_subset": {"n": R.size(RT.subset_like(S, sets["null"], 0)), "rho": rn, "rho_mean": sum(rn) / len(rn), "rho_max": max(rn)}}
     log(f"[stage1 {name}] T0 {T0:.4f} T1 {T1:.4f} G {gain:.4f} | kl_ft {rec['kl_ft']:.4f} | |S| {rec['n']['S']} by layer "
         f"{rec['by_layer_S']} | rho_S {rho['S']:.4f} random mean {rec['random_mean']:.4f} max {rec['random_max']:.4f} | "
-        f"rho_busy {rho['busy']:.4f} rho_null {rho['null']:.4f} (|null| {rec['n']['null']}) | rho_S at W0 {rec['rho_S_W0']:.4f}")
+        f"rho_busy {rho['busy']:.4f} rho_null {rho['null']:.4f} (|null| {rec['n']['null']}; cut to |S| mean {rec['null_subset']['rho_mean']:.4f} max "
+        f"{rec['null_subset']['rho_max']:.4f}, n {rec['null_subset']['n']}) | rho_S at W0 {rec['rho_S_W0']:.4f}")
     log(f"[stage1 {name}] kl_other S {rec['kl_other']['S']:.4f} busy {rec['kl_other']['busy']:.4f} null "
         f"{rec['kl_other']['null']:.4f} random mean {sum(rec['random']['kl_other']) / CFG.n_random:.4f} | J(busy, S) "
         f"{rec['J_busy_S']:.4f} J(null, S) {rec['J_null_S']:.4f} | top-k " + " ".join(
@@ -295,9 +306,9 @@ def stage1(run: Run) -> dict[str, Any]:
         del ref0
     out.update(RT.readings(by_task))
     dump(1, out)
-    log(f"[stage1] tasks {json.dumps(out['tasks'])} | fails {json.dumps(out['task_fails'])}")
-    log(f"[stage1] reading '{out['reading']}' | P1 {json.dumps(out['P1'])} | P2 {json.dumps(out['P2'])} | P3 "
-        f"{json.dumps(out['P3'])} | P2 fails while P1 passes: {out['P2_fails_while_P1_passes']}")
+    log(f"[stage1] seeds {json.dumps(out['seed_class'])} | tasks {json.dumps(out['task_class'])}")
+    log(f"[stage1] reading '{out['reading']}' | P1 {json.dumps(out['P1'])} | P2_S {json.dumps(out['P2_S'])} | P2_busy "
+        f"{json.dumps(out['P2_busy'])} | P3 {json.dumps(out['P3'])} | P2_S fails while P1 passes: {out['P2_S_fails_while_P1_passes']}")
     return out
 
 
@@ -320,8 +331,9 @@ def stage2(run: Run, s1: dict[str, Any]) -> dict[str, Any]:
 
         a0 = RO.trigger_inputs(model, t.held.tokens, t.half)
         tr_null = RO.trace(a0, a1(f"{n}/null"), mu_t, mu_all)
-        rec: dict[str, Any] = {"n_positions": pm["by"][n]["n"], "stage1_task_fails": s1["task_fails"][n], "null": tr_null, "seeds": {}}
-        rec["scorable"] = rec["n_positions"] >= CFG.min_nat and not rec["stage1_task_fails"]
+        rec: dict[str, Any] = {"n_positions": pm["by"][n]["n"], "stage1_task_class": s1["task_class"][n], "null": tr_null, "seeds": {}}
+        cls = rec["stage1_task_class"]  # P4 reads the tasks where stage 1 did not fail: not 'fail', not unscored
+        rec["scorable"] = rec["n_positions"] >= CFG.min_nat and cls != "fail" and not cls.startswith("unscored")
         for name in names(n)[:-1]:
             bl = R.by_layer(run.S(name))
             layer = int(max(bl, key=lambda x: bl[x]))  # the layer holding most of S; ties go to the lowest layer
@@ -413,6 +425,8 @@ def main() -> None:
     if not PRED.is_file():
         sys.exit(f"file the predictions first: {PRED}")
     s0, s1 = read_json(RESULTS / "stage0.json"), read_json(RESULTS / "stage1.json")
+    if 0 in stages and len(stages) > 1:
+        sys.exit("stage 0 runs alone (--stages 0); then --stages 1,2,3 in a second job")
     if 0 not in stages and not (s0 and s0.get("pass") is True):
         sys.exit("stage 0 has not passed (results/stage0.json): run --stages 0 alone first")
     if {2, 3} & set(stages) and 1 not in stages and not (s1 and s1.get("reading") not in (None, "fail")):

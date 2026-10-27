@@ -10,26 +10,28 @@
     "rho_X": "(T1 - T1 with X removed from the fine-tuned weights) / G: 0 = removing X does nothing, 1 = it undoes the fine-tune",
     "rho_S at W0": "(T0 - T0 with S removed from W0) / G",
     "random sets": "20 draws, recruit.random_like(S, alive, seed) for seeds 0..19: same size per matrix as S, alive, outside S",
-    "busy set": "the top-|S| alive subcomponents by W0's mean trigger importance over the training windows (choice: training windows, the windows S is defined on); same size as S, removed from the fine-tuned weights (stage 1) or from W0 (stage 0)",
+    "busy set": "the top-|S| alive subcomponents by W0's mean trigger importance over the training windows (choice: training windows, the windows S is defined on); same size as S, removed from the fine-tuned weights (stage 1) or from W0 (stage 0) Note: this is the plan tables' busy reference (top-|S| by W0's mean trigger importance), NOT E12's least-squares busy set that the plan's design-check wording names (amended before any run, 2026-10-27, after code review)",
     "null set": "the ' http' fine-tune's recruited set on the same task (s_null > 0.3), removed from this task's fine-tuned weights",
     "top-k": "the k alive subcomponents with the largest s, k in 25, 50, 100, 200, 400",
     "kl_other": "mean over held-out windows of the mean KL(reference || model) over the 40 non-trigger positions (local_faith.stats, the fine-tune's own kl_other definition); for a removal the reference is the fine-tuned model, for the fine-tune's own off-target KL (kl_ft) it is W0",
     "kl_trigger": "mean KL(reference || model) at the trigger",
-    "task numbers (choice)": "a task's rho_S is the MEAN over its two seeds; its random max and rho_null are the MAX over both seeds (the stricter side for the null bars); its seed gap is |rho_S(s0) - rho_S(s1)|",
+    "task numbers (choice)": "each seed is classified separately against the tree's bars (seed classes: pass = rho_S >= 0.5 with random max <= 0.15 and rho_null <= 0.15; fail = rho_S < 0.2 or rho_S < random max + 0.1; partial = rho_S in [0.2, 0.5) and >= random max + 0.1; else none); a task takes a class only when both seeds have it, else 'seeds disagree' (counts toward no branch); a pass also needs the seeds' rho_S within 0.1 (P1's own rule). A task is 'unscored: random removal bites' when either seed's random max > 0.15, and 'unscored: gain < 1 nat' when either seed has G < 1; unscored tasks count toward no branch (amended before any run, 2026-10-27, after code review)",
     "a1, a0, da (stage 2)": "each decomposed matrix's raw input (what Gamma reads) at the trigger of each held-out window, in the fine-tuned model and at W0; da = mean over windows of a1 - a0",
     "natural direction n (stage 2)": "mu_target - mu_all at W0 over the Pile rows: mean input at positions whose next token is the target (recruit.precede_mask) minus the mean input over all positions",
     "cos, closer, closer_all (stage 2)": "cos(da, n) per matrix; mean over windows of |a1 - mu_target| / |a0 - mu_target|; the same with mu_all",
-    "census (stage 3)": "over the 2,000 Pile rows at W0, positions 0..510 of each row (the last has no next token): a piece is on where its importance > 0.5; on-rate = on-positions / positions; top next (current) tokens by (rate at its on-positions) / (base rate over all positions), only tokens seen >= 5 times at its on-positions (choice); 'rare' below 50 on-positions; classes target (the target among the top 3 next tokens), trigger (a trigger token among the top 3 current tokens), both, neither, rare. A task's trigger tokens: the tokens at the trigger position of >= 10% of its training windows (choice). Pieces: S of seed 0 per task and 5 random sets (random_like seeds 0..4)"
+    "census (stage 3)": "over the 2,000 Pile rows at W0, positions 0..510 of each row (the last has no next token): a piece is on where its importance > 0.5; on-rate = on-positions / positions; top next (current) tokens by (rate at its on-positions) / (base rate over all positions), only tokens seen >= 5 times at its on-positions (choice); 'rare' below 50 on-positions; classes target (the target among the top 3 next tokens), trigger (a trigger token among the top 3 current tokens), both, neither, rare. A task's trigger tokens: the tokens at the trigger position of >= 10% of its training windows (choice). Pieces: S of seed 0 per task and 5 random sets (random_like seeds 0..4)",
+    "null subset": "the null's recruited set cut to |S| per matrix (a random subset of the same size per matrix, all of the null's members where it has fewer), 20 draws (recruitment.subset_like seeds 0..19), removed from the fine-tuned weights; reported next to rho_null, not scored (amended before any run, 2026-10-27, after code review)"
   },
   "control": {
-    "rule": "stage 0 runs first and alone; any fail exits non-zero and nothing else runs (stop, fix). Task by task, early stop after the first task that fails",
+    "rule": "stage 0 runs first and alone; any fail exits non-zero and nothing else runs (stop, fix). Task by task, early stop after the first task that fails; --stages refuses 0 combined with any other stage (amended before any run, 2026-10-27, after code review)",
     "W0 cells": "T0 within 0.02 of E18 (regating_leak.json G1.<task>.cells.T0): emoticon -5.022894911570091, r1_t534_v369 -5.544807052612304, r2_t359_v816 -6.91097011206285",
     "states": "T1 (route_cells, as E18) within 0.02 of E18's T0 + tasks.<task>.seeds.<s>.gain: emoticon s0 8.40702324697416, s1 8.668388641043885; r1_t534_v369 s0 4.7805118656158445, s1 5.3234737205505365; r2_t359_v816 s0 5.61468853140777, s1 5.282784749876777. Held-out P(target) within 0.01 of tasks.<task>.seeds.<s>.p_heldout: emoticon 0.9992794802744095, 0.999539074015944; r1_t534_v369 0.9893197357654572, 0.9935128545761108; r2_t359_v816 0.9927402999041215, 0.9904946386814117. The null states (choice: E18 saved no T1 for them): held-out P(' http') within 0.01 of tasks.<task>.null.p_heldout: 0.9980989351664504, 0.994062385559082, 0.9884964565061173",
     "recruited set": "in-job S against the saved file's (same rule, threshold 0.3), all nine states: Jaccard >= 0.95 and |S| within 5% of the saved |S|. E18's sizes: emoticon 210, 213, null 130; r1_t534_v369 56, 62, null 225; r2_t359_v816 23, 21, null 165",
     "empty removal": "each target state's T1 (full-model path) with an empty set removed equals its T1 to 1e-5, and W0's T0 read again after the states equals the first read to 1e-5 (the weights are restored)",
-    "busy reference": "removing the busy set (|S| of seed 0) from W0 moves the trigger distribution: kl_trigger(W0 || W0 without it) >= 1 nat on every task whose busy set has >= 100 pieces (emoticon, |S| 210); reported, not checked, on the word tasks (|S| 21 to 62), where a set that small need not move the trigger by 1 nat. One task suffices: the removal code is shared. Else the ablation does not bite: stop. (Amended by the lead before any run, 2026-10-27: the plan's 'every task' would stop the job on a control too strict for small sets.)"
+    "busy reference": "removing the busy set (|S| of seed 0) from W0 moves the trigger distribution: kl_trigger(W0 || W0 without it) >= 1 nat on every task whose busy set has >= 100 pieces (emoticon, |S| 210); reported, not checked, on the word tasks (|S| 21 to 62), where a set that small need not move the trigger by 1 nat. One task suffices: the removal code is shared. Else the ablation does not bite: stop. (Amended by the lead before any run, 2026-10-27: the plan's 'every task' would stop the job on a control too strict for small sets.)",
+    "path agreement": "|T0 on the full-model logits path (stages 1+) - route_cells T0 (E18's path)| <= 1e-3 per task, and each target state's |T1 full-model path - route_cells T1| <= 1e-3: the path stage 1 uses agrees with the E18-matched one, and the fine-tunes left W0 untouched (amended before any run, 2026-10-27, after code review)"
   },
-  "scorable": "a state's removed shares are scored only with G >= 1 nat (E18's rule; E18's gains were 10.3 to 13.7). Stage 2: a target with fewer than 200 Pile positions before it in rows 0..2000 is unscored (E18 had 109 for ' just' in 600 rows), as is a task that failed stage 1 by the fail rule below",
+  "scorable": "a state with G < 1 nat (E18's rule; E18's gains were 10.3 to 13.7) has its shares unscored: it is excluded from P3 and its task reads 'unscored: gain < 1 nat' in the tree. Stage 2: a target with fewer than 200 Pile positions before it in rows 0..2000 is unscored, as is a task whose stage-1 class is 'fail' or unscored (amended before any run, 2026-10-27, after code review)",
   "expected": {
     "W0 / do-nothing": "rho with an empty set 0 exactly; rho_S at W0 about 0 (S is off at W0); kl_other of the empty removal 0",
     "random sets": "rho_random mean and max <= 0.1 under either reading",
@@ -44,23 +46,31 @@
   "predictions": [
     {
       "id": "P1_recruitment_real",
-      "rule": "rho_S >= 0.5 on at least two of the three tasks, the two seeds' rho_S within 0.1 of each other, with the random draws' max <= 0.15 and rho_null <= 0.15 on those tasks (task numbers as defined: rho_S the seeds' mean, random max and rho_null the max over seeds). Absolute, in shares of the gain",
+      "rule": "the decision tree reads 'pass': at least two of the three tasks have class 'pass', i.e. on both seeds rho_S >= 0.5, random max <= 0.15 and rho_null <= 0.15, and the seeds' rho_S within 0.1 of each other (task classes as defined). Absolute, in shares of the gain (amended before any run, 2026-10-27, after code review)",
       "predicted": "pass, lean medium-low. In the masked model the recruited set carried only 40 to 64% of the re-gating effect (E4, E6), so rho_S between 0.3 and 0.6 is the likeliest reading (the 'partial' branch)",
       "blind_to": "the trigger position only; held-out windows; removal is all-or-nothing per subcomponent (a piece the fine-tune uses partly counts fully); the 0.3 threshold that defines S (the top-k curve reads past it); pieces that were already on at W0 and only strengthened are outside S by construction; interactions between removed pieces; one 67M model",
       "positive_control": "the busy set removed from W0 moves the trigger by >= 1 nat of KL (stage 0): removal bites. The empty removal returns T1 to 1e-5",
       "noise_floor": "20 random same-size draws per state (spread reported); two seeds per task; regenerated states reproduce within about 0.002 (E28, E35)"
     },
     {
-      "id": "P2_specificity",
-      "rule": "on the tasks where P1 holds (per task, both seeds): kl_other with S removed <= 3 x kl_ft, and kl_other with the busy set removed >= 10 x kl_ft. Relative to the fine-tune's own off-target KL. Unscored if P1 holds on no task",
+      "id": "P2_S_specificity",
+      "rule": "on the tasks of class pass (both seeds): kl_other with S removed <= 3 x kl_ft. Relative to the fine-tune's own off-target KL. Unscored if no task passes (amended before any run, 2026-10-27, after code review)",
       "predicted": "pass, lean medium",
       "blind_to": "damage outside the 41-token windows (Pile not read); the 40 non-trigger positions only; KL to the fine-tuned model, not to W0",
-      "positive_control": "the busy set's kl_other (the same measure on a set chosen for being on at the trigger)",
+      "positive_control": "P2_busy below: the busy set's kl_other, the same measure on a set chosen for being on at the trigger (amended before any run, 2026-10-27, after code review)",
       "noise_floor": "the 20 random draws' kl_other (reported); two seeds"
     },
     {
+      "id": "P2_busy_control",
+      "rule": "on the same tasks (both seeds): kl_other with the busy set removed >= 10 x kl_ft. A control, not a claim: a miss reads 'busy control too weak', not 'S damages broadly' (amended before any run, 2026-10-27, after code review)",
+      "predicted": "pass",
+      "blind_to": "the busy set is chosen by W0's importance at the trigger only",
+      "positive_control": "the stage-0 busy check on emoticon (KL at the trigger >= 1 nat)",
+      "noise_floor": "the 20 random draws' kl_other; two seeds"
+    },
+    {
       "id": "P3_S_off_at_W0",
-      "rule": "|rho_S at W0| <= 0.1 on every task and seed. Absolute, in shares of the gain",
+      "rule": "|rho_S at W0| <= 0.1 on every scorable task and seed (states with G < 1 nat excluded and listed). Absolute, in shares of the gain (amended before any run, 2026-10-27, after code review)",
       "predicted": "pass, lean high",
       "blind_to": "the trigger position only; held-out windows",
       "positive_control": "the busy set removed from W0 (stage 0) moves the trigger",
@@ -68,21 +78,23 @@
     },
     {
       "id": "P4_update_points_at_target_contexts",
-      "rule": "on each task where stage 1 did not fail (by the fail rule) and the target has >= 200 Pile positions: on each seed, cos >= 0.3 and cos >= 3 x the ' http' null's cos (same matrix) on at least half the matrices of the layer that holds most of that seed's S (ties: the lowest layer, choice); a task passes when both seeds do, P4 when every scored task does. Absolute cosines, relative to the null",
+      "rule": "on each task whose stage-1 class is not fail and not unscored (amended before any run, 2026-10-27, after code review) and the target has >= 200 Pile positions: on each seed, cos >= 0.3 and cos >= 3 x the ' http' null's cos (same matrix) on at least half the matrices of the layer that holds most of that seed's S (ties: the lowest layer, choice); a task passes when both seeds do, P4 when every scored task does. Absolute cosines, relative to the null",
       "predicted": "pass, lean medium-low. If stage 1 passed and P4 fails, Gamma recruits the pieces through a direction that is not 'look like a natural target context'",
       "blind_to": "the mean shift only (per-window directions are averaged); the natural direction is defined by next-token identity (contexts where the target is predicted but not emitted count as non-target); which upstream pieces moved da (not in this plan); 2,000 Pile rows",
       "positive_control": "random directions read about 1 / sqrt(d_in) (reported per matrix); closer_all about 1 shows the move is toward the target's contexts, not toward the mean",
       "noise_floor": "two seeds; the ' http' null per task"
     }
   ],
-  "reported_not_scored": "rho_busy and its kl_other; rho at top-k (k = 25, 50, 100, 200, 400) with kl_other per k; every random draw's rho and kl_other; |S| per state and by layer; J(busy, S), J(null, S); kl_trigger of every removal; kl_other of S removed at W0; stage 2: cos, closer, closer_all, |da| and 1/sqrt(d_in) per matrix, for both seeds and the null; Pile positions per target; stage 3: one table per task (S of seed 0: matrix, layer, rise s, on-rate, on-positions, top 10 next and current tokens with ratios and counts, class), class counts and shares for S and for each of the five random sets; the random sets' tables in results/large/stage3_pieces.json. Stage 3's one check (not a prediction): the share of target pieces (classes target + both) in S >= 3 x the random sets' mean share",
+  "reported_not_scored": "rho_busy and its kl_other; rho at top-k (k = 25, 50, 100, 200, 400) with kl_other per k; every random draw's rho and kl_other; |S| per state and by layer; J(busy, S), J(null, S); kl_trigger of every removal; kl_other of S removed at W0; stage 2: cos, closer, closer_all, |da| and 1/sqrt(d_in) per matrix, for both seeds and the null; Pile positions per target; stage 3: one table per task (S of seed 0: matrix, layer, rise s, on-rate, on-positions, top 10 next and current tokens with ratios and counts, class), class counts and shares for S and for each of the five random sets; the random sets' tables in results/large/stage3_pieces.json. Stage 3's one check (not a prediction): the share of target pieces (classes target + both) in S >= 3 x the random sets' mean share; rho of the null's set cut to |S| per matrix (20 draws: every draw, mean, max, size) next to rho_null (amended before any run, 2026-10-27, after code review); the seed classes and task classes",
   "decision_tree": {
-    "pass": "P1 passes: stages 2 and 3 run. The pending card's evidence gains 'the fine-tuned model acts through the recruited pieces', with rho_S",
-    "partial": "rho_S in [0.2, 0.5) on two or more tasks, each at least 0.1 above its random max: stages 2 and 3 run; the report says the recruited set is part of the mechanism and names the top-k curve as the clue to the rest",
-    "fail": "rho_S < 0.2, or rho_S within 0.1 of the random max (rho_S < random max + 0.1), on two or more tasks: stages 2 and 3 do not run (the job writes stage1.json with the reading and stops); a Blocking card and a push notification: re-gating is Gamma's reading, not the model's mechanism",
-    "outside the tree (choice)": "none of the three holds (e.g. one task passes, one is partial, one fails): stage 1 did not fail, so stages 2 and 3 run; the report says which tasks sit where",
-    "P2 fails while P1 passes": "removing S damages the model broadly: report the top-k curve and its kl_other per k; the card asks whether to score at a smaller k",
-    "order": "pass is checked first, then fail, then partial; the three cannot hold together (each needs two of the three tasks on disjoint sides of the bars)"
+    "classes": "the tree counts TASK classes (definitions: 'task numbers'); 'seeds disagree', 'pass, seeds more than 0.1 apart', 'unscored: random removal bites' and 'unscored: gain < 1 nat' count toward no branch, so non-specific damage by random removal cannot produce a fail or a Blocking card (amended before any run, 2026-10-27, after code review)",
+    "pass": "two or more tasks of class pass (P1): stages 2 and 3 run. The pending card's evidence gains 'the fine-tuned model acts through the recruited pieces', with rho_S (amended before any run, 2026-10-27, after code review)",
+    "partial": "two or more tasks of class partial (both seeds rho_S in [0.2, 0.5), each at least 0.1 above its random max): stages 2 and 3 run; the report says the recruited set is part of the mechanism and names the top-k curve as the clue to the rest (amended before any run, 2026-10-27, after code review)",
+    "fail": "two or more tasks of class fail (both seeds rho_S < 0.2 or within 0.1 of the random max): stages 2 and 3 do not run (the job writes stage1.json with the reading and stops); a Blocking card and a push notification: re-gating is Gamma's reading, not the model's mechanism (amended before any run, 2026-10-27, after code review)",
+    "outside the tree (choice)": "none of the three holds (mixed or unscored tasks): stage 1 did not fail, so stages 2 and 3 run; the report says which tasks and seeds sit where (amended before any run, 2026-10-27, after code review)",
+    "P2_S fails while P1 passes": "removing S damages the model broadly: report the top-k curve and its kl_other per k; the card asks whether to score at a smaller k. Reads P2_S only; a P2_busy miss reads 'busy control too weak' (amended before any run, 2026-10-27, after code review)",
+    "order": "pass is checked first, then fail, then partial; the three cannot hold together (each needs two of the three tasks)"
   },
-  "filed": "2026-10-27 13:11:29"
+  "filed": "2026-10-27 13:11:29",
+  "amended": "2026-10-27, before any run (no number produced; cluster job 38479 died at model load), after code review: fields marked (amended ...)"
 }

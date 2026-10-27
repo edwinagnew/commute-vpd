@@ -10,7 +10,7 @@ S subtracts its rank-1 matrices from W (`signatures.ablated_weights`). On a task
 The removed share of a set is rho = (lo without nothing removed - lo with S removed) / G, G = T1 - T0 the fine-tune's
 gain: 0 when removing S does nothing, 1 when it undoes the fine-tune.
 
-The stage-1 readings (P1, P2, P3 and the decision tree) are pure functions of per-state records at the bottom, with
+The stage-1 readings (P1, P2_S, P2_busy, P3 and the decision tree) are pure functions of per-state records at the bottom, with
 the plan's thresholds as module constants.
 """
 
@@ -78,60 +78,75 @@ def share(lo_full: float, lo_removed: float, gain: float) -> float:
     return (lo_full - lo_removed) / gain if abs(gain) > 1e-9 else float("nan")
 
 
+def subset_like(sel: Sel, pool: Sel, seed: int) -> Sel:
+    """A random subset of `pool` with the size of `sel` per matrix (all of pool[k] where it is smaller): the null's
+    recruited set cut to |S|, matched per matrix."""
+    gen = torch.Generator().manual_seed(seed)
+    out = {}
+    for k, idx in sel.items():
+        p = pool.get(k, torch.zeros(0, dtype=torch.long))
+        out[k] = p[torch.randperm(p.numel(), generator=gen)[: min(int(idx.numel()), int(p.numel()))]].sort().values
+    return out
+
+
 # ----------------------------------------------------------------------------- stage-1 readings (pure)
+# Amended before any run, 2026-10-27, after code review: each seed is classified separately and a task takes a class
+# only when both seeds agree; a task whose random removal bites (random max > 0.15) or with a seed of gain < 1 nat is
+# unscored and counts toward no branch; P2 is split into P2_S (scored) and P2_busy (the busy control).
+
+UNSCORED_GAIN, UNSCORED_RANDOM = "unscored: gain < 1 nat", "unscored: random removal bites"
 
 
-def task_summary(seeds: list[dict[str, Any]]) -> dict[str, float]:
-    """One task's numbers from its seeds' records (each with rho_S, random_max, rho_null): rho_S is the MEAN over the
-    seeds, random_max and rho_null the MAX over the seeds (the stricter side for the null bars), gap the seeds'
-    largest difference in rho_S."""
-    rho = [s["rho_S"] for s in seeds]
-    return {"rho_S": sum(rho) / len(rho), "seed_gap": max(rho) - min(rho),
-            "random_max": max(s["random_max"] for s in seeds), "rho_null": max(s["rho_null"] for s in seeds)}
-
-
-def task_fails(t: dict[str, float]) -> bool:
-    """The plan's fail rule for one task: rho_S < 0.2, or rho_S within 0.1 of the random max (or below it)."""
-    return t["rho_S"] < RHO_FAIL or t["rho_S"] < t["random_max"] + MARGIN
-
-
-def p1_task(t: dict[str, float]) -> bool:
-    return (t["rho_S"] >= RHO_PASS and t["seed_gap"] <= SEED_GAP and t["random_max"] <= RANDOM_MAX
-            and t["rho_null"] <= NULL_MAX)
-
-
-def partial_task(t: dict[str, float]) -> bool:
-    return RHO_FAIL <= t["rho_S"] < RHO_PASS and t["rho_S"] >= t["random_max"] + MARGIN
-
-
-def stage1_reading(tasks: dict[str, dict[str, float]]) -> str:
-    """The decision tree on the task summaries: 'pass' (P1), 'fail', 'partial', or 'outside the tree' (none of the
-    three; stage 1 did not fail, so stages 2 and 3 run). P1, fail and partial cannot hold together: each needs two of
-    the three tasks on disjoint sides of the bars."""
-    if sum(p1_task(t) for t in tasks.values()) >= N_TASKS:
+def seed_class(r: dict[str, Any]) -> str:
+    """One scorable seed against the tree's bars: 'pass' (P1's bars on one seed), 'fail', 'partial', or 'none'."""
+    rho, rmax = r["rho_S"], r["random_max"]
+    if rho >= RHO_PASS and rmax <= RANDOM_MAX and r["rho_null"] <= NULL_MAX:
         return "pass"
-    if sum(task_fails(t) for t in tasks.values()) >= N_TASKS:
+    if rho < RHO_FAIL or rho < rmax + MARGIN:
         return "fail"
-    if sum(partial_task(t) for t in tasks.values()) >= N_TASKS:
-        return "partial"
+    return "partial" if rho < RHO_PASS else "none"
+
+
+def task_class(seeds: list[dict[str, Any]]) -> str:
+    """A task's class: unscored (a seed with gain < 1 nat, or random removal bites on either seed), the seeds' common
+    class (a pass also needs the seeds' rho_S within 0.1, P1's own rule), else 'seeds disagree'."""
+    if not all(r["scorable"] for r in seeds):
+        return UNSCORED_GAIN
+    if max(r["random_max"] for r in seeds) > RANDOM_MAX:
+        return UNSCORED_RANDOM
+    cls = {seed_class(r) for r in seeds}
+    if len(cls) > 1:
+        return "seeds disagree"
+    c = cls.pop()
+    rho = [r["rho_S"] for r in seeds]
+    return "pass, seeds more than 0.1 apart" if c == "pass" and max(rho) - min(rho) > SEED_GAP else c
+
+
+def stage1_reading(classes: dict[str, str]) -> str:
+    """The decision tree on the task classes: 'pass' (P1), 'fail', 'partial', or 'outside the tree'. The three are
+    exclusive: each needs two of the three tasks."""
+    for branch in ("pass", "fail", "partial"):
+        if sum(c == branch for c in classes.values()) >= N_TASKS:
+            return branch
     return "outside the tree"
 
 
-def p2_state(s: dict[str, Any]) -> bool:
-    """One task-seed: removing S costs <= 3 x the fine-tune's own off-target KL, removing the busy set >= 10 x."""
-    return s["kl_other"]["S"] <= KL_S * s["kl_ft"] and s["kl_other"]["busy"] >= KL_BUSY * s["kl_ft"]
-
-
 def readings(states: dict[str, dict[str, dict[str, Any]]]) -> dict[str, Any]:
-    """P1, P2, P3 and the decision tree from {task: {seed: record}}; a record has rho_S, random_max, rho_null, rho_S_W0,
-    kl_ft and kl_other {'S', 'busy'}. P2 is read on the tasks where P1 holds (both seeds), unscored if there are none."""
-    tasks = {n: task_summary(list(s.values())) for n, s in states.items()}
-    p1 = {n: p1_task(t) for n, t in tasks.items()}
-    p2 = {n: all(p2_state(r) for r in states[n].values()) for n in tasks if p1[n]}
-    p3 = {f"{n}/s{k}": abs(r["rho_S_W0"]) <= W0_TOL for n, s in states.items() for k, r in s.items()}
-    reading = stage1_reading(tasks)
-    return {"tasks": tasks, "task_fails": {n: task_fails(t) for n, t in tasks.items()}, "reading": reading,
-            "P1": {"per_task": p1, "pass": reading == "pass"},
-            "P2": {"per_task": p2, "pass": all(p2.values()) if p2 else "unscored"},
-            "P3": {"per_state": p3, "pass": all(p3.values())},
-            "P2_fails_while_P1_passes": reading == "pass" and bool(p2) and not all(p2.values())}
+    """P1, P2_S, P2_busy, P3 and the decision tree from {task: {seed: record}}; a record has scorable, rho_S, random_max,
+    rho_null, rho_S_W0, kl_ft and kl_other {'S', 'busy'}. P2_S and P2_busy are read on the tasks that pass (both seeds),
+    unscored if there are none; P3 on every scorable state."""
+    classes = {n: task_class(list(s.values())) for n, s in states.items()}
+    reading = stage1_reading(classes)
+    on_p1 = [n for n, c in classes.items() if c == "pass"]
+    p2s = {n: all(r["kl_other"]["S"] <= KL_S * r["kl_ft"] for r in states[n].values()) for n in on_p1}
+    p2b = {n: all(r["kl_other"]["busy"] >= KL_BUSY * r["kl_ft"] for r in states[n].values()) for n in on_p1}
+    p3 = {f"{n}/s{k}": abs(r["rho_S_W0"]) <= W0_TOL for n, s in states.items() for k, r in s.items() if r["scorable"]}
+    return {"task_class": classes, "seed_class": {f"{n}/s{k}": seed_class(r) if r["scorable"] else UNSCORED_GAIN
+                                                  for n, s in states.items() for k, r in s.items()},
+            "reading": reading, "P1": {"per_task": {n: c == "pass" for n, c in classes.items()}, "pass": reading == "pass"},
+            "P2_S": {"per_task": p2s, "pass": all(p2s.values()) if p2s else "unscored"},
+            "P2_busy": {"per_task": p2b, "pass": all(p2b.values()) if p2b else "unscored",
+                        "on_miss": "busy control too weak (not 'S damages broadly')"},
+            "P3": {"per_state": p3, "pass": all(p3.values()) if p3 else "unscored",
+                   "unscored": [f"{n}/s{k}" for n, s in states.items() for k, r in s.items() if not r["scorable"]]},
+            "P2_S_fails_while_P1_passes": reading == "pass" and bool(p2s) and not all(p2s.values())}
