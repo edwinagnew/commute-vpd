@@ -3,7 +3,7 @@
 # Never point anything at /tmp (MATS cluster handbook).
 
 export COMMUTE_REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # the clone this file is in
-_eph=/ephemeral/$USER
+_eph=/ephemeral/${USER:-$(id -un)}   # a restarted lead's shell can lack USER (job 39125 died on it, 2026-10-27)
 
 export TMPDIR=$_eph/tmp
 export HF_HOME=$_eph/hf                    # tokenizer + datasets cache (re-downloadable); overrides env.py's artifacts/hf default
