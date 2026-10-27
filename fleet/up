@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Start the agents: one Claude session per role, in a window of the tmux session FLEET_SESSION, each in its own clone
 # FLEET_AGENTS/<role>/ (fleet/fleet.conf). Each runs /loop in auto permission mode and is restarted a minute after it
-# exits; its state is in the repository and its handoff note, not in the session. Ported from mats-fleet's ci/fleet-up.
+# exits, unless it marked itself finished (fleet/finish); its state is in the repository and its handoff note, not in
+# the session. Ported from mats-fleet's ci/fleet-up.
 #   fleet/up [ROLE ...]   start the given roles (default: the lines of FLEET_DATA/roster, else lead); windows already
 #                         running are left alone. A numbered role (worker-2) uses its base role's brief.
 #   fleet/up status       list the windows
-#   fleet/up stop         end every agent
+#   fleet/up stop         end every agent (fleet/stop all; fleet/stop ROLE ends one)
 set -euo pipefail
 source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
 export PATH="$HOME/.local/bin:/usr/bin:$PATH"   # cron's PATH has neither claude nor uv
@@ -70,11 +71,13 @@ for role in "${roles[@]}"; do
   [[ -f "$FLEET_AGENTS/$role/fleet/roles/$file.md" ]] || { echo "up: no fleet/roles/$file.md for $role; skipped"; continue; }
   effort=high   # xhigh spent minutes thinking on routine turns and risks the usage limit mid-night (user, 2026-10-26)
   mkdir -p "$FLEET_DATA/agents/$role"
+  rm -f "$FLEET_DATA/agents/$role/done"   # a fresh start is new work
+  done_file=$(printf %q "$FLEET_DATA/agents/$role/done")
   prompt="/loop You are the $role agent working on commute. Start each iteration with fleet/iteration-start $role: it pulls, says whether a restart was requested (if so, follow fleet/roles/$file.md, Restarts, first), and shows your handoff note, your live Slurm jobs and the research-log queue. Read fleet/roles/$file.md once per session and again after a compaction. Then do the next item, commit, and push (git pull --no-rebase, then git push). End every iteration by rewriting your handoff note (fleet/handoff $role). While waiting on Slurm jobs run fleet/wait-job JOBID... in the background; wake-ups at least 20 minutes apart while waiting, 60 minutes when idle."
   # The keys reach this window's command only: never .bashrc, never tmux's global environment.
   # Scratchpads on /ephemeral (fleet/fleet.sh), recreated after a reboot.
   tmp=""; [[ -n "${CLAUDE_CODE_TMPDIR:-}" ]] && tmp="mkdir -p $(printf %q "$CLAUDE_CODE_TMPDIR"); export CLAUDE_CODE_TMPDIR=$(printf %q "$CLAUDE_CODE_TMPDIR"); "
-  cmd="set -a; source $(printf %q "$FLEET_SECRETS"); set +a; while :; do ${tmp}${scope}claude --permission-mode auto --model 'opus[1m]' --effort $effort -n $FLEET_PREFIX-$role $(printf %q "$prompt"); echo 'restarting in 60s'; sleep 60; done"
+  cmd="set -a; source $(printf %q "$FLEET_SECRETS"); set +a; while :; do ${tmp}${scope}claude --permission-mode auto --model 'opus[1m]' --effort $effort -n $FLEET_PREFIX-$role $(printf %q "$prompt"); [[ -e $done_file ]] && { echo 'finished (fleet/finish), not restarting; fleet/start gives it new work'; exec bash; }; echo 'restarting in 60s'; sleep 60; done"
   if tmux has-session -t "$session" 2>/dev/null; then
     tmux new-window -d -t "$session" -n "$role" -c "$FLEET_AGENTS/$role" "$cmd"
   else

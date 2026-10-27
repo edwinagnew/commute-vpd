@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
-# Stop every agent at once. Slurm jobs keep running; a RunPod pod an agent started terminates itself when that
-# agent's session ends (cleanup = "terminate"), but check the RunPod console anyway.
-#   fleet/stop
-exec "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/up" stop
+# Stop agents. Slurm jobs keep running; a RunPod pod an agent started terminates itself when that agent's session ends
+# (cleanup = "terminate"), but check the RunPod console anyway. Bring one back with fleet/start.
+#   fleet/stop ROLE   stop that agent only (its window and its restart loop)
+#   fleet/stop all    stop every agent
+set -euo pipefail
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
+case "${1:-}" in
+  ""|-h|--help) sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 1 ;;
+  all) exec "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/up" stop ;;
+  *) if tmux kill-window -t "$FLEET_SESSION:$1" 2>/dev/null; then echo "stop: $1 stopped"
+     else echo "stop: no agent $1 running (fleet/up status lists them)" >&2; exit 1; fi ;;
+esac

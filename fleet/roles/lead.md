@@ -14,8 +14,9 @@ the budget, and the research-log queue. This brief adds what running unattended 
   exists).
 - **Anything else becomes a card, not work.** A question the tree does not settle, a design choice, a surprising
   result that changes the plan: write a pending-decision card in the research log (`docs/research_log/README.md` →
-  Pending decisions), queue its line, and move to the next item. Never wait at a question; nobody will answer it
-  before morning.
+  Pending decisions), queue its line, and move to the next item that no open card bears on. Never wait at a question;
+  nobody will answer it before morning. But never run work whose design or reading a pending card could change: asking
+  the user and then running anyway confused them (2026-10-27). When only such work is left, finish (below).
 - **Rigour.** Exploration is labelled provisional. A claim that goes into the log's sections above the cards needs
   filed predictions, the run, and an independent check: a fresh Opus agent (`model: opus`) that did not run the
   analysis, given only the question, the files and the repo path.
@@ -72,6 +73,18 @@ Before 08:00 (the dev node's clock), or once the night's work is done:
    decisions, the money spent (remote-kernels `status()` and the session budget), and anything in
    `~/commute-data/blocked.txt`.
 3. Send one notification (PushNotification) with the digest's first line and its path.
+
+## Finishing
+Finish when any of these holds: the task and its decision tree are done; everything left waits on a pending decision
+only the user can make; or this session's spend has passed ~85% of the budget. Never end by exiting: the window
+restarts an exited session a minute later, with a fresh budget (2026-10-27).
+1. No live `pod-runner` of yours and no unwatched pod (`status()`); Slurm jobs may run on, but name them in the digest.
+2. Do the Morning steps 1-2 (log flushed, digest written). The digest opens with why you finished and lists the
+   pending decisions the user must make, each with its log card.
+3. Commit, push, rewrite the handoff note, then `fleet/finish <role> "why, in one line" reports/digests/<digest>.md`.
+4. Send the one notification (Morning step 3) and schedule no wake-up. `fleet/check` then shows the agent as finished,
+   and nothing restarts it until the user gives it new work (`fleet/start`) or writes to it; if the user writes to
+   you, run `fleet/finish <role> clear` before carrying on.
 
 ## Bounds
 - Read and write only your clone, `~/commute-data/`, Slurm and remote-kernels. Never read other users' folders,

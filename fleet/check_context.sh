@@ -18,6 +18,7 @@ stamp() { date '+%Y-%m-%d %H:%M %Z'; }
 
 for role in $(tmux list-windows -t "$FLEET_SESSION" -F '#W'); do
   dir="$FLEET_DATA/agents/$role"; mkdir -p "$dir"
+  [[ -f "$dir/done" ]] && continue   # finished (fleet/finish): idle until the user gives it new work
   transcript=$(fleet_transcript "$role")
   tokens=0
   [[ -n "$transcript" ]] && tokens=$(tail -n 200 "$transcript" | jq -r 'select(.message.usage?) | .message.usage

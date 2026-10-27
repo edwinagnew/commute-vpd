@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One screen on how the agents are doing. Safe to run any time; it changes nothing.
 #   fleet/check
-# Top: NEEDS YOU, what only the user can act on (an agent at a prompt, interrupted or stopped; a problem an agent
+# Top: NEEDS YOU, what only the user can act on (an agent at a prompt, interrupted, stopped or finished; a problem an agent
 # recorded with fleet/problem and has not fixed; a subagent silent for over 2 h; a key or cluster problem). Then per
 # agent: its task's title (fleet/summarize), its status, what it is doing now, its running subagents, problems fixed in
 # the last 2 h. Then the latest commits, then compute: Slurm jobs, the cluster, the commute-* pods with their cost, keys.
@@ -25,6 +25,13 @@ needs=()   # lines for NEEDS YOU, filled while the agents are read
 # What the agent's window shows, as "short status|what the user should do" (the second part empty when nothing).
 state() {  # state ROLE NSUBS (reads $recent, the transcript's tail)
   local pane body last wake
+  # Finished (fleet/finish): nothing restarts it; the user reads its digest and decides.
+  if [[ -f "$FLEET_DATA/agents/$1/done" ]]; then
+    local why digest resume='fleet/start "new task"'
+    [[ "$1" == lead ]] || resume="fleet/start -r $1 \"new task\""
+    IFS=$'\t' read -r _ why digest < "$FLEET_DATA/agents/$1/done"
+    echo "finished: $why|finished ($why). Read $digest and the log's pending decisions, then $resume or fleet/stop $1"; return
+  fi
   pane=$(tmux capture-pane -p -t "$FLEET_SESSION:$1" 2>/dev/null | grep -v '^\s*$')
   if [[ "$(tmux display -p -t "$FLEET_SESSION:$1" '#{pane_current_command}' 2>/dev/null)" == bash ]] \
      && grep -q 'restarting in 60s' <<< "$(tail -3 <<< "$pane")"; then
@@ -53,7 +60,7 @@ state() {  # state ROLE NSUBS (reads $recent, the transcript's tail)
       return
     fi
   fi
-  echo "stopped|stopped: idle with no wake-up scheduled; tmux attach -t $FLEET_SESSION and tell it to carry on"
+  echo "stopped|stopped before finishing: idle, no wake-up. To continue: tmux attach -t $FLEET_SESSION and tell it to carry on. To end it: fleet/stop $1 (/exit only restarts it)"
 }
 
 windows=$(tmux list-windows -t "$FLEET_SESSION" -F '#W' 2>/dev/null)

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Mark an agent finished, so it is not restarted and fleet/check tells the user what to read (2026-10-27: the lead
+# went idle with its budget spent and decisions pending; /exit only restarted it, with a fresh budget).
+#   fleet/finish ROLE "why, in one line" DIGEST   mark ROLE finished; DIGEST is the report the user reads first
+#   fleet/finish ROLE clear                        resume: the user has given it new work
+#   fleet/finish ROLE                              show the marker
+# File: FLEET_DATA/agents/ROLE/done, one line: epoch, why, digest (tab-separated). fleet/up clears it on a fresh start.
+set -euo pipefail
+[[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/fleet.sh"
+role=${1:?usage: fleet/finish ROLE ["why" DIGEST | clear]}
+f="$FLEET_DATA/agents/$role/done"
+mkdir -p "$(dirname "$f")"
+if (( $# == 1 )); then
+  cat "$f" 2>/dev/null || echo "$role: not finished"
+elif [[ "$2" == clear ]]; then
+  rm -f "$f"; echo "$role: resumed"
+else
+  digest=${3:?usage: fleet/finish ROLE "why" DIGEST}
+  printf '%s\t%s\t%s\n' "$(date +%s)" "${2//$'\t'/ }" "$digest" > "$f"
+  echo "$role: finished; not restarted until fleet/start or fleet/finish $role clear"
+fi

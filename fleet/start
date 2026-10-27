@@ -7,7 +7,7 @@
 #   fleet/start                              no task: the agent does only analysis of what already exists (/design, class 1)
 # The task goes in the role's task file (fleet/fleet.sh, fleet_task_file: FLEET_DATA/tonight for the lead,
 # FLEET_DATA/agents/<role>/task otherwise), which the agent rereads every iteration, so editing it redirects the agent.
-# Then: fleet/check to see how each agent is doing, fleet/stop to end them.
+# Then: fleet/check to see how each agent is doing, fleet/stop ROLE (or all) to end them.
 set -euo pipefail
 [[ "${1:-}" == -h || "${1:-}" == --help ]] && { sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"; exit 0; }
 here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
@@ -21,6 +21,8 @@ if [[ $# -gt 0 ]]; then
 else
   : > "$task"; echo "task for $role: none (analysis of existing results only)"
 fi
+# A finished agent sits idle with no wake-up and would never read the new task: replace its window.
+[[ -e "$FLEET_DATA/agents/$role/done" ]] && tmux kill-window -t "$FLEET_SESSION:$role" 2>/dev/null
 "$here/up" "$role"
 "$here/summarize" "$role" &> /dev/null &   # the task's title for fleet/check, without waiting for cron
 echo "Started. Check on it with: fleet/check    Watch it live: tmux attach -t $FLEET_SESSION (leave with Ctrl-b d)"

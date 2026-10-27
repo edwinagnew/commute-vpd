@@ -13,6 +13,7 @@ adir="$FLEET_DATA/agents/$role"
 mkdir -p "$adir"
 code=0
 
+[[ -e "$adir/done" ]] && echo "FINISHED earlier ($(cut -f2 "$adir/done")). Only a message from the user resumes you: then run fleet/finish $role clear and carry on. Otherwise end this iteration with no wake-up."
 [[ -e "$adir/restart-requested" ]] && echo "RESTART REQUESTED ($adir/restart-requested): follow fleet/roles/${role%-[0-9]*}.md, Restarts, before anything else."
 
 # Merge, never rebase (plan section 3). A failed merge is left for the agent to resolve.
