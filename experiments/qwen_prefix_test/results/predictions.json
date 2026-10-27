@@ -1,0 +1,83 @@
+{
+ "plan": "reports/plans/2026-10-28_plan_qwen-prefix-test.md. Filed 2026-10-28 before any run; never edited after.",
+ "state": "Qwen/Qwen3-1.7B-Base at revision ea980cb0a6c2ae4b936e82123acc929f1cec04c1, unchanged, bf16 weights; raw text, no chat template, no instruction, no special tokens; greedy decoding; batches of 128, left-padded (commute.qwen_eval.load_model and generate)",
+ "sets": {
+  "copy": "openai/gsm8k main test, revision 740312add88f781978c0658806c59bc2815b9866, the first 256 questions in index order; prompt = the whole question, a blank line, then its own prefix",
+  "train": "openai/gsm8k main train, same revision, the first 1,319 questions in index order (the positive control)",
+  "floor": "danish-foundation-models/multilingual-gsm-symbolic, config eng, split test_synthetic, revision 75ce20d919d93ba78340adc6f70d2120f3ca3ce3 (tag v0.5.5): 2,000 variants, 20 of each of 100 templates; source_id is the GSM8K test index of the template's question and the 100 source ids equal GSM-Symbolic's original ids (checked on CPU 2026-10-27); the dataset was created 2026-04-22, after Qwen3's release (2025-04-29), so its variants cannot be in Qwen3's training data; instance-major order",
+  "test": "openai/gsm8k main test, same revision, all 1,319 questions in index order (the reading)"
+ },
+ "measurements": {
+  "cut": "a question's whitespace-separated words w_1..w_n (n >= 5, asserted): prefix = the first int(0.6 n) words joined by single spaces, remainder = the rest joined by single spaces; both non-empty for n >= 2",
+  "EM_x": "share of set x's items whose greedy continuation of the prefix, with whitespace collapsed to single spaces and stripped, equals the remainder or starts with the remainder followed by a space; new tokens per batch = the batch's longest remainder in tokens (tokenised with a leading space) + 8",
+  "SE": "train, test, copy: binomial sqrt(p (1 - p) / n). floor: stdev over templates of each template's EM, divided by sqrt(T); None when T < 2",
+  "D_x": "EM_x - EM_floor, absolute, x = train, test; SE = sqrt(SE_x^2 + SE_floor^2)",
+  "r": "D_test / D_train, computed only when D_train >= 0.05; SE by the delta method, sqrt(SE_test^2 + r^2 SE_train^2 + (1 - r)^2 SE_floor^2) / D_train"
+ },
+ "gates": {
+  "G1 (copy control)": "EM_copy >= 0.90; runs first and alone; fail: stop, nothing else is read",
+  "G2 (positive control)": "D_train >= 0.05; not a stop: a failing control leaves a null on test unreadable but a high D_test still reads"
+ },
+ "rules": {
+  "verdict": "no reading if any of EM_train, EM_test, EM_floor is missing; else if D_train < 0.05: 'like train' if D_test >= 0.05, else 'no control'; else (control passes, r defined, D_train > 0): 'rare' if r <= 0.2, 'like train' if r >= 0.5, 'partial' strictly between. Negative r (test below the floor) is 'rare'",
+  "edge cases checked on CPU before filing (2026-10-27)": "an empty set gives EM None and verdict 'no reading'; D_train = 0 or negative gives 'no control' (no division); D_train exactly 0.05 passes the control (inclusive); r exactly 0.2 is 'rare' and exactly 0.5 'like train' (inclusive); no control with D_test exactly 0.05 is 'like train'; r above 1 (test above train) is 'like train'; a floor with one template gives SE None and every SE that uses it None, the verdict still reads from the point estimates; every case maps to exactly one of the five verdicts. The exact-match rule accepts every set's own remainder (1.000 on all four sets) and rejects a continuation that runs the remainder's last word into a longer one",
+  "stage budgets": "copy 120 s, train 300 s, floor 420 s, test 300 s; a stage stops before a batch that would pass its budget and records k; readings use the k reached"
+ },
+ "expected": {
+  "do-nothing reference": "none: no update is read; every number is a reading of the unchanged base model",
+  "EM_copy": "about 0.98 (at least 0.90): copying a question shown a line earlier needs no memory",
+  "EM_floor": "about 0.02 (0.00 to 0.08): formulaic endings guessed from the prefix; 7.8% of floor remainders are word for word the remainder of their GSM8K original, so memory of the originals can add at most 0.078 times the test detection rate",
+  "EM_train": "about 0.10 (0.02 to 0.40); Wu et al. read 21.8% and 32.0% on MATH-500 for Qwen3-4B-Base and 8B-Base; a 1.7B model reproduces less of what it saw",
+  "EM_test": "about 0.05 (0.01 to 0.20)",
+  "D_train": "about 0.08",
+  "D_test": "about 0.03",
+  "r": "about 0.35 (0.0 to 0.8)"
+ },
+ "predictions": [
+  {
+   "id": "P0",
+   "rule": "G1 passes (EM_copy >= 0.90)",
+   "predicted": "pass",
+   "confidence": "high",
+   "positive_control": "itself: the answer is in the prompt",
+   "blind_to": "memory (by design); it tests the cut, the batching, left padding, decoding and the comparison",
+   "noise_floor": "binomial SE about 0.01 at 256 items and EM 0.98"
+  },
+  {
+   "id": "P1",
+   "rule": "G2 passes (D_train >= 0.05)",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "this is the positive control for memory detection: GSM8K train questions are copied into many public maths training sets, and CoDeC read 100 (seen) for Qwen2.5-1.5B-Instruct on GSM8K train",
+   "blind_to": "train questions seen but not reproduced word for word (paraphrased copies such as rephrased-question sets teach the problem without its wording); CoDeC read only 28 and 54 for Qwen3-8B and 14B on train, below its seen line of 80, so Qwen3 may have seen train less than Qwen2.5",
+   "noise_floor": "SE of D_train about 0.010 at EM_train 0.10 (binomial 0.008, floor about 0.005)"
+  },
+  {
+   "id": "P2",
+   "rule": "verdict is not 'like train'",
+   "predicted": "pass",
+   "confidence": "medium",
+   "positive_control": "P1 (train)",
+   "blind_to": "memory that is not word for word; answer memory without question memory; the post-trained Qwen3-1.7B may recall less than its base (Wu et al.: 5.2% against 21.8% at 4B); r assumes the same detection rate per seen question on train and test and train fully seen, so r is an upper bound on the share of test seen as often as train; template memory raising the floor shrinks D_test (bounded above: at most 7.8% of floor items)",
+   "noise_floor": "SE of r about 0.1 at D_train 0.08; about 0.2 at D_train 0.05"
+  },
+  {
+   "id": "P3",
+   "rule": "verdict is 'rare' (control passes and r <= 0.2)",
+   "predicted": "fail (partial)",
+   "confidence": "low",
+   "positive_control": "as P2",
+   "blind_to": "as P2",
+   "noise_floor": "as P2"
+  }
+ ],
+ "reported": "every set's k, EM and SE; D_train, D_test and their SEs; r and its SE; peak GPU memory; batch times. Continuations in results/large/{copy,train,floor,test}.jsonl",
+ "decision_tree": {
+  "P0 fails": "stop; read the copy continuations, fix the apparatus; nothing else is read",
+  "verdict rare": "card decision-qwen-baseline, option (a) as recommended: keep GSM8K; GSM8K test stays the held-out score, with GSM-Plus and the 2026 synthetic set beside it; the fresh-number gap D_plus 0.039 is read as harder numbers, not recall",
+  "verdict partial": "option (a) with fresh-set scoring as the primary held-out score (the 2,000 unseen 2026 synthetic variants and GSM-Plus), GSM8K test reported beside it as secondary; recommended to the user on the card",
+  "verdict like train": "pending-decision card for the user, no default: (a) fresh-set scoring only, GSM8K test no longer a held-out score, or (b) switch task (synthetic multi-step arithmetic, headroom report section 3)",
+  "verdict no control": "the prefix test cannot see memory at this size and does not settle the question; recommend option (a) with fresh-set scoring as the primary held-out score, the choice that holds whichever way memory goes; card to the user",
+  "verdict no reading": "cannot follow a finished run (every stage runs at least its first batch); if the job dies before the readings, rerun after reading the log"
+ }
+}

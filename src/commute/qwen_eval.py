@@ -6,6 +6,8 @@ INSTRUCTION; up to MAX_NEW new tokens, left-padded batches. Lengths count prompt
 response tokens up to and including the end token; a response is truncated when no end token comes within MAX_NEW.
 With `window`, each record also carries `capped_response`: the response cut where prompt plus response reach `window`
 tokens (the "capped" reading; equal to `response` when the whole answer fits).
+`load_model(name, revision)` and `generate(..., max_new=)` serve other checkpoints and shorter generations (the base
+model's prefix test, experiments/qwen_prefix_test); the defaults are the ones above.
 """
 
 from __future__ import annotations
@@ -28,10 +30,10 @@ GREEDY = {"do_sample": False}
 Records = list[dict[str, Any]]
 
 
-def load_model() -> tuple[Any, Any]:
-    tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
+def load_model(name: str = MODEL, revision: str = MODEL_REV) -> tuple[Any, Any]:
+    tok = AutoTokenizer.from_pretrained(name, revision=revision)
     tok.padding_side = "left"
-    model: Any = AutoModelForCausalLM.from_pretrained(MODEL, revision=MODEL_REV, dtype=torch.bfloat16)
+    model: Any = AutoModelForCausalLM.from_pretrained(name, revision=revision, dtype=torch.bfloat16)
     model = model.cuda().eval()
     # drop the checkpoint's sampling defaults (T 0.6, top_k 20, top_p 0.95) so only the settings passed here apply
     eos = model.generation_config.eos_token_id
@@ -46,9 +48,9 @@ def prompt(tok: Any, question: str) -> str:
 
 @torch.no_grad()
 def generate(tok: Any, model: Any, texts: list[str], n_ret: int, kw: dict[str, Any],
-             window: int | None = None) -> Records:
+             window: int | None = None, max_new: int = MAX_NEW) -> Records:
     enc = tok(texts, return_tensors="pt", padding=True, add_special_tokens=False).to(model.device)
-    out = model.generate(**enc, max_new_tokens=MAX_NEW, num_return_sequences=n_ret, **kw)
+    out = model.generate(**enc, max_new_tokens=max_new, num_return_sequences=n_ret, **kw)
     gen = out[:, enc["input_ids"].shape[1]:].cpu()
     plen = enc["attention_mask"].sum(1).repeat_interleave(n_ret).tolist()
     eos = torch.tensor(model.generation_config.eos_token_id)
