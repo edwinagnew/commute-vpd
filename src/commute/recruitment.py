@@ -12,10 +12,15 @@ gain: 0 when removing S does nothing, 1 when it undoes the fine-tune.
 
 The stage-1 readings (P1, P2_S, P2_busy, P3 and the decision tree) are pure functions of per-state records at the bottom, with
 the plan's thresholds as module constants.
+
+Amendment 2 (2026-10-27, reports/plans/2026-10-27_plan_e38-amend2.md) adds removal at the trigger position only
+(`removal_hooks`, `removed_at`) and its readings (P5 to P7, at the bottom).
 """
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 
 import torch
@@ -70,6 +75,48 @@ def removed(model: Any, W: dict[str, Tensor], comps: dict[str, tuple[Tensor, Ten
     from commute.signatures import ablated_weights
 
     with model_state(model, target=ablated_weights(W, comps, sel)):
+        return readout(model, windows, half, token, ref)
+
+
+@contextmanager
+def removal_hooks(model: Any, W_removed: dict[str, Tensor], half: int | None) -> Iterator[None]:
+    """While open, each decomposed matrix k of the target model outputs F.linear(x, W_removed[k]) at position `half`
+    (at every position if None) and its own output everywhere else (E38 Amendment 2). With W_removed =
+    `ablated_weights(W, comps, sel)` and the model's weights at W, that output is x W^T - sum_{c in sel} (x . v_c) u_c,
+    computed as the weight path computes it (same input, same autocast cast), so with half=None it equals `removed`
+    bit for bit. Every matrix in W_removed is hooked, also those where sel is empty. The hooks go in the `finally`."""
+    from commute.vpd import target_linear
+
+    def hook_of(w: Tensor) -> Any:
+        def hook(_module: Any, args: tuple[Tensor, ...], out: Tensor) -> Tensor:
+            alt = torch.nn.functional.linear(args[0], w)
+            if half is None:
+                return alt
+            assert out.ndim == 3, tuple(out.shape)  # (B, T, d_out)
+            out = out.clone()
+            out[:, half] = alt[:, half]
+            return out
+
+        return hook
+
+    handles = []
+    try:
+        for k, w in W_removed.items():
+            handles.append(target_linear(model, k).register_forward_hook(hook_of(w)))
+        yield
+    finally:
+        for h in handles:
+            h.remove()
+
+
+def removed_at(model: Any, W: dict[str, Tensor], comps: dict[str, tuple[Tensor, Tensor]], sel: Sel, windows: Tensor,
+               half: int, token: int, ref: list[Tensor], everywhere: bool = False) -> dict[str, float]:
+    """`readout` of the full model with weights W, with `sel`'s rank-1 outputs removed at the trigger position only
+    (`removal_hooks`; at every position with `everywhere`, which must reproduce `removed`). Weights restored after."""
+    from commute.faithfulness import model_state
+    from commute.signatures import ablated_weights
+
+    with model_state(model, target=W), removal_hooks(model, ablated_weights(W, comps, sel), None if everywhere else half):
         return readout(model, windows, half, token, ref)
 
 
@@ -150,3 +197,55 @@ def readings(states: dict[str, dict[str, dict[str, Any]]]) -> dict[str, Any]:
             "P3": {"per_state": p3, "pass": all(p3.values()) if p3 else "unscored",
                    "unscored": [f"{n}/s{k}" for n, s in states.items() for k, r in s.items() if not r["scorable"]]},
             "P2_S_fails_while_P1_passes": reading == "pass" and bool(p2s) and not all(p2s.values())}
+
+
+# ----------------------------------------------------------------------------- E38 Amendment 2's readings (pure)
+# reports/plans/2026-10-27_plan_e38-amend2.md, filed predictions experiments/recruitment_test/results/predictions_amend2.json.
+# D(X) = rho_ft(X) - rho_0(X): the share of the gain removing X takes from W1 minus the share it takes from W0, both
+# over the same state's gain. A record (one task-seed) has scorable, kl_ft, and per position rule ('trigger', 'all')
+# D, rho_0 and kl_other_ft, each {'S', 'null', 'busy': float, 'random': [20 floats]}.
+
+D_THROUGH, D_NOT = 0.10, 0.05  # P5: 'through' needs D(S) >= D_THROUGH; below D_NOT it is 'not'
+BEAT_NOT = 18  # P5: D(S) above fewer than 18 of the 20 random D is 'not'
+NULL_D_MAX = 0.10  # P5_null: |D(null)| at most this on every scored state
+RHO0_MIN = 0.10  # P6: rho_0(S), trigger-only, at least this on every scored state
+
+
+def d_seed_class(D_S: float, D_random: list[float]) -> str:
+    """P5's seed rule: 'through' (D(S) >= 0.10 and above all random D), 'not' (D(S) < 0.05 or above fewer than 18 of
+    them), else 'unclear'."""
+    beats = sum(D_S > d for d in D_random)
+    if D_S >= D_THROUGH and beats == len(D_random):
+        return "through"
+    return "not" if D_S < D_NOT or beats < BEAT_NOT else "unclear"
+
+
+def d_reading(states: dict[str, dict[str, dict[str, Any]]], pos: str) -> dict[str, Any]:
+    """P5 under one position rule: seed classes, task classes (the seeds' common class, else 'seeds disagree';
+    unscored if a seed has gain < 1 nat) and the reading ('through' / 'not through' on >= 2 tasks, else 'outside the
+    tree')."""
+    seeds = {f"{n}/s{k}": d_seed_class(r["D"][pos]["S"], r["D"][pos]["random"]) if r["scorable"] else UNSCORED_GAIN
+             for n, s in states.items() for k, r in s.items()}
+    tasks = {}
+    for n, s in states.items():
+        cls = {seeds[f"{n}/s{k}"] for k in s}
+        tasks[n] = UNSCORED_GAIN if UNSCORED_GAIN in cls else cls.pop() if len(cls) == 1 else "seeds disagree"
+    counts = {c: sum(v == c for v in tasks.values()) for c in ("through", "not")}
+    reading = ("through" if counts["through"] >= N_TASKS else "not through" if counts["not"] >= N_TASKS
+               else "outside the tree")
+    return {"seed_class": seeds, "task_class": tasks, "reading": reading}
+
+
+def amend2_readings(states: dict[str, dict[str, dict[str, Any]]]) -> dict[str, Any]:
+    """P5 (trigger-only), P5_all (all positions), P5_null, P6 and P7 from {task: {seed: record}}. P5_null and P6 read
+    every scored state; P7 (kl_other of trigger-only S removal from W1 <= KL_S x the fine-tune's own) needs both seeds
+    of >= 2 tasks."""
+    scored = {f"{n}/s{k}": r for n, s in states.items() for k, r in s.items() if r["scorable"]}
+    p5, p5_all = d_reading(states, "trigger"), d_reading(states, "all")
+    null = {k: abs(r["D"]["trigger"]["null"]) <= NULL_D_MAX for k, r in scored.items()}
+    p6 = {k: r["rho_0"]["trigger"]["S"] >= RHO0_MIN for k, r in scored.items()}
+    p7 = {n: all(r["kl_other_ft"]["trigger"]["S"] <= KL_S * r["kl_ft"] for r in s.values()) for n, s in states.items()}
+    return {"P5": p5, "P5_all": {**p5_all, "same_task_classes_as_P5": p5_all["task_class"] == p5["task_class"]},
+            "P5_null": {"per_state": null, "pass": all(null.values()) if null else "unscored"},
+            "P6": {"per_state": p6, "pass": all(p6.values()) if p6 else "unscored"},
+            "P7": {"per_task": p7, "pass": sum(p7.values()) >= N_TASKS}}
