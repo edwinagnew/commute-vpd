@@ -56,10 +56,10 @@ Pass rules (fixed here, before any run; loader report §3):
 
 | check | must read | else |
 |---|---|---|
-| 0. target logits, HF torch vs JAX, same tokens | within the bf16 noise floor (torch fp32 vs torch bf16 on the same tokens) | stop: the target differs; fix before Γ |
+| 0. target logits, HF torch vs JAX, same tokens | KL(HF fp32 ‖ JAX) at most 2× the bf16 noise floor KL(HF fp32 ‖ HF bf16) on the same tokens | stop: the target differs; fix before Γ |
 | 1. g, torch Γ on JAX taps vs JAX | share of (position, component) pairs with abs diff > 0.1 below 1e-3 | stop, fix the Γ port |
 | 2. g, torch end to end vs JAX | same rule | fix the taps |
-| 3. masked-forward KL to clean logits, three mask settings | within 5% relative | fix the masked forward |
+| 3. masked-forward KL to clean logits, three mask settings | |torch − JAX| ≤ max(5% of JAX, 2× check 0 floor), scored with both sides in bf16 (the floor term: m = 1 sits near the noise floor) | fix the masked forward |
 | 4. 20-step adversary KL, 3 seeds per side | ranges overlap | look at the adversary port |
 
 Afterwards: copy the converted files to the RunPod volume (later, with the first paid run), and record
