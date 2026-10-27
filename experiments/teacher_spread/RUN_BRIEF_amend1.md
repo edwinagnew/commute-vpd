@@ -45,11 +45,12 @@ Watch for: no execute() or wait() over 5 min: re-arm instead. On a WebSocket clo
 | Teacher, C2 | `[ft] ...` to step 300, `[C2] held-out gain ~0.130 (E36 0.1301) pass True` | ~30 s |
 | W0 | `[W0] logp ~-3.146 gap ~0.272 damage 0 ...`, `[score] {}` | ~20 s |
 | do-nothing, C3 | `[do-nothing] logp ~-3.016 gap 0 damage ~0.235 ...`, `[score] ...`, `[C3] {... "pass": true}` | ~20 s |
-| arm 3, step 0 | `[arm3_0] second-order share ...`, `[faith] ...`, `[arm3_0] logp ~-3.041 ... pile {...}`, `[score]` with s ~0.80, check ~1.05 | ~1.5 min |
+| probe | `[masked teacher coeff None] warmup 1 ...` ×3, `[probe] {"sec_per_step": ..., "peak_gb": ..., "m0_arm2_train_minutes": ...}`: the masked trainer's first GPU run (nothing moves). Not a stop, but a traceback here is a code stop; if `m0_arm2_train_minutes` is over 40 or `peak_gb` over 70, tell the lead at once | ~10 s |
+| arm 3, step 0 | `[arm3_0] second-order share ...` (read it with the step-0 numbers: if it is not small, s and check may differ from E37's 0.80 and 1.05 for that known reason; report it, it is not a failed control), `[faith] ...`, `[arm3_0] logp ~-3.041 ... pile {...}`, `[score]` with s ~0.80, check ~1.05 | ~1.5 min |
 | arm 1 | `[component training lr 1e-05] step 1 ... 500 ... 4000`, `[arm1] trained 4000 steps in N s; train KL step 1 ~0.290`, `[saved] amend1_arm1_step1000.pt`, `[saved] amend1_arm1_step4000.pt`, then `[arm1_1000]`, `[arm1_2000]`, `[arm1_4000]` each with `[score]` | ~7 min + 3 min of reads |
 | arm 3 | the same with `[arm3]`, 2000 steps, `[saved] amend1_arm3_step2000.pt`, `[arm3_1000]`, `[arm3_2000]` | ~3.5 min + 2 min |
-| G2 | `[G2] {"kl": ~0.290, "arm1_kl_step1": ~0.290, "pass": true}` | seconds |
-| M0 | `[masked teacher coeff None] warmup 1/2/5/10/50 ...`, `step 50 ... 1000`, `[M0] trained in N s (N s per step) ...`, `[M0_1000] ...`, `[M0] {... "pass": true}`, `[M0] pass at coeff None; arm 2 projected N min ...: arm 2 runs 2000 steps` | 5-11 min + 1 min |
+| G2 | `[G2] {"kl": ~0.290, "arm1_kl_step1": ~0.290, "path_kl": ~0, "pass": true}` (path_kl: the two forward paths at W0 alone; on a miss it says whether rounding or a real mismatch caused it) | seconds |
+| M0 | `[masked teacher coeff None] warmup 1/2/5/10/50 ...`, `step 50 ... 1000`, `[M0] trained in N s (N s per step); teacher KL at loop step 1 ~0; masked terms ...`, `[M0_1000] ...`, `[M0] {... "pass": true}`, `[M0] pass at coeff None; arm 2 projected N min ...: arm 2 runs 2000 steps` | 5-11 min + 1 min |
 | (M0 retry) | only if M0 misses: the same as `M0b` at `coeff 0.05` | as M0 |
 | arm 2 | `[masked teacher coeff ...] ...` to step 2000 (or 1000), `[arm2] trained in ...`, `[saved] amend1_arm2_step2000.pt`, `[arm2_1000]`, `[arm2_2000]` | 10-21 min + 2 min |
 | End | `[score] {... "P1": ..., "P2": ..., "P3": ..., "branch": ...}`, `FINISHED wrote ...`, `=== FINISHED (exit 0) ===` | seconds |
@@ -87,6 +88,7 @@ numbers named here, download the JSON and logs, then terminate.
 - **C2**, `STOP: C2: the teacher's held-out gain ...`. Report `[C2]` and the `[ft] checkpoint 300` line.
 - **C3**, `STOP: C3: the do-nothing state does not read as the teacher`. Report `[C3]` and `[do-nothing]`.
 - **G2 or M0 missing** is not a stop: the run logs `[arm2] not run: ...` and finishes. Report the `[G2]` and `[M0]` lines.
+- **Reading M0**: read M0's stored loop-step-1 teacher KL (`train.M0.kl_step1`, in the `[M0] trained` line) before its damage. It should be about 0; if not, the two forward paths differ and that, not the masked losses, may move the model. Report both.
 - **A Python traceback** (an out-of-memory error in M0 or arm 2 included) is a code stop: report it with the last ten
   log lines, download what is written, terminate; do not retry. Arms 1 and 3 are already in the JSON by then.
 
@@ -95,7 +97,7 @@ about 7 min). Only on the lead's say-so.
 
 ## What to copy into the report
 
-- every `[load]`, `[C1]`, `[C2]`, `[C3]`, `[G2]`, `[M0]`, `[arm2]` and `[saved]` line, the `[ft] checkpoint 300` line,
+- every `[load]`, `[C1]`, `[C2]`, `[C3]`, `[probe]`, `[G2]`, `[M0]`, `[arm2]` and `[saved]` line, the `[ft] checkpoint 300` line,
   both `[rows] sample` lines and the `[arm3_0] second-order share` line;
 - every state line (`[W0]`, `[do-nothing]`, `[arm3_0]`, `[arm1_N]`, `[arm3_N]`, `[M0_1000]`, `[M0b_1000]`,
   `[arm2_N]`), with its seconds and peak GB, and the `[score]` line after each;

@@ -113,3 +113,39 @@ def test_masked_teacher_on_the_toy_trains_alive_columns_and_restores_the_model()
         assert (U2 - uv0[k][0]).abs().max() > 0
         assert torch.equal(vpd.target_weights(model)[k], W0[k]) and torch.equal(model.components[k].U, c0[k][0])
         assert not model.components[k].U.requires_grad
+
+
+def test_masked_losses_alone_move_u_and_v_on_the_toy() -> None:
+    """M0's set-up on the toy (teacher at W0): the teacher KL's gradient on U, V is rounding-sized, the masked losses'
+    is not, and masked training moves the alive columns."""
+    from test_faithfulness_invariants import KEYS, VOCAB, make_model
+
+    from commute import gamma, teacher, vpd
+    from commute import masked_teacher as MT
+    from commute.component_training import alive_uv
+
+    model = make_model()
+    w0_net, wd = teacher.teacher_net(model, {}), vpd.weight_deltas(model)
+    rows = torch.randint(0, VOCAB, (6, vpd.SEQ_LEN), generator=torch.Generator().manual_seed(0))
+    params = [p for k in KEYS for p in (model.components[k].U, model.components[k].V)]
+
+    def grad_norm(fn: Any) -> float:
+        for p in params:
+            p.grad = None
+        fn()
+        return sum(float(p.grad.norm()) for p in params if p.grad is not None)
+
+    for p in params:
+        p.requires_grad_(True)
+    g_kl = grad_norm(lambda: MT.student_kl(model, w0_net, rows[:2], wd).backward())
+    L = gamma.loss_setup(model, MT._masked, 2, 1, 0)
+    g_all = grad_norm(lambda: MT._step(model, w0_net, rows[:2], wd, L))
+    for p in params:
+        p.requires_grad_(False)
+        p.grad = None
+    assert g_all > 1e3 * g_kl, (g_all, g_kl)
+    alive = {k: torch.ones(8, dtype=torch.bool) for k in KEYS}
+    uv0 = alive_uv(model, alive)
+    _, st = MT.train(model, w0_net, rows, alive, uv0, MT.MaskedConfig(lr=1e-2, batch=2, steps=2, warmup=1, save_steps=(2,)),
+                     log=lambda _: None)
+    assert all((st[2][k][1] - uv0[k][0]).abs().max() > 1e-4 for k in KEYS)
