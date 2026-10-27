@@ -24,11 +24,13 @@ test -n "${RUNPOD_S3_API_KEY:-}" || { echo "RUNPOD_S3_API_KEY is not set"; exit 
 export AWS_ACCESS_KEY_ID=$RUNPOD_S3_API_USER AWS_SECRET_ACCESS_KEY=$RUNPOD_S3_API_KEY AWS_DEFAULT_REGION=us-mo-1
 export AWS_CONFIG_FILE=$TMPDIR/aws-config-$SLURM_JOB_ID
 printf '[default]\ns3 =\n  multipart_chunksize = 64MB\n  max_concurrent_requests = 4\n' > "$AWS_CONFIG_FILE"
-aws() { uvx --python 3.12 --from awscli==1.36.0 aws --endpoint-url https://s3api-us-mo-1.runpod.io "$@"; }
+# Job 39126: the CLI reported "NoSuchUpload" on CompleteMultipartUpload for files that had landed whole (sizes match);
+# likely a retry after the 60 s read timeout while RunPod assembles the parts. No read timeout; the size check decides.
+aws() { uvx --python 3.12 --from awscli==1.36.0 aws --endpoint-url https://s3api-us-mo-1.runpod.io --cli-read-timeout 0 "$@"; }
 dest=s3://ydavm7ct4x/qwen3-1.7b-p-e9fcffd5-torch
 
 start=$(date +%s)
-aws s3 sync --no-progress "$COMMUTE_QWEN_DIR" "$dest"
+aws s3 sync --no-progress "$COMMUTE_QWEN_DIR" "$dest" || echo "[s3] sync reported failures; the size check decides"
 echo "[s3] synced in $(( ($(date +%s) - start) / 60 )) min"
 
 # Verify: every local file is on the volume with the same byte count.
