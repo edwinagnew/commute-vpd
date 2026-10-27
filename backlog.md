@@ -285,7 +285,8 @@ Deferred ideas and loose ends. Date each entry.
   tokens and spread across heads (`../papers/pd/vpd_blog_post.md`, "Previous token behavior"). It only cites induction
   heads found by parameter decomposition in a toy induction model (Christensen et al. 2025). Those two subcomponents
   are a ready-made anchor: check whether the copy task's switched-on layer-1/2 attention set (E12, E28) includes them.
-- 2026-10-23. **Define the fixed-shift hypothesis without cues** (user, 2026-10-23, on accepting option (c) tentatively:
+- 2026-10-23. **Define the fixed-shift hypothesis without cues** (**de-prioritised 2026-10-27**, user, with the
+  hypothesis; `reports/decisions/2026-10-27_decision_regating-fixed-shift-deprioritised.md`) (user, 2026-10-23, on accepting option (c) tentatively:
   "make sure the backlog reflects we need to work out how to define it better and/or without cues"). The hypothesis
   now reads "one fixed change per cue", but "cue" is only defined for our toy tasks: the token at the trigger position
   that decides the answer. For a real post-training task ("get better at calling Python inline") there is no list of
@@ -301,6 +302,21 @@ Deferred ideas and loose ends. Date each entry.
   The E32/E33 report's anatomy follow-ups (what the per-cue change is made of in the MLP subcomponents; the common
   mean and cue-specific rest of the one-answer state) are **deferred**: mechanism of a toy, not run until a definition
   that transfers exists.
+- 2026-10-27. **De-prioritised: E35/E36's open items** (user, 2026-10-27, with the fixed-shift hypothesis): a
+  summary of the whole preceding text that keeps word order, a rule joining text neighbours with each value's room to
+  move, and what the remaining tenth to quarter of the switching depends on. Not carried forward
+  (`reports/decisions/2026-10-27_decision_regating-fixed-shift-deprioritised.md`).
+- 2026-10-27. **Re-gating: ablate the switched-on set in the full fine-tuned weights, with no Γ involved** (proposed by
+  the lead, found interesting by the user; `/design` first). Remove the switched-on pieces (E18's S_on, saved) from
+  W₀ + δW and read the target at the trigger and the off-target KL; random same-size sets and the original model as
+  references. If the behaviour dies, the fine-tuned model routes through those pieces and re-gating is a real
+  description; if it survives, re-gating is Γ's reading and the line's premise fails. E12 ablated a different set.
+  Forward passes on saved states, minutes. Serves reading (b) of the pending card "What would it mean to understand
+  re-gating?" (`reports/decisions/2026-10-27_decision_regating-fixed-shift-deprioritised.md`).
+- 2026-10-27. **Re-gating: does the trigger's residual stream move toward natural target contexts?** (proposed by the
+  lead, found interesting by the user; `/design` first). Cosine of the fine-tune's change in each matrix's input at the
+  trigger with the difference between the mean input at Pile positions that precede the target and the mean input
+  overall; other-target fine-tunes as the null. Serves reading (c) of the same card (same decision report).
 - 2026-10-23. **Teacher training** (user's name; proposed 2026-10-23, to start in a new session). Component training
   with the fine-tuned model as teacher: train the alive (U, V), Δ and Γ frozen, to match the fine-tuned model's
   outputs (KL to W₀ + δW) instead of the task's loss and data. It is the only route so far that keeps the behaviour,
