@@ -22,3 +22,11 @@ as `~/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5` (user chose symlink over mov
 **How to apply:** the user wants the high-level discussion in the lead's own window ("Here, in this window",
 2026-10-27), with bookkeeping and scoping sent to subagents so the lead's context stays free for it. Scoping reports:
 `reports/analyses/2026-10-27_analysis_qwen-{loader,compute,findings-to-port,rl-gsm8k}.md`.
+
+**User's framing (2026-10-27, in the lead window).** Use case: "interpreting what a single post-training step does to
+a model", so the update is small and "does something interesting". GSM8K is tentative ("simple enough that the model has
+some base capability for it but also room for improvement"); better realistic tasks welcome, "more safety relevant"
+even better (task-choice agent: `reports/analyses/2026-10-27_analysis_qwen-task-choice.md`). Compare SFT on known-correct
+solutions (gold or a stronger model's samples) with RL on the same task, since the re-weighting debate contrasts SFT
+(may teach new things) with RL (may only recruit); the user leans to SFT first, as closer to the 67M experiments.
+Thinking mode vs the 512-token decomposition length was a caveat the user valued.
