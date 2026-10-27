@@ -10,7 +10,9 @@ window (`recruitment.trigger_io`). Per task-seed state, G = T1 - T0 (G < 1 nat: 
 for X in S; null_minus_S (the ' http' state's recruited set minus S); random_i = recruit.random_like(S, alive, i); and
 active_i = per layer, as many pieces as S has there, drawn with seed i from the alive pieces not in S with W0 mean
 trigger importance task.m0 >= 0.5 (>= 0.2 for the whole state if some layer's pool at 0.5 is smaller than S's count
-there; threshold, pool sizes and realized sizes recorded), i = 0..19.
+there; threshold, pool sizes and realized sizes recorded), i = 0..19. A state whose pool is still too small at 0.2
+in some layer draws from the whole pool and is unscored for P9 (results/predictions_amend3_pool.json, filed before
+any run; the run refuses to start without it too).
 
 One job: the controls R0-R3 on all nine states first (any fail: results written, FAIL logged, exit 1), then the grid ->
 results/amend3.json (rewritten after each state; P9, P10 at the end). Every scored number is also in the log (stdout
@@ -43,6 +45,7 @@ from commute.faithfulness import model_state
 from commute.regating import Task
 
 PRED, OUT = RESULTS / "predictions_amend3.json", RESULTS / "amend3.json"
+PRED_POOL = RESULTS / "predictions_amend3_pool.json"  # the short-pool rule, filed before any run
 
 
 @dataclass(frozen=True)
@@ -132,11 +135,14 @@ def active_sets(run: Run, t: Task, S: R.Sel) -> tuple[list[R.Sel], dict[str, Any
     """The 20 active sets, matched to S per layer, and how they were drawn."""
     by, thr = R.by_layer(S), CFG.m0_active
     pools = {thr: RT.active_pool(S, run.alive, t.m0, thr)}
-    if any(len(pools[thr].get(lay, [])) < n for lay, n in by.items()):  # 0.2 even if still short: draws take all
+    def short() -> bool:
+        return any(len(pools[thr].get(lay, [])) < n for lay, n in by.items())
+
+    if short():  # 0.2 even if still short: draws take all of it, and P9 leaves the state unscored
         thr = CFG.m0_active_low
         pools[thr] = RT.active_pool(S, run.alive, t.m0, thr)
     sets = [RT.active_like(S, pools[thr], i) for i in range(CFG.n_active)]
-    return sets, {"threshold": thr, "S_by_layer": by, "sizes": [R.size(x) for x in sets],
+    return sets, {"threshold": thr, "short": short(), "S_by_layer": by, "sizes": [R.size(x) for x in sets],
                   "matched": all(R.by_layer(x) == by for x in sets),
                   "pool_by_layer": {str(k): {lay: len(p) for lay, p in v.items()} for k, v in pools.items()}}
 
@@ -164,7 +170,7 @@ def grid_state(run: Run, task: str, name: str, T0: float, io: RT.IO) -> dict[str
 def log_state(name: str, rec: dict[str, Any]) -> None:
     a, r = rec["active"], rec["rho"]
     log(f"[a3 grid {name}] T0 {rec['T0']:.4f} T1 {rec['T1']:.4f} G {rec['gain']:.4f} scorable {rec['scorable']} | n "
-        f"{json.dumps(rec['n'])} | active threshold {a['threshold']} S by layer {json.dumps(a['S_by_layer'])} pool by "
+        f"{json.dumps(rec['n'])} | active threshold {a['threshold']} short {a['short']} S by layer {json.dumps(a['S_by_layer'])} pool by "
         f"layer {json.dumps(a['pool_by_layer'])} sizes {a['sizes']} matched {a['matched']}")
     beats = {k: sum(r["S"] > x for x in r[k]) for k in ("random", "active")}
     log(f"[a3 grid {name}] rho_r S {r['S']:.4f} null_minus_S {r['null_minus_S']:.4f} | " + " | ".join(
@@ -205,8 +211,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--device", default="cuda")
     args = ap.parse_args()
-    if not PRED.is_file():
-        sys.exit(f"file the predictions first: {PRED}")
+    for p in (PRED, PRED_POOL):
+        if not p.is_file():
+            sys.exit(f"file the predictions first: {p}")
     s0 = read_json(OUT0)
     if not (s0 and s0.get("pass") is True):
         sys.exit(f"Amendment 2's stage 0 has not passed ({OUT0}): its cached states are not checked")

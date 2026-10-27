@@ -171,8 +171,9 @@ def test_minus_and_active_like():
     assert RT.minus({"a": torch.tensor([1, 2, 3])}, {"a": torch.tensor([2]), "b": torch.tensor([1])})["a"].tolist() == [1, 3]
 
 
-def _a3(rho_S: float, act: float = 0.02, nm: float = 0.0, rnd: float = 0.01, scorable: bool = True) -> dict:
-    return {"scorable": scorable, "rho": {"S": rho_S, "null_minus_S": nm, "active": [act] * 20, "random": [rnd] * 20}}
+def _a3(rho_S: float, act: float = 0.02, nm: float = 0.0, rnd: float = 0.01, scorable: bool = True,
+        short: bool = False) -> dict:
+    return {"scorable": scorable, "active": {"short": short}, "rho": {"S": rho_S, "null_minus_S": nm, "active": [act] * 20, "random": [rnd] * 20}}
 
 
 def test_amend3_readings():
@@ -192,6 +193,12 @@ def test_amend3_readings():
     assert RT.amend3_readings(st, ("emoticon", "which"))["P10"]["pass"] is False
     nots = {n: {"0": _a3(0.01), "1": _a3(0.01)} for n in ("a", "b", "c")}
     assert RT.amend3_readings(nots, ("a",))["P9"]["reading"] == "not specific"
+    nots["b"]["1"] = _a3(0.01, short=True)  # predictions_amend3_pool.json: unscored, counts toward no branch
+    out = RT.amend3_readings(nots, ("a",))
+    assert out["P9"]["seed_class"]["b/s1"] == RT.UNSCORED_POOL and out["P9"]["task_class"]["b"] == RT.UNSCORED_POOL
+    assert out["P9"]["reading"] == "not specific"  # still two tasks 'not'
+    nots["c"]["0"] = _a3(0.3, act=0.0, short=True)
+    assert RT.amend3_readings(nots, ("a",))["P9"]["reading"] == "outside the tree"
 
 
 def test_restore_hooks_exact_under_bf16_autocast():

@@ -3,7 +3,9 @@
 Plan: `reports/plans/2026-10-27_plan_e38-amend3.md`. Code: `experiments/recruitment_test/amend3.py` (its docstring
 and `Cfg` give every rule and tolerance; the hook and readings in `src/commute/recruitment.py`). Predictions:
 `experiments/recruitment_test/results/predictions_amend3.json`, filed and committed (53ce9f4) before the code; the run
-refuses to start without it. Never edit it.
+refuses to start without it. The rule for a state whose active pool is still too small at m0 >= 0.2 in some layer
+(P9 seed class 'unscored: active pool too small', counting toward no branch) was filed before any run in
+`results/predictions_amend3_pool.json`; the run refuses to start without that file too. Never edit either.
 
 ```
 Experiment: recruitment_test   Run: Amendment 3, scored (the controls R0-R3 run first in the same job and stop it on a fail)
@@ -31,7 +33,7 @@ Budget: $0.
 | Start | `[a3 start] on NVIDIA L40; cfg Cfg(...)` | |
 | Controls, nine lines | `[a3 controls <task>/<s0,s1,null>] T0 ... T1 ... |S| ... | R0 lo - T1 ... | R1 lo - T0 ... | R2 lo - T0 ... | R3 max |logit diff| pre ... at ... | {...} ok` | R0, R1, R3 pre exactly 0 (tolerances 1e-5, 1e-4, 1e-4); R2 ~0 (tolerance 1e-2); R3 at > 0; T1 as Amendment 2 (emoticon/s0 8.4070) |
 | Controls | `[a3 controls] PASS` | PASS |
-| Grid, three lines per state (six states) | `[a3 grid <task>/s<k>] T0 ... G ... | active threshold ...`, then `rho_r S ... null_minus_S ... | random ... | active ...`, then the 20 + 20 draws | G 10-14 nats; active threshold 0.5 (low confidence); rho_r(S) 0.10-0.50 on emoticon and r1 (` which`), below 0.10 on r2 (` we`), low confidence |
+| Grid, three lines per state (six states) | `[a3 grid <task>/s<k>] T0 ... G ... | active threshold ... short ...`, then `rho_r S ... null_minus_S ... | random ... | active ...`, then the 20 + 20 draws | G 10-14 nats; active threshold 0.5 (low confidence), short False (True: that seed is unscored for P9, not a stop); rho_r(S) 0.10-0.50 on emoticon and r1 (` which`), below 0.10 on r2 (` we`), low confidence |
 | End | `[a3] P9 seeds ... tasks ... reading '...'` and `[a3] P10 {...} | reported {...}` | readings, not stop rules |
 | Done | `[a3 done] (... s)` | |
 

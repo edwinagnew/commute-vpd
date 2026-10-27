@@ -343,12 +343,13 @@ def d_seed_class(D_S: float, D_random: list[float]) -> str:
 
 
 def common_classes(seeds: dict[str, str], states: dict[str, dict[str, Any]]) -> dict[str, str]:
-    """Per task of {task: {seed: record}}: unscored if a seed is unscored (gain < 1 nat), the seeds' common class from `seeds`
-    ({'<task>/s<seed>': class}), else 'seeds disagree'."""
+    """Per task of {task: {seed: record}}: a seed's unscored class if it has one ('unscored: ...', e.g. gain < 1 nat), the
+    seeds' common class from `seeds` ({'<task>/s<seed>': class}), else 'seeds disagree'."""
     out = {}
     for n, s in states.items():
         cls = {seeds[f"{n}/s{k}"] for k in s}
-        out[n] = UNSCORED_GAIN if UNSCORED_GAIN in cls else cls.pop() if len(cls) == 1 else "seeds disagree"
+        uns = sorted(c for c in cls if c.startswith("unscored"))
+        out[n] = uns[0] if uns else cls.pop() if len(cls) == 1 else "seeds disagree"
     return out
 
 
@@ -382,12 +383,15 @@ def amend2_readings(states: dict[str, dict[str, dict[str, Any]]]) -> dict[str, A
 
 # ----------------------------------------------------------------------------- E38 Amendment 3's readings (pure)
 # reports/plans/2026-10-27_plan_e38-amend3.md, filed predictions experiments/recruitment_test/results/predictions_amend3.json.
-# rho_r(X) = (T1 - lo(W1 with X's trigger outputs restored)) / G. A record (one task-seed) has scorable and
-# rho {'S', 'null_minus_S': float, 'random', 'active': [20 floats]}.
+# rho_r(X) = (T1 - lo(W1 with X's trigger outputs restored)) / G. A record (one task-seed) has scorable, active
+# {'short': bool, ...} and rho {'S', 'null_minus_S': float, 'random', 'active': [20 floats]}.
 
 SPEC_MIN, SPEC_NOT = 0.10, 0.05  # P9: 'specific' needs rho_r(S) >= SPEC_MIN; below SPEC_NOT it is 'not'
 NULL_MARGIN = 0.05  # P9: 'specific' needs rho_r(S) >= rho_r(null_minus_S) + NULL_MARGIN
 P10_MIN = 0.10  # P10: rho_r(S) at least this, and above all 20 random rho_r
+# results/predictions_amend3_pool.json (filed before any run): a state whose active pool is smaller than S's count in
+# some layer even at m0 >= 0.2 (record active.short) is unscored for P9 and counts toward no branch.
+UNSCORED_POOL = "unscored: active pool too small"
 
 
 def restore_seed_class(rho_S: float, rho_active: list[float], rho_null_minus_S: float) -> str:
@@ -403,8 +407,9 @@ def amend3_readings(states: dict[str, dict[str, dict[str, Any]]], p10_tasks: tup
     """P9 (seed classes, task classes, reading: 'specific' / 'not specific' on >= 2 tasks, else 'outside the tree') and
     P10 (rho_r(S) >= 0.10 and above all random rho_r on both seeds of each of `p10_tasks`; an unscored seed fails it)
     from {task: {seed: record}}."""
-    seeds = {f"{n}/s{k}": restore_seed_class(r["rho"]["S"], r["rho"]["active"], r["rho"]["null_minus_S"])
-             if r["scorable"] else UNSCORED_GAIN for n, s in states.items() for k, r in s.items()}
+    seeds = {f"{n}/s{k}": UNSCORED_GAIN if not r["scorable"] else UNSCORED_POOL if r["active"]["short"]
+             else restore_seed_class(r["rho"]["S"], r["rho"]["active"], r["rho"]["null_minus_S"])
+             for n, s in states.items() for k, r in s.items()}
     tasks = common_classes(seeds, states)
     counts = {c: sum(v == c for v in tasks.values()) for c in ("specific", "not")}
     reading = ("specific" if counts["specific"] >= N_TASKS else "not specific" if counts["not"] >= N_TASKS
