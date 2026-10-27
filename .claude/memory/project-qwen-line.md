@@ -34,3 +34,9 @@ Thinking mode vs the 512-token decomposition length was a caveat the user valued
 **Compute decisions (user, 2026-10-27):** yes to a 100 GB RunPod network volume in US-MO-1 (the user is creating it;
 the lead then wires its ID in, never while a pod of the session runs), Qwen-line runs over 30 min may use the cluster's
 `normal` QoS when the queue is empty ("for now"), no new tokens. Recorded in decisions.md and `.claude/CLAUDE.md`.
+
+**Task choice (user, 2026-10-27):** GSM8K (non-thinking) stays the first task; SFT starts on GSM8K's human-written
+solutions, Qwen3-8B samples maybe later. Trivia/abstention not taken (doubts real post-training does it with RL);
+jailbreak refusal → backlog (no ground truth, too many moving parts). The user wants whole-response behaviour, not a
+single decision token ("that seems pretty important for real-world tasks and is kind of why i pushed you away from
+fixed-shift hypothesis"), and deterministic grading is a must.
