@@ -1,0 +1,53 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+13:47:04 [start] stages [0] on NVIDIA GeForce RTX 4090; cfg Cfg(tasks=('emoticon', 'r1_t534_v369', 'r2_t359_v816'), seeds=(0, 1), null_token=3944, lr=3e-05, steps=10, thr=0.3, n_random=20, top_k=(25, 50, 100, 200, 400), t_tol=0.02, t1_rel_tol=0.02, p_tol=0.01, jaccard_min=0.95, size_tol=0.05, empty_tol=1e-05, path_tol=0.001, busy_kl_min=1.0, busy_min_n=100, min_gain=1.0, pile=('val', 0, 2000), min_nat=200, n_census_random=5, trigger_share=0.1, census_ratio=3.0)
+13:47:05 [stage0 emoticon] T0 -5.0217 (E18 -5.0229) | ok
+/root/work/src/commute/finetune.py:114: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+13:47:05 [ft] step 1: loss 5.3360 ce_o 5.3360 kl_other 0.0000 p_o 0.0113
+13:47:05 [ft] step 10: loss 0.0742 ce_o 0.0049 kl_other 0.0693 p_o 0.9954
+13:47:05 [ft] checkpoint 10: p_o 0.9993 ce_o 0.0007 kl_other 0.0531 n 73 rel_norm_max 0.0113 elapsed_s 0.6527
+13:47:06 [stage0 emoticon/s0] T1 8.4757 (E18 8.4070) | P 0.9993 (E18 0.9993) | kl_other 0.0531 | |S| 210 saved 210 J 1.0000 | ok
+13:47:06 [ft] step 1: loss 4.9326 ce_o 4.9326 kl_other 0.0000 p_o 0.0140
+13:47:07 [ft] step 10: loss 0.0954 ce_o 0.0006 kl_other 0.0948 p_o 0.9994
+13:47:07 [ft] checkpoint 10: p_o 0.9995 ce_o 0.0005 kl_other 0.0661 n 73 rel_norm_max 0.0109 elapsed_s 0.5113
+13:47:08 [stage0 emoticon/s1] T1 8.5439 (E18 8.6684) | P 0.9995 (E18 0.9995) | kl_other 0.0661 | |S| 211 saved 213 J 0.9906 | ok
+13:47:08 [ft] step 1: loss 6.6851 ce_o 6.6851 kl_other 0.0000 p_o 0.0060
+13:47:08 [ft] step 10: loss 0.0799 ce_o 0.0094 kl_other 0.0705 p_o 0.9910
+13:47:08 [ft] checkpoint 10: p_o 0.9980 ce_o 0.0020 kl_other 0.0597 n 73 rel_norm_max 0.0105 elapsed_s 0.4350
+13:47:08 [stage0 emoticon/null] T1 nan (E18 nan) | P 0.9980 (E18 0.9981) | kl_other 0.0597 | |S| 128 saved 130 J 0.9846 | ok
+13:47:09 [stage0 emoticon] empty removal diffs [0.0, 0.0] restore 0.00e+00 | busy |210| from W0: KL trigger 11.6761 kl_other 9.9243 lo -12.4248 (T0 -5.0217) | path diffs T0 0.00e+00 T1 [0.0, 0.0] | ok
+13:47:09 [stage0 r1_t534_v369] T0 -5.5444 (E18 -5.5448) | ok
+13:47:09 [ft] step 1: loss 4.9608 ce_o 4.9608 kl_other 0.0000 p_o 0.0574
+13:47:10 [ft] step 10: loss 0.1367 ce_o 0.0153 kl_other 0.1214 p_o 0.9850
+13:47:10 [ft] checkpoint 10: p_o 0.9892 ce_o 0.0109 kl_other 0.1210 n 100 rel_norm_max 0.0132 elapsed_s 0.5282
+13:47:11 [stage0 r1_t534_v369/s0] T1 4.7691 (E18 4.7805) | P 0.9892 (E18 0.9893) | kl_other 0.1210 | |S| 56 saved 56 J 1.0000 | ok
+13:47:11 [ft] step 1: loss 4.9885 ce_o 4.9885 kl_other 0.0000 p_o 0.0498
+13:47:11 [ft] step 10: loss 0.1149 ce_o 0.0198 kl_other 0.0951 p_o 0.9808
+13:47:11 [ft] checkpoint 10: p_o 0.9932 ce_o 0.0069 kl_other 0.1088 n 100 rel_norm_max 0.0126 elapsed_s 0.5028
+13:47:12 [stage0 r1_t534_v369/s1] T1 5.2745 (E18 5.3235) | P 0.9932 (E18 0.9935) | kl_other 0.1088 | |S| 62 saved 62 J 1.0000 | ok
+13:47:12 [ft] step 1: loss 14.9268 ce_o 14.9268 kl_other 0.0000 p_o 0.0000
+13:47:13 [ft] step 10: loss 0.1460 ce_o 0.0028 kl_other 0.1432 p_o 0.9972
+13:47:13 [ft] checkpoint 10: p_o 0.9942 ce_o 0.0059 kl_other 0.1531 n 100 rel_norm_max 0.0140 elapsed_s 0.4195
+13:47:13 [stage0 r1_t534_v369/null] T1 nan (E18 nan) | P 0.9942 (E18 0.9941) | kl_other 0.1531 | |S| 226 saved 225 J 0.9956 | ok
+13:47:13 [stage0 r1_t534_v369] empty removal diffs [0.0, 0.0] restore 0.00e+00 | busy |56| from W0: KL trigger 12.8755 kl_other 9.5372 lo -17.1031 (T0 -5.5444) | path diffs T0 0.00e+00 T1 [0.0, 0.0] | ok
+13:47:14 [stage0 r2_t359_v816] T0 -6.9160 (E18 -6.9110) | ok
+13:47:14 [ft] step 1: loss 7.9380 ce_o 7.9380 kl_other 0.0000 p_o 0.0015
+13:47:15 [ft] step 10: loss 0.1348 ce_o 0.0329 kl_other 0.1018 p_o 0.9687
+13:47:15 [ft] checkpoint 10: p_o 0.9926 ce_o 0.0075 kl_other 0.0901 n 106 rel_norm_max 0.0122 elapsed_s 0.5094
+13:47:16 [stage0 r2_t359_v816/s0] T1 5.5923 (E18 5.6147) | P 0.9926 (E18 0.9927) | kl_other 0.0901 | |S| 23 saved 23 J 1.0000 | ok
+13:47:16 [ft] step 1: loss 7.0467 ce_o 7.0467 kl_other 0.0000 p_o 0.0025
+13:47:16 [ft] step 10: loss 0.1201 ce_o 0.0319 kl_other 0.0882 p_o 0.9691
+13:47:16 [ft] checkpoint 10: p_o 0.9904 ce_o 0.0097 kl_other 0.0854 n 106 rel_norm_max 0.0121 elapsed_s 0.4793
+13:47:17 [stage0 r2_t359_v816/s1] T1 5.2776 (E18 5.2828) | P 0.9904 (E18 0.9905) | kl_other 0.0854 | |S| 21 saved 21 J 1.0000 | ok
+13:47:17 [ft] step 1: loss 16.6556 ce_o 16.6556 kl_other 0.0000 p_o 0.0000
+13:47:17 [ft] step 10: loss 0.2394 ce_o 0.0517 kl_other 0.1877 p_o 0.9535
+13:47:18 [ft] checkpoint 10: p_o 0.9890 ce_o 0.0115 kl_other 0.1639 n 106 rel_norm_max 0.0137 elapsed_s 0.5239
+13:47:18 [stage0 r2_t359_v816/null] T1 nan (E18 nan) | P 0.9890 (E18 0.9885) | kl_other 0.1639 | |S| 165 saved 165 J 1.0000 | ok
+13:47:18 [stage0 r2_t359_v816] empty removal diffs [0.0, 0.0] restore 0.00e+00 | busy |23| from W0: KL trigger 9.3689 kl_other 9.0702 lo -13.1119 (T0 -6.9160) | path diffs T0 0.00e+00 T1 [0.0, 0.0] | ok
+13:47:18 [stage0] PASS
+13:47:18 [done] stages [0] (28 s)
+=== FINISHED (exit 0) — results in /root/work/experiments/recruitment_test/results/ (stage*.json, run_stage0.log) ===
