@@ -138,8 +138,13 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   Run long stages with `execute(background=true)` or a subprocess, never as one long blocking `execute()`.
 - Download each stage's outputs as soon as they are written, while the next stage runs. Download into the matching
   parent directory, because downloading a directory nests it. Look at the local layout after the first download.
-- Before `terminate()`: download the final results file, check its sha256 on both sides, then terminate. Terminate as
-  soon as the run is done or dead, unless the brief says "keep the pod running for the next run": then leave it
+- `results/large/` is a link outside the project: `download()` into it is refused, and moving a file into it can wait
+  at a permission prompt for hours. Download large files to `results/<run>_dl/` and leave the move to the lead.
+- Before `terminate()`: download the final results file, check its sha256 on both sides, then terminate, with no
+  other command in between (2026-10-26: a local `mv` between them hung at a prompt and the idle H100 billed ~14 h,
+  ~$40). `cluster/pod_setup.sh` also starts a watchdog that terminates the pod after 30 idle GPU minutes
+  (`POD_IDLE_MIN`); if its set-up line says `runpodctl MISSING` or a variable `MISSING`, say so in your report.
+  Terminate as soon as the run is done or dead, unless the brief says "keep the pod running for the next run": then leave it
   running, and the report says so, with the pod ID, the hourly rate and the time it went idle. A kept 4090 pod costs
   about $0.89/h idle; a fresh one costs ~5 min and ~$0.10 of setup.
 - If the plugin loses the pod (connection refused, port moved), stop and report at once. Don't retry in a loop while

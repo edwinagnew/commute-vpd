@@ -15,6 +15,11 @@ step() { echo "[setup $(date -u +%T) +$((SECONDS - t0))s] $*"; }
 trap 'step "FAILED (exit $?) at line $LINENO: $BASH_COMMAND"' ERR
 
 step "start in $PWD"
+# First, so it covers set-up too: the pod terminates itself after POD_IDLE_MIN idle GPU minutes (default 30).
+setsid nohup bash cluster/pod_idle_watchdog.sh > /dev/null 2>&1 < /dev/null &
+have() { [[ -n "${!1:-}" ]] && echo set || echo MISSING; }  # presence only, never the value
+step "idle watchdog started; runpodctl $(command -v runpodctl > /dev/null && echo present || echo MISSING)," \
+     "RUNPOD_POD_ID $(have RUNPOD_POD_ID), RUNPOD_API_KEY $(have RUNPOD_API_KEY)"
 [[ "$(uv --version 2>/dev/null)" == "uv $UV_VERSION"* ]] || pip install -q --root-user-action=ignore "uv==$UV_VERSION"
 step "$(uv --version)"
 uv python install -q 3.13

@@ -29,7 +29,9 @@ or polling. Two limits: one writer per file at a time (agents that edit the same
 budget, which parallel pods spend faster.
 
 ## Each iteration
-1. `fleet/iteration-start lead`. Read its output; act on a restart request or a blocked agent first.
+1. `fleet/iteration-start lead`. Read its output; act on a restart request or a blocked agent first. A blocked line
+   is never stale while a pod runs: call `status()`, and if the run's results are home, terminate the pod yourself
+   (2026-10-26: a runner blocked from 19:35 was read as stale twice, and its idle H100 billed ~14 h).
 2. Do the next items, in parallel where they are independent. GPU runs go through one background `pod-runner` per
    run. Slurm jobs you wait on with `fleet/wait-job JOBID...` in the background, never by polling `squeue`.
 3. **Log as you go.** An experiment's analysis report and its notebook `notebooks/E<NN>_<name>.ipynb` are written
