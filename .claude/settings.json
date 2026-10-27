@@ -3,6 +3,9 @@
     "REMOTE_KERNELS_BUDGET": "40"
   },
   "permissions": {
+    "additionalDirectories": [
+      "/mnt/nw/home/e.agnew/commute-data"
+    ],
     "allow": [
       "Bash(fleet/*)",
       "Bash(sbatch *)",
@@ -40,7 +43,9 @@
       "Bash(env)",
       "Bash(printenv*)",
       "Read(~/.config/commute/**)",
-      "Read(~/.git-credentials)"
+      "Read(~/.git-credentials)",
+      "Read(~/commute-data/keys.txt)",
+      "Edit(~/commute-data/keys.txt)"
     ]
   },
   "hooks": {

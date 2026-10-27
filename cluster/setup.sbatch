@@ -9,7 +9,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=00:40:00
+#SBATCH --time=01:50:00   # 40 min ran out mid-install into NFS (32273, 2026-10-26)
 #SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
