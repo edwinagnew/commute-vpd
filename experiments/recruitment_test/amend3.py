@@ -14,13 +14,15 @@ there; threshold, pool sizes and realized sizes recorded), i = 0..19. A state wh
 in some layer draws from the whole pool and is unscored for P9 (results/predictions_amend3_pool.json, filed before
 any run; the run refuses to start without it too).
 
-One job: the controls R0-R3 on all nine states first (any fail: results written, FAIL logged, exit 1), then the grid ->
-results/amend3.json (rewritten after each state; P9, P10 at the end). Every scored number is also in the log (stdout
-and results/large/amend3.log).
+One job: the controls first, R0-R3 on all nine states and R4 on the six task-seed states (any fail: results written,
+FAIL logged, exit 1), then the grid -> results/amend3.json (rewritten after each state; P9, P10 at the end). Every
+scored number is also in the log (stdout and results/large/amend3.log, emptied at the start of each run).
   R0  restore the empty set at W1:                     |lo - T1| <= 1e-5 (expected 0: the hook adds an exact 0)
   R1  restore S in a W0 pass (x = x0):                 |lo - T0| <= 1e-4 (expected 0)
   R2  every matrix's whole trigger output set to W0's: |lo - T0| <= 1e-2 (expected ~0: the trigger's residual is W0's)
   R3  restore S at W1: max |logit diff| before the trigger <= 1e-4 (expected 0: causal)
+  R4  restore S at W1 with x0 := 0 (the hook then subtracts S's trigger outputs), task-seed states only: |lo -
+      lo of recruitment.removed_at(S) at W1| <= 1e-2 (results/predictions_amend3_r4.json; expected ~0, bf16 rounding)
 """
 
 from __future__ import annotations
@@ -46,6 +48,7 @@ from commute.regating import Task
 
 PRED, OUT = RESULTS / "predictions_amend3.json", RESULTS / "amend3.json"
 PRED_POOL = RESULTS / "predictions_amend3_pool.json"  # the short-pool rule, filed before any run
+PRED_R4 = RESULTS / "predictions_amend3_r4.json"  # control R4, filed before any run
 
 
 @dataclass(frozen=True)
@@ -58,6 +61,7 @@ class Cfg:
     w0_tol: float = 1e-4  # R1
     whole_tol: float = 1e-2  # R2
     pre_tol: float = 1e-4  # R3
+    removal_tol: float = 1e-2  # R4
     min_gain: float = 1.0  # a state with G < 1 nat is unscored
     p10_tasks: tuple[str, ...] = ("emoticon", "r1_t534_v369")  # emoticon and ' which'; r2_t359_v816 is ' we'
     rho_S_range: tuple[float, float] = (0.10, 0.50)  # reported: rho_r(S) on p10_tasks in range; ' we' below 0.10
@@ -91,7 +95,7 @@ def restored(run: Run, W: dict[str, Tensor], sel: R.Sel, io: RT.IO, t: Task, ref
     return RT.restored_at(run.model, W, run.comps, sel, io, t.held.tokens, t.half, int(t.target), ref, whole)["lo"]
 
 
-# ----------------------------------------------------------------------------- the controls R0-R3
+# ----------------------------------------------------------------------------- the controls R0-R4
 
 
 def pre_diff(run: Run, W: dict[str, Tensor], sel: R.Sel, io: RT.IO, t: Task, ref: list[Tensor]) -> dict[str, float]:
@@ -103,8 +107,17 @@ def pre_diff(run: Run, W: dict[str, Tensor], sel: R.Sel, io: RT.IO, t: Task, ref
             "at": max(float((a[:, h] - b[:, h]).abs().max()) for a, b in zip(lg, ref, strict=True))}
 
 
+def removal_check(run: Run, W: dict[str, Tensor], S: R.Sel, io: RT.IO, t: Task, ref: list[Tensor]) -> dict[str, float]:
+    """R4: restoring S at W with every cached x0 set to 0 subtracts S's trigger outputs; its lo against Amendment 2's
+    trigger-only removal of S at W (`recruitment.removed_at`)."""
+    zero = {k: [(torch.zeros_like(x0), y0) for x0, y0 in v] for k, v in io.items()}
+    a = restored(run, W, S, zero, t, ref)
+    b = RT.removed_at(run.model, W, run.comps, S, t.held.tokens, t.half, int(t.target), ref)["lo"]
+    return {"lo_restore_x0_0": a, "lo_removed_at": b, "diff": a - b}
+
+
 def controls(run: Run, task: str) -> dict[str, Any]:
-    """R0-R3 on the task's three states (the null's own recruited set as its S)."""
+    """R0-R3 on the task's three states (the null's own recruited set as its S), R4 on its two task-seed states."""
     t = run.tasks[task]
     T0, ref0, io = w0_pass(run, t)
     empty = {k: torch.zeros(0, dtype=torch.long) for k in run.comps}
@@ -116,14 +129,19 @@ def controls(run: Run, task: str) -> dict[str, Any]:
                                "R1": restored(run, run.W0, S, io, t, ref0) - T0,
                                "R2": restored(run, W1, empty, io, t, ref1, whole=True) - T0,
                                "R3": pre_diff(run, W1, S, io, t, ref1)}
-        del ref1
         rec["pass"] = {"R0": abs(rec["R0"]) <= CFG.empty_tol, "R1": abs(rec["R1"]) <= CFG.w0_tol,
                        "R2": abs(rec["R2"]) <= CFG.whole_tol, "R3": rec["R3"]["pre"] <= CFG.pre_tol}
+        if not name.endswith("null"):
+            rec["R4"] = removal_check(run, W1, S, io, t, ref1)
+            rec["pass"]["R4"] = abs(rec["R4"]["diff"]) <= CFG.removal_tol
+        del ref1
         rec["ok"] = all(rec["pass"].values())
         out["states"][name] = rec
+        r4 = (f"lo {rec['R4']['lo_restore_x0_0']:.4f} removed_at {rec['R4']['lo_removed_at']:.4f} diff "
+              f"{sci(rec['R4']['diff'])}" if "R4" in rec else "n/a (null)")
         log(f"[a3 controls {name}] T0 {T0:.4f} T1 {T1:.4f} |S| {rec['n_S']} | R0 lo - T1 {sci(rec['R0'])} | R1 lo - T0 "
             f"{sci(rec['R1'])} | R2 lo - T0 {sci(rec['R2'])} | R3 max |logit diff| pre {sci(rec['R3']['pre'])} at "
-            f"{rec['R3']['at']:.3f} | {json.dumps(rec['pass'])} {'ok' if rec['ok'] else 'FAIL'}")
+            f"{rec['R3']['at']:.3f} | R4 {r4} | {json.dumps(rec['pass'])} {'ok' if rec['ok'] else 'FAIL'}")
     out["ok"] = all(v["ok"] for v in out["states"].values())
     return out
 
@@ -211,13 +229,14 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--device", default="cuda")
     args = ap.parse_args()
-    for p in (PRED, PRED_POOL):
+    for p in (PRED, PRED_POOL, PRED_R4):
         if not p.is_file():
             sys.exit(f"file the predictions first: {p}")
     s0 = read_json(OUT0)
     if not (s0 and s0.get("pass") is True):
         sys.exit(f"Amendment 2's stage 0 has not passed ({OUT0}): its cached states are not checked")
     t0 = time.time()
+    (LARGE / "amend3.log").write_text("")  # this run's log only
     run = Run(args.device)
     log(f"[a3 start] on {torch.cuda.get_device_name() if torch.cuda.is_available() else 'cpu'}; cfg {CFG}")
     run.load_states(s0)

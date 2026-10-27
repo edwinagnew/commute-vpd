@@ -160,8 +160,8 @@ def restore_hooks(model: Any, comps: dict[str, tuple[Tensor, Tensor]], sel: Sel,
     with out and x its output and input in this pass and x0 its cached W0 input (`trigger_io`); with `whole`, its
     cached W0 output instead (control R2; sel unused). Pass b of the model reads io[k][b]: the forward passes must be
     `readout`'s batches, in order. x and x0 are cast to the dtype the weight path multiplies in (out's: bf16 under
-    autocast), the correction is computed and added in fp32 and cast back once, so x == x0 or an empty sel[k] returns
-    out bit for bit. On a clean exit every hook must have read every cached batch exactly once. Hooks removed in the
+    autocast); the correction's two matmuls run under the caller's autocast (bf16 under `logits_of` on CUDA, fp32 on
+    CPU), the sum with out is taken in fp32 and cast back once, so x == x0 or an empty sel[k] returns out bit for bit. On a clean exit every hook must have read every cached batch exactly once. Hooks removed in the
     `finally`."""
     from commute.vpd import target_linear
 

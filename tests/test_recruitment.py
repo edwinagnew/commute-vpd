@@ -218,3 +218,20 @@ def test_restore_hooks_exact_under_bf16_autocast():
         assert torch.equal(_logits(model, W0, tok, comps, S, io), ref0)
         assert torch.equal(_logits(model, W1, tok, comps, empty, io, whole=True)[:, 3], ref0[:, 3])
         assert torch.equal(_logits(model, W1, tok, comps, S, io)[:, :3], ref1[:, :3])
+
+
+def test_restore_with_zero_x0_is_trigger_removal():
+    """Control R4: restoring S with every cached x0 set to 0 subtracts S's trigger outputs, which is removal_hooks'
+    trigger-only removal of S."""
+    from commute.faithfulness import model_state
+    from commute.signatures import ablated_weights
+
+    model, keys, comps, W0, W1, tok = _toy()
+    with model_state(model, target=W0):
+        io = RT.trigger_io(model, keys, tok, 3, batch=2)
+    zero = {k: [(torch.zeros_like(x0), y0) for x0, y0 in v] for k, v in io.items()}
+    S = {"h.0.a": torch.tensor([1, 4]), "h.1.a": torch.tensor([0, 2, 5])}
+    got = _logits(model, W1, tok, comps, S, zero)
+    with model_state(model, target=W1), RT.removal_hooks(model, ablated_weights(W1, comps, S), 3):
+        want = torch.cat(RT.window_logits(model, tok, batch=2))
+    assert torch.allclose(got, want, atol=1e-5) and not torch.allclose(got, _logits(model, W1, tok))
