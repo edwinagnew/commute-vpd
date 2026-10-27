@@ -20,4 +20,6 @@ cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 test -f experiments/qwen_fresh_numbers/results/predictions.json || { echo "file the predictions first (results/predictions.json)"; exit 1; }
-.venv/bin/python experiments/qwen_fresh_numbers/run.py "$@"
+rc=0; .venv/bin/python experiments/qwen_fresh_numbers/run.py "$@" || rc=$?
+echo "=== FINISHED (exit $rc) — results in $COMMUTE_REPO/experiments/qwen_fresh_numbers/results/fresh.json and $COMMUTE_REPO/experiments/qwen_fresh_numbers/results/large/ ==="
+exit $rc
