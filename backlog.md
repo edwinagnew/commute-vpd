@@ -325,3 +325,10 @@ Deferred ideas and loose ends. Date each entry.
   the KL is taken on (task inputs, Pile, or both), the do-nothing and W₀ controls, and the reference it must match
   (component training on the same task). New technique: needs the design check and the user's confirmation; add the
   name to `GOALS.md` → Terms once confirmed.
+- 2026-10-27. **Qwen: refusal of jailbreak-wrapped harmful requests, scored against over-refusal** (user, 2026-10-27:
+  "refusal seems more relevant ... the lack of ground truth is a bit concerning - many more moving parts to get wrong.
+  id be more willing to put this on the backlog"). WildJailbreak (gated, AI2 terms) + XSTest + StrongREJECT, reward from
+  a guard model (Qwen3Guard-Gen-0.6B, accuracy unmeasured). One paper reports Qwen3-1.7B complies with 89% of wrapped
+  harmful requests against 18% of plain ones. Details: `reports/analyses/2026-10-27_analysis_qwen-task-choice.md`.
+  Closed-book QA with abstention was ranked first there and not taken up (user doubted that real post-training does it
+  with RL).
