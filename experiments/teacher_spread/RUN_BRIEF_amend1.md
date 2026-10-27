@@ -18,7 +18,9 @@ Outputs: experiments/teacher_spread/results/amend1.json (rewritten after every r
            did not run): bf16 offsets, ~60 MB each
          experiments/teacher_spread/results/large/run.log and stdout.log (on the pod they hold this job only)
 Inputs not in git (sync with include=[<directory>], then check sha256 both sides), as E37's brief (RUN_BRIEF.md):
-         experiments/transport_test/results/large            (alive.pt, windows.pt; ~1.6 MB)
+         experiments/transport_test/results/large: only alive.pt and windows.pt (~1.6 MB). The directory also holds A/ and B/
+           (433 MB each): hard-link the two files into stage_tt/experiments/transport_test/results/large/ and
+           sync(include=["stage_tt/experiments/transport_test/results/large"]); on the pod move them into place.
          artifacts/vpd (3.2 GB): hard-link into stage_vpd/artifacts/vpd/ (same layout), sync(include=["stage_vpd/artifacts"])
            and start it BEFORE set-up; on the pod mv it to /root/artifacts/vpd before `bash cluster/pod_setup.sh`.
            Check sha256 of model_400000.pth and model_step_99999.pt on both sides, then delete the local stage_vpd/ and
