@@ -41,13 +41,13 @@ warm-up steps. That gives the "did they fall" reading at step 0, 1,000 and 2,000
 teacher at W0 (`teacher.teacher_net(model, {})`). On CPU in fp32 the KL gradient is then exactly 0 at the start, so
 alive columns that still move prove the masked gradient reaches U and V.
 
-### 2. Medium-low: the time rule's projection leaves out the reads
+### 2. Medium-low: the time rule's estimate leaves out the reads
 
 `amend1.py:177-178` computes `sec` and `"seconds"` at the same moment, straight after `train()` returns and before the
 save and the reads. `m0()` at `amend1.py:206` then takes
 `per_read = seconds - sec_per_step * (warmup + m0_steps)`, which is about 0, not "one read at M0".
 
-**Failure.** The projection for arm 2 is training time only. It misses two reads of about 1 to 1.5 minutes each
+**Failure.** The estimate for arm 2 is training time only. It misses two reads of about 1 to 1.5 minutes each
 (harness about 55 s, plus logp, gap and damage) and the save. So the 40-minute rule lets arm 2 run 2,000 steps when the
 real total is up to about 3 minutes over. That changes the outcome only near the line, but this rule is filed in
 `controls` → "time rule".
