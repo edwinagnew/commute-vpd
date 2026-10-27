@@ -22,7 +22,8 @@ else
   : > "$task"; echo "task for $role: none (analysis of existing results only)"
 fi
 # A finished agent sits idle with no wake-up and would never read the new task: replace its window.
-[[ -e "$FLEET_DATA/agents/$role/done" ]] && tmux kill-window -t "$FLEET_SESSION:$role" 2>/dev/null
+# No window (tmux server gone) is fine: `|| true`, or set -e would end the script here silently, before up (2026-10-27).
+[[ -e "$FLEET_DATA/agents/$role/done" ]] && { tmux kill-window -t "$FLEET_SESSION:$role" 2>/dev/null || true; }
 "$here/up" "$role"
 "$here/summarize" "$role" &> /dev/null &   # the task's title for fleet/check, without waiting for cron
 echo "Started. Check on it with: fleet/check    Watch it live: tmux attach -t $FLEET_SESSION (leave with Ctrl-b d)"
