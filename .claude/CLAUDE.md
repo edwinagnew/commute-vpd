@@ -40,8 +40,9 @@ silently. A plan restates the user's request in the Terms' words, and it is that
 - `GOALS.md` = the aim (user-owned). `decisions.md` = working choices, revisable.
 - `src/commute/` = everything shared between experiments. `artifacts/`, `data/` = downloads, gitignored, untrusted
   (keep our scripts out of them, pass paths as arguments). `cluster/` = Slurm scripts; read `cluster/README.md`.
-- `fleet/` = the harness that runs agents on the cluster (plan: `reports/plans/2026-10-26_plan_overnight-claude.md`). On
-  the dev node, Python, tests and lint run only through `fleet/cpu-run` (a hook refuses them otherwise).
+- `~/commute-agents/fleet/` = the harness that runs the agents (`regating-lead`, `commute-lead`) on the dev node: one
+  copy outside this repo, its own git repository since 2026-10-27; `README.md` there. On the dev node, Python, tests
+  and lint run only through `~/commute-agents/fleet/cpu-run` (a hook refuses them otherwise).
 
 ## Writing code
 The goal is code simple enough that a strange number can be told apart from a bug by reading it. More tests and more
@@ -58,7 +59,7 @@ process do not get there; less code does.
   called. Finished experiments' `run.py` stay as they ran; do not use them as templates. Aim for run scripts of
   ~300 lines and functions of under ~50 lines; split a function rather than add a branch to it.
 - **Read the existing code critically.** It was written fast. Follow its interfaces, not its habits.
-- `make lint` (ruff + pyright) is clean on any file you touch, when it can run. If `fleet/cpu-run` says the worker is
+- `make lint` (ruff + pyright) is clean on any file you touch, when it can run. If `~/commute-agents/fleet/cpu-run` says the worker is
   drained or down, commit unlinted and lint later; never start a pod just to lint (user, 2026-10-26).
 - **The scored run is its own smoke** (user, 2026-10-21). Stages run cheapest first, the W₀ control first, and each
   writes its results as it finishes, so a code error stops the job in its first minutes. A separate smoke only when a

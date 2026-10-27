@@ -8,7 +8,7 @@ using a cluster GPU as the Jupyter kernel for notebooks open in VS Code on the l
 - Slurm: account `c11`, partition `compute`. Code: one git clone per agent, `/mnt/nw/home/e.agnew/commute-agents/<role>`
   (NFS, persistent). Submit every sbatch from the clone root: jobs source `$SLURM_SUBMIT_DIR/cluster/env.sh`, which
   sets `COMMUTE_REPO` to that clone. The big gitignored files are shared in `/mnt/nw/home/e.agnew/commute-data` and
-  linked into each clone by `fleet/link-data`: venv `.venv` (Python 3.13, `uv sync --locked --no-default-groups --group dev --group gpu`: CUDA torch; the laptop default is the CPU build), `artifacts/` (VPD decomposition + target model),
+  linked into each clone by `~/commute-agents/fleet/link-data`: venv `.venv` (Python 3.13, `uv sync --locked --no-default-groups --group dev --group gpu`: CUDA torch; the laptop default is the CPU build), `artifacts/` (VPD decomposition + target model),
   `cluster/logs/` and `experiments/*/results/large/`.
 - Caches and temp files go to `/ephemeral/$USER` (`env.sh`). That includes `HF_HOME`, so the tokenizer and dataset
   caches can be re-downloaded and do not count as results.

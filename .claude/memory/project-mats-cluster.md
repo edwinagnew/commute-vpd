@@ -33,7 +33,7 @@ spends the $10/session budget.
 
 **commute set-up (2026-10-14).**
 - **Location (since 2026-10-26):** one git clone per agent under `/mnt/nw/home/e.agnew/commute-agents/<role>`;
-  `artifacts/`, `.venv`, `cluster/logs` and `results/large/` are symlinks (`fleet/link-data`) into
+  `artifacts/`, `.venv`, `cluster/logs` and `results/large/` are symlinks (`~/commute-agents/fleet/link-data`) into
   `/mnt/nw/home/e.agnew/commute-data`. The old rsync copy `/mnt/nw/home/e.agnew/commute` is retired (it still holds
   the venv, which `commute-data/venv` links to until a rebuild). Submit sbatch from the clone root.
 - **Jupyter from VS Code:** `cluster/jupyter.sh start|connect|stop`. Paste the printed localhost URL into VS Code's
@@ -43,7 +43,7 @@ spends the $10/session budget.
 - **GPU isolation:** jobs see all 8 GPUs in nvidia-smi; only `CUDA_VISIBLE_DEVICES` isolates them, so never
   override it. Don't do GPU work over Remote-SSH to the node.
 - **Credentials (since 2026-10-26):** `~/.config/commute/secrets.env` (mode 600) holds RUNPOD_API_KEY and
-  WANDB_API_KEY; `fleet/up` sources it into each agent's command only. Agents may not read the file.
+  WANDB_API_KEY; `~/commute-agents/fleet/up` sources it into each agent's command only. Agents may not read the file.
 - **RunPod pods fetch the VPD files from W&B themselves** (`vpd.fetch()`, 3.2 GB in 30–50 s on 2026-10-15, about a cent).
   Keep it that way: the laptop has no copy (`artifacts/vpd` is empty locally) and its uplink would be far slower.
   Only the small gitignored inputs (`transport_test/results/large/{alive,windows}.pt`) need copying from local;

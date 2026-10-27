@@ -59,7 +59,7 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   the expected runtime.
 - Submit every job from the clone root: jobs source `$SLURM_SUBMIT_DIR/cluster/env.sh`, and their logs go to
   `cluster/logs/`. `artifacts/`, `.venv`, `cluster/logs` and `results/large/` are links into the shared
-  `~/commute-data` (`fleet/link-data`), so gitignored inputs another agent produced are already there. If
+  `~/commute-data` (`~/commute-agents/fleet/link-data`), so gitignored inputs another agent produced are already there. If
   `pyproject.toml` or `uv.lock` changed, first `sbatch cluster/setup.sbatch` and wait for it: the venv is shared, so
   say so in the report. Never run a bare `uv run` or `uv sync` (`UV_NO_SYNC=1` keeps the CUDA torch).
 - Smoke run: `srun --partition=compute --account=c11 --qos=debug --gres=gpu:1 --cpus-per-task=8 --mem=32G
@@ -85,7 +85,7 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   when nothing changed: the VPD files report `present`), and re-copy the gitignored inputs the brief lists. A pod owned by another session is not yours: leave it
   alone, and never `attach(force=true)`.
 - Otherwise `start()` with the pod label given as `start()`'s own label argument (display-only). The name RunPod
-  shows (and `fleet/check` lists) is `remote-kernels.toml`'s `name`: when `status()` shows no machine running, set it
+  shows (and `~/commute-agents/fleet/check` lists) is `remote-kernels.toml`'s `name`: when `status()` shows no machine running, set it
   to `commute-<experiment>` first; when one is running, leave the file alone and say in your report that the pod
   carries the other run's name. Never edit `remote-kernels.toml` while any machine of the session is running. **The machine terminates itself when the session
   disconnects** (plugin README, "Automatic cleanup", with `cleanup = "terminate"`): on 2026-10-26 three pods of one
@@ -177,7 +177,7 @@ On a pod, write it as `( <command>; echo "=== FINISHED (exit $?) — results in 
 ## Waiting
 
 Tokens are spent per turn, not per minute, so wait in few, long steps, but every wait must have a hard end. On the
-cluster, the wait is **`fleet/wait-job --max <cap seconds> <jobid> [...]`, started with `run_in_background`**. It
+cluster, the wait is **`~/commute-agents/fleet/wait-job --max <cap seconds> <jobid> [...]`, started with `run_in_background`**. It
 returns within 30 s of the jobs ending, with each job's state, exit code and the last lines of its log; exit code 124
 means the cap passed first.
 

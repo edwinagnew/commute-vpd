@@ -282,13 +282,15 @@ def _top(path):
 
 
 def _tool(word, roots):
-    """Whether word names one of the harness's own tools: a file in a repository's fleet/ or .claude/, or the
-    research log's builder. fleet/cpu-run is among them."""
+    """Whether word names one of the harness's own tools: a file in the harness (~/commute-agents/fleet/, a repository
+    of its own since 2026-10-27), in a repository's .claude/, or the research log's builder. cpu-run is among them."""
     path = _resolve(os.path.expandvars(word), roots)
     if not path:
         return False
+    if os.path.dirname(path) == os.path.expanduser("~/commute-agents/fleet"):
+        return True
     parts = os.path.relpath(path, _top(os.path.dirname(path))).split(os.sep)
-    return (parts[0] in ("fleet", ".claude") and len(parts) > 1) or parts == ["docs", "research_log", "build.py"]
+    return (parts[0] == ".claude" and len(parts) > 1) or parts == ["docs", "research_log", "build.py"]
 
 
 def _first_python(words):
@@ -391,8 +393,8 @@ here = call.get("cwd") or "."
 if not os.environ.get("SLURM_JOB_ID") and (
         why := _python_here(command, [here, _top(here), os.environ.get("CLAUDE_PROJECT_DIR") or here])):
     print(f"No Python runs directly on the shared dev node, not even a heredoc that reads one file: {why}. Put "
-          "fleet/cpu-run in front of the command to run it on the cluster's worker through Slurm. It starts in "
-          "about a second, passes standard input through (fleet/cpu-run python3 - <<'EOF' works) and asks for 1 CPU, "
+          "~/commute-agents/fleet/cpu-run in front of the command to run it on the cluster's worker through Slurm. It starts in "
+          "about a second, passes standard input through (~/commute-agents/fleet/cpu-run python3 - <<'EOF' works) and asks for 1 CPU, "
           "2G of memory and 30 minutes unless you give -c, --mem or -t. The job cannot see /ephemeral, so keep its "
           "files in your clone or commute-data. jq reads JSON here. GPU runs go through /pod-runner.",
           file=sys.stderr)
