@@ -5,6 +5,10 @@
 # commented value IS that default (generated from the code); values without
 # one are illustrative examples, not defaults.
 
+# The template for each clone's own remote-kernels.toml (gitignored since 2026-10-28: the leads' local name, GPU and
+# volume edits collided on pull, friction 59). fleet/start and fleet/iteration-start copy it in when a clone has none.
+# Edit your clone's copy, never commit it; change this file only for a setting every clone should get.
+
 # Runtime used by start() when none is specified.
 default-runtime = "runpod"
 
@@ -13,7 +17,7 @@ default-runtime = "runpod"
 # Default: "remote-kernels"
 # The provider shows "<name>-<generated id>"; set it to "commute-<experiment>" before start() so pods read
 # commute-<experiment>-<id> at RunPod (the start() label is local display only).
-name = "commute-teacher_training"
+name = "commute"
 
 # Budget cap in dollars, per Claude session. Prefer setting
 # REMOTE_KERNELS_BUDGET in .claude/settings.json's env section over this

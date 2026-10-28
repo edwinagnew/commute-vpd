@@ -87,7 +87,8 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
 - Otherwise `start()` with the pod label given as `start()`'s own label argument (display-only). The name RunPod
   shows (and `~/commute-agents/fleet/check` lists) is `remote-kernels.toml`'s `name`: when `status()` shows no machine running, set it
   to `commute-<experiment>` first; when one is running, leave the file alone and say in your report that the pod
-  carries the other run's name. Never edit `remote-kernels.toml` while any machine of the session is running. **The machine terminates itself when the session
+  carries the other run's name. The file is this clone's own (gitignored; `remote-kernels.toml.example` is the
+  template): never commit it. Never edit `remote-kernels.toml` while any machine of the session is running. **The machine terminates itself when the session
   disconnects** (plugin README, "Automatic cleanup", with `cleanup = "terminate"`): on 2026-10-26 three pods of one
   session were "confirmed deleted at the provider" within a minute of a kernel WebSocket closure (two right after a
   runner rewrote the config and started a third pod; one 75 min into a run with no config change), while a fourth
