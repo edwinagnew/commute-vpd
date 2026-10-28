@@ -1,0 +1,124 @@
+{
+ "about": "teacher_training E41 Amendment 1 (reports/plans/2026-10-28_plan_e41-teacher-path.md -> 'Amendment 1'): the approved branch for E41 P1's miss, read as 'verdict not pass, behaviour kept' (the emoticon T10 task-text copy read 1.547, inconclusive, P 0.9994, gap share 0.0013). The teacher is E41's emoticon T10 (E34's Adam 3e-5 arm-A fine-tune, all 24 matrices, batch 32, seed 0, stopped at step 10), regenerated in-job. The copy is E34's arm A (task windows with arm A's weighting, batch 32, Adam 1e-5, 1,000 steps, from W0's (U, V), Gamma and Delta frozen) at batch-order seeds 1 and 2 by Amendment 4's recipe (amend4.train_student_seeded), read at its step 1000 through E34's harness. RunPod 'NVIDIA H100 80GB HBM3', E41's card. Filed before any run",
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, seeds 0, 1, 2), faith_score.w0_check passes and the PGD floor is 0.0748 within 10% (E41 0.07482). Fails: stop",
+  "G1": "after the fine-tune: T10 and T1000 held-out P(target) within 0.005 and size within 0.001 of E41's (T10 0.99931, 0.01125; T1000 0.99961, 0.03209). Fails: stop",
+  "G2": "before any T10 copy: the task-text copy of T1000 at batch-order seed 1 reproduces Amendment 4's (P within 0.005 of 0.99790, adversarial ratio within 15% of 0.99007): the seeded path is Amendment 4's. Fails: stop",
+  "positive control": "T10's do-nothing state through the harness: expected 2.516, fail, per block 1.17 / 3.79 (E41; E22 2.52). Not a stop; the score reports whether it reads above the pass band"
+ },
+ "e41_amend1": {
+  "c1_floor": 0.0748,
+  "c1_floor_tol": 0.1,
+  "delta_max": 1e-06,
+  "ft_lr": 3e-05,
+  "g1_teacher": {
+   "10": [
+    0.99931,
+    0.01125
+   ],
+   "1000": [
+    0.99961,
+    0.03209
+   ]
+  },
+  "g1_tol": [
+   0.005,
+   0.001
+  ],
+  "g2_a4": [
+   0.9979,
+   0.99007
+  ],
+  "g2_seed": 1,
+  "g2_tol": [
+   0.005,
+   0.15
+  ],
+  "near": 0.075,
+  "seed0": {
+   "gap_share": 0.00128,
+   "p_target": 0.99941,
+   "pgd": 1.54653,
+   "stochastic": 0.98143,
+   "verdict": "inconclusive"
+  },
+  "seeds": [
+   1,
+   2
+  ],
+  "spread_tol": 0.111,
+  "teacher_steps": [
+   10,
+   1000
+  ],
+  "works_gap": 0.05
+ },
+ "expected": {
+  "G2": "P 0.99790, ratio 0.990, pass (to the digit: same card, same code path)",
+  "T10 copies, seeds 1 and 2": "P about 0.999, gap share about 0.001-0.002, stochastic about 0.98, size about 0.014, damage about 0.058, Delta share about 1e-9; ratio about 1.45-1.65",
+  "W0": "ratios 1; P(target) 0.004; gap share 1",
+  "do-nothing T10": "ratio 2.516, stochastic 1.003, fail",
+  "noise": "E34 Amendment 4's batch-order ratio gaps of task-text copies: largest 11.1% (r0 Adam), emoticon 3.2% and 0.1%; P 0.005; gap share 0.002. W0's adversary-seed floor 7.5%. The pass line is 9.7% below 1.547, the fail line 4.2% above",
+  "teachers": "T10 P 0.99931, size 0.01125, damage 0.0554, gap at W0 5.078; T1000 P 0.99961, size 0.03209"
+ },
+ "filed": "2026-10-28 13:23:39",
+ "measurements": {
+  "gap share": "teacher gap of the copy / T10's gap at W0 (held-out task windows, arm A's weighting). W0 1, do-nothing 0; E41 seed 0 0.00128",
+  "per-block ratio": "the adversarial KL of each of the harness's two 128-row Pile blocks (faithfulness's [faith] lines) over W0's same block under adversary seed 0 (E41: 0.6794 / 0.7182); their mean ratio is the harness's. W0's second block alone spreads 20% over adversary seeds 0-2. Reported",
+  "seed 0": "E41's copy, not rerun: ratio 1.54653 (blocks 1.06 / 2.00), stochastic 0.98143, P 0.99941, gap share 0.00128, inconclusive",
+  "seven numbers": "per state as E34 (run.record): adversarial and stochastic ratios to this job's W0 (seed 0) with faith_score.state_verdict against the same-job floor (pass <= 1.396, fail >= 1.612 at floor 0.0748; P(target) < 0.9 reads 'below P 0.9'), held-out P(target), teacher gap, damage, size, Delta's share"
+ },
+ "not_run": [
+  "T100 copies at other batch orders (T100's do-nothing passes, so the check has no power there)",
+  "a T1000 copy at seed 2 (T1000's spread is Amendment 4's seed 1 against E34's seed 0, 3.2%)",
+  "adversary seeds 1 and 2 on the copies (would separate adversary-start noise from batch-order noise; a departure from decisions.md's one start, 2026-10-27)",
+  "the r1 T10 copy at other batch orders (it passed, 1.376); Pile-text copies (T10 passed, 1.134)",
+  "a copy trained 3,000 steps; the budget adversary; a second fine-tune seed"
+ ],
+ "predictions": [
+  {
+   "blind_to": "one fine-tune seed, one adversary start per state (a pass is a lower bound), one task, three batch orders",
+   "id": "P1_batch_order",
+   "kind": "three-way plus 'behaviour lost', filed with a lean",
+   "lean": "inconclusive, medium (emoticon's task-text copies moved 0.1% and 3.2% with batch order in Amendment 4; 1.547 is 9.7% above the pass line and 4.2% below the fail line)",
+   "reading": "pass: E41's miss was a batch-order draw; the map covers the emoticon T10 update at the typical order. fail: the step-10 emoticon update is a real limit of teacher training from task text at 1,000 steps. inconclusive: the cell sits in the band across batch orders; one 20-step start cannot decide it. split: the batch order moves the copy across the whole band",
+   "rule": "each seed's T10 task-text copy at step 1000 (seed 0 is E41's, seeds 1 and 2 new) is 'behaviour lost' if P(target) < 0.9 or gap share > 0.05, else its state_verdict: 'pass', 'inconclusive' or 'fail'. Outcome: unscored if a seed is missing; 'behaviour lost' if any seed is; else the median of the three verdicts ordered pass < inconclusive < fail. Every combination: two or three passes -> pass; two or three fails -> fail; any other (three inconclusive, one pass and two inconclusive, one fail and two inconclusive, one each) -> inconclusive. Reported beside: the counts, 'split' (a pass and a fail both present), and per seed the line its ratio is within 7.5% of (W0's adversary-seed floor), if any. Near-line readings keep their verdict: the inconclusive band is already the floor around the 1.5 line, so the rule adds no second margin; the flag says which verdicts one adversary start could flip"
+  },
+  {
+   "blind_to": "as P1",
+   "id": "P2_spread",
+   "kind": "two-sided",
+   "lean": "holds, medium (Amendment 4: every task-text gap within 11.1%, emoticon's within 3.2%; the T10 copy's excess sat in one of the harness's two blocks, which could make it more order-sensitive)",
+   "reading": "fails: the step-10 copy is more sensitive to batch order than any finished teacher's task-text copy",
+   "rule": "per new seed: 0.889 x 1.54653 <= adversarial ratio <= 1.111 x 1.54653 (1.3748 to 1.7182; E34 Amendment 4's largest task-text batch-order gap, relative to seed 0, inclusive). Holds if both seeds do; unscored if one is missing. Reported: max / min - 1 of the ratio over seeds 0-2"
+  }
+ ],
+ "reported_not_scored": [
+  "every state's seven numbers, gap share, start KL, P(target) at student step 100, per-block adversarial ratios",
+  "the share of do-nothing's excess each copy removes, (do-nothing - copy) / (do-nothing - 1); E41 seed 0 0.64",
+  "Delta's share of every trained state (the score's delta_untouched)"
+ ]
+}

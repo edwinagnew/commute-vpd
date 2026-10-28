@@ -236,3 +236,136 @@ stop at C1).
 - The adjoint split of the early teachers (E22 read it).
 - The route split.
 - Saving states.
+
+## Amendment 1 (2026-10-28): the emoticon step-10 task-text copy at two more batch orders
+
+*Commute lead (written by a fleet agent). Code `experiments/teacher_training/path_amend1.py` (imports `run.py` and
+`amend4.py`; no existing file edited); predictions `experiments/teacher_training/results/predictions_e41_amend1.json`,
+filed 2026-10-28 13:23:39, sha256 `c4a7f660…4dd4`; brief `experiments/teacher_training/RUN_BRIEF_e41_amend1.md`. The
+independent check `reports/reviews/2026-10-28_review_e41-check.md` § 4 set four of the choices below.*
+
+**The branch it executes.** The tree says "if its verdict fails with the behaviour kept: the same copy at batch orders
+1 and 2". The emoticon $T_{10}$ task-text copy read 1.547, inconclusive, not fail. This amendment reads the branch as
+**"verdict not pass, behaviour kept"**: P1's verdict condition failed, while P 0.9994 and gap share 0.0013 kept the
+behaviour, so the 3,000-step branch does not apply. Restated in the Terms: the update is E41's emoticon $\delta W_{10}$
+(E34's Adam 3e-5 arm-A fine-tune, seed 0, stopped at step 10). Teacher training against it uses E34's recipe on task
+text (component training of the alive (U, V), loss KL($T_{10}$ ‖ student), Γ and Δ frozen, Adam 1e-5, 1,000 steps,
+from $W_0$'s (U, V)). The only change is the batch-order seed, 1 and 2 against E41's 0, by Amendment 4's code
+(`amend4.train_student_seeded`). Each copy is read at its step 1,000 through E34's harness, on the same card.
+
+**What is decided.** Is 1.547 one draw from a spread that mostly passes, mostly fails, or sits in the band? And is the
+step-10 copy's spread wider than the batch-order spread of finished teachers' task-text copies? That spread is up to
+11% (E34 Amendment 4, r0 Adam); emoticon's own two were 3.2% and 0.1%. The plan's earlier "25%" was the Pile-text
+spread and does not apply here.
+
+**Design check.** Goal: the weak version for small updates (`GOALS.md` → Φ, "small: measured by a step sweep"). Nearest
+tried: E41 (this cell, one order) and E34 Amendment 4 (second batch order of finished copies). Patch: it settles one
+cell of E41. Relies on `decisions.md`'s one adversary start (2026-10-27); no departure. Approved branch of this plan's
+tree, so no sign-off.
+
+### Stages (one job, controls first)
+
+| Stage | Reads | Must read / expected | Else |
+|---|---|---|---|
+| C1 | $W_0$, Pile harness, adversary seeds 0-2 | `w0_check` passes, floor 0.0748 within 10% (E41 0.07482) | stop |
+| fine-tune | E41's emoticon fine-tune at checkpoints 10 and 1000 | — | — |
+| G1 | $T_{10}$ and $T_{1000}$ P(target), size | within 0.005 and 0.001 of E41's (0.99931, 0.01125; 0.99961, 0.03209) | stop |
+| positive control | do-nothing at $T_{10}$ | 2.516, fail; blocks 1.17 / 3.79 (E41) | reported |
+| G2 | task-text copy of $T_{1000}$ at seed 1 | Amendment 4's seed-1 copy: P within 0.005 of 0.99790, ratio within 15% of 0.990 | stop: the seeded path is not Amendment 4's |
+| scored | task-text copy of $T_{10}$ at seed 1, then seed 2 | see below | — |
+
+**Why G2 and not more.** G2 is the one extra copy, about 2 min. It checks that the seeded path reproduces Amendment 4's
+copy, on the same teacher and card, before any scored copy. A $T_{100}$ copy is skipped: $T_{100}$'s do-nothing passes,
+so the check has no power there. A $T_{1000}$ copy at seed 2 is skipped too: $T_{1000}$'s batch-order spread is
+already known (E34 seed 0 against Amendment 4 seed 1, 3.2%), and no prediction reads a third draw.
+
+### Numbers and expected values
+
+Each harness read now also keeps the adversarial ratio of each of its two 128-row Pile blocks. That is the block's KL
+over $W_0$'s same block under adversary seed 0 (E41: 0.6794 / 0.7182); the mean over blocks is the harness ratio. The
+script takes the block values from the harness's `[faith]` log lines through a tee, and checks they average to the
+stored ratio. E41's seed-0 copy put its excess in one block (1.06 / 2.00).
+
+| Number | $W_0$ | Do-nothing $T_{10}$ | Control (G2) | Expected, seeds 1 and 2 |
+|---|---|---|---|---|
+| adversarial ratio | 1 | 2.516 | 0.990 | about 1.45-1.65 (seed 0 1.547) |
+| per-block ratio | 1 / 1 | 1.17 / 3.79 | about 1 / 1 | excess in one block, as seed 0 |
+| P(target) | 0.004 | 0.9993 | 0.9979 | about 0.999 |
+| gap share | 1 | 0 | — | about 0.001-0.002 |
+| Δ's share | — | 1 | ~1e-9 | ~1e-9 (above 1e-6 is a bug) |
+
+**Blind to.** There is one adversary start per state, so a pass is a lower bound. The run uses one fine-tune seed and
+one task. There are three batch orders, which is enough to see a spread but not to estimate one.
+
+**Noise floor.** Task-text batch-order ratio gaps go up to 11.1% (E34 Amendment 4). $W_0$'s adversary-seed floor is
+7.5%. The pass line is 9.7% below 1.547 and the fail line 4.2% above it.
+
+### Predictions (filed)
+
+- **P1, batch order** (three-way plus "behaviour lost"). Each seed's copy (0 = E41's, 1, 2) is "behaviour lost" if
+  P < 0.9 or gap share > 0.05; otherwise it gets its `state_verdict`. The outcome is "behaviour lost" if any seed is.
+  Otherwise it is the **median verdict of the three seeds**, ordered pass < inconclusive < fail. Every combination is
+  covered:
+  - two or three passes give pass;
+  - two or three fails give fail;
+  - every other mix (three inconclusive, one pass with two inconclusive, one fail with two inconclusive, or one of
+    each) gives inconclusive.
+
+  P1 is unscored if a seed is missing. Reported beside it: the counts, "split" (a pass and a fail both present), and,
+  per seed, the line its ratio is within 7.5% of.
+  - **Near a line.** A reading within the 7.5% adversary-seed floor of a line keeps its verdict. The inconclusive band
+    is already that floor around the 1.5 line (pass ≤ 1.5/1.0748, fail ≥ 1.5 × 1.0748), so the rule adds no second
+    margin. Every inconclusive reading is near a line by construction. For a pass or a fail, the flag marks a verdict
+    that one adversary start could flip, and the report says so.
+  - **Lean:** inconclusive, medium. Emoticon's task-text copies moved 0.1% and 3.2% with batch order, and it takes a
+    9.7% drop to pass.
+- **P2, spread** (two-sided). Each new seed's ratio must lie within 11.1% of seed 0's 1.54653, relative and inclusive:
+  1.3748 to 1.7182. P2 holds if both seeds do and is unscored if one is missing. Reported beside it: max/min − 1 over
+  seeds 0-2. *Lean: holds, medium.* The one-block excess could make this copy more sensitive to batch order.
+
+**Edge cases, run through `score` before filing** (synthetic records on the CPU worker):
+- an empty file, and one seed only: P1 and P2 unscored (None);
+- pass+pass gives pass; fail+fail gives fail; inc+inc, pass+inc and fail+inc give inconclusive;
+- pass+fail gives inconclusive, with split true;
+- P 0.85 ("below P 0.9"), and a pass with gap share 0.06: behaviour lost;
+- ties: gap share exactly 0.05 and P exactly 0.9 keep the behaviour;
+- P2 at exactly (1 ± 0.111) × 1.54653 holds; 1e-4 beyond it fails;
+- a do-nothing state at or below 1 gives the excess-removed share None, with no division by zero;
+- Δ's share 2e-6 sets `delta_untouched` false;
+- an unknown verdict string raises an error;
+- 1.5 is flagged near the fail line, the nearer of the two;
+- the `[faith]` parser read E41's real log lines exactly.
+
+### Decision tree
+
+- **A control fails** (C1, G1, G2), a block-parse assertion fires, or `delta_untouched` is false: stop, report, fix.
+- **Pass:** the miss was a batch-order draw. The early emoticon cell reads pass at the typical order. The
+  comparison's small-update cell turns "yes, one order in three inconclusive".
+- **Fail:** the step-10 emoticon update is a real limit of teacher training from task text at 1,000 steps. This is a
+  qualitative surprise against E41 P1's high lean: announce it.
+- **Inconclusive:** the cell sits in the band at every typical order, and one 20-step start cannot decide it. The card
+  offers more adversary starts (a departure from `decisions.md`), the budget adversary, or accepting "inconclusive" as
+  the early-update reading.
+- **Split, or P2 fails:** the step-10 copy is more order-sensitive than finished copies. That goes into the card with
+  the spread.
+- **Behaviour lost:** a qualitative surprise. Announce it and file a card; no further run.
+- **In every case**, the Blocking card on early updates and the weak version goes to the user afterwards, as this plan's
+  tree says.
+
+### Cost and routing
+
+- **Run time:** about 12 min on an H100. Load and C1 take 3 min, the fine-tune 0.5 min, the gap and do-nothing read
+  1 min, and each of G2 and the two copies about 2.2 min (E41: 126 s per copy with its read).
+- **Card:** RunPod "NVIDIA H100 80GB HBM3", directly. The run is under 30 min, but C1's floor, G1, G2 and the seed-0
+  reference all belong to that card, and the cluster's L40 reads a floor of about 0.21 and would stop at C1.
+- **Cost:** about 25 min of pod with set-up and downloads, at E41's ~$4.4/h: **about $1.9, cap $3**. The tree's
+  "about $1" left out set-up. This is within the session's $40.
+
+### Not in this amendment
+
+- $T_{100}$ copies at other orders, and a $T_{1000}$ copy at seed 2 (reasons above).
+- Adversary seeds 1 and 2 on the copies (the check's suggestion). That would separate adversary-start noise from
+  batch-order noise, but it departs from the one-start decision. It is the card's first option if the outcome is
+  inconclusive.
+- The " which" $T_{10}$ copy at other orders (it passed, 1.376), and Pile-text copies ($T_{10}$ passed, 1.134).
+- A 3,000-step copy, the budget adversary, and a second fine-tune seed.
