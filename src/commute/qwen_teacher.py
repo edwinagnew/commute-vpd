@@ -188,15 +188,15 @@ def random_change(off: Offsets, alpha: float, seed: int, dtype: torch.dtype) -> 
 
 def train(model: Any, off: Offsets, teacher: Mapping[str, Tensor] | None, maths: Tensor, web: Tensor, lr: float,
           steps: int, rows_each: int, micro: int, seed: int, log: Any = print,
-          on_step: Callable[[int, list[dict[str, float]]], None] | None = None) -> list[dict[str, float]]:
-    """Adam (betas 0.9, 0.999, no decay, no clipping) on the offsets for `steps` steps. Each step: `rows_each` rows
+          on_step: Callable[[int, list[dict[str, float]]], bool | None] | None = None) -> list[dict[str, float]]:
+    """Adam (betas 0.9, 0.999, no decay, no clipping) on the offsets for at most `steps` steps. Each step: `rows_each` rows
     drawn with replacement from `maths` and from `web` (CPU [N, T] tensors, batch order `seed`), the loss the mean
     over every position of the batch of KL(teacher ‖ student), in micro-batches of `micro` rows, the forwards and the
     backward in TF32 (module docstring). `teacher`: δW per site (bf16 is enough: it enters as its own term); None: the
     teacher is the unchanged model. curve[0] also holds `kl_fp32_teacher_w0`, the same first batch's KL(teacher ‖ W0)
     from fp32 forwards on swapped weights, TF32 off (0 for None), to read beside curve[0]["kl"], the training forward's
     value of the same quantity. `on_step(step, curve)` runs after every step with TF32 off (the caller's early checks
-    and fixed-row readings; it may stop the job)."""
+    and fixed-row readings; it may stop the job); training ends after a step at which it returns True."""
     dev = off.dV[SITES[0]].device
     opt = torch.optim.Adam(off.params(), lr=lr, betas=(0.9, 0.999), weight_decay=0.0, fused=True)
     gen = torch.Generator().manual_seed(seed)
@@ -234,8 +234,8 @@ def train(model: Any, off: Offsets, teacher: Mapping[str, Tensor] | None, maths:
             if step in (1, 2, 10, 50, 100) or step % 100 == 0:
                 log(f"[teacher training] step {step}: KL {total:.3e}, {curve[-1]['s']:.2f} s, "
                     f"peak {torch.cuda.max_memory_allocated() / 1e9:.1f} GB")
-            if on_step is not None:
-                on_step(step, curve)
+            if on_step is not None and on_step(step, curve):
+                break
     finally:
         model.eval()
     return curve

@@ -14,25 +14,27 @@ Stages, in this order (logical stage in run.py's terms in brackets):
            KL, g statistics and the alive set (recomputed), the disk pre-flight at that alive count, the positive
            control at the full alive set at each filed rate (rules.B_rate: 100 steps, fp32 KL(teacher ‖ student) on
            the fixed rows at steps 0, 50, 100; `qualifies`, `pick_rate`) giving step time, peak GPU memory, the rate
-           T0 and T1 use and T0's steps (`t0_steps`), one adversary pass; the projection against --budget-left gives
-           the number of read steps D1 and T1 can afford. Stops: host, disk, peak memory, no qualifying rate, budget.
+           T0 and T1 use, one adversary pass; the projection against --budget-left gives the number of read steps D1
+           and T1 can afford. Stops: host, disk, peak memory, no qualifying rate, budget.
   G1  [G]  W0's adversary on FineWeb (seed 0) and maths rows (seeds 0-2, the maths reference), G_control first.
+  T0  [T0] the teacher-training positive control, as early as it can run (its FineWeb ratio needs G1's W0 reading):
+           the teacher is W0 plus the change of small random offsets on the alive columns, sized as B's (rules.B_rate
+           target_kl, the size B has just shown falls), trained at B's rate; the fixed rows read every read_every
+           steps, training ends at the first reading <= fall_max of step 0's, a miss at the cap (t0_steps) stops the
+           job (rules.T0).
   L   [L]  one AdamW step from W0 on F's first batch at 1e-7, 1e-6, 1e-5; KL to start on the maths rows. Runs alone
            on a cluster L40 (no decomposition): --stages L. Done (results/amend1/L.json: 29.5 GB GPU, 10.9 host).
   A0  [A0] as E40 (P0), its first batch compared with the earlier run's answers (reported).
   F1  [F]  SFT 100 steps: transformers.get_cosine_schedule_with_warmup (10 warm-up steps; step 1 runs at rate 0),
            gradients clipped at 1.0; no Adam moments saved; read steps chosen after it among the saved δW files
            (`run.read_rule`).
-  T0  [T0] the teacher-training positive control: the teacher is W0 plus the change of small random offsets on the
-           alive columns, sized so KL(teacher ‖ W0) on the fixed rows is F1's KL to start at its first read step; B's
-           t0_steps at B's rate; the fall is the fixed-row KL at the end over step 0's (rules.T0).
   D1  [D]  do-nothing at the read steps (run.stage_D), at step 100 the maths pass test (rule M).
   T1  [T]  teacher training at the read steps (run.stage_T); offsets bf16 before the last read step, fp32 at it, each
            state read back from its file; resumed only when δW, rate, steps and alive set match.
 
 Teacher training runs the fp32 target, matmuls in TF32, with gradient checkpointing (`qwen_teacher` docstring: bf16
-autocast was 18-44% off fp32 on the first batch, TF32 2.4e-4). With --wandb-upload only results JSONs, the log and T1's
-last offsets are uploaded, at the job's end; δW and the other large files stay on the volume, which outlives the pod.
+autocast was 18-44% off fp32 on the first batch, TF32 2.4e-4). With --wandb-upload only results JSONs and the log are
+uploaded, at the job's end; δW, the offsets and the other large files stay on the volume, which outlives the pod.
 
 --rehearse runs every stage at the tiny sizes of A1_TINY on a cluster L40 (46 GB), F1 and L at full size, with stops
 logged instead of taken, into results/amend1_rehearse/, and writes rehearsal.json from checks.json: every miss of
@@ -123,7 +125,7 @@ A1_TINY = replace(  # the rehearsal: F1 and L at full size, the rest tiny, on an
     t_steps=3, t_rows_each=1, t_micro=1, web_pool=8, micro=4, min_card_gb=40.0, upload_max_bytes=50_000_000,
     expected_misses=(  # tiny rows against full-size references, 16 problems, 3 teacher steps, 16 columns per site
         "B_fineweb seed 0 step-0 KL", "G_fineweb seed 0 step-0 KL", "G_maths seed 0 step-0 KL", "G control",
-        "P0:", "T0 positive control", "pass time"),
+        "P0:", "pass time"),
 )
 DIMS = {"q": (2048, 2048), "k": (2048, 1024), "v": (2048, 1024), "o": (2048, 2048), "gate": (2048, 6144),
         "up": (2048, 6144), "down": (6144, 2048)}  # (d_in, d_out) of Qwen3-1.7B's decomposed matrices
@@ -186,7 +188,7 @@ def projection(job: Job, b: dict[str, Any]) -> dict[str, Any]:
 
     def stages(k: int) -> dict[str, float]:
         return {"G1": 4 * start_s, "A0": gen_all, "F1": cfg.steps * sft + len(cfg.saved) * 60 + gen_all,
-                "T0": b["t0_steps"] * step + start_s + 120, "D1": (k + 1) * start_s + 300,
+                "T0": cfg.t0_steps * step + start_s + 120, "D1": (k + 1) * start_s + 300,
                 "T1": k * (cfg.t_steps * step + start_s + 120) + start_s + math.ceil(n_test / cfg.gen_batch)
                 * b["eval_batch_s"] + 300}
 
@@ -210,18 +212,9 @@ def pick_rate(readings: dict[float, dict[str, float]], reads: list[int], ratio_m
     return max((lr for lr, kl in readings.items() if qualifies(kl, reads, ratio_max)), default=None)
 
 
-def t0_steps(kl: dict[str, float], frac: float, cap: int) -> int:
-    """T0's steps from B's readings at the chosen rate: the step at which the fixed-row KL reaches `frac` of its
-    start, extrapolated linearly in log KL through step 0 and B's last reading N; N when that reading is already at or
-    below `frac` (0 included), at most `cap`. Needs a rate that `qualifies` (a positive start, last / first < 1)."""
-    n = max(map(int, kl))
-    r = kl[str(n)] / kl["0"]
-    return n if r <= frac else min(cap, math.ceil(n * math.log(frac) / math.log(r)))
-
-
 def stage_B(job: Job) -> None:
     """The benchmark (module docstring). The positive control at the full alive set gives teacher training's step
-    time, peak memory, its rate (`pick_rate`) and T0's steps (`t0_steps`)."""
+    time, peak memory and its rate (`pick_rate`)."""
     cfg, bench, rule = job.cfg, job.early("bench") or {}, job.pred["rules"]["B_rate"]
     out: dict[str, Any] = {"host": host_memory()}
     job.check("B host RAM", out["host"]["usable_gb"] >= bench.get("host_gb_min", 0), out["host"])
@@ -256,9 +249,7 @@ def stage_B(job: Job) -> None:
     t_lr = pick_rate({float(k): r["kl"] for k, r in out["rates"].items()}, reads, rule["ratio_max"])
     job.check("B rate", t_lr is not None, {k: {"kl": r["kl"], "qualifies": r["qualifies"]}
                                            for k, r in out["rates"].items()})
-    out["t_lr"] = t_lr if t_lr is not None else cfg.t_lr  # a rehearsal goes on at the config's rate and T0's cap
-    out["t0_steps"] = (t0_steps(out["rates"][f"{t_lr:g}"]["kl"], job.pred["rules"]["T0"]["fall_max"], cfg.t0_steps)
-                       if t_lr is not None else cfg.t0_steps)
+    out["t_lr"] = t_lr if t_lr is not None else cfg.t_lr  # a rehearsal goes on at the config's rate
     first = job.pred["three_starts"]["seeds"][0]
     job.adv(nullcontext, job.web, first, "B_fineweb", "fineweb", steps=1)
     out |= {"adv_pass_s": job.last_pass_s, "adv_step0": job.last_step0}
@@ -319,12 +310,14 @@ def stage_F1(job: Job) -> None:
 
 
 def positive_control(job: Job, off: Offsets, target: float, lr: float, steps: int, name: str,
-                     reads: tuple[int, ...], end_stops: bool | None) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
+                     reads: tuple[int, ...], end_stops: bool | None, until: float | None = None
+                     ) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
     """The teacher W0 + `random_change` at the α whose KL(teacher ‖ W0) on the fixed rows (`Job.fixed_rows`) is
     `target` (KL ∝ α², pc_iters rounds from α = 1e-3), then teacher training of `off` (zero offsets on the GPU)
-    towards it, the fixed-row KL(teacher ‖ student) read at step 0 and at `reads` (`run.teacher_checks`, with its
-    end check stopping per `end_stops`). Returns the teacher's change (bf16) and the record; "fall" is the last
-    reading over step 0's."""
+    towards it for at most `steps` steps, the fixed-row KL(teacher ‖ student) read at step 0 and at `reads`
+    (`run.teacher_checks`, with its end check stopping per `end_stops`); with `until`, training ends at the first
+    reading whose fall is <= until. Returns the teacher's change (bf16) and the record; "fall" is the last reading
+    over step 0's, "t_steps" the steps run."""
     cfg, rows = job.cfg, job.fixed_rows()
     alpha, search = 1e-3, []
     for _ in range(cfg.pc_iters):
@@ -335,29 +328,34 @@ def positive_control(job: Job, off: Offsets, target: float, lr: float, steps: in
             break
         alpha *= math.sqrt(target / kl)
     teacher = random_change(off, alpha, cfg.pc_seed, BF16)
-    on_step, fixed = teacher_checks(job, name, lambda: kl_to_teacher(job.model, rows, job.W0, teacher, off), reads,
-                                    end_stops)
+    checks, fixed = teacher_checks(job, name, lambda: kl_to_teacher(job.model, rows, job.W0, teacher, off), reads,
+                                   end_stops)
+
+    def on_step(step: int, curve: list[dict[str, float]]) -> bool:
+        checks(step, curve)
+        return until is not None and str(step) in fixed and r9(fixed_fall(fixed, step)) <= until
+
     curve = train(job.model, off, teacher, *job.pools(), lr, steps, cfg.t_rows_each, cfg.t_micro, cfg.seed, log,
                   on_step)
     step_s = statistics.mean(c["s"] for c in curve[1:]) if len(curve) > 1 else curve[0]["s"]
-    return teacher, {"target_kl": target, "alpha": alpha, "search": search, "lr": lr, "t_steps": steps,
+    return teacher, {"target_kl": target, "alpha": alpha, "search": search, "lr": lr, "t_steps": len(curve),
                      "kl": fixed, "fall": fixed_fall(fixed), "curve": [c["kl"] for c in curve],
                      "first_batch_kl_fp32": curve[0]["kl_fp32_teacher_w0"], "step_s": step_s}
 
 
-def first_read_kl(job: Job) -> float:
-    """F1's KL to start at its first read step (the positive control's size)."""
-    F = job.res["F"]
-    return F["saved"][str(min(F["read_steps"]))]["kl_to_start"]
-
-
 def stage_T0(job: Job) -> None:
-    """The positive control: trained, then behaviour kept on maths rows and the FineWeb adversary of the student."""
-    cfg = job.cfg
+    """The positive control at B's size and rate, trained until its fixed-row fall reaches fall_max (read every
+    read_every steps, at most t0_steps; a miss at the cap stops), then behaviour kept on maths rows and the FineWeb
+    adversary of the student."""
+    cfg, rule = job.cfg, job.pred["rules"]["T0"]
     off = Offsets(job.decomp()[0], job.alive())
     job.decomp("cpu")
-    steps = job.res["B"]["t0_steps"]
-    teacher, out = positive_control(job, off, first_read_kl(job), job.t_lr(), steps, "T0", (steps,), True)
+    reads = tuple(range(rule["read_every"], cfg.t0_steps + 1, rule["read_every"]))
+    teacher, out = positive_control(job, off, job.pred["rules"]["B_rate"]["target_kl"], job.t_lr(), cfg.t0_steps,
+                                    "T0", reads, True, rule["fall_max"])
+    job.put("T0", out)
+    job.check("T0 fixed-row fall by the cap", r9(out["fall"]) <= rule["fall_max"],
+              {"fall": out["fall"], "kl": out["kl"]})
     off.to("cpu")
     with torch.no_grad():
         Wt, Ws = plus(job.W0, teacher), {s: job.W0[s] + off.change(s, DEV) for s in SITES}
@@ -373,8 +371,8 @@ def stage_T0(job: Job) -> None:
         job.halt(f"T0 positive control: fall {out['fall']:.3f}, ratio {out['fineweb']['ratio']:.3f}")
 
 
-STAGES: tuple[Stage, ...] = (("B", "B", stage_B), ("G1", "G", stage_G1), ("L", "L", stage_L),
-                             ("A0", "A0", run.stage_A0), ("F1", "F", stage_F1), ("T0", "T0", stage_T0),
+STAGES: tuple[Stage, ...] = (("B", "B", stage_B), ("G1", "G", stage_G1), ("T0", "T0", stage_T0),
+                             ("L", "L", stage_L), ("A0", "A0", run.stage_A0), ("F1", "F", stage_F1),
                              ("D1", "D", run.stage_D), ("T1", "T", run.stage_T))
 
 
@@ -386,11 +384,10 @@ def before_loading(a: argparse.Namespace, cfg: Any, layout: Layout, stages: list
     rule = pred["rules"]["read_steps"]
     assert (tuple(rule["fixed"]), rule["kl_min"]) == (cfg.read_fixed, cfg.read_kl_min), "read rule: file vs config"
     assert pred["rules"]["T0"]["steps_max"] == cfg.t0_steps, "T0 step cap: file vs config"
-    if "F1" in names:
-        if "L" not in names and not layout.result("L").is_file():
-            sys.exit(f"F1 needs stage L's results first: {layout.result('L')}")
-        if "B" not in names and "B" not in run.done(layout):
-            sys.exit("F1 needs a finished stage B (its read-step budget)")
+    if names & {"G1", "T0", "A0", "F1", "D1", "T1"} and "B" not in names and "B" not in run.done(layout):
+        sys.exit(f"these stages need a finished stage B (its read-step budget): {layout.result('B')} is missing")
+    if "F1" in names and "L" not in names and not layout.result("L").is_file():
+        sys.exit(f"F1 needs stage L's results first: {layout.result('L')}")
     if a.volume != "none":
         assert os.path.ismount(a.volume), f"--volume {a.volume} is not a mount point"
     decomp = Path(a.decomp)
@@ -406,12 +403,12 @@ def before_loading(a: argparse.Namespace, cfg: Any, layout: Layout, stages: list
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--stages", default="B,G1,A0,F1,T0,D1,T1")
+    ap.add_argument("--stages", default="B,G1,T0,A0,F1,D1,T1")
     ap.add_argument("--out", default="/workspace/e40a1")
     ap.add_argument("--decomp", default="/workspace/qwen3-1.7b-p-e9fcffd5-torch")
     ap.add_argument("--usd-per-h", type=float, default=4.5)
     ap.add_argument("--budget-left", type=float, default=None, help="dollars left for this run (B's projection)")
-    ap.add_argument("--wandb-upload", action="store_true", help="upload results JSONs, the log and T1's last offsets to W&B (off)")
+    ap.add_argument("--wandb-upload", action="store_true", help="upload results JSONs and the log to W&B (off)")
     ap.add_argument("--wandb-dir", default=str(Path.home() / "wandb"), help="W&B's run files, on the container disk")
     ap.add_argument("--rehearse", action="store_true", help="tiny sizes (A1_TINY), stops logged, own directory")
     ap.add_argument("--kill-after-save", action="store_true", help="rehearsal: end the job after T1's first save")
