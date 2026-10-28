@@ -294,3 +294,23 @@ alive set (137× the rehearsal's 16 columns per site) α is ~12× smaller and th
 lowest step-100 fall (a tie: the smaller); T0 ends at a fall ≤ 0.5, or at 300 unless still falling ≥ 3% of the start
 per reading, else at 600 (the projection counts 600); per-row fixed-row KLs (8) logged at every reading. A $0 rehearsal
 at 16 columns and at a larger cut (`--rehearse-cols`) measures the rate-versus-size scaling before the paid card.
+
+**Gate 3, third rehearsal: rate versus size (2026-10-28).** Cluster L40s, debug QoS, code 5c49414 (before the review-4
+and -5 fixes, 5f099e9 and 5e88c09, which change only the NaN path, memory freeing and logging); files in
+`experiments/qwen_sft/results/amend1_rehearse_e40a1_r3_c16/` and `_c384/`. Job 40760 (B, G1, T0 at 16 alive columns
+per site): ~19 min, peaks 41.8 GB GPU, 37.9 GB host. Job 40780 (B at 384 columns): ~4 min, peaks 39.0 GB GPU, 37.9 GB
+host. B's fixed-row KL as a fraction of its start, step 25 / step 100:
+
+| rate | 16 columns | 384 columns |
+|---|---|---|
+| 3e-5 | 0.940 / 0.725 | 9.24 / aborted |
+| 1e-5 | 0.871 / 0.718 (picked) | 4.41 / aborted |
+| 3e-6 | 0.941 / 0.853 | 1.55 / aborted |
+| 1e-6 | 0.973 / 0.915 | 0.874 / 0.788 (picked, the grid's floor) |
+
+The usable rate falls with size, roughly as fast as Fable's 1/√n or faster: 24× more columns moved the pick down at
+least 10×. The paid card's full alive set is ~5.7× the 384-column cut, so every filed rate would likely abort and B
+stop on "none qualifies". T0 at 16 columns (1e-5) extended to 600 steps and ended at 0.529 of its start (0.570 at 300),
+missing its ≤ 0.5 line even at the size where training works best. **Both filed rules need a decision before the paid
+run** (Fable's advice: `reports/reviews/2026-10-28_review_e40a1-rate-scaling-fable-advice.md`). Lint: pyright clean on
+amend1.py, run.py and the test; it still flags check_teacher.py's frozen `autocast=` calls (minor 7 above).
