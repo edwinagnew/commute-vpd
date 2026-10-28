@@ -61,7 +61,9 @@ def test_score_reads_the_rules(tmp_path):
     path.write_text(json.dumps(out))
     plot.OUT, plot.FIG = path, tmp_path / "figures"
     plot.main()
-    assert {p.name for p in (tmp_path / "figures").iterdir()} == {"pile.png", "topk.png", "split.png", "trigger.png", "adversarial.png"}
+    # halves.png: amendment 1, drawn from the committed plot.AMEND1 (results/gamma_shift_map_amend1.json)
+    assert {p.name for p in (tmp_path / "figures").iterdir()} == {"pile.png", "topk.png", "split.png", "trigger.png", "adversarial.png",
+                                                                  "halves.png"}
 
 
 def test_halves_score_reads_the_rules():

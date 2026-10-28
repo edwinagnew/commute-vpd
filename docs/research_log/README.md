@@ -68,7 +68,9 @@ least once a day:
 
 1. Check nobody else has published since the last build. `Artifact read` with `url` and
    `paths: ["index.html", "experiments.html", "changelog.html"]` (small files come back inline, so leave out pages
-   you are not changing), then `python3 docs/research_log/build.py --check <the directory it saved to>`. "same" on
+   you are not changing), then `python3 docs/research_log/build.py --check <the directory it saved to>`. Run it
+   here, not through `fleet/cpu-run`: it is stdlib only, the dev-node hook allows it, and the worker cannot see the
+   `/ephemeral` folder the read saves to (2026-10-27, three times). "same" on
    every page: build on `parts/` as is. A diff: someone published without committing `parts/`. Merge the diff into
    `parts/` first.
 2. Run the completeness check, so nothing written since the last flush is missed:
@@ -80,7 +82,8 @@ least once a day:
      grep -rq "id=\"e${e#E}\"" docs/research_log/parts || echo "missing card: $e"; done
    ```
    Every report listed and every E-code missing from `parts/` must be covered by a `PENDING.md` line or an existing
-   changelog row; add the missing lines first.
+   changelog row; add the missing lines first. A row covers the reports it names in full or by a wildcard
+   (`analysis_qwen-*` covers every `analysis_qwen-` report).
 3. Apply each line as "What to update" below says, grepping `parts/` for the places to change rather than reading
    whole sections. Write one changelog row for the flush, empty `PENDING.md`, build, publish.
 
@@ -115,14 +118,16 @@ fine anywhere: the build points them at the right page.
 From a Claude Code session, with the Artifact tool, in one try (2026-10-27; before that it took 3 or 4):
 
 1. `git pull --no-rebase`, then `python3 docs/research_log/build.py`, so the build has every other session's changes.
-2. Right before every publish, not just a session's first: one read that covers the page and every already-published
-   file you will pass. It saves them to disk, so nothing large comes into context. Pass only `url` and `paths`:
+2. Right before every publish, not just a session's first, two calls; the publisher needs both:
 
    ```
-   Artifact read
-     url:    https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu
-     paths:  ["index.html", "experiments.html", "glossary.html", "changelog.html", "style.css", "script.js"]
+   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu
+   Artifact list    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   scope: "files"
    ```
+   The read with `url` alone is what counts as viewing the page: a read with `paths`, even one naming `index.html`,
+   saves the files but does not (refused "not viewed" on every such try, 2026-10-27). The listing covers every
+   already-published file you will pass without bringing any into context (a `paths` read inlines glossary, style
+   and script, about 15k tokens).
 3. Publish at once:
 
 ```
@@ -142,9 +147,11 @@ Files already published stay unless passed as `null`. The nav's version line is 
 changelog row publishes all four pages and both assets; new figures are added to the map.
 
 The publisher refuses a page the session has not viewed, and any file already on the artifact that the session has
-not read or listed, or that changed since it did. Step 2's read covers both. Several sessions publish this log, so a
-refusal usually means another one published in between: repeat steps 2 and 3. Never resend the refused call
-unchanged; that is refused too.
+not read or listed, or that changed since it did. Step 2 covers both. Several sessions publish this log, so a
+refusal that hands back newer content means another one published in between: `git pull`, rebuild, repeat steps 2
+and 3, never resending the refused content unchanged. A refusal for a missing view or read means step 2 was skipped:
+make the missing call and send the same publish again. If that resend is refused as unchanged, send it once more;
+on 2026-10-27 that went through each time.
 
 Figures already published (their sources, for a re-upload):
 - "fig/overview_component_training.png": "docs/research_log/component_training_tasks.png"

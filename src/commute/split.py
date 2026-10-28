@@ -306,9 +306,13 @@ def adjoint_split(M: Tensor, U_A: Tensor, V_A: Tensor) -> tuple[Tensor, Tensor]:
 def adjoint_scale(M: Tensor, U_A: Tensor, V_A: Tensor, Sigma: Tensor) -> tuple[float, float]:
     """The scale c that best matches the adjoint split's weight change K(M) to M on the data, c = argmin ||(c K(M) - M)
     Sigma^1/2||_F, and the share of M's weighted energy that c K(M) reproduces (the squared weighted cosine of K(M) and M).
-    K depends on the gauge of (U_A, V_A); the released decomposition fixes it."""
+    K depends on the gauge of (U_A, V_A); the released decomposition fixes it. M outside both spans (K(M) = 0) gives
+    (0, 0), as `adjoint_step`."""
     M, S = M.double(), Sigma.double()
     K = dsigma(*adjoint_split(M, U_A, V_A), U_A, V_A)
+    # K(M) at rounding level would make c and the share ratios of rounding noise (c ~ 1e14): `adjoint_step`'s bound.
+    if float(K.norm()) <= 10 * torch.finfo(M.dtype).eps * float(U_A.norm() ** 2 + V_A.norm() ** 2) * float(M.norm()):
+        return 0.0, 0.0
     kk, mm, km = weighted_energy(K, S), weighted_energy(M, S), float(((K @ S) * M).sum())
     return km / kk, km * km / (kk * mm)
 

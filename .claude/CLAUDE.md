@@ -95,7 +95,9 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   relative vs absolute; the plan states what each metric is blind to, its positive control, and its noise floor.
   Before filing, run each rule against its edge cases (an empty or one-element pool, a zero denominator, ties, a
   case no branch covers) and fix it then: E38 Amendments 2 and 3 each filed a rule that was degenerate or incomplete,
-  found only by the code writer, at a round trip each (2026-10-27).
+  found only by the code writer, at a round trip each (2026-10-27). A control that two numeric paths agree (bf16 vs
+  fp32, batched vs single) takes its tolerance from a measured noise floor between them, stated in the plan: E38
+  Amendment 3's R4 guessed 1e-2, run 1 stopped at 0.0195 from rounding alone, and it cost a rerun.
   Every analysis report opens with a plain-words paragraph (three sentences, no symbols: what was done, what was found,
   what it means for `GOALS.md`) and ends with a "Not run" list.
 - Results are committed (small summaries); anything over ~1 MB per run goes in the gitignored `results/large/`.

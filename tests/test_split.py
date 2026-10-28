@@ -368,7 +368,7 @@ def test_reproduced_share_reads_one_inside_and_zero_outside_both_spans():
     assert set(per) == {"a", "b", "c"}
     assert abs(per["a"]["c"] - 1) < 1e-10 and abs(per["a"]["share"] - 1) < 1e-10
     assert abs(per["b"]["c"] - 0.5) < 1e-10 and abs(per["b"]["share"] - 1) < 1e-10
-    assert abs(per["c"]["share"]) < 1e-3  # K(M) is rounding noise here, so c is too; the share still reads 0
+    assert per["c"]["c"] == 0 and per["c"]["share"] == 0  # K(M) is rounding noise here: adjoint_scale reads it as zero
     e = {k: per[k]["energy"] for k in per}
     assert abs(r["pooled"] - (e["a"] + e["b"]) / sum(e.values())) < 1e-3
     single = split.reproduced_share({"a": dW["a"]}, uv, sigma)["pooled"]
