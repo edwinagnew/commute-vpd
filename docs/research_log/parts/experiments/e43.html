@@ -1,0 +1,25 @@
+<article class="exp missed" id="e43">
+<div class="top"><span class="id">E43</span><span class="chip refuted">missed</span><h3>After teacher training, can the rest of the fine-tune go into Δ so the weights are exactly the fine-tuned model's?</h3><span class="when">2026-10-28 · RunPod H100 · <code>experiments/teacher_training</code></span></div>
+<p class="one">No. Putting the part of the fine-tune that teacher training did not reproduce into Δ makes the decomposition fail the adversarial check on the emoticon fine-tune, at 2.5 and 1.9 times teacher training's own reading and worse than leaving the whole fine-tune in Δ (first figure). Teacher training's own state, with Δ untouched, stays the map.</p>
+<figure>
+<img src="fig/e43_check.png" alt="Pile adversarial ratio at steps 10 and 1,000. Do-nothing 2.52 and 1.50; least-squares split 6.96 and 2.11; teacher training's own state 1.55 and 0.96; teacher training plus remainder 3.92 and 1.87. Pass line 1.40, fail line 1.61.">
+<figcaption>Does adding the remainder to Δ keep teacher training's faithfulness? No, at either step. Up: the adversarial ratio (the damage a 20-step mask adversary finds at the state over what it finds at the unchanged model; on this H100, 1.40 or less passes and 1.61 or more fails). The orange diamonds, exact fine-tuned weights, sit above the grey do-nothing squares at both steps. Grey band: the unchanged model's three adversary seeds.</figcaption>
+</figure>
+<figure>
+<img src="fig/e43_removal.png" alt="Share of the fine-tune's behaviour lost when the remainder is put back into Δ, on task text and on Pile text. Task text: 0.0013 at step 10 and 0.0056 at step 1,000. Pile text: 0.235 and 0.417 for teacher training plus remainder; 0.125 and 0.099 for the least-squares split.">
+<figcaption>How much of the fine-tune's behaviour sits in the remainder? On task text almost none; on Pile text a quarter to two-fifths, the gap teacher training's own state already has there. Up: the KL from the fine-tune to the state with the remainder put back to Δ, as a share of do-nothing's (0: the remainder carries nothing). KL in nats on 256 Pile rows and held-out task windows.</figcaption>
+</figure>
+<figure>
+<img src="fig/e43_delta.png" alt="Squared weight in the remainder, as a multiple of the fine-tune's: 5.1 at step 10 and 1.1 at step 1,000, against 1 for do-nothing and about zero for teacher training's own state. Cosine with teacher training's own weight change: minus 0.90 and minus 0.42.">
+<figcaption>How large is the remainder? At step 10 it is five times the fine-tune's squared size and points mostly opposite teacher training's weight change, so it largely undoes it. At step 1,000 it is about the fine-tune's size. Up: squared weight in the added part of Δ over the fine-tune's squared size.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>E41's emoticon Adam fine-tune of all 24 matrices, stopped at steps 10 and 1,000, with teacher training's own state as in E41 (Γ and Δ frozen, Adam 1e-5, 1,000 steps). The remainder, the fine-tune's weights minus teacher training's, is added to Δ, so the weights equal the fine-tuned model's exactly. Read through the Pile harness (one 20-step adversary start, 256 rows) beside do-nothing, the least-squares split and teacher training's own state, with the remainder put back to Δ on task and Pile text. Controls first, all passed. One H100 job, about $2.5.</dd>
+<dt>Found</dt><dd><ul>
+<li>That decomposition fails the adversarial check at both steps, at 2.5 and 1.9 times teacher training's own reading, against 1.25 times filed, and above leaving the whole fine-tune in Δ.</li>
+<li>Putting the remainder back to Δ loses almost nothing on task text (0.001 and 0.006) and a quarter to two-fifths of the fine-tune's behaviour on Pile text (0.24 and 0.42), the gap teacher training's own state already has there.</li>
+<li>At step 10 the remainder is five times the fine-tune's squared size and mostly undoes teacher training's weight change; expected about the fine-tune's size.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1</dd>
+<dt>Moved on</dt><dd>Exact weights cost faithfulness this way, so teacher training's own state, with Δ untouched, stays the map. The run did not test which part of the remainder the adversary uses; one task, fine-tune seed, batch order and adversary start. A <a href="#decision-exact-weights">pending card</a> offers accepting this or two new plans. Reports: <code>reports/analyses/2026-10-28_analysis_e43-teacher-remainder.md</code>, independent check <code>reports/reviews/2026-10-28_review_e43-check.md</code>; plan <code>reports/plans/2026-10-28_plan_e43-teacher-remainder.md</code>; notebook <code>notebooks/E43_teacher_remainder.ipynb</code>. Not run: teacher training on Pile text before the remainder; the least-squares split of the remainder; a second seed or adversary start; the broad task; the larger model.</dd>
+</dl>
+</article>

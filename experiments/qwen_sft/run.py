@@ -519,8 +519,8 @@ class Job:
         save(path, tensors, dtype, droppable, log, meta)
 
     def keep(self, path: Path) -> None:
-        """A file uploaded to W&B when the run uploads: results and logs, and T's last offsets (`stage_T`); δW and
-        the other large files stay on the volume (it outlives the pod)."""
+        """A file uploaded to W&B when the run uploads: results and logs (`run_stages`), and E40's T0 offsets; δW,
+        T's offsets and the other large files stay on the volume (it outlives the pod)."""
         if self.uploader is not None:
             self.uploader.add(path)
 
@@ -1085,8 +1085,6 @@ def stage_T(job: Job) -> None:
                           cfg.seed, log, on_step)
             last = t == max(job.read_steps())
             off.save(path, BF16 if cfg.offsets_bf16_before_last and not last else F32, meta, log)
-            if last:  # T's final offsets; the earlier ones and δW stay on the volume
-                job.keep(path)
             rec["curve"] = [c["kl"] for c in curve]
             rec["first_batch_kl_fp32"] = curve[0]["kl_fp32_teacher_w0"]  # beside curve[0], the training forward's
             if job.kill_after_save:
