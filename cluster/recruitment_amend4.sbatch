@@ -15,7 +15,7 @@
 #SBATCH --qos=debug
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --mem=32G  # job 40041 ran at 40G; 64G waited on node RAM (2026-10-28)
 #SBATCH --time=00:30:00
 #SBATCH --output=cluster/logs/%x-%j.out
 
