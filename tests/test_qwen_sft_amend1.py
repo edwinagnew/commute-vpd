@@ -160,7 +160,7 @@ def _kl(k0: float, k50: float, k100: float) -> dict[str, float]:
 def test_b_rate_rule_and_its_edge_cases():
     rule = R["B_rate"]
     reads, cap, q = rule["reads"], rule["ratio_max"], A1.qualifies
-    assert reads == [0, 50, 100] and rule["rates"] == [1e-5, 3e-5]
+    assert reads == [0, 50, 100] and rule["rates"] == [3e-5, 1e-5, 3e-6, 1e-6]
     good = _kl(0.006957, 0.0058, 0.004886)  # check_teacher's 1e-5 curve (0.702 at step 100), 50 made up between
     assert q(good, reads, cap) and q(_kl(1.0, 0.95, 0.9), reads, cap)  # 0.9 exactly: inclusive
     assert not q(_kl(1.0, 0.95, 0.9000001), reads, cap)  # falls, but not enough
@@ -170,9 +170,36 @@ def test_b_rate_rule_and_its_edge_cases():
     assert not q(_kl(math.nan, 0.5, 0.4), reads, cap) and not q(_kl(1.0, math.nan, 0.4), reads, cap)
     assert not q(_kl(math.inf, 0.5, 0.4), reads, cap) and not q({"0": 1.0, "100": 0.5}, reads, cap)  # missing 50
     up = _kl(0.006957, 0.015, 0.023)  # check_teacher's 1e-4 divergence
-    assert A1.pick_rate({1e-5: good, 3e-5: good}, reads, cap) == 3e-5  # both: the larger
-    assert A1.pick_rate({1e-5: good, 3e-5: up}, reads, cap) == 1e-5
-    assert A1.pick_rate({1e-5: up, 3e-5: up}, reads, cap) is None and A1.pick_rate({}, reads, cap) is None
+    pick = A1.pick_rate
+    assert pick({1e-5: good, 3e-5: good}, reads, cap) == 1e-5  # a tie: the smaller
+    assert pick({1e-6: _kl(1.0, 0.9, 0.7), 1e-5: _kl(1.0, 0.95, 0.6), 3e-5: _kl(1.0, 0.8, 0.65)}, reads, cap) == 1e-5
+    assert pick({1e-6: _kl(1.0, 0.9, 0.6), 3e-5: _kl(2.0, 1.8, 1.1)}, reads, cap) == 3e-5  # by the fall, not the KL
+    assert pick({1e-5: good, 3e-5: up}, reads, cap) == 1e-5
+    assert pick({1e-5: _kl(1.0, math.nan, 0.5), 3e-5: good}, reads, cap) == 3e-5  # NaN: out
+    aborted = {"0": 1.0, "25": 3.3}  # an arm stopped at 25 has no later readings
+    assert pick({1e-5: aborted, 3e-5: aborted}, reads, cap) is None
+    assert pick({1e-5: up, 3e-5: up}, reads, cap) is None and pick({}, reads, cap) is None
+
+
+def test_b_aborts_at_25_above_1_2():
+    rule, ab = R["B_rate"], A1.b_aborts
+    assert (rule["abort_at"], rule["abort_ratio"]) == (25, 1.2)
+    assert not ab({"0": 1.0, "25": 1.2}, 25, rule) and ab({"0": 1.0, "25": 1.2000001}, 25, rule)  # inclusive
+    assert ab({"0": 0.006957, "25": 0.023}, 25, rule) and not ab({"0": 0.006957, "25": 0.00609}, 25, rule)  # 40673
+    assert ab({"0": 1.0, "25": math.nan}, 25, rule) and ab({"0": 0.0, "25": 0.0}, 25, rule)  # NaN, zero start
+    assert not ab({"0": 1.0, "25": 0.5, "50": 9.0}, 50, rule)  # only at 25
+
+
+def test_t0_ends():
+    rule, end = R["T0"], A1.t0_ends
+    assert (rule["first_cap"], rule["steps_max"], rule["read_every"], rule["extend_drop"]) == (300, 600, 50, 0.03)
+    assert end({"0": 1.0, "100": 0.5}, 100, rule) and not end({"0": 1.0, "100": 0.51}, 100, rule)
+    assert end({"0": 1.0, "250": 0.62, "300": 0.6}, 300, rule)  # flat at 300: ends (a miss)
+    assert not end({"0": 1.0, "250": 0.63, "300": 0.6}, 300, rule)  # still falling by 3%: runs on
+    assert end({"0": 1.0, "250": 0.6, "300": 0.61}, 300, rule)  # rising: ends
+    assert end({"0": 1.0, "250": math.nan, "300": 0.6}, 300, rule) and end({"0": 0.0, "300": 0.0}, 300, rule)
+    assert not end({"0": 1.0, "350": 0.7, "400": 0.69}, 400, rule)  # past 300, flat: on to the cap
+    assert A1.A1.t0_steps == rule["steps_max"]  # the cap itself is train()'s step count
 
 
 def test_maths_pass_test_rule():
@@ -267,11 +294,13 @@ def test_fixed_row_reading_is_kl_to_w0_at_zero_offsets_and_zero_at_the_target():
     off = Offsets(comps, alive, device="cpu")
     alpha = 0.5
     teacher = random_change(off, alpha, seed=0, dtype=torch.float32)
-    k0 = kl_to_teacher(model, rows, W0, teacher, off)
-    assert k0 > 0 and k0 == mean_kl(model, rows, plus(W0, teacher), None)
+    per_row = kl_to_teacher(model, rows, W0, teacher, off)
+    k0 = sum(per_row) / len(per_row)
+    assert len(per_row) == 2 and min(per_row) > 0
+    assert k0 == pytest.approx(mean_kl(model, rows, plus(W0, teacher), None), rel=1e-12)
     with torch.no_grad():
         for i, s in enumerate(qwen_vpd.SITES):  # random_change's draws (seed 0: generator seed i)
             gen = torch.Generator().manual_seed(i)
             off.dV[s].copy_(alpha * torch.randn(off.V[s].shape, generator=gen))
             off.dU[s].copy_(alpha * torch.randn(off.U[s].shape, generator=gen))
-    assert kl_to_teacher(model, rows, W0, teacher, off) < 1e-6 * k0
+    assert max(kl_to_teacher(model, rows, W0, teacher, off)) < 1e-6 * k0

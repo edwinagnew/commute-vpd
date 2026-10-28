@@ -243,12 +243,15 @@ def train(model: Any, off: Offsets, teacher: Mapping[str, Tensor] | None, maths:
 
 @torch.no_grad()
 def kl_to_teacher(model: Any, rows: list[Tensor], W0: Mapping[str, Tensor], teacher: Mapping[str, Tensor],
-                  off: Offsets) -> float:
-    """Teacher training's reading on fixed rows: the mean fp32 KL(teacher ‖ student) over every position of `rows`, the
+                  off: Offsets) -> list[float]:
+    """Teacher training's reading on fixed rows: per row, the mean fp32 KL(teacher ‖ student) over its positions, the
     teacher's weights W0 + δW and the student's W0 + the offsets' change, swapped in (check_teacher.py's reading, job
-    40673). At zero offsets it is KL(teacher ‖ W0). Holds two fp32 copies of the decomposed matrices while it runs."""
+    40673); the rows are of one length, so their mean is the mean over every position. At zero offsets it is
+    KL(teacher ‖ W0). Holds two fp32 copies of the decomposed matrices while it runs."""
+    assert len({r.numel() for r in rows}) == 1, "rows of one length (the reading is their mean)"
     dev = str(W0[SITES[0]].device)
-    return mean_kl(model, rows, plus(W0, teacher), {s: W0[s] + off.change(s, dev) for s in SITES})
+    Wt, Ws = plus(W0, teacher), {s: W0[s] + off.change(s, dev) for s in SITES}
+    return [mean_kl(model, [r], Wt, Ws) for r in rows]
 
 
 # ----------------------------------------------------------------------------- readings of a state

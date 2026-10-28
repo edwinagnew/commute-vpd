@@ -174,7 +174,7 @@ def main() -> None:
         return put
 
     a.usd_per_h = 0.0
-    job = Job(a, CFG, amend1.REHEARSAL, budget_usd=math.inf, guard_usd=math.inf)
+    job = Job(a, CFG, amend1.rehearsal("amend1_rehearse"),budget_usd=math.inf, guard_usd=math.inf)
     off = Offsets(load_components(job.decomp_dir, "cpu", BF16), job.alive())
     alpha = job.res["B"]["rates"]["1e-05"]["alpha"]
     teacher = {s: v.float() for s, v in random_change(off, alpha, CFG.pc_seed, BF16).items()}

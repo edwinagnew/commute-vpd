@@ -285,3 +285,12 @@ runner stops the pod (B's results downloaded) and the lead asks the user before 
 later stage (fixed in this commit). (c) T0's first 100 steps repeat B's chosen-rate control (~100 teacher steps paid
 twice); accepted and counted in the cost. (d) δW and the offsets live only on the network volume 2bun37yawb, not W&B;
 the analysis reads the JSONs; the runner brief must pass --volume /workspace.
+
+**Gate 5, rate grid from the Fable advice (2026-10-28).** Fable's advice (unmeasured; `reports/reviews/
+2026-10-28_review_e40a1-t0-fable-advice.md`): at a fixed target KL, α shrinks as 1/√(alive parameters), so at the full
+alive set (137× the rehearsal's 16 columns per site) α is ~12× smaller and the filed rates {1e-5, 3e-5} may sit where
+1e-4 diverged (×3.3 by step 25, check_teacher). Changes (`predictions_amend1.json` → amended_3): B's grid {3e-5, 1e-5,
+3e-6, 1e-6}, read at 0, 25, 50, 100, an arm aborted at 25 above 1.2× its start; the rate is the qualifying one with the
+lowest step-100 fall (a tie: the smaller); T0 ends at a fall ≤ 0.5, or at 300 unless still falling ≥ 3% of the start
+per reading, else at 600 (the projection counts 600); per-row fixed-row KLs (8) logged at every reading. A $0 rehearsal
+at 16 columns and at a larger cut (`--rehearse-cols`) measures the rate-versus-size scaling before the paid card.
