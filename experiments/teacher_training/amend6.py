@@ -158,6 +158,10 @@ class Run6:
                      matches=None if ref is None else all(abs(reading[k] - v) <= AM.ref_tol[k] for k, v in ref.items()))
             if "gap_w0" not in t:
                 t["gap_w0"] = gap_w0(tctx, net)
+            if "pile_gap_w0" not in t:  # the teacher's own plain-text gap at W0, same rows as pile_gap (recorded, not scored)
+                from commute.finetune import eval_arm_b
+
+                t["pile_gap_w0"] = eval_arm_b(self.w0_net, net, self.rows, tctx.device)["kl_to_ref"]
             log(f"[{task}/{kind} teacher] {json.dumps(t, default=float)}")
             dump(OUT6, self.out)
             self.teachers[(task, kind)] = (dW, net)
@@ -239,12 +243,15 @@ def g1(r: Run6) -> None:
     """G1: the r1 SGD teacher reproduces E34's P and size and its do-nothing adversarial ratio; stop otherwise."""
     r.references(R1, "sgd", harness=True)
     t, rec = r.out["teachers"][f"{R1}/sgd"], r.out["states"][f"{R1}/sgd/nothing"]
-    ok = bool(t["matches"]) and abs(rec["pgd"] - AM.g1_harness) <= AM.g1_harness_tol
-    r.out["G1"] = {"reading": t["reading"], "pgd": rec["pgd"], "pass": ok}
+    pile_ok = rec["pile_damage"] > 1e-3 and rec["pile_gap"] <= 1e-4  # pile_read applied the update; the state is the teacher
+    ok = bool(t["matches"]) and abs(rec["pgd"] - AM.g1_harness) <= AM.g1_harness_tol and pile_ok
+    r.out["G1"] = {"reading": t["reading"], "pgd": rec["pgd"], "pile_damage": rec["pile_damage"],
+                   "pile_gap": rec["pile_gap"], "pass": ok}
     log(f"[G1] {json.dumps(r.out['G1'], default=float)}")
     dump(OUT6, r.out)
     if not ok:
-        halt(OUT6, r.out, f"G1: r1 SGD teacher {json.dumps(t['reading'], default=float)}, do-nothing ratio {rec['pgd']:.4f}")
+        halt(OUT6, r.out, f"G1: r1 SGD teacher {json.dumps(t['reading'], default=float)}, do-nothing ratio {rec['pgd']:.4f}, "
+                          f"pile_damage {rec['pile_damage']:.3g} (need > 1e-3), pile_gap {rec['pile_gap']:.3g} (need <= 1e-4)")
 
 
 def stage_a(r: Run6) -> None:
@@ -281,6 +288,7 @@ def stage_b(r: Run6) -> None:
 def stage_d(r: Run6) -> None:
     for seed, steps in ((0, AM.seed0_steps), (1, AM.seed1_steps)):
         for task in AM.long_tasks:
+            r.references(task, "lora", harness=False)  # the LoRA teacher's do-nothing plain-text damage (skips what exists)
             r.student(task, "lora", "B", seed, steps, tuple(s for s in steps if s in AM.long_harness), save=True)
 
 

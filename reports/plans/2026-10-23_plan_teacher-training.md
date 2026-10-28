@@ -664,6 +664,8 @@ and a failed G3 reads "unreadable".
   $1.5). "Learnt, not passed" on any task: a qualitative surprise; stop and tell.
 - **P6 fails.** The spread is reported, and every P5 category within 0.05 of its bar is marked unsettled.
 
+Correction (2026-10-28, before the run): G3 failing skips the two new S arms and the run continues, as the filed controls say.
+
 ### Cost and routing
 
 | Stage | Minutes (H100, from E34, A3 and A5 logs) |
