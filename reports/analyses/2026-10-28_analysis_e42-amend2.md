@@ -8,8 +8,8 @@ Follows `reports/analyses/2026-10-28_analysis_e42-amend1.md`.*
 
 We tried three simpler versions of masked teacher training on the cipher task, each run first with nothing to copy.
 Every version broke the worst-case check on ordinary text while the random-mask check stayed level, so the plan
-stopped before any copy was made. So no training of this kind has yet kept a new behaviour in the parts the
-decomposition switches on, and the pending choice on the test stands.
+stopped and no masked copy was made. Whether training with the importance network fixed can keep the new cipher in
+the parts the decomposition switches on at the cue is therefore still untested.
 
 ## What was tested
 
@@ -24,7 +24,7 @@ $g + (1-g)r$ with $r$ uniform on [0, 1] and drawn afresh at every position. Γ a
 subcomponents' $U, V$ train. Its control, the same recipe with the teacher set to the unchanged model $W_0$, broke the
 adversarial check, so the cipher copy never ran.
 
-This amendment asks which term does the damage. It reruns that nothing-to-copy control three ways, each for 1,000
+This amendment asks which term breaks the check. It reruns that nothing-to-copy control three ways, each for 1,000
 steps on the cipher's 403 training windows, with Amendment 1's batches and mask draws:
 
 - **CI-masked term alone**: weight 0.5 on the CI-masked term, none on the stochastic one.
@@ -54,10 +54,12 @@ copy would run with its recipe. If all three failed, the plan stops.
 - **Both at the trigger only: fail**, low confidence. One position of 41 asks less. But the trigger is where the masked
   students start furthest from the teacher, and there is still no worst-case term.
 
-## The apparatus: step 1 reproduces Amendment 1's job
+## The apparatus: step 1 reproduces Amendment 1's first step
 
 Step 1 of each control has the same state, batch and mask draws as job 40338's step 1, so every logged term must
-match it. They do, to every printed digit:
+match it. They do, to every printed digit. This shows that the first batch and mask draw are Amendment 1's, including
+the draw for a term with weight 0. That later batches and draws follow the same order rests on the code, not on this
+match; after step 1 the terms differ, as they must, because the parameters do.
 
 | term at step 1, nats | job 40338, both terms | CI-masked alone | stochastic alone | both at the trigger only |
 |---|---|---|---|---|
@@ -83,11 +85,11 @@ The trainer's unmasked term at $W_0$ was 0.00163 nats, under its stop line of 0.
 **Reading it.** No: all three new controls failed the adversarial check, and so did Amendment 1's. In the left panel
 the unchanged model's three adversary seeds sit at 1.0 to 1.21. E42's copy, trained without masked terms on the
 same windows, sits at 0.96. Every masked recipe sits between 11.7 and 48.7, six to twenty-seven times the fail line.
-The stochastic term alone did the least damage and the CI-masked term alone the most, more than both terms together.
-In the right panel every state's random-mask ratio stays between 0.94 and 1.04, far under its line. So each recipe left
-the decomposition as good as before on average and broke it in the worst case. The ordering among the four recipes is
-one batch order and one adversary start. A control's spread across batch orders is unmeasured, so only "all far past
-the line" is established.
+The stochastic term alone read the lowest adversarial ratio and the CI-masked term alone the highest, higher than
+both terms together. In the right panel every state's random-mask ratio stays between 0.94 and 1.04, far under its
+line. So each recipe left the decomposition as good as before on Pile text under random masks, and broke it in the
+worst case. A control's spread across batch orders is unmeasured. So what is established is that, on one batch order
+and one adversary start, all four sit far past the line; their ordering is not.
 
 | quantity | $W_0$ | E42's copy, no masked terms | both terms, Amendment 1 | CI-masked alone | stochastic alone | both at the trigger only |
 |---|---|---|---|---|---|---|
@@ -96,15 +98,15 @@ the line" is established.
 | stochastic Pile ratio, line 1.497 | 1 | 0.936 | 1.028 | 1.016 | 1.011 | 1.038 |
 | CI-masked Pile ratio | 1 | 0.98 | 0.934 | 0.929 | 0.998 | 0.987 |
 | unmasked Pile ratio | 1 | not read here | 0.900 | 0.914 | 0.889 | 0.899 |
-| held-out P(target) | 1.5e-5 | 0.964 | 1.6e-5 | 1.6e-5 | 1.6e-5 | 1.6e-5 |
-| trigger CI-masked P(target) | about $W_0$'s P | 0.007 | 1.4e-5 | 1.5e-5 | 1.8e-5 | 1.4e-5 |
+| held-out P(target) | 1.5e-5, filed value, not read in this job | 0.964 | 1.6e-5 | 1.6e-5 | 1.6e-5 | 1.6e-5 |
+| trigger CI-masked P(target) | about $W_0$'s P, filed value, not read in this job | 0.007 | 1.4e-5 | 1.5e-5 | 1.8e-5 | 1.4e-5 |
 | damage elsewhere, expected under 0.02 | 0 | 0.0243 | 0.0231 | 0.0135 | 0.0195 | 0.0194 |
 | size, largest relative change of a matrix | 0 | 0.0262 | 0.0514 | 0.0370 | 0.0414 | 0.0443 |
 | teacher gap | 0 | not read here | 0.102 | 0.076 | 0.098 | 0.097 |
 | class, filed rule | — | pass | fail | **fail** | **fail** | **fail** |
 
 Nothing was copied, as intended: the target's probability stayed at $W_0$'s in every control. The size of the change
-does not order like the damage: the stochastic-only control moved its matrices further than the CI-masked-only one,
+does not order like the adversarial ratio: the stochastic-only control moved its matrices further than the CI-masked-only one,
 yet read a quarter of its adversarial ratio. The route shares in the result file split a gain of almost nothing and are
 not read.
 
@@ -112,13 +114,15 @@ not read.
 
 ![masked terms fall about a third; the unmasked term drifts alike under every recipe](../../experiments/teacher_training/figures/e42_amend2_curves.png)
 
-**Reading it.** Each recipe did what it was built to do, and the target model drifted from the teacher by the same
-amount under all of them. In the left panel each trained term fell to about 0.7 of its first-50-step mean on the full
+**Reading it.** Each recipe did what it was built to do, and the target model drifted from the teacher by about the
+same amount under each. In the left panel each trained term fell to about 0.7 of its first-50-step mean on the full
 windows, as in Amendment 1. At the trigger only, the two trained terms fell further, to about 0.55. The term left
 untrained fell too, by less: the stochastic term by 17% under the CI-masked recipe, the CI-masked term by 9% under the
-stochastic one. In the right panel the unmasked term starts at 0.0016 nats, jumps to about 0.09 within 50 steps and
-ends near 0.04. The four recipes trace the same curve, while their adversarial ratios range from 12 to 49. So this
-drift of the target model away from $W_0$ on the cipher windows does not tell the recipes' damage apart.
+stochastic one. In the right panel the unmasked term starts at 0.0016 nats at step 1. It averages about 0.09 over the
+first 50 steps, with single steps reaching 0.11 to 0.17 near step 10, and ends near 0.04. The three new recipes trace
+the same curve, and Amendment 1's first and last 50-step means sit on it. Their adversarial ratios range from 12 to
+49. So this drift of the target model away from $W_0$ on the cipher windows does not tell the recipes' adversarial
+ratios apart.
 
 | term, mean over 50 steps, nats | CI-masked alone: first → last | stochastic alone | both at the trigger only | both terms, Amendment 1 |
 |---|---|---|---|---|
@@ -164,22 +168,27 @@ why. Each candidate below is consistent with the four controls, and no run separ
   third of the masked error on 403 cipher windows, with Γ frozen and no sparsity loss to push back.
 - **Specific to the CI-masked case.** The CI-masked recipe read the highest ratio and the stochastic one the lowest.
   The filed reasoning for the CI-masked lean, switched-off subcomponents changing to cancel the switched-on ones,
-  would predict that order. The order rests on one batch order and one adversary start.
+  is consistent with that order. But the same reasoning predicted the stochastic term alone would pass, and it did
+  not. The order rests on one batch order and one adversary start.
 
 ## What we learned
 
 No masked teacher training recipe tried on the cipher windows with Γ frozen holds still with nothing to copy. Four
-recipes failed the adversarial check, each at least six times past its line. So no frozen-Γ map has been shown able
-to keep a new behaviour in the CI-masked model. None has been shown unable to either, since every attempt broke its
-own control first. For `GOALS.md`'s fork between a new capability and a brittle decomposition, E42's finding
-stands as it was. With Γ frozen, the cipher sits in subcomponents Γ keeps off at the trigger, and whether that is
-forced is still untested. The remaining ways to test it change Γ or add an adversarial term to the loss; neither is
-in the approved tree.
+recipes failed the adversarial check, each at least six times past its line. So no masked copy was made, and whether
+training with Γ fixed can keep the random cipher in the CI-masked model at the trigger is still untested on the 67M
+model. No frozen-Γ map has been shown able to do it, and none has been shown unable to, since every masked attempt
+broke its own control first. E42's identity control, a behaviour the model half had, did keep 0.93 at the trigger
+under a frozen Γ. For `GOALS.md`'s fork between a new capability and a brittle decomposition, E42's finding stands as
+it was. With Γ frozen, the cipher sits in subcomponents Γ keeps off at the trigger, and whether that is forced is still
+untested. Untried ways include letting Γ change and adding an adversarial term to the loss; neither is in the approved
+tree.
 
 ## How compelling is the evidence
 
-The failures are far outside any noise. The smallest, 11.7, is six times the fail line, and $W_0$'s three adversary
-seeds spread by 0.21. Both 128-row blocks failed in every control. The comparison between recipes is weaker: one task,
+The failures are far outside every measured noise floor. $W_0$'s adversary seeds spread by 0.21, and a trained copy
+moves up to 25% between batch orders. A control's spread across batch orders is unmeasured. The smallest failure,
+11.7, would need an 85% drop to reach the fail line, far beyond the 25% seen for trained copies, so the fails are
+safe; the ordering is not. Both 128-row blocks failed in every control. The comparison between recipes is weaker: one task,
 one batch order, one adversary start of 20 steps on 256 rows, one weight of 0.5. A control's adversarial ratio across
 batch orders has never been measured. Amendment 1's two blocks read 11 and 25 nats, so the spread may be large.
 
@@ -190,7 +199,11 @@ What each number is blind to:
   Its positive controls hold on this card: Amendment 1's control failed at 25.99 and E42's copy passed at 0.96.
 - **Stochastic Pile ratio**: an average over random masks, blind by construction to changes that cancel on average.
   It read level in every state, including the four that failed the adversarial check.
-- **Held-out P(target) and trigger CI-masked P(target)**: confirm that nothing was copied; not informative about damage.
+- **The adversarial ratio's reference**: each ratio is to $W_0$'s seed-0 reading, 0.692 nats, the lowest of its three
+  seeds. That matters near the line, not at 12 to 49.
+- **CI-masked and unmasked Pile ratios**: reported, 0.89 to 1.00, with no expected value filed; not interpreted.
+- **Held-out P(target) and trigger CI-masked P(target)**: confirm that nothing was copied; say nothing about the Pile
+  checks.
 - **Damage elsewhere and size**: one number each per state; neither orders like the adversarial ratio here.
 - **VPD's sparsity loss**: not read in any state.
 
@@ -198,11 +211,11 @@ What each number is blind to:
 
 **The stochastic term alone failed, reversing the filed lean.** We leaned "pass" at low confidence. We reasoned
 that random masks between Γ's value and 1 penalise the cancelling a CI-masked fit allows. It read 11.7, six times the fail
-line. It was the mildest of the four recipes, but nowhere near holding. The filed evidence against the lean, E37's
+line. It was the lowest ratio of the four recipes, but nowhere near holding. The filed evidence against the lean, E37's
 failure with VPD's stochastic loss, turned out the better guide. Why the stochastic term breaks the worst case is not
 known; the candidates above are untested.
 
-Smaller: the CI-masked term alone did nearly twice the damage of both terms together, 48.7 against 26.0. This rests on
+Smaller: the CI-masked term alone read nearly twice the adversarial ratio of both terms together, 48.7 against 26.0. This rests on
 one batch order and one adversary start, and may be within a control's unmeasured spread.
 
 ## What next
@@ -215,7 +228,7 @@ The tree stops here: no run follows from this amendment. Items for the lead, non
 - If the masked line were reopened, option (c) of card `decision-e42-masked` remains: an adversarial term matched to
   the teacher, shaped for 41-token windows. E37's 3.84 suggests it may not be enough; it needs new code and a review.
 - At $0, the three saved control states could be re-read with adversary seeds 1 and 2. That would show whether the
-  ordering among recipes is real. It would not change the stop, since all three would need to fall under 1.81.
+  ordering survives other adversary starts; batch order would stay untested. It would not change the stop, since all three would need to fall under 1.81.
 
 ## Scorecard
 
