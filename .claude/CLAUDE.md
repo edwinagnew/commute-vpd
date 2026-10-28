@@ -141,7 +141,7 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   faster, an H100 for runs over ~1 h; pods `commute-<experiment>-<id>`). Qwen line only, for now (user, 2026-10-27):
   a longer run that fits an L40 may use the cluster's `normal` QoS when the queue is empty at submission.
 - **Every GPU run goes through `/pod-runner`** (`.claude/skills/pod-runner/SKILL.md`): the lead writes the brief and
-  spawns one `pod-runner` agent (Opus) in the background per run. The lead never runs `sbatch`, `srun` or `start()`
+  spawns one `pod-runner` agent (Sonnet) in the background per run. The lead never runs `sbatch`, `srun` or `start()`
   inline, and doesn't use a fork for this: a fork re-reads the lead's whole context on every polling turn.
 - Budget: the session's `REMOTE_KERNELS_BUDGET` (`.claude/settings.json`; $40, user 2026-10-21) is the limit, with no
   per-run sign-off below it. Plan to stay ~15% under it: the plugin terminates machines when it is hit. Anything more

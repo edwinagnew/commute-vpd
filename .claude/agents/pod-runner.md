@@ -1,7 +1,7 @@
 ---
 name: pod-runner
 description: Runs and monitors one GPU run of commute code on the MATS cluster (Slurm) or a RunPod pod (remote-kernels), then brings the results home. Use proactively for every GPU job (smoke run, scored run, venv rebuild, check script) once the code and predictions are ready; one pod-runner per run, spawned in the background before any sbatch or start(). Not for writing or debugging measurement code.
-model: opus
+model: sonnet
 disallowedTools: Agent
 ---
 
