@@ -210,3 +210,60 @@ upstream), and ask whether those upstream pieces are themselves recruited or mov
 The fixed shift's form on any task; a cue-free restatement; a Γ refit; the 67M restore line's optional "dropped
 members" check; a second 67M model; GRPO (the Qwen line's Q5); a behavioural test of the masked model on lowercase
 text (E36's gap), unless stage 0's non-learning row makes it necessary, in which case it is a card first.
+
+## Amendment 1, before filing (2026-10-28, regating-lead; proposed, awaiting the user)
+
+The user's task (2026-10-28): "run (a) stage 0 … be way more rigorous about regating". Before filing, the lead put
+stage 0's predictions to a Fable advisor (notes and numbers:
+`reports/plans/2026-10-28_plan_regating-line-reset_numbers.txt`) against E12's, E6's and E36's filed cells in nats. Finding: **stage
+0 as written cannot tell an instrument from an artefact.** Its two nulls cannot fail, one null fails a working
+stand-in, and P0.2's number is the gate gain renamed.
+
+What the filed cells already say (nats; E12 `new_vs_existing.json` `routes_lift.cells`, seeds 0 and 1):
+
+| state | gate gain L(C₀,G₁)−L(C₀,G₀) | piece gain U₁−U₀ | d + i | gated piece gain / piece gain |
+|---|---|---|---|---|
+| copy (ident32, ident32b) | 10.7-11.6 | 12.0-12.6 | 0.13-0.19 | 0.87-0.97 |
+| random maps (rand32, rand32b) | 3.5-6.0 | 10.8-15.9 | 0.3-0.5 | 0.36-0.41 |
+| E6 random δW, Frobenius-matched | −0.017 | — | — | real gain −0.015 |
+| E36 code, learned nothing | −0.04/−0.05 | — | — | real gain −0.05/−0.07 |
+
+Defects and the proposed fix:
+
+1. **P0.2 is r renamed.** d + i (what the updated pieces add under gating) is 0.1-0.5 nats in both classes; the
+   separation rests entirely on the gate gain. Refiled as a *replication* of E12 in nats, lean high: on both seeds,
+   gated piece gain / piece gain ≥ 0.8 for copy and ≤ 0.5 for random maps (the piece gain is ≥ 10 nats on every
+   anchor, so the denominator is not degenerate). Not independent evidence for the instrument.
+2. **P0.1 is uncomputable.** Every null's real gain is under 0.1 nats, so its r is undefined. Dropped as a
+   prediction; r is reported only for states with real gain ≥ 1 nat (MIN_GAIN), as a row.
+3. **The sign-flipped null retires a working stand-in.** E6 and E36 show the gate gain tracks the sign and size of
+   tiny real gains. The flip becomes an unscored sanity row: sign(gate gain) = sign(real gain), and |gate gain| ≤
+   |real gain| + floor. It tests that Γ is smooth in its inputs, which nobody doubts.
+4. **The Frobenius-matched random δW is known inert** (E6). Replaced by one random δW scaled so the full model's KL
+   to W₀ at non-task positions matches the fine-tune's (scale capped at 10× the fine-tune's norm, reported).
+   Rule: |gate gain| ≤ floor.
+5. **Floors in nats.** A null passes if |gate gain| ≤ max(0.1 nats, 2 × paired SE of the per-window L(C₀,G₁) −
+   L(C₀,G₀)); the run prints n and the SE per state. No state with real gain ≤ 0 may read gate gain > +0.1. E36's
+   lowercase gain (0.07-0.13 nats per token) sits at this floor: reported with its SE, not scored. E36's code and
+   lowercase states have no trigger; they need the per-token cell function (`spread.masked_logp`), not
+   `route_split`.
+6. **The missing null (new P0.4, the one whose failure retires the line).** A write that uses no existing
+   machinery but makes downstream activations "predict the target": on each E12 anchor task, a rank-1 δW at an
+   early layer (`h.1.mlp.down_proj`, δW = α · u · v̄ᵀ, u the target's unembedding direction per key's answer — or,
+   for a single direction, the copy table's mean answer direction — v̄ the mean key-position input to that matrix),
+   α scaled so the real gain T₁ − T₀ matches the copy state's. It sits in Δ, so its piece gain is 0 by construction;
+   read the gate gain only. Prediction, if the gate gain reads *existing machinery*: gate gain ≤ 0.5 × the copy
+   state's. If it reads ≥ 0.8 × the copy state's, Γ reads "the activations now predict the target", not "the update
+   uses existing machinery", and E12's separation is a property of how the two fine-tunes move activations: the line
+   is retired as an interpretation of an update. Between 0.5 and 0.8: inconclusive, card.
+7. **Stage 0a tolerance.** Regenerated E18 states drift by 0.07 nats in T₁ (E38 `stage0.json`). The identity check
+   (r 0.60 ± 0.01) runs on E18's exact seed-0 state, `reading_a_coverage/emoticon/dW_ft_step10_s0.pt`; regenerated
+   and E38-cached states are checked at 2% of the gain (E38's `t1_rel_tol`). W₀ cells stay within 0.02 nats.
+
+**Revised tree.** P0.4 ≤ 0.5 and the random arm passes and P0.2 replicates: stage 1 is proposed with the gate gain
+and its three nulls as the reading. P0.4 ≥ 0.8, or the KL-matched random arm fails: retire, Blocking card as in
+section 2. P0.2 fails to replicate: stop, fix regeneration before reading anything.
+
+Open on the user: whether to adopt this amendment (and P0.4's single-direction or per-key form). Fable's caveat:
+if the user wants stage 0 only as bookkeeping (one table in nats, no instrument claim), the plan stands with items
+2, 4, 5 and 7.
