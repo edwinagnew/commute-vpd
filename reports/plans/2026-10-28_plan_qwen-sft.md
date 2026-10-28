@@ -115,7 +115,7 @@ Chosen for what a later experiment would otherwise need the fine-tune rerun for.
 | Per step: loss, ‖δW‖ per matrix, batch indices; held-out readings | small, committed | step-size analyses |
 | Step-0 and step-100 greedy responses on GSM8K test and GSM1k | small, committed | answer-level comparisons |
 
-Space: about 48 GB for items 1-4 against ~46 GB free on the 100 GB volume. If the volume is not enlarged, the runner
+Space: about 48 GB for items 1-4; the user enlarged the volume to 150 GB (2026-10-28), so ~96 GB is free. If space still runs short, the runner
 drops, in order: Adam moments, δW step 3, δW step 20.
 
 ## 6. Decision tree (each branch approved with this plan)
