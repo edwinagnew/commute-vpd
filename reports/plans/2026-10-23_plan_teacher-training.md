@@ -690,3 +690,124 @@ short, the run can stop after stage d's seed 0 (about $6.5); every stage writes 
 - The adversary on stage a's students (E34, A3 and A4 read them), and on the Adam and LoRA do-nothing states.
 - Student B past 5,000 steps, on more than 8,192 rows, or at seed 1 past 2,500.
 - A longer adversary or more starts (decided 2026-10-27).
+
+## Amendment 7 (2026-10-28, commute lead): the LoRA's Pile-text copies on r1 and r0 to 10,000 steps
+
+*The approved branch of Amendment 6's decision tree: "plateau with a larger gap, or rising: that task's student B to
+10,000 steps (approved branch, about $1.5)" (class 3), confirmed by `reports/reviews/2026-10-28_review_e34-amend6-check.md`
+§ 4, which asks for its own predictions first and r1's scoring rule fixed in advance. Code
+`experiments/teacher_training/amend7.py`, predictions `results/predictions_amend7.json`, brief `RUN_BRIEF_amend7.md`,
+results `results/teacher_training_amend7.json`.*
+
+**In plain words.** Copied from plain Pile text alone for 5,000 steps, the rank-8 LoRA's trigger behaviour reached
+about the 0.9 bar on r1 and 0.82, still rising, on r0. This job runs the same two copies to 10,000 steps. It asks
+whether r0 gets there, and whether r1 is at the bar or above it once the reading is averaged over many steps
+rather than taken at one checkpoint.
+
+### The question, restated in the Terms' words
+
+Teacher training is component training with the loss KL(teacher ‖ student), the teacher the fine-tuned model W₀ + δW,
+Γ and Δ frozen. Here the teacher is E9's rank-8 LoRA on r1 and on r0, and the student trains on Pile train rows
+32,768-40,959 only (Amendment 6's student B, batch 8, Adam 1e-5, batch-order seed 0). Does the decomposition after
+teacher training, at step 10,000, keep the LoRA's behaviour at the trigger, measured as the mean of the held-out
+P(target) over steps 9,001-10,000, and does it pass the adversarial check?
+
+### Design check
+
+- **Goal served.** Q1, the weak version under reading A, with teacher training as the map: whether its label-free
+  form covers LoRA, the canonical update (`decisions.md`, 2026-10-14). Amendment 6 left that cell "partial".
+- **Nearest tried.** Amendment 6 stage d (to 5,000 steps: emoticon learnt, r1 0.887 at one checkpoint and 0.904 over
+  the last 1,000 steps, r0 0.82 rising), Amendment 3 (to 1,000). Nothing past 5,000 steps.
+- **Patch or step.** A step: the tree's branch, the last reading the plan allows on this cell before it is written up.
+- **Decisions relied on.** Γ and Δ frozen; reading A; same-job W₀ floor and `state_verdict`; one adversary start of 20
+  steps, passes as lower bounds (2026-10-27); teacher training uses Adam (`decisions.md`, 2026-10-28). No departure.
+- **What changes what we do next.** r0 reaching the bar: the label-free map covers a rank-8 LoRA given 10,000 steps.
+  r0 plateauing below: it needs task text for that LoRA. r1 "at the bar": the cell is written as "to about 0.9 and no
+  further", with no more steps. Any copy failing the check: a qualitative surprise, stop and tell.
+- **Control first.** C1 (W₀ under the harness) and W₀'s plain-text damage, alone, with stop rules; then each LoRA
+  teacher against its same-card reading (G1, stop); then a 1,000-step r1 student alone, about 90 s, which must reproduce
+  Amendment 6's step-1,000 state (G2, stop). **Against the reference:** the 10,000-step students are retrained from
+  zero, not resumed from the saved step-5,000 offsets, because Adam's moments were not saved. Same data, rows,
+  seed, constant learning rate and batch order, which does not depend on the step count. So the first 5,000 steps
+  are Amendment 6's run, and G3 tests that: each student's step-5,000 state must reproduce Amendment 6's. Nothing else
+  differs.
+
+### Run order (one H100 job)
+
+| Stage | What | Minutes (H100; A6's log: 5,000 steps in 445 s) |
+|---|---|---|
+| Load, C1, W₀ plain-text control | as Amendment 6 | 4 |
+| r1: G1 teacher, do-nothing (plain text only), Pile train stream | stop if the teacher misses its reference | 5 |
+| G2 | r1 student B to 1,000 steps, read without the adversary | 2 |
+| r1 to 10,000 | states at 5,000 and 10,000 with the adversary, 7,500 without; G3; step-10,000 offsets saved | 18 |
+| r0: G1 teacher, do-nothing, then to 10,000 | as r1, without G2 | 20 |
+| Score | `score`, pure | 0 |
+| **Run** | | **about 50** |
+
+### Numbers, and what each should read
+
+| Number | How measured | W₀ | Do-nothing (the LoRA in Δ) | Control | Blind to |
+|---|---|---|---|---|---|
+| P-bar | mean of the per-step free held-out P(target) over the last 1,000 steps | 0.04 r1, 0.15 r0 | 0.9993 r1, 0.9828 r0 | G2: the single state P at 1,000 reads 0.87530; G3: at 5,000 0.88704 r1, 0.81925 r0 | batch order; the up-to-0.002 gap between the free and `read_state` readings |
+| Faith | `state_verdict` on the two ratios, no P bar, at 5,000 and 10,000 | 1 (pass) | 1.003 r1, 1.009 r0 (A3, this card, not re-read) | G3: 1.071 r1, 0.956 r0 at 5,000 | adversaries past one start of 20 steps |
+| Matching plain-text gap | KL(teacher ‖ state) / KL(teacher ‖ W₀), 256 Pile val rows | 1 | 0 | 1.12 r1, 1.52 r0 at 5,000 (A6) | which positions carry it |
+
+Expected for the students at 10,000: r1 P-bar near 0.90, since its 50-step means sat at 0.896-0.916 from step 3,000
+with a flat training loss. r0 near 0.9, since it rose by about 0.07 per 1,000 steps from 2,500 to 5,000. Every
+adversarial read passes. Sizes grow from 0.022-0.024 at 5,000.
+
+**Noise floor.** For P-bar, the batch-order spread: Amendment 4's 0.032 for Pile-text copies, and Amendment 6's second
+order at step 2,500, 0.002 on r1 and 0.032 on r0. Within one run, A6's single checkpoints wander by up to 0.04 around
+the 50-step mean; a 1,000-step mean removes most of that, not the batch order. Hence the band of 0.03 below. For the
+ratios, C1's floor, 0.0748, and A4's 25% between batch orders. The G2 and G3 tolerances, 0.002 in P, 0.0005 in size,
+0.03 in ratio, come from measured agreement: Amendment 6 reproduced Amendment 3's three step-1,000 readings to 5e-5
+and E34's do-nothing ratio to every printed digit, on the same card and code.
+
+### Predictions (`results/predictions_amend7.json`, filed before the run)
+
+Category rule, per task at step 10,000, with d = P-bar(10,000) − 0.9: |d| < 0.03 → **at the bar**; d ≥ 0.03 →
+**learnt** if faith passes at 10,000, else **learnt, not passed**; d ≤ −0.03 → **plateau** if P-bar rose by less than
+0.03 from step 5,000 (steps 4,001-5,000) to 10,000, else **rising**. The band is fixed now because r1 sits at the bar:
+inside it, one batch order cannot tell "learnt" from "plateau", and the rule says so instead of picking a side.
+
+- **P1, r1 at the bar** (medium). Pass = "at the bar".
+- **P2, r0 reaches the bar** (medium-low; lean "at the bar", as r1 levelled off there). Pass = "at the bar" or
+  "learnt".
+- **P3, the copies pass** (high). Faith at 5,000 and 10,000 on both tasks; pass = all four present and "pass".
+- **P4, the plain-text gap stays far** (medium). At 10,000 the matching gap is above 0.5 on both tasks; pass needs both
+  present with a positive denominator. At 5,000 it read 1.12 and 1.52, having fallen by 0.13 and 0.30 since step 1,000.
+
+Edge cases run before filing: a value exactly on the band's edge counts as outside it (d = 0.03 is "learnt" or
+"learnt, not passed", d = −0.03 is below); a falling P-bar below the band reads "plateau"; faith "inconclusive" above
+the band reads "learnt, not passed"; a state without its adversarial read, or a P-bar window not complete, leaves the
+prediction absent; P3 and P4 never pass on a partial pool; a non-positive teacher gap at W₀ makes P4 unreadable rather
+than a division by zero. The G2 and G3 gates stop the job rather than score a run that does not continue Amendment 6's.
+
+### Decision tree
+
+- **C1, W₀'s plain-text damage, G1, G2 or G3 fails.** The run stops; report the numbers. G3 on r1 stops before r0.
+- **P2: r0 at the bar or learnt.** The label-free map covers the r0 LoRA given 10,000 steps (at the bar: to about
+  0.9); with emoticon, two tasks of three or all three, by r1's category. **Plateau below:** the label-free map needs
+  task text for that LoRA, Amendment 3's first explanation; the techniques card says so. **Rising below:** reported as
+  not reached by 10,000; no further steps in this tree.
+- **P1: r1 at the bar.** The cell reads "to about the bar and no further by 10,000 steps"; a second batch order is
+  the only way to settle it, outside this tree. **Learnt:** covered given 10,000 steps. **Below:** plain text does not
+  carry the r1 LoRA past 0.87.
+- **P3 fails, or "learnt, not passed" anywhere.** A qualitative surprise: stop and tell the user before anything else.
+- **P4 fails.** A copy closed more than half its plain-text distance to the LoRA, reversing Amendment 6's "does not
+  carry the LoRA's change to plain text": announce it as a surprise.
+
+### Cost and routing
+
+About 50 minutes of run plus about 15 of set-up and downloads: RunPod "NVIDIA H100 80GB HBM3", since it is over 30
+minutes and the references and floor are that card's. About $5 at Amendment 6's effective $4.7/h, cap $7, inside the
+session's $40. The tree's "$1.5 each" counted training only, 15 minutes per student; load, controls and set-up are paid
+once. Not a gated run: under $15, under 3 h, inside the cap. The one review of new measurement code applies: a fresh
+agent reviews `amend7.py` before the run.
+
+### Not run
+
+- A second batch order, the only way to settle a category inside the band.
+- Emoticon past 5,000 steps (learnt in Amendment 6); task-text copies; any full-weight teacher.
+- The adversary at step 7,500; more adversary starts or a longer adversary (decided 2026-10-27).
+- Resuming from the saved step-5,000 offsets: without Adam's moments it would not continue the reference run.

@@ -1,0 +1,122 @@
+{
+ "about": "teacher_training Amendment 7 (reports/plans/2026-10-23_plan_teacher-training.md -> 'Amendment 7'): Amendment 6's approved branch, student B (Pile text) of E9's rank-8 LoRA teacher on r1 and r0 to 10,000 steps, batch-order seed 0, one RunPod H100 job. Teachers regenerated in-job (amend3.lora_teacher). The step-5,000 states must reproduce Amendment 6's (G3). Amendment 6's predictions file stands unedited. Filed before any run",
+ "amend7": {
+  "a6_1000": {
+   "p_target": 0.8753,
+   "size": 0.01634
+  },
+  "a6_5000": {
+   "r0_t352_v310": {
+    "p_target": 0.81925,
+    "pgd": 0.95552
+   },
+   "r1_t534_v369": {
+    "p_target": 0.88704,
+    "pgd": 1.07108
+   }
+  },
+  "band": 0.03,
+  "control_steps": 1000,
+  "gap_far": 0.5,
+  "harness_at": [
+   5000,
+   10000
+  ],
+  "repro_tol": {
+   "p_target": 0.002,
+   "pgd": 0.03,
+   "size": 0.0005
+  },
+  "rise": 0.03,
+  "steps": [
+   5000,
+   7500,
+   10000
+  ],
+  "tasks": [
+   "r1_t534_v369",
+   "r0_t352_v310"
+  ],
+  "w0_pile_max": 0.0001,
+  "window": 1000
+ },
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, seeds 0, 1, 2), faith_score.w0_check; expected pass, floor about 0.0748 on the H100. Fails: stop",
+  "G1": "each LoRA teacher matches its same-card reading (Amendment 6's refs: P within 0.01, damage within 0.005, size within 0.003; A6 matched all). Fails: stop",
+  "G2": "r1 first, alone: student B to 1,000 steps reads P(target) within 0.002 of 0.87530 and size within 0.0005 of 0.01634 (Amendment 6's state; A6 reproduced A3's three step-1,000 readings to 5e-5). Fails: stop",
+  "G3": "each 10,000-step student's step-5,000 state reads P(target) within 0.002 and adversarial ratio within 0.03 of Amendment 6's (r1 0.88704, 1.0711; r0 0.81925, 0.9555). Fails: stop (r1's before r0 starts)",
+  "W0_plain_text": "W0's plain-text damage KL(W0 || W0) over the 256 rows <= 1e-4 (expected 0, Amendment 6 read 0). Fails: stop"
+ },
+ "expected": {
+  "W0": "P(target) 0.04 r1, 0.15 r0; ratios 1; pile_damage 0; matching gap 1 by definition",
+  "controls": "G2 0.87530 at 1,000; G3 at 5,000 r1 0.88704 and 1.071, r0 0.81925 and 0.956",
+  "do_nothing": "P(target) 0.9993 r1, 0.9828 r0; adversarial ratio 1.003 r1, 1.009 r0 (A3, this card; not re-read); pile_damage 0.01295 r1, 0.00650 r0; matching gap 0",
+  "students": "r1 P-bar about 0.90 at 5,000 (A6's 50-step means 0.896-0.916 from step 3,000 on, training loss flat from step 250); r0 about 0.78 at 5,000, rising about 0.07 per 1,000 steps; sizes 0.022-0.024 at 5,000 and growing; every adversarial read of a Pile-text LoRA copy so far passed (0.87-1.09)"
+ },
+ "filed": "2026-10-28 14:42:49",
+ "measurements": {
+  "faith": "state_verdict on the adversarial and stochastic ratios to this job's W0, no P bar, at 5,000 and 10,000: pass at or below 1.396 of the floor 0.0748, fail at or above 1.612. One adversary start of 20 steps, a lower bound (Amendment 5)",
+  "p_bar": "the mean of the per-step free held-out P(target) at the trigger (component_training.train's curve, 'heldout_p_o') over the last 1,000 steps, at every 1,000 steps; read at 10,000 (steps 9,001-10,000) and 5,000 (4,001-5,000). Blind to batch order (one order) and to the up-to-0.002 difference between the free reading and read_state's held-out P. Noise floor: Amendment 4's batch-order spread of P for Pile-text copies, 0.032, and Amendment 6's second order at step 2,500 (0.002 r1, 0.032 r0)",
+  "plain_text": "Amendment 6's pile_damage KL(W0 || state) and pile_gap KL(teacher || state) on the 256 Pile val rows; the gap divided by the teacher's own KL(teacher || W0) on the same rows, 'matching' (1 at W0, 0 at the teacher), scored; the gap divided by the do-nothing pile_damage, Amendment 6's 'filed' reading, is computed from the file in the analysis, not scored"
+ },
+ "not_run": [
+  "a second batch order (the only way to settle a category inside the band)",
+  "emoticon past 5,000 (learnt in Amendment 6); task-text copies; any full-weight teacher",
+  "more adversary starts or a longer adversary (decided 2026-10-27)",
+  "the step-7,500 state under the adversary"
+ ],
+ "predictions": [
+  {
+   "confidence": "medium",
+   "id": "P1_r1_at_the_bar",
+   "predicted": "at the bar: r1's 50-step mean held-out P sat at 0.896-0.916 from step 3,000 to 5,000 with a flat training loss, so 5,000 more steps of the same loss should leave it near 0.9",
+   "rule": "category of r1 at 10,000: d = P-bar(10,000) - 0.9; |d| < 0.03 -> 'at the bar'; d >= 0.03 -> 'learnt' if faith 'pass' at 10,000, else 'learnt, not passed'; d <= -0.03 -> 'plateau' if P-bar(10,000) - P-bar(5,000) < 0.03, else 'rising'. Pass = 'at the bar'"
+  },
+  {
+   "confidence": "medium-low",
+   "id": "P2_r0_reaches_the_bar",
+   "predicted": "reaches the bar (lean: at the bar, as r1 plateaued there): r0's 50-step mean rose 0.617 -> 0.793 from step 2,500 to 5,000 and was still rising",
+   "rule": "category of r0 at 10,000 by P1's rule; pass = 'at the bar' or 'learnt'"
+  },
+  {
+   "confidence": "high",
+   "id": "P3_copies_pass",
+   "predicted": "all pass (every Pile-text LoRA copy read so far passed, 0.87-1.09)",
+   "rule": "faith at steps 5,000 and 10,000 on r1 and r0; pass = all four present and 'pass'"
+  },
+  {
+   "confidence": "medium",
+   "id": "P4_gap_stays_far",
+   "predicted": "holds: at 5,000 the matching gaps read 1.12 r1 and 1.52 r0, having fallen by 0.13 and 0.30 from step 1,000; plain text has not carried the LoRA's change to plain text and 5,000 more steps should not close half of it",
+   "rule": "at 10,000, per task: pile_gap / the teacher's KL(teacher || W0) on the same rows ('matching'); pass = both present, denominators > 0, and both above 0.5"
+  }
+ ],
+ "reported_not_scored": [
+  "P-bar at every 1,000 steps; Amendment 6's curve marks (single P, 50-step mean, loss) every 250 steps",
+  "single held-out P, size, damage, teacher gap and Delta's share at 5,000, 7,500, 10,000; ratios at 5,000 and 10,000",
+  "plain-text damage and gap at each state (the analysis divides them by the do-nothing's plain-text damage)"
+ ]
+}
