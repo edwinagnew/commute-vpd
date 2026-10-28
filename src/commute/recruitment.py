@@ -30,6 +30,9 @@ S's top-direction share (`top_dir_share`), control R6's pieces and rule (`top_ab
 
 Amendment 6 (2026-10-28, reports/plans/2026-10-28_plan_e38-amend6.md) restores S and D together and S split by the
 sign of its training e_c; it adds P14 (`overlap`, `p14_seed_class`, `p14_task_class`, `p14_reading`).
+
+Amendment 7 (2026-10-28, reports/plans/2026-10-28_plan_e38-amend7.md) restores the next-ranked set D2, D union D2 and
+the top 2|S in k| set T2 (both by `top_per_matrix`); it adds P15 and P16 (`overlap2`, `p15_*`, `p16_*`).
 """
 
 from __future__ import annotations
@@ -760,3 +763,52 @@ def p14_reading(states: dict[str, dict[str, dict[str, Any]]], task: str, beside:
              for n, s in states.items() for k, r in s.items()}
     tasks = {n: p14_task_class([seeds[f"{n}/s{k}"] for k in s]) for n, s in states.items()}
     return {"a": a, "seed_class": seeds, "task_class": tasks, "reading": tasks[task], "beside": tasks[beside]}
+
+
+# ----------------------------------------------------------------------------- E38 Amendment 7: D2, D union D2, T2
+# reports/plans/2026-10-28_plan_e38-amend7.md, filed predictions experiments/recruitment_test/results/predictions_amend7.json.
+# A record (one task-seed) has scorable, D2_short, T2_short and rho {'D', 'D2', 'D_union_D2', 'S_union_D', 'T2'}.
+
+P16_MARGIN = 0.05  # P16: 'short' needs rho_r(T2) < rho_r(S union D) - 0.05
+
+
+def overlap2(rho: dict[str, float]) -> float:
+    """a2 = rho_r(D union D2) - max(rho_r(D), rho_r(D2))."""
+    return rho["D_union_D2"] - max(rho["D"], rho["D2"])
+
+
+def p15_seed_class(r: dict[str, Any]) -> str:
+    """P15's seed rule: P14's on (D, D2, a2), with a short D2 unscored as G < 1 is."""
+    return p14_seed_class(r["scorable"] and not r["D2_short"], r["rho"]["D"], r["rho"]["D2"], overlap2(r["rho"]))
+
+
+def p15_reading(states: dict[str, dict[str, dict[str, Any]]]) -> dict[str, Any]:
+    """P15 from {task: {seed: record}}: each seed's a2 and class, each task's (P14's task rule); over the tasks not
+    'unscored': 'generic' if all 'separate', 'not generic' if all 'redundant', else 'outside the tree'; 'unscored' if
+    there are none."""
+    a2 = {f"{n}/s{k}": overlap2(r["rho"]) for n, s in states.items() for k, r in s.items()}
+    seeds = {f"{n}/s{k}": p15_seed_class(r) for n, s in states.items() for k, r in s.items()}
+    tasks = {n: p14_task_class([seeds[f"{n}/s{k}"] for k in s]) for n, s in states.items()}
+    scored = [c for c in tasks.values() if c != UNSCORED]
+    reading = ("unscored" if not scored else "generic" if all(c == "separate" for c in scored)
+               else "not generic" if all(c == "redundant" for c in scored) else "outside the tree")
+    return {"a2": a2, "seed_class": seeds, "task_class": tasks, "n_scored_tasks": len(scored), "reading": reading}
+
+
+def p16_seed_class(r: dict[str, Any]) -> str:
+    """P16's seed rule: 'unscored' if G < 1 or T2 is short in any matrix; 'covers' if rho_r(T2) >= rho_r(S union D)
+    (ties 'covers'), 'short' if rho_r(T2) < rho_r(S union D) - 0.05, else 'unclear'."""
+    if not r["scorable"] or r["T2_short"]:
+        return UNSCORED
+    t, u = r["rho"]["T2"], r["rho"]["S_union_D"]
+    return "covers" if t >= u else "short" if t < u - P16_MARGIN else "unclear"
+
+
+def p16_reading(states: dict[str, dict[str, dict[str, Any]]], read_on: tuple[str, ...]) -> dict[str, Any]:
+    """P16 from {task: {seed: record}}: each seed's class, each task's (P14's task rule); the reading on `read_on`
+    (emoticon and ' which') is 'covers' if all of them read 'covers', 'short' if all 'short', else 'outside the tree'."""
+    seeds = {f"{n}/s{k}": p16_seed_class(r) for n, s in states.items() for k, r in s.items()}
+    tasks = {n: p14_task_class([seeds[f"{n}/s{k}"] for k in s]) for n, s in states.items()}
+    on = [tasks[n] for n in read_on]
+    reading = "covers" if all(c == "covers" for c in on) else "short" if all(c == "short" for c in on) else "outside the tree"
+    return {"seed_class": seeds, "task_class": tasks, "reading": reading}
