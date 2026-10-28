@@ -1,4 +1,6 @@
-# Plan: E40, the first Qwen3-1.7B updates: reinforcement learning on GSM8K, with a null and an SFT arm
+# Plan (on hold): the first Qwen3-1.7B updates: reinforcement learning on GSM8K, with a null and an SFT arm
+
+*On hold since 2026-10-28: the user chose SFT and the existing decomposition first (`reports/plans/2026-10-28_plan_qwen-sft.md`, E40). RL comes later, under a new E-code.*
 
 *2026-10-28, qwen-decomp-lead. The user's task (2026-10-28): "I still don't have a good sense on whether doing RL when
 it's already at 75% accuracy is worth doing. If it is, then just go ahead. If not, we need to look for a more difficult
