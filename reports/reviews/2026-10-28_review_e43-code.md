@@ -33,3 +33,5 @@ adds `faith`; drops card/w0_floor, covered by `load()`).
    "not gated" so the runner doesn't flag a mismatch.
 7. minor — bf16 autocast in the masked forward rounds Δ′; the harness's convention for every state; add as a
    "blind to" line.
+
+Fixed in 7832c02: 1 (P3 refiled as `predictions_e43_v2.json`, sha256 204c1fbb..., ratio bound only, verdicts reported; 40 edge cases), 2 (teacher training b = plus remainder's in predictions, plan, docstring), 3 (verdict noted as stochastic+PGD, reported only), 4 (PC stops if KL(ft || W0) on Pile < 0.005; brief asks for kl_pile_w0), 6 (brief: least squares "not gated"), 7 (bf16 "blind to" line); skipped: 5 (zero control on the removal path: low risk, E34 A6 ran the same path at pile_gap 0, and a gate would need an unmeasured tolerance).
