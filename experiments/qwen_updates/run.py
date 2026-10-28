@@ -11,9 +11,10 @@ a missed first-minute check stops with exit 2):
   P        anchor 1's prompt: the few-shot answers, the three candidates against no prompt on 512 train problems, the
            format fallback only if none qualifies; the chosen prompt's greedy answers to test 256-511 (anchor 1's rows)
   S        sampling (--set own: 4 unprompted samples per problem; --set a1: 8 prompted), one file per batch
-  T        training one run (--arm, --seed): 100 steps, δW saved at the grid's brackets and step 100
+  T        training one run (--arm, --seed): 100 steps (a2long, Amendment 1: 300, in two jobs of 150, exit 3 between),
+           δW saved at the grid's brackets, step 100 and the last step; a fresh start deletes the run's old T, E and δW
   E        reading one run: KL to start on all own and maths rows and the task reading at every saved state, the state
-           chosen per grid value, then accuracy, lengths and anchor scores at the chosen states and step 100
+           chosen per grid value, then accuracy, lengths and anchor scores at the chosen states, step 100 and the last
 Results: results/<stage>[_<run>].json, results/score.json, results/run.log; large files under results/large/.
 """
 
@@ -22,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import shutil
 import statistics
 import time
 from dataclasses import asdict
@@ -35,7 +37,8 @@ from job import (
     CFG,
     DEV,
     LARGE,
-    SEEDS,
+    PRED,
+    RESULTS,
     Job,
     accuracy,
     facts_eval,
@@ -172,7 +175,8 @@ def stage_S(job: Job, name: str) -> None:
     n, d = (CFG.own_k if name == "own" else CFG.a1_k), LARGE / "S" / name
     items = [job.sets["train"][i] for i in job.problems]
     texts = [prompt(job.tok, it["question"]) if name == "own" else job.a1_text(it["question"]) for it in items]
-    per = per_batch(job, texts, n)
+    per = job.get(f"S_{name}").get("prompts_per_batch") or per_batch(job, texts, n)  # fixed at the first batch
+    job.put(f"S_{name}", {"prompts_per_batch": per})
     d.mkdir(parents=True, exist_ok=True)
     starts = list(range(0, len(texts), per))
     for b, s in enumerate(starts):
@@ -207,8 +211,14 @@ def stage_S(job: Job, name: str) -> None:
 
 
 def early(job: Job, arm: str, out: dict[str, Any], rec: dict[str, Any], maths: list[Any]) -> None:
-    """The first-minute checks (predictions.json "early"); each miss stops the job."""
+    """The first-minute checks (the arm's predictions file, "early"); each miss stops the job."""
     E, t, file = job.pred["early"], rec["step"], f"T_{out['run']}"
+    same = E.get("reproduce", {}).get(out["run"], {})
+    if str(t) in same.get("kl", {}):
+        ref = same["kl"][str(t)]
+        job.check(out, f"step {t} tracker KL against {same['of']}",
+                  all(r9(abs(rec["kl"][a] / v - 1)) <= same["tol"] for a, v in ref.items()),
+                  {"kl": rec["kl"], "ref": ref}, file)
     if not (math.isfinite(rec["loss"]) and math.isfinite(rec["grad_norm"])):
         job.check(out, f"step {t} finite", False, {"loss": rec["loss"], "grad_norm": rec["grad_norm"]}, file)
     if t == 1:
@@ -226,7 +236,8 @@ def early(job: Job, arm: str, out: dict[str, Any], rec: dict[str, Any], maths: l
             lo, hi = E["first_live"]["band"]
             job.check(out, "step 2 |dW| / (rate sqrt numel)", lo <= r9(min(ratio)) and r9(max(ratio)) <= hi,
                       {"min": min(ratio), "max": max(ratio)}, file)
-            job.check(out, "step 2 KL on the maths rows", at_most(kl, E["step2_kl_max"]), {"kl": kl}, file)
+            kmax = E["step2_kl_max"] * (ARMS[arm].lr / 1e-5) ** 2  # filed at peak 1e-5; KL grows as the step squared
+            job.check(out, "step 2 KL on the maths rows", at_most(kl, kmax), {"kl": kl, "max": kmax}, file)
         if arm == "gold" and str(t) in E["gold_curve"]["ref"]:
             ref = E["gold_curve"]["ref"][str(t)]
             job.check(out, f"gold step {t} KL against E40a1", r9(abs(kl / ref - 1)) <= E["gold_curve"]["tol"],
@@ -234,13 +245,24 @@ def early(job: Job, arm: str, out: dict[str, Any], rec: dict[str, Any], maths: l
 
 
 def stage_T(job: Job, arm: str, seed: int) -> None:
-    run, m, maths = f"{arm}_s{seed}", job.fp32(), job.maths()
+    A, run, ckpt = ARMS[arm], f"{arm}_s{seed}", LARGE / "ckpt" / f"{arm}_s{seed}.pt"
+    m, maths = job.fp32(), job.maths()
     stream, per, own, data = job.arm_data(arm, seed)
-    out: dict[str, Any] = {"run": run, "data": data, "steps": [], "saves": [], "crossings": []}
-    if arm in ("own", "own2"):
-        job.check(out, "own samples kept", data["n"] >= job.pred["early"]["own_kept_min"], data, f"T_{run}")
+    if ckpt.is_file():  # resume; drop what a lost job recorded past the checkpoint
+        out = job.get(f"T_{run}")
+        c = out["paused"]
+        out |= {"steps": [s for s in out["steps"] if s["step"] <= c], "saves": [s for s in out["saves"] if s <= c],
+                "crossings": [x for x in out["crossings"] if x["hi"] <= c]}
+        job.log(f"[T {run}] resuming after step {c}")
+    else:  # a fresh start keeps nothing of an earlier run under this name
+        (RESULTS / f"E_{run}.json").unlink(missing_ok=True)
+        for d in (LARGE / "E" / run, LARGE / "dW" / run):
+            shutil.rmtree(d, ignore_errors=True)
+        out = {"run": run, "data": data, "steps": [], "saves": [], "crossings": [], "seconds": 0.0}
+        if A.data == "own":
+            job.check(out, "own samples kept", data["n"] >= job.pred["early"]["own_kept_min"], data, f"T_{run}")
     axes = {"maths": maths[: CFG.track_rows]} | ({} if own is None else {"own": job.rows(own[: CFG.track_rows])})
-    r = Recipe(ARMS[arm], CFG.warmup, CFG.steps, CFG.schedule, CFG.clip, CFG.micro)
+    r = Recipe(A.lr, CFG.warmup, A.steps, CFG.schedule, CFG.clip, CFG.micro)
     out["recipe"] = asdict(r)
 
     def save_dw(t: int, dW: dict[str, Any]) -> None:
@@ -252,15 +274,20 @@ def stage_T(job: Job, arm: str, seed: int) -> None:
         out["crossings"] += rec.pop("crossed", [])
         rec.pop("norms")
         out["steps"].append(rec)
+        if rec["step"] % CFG.t_chunk == 0 and rec["step"] < A.steps:
+            out["paused"] = rec["step"]  # train writes the checkpoint next
         job.log(f"[T {run}] step {rec['step']}: lr {rec['lr']:.2e}, loss {rec['loss']:.4f}, |dW| {rec['dw_norm']:.4f}"
                 + (f", KL {json.dumps(rec['kl'])}" if "kl" in rec else ""))
         job.put(f"T_{run}", out)
 
     t0 = time.time()
-    train(m, job.W0, lambda t: stream[(t - 1) * per : t * per], r, axes,
-          set(read_steps(CFG.steps, CFG.dense_until, CFG.every)), CFG.grid, save_dw, on_step)
-    out |= {"done": True, "seconds": time.time() - t0, "peaks": job.peaks()}
+    t = train(m, job.W0, lambda t: stream[(t - 1) * per : t * per], r, axes,
+              set(read_steps(A.steps, CFG.dense_until, CFG.every)), CFG.grid, {CFG.steps, A.steps}, save_dw, on_step,
+              ckpt, CFG.t_chunk)
+    out |= {"done": t == A.steps, "seconds": out["seconds"] + time.time() - t0, "peaks": job.peaks()}
     job.put(f"T_{run}", out)
+    if t < A.steps:
+        job.pause(f"checkpoint after step {t} ({ckpt})")
 
 
 # ----------------------------------------------------------------------------- E: reading
@@ -268,16 +295,16 @@ def stage_T(job: Job, arm: str, seed: int) -> None:
 
 def task_reader(job: Job, arm: str, seed: int) -> Any:
     """The arm's teacher-forced task reading at weights W (None: W0), fp32."""
-    m = job.model
-    if arm == "a1":
+    m, d = job.model, ARMS[arm].data
+    if d == "a1":
         held = [r for r in job.samples("a1") if r["pid"] >= N_TRAIN and r["k"] == 0 and not r["truncated"]]
         qs = [job.sets["train"][r["idx"]]["question"] for r in held]
         pairs = [(job.ids(job.a1_text(q)) + r["ids"], job.ids(prompt(job.tok, q)) + r["ids"], len(r["ids"]))
                  for q, r in zip(qs, held, strict=True)]
         return lambda W: {"distill_kl": distill_kl(m, pairs, job.W0, W)}
-    if arm == "gold":
+    if d == "gold":
         seqs, key = [job.gold_seq(i) for i in job.held_idx], "loss"
-    elif arm == "a2":
+    elif d == "a2":
         seqs, key = [job.fact_seq(q) for q in qwen_facts.held_set(seed)], "loss"
     else:
         held = keep_correct([r for r in job.samples("own") if r["pid"] >= N_TRAIN])
@@ -293,21 +320,22 @@ def task_reader(job: Job, arm: str, seed: int) -> Any:
 def gen_reading(job: Job, arm: str, seed: int, t: int) -> dict[str, Any]:
     run = f"{arm}_s{seed}"
     W = plus(job.W0, load(LARGE / "dW" / run / f"step_{t}.safetensors", DEV))
-    full = t == CFG.steps and arm in ("gold", "own", "own2", "null")
+    d = ARMS[arm].data
+    full = t == CFG.steps and d in ("gold", "own", "null")
     items = job.sets["test"] if full else job.sets["test"][: CFG.eval_problems]
     acc, recs = accuracy(job, W, items, LARGE / "E" / run / f"step_{t}_test.jsonl", f"{run} {t}")
     res: dict[str, Any] = {"test": acc}
     if full:
         res["first256_strict_dropped"] = summary(recs[: CFG.eval_problems])["strict_dropped"]
-    if arm == "a2":
+    if d == "a2":
         res["facts"] = facts_eval(job, job.gen(W), qwen_facts.held_set(seed))
-    if arm == "a1":
+    if d == "a1":
         res["format_unprompted"] = statistics.mean(follows_format(r["response"]) for r in recs)
     return res
 
 
 def stage_E(job: Job, arm: str, seed: int) -> None:
-    run = f"{arm}_s{seed}"
+    run, d, last = f"{arm}_s{seed}", ARMS[arm].data, {CFG.steps, ARMS[arm].steps}
     T, out = job.get(f"T_{run}"), job.get(f"E_{run}") or {"states": {}, "gen": {}}
     assert T.get("done"), f"T_{run} has not finished"
     m, maths, own = job.fp32(), job.maths(), job.own_rows(arm, seed)
@@ -322,7 +350,7 @@ def stage_E(job: Job, arm: str, seed: int) -> None:
         kl = {a: 0.0 if W is None else mean_kl(m, rows, job.W0, W) for a, rows in axes.items()}
         st = {"kl": kl | ({"own": kl["maths"]} if own is None else {}), "task": task(W)}
         base = out["states"].get("0", st)["task"]
-        st["task"] |= ({"gap": 1 - st["task"]["distill_kl"] / base["distill_kl"]} if arm == "a1"
+        st["task"] |= ({"gap": 1 - st["task"]["distill_kl"] / base["distill_kl"]} if d == "a1"
                        else {"drop": base["loss"] - st["task"]["loss"]})
         out["states"][str(t)] = st
         del W
@@ -332,9 +360,9 @@ def stage_E(job: Job, arm: str, seed: int) -> None:
     cross = T["crossings"] + ([{**c, "axis": "own"} for c in T["crossings"]] if own is None else [])
     out["chosen"] = choose(cross, {int(s): v["kl"] for s, v in out["states"].items()})
     job.put(f"E_{run}", out)
-    for t in sorted({c["step"] for c in out["chosen"]} | {CFG.steps}):
+    for t in sorted({c["step"] for c in out["chosen"]} | last):
         if str(t) not in out["gen"]:
-            job.budget(450 if t == CFG.steps else 120)
+            job.budget(450 if t in last else 120)
             t0 = time.time()
             out["gen"][str(t)] = gen_reading(job, arm, seed, t)
             job.put(f"E_{run}", out)
@@ -342,7 +370,7 @@ def stage_E(job: Job, arm: str, seed: int) -> None:
             job.log(f"[E {run}] generation at {t}: {json.dumps(out['gen'][str(t)])}")
     k0 = job.get("control").get(f"facts_s{seed}", {}).get("known")
     for c in out["chosen"]:
-        c["learned"] = learned(arm, out["states"][str(c["step"])]["task"], out["gen"][str(c["step"])].get("facts"), k0,
+        c["learned"] = learned(d, out["states"][str(c["step"])]["task"], out["gen"][str(c["step"])].get("facts"), k0,
                                job.pred["rules"]["learned"])
     out["done"] = True
     job.put(f"E_{run}", out)
@@ -352,8 +380,9 @@ def stage_E(job: Job, arm: str, seed: int) -> None:
 
 
 def score(job: Job) -> None:
-    """The Job 1 predictions (plan section 5) from whatever has run; a missing input reads as None (not yet run)."""
-    R, last = job.pred["rules"], str(CFG.steps)
+    """The Job 1 predictions (plan section 5) and Amendment 1's from whatever has run; a missing input reads as None
+    (not yet run)."""
+    R, last = json.loads(PRED.read_text())["rules"], str(CFG.steps)
     w0 = records(LARGE / "W0_test.jsonl")
     own, gold = (records(LARGE / "E" / f"{a}_s0" / f"step_{last}_test.jsonl") for a in ("own", "gold"))
     g = paired_gain(w0, own)
@@ -362,13 +391,23 @@ def score(job: Job) -> None:
     out["own_length"] = {"ratio": x, "holds": at_least(x, R["own_length"]["min_ratio"])}
     x = length_ratio(w0, gold)
     out["gold_length"] = {"ratio": x, "holds": at_most(x, R["gold_length"]["max_ratio"])}
-    for s in SEEDS["a1"]:
+    for s in ARMS["a1"].seeds:
         gap = job.get(f"E_a1_s{s}").get("states", {}).get(last, {}).get("task", {}).get("gap")
         out[f"anchor1_learns_s{s}"] = {"gap": gap, "holds": at_least(gap, R["anchor1_learns"]["gap_min"])}
         f = job.get(f"E_a2_s{s}").get("gen", {}).get(last, {}).get("facts", {})
         k0 = job.get("control").get(f"facts_s{s}", {}).get("known")
         out[f"anchor2_learns_s{s}"] = f | {"known_w0": k0, "holds": anchor2_holds(f.get("invented"), f.get("known"),
                                                                                     k0, R["anchor2_learns"])}
+    A1 = RESULTS / ARMS["a2long"].pred
+    if A1.is_file():  # Amendment 1: the same rule on a2long at its last step; step 100 beside it
+        R1 = json.loads(A1.read_text())["rules"]["anchor2_learns"]
+        for s in ARMS["a2long"].seeds:
+            gen = job.get(f"E_a2long_s{s}").get("gen", {})
+            f = gen.get(str(R1["step"]), {}).get("facts", {})
+            k0 = job.get("control").get(f"facts_s{s}", {}).get("known")
+            out[f"amend1_anchor2_learns_s{s}"] = f | {
+                "known_w0": k0, "at_100": gen.get(last, {}).get("facts"),
+                "holds": anchor2_holds(f.get("invented"), f.get("known"), k0, R1)}
     job.put("score", out)
     job.log(f"[score] {json.dumps(out)}")
 
@@ -383,8 +422,8 @@ def main() -> None:
     if a.stage == "S":
         assert a.set, "--stage S needs --set"
     if a.stage in ("T", "E"):
-        assert a.arm and a.seed in SEEDS[a.arm], f"--arm with a seed in {SEEDS}"
-    job = Job(a.stage, a.set or (f"{a.arm}_s{a.seed}" if a.arm else ""))
+        assert a.arm and a.seed in ARMS[a.arm].seeds, "--arm with one of its seeds (job.ARMS)"
+    job = Job(a.stage, a.set or (f"{a.arm}_s{a.seed}" if a.arm else ""), RESULTS / ARMS[a.arm].pred if a.arm else PRED)
     if a.stage == "control":
         stage_control(job)
     elif a.stage == "P":

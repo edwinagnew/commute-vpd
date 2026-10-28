@@ -50,9 +50,7 @@ LARGE = RESULTS / "large"  # on the cluster a link into commute-data (samples, Î
 MATHS = HERE.parent / "qwen_sft" / "results" / "maths_rows.json"
 BASELINE = HERE.parent / "qwen_gsm8k_baseline" / "results" / "large" / "greedy.jsonl"
 DEV, F32, BF16 = "cuda", torch.float32, torch.bfloat16
-ARMS = {"gold": 1e-5, "own": 1e-5, "own2": 2e-5, "null": 1e-5, "a1": 1e-5, "a2": 1e-5}  # arm -> peak rate
-SAMPLED = {"own": "own", "own2": "own", "null": "own", "a1": "a1"}  # arm -> sample set
-SEEDS = {"gold": (0,), "own": (0,), "own2": (0,), "null": (0,), "a1": (0, 1), "a2": (0, 1)}
+SAMPLED = {"own": "own", "null": "own", "a1": "a1"}  # data -> sample set
 
 
 @dataclass(frozen=True)
@@ -88,24 +86,40 @@ class Config:
     control_lr: float = 1e-5
     control_micro: int = 4  # E40a1's stage L
     budget_s: float = 1500.0  # P, S, E stop before a unit that would pass this (debug jobs are 30 min)
+    t_chunk: int = 150  # T writes a checkpoint and exits 3 after every t_chunk steps (a 300-step run: two jobs)
 
     def __post_init__(self) -> None:
         assert self.batch % self.micro == 0 and self.n_held < self.n_problems
         assert self.own_k * 2 == self.a1_k and self.track_rows <= self.own_rows
         assert self.dense_until % self.every == 0 and 0 < self.warmup < self.steps
         assert self.a1_rows_from >= self.eval_problems and list(self.grid) == sorted(self.grid)
+        assert self.t_chunk % self.every == 0 and self.t_chunk > self.steps  # a read step; 100-step runs never pause
 
 
 CFG = Config()
 
 
+@dataclass(frozen=True)
+class Arm:
+    data: str  # what it trains on (`Job.arm_data`) and how it is read (run.py)
+    lr: float = 1e-5  # peak rate
+    steps: int = CFG.steps
+    seeds: tuple[int, ...] = (0,)
+    pred: str = "predictions.json"  # in results/; the run refuses to start without it
+
+
+ARMS = {"gold": Arm("gold"), "own": Arm("own"), "own2": Arm("own", lr=2e-5), "null": Arm("null"),
+        "a1": Arm("a1", seeds=(0, 1)), "a2": Arm("a2", seeds=(0, 1)),
+        "a2long": Arm("a2", steps=300, seeds=(0, 1), pred="predictions_amend1.json")}  # Amendment 1 (plan section 8)
+
+
 class Job:
     """One stage's process: log, results files, budget, and the data every stage shares (built lazily)."""
 
-    def __init__(self, stage: str, run: str) -> None:
-        if not PRED.is_file():
-            sys.exit(f"{PRED} is missing: predictions are filed before any run")
-        self.pred, self.stage, self.run, self.t0 = json.loads(PRED.read_text()), stage, run, time.time()
+    def __init__(self, stage: str, run: str, pred: Path = PRED) -> None:
+        if not pred.is_file():
+            sys.exit(f"{pred} is missing: predictions are filed before any run")
+        self.pred, self.stage, self.run, self.t0 = json.loads(pred.read_text()), stage, run, time.time()
         self.cfg = CFG
         LARGE.mkdir(parents=True, exist_ok=True)
         fp32_matmuls()
@@ -158,10 +172,14 @@ class Job:
             sys.exit(2)
 
     def budget(self, est_s: float) -> None:
-        """Exit 3 (resubmit the same command) when a unit of about est_s (or the slowest so far) would pass the budget."""
+        """Exit 3 when a unit of about est_s (or the slowest so far) would pass the budget."""
         if time.time() - self.t0 + max(est_s, self.unit_s) > CFG.budget_s:
-            self.log(f"BUDGET: {time.time() - self.t0:.0f} s used; resubmit the same command to continue")
-            sys.exit(3)
+            self.pause(f"{time.time() - self.t0:.0f} s used")
+
+    def pause(self, why: str) -> None:
+        """Exit 3: the work so far is saved; resubmit the same command to go on."""
+        self.log(f"BUDGET: {why}; resubmit the same command to continue")
+        sys.exit(3)
 
     def timed(self, t_start: float) -> None:
         self.unit_s = max(self.unit_s, time.time() - t_start)
@@ -224,33 +242,34 @@ class Job:
     def arm_data(self, arm: str, seed: int) -> tuple[list[Item], int, list[list[int]] | None, dict[str, Any]]:
         """The training stream (steps x per-step items, in order), items per step, the own rows (None: the maths rows
         are the own rows) and a summary."""
-        own = self.own_rows(arm, seed)
-        if arm == "gold":
-            seqs: list[Item] = [self.gold_seq(i) for i in self.train_idx[: CFG.steps * CFG.batch]]
+        own, d, steps = self.own_rows(arm, seed), ARMS[arm].data, ARMS[arm].steps
+        if d == "gold":
+            seqs: list[Item] = [self.gold_seq(i) for i in self.train_idx[: steps * CFG.batch]]
             return seqs, CFG.batch, own, {"n": len(self.train_idx)}
-        if arm == "a2":
+        if d == "a2":
             seqs2 = [self.fact_seq(q) for q in qwen_facts.train_set(seed)]
             one = pack_whole(seqs2, CFG.seq_len)  # one pass: the mean packed row length
             row_len = sum(len(r[0]) for r in one) / len(one)
             per = round(CFG.batch * self.get("control")["gold_mean_tokens"] / row_len)
-            stream: list[Item] = list(packed_stream(seqs2, seed, CFG.seq_len, CFG.steps * per))
+            stream: list[Item] = list(packed_stream(seqs2, seed, CFG.seq_len, steps * per))
             return stream, per, own, {"n": len(seqs2), "rows_per_pass": len(one), "row_len": row_len,
                                       "rows_per_step": per}
-        recs = [r for r in self.samples(SAMPLED[arm]) if r["pid"] < CFG.n_problems - CFG.n_held]
-        if arm == "a1":
+        recs = [r for r in self.samples(SAMPLED[d]) if r["pid"] < CFG.n_problems - CFG.n_held]
+        if d == "a1":
             recs = [r for r in recs if seed * CFG.own_k <= r["k"] < (seed + 1) * CFG.own_k]
-        kept = keep_correct(recs) if arm in ("own", "own2") else keep_finished(recs)
-        order = cycle(len(kept), seed, CFG.steps * CFG.batch)
+        kept = keep_correct(recs) if d == "own" else keep_finished(recs)
+        order = cycle(len(kept), seed, steps * CFG.batch)
         items: list[Item] = [self.sample_seq(kept[i]) for i in order]
         return items, CFG.batch, own, {"n": len(kept), "of": len(recs), "passes": len(order) / max(1, len(kept))}
 
     def own_rows(self, arm: str, seed: int) -> list[list[int]] | None:
         """The arm's own rows, 64 packed rows of 512 (None for own samples and the null: the maths rows)."""
-        if arm == "gold":
+        d = ARMS[arm].data
+        if d == "gold":
             seqs = [self.gold_seq(i)[0] for i in self.held_idx]
-        elif arm == "a2":
+        elif d == "a2":
             seqs = [self.fact_seq(q)[0] for q in qwen_facts.held_set(seed)]
-        elif arm == "a1":  # the prompted model's greedy answers to test 256-511, under the unprompted chat
+        elif d == "a1":  # the prompted model's greedy answers to test 256-511, under the unprompted chat
             recs = json.loads((LARGE / "P" / "a1_rows.json").read_text())["items"]
             seqs = [self.ids(prompt(self.tok, self.sets["test"][r["idx"]]["question"])) + r["ids"] for r in recs]
         else:
