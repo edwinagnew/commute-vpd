@@ -267,3 +267,46 @@ section 2. P0.2 fails to replicate: stop, fix regeneration before reading anythi
 Open on the user: whether to adopt this amendment (and P0.4's single-direction or per-key form). Fable's caveat:
 if the user wants stage 0 only as bookkeeping (one table in nats, no instrument claim), the plan stands with items
 2, 4, 5 and 7.
+
+### Amendment 1 adopted (user, 2026-10-28: "adopt amendment 1, per-key write for P0.4"): the rules filed
+
+Everything in nats, on held-out windows at the scored position (E18: trigger; E12: the key position `half`). Floor F
+for a state = max(0.1, 2 × paired SE over windows of L(C₀,G₁) − L(C₀,G₀)). Gate gain g = L(C₀,G₁) − L(C₀,G₀); real
+gain G = T₁ − T₀.
+
+**States.** E18 do-nothing, three tasks × seeds 0, 1 + the ` http` null (E38's cached dW,
+`~/commute-data/results-large/recruitment_test/states/`), plus E18's exact seed-0 emoticon state
+(`reading_a_coverage/emoticon/dW_ft_step10_s0.pt`) for the identity check. E12's four tasks × seeds 0, 1 at the
+scored step, rebuilt by E12's recipe (`new_vs_existing/run.py` build + run) with their least-squares splits. E36's
+code fine-tune (steps 10, 100), per-token cells via `spread.masked_logp` (no U). Not E36 lowercase (at the floor), not
+E42 (no prediction reads it): listed in Not run.
+
+**Stage 0a (control; first, alone; any fail exits non-zero).**
+- W₀ cells L(C₀,G₀), U₀, T₀ per task within 0.02 of E18's and E12's filed values.
+- Identity: r on E18's exact seed-0 emoticon state = 0.597 ± 0.01.
+- Regenerated/cached states: T₁ within 2% of the filed gain of the filed T₁ (E38's `t1_rel_tol`); E12 states' r within
+  0.03 of the filed per-seed r.
+- Null: the ` http` state's G at the emoticon trigger, |G| ≤ 0.1 × the seed-0 fine-tune's G.
+
+**Predictions (stage 0b).**
+- **P0.2 (replication of E12, lean high).** Gated piece gain over piece gain, (L(C₁,G₁) − L(C₀,G₀)) / (U₁ − U₀),
+  ≥ 0.8 for each copy state and ≤ 0.5 for each random-map state, both seeds. Unscored if U₁ − U₀ < 1 nat. Any miss:
+  stop; fix regeneration before reading anything.
+- **P0.3 (KL-matched random δW, lean high).** Per E18 task and per E12 task, seed 0: a Gaussian δW
+  (`finetune.random_direction`, seed 0) on the same matrices, scaled by bisection so the full model's kl_other to W₀
+  (40 non-scored positions) equals the fine-tune's within 10%; scale capped at 10× the fine-tune's Frobenius norm (if
+  the cap binds, the row is reported "cap" and scored at the cap). Pass: |g| ≤ F on every row. Fail: |g| > F on any
+  scored row with |g| ≥ 0.25 × that task's fine-tune g.
+- **Sign row (unscored).** Flipped δW (−δW) of each seed-0 fine-tune: report g, G; expect sign(g) = sign(G).
+- **Non-positive rule (scored with P0.3).** Every state with G ≤ 0 (null, flipped, E36 code) reads g ≤ +0.1 + F.
+- **P0.4 (per-key direct write; the retire test, lean medium).** On ident32 and ident32b (copy), and reported on
+  rand32, rand32b: δW on the MLP output matrix of block 1 only, the minimum-norm solution of δW a_k = α u_{t(k)} for
+  every key k in the table, with a_k the mean input to that matrix at the key position over the task's training
+  windows with key k at W₀, u_t the unembedding row of answer t, and α set by bisection so G matches the seed-0 copy
+  fine-tune's G on that task within 5% (if no α ≤ 1e3 reaches it: "unreachable", the task is inconclusive). Its δW
+  lies in Δ (no piece gain); read g only. Ratio ρ = g_write / g_finetune(seed 0, same task). Both copy tasks
+  ρ ≤ 0.5: pass (Γ does not read a new write as existing machinery). Either copy task ρ ≥ 0.8: fail, retire the line.
+  Otherwise, or seeds' fine-tune g < 1 nat: inconclusive, card.
+
+**Tree.** P0.2 replicates, P0.3 passes, P0.4 passes → propose stage 1 with g and its nulls. P0.3 fails or P0.4
+fails → retire (Blocking card, section 2's words). P0.4 inconclusive → card with the numbers. P0.2 fails → stop, fix.
