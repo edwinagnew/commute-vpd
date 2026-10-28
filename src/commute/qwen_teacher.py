@@ -98,7 +98,8 @@ class Offsets:
             self.dU[s] = torch.zeros_like(self.U[s], requires_grad=True)
 
     def params(self) -> list[Tensor]:
-        return [*self.dV.values(), *self.dU.values()]
+        """The offsets with at least one entry (a site with no alive column, or outside a layer subset, has none)."""
+        return [p for p in (*self.dV.values(), *self.dU.values()) if p.numel()]
 
     def n_params(self) -> int:
         return sum(p.numel() for p in self.params())
@@ -145,9 +146,9 @@ class Offsets:
                     V[:, idx] = self.V[s].to(V.device, V.dtype)
                     U[idx] = self.U[s].to(U.device, U.dtype)
 
-    def save(self, path: Path, log: Any = print) -> None:
+    def save(self, path: Path, dtype: torch.dtype, meta: dict[str, str] | None = None, log: Any = print) -> None:
         tensors = {f"{s}.dV": self.dV[s] for s in SITES} | {f"{s}.dU": self.dU[s] for s in SITES}
-        save(path, tensors, torch.float32, droppable=False, log=log)
+        save(path, tensors, dtype, droppable=False, log=log, meta=meta)
 
     def load_from(self, path: Path) -> None:
         t = load(path)
@@ -157,14 +158,30 @@ class Offsets:
                 self.dU[s].copy_(t[f"{s}.dU"])
 
 
+def random_change(off: Offsets, alpha: float, seed: int, dtype: torch.dtype) -> dict[str, Tensor]:
+    """The weight change of offsets α·(R_V, R_U) on the alive columns, R ~ N(0, 1) drawn per site from `seed`:
+    (α R_V (U_A + α R_U) + V_A α R_U)ᵀ. A teacher W0 + this change is one the student can match exactly (its offsets
+    α·R), the teacher-training positive control. Drawn on the offsets' device one site at a time."""
+    out = {}
+    for i, s in enumerate(SITES):
+        V, U = off.V[s], off.U[s]
+        gen = torch.Generator(device=V.device).manual_seed(seed * 1000 + i)
+        RV = alpha * torch.randn(V.shape, generator=gen, device=V.device)
+        RU = alpha * torch.randn(U.shape, generator=gen, device=V.device)
+        out[s] = (RV @ (U + RU) + V @ RU).T.to(dtype)
+    return out
+
+
 def train(model: Any, off: Offsets, teacher: Mapping[str, Tensor] | None, maths: Tensor, web: Tensor, lr: float,
-          steps: int, rows_each: int, micro: int, seed: int, log: Any = print) -> list[dict[str, float]]:
+          steps: int, rows_each: int, micro: int, seed: int, log: Any = print,
+          on_step: Callable[[int, list[dict[str, float]]], None] | None = None) -> list[dict[str, float]]:
     """Adam (betas 0.9, 0.999, no decay, no clipping) on the offsets for `steps` steps. Each step: `rows_each` rows
     drawn with replacement from `maths` and from `web` (CPU [N, T] tensors, batch order `seed`), the loss the mean
     over every position of the batch of KL(teacher ‖ student), in micro-batches of `micro` rows. `teacher`: δW per
     site (bf16 is enough: it enters as its own term); None: the teacher is the unchanged model. curve[0] also holds
     `kl_fp32_teacher_w0`, the same first batch's KL(teacher ‖ W0) from fp32 forwards on swapped weights (0 for None),
-    to read beside curve[0]["kl"], the training forward's value of the same quantity."""
+    to read beside curve[0]["kl"], the training forward's value of the same quantity. `on_step(step, curve)` runs after
+    every step (the caller's early checks; it may stop the job)."""
     dev = off.dV[SITES[0]].device
     opt = torch.optim.Adam(off.params(), lr=lr, betas=(0.9, 0.999), weight_decay=0.0, fused=True)
     gen = torch.Generator().manual_seed(seed)
@@ -197,9 +214,11 @@ def train(model: Any, off: Offsets, teacher: Mapping[str, Tensor] | None, maths:
             if step == 1:
                 curve[0]["kl_fp32_teacher_w0"] = kl32
                 log(f"[teacher training] first batch KL(teacher ‖ W0): fp32 {kl32:.4e}, training forward {total:.4e}")
-            if step in (1, 2, 10, 100) or step % 100 == 0:
+            if step in (1, 2, 10, 50, 100) or step % 100 == 0:
                 log(f"[teacher training] step {step}: KL {total:.3e}, {curve[-1]['s']:.2f} s, "
                     f"peak {torch.cuda.max_memory_allocated() / 1e9:.1f} GB")
+            if on_step is not None:
+                on_step(step, curve)
     finally:
         model.eval()
     return curve
@@ -241,16 +260,16 @@ def g_stats(p: dict[str, Any]) -> dict[str, Tensor]:
 
 
 def adversary(model: Any, rows: list[Tensor], gamma: Gamma, comps: Components, seed: int,
-              log: Any = None) -> tuple[float, dict[str, Tensor]]:
-    """`qwen_vpd.pgd_kl_rows` (one start, 20 sign steps of 0.1) with g and the clean logits recomputed per row, and its
-    final sources (site -> [C], site.delta -> [1])."""
+              log: Any = None, steps: int = qwen_vpd.PGD_STEPS) -> tuple[float, dict[str, Tensor]]:
+    """`qwen_vpd.pgd_kl_rows` (one start, `steps` sign steps of 0.1; 20 is the pass test, fewer only in a rehearsal)
+    with g and the clean logits recomputed per row, and its final sources (site -> [C], site.delta -> [1])."""
 
     def inputs(i: int) -> tuple[dict[str, Tensor], Tensor]:
         logits, g = importances(model, rows[i], gamma, comps)
         return g, logits
 
     final: dict[str, Tensor] = {}
-    kl = qwen_vpd.pgd_kl_rows(model, rows, comps, inputs, seed, log=log, final=final)
+    kl = qwen_vpd.pgd_kl_rows(model, rows, comps, inputs, seed, steps=steps, log=log, final=final)
     return kl, final
 
 

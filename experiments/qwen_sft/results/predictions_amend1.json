@@ -1,0 +1,89 @@
+{
+ "plan": "reports/plans/2026-10-28_plan_qwen-sft.md, Amendment 1 and its Gates; E40's results/predictions.json stands unedited for E40",
+ "filed": "2026-10-28, before any stage of experiments/qwen_sft/amend1.py; values marked provisional are replaced by the rehearsal's measurements (results/amend1_rehearse/) before the pod run, and never after it",
+ "scored_by": "experiments/qwen_sft/run.py `score` (rules) and `Job.check` (early: each missed check stops the job; --rehearse logs it instead)",
+ "quantities": "as results/predictions.json, with: F1 = SFT under transformers.get_cosine_schedule_with_warmup(10, 100), peak 1e-5, clip 1.0; read steps = rules.read_steps; the positive control's teacher = W0 + the change of offsets alpha*R (R ~ N(0,1), seed 0) on the alive columns, alpha sized so KL(teacher || W0) on 8 maths rows equals F1's KL to start at its first read step; maths-row readings reported, not scored (card decision-qwen-maths-adversary), against W0's maths reading at seeds 0-2 in G1",
+ "rules": {
+  "G_control": {
+   "rule": "as E40: G1's FineWeb masked KL and seed-0 adversary within the relative tolerances of experiments/qwen_adversary (filed numbers, not read from any results file); a NaN misses",
+   "masked_kl": {"ref": 0.141670617449563, "tol": 0.02},
+   "adv": {"ref": 1.7016382161527872, "tol": 0.15},
+   "if_fails": "stop"
+  },
+  "G": {"rule": "as E40 (reported; G1 does not stop on it)", "pass_max": 2.0, "fail_above": 3.0},
+  "L_control": {
+   "rule": "control: L's KL to start after one AdamW step at 1e-5 within +-tol (relative) of E40's step 1 on the same batch and rows; a missing value or NaN misses",
+   "ref": 0.10621040009342284,
+   "tol": 0.03,
+   "if_fails": "stop; F1 refuses to start"
+  },
+  "L_scaling": {
+   "rule": "KL at 1e-6 over KL at 1e-5 in [band] inclusive (first-order scaling gives about 0.01); a zero KL at 1e-5 or NaN misses",
+   "band": [0.003, 0.05]
+  },
+  "read_steps": {
+   "rule": "D1 and T1 read steps: fixed, plus the first saved step whose KL to start >= kl_min when it is not already one of them; applied after F1; when B's budget allows fewer, the smallest step not in fixed goes first, never 10 or 100. Mirrored in amend1.py's config (asserted equal at start); the user may change it",
+   "fixed": [10, 100],
+   "kl_min": 0.01
+  },
+  "T0": {
+   "rule": "positive control (replaces E40's T0): teacher training towards W0 + a random change the student can match exactly, 300 steps; fall = mean training KL of the last 10 steps / step 1's <= fall_max, and the trained student's FineWeb adversary ratio in [band] inclusive",
+   "fall_max": 0.2,
+   "band": [0.85, 1.15],
+   "steps": 300,
+   "provisional": "steps, from the rehearsal's rate check (TR)",
+   "if_fails": "stop"
+  },
+  "P0": {"rule": "as E40 (A0 accuracy; F1's step-0 readings exactly 0)", "test": 0.777, "gsm1k": 0.782, "tol": 0.015, "zero_max": 1e-06, "if_fails": "stop"},
+  "P1": {"rule": "as E40, on F1 at step 100", "gold_drop_min": 0.05, "kl_min": 0.001, "length_ratio_max": 0.8},
+  "P2": {"rule": "as E40, re-pointed: D1's ratio at its first read step <= step1_max holds; at step 100 > line 'sees the update', <= line 'blind on web text'", "step1_max": 1.2, "line": 1.5},
+  "P3": {"rule": "as E40, on T1", "kept_min": 0.8, "steps": [10, 100], "denominator_min": 1e-06},
+  "P4": {"rule": "as E40, on T1 at every read step", "line": 1.5},
+  "P5": {
+   "rule": "teacher training over do-nothing on maths rows at step 100: ratio = T1's adversary / D1's (same seed) <= ratio_max; a seed-0 ratio in [band] inclusive is re-read at seeds 1 and 2 (both states) and the mean of the per-seed ratios decides",
+   "ratio_max": 0.8,
+   "band": [0.7, 0.9]
+  },
+  "P6": {
+   "rule": "accuracy: F1's step-100 GSM8K strict drop-rule accuracy minus A0's, paired on the problems fitting at both, in [band] inclusive (E40's constant-rate fine-tune fell by 0.16); no pairs or NaN misses",
+   "band": [-0.2, -0.03]
+  }
+ },
+ "three_starts": {
+  "rule": "as E40 for every FineWeb ratio; the spend guard stops extra starts once this job's spend exceeds guard_share x --budget-left (the seed-0 ratio then decides, reread_skipped_budget recorded)",
+  "seeds": [0, 1, 2],
+  "band": [1.2, 1.8],
+  "guard_share": 0.85
+ },
+ "early": {
+  "finite": {"rule": "a NaN or infinity in any loss, gradient norm, KL or adversary reading is a miss"},
+  "memory": {"rule": "peak GPU memory of a stage <= tol x amend1.py's mem_gb estimate, after each adversary start, teacher-training step 2, F's step 1 and the stage's end", "tol": 1.25},
+  "bench": {"rule": "B: teacher-training peak <= peak_gb_max; usable host RAM (physical, cgroup limit) >= host_gb_min; the disk pre-flight fits; B's projection fits --budget-left with 2 read steps", "peak_gb_max": 125.0, "host_gb_min": 110.0},
+  "adv_step0": {
+   "rule": "each adversary start's step-0 KL (one pass, random sources), checked as it is logged: B and G1 at a traced seed within tol (relative) of the first runs' traces (experiments/qwen_adversary run.log, E40 G); every other start within [state_low x G1's seed-0 reading, G1's + state_add]",
+   "refs": {"fineweb": {"0": 0.0918, "1": 0.0916, "2": 0.0917}, "maths": {"0": 0.0374}},
+   "tol": 0.02,
+   "state_low": 0.5,
+   "state_add": 2.0
+  },
+  "adv_pass": {"rule": "each adversary start's first pass within tol (relative) of B's", "tol": 0.25},
+  "F_step1": {"rule": "F1's step-1 loss (at W0, the first batch) within loss_tol (relative) of E40's; its rate is 0, so delta-W and the KL to start after it are exactly 0", "loss_ref": 2.4102348019293522, "loss_tol": 0.01},
+  "F_first_live": {
+   "rule": "at the first step with a nonzero rate (step 2): |delta-W| per matrix / (rate x sqrt(numel)) in [band]. Adam's per-entry step is at most about the rate (bound 1.0013 at its second step) and below it where the two first gradients disagree; step 1 at rate 0 has already filled Adam's moments, so the ratio is not 1 within 1e-3",
+   "band": [0.3, 1.0014],
+   "provisional": "lower end, from the rehearsal's full-size F1 on the L40"
+  },
+  "F1_early": {"rule": "F1's KL to start after the first step with a nonzero rate <= kl_max (code check, not a prediction)", "kl_max": 0.005},
+  "teacher_first": {
+   "rule": "teacher training: step 1's training-forward KL within fp32_tol (relative) of the fp32 KL(teacher || W0) on the same batch when that is >= fp32_min; exactly 0 within zero_kl_max when the teacher is W0 (B); at step end_at, the mean KL of the 10 steps before it <= end_frac x step 1's",
+   "zero_kl_max": 1e-06,
+   "fp32_min": 1e-06,
+   "fp32_tol": 0.05,
+   "end_at": 100,
+   "end_frac": 0.7,
+   "provisional": "fp32_tol from the rehearsal's measured gap (checks.json, 'step-1 KL vs fp32'); end_frac from TR"
+  }
+ },
+ "reported": "every number of every stage; maths-row readings of D1, T1 and the positive control against W0's maths readings at seeds 0-2 (unscored); A0's first batch against the earlier run's answers (share differing); the read steps chosen; the benchmark projection with its worst-case re-reads",
+ "edge_cases_checked": "tests/test_qwen_sft.py and tests/test_qwen_sft_amend1.py: L at both ends of its tolerance, NaN and a zero KL at 1e-5; read_rule with the first KL step absent, equal to 10, before 10, NaN KLs, and a budget of 2 (the optional step dropped, never 10 or 100); P5 at 0.8 and in its band (three starts); P6 at both ends, no pairs; the positive control's fall at 0.2, a zero first KL; the schedule against transformers' own at every step"
+}
