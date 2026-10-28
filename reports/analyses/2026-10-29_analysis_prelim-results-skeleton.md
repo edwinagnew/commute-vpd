@@ -28,9 +28,9 @@ scale, **D2** for both SFT and RL, **D3** readings from the decomposition that t
 calibrated on two anchor updates whose novelty is fixed by design.
 
 **Proposed answer paragraph, to be rewritten once Qwen numbers exist.** On a 67-million-parameter model, training the
-subcomponents to copy a finished fine-tune keeps its behaviour, keeps the decomposition faithful and leaves the residual
-untouched for narrow fine-tunes, including one teaching a cipher the model lacked. It fails for a broad fine-tune and
-needs Adam. No simple split of a finished update does all three. On the 1.7-billion-parameter model the decomposition is
+subcomponents to copy a finished fine-tune keeps its behaviour and leaves the residual untouched for narrow fine-tunes,
+including one teaching a cipher the model lacked. Its faithfulness passes sit close to the line, within the check's own
+noise. It fails for a broad fine-tune. No simple split of a finished update does all three. On the 1.7-billion-parameter model the decomposition is
 already strained on maths text before any update, and the first maps are being scored now.
 
 ## 2. The three lines and what each can claim now
@@ -97,6 +97,18 @@ same update's do-nothing has been a pending decision since 2026-10-21. "Δ not a
 | C16 | The adversary's extra damage comes from removing alive and dead subcomponents together | E17, E20, E23 | 1 adversary seed per state | emoticon, next-word | permuted pattern; random half; W₀ masks | none | holds, cause open, `claims.html:35` |
 
 Every row is the 67M model. The optimiser behind each row: Adam unless the row names SGD; C10, C12, C14 and C15 have both.
+
+**The claims red team, 2026-10-28 evening** (`reports/reviews/2026-10-29_review_claims-red-team.md`), weakened five of
+these rows and overturned none. Its pending cards are queued, not yet in the log; the write-up waits on them.
+- C1, C2, C3: do-nothing never failed the check on E34's six teachers or E42's three ciphers, so there the check had no
+  shown power. Where do-nothing does fail, the copies read 1.28-1.55, inside the adversary's 7.5% seed spread of the line.
+- C4: the LoRA's pass margin is ×1.10 under one start, and "not a rank cap" is shown only under SGD.
+- C5: E34's own plain-SGD student passes on emoticon and at step 100 on " which"; the claim is rescoped to "plain SGD
+  at 0.03, read at step 1000, fails on that task's Adam and LoRA teachers". Card `red-team-sgd-map`.
+- C6: "worse than do-nothing" was never filed and rests on one 128-row block.
+- C9, C14: the size reading's adversarial half is contradicted in the repo, E22: an SGD update passes where an Adam one
+  of the same size fails. Card `red-team-split-size`.
+Each has a $0 cluster test of under 30 minutes, listed in the red team's table.
 
 ### 3b. Re-gating line, 67M, at the v88 ceiling
 
@@ -180,7 +192,8 @@ same day, by E42 for gap 1, E41 for gap 3 and E39 Amendment 2 for gap 5; the row
 |---|---|---|---|---|---|
 | 1 | Any pass on the 67M is a pass against a settled line | 1.5 is unanchored and DN fails it on large updates; fixed line against same-update DN pending since 2026-10-21; "Δ not absorbing" has no threshold | the user's decision on the pending card; then restate C1-C14 against it | $0, a decision | not in §2; `gaps.html:6-8` |
 | 2 | Log wording that sits above the evidence: "TT needs Adam" in general; Q11's "SGD fails once its change grows large"; "small SGD updates keep more behaviour than Adam ones"; Q2 "answered" on an unscored E16; R1 "on every single-trigger task"; captions of R1 and R3 | the readers found each against the claims rows and cards | rewrite the log's sentences and the two captions to the claims rows' wording | $0, a log flush | not in §2 |
-| 3 | Γ's change marks the real update's mechanism, not just the stand-in's bookkeeping | no re-gating measure has passed its nulls; non-learning and other-target updates read the same | the reset plan's stage 0 table with the direct-write null P0.4 | $0 to a few dollars, cluster; **awaiting the user's call on Amendment 1** | not in §2; `gaps.html:35` |
+| 2b | Any teacher-training pass on the 67M is outside the adversary's own noise | every reading is one 20-step start; margins ×1.03-1.24; do-nothing never failed on E34 or E42 | the red team's five re-reads under four adversary starts, regenerated states, within one job | $0, five cluster jobs of ≤30 min; four cards pending | not in §2; red team "What cuts across" |
+| 3 | Γ's change marks the real update's mechanism, not just the stand-in's bookkeeping | no re-gating measure has passed its nulls; non-learning and other-target updates read the same | E46 stage 0 under Amendment 1, with the direct-write null P0.4 as the test whose failure retires the reading | $0 to a few dollars, cluster; **adopted by the user 2026-10-28**, `decisions.md:58`; the re-gating lead's work | not in §2; `gaps.html:35` |
 | 4 | Teacher-trained states are harmless on plain text | harmlessness read on task windows only | forward passes on saved states | $0, cluster minutes | §2 10 |
 | 5 | Which of the four readings teacher training lands in | no route split of a teacher-trained state | the route split on saved states | $0, cluster minutes | §2 11 |
 | 6 | Teacher training works on the hardest familiar task, the rare target | never run | add the rare target to E34's task list | $0-1 | §2 6 |
@@ -197,7 +210,8 @@ same day, by E42 for gap 1, E41 for gap 3 and E39 Amendment 2 for gap 5; the row
 | 17 | A map that updates Γ keeps the floor | no Γ-refit protocol holds the unchanged model | the matched-attacker refit | about $9 a refit, protocol unsolved | §2 9 |
 | 18 | Re-gating is not a leak through Γ's input | the decisive tests need a Γ from another decomposition seed or a refit Γ | a second decomposition, or rank 17's refit | unknown; no second decomposition exists | not in §2 |
 
-Ranks 1-3 cost nothing and change what the write-up may say most; rank 3 is the user's call. Ranks 4-6 close by forward
+Ranks 1-3 cost nothing and change what the write-up may say most; rank 1 and the red team's cards are the user's calls.
+Rank 2b decides whether the commute line's headline, C1-C3, survives into the write-up as stated. Ranks 4-6 close by forward
 passes or small cluster jobs. Ranks 13-15 are the Qwen line's own plan and set the 2026-11-11 date.
 
 ## 7. Outline of the write-up
@@ -212,7 +226,8 @@ passes or small cluster jobs. Ranks 13-15 are the Qwen line's own plan and set t
 
 ## Surprises
 
-None from new data; this is a reading of existing files. Two findings about the record: the log states six things above
+None from new data; this is a reading of existing files. The claims red team, landed while this was drafted, weakens
+the commute line's headline more than the log does; §3a lists how. Two findings about the record: the log states six things above
 what its own claims rows and cards support, listed in §6 rank 2; and E44's code and predictions are committed while Q9
 calls it planned.
 
