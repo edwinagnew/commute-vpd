@@ -1,227 +1,207 @@
 # Plan: After teacher training, can the rest of the fine-tune go into Δ without Δ carrying the fine-tune's behaviour? (E43)
 
-*2026-10-28, commute lead (written by a design agent). The user's request in chat, 2026-10-28; the reading is
-`decisions.md`'s last row (E43 only). Words as in `GOALS.md` → Terms. Plan only: no predictions file, no code, no run
-until the user has confirmed the restatement and the design check.*
+*2026-10-28, commute lead (written by a design agent). The user's request in chat, 2026-10-28; the reading and the
+scope are `decisions.md`'s last two rows. Words as in `GOALS.md` → Terms. Code
+`experiments/teacher_training/remainder.py` (imports `run.py` and `path.py` beside it); predictions
+`experiments/teacher_training/results/predictions_e43.json`, filed 2026-10-28 15:23:16 on the CPU worker, sha256
+`74124bbdc9be6b9b97e0d40f58e11374aba13f7512142070f506ce29a3eee172`; brief `experiments/teacher_training/RUN_BRIEF_e43.md`.
+A fresh agent reviews the code before it runs.*
 
-## The request, restated in the Terms (for the user to confirm)
+## Scope as approved, 2026-10-28
+
+The user approved a cut-down E43 after reading the first version of this plan (`decisions.md`, "run the cut-down
+E43 on the H100"):
+
+- **Card.** RunPod "NVIDIA H100 80GB HBM3". The L40's adversary spread (0.21, against 0.075) would leave the step-10
+  cells at the line.
+- **Cases.** Emoticon only, at T₁₀ and T₁₀₀₀, by E41's recipes (task-text copy). The broad fine-tune is dropped,
+  because teacher training's own state already fails there.
+- **States, on the same rows.** Do-nothing (the positive control), least squares, teacher training's own state, and
+  teacher training plus remainder.
+- **Removal.** Putting Δ′ back to Δ is scored. Setting Δ′ to zero is reported.
+- **Which text counts.** Both the task text and plain Pile text count as the fine-tune's behaviour.
+- **Predictions.** P1 (task text) is kept only as a check, since E41 already gives its value, and is unscored. P2
+  (the plain-text removal share) and P3 (the adversarial check, paired with teacher training's own state) are scored.
+  P3 reports the share of do-nothing's excess removed beside it.
+
+The body below matches this scope.
+
+## The request, restated in the Terms (confirmed)
 
 The first step is **teacher training** as it stands: component training of the alive (U, V), with the loss
 KL(fine-tuned model ‖ student), and Γ and Δ frozen. Then, per matrix, set **Δ′ = Δ + (W_ft − W_tt)**, where W_ft is
 the fine-tuned weights and W_tt is teacher training's weights. The **remainder** R = W_ft − W_tt is the part of the
 update the subcomponents did not reproduce. The resulting state is called **teacher training plus remainder**. Its
-weights equal the fine-tune's exactly ("Weights = fine-tune's" ✓), so Δ is no longer untouched. The user's reason:
-the model is still the original fine-tune, and the decomposition stays as faithful as it can be. For E43 only
-(`decisions.md`), "Δ does not absorb the update" is read **behaviourally**. Δ′ passes if removing it barely changes
-the outputs. Its weight size is reported beside that reading and decides nothing.
+weights equal the fine-tune's exactly ("Weights = fine-tune's" ✓), so Δ is no longer untouched.
 
-**Two readings of "removing Δ′" for the user to choose between.**
-
-- **(a) Δ′ back to Δ**, which takes out only the remainder. The state then becomes teacher training's own state, and
-  for do-nothing it becomes W₀. This plan scores (a).
-- **(b) Δ′ to zero**, which takes out the whole residual, compared with W₀'s Δ taken to zero. This is what VPD's
-  adversary can do (its masks include Δ), and it is the route split's "not carried by the components" share. Under (b)
-  the run reports this share and the adversarial check, but scores neither as the removal reading.
-
-**Which text counts.** P1 reads the task text, where the fine-tune's behaviour lives. P2 reads plain Pile text,
-where a remainder that cancels the subcomponents' own change would show. The user confirms whether plain text counts
-as "the fine-tune's behaviour" for this criterion, or only as a warning.
+For E43 only, "Δ does not absorb the update" is read **behaviourally**. Δ′ passes if putting it back to Δ barely
+changes the outputs, on the task text and on plain text. Its weight size is reported beside that reading and decides
+nothing.
 
 ## Design check (`/design`)
 
-- **Goal served.** The weak version (`GOALS.md`): a decomposition of W + δW whose components carry the new model,
-  read here with the user's E43-only behavioural reading of "Δ may not absorb δW". If the remainder is inert, this is
-  the first map that keeps the fine-tune's exact weights and stays as faithful as teacher training.
+- **Goal served.** The weak version (`GOALS.md`), under the user's E43-only behavioural reading of "Δ may not absorb
+  δW". If the remainder is inert, this is the first map that keeps the fine-tune's exact weights and stays as faithful
+  as teacher training.
 - **Nearest tried.**
-  - E34, E37 and E41 give teacher training's own state, with Δ untouched and the weights not equal to the fine-tune's.
-  - E16 and E22 give the least-squares split, which has the fine-tune's weights, puts 0.36-0.38 of ‖δW‖² in Δ, and
-    fails the check at step 10 (6.96).
-  - E34 Amendment 6 already measured the plain-text half of this question for r1 without naming it. KL(fine-tune ‖
-    copy) on Pile text, over KL(fine-tune ‖ W₀), reads 0.30 (Adam), 0.33 (SGD) and 1.06 (LoRA) for task-text copies,
-    and 0.13 for the Adam Pile-text copy. So on r1 the remainder carries a third to all of the fine-tune's own
-    plain-text change.
-  - What is new here: the adversarial check of a state whose Δ′ holds the remainder; the same plain-text reading on
-    emoticon and the broad fine-tune; least squares on the same rows.
-- **Patch or step.** A step. It tests a new map, built from two existing operations, against the user's reading.
-- **`decisions.md`.** It departs from reading A as written, and the user recorded that for E43 only (2026-10-28). It
-  relies on teacher training at Adam 1e-5 (2026-10-28) and on the check with one adversary start, 20 steps, readings
-  as lower bounds (2026-10-27).
+  - E41 and E34 give teacher training's own state, with Δ untouched and the weights not equal to the fine-tune's.
+  - E22 gives least squares, which has the fine-tune's weights, puts 0.36-0.38 of ‖δW‖² in Δ, and fails at step 10
+    (6.96).
+  - E34 Amendment 6 already gives r1's plain-text share for task-text copies: 0.30 (Adam), 0.33 (SGD), 1.06 (LoRA).
+  - New here: the check of a state whose Δ′ holds the remainder, and the plain-text share on emoticon beside least
+    squares.
+- **Patch or step.** A step: a new map, built from two existing operations, read against the user's reading.
+- **`decisions.md`.** It departs from reading A as written; the user recorded that departure for E43 only. It relies on
+  teacher training at Adam 1e-5 (2026-10-28) and on one adversary start with readings as lower bounds (2026-10-27).
 - **What changes what we do next.**
-  - If the claim holds (P1 holds, P2 reads "inert", P3 holds), a card asks whether teacher training plus remainder
-    becomes the map, and whether the behavioural reading is extended. Extending it changes the success criterion.
-  - If P3 fails or P2 reads "carries", the exact-weights version costs faithfulness. Teacher training's own state
-    stays the map.
-- **Control first.** W₀ (C1) runs alone at the start of every job, with a stop. Then the do-nothing state, the
-  positive control: removing its Δ′ must read 1, and at T₁₀ and on the broad fine-tune it must fail the check.
-- **Reference recipes.** No replayed procedure. Teachers and copies are regenerated by E41's and E37's recipes
-  unchanged. All references are re-read in the same job, so the card difference from E41 and E37 (H100) is not a
-  difference between rows.
-- **Class.** This is a new map, and it relies on a departure the user made for this experiment, so it is not in an
-  approved class. It **needs the user's confirmation** of the restatement and this check before any code is written.
+  - P2 "inert" with P3 holding: a card asks whether teacher training plus remainder becomes the map.
+  - P2 "carries" or P3 failing: the exact-weights version costs faithfulness, and teacher training's own state stays
+    the map.
+- **Control first.** C1 (W₀) runs alone at the start, with a stop. Then, per step, the do-nothing state (PC) runs before
+  any copy.
+- **Reference recipes.** The fine-tune and the copy are E41's unchanged. E41 reproduced to 16 digits on this card.
+  G1, PC and G3 check that they reproduce here.
+- **Class.** A new map, confirmed by the user after the check (`decisions.md`, 2026-10-28).
 
-**What argues against running, or for a smaller run.**
+**Known weaknesses.**
+- P1 has no power: removing the remainder gives teacher training's own state, whose gap share E41 measured (0.0013,
+  0.0056).
+- The Δ′ share is expected to be about 0.9-1.1 by construction.
+- P3 at T₁₀₀₀ can only see a difference larger than 25%, and the null predicts about 15% there.
 
-1. **P1 has almost no power.** Under reading (a), the state with Δ′ removed *is* teacher training's own state. Its
-   task-text reading is therefore teacher training's gap share, which is already measured: 0.0013 at T₁₀ and 0.006 at
-   T₁₀₀₀ (E41), and 0.044 on the broad fine-tune (E37). The run re-reads P1 on this card and learns nothing new.
-2. **P2 is half answered.** E34 Amendment 6 already puts r1's task-text remainders at 0.30-1.06 of the fine-tune's
-   plain-text change, so "between" or "carries" is likely.
-3. **The weight share fails by construction.** From E34's cosines and sizes, ‖Δ′ − Δ‖² / ‖δW‖² should be about 0.9-1.1:
-   Δ′ holds about as much weight as the whole update. A pass here is a pass only under the E43 reading.
-4. **P3, the one new number, is weak on an L40.** On that card, W₀'s spread over adversary seeds is 0.21, against 0.075
-   on the H100.
-   - At T₁₀₀₀ the null predicts only about +15% over teacher training's own state, inside P3's 25% tolerance.
-   - The T₁₀ cells will likely sit inside the L40's wide band between the pass and fail lines.
-   - An H100 run, about $2-3, would give a 7.5% floor and could reuse E22's and E41's same-card references to 16
-     digits.
-5. **The broad case will almost surely fail.** Teacher training's own state fails there (2.20), and removing Δ′ lands
-   on that state. Only the size of the failure against do-nothing's 4.87 is new.
+## States (per step k ∈ {10, 1000}; one job, about 15 min of H100)
 
-## States (every case, one job each)
+| State | Made by | Δ′ − Δ | With Δ′ back to Δ it is |
+|---|---|---|---|
+| W₀ | `harness.load` | 0 | W₀ |
+| do-nothing | target W₀ + δW_k, released (U, V) | δW_k | W₀ |
+| least squares | `split.split_state(δW_k)`, target W₀ + δW_k | about (I − P_U) δW (I − P_V) | the split's components with W₀'s Δ |
+| teacher training | `path.student` (E41's one-shot task-text copy: Adam 1e-5, 1,000 steps, batch-order seed 0) | 0 | itself |
+| **plus remainder** | the copy's (U′, V′), target **W₀ + δW_k** | R = δW_k − δW_tt | teacher training's own state (G2 checks this) |
 
-| State | How it is made | Δ′ − Δ |
-|---|---|---|
-| W₀ | `harness.load` | 0 |
-| do-nothing | target W₀ + δW, released (U, V) (`harness.measure(..., None, ...)`) | δW |
-| least squares | `split.split_state(δW, uv, bases)`, target W₀ + δW | (I − P_U) δW (I − P_V) plus second order |
-| teacher training | the copy's (U′, V′), target W₀ + δW_tt (`teacher_training/run.read_state`; broad: `row_copy.read_state`) | 0 (≤ 1e-6 of ‖δW‖², else a bug) |
-| **teacher training plus remainder** | the same (U′, V′), target **W₀ + δW** (`harness.measure`) | R = δW − δW_tt |
+The fine-tune is E41's emoticon Adam 3e-5 arm-A fine-tune: all 24 matrices, batch 32, seed 0, checkpoints at 10 and
+1,000, regenerated in the job. No state is read from disk and none is saved; the analysis reads only the JSON.
 
-The **removal state** of any row is its target minus (Δ′ − Δ). For do-nothing it is W₀, for least squares the split's
-components with W₀'s Δ, and for teacher training plus remainder it is teacher training's own state.
+## Stage 0: controls (stop on any miss)
 
-**Cases.**
+| Check | Must read (E41, same card) |
+|---|---|
+| C1, first and alone | `w0_check` passes; PGD floor 0.0748 within 10%; seed-0 PGD KL 0.69882 within 1% |
+| G1 | T₁₀: P(target) 0.99931 and size 0.01125; T₁₀₀₀: 0.99961 and 0.03209 (within 0.005 and 0.001) |
+| PC, per step, before the copy | do-nothing ratio 2.5159 (T₁₀, fail) and 1.4994 (T₁₀₀₀); its task-text KL to W₀ 5.0784 and 5.0897 (E41's gap at W₀); all within 1% |
+| G3, per step | the copy's P 0.99941 and 0.99675 (within 0.005); ratio 1.5465 and 0.9591 (within 5%); Δ share ≤ 1e-6 |
+| G2, per step | the copy's U′V′ᵀ − UVᵀ reproduces its δW within 1e-3 of the largest entry, so removing R lands exactly on the copy |
 
-| Case | Update δW | Copy (teacher training) |
-|---|---|---|
-| emoticon T₁₀ | E41's Adam 3e-5 arm-A fine-tune, all 24 matrices, batch 32, seed 0, stopped at step 10 | E34/E41's task-text recipe: Adam 1e-5, 1,000 steps, batch-order seed 0 |
-| emoticon T₁₀₀₀ | the same fine-tune at step 1,000 | the same |
-| broad | E36 Amendment 1/E37's lowercase fine-tune, all 24 matrices, Adam 3e-5, batch 8, 300 steps, seed 0 | E37's recipe: 2,400 lowercase rows, Adam 1e-5, batch 8, 1,000 steps, seed 0 |
+Do-nothing is the positive control on both readings:
+- **Removal.** Its removal share is 1 by construction, since its removal state, W₀, gives the denominators.
+- **Check.** At T₁₀ it fails (2.52). The check sees an update that sits in Δ.
 
-**Saved states.** None of the emoticon copies were saved (E41 saved nothing). E39 kept E37's broad copy as bf16
-offsets (`broad_fragility/results/large/trained_step1000.pt`), but not the fine-tune. Everything is regenerated in the
-job: the fine-tune must be made anyway, the copy costs about 3.5 min on an L40, and fp32 offsets in memory make R
-exact.
+## The numbers (T₁₀ / T₁₀₀₀; references on the same rows, same job)
 
-## Stage 0: the control (first in each job, alone; stop on a miss)
-
-| Check | Must read | Else |
-|---|---|---|
-| C1: W₀ under the Pile harness, adversary seeds 0-2 | `faith_score.w0_check` passes; floor ≤ 0.25 on an L40 (measured 0.209, E31; step split's C0 rule) | stop |
-| G1: the teacher | emoticon P(target) 0.9993 / 0.9996 and size 0.0113 / 0.0321 within 0.005 and 3% (E41); broad held-out gain 0.130 within 0.005 (E37) | stop |
-| PC1: do-nothing removal reading | the removal share is exactly 1 (within 1e-6), and its removal state equals W₀ | stop: the removal code path is wrong |
-| PC2: do-nothing check, T₁₀ and broad | above the job's pass line (H100: 2.52 and 4.87; L40 expected about 2.3-2.6 and over 3) | stop: on this card the check cannot see the update in Δ, so P3 is unreadable |
-| G2: teacher training plus remainder | its target weights equal W_ft within 1e-6 relative; the copy's Δ share ≤ 1e-6 | stop |
-
-PC1 holds by construction, so it tests the code, not the reading's sensitivity. The graded reference is least
-squares. Its remainder carries 0.09, 0.16 and 0.28 of the log-odds gain at the trigger (E22, the "not carried by the
-components" route at steps 10, 100 and 1,000). So its removal readings should land clearly between teacher training
-plus remainder and do-nothing.
-
-## The numbers (per case; references on the same rows, same job)
-
-| Number | W₀ | do-nothing | least squares | teacher training | teacher training plus remainder: expected |
+| Number | W₀ | do-nothing | least squares | teacher training | plus remainder: expected |
 |---|---|---|---|---|---|
-| **b_task**: KL(fine-tune ‖ removal state) / KL(fine-tune ‖ W₀), on the task's held-out text (emoticon: windows, arm A weighting; broad: 64 held-out lowercase rows, every position) | n/a (0/0) | 1 | measured; between 0 and 1 | 0 (nothing removed) | = teacher training's gap share: 0.0013 (T₁₀), 0.006 (T₁₀₀₀), 0.044 (broad) |
-| **b_pile**: the same ratio on the harness's 256 Pile val rows | n/a | 1 | measured | 0 | unknown; r1's task-text copies read 0.30-0.33 (Adam, SGD), 1.06 (LoRA) |
-| **check**: Pile harness PGD KL over W₀'s (one start, seed 0, 20 steps, 256 rows) | 1 | H100: 2.52 / 1.50 / 4.87 | H100: 6.96 / 2.11 / not run | H100: 1.55 / 0.96 / 2.20 | at least teacher training's; the null puts it nearer do-nothing |
-| Δ′ share, ‖Δ′ − Δ‖² / ‖δW‖² (reported) | 0 | 1 | 0.36 / 0.38 (E22) / measured | ~1e-9 | about 0.9-1.1 (from E34 and E37's sizes and cosines) |
-| cos(R, δW_tt), the cancellation sign (reported) | n/a | n/a | about 0 (first-order orthogonal) | n/a | about −0.3; below −0.5 means R mostly undoes the copy |
-
-The three-number cells read T₁₀ / T₁₀₀₀ / broad. The route split's "not carried by the components" share (reading b)
-is logged by `harness.measure` and reported. It is in log-odds, so it saturates near P = 1: E41's Pile-text copy at
-P 0.90 would read 0.57.
+| **b_pile** = KL(fine-tune ‖ Δ′ back to Δ) / KL(fine-tune ‖ W₀) on the harness's 256 Pile val rows | 0/0 | 1 | measured | 0 | unknown; r1's task-text copies read 0.30-0.33 |
+| **check** (Pile harness PGD KL over W₀'s; one start, seed 0, 20 steps) | 1 | 2.52 / 1.50 | 6.96 / 2.11 (E22) | 1.55 / 0.96 (E41) | at least teacher training's; the null puts it nearer do-nothing |
+| b_task (the same ratio on held-out task windows, arm A weighting; P1 check) | 0/0 | 1 | measured | 0 | 0.0013 / 0.0056 (E41's gap shares) |
+| Δ′ share ‖Δ′ − Δ‖² / ‖δW‖² (reported) | 0 | 1 | 0.36 / 0.38 | ~1e-9 | about 0.9-1.1 |
+| e_delta, Δ′ to zero (route split, log-odds at the trigger; reported) | 0 | 1 | 0.09 / 0.28 | 0.011 / 0.015 | slightly above teacher training's |
+| cos(R, the copy's δW) (reported) | — | — | — | — | about −0.3; below −0.5 means R mostly undoes the copy |
 
 **Blind to.**
-- b_task sees nothing off the task text.
-- b_pile sees only 256 Pile rows, and nothing at the trigger.
-- Both are ratios of KLs and need a non-zero denominator: a case whose KL(fine-tune ‖ W₀) is below 0.005 nats
-  (10 × the hook-path floor of 0.0005, E41's C2) is unscored.
+- b_pile sees nothing at the trigger and nothing off the 256 rows.
+- b_task sees nothing off the task windows.
+- Both shares are ratios, so either is unscored if its denominator is below 0.005 nats (10 × E41's hook floor of
+  0.0005).
 - The check uses one start, so a pass is a lower bound.
-- The Δ′ share is unweighted Frobenius; it sees no inputs.
+- The Δ′ share sees no inputs.
+- e_delta saturates near P = 1.
 
-**Noise floors (measured).**
-- b_task: batch-order spread of the gap share, 0.002 on task text (E34 Amendment 4).
-- b_pile: batch-order spread of 0.10 (emoticon LoRA Pile-text copies, 0.77 against 0.87) up to 0.38 (r0, 1.43 against
-  1.82), E34 Amendment 6.
-- Check: W₀'s spread over adversary seeds is 0.21 on an L40 (E31) and 0.075 on an H100. The batch-order spread of the
-  T₁₀ copy is 21% (E41 Amendment 1). The comparison in P3 is paired (same copy, rows and adversary seed), so its noise
-  is at most the seed floor.
+**Noise floors (H100, measured).**
+- Check: W₀'s spread over adversary seeds is 0.0748 (E41), and the lines are 1.396 (pass) and 1.612 (fail). The
+  ratio's batch-order spread is 21% at T₁₀ and 3.2% at T₁₀₀₀ (E41 Amendment 1). P3 is paired (same copy, rows and
+  adversary seed), so its noise is at most these.
+- b_pile: the batch-order spread is 0.10 (E34 Amendment 6, emoticon Pile-text copies, 0.77 against 0.87).
+- Gap share: 0.002 (E34 Amendment 4).
 
-## Predictions (described here; filed later)
+## Predictions (filed; rules as in `remainder.score`, 34 edge cases run before filing)
 
 **Claim.** The remainder is behaviourally inert, so teacher training plus remainder is as faithful as teacher
 training's own state while keeping the fine-tune's exact weights.
 
-**Null.** The remainder carries what the copy got wrong off the task text. The adversary, which can remove Δ′, then
-reads the state the way it reads do-nothing for that part.
+**Null.** The remainder carries what the copy got wrong off the task text, and the adversary, which can remove Δ′,
+reads that part as it reads do-nothing.
 
-- **P1, the user's criterion on task text.** In every case, b_task ≤ 0.05 (absolute; E41's "works" line). After the
-  remainder is removed, P(target) ≥ 0.9 (emoticon), or the behaviour kept s ≥ 0.9 (broad). *Lean: high on emoticon,
-  medium on broad (0.044 against 0.05).* No power: this is teacher training's gap share, re-read.
-- **P2, hidden cancellation on plain text (three-way, per case).** "Inert" if b_pile ≤ 0.2, which is twice the
-  smallest measured batch-order spread above zero. "Carries" if b_pile ≥ 0.5, half of do-nothing. "Between"
-  otherwise. Least squares' b_pile is reported beside it. Unscored below the 0.005-nat denominator. *Lean: between,
-  medium on emoticon, from r1's 0.30-0.33; between or carries, low on broad.*
-- **P3, the adversarial check, paired.** In each case, teacher training plus remainder's check must be ≤ 1.25 × teacher
-  training's own (relative, E41's tolerance), and its verdict no worse (pass < at the line < fail, the job's lines).
-  Reported beside it: the share of do-nothing's excess it removes, (r_dn − r)/(r_dn − 1), only where do-nothing is
-  above the pass line. *Lean: holds at T₁₀₀₀, high (null's gap is about 15%); medium at T₁₀; fails on broad, medium.*
-- **Edge cases to run through `score` before filing.** An empty file; a missing case; a denominator at 0.005 exactly
-  and just below it; b_pile exactly 0.2 and exactly 0.5; a ratio exactly 1.25 ×; both states failing, which counts as
-  "no worse"; do-nothing at or below 1, which gives an excess share of None; a Δ share of 2e-6, which sets G2 false.
+- **P1, task-text check (unscored).** Per step: b_task ≤ 0.05, and teacher training's own P(target) is ≥ 0.9. Its
+  value is known from E41.
+- **P2, plain text (scored).** Per step, b_pile is "inert" at ≤ 0.2 (twice the batch-order spread), "carries" at
+  ≥ 0.5 (half of do-nothing), and "between" otherwise; both ends are inclusive.
+  - The outcome is the worst step.
+  - It is unscored if a record is missing or KL(fine-tune ‖ W₀) on the Pile rows is below 0.005 nats.
+  - Least squares' b_pile is reported beside it.
+  - *Lean: between, medium (r1's 0.30-0.33).*
+- **P3, the check, paired (scored).** Per step, plus remainder's ratio is ≤ 1.25 × teacher training's own (relative,
+  inclusive), and its verdict is no worse (pass < inconclusive < fail, the check alone; both failing counts as no
+  worse).
+  - It holds if both steps hold, and is unscored if a record is missing.
+  - Reported per step: the share of do-nothing's excess removed, (r_dn − r)/(r_dn − 1), for both states. It is None
+    where do-nothing reads at or below the pass line.
+  - *Lean: holds; high at T₁₀₀₀, where the null's gap is about 15%; medium at T₁₀.*
+
+**Edge cases run through `score`** (synthetic records on the CPU worker,
+`~/commute-data/scratch/commute-lead/e43_edge.py`; all 34 pass):
+- an empty file, a missing step and a missing record are all unscored;
+- b_pile exactly 0.2 is inert and 0.2000001 between; exactly 0.5 carries and 0.4999999 between; the worst step wins;
+- a denominator of 0.005 is scored, while 0.004999 and 0 are None;
+- a ratio of exactly 1.25 × holds and 1.2500001 × fails;
+- a worse verdict fails; both failing holds; a better verdict holds;
+- a do-nothing ratio at the pass line or below 1 gives an excess share of None;
+- a P1 denominator of 0 gives None;
+- a copy below P 0.9 makes P1 false;
+- an unknown verdict raises.
 
 ## Decision tree
 
-- **A control fails** (C1, G1, PC1, PC2, G2): stop, report, fix. Nothing is read.
-- **P1 holds, P2 inert and P3 holds on emoticon.** Teacher training plus remainder meets the E43 reading wherever
-  teacher training does. A pending-decision card goes to the user: adopt it as the map, and say whether the
-  behavioural reading should hold for every technique (a `GOALS.md` change, the user's). No run.
-- **P3 holds, P2 between or carries.** The adversary and the task text do not see the remainder, but plain text does.
-  A card asks the user whether plain-text change counts as behaviour. Its options:
-  - accept it;
-  - copy from Pile text instead (r1's Pile-text copy read 0.13 against 0.30; E43 Amendment 1, emoticon T₁₀₀₀, about
-    20 min on an L40, $0);
-  - put the least-squares split of R into the subcomponents first.
-  Nothing runs before the user decides.
-- **P3 fails on an emoticon case.** The adversary uses Δ′ as it uses do-nothing's Δ, so exact weights cost
-  faithfulness. This is a qualitative surprise against the claim: announce it, file a card, and keep teacher training's
-  own state as the map. No run.
-- **P1 fails** (broad only, plausibly): the copy's own gap. Report it beside E37; no run.
-- **Broad, P3 fails as leant.** Report the share of do-nothing's excess removed, and make no claim beyond E37's.
+- **A control fails** (C1, G1, PC, G2, G3): stop, report, fix. Nothing is read.
+- **P2 inert and P3 holds.** Teacher training plus remainder meets the E43 reading on emoticon wherever teacher
+  training does. A pending-decision card goes to the user with two questions: adopt it as the map, and should the
+  behavioural reading hold for every technique (a `GOALS.md` change, the user's). No run.
+- **P3 holds, P2 between or carries.** The adversary does not see the remainder, but plain text does. A card offers
+  three options; nothing runs before the user decides.
+  - Accept it.
+  - Copy from Pile text instead (r1's Pile-text copy read 0.13 against 0.30).
+  - Put the least-squares split of R into the subcomponents first.
+- **P3 fails.** The adversary uses Δ′ as it uses do-nothing's Δ, so exact weights cost faithfulness. This is a
+  qualitative surprise against the claim: announce it, file a card, and keep teacher training's own state as the map.
+  No run.
+- **P1 check false.** A code or reproduction problem, since E41 fixes its value. Stop and report.
 
 ## Cost and routing
 
-Not gated: the run is $0, under 3 h, and needs no budget. Timings are H100 step times from E41, E37 and E39, scaled by
-the L40's measured 2.4× (one harness read takes 125 s on an L40, in `adjoint_sgd/results/large/full_amend2_emo_03.log`,
-against 53 s on an H100).
+The run takes about 15 min on an H100, timed from E41 (harness read 53 s, copy with its read 126 s, load and C1 3 min):
 
-| Job (MATS `debug`, one L40, `--time 0:40:00`) | Stages | Estimate |
-|---|---|---|
-| 1: emoticon T₁₀ (**first, alone**) | load and C1 7.5 min; fine-tune and G1 under 1 min; PC1 and PC2 2 min; copy 3.4 min; least squares under 1 min; three more harness reads 6.3 min; removal readings 1 min | ~22 min |
-| 2: emoticon T₁₀₀₀ | the same, with the 1,000-step fine-tune | ~23 min |
-| 3: broad | load and C1 7.5 min; Pile stream and lowercase rows 4 min; fine-tune 1 min; copy 3.5 min; least squares 1 min; four reads 8.3 min; removal readings 1 min | ~26 min |
+| Stage | Time |
+|---|---|
+| load and C1 | 3 min |
+| fine-tune and G1 | 0.5 min |
+| T₁₀: do-nothing and PC, the copy and G3, plus remainder, least squares, removal readings | about 5.5 min |
+| T₁₀₀₀: the same | about 5.5 min |
 
-- Jobs 2 and 3 are submitted together once job 1's C1 and PC2 pass, about 12 min in. The whole run takes about 40 min
-  of wall time and costs **$0**.
-- If `debug` does not start within 10 min, the rule sends the run to RunPod, on one H100 at about $2-3. Every reference
-  is in the job, so the only change is the floor.
-- **Recommendation for the lead.** Given point 4 of the design check, the H100 is the better card for P3 at modest
-  cost. The L40 is enough for P1 and P2.
+- **Card:** RunPod "NVIDIA H100 80GB HBM3". C1, PC and G3 belong to that card.
+- **Cost:** about 25-30 min of pod with set-up and downloads, at about $4.4/h: **about $2, cap $4**. That is within
+  the session's budget.
+- **Gating:** not gated (under $15 and under 3 h).
 
-## Order of work for the fleet agent (after the user confirms)
+## Order of work
 
-1. Read this plan and `src/commute/README.md`. Read `teacher_training/run.py` and `path.py` for `read_state`, `Job`
-   and the teacher and copy recipe, and `broad_fragility/run.py` for the broad `Job`, `read` and `stage0_trained`.
-2. Write `experiments/teacher_remainder/run.py` (~200 lines), importing those interfaces. The one new helper is the
-   removal state (target minus (Δ′ − Δ)), placed in `src/commute/` if a second experiment needs it.
-3. File predictions in `results/predictions.json`, with the edge cases above run through `score` on the CPU worker.
-4. Get a fresh Opus review of the diff. Then `/pod-runner`: job 1 alone, then jobs 2 and 3.
-5. Write the analysis by `/writeup`, add the `TRIED.md` row and a PENDING line, then commit and push.
+1. Done: code, filed predictions, edge cases, lint (ruff and pyright clean).
+2. A fresh Opus agent reviews `remainder.py` (scope: the new file, uncommitted at review time, and the repo path). Fix
+   what is real. A change to `E43` or `CFG` means refiling under a new name.
+3. `/pod-runner` with `RUN_BRIEF_e43.md`.
+4. Write the analysis by `/writeup`, add the `TRIED.md` row and the PENDING line, then commit and push.
 
 ## Not run
 
-- Pile-text (arm B) copies; T₁₀₀; r0, r1, r2; SGD and LoRA teachers; Qwen.
-- Batch-order or fine-tune-seed repeats; adversary seeds 1-2 or the budget adversary on the new state.
-- The least-squares split of R into the subcomponents (a hybrid map): offered on a card only.
-- Input-weighted shares or the four blocks of R; the full route split; Γ refit; the strong version.
+- The broad lowercase fine-tune (dropped at approval); T₁₀₀; other tasks; SGD and LoRA teachers; Pile-text copies; Qwen.
+- Batch-order or seed repeats; adversary seeds 1-2 and the budget adversary.
+- The least-squares split of R into the subcomponents (offered on a card only); input-weighted shares of R.
+- Saving states.

@@ -1,0 +1,121 @@
+{
+ "about": "teacher_training E43 (reports/plans/2026-10-28_plan_e43-teacher-remainder.md, 'Scope as approved'). Emoticon, E41's Adam 3e-5 arm-A fine-tune (seed 0) at steps 10 and 1000, regenerated in-job; E41's one-shot task-text copy; 'plus remainder' = the copy's (U', V') with target W0 + dW (Delta' = Delta + W_ft - W_tt). States on the same rows: do-nothing, least squares, teacher training's own, plus remainder. RunPod H100 80GB HBM3. Filed before any run",
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": "C1 first, alone: w0_check, PGD floor 0.0748 within 10%, seed-0 PGD KL 0.69882 within 1%. G1: teachers P and size within 0.005 / 0.001 of E41's. PC per step: do-nothing ratio 2.5159 (T10) / 1.4994 (T1000) and its task-text KL at W0 5.0784 / 5.0897 within 1% (E41); its removal shares are 1 by construction (the denominators are its own). G3: the copy's P within 0.005 and ratio within 5% of E41's (0.99941, 1.5465; 0.99675, 0.9591), Delta share <= 1e-6. G2: the copy's (U', V') minus W0's reproduces its delta-W to 1e-3. Any miss: stop",
+ "e43": {
+  "c1_floor": 0.0748,
+  "c1_floor_tol": 0.1,
+  "c1_kl": 0.69882,
+  "c1_kl_tol": 0.01,
+  "carries": 0.5,
+  "delta_max": 1e-06,
+  "denom_min": 0.005,
+  "ft_lr": 3e-05,
+  "g1": {
+   "10": [
+    0.99931,
+    0.01125
+   ],
+   "1000": [
+    0.99961,
+    0.03209
+   ]
+  },
+  "g1_tol": [
+   0.005,
+   0.001
+  ],
+  "g2_tol": 0.001,
+  "g3": {
+   "10": [
+    0.99941,
+    1.54653
+   ],
+   "1000": [
+    0.99675,
+    0.95909
+   ]
+  },
+  "g3_tol": [
+   0.005,
+   0.05
+  ],
+  "inert": 0.2,
+  "p3_ratio": 1.25,
+  "pc": {
+   "10": [
+    2.5159,
+    5.07835
+   ],
+   "1000": [
+    1.4994,
+    5.08975
+   ]
+  },
+  "pc_tol": 0.01,
+  "steps": [
+   10,
+   1000
+  ],
+  "works": 0.05
+ },
+ "expected": {
+  "W0": "check 1; removal shares undefined (0/0)",
+  "do-nothing": "check 2.516 fail / 1.499 inconclusive; b 1 and 1; Delta' share 1; e_delta 1",
+  "least squares": "check 6.96 / 2.11 (E22); Delta' share 0.36 / 0.38; e_delta 0.09 / 0.28; b measured, between 0 and 1",
+  "noise": "W0's adversary-seed floor 0.0748; batch-order spread of the ratio 21% at T10, 3.2% at T1000 (E41 A1); b_pile batch-order spread 0.10 (E34 A6, Pile-text copies); gap share 0.002 (E34 A4)",
+  "plus remainder": "b_task = the copy's gap share, 0.0013 / 0.0056 (E41); b_pile unknown (r1's task-text copies 0.30-0.33, LoRA 1.06, E34 Amendment 6); Delta' share 0.9-1.1; cos(R, copy) about -0.3",
+  "teacher training": "check 1.547 / 0.959; P 0.9994 / 0.9968; Delta share ~1e-9; b 0"
+ },
+ "filed": "2026-10-28 15:23:16",
+ "measurements": {
+  "check": "Pile harness PGD KL over W0's (one start, seed 0, 20 steps, 256 rows); verdict against this job's floor, pass <= 1.5/(1+f) (1.396 at f 0.0748), fail >= 1.5(1+f) (1.612). A pass is a lower bound",
+  "removal share": "KL(fine-tune || state with Delta' put back to Delta) / KL(fine-tune || W0), on the held-out task windows with arm A's weighting (b_task) and on the harness's 256 Pile val rows (b_pile). Do-nothing 1, teacher training's own 0, both by construction. Blind to: text off those rows; the trigger alone",
+  "reported": "Delta' share ||Delta' - Delta||^2 / ||dW||^2 (harness delta_change_frac); e_delta (Delta' to zero, log-odds at the trigger, saturates near P 1); cos(R, the copy's delta-W); start KL"
+ },
+ "not_run": [
+  "the broad lowercase fine-tune (dropped: teacher training's own state fails there)",
+  "T100; other tasks; SGD or LoRA teachers; Pile-text copies",
+  "batch-order or seed repeats; adversary seeds 1-2; the budget adversary",
+  "the least-squares split of R into the subcomponents; input-weighted shares; Qwen"
+ ],
+ "predictions": [
+  {
+   "id": "P1_task_text_check",
+   "rule": "per step: b_task(plus remainder) <= 0.05 and teacher training's own P(target) >= 0.9; None if a record is missing or the denominator < 0.005 nats. Unscored: its value is known from E41 (0.0013, 0.0056)",
+   "scored": false
+  },
+  {
+   "id": "P2_plain_text",
+   "lean": "between, medium (r1's task-text copies read 0.30-0.33)",
+   "rule": "per step: b_pile(plus remainder) <= 0.2 'inert', >= 0.5 'carries', else 'between' (both ends inclusive); None if a record is missing or KL(fine-tune || W0) on the Pile rows < 0.005 nats. Outcome: the worst step (inert < between < carries); unscored if any step is None. Least squares' b_pile reported beside it"
+  },
+  {
+   "id": "P3_check_paired",
+   "lean": "holds, high at T1000 (the null's gap ~15%); medium at T10",
+   "rule": "per step: plus remainder's ratio <= 1.25 x teacher training's own ratio (relative, inclusive) and its verdict no worse (pass < inconclusive < fail, the check alone; both failing counts as no worse). Holds if both steps hold; unscored if a record is missing. Reported per step: the share of do-nothing's excess removed, (r_dn - r)/(r_dn - 1), for plus remainder and for teacher training's own, None where do-nothing reads at or below the pass line"
+  }
+ ]
+}
