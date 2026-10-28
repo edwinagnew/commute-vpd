@@ -57,3 +57,6 @@
 - [Qwen3-1.7B line](project-qwen-line.md) — qwen-decomp-lead since 2026-10-27; decomposition p-e9fcffd5 (JAX, 47 GB) at artifacts/qwen3-1.7b-p-e9fcffd5; plan before spend; discuss in the lead window
 - [Don't ask for cheap recommended checks](feedback-dont-ask-for-cheap-recommended-checks.md) — a $0 minutes-long check a report recommends: run it, FYI only (2026-10-27)
 - [Explain tree branches before running](feedback-explain-tree-branches-before-running.md) — a decision-tree run still gets a plain what/why in chat first; user didn't know the prefix test (2026-10-27)
+- [Measure step size first](feedback-measure-step-size-before-scored-run.md) — realistic fine-tune recipe (warm-up) and a step-1 size check before scored runs; E40 1e-5 no warm-up made step 1 huge (2026-10-28)
+- [Layer-wise training: 67M first](feedback-layerwise-training-on-67m-first.md) — block-wise teacher training must be shown on the 67M before Qwen (user, 2026-10-28)
+- [Gated runs](feedback-gated-runs.md) — runs >$15, >3 h or above the cap: pre-mortem, sourced settings, $0 rehearsal of every stage, early checks, two reviews, user go-ahead (.claude/CLAUDE.md, 2026-10-28)
