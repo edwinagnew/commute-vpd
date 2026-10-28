@@ -76,6 +76,10 @@ else runs, so report the line and terminate. The same goes for G1 and G2, which 
   `[emoticon T1000]` and `[G1]` lines.
 - **G2**: `STOP: G2: T1000 copy at seed 1 P <p> ratio <r>; Amendment 4 0.9979, 0.99007`. Report the copy's lines and
   `[G2]`.
+- **Seed not applied (review 2026-10-28; G2's tolerance cannot catch it)**: stop, download and terminate if the G2 copy
+  reads about P 0.99675 / ratio 0.959 (E41's seed-0 values) instead of 0.99790 / 0.990, or if either T10 copy's
+  `start KL` reads 5.42720 (E41 seed 0's first batch). The H100 path reproduces to four digits, so a match means the
+  batch-order seed was ignored.
 - An `AssertionError` naming `[faith] lines` or `block KLs` is the per-block reading going wrong (the harness logged a
   different number of blocks, or the parsed values do not give the stored ratio): a code stop. Report it with the last
   ten log lines.

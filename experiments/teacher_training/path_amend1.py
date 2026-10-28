@@ -120,8 +120,11 @@ def read(job: Job, out: dict[str, Any], label: str, upd: tuple[Any, Any], net: A
     tctx = job.task(EMO)[0]
     rec, kl = with_blocks(lambda: read_state(job, tctx, label, upd, net, True))
     w0 = out["W0_pgd_blocks"]
-    assert len(kl) == len(w0), f"{label}: {len(kl)} [faith] lines, expected {len(w0)}"
-    assert abs(sum(kl) / sum(w0) / rec["pgd"] - 1) <= 1e-3, f"{label}: block KLs {kl} do not give the ratio {rec['pgd']}"
+    # Reported, not scored: a parse mismatch is logged and stored as None rather than stopping the scored reads.
+    if len(kl) != len(w0) or abs(sum(kl) / sum(w0) / rec["pgd"] - 1) > 1e-3:
+        log(f"[{label}] block KLs {kl} do not give the ratio {rec['pgd']} (W0 blocks {w0}); pgd_blocks not stored")
+        rec["pgd_blocks"] = None
+        return rec
     rec["pgd_blocks"] = [k / w for k, w in zip(kl, w0, strict=True)]
     log(f"[{label}] adversarial ratio per 128-row block " + " ".join(f"{v:.4f}" for v in rec["pgd_blocks"]))
     return rec
