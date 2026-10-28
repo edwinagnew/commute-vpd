@@ -21,7 +21,8 @@
     "cached_E18": "E38's cached states (sha256 as E38 amend2_stage0.json recorded them, refs.e18.<task>.sha256): T1 (full model) within t1_rel_tol (0.02) x refs gain of refs T1, seeds 0 and 1",
     "E12_rebuilt": "marker, keys, values, n_train, n_heldout equal refs.e12_tasks exactly; each seed fine-tuned to its filed scored step (refs.e12.<task>.step), lifted: T1 within 0.02 x filed gain of filed T1 and r within e12_r_tol (0.03) of filed r",
     "null": "the ' http' state's G at the emoticon trigger: |G_null / G_s0| <= null_ratio_max (0.1), G_s0 the cached seed-0 state's G in the same job; the other two tasks' nulls reported, not scored",
-    "E36_rebuilt": "choice (lead's writer, before any run): the row selection record equals refs.e36.select exactly; per step, T0 and L00 within 0.02 of refs.e36 and G within max(0.02 x |filed gain|, e36_gain_abs_tol = 0.005) of the filed gain. Reason: 2% of E36's 0.05-nat gain is 0.001, under the 0.0013 bf16 reproduction floor E35 measured"
+    "E36_rebuilt": "choice (lead's writer, before any run): the row selection record equals refs.e36.select exactly; per step, T0 and L00 within 0.02 of refs.e36 and G within max(0.02 x |filed gain|, e36_gain_abs_tol = 0.005) of the filed gain. Reason: 2% of E36's 0.05-nat gain is 0.001, under the 0.0013 bf16 reproduction floor E35 measured",
+    "E36_note": "not a test: the floor F >= 0.1 exceeds E36 code's whole effect (|G| 0.05-0.07, |g| 0.04-0.05 per token), so its rows can pass the non-positive rule whatever Gamma does; reported for the table, read as an annotation only (amended before any run, after code review; no rule changed)"
   },
   "P0.2": {
     "name": "replication of E12 (lean high)",
@@ -102,7 +103,8 @@
     "nonpos_margin": 0.1,
     "p04_min_ft_g": 1,
     "p04_fail": 0.8,
-    "p04_pass": 0.5
+    "p04_pass": 0.5,
+    "write_ill_posed_rel_err": 0.5
   },
   "refs": {
     "e18": {
@@ -638,5 +640,11 @@
       "e36": "experiments/regating_spread/results/regating_spread.json .select, .states.<step>.{gain, gap, L.T0, L.g0}",
       "identity_r": "regating_leak.json .G1.emoticon.r"
     }
+  },
+  "amended_before_any_run_after_code_review": {
+    "date": "2026-10-28, after the fresh-Opus code review of 1ca1060, before any run",
+    "write_fit": "choice (lead's writer, amended before any run, after code review): the write is exact on the 32 training-mean key inputs by construction, so its residual there says nothing. Each write row reports instead cond(A) (A = the 32 mean key inputs), ||X||_F, and on the held-out windows at W0 the per-window cosine of X a_i with u_t(i) and the relative error ||X a_i - u_t(i)|| / ||u_t(i)|| (alpha cancels), mean and max. The row is flagged ill_posed when the mean relative error > 0.5 (thresholds.write_ill_posed_rel_err). Report-only: it changes no verdict and no P0.4 rule.",
+    "grid_then_bisect": "choice (lead's writer, amended before any run, after code review): perturb.match reads its function on a 12-point log grid from 0.01 to the cap (random arm: scale 0.01-10; write: alpha 0.01-1000), records the (scale, value) pairs in the row (grid), returns a grid point inside the tolerance band, else bisects (40 halvings) inside the first grid interval whose right end exceeds the target (left end the previous grid point, or 0). cap / unreachable only when no grid point reaches target x (1 - tolerance). Replaces bisection on (0, cap] from the cap, which assumed the function increasing on the whole range.",
+    "commit_check": "stage0a.json records git HEAD; 0b refuses unless run.py, perturb.py and anchors.py are unchanged since that commit"
   }
 }

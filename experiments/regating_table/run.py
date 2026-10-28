@@ -21,6 +21,7 @@ import argparse
 import hashlib
 import json
 import math
+import subprocess
 import sys
 import time
 from dataclasses import dataclass
@@ -41,6 +42,8 @@ PRED = RESULTS / "predictions.json"
 TRANSPORT, LADDER = EXP / "transport_test" / "results", EXP / "task_ladder" / "results" / "large"
 E38_STATES = EXP / "recruitment_test" / "results" / "large" / "states"
 EXACT = EXP / "reading_a_coverage" / "results" / "large" / "emoticon" / "dW_ft_step10_s0.pt"
+REPO = EXP.parent
+CODE = ("experiments/regating_table/run.py", "src/commute/perturb.py", "src/commute/anchors.py")
 E18_TASKS = ("emoticon", "r1_t534_v369", "r2_t359_v816")
 BATCH, ROW_BATCH = 64, 8
 
@@ -70,6 +73,25 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: f.read(1 << 24), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def git_head() -> str:
+    return subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+
+
+def code_unchanged(commit: str) -> bool:
+    """The measurement code is as it was at `commit` (later doc commits do not count)."""
+    return subprocess.run(["git", "-C", str(REPO), "diff", "--quiet", commit, "--", *CODE]).returncode == 0
+
+
+class Clock:
+    def __init__(self) -> None:
+        self.t0 = self.last = time.time()
+
+    def lap(self, label: str) -> None:
+        now = time.time()
+        log(f"[time] {label}: {now - self.last:.0f} s (total {now - self.t0:.0f} s)")
+        self.last = now
 
 
 def load_checked(path: Path, sha: str) -> Any:
@@ -236,57 +258,82 @@ def e18_0a(run: Run, name: str) -> dict[str, Any]:
     return rec
 
 
-def e12_build_0a(run: Run) -> tuple[dict[str, Any], dict[str, Any]]:
-    """E12's windows rebuilt; marker, keys, values and sizes must equal tasks.json exactly. Saved for 0b."""
-    built, rec = AN.build_kv(run.model, run.device, log)
+def reuse(path: Path, prev_sha: str | None) -> Any:
+    """The file an earlier 0a run wrote and recorded (`prev_sha`), if it is still that file; else None."""
+    return torch.load(path, weights_only=False) if prev_sha and path.is_file() and sha256(path) == prev_sha else None
+
+
+def saved(obj: Any, path: Path) -> str:
+    torch.save(obj, path)
+    return sha256(path)
+
+
+def e12_build_0a(run: Run, prev: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """E12's windows rebuilt (or reused from an earlier 0a run); marker, keys, values and sizes must equal tasks.json
+    exactly. Saved for 0b."""
+    names = [t.name for t in AN.KV_TASKS]
+    old = {n: reuse(LARGE / f"windows_{n}.pt", prev.get("sha256", {}).get(n)) for n in names}
+    built = old if all(v is not None for v in old.values()) else AN.build_kv(run.model, run.device, log)[0]
+    rec = {"marker": built[names[0]]["task"].marker, "tasks": {n: {"keys": list(w["task"].keys), "values": list(w["task"].values),
+           "n_train": len(w["train"]), "n_heldout": len(w["heldout"])} for n, w in built.items()}}
     ref = run.P["refs"]["e12_tasks"]
     ok = rec["marker"] == ref["marker"] and all(rec["tasks"][n] == ref["tasks"][n] for n in ref["tasks"])
-    out: dict[str, Any] = {"marker": rec["marker"], "ok": ok, "sha256": {}}
-    for n, w in built.items():
-        torch.save(w, LARGE / f"windows_{n}.pt")
-        out["sha256"][n] = sha256(LARGE / f"windows_{n}.pt")
-    return built, out
+    sha = {n: prev["sha256"][n] if built is old else saved(w, LARGE / f"windows_{n}.pt") for n, w in built.items()}
+    return built, {"marker": rec["marker"], "ok": ok, "sha256": sha, "reused": built is old}
 
 
-def e12_0a(run: Run, name: str, w: dict[str, Any]) -> dict[str, Any]:
-    """W0 cells; each seed fine-tuned to its filed scored step, lifted; T1 and r against E12's routes_lift."""
+def e12_0a(run: Run, name: str, w: dict[str, Any], prev: dict[str, Any]) -> dict[str, Any]:
+    """W0 cells; each seed fine-tuned to its filed scored step (or reused), lifted; T1 and r against E12's routes_lift."""
     th, ref = run.P["thresholds"], run.P["refs"]["e12"][name]
     t = run.task(name, w["train"], w["heldout"], w["table"])
     rec: dict[str, Any] = {"W0": w0_ok(t, ref["W0"], th["w0_tol"]), "states": {}}
     for s in ("s0", "s1"):
-        dW, ev = AN.kv_finetune(run.model, w, int(s[1]), ref["step"][s], run.device, log)
-        path = LARGE / f"{name}_{s}.pt"
-        torch.save(dW, path)
+        path, p = LARGE / f"{name}_{s}.pt", prev.get("states", {}).get(s, {})
+        dW = reuse(path, p.get("sha256"))
+        if dW is None:
+            dW, ev = AN.kv_finetune(run.model, w, int(s[1]), ref["step"][s], run.device, log)
+            p = {"sha256": saved(dW, path), "p_heldout": ev["p_o"]}
         c = cells(run, t, dW, AN.lifted(run.model, run.lift, dW))
         r = c["g"] / c["G"]
-        rec["states"][s] = {"sha256": sha256(path), "T1": c["cells"]["T1"], "T1_ref": ref["T1"][s], "r": r, "r_ref": ref["r"][s],
-                            "p_heldout": ev["p_o"], "ok": within(c["cells"]["T1"], ref["T1"][s], th["t1_rel_tol"] * ref["gain"][s])
+        rec["states"][s] = {"sha256": p["sha256"], "p_heldout": p["p_heldout"], "T1": c["cells"]["T1"], "T1_ref": ref["T1"][s],
+                            "r": r, "r_ref": ref["r"][s], "ok": within(c["cells"]["T1"], ref["T1"][s], th["t1_rel_tol"] * ref["gain"][s])
                             and within(r, ref["r"][s], th["e12_r_tol"])}
     rec["ok"] = rec["W0"]["ok"] and all(v["ok"] for v in rec["states"].values())
     return rec
 
 
-def e36_0a(run: Run) -> dict[str, Any]:
-    """E36's rows (selection record exact), the code fine-tune; per step T0, L00 against the filed and the gain."""
-    th, ref = run.P["thresholds"], run.P["refs"]["e36"]
+def e36_states(run: Run, prev: dict[str, Any]) -> tuple[Tensor, dict[str, Any], dict[str, Any]]:
+    """(held-out rows, step -> (delta-W, sha256, kl_rows), selection record): reused from an earlier 0a run when every
+    file is still the one it recorded, else E36's selection and fine-tune rerun and saved."""
+    held = reuse(LARGE / "code_held.pt", prev.get("held_sha256"))
+    old = {str(k): reuse(LARGE / f"code_step{k}.pt", prev.get("states", {}).get(str(k), {}).get("sha256")) for k in AN.CODE_CHECKS}
+    if held is not None and all(v is not None for v in old.values()):
+        return held, {k: (d, prev["states"][k]["sha256"], prev["states"][k]["kl_rows"]) for k, d in old.items()}, prev["select"]
     train, held, sel = AN.code_rows(run.vocab, log)
     deltas, evals = AN.code_finetune(run.model, train, held, run.device, log)
-    torch.save(held, LARGE / "code_held.pt")
+    saved(held, LARGE / "code_held.pt")
+    return held, {str(k): (deltas[k], saved(deltas[k], LARGE / f"code_step{k}.pt"), evals[k]["kl_to_ref"]) for k in AN.CODE_CHECKS}, sel
+
+
+def e36_0a(run: Run, prev: dict[str, Any]) -> dict[str, Any]:
+    """E36's rows (selection record exact), the code fine-tune; per step T0, L00 against the filed and the gain."""
+    th, ref = run.P["thresholds"], run.P["refs"]["e36"]
+    held, states, sel = e36_states(run, prev)
     rec: dict[str, Any] = {"select": sel, "select_ok": sel == ref["select"], "held_sha256": sha256(LARGE / "code_held.pt"), "states": {}}
-    for step in AN.CODE_CHECKS:
-        path = LARGE / f"code_step{step}.pt"
-        torch.save(deltas[step], path)
-        c = row_cells(run, held, deltas[step])
-        rs = ref["steps"][str(step)]
+    for step, (dW, sha, kl) in states.items():
+        c = row_cells(run, held, dW)
+        rs = ref["steps"][step]
         tol = max(th["t1_rel_tol"] * abs(rs["gain"]), th["e36_gain_abs_tol"])
-        rec["states"][str(step)] = {**c, "sha256": sha256(path), "kl_rows": evals[step]["kl_to_ref"], "ok": within(c["G"], rs["gain"], tol)
-                                    and within(c["cells"]["T0"], ref["T0"], th["w0_tol"]) and within(c["cells"]["L00"], ref["L00"], th["w0_tol"])}
+        rec["states"][step] = {**c, "sha256": sha, "kl_rows": kl, "ok": within(c["G"], rs["gain"], tol)
+                               and within(c["cells"]["T0"], ref["T0"], th["w0_tol"]) and within(c["cells"]["L00"], ref["L00"], th["w0_tol"])}
     rec["ok"] = rec["select_ok"] and all(v["ok"] for v in rec["states"].values())
     return rec
 
 
 def stage0a(run: Run) -> None:
-    out: dict[str, Any] = {"groups": {}, "pass": False}
+    prev = json.loads((RESULTS / "stage0a.json").read_text()).get("groups", {}) if (RESULTS / "stage0a.json").is_file() else {}
+    out: dict[str, Any] = {"groups": {}, "pass": False, "commit": git_head()}
+    clock = Clock()
 
     def done(key: str, rec: dict[str, Any]) -> None:
         out["groups"][key] = rec
@@ -294,17 +341,18 @@ def stage0a(run: Run) -> None:
         log(f"[0a {key}] {json.dumps(_finite({k: v for k, v in rec.items() if k != 'states'}))}")
         for s, v in rec.get("states", {}).items():
             log(f"[0a {key}/{s}] {json.dumps(_finite(v))}")
+        clock.lap(f"0a {key}")
         if not rec["ok"]:
             log(f"[0a] FAIL at {key}: stop and fix")
             sys.exit(1)
 
     for n in E18_TASKS:
         done(f"e18/{n}", e18_0a(run, n))
-    built, rec = e12_build_0a(run)
+    built, rec = e12_build_0a(run, prev.get("e12/build", {}))
     done("e12/build", rec)
     for n in built:
-        done(f"e12/{n}", e12_0a(run, n, built[n]))
-    done("e36/code", e36_0a(run))
+        done(f"e12/{n}", e12_0a(run, n, built[n], prev.get(f"e12/{n}", {})))
+    done("e36/code", e36_0a(run, prev.get("e36/code", {})))
     out["pass"] = True
     dump("stage0a.json", out)
     log("[0a] PASS")
@@ -318,23 +366,26 @@ def random_row(run: Run, t: Task, dW: dict[str, Tensor], ft: dict[str, Any]) -> 
 
     d = random_direction(dW, 0)
     m = PT.match(lambda c: read_state(run, t, PT.scaled(d, c))[1], ft["kl_other"], PT.SCALE_CAP, run.P["thresholds"]["kl_rel_tol"])
-    return {**cells(run, t, PT.scaled(d, m["x"])), "scale": m["x"], "match": m["status"], "kl_target": ft["kl_other"], "trace": m["trace"]}
+    return {**cells(run, t, PT.scaled(d, m["x"])), "scale": m["x"], "match": m["status"], "kl_target": ft["kl_other"],
+            "grid": m["grid"], "trace": m["trace"]}
 
 
 def write_row(run: Run, t: Task, w: dict[str, Any], ft: dict[str, Any]) -> dict[str, Any]:
-    """P0.4's per-key direct write, alpha matched to the seed-0 fine-tune's real gain on this task."""
-    task = w["task"]
+    """P0.4's per-key direct write, alpha matched to the seed-0 fine-tune's real gain on this task; `fit` reads the write
+    on single held-out windows at W0 (report-only flag "ill_posed" when its mean relative error exceeds the filed bar)."""
+    task, lm = w["task"], run.model.target_model.lm_head.weight.detach().float()
     A = PT.key_inputs(run.model, t.train.tokens, t.half, list(task.keys))
-    U = run.model.target_model.lm_head.weight.detach().float()[torch.tensor(task.values)].T
-    X = PT.key_write(A, U)
-    resid = float((X @ A.double() - U.double()).norm() / U.double().norm())
+    X = PT.key_write(A, lm[torch.tensor(task.values, device=lm.device)].T)
+    held_t = w["table"].to(lm.device)[t.held.tokens[:, t.half].to(lm.device)]
+    fit = PT.write_fit(X, A, PT.window_inputs(run.model, t.held.tokens, t.half), lm[held_t])
+    fit["ill_posed"] = fit["rel_err_mean"] > run.P["thresholds"]["write_ill_posed_rel_err"]
     dw = lambda a: {PT.WRITE_KEY: (a * X).float()}
     if ft["G"] <= 0:
-        return {"status": "no_target", "resid": resid}
+        return {"status": "no_target", "fit": fit}
     m = PT.match(lambda a: read_state(run, t, dw(a))[0] - t.T0f, ft["G"], PT.ALPHA_MAX, run.P["thresholds"]["write_rel_tol"])
     status = {"ok": "ok", "cap": "unreachable", "no_match": "no_match"}[m["status"]]
-    rec = {"status": status, "alpha": m["x"], "G_full": m["f"], "G_target": ft["G"], "resid": resid, "trace": m["trace"],
-           "norm": float(m["x"] * X.norm())}
+    rec = {"status": status, "alpha": m["x"], "G_full": m["f"], "G_target": ft["G"], "fit": fit, "grid": m["grid"],
+           "trace": m["trace"], "norm": float(m["x"] * X.norm())}
     if status != "ok":
         return rec
     c = cells(run, t, dw(m["x"]))
@@ -345,16 +396,19 @@ def stage0b(run: Run) -> None:
     s0a = json.loads((RESULTS / "stage0a.json").read_text()) if (RESULTS / "stage0a.json").is_file() else {}
     if not s0a.get("pass"):
         sys.exit("stage 0a has not passed: run --stages 0a first")
+    if not code_unchanged(s0a["commit"]):
+        sys.exit(f"{', '.join(CODE)} changed since stage 0a's commit {s0a['commit']}: rerun --stages 0a")
     from commute import regating as G
 
-    out: dict[str, Any] = {"states": {}}
+    out: dict[str, Any] = {"states": {}, "commit": git_head(), "stage0a_commit": s0a["commit"]}
+    clock = Clock()
 
     def put(key: str, kind: str, task: str, rec: dict[str, Any]) -> dict[str, Any]:
         out["states"][key] = {"kind": kind, "task": task, **rec}
         dump("stage0b.json", out)
         log(f"[0b {key}] " + " ".join(f"{k} {rec[k]:.4f}" if isinstance(rec.get(k), float) else f"{k} {rec.get(k)}"
                                      for k in ("G", "g", "F", "se", "n", "piece_gain", "gated_piece_gain", "kl_other", "r",
-                                               "scale", "match", "alpha", "status")) + f" | cells {json.dumps(rec.get('cells'))}")
+                                               "scale", "match", "alpha", "status", "fit")) + f" | cells {json.dumps(rec.get('cells'))}")
         return rec
 
     for n in E18_TASKS:
@@ -366,18 +420,20 @@ def stage0b(run: Run) -> None:
         put(f"{n}/random", "random", n, random_row(run, t, dws["s0"], recs["s0"]))
         put(f"{n}/flipped", "flipped", n, cells(run, t, PT.flipped(dws["s0"])))
         del t, dws
-    e12_0b(run, s0a, put)
+        clock.lap(f"0b {n}")
+    e12_0b(run, s0a, put, clock)
     e36 = s0a["groups"]["e36/code"]
     held = load_checked(LARGE / "code_held.pt", e36["held_sha256"])
     for step, st in e36["states"].items():
         put(f"code/step{step}", "code", "code", {**row_cells(run, held, load_checked(LARGE / f"code_step{step}.pt", st["sha256"])),
                                                   "kl_rows": st["kl_rows"]})
+    clock.lap("0b code")
     out["score"] = score(out["states"], run.P)
     dump("stage0b.json", out)
     log(f"[0b score] {json.dumps(_finite(out['score']))}")
 
 
-def e12_0b(run: Run, s0a: dict[str, Any], put: Any) -> None:
+def e12_0b(run: Run, s0a: dict[str, Any], put: Any, clock: Clock) -> None:
     """E12's states lifted (their least-squares splits), then the seed-0 fine-tune's random, flipped and write rows."""
     for n, sha in s0a["groups"]["e12/build"]["sha256"].items():
         w = load_checked(LARGE / f"windows_{n}.pt", sha)
@@ -388,6 +444,7 @@ def e12_0b(run: Run, s0a: dict[str, Any], put: Any) -> None:
         put(f"{n}/flipped", "flipped", n, cells(run, t, PT.flipped(dws["s0"])))
         put(f"{n}/write", "write", n, write_row(run, t, w, recs["s0"]))
         del t, dws
+        clock.lap(f"0b {n}")
 
 
 # ----------------------------------------------------------------------------- the filed rules
