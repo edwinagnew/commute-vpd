@@ -84,14 +84,15 @@ def read(job: Job, tctx: Any, label: str, upd: tuple[Any, Any], net: Any, pile: 
 
 def train_masked(tctx: Any, net: Any, save_steps: tuple[int, ...]) -> tuple[dict[int, Any], dict[str, Any]]:
     """The masked recipe (E34's student settings, arm A's batch) from W0's (U, V): the states at `save_steps` and the
-    curve's means over its first and last 50 steps (did the masked terms fall?)."""
+    curve's means over each block of 50 steps (did the masked terms fall, and are they still falling at the end?)."""
     from commute import masked_copy
 
     cfg = masked_copy.CopyConfig(lr=CFG.student_lr, batch=CFG.batch_a, steps=CFG.steps[-1], save_steps=save_steps,
                                  coeff=AM.coeff)
     t0 = time.time()
     curve, states = masked_copy.train(tctx.model, net, tctx.train, tctx.alive, tctx.uv, cfg, log)
-    return states, {"first50": means(curve[:50]), "last50": means(curve[-50:]), "seconds": time.time() - t0}
+    blocks = [means(curve[i:i + 50]) for i in range(0, len(curve), 50)]
+    return states, {"first50": blocks[0], "last50": blocks[-1], "blocks50": blocks, "seconds": time.time() - t0}
 
 
 def means(rows: list[dict[str, float]]) -> dict[str, float]:
