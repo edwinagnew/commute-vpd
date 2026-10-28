@@ -1,0 +1,35 @@
+{
+ "amendment": "E38 Amendment 5, the direction-matched restore (card decision-e38-next, option (a), approved by the user 2026-10-28). Plan: reports/plans/2026-10-28_plan_e38-amend5.md. Filed before amend5.py was written. Earlier predictions files are unchanged.",
+ "states": "Amendment 2's cached states (results/large/states/, sha256 in results/amend2_stage0.json): 3 tasks x seeds 0, 1, plus each task's ' http' null (controls only). A state with G < 1 nat is unscored (every share nan).",
+ "definitions": {
+  "lo, G, restore X, rho_r(X)": "as Amendment 3 (predictions_amend3.json), rho_r on the held-out windows",
+  "e_c": "for alive subcomponent c of matrix k (rank-1 u_c v_c^T): mean over windows of ((x1 - x0) . v_c) * (g . u_c), x1 / x0 = k's trigger input in W1's / W0's pass, g = gradient of the window's trigger lo with respect to k's trigger output in W1's plain forward pass (no hooks); nats; positive = restoring c takes back gain. Training windows choose the sets; held-out windows give the reported e-hat only",
+  "D": "per matrix k, the |S in k| alive pieces not in S with the largest training e_c (ties: index); short if fewer exist (recorded)",
+  "C_k": "per matrix k, the |S in k| alive pieces not in S with the largest Delta_c (Amendment 4's definition; ties: index)",
+  "top-direction share of S": "per matrix, S's members among the |S in k| alive pieces (S included) with the largest training e_c, summed over matrices, over |S|",
+  "e-hat(X)": "sum of held-out e_c over X, over G"
+ },
+ "controls (run first; any fail stops the job before any share)": {
+  "R0-R4": "Amendment 3's, unchanged (predictions_amend3.json, predictions_amend3_r4.json, tolerance predictions_amend3_r4b.json)",
+  "R6": "on each of the six task-seed states, the 10 alive pieces with the largest |training e_c|, each restored alone on the training windows; a_c = lo_train(W1) - lo_train(W1, c restored); pass if >= 8 of the 10 have |e_c| >= 0.02 nats and a_c with the sign of e_c",
+  "expected": "all pass; rho_r(S) equals Amendment 4's to 1e-4"
+ },
+ "P13 (main): does S take back more of the gain than the pieces a first-order ranking toward the target picks, matched per matrix?": {
+  "seed rule": "'unscored' if G < 1; 'unscored: pool too small' if D is short in any matrix; 'S ahead' if rho_r(S) >= rho_r(D) + 0.05; 'not ahead' if rho_r(D) >= rho_r(S); else 'unclear'",
+  "task rule": "a task with an unscored seed takes its unscored class (the first in sorted order if the two seeds are unscored differently); else scored only if rho_r(S) >= 0.10 on both seeds (else 'S too small'); a scored task takes the two seeds' common class, else 'seeds disagree'",
+  "reading": "'Gamma adds' if >= 2 scored tasks are 'S ahead' and none 'not ahead'; 'direction suffices' if >= 2 are 'not ahead' and none 'S ahead'; else 'outside the tree' (including fewer than 2 scored tasks)",
+  "edge cases checked": "D empty in a matrix where S has none restores 0 there (R0); a short D makes the seed unscored, counted toward no branch; nan only when G < 1, caught first; |S| = 0 gives rho_r(S) = 0, 'S too small'; ties rho_r(D) == rho_r(S) read 'not ahead'; ' we' is expected 'S too small' (0.037, 0.049), leaving emoticon and ' which'",
+  "expected": "'direction suffices': on emoticon and ' which' D takes back at least as much as S",
+  "confidence": "low",
+  "basis": "e_c ranks by the quantity the restore measures, to first order, on windows of the same task; S was chosen by a rise in importance, blind to the target, and holds only 5-11% of the top movers (Amendment 4). Against: shares need not add (every alive piece together takes back only 0.38-0.49), so a first-order top set may cancel within itself"
+ },
+ "reported, with expected value": {
+  "rho_r(C_k)": "below rho_r(S) - 0.05 on emoticon and ' which' (as Amendment 4's C_n); low",
+  "top-direction share of S": "below 0.5 on emoticon and ' which'; low",
+  "e-hat(S), e-hat(D) against rho_r(S), rho_r(D)": "within a factor 2 on emoticon and ' which'; low",
+  "e-hat(all alive) against Amendment 4's rho_r(all_alive)": "no expectation filed; reported",
+  "rho_r(D) against zero": "above 0.10 on emoticon and ' which'; low"
+ },
+ "noise floors": "P13's 0.05 margin: Amendment 3's random sets never exceeded 0.029 and S's seeds differ by at most 0.023 (amend3.json). R6's 0.02 nats: Amendment 4's random singles read about 1e-3 of a 10-14 nat gain, about 0.01 nats.",
+ "filed": "2026-10-28"
+}
