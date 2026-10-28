@@ -754,6 +754,7 @@ def teacher_checks(job: Job, name: str, read: Callable[[], list[float]] | None =
 
     if read is not None:
         take(0)
+        finite(f"{name} fixed-row KL step 0", kl["0"])
 
     def on_step(step: int, curve: list[dict[str, float]]) -> None:
         finite(f"{name} step {step}", curve[-1]["kl"])

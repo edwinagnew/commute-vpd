@@ -233,6 +233,7 @@ def arm_ends(fixed: dict[str, float], step: int, train_kl: float,
     and, lacking its later readings, does not qualify; in T0 `teacher_checks` has stopped the job first), else
     `ends(fixed, step)` at a reading."""
     if not math.isfinite(train_kl + fixed.get(str(step), 0.0)):
+        log(f"[B] step {step}: non-finite {'training KL' if not math.isfinite(train_kl) else 'fixed-row reading'}, arm ends")
         return True
     return str(step) in fixed and ends(fixed, step)
 
