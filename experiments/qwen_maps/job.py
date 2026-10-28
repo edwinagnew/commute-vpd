@@ -231,20 +231,21 @@ class Job:
         return self.out / "S" / f"step{t}"
 
     def change(self, name: str, t: int | None, fp32: bool = False) -> Any:
-        """site -> SiteChange of state `name` at step t, built from δW and S's files on the GPU (fp32)."""
+        """site -> SiteChange of state `name` at step t, built from δW and S's files on the GPU in float64
+        (`qwen_maps.applied` casts it to the forward's fp32)."""
         dW = {} if t is None else self.dw(t, fp32)
 
         def fn(s: str) -> qwen_maps.SiteChange:
             if name == "W0" or s not in dW:
                 return qwen_maps.NONE
-            U_A, V_A = self.alive.uv(s, DEV, F32)
-            M = dW[s].to(DEV, F32)
+            U_A, V_A = self.alive.uv(s, DEV, F64)
+            M = dW[s].to(DEV, F64)
             if name == "do_nothing":
                 return qwen_maps.site_change(name, M, U_A, V_A, None, 0.0, 0.0)
             path, rec = self.site_dir(t or 0) / f"{s}.safetensors", self.site_rec(t or 0, s)
             RU = RV = None
             if name == "random":
-                RU, RV = qwen_maps.random_pieces(tuple(U_A.shape), tuple(V_A.shape), 0, s, DEV)
+                RU, RV = (x.double() for x in qwen_maps.random_pieces(tuple(U_A.shape), tuple(V_A.shape), 0, s, DEV))
             with safe_open(str(path), framework="pt") as f:
                 return qwen_maps.site_change(name, M, U_A, V_A, f.get_tensor, rec["c"], rec["a"], RU, RV)
 

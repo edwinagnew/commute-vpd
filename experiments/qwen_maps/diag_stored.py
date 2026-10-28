@@ -1,7 +1,9 @@
 """E44 diagnostic ($0, cluster L40): why stage S stopped at `stored_error` (layers.2.mlp.up_proj, step 1, 3.82e-3 of
 ‖δW‖_Σ against a limit of 1e-3). For each site and each given δW, and for each stored split (ls = all alive columns,
 lower, upper = the halves, as stage S builds them), one JSON line with:
-  stored_error   the rule's number (`qwen_maps.stored_error`): X stored fp32, pieces and dσ formed in fp32
+  stored_error   the rule's number (`qwen_maps.stored_error`): X stored fp32, pieces formed in float64 then rounded
+                 to fp32 (the fix of 2026-10-28). results/diag_stored.jsonl predates the fix: there this column is
+                 the old number, pieces and dσ formed in fp32 (err_frob still measures that one)
   err_x64        X stored fp32, applied in float64 (fix "fp64 application")
   err_pieces64   pieces X V, Xᵀ U formed in float64 then stored fp32, applied in float64 (fix "store pieces")
   err_pieces32   the same pieces stored fp32, dσ formed in fp32 (store pieces, application as now)
