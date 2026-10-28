@@ -1,0 +1,100 @@
+{
+ "plan": "reports/plans/2026-10-28_plan_qwen-q0q1.md (E44, Q0 + Q1), section 5; quantities from sections 2-3",
+ "filed": "2026-10-28, before any run of experiments/qwen_maps/run.py; never edited after the run (add a dated report instead)",
+ "scored_by": "commute.maps_score, called by experiments/qwen_maps/run.py `score`, reading the numbers under `rules`",
+ "general": "Only the apparatus and the controls carry predictions; the splits are reported against the pass rule, which is a measurement rule, not a prediction (re-plan Q1). Thresholds are absolute; <= and >= are inclusive, < and > strict, as written; every comparison rounds to 9 places first; NaN, infinity or a missing value is a miss in every rule; no re-reads.",
+ "quantities": {
+  "rows": "maths: experiments/qwen_sft/results/maths_rows.json (128 rows of 512, the unchanged model's own GSM8K test answers); web: experiments/qwen_adversary/results/tokens.json (128 FineWeb-Edu rows of 512)",
+  "update": "E40's saved dW (no warm-up, Adam 1e-5, batch 64): /workspace/e40/dW/step_{1,10}.safetensors (bf16); step 100 from step_100_fp32.safetensors",
+  "states": "plan section 2: W0, do-nothing, least squares, in-span least squares, scaled adjoint, control (i) lower and upper halves, control (ii) random (Sigma-matched); built by commute.qwen_maps.site_change from stage S's products",
+  "r1": "CI-masked KL (m = g, Delta off) of the state against its own unmasked model, mean over every position of the block's rows, divided by W0's (stage C, same rows); g recomputed on the state's own activations and V",
+  "r1_stoch": "the same with qwen_vpd.stochastic_masks drawn per row from (seed 0, row index); reported, not scored",
+  "K(X)": "KL(fine-tuned || CI-masked X) on maths rows, mean over every position; fine-tuned = W0 + dW_t, fp32 weights",
+  "K(D)": "K of the unchanged decomposition (W0's weights and components, Gamma on W0's activations), read per step in stage D",
+  "K0": "W0's CI-masked KL on maths rows as measured in stage C (filed reference 0.05886)",
+  "spread": "max minus min, over stochastic seeds 0, 1, 2, of W0's stochastic-masked KL on maths rows (nats), stage C",
+  "r2": "[K(D) - K(D')] / [K(D) - K0]; scored only where K(D) - K0 >= max(floor_min, floor_mult x spread), else 'unscored'",
+  "r3": "KL of the state (against its own unmasked model) under W0's saved adversary sources (m = g + (1 - g) s, d = s_delta), divided by W0's KL under the same sources (stage C replay); web: mean of the three seeds' ratios (G_fineweb_seed0, W0_fineweb_seed1, W0_fineweb_seed2); maths: G_maths_seed0",
+  "share": "the state's Delta change, sqrt(sum over matrices of ||Delta' - Delta0||_Sigma^2 / sum over matrices of ||dW||_Sigma^2), Sigma = input second moment on maths rows at W0 (a ratio of sums; NaN for an empty pool or zero denominator)",
+  "KL to start": "mean over every position of the 128 maths rows of KL(W0 || W0 + dW_t), fp32 weights swapped in (qwen_sft.mean_kl)",
+  "accuracy": "qwen_eval.score greedy strict accuracy, drop rule, first 256 GSM8K test problems, bf16 weights; reported"
+ },
+ "rules": {
+  "control_W0": {
+   "prediction": 1,
+   "rule": "stage C: |x / ref - 1| <= tol for W0's r1 KL on both row sets and for each replayed source; KL to start at step 100 from the fp32 file within tol; gap g = |KL(step-100 bf16 file) / KL(step-100 fp32 file) - 1|; steps 1 and 10 (bf16 files) within tol + gap_mult x g. All parts must hold",
+   "tol": 0.01,
+   "gap_mult": 3.0,
+   "ci": {"maths": 0.058863653236301064, "web": 0.14167061740135692},
+   "replay": {"G_fineweb_seed0": 1.7031564672943205, "W0_fineweb_seed1": 1.4364670109935105,
+              "W0_fineweb_seed2": 1.7472224158700556, "G_maths_seed0": 4.235135921742767},
+   "kl_to_start": {"1": 0.10621040009342284, "10": 0.5203950968215327, "100_fp32": 0.6636925978228345},
+   "sources": "E40 G.json (masked_kl, adv), W0_refs.json (seeds 1, 2), F.json saved.*.kl_to_start",
+   "basis": "two H100 runs of the whole search read 0.09% apart, and a replay is one forward",
+   "if_misses": "stop after stage C; fix; rerun the stage (decision tree, class 2). A source file absent is a miss"
+  },
+  "kept": {"floor_min": 0.05, "floor_mult": 5.0},
+  "pass": {
+   "rule": "measurement rule, not a prediction: r1 <= line on both row sets, r3 <= line on both, r2 >= kept_min where scored; r2 unscored -> 'incomplete'",
+   "line": 1.5, "kept_min": 0.8
+  },
+  "teeth_i": {
+   "prediction": 2,
+   "rule": "per step: if |share(lower) - share(upper)| > share_tol -> 'confounded by the span', a failure to fail. Else r2 scored: r2(lower) <= r2(upper) - margin; r2 unscored: r1m(lower) >= r1m(upper) + margin x (K(D) - K0) / K0 (the same margin in r1 units)",
+   "share_tol": 0.1, "margin": 0.2, "lean": "medium-high",
+   "halves": "per matrix, alive subcomponents ordered by share of maths positions with g > 0.01, ties by mean g, then by index (E40's W0_maths g statistics); lower = first n // 2, upper = last n // 2; a matrix with fewer than two alive subcomponents gives both halves nothing"
+  },
+  "teeth_ii": {"prediction": 3, "rule": "per step: max(r1m, r1w, r3m, r3w) of control (ii) > line", "line": 1.5, "lean": "medium"},
+  "teeth_iii": {
+   "prediction": 4,
+   "rule": "per step: do-nothing's r2 < kept_min where scored, else its r1m > line. Also at step 10: do-nothing's r3w <= line (lean high, E40 read 1.18)",
+   "line": 1.5, "kept_min": 0.8, "lean": "high"
+  },
+  "teeth_outcome": {
+   "prediction": 5,
+   "rule": "teeth at a step = teeth_i, teeth_ii and teeth_iii's main rule all hold. Step 10 without teeth -> stop before stage M (the line stops; card to the user). Step 10 with teeth and step 1 without -> step 1's splits reported 'unscored'"
+  },
+  "fresh_search": {
+   "rule": "stage A, reported: one 20-step search (seed 0, maths rows) on the passing split with the smallest r3 margin (1.5 - max(r3m, r3w)), else the adjoint split at step 10; ratio = KL / w0_maths_kl; ratio > line where the replay passed -> the replay is blind for that state (decision tree)",
+   "w0_maths_kl": 4.235135921742767, "line": 1.5
+  },
+  "early": {
+   "alive": "the alive set from E40's g statistics (g > 0.01 anywhere on either block) must count 494598, else stop",
+   "dW_files": "step_1, step_10, step_100, step_100_fp32 under /workspace/e40/dW, else stop and tell the user",
+   "memory": "stage D's first batch: GPU peak over 70 GB halves the eval batch (8 -> 4) for the rest of the run; an out-of-memory error after that stops the job",
+   "S_time": "stage S's first layer x 28 over 50 min -> stop",
+   "spend": "stages A and H: spend so far + their planned minutes (22, 20) at --usd-per-h over $9.5 -> skipped; spend reaching $10 after any stage stops the job"
+  }
+ },
+ "expected": {
+  "note": "plan section 3, filed before code; step 10 unless two values (step 1 / step 10); r2 derived from r1 with K(D) = 0.55, an estimate stage D replaces. Do-nothing's maths r3 has no E40 reference. Reported beside the readings, not scored",
+  "do_nothing": {"r1m": "2-3.5 / 8-11", "r1w": "1.0-1.5 / 1.0-2.0", "r2": "about 0 / about 0", "r3w": "1.0-1.2 / 1.0-1.3", "r3m": "no reference"},
+  "lower": {"r1m": "5-12", "r1w": "1.0-2.0", "r2": "-0.32 to 0.52", "r3w": "1.0-1.5", "r3m": "1.1-1.5"},
+  "upper": {"r1m": "2-6", "r1w": "1.0-2.0", "r2": "0.40-0.88", "r3w": "1.0-1.5", "r3m": "1.2-2"},
+  "random": {"r1m": "1.5-5", "r1w": "1.5-5", "r2": "< 0", "r3w": "> 1.5", "r3m": "> 1.5"},
+  "W0": {"r1": 1, "r2": "0 by definition", "r3": 1}
+ },
+ "edge_cases": {
+  "note": "each rule run on these cases by tests/test_qwen_maps.py (commute.maps_score) before the pod; results as filed here",
+  "r2_zero_denominator": "K(D) - K0 = 0: unscored (0 < floor)",
+  "r2_at_floor": "K(D) - K0 exactly max(0.05, 5 x spread): scored (unscored only strictly below)",
+  "r2_nan_or_missing_input": "spread NaN, or K(D') missing: a scored NaN, which misses every rule that reads it (never 'unscored')",
+  "pass_ties": "r1 = 1.5 and r2 = 0.8 exactly: pass",
+  "pass_r2_unscored": "everything else holds: 'incomplete'",
+  "pass_nan_or_missing": "any reading NaN or missing: fail",
+  "teeth_i_share_tie": "shares exactly share_tol apart: scored (not confounded); further apart: confounded, a failure to fail",
+  "teeth_i_r2_tie": "r2(lower) = r2(upper) - 0.2 exactly: holds",
+  "teeth_i_r1_tie": "r2 unscored, r1m(lower) = r1m(upper) + 0.2 (K(D) - K0) / K0 exactly: holds",
+  "teeth_i_zero_K0": "r2 unscored and K0 = 0: miss",
+  "teeth_i_empty_pool": "a pooled share over no matrices is NaN: miss. Halves empty in every matrix leave both equal to do-nothing: equal readings, so the rule misses (fails to fail)",
+  "teeth_ii_tie": "max exactly 1.5: miss (strict >)",
+  "teeth_ii_nan": "any of the four NaN or missing: miss",
+  "teeth_iii_tie": "r2 = 0.8 exactly: miss (strict <); r2 unscored and r1m = 1.5 exactly: miss",
+  "dn_r3w_tie": "do-nothing r3w = 1.5 exactly: holds",
+  "control_tie": "|x / ref - 1| = 0.01 exactly: holds",
+  "control_absent_source": "a replay value missing: miss",
+  "control_zero_fp32_kl": "KL(step-100 fp32) = 0: gap undefined, steps 1 and 10 miss",
+  "outcome_missing_step": "no teeth reading at step 10: stop before M",
+  "outcome_step1_only_fails": "teeth at 10, not at 1: step 1's splits 'unscored'"
+ }
+}
