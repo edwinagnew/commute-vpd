@@ -1,0 +1,642 @@
+{
+  "experiment": "E46 stage 0, experiments/regating_table",
+  "filed": "2026-10-28, before any run; never edited after the run (a dated report instead)",
+  "plan": "reports/plans/2026-10-28_plan_regating-line-reset.md, section 'Amendment 1 adopted (user, 2026-10-28: \"adopt amendment 1, per-key write for P0.4\"): the rules filed' (overrides section 2 and Amendment 1 where they differ)",
+  "units": "log-odds of the target at the scored position (E18: the trigger; E12: the key position half = 20), held-out windows; E36 code: mean next-token log-probability per token over 64 held-out rows. Called nats in the plan.",
+  "definitions": {
+    "cells": "local_faith.route_split: L(C, G) masked model (Delta out), U unmasked, T full model; subscript 0 = W0, 1 = the state. E12 states are read lifted (their least-squares split, E12's routes_lift); E18 states, nulls and perturbations are do-nothing states (released subcomponents, so L10 = L00, L11 = L01, U1 = U0). E36 code: T, L00, L01 only (spread.masked_logp), no U, no split.",
+    "G": "real gain T1 - T0",
+    "g": "gate gain L01 - L00 = L(C0,G1) - L(C0,G0)",
+    "piece_gain": "U1 - U0",
+    "gated_piece_gain": "L11 - L00",
+    "masked_off": "piece_gain - gated_piece_gain",
+    "F": "floor = max(0.1, 2 x paired SE over windows of L01 - L00), SE = sample sd (n - 1) / sqrt(n); E36: over rows; n printed per state",
+    "kl_other": "full model's mean KL(W0 || state) over the 40 non-scored positions of each held-out window (local_faith.stats); E36 code: kl_rows = finetune.eval_arm_b's kl_to_ref, every position of the 64 held-out rows",
+    "r": "g / G, reported only for states with G >= 1 (MIN_GAIN), never scored"
+  },
+  "stage_0a_control": {
+    "order": "runs first and alone, task by task (E18 emoticon, which, we; E12 build; ident32, ident32b, rand32, rand32b; E36 code); the first failing group stops the job with exit 1",
+    "W0_cells": "per E18 and E12 task, L00, U0, T0 within w0_tol (0.02) of refs.e18.<task>.W0 / refs.e12.<task>.W0",
+    "identity": "r = (L01 - L00) / (T1 - T0) on E18's exact seed-0 emoticon state (reading_a_coverage/emoticon/dW_ft_step10_s0.pt, sha256 refs.e18.emoticon.sha256.exact) within identity_tol (0.01) of refs.identity_r",
+    "cached_E18": "E38's cached states (sha256 as E38 amend2_stage0.json recorded them, refs.e18.<task>.sha256): T1 (full model) within t1_rel_tol (0.02) x refs gain of refs T1, seeds 0 and 1",
+    "E12_rebuilt": "marker, keys, values, n_train, n_heldout equal refs.e12_tasks exactly; each seed fine-tuned to its filed scored step (refs.e12.<task>.step), lifted: T1 within 0.02 x filed gain of filed T1 and r within e12_r_tol (0.03) of filed r",
+    "null": "the ' http' state's G at the emoticon trigger: |G_null / G_s0| <= null_ratio_max (0.1), G_s0 the cached seed-0 state's G in the same job; the other two tasks' nulls reported, not scored",
+    "E36_rebuilt": "choice (lead's writer, before any run): the row selection record equals refs.e36.select exactly; per step, T0 and L00 within 0.02 of refs.e36 and G within max(0.02 x |filed gain|, e36_gain_abs_tol = 0.005) of the filed gain. Reason: 2% of E36's 0.05-nat gain is 0.001, under the 0.0013 bf16 reproduction floor E35 measured"
+  },
+  "P0.2": {
+    "name": "replication of E12 (lean high)",
+    "rule": "per E12 state (4 tasks x seeds 0, 1), ratio = gated_piece_gain / piece_gain; copy (ident32, ident32b): ratio >= 0.8; random maps (rand32, rand32b): ratio <= 0.5; a state with piece_gain < 1 is unscored",
+    "verdict": "pass iff every scored state passes AND each class has at least one scored state; else fail (any miss, a seed disagreeing with the other, or a class with no scored state). Fail: stop, fix regeneration before reading anything",
+    "edge_cases": "piece_gain < 1 (including <= 0) -> unscored, so the denominator is >= 1; a whole class unscored -> fail (choice (lead's writer, before any run): the filed piece gains are 10.8-15.9, so an unscored class means the rebuild failed)",
+    "filed_values": "refs.e12.<task>.gated_piece_over_piece: copy 0.87-0.97, random 0.35-0.41",
+    "blind_to": "a behaviour Gamma can already gate but the pieces cannot express; it is E12's r renamed (Amendment 1, item 1), not independent evidence for the instrument"
+  },
+  "P0.3": {
+    "name": "KL-matched random delta-W (lean high)",
+    "construction": "per E18 task and per E12 task, the seed-0 fine-tune's delta-W (E18: E38's cached s0): finetune.random_direction(dW, seed 0) (the fine-tune's per-matrix Frobenius norms) times c, c in (0, 10] by bisection (perturb.match, 40 halvings) so the full model's kl_other equals the fine-tune's within kl_rel_tol (10%)",
+    "cap": "if kl_other at c = 10 is below 0.9 x the target the row is 'cap' and is scored at c = 10",
+    "rule": "within_floor: |g| <= F. fails: |g| > F AND |g| >= 0.25 x |g of that task's seed-0 fine-tune|",
+    "verdict": "fail if any row fails or the non-positive rule fails; else pass if every row is within_floor; else inconclusive (some row has F < |g| < 0.25 x |g_ft|)",
+    "edge_cases": [
+      "choice (lead's writer, before any run): a row with F < |g| < 0.25 x |g_ft| is neither pass nor fail as filed; P0.3 then reads 'inconclusive' and the tree goes to a card",
+      "choice (lead's writer, before any run): the fail bar uses |g_ft| so a negative fine-tune g cannot make every row fail",
+      "a row that is 'cap' and has |g| > F and |g| >= 0.25 |g_ft| fails (scored at the cap, as filed)",
+      "choice (lead's writer, before any run): 'no_match' (40 halvings never inside 10%) is scored at the last midpoint, flagged in the row",
+      "the KL target is > 0 for every fine-tune (kl_other of a trained state); perturb.match asserts it"
+    ],
+    "blind_to": "a non-random direction of the same size; one random seed per task"
+  },
+  "nonpositive_rule": {
+    "rule": "scored with P0.3: every row of the table with G <= 0 (nulls, flipped, random rows, E36 code steps 10 and 100, whatever has G <= 0) reads g <= 0.1 + F; any miss makes P0.3 fail",
+    "edge_cases": "G = 0 exactly is covered (<=); write rows that did not reach their target have no G and are not covered"
+  },
+  "sign_row": {
+    "rule": "unscored: -delta-W of each seed-0 fine-tune (3 E18 + 4 E12 tasks); report g, G and whether sign(g) = sign(G) (expected same sign; G = g = 0 counts as same)"
+  },
+  "P0.4": {
+    "name": "per-key direct write, the retire test (lean medium)",
+    "construction": "on ident32, ident32b (scored) and rand32, rand32b (reported): delta-W on h.1.mlp.down_proj only (block 1's MLP output matrix, (768, 3072)), X = U pinv(A) (perturb.key_write: the minimum-norm solution of X a_k = u_t(k) for every key k), a_k the mean input to that matrix at the key position over the task's training windows holding key k, at W0; u_t the unembedding row (lm_head, tied to wte) of key k's answer; delta-W = alpha X, alpha in (0, 1000] by bisection so the full model's G equals that task's seed-0 fine-tune's G within write_rel_tol (5%). Do-nothing state (the write lies in Delta): g only. rho = g_write / g_finetune(seed 0, same task)",
+    "verdict_order": [
+      "1. choice (lead's writer, before any run: the plan lists this case after pass and fail; it goes first so no rho with a small denominator is read): if either seed's fine-tune g on either copy task is < 1: inconclusive",
+      "2. else if any copy task reached its target and has rho >= 0.8: fail (retire the line)",
+      "3. else if both copy tasks reached their targets and both rho <= 0.5: pass",
+      "4. else inconclusive (a copy task unreachable, no_match, or 0.5 < rho < 0.8)"
+    ],
+    "edge_cases": [
+      "choice (lead's writer, before any run): 'unreachable' = G at alpha = 1000 below 0.95 x target (perturb.match 'cap'); 'no_match' (40 halvings never inside 5%) is treated as unreachable",
+      "choice (lead's writer, before any run): one copy task unreachable and the other rho >= 0.8 -> fail (step 2 before 4); one unreachable and the other <= 0.5 -> inconclusive",
+      "rho is not computed when the fine-tune g < 1, so the denominator is >= 1; a negative g_write gives rho < 0 <= 0.5",
+      "choice (lead's writer, before any run): if the seed-0 fine-tune's G <= 0 there is no target; status 'no_target' (inconclusive). Not expected (filed G 13.2-20.7)",
+      "the run prints the write's relative residual ||X A - U|| / ||U|| (0 when A has full column rank, K = 32 <= 3072)",
+      "choice (lead's writer, before any run): the bisection matches the full model's G read by the logits path (finetune.logits_of); the reported G is route_split's (path difference <= 1e-3, E38)"
+    ],
+    "blind_to": "writes at other layers or of other forms; one write per task"
+  },
+  "tree": {
+    "order": [
+      "P0.2 not pass -> 'stop: fix regeneration'",
+      "else P0.3 fail or P0.4 fail -> 'retire' (Blocking card, section 2's words)",
+      "else P0.3 pass and P0.4 pass -> 'propose stage 1' with g and its nulls",
+      "else (P0.3 or P0.4 inconclusive) -> 'card' with the numbers"
+    ],
+    "note": "every combination of (P0.2 in {pass, fail}) x (P0.3, P0.4 in {pass, fail, inconclusive}) lands in exactly one branch (first match wins)"
+  },
+  "not_run": "E36 lowercase (at the floor), E42 teacher states (no prediction reads them), the masked models' KL to W0 (only the full model's kl_other is read), P0.1 (dropped by Amendment 1)",
+  "thresholds": {
+    "F_min": 0.1,
+    "min_gain": 1,
+    "w0_tol": 0.02,
+    "t1_rel_tol": 0.02,
+    "e12_r_tol": 0.03,
+    "identity_tol": 0.01,
+    "null_ratio_max": 0.1,
+    "e36_gain_abs_tol": 0.005,
+    "kl_rel_tol": 0.1,
+    "scale_cap": 10,
+    "write_rel_tol": 0.05,
+    "alpha_max": 1000,
+    "p02_min_piece": 1,
+    "p02_copy_min": 0.8,
+    "p02_random_max": 0.5,
+    "p03_fail_frac": 0.25,
+    "nonpos_margin": 0.1,
+    "p04_min_ft_g": 1,
+    "p04_fail": 0.8,
+    "p04_pass": 0.5
+  },
+  "refs": {
+    "e18": {
+      "emoticon": {
+        "W0": {
+          "L00": -5.77840722750311,
+          "U0": -4.960735373301048,
+          "T0": -5.022894911570091
+        },
+        "gain": {
+          "s0": 13.429918158544252,
+          "s1": 13.691283552613976
+        },
+        "T1": {
+          "s0": 8.40702324697416,
+          "s1": 8.668388641043885
+        },
+        "sha256": {
+          "s0": "48384de48bc5b98e33a8d28d3a814dde4c2d304e86ca26eb68c6b2601b8df636",
+          "s1": "52ef1f6be64628857b0f8c8604ec8573c81fe555eee23a8faa37c8147615f8bf",
+          "null": "bc0f908abb93d1a1a60812c62c50aec887838bb5d7fc4d39d317e8f53d7c149d",
+          "exact": "72a47e0afd7bb884499cddd1028b5f3df374b5d7ce6edad309ec2c6ddd5da831"
+        }
+      },
+      "r1_t534_v369": {
+        "W0": {
+          "L00": -5.274061250686645,
+          "U0": -5.552277851104736,
+          "T0": -5.544807052612304
+        },
+        "gain": {
+          "s0": 10.325318918228149,
+          "s1": 10.86828077316284
+        },
+        "T1": {
+          "s0": 4.7805118656158445,
+          "s1": 5.3234737205505365
+        },
+        "sha256": {
+          "s0": "2c203347ced1b540f8e9824214c9707c67dcf87abef3ed612774c7b4a59f33ec",
+          "s1": "efacedca186e97b0e0636631ad7f7fc8e741505f234e72f3135f242da99886a1",
+          "null": "1dfdee5eea63eec593dc7f311e78c0c3bc16545c73774b869939183a7a82b9c5"
+        }
+      },
+      "r2_t359_v816": {
+        "W0": {
+          "L00": -6.392651395977668,
+          "U0": -6.912591583323929,
+          "T0": -6.91097011206285
+        },
+        "gain": {
+          "s0": 12.52565864347062,
+          "s1": 12.193754861939627
+        },
+        "T1": {
+          "s0": 5.61468853140777,
+          "s1": 5.282784749876777
+        },
+        "sha256": {
+          "s0": "ae3d8fe2467e1e8b75fed6d160c8a8cb280881f5b1b2193b9107ae68e6257cd2",
+          "s1": "af48bbc7a11ec1f4edd3786f1023be854d72f3eb43047f577c06dd8cdbca29a2",
+          "null": "934b0cadad9af4001059b6270b6a3bdf72b7acc52ab87b92f25b207cbc8d182d"
+        }
+      }
+    },
+    "identity_r": 0.5971955526068516,
+    "e12": {
+      "ident32": {
+        "W0": {
+          "L00": -8.148681630793305,
+          "U0": -10.090742563463978,
+          "T0": -10.153754922532544
+        },
+        "step": {
+          "s0": 10,
+          "s1": 10
+        },
+        "T1": {
+          "s0": 3.816969360272909,
+          "s1": 3.9191700256976887
+        },
+        "gain": {
+          "s0": 13.970724282805453,
+          "s1": 14.072924948230233
+        },
+        "r": {
+          "s0": 0.8018416693471949,
+          "s1": 0.7613329626793577
+        },
+        "gate_gain": {
+          "s0": 11.202308880914117,
+          "s1": 10.71418164440037
+        },
+        "piece_gain": {
+          "s0": 12.186507234868316,
+          "s1": 12.443763762405238
+        },
+        "gated_piece_over_piece": {
+          "s0": 0.933037506753139,
+          "s1": 0.8719764078288168
+        }
+      },
+      "ident32b": {
+        "W0": {
+          "L00": -8.226672811606496,
+          "U0": -10.110222963942695,
+          "T0": -10.21983209590322
+        },
+        "step": {
+          "s0": 10,
+          "s1": 10
+        },
+        "T1": {
+          "s0": 4.398961204843423,
+          "s1": 4.048501683264663
+        },
+        "gain": {
+          "s0": 14.618793300746642,
+          "s1": 14.268333779167882
+        },
+        "r": {
+          "s0": 0.7911835955408453,
+          "s1": 0.8041284864051406
+        },
+        "gate_gain": {
+          "s0": 11.56614944615315,
+          "s1": 11.473573645365608
+        },
+        "piece_gain": {
+          "s0": 12.609631567886195,
+          "s1": 11.991229598055181
+        },
+        "gated_piece_over_piece": {
+          "s0": 0.9289051946506487,
+          "s1": 0.9685805598999472
+        }
+      },
+      "rand32": {
+        "W0": {
+          "L00": -11.913160953325095,
+          "U0": -13.184199038240099,
+          "T0": -13.210401318736912
+        },
+        "step": {
+          "s0": 10,
+          "s1": 10
+        },
+        "T1": {
+          "s0": 0.5266025090954968,
+          "s1": -0.03444844668673486
+        },
+        "gain": {
+          "s0": 13.737003827832408,
+          "s1": 13.175952872050177
+        },
+        "r": {
+          "s0": 0.27336627728829765,
+          "s1": 0.26567509156312635
+        },
+        "gate_gain": {
+          "s0": 3.7552335975096405,
+          "s1": 3.5005224857133683
+        },
+        "piece_gain": {
+          "s0": 11.203738055278345,
+          "s1": 10.779057738707237
+        },
+        "gated_piece_over_piece": {
+          "s0": 0.36386604816002927,
+          "s1": 0.354856367140343
+        }
+      },
+      "rand32b": {
+        "W0": {
+          "L00": -11.982441508892885,
+          "U0": -13.966415611739011,
+          "T0": -13.978815540824968
+        },
+        "step": {
+          "s0": 30,
+          "s1": 30
+        },
+        "T1": {
+          "s0": 6.751959289472127,
+          "s1": 6.648007304398055
+        },
+        "gain": {
+          "s0": 20.730774830297094,
+          "s1": 20.626822845223025
+        },
+        "r": {
+          "s0": 0.28919528546528966,
+          "s1": 0.2789912757396949
+        },
+        "gate_gain": {
+          "s0": 5.99524234496441,
+          "s1": 5.754703620045455
+        },
+        "piece_gain": {
+          "s0": 15.737604760632072,
+          "s1": 15.912090419494
+        },
+        "gated_piece_over_piece": {
+          "s0": 0.4137451162255955,
+          "s1": 0.392608746234165
+        }
+      }
+    },
+    "e12_tasks": {
+      "marker": 18214,
+      "tasks": {
+        "ident32": {
+          "keys": [
+            1027,
+            1097,
+            1072,
+            1318,
+            1263,
+            873,
+            949,
+            789,
+            372,
+            849,
+            1281,
+            1363,
+            1341,
+            753,
+            952,
+            1159,
+            1077,
+            703,
+            1056,
+            985,
+            878,
+            1119,
+            1110,
+            1029,
+            1039,
+            1142,
+            1146,
+            858,
+            923,
+            1327,
+            1078,
+            1198
+          ],
+          "values": [
+            1027,
+            1097,
+            1072,
+            1318,
+            1263,
+            873,
+            949,
+            789,
+            372,
+            849,
+            1281,
+            1363,
+            1341,
+            753,
+            952,
+            1159,
+            1077,
+            703,
+            1056,
+            985,
+            878,
+            1119,
+            1110,
+            1029,
+            1039,
+            1142,
+            1146,
+            858,
+            923,
+            1327,
+            1078,
+            1198
+          ],
+          "n_train": 403,
+          "n_heldout": 97
+        },
+        "ident32b": {
+          "keys": [
+            1309,
+            1107,
+            1293,
+            1340,
+            779,
+            1302,
+            1264,
+            1160,
+            1014,
+            1387,
+            1223,
+            1024,
+            1375,
+            754,
+            1057,
+            1543,
+            355,
+            987,
+            1060,
+            629,
+            871,
+            1175,
+            1511,
+            1364,
+            1310,
+            1563,
+            1273,
+            1199,
+            441,
+            990,
+            1416,
+            894
+          ],
+          "values": [
+            1309,
+            1107,
+            1293,
+            1340,
+            779,
+            1302,
+            1264,
+            1160,
+            1014,
+            1387,
+            1223,
+            1024,
+            1375,
+            754,
+            1057,
+            1543,
+            355,
+            987,
+            1060,
+            629,
+            871,
+            1175,
+            1511,
+            1364,
+            1310,
+            1563,
+            1273,
+            1199,
+            441,
+            990,
+            1416,
+            894
+          ],
+          "n_train": 403,
+          "n_heldout": 97
+        },
+        "rand32": {
+          "keys": [
+            1027,
+            1097,
+            1072,
+            1318,
+            1263,
+            873,
+            949,
+            789,
+            372,
+            849,
+            1281,
+            1363,
+            1341,
+            753,
+            952,
+            1159,
+            1077,
+            703,
+            1056,
+            985,
+            878,
+            1119,
+            1110,
+            1029,
+            1039,
+            1142,
+            1146,
+            858,
+            923,
+            1327,
+            1078,
+            1198
+          ],
+          "values": [
+            3491,
+            10126,
+            4893,
+            6153,
+            2036,
+            9066,
+            7759,
+            1262,
+            5454,
+            8708,
+            5272,
+            7705,
+            4517,
+            4325,
+            10895,
+            5559,
+            4726,
+            6079,
+            6809,
+            4310,
+            6880,
+            6171,
+            5486,
+            5642,
+            5717,
+            4832,
+            1889,
+            9713,
+            6699,
+            3735,
+            5197,
+            4596
+          ],
+          "n_train": 403,
+          "n_heldout": 97
+        },
+        "rand32b": {
+          "keys": [
+            1309,
+            1107,
+            1293,
+            1340,
+            779,
+            1302,
+            1264,
+            1160,
+            1014,
+            1387,
+            1223,
+            1024,
+            1375,
+            754,
+            1057,
+            1543,
+            355,
+            987,
+            1060,
+            629,
+            871,
+            1175,
+            1511,
+            1364,
+            1310,
+            1563,
+            1273,
+            1199,
+            441,
+            990,
+            1416,
+            894
+          ],
+          "values": [
+            9777,
+            2006,
+            5750,
+            5270,
+            4596,
+            8871,
+            7094,
+            8368,
+            7792,
+            2862,
+            5301,
+            7470,
+            5950,
+            5718,
+            2488,
+            3392,
+            4112,
+            5293,
+            2839,
+            4605,
+            6031,
+            4033,
+            2101,
+            6875,
+            6107,
+            5966,
+            892,
+            4984,
+            6919,
+            7637,
+            1023,
+            5717
+          ],
+          "n_train": 403,
+          "n_heldout": 97
+        }
+      }
+    },
+    "e36": {
+      "select": {
+        "cut": 0.3046875,
+        "n_train": 1039,
+        "n_held": 374,
+        "marked_tokens": 1488
+      },
+      "T0": -1.5959894356664197,
+      "L00": -1.7602583892937018,
+      "steps": {
+        "10": {
+          "gain": -0.05182453504110218,
+          "g": -0.04226981082918524
+        },
+        "100": {
+          "gain": -0.06512495945742303,
+          "g": -0.049859057798720796
+        }
+      }
+    },
+    "e12_class": {
+      "ident32": "copy",
+      "ident32b": "copy",
+      "rand32": "random",
+      "rand32b": "random"
+    },
+    "sources": {
+      "e18": "experiments/regating_leak/results/regating_leak.json (.G1.<task>.cells, .tasks.<task>.seeds.<s>.gain; T1 = T0 + gain)",
+      "e18_sha256": "experiments/recruitment_test/results/amend2_stage0.json .states (the files now on disk; stage0.json lists an earlier set)",
+      "e12": "experiments/new_vs_existing/results/new_vs_existing.json .tasks.<task>.seeds.<s>.routes_lift and .scored_step",
+      "e12_tasks": "experiments/new_vs_existing/results/tasks.json",
+      "e36": "experiments/regating_spread/results/regating_spread.json .select, .states.<step>.{gain, gap, L.T0, L.g0}",
+      "identity_r": "regating_leak.json .G1.emoticon.r"
+    }
+  }
+}
