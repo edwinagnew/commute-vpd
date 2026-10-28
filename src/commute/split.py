@@ -46,6 +46,16 @@ def full_svd(A: Tensor) -> tuple[Tensor, Tensor]:
     return P, s
 
 
+def gram_basis(A: Tensor) -> tuple[Tensor, Tensor]:
+    """`full_svd`'s output from the eigendecomposition of the Gram matrix A A^T (float64): P (d, d) its eigenvectors and
+    s = sqrt(eigenvalues), both in descending order. Cheaper than a full SVD when n is large (2026-10-28, E44). Eigenvalues
+    carry an absolute error of ~eps * s_max^2, so s is good to ~1e-8 * s_max: enough for a tolerance of 1e-6."""
+    A = A.double()
+    evals, P = torch.linalg.eigh(A @ A.T)
+    order = evals.argsort(descending=True)
+    return P[:, order], evals[order].clamp(min=0).sqrt()
+
+
 def _truncate(s: Tensor, tol: float) -> tuple[Tensor, int]:
     keep = s > tol * s.max() if s.max() > 0 else torch.zeros_like(s, dtype=torch.bool)
     return torch.where(keep, s, torch.zeros_like(s)), int(keep.sum())
@@ -97,12 +107,18 @@ def dsigma_smin(b: Basis) -> float:
     return float(min(cands)) if cands else 0.0
 
 
-def least_squares_split(M: Tensor, b: Basis, U_A: Tensor, V_A: Tensor) -> tuple[Tensor, Tensor]:
-    """Minimum-norm (dU, dV) with dU V_A^T + U_A dV^T = M - O(M) (exact up to the tol truncation)."""
+def least_squares_x(M: Tensor, b: Basis) -> Tensor:
+    """X = K^+ M (d_out, d_in), from which the least-squares split's pieces are dU = X V_A, dV = X^T U_A: one matrix of
+    M's size holds a split of any number of subcomponents."""
     Mt = to_basis(M, b)
     den = b.s[:, None] ** 2 + b.t[None, :] ** 2
     Xt = torch.where(den > 0, Mt / torch.where(den > 0, den, torch.ones_like(den)), torch.zeros_like(Mt))
-    X = b.P @ Xt @ b.Q.T
+    return b.P @ Xt @ b.Q.T
+
+
+def least_squares_split(M: Tensor, b: Basis, U_A: Tensor, V_A: Tensor) -> tuple[Tensor, Tensor]:
+    """Minimum-norm (dU, dV) with dU V_A^T + U_A dV^T = M - O(M) (exact up to the tol truncation)."""
+    X = least_squares_x(M, b)
     return X @ V_A, X.T @ U_A
 
 
@@ -356,8 +372,17 @@ def n_half(energies: Tensor) -> int:
 def random_like(M: Tensor, Sigma: Tensor, seed: int) -> Tensor:
     """An update with iid Gaussian entries and M's input-weighted energy: the null for the measured (not analytic) shares."""
     g = torch.Generator().manual_seed(seed)
-    G = torch.randn(M.shape, generator=g, dtype=torch.float64)
+    G = torch.randn(M.shape, generator=g, dtype=torch.float64).to(M.device)  # drawn on the CPU: the same G on any device
     return G * (weighted_energy(M.double(), Sigma) / weighted_energy(G, Sigma)) ** 0.5
+
+
+def sigma_matched_scale(M: Tensor, RU: Tensor, RV: Tensor, U_A: Tensor, V_A: Tensor, Sigma: Tensor) -> float:
+    """The scale a with ||d sigma(a RU, a RV) Sigma^1/2||_F = ||M Sigma^1/2||_F: random pieces (RU, RV) on the alive
+    columns with the update's input-weighted first-order effect (E44's control (ii), Fable's change). 0 when the random
+    pieces have no effect (no alive column)."""
+    S = Sigma.double()
+    e = weighted_energy(dsigma(RU.double(), RV.double(), U_A.double(), V_A.double()), S)
+    return (weighted_energy(M.double(), S) / e) ** 0.5 if e > 0 else 0.0
 
 
 # ----------------------------------------------------------------------------- the step split (2026-10-21)
