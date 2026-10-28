@@ -239,7 +239,14 @@ Three outcomes, each sharp. If the anchors do not separate on any row, VPD's rea
 the write-up says so; the GSM8K arms are then not interpreted on this axis. If they separate and the GSM8K arms read
 like the existing anchor, that is evidence for elicitation, with GRPO and own-samples SFT compared against each
 other. If a GSM8K arm reads like the new anchor on any validated row, that is the result the project was set up to
-be able to find, and it is reported as such, not explained away. The RL arm in particular is the one where the
+be able to find, and it is reported as such, not explained away. One rule for that reading (user, 2026-10-28, from the 67M phase):
+a failed split is never, on its own, evidence of a new mechanism. The 67M line had updates on behaviour the model
+plainly already had that still left a large share outside the subcomponents; brittleness and re-gating both produce
+that. "New" is claimed for a GSM8K arm only when it reads like the new anchor on rows that do not depend on the split
+passing: Γ switching and the think-mode overlap, behaviour kept under CI masks, and where δW lands relative to what Γ
+gates on for this text. A failed split with those rows reading "existing" is the brittleness branch of `GOALS.md` and
+is reported as that. Symmetrically, D1 failing on an arm is a positive result only when this rule is met, so
+teacher training (Q4) is not used to rescue a pass before the Q3 rows on that arm are read. The RL arm in particular is the one where the
 literature's prior is weakest for a 1.7B model trained in no-think mode, so it is the arm to watch.
 
 **Timeline, two weeks from 2026-10-28.** Each run stays under the gate; nothing waits on a rehearsal cycle.
