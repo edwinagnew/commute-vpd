@@ -171,3 +171,24 @@ details.mobile-toc { display: none; }
 .hero .eyebrow { margin: 0; color: var(--accent); }
 .hero .big { font-family: var(--display); font-size: 1.45rem; line-height: 1.3; font-weight: 600; color: var(--fg); text-wrap: balance; }
 .hero p { color: var(--fg2); }
+
+/* Techniques comparison: one row per technique, one verdict per cell, tinted by verdict; the name column stays put
+   while the table scrolls sideways on a phone. Classes: y yes, p in part, n no, u untested, r planned or running,
+   q no answer, na not applicable or plain text. */
+table.cmp { font-size: 13px; width: auto; min-width: 100%; }
+table.cmp th, table.cmp td { padding: 5px 9px; white-space: nowrap; vertical-align: middle; }
+table.cmp th { white-space: normal; min-width: 70px; vertical-align: bottom; }
+table.cmp td[colspan] { white-space: normal; }
+table.cmp tr > :first-child { position: sticky; left: 0; z-index: 1; background: var(--raised); font-weight: 500; }
+table.cmp thead tr > :first-child { background: var(--paper); }
+table.cmp tr.grp td { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--paper); font-weight: 400; }
+table.cmp td[title] { cursor: help; }
+table.cmp td a { color: inherit; }
+table.cmp td.y, .cv.y { background: var(--good-soft); }
+table.cmp td.p, .cv.p { background: var(--warn-soft); }
+table.cmp td.n, .cv.n { background: var(--bad-soft); }
+table.cmp td.r, .cv.r { background: var(--info-soft); }
+table.cmp td.q, .cv.q { background: var(--neutral-soft); }
+table.cmp td.u, table.cmp td.na, .cv.u { color: var(--muted); }
+.cv { display: inline-block; min-width: 1.6em; text-align: center; border-radius: 4px; font-weight: 500; color: var(--fg); }
+.legend.cmpkey { margin: 4px 0 8px; }
