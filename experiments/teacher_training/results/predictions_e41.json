@@ -1,0 +1,154 @@
+{
+ "about": "teacher_training E41 (reports/plans/2026-10-28_plan_e41-teacher-path.md; technique-comparison gap 3). Teachers: E34's Adam 3e-5 arm-A fine-tune (all 24 matrices, batch 32, seed 0) of emoticon and r1_t534_v369, regenerated in-job, at steps 10, 100, 1000 (T10, T100, T1000; one fine-tune, constant rate). Teacher training: E34's recipe (Adam 1e-5, 1,000 steps, batch-order seed 0; arm A task windows with arm A's weighting, batch 32; arm B Pile train rows from 32,768, batch 8, plain mean KL), Gamma and Delta frozen. One-shot = from W0's (U, V); chain = from the T10 one-shot copy against T100, then from that against T1000, fresh Adam per link. Arms: emoticon A and B, r1 A. Every copy read at its step 1000 through E34's harness. RunPod H100. Filed before any run",
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, seeds 0, 1, 2), faith_score.w0_check passes and the PGD floor is 0.0748 within 10%. Fails: stop, nothing trained",
+  "C2": "before the first chain link: from the emoticon T10 arm-A copy's offsets via component_training.train's init, one step at lr 0 against that copy's own weights; step-1 KL <= 0.005 nats (E34's hook-path floor 0.0007) and delta-W unchanged to 1e-3 of its largest entry (bf16 offsets would read about 4e-3). Fails: stop",
+  "G1": "per task, after the fine-tune: T1000's held-out P(target) within 0.005 and size within 0.001 of E34's (emoticon 0.99961, 0.03209; r1 0.99621, 0.03334). Fails: stop",
+  "G3": "per task, the first copy: the one-shot arm-A copy of T1000 reproduces E34's (P within 0.005, adversarial ratio within 15% relative; emoticon 0.99675, 0.9591; r1 0.99443, 0.9676). Fails: stop",
+  "do-nothing": "per task, before any copy: the do-nothing state of T10, T100, T1000 through the harness. Expected (H100, E22 and E34): emoticon 2.52 fail, 1.14 pass, 1.50 inconclusive; r1 T1000 1.52 inconclusive, T10 and T100 unknown. Emoticon T10 is the positive control: the check sees that update. Not a stop; P1 reports per cell whether the do-nothing state is above the pass band"
+ },
+ "e41": {
+  "c1_floor": 0.0748,
+  "c1_floor_tol": 0.1,
+  "c2_dw_rel_max": 0.001,
+  "c2_loss_max": 0.005,
+  "delta_max": 1e-06,
+  "ft_lr": 3e-05,
+  "g1_teacher": {
+   "emoticon": [
+    0.99961,
+    0.03209
+   ],
+   "r1_t534_v369": [
+    0.99621,
+    0.03334
+   ]
+  },
+  "g1_tol": [
+   0.005,
+   0.001
+  ],
+  "g3_oneshot": {
+   "emoticon": [
+    0.99675,
+    0.9591
+   ],
+   "r1_t534_v369": [
+    0.99443,
+    0.9676
+   ]
+  },
+  "g3_tol": [
+   0.005,
+   0.15
+  ],
+  "groups": [
+   [
+    "emoticon",
+    "A"
+   ],
+   [
+    "emoticon",
+    "B"
+   ],
+   [
+    "r1_t534_v369",
+    "A"
+   ]
+  ],
+  "neither_p": 0.5,
+  "not_worse": {
+   "A": [
+    0.25,
+    0.01,
+    0.005
+   ],
+   "B": [
+    0.25,
+    0.05,
+    0.02
+   ]
+  },
+  "teacher_steps": [
+   10,
+   100,
+   1000
+  ],
+  "works_gap": 0.05
+ },
+ "expected": {
+  "W0": "ratios 1; gap share 1; P(target) 0.004 emoticon, 0.04 r1",
+  "noise": "Amendment 4's batch-order spread at step 1000: P 0.005 (task text) / 0.032 (Pile text); gap share 0.002 / 0.010; adversarial ratio up to 11% (task text) / 25% (Pile text); W0's adversary-seed floor 7.5%",
+  "references": "one-shot T1000 copies as E34 seed 0: emoticon A P 0.997 ratio 0.96 gap share 0.006; emoticon B P 0.902 ratio 1.05 gap share 0.027; r1 A P 0.994 ratio 0.97 gap share 0.004",
+  "teachers": "emoticon P 0.999 / ~0.999 / 0.9996, size 0.0113 / 0.0222 / 0.0321; r1 P ~0.99 at T10 (task ladder 0.989), 0.996 at T1000, size ~0.013 / ? / 0.0333; gap at W0 about 5-5.6 nats"
+ },
+ "filed": "2026-10-28 12:02:14",
+ "measurements": {
+  "cosine": "finetune.cosines 'all' between the chained and one-shot T1000 copies' weight changes; references Amendment 5's batch-order cosines 0.913 (task text), 0.429 (Pile text); null about 2e-4",
+  "gap share": "teacher gap of the state / teacher gap of W0, against the same teacher (held-out task windows, arm A's weighting). W0 1, do-nothing 0. Blind to text outside the task windows",
+  "seven numbers": "per state as E34 (run.record): adversarial and stochastic ratios to this job's W0 (seed 0) with faith_score.state_verdict against the same-job floor (pass <= 1.396, fail >= 1.612 at floor 0.0748; P(target) < 0.9 reads 'below P 0.9'), held-out P(target), teacher gap, damage, size, Delta's share",
+  "start KL": "the student's loss at step 1 (before the first update) on the first batch, the same batch for every copy of an arm (seed 0): the one-shot's is W0's distance to the teacher, the chain's its head start"
+ },
+ "not_run": [
+  "SGD teachers; LoRA teachers; r0 and the cipher tasks; arm B on r1",
+  "short chain links (fewer student steps per link) and finer chains (steps 1, 3, 30, 300); a one-shot copy trained 3,000 steps to match the chain's total",
+  "a second batch order or fine-tune seed; more adversary starts or a longer adversary; the budget adversary",
+  "the scaled adjoint split of the early teachers (E22 read it); the route split"
+ ],
+ "predictions": [
+  {
+   "blind_to": "one seed, one adversary start (a pass is a lower bound), two trigger tasks, Adam teachers only",
+   "id": "P1_early_task_text",
+   "lean": "high (E34: all six task-text copies passed; the early teachers are smaller)",
+   "rule": "for each task with arm A and each early teacher (T10, T100) with P(target) >= 0.9: the one-shot arm-A copy at step 1000 'works': state_verdict 'pass' and gap share <= 0.05. Holds if every such cell works; unscored if there is no such cell or one is missing. Reported per cell: whether the do-nothing state of that teacher reads 'fail' or 'inconclusive' (the check sees the update)"
+  },
+  {
+   "blind_to": "as P1; one task",
+   "id": "P2_early_pile_text",
+   "kind": "two-sided, filed with a lean",
+   "lean": "learnt, low (E34's Pile-text copy of T1000 read P 0.902, at the line; Amendment 2 showed it leans on the trigger rows)",
+   "rule": "emoticon, each early teacher with P(target) >= 0.9: the one-shot arm-B copy at step 1000 is 'learnt' if it works (as P1), 'neither' if P(target) < 0.5, 'between' otherwise; overall 'learnt' if both are, 'neither' if both are, else 'between'; unscored if a cell is missing"
+  },
+  {
+   "blind_to": "the chain has 2,000-3,000 student steps against the one-shot's 1,000 (named, not removed); links of 1,000 steps, not the short links a per-step map would use; one seed",
+   "id": "P3_chain_task_text",
+   "lean": "high (each link is a full E34 copy; the start is the only difference)",
+   "rule": "for each task with arm A, at T100 and at T1000: the chained copy against the one-shot copy of the same teacher is not worse: verdict 'pass' wherever the one-shot's is, adversarial ratio <= 1.25 x the one-shot's, P(target) >= the one-shot's - 0.01, gap share <= the one-shot's + 0.005. Holds if all four comparisons do; unscored if one is missing"
+  },
+  {
+   "blind_to": "as P3; one task",
+   "id": "P4_chain_pile_text",
+   "lean": "holds, medium (Pile-text copies land at different weight changes from batch order alone, Amendment 5 cosine 0.43, with the same behaviour)",
+   "rule": "emoticon arm B, at T100 and at T1000: as P3 with tolerances 1.25 x on the ratio, 0.05 on P(target), 0.02 on the gap share"
+  }
+ ],
+ "reported_not_scored": [
+  "every state's seven numbers, gap share, start KL and P(target) at student step 100 from the training curve",
+  "the do-nothing states' readings and the teachers' own P(target), damage and size at each step",
+  "the cosine of the chained and one-shot T1000 copies' weight changes",
+  "the one-shot arm-B T1000 copy against E34's (P 0.902, ratio 1.05); Delta's share of every copy (expected ~1e-9; above 1e-6 is a bug)"
+ ]
+}
