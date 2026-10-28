@@ -1,0 +1,165 @@
+{
+ "about": "teacher_training E41 Amendment 2, short links (reports/plans/2026-10-28_plan_e41-teacher-path.md -> 'Amendment 2'; the approved branch for E41's P3 and P4 holding; decisions.md 2026-10-28 option (a): one batch order and one adversary start per link, a link between the lines is 'at the line'). Teacher: E41's emoticon fine-tune (E34's Adam 3e-5 arm A, all 24 matrices, batch 32, seed 0) regenerated in-job with checkpoints 1, 3, 10, 30, 100, 300, 1000. Chain: link 1 from W0's (U, V) against T1, each later link from the previous link's (U, V) against the next checkpoint; 100 student steps per link (700 in all), E34's task-text recipe (Adam 1e-5, batch 32, arm A's weighting, Gamma and Delta frozen), fresh Adam per link, link i at batch-order seed i. Every link read through E34's harness beside its teacher's do-nothing state; links T10, T100, T1000 against E41's one-shot copies. RunPod 'NVIDIA H100 80GB HBM3'. Filed before any run",
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, seeds 0, 1, 2): faith_score.w0_check passes, the PGD floor is 0.0748 within 10%, and the seed-0 PGD KL is E41's 0.69882 within 1% (E41 and Amendment 1 equal to 16 digits). Fails: stop, nothing trained",
+  "C2": "after the first link, before any warm start: from link T1's offsets via component_training.train's init, one step at lr 0 against that link's own weights; step-1 KL <= 0.005 nats (E41 0.0005) and delta-W unchanged to 1e-3 of its largest entry (E41 0). Fails: stop",
+  "Delta": "every link's Delta share <= 1e-6 (by construction ~1e-9); above it the run stops (a bug)",
+  "G1": "after the fine-tune: T10, T100, T1000 held-out P(target) within 0.005 and size within 0.001 of E41's (0.99931 / 0.01125, 0.99946 / 0.02217, 0.99961 / 0.03209). Fails: stop",
+  "PC": "before any link: T10's do-nothing state reads E41's 2.5159 within 1% (fail). The positive control (the check sees this early update when Delta carries it) and the proof that this job's harness reads as E41's, whose one-shot copies are P2's and P3's references. Fails: stop"
+ },
+ "e41_amend2": {
+  "c1_floor": 0.0748,
+  "c1_floor_tol": 0.1,
+  "c2_dw_rel_max": 0.001,
+  "c2_loss_max": 0.005,
+  "delta_max": 1e-06,
+  "e41_nothing10": 2.5159,
+  "e41_w0_pgd": 0.69882,
+  "ft_lr": 3e-05,
+  "g1_teacher": {
+   "10": [
+    0.99931,
+    0.01125
+   ],
+   "100": [
+    0.99946,
+    0.02217
+   ],
+   "1000": [
+    0.99961,
+    0.03209
+   ]
+  },
+  "g1_tol": [
+   0.005,
+   0.001
+  ],
+  "link_seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "link_steps": 100,
+  "links": [
+   1,
+   3,
+   10,
+   30,
+   100,
+   300,
+   1000
+  ],
+  "near": 0.075,
+  "not_worse": [
+   0.25,
+   0.01,
+   0.005
+  ],
+  "oneshot": {
+   "10": {
+    "check": "at the line",
+    "damage": 0.05769,
+    "gap_share": 0.00128,
+    "p_target": 0.99941,
+    "pgd": 1.54653,
+    "size": 0.0141
+   },
+   "100": {
+    "check": "pass",
+    "damage": 0.03625,
+    "gap_share": 0.00137,
+    "p_target": 0.99892,
+    "pgd": 1.01556,
+    "size": 0.01682
+   },
+   "1000": {
+    "check": "pass",
+    "damage": 0.01801,
+    "gap_share": 0.00558,
+    "p_target": 0.99675,
+    "pgd": 0.95909,
+    "size": 0.01842
+   }
+  },
+  "pileup": 0.25,
+  "repro_tol": 0.01,
+  "works_gap": 0.05
+ },
+ "expected": {
+  "W0": "ratios 1, check pass; P(target) 0.004; gap share 1; size, damage 0",
+  "do-nothing": "gap share 0; P, size, damage the teacher's; Delta share 1. T10 2.516 fail (PC), T100 1.136 pass, T1000 1.499 at the line (E41, to the digit); T1, T3, T30, T300 not read before",
+  "links": "P about 0.999 from T10 on, gap share under 0.01, Delta share ~1e-9; ratios at the line or pass at T1-T10 (as the T10 one-shot copies), about 1.0-1.1 from T100 on; size about 0.015-0.022 and damage about 0.03-0.05 at T1000",
+  "noise": "batch order (Amendment 1, E34 Amendment 4, same card): ratio up to 21% at T10 and 3.2% at T1000, P 0.005, gap share 0.002, size up to 5%, damage up to 3%; W0's adversary-seed floor 7.5%; this job against E41's: 0 (equal to 16 digits)",
+  "references": "E41's one-shot copies: T10 1.547 at the line, P 0.9994, gap share 0.0013, size 0.0141, damage 0.0577; T100 1.016 pass, 0.9989, 0.0014, 0.0168, 0.0363; T1000 0.959 pass, 0.9968, 0.0056, 0.0184, 0.0180. Amendment 1: the T10 copy at batch orders 1 and 2 read 1.280 pass and 1.505 at the line",
+  "teachers": "T10 P 0.99931 size 0.01125, T100 0.99946 / 0.02217, T1000 0.99961 / 0.03209 (E41); T1 and T3 P unknown (the fine-tune's step-1 batch read P 0.011 before its update, step 10 0.995), sizes rising from about 0.002; gap at W0 about 5.1 nats from T10 on"
+ },
+ "filed": "2026-10-28 14:39:38",
+ "measurements": {
+  "do-nothing": "per teacher T_k: delta-W in Delta, subcomponents and Gamma untouched, read the same way; the check 'sees the update' at T_k when this reads fail or at the line",
+  "per link": "run.record's numbers through the harness (adversarial and stochastic ratios to this job's W0 at adversary seed 0, held-out P(target), teacher gap, damage, size, Delta's share); the check's verdict on the two ratios against the same-job floors, P(target) aside (pass <= 1.396, fail >= 1.612 at floor 0.0748, 'at the line' between); gap share = teacher gap / T_k's gap at W0; start KL = the loss on the link's first batch before its first update (its head start)"
+ },
+ "not_run": [
+  "batch-order repeats of any link (decisions.md 2026-10-28, option (a)); adversary seeds 1 and 2",
+  "Pile-text chains; the r1 task; SGD or LoRA teachers",
+  "links shorter than 100 steps; carrying Adam's state across links; a one-shot copy trained 700 steps",
+  "the cosine of the chain's end with the one-shot T1000 copy; per-block ratios; saving states"
+ ],
+ "predictions": [
+  {
+   "blind_to": "one fine-tune seed, one task, one batch order and one adversary start per link (a pass is a lower bound); damage outside 256 Pile rows and the held-out task windows",
+   "id": "P1_links",
+   "kind": "three-way plus 'behaviour lost', filed with a lean",
+   "lean": "at the line, medium (the T10 one-shot copies read 1 pass and 2 at the line over three batch orders; the links at T1 and T3 copy updates never read; from T100 on one-shot copies pass by 25% or more)",
+   "reading": "pass: teacher training applied every 100 steps keeps every early update faithful, so it can run alongside training on this fine-tune. at the line: the chain is where the one-shot T10 copy is (decisions.md option (a) accepts that). fail or behaviour lost: a qualitative surprise",
+   "rule": "per link k in 1, 3, 10, 30, 100, 300, 1000: 'behaviour lost' if its gap share > 0.05, or if T_k's P(target) >= 0.9 and the link's < 0.9; else the check's verdict on its two ratios (pass, at the line, fail). Outcome: unscored if any link or teacher reading is missing; 'behaviour lost' if any link is; else the worst link's verdict (pass < at the line < fail): 'pass' only if every link passes. Ties keep the behaviour (gap share exactly 0.05, P exactly 0.9) and follow faith_score's lines (ratio exactly 1.5 / 1.0748 passes, exactly 1.5 x 1.0748 fails). Reported beside: per link, whether the check sees its update, the line a ratio is within 7.5% of, and the share of do-nothing's excess removed, (do-nothing - link) / (do-nothing - 1) where do-nothing > 1"
+  },
+  {
+   "blind_to": "as P1; the chain has 300 / 500 / 700 student steps at the anchors against the one-shot's 1,000",
+   "id": "P2_not_worse",
+   "kind": "holds / fails",
+   "lean": "holds, medium (E41's three-link chain held every comparison with ratios 1.04-1.05x; the risk is the T10 link, 300 steps from W0 against the one-shot's 1,000)",
+   "reading": "fails: short links pile up error the one-shot copy does not have, on the check or the behaviour",
+   "rule": "at T10, T100 and T1000, the link against E41's one-shot copy of the same teacher: its check verdict no worse (pass < at the line < fail; the one-shot reads at the line, pass, pass), adversarial ratio <= 1.25 x the one-shot's (relative), P(target) >= the one-shot's - 0.01 and gap share <= the one-shot's + 0.005 (absolute; E41 P3's arm-A tolerances), all inclusive. Holds if all three anchors do; unscored if one is missing"
+  },
+  {
+   "blind_to": "size is the largest relative change of one matrix; damage is on held-out task windows only",
+   "id": "P3_no_pileup",
+   "kind": "two-sided, filed with a lean",
+   "lean": "fails, medium, on damage (E41's 1,000-step chain read 1.36x the one-shot's size and 1.49x its damage at T1000; step-10 copies do their teacher's full damage, 0.055, against the T1000 copy's 0.018, and the last link has 100 steps to shed it)",
+   "reading": "holds: no pile-up of size or damage at the end. fails: the chain carries the early copies' size or damage forward, unseen by the check and the behaviour; a reset or a longer last link would be needed to match a one-shot copy",
+   "rule": "the T1000 link's size <= 1.25 x the one-shot T1000 copy's (0.01842) and its damage <= 1.25 x the one-shot's (0.01801), inclusive. Unscored if the link is missing. Reported: both ratios, and size and damage over the one-shot's at T10 and T100 and over each link's teacher"
+  }
+ ],
+ "reported_not_scored": [
+  "every link's numbers, check verdict, gap share and start KL; every do-nothing state; the teachers' readings",
+  "the score after every link (in the log and the JSON)",
+  "Delta's share of every link (the score's delta_untouched)"
+ ]
+}

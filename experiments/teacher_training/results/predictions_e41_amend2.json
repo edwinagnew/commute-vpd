@@ -57,6 +57,7 @@
    0.005,
    0.001
   ],
+  "gap_floor": 0.005,
   "link_seeds": [
    0,
    1,
@@ -118,9 +119,9 @@
   "links": "P about 0.999 from T10 on, gap share under 0.01, Delta share ~1e-9; ratios at the line or pass at T1-T10 (as the T10 one-shot copies), about 1.0-1.1 from T100 on; size about 0.015-0.022 and damage about 0.03-0.05 at T1000",
   "noise": "batch order (Amendment 1, E34 Amendment 4, same card): ratio up to 21% at T10 and 3.2% at T1000, P 0.005, gap share 0.002, size up to 5%, damage up to 3%; W0's adversary-seed floor 7.5%; this job against E41's: 0 (equal to 16 digits)",
   "references": "E41's one-shot copies: T10 1.547 at the line, P 0.9994, gap share 0.0013, size 0.0141, damage 0.0577; T100 1.016 pass, 0.9989, 0.0014, 0.0168, 0.0363; T1000 0.959 pass, 0.9968, 0.0056, 0.0184, 0.0180. Amendment 1: the T10 copy at batch orders 1 and 2 read 1.280 pass and 1.505 at the line",
-  "teachers": "T10 P 0.99931 size 0.01125, T100 0.99946 / 0.02217, T1000 0.99961 / 0.03209 (E41); T1 and T3 P unknown (the fine-tune's step-1 batch read P 0.011 before its update, step 10 0.995), sizes rising from about 0.002; gap at W0 about 5.1 nats from T10 on"
+  "teachers": "T10 P 0.99931 size 0.01125, T100 0.99946 / 0.02217, T1000 0.99961 / 0.03209 (E41); T1 and T3 P unknown (the fine-tune's step-1 batch read P 0.011 before its update, step 10 0.995), sizes rising from about 0.002; gap at W0 about 5.1 nats from T10 on, never measured at T1 and T3"
  },
- "filed": "2026-10-28 14:39:38",
+ "filed": "2026-10-28 14:51:54",
  "measurements": {
   "do-nothing": "per teacher T_k: delta-W in Delta, subcomponents and Gamma untouched, read the same way; the check 'sees the update' at T_k when this reads fail or at the line",
   "per link": "run.record's numbers through the harness (adversarial and stochastic ratios to this job's W0 at adversary seed 0, held-out P(target), teacher gap, damage, size, Delta's share); the check's verdict on the two ratios against the same-job floors, P(target) aside (pass <= 1.396, fail >= 1.612 at floor 0.0748, 'at the line' between); gap share = teacher gap / T_k's gap at W0; start KL = the loss on the link's first batch before its first update (its head start)"
@@ -138,14 +139,14 @@
    "kind": "three-way plus 'behaviour lost', filed with a lean",
    "lean": "at the line, medium (the T10 one-shot copies read 1 pass and 2 at the line over three batch orders; the links at T1 and T3 copy updates never read; from T100 on one-shot copies pass by 25% or more)",
    "reading": "pass: teacher training applied every 100 steps keeps every early update faithful, so it can run alongside training on this fine-tune. at the line: the chain is where the one-shot T10 copy is (decisions.md option (a) accepts that). fail or behaviour lost: a qualitative surprise",
-   "rule": "per link k in 1, 3, 10, 30, 100, 300, 1000: 'behaviour lost' if its gap share > 0.05, or if T_k's P(target) >= 0.9 and the link's < 0.9; else the check's verdict on its two ratios (pass, at the line, fail). Outcome: unscored if any link or teacher reading is missing; 'behaviour lost' if any link is; else the worst link's verdict (pass < at the line < fail): 'pass' only if every link passes. Ties keep the behaviour (gap share exactly 0.05, P exactly 0.9) and follow faith_score's lines (ratio exactly 1.5 / 1.0748 passes, exactly 1.5 x 1.0748 fails). Reported beside: per link, whether the check sees its update, the line a ratio is within 7.5% of, and the share of do-nothing's excess removed, (do-nothing - link) / (do-nothing - 1) where do-nothing > 1"
+   "rule": "per link k in 1, 3, 10, 30, 100, 300, 1000: 'teacher too close to W0 to read' (left out of P1, its check verdict still reported) if T_k's gap at W0 < 0.005 nats (10 x E41's C2 hook-vs-merged KL, 0.0005: below it a gap share is a ratio of two numbers near the hook path's floor); else 'behaviour lost' if its gap share > 0.05 and its teacher gap > 0.005 nats, or if T_k's P(target) >= 0.9 and the link's < 0.9; else the check's verdict on its two ratios (pass, at the line, fail). Outcome: unscored if any link, teacher reading or gap at W0 is missing, or if every link is too close; 'behaviour lost' if any read link is; else the worst read link's verdict (pass < at the line < fail): 'pass' only if every read link passes. Ties: gap at W0 exactly 0.005 is read; gap share exactly 0.05, teacher gap exactly 0.005 and P exactly 0.9 keep the behaviour; ratios follow faith_score's lines (exactly 1.5 / 1.0748 passes, exactly 1.5 x 1.0748 fails). Reported beside: per link, whether the check sees its update (a pass where do-nothing also passes carries no information), the line a ratio is within 7.5% of, and the share of do-nothing's excess removed, (do-nothing - link) / (do-nothing - 1) where do-nothing > 1"
   },
   {
    "blind_to": "as P1; the chain has 300 / 500 / 700 student steps at the anchors against the one-shot's 1,000",
    "id": "P2_not_worse",
    "kind": "holds / fails",
    "lean": "holds, medium (E41's three-link chain held every comparison with ratios 1.04-1.05x; the risk is the T10 link, 300 steps from W0 against the one-shot's 1,000)",
-   "reading": "fails: short links pile up error the one-shot copy does not have, on the check or the behaviour",
+   "reading": "fails at T100 or T1000: short links pile up error the one-shot copy does not have, on the check or the behaviour. A miss at T10 alone sits inside batch-order noise (the one-shot copy reads 1.547 at the line, spread 21% over three orders) and is not read as pile-up",
    "rule": "at T10, T100 and T1000, the link against E41's one-shot copy of the same teacher: its check verdict no worse (pass < at the line < fail; the one-shot reads at the line, pass, pass), adversarial ratio <= 1.25 x the one-shot's (relative), P(target) >= the one-shot's - 0.01 and gap share <= the one-shot's + 0.005 (absolute; E41 P3's arm-A tolerances), all inclusive. Holds if all three anchors do; unscored if one is missing"
   },
   {

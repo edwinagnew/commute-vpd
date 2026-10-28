@@ -3,7 +3,7 @@
 Plan: `reports/plans/2026-10-28_plan_e41-teacher-path.md` → "Amendment 2". Code:
 `experiments/teacher_training/path_amend2.py` (imports `run.py` and `path.py` beside it). Predictions:
 `experiments/teacher_training/results/predictions_e41_amend2.json` (sha256
-`fc52244502a3d735a953fd961bee42ccaef32894fc326979387f52cb1de6ad9a`). The run refuses to start without the predictions
+`08e5e05bb11029a9df88db04b7dfcfe8f25c4f722e2be7aa5e7394c9d6963db8`). The run refuses to start without the predictions
 file, and also if its `config` or `e41_amend2` entries differ from `run.py`'s `CFG` or `path_amend2.py`'s `AM`.
 
 ```
@@ -51,7 +51,7 @@ Budget: $3 cap for this run; expect about $1.7 (~23 min of pod at about $4.4/h)
 
 Per state, `run.read_state` prints `[<label>] pgd ... stochastic ... p_target ... verdict ...` after the harness's own
 `[<label>] gain ...` line and two `[faith]` lines (one per 128-row Pile block), about 53 s per state. Each link then
-prints `[link T<k>] check <pass|at the line|fail> pgd ... gap share ... size ... damage ... start KL ... seed <i>
+prints `[link T<k>] check <pass|at the line|fail> pgd ... teacher gap ... gap at W0 ... gap share ... size ... damage ... start KL ... seed <i>
 student steps <n> (<s> s)` and `[score after T<k>] {...}`.
 
 | Stage | What | Expected |

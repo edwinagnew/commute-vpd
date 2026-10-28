@@ -374,7 +374,7 @@ one task. There are three batch orders, which is enough to see a spread but not 
 
 *Commute lead (written by a fleet agent). Code `experiments/teacher_training/path_amend2.py` (imports `run.py` and
 `path.py`; no existing file edited); predictions `experiments/teacher_training/results/predictions_e41_amend2.json`,
-filed 2026-10-28 14:39:38 on the CPU worker, sha256 `fc522445…ad9a`; brief
+refiled 2026-10-28 14:51:54 on the CPU worker, sha256 `08e5e05b…3db8` (first filing 14:39:38, `fc522445…ad9a`, kept as `predictions_e41_amend2_filed-1439.json`; see "Refiled before the run" below); brief
 `experiments/teacher_training/RUN_BRIEF_e41_amend2.md`. A fresh agent reviews the code before it runs.*
 
 **The branch it executes.** The tree's "P3 and P4 hold" branch: emoticon, arm A, a chain over the fine-tune's
@@ -467,10 +467,15 @@ size and damage noise.
 
 ### Predictions (filed)
 
-- **P1, every link** (three-way plus "behaviour lost"). Each link is "behaviour lost" if its gap share is above 0.05,
-  or if its teacher holds P ≥ 0.9 and the link does not. Otherwise it gets the check's verdict on its two Pile ratios:
-  pass, at the line, or fail. The outcome is unscored if any link or teacher reading is missing. It is "behaviour
-  lost" if any link is. Otherwise it is the worst link's verdict, so "pass" means every link passed.
+- **P1, every link** (three-way plus "behaviour lost"; rule as refiled, below).
+  - A link whose teacher's gap at W₀ is below 0.005 nats is "teacher too close to W₀ to read". It is left out of
+    P1, and its check verdict is still reported, as E41 left out teachers below P 0.9.
+  - Otherwise the link is "behaviour lost" if its gap share is above 0.05 and its teacher gap above 0.005 nats, or if
+    its teacher holds P ≥ 0.9 and the link does not.
+  - Otherwise it gets the check's verdict on its two Pile ratios: pass, at the line, or fail.
+  - The outcome is unscored if any link, teacher reading or gap at W₀ is missing, or if every link is too close. It
+    is "behaviour lost" if any read link is. Otherwise it is the worst read link's verdict, so "pass" means every
+    read link passed.
   - Reported beside it, per link: whether the check sees that update (its do-nothing state reads fail or at the line);
     the line, if any, that the ratio is within 7.5% of; and the share of do-nothing's excess the link removes.
   - *Lean: at the line, medium.* The T₁₀ one-shot copies read one pass and two at the line. The T₁ and T₃ updates
@@ -491,7 +496,7 @@ size and damage noise.
   1,000-step chain read 1.36 times the one-shot's size and 1.49 times its damage. Step-10 copies do their teacher's
   full damage (0.055, against the T₁₀₀₀ copy's 0.018), and the last link has only 100 steps to shed it.
 
-**Edge cases, run through `score` before filing** (51 synthetic cases on the CPU worker, script
+**Edge cases, run through `score` before filing** (59 synthetic cases on the CPU worker, the last 8 added at the refiling, script
 `~/commute-data/scratch/commute-lead/e41a2_edge.py`; all pass):
 - an empty file: P1, P2 and P3 unscored, and `delta_untouched` false;
 - a missing link (T₃₀): P1 unscored, P2 still scored. A missing T₁₀₀₀ link: P2 and P3 unscored. A missing teacher
@@ -508,6 +513,15 @@ size and damage noise.
   zero;
 - a Δ share of 2e-6 sets `delta_untouched` false. An unknown verdict string raises;
 - near-line flags: 1.5 is near the fail line, 1.396 near the pass line, and 1.0 near neither.
+- tiny gaps at W₀ (added at the refiling): a teacher at 0.004 nats is too close, so its link (which reads fail) is
+  left out and listed; at exactly 0.005 it is read. A teacher gap of exactly 0.005 with gap share 0.2 keeps the
+  behaviour, and 1.0001 times that loses it. Every link too close, or a missing gap at W₀: P1 unscored.
+
+**Reading notes** (review, 2026-10-28):
+- P2 at T₁₀ reads inside batch-order noise. The one-shot copy there reads 1.547, at the line, and its spread over
+  three orders is 21%. So a P2 miss at T₁₀ alone is not read as pile-up; only a miss at T₁₀₀ or T₁₀₀₀ is.
+- A link that passes where its do-nothing state also passes carries no information about the map
+  (`check_sees_the_update` false). The write-up says so per link, and does not count such passes as evidence.
 
 ### Decision tree
 
@@ -552,3 +566,21 @@ size and damage noise.
   chain's total.
 - The cosine of the chain's end with the one-shot T₁₀₀₀ copy (it would need E34's saved state on the pod), per-block
   ratios, and saving states. The analysis reads only the JSON, and the chain regenerates in about 8 min.
+
+### Refiled before the run, 2026-10-28: why
+
+The independent review of commit 3470e50 found P1's "behaviour lost" rule degenerate at the earliest links. The gap
+share is the link's teacher gap over the teacher's gap at W₀. For T₁ and T₃, one and three Adam steps from W₀, the
+teacher's gap at W₀ has never been measured and may be very small; the reviewer's estimate is 0.005-0.01 nats. A 0.05
+share would then ask the link to sit within about 0.0003-0.0005 nats of its teacher. That is at E41's floor of 0.0005
+between the hook path and the merged weights (C2), so P1 could read "behaviour lost" from a ratio of two numbers near
+zero and fire a Blocking card. The fix removes the degenerate case instead of adding a check beside it:
+- a teacher whose gap at W₀ is below 0.005 nats is "too close to W₀ to read" and is left out of P1;
+- "behaviour lost" by the gap needs the link's teacher gap above 0.005 nats as well.
+
+The floor is 10 × E41's C2 step-1 KL of 0.000502 (`results/teacher_training_e41.json` → `C2.loss_step1`), the
+measured noise floor of the hook path against the merged weights. P1 is unscored if every link is too close. The run
+now logs each link's teacher gap and gap at W₀. Two smaller fixes came with it: a rerun clears stale `C2`, `score`
+and `done` before redoing the chain, and P2's reading text says a T₁₀ miss alone is batch-order noise. Nothing had
+run. The first filing (14:39:38) is kept unedited as `predictions_e41_amend2_filed-1439.json`; the refiled file
+(14:51:54, sha256 `08e5e05bb11029a9df88db04b7dfcfe8f25c4f722e2be7aa5e7394c9d6963db8`) is the one the run reads.
