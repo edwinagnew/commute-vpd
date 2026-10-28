@@ -310,3 +310,21 @@ E42 (no prediction reads it): listed in Not run.
 
 **Tree.** P0.2 replicates, P0.3 passes, P0.4 passes → propose stage 1 with g and its nulls. P0.3 fails or P0.4
 fails → retire (Blocking card, section 2's words). P0.4 inconclusive → card with the numbers. P0.2 fails → stop, fix.
+
+### Question raised by the code review (2026-10-28, before any run): P0.4's copy writes are confounded
+
+The 67M model ties its output and input embeddings. On the copy tasks the answer is the key itself, so the per-key
+write adds the key's own embedding at block 1: "the current token is k, more strongly". That is an existing
+representation, and Γ may open existing machinery for it, so a ρ ≥ 0.8 on a copy task would not cleanly show that
+Γ reads "the activations predict the target". (Orthogonalising the write against the key's embedding removes all
+of it on copy, so that fix is degenerate.) The random-map writes do not have this confound: their answer is a
+different token from the key. Options:
+
+- **A (lead's recommendation).** Score P0.4 on the random-map writes (rand32, rand32b; α matched to that task's
+  seed-0 fine-tune's G), with ρ = g_write / g of the copy fine-tune of the same table size (ident32 for rand32,
+  ident32b for rand32b), the existing-machinery reference. Same bars: both ≤ 0.5 pass, either ≥ 0.8 retire, else
+  inconclusive. Copy writes reported with the confound named.
+- B. Keep as filed; the write-up names the confound, so a copy-task fail reads as inconclusive in practice.
+- C. Score both: retire only if copy and random-map writes both reach ≥ 0.8.
+
+Stage 0a (the control) does not depend on this and runs meanwhile; stage 0b waits for the answer.
