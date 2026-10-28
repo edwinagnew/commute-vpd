@@ -60,6 +60,10 @@ MODEL_ID = re.compile(r"(?<![\w./-])(Qwen/\S+|meta-llama/\S+|EleutherAI/\S+|goog
                       r"gpt2(-(medium|large|xl))?(?![\w-])|pythia-\d+\w*)")
 SUBMIT = re.compile(r"^\s*(\w+=\S*\s+)*(sbatch|srun|(\S*/)?fleet/cpu-run)\b")
 SHELL_FILE = (".sbatch", ".sh", ".slurm", ".bash")
+# Linters read the files they name and run none of them: `fleet/cpu-run make lint FILES="...qwen_vpd.py"` was refused
+# because qwen_vpd.py loads a model (friction 13). Such a job is not searched for loading calls, unless it also runs Python.
+STATIC_ONLY = re.compile(r"\b(make\s+(\S+\s+)*lint|ruff|pyright)\b")
+RUNS_PYTHON = re.compile(r"\b(python[\d.]*|pytest|jupyter|papermill)\b|\buv\s+run\s+(?!ruff\b|pyright\b)")
 
 
 def _read(path):
@@ -113,6 +117,8 @@ def _language_model(segment, cwd):
         for mod in re.findall(r"(?:^|\s)-m\s+([\w.]+)", text):
             rel = mod.replace(".", "/")
             scripts += [_resolve(rel + ".py", roots), _resolve(rel + "/__main__.py", roots)]
+    if STATIC_ONLY.search(segment) and not any(RUNS_PYTHON.search(t) for t in (command, *(t for _, t in shell))):
+        return None
     for path in dict.fromkeys(p for p in scripts if p):
         if "tests" in os.path.relpath(path, roots[1]).split(os.sep)[:-1]:
             continue  # tests build tiny models; the runtime CPU guard still stops any module over 50M parameters
