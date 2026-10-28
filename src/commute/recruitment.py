@@ -23,6 +23,10 @@ of each matrix at the trigger (`trigger_io`), a W1 pass that puts a set's trigge
 Amendment 4 (2026-10-28, reports/plans/2026-10-28_plan_e38-amend4.md) adds each piece's trigger output change
 (`output_change`), the count- and change-matched sets built from it (`movers`, `count_matched`, `change_matched`),
 S's share of the top movers (`top_share`) and its readings (P11, P12).
+
+Amendment 5 (2026-10-28, reports/plans/2026-10-28_plan_e38-amend5.md) adds each piece's first-order take-back e_c
+(`trigger_grads`, `take_back`), the per-matrix top sets by a score (`top_per_matrix`: D by e_c, C_k by Delta_c),
+S's top-direction share (`top_dir_share`), control R6's pieces and rule (`top_abs`, `r6_agree`) and P13.
 """
 
 from __future__ import annotations
@@ -570,3 +574,147 @@ def p12_reading(seeds: dict[str, dict[str, Any]]) -> dict[str, Any]:
     uns = sorted(c for c in cls.values() if c.startswith("unscored"))
     vals = set(cls.values())
     return {"seed_class": cls, "reading": uns[0] if uns else vals.pop() if len(vals) == 1 else "seeds disagree"}
+
+
+# ----------------------------------------------------------------------------- E38 Amendment 5: direction-matched sets
+# reports/plans/2026-10-28_plan_e38-amend5.md, filed predictions experiments/recruitment_test/results/predictions_amend5.json.
+
+
+def trigger_grads(model: Any, keys: list[str], windows: Tensor, half: int, token: int, batch: int = BATCH) -> IO:
+    """Per matrix, per batch of `readout` (same windows, batch size and autocast): g (B, d_out) float32, the gradient
+    of each window's trigger lo (`local_faith.stats`' lo_trigger) with respect to the matrix's output at position
+    `half`, in the target model as it stands. One backward per batch gives every matrix's g: each output gets an exact
+    zero leaf added at `half` (the forward is unchanged bit for bit), and windows do not interact, so the gradient of
+    the batch's summed lo with respect to row w of a leaf is window w's own. Stored as (g, empty) pairs, the IO layout."""
+    from commute.finetune import logits_of
+    from commute.identity import log_odds
+    from commute.vpd import target_linear
+
+    leaf: dict[str, Tensor] = {}
+
+    def hook_of(k: str) -> Any:
+        def hook(_module: Any, _args: tuple[Tensor, ...], out: Tensor) -> Tensor:
+            leaf[k] = torch.zeros(out.shape[0], out.shape[-1], dtype=out.dtype, device=out.device, requires_grad=True)
+            out = out.clone()
+            out[:, half] = out[:, half] + leaf[k]
+            return out
+
+        return hook
+
+    grads: IO = {k: [] for k in keys}
+    handles = [target_linear(model, k).register_forward_hook(hook_of(k)) for k in keys]
+    device = next(model.parameters()).device
+    try:
+        with torch.enable_grad():
+            for s in range(0, windows.shape[0], batch):
+                lg = logits_of(model.target_model, windows[s : s + batch].to(device))
+                gs = torch.autograd.grad(log_odds(lg[:, half], token).sum(), [leaf[k] for k in keys])
+                for k, g in zip(keys, gs, strict=True):
+                    grads[k].append((g.float(), torch.zeros(0)))
+    finally:
+        for h in handles:
+            h.remove()
+    return grads
+
+
+@torch.no_grad()
+def take_back(comps: dict[str, tuple[Tensor, Tensor]], io0: IO, io1: IO, grads: IO) -> dict[str, Tensor]:
+    """e_c per matrix ((C,) float32, CPU): the mean over windows of ((x1 - x0) . v_c) (g . u_c), x1 / x0 the matrix's
+    trigger inputs in W1's / W0's `trigger_io` pass and g its `trigger_grads` at W1, all over the same windows and
+    batches, in fp32. Restoring c alone adds ((x0 - x1) . v_c) u_c at the trigger, so e_c is minus its first-order
+    change of lo: positive when restoring c takes back gain."""
+    assert io0.keys() == io1.keys() == grads.keys()
+    out = {}
+    for k in io0:
+        U, V = comps[k]  # (C, d_out), (d_in, C)
+        tot, n = torch.zeros(V.shape[1], dtype=torch.float32, device=V.device), 0
+        for (x0, _), (x1, _), (g, _) in zip(io0[k], io1[k], grads[k], strict=True):
+            assert x0.shape == x1.shape and g.shape[0] == x0.shape[0], (k, tuple(x0.shape), tuple(x1.shape), tuple(g.shape))
+            dv = (x1.float() - x0.float()).to(V.device) @ V.float()  # (B, C)
+            tot += (dv * (g.float().to(U.device) @ U.float().T)).sum(0)
+            n += x0.shape[0]
+        out[k] = (tot / n).cpu()
+    return out
+
+
+def top_per_matrix(score: dict[str, Tensor], alive: dict[str, Tensor], exclude: Sel,
+                   counts: dict[str, int]) -> tuple[Sel, dict[str, bool]]:
+    """Per matrix k of `alive`: the counts[k] alive pieces not in exclude[k] of largest score[k] (ties: index; all of
+    them where fewer: short), as a Sel over alive's keys, and the short flag per matrix (False where counts[k] is 0)."""
+    out, short = {}, {}
+    for k in sorted(alive):
+        drop = set(exclude.get(k, torch.zeros(0, dtype=torch.long)).tolist())
+        pool = [c for c in alive[k].cpu().bool().nonzero().flatten().tolist() if c not in drop]
+        n, sk = counts.get(k, 0), score[k].tolist()
+        top = sorted(pool, key=lambda c: (-sk[c], c))[:n]
+        out[k], short[k] = torch.tensor(sorted(top), dtype=torch.long), len(pool) < n
+    return out, short
+
+
+def top_dir_share(e: dict[str, Tensor], alive: dict[str, Tensor], S: Sel) -> tuple[float, dict[str, int]]:
+    """The top-direction share of S: per matrix, S's members among the |S in k| alive pieces (S included) of largest
+    e_c (ties: index), summed over matrices, over |S| (nan for an empty S); and the hits per matrix with members."""
+    from commute.recruit import size
+
+    counts = {k: int(v.numel()) for k, v in S.items()}
+    top, _ = top_per_matrix(e, alive, {}, counts)
+    hits = {k: int(torch.isin(top[k], S[k].cpu()).sum()) for k, n in counts.items() if n}
+    return (sum(hits.values()) / size(S) if size(S) else float("nan")), hits
+
+
+def top_abs(e: dict[str, Tensor], alive: dict[str, Tensor], n: int) -> list[tuple[str, int, float]]:
+    """R6's pieces: the n alive pieces of largest |e_c| (ties: matrix name, then index), as (matrix, index, e_c)."""
+    pieces = [(k, c, float(e[k][c])) for k in sorted(alive) for c in alive[k].cpu().bool().nonzero().flatten().tolist()]
+    return sorted(pieces, key=lambda p: (-abs(p[2]), p[0], p[1]))[:n]
+
+
+def r6_agree(e: list[float], a: list[float], min_e: float) -> int:
+    """R6: how many pieces have |e_c| >= min_e and an actual take-back a_c of e_c's sign (a_c = 0 never agrees)."""
+    return sum(abs(x) >= min_e and x * y > 0 for x, y in zip(e, a, strict=True))
+
+
+def summed(e: dict[str, Tensor], sel: Sel) -> float:
+    """sum of e_c over the members of `sel`, in float64."""
+    return float(sum(e[k][idx.cpu()].double().sum() for k, idx in sel.items()))
+
+
+P13_MARGIN, P13_S_MIN = 0.05, 0.10  # P13: 'S ahead' needs rho_r(S) >= rho_r(D) + 0.05; a task needs S >= 0.10
+UNSCORED_SHORT = "unscored: pool too small"
+
+
+def p13_seed_class(r: dict[str, Any]) -> str:
+    """P13's seed rule (record: scorable, D_short, rho {'S', 'D'}): unscored if G < 1 (first: its shares are nan) or D
+    is short in any matrix; 'S ahead', 'not ahead' (D at or above S; ties read 'not ahead'), else 'unclear'."""
+    if not r["scorable"]:
+        return UNSCORED_GAIN
+    if r["D_short"]:
+        return UNSCORED_SHORT
+    s, d = r["rho"]["S"], r["rho"]["D"]
+    if s >= d + P13_MARGIN:
+        return "S ahead"
+    return "not ahead" if d >= s else "unclear"
+
+
+def p13_task_class(seeds: list[dict[str, Any]]) -> str:
+    """P13's task rule: an unscored seed's class (the first in sorted order if they differ), else 'S too small' unless
+    rho_r(S) >= 0.10 on both seeds, else the seeds' common class or 'seeds disagree'."""
+    cls = [p13_seed_class(r) for r in seeds]
+    uns = sorted(c for c in cls if c.startswith("unscored"))
+    if uns:
+        return uns[0]
+    if any(r["rho"]["S"] < P13_S_MIN for r in seeds):
+        return TOO_SMALL
+    return cls[0] if len(set(cls)) == 1 else "seeds disagree"
+
+
+def p13_reading(states: dict[str, dict[str, dict[str, Any]]]) -> dict[str, Any]:
+    """P13 from {task: {seed: record}}: 'Gamma adds' if >= 2 scored tasks are 'S ahead' and none 'not ahead',
+    'direction suffices' the other way round, else 'outside the tree' (also < 2 scored tasks). A scored task is one
+    that is neither unscored nor 'S too small'."""
+    seeds = {f"{n}/s{k}": p13_seed_class(r) for n, s in states.items() for k, r in s.items()}
+    tasks = {n: p13_task_class(list(s.values())) for n, s in states.items()}
+    scored = [c for c in tasks.values() if not c.startswith("unscored") and c != TOO_SMALL]
+    ahead, nots = scored.count("S ahead"), scored.count("not ahead")
+    reading = ("Gamma adds" if ahead >= N_TASKS and nots == 0 else "direction suffices" if nots >= N_TASKS and ahead == 0
+               else "outside the tree")
+    return {"seed_class": seeds, "task_class": tasks, "n_scored_tasks": len(scored), "reading": reading}
