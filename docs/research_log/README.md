@@ -239,6 +239,7 @@ Figures already published (their sources, for a re-upload):
 - "fig/e38_amend4_change.png": "experiments/recruitment_test/figures/amend4_change.png"
 - "fig/e38_amend4_singles.png": "experiments/recruitment_test/figures/amend4_singles.png"
 - "fig/e38_amend5_restore.png": "experiments/recruitment_test/figures/amend5_restore.png"
+- "fig/e38_amend7_line.png": "experiments/recruitment_test/figures/amend7_line.png"
 - "fig/e39_moves.png": "experiments/broad_fragility/figures/moves.png"
 - "fig/e39_reverts.png": "experiments/broad_fragility/figures/reverts.png"
 - "fig/e39_shape.png": "experiments/broad_fragility/figures/shape.png"
