@@ -37,6 +37,7 @@ from run import (
     CFG,
     EMO,
     FT_ADAM_LR,
+    LADDER,
     R1,
     RESULTS,
     TASKS,
@@ -211,9 +212,9 @@ def group(job: Job, out: dict[str, Any], task: str, arm: str, T: dict[str, Any])
     if arm == "A":
         g3(out, task, g["oneshot"]["1000"])
     prev = teach(job, out, task, arm, "10", T, None, "oneshot")
-    teach(job, out, task, arm, "100", T, None, "oneshot")
     if (task, arm) == AM.groups[0] and not out.get("C2", {}).get("pass"):
         c2(job, out, task, prev)
+    teach(job, out, task, arm, "100", T, None, "oneshot")
     for k in ("100", "1000"):
         prev = teach(job, out, task, arm, k, T, init_of(job.task(task)[0], prev), "chain")
     g["cos_chain_oneshot"] = finetune.cosines({k: v[0] for k, v in prev.items()}, {k: v[0] for k, v in one.items()})["all"]
@@ -391,6 +392,7 @@ def e41(device: str) -> None:
     filed = json.loads(PRED.read_text())
     assert filed["config"] == json.loads(json.dumps(asdict(CFG))), f"predictions were filed for another config: {filed['config']}"
     assert filed["e41"] == json.loads(json.dumps(asdict(AM))), f"predictions were filed for another E41 config: {filed['e41']}"
+    assert (LADDER / f"windows_{R1}.pt").is_file(), f"the r1 windows file is missing: {LADDER / f'windows_{R1}.pt'}"
     job = Job(device)
     out = load(OUT, job, {"tasks": {}})
     floor = job.w0["pgd_floor"]

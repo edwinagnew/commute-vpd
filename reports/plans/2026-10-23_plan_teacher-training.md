@@ -529,3 +529,162 @@ change, which is gauge-free).
 
 **Cost.** One teacher, four 1,000-step copies, about ten adversary reads: about 20 min on an H100 or L40. Cluster
 `debug` QoS first (job ≤ 30 min), RunPod H100 if not started in 10 min. Cap $3.
+
+## Amendment 6 (2026-10-28, commute lead): teacher training coverage
+
+*From gaps 10, 7, 6 and 4 of `reports/reviews/2026-10-28_review_technique-comparison.md` (section 2). Inside the user's
+instruction to the commute lead (2026-10-28) to fill the comparison's gaps with new experiments: no sign-off; the
+check is written here. Code `experiments/teacher_training/amend6.py`, predictions `results/predictions_amend6.json`,
+brief `RUN_BRIEF_amend6.md`, results `results/teacher_training_amend6.json`.*
+
+**In plain words.** Teacher training is the one map that keeps the behaviour and passes the adversarial check on narrow
+updates, but four of its cells are still empty. We have never read whether the trained decomposition harms ordinary
+text, only the task's own windows. We have never tried it on the rare-target task where component training never
+passed, or with plain SGD as its optimiser on anything but an SGD teacher. And its text-only form copied a LoRA only
+halfway in 1,000 steps. This job reads all four on the existing model, tasks and harness, in one H100 run.
+
+### The question, restated in the Terms' words
+
+Teacher training is component training with the loss KL(teacher ‖ student), the teacher the fine-tuned model W₀ + δW,
+Γ and Δ frozen. Four readings of it, each on E34's harness:
+
+- **(a) Harmless on plain text.** For the decompositions after teacher training of r1's SGD, Adam 3e-5 and LoRA
+  teachers, is the damage to plain Pile text, KL(W₀ ‖ state) over the 256 Pile val rows, at most twice the
+  fine-tune's own?
+- **(b) The rare target.** On r2 t275 (" in" → " Fig"), with a full-weight SGD 0.1 teacher (E26's rate), is the
+  decomposition after teacher training faithful, and does it keep the teacher's behaviour?
+- **(c) Plain SGD as the map's optimiser.** Teacher training with plain SGD at 0.03 on (U, V) (E34's arm S) failed at step
+  1,000 on r1's SGD teacher. Does it also fail on r1's Adam teacher and r1's LoRA teacher? Here SGD is the optimiser
+  of teacher training, not of the fine-tune.
+- **(d) A LoRA from plain text, longer.** Teacher training on Pile text alone (arm B) of the rank-8 LoRA teacher, run to
+  5,000 steps instead of 1,000. Does it reach P(target) 0.9 and pass, and does a second batch order agree?
+
+### Design check
+
+- **Goal served.** Q1, the weak version under reading A, with teacher training as the map (`decisions.md`,
+  2026-10-26). (a) completes "harmless" on the input distribution the adversary reads. (b) is the weak version's
+  hardest familiar task. (c) is the optimiser subgoal (`GOALS.md`: both optimisers as the map). (d) decides
+  whether the label-free form of the map covers LoRA, the canonical update.
+- **Nearest tried.** E34 (damage read on task windows only; r2 left out; arm S on SGD teachers only), E34 Amendment 3
+  (LoRA arm B at 0.57, 0.88, 0.52 at step 1,000, still rising), Amendment 4 (the batch-order spread), E21 and E26
+  (component training on r2: SGD fails, Adam keeps 0.78-0.90). None read plain-text damage, a teacher on r2, an SGD
+  map on a non-SGD teacher, or a LoRA arm B past 1,000 steps.
+- **Patch or step.** Steps: each fills a cell of the comparison matrix that bears on `GOALS.md`; none patches a
+  failed run.
+- **Decisions relied on.** Γ and Δ frozen; reading A; same-job W₀ floor and `faith_score.state_verdict`; the paper's
+  adversary, one start, 20 steps, passes as lower bounds (2026-10-27). No departure.
+- **What changes what we do next.** In the decision tree below. In short: (a) failing narrows the "harmless" claim and
+  adds a plain-text reading to the Qwen harness. (b) failing says a rare target is out of reach of every Γ-frozen map
+  tried. (c) reading "map" makes Adam the only optimiser of teacher training. (d) plateauing below 0.9 says plain
+  text does not pin down a LoRA, and task text is needed.
+- **Control first.** C1 (W₀ through the harness), then W₀'s own plain-text damage (must read 0), then G1 (the r1
+  SGD teacher reproduces E34, its do-nothing state included), each alone with a stop rule, before any new state.
+  Stage c opens with its own control G3 (arm S on the SGD teacher must fail at step 1,000, as in E34). No reference
+  end state is replayed: every teacher is a deterministic regeneration, read against its same-card numbers.
+
+### Arms and states (one job, cheapest stage first)
+
+| Stage | Teacher | States, each read on E34's harness | Adversary at |
+|---|---|---|---|
+| 0 | — | W₀ (C1); W₀'s plain-text damage | C1 only |
+| G1 | r1 SGD 0.03 | do-nothing, scaled adjoint | do-nothing |
+| a | r1 SGD 0.03, Adam 3e-5, LoRA rank 8 | do-nothing, scaled adjoint, students A and B at 1,000 (LoRA: A only) | none (E34, A3, A4 read them) |
+| c | r1 SGD (G3), then r1 Adam, r1 LoRA | student S (plain SGD 0.03, task windows) at 1,000 | 1,000 |
+| b | r2 t275 SGD 0.1 (gate P ≥ 0.5) | do-nothing, scaled adjoint, students A and B at 1,000 | do-nothing, A, B |
+| d | LoRA on emoticon, r1, r0 | student B, seed 0 to 5,000 (read at 1,000, 2,500, 5,000); then seed 1 to 2,500 (1,000, 2,500) | 2,500 and 5,000 |
+
+Students: A = task windows with the trigger weighting, B = Pile train rows 32,768-40,959 (batch 8, plain mean KL),
+both Adam 1e-5, batch-order seed 0 unless named. Teachers are regenerated: arm-A fine-tunes of all 24 matrices (seed 0,
+step 1,000) and E9's LoRA (`amend3.lora_teacher`). Saved as bf16 offsets: the r2 students and every stage-d student at
+its last step (eight files, about 60 MB each).
+
+Why 5,000 steps for (d): Amendment 3's emoticon student rose by 0.49 between steps 100 and 1,000 and r1's by 0.12, so
+both should cross 0.9 well inside 5,000 if plain text carries the LoRA. r0's rose by 0.06; a plateau below about 0.6
+will show by 5,000. Ten thousand steps would double the cost for r0 alone. The 8,192 rows are reused about five times
+over 5,000 steps; the plain-text gap on held-out val rows shows if that matters. Seed 1 stops at 2,500 steps, the
+point the plateau rule compares against, at half the cost of a full replica.
+
+### Numbers, and what each should read
+
+Per state, E34's seven (adversarial and stochastic ratio with verdict, P(target), teacher gap, damage on task windows,
+size, Δ's share) and three more:
+
+| Number | How measured | W₀ | Do-nothing (the teacher) | Control | Blind to |
+|---|---|---|---|---|---|
+| Plain-text damage | mean KL(W₀ ‖ state), every position of the 256 Pile val rows | 0 (≤ 1e-4, stop rule) | the fine-tune's change on plain text, likely the order of its window damage (r1: SGD 0.056, Adam 0.076, LoRA 0.015) | the do-nothing reading > 0 | harm outside those rows; damage in the masked model |
+| Plain-text gap | mean KL(teacher ‖ state), same rows | the teacher's plain-text damage | 0 by construction | the do-nothing reading 0 | which positions carry it |
+| Faith | `state_verdict` on the two ratios, no P bar | pass | r1 SGD inconclusive (1.588, G1) | S on the SGD teacher: fail (E34 3.14) | adversaries past one start of 20 steps |
+
+Expected for the students: A and B of the full-weight teachers at P 0.97-1.0 and pass (E34, A4), plain-text damage
+0.55-0.97 times their teacher's (E34's window ratios); the r1 LoRA's A student at 2.1 times on windows (A3). The
+adjoint states below their teacher's damage (0.38-0.55 on r1's windows). Stage-d seed 0 at step 1,000 within about
+0.03 of A3's P (reported). P(target) at W₀: 0.004 emoticon, 0.15 r0, 0.04 r1, 0.0034 r2.
+
+**Noise floor.** Amendment 4's batch-order spread: P(target) within 0.032 for Pile-text students, adversarial ratio
+within 25%; C1's adversary-seed floor (0.075 on the H100). The plain-text readings are deterministic per state and
+have no batch-order spread yet, which is why P1's bar is a factor of two.
+
+### Predictions (`results/predictions_amend6.json`, filed before the run)
+
+- **P1, harmless on plain text** (high on the four full-weight students, low on the LoRA one). For r1's SGD-teacher A
+  and B, Adam-teacher A and B and LoRA-teacher A students at step 1,000: plain-text damage at most twice the
+  teacher's, or at most 0.002 nats. Pass needs all five.
+- **P2, r2 student A** (medium-low). "Kept" means P at least the teacher's minus 0.05; "faithful" means faith reads
+  pass. Predicted: kept and faithful.
+- **P3, r2 student B.** As P2, two-sided, lean kept and faithful (" in" is common on the Pile).
+- **P4, plain SGD as the map** (medium, two-sided). Student S at 1,000 on the r1 Adam and LoRA teachers: fail on both
+  reads "map", pass on both "teacher", else "mixed". Lean: map. Needs G3.
+- **P5, a LoRA from plain text, longer** (medium on emoticon and r1, none on r0). Student B at seed 0, step 5,000:
+  learnt (P ≥ 0.9 and pass), learnt but not passed, plateau (50-step mean P rose by under 0.03 from 2,500 to 5,000),
+  or rising. Predicted: emoticon and r1 learnt; r0 not predicted.
+- **P6, second batch order.** Per task, seed 1 against seed 0 at step 2,500: P within 0.05 and adversarial ratio
+  within 25% (Amendment 4's rule). Predicted: holds on all three.
+
+Every rule was run against its edge cases before filing: an empty or partial pool never passes, a teacher with zero
+plain-text damage falls back to the 0.002 bar, ties at each bar count as holding, a skipped r2 teacher reads "not run",
+and a failed G3 reads "unreadable".
+
+### Decision tree
+
+- **C1, W₀'s plain-text damage, or G1 fails.** The run stops; Blocking card, report the numbers.
+- **P1 holds.** Plain-text harmlessness joins teacher training's card and the matrix. It fails on a full-weight
+  student: the claim narrows to task windows, and the Qwen harness gets a plain-text damage reading (designed there).
+  It fails on the LoRA student only: reported beside its window ratio, no follow-up.
+- **P2 kept and faithful.** Teacher training is the first map to place r2's behaviour faithfully. Faithful but not
+  kept: run student A to 3,000 steps on r2 (approved branch, about $0.5). Kept but not faithful, or neither: no
+  Γ-frozen map tried places a rare target; a pending-decision card, since it bears on the "Create" reading and on
+  updating Γ. Teacher skipped by the gate: report; an Adam teacher on r2 needs its own check, since its P is 0.82.
+- **P4 "map".** Adam is the only optimiser for teacher training; the lead adds a `decisions.md` row and the
+  optimiser subgoal's reading. "Teacher": the late failure needs the SGD teacher; next, arm S on it at seed 1
+  (approved, class 2, about $0.5). "Mixed": reported per teacher. G3 fails: stop and tell the lead.
+- **P5 learnt on all three.** The text-only map covers a rank-8 LoRA given more steps; claims row and techniques card
+  updated. A task in plateau whose student has taken nine tenths of the teacher's change on plain text (its
+  plain-text gap at most a tenth of the teacher's plain-text damage): plain text does not carry that LoRA. The
+  label-free map then needs task text for it, Amendment 3's first explanation. Plateau with a larger gap, or rising: that task's student B to 10,000 steps (approved branch, about
+  $1.5). "Learnt, not passed" on any task: a qualitative surprise; stop and tell.
+- **P6 fails.** The spread is reported, and every P5 category within 0.05 of its bar is marked unsettled.
+
+### Cost and routing
+
+| Stage | Minutes (H100, from E34, A3 and A5 logs) |
+|---|---|
+| Load, C1, W₀ plain-text control | 4 |
+| G1 (r1 task context, teacher, do-nothing with the adversary, adjoint) | 3 |
+| a (two fine-tunes and a LoRA, five students, Pile train stream about 3 min) | 13 |
+| c (three S students with the adversary at 1,000) | 7 |
+| b (r2 context, teacher, do-nothing, adjoint, two students with the adversary) | 8 |
+| d seed 0 (three 5,000-step students at about 0.1 s per step, six adversary reads) | 33 |
+| d seed 1 (three 2,500-step students, three adversary reads) | 17 |
+| **Run** | **about 85** |
+
+About 100 min with set-up and downloads: RunPod "NVIDIA H100 80GB HBM3" (over 30 min, and E34's floor and references
+are that card's), about $8 at E34's effective $4.7/h, cap $10, against the session's $40. If the session budget is
+short, the run can stop after stage d's seed 0 (about $6.5); every stage writes its results as it finishes.
+
+### Not in this plan
+
+- The r2 Adam 3e-5 teacher: one teacher keeps stage b at 8 min, and E21 read that fine-tune at only P 0.82 (L40), so the SGD teacher is the cleaner first read.
+- Arm S at a second batch order, on emoticon or r0, or read by the adversary at step 100.
+- The adversary on stage a's students (E34, A3 and A4 read them), and on the Adam and LoRA do-nothing states.
+- Student B past 5,000 steps, on more than 8,192 rows, or at seed 1 past 2,500.
+- A longer adversary or more starts (decided 2026-10-27).

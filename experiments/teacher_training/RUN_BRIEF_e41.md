@@ -7,7 +7,8 @@ without it, and also if its `config` or `e41` entries differ from `run.py`'s `CF
 ```
 Experiment: teacher_training   Run: E41, scored (its own smoke: C1, G1, the do-nothing reads and G3 come in its first
             ~10 min, C2 by ~17 min)
-Command: mkdir -p experiments/teacher_training/results/large
+Command: [ -L experiments/teacher_training/results/large ] && rm experiments/teacher_training/results/large
+         mkdir -p experiments/teacher_training/results/large
          (.venv/bin/python experiments/teacher_training/path.py cuda; echo "=== FINISHED (exit $?) — results in <repo>/experiments/teacher_training/results ===") 2>&1 | tee -a experiments/teacher_training/results/large/run_e41.log /proc/1/fd/1
          (start it as a background subprocess; no execute() or wait() over 5 min, re-arm instead)
 Expected: about 50 min of run on the H100 (E34 and Amendment 3 timings, see stages), + set-up and downloads;
@@ -15,16 +16,20 @@ Expected: about 50 min of run on the H100 (E34 and Amendment 3 timings, see stag
 Outputs: results/teacher_training_e41.json (rewritten after every reading; "score" and "done" at the end) -> bring home
          results/large/run_e41.log -> bring home
          No .pt files: the run saves no states.
-Inputs not in git (sync with include=[<the gitignored directory itself>], then check sha256 on both sides):
-         experiments/transport_test/results/large            (alive.pt 361 KB, windows.pt 156 KB)
-         experiments/task_ladder/results/large/windows_r1_t534_v369.pt   (263 KB). Every results/large is a symlink
-                  that arrives dangling: hard-link this one file into a staging path ending in
-                  task_ladder/results/large/ and name that path, replace the symlink on the pod with the real
-                  directory, then delete the staging directory on both sides
+Download target: results/large/run_e41.log goes to experiments/teacher_training/results/e41_dl/run_e41.log, never into
+         results/large (a symlink into commute-data: download() there is refused and a mv waits at a prompt). Move it
+         into results/large only after the pod is terminated. The JSON goes to its own place, results/.
+Inputs not in git (each results/large below is a symlink that arrives on the pod dangling: stage by hard link, then on
+         the pod replace each symlink, including experiments/teacher_training/results/large, with a real directory
+         before any mkdir or tee; sync(include=[<path ending in results/large>]); check sha256 on both sides; delete the
+         staging directories on both sides afterwards):
+         experiments/transport_test/results/large/{alive.pt 361 KB, windows.pt 156 KB}
+         experiments/task_ladder/results/large/windows_r1_t534_v369.pt   (263 KB)
          artifacts/vpd: let pod_setup.sh fetch it from W&B on the pod (works, ~65 s, 2026-10-27); only if that
                   fails, stage it by hard link as RUN_BRIEF_amend5.md describes
          artifacts/sets/val_0_256.npy (1 MB; optional, otherwise it streams in ~1 min). Pile train rows
                   32,768..40,959 (arm B) stream in-job, ~3 min
+         path.py and predictions_e41.json are untracked unless the lead commits them first: check they are on the pod.
          NOT needed: any .pt under teacher_training/results/large (no saved state is read)
 Platform: RunPod "NVIDIA H100 80GB HBM3" directly (over 30 min; C1's floor 0.0748, G1, G3 and the noise floor are
           that card's; an L40 reads ~0.21 and stops at C1). Pod commute-teacher_training-e41-<id>, label set through
@@ -44,7 +49,7 @@ Per state, `run.read_state` prints `[<label>] p_target ... pgd ... verdict ...` 
 | Load + C1 | model, harness, W₀ on Pile adversary seeds 0, 1, 2 (`[pile W0 seed s]`); run.py's `[C1] <s> s; {...}`, then path.py's `[C1] {"pass": ..., "pgd_floor": ...}` | ~3 min |
 | emoticon teachers | fine-tune (`[ft] checkpoint 10/100/1000`), `[emoticon T10]`, `[emoticon T100]`, `[emoticon T1000]` (P, damage, size, gap_w0), `[G1 emoticon]` | ~0.7 min |
 | emoticon do-nothing | `[emoticon T10 do-nothing]`, `T100`, `T1000` (expected pgd 2.52, 1.14, 1.50) | ~3 min |
-| emoticon arm A | `[emoticon A oneshot T1000]`, then `[G3 emoticon]`; `oneshot T10`, `oneshot T100`; `[C2] {...}`; `chain T100`, `chain T1000`; `[emoticon A] cosine ...` | ~12 min (each copy ~85 s training + ~55 s read) |
+| emoticon arm A | `[emoticon A oneshot T1000]`, then `[G3 emoticon]`; `oneshot T10`; `[C2] {...}`; `oneshot T100`; `chain T100`, `chain T1000`; `[emoticon A] cosine ...` | ~12 min (each copy ~85 s training + ~55 s read) |
 | emoticon arm B | the Pile train stream (`[data] train rows 32768..40960`, ~3 min, once); the same five copies and the cosine line | ~16 min (each copy ~100 s + ~55 s) |
 | r1 | task context (~1 min, quiet), fine-tune, `[r1_t534_v369 T*]`, `[G1 r1_t534_v369]`, three do-nothing reads, arm A as emoticon's with `[G3 r1_t534_v369]` | ~16 min |
 | Score | `[score] {...}` then `done` | seconds |
@@ -54,12 +59,12 @@ Per state, `run.read_state` prints `[<label>] p_target ... pgd ... verdict ...` 
 C1 runs first and alone. If its `[C1] {"pass": false, ...}` line appears, the run halts with a `STOP:` line. Nothing
 else runs, so report the line and terminate. The same goes for G1, G3 and C2, which stop the run themselves.
 
-## Downloads (into the matching parent; check the local layout after the first, since download() of a directory nested it, 2026-10-19)
+## Downloads (the JSON into results/, the log into results/e41_dl/, never results/large; check the local layout after the first, since download() of a directory nested it, 2026-10-19)
 
-- After `[G3 emoticon]`: `teacher_training_e41.json`.
-- After each `[<task> <arm>] cosine ...` line (a group finished): the JSON and `run_e41.log`.
+- After `[G3 emoticon]`: `teacher_training_e41.json` (to `results/`).
+- After each `[<task> <arm>] cosine ...` line (a group finished): the JSON (to `results/`) and `run_e41.log` (to `results/e41_dl/`).
 - Before `terminate()`: the JSON (with `"done": true` and `score`) and `run_e41.log`. Check sha256 on both sides,
-  then terminate. Terminate before any local file move.
+  then terminate. Terminate before any local file move; move `results/e41_dl/run_e41.log` into `results/large/` afterwards.
 
 ## Stop rules (the run halts itself with a `STOP:` line; report that line and the numbers named here, then terminate)
 
