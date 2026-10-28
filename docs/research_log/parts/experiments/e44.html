@@ -1,0 +1,10 @@
+<article class="exp" id="e44">
+<div class="top"><span class="id">E44</span><span class="chip open">planned</span><h3>Qwen3-1.7B: can the pass test fail a bad placement, and how do simple splits of E40's update read on it?</h3><span class="when">2026-10-28 · RunPod H100 · <code>experiments/qwen_maps</code></span></div>
+<p class="one">Due to run once the code is written: about $8 on one H100. It first checks that the pass test can fail three deliberately bad placements of E40's update; if it cannot, the line stops for you. Only then does it read three simple splits of the update.</p>
+<dl class="fields">
+<dt>Run</dt><dd>E40's saved weight changes after 1 and 10 steps (step 100 only if a split passes at step 10) are written into the subcomponents. The three bad placements are a split onto the subcomponents Γ rarely turns on for maths text, a random change with the same effect on the inputs, and doing nothing. Then the least-squares split, the least-squares split without the part outside the subcomponents' span, and the scaled adjoint split; each is read against the unchanged decomposition on the same text.</dd>
+<dt>Found</dt><dd>Nothing yet. No prediction is filed on whether a split passes: this update is a large format change, so the run tests the pass test and the scoring, and is not evidence for the weak version. Q2's anchor updates carry that.</dd>
+<dt>Bears on</dt><dd>Q9, Q1</dd>
+<dt>Moved on</dt><dd>Q2's two anchor updates of known kind follow in the re-plan. Plan: <code>reports/plans/2026-10-28_plan_qwen-q0q1.md</code>; Fable's advice: <code>reports/reviews/2026-10-28_review_e44-plan-fable-advice.md</code>.</dd>
+</dl>
+</article>
