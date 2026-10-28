@@ -82,7 +82,7 @@ unchanged model's.
 
 The only reading about an update is E40's. Doing nothing passes its web-text check after a step or ten, so that check
 cannot fail the trivial placement. E44 exists to give the check teeth. Its code is reviewed and fixed, and a $0 cluster
-rehearsal on the fixed code ran clean. The paid run waits for a free H100; whether to take a dearer H200 instead is a pending decision.
+rehearsal on the fixed code ran clean. The paid run then started on an H100: its unchanged-model control held, but it stopped at a precision check on the stored update before any split was read. A free cluster diagnosis comes next.
 
 ## 3. Claims and the evidence under each
 
@@ -164,7 +164,7 @@ The log's claims section has no Qwen row. No map has been scored on Qwen.
 
 | Deliverable | Supported now by | In flight | Not built |
 |---|---|---|---|
-| D1, a clean decomposition of an update at scale | nothing on Qwen; the 67M's C1-C3 as the precedent | E44: the test with teeth and the cheap maps on E40's saved updates; the $0 rehearsal on the fixed code ran clean; the paid run, about $8, waits for an H100, with an H200 at about $11-14 a pending decision | a check that the unchanged model's adversarial sources still exist on the volume |
+| D1, a clean decomposition of an update at scale | nothing on Qwen; the 67M's C1-C3 as the precedent | E44: the test with teeth and the cheap maps on E40's saved updates; the paid run held its control, then stopped at a precision check on the stored update, $1.45 spent; a $0 diagnosis next | a check that the unchanged model's adversarial sources still exist on the volume |
 | D2, the same for SFT and RL | nothing | E45 Job 1, on the cluster for $0: the control and the gold update match E40; reading the arms is gated at $15-20 | the GRPO loop; ~8,000 sampled GSM8K answers |
 | D3, elicitation against a new mechanism | the 67M's R1-R5 as an instrument, and C2's cipher; nothing at scale | E45 Job 1: anchor 2, the invented facts, was not learned by step 100 on seed 0, and its maths accuracy fell; Amendment 1 trains 300 steps on both seeds | the invented-facts set; the context-distillation prompt search; the Qwen readings of Γ's change and the think-mode overlap |
 
