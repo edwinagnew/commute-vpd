@@ -1,0 +1,97 @@
+"""SFT of Qwen3-1.7B's 196 decomposed matrices with δW saved where the KL to start crosses a fixed grid (E45, plan
+reports/plans/2026-10-28_plan_qwen-q2.md, section 3). The step, loss and optimiser are `qwen_sft`'s (E40, E40
+Amendment 1): fp32 master weights, bf16 autocast forward, AdamW, the library's warm-up and cosine schedule, gradient
+clipping. Batches are `qwen_sft.Item`s: sequences (prompt length) or packed rows (per-token target flags).
+
+At each read step the KL to start, mean over every position of KL(W0 ‖ W_t) in fp32, is read on each axis's tracker
+rows. The first read at or past a grid value on an axis saves δW (bf16) at that step and at the read step before it
+(the bracket; none when the first read is already past); step `steps` is always saved. Which of the two states is
+read at the grid value is decided later, from the KL on all rows (`qwen_updates.choose`).
+"""
+
+from __future__ import annotations
+
+import math
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
+from typing import Any
+
+import torch
+from torch import Tensor
+
+from commute.qwen_sft import (
+    Item,
+    Weights,
+    adamw,
+    lr_at,
+    lr_schedule,
+    mean_kl,
+    sft_step,
+    trainable,
+)
+from commute.qwen_updates import crossed
+
+DEV = "cuda"
+
+
+@dataclass(frozen=True)
+class Recipe:
+    lr: float
+    warmup: int  # "hf_cosine": steps of linear warm-up, step 1 at rate 0 (`qwen_sft.lr_at`)
+    steps: int
+    schedule: str  # "constant" or "hf_cosine"
+    clip: float | None
+    micro: int
+
+
+def delta(params: Mapping[str, Tensor], W0: Weights) -> dict[str, Tensor]:
+    """δW in bf16 on the host, one matrix at a time (no GPU copy of the whole change)."""
+    return {s: (p.detach() - W0[s]).to("cpu", torch.bfloat16) for s, p in params.items()}
+
+
+def one_step(model: Any, params: Mapping[str, Tensor], W0: Weights, opt: Any, sched: Any, batch: Sequence[Item],
+             r: Recipe, t: int) -> dict[str, Any]:
+    """One optimiser step; returns its rate, loss, gradient norm (before clipping) and |δW| per matrix after it."""
+    lr = opt.param_groups[0]["lr"]
+    assert math.isclose(lr, lr_at(t, r.lr, r.warmup, r.steps, r.schedule), rel_tol=1e-9, abs_tol=1e-15), (t, lr)
+    opt.zero_grad(set_to_none=True)
+    model.train()
+    loss = sft_step(model, batch, r.micro, DEV)
+    model.eval()
+    gnorm = float(torch.nn.utils.clip_grad_norm_(list(params.values()), r.clip or math.inf))
+    opt.step()
+    if sched is not None:
+        sched.step()
+    with torch.no_grad():
+        norms = {s: float((p.detach() - W0[s]).norm()) for s, p in params.items()}
+    return {"step": t, "lr": lr, "loss": loss, "grad_norm": gnorm, "norms": norms,
+            "dw_norm": math.sqrt(sum(v * v for v in norms.values()))}
+
+
+def train(model: Any, W0: Weights, batch_at: Callable[[int], Sequence[Item]], r: Recipe, axes: dict[str, list[Tensor]],
+          reads: set[int], grid: Sequence[float], save: Callable[[int, dict[str, Tensor]], None],
+          on_step: Callable[[dict[str, Any]], None]) -> None:
+    """r.steps steps from W0. After each step `on_step` gets its record (with `kl` per axis and `crossed` at read
+    steps); it runs inside the training context, so it may read the model as it stands (the early checks)."""
+    done: set[tuple[str, float]] = set()
+    saved: set[int] = set()
+    prev: tuple[int, dict[str, Tensor]] | None = None
+    with trainable(model, W0) as params:
+        opt = adamw(params, r.lr)
+        sched = lr_schedule(opt, r.warmup, r.steps, r.schedule)
+        for t in range(1, r.steps + 1):
+            rec = one_step(model, params, W0, opt, sched, batch_at(t), r, t)
+            if t in reads:
+                rec["kl"] = {a: mean_kl(model, rows, W0, None) for a, rows in axes.items()}
+                new = crossed(rec["kl"], done, grid)
+                rec["crossed"] = [{"axis": a, "grid": g, "lo": prev[0] if prev else None, "hi": t} for a, g in new]
+                dW = delta(params, W0) if new or t == r.steps or len(done) + len(new) < len(axes) * len(grid) else None
+                if dW is not None and (new or t == r.steps):
+                    save(t, dW)
+                    saved.add(t)
+                if new and prev is not None and prev[0] not in saved:
+                    save(*prev)
+                    saved.add(prev[0])
+                done |= set(new)
+                prev = (t, dW) if dW is not None and len(done) < len(axes) * len(grid) else None
+            on_step(rec)
