@@ -1,0 +1,219 @@
+{
+ "about": "E42 Amendment 2, which masked term moves the decomposition with nothing to copy, then the cipher copy with the term(s) that hold still (reports/plans/2026-10-28_plan_e42-teacher-new-behaviour.md -> 'Amendment 2'; decisions.md, card decision-e42-masked). Task rand32 only, one job. Every recipe is Amendment 1's (E42's arm A: task windows, Adam 1e-5, batch 32, batch-order seed 0, 1000 steps, Gamma and Delta frozen; loss arm-A-weighted KL(teacher || unmasked student) + masked terms matched to the teacher) with commute.masked_terms' weights: 'ci' = CI-masked 0.5, stochastic 0; 'st' = CI-masked 0, stochastic 0.5; 'trig' = both 0.5, each read as its KL at the trigger alone (no weight on the other 40 positions). A term with weight 0 is computed without a gradient and logged; the batches and mask draws are Amendment 1's. Filed before any run",
+ "amend1": {
+  "coeff": 0.5,
+  "e42_ci": [
+   [
+    "rand32",
+    0.007
+   ],
+   [
+    "rand1",
+    0.001
+   ]
+  ],
+  "g2_max": 0.01,
+  "kept": 0.5,
+  "lost": 0.1,
+  "tasks": [
+   "rand32",
+   "rand1"
+  ]
+ },
+ "amend2": {
+  "fallback": "trig",
+  "first": [
+   "ci",
+   "st"
+  ],
+  "recipes": [
+   [
+    "ci",
+    0.5,
+    0.0,
+    false
+   ],
+   [
+    "st",
+    0.0,
+    0.5,
+    false
+   ],
+   [
+    "trig",
+    0.5,
+    0.5,
+    true
+   ]
+  ],
+  "task": "rand32"
+ },
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, seeds 0, 1, 2), faith_score.w0_check. Expected: pass, floor 0.2088 on an L40 (E42's), pass line 1.24, fail line 1.81. Stop",
+  "G1": "E42's: the regenerated teacher's held-out P(target) at step 10 within 0.02 of E10's (rand32 0.5847, rand1 0.9982). Stop",
+  "G2": "the trainer's unmasked term with the teacher at W0, on its first batch: the component path's KL to the target model, arm A's weighting. Expected about 1e-3 (E37 Amendment 1: 0.00065 per Pile position). Above 0.01: stop (the trainer's forward is not the model's). Amendment 1 read 0.0016",
+  "M0_ci, M0_st": "stage 1, both always, before the teacher: recipe 'ci' and recipe 'st' with the teacher at W0, 1000 steps, Pile harness. Expected if a recipe holds still: P(target) and trigger CI-masked P(target) at W0's (under 1e-3), damage elsewhere under 0.02, adversarial ratio 0.8-1.24, stochastic about 1. Amendment 1's M0 (both terms) read 25.99 / 1.028. Scored as C_ci, C_st",
+  "M0_trig": "only when M0_ci and M0_st both fail: recipe 'trig' with the teacher at W0, as above. Scored as C_trig. If it fails too the job stops: no copy (decision-e42-criterion stays as it is)",
+  "references": "W0's trigger cells and E42's saved arm-A copy re-read at the trigger in this job: its trigger CI-masked P(target) expected within 0.005 of E42's logged 0.007 (rand32) and 0.001 (rand1) (bf16 rounding of the saved offsets). Reported, not a stop"
+ },
+ "e42": {
+  "e10": [
+   [
+    "rand32",
+    0.5847,
+    0.9965
+   ],
+   [
+    "ident32",
+    0.9595,
+    0.9995
+   ],
+   [
+    "rand1",
+    0.9982,
+    1.0
+   ]
+  ],
+  "g1_tol": 0.02,
+  "masked_hi": 0.5,
+  "masked_lo": 0.25,
+  "pile_reading_rows": 1024,
+  "tasks": [
+   "rand32",
+   "ident32",
+   "rand1"
+  ],
+  "teacher_checkpoints": [
+   10,
+   300,
+   1000
+  ],
+  "teacher_lr": 3e-05,
+  "teacher_p_min": 0.9
+ },
+ "expected": {
+  "Amendment 1's M0 (both terms, arm A's weighting)": "P 1.6e-5; trigger CI-masked P 1.4e-5; adversarial 25.99 fail, stochastic 1.028; damage 0.023; size 0.051",
+  "E42's copy (arm A, same card)": "P 0.964; trigger CI-masked P 0.007; adversarial 0.960, stochastic 0.936, pass",
+  "M_ci, M_trig": "P >= 0.9; trigger CI-masked P >= 0.5; adversarial <= 1.24; the CI-masked term's trigger KL over the last 50 steps well under its first 50",
+  "M_st": "P >= 0.9; trigger CI-masked P not trained directly, expected under 0.1; adversarial <= 1.24",
+  "W0": "held-out P(target) about 1.5e-5 (rand32), 1.7e-4 (rand1); trigger CI-masked P(target) about the same; ratios 1",
+  "a control that holds still": "P and trigger CI-masked P under 1e-3; adversarial 0.8-1.24; stochastic about 1; damage under 0.02"
+ },
+ "filed": "2026-10-28 14:13:50",
+ "measurements": {
+  "Pile verdict": "faith_score.state_verdict: P(target) >= 0.9, then the adversarial and stochastic Pile ratios to this job's W0 seed 0, each against its own floor (pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f))",
+  "control class": "the Pile verdicts of faith_score.state_verdict (each ratio against this job's W0 floor: pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f); f = 0.209 on the L40 gives 1.24 / 1.81 adversarial, 1.497 / 1.503 stochastic), read whatever P(target) is",
+  "held-out P(target)": "arms.heldout_of: the target model W0 + delta-W at the trigger, mean over held-out windows",
+  "trigger CI-masked P(target)": "local_faith.route_split's p_cells L11: mean over the 97 held-out windows of P(table[key]) at the trigger from the model built from the subcomponents alone under Gamma's masks on the state's own activations, Delta out"
+ },
+ "noise_floors": "held-out P(target) between batch orders 0.005 on task text (E34 Amendment 4); W0's adversarial ratio between adversary seeds 0.21 on the L40; a trained copy's ratio between batch orders up to 25% (E34 Amendment 4); the trigger CI-masked P between batch orders is unmeasured: the 0.1 and 0.5 lines sit 14x and 70x above E42's rand32 copy (0.007); a control's adversarial ratio between batch orders is unmeasured (Amendment 1's M0 read 11 and 25 nats on its two 128-row blocks)",
+ "not_run": [
+  "rand1 and ident32; a second batch order; other weights",
+  "the persistent adversary in the loop; the masked terms on Pile rows",
+  "M0_trig when a single-term control holds; a second copy when both hold (M_st)",
+  "the plain-text leak of the copy (kv_windows.pile_reading on its saved state)",
+  "VPD's sparsity loss; a longer adversary or other starts"
+ ],
+ "predictions": [
+  {
+   "blind_to": "one batch order, one weight, one adversary start of 20 steps on 256 Pile rows; whether the term would hold beside the other",
+   "id": "C_ci",
+   "kind": "classification, filed with a lean",
+   "lean": "fail (medium): it trains only the corner where every mask is Gamma's g; the unmasked term pins the other corner, so the switched-off subcomponents can change to cancel the switched-on ones' changes, and a mask the adversary sets between the corners undoes the cancelling",
+   "outcomes": {
+    "fail": "the CI-masked term moves the decomposition with nothing to copy",
+    "inconclusive": "holds for the tree; flagged",
+    "pass": "the CI-masked term alone holds still"
+   },
+   "positive_control": "Amendment 1's M0 failed at 25.99 on the same card and rows; E42's copy passed at 0.96",
+   "rule": "M0_ci at step 1000: any Pile ratio NaN, or the adversarial or the stochastic verdict 'fail' -> 'fail'; else either verdict 'inconclusive' -> 'inconclusive'; else 'pass'. Absolute (each ratio to this job's W0 seed 0, against its own floor)"
+  },
+  {
+   "blind_to": "as C_ci",
+   "id": "C_st",
+   "kind": "classification, filed with a lean",
+   "lean": "pass (low): random masks between g and 1 on every subcomponent penalise exactly the cancelling a CI-only fit allows; against it, E37 Amendment 1's control with VPD's stochastic subset loss (and its adversary) failed at 3.84, and Amendment 1's analysis expected an average-case term alone to fail",
+   "outcomes": {
+    "fail": "the stochastic term moves the decomposition too",
+    "inconclusive": "holds for the tree; flagged",
+    "pass": "it holds still alone"
+   },
+   "positive_control": "as C_ci",
+   "rule": "as C_ci, on M0_st"
+  },
+  {
+   "blind_to": "as C_ci",
+   "id": "C_trig",
+   "kind": "classification, filed with a lean; scored only if run",
+   "lean": "fail (low): one position of 41 asks less, but the trigger is where the masked students start furthest off (0.69 and 0.44 nats) and it still has no worst-case term",
+   "outcomes": {
+    "fail": "stop: no frozen-Gamma masked recipe tried here holds still",
+    "inconclusive": "the copy runs; flagged",
+    "pass": "the copy runs with it"
+   },
+   "positive_control": "as C_ci",
+   "rule": "as C_ci, on M0_trig (run only when C_ci and C_st both read 'fail')"
+  },
+  {
+   "blind_to": "a mean over 97 held-out windows at one position, which share the training windows' keys (new contexts, not new keys); whether the map leaks onto keys without the marker in plain text; the adversary at the trigger; which subcomponents carry it; one batch order, one coefficient; the recipe was picked by its control",
+   "id": "P1_copy_masked_model_keeps",
+   "kind": "classification, filed with a lean per recipe",
+   "lean": {
+    "ci": "kept (medium-low): the term trains the scored quantity, on the training windows' 32 keys",
+    "st": "not kept (low): the CI-masked model is not trained; random masks favour the switched-on set only on average, and a switched-off subcomponent is half on under them",
+    "trig": "kept (medium-low): the scored quantity at the scored position"
+   },
+   "outcomes": {
+    "did not copy": "the masked terms cost the copy itself",
+    "kept": "a frozen Gamma can carry the new behaviour in the CI-masked model: E42's masked-off route came from the loss, not from Gamma being frozen",
+    "not kept": "the masked loss stalls: with Gamma frozen the subcomponents it switches on at the trigger cannot carry the behaviour under this recipe",
+    "partly": "the masked terms move it but not to the line in 1000 steps"
+   },
+   "positive_control": "E42's ident32 copy, whose gain Gamma supports, read 0.929 on the same reading (E42 log, same card); in-job negatives: W0's cells and E42's rand copy re-read (0.007 / 0.001)",
+   "rule": "the copy that runs (M_ci, M_st or M_trig) at step 1000: Amendment 1's P1 rule (held-out P(target) < 0.9 or NaN -> 'did not copy'; else trigger CI-masked P(target): NaN -> 'unscorable'; >= 0.5 -> 'kept'; < 0.1 -> 'not kept'; otherwise 'partly'). Absolute"
+  },
+  {
+   "blind_to": "one adversary start of 20 steps on 256 Pile rows (E34 Amendment 5: one-start verdicts may be lenient); VPD's sparsity loss, not read; damage to plain text beyond the ratios",
+   "id": "P2_copy_faithful",
+   "kind": "classification, filed with a lean",
+   "lean": "pass (low): its control held and E42's copy passed with 0.25 to spare; against it, copying moves the subcomponents further than the control did",
+   "outcomes": {
+    "did not copy": "as P1",
+    "fail": "carrying it in the switched-on subcomponents costs the Pile check",
+    "inconclusive": "rerun the task on an H100 (pass line 1.40, fail 1.61), the plan's tree",
+    "pass": "with P1 'kept': a frozen-Gamma map keeps the new behaviour in the CI-masked model and passes"
+   },
+   "positive_control": "E42's least-squares split failed on the same card and reading (1.98 rand32, 1.83 rand1)",
+   "rule": "the copy that runs, at step 1000: Amendment 1's P2 rule (faith_score.state_verdict: pass / inconclusive / fail; 'below P 0.9' -> did not copy; no Pile reading -> unscorable). Absolute"
+  }
+ ],
+ "reported_not_scored": [
+  "G2's masked terms at W0; every trained state's curve in 50-step blocks (each term, and its KL at the trigger, the unweighted term included)",
+  "every state's route shares, gain, unmasked trigger P, every Pile ratio, damage elsewhere, size, teacher gap, Delta's share; the copy at step 100 (no Pile harness)",
+  "W0's trigger cells; E42's copy re-read at the trigger; E42's floor beside this job's"
+ ],
+ "tree": "a control holds when its class is 'pass' or 'inconclusive'. Exactly one of M0_ci, M0_st holds -> the copy M_<that recipe>; both hold -> M_ci (the term that targets the trigger reading); neither -> M0_trig, then M_trig if it holds, else stop. A copy run after an 'inconclusive' control: its fail or inconclusive is not attributed to copying"
+}

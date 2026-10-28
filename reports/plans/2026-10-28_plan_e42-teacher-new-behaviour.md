@@ -386,3 +386,206 @@ one H100 pod, about 20 minutes of run plus set-up, about $2. The L40's wider ban
 ident32; a coefficient sweep, one masked term alone, or the masked terms at the trigger only; the persistent adversary
 in the loop; a second batch order; the plain-text leak of arm M (a $0 branch above); VPD's sparsity loss; Pile-text
 training (arm B) with the masked terms; a longer adversary or other starts; updating Γ; the larger model.
+
+## Amendment 2 (2026-10-28): each masked term alone with nothing to copy, then the copy with the term that holds still
+
+### The question, in plain words
+
+Amendment 1 added two masked terms to teacher training and first ran the recipe with nothing to copy. That control
+broke the adversarial check on Pile text (ratio 26, fail line 1.81) while the random-mask check stayed level (1.03), so
+the cipher copy was never run. This amendment asks which of the two terms does the damage, by running the
+nothing-to-copy control twice, once with each term alone. If one term alone holds still, the cipher copy runs with that
+term and is read as Amendment 1 would have read it. If neither does, one last control puts both terms at the trigger
+position only, and if that fails too the masked line stops. This is the tree the lead recommended and the user took
+(decisions.md, last row: card `decision-e42-masked`).
+
+**Restated in the Terms' words (what the lead confirms).** Every recipe is Amendment 1's: component training of the
+alive (U, V) from W₀'s values, Γ and Δ frozen, on rand32's 403 training windows, Adam 1e-5, batch 32, batch-order
+seed 0, 1,000 steps. The loss is KL(teacher ‖ student) with arm A's weighting (the KL at the trigger plus the mean KL
+over the other 40 positions), plus masked terms each matched to the teacher:
+- **ci**: + 0.5 KL(teacher ‖ CI-masked student), arm A's weighting; no stochastic term.
+- **st**: + 0.5 KL(teacher ‖ stochastic-masked student), arm A's weighting; no CI-masked term.
+- **trig**: + 0.5 of each, each read as its KL at the trigger alone (no weight on the other 40 positions); the
+  unmasked term keeps arm A's weighting.
+
+The CI-masked student is the model built from the subcomponents alone, under Γ's masks on the student's own
+activations, with Δ left out. The stochastic-masked student draws masks g + (1 − g)·r with r uniform, all layers, and Δ
+under its own random mask. A control is the recipe with the teacher at W₀ (nothing to copy); the copy is the recipe
+with E42's cipher teacher. One task (rand32), one job.
+
+**Code.** A new module, `src/commute/masked_terms.py`, generalises `masked_copy.train` with a weight per masked term
+and a trigger-only option. A term with weight 0 is computed without a gradient and logged. The batches, the mask draws
+and the forwards are `masked_copy.window_terms`'s, in its order, so ci and st see Amendment 1's batches and masks, and
+(0.5, 0.5, arm A's weighting) is `masked_copy.train` up to the rounding of the sum. No existing file is edited. The run
+script `experiments/teacher_training/newskill_amend2.py` reuses Amendment 1's G2, state read, references and P1/P2
+rules.
+
+### Design check (`/design`)
+
+- **Goal served.** `GOALS.md` → "If no simple Φ works": is a failure the update's (a new capability) or the
+  decomposition's (frozen Γ)? E42 found the cipher in subcomponents Γ keeps off at the trigger. Whether a frozen-Γ map
+  can be trained to keep it in the CI-masked model is still untested, because Amendment 1's recipe broke its own
+  control. This finds the part of that recipe that breaks it, and runs the copy if a part holds still.
+- **Nearest tried.** E42 Amendment 1 (both terms, failed its control at 26); E37 Amendment 1 (VPD's stochastic subset
+  loss and persistent adversary, matched to the student's own output on Pile rows, failed its control at 3.84, and
+  3.14 at a tenth of the weights). Neither separated the terms. Amendment 1's analysis listed "each masked term alone"
+  as one of three tests of its hypothesis.
+- **Patch or step.** A patch on Amendment 1: the controls only say which term moves the decomposition. It becomes a
+  step toward the goal only through the copy, which runs if a term holds.
+- **Decisions relied on.** decisions.md's last row (this tree, $0, MATS cluster); Γ frozen; teacher training as the
+  map (2026-10-26); E21's verdict rule with the same-job W₀ floor; E34's student settings. Departure, as in Amendment
+  1 and flagged there: the 67M model, although the commute line has moved to the larger model.
+- **What changes next.** ci holds → the copy with the CI-masked term, the direct test Amendment 1 meant; its P1 then
+  answers whether a frozen Γ can carry the cipher in the CI-masked model. Only st holds → the CI-masked term is what
+  breaks the check; the copy with the stochastic term says whether random masks alone pull the cipher into the
+  switched-on set, but a "not kept" there leaves the frozen-Γ question open. Both fail → the trigger-only control; if
+  it fails too, the masked line stops and card `decision-e42-criterion` stays as it is, with masked teacher training
+  marked as tried and failed.
+- **Control first.** C1 (W₀ under the Pile harness) runs first and alone, then G2 (the trainer's forward path at W₀),
+  then the controls, each alone and before the teacher is made. A control does not stop the job: the tree reads it.
+  C1, G2 and G1 stop it.
+- **Reference recipe replayed.** Each control is Amendment 1's M0 with one masked weight set to 0. What differs:
+  (1) the term with weight 0 is computed without a gradient, which changes neither the loss nor the random draws;
+  (2) the loss sums 0.5 a + 0.5 b rather than 0.5 (a + b), a rounding difference. trig differs from M0 in the masked
+  terms' weighting only. The copy differs from its control only in the teacher.
+- **Class.** 3: a step of the tree the user approved on card `decision-e42-masked` (decisions.md, 2026-10-28, "go with
+  whatever you recommend on the masked one"). No sign-off needed.
+
+### Arms and run order (one job, rand32)
+
+| Stage | What | Stops the job when |
+|---|---|---|
+| C1 | W₀ under the Pile harness, adversary seeds 0, 1, 2 | `w0_check` fails |
+| G2 | Amendment 1's path check: the trainer's unmasked term at W₀ on its first batch | path KL > 0.01 nats |
+| M0_ci | recipe ci, teacher = W₀, 1,000 steps, Pile harness; state saved | never (the tree reads it) |
+| M0_st | recipe st, the same | never |
+| M0_trig | recipe trig, the same; only if M0_ci and M0_st both read "fail" | it fails too: the tree's stop |
+| teacher, G1 | E42's teacher regenerated; step-10 P within 0.02 of E10's | G1 fails |
+| references | W₀'s trigger cells; E42's saved arm-A copy re-read at the trigger | — |
+| M_<recipe> | the copy with the recipe the tree picks; step 100 read without, step 1,000 with the Pile harness; step-1,000 state saved | — |
+
+Every trained state's last step is saved as bf16 offsets in `results/large/e42_amend2/rand32/` (about 60 MB each), so
+a control can be re-read without a rerun (Amendment 1's M0 could not). The JSON holds each state's training curve in
+50-step blocks (every term and its trigger KL, the unweighted term included) and its trigger CI-masked P(target)
+(`p_ci_trigger`).
+
+### The numbers
+
+"Amendment 1's M0" is both terms at 0.5 with the teacher at W₀, same card, rows and batches. "E42 arm A" is teacher
+training with no masked terms.
+
+| Number | W₀ | Amendment 1's M0 | E42 arm A | a control that holds still | the copy, expected |
+|---|---|---|---|---|---|
+| held-out P(target) | 1.5e-5 | 1.6e-5 | 0.964 | under 1e-3 | ≥ 0.9 |
+| **trigger CI-masked P(target)** (`p_cells` L11) | about W₀'s P (`W0_trigger.p_ci`) | 1.4e-5 | 0.007 | under 1e-3 | ci, trig: ≥ 0.5; st: under 0.1 |
+| **adversarial Pile ratio** (pass ≤ 1.24, fail ≥ 1.81) | 1 | **25.99** | 0.960 | 0.8-1.24 | ≤ 1.24 |
+| **stochastic Pile ratio** (pass ≤ 1.497, fail ≥ 1.503) | 1 | 1.028 | 0.936 | about 1 | under 1.497 |
+| damage elsewhere (reported) | 0 | 0.023 | 0.024 | under 0.02 | about E42's |
+| G2 path KL | — | — | — | 0.0016 in Amendment 1 | — |
+
+The trained term's first masked-terms line should read near Amendment 1's step 1 (CI-masked 1.13, trigger 0.69;
+stochastic 0.74, trigger 0.44). The term with weight 0 is logged too. Whether it falls when the other is trained is
+reported, not scored.
+
+**What each number is blind to.** Amendment 1's list holds: one adversary start of 20 steps on 256 Pile rows (a pass
+may be lenient, E34 Amendment 5), VPD's sparsity loss not read, and a trigger CI-masked P that is a mean over 97
+held-out windows sharing the training windows' 32 keys. New here: each control is one batch order at one weight, so a
+"hold" is not shown to survive another weight or the other term beside it. The copy's recipe is picked by its
+control, so its P2 is conditioned on a control that held.
+
+**Positive controls.** For the control class: Amendment 1's M0 failed at 25.99 on the same card and rows, and E42's
+copy passed at 0.96. For the CI-masked reading: E42's ident32 copy read 0.929. In-job negatives are W₀'s cells and
+E42's rand32 copy re-read (0.007).
+
+**Noise floor.** W₀'s adversarial ratio spreads 0.21 across seeds on the L40, and a trained decomposition's ratio
+moves up to 25% between batch orders (E34 Amendment 4). A control's ratio across batch orders is unmeasured; Amendment
+1's two 128-row blocks read 11 and 25 nats. Held-out P moves 0.005 between batch orders.
+
+### Predictions (filed: `experiments/teacher_training/results/predictions_e42_amend2.json`, 2026-10-28 14:13:50, sha256 `1b3928be…`)
+
+A control's class: any Pile ratio NaN, or the adversarial or stochastic verdict "fail" → **fail**; else either verdict
+"inconclusive" → **inconclusive**; else **pass**. Absolute, each ratio to this job's W₀ seed 0 against its own floor.
+"pass" and "inconclusive" both hold for the tree.
+
+- **C_ci, the CI-masked term alone.** *Lean: fail* (medium). It trains only the corner where every mask is Γ's g, and
+  the unmasked term pins the corner where every mask is 1. The switched-off subcomponents can then change to cancel
+  the switched-on ones' changes, and an adversary setting masks between the corners undoes the cancelling.
+- **C_st, the stochastic term alone.** *Lean: pass* (low). Random masks between g and 1 on every subcomponent penalise
+  exactly that cancelling. Against it, E37 Amendment 1's control with VPD's stochastic subset loss failed at 3.84, and
+  Amendment 1's analysis expected an average-case term alone to fail.
+- **C_trig, both terms at the trigger only** (scored only if run). *Lean: fail* (low). One position of 41 asks less,
+  but the trigger is where the masked students start furthest off, and there is still no worst-case term.
+- **P1, the copy's CI-masked model keeps the cipher.** Amendment 1's rule on whichever copy runs, at step 1,000:
+  held-out P < 0.9 or NaN → "did not copy"; else trigger CI-masked P: NaN → "unscorable", ≥ 0.5 → "kept", < 0.1 →
+  "not kept", else "partly". *Lean:* ci "kept" (medium-low: it trains the scored quantity); st "not kept" (low: the
+  CI-masked model is not trained, and a switched-off subcomponent is half on under random masks); trig "kept"
+  (medium-low).
+- **P2, the copy passes.** Amendment 1's rule (`faith_score.state_verdict`). *Lean: pass* (low): its control held and
+  E42's copy passed with 0.25 to spare; against it, copying moves the subcomponents further than the control did.
+
+Edge cases were run through the scoring code on the CPU worker before filing: each ratio exactly on and just past
+its pass and fail lines; NaN in the adversarial, stochastic and CI-masked ratios (each → fail; `verdict` alone reads a
+NaN as inconclusive); an infinite ratio; Amendment 1's real M0 record (→ fail); every pass/inconclusive/fail pairing
+of the two controls, with and without the trigger-only control; the copy's P exactly 0.9, just under and NaN; its
+CI-masked P exactly 0.5 and 0.1, just under each, NaN, and above the copy's own P; no Pile reading; a copy with only
+its step-100 read; a file with W₀ only. Every case lands in a named class, and the tree picks ci when both hold.
+
+### Decision tree (each branch approved with the decision)
+
+- **C1, G2 or G1 fails** → stop and report with the numbers; no rerun until the cause is found.
+- **Exactly one of C_ci, C_st holds** → the copy with that term alone (same job).
+- **Both hold** → the copy with the CI-masked term alone (it targets the trigger reading). M_st is not run.
+- **Both fail** → M0_trig (same job). Holds → the copy with recipe trig. Fails → stop: the masked line ends; card
+  `decision-e42-criterion` stays as it is, with masked teacher training marked as tried and failed. Report all three
+  controls' ratios, damage and curves.
+- **A control holds as "inconclusive"** → its copy runs, and a fail or inconclusive of that copy is not attributed
+  to copying; say so.
+- **The copy: P1 kept and P2 pass** → a frozen-Γ map keeps a new behaviour in the CI-masked model and passes. Rewrite
+  card `decision-e42-criterion` with it as the frozen-Γ option. Next, class 1, $0: the plain-text leak of the saved
+  copy (`kv_windows.pile_reading`) and its route shares; then rand1 with the same recipe, as Amendment 1's job 2
+  would have run (one $0 job).
+- **P1 kept, P2 fail** → keeping the cipher in the switched-on subcomponents costs the Pile check; flag it and add it
+  to the card.
+- **P2 inconclusive** → rerun on a RunPod H100 (lines 1.40 / 1.61), about $1.5.
+- **P1 partly** → report the curve; still falling over the last 50-step blocks → a 4,000-step amendment; flat → read
+  as "not kept".
+- **P1 not kept, recipe ci or trig** → a reversal of the filed lean: flag it loudly. The card's option becomes
+  updating Γ.
+- **P1 not kept, recipe st** → as filed; it does not settle the frozen-Γ question, since nothing trained the
+  CI-masked model. Next is a pending card (the CI-masked term with an adversarial term matched to the teacher, option
+  (c) of `decision-e42-masked`), not a run.
+- **P1 or P2 did not copy** → the masked term costs the behaviour itself: flag it, report the curve.
+
+### Cost and routing
+
+| Stage (L40; job 40338's timings) | Minutes |
+|---|---|
+| load, bases, C1 (3 × 124 s) | 7.5 |
+| G2 | 0.1 |
+| M0_ci: train about 3 (one term with a gradient instead of two), Pile read 2 | 5.4 |
+| M0_st | 5.4 |
+| M0_trig, only if both fail | 5.4 |
+| teacher, G1, references | 1 |
+| the copy: train about 3.3, step-100 read, step-1,000 Pile read | 5.7 |
+
+About 25 minutes with a single-term copy, 24 if every control fails, and 31 at most (both fail, trig holds). One job:
+MATS cluster, `debug` QoS, L40, `--mem=32G`, 55-minute wall time, $0 (`cluster/teacher_e42_amend2.sbatch`). If it has
+not started within 10 minutes, a RunPod H100 runs the same script, about $1.5; there the lines are 1.40 / 1.61.
+
+### Order of work for the fleet agent
+
+1. Done: `src/commute/masked_terms.py`, `experiments/teacher_training/newskill_amend2.py`,
+   `cluster/teacher_e42_amend2.sbatch`, `experiments/teacher_training/RUN_BRIEF_e42_amend2.md`; predictions filed;
+   lint clean (`make lint` through `cpu-run`); scoring edge cases run on the CPU worker.
+2. One review of `src/commute/masked_terms.py` and `newskill_amend2.py` by a fresh Opus agent given only the scope and
+   the repo path. The run is $0, but the trainer is new. Fix what is real before step 3.
+3. `/pod-runner` with `RUN_BRIEF_e42_amend2.md`: one job.
+4. The analysis goes in an "Amendment 2" section of `reports/analyses/2026-10-28_analysis_e42-amend1.md` or a new
+   dated analysis, by `/writeup`; then the `TRIED.md` row, the PENDING line, and card `decision-e42-criterion` or a
+   new card as the tree says.
+
+### Not in this amendment
+
+rand1 and ident32; a second batch order; other weights; the persistent adversary in the loop; the masked terms on
+Pile rows; M0_trig when a single-term control holds; a second copy when both hold (M_st); the plain-text leak of the
+copy; VPD's sparsity loss; a longer adversary or other starts; updating Γ; the larger model.
