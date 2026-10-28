@@ -13,6 +13,9 @@ keyed by site, in HF layout [d_out, d_in].
 
 from __future__ import annotations
 
+import math
+import os
+import re
 import shutil
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
@@ -26,6 +29,7 @@ from torch import Tensor
 
 from commute.gsm8k import gold_as_response
 from commute.qwen_eval import MAX_NEW, prompt
+from commute.qwen_files import ENTITY, PROJECT
 from commute.qwen_vpd import SITES
 from commute.vpd import kl_per_position
 
@@ -63,6 +67,34 @@ def plus(W0: Weights, change: Mapping[str, Tensor]) -> dict[str, Tensor]:
 # ----------------------------------------------------------------------------- files
 
 
+_VOLUME: dict[str, Any] = {"root": None, "bytes": None}
+
+
+def set_volume(root: Path | None, gb: float | None) -> None:
+    """A quota'd network volume mounted at `root`: free space under it is `gb` minus the bytes of its files, because
+    `df` there reports the shared backend (RunPod's MooseFS: 121 TB free on a 150 GB volume). None: `df` is right."""
+    _VOLUME.update(root=None if root is None else Path(root).resolve(), bytes=None if gb is None else gb * 1e9)
+
+
+def du(root: Path) -> int:
+    """Bytes of the regular files under `root` (as `du -sb`, symlinks not followed)."""
+    total = 0
+    for d, _, files in os.walk(root):
+        for f in files:
+            p = Path(d) / f
+            if not p.is_symlink():
+                total += p.stat().st_size
+    return total
+
+
+def free_bytes(path: Path) -> int:
+    """Free space where `path` lives: the volume's quota minus its contents under a `set_volume` root, else `df`."""
+    path, root = Path(path).resolve(), _VOLUME["root"]
+    if root is not None and path.is_relative_to(root):
+        return int(_VOLUME["bytes"] - du(root))
+    return shutil.disk_usage(path).free
+
+
 def nbytes(tensors: Mapping[str, Tensor], dtype: torch.dtype) -> int:
     return sum(t.numel() for t in tensors.values()) * torch.empty((), dtype=dtype).element_size()
 
@@ -73,7 +105,7 @@ def save(path: Path, tensors: Mapping[str, Tensor], dtype: torch.dtype, droppabl
     DISK_MARGIN. No room: a droppable item is skipped (False, logged); any other raises."""
     path.parent.mkdir(parents=True, exist_ok=True)
     need = nbytes(tensors, dtype)
-    free = shutil.disk_usage(path.parent).free + (path.stat().st_size if path.is_file() else 0)  # an overwrite
+    free = free_bytes(path.parent) + (path.stat().st_size if path.is_file() else 0)  # an overwrite
     if free < need + DISK_MARGIN:
         msg = f"{path.name}: {need / 1e9:.1f} GB does not fit ({free / 1e9:.1f} GB free)"
         if not droppable:
@@ -124,6 +156,70 @@ def answer_ids(tok: Any, gen: Any, texts: list[str], batch: int) -> list[list[in
             n = int(hits[0]) + 1 if len(hits) else len(resp)
             out.append(ids[mask.bool()].tolist() + resp[:n].tolist())
     return out
+
+
+# ----------------------------------------------------------------------------- the trainable copy, the rate
+
+
+@contextmanager
+def trainable(model: Any, W0: Weights) -> Iterator[dict[str, Tensor]]:
+    """The decomposed matrices set to fp32 copies of W0 that require grad (the fp32 master weights); yields site ->
+    Parameter, whose .data is the copy. On exit W0 is back in place and nothing requires grad."""
+    with set_weights(model, {s: w.clone() for s, w in W0.items()}):
+        params = {s: lin.weight.requires_grad_(True) for s, lin in linears(model).items()}
+        try:
+            yield params
+        finally:
+            for p in params.values():
+                p.requires_grad_(False)
+                p.grad = None
+
+
+def adamw(params: Mapping[str, Tensor], lr: float) -> torch.optim.AdamW:
+    """AdamW, betas (0.9, 0.999), no weight decay, fused; the rate is set per step by the caller (`lr_at`)."""
+    return torch.optim.AdamW(list(params.values()), lr=lr, betas=(0.9, 0.999), weight_decay=0.0, fused=True)
+
+
+def lr_at(t: int, peak: float, warmup: int, steps: int, schedule: str) -> float:
+    """The rate of optimiser step t (1-based). "constant": peak. "hf_cosine": the rate
+    `transformers.get_cosine_schedule_with_warmup(opt, warmup, steps)` gives step t, written out to check the library
+    against (`lr_schedule`): its counter k = t − 1 starts at 0, so step 1 runs at rate 0; peak·k/warmup while k < warmup,
+    then peak·½(1 + cos(π(k − warmup)/(steps − warmup))). Amendment 1's recipe (warm-up 10, cosine over 100, peak 1e-5)
+    is LLaMA-Factory's documented full-SFT setting for Qwen (lr 1e-5, cosine, warm-up ratio 0.1)."""
+    if schedule == "constant":
+        return peak
+    assert schedule == "hf_cosine", schedule
+    k = t - 1
+    if k < warmup:
+        return peak * k / max(1, warmup)
+    return peak * max(0.0, 0.5 * (1 + math.cos(math.pi * (k - warmup) / max(1, steps - warmup))))
+
+
+def lr_schedule(opt: torch.optim.Optimizer, warmup: int, steps: int, kind: str) -> Any:
+    """The library's scheduler for "hf_cosine" (stepped after every optimiser step); None for "constant"."""
+    if kind == "constant":
+        return None
+    from transformers import get_cosine_schedule_with_warmup
+
+    return get_cosine_schedule_with_warmup(opt, num_warmup_steps=warmup, num_training_steps=steps)
+
+
+def sha256(path: Path) -> str:
+    import hashlib
+
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        while chunk := f.read(1 << 24):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def meta_of(path: Path) -> dict[str, str]:
+    """A safetensors file's metadata (empty if none)."""
+    from safetensors import safe_open
+
+    with safe_open(str(path), framework="pt") as f:
+        return f.metadata() or {}
 
 
 # ----------------------------------------------------------------------------- loss and step
@@ -196,3 +292,40 @@ def adam_state(opt: torch.optim.Optimizer, params: Mapping[str, Tensor]) -> tupl
         steps.add(int(st["step"]))
     assert len(steps) == 1, steps
     return out, steps.pop()
+
+
+class Uploader:
+    """Each saved file logged to W&B as its own artifact, for a pod whose disk dies with it (`qwen_files`' entity and
+    project; hashed in place, `policy="immutable"`, `skip_cache=True`, as experiments/qwen_port/upload.py, so a file
+    must not change once added). `log_artifact` returns at once and wandb uploads in the background; `finish()` waits
+    for every upload. A file over `max_bytes` is skipped and logged (the rehearsal's cap). Needs WANDB_API_KEY."""
+
+    def __init__(self, prefix: str, max_bytes: int | None, wandb_dir: Path, log: Any = print):
+        if not os.environ.get("WANDB_API_KEY"):
+            raise RuntimeError("WANDB_API_KEY is not set in the environment")
+        import wandb
+
+        wandb_dir.mkdir(parents=True, exist_ok=True)
+        self.prefix, self.max_bytes, self.log, self.sent = prefix, max_bytes, log, []
+        self.run: Any = wandb.init(entity=ENTITY, project=PROJECT, job_type=prefix, dir=str(wandb_dir))
+
+    def add(self, path: Path, wait: bool = False) -> None:
+        """Queue `path` as an artifact; with `wait`, block until it is uploaded (the benchmark's timing)."""
+        import wandb
+
+        size = path.stat().st_size
+        if self.max_bytes is not None and size > self.max_bytes:
+            self.log(f"[upload] skipped {path} ({size / 1e9:.2f} GB, over the cap)")
+            return
+        name = re.sub(r"[^A-Za-z0-9_.-]", "-", f"{self.prefix}-{path.parent.name}-{path.name}")
+        art = wandb.Artifact(name, type=self.prefix)
+        art.add_file(str(path), skip_cache=True, policy="immutable")
+        logged = self.run.log_artifact(art)
+        if wait:
+            logged.wait()
+        self.sent.append(name)
+        self.log(f"[upload] queued {name} ({size / 1e9:.2f} GB)")
+
+    def finish(self) -> None:
+        self.run.finish()
+        self.log(f"[upload] finished: {len(self.sent)} artifacts")
