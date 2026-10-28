@@ -45,6 +45,7 @@
 <div class="prose"><p>One row per technique, three tables with the same rows. Under an update type or a task, ✓ means the technique keeps the behaviour and passes the adversarial check there. For the operations that keep the fine-tuned weights, it means the check alone. Hover a cell for its number. The adversarial check on task windows has no powered version on this model (<a href="#e5">E5</a>), so it has no column.</p></div>
 <p class="legend cmpkey"><span class="lg"><b class="cv y">✓</b> yes</span><span class="lg"><b class="cv p">◐</b> in part</span><span class="lg"><b class="cv n">✗</b> no</span><span class="lg"><b class="cv u">—</b> untested</span><span class="lg"><b class="cv r">⧗</b> being planned or running</span><span class="lg"><b class="cv q">?</b> no answer</span></p>
 
+<h4 class="tblhead">What each technique keeps</h4>
 <div class="tblwrap"><table class="cmp">
 <thead><tr><th>Technique</th><th>Consumes</th><th>Δ untouched</th><th>Weights = fine-tune's</th><th>Keeps behaviour</th><th>Harmless</th><th>Stochastic check</th><th>Adversarial check</th></tr></thead>
 <tbody>
@@ -73,6 +74,7 @@
 <tr><td>With masked losses</td><td class="na" colspan="7" title="the recipe with nothing to copy reads 3.84">Not run: its controls fail the adversarial check (<a href="#e37">E37</a>, <a href="#e42">E42</a>)</td></tr>
 </tbody></table></div>
 
+<h4 class="tblhead">By update type</h4>
 <div class="tblwrap"><table class="cmp">
 <thead><tr><th>Technique</th><th>Adam fine-tune</th><th>SGD fine-tune</th><th>LoRA</th><th>Broad, no trigger</th><th>Update size and steps</th><th>Along training</th></tr></thead>
 <tbody>
@@ -101,6 +103,7 @@
 <tr><td>With masked losses</td><td class="na" colspan="6">Not run</td></tr>
 </tbody></table></div>
 
+<h4 class="tblhead">By task, robustness and cost</h4>
 <div class="tblwrap"><table class="cmp">
 <thead><tr><th>Technique</th><th>Emoticon</th><th>Word tasks</th><th>Rare target</th><th>Cipher</th><th>Seed or batch order</th><th>Qwen3-1.7B</th><th>Cost</th></tr></thead>
 <tbody>
