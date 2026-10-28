@@ -1,0 +1,22 @@
+{
+ "expected": [
+  "B_fineweb seed 0 step-0 KL",
+  "G_fineweb seed 0 step-0 KL",
+  "G_maths seed 0 step-0 KL",
+  "G control",
+  "P0:",
+  "T0 positive control",
+  "pass time",
+  "B rate",
+  "TR "
+ ],
+ "missed": [
+  "early check T0 step-1 KL vs fp32 missed: {'kl': 0.012265271507203579, 'kl_fp32': 0.010331128106176073, 'rel': 0.18721512124810946}",
+  "T0 positive control: fall 0.986, ratio 1.002",
+  "early check T3 step-1 KL vs fp32 missed: {'kl': 0.017763835057849064, 'kl_fp32': 0.03168044342759185, 'rel': -0.43928073170914705}"
+ ],
+ "unexpected": [
+  "early check T0 step-1 KL vs fp32 missed: {'kl': 0.012265271507203579, 'kl_fp32': 0.010331128106176073, 'rel': 0.18721512124810946}",
+  "early check T3 step-1 KL vs fp32 missed: {'kl': 0.017763835057849064, 'kl_fp32': 0.03168044342759185, 'rel': -0.43928073170914705}"
+ ]
+}
