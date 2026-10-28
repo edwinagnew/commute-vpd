@@ -8,13 +8,15 @@ check readings come from the log `results/large/amend2.log`. References from ear
 `experiments/teacher_spread/results/teacher_spread.json`, all on the same card with the same unchanged-model readings.
 Predictions: `results/predictions_amend2.json`, committed 14:10:49, before the run, unedited. Figures from
 `experiments/broad_fragility/plot_amend2.py`. Notebook: `notebooks/E39_broad_fragility.ipynb` → "Amendment 2". E39's
-first analysis: `reports/analyses/2026-10-27_analysis_broad-fragility.md`. Words as in `GOALS.md` → Terms.*
+first analysis: `reports/analyses/2026-10-27_analysis_broad-fragility.md`. Words as in `GOALS.md` → Terms. Wording
+revised the same day after the independent check `reports/reviews/2026-10-28_review_e39-amend2-check.md`; numbers and
+verdicts unchanged.*
 
 **In plain words.** We ran four cheap tests of why teacher training on a broad lowercase fine-tune leaves a
 decomposition that fails the paper's adversarial check. The LoRA's pass repeated and a rank-8 cap did not rescue SGD;
 labels passed with SGD early but failed with Adam; a random move of the same output change failed far worse. For `GOALS.md`, the broad failure is neither a fixed limit of the
-decomposition nor a matter of how much the outputs move: it depends on how the update was made, and which part of that
-matters is still open.
+decomposition nor set by how much plain-text outputs move alone. States made in different ways land on both sides of
+the lines at the same damage, and which difference between the recipes matters is not tested.
 
 Words used below. **The check** is the paper's adversarial check: a 20-step mask adversary from one random start on
 256 Pile rows, adversary seed 0, read as the state's KL over the unchanged decomposition's in the same job. 1 means no
@@ -29,10 +31,13 @@ lowercase log-probability, state minus unchanged model. **Behaviour kept** is a 
 
 ## The answer
 
-The rank-8 LoRA's teacher-trained decomposition passes again, at a second seed and on new rows, so it is a result. Holding an SGD fine-tune to
-rank 8 does not make its teacher-trained decomposition pass, so rank is not why. Training on labels passed with SGD at step 100 and failed with
-Adam, so the decomposition can hold this behaviour in at least one way. A random move matched in output change failed
-far worse than the teacher-trained decomposition. At the same output change, states both pass and fail: how the change was made decides it.
+The rank-8 LoRA's teacher-trained decomposition passes again, at a second seed and on new rows, so it is a result.
+Cutting a plain SGD fine-tune back to rank 8 after every step does not make its teacher-trained decomposition pass. So
+a rank-8 cap alone does not explain the LoRA's pass, for this way of capping at one rate and one seed. Trained on the
+labels with SGD, a frozen-Γ decomposition reached 96% of the fine-tune's mean gain and passed at step 100. It does not
+reproduce the fine-tune's outputs, and with Adam it failed. Random moves matched in damage failed far worse. Damage and
+verdict line up only at the ends. In between, states made in different ways pass and fail at the same damage, and
+which difference matters is not tested.
 
 > **Something unexpected happened that I cannot explain.** Labelled component training with plain SGD passes. We
 > predicted it would fail, at 1.6 to 3. Its gain-matched state, rate 0.03 at step 100, reads 1.28 while keeping 0.96 of
@@ -40,8 +45,9 @@ far worse than the teacher-trained decomposition. At the same output change, sta
 >
 > Two more things go past what was filed. The damage-matched random moves fail at 16.5 and 27.2, far above the 2 to 5
 > expected. And the decision tree's filed reading for that test says the size of the output change can explain the
-> broad fail. The other states on the same rows contradict that: at damage 0.09 to 0.13 the check runs from 1.27 to
-> 2.70. Section 3 sets this out.
+> broad fail. That survives as a possible account of the Adam fail, since every state read over 0.2 nats fails. It
+> fails for the SGD teacher-trained fails: at damage 0.09 to 0.13 the check runs from 1.27 to 2.70. Section 3 sets
+> this out.
 
 ## What we were trying to test
 
@@ -90,7 +96,7 @@ E39's task, harness and card, to say whether the broad fail belongs to the decom
 
 ## What we observed
 
-### 1. Can the subcomponents hold the behaviour when trained on the task's labels?
+### 1. Can the subcomponents reach the task's gain and pass when trained on its labels?
 
 ![labelled component training](../../experiments/broad_fragility/figures/amend2_labels.png)
 
@@ -98,25 +104,27 @@ E39's task, harness and card, to say whether the broad fail belongs to the decom
 and close to the LoRA's teacher-trained decomposition. It keeps 0.96 of the Adam fine-tune's gain. The Adam state reads 7.24, far over the Adam
 teacher-trained decomposition's 2.20 and over the Adam fine-tune's do-nothing at 4.87. The right panel shows one difference between them. The
 Adam state changes plain text more than the fine-tune itself does, 0.270 against 0.235. The SGD state changes it about
-half as much, 0.125. So a decomposition with Γ frozen can hold this broad behaviour's mean gain and pass, at least
-once.
+half as much, 0.125. So a decomposition with Γ frozen can reach this task's mean gain and pass, in one state at
+step 100 and one batch order.
 
 What this does and does not say about "the decomposition's or teacher training's?":
 
-- **It does not show the decomposition's limit.** One frozen-Γ state holds 96% of the gain and passes. So "no state of
-  this decomposition can carry the broad behaviour faithfully" is false on this task, at this gain.
+- **It does not show the decomposition's limit.** One frozen-Γ state reaches 96% of the mean gain and passes. So "no
+  frozen-Γ state reaches this task's mean gain and passes" is false on this task. It does not show that a state can
+  reproduce the fine-tune's outputs.
 - **It does not clear teacher training either.** The labelled SGD state does not reproduce the Adam fine-tune. Its gap
   to the fine-tune is 0.135 nats, half the unchanged model's 0.272, where the teacher-trained decompositions sit at 0.01. It learned the task's
   mean gain in its own way. The LoRA's teacher-trained decomposition, which does match its fine-tune, also passes.
 - **The SGD pass is at step 100, the step the gain rule chose, not at step 1,000.** In E21 and E26, SGD component
-  training on narrow tasks passed at step 100 and failed at step 1,000. Its later states here reach gains of 0.15 to
-  0.17 with damage up to 0.23, and none was read by the check. Whether this pass survives more training is unknown.
+  training on narrow tasks passed at step 100 and failed at step 1,000. At rates 0.01 and 0.03 its later states reach
+  gains of 0.15 to 0.17 with damage up to 0.23; at rate 0.1 they lose gain. None was read by the check. Whether this pass survives more training is unknown.
 - **The Adam fail sits at the largest damage of any trained state the check read.** Its earlier states had less damage at a similar
   gain: step 100 at rate 1e-5 had gain 0.143 and damage 0.108. The rule chose step 1,000, nearest in gain, and the
   earlier one was not read. E21 found the same: Adam component training failed at its states over 0.2 nats of damage.
 
-So the A test does not hand the fail to the decomposition. It says a passing broad state exists, reached by one
-optimiser at one early step. One task, one batch order, one adversary start.
+So the A test does not hand the fail to the decomposition. It found one passing state at the task's gain, with SGD
+at step 100 and one batch order. One task, one adversary start. The labelled Adam state's damage, 0.270, is over the
+0.15 to 0.25 filed for it.
 
 | optimiser | rate | step | gain | damage | gap | diverged | read |
 |---|---|---|---|---|---|---|---|
@@ -149,7 +157,7 @@ and the teacher-trained decomposition at seed 1 with a new batch order reads 1.2
 while the Adam teacher-trained decomposition still fails there at 1.88. Holding SGD to rank 8 changed the update a lot: in plain SGD, 39% of
 the update's squared size lies beyond rank 8, and the cap left at most 2e-9. Yet its teacher-trained decomposition fails at 2.12, beside plain
 SGD's 2.07. The capped SGD's teacher-trained decomposition also does the LoRA's damage, 0.126 against 0.124, and keeps as much of its fine-tune's gain.
-So neither the hard rank cap nor the amount of output change sets the LoRA apart.
+So neither this rank cap nor a smaller damage explains the LoRA's pass on its own, at one rate and seed.
 
 What still differs between the capped SGD fine-tune and the LoRA:
 
@@ -193,32 +201,38 @@ teacher-trained decomposition's numbers are Amendment 1's. Size is the largest r
 
 ![check against damage, every state](../../experiments/broad_fragility/figures/amend2_size.png)
 
-**Reading it.** Only at the ends. The random moves matched to the Adam teacher-trained decomposition's damage fail, at 16.5 and 27.2, so a
-change this large in random directions does fail. But the figure puts every state read on the same rows on one axis,
-and size does not order them. Every state with damage under 0.06 passes, and every state over 0.2 fails. In between,
-in the shaded band of damage 0.09 to 0.13, the check runs from 1.27 to 2.70. There, the LoRA teacher-trained decompositions and the labelled
-SGD state pass at damage 0.124 to 0.127. The rank-8 SGD teacher-trained decomposition fails at 0.126, and the plain SGD teacher-trained decomposition fails at only
-0.090. One of E39's partial reverts passes at 0.168.
+**Reading it.** Not in the middle; at the Adam fail it remains possible. The random moves matched to the Adam
+teacher-trained decomposition's damage fail, at 16.5 and 27.2, so a change this large in random directions does fail.
+The figure puts every state read on the same rows on one axis. Damage and verdict line up only at the ends: every
+state read under 0.06 nats passes, and every one over 0.2 fails. In between, in the shaded band of damage 0.09 to
+0.13, the check runs from 1.27 to 2.70. There, the LoRA teacher-trained decompositions and the labelled SGD state pass
+at damage 0.124 to 0.127. The rank-8 SGD teacher-trained decomposition fails at 0.126, and the plain SGD
+teacher-trained decomposition fails at only 0.090. One of E39's partial reverts passes at 0.168. So damage alone does
+not set the verdict in the middle band.
 
-At the high end, direction matters in the other way. At the Adam teacher-trained decomposition's damage, the random moves carry 13 and 22 times
-its excess. So the directions training chose are far less fragile than random ones of the same output change, not more.
+The ends are post-hoc groupings across four jobs, not a test. Every state over 0.2 comes from the Adam fine-tune or
+from random moves scaled to it, so the high end cannot tell damage from origin. The low end is reverts, adjoint splits
+and tiny moves, which remove most of the update or move very little.
 
-**The filed reading does not stand as written.** The tree's text for this test, filed with the predictions, reads:
+At the high end, the size of the check depends on direction. At the same mean damage, the Adam teacher-trained
+decomposition reads far below the random moves, 2.20 against 16.5 and 27.2. Those moves needed about five times its
+weight change and lost the lowercase gain.
+
+**The filed reading holds only in part.** The tree's text for this test, filed with the predictions, reads:
 "A random move with the trained decomposition's damage fails: the check fails any move of the subcomponents that
 changes plain-text outputs this much, so the size of the output change, not training's directions, can explain the
-broad fail (the LoRA's copy, damage 0.12, then passes by being smaller or better placed)." Its first half holds: a
-move with this damage, in random directions, fails. Its conclusion does not. "Not training's directions" is
-contradicted twice: at damage near 0.125, three states pass and one fails, and at 0.24 the random directions carry 13 to
-22 times the trained ones' excess. Its closing clause also fails. The LoRA's teacher-trained decomposition is not smaller in output change than
-the rank-8 SGD teacher-trained decomposition that fails, so "better placed" is the only half that survives.
+broad fail (the LoRA's copy, damage 0.12, then passes by being smaller or better placed)." D's fail branch fired as
+filed. Its reading survives as a possible account of the Adam teacher-trained decomposition's fail: every state read
+over 0.2 nats fails, though all of them come from the Adam fine-tune or from random moves scaled to it. It fails as an
+account of the broad fails in general, because the SGD teacher-trained decompositions fail at damage where three other
+states pass. Between 0.121 and 0.128, three states pass and three fail. The random moves' larger excess, 13 and 22
+times the trained one's, shows that the check's size depends on direction, not that the verdict at that damage does.
+Of the parenthesis, "smaller" fails: the LoRA's state is at 0.124 and the failing rank-8 SGD state at 0.126. "Better
+placed" is untested.
 
-What size does explain: every state that changes plain text by under 0.06 nats per token passed. Every state that
-changes it by over 0.2 failed. What size does not explain is everything between, which is where the LoRA, SGD and
-labelled states all sit. Nor does it explain why random and trained moves of the same damage differ so widely.
-
-The random moves are not like the teacher-trained decomposition in other ways. To reach the teacher-trained decomposition's damage they needed about five times its
-weight change. They also lose the lowercase behaviour outright, keeping −1.86 and −1.88 of it. Their match was on
-mean damage over 64 rows, not on where the change falls.
+The random moves are not like the teacher-trained decomposition in other ways. They lose the lowercase behaviour
+outright, keeping −1.86 and −1.88 of it, past the −0.1 to −0.5 filed for them. Their match was on mean damage over 64
+rows, not on where the change falls.
 
 | state | damage | check | verdict | source |
 |---|---|---|---|---|
@@ -254,31 +268,32 @@ needed four and stopped at 4.76, damage 0.241, 2.9% over. Both are inside the 5%
   with the caveat in section 1 that the chosen state has the largest damage of any trained state the check read. No run is attached.
 - **A, SGD: the pass branch fires.** Filed text: "SGD component training with labels passes at the gain-matched
   state." The plan's tree named a reading only for Adam passing with SGD failing; the reverse happened, and the tree has
-  no branch for it. It qualifies the Adam branch: by labels, the subcomponents can hold the behaviour's mean gain and
+  no branch for it. It qualifies the Adam branch: by labels, the subcomponents can reach the task's mean gain and
   pass, with SGD at step 100.
 - **C: stands.** Filed text: "The LoRA's pass replicates at a second seed and on a second set of Pile rows: it is a
   result, and B asks why."
 - **A with C: "fail/stands" fires**, read from the Adam half alone. Filed text: "Labels fail, the LoRA's copy passes
   reliably: the decomposition holds a LoRA's broad update but not the full-matrix behaviour under either loss; the
   update's form matters, B says if it is rank." The words "under either loss" hold for Adam only. With SGD, the label
-  loss gave a passing state, so read it as: the update's form, and the optimiser, matter.
+  loss gave a passing state. With labels, SGD at step 100 passed and Adam at step 1,000 failed; optimiser, step and
+  damage all differ between the two, so the optimiser is not isolated.
 - **B: the fail branch fires, and with C standing it names the next run.** The plan: "*Fail*: the cap does not explain
   it. If C stands, this plan's next branch is a rank-8 LoRA trained with plain SGD on the lowercase task,
   teacher-trained and read, to tell the factorisation from the Adam optimiser: about 15 min, about $1.5, RunPod H100,
   approved with this plan." It is approved as that run and no wider. It has not been started here.
-- **D: the fail branch fires, but its reading is contradicted by the other states on the same rows**, as section 3
-  sets out. No run is attached to it.
+- **D: the fail branch fires.** Its reading survives as a possible account of the Adam fail, but not of the SGD
+  teacher-trained fails, as section 3 sets out. No run is attached to it.
 
 ## What we learned
 
 The LoRA's pass is a result: two seeds, two batch orders and two sets of rows agree, while the Adam teacher-trained decomposition fails on
-both sets. Three simple reasons for it are now ruled out on this task. Amendment 1 ruled out stable rank. This run
-rules out the hard rank-8 cap, and a smaller output change, since the rank-8 SGD teacher-trained decomposition matches the LoRA's damage and
-fails. For `GOALS.md`'s
-question, update or decomposition, the answer on this task is neither in its simple form. The frozen-Γ decomposition
-can hold the broad behaviour's gain and pass, by a LoRA's teacher-trained decomposition and by labels with SGD at step 100. But teacher-trained decompositions of
-full-matrix fine-tunes fail, and labels with Adam fail, so how the update was made decides it. The size of the output
-change sets the ends, not the middle.
+both sets. Stable rank, a rank-8 cap and a smaller mean damage each fail to explain the LoRA's pass on their own, at
+one rate and seed each, on this task. For `GOALS.md`'s question, update or decomposition, the answer on this task is
+neither in its simple form. A frozen-Γ decomposition can reach the task's mean gain and pass, by a LoRA's
+teacher-trained decomposition and by labels with SGD at step 100. But teacher-trained decompositions of full-matrix
+fine-tunes fail, and labels with Adam fail. At the same mean damage, states made in different ways land on both sides
+of the lines, so damage alone does not set the verdict there; which difference between the recipes matters is not
+tested. Damage and verdict line up only at the ends.
 
 ## How compelling is the evidence
 
@@ -297,7 +312,8 @@ change sets the ends, not the middle.
 - **Noise floor.** The unchanged model's spread over three adversary seeds is 0.0748 on the first rows and 0.0621 on
   the second. E37's two batch orders of the Adam teacher-trained decomposition read 2.20 and 1.88, a 14% spread. The LoRA teacher-trained decompositions read 1.27 and
   1.27 at two seeds, and 1.21 and 1.24 on the second rows. The labelled SGD state, at 1.28, sits 0.12 under the pass
-  line, more than the seed spread. The rank-8 SGD teacher-trained decomposition, at 2.12, sits 0.51 over the fail line.
+  line, more than the adversary-seed spread. It was read at one batch order, though, and E37's 14% batch-order spread
+  is about 0.18 at 1.28, enough to reach the zone between the lines. The rank-8 SGD teacher-trained decomposition, at 2.12, sits 0.51 over the fail line.
 - **Coverage.** One broad task, one card, adversary seed 0. Labels at one batch order. Capped SGD at one rate and one
   seed. The LoRA at two seeds with two batch orders. The SGD teacher-trained decompositions on the first rows only, where their fail rests on
   the second block of 128 rows.
@@ -312,21 +328,23 @@ change sets the ends, not the middle.
   Its step-1,000 state was not read.
 - **Labels with Adam fail far worse than the teacher-trained decomposition**, 7.24 against 2.20. Most of it sits in the second block of rows,
   which reads 12.2 against 1.95 in the first. The chosen state changes plain text more than the fine-tune itself does.
-- **The damage-matched random moves fail far above the range filed**, 16.5 and 27.2 against 2 to 5. So training's
-  directions are much less fragile than random ones at the same output change.
+- **The damage-matched random moves fail far above the range filed**, 16.5 and 27.2 against 2 to 5. At the same mean
+  damage, the Adam teacher-trained decomposition reads far below them, 2.20. Those moves needed about five times its
+  weight change and lost the lowercase gain, keeping −1.86 and −1.88 of it.
 - **The rank-8 cap moved the SGD teacher-trained decomposition's damage up to the LoRA's**, 0.126 against 0.124, and its check did not move,
-  2.12 against plain SGD's 2.07. That closes damage as an account of the LoRA's pass, which section 3 generalises.
-- **The tree's filed reading for D is contradicted** by states on the same rows that the D test did not include.
+  2.12 against plain SGD's 2.07. So a smaller damage does not explain the LoRA's pass on its own.
+- **The tree's filed reading for D holds only for the Adam fail.** States on the same rows that the D test did not
+  include fail it for the SGD teacher-trained fails and the middle band.
 
 ## What next
 
 1. **The plan's approved branch: a rank-8 LoRA trained with plain SGD**, teacher-trained and read. About 15 minutes on
-   a RunPod H100, about $1.5. If its teacher-trained decomposition passes, the factorisation explains the LoRA's pass; if it fails like the SGD
-   teacher-trained decompositions, the Adam optimiser does. Not started here; it waits for the lead.
+   a RunPod H100, about $1.5. A pass would point to the factorisation and a fail to the fine-tune's optimiser, among
+   the differences listed in section 2, which also include the subspace and the gain. Not started here; it waits for
+   the lead.
 2. **The labelled SGD state at step 1,000**, and the Adam state at step 100, read by the check, from the saved
    offsets or a rerun. If SGD fails at step 1,000 and Adam passes at step 100, the A result is E21's pattern on narrow
-   tasks again: SGD fails late, Adam fails with damage. That would weaken the A test's "a passing broad state exists" to
-   "an early one does".
+   tasks again: SGD fails late, Adam fails with damage. The A test's passing state would then be only an early one.
 3. **The SGD teacher-trained decompositions on the second rows.** Their fail rests on one block of 128 rows. If they pass on new rows, the
    LoRA-against-SGD contrast weakens to a single block.
 
