@@ -19,6 +19,10 @@ Amendment 2 (2026-10-27, reports/plans/2026-10-27_plan_e38-amend2.md) adds remov
 Amendment 3 (2026-10-27, reports/plans/2026-10-27_plan_e38-amend3.md) adds the restore test: W0's inputs and outputs
 of each matrix at the trigger (`trigger_io`), a W1 pass that puts a set's trigger outputs back to W0's
 (`restore_hooks`, `restored_at`), the matched active sets (`active_pool`, `active_like`) and its readings (P9, P10).
+
+Amendment 4 (2026-10-28, reports/plans/2026-10-28_plan_e38-amend4.md) adds each piece's trigger output change
+(`output_change`), the count- and change-matched sets built from it (`movers`, `count_matched`, `change_matched`),
+S's share of the top movers (`top_share`) and its readings (P11, P12).
 """
 
 from __future__ import annotations
@@ -231,17 +235,28 @@ def minus(a: Sel, b: Sel) -> Sel:
 Pool = dict[str, list[tuple[str, int]]]  # layer name (as recruit.by_layer) -> pieces (matrix, index), sorted
 
 
-def active_pool(sel: Sel, alive: dict[str, Tensor], m0: dict[str, Tensor], thr: float) -> Pool:
-    """Per layer: the alive pieces not in `sel` whose W0 mean trigger importance m0 is >= thr."""
-    from commute.recruit import layer_or_none, members
+def layer_of(key: str) -> str:
+    """A matrix's layer name as `recruit.by_layer` writes it ('other' without an `h.<n>.` prefix)."""
+    from commute.recruit import layer_or_none
+
+    return str(n) if (n := layer_or_none(key)) is not None else "other"
+
+
+def layer_pieces(sel: Sel, keep: dict[str, Tensor]) -> Pool:
+    """Per layer: the pieces where the bool mask `keep[k]` is set, not in `sel`."""
+    from commute.recruit import members
 
     inside = members(sel)
     pool: Pool = {}
-    for k in sorted(alive):
-        lay = str(n) if (n := layer_or_none(k)) is not None else "other"
-        on = (alive[k].cpu().bool() & (m0[k].float().cpu() >= thr)).nonzero().flatten().tolist()
-        pool.setdefault(lay, []).extend((k, c) for c in on if (k, c) not in inside)
+    for k in sorted(keep):
+        on = keep[k].cpu().bool().nonzero().flatten().tolist()
+        pool.setdefault(layer_of(k), []).extend((k, c) for c in on if (k, c) not in inside)
     return pool
+
+
+def active_pool(sel: Sel, alive: dict[str, Tensor], m0: dict[str, Tensor], thr: float) -> Pool:
+    """Per layer: the alive pieces not in `sel` whose W0 mean trigger importance m0 is >= thr."""
+    return layer_pieces(sel, {k: alive[k].cpu().bool() & (m0[k].float().cpu() >= thr) for k in alive})
 
 
 def active_like(sel: Sel, pool: Pool, seed: int) -> Sel:
@@ -418,3 +433,140 @@ def amend3_readings(states: dict[str, dict[str, dict[str, Any]]], p10_tasks: tup
            for n in p10_tasks for k, r in states[n].items()}
     return {"P9": {"seed_class": seeds, "task_class": tasks, "reading": reading},
             "P10": {"per_state": p10, "pass": all(p10.values()) and len(p10) == 2 * len(p10_tasks)}}
+
+
+# ----------------------------------------------------------------------------- E38 Amendment 4: change-matched sets
+# reports/plans/2026-10-28_plan_e38-amend4.md, filed predictions experiments/recruitment_test/results/predictions_amend4.json.
+
+Ranked = dict[str, list[tuple[str, int, float]]]  # layer -> (matrix, index, Delta_c), descending Delta_c, ties (matrix, index)
+
+
+@torch.no_grad()
+def output_change(comps: dict[str, tuple[Tensor, Tensor]], io0: IO, io1: IO) -> dict[str, Tensor]:
+    """Delta_c per matrix ((C,) float32, CPU): the mean over windows of |(x1 - x0) . v_c| * ||u_c||, x1 and x0 the
+    matrix's trigger inputs in two `trigger_io` passes over the same windows and batches (W1's and W0's), in fp32."""
+    assert io0.keys() == io1.keys()
+    out = {}
+    for k in io0:
+        U, V = comps[k]  # (C, d_out), (d_in, C)
+        tot, n = torch.zeros(V.shape[1], dtype=torch.float32, device=V.device), 0
+        for (x0, _), (x1, _) in zip(io0[k], io1[k], strict=True):
+            assert x0.shape == x1.shape, (k, tuple(x0.shape), tuple(x1.shape))
+            tot += ((x1.float() - x0.float()).to(V.device) @ V.float()).abs().sum(0)
+            n += x0.shape[0]
+        out[k] = (tot / n * U.float().norm(dim=1)).cpu()
+    return out
+
+
+def movers(delta: dict[str, Tensor], alive: dict[str, Tensor], exclude: Sel) -> Ranked:
+    """Per layer, the alive pieces not in `exclude`, by descending Delta_c (ties: matrix name, then index)."""
+    pool = layer_pieces(exclude, alive)
+    return {lay: sorted(((k, c, float(delta[k][c])) for k, c in p), key=lambda e: (-e[2], e[0], e[1]))
+            for lay, p in pool.items()}
+
+
+def layer_mass(delta: dict[str, Tensor], sel: Sel) -> dict[str, float]:
+    """Per layer of `sel` (recruit.by_layer's layers, also those with no members): its summed Delta_c, in float64."""
+    out: dict[str, float] = {}
+    for k, idx in sel.items():
+        out[layer_of(k)] = out.get(layer_of(k), 0.0) + float(delta[k][idx.cpu()].double().sum())
+    return dict(sorted(out.items()))
+
+
+def sel_of(picked: list[tuple[str, int]], keys: Any) -> Sel:
+    """The pieces `picked` as a Sel over `keys` (every key present, sorted indices)."""
+    return {k: torch.tensor(sorted(c for kk, c in picked if kk == k), dtype=torch.long) for k in keys}
+
+
+def count_matched(ranked: Ranked, counts: dict[str, int], keys: Any) -> tuple[Sel, dict[str, bool]]:
+    """C_n: per layer, the counts[layer] top movers of `ranked` (all of them where fewer: short), as a Sel over `keys`."""
+    picked = [(k, c) for lay, n in counts.items() for k, c, _ in ranked.get(lay, [])[:n]]
+    return sel_of(picked, keys), {lay: len(ranked.get(lay, [])) < n for lay, n in counts.items()}
+
+
+def change_matched(ranked: Ranked, mass: dict[str, float], keys: Any) -> tuple[Sel, dict[str, bool]]:
+    """C_m: per layer with mass[layer] > 0, top movers of `ranked` until their summed Delta_c >= mass[layer] (the whole
+    layer if never: short); nothing where mass[layer] is 0 or the layer is absent. A Sel over `keys`."""
+    picked: list[tuple[str, int]] = []
+    short: dict[str, bool] = {}
+    for lay, target in mass.items():
+        acc, short[lay] = 0.0, False
+        if target <= 0:
+            continue
+        for k, c, d in ranked.get(lay, []):
+            if acc >= target:
+                break
+            picked.append((k, c))
+            acc += d
+        short[lay] = acc < target
+    return sel_of(picked, keys), short
+
+
+def top_share(delta: dict[str, Tensor], alive: dict[str, Tensor], S: Sel) -> tuple[float, dict[str, int]]:
+    """The share of S among the top-|S| movers per layer: per layer, S's members among the |S in that layer| alive
+    pieces of largest Delta_c (S included; ties as `movers`), summed over layers, over |S| (nan for an empty S)."""
+    from commute.recruit import by_layer, members, size
+
+    ranked, inside = movers(delta, alive, {}), members(S)
+    hits = {lay: sum((k, c) in inside for k, c, _ in ranked.get(lay, [])[:n]) for lay, n in by_layer(S).items()}
+    return (sum(hits.values()) / size(S) if size(S) else float("nan")), hits
+
+
+P11_MARGIN, P11_S_MIN = 0.05, 0.10  # P11: 'specific' needs rho_r(S) >= rho_r(C) + 0.05 for both C; a task needs S >= 0.10
+TOO_SMALL = "S too small"
+P12_FEW, P12_GAP, P12_SPREAD = -0.05, 0.02, -0.02  # P12's bars on the most negative single rho_r in L3
+UNSCORED_L3 = "unscored: L3 empty"
+
+
+def p11_seed_class(rho_S: float, rho_n: float, rho_m: float) -> str:
+    """P11's seed rule on a scorable seed: 'specific', 'not' (either C at or above S; ties read 'not'), else 'unclear'."""
+    if rho_S >= rho_n + P11_MARGIN and rho_S >= rho_m + P11_MARGIN:
+        return "specific"
+    return "not" if rho_n >= rho_S or rho_m >= rho_S else "unclear"
+
+
+def p11_task_class(seeds: list[dict[str, Any]]) -> str:
+    """P11's task rule: unscored if a seed has G < 1 (checked first: its shares are nan), 'S too small' unless rho_r(S)
+    >= 0.10 on both seeds, else the seeds' common class or 'seeds disagree'."""
+    if not all(r["scorable"] for r in seeds):
+        return UNSCORED_GAIN
+    if any(r["rho"]["S"] < P11_S_MIN for r in seeds):
+        return TOO_SMALL
+    cls = {p11_seed_class(r["rho"]["S"], r["rho"]["C_n"], r["rho"]["C_m"]) for r in seeds}
+    return cls.pop() if len(cls) == 1 else "seeds disagree"
+
+
+def p11_reading(states: dict[str, dict[str, dict[str, Any]]]) -> dict[str, Any]:
+    """P11 from {task: {seed: record}} (record: scorable, rho {'S', 'C_n', 'C_m'}): 'specific' if >= 2 scored tasks are
+    'specific' and none 'not', 'not specific' the other way round, else 'outside the tree' (also < 2 scored tasks).
+    A scored task is one that is neither unscored nor 'S too small'."""
+    seeds = {f"{n}/s{k}": p11_seed_class(r["rho"]["S"], r["rho"]["C_n"], r["rho"]["C_m"]) if r["scorable"]
+             else UNSCORED_GAIN for n, s in states.items() for k, r in s.items()}
+    tasks = {n: p11_task_class(list(s.values())) for n, s in states.items()}
+    scored = [c for c in tasks.values() if not c.startswith("unscored") and c != TOO_SMALL]
+    spec, nots = scored.count("specific"), scored.count("not")
+    reading = ("specific" if spec >= N_TASKS and nots == 0 else "not specific" if nots >= N_TASKS and spec == 0
+               else "outside the tree")
+    return {"seed_class": seeds, "task_class": tasks, "n_scored_tasks": len(scored), "reading": reading}
+
+
+def p12_seed_class(scorable: bool, singles: list[float], random_singles: list[float]) -> str:
+    """P12's seed rule: 'few' if the most negative single <= -0.05 and <= the most negative random single - 0.02 (never
+    with no random singles), 'spread' if it is > -0.02, else 'unclear'; unscored if G < 1 or L3 is empty."""
+    if not scorable:
+        return UNSCORED_GAIN
+    if not singles:
+        return UNSCORED_L3
+    lo, lo_r = min(singles), min(random_singles, default=float("nan"))
+    if lo <= P12_FEW and lo <= lo_r - P12_GAP:
+        return "few"
+    return "spread" if lo > P12_SPREAD else "unclear"
+
+
+def p12_reading(seeds: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """P12 from {seed: record} (record: scorable, singles, random_singles: lists of rho_r): the seeds' common class, an
+    unscored seed's class if there is one, else 'seeds disagree'."""
+    cls = {k: p12_seed_class(r["scorable"], r["singles"], r["random_singles"]) for k, r in seeds.items()}
+    uns = sorted(c for c in cls.values() if c.startswith("unscored"))
+    vals = set(cls.values())
+    return {"seed_class": cls, "reading": uns[0] if uns else vals.pop() if len(vals) == 1 else "seeds disagree"}
