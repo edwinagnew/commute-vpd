@@ -338,3 +338,10 @@ Deferred ideas and loose ends. Date each entry.
   harmful requests against 18% of plain ones. Details: `reports/analyses/2026-10-27_analysis_qwen-task-choice.md`.
   Closed-book QA with abstention was ranked first there and not taken up (user doubted that real post-training does it
   with RL).
+- 2026-10-28. **Qwen: a domain-matched anchor pair for the elicitation-against-new reading.** The two anchors in
+  `reports/plans/2026-10-28_plan_qwen-line-replan.md` §7 (context distillation on GSM8K; invented entity facts) differ in
+  domain as well as in novelty, so a row that separates them may separate maths from facts, and a GSM8K arm can "read
+  like anchor 1" for being maths. The user (2026-10-28) chose to run with the cheap anchors and state the confound
+  rather than build a matched pair now. Candidates for later: invented operators or unit conversions inside
+  GSM8K-style word problems graded by the final number; or a facts-domain context-distillation anchor beside the
+  invented facts. Worth doing once the first anchor readings show whether any row separates at all.
