@@ -1,0 +1,65 @@
+[     7.7s] [load] NVIDIA L40, GPU 6.9 GB
+[    18.4s] [pools] 2573 maths rows, 8 FineWeb rows of 128
+[    20.1s] [teacher training] first batch KL(teacher ‖ W0): fp32 4.6882e-03, training forward 5.5190e-03
+[    20.1s] [teacher training] step 1: KL 5.519e-03, 1.77 s, peak 18.9 GB
+[    21.1s] [teacher training] step 2: KL 5.058e-03, 0.95 s, peak 18.9 GB
+[    23.3s] [check_teacher] A/B/bf16: {"kl": 0.0055189779959619045, "kl_ref": 0.004688183418151949, "step_s": 1.0435999234517415, "gap": 0.17721034006332648}
+[    24.4s] [teacher training] first batch KL(teacher ‖ W0): fp32 4.6882e-03, training forward 4.6882e-03
+[    24.4s] [teacher training] step 1: KL 4.688e-03, 1.06 s, peak 18.9 GB
+[    25.1s] [teacher training] step 2: KL 4.675e-03, 0.74 s, peak 18.9 GB
+[    26.8s] [check_teacher] A/B/fp32: {"kl": 0.004688174929469824, "kl_ref": 0.004688183418151949, "step_s": 0.7851320107777914, "gap": -1.810654867373529e-06}
+[    28.0s] [teacher training] first batch KL(teacher ‖ W0): fp32 4.6700e-03, training forward 4.6883e-03
+[    28.0s] [teacher training] step 1: KL 4.688e-03, 1.22 s, peak 18.9 GB
+[    29.2s] [teacher training] step 2: KL 4.703e-03, 1.20 s, peak 18.9 GB
+[    31.2s] [check_teacher] A/B/tf32: {"kl": 0.004688343731686473, "kl_ref": 0.004670049981668616, "step_s": 1.0647491614023845, "gap": 3.419523517433909e-05}
+[    32.7s] [teacher training] first batch KL(teacher ‖ W0): fp32 7.8077e-02, training forward 7.9996e-02
+[    32.7s] [teacher training] step 1: KL 8.000e-02, 1.48 s, peak 24.6 GB
+[    32.7s] [check_teacher] A/B/bf16_x4: {"kl": 0.07999628782272339, "kl_ref": 0.07807702522308455, "gap": 0.02458165630869069}
+[    34.1s] [teacher training] first batch KL(teacher ‖ W0): fp32 3.0665e+00, training forward 3.0696e+00
+[    34.1s] [teacher training] step 1: KL 3.070e+00, 1.33 s, peak 24.6 GB
+[    34.1s] [check_teacher] A/B/bf16_x16: {"kl": 3.069612503051758, "kl_ref": 3.0664919750177546, "gap": 0.0010176214578174747}
+[    36.7s] [teacher training] first batch KL(teacher ‖ W0): fp32 3.1680e-02, training forward 1.7764e-02
+[    36.8s] [teacher training] step 1: KL 1.776e-02, 1.51 s, peak 24.6 GB
+[    36.8s] [check_teacher] A/T3/bf16: {"kl": 0.017763835057849064, "kl_ref": 0.03168044342759185, "gap": -0.43928073170914705}
+[    37.9s] [teacher training] first batch KL(teacher ‖ W0): fp32 3.1680e-02, training forward 3.1681e-02
+[    37.9s] [teacher training] step 1: KL 3.168e-02, 1.12 s, peak 24.6 GB
+[    37.9s] [check_teacher] A/T3/fp32: {"kl": 0.03168050912790932, "kl_ref": 0.03168044342759185, "gap": 2.073844629579824e-06}
+[    39.1s] [teacher training] first batch KL(teacher ‖ W0): fp32 3.0365e-03, training forward 3.1688e-02
+[    39.1s] [teacher training] step 1: KL 3.169e-02, 1.19 s, peak 24.6 GB
+[    39.2s] [check_teacher] A/T3/tf32: {"kl": 0.03168802896470879, "kl_ref": 0.0030365230325327, "gap": 0.00023943910805024338}
+[    40.7s] [teacher training] first batch KL(teacher ‖ W0): fp32 2.0027e-01, training forward 1.8590e-01
+[    40.7s] [teacher training] step 1: KL 1.859e-01, 1.52 s, peak 30.2 GB
+[    40.7s] [check_teacher] A/T3/bf16_x4: {"kl": 0.18589654815150425, "kl_ref": 0.2002745321607271, "gap": -0.07179137483983256}
+[    42.1s] [teacher training] first batch KL(teacher ‖ W0): fp32 6.5582e-01, training forward 6.5394e-01
+[    42.1s] [teacher training] step 1: KL 6.539e-01, 1.33 s, peak 30.2 GB
+[    42.1s] [check_teacher] A/T3/bf16_x16: {"kl": 0.6539444606751204, "kl_ref": 0.655818185808613, "gap": -0.0028570801695325665}
+[    42.8s] [check_teacher] B/0.0001: {"kl": {"0": 0.006957462498124002}}
+[    43.8s] [teacher training] first batch KL(teacher ‖ W0): fp32 4.6882e-03, training forward 4.6882e-03
+[    43.8s] [teacher training] step 1: KL 4.688e-03, 1.01 s, peak 30.2 GB
+[    44.6s] [teacher training] step 2: KL 8.895e-03, 0.82 s, peak 30.2 GB
+[    52.0s] [teacher training] step 10: KL 5.655e-02, 1.00 s, peak 30.2 GB
+[    67.5s] [check_teacher] B/0.0001: {"kl": {"0": 0.006957462498124002, "25": 0.022995611931407627}, "step_s": 0.9531376659870148}
+[    67.5s] [check_teacher] B/1e-05: {"kl": {"0": 0.006957462498124002}}
+[    68.7s] [teacher training] first batch KL(teacher ‖ W0): fp32 4.6882e-03, training forward 4.6882e-03
+[    68.7s] [teacher training] step 1: KL 4.688e-03, 1.22 s, peak 30.2 GB
+[    69.7s] [teacher training] step 2: KL 4.563e-03, 0.94 s, peak 30.2 GB
+[    77.6s] [teacher training] step 10: KL 4.598e-03, 1.10 s, peak 30.2 GB
+[    93.2s] [check_teacher] B/1e-05: {"kl": {"0": 0.006957462498124002, "25": 0.006086454782922607}, "step_s": 0.9848950207233429}
+[   118.0s] [teacher training] step 50: KL 2.039e-03, 0.99 s, peak 30.2 GB
+[   167.0s] [teacher training] step 100: KL 1.679e-03, 1.03 s, peak 30.2 GB
+[   167.7s] [check_teacher] B/1e-05: {"kl": {"0": 0.006957462498124002, "25": 0.006086454782922607, "100": 0.004886036865036013}, "step_s": 0.9839866016850327}
+[   267.2s] [teacher training] step 200: KL 2.539e-03, 1.07 s, peak 30.2 GB
+[   356.8s] [teacher training] step 300: KL 2.071e-02, 0.81 s, peak 30.2 GB
+[   357.5s] [check_teacher] B/1e-05: {"kl": {"0": 0.006957462498124002, "25": 0.006086454782922607, "100": 0.004886036865036013, "300": 0.004107261301037903}, "step_s": 0.9578924785090928}
+[   357.6s] [score] R B: OK [0.9999964630672644, 0.9999960130389391]
+[   357.6s] [score] A1 B: OK: H2 holds, gap -1.81e-06
+[   357.6s] [score] A2 B: OK x1 1.77e-01, x16 1.02e-03
+[   357.6s] [score] A3 B: OK bf16 1.77e-01, tf32 3.42e-05
+[   357.6s] [score] R T3: OK [1.0000139970830761, 0.9999907148079862]
+[   357.6s] [score] A1 T3: OK: H2 holds, gap 2.07e-06
+[   357.6s] [score] A2 T3: OK x1 -4.39e-01, x16 -2.86e-03
+[   357.6s] [score] A3 T3: OK bf16 -4.39e-01, tf32 2.39e-04
+[   357.6s] [score] A4: MISS [1.0435999234517415, 1.0647491614023845, 0.7851320107777914]
+[   357.6s] [score] B1: MISS 0.702
+[   357.6s] [score] B2: MISS 3.305
+[   357.6s] [score] B: MISS: mixed
