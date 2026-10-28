@@ -23,3 +23,8 @@ plan file carries the detail. Related: [[feedback-concise-design-check]], [[feed
 Repeated 2026-10-28: a **For you:** line repeated for hours named "gaps 2 and 5" and "labelled component training on
 the broad task"; the user said "those questions dont make sense to me" and approved only because they were cheap. A
 For-you line must say in plain words what each run would show and why it matters, never a report's internal labels.
+
+Repeated again 2026-10-28 ("go with whatever you recommend ... bad description as usual"): a decision put to the user
+always carries a recommendation (never "no recommendation"), and each option is described by what it would tell us in
+everyday words ("check whether X alone breaks it"), not by the method's internals ("masked terms", "Γ switches",
+"CI-masked"). Write the question so someone who has not read the card can answer it.
