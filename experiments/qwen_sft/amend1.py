@@ -97,7 +97,7 @@ from commute.qwen_vpd import SITES
 A1 = replace(
     CFG, warmup=10, schedule="hf_cosine", clip=1.0, save_adam=False, read_fixed=(10, 100), read_kl_min=0.01,
     drop_order=("dW_3", "dW_20"), offsets_bf16_before_last=True, offsets_gb_max=110.0, min_card_gb=130.0,
-    t0_steps=300, a0_compare="large_dl/large/step0_test.jsonl",
+    t0_steps=300, a0_compare="large/nowarmup/step0_test.jsonl",
     mem_gb=(("B", 95.0), ("G", 70.0), ("L", 42.0), ("A0", 30.0), ("F", 50.0), ("T0", 100.0), ("D", 72.0),
             ("T", 100.0)),
 )
