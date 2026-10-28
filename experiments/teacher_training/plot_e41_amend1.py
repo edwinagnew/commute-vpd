@@ -5,7 +5,8 @@ the run's own (`path_amend1.py`, under "score" in the results file).
   e41_amend1_seeds.png  the Pile adversarial ratio of the step-10 copy at batch orders 0, 1 and 2 beside the step-10
                         fine-tune left in Δ (do-nothing) and the copy of the finished fine-tune at orders 0 and 1 (the
                         positive control G2 is order 1); each state's two 128-row blocks as small markers; the pass and
-                        fail lines and the unchanged model's adversary-seed band
+                        fail lines, the unchanged model's adversary-seed band (all rows) and its second block's highest
+                        reading over those seeds; order 0's block values are hard-coded from E41's log (see SEED0_BLOCKS)
 
 Usage (repo root): uv run python experiments/teacher_training/plot_e41_amend1.py [--out DIR]
 """
@@ -25,9 +26,11 @@ import matplotlib.pyplot as plt
 from commute.faith_score import LINE
 
 HERE = Path(__file__).resolve().parent
-# Per-block ratios of E41's order-0 copies, from the [faith] lines of results/e41_dl/run_e41.log (lines 164-165 and
+# Per-block ratios of E41's order-0 copies, from the [faith] lines of results/large/run_e41.log (lines 164-165 and
 # 149-150) over W0's seed-0 blocks 0.6794 / 0.7182; E41 stored no blocks.
 SEED0_BLOCKS = {"10": (0.7218 / 0.6794, 1.4397 / 0.7182), "1000": (0.6702 / 0.6794, 0.6703 / 0.7182)}
+# The unchanged model's second block at adversary seed 1, its highest of seeds 0-2, over seed 0 (run_e41_amend1.log line 10)
+W0_BLOCK2_MAX = 0.8277 / 0.7182
 INK, MUTED, GRID = "#0b0b0b", "#8a8984", "#e6e5e0"
 COPY, FINISHED = "#2a78d6", "#9cc3ee"  # plot_e41.py's task-text blue; a lighter blue for the finished teacher's copies
 Rec = dict[str, Any]
@@ -57,6 +60,9 @@ def fig_seeds(a1: Rec, e41: Rec, out: Path) -> None:
     for y, txt in ((LINE / (1 + floor), "pass at or below"), (LINE * (1 + floor), "fail at or above")):
         ax.axhline(y, color=INK, ls=":", lw=1)
         ax.text(6.45, y + 0.02, f"{txt} {y:.2f}", fontsize=7.5, va="bottom", ha="right")
+    ax.axhline(W0_BLOCK2_MAX, color=MUTED, ls="--", lw=0.8)
+    ax.text(4.7, W0_BLOCK2_MAX + 0.01, f"unchanged model, second 128 rows,\nhighest of 3 adversary seeds: {W0_BLOCK2_MAX:.2f}",
+            fontsize=7.5, va="bottom", ha="right", color=MUTED)
     rows = states(a1, e41)
     for i, (x, _, r, (b1, b2), c) in enumerate(rows):
         ax.scatter(x, r, s=80, marker="o", color=c, zorder=4, label="all 256 rows: the check's ratio" if i == 1 else None)
@@ -77,8 +83,8 @@ def fig_seeds(a1: Rec, e41: Rec, out: Path) -> None:
         ax.spines[s].set_visible(False)
     ax.legend(fontsize=8, loc="upper right", frameon=False)
     fig.suptitle("Does the copy of the step-10 fine-tune pass at other batch orders?\n"
-                 "One of three passes (1.28) and two sit between the lines (1.55, 1.51): batch order moves it 21%,\n"
-                 "the finished fine-tune's copy 3%. The excess over the unchanged model is in the second 128 rows each time",
+                 "One of three passes (1.28) and two sit between the lines (1.55, 1.51); it spans 21% across batch orders,\n"
+                 "the finished fine-tune's copy 3%, with one adversary start each. Nearly all the excess is in the second 128 rows",
                  fontsize=11)
     fig.tight_layout()
     fig.savefig(out / "e41_amend1_seeds.png", dpi=150)

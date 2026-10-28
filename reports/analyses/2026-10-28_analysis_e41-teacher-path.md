@@ -2,7 +2,7 @@
 
 *2026-10-28. Plan `reports/plans/2026-10-28_plan_e41-teacher-path.md`; code `experiments/teacher_training/path.py`;
 predictions `experiments/teacher_training/results/predictions_e41.json`, filed 12:02:14, unedited; results
-`experiments/teacher_training/results/teacher_training_e41.json`; log `experiments/teacher_training/results/e41_dl/run_e41.log`;
+`experiments/teacher_training/results/teacher_training_e41.json`; log `experiments/teacher_training/results/large/run_e41.log`;
 notebook `notebooks/E41_teacher_path.ipynb`; figures `experiments/teacher_training/figures/e41_*.png` from
 `plot_e41.py`. Gap 3 of `reports/reviews/2026-10-28_review_technique-comparison.md`.*
 
@@ -21,7 +21,7 @@ behaviour. The adversarial check can tell a copy from doing nothing only at step
 one copy passed by about 1% and the emoticon copy was inconclusive, between the lines. A chain of three copies stayed
 within the filed tolerances of single copies. Its weight change was larger and its adversarial ratio slightly higher.
 
-*Amendment 1, at the end: at two more batch orders the emoticon step-10 copy passed once and was inconclusive again, so it sits at the pass line, and batch order moves it more than it moves copies of finished fine-tunes.*
+*Amendment 1, at the end: at two more batch orders the emoticon step-10 copy passed once and was inconclusive twice, so it sits at the pass line; its reading varied more across orders than finished copies' do, with one adversary start per reading.*
 
 ## What we tested
 
@@ -300,7 +300,7 @@ Rules as filed in `predictions_e41.json`; the run's `score` block, checked here 
   and pod ID are not recorded in the repo. Results committed in a450fde.
 - `teacher_training_e41.json` sha256 `aeb17705e38a47409981b4165e7bd8bd17f2a9e0118cf1b64a779414a76747a7`.
 - `predictions_e41.json` sha256 `9e442abc41e89b673e1e85d0d345886a520a4fff589cb8b22d28a1cd9d95cf6d`.
-- `e41_dl/run_e41.log` sha256 `9085946bb2b9ed50ae2201ed539306bf7eb7e8cf9d6216846dd19b4be3024b83`.
+- `large/run_e41.log` sha256 `9085946bb2b9ed50ae2201ed539306bf7eb7e8cf9d6216846dd19b4be3024b83`.
 - Figures: `uv run python experiments/teacher_training/plot_e41.py`, from the results JSON only.
 - Independent check: `reports/reviews/2026-10-28_review_e41-check.md`, corrections applied.
 
@@ -309,20 +309,22 @@ Rules as filed in `predictions_e41.json`; the run's `score` block, checked here 
 *2026-10-28. Plan `reports/plans/2026-10-28_plan_e41-teacher-path.md` → "Amendment 1"; code
 `experiments/teacher_training/path_amend1.py`; predictions `experiments/teacher_training/results/predictions_e41_amend1.json`,
 filed 13:23:39, one commit (d95a037), unedited; results `experiments/teacher_training/results/teacher_training_e41_amend1.json`;
-log `experiments/teacher_training/results/e41a1_dl/run_e41_amend1.log`; figure `figures/e41_amend1_seeds.png` from
+log `experiments/teacher_training/results/large/run_e41_amend1.log`; figure `figures/e41_amend1_seeds.png` from
 `plot_e41_amend1.py`; notebook `notebooks/E41_teacher_path.ipynb` → "Amendment 1".*
+
+*Independent check: `reports/reviews/2026-10-28_review_e41-amend1-check.md`, corrections applied.*
 
 We trained the subcomponents to imitate the fine-tune stopped at step 10 twice more, changing only the order in which
 the training batches arrive. One of the three copies passed the adversarial check and two sat between the pass and fail
-lines. Batch order moved this copy's reading further than it has moved any copy of a finished fine-tune, so on the
-smallest update teacher training lands at the pass line, and one training run cannot say on which side.
+lines, so on this step teacher training sits at the pass line. Its reading varied more across batch orders than any
+finished copy's has, but each reading used one adversary start, so part of that may be the adversary's.
 
 ### The answer
 
 At the line. We retrained the copy of the step-10 emoticon fine-tune at two more batch orders. One of the three copies
 passes the adversarial check, at 1.28. The other two sit between the lines, at 1.55 and 1.51. Every copy keeps the
-behaviour and removes most of the damage that leaving the update in Δ causes. One change of batch order moved this
-copy's reading by a sixth, where it moved a copy of the finished fine-tune by a thirtieth.
+behaviour, and each removes 64% to 82% of the excess that leaving the update in Δ shows on the check. Across three
+orders the reading spans a fifth. With one adversary start per reading, how much of that is batch order is untested.
 
 ### What we tested
 
@@ -333,12 +335,12 @@ against E41's 0. It sets which task windows form each batch and in what order, b
 at its last step through the same harness, on the same H100 type, with the same single adversary start.
 
 **The question.** Is E41's inconclusive 1.547 one draw from a spread that mostly passes, mostly fails, or sits in the
-band? And does batch order move this copy more than it moves copies of finished fine-tunes? In E34 Amendment 4, a
+band? And does the reading vary more across batch orders than for copies of finished fine-tunes? In E34 Amendment 4, a
 second batch order moved those by up to 11.1% on task text. On emoticon it moved them by 3.2% and 0.1%.
 
 **A new reading: the two blocks.** The harness reads its 256 Pile rows as two blocks of 128, each with its own
 adversary. A block's ratio is its adversarial KL over the unchanged model's on the same block. The mean of the two is
-the check's ratio. E41's step-10 copy had put all its excess in the second block.
+the check's ratio. E41's step-10 copy had put most of its excess in the second block.
 
 **Reading the ratio.** It is 1 for the unchanged model. With this job's floor of 0.0748, a ratio at or below 1.396
 passes and one at or above 1.612 fails. Leaving the step-10 update in Δ reads 2.516. The share of that excess a copy
@@ -353,8 +355,9 @@ removes is $(2.516 - r)/(2.516 - 1)$ for a copy reading $r$: 0 is doing nothing,
 
 ### Controls
 
-All passed; nothing stopped. The seed was applied: each order saw a different first batch. The step-10 copy's loss on
-it was 4.986 and 4.962 at the new orders, against 5.427 at order 0.
+All passed; nothing stopped. The seed was applied. The strongest sign is that the finished fine-tune's copy at order 1
+reproduced Amendment 4's to the digit. Also, each order saw a different first batch: the step-10 copy's loss on it was
+4.986 and 4.962 at the new orders, against 5.427 at order 0.
 
 | control | rule | read | verdict |
 |---|---|---|---|
@@ -368,9 +371,9 @@ it was 4.986 and 4.962 at the new orders, against 5.427 at order 0.
 
 ![adversarial ratio of the step-10 copy at three batch orders](../../experiments/teacher_training/figures/e41_amend1_seeds.png)
 
-At one order of three. Order 1 reads 1.280, a pass by 8.3%. That margin is outside the 7.5% adversary-seed floor.
-Order 2 reads 1.505, inconclusive and 6.6% under the fail line. With E41's 1.547 at order 0, the median verdict is
-inconclusive, as leaned. No order fails, and no copy loses the behaviour.
+At one order of three. Order 1 reads 1.280, a pass by 8.3%. That margin is just outside the unchanged model's 7.5%
+spread across adversary starts. Order 2 reads 1.505, inconclusive and 6.6% under the fail line. With E41's 1.547 at
+order 0, the median verdict is inconclusive, as leaned. No order fails, and no copy loses the behaviour.
 
 | batch order | adversarial ratio | verdict | blocks 1 / 2 | P(target) | gap share | excess removed | stochastic | size | damage | start KL | P at 100 | Δ share |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -380,36 +383,40 @@ inconclusive, as leaned. No order fails, and no copy loses the behaviour.
 | do-nothing | 2.516 | fail | 1.17 / 3.79 | 0.9993 | 0 | 0 | 1.003 | 0.0113 | 0.0554 | — | — | 1 |
 
 Every copy holds P 0.999 at the trigger, against 0.004 for the unchanged model. Every copy keeps its gap share near
-0.0013. Each does the teacher's full damage elsewhere, about 1.03 times it. Each is a quarter to a third larger than
-the teacher. The stochastic ratio passes everywhere, so the verdict is the adversarial ratio's.
+0.0013. Each does the teacher's full damage elsewhere, 1.02 to 1.04 times it. Each is 24% to 30% larger than the
+teacher. The stochastic ratio passes everywhere, so the verdict is the adversarial ratio's.
 
-### Does batch order move the step-10 copy more than copies of finished fine-tunes?
+### Does the reading vary more across batch orders than for finished copies?
 
-Yes. Order 1 reads 17.3% below order 0, outside the filed 11.1%. Order 2 reads 2.7% below it. The order-1 gap is
-half as large again as the widest gap for a finished fine-tune's copy, and five times emoticon's. Over the three
-orders, the largest reading is 21% above the smallest. In the same job, the copy of the finished fine-tune at order 1
-read 0.990. That is 3.2% from E41's reading of it at order 0.
+By the filed rule, yes. Order 1 read 17.3% below order 0, outside the 11.1% filed. Order 2 read 2.7% below it. Over
+the three orders, the largest reading is 21% above the smallest. In the same job, the finished fine-tune's copy at
+order 1 read 0.990, which is 3.2% from E41's reading of it at order 0.
 
-Each state got one adversary start, and a different state is a different problem for the adversary. So this spread
-mixes the copy's own change with adversary-start noise near the line. The 11.1% reference was measured the same way,
-so the comparison is like for like. On the whole 256 rows the unchanged model moves 7.5% across adversary starts.
+Batch order is one of two noise sources here, not a shown cause. Each reading had one adversary start, and a different
+state is a different problem for the adversary. The copies agree on every number the adversary does not touch. Their
+stochastic ratios lie between 0.979 and 0.981, their damage between 0.057 and 0.058, and their first-block ratios
+between 1.06 and 1.07. They differ only in what the adversary finds on the second 128 rows, 1.47 to 2.00. The finished
+copies read near 1, where the unchanged model's spread across starts is 7.5%. On its second block alone the unchanged
+model spans 20% across starts. Whether the adversary's own variation grows with the excess is unmeasured. So whether
+the copy or the adversary's start moved is untested.
 
-### Where is the extra damage?
+### Where is the excess?
 
-In the second block of 128 rows, at every order. The first block reads 1.06 to 1.07 at all three orders. That is at
-or just above the unchanged model's own range across adversary starts there, 0.99 to 1.06. The second block reads
-2.00, 1.47 and 1.92. The unchanged model's second block ranges from 0.96 to 1.15 across adversary starts. Doing
-nothing reads 3.79 there. So every order leaves a real excess on the same 128 rows, and batch order changes its size.
-Which rows carry it, and why, is untested.
+Nearly all of it is in the second block of 128 rows, at every order: 86% to 94% of the excess over 1. The first block
+reads 1.06 to 1.07 at all three orders. That is at or just above the unchanged model's own range across adversary
+starts there, 0.99 to 1.06. The second block reads 2.00, 1.47 and 1.92. The unchanged model's second block ranges from
+0.96 to 1.15 across adversary starts. Doing nothing reads 3.79 there. So every order leaves a real excess on the same
+128 rows, and its size varies across orders, from 1.47 to 2.00. Which rows carry it, and why, is untested.
 
 ### What we learned
 
-On the earliest update of this fine-tune, teacher training from task text sits at the pass line. Across three batch
-orders it passed once and was inconclusive twice, never failing and always keeping the behaviour. It removed two-thirds
-to four-fifths of the excess that leaving the update in Δ shows. Its reading is more sensitive to batch order than any
-copy of a finished fine-tune. So a single run of an early copy can land on either side of the pass line. For
-`GOALS.md`, small updates are where teacher training is least certain to keep the decomposition faithful. At this same
-step, the adjoint split passed at 1.06 in E22, though it loses the behaviour later in the fine-tune.
+On the step-10 update of this fine-tune, teacher training from task text sits at the pass line. Across three batch
+orders it passed once and was inconclusive twice, never failing and always keeping the behaviour. It removed 64% to 82%
+of the excess that leaving the update in Δ shows on the check. Its reading varied more across batch orders than any
+finished copy's, with the adversary's start not separated. So a single reading of an early copy near the line can land
+on either side of it. On both tasks the step-10 copies read closest to the pass line of any copy; emoticon was read at
+three orders and " which" at one. At this same step the adjoint split passed at 1.06 in E22 with P(target) 0.93,
+against the copies' 0.999. It loses the behaviour later in the fine-tune.
 
 ### How compelling is the evidence
 
@@ -425,8 +432,8 @@ step, the adjoint split passed at 1.06 in E22, though it loses the behaviour lat
 ### Surprises
 
 - **The spread prediction failed.** We filed that both new readings would lie within 11.1% of 1.547, at medium
-  confidence. Order 1 read 1.280, 17% lower. The step-10 copy is more sensitive to batch order than any copy of a
-  finished fine-tune measured so far.
+  confidence. Order 1 read 1.280, 17% lower. Its reading varied more across orders than any finished copy's measured
+  so far, with the adversary's start not separated.
 - The median verdict came out inconclusive, as leaned. No order failed, and no copy lost the behaviour.
 
 ### What next
@@ -451,6 +458,7 @@ Rules as filed in `predictions_e41_amend1.json`; the run's `score` block, checke
 
 - Adversary seeds 1 and 2 on the step-10 copies, which would separate adversary-start noise from batch order; the
   160-step budget adversary.
+- A second set of Pile rows for the check.
 - $T_{100}$ copies at other orders, where doing nothing passes, and a $T_{1000}$ copy at order 2.
 - The " which" step-10 copy and the Pile-text step-10 copy at other orders.
 - A 3,000-step copy, a warm start from the adjoint split, a second fine-tune seed, other tasks.
@@ -463,48 +471,57 @@ Rules as filed in `predictions_e41_amend1.json`; the run's `score` block, checke
   (results commit 3f443e1). Pod time and pod ID are not recorded in the repo.
 - `predictions_e41_amend1.json` sha256 `c4a7f6601bc6bca520e82caacbf06e0cfb786cfbd815b8f05a663c9db00b4dd4`.
 - `teacher_training_e41_amend1.json` sha256 `c84241bfb8c99ce0465a3a358c9594af4fa43481d2e3a0172902e761c7ef0437`.
-- `e41a1_dl/run_e41_amend1.log` sha256 `64d40de46f9dc7e8bcb710e5cd1c7b6339315175502764424a46655dd47d35eb`.
-- Order 0's block ratios are from E41's log, lines 164-165, over $W_0$'s seed-0 blocks; E41 stored none.
-- Figure: `uv run python experiments/teacher_training/plot_e41_amend1.py`, from the two results files.
+- `large/run_e41_amend1.log` sha256 `64d40de46f9dc7e8bcb710e5cd1c7b6339315175502764424a46655dd47d35eb`.
+- Order 0's block ratios are from E41's log, `results/large/run_e41.log` lines 164-165 for the step-10 copy and
+  149-150 for the finished copy, over $W_0$'s seed-0 blocks; E41 stored none.
+- Figure: `uv run python experiments/teacher_training/plot_e41_amend1.py`. It reads the two results files, and
+  hard-codes order 0's block values for both teachers from those E41 log lines.
 
 ### Card draft: early updates and the weak version
 
-*For `parts/sections/decisions.html`, id `decision-early-updates`. Flag: Blocking, Commute line, new 2026-10-28.*
-*Run line: Nothing runs until this is decided. The approved short-links run reads the fine-tune at steps 1 to 30, and
-needs to know whether early readings take one batch order or three.*
+*For `parts/sections/decisions.html`, id `decision-early-updates`. Flag: Blocking, Commute line, new 2026-10-28.
+Text as allowed by the independent check, § 4.*
+*Run line: Nothing runs until this is decided. The approved short-links run reads the fine-tune at steps 1 to 30; the
+choice changes its cost by about three times.*
 
-**Teacher training is least certain on the earliest, smallest updates: accept "at the line", or try to fix it?**
+**On the step-10 emoticon update, teacher training reads at the pass line: accept that, or try to fix it?**
 
-**What it is about.** `GOALS.md` assumes post-training updates are small. Teacher training, our best map, copies a
-fine-tune into the subcomponents with Δ frozen. It works on fine-tunes run to the end. We asked whether it also works
-on the same fine-tune stopped after 10 steps, the one point where leaving the update in Δ fails the adversarial check.
+**What it is about.** `GOALS.md` assumes post-training updates are small. Teacher training copies a fine-tune into the
+subcomponents with Δ frozen. It passes on the six trigger-task fine-tunes run to the end (E34), though not on the broad
+lowercase fine-tune (E37). We asked whether it also works on a fine-tune stopped after 10 steps. That is the one point
+where leaving the update in Δ fails the adversarial check (2.52).
 
-**What the evidence says.** On emoticon, three copies trained with different batch orders read 1.55, 1.28 and 1.51.
-Passing means 1.40 or less, failing 1.61 or more. So one copy passes, two are inconclusive, and none fails. Every copy
-keeps the behaviour and removes two-thirds or more of the damage that leaving the update in Δ causes. One change of
-batch order moved this copy's reading by a sixth, against at most a ninth for copies of finished fine-tunes. On the second task the
-step-10 copy passed at 1.38, one order only. The adjoint split of the same emoticon update passed at 1.06, but it loses
-the behaviour later in the fine-tune (E22).
+**What the evidence says.** On emoticon, three copies trained at different batch orders read 1.55, 1.28 and 1.51.
+Passing means 1.40 or less and failing 1.61 or more, so one passes, two are inconclusive and none fails. Every copy
+keeps the behaviour. Each removes 64% to 82% of the excess that leaving the update in Δ shows on the check. The copies
+agree on every other number; they differ only in what the adversary finds on one block of 128 Pile rows. One new order
+read 17% below the first, against at most 11% for finished copies at a second order. Each reading had one adversary
+start, so how much of that is batch order is untested. On the second task the step-10 copy passed at 1.38, 1.4% inside
+the line, at one order. The adjoint split of the same emoticon update passed at 1.06 with P(target) 0.93, and loses the
+behaviour later in the fine-tune (E22).
 
 **The options.**
-- (a) Accept "at the line" for the earliest updates on this model, and move on. No cost.
-- (b) Read the three copies with two more adversary starts, or with the 160-step adversary, to separate the
-  adversary's noise from batch order. About $2; a departure from the one-start decision.
+- (a) Accept "at the line" for the step-10 update on this model, and move on. No cost, but the short-links run then
+  reads its early links at one order.
+- (b) Read the three copies at adversary seeds 1 and 2 as well, reporting each start and keeping the verdict at seed 0.
+  This tells whether the spread is the adversary's or the copy's, and so whether three adversary starts on one copy
+  could replace three batch orders. About $2; a departure from the one-start decision, though not a search.
 - (c) Train the step-10 copy longer, 3,000 steps at three orders. About $2.5. Against it: the copy already matches its
   teacher closely, and longer training did not lower the check on E37's broad update.
 - (d) Start teacher training from the scaled adjoint split, which passes at step 10, for early teachers. Small new
-  code, a review and about $1.5. Against it: from that start, E37's broad copy drifted from 1.05 to 1.76 within 1,000
+  code, a review and about $1.5. Against it: from that start, E37's broad copy went from 1.05 to 1.76 within 1,000
   steps.
-- (e) Make three batch orders the standard for every early-step reading of teacher training. It triples the cost of
-  each early copy: about 4 more minutes per cell here, much more on Qwen.
+- (e) Read every early-step copy at three batch orders and score the median. About 4 more minutes per cell here. It
+  triples the short-links chain's run time, about $1.5 to roughly $4, and costs much more on Qwen.
 
 **Recommendation.** (a) with (e). The three orders agree that the copy keeps the behaviour and removes most of the
-excess. They differ only on which side of the line it lands, and one order alone misread it by 17%. Options (c) and (d) would
-test fixes for a shortfall whose cause is untested.
+excess; they disagree only on which side of the pass line it lands. A median of three is a robust reading whichever
+noise causes that. If a cheaper standard matters, for Qwen especially, (b) first tells whether three adversary starts
+would do instead. (c) and (d) would test fixes for a shortfall whose cause is untested.
 
-**Why it matters.** Small updates are the case `GOALS.md` cares about, and the one where continuous interpretability
-would apply teacher training step after step. If the map is only "at the line" there, every early reading needs more
-than one run before it means anything.
+**Why it matters.** Small updates are the case `GOALS.md` cares about. They are also where continuous interpretability
+would apply teacher training step after step. A single early reading near the line cannot be read on its own.
 
-*Links: E41, E22, E34, E37. Reports: this analysis → "Amendment 1"; `reports/plans/2026-10-28_plan_e41-teacher-path.md`
-→ "Amendment 1".*
+*Links: E41, E22, E34, E37. Reports: this analysis → "Amendment 1";
+`reports/reviews/2026-10-28_review_e41-amend1-check.md`; `reports/plans/2026-10-28_plan_e41-teacher-path.md` →
+"Amendment 1".*
