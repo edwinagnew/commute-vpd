@@ -272,11 +272,6 @@ Deferred ideas and loose ends. Date each entry.
     group doesn't, faithfulness is not enough evidence for "interpretable along training", and identity tracking is
     needed. If they keep both, and (b) shows component training near the fine-tune's solution, E16's best result
     gets the support it is missing. Related: `theory/component_identity.md`, E3, E4's identity controls.
-- 2026-10-22. **Spread-out fine-tune** (user, 2026-10-22: "definitely interesting but we aren't ready for it"). A
-  style or topic shift on ordinary text, with no single trigger and target: closest to real post-training. Asks whether
-  the fixed-shift hypothesis survives once the task is not a bigram. Needs a way to score switching without a trigger
-  position (the E18/E28 harness reads the trigger only). 2026-10-23: now the **next re-gating step** (decision
-  `reports/decisions/2026-10-23_decision_fixed-shift-per-cue.md`); goes through `/design` first. Its job is the entry below.
 - 2026-10-22. **Induction fine-tune, for further consideration** (user, 2026-10-22). Dropped as the next re-gating
   task (learned very early, likely near saturation), but its mechanism is known in general, so a fine-tune that bolts
   something new onto it (induction on unusual tokens, or a new cue for it) would let us watch new behaviour attach to
@@ -285,6 +280,26 @@ Deferred ideas and loose ends. Date each entry.
   tokens and spread across heads (`../papers/pd/vpd_blog_post.md`, "Previous token behavior"). It only cites induction
   heads found by parameter decomposition in a toy induction model (Christensen et al. 2025). Those two subcomponents
   are a ready-made anchor: check whether the copy task's switched-on layer-1/2 attention set (E12, E28) includes them.
+- 2026-10-27. **Re-gating: ablate the switched-on set in the full fine-tuned weights, with no Γ involved** (proposed by
+  the lead, found interesting by the user; `/design` first). Remove the switched-on pieces (E18's S_on, saved) from
+  W₀ + δW and read the target at the trigger and the off-target KL; random same-size sets and the original model as
+  references. If the behaviour dies, the fine-tuned model routes through those pieces and re-gating is a real
+  description; if it survives, re-gating is Γ's reading and the line's premise fails. E12 ablated a different set.
+  Forward passes on saved states, minutes. Serves reading (b) of the pending card "What would it mean to understand
+  re-gating?" (`reports/decisions/2026-10-27_decision_regating-fixed-shift-deprioritised.md`). Ran as E38 stages 1 and 2; removal uninformative, trace mixed.
+- 2026-10-27. **Re-gating: does the trigger's residual stream move toward natural target contexts?** (proposed by the
+  lead, found interesting by the user; `/design` first). Cosine of the fine-tune's change in each matrix's input at the
+  trigger with the difference between the mean input at Pile positions that precede the target and the mean input
+  overall; other-target fine-tunes as the null. Serves reading (c) of the same card (same decision report). Ran as E38 stages 1 and 2; removal uninformative, trace mixed.
+- 2026-10-28. **Reset plan E46** (`reports/plans/2026-10-28_plan_regating-line-reset.md`): stage 0, one table in nats on existing states with nulls (non-learning, other-target, random and sign-flipped updates); waits on the user.
+
+## De-prioritised 2026-10-27 (fixed-shift hypothesis)
+
+- 2026-10-22. **Spread-out fine-tune** (user, 2026-10-22: "definitely interesting but we aren't ready for it"). A
+  style or topic shift on ordinary text, with no single trigger and target: closest to real post-training. Asks whether
+  the fixed-shift hypothesis survives once the task is not a bigram. Needs a way to score switching without a trigger
+  position (the E18/E28 harness reads the trigger only). 2026-10-23: now the **next re-gating step** (decision
+  `reports/decisions/2026-10-23_decision_fixed-shift-per-cue.md`); goes through `/design` first. Its job is the entry below.
 - 2026-10-23. **Define the fixed-shift hypothesis without cues** (**de-prioritised 2026-10-27**, user, with the
   hypothesis; `reports/decisions/2026-10-27_decision_regating-fixed-shift-deprioritised.md`) (user, 2026-10-23, on accepting option (c) tentatively:
   "make sure the backlog reflects we need to work out how to define it better and/or without cues"). The hypothesis
@@ -306,17 +321,8 @@ Deferred ideas and loose ends. Date each entry.
   summary of the whole preceding text that keeps word order, a rule joining text neighbours with each value's room to
   move, and what the remaining tenth to quarter of the switching depends on. Not carried forward
   (`reports/decisions/2026-10-27_decision_regating-fixed-shift-deprioritised.md`).
-- 2026-10-27. **Re-gating: ablate the switched-on set in the full fine-tuned weights, with no Γ involved** (proposed by
-  the lead, found interesting by the user; `/design` first). Remove the switched-on pieces (E18's S_on, saved) from
-  W₀ + δW and read the target at the trigger and the off-target KL; random same-size sets and the original model as
-  references. If the behaviour dies, the fine-tuned model routes through those pieces and re-gating is a real
-  description; if it survives, re-gating is Γ's reading and the line's premise fails. E12 ablated a different set.
-  Forward passes on saved states, minutes. Serves reading (b) of the pending card "What would it mean to understand
-  re-gating?" (`reports/decisions/2026-10-27_decision_regating-fixed-shift-deprioritised.md`).
-- 2026-10-27. **Re-gating: does the trigger's residual stream move toward natural target contexts?** (proposed by the
-  lead, found interesting by the user; `/design` first). Cosine of the fine-tune's change in each matrix's input at the
-  trigger with the difference between the mean input at Pile positions that precede the target and the mean input
-  overall; other-target fine-tunes as the null. Serves reading (c) of the same card (same decision report).
+## Other open items
+
 - 2026-10-23. **Teacher training** (user's name; proposed 2026-10-23, to start in a new session). Component training
   with the fine-tuned model as teacher: train the alive (U, V), Δ and Γ frozen, to match the fine-tuned model's
   outputs (KL to W₀ + δW) instead of the task's loss and data. It is the only route so far that keeps the behaviour,
