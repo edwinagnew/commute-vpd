@@ -1,0 +1,310 @@
+{
+ "B host RAM": {
+  "ok": true,
+  "stops": true,
+  "physical_gb": 490.216828928,
+  "cgroup_gb": null,
+  "usable_gb": 490.216828928
+ },
+ "B disk": {
+  "ok": true,
+  "stops": true,
+  "free_gb": 5390.466023424,
+  "need_gb": 52.155181696
+ },
+ "B 1e-06 step-1 KL vs fp32": {
+  "ok": false,
+  "stops": true,
+  "kl": 0.0055189779959619045,
+  "kl_fp32": 0.004688183418151949,
+  "rel": 0.17721034006332648
+ },
+ "memory B B 1e-06 step 2": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 34.829505024
+ },
+ "B 1e-05 step-1 KL vs fp32": {
+  "ok": false,
+  "stops": true,
+  "kl": 0.0055189779959619045,
+  "kl_fp32": 0.004688183418151949,
+  "rel": 0.17721034006332648
+ },
+ "memory B B 1e-05 step 2": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 34.829505024
+ },
+ "memory B teacher training": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 34.829505024
+ },
+ "B rate": {
+  "ok": false,
+  "stops": true,
+  "1e-06": false,
+  "1e-05": false
+ },
+ "B_fineweb seed 0 step-0 KL": {
+  "ok": false,
+  "stops": true,
+  "step0": 0.1193,
+  "ref": 0.0918
+ },
+ "memory B B_fineweb seed 0": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 39.021003776
+ },
+ "memory B end": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 39.021003776
+ },
+ "G_fineweb seed 0 step-0 KL": {
+  "ok": false,
+  "stops": true,
+  "step0": 0.1193,
+  "ref": 0.0918
+ },
+ "G_fineweb seed 0 pass time": {
+  "ok": true,
+  "stops": false,
+  "pass_s": 1.6078836917877197,
+  "benchmark_s": 1.576894998550415
+ },
+ "memory G G_fineweb seed 0": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 36.201387008
+ },
+ "G_maths seed 0 step-0 KL": {
+  "ok": false,
+  "stops": true,
+  "step0": 0.051,
+  "ref": 0.0374
+ },
+ "G_maths seed 0 pass time": {
+  "ok": true,
+  "stops": false,
+  "pass_s": 1.4522960186004639,
+  "benchmark_s": 1.576894998550415
+ },
+ "memory G G_maths seed 0": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 36.201387008
+ },
+ "G_maths seed 1 step-0 KL": {
+  "ok": true,
+  "stops": true,
+  "step0": 0.0491,
+  "ref": 0.051
+ },
+ "G_maths seed 1 pass time": {
+  "ok": true,
+  "stops": false,
+  "pass_s": 1.4441087245941162,
+  "benchmark_s": 1.576894998550415
+ },
+ "memory G G_maths seed 1": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 36.201387008
+ },
+ "G_maths seed 2 step-0 KL": {
+  "ok": true,
+  "stops": true,
+  "step0": 0.0505,
+  "ref": 0.051
+ },
+ "G_maths seed 2 pass time": {
+  "ok": true,
+  "stops": false,
+  "pass_s": 1.4581398963928223,
+  "benchmark_s": 1.576894998550415
+ },
+ "memory G G_maths seed 2": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 36.201387008
+ },
+ "memory G end": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 36.201387008
+ },
+ "memory L end": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 29.449595392
+ },
+ "A0 first batch against the earlier run": {
+  "ok": false,
+  "stops": false,
+  "differ_share": 0.25,
+  "n": 8
+ },
+ "memory A0 end": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 14.1554688
+ },
+ "F step-1 loss": {
+  "ok": true,
+  "stops": true,
+  "loss": 2.407046682037147,
+  "ref": 2.4102348019293522
+ },
+ "F step 1 at rate 0": {
+  "ok": true,
+  "stops": true,
+  "max_norm": 0.0,
+  "kl_to_start": 0.0
+ },
+ "memory F step 1": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 36.705753088
+ },
+ "F step 2 |dW| / (rate \u221anumel)": {
+  "ok": true,
+  "stops": true,
+  "min": 0.5510060194210945,
+  "max": 0.9359875727991868,
+  "median": 0.9072183103643259,
+  "rate": 1.0000000000000002e-06
+ },
+ "F step 2 KL to start": {
+  "ok": true,
+  "stops": true,
+  "kl_to_start": 0.0037432143478102523,
+  "max": 0.005
+ },
+ "memory F end": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 36.705753088
+ },
+ "T0 step-1 KL vs fp32": {
+  "ok": false,
+  "stops": true,
+  "kl": 0.012265271507203579,
+  "kl_fp32": 0.010331128106176073,
+  "rel": 0.18721512124810946
+ },
+ "memory T0 T0 step 2": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 33.849838592
+ },
+ "T0_fineweb seed 0 step-0 KL": {
+  "ok": true,
+  "stops": true,
+  "step0": 0.1194,
+  "ref": 0.1193
+ },
+ "T0_fineweb seed 0 pass time": {
+  "ok": true,
+  "stops": false,
+  "pass_s": 1.6064283847808838,
+  "benchmark_s": 1.576894998550415
+ },
+ "memory T0 T0_fineweb seed 0": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 41.837479424
+ },
+ "memory T0 end": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 41.837479424
+ },
+ "D3_fineweb seed 0 step-0 KL": {
+  "ok": true,
+  "stops": true,
+  "step0": 0.1188,
+  "ref": 0.1193
+ },
+ "D3_fineweb seed 0 pass time": {
+  "ok": true,
+  "stops": false,
+  "pass_s": 1.3510544300079346,
+  "benchmark_s": 1.576894998550415
+ },
+ "memory D D3_fineweb seed 0": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 41.867363328
+ },
+ "D10_fineweb seed 0 step-0 KL": {
+  "ok": true,
+  "stops": true,
+  "step0": 0.1138,
+  "ref": 0.1193
+ },
+ "D10_fineweb seed 0 pass time": {
+  "ok": true,
+  "stops": false,
+  "pass_s": 1.3369317054748535,
+  "benchmark_s": 1.576894998550415
+ },
+ "memory D D10_fineweb seed 0": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 41.867363328
+ },
+ "D100_fineweb seed 0 step-0 KL": {
+  "ok": true,
+  "stops": true,
+  "step0": 0.1212,
+  "ref": 0.1193
+ },
+ "D100_fineweb seed 0 pass time": {
+  "ok": true,
+  "stops": false,
+  "pass_s": 1.29681396484375,
+  "benchmark_s": 1.576894998550415
+ },
+ "memory D D100_fineweb seed 0": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 41.867363328
+ },
+ "D100_maths seed 0 step-0 KL": {
+  "ok": true,
+  "stops": true,
+  "step0": 0.1181,
+  "ref": 0.051
+ },
+ "D100_maths seed 0 pass time": {
+  "ok": true,
+  "stops": false,
+  "pass_s": 1.293579339981079,
+  "benchmark_s": 1.576894998550415
+ },
+ "memory D D100_maths seed 0": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 41.867367424
+ },
+ "memory D end": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 41.867367424
+ },
+ "T3 step-1 KL vs fp32": {
+  "ok": false,
+  "stops": true,
+  "kl": 0.017763835057849064,
+  "kl_fp32": 0.03168044342759185,
+  "rel": -0.43928073170914705
+ },
+ "memory T T3 step 2": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 33.866877952
+ }
+}
