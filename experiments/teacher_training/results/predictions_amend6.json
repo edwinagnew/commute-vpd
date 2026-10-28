@@ -1,0 +1,178 @@
+{
+ "about": "teacher_training Amendment 6 (reports/plans/2026-10-23_plan_teacher-training.md -> 'Amendment 6'): gaps 10, 7, 6 and 4 of reports/reviews/2026-10-28_review_technique-comparison.md in one RunPod H100 job. Teachers regenerated in-job: arm-A fine-tunes of all 24 matrices (seed 0, step 1000; r1 SGD 0.03 and Adam 3e-5, r2_t275_v2667 SGD 0.1) and E9's rank-8 LoRA (amend3.lora_teacher) on emoticon, r1, r0. Students use E34's recipes (run.CFG): A task windows, B Pile train rows 32,768-40,959 (batch 8, plain mean KL), both Adam 1e-5; S task windows with plain SGD 0.03. E34's earlier predictions files stand unedited. Filed before any run",
+ "amend6": {
+  "a3_b1000": {
+   "emoticon": 0.5667,
+   "r0_t352_v310": 0.521,
+   "r1_t534_v369": 0.8753
+  },
+  "curve_every": 250,
+  "ft_lr": {
+   "r1_t534_v369/adam": 3e-05,
+   "r1_t534_v369/sgd": 0.03,
+   "r2_t275_v2667/sgd": 0.1
+  },
+  "g1_harness": 1.588,
+  "g1_harness_tol": 0.03,
+  "g3_p": 0.9857,
+  "g3_p_tol": 0.02,
+  "harmless": 2.0,
+  "harmless_abs": 0.002,
+  "keep_tol": 0.05,
+  "long_harness": [
+   2500,
+   5000
+  ],
+  "long_tasks": [
+   "emoticon",
+   "r1_t534_v369",
+   "r0_t352_v310"
+  ],
+  "mean_over": 50,
+  "plateau": 0.03,
+  "r2_p_min": 0.5,
+  "ref_tol": {
+   "damage": 0.005,
+   "p_target": 0.01,
+   "size": 0.003
+  },
+  "refs": {
+   "emoticon/lora": {
+    "damage": 0.01625,
+    "p_target": 0.99992,
+    "size": 0.11968
+   },
+   "r0_t352_v310/lora": {
+    "damage": 0.0036,
+    "p_target": 0.98484,
+    "size": 0.08415
+   },
+   "r1_t534_v369/adam": {
+    "p_target": 0.9962,
+    "size": 0.03334
+   },
+   "r1_t534_v369/lora": {
+    "damage": 0.01476,
+    "p_target": 0.99919,
+    "size": 0.10675
+   },
+   "r1_t534_v369/sgd": {
+    "p_target": 0.9834,
+    "size": 0.02875
+   }
+  },
+  "s_lr": 0.03,
+  "seed0_steps": [
+   1000,
+   2500,
+   5000
+  ],
+  "seed1_steps": [
+   1000,
+   2500
+  ],
+  "seed_p_tol": 0.05,
+  "seed_ratio_tol": 0.25,
+  "w0_pile_max": 0.0001
+ },
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, seeds 0, 1, 2), faith_score.w0_check; expected pass, floor about 0.075 on the H100. Fails: stop",
+  "G1": "the r1 SGD teacher (fine-tune seed 0, step 1000) reads P within 0.01 of 0.9834 and size within 0.003 of 0.02875 (E34, A4, A5), and its do-nothing adversarial ratio is within 0.03 of 1.588 (E34 and A5 read 1.5884). Fails: stop. Every other teacher's reading is checked against its same-card reference and reported",
+  "G3": "stage c, first: arm S on the r1 SGD teacher at step 1000 reads 'fail' with P within 0.02 of 0.9857 (E34: 3.14). Fails: the two new S arms are skipped and P4 reads 'unreadable'",
+  "W0_plain_text": "W0's plain-text damage KL(W0 || W0) over the 256 rows <= 1e-4 (expected 0: two identical forward passes). Fails: stop (every damage reading would carry the paths' difference)",
+  "r2_gate": "the r2 teacher's held-out P(target) >= 0.5 at step 1000, else its students are skipped and P2, P3 read 'not run' (no SGD 0.1 full-weight fine-tune of r2 has been read; E21's Adam 3e-5 one read 0.82)"
+ },
+ "expected": {
+  "S": "the SGD teacher's S: 'fail' at 1000 (E34 3.14), pass at 100; window damage 1.2x the teacher's",
+  "W0": "pile_damage 0; every ratio 1; P(target) 0.004 emoticon, 0.15 r0, 0.04 r1, 0.0034 r2",
+  "a_students": "P 0.97-1.0 at step 1000 (E34, A3); task-window damage 0.55-0.97x the teacher's for full-weight teachers, 2.1x for the r1 LoRA's student A (A3)",
+  "adjoint": "plain-text damage below the teacher's (E31 A3 and E34 on windows: 0.38-0.55x on r1)",
+  "d": "seed 0 at step 1000 reproduces A3's P 0.567, 0.875, 0.521 (emoticon, r1, r0) within about 0.03 (reported)",
+  "do_nothing": "pile_gap 0 by construction (positive control of the gap); pile_damage of each teacher same order as its task-window damage (r1 SGD 0.056, Adam 0.076, LoRA 0.015; no reference on plain text)",
+  "noise": "A4's batch-order spread: P within 0.032 (Pile-text students), adversarial ratio within 25%; C1's floor"
+ },
+ "filed": "2026-10-28 12:04:51",
+ "measurements": {
+  "curve": "every student's training curve at step 100 and every 250 steps: free held-out P(target) and damage, and the means over the last 50 steps of P and of the training loss",
+  "harness": "E34's seven numbers per state (run.read_state): adversarial and stochastic ratios to this job's W0 (adversary seed 0), verdict (state_verdict, P bar 0.9), held-out P(target), teacher gap, damage on task windows, size, Delta's share. 'faith' = state_verdict on the two ratios with no P bar",
+  "plain_text": "pile_damage = mean over every position of the 256 Pile val rows (the harness's rows) of KL(W0 || state), the state being the target model at W0 + its delta-W; pile_gap = the same of KL(teacher || state). finetune.eval_arm_b, bf16 autocast, KL in fp32. Held fixed: rows, Gamma, Delta. Blind to harm the 256 rows do not sample and to damage in the masked model; no batch-order spread exists for it (the 2x bar is wide for that reason). Positive control: each teacher's own pile_damage > 0"
+ },
+ "not_run": [
+  "the r2 Adam 3e-5 teacher (one teacher keeps stage b short; E21 read that fine-tune at P 0.82 on an L40); r2 S",
+  "arm S at a second batch order, on emoticon or r0, or at step-100 harness reads",
+  "the adversary on stage a's students (E34 and A4 read them); harness reads of the LoRA and Adam do-nothing states (E34, A3 read them on this card)",
+  "student B past 5,000 steps or on more than 8,192 Pile rows; seed 1 past 2,500 steps",
+  "a longer adversary or more adversary starts (decided 2026-10-27: one start, 20 steps)"
+ ],
+ "predictions": [
+  {
+   "confidence": "high on the four full-weight students; low on the LoRA student",
+   "id": "P1_harmless_on_plain_text",
+   "predicted": "holds on all five (E34 windows: 0.55-0.97x); the LoRA student read 2.1x on windows, so it may not",
+   "reported": "each ratio, the scaled adjoint states' ratios, the S and r2 and (d) states' plain-text damage",
+   "rule": "for each of r1's SGD-teacher A and B, Adam-teacher A and B, and LoRA-teacher A students at step 1000 (seed 0): pile_damage <= 2 x its teacher's do-nothing pile_damage, or <= 0.002 nats absolute; pass = all five present and holding"
+  },
+  {
+   "confidence": "medium-low (component training never passed r2 cleanly: E11, E21, E26)",
+   "id": "P2_r2_A",
+   "predicted": "kept and faithful (E34: every A student within 0.08 of its teacher and passing)",
+   "rule": "r2 student A at step 1000: 'kept' = P(target) >= the teacher's P - 0.05; 'faithful' = faith 'pass'; category kept and faithful / faithful, not kept / kept, not faithful / neither; pass = kept and faithful"
+  },
+  {
+   "id": "P3_r2_B",
+   "kind": "two-sided, filed with a lean",
+   "lean": "kept and faithful (the cue ' in' is common on the Pile, as r0's and r1's are)",
+   "rule": "as P2 for student B (Pile rows) at step 1000"
+  },
+  {
+   "confidence": "medium",
+   "id": "P4_sgd_map",
+   "kind": "two-sided, filed with a lean",
+   "lean": "map: SGD on (U, V) fails late on r1 whatever its teacher (E21, E26 component training; E34 arm S)",
+   "reported": "P(target) at step 100 (free reading) and the size of each S state (E21: SGD fails above about 0.009)",
+   "rule": "arm S at step 1000 on the r1 Adam and LoRA teachers, verdict per teacher: 'fail' -> map, 'pass' -> teacher, 'inconclusive' -> between, 'below P 0.9' -> not learnt; overall map if both map, teacher if both teacher, else mixed; needs G3; pass = map"
+  },
+  {
+   "confidence": "medium on emoticon and r1; none on r0",
+   "id": "P5_lora_text_only_longer",
+   "predicted": "emoticon learnt, r1 learnt (A3 at 1000: 0.567 rising from 0.076, 0.875 from 0.756); r0 not predicted (0.462 -> 0.521)",
+   "reported": "pile_gap / the teacher's pile_damage at 1000, 2500, 5000 (how much of the teacher's plain-text change the student has taken), the curves, damage",
+   "rule": "student B of each LoRA teacher at seed 0, step 5000: 'learnt' if P >= 0.9 and verdict 'pass'; 'learnt, not passed' if P >= 0.9 otherwise; else 'plateau' if the 50-step mean P rose by less than 0.03 from step 2500 to 5000, 'rising' if not; pass = emoticon and r1 both learnt"
+  },
+  {
+   "confidence": "medium",
+   "id": "P6_lora_text_only_seed",
+   "predicted": "holds on all three (A4: Pile-text students of full-weight teachers within 0.032 and 25%)",
+   "rule": "per task, student B at seed 1 against seed 0 at step 2500: |P1 - P0| <= 0.05 and |ratio1 / ratio0 - 1| <= 0.25 (Amendment 4's P2 rule); pass = all three tasks"
+  }
+ ],
+ "reported_not_scored": [
+  "every teacher's reading against its same-card reference (only G1 halts); gaps at W0",
+  "plain-text damage and gap of every state; the adjoint states' P(target)",
+  "(d) seed 0's P at step 1000 against A3's (0.567, 0.875, 0.521)",
+  "the r2 teacher's own reading and do-nothing verdict (E21 read an Adam 3e-5 r2 fine-tune at 1.54 on an L40)"
+ ]
+}
