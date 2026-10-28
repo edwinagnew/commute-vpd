@@ -183,16 +183,78 @@ positive control on Qwen (Spurious Rewards), not a null: its accuracy change is 
 5. **Two amendments per experiment at most** (user, 2026-10-27); the third is a new plan.
 6. Gated runs (`.claude/CLAUDE.md`) stay as they are; the plan above keeps every run under the gate except Q4 and Q5.
 
-## 6. Questions for the user
+## 6. The user's answers (2026-10-28, chat)
 
-1. **Pass test.** Adopt Q0's three readings (masked KL, behaviour kept, paired adversary) as the Qwen pass test, with
-   the 20-step search once per experiment? Recommended: yes.
-2. **Canonical update.** Replace gold-solution SFT with SFT on the model's own correct samples, keeping gold as the
-   off-policy contrast at matched KL? Recommended: yes. Real GRPO follows as Q5.
-3. **Teacher training on the H200.** Hold E40 Amendment 1 until Q1 is read, and run it only if the least-squares split
-   fails? Recommended: hold. It saves ~$30 and about a day if the split passes.
-4. **Deliverable and date.** No file records what the Qwen line is for (a MATS write-up, a paper draft, a tool) or
-   when. This decides how many of Q1-Q5 there is time for. The order above holds either way.
+1. **Pass test:** Q0's three readings are the Qwen pass test; the 20-step search runs once per experiment.
+2. **Canonical update:** SFT on the model's own correct samples; gold SFT is the off-policy contrast at matched KL.
+3. **Teacher training on the H200:** on hold until Q1 is read; runs only if the least-squares split fails.
+4. **The goal (user's words):** "sharp preliminary results in a couple of weeks time. for example, the ability to
+   cleanly decompose post-training updates on a decent scale and the ability to this both for SFT and RL and some
+   evidence showing we can distinguish elicitation versus new mechanisms based on a VPD decomposition."
+
+## 7. The goal, and whether the plan reaches it by about 2026-11-11
+
+Three deliverables, and what in the plan produces each:
+
+| deliverable | produced by | state of the evidence it rests on |
+|---|---|---|
+| **D1. Cleanly decompose a post-training update at scale.** A map Φ that keeps the decomposition faithful for a real update on Qwen3-1.7B, with a test that can fail | Q0 + Q1 on the saved δWs; Q2's δWs through the same table | The least-squares split is exact on Qwen (complete spans); whether it *passes* is unknown. Fallback: teacher training (Q4) |
+| **D2. For SFT and for RL.** The same table for an SFT update and an RL update | Q2 (SFT arms) and Q5 (GRPO) | SFT code works. **RL code does not exist** and is the schedule risk; the own-samples arm is the RL-like stand-in until it does |
+| **D3. Elicitation against new mechanisms, read from the decomposition.** Two updates that differ on that axis, and VPD readings that separate them | Q2 with a **third arm that teaches something new** (added below), Q3's readings on all arms | The 67M showed re-gating dominates for narrow tasks (E4, E6, E18) and that a cipher the model lacked can be copied (E42). Nothing at scale yet |
+
+**The addition D3 needs: a "teach new" arm in Q2.** GSM8K alone gives the elicitation side only (RL and own-samples
+SFT strengthen what the model does; gold SFT teaches a format, which is "new" only trivially). A third SFT arm teaches
+the model facts it cannot have: about 1,000 question-answer pairs about invented entities, chat-formatted, graded by
+exact match on held-out rephrasings, trained with the same warm-up recipe and matched to the own-samples arm on KL to
+start. This is the findings-to-port analysis's "new facts" row and the realistic analogue of the 67M's cipher
+(E10, E42). Known facts the model already answers can be mixed in as the per-example elicitation control (Gekhman et
+al. 2024). Cost: one more arm in the same pod, about $4.
+
+**What "distinguish" looks like, filed before the runs (Q3's readings, each arm against the others):**
+
+| reading | elicitation (own samples, RL) | new mechanism (invented facts) |
+|---|---|---|
+| direct against re-gating share (route split on task rows) | re-gating dominates; direct small | direct share larger than for the elicitation arms |
+| the switched-on set's overlap with the think-mode set | above chance | at chance |
+| where the split puts δW | few alive subcomponents, concentrated | spread across more subcomponents, MLP matrices, including ones Γ never gates on for this text |
+| Q0 behaviour kept under CI masks | high for the split | lower: the new behaviour is partly in components the masks do not keep |
+| Q0 pass of the least-squares split | passes | passes less, or needs teacher training |
+
+If the arms do not separate on any row, that is also a sharp result: VPD's readings do not see the difference, and the
+write-up says so. If they separate on the route split and the think-mode overlap but not on faithfulness, the
+decomposition reads the mechanism without the map having to differ, which is the interesting middle.
+
+**Timeline, two weeks from 2026-10-28.** Each run stays under the gate; nothing waits on a rehearsal cycle.
+
+| days | work | cost |
+|---|---|---|
+| 1-2 | Q0 + Q1 on the saved δWs, one pod in US-MO-1 | ~$8 |
+| 3-5 | Q2, three arms (own samples, gold, invented facts), matched on KL; Q1's table on each. **In parallel, from day 3:** a writer builds the GRPO loop (TRL's trainer, thinking off, 512-token cap) and rehearses it at tiny size on the cluster for $0 | ~$14 |
+| 5-7 | Q3's readings on all arms (route split, Γ switching, think-mode overlap, where δW lands) | ~$5 |
+| 7-10 | Q5, GRPO, ~100 steps, δW saved at the same steps; Q1 and Q3 tables on it. Q4 only if Q1 failed | ~$20 (+$30 if Q4) |
+| 11-13 | Write-up: one figure per deliverable, the Q0 controls beside every pass; buffer for one rerun | — |
+
+Total about $50-80 over two sessions' caps. Feasible if the line runs the table above and nothing else: no
+amendments beyond a rerun of a failed stage, no new side questions.
+
+**Risks, in order.** (1) Q0's controls fail to fail: no reading has teeth, and a day goes to settling the criterion
+with the user before D1 can be claimed. (2) The RL loop: new code, rollouts at 1.7B; mitigated by starting it on day 3
+and rehearsing for $0. If it slips, D2 ships with the own-samples arm as the RL stand-in and says so. (3) The
+decomposition is weaker on maths text than on web text (adversary 4.24 against 1.70), so every D1 claim is a ratio to
+W₀'s own reading on the same rows, never an absolute. (4) The own-samples update may lengthen answers toward
+thinking-style text past 512 tokens; the drop rule and length readings catch it at the first saved steps. (5) The
+invented-facts arm may not generalise to rephrasings at 100 steps; the in-format held-out questions are the primary
+score and rephrasings are reported.
+
+## 8. Task for the qwen-decomp lead
+
+> Read `reports/plans/2026-10-28_plan_qwen-line-replan.md`. The user has taken its recommendations 1-3 and set the goal
+> in §6-7. E40 Amendment 1 is on hold (do not start the H200 run; keep its code). Do not delete the old volume
+> `ydavm7ct4x`: Q1 reads E40's δWs from it. Write one plan for Q0 + Q1 together, on one H100 pod in US-MO-1, under
+> $10: the three readings, the two positive controls, the free singular-subspace check, and the least-squares and
+> adjoint splits of δW at steps 10 and 100. Predictions filed before the run. Then Q2 with the three arms of §7.
+> Rules of §5 apply: a heuristic question gets one hour and no run; one question per run; the adversary once per
+> experiment; two amendments at most. Report each result in plain words with the control beside it.
 
 ## Not in this plan
 
