@@ -43,8 +43,9 @@ Platform: RunPod "NVIDIA H100 80GB HBM3" directly (over 30 min; C1's floor 0.074
           Amendment 6 readings are that card's; any other card, H100 PCIe and NVL included, stops at C1 or G2).
           Pod commute-teacher_training-amend7-<id>, label set through start()'s argument; set up with
           `bash cluster/pod_setup.sh`
-Pod: fresh; terminate when done. If another machine of the session runs, pass instance=... to every machine-scoped
-     call and never edit remote-kernels.toml while any machine runs
+Pod: fresh; terminate when done. Never edit remote-kernels.toml (another session's runner set its name and its pod may
+     be running; the RunPod name reads commute-broad_fragility-<id>, the start() label is display only). If another
+     machine of the session runs, pass instance=... to every machine-scoped call
 Budget: expect about $5 (~65 min of pod at about $4.7/h); cap $7: past it, download what is written and terminate.
         Before start(), check the session's spend against REMOTE_KERNELS_BUDGET ($40) and tell the lead if under $8 remains
 Watch for: stages, stop rules below
