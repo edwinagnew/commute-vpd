@@ -148,3 +148,19 @@ existing masked and adversary functions. One review by a fresh Opus agent before
 Rejection-sampling SFT, a LoRA arm, SGD, a second seed, thinking mode, any map applied to δW (next plan), the outside
 share (on Qwen every matrix has at least as many subcomponents as dimensions, so the span is likely full; to be
 checked on alive counts in the next plan).
+
+## On hold (2026-10-28)
+
+The user asked to hold this plan: "i think it would be better if we tested fine-tuning and the existing decomposition
+first". The restatement put to the user: G (the unchanged decomposition on the model's own GSM8K answers), then SFT on
+the human solutions with δW saved at steps 1-100, then the do-nothing check at each step (δW into Δ, the adversary
+against the fine-tuned model); RL, the null and teacher training to later plans. Awaiting the user's confirmation.
+
+Notes from the paused code writer, for the rewrite (no code was written). Reusable: `qwen_eval.load_model().float()`
+for the fp32 model (exact upcast); a token-id sampler beside `qwen_eval.generate` (which returns text only); G's rows
+from greedy GSM8K test answers packed end to end (~230 problems for 128 rows); the decomposition path as an argument;
+SFT sequence = prompt ids + `gold_as_response` + `<|im_end|>`, cut at 512; fused AdamW; gradient checkpointing with
+`use_reentrant=False`; the GSM1k filter moved from `experiments/qwen_fresh_set/run.py` into src. Problems found in this
+plan: F's loss divisor unstated; S cannot time evaluation and readouts before A0 (time one batch of each inside S);
+P2's "|d| < 2 SE" fails at d = 0 with SE 0; Adam moves δW on a zero-gradient step unless `opt.step()` is skipped; P6
+does not name the steps its window share covers.
