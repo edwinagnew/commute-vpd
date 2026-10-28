@@ -78,6 +78,32 @@ process do not get there; less code does.
   is out of quota until ~2026-11-18 (user, 2026-10-26); until then spawn a fresh Opus agent that did not write the
   code or run the analysis, giving it only the scope and the repo path.
 
+## Gated runs (user, 2026-10-28)
+A run is **gated** when it is expected to cost over $15, to run over 3 h, or to need budget above the session cap. A
+gated run goes ahead only after every gate below, in order; the plan carries a "Gates" section that records each.
+E40 (2026-10-28) is why: an unchecked fine-tune recipe and an unmeasured memory need wasted ~$6.50 and 2 h, and both
+could have been found for $0.
+1. **Pre-mortem.** The plan lists, for this run, what could go wrong under each heading, each with its guard:
+   recipe and hyperparameters; data (split, leakage, formatting, chat template, tokenisation, lengths); precision;
+   memory and host RAM per stage; time and cost per stage; what is saved, where, its size, and whether it outlives the
+   pod; downloads; pod loss and resume; controls and references (same card, same rows); predictions (complete, not
+   degenerate); code paths never run on a GPU.
+2. **Every setting sourced.** Each training, evaluation and adversary setting is either copied from a named standard
+   (paper, library default, documented recipe for the model size) or measured; any departure is stated with its
+   reason. "Chosen here" is not a source.
+3. **Rehearsal for $0.** Every stage runs end to end at tiny size on the MATS cluster (`debug` QoS), with saves, a
+   resume from saved files and the downloads; every unknown the plan depends on (sizes, memory, step times, update
+   size at the first steps, alive counts, disk) is measured there and written into the plan. This overrides "the
+   scored run is its own smoke" for gated runs. What cannot fit a cluster card is rehearsed on the paid card in a
+   first stage of a few minutes, with a stop.
+4. **Early checks in code.** Every stage has filed expected values for its first minutes (first steps, first
+   reading), not only its end, and the code stops the job when one is missed.
+5. **Two independent reviews**, each by a fresh agent that wrote neither: the plan against gates 1-4, and the code
+   (the review above). Fix what is real; record what was skipped and why.
+6. **The user's go-ahead**, given in chat after seeing the gates' record: the rehearsal's numbers, the cost estimate
+   per stage and the stop rules. While it runs, the runner reports at each stage's end; any stop or surprise goes to
+   the user before the next paid stage.
+
 ## Sessions
 Quality drops in long sessions. **Tell the user, in one line at the end of a reply, when to start a new session**
 and what to hand it (the plan or report file, the files to read). Do it when:
