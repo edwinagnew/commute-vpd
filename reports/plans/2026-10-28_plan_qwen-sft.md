@@ -138,3 +138,42 @@ before the paid run; runner via `/pod-runner`.
 
 RL (held), a shuffled-label null, SGD, a LoRA arm, a second seed, other maps (splits) on these δWs (their inputs are
 saved), thinking mode.
+
+## Amendment 1 (2026-10-28): the corrected learning-rate recipe, teacher training on an H200
+
+**Why.** E40's fine-tune used Adam at a constant 1e-5 with no warm-up. Adam's first step moves every weight by the
+full rate, so step 1 alone gave KL to start 0.106 nats per token and 1.57 of the 1.98 nats of gold-loss drop reached
+by step 100 (`results/F.json`). Real recipes warm up. The user: "obviously you should run with the correct learning
+rate always". Separately, 494,598 subcomponents are alive (73 GB for teacher training), so the user chose option (a)
+of card decision-qwen-tt-memory: a larger card, method unchanged. The user also raised this session's pod budget
+from $40 to $50 to keep step 10 (chat, 2026-10-28).
+
+**Recipe.** AdamW, peak 1e-5, linear warm-up from 0 over the first 10 steps (rate 1e-5 · t/10 at step t ≤ 10), then
+cosine decay to 0 at step 100 (1e-5 · ½(1 + cos(π(t − 10)/90))). This is LLaMA-Factory's documented full-SFT setting
+for Qwen models (lr 1e-5, cosine, warm-up ratio 0.1). Everything else as in §2.
+
+**Card.** An H200 141 GB, B200 if none; US-MO-1 with the volume preferred. Elsewhere, fetch the decomposition from
+W&B (`qwen_files.fetch`, ~20 min) and upload section 5's saved items to W&B as each is written, because a container
+disk dies with the pod. The alive cap rises to 110 GB.
+
+**Stages, in order.**
+
+| stage | what | stop rule |
+|---|---|---|
+| G1 | The control on this card. FineWeb masked KL and adversary seed 0, maths adversary seed 0, on E40's `maths_rows.json` (not regenerated). Alive set reused from `/workspace/e40_nowarmup/alive.safetensors` (it does not depend on the card) | G_control as filed (0.14167 within 2%, 1.7016 within 15%) |
+| L | Step-1 size check. From W₀, one AdamW step on F's first batch at each of 1e-7, 1e-6 and 1e-5, then KL to start on maths rows; seconds per rate | the 1e-5 reading off E40's 0.106 by more than 15% → stop |
+| A0 | As in §2, on this card | P0 |
+| F1 | SFT with the recipe above, 100 steps, the §5 items saved to `/workspace/e40a1` | — |
+| T0 | Teacher training at δW = 0, 20 steps (the gradient is exactly zero there). If the offsets' largest entry is exactly 0, the state is W₀'s and G1's reading stands (ratio 1); otherwise read the adversary | T0 band |
+| D1 | Do-nothing at steps 1, 10, 100, as D | — |
+| T1 | Teacher training at steps 1, 10, 100, as T (1,000 steps) | — |
+
+**Predictions** (`results/predictions_amend1.json`, filed before the run; E40's filed rules stand unedited for E40):
+- **L (control).** KL at 1e-5 within ±15% of 0.106. KL at 1e-6 over KL at 1e-5 between 0.003 and 0.05 (first-order
+  scaling gives about 0.01).
+- **F1 is small early.** F1's KL to start at step 1 ≤ 0.005 nats per token, and its gold-loss drop at step 1 ≤ 0.3 of
+  its drop at step 100.
+- **P1-P5** as in §4, read on F1, D1 and T1.
+
+**Budget.** About 7 h on an H200, $28-32 at ~$4.5/h, against ~$31 usable under the raised cap. The benchmark's
+projection rule uses the remaining budget, not $25; the re-read guard stops extra starts at the cap less 15%.
