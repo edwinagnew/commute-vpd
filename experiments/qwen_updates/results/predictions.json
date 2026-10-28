@@ -1,0 +1,43 @@
+{
+ "plan": "reports/plans/2026-10-28_plan_qwen-q2.md (E45, Q2), section 5, with Fable's changes (reports/reviews/2026-10-28_review_e45-plan-fable-advice.md) applied 2026-10-28",
+ "filed": "2026-10-28, before any run of experiments/qwen_updates/run.py; never edited after the run (add a dated report instead)",
+ "scored_by": "experiments/qwen_updates/run.py `score` (Job 1 rules, with commute.qwen_updates); the decomposition rows are scored by Job 2 and Q3's code",
+ "general": "Thresholds are absolute; <= and >= inclusive, < and > strict, as written; comparisons round to 9 places first; NaN, infinity or a missing value is a miss; no re-reads. Only the anchors carry predictions on decomposition readings; own samples, gold and the null carry none and no label.",
+ "quantities": {
+  "KL to start": "mean over every position of KL(W0 || W0 + dW) in fp32 (qwen_sft.mean_kl); axes: the arm's own rows (64 packed rows of 512) and E40's 128 maths rows (experiments/qwen_sft/results/maths_rows.json); for own samples and the null the own rows are the maths rows",
+  "grid": "0.01, 0.03, 0.1, 0.3; at each the saved state nearest in |log(KL / grid value)| of the two bracketing read steps (a tie takes the later), the matched KL stated",
+  "accuracy": "qwen_eval.score greedy strict accuracy, drop rule (answers fitting 512 tokens), bf16 weights; GSM8K test 0-255 at the chosen states, the full test (1,319) at step 100 for own samples, gold and the null; W0's from stage control, same code",
+  "length": "mean greedy response tokens on the full GSM8K test",
+  "gap closed": "1 - KL(W0 on the prompted chat || W_t on the unprompted chat) / the same at W_t = W0, mean over the response positions of the first prompted sample of each of the 64 held-out problems",
+  "facts": "greedy exact match (commute.qwen_facts.correct) of the held-out template 3 question for each invented fact (invented) and each known fact (known)"
+ },
+ "rules": {
+  "own_accuracy": {"prediction": "own samples' accuracy at step 100 minus W0's, paired on the test problems whose answers fit at both, at least min", "min": 0.01, "lean": "medium"},
+  "own_length": {"prediction": "own samples' mean response length at step 100 over W0's, at least min_ratio", "min_ratio": 0.9, "lean": "high"},
+  "gold_length": {"prediction": "gold's mean response length at step 100 over W0's, at most max_ratio", "max_ratio": 0.8, "lean": "high"},
+  "anchor1_learns": {"prediction": "per seed: gap closed at step 100 at least gap_min", "gap_min": 0.5, "lean": "medium"},
+  "anchor2_learns": {"prediction": "per seed: invented exact match at step 100 at least em_min and known at least known_frac x W0's known (stage control, same draw); seed 0 is read before any other anchor run", "em_min": 0.5, "known_frac": 0.9, "lean": "medium (packed)"},
+  "learned": {"rule": "an arm is read at a grid value only where learned: own samples (and the null, reported) held-out correct-sample loss drop >= own_drop nats per token; gold held-out gold loss drop >= gold_drop; anchor 1 gap closed >= a1_gap; anchor 2 invented exact match >= a2_em and known >= known_frac x W0's", "own_drop": 0.02, "gold_drop": 0.05, "a1_gap": 0.25, "a2_em": 0.25, "known_frac": 0.9},
+  "prompt": {"rule": "anchor 1's prompt: paired gain over no prompt (strict, whole response, 512 train problems) >= min_gain and >= se_mult x its paired standard error; the largest qualifying gain is used. None: the format system prompt qualifies if W0 follows it on >= format_with_min of problems with it and <= format_without_max without; neither: stop", "min_gain": 0.03, "se_mult": 2.0, "format_with_min": 0.9, "format_without_max": 0.05},
+  "decisive_point": "own-rows KL 0.1 if all four anchor runs are learned at their 0.1 state; else the smallest grid value above 0.1 where they all are; else step 100, reported as unmatched and not used to validate a row",
+  "decomposition_rows": {
+   "scored_in": "Job 2 (behaviour kept, least-squares pass, placement) and Q3 (re-gating share); filed here so they are named before the runs",
+   "regating_share": {"measurement": "route split on own rows under the least-squares split; share (K00 - K01) / (K00 - K11); K11 - K0 reported beside it, K0 = W0's CI-masked KL on the same rows; unscored when K11 - K0 > 0.5 x (K00 - K0) or K00 - K0 <= 0", "anchor1": ">= 0.5", "anchor2": "below anchor 1", "decisive": true, "lean": "medium"},
+   "behaviour_kept": {"measurement": "E44's r2 for the least-squares split on own rows", "anchor1": ">= 0.8", "anchor2": "below anchor 1", "decisive": true, "lean": "medium-high"},
+   "placement": {"measurement": "share of the least-squares split's Sigma-weighted piece energy on subcomponents Gamma gates on for the own rows at W0 (g > 0.01 at >= 1% of positions), minus the same for split.random_like", "anchor1": "above anchor 2", "anchor2": "below anchor 1; MLP share reported", "decisive": true, "lean": "low"},
+   "least_squares_pass": {"measurement": "E44's pass rule", "anchor1": "passes", "anchor2": "passes less (a ratio higher by more than seed spread) or fails", "decisive": false, "lean": "low"},
+   "validation": "a row is validated if both anchors are scored on both seeds at the decisive point and the gap between anchor means exceeds (strictly) both the larger within-anchor seed difference and the row's noise floor (r2's and the route split's: max(0.05 nats, 5 x W0's re-masked spread on those rows), in the denominator); a gap past the floor in the wrong direction validates the row and is announced as a reversed prediction",
+   "reading": "t = (x - anchor 1 mean) / (anchor 2 mean - anchor 1 mean), same grid value, same axis; t <= 0.25 like anchor 1, t >= 0.75 like anchor 2, otherwise between; t < -0.5 or t > 1.5 like neither",
+   "not_filed": "think-mode overlap row and anchor 2's 5th template: Q3 material (plan section 5)"
+  }
+ },
+ "early": {
+  "rule": "first-minute values; a miss stops the job (exit 2) and is reported before the next job",
+  "control": {"kl_ref": 0.10679004420388163, "kl_tol": 0.01, "kl_source": "experiments/qwen_sft/results/amend1_rehearse_1/L.json, rate 1e-05 (L40; H100 read 0.10680)", "acc_ref": 0.7791666666666667, "acc_tol": 0.03, "acc_source": "experiments/qwen_gsm8k_baseline greedy.jsonl, test 0-255, strict among answers fitting 512 tokens (187 of 240; L40)", "invented_max": 0.02},
+  "gold_step1_loss": {"ref": 2.407046682037147, "tol": 0.01, "source": "E40a1 rehearsal F1 step 1 (L40, micro 8)"},
+  "first_live": {"band": [0.3, 1.0014], "source": "predictions_amend1.json F_first_live: |dW| per matrix / (rate x sqrt numel) after step 2, the first step at a nonzero rate"},
+  "step2_kl_max": 0.005,
+  "gold_curve": {"ref": {"2": 0.0037432143478102523, "3": 0.02208870828579879, "5": 0.10963932470770964, "10": 0.3559994175004614}, "tol": 0.05, "source": "experiments/qwen_sft/results/amend1_rehearse_1/F1.json saved KL to start, 128 maths rows (L40)"},
+  "own_kept_min": 4000
+ }
+}

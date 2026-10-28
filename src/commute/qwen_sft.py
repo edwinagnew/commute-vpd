@@ -17,7 +17,7 @@ import math
 import os
 import re
 import shutil
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -34,6 +34,7 @@ from commute.qwen_vpd import SITES
 from commute.vpd import kl_per_position
 
 Seq = tuple[list[int], int]  # token ids, number of prompt tokens (the response is ids[n_prompt:])
+Item = tuple[list[int], int | list[bool]]  # a Seq, or token ids with a per-token target flag (a packed row)
 Weights = Mapping[str, Tensor]  # site -> [d_out, d_in], fp32 on the model's device
 DISK_MARGIN = 2 * 10**9  # bytes left free on the volume after any save
 
@@ -233,22 +234,27 @@ def meta_of(path: Path) -> dict[str, str]:
 # ----------------------------------------------------------------------------- loss and step
 
 
-def targets(seqs: list[Seq], pad: int) -> tuple[Tensor, Tensor]:
-    """Right-padded tokens [b, T] and the mask [b, T - 1] of logit positions whose next token is a response token."""
+def targets(seqs: Sequence[Item], pad: int) -> tuple[Tensor, Tensor]:
+    """Right-padded tokens [b, T] and the mask [b, T - 1] of logit positions whose next token is a response token
+    (a flag list marks the target tokens themselves; its first entry has no logit position and must be False)."""
     T = max(len(ids) for ids, _ in seqs)
     toks = torch.full((len(seqs), T), pad, dtype=torch.long)
     mask = torch.zeros(len(seqs), T - 1, dtype=torch.bool)
     for i, (ids, p) in enumerate(seqs):
         toks[i, : len(ids)] = torch.tensor(ids)
-        mask[i, p - 1 : len(ids) - 1] = True
+        if isinstance(p, int):
+            mask[i, p - 1 : len(ids) - 1] = True
+        else:
+            assert len(p) == len(ids) and not p[0], "one flag per token, the first never a target"
+            mask[i, : len(ids) - 1] = torch.tensor(p[1:], dtype=torch.bool)
     return toks, mask
 
 
-def n_targets(seqs: list[Seq]) -> int:
-    return sum(len(ids) - p for ids, p in seqs)
+def n_targets(seqs: Sequence[Item]) -> int:
+    return sum(len(ids) - p if isinstance(p, int) else sum(p[1:]) for ids, p in seqs)
 
 
-def nll_sum(model: Any, seqs: list[Seq], device: str) -> Tensor:
+def nll_sum(model: Any, seqs: Sequence[Item], device: str) -> Tensor:
     """Summed log-loss of the response tokens; causal attention, so right padding changes no real position."""
     toks, mask = targets(seqs, pad=0)
     toks, mask = toks.to(device), mask.to(device)
@@ -257,7 +263,7 @@ def nll_sum(model: Any, seqs: list[Seq], device: str) -> Tensor:
     return (nll * mask.flatten()).sum()
 
 
-def sft_step(model: Any, seqs: list[Seq], micro: int, device: str) -> float:
+def sft_step(model: Any, seqs: Sequence[Item], micro: int, device: str) -> float:
     """Gradients of the batch's mean response-token log-loss accumulated in micro-batches (bf16 autocast); returns
     the loss. The caller zeroes gradients before and steps the optimiser after."""
     n, total = n_targets(seqs), 0.0
@@ -270,7 +276,7 @@ def sft_step(model: Any, seqs: list[Seq], micro: int, device: str) -> float:
 
 
 @torch.no_grad()
-def gold_loss(model: Any, seqs: list[Seq], batch: int, device: str) -> float:
+def gold_loss(model: Any, seqs: Sequence[Item], batch: int, device: str) -> float:
     """Mean response-token log-loss in fp32 (no autocast), pooled over every response token of `seqs`."""
     total = sum(float(nll_sum(model, seqs[i : i + batch], device).double()) for i in range(0, len(seqs), batch))
     return total / n_targets(seqs)

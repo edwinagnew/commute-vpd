@@ -33,6 +33,8 @@ INSTRUCTION = ("Solve the problem step by step. Then end your response with one 
                "The answer is N.\nwhere N is the final numerical answer, written as a plain number.")
 MAX_NEW, WINDOW = 512, 512
 GREEDY = {"do_sample": False}
+# the Qwen3 model card's no-think sampling: T 0.7, top-p 0.8, top-k 20, min-p 0 (which filters nothing, so left unset)
+SAMPLE = {"do_sample": True, "temperature": 0.7, "top_p": 0.8, "top_k": 20}
 
 Records = list[dict[str, Any]]
 
@@ -71,6 +73,22 @@ def generate(tok: Any, model: Any, texts: list[str], n_ret: int, kw: dict[str, A
             rec["capped_response"] = tok.decode(row[:min(n, max(window - int(p), 0))], skip_special_tokens=True)
         recs.append(rec)
     return recs
+
+
+@torch.no_grad()
+def sample(tok: Any, model: Any, texts: list[str], n_ret: int, kw: dict[str, Any],
+           max_new: int = MAX_NEW) -> list[tuple[list[int], bool]]:
+    """`generate`'s batching and end rule, returning token ids: per output (n_ret in a row per prompt), the response
+    ids up to and including the first end token, and whether none came within max_new (truncated)."""
+    enc = tok(texts, return_tensors="pt", padding=True, add_special_tokens=False).to(model.device)
+    out = model.generate(**enc, max_new_tokens=max_new, num_return_sequences=n_ret, **kw)
+    eos = torch.tensor(model.generation_config.eos_token_id)
+    res = []
+    for row in out[:, enc["input_ids"].shape[1]:].cpu():
+        hits = torch.isin(row, eos).nonzero()
+        n = int(hits[0]) + 1 if len(hits) else len(row)
+        res.append((row[:n].tolist(), not len(hits)))
+    return res
 
 
 def run_batches(chunks: list[list[int]], step: Callable[[list[int]], Records], budget_s: float, sink: Path,
