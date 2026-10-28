@@ -10,12 +10,12 @@ B; --volume a mount point; the decomposition fetched (`qwen_files.fetch`, ~20 mi
 incomplete, after checking the volume has room for it (53.65 GB) and the run's files.
 
 Stages, in this order (logical stage in run.py's terms in brackets):
-  B   [B]  the benchmark, first on the paid card: host RAM and its cgroup limit, a timed W&B upload (with
-           --wandb-upload), one generation batch, W0's masked KL, g statistics and the alive set (recomputed), the
-           disk pre-flight at that alive count, the positive control at the full alive set for 25 steps at 1e-6 and
-           1e-5 (step time, peak GPU memory, and the rate T0 and T1 use: the larger whose curve falls), one adversary
-           pass; the projection against --budget-left gives the number of read steps D1 and T1 can afford. Stops:
-           host, disk, peak memory, no falling curve, budget.
+  B   [B]  the benchmark, first on the paid card: host RAM and its cgroup limit, one generation batch, W0's masked
+           KL, g statistics and the alive set (recomputed), the disk pre-flight at that alive count, the positive
+           control at the full alive set at each filed rate (rules.B_rate: 100 steps, fp32 KL(teacher ‖ student) on
+           the fixed rows at steps 0, 50, 100; `qualifies`, `pick_rate`) giving step time, peak GPU memory, the rate
+           T0 and T1 use and T0's steps (`t0_steps`), one adversary pass; the projection against --budget-left gives
+           the number of read steps D1 and T1 can afford. Stops: host, disk, peak memory, no qualifying rate, budget.
   G1  [G]  W0's adversary on FineWeb (seed 0) and maths rows (seeds 0-2, the maths reference), G_control first.
   L   [L]  one AdamW step from W0 on F's first batch at 1e-7, 1e-6, 1e-5; KL to start on the maths rows. Runs alone
            on a cluster L40 (no decomposition): --stages L. Done (results/amend1/L.json: 29.5 GB GPU, 10.9 host).
@@ -24,23 +24,30 @@ Stages, in this order (logical stage in run.py's terms in brackets):
            gradients clipped at 1.0; no Adam moments saved; read steps chosen after it among the saved δW files
            (`run.read_rule`).
   T0  [T0] the teacher-training positive control: the teacher is W0 plus the change of small random offsets on the
-           alive columns, sized so KL(teacher ‖ W0) is F1's KL to start at its first read step; t0_steps at B's rate.
+           alive columns, sized so KL(teacher ‖ W0) on the fixed rows is F1's KL to start at its first read step; B's
+           t0_steps at B's rate; the fall is the fixed-row KL at the end over step 0's (rules.T0).
   D1  [D]  do-nothing at the read steps (run.stage_D), at step 100 the maths pass test (rule M).
   T1  [T]  teacher training at the read steps (run.stage_T); offsets bf16 before the last read step, fp32 at it, each
            state read back from its file; resumed only when δW, rate, steps and alive set match.
-  TR  [TR] rehearsal only: teacher-training rate check, the positive control on 2 layers at 1e-6 and 1e-5.
+
+Teacher training runs the fp32 target, matmuls in TF32, with gradient checkpointing (`qwen_teacher` docstring: bf16
+autocast was 18-44% off fp32 on the first batch, TF32 2.4e-4). With --wandb-upload only results JSONs, the log and T1's
+last offsets are uploaded, at the job's end; δW and the other large files stay on the volume, which outlives the pod.
 
 --rehearse runs every stage at the tiny sizes of A1_TINY on a cluster L40 (46 GB), F1 and L at full size, with stops
-logged instead of taken, into results/amend1_rehearse/, and writes rehearsal.json: the misses expected at tiny size
-and any beyond them. Stages that need the decomposition fit there because the rehearsal loads U, V in bf16 (9.8 GB
-instead of 19.5) and cuts the rows to 128 tokens; teacher training uses 16 alive columns per site. --kill-after-save
-ends the job after T1's first saved offsets, so the next job resumes from them.
+logged instead of taken, into results/amend1_rehearse/, and writes rehearsal.json from checks.json: every miss of
+every job so far, the ones expected at tiny size and any beyond them. Stages that need the decomposition fit there
+because the rehearsal loads U, V in bf16 (9.8 GB instead of 19.5) and cuts the rows to 128 tokens; teacher training
+uses 16 alive columns per site. --kill-after-save ends the job after T1's first saved offsets, so the next job resumes
+from them.
 
-Memory, GB = 1e9 B, H200 141 GB (estimates; the one filed limit is 125): target fp32 6.9, U, V fp32 19.5, Γ bf16
-17.1, alive 3.65e9 parameters (E40), 20 B each in training (73 GB). B: 72.7 building the offsets with the
-decomposition resident, ~88 training with it parked (host: U, V and Γ, 36.6). G1, D1: ~60 (first pod). F1: ~40
-(first pod 39.9). A0: ~24 (first pod 23.7). T0, T1: ~91 training, ~64 reading. Host peak ~70 (U, V and Γ parked plus
-the offsets after training, 29.2), of 251 on the first pod.
+Memory, GB = 1e9 B, H200 141 GB (estimates from the code; the one filed limit is 125): target fp32 6.9, U, V fp32
+19.5, Γ bf16 17.1; alive 2.39e9 parameters in the rehearsal's B (328,041 subcomponents; E40 counted 3.65e9), 20 B each
+in training (47.9 GB; 73 at E40's count). Teacher training, decomposition parked: target 6.9 + offsets 47.9 + δW bf16
+2.8 + two fp32 copies of the 196 matrices while a fixed-row reading or the step-1 reference runs (11.3) + logits and
+KL of a 2-row micro-batch (~3) + checkpointed fp32 activations and one layer's changes (<1): ~72 (~97 at E40's count).
+B: 72.7 building the offsets with the decomposition resident. G1, D1: ~60 (first pod). F1: ~40 (first pod 39.9).
+A0: ~24 (first pod 23.7). Host peak ~70 (U, V and Γ parked plus the offsets after training), of 251 on the first pod.
 
 Usage (repo root):
   cluster L40, L alone:   cluster/qwen_sft_amend1.sbatch --stages L (see its header)
@@ -51,6 +58,7 @@ Usage (repo root):
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import math
 import os
@@ -75,10 +83,11 @@ from run import (
     Stage,
     chosen,
     disk_sizes,
-    fall,
+    fixed_fall,
     free,
     log,
     peaks,
+    r9,
     run_stages,
     score,
     start,
@@ -101,7 +110,7 @@ from commute.qwen_sft import (
     sft_step,
     trainable,
 )
-from commute.qwen_teacher import Offsets, random_change, train
+from commute.qwen_teacher import Offsets, kl_to_teacher, random_change, train
 from commute.qwen_vpd import SITES
 
 A1 = replace(
@@ -111,16 +120,15 @@ A1 = replace(
 )
 A1_TINY = replace(  # the rehearsal: F1 and L at full size, the rest tiny, on an L40 (46 GB)
     A1, n_rows=4, row_len=128, eval_problems=16, gen_batch=8, alive_max=16, comps_dtype="bfloat16", adv_steps=2,
-    t_steps=3, t0_steps=3, t_rows_each=1, t_micro=1, web_pool=8, micro=4, min_card_gb=40.0,
-    upload_max_bytes=50_000_000, upload_probe_bytes=10_000_000,
+    t_steps=3, t_rows_each=1, t_micro=1, web_pool=8, micro=4, min_card_gb=40.0, upload_max_bytes=50_000_000,
     expected_misses=(  # tiny rows against full-size references, 16 problems, 3 teacher steps, 16 columns per site
         "B_fineweb seed 0 step-0 KL", "G_fineweb seed 0 step-0 KL", "G_maths seed 0 step-0 KL", "G control",
-        "P0:", "T0 positive control", "pass time", "B rate", "TR "),
+        "P0:", "T0 positive control", "pass time"),
 )
 DIMS = {"q": (2048, 2048), "k": (2048, 1024), "v": (2048, 1024), "o": (2048, 2048), "gate": (2048, 6144),
         "up": (2048, 6144), "down": (6144, 2048)}  # (d_in, d_out) of Qwen3-1.7B's decomposed matrices
 MATRIX_NUMEL = 28 * sum(i * o for i, o in DIMS.values())  # 1,409,286,144: δW's entries, before the model loads
-NAMES = {"B": "B", "G": "G1", "L": "L", "A0": "A0", "F": "F1", "T0": "T0", "D": "D1", "T": "T1", "TR": "TR"}
+NAMES = {"B": "B", "G": "G1", "L": "L", "A0": "A0", "F": "F1", "T0": "T0", "D": "D1", "T": "T1"}
 PRED = RESULTS / "predictions_amend1.json"
 LAYOUT = Layout(RESULTS / "amend1", PRED, NAMES, LARGE / "amend1", guard=True)
 REHEARSAL = Layout(RESULTS / "amend1_rehearse", PRED, NAMES, LARGE / "amend1_rehearse", guard=True)
@@ -144,8 +152,8 @@ def host_memory() -> dict[str, float | None]:
 
 
 def disk_need(cfg: Any, n_alive_params: int, extra: int) -> tuple[int, dict[str, int]]:
-    """Bytes the run will write (`run.disk_sizes` at this alive count) plus `extra` (a decomposition still to fetch,
-    the upload probe) and the margin."""
+    """Bytes the run will write (`run.disk_sizes` at this alive count) plus `extra` (a decomposition still to fetch)
+    and the margin."""
     sizes = disk_sizes(cfg, MATRIX_NUMEL, n_alive_params)
     return sum(sizes.values()) + extra + DISK_MARGIN, sizes
 
@@ -154,7 +162,7 @@ def preflight(job: Job, may_delete: Path | None) -> dict[str, Any]:
     """Free space on --out (`qwen_sft.free_bytes`: the volume's quota minus its files, or `df` if smaller) against every
     large file of the run at the real alive count. Short of space, `may_delete` (a file the user allowed to go) is
     deleted and the space read again."""
-    need, sizes = disk_need(job.cfg, job.alive_info()["n_params"], job.cfg.upload_probe_bytes if job.uploader else 0)
+    need, sizes = disk_need(job.cfg, job.alive_info()["n_params"], 0)
     out: dict[str, Any] = {"free_gb": free_bytes(job.out) / 1e9, "need_gb": need / 1e9,
                            "sizes_gb": {k: v / 1e9 for k, v in sizes.items()}}
     if out["free_gb"] * 1e9 < need and may_delete is not None and may_delete.is_file():
@@ -165,38 +173,22 @@ def preflight(job: Job, may_delete: Path | None) -> dict[str, Any]:
     return out
 
 
-def probe_upload(job: Job) -> dict[str, float]:
-    """A random file of upload_probe_bytes uploaded to W&B and waited for: the uplink's rate."""
-    assert job.uploader is not None
-    path = job.out / "upload_probe.bin"
-    with path.open("wb") as f:
-        for _ in range(0, job.cfg.upload_probe_bytes, 1 << 26):
-            f.write(os.urandom(min(1 << 26, job.cfg.upload_probe_bytes)))
-    t0 = time.time()
-    job.uploader.add(path, wait=True)
-    dt = time.time() - t0
-    size = path.stat().st_size
-    path.unlink()
-    return {"bytes": size, "s": dt, "mb_per_s": size / 1e6 / dt}
-
-
 def projection(job: Job, b: dict[str, Any]) -> dict[str, Any]:
-    """Time of every later stage from B's measurements, at 3 and 2 read steps, with the uploads' time when the run
-    uploads; the worst case of the re-reads (every FineWeb ratio, the maths pass test and P5 in their bands) beside
-    it. n_read_max: the most read steps whose base spend fits --budget-left (0: not even 2)."""
+    """Time of every later stage from B's measurements, at 3 and 2 read steps (no upload time: large files stay on
+    the volume); the worst case of the re-reads (every FineWeb ratio, the maths pass test and P5 in their bands)
+    beside it. n_read_max: the most read steps whose base spend fits --budget-left (0: not even 2)."""
     cfg = job.cfg
     start_s = (cfg.adv_steps + 1) * b["adv_pass_s"]
     n_test, n_1k = (len(job.sets[n][: cfg.eval_problems]) for n in ("test", "gsm1k"))
     gen_all = (math.ceil(n_test / cfg.gen_batch) + math.ceil(n_1k / cfg.gen_batch)) * b["eval_batch_s"]
     step, maths = b["teacher_step_s"], job.pools()[0]
     sft = step * maths.numel() / cfg.steps / (2 * cfg.t_rows_each * cfg.row_len)  # rough: by tokens per step
-    upload_s = sum(b["disk"]["sizes_gb"].values()) * 1e3 / b["upload"]["mb_per_s"] if "upload" in b else 0.0
 
     def stages(k: int) -> dict[str, float]:
         return {"G1": 4 * start_s, "A0": gen_all, "F1": cfg.steps * sft + len(cfg.saved) * 60 + gen_all,
-                "T0": cfg.t0_steps * step + start_s + 120, "D1": (k + 1) * start_s + 300,
+                "T0": b["t0_steps"] * step + start_s + 120, "D1": (k + 1) * start_s + 300,
                 "T1": k * (cfg.t_steps * step + start_s + 120) + start_s + math.ceil(n_test / cfg.gen_batch)
-                * b["eval_batch_s"] + 300, "uploads": upload_s}
+                * b["eval_batch_s"] + 300}
 
     usd = {k: (time.time() - run.T_START + sum(stages(k).values())) / 3600 * job.usd_per_h for k in (3, 2)}
     worst = {k: (4 * k + 2 + 4 + 4) * start_s / 3600 * job.usd_per_h for k in (3, 2)}
@@ -205,24 +197,34 @@ def projection(job: Job, b: dict[str, Any]) -> dict[str, Any]:
             "budget_usd": job.budget_usd, "guard_usd": job.guard_usd, "n_read_max": n_max}
 
 
-def falls(curve: list[float], n: int) -> bool:
-    """A teacher-training curve falls: its last n steps' mean KL below its first n steps' (NaN: not)."""
-    return len(curve) >= 2 * n and statistics.mean(curve[-n:]) < statistics.mean(curve[:n])
+def qualifies(kl: dict[str, float], reads: list[int], ratio_max: float) -> bool:
+    """The filed rate rule for one rate: fixed-row KL readings at `reads` (step -> KL) all present and finite, a
+    positive start, strictly falling from each reading to the next (a tie does not), and last / first <= ratio_max."""
+    v = [kl.get(str(t), math.nan) for t in reads]
+    return (all(map(math.isfinite, v)) and v[0] > 0 and all(a > b for a, b in itertools.pairwise(v))
+            and r9(v[-1] / v[0]) <= ratio_max)
 
 
-def pick_rate(curves: dict[float, list[float]], n: int) -> float | None:
-    """The filed rule: the largest rate whose curve falls; None if none does."""
-    return max((lr for lr, c in curves.items() if falls(c, n)), default=None)
+def pick_rate(readings: dict[float, dict[str, float]], reads: list[int], ratio_max: float) -> float | None:
+    """The largest rate that `qualifies`; None if none does."""
+    return max((lr for lr, kl in readings.items() if qualifies(kl, reads, ratio_max)), default=None)
+
+
+def t0_steps(kl: dict[str, float], frac: float, cap: int) -> int:
+    """T0's steps from B's readings at the chosen rate: the step at which the fixed-row KL reaches `frac` of its
+    start, extrapolated linearly in log KL through step 0 and B's last reading N; N when that reading is already at or
+    below `frac` (0 included), at most `cap`. Needs a rate that `qualifies` (a positive start, last / first < 1)."""
+    n = max(map(int, kl))
+    r = kl[str(n)] / kl["0"]
+    return n if r <= frac else min(cap, math.ceil(n * math.log(frac) / math.log(r)))
 
 
 def stage_B(job: Job) -> None:
     """The benchmark (module docstring). The positive control at the full alive set gives teacher training's step
-    time, peak memory and its rate (`pick_rate`)."""
+    time, peak memory, its rate (`pick_rate`) and T0's steps (`t0_steps`)."""
     cfg, bench, rule = job.cfg, job.early("bench") or {}, job.pred["rules"]["B_rate"]
     out: dict[str, Any] = {"host": host_memory()}
     job.check("B host RAM", out["host"]["usable_gb"] >= bench.get("host_gb_min", 0), out["host"])
-    if job.uploader is not None:
-        out["upload"] = probe_upload(job)
     tok, gen = load_model()
     texts = [prompt(tok, it["question"]) for it in job.sets["test"][: cfg.gen_batch]]
     t0 = time.time()
@@ -239,20 +241,24 @@ def stage_B(job: Job) -> None:
     off = Offsets(job.decomp()[0], job.alive())
     job.decomp("cpu")
     out["rates"] = {}
+    reads, steps = rule["reads"], max(rule["reads"])
     for lr in rule["rates"]:
         off.reset()
-        _, rec = positive_control(job, off, rule["target_kl"], lr, rule["steps"], f"B {lr:g}")
+        _, rec = positive_control(job, off, rule["target_kl"], lr, steps, f"B {lr:g}", tuple(reads), None)
         rec["peak_gb"] = torch.cuda.max_memory_allocated() / 1e9
-        out["rates"][f"{lr:g}"] = rec | {"falls": falls(rec["curve"], rule["n"])}
+        out["rates"][f"{lr:g}"] = rec | {"qualifies": qualifies(rec["kl"], reads, rule["ratio_max"])}
         job.put("B", out)
     del off
     free()
     out["teacher_step_s"] = statistics.mean(r["step_s"] for r in out["rates"].values())
     out["teacher_peak_gb"] = max(r["peak_gb"] for r in out["rates"].values())
     job.mem_check("teacher training")
-    t_lr = pick_rate({float(k): r["curve"] for k, r in out["rates"].items()}, rule["n"])
-    job.check("B rate", t_lr is not None, {k: r["falls"] for k, r in out["rates"].items()})
-    out["t_lr"] = t_lr if t_lr is not None else cfg.t_lr  # a rehearsal goes on at the config's
+    t_lr = pick_rate({float(k): r["kl"] for k, r in out["rates"].items()}, reads, rule["ratio_max"])
+    job.check("B rate", t_lr is not None, {k: {"kl": r["kl"], "qualifies": r["qualifies"]}
+                                           for k, r in out["rates"].items()})
+    out["t_lr"] = t_lr if t_lr is not None else cfg.t_lr  # a rehearsal goes on at the config's rate and T0's cap
+    out["t0_steps"] = (t0_steps(out["rates"][f"{t_lr:g}"]["kl"], job.pred["rules"]["T0"]["fall_max"], cfg.t0_steps)
+                       if t_lr is not None else cfg.t0_steps)
     first = job.pred["three_starts"]["seeds"][0]
     job.adv(nullcontext, job.web, first, "B_fineweb", "fineweb", steps=1)
     out |= {"adv_pass_s": job.last_pass_s, "adv_step0": job.last_step0}
@@ -312,12 +318,14 @@ def stage_F1(job: Job) -> None:
 # ----------------------------------------------------------------------------- the positive control, its rate check
 
 
-def positive_control(job: Job, off: Offsets, target: float, lr: float, steps: int, name: str
-                     ) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
-    """The teacher W0 + `random_change` at the α whose KL(teacher ‖ W0) on the first pc_rows maths rows is `target`
-    (KL ∝ α², pc_iters rounds from α = 1e-3), then teacher training of `off` (zero offsets on the GPU) towards it.
-    Returns the teacher's change (bf16) and the record."""
-    cfg, rows = job.cfg, job.maths()[: job.cfg.pc_rows]
+def positive_control(job: Job, off: Offsets, target: float, lr: float, steps: int, name: str,
+                     reads: tuple[int, ...], end_stops: bool | None) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
+    """The teacher W0 + `random_change` at the α whose KL(teacher ‖ W0) on the fixed rows (`Job.fixed_rows`) is
+    `target` (KL ∝ α², pc_iters rounds from α = 1e-3), then teacher training of `off` (zero offsets on the GPU)
+    towards it, the fixed-row KL(teacher ‖ student) read at step 0 and at `reads` (`run.teacher_checks`, with its
+    end check stopping per `end_stops`). Returns the teacher's change (bf16) and the record; "fall" is the last
+    reading over step 0's."""
+    cfg, rows = job.cfg, job.fixed_rows()
     alpha, search = 1e-3, []
     for _ in range(cfg.pc_iters):
         kl = mean_kl(job.model, rows, plus(job.W0, random_change(off, alpha, cfg.pc_seed, BF16)), None)
@@ -327,12 +335,14 @@ def positive_control(job: Job, off: Offsets, target: float, lr: float, steps: in
             break
         alpha *= math.sqrt(target / kl)
     teacher = random_change(off, alpha, cfg.pc_seed, BF16)
+    on_step, fixed = teacher_checks(job, name, lambda: kl_to_teacher(job.model, rows, job.W0, teacher, off), reads,
+                                    end_stops)
     curve = train(job.model, off, teacher, *job.pools(), lr, steps, cfg.t_rows_each, cfg.t_micro, cfg.seed, log,
-                  teacher_checks(job, name, zero=False))
-    kls = [c["kl"] for c in curve]
+                  on_step)
     step_s = statistics.mean(c["s"] for c in curve[1:]) if len(curve) > 1 else curve[0]["s"]
-    return teacher, {"target_kl": target, "alpha": alpha, "search": search, "lr": lr, "t_steps": steps, "curve": kls,
-                     "first_batch_kl_fp32": curve[0]["kl_fp32_teacher_w0"], "fall": fall(kls), "step_s": step_s}
+    return teacher, {"target_kl": target, "alpha": alpha, "search": search, "lr": lr, "t_steps": steps,
+                     "kl": fixed, "fall": fixed_fall(fixed), "curve": [c["kl"] for c in curve],
+                     "first_batch_kl_fp32": curve[0]["kl_fp32_teacher_w0"], "step_s": step_s}
 
 
 def first_read_kl(job: Job) -> float:
@@ -346,7 +356,8 @@ def stage_T0(job: Job) -> None:
     cfg = job.cfg
     off = Offsets(job.decomp()[0], job.alive())
     job.decomp("cpu")
-    teacher, out = positive_control(job, off, first_read_kl(job), job.t_lr(), cfg.t0_steps, "T0")
+    steps = job.res["B"]["t0_steps"]
+    teacher, out = positive_control(job, off, first_read_kl(job), job.t_lr(), steps, "T0", (steps,), True)
     off.to("cpu")
     with torch.no_grad():
         Wt, Ws = plus(job.W0, teacher), {s: job.W0[s] + off.change(s, DEV) for s in SITES}
@@ -362,34 +373,19 @@ def stage_T0(job: Job) -> None:
         job.halt(f"T0 positive control: fall {out['fall']:.3f}, ratio {out['fineweb']['ratio']:.3f}")
 
 
-def stage_TR(job: Job) -> None:
-    """The rehearsal's teacher-training rate check: the positive control with offsets on tr_layers only, at each of
-    tr_rates for tr_steps, so the rate on Qwen is measured rather than carried from the 67M."""
-    cfg = job.cfg
-    target = first_read_kl(job) if "read_steps" in job.res.get("F", {}) else cfg.tr_target_kl
-    out: dict[str, Any] = {"layers": list(cfg.tr_layers), "rates": {}}
-    for lr in cfg.tr_rates:
-        off = Offsets(job.decomp()[0], job.alive(cfg.tr_layers))
-        job.decomp("cpu")
-        _, out["rates"][f"{lr:g}"] = positive_control(job, off, target, lr, cfg.tr_steps, f"TR {lr:g}")
-        job.put("TR", out)
-        del off
-        free()
-
-
 STAGES: tuple[Stage, ...] = (("B", "B", stage_B), ("G1", "G", stage_G1), ("L", "L", stage_L),
                              ("A0", "A0", run.stage_A0), ("F1", "F", stage_F1), ("T0", "T0", stage_T0),
-                             ("D1", "D", run.stage_D), ("T1", "T", run.stage_T), ("TR", "TR", stage_TR))
+                             ("D1", "D", run.stage_D), ("T1", "T", run.stage_T))
 
 
 def before_loading(a: argparse.Namespace, cfg: Any, layout: Layout, stages: list[Stage]) -> None:
-    """Checks that need no model: the read rule and the positive control's steps as filed, F1's inputs (L's results,
-    a finished B), a mounted volume, and the decomposition fetched when a stage needs it and it is not complete (the
-    space for it and the run's files checked first, at E40's alive count)."""
+    """Checks that need no model: the read rule and T0's step cap as filed, F1's inputs (L's results, a finished B),
+    a mounted volume, and the decomposition fetched when a stage needs it and it is not complete (the space for it
+    and the run's files checked first, at E40's alive count)."""
     pred, names = json.loads(PRED.read_text()), {s[0] for s in stages}
     rule = pred["rules"]["read_steps"]
     assert (tuple(rule["fixed"]), rule["kl_min"]) == (cfg.read_fixed, cfg.read_kl_min), "read rule: file vs config"
-    assert a.rehearse or pred["rules"]["T0"]["steps"] == cfg.t0_steps, "T0 steps: file vs config"
+    assert pred["rules"]["T0"]["steps_max"] == cfg.t0_steps, "T0 step cap: file vs config"
     if "F1" in names:
         if "L" not in names and not layout.result("L").is_file():
             sys.exit(f"F1 needs stage L's results first: {layout.result('L')}")
@@ -398,7 +394,7 @@ def before_loading(a: argparse.Namespace, cfg: Any, layout: Layout, stages: list
     if a.volume != "none":
         assert os.path.ismount(a.volume), f"--volume {a.volume} is not a mount point"
     decomp = Path(a.decomp)
-    if names & {"B", "G1", "T0", "D1", "T1", "TR"} and not qwen_files.complete(decomp):
+    if names & {"B", "G1", "T0", "D1", "T1"} and not qwen_files.complete(decomp):
         prior = pred["early"]["bench"]["alive_params_prior"]
         need, _ = disk_need(cfg, prior, pred["early"]["bench"]["decomp_bytes"])
         free_b = free_bytes(decomp.parent if decomp.parent.exists() else Path(a.out))
@@ -415,7 +411,7 @@ def main() -> None:
     ap.add_argument("--decomp", default="/workspace/qwen3-1.7b-p-e9fcffd5-torch")
     ap.add_argument("--usd-per-h", type=float, default=4.5)
     ap.add_argument("--budget-left", type=float, default=None, help="dollars left for this run (B's projection)")
-    ap.add_argument("--wandb-upload", action="store_true", help="upload every large file as it is written (off)")
+    ap.add_argument("--wandb-upload", action="store_true", help="upload results JSONs, the log and T1's last offsets to W&B (off)")
     ap.add_argument("--wandb-dir", default=str(Path.home() / "wandb"), help="W&B's run files, on the container disk")
     ap.add_argument("--rehearse", action="store_true", help="tiny sizes (A1_TINY), stops logged, own directory")
     ap.add_argument("--kill-after-save", action="store_true", help="rehearsal: end the job after T1's first save")
@@ -437,7 +433,8 @@ def main() -> None:
     budget = a.budget_left if a.budget_left is not None else math.inf
     uploader = None
     if a.wandb_upload:
-        uploader = Uploader("e40a1-rehearse" if a.rehearse else "e40a1", cfg.upload_max_bytes, Path(a.wandb_dir), log)
+        # its messages to stdout: run.log is itself uploaded (immutable) at the end, so nothing may append to it then
+        uploader = Uploader("e40a1-rehearse" if a.rehearse else "e40a1", cfg.upload_max_bytes, Path(a.wandb_dir), print)
     job = Job(a, cfg, layout, budget_usd=budget, guard_usd=pred["three_starts"]["guard_share"] * budget,
               rehearse=a.rehearse, uploader=uploader, kill_after_save=a.kill_after_save)
     job.may_delete = Path(a.may_delete) if a.may_delete else None

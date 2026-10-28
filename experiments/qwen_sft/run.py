@@ -87,6 +87,7 @@ from commute.qwen_teacher import (
     do_nothing,
     g_stats,
     importance_pass,
+    kl_to_teacher,
     move_gamma,
     train,
 )
@@ -153,17 +154,13 @@ class Config:
     l_micro: int = 4
     l_card_gb: float = 40.0
     pc_seed: int = 0  # Amendment 1's positive control: the random offsets' seed,
-    pc_rows: int = 8  # the maths rows its size search reads,
-    pc_iters: int = 4  # and the search's rounds (KL ∝ α²: α ← α·√(target / KL))
-    tr_layers: tuple[int, ...] = (0, 1)  # the rehearsal's teacher-training rate check: offsets on these layers,
-    tr_rates: tuple[float, ...] = (1e-6, 1e-5)  # at these rates,
-    tr_steps: int = 100  # for this many steps
-    tr_target_kl: float = 1e-3  # the teacher's KL(teacher ‖ W0) when no F result gives one
+    pc_rows: int = 8  # teacher training's fixed rows (`Job.fixed_rows`: half maths, half FineWeb evaluation rows),
+    pc_iters: int = 4  # and the size search's rounds on them (KL ∝ α²: α ← α·√(target / KL))
     a0_compare: str | None = None  # A0: an earlier run's step-0 GSM8K responses (under results/), first batch compared
     upload_max_bytes: int | None = None  # --wandb-upload skips larger files (a rehearsal's cap)
-    upload_probe_bytes: int = 10**9  # the benchmark's timed upload
 
     def __post_init__(self) -> None:
+        assert self.pc_rows % 2 == 0 and self.pc_rows // 2 <= self.n_rows
         assert self.steps == max(self.saved) and set(self.read_steps) <= set(self.saved)
         assert self.steps in self.read_steps and self.row_len <= self.seq_len
         assert set(self.read_fixed) <= set(self.saved) and (not self.read_fixed or self.steps in self.read_fixed)
@@ -331,9 +328,12 @@ def step0_ok(x: float, ref: float, rule: dict[str, float], own: bool) -> bool:
     return rule["state_low"] * ref <= r9(x) <= ref + rule["state_add"]
 
 
-def fall(curve: list[float], n: int = 10) -> float:
-    """Teacher training's end over its start: the mean training KL of the last n steps over step 1's."""
-    return statistics.mean(curve[-n:]) / curve[0] if curve and curve[0] > 0 else math.nan
+def fixed_fall(kl: dict[str, float], step: int | None = None) -> float:
+    """Teacher training's fall on its fixed rows: the fp32 KL(teacher ‖ student) at `step` (None: the last reading)
+    over step 0's (`qwen_teacher.kl_to_teacher`). NaN when step 0's is not > 0 or a reading is missing."""
+    end = kl.get(str(step) if step is not None else max(kl, key=int, default="0"))
+    k0 = kl.get("0", math.nan)
+    return end / k0 if end is not None and k0 > 0 else math.nan
 
 
 def score_amend1(res: dict[str, Any], R: dict[str, Any], last: str) -> dict[str, Any]:
@@ -349,7 +349,7 @@ def score_amend1(res: dict[str, Any], R: dict[str, Any], last: str) -> dict[str,
             sc["L_scaling"] = {"ratio": ratio, "holds": in_band(ratio, R["L_scaling"]["band"])}
     T0, T, Fs = res.get("T0", {}), res.get("T", {}), res.get("F", {})
     if "fall_max" in R["T0"] and "fineweb" in T0:
-        f = fall(T0["curve"])
+        f = fixed_fall(T0["kl"])
         sc["T0"] = {"fall": f, "ratio": T0["fineweb"]["ratio"],
                     "holds": r9(f) <= R["T0"]["fall_max"] and in_band(T0["fineweb"]["ratio"], R["T0"]["band"])}
     if "ratio_max" in R["P5"] and "p5" in T.get(last, {}).get("maths", {}):
@@ -438,7 +438,6 @@ class Job:
         self.budget_usd, self.guard_usd, self.prior_usd = budget_usd, guard_usd, prior_usd
         self.rehearse, self.uploader, self.kill_after_save, self.stage = rehearse, uploader, kill_after_save, ""
         self.last_step0, self.last_pass_s = math.nan, math.nan
-        self.missed: list[str] = []  # a rehearsal's checks and stops that missed
         self.may_delete: Path | None = None  # Amendment 1: the one file B may delete when the volume is short
         fp32_matmuls()
         self.tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
@@ -467,9 +466,14 @@ class Job:
         log(f"[score] {json.dumps(sc, default=float)}")
 
     def halt(self, why: str) -> None:
+        """A rule's stop (not a first-minutes check): recorded in checks.json as missed, then `stop`."""
+        self.record(f"stop {self.stage}: {why}", False, {}, True)
+        self.stop(why)
+
+    def stop(self, why: str) -> None:
+        """End the job (<dir>/stopped.json); a rehearsal logs it and goes on."""
         if self.rehearse:
             log(f"REHEARSAL: would stop here: {why}")
-            self.missed.append(why)
             return
         write_json(self.layout.file("stopped"), {"why": why, "at_s": time.time() - T_START})
         log(f"STOP: {why}")
@@ -479,16 +483,19 @@ class Job:
         """A filed first-minutes rule (the predictions file's "early" section); None: no such check in this run."""
         return self.pred.get("early", {}).get(name)
 
+    def record(self, name: str, ok: bool, detail: dict[str, Any], stops: bool) -> None:
+        """One entry of <dir>/checks.json, which keeps every check and stop of every job of the run (rehearsal.json
+        is built from it)."""
+        self.checks[name] = {"ok": ok, "stops": stops, **detail}
+        write_json(self.layout.file("checks"), self.checks)
+
     def check(self, name: str, ok: bool, detail: dict[str, Any], stop: bool = True) -> None:
         """Record a first-minutes check in <dir>/checks.json and stop the job when it is missed (`stop`; otherwise
         it is reported only)."""
-        self.checks[name] = {"ok": ok, "stops": stop, **detail}
-        write_json(self.layout.file("checks"), self.checks)
+        self.record(name, ok, detail, stop)
         log(f"[check] {name}: {'ok' if ok else 'MISSED'} {json.dumps(detail, default=float)}")
-        if not ok and not stop and self.rehearse:
-            self.missed.append(f"early check {name} missed (report only)")
         if not ok and stop:
-            self.halt(f"early check {name} missed: {detail}")
+            self.stop(f"early check {name} missed: {detail}")
 
     def finite(self, name: str, **values: float) -> None:
         """A NaN or infinity anywhere is a miss (the filed "finite" rule)."""
@@ -509,11 +516,11 @@ class Job:
 
     def save(self, path: Path, tensors: Any, dtype: torch.dtype, droppable: bool, meta: dict[str, str] | None = None
              ) -> None:
-        if save(path, tensors, dtype, droppable, log, meta):
-            self.keep(path)
+        save(path, tensors, dtype, droppable, log, meta)
 
     def keep(self, path: Path) -> None:
-        """A written file of section 5, uploaded to W&B as it is written when the run uploads."""
+        """A file uploaded to W&B when the run uploads: results and logs, and T's last offsets (`stage_T`); δW and
+        the other large files stay on the volume (it outlives the pod)."""
         if self.uploader is not None:
             self.uploader.add(path)
 
@@ -550,13 +557,16 @@ class Job:
         rows = json.loads(MATHS.read_text())["rows"]
         return rows_of(rows if full else [r[: self.cfg.row_len] for r in rows[: self.cfg.n_rows]])
 
-    def alive(self, layers: tuple[int, ...] | None = None) -> dict[str, Tensor]:
-        """The alive index per site, cut to the config's alive_max; with `layers`, every alive column of those layers
-        and none elsewhere (the rehearsal's rate check)."""
+    def alive(self) -> dict[str, Tensor]:
+        """The alive index per site, cut to the config's alive_max."""
         idx = load(self.out / "alive.safetensors")
-        if layers is not None:
-            return {s: v if int(s.split(".")[1]) in layers else v[:0] for s, v in idx.items()}
         return {s: v[: self.cfg.alive_max] for s, v in idx.items()} if self.cfg.alive_max else idx
+
+    def fixed_rows(self) -> list[Tensor]:
+        """Teacher training's fixed rows, the same at every reading: the first pc_rows / 2 maths rows and FineWeb
+        evaluation rows (none of them in the training pools; at the rehearsal's sizes check_teacher.py's 8 rows)."""
+        k = self.cfg.pc_rows // 2
+        return self.maths()[:k] + self.web[:k]
 
     def alive_info(self) -> dict[str, Any]:
         return (self.res["B"] if "B" in self.res else self.res["G"])["alive"]
@@ -713,19 +723,29 @@ def records(path: Path) -> Records:
     return [json.loads(line) for line in path.open()]
 
 
-def teacher_checks(job: Job, name: str, zero: bool, end_stops: bool = True
-                   ) -> Callable[[int, list[dict[str, float]]], None]:
+OnStep = Callable[[int, list[dict[str, float]]], None]
+
+
+def teacher_checks(job: Job, name: str, read: Callable[[], float] | None = None, reads: tuple[int, ...] = (),
+                   end_stops: bool | None = True) -> tuple[OnStep, dict[str, float]]:
     """Teacher training's first-minutes checks, when filed: a finite KL every step; step 1's training-forward KL
-    against the fp32 KL(teacher ‖ W0) on the same batch (exactly 0 within `zero_kl_max` at δW = 0, `zero`); memory
-    after step 2; and at step `end_at` the mean KL of the 10 steps before it at most `end_frac` of step 1's (a stop
-    for the positive control and the rate check, reported for T1: `end_stops`)."""
+    against the fp32 KL(teacher ‖ W0) on the same batch (exactly 0 within `zero_kl_max` when there is no teacher,
+    `read` None); memory after step 2. With `read` (the fixed-row KL, `qwen_teacher.kl_to_teacher`): a reading now
+    (step 0) and after each step in `reads` and at `end_at`, kept in the returned dict (step -> KL, written as taken),
+    and at `end_at` the fall (`fixed_fall`) at most `end_frac`: a stop for the positive control (T0), reported for T1
+    (`end_stops` False), not made for B, whose rate rule reads the same ratio (`end_stops` None)."""
+    rule = job.early("teacher_first")
+    kl: dict[str, float] = {}
+    end = rule["end_at"] if rule is not None and read is not None and end_stops is not None else None
+    if read is not None:
+        kl["0"] = read()
+        log(f"[{name}] fixed-row KL(teacher ‖ student) at step 0: {kl['0']:.4e}")
 
     def on_step(step: int, curve: list[dict[str, float]]) -> None:
-        rule = job.early("teacher_first")
         job.finite(f"{name} step {step}", kl=curve[-1]["kl"])
         if step == 1 and rule is not None:
             c = curve[0]
-            if zero:
+            if read is None:
                 job.check(f"{name} step-1 KL", c["kl"] <= rule["zero_kl_max"], {"kl": c["kl"]})
             elif c["kl_fp32_teacher_w0"] >= rule["fp32_min"]:
                 rel = c["kl"] / c["kl_fp32_teacher_w0"] - 1
@@ -733,12 +753,16 @@ def teacher_checks(job: Job, name: str, zero: bool, end_stops: bool = True
                           {"kl": c["kl"], "kl_fp32": c["kl_fp32_teacher_w0"], "rel": rel})
         if step == 2:
             job.mem_check(f"{name} step 2")
-        if rule is not None and step == rule["end_at"] and not zero:
-            now = fall([c["kl"] for c in curve])
-            job.check(f"{name} KL at step {step}", r9(now) <= rule["end_frac"], {"mean_last10_over_step1": now},
-                      stop=end_stops)
+        if read is not None and (step in reads or step == end):
+            kl[str(step)] = read()
+            log(f"[{name}] fixed-row KL(teacher ‖ student) at step {step}: {kl[str(step)]:.4e}")
+            job.finite(f"{name} fixed-row KL step {step}", kl=kl[str(step)])
+        if step == end and rule is not None:
+            f = fixed_fall(kl, step)
+            job.check(f"{name} fixed-row fall at step {step}", r9(f) <= rule["end_frac"], {"fall": f, "kl": dict(kl)},
+                      stop=bool(end_stops))
 
-    return on_step
+    return on_step, kl
 
 
 # ----------------------------------------------------------------------------- stages
@@ -835,7 +859,7 @@ def benchmark(job: Job, g: dict[str, Any]) -> dict[str, Any]:
     job.decomp("cpu")
     maths, web = job.pools()
     curve = train(job.model, off, None, maths, web, cfg.t_lr, 2, cfg.t_rows_each, cfg.t_micro, cfg.seed, log,
-                  teacher_checks(job, "benchmark", zero=True))
+                  teacher_checks(job, "benchmark")[0])
     b: dict[str, Any] = {"teacher_step_s": curve[-1]["s"], "teacher_peak_gb": torch.cuda.max_memory_allocated() / 1e9}
     del off
     free()
@@ -872,7 +896,7 @@ def stage_T0(job: Job) -> None:
     off = Offsets(job.decomp()[0], job.alive())
     job.decomp("cpu")
     curve = train(job.model, off, None, *job.pools(), cfg.t_lr, cfg.t0_steps, cfg.t_rows_each, cfg.t_micro, cfg.seed,
-                  log, teacher_checks(job, "T0", zero=True))
+                  log, teacher_checks(job, "T0")[0])
     out: dict[str, Any] = {"t_steps": cfg.t0_steps, "max_abs_offset": off.max_abs(), "curve": [c["kl"] for c in curve],
                            "first_batch_kl_fp32": curve[0]["kl_fp32_teacher_w0"]}
     if cfg.t0_shortcut and out["max_abs_offset"] == 0.0:
@@ -1053,11 +1077,16 @@ def stage_T(job: Job) -> None:
         if path.is_file() and all(meta_of(path).get(k) == v for k, v in meta.items()):
             rec["resumed_from"] = str(path)
         else:
+            def read(dW: dict[str, Tensor] = dW, off: Offsets = off) -> float:
+                return kl_to_teacher(job.model, job.fixed_rows(), job.W0, dW, off)
+
+            on_step, rec["kl_fixed"] = teacher_checks(job, f"T{t}", read, end_stops=False)
             curve = train(job.model, off, dW, *job.pools(), job.t_lr(), cfg.t_steps, cfg.t_rows_each, cfg.t_micro,
-                          cfg.seed, log, teacher_checks(job, f"T{t}", zero=False, end_stops=False))
-            dtype = BF16 if cfg.offsets_bf16_before_last and t != max(job.read_steps()) else F32
-            off.save(path, dtype, meta, log)
-            job.keep(path)
+                          cfg.seed, log, on_step)
+            last = t == max(job.read_steps())
+            off.save(path, BF16 if cfg.offsets_bf16_before_last and not last else F32, meta, log)
+            if last:  # T's final offsets; the earlier ones and δW stay on the volume
+                job.keep(path)
             rec["curve"] = [c["kl"] for c in curve]
             rec["first_batch_kl_fp32"] = curve[0]["kl_fp32_teacher_w0"]  # beside curve[0], the training forward's
             if job.kill_after_save:
@@ -1153,12 +1182,14 @@ def refuse_done(layout: Layout, stages: list[Stage]) -> None:
 
 
 def rehearsal_report(job: Job) -> None:
-    """<dir>/rehearsal.json: the checks and stops expected to miss at tiny sizes (the config's list, by prefix), the
-    ones that missed, and those that missed beyond the list, which the rehearsal is for."""
-    unexpected = [m for m in job.missed if not any(e in m for e in job.cfg.expected_misses)]
-    write_json(job.layout.file("rehearsal"), {"expected": list(job.cfg.expected_misses), "missed": job.missed,
+    """<dir>/rehearsal.json from <dir>/checks.json (every job of the rehearsal so far): every check and stop that
+    missed, the ones expected to miss at tiny sizes (the config's list, matched as substrings of the name), and those
+    beyond the list, which the rehearsal is for."""
+    missed = {k: c for k, c in job.checks.items() if not c["ok"]}
+    unexpected = [k for k in missed if not any(e in k for e in job.cfg.expected_misses)]
+    write_json(job.layout.file("rehearsal"), {"expected": list(job.cfg.expected_misses), "missed": missed,
                                               "unexpected": unexpected})
-    log(f"[rehearsal] {len(job.missed)} missed, {len(unexpected)} beyond the expected list: {unexpected}")
+    log(f"[rehearsal] {len(missed)} missed, {len(unexpected)} beyond the expected list: {unexpected}")
 
 
 def run_stages(job: Job, stages: list[Stage]) -> None:
@@ -1172,10 +1203,12 @@ def run_stages(job: Job, stages: list[Stage]) -> None:
             job.mem_check("end")
             write_json(job.layout.file("done"), done(job.layout) | {logical: time.time()})
     finally:
-        if job.uploader is not None:
-            job.uploader.finish()  # waits for every queued upload, also after a stop
         if job.rehearse:
             rehearsal_report(job)
+        if job.uploader is not None:
+            for p in [*sorted(job.layout.dir.glob("*.json")), job.layout.log()]:
+                job.keep(p)  # results and the log, as they stand at the job's end
+            job.uploader.finish()  # waits for every queued upload, also after a stop
     print("FINISHED", RESULTS, flush=True)
 
 

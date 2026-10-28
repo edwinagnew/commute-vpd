@@ -235,3 +235,30 @@ rate), a mount-point check, host-memory release between read steps, T1's end che
 stricter resume check, and the maths pass test (ratio to the same-card W₀ maths reading, 1.5 line, user-accepted).
 "F1 is small early" is retired as a prediction: under the library's schedule step 1 runs at rate 0, so it is
 checked in code at step 2 (KL ≤ 0.005). The rehearsal reruns after the fixes.
+
+**Gate 3, rehearsal record (2026-10-28).** Cluster L40s, tiny sizes (16 alive columns per site, 128-token rows), F1
+and L full size; files in `experiments/qwen_sft/results/amend1_rehearse_1/`. Job 40602 (B, G1, L, A0; 330 s): 328,041
+alive subcomponents, 2.39 billion offset entries, so 47.9 GB of offsets, gradients, Adam and copies; disk need 52.2 GB
+at that count; peaks 39.0 GB GPU, 38.0 GB host; W&B uplink 2.0 MB/s. Job 40609 (F1): 932 s, 36.7 GB GPU, 10.8 GB host.
+Jobs 40637, 40647 (T0, D1, T1 killed after its first save and resumed, TR): all ran end to end, peaks 41.8-44.7 GB,
+0.85-0.91 s per teacher step. Job 40668: the stale-results guard refused at once. Two checks missed: the first-batch
+training KL sat 18-19% above its fp32 value (B, T0) and 44% below (T3), and B's curves did not fall. Job 40673
+(`check_teacher.py`, `results/check_teacher.json`) found why. Without autocast the training forward matches fp32 to
+2e-6, and the bf16 gap shrinks to 1e-3 at a 16x teacher, so bf16 rounding caused it; TF32 is off by 3.4e-5 and
+2.4e-4; 1.04, 1.06, 0.79 s per step for bf16, TF32, fp32 (tiny sizes; no guide to the H200). On 8 fixed rows, 1e-4
+diverges (x3.3 by step 25); 1e-5 falls to 0.875, 0.702, 0.590 of the start at steps 25, 100, 300. Gradients flow;
+25 steps read on one noisy batch could not show it. Changes, committed with this record:
+1. Teacher training runs fp32 with TF32 matmuls, checkpointing kept, no bf16 autocast; readings stay true fp32 (TF32
+   on swapped weights read T3's KL as 0.0030 for 0.0317). 2. The first-batch check stays at 2e-3 (8x TF32's 2.4e-4).
+3. B tries 1e-5 and 3e-5 (1e-4 diverged), 100 steps each, fp32 KL on 4 maths and 4 FineWeb evaluation rows at steps 0,
+   50, 100 (the target sized on the same rows). A rate qualifies if the readings fall strictly and step 100 is at most
+   0.9 of step 0; the larger qualifying rate is used, none stops. Zero or NaN starts, ties, both, neither: in the tests.
+4. T0 and the step-100 check read that same fixed-row fall. T0 passes at 0.5 or below, an estimate: 300 steps reached
+   0.59 on 16 columns, and the full alive set's smaller α should go further; B measures it. T0's 300 steps and end
+   fraction 0.7 came from TR's bf16 batch curves, so had no source: T0's steps now come from B's curve (log-linear to
+   0.5, at most 300) and the step-100 check uses B's 0.9. TR is deleted. At rehearsal size that extrapolation says 196
+   steps while 300 read 0.59, so the curve bends: if B's does too, T0 may stop.
+5. Only results JSONs, the log and T1's last offsets go to W&B; δW and other files stay on the volume, so upload time
+   leaves the cost estimate (at 2 MB/s it had left no read steps). 6. rehearsal.json lists every miss in checks.json.
+Peak GPU memory in teacher training, from the code: ~72 GB at 2.39e9 entries, ~97 at E40's 3.65e9 (limit 125). Not
+measured until the paid B: full-size TF32 step time, peak memory at the full alive count, B's rate and T0's steps.

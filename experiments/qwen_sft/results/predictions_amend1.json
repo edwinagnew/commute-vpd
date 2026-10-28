@@ -18,8 +18,8 @@
   },
   "G": {
    "rule": "as E40 (reported; G1 does not stop on it)",
-   "pass_max": 2.0,
-   "fail_above": 3.0
+   "pass_max": 2,
+   "fail_above": 3
   },
   "L_control": {
    "rule": "control: L's KL to start after one AdamW step at 1e-5 within +-tol (relative) of E40's step 1 on the same batch and rows; a missing value or NaN misses",
@@ -43,14 +43,15 @@
    "kl_min": 0.01
   },
   "T0": {
-   "rule": "positive control (replaces E40's T0): teacher training at B's chosen rate towards W0 + a random change the student can match exactly, `steps` steps; fall = mean training KL of the last 10 steps / step 1's <= fall_max, and the trained student's FineWeb adversary ratio in [band] inclusive; amend1.py asserts its t0_steps equal to `steps`",
-   "fall_max": 0.2,
+   "rule": "positive control (replaces E40's T0): teacher training at B's chosen rate towards W0 + a random change the student can match exactly, for B's t0_steps steps; fall = fp32 KL(teacher || student) on the fixed rows (Job.fixed_rows: the first 4 maths rows and the first 4 FineWeb evaluation rows, the rows B reads) after the last step / the same at step 0 <= fall_max, and the trained student's FineWeb adversary ratio in [band] inclusive; a zero, missing or non-finite step-0 reading is a NaN fall and misses",
+   "fall_max": 0.5,
    "band": [
     0.85,
     1.15
    ],
-   "steps": 300,
-   "provisional": "steps, from the rehearsal's rate check (TR)",
+   "steps_rule": "B's readings at its chosen rate, extrapolated linearly in log KL through steps 0 and 100 to the step where the fixed-row KL reaches fall_max of its start; 100 when step 100 already reads at or below it; at most steps_max (amend1.t0_steps; amend1.py asserts the config's cap equal to steps_max)",
+   "steps_max": 300,
+   "sources": "fall_max: an estimate, not a measurement: check_teacher (job 40673) read 0.59 after 300 steps at 1e-5 on the rehearsal's 16 columns per site; the full alive set spreads the same target KL over ~100x more columns, so alpha is smaller and the same steps should go further; B measures it on the card. steps: the 300 filed before had no source (TR's bf16 training-batch curves), so they come from B's measured curve, capped at the earlier 300",
    "if_fails": "stop"
   },
   "P0": {
@@ -101,15 +102,21 @@
    ]
   },
   "B_rate": {
-   "rule": "B, at the full alive set: the positive control (target KL(teacher || W0) target_kl) for `steps` steps at each of `rates`; a curve falls when the mean training KL of its last n steps is below that of its first n; teacher training (T0, T1) runs at the largest rate whose curve falls; none falls: stop",
+   "rule": "B, at the full alive set: the positive control (target KL(teacher || W0) target_kl on the fixed rows, alpha set on those rows) from zero offsets for max(reads) steps at each of `rates`; fp32 KL(teacher || student) on the fixed rows (the same rows at every reading) at each step in `reads`. A rate qualifies when every reading is present and finite, the step-0 reading is > 0, the readings fall strictly (KL(100) < KL(50) < KL(0); a tie does not), and KL(100) / KL(0) <= ratio_max. Teacher training (T0, T1) runs at the largest qualifying rate; none qualifies: stop",
    "rates": [
-    1e-06,
-    1e-05
+    1e-05,
+    3e-05
    ],
-   "steps": 25,
-   "n": 5,
+   "reads": [
+    0,
+    50,
+    100
+   ],
+   "ratio_max": 0.9,
    "target_kl": 0.01,
-   "added": "2026-10-28, after the code review of Amendment 1, before any paid stage"
+   "sources": "rates: check_teacher (job 40673, fp32, rehearsal sizes) measured 1e-4 diverging (x3.3 at step 25) and 1e-5 falling to 0.875, 0.702 and 0.590 of the start at steps 25, 100 and 300; 3e-5 lies between them. ratio_max 0.9: a fall the fixed rows show and batch noise cannot (they are fixed). target_kl: as filed",
+   "edge_cases": "zero start: does not qualify (no positive start; no division); NaN or missing reading: does not qualify; a tie between readings: does not qualify; KL(100)/KL(0) exactly 0.9: qualifies (r9, inclusive); both rates qualify: 3e-5; neither: stop (a rehearsal goes on at the config's 1e-5 and T0's cap)",
+   "added": "2026-10-28, after the code review of Amendment 1, before any paid stage; replaced 2026-10-28 (see amended)"
   },
   "M": {
    "rule": "the maths pass test (the user accepted maths-text scoring, 2026-10-28): a state's maths-row adversary over W0's maths reference on this card (G1's mean over seeds 0-2); the seed-0 ratio decides unless it lies in [band] inclusive, then seeds 1 and 2 are read and the mean of the three ratios decides; pass <= line. Scored for D1 (reading: 'pass' = the test does not see the update) and T1 at step 100",
@@ -140,11 +147,11 @@
   },
   "memory": {
    "rule": "peak GPU memory of a stage <= peak_gb_max, after each adversary start, teacher-training step 2, F's step 1, B's teacher training and the stage's end (the one memory threshold)",
-   "peak_gb_max": 125.0
+   "peak_gb_max": 125
   },
   "bench": {
    "rule": "B: usable host RAM (physical, cgroup limit) >= host_gb_min; the disk pre-flight fits at the real alive count (before a fetch of the decomposition: at alive_params_prior, E40's count, plus decomp_bytes); B's projection fits --budget-left with 2 read steps",
-   "host_gb_min": 110.0,
+   "host_gb_min": 110,
    "alive_params_prior": 3651683328,
    "decomp_bytes": 53652228856
   },
@@ -162,7 +169,7 @@
    },
    "tol": 0.02,
    "state_low": 0.5,
-   "state_add": 2.0
+   "state_add": 2
   },
   "adv_pass": {
    "rule": "each adversary start's first pass within tol (relative) of B's; reported, not a stop",
@@ -186,15 +193,16 @@
    "kl_max": 0.005
   },
   "teacher_first": {
-   "rule": "teacher training: step 1's training-forward KL within fp32_tol (relative) of the fp32 KL(teacher || W0) on the same batch when that is >= fp32_min; exactly 0 within zero_kl_max when the teacher is W0 (B); at step end_at, the mean KL of the 10 steps before it <= end_frac x step 1's; the step-end_at check stops the positive control (T0) and the rate check (TR), and is reported for T1",
+   "rule": "teacher training: step 1's training-forward KL (fp32, TF32 matmuls) within fp32_tol (relative) of the fp32 KL(teacher || W0) on the same batch (TF32 off) when that is >= fp32_min; exactly 0 within zero_kl_max when the teacher is W0 (E40's benchmark); at step end_at, the fixed-row fp32 KL(teacher || student) / the same at step 0 <= end_frac: a stop for the positive control (T0), reported for T1, not made in B (its rate rule reads the same ratio)",
    "zero_kl_max": 1e-06,
    "fp32_min": 1e-06,
-   "fp32_tol": 0.05,
+   "fp32_tol": 0.002,
    "end_at": 100,
-   "end_frac": 0.7,
-   "provisional": "fp32_tol from the rehearsal's measured gap (checks.json, 'step-1 KL vs fp32'); end_frac from TR"
+   "end_frac": 0.9,
+   "sources": "fp32_tol: about 8x the TF32 gap check_teacher measured on the rehearsal's first batches (3.4e-5 on B's teacher, 2.4e-4 on T3's; job 40673). end_frac: B_rate's ratio_max, the same reading at the same step (the 0.7 filed before came from TR's bf16 training-batch curves and had no source)"
   }
  },
- "reported": "every number of every stage; maths-row readings of D1, T1 and the positive control against W0's maths readings at seeds 0-2 (unscored); A0's first batch against the earlier run's answers (share differing); the read steps chosen; the benchmark projection with its worst-case re-reads; B's positive-control curves at both rates; the rehearsal's list of checks missed beyond those expected at tiny size (rehearsal.json)",
- "edge_cases_checked": "tests/test_qwen_sft.py and tests/test_qwen_sft_amend1.py: L at both ends of its tolerance, NaN and a zero KL at 1e-5; read_rule with the first KL step absent, equal to 10, before 10, NaN KLs, and a budget of 2 (the optional step dropped, never 10 or 100); P5 at 0.8 and in its band (three starts); P6 at both ends, no pairs; the positive control's fall at 0.2, a zero first KL; the schedule against transformers' own at every step; B_rate with neither, one or both curves falling and with a NaN; rule M at 1.5, in its band (three starts) and with the guard tripping"
+ "reported": "every number of every stage; maths-row readings of D1, T1 and the positive control against W0's maths readings at seeds 0-2 (unscored); A0's first batch against the earlier run's answers (share differing); the read steps chosen; the benchmark projection with its worst-case re-reads; B's positive-control fixed-row readings and training curves at both rates; T1's fixed-row readings at steps 0 and 100 per read step; the rehearsal's list of checks missed beyond those expected at tiny size (rehearsal.json)",
+ "edge_cases_checked": "tests/test_qwen_sft.py and tests/test_qwen_sft_amend1.py: L at both ends of its tolerance, NaN and a zero KL at 1e-5; read_rule with the first KL step absent, equal to 10, before 10, NaN KLs, and a budget of 2 (the optional step dropped, never 10 or 100); P5 at 0.8 and in its band (three starts); P6 at both ends, no pairs; the positive control's fixed-row fall at 0.5, a zero or missing step-0 reading; the schedule against transformers' own at every step; B_rate with a zero, NaN or missing reading, a tie, the ratio at 0.9, both, one or neither rate qualifying; t0_steps below, at and above the cap and with step 100 already under fall_max; rule M at 1.5, in its band (three starts) and with the guard tripping",
+ "amended": "2026-10-28, after the $0 rehearsal (cluster jobs 40602, 40609, 40637, 40647) and its check (job 40673, results/check_teacher.json), before any stage that reads these rules has run in results/amend1/ (only L has, which none of them reads): B_rate replaced (rates, fixed-row readings, rule); T0 read on the fixed rows, fall_max 0.2 -> 0.5, steps from B with a cap; teacher_first fp32_tol 0.05 -> 0.002 and its end check on the fixed rows with end_frac 0.7 -> 0.9; the rehearsal rate check TR deleted. Why: reports/plans/2026-10-28_plan_qwen-sft.md, Amendment 1, Gate 3 rehearsal record"
 }
