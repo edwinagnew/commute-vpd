@@ -148,7 +148,7 @@ class Config:
     budget_usd: float = 25.0  # E40's projection rule; Amendment 1 passes --budget-left instead
     offsets_gb_max: float = 45.0  # alive copies + offsets + gradients + Adam, 20 B per alive parameter
     min_card_gb: float = 70.0
-    mem_gb: tuple[tuple[str, float], ...] = ()  # estimated peak GPU memory per logical stage (the early check)
+    expected_misses: tuple[str, ...] = ()  # a rehearsal: the checks and stops expected to miss at its tiny sizes
     l_rates: tuple[float, ...] = (1e-7, 1e-6, 1e-5)  # Amendment 1's stage L
     l_micro: int = 4
     l_card_gb: float = 40.0
@@ -173,7 +173,6 @@ class Config:
         assert all(d == "adam" or int(d.removeprefix("dW_")) in self.saved for d in self.drop_order)
         assert self.schedule in ("constant", "hf_cosine") and 0 <= self.warmup < self.steps
         assert self.first_live() in self.saved, "F's checks read the first step with a nonzero rate"
-        assert all(s in (*STAGES, "L", "B", "TR") for s, _ in self.mem_gb)
 
     def first_live(self) -> int:
         """The first SFT step whose rate is not 0 (step 2 under the library's warm-up, which starts at 0)."""
@@ -214,6 +213,13 @@ def log(msg: str) -> None:
     print(line, flush=True)
     with _LOG[0].open("a") as f:
         f.write(line + "\n")
+
+
+def write_json(path: Path, obj: Any) -> None:
+    """Written whole under a temporary name, then renamed: a lost machine never leaves half a results file."""
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(obj, indent=1, default=float))
+    tmp.replace(path)
 
 
 def free() -> None:
@@ -349,6 +355,14 @@ def score_amend1(res: dict[str, Any], R: dict[str, Any], last: str) -> dict[str,
     if "ratio_max" in R["P5"] and "p5" in T.get(last, {}).get("maths", {}):
         x = T[last]["maths"]["p5"]["ratio"]
         sc["P5"] = {"ratio": x, "holds": r9(x) <= R["P5"]["ratio_max"]}
+    if "M" in R:  # the maths pass test: a state's maths adversary over W0's on this card (G1, mean of seeds 0-2)
+        D = res.get("D", {})
+        for name, st in (("M_do_nothing", D), ("M_teacher", T)):
+            m = st.get(last, {}).get("maths", {})
+            if "ratio" in m:
+                passes = r9(m["ratio"]) <= R["M"]["line"]
+                sc[name] = {"ratio": m["ratio"], "starts": len(m.get("ratios", {})), "holds": passes,
+                            "reading": "pass" if passes else "sees the update"}
     if "P6" in R and "paired" in Fs:
         d = Fs["paired"]["test"]["diff"]
         sc["P6"] = {"diff": d, "n": Fs["paired"]["test"]["n"], "holds": d is not None and in_band(d, R["P6"]["band"])}
@@ -424,6 +438,7 @@ class Job:
         self.budget_usd, self.guard_usd, self.prior_usd = budget_usd, guard_usd, prior_usd
         self.rehearse, self.uploader, self.kill_after_save, self.stage = rehearse, uploader, kill_after_save, ""
         self.last_step0, self.last_pass_s = math.nan, math.nan
+        self.missed: list[str] = []  # a rehearsal's checks and stops that missed
         self.may_delete: Path | None = None  # Amendment 1: the one file B may delete when the volume is short
         fp32_matmuls()
         self.tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
@@ -445,17 +460,18 @@ class Job:
 
     def put(self, stage: str, d: dict[str, Any]) -> None:
         self.res[stage] = d
-        self.layout.result(stage).write_text(json.dumps(d, indent=1))
+        write_json(self.layout.result(stage), d)
         log(f"[{stage}] {json.dumps(brief(d), default=float)}")
         sc = score(self.res, self.pred, self.cfg.steps)
-        self.layout.file("score").write_text(json.dumps(sc, indent=1))
+        write_json(self.layout.file("score"), sc)
         log(f"[score] {json.dumps(sc, default=float)}")
 
     def halt(self, why: str) -> None:
         if self.rehearse:
             log(f"REHEARSAL: would stop here: {why}")
+            self.missed.append(why)
             return
-        self.layout.file("stopped").write_text(json.dumps({"why": why, "at_s": time.time() - T_START}))
+        write_json(self.layout.file("stopped"), {"why": why, "at_s": time.time() - T_START})
         log(f"STOP: {why}")
         sys.exit(f"STOP: {why}")
 
@@ -466,9 +482,11 @@ class Job:
     def check(self, name: str, ok: bool, detail: dict[str, Any], stop: bool = True) -> None:
         """Record a first-minutes check in <dir>/checks.json and stop the job when it is missed (`stop`; otherwise
         it is reported only)."""
-        self.checks[name] = {"ok": ok, **detail}
-        self.layout.file("checks").write_text(json.dumps(self.checks, indent=1, default=float))
+        self.checks[name] = {"ok": ok, "stops": stop, **detail}
+        write_json(self.layout.file("checks"), self.checks)
         log(f"[check] {name}: {'ok' if ok else 'MISSED'} {json.dumps(detail, default=float)}")
+        if not ok and not stop and self.rehearse:
+            self.missed.append(f"early check {name} missed (report only)")
         if not ok and stop:
             self.halt(f"early check {name} missed: {detail}")
 
@@ -478,12 +496,16 @@ class Job:
             self.check(f"{name} finite", False, values)
 
     def mem_check(self, where: str) -> None:
-        """Peak GPU memory since the stage began against the config's estimate for the stage, x the filed tolerance."""
-        est, rule = dict(self.cfg.mem_gb).get(self.stage), self.early("memory")
-        if est is None or rule is None:
+        """Peak GPU memory since the stage began against the one filed limit (`memory.peak_gb_max`)."""
+        rule = self.early("memory")
+        if rule is None:
             return
         peak = torch.cuda.max_memory_allocated() / 1e9
-        self.check(f"memory {self.stage} {where}", peak <= rule["tol"] * est, {"peak_gb": peak, "estimate_gb": est})
+        self.check(f"memory {self.stage} {where}", peak <= rule["peak_gb_max"], {"peak_gb": peak})
+
+    def t_lr(self) -> float:
+        """Teacher training's rate: the one B chose (Amendment 1's filed rule), else the config's."""
+        return self.res.get("B", {}).get("t_lr", self.cfg.t_lr)
 
     def save(self, path: Path, tensors: Any, dtype: torch.dtype, droppable: bool, meta: dict[str, str] | None = None
              ) -> None:
@@ -590,7 +612,7 @@ class Job:
                            {"step0": self.last_step0, "ref": ref})
             if rp is not None and bench:
                 self.check(f"{name} seed {seed} pass time", r9(abs(self.last_pass_s / bench - 1)) <= rp["tol"],
-                           {"pass_s": self.last_pass_s, "benchmark_s": bench})
+                           {"pass_s": self.last_pass_s, "benchmark_s": bench}, stop=False)
 
         with state():
             t_in[0] = time.time()
@@ -608,7 +630,7 @@ class Job:
         refs = json.loads(f.read_text()) if f.is_file() else {}
         if str(seed) not in refs:
             refs[str(seed)] = self.adv(nullcontext, self.web, seed, "W0_fineweb", "fineweb")
-            f.write_text(json.dumps(refs, indent=1))
+            write_json(f, refs)
         return refs[str(seed)]
 
     def fineweb(self, state: Callable[[], Any], name: str) -> dict[str, Any]:
@@ -617,8 +639,16 @@ class Job:
                             ts["seeds"], ts["band"], lambda: self.spent_usd() <= self.guard_usd)
 
     def maths_adv(self, state: Callable[[], Any], name: str) -> dict[str, Any]:
-        kl = self.adv(state, self.maths(), self.pred["three_starts"]["seeds"][0], f"{name}_maths", "maths")
-        return {"adv": kl, "ratio": kl / self.res["G"]["maths"]["adv"]}
+        """The state's maths-row adversary. With Amendment 1's filed maths pass test ("M"): its ratio to W0's maths
+        reference on this card (G1's mean over seeds 0-2), three starts when the first lands in M's band. E40: one
+        start, its ratio to G's seed-0 reading."""
+        seeds, m = self.pred["three_starts"]["seeds"], self.pred["rules"].get("M")
+        if m is None:
+            kl = self.adv(state, self.maths(), seeds[0], f"{name}_maths", "maths")
+            return {"adv": kl, "ratio": kl / self.res["G"]["maths"]["adv"]}
+        ref = self.res["G"]["maths"]["mean_over_seeds"]
+        return three_starts(lambda s: self.adv(state, self.maths(), s, f"{name}_maths", "maths"), lambda s: ref,
+                            seeds, m["band"], lambda: self.spent_usd() <= self.guard_usd)
 
     def gstats(self, state: Callable[[], Any], name: str) -> None:
         comps, gamma = self.decomp()
@@ -666,15 +696,16 @@ class Job:
         """The do-nothing state's maths-row adversary at the last step and `seed` (D's seed-0 reading; other seeds
         read once and kept in <dir>/D_maths_refs.json), the reference of P5's three starts."""
         last = str(self.cfg.steps)
-        if seed == self.pred["three_starts"]["seeds"][0]:
-            return self.res["D"][last]["maths"]["adv"]
+        read = self.res["D"][last]["maths"]["adv"]  # seed -> KL (the maths pass test's starts)
+        if str(seed) in read:
+            return read[str(seed)]
         f = self.layout.file("D_maths_refs")
         refs = json.loads(f.read_text()) if f.is_file() else {}
         if str(seed) not in refs:
             dW = load(self.dw_path(self.cfg.steps))
             refs[str(seed)] = self.adv(lambda: do_nothing(self.model, self.W0, dW), self.maths(), seed,
                                        f"D{last}_maths", "maths")
-            f.write_text(json.dumps(refs, indent=1))
+            write_json(f, refs)
         return refs[str(seed)]
 
 
@@ -682,10 +713,12 @@ def records(path: Path) -> Records:
     return [json.loads(line) for line in path.open()]
 
 
-def teacher_checks(job: Job, name: str, zero: bool) -> Callable[[int, list[dict[str, float]]], None]:
+def teacher_checks(job: Job, name: str, zero: bool, end_stops: bool = True
+                   ) -> Callable[[int, list[dict[str, float]]], None]:
     """Teacher training's first-minutes checks, when filed: a finite KL every step; step 1's training-forward KL
     against the fp32 KL(teacher ‖ W0) on the same batch (exactly 0 within `zero_kl_max` at δW = 0, `zero`); memory
-    after step 2; and at step `end_at` the mean KL of the 10 steps before it at most `end_frac` of step 1's."""
+    after step 2; and at step `end_at` the mean KL of the 10 steps before it at most `end_frac` of step 1's (a stop
+    for the positive control and the rate check, reported for T1: `end_stops`)."""
 
     def on_step(step: int, curve: list[dict[str, float]]) -> None:
         rule = job.early("teacher_first")
@@ -702,7 +735,8 @@ def teacher_checks(job: Job, name: str, zero: bool) -> Callable[[int, list[dict[
             job.mem_check(f"{name} step 2")
         if rule is not None and step == rule["end_at"] and not zero:
             now = fall([c["kl"] for c in curve])
-            job.check(f"{name} KL at step {step}", r9(now) <= rule["end_frac"], {"mean_last10_over_step1": now})
+            job.check(f"{name} KL at step {step}", r9(now) <= rule["end_frac"], {"mean_last10_over_step1": now},
+                      stop=end_stops)
 
     return on_step
 
@@ -975,7 +1009,7 @@ def stage_F(job: Job) -> None:
     out["paired"] = {n: paired(records(large / f"step0_{n}.jsonl"), records(large / f"step{cfg.steps}_{n}.jsonl"))
                      for n in ("test", "gsm1k")}
     if cfg.read_fixed:
-        kl = {int(t): r["kl_to_start"] for t, r in out["saved"].items()}
+        kl = {int(t): r["kl_to_start"] for t, r in out["saved"].items() if job.dw_path(int(t)).is_file()}
         out["read_steps"] = read_rule(kl, cfg.read_fixed, cfg.read_kl_min, job.res["B"]["n_read_max"])
     job.put("F", out)
 
@@ -998,7 +1032,16 @@ def stage_D(job: Job) -> None:
         job.put("D", res)
 
 
+def offsets_meta(job: Job, t: int) -> dict[str, str]:
+    """What a teacher-training state was trained from: the δW file's and the alive index's hashes, rate and steps. A
+    saved state is resumed only when all of them match."""
+    return {"dW_sha256": sha256(job.dw_path(t)), "alive_sha256": sha256(job.out / "alive.safetensors"),
+            "t_lr": repr(job.t_lr()), "t_steps": str(job.cfg.t_steps), "alive_max": str(job.cfg.alive_max)}
+
+
 def stage_T(job: Job) -> None:
+    """Teacher training at each read step. Every state is read from its saved file (bf16 before the last read step,
+    fp32 at it), whether it was trained in this job or resumed, so the two read alike."""
     cfg, res = job.cfg, job.res.get("T", {})
     for t in job.read_steps():
         if str(t) in res:
@@ -1006,55 +1049,57 @@ def stage_T(job: Job) -> None:
         off = Offsets(job.decomp()[0], job.alive())
         job.decomp("cpu")  # training and the readings below need no decomposition
         dW = load(job.dw_path(t), DEV)
-        path, rec, digest = job.out / "offsets" / f"T{t}.safetensors", {}, sha256(job.dw_path(t))
-        if path.is_file() and meta_of(path).get("dW_sha256") == digest:  # resume only from this δW's training
-            off.load_from(path)
+        path, rec, meta = job.out / "offsets" / f"T{t}.safetensors", {}, offsets_meta(job, t)
+        if path.is_file() and all(meta_of(path).get(k) == v for k, v in meta.items()):
             rec["resumed_from"] = str(path)
         else:
-            curve = train(job.model, off, dW, *job.pools(), cfg.t_lr, cfg.t_steps, cfg.t_rows_each, cfg.t_micro,
-                          cfg.seed, log, teacher_checks(job, f"T{t}", zero=False))
+            curve = train(job.model, off, dW, *job.pools(), job.t_lr(), cfg.t_steps, cfg.t_rows_each, cfg.t_micro,
+                          cfg.seed, log, teacher_checks(job, f"T{t}", zero=False, end_stops=False))
             dtype = BF16 if cfg.offsets_bf16_before_last and t != max(job.read_steps()) else F32
-            off.save(path, dtype, {"dW_sha256": digest, "dW": str(job.dw_path(t))}, log)
+            off.save(path, dtype, meta, log)
             job.keep(path)
             rec["curve"] = [c["kl"] for c in curve]
             rec["first_batch_kl_fp32"] = curve[0]["kl_fp32_teacher_w0"]  # beside curve[0], the training forward's
             if job.kill_after_save:
                 log(f"REHEARSAL: killed after saving {path}; the next job resumes from it")
                 sys.exit(3)
+        off.load_from(path)
         off.to("cpu")
-        with torch.no_grad():
-            Wt, Ws = plus(job.W0, dW), {s: job.W0[s] + off.change(s, DEV) for s in SITES}
-        del dW
-        rec["kl_teacher_student"] = mean_kl(job.model, job.maths(), Wt, Ws)
-        rec["kl_teacher_w0"] = mean_kl(job.model, job.maths(), Wt, None)
-        rec["max_abs_offset"] = off.max_abs()
-        del Wt
-        if t == cfg.steps:
-            rec["accuracy"] = job.accuracy(Ws, f"T{t}", ("test",))
-        del Ws
-        free()
-
-        def state(off: Offsets = off) -> Any:
-            return off.state(job.model, job.decomp()[0], job.W0)
-
-        rec["fineweb"] = job.fineweb(state, f"T{t}")
-        if t == cfg.steps:
-            rec["maths"] = job.maths_adv(state, f"T{t}")
-            p5 = job.pred["rules"]["P5"]
-            if "band" in p5:  # Amendment 1: teacher training over do-nothing on maths rows, three starts near the line
-                seeds, first = job.pred["three_starts"]["seeds"], rec["maths"]["adv"]
-
-                def read(s: int, state: Callable[[], Any] = state, first: float = first, s0: int = seeds[0],
-                         name: str = f"T{t}_maths") -> float:
-                    return first if s == s0 else job.adv(state, job.maths(), s, name, "maths")
-
-                rec["maths"]["p5"] = three_starts(read, job.d_maths, seeds, p5["band"],
-                                                  lambda: job.spent_usd() <= job.guard_usd)
-            job.gstats(state, f"T{t}")
+        t_readings(job, t, off, dW, rec)
+        del dW, off
         res[str(t)] = rec
         job.put("T", res)
-        del off
         free()
+
+
+def t_readings(job: Job, t: int, off: Offsets, dW: dict[str, Tensor], rec: dict[str, Any]) -> None:
+    """One teacher-training state's readings: behaviour kept on maths rows, accuracy at the last step, the FineWeb
+    adversary, and at the last step the maths pass test, P5 and g statistics."""
+    cfg = job.cfg
+    with torch.no_grad():
+        Wt, Ws = plus(job.W0, dW), {s: job.W0[s] + off.change(s, DEV) for s in SITES}
+    rec["kl_teacher_student"] = mean_kl(job.model, job.maths(), Wt, Ws)
+    rec["kl_teacher_w0"] = mean_kl(job.model, job.maths(), Wt, None)
+    rec["max_abs_offset"] = off.max_abs()
+    del Wt
+    if t == cfg.steps:
+        rec["accuracy"] = job.accuracy(Ws, f"T{t}", ("test",))
+    del Ws
+    free()
+
+    def state() -> Any:
+        return off.state(job.model, job.decomp()[0], job.W0)
+
+    rec["fineweb"] = job.fineweb(state, f"T{t}")
+    if t == cfg.steps:
+        rec["maths"] = job.maths_adv(state, f"T{t}")
+        p5 = job.pred["rules"]["P5"]
+        if "band" in p5:  # Amendment 1: teacher training over do-nothing on maths rows, three starts near the line
+            seeds, read = job.pred["three_starts"]["seeds"], rec["maths"]["adv"]
+            rec["maths"]["p5"] = three_starts(
+                lambda s: read[str(s)] if str(s) in read else job.adv(state, job.maths(), s, f"T{t}_maths", "maths"),
+                job.d_maths, seeds, p5["band"], lambda: job.spent_usd() <= job.guard_usd)
+        job.gstats(state, f"T{t}")
 
 
 # ----------------------------------------------------------------------------- entry
@@ -1088,16 +1133,32 @@ def start(layout: Layout, stages: list[Stage]) -> None:
     layout.file("stopped").unlink(missing_ok=True)
 
 
+def done(layout: Layout) -> dict[str, float]:
+    """The stages that finished (<dir>/done.json, written after each stage ends): logical stage -> time."""
+    return json.loads(layout.file("done").read_text()) if layout.file("done").is_file() else {}
+
+
 def refuse_done(layout: Layout, stages: list[Stage]) -> None:
-    """With the layout's guard: exit if a chosen stage's results file exists, except D and T, which resume read step
-    by read step until <dir>/done.json lists them."""
+    """With the layout's guard: exit if a chosen stage is marked finished. A partial results file (a stage that
+    stopped or crashed) is overwritten, and said so; D and T resume it read step by read step."""
     if not layout.guard:
         return
-    done = json.loads(layout.file("done").read_text()) if layout.file("done").is_file() else {}
     for name, logical, _ in stages:
         p = layout.result(logical)
-        if p.is_file() and (logical not in ("D", "T") or logical in done):
-            sys.exit(f"refusing stage {name}: {p} exists (move it aside to rerun)")
+        if logical in done(layout):
+            sys.exit(f"refusing stage {name}: it finished ({p}); move its results aside to rerun")
+        if p.is_file():
+            print(f"[guard] {p} is partial: stage {name} " + ("resumes it" if logical in ("D", "T") else "overwrites it"),
+                  flush=True)
+
+
+def rehearsal_report(job: Job) -> None:
+    """<dir>/rehearsal.json: the checks and stops expected to miss at tiny sizes (the config's list, by prefix), the
+    ones that missed, and those that missed beyond the list, which the rehearsal is for."""
+    unexpected = [m for m in job.missed if not any(e in m for e in job.cfg.expected_misses)]
+    write_json(job.layout.file("rehearsal"), {"expected": list(job.cfg.expected_misses), "missed": job.missed,
+                                              "unexpected": unexpected})
+    log(f"[rehearsal] {len(job.missed)} missed, {len(unexpected)} beyond the expected list: {unexpected}")
 
 
 def run_stages(job: Job, stages: list[Stage]) -> None:
@@ -1109,11 +1170,12 @@ def run_stages(job: Job, stages: list[Stage]) -> None:
             fn(job)
             log(f"[{name}] done in {time.time() - t0:.0f} s, {peaks()}")
             job.mem_check("end")
-            f = job.layout.file("done")
-            f.write_text(json.dumps((json.loads(f.read_text()) if f.is_file() else {}) | {logical: time.time()}))
+            write_json(job.layout.file("done"), done(job.layout) | {logical: time.time()})
     finally:
         if job.uploader is not None:
             job.uploader.finish()  # waits for every queued upload, also after a stop
+        if job.rehearse:
+            rehearsal_report(job)
     print("FINISHED", RESULTS, flush=True)
 
 

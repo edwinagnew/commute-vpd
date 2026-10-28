@@ -101,6 +101,12 @@ class Offsets:
         """The offsets with at least one entry (a site with no alive column, or outside a layer subset, has none)."""
         return [p for p in (*self.dV.values(), *self.dU.values()) if p.numel()]
 
+    @torch.no_grad()
+    def reset(self) -> None:
+        """Every offset back to 0 (the next run of `train` starts from W0's components with a fresh Adam)."""
+        for p in self.params():
+            p.zero_()
+
     def n_params(self) -> int:
         return sum(p.numel() for p in self.params())
 
@@ -201,14 +207,16 @@ def train(model: Any, off: Offsets, teacher: Mapping[str, Tensor] | None, maths:
             opt.zero_grad(set_to_none=True)
             total = 0.0
             for mb in batch.split(micro):
-                with torch.autocast("cuda", dtype=torch.bfloat16):
-                    with torch.no_grad(), change_hooks(model, t_change):
-                        t_logits = logits32(model, mb)
-                    with change_hooks(model, off.change):
+                with torch.no_grad(), change_hooks(model, t_change), torch.autocast("cuda", dtype=torch.bfloat16):
+                    t_logits = logits32(model, mb)
+                # the backward inside the student's hooks: non-reentrant checkpointing recomputes each layer during
+                # backward, and the recompute must run the same hooks as the forward did (rehearsal job 40530)
+                with change_hooks(model, off.change):
+                    with torch.autocast("cuda", dtype=torch.bfloat16):
                         s_logits = logits32(model, mb)
-                loss = kl_exact_zero(t_logits, s_logits).sum() / n
-                loss.backward()
-                total += float(loss)
+                    loss = kl_exact_zero(t_logits, s_logits).sum() / n
+                    loss.backward()
+                total += float(loss.detach())
             opt.step()
             curve.append({"kl": total, "s": time.time() - t0})
             if step == 1:

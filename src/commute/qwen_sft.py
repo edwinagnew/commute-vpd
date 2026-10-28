@@ -77,22 +77,28 @@ def set_volume(root: Path | None, gb: float | None) -> None:
 
 
 def du(root: Path) -> int:
-    """Bytes of the regular files under `root` (as `du -sb`, symlinks not followed)."""
+    """Bytes of the regular files under `root` (as `du -sb`, symlinks not followed; a file that vanishes during the
+    walk, as a temporary one may, is skipped)."""
     total = 0
     for d, _, files in os.walk(root):
         for f in files:
             p = Path(d) / f
-            if not p.is_symlink():
-                total += p.stat().st_size
+            try:
+                if not p.is_symlink():
+                    total += p.stat().st_size
+            except FileNotFoundError:
+                continue
     return total
 
 
 def free_bytes(path: Path) -> int:
-    """Free space where `path` lives: the volume's quota minus its contents under a `set_volume` root, else `df`."""
+    """Free space where `path` lives: under a `set_volume` root the smaller of the quota minus its contents and `df`,
+    else `df`."""
     path, root = Path(path).resolve(), _VOLUME["root"]
+    df = shutil.disk_usage(path).free
     if root is not None and path.is_relative_to(root):
-        return int(_VOLUME["bytes"] - du(root))
-    return shutil.disk_usage(path).free
+        return min(int(_VOLUME["bytes"] - du(root)), df)
+    return df
 
 
 def nbytes(tensors: Mapping[str, Tensor], dtype: torch.dtype) -> int:
@@ -112,7 +118,9 @@ def save(path: Path, tensors: Mapping[str, Tensor], dtype: torch.dtype, droppabl
             raise RuntimeError(msg)
         log(f"[save] DROPPED {msg}")
         return False
-    save_file({k: v.detach().to("cpu", dtype).contiguous() for k, v in tensors.items()}, str(path), metadata=meta)
+    tmp = path.with_name(path.name + ".tmp")  # written whole, then renamed: a lost pod never leaves half a file
+    save_file({k: v.detach().to("cpu", dtype).contiguous() for k, v in tensors.items()}, str(tmp), metadata=meta)
+    os.replace(tmp, path)
     log(f"[save] {path} ({need / 1e9:.2f} GB)")
     return True
 

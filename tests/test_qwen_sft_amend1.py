@@ -53,7 +53,8 @@ def test_configs_and_the_filed_read_rule_agree():
     assert A1.A1.first_live() == 2 and A1.A1_TINY.first_live() == 2 and RUN.CFG.first_live() == 1
     assert (tuple(R["read_steps"]["fixed"]), R["read_steps"]["kl_min"]) == (A1.A1.read_fixed, A1.A1.read_kl_min)
     assert A1.A1_TINY.steps == A1.A1.steps and A1.A1_TINY.batch == A1.A1.batch  # F1 at full size in the rehearsal
-    assert set(dict(A1.A1.mem_gb)) >= {"B", "G", "A0", "F", "T0", "D", "T"}
+    assert R["T0"]["steps"] == A1.A1.t0_steps and "dW_3" not in A1.A1.drop_order
+    assert A1.MATRIX_NUMEL == 1_409_286_144
 
 
 def test_read_rule():
@@ -127,14 +128,34 @@ def test_refuse_done(tmp_path: Path):
     layout = RUN.Layout(tmp_path, tmp_path / "p.json", A1.NAMES, tmp_path / "large", guard=True)
     RUN.refuse_done(layout, _stages("A0", "D1"))  # nothing there yet
     (tmp_path / "D1.json").write_text("{}")
-    RUN.refuse_done(layout, _stages("D1"))  # a partial D resumes
-    (tmp_path / "done.json").write_text(json.dumps({"D": 1.0}))
-    with pytest.raises(SystemExit):
-        RUN.refuse_done(layout, _stages("D1"))
-    (tmp_path / "A0.json").write_text("{}")
-    with pytest.raises(SystemExit):
-        RUN.refuse_done(layout, _stages("A0"))
-    RUN.refuse_done(RUN.Layout(tmp_path, tmp_path / "p.json", A1.NAMES, tmp_path, guard=False), _stages("A0"))
+    (tmp_path / "B.json").write_text("{}")
+    RUN.refuse_done(layout, _stages("B", "D1"))  # partial files (a crash): overwritten or resumed, not refused
+    RUN.write_json(tmp_path / "done.json", {"D": 1.0, "B": 2.0})
+    for name in ("D1", "B"):
+        with pytest.raises(SystemExit):
+            RUN.refuse_done(layout, _stages(name))
+    RUN.refuse_done(RUN.Layout(tmp_path, tmp_path / "p.json", A1.NAMES, tmp_path, guard=False), _stages("B"))
+    assert not list(tmp_path.glob("*.tmp"))  # written whole, then renamed
+
+
+def test_b_rate_rule():
+    n = R["B_rate"]["n"]
+    down, up = [1.0] * 5 + [0.5] * 15 + [0.4] * 5, [1.0] * 5 + [1.0] * 15 + [1.1] * 5
+    assert A1.falls(down, n) and not A1.falls(up, n) and not A1.falls([1.0] * 25, n)
+    assert not A1.falls([math.nan] * 25, n) and not A1.falls(down[:9], n)
+    assert A1.pick_rate({1e-6: down, 1e-5: down}, n) == 1e-5
+    assert A1.pick_rate({1e-6: down, 1e-5: up}, n) == 1e-6
+    assert A1.pick_rate({1e-6: up, 1e-5: up}, n) is None
+
+
+def test_maths_pass_test_rule():
+    res = {"D": {"100": {"maths": {"ratio": 1.5, "ratios": {"0": 1.5, "1": 1.4, "2": 1.6}}}},
+           "T": {"100": {"maths": {"ratio": 1.5000001, "ratios": {"0": 1.0}}}}}
+    sc = RUN.score_amend1(res, R, "100")
+    assert sc["M_do_nothing"]["holds"] and sc["M_do_nothing"]["starts"] == 3 and sc["M_do_nothing"]["reading"] == "pass"
+    assert not sc["M_teacher"]["holds"] and sc["M_teacher"]["reading"] == "sees the update"
+    res["T"]["100"]["maths"]["ratio"] = math.nan
+    assert not RUN.score_amend1(res, R, "100")["M_teacher"]["holds"]
 
 
 def test_free_space_on_a_quota_volume(tmp_path: Path):
@@ -143,11 +164,14 @@ def test_free_space_on_a_quota_volume(tmp_path: Path):
     (vol / "a.bin").write_bytes(b"x" * 1000)
     (vol / "sub" / "b.bin").write_bytes(b"x" * 500)
     (vol / "link").symlink_to(vol / "a.bin")
+    (vol / "gone").symlink_to(vol / "missing")  # a dangling link is not followed
     assert du(vol) == 1500
     set_volume(vol, 1e-5)  # a 10,000-byte quota
     try:
         assert free_bytes(vol / "sub") == 10_000 - 1500
         assert free_bytes(tmp_path) > 10_000  # outside the volume: df
+        set_volume(vol, 1e9)  # a quota larger than the disk: df is smaller and wins
+        assert free_bytes(vol) <= __import__("shutil").disk_usage(vol).free
     finally:
         set_volume(None, None)
 
@@ -167,3 +191,35 @@ def test_positive_control_teacher_is_the_students_own_change():
             off.dU[s].copy_(0.01 * torch.randn(off.U[s].shape, generator=gen))
         assert torch.allclose(off.change(s), teacher[s], atol=1e-7), s
     assert torch.equal(random_change(off, 0.0, 0, torch.float32)[qwen_vpd.SITES[1]], torch.zeros(4, 3))
+
+
+def _tiny_qwen() -> tuple[Any, qwen_vpd.Components, dict[str, torch.Tensor]]:
+    """A random 28-layer Qwen3 of width 32 with gradient checkpointing, as the job sets it up, and components of 8
+    subcomponents per site, all alive."""
+    from transformers import Qwen3Config, Qwen3ForCausalLM
+
+    torch.manual_seed(0)
+    cfg = Qwen3Config(vocab_size=64, hidden_size=32, intermediate_size=64, num_hidden_layers=28, num_attention_heads=2,
+                      num_key_value_heads=1, head_dim=16, max_position_embeddings=64, tie_word_embeddings=True)
+    model = Qwen3ForCausalLM(cfg).eval().requires_grad_(False)
+    model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+    dims = {"q": (32, 32), "k": (32, 16), "v": (32, 16), "o": (32, 32), "gate": (32, 64), "up": (32, 64), "down": (64, 32)}
+    V = {k: 0.1 * torch.randn(qwen_vpd.N_LAYERS, i, 8) for k, (i, _) in dims.items()}
+    U = {k: 0.1 * torch.randn(qwen_vpd.N_LAYERS, 8, o) for k, (_, o) in dims.items()}
+    return model, qwen_vpd.Components(V, U), {s: torch.arange(8) for s in qwen_vpd.SITES}
+
+
+def test_teacher_training_runs_under_checkpointing_and_is_exactly_zero_at_w0():
+    """The rehearsal's crash (job 40530): the backward ran outside the student's hooks, so the checkpointed recompute
+    saved different tensors. Here train() runs end to end on CPU; with the teacher at W0 every offset stays 0."""
+    from commute.qwen_teacher import train
+
+    model, comps, alive = _tiny_qwen()
+    rows = torch.randint(64, (4, 16), generator=torch.Generator().manual_seed(1))
+    off = Offsets(comps, alive, device="cpu")
+    curve = train(model, off, None, rows, rows, 1e-3, 3, 1, 1, 0, log=lambda m: None)
+    assert all(c["kl"] == 0.0 for c in curve) and off.max_abs() == 0.0
+    teacher = random_change(off, 0.5, seed=0, dtype=torch.float32)
+    curve = train(model, off, teacher, rows, rows, 1e-2, 3, 1, 1, 0, log=lambda m: None)
+    assert curve[0]["kl"] > 0 and curve[0]["kl_fp32_teacher_w0"] > 0 and off.max_abs() > 0
+    assert all(math.isfinite(c["kl"]) for c in curve)
