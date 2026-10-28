@@ -1,0 +1,58 @@
+[    25.2s] [load] NVIDIA H100 80GB HBM3, GPU 6.9 GB
+[    25.2s] [config] {"seq_len": 512, "n_rows": 128, "maths_problems": 256, "gen_batch": 128, "gen_budget_s": 1800.0, "alive_g": 0.01, "seed": 0, "heldout": 256, "batch": 64, "micro": 8, "steps": 100, "lr": 1e-05, "saved": [1, 2, 3, 5, 10, 20, 50, 100], "read_steps": [1, 10, 100], "drop_order": ["adam", "dW_3", "dW_20"], "t_lr": 1e-05, "t_steps": 1000, "t_rows_each": 4, "t_micro": 2, "web_pool": 2048, "eval_batch": 8, "budget_usd": 25.0, "offsets_gb_max": 45.0}; stages ['G', 'T0', 'A0', 'F', 'D', 'T']; out /workspace/e40
+[   291.9s] [save] /root/work/experiments/qwen_sft/results/large/gstats/W0_fineweb.safetensors (0.00 GB)
+[   291.9s] [G] fineweb: masked KL 0.1417
+[   330.3s] [save] /root/work/experiments/qwen_sft/results/large/gstats/W0_maths.safetensors (0.00 GB)
+[   330.3s] [G] maths: masked KL 0.0589
+[   330.5s] [save] /workspace/e40/alive.safetensors (0.00 GB)
+[   330.5s] [G] {"eval_batch_s": 19.92395853996277, "problems_in_rows": 209, "fineweb": {"masked_kl": 0.14167061740135692}, "maths": {"masked_kl": 0.058863653236301064}, "alive": {"subcomponents": 494598, "of": 688128, "n_params": 3651683328, "offsets_gb": 73.03366656}, "read_steps": [1, 10, 100]}
+[   330.5s] [score] {"G_control": {"rel": {"masked_kl": -3.4026870210368543e-10}, "holds": true}}
+[   389.7s] seed 0 step 0: KL 0.0918
+[   448.8s] seed 0 step 1: KL 0.1131
+[   507.8s] seed 0 step 2: KL 0.1376
+[   566.9s] seed 0 step 3: KL 0.1661
+[   626.0s] seed 0 step 4: KL 0.1999
+[   685.1s] seed 0 step 5: KL 0.2401
+[   744.3s] seed 0 step 6: KL 0.2906
+[   803.4s] seed 0 step 7: KL 0.3509
+[   862.5s] seed 0 step 8: KL 0.4200
+[   921.7s] seed 0 step 9: KL 0.5107
+[   981.0s] seed 0 step 10: KL 0.5959
+[  1040.1s] seed 0 step 11: KL 0.6923
+[  1099.2s] seed 0 step 12: KL 0.8012
+[  1158.4s] seed 0 step 13: KL 0.9114
+[  1217.5s] seed 0 step 14: KL 1.0257
+[  1276.6s] seed 0 step 15: KL 1.1221
+[  1335.6s] seed 0 step 16: KL 1.2477
+[  1394.7s] seed 0 step 17: KL 1.3341
+[  1453.7s] seed 0 step 18: KL 1.4808
+[  1512.8s] seed 0 step 19: KL 1.5414
+[  1548.6s] [save] /root/work/experiments/qwen_sft/results/large/sources/G_fineweb_seed0.safetensors (0.00 GB)
+[  1548.6s] [G_fineweb] adversary seed 0: 1.7032 nats (1218 s)
+[  1548.6s] [G] {"eval_batch_s": 19.92395853996277, "problems_in_rows": 209, "fineweb": {"masked_kl": 0.14167061740135692, "adv": 1.7031564672943205, "adv_s": 1218.127104997635}, "maths": {"masked_kl": 0.058863653236301064}, "alive": {"subcomponents": 494598, "of": 688128, "n_params": 3651683328, "offsets_gb": 73.03366656}, "read_steps": [1, 10, 100]}
+[  1548.6s] [score] {"G_control": {"rel": {"masked_kl": -3.4026870210368543e-10, "adv": 0.0008922291043544917}, "holds": true}}
+[  1607.7s] seed 0 step 0: KL 0.0374
+[  1666.8s] seed 0 step 1: KL 0.0956
+[  1725.8s] seed 0 step 2: KL 0.1774
+[  1785.2s] seed 0 step 3: KL 0.2478
+[  1844.3s] seed 0 step 4: KL 0.3490
+[  1903.6s] seed 0 step 5: KL 0.4511
+[  1963.1s] seed 0 step 6: KL 0.5234
+[  2022.7s] seed 0 step 7: KL 0.6886
+[  2082.0s] seed 0 step 8: KL 0.8475
+[  2141.5s] seed 0 step 9: KL 0.9595
+[  2201.0s] seed 0 step 10: KL 1.0924
+[  2260.6s] seed 0 step 11: KL 1.4208
+[  2320.1s] seed 0 step 12: KL 1.5348
+[  2379.7s] seed 0 step 13: KL 1.7401
+[  2438.9s] seed 0 step 14: KL 2.0696
+[  2498.2s] seed 0 step 15: KL 2.4643
+[  2558.0s] seed 0 step 16: KL 2.9370
+[  2617.3s] seed 0 step 17: KL 3.1837
+[  2676.2s] seed 0 step 18: KL 2.5964
+[  2735.3s] seed 0 step 19: KL 4.4960
+[  2771.3s] [save] /root/work/experiments/qwen_sft/results/large/sources/G_maths_seed0.safetensors (0.00 GB)
+[  2771.3s] [G_maths] adversary seed 0: 4.2351 nats (1223 s)
+[  2771.3s] [G] {"eval_batch_s": 19.92395853996277, "problems_in_rows": 209, "fineweb": {"masked_kl": 0.14167061740135692, "adv": 1.7031564672943205, "adv_s": 1218.127104997635}, "maths": {"masked_kl": 0.058863653236301064, "adv": 4.235135921742767, "adv_s": 1222.6905617713928}, "alive": {"subcomponents": 494598, "of": 688128, "n_params": 3651683328, "offsets_gb": 73.03366656}, "read_steps": [1, 10, 100]}
+[  2771.3s] [score] {"G_control": {"rel": {"masked_kl": -3.4026870210368543e-10, "adv": 0.0008922291043544917}, "holds": true}, "G": {"adv_ratio": 2.4866393681790235, "masked_ratio": 0.41549655331520613, "verdict": "ambiguous"}}
+[  2771.3s] STOP: alive offsets need 73.0 GB (20 B x 3651683328 parameters)
