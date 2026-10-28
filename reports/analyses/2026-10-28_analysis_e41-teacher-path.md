@@ -23,7 +23,7 @@ within the filed tolerances of single copies. Its weight change was larger and i
 
 *Amendment 1, at the end: at two more batch orders the emoticon step-10 copy passed once and was inconclusive twice, so it sits at the pass line; its reading varied more across orders than finished copies' do, with one adversary start per reading.*
 
-*Amendment 2, at the end: a chain of short copies along the emoticon fine-tune, each from the last, kept the behaviour and passed everywhere without piling up damage; the check sees only two links, and the step-10 one sits at the pass line.*
+*Amendment 2, at the end: a chain of short copies along the emoticon fine-tune, each from the last, kept the behaviour at all seven checkpoints and passed the check, with size and damage ending within the filed limits; the check sees only two links, and the step-10 one sits at the pass line.*
 
 ## What we tested
 
@@ -540,8 +540,9 @@ from `plot_e41_amend2.py`; notebook `notebooks/E41_teacher_path.ipynb` → "Amen
 
 We trained the subcomponents to imitate the emoticon fine-tune at seven points along it, each copy starting where the
 last one ended. Every copy kept the behaviour and passed the adversarial check, but only two of those passes are
-evidence, and the earlier of the two sits near the pass line. The chain ended no worse than a single long copy and piled
-up no damage, so on this model teacher training can run alongside training at this rhythm.
+evidence, and the earlier of the two sits near the pass line. The chain ended no worse than a single long copy and
+ended within the filed limits for size and damage (damage at 1.2 times a single copy's, just inside), so on this
+fine-tune teacher training kept up with training at this rhythm.
 
 ### The answer
 
@@ -668,7 +669,7 @@ orders. E41's long chain, with 1,000 steps per link, ended at 1.36 times the siz
 
 The two chains behave differently. The short chain's size grows at every link but stays below every teacher's from
 step 10 on. It reaches 0.015, against the fine-tune's 0.032. Its damage falls at every link after step 3, from 0.10 to
-0.022. It sheds damage gradually as the teacher matures, rather than in the last link. Relative to its own teacher, the
+0.022. Its damage falls link by link, while the teachers' damage stays between 0.038 and 0.055 from step 30 on. Relative to its own teacher, the
 link's damage falls from 1.01 at step 10 to 0.40 at step 1,000. Its size falls from 0.96 to 0.47 of the teacher's.
 
 | anchor | short chain size ÷ one-shot | short chain damage ÷ one-shot | E41 long chain size ÷ one-shot | E41 long chain damage ÷ one-shot | short chain size ÷ teacher | short chain damage ÷ teacher |
@@ -702,12 +703,14 @@ at every anchor. P(target) is within 0.002 of the one-shot's at each, and gap sh
 
 ### What we learned
 
-Teacher training applied every 100 steps along this fine-tune kept every update's behaviour with Δ untouched, from the
-first Adam step to the last. On the adversarial check it passed at both checkpoints where doing nothing does not. At
+Teacher training applied every 100 steps along this fine-tune kept the behaviour at all seven checkpoints read, from
+step 1 to step 1,000, with Δ untouched. On the adversarial check it passed at both checkpoints where doing nothing does not. At
 step 1,000 it passed clearly; at step 10 it sat near the pass line, where single copies already sat. The chain ended no
-worse than a single 1,000-step copy on every filed comparison. Unlike E41's chain of long links, it did not carry size
-or damage forward: it shed the early copies' damage link by link. `GOALS.md` asks whether a map applied along
-training accumulates error. In this first run at a monitor's rhythm, over seven links on this model, it did not.
+worse than a single 1,000-step copy on every filed comparison. Its size still grew at every link, but its damage fell at
+every link after step 3, and it ended below E41's chain of long links on both. `GOALS.md` asks
+whether a map applied along training accumulates error. In this first run at a monitor's rhythm, over seven links of
+one fine-tune, it did not accumulate error on the filed comparisons: the check, the behaviour, and size and damage
+within 1.25 times a single copy's.
 
 ### How compelling is the evidence
 
@@ -722,7 +725,8 @@ training accumulates error. In this first run at a monitor's rhythm, over seven 
   - size: everything but the largest relative change of one matrix;
   - damage: everything outside the held-out task windows;
   - Δ's share: everything but a code bug.
-- **Noise floor**, same card: batch order moves the ratio by up to 21% at step 10 and 3.2% at step 1,000. It moves P
+- **Noise floor**, same card: the ratio varied by up to 21% across three batch orders at step 10 and 3.2% at step
+  1,000 (one adversary start each, so the spread mixes both sources). Batch order moves P
   by 0.005, gap share by 0.002, size by up to 5% and damage by up to 3%. $W_0$'s adversary-seed floor is 7.5%.
 - **Unequal training at the anchors**: 300, 500 and 700 student steps against the one-shot's 1,000. A one-shot copy
   trained 700 steps was not run, so how much of the smaller size is fewer steps is untested.
@@ -732,8 +736,8 @@ training accumulates error. In this first run at a monitor's rhythm, over seven 
 ### Surprises
 
 - **The pile-up lean was reversed.** We filed that the chain would end with too much damage, at medium confidence. It
-  ended at 1.20 times the one-shot copy's damage, inside the 1.25 limit, and at 0.83 times its size. The chain shed the
-  early copies' damage across the links, not in the last one. Why E41's long chain did not is untested.
+  ended at 1.20 times the one-shot copy's damage, inside the 1.25 limit, and at 0.83 times its size. Its damage fell
+  at every link after step 3. Why it fell, and why E41's long chain ended higher, is untested.
 - **Every link passed where we leaned "at the line".** This is not a change of substance. The step-10 link sits inside
   the one-shot copies' spread and is reported at the line.
 - **The step-1 copy is twice the size of its update.** It reads 1.17 on the check where doing nothing reads 1.05. Both
@@ -747,7 +751,10 @@ The plan's tree branch that fires, quoted: "**P1 pass, P2 holds.** Teacher train
 update along this fine-tune faithful and ends as well as one copy. The comparison's "continuous" cell turns yes on this
 model. P3 then says whether it costs extra size or damage. A card asks whether to carry this rhythm to Qwen."
 
-The filed score is pass, so this is the branch. Read with the user's option (a), the step-10 link is at the line. That
+The filed score is pass, so this is the branch, but its wording claims more than the run shows. "Every update" and
+"faithful" rest on seven checkpoints 100 student steps apart, of which the check sees two. So the "continuous" cell
+turns yes provisionally, for this emoticon fine-tune only: seven checkpoints, two of them seen by the check (step
+1,000 a clear pass, step 10 at the line), one batch order and one adversary start each. Read with the user's option (a), the step-10 link is at the line. That
 is the neighbouring branch's wording, "P1 at the line, P2 holds", which also proposes no run. The pile-up prediction
 held, so no card on damage. The branch costs nothing further; this run cost about $2.10.
 
