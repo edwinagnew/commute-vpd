@@ -112,7 +112,7 @@ def fig_copy(res: dict[str, Rec], out: Path) -> None:
         style(ax)
     a1.legend(fontsize=7.5, loc="lower right", frameon=False)
     fig.suptitle("Does teacher training copy a behaviour the model lacked, faithfully and with Δ untouched?\n"
-                 "Yes on all three tasks: the copy keeps 0.96 to 1.00 and passes; Δ takes under 1e-8 of its change",
+                 "Yes on all three tasks: the copy keeps 0.96 to 1.00 and passes, below every seed of the unchanged model; Δ untouched",
                  fontsize=11)
     fig.tight_layout()
     fig.savefig(out / "e42_copy.png", dpi=150)
@@ -203,7 +203,7 @@ def fig_pile(res: dict[str, Rec], out: Path) -> None:
     a1.set_yticks(ticks, [f"{v:g}" for v in ticks])
     a1.minorticks_off()
     a1.set_ylabel("held-out P(target) at the trigger")
-    a1.set_title("The Pile-text copy learns the one-pair cipher only", fontsize=10)
+    a1.set_title("The Pile-text copy passes 0.9 on the one-pair task only", fontsize=10)
     a2.set_yscale("log")
     a2.set_ylim(1e-5, 10)
     a2.set_ylabel("mean P(the key's value) right after a key word\nin plain Pile text, no marker")
@@ -213,7 +213,7 @@ def fig_pile(res: dict[str, Rec], out: Path) -> None:
     a1.legend(fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=3, frameon=False)
     a2.legend(fontsize=7.5, loc="center right", frameon=False)
     fig.suptitle("Can ordinary Pile text alone teach the copy a behaviour the model lacked?\n"
-                 "For one pair, yes: 0.91 and a pass, filed as 'neither'; the fine-tune shows the pair in plain text",
+                 "One pair: 0.91 and a pass, filed below 0.5; the fine-tune shows the pair in plain text (cause untested)",
                  fontsize=11)
     fig.tight_layout()
     fig.savefig(out / "e42_pile.png", dpi=150)
