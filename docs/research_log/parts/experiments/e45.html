@@ -1,0 +1,10 @@
+<article class="exp" id="e45">
+<div class="top"><span class="id">E45</span><span class="chip open">planned</span><h3>Qwen3-1.7B: four updates at matched size, two of known kind, to learn which readings tell "already there" from "new"</h3><span class="when">2026-10-28 · MATS cluster, then one H100 · <code>experiments/qwen_updates</code></span></div>
+<p class="one">Due to run: Job 1, training the updates, is running on the cluster for $0 (about 16 jobs under 30 minutes each). Job 2, reading them through E44's table, is gated and waits for E44.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Four fine-tunes of Qwen3-1.7B with one recipe: the model trained on its own correct GSM8K answers, the model trained on the human-written solutions, and two anchors whose kind is fixed by design (answers it gives with a prompt, taught without the prompt; and facts about people who do not exist). A self-distillation arm with no filter is the null. Each update is saved at equal amounts of movement away from the start.</dd>
+<dt>Found</dt><dd>Nothing yet. Only the two anchors carry predictions; the GSM8K updates are read against them and carry no label beforehand.</dd>
+<dt>Bears on</dt><dd>Q9, Q2</dd>
+<dt>Moved on</dt><dd>You approved the plan with Fable's changes (packed invented facts, the self-distillation null, a second seed that redraws the data). Plan: <code>reports/plans/2026-10-28_plan_qwen-q2.md</code>; advice: <code>reports/reviews/2026-10-28_review_e45-plan-fable-advice.md</code>.</dd>
+</dl>
+</article>
