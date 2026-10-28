@@ -61,7 +61,8 @@
   "early": {
    "alive": "the alive set from E40's g statistics (g > 0.01 anywhere on either block) must count 494598, else stop",
    "dW_files": "step_1, step_10, step_100, step_100_fp32 under /workspace/e40/dW, else stop and tell the user",
-   "memory": "stage D's first batch: GPU peak over 70 GB halves the eval batch (8 -> 4) for the rest of the run; an out-of-memory error after that stops the job",
+   "memory": "eval batch starts at 2 (~60-65 GB expected); the first batch of every read: GPU peak over 70 GB halves it for the reads after; an out-of-memory error halves it and reruns the stage; at batch 1 an out-of-memory error stops the job (amended before any run, review of 2026-10-28)",
+   "stored_error": "stage S: a stored X whose fp32 pieces miss their float64 dsigma by more than 1e-3 of ||dW||_Sigma stops the job",
    "S_time": "stage S's first layer x 28 over 50 min -> stop",
    "spend": "stages A and H: spend so far + their planned minutes (22, 20) at --usd-per-h over $9.5 -> skipped; spend reaching $10 after any stage stops the job"
   }
