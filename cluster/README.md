@@ -43,6 +43,10 @@ pending) it put a 20-min debug job's start 24 h away, while the two debug smoke 
 query put a 2-h normal job 16 days out). Policy (2026-10-20): only runs of ≤ 30 min come here, on
 `debug`, with at most 10 min of waiting for a start; longer runs go straight to RunPod (`.claude/agents/pod-runner.md`).
 
+Ask `--mem` for the job's measured peak plus a margin, not a round large number: the node's RAM is shared, so a job
+asking more than is free waits even when a GPU is idle (E38 Amendment 4 asked 64G, waited 17 min, peaked at 40G;
+2026-10-28). Copying an old sbatch file copies its request; most ask 32G or 48G.
+
 ## Notebook in VS Code on a cluster GPU
 
 1. Start the server (laptop, repo root): `cluster/jupyter.sh start`.
