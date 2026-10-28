@@ -177,3 +177,50 @@ disk dies with the pod. The alive cap rises to 110 GB.
 
 **Budget.** About 7 h on an H200, $28-32 at ~$4.5/h, against ~$31 usable under the raised cap. The benchmark's
 projection rule uses the remaining budget, not $25; the re-read guard stops extra starts at the cap less 15%.
+
+### Amendment 1: Gates (`.claude/CLAUDE.md` → Gated runs; first gated run)
+
+A fresh Opus agent reviewed this amendment against the gates (2026-10-28). Its findings are accepted as below; they
+supersede the amendment's table above where they differ.
+
+**Changes from the review.** Results go to their own directory (`results/amend1/`, and a stage whose JSON exists
+refuses to run): left as it was, the first run's D step 1 and its H100 seed-1 reference would have been read as this
+run's. The saves were twice the §5 estimate (offsets are 14.6 GB each in fp32 at 3.65 B alive parameters), so T0's
+offsets and the Adam moments are not saved, offsets at the first two read steps are bf16, and a disk pre-flight runs in
+minute 1. T0 at δW = 0 could not fail (zero gradient), so it becomes a positive control with a reachable target
+(random offsets of matched size). Teacher training's rate is measured on Qwen in the rehearsal (1e-6 against 1e-5),
+not carried from the 67M. The SFT schedule is `transformers.get_cosine_schedule_with_warmup` itself, with HF's step
+semantics (the first optimiser step runs at rate 0) and HF's default clipping at 1.0. Read steps for D1 and T1 are 10,
+100, and the first saved step with KL to start ≥ 0.01: under warm-up step 1's KL is about 0.001 and do-nothing already
+read 1.05 at a hundred times that, so a step-1 read could not fail. The benchmark is the first paid stage.
+
+**Pre-mortem.**
+
+| heading | could go wrong | guard |
+|---|---|---|
+| Recipe | teacher-training rate unmeasured on Qwen; SFT schedule ends at rate 0 | rate check in the rehearsal; the library's schedule |
+| Data | separate tokenisation of prompt and response; stale results read as new | ids compared with whole-string tokenisation in the rehearsal; own directory, refuse if exists |
+| Precision | bf16 adds at q, k, v, gate, up round away a small change | first-batch fp32 KL against the training forward's, tolerance from the rehearsal's measured gap, stop |
+| Memory | teacher training ~90 GB GPU, ~80 GB host, unmeasured | benchmark first: stop on peak > 125 GB or host < 110 GB |
+| Time and cost | teacher-training step 1-3 s, unmeasured (±$7) | measured in the benchmark; projection against the remaining budget; smallest read step dropped first |
+| Saves | ~100 GB against 50-58 GB free | reduced save list, disk pre-flight |
+| Downloads and uploads | off the volume, the container disk dies with the pod; W&B upload never run | upload rehearsed from the cluster; 1 GB timed in the benchmark; volume region preferred |
+| Pod loss and resume | F1 not resumable | δW uploaded or on the volume as written; T resumes only against a δW file with a matching hash |
+| Controls and references | cross-card reference; T0 degenerate | same-card references only; reachable-target control |
+| Predictions | degenerate step-1 rule; P5 one start | read steps from the KL curve; P5 with a margin and three starts near it; NaN is a miss |
+| Code never run on a GPU | teacher training, benchmark, resume, the schedule, uploads | all in the L40 rehearsal; full size in the benchmark |
+
+**Settings and sources.** SFT: AdamW (0.9, 0.999), eps 1e-8, weight decay 0, peak 1e-5, cosine with 10% warm-up,
+clipping 1.0 (HF Trainer defaults and LLaMA-Factory's full-SFT setting); batch 64 and 100 steps are project choices
+(the project studies early steps; one epoch is 117 steps); response-only token-mean loss, bf16 autocast with fp32
+master (HF); only the 196 matrices trained (§1). Teacher training: Adam, batch 8 × 512, 1,000 steps, plain mean KL
+(E34 on the 67M); its rate is measured in the rehearsal; the alive threshold g > 0.01 follows the port analysis's flat
+count between 0.001 and 0.01 (`2026-10-27_analysis_qwen-port.md`). Adversary: the paper's setting (decision
+2026-10-27); three-starts band from measured noise (`2026-10-28_analysis_qwen-adversary-128.md`). Evaluation: the
+baseline's.
+
+**Open, waiting on the user.** The reading of maths-row adversary numbers (card decision-qwen-maths-adversary): until
+it is decided they are reported, not scored, with W₀'s maths reading at three seeds on the same card as reference.
+
+**Still to do before the go-ahead:** the code (writer), the $0 rehearsal on a cluster L40 with its numbers written
+here, the code review, then the user's go-ahead with the per-stage cost.
