@@ -9,14 +9,17 @@ number goes to results/run.log.
   R  (cluster, $0) alive set; fp32 ranks of every alive U and V; Gram against SVD on one layer; split exactness on a
      random δW. No model.
   C  W0 alone: r1 (CI masks) on both row sets, stochastic seeds 0-2, replay of the four saved sources, KL to start at
-     1, 10, 100 (both files at 100). Prediction 1 missed: stop.
-  S  Σ on maths rows at W0; bases (cached on --out); per site and step every state's products; free check; placement
+     1, 10, 100 (both files at 100). Prediction 1 missed: stop (C not done).
+  S  Σ on maths rows at W0; bases (not cached); per site and step every state's products; free check; placement
      arrays (--out/arrays). First layer × layers over s_limit_min: stop.
-  D  per step K(D), then do-nothing; memory rule on its first batch.   K  controls (i) lower, upper, (ii) random;
-     teeth; none at step 10: stop.   M  least squares, in-span, adjoint.   G  accuracy (fine-tuned, adjoint, in-span).
+  D  per step K(D), then do-nothing; stop rules named in stopped.json.   K  controls (i) lower, upper, (ii) random;
+     teeth; none at step 10: stop (K done only after).   M  least squares, in-span, adjoint.   G  accuracy (fine-tuned, adjoint, in-span).
   A  one fresh 20-step search;   H  step 100 if a split passed at 10; both under the spend rule.
+Every read: a first-batch GPU peak over 70 GB halves the eval batch; an out-of-memory error halves it and reruns the
+stage; the batch and the cumulative spend persist in results/state.json. A stop writes results/stopped.json (its
+rule's name); the next job refuses to start while it exists, and a skipped C or K has its gate read again.
 Usage (repo root): python experiments/qwen_maps/run.py --stages C,S,D,K,M,G,A,H [--rehearse] [--out /root/e44]
-  [--e40 /workspace/e40] [--decomp DIR] [--usd-per-h 3.0] [--prior-usd 0.75] [--svd-bases]
+  [--e40 /workspace/e40] [--decomp DIR] [--usd-per-h 3.0] [--prior-usd SETUP_USD, first job only] [--svd-bases] [--waive NAMES, rehearsal]
 """
 
 from __future__ import annotations
@@ -53,9 +56,12 @@ from safetensors import safe_open
 
 from commute import maps_score as ms
 from commute import qwen_eval, qwen_maps, qwen_sets, split
-from commute.qwen_sft import linears, load, mean_kl
+from commute.qwen_sft import linears, mean_kl
 from commute.qwen_teacher import adversary
 from commute.qwen_vpd import DECOMP_DIR, SITES, parse_site
+
+STORE_ERR_MAX = 1e-3  # stored-precision error of a split's applied pieces, relative to ‖δW‖_Σ (review, 2026-10-28)
+GRAM_FACTOR = 10.0  # R: the Gram basis's residual may be at most this times the SVD basis's, plus 1e-12
 
 # ----------------------------------------------------------------------------- scoring
 
@@ -87,11 +93,11 @@ def score(res: dict[str, Any], pred: dict[str, Any]) -> dict[str, Any]:
 # ----------------------------------------------------------------------------- shared steps
 
 
-def state_reading(job: Job, name: str, t: int, KD: float, share: float, fp32: bool = False, on_batch: Any = None
+def state_reading(job: Job, name: str, t: int, KD: float, share: float, fp32: bool = False
                   ) -> dict[str, Any]:
     """A state's readings at step t on both row sets, as nats and as ratios to W0 (stage C, same rows)."""
     C, R = job.res["C"], job.pred["rules"]
-    m = job.read(name, t, "maths", (0,), job.ft(t, fp32), on_batch=on_batch, fp32=fp32)
+    m = job.read(name, t, "maths", (0,), job.ft(t, fp32), fp32=fp32)
     w = job.read(name, t, "web", (0,), None, fp32=fp32)
     st = {"maths": m, "web": w, "share": share, "r1m": m["ci"] / C["ci"]["maths"], "r1w": w["ci"] / C["ci"]["web"],
           "stoch_m": m["stoch_0"] / C["stoch"]["maths"]["0"], "stoch_w": w["stoch_0"] / C["stoch"]["web"]["0"],
@@ -118,28 +124,22 @@ def read_states(job: Job, stage: str, names: tuple[str, ...]) -> dict[str, Any]:
     return out
 
 
-def basis_of(job: Job, s: str, U_A: torch.Tensor, V_A: torch.Tensor) -> split.Basis:
-    """The alive set's basis, cached on --out (dropped, with a log line, when the disk is short)."""
-    path, tol, how = job.out / "bases" / f"{s}.safetensors", job.cfg.tol, job.cfg.basis
-    if path.is_file():
-        b = load(path, DEV)
-        return split.basis_from((b["P"], b["s"]), (b["Q"], b["t"]), tol)
-    bu, bv = qwen_maps.make_basis(U_A, how), qwen_maps.make_basis(V_A, how)
-    try:
-        write_tensors(path, {"P": bu[0].cpu(), "s": bu[1].cpu(), "Q": bv[0].cpu(), "t": bv[1].cpu()})
-    except RuntimeError as e:
-        job.log(f"[S] basis not cached: {e}")
-    return split.basis_from(bu, bv, tol)
+def basis_of(job: Job, U_A: torch.Tensor, V_A: torch.Tensor) -> split.Basis:
+    """Not cached (2026-10-28 review): fp32 X takes the disk the 34 GB of bases would have; H recomputes them."""
+    how = job.cfg.basis
+    return split.basis_from(qwen_maps.make_basis(U_A, how), qwen_maps.make_basis(V_A, how), job.cfg.tol)
 
 
 def s_site(job: Job, s: str, steps: tuple[int, ...], with_halves: bool, fp32: bool = False) -> None:
-    """Stage S for one site: its products at each step written to --out/S/step<t>/<site>.{safetensors,json}."""
+    """Stage S for one site: its products at each step written to --out/S/step<t>/<site>.{safetensors,json} (fp32 X:
+    5.6 GB per split and step over all sites, 34 GB for S, 5.6 GB more for H). A stored X whose applied pieces miss
+    their float64 value by more than store_err_max of ‖δW‖_Σ stops the job."""
     files = [job.site_dir(t) / f"{s}.json" for t in steps]
     if all(f.is_file() for f in files):
         return
     U_A, V_A = job.alive.uv(s, DEV, F64)
     S, hb = job.sigma()[s].to(DEV), {}
-    b = basis_of(job, s, U_A, V_A)
+    b = basis_of(job, U_A, V_A)
     if with_halves:
         st, idx = job.gstats("maths"), job.alive.idx[s].cpu()
         for h, pos in zip(HALVES, qwen_maps.halves(st[f"{s}.active"][idx], st[f"{s}.mean_g"][idx]), strict=True):
@@ -153,6 +153,9 @@ def s_site(job: Job, s: str, steps: tuple[int, ...], with_halves: bool, fp32: bo
         arrays, scalars = qwen_maps.site_products(M, U_A, V_A, S, b, hb, RU.double(), RV.double())
         write_tensors(f.with_suffix(".safetensors"), qwen_maps.to_disk(arrays))
         write_json(f, scalars)
+        worst = max(scalars["stored_error"].values())
+        if worst > STORE_ERR_MAX:
+            job.stop("stored_error", f"{s} step {t}: stored pieces miss float64 by {worst:.2e} of ‖δW‖_Σ")
 
 
 def s_summary(job: Job, t: int) -> dict[str, Any]:
@@ -169,6 +172,7 @@ def s_summary(job: Job, t: int) -> dict[str, Any]:
            "outside_both_null": pool(lambda r: r["outside_both_null"] * r["energy"]),
            "ls_second": math.sqrt(pool(lambda r: r["ls_second"])),
            "half_piece_energy": {h: sum(r["half_piece_energy"].get(h, 0.0) for r in recs.values()) for h in HALVES},
+           "stored_error_max": max(max(r["stored_error"].values()) for r in recs.values()),
            "energy": sum(E), "per_site": recs}
     arrays = {}
     for s in job.sites:
@@ -216,20 +220,24 @@ def stage_R(job: Job) -> None:
             t0 = time.time()
             P, sg = split.gram_basis(A)
             t1 = time.time()
-            sv = split.full_svd(A)[1]
+            Ps, sv = split.full_svd(A)
+            t2 = time.time()
             r_g, r_s = int((sg > cfg.tol * sg.max()).sum()), int((sv > cfg.tol * sv.max()).sum())
-            Pr = P[:, :r_g]
-            resid = float((A - Pr @ (Pr.T @ A)).norm() / A.norm())
-            out["gram"][f"{s}.{side}"] = {"rank_gram": r_g, "rank_svd": r_s, "residual": resid,
-                                          "s_gram": t1 - t0, "s_svd": time.time() - t1}
+
+            def resid(B: torch.Tensor, A: torch.Tensor = A) -> float:  # what the kept directions leave of A
+                return float((A - B @ (B.T @ A)).norm() / A.norm())
+
+            # both residuals include the singular values cut at tol, so they are compared with each other
+            out["gram"][f"{s}.{side}"] = {"rank_gram": r_g, "rank_svd": r_s, "residual_gram": resid(P[:, :r_g]),
+                                          "residual_svd": resid(Ps[:, :r_s]), "s_gram": t1 - t0, "s_svd": t2 - t1}
             job.log(f"[R] {s} {side}: {out['gram'][f'{s}.{side}']}")
         M = torch.randn(U_A.shape[0], V_A.shape[0], generator=torch.Generator().manual_seed(0), dtype=F64).to(DEV)
         b = split.basis_from(split.gram_basis(U_A), split.gram_basis(V_A), cfg.tol)
         dU, dV = split.least_squares_split(M, b, U_A, V_A)
         err = split.dsigma(dU, dV, U_A, V_A) - (M - split.obstruction(M, b))
         out["exact"][s] = float(err.norm() / M.norm())
-    out["holds"] = (all(g["rank_gram"] == g["rank_svd"] and g["residual"] < cfg.tol for g in out["gram"].values())
-                    and all(e < cfg.tol for e in out["exact"].values()))
+    out["holds"] = (all(g["rank_gram"] == g["rank_svd"] and g["residual_gram"] <= GRAM_FACTOR * g["residual_svd"]
+                        + 1e-12 for g in out["gram"].values()) and all(e < cfg.tol for e in out["exact"].values()))
     job.put("R", out)  # the check first, so a time-out in the ranks below keeps it
     if not out["holds"]:
         job.log("[R] MISSED: the Gram bases disagree with SVD; the pod run passes --svd-bases (S 60-90 min, no H)")
@@ -255,9 +263,21 @@ def stage_C(job: Job) -> None:
     out = {"ci": {"maths": m["ci"], "web": w["ci"]}, "spread": max(sm) - min(sm), "kl_to_start": kl,
            "stoch": {"maths": {str(s): m[f"stoch_{s}"] for s in seeds}, "web": {str(s): w[f"stoch_{s}"] for s in seeds}},
            "replay": {n: w[f"replay_{n}"] for n in WEB_SOURCES} | {MATHS_SOURCE: m[f"replay_{MATHS_SOURCE}"]}}
-    job.put("C", out)
-    if not ms.control_w0(out, job.pred["rules"]["control_W0"])["holds"]:
-        job.stop("control_W0 (prediction 1) missed")
+    holds = ms.control_w0(out, job.pred["rules"]["control_W0"])["holds"]
+    job.put("C", out | {"done": holds or "control_W0" in job.waive})  # a miss reruns C (unless a rehearsal waives it)
+    gate_C(job)
+
+
+def gate_C(job: Job) -> None:
+    """Prediction 1, read again whenever C is skipped as done."""
+    if not ms.control_w0(job.res["C"], job.pred["rules"]["control_W0"])["holds"]:
+        job.stop("control_W0", "control_W0 (prediction 1) missed")
+
+
+def gate_K(job: Job) -> None:
+    """Prediction 5, read again whenever K is skipped as done."""
+    if score(job.res, job.pred).get("outcome", {}).get("stop", True):
+        job.stop("teeth", "no teeth at step 10 (prediction 5): the line stops before stage M")
 
 
 def stage_S(job: Job) -> None:
@@ -267,37 +287,27 @@ def stage_S(job: Job) -> None:
             s_site(job, s, job.cfg.steps, with_halves=True)
         job.log(f"[S] layer {layer}: {time.time() - t0:.0f} s, {job.peaks()}")
         if i == 0 and (time.time() - t0) * len(job.cfg.layers) > job.cfg.s_limit_min * 60:
-            job.stop(f"S's first layer took {time.time() - t0:.0f} s: projected over {job.cfg.s_limit_min} min")
+            job.stop("S_time", f"S's first layer took {time.time() - t0:.0f} s: projected over {job.cfg.s_limit_min} min")
     job.forget()
     job.drop_sigma()  # 11 GB of host memory; H recomputes it
     job.put("S", {str(t): s_summary(job, t) for t in job.cfg.steps} | {"done": True})
 
 
 def stage_D(job: Job) -> None:
-    out = job.res.get("D", {"eval_batch": job.batch})
-    torch.cuda.reset_peak_memory_stats()
-
-    def memory_rule(i: int) -> None:
-        peak = torch.cuda.max_memory_allocated() / 1e9
-        if i == 0 and "memory" not in out:
-            out["memory"] = {"first_batch_peak_gb": peak, "halved": peak > job.cfg.mem_halve_gb}
-            job.batch = max(1, job.batch // 2) if peak > job.cfg.mem_halve_gb else job.batch
-            out["eval_batch"] = job.batch
-            job.log(f"[D] memory rule: first batch peak {peak:.1f} GB, eval batch now {job.batch}")
-
+    out = job.res.get("D", {})
     for t in job.cfg.steps:
         if str(t) not in out:
             KD = k_of_d(job, t)
             share = job.res["S"][str(t)]["share"]["do_nothing"]
-            out[str(t)] = {"KD": KD, "do_nothing": state_reading(job, "do_nothing", t, KD, share, on_batch=memory_rule)}
+            out[str(t)] = {"KD": KD, "do_nothing": state_reading(job, "do_nothing", t, KD, share)}
             job.put("D", out)
     job.put("D", out | {"done": True})
 
 
 def stage_K(job: Job) -> None:
-    job.put("K", read_states(job, "K", CONTROLS) | {"done": True})
-    if score(job.res, job.pred).get("outcome", {}).get("stop", True):
-        job.stop("no teeth at step 10 (prediction 5): the line stops before stage M")
+    out = read_states(job, "K", CONTROLS)
+    gate_K(job)  # done only once the teeth hold (or a rehearsal waives them)
+    job.put("K", out | {"done": True})
 
 
 def stage_M(job: Job) -> None:
@@ -306,6 +316,7 @@ def stage_M(job: Job) -> None:
 
 def stage_G(job: Job) -> None:
     out = job.res.get("G", {})
+    job.forget()  # the fine-tuned weights' 5.6 GB of GPU, for generation's cache
     w0 = job.large / "step0_test.jsonl"  # E40's W0 answers, the same prompts and code
     if w0.is_file():
         recs = [json.loads(x) for x in w0.read_text().splitlines()]
@@ -360,13 +371,48 @@ STAGE_FNS = dict(zip(STAGES, (stage_R, stage_C, stage_S, stage_D, stage_K, stage
                      strict=True))
 
 
+GATES = {"C": gate_C, "K": gate_K}
+
+
 def done(job: Job, stage: str) -> bool:
-    """A stage with a finished results file is skipped ("done" true, or absent for the one-write stages C, A, H); S
-    also needs its files on --out (lost with a pod)."""
-    if not job.res.get(stage, {}).get("done", stage in "CAH" and stage in job.res):
+    """A stage with a finished results file is skipped ("done" true, or absent for the one-write stages A, H; C is
+    done only when its control held); S also needs its files on --out (lost with a pod)."""
+    if not job.res.get(stage, {}).get("done", stage in "AH" and stage in job.res):
         return False
     return stage != "S" or all((job.site_dir(t) / f"{s}.safetensors").is_file() for t in job.cfg.steps
                                for s in job.sites)
+
+
+def refuse_if_stopped(job: Job) -> None:
+    """A run that stopped stays stopped: the next job exits at once unless a rehearsal waives that stop."""
+    f = job.dir / "stopped.json"
+    if f.is_file():
+        st = json.loads(f.read_text())
+        if st.get("name") not in job.waive:
+            sys.exit(f"{f} exists ({st.get('name')}: {st.get('why')}): the run stopped; the user decides what next")
+        job.log(f"WAIVED: starting despite {f} ({st.get('name')})")
+
+
+def run_stage(job: Job, st: str) -> None:
+    """A stage, or its gate when it is done; an out-of-memory error halves the eval batch (persisted, so a resume
+    never reuses the failed size) and reruns the stage, which resumes per state and step."""
+    if done(job, st):
+        job.log(f"[{st}] done earlier: skipped")
+        if st in GATES:
+            GATES[st](job)
+        return
+    job.stage = st
+    while True:
+        try:
+            return STAGE_FNS[st](job)
+        except torch.cuda.OutOfMemoryError as e:
+            msg = f"out of memory in stage {st} at eval batch {job.batch}: {str(e)[:200]}"
+            del e
+            torch.cuda.empty_cache()
+            if job.batch == 1:
+                job.stop("oom", msg)
+                return
+            job.set_batch(job.batch // 2, msg)
 
 
 def main() -> None:
@@ -379,30 +425,28 @@ def main() -> None:
     ap.add_argument("--e40-large", default=str(E40_RESULTS / "large" / "nowarmup"))
     ap.add_argument("--decomp", default=str(DECOMP_DIR))
     ap.add_argument("--usd-per-h", type=float, default=3.0)
-    ap.add_argument("--prior-usd", type=float, default=0.0)
+    ap.add_argument("--prior-usd", type=float, default=0.0, help="setup spend; read only when results/state.json "
+                    "does not exist (later jobs carry the cumulative spend there)")
+    ap.add_argument("--waive", default="", help="rehearsal only: stop names to log and pass (control_W0,teeth)")
     a = ap.parse_args()
     if not PRED.is_file():
         sys.exit(f"{PRED} missing: predictions are filed before the run")
     cfg = dataclasses.replace(REHEARSAL if a.rehearse else CFG, **({"basis": "svd"} if a.svd_bases else {}))
     job = Job(a, cfg, score)
+    refuse_if_stopped(job)
     stages = [s for s in STAGES if s in a.stages.split(",")]
-    job.log(f"[config] {json.dumps(dataclasses.asdict(cfg))}; stages {stages}; args {vars(a)}")
+    job.log(f"[config] {json.dumps(dataclasses.asdict(cfg))}; stages {stages}; args {vars(a)}; "
+            f"spent before ${job.spent_before:.2f}, eval batch {job.batch}")
     need = [job.e40 / "dW" / f for f in ("step_1.safetensors", "step_10.safetensors", "step_100.safetensors",
                                           "step_100_fp32.safetensors")]
     if cfg.random_dw == 0 and set(stages) - {"R"} and not all(p.is_file() for p in need):
-        job.stop(f"δW files missing under {job.e40 / 'dW'}: tell the user")
+        job.stop("dW", f"δW files missing under {job.e40 / 'dW'}: tell the user")
     for st in stages:
-        if done(job, st):
-            job.log(f"[{st}] done earlier: skipped")
-            continue
-        job.stage = st
-        try:
-            STAGE_FNS[st](job)
-        except torch.cuda.OutOfMemoryError as e:
-            job.stop(f"out of memory in stage {st} at eval batch {job.batch}: {e}")
+        run_stage(job, st)
+        job.save_state()
         job.log(f"[{st}] finished: spent ${job.spent():.2f}, {job.peaks()}")
         if job.spent() >= cfg.stop_usd:
-            job.stop(f"spend ${job.spent():.2f} reached ${cfg.stop_usd}")
+            job.stop("spend", f"spend ${job.spent():.2f} reached ${cfg.stop_usd}")
 
 
 if __name__ == "__main__":
