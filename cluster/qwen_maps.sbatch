@@ -8,11 +8,18 @@
 #      R.json "holds" false -> the pod run adds --svd-bases (plan section 4). The ranks may outrun 30 min: the check
 #      is written first, and the log shows the ranks' pace.
 #   2. every other stage at REHEARSAL sizes (2 rows of 64 tokens per set, batch 1, random δW on layer 0, bf16
-#      components, 2-step adversary, 4 GSM8K problems; results/rehearsal/; stops are logged, not obeyed):
-#        R=/mnt/nw/home/e.agnew/commute-data/tmp/e44_rehearse
+#      components, 2-step adversary, 4 GSM8K problems; results/rehearsal/). Stops are obeyed, as on the pod, so the
+#      stop and resume paths run first (a rehearsal from code before 2026-10-28's review fixes: move its
+#      results/rehearsal/ aside and use a new --out):
+#        R=/mnt/nw/home/e.agnew/commute-data/tmp/e44_rehearse2
 #        sbatch cluster/qwen_maps.sbatch --rehearse --stages C,S,D,K,M,G,A,H --out $R
-#   3. the resume: the same command again; every stage should log "done earlier: skipped" within a minute of load.
-# Expected misses at tiny size (logged "REHEARSAL: would stop here"): control_W0 (random δW, 2 rows), probably teeth.
+#          -> expect "STOP control_W0" (random δW, 2 rows), exit 1, results/rehearsal/stopped.json
+#        sbatch --time=00:05:00 cluster/qwen_maps.sbatch --rehearse --stages C,S,D,K,M,G,A,H --out $R
+#          -> refuses at once: stopped.json exists
+#        sbatch cluster/qwen_maps.sbatch --rehearse --waive control_W0,teeth --stages C,S,D,K,M,G,A,H --out $R
+#          -> "WAIVED" lines for control_W0 (and teeth if it misses), then every stage to the end
+#   3. the resume: the last command again; every stage logs "done earlier: skipped" (C and K re-read their gates,
+#      logged WAIVED), within a minute of load.
 # Host memory: the alive columns (14.6 GB fp32 in R, 7.3 GB bf16 in the rehearsal) plus Σ and δW for one layer.
 #SBATCH --job-name=commute-qwen_maps
 #SBATCH --partition=compute
