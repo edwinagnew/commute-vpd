@@ -54,6 +54,7 @@ def test_configs_and_the_filed_read_rule_agree():
     assert (tuple(R["read_steps"]["fixed"]), R["read_steps"]["kl_min"]) == (A1.A1.read_fixed, A1.A1.read_kl_min)
     assert A1.A1_TINY.steps == A1.A1.steps and A1.A1_TINY.batch == A1.A1.batch  # F1 at full size in the rehearsal
     assert R["T0"]["steps_max"] == A1.A1.t0_steps == A1.A1_TINY.t0_steps and "dW_3" not in A1.A1.drop_order
+    assert [s[0] for s in A1.STAGES][:3] == ["B", "G1", "T0"]  # the positive control before A0 and F1 are paid for
     assert A1.MATRIX_NUMEL == 1_409_286_144
 
 
@@ -166,14 +167,6 @@ def test_b_rate_rule_and_its_edge_cases():
     assert A1.pick_rate({1e-5: up, 3e-5: up}, reads, cap) is None and A1.pick_rate({}, reads, cap) is None
 
 
-def test_t0_steps_from_b():
-    frac, cap = R["T0"]["fall_max"], R["T0"]["steps_max"]
-    assert A1.t0_steps(_kl(1.0, 0.85, 0.702), frac, cap) == 196  # 100 ln 0.5 / ln 0.702 = 195.9
-    assert A1.t0_steps(_kl(1.0, 0.95, 0.9), frac, cap) == cap  # 658 capped
-    assert A1.t0_steps(_kl(1.0, 0.7, 0.5), frac, cap) == 100 and A1.t0_steps(_kl(1.0, 0.5, 0.0), frac, cap) == 100
-    assert A1.t0_steps(_kl(1.0, 0.8, 0.5000001), frac, cap) == 101
-
-
 def test_maths_pass_test_rule():
     res = {"D": {"100": {"maths": {"ratio": 1.5, "ratios": {"0": 1.5, "1": 1.4, "2": 1.6}}}},
            "T": {"100": {"maths": {"ratio": 1.5000001, "ratios": {"0": 1.0}}}}}
@@ -249,6 +242,9 @@ def test_teacher_training_runs_under_checkpointing_and_is_exactly_zero_at_w0():
     curve = train(model, off, teacher, rows, rows, 1e-2, 3, 1, 1, 0, log=lambda m: None)
     assert curve[0]["kl"] > 0 and curve[0]["kl_fp32_teacher_w0"] > 0 and off.max_abs() > 0
     assert all(math.isfinite(c["kl"]) for c in curve)
+    # T0's stop: training ends after the step at which on_step returns True; None or False goes on to `steps`
+    assert len(train(model, off, teacher, rows, rows, 1e-2, 3, 1, 1, 0, lambda m: None, lambda s, c: s == 2)) == 2
+    assert len(train(model, off, teacher, rows, rows, 1e-2, 3, 1, 1, 0, lambda m: None, lambda s, c: None)) == 3
 
 
 def test_fixed_row_reading_is_kl_to_w0_at_zero_offsets_and_zero_at_the_target():

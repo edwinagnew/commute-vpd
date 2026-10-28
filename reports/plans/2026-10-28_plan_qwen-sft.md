@@ -262,3 +262,17 @@ diverges (x3.3 by step 25); 1e-5 falls to 0.875, 0.702, 0.590 of the start at st
    leaves the cost estimate (at 2 MB/s it had left no read steps). 6. rehearsal.json lists every miss in checks.json.
 Peak GPU memory in teacher training, from the code: ~72 GB at 2.39e9 entries, ~97 at E40's 3.65e9 (limit 125). Not
 measured until the paid B: full-size TF32 step time, peak memory at the full alive count, B's rate and T0's steps.
+
+**Gate 5, second review (2026-10-28).** A fresh Opus agent reviewed commit 51afa50 while rehearsal job 40691 ran B on
+it. 1. The first-batch check had a 1.8x margin, not 8x: job 40691 read 1.13e-3 relative on B's first batch (both
+rates), so a slightly larger gap on full rows would stop B on the paid card. Now 1e-2 (9x the measured gap), dated in
+`predictions_amend1.json`. 2. T0 would likely miss and stop after F1 was paid for: the log-linear step count ignores
+the bending curve (196 steps extrapolated where check_teacher read 0.59 at 300), and T0 was sized at F1's first-read KL
+(0.022 in the rehearsal) while B's curve was measured at 0.01. Now T0 is sized at B's target KL, reads the fixed rows
+every 50 steps, ends at the first reading at or under 0.5 of the start, and stops the job if none by step 300; it runs
+right after G1 (its FineWeb ratio needs G1's W₀ reading), before A0 and F1. `t0_steps` is deleted, and the rehearsal
+no longer excuses a T0 miss. 3. T1's last offsets (9.6-14.6 GB) were still uploaded, 80-120 min of billed idle at the
+measured 2 MB/s; now only results JSONs and the log go to W&B. Deferred: minor 4, computing each site's change once per
+step instead of twice per micro-batch; its cost is a T1 step about 2x what it could be (3 x 1000 steps), and B's
+projection guards the budget either way.
+Minor 7: `check_teacher.py` stays frozen as it ran (job 40673), so pyright still flags its `autocast=` calls.
