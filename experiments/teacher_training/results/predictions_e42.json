@@ -1,0 +1,134 @@
+{
+ "about": "E42, teacher training on a behaviour the model lacks (reports/plans/2026-10-28_plan_e42-teacher-new-behaviour.md; gap 1 of reports/reviews/2026-10-28_review_technique-comparison.md). Tasks rand32, ident32, rand1: E10's key -> value windows (experiments/kv_task/results/large/windows_<task>.pt; 403 train, 97 held-out windows each). Teacher: E10's fine-tune recipe (arm A's loss with the table target, all 24 matrices, Adam 3e-5, batch 32, clip 1, seed 0) run to step 1000. Students: E34's arms A (task windows, arm A's weighting, Adam 1e-5, batch 32) and B (Pile train rows from 32,768, 8,192 rows, batch 8 of 512 tokens, plain mean KL, Adam 1e-5), 1,000 steps, batch-order seed 0, Gamma and Delta frozen. Step 100 read without the Pile harness, step 1000 with it. Filed before any run",
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, seeds 0, 1, 2), faith_score.w0_check. Expected: pass; floor about 0.21 on an L40 (pass line 1.24, fail line 1.81), 0.075 on an H100 (1.40, 1.61). Fails: stop, nothing trained",
+  "G1": "per task, before anything else is read: the teacher's held-out P(target) at step 10 within 0.02 of E10's same run (rand32 0.5847, ident32 0.9595, rand1 0.9982; E28 reproduced rand32 at 0.5858 on another card). Fails: stop with both numbers (windows, table or recipe differ from E10's)",
+  "positive_control": "the least-squares split of the teacher's delta-W (split.split_state): target weights = the teacher's, so P(target) is the teacher's; E10 read its Pile adversarial ratio at 38.9 / 9.4 / 1.73 at step 10. 'power' = its verdict is 'fail'. Without power on a task, a student's pass there is read as 'no failing state shown on this task', not scored differently",
+  "task_gate": "a teacher with held-out P(target) < 0.9 at step 1000 is reported with its references and its students skipped (a skip: E10's run read 0.9965 / 0.9995 / 1.0000 at step 300)"
+ },
+ "e42": {
+  "e10": [
+   [
+    "rand32",
+    0.5847,
+    0.9965
+   ],
+   [
+    "ident32",
+    0.9595,
+    0.9995
+   ],
+   [
+    "rand1",
+    0.9982,
+    1.0
+   ]
+  ],
+  "g1_tol": 0.02,
+  "masked_hi": 0.5,
+  "masked_lo": 0.25,
+  "pile_reading_rows": 1024,
+  "tasks": [
+   "rand32",
+   "ident32",
+   "rand1"
+  ],
+  "teacher_checkpoints": [
+   10,
+   300,
+   1000
+  ],
+  "teacher_lr": 3e-05,
+  "teacher_p_min": 0.9
+ },
+ "expected": {
+  "W0": "P(target) about 1.5e-5 (rand32), 1.7e-4 (ident32, rand1) (E10's route-split T0); every ratio 1; teacher gap = the teacher's whole effect, about -log P_W0(target): 11 nats rand32, 8.7 ident32 and rand1; shares undefined",
+  "arm A": "P(target) >= 0.9 at 1000, teacher gap under 5% of W0's (E34 under 3.6%); Delta's share ~0 (exactly 0 up to rounding: Delta is frozen); adversarial ratio near E10 Amendment 1's label-trained states (rand32 0.975 / 0.944 at 100 / 300, ident32 1.07 / 1.03); e_gate share near E10's label-trained 0.75 (rand32 @30), 0.21 (ident32 @30), 0.86 (rand1 @10)",
+  "arm B": "P(target) < 0.5: the marker has zero count in the rows the windows came from, and arm A's loss pins the teacher's predictions after keys in ordinary text, so the Pile reading should be within 10x of W0's",
+  "least-squares split": "P = the teacher's, gap 0, adversarial ratio >= 1.81 on rand32 and ident32 (power), rand1 uncertain; e_gate share 0.52 / 0.06 / 0.73 at step 10 in E10",
+  "teacher (= do-nothing)": "P(target) >= 0.99 at step 1000 (E10: 0.9965 / 0.9995 / 1.0000 at 300); KL elsewhere 0.04-0.08, size 0.03-0.045 (E10 at 300: 0.052 / 0.051 / 0.045 and 0.031 / 0.027 / 0.025). Do-nothing: gap 0, Delta's share 1, e_delta 1, e_gate = -r; its adversarial ratio is not predicted (E10 at step 10, damage elsewhere 0.70 / 0.19 / 0.04: 4.73 / 8.12 / 1.06)"
+ },
+ "filed": "2026-10-28 11:57:06",
+ "measurements": {
+  "per state": "run.record's numbers (adversarial and stochastic ratios to this job's W0 with faith_score.state_verdict, held-out P(target), teacher gap, damage elsewhere, size, Delta's share) plus the route split at the trigger on the held-out windows (local_faith.route_split): gain in log-odds of the target and the shares d, r, i, e_gate, e_delta of it. e_gate is the masked-off share: the part of the gain present with every subcomponent on but lost under Gamma's mask. Shares are not scored when the gain < 1.0 log-odds",
+  "pile reading": "kv_windows.pile_reading on the first 1,024 of arm B's rows: mean P(table[x]) as the next token at every position holding a key x, for the teacher and for W0; counts of the marker and of the marker followed by a key. Reported; it says whether plain Pile text shows the teacher's map at all"
+ },
+ "noise_floors": "P(target) between batch orders 0.005 on task text, 0.032 on Pile text (E34 Amendment 4); harness ratio of W0 between adversary seeds 0.21 (L40) / 0.075 (H100), of a trained copy between batch orders up to 25% (E34 Amendment 4); route shares are deterministic given a state, their batch-order spread is unmeasured (P2's 0.5 line sits 0.25 below E10's label-trained rand32 value)",
+ "not_run": [
+  "an SGD teacher or arm S; a LoRA teacher",
+  "a second batch order or teacher seed; a longer adversary or other starts",
+  "E10's step-10 teacher (the first-learned step) as a second teacher",
+  "the scaled adjoint split; the per-subcomponent list of what carries the gain (CPU on the saved offsets, a branch)",
+  "teacher = W0 (E34's C2: a property of teacher.teacher_loss, unchanged by the windows)"
+ ],
+ "predictions": [
+  {
+   "blind_to": "one adversary start per state (E34 Amendment 5: one-start verdicts may be lenient), 20-step adversary, 256 Pile val rows, one batch order, one teacher seed, 67M model; damage on the task windows is read only as KL elsewhere",
+   "id": "P1_A_copies_faithfully",
+   "outcomes": {
+    "did not copy": "frozen-Gamma copying cannot reach the new behaviour: Blocking card",
+    "fail": "the first faithful-map failure on a narrow task: Blocking card",
+    "inconclusive": "rerun the task on an H100 (narrower band); plan's decision tree",
+    "pass": "teacher training keeps a behaviour the model lacked, with Delta fixed, faithfully"
+   },
+   "predicted": "pass on every task run. Lean: high on rand32 (E10 Amendment 1: label-trained component training on rand32 passes at 0.975 and 0.944 with P 0.96; E34: every task-text copy passed on six teachers)",
+   "rule": "per task whose teacher passed the gate: the arm-A student at step 1000, faith_score.state_verdict. 'pass' (P(target) >= 0.9 and both Pile ratios at or below line / (1 + floor)) -> pass; 'inconclusive' -> inconclusive (between the lines on this card); 'fail' -> fail; 'below P 0.9' -> did not copy. Absolute"
+  },
+  {
+   "blind_to": "which subcomponents and how many; a mean over held-out windows at one position; a share can exceed 1 or go negative when the other shares cancel",
+   "id": "P2_A_masked_off",
+   "kind": "classification, filed with a lean per task",
+   "lean": {
+    "ident32": "not masked-off (medium: label training 0.21, r 0.76)",
+    "rand1": "masked-off (high: 0.86, 0.73)",
+    "rand32": "masked-off (high: E10 label training 0.75, least-squares split 0.52)"
+   },
+   "outcomes": {
+    "masked-off on the cipher tasks": "the copy carries the new behaviour through subcomponents Gamma keeps off, as label training does: GOALS's 'create' branch with Delta held",
+    "not masked-off on a cipher task": "the copy routes the new behaviour differently from label training: flagged as a reversal, check-in with the user"
+   },
+   "rule": "per task, the arm-A student at step 1000: e_gate share of the route split at the trigger. 'unscorable' if the gain < 1.0 log-odds or the share is NaN; else 'masked-off' if >= 0.5, 'not masked-off' if <= 0.25 (negative values included), 'mixed' otherwise. Absolute"
+  },
+  {
+   "blind_to": "1,000 steps (E34 Amendment 3's LoRA copies were still rising at 1000), one Pile slice, one batch order",
+   "id": "P3_B_from_pile",
+   "kind": "classification, filed with a lean",
+   "lean": "neither on every task (medium: no marker in the text; the cipher's 32 arbitrary pairs show on Pile only if the teacher maps keys outside the marker, which arm A's loss discourages; but E34's P3a reversed once)",
+   "outcomes": {
+    "learnt or between": "reversal: flagged; the pile reading says whether the teacher shows the map at key words without the marker",
+    "neither": "plain text does not carry a behaviour the model lacks: the text-only map needs the task's inputs here"
+   },
+   "rule": "per task whose teacher passed the gate, the arm-B student at step 1000: 'learnt' if P(target) >= 0.9 and state_verdict 'pass'; 'neither' if P(target) < 0.5; 'between' otherwise (E34 Amendment 1's categories)"
+  }
+ ],
+ "reported_not_scored": [
+  "teacher readings at steps 10, 300, 1000 beside E10's; its gap at W0",
+  "do-nothing and least-squares states' numbers and shares; the 'power' flag",
+  "every state's d, r, i, e_delta shares and gain; step-100 states of both arms (no Pile harness)",
+  "the pile reading (teacher vs W0 at key words; marker counts)",
+  "arm A's teacher gap, damage elsewhere, size and Delta's share"
+ ]
+}

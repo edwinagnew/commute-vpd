@@ -45,6 +45,7 @@ Layouts: param-decomp `(U (C, d_out), V (d_in, C))`; theory `(U_A (d_out, n), V_
 - `windows_for_trigger(rows, trigger, half, max_n, seed)`; `plain_mask(decode, vocab)`; `count_tokens(rows, half)`
 - `trigger_gbar(model, uv_alive_index, toks, half)`: mean g at trigger; `trigger_gradient(model, toks, half, token)` -> dL/dW; `coverage_from(G, uv, gbar)`
 **kv** — key -> value tasks. `KVTask.table(vocab)`; `identity(...)`, `bijection(name, marker, keys, pool, seed)`; `pick_marker(counts, decode, vocab)`; `windows(rows, marker, keys, half, n, seed)`; `key_distributions(logits_fn, w, device)`.
+**kv_windows** — kv windows in the harness (E42). `task_context(ctx, windows_path)` -> (Context with the table as target, KVTask); `pile_reading(nets, rows, task, device)`: mean P(table[x]) after each key x in plain rows, per net, and marker counts.
 **many_cues** — E33 many cues, one target. `qualifying(stats, pool, plain)`, `pick_target(Q)`, `alternative(p, q, target, used)`, `concat(ws)`, `table(pairs, vocab)`, `overlap(d, labels, alive)`, `donors(labels, same, seed)`, `reading(...)`, `combined(one, many)`.
 
 ## States: build, load, save
