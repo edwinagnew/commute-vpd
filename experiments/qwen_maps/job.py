@@ -38,13 +38,14 @@ STAGES, DEV, F32, F64 = ("R", "C", "S", "D", "K", "M", "G", "A", "H"), "cuda", t
 SPLITS, CONTROLS, HALVES = ("ls", "inspan", "adjoint"), ("lower", "upper", "random"), ("lower", "upper")
 WEB_SOURCES = ("G_fineweb_seed0", "W0_fineweb_seed1", "W0_fineweb_seed2")
 MATHS_SOURCE = "G_maths_seed0"
+FT_WEIGHTS = ("do_nothing", "ls", "lower", "upper")  # states whose weights are W0 + δW
 
 
 @dataclass(frozen=True)
 class Config:
     n_rows: int = 128  # rows per block (maths, FineWeb)
     row_len: int = 512
-    eval_batch: int = 8
+    eval_batch: int = 2  # ~60-65 GB peak on an H100 (qwen_maps.read_rows); halved on a first-batch peak or OOM
     steps: tuple[int, ...] = (1, 10)
     step_h: int = 100
     layers: tuple[int, ...] = tuple(range(28))  # δW on these layers only (the rehearsal's few)
@@ -63,7 +64,7 @@ class Config:
     spend_limit_usd: float = 9.5  # A and H: spend + their minutes over this -> skipped
     stop_usd: float = 10.0
     stage_min: tuple[tuple[str, float], ...] = (("A", 22.0), ("H", 20.0))
-    rehearse: bool = False  # stops are logged, not obeyed
+    rehearse: bool = False  # tiny sizes; stops are obeyed unless --waive names them
     results: str = ""  # subdirectory of results/
 
     def __post_init__(self) -> None:
@@ -88,7 +89,11 @@ class Job:
         self.dir.mkdir(parents=True, exist_ok=True)
         self.pred = json.loads(PRED.read_text())
         self.res = {s: json.loads(p.read_text()) for s in STAGES if (p := self.dir / f"{s}.json").is_file()}
-        self.batch = self.res.get("D", {}).get("eval_batch", cfg.eval_batch)
+        self.waive: set[str] = set(a.waive.split(",")) - {""}
+        assert not self.waive or cfg.rehearse, "--waive is for the rehearsal only"
+        state = json.loads(f.read_text()) if (f := self.dir / "state.json").is_file() else {}
+        self.batch = state.get("eval_batch", cfg.eval_batch)  # a halving persists: a resume never reuses a failed size
+        self.spent_before = state.get("usd", a.prior_usd)  # earlier jobs' spend (their wall time × rate)
         self.sites = [s for s in SITES if parse_site(s)[0] in cfg.layers]
         self._model: Any = None
         self._decomp: Any = None
@@ -107,21 +112,35 @@ class Job:
     def put(self, stage: str, d: dict[str, Any]) -> None:
         self.res[stage] = d
         write_json(self.dir / f"{stage}.json", d)
+        self.save_state()
         self.log(f"[{stage}] {json.dumps(brief(d), default=float)}")
         sc = self.scorer(self.res, self.pred)
         write_json(self.dir / "score.json", sc)
         self.log(f"[score] {json.dumps(sc, default=float)}")
 
-    def stop(self, why: str) -> None:
-        if self.cfg.rehearse:
-            self.log(f"REHEARSAL: would stop here: {why}")
+    def stop(self, name: str, why: str) -> None:
+        """A stop rule: <dir>/stopped.json, then exit; the next job refuses to start while it exists. A rehearsal
+        that names the rule in --waive logs it and goes on."""
+        if name in self.waive:
+            self.log(f"WAIVED stop {name}: {why}")
             return
-        write_json(self.dir / "stopped.json", {"why": why, "stage": self.stage, "at_s": time.time() - self.t0})
-        self.log(f"STOP: {why}")
-        sys.exit(f"STOP: {why}")
+        write_json(self.dir / "stopped.json", {"name": name, "why": why, "stage": self.stage,
+                                               "at_s": time.time() - self.t0})
+        self.save_state()
+        self.log(f"STOP {name}: {why}")
+        sys.exit(f"STOP {name}: {why}")
 
     def spent(self) -> float:
-        return (time.time() - self.t0) / 3600 * self.a.usd_per_h + self.a.prior_usd
+        return self.spent_before + (time.time() - self.t0) / 3600 * self.a.usd_per_h
+
+    def save_state(self) -> None:
+        """Cumulative spend and the eval batch, read back by the next job of the run."""
+        write_json(self.dir / "state.json", {"usd": self.spent(), "eval_batch": self.batch})
+
+    def set_batch(self, b: int, why: str) -> None:
+        self.batch = b
+        self.save_state()
+        self.log(f"[batch] eval batch now {b}: {why}")
 
     def peaks(self) -> str:
         gpu = torch.cuda.max_memory_allocated() / 1e9 if torch.cuda.is_available() else 0.0
@@ -155,7 +174,7 @@ class Job:
             idx = qwen_maps.alive_from_stats(self.gstats("maths"), self.gstats("fineweb"))
             self._alive = qwen_maps.Alive(self.comps(), idx)
             if self._alive.count() != self.cfg.alive_total:
-                self.stop(f"alive set {self._alive.count()} != {self.cfg.alive_total}")
+                self.stop("alive", f"alive set {self._alive.count()} != {self.cfg.alive_total}")
         return self._alive
 
     def rows(self, block: str) -> Tensor:
@@ -235,10 +254,23 @@ class Job:
         return json.loads((self.site_dir(t) / f"{s}.json").read_text())
 
     def read(self, name: str, t: int | None, block: str, seeds: tuple[int, ...], ft: dict[str, Tensor] | None,
-             sources: bool = True, on_batch: Any = None, fp32: bool = False) -> dict[str, float]:
-        with qwen_maps.applied(self.model, self.comps(), self.alive, self.change(name, t, fp32)):
+             sources: bool = True, fp32: bool = False) -> dict[str, float]:
+        """One state's row loop on one block. States whose weights are W0 + δW use the fine-tuned weights as they
+        stand (no second copy). Memory rule, every read: a first-batch peak over mem_halve_gb halves the batch for
+        the reads after it (an out-of-memory error is retried at half size by run.py)."""
+        weights = self.ft(t, fp32) if name in FT_WEIGHTS and t is not None else None
+        torch.cuda.reset_peak_memory_stats()
+
+        def memory_rule(i: int) -> None:
+            peak = torch.cuda.max_memory_allocated() / 1e9
+            if i == 0:
+                self.log(f"[memory] {name} {block}: first batch of {self.batch}, peak {peak:.1f} GB")
+                if peak > self.cfg.mem_halve_gb and self.batch > 1:
+                    self.set_batch(self.batch // 2, f"first-batch peak {peak:.1f} GB > {self.cfg.mem_halve_gb}")
+
+        with qwen_maps.applied(self.model, self.comps(), self.alive, self.change(name, t, fp32), weights):
             return qwen_maps.read_rows(self.model, self.rows(block), self.batch, self.gamma(), self.comps(), seeds,
-                                       self.sources(block) if sources else {}, ft, on_batch)
+                                       self.sources(block) if sources else {}, ft, memory_rule)
 
 
 def brief(d: Any) -> Any:

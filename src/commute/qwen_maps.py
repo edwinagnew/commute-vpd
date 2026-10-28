@@ -140,19 +140,29 @@ def make_basis(A: Tensor, method: str) -> tuple[Tensor, Tensor]:
 
 
 def to_disk(arrays: dict[str, Tensor]) -> dict[str, Tensor]:
-    """S's arrays as saved: X and O in bf16 (the plan's precision for pieces), piece energies fp32, positions int64."""
-    def cast(k: str, v: Tensor) -> Tensor:
-        return v if k.startswith("pos_") else v.to(torch.float32 if k.startswith("pe_") else torch.bfloat16)
+    """S's arrays as saved: X and piece energies fp32, positions int64. Not bf16: the pieces X V, Xᵀ U amplify X's
+    rounding by up to t_max / t_min of the alive spectrum (review of 2026-10-28; ~10% in bf16 at condition 50); fp32
+    X is 5.6 GB per split and step, and `stored_error` checks what is left."""
+    return {k: (v if k.startswith("pos_") else v.float()).cpu().contiguous() for k, v in arrays.items()}
 
-    return {k: cast(k, v).cpu().contiguous() for k, v in arrays.items()}
+
+def stored_error(X: Tensor, U: Tensor, V: Tensor, S: Tensor, E: float) -> float:
+    """‖dσ(pieces from X, U, V in fp32, as `site_change` builds them) − dσ(the same in float64)‖_Σ / ‖δW‖_Σ: what the
+    stored precision costs the applied state (0 for δW = 0)."""
+    exact = split.dsigma(X @ V, X.T @ U, U, V)
+    X32, U32, V32 = X.float(), U.float(), V.float()
+    applied = split.dsigma(X32 @ V32, X32.T @ U32, U32, V32).double()
+    return (split.weighted_energy(applied - exact, S) / E) ** 0.5 if E > 0 else 0.0
 
 
 def site_products(M: Tensor, U_A: Tensor, V_A: Tensor, S: Tensor, b: split.Basis,
                   hb: dict[str, tuple[Tensor, split.Basis]], RU: Tensor, RV: Tensor) -> tuple[dict[str, Tensor], dict]:
     """Everything stage S keeps for one site and step (float64 inputs on one device): the arrays (X of each split,
-    O(δW), per-subcomponent piece energies of the least-squares and adjoint splits and of the same splits of
-    `split.random_like(δW, Σ, 0)`) and the scalars (energies of δW and of each state's Δ change, the free check, c, a).
-    `hb[half]` = (positions in alive, the half's basis)."""
+    per-subcomponent piece energies of the least-squares and adjoint splits and of the same splits of
+    `split.random_like(δW, Σ, 0)`) and the scalars (energies of δW and of each state's Δ change, the free check, c, a,
+    and `stored_error` per stored X). `hb[half]` = (positions in alive, the half's basis). O(δW) is not stored: the
+    in-span state's weight change is dσ of its applied pieces, which is δW − O(δW) up to `stored_error["ls"]`.
+    `dsigma_smin` is reported (plan, free check): the smallest gain of dσ, which sets how much X's rounding grows."""
     E = split.weighted_energy(M, S)
     X, O = split.least_squares_x(M, b), split.obstruction(M, b)
     dU, dV = X @ V_A, X.T @ U_A
@@ -161,7 +171,8 @@ def site_products(M: Tensor, U_A: Tensor, V_A: Tensor, S: Tensor, b: split.Basis
     aU, aV = c * (M @ V_A), c * (M.T @ U_A)
     R = split.random_like(M, S, 0)
     XR, cR = split.least_squares_x(R, b), split.adjoint_scale(R, U_A, V_A, S)[0]
-    arrays = {"X_ls": X, "O": O,
+    err = {"ls": stored_error(X, U_A, V_A, S, E)}
+    arrays = {"X_ls": X,
               "pe_ls": split.piece_energies(dU, dV, U_A, V_A, S),
               "pe_ls_null": split.piece_energies(XR @ V_A, XR.T @ U_A, U_A, V_A, S),
               "pe_adjoint": split.piece_energies(aU, aV, U_A, V_A, S),
@@ -176,8 +187,9 @@ def site_products(M: Tensor, U_A: Tensor, V_A: Tensor, S: Tensor, b: split.Basis
         delta[half] = split.weighted_energy(M - split.dsigma(hU, hV, Uh, Vh) - hU @ hV.T, S)
         pieces[half] = float(split.piece_energies(hU, hV, Uh, Vh, S).sum())
         arrays[f"X_{half}"], arrays[f"pos_{half}"] = Xh, pos
+        err[half] = stored_error(Xh, Uh, Vh, S, E)
     wf = split.weighted_fractions(M, b, S)
-    scalars = {"energy": E, "delta": delta, "half_piece_energy": pieces, "c": c,
+    scalars = {"energy": E, "delta": delta, "half_piece_energy": pieces, "c": c, "stored_error": err,
                "a": split.sigma_matched_scale(M, RU, RV, U_A, V_A, S),
                "r_u": b.r_u, "r_v": b.r_v, "d_out": M.shape[0], "d_in": M.shape[1],
                "null": split.gaussian_null(b, M.shape[0], M.shape[1]), "outside_both": wf["omega_act"],
@@ -207,24 +219,28 @@ def site_change(name: str, M: Tensor | None, U_A: Tensor, V_A: Tensor, p: Callab
     assert p is not None, name
     if name in ("ls", "inspan"):
         X = p("X_ls").to(M)
-        w = M if name == "ls" else M - p("O").to(M)
-        return w, None, X @ V_A, X.T @ U_A
+        dU, dV = X @ V_A, X.T @ U_A
+        w = M if name == "ls" else split.dsigma(dU, dV, U_A, V_A)  # = δW − O(δW), up to S's stored_error
+        return w, None, dU, dV
     pos = p(f"pos_{name}").to(M.device)
     X = p(f"X_{name}").to(M)
     return M, pos, X @ V_A[:, pos], X.T @ U_A[:, pos]
 
 
 @contextmanager
-def applied(model: Any, comps: Components, alive: Alive, change: Callable[[str], SiteChange]) -> Iterator[None]:
+def applied(model: Any, comps: Components, alive: Alive, change: Callable[[str], SiteChange],
+            weights: dict[str, Tensor] | None = None) -> Iterator[None]:
     """The state whose sites `change` gives: weights W0 + dW swapped in (fp32, the model's device), and the alive
-    columns at `positions` (None: all) moved by (dU, dV) in place; the original columns written back on exit."""
+    columns at `positions` (None: all) moved by (dU, dV) in place; the original columns written back on exit.
+    `weights`: the state's weights given whole instead (the fine-tuned ones, for states whose weights are W0 + δW: no
+    second 5.6 GB copy on the GPU)."""
     lins, W, touched = linears(model), {}, []
     try:
         with torch.no_grad():
             for s in SITES:
                 dW, pos, dU, dV = change(s)
                 w0 = lins[s].weight.data
-                W[s] = w0 if dW is None else w0 + dW.to(w0)
+                W[s] = weights[s] if weights is not None else w0 if dW is None else w0 + dW.to(w0)
                 if dU is None or dV is None:
                     continue
                 V, U = comps.vu(s)
@@ -250,13 +266,17 @@ def _kl(p: Tensor, q: Tensor) -> float:
 
 
 def _stochastic(g: dict[str, Tensor], seed: int, first_row: int) -> tuple[dict[str, Tensor], dict[str, Tensor]]:
-    """`qwen_vpd.stochastic_masks` drawn row by row from (seed, row index): the same draw for a row at any batch size."""
-    v0 = next(iter(g.values()))
-    draws = []
-    for j in range(v0.shape[0]):
-        gen = torch.Generator(device=v0.device).manual_seed(seed * 1_000_003 + first_row + j)
-        draws.append(stochastic_masks({s: v[j : j + 1] for s, v in g.items()}, gen))
-    return ({s: torch.cat([m[s] for m, _ in draws]) for s in g}, {s: torch.cat([d[s] for _, d in draws]) for s in g})
+    """`qwen_vpd.stochastic_masks` drawn row by row from (seed, row index), the same draw for a row at any batch size,
+    written into buffers of g's size (no concatenation copy: one row's draw is the only transient)."""
+    masks = {s: torch.empty_like(v) for s, v in g.items()}
+    deltas = {s: torch.empty(v.shape[:-1], dtype=v.dtype, device=v.device) for s, v in g.items()}
+    for j in range(next(iter(g.values())).shape[0]):
+        gen = torch.Generator(device=masks[SITES[0]].device).manual_seed(seed * 1_000_003 + first_row + j)
+        m, d = stochastic_masks({s: v[j : j + 1] for s, v in g.items()}, gen)
+        for s in g:
+            masks[s][j : j + 1], deltas[s][j : j + 1] = m[s], d[s]
+        del m, d
+    return masks, deltas
 
 
 @torch.no_grad()
@@ -266,7 +286,11 @@ def read_rows(model: Any, rows: Tensor, batch: int, gamma: Gamma, comps: Compone
     """Mean over every position of `rows` ([N, T], any device) of KL(own unmasked ‖ ·) for: CI masks (m = g, Δ off;
     "ci"), stochastic masks per seed ("stoch_<seed>"), and each saved adversary source (m = g + (1 − g) s, d = s_Δ;
     "replay_<name>"); with `ft` (fine-tuned weights), "K" = KL(fine-tuned ‖ CI-masked). g is computed once per batch
-    from the state as it stands (its own activations and V)."""
+    from the state as it stands (its own activations and V). At most one mask set is alive beside g.
+
+    GPU memory per row of 512 (fp32): g 1.41 GB, one mask set 1.41, three logits 0.93, KL temporaries ~1.2: ~5 GB per
+    row on top of the fixed ~43.5 GB (target 6.9, components 19.5, Γ 17.1) and the weights a state holds (5.6 GB
+    each for the state and the fine-tuned model): batch 2 peaks at ~60-65 GB, batch 4 at ~75, batch 8 at ~95."""
     dev = str(next(iter(comps.V.values())).device)
     sums: dict[str, float] = {}
 
@@ -279,11 +303,14 @@ def read_rows(model: Any, rows: Tensor, batch: int, gamma: Gamma, comps: Compone
         ci = masked_logits(model, tokens, comps, g)
         add("ci", _kl(logits, ci))
         for seed in stoch_seeds:
-            add(f"stoch_{seed}", _kl(logits, masked_logits(model, tokens, comps, *_stochastic(g, seed, i))))
+            masks, deltas = _stochastic(g, seed, i)
+            add(f"stoch_{seed}", _kl(logits, masked_logits(model, tokens, comps, masks, deltas)))
+            del masks, deltas
         for name, src in sources.items():
             masks = {s: g[s] + (1 - g[s]) * src[s].to(g[s]) for s in SITES}
             deltas = {s: src[f"{s}.delta"].to(g[s]).expand(tokens.shape) for s in SITES}
             add(f"replay_{name}", _kl(logits, masked_logits(model, tokens, comps, masks, deltas)))
+            del masks, deltas
         if ft is not None:
             with set_weights(model, ft):
                 add("K", _kl(model(tokens, use_cache=False).logits, ci))
