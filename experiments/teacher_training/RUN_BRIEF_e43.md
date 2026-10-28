@@ -2,8 +2,8 @@
 
 Plan: `reports/plans/2026-10-28_plan_e43-teacher-remainder.md` ("Scope as approved"). Code:
 `experiments/teacher_training/remainder.py` (imports `run.py` and `path.py` beside it). Predictions:
-`experiments/teacher_training/results/predictions_e43.json` (sha256
-`74124bbdc9be6b9b97e0d40f58e11374aba13f7512142070f506ce29a3eee172`). The run refuses to start without the predictions
+`experiments/teacher_training/results/predictions_e43_v2.json` (sha256
+`204c1fbb70655a72b6e02eb425203cf72539ca9866658e5d0e8fdaec9316978a`). The run refuses to start without the predictions
 file. It also refuses if the file's `config` or `e43` entries differ from `run.py`'s `CFG` or `remainder.py`'s `AM`.
 
 ```
@@ -34,7 +34,7 @@ Inputs not in git (each results/large below is a symlink that arrives on the pod
          artifacts/vpd: let pod_setup.sh fetch it from W&B on the pod (works, ~65 s, 2026-10-27). Only if that
                   fails, stage it by hard link as RUN_BRIEF_amend5.md describes.
          artifacts/sets/val_0_256.npy (1 MB; optional, otherwise it streams in ~1 min)
-         remainder.py and predictions_e43.json are committed: check the predictions sha256 on the pod.
+         remainder.py and predictions_e43_v2.json are committed: check the predictions sha256 on the pod.
          NOT needed: the r1 windows, Pile train rows, any .pt under teacher_training/results/large
 Platform: RunPod "NVIDIA H100 80GB HBM3" directly. C1's floor 0.0748 and seed-0 KL 0.69882, PC's 2.5159 and 1.4994,
           and G3's E41 copies are that card's. An L40 or an H100 PCIe/NVL would likely stop at C1 or PC.
@@ -55,10 +55,10 @@ do-nothing, plus remainder and least squares, then `[score after T<k>] {...}`.
 |---|---|---|
 | Load + C1 | `[pile W0 seed s]` for s = 0, 1, 2, then `[C1] {"pass": true, "pgd_floor": 0.0748..., "w0_pgd_kl": 0.69882..., ...}` | ~3 min |
 | fine-tune + G1 | `[ft] ...` to step 1000, `[G1 T10] {... "pass": true}` (P 0.99931, size 0.01125), `[G1 T1000]` (0.99961, 0.03209) | ~0.5 min |
-| T10 do-nothing + PC | `[T10 do-nothing] pgd 2.5159 ... verdict fail`, `[PC T10] {"pgd": 2.5159..., "kl_task_w0": 5.078..., "kl_pile_w0": ..., "pass": true}` | ~1 min |
+| T10 do-nothing + PC | `[T10 do-nothing] pgd 2.5159 ... verdict fail`, `[PC T10] {"pgd": 2.5159..., "kl_task_w0": 5.078..., "kl_pile_w0": ..., "pass": true}` | ~1 min; report `kl_pile_w0` (PC stops itself if it is below 0.005 nats) |
 | T10 copy + G3, G2 | component training to step 1000, `[T10 teacher training] pgd 1.5465 ... p_target 0.9994`, `[G3 T10] {... "pass": true}`, `[G2 T10] {"removal_vs_copy": ~1e-5, "pass": true}` | ~2.2 min |
-| T10 plus remainder, least squares | `[T10 plus remainder] ...` (delta_share about 0.9-1.1), `[T10 least squares] ...` (pgd about 7.0), the three removal lines, `[score after T10]` | ~2 min |
-| T1000 | the same: do-nothing 1.4994, copy 0.9591 and P 0.99675, then plus remainder and least squares (about 2.1) | ~5.5 min |
+| T10 plus remainder, least squares | `[T10 plus remainder] ...` (delta_share about 0.9-1.1), `[T10 least squares] ...` (pgd about 7.0, E22, not gated: another card may differ), the three removal lines, `[score after T10]` | ~2 min |
+| T1000 | the same: do-nothing 1.4994, copy 0.9591 and P 0.99675, then plus remainder and least squares (about 2.1, not gated) | ~5.5 min |
 | Score | `[score] {...}` then `done` | seconds |
 
 ## Early stop for the controls
@@ -68,7 +68,7 @@ Report the line and the numbers named here, download the JSON and the log, then 
 
 - **C1**: `STOP: C1: {...}`. Report the `[C1]` lines and the three `[pile W0 seed s]` lines: the card or harness differs.
 - **G1**: `STOP: G1 T<k>: {...}`. Report `[G1 T10]`, `[G1 T1000]`: the fine-tune does not reproduce E41's.
-- **PC**: `STOP: PC T<k>: {...}`. Report the do-nothing lines and `[PC T<k>]`: E41's references do not hold here.
+- **PC**: `STOP: PC T<k>: {...}`. Report the do-nothing lines and `[PC T<k>]`: E41's references do not hold here, or `kl_pile_w0` is below 0.005 nats (P2 could not be scored).
 - **G3**: `STOP: G3 T<k>: {...}`. Report the `[T<k> teacher training]` line: the copy does not reproduce E41's (or Δ moved).
 - **G2**: `STOP: G2 T<k>: {...}`: removing the remainder does not land on the copy (a code bug).
 - A results file written on another card or W₀ floor makes the run exit at once, naming both. Move the file aside only

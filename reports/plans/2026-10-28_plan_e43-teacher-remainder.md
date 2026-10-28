@@ -3,8 +3,9 @@
 *2026-10-28, commute lead (written by a design agent). The user's request in chat, 2026-10-28; the reading and the
 scope are `decisions.md`'s last two rows. Words as in `GOALS.md` → Terms. Code
 `experiments/teacher_training/remainder.py` (imports `run.py` and `path.py` beside it); predictions
-`experiments/teacher_training/results/predictions_e43.json`, filed 2026-10-28 15:23:16 on the CPU worker, sha256
-`74124bbdc9be6b9b97e0d40f58e11374aba13f7512142070f506ce29a3eee172`; brief `experiments/teacher_training/RUN_BRIEF_e43.md`.
+`experiments/teacher_training/results/predictions_e43_v2.json`, filed 2026-10-28 15:48:10 on the CPU worker, sha256
+`204c1fbb70655a72b6e02eb425203cf72539ca9866658e5d0e8fdaec9316978a` (it refiles `predictions_e43.json`, sha256
+`74124bbd…`, before any run; see "Refile 2026-10-28" below); brief `experiments/teacher_training/RUN_BRIEF_e43.md`.
 A fresh agent reviews the code before it runs.*
 
 ## Scope as approved, 2026-10-28
@@ -25,6 +26,19 @@ E43 on the H100"):
   P3 reports the share of do-nothing's excess removed beside it.
 
 The body below matches this scope.
+
+## Refile 2026-10-28 (before any run)
+
+The code review (`reports/reviews/2026-10-28_review_e43-code.md`) found P3's verdict clause decided T₁₀ inside the
+noise: teacher training's own ratio there is 1.547, and the fail line 1.612 sits only 4% above it, while W₀'s adversary
+spread is 7.5%; the 1.25× ratio bound (1.93) never bound. At T₁₀₀₀, 1.25 × 0.959 = 1.199 is below the pass line, so
+the clause never binds there either. The clause is therefore **dropped**: P3 is the ratio bound alone. Dropping it is
+simpler than "apply it only where the ratio cannot decide", which has no case where it would change the outcome
+except inside the noise. Both verdicts are still reported. The predictions were refiled as
+`predictions_e43_v2.json`; `predictions_e43.json` is left as filed and no longer read. The same refile corrects
+teacher training's expected removal share (it equals plus remainder's, not 0: both remove to W_tt) and adds a stop at
+PC when KL(fine-tune ‖ W₀) on the Pile rows is below 0.005 nats, so P2 cannot go unscored after the spend. `CFG` and
+`E43` are unchanged. The new rule ran against 40 edge cases (`~/commute-data/scratch/commute-lead/e43_edge_v2.py`).
 
 ## The request, restated in the Terms (confirmed)
 
@@ -88,7 +102,7 @@ The fine-tune is E41's emoticon Adam 3e-5 arm-A fine-tune: all 24 matrices, batc
 |---|---|
 | C1, first and alone | `w0_check` passes; PGD floor 0.0748 within 10%; seed-0 PGD KL 0.69882 within 1% |
 | G1 | T₁₀: P(target) 0.99931 and size 0.01125; T₁₀₀₀: 0.99961 and 0.03209 (within 0.005 and 0.001) |
-| PC, per step, before the copy | do-nothing ratio 2.5159 (T₁₀, fail) and 1.4994 (T₁₀₀₀); its task-text KL to W₀ 5.0784 and 5.0897 (E41's gap at W₀); all within 1% |
+| PC, per step, before the copy | do-nothing ratio 2.5159 (T₁₀, fail) and 1.4994 (T₁₀₀₀); its task-text KL to W₀ 5.0784 and 5.0897 (E41's gap at W₀); all within 1%; its Pile-row KL to W₀ ≥ 0.005 nats (P2's denominator; refile) |
 | G3, per step | the copy's P 0.99941 and 0.99675 (within 0.005); ratio 1.5465 and 0.9591 (within 5%); Δ share ≤ 1e-6 |
 | G2, per step | the copy's U′V′ᵀ − UVᵀ reproduces its δW within 1e-3 of the largest entry, so removing R lands exactly on the copy |
 
@@ -100,9 +114,9 @@ Do-nothing is the positive control on both readings:
 
 | Number | W₀ | do-nothing | least squares | teacher training | plus remainder: expected |
 |---|---|---|---|---|---|
-| **b_pile** = KL(fine-tune ‖ Δ′ back to Δ) / KL(fine-tune ‖ W₀) on the harness's 256 Pile val rows | 0/0 | 1 | measured | 0 | unknown; r1's task-text copies read 0.30-0.33 |
+| **b_pile** = KL(fine-tune ‖ Δ′ back to Δ) / KL(fine-tune ‖ W₀) on the harness's 256 Pile val rows | 0/0 | 1 | measured | = plus remainder's (same removal state W_tt) | unknown; r1's task-text copies read 0.30-0.33 |
 | **check** (Pile harness PGD KL over W₀'s; one start, seed 0, 20 steps) | 1 | 2.52 / 1.50 | 6.96 / 2.11 (E22) | 1.55 / 0.96 (E41) | at least teacher training's; the null puts it nearer do-nothing |
-| b_task (the same ratio on held-out task windows, arm A weighting; P1 check) | 0/0 | 1 | measured | 0 | 0.0013 / 0.0056 (E41's gap shares) |
+| b_task (the same ratio on held-out task windows, arm A weighting; P1 check) | 0/0 | 1 | measured | = plus remainder's | 0.0013 / 0.0056 (E41's gap shares) |
 | Δ′ share ‖Δ′ − Δ‖² / ‖δW‖² (reported) | 0 | 1 | 0.36 / 0.38 | ~1e-9 | about 0.9-1.1 |
 | e_delta, Δ′ to zero (route split, log-odds at the trigger; reported) | 0 | 1 | 0.09 / 0.28 | 0.011 / 0.015 | slightly above teacher training's |
 | cos(R, the copy's δW) (reported) | — | — | — | — | about −0.3; below −0.5 means R mostly undoes the copy |
@@ -112,7 +126,10 @@ Do-nothing is the positive control on both readings:
 - b_task sees nothing off the task windows.
 - Both shares are ratios, so either is unscored if its denominator is below 0.005 nats (10 × E41's hook floor of
   0.0005).
-- The check uses one start, so a pass is a lower bound.
+- Because both remove to W_tt, b_pile reads the copy's own plain-text fidelity as much as the remainder's.
+- The check uses one start, so a pass is a lower bound. Its verdict (reported) combines the stochastic and PGD ratios.
+- The check runs the masked forward under bf16 autocast (the harness's convention for every state), so it is blind
+  to Δ′ below bf16 rounding.
 - The Δ′ share sees no inputs.
 - e_delta saturates near P = 1.
 
@@ -123,7 +140,7 @@ Do-nothing is the positive control on both readings:
 - b_pile: the batch-order spread is 0.10 (E34 Amendment 6, emoticon Pile-text copies, 0.77 against 0.87).
 - Gap share: 0.002 (E34 Amendment 4).
 
-## Predictions (filed; rules as in `remainder.score`, 34 edge cases run before filing)
+## Predictions (refiled; rules as in `remainder.score`, 40 edge cases run before filing)
 
 **Claim.** The remainder is behaviourally inert, so teacher training plus remainder is as faithful as teacher
 training's own state while keeping the fine-tune's exact weights.
@@ -140,24 +157,24 @@ reads that part as it reads do-nothing.
   - Least squares' b_pile is reported beside it.
   - *Lean: between, medium (r1's 0.30-0.33).*
 - **P3, the check, paired (scored).** Per step, plus remainder's ratio is ≤ 1.25 × teacher training's own (relative,
-  inclusive), and its verdict is no worse (pass < inconclusive < fail, the check alone; both failing counts as no
-  worse).
+  inclusive). No verdict clause (dropped at the refile: at T₁₀ it decided inside the noise). Both verdicts are reported.
   - It holds if both steps hold, and is unscored if a record is missing.
   - Reported per step: the share of do-nothing's excess removed, (r_dn − r)/(r_dn − 1), for both states. It is None
     where do-nothing reads at or below the pass line.
   - *Lean: holds; high at T₁₀₀₀, where the null's gap is about 15%; medium at T₁₀.*
 
 **Edge cases run through `score`** (synthetic records on the CPU worker,
-`~/commute-data/scratch/commute-lead/e43_edge.py`; all 34 pass):
+`~/commute-data/scratch/commute-lead/e43_edge_v2.py`; all 40 pass):
 - an empty file, a missing step and a missing record are all unscored;
 - b_pile exactly 0.2 is inert and 0.2000001 between; exactly 0.5 carries and 0.4999999 between; the worst step wins;
 - a denominator of 0.005 is scored, while 0.004999 and 0 are None;
 - a ratio of exactly 1.25 × holds and 1.2500001 × fails;
-- a worse verdict fails; both failing holds; a better verdict holds;
+- verdicts are reported and never decide (a fail verdict within 1.25× holds; both failing beyond 1.25× fails); a NaN
+  ratio fails; one failing step fails P3; a teacher ratio of 0 raises;
 - a do-nothing ratio at the pass line or below 1 gives an excess share of None;
 - a P1 denominator of 0 gives None;
 - a copy below P 0.9 makes P1 false;
-- an unknown verdict raises.
+- an unknown verdict is not read.
 
 ## Decision tree
 

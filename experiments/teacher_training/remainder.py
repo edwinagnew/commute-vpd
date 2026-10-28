@@ -13,17 +13,21 @@ Each is read through E41's Pile harness (`read`: harness.measure + arms.heldout_
 e_delta is Delta' taken to zero, reported). Each but teacher training's own is also read with Delta' put back to Delta
 (`removal`: the target W0 + (U'V'^T - UV^T)): KL(fine-tune || that model) on the held-out task windows (arm A's
 weighting) and on the harness's 256 Pile val rows, each over the same KL of W0 (do-nothing's removal state, the same
-path). Teacher training's own removal state is itself: 0 by construction, not read.
+path). Teacher training's own removal state is itself, W_tt, which is plus remainder's removal state (G2): its removal
+shares equal plus remainder's, so they are not read twice.
 Stages, in order, each record dumped and logged as it finishes:
   C1   W0 under the Pile harness (job load): w0_check, floor 0.0748 and seed-0 PGD KL 0.69882 within tolerance; stop
   fine-tune; G1: T10 and T1000 P(target) and size as E41's; stop
-  per step (10, then 1000): do-nothing (PC: its ratio as E41's, its task-text denominator as E41's gap at W0; stop),
+  per step (10, then 1000): do-nothing (PC: its ratio as E41's, its task-text denominator as E41's gap at W0, its
+       plain-text denominator >= denom_min so P2 can be scored; stop),
        the copy (G3: as E41's one-shot copy; Delta share <= 1e-6; stop), plus remainder (G2: its removal state is the
        copy's own target; stop), least squares
   score  P2, P3 (scored) and the P1 check (`score`, pure) -> out["score"]
 A step not marked done is redone from its start on a rerun (the copy lives in memory only).
 
-Usage (repo root, project venv):  remainder.py --predictions   files results/predictions_e43.json (refuses to overwrite)
+Usage (repo root, project venv):  remainder.py --predictions   files results/predictions_e43_v2.json (refuses to overwrite;
+                                                               the first filing, predictions_e43.json, was refiled
+                                                               before any run: plan, "Refile 2026-10-28")
                                   remainder.py [cuda]          the run (GPU); refuses to start without the predictions
 """
 
@@ -40,8 +44,7 @@ import torch
 from path import student
 from run import CFG, EMO, FT_ADAM_LR, RESULTS, Job, dump, halt, load, log, record
 
-PRED, OUT = RESULTS / "predictions_e43.json", RESULTS / "teacher_training_e43.json"
-ORDER = {"pass": 0, "inconclusive": 1, "fail": 2}  # the check's verdicts, best first
+PRED, OUT = RESULTS / "predictions_e43_v2.json", RESULTS / "teacher_training_e43.json"
 
 
 @dataclass(frozen=True)
@@ -135,8 +138,8 @@ def one_step(job: Job, out: dict[str, Any], rows: Any, k: str, dW: dict[str, Any
     d_task, d_pile = s["nothing"]["kl_task"], s["nothing"]["kl_pile"]
     s["denominators"] = {"task": d_task, "pile": d_pile}
     r, g = AM.pc[k]
-    stop_unless(out, f"PC T{k}", abs(s["nothing"]["pgd"] / r - 1) <= AM.pc_tol and abs(d_task / g - 1) <= AM.pc_tol,
-                {"pgd": s["nothing"]["pgd"], "kl_task_w0": d_task, "kl_pile_w0": d_pile, "e41": [r, g]})
+    stop_unless(out, f"PC T{k}", abs(s["nothing"]["pgd"] / r - 1) <= AM.pc_tol and abs(d_task / g - 1) <= AM.pc_tol
+                and d_pile >= AM.denom_min, {"pgd": s["nothing"]["pgd"], "kl_task_w0": d_task, "kl_pile_w0": d_pile, "e41": [r, g]})
     t0 = time.time()
     curve, st = student(job, EMO, "A", net, None)
     dW_tt = {key: v[0] for key, v in st.items()}
@@ -184,11 +187,12 @@ def excess_removed(r: float, r_dn: float, pass_line: float) -> float | None:
 
 
 def paired(s: dict[str, Any], pass_line: float) -> dict[str, Any] | None:
-    """P3 for one step: plus remainder's ratio <= AM.p3_ratio x teacher training's own and its verdict no worse."""
+    """P3 for one step: plus remainder's ratio <= AM.p3_ratio x teacher training's own. The verdicts are reported only:
+    a verdict clause decided T10 inside the noise (the fail line sits 4% above the copy's ratio; review 2026-10-28)."""
     a, t, n = s.get("plus_remainder"), s.get("teacher_training"), s.get("nothing")
     if a is None or t is None or n is None:
         return None
-    return {"holds": a["pgd"] <= AM.p3_ratio * t["pgd"] and ORDER[a["faith"]] <= ORDER[t["faith"]],
+    return {"holds": a["pgd"] <= AM.p3_ratio * t["pgd"],
             "ratio_over_own": a["pgd"] / t["pgd"], "verdicts": [a["faith"], t["faith"]],
             "excess_removed": excess_removed(a["pgd"], n["pgd"], pass_line),
             "excess_removed_own": excess_removed(t["pgd"], n["pgd"], pass_line)}
@@ -225,19 +229,25 @@ PREDICTIONS: dict[str, Any] = {
     "about": "teacher_training E43 (reports/plans/2026-10-28_plan_e43-teacher-remainder.md, 'Scope as approved'). Emoticon, "
              "E41's Adam 3e-5 arm-A fine-tune (seed 0) at steps 10 and 1000, regenerated in-job; E41's one-shot task-text copy; "
              "'plus remainder' = the copy's (U', V') with target W0 + dW (Delta' = Delta + W_ft - W_tt). States on the same "
-             "rows: do-nothing, least squares, teacher training's own, plus remainder. RunPod H100 80GB HBM3. Filed before any run",
+             "rows: do-nothing, least squares, teacher training's own, plus remainder. RunPod H100 80GB HBM3. Filed before any run. "
+             "Refiles predictions_e43.json before any run (plan, 'Refile 2026-10-28'): P3 drops its verdict clause; "
+             "teacher training's expected removal share corrected; PC also stops on a Pile denominator below 0.005 nats",
     "controls": "C1 first, alone: w0_check, PGD floor 0.0748 within 10%, seed-0 PGD KL 0.69882 within 1%. G1: teachers P and "
                 "size within 0.005 / 0.001 of E41's. PC per step: do-nothing ratio 2.5159 (T10) / 1.4994 (T1000) and its "
-                "task-text KL at W0 5.0784 / 5.0897 within 1% (E41); its removal shares are 1 by construction (the "
+                "task-text KL at W0 5.0784 / 5.0897 within 1% (E41), and its Pile-row KL at W0 >= 0.005 nats (else P2 "
+                "could not be scored); its removal shares are 1 by construction (the "
                 "denominators are its own). G3: the copy's P within 0.005 and ratio within 5% of E41's (0.99941, 1.5465; "
                 "0.99675, 0.9591), Delta share <= 1e-6. G2: the copy's (U', V') minus W0's reproduces its delta-W to 1e-3. "
                 "Any miss: stop",
     "measurements": {
         "removal share": "KL(fine-tune || state with Delta' put back to Delta) / KL(fine-tune || W0), on the held-out task "
-                         "windows with arm A's weighting (b_task) and on the harness's 256 Pile val rows (b_pile). Do-nothing 1, "
-                         "teacher training's own 0, both by construction. Blind to: text off those rows; the trigger alone",
+                         "windows with arm A's weighting (b_task) and on the harness's 256 Pile val rows (b_pile). Do-nothing 1 "
+                         "by construction; teacher training's own equals plus remainder's (both remove to W_tt, G2), so b_pile "
+                         "reads the copy's own plain-text fidelity. Blind to: text off those rows; the trigger alone",
         "check": "Pile harness PGD KL over W0's (one start, seed 0, 20 steps, 256 rows); verdict against this job's floor, "
-                 "pass <= 1.5/(1+f) (1.396 at f 0.0748), fail >= 1.5(1+f) (1.612). A pass is a lower bound",
+                 "pass <= 1.5/(1+f) (1.396 at f 0.0748), fail >= 1.5(1+f) (1.612). A pass is a lower bound. The verdict "
+                 "(reported, not scored) combines the stochastic and PGD ratios. Blind to: Delta' below bf16 rounding "
+                 "(the masked forward runs under bf16 autocast, the harness's convention for every state)",
         "reported": "Delta' share ||Delta' - Delta||^2 / ||dW||^2 (harness delta_change_frac); e_delta (Delta' to zero, "
                     "log-odds at the trigger, saturates near P 1); cos(R, the copy's delta-W); start KL",
     },
@@ -245,7 +255,8 @@ PREDICTIONS: dict[str, Any] = {
         "W0": "check 1; removal shares undefined (0/0)",
         "do-nothing": "check 2.516 fail / 1.499 inconclusive; b 1 and 1; Delta' share 1; e_delta 1",
         "least squares": "check 6.96 / 2.11 (E22); Delta' share 0.36 / 0.38; e_delta 0.09 / 0.28; b measured, between 0 and 1",
-        "teacher training": "check 1.547 / 0.959; P 0.9994 / 0.9968; Delta share ~1e-9; b 0",
+        "teacher training": "check 1.547 / 0.959; P 0.9994 / 0.9968; Delta share ~1e-9; b equal to plus remainder's (the same "
+                            "removal state, W_tt)",
         "plus remainder": "b_task = the copy's gap share, 0.0013 / 0.0056 (E41); b_pile unknown (r1's task-text copies 0.30-0.33, "
                           "LoRA 1.06, E34 Amendment 6); Delta' share 0.9-1.1; cos(R, copy) about -0.3",
         "noise": "W0's adversary-seed floor 0.0748; batch-order spread of the ratio 21% at T10, 3.2% at T1000 (E41 A1); b_pile "
@@ -260,9 +271,10 @@ PREDICTIONS: dict[str, Any] = {
                  "None if a record is missing or KL(fine-tune || W0) on the Pile rows < 0.005 nats. Outcome: the worst step "
                  "(inert < between < carries); unscored if any step is None. Least squares' b_pile reported beside it"},
         {"id": "P3_check_paired", "lean": "holds, high at T1000 (the null's gap ~15%); medium at T10",
-         "rule": "per step: plus remainder's ratio <= 1.25 x teacher training's own ratio (relative, inclusive) and its "
-                 "verdict no worse (pass < inconclusive < fail, the check alone; both failing counts as no worse). Holds if "
-                 "both steps hold; unscored if a record is missing. Reported per step: the share of do-nothing's excess "
+         "rule": "per step: plus remainder's ratio <= 1.25 x teacher training's own ratio (relative, inclusive); no verdict "
+                 "clause (at T10 it would decide inside the noise, 4% above the copy's 1.547; at T1000 1.25 x 0.959 is "
+                 "below the pass line, so it never binds). Holds if both steps hold; unscored if a record is missing. "
+                 "Reported per step: both verdicts, and the share of do-nothing's excess "
                  "removed, (r_dn - r)/(r_dn - 1), for plus remainder and for teacher training's own, None where do-nothing "
                  "reads at or below the pass line"},
     ],
