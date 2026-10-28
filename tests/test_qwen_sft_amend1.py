@@ -4,6 +4,7 @@ the volume's free space, and the positive control's teacher on toy tensors. No m
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import math
@@ -143,6 +144,13 @@ def test_refuse_done(tmp_path: Path):
             RUN.refuse_done(layout, _stages(name))
     RUN.refuse_done(RUN.Layout(tmp_path, tmp_path / "p.json", A1.NAMES, tmp_path, guard=False), _stages("B"))
     assert not list(tmp_path.glob("*.tmp"))  # written whole, then renamed
+
+
+def test_every_stage_after_b_needs_a_finished_b(tmp_path: Path):
+    layout = RUN.Layout(tmp_path, tmp_path / "p.json", A1.NAMES, tmp_path / "large")
+    a = argparse.Namespace(volume="none", decomp=str(tmp_path), out=str(tmp_path))
+    with pytest.raises(SystemExit, match=r"B\.json"):
+        A1.before_loading(a, A1.A1, layout, _stages("T0"))
 
 
 def _kl(k0: float, k50: float, k100: float) -> dict[str, float]:

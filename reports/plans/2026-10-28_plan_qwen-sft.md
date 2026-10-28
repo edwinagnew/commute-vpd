@@ -276,3 +276,12 @@ measured 2 MB/s; now only results JSONs and the log go to W&B. Deferred: minor 4
 step instead of twice per micro-batch; its cost is a T1 step about 2x what it could be (3 x 1000 steps), and B's
 projection guards the budget either way.
 Minor 7: `check_teacher.py` stays frozen as it ran (job 40673), so pyright still flags its `autocast=` calls.
+
+**Gate 5, third review (2026-10-28).** A fresh agent reviewed 0dc2c0a and found no crash or wrong-number bug.
+(a) T0's rule (0.5 of the start by step 300) has no full-size measurement; the rehearsal curves bend (0.59 at 300 steps
+in check_teacher; 0.72 at step 100 in rehearsal B), and a miss stops the paid job after B, G1 and T0 (~1 h). Guard: the
+paid run runs stage B alone first; if B's chosen-rate fixed-row reading at step 100 is above 0.65 of its start, the
+runner stops the pod (B's results downloaded) and the lead asks the user before T0. (b) B is now required for every
+later stage (fixed in this commit). (c) T0's first 100 steps repeat B's chosen-rate control (~100 teacher steps paid
+twice); accepted and counted in the cost. (d) δW and the offsets live only on the network volume 2bun37yawb, not W&B;
+the analysis reads the JSONs; the runner brief must pass --volume /workspace.

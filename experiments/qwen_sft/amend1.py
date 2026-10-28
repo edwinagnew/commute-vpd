@@ -384,11 +384,10 @@ def before_loading(a: argparse.Namespace, cfg: Any, layout: Layout, stages: list
     rule = pred["rules"]["read_steps"]
     assert (tuple(rule["fixed"]), rule["kl_min"]) == (cfg.read_fixed, cfg.read_kl_min), "read rule: file vs config"
     assert pred["rules"]["T0"]["steps_max"] == cfg.t0_steps, "T0 step cap: file vs config"
-    if "F1" in names:
-        if "L" not in names and not layout.result("L").is_file():
-            sys.exit(f"F1 needs stage L's results first: {layout.result('L')}")
-        if "B" not in names and "B" not in run.done(layout):
-            sys.exit("F1 needs a finished stage B (its read-step budget)")
+    if names & {"G1", "T0", "A0", "F1", "D1", "T1"} and "B" not in names and "B" not in run.done(layout):
+        sys.exit(f"these stages need a finished stage B (its read-step budget): {layout.result('B')} is missing")
+    if "F1" in names and "L" not in names and not layout.result("L").is_file():
+        sys.exit(f"F1 needs stage L's results first: {layout.result('L')}")
     if a.volume != "none":
         assert os.path.ismount(a.volume), f"--volume {a.volume} is not a mount point"
     decomp = Path(a.decomp)
