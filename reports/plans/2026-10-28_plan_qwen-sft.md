@@ -224,3 +224,14 @@ it is decided they are reported, not scored, with W₀'s maths reading at three 
 
 **Still to do before the go-ahead:** the code (writer), the $0 rehearsal on a cluster L40 with its numbers written
 here, the code review, then the user's go-ahead with the per-stage cost.
+
+**Gate 5, code review (2026-10-28).** A fresh Opus agent reviewed the Amendment 1 diff. Its critical finding was
+already live in the rehearsal (cluster job 40530): teacher training's backward pass ran outside the change hooks
+under gradient checkpointing, so every teacher-training stage would have crashed at its first backward on the
+paid card. Fixes under way, with the others the review ranked: the disk pre-flight on the real alive count (and
+the decomposition fetch onto the new volume 2bun37yawb, US-NC-1), read steps only among files that exist, a
+full-size teacher-training rate check in B (positive control, 25 steps at 1e-6 and 1e-5, a filed rule picks the
+rate), a mount-point check, host-memory release between read steps, T1's end check report-only, atomic saves and a
+stricter resume check, and the maths pass test (ratio to the same-card W₀ maths reading, 1.5 line, user-accepted).
+"F1 is small early" is retired as a prediction: under the library's schedule step 1 runs at rate 0, so it is
+checked in code at step 2 (KL ≤ 0.005). The rehearsal reruns after the fixes.
