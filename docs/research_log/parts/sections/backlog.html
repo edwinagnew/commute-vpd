@@ -29,8 +29,12 @@
     <li><strong>A gated-on control that learns</strong>, before any further "direct share is small" claim.</li>
     <li><strong>Rungs 3 and 4</strong> once the direct share has somewhere to go.</li>
     <li><strong>E12 follow-ups</strong>: the moved set by relative change; the copy tasks' switched-on attention set.</li>
-    <li><strong>Induction, for further consideration</strong> (user, 2026-10-22): a fine-tune that adds something new to a known mechanism would show new behaviour attaching to known machinery. Cheap first check: whether the copy task's switched-on set includes the one query and one key subcomponent the VPD paper decomposes in layer 1.</li></ul></div>
-  <div class="card"><div class="k">Mechanism and definitions</div><ul>
+    <li><strong>Induction, for further consideration</strong> (user, 2026-10-22): a fine-tune that adds something new to a known mechanism would show new behaviour attaching to known machinery. Cheap first check: whether the copy task's switched-on set includes the one query and one key subcomponent the VPD paper decomposes in layer 1.</li>
+    <li><strong>Reset plan E46</strong> (<code>reports/plans/2026-10-28_plan_regating-line-reset.md</code>): stage 0, one table in nats on existing states with nulls (non-learning, other-target, random and sign-flipped updates); waits on the user.</li>
+    <li><strong>Re-gating: ablate the switched-on set in the full fine-tuned weights</strong> (2026-10-27): ran as E38 stages 1 and 2; removal uninformative, trace mixed.</li>
+    <li><strong>Re-gating: does the trigger&#39;s residual move toward natural target contexts</strong> (2026-10-27): ran as E38 stages 1 and 2; removal uninformative, trace mixed.</li></ul></div>
+  <div class="card"><div class="k">Mechanism and definitions
+</div><ul>
     <li><strong>Define re-weighting, recruit and create in VPD terms.</strong> E10 gives the first data.</li>
     <li><strong>The turned-down set: run as E29.</strong> It is not the original model's machinery for the competing tokens, and lowering it is not, as a rule, "switch off the competitors".</li>
     <li><strong>E18's remainder from another window: run as E18's fourth amendment.</strong> Mostly an averaging baseline. Remaining: the remainder with the fixed change present, borrowed only from nearest-neighbour inputs.</li>
@@ -38,7 +42,7 @@
     <li><strong>Flaw of the update or of the decomposition?</strong> A seed-consistency test was rejected as not answering it.</li>
     <li><strong>One rerun, two questions (user, 2026-10-21): do changed subcomponents keep their meaning, and does component training find the fine-tune's solution?</strong> Both need states E16 did not save (emoticon at steps 100 and 1,000, about 30 minutes on an L40). Meaning: the overlap of the Pile inputs the 20 gain-carrying pieces fire on, against 20 random ones, with synthetic rotations as the control. Same solution: the input-weighted cosine of the two weight changes and the KL between the two models, with two fine-tune seeds as the floor.</li></ul></div>
   <div class="card"><div class="k">Next phases</div><ul>
-    <li><strong>A larger model</strong> with a real post-trained sibling (Q9): started 2026-10-27 as the Qwen3-1.7B line, with teacher training as the map; E40 is running (section {{n:next}}). Every harness here needs re-validating on the new decomposition.</li>
+    <li><strong>A larger model</strong> with a real post-trained sibling (Q9): started 2026-10-27 as the Qwen3-1.7B line, with teacher training as the map; E40 has run once, its rerun is held by the re-plan and E44 is planned (section {{n:next}}). Every harness here needs re-validating on the new decomposition.</li>
     <li><strong>RL updates</strong> at matched behavioural effect (Q10).</li>
     <li><strong>Toy ground truth</strong> on the repository's small models.</li>
     <li><strong>Housekeeping:</strong> merge the nested ladder results directory; note "four checks" in decisions.</li></ul></div>
