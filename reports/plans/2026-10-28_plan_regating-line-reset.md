@@ -210,3 +210,121 @@ upstream), and ask whether those upstream pieces are themselves recruited or mov
 The fixed shift's form on any task; a cue-free restatement; a Γ refit; the 67M restore line's optional "dropped
 members" check; a second 67M model; GRPO (the Qwen line's Q5); a behavioural test of the masked model on lowercase
 text (E36's gap), unless stage 0's non-learning row makes it necessary, in which case it is a card first.
+
+## Amendment 1, before filing (2026-10-28, regating-lead; proposed, awaiting the user)
+
+The user's task (2026-10-28): "run (a) stage 0 … be way more rigorous about regating". Before filing, the lead put
+stage 0's predictions to a Fable advisor (notes and numbers:
+`reports/plans/2026-10-28_plan_regating-line-reset_numbers.txt`) against E12's, E6's and E36's filed cells in nats. Finding: **stage
+0 as written cannot tell an instrument from an artefact.** Its two nulls cannot fail, one null fails a working
+stand-in, and P0.2's number is the gate gain renamed.
+
+What the filed cells already say (nats; E12 `new_vs_existing.json` `routes_lift.cells`, seeds 0 and 1):
+
+| state | gate gain L(C₀,G₁)−L(C₀,G₀) | piece gain U₁−U₀ | d + i | gated piece gain / piece gain |
+|---|---|---|---|---|
+| copy (ident32, ident32b) | 10.7-11.6 | 12.0-12.6 | 0.13-0.19 | 0.87-0.97 |
+| random maps (rand32, rand32b) | 3.5-6.0 | 10.8-15.9 | 0.3-0.5 | 0.36-0.41 |
+| E6 random δW, Frobenius-matched | −0.017 | — | — | real gain −0.015 |
+| E36 code, learned nothing | −0.04/−0.05 | — | — | real gain −0.05/−0.07 |
+
+Defects and the proposed fix:
+
+1. **P0.2 is r renamed.** d + i (what the updated pieces add under gating) is 0.1-0.5 nats in both classes; the
+   separation rests entirely on the gate gain. Refiled as a *replication* of E12 in nats, lean high: on both seeds,
+   gated piece gain / piece gain ≥ 0.8 for copy and ≤ 0.5 for random maps (the piece gain is ≥ 10 nats on every
+   anchor, so the denominator is not degenerate). Not independent evidence for the instrument.
+2. **P0.1 is uncomputable.** Every null's real gain is under 0.1 nats, so its r is undefined. Dropped as a
+   prediction; r is reported only for states with real gain ≥ 1 nat (MIN_GAIN), as a row.
+3. **The sign-flipped null retires a working stand-in.** E6 and E36 show the gate gain tracks the sign and size of
+   tiny real gains. The flip becomes an unscored sanity row: sign(gate gain) = sign(real gain), and |gate gain| ≤
+   |real gain| + floor. It tests that Γ is smooth in its inputs, which nobody doubts.
+4. **The Frobenius-matched random δW is known inert** (E6). Replaced by one random δW scaled so the full model's KL
+   to W₀ at non-task positions matches the fine-tune's (scale capped at 10× the fine-tune's norm, reported).
+   Rule: |gate gain| ≤ floor.
+5. **Floors in nats.** A null passes if |gate gain| ≤ max(0.1 nats, 2 × paired SE of the per-window L(C₀,G₁) −
+   L(C₀,G₀)); the run prints n and the SE per state. No state with real gain ≤ 0 may read gate gain > +0.1. E36's
+   lowercase gain (0.07-0.13 nats per token) sits at this floor: reported with its SE, not scored. E36's code and
+   lowercase states have no trigger; they need the per-token cell function (`spread.masked_logp`), not
+   `route_split`.
+6. **The missing null (new P0.4, the one whose failure retires the line).** A write that uses no existing
+   machinery but makes downstream activations "predict the target": on each E12 anchor task, a rank-1 δW at an
+   early layer (`h.1.mlp.down_proj`, δW = α · u · v̄ᵀ, u the target's unembedding direction per key's answer — or,
+   for a single direction, the copy table's mean answer direction — v̄ the mean key-position input to that matrix),
+   α scaled so the real gain T₁ − T₀ matches the copy state's. It sits in Δ, so its piece gain is 0 by construction;
+   read the gate gain only. Prediction, if the gate gain reads *existing machinery*: gate gain ≤ 0.5 × the copy
+   state's. If it reads ≥ 0.8 × the copy state's, Γ reads "the activations now predict the target", not "the update
+   uses existing machinery", and E12's separation is a property of how the two fine-tunes move activations: the line
+   is retired as an interpretation of an update. Between 0.5 and 0.8: inconclusive, card.
+7. **Stage 0a tolerance.** Regenerated E18 states drift by 0.07 nats in T₁ (E38 `stage0.json`). The identity check
+   (r 0.60 ± 0.01) runs on E18's exact seed-0 state, `reading_a_coverage/emoticon/dW_ft_step10_s0.pt`; regenerated
+   and E38-cached states are checked at 2% of the gain (E38's `t1_rel_tol`). W₀ cells stay within 0.02 nats.
+
+**Revised tree.** P0.4 ≤ 0.5 and the random arm passes and P0.2 replicates: stage 1 is proposed with the gate gain
+and its three nulls as the reading. P0.4 ≥ 0.8, or the KL-matched random arm fails: retire, Blocking card as in
+section 2. P0.2 fails to replicate: stop, fix regeneration before reading anything.
+
+Open on the user: whether to adopt this amendment (and P0.4's single-direction or per-key form). Fable's caveat:
+if the user wants stage 0 only as bookkeeping (one table in nats, no instrument claim), the plan stands with items
+2, 4, 5 and 7.
+
+### Amendment 1 adopted (user, 2026-10-28: "adopt amendment 1, per-key write for P0.4"): the rules filed
+
+Everything in nats, on held-out windows at the scored position (E18: trigger; E12: the key position `half`). Floor F
+for a state = max(0.1, 2 × paired SE over windows of L(C₀,G₁) − L(C₀,G₀)). Gate gain g = L(C₀,G₁) − L(C₀,G₀); real
+gain G = T₁ − T₀.
+
+**States.** E18 do-nothing, three tasks × seeds 0, 1 + the ` http` null (E38's cached dW,
+`~/commute-data/results-large/recruitment_test/states/`), plus E18's exact seed-0 emoticon state
+(`reading_a_coverage/emoticon/dW_ft_step10_s0.pt`) for the identity check. E12's four tasks × seeds 0, 1 at the
+scored step, rebuilt by E12's recipe (`new_vs_existing/run.py` build + run) with their least-squares splits. E36's
+code fine-tune (steps 10, 100), per-token cells via `spread.masked_logp` (no U). Not E36 lowercase (at the floor), not
+E42 (no prediction reads it): listed in Not run.
+
+**Stage 0a (control; first, alone; any fail exits non-zero).**
+- W₀ cells L(C₀,G₀), U₀, T₀ per task within 0.02 of E18's and E12's filed values.
+- Identity: r on E18's exact seed-0 emoticon state = 0.597 ± 0.01.
+- Regenerated/cached states: T₁ within 2% of the filed gain of the filed T₁ (E38's `t1_rel_tol`); E12 states' r within
+  0.03 of the filed per-seed r.
+- Null: the ` http` state's G at the emoticon trigger, |G| ≤ 0.1 × the seed-0 fine-tune's G.
+
+**Predictions (stage 0b).**
+- **P0.2 (replication of E12, lean high).** Gated piece gain over piece gain, (L(C₁,G₁) − L(C₀,G₀)) / (U₁ − U₀),
+  ≥ 0.8 for each copy state and ≤ 0.5 for each random-map state, both seeds. Unscored if U₁ − U₀ < 1 nat. Any miss:
+  stop; fix regeneration before reading anything.
+- **P0.3 (KL-matched random δW, lean high).** Per E18 task and per E12 task, seed 0: a Gaussian δW
+  (`finetune.random_direction`, seed 0) on the same matrices, scaled by bisection so the full model's kl_other to W₀
+  (40 non-scored positions) equals the fine-tune's within 10%; scale capped at 10× the fine-tune's Frobenius norm (if
+  the cap binds, the row is reported "cap" and scored at the cap). Pass: |g| ≤ F on every row. Fail: |g| > F on any
+  scored row with |g| ≥ 0.25 × that task's fine-tune g.
+- **Sign row (unscored).** Flipped δW (−δW) of each seed-0 fine-tune: report g, G; expect sign(g) = sign(G).
+- **Non-positive rule (scored with P0.3).** Every state with G ≤ 0 (null, flipped, E36 code) reads g ≤ +0.1 + F.
+- **P0.4 (per-key direct write; the retire test, lean medium).** On ident32 and ident32b (copy), and reported on
+  rand32, rand32b: δW on the MLP output matrix of block 1 only, the minimum-norm solution of δW a_k = α u_{t(k)} for
+  every key k in the table, with a_k the mean input to that matrix at the key position over the task's training
+  windows with key k at W₀, u_t the unembedding row of answer t, and α set by bisection so G matches the seed-0 copy
+  fine-tune's G on that task within 5% (if no α ≤ 1e3 reaches it: "unreachable", the task is inconclusive). Its δW
+  lies in Δ (no piece gain); read g only. Ratio ρ = g_write / g_finetune(seed 0, same task). Both copy tasks
+  ρ ≤ 0.5: pass (Γ does not read a new write as existing machinery). Either copy task ρ ≥ 0.8: fail, retire the line.
+  Otherwise, or seeds' fine-tune g < 1 nat: inconclusive, card.
+
+**Tree.** P0.2 replicates, P0.3 passes, P0.4 passes → propose stage 1 with g and its nulls. P0.3 fails or P0.4
+fails → retire (Blocking card, section 2's words). P0.4 inconclusive → card with the numbers. P0.2 fails → stop, fix.
+
+### Question raised by the code review (2026-10-28, before any run): P0.4's copy writes are confounded
+
+The 67M model ties its output and input embeddings. On the copy tasks the answer is the key itself, so the per-key
+write adds the key's own embedding at block 1: "the current token is k, more strongly". That is an existing
+representation, and Γ may open existing machinery for it, so a ρ ≥ 0.8 on a copy task would not cleanly show that
+Γ reads "the activations predict the target". (Orthogonalising the write against the key's embedding removes all
+of it on copy, so that fix is degenerate.) The random-map writes do not have this confound: their answer is a
+different token from the key. Options:
+
+- **A (lead's recommendation).** Score P0.4 on the random-map writes (rand32, rand32b; α matched to that task's
+  seed-0 fine-tune's G), with ρ = g_write / g of the copy fine-tune of the same table size (ident32 for rand32,
+  ident32b for rand32b), the existing-machinery reference. Same bars: both ≤ 0.5 pass, either ≥ 0.8 retire, else
+  inconclusive. Copy writes reported with the confound named.
+- B. Keep as filed; the write-up names the confound, so a copy-task fail reads as inconclusive in practice.
+- C. Score both: retire only if copy and random-map writes both reach ≥ 0.8.
+
+Stage 0a (the control) does not depend on this and runs meanwhile; stage 0b waits for the answer.
