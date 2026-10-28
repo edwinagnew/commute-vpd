@@ -9,9 +9,15 @@ student's weight is (V_A + dV)(U_A + dU) + (V_D U_D) + Δ₀ transposed, that is
 
 Teacher training runs the target model under bf16 autocast with the change added to each decomposed nn.Linear's output
 as its own term, x changeᵀ (`change_hooks`), for the student and for the teacher (change δW): a weight swap under
-autocast would round W0 + δW to bf16 and lose most of a one-step δW. Loss: the mean over every position of
-KL(teacher ‖ student), `teacher.kl_exact_zero`'s gradient, so with δW = 0 the gradient is exactly 0 and Adam does not
-move (the T0 control). Readings run in fp32 on the swapped weights (`Offsets.state`).
+autocast would round W0 + δW to bf16 and lose most of a one-step δW. o_proj and down_proj, whose outputs join the
+fp32 residual stream, return out.float() + term.float(), so their change is not rounded to the bf16 output; the other
+sites feed bf16 matmuls and add it in bf16. The logits are the final hidden state through lm_head in fp32
+(`logits32`). Loss: the mean over every position of KL(teacher ‖ student), `teacher.kl_exact_zero`'s gradient.
+T0's exact zero: at δW = 0 the teacher has no hooks and the student adds an exact 0 (zero offsets give a zero change),
+so every bf16 output is bitwise the teacher's, and at o_proj/down_proj residual + out.float() equals the teacher's
+residual + out (the same fp32 promotion); the logits are equal, the gradient is exactly 0 and Adam does not move.
+`train` also logs the fp32 KL(teacher ‖ W0) on its first batch beside the training forward's own first value, so a
+precision loss shows. Readings run in fp32 on the swapped weights (`Offsets.state`).
 
 States read by the adversary (`adversary`, `importance_pass`): W0; do-nothing (weights W0 + δW, components unchanged,
 so Δ absorbs δW); after teacher training (weights W0 + change, the alive columns of U, V replaced in place, so Γ reads
@@ -31,12 +37,20 @@ import torch.nn.functional as F
 from torch import Tensor
 
 from commute import qwen_vpd
-from commute.qwen_sft import linears, load, plus, save, set_weights
+from commute.qwen_sft import linears, load, mean_kl, plus, save, set_weights
 from commute.qwen_vpd import SITES, Components, Gamma, importances, masked_logits
 from commute.teacher import kl_exact_zero
 from commute.vpd import kl_per_position
 
 Change = Callable[[str], Tensor]  # site -> [d_out, d_in] added to the weight
+RESIDUAL = ("o_proj", "down_proj")  # outputs added straight into the residual stream (Qwen3DecoderLayer)
+
+
+def logits32(model: Any, tokens: Tensor) -> Tensor:
+    """The body under whatever autocast is on, then the final hidden state through lm_head in fp32."""
+    h = model.model(tokens, use_cache=False).last_hidden_state
+    with torch.autocast("cuda", enabled=False):
+        return model.lm_head(h.float())
 
 
 def move_gamma(g: Gamma, device: str) -> Gamma:
@@ -49,12 +63,15 @@ def move_gamma(g: Gamma, device: str) -> Gamma:
 
 @contextmanager
 def change_hooks(model: Any, change: Change | None) -> Iterator[None]:
-    """Each decomposed nn.Linear's output plus x changeᵀ (in autocast's dtype when autocast is on); None: no hooks."""
+    """Each decomposed nn.Linear's output plus x changeᵀ (in autocast's dtype when autocast is on); o_proj and
+    down_proj, which join the fp32 residual stream, add it in fp32 (module docstring). None: no hooks."""
     if change is None:
         yield
         return
 
     def hook(site: str) -> Any:
+        if site.endswith(RESIDUAL):
+            return lambda m, args, out: out.float() + F.linear(args[0], change(site)).float()
         return lambda m, args, out: out + F.linear(args[0], change(site)).to(out.dtype)
 
     handles = [lin.register_forward_hook(hook(s)) for s, lin in linears(model).items()]
@@ -130,7 +147,7 @@ class Offsets:
 
     def save(self, path: Path, log: Any = print) -> None:
         tensors = {f"{s}.dV": self.dV[s] for s in SITES} | {f"{s}.dU": self.dU[s] for s in SITES}
-        save(path, tensors, torch.bfloat16, droppable=False, log=log)
+        save(path, tensors, torch.float32, droppable=False, log=log)
 
     def load_from(self, path: Path) -> None:
         t = load(path)
@@ -145,31 +162,41 @@ def train(model: Any, off: Offsets, teacher: Mapping[str, Tensor] | None, maths:
     """Adam (betas 0.9, 0.999, no decay, no clipping) on the offsets for `steps` steps. Each step: `rows_each` rows
     drawn with replacement from `maths` and from `web` (CPU [N, T] tensors, batch order `seed`), the loss the mean
     over every position of the batch of KL(teacher ‖ student), in micro-batches of `micro` rows. `teacher`: δW per
-    site (bf16 is enough: it enters as its own bf16 term); None: the teacher is the unchanged model."""
+    site (bf16 is enough: it enters as its own term); None: the teacher is the unchanged model. curve[0] also holds
+    `kl_fp32_teacher_w0`, the same first batch's KL(teacher ‖ W0) from fp32 forwards on swapped weights (0 for None),
+    to read beside curve[0]["kl"], the training forward's value of the same quantity."""
     dev = off.dV[SITES[0]].device
     opt = torch.optim.Adam(off.params(), lr=lr, betas=(0.9, 0.999), weight_decay=0.0, fused=True)
     gen = torch.Generator().manual_seed(seed)
     t_change = None if teacher is None else teacher.__getitem__
     n = 2 * rows_each * maths.shape[1]
     curve: list[dict[str, float]] = []
+    kl32 = 0.0
     model.train()  # gradient checkpointing; Qwen3 has no dropout
     try:
         for step in range(1, steps + 1):
             t0 = time.time()
             draw = [rows[torch.randint(len(rows), (rows_each,), generator=gen)] for rows in (maths, web)]
+            batch = torch.cat(draw).to(dev)
+            if step == 1 and teacher is not None:
+                W0 = {s: lin.weight.data for s, lin in linears(model).items()}
+                kl32 = mean_kl(model, list(batch.split(1)), plus(W0, teacher), None)
             opt.zero_grad(set_to_none=True)
             total = 0.0
-            for mb in torch.cat(draw).to(dev).split(micro):
+            for mb in batch.split(micro):
                 with torch.autocast("cuda", dtype=torch.bfloat16):
                     with torch.no_grad(), change_hooks(model, t_change):
-                        t_logits = model(mb, use_cache=False).logits
+                        t_logits = logits32(model, mb)
                     with change_hooks(model, off.change):
-                        s_logits = model(mb, use_cache=False).logits
+                        s_logits = logits32(model, mb)
                 loss = kl_exact_zero(t_logits, s_logits).sum() / n
                 loss.backward()
                 total += float(loss)
             opt.step()
             curve.append({"kl": total, "s": time.time() - t0})
+            if step == 1:
+                curve[0]["kl_fp32_teacher_w0"] = kl32
+                log(f"[teacher training] first batch KL(teacher ‖ W0): fp32 {kl32:.4e}, training forward {total:.4e}")
             if step in (1, 2, 10, 100) or step % 100 == 0:
                 log(f"[teacher training] step {step}: KL {total:.3e}, {curve[-1]['s']:.2f} s, "
                     f"peak {torch.cuda.max_memory_allocated() / 1e9:.1f} GB")
