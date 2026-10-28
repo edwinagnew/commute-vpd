@@ -180,14 +180,16 @@ def random_change(off: Offsets, alpha: float, seed: int, dtype: torch.dtype) -> 
 
 def train(model: Any, off: Offsets, teacher: Mapping[str, Tensor] | None, maths: Tensor, web: Tensor, lr: float,
           steps: int, rows_each: int, micro: int, seed: int, log: Any = print,
-          on_step: Callable[[int, list[dict[str, float]]], None] | None = None) -> list[dict[str, float]]:
+          on_step: Callable[[int, list[dict[str, float]]], None] | None = None, autocast: bool = True
+          ) -> list[dict[str, float]]:
     """Adam (betas 0.9, 0.999, no decay, no clipping) on the offsets for `steps` steps. Each step: `rows_each` rows
     drawn with replacement from `maths` and from `web` (CPU [N, T] tensors, batch order `seed`), the loss the mean
     over every position of the batch of KL(teacher ‖ student), in micro-batches of `micro` rows. `teacher`: δW per
     site (bf16 is enough: it enters as its own term); None: the teacher is the unchanged model. curve[0] also holds
     `kl_fp32_teacher_w0`, the same first batch's KL(teacher ‖ W0) from fp32 forwards on swapped weights (0 for None),
     to read beside curve[0]["kl"], the training forward's value of the same quantity. `on_step(step, curve)` runs after
-    every step (the caller's early checks; it may stop the job)."""
+    every step (the caller's early checks; it may stop the job). `autocast=False` runs both training forwards in
+    fp32 (the teacher's δW then fp32 too), the hooks kept (check_teacher.py's precision check)."""
     dev = off.dV[SITES[0]].device
     opt = torch.optim.Adam(off.params(), lr=lr, betas=(0.9, 0.999), weight_decay=0.0, fused=True)
     gen = torch.Generator().manual_seed(seed)
@@ -207,12 +209,13 @@ def train(model: Any, off: Offsets, teacher: Mapping[str, Tensor] | None, maths:
             opt.zero_grad(set_to_none=True)
             total = 0.0
             for mb in batch.split(micro):
-                with torch.no_grad(), change_hooks(model, t_change), torch.autocast("cuda", dtype=torch.bfloat16):
+                with (torch.no_grad(), change_hooks(model, t_change),
+                      torch.autocast("cuda", dtype=torch.bfloat16, enabled=autocast)):
                     t_logits = logits32(model, mb)
                 # the backward inside the student's hooks: non-reentrant checkpointing recomputes each layer during
                 # backward, and the recompute must run the same hooks as the forward did (rehearsal job 40530)
                 with change_hooks(model, off.change):
-                    with torch.autocast("cuda", dtype=torch.bfloat16):
+                    with torch.autocast("cuda", dtype=torch.bfloat16, enabled=autocast):
                         s_logits = logits32(model, mb)
                     loss = kl_exact_zero(t_logits, s_logits).sum() / n
                     loss.backward()
