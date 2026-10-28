@@ -24,6 +24,7 @@ CODE = re.compile(r"\b[PGCR]\d+′?\b|\be_(?:Δ|gate|delta)\b|\bkl_other\b")
 RETIRED = re.compile(r"\b(pull[- ]?backs?|lifts?|lifted|lifting|projections?)\b|(?<!\w)H[′'](?!\w)", re.IGNORECASE)
 INLINE = re.compile(r"`[^`]*`|\[([^\]]*)\]\([^)]*\)|\$[^$]*\$")
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z\*\"“(])")
+ITALIC_LINE = re.compile(r"\*[^*\s][^*]*\*|_[^_\s][^_]*_")
 
 
 def markdown_chunks(path: Path) -> list[tuple[str, str]]:
@@ -59,6 +60,8 @@ def sentences(lines: list[str], headings: list[str]) -> list[tuple[str, str]]:
             buf = []
         buf.append(line.strip())
         head = h
+        if ITALIC_LINE.fullmatch(line.strip()):  # a dated *...* header line is its own sentence (friction 70)
+            out.append((buf.pop(), head))
     if buf:
         out.extend((s, head) for s in SENTENCE_END.split(" ".join(buf)))
     return [(s.strip(), h) for s, h in out if s.strip()]
