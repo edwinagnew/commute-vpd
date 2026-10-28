@@ -92,7 +92,7 @@ def fig_faithful(res: Rec, out: Path) -> None:
     axes[0].set_ylabel("Pile adversarial ratio to the unchanged model")
     axes[0].legend(fontsize=7.5, loc="upper right", frameon=False)
     fig.suptitle("Do copies of the fine-tune stopped early pass the adversarial check where doing nothing fails?\n"
-                 "At step 10 do-nothing fails on both tasks; the copy passes on one (1.38) and stops between the lines "
+                 "At step 10 do-nothing fails on both tasks; the copy passes by 1% on one (1.38) and is inconclusive "
                  "on emoticon (1.55)", fontsize=11)
     fig.tight_layout()
     fig.savefig(out / "e41_faithful.png", dpi=150)
@@ -179,8 +179,8 @@ def fig_chain(res: Rec, out: Path) -> None:
         ax.set_xticks(range(len(groups)), names, fontsize=8.5)
         ax.legend(fontsize=7.5, loc="upper left", ncol=2, frameon=False)
     a2.set_ylim(0, 0.045)
-    fig.suptitle("Does the chain land on the same copy as one copy made from the unchanged model?\n"
-                 "No: cosine 0.65 to 0.86 and a change 20% to 36% larger, with the same verdicts", fontsize=11)
+    fig.suptitle("Does a chain of three copies land where one copy from the unchanged model does?\n"
+                 "No: cosine 0.65 to 0.86, a change 20% to 36% larger; verdicts within the filed tolerances", fontsize=11)
     fig.tight_layout()
     fig.savefig(out / "e41_chain.png", dpi=150)
     plt.close(fig)

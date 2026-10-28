@@ -6,19 +6,20 @@ predictions `experiments/teacher_training/results/predictions_e41.json`, filed 1
 notebook `notebooks/E41_teacher_path.ipynb`; figures `experiments/teacher_training/figures/e41_*.png` from
 `plot_e41.py`. Gap 3 of `reports/reviews/2026-10-28_review_technique-comparison.md`.*
 
+*Independent check: `reports/reviews/2026-10-28_review_e41-check.md`, corrections applied.*
+
 We stopped one fine-tune early and at its end, and trained the subcomponents to imitate each version, from the
-unchanged model and in a chain. Every copy kept the behaviour with the residual untouched, the chain did as well as
-single copies, and only the earliest emoticon copy missed the adversarial check's pass line. So teacher training
-reaches small, early updates without piling up error over three applications, but the earliest update is where it
-comes closest to failing.
+unchanged model and in a chain of three. Every copy kept the behaviour with the residual untouched, but at the one
+early step where doing nothing fails the check, one copy passed narrowly and the emoticon copy was inconclusive. So the
+earliest update is where teacher training is weakest, and the chain stayed within the filed tolerances while its weight
+change grew.
 
 ## The answer
 
-Mostly yes. We copied one fine-tune, stopped at three points, into the subcomponents with Δ fixed. Every copy kept the
-behaviour. Every copy but one passed the adversarial check. The earliest emoticon copy read between the pass and fail
-lines, where leaving that update in Δ fails clearly. That copy is worse than the line and much better than doing
-nothing. Copying step after step along the fine-tune ended as well as one copy made from the unchanged model, by a
-different and somewhat larger weight change.
+Partly. We copied one fine-tune, stopped at three points, into the subcomponents with Δ fixed. Every copy kept the
+behaviour. The adversarial check can tell a copy from doing nothing only at step 10, where doing nothing fails. There
+one copy passed by about 1% and the emoticon copy was inconclusive, between the lines. A chain of three copies stayed
+within the filed tolerances of single copies. Its weight change was larger and its adversarial ratio slightly higher.
 
 ## What we tested
 
@@ -83,16 +84,23 @@ E22's other two emoticon do-nothing readings also reproduce: 1.136 at $T_{100}$ 
 
 Every teacher holds P ≥ 0.9, so every early teacher stays in the scored predictions. The check sees both step-10 updates and neither step-100
 update: at step 100 do-nothing already passes, so the step-100 cells of the first prediction cannot tell teacher training from the trivial
-map.
+map. Their P and gap-share readings still show the copy learnt the teacher. At step 1,000 do-nothing is only
+inconclusive, so only the step-10 cells separate a map from doing nothing on the check.
 
 ## Does a copy of an early fine-tune pass where doing nothing fails?
 
 ![adversarial ratio against teacher step](../../experiments/teacher_training/figures/e41_faithful.png)
 
-On the " which" task yes; on emoticon not quite. At step 10 do-nothing fails on both tasks, at 2.52 and 2.16. The
-one-shot task-text copy brings the ratio to 1.38 on " which", just under the 1.396 line. On emoticon it brings it to
-1.55: inconclusive, not a fail. At step 100 every copy passes, but so does do-nothing. At step 1,000 every copy sits at
-0.96 to 1.05, where do-nothing is inconclusive on both tasks. The Pile-text copy of emoticon $T_{10}$ passes at 1.13.
+On the " which" task it passes, by 1.4%, well inside the noise; on emoticon it is inconclusive. At step 10 do-nothing
+fails on both tasks, at 2.52 and 2.16. The one-shot task-text copy reads 1.376 on " which", 1.4% under the 1.396 line,
+against an 11% batch-order spread and a 7.5% adversary-seed floor. On emoticon it reads 1.547: 11% above the pass line
+and 4.2% below the 1.612 fail line. At step 100 every copy passes, but so does do-nothing. At step 1,000 every copy
+sits at 0.96 to 1.05, where do-nothing is inconclusive on both tasks. The Pile-text copy of emoticon $T_{10}$ passes at
+1.13, so the emoticon miss belongs to the task-text copy, not to the teacher alone.
+
+The adjoint split of the same emoticon step-10 update passed at 1.06 with P 0.93 and Δ fixed in E22. At this step the
+closed-form map did better on the check than the task-text copy. It loses the behaviour later in the fine-tune: P
+0.60 at step 100 and 0.10 at step 1,000, against teacher training's ≥ 0.997 at every step.
 
 ### All states
 
@@ -122,24 +130,28 @@ comparable with the task-text column.
 The first prediction asked every early task-text copy to pass with gap share ≤ 0.05. The emoticon $T_{10}$ copy has gap share 0.0013
 and P 0.9994, but its adversarial ratio is 1.547, inconclusive, so it does not "work" by the filed rule. The score's
 `check_sees_the_update` field marks this cell `true`: its do-nothing state reads above the pass band, 2.516, fail.
-This is the cell where the check has power, so the miss is informative, not an artefact of a blind cell.
+Of the first prediction's four cells, only the two step-10 cells have power. They read one pass by 1.4% and one
+inconclusive. A high-lean prediction failed in the cell where the check had full power.
 
 Both readings hold, and neither is re-scored here.
 - **Against the line**: on the smallest and most fragile update we gave it, the map does not reach a pass, on one of
-  the two tasks. The other step-10 copy passes by 0.02.
+  the two tasks. The other step-10 copy passes by 0.019.
 - **Against doing nothing**: the copy removes $(2.516 - 1.547)/(2.516 - 1) = 0.64$ of the excess the adversary finds
   when the same update sits in Δ. The " which" $T_{10}$ copy removes 0.68 of its do-nothing excess. Both step-10
   copies keep the behaviour and sit closer to their teacher than any later copy, gap share 0.0013 and 0.0010.
 
-So for small updates: the copy is worse than the line and much better than doing nothing. It does not fail, and it
-reads where the check cannot decide. The distance to the pass line is 11%, the size of the largest batch-order spread
-of a task-text copy's ratio in E34 Amendment 4. A second batch order could land on either side.
+So for small updates: the emoticon copy is inconclusive at 1.547, 11% above the pass line and 4.2% below the fail
+line. It removes about two-thirds of do-nothing's excess over $W_0$, with its behaviour intact. The 4.2% to the fail
+line is inside the 7.5% adversary-seed floor, and its excess sits in one 128-row batch, below. A rerun could land in
+pass, inconclusive or fail. To pass it would need a 9.8% drop, about the largest batch-order spread of a task-text
+copy's ratio seen in E34 Amendment 4, "up to 11%".
 
 Two further readings from the log, not scored:
 - The harness reads the 256 rows as two 128-row batches, each with its own adversary. For the emoticon $T_{10}$ copy
   the batches read 0.722 and 1.440 against $W_0$'s 0.679 and 0.718, ratios 1.06 and 2.00. Do-nothing at $T_{10}$
-  reads 1.17 and 3.79. The excess sits in the same batch for both. For the " which" $T_{10}$ copy it is spread over
-  both batches, 1.37 and 1.38.
+  reads 1.17 and 3.79. The excess sits in the same batch for both. A ratio of 2.00 on that batch alone would read fail;
+  $W_0$'s second batch spreads 20% over adversary seeds 0-2, 0.718 / 0.828 / 0.690, far below it. For the " which"
+  $T_{10}$ copy the excess is spread over both batches, 1.37 and 1.38.
 - Both step-10 task-text copies reproduce their teacher's damage elsewhere in full, 1.04 and 1.02 times it, and are
   larger than the teacher, 1.25 and 1.07 times its size. Copies of $T_{1000}$ do 0.33 and 0.55 of their teacher's
   damage at 0.57 and 0.63 of its size. The emoticon $T_{10}$ Pile-text copy also does 1.11 times the teacher's damage
@@ -155,12 +167,14 @@ finished one: P 0.998 and 0.995 at $T_{10}$ and $T_{100}$, against 0.902 at $T_{
 against 0.027. At student step 100 the Pile-text copy of $T_{10}$ already holds 0.989; of $T_{1000}$, 0.339. The
 $T_{1000}$ Pile-text copy reproduces E34's: P 0.902, ratio 1.05.
 
-## Does copying step after step pile up error?
+## Does a chain of copies along the fine-tune pile up error?
 
 ![chained against one-shot: cosine and size](../../experiments/teacher_training/figures/e41_chain.png)
 
-Not over three links of 1,000 steps. Every chained copy passes, keeps P ≥ 0.90 and leaves Δ alone; all six filed
-comparisons hold with wide margins.
+Not on any scored number, over a chain of three checkpoints, steps 10, 100 and 1,000, with 1,000 student steps per
+copy. Every chained copy passes, keeps P ≥ 0.90 and leaves Δ alone, and all six filed comparisons hold. But on task
+text the chained adversarial ratio is 4-5% higher in all four cells, and two unfiled quantities grow from the second
+link to the third in every group.
 
 | task | text | teacher | chain ratio ÷ one-shot ratio (≤ 1.25) | chain P − one-shot P (≥ −0.01 task, −0.05 Pile) | chain gap share − one-shot (≤ +0.005 task, +0.02 Pile) | both verdicts | chain size ÷ one-shot size | holds |
 |---|---|---|---|---|---|---|---|---|
@@ -174,25 +188,37 @@ comparisons hold with wide margins.
 - **Same sign on task text.** The chained ratio is 4% to 5% above the one-shot's in all four task-text cells. That is
   inside the 25% tolerance, the 11% batch-order spread and the 7.5% adversary-seed floor, but it is one sign four
   times. On Pile text it is +1% and −2%.
-- **Different states.** Cosine of the chained and one-shot step-1000 weight changes: emoticon task text 0.750, Pile
-  text 0.653, " which" task text 0.858. References from E34 Amendment 5, two one-shot copies of another teacher, the
-  " which" SGD fine-tune, at two batch orders: 0.913 from task text, 0.429 from Pile text; a random direction 2e-4. On
-  task text the chain is further from the one-shot copy than batch order moves it; on Pile text it is closer.
-- **Larger.** The chained change is 1.20 to 1.36 times the one-shot copy's size at step 1000, still below the fine-tune's
-  own 0.032-0.033. The chained task-text copies also do more damage elsewhere: 0.027 against 0.018 on emoticon, 0.050
-  against 0.042 on " which". Not filed.
+- **Different states.** Cosine of the chained and one-shot step-1000 weight changes: 0.750 and 0.858 from task text,
+  0.653 from Pile text, against 0.913 and 0.429 between two batch orders of E34's copies of another teacher, the
+  " which" SGD fine-tune (E34 Amendment 5); a random direction 2e-4.
+- **Larger, and growing link by link** (not filed). The chained change is 1.20 to 1.36 times the one-shot copy's size
+  at step 1000, still below the fine-tune's own 0.032-0.033. Both its size and its damage elsewhere, relative to the
+  one-shot copy's, grow from the second link to the third in all three groups:
+
+  | group | size ÷ one-shot, T100 → T1000 | damage ÷ one-shot, T100 → T1000 |
+  |---|---|---|
+  | emoticon, task text | 1.27 → 1.36 | 1.27 → 1.49 |
+  | " which", task text | 1.11 → 1.20 | 1.07 → 1.19 |
+  | emoticon, Pile text | 1.12 → 1.21 | 0.87 → 1.05 |
+
+  That is the pattern accumulation would show, in quantities nobody filed; two links cannot tell a trend from noise,
+  and it is untested. The short-links branch should file a prediction on it.
+- **Gap share at step 1000 is lower for the chain**: 0.0033 against 0.0056 on emoticon, 0.0030 against 0.0039 on
+  " which", 0.0251 against 0.0266 on Pile text.
 - **Head start.** On task text the first link starts 0.13 and 0.17 nats from $T_{100}$, against 5.3 and 5.0 from
   $W_0$; the second link 0.065 and 0.062 from $T_{1000}$. On Pile text the chain's P at student step 100 against
   $T_{1000}$ is 0.948, against the one-shot copy's 0.339.
 
 ## What we learned
 
-Teacher training covers early updates on these two tasks, from task text and from ordinary text, with Δ untouched.
-The adjoint split, the other map that keeps Δ fixed, lost behaviour along this same fine-tune in E22. But teacher
-training's weakest result is on the earliest update: the step-10 emoticon copy is the one copy that did not pass. The
-small updates `GOALS.md` asks about are where this map comes closest to failing, not where it is safest. Applying it
-again along the fine-tune did not pile up error over three links, though the chained change grew. Whether that holds at
-many short links is the next question.
+Teacher training keeps the behaviour of every early teacher with Δ untouched, from task text on two tasks and from Pile
+text on emoticon. On the adversarial check, at the one step where doing nothing fails, one step-10 copy passed by 1.4%
+and the other was inconclusive. The step-10 task-text copies read the highest ratios of any trained state, so the small
+updates `GOALS.md` asks about are where this map is weakest, on one seed, one batch order and one adversary start.
+Along this fine-tune the adjoint split keeps Δ fixed and passes, but loses behaviour after step 10 (E22). At step 10,
+though, it passed at 1.06 where the task-text copy was inconclusive. A chain of three copies stayed within the filed
+tolerances of single copies on every scored number. Its size and damage elsewhere grew from link to link, which is
+what the short-links run must test.
 
 ## How compelling is the evidence
 
@@ -204,32 +230,41 @@ many short links is the next question.
   step-100 cells of the first prediction hold but carry no information about the map.
 - **Noise floor** (E34 Amendment 4, a second batch order, H100): ratio up to 11% on task text and 25% on Pile text; P
   0.005 and 0.032; gap share 0.002 and 0.010. $W_0$'s adversary-seed floor here 7.5%.
-- **The chain had more training**: 2,000 or 3,000 student steps in total against the one-shot's 1,000. That favours the
-  chain; it still did not beat the one-shot copy on task text.
+- **The chain had more training**: 2,000 or 3,000 student steps in total against the one-shot's 1,000. Its adversarial
+  ratio was still 4-5% higher on task text, while its gap share at step 1000 was lower. The extra steps also grew its
+  change and its damage elsewhere.
 - **The cosine references** come from another teacher and count directions that carry no behaviour; they bound how
   alike the total changes are, not where the behaviour sits.
 
 ## Surprises
 
 - **The first prediction failed as filed, on one cell, at a high lean.** We expected every early task-text copy to work. The emoticon
-  $T_{10}$ copy read 1.547, inconclusive, with its behaviour and gap intact. Not a reversal: the copy did not fail,
-  and it removed two-thirds of do-nothing's excess. The plan's decision tree sends it to a batch-order rerun.
+  $T_{10}$ copy read 1.547, inconclusive, with its behaviour and gap intact. It failed in the only cell where the check
+  had full power, 4.2% under the fail line, inside the adversary-seed floor; a rerun could read pass, inconclusive or
+  fail. The plan's decision tree sends it to a batch-order rerun.
 - **Early fine-tunes are easier to copy from Pile text than the finished one**: 0.998 and 0.995 against 0.902, where
   the filed lean was low.
 - **Step-10 copies are larger than their teachers** and reproduce their damage in full; copies of the finished
   fine-tune are smaller and do a third to a half of it. Not filed.
-- **The chained change grows** by 11% to 36% over the one-shot copy's, and its task-text ratios sit 4% to 5% above
-  the one-shot's in all four cells. Not filed; within noise.
+- **The chained change grows** by 11% to 36% over the one-shot copy's, more at the third link than at the second in all
+  three groups, and so does its damage elsewhere. Its task-text ratios sit 4% to 5% above the one-shot's in all four
+  cells. Not filed; each within noise, but one sign every time.
+- **The adjoint split did better at step 10** on the check: 1.06 with P 0.93 in E22, where the task-text copy of the same
+  update read 1.547.
 
 ## What next
 
-1. **The emoticon $T_{10}$ task-text copy at batch orders 1 and 2** (approved branch, Amendment 4's recipe, about $1,
-   H100). Both at or under 1.396: the miss was batch-order noise. Both above: the earliest update is a real limit.
-   Either way a Blocking card on early updates and the weak version goes to the user, as the plan's tree says.
+1. **The emoticon $T_{10}$ task-text copy at batch orders 1 and 2** (E41 Amendment 1; approved branch, Amendment 4's
+   recipe, about $1, H100). The plan's branch reads "if its verdict fails with the behaviour kept"; this cell's verdict
+   is inconclusive, and the amendment reads "fails" as "not pass", the first prediction's verdict condition. The
+   behaviour is kept, so the 3,000-step branch does not apply. Its predictions are filed first and must cover every
+   outcome: pass, inconclusive or fail at each batch order, and a mixed result. Either way a Blocking card on early
+   updates and the weak version goes to the user, as the plan's tree says.
 2. **Short chain links** (approved branch, "Amendment 2 of E41", about $1.5): emoticon, task text, a chain over the
    fine-tune's checkpoints 1, 3, 10, 30, 100, 300, 1000 with 100 student steps per link, read at every link against
-   this run's one-shot copies. Predictions filed first. If every link passes, the map can run alongside training; if
-   the ratio or the size grows link by link, it needs a reset.
+   this run's one-shot copies. Predictions filed first, including one on the size and damage growth seen here. If every
+   link passes, the map can run alongside training; if the ratio, the size or the damage grows link by link, it needs a
+   reset.
 
 ## Scorecard
 
@@ -242,7 +277,7 @@ Rules as filed in `predictions_e41.json`; the run's `score` block, checked here 
 | G3 | one-shot $T_{1000}$ task-text copy = E34's | P within 0.005, ratio within 15% | 0.99675 / 0.9591; 0.99443 / 0.9676 | pass ×2 |
 | C2 | warm start reproduces its start | step-1 KL ≤ 0.005; δW within 1e-3 | 0.0005; 0 | pass |
 | — | Δ untouched in every trained state | Δ's share ≤ 1e-6 | ≤ 2.3e-9 | pass |
-| P1 | early teachers copied from task text work | every cell (task × $T_{10}$, $T_{100}$): verdict pass and gap share ≤ 0.05 | emoticon $T_{10}$ 1.547 inconclusive, gap 0.0013; emoticon $T_{100}$ 1.016; " which" $T_{10}$ 1.376; " which" $T_{100}$ 1.002; all gaps ≤ 0.0031. Check sees the update: $T_{10}$ cells yes, $T_{100}$ cells no | **fails as filed** (1 of 4 cells; lean high) |
+| P1 | early teachers copied from task text work | every cell (task × $T_{10}$, $T_{100}$): verdict pass and gap share ≤ 0.05 | emoticon $T_{10}$ 1.547 inconclusive, gap 0.0013; emoticon $T_{100}$ 1.016; " which" $T_{10}$ 1.376; " which" $T_{100}$ 1.002; all gaps ≤ 0.0031. Check sees the update: $T_{10}$ cells yes, $T_{100}$ cells no | **fails as filed** (1 of 4 cells; lean high). Of the two cells with power, one passes by 1.4% and one is inconclusive |
 | P2 | early teachers copied from Pile text, emoticon | learnt if works; neither if P < 0.5; else between | $T_{10}$ P 0.9984, 1.134 pass, gap 0.0038; $T_{100}$ P 0.9954, 0.954 pass, gap 0.0049 | **learnt** (lean learnt, low) |
 | P3 | chain not worse, task text | at $T_{100}$, $T_{1000}$ per task: pass where one-shot passes; ratio ≤ 1.25×; P ≥ −0.01; gap ≤ +0.005 | 4 of 4 cells, table above | **holds** (lean high) |
 | P4 | chain not worse, Pile text, emoticon | as P3 with 1.25×, −0.05, +0.02 | 2 of 2 cells | **holds** (lean medium) |
@@ -259,10 +294,10 @@ Rules as filed in `predictions_e41.json`; the run's `score` block, checked here 
 
 ## Provenance
 
-- RunPod NVIDIA H100 80GB HBM3; job 12:15:12 to 12:58:25 on 2026-10-28, 43.5 min of pod, about $3.2. Pod ID not
-  recorded in the repo. Results committed in a450fde.
+- RunPod NVIDIA H100 80GB HBM3; job 12:15:12 to 12:58:25 on 2026-10-28, 43.2 min of job, about $3.2 in all. Pod time
+  and pod ID are not recorded in the repo. Results committed in a450fde.
 - `teacher_training_e41.json` sha256 `aeb17705e38a47409981b4165e7bd8bd17f2a9e0118cf1b64a779414a76747a7`.
 - `predictions_e41.json` sha256 `9e442abc41e89b673e1e85d0d345886a520a4fff589cb8b22d28a1cd9d95cf6d`.
 - `e41_dl/run_e41.log` sha256 `9085946bb2b9ed50ae2201ed539306bf7eb7e8cf9d6216846dd19b4be3024b83`.
 - Figures: `uv run python experiments/teacher_training/plot_e41.py`, from the results JSON only.
-- Independent check of this analysis: pending.
+- Independent check: `reports/reviews/2026-10-28_review_e41-check.md`, corrections applied.
