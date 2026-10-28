@@ -251,14 +251,16 @@ through the same table:
 asks about; the anchors are the best proxies we have (behaviour novelty, content novelty), and whether VPD.s readings
 track even those proxies is itself a result, not a calibration. Second, the anchors differ in domain as well as in
 novelty: one is maths with long answers, the other short entity recall. A row that separates them may be separating
-maths from facts, and a GSM8K arm would then "read like anchor 1" for being maths. **Open, user.s call:** put both
-anchors inside GSM8K-style maths (anchor 2 as invented operators or unit conversions used in word problems, graded
-by the final number) at the cost of a harder dataset to write, or keep the cheap anchors and state the confound in
-every reading.
+maths from facts, and a GSM8K arm would then "read like anchor 1" for being maths. **Decided (user, 2026-10-28):**
+run with the cheap anchors as they are, and state the domain confound beside every anchor reading and in the write-up:
+no GSM8K arm is reported as "reads like anchor 1" without the sentence "anchor 1 shares its domain, anchor 2 does
+not". A domain-matched anchor pair is a backlog item (`backlog.md`, 2026-10-28), not part of this plan.
 
 **What "distinguish" looks like, filed before the runs.** The predictions below are for the two anchors only. A row
 counts as validated only if the gap between the anchors exceeds the spread between seeds of the same anchor, which
-needs two seeds per anchor (+~$8; **open, user.s call**) or the row is reported as a single-seed observation. The
+needs two seeds per anchor (**decided, user 2026-10-28**; the +~$8 is a floor, the user expects more, so the
+runner measures the first seed.s cost before starting the second) or the row is reported as a single-seed
+observation. The
 decisive rows are named before the runs, not chosen after; "any row" is not a rule. A validated row is then read on
 each GSM8K arm, and the arm is reported as "reads like anchor 1", "reads like anchor 2", "between", or "like
 neither", with the numbers. No GSM8K arm has a predicted column. **KL matching:** each arm.s KL to start is read on
@@ -301,7 +303,8 @@ sources (saved `droppable=True` under `large/sources` on the pod volume) still e
 | 7-10 | Q5, GRPO, ~100 steps, δW saved at the same steps; Q1 and Q3 tables on it. Q4 only if Q1 failed | ~$20 (+$30 if Q4) |
 | 11-13 | Write-up: one figure per deliverable, the Q0 controls beside every pass; buffer for one rerun | — |
 
-Total about $50-80 over two sessions' caps. Feasible if the line runs the table above and nothing else: no
+Total about $60-90 over two sessions. caps, with the second anchor seeds and the matching grid included and their
+estimates treated as floors. Feasible if the line runs the table above and nothing else: no
 amendments beyond a rerun of a failed stage, no new side questions.
 
 **Risks, in order.** (1) Q0's controls fail to fail: no reading has teeth, and a day goes to settling the criterion
@@ -322,7 +325,10 @@ score and rephrasings are reported.
 > $10: the three readings, the two positive controls, the free singular-subspace check, and the least-squares and
 > adjoint splits of δW at steps 10 and 100. Predictions filed before the run. Then Q2 with the four arms of §7:
 > the two GSM8K arms carry no elicitation-or-new label; the two anchors (context distillation, invented facts) are
-> the only arms with predicted columns, and the GSM8K arms are read against them. Do not write "GSM8K is the
+> the only arms with predicted columns, and the GSM8K arms are read against them. Two seeds per anchor, the
+> decisive rows named before the run, the domain confound stated beside every anchor reading, arms compared on a
+> grid of KL values on their own rows and on the shared maths rows. Read §3A, Q0.s controls and noise floor, Q1.s
+> "Expected", and §7.s two limits before writing the plan; they changed on 2026-10-28 after review. Do not write "GSM8K is the
 > strengthening case" anywhere; `reports/analyses/2026-10-27_analysis_qwen-gsm8k-rl-headroom.md` §"How it bears on
 > the project" does, and a one-paragraph review report should say why that inference is withdrawn.
 > Rules of §5 apply: a heuristic question gets one hour and no run; one question per run; the adversary once per
