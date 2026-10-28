@@ -27,6 +27,9 @@ S's share of the top movers (`top_share`) and its readings (P11, P12).
 Amendment 5 (2026-10-28, reports/plans/2026-10-28_plan_e38-amend5.md) adds each piece's first-order take-back e_c
 (`trigger_grads`, `take_back`), the per-matrix top sets by a score (`top_per_matrix`: D by e_c, C_k by Delta_c),
 S's top-direction share (`top_dir_share`), control R6's pieces and rule (`top_abs`, `r6_agree`) and P13.
+
+Amendment 6 (2026-10-28, reports/plans/2026-10-28_plan_e38-amend6.md) restores S and D together and S split by the
+sign of its training e_c; it adds P14 (`overlap`, `p14_seed_class`, `p14_task_class`, `p14_reading`).
 """
 
 from __future__ import annotations
@@ -718,3 +721,42 @@ def p13_reading(states: dict[str, dict[str, dict[str, Any]]]) -> dict[str, Any]:
     reading = ("Gamma adds" if ahead >= N_TASKS and nots == 0 else "direction suffices" if nots >= N_TASKS and ahead == 0
                else "outside the tree")
     return {"seed_class": seeds, "task_class": tasks, "n_scored_tasks": len(scored), "reading": reading}
+
+
+# ----------------------------------------------------------------------------- E38 Amendment 6: S and D together
+# reports/plans/2026-10-28_plan_e38-amend6.md, filed predictions experiments/recruitment_test/results/predictions_amend6.json.
+
+P14_FLOOR, P14_SEPARATE, P14_REDUNDANT = 0.10, 0.5, 0.05  # P14: rho_r(S), rho_r(D) >= 0.10; a >= 0.5 x min; a <= 0.05
+UNSCORED = "unscored"
+
+
+def overlap(rho: dict[str, float]) -> float:
+    """a = rho_r(S union D) - max(rho_r(S), rho_r(D))."""
+    return rho["S_union_D"] - max(rho["S"], rho["D"])
+
+
+def p14_seed_class(scorable: bool, rho_S: float, rho_D: float, a: float) -> str:
+    """P14's seed rule: 'unscored' if G < 1 (first: its shares are nan) or rho_r(S) or rho_r(D) < 0.10; 'separate' if
+    a >= 0.5 x min(rho_r(S), rho_r(D)) (checked first), 'redundant' if a <= 0.05, else 'partial'."""
+    if not scorable or rho_S < P14_FLOOR or rho_D < P14_FLOOR:
+        return UNSCORED
+    if a >= P14_SEPARATE * min(rho_S, rho_D):
+        return "separate"
+    return "redundant" if a <= P14_REDUNDANT else "partial"
+
+
+def p14_task_class(seeds: list[str]) -> str:
+    """P14's task rule on the seeds' classes: 'unscored' if any seed is, else their common class or 'seeds disagree'."""
+    if UNSCORED in seeds:
+        return UNSCORED
+    return seeds[0] if len(set(seeds)) == 1 else "seeds disagree"
+
+
+def p14_reading(states: dict[str, dict[str, dict[str, Any]]], task: str, beside: str) -> dict[str, Any]:
+    """P14 from {task: {seed: record}} (record: scorable, rho {'S', 'D', 'S_union_D'}): each seed's a and class, each
+    task's class; the reading is `task`'s class (' which'), with `beside`'s (emoticon) reported next to it."""
+    a = {f"{n}/s{k}": overlap(r["rho"]) for n, s in states.items() for k, r in s.items()}
+    seeds = {f"{n}/s{k}": p14_seed_class(r["scorable"], r["rho"]["S"], r["rho"]["D"], a[f"{n}/s{k}"])
+             for n, s in states.items() for k, r in s.items()}
+    tasks = {n: p14_task_class([seeds[f"{n}/s{k}"] for k in s]) for n, s in states.items()}
+    return {"a": a, "seed_class": seeds, "task_class": tasks, "reading": tasks[task], "beside": tasks[beside]}
