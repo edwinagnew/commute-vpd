@@ -53,6 +53,7 @@ PRED, OUT = RESULTS / "predictions_e41_amend2.json", RESULTS / "teacher_training
 CHECK = ("pass", "at the line", "fail")  # the check's verdict on the two Pile ratios, in order
 LABEL = {"pass": "pass", "inconclusive": "at the line", "fail": "fail"}  # faith_score.verdict's words -> CHECK
 ANCHORS = ("10", "100", "1000")  # the links with an E41 one-shot copy of the same teacher
+TOO_CLOSE = "teacher too close to W0 to read"  # P1 leaves such a link out (its check verdict is still reported)
 
 
 @dataclass(frozen=True)
@@ -82,6 +83,9 @@ class Amend2:
     c2_loss_max: float = 0.005  # C2: step-1 KL of the warm start against its own weights (E41 read 0.0005)
     c2_dw_rel_max: float = 1e-3  # C2: largest |delta-W after - before| / largest |delta-W before|, lr 0, one step
     works_gap: float = 0.05  # behaviour kept: gap share <= this, and P(target) >= 0.9 where the teacher's is
+    # P1: a teacher whose gap at W0 is below this (nats) is too close to W0 to read a gap share; a link's teacher gap
+    # must exceed it to count as behaviour lost. 10 x E41's C2 hook-vs-merged KL (0.000502, results/teacher_training_e41.json)
+    gap_floor: float = 0.005
     not_worse: tuple[float, float, float] = (0.25, 0.01, 0.005)  # P2: E41 P3's ratio (relative), P, gap share
     pileup: float = 0.25  # P3: the last link's size and damage at most (1 + this) x the one-shot T1000 copy's
     near: float = 0.075  # reported: a ratio within this (relative) of a verdict line, W0's adversary-seed floor
@@ -179,6 +183,8 @@ def c2(job: Job, out: dict[str, Any], st: dict[str, Any]) -> None:
 def chain(job: Job, out: dict[str, Any], T: dict[str, Any]) -> None:
     """The links in order, each from the previous link's state; every link read, logged and scored as it finishes."""
     tctx = job.task(EMO)[0]
+    for stale in ("C2", "score", "done"):  # a rerun redoes the chain; run.load keeps everything but "stopped"
+        out.pop(stale, None)
     out["links"], st = {}, None
     for i, (k, seed) in enumerate(zip(map(str, AM.links), AM.link_seeds, strict=True)):
         nothing(job, out, T, k)
@@ -191,7 +197,8 @@ def chain(job: Job, out: dict[str, Any], T: dict[str, Any]) -> None:
         out["score"] = score(out)
         dump(OUT, out)
         log(f"[link T{k}] check {rec['check']} pgd {rec['pgd']:.4f} stochastic {rec['stochastic']:.4f} P(target) "
-            f"{rec['p_target']:.5f} gap share {rec['gap_share']:.5f} size {rec['size']:.5f} damage {rec['damage']:.5f} "
+            f"{rec['p_target']:.5f} teacher gap {rec['teacher_gap']:.6f} gap at W0 {out['teachers'][k]['gap_w0']:.6f} "
+            f"gap share {rec['gap_share']:.5f} size {rec['size']:.5f} damage {rec['damage']:.5f} "
             f"start KL {rec['start_kl']:.5f} seed {seed} student steps {rec['student_steps']} ({rec['seconds']:.0f} s)")
         log(f"[score after T{k}] {json.dumps(out['score'], default=float)}")
         if rec["delta_share"] > AM.delta_max:
@@ -226,20 +233,23 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
     links, teach = out.get("links", {}), out.get("teachers", {})
 
     def category(k: str) -> str | None:
-        r, t = links.get(k), teach.get(k, {}).get("reading")
-        if r is None or t is None:
+        r, t, g = links.get(k), teach.get(k, {}).get("reading"), teach.get(k, {}).get("gap_w0")
+        if r is None or t is None or g is None:
             return None
         assert r["check"] in CHECK, r["check"]
-        lost = r["gap_share"] > AM.works_gap or (t["p_target"] >= CFG.p_min and r["p_target"] < CFG.p_min)
+        if g < AM.gap_floor:
+            return TOO_CLOSE
+        lost = ((r["gap_share"] > AM.works_gap and r["teacher_gap"] > AM.gap_floor)
+                or (t["p_target"] >= CFG.p_min and r["p_target"] < CFG.p_min))
         return "behaviour lost" if lost else r["check"]
 
     def ratio(a: float, b: float) -> float | None:
         return None if b == 0 else a / b
 
     cats = {k: category(k) for k in map(str, AM.links)}
-    known = [c for c in cats.values() if c is not None]
-    p1 = (None if len(known) < len(cats) else "behaviour lost" if "behaviour lost" in known
-          else max(known, key=CHECK.index))
+    read_ = [c for c in cats.values() if c is not None and c != TOO_CLOSE]
+    p1 = (None if None in cats.values() or not read_ else "behaviour lost" if "behaviour lost" in read_
+          else max(read_, key=CHECK.index))
     p2 = {k: not_worse(links.get(k), AM.oneshot[k]) for k in ANCHORS}
     end, o = links.get(ANCHORS[-1]), AM.oneshot[ANCHORS[-1]]
     p3 = None if end is None else (end["size"] <= (1 + AM.pileup) * o["size"]
@@ -248,7 +258,8 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
     floor = out["W0"]["pgd_floor"]
     return {"C1": out.get("C1", {}).get("pass"), "G1": out.get("G1", {}).get("pass"), "PC": out.get("PC", {}).get("pass"),
             "C2": out.get("C2", {}).get("pass"),
-            "P1_links": {"outcome": p1, "per_link": cats, "lean": "at the line"},
+            "P1_links": {"outcome": p1, "per_link": cats, "too_close": [k for k, c in cats.items() if c == TOO_CLOSE],
+                         "lean": "at the line"},
             "P2_not_worse": {"pass": holds(p2), "per": p2},
             "P3_no_pileup": {"pass": p3, "size_over_oneshot": None if end is None else end["size"] / o["size"],
                              "damage_over_oneshot": None if end is None else end["damage"] / o["damage"]},
@@ -301,7 +312,7 @@ PREDICTIONS: dict[str, Any] = {
                       "T1000 1.499 at the line (E41, to the digit); T1, T3, T30, T300 not read before",
         "teachers": "T10 P 0.99931 size 0.01125, T100 0.99946 / 0.02217, T1000 0.99961 / 0.03209 (E41); T1 and T3 P "
                     "unknown (the fine-tune's step-1 batch read P 0.011 before its update, step 10 0.995), sizes rising "
-                    "from about 0.002; gap at W0 about 5.1 nats from T10 on",
+                    "from about 0.002; gap at W0 about 5.1 nats from T10 on, never measured at T1 and T3",
         "references": "E41's one-shot copies: T10 1.547 at the line, P 0.9994, gap share 0.0013, size 0.0141, damage "
                       "0.0577; T100 1.016 pass, 0.9989, 0.0014, 0.0168, 0.0363; T1000 0.959 pass, 0.9968, 0.0056, "
                       "0.0184, 0.0180. Amendment 1: the T10 copy at batch orders 1 and 2 read 1.280 pass and 1.505 at "
@@ -317,14 +328,19 @@ PREDICTIONS: dict[str, Any] = {
         {"id": "P1_links", "kind": "three-way plus 'behaviour lost', filed with a lean",
          "lean": "at the line, medium (the T10 one-shot copies read 1 pass and 2 at the line over three batch orders; "
                  "the links at T1 and T3 copy updates never read; from T100 on one-shot copies pass by 25% or more)",
-         "rule": "per link k in 1, 3, 10, 30, 100, 300, 1000: 'behaviour lost' if its gap share > 0.05, or if T_k's "
-                 "P(target) >= 0.9 and the link's < 0.9; else the check's verdict on its two ratios (pass, at the "
-                 "line, fail). Outcome: unscored if any link or teacher reading is missing; 'behaviour lost' if any "
-                 "link is; else the worst link's verdict (pass < at the line < fail): 'pass' only if every link "
-                 "passes. Ties keep the behaviour (gap share exactly 0.05, P exactly 0.9) and follow faith_score's "
-                 "lines (ratio exactly 1.5 / 1.0748 passes, exactly 1.5 x 1.0748 fails). Reported beside: per link, "
-                 "whether the check sees its update, the line a ratio is within 7.5% of, and the share of do-nothing's "
-                 "excess removed, (do-nothing - link) / (do-nothing - 1) where do-nothing > 1",
+         "rule": "per link k in 1, 3, 10, 30, 100, 300, 1000: 'teacher too close to W0 to read' (left out of P1, its "
+                 "check verdict still reported) if T_k's gap at W0 < 0.005 nats (10 x E41's C2 hook-vs-merged KL, "
+                 "0.0005: below it a gap share is a ratio of two numbers near the hook path's floor); else 'behaviour "
+                 "lost' if its gap share > 0.05 and its teacher gap > 0.005 nats, or if T_k's P(target) >= 0.9 and the "
+                 "link's < 0.9; else the check's verdict on its two ratios (pass, at the line, fail). Outcome: "
+                 "unscored if any link, teacher reading or gap at W0 is missing, or if every link is too close; "
+                 "'behaviour lost' if any read link is; else the worst read link's verdict (pass < at the line < "
+                 "fail): 'pass' only if every read link passes. Ties: gap at W0 exactly 0.005 is read; gap share "
+                 "exactly 0.05, teacher gap exactly 0.005 and P exactly 0.9 keep the behaviour; ratios follow "
+                 "faith_score's lines (exactly 1.5 / 1.0748 passes, exactly 1.5 x 1.0748 fails). Reported beside: per "
+                 "link, whether the check sees its update (a pass where do-nothing also passes carries no "
+                 "information), the line a ratio is within 7.5% of, and the share of do-nothing's excess removed, "
+                 "(do-nothing - link) / (do-nothing - 1) where do-nothing > 1",
          "reading": "pass: teacher training applied every 100 steps keeps every early update faithful, so it can run "
                     "alongside training on this fine-tune. at the line: the chain is where the one-shot T10 copy is "
                     "(decisions.md option (a) accepts that). fail or behaviour lost: a qualitative surprise",
@@ -338,7 +354,9 @@ PREDICTIONS: dict[str, Any] = {
                  "1.25 x the one-shot's (relative), P(target) >= the one-shot's - 0.01 and gap share <= the one-shot's "
                  "+ 0.005 (absolute; E41 P3's arm-A tolerances), all inclusive. Holds if all three anchors do; "
                  "unscored if one is missing",
-         "reading": "fails: short links pile up error the one-shot copy does not have, on the check or the behaviour",
+         "reading": "fails at T100 or T1000: short links pile up error the one-shot copy does not have, on the check or "
+                    "the behaviour. A miss at T10 alone sits inside batch-order noise (the one-shot copy reads 1.547 "
+                    "at the line, spread 21% over three orders) and is not read as pile-up",
          "blind_to": "as P1; the chain has 300 / 500 / 700 student steps at the anchors against the one-shot's 1,000"},
         {"id": "P3_no_pileup", "kind": "two-sided, filed with a lean",
          "lean": "fails, medium, on damage (E41's 1,000-step chain read 1.36x the one-shot's size and 1.49x its damage "
