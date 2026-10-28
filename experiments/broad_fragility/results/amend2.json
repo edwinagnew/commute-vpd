@@ -1,0 +1,564 @@
+{
+ "card": "NVIDIA H100 80GB HBM3",
+ "done": [
+  "move",
+  "label_adam",
+  "label_sgd",
+  "lora",
+  "cap"
+ ],
+ "label": {
+  "adam": {
+   "chosen": {
+    "lr": 1e-05,
+    "step": 1000
+   },
+   "done": true,
+   "gain": 0.13434127332624035,
+   "grid": {
+    "1e-05@100": {
+     "damage": 0.10781733336993911,
+     "diverged": false,
+     "gain": 0.14306805245277276,
+     "gap": 0.11999944788725704
+    },
+    "1e-05@1000": {
+     "damage": 0.27041196606771445,
+     "diverged": false,
+     "gain": 0.13434127332624035,
+     "gap": 0.1315942434659924
+    },
+    "1e-05@300": {
+     "damage": 0.1629687499239636,
+     "diverged": false,
+     "gain": 0.15601789604303118,
+     "gap": 0.10674988139426357
+    },
+    "3e-05@100": {
+     "damage": 0.20181575255663464,
+     "diverged": false,
+     "gain": 0.11092314679245607,
+     "gap": 0.1389041989209217
+    },
+    "3e-05@1000": {
+     "damage": 0.5025133225283646,
+     "diverged": true,
+     "gain": -0.03256800136446447,
+     "gap": 0.2977261329166201
+    },
+    "3e-05@300": {
+     "damage": 0.2972463382292452,
+     "diverged": false,
+     "gain": 0.09328108104386068,
+     "gap": 0.1603799973333689
+    }
+   }
+  },
+  "sgd": {
+   "chosen": {
+    "lr": 0.03,
+    "step": 100
+   },
+   "done": true,
+   "gain": 0.1253369650407623,
+   "grid": {
+    "0.01@100": {
+     "damage": 0.06912542349101043,
+     "diverged": false,
+     "gain": 0.12171964800703261,
+     "gap": 0.14057862157815498
+    },
+    "0.01@1000": {
+     "damage": 0.15272322744562492,
+     "diverged": false,
+     "gain": 0.16581334318215646,
+     "gap": 0.09696419184633862
+    },
+    "0.01@300": {
+     "damage": 0.1015718916860169,
+     "diverged": false,
+     "gain": 0.14558587978517368,
+     "gap": 0.11959103972340161
+    },
+    "0.03@100": {
+     "damage": 0.12469632269916499,
+     "diverged": false,
+     "gain": 0.1253369650407623,
+     "gap": 0.13521795553653546
+    },
+    "0.03@1000": {
+     "damage": 0.2288499923714137,
+     "diverged": false,
+     "gain": 0.15372177373179197,
+     "gap": 0.10483971944592807
+    },
+    "0.03@300": {
+     "damage": 0.15538013310954435,
+     "diverged": false,
+     "gain": 0.14931235128023213,
+     "gap": 0.11786341680742927
+    },
+    "0.1@100": {
+     "damage": 0.2148977826644159,
+     "diverged": false,
+     "gain": 0.07799535740008467,
+     "gap": 0.16585913021420554
+    },
+    "0.1@1000": {
+     "damage": 0.37468725767241046,
+     "diverged": false,
+     "gain": 0.057211395603906645,
+     "gap": 0.19268911888765006
+    },
+    "0.1@300": {
+     "damage": 0.28731912671360377,
+     "diverged": false,
+     "gain": 0.08225146011826379,
+     "gap": 0.17559086424462847
+    }
+   }
+  }
+ },
+ "moves": {
+  "0": {
+   "damage": 0.24356900286513683,
+   "matched": true,
+   "target": 0.23386794626119772,
+   "trail": [
+    [
+     4.0,
+     0.15199269311729557
+    ],
+    [
+     8.0,
+     0.7381367880937746
+    ],
+    [
+     5.656854249492381,
+     0.3259326384211943
+    ],
+    [
+     4.756828460010884,
+     0.22132131955434003
+    ],
+    [
+     5.187358218604039,
+     0.26820810934611283
+    ],
+    [
+     4.967431248293936,
+     0.24356900286513683
+    ]
+   ],
+   "x": 4.967431248293936
+  },
+  "1": {
+   "damage": 0.24054608552997392,
+   "matched": true,
+   "target": 0.23386794626119772,
+   "trail": [
+    [
+     4.0,
+     0.16462735419061653
+    ],
+    [
+     8.0,
+     0.803588027412334
+    ],
+    [
+     5.656854249492381,
+     0.3550959821180201
+    ],
+    [
+     4.756828460010884,
+     0.24054608552997392
+    ]
+   ],
+   "x": 4.756828460010884
+  }
+ },
+ "reads": {
+  "label_adam": {
+   "check": 7.242423889620775,
+   "damage": 0.27041196606771445,
+   "gap": 0.1315942434659924,
+   "logp": -3.01127491350667,
+   "lr": 1e-05,
+   "pile": {
+    "ci_masked_kl": 1.3526206688252738,
+    "pgd_kl": 7.242423889620775,
+    "stochastic_kl": 1.351105631493966,
+    "unmasked_kl": 1.3438759849557356
+   },
+   "s": 1.033781942257971,
+   "size": 0.054084327071905136,
+   "step": 1000,
+   "stochastic": 1.351105631493966,
+   "teacher": "adam",
+   "verdict": "fail"
+  },
+  "label_sgd": {
+   "check": 1.275385383219759,
+   "damage": 0.12469632269916499,
+   "gap": 0.13521795553653546,
+   "logp": -3.020279221792148,
+   "lr": 0.03,
+   "pile": {
+    "ci_masked_kl": 1.1011077734289572,
+    "pgd_kl": 1.275385383219759,
+    "stochastic_kl": 1.0839024922015257,
+    "unmasked_kl": 0.992411879423782
+   },
+   "s": 0.9644920577900318,
+   "size": 0.013756810687482357,
+   "step": 100,
+   "stochastic": 1.0839024922015257,
+   "teacher": "adam",
+   "verdict": "pass"
+  },
+  "move_s0": {
+   "check": 16.46138883767746,
+   "damage": 0.24356900286513683,
+   "damage_miss": 0.04148091587166203,
+   "gap": 0.477690145773667,
+   "logp": -3.3867668101797648,
+   "pile": {
+    "ci_masked_kl": 1.2530125773440144,
+    "pgd_kl": 16.46138883767746,
+    "stochastic_kl": 1.2200075959655896,
+    "unmasked_kl": 1.0933325157643137
+   },
+   "s": -1.8557004382028381,
+   "size": 0.1812102198600769,
+   "stochastic": 1.2200075959655896,
+   "teacher": "adam",
+   "verdict": "fail",
+   "x": 4.967431248293936
+  },
+  "move_s1": {
+   "check": 27.241466729937123,
+   "damage": 0.24054608552997392,
+   "damage_miss": 0.028555171307305338,
+   "gap": 0.4778718694189801,
+   "logp": -3.390390111178298,
+   "pile": {
+    "ci_masked_kl": 1.233863743099733,
+    "pgd_kl": 27.241466729937123,
+    "stochastic_kl": 1.1908752309986956,
+    "unmasked_kl": 1.055126339353213
+   },
+   "s": -1.8835824364220513,
+   "size": 0.17352741956710815,
+   "stochastic": 1.1908752309986956,
+   "teacher": "adam",
+   "verdict": "fail",
+   "x": 4.756828460010884
+  },
+  "nothing_adam": {
+   "check": 4.867811360390281,
+   "damage": 0.23483668294236157,
+   "gap": 0.0,
+   "logp": -3.015664919709,
+   "pile": {
+    "ci_masked_kl": 1.1690256991337378,
+    "pgd_kl": 4.867811360390281,
+    "stochastic_kl": 1.10635526333506,
+    "unmasked_kl": 26.32981903595305
+   },
+   "s": 1.0,
+   "size": 0.048852257430553436,
+   "stochastic": 1.10635526333506,
+   "teacher": "adam",
+   "verdict": "fail"
+  },
+  "trained": {
+   "check": 2.2011049471176096,
+   "damage": 0.23386794626119772,
+   "gap": 0.011855229779614156,
+   "logp": -3.015951866086754,
+   "pile": {
+    "ci_masked_kl": 1.1594786036704254,
+    "pgd_kl": 2.2011049471176096,
+    "stochastic_kl": 1.0884430815934698,
+    "unmasked_kl": 0.9199355214268379
+   },
+   "s": 0.9977918924216388,
+   "size": 0.03647966310381889,
+   "stochastic": 1.0884430815934698,
+   "teacher": "adam",
+   "train_kl_end": 0.011008185893297195,
+   "train_kl_step1": 0.29019078612327576,
+   "verdict": "fail"
+  },
+  "trained_rows2": {
+   "check": 1.8826297811686339,
+   "damage": 0.23386794626119772,
+   "gap": 0.011855229779614156,
+   "logp": -3.015951866086754,
+   "pile": {
+    "ci_masked_kl": 1.1683111951254654,
+    "pgd_kl": 1.8826297811686339,
+    "stochastic_kl": 1.090783653963542,
+    "unmasked_kl": 0.9120826208462334
+   },
+   "s": 0.9977918924216388,
+   "size": 0.03647966310381889,
+   "stochastic": 1.090783653963542,
+   "teacher": "adam",
+   "verdict": "fail"
+  },
+  "tt_lora_s0": {
+   "check": 1.2726038884377593,
+   "damage": 0.12445878081564624,
+   "gap": 0.00935997616982035,
+   "logp": -3.002958947535252,
+   "order": 0,
+   "pile": {
+    "ci_masked_kl": 1.075919247630101,
+    "pgd_kl": 1.2726038884377593,
+    "stochastic_kl": 1.0398488985215661,
+    "unmasked_kl": 0.9621435745404397
+   },
+   "s": 0.9644006702160952,
+   "size": 0.01720021665096283,
+   "stochastic": 1.0398488985215661,
+   "teacher": "lora_s0",
+   "train_kl_end": 0.007091451799497008,
+   "train_kl_step1": 0.15413565933704376,
+   "verdict": "pass"
+  },
+  "tt_lora_s0_rows2": {
+   "check": 1.206623290335587,
+   "damage": 0.12445878081564624,
+   "gap": 0.00935997616982035,
+   "logp": -3.002958947535252,
+   "pile": {
+    "ci_masked_kl": 1.0821141720002545,
+    "pgd_kl": 1.206623290335587,
+    "stochastic_kl": 1.0460739356311253,
+    "unmasked_kl": 0.96687438871012
+   },
+   "s": 0.9644006702160952,
+   "size": 0.01720021665096283,
+   "stochastic": 1.0460739356311253,
+   "teacher": "lora_s0",
+   "verdict": "pass"
+  },
+  "tt_lora_s1": {
+   "check": 1.2687819025685305,
+   "damage": 0.12746240130330017,
+   "gap": 0.007263750654617209,
+   "logp": -3.0016636314647,
+   "order": 1,
+   "pile": {
+    "ci_masked_kl": 1.0844926686137624,
+    "pgd_kl": 1.2687819025685305,
+    "stochastic_kl": 1.047899408075253,
+    "unmasked_kl": 0.9599011306462347
+   },
+   "s": 0.9722091159244264,
+   "size": 0.01754010282456875,
+   "stochastic": 1.047899408075253,
+   "teacher": "lora_s1",
+   "train_kl_end": 0.009680137829855084,
+   "train_kl_step1": 0.1496787965297699,
+   "verdict": "pass"
+  },
+  "tt_lora_s1_rows2": {
+   "check": 1.2425071954736424,
+   "damage": 0.12746240130330017,
+   "gap": 0.007263750654617209,
+   "logp": -3.0016636314647,
+   "pile": {
+    "ci_masked_kl": 1.0887393307597484,
+    "pgd_kl": 1.2425071954736424,
+    "stochastic_kl": 1.0519723185138052,
+    "unmasked_kl": 0.9546843710655694
+   },
+   "s": 0.9722091159244264,
+   "size": 0.01754010282456875,
+   "stochastic": 1.0519723185138052,
+   "teacher": "lora_s1",
+   "verdict": "pass"
+  },
+  "tt_sgd_r8": {
+   "check": 2.12176069958803,
+   "damage": 0.12634337337969243,
+   "gap": 0.007387754043271015,
+   "logp": -3.019511993248555,
+   "order": 0,
+   "pile": {
+    "ci_masked_kl": 1.0834286646748426,
+    "pgd_kl": 2.12176069958803,
+    "stochastic_kl": 1.041626160158964,
+    "unmasked_kl": 0.9228485590050626
+   },
+   "s": 0.9595325694682045,
+   "size": 0.019631611183285713,
+   "stochastic": 1.041626160158964,
+   "teacher": "sgd_r8",
+   "train_kl_end": 0.006728552333079278,
+   "train_kl_step1": 0.16071972250938416,
+   "verdict": "fail"
+  }
+ },
+ "rows2": {
+  "rows": [
+   "val",
+   256,
+   256
+  ],
+  "spread": 0.062064118981569605,
+  "w0_pile": {
+   "0": {
+    "ci_masked_kl": 0.3330884985625744,
+    "pgd_kl": 0.6297630071640015,
+    "stochastic_kl": 0.23167908377945423,
+    "unmasked_kl": 0.011144552030600607
+   },
+   "1": {
+    "ci_masked_kl": 0.3330884985625744,
+    "pgd_kl": 0.6575765013694763,
+    "stochastic_kl": 0.23271013516932726,
+    "unmasked_kl": 0.011144552030600607
+   },
+   "2": {
+    "ci_masked_kl": 0.3330884985625744,
+    "pgd_kl": 0.6688486933708191,
+    "stochastic_kl": 0.23237681947648525,
+    "unmasked_kl": 0.011144552030600607
+   }
+  }
+ },
+ "score": {
+  "G_C": true,
+  "G_rows2": true,
+  "P10": "misses",
+  "P10_gain_ratio": 0.9644920577900318,
+  "P10_verdict": "pass",
+  "P11": "holds",
+  "P11_gain_ratio": 1.01132161628137,
+  "P11_verdict": "fail",
+  "P12": "holds",
+  "P12_gain_ratio": 1.1394077553941602,
+  "P12_verdict": "pass",
+  "P13": "holds",
+  "P13_verdicts": [
+   "pass",
+   "pass"
+  ],
+  "P14": "holds",
+  "P14_mean": 21.851427783807292,
+  "P14_seeds": [
+   0,
+   1
+  ],
+  "P14_verdict": "fail",
+  "P9": "holds",
+  "P9_gain_ratio": 1.033781942257971,
+  "P9_verdict": "fail",
+  "tree": {
+   "A_adam": "Component training with labels (Adam) fails too: trained on this behaviour by labels or by copying, the subcomponents give a decomposition that fails the check, so the fail is not teacher training's alone (GOALS' 'brittle' branch, for this task and these recipes). Read with C.",
+   "A_and_C": "Labels fail, the LoRA's copy passes reliably: the decomposition holds a LoRA's broad update but not the full-matrix behaviour under either loss; the update's form matters, B says if it is rank.",
+   "A_sgd": "SGD component training with labels passes at the gain-matched state.",
+   "B": "SGD held to rank 8 fails like plain SGD: the cap does not explain the LoRA's pass. If C stands, next (this plan's branch, ~$1.5): a rank-8 LoRA trained with plain SGD, teacher-trained and read, to tell the LoRA's factorisation from its Adam optimiser.",
+   "C": "The LoRA's pass replicates at a second seed and on a second set of Pile rows: it is a result, and B asks why.",
+   "D": "A random move with the trained decomposition's damage fails: the check fails any move of the subcomponents that changes plain-text outputs this much, so the size of the output change, not training's directions, can explain the broad fail (the LoRA's copy, damage 0.12, then passes by being smaller or better placed)."
+  }
+ },
+ "shape": {
+  "lora_s0": {
+   "gain": 0.14792320630147726,
+   "lr": 0.0001,
+   "order": 0,
+   "seed": 0
+  },
+  "lora_s1": {
+   "gain": 0.1480674815842815,
+   "lr": 0.0001,
+   "order": 1,
+   "seed": 1
+  },
+  "sgd_r8": {
+   "chosen": 0.03,
+   "gain": 0.131422525505565,
+   "grid": {
+    "0.01": {
+     "diverged": false,
+     "eval": {
+      "ce": 3.021868233578079,
+      "elapsed_s": 64.69765186309814,
+      "kl_to_ref": 0.12469930294901133,
+      "n": 64,
+      "rel_norm_max": 0.00867608841508627
+     },
+     "gain": 0.1237479869167637
+    },
+    "0.03": {
+     "diverged": false,
+     "eval": {
+      "ce": 3.0141936300318766,
+      "elapsed_s": 64.45802068710327,
+      "kl_to_ref": 0.15981683693826199,
+      "n": 64,
+      "rel_norm_max": 0.015389795415103436
+     },
+     "gain": 0.131422525505565
+    },
+    "0.1": {
+     "diverged": false,
+     "eval": {
+      "ce": 3.0539451345305624,
+      "elapsed_s": 64.55360722541809,
+      "kl_to_ref": 0.22736255824565887,
+      "n": 64,
+      "rel_norm_max": 0.0395178459584713
+     },
+     "gain": 0.09167109123060824
+    }
+   },
+   "plain_gain": 0.13671291244840678,
+   "plain_lr": 0.01,
+   "plain_tail": {
+    "max": 0.5510981419179706,
+    "pooled": 0.3949651887444168
+   },
+   "tail": {
+    "max": 2.2874364421310815e-09,
+    "pooled": 1.0370981337891368e-10
+   }
+  }
+ },
+ "stage0": {
+  "gain": 0.12995126712391025,
+  "i": true,
+  "ii": true,
+  "iii": true,
+  "spread": 0.07481641823118812,
+  "w0_blocks": [
+   0.6793946027755737,
+   0.7182474732398987
+  ],
+  "w0_pile": {
+   "0": {
+    "ci_masked_kl": 0.34816805366426706,
+    "pgd_kl": 0.6988210380077362,
+    "stochastic_kl": 0.2477959473617375,
+    "unmasked_kl": 0.012019786867313087
+   },
+   "1": {
+    "ci_masked_kl": 0.34816805366426706,
+    "pgd_kl": 0.751104325056076,
+    "stochastic_kl": 0.24784572049975395,
+    "unmasked_kl": 0.012019786867313087
+   },
+   "2": {
+    "ci_masked_kl": 0.34816805366426706,
+    "pgd_kl": 0.7067216336727142,
+    "stochastic_kl": 0.2475747922435403,
+    "unmasked_kl": 0.012019786867313087
+   }
+  }
+ },
+ "status": "done"
+}
