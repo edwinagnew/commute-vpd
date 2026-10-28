@@ -109,3 +109,159 @@ answer to the user's question with the stable ranks beside it.
 
 Fixes (masked losses, refit Γ, constrained teacher training), longer training (the user ruled it out), a second broad
 task, the larger model.
+
+## Amendment 2 (2026-10-28): why does the broad failure happen?
+
+*Approved by the user, 2026-10-28 (`decisions.md`, card `decision-lora-passes` closed with option (b) plus labelled
+component training: "it sounds like its cheap amendment tests so you can go ahead and run them"). Follows the
+analysis's Amendment 1 and its "What next", and gaps 2 and 5 of `reports/reviews/2026-10-28_review_technique-comparison.md`.
+Code `experiments/broad_fragility/amend2.py` (imports `run.py`; new shared code in `src/commute/rank_cap.py`);
+predictions `results/predictions_amend2.json`; run brief `RUN_BRIEF_amend2.md`.*
+
+### The request, restated in the Terms' words
+
+Four tests, one job, on E39's lowercase task, harness and card:
+
+- **(A)** Component training on the lowercase task's own labels (next-token cross-entropy), Γ and Δ frozen, with Adam
+  and with plain SGD, read by the check at the state whose held-out gain matches the Adam fine-tune's. It tells "a
+  frozen-Γ decomposition cannot hold this broad behaviour" from "teacher training's copying fails".
+- **(B)** Teacher training, as E39 ran it, on a plain SGD fine-tune held to rank 8 per matrix. It tells whether the
+  LoRA's hard rank cap explains its pass, or something else about the LoRA does.
+- **(C)** Teacher training on the rank-8 LoRA fine-tune repeated at a second seed, and both LoRA decompositions read
+  on a second set of Pile rows. E39's pass was one seed and one set of rows, and the state was lost.
+- **(D)** A random move of the alive subcomponents matched to the trained decomposition in output change (damage on
+  plain text), not in weight size.
+
+Two readings are mine and are flagged for the lead. "A second seed" changes the LoRA's initialisation seed and teacher
+training's batch order together. "A second set of rows" is the check's Pile rows (val 256-511), not the fine-tune's
+training rows, as E39's "What next" item 3 meant.
+
+### /design check
+
+1. **Goal.** `GOALS.md`'s branch question: if no simple map works, is it the update or the decomposition? (A) asks it
+   directly for the broad task. (B) and (C) bear on LoRA as the canonical update and on the optimiser subgoal.
+2. **Nearest tried.** E39 and Amendment 1 (TRIED row E39), E37, E21 and E26 (SGD component training fails late on
+   narrow tasks), and E27 (LoRA with plain SGD on emoticon). Component training with labels has never been read on a
+   broad task. No rank-capped full-matrix update, no LoRA repeat and no damage-matched random move has been run.
+3. **Patch or step.** (B) to (D) are follow-ups to E39's surprises, so patches. (A) is a step on the branch question.
+4. **Decisions.** Γ and Δ stay frozen. The check keeps the paper's setting (decision 2026-10-27), so its readings
+   remain lower bounds. The user ruled out training teacher training longer on the broad task. Nothing here does that.
+   (A) trains with labels, and the user approved it explicitly.
+5. **What changes next.** See the decision tree below. Each test has a branch, and (A) with (C) together decides
+   whether the broad line goes to the user as "the decomposition's limit" or as "teacher training's fault".
+6. **Control first.** Stage 0 runs alone with an early stop: W₀ (spread, per-block readings), the Adam fine-tune and
+   its teacher-trained decomposition reproduced (2.2011), and the Adam fine-tune's do-nothing (E37: 4.8678) as the
+   positive control. The LoRA at seed 0 and batch order 0 reproduces E39 first (control G_C). The Adam teacher-trained
+   decomposition must fail on the second rows (control G_rows2) before the LoRA's readings there count.
+7. **Recipe differences from the reference.** (A) differs from teacher training only in its loss and in the state
+   picked: labels instead of KL to the teacher, and the gain-matched state among steps 100, 300 and 1000. Rows,
+   batch, batch order and clip are the same. (B) differs from Amendment 1's SGD fine-tune only in the cut to rank 8
+   after each step; the rate is re-picked by E39's rule. (C) seed 0 is E39's recipe exactly; seed 1 changes the LoRA
+   seed and the batch order. (D) is E39's random move scaled by a search instead of fixed at ×1.
+
+### Stages, cheapest first, each written as it finishes (about 40 min on the H100)
+
+| stage | what | reads |
+|---|---|---|
+| 0 | W₀ on adversary seeds 0-2; Adam fine-tune, its teacher-trained decomposition, its do-nothing | 2 check reads |
+| move (D) | per noise seed 0 and 1, E39's random move scaled by x until damage is within 5% of the trained decomposition's (double x from 4, then bisect in log x; at most 12 damage reads) | 2 check reads |
+| label_adam (A) | component training with labels, Adam at 1e-5 and 3e-5, 1,000 steps, states at 100, 300, 1000; the state not diverged whose gain is nearest the Adam fine-tune's | 6 gain reads, 1 check read |
+| label_sgd (A) | the same with plain SGD at 0.01, 0.03 and 0.1 | 9 gain reads, 1 check read |
+| lora (C) | LoRA seed 0 / batch order 0, LoRA seed 1 / batch order 1, each teacher-trained; then W₀ on val rows 256-511 (seeds 0-2) and the Adam, LoRA-0 and LoRA-1 teacher-trained decompositions read there | 5 check reads |
+| cap (B) | plain SGD with each matrix's change cut to its best rank-8 approximation after every step, rates 0.01, 0.03, 0.1, E39's rate rule; plain SGD at 0.01 for its share beyond rank 8; teacher training on the capped fine-tune | 1 check read |
+
+States saved as bf16 offsets: both labelled states, both LoRA teacher-trained states (E39's was lost), and the capped
+SGD teacher-trained state.
+
+### The numbers, and what each should read
+
+| number | W₀ | do-nothing (Adam) | control | expected |
+|---|---|---|---|---|
+| check, Adam teacher-trained | 1 | 4.868 | 2.201 (stage 0) | 2.201 |
+| check, matched random move (P14) | 1 | — | E39's size-matched moves 1.03, 1.07 | 2-5, x 4-7 |
+| check, labelled Adam / SGD (P9, P10) | 1 | 4.868 | 2.201 | 1.6-2.4 / 1.6-3 |
+| gain of the chosen labelled state | 0 | 0.130 | 0.130 | 0.10-0.16 |
+| check, LoRA seed 0 teacher-trained (G_C) | 1 | 2.653 (E39) | E39 1.2726 | 1.27 |
+| check, LoRA seed 1 teacher-trained (P12) | 1 | — | G_C | 1.15-1.45 |
+| W₀ spread, second rows | 0 | — | first rows 0.0748 | 0.03-0.10 |
+| check on the second rows: Adam / LoRA 0 / LoRA 1 (G_rows2, P13) | 1 | — | Adam must fail | 1.8-2.6 / 1.1-1.5 / 1.1-1.5 |
+| share of the capped update beyond rank 8, largest matrix | 0 | — | must be ≤ 1e-4 | ~1e-10 (rounding) |
+| share of the plain SGD update beyond rank 8, pooled | 0 | — | — | 0.1-0.4 |
+| check, capped SGD teacher-trained (P11) | 1 | — | Amendment 1's SGD 2.07, LoRA 1.27 | 1.8-2.2 |
+
+Behaviour kept, gap, damage, the stochastic ratio and size are read at every state as in E39. They enter no rule.
+
+### Predictions (filed in `results/predictions_amend2.json` before the run)
+
+| id | rule | expected | confidence |
+|---|---|---|---|
+| P9 | labelled Adam, gain-matched state: check ≥ 1.61 | fails, 1.6-2.4 | low-medium |
+| P10 | labelled SGD, gain-matched state: check ≥ 1.61 | fails, 1.6-3 | medium-low |
+| P11 | teacher training on SGD held to rank 8: check ≥ 1.61 | fails like plain SGD | medium-low |
+| P12 | teacher training on the LoRA at seed 1, batch order 1: check ≤ 1.40 | passes | medium |
+| P13 | on the second rows, both LoRA teacher-trained states ≤ 1.40 | both pass | medium-low |
+| P14 | damage-matched random moves, mean over matched seeds: check ≥ 1.61 | fails, 2-5 | medium |
+
+Gates, each scored as "unscored: why" rather than as a miss. A state's gain must be within 30% of the Adam
+fine-tune's (P9-P12). For P11 the cap must hold, with no matrix's share beyond rank 8 over 1e-4. For P13, G_rows2
+must hold. For P14, a seed counts only if its damage came within 5% of the target. A non-finite check is unscored.
+Both lines are inclusive. The rules were run on 314,928 combinations of outcomes and gates, including
+missing stages, ties at the lines, NaN, no matched seed, every rate diverged and a failed control. Every
+combination scored, and every reading below was reached.
+
+**What each number is blind to.** The check is one 20-step adversary from one start, a lower bound. (A)'s state is
+picked by gain alone, from six (Adam) or nine (SGD) states. Its rows are drawn with replacement, unlike the
+fine-tune's. Γ is at W₀ throughout. (B) caps the rank one way, by cutting after each step, not as a factored update.
+It has one rate and one seed. (C) changes the seed and the batch order together and adds one seed only. The second
+rows are one more set of 256. (D) uses one direction family per noise seed, isotropic per side, which moves every
+alive subcomponent including those Γ rarely turns on. It is matched in mean damage on 64 rows, not in where the change
+falls or in behaviour.
+
+**Noise floor.** W₀'s spread over adversary seeds, 0.0748 on this card; the pass and fail lines bracket 1.5 by it.
+The second rows' spread is read in the job. E37's batch-order spread of the check was 14% (2.20 and 1.88). Gains
+reproduce to 0.0001 across jobs.
+
+### Decision tree
+
+- **Stage 0 fails:** stop and report; nothing else is read.
+- **G_C misses** (the LoRA at seed 0 does not read 1.27 again): not a stop, but tell the user at once. C is read with it.
+- **A, Adam (P9).** *Pass*: the frozen-Γ decomposition can hold this broad behaviour, so the fail belongs to teacher
+  training's copying. Next, class 1: compare the labelled and teacher-trained states on the saved offsets. A fix to
+  teacher training needs a new plan. *Fail*: training the subcomponents on this behaviour fails by labels as well as by
+  copying, so the fail is not teacher training's alone. *Between or unscored*: not separated; report it.
+- **A, SGD (P10)** is read beside Adam's. If Adam passes and SGD fails, it is E21/E26's late SGD fail again, an
+  optimiser effect.
+- **B (P11).** *Pass*: the rank cap is enough. If C stands, the cap explains the LoRA's pass; next is a new plan, a
+  LoRA at higher rank. *Fail*: the cap does not explain it. If C stands, this plan's next branch is a rank-8 LoRA
+  trained with plain SGD on the lowercase task, teacher-trained and read, to tell the factorisation from the Adam
+  optimiser: about 15 min, about $1.5, RunPod H100, approved with this plan.
+- **C (P12, P13).** *Stands* (seed 1 passes, both pass on the second rows): the LoRA's pass is a result. *Seed 1
+  passes, second rows unscored*: it replicates on one set of rows only. *Fails* (seed 1 or a second-rows reading
+  fails): E39's 1.27 was chance, B becomes a fact about SGD only, and "why does the LoRA pass" closes. *Between*:
+  not robust enough to explain; a third seed is the user's call.
+- **D (P14).** *Fail*: any move of the subcomponents with this much output change fails, so the size of the change can
+  explain the broad fail. *Pass*: the fragility is specific to the directions training chooses.
+- **A with C.** Labels pass and C stands: the decomposition holds broad behaviour, and teacher training's copy of
+  full-matrix fine-tunes is what fails. Labels fail and C stands: the form of the update matters, and B says whether
+  it is the rank. Labels fail and C fails: no broad update is held reliably by any map tried. That goes to the user as
+  a card: the "brittle" branch for broad updates, with a Γ refit or a weak version scoped to narrow updates as the
+  options. Labels pass and C fails: teacher training is unreliable on broad updates generally.
+
+The tree's wording is filed with the predictions (`readings`). `amend2.py` writes the reading it lands on under
+`score.tree`.
+
+### Machine and cost
+
+About 40 min of run: stage 0 about 7 min including the model load, D about 3, A about 8, C about 10, B about 6-8.
+The cap's cut after every step is the uncertain part. That is over 30 min, so it goes to RunPod on E39's card, the
+H100 80GB HBM3: stage 0's per-block readings are that card's, and an L40 would stop there. With about 10 min of
+set-up and downloads, that is about 50-55 min of pod at about $4.4/h: about $4, capped at $6. That is 10-15% of the
+session's $40.
+
+### Not run
+
+- The LoRA trained with plain SGD (B's next branch), a LoRA at higher rank, and SGD's teacher-trained state on the
+  second rows.
+- Per-block check readings on the second rows.
+- A second batch order for (A), and Γ's importance read at the labelled states.
+- Reverts on the labelled or LoRA states; random moves in directions the inputs use.
