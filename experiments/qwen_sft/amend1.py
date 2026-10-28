@@ -227,6 +227,16 @@ def b_aborts(kl: dict[str, float], step: int, rule: dict[str, Any]) -> bool:
     return step == rule["abort_at"] and not r9(fixed_fall(kl, step)) <= rule["abort_ratio"]
 
 
+def arm_ends(fixed: dict[str, float], step: int, train_kl: float,
+             ends: Callable[[dict[str, float], int], bool]) -> bool:
+    """Teacher training's end after `step`: a non-finite training KL or reading at this step (in B the arm ends there
+    and, lacking its later readings, does not qualify; in T0 `teacher_checks` has stopped the job first), else
+    `ends(fixed, step)` at a reading."""
+    if not math.isfinite(train_kl + fixed.get(str(step), 0.0)):
+        return True
+    return str(step) in fixed and ends(fixed, step)
+
+
 def t0_ends(kl: dict[str, float], step: int, rule: dict[str, Any]) -> bool:
     """T0's end at a reading: the fall at or under fall_max; at first_cap, unless the fall dropped by at least
     extend_drop (of the start) since the reading before (else training runs on to its cap, steps_max). A NaN fall
@@ -260,18 +270,23 @@ def stage_B(job: Job) -> None:
     job.decomp("cpu")
     out["rates"] = {}
     reads, steps = rule["reads"], max(rule["reads"])
+    job.mem_check("before the rate grid")  # the peak is reset per arm below
     for lr in rule["rates"]:  # an aborted arm lacks the later readings, so it does not qualify
         off.reset()
-        _, rec = positive_control(job, off, rule["target_kl"], lr, steps, f"B {lr:g}",
-                                  tuple(sorted({*reads, rule["abort_at"]})), None, lambda kl, t: b_aborts(kl, t, rule))
+        torch.cuda.reset_peak_memory_stats()
+        teacher, rec = positive_control(job, off, rule["target_kl"], lr, steps, f"B {lr:g}",
+                                        tuple(sorted({*reads, rule["abort_at"]})), None,
+                                        lambda kl, t: b_aborts(kl, t, rule))
+        del teacher
+        free()
         rec["peak_gb"] = torch.cuda.max_memory_allocated() / 1e9
         out["rates"][f"{lr:g}"] = rec | {"qualifies": qualifies(rec["kl"], reads, rule["ratio_max"])}
         job.put("B", out)
+        job.mem_check(f"teacher training {lr:g}")
     del off
     free()
     out["teacher_step_s"] = statistics.mean(r["step_s"] for r in out["rates"].values())
     out["teacher_peak_gb"] = max(r["peak_gb"] for r in out["rates"].values())
-    job.mem_check("teacher training")
     t_lr = pick_rate({float(k): r["kl"] for k, r in out["rates"].items()}, reads, rule["ratio_max"])
     job.check("B rate", t_lr is not None, {k: {"kl": r["kl"], "qualifies": r["qualifies"]}
                                            for k, r in out["rates"].items()})
@@ -359,7 +374,7 @@ def positive_control(job: Job, off: Offsets, target: float, lr: float, steps: in
 
     def on_step(step: int, curve: list[dict[str, float]]) -> bool:
         checks(step, curve)
-        return str(step) in fixed and ends(fixed, step)
+        return arm_ends(fixed, step, curve[-1]["kl"], ends)
 
     curve = train(job.model, off, teacher, *job.pools(), lr, steps, cfg.t_rows_each, cfg.t_micro, cfg.seed, log,
                   on_step)

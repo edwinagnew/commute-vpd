@@ -8,9 +8,11 @@
 #   the rehearsal (tiny sizes, F1 and L at full size) writes results/amend1_rehearse_<name of --out>/ (since
 #   2026-10-28, amended_3; the first two rehearsals are kept in results/amend1_rehearse_1/ and _2/). Each rerun uses a
 #   new out dir; --rehearse-cols N sets teacher training's alive columns per site (16; the most an L40 holds ~480).
+#   A wide --rehearse-cols run (hundreds of columns) runs --stages B alone: B's four arms (up to 400 steps) and T0
+#   (up to 600) together outgrow the 30-min limit as steps slow with the columns.
 #   Four jobs, each submitted when the one before has ended, then the guard check:
 #     R=/mnt/nw/home/e.agnew/commute-data/tmp/e40a1_rehearse2
-#     sbatch cluster/qwen_sft_amend1.sbatch --rehearse --wandb-upload --stages B,G1,T0,L,A0 --out $R   # ~17 min
+#     sbatch cluster/qwen_sft_amend1.sbatch --rehearse --wandb-upload --stages B,G1,T0,L,A0 --out $R   # ~25 min at 16 cols
 #     sbatch --mem=32G cluster/qwen_sft_amend1.sbatch --rehearse --stages F1 --out $R                 # ~16 min
 #     sbatch cluster/qwen_sft_amend1.sbatch --rehearse --wandb-upload --stages D1,T1 --kill-after-save --out $R
 #                                                       # ~6 min; ends with exit 3 after T1's first saved offsets

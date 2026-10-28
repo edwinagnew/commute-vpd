@@ -190,6 +190,47 @@ def test_b_aborts_at_25_above_1_2():
     assert not ab({"0": 1.0, "25": 0.5, "50": 9.0}, 50, rule)  # only at 25
 
 
+class _StopJob:
+    """The parts of run.Job that teacher_checks uses; a stop raises."""
+
+    pred = PRED
+
+    def early(self, name: str) -> Any:
+        return PRED["early"].get(name)
+
+    def check(self, name: str, ok: bool, detail: dict[str, Any], stop: bool = True) -> None:
+        if not ok and stop:
+            raise SystemExit(name)
+
+    def finite(self, name: str, **values: float) -> None:
+        if not all(math.isfinite(v) for v in values.values()):
+            self.check(f"{name} finite", False, values)
+
+    def mem_check(self, where: str) -> None:
+        pass
+
+
+def test_a_non_finite_value_ends_a_b_arm_and_stops_t0():
+    rule, nan = R["B_rate"], math.nan
+
+    def b_end(kl: dict[str, float], t: int) -> bool:
+        return A1.b_aborts(kl, t, rule)
+
+    readings = iter([1.0, nan])  # step 0, then a NaN reading at 25
+    on_step, kl, _ = RUN.teacher_checks(_StopJob(), "B", lambda: [next(readings)], (25, 50, 100), None)
+    on_step(3, [{"kl": nan}])  # B: no stop
+    assert A1.arm_ends(kl, 3, nan, b_end) and A1.arm_ends(kl, 3, math.inf, b_end)  # a training KL: the arm ends
+    on_step(25, [{"kl": 0.5}])
+    assert A1.arm_ends(kl, 25, 0.5, b_end)  # a NaN reading at 25 ends it
+    late = {"0": 1.0, "25": 0.9, "50": math.inf}
+    assert A1.arm_ends(late, 50, 0.5, b_end) and not A1.arm_ends(late, 25, 0.5, b_end)  # one later, too
+    assert not A1.arm_ends(late, 26, 0.5, b_end)  # finite, no reading: trains on
+    assert A1.pick_rate({3e-5: kl, 1e-5: _kl(1.0, 0.95, 0.6)}, rule["reads"], rule["ratio_max"]) == 1e-5  # next rate
+    t0_step, _, _ = RUN.teacher_checks(_StopJob(), "T0", lambda: [1.0], (50,), True)
+    with pytest.raises(SystemExit):
+        t0_step(3, [{"kl": nan}])  # elsewhere a non-finite value still stops the job
+
+
 def test_t0_ends():
     rule, end = R["T0"], A1.t0_ends
     assert (rule["first_cap"], rule["steps_max"], rule["read_every"], rule["extend_drop"]) == (300, 600, 50, 0.03)
