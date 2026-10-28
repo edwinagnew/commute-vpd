@@ -7,11 +7,12 @@ Qwen re-plan's §7 (`reports/plans/2026-10-28_plan_qwen-line-replan.md`) and the
 (`reports/reviews/2026-10-28_review_technique-comparison.md`). Three readers extracted the claims, one per line; their
 notes are summarised here and every row cites the log. Vocabulary: `GOALS.md` → Terms.*
 
-We read the research log's claims, questions, techniques and gaps against the project's aim and sorted every claim into
-three lines of work. On the small model, one map, teacher training, copies narrow fine-tunes into the decomposition while
-keeping behaviour and faithfulness, and the masked stand-in reads most narrow gains as changed importance values; on the
-larger model nothing about an update has been scored yet. A write-up in two weeks can report a partial yes on the small
-model, a measuring instrument rather than a mechanism for the second line, and at most a first table on the larger model.
+We read the research log's claims, questions, techniques and gaps against the project's aim, and sorted every claim
+into three lines of work. On the small model, teacher training copies narrow fine-tunes into the decomposition and keeps
+behaviour and faithfulness. The masked stand-in reads most narrow gains as changed importance values. On the larger model
+nothing about an update has been scored yet. A write-up in two weeks can report a partial yes on the small model. For
+the second line it can offer a measuring instrument, not a mechanism. On the larger model it can offer at most a first
+table.
 
 ## 1. The question, in the user's words
 
@@ -19,64 +20,79 @@ model, a measuring instrument rather than a mechanism for the second line, and a
 > components. If so, this gives "continuous interpretability" (within some limit). If not, is it because post-training
 > teaches new capabilities (vs strengthens existing ones), or maybe just parameter decompositions are too brittle.
 
-Made precise by the user on 2026-10-14: is there a simple operation that maps a post-training update to an update on the
-subcomponents, such that the resulting decomposition is faithful for the new model, with Δ not absorbing the update? The
-write-up answers the weak version only; the strong version, matching a re-decomposition, is postponed in `GOALS.md`.
+The user made it precise on 2026-10-14. Is there a simple operation that maps a post-training update to an update on
+the subcomponents, so that the new decomposition is faithful for the new model and Δ does not absorb the update? The
+write-up answers this weak version only. `GOALS.md` postpones the strong version, matching a re-decomposition.
 
-The write-up's goal, from the re-plan's §7, is three deliverables: **D1** cleanly decompose a post-training update at
-scale, **D2** for both SFT and RL, **D3** readings from the decomposition that tell elicitation from a new mechanism,
-calibrated on two anchor updates whose novelty is fixed by design.
+The re-plan's §7 sets three deliverables:
+- **D1**: decompose a post-training update cleanly at scale.
+- **D2**: do it for both SFT and RL.
+- **D3**: find readings of the decomposition that tell elicitation from a new mechanism, calibrated on two anchor
+  updates whose novelty is fixed by design.
 
 **Proposed answer paragraph, to be rewritten once Qwen numbers exist.** On a 67-million-parameter model, training the
-subcomponents to copy a finished fine-tune keeps its behaviour and leaves the residual untouched for narrow fine-tunes.
-For a cipher the model lacked, the subcomponents Γ marks important at the trigger carry almost none of the copied
-behaviour. The faithfulness check passes these copies, but on those tasks it never failed doing nothing either. A broad
-fine-tune is copied badly, except a rank-8 LoRA. Each split of a finished update loses one property on the one task read. On the 1.7-billion-parameter model the decomposition is
-already strained on maths text before any update, and the first maps are being scored now.
+subcomponents to copy a finished narrow fine-tune keeps its behaviour and leaves the residual untouched. For a cipher
+the model lacked, the subcomponents Γ marks important at the trigger carry almost none of the copied behaviour. The
+faithfulness check passes these copies, but on those tasks it never failed doing nothing either. A broad fine-tune is
+copied badly, except by a LoRA of rank 8. Each split of a finished update loses one property on the one task read. On the
+1.7-billion-parameter model the decomposition is already strained on maths text before any update. The first maps are
+about to be scored.
 
 ## 2. The three lines and what each can claim now
 
 ### Commute line: log question Q1 with Q2, Q4, Q8 and Q11, 67M model
 
 The log's verdict on Q1 is "Partly". Teacher training is "the first map of a finished update that keeps the behaviour,
-faithfulness and Δ together" (`overview.html:159`). That holds on three trigger tasks, from task text or plain Pile text,
-at two batch orders and under a longer adversary, and on three cipher tasks. Copies of an update stopped at step 10 sit
-at the pass line, which the user accepted. A broad fine-tune with no trigger is copied badly, except for a rank-8 LoRA.
-The splits of a finished update each fail one condition on the one large update read; size alone does not decide which,
-since an SGD update passes where an Adam one of the same size fails. Component training on the broad task's labels
-passes with SGD at step 100, so the broad failure is not a fixed limit of the decomposition. Three limits apply to
-every verdict: the pass line is not anchored, each reading is a one-start adversary and so a lower bound, and most rows
-rest on one fine-tune seed.
+faithfulness and Δ together" (`overview.html:159`). That holds on three trigger tasks and on three cipher tasks. It holds
+whether the copy learns from task text or plain Pile text, at two batch orders, and under a longer adversary. Copies of
+an update stopped at step 10 sit at the pass line, which the user accepted. A broad fine-tune with no trigger is copied
+badly, except by a LoRA of rank 8.
+
+Each split of a finished update fails one condition on the one large update read. Size alone does not decide which: an
+SGD update passes where an Adam one of the same size fails. Component training on the broad task's labels passes with
+SGD at step 100, so the broad failure is not a fixed limit of the decomposition.
+
+Three limits apply to every verdict:
+- the pass line is not anchored;
+- each reading uses an adversary with one start, so it is a lower bound;
+- most rows rest on one fine-tune seed.
 
 ### Re-gating line: log question Q5, 67M model, at the v88 ceiling
 
-The log's verdict on Q5 is "not shown", and the line was reset on 2026-10-28 (`questions.html:12`). Re-gating has one
+The log's verdict on Q5 is "not shown"; the user reset the line on 2026-10-28, `questions.html:12`. Re-gating has one
 definition: the change in Γ's importance values between the fine-tuned and the original model's activations on the same
-inputs. What holds: in VPD's masked stand-in, the original subcomponents under Γ's new values with Δ left out, the new
-values carry most of a single-trigger fine-tune's gain for common next words and copying, and the moved subcomponents
-almost none. The stand-in separates a copying task from random maps on tasks whose nature is known by construction.
-Without seeing the target, Γ picks out the original model's own machinery for it. What does not hold yet: that the
-fine-tuned model works this way. The stand-in's share reads the same for a fine-tune that learned nothing and for one
-aimed at another token, and no measure of re-gating has passed its nulls. The write-up presents this line as an
-instrument under test, never as a mechanism.
+inputs.
+
+What holds is a reading of VPD's masked stand-in: the original subcomponents under Γ's new values, with Δ left out. In
+it, the new values carry most of a single-trigger fine-tune's gain for common next words and copying. The moved
+subcomponents carry almost none. The stand-in separates a copying task from random maps, on tasks whose nature is known
+by construction. Without seeing the target, Γ picks out the original model's own machinery for it.
+
+What does not hold yet is that the fine-tuned model works this way. The stand-in's share reads the same for a
+fine-tune that learned nothing and for one aimed at another token. No measure of re-gating has passed its nulls. The
+write-up presents this line as an instrument under test, never as a mechanism.
 
 ### Qwen line: log question Q9, Qwen3-1.7B
 
-The log says "No result on an update yet" (`questions.html:20`). What exists is apparatus and references. The PyTorch
+The log says "No result on an update yet", `questions.html:20`. What exists is apparatus and references. The PyTorch
 port reproduces the authors' decomposition. On the unchanged model the paper's adversary reads about 1.6 nats on web
-text, three starts agreeing within a fifth, and 4.24 on the model's own maths answers. So the unchanged decomposition
-already sits above the paper's 1.5 line, and every maths reading on an update must be a ratio to the unchanged model's.
-The only reading about an update, E40, shows that doing nothing passes the web-text check at steps 1 and 10, so that
-check cannot fail the trivial placement. E44 exists to give the check teeth; its cluster rehearsal, job 40945, was
-running at the time of writing.
+text, with three starts agreeing within a fifth. On the model's own maths answers it reads 4.24. So the unchanged
+decomposition already sits above the paper's line, and every maths reading on an update must be a ratio to the
+unchanged model's.
+
+The only reading about an update is E40's. Doing nothing passes its web-text check after a step or ten, so that check
+cannot fail the trivial placement. E44 exists to give the check teeth. Its code is reviewed and fixed, and a $0 cluster
+rehearsal reruns on the fixed code before about $8 on one H100, `e44.html`.
 
 ## 3. Claims and the evidence under each
 
 Abbreviations in this table only: TT teacher training, CT component training with labels, DN do-nothing, LS
-least-squares split, BO batch order. "Floor" is the per-job pass line from the unchanged model's three adversary seeds:
-pass at or under 1.40 and fail at or over 1.61 on the H100, 1.24 and 1.81 on the L40. "1.5" is the fixed line inherited
-from E2, which `gaps.html:6-7` calls unanchored and which do-nothing fails on large Adam updates; fixed line against the
-same update's do-nothing has been a pending decision since 2026-10-21. "Δ not absorbing" has no threshold anywhere.
+least-squares split, BO batch order.
+- "Floor" is the per-job pass line set by the unchanged model's three adversary seeds. On the H100 a ratio passes at or
+  under 1.40 and fails at or over 1.61; on the L40 the lines are 1.24 and 1.81.
+- "1.5" is the fixed line inherited from E2. `gaps.html:6-7` calls it unanchored, and do-nothing fails it on large Adam
+  updates. Whether to keep it or read against the same update's do-nothing has been a pending decision since 2026-10-21.
+- "Δ not absorbing" has no threshold anywhere.
 
 ### 3a. Commute line, 67M
 
@@ -100,18 +116,21 @@ same update's do-nothing has been a pending decision since 2026-10-21. "Δ not a
 | C16 | The adversary's extra damage comes from removing alive and dead subcomponents together | E17, E20, E23 | 1 adversary seed per state | emoticon, next-word | permuted pattern; random half; W₀ masks | none | holds, cause open, `claims.html:35` |
 | C17 | Component training on the broad task's labels passes with plain SGD at step 100, 1.28, where Adam fails, 7.24: the broad failure is not a fixed limit of the decomposition | E39 Amendment 2 | 1 | 1: lowercase | unchanged model; DN | floor; not settled | `e39.html:25`, `decisions.md:47`; later steps not read |
 
-Every row is the 67M model. The optimiser behind each row: Adam unless the row names SGD; C10, C12, C14 and C15 have both.
+Every row is the 67M model. Each row's optimiser is Adam unless the row names SGD; four rows have both.
 
-**The claims red team, 2026-10-28 evening** (`reports/reviews/2026-10-29_review_claims-red-team.md`), weakened five claims, touching eight
-rows, and overturned none. Its pending cards are queued, not yet in the log; the write-up waits on them.
-- C1, C2, C3: at the harness's adversary start, do-nothing never failed the check on E34's six teachers or E42's three ciphers, so there the check had no
-  shown power. Where do-nothing does fail, the copies read 1.28-1.55, inside the adversary's 7.5% seed spread of the line.
-- C4: the LoRA's pass margin is ×1.10 under one start, and "not a rank cap" is shown only under SGD.
-- C5: E34's own plain-SGD student passes on emoticon and at step 100 on " which"; the claim is rescoped to "plain SGD
-  at 0.03, read at step 1000, fails on that task's Adam and LoRA teachers". Card `red-team-sgd-map`.
-- C6: "worse than do-nothing" was never filed and rests on one 128-row block.
-- C9, C14: the size reading's adversarial half is contradicted in the repo, E22: an SGD update passes where an Adam one
-  of the same size fails. Card `red-team-split-size`.
+**The claims red team** ran on the evening of 2026-10-28, `reports/reviews/2026-10-29_review_claims-red-team.md`. It
+weakened five claims across eight rows and overturned none. Its pending cards are queued, not yet in the log, and the
+write-up waits on them.
+- C1-C3: at the harness's adversary start, do-nothing never failed the check on E34's teachers or E42's ciphers. There
+  the check had no shown power. Where do-nothing does fail, the copies read 1.28-1.55, inside the adversary's seed
+  spread of the line.
+- C4: under one start the LoRA passes with a margin of only ×1.10. "Not a rank cap" is shown only under SGD.
+- C5: E34's own plain-SGD student passes on emoticon, and at step 100 on " which". The claim is rescoped: plain SGD at
+  one rate, read at step 1000, fails on that task's Adam and LoRA teachers. Card `red-team-sgd-map`.
+- C6: "worse than do-nothing" was never filed, and it rests on one block of 128 rows.
+- C9, C14: E22 contradicts the adversarial half of the size reading. An SGD update passes where an Adam one of the same
+  size fails. Card `red-team-split-size`.
+
 Each has a $0 cluster test of under 30 minutes, listed in the red team's table.
 
 ### 3b. Re-gating line, 67M, at the v88 ceiling
@@ -145,13 +164,13 @@ The log's claims section has no Qwen row. No map has been scored on Qwen.
 
 | Deliverable | Supported now by | In flight | Not built |
 |---|---|---|---|
-| D1, a clean decomposition of an update at scale | nothing on Qwen; the 67M's C1-C3 as the precedent | E44: the test with teeth and the cheap maps on E40's saved updates; rehearsal job 40945, then one H100, about $8 | a check that the unchanged model's adversarial sources still exist on the volume |
+| D1, a clean decomposition of an update at scale | nothing on Qwen; the 67M's C1-C3 as the precedent | E44: the test with teeth and the cheap maps on E40's saved updates; a $0 rehearsal on the fixed code, then one H100, about $8 | a check that the unchanged model's adversarial sources still exist on the volume |
 | D2, the same for SFT and RL | nothing | E45 plan, drafted, unconfirmed, no log card: SFT arms on the cluster for $0, reading them gated at $15-20 | the GRPO loop; ~8,000 sampled GSM8K answers |
 | D3, elicitation against a new mechanism | the 67M's R1-R5 as an instrument, and C2's cipher; nothing at scale | the anchors are inside the E45 plan | the invented-facts set; the context-distillation prompt search; the Qwen readings of Γ's change and the think-mode overlap |
 
-E44 on E40's updates is a shakedown of the table, not D1 evidence: D1 is scored on Q2's updates. Every anchor reading
-carries the sentence "anchor 1 shares its domain, anchor 2 does not" (user, 2026-10-28). A failed split is never, on
-its own, evidence of a new mechanism.
+E44 on E40's updates is a shakedown of the table, not D1 evidence: D1 is scored on Q2's updates. The user asked on
+2026-10-28 that every anchor reading carry the sentence "anchor 1 shares its domain, anchor 2 does not". A failed split
+is never, on its own, evidence of a new mechanism.
 
 ## 5. Figures
 
@@ -190,8 +209,14 @@ needed.
 
 ## 6. What the write-up cannot yet say, cheapest gap first
 
-"§2 n" is the gap's number in the technique review's §2. Seven of that review's gaps were partly closed later the
-same day or by runs it missed: E42 for gap 1, E41 for gap 3, E39 Amendment 2 for gaps 2 and 5, and E34 Amendment 6 for gaps 4, 6, 7 and 10. Gap 4's longer run, Amendment 7, was cancelled by the user as low value, `decisions.md:52`. The rows below say what is left of each.
+"§2 n" is the gap's number in the technique review's §2. Runs later that day, or runs the review missed, partly
+closed seven of its gaps:
+- E42 closed gap 1, and E41 gap 3;
+- E39 Amendment 2 closed gaps 2 and 5;
+- E34 Amendment 6 closed gaps 4, 6, 7 and 10.
+
+The user cancelled gap 4's longer run, Amendment 7, as low value, `decisions.md:52`. The rows below say what is left of
+each.
 
 | Rank | What cannot be said | Why | What closes it | Cost | §2 |
 |---|---|---|---|---|---|
@@ -217,34 +242,39 @@ same day or by runs it missed: E42 for gap 1, E41 for gap 3, E39 Amendment 2 for
 | 17 | A map that updates Γ keeps the floor | no Γ-refit protocol holds the unchanged model | the matched-attacker refit | about $9 a refit, protocol unsolved | §2 9 |
 | 18 | Re-gating is not a leak through Γ's input | the decisive tests need a Γ from another decomposition seed or a refit Γ | a second decomposition, or rank 17's refit | unknown; no second decomposition exists | not in §2 |
 
-Ranks 1 to 3b cost nothing; ranks 1 and 1b are the user's decisions, and rank 2 waits on the red team's cards. Rank 2b
-decides whether the commute line's headline, C1-C3, survives into the write-up as stated. Ranks 4 to 10 are cluster jobs of
-under 30 minutes at $0. Ranks 13-15 are the Qwen line's own plan and set the 2026-11-11 date.
+The first ranks, up to 3b, cost nothing. Ranks 1 and 1b are the user's decisions, and rank 2 waits on the red team's
+cards. Rank 2b decides whether the commute line's headline survives into the write-up as stated. Ranks 4 to 10 are
+short cluster jobs at $0. Ranks 13 to 15 are the Qwen line's own plan, and they set the date of the write-up.
 
 ## 7. Outline of the write-up
 
 1. The question and why it matters: the re-weighting hypothesis and post-training monitoring, not the testbed model.
-2. The decomposition, the maps and the check, in one page with one diagram; the pass line and its problem, C13's figure.
-3. Small model, the commute line: C8 and C11 the splits fail; C1, C2 and C3 teacher training copies narrow updates;
-   C17 labels show the broad failure is not the decomposition's;
-   C4 and C5 where it fails. One figure each.
-4. Small model, the masked stand-in: R1 and R2 together, R3, R5; stated as an instrument with its nulls.
+2. The decomposition, the maps and the check, in one page with one diagram. Then the pass line and its problem, with
+   C13's figure.
+3. Small model, the commute line, one figure each:
+   - the splits fail, C8 and C11;
+   - teacher training copies narrow updates, C1-C3;
+   - labels show the broad failure is not the decomposition's, C17;
+   - where teacher training fails, C4 and C5.
+4. Small model, the masked stand-in: R1 with R2, then R3 and R5, stated as an instrument with its nulls.
 5. Qwen: W2-W5 the references; D1, D2 and D3 as far as the runs get.
 6. What it cannot say: §6 of this file, cut to the gaps still open on the day.
 
 ## Surprises
 
-None from new data; this is a reading of existing files. The claims red team, landed while this was drafted, weakens
-the commute line's headline more than the log does; §3a lists how. Two findings about the record: the log states six things above
-what its own claims rows and cards support, listed in §6 rank 2; and E44's code and predictions are committed while Q9
-calls it planned.
+None from new data; this is a reading of existing files. The claims red team landed while this was drafted. It weakens
+the commute line's headline more than the log does, and §3a lists how.
+
+Two findings about the record:
+- the log states six things above what its own claims rows and cards support, listed in §6 rank 2;
+- E44's code and predictions are committed while Q9 calls it planned.
 
 ## Not run
 
 - No claim was re-derived from results JSON; rows rest on the log and its cards, with file:line where the reader gave it.
 - The E20 figures and `experiments/lift_test/figures/obstruction.png` were not checked.
 - The re-gating red team's exact E38 numbers were not used; the log's "about a fifth" stands.
-- An independent Opus check ran on the first draft; its findings are applied: stale gaps closed by E34 Amendment 6 and
-  E39 Amendment 2, missing rows C17 and the Pile-text damage, row errors in C15, R3, R4 and W2. Not re-checked after the
-  fixes.
-- E44's rehearsal, job 40945, was not read beyond its log's progress line.
+- An independent Opus check ran on the first draft, and its findings are applied. It found stale gaps that later
+  amendments had closed, two missing rows, and errors in four rows. The fixes were not re-checked.
+- E44's rehearsal was not read beyond the log card's status line.
+- The polish on the 29th rewrote prose; the only table cell it changed is E44's status in §4.
