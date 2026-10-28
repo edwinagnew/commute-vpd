@@ -1,0 +1,91 @@
+{
+ "G2": {
+  "ci_masked_w0": 1.128783106803894,
+  "pass": true,
+  "path_kl": 0.0016302497824653983,
+  "stochastic_w0": 0.7637463808059692,
+  "unmasked_w0": 0.0016302497824653983
+ },
+ "M0": {
+  "damage": 0.023114963905098512,
+  "delta_share": 1.8687651451798057e-10,
+  "gain": 0.3817697701994902,
+  "p_ci_trigger": 1.4349781285353693e-05,
+  "p_target": 1.5907231406260705e-05,
+  "p_unmasked_trigger": 1.5939623852191305e-05,
+  "pgd": 25.985587812080357,
+  "pile_ratios": {
+   "ci_masked_kl": 0.9344543141670196,
+   "pgd_kl": 25.985587812080357,
+   "stochastic_kl": 1.0278814845366333,
+   "unmasked_kl": 0.9003792119881862
+  },
+  "pile_verdicts": {
+   "pgd_kl": "fail",
+   "stochastic_kl": "pass"
+  },
+  "scorable": false,
+  "share_d": -1.0651610673851977,
+  "share_e_delta": 0.07980642957170857,
+  "share_e_gate": 1.5110882373498085,
+  "share_i": 0.1393040906639504,
+  "share_r": 0.33496230979973,
+  "size": 0.051385413855314255,
+  "stochastic": 1.0278814845366333,
+  "teacher_gap": 0.1023761683825365,
+  "train": {
+   "first50": {
+    "ci_masked": 1.1309667754173278,
+    "ci_masked_trigger": 0.7185837888717651,
+    "grad_norm": 10.173653659820557,
+    "loss": 1.0272499763965606,
+    "stochastic": 0.7396523523330688,
+    "stochastic_trigger": 0.46052866101264955,
+    "unmasked": 0.09194040375528857,
+    "unmasked_trigger": 0.08311583112808876
+   },
+   "last50": {
+    "ci_masked": 0.7757649803161621,
+    "ci_masked_trigger": 0.4090750187635422,
+    "grad_norm": 3.876297559738159,
+    "loss": 0.6830559170246124,
+    "stochastic": 0.5059054672718049,
+    "stochastic_trigger": 0.24937774926424028,
+    "unmasked": 0.04222069218754768,
+    "unmasked_trigger": 0.031482857912778855
+   },
+   "seconds": 194.9949975013733
+  },
+  "verdict": "below P 0.9"
+ },
+ "W0": {
+  "ci_rel": 0.0005403122725500253,
+  "pass": true,
+  "pgd_floor": 0.20877548446862537,
+  "pgd_rel": 0.002526326455931871,
+  "pile": {
+   "0": {
+    "ci_masked_kl": 0.3481880286708474,
+    "pgd_kl": 0.6917431652545929,
+    "stochastic_kl": 0.24786615511402488,
+    "unmasked_kl": 0.012028305005514994
+   },
+   "1": {
+    "ci_masked_kl": 0.3481880286708474,
+    "pgd_kl": 0.8361621797084808,
+    "stochastic_kl": 0.24835433764383197,
+    "unmasked_kl": 0.012028305005514994
+   },
+   "2": {
+    "ci_masked_kl": 0.3481880286708474,
+    "pgd_kl": 0.7048778533935547,
+    "stochastic_kl": 0.24838376697152853,
+    "unmasked_kl": 0.012028305005514994
+   }
+  },
+  "stochastic_floor": 0.002088271620889648
+ },
+ "card": "NVIDIA L40",
+ "stopped": "M0: with nothing to copy the masked recipe fails or breaks the Pile check {'stochastic_kl': 'pass', 'pgd_kl': 'fail'} {'stochastic_kl': 1.0278814845366333, 'ci_masked_kl': 0.9344543141670196, 'unmasked_kl': 0.9003792119881862, 'pgd_kl': 25.985587812080357}; arm M not run",
+ "task": "rand32"
+}
