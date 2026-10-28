@@ -1,0 +1,169 @@
+"""E45's pure pieces: packing, data order, the KL-grid crossings and nearest state, the sample filters, the prompt
+rule, the Job 1 scoring rules with the plan's edge cases (section 5), the facts generator, and qwen_sft's masks."""
+
+from __future__ import annotations
+
+import json
+import math
+from pathlib import Path
+
+from commute import qwen_facts as qf
+from commute.qwen_sft import n_targets, targets
+from commute.qwen_updates import (
+    anchor2_holds,
+    at_least,
+    choose,
+    crossed,
+    cycle,
+    keep_correct,
+    keep_finished,
+    learned,
+    length_ratio,
+    nearest,
+    pack_whole,
+    packed_stream,
+    paired_gain,
+    pick,
+    prompt_rule,
+    read_steps,
+)
+
+PRED = json.loads((Path(__file__).resolve().parents[1] / "experiments/qwen_updates/results/predictions.json").read_text())
+
+
+# ----------------------------------------------------------------------------- packing and order
+
+
+def test_pack_whole_never_splits_and_flags_responses():
+    rows = pack_whole([([1, 2, 3], 1), ([4, 5], 1), ([6, 7, 8], 2)], 5)
+    assert rows == [([1, 2, 3, 4, 5], [False, True, True, False, True]), ([6, 7, 8], [False, False, True])]
+    _, mask = targets(rows, pad=0)
+    assert int(mask.sum()) == n_targets(rows) == 4
+    assert mask[0].tolist() == [True, True, False, True]  # logit j predicts token j + 1
+
+
+def test_packed_stream_repacks_each_pass_and_is_seeded():
+    seqs = [([i, i, i], 1) for i in range(10)]
+    a, b = packed_stream(seqs, 0, 6, 12), packed_stream(seqs, 0, 6, 12)
+    assert a == b and len(a) == 12 and packed_stream(seqs, 1, 6, 12) != a
+    assert a[:5] != a[5:10]  # the second pass is shuffled anew
+
+
+def test_cycle_covers_each_pass_once():
+    c = cycle(5, 0, 12)
+    assert len(c) == 12 and sorted(c[:5]) == list(range(5)) and sorted(c[5:10]) == list(range(5))
+    assert cycle(5, 0, 12) == c != cycle(5, 1, 12)
+
+
+def test_read_steps():
+    s = read_steps(100, 30, 5)
+    assert s[:30] == list(range(1, 31)) and s[30:] == list(range(35, 101, 5))
+
+
+# ----------------------------------------------------------------------------- the grid
+
+
+def test_crossed_first_time_only_and_both_axes():
+    done: set = set()
+    new = crossed({"maths": 0.05, "own": 0.005}, done, (0.01, 0.03, 0.1))
+    assert new == [("maths", 0.01), ("maths", 0.03)]
+    done |= set(new)
+    assert crossed({"maths": 0.05, "own": 0.01}, done, (0.01, 0.03, 0.1)) == [("own", 0.01)]  # inclusive
+    assert crossed({"maths": math.nan}, set(), (0.01,)) == []
+
+
+def test_nearest_in_log_kl_ties_and_missing_lower():
+    assert nearest((3, 0.02), (4, 0.06), 0.03) == (3, 0.02)  # log 1.5 < log 2
+    assert nearest((3, 0.015), (4, 0.06), 0.03) == (4, 0.06)  # log 2 = log 2: the later
+    assert nearest(None, (1, 0.5), 0.3) == (1, 0.5)
+    assert nearest((1, 0.0), (2, 0.05), 0.01) == (2, 0.05)  # zero KL is infinitely far
+
+
+def test_choose_reads_full_kl():
+    cross = [{"axis": "own", "grid": 0.1, "lo": 4, "hi": 5}, {"axis": "maths", "grid": 0.01, "lo": None, "hi": 2}]
+    kl = {4: {"own": 0.09, "maths": 0.2}, 5: {"own": 0.2, "maths": 0.3}, 2: {"own": 0.0, "maths": 0.02}}
+    assert choose(cross, kl) == [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.09},
+                                 {"axis": "maths", "grid": 0.01, "step": 2, "kl": 0.02}]
+
+
+# ----------------------------------------------------------------------------- samples and prompts
+
+
+def test_sample_filters():
+    recs = [{"pid": 0, "ids": [1], "strict": True, "truncated": False},
+            {"pid": 0, "ids": [1], "strict": True, "truncated": False},  # duplicate
+            {"pid": 1, "ids": [1], "strict": True, "truncated": False},  # same ids, other problem
+            {"pid": 1, "ids": [2], "strict": False, "truncated": False},
+            {"pid": 2, "ids": [3], "strict": True, "truncated": True}]
+    assert [r["pid"] for r in keep_correct(recs)] == [0, 1]
+    assert len(keep_finished(recs)) == 4
+
+
+def test_prompt_rule_edges():
+    R = PRED["rules"]["prompt"]
+    base = [False] * 100
+    up = prompt_rule(base, [True] * 3 + [False] * 97, R["min_gain"], R["se_mult"])
+    assert up["gain"] == 0.03 and not up["qualifies"]  # gain 0.03 but se 0.017: 2 se = 0.034
+    allsame = prompt_rule([False] * 10, [True] * 10, R["min_gain"], R["se_mult"])
+    assert allsame["se"] == 0 and allsame["qualifies"]  # spread 0: the gain decides
+    assert not prompt_rule([], [], R["min_gain"], R["se_mult"])["qualifies"]
+    assert not prompt_rule([True], [True], R["min_gain"], R["se_mult"])["qualifies"]  # one problem: no se
+    rules = {"a": {"gain": 0.05, "qualifies": True}, "b": {"gain": 0.08, "qualifies": False},
+             "c": {"gain": 0.05, "qualifies": True}}
+    assert pick(rules) == "a" and pick({"a": {"gain": 1.0, "qualifies": False}}) is None
+
+
+# ----------------------------------------------------------------------------- Job 1 rules
+
+
+def rec(idx, strict, fits=True, n=100):
+    return {"idx": idx, "strict": strict, "fits": fits, "response_tokens": n}
+
+
+def test_own_accuracy_pairs_kept_at_both():
+    w0 = [rec(0, False), rec(1, True), rec(2, False, fits=False)]
+    t = [rec(0, True), rec(1, True, fits=False), rec(2, True)]
+    g = paired_gain(w0, t)
+    assert g == {"n": 1, "diff": 1}
+    assert paired_gain(w0, []) == {"n": 0, "diff": None} and not at_least(None, 0.01)
+    assert at_least(0.01, PRED["rules"]["own_accuracy"]["min"])  # inclusive at the threshold
+    assert not at_least(math.nan, 0.0)
+
+
+def test_length_ratio_edges():
+    assert length_ratio([rec(0, True, n=200)], [rec(0, True, n=180)]) == 0.9
+    assert length_ratio([], [rec(0, True)]) is None and length_ratio([rec(0, True, n=0)], [rec(0, True)]) is None
+
+
+def test_anchor_rules_edges():
+    R = PRED["rules"]["anchor2_learns"]
+    assert anchor2_holds(0.5, 0.9, 1.0, R)  # both at their thresholds
+    assert not anchor2_holds(0.5, 0.89, 1.0, R) and not anchor2_holds(None, 1.0, 1.0, R)
+    assert not anchor2_holds(0.6, 0.9, None, R)  # no W0 reference: a miss
+    assert anchor2_holds(0.6, 0.0, 0.0, R)  # W0 knows none: 0.9 x 0 is met
+    L = PRED["rules"]["learned"]
+    assert learned("a1", {"gap": 0.25}, None, None, L) and not learned("a1", {}, None, None, L)
+    assert learned("gold", {"drop": 0.05}, None, None, L) and not learned("own", {"drop": 0.019}, None, None, L)
+    assert learned("a2", {}, {"invented": 0.25, "known": 0.9}, 1.0, L) and not learned("a2", {}, None, 1.0, L)
+
+
+# ----------------------------------------------------------------------------- facts
+
+
+def test_facts_sizes_determinism_and_draws():
+    a, b = qf.train_set(0), qf.train_set(0)
+    assert a == b and len(a) == 3600 and sum(q.fact.known for q in a) == 600
+    assert len(qf.held_set(0)) == 1200 and {q.template for q in qf.held_set(0)} == {qf.HELD_TEMPLATE}
+    p0 = {f.subject for f in qf.invented(0)}
+    p1 = {f.subject for f in qf.invented(1)}
+    assert len(p0) == len(p1) == qf.N_PEOPLE and len(p0 & p1) < 5
+    known = {f.subject for f in qf.known()}
+    assert len(known) == 200 and not (p0 & known)
+    assert all(qf.FORMAT in q.question and q.answer.startswith("The answer is ") for q in a)
+
+
+def test_facts_grader():
+    assert qf.correct("The answer is **Brasília**.", "Brasilia")
+    assert qf.correct("Hmm.\nThe answer is 1957.", "1957")
+    assert not qf.correct("The answer is 1958.", "1957") and not qf.correct("Paris", "Paris")
+    assert qf.correct("The answer is X.\nThe answer is New Delhi.", "New Delhi")  # the last one counts
