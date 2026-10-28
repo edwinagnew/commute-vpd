@@ -23,6 +23,8 @@ within the filed tolerances of single copies. Its weight change was larger and i
 
 *Amendment 1, at the end: at two more batch orders the emoticon step-10 copy passed once and was inconclusive twice, so it sits at the pass line; its reading varied more across orders than finished copies' do, with one adversary start per reading.*
 
+*Amendment 2, at the end: a chain of short copies along the emoticon fine-tune, each from the last, kept the behaviour and passed everywhere without piling up damage; the check sees only two links, and the step-10 one sits at the pass line.*
+
 ## What we tested
 
 **Teacher training** is component training of the alive subcomponents' read and write vectors $(U, V)$ with the loss
@@ -525,3 +527,272 @@ would apply teacher training step after step. A single early reading near the li
 *Links: E41, E22, E34, E37. Reports: this analysis → "Amendment 1";
 `reports/reviews/2026-10-28_review_e41-amend1-check.md`; `reports/plans/2026-10-28_plan_e41-teacher-path.md` →
 "Amendment 1".*
+
+## Amendment 2: short links, a chain of 100-step copies along the emoticon fine-tune
+
+*2026-10-28. Plan `reports/plans/2026-10-28_plan_e41-teacher-path.md` → "Amendment 2", including "Refiled before the
+run"; code `experiments/teacher_training/path_amend2.py`; predictions
+`experiments/teacher_training/results/predictions_e41_amend2.json`, refiled 14:51:54 before the run (commit fb4aeb8),
+unedited since; the first filing is kept as `predictions_e41_amend2_filed-1439.json`; results
+`experiments/teacher_training/results/teacher_training_e41_amend2.json`; log
+`experiments/teacher_training/results/large/run_e41_amend2.log`; figures `figures/e41_amend2_{faithful,behaviour,pileup}.png`
+from `plot_e41_amend2.py`; notebook `notebooks/E41_teacher_path.ipynb` → "Amendment 2".*
+
+We trained the subcomponents to imitate the emoticon fine-tune at seven points along it, each copy starting where the
+last one ended. Every copy kept the behaviour and passed the adversarial check, but only two of those passes are
+evidence, and the earlier of the two sits near the pass line. The chain ended no worse than a single long copy and piled
+up no damage, so on this model teacher training can run alongside training at this rhythm.
+
+### The answer
+
+Yes, within what the check can see. We copied the emoticon fine-tune into the subcomponents at seven checkpoints, 100
+training steps each, each copy starting from the last. Every copy kept the behaviour and passed the adversarial check.
+Leaving the update in Δ fails or sits between the lines only at steps 10 and 1,000, so only those two passes are
+evidence. At step 10 the copy sits near the pass line, as single copies did. The chain ended with a smaller weight
+change than a single 1,000-step copy, and damage just inside the limit.
+
+### What we tested
+
+**The update.** E41's emoticon fine-tune: E34's Adam 3e-5 fine-tune of all 24 matrices, arm A's loss, batch 32, seed 0,
+regenerated in the job. The rate is constant, so its checkpoint at step $k$ is the fine-tune stopped at $k$. Seven
+checkpoints were kept, $k \in \{1, 3, 10, 30, 100, 300, 1000\}$: the teachers $T_k$.
+
+**The chain.** Teacher training is component training of the alive subcomponents' read and write vectors $(U, V)$ with
+the loss $\mathrm{KL}(T_k \,\|\, \text{student})$, Γ and Δ frozen, by E34's task-text recipe. The first link starts from
+the unchanged model's $(U, V)$ and trains 100 steps against $T_1$. Each later link starts from the previous link's
+$(U, V)$ and trains 100 steps against the next checkpoint, with a fresh Adam state and its own batch order. The link
+at $T_{1000}$ has had 700 student steps in all.
+
+**The references, all on the same card and harness.**
+- **Doing nothing** at each checkpoint: $\delta W_k$ put into Δ, subcomponents and Γ untouched. The check **sees the
+  update** at a checkpoint only where this reads fail or between the lines. Where doing nothing passes, a passing copy
+  says nothing about the map.
+- **One-shot copies**: E41's copies of $T_{10}$, $T_{100}$ and $T_{1000}$, each 1,000 steps from the unchanged model.
+  The $T_{10}$ copy also at batch orders 1 and 2, from Amendment 1.
+- **E41's long chain**: the one-shot $T_{10}$ copy, then 1,000 steps against $T_{100}$, then 1,000 against $T_{1000}$,
+  reusing the same batches at each link.
+
+**Numbers per state**, read at its last step:
+- **Adversarial ratio**: the KL a 20-step mask adversary finds on 256 Pile rows, one start, over the same at $W_0$. 1
+  means no change. With this job's $W_0$ floor of 0.0748, pass ≤ 1.396, fail ≥ 1.612, **at the line** between. The
+  stochastic-mask ratio is read the same way, and the verdict takes the worse of the two.
+- **P(target)**: held-out probability of `o` after an emoticon. $W_0$ reads 0.004.
+- **Gap share**: $\mathrm{KL}(T_k \,\|\, \text{state}) / \mathrm{KL}(T_k \,\|\, W_0)$ on held-out task windows. $W_0$
+  reads 1, doing nothing 0.
+- **Size**: the largest relative weight change of any of the 24 matrices. **Damage**: the KL from $W_0$ at the
+  held-out windows' non-target positions. Both read 0 at $W_0$; doing nothing reads the teacher's own.
+- **Excess removed**: $(r_{\text{nothing}} - r)/(r_{\text{nothing}} - 1)$ for a copy reading $r$. 0 is doing nothing,
+  1 is the unchanged model. It is read only where the check sees the update; elsewhere the denominator is near zero.
+- **Start KL**: the link's loss on its first batch before any update, its head start.
+
+**What differs from the one-shot reference at each anchor.** The chain has had 300, 500 and 700 student steps at
+$T_{10}$, $T_{100}$ and $T_{1000}$, against the one-shot's 1,000. Adam restarts at every link. Link $i$ uses batch order
+$i$; E41's long chain reused order 0.
+
+### What we expected
+
+- **Every link at the line or better, leaning "at the line"**, at medium confidence. The one-shot $T_{10}$ copies had
+  read one pass and two at the line over three batch orders, and copies of $T_1$ and $T_3$ had never been read.
+- **The chain no worse than a single copy** at steps 10, 100 and 1,000, at medium confidence. E41's long chain had held
+  with ratios 4% to 5% above the one-shot's. The named risk was step 10, reached after 300 student steps.
+- **No pile-up of size or damage at step 1,000**, filed with the lean that it **fails on damage**, at medium confidence.
+  E41's long chain had grown to 1.36 times the one-shot copy's size and 1.49 times its damage. Step-10 copies do their
+  teacher's full damage, three times the finished copy's, and the last link has only 100 steps to shed it.
+
+### Controls
+
+All passed; nothing stopped. This job's references equal E41's to every printed digit.
+
+| control | rule | read | verdict |
+|---|---|---|---|
+| C1, $W_0$ under the Pile harness, adversary seeds 0-2 | `w0_check`; floor 0.0748 within 10%; seed-0 PGD KL 0.69882 within 1% | floor 0.07482; PGD 0.6988 / 0.7511 / 0.7067 | pass, equal to E41's |
+| G1, regenerated $T_{10}$, $T_{100}$, $T_{1000}$ | P within 0.005, size within 0.001 of E41's | 0.99931 / 0.01125; 0.99946 / 0.02217; 0.99961 / 0.03209 | pass, to the digit |
+| PC, do-nothing at $T_{10}$ | 2.5159 within 1%, fail | 2.5159000284, fail; blocks 1.17 / 3.79 | reproduced to 10 digits |
+| C2, warm start from the $T_1$ link, one step at lr 0 against its own weights | step-1 KL ≤ 0.005; δW within 1e-3 | KL 0.00057; δW change 0 | pass |
+| Δ untouched, every link | Δ's share ≤ 1e-6 | ≤ 1.1e-8 | pass |
+
+Do-nothing at $T_{100}$ and $T_{1000}$ also reproduces E41's 1.136 and 1.499.
+
+### Does every link pass where doing nothing fails?
+
+![adversarial ratio of each link against the checkpoint it copies](../../experiments/teacher_training/figures/e41_amend2_faithful.png)
+
+Every link passes, but only two of the seven passes are evidence. Doing nothing passes at five checkpoints: steps 1, 3,
+30, 100 and 300. There the check cannot tell any map from leaving the update in Δ. Doing nothing fails at step 10, at
+2.52, and sits at the line at step 1,000, at 1.50. Those are the two links that test the map.
+
+At step 1,000 the link reads 0.91, against 1.50 for doing nothing and 0.96 for the one-shot copy. That is a clear pass.
+
+At step 10 the link reads 1.32. It passes by 5%, inside the unchanged model's 7.5% spread across adversary starts. The
+one-shot copies of the same checkpoint read 1.55, 1.28 and 1.51 at three batch orders, and 1.32 lies inside that spread.
+It is one batch order and one adversary start. The user's choice on early updates reports a link this close to the line
+as **at the line**. So this run does not show that short links fix the step-10 shortfall. As in all three one-shot
+copies, the excess sits in the second block of 128 rows. The link reads 1.03 and 1.60 by block; doing nothing reads 1.17
+and 3.79. The link removes 79% of doing nothing's excess, where the one-shot copies removed 64% to 82%.
+
+| link | student steps in all | start KL | do-nothing ratio | check sees it | link ratio | stochastic | verdict | P(target) | teacher P | gap share | excess removed | size | damage | Δ share |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| $T_1$ | 100 | 4.859 | 1.049 pass | no | 1.165 | 0.964 | pass | 0.9136 | 0.9303 | 0.0038 | — | 0.0070 | 0.0431 | 1.1e-8 |
+| $T_3$ | 200 | 0.336 | 1.131 pass | no | 1.097 | 1.013 | pass | 1.0000 | 1.0000 | 0.0011 | — | 0.0083 | 0.1013 | 6.5e-9 |
+| $T_{10}$ | 300 | 0.179 | 2.516 fail | **yes** | **1.325** | 0.979 | **pass**, 5% under the line | 0.9996 | 0.9993 | 0.0013 | **0.79** | 0.0108 | 0.0560 | 3.9e-9 |
+| $T_{30}$ | 400 | 0.109 | 1.052 pass | no | 0.960 | 0.956 | pass | 0.9955 | 0.9970 | 0.0013 | — | 0.0124 | 0.0370 | 3.0e-9 |
+| $T_{100}$ | 500 | 0.059 | 1.136 pass | no | 0.985 | 0.946 | pass | 0.9991 | 0.9995 | 0.0021 | — | 0.0139 | 0.0326 | 2.3e-9 |
+| $T_{300}$ | 600 | 0.062 | 1.243 pass | no | 0.956 | 0.963 | pass | 0.9982 | 0.9985 | 0.0035 | — | 0.0149 | 0.0249 | 2.0e-9 |
+| $T_{1000}$ | 700 | 0.055 | 1.499 at the line | **yes** | **0.910** | 0.953 | **pass** | 0.9988 | 0.9996 | 0.0057 | **1.18** | 0.0152 | 0.0217 | 1.8e-9 |
+
+The run's `excess_removed` field also prints values at the five links the check cannot see, from −2.35 to 1.76. Their
+denominators are small, 0.05 to 0.24, and doing nothing passes there. So these values say nothing about the map and are
+left out above. An excess removed above 1 at step 1,000 means the link reads below the unchanged model. E41's finished
+copies also read near or below 1.
+
+### Does every link keep the behaviour?
+
+![P(target) and gap share of each link against the checkpoint it copies](../../experiments/teacher_training/figures/e41_amend2_behaviour.png)
+
+Yes. Every link holds P(target) of 0.91 or more, against 0.004 for the unchanged model. Every link's gap share is below
+0.006, so each sits within 0.6% of the way from its teacher back to the unchanged model. From step 3 on, every link
+holds 0.995 or more. The one low reading is step 1, where the teacher itself holds only 0.930 and the link 0.914. That
+is 0.014 above the "behaviour lost" line, with gap share 0.004. Gap share grows slowly along the chain, from 0.001 at
+step 3 to 0.006 at step 1,000. It ends level with the one-shot copy's 0.0056.
+
+No teacher was too close to the unchanged model to read. The smallest gap at $W_0$ was 4.48 nats, at step 1, far above
+the refiled floor of 0.005 nats.
+
+### Does the chain pile up size or damage?
+
+![size and damage of each link, beside the fine-tune's own, the one-shot copies and E41's long chain](../../experiments/teacher_training/figures/e41_amend2_pileup.png)
+
+No, narrowly on damage. At step 1,000 the link's size is 0.83 times the one-shot copy's and its damage 1.20 times it.
+The filed limit is 1.25 times on each. Damage is 3.7% under its limit, about the 3% that damage moves across batch
+orders. E41's long chain, with 1,000 steps per link, ended at 1.36 times the size and 1.49 times the damage.
+
+The two chains behave differently. The short chain's size grows at every link but stays below every teacher's from
+step 10 on. It reaches 0.015, against the fine-tune's 0.032. Its damage falls at every link after step 3, from 0.10 to
+0.022. It sheds damage gradually as the teacher matures, rather than in the last link. Relative to its own teacher, the
+link's damage falls from 1.01 at step 10 to 0.40 at step 1,000. Its size falls from 0.96 to 0.47 of the teacher's.
+
+| anchor | short chain size ÷ one-shot | short chain damage ÷ one-shot | E41 long chain size ÷ one-shot | E41 long chain damage ÷ one-shot | short chain size ÷ teacher | short chain damage ÷ teacher |
+|---|---|---|---|---|---|---|
+| step 10 | 0.76 | 0.97 | 1, it is the one-shot copy | 1 | 0.96 | 1.01 |
+| step 100 | 0.83 | 0.90 | 1.27 | 1.27 | 0.63 | 0.72 |
+| step 1000 | **0.83** | **1.20** | 1.36 | 1.49 | 0.47 | 0.40 |
+
+| link | size ÷ teacher | damage ÷ teacher |
+|---|---|---|
+| step 1 | 2.02 | 1.10 |
+| step 3 | 1.28 | 1.03 |
+| step 30 | 0.79 | 0.97 |
+| step 300 | 0.55 | 0.54 |
+
+Why the long chain kept more is untested. It differs in three ways at once: 1,000 steps per link, 3,000 student steps
+in all against 700, and the same batches at every link.
+
+### Is the chain worse than a single copy?
+
+Not at any anchor, on any of the four filed comparisons. The adversarial ratio is 3% to 14% below the one-shot copy's
+at every anchor. P(target) is within 0.002 of the one-shot's at each, and gap share within
+0.0007. The step-10 comparison reads inside batch-order noise, as the plan's reading notes say. The anchors at steps
+100 and 1,000 are where a pile-up would show, and neither does.
+
+| anchor | verdict, chain vs one-shot | ratio ÷ one-shot (≤ 1.25) | P − one-shot (≥ −0.01) | gap share − one-shot (≤ +0.005) | holds |
+|---|---|---|---|---|---|
+| step 10 | pass vs at the line | 0.857 | +0.0002 | +0.0001 | yes |
+| step 100 | pass vs pass | 0.970 | +0.0002 | +0.0007 | yes |
+| step 1000 | pass vs pass | 0.948 | +0.0020 | +0.0001 | yes |
+
+### What we learned
+
+Teacher training applied every 100 steps along this fine-tune kept every update's behaviour with Δ untouched, from the
+first Adam step to the last. On the adversarial check it passed at both checkpoints where doing nothing does not. At
+step 1,000 it passed clearly; at step 10 it sat near the pass line, where single copies already sat. The chain ended no
+worse than a single 1,000-step copy on every filed comparison. Unlike E41's chain of long links, it did not carry size
+or damage forward: it shed the early copies' damage link by link. `GOALS.md` asks whether a map applied along
+training accumulates error. In this first run at a monitor's rhythm, over seven links on this model, it did not.
+
+### How compelling is the evidence
+
+- **Two links carry the result on the check.** At five of the seven checkpoints doing nothing passes, so those links'
+  passes are not evidence about the map. The step-10 link is one batch order and one adversary start, near the line.
+- **One fine-tune, one task, one seed**: emoticon, Adam, the 67M model. No " which" chain and no Pile-text chain here.
+- **Blind to**, per number:
+  - adversarial ratio: one start, so a pass is a lower bound; 256 Pile rows only; a link near a line can land on
+    either side at another batch order;
+  - P(target): everything but the target token at the trigger;
+  - gap share: text outside the task windows;
+  - size: everything but the largest relative change of one matrix;
+  - damage: everything outside the held-out task windows;
+  - Δ's share: everything but a code bug.
+- **Noise floor**, same card: batch order moves the ratio by up to 21% at step 10 and 3.2% at step 1,000. It moves P
+  by 0.005, gap share by 0.002, size by up to 5% and damage by up to 3%. $W_0$'s adversary-seed floor is 7.5%.
+- **Unequal training at the anchors**: 300, 500 and 700 student steps against the one-shot's 1,000. A one-shot copy
+  trained 700 steps was not run, so how much of the smaller size is fewer steps is untested.
+- **The references are clean**: this job's unchanged model, teachers and positive control equal E41's to every printed
+  digit, so E41's one-shot copies are valid comparisons.
+
+### Surprises
+
+- **The pile-up lean was reversed.** We filed that the chain would end with too much damage, at medium confidence. It
+  ended at 1.20 times the one-shot copy's damage, inside the 1.25 limit, and at 0.83 times its size. The chain shed the
+  early copies' damage across the links, not in the last one. Why E41's long chain did not is untested.
+- **Every link passed where we leaned "at the line".** This is not a change of substance. The step-10 link sits inside
+  the one-shot copies' spread and is reported at the line.
+- **The step-1 copy is twice the size of its update.** It reads 1.17 on the check where doing nothing reads 1.05. Both
+  pass, and the check cannot see this update. Not filed.
+- **The step-3 checkpoint does the most damage of any**, 0.099, nearly twice step 10's. Yet doing nothing passes the
+  check there, at 1.13. Damage on task windows and the Pile check disagree on which early update is worst. Not filed.
+
+### What next
+
+The plan's tree branch that fires, quoted: "**P1 pass, P2 holds.** Teacher training applied every 100 steps keeps every
+update along this fine-tune faithful and ends as well as one copy. The comparison's "continuous" cell turns yes on this
+model. P3 then says whether it costs extra size or damage. A card asks whether to carry this rhythm to Qwen."
+
+The filed score is pass, so this is the branch. Read with the user's option (a), the step-10 link is at the line. That
+is the neighbouring branch's wording, "P1 at the line, P2 holds", which also proposes no run. The pile-up prediction
+held, so no card on damage. The branch costs nothing further; this run cost about $2.10.
+
+1. **A card for the user**: carry teacher training at 100 steps per checkpoint to the Qwen line. The plan gives no
+   cost; it would need its own plan. The "continuous" cell should say it rests on two seen links, one at the line.
+2. **A one-shot copy trained 700 steps** against the step-1,000 teacher, about a minute of H100 time inside any later
+   job. It would say whether the chain's smaller size is the chain or just fewer steps.
+3. **Adversary seeds 1 and 2 on the step-10 link** would say whether it is a pass or at the line. Option (a) declined
+   this kind of repeat, so it runs only if the user reopens it.
+
+### Scorecard (Amendment 2)
+
+Rules as filed in `predictions_e41_amend2.json` (refiled 14:51:54, sha256 `08e5e05b…3db8`); the run's `score` block,
+checked here by hand against the results file.
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| C1 | $W_0$ reads E41's floor and seed-0 KL | `w0_check`; floor 0.0748 within 10%; PGD KL 0.69882 within 1% | 0.07482; 0.69882 | pass |
+| G1 | regenerated teachers = E41's | P within 0.005, size within 0.001 at $T_{10}$, $T_{100}$, $T_{1000}$ | to the digit | pass |
+| PC | do-nothing at $T_{10}$ = E41's | 2.5159 within 1%, fail | 2.5159000284, fail | pass |
+| C2 | warm start reproduces its start | step-1 KL ≤ 0.005; δW within 1e-3 | 0.00057; 0 | pass |
+| — | Δ untouched | every link's share ≤ 1e-6 | ≤ 1.1e-8 | pass |
+| P1 | every link keeps the behaviour and passes | per link: too close if gap at $W_0$ < 0.005; lost if gap share > 0.05 with teacher gap > 0.005, or teacher P ≥ 0.9 and link P < 0.9; else the check's verdict; outcome the worst read link | none too close, smallest gap at $W_0$ 4.48; largest gap share 0.0057; $T_1$ P 0.914 with teacher 0.930; all seven ratios ≤ 1.325 against the 1.396 line, stochastic ≤ 1.013; check sees the update at $T_{10}$ and $T_{1000}$ only; near a line: $T_{10}$, the pass line | **pass** (lean at the line, medium). Two of seven links carry evidence; the $T_{10}$ link is at the line by option (a) |
+| P2 | the chain is not worse than one copy | at $T_{10}$, $T_{100}$, $T_{1000}$: verdict no worse; ratio ≤ 1.25 × one-shot; P ≥ one-shot − 0.01; gap share ≤ one-shot + 0.005 | ratio 0.857 / 0.970 / 0.948 ×; P +0.0002 / +0.0002 / +0.0020; gap +0.0001 / +0.0007 / +0.0001; verdicts pass vs at the line, pass, pass | **holds** (lean holds, medium) |
+| P3 | no pile-up | $T_{1000}$ link size ≤ 1.25 × 0.01842 = 0.02303 and damage ≤ 1.25 × 0.01801 = 0.02251 | size 0.01521 (0.826 ×), damage 0.02168 (1.204 ×) | **holds**, damage 3.7% under the limit (**lean fails on damage, medium: reversed**) |
+
+### Not run (Amendment 2)
+
+- Batch-order repeats of any link and adversary seeds 1 and 2, by option (a); the 160-step adversary.
+- A one-shot copy trained 700 steps to match the chain's total; carrying Adam's state across links; links shorter
+  than 100 steps; a reset to the unchanged model every few links.
+- Chains on the " which" task, from Pile text, or of SGD or LoRA teachers; a second fine-tune seed.
+- The cosine of the chain's end with the one-shot $T_{1000}$ copy; which Pile rows carry the step-10 excess.
+- No states were saved; the chain regenerates in about 8 minutes.
+
+### Provenance (Amendment 2)
+
+- RunPod NVIDIA H100 80GB HBM3, pod 01M61G2E2V3P2QE35168ZR98ET; job 15:08:13 to 15:25:43 on 2026-10-28, about 17.5
+  min of job and 32 min of pod, about $2.10.
+- `predictions_e41_amend2.json` sha256 `08e5e05bb11029a9df88db04b7dfcfe8f25c4f722e2be7aa5e7394c9d6963db8`; first filing
+  `predictions_e41_amend2_filed-1439.json` sha256 `fc52244502a3d735a953fd961bee42ccaef32894fc326979387f52cb1de6ad9a`.
+- `teacher_training_e41_amend2.json` sha256 `644f8341f2fd1ee7e26b753e1983ea64ab09c804cac5e6b3dcf7a9346a837dda`.
+- `large/run_e41_amend2.log` sha256 `9949fd0eb9c68e45c3530b822f248d59a827e8e9753770e8b978b2674abd4556`, not in git.
+- Code `path_amend2.py` sha256 `2c2155c04d7a95b84d1e7f7e8986cd544c942eca06ae56a64f2977dda521631a`, commit fb4aeb8.
+- The step-10 link's block ratios are from the log's `[faith]` lines at 15:17:40 and 15:18:06, over $W_0$'s seed-0
+  blocks 0.6794 / 0.7182; the results file stores no blocks.
+- Figures: `uv run python experiments/teacher_training/plot_e41_amend2.py`, rendered on the CPU worker. It reads E41's
+  and both amendments' results files, and the predictions file for the 1.25 limit.
