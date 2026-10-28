@@ -1,0 +1,42 @@
+{
+ "amendment": "E38 Amendment 4, the change-matched restore (card decision-e38-matched-change, option (a), approved by the user in the task file 2026-10-28). Plan: reports/plans/2026-10-28_plan_e38-amend4.md. Filed before amend4.py was written. Earlier predictions files are unchanged.",
+ "states": "Amendment 2's cached states (results/large/states/, sha256 in results/amend2_stage0.json): 3 tasks x seeds 0, 1, plus each task's ' http' null. A state with G < 1 nat is unscored (every share nan).",
+ "definitions": {
+  "Delta_c": "for alive subcomponent c of matrix k (rank-1 u_c v_c^T): mean over the task's TRAINING windows, at the trigger, of |(x1 - x0) . v_c| * ||u_c||, x1 = k's input in the fine-tuned model's pass, x0 = in W0's pass",
+  "restore X, rho_r(X)": "as Amendment 3 (predictions_amend3.json), on the held-out windows",
+  "layer": "recruit.by_layer's grouping",
+  "C_n": "per layer, the |S in that layer| alive pieces not in S with the largest Delta_c (ties: matrix name, then index); the whole layer's non-S alive pieces if fewer (recorded)",
+  "C_m": "per layer, alive pieces not in S in descending Delta_c (same ties) until their summed Delta_c >= S's summed Delta_c in that layer; empty where S has no members or S's sum is 0; the whole layer if never reached (recorded as short)",
+  "all_alive": "every alive subcomponent, S included",
+  "L3, rest, singles, random singles (emoticon s0, s1 only)": "L3 = alive pieces in layer 3 not in S with task.m0 >= 0.2 (Amendment 3's pool); rest = recruitment.active_like(S, that state's pool at 0.2, 0) minus its layer-3 members; singles = each L3 member restored alone; random singles = |L3| single pieces drawn with seed 0 from layer 3's alive pieces not in S with task.m0 < 0.2"
+ },
+ "controls (run first on every state; any fail stops the job before any share)": {
+  "R0-R4": "Amendment 3's, unchanged (predictions_amend3.json, predictions_amend3_r4.json, tolerance predictions_amend3_r4b.json)",
+  "R5": "Delta_c computed with the fine-tuned weights replaced by W0: max over alive pieces <= 1e-6",
+  "expected": "all pass; rho_r(S) equals Amendment 3's to 1e-4"
+ },
+ "P11 (main): does S take back more of the gain than the pieces whose outputs moved as much?": {
+  "seed rule": "'unscored' if G < 1; 'specific' if rho_r(S) >= rho_r(C_n) + 0.05 and rho_r(S) >= rho_r(C_m) + 0.05; 'not' if rho_r(C_n) >= rho_r(S) or rho_r(C_m) >= rho_r(S); else 'unclear'",
+  "task rule": "a task is scored only if rho_r(S) >= 0.10 on both seeds (else 'S too small'); a scored task takes the two seeds' common class, else 'seeds disagree'; a task with an 'unscored' seed is 'unscored'",
+  "reading": "'specific' if >= 2 scored tasks are 'specific' and none is 'not'; 'not specific' if >= 2 are 'not' and none is 'specific'; else 'outside the tree' (including fewer than 2 scored tasks)",
+  "edge cases checked": "empty C_n or C_m restores exactly 0 (R0), so S >= 0.10 makes the seed 'specific' against it; ties rho_r(C) == rho_r(S) read 'not'; nan only when G < 1, caught first; ' we' is expected 'S too small' (0.037, 0.049), leaving emoticon and ' which'",
+  "expected": "'specific': on emoticon and ' which' both change-matched sets take back at least 0.05 less than S",
+  "confidence": "low",
+  "basis": "Amendment 3: on emoticon the already-active pieces, whose outputs also moved, restore about -0.2; on ' which' they restore about 0; the null's set minus S, which a fine-tune also moved, restores about 0. Against: S was chosen by a rise in importance, which tracks input change, and C_m may be much larger than S"
+ },
+ "reported, with expected value": {
+  "Delta mass of C_n / Delta mass of S": "below 1 on all six task-seed states; low confidence",
+  "share of S among the top-|S| movers per layer": ">= 0.5 on emoticon and ' which'; low",
+  "rho_r(all_alive)": "between 0.3 and 0.9 on emoticon and ' which'; low",
+  "rho_r(L3), rho_r(rest) on emoticon": "rho_r(L3) <= -0.15 and |rho_r(rest)| <= 0.05 on both seeds; low"
+ },
+ "P12 (emoticon only): does the negative share of the active pieces sit in a few of them?": {
+  "seed rule": "'few' if the most negative single rho_r in L3 <= -0.05 and <= the most negative random single - 0.02; 'spread' if the most negative single in L3 > -0.02; else 'unclear'; 'unscored' if G < 1 or L3 is empty",
+  "reading": "the two seeds' common class, else 'seeds disagree'",
+  "expected": "'few'",
+  "confidence": "low",
+  "basis": "one random set per emoticon seed read -0.13 alone in Amendment 3, so single pieces can carry large negative shares, and every active draw held the whole L3 pool while reading alike"
+ },
+ "noise floors": "P11's 0.05 margin: Amendment 3's random sets never exceeded 0.029 and S's seeds differ by at most 0.023 (amend3.json). P12's bars: the random singles of the same run.",
+ "filed": "2026-10-28"
+}
