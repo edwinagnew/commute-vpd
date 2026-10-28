@@ -1,0 +1,40 @@
+{
+ "amendment": "E38 Amendment 7: D2, D union D2 and T2, the settling control for Amendment 6's 'separate' (recommended by reports/reviews/2026-10-28_review_e38-amend6-check.md). Plan: reports/plans/2026-10-28_plan_e38-amend7.md. Filed before amend7.py was written. Earlier predictions files are unchanged.",
+ "states": "Amendment 2's cached states, the six task-seed states; S and D from results/amend5.json (members); training e_c from results/large/amend5_scores.pt. A state with G < 1 nat is unscored.",
+ "definitions": {
+  "rho_r(X)": "as Amendments 3-6, on the held-out windows",
+  "n_k": "|S in k| per matrix k",
+  "D2": "per matrix, the n_k alive pieces outside S union D with the largest training e_c (ties: index); short if fewer exist",
+  "T2": "per matrix, the 2 n_k alive pieces with the largest training e_c, S's members allowed (ties: index); short if fewer exist",
+  "a2": "rho_r(D union D2) - max(rho_r(D), rho_r(D2))"
+ },
+ "controls (run first; any fail stops the job before any share)": {
+  "R0-R4": "Amendment 3's, unchanged",
+  "R8": "rho_r(S), rho_r(D), rho_r(S union D) restored from the saved members equal amend6.json's to 1e-4 on all six task-seed states"
+ },
+ "P15: is Amendment 6's 'separate' true of D and D2 too?": {
+  "seed rule": "'unscored' if G < 1, D2 short in any matrix, rho_r(D) < 0.10 or rho_r(D2) < 0.10; else 'separate' if a2 >= 0.5 * min(rho_r(D), rho_r(D2)) (checked first); 'redundant' if a2 <= 0.05; else 'partial'",
+  "task rule": "an unscored seed makes the task 'unscored'; else the two seeds' common class, else 'seeds disagree'",
+  "reading": "over the scored tasks: 'generic' if >= 1 and all 'separate'; 'not generic' if >= 1 and all 'redundant'; 'unscored' if none; else 'outside the tree'",
+  "edge cases checked": "no scored task reads 'unscored'; a2 < 0 reads 'redundant'; tie order as P14; ' which' may be unscored (D2's first-order share about 0.09), leaving emoticon; ' we' expected unscored (rho_r(D) about 0.11, D2 smaller)",
+  "expected": "'generic' (emoticon 'separate')",
+  "confidence": "low",
+  "basis": "the Amendment 6 check: restores of disjoint sets add almost linearly here (union 82-90% of the sum; S+ plus S- within 0.04 of S)"
+ },
+ "P16: does T2 take back as much as S union D?": {
+  "seed rule": "'unscored' if G < 1 or T2 short in any matrix; 'covers' if rho_r(T2) >= rho_r(S union D) (ties 'covers'); 'short' if rho_r(T2) < rho_r(S union D) - 0.05; else 'unclear'",
+  "task rule": "an unscored seed makes the task 'unscored'; else the two seeds' common class, else 'seeds disagree'",
+  "reading": "on emoticon and ' which': 'covers' if both 'covers'; 'short' if both 'short'; else 'outside the tree'",
+  "edge cases checked": "S inside T2 entirely gives T2 = S union D, rho equal, 'covers' by the tie rule; a short T2 makes the seed unscored and the reading 'outside the tree'",
+  "expected": "'covers' on both tasks",
+  "confidence": "low",
+  "basis": "the check's first-order sums: top 2|S| per matrix 0.43-0.44 against S union D's 0.36 on ' which', first order within about 10% of restores there"
+ },
+ "reported, with expected value": {
+  "rho_r(D2)": "below rho_r(D) on every state; low",
+  "|T2 and S| / |S|": "about a third; low",
+  "e-hat(T2)": "reported beside rho_r(T2), no expectation"
+ },
+ "noise floors": "0.05: Amendment 3's random sets never exceeded 0.029 and S's seeds differ by at most 0.023 (amend3.json).",
+ "filed": "2026-10-28"
+}
