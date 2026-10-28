@@ -329,6 +329,19 @@ different token from the key. Options:
 
 Stage 0a (the control) does not depend on this and runs meanwhile; stage 0b waits for the answer.
 
+**Fable's advice (advice only; the decision is the user's, 2026-10-28).** Recommends A, filed as a dated amendment
+before 0b, plus two additions. (1) Per task, print the cosine between the fine-tune's change to the residual stream
+after block 1 at the scored position and the write's change. If it is high on the random maps too, the random-map
+write is not a "no machinery" null, and ρ there cannot be read. (2) Report the random-map fine-tune's own g
+(0.36-0.41) beside ρ, so a reading near 0.4 counts as "not retired", not as a sharp pass. Fable's view of the others:
+under B a copy-task fail would read as inconclusive, so the test cannot fail, which is Amendment 1's complaint about
+the original nulls. C gives a confounded arm a veto over the retire verdict. Fable considered and declined three
+alternatives. Orthogonalising the write is degenerate on copy. A write on the last block gives g ≡ 0 by
+construction. A gradient-fitted write recruits machinery. What would change the advice: the random-map writes are
+unreachable at the α cap; the copy write reads ≤ 0.5 anyway; the cosine in (1) is high on the random maps. Fable also
+proposes changing the wording "Γ does not read a new write as existing machinery" to "this write did not read as the
+copy fine-tune", so that a pass is not read as evidence for the instrument.
+
 ### Stage 0a stopped at the null (2026-10-28, job 41161, 42 s, $0): the filed null rule cannot pass
 
 **What ran.** `run.py --stages 0a` at f5fb9d2, cluster `debug` QoS. Group e18/emoticon: the W₀ cells (L00, U0, T0), the
