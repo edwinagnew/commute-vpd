@@ -19,3 +19,7 @@ really wish you were clearer when you submitted things to my approval so it was 
 **How to apply:** the chat message that asks for approval is a summary a reader with no context can assess; the
 plan file carries the detail. Related: [[feedback-concise-design-check]], [[feedback-short-chat-replies]],
 [[feedback-user-definitions-override-files]].
+
+Repeated 2026-10-28: a **For you:** line repeated for hours named "gaps 2 and 5" and "labelled component training on
+the broad task"; the user said "those questions dont make sense to me" and approved only because they were cheap. A
+For-you line must say in plain words what each run would show and why it matters, never a report's internal labels.
