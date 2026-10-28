@@ -56,7 +56,8 @@ class Cfg:
     min_gain: float = 1.0  # a state with G < 1 nat is unscored
     all_range: tuple[float, float] = (0.3, 0.9)  # reported: rho_r(all_alive) on emoticon and ' which'
     top_share_min: float = 0.5  # reported: S's share of the top movers on emoticon and ' which'
-    l3_max, rest_abs = -0.15, 0.05  # reported: rho_r(L3) <= -0.15 and |rho_r(rest)| <= 0.05 on emoticon
+    l3_max: float = -0.15  # reported: rho_r(L3) <= -0.15 on emoticon
+    rest_abs: float = 0.05  # ... and |rho_r(rest)| <= 0.05
 
     def __post_init__(self) -> None:
         assert self.min_gain == E38.min_gain == A3.CFG.min_gain and self.m0_l3 == A3.CFG.m0_active_low
@@ -123,8 +124,9 @@ def change_sets(run: Run, delta: dict[str, Any], S: R.Sel) -> tuple[dict[str, R.
     return sets, info
 
 
-def l3_arms(run: Run, t: Task, S: R.Sel, rho: Callable[[R.Sel], float]) -> dict[str, Any]:
-    """Emoticon: rho_r of L3, rest, each L3 member alone, and as many random layer-3 singles below m0 0.2."""
+def l3_arms(run: Run, t: Task, S: R.Sel, rho: Callable[[R.Sel], float], sets: dict[str, R.Sel]) -> dict[str, Any]:
+    """Emoticon: rho_r of L3, rest, each L3 member alone, and as many random layer-3 singles below m0 0.2; how many of
+    C_n's and C_m's members are in L3 (whose block restored about -0.2 in Amendment 3)."""
     keys, lay = sorted(run.alive), CFG.l3_layer
     pool = RT.active_pool(S, run.alive, t.m0, CFG.m0_l3)
     L3 = pool.get(lay, [])
@@ -132,7 +134,8 @@ def l3_arms(run: Run, t: Task, S: R.Sel, rho: Callable[[R.Sel], float]) -> dict[
     gen = torch.Generator().manual_seed(CFG.seed)
     rnd = [low[j] for j in torch.randperm(len(low), generator=gen)[: len(L3)].tolist()]
     rest = {k: v if RT.layer_of(k) != lay else v[:0] for k, v in RT.active_like(S, pool, CFG.seed).items()}
-    return {"n": {"L3": len(L3), "rest": R.size(rest), "low_pool": len(low), "random_singles": len(rnd)},
+    in_l3 = {x: len(R.members(sets[x]) & set(L3)) for x in ("C_n", "C_m")}
+    return {"n": {"L3": len(L3), "rest": R.size(rest), "low_pool": len(low), "random_singles": len(rnd)}, "in_L3": in_l3,
             "rho": {"L3": rho(RT.sel_of(L3, keys)), "rest": rho(rest)},
             "singles": [[k, c, rho(RT.sel_of([(k, c)], keys))] for k, c in L3],
             "random_singles": [[k, c, rho(RT.sel_of([(k, c)], keys))] for k, c in rnd]}
@@ -155,7 +158,7 @@ def grid_state(run: Run, task: str, name: str, T0: float, io: RT.IO, io0_train: 
                            "rho_S_amend3": float(a3["states"][name]["rho"]["S"]) if a3 else float("nan")}
     log_state(name, rec)
     if task == CFG.l3_task:
-        rec["l3"] = l3_arms(run, t, S, rho)
+        rec["l3"] = l3_arms(run, t, S, rho, sets)
         log_l3(name, rec["l3"])
     return rec
 
@@ -176,7 +179,7 @@ def log_state(name: str, rec: dict[str, Any]) -> None:
 
 def log_l3(name: str, a: dict[str, Any]) -> None:
     s, rs = [x[2] for x in a["singles"]], [x[2] for x in a["random_singles"]]
-    log(f"[a4 L3 {name}] n {json.dumps(a['n'])} | rho_r L3 {a['rho']['L3']:.4f} rest {a['rho']['rest']:.4f} | most "
+    log(f"[a4 L3 {name}] n {json.dumps(a['n'])} members in L3 {json.dumps(a['in_L3'])} | rho_r L3 {a['rho']['L3']:.4f} rest {a['rho']['rest']:.4f} | most "
         f"negative single {min(s, default=float('nan')):.4f} random single {min(rs, default=float('nan')):.4f}")
     log(f"[a4 L3 {name}] singles {json.dumps([round(x, 4) for x in s])}")
     log(f"[a4 L3 {name}] random singles {json.dumps([round(x, 4) for x in rs])}")
