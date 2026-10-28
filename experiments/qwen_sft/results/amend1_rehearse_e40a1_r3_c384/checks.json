@@ -1,0 +1,118 @@
+{
+ "B host RAM": {
+  "ok": true,
+  "stops": true,
+  "physical_gb": 490.216828928,
+  "cgroup_gb": null,
+  "usable_gb": 490.216828928
+ },
+ "B disk": {
+  "ok": true,
+  "stops": true,
+  "free_gb": 5250.500001792,
+  "need_gb": 52.145181696
+ },
+ "B 3e-05 step-1 KL vs fp32": {
+  "ok": true,
+  "stops": true,
+  "kl": 0.014211433939635754,
+  "kl_fp32": 0.014171180526417018,
+  "rel": 0.0028405123443102642
+ },
+ "memory B B 3e-05 step 2": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 37.01189376
+ },
+ "B 1e-05 step-1 KL vs fp32": {
+  "ok": true,
+  "stops": true,
+  "kl": 0.014211433939635754,
+  "kl_fp32": 0.014171180526417018,
+  "rel": 0.0028405123443102642
+ },
+ "memory B B 1e-05 step 2": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 37.01189376
+ },
+ "B 3e-06 step-1 KL vs fp32": {
+  "ok": true,
+  "stops": true,
+  "kl": 0.014211433939635754,
+  "kl_fp32": 0.014171180526417018,
+  "rel": 0.0028405123443102642
+ },
+ "memory B B 3e-06 step 2": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 37.01189376
+ },
+ "B 1e-06 step-1 KL vs fp32": {
+  "ok": true,
+  "stops": true,
+  "kl": 0.014211433939635754,
+  "kl_fp32": 0.014171180526417018,
+  "rel": 0.0028405123443102642
+ },
+ "memory B B 1e-06 step 2": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 37.01189376
+ },
+ "memory B teacher training": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 37.01189376
+ },
+ "B rate": {
+  "ok": true,
+  "stops": true,
+  "3e-05": {
+   "kl": {
+    "0": 0.009999839341140411,
+    "25": 0.09239444715937965
+   },
+   "qualifies": false
+  },
+  "1e-05": {
+   "kl": {
+    "0": 0.009999839341140411,
+    "25": 0.04407890018388514
+   },
+   "qualifies": false
+  },
+  "3e-06": {
+   "kl": {
+    "0": 0.009999839341140411,
+    "25": 0.015523181196957404
+   },
+   "qualifies": false
+  },
+  "1e-06": {
+   "kl": {
+    "0": 0.009999839341140411,
+    "25": 0.008735559826856828,
+    "50": 0.008821836060859678,
+    "100": 0.007881630175317936
+   },
+   "qualifies": true
+  }
+ },
+ "B_fineweb seed 0 step-0 KL": {
+  "ok": false,
+  "stops": true,
+  "step0": 0.1193,
+  "ref": 0.0918
+ },
+ "memory B B_fineweb seed 0": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 39.020479488
+ },
+ "memory B end": {
+  "ok": true,
+  "stops": true,
+  "peak_gb": 39.020479488
+ }
+}

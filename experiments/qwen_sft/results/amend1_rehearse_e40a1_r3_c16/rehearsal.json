@@ -1,0 +1,72 @@
+{
+ "expected": [
+  "B_fineweb seed 0 step-0 KL",
+  "G_fineweb seed 0 step-0 KL",
+  "G_maths seed 0 step-0 KL",
+  "G control",
+  "P0:",
+  "pass time"
+ ],
+ "missed": {
+  "B_fineweb seed 0 step-0 KL": {
+   "ok": false,
+   "stops": true,
+   "step0": 0.1193,
+   "ref": 0.0918
+  },
+  "stop G: G control: FineWeb (this run, qwen_adversary) {'masked_kl': (0.17593801204782938, 0.141670617449563)} outside the filed tolerances": {
+   "ok": false,
+   "stops": true
+  },
+  "G_fineweb seed 0 step-0 KL": {
+   "ok": false,
+   "stops": true,
+   "step0": 0.1193,
+   "ref": 0.0918
+  },
+  "stop G: G control: FineWeb (this run, qwen_adversary) {'masked_kl': (0.17593801204782938, 0.141670617449563), 'adv': (0.6908750683069229, 1.7016382161527872)} outside the filed tolerances": {
+   "ok": false,
+   "stops": true
+  },
+  "G_maths seed 0 step-0 KL": {
+   "ok": false,
+   "stops": true,
+   "step0": 0.051,
+   "ref": 0.0374
+  },
+  "T0 fixed-row fall at its end": {
+   "ok": false,
+   "stops": true,
+   "fall": 0.5285170523078496,
+   "kl": {
+    "0": 0.010000513778011644,
+    "50": 0.008670569811831445,
+    "100": 0.007175665544661792,
+    "150": 0.007149510897303017,
+    "200": 0.006839915952377012,
+    "250": 0.006351856001679514,
+    "300": 0.00570098587637233,
+    "350": 0.006149213172613026,
+    "400": 0.005779017122496488,
+    "450": 0.005827105517830771,
+    "500": 0.005352591068862363,
+    "550": 0.005316283305569271,
+    "600": 0.005285442063518751
+   }
+  },
+  "T0_fineweb seed 0 pass time": {
+   "ok": false,
+   "stops": false,
+   "pass_s": 1.495903491973877,
+   "benchmark_s": 2.112203598022461
+  },
+  "stop T0: T0 positive control: fall 0.529, ratio 1.012": {
+   "ok": false,
+   "stops": true
+  }
+ },
+ "unexpected": [
+  "T0 fixed-row fall at its end",
+  "stop T0: T0 positive control: fall 0.529, ratio 1.012"
+ ]
+}

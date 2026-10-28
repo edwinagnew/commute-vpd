@@ -5,19 +5,21 @@
 # dir is on NFS, because the jobs land on different nodes and later ones read the earlier ones' files.
 #   L alone (results/amend1/L.json; done 2026-10-28, keep it):
 #     sbatch --mem=32G cluster/qwen_sft_amend1.sbatch --stages L --out /mnt/nw/home/e.agnew/commute-data/tmp/e40a1
-#   the rehearsal (results/amend1_rehearse/; tiny sizes, F1 and L at full size). The first rehearsal (jobs 40602-40668)
-#   is kept in results/amend1_rehearse_1/. Each rerun uses a new out dir and an empty results dir; four jobs, each
-#   submitted when the one before has ended, then the guard check:
+#   the rehearsal (tiny sizes, F1 and L at full size) writes results/amend1_rehearse_<name of --out>/ (since
+#   2026-10-28, amended_3; the first two rehearsals are kept in results/amend1_rehearse_1/ and _2/). Each rerun uses a
+#   new out dir; --rehearse-cols N sets teacher training's alive columns per site (16; the most an L40 holds ~480).
+#   A wide --rehearse-cols run (hundreds of columns) runs --stages B alone: B's four arms (up to 400 steps) and T0
+#   (up to 600) together outgrow the 30-min limit as steps slow with the columns.
+#   Four jobs, each submitted when the one before has ended, then the guard check:
 #     R=/mnt/nw/home/e.agnew/commute-data/tmp/e40a1_rehearse2
-#     rm -rf experiments/qwen_sft/results/amend1_rehearse experiments/qwen_sft/results/large/amend1_rehearse
-#     sbatch cluster/qwen_sft_amend1.sbatch --rehearse --wandb-upload --stages B,G1,T0,L,A0 --out $R   # ~17 min
+#     sbatch cluster/qwen_sft_amend1.sbatch --rehearse --wandb-upload --stages B,G1,T0,L,A0 --out $R   # ~25 min at 16 cols
 #     sbatch --mem=32G cluster/qwen_sft_amend1.sbatch --rehearse --stages F1 --out $R                 # ~16 min
 #     sbatch cluster/qwen_sft_amend1.sbatch --rehearse --wandb-upload --stages D1,T1 --kill-after-save --out $R
 #                                                       # ~6 min; ends with exit 3 after T1's first saved offsets
 #     sbatch cluster/qwen_sft_amend1.sbatch --rehearse --wandb-upload --stages T1 --out $R             # the resume, ~4 min
 #     sbatch --mem=4G --time=00:05:00 cluster/qwen_sft_amend1.sbatch --rehearse --stages A0 --out $R
 #                                                       # the stale-results guard: refuses at once (exit 1)
-#   results/amend1_rehearse/rehearsal.json then lists every check and stop that missed (from checks.json, all jobs),
+#   results/amend1_rehearse_<name>/rehearsal.json then lists every check and stop that missed (from checks.json, all jobs),
 #   and those beyond the ones expected at tiny size.
 # --wandb-upload needs WANDB_API_KEY in the submitting shell (sbatch passes the environment); it uploads the results
 # JSONs and run.log at each job's end (offsets and δW stay on the volume), the rehearsal only files under 50 MB. Expected peaks: GPU

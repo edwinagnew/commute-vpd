@@ -726,23 +726,38 @@ def records(path: Path) -> Records:
 OnStep = Callable[[int, list[dict[str, float]]], None]
 
 
-def teacher_checks(job: Job, name: str, read: Callable[[], float] | None = None, reads: tuple[int, ...] = (),
-                   end_stops: bool | None = True) -> tuple[OnStep, dict[str, float]]:
-    """Teacher training's first-minutes checks, when filed: a finite KL every step; step 1's training-forward KL
-    against the fp32 KL(teacher ‖ W0) on the same batch (exactly 0 within `zero_kl_max` when there is no teacher,
-    `read` None); memory after step 2. With `read` (the fixed-row KL, `qwen_teacher.kl_to_teacher`): a reading now
-    (step 0) and after each step in `reads` and at `end_at`, kept in the returned dict (step -> KL, written as taken),
+def teacher_checks(job: Job, name: str, read: Callable[[], list[float]] | None = None, reads: tuple[int, ...] = (),
+                   end_stops: bool | None = True) -> tuple[OnStep, dict[str, float], dict[str, list[float]]]:
+    """Teacher training's first-minutes checks, when filed: a finite KL every step and at each reading (a stop, except
+    in B, `end_stops` None, where a non-finite value ends that rate's arm instead: `amend1.arm_ends`); step 1's
+    training-forward KL against the fp32 KL(teacher ‖ W0) on the same batch (exactly 0 within `zero_kl_max` when there
+    is no teacher, `read` None); memory after step 2. With `read` (the fixed-row KL, `qwen_teacher.kl_to_teacher`): a reading now
+    (step 0) and after each step in `reads` and at `end_at`, kept in the returned dicts (step -> the mean over the rows,
+    and step -> the per-row KLs; written as taken),
     and at `end_at` the fall (`fixed_fall`) at most `end_frac`: a stop for the positive control (T0), reported for T1
     (`end_stops` False), not made for B, whose rate rule reads the same ratio (`end_stops` None)."""
     rule = job.early("teacher_first")
     kl: dict[str, float] = {}
+    rows: dict[str, list[float]] = {}
     end = rule["end_at"] if rule is not None and read is not None and end_stops is not None else None
+
+    def finite(what: str, v: float) -> None:
+        if end_stops is not None:
+            job.finite(what, kl=v)
+
+    def take(step: int) -> None:
+        assert read is not None
+        rows[str(step)] = read()
+        kl[str(step)] = statistics.fmean(rows[str(step)])
+        log(f"[{name}] fixed-row KL(teacher ‖ student) at step {step}: {kl[str(step)]:.4e}, rows "
+            + " ".join(f"{k:.2e}" for k in rows[str(step)]))
+
     if read is not None:
-        kl["0"] = read()
-        log(f"[{name}] fixed-row KL(teacher ‖ student) at step 0: {kl['0']:.4e}")
+        take(0)
+        finite(f"{name} fixed-row KL step 0", kl["0"])
 
     def on_step(step: int, curve: list[dict[str, float]]) -> None:
-        job.finite(f"{name} step {step}", kl=curve[-1]["kl"])
+        finite(f"{name} step {step}", curve[-1]["kl"])
         if step == 1 and rule is not None:
             c = curve[0]
             if read is None:
@@ -754,15 +769,14 @@ def teacher_checks(job: Job, name: str, read: Callable[[], float] | None = None,
         if step == 2:
             job.mem_check(f"{name} step 2")
         if read is not None and (step in reads or step == end):
-            kl[str(step)] = read()
-            log(f"[{name}] fixed-row KL(teacher ‖ student) at step {step}: {kl[str(step)]:.4e}")
-            job.finite(f"{name} fixed-row KL step {step}", kl=kl[str(step)])
+            take(step)
+            finite(f"{name} fixed-row KL step {step}", kl[str(step)])
         if step == end and rule is not None:
             f = fixed_fall(kl, step)
             job.check(f"{name} fixed-row fall at step {step}", r9(f) <= rule["end_frac"], {"fall": f, "kl": dict(kl)},
                       stop=bool(end_stops))
 
-    return on_step, kl
+    return on_step, kl, rows
 
 
 # ----------------------------------------------------------------------------- stages
@@ -1077,10 +1091,10 @@ def stage_T(job: Job) -> None:
         if path.is_file() and all(meta_of(path).get(k) == v for k, v in meta.items()):
             rec["resumed_from"] = str(path)
         else:
-            def read(dW: dict[str, Tensor] = dW, off: Offsets = off) -> float:
+            def read(dW: dict[str, Tensor] = dW, off: Offsets = off) -> list[float]:
                 return kl_to_teacher(job.model, job.fixed_rows(), job.W0, dW, off)
 
-            on_step, rec["kl_fixed"] = teacher_checks(job, f"T{t}", read, end_stops=False)
+            on_step, rec["kl_fixed"], rec["kl_fixed_rows"] = teacher_checks(job, f"T{t}", read, end_stops=False)
             curve = train(job.model, off, dW, *job.pools(), job.t_lr(), cfg.t_steps, cfg.t_rows_each, cfg.t_micro,
                           cfg.seed, log, on_step)
             last = t == max(job.read_steps())

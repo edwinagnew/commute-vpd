@@ -112,8 +112,9 @@ that `GOALS.md` asks for ("small is measured, never assumed") has its first poin
 
 ### Q2. The right first update: the model's own correct samples against gold solutions (~$10, one H100)
 
-*Question.* An update that strengthens what the model does (on-policy) against one that teaches a new format
-(off-policy), on the same task, same code, matched on how much they move the model.
+*Question.* An on-policy update (the model's own correct samples) against an off-policy one (gold solutions), on the
+same task, same code, matched on how much they move the model. Neither arm is labelled elicitation or new; what each
+update does to the model is what Q3 reads (§7).
 
 *What.* Sample the unchanged model on GSM8K train (4 samples per problem, about 2,000 problems, thinking off), keep
 the correct ones, and run the warm-up SFT recipe on them for 100 steps, saving δW at the same steps as E40. Rerun gold
@@ -200,36 +201,60 @@ Three deliverables, and what in the plan produces each:
 |---|---|---|
 | **D1. Cleanly decompose a post-training update at scale.** A map Φ that keeps the decomposition faithful for a real update on Qwen3-1.7B, with a test that can fail | Q0 + Q1 on the saved δWs; Q2's δWs through the same table | The least-squares split is exact on Qwen (complete spans); whether it *passes* is unknown. Fallback: teacher training (Q4) |
 | **D2. For SFT and for RL.** The same table for an SFT update and an RL update | Q2 (SFT arms) and Q5 (GRPO) | SFT code works. **RL code does not exist** and is the schedule risk; the own-samples arm is the RL-like stand-in until it does |
-| **D3. Elicitation against new mechanisms, read from the decomposition.** Two updates that differ on that axis, and VPD readings that separate them | Q2 with a **third arm that teaches something new** (added below), Q3's readings on all arms | The 67M showed re-gating dominates for narrow tasks (E4, E6, E18) and that a cipher the model lacked can be copied (E42). Nothing at scale yet |
+| **D3. Elicitation against new mechanisms, read from the decomposition.** Readings that separate two anchor updates whose nature is known by construction, then applied to the GSM8K updates, whose nature is the question | Q2 with **two anchor arms** (added below), Q3's readings on all arms | The 67M showed re-gating dominates for narrow tasks (E4, E6, E18) and that a cipher the model lacked can be copied (E42). Nothing at scale yet |
 
-**The addition D3 needs: a "teach new" arm in Q2.** GSM8K alone gives the elicitation side only (RL and own-samples
-SFT strengthen what the model does; gold SFT teaches a format, which is "new" only trivially). A third SFT arm teaches
-the model facts it cannot have: about 1,000 question-answer pairs about invented entities, chat-formatted, graded by
-exact match on held-out rephrasings, trained with the same warm-up recipe and matched to the own-samples arm on KL to
-start. This is the findings-to-port analysis's "new facts" row and the realistic analogue of the 67M's cipher
-(E10, E42). Known facts the model already answers can be mixed in as the per-example elicitation control (Gekhman et
-al. 2024). Cost: one more arm in the same pod, about $4.
+**What D3 needs: anchors, not labels.** Whether SFT or RL on GSM8K builds anything new in this model is the
+project's question (`GOALS.md`: "teaches new capabilities rather than strengthening existing ones"). The literature
+leans one way (RL's Razor, Spurious rewards, Nikolich), but that is a prior on a different model size and regime, not
+a result, and the plan must not assume it. An earlier draft of this section wrote "GSM8K gives the elicitation side"
+as if settled; it is not, and a 2026-10-28 chat correction from the user is why this section reads as it does now.
+So the GSM8K arms (own-samples SFT, gold SFT, GRPO) carry **no label**. Their readings are the finding, whichever way
+they fall. What makes the readings mean something is two anchor arms whose nature is known **by construction**, run
+through the same table:
 
-**What "distinguish" looks like, filed before the runs (Q3's readings, each arm against the others):**
+- **Existing by construction: context distillation.** Pick a system prompt that raises no-think GSM8K accuracy at W₀
+  (measured first; if none does by more than noise, use think-mode answers distilled into no-think instead). Train
+  the model to give the prompted answers without the prompt. A behaviour the frozen model already produces under a
+  prompt is in the model already; the update can only route to it. Same recipe, matched on KL to start. ~$4.
+- **New by construction: invented facts.** About 1,000 question-answer pairs about entities that do not exist,
+  chat-formatted, graded by exact match on held-out rephrasings. The model cannot have these; the update must put
+  them somewhere. Same recipe, matched KL. This is the findings-to-port analysis's "new facts" row and the realistic
+  analogue of the 67M's cipher (E10, E42). Known facts the model already answers mixed in as the per-example
+  control (Gekhman et al. 2024). ~$4.
 
-| reading | elicitation (own samples, RL) | new mechanism (invented facts) |
+**What "distinguish" looks like, filed before the runs.** The predictions below are for the two anchors only. The
+table is validated if the anchors separate on a row; that row is then read on each GSM8K arm, and the GSM8K arm's
+nature is reported as "reads like the existing anchor", "reads like the new anchor", "between", or "like neither",
+with the numbers. No GSM8K arm has a predicted column.
+
+| reading | existing anchor (context distillation) | new anchor (invented facts) |
 |---|---|---|
-| direct against re-gating share (route split on task rows) | re-gating dominates; direct small | direct share larger than for the elicitation arms |
+| direct against re-gating share (route split on task rows) | re-gating dominates; direct small | direct share larger |
 | the switched-on set's overlap with the think-mode set | above chance | at chance |
 | where the split puts δW | few alive subcomponents, concentrated | spread across more subcomponents, MLP matrices, including ones Γ never gates on for this text |
 | Q0 behaviour kept under CI masks | high for the split | lower: the new behaviour is partly in components the masks do not keep |
 | Q0 pass of the least-squares split | passes | passes less, or needs teacher training |
 
-If the arms do not separate on any row, that is also a sharp result: VPD's readings do not see the difference, and the
-write-up says so. If they separate on the route split and the think-mode overlap but not on faithfulness, the
-decomposition reads the mechanism without the map having to differ, which is the interesting middle.
+Three outcomes, each sharp. If the anchors do not separate on any row, VPD's readings do not see the difference, and
+the write-up says so; the GSM8K arms are then not interpreted on this axis. If they separate and the GSM8K arms read
+like the existing anchor, that is evidence for elicitation, with GRPO and own-samples SFT compared against each
+other. If a GSM8K arm reads like the new anchor on any validated row, that is the result the project was set up to
+be able to find, and it is reported as such, not explained away. One rule for that reading (user, 2026-10-28, from the 67M phase):
+a failed split is never, on its own, evidence of a new mechanism. The 67M line had updates on behaviour the model
+plainly already had that still left a large share outside the subcomponents; brittleness and re-gating both produce
+that. "New" is claimed for a GSM8K arm only when it reads like the new anchor on rows that do not depend on the split
+passing: Γ switching and the think-mode overlap, behaviour kept under CI masks, and where δW lands relative to what Γ
+gates on for this text. A failed split with those rows reading "existing" is the brittleness branch of `GOALS.md` and
+is reported as that. Symmetrically, D1 failing on an arm is a positive result only when this rule is met, so
+teacher training (Q4) is not used to rescue a pass before the Q3 rows on that arm are read. The RL arm in particular is the one where the
+literature's prior is weakest for a 1.7B model trained in no-think mode, so it is the arm to watch.
 
 **Timeline, two weeks from 2026-10-28.** Each run stays under the gate; nothing waits on a rehearsal cycle.
 
 | days | work | cost |
 |---|---|---|
 | 1-2 | Q0 + Q1 on the saved δWs, one pod in US-MO-1 | ~$8 |
-| 3-5 | Q2, three arms (own samples, gold, invented facts), matched on KL; Q1's table on each. **In parallel, from day 3:** a writer builds the GRPO loop (TRL's trainer, thinking off, 512-token cap) and rehearses it at tiny size on the cluster for $0 | ~$14 |
+| 3-5 | Q2, four arms (own samples, gold, and the two anchors: context distillation, invented facts), matched on KL; Q1's table on each. **In parallel, from day 3:** a writer builds the GRPO loop (TRL's trainer, thinking off, 512-token cap) and rehearses it at tiny size on the cluster for $0 | ~$18 |
 | 5-7 | Q3's readings on all arms (route split, Γ switching, think-mode overlap, where δW lands) | ~$5 |
 | 7-10 | Q5, GRPO, ~100 steps, δW saved at the same steps; Q1 and Q3 tables on it. Q4 only if Q1 failed | ~$20 (+$30 if Q4) |
 | 11-13 | Write-up: one figure per deliverable, the Q0 controls beside every pass; buffer for one rerun | — |
@@ -252,14 +277,18 @@ score and rephrasings are reported.
 > in §6-7. E40 Amendment 1 is on hold (do not start the H200 run; keep its code). Do not delete the old volume
 > `ydavm7ct4x`: Q1 reads E40's δWs from it. Write one plan for Q0 + Q1 together, on one H100 pod in US-MO-1, under
 > $10: the three readings, the two positive controls, the free singular-subspace check, and the least-squares and
-> adjoint splits of δW at steps 10 and 100. Predictions filed before the run. Then Q2 with the three arms of §7.
+> adjoint splits of δW at steps 10 and 100. Predictions filed before the run. Then Q2 with the four arms of §7:
+> the two GSM8K arms carry no elicitation-or-new label; the two anchors (context distillation, invented facts) are
+> the only arms with predicted columns, and the GSM8K arms are read against them. Do not write "GSM8K is the
+> strengthening case" anywhere; `reports/analyses/2026-10-27_analysis_qwen-gsm8k-rl-headroom.md` §"How it bears on
+> the project" does, and a one-paragraph review report should say why that inference is withdrawn.
 > Rules of §5 apply: a heuristic question gets one hour and no run; one question per run; the adversary once per
 > experiment; two amendments at most. Report each result in plain words with the control beside it.
 
 ## Not in this plan
 
 Thinking mode as a training setting; a second decomposition; the sparsity loss as a reading; a Γ refit on Qwen; any
-task other than GSM8K.
+task beyond GSM8K and the two anchor arms of §7.
 
 ## Sources
 
