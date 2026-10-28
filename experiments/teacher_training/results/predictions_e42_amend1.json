@@ -1,0 +1,147 @@
+{
+ "about": "E42 Amendment 1, masked teacher training on a behaviour the model lacks (reports/plans/2026-10-28_plan_e42-teacher-new-behaviour.md -> 'Amendment 1'). Tasks rand32 then rand1 (E10's key -> value windows, 403 train and 97 held-out each), one task per job. Teacher: E42's (arm A's loss with the table target, all 24 matrices, Adam 3e-5, batch 32, seed 0, step 1000), regenerated. Arm M: E42's arm A (task windows, Adam 1e-5, batch 32, batch-order seed 0, 1000 steps, Gamma and Delta frozen) with commute.masked_copy's loss: arm-A-weighted KL(teacher || unmasked student) + 0.5 x the same for the CI-masked student (masks = Gamma's g on the student's activations, Delta out) + 0.5 x the same for the stochastic-masked student (g + (1 - g) r, Delta under its own random mask, all layers). Step 100 read without the Pile harness, step 1000 with it. Filed before any run",
+ "amend1": {
+  "coeff": 0.5,
+  "e42_ci": [
+   [
+    "rand32",
+    0.007
+   ],
+   [
+    "rand1",
+    0.001
+   ]
+  ],
+  "g2_max": 0.01,
+  "kept": 0.5,
+  "lost": 0.1,
+  "tasks": [
+   "rand32",
+   "rand1"
+  ]
+ },
+ "config": {
+  "batch_a": 32,
+  "batch_b": 8,
+  "c2_steps": 100,
+  "c3_gap_max": 0.1,
+  "c3_p_tol": 0.05,
+  "first_gap_max": 0.5,
+  "p_min": 0.9,
+  "pile_pgd_steps": 20,
+  "pile_rows": 256,
+  "pile_seeds": [
+   0,
+   1,
+   2
+  ],
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "steps": [
+   100,
+   1000
+  ],
+  "student_lr": 1e-05
+ },
+ "controls": {
+  "C1": "first, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, seeds 0, 1, 2), faith_score.w0_check. Expected: pass, floor 0.2088 on an L40 (E42's), pass line 1.24, fail line 1.81. Stop",
+  "G1": "E42's: the regenerated teacher's held-out P(target) at step 10 within 0.02 of E10's (rand32 0.5847, rand1 0.9982). Stop",
+  "G2": "the trainer's unmasked term with the teacher at W0, on its first batch: the component path's KL to the target model, arm A's weighting. Expected about 1e-3 (E37 Amendment 1: 0.00065 per Pile position). Above 0.01: stop (the trainer's forward is not the model's)",
+  "M0": "alone, before the teacher: the masked recipe with the teacher at W0, 1000 steps, Pile harness. Expected: held-out P(target) and trigger CI-masked P(target) at W0's values (both under 1e-3), damage elsewhere under 0.02, both Pile ratios 'pass' or 'inconclusive'. Either Pile ratio 'fail' (faith_score.verdict against this job's floors), or any Pile ratio NaN: stop, arm M not run (the recipe moves the decomposition with nothing to copy, as E37 Amendment 1's masked control did). 'inconclusive': arm M runs; a fail or inconclusive of arm M is then not attributed to copying",
+  "references": "W0's trigger cells and E42's saved arm-A copy re-read at the trigger in this job: its trigger CI-masked P(target) expected within 0.005 of E42's logged 0.007 (rand32) and 0.001 (rand1) (bf16 rounding of the saved offsets). Reported, not a stop"
+ },
+ "e42": {
+  "e10": [
+   [
+    "rand32",
+    0.5847,
+    0.9965
+   ],
+   [
+    "ident32",
+    0.9595,
+    0.9995
+   ],
+   [
+    "rand1",
+    0.9982,
+    1.0
+   ]
+  ],
+  "g1_tol": 0.02,
+  "masked_hi": 0.5,
+  "masked_lo": 0.25,
+  "pile_reading_rows": 1024,
+  "tasks": [
+   "rand32",
+   "ident32",
+   "rand1"
+  ],
+  "teacher_checkpoints": [
+   10,
+   300,
+   1000
+  ],
+  "teacher_lr": 3e-05,
+  "teacher_p_min": 0.9
+ },
+ "expected": {
+  "E42's copy (arm A, same card)": "P 0.964 / 1.000; trigger CI-masked P 0.007 / 0.001; adversarial ratio 0.960 / 0.989, stochastic 0.936 / 0.941, pass; e_gate share 0.84 / 0.92",
+  "M0": "as in controls",
+  "W0": "held-out P(target) about 1.5e-5 (rand32), 1.7e-4 (rand1); trigger CI-masked P(target) about the same; ratios 1",
+  "arm M": "P >= 0.9; trigger CI-masked P >= 0.5; adversarial ratio <= 1.24; e_gate share <= 0.25 (reported); Delta's share 0 up to rounding; the CI-masked term's trigger KL over the last 50 steps well under its first 50",
+  "do-nothing (E42, same card)": "P 0.994 / 1.000; trigger CI-masked P 0.016 / 0.001; adversarial ratio 1.50 / 1.56"
+ },
+ "filed": "2026-10-28 13:13:54",
+ "measurements": {
+  "Pile verdict": "faith_score.state_verdict: P(target) >= 0.9, then the adversarial and stochastic Pile ratios to this job's W0 seed 0, each against its own floor (pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f))",
+  "held-out P(target)": "arms.heldout_of: the target model W0 + delta-W at the trigger, mean over held-out windows",
+  "trigger CI-masked P(target)": "local_faith.route_split's p_cells L11: mean over the 97 held-out windows of P(table[key]) at the trigger from the model built from the subcomponents alone under Gamma's masks on the state's own activations, Delta out"
+ },
+ "noise_floors": "held-out P(target) between batch orders 0.005 on task text (E34 Amendment 4); W0's adversarial ratio between adversary seeds 0.21 on the L40; a trained copy's ratio between batch orders up to 25% (E34 Amendment 4); the trigger CI-masked P between batch orders is unmeasured: the 0.1 and 0.5 lines sit 14x and 70x above E42's rand32 copy (0.007)",
+ "not_run": [
+  "ident32 (E42's copy already keeps it in the CI-masked model, 0.929)",
+  "a coefficient sweep, the CI-masked or the stochastic term alone, masked terms at the trigger only",
+  "the persistent adversary in the loop (masked_teacher's recipe; its shapes are for 512-token rows)",
+  "a second batch order; the plain-text leak of arm M's map (kv_windows.pile_reading on its saved state)",
+  "VPD's sparsity loss; a longer adversary or other starts; Pile-text training (arm B) with masked terms"
+ ],
+ "predictions": [
+  {
+   "blind_to": "a mean over 97 held-out windows at one position, which share the training windows' keys (new contexts, not new keys); whether the map leaks onto keys without the marker in plain text; the adversary at the trigger; which subcomponents carry it; one batch order, one coefficient",
+   "id": "P1_M_masked_model_keeps",
+   "kind": "classification, filed with a lean per task",
+   "lean": {
+    "rand1": "kept (medium: one pair, the same argument)",
+    "rand32": "kept (medium-low: the CI-masked term trains the scored quantity directly and the held-out windows share the training windows' 32 keys; against it, only subcomponents Gamma switches on at the key can carry it, and Gamma may switch them off as they move)"
+   },
+   "outcomes": {
+    "did not copy": "the masked terms cost the copy itself",
+    "kept": "a frozen Gamma can carry the new behaviour in the CI-masked model: E42's masked-off route came from the loss, not from Gamma being frozen",
+    "not kept": "the masked loss stalls: with Gamma frozen the subcomponents it switches on at the trigger cannot carry the behaviour under this recipe",
+    "partly": "the masked terms move it but not to the line in 1000 steps"
+   },
+   "positive_control": "E42's ident32 copy, whose gain Gamma supports, read 0.929 on the same reading (E42 log, same card); in-job negatives: W0's cells and E42's rand copy re-read (0.007 / 0.001)",
+   "rule": "per task, arm M at step 1000: held-out P(target) < 0.9 or NaN -> 'did not copy'; else the trigger CI-masked P(target) (p_ci_trigger): NaN -> 'unscorable'; >= 0.5 -> 'kept'; < 0.1 -> 'not kept'; otherwise 'partly'. Absolute"
+  },
+  {
+   "blind_to": "one adversary start of 20 steps on 256 Pile rows (E34 Amendment 5: one-start verdicts may be lenient); VPD's sparsity loss, not read; damage to plain text beyond the ratios",
+   "id": "P2_M_faithful",
+   "kind": "classification, filed with a lean",
+   "lean": "pass on both (medium-low: E42's copy passed at 0.96 / 0.99 with 0.25 to spare and the added terms are reconstruction losses toward the teacher; against it, E37 Amendment 1's masked control rose to 3.84)",
+   "outcomes": {
+    "did not copy": "as P1",
+    "fail": "carrying it in the switched-on subcomponents costs the Pile check",
+    "inconclusive": "rerun the task on an H100 (pass line 1.40, fail 1.61), the plan's tree",
+    "pass": "with P1 'kept': a frozen-Gamma map keeps the new behaviour in the CI-masked model and passes"
+   },
+   "positive_control": "E42's least-squares split failed on the same card and reading (1.98 rand32, 1.83 rand1)",
+   "rule": "per task, arm M at step 1000: faith_score.state_verdict's verdict: 'pass' -> pass; 'inconclusive' -> inconclusive; 'fail' -> fail; 'below P 0.9' -> did not copy; no Pile reading -> unscorable. Absolute"
+  }
+ ],
+ "reported_not_scored": [
+  "G2's masked terms at W0; M0's and arm M's curve means over the first and last 50 steps, per term and at the trigger",
+  "every state's route shares, gain, unmasked trigger P, every Pile ratio (CI-masked and unmasked included), damage elsewhere, size, teacher gap, Delta's share; arm M at step 100 (no Pile harness)",
+  "W0's trigger cells; E42's copy re-read at the trigger; E42's floor beside this job's"
+ ]
+}

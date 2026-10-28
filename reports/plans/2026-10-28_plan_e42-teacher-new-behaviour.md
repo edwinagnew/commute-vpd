@@ -188,3 +188,201 @@ An SGD teacher or SGD students (arm S); a LoRA teacher; E10's step-10 teacher (t
 damage is largest); the scaled adjoint split; a second batch order or teacher seed; a longer adversary or several
 starts (`decisions.md` 2026-10-27); teacher = W₀ (E34's C2 tests the loss, which the windows do not change); a Pile
 reading of the students; the larger model.
+
+## Amendment 1 (2026-10-28): teacher training with the masked students matched to the teacher
+
+*Written by a subagent of the commute lead, after E42 ran (analysis `reports/analyses/2026-10-28_analysis_e42-teacher-new-behaviour.md`,
+check `reports/reviews/2026-10-28_review_e42-check.md`, claim 3 and card point 5). Fills the frozen-Γ branch of the
+pending card `decision-e42-criterion`. Code, predictions, sbatch and brief are written; nothing has run. Appended;
+nothing above is changed.*
+
+### The question, in plain words
+
+E42's teacher training kept the cipher in the fine-tuned model's place and passed the Pile checks, but on the two
+random ciphers the model built from the subcomponents Γ switches on at the trigger keeps almost none of it: P(target)
+0.007 on rand32 and 0.001 on rand1, against 0.96 and 1.00 with every subcomponent on. 84% and 92% of the gain runs
+through subcomponents Γ keeps off there. The check found this is not specific to teacher training, since
+label-trained component training does the same, but that no frozen-Γ map has yet been trained to avoid it. This
+amendment trains one. If the CI-masked model can be made to keep the cipher with Γ frozen, E42's masked-off route
+came from the loss, and the pending card gets a map that satisfies both readings. If it cannot, the frozen Γ is what
+limits it, which points at updating Γ.
+
+**Restated in the Terms' words (what the lead confirms).** Teacher = E42's (arm-A fine-tune of all 24 matrices on the
+cipher's training windows, Adam 3e-5, batch 32, seed 0, step 1,000), regenerated. Map = teacher training with two
+terms added to its loss. Component training of the alive (U, V) from W₀'s values, Γ and Δ frozen, on the task's 403
+training windows, with the loss KL(teacher ‖ student) + 0.5 KL(teacher ‖ CI-masked student) + 0.5 KL(teacher ‖
+stochastic-masked student). Each term uses arm A's weighting: the KL at the trigger plus the mean KL over the other
+40 positions. The CI-masked student is the model built from the subcomponents alone, under Γ's importances computed on
+the student's own activations, with Δ left out. This is the model whose trigger P(target) E42 read at 0.007. The
+stochastic-masked student draws masks g + (1 − g)·r with r uniform, all layers, and Δ under its own random mask.
+Read at step 1,000: the held-out P(target), the trigger CI-masked P(target), and the Pile verdict. The verdict reads
+VPD's stochastic and adversarial checks on 256 Pile validation rows as ratios to this job's W₀, one start of 20 steps.
+
+**Why these terms and not `masked_teacher`'s.** E37 Amendment 1's masked teacher training
+(`src/commute/masked_teacher.py`) adds VPD's released masked losses: the stochastic subset loss and the persistent
+adversary, each matching the masked student to the student's *own* output. Three things rule it out here. Its persistent adversary's
+sources are shaped for 512-token rows, and the windows are 41 tokens. Its control with nothing to copy failed twice (check 3.84 and
+3.14), with no tested cause. And matching the masked student to its own output does not ask the CI-masked model to show the
+cipher at all. Matching it to the teacher does. The new module `src/commute/masked_copy.py` keeps `masked_teacher`'s
+loop (U, V trained as parameters, dead columns' gradients zeroed, target weights set to Δ₀ + UVᵀ after every step
+so Γ reads the student's activations) and drops the adversary and the warm-up. The released run's own CI-masked loss
+is not in its stack (its masked losses are the stochastic subset loss and the persistent adversary, 0.5 each); 0.5 is
+borrowed from them.
+
+### Design check (`/design`)
+
+- **Goal served.** `GOALS.md` → "If no simple Φ works": is it the update (a new capability) or the decomposition
+  (frozen Γ)? E42 put teacher training's gain on a new behaviour where "Where an update goes" says a frozen Γ forces
+  it: masked off. This asks whether that is forced. It also bears on the weak version directly. CI-masked
+  reconstruction is one of VPD's checks under "Faithful", read here at the trigger, where the Pile reading cannot see it.
+- **Nearest tried.** E42 arm A (the same map without the masked terms: masked off, 0.84 / 0.92). E37 Amendment 1's
+  arm 2 (VPD's released masked losses added to teacher training on a broad fine-tune): never run, its control failed.
+  E15 (Γ refit): the other branch, updating Γ, $9 per state. E10's label-trained component training: masked off too.
+  Nothing has trained the CI-masked model toward a target at a trigger.
+- **Patch or step.** A step: it answers the open half of the check's claim 3 ("whether any frozen-Γ map can close it
+  is untested"), and it is the frozen-Γ option the check asked card `decision-e42-criterion` to name.
+- **Decisions relied on.** Γ frozen; teacher training as the map (2026-10-26); the paper's adversary setting
+  (2026-10-27); E21's verdict rule with the same-job W₀ floor; E34's student settings unchanged. Departure, flagged:
+  as E42, this runs on the 67M although the commute line has moved to the larger model (2026-10-26), at $0, inside
+  the user's instruction to fill the technique comparison's gaps.
+- **What changes next.** "Kept" and "pass" give a frozen-Γ map that passes under both readings of the pending card. That
+  map becomes the default for the Qwen line's narrow tasks, and the card's question loses its urgency. "Not
+  kept" is the first direct evidence that a frozen Γ cannot carry a new behaviour, which makes updating Γ the commute
+  line's next question. "Kept" with a failed check means the two readings cannot both be met with Γ frozen, so the
+  card must choose.
+- **Control first.** C1 (W₀ under the Pile harness) runs first and alone. Then G2 (seconds): with the teacher at W₀,
+  the trainer's unmasked student against the model's own forward on its first batch. Then M0, alone and before
+  the teacher is made: the masked recipe with the teacher at W₀, nothing to copy. It stops the job if either Pile
+  ratio fails, since E37 Amendment 1's version of this control failed. G1 (E42's teacher reproduces E10 at step 10)
+  follows, before arm M.
+- **Reference recipe replayed.** Arm M is E42's arm A plus the two masked terms. What differs from E42's arm A's
+  recipe: (1) the forward path for the unmasked term is the component model at mask 1 with Δ₀ under mask 1, where E42
+  used hooks on the target linears; G2 reads that difference at W₀. (2) Adam runs on the full U, V with dead columns'
+  gradients zeroed, against offsets on the alive columns. Adam is per entry and dead entries get no gradient, so the
+  updates are the same. (3) There is no per-step held-out evaluation, which does not touch training. The batches are
+  the same: the sampler, seed 0 and batch 32 are E42's. With the masked weight at 0, arm M is E42's arm A up to (1).
+  The masked terms are the one intended difference, and M0 is what tests them on their own.
+- **Class.** Inside the user's instruction to fill the technique comparison's gaps (2026-10-28), a branch named by
+  E42's check and its pending card; no sign-off needed.
+
+### Arms and run order, per task (one task per job; rand32, then rand1)
+
+| Stage | What | Stops the job when |
+|---|---|---|
+| C1 | W₀ under the Pile harness, adversary seeds 0, 1, 2 | `w0_check` fails |
+| G2 | the trainer's unmasked term at W₀ on its first batch, teacher at W₀ (the path's KL); the two masked terms at W₀ logged beside it | path KL > 0.01 nats |
+| M0 | the masked recipe, teacher = W₀, 1,000 steps, read with the Pile harness | either Pile ratio "fail", or a NaN ratio |
+| teacher, G1 | E42's teacher regenerated; step-10 P within 0.02 of E10's | G1 fails |
+| references | W₀'s trigger cells; E42's saved arm-A state (`results/large/e42/<task>/A_step1000.pt`) re-read at the trigger, no Pile harness, so its CI-masked P is in a JSON at last | — |
+| M | the masked recipe with the teacher, 1,000 steps; step 100 read without, step 1,000 with the Pile harness; step-1,000 state saved (bf16 offsets, `results/large/e42_amend1/<task>/M_step1000.pt`) | — |
+
+rand1 costs the same as rand32 and is the second random cipher, so it runs as job 2 after job 1 has passed C1, G2,
+M0 and G1. ident32 is not run: E42's arm A already keeps it in the CI-masked model (0.929).
+
+### The numbers
+
+Two tasks, rand32 / rand1. "E42 arm A" is E42's decomposition after teacher training on the task windows, read on the
+same card (L40) with the same W₀ floor (0.2088). Its trigger CI-masked values come from E42's logs and are re-read in this job.
+
+| Number | W₀ | do-nothing (E42) | E42 arm A | M0 (control) | arm M, expected |
+|---|---|---|---|---|---|
+| held-out P(target), target model | 1.5e-5 / 1.7e-4 | 0.994 / 1.000 | 0.964 / 1.000 | W₀'s, < 1e-3 | ≥ 0.9 |
+| **trigger CI-masked P(target)**, Γ on the state's own activations, Δ out (`p_cells` L11) | about W₀'s P (in the JSON as `W0_trigger.p_ci`) | 0.016 / 0.001 | 0.007 / 0.001 | W₀'s, < 1e-3 | ≥ 0.5 |
+| adversarial Pile ratio (verdict: pass ≤ 1.24, fail ≥ 1.81 on the L40) | 1 | 1.50 / 1.56 | 0.960 / 0.989 | 0.8-1.24 | ≤ 1.24 |
+| stochastic Pile ratio (pass ≤ 1.497, fail ≥ 1.503) | 1 | 0.89 / 0.90 | 0.936 / 0.941 | about 1 | under 1.497 |
+| G2 path KL | — | — | — | — | about 1e-3 (E37 Amendment 1: 0.00065 per Pile position) |
+
+Logged, reported and not scored: the route shares (arm M's masked-off share e_gate is expected ≤ 0.25 if the CI-masked
+P passes 0.5), the gain, the unmasked trigger P, the CI-masked and unmasked Pile ratios, damage elsewhere (M0 under
+0.02), size, teacher gap and Δ's share (0 up to rounding). Also each training term's mean over the first and last 50
+steps, overall and at the trigger. If the CI-masked term's trigger KL does not fall, the masked loss has stalled.
+
+**What each number is blind to.** The trigger CI-masked P is a mean over 97 held-out windows at one position. Those
+windows share the training windows' 32 keys, so "kept" means the same keys in new contexts, not new keys. It is
+blind to whether the map leaks onto the same keys without the marker in plain text, to an adversary at the trigger,
+and to which subcomponents carry it. The Pile verdict is one 20-step adversary start on 256 rows, and a pass there
+may be lenient (E34 Amendment 5). VPD's sparsity loss is not read. The held-out P is blind to damage outside the
+windows.
+
+**Positive controls.** For the CI-masked reading: E42's ident32 arm A read 0.929 on the same reading, on a behaviour
+Γ supports. In-job negatives are W₀'s cells and E42's arm A re-read (0.007 / 0.001). For the Pile verdict: E42's
+least-squares split failed on the same card (1.98 / 1.83).
+
+**Noise floor.** Held-out P moves 0.005 between batch orders on task text (E34 Amendment 4). W₀'s adversarial ratio
+spreads 0.21 between seeds on the L40, and a trained decomposition's ratio moves up to 25% between batch orders. The
+CI-masked P's batch-order spread is unmeasured. The 0.1 and 0.5 lines sit 14× and 70× above E42's rand32 value.
+
+### Predictions (filed: `experiments/teacher_training/results/predictions_e42_amend1.json`, 2026-10-28 13:13:54, sha256 `d01c266d…`)
+
+- **P1, the CI-masked model keeps the cipher.** Arm M at step 1,000, per task. Held-out P(target) < 0.9 or NaN →
+  "did not copy". Otherwise the trigger CI-masked P(target): NaN → "unscorable"; ≥ 0.5 → "kept"; < 0.1 → "not kept";
+  between → "partly". Absolute. *Lean: kept on rand32* (medium-low). The CI-masked term trains the scored quantity
+  directly, and the held-out windows share the training keys. Against it, only subcomponents Γ switches on at the key
+  can carry the cipher, and Γ may switch them off as they move. *Kept on rand1* (medium: one pair).
+- **P2, it passes.** Arm M at step 1,000: `faith_score.state_verdict`'s verdict. pass → pass, inconclusive →
+  inconclusive, fail → fail, below P 0.9 → did not copy, no Pile reading → unscorable. *Lean: pass on both*
+  (medium-low). E42's arm A passed with 0.25 to spare, and the added terms are reconstruction losses toward the
+  teacher. Against it, E37 Amendment 1's masked control rose to 3.84.
+
+Edge cases were run through the scoring code on the CPU worker before filing. They were P(target) exactly 0.9, just
+under it and NaN; CI-masked P exactly 0.5, exactly 0.1, just under each, NaN, and above the target's own P; a missing
+Pile reading; M0's ratios exactly on the fail line, just under the pass line, between the lines, and NaN; and a file
+with no M0 or no arm M. Every case lands in a named class. A NaN P first read "kept" and a NaN M0 ratio first read
+"inconclusive"; both were fixed before filing ("did not copy" and a stop).
+
+### Decision tree (each branch approved with this amendment)
+
+- **C1, G2 or G1 fails** → stop and report with the numbers; no rerun until the cause is found. G2 failing means
+  the trainer's forward is not the model's.
+- **M0 fails** (a Pile ratio "fail" or NaN) → stop: the masked terms move the decomposition with nothing to copy.
+  Report M0's ratios, damage and curves. Next is a pending card, not a run. Options: the masked terms at the trigger
+  only, or one term alone, each a new amendment with its own predictions.
+- **M0 inconclusive** → arm M runs. An arm M fail or inconclusive is then not attributed to copying; say so.
+- **Job 1 (rand32) passes C1, G2, M0 and G1** → job 2 (rand1), whatever P1 and P2 read.
+- **P1 kept and P2 pass on rand32** → a frozen-Γ map keeps a new behaviour in the CI-masked model and passes the Pile
+  checks. E42's masked-off route came from the loss, not from Γ being frozen. Rewrite card `decision-e42-criterion`
+  with this map as its frozen-Γ option. Next, class 1, $0: the plain-text leak of arm M's saved state
+  (`kv_windows.pile_reading`, the same keys without the marker), and its route shares.
+- **P1 kept, P2 fail** → carrying the cipher in the switched-on subcomponents costs the Pile check. Flag it and add it
+  to the card: with Γ frozen, the two readings cannot both be met here.
+- **P2 inconclusive** on a task → rerun that task on a RunPod H100 (pass line 1.40, fail line 1.61; about $1.5).
+- **P1 partly** → report the curve. If the CI-masked term's trigger KL is still falling over the last 50 steps, a
+  longer run (4,000 steps) is the next amendment; if flat, read it as "not kept".
+- **P1 not kept** on a random cipher → a reversal of the filed lean: flag it loudly. The masked loss stalls with Γ
+  frozen, so the card's option becomes updating Γ (E15's refit, or the re-gating line's shift).
+- **P1 or P2 did not copy** → the masked terms cost the behaviour itself: flag it, report the curve.
+- **rand32 and rand1 disagree** → report both. rand1 is a single pair, so rand32's class is the one carried to the card.
+
+### Cost and routing
+
+| Stage (L40; E42's job logs 40166, 40194, 40195) | Minutes |
+|---|---|
+| load, bases, C1 (3 × ~140 s) | 7.5 |
+| G2 | 0.1 |
+| M0: train (three student forwards per step, no per-step held-out pass; E42's arm A took 115-139 s with one) about 3-4, Pile read 2.3 | 6 |
+| teacher, G1 | 0.7 |
+| references (no Pile harness) | 0.2 |
+| arm M: train 3-4, step-100 read, step-1,000 Pile read | 6.5 |
+
+About 21 minutes per job, two jobs: MATS cluster, `debug` QoS, L40, $0 (`cluster/teacher_e42_amend1.sbatch <task>`,
+45-minute wall time, `--mem=24G`). If a job has not started within 10 minutes, use RunPod: both tasks in sequence on
+one H100 pod, about 20 minutes of run plus set-up, about $2. The L40's wider band (1.24-1.81 against the H100's
+1.40-1.61) is the price of $0, and an inconclusive reading takes the H100 branch.
+
+### Order of work for the fleet agent
+
+1. Done: `src/commute/masked_copy.py`, `experiments/teacher_training/newskill_amend1.py`,
+   `cluster/teacher_e42_amend1.sbatch`, `experiments/teacher_training/RUN_BRIEF_e42_amend1.md`; predictions filed;
+   lint clean (`make lint` through `cpu-run`).
+2. One review before the run of new measurement code, by a fresh Opus agent given only the scope and the repo path.
+   The run is $0, but `masked_copy.py` is a new trainer. Fix what is real before step 3.
+3. `/pod-runner` with `RUN_BRIEF_e42_amend1.md`: job 1 (rand32), then job 2 (rand1).
+4. The analysis goes in an "Amendment 1" section of `reports/analyses/2026-10-28_analysis_e42-teacher-new-behaviour.md`,
+   by `/writeup`. Then the notebook section, the `TRIED.md` row, the PENDING line, and the card
+   `decision-e42-criterion` rewritten.
+
+### Not in this amendment
+
+ident32; a coefficient sweep, one masked term alone, or the masked terms at the trigger only; the persistent adversary
+in the loop; a second batch order; the plain-text leak of arm M (a $0 branch above); VPD's sparsity loss; Pile-text
+training (arm B) with the masked terms; a longer adversary or other starts; updating Γ; the larger model.
