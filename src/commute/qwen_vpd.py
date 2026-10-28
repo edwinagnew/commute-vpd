@@ -387,12 +387,14 @@ def pgd_kl(
 def pgd_kl_rows(
     model: Any, rows: list[Tensor], comps: Components, inputs: RowInputs,
     seed: int, steps: int = PGD_STEPS, step_size: float = PGD_STEP_SIZE, log: Callable[[str], None] | None = None,
+    final: dict[str, Tensor] | None = None,
 ) -> float:
     """The config's evaluation adversary (recon_eval.py:104-139,194-251; adversary.py:316-349): one U(0, 1) source per
     site of shape [C] plus one Δ scalar, shared by every row and position, `steps` sign steps of `step_size` up the
     mean KL, clipped to [0, 1]; returns the KL at the final sources. `inputs(i)` gives row i's g and clean logits,
     read once per pass, so a caller can recompute them instead of holding all rows (`importances`). `log`, if given,
-    gets each step's KL before its update (a liveness line for long runs)."""
+    gets each step's KL before its update (a liveness line for long runs). `final`, if given, receives the final
+    sources (site -> [C], site.delta -> [1], on the CPU)."""
     dev, dt = rows[0].device, comps.dtype
     gen = torch.Generator(device=dev).manual_seed(seed)
     src = {s: torch.rand(C[parse_site(s)[1]], generator=gen, device=dev, dtype=dt).requires_grad_() for s in SITES}
@@ -406,4 +408,7 @@ def pgd_kl_rows(
                 assert p.grad is not None
                 p.add_(step_size * p.grad.sign()).clamp_(0, 1)
                 p.grad = None
+    if final is not None:
+        final.update({s: v.detach().cpu() for s, v in src.items()})
+        final.update({f"{s}.delta": v.detach().reshape(1).cpu() for s, v in dsrc.items()})
     return _source_kl(model, rows, comps, inputs, src, dsrc, grad=False)

@@ -1,0 +1,79 @@
+{
+ "plan": "reports/plans/2026-10-28_plan_qwen-sft.md (E40), section 4",
+ "filed": "2026-10-28, before any run of experiments/qwen_sft/run.py; never edited after the run (add a dated report instead)",
+ "scored_by": "experiments/qwen_sft/run.py `score`, which reads the numbers under `rules` and `three_starts` from this file",
+ "quantities": {
+  "adversary": "qwen_vpd.pgd_kl_rows: one U(0,1) source per site shared by every row and position, 20 sign steps of 0.1, KL(clean || masked) in nats averaged over every position of the 128 rows; fp32, Gamma bf16; g and clean logits recomputed per row from the state's own weights and components",
+  "masked_kl": "KL(clean || masked) with m = g and Delta off, mean over every position of the 128 rows (experiments/qwen_adversary ci128)",
+  "maths rows": "greedy answers (bf16, qwen_eval's prompt, thinking off) of the unchanged model to GSM8K test prompts 0-255, prompt ids + response ids through the end token, packed end to end into 128 rows of 512",
+  "FineWeb rows": "experiments/qwen_adversary/results/tokens.json, 128 rows of 512",
+  "ratio": "a state's FineWeb adversary reading / W0's (G) on the same rows and seed; with three starts, the mean of the three per-seed ratios (W0 re-read at seeds 1 and 2 in this job)",
+  "gold loss drop": "held-out (256 GSM8K train problems kept out of SFT) mean response-token log-loss of prompt + gold_as_response + end token, fp32: A0's value minus the value at step t",
+  "KL to start": "mean over every position of the maths rows of KL(pi_W0 || pi_t), fp32",
+  "behaviour kept": "1 - KL(teacher || student) / KL(teacher || W0), mean over every position of the maths rows, fp32 weights; teacher = W0 + dW_t (the saved bf16 dW), student = W0 + the teacher-trained change, no masks",
+  "accuracy": "qwen_eval.score greedy strict accuracy, drop rule (answers past 512 tokens leave): GSM8K test (1,319) and GSM1k (1,197 after the 8-gram filter), bf16 weights",
+  "length": "mean greedy response tokens on GSM8K test (all 1,319)"
+ },
+ "rules": {
+  "G": {
+   "rule": "a = maths adversary / FineWeb adversary, m = maths masked_kl / FineWeb masked_kl (both read in G, seed 0). fail if a or m exceeds fail_above, or either is not finite; else pass if both <= pass_max; else ambiguous",
+   "pass_max": 2.0,
+   "fail_above": 3.0,
+   "expected": "pass (maths adversary 1-3 nats against FineWeb 1.62; masked KL 0.07-0.28 against 0.142)",
+   "if_fails": "stop; card: the decomposition does not explain maths answers. Ambiguous: the run continues; a card asks how to read the maths-row results",
+   "blind_to": "damage a 20-step search misses (a lower bound); parts the importance values keep on"
+  },
+  "T0": {
+   "rule": "teacher training with dW = 0 (1,000 steps, the full recipe), then ratio in [band[0], band[1]] inclusive",
+   "band": [0.85, 1.15],
+   "expected": "holds, ratio about 1.000: the gradient is exactly zero at dW = 0, so the offsets stay 0 (max_abs_offset is reported)",
+   "if_fails": "stop; fix, rerun the stage"
+  },
+  "P0": {
+   "rule": "step 0: |GSM8K drop-rule accuracy - test| <= tol and |GSM1k drop-rule accuracy - gsm1k| <= tol, every problem answered (k = 1,319 and 1,197); and, at the start of F with the trainable copy in place, |gold loss drop| <= zero_max and KL to start <= zero_max",
+   "test": 0.777,
+   "gsm1k": 0.782,
+   "tol": 0.015,
+   "zero_max": 1e-06,
+   "expected": "holds (the same bf16 weights and code as the baseline and fresh-set runs; the zero checks read the weight swap)",
+   "if_fails": "stop"
+  },
+  "P1": {
+   "rule": "at step 100: gold loss drop >= gold_drop_min nats per token, KL to start >= kl_min, and mean GSM8K response length / step 0's <= length_ratio_max; holds if all three hold",
+   "gold_drop_min": 0.05,
+   "kl_min": 0.001,
+   "length_ratio_max": 0.8,
+   "expected": "holds (gold solutions are terser than the model's answers)"
+  },
+  "P2": {
+   "rule": "do-nothing: ratio at step 1 <= step1_max holds; at step 100, ratio > line reads 'sees the update', <= line 'blind on web text'",
+   "step1_max": 1.2,
+   "line": 1.5,
+   "expected": "step 1 holds; step 100 uncertain, leaning 'blind on web text'; the maths-row reading beside it is then the informative one"
+  },
+  "P3": {
+   "rule": "behaviour kept >= kept_min at each of `steps` that is read; a step whose KL(teacher || W0) < denominator_min is unscored; holds if every scored step holds (none scored: unscored). Step 1's kept is reported, not scored",
+   "kept_min": 0.8,
+   "steps": [10, 100],
+   "denominator_min": 1e-06,
+   "expected": "holds (E34, E37 kept behaviour)"
+  },
+  "P4": {
+   "rule": "teacher training: ratio <= line at every read step (1, 10, 100; 10 only if the budget rule kept it)",
+   "line": 1.5,
+   "expected": "holds at 1 and 10; at 100 uncertain (E37's broad update failed at 2.20)"
+  },
+  "P5": {
+   "rule": "at step 100: teacher training's maths-row adversary reading < do-nothing's (strict), one start each",
+   "expected": "holds"
+  }
+ },
+ "three_starts": {
+  "rule": "a FineWeb ratio (seed 0) inside [band[0], band[1]] inclusive is re-read with the other seeds and decided on the mean of the per-seed ratios; outside the band the seed-0 ratio decides. Applies to every FineWeb ratio (T0, D, T)",
+  "seeds": [0, 1, 2],
+  "band": [1.2, 1.8]
+ },
+ "reported": "accuracy at step 100 against step 0 paired on the problems fitting the window at both (expected within +-0.05), all-answers accuracy, lengths, gold loss drop and KL to start at every saved step, |dW| per matrix per step, the teacher-training curves, max |offset|, g statistics, the adversary's final sources, the benchmark projection",
+ "decision_tree": "plan section 6",
+ "edge_cases_checked": "tests/test_qwen_sft.py runs each rule on: a zero denominator in behaviour kept (step 1: unscored, no division); ties at every threshold (G at exactly 2 and 3, T0 at 0.85 and 1.15, P0 at tol, P1 at each minimum, P2 at 1.2 and 1.5, P3 at 0.8, P4 at 1.5: the inclusive side as written, ties in exact arithmetic rounded to 9 places); a NaN reading (G fails, T0 does not hold, no re-read); three starts that straddle the line (the mean decides); the drop rule leaving different problem sets at step 0 and 100 (paired on the problems kept at both; none in common: no difference); P3 with step 10 dropped by the budget rule (scored on step 100 alone)"
+}
