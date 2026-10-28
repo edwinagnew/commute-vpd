@@ -43,7 +43,7 @@ Budget:     $0 on the cluster; RunPod fallback cap $2
 
 A control that reads `fail` does **not** stop the job: the tree reads it. The first masked-terms line of each control
 should show `unmasked` about 0.0016 (G2's `path_kl`, the teacher is W₀) and the trained term near Amendment 1's step-1
-value (CI-masked 1.13, stochastic 0.74). In the copy, `unmasked` at step 1 should be about 13 (E42's teacher gap at
+value. Step 1 of each control has the same state, batch and mask draws as job 40338's step 1, so every term, including the one with weight 0, must match it to rounding: unmasked 0.00163, ci_masked 1.129, stochastic 0.7389, ci_masked_trigger 0.6884, stochastic_trigger 0.4363 (review 2026-10-28). A mismatch means the batches or masks differ: report it at once. In the copy, `unmasked` at step 1 should be about 13 (E42's teacher gap at
 W₀). If a control's training takes more than 6 minutes, say so in the report. It is not a stop.
 
 ## Stop rules (the run halts itself with a `STOP:` line; report that line and the numbers named, do not resubmit)
