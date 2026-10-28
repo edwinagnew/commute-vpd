@@ -369,3 +369,186 @@ one task. There are three batch orders, which is enough to see a spread but not 
   inconclusive.
 - The " which" $T_{10}$ copy at other orders (it passed, 1.376), and Pile-text copies ($T_{10}$ passed, 1.134).
 - A 3,000-step copy, the budget adversary, and a second fine-tune seed.
+
+## Amendment 2 (2026-10-28): short links, a chain of 100-step copies along the emoticon fine-tune
+
+*Commute lead (written by a fleet agent). Code `experiments/teacher_training/path_amend2.py` (imports `run.py` and
+`path.py`; no existing file edited); predictions `experiments/teacher_training/results/predictions_e41_amend2.json`,
+filed 2026-10-28 14:39:38 on the CPU worker, sha256 `fc522445…ad9a`; brief
+`experiments/teacher_training/RUN_BRIEF_e41_amend2.md`. A fresh agent reviews the code before it runs.*
+
+**The branch it executes.** The tree's "P3 and P4 hold" branch: emoticon, arm A, a chain over the fine-tune's
+checkpoints 1, 3, 10, 30, 100, 300 and 1000, with 100 student steps per link, read at every link against E41's one-shot
+copies at 10, 100 and 1000. The user chose option (a) on `decision-early-updates` (`decisions.md`, 2026-10-28): each
+link is read once, at one batch order and one adversary start, and a link between the pass and fail lines is reported
+as **at the line**. No batch-order repeats.
+
+**Restated in the Terms.** The update δW_k is E41's emoticon fine-tune stopped at step k: E34's Adam 3e-5 full-weight
+fine-tune of all 24 matrices, arm A's loss, batch 32, seed 0, regenerated in the job with checkpoints at
+k ∈ {1, 3, 10, 30, 100, 300, 1000}. The teacher T_k is the model at W₀ + δW_k. **Teacher training** is component
+training of the alive (U, V) with the loss KL(T_k ‖ student), Γ and Δ frozen, by E34's task-text recipe (Adam 1e-5,
+batch 32, arm A's weighting). **The chain:** link 1 starts from W₀'s (U, V) and trains 100 steps against T₁. Each later
+link starts from the previous link's (U, V) and trains 100 steps against the next checkpoint, with a fresh Adam state.
+That makes 700 student steps in all. Each link is read at its last step through E34's harness, beside T_k's do-nothing
+state (δW_k in Δ). The links at T₁₀, T₁₀₀ and T₁₀₀₀ are compared with E41's one-shot copies, 1,000 steps from W₀
+against the same teacher.
+
+### Design check
+
+- **Goal served.** The weak version under a map applied along training (`GOALS.md` → Φ: "applied at every step and
+  the question is whether the error accumulates"). This is the first run of teacher training at the rhythm a monitor
+  would use: a short copy at each checkpoint, each one starting where the last ended.
+- **Nearest tried.** E41's chain of three 1,000-step links (P3 and P4 held; size and damage grew from link to link,
+  unfiled), and E41 Amendment 1 (the T₁₀ one-shot copy sits at the line across three batch orders). New here: links
+  of 100 steps, seven checkpoints, the updates at steps 1, 3, 30 and 300, and a filed prediction on the growth.
+- **Patch or step.** A step. It is the "alongside training" form that E41's tree named as next.
+- **`decisions.md`.** It relies on teacher training as the map (2026-10-26), on one adversary start with readings as
+  lower bounds (2026-10-27), and on option (a) of 2026-10-28. There is no departure.
+- **What would change what we do next.** If every link passes, the map can run alongside training on this model at
+  100 steps per checkpoint. A fail, or lost behaviour, at any link is a qualitative surprise and goes to the user. If
+  the chain ends worse than a one-shot copy (P2 fails), the error accumulates and the map needs a reset. If size or
+  damage piles up unseen (P3 fails), the next card asks whether that matters.
+- **Control first.** C1 runs alone first, with a stop. G1 follows (stop), then T₁₀'s do-nothing state (PC, stop),
+  then C2 after the first link, before any warm start (stop). The details are below.
+- **Approved class.** Class 3, a branch of this plan's tree. No sign-off is needed; this check is the record.
+
+### What differs from the one-shot reference at each warm start
+
+| Difference | Removed or tested |
+|---|---|
+| The start: the previous link's (U, V), not W₀'s | **tested**: the point of the chain. C2 checks the warm start reproduces its start |
+| 100 steps against T_k, not 1,000 | **tested**: the point of short links |
+| Total steps at the anchors: 300, 500 and 700, against 1,000 | named, not removed: a one-shot copy trained to the same total is in "Not run" |
+| Adam: the moments are reset at each link and the bias correction restarts, so each link's first steps are near sign steps | named, not removed: this is what applying the map again means (as in E41). Carrying Adam's state across links is in "Not run" |
+| Schedule position | none: the rate is constant (`TrainConfig` has no schedule), and gradient clipping is 1.0 as in the reference |
+| Data order: link i draws its batches with batch-order seed i (0 to 6) | **removed** down to batch-order noise. E41's chain used seed 0 for every link, which at 100 steps would replay the same 100 batches seven times. Seed i is any typical draw (Amendment 1 showed the seed is applied). What remains is the measured batch-order spread |
+| The teacher: regenerated with seven checkpoints, not three | removed: checkpoint evaluations draw no random numbers; G1 checks T₁₀, T₁₀₀ and T₁₀₀₀ against E41 |
+| The references come from E41's job, not this one | removed: C1 (W₀'s seed-0 KL) and PC (T₁₀'s do-nothing ratio) must equal E41's within 1%. E41 and Amendment 1 read both to 16 digits |
+
+### Stages (one job, controls first)
+
+| Stage | Reads | Must read / expected | Else |
+|---|---|---|---|
+| C1 | W₀, Pile harness, adversary seeds 0-2 | `w0_check` passes; floor 0.0748 within 10% (E41 0.07482); seed-0 PGD KL 0.69882 within 1% | stop |
+| fine-tune, G1 | checkpoints 1-1000; T₁₀, T₁₀₀, T₁₀₀₀ P(target) and size | within 0.005 and 0.001 of E41's: 0.99931 / 0.01125, 0.99946 / 0.02217, 0.99961 / 0.03209 | stop |
+| PC | do-nothing at T₁₀ | 2.5159 within 1%, fail (E41 and Amendment 1: 2.5159000284 both) | stop |
+| per link, in order | do-nothing at T_k (once), then the link and its read; the score so far is logged | see below | a Δ share above 1e-6 stops |
+| C2 | after link T₁: from its offsets via `init`, one step at lr 0 against its own weights | step-1 KL ≤ 0.005 (E41 0.0005); δW within 1e-3 of its largest entry (E41 0) | stop |
+
+### Numbers and expected values
+
+| Number | W₀ | Do-nothing at T_k | Control | Expected at the links |
+|---|---|---|---|---|
+| adversarial ratio | 1 | T₁₀ 2.516 fail, T₁₀₀ 1.136 pass, T₁₀₀₀ 1.499 at the line (E41); T₁, T₃, T₃₀, T₃₀₀ never read | PC 2.516 | at the line or pass at T₁-T₁₀ (as the T₁₀ one-shot copies, 1.28-1.55); about 1.0-1.1 from T₁₀₀ on |
+| check verdict (both Pile ratios, P aside) | pass | as above | — | as above |
+| P(target) | 0.004 | the teacher's (T₁ and T₃ unknown; 0.999 from T₁₀) | — | about 0.999 from T₁₀ on |
+| gap share | 1 | 0 | — | under 0.01 |
+| size, damage | 0, 0 | the teacher's (T₁₀₀₀ 0.0321, 0.0547) | — | at T₁₀₀₀ about 0.015-0.022 and 0.03-0.05 (one-shot 0.0184, 0.0180) |
+| Δ's share | — | 1 | C2: δW unchanged | ~1e-9 (above 1e-6 stops) |
+| start KL (reported) | — | — | C2 ≤ 0.005 | far below the 5.3-5.4 nats of a start from W₀ |
+
+**Blind to.**
+- Adversarial ratio: one start, so a pass is a lower bound. It sees only 256 Pile rows. A link at the line can land on
+  either side at another batch order (Amendment 1).
+- Gap share: text outside the task windows.
+- P(target): everything but the target token at the trigger.
+- Size: everything but the largest relative change of one matrix.
+- Damage: everything outside the held-out task windows.
+- Δ's share: everything but a code bug.
+
+**Noise floor** (same card):
+- Batch order (Amendment 1; E34 Amendment 4): the ratio moves by up to 21% at T₁₀ and 3.2% at T₁₀₀₀. P moves by
+  0.005, gap share by 0.002, size by up to 5% and damage by up to 3%.
+- W₀'s adversary-seed floor: 7.5%.
+- This job against E41's: 0 so far, equal to 16 digits.
+
+P2 keeps E41 P3's tolerances: 25% on the ratio, 0.01 on P and 0.005 on the gap share. P3's 25% is 5 to 8 times the
+size and damage noise.
+
+### Predictions (filed)
+
+- **P1, every link** (three-way plus "behaviour lost"). Each link is "behaviour lost" if its gap share is above 0.05,
+  or if its teacher holds P ≥ 0.9 and the link does not. Otherwise it gets the check's verdict on its two Pile ratios:
+  pass, at the line, or fail. The outcome is unscored if any link or teacher reading is missing. It is "behaviour
+  lost" if any link is. Otherwise it is the worst link's verdict, so "pass" means every link passed.
+  - Reported beside it, per link: whether the check sees that update (its do-nothing state reads fail or at the line);
+    the line, if any, that the ratio is within 7.5% of; and the share of do-nothing's excess the link removes.
+  - *Lean: at the line, medium.* The T₁₀ one-shot copies read one pass and two at the line. The T₁ and T₃ updates
+    have never been read.
+- **P2, the chain is not worse than one copy.** At T₁₀, T₁₀₀ and T₁₀₀₀, each link is compared with E41's one-shot copy
+  of the same teacher. Four conditions, all inclusive:
+  - its check verdict is no worse (pass < at the line < fail; the one-shot copies read at the line, pass, pass);
+  - its adversarial ratio is ≤ 1.25 × the one-shot's (relative);
+  - its P(target) is ≥ the one-shot's − 0.01 (absolute);
+  - its gap share is ≤ the one-shot's + 0.005 (absolute).
+
+  P2 holds if all three anchors do, and is unscored if one is missing. *Lean: holds, medium.* E41's three-link chain
+  held with ratios 1.04-1.05 times the one-shot's. The risk is the T₁₀ link, which has had 300 steps against the
+  one-shot's 1,000.
+- **P3, no pile-up** (two-sided). The T₁₀₀₀ link's size must be ≤ 1.25 × the one-shot T₁₀₀₀ copy's 0.01842, and its
+  damage ≤ 1.25 × that copy's 0.01801. It is unscored if the link is missing. Reported beside it: both ratios, the same
+  ratios at T₁₀ and T₁₀₀, and every link's size and damage over its teacher's. *Lean: fails, medium, on damage.* E41's
+  1,000-step chain read 1.36 times the one-shot's size and 1.49 times its damage. Step-10 copies do their teacher's
+  full damage (0.055, against the T₁₀₀₀ copy's 0.018), and the last link has only 100 steps to shed it.
+
+**Edge cases, run through `score` before filing** (51 synthetic cases on the CPU worker, script
+`~/commute-data/scratch/commute-lead/e41a2_edge.py`; all pass):
+- an empty file: P1, P2 and P3 unscored, and `delta_untouched` false;
+- a missing link (T₃₀): P1 unscored, P2 still scored. A missing T₁₀₀₀ link: P2 and P3 unscored. A missing teacher
+  reading: P1 unscored;
+- all pass gives pass. One link at the line gives at the line. Adding a fail gives fail. Adding a lost behaviour
+  gives behaviour lost;
+- a teacher below P 0.9 (T₁) with the link at P 0.5 and gap share 0.01: kept;
+- ties: P exactly 0.9 and gap share exactly 0.05 keep the behaviour; 0.8999 and 0.0501 lose it. A ratio exactly at
+  1.5 / 1.0748 passes and exactly at 1.5 × 1.0748 fails; 1.5 is at the line; a stochastic fail with a PGD pass fails;
+- P2 at each anchor: exactly 1.25 ×, −0.01 and +0.005 hold; 1e-6 beyond any of them fails. At T₁₀ a pass or at the
+  line holds and a fail does not; at T₁₀₀ at the line fails;
+- P3 at exactly 1.25 × holds, and 1.0001 times that fails;
+- a do-nothing state at or below 1 gives "excess removed" None; a teacher damage of 0 gives None, not a division by
+  zero;
+- a Δ share of 2e-6 sets `delta_untouched` false. An unknown verdict string raises;
+- near-line flags: 1.5 is near the fail line, 1.396 near the pass line, and 1.0 near neither.
+
+### Decision tree
+
+- **A control fails** (C1, G1, PC, C2) or a Δ share is above 1e-6: stop, report, fix. PC failing means E41's
+  references do not apply on this card.
+- **P1 pass, P2 holds.** Teacher training applied every 100 steps keeps every update along this fine-tune faithful
+  and ends as well as one copy. The comparison's "continuous" cell turns yes on this model. P3 then says whether it
+  costs extra size or damage. A card asks whether to carry this rhythm to Qwen.
+- **P1 at the line, P2 holds.** The chain sits where the one-shot T₁₀ copy sits. Option (a) accepts that; it is
+  reported as at the line, with the links named.
+- **P1 fail or behaviour lost.** This is a qualitative surprise: announce it and file a Blocking card. No run.
+- **P2 fails.** Short links pile up error that one copy does not. Announce it and file a card with these options: a
+  reset to W₀ every few links, carrying Adam's state across links, or a longer last link. No run before the user
+  decides.
+- **P3 fails, with P1 and P2 holding.** The chain carries extra size or damage that neither the check nor the
+  behaviour sees. Report it with the per-link ratios. The card asks whether damage on task windows matters when the
+  check passes. No run.
+
+### Stop rules (in the code; the run halts itself with a `STOP:` line)
+
+- C1, G1, PC, C2 as above.
+- A link's Δ share above 1e-6.
+- A results file from another card or W₀ floor: the run exits at once (`run.load`).
+
+### Cost and routing
+
+- **Run time:** about 17 min on an H100. Load and C1 take 3 min and the fine-tune with seven checkpoint evaluations
+  under 1 min. Then come seven do-nothing reads at about 53 s each, and seven links at about 8 s of training plus a
+  53 s read each.
+- **Departure from the tree's "about 15 min":** the tree did not count the do-nothing states of T₁, T₃, T₃₀ and T₃₀₀.
+  Those say whether the check can see each link's update, and they add about 4 min.
+- **Card:** RunPod "NVIDIA H100 80GB HBM3", directly. The run fits under 30 min, but C1's floor, PC and every reference
+  belong to that card, and the cluster's L40 reads a floor of about 0.21.
+- **Cost:** about 23 min of pod with set-up and downloads, at about $4.4/h: **about $1.7, cap $3**. That is within the
+  session's $40.
+
+### Not in this amendment
+
+- Batch-order repeats of any link (option (a)); adversary seeds 1 and 2.
+- Pile-text chains, the " which" task, SGD or LoRA teachers.
+- Links shorter than 100 steps; carrying Adam's state across links; a one-shot copy trained 700 steps to match the
+  chain's total.
+- The cosine of the chain's end with the one-shot T₁₀₀₀ copy (it would need E34's saved state on the pod), per-block
+  ratios, and saving states. The analysis reads only the JSON, and the chain regenerates in about 8 min.
