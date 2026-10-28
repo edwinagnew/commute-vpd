@@ -28,6 +28,7 @@ sys.modules[_spec.name] = RUN  # dataclasses looks the module up by name
 _spec.loader.exec_module(RUN)
 PRED = json.loads((EXP / "results" / "predictions.json").read_text())
 G_RULE = PRED["rules"]["G"]
+YES = lambda: True
 
 
 # ----------------------------------------------------------------------------- rows and masks
@@ -79,20 +80,41 @@ def test_three_starts_one_start_outside_the_band():
         reads.append(s)
         return 2.0
 
-    out = RUN.three_starts(read, lambda s: 1.0, [0, 1, 2], [1.2, 1.8])
+    out = RUN.three_starts(read, lambda s: 1.0, [0, 1, 2], [1.2, 1.8], YES)
     assert reads == [0] and out["ratio"] == 2.0
-    out = RUN.three_starts(lambda s: math.nan, lambda s: 1.0, [0, 1, 2], [1.2, 1.8])
+    out = RUN.three_starts(lambda s: math.nan, lambda s: 1.0, [0, 1, 2], [1.2, 1.8], YES)
     assert len(out["ratios"]) == 1 and math.isnan(out["ratio"])
 
 
 def test_three_starts_straddling_the_line_the_mean_decides():
     adv = {0: 1.6, 1: 1.3, 2: 1.45}
     ref = {0: 1.0, 1: 1.0, 2: 1.0}
-    out = RUN.three_starts(adv.__getitem__, ref.__getitem__, [0, 1, 2], [1.2, 1.8])
+    out = RUN.three_starts(adv.__getitem__, ref.__getitem__, [0, 1, 2], [1.2, 1.8], YES)
     assert set(out["ratios"]) == {"0", "1", "2"}
     assert out["ratio"] == pytest.approx(1.45) and out["ratio"] <= 1.5  # seed 0 alone would have failed P4
-    edge = RUN.three_starts(lambda s: 1.2, lambda s: 1.0, [0, 1, 2], [1.2, 1.8])
+    edge = RUN.three_starts(lambda s: 1.2, lambda s: 1.0, [0, 1, 2], [1.2, 1.8], YES)
     assert len(edge["ratios"]) == 3  # the band is inclusive
+    assert "reread_skipped_budget" not in out
+
+
+def test_three_starts_spend_guard_falls_back_to_one_start():
+    reads: list[int] = []
+
+    def read(s: int) -> float:
+        reads.append(s)
+        return {0: 1.6, 1: 1.3, 2: 1.3}[s]
+
+    out = RUN.three_starts(read, lambda s: 1.0, [0, 1, 2], [1.2, 1.8], lambda: False)
+    assert reads == [0] and out["reread_skipped_budget"] and out["ratio"] == 1.6
+    asked = iter([True, False])  # the guard trips between seed 1's reading and its W0 reference
+    reads.clear()
+    out = RUN.three_starts(read, lambda s: 1.0, [0, 1, 2], [1.2, 1.8], lambda: next(asked))
+    assert reads == [0, 1] and out["reread_skipped_budget"] and out["ratio"] == 1.6
+    reads.clear()
+    out = RUN.three_starts(read, lambda s: 1.0, [0, 1, 2], [1.2, 1.8], lambda: False)
+    assert out["ratio"] == 1.6
+    out = RUN.three_starts(lambda s: 2.0, lambda s: 1.0, [0, 1, 2], [1.2, 1.8], lambda: False)
+    assert "reread_skipped_budget" not in out  # outside the band the guard is never asked
 
 
 def test_kept_zero_denominator_is_unscored():
@@ -152,6 +174,16 @@ def test_score_misses_and_missing_inputs():
     assert set(sc["P3"]["scored"]) == {"100"} and not sc["P3"]["holds"]
     assert not sc["P4"]["holds"] and "P5" not in sc
     assert RUN.score({}, PRED) == {}
+
+
+def test_g_control_ties_partial_and_nan():
+    c = PRED["rules"]["G_control"]
+    edge = {"masked_kl": c["masked_kl"]["ref"] * 1.02, "adv": c["adv"]["ref"] * 0.85}
+    assert RUN.score({"G": {"fineweb": edge}}, PRED)["G_control"]["holds"]
+    assert RUN.score({"G": {"fineweb": {"masked_kl": c["masked_kl"]["ref"]}}}, PRED)["G_control"]["holds"]  # before the adversary
+    miss = {"masked_kl": c["masked_kl"]["ref"], "adv": c["adv"]["ref"] * 0.84}
+    assert not RUN.score({"G": {"fineweb": miss}}, PRED)["G_control"]["holds"]
+    assert not RUN.score({"G": {"fineweb": {"masked_kl": math.nan}}}, PRED)["G_control"]["holds"]
 
 
 # ----------------------------------------------------------------------------- the teacher-trained state, toy sizes
@@ -229,3 +261,8 @@ def test_change_hooks_add_the_change_term():
         y = lin(x)
     assert torch.allclose(y, x @ (lin.weight + change).T, atol=1e-6)
     assert torch.allclose(lin(x), x @ lin.weight.T)  # hooks removed
+    o = qwen_vpd.site_name(0, "o")
+    zero = {t: torch.zeros(D_OUT, D_IN) for t in qwen_vpd.SITES}
+    plain = {t: linears(model)[t](x) for t in (o, s)}
+    with change_hooks(model, zero.__getitem__):  # an exact zero change leaves the outputs bitwise unchanged
+        assert all(torch.equal(linears(model)[t](x), plain[t]) for t in (o, s))

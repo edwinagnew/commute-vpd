@@ -15,6 +15,14 @@
   "length": "mean greedy response tokens on GSM8K test (all 1,319)"
  },
  "rules": {
+  "G_control": {
+   "rule": "control, read first in G: G's FineWeb readings reproduce experiments/qwen_adversary/results/adversary.json on the same 128 rows: |masked_kl / masked_kl.ref - 1| <= masked_kl.tol and |seed-0 adversary / adv.ref - 1| <= adv.tol (relative; a NaN misses). Checked after the masked pass and again after the FineWeb adversary, before the maths adversary",
+   "masked_kl": {"ref": 0.141670617449563, "tol": 0.02},
+   "adv": {"ref": 1.7016382161527872, "tol": 0.15},
+   "basis": "same code, rows, seed and precision; the adversary's tolerance allows a different card (an earlier card read 4-13% lower on the same rows and seeds)",
+   "if_fails": "stop, writing both numbers: the apparatus does not reproduce the adversary run",
+   "added": "2026-10-28, after the fresh review of commit 0d01537, before any run"
+  },
   "G": {
    "rule": "a = maths adversary / FineWeb adversary, m = maths masked_kl / FineWeb masked_kl (both read in G, seed 0). fail if a or m exceeds fail_above, or either is not finite; else pass if both <= pass_max; else ambiguous",
    "pass_max": 2.0,
@@ -69,11 +77,12 @@
   }
  },
  "three_starts": {
-  "rule": "a FineWeb ratio (seed 0) inside [band[0], band[1]] inclusive is re-read with the other seeds and decided on the mean of the per-seed ratios; outside the band the seed-0 ratio decides. Applies to every FineWeb ratio (T0, D, T)",
+  "rule": "a FineWeb ratio (seed 0) inside [band[0], band[1]] inclusive is re-read with the other seeds and decided on the mean of the per-seed ratios; outside the band the seed-0 ratio decides. Applies to every FineWeb ratio (T0, D, T). Spend guard (added 2026-10-28 after review, before any run): before each extra start, if the run's spend so far exceeds guard_usd the re-read stops, the seed-0 ratio decides and the state records reread_skipped_budget; the base run is never cut by it",
+  "guard_usd": 30.0,
   "seeds": [0, 1, 2],
   "band": [1.2, 1.8]
  },
  "reported": "accuracy at step 100 against step 0 paired on the problems fitting the window at both (expected within +-0.05), all-answers accuracy, lengths, gold loss drop and KL to start at every saved step, |dW| per matrix per step, the teacher-training curves, max |offset|, g statistics, the adversary's final sources, the benchmark projection",
  "decision_tree": "plan section 6",
- "edge_cases_checked": "tests/test_qwen_sft.py runs each rule on: a zero denominator in behaviour kept (step 1: unscored, no division); ties at every threshold (G at exactly 2 and 3, T0 at 0.85 and 1.15, P0 at tol, P1 at each minimum, P2 at 1.2 and 1.5, P3 at 0.8, P4 at 1.5: the inclusive side as written, ties in exact arithmetic rounded to 9 places); a NaN reading (G fails, T0 does not hold, no re-read); three starts that straddle the line (the mean decides); the drop rule leaving different problem sets at step 0 and 100 (paired on the problems kept at both; none in common: no difference); P3 with step 10 dropped by the budget rule (scored on step 100 alone)"
+ "edge_cases_checked": "tests/test_qwen_sft.py runs each rule on: a zero denominator in behaviour kept (step 1: unscored, no division); ties at every threshold (G at exactly 2 and 3, T0 at 0.85 and 1.15, P0 at tol, P1 at each minimum, P2 at 1.2 and 1.5, P3 at 0.8, P4 at 1.5: the inclusive side as written, ties in exact arithmetic rounded to 9 places); a NaN reading (G fails, T0 does not hold, no re-read); three starts that straddle the line (the mean decides); the drop rule leaving different problem sets at step 0 and 100 (paired on the problems kept at both; none in common: no difference); P3 with step 10 dropped by the budget rule (scored on step 100 alone); G_control at both tolerances (inclusive), with only the masked reading present, and on a NaN (misses); the spend guard tripping before seed 1 or between a reading and its W0 reference (the first seed decides, reread_skipped_budget recorded)"
 }

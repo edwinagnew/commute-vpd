@@ -6,7 +6,8 @@ Stages, in this order, any subset by --stages (a later stage reads the earlier o
 --out). Each writes results/<stage>.json as it finishes, prints every number, and rescores results/score.json.
   G   maths rows (greedy answers of the unchanged model to the first GSM8K test prompts, packed into 128 rows of 512);
       on those and on experiments/qwen_adversary's 128 FineWeb-Edu rows: importance-masked KL, g statistics and the
-      alive set (g > 0.01 anywhere), the adversary (seed 0). Stop on G fail. Then the benchmark check: one teacher-
+      alive set (g > 0.01 anywhere), the adversary (seed 0), FineWeb first: the control (G_control) stops unless its
+      masked KL and adversary reproduce qwen_adversary's. Stop on G fail. Then the benchmark check: one teacher-
       training step timed, the projection of T0-T; over $25 drops step 10 from D and T, still over stops; alive
       offsets over 45 GB stop.
   T0  teacher training with δW = 0, adversary on FineWeb rows; ratio outside the T0 band stops.
@@ -174,17 +175,27 @@ def in_band(x: float, band: list[float]) -> bool:
     return band[0] <= r9(x) <= band[1]  # False for NaN
 
 
-def three_starts(read: Callable[[int], float], ref: Callable[[int], float], seeds: list[int],
-                 band: list[float]) -> dict[str, Any]:
-    """The first seed's ratio decides unless it lies in `band`; then every seed is read and the mean ratio decides."""
+def three_starts(read: Callable[[int], float], ref: Callable[[int], float], seeds: list[int], band: list[float],
+                 may_extend: Callable[[], bool]) -> dict[str, Any]:
+    """The first seed's ratio decides unless it lies in `band`; then every seed is read and the mean ratio decides.
+    `may_extend()` is asked before each extra start (the state's and W0's reference); False: the re-read stops, the
+    first seed decides and the result says `reread_skipped_budget`."""
     adv = {seeds[0]: read(seeds[0])}
     ratios = {seeds[0]: adv[seeds[0]] / ref(seeds[0])}
+    out: dict[str, Any] = {}
     if in_band(ratios[seeds[0]], band):
         for s in seeds[1:]:
+            if not may_extend():
+                out["reread_skipped_budget"] = True
+                break
             adv[s] = read(s)
+            if not may_extend():
+                out["reread_skipped_budget"] = True
+                break
             ratios[s] = adv[s] / ref(s)
-    return {"adv": {str(k): v for k, v in adv.items()}, "ratios": {str(k): v for k, v in ratios.items()},
-            "ratio": statistics.mean(ratios.values())}
+    decide = [ratios[seeds[0]]] if out else list(ratios.values())
+    return out | {"adv": {str(k): v for k, v in adv.items()}, "ratios": {str(k): v for k, v in ratios.items()},
+                  "ratio": statistics.mean(decide)}
 
 
 def kept(kl_ts: float, kl_t0: float, floor: float) -> float | None:
@@ -216,6 +227,10 @@ def score(res: dict[str, Any], pred: dict[str, Any]) -> dict[str, Any]:
     """Every filed rule whose inputs are in `res` (stage -> results); absent inputs leave the rule unscored."""
     R, sc = pred["rules"], {}
     G, T0, A0, Fs, D, T = (res.get(k, {}) for k in STAGES)
+    if "fineweb" in G:  # the apparatus control: G's FineWeb readings reproduce experiments/qwen_adversary's
+        c, fw = R["G_control"], G["fineweb"]
+        rel = {k: fw[k] / c[k]["ref"] - 1 for k in ("masked_kl", "adv") if k in fw}
+        sc["G_control"] = {"rel": rel, "holds": all(r9(abs(v)) <= c[k]["tol"] for k, v in rel.items())}
     if "adv" in G.get("fineweb", {}) and "adv" in G.get("maths", {}):
         a = G["maths"]["adv"] / G["fineweb"]["adv"]
         m = G["maths"]["masked_kl"] / G["fineweb"]["masked_kl"]
@@ -267,7 +282,7 @@ class Job:
 
     def __init__(self, a: argparse.Namespace) -> None:
         self.pred = json.loads(PRED.read_text())
-        self.out, self.decomp_dir, self.usd_per_h = Path(a.out), Path(a.decomp), a.usd_per_h
+        self.out, self.decomp_dir, self.usd_per_h, self.prior_usd = Path(a.out), Path(a.decomp), a.usd_per_h, a.prior_usd
         fp32_matmuls()
         self.tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
         self.end_id = int(self.tok.convert_tokens_to_ids("<|im_end|>"))
@@ -327,6 +342,9 @@ class Job:
     def dw_path(self, t: int) -> Path:
         return self.out / "dW" / f"step_{t}.safetensors"
 
+    def dw_fp32_path(self) -> Path:
+        return self.out / "dW" / f"step_{CFG.steps}_fp32.safetensors"
+
     def pools(self) -> tuple[Tensor, Tensor]:
         """Teacher training's rows: F's training sequences packed into 512-token rows, and FineWeb-Edu rows that are
         not evaluation rows (streamed once, cached on --out)."""
@@ -364,7 +382,11 @@ class Job:
     def fineweb(self, state: Callable[[], Any], name: str) -> dict[str, Any]:
         ts = self.pred["three_starts"]
         return three_starts(lambda s: self.adv(state, self.web, s, f"{name}_fineweb"), self.w0_ref, ts["seeds"],
-                            ts["band"])
+                            ts["band"], lambda: self.spent_usd() <= ts["guard_usd"])
+
+    def spent_usd(self) -> float:
+        """This job's machine time so far at --usd-per-h, plus --prior-usd (earlier jobs of the run)."""
+        return (time.time() - T_START) / 3600 * self.usd_per_h + self.prior_usd
 
     def maths_adv(self, state: Callable[[], Any], name: str) -> dict[str, float]:
         kl = self.adv(state, self.maths(), self.pred["three_starts"]["seeds"][0], f"{name}_maths")
@@ -413,7 +435,7 @@ def stage_G(job: Job) -> None:
     out["problems_in_rows"] = int((cum < CFG.n_rows * CFG.seq_len).sum()) + 1
     MATHS.write_text(json.dumps({"problems": CFG.maths_problems, "rows": pack(seqs, CFG.n_rows, CFG.seq_len)}))
     comps, gamma = job.decomp()
-    blocks = (("maths", job.maths()), ("fineweb", job.web))
+    blocks = (("fineweb", job.web), ("maths", job.maths()))  # FineWeb first: the apparatus control reads it
     alive: dict[str, Tensor] = {}
     for block, rows in blocks:
         p = importance_pass(job.model, rows, gamma, comps, CFG.alive_g, masked=True)
@@ -424,14 +446,18 @@ def stage_G(job: Job) -> None:
     idx = {s: alive[s].nonzero().flatten() for s in SITES}
     save(job.out / "alive.safetensors", idx, torch.int64, droppable=False, log=log)
     n = sum(len(idx[s]) * (comps.vu(s)[0].shape[0] + comps.vu(s)[1].shape[1]) for s in SITES)
+    del comps, gamma  # no GPU copy may outlive a park (benchmark, T0)
     out["alive"] = {"subcomponents": sum(len(v) for v in idx.values()), "of": sum(len(v) for v in alive.values()),
                     "n_params": n, "offsets_gb": 20 * n / 1e9}
+    out["read_steps"] = list(CFG.read_steps)
     for block, rows in blocks:
+        job.put("G", out)
+        g_control(job)
         t0 = time.time()
         out[block]["adv"] = job.adv(nullcontext, rows, job.pred["three_starts"]["seeds"][0], f"G_{block}")
         out[block]["adv_s"] = time.time() - t0
-    out["read_steps"] = list(CFG.read_steps)
     job.put("G", out)
+    g_control(job)
     if score(job.res, job.pred)["G"]["verdict"] == "fail":
         job.halt("G fails: the decomposition does not explain the maths rows as it explains web text (card)")
     if out["alive"]["offsets_gb"] > CFG.offsets_gb_max:
@@ -443,11 +469,21 @@ def stage_G(job: Job) -> None:
         job.halt(f"projected spend over ${CFG.budget_usd} even without step 10: {out['benchmark']}")
 
 
+def g_control(job: Job) -> None:
+    """Stop unless G's FineWeb readings so far reproduce experiments/qwen_adversary's (the filed G_control)."""
+    c = score(job.res, job.pred)["G_control"]
+    if not c["holds"]:
+        fw, ref = job.res["G"]["fineweb"], job.pred["rules"]["G_control"]
+        got = {k: (fw[k], ref[k]["ref"]) for k in c["rel"]}
+        job.halt(f"G control: FineWeb (this run, qwen_adversary) {got} outside the filed tolerances")
+
+
 def benchmark(job: Job, g: dict[str, Any]) -> dict[str, Any]:
     """One teacher-training step timed after a first (warm-up) one; the projection of T0-T from it, G's adversary
-    starts and G's generation batches; the budget rule (read_steps empty: over budget even without step 10)."""
-    comps, _ = job.decomp()
-    off = Offsets(comps, job.alive())
+    starts and G's generation batches; the budget rule (read_steps empty: over budget even without step 10).
+    The worst case of the three-starts re-reads (every D and T ratio in the band: two more starts each, plus W0 at
+    seeds 1 and 2) is projected beside it; the running guard (`Job.spent_usd`) caps those re-reads."""
+    off = Offsets(job.decomp()[0], job.alive())
     job.decomp("cpu")
     maths, web = job.pools()
     torch.cuda.reset_peak_memory_stats()
@@ -465,23 +501,28 @@ def benchmark(job: Job, g: dict[str, Any]) -> dict[str, Any]:
              "T": k * (train_s + adv) + adv + math.ceil(qwen_sets.N_TEST / CFG.gen_batch) * gen}
         return p, (time.time() - T_START + sum(p.values())) / 3600 * job.usd_per_h
 
+    def worst(steps: tuple[int, ...]) -> float:
+        return (4 * len(steps) + 2) * adv / 3600 * job.usd_per_h
+
     steps = CFG.read_steps
     b["projected_s"], b["projected_usd"] = spend(steps)
+    b["rereads_worst_usd"] = worst(steps)
     if b["projected_usd"] > CFG.budget_usd:
         steps = tuple(t for t in steps if t != 10)
         b["projected_s_without_10"], b["projected_usd_without_10"] = spend(steps)
+        b["rereads_worst_usd_without_10"] = worst(steps)
         if b["projected_usd_without_10"] > CFG.budget_usd:
             steps = ()
     return b | {"read_steps": list(steps)}
 
 
 def stage_T0(job: Job) -> None:
-    comps, _ = job.decomp()
-    off = Offsets(comps, job.alive())
+    off = Offsets(job.decomp()[0], job.alive())
     job.decomp("cpu")
     curve = train(job.model, off, None, *job.pools(), CFG.t_lr, CFG.t_steps, CFG.t_rows_each, CFG.t_micro, CFG.seed, log)
     off.save(job.out / "offsets" / "T0.safetensors", log)
-    out: dict[str, Any] = {"max_abs_offset": off.max_abs(), "curve": [c["kl"] for c in curve]}
+    out: dict[str, Any] = {"max_abs_offset": off.max_abs(), "curve": [c["kl"] for c in curve],
+                           "first_batch_kl_fp32": curve[0]["kl_fp32_teacher_w0"]}
     off.to("cpu")
     out["fineweb"] = job.fineweb(lambda: off.state(job.model, job.decomp()[0], job.W0), "T0")
     job.put("T0", out)
@@ -503,14 +544,14 @@ def stage_A0(job: Job) -> None:
 
 def disk_sizes(job: Job) -> dict[str, int]:
     numel = sum(w.numel() for w in job.W0.values())
-    sizes = {f"dW_{t}": 2 * numel for t in CFG.saved} | {"grad": 2 * numel, "adam": 8 * numel}
-    return sizes | {f"offsets_T{t}": 2 * job.res["G"]["alive"]["n_params"] for t in CFG.read_steps}
+    sizes = {f"dW_{t}": 2 * numel for t in CFG.saved} | {"dW_fp32": 4 * numel, "grad": 2 * numel, "adam": 8 * numel}
+    return sizes | {f"offsets_T{t}": 4 * job.res["G"]["alive"]["n_params"] for t in CFG.read_steps}  # fp32
 
 
 def stage_F(job: Job) -> None:
     job.drop_decomp()
     job.out.mkdir(parents=True, exist_ok=True)
-    rewritten = [job.dw_path(t) for t in CFG.saved] + [job.out / "grad_W0.safetensors", job.out / ADAM]
+    rewritten = [job.dw_path(t) for t in CFG.saved] + [job.dw_fp32_path(), job.out / "grad_W0.safetensors", job.out / ADAM]
     room = shutil.disk_usage(job.out).free - DISK_MARGIN + sum(p.stat().st_size for p in rewritten if p.is_file())
     drops = plan_drops(disk_sizes(job), room, CFG.drop_order)
     out: dict[str, Any] = {"dropped": drops, "saved": {}, "steps": []}
@@ -547,6 +588,8 @@ def stage_F(job: Job) -> None:
                 name = f"dW_{t}"
                 if name not in drops:
                     save(job.dw_path(t), {s: W[s] - job.W0[s] for s in SITES}, BF16, name in CFG.drop_order, log)
+                if t == CFG.steps:  # exact, to continue the fine-tune from the Adam state
+                    save(job.dw_fp32_path(), {s: W[s] - job.W0[s] for s in SITES}, F32, droppable=False, log=log)
                 out["saved"][str(t)] = reading()
                 job.put("F", out)
         if "adam" not in drops:
@@ -598,6 +641,7 @@ def stage_T(job: Job) -> None:
                           CFG.seed, log)
             off.save(path, log)
             rec["curve"] = [c["kl"] for c in curve]
+            rec["first_batch_kl_fp32"] = curve[0]["kl_fp32_teacher_w0"]  # beside curve[0], the training forward's
         off.to("cpu")
         with torch.no_grad():
             Wt, Ws = plus(job.W0, dW), {s: job.W0[s] + off.change(s, DEV) for s in SITES}
@@ -633,12 +677,15 @@ def main() -> None:
     ap.add_argument("--out", default="/workspace/e40")
     ap.add_argument("--decomp", default="/workspace/qwen3-1.7b-p-e9fcffd5-torch")
     ap.add_argument("--usd-per-h", type=float, default=3.0)
+    ap.add_argument("--prior-usd", type=float, default=0.0, help="spend of earlier jobs of this run (re-read guard)")
     a = ap.parse_args()
     stages = a.stages.split(",")
     assert stages == [s for s in STAGES if s in stages], f"stages run in the order {STAGES}: {stages}"
     if not PRED.is_file():
         sys.exit(f"file the predictions first: {PRED}")
     assert torch.cuda.get_device_properties(0).total_memory > 70e9, "needs an 80 GB card (H100)"
+    if LARGE.is_symlink() and not LARGE.exists():  # results/large arrives on a pod as a dangling symlink
+        LARGE.unlink()
     LARGE.mkdir(parents=True, exist_ok=True)
     (RESULTS / "stopped.json").unlink(missing_ok=True)
     job = Job(a)
