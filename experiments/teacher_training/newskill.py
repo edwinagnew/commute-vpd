@@ -291,10 +291,10 @@ def student_arm(job: Job, out: dict[str, Any], path: Path, name: str, tctx: Any,
     for s in CFG.steps:
         st = states.pop(s)
         out[arm][str(s)] = read(job, tctx, f"{name} {arm}@{s}", ({k: v[0] for k, v in st.items()}, st), net, s == last)
-        dump(path, out)
-        if s == last:
+        if s == last:  # saved before the dump: a rerun skips any arm whose last step is in the JSON
             arms.save_offsets(LARGE / "e42" / name / f"{arm}_step{s}.pt", tctx.uv_cpu, st,
                               {"task": name, "teacher": "adam 3e-5 step 1000", "arm": arm, "step": s})
+        dump(path, out)
 
 
 def run_task(job: Job, name: str) -> None:

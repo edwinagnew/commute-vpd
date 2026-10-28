@@ -24,4 +24,8 @@ cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 test -f experiments/teacher_training/results/predictions_e42.json || { echo "file the predictions first (newskill.py --predictions)"; exit 1; }
-.venv/bin/python experiments/teacher_training/newskill.py "$@"
+rc=0
+[ $# -eq 1 ] || { echo "teacher_e42.sbatch: give exactly one task (rand32, ident32 or rand1); all three overrun the 1 h limit" >&2; exit 1; }
+.venv/bin/python experiments/teacher_training/newskill.py "$@" || rc=$?
+echo "=== FINISHED (exit $rc) — results in $COMMUTE_REPO/experiments/teacher_training/results/teacher_training_e42_$1.json and $COMMUTE_REPO/experiments/teacher_training/results/large/e42/$1/ ==="
+exit $rc
