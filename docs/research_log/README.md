@@ -45,7 +45,10 @@ a chat message. A card says what the choice is about in plain words (no reliance
 what the evidence says, the options with what each changes, and why it matters, then links the reports, notebooks and
 cards. Each card carries an urgency flag in its top right (`<span class="chip … urgency">`): Blocking (red, planned runs cannot go ahead), Soon (amber, decides one line's next step) or No rush (grey); re-rate the flags when the plans change. Under the flag, one line says what runs next on that line and when: "Running:
 <what>", "Due to run: <what>, <when or on what condition>", or "Nothing runs until this is decided" (user,
-2026-10-26). Starting, finishing or dropping a run changes that line, and the change is queued like any other. When the user decides, the card is removed, the decision goes into `decisions.md` and the changelog row names
+2026-10-26). Starting, finishing or dropping a run changes that line, and the change is queued like any other. A card
+whose choice waits on the user now has the label `Question for you · <line> · new <date>` in its `<div class="k">`,
+and these cards come first in the section; a card that waits on something else (a run, another decision) has no such
+label and goes after them. When the user decides, the card is removed, the decision goes into `decisions.md` and the changelog row names
 it. Adding or removing a card is a `PENDING.md` line like any other change.
 
 ## Main-page length (temporary, user 2026-10-26)
@@ -115,8 +118,12 @@ fine anywhere: the build points them at the right page.
 
 ## How to publish
 
-From a Claude Code session, with the Artifact tool, in one try (2026-10-27; before that it took 3 or 4):
+From a Claude Code session, with the Artifact tool:
 
+0. `~/commute-agents/fleet/log-lock take <role>` before claiming a version number or editing any part, and
+   `~/commute-agents/fleet/log-lock release <role>` after the publish (one flush at a time across the leads: two
+   flushes both claimed v73, friction 37). `<role>` is the lead's role name (`commute-lead`, ...); a clerk is given it
+   in its brief. If another role holds the lock, wait and retry; a lock older than 45 min may be taken over.
 1. `git pull --no-rebase`, then `python3 docs/research_log/build.py`, so the build has every other session's changes.
 2. Right before every publish, not just a session's first, two calls; the publisher needs both:
 
@@ -152,6 +159,17 @@ refusal that hands back newer content means another one published in between: `g
 and 3, never resending the refused content unchanged. A refusal for a missing view or read means step 2 was skipped:
 make the missing call and send the same publish again. If that resend is refused as unchanged, send it once more;
 on 2026-10-27 that went through each time.
+
+What the publisher did on 2026-10-28 (friction 43, 46, 48, 60), so a flush plans for it instead of retrying blind:
+- `build.py --check` saying `same` does not count as a view or a read: the publisher's rules are its own, and only
+  its own read, listing or refusal satisfies them.
+- Three sends per flush were common (v71, v79, v82): refused "not viewed", then refused as an unchanged resend, then
+  accepted. The refusal's own diff counts as the view, and the identical resend after it is expected: send it.
+- Twice it asked for every line of the saved live page to be Read (~70k tokens) before it would publish. That is the
+  publisher's requirement for files the session did not write, not a step to skip: Read the file it names, in parts,
+  then publish. Budget a flush's context for it.
+- Never `Artifact read` the log with `paths` "to be safe": it inlines glossary, style and script (~15k tokens) and
+  still does not count as viewing the page.
 
 Figures already published (their sources, for a re-upload):
 - "fig/overview_component_training.png": "docs/research_log/component_training_tasks.png"
