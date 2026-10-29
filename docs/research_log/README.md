@@ -75,7 +75,8 @@ least once a day:
    here, not through `fleet/cpu-run`: it is stdlib only, the dev-node hook allows it, and the worker cannot see the
    `/ephemeral` folder the read saves to (2026-10-27, three times). "same" on
    every page: build on `parts/` as is. A diff: someone published without committing `parts/`. Merge the diff into
-   `parts/` first.
+   `parts/` first. With local edits to `parts/` already made, `--check-head <dir>` compares `parts/` as committed
+   at HEAD instead, so the edits need not be set aside (friction 109).
 2. Run the completeness check, so nothing written since the last flush is missed:
    ```
    last=$(grep -o '<td class="c">20[0-9-]*</td>' docs/research_log/parts/sections/changelog.html \
@@ -262,3 +263,4 @@ Figures already published (their sources, for a re-upload):
 - "fig/e39_reverts.png": "experiments/broad_fragility/figures/reverts.png"
 - "fig/e39_shape.png": "experiments/broad_fragility/figures/shape.png"
 - "fig/e39_amend1_rank.png": "experiments/broad_fragility/figures/amend1_rank.png"
+- "fig/e39_amend3_rows.png": "experiments/broad_fragility/figures/amend3_rows.png"

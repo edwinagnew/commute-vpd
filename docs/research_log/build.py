@@ -1,13 +1,22 @@
 """Build the research-log pages in build/ from parts/; `--check DIR` diffs them against live copies in DIR.
 
+`--check-head DIR` does the same for parts/ as committed at HEAD, leaving local edits alone: setting them aside took a
+clerk four git calls, each refused when chained in a worktree (friction 109).
+
 Recipe in README.md. A section is numbered by its place in SECTIONS; the text names sections as {{n:<id>}}, which the
 build replaces with the current number, so a new section is one line here and one file in parts/sections/.
 """
 
+import atexit
 import difflib
+import io
 import json
 import re
+import shutil
+import subprocess
 import sys
+import tarfile
+import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -143,6 +152,20 @@ def unwrap(live: str) -> str:
 
 
 def main() -> None:
+    global PARTS
+    if len(sys.argv) == 3 and sys.argv[1] == "--check-head":
+        git = ["git", "-C", str(HERE.resolve())]
+        top = subprocess.run([*git, "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True)
+        prefix = HERE.resolve().relative_to(top.stdout.strip()).as_posix()
+        # git 2.34 refuses HEAD:./parts from a subfolder ("current working directory is untracked"), so run at the top.
+        tar = subprocess.run(["git", "-C", top.stdout.strip(), "archive", f"HEAD:{prefix}/parts"],
+                             capture_output=True, check=True).stdout
+        tmp = tempfile.mkdtemp()
+        atexit.register(shutil.rmtree, tmp, True)
+        with tarfile.open(fileobj=io.BytesIO(tar)) as t:
+            t.extractall(tmp)
+        PARTS = Path(tmp)
+        sys.argv[1] = "--check"
     pages = build()
     if len(sys.argv) == 3 and sys.argv[1] == "--check":
         for name, text in pages.items():

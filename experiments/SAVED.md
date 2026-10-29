@@ -13,6 +13,12 @@ named only in E40 Amendment 1, which never ran, and a plan writer had to dig thr
   e.g. `dW/step_1.safetensors`. Contents not yet listed here from a run report.
 - `/workspace/e40_nowarmup/`: never created (E40 Amendment 1 did not run).
 
+## qwen_maps (E44 input, regenerated on the cluster 2026-10-29, job 42866)
+- `~/commute-data/results-large/qwen_sft/nowarmup_regen/dW/` (14.1 GB, never committed): `step_{1,10,100}.safetensors` (2.82 GB each),
+  `step_100_fp32.safetensors` (5.64 GB), `SHA256SUMS` (copy committed as `experiments/qwen_maps/results/regen_SHA256SUMS`).
+  Written by `experiments/qwen_maps/regen.py`; check record `experiments/qwen_maps/results/regen.json`.
+- W&B artifact `edwinagnew-mats/commute/qwen3-1.7b-e40-nowarmup-dW` (version in `RUN_BRIEF.md` section 4): the same four files, for pods.
+
 ## adjoint_sgd
 - Logs only: `full_{A..E}.log` (shards), `full_amend3_r{0,1}_*.log`, `full_amend3_emo_*.log`. No script here saves tensors, and every state is regenerated in-job (see the run.py docstring: arm A Adam 3e-5 / 3e-6 and SGD 0.01, 1000 steps, seeds 0/1).
 

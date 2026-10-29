@@ -36,9 +36,10 @@ by the plan's rule.
 > **Something unexpected happened that I cannot explain.** We predicted both SGD teacher-trained decompositions would
 > fail on the second rows, at 1.6 to 2.2. Both passed. Plain SGD read 1.18, below the whole filed range. SGD held to
 > rank 8 read 1.39, under the pass line by 0.01, less than the unchanged model's spread over adversary seeds. Moving
-> from the first rows to the second changes the plain SGD state's check by 0.88. That is about twelve times the
-> unchanged model's spread over adversary seeds. The rows 128-255 read three times the unchanged model's KL for both
-> SGD states. Why that block is so much harder for them is not tested.
+> from the first rows to the second changes the plain SGD state's check by 0.88. The unchanged model's spread over
+> adversary seeds is about a twelfth of that. That spread is a different quantity, though. Neither the noise between
+> row sets nor the SGD states' own seed spread was measured. The rows 128-255 read about three times the unchanged
+> model's KL for both SGD states. Why that block is so much harder for them is not tested.
 
 ## What we were trying to test
 
@@ -103,6 +104,12 @@ Each block's value is its PGD KL over the unchanged model's on the same block at
 on the first rows, 0.6185 and 0.6411 on the second. The 256-row check is the mean KL over the mean of the unchanged
 model's, not the mean of the two block ratios.
 
+**How the verdict is formed.** The check is the mean of the two blocks' KLs over the unchanged model's mean on the
+same two blocks. So one block can flip the verdict only when it reads very high. With rows 0-127 at 1.16, as for plain
+SGD, rows 128-255 must read about 2.04 or more for the check to reach the fail line. Both SGD states cleared that, at
+2.93 and 2.95, and so failed on the first rows from one block. A rule of "fail only when most blocks fail" would pass
+both SGD states on both sets of rows: each fails one block of four. Under that rule, Adam would still fail on both.
+
 The other readings of these states do not see the block. The stochastic ratio uses random masks instead of the
 adversary. It reads the same on both sets for each state: 1.030 and 1.031 for plain SGD, for example, and 1.088 and
 1.091 for Adam. The importance-masked KL per block is also flat, 0.365 and 0.372 for plain SGD on the first rows' two
@@ -118,15 +125,23 @@ adversarial mask, shared over the block, finds a large effect.
 - **They do not carry to a new set of 256 rows.** On the second rows both SGD states pass, plain SGD clearly, at 1.18.
   SGD held to rank 8 passes narrowly: 1.388, 0.012 under the pass line, inside the unchanged model's seed spread of
   0.062. Its rows 256-383 read 1.42, just over the line.
-- **The Adam fail does carry over.** Every one of its four blocks reads over the fail line, 1.69 at the lowest.
+- **The Adam fail does carry over, at this seed and batch order.** Every one of its four blocks reads over the fail
+  line, 1.69 at the lowest. Its drop between row sets, 0.318, is about the 14% batch-order spread E37 measured on this
+  state, so the Adam check's size is not pinned down, only its side of the line.
 - **On the second rows, plain SGD reads in the LoRA's range.** Plain SGD reads 1.18, the LoRA 1.21 and 1.24. SGD held
   to rank 8 reads higher, 1.39, but on the same side of the line. The LoRA-against-SGD contrast that Amendments 1 and
   2 set out to explain lives on rows 128-255. There the SGD states read 2.9 and the LoRA 1.4.
-- **Rows 128-255 are the harder block for almost every failing state.** E39 and its amendments read 14
-  states over 1.40 on the first rows. Of these, 13 read higher on rows 128-255 than on rows 0-127. The exception is one
-  of the damage-matched random moves. States near 1, such as the adjoint splits, show no such pattern. Amendment 1 read the SGD do-nothing at 1.34 and 3.83 on the first rows' two blocks. Amendment 2
-  read the labelled Adam state at 1.95 and 12.2. The unchanged model itself reads slightly more on it, 0.718 against
-  0.679. So the block is harder for nearly every state that fails; the SGD states are unusually exposed to it.
+- **Rows 128-255 are the harder of the first rows' two blocks for most states.** E39 and its amendments read 14
+  states over 1.40 on the first rows. Of these, 13 read higher on rows 128-255 than on rows 0-127; the exception is one
+  of the damage-matched random moves. The count overstates the evidence: six of the 14 come from one Adam state, the
+  teacher-trained decomposition and five of its reverts. The pattern also shows under 1.40. The LoRA reads 1.11 and
+  1.42, the labelled SGD state 1.21 and 1.34, and the layer-0 revert 1.20 and 1.50. States near 1, such as the
+  adjoint splits, show no such pattern. The unchanged model itself reads slightly more on it, 0.718 against 0.679.
+- **The SGD states are not unusually exposed to the block.** On the first rows their rows 128-255 read 2.5 and 2.4
+  times their rows 0-127. The SGD do-nothing reads 2.9 times, at 1.34 and 3.83 in Amendment 1. Amendment 2's labelled
+  Adam state reads 6.3 times, at 1.95 and 12.2. Adam's teacher-trained decomposition reads 1.6 times and the LoRA's
+  1.3 times. What sets the SGD states apart is that their rows 0-127 are low enough to pass, so the one block decides
+  their verdict.
 
 **It cannot say:**
 
@@ -145,9 +160,12 @@ adversarial mask, shared over the block, finds a large effect.
   - *The block as a whole.* One mask is shared by 128 rows, so a block's mix may let one setting hurt all its rows
     together. Re-blocking would test it: read the 256 rows of the first set shuffled into new blocks of 128, and read
     more blocks, say val 512-1023. Then count how many blocks fail for each state.
-- **Whether other verdicts near the lines move too.** Every check in the project so far reads the first rows. The LoRA and
-  Adam states have been read on two sets of rows. Amendment 2's labelled SGD pass, at 1.28, was read on the first rows
-  only. Earlier verdicts at 1.4 to 2.2 on other experiments were not re-read.
+- **Whether other verdicts near the lines move too.** Almost every check in the project reads rows 0-255. E39's
+  Amendments 2 and 3 and E47's test t2c read rows 256-511; see `reports/analyses/2026-10-29_analysis_e47-claim-tests.md`.
+  On the L40 that same morning, t2c read the Adam teacher-trained decomposition at 1.897 and the rank-8 LoRA at 1.154
+  on rows 256-511. A rank-128 LoRA read 1.532 there, a third above rank 8, where on the first rows it sat inside rank
+  8's band. That state climbs on rows 256-511, which runs against "rows 128-255 are simply the harder rows". Amendment
+  2's labelled SGD pass, at 1.28, was read on the first rows only.
 
 ### Which of E39's statements this changes
 
@@ -180,6 +198,8 @@ Scored predictions stand as filed. Amendment 1's "the SGD teacher-trained decomp
    SGD it holds on the first rows and fails on the second.
 8. Per-block section: "the SGD verdict depends more on which 128 rows the adversary sees than Adam's does". This run
    confirms it on new rows; it was the right warning.
+8b. The plain-words paragraph, lines 18-19: "the LoRA's trained decomposition passed, but the SGD one failed like
+   Adam's despite an update nearly as concentrated as the LoRA's". On the first rows only.
 
 **Amendment 2's analysis, `reports/analyses/2026-10-28_analysis_e39-amend2.md`:**
 
@@ -200,6 +220,18 @@ Scored predictions stand as filed. Amendment 1's "the SGD teacher-trained decomp
 in stable rank as the LoRA's and does less damage, yet fails like Adam's", and "stable rank, a rank-8 cap ... each fail
 to explain it". Both now hold on the first rows only; the new row says so.
 
+**Log sections outside the card** (for the lead's flush; queued in `PENDING.md`):
+
+13. `docs/research_log/parts/sections/techniques.html` line 82, the do-nothing row's E21/E39 cell: "narrow passes
+    (1.12); broad fails (2.62)". The SGD do-nothing's 2.62 is a first-rows reading only, never read on the second rows.
+14. Same file, line 99, the task-text row's E34/E39 cell: "three narrow SGD teachers pass; the broad one fails
+    (2.07)". It fails on the first rows and passes on the second, at 1.18.
+15. Same file, line 140: "full-weight Adam (2.20) and SGD (2.07) fail; ... SGD held to rank 8 still fails (2.12)"
+    and the line after it, "Open: a rank-8 LoRA trained with plain SGD". The SGD fails are first rows only, and the
+    open run was stopped by its rule.
+16. `docs/research_log/parts/sections/next.html` line 21: "E39 Amendment 3 (a rank-8 LoRA by plain SGD; about $1.8)
+    is running". It is done and stopped before that stage.
+
 **Notebook, `notebooks/E39_broad_fragility.ipynb`:** the answer cell, the "less spread-out" section and "What we
 learned" say the SGD fail without the row caveat. The new Amendment 3 section says so; the old cells stay as written.
 
@@ -215,12 +247,12 @@ learned" say the SGD fail without the row caveat. The new Amendment 3 section sa
 
 ## What we learned
 
-The Adam teacher-trained decomposition's fail is a property of the state. It fails on every block of 512 Pile rows.
-The SGD teacher-trained decompositions' fails are a property of one block of 128 rows, rows 128-255, read at one
-adversary seed. On the next 256 rows they pass, plain SGD in the LoRA's range. So E39's story, "the LoRA passes and
+The Adam teacher-trained decomposition fails on every block of 512 Pile rows, at one adversary seed and one batch
+order. The SGD teacher-trained decompositions fail on one block of 128 rows, rows 128-255, read at one adversary
+seed. On the next 256 rows they pass, plain SGD in the LoRA's range. So E39's story, "the LoRA passes and
 the full-matrix fine-tunes fail", holds as "the LoRA passes and the Adam fine-tune fails". Whether full-matrix SGD
-belongs with the LoRA or with Adam is unresolved. Amendments 1 and 2 built a contrast on one block, and that block is
-the harder one for 13 of the 14 states the check has read over 1.40. For `GOALS.md`, teacher training on a broad update now has one
+belongs with the LoRA or with Adam is unresolved. Amendments 1 and 2 built a contrast on one block, and that block reads
+higher than rows 0-127 for most states the check has read. For `GOALS.md`, teacher training on a broad update now has one
 clear fail, Adam's, and the check's verdict on states reading 1.2 to 2.2 depends on which 128 rows each adversary
 sees.
 
@@ -230,9 +262,10 @@ sees.
   second rows are one more set of 256, two blocks. The per-block readings are single starts, and the unchanged model's
   reading of a block varies by up to 19% over three seeds.
 - **Noise floor.** The unchanged model's spread over adversary seeds 0-2 is 0.0748 on the first rows and 0.0621 on
-  the second. The plain SGD state's change between row sets, 0.884, is about twelve times the first-rows spread; the
-  capped one's, 0.734, about ten times. Adam's change, 0.318, is about four times. The LoRA's changes, 0.066 and
-  0.026, are inside it. E37's batch-order spread of the check was 14%, on the Adam state.
+  the second. The plain SGD state's change between row sets is 0.884, the capped one's 0.734, Adam's 0.318, and the
+  LoRA's 0.066 and 0.026. A seed spread is not a between-row-set noise floor, and neither that floor nor the SGD
+  states' own seed spread on rows 128-255 was measured. So these changes are large against the only floor we have, no
+  more. E37's batch-order spread of the check was 14% on the Adam state, about Adam's change here.
 - **Reproduction.** Regenerated fine-tunes matched their filed gains to 0.0001, and their teacher-trained checks on
   the first rows matched Amendments 1 and 2 to four digits.
 - **Coverage.** One broad task, one card, one batch order for each teacher training, adversary seed 0, 512 Pile rows
@@ -245,8 +278,8 @@ sees.
   start on rows 128-255, or the block as a whole.
 - **On the second rows plain SGD reads as low as the LoRA**, 1.18 against 1.21 and 1.24, so the contrast E39 turned
   on is absent there.
-- **Rows 128-255 read higher than rows 0-127 for 13 of the 14 states read over 1.40 on the first rows.** The unchanged
-  model's own reading there also varies most over seeds.
+- **Rows 128-255 read higher than rows 0-127 for most states read on them**, though six of the 14 failing ones are
+  one Adam state and its reverts. The unchanged model's own reading there also varies most over seeds.
 
 ## What next
 
@@ -262,7 +295,7 @@ sees.
    are worth running only once item 2 says whether full-matrix SGD fails; until then the SGD LoRA has nothing to be
    told apart from.
 
-The draft card below puts items 1 and 2 to the user, since the choice of rows bears on every check in the project.
+The card below puts items 1 and 2 to the user, since the choice of rows bears on almost every check in the project.
 
 ## Scorecard
 
@@ -301,42 +334,71 @@ sha256 `24c1fe6d…`. Pass line 1.40, fail line 1.61, both inclusive. The verdic
 - Figure `experiments/broad_fragility/figures/amend3_rows.png` from `plot_amend3.py`, rendered on the cluster's CPU
   worker with the logs' folder as argument; `ruff check` passes on it.
 
-## Draft card
+## Pending-decision card `decision-pile-rows`
 
-*Not added to the log; for the lead. Section `decisions`, flag Soon. Run line: "Nothing runs on the broad line until
-this is decided."*
+*Card text ready for the log, section `decisions`; not added here, the lead adds it at the flush. Flag: Soon. Run
+line: "Nothing runs on the broad line until this is decided."*
 
-**Question for you · commute · new 2026-10-29.** The paper's adversarial check gave the SGD teacher-trained
-decompositions opposite verdicts on two sets of 256 Pile rows. Which rows should the check read for the broad-task
-claims, and should we first find out why one block of rows is so much harder?
+**Question for you · commute · new 2026-10-29.** The paper's adversarial check gave the same two SGD teacher-trained
+decompositions opposite verdicts on two sets of 256 Pile rows. Should we find out why one block of 128 rows decides
+their verdict, and read E39's main states on more rows, before saying where full-matrix SGD belongs?
 
-**What we saw.** On the first 256 rows, the ones every check in the project has read, both SGD teacher-trained
-decompositions fail, at 2.07 and 2.12. On the next 256 rows they pass, at 1.18 and 1.39. The fail sits on one block of
-128 rows, rows 128-255, where they read about three times the original decomposition's KL. Their other three blocks
-read 1.11 to 1.42. The Adam teacher-trained decomposition fails on all four blocks, and the LoRA one passes on all
-four. So E39's "full-matrix fine-tunes fail, the LoRA passes" now holds for Adam only, and the run's stop rule ended
-the SGD LoRA test. Of 14 states read over 1.40 on the first rows, 13 read higher on rows 128-255 than on rows 0-127. The original decomposition's
-own reading there varies most over adversary seeds.
+**What we saw.** Almost every check in the project reads Pile rows 0-255. On those rows both SGD teacher-trained
+decompositions fail, at 2.07 and 2.12. On rows 256-511 they pass, at 1.18 and 1.39. Their fail sits on one block of 128
+rows, rows 128-255, which reads about three times the original decomposition's KL. Their other three blocks read 1.11
+to 1.42. The Adam teacher-trained decomposition fails on all four blocks. The LoRA one passes on three; on rows 128-255
+it reads 1.42 and 1.44, just over the pass line. So E39's "full-matrix fine-tunes fail, the LoRA passes" holds for Adam
+only, and the run's own stop rule ended the SGD LoRA test. Rows 128-255 read higher than rows 0-127 for most states,
+but six of the 14 failing ones are one Adam state and its reverts. The SGD states are no more exposed to the block
+than the SGD do-nothing; their rows 0-127 are just low enough that the one block decides. The check averages the two
+blocks' KLs, so a "most blocks fail" rule would pass both SGD states on both row sets. E47's test on rows 256-511 found
+a rank-128 LoRA climbing there, so it is not always the same rows that are hard.
 
 **Options.**
 
-- **(a) Look first, at no cost.** One cluster debug job, about 30 minutes. It reads per-row KL under the adversary on rows
-  128-255, adversary seeds 1 and 2 on that block, and the fine-tune's per-row damage there, for the SGD and LoRA
-  states. It says whether a handful of rows, the adversary's start or the block as a whole makes the difference. It
-  does not change any verdict.
-- **(b) Read the broad-task states on more rows**, free on the cluster, or one to two dollars on the H100. Read E39's Adam,
-  plain SGD and LoRA teacher-trained decompositions and their do-nothing states on four more blocks, val 512-1023.
-  Count the failing blocks. It keeps the paper's per-adversary setting of one start and 128 rows, and adds blocks. It
-  would settle whether full-matrix SGD belongs with Adam or with the LoRA.
-- **(c) Keep the check on the first 256 rows**, as the paper's setting, and record E39's SGD result as "fails on the
-  first rows, passes on the second". The broad line closes with "Adam fails, the LoRA passes, SGD unresolved". The SGD
-  LoRA stays unrun.
-- **(d) Run Amendment 3's two remaining stages anyway**, about $1.5: the labelled SGD state at step 1,000 and the SGD
-  LoRA. They answer their own questions only on the first rows, which this run showed may not generalise.
+- **(a) Look first, free.** One cluster debug job of about 30 minutes, on the SGD and LoRA states: adversary seeds 1
+  and 2 on rows 128-255, then per-row KL and the fine-tune's per-row damage there. It says whether the adversary's
+  start, a handful of rows, or the block as a whole decides. It changes no verdict.
+- **(b) Read E39's main states on more rows, free on the cluster.** The Adam, plain SGD and LoRA teacher-trained
+  decompositions and their do-nothing states on val 512-1023, four blocks of 128. Count the failing blocks per state.
+  It keeps the paper's per-adversary setting and adds blocks. It would say whether full-matrix SGD sits with Adam or
+  with the LoRA.
+- **(c) Keep the check as it is** and record E39's SGD result as "unresolved on the broad task". The line closes with
+  "Adam fails, the LoRA passes, SGD unresolved", and the SGD LoRA stays unrun.
+- **(d) Run Amendment 3's two remaining stages anyway**, about $1.5 on the H100: labelled SGD at step 1,000 and the SGD
+  LoRA. They answer only on rows 0-255, which this run showed may not generalise.
 
-**Why it matters.** Every check reading in the project, on every experiment, is on rows 0-255. Verdicts between about
-1.2 and 2.2 may depend on that one block in the same way. Option (b) answers that for E39's states only. A rule such
-as "fail only when most blocks fail" would apply to all of them, and is a separate choice. Lean: (a) then (b), both on
-the cluster.
+**Fable's advice (2026-10-29).** Do (a) and (b) as one free cluster job, or two debug jobs of 30 minutes or less.
+First regenerate and save the three fine-tunes and their teacher-trained decompositions. Then read adversary seeds 1
+and 2 on rows 128-255 for the unchanged model, both SGD states and the LoRA, with E47's multi-start reading. Then read
+val 512-1023 in four blocks at seeds 0-2 for the Adam, plain SGD and LoRA teacher-trained and do-nothing states, with
+per-block ratios and failing-block counts. Read per-row KL only if the seeds say it is the rows. Hold (d). Adopt (c)'s
+wording now: "SGD unresolved on the broad task".
 
-Links: this report; `notebooks/E39_broad_fragility.ipynb` → "Amendment 3"; card E39.
+Not now: changing the check across the project. A new row rule would silently re-score about fifteen experiments on
+both lines.
+
+What would change this:
+
+- If seeds 1 and 2 bring rows 128-255 down to about 1.3 for the SGD states, it is the adversary's start. Multi-start
+  readings then become a question for every line.
+- If SGD fails two or more of the four new blocks, SGD sits with Adam, and (d) runs.
+- If SGD fails none or one and Adam fails all four, the line closes "Adam fails, the LoRA passes, SGD passes on most
+  rows", and (d) is dropped.
+
+Verdicts outside E39 that rest on one row set and one start, in the 1.2 to 2.2 band, and that the answer could
+touch:
+
+- E41's step-10 copies, at 1.28, 1.51 and 1.55, with the " which" copy passing by 1%;
+- E42's least-squares split, which "fails only just" on two tasks;
+- E43's step-1,000 margin, which sits in one block, E47 claim (iv);
+- E34's SGD-student fail, already rescoped by E47 claim (v); `decisions.md` row 50 and the E34 card still need the
+  wording.
+
+**The lead's recommendation:** Fable's sequence.
+
+**Why it matters.** The check is the pass test on both lines. If one block of 128 rows can decide a verdict, every
+reading near the lines carries that risk until the block's effect is understood.
+
+Links: `reports/analyses/2026-10-29_analysis_e39-amendment3.md`; `reports/analyses/2026-10-29_analysis_e47-claim-tests.md`;
+`notebooks/E39_broad_fragility.ipynb` → "Amendment 3"; card E39.
