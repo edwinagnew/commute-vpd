@@ -22,7 +22,7 @@ the independent check found the step-10 reading of claim (iv) rested on one adve
 Filed-lean misses: T3 (lean falls, read mixed), T2c cap (lean no cap effect, read unsettled), T1 (rand32 had power the
 lean said it lacked). The step-10 reversal I notified you about did not survive t4c.
 
-## Decisions for you (log cards, drafted in the report's "Pending decisions" section)
+## Decisions for you (log v103 cards `decision-e47-lora-rank`, `-split-keep`, `-remainder`, `-plain-sgd`)
 - (ii) count the rank-8 pass now, or first run ranks 32 and 64 on rows 256-511 ($0, one job; recommended)?
 - (iii) reword the split claim to "keeps less as training goes on; at matched size the path adds about 0.08"?
 - (iv) drop the remainder claim from the log (recommended)?
