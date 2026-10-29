@@ -1,0 +1,103 @@
+{
+ "experiment": "E46 Amendment 3: stage 1's ratio (gated piece gain over piece gain) on the least-squares split of stage 0's nulls, experiments/regating_table/amend3.py",
+ "plan": "reports/plans/2026-10-28_plan_regating-line-reset.md, section 'Amendment 3 (2026-10-29): stage 1's ratio on split nulls', revised after Fable's review (2026-10-29). User's choice: option 3 of decision-e46-stage1 (decisions.md, 2026-10-29)",
+ "filed": "2026-10-29, before any amend3 run; never edited after the run",
+ "tables": ["ident32", "ident32b", "rand32", "rand32b"],
+ "random_map_tables": ["rand32", "rand32b"],
+ "number": {
+  "ratio": "(L(C1,G1) - L(C0,G0)) / (U1 - U0), trigger log-odds of the table's answer on held-out windows at the key position, as run.cells computes gated_piece_gain and piece_gain and as P0.2 scored it",
+  "split": "anchors.lifted(run.model, run.lift, dW) -> split.split_state: least-squares split, remainder to Delta, target weights W0 + dW",
+  "min_piece": "the ratio is scored only if piece_gain >= p02_min_piece (1 nat, signed; NaN is not >= 1); else the row is 'undefined': both parts and their intervals reported, the row does not enter the bars"
+ },
+ "rows": {
+  "write_G": "per table: run.write_delta's X (stage 0b's write_row construction) at stage0b.json states['<table>/write'].alpha (G-matched)",
+  "write_piece": "per table: the same X, alpha by perturb.match (cap alpha_max, write_rel_tol) so the split state's piece_gain equals stage0b.json states['<table>/s0'].piece_gain; flagged 'piece-matched' with its match status",
+  "scored_write": "on rand32 and rand32b: write_G if defined, else write_piece if defined, else none ('undefined'); the other is reported only. Copy tables pick the same way for the copy-write rule (unscored)",
+  "random_seed0": "per table: finetune.random_direction(seed-0 fine-tune dW, 0) times amend1.json rows['<table>/random'].scale (amend1's score block names it c); reported only",
+  "random_seed1": "per table: random_direction(dW, 1), scale by perturb.match to amend1.json rows['<table>/random'].kl_target within kl_rel_tol, cap scale_cap; capped rows flagged; reported only",
+  "reference": "the eight E12 fine-tunes (results/large/<table>_s{0,1}.pt, sha256 as stage0a.json), split and read by the same function",
+  "dropped": "E18's six random rows and E18's fine-tunes (no expected value; fewer measurements)"
+ },
+ "controls": {
+  "order": "C0 then C1 on all four tables before any null row; C2 on each random seed-0 row and G-matched write before its ratio is recorded. A miss exits 1",
+  "C0_W0": "split of a zero update (C1 = C0): |piece_gain| <= w0_split_tol and |gated_piece_gain| <= w0_split_tol on every table. Expected exactly 0",
+  "C1_reference": "each E12 fine-tune's ratio within ref_ratio_tol of stage0b.json score P0.2 rows (0.872-0.968 copy, 0.356-0.414 random maps), and P0.2's bars hold (copy >= p02_copy_min, random maps <= p02_random_max)",
+  "C2_unchanged": "the split changes neither the full model nor L(C0,G1): random seed-0 rows' G and g against amend1.json rows, G-matched writes' G and g against stage0b.json states, each within max(w0_tol, repro_rel_tol x |G_ref|)"
+ },
+ "A3.1": {
+  "claim": "the split random-map writes do not read like the copy fine-tunes",
+  "rule": "rand32 and rand32b: the scored write is defined and its ratio <= bar_low (0.5)",
+  "lean": "defined: medium-high (the piece-matched alpha is fitted to 11-16 nats of piece gain; fails only if the cap binds). ratio <= 0.5: medium (random-map fine-tunes 0.36-0.41; the unsplit write's gate gain was 48-65% of theirs)",
+  "lands": "both leans hold -> branch 3; a write in (0.5, 0.7) -> branch 5; a write >= 0.7 -> branch 2; no defined write on a table -> branch 4"
+ },
+ "copy_write_rule": {
+  "status": "unscored, rule written before the run",
+  "rule": "both copy tables' scored writes defined and ratio <= bar_low -> 'discounts': a low random-map write shows the ratio discounts hand writes, not new behaviour, and a branch-3 stage 1 proposal says so; either undefined -> 'unread'; else 'no'"
+ },
+ "reported_unscored": [
+  "random rows (8): expected undefined (full-model G -0.20 to +0.40); lean medium",
+  "copy writes' ratio (expected >= 0.7: the tied embedding makes them existing machinery)",
+  "in-span share per row: 1 - harness.outside_share_of(dW, bases, Sigma, all changed matrices)['pooled'] (split.weighted_fractions omega_act pooled by energy; Sigma = input second moments over the table's training windows at W0), beside the two fine-tunes' value",
+  "g / G per row where |G| >= g_over_G_min_abs_G, as Amendment 2",
+  "masked_off = piece_gain - gated_piece_gain per row"
+ ],
+ "noise": {
+  "bootstrap": "per row, paired bootstrap over held-out windows of the ratio of means (L11w - L00w over U1w - U0w; per window from local_faith.masked_lo_windows, U with all-ones gates), n_boot resamples, seed 0, boot_ci percentile interval over the resamples with piece gain >= p02_min_piece; 'unstable' if more than unstable_frac of resamples fall under it. Reported; verdicts use point estimates; a row whose interval crosses a bar is named in the report, not re-scored",
+  "seed": "fine-tune seed spread from E12, up to 0.06"
+ },
+ "tree": {
+  "order": [
+   "any random-map write row (either alpha) with non-finite G, g, piece_gain or gated_piece_gain, or a defined scored write with a non-finite ratio -> 'card: non-finite'",
+   "a scored write with ratio >= bar_high (0.7) -> 'different number before any pod' (card with the rows)",
+   "both scored writes defined and ratio <= bar_low (0.5) -> 'propose stage 1 with this number' (to the user; its filing adds the Qwen split random null in the KL form, bars carried)",
+   "a random-map table with no defined write -> 'card: write null unreadable'",
+   "else (a defined scored write in (0.5, 0.7)) -> 'card' with the numbers"
+  ],
+  "note": "first match wins; controls passed or the job has stopped. After branches 1-2 every defined scored ratio is finite and < 0.7, so 3-5 cover every remaining case"
+ },
+ "edge_cases": [
+  "piece_gain = 0: undefined by min_piece, never a division; W0 is a control, not a scored row",
+  "piece_gain negative: undefined (signed)",
+  "piece_gain NaN: fails min_piece, caught first by branch 1",
+  "gated_piece_gain negative with piece_gain >= 1: ratio < 0, counts as <= bar_low",
+  "ratio > 1: counts as >= bar_high",
+  "ratio exactly 0.5 or 0.7: inclusive (branch 3 or 2); the bars are disjoint",
+  "one write undefined, the other >= 0.7: branch 2 before branch 4",
+  "one write undefined, the other <= 0.5: branch 4",
+  "G-matched write undefined, piece-matched defined: the piece-matched write is scored",
+  "piece match capped at alpha_max or 'no_match': scored if defined, flagged with its status",
+  "a seed-1 random row capped at scale_cap: reported at the cap, flagged",
+  "bootstrap resamples with piece gain < 1 nat: interval over the rest, flagged 'unstable' above unstable_frac; none left -> interval null"
+ ],
+ "next": "branch 3: stage 1's filing must include a split random null of the Qwen dW itself at the Qwen fine-tune's kl_other, read in the KL form, with bar_low and bar_high carried; this job's null transfers to stage 1 only through that row",
+ "blind_to": "what the split pieces are (gating-off vs pieces that carry nothing: told apart only by the two parts in nats and the in-span share); the split's second-order term dU dV^T at 6-26x a fine-tune's norm (random rows only); one write direction per table; trigger log-odds, not stage 1's KL form; single-position toys on the 67M",
+ "thresholds": {
+  "p02_min_piece": 1,
+  "bar_low": 0.5,
+  "bar_high": 0.7,
+  "w0_split_tol": 0.001,
+  "ref_ratio_tol": 0.01,
+  "p02_copy_min": 0.8,
+  "p02_random_max": 0.5,
+  "w0_tol": 0.02,
+  "repro_rel_tol": 0.02,
+  "kl_rel_tol": 0.1,
+  "scale_cap": 100,
+  "write_rel_tol": 0.05,
+  "alpha_max": 1000,
+  "n_boot": 2000,
+  "boot_ci": 0.9,
+  "unstable_frac": 0.05,
+  "g_over_G_min_abs_G": 0.1
+ },
+ "sources": {
+  "bar_low": "P0.2's filed p02_random_max (0.5), predictions.json; revised from Fable's 0.4 after Fable's review",
+  "bar_high": "Fable's advice, reports/reviews/2026-10-29_review_e46-card-fable-advice.md (option 3's tree), adopted by the user's choice of option 3",
+  "p02_min_piece, p02_copy_min, p02_random_max, w0_tol, write_rel_tol, alpha_max": "predictions.json, unchanged",
+  "kl_rel_tol, scale_cap": "predictions_amend1.json, unchanged",
+  "repro_rel_tol": "E38's t1_rel_tol (2%), as predictions.json",
+  "ref_ratio_tol": "5x stage 0b's reproduction of E12's ratios (0.002)",
+  "w0_split_tol": "the zero split repeats W0's own computation; 1e-3 is 20x under w0_tol"
+ },
+ "not_run": "flipped updates split; the KL form of the ratio; E18's fine-tunes and random rows split; a random update at the fine-tune's own norm split; more than one write direction per table; any Gamma from another seed or refitted; anything on Qwen"
+}

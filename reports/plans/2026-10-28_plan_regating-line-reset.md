@@ -403,15 +403,25 @@ branch (P0.3 read inconclusive), and the change is recorded here rather than hid
 
 ### Amendment 3 (2026-10-29): stage 1's ratio on split nulls
 
-*Draft by a regating-lead subagent, 2026-10-29; the lead files the predictions. The user chose option 3 of
-decision-e46-stage1 in chat (`decisions.md`, 2026-10-29), so this is confirmed work; the predictions are still filed
-before any run. Not gated: $0, one cluster `debug` job of under 10 minutes, no budget used.*
+*Draft by a regating-lead subagent, 2026-10-29; filed by the lead (`results/predictions_amend3.json`) before any run.
+The user chose option 3 of decision-e46-stage1 in chat (`decisions.md`, 2026-10-29), so this is confirmed work. Not
+gated: $0, one cluster `debug` job of about 10 minutes, no budget used.*
 
-**The request, restated in the Terms' words.** Take each null update of stage 0 that sat whole in Δ (the do-nothing
-state): the KL-matched random δW of every task and the per-key hand write of every E12 table. Give it the
-least-squares split, exactly as the E12 fine-tunes were split in stage 0b. On the split state, read stage 1's first
-number, gated piece gain over piece gain, by the same code that read the fine-tunes. Stage 1 is proposed with this
-number only if the nulls do not read like the copy fine-tunes on it.
+*Revised after Fable's review (2026-10-29, regating-lead, before filing; no run had started).* Seven changes: (1) the
+low bar is 0.5, P0.2's filed `p02_random_max`, not 0.4; (2) a random-map write whose piece gain is under 1 nat at the
+G-matched α is replaced in the score by a piece-matched write, so the "write undefined" branch fires only when neither α
+gives a defined write; (3) the cross-job reproduction tolerance is `w0_tol` (0.02 nats), not 0.005, and the random
+rows' scale is read from `amend1.json`'s `rows[...].scale` (its score block calls it `c`); (4) each null row reports its
+in-span share beside the fine-tunes'; (5) the copy writes stay unscored, with their reading rule written now; (6) the
+random rows are cut to the four E12 tables and are reported only, and "What changes next" requires stage 1 to read its
+own split random null; (7) the code check: `amend1.py` never called `run.code_unchanged` (it ran its own `git diff`),
+so `amend3.py` adds the check, on `perturb.py`, `anchors.py`, `split.py` and `local_faith.py` against stage 0b's commit.
+
+**The request, restated in the Terms' words.** Take the null updates of stage 0 that sat whole in Δ (the do-nothing
+state): the per-key hand write of every E12 table and the KL-matched random δW. Give each the least-squares split,
+exactly as the E12 fine-tunes were split in stage 0b. On the split state, read stage 1's first number, gated piece gain
+over piece gain, by the same code that read the fine-tunes. Stage 1 is proposed with this number only if the
+random-map writes do not read like the copy fine-tunes on it.
 
 **Design check (`/design`).**
 - *Goal.* `GOALS.md`'s fork (new capability or strengthened existing one): stage 1's ratio is the line's proposed
@@ -421,113 +431,130 @@ number only if the nulls do not read like the copy fine-tunes on it.
 - *Patch or step.* A patch: the missing null of a number about to cost money ($5 on Qwen).
 - *Decisions.* Γ frozen; the least-squares split as E12 ran it (`decisions.md`); option A for P0.4 (the copy writes
   carry the key's own embedding, reported only). No departure.
-- *What changes next.* Nulls ≤ 0.4: stage 1 is proposed with this number. Any scored null ≥ 0.7: stage 1 needs a
-  different number before any pod. Between, or no null readable: card.
-- *Control first.* The split of a zero update (W₀) and the eight E12 fine-tunes, read first on every task, stop the job
-  on a miss before any null row (below).
-- *Numbers.* The ratio and its two parts per row; nothing else is scored.
+- *What changes next.* Both random-map writes ≤ 0.5: stage 1 is proposed with this number, and its filing must include
+  a split random null of the Qwen δW itself, scaled to the Qwen fine-tune's kl_other, read in the KL form stage 1
+  uses, with this amendment's bars (0.5, 0.7) carried over. This job's null reaches stage 1 only through that row: the
+  67M toys read trigger log-odds, stage 1 reads KL on maths rows. Any scored write ≥ 0.7: stage 1 needs a different
+  number before any pod. Between, or no write readable: card.
+- *Control first.* The split of a zero update (W₀) and the eight E12 fine-tunes, read first on all four tables, stop
+  the job on a miss before any null row (below).
+- *Numbers.* The ratio and its two parts per write; the rest is reported.
 
 **States split.** All by `anchors.lifted(run.model, run.lift, dW)`, which calls `split.split_state` (the
-least-squares split: least-norm (dU, dV), remainder to Δ, so the target weights equal W₀ + δW).
-- *Random δW, seed 0*: per task (emoticon, which, we, ident32, ident32b, rand32, rand32b), `finetune.random_direction`
-  of the seed-0 fine-tune's δW, seed 0, at the scale `amend1.json` matched (6.4 to 26.4 times the fine-tune's norm).
-- *Random δW, seed 1* (the seed noise floor): the same with seed 1, scale matched by `perturb.match` to the same
-  kl_target under Amendment 2's rule (cap 100, 10%).
-- *Per-key hand writes*: on ident32, ident32b, rand32, rand32b, block 1's MLP output matrix, rebuilt as stage 0b's
-  `write_row` built it, at stage 0b's α (15.2, 18.7, 12.7, 25.7). Scored on rand32 and rand32b; the copy writes are
-  reported only, as in P0.4.
+least-squares split: least-norm (dU, dV), remainder to Δ, so the target weights equal W₀ + δW). Only the four E12
+tables (ident32, ident32b, rand32, rand32b): E18's random rows and E18's fine-tunes are cut (fewer measurements; no
+expected value exists for them).
+- *Per-key hand writes, G-matched*: block 1's MLP output matrix, rebuilt by `run.write_delta` (stage 0b's `write_row`
+  construction, moved out of it unchanged) at stage 0b's α (`stage0b.json` `states['<table>/write'].alpha`: 15.2,
+  18.7, 12.7, 25.7).
+- *Per-key hand writes, piece-matched*: the same direction X, α re-matched by `perturb.match` (cap `alpha_max` 1000,
+  `write_rel_tol` 5%) so the split state's piece gain equals the table's seed-0 fine-tune's (`stage0b.json`: ident32
+  12.2, ident32b 12.6, rand32 11.2, rand32b 15.7 nats), flagged "piece-matched". Read on all four tables (the copy
+  writes need the same α rule for their reading below). On a table, the *scored write* is the G-matched write if it is
+  defined, else the piece-matched write if that is defined, else none ("undefined"); the other is reported only.
+- *Random δW, seed 0*: `finetune.random_direction` of the seed-0 fine-tune's δW, seed 0, at the scale `amend1.json`
+  matched (`rows['<table>/random'].scale`: 16.1, 16.1, 26.4, 6.4 times the fine-tune's norm). Reported only.
+- *Random δW, seed 1*: the same with seed 1, scale matched by `perturb.match` to the same kl_target under Amendment 2's
+  rule (cap 100, 10%). Reported only.
 - *Reference*: the eight E12 fine-tunes (four tables, seeds 0 and 1), split and read by the same function.
 
-**The number.** For a state (W₀ + δW, split components C₁), on the task's held-out windows at the scored position
-(E18: the trigger; E12: the key position), in trigger log-odds of the task's answer, exactly as `run.cells` and P0.2 compute it:
+**The number.** For a state (W₀ + δW, split components C₁), on the table's held-out windows at the key position, in
+trigger log-odds of the table's answer, exactly as `run.cells` and P0.2 compute it:
 ratio = (L(C₁,G₁) − L(C₀,G₀)) / (U₁ − U₀). Numerator: the gated piece gain (masked model, Δ out, the split
 subcomponents under Γ's values from the updated model). Denominator: the piece gain (the split subcomponents
-unmasked, Δ out). Stage 1 takes this number as written; its "KL to the fine-tuned model in place of trigger log-odds"
-on maths rows is a change of target that this 67M job cannot read (open choice 1).
+unmasked, Δ out). Stage 1 reads the same ratio in its KL form on maths rows; see "What changes next".
 
 **What it reads.**
-- *At W₀* (the split of a zero update): C₁ = C₀, so both parts are exactly 0 and the ratio is undefined. Control:
-  |piece gain| and |gated piece gain| ≤ 1e-3 nats on every task (the same computation in the same job as W₀'s own cells).
-- *Do-nothing* (the same nulls unsplit, stage 0b and Amendment 2): piece gain 0 by construction, ratio undefined.
-  The split leaves the full model and L(C₀,G₁) unchanged, so G and g must reproduce `amend1.json` (random seed 0) and
-  `stage0b.json` (writes): |ΔG|, |Δg| ≤ max(0.005, 0.02 × |G|) nats (E38's 2% and E36's 0.005-nat tolerances).
-- *Positive control* (the eight E12 fine-tunes): copy 0.87-0.97, random maps 0.36-0.41 (stage 0b). Each within 0.01 of
-  its stage 0b value (stage 0b reproduced E12 within 0.002), and P0.2's bars hold (≥ 0.8 copy, ≤ 0.5 random maps).
-  Any control miss: exit 1 before the first null row.
+- *At W₀* (the split of a zero update, C₁ = C₀): both parts are exactly 0. Control C0: |piece gain| and |gated piece
+  gain| ≤ 1e-3 nats on every table.
+- *Do-nothing* (the same nulls unsplit, stage 0b and Amendment 2): piece gain 0 by construction, ratio undefined. The
+  split leaves the full model and L(C₀,G₁) unchanged, so G and g must reproduce `amend1.json` (random seed 0) and
+  `stage0b.json` (G-matched writes). Control C2: |ΔG|, |Δg| ≤ max(`w0_tol` 0.02 nats, 2% of |G|) (the filed tolerance
+  for reproducing bf16 cells across jobs, and E38's 2%).
+- *Positive control C1* (the eight E12 fine-tunes): copy 0.87-0.97, random maps 0.36-0.41 (stage 0b). Each within
+  0.01 of its stage 0b value (stage 0b reproduced E12 within 0.002), and P0.2's bars hold (≥ 0.8 copy, ≤ 0.5 random
+  maps). Any control miss: exit 1 before the next row.
+- *In-span share* (reported, every row): the share of the update's input-weighted energy that the alive subcomponents
+  can take, 1 − `omega_act` from `split.weighted_fractions` (via `harness.outside_share_of`, pooled by energy over the
+  changed matrices; input moments over the table's training windows at W₀), with the two fine-tunes' value beside it.
+  It says how much of a null the split pieces carry at all, which the ratio cannot.
 
 **Blind spot and noise floor.** The ratio is blind to what the split pieces are: a null can read low because Γ gates
-it off or because its pieces carry nothing toward the answer, and those are told apart only by the parts in nats,
-reported per row. At 6-26 times a fine-tune's norm the split's second-order term (dU dVᵀ) is large. It moves the
-unmasked model in a way no fine-tune of normal size would, so a random row's piece gain says little about real updates;
-the writes are the null that matters. One write per table, one model, single-position toys. Noise floor: per row, a
-paired bootstrap over held-out windows (2000 resamples, seed 0) of the ratio of means, 90% interval, reported. Across
-draws: random seeds 0 and 1 per task. Across fine-tune seeds: E12's spread, up to 0.06 (copy A 0.87 against 0.93).
-Verdicts use point estimates; a row whose interval crosses a bar is named in the report, not re-scored.
+it off or because its pieces carry nothing toward the answer, and those are told apart only by the parts in nats and
+the in-span share, reported per row. At 6-26 times a fine-tune's norm the split's second-order term (dU dVᵀ) is large,
+so a random row's piece gain says little about real updates; the writes are the null that is scored. One write
+direction per table, one model, single-position toys. Noise floor: per row, a paired bootstrap over held-out windows
+(2000 resamples, seed 0) of the ratio of means, 90% interval over the resamples whose piece gain is ≥ 1 nat, reported.
+Across fine-tune seeds: E12's spread, up to 0.06. Verdicts use point estimates; a row whose interval crosses a bar is
+named in the report, not re-scored.
 
 **The min-piece rule.** A row's ratio is scored only if its piece gain is ≥ 1 nat (P0.2's `p02_min_piece`, signed: a
-negative piece gain is never scored). Below it the row is "undefined": its two parts and their intervals are reported,
-and it does not enter the bars. This is likely for the random rows: their full-model gain on the answer is −0.2 to
-+0.4 nats, so the in-span part of the update should move the unmasked answer by less than a nat. Stage 1 applies the
-same rule, so an update whose split pieces barely move the answer is never read by the ratio in stage 1 either. An
-undefined null therefore cannot make stage 1 read "existing". It also leaves the ratio without a null on such rows,
-which is why the tree rests on the writes (G 13-21 nats, so their pieces should clear a nat). If more than 5% of a
-row's bootstrap resamples fall under 1 nat, its interval is reported as "unstable".
+negative or non-finite piece gain is never scored). Below it the row is "undefined": its two parts and their intervals
+are reported. Stage 1 applies the same rule. If more than 5% of a row's bootstrap resamples fall under 1 nat, its
+interval is flagged "unstable".
 
-**Predictions (draft: `experiments/regating_table/results/predictions_amend3.DRAFT.json`).**
-- **A3.1, the writes (scored on rand32, rand32b).** Piece gain ≥ 1 nat on both (lean medium: the write is rank ≤ 32
-  on one matrix, and how much of it the alive subcomponents can take is unmeasured). Ratio ≤ 0.4 on both (lean
-  low-medium). A write that uses no old machinery should read like the new-behaviour fine-tunes (0.36-0.41) or lower.
-  But its unsplit gate gain was already 48-65% of theirs, so it may sit at or just over 0.4.
-- **A3.2, the random rows (14: seven tasks, seeds 0 and 1).** Every row undefined (piece gain < 1 nat; lean medium).
-  Any defined row ≤ 0.4 (lean medium).
-- Reported only: the copy writes' ratio (the tied embedding makes them existing machinery by construction; ≥ 0.7
-  expected, unscored); g/G per row as Amendment 2.
+**Predictions (`experiments/regating_table/results/predictions_amend3.json`).**
+- **A3.1, the random-map writes (scored on rand32, rand32b).** Each table's scored write is defined (lean medium-high:
+  the G-matched write is rank ≤ 32 on one matrix and its in-span part is unmeasured, but the piece-matched α is fitted
+  to make the piece gain 11-16 nats, and fails only if the cap binds). Its ratio ≤ 0.5 on both (lean medium: the
+  random-map fine-tunes read 0.36-0.41, 0.09-0.14 under the bar, and the unsplit write's gate gain was 48-65% of
+  theirs, so the write may sit near them or a little above).
+- **Reported only.** The random rows (8: four tables, seeds 0 and 1): expected undefined (their full-model gain on the
+  answer is −0.2 to +0.4 nats; lean medium); the copy writes (expected ≥ 0.7, through the tied embedding); g/G per row
+  as Amendment 2; masked-off part (piece gain − gated piece gain); in-span share.
+- **The copy writes' rule (unscored, written now).** If both copy writes' scored writes are defined and read ≤ 0.5,
+  then a low random-map write shows that the ratio discounts hand writes, not that it detects new behaviour, and a
+  stage 1 proposal from branch 3 says so in its first paragraph. If either copy write is undefined, this reads
+  "unread"; otherwise "no".
 
-**Tree** (first match wins; controls must have passed, else the job has stopped):
-1. Any scored row non-finite → card.
-2. Any scored null row (a random-map write or a defined random row) ≥ 0.7 → "the ratio does not separate stage 1's
-   classes": stage 1 needs a different number before any pod (card with the rows).
-3. Both random-map writes defined and ≤ 0.4, and every defined random row ≤ 0.4 → stage 1 is proposed to the user
-   with this number and these nulls as its standing bars.
-4. A random-map write undefined → card: "the ratio's null could not be read on the write".
-5. Otherwise (some row in (0.4, 0.7)) → card with the numbers.
+**Tree** (scored rows: the two random-map scored writes; first match wins; the controls have passed, else the job has
+stopped):
+1. Any random-map write row (either α) with a non-finite G, g, piece gain or gated piece gain, or a defined scored
+   write with a non-finite ratio → card: non-finite.
+2. A scored write with ratio ≥ 0.7 → "the ratio does not separate stage 1's classes": stage 1 needs a different
+   number before any pod (card with the rows).
+3. Both scored writes defined and ≤ 0.5 → stage 1 is proposed to the user with this number, these bars, and the Qwen
+   split random null of "What changes next" (with the copy writes' sentence if their rule reads "discounts").
+4. A random-map table with no defined write (neither α) → card: "the ratio's null could not be read on the write".
+5. Otherwise (a defined scored write in (0.5, 0.7)) → card with the numbers.
 
-Edge-case pass: a zero denominator is caught by rule 1's non-finite branch and the min-piece rule (0 < 1). A negative
-numerator gives a negative ratio, which counts as ≤ 0.4 (Γ lets nothing through). A ratio > 1 counts as ≥ 0.7. The
-bars are inclusive and disjoint (≤ 0.4, ≥ 0.7). All 14 random rows undefined and both writes defined lands in 3 or 2
-or 5 by the writes alone. A seed-1 random row whose match caps at 100 is scored at the cap and flagged, as Amendment 2.
-A write that no longer reproduces stage 0b's G stops the job as a control. Every combination of defined, undefined
-and non-finite rows lands in exactly one branch.
+**Leans against the tree.** Both A3.1 leans hold → branch 3. The likelier miss, a write at 0.5-0.7 → branch 5. A
+G-matched write under 1 nat no longer reaches branch 4: its piece-matched write is scored in its place, and branch 4
+needs the cap to bind on the piece match too (lean low). A copy-like write (≥ 0.7) → branch 2, before any undefined
+branch.
 
-**Runtime and memory.** Stage 0b (Slurm 42675) read an E12 task with two split fine-tunes, a random match, the flipped
-row and a write match in 19-20 s, an E18 task in 7-11 s. Amendment 2 (Slurm 42791) matched a random row in 4-6 s.
-Here, per task: W₀ split and the reference rows (E12 only, about 5 s), the seed-0 random row split (about 2 s), the
-seed-1 match and its row (about 6 s), the write rebuilt and read (about 4 s), and per-window passes for the bootstrap
-(about double each row's read). That is about 2-4 minutes over seven tasks, plus model load and the split bases. Under
-10 minutes on one `debug` card in all, $0. Memory as stage 0 (`cluster/regating_table.sbatch`, 48 GB host, one GPU;
-the 67M model, CPU float64 split bases), which ran without trouble. RunPod only if not started within 10 min (about
-$0.20 on a 4090).
+**Edge cases, run against the rule** (and in code on made-up rows, every branch): a zero piece gain is undefined by the
+min-piece rule, never a division (W₀ is a control, not a scored row). A negative piece gain is undefined. A negative
+gated piece gain over a defined piece gain gives a ratio < 0, which counts as ≤ 0.5. A ratio > 1 counts as ≥ 0.7. The
+bars are inclusive (0.5 and 0.7 exactly fall in branches 3 and 2) and disjoint. A NaN piece gain fails the min-piece
+test but is caught first by branch 1. One write undefined and the other ≥ 0.7: branch 2 before branch 4. One write
+undefined and the other ≤ 0.5: branch 4. A piece match that caps at α = 1000 or ends "no_match" is scored if defined,
+flagged with its status. A seed-1 random row capped at 100 is reported at the cap, flagged. A G-matched write that no
+longer reproduces stage 0b's G or g stops the job (C2). After branches 1 and 2 every defined scored ratio is finite and
+< 0.7, so 3, 4 and 5 cover the rest: each combination lands in exactly one branch.
 
-**Code outline (no copying between experiments).** `experiments/regating_table/amend3.py`, about 150-180 lines. It
-imports from `run.py` (`Run`, `Task`, `cells`, `read_state`, `load_checked`, `log`, `dump`, `Clock`, `E18_TASKS`) and
-from `amend1.py` (`load`), and calls `anchors.lifted`, `finetune.random_direction`, `perturb.scaled` and
-`perturb.match`. Per row it is one `cells(run, t, dW, anchors.lifted(run.model, run.lift, dW))`, plus per-window L₁₁,
-U₁ and U₀ from `local_faith.masked_lo_windows` (U with all-ones gates) for the bootstrap (about 20 lines). One refactor
-in `run.py`: move the write's construction out of `write_row` into `write_delta(run, t, w)` (about 8 lines moved, no
-number changes; the write control checks it). One line in `cluster/regating_table.sbatch` (`amend3)`). The job
-refuses to start without `results/predictions_amend3.json` and if `perturb.py` or `anchors.py` changed since stage
-0b's commit (as `amend1.py`). Every scored number goes to the log and `results/amend3.json` after each row. One
-fresh-Opus code review before the job (free).
+**Runtime and memory.** Stage 0b (Slurm 42675) read an E12 table with two split fine-tunes, a random match, the
+flipped row and a write match in 19-20 s; Amendment 2 (Slurm 42791) matched a random row in 4-6 s. Here, per table:
+input moments (~2 s), W₀ split and the two reference rows (~6 s), the seed-0 random row (~3 s), the seed-1 match and
+its row (~8 s), the G-matched write (~4 s), the piece match (12 grid points and up to 40 halvings, each a split and a
+pass, ~1-2 s: under 90 s) and its row, and per-window passes for the bootstrap (about double each row's read), and the in-span share on CPU (float64, 24 matrices, ~5-10 s for a full-model row). About
+3 minutes a table (the controls pass reloads each table), 12-16 minutes with model load and the split bases: one `debug` card, under its 30-minute limit,
+$0. Memory as stage 0 (48 GB host, one GPU; the 67M model, CPU float64 split bases and input moments).
+
+**Code.** `experiments/regating_table/amend3.py`. It imports from `run.py` (`Run`, `cells`, `read_state`,
+`load_checked`, `log`, `dump`, `Clock`, `code_unchanged`, `write_delta`) and from `amend1.py` (`load`), and calls
+`anchors.lifted`, `finetune.random_direction`, `perturb.scaled`, `perturb.match` and `harness.outside_share_of`. One
+refactor in `run.py`: `write_delta(run, t, keys, values)` builds the write X and its fit, moved out of `write_row`
+(its only caller; numbers unchanged, the G-matched write's C2 checks it), and `code_unchanged` takes the file list. One
+line in `cluster/regating_table.sbatch` (`amend3`). The job refuses to start without `results/predictions_amend3.json`
+and if the four files above changed since stage 0b's commit. Every scored number goes to the log and
+`results/amend3.json` after each row, with the score block and the tree's verdict at the end. One fresh-Opus code
+review before the job (free).
 
 **Open choices.**
-1. Stage 1's table reads the ratio on Qwen maths rows with "KL to the fine-tuned model in place of trigger log-odds".
-   This job reads trigger log-odds, the form of the positive control, so its null transfers to stage 1 only if stage 1
-   keeps that form or reads its own split null. Recommendation: stage 1's filing reads the KL form on a split random
-   δW of the Qwen update itself; not added here.
-2. E18's six fine-tunes, split, as same-task references for the E18 random rows: cheap, but no expected value exists,
-   so cut under "fewer measurements". Add only if the lead wants a reference on every task.
-3. A random δW at the fine-tune's own norm (c = 1) split, a scale at which the second-order term is a fine-tune's: not
-   added; the KL-matched scale is what the user's option names.
+1. A random δW at the fine-tune's own norm (c = 1) split, a scale at which the second-order term is a fine-tune's: not
+   added; the KL-matched scale is what the user's option names, and stage 1's Qwen random null replaces it.
+2. More than one write direction per table: not added.
 
-**Not run.** The flipped updates split; the KL form; E18 fine-tunes split; more than one write per table; any Γ
-from another seed or refitted; anything on Qwen.
+**Not run.** The flipped updates split; the KL form; E18's fine-tunes and random rows split; a random update at the
+fine-tune's own norm split; more than one write per table; any Γ from another seed or refitted; anything on Qwen.
