@@ -78,7 +78,7 @@ def grouped(ax: Axes, rows: list[Row], key: str, clip: float | None = None) -> N
                 ax.bar(x, h, w, color=SHADES[pair][k], edgecolor="white", lw=0.8, zorder=3)
             if clip and max(vals) > clip:
                 ax.text(x + w / 2, clip * 0.96, f" {max(vals):.2f}, cut off", ha="left", va="top", fontsize=8, zorder=4)
-    labels = [OPS[op] if op != "component_training" else "component training\n(analogue: free | rank-8)"
+    labels = [OPS[op] if op != "component_training" else "component training\n(unconstrained | rank 8)"
               for op in OPS]
     ax.set_xticks(range(len(OPS)), labels, fontsize=9)
     ax.set_xlim(-0.55, len(OPS) - 0.45)
@@ -88,10 +88,10 @@ def grouped(ax: Axes, rows: list[Row], key: str, clip: float | None = None) -> N
 def bars(rows: list[Row], f: float) -> None:
     fig, axes = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
     a, b, c = axes
-    floor_band(a, f, "as faithful as the original model: W0 noise band")
+    floor_band(a, f, "as faithful as the unchanged decomposition (its run-to-run spread)")
     grouped(a, rows, "pgd", clip=RATIO_CLIP)
     a.set_ylim(0, RATIO_CLIP)
-    a.set_ylabel("Pile PGD KL ÷ W0's")
+    a.set_ylabel("adversarial ratio\n(1 = as faithful as the original)")
     a.set_title("(a) Adversarial ratio: lower is better; inside the grey band is as faithful as the original",
                 fontsize=10, loc="left")
     a.legend(fontsize=8, loc="upper right")
@@ -105,16 +105,16 @@ def bars(rows: list[Row], f: float) -> None:
     b.legend(fontsize=8, loc="upper right", ncol=2)
     grouped(c, rows, "delta_share")
     c.set_ylim(0, 1.05)
-    c.set_ylabel("Δ's share of ||δW||²")
+    c.set_ylabel("share of the update\nleft in Δ")
     for i, op in enumerate(OPS):
         if max(series(rows, "ft", op, "delta_share") + series(rows, "lora24", op, "delta_share")) < 0.01:
-            c.text(i, 0.04, "≈ 0: Δ untouched", ha="center", fontsize=8, color=GREY)
+            c.text(i, 0.04, "≈ 0", ha="center", fontsize=8, color=GREY)
     c.set_title("(c) Share of the update absorbed by Δ: lower is better", fontsize=10, loc="left")
     handles = [Patch(color=SHADES[p][k], label=f"{name}, step {s}")
-               for p, name in (("ft", "fine-tune or free c.t."), ("lora24", "LoRA or rank-8 c.t."))
+               for p, name in (("ft", "fine-tune, or component training beside it"), ("lora24", "LoRA, or rank-8 component training beside it"))
                for k, s in enumerate(STEPS)]
     fig.legend(handles=handles, ncol=2, fontsize=8, loc="lower center", bbox_to_anchor=(0.5, 0.0), frameon=False,
-               title="colour = update (c.t. = its component-training analogue); the steps share one bar, darker = later step (one shade: the steps agree)",
+               title="the three steps are drawn over one another in one bar, darker = later step (one shade: the steps agree)",
                title_fontsize=8)
     fig.suptitle("The five operations side by side", fontsize=12)
     fig.tight_layout(rect=(0, 0.07, 1, 1))
@@ -138,7 +138,7 @@ def pgd(rows: list[Row], f: float) -> None:
         ax.set_xlabel("training step")
         ax.set_title(label, fontsize=10)
         ax.legend(fontsize=7)
-    axes[0].set_ylabel("adversarial ratio, Pile PGD KL ÷ W0's")
+    axes[0].set_ylabel("adversarial ratio (1 = as faithful as the original)")
     fig.suptitle("How faithful does each operation's state stay under the adversary?", fontsize=11)
     save(fig, "pgd.png")
 
