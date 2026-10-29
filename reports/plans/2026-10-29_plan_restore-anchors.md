@@ -200,3 +200,136 @@ contrast over 2,000 rows about 1 min, about 1 min per fine-tune for its set buil
 GPU memory under 15 GB. Fits the cluster's `debug` 30-min limit.
 
 **Code review (2026-10-29, fresh Opus, before the run; no rule changed).** R0, R1 and R2 cannot fail for a wrong restore formula (empty set or zero input difference make the correction zero by construction); they catch misaligned batches, wrong cached io and non-determinism. The restore formula itself rests on E38 Amendment 3's R4, run on the same `restore_hooks` (unchanged since). C1's two halves both read `route_cells`' T (one earlier, one now). The stand-in ratio is now checked against its expected range in `reported()` (reported only). The analysis report repeats these.
+
+## Amendment 1 (2026-10-29): power checks
+
+*Filed before the code ran (code: `experiments/restore_anchors/amend1.py`; rules as data in
+`experiments/restore_anchors/results/predictions_amend1.json`, which the run refuses to start without; never edited
+after the run). $0, one cluster `debug` job, about 3-6 min on an L40. Nothing here changes E50's filed verdict ("does
+not separate"); it decides what the card says about the power of the numbers behind that verdict.*
+
+**Why.** E50 read "does not separate": restoring every alive subcomponent at the key position took back 0.76-0.78 of
+the gain on the copy fine-tunes and 0.66-0.73 on the random maps; S took back 0.14-0.19 and 0.10-0.20. An independent
+check found three gaps. (i) 1 − ρ(every alive) is exactly the gain kept with only Δ's paths on (the update's own
+write δW·x and the decomposition's residual Δ₀·x), so every alive measures relayed versus direct gain, and no update
+known to read low was run: its power is unknown. (ii) S missed its copy floor and takes back a near-constant 2.0-2.7
+nats on all eight fine-tunes, whatever its size (24 to 118); five subcomponents are in all eight S sets
+(h.2.mlp.c_fc:2151, h.2.mlp.down_proj:2550, h.3.attn.q_proj:60, h.3.mlp.c_fc:1428, h.3.mlp.down_proj:1345), and
+random-map S sets share 12-22 members with copy S sets. (iii) W₀'s T0 on the copy tables is about −10 nats: W₀ does not
+copy in this format.
+
+**The request in the Terms' words.** Get one real-model number whose control shows it can separate. Rows, each placed
+by do-nothing and read exactly as E50 reads (full model W₀ + δW, key position `half` = 20, the 97 held-out windows):
+1. *Low-reading control.* Per table, E46 Amendment 3's two nulls: the hand write at the G-matched alpha (`{h.1.mlp.down_proj:
+   α X}`, X = `perturb.key_write` of the key inputs and the answers' unembedding rows, α = `stage0b.json`'s), and the
+   seed-0 random δW (`finetune.random_direction` of the seed-0 fine-tune, times `amend1.json`'s scale). S for each is
+   its own switched-on set (E38's rule). Read every alive, S and the sets below on both.
+2. *Write-only restore* on all eight fine-tunes (and the nulls): each matrix's key-position output set to W₀x₀ + δW·x,
+   no subcomponents. It differs from every alive by exactly Δ₀(x − x₀). Done through the same restore hooks with W₀
+   as one piece per matrix, (U, V) = (W₀ᵀ, I).
+3. *S's shared core versus the rest.* The core = the S members present in all eight E50 S sets (read from
+   `restore_anchors.json`; the five above). Per fine-tune restore (a) the core and (b) S minus the core, each beside 20
+   random sets of matching size per matrix (alive, outside that row's S, seeds 0-19, `recruit.random_like`).
+4. *T0 per table and a W₀ copy probe.* W₀ with a demonstration (marker, key, value) written at positions half−10 ..
+   half−8 of each held-out window: does W₀ produce the value in-context? One format only (it is one more forward pass).
+
+**What the hand write should read, from the algebra.** Restoring every alive subcomponent leaves, at the key, each
+matrix's output W₀x₀ + δW·x + Δ₀(x − x₀): only the update's own write and Δ₀'s paths stay on, so ρ(every alive) = 1 − K/G
+with K the gain kept on those paths. The hand write changes one block-1 matrix; nothing upstream of it changes, so at
+the key its input is x₀ and δW·x₀ is its whole write, built to add α times the answer's unembedding row to the residual.
+ρ(every alive) on the write is therefore the share of its gain that W₀'s later subcomponents relay. It needs no relay
+to raise the answer, so it should read low.
+
+**Expected values.** Shares of G; G is 13-21 nats for the fine-tunes and the hand writes.
+
+| number | expected | rule |
+|---|---|---|
+| T0 per table | ident32 −10.150, ident32b −10.223, rand32 −13.215, rand32b −13.981 (E50) | control C1 |
+| write: G | 13.37, 15.27, 13.10, 20.90 (Amendment 3's write_G) | control C2_null, within 2% |
+| write: ρ(every alive) | ≤ 0.2 on each table | reported |
+| every alive gap: min over copy fine-tunes − max over the four writes, per seed | ≥ 0.55 (0.757 − 0.2) | **power rule**: ≥ 0.3 on both seeds = powered |
+| write: ρ(S) | ≤ 0.05 on each table | **S-on-write rule** |
+| random δW: G | < 1 nat on all four (Amendment 3: 0.04-0.40) | unscored by E50's rule: every share NaN, nats logged only |
+| write-only minus every alive, per fine-tune | abs ≤ 0.02 (a **materiality bound**, not a noise floor) | FYI, changes no verdict |
+| core and rest, "shared format part" reading | nats(core) ≥ 0.5 × nats(S) on all eight (about 1.0-1.35 nats or more); ρ(core) above its random sets' max; ρ(rest) ≤ 0.1; core and rest each "does not separate" | **core rule** |
+| core and rest, "kind-specific" reading | rest separates by E50's rule (gap ≥ 0.3, worst pair, both seeds) | **core rule** |
+| random sets (S, core, rest sizes) | abs(mean) ≤ 0.05, max ≤ 0.15 | reported; max > 0.15 makes that set unscored (E50) |
+| probe: lo with a demonstration − T0 | ≥ 3 nats on the copy tables (lean: induction); random-map tables beside | reported |
+
+Lean: every alive "powered", S "low" on the write, core "shared format part" (S takes back the same 2-2.7 nats whatever
+its size, which points to a part common to all eight). A priori, "kind-specific" by E50's rule is nearly out of reach:
+ρ(S) ≤ 0.2 on all eight, so ρ(rest) on copy can clear random maps by 0.3 only if the core pushes against the rest
+(restores need not add; S − core − rest is logged per row).
+
+**The rules.** A row is scored for a set when G ≥ 1 nat and its ρ is finite; for S, core and rest also when the set is
+non-empty and its random sets' max ρ ≤ 0.15 (E50's). gap_class per seed, given a high group and a low group: unscored if
+any value is unscored; g = min(high) − max(low); "separates" if g ≥ 0.3, "reversed" if max(high) − min(low) ≤ −0.3,
+else "no"; over seeds as E50 (both separate → separates; both reversed → reversed; any unscored → unscored; else does
+not separate).
+- *Power of every alive*: high = the seed's two copy fine-tunes, low = the four hand writes. First match: unscored
+  (either seed); **powered** (separates on both seeds); **blind** (on neither); **partial** (one seed).
+- *S on the write*: first match: unscored (any write unscored for S); **low** (ρ(S) ≤ 0.05 on all four); **generic**
+  (S takes back ≥ 1.0 nat on all four, about half the fine-tunes' 2.0-2.7); **between**.
+- *Core and rest*: shared = on all eight fine-tunes the core is scored, S takes back > 0 nats, the core takes back
+  ≥ 0.5 of S's nats and its ρ beats its random sets' max; kind = rest separates (high = copy, low = random maps). First
+  match: unscored (any fine-tune unscored for core or rest); **both**; **shared format part**; **kind-specific**;
+  **neither**.
+- E50's separation rule is also reported for every alive, write-only, S, core and rest on the fine-tunes.
+
+**Edge cases, run against the rules before filing.** A write with G < 1 nat (cannot happen at the matched alpha, but
+covered): its every-alive value is unscored, so the power rule is unscored, not passed. A negative ρ (the write's
+downstream blocks cancel part of it) counts as low; it only widens the gap. Gap exactly 0.3: separates (≥). An empty S
+on a write: S unscored there, never a "low" pass (an empty restore is an exact 0). ρ(S) ≤ 0.05 and S nats ≥ 1.0 at once
+(possible when G > 20): "low" wins by order. S taking back ≤ 0 nats on a fine-tune: the core test fails there (the 0.5
+fraction has no meaning), so the reading cannot be "shared". An empty core (no member common to all eight): the core
+is unscored on every row and the reading is "unscored". The random rows: their shares are NaN by E50's rule, so they
+enter no rule; NaN goes to the JSON as "nan". A core subcomponent missing from a null's own S: the rest is S minus
+the core as a set difference, unaffected; the core is still restored as given.
+
+**Blind to.** *ρ(every alive) on the write*: it equals the relayed share only because the write's matrix sees x₀; it
+says nothing about whether a fine-tune's relay is "existing" machinery. It is one low anchor family (one matrix, one
+block), so "powered" means "can tell a direct write from copy", not "can tell any new mechanism from copy". *Write-only*:
+Δ₀'s paths (that is its only difference from every alive). *Core*: defined on the same eight states it is scored on
+(post hoc), so "shared" is checked only against random sets of its size, and any "kind-specific" rest needs fresh
+seeds before use. *S on the write*: subcomponents switched on by 0.3 or less. *Probe*: every format but one.
+**The method's limit** (decisions.md, "Limit of the elicitation reading"): a new mechanism built from subcomponents W₀
+already has, put together under new gating, reads as "elicited" to VPD, because its unit is the rank-one subcomponent,
+not the circuit. A powered every alive therefore separates direct from relayed gain, never "a circuit W₀ already runs"
+from a new one.
+
+**Positive controls and noise floor.** Every alive: the copy fine-tunes are the high end (E50: 0.76-0.78) and the hand
+write is the designed low end. Core and rest: the 20 random sets of matching size. Write-only: every alive, from
+which it differs by one exact term. The probe has no positive control (report-only). Noise floor: one restore under
+bf16 rounds by about 0.02 nats (E38 Amendment 3's R4b), about 0.0015 of G here; E50's seed spread was at most 0.020 on
+ρ(every alive) and 0.052 on ρ(S), so the 0.3 gap is about 15 and 6 times them; the random draws' sd is reported per
+row and set.
+
+**Stop rules (in code).** (1) No `predictions_amend1.json`, `predictions.json` or `restore_anchors.json`: refuse. (2) Any
+E46 window or state file missing or not the file its sha256 recorded: exit before any reading. (3) Controls before any
+share, on every table and row: E50's C1 (T0 against E46 and route_cells) plus T0 within 0.02 nats of E50's; E50's C2
+(T1 against E46, fine-tunes), R0, R1 (every set of this amendment restored in a W₀ pass, ≤ 0.01 nats) and R2; C2_null,
+the nulls' G within max(0.02 nats, 2%) of Amendment 3's; C5, the write-only restore in a W₀ pass reads T0 within 0.01
+nats. Then the nulls are read first (they are the power controls), and C3 is each fine-tune's first reading: ρ(every
+alive) and ρ(S) within 0.01 of E50's. Any miss: results written, FAIL logged, exit 1. (4) Results rewritten after each
+row; every scored number printed to the log. (5) G < 1 nat is not a stop: that row is unscored.
+
+**Decision rule (what each outcome means for the card).**
+- Every alive **powered**: E50's "does not separate" stands as a finding, not a blind spot: both kinds relay about 0.7
+  of their gain through W₀'s subcomponents, while a direct write does not. Every alive measures relayed versus direct
+  gain, not existing versus new mechanism; it goes forward, if at all, only as a relay number beside the stand-in
+  ratio. **Blind**: it reads high even for a direct write; E50's every-alive row is uninformative and is not carried
+  forward. **Partial** or **unscored**: card to the user with both seeds' gaps.
+- S on the write **low**: S's near-constant take-back belongs to learned updates. **Generic**: S takes back nats from any
+  update that pushes the answer; S is withdrawn as evidence of kind. **Between**: reported; S stays as E50 left it.
+- Core **shared format part**: S's take-back is mostly five shared subcomponents; S is closed as evidence of kind on
+  the 67M and the five are named on the card. **Kind-specific**: the rest is a candidate real-model number, post hoc,
+  so it needs fresh seeds in a new amendment before any Qwen use. **Both**: both statements. **Neither**: S is closed as
+  evidence of kind on the 67M. **Unscored**: card to the user.
+
+**Departures.** The hand write is rebuilt in `amend1.py` from `perturb.key_inputs` and `perturb.key_write` (the two
+`src/` calls `regating_table/run.py`'s `write_delta` makes), not imported: importing across experiments needs a path
+change, and moving `write_delta` into `src/` would mean editing `regating_table/run.py` and `perturb.py`, which E46's
+`code_unchanged` guards (stage 0b; Amendments 1 and 3) check against recorded commits. C2_null checks the rebuild
+reproduces Amendment 3's G. `amend1.py` is about 300 lines, over the ~200 asked: the controls, the sets and the filed
+rules are each one function; nothing was cut that a rule reads. The probe is one demonstration format, not "any
+format": a wider format search is a separate question about W₀, not a power check.

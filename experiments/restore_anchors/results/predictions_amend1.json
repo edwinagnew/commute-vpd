@@ -1,0 +1,108 @@
+{
+ "experiment": "E50 restore_anchors, Amendment 1: power checks",
+ "filed": "2026-10-29, before any run of amend1.py; never edited after the run",
+ "plan": "reports/plans/2026-10-29_plan_restore-anchors.md, section 'Amendment 1 (2026-10-29): power checks'",
+ "inputs": {
+  "e50_rules": "experiments/restore_anchors/results/predictions.json (controls' tolerances, min_gain, gap, random_bites, n_random; read, not changed)",
+  "e50_result": "experiments/restore_anchors/results/restore_anchors.json (S members per fine-tune; T0, T1, rho(every_alive), rho(S) for control C3)",
+  "states": "E46 stage 0a's E12 windows and fine-tunes, checked by stage0a.json's sha256 (E50's e46_files)",
+  "write": "{perturb.WRITE_KEY: alpha X}, X = perturb.key_write(perturb.key_inputs(W0, train windows, half, keys), unembedding rows of the values), alpha = stage0b.json states[<table>/write].alpha (E46 Amendment 3's G-matched write_G row)",
+  "random": "finetune.random_direction(<table>_s0, seed 0) times amend1.json rows[<table>/random].scale (E46 Amendment 3's random_s0 row)",
+  "core": "the S members present in all eight E50 S sets (restore_anchors.json states[*].members.S); at filing: h.2.mlp.c_fc:2151, h.2.mlp.down_proj:2550, h.3.attn.q_proj:60, h.3.mlp.c_fc:1428, h.3.mlp.down_proj:1345"
+ },
+ "rows": {
+  "write": "per table, the hand write, placed by do-nothing; S its own switched-on set (E38's rule, 0.3)",
+  "random": "per table, the seed-0 random delta-W, placed by do-nothing; S its own switched-on set",
+  "finetune": "the eight E50 fine-tunes; S = E50's recorded S"
+ },
+ "sets": {
+  "every_alive": "every alive subcomponent (E50)",
+  "S": "the row's switched-on set",
+  "core": "the core (above), the same on every row",
+  "rest": "S minus the core (recruitment.minus)",
+  "random_<X>_<i>": "for X in (S, core, rest), i = 0..19: recruit.random_like(X, alive outside the row's S, i)",
+  "write_only": "not a subcomponent set: every matrix's key-position output set to W0 x0 + dW x (restore_hooks with W0 as one piece per matrix, (U, V) = (W0^T, I)); differs from every_alive by exactly Delta0 (x - x0)"
+ },
+ "controls": {
+  "C1": "E50's task_control per table: T0 within C1_T0_tol of E46 stage 0a and within C1_path_tol of route_cells' T",
+  "C2": "E50's state_control per fine-tune (T1 within C2_T1_rel_tol x G of E46's; R0; R1 over every set of this amendment in a W0 pass; R2)",
+  "C2_null": "the same R0, R1, R2 on each write and random row; its gain G within max(null_G_abs_tol, null_G_rel_tol x |G_ref|) of E46 Amendment 3's row (amend3.json rows[<table>/write_G | random_s0].G)",
+  "C3": "per fine-tune, rho(every_alive) and rho(S) within C3_rho_tol of restore_anchors.json's, T0 within C1_T0_tol of its T0",
+  "C5": "write_only restored in a W0 pass: abs(lo - T0) <= R1_w0_tol (it is exactly 0 by construction: x = x0)",
+  "null_G_abs_tol": 0.02,
+  "null_G_rel_tol": 0.02,
+  "C3_rho_tol": 0.01,
+  "order": "C1, C2, C2_null, C5 on every table and row before any share; C3 on each fine-tune as its first reading; any miss: results written, FAIL logged, exit 1"
+ },
+ "thresholds": {
+  "min_gain": 1.0,
+  "gap": 0.3,
+  "random_bites": 0.15,
+  "write_low": 0.2,
+  "S_write_low": 0.05,
+  "S_write_generic_nats": 1.0,
+  "core_half": 0.5,
+  "write_only_bound": 0.02,
+  "probe_min_nats": 3.0,
+  "random_abs_mean_max": 0.05,
+  "random_max_max": 0.15
+ },
+ "expected": {
+  "T0": {"ident32": -10.1498, "ident32b": -10.2228, "rand32": -13.2147, "rand32b": -13.9812},
+  "write": {
+   "G": "E46 Amendment 3's write_G: ident32 13.37, ident32b 15.27, rand32 13.10, rand32b 20.90 (C2_null)",
+   "rho_every_alive_max": 0.2,
+   "rho_every_alive_algebra": "rho(every_alive) = 1 - K / G, K = the gain with only dW's and Delta0's paths on at the key; for the write, x = x0 at its own matrix (nothing upstream changes), so dW x is its whole direct write and rho(every_alive) is the share W0's downstream subcomponents relay",
+   "rho_S_max": 0.05
+  },
+  "random": {"G": "below 1 nat on all four (E46 Amendment 3: 0.04-0.40): unscored, every share nan; nats logged, no rule"},
+  "every_alive_gap": "min over the copy fine-tunes of rho(every_alive) minus max over the four write rows, per seed: >= 0.55 (E50's lowest copy reading 0.757, minus 0.2)",
+  "every_alive_power": "powered",
+  "S_on_write": "low",
+  "write_only_minus_every_alive": "abs <= 0.02 on all eight fine-tunes (materiality bound, not a noise floor; FYI, changes no verdict)",
+  "random_sets": {"abs_mean_max": 0.05, "max_max": 0.15},
+  "core_rest": {
+   "shared_format_part": "nats(core) >= 0.5 nats(S) on all eight fine-tunes (about 1.0-1.35 nats or more of S's 2.0-2.7), rho(core) above its 20 random sets' max on each; rho(rest) <= 0.1; rest and core each 'does not separate'",
+   "kind_specific": "rest separates (gap >= 0.3 on both seeds); needs rho(rest) on copy >= 0.3 + rho(rest) on random maps although rho(S) <= 0.2 on all eight, so only if the core pushes against the rest (restores do not add)",
+   "lean": "shared_format_part (S takes back 2.0-2.7 nats whatever its size, 24 to 118: a part common to all eight carries it)"
+  },
+  "probe": "W0 with a demonstration (marker, key, value) written at positions half-10..half-8 of each held-out window: lo - T0 >= 3 nats on the copy tables (lean; induction); the random-map tables reported beside; report-only"
+ },
+ "rules": {
+  "scored": "a row is scored for X when G >= min_gain and rho_X is finite; for X in (S, core, rest) also when X is non-empty and its random sets' max rho <= random_bites",
+  "gap_class": "per seed: unscored if any value unscored; g = min(high) - max(low), rev = max(high) - min(low); 'separates' if g >= gap, 'reversed' if rev <= -gap, else 'no'; verdict over seeds as E50 (both separates -> separates, both reversed -> reversed, any unscored -> unscored, else does not separate)",
+  "every_alive_power": "high = the two copy fine-tunes of the seed, low = the four write rows (rho(every_alive)); gap_class per seed; first match: unscored (either seed unscored); powered (separates on both seeds); blind (separates on neither); partial (one seed)",
+  "S_on_write": "first match: unscored (any write row unscored for S); low (rho(S) <= S_write_low on all four); generic (nats(S) >= S_write_generic_nats on all four); between",
+  "core_rest": "shared = on all eight fine-tunes core is scored, nats(S) > 0, nats(core) >= core_half x nats(S) and rho(core) > its random max; kind = rest's verdict (gap_class, high = copy, low = random maps, per seed) is separates; reading: unscored (any fine-tune unscored for core or for rest) / both / shared_format_part / kind_specific / neither",
+  "separation_X": "for X in (every_alive, S, core, rest, write_only): E50's rule on the fine-tunes (high = copy, low = random maps), reported",
+  "reported_only": "write rho(every_alive) <= write_low and rho(S) <= S_write_low per table; random rows' G < 1; the write_only bound; the random sets' mean and max; the probe; T0 per table; nothing here changes E50's filed verdict"
+ },
+ "decision": {
+  "every_alive": {
+   "powered": "every alive tells a direct write from copy, so E50's 'does not separate' stands as a finding: both kinds relay about 0.7 of their gain through W0's subcomponents. every alive measures relayed versus direct gain, not existing versus new mechanism; it goes forward, if at all, only as a relay number beside the stand-in ratio",
+   "blind": "every alive reads high even for a direct write: its E50 row is uninformative and is not carried forward",
+   "partial": "card to the user with both seeds' gaps",
+   "unscored": "card to the user"
+  },
+  "S_on_write": {
+   "low": "S reads low on a direct write: its near-constant take-back belongs to learned updates",
+   "generic": "S takes back nats from any update that pushes the answer: S is withdrawn as evidence of kind",
+   "between": "reported; S stays as E50 left it"
+  },
+  "core_rest": {
+   "shared_format_part": "S's take-back is mostly five shared subcomponents; S is closed as evidence of kind on the 67M and the five are named on the card",
+   "kind_specific": "the rest is a candidate real-model number; it is post hoc (the core is defined on these states), so it needs fresh seeds in a new amendment before any Qwen use",
+   "both": "both statements",
+   "neither": "S is closed as evidence of kind on the 67M",
+   "unscored": "card to the user"
+  }
+ },
+ "noise_floor": "one restore under bf16 ~0.02 nats (E38 Amendment 3 R4b), ~0.0015 of G (13-21 nats); E50's seed spread on rho(every_alive) <= 0.020 and on rho(S) <= 0.052; the 20 random draws' sd per row and set reported",
+ "stop_rules": [
+  "no predictions_amend1.json, predictions.json or restore_anchors.json: refuse to start",
+  "an E46 window or state file missing or not its recorded sha256: exit before any reading",
+  "C1, C2, C2_null, C5 on every table and row before any share; C3 on each fine-tune as its first reading; any miss: results written, FAIL logged, exit 1",
+  "results JSON rewritten after each row; every scored number printed to the log",
+  "G < 1 nat is not a stop: that row is unscored"
+ ]
+}
