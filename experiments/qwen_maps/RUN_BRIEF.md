@@ -33,3 +33,27 @@ Spend reaching $10 stops the job. Download into `experiments/qwen_maps/results/`
 - **Spend carried.** `results/state.json` (usd 1.274, eval batch 2) is committed and synced, so `Job` reads it: the $10 total cap counts the first pod. `--prior-usd` is ignored while state.json exists, so the second pod's set-up is **not** counted unless the lead adds it to state.json's `usd` before the sync (`jq '.usd += <setup>'`).
 - **C** is skipped as done (`C.json` has `"done": true`); its gate is read again from the file, no model load for it. S reruns from scratch (its files on `/root/e44` went with the pod).
 - **Spend at $3.99/h.** From $1.27, on the table's times (S 35, D 8, K 24, M 24, G 12 min, plus ~5 min of loading) G ends near $8.4, so A (+22 min, $1.46) and H (+20 min, $1.33) fail the $9.5 spend rule and are skipped. The first pod's S went at ~10 s per layer after Σ (layers 0-1 in 35 s), so S may take ~5 min instead of 35: then G ends near $6.4, A runs (~$7.9) and H fits only just (~$9.2) if a split passed at 10. Uncounted set-up spend moves both lines up.
+
+**4. Pod without the volume (2026-10-29; plan, "Amendment record (2026-10-29)").** Volume `ydavm7ct4x` could not be
+reached (6 of 6 starts in US-MO-1 failed). E40's δW were remade on the cluster (`RUN_BRIEF_regen.md`) and put on W&B;
+the pod fetches them and the decomposition, so any H100 in any region works. Sections 2 and 3 hold except as below.
+- **Pod.** One H100 80 GB (SXM or PCIe), any region, **no network volume**, container disk **200 GB** (decomposition
+  53.7 GB, δW 14.1 GB, S's files 34 GB, H 5.6 GB, venv). `remote-kernels.toml` must name no volume before `start()`;
+  the lead edits it, never while a pod of the session runs. Pass `--usd-per-h` at the pod's real rate.
+- **Fetch, while `uv sync` builds the venv** (both need `WANDB_API_KEY`; no torch), in two background processes teed
+  to the console: `PYTHONPATH=src uv run --no-project --with wandb==0.23.1 python -m commute.qwen_files /root/qwen`
+  (~20 min at ~45 MB/s) and `PYTHONPATH=src uv run --no-project --with wandb==0.23.1 python -m commute.qwen_e40_files
+  fetch /root/e40_nowarmup` (~5 min; ends with `sha256sum -c`, so exit 0 means the four files match the cluster's).
+  Check `ls -l /root/e40_nowarmup/dW/`: `step_{1,10,100}.safetensors` 2.82 GB each, `step_100_fp32.safetensors` 5.64 GB.
+- **Small inputs**: as section 2 (the W0 sources, g statistics and step-0 answers from `qwen_sft/nowarmup/`, which do
+  not depend on δW).
+- **C runs again** (the reproduction check). Before the sync the lead renames the first pod's C in git and commits:
+  `git mv experiments/qwen_maps/results/C.json experiments/qwen_maps/results/C_2026-10-28_volume.json`. C then reads
+  the new δW; its filed control_W0 rule is unchanged: KL to start within 1% (+ 3 × the bf16/fp32 gap) of 0.10621 and
+  0.52040 at steps 1 and 10, within 1% of 0.66369 at 100 (fp32 file); r1 and the four replays as before (W0 only, so
+  they should read as the first pod's: 0.05886, 0.14167; 1.7032, 1.4365, 1.7472, 4.2351). Expected KL to start: the
+  values in `results/regen.json` `kl` (step 1 ~0.1068 on the L40, 0.55% above E40's H100 reading). A miss stops after C,
+  as filed: tell the user. Nothing else of the first pod's is reused; S reruns from scratch.
+- **Command**: section 2's, with `--e40 /root/e40_nowarmup --decomp /root/qwen --usd-per-h <rate>`.
+- **Spend.** `results/state.json` carries $2.18 from the earlier pods, counted against the $10 stop. C's rerun adds
+  ~12 min. Whether to keep that carry or reset it is the user's call; the lead says which in the report.

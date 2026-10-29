@@ -11,6 +11,7 @@ import os
 import shutil
 import sys
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
@@ -31,18 +32,20 @@ def complete(dest: Path) -> bool:
     return all((dest / n).is_file() and (dest / n).stat().st_size == f["bytes"] for n, f in files.items())
 
 
-def fetch(dest: Path, log: Any = print) -> None:
-    """Fill `dest` with the artifact. A complete `dest` is kept without asking W&B, so a pod on the network volume
-    needs no W&B access. Otherwise only the files missing or of the wrong size are downloaded, each into a scratch
-    directory beside `dest` and moved into place once whole. Downloading needs WANDB_API_KEY; never prints it."""
-    if complete(dest):
+def fetch(dest: Path, log: Any = print, artifact: str = ARTIFACT, kind: str = ARTIFACT_TYPE,
+          ok: Callable[[Path], bool] = complete) -> None:
+    """Fill `dest` with `artifact` (default the decomposition; `ok` says when `dest` is complete). A complete `dest`
+    is kept without asking W&B, so a pod on the network volume needs no W&B access. Otherwise only the files missing
+    or of the wrong size are downloaded, each into a scratch directory beside `dest` and moved into place once whole.
+    Downloading needs WANDB_API_KEY; never prints it."""
+    if ok(dest):
         log(f"[fetch] {dest}: complete")
         return
     if not os.environ.get("WANDB_API_KEY"):
         raise RuntimeError("WANDB_API_KEY is not set in the environment")
     import wandb
 
-    art = wandb.Api().artifact(f"{ENTITY}/{PROJECT}/{ARTIFACT}:latest", type=ARTIFACT_TYPE)
+    art = wandb.Api().artifact(f"{ENTITY}/{PROJECT}/{artifact}:latest", type=kind)
     scratch = dest.parent / f"_dl_{dest.name}"
     dest.mkdir(parents=True, exist_ok=True)
     scratch.mkdir(exist_ok=True)
@@ -52,11 +55,12 @@ def fetch(dest: Path, log: Any = print) -> None:
             continue
         t0 = time.time()
         entry.download(root=str(scratch), skip_cache=True, executor=pool)
+        (dest / name).parent.mkdir(parents=True, exist_ok=True)  # a name may hold a directory (dW/step_1...)
         os.replace(scratch / name, dest / name)
         log(f"[fetch] {name}: {(entry.size or 0) / 1e6:.0f} MB in {time.time() - t0:.0f} s")
     pool.shutdown()
     shutil.rmtree(scratch)
-    assert complete(dest), f"{dest} incomplete after download of {art.qualified_name}"
+    assert ok(dest), f"{dest} incomplete after download of {art.qualified_name}"
 
 
 if __name__ == "__main__":
