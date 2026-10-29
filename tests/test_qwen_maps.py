@@ -233,6 +233,10 @@ def test_stored_error_under_the_limit_on_a_badly_conditioned_span():
     fp32_formed = split.dsigma(X32 @ V32, X32.T @ U32, U32, V32).double() - exact  # the stopped run's application
     assert (split.weighted_energy(fp32_formed, S) / E) ** 0.5 > 1e-3
     assert 0 < qwen_maps.stored_error(X, U, V, S, E) < 1e-3
+    applied = qwen_maps.site_change("inspan", M, U, V, {"X_ls": X32}.__getitem__, 0.0, 0.0)[0]  # the state's change
+    assert applied is not None
+    applied_err = (split.weighted_energy(applied - exact, S) / E) ** 0.5
+    assert applied_err == pytest.approx(qwen_maps.stored_error(X, U, V, S, E), rel=1e-6)
 
 
 # ----------------------------------------------------------------------------- resume after a stop (run.py)

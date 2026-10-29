@@ -186,17 +186,17 @@ def site_products(M: Tensor, U_A: Tensor, V_A: Tensor, S: Tensor, b: split.Basis
               "pe_adjoint_null": split.piece_energies(cR * (R @ V_A), cR * (R.T @ U_A), U_A, V_A, S)}
     delta = {"do_nothing": E, "ls": split.weighted_energy(O - second, S), "inspan": split.weighted_energy(second, S),
              "adjoint": split.weighted_energy(aU @ aV.T, S), "random": 0.0}
-    pieces = {}
+    half_energy = {}
     for half, (pos, bh) in hb.items():
         Uh, Vh = U_A[:, pos], V_A[:, pos]
         Xh = split.least_squares_x(M, bh)
         hU, hV = Xh @ Vh, Xh.T @ Uh
         delta[half] = split.weighted_energy(M - split.dsigma(hU, hV, Uh, Vh) - hU @ hV.T, S)
-        pieces[half] = float(split.piece_energies(hU, hV, Uh, Vh, S).sum())
+        half_energy[half] = float(split.piece_energies(hU, hV, Uh, Vh, S).sum())
         arrays[f"X_{half}"], arrays[f"pos_{half}"] = Xh, pos
         err[half] = stored_error(Xh, Uh, Vh, S, E)
     wf = split.weighted_fractions(M, b, S)
-    scalars = {"energy": E, "delta": delta, "half_piece_energy": pieces, "c": c, "stored_error": err,
+    scalars = {"energy": E, "delta": delta, "half_piece_energy": half_energy, "c": c, "stored_error": err,
                "a": split.sigma_matched_scale(M, RU, RV, U_A, V_A, S),
                "r_u": b.r_u, "r_v": b.r_v, "d_out": M.shape[0], "d_in": M.shape[1],
                "null": split.gaussian_null(b, M.shape[0], M.shape[1]), "outside_both": wf["omega_act"],
