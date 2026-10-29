@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
-from job import CFG, DEV, E40_RESULTS, F32, F64, HALVES, Job
+from job import CFG, DEV, E40_RESULTS, F32, F64, HALVES, Job, JobOpts
 
 from commute import qwen_maps, split
 from commute.qwen_sft import load
@@ -93,8 +93,7 @@ def main() -> None:
     todo = [s for s in order if any((s, lab) not in done for lab in dws)]
     t0 = time.time()
     print(f"{len(todo)} sites to do, {len(done)} (site, label) pairs done", flush=True)
-    job = Job(argparse.Namespace(out=str(out.parent), e40="", e40_large=a.e40_large, waive="", prior_usd=0.0,
-                                 decomp=a.decomp, usd_per_h=0.0), CFG, lambda r, p: {})
+    job = Job(JobOpts(out=str(out.parent), e40_large=a.e40_large, decomp=a.decomp), CFG, lambda r, p: {})
     model = load_target(DEV, F32)  # Σ at W0 on stage S's rows, as Job.sigma computes it (no log written)
     sigma = qwen_maps.input_moments(model, list(job.rows("maths").to(DEV).split(job.batch)), todo)
     del model
