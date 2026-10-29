@@ -16,7 +16,7 @@ import json
 from typing import Any
 
 import matplotlib.pyplot as plt
-from plot import BLUE, INK, MUTED, NAME, ORANGE, RES, TASKS, keys, save, style
+from plot import BLUE, FIG, INK, MUTED, NAME, ORANGE, RES, TASKS, keys, save, style
 
 BROWN = "#8a6a2f"
 
@@ -52,31 +52,37 @@ def fig_census(ce: dict[str, Any]) -> None:
 
 
 def fig_restore(st7: dict[str, Any], a3: dict[str, Any], a4: dict[str, Any], a5: dict[str, Any]) -> None:
-    fig, ax = plt.subplots(figsize=(10, 5.6))
-    sets = ((-0.22, BROWN, "P", "the same number of pieces whose outputs changed most"),
-            (0.0, BLUE, "o", "S: the pieces Γ switches on (chosen without the target)"),
-            (0.22, ORANGE, "v", "the same number of pieces ranked by pull on the target (no Γ; outside S)"))
-    for i, k in enumerate(keys()):
-        first = i == 0
-        rnd = a3["states"][k]["rho"]["random"]
-        ax.vlines(i - 0.4, min(rnd), max(rnd), color=MUTED, lw=1.4, zorder=2)
-        ax.scatter([i - 0.4], [sum(rnd) / len(rnd)], s=22, color=MUTED, zorder=3,
-                   label="20 random sets of the same size (mean and range)" if first else None)
-        y_all = a5["states"][k]["rho_all_alive_amend4"]
-        ax.plot([i - 0.46, i + 0.46], [y_all] * 2, color=INK, lw=1.4, ls="--", zorder=2,
-                label="every piece at once" if first else None)
-        ys = (a4["states"][k]["rho"]["C_n"], st7[k]["rho"]["S"], st7[k]["rho"]["D"])
-        for (dx, col, mk, lab), y in zip(sets, ys, strict=True):
-            ax.scatter([i + dx], [y], s=55, marker=mk, color=col, zorder=4, label=lab if first else None)
-    ax.set_xticks(range(len(keys())), task_seed_labels(), fontsize=8)
-    ax.set_xlim(-0.6, len(keys()) - 0.4)
-    ax.set_ylim(-0.25, 0.6)
-    ax.set_ylabel("share of the fine-tune's gain undone by putting\nthe set's outputs back to the original model's")
-    ax.set_title("Putting back Γ's set undoes about a fifth of the gain, random sets none;\n"
-                 "a ranking that needs no Γ does as well or better", fontsize=10)
-    style(ax)
-    ax.legend(frameon=False, fontsize=7.5, loc="upper center", ncol=2, bbox_to_anchor=(0.5, -0.13))
-    save(fig, "log_restore.png")
+    """Bars per task: the mean over the two seeds of each set's restored share, each seed as a dot."""
+    sets = (("random sets of S's size (mean of 20)", MUTED, lambda k: sum(r := a3["states"][k]["rho"]["random"]) / len(r)),
+            ("the pieces whose outputs changed most", BROWN, lambda k: a4["states"][k]["rho"]["C_n"]),
+            ("S: the pieces Γ switches on (no target needed)", BLUE, lambda k: st7[k]["rho"]["S"]),
+            ("ranked by pull on the target (needs the target, no Γ; outside S)", ORANGE, lambda k: st7[k]["rho"]["D"]),
+            ("every piece at once", INK, lambda k: a5["states"][k]["rho_all_alive_amend4"]))
+    fig, axes = plt.subplots(1, len(TASKS), figsize=(11, 4.6), sharey=True)
+    for ax, n in zip(axes, TASKS, strict=True):
+        ks = [k for k in keys() if k.split("/")[0] == n]
+        for j, (lab, col, f) in enumerate(sets):
+            ys = [f(k) for k in ks]
+            m = sum(ys) / len(ys)
+            ax.bar(j, m, 0.72, color=col, alpha=0.35 if col == INK else 0.9, label=lab if n == TASKS[0] else None)
+            ax.scatter([j - 0.12, j + 0.12], ys, s=14, color="k", zorder=3)
+            m = 0.0 if abs(m) < 0.005 else m
+            ax.text(j + 0.3, m + (0.012 if m >= 0 else -0.012), f"{m:.2f}", ha="center", fontsize=8.5,
+                    va="bottom" if m >= 0 else "top",
+                    fontweight="bold" if col == BLUE else "normal")
+        ax.set_xticks([])
+        ax.set_title(f"task: {NAME[n]}", fontsize=9.5)
+        ax.set_ylim(-0.2, 0.6)
+        style(ax)
+    axes[0].set_ylabel("share of the fine-tune's gain undone\nby resetting the set's outputs")
+    fig.suptitle("Resetting the pieces Γ switches on undoes about a fifth of the gain on two of three tasks; random sets undo none.\n"
+                 "A ranking that needs the target but no Γ does as well or better.", fontsize=10.5)
+    fig.tight_layout()
+    fig.legend(*axes[0].get_legend_handles_labels(), loc="upper center", bbox_to_anchor=(0.5, 0.0), ncol=3, fontsize=8, frameon=False,
+               title="bars: mean of two seeds; dots: each seed; every set but the last has as many pieces as S",
+               title_fontsize=8)
+    FIG.mkdir(exist_ok=True)
+    fig.savefig(FIG / "log_restore.png", dpi=150, bbox_inches="tight")
 
 
 def main() -> None:

@@ -85,6 +85,50 @@ def grouped(ax: Axes, rows: list[Row], key: str, clip: float | None = None) -> N
     ax.grid(axis="y", color="#e6e6e6", zorder=0)
 
 
+GOOD, MID, BAD = "#cfe8d4", "#f6e3b4", "#f4c4c0"
+
+
+def grid(rows: list[Row]) -> None:
+    """The research log's scorecard: one table per update, operations down, the three counts by step across, each
+    cell coloured good / in between / bad by the thresholds in the legend."""
+    crit = (("pgd", "faithful\n(adversarial ratio)", lambda v, r: GOOD if v <= r["pgd_line"] else BAD, "{:.2f}"),
+            ("p_target", "behaviour kept\n(target probability)", lambda v, r: GOOD if v >= 0.9 else BAD if v < 0.5 else MID, "{:.2f}"),
+            ("delta_share", "update left in Δ\n(share)", lambda v, r: GOOD if v <= 0.1 else BAD if v >= 0.3 else MID, "{:.0%}"))
+    fig, axes = plt.subplots(1, 2, figsize=(13, 3.9))
+    for ax, pair in zip(axes, PAIRS, strict=True):
+        for i, op in enumerate(OPS):
+            for c, (key, _, colour, fmt) in enumerate(crit):
+                for s, step in enumerate(STEPS):
+                    r = next(x for x in rows if x["pair"] == pair and x["op"] == op and x["step"] == step)
+                    v = r[key]
+                    x = c * 3.4 + s
+                    ax.add_patch(plt.Rectangle((x, -i - 0.5), 0.95, 0.95, color=colour(v, r), lw=0))
+                    ax.text(x + 0.475, -i - 0.03, fmt.format(v), ha="center", va="center", fontsize=8)
+        for c, (_, head, _, _) in enumerate(crit):
+            ax.text(c * 3.4 + 1.45, 1.05, head + "\nat step",  ha="center", va="bottom", fontsize=8.5)
+            for s, step in enumerate(STEPS):
+                ax.text(c * 3.4 + s + 0.475, 0.62, f"{step}", ha="center", va="bottom", fontsize=7.5, color=GREY)
+        names = [OPS[op] if op != "component_training" else
+                 ("component training\n(in place of the update)" if pair == "ft" else "component training, rank 8\n(in place of the update)")
+                 for op in OPS]
+        ax.set_yticks([-i for i in range(len(OPS))], names, fontsize=8.5)
+        ax.set_xticks([])
+        ax.set_xlim(-0.1, 3 * 3.4 - 0.4)
+        ax.set_ylim(-len(OPS) + 0.4, 2.3)
+        ax.set_title(PAIRS[pair], fontsize=10, loc="left")
+        for sp in ax.spines.values():
+            sp.set_visible(False)
+        ax.tick_params(length=0)
+    handles = [Patch(color=GOOD, label="good: inside the unchanged decomposition's spread; target ≥ 0.9; ≤ 10% in Δ"),
+               Patch(color=MID, label="in between: target 0.5 to 0.9; 10 to 30% in Δ"),
+               Patch(color=BAD, label="bad: outside the spread; target < 0.5; ≥ 30% in Δ")]
+    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=8, frameon=False)
+    fig.suptitle("Only component training does well on all three counts; each split of the finished update fails at least one", fontsize=11)
+    fig.tight_layout(rect=(0, 0.08, 1, 0.95))
+    fig.savefig(FIG / "grid.png", dpi=150)
+    plt.close(fig)
+
+
 def bars(rows: list[Row], f: float) -> None:
     fig, axes = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
     a, b, c = axes
@@ -196,6 +240,7 @@ def main() -> None:
     rows, f = load()
     FIG.mkdir(exist_ok=True)
     bars(rows, f)
+    grid(rows)
     pgd(rows, f)
     outside(rows)
     routes(rows)

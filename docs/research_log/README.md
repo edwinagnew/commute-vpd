@@ -93,14 +93,32 @@ least once a day:
 
 ## What to update
 
-1. **Every experiment**: a new file `parts/experiments/eN.html` holding one `<article class="exp" id="eN">` card
-   (code, name, date, machine, directory; an outcome chip of one or two words: held, missed, mixed, surprise, no answer, ongoing, unscored; one-sentence verdict; Run / Found / Bears on / Moved on), or the Moved-on
-   field of an existing one. **Found** is three bullets at most, each one plain sentence a colleague can read
-   cold: what came out and whether it was expected, at most two numbers, no filed-prediction bookkeeping (that lives
-   in the report). An amendment rewrites the bullets to the experiment's current answer instead of adding one per
-   amendment; **Moved on** is three sentences at most plus the report link (user, 2026-10-26: the Found lists had
-   become unreadable). A flush that touches a card brings it to this length. Figures: copy the experiment's own PNG into the `files` map below under
-   `fig/eN_<name>.png`.
+1. **Every experiment**: a new file `parts/experiments/eN.html` holding one `<article class="exp" id="eN">` card, or
+   the fields of an existing one. Card format (user, 2026-10-29, after a red-team read by cold Sonnet readers; model
+   cards: E16, E21, E34, E38, E39):
+   - **Header**: code, name (the question), date, machine, directory; an outcome chip of one or two words (held,
+     missed, mixed, surprise, no answer, ongoing, unscored).
+   - **Opening**: four short `<p class="one">` paragraphs headed **The question.** (in project terms: which line and
+     Q, why it matters, what earlier result prompted it), **What we did.** (in plain words, defining every term a
+     reader new to the project needs: the adversarial ratio and its pass and fail lines, do-nothing, the map used),
+     **What we found.** (the result, at most two numbers a sentence, pointing at the figures) and **What it means.**
+     (what it says for the line, the caveat that sets the next test, and what the project did next). A reader who
+     stops here knows the result and why the next decision followed.
+   - **Figures**: three to five, each answering one question. Design the plot for its message, not as a dump of
+     every arm: one panel where one will do, bars from a natural baseline, task names in words (` which` then ` was`,
+     never `r1_t534_v369`), no "Amendment N", "filed", W₀ or raw metric names in titles, legends or axes. A title
+     states the finding; if a later run overturns it, redraw it. The caption opens with the question in bold and a
+     one-word answer, then says how to read the plot. Log figures are drawn from saved results by the experiment's
+     `plot_log.py`; figures cut from a card stay in its report, and Moved on says so.
+   - **Run**: two sentences: what ran, on what, at what cost.
+   - **Found**: three bullets at most, each one plain sentence a colleague can read cold: what came out and whether it
+     was expected, at most two numbers, no filed-prediction bookkeeping (that lives in the report). An amendment
+     rewrites the bullets to the experiment's current answer instead of adding one per amendment.
+   - **Bears on**; **Moved on**: three sentences at most (the decisions taken and by whom, what runs next) plus the
+     report links.
+   A flush that touches a card brings it to this format (user, 2026-10-26: the Found lists had become unreadable;
+   2026-10-29: the openings were too thin and the plots too hard to read). Figures: copy the PNG into the `files`
+   map below under `fig/eN_<name>.png`.
 2. **Every claim, with its status** (`claims.html`): add, re-chip or re-word rows. Statuses: holds,
    partial/qualified, refuted, uninformative, open.
 3. **Sub-questions** (`questions.html`): the status line and chip of every Q the experiment bears on; the E-code
@@ -261,6 +279,8 @@ Figures already published (their sources, for a re-upload):
 - "fig/e38_amend7_line.png": "experiments/recruitment_test/figures/amend7_line.png"
 - "fig/e38_log_census.png": "experiments/recruitment_test/figures/log_census.png"
 - "fig/e38_log_restore.png": "experiments/recruitment_test/figures/log_restore.png"
+- "fig/e16_grid.png": "experiments/split_comparison/figures/grid.png"
+- "fig/e34_log_faithful.png": "experiments/teacher_training/figures/log_faithful.png"
 - "fig/e34_amend6_lora.png": "experiments/teacher_training/figures/amend6_lora.png"
 - "fig/e39_moves.png": "experiments/broad_fragility/figures/moves.png"
 - "fig/e39_reverts.png": "experiments/broad_fragility/figures/reverts.png"
