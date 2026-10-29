@@ -46,6 +46,9 @@ Layouts: param-decomp `(U (C, d_out), V (d_in, C))`; theory `(U_A (d_out, n), V_
 - `trigger_gbar(model, uv_alive_index, toks, half)`: mean g at trigger; `trigger_gradient(model, toks, half, token)` -> dL/dW; `coverage_from(G, uv, gbar)`
 **kv** — key -> value tasks. `KVTask.table(vocab)`; `identity(...)`, `bijection(name, marker, keys, pool, seed)`; `pick_marker(counts, decode, vocab)`; `windows(rows, marker, keys, half, n, seed)`; `key_distributions(logits_fn, w, device)`.
 **kv_windows** — kv windows in the harness (E42). `task_context(ctx, windows_path)` -> (Context with the table as target, KVTask); `pile_reading(nets, rows, task, device)`: mean P(table[x]) after each key x in plain rows, per net, and marker counts.
+**pcfg** — Jain et al.'s PCFG counting data (E55), numpy. `sample_texts(rng, n)` -> (n, 250) codes; `count(texts, op)`; `answers(fam, op, texts)`; `assemble(fam, op, texts)` -> (n, 259); `pretrain_batch(rng, n, prior)`; `task_batch(rng, n, family, op, c_rate)` -> (seq, spurious mask); `spurious_texts(rng, n)`. Consts `PRIORS`, `VOCAB`, `SEQ`, `ART_POS`, `ANS`, token ids.
+**mingpt** — minGPT (6 blocks, 6 heads, d 192). `GPT(GPTConfig(vocab, block))`; `make_optimizer(model, lr, wd)`: AdamW, decay on Linear weights.
+**pcfg_train** — PCFG training loop. `Schedule(iters, lr).lr_at(step)`; `Batches(make, seed, batch, chunk, device).get(step)`; `train(model, batches, Run(...), ckpt, stop_at=, deadline=)` resumes from ckpt; `lm_loss`; `answer_accuracy(model, seq)`; `save_checkpoint` / `load_checkpoint`.
 **many_cues** — E33 many cues, one target. `qualifying(stats, pool, plain)`, `pick_target(Q)`, `alternative(p, q, target, used)`, `concat(ws)`, `table(pairs, vocab)`, `overlap(d, labels, alive)`, `donors(labels, same, seed)`, `reading(...)`, `combined(one, many)`.
 
 ## States: build, load, save
