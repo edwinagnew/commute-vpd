@@ -368,3 +368,29 @@ the full model's gain cannot pass for a different-target fine-tune at the same t
 - C. Drop the null from 0a. The other-target row is read in 0b's table anyway.
 
 Each option means a rerun of 0a, about 5-25 min at $0. Ask #2 (P0.4) is still open, so 0b waits either way.
+
+### Amendment 2, after stage 0b (2026-10-29, regating-lead; FYI under the user's 2026-10-29 rule for a plainly mis-specified filed setting with one clear fix; Fable's advice, recommendation B)
+
+**What happened.** Stage 0b (Slurm 42675, 2 min, $0, `results/stage0b.json`, commit 0bc8f3e) scored P0.2 pass, P0.4
+pass (ρ 0.16 rand32, 0.34 rand32b) and P0.3 inconclusive: emoticon/random g = −0.155 and rand32/random g = +0.118
+nats sit over F = 0.1 and far under the fail bar (0.25 × fine-tune g, 0.9-2.9 nats). The tree has no branch for that.
+
+**The mis-specified setting.** P0.3 says the random δW is *KL-matched* to the fine-tune. The filed `scale_cap` = 10
+(× the fine-tune's Frobenius norm) was not sourced and bound on 6 of 7 rows: the random δW reached 12-80% of the
+fine-tune's kl_other (rand32: 0.085 against 0.70). Near the top of the grid kl_other grows as c², so a match needs
+c ≈ 11 (emoticon) to ≈ 29 (rand32). The rule as written was not run.
+
+**Fix.** `scale_cap` 10 → 100, nothing else. Rerun only the seven random rows (`experiments/regating_table/amend1.py`,
+`results/predictions_amend1.json` filed before the run with the same P0.3 rule, F, fail fraction and kl tolerance;
+only the cap differs). Each row also reports G and g/G, unscored (Γ follows the small real change a random δW makes;
+on stage 0b's rows g ≈ G). Expected: pass on the E18 and ident rows; rand32 may read inconclusive.
+
+**Reading.** P0.3 passes on the rerun with P0.2 and P0.4 → stage 1 is *proposed* to the user (it still needs their
+go). Some row still cannot match at c = 100 → reported "cap"; whether to read P0.3 on the matched rows alone is the
+user's call (card). P0.3 fails → the reading goes to the user (card) before any retire card, since g tracking a real
+G is the behaviour Amendment 1 item 3 said should not retire a working stand-in.
+
+**For the card, not scored (Fable).** P0.4's pass is thin: the writes read 1.8 and 3.9 nats of gate gain with no
+piece gain (48% and 65% of the random-map fine-tunes' own g) and were not matched on kl_other. The non-positive rule
+bounds only positive g, so the other-target nulls' gate gain of −0.9 to −3.5 nats is unscored in size. rand32's
+fine-tune kl_other (0.70) is 7× rand32b's (0.097) under the same recipe.

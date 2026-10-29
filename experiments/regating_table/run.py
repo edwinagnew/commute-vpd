@@ -361,11 +361,13 @@ def stage0a(run: Run) -> None:
 # ----------------------------------------------------------------------------- stage 0b: the table
 
 
-def random_row(run: Run, t: Task, dW: dict[str, Tensor], ft: dict[str, Any]) -> dict[str, Any]:
+def random_row(run: Run, t: Task, dW: dict[str, Tensor], ft: dict[str, Any], cap: float = PT.SCALE_CAP) -> dict[str, Any]:
+    """P0.3's row: the seed-0 random direction scaled to the fine-tune's kl_other, c <= cap (stage 0b: the filed 10;
+    amend1.py: Amendment 2's 100)."""
     from commute.finetune import random_direction
 
     d = random_direction(dW, 0)
-    m = PT.match(lambda c: read_state(run, t, PT.scaled(d, c))[1], ft["kl_other"], PT.SCALE_CAP, run.P["thresholds"]["kl_rel_tol"])
+    m = PT.match(lambda c: read_state(run, t, PT.scaled(d, c))[1], ft["kl_other"], cap, run.P["thresholds"]["kl_rel_tol"])
     return {**cells(run, t, PT.scaled(d, m["x"])), "scale": m["x"], "match": m["status"], "kl_target": ft["kl_other"],
             "grid": m["grid"], "trace": m["trace"]}
 
