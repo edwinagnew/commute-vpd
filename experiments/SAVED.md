@@ -118,8 +118,12 @@ This folder is "E11" in `saved_states`. All files are written by run.py.
 - `code_as_ran/`: the scripts as they ran, with `git_state.txt`.
 - Logs: `logs/{scored,smoke,uv_sync,vpd_fetch}.log`.
 
-## row_blocks (E49, planned 2026-10-29; not yet written)
-- `dW_{adam,sgd,lora}.pt`: dW dicts (fp32, 113 MB each) of E37's Adam fine-tune, A1's plain SGD fine-tune and E39's rank-8 LoRA on the lowercase task (`lowercase.finetune`), regenerated on the cluster L40 by `run.py regen`; sha256 in `results/regen.json`. Load with `torch.load(p, weights_only=True)`; a do-nothing state is `harness.at(ctx, dW, None)`.
+## row_blocks (E49, written 2026-10-29, Slurm 42959)
+- `dW_{adam,sgd,lora}.pt`: dW dicts (fp32) of the lowercase fine-tunes (`lowercase.finetune`, 300 steps of 8 lowercase rows), regenerated on the cluster L40 by `run.py regen`; sha256 in `results/regen.json` and the regen log. Load with `torch.load(p, weights_only=True)`; a do-nothing state is `harness.at(ctx, dW, None)`.
+  - `dW_adam.pt` (113,253,467 B; sha256 `2b1669e1…`): E37's Adam fine-tune, rate 3e-5; held-out gain 0.12963 (H100 0.1301).
+  - `dW_sgd.pt` (113,252,477 B; `2b2cc903…`): A1's plain SGD fine-tune, rate 0.01; gain 0.13705 (H100 0.13671).
+  - `dW_lora.pt` (113,253,467 B; `067152d9…`): E39's rank-8 LoRA, Adam 1e-4, saved as its δW; gain 0.14774 (H100 0.1479).
+- Pile val rows 512-1023 for these reads are cached at `~/commute-data/artifacts/sets/val_{512,768}_256.npy` (regen job).
 - Logs: `{regen,a,b512s0..b768s2,score}.log`.
 
 ## recruit_test
