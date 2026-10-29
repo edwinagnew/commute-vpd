@@ -1,0 +1,16 @@
+<article class="exp" id="e48">
+<div class="top"><span class="id">E48</span><span class="chip partial">mixed</span><h3>Is the unchanged decomposition's masked model already poor at the cipher's cue, so that a pass counting it would fail every map?</h3><span class="when">2026-10-29 · MATS cluster L40 · <code>experiments/pass_reread</code></span></div>
+<p class="one">Yes, on both random ciphers, so the new part of the pass is not used and the pass stays the ordinary-text adversarial reading with the cue reading printed beside it. The run stopped after its first control, as planned, in 2 minutes at $0.</p>
+<figure>
+<img src="fig/e48_s1_fidelity.png" alt="Ratio of the unchanged decomposition's masked-model distance from the original at each task's cue to its distance on ordinary text, with a dashed stop line at 1.5: 2.21 on the one-pair cipher, 1.86 on the 32-pair cipher and its identity control, 1.48 on emoticon, 1.14, 0.95 and 0.76 on the rare target and the first two ladder rungs.">
+<figcaption>Is the unchanged decomposition already far from the original model at the cipher's cue? Yes. Each dot is the masked model's distance from the original at the task's cue, as a multiple of its distance on ordinary text (1 is as close); the dashed line at 1.5 is the agreed stop line. Both random ciphers are past it; the earlier tasks' cues are under it.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>The unchanged decomposition rebuilt only from the subcomponents Γ marks important (Δ at its original value), read at the position after each cipher's marker and key on 97 held-out windows, against its distance on 256 Pile rows. Two apparatus checks passed first. One job, Slurm 42757, 2 minutes, $0.</dd>
+<dt>Found</dt><dd><ul>
+<li>At the 32-pair cipher's cue the masked model is 1.86 times its ordinary-text distance from the original, and 2.21 times at the one-pair cipher's, both over the 1.5 line; the earlier tasks' cues read 0.76 to 1.48, emoticon closest. We leaned towards this, with medium-low confidence.</li>
+<li>The identity control reads the same 1.86 as the 32-pair cipher because the two tasks share their windows; putting the original Δ back in moved nothing (0.001 nats).</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q4</dd>
+<dt>Moved on</dt><dd>The saved teacher-training copies were not re-read, by design, and the rare target stays "not placed, a narrow miss" (E34); no rerun. Report: <code>reports/analyses/2026-10-29_analysis_e48-pass-reread.md</code>; plan <code>reports/plans/2026-10-29_plan_e48-pass-reread.md</code>; notebook <code>notebooks/E48_pass_reread.ipynb</code>. Not run: the saved copies under the new reading; the subcomponents carrying E42's gain.</dd>
+</dl>
+</article>
