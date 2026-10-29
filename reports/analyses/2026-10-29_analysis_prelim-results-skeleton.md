@@ -82,7 +82,7 @@ unchanged model's.
 
 The only reading about an update is E40's. Doing nothing passes its web-text check after a step or ten, so that check
 cannot fail the trivial placement. E44 exists to give the check teeth. Its code is reviewed and fixed, and a $0 cluster
-rehearsal on the fixed code ran clean. The paid run then started on an H100: its unchanged-model control held, but it stopped at a precision check on the stored update before any split was read. A free cluster diagnosis comes next.
+rehearsal on the fixed code ran clean. The paid run then started on an H100: its unchanged-model control held, but it stopped at a precision check on the stored update before any split was read. A free cluster diagnosis traced it to one split on a few ill-conditioned layers, and a fix in higher precision is under way.
 
 ## 3. Claims and the evidence under each
 
@@ -164,9 +164,9 @@ The log's claims section has no Qwen row. No map has been scored on Qwen.
 
 | Deliverable | Supported now by | In flight | Not built |
 |---|---|---|---|
-| D1, a clean decomposition of an update at scale | nothing on Qwen; the 67M's C1-C3 as the precedent | E44: the test with teeth and the cheap maps on E40's saved updates; the paid run held its control, then stopped at a precision check on the stored update, $1.45 spent; a $0 diagnosis next | a check that the unchanged model's adversarial sources still exist on the volume |
+| D1, a clean decomposition of an update at scale | nothing on Qwen; the 67M's C1-C3 as the precedent | E44: the test with teeth and the cheap maps on E40's saved updates; the paid run held its control, then stopped at a precision check on the stored update, $1.45 spent; a $0 diagnosis found one ill-conditioned split, fix under way | a check that the unchanged model's adversarial sources still exist on the volume |
 | D2, the same for SFT and RL | nothing | E45 Job 1, on the cluster for $0: the control and the gold update match E40; reading the arms is gated at $15-20 | the GRPO loop; ~8,000 sampled GSM8K answers |
-| D3, elicitation against a new mechanism | the 67M's R1-R5 as an instrument, and C2's cipher; nothing at scale | E45 Job 1: anchor 2, the invented facts, was not learned by step 100 on seed 0, and its maths accuracy fell; Amendment 1 trains 300 steps on both seeds | the invented-facts set; the context-distillation prompt search; the Qwen readings of Γ's change and the think-mode overlap |
+| D3, elicitation against a new mechanism | the 67M's R1-R5 as an instrument, and C2's cipher; nothing at scale | E45 Job 1: anchor 2, the invented facts, was not learned by step 100 on seed 0, and its maths accuracy fell; with 300 steps, Amendment 1, it learns on seed 0; seed 1 is running | the invented-facts set; the context-distillation prompt search; the Qwen readings of Γ's change and the think-mode overlap |
 
 E44 on E40's updates is a shakedown of the table, not D1 evidence: D1 is scored on Q2's updates. The user asked on
 2026-10-28 that every anchor reading carry the sentence "anchor 1 shares its domain, anchor 2 does not". A failed split
@@ -237,7 +237,7 @@ each.
 | 12 | A second fine-tune seed under C1-C3 | every teacher-training row uses fine-tune seed 0, `e34.html:43` | E34's three tasks at a second seed | about $2-3 | not in §2 |
 | 13 | Any map keeps the decomposition faithful on Qwen, D1 | no map scored; the unchanged model reads 4.24 on maths | E44, then Q2's updates through the same table | about $8, then $15-20 gated | §2 8 |
 | 14 | SFT against RL on Qwen, D2 | no RL code | the GRPO loop, rehearsed for $0, then Q5 | about $20, gated; code days 3-7 | not in §2 |
-| 15 | Elicitation or a new mechanism on Qwen, D3 | anchors and readings not built | two anchors, two seeds each, then Q3's readings; anchor 2 is not yet learned, E45 Amendment 1 | about $16 + $5, floors | not in §2 |
+| 15 | Elicitation or a new mechanism on Qwen, D3 | anchors and readings not built | two anchors, two seeds each, then Q3's readings; anchor 2 learns at 300 steps on seed 0, E45 Amendment 1 | about $16 + $5, floors | not in §2 |
 | 16 | Teacher training on Qwen, if E44's maps fail | the rate falls with size; the filed grid would probably abort | E40 Amendment 1 under a new grid | about $30 on an H200, gated | not in §2 |
 | 17 | A map that updates Γ keeps the floor | no Γ-refit protocol holds the unchanged model | the matched-attacker refit | about $9 a refit, protocol unsolved | §2 9 |
 | 18 | Re-gating is not a leak through Γ's input | the decisive tests need a Γ from another decomposition seed or a refit Γ | a second decomposition, or rank 17's refit | unknown; no second decomposition exists | not in §2 |
