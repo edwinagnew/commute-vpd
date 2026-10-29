@@ -50,7 +50,8 @@ def fetch(dest: Path, log: Any = print, artifact: str = ARTIFACT, kind: str = AR
     dest.mkdir(parents=True, exist_ok=True)
     scratch.mkdir(exist_ok=True)
     pool = ThreadPoolExecutor(16)  # parts of one file in parallel, as wandb's own Artifact.download does
-    for name, entry in sorted(art.manifest.entries.items()):
+    for name in sorted(art.manifest.entries):
+        entry = art.get_entry(name)  # wandb 0.23.1: a bare manifest entry has no parent and cannot download
         if (dest / name).is_file() and (dest / name).stat().st_size == entry.size:
             continue
         t0 = time.time()
