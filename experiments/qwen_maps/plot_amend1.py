@@ -92,4 +92,15 @@ def main() -> None:
     )
     ax.set_ylabel("share, 0 = original model, 1 = fine-tuned model")
     ax.set_title("Do Γ's masks reproduce the update where the update is made?")
-    ax.le
+    ax.legend(loc="center left", fontsize=8, frameon=False, bbox_to_anchor=(0.0, 0.78))
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    OUT.parent.mkdir(exist_ok=True)
+    fig.tight_layout()
+    fig.savefig(OUT, dpi=150)
+    plt.close(fig)
+    print(f"wrote {OUT}")
+
+
+if __name__ == "__main__":
+    main()
