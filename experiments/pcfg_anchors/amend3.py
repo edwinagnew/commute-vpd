@@ -131,7 +131,8 @@ def ccc_rows(texts: np.ndarray) -> int:
 
 
 def model_free_checks(k: dict[str, Any], pr: Rows, te1: Rows) -> dict[str, bool]:
-    """Rows are what the filing says; the swap read labels known answerers as filed (synthetic)."""
+    """Rows are what the filing says (the te1 label histogram equals Stage A's saved one, a2_N1.json); the swap read
+    labels known answerers as filed (synthetic)."""
     (pt, pid), tt = pr, te1[0]
     old = {t.tobytes() for t in eval_texts(json.loads(PRED1.read_text())["constants"])}
     old |= {t.tobytes() for t in amend2_fresh(json.loads(PRED2.read_text())["constants"])}
@@ -142,7 +143,8 @@ def model_free_checks(k: dict[str, Any], pr: Rows, te1: Rows) -> dict[str, bool]
     got = {s: swap_read(p == tb, swap_size(te1), tb, k, f"synthetic {s}")["label"] for s, (p, _) in synth.items()}
     return {"pairs_counts_match": bool((np.array(k["pairs"])[pid] == np.stack([pcfg.count(pt, A), pcfg.count(pt, B)], 1)).all()),
             "pairs_natural_no_ccc": ccc_rows(pt) == 0, "pairs_disjoint_from_amend1_amend2": not any(t.tobytes() in old for t in pt),
-            "te1_rows_are_stage_a_rows": bool((texts_of(eval_seqs(B, A1.eval_n, 1.0)) == tt).all()),
+            "te1_wrapper_changes_no_row": bool((texts_of(eval_seqs(B, A1.eval_n, 1.0)) == tt).all()),
+            "te1_label_hist_is_stage_a_N1_count_b_te1_hist": swap_hist(tb) == json.loads((RESULTS / "a2_N1.json").read_text())["states"]["10000"]["count_b_te1"]["hist"],
             "te1_label_is_a_plus_1": bool((tb == ta + 1).all()), "te1_rows_hold_ccc": ccc_rows(tt) > 0,
             "b_check_rows_no_ccc": ccc_rows(qualifying_texts(np.random.default_rng([EVAL_SEED, 51]), N_B)) == 0} | {
             f"synthetic_{s}_{w.replace(' ', '_')}": got[s] == w for s, (_, w) in synth.items()}  # fmt: skip
@@ -214,7 +216,12 @@ def te1_read(pred: np.ndarray, te1: Rows, offset: int, tag: str, k: dict[str, An
     row = swap_read(pred == a + offset, swap, pcfg.count(te1[0], B), k, f"te1 {tag}")
     pre, clip = pred == te1[1] + offset, np.minimum(swap, k["swap_clip"])
     row["pre_swap_share_by_swap"] = {str(v): float(pre[clip == v].mean()) for v in np.unique(clip)}
-    log(f"te1 {tag}: share answering count a before the swap + {offset}, by |swap|: {row['pre_swap_share_by_swap']}")
+    lower, b = te1[1] > a, pcfg.count(te1[0], B)  # direction: a -> c (lowering a) or c -> a (raising a)
+    row["by_b_direction_swap"] = {f"{x},{'lower' if lo else 'raise'},{v}": float((pred == a + offset)[m].mean())
+                                  for x in np.unique(b) for lo in (True, False) for v in np.unique(swap[swap > 0])
+                                  if (m := (b == x) & (lower == lo) & (swap == v)).sum() >= k["min_cell_rows"]}  # fmt: skip
+    log(f"te1 {tag}: share answering count a before the swap + {offset}, by |swap|: {row['pre_swap_share_by_swap']}; "
+        f"right by (b, direction, |swap|): {row['by_b_direction_swap']}")
     return row
 
 
