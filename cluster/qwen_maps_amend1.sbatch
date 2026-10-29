@@ -15,7 +15,7 @@
 #SBATCH --qos=debug
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --mem=48G
 #SBATCH --time=00:30:00
 #SBATCH --export=ALL,PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 #SBATCH --output=cluster/logs/%x-%j.out
