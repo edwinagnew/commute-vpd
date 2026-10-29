@@ -121,7 +121,7 @@ def fig_methods(tasks: dict[str, Any]) -> None:
     ax.set_xticks(x, [tick(tasks[t]) for t in ORDER], fontsize=7.5)
     ax.set_ylim(0, 1.15)
     ax.set_ylabel("share of the gain from Γ switching\nthe original pieces on differently (re-gating share)")
-    ax.set_title("Three ways of training give about the same re-gating share on each task;\n"
+    ax.set_title("Three ways of training give about the same re-gating share on each task (one seed);\n"
                  "it is lower for the rare targets and emoticon", fontsize=10.5)
     ax.legend(frameon=False, fontsize=8, loc="lower left")
     style(ax)
