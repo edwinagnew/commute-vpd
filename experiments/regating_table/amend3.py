@@ -48,7 +48,10 @@ from commute.finetune import random_direction
 
 PRED_A, OUT = RESULTS / "predictions_amend3.json", "amend3.json"
 TABLES, RANDOM_MAP = ("ident32", "ident32b", "rand32", "rand32b"), ("rand32", "rand32b")
-FROZEN = ("src/commute/perturb.py", "src/commute/anchors.py", "src/commute/split.py", "src/commute/local_faith.py")
+FROZEN = (
+    "src/commute/perturb.py", "src/commute/anchors.py", "src/commute/split.py", "src/commute/local_faith.py",
+    "src/commute/finetune.py", "src/commute/vpd.py", "src/commute/component_training.py",
+)  # harness.py left out: E49 added a function to it after 910effa; run.py changed here (C1, C2 cover it)
 SHARED = ("p02_min_piece", "p02_copy_min", "p02_random_max", "w0_tol", "write_rel_tol", "alpha_max")  # = predictions.json's
 PARTS = ("G", "g", "piece_gain", "gated_piece_gain")
 
