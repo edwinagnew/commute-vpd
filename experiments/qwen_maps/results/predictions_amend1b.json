@@ -1,0 +1,64 @@
+{
+  "plan": "reports/plans/2026-10-28_plan_qwen-q0q1.md, 'Amendment record (2026-10-29, Amendment 1b: consistent inputs)'",
+  "filed": "2026-10-29, before any code was run (a $0 check the independent review of Amendment 1 recommended; the user is told in chat, standing rule); never edited after the run (add a dated report instead)",
+  "scored_by": "experiments/qwen_maps/amend1b.py, reading the numbers under `rules`",
+  "question": "Amendment 1 spliced Gamma's inputs (FT before layer l, W0 after) and Gamma's masks recovered none of the update at l = 16. Is that because Gamma ignores the change made in the early layers, or because the spliced inputs disagree with each other? Given the inputs of H(l) itself, a model whose early layers are fine-tuned and whose every activation is consistent, do Gamma's masks reproduce the update?",
+  "general": "As predictions_amend1.json: thresholds absolute unless 'relative'; <= and >= inclusive, < and > strict; every comparison rounds to 9 places first; NaN, infinity or a missing value is a miss in every control rule and makes the verdict 'unreadable'; no re-reads; K values are means over every position of the 16 rows (4096 positions), m_H is a ratio of those means.",
+  "quantities": {
+    "rows, update, FT": "as predictions_amend1.json: the first 16 rows of maths_rows.json cut to 256 tokens, batch 1; E40's no-warm-up step-10 dW (regen copy, sha256 against regen_SHA256SUMS); FT = W0 + dW in fp32 over the 196 decomposed sites",
+    "H(l)": "the unmasked model with FT's weights in the decomposed sites of layers 0..l-1 and W0's in layers l..27 (amend1.Weights.use(l)); H(0) = W0, H(28) = FT",
+    "K_H(l)": "KL(FT || masked model): masks = qwen_vpd.importances(model, tokens, gamma, comps) run with H(l)'s weights in (Gamma's clean-forward inputs of H(l): all 29 taps and all 196 readouts, consistent), then masked_logits with W0's weights, the original components, Delta off; amend1.Run.k_plain(l). K_H(0) = K(0), K_H(28) = K(28) by definition",
+    "K(0), K(28)": "K_H(0) and K_H(28), re-measured in this job; Amendment 1 read them through this same path (Kplain_W0, Kplain_FT) and through the splice, equal to every digit",
+    "m_H(l)": "[K(0) - K_H(l)] / [K(0) - K(28)], with K(0) and K(28) from this job: the share of do-nothing's reproduction reached when Gamma reads H(l). m_H(0) = 0, m_H(28) = 1",
+    "u(l)": "Amendment 1's values, filed here as constants (not re-measured): u(16) = 0.92620087, u(24) = 0.99403834 (amend1_score.json, 0.926200867755243 and 0.9940383354333424)",
+    "KL_self(l)": "unscored secondary: KL(H(l) || masked model with H(l)'s masks), the reference being H(l)'s own clean logits from the same importances call; how well the masks reproduce the model Gamma read. KL_self(28) = K(28); l in {0, 16, 24}",
+    "floor f": "|a / b - 1| between two calls of K_H(0) on row 0"
+  },
+  "stages": "stage 1 (controls, alone, first): K_H(0) twice on row 0, then K(0), K(28) on all 16 rows; amend1b_controls.json; any miss stops the job. Stage 2: K_H(16) (the verdict), K_H(24), then KL_self(0), KL_self(16), KL_self(24); amend1b_stage2.json and amend1b_score.json written after each; every value printed to run.log",
+  "rules": {
+    "control_floor": {
+      "prediction": 1,
+      "rule": "f <= 1e-3",
+      "expected": "0, bitwise (Amendment 1 read 0)",
+      "if_misses": "stop after stage 1"
+    },
+    "control_reproduce": {
+      "prediction": 2,
+      "rule": "relative: |K(0) / 1.4956748775221875 - 1| <= 1e-3 and |K(28) / 0.10243869165192843 - 1| <= 1e-3 (Amendment 1's K_0 = Kplain_W0 and K_28 = Kplain_FT, amend1_controls.json)",
+      "tolerance_basis": "Amendment 1's floor was exactly 0 and the path, rows, weights and card type are the same, so 0 is expected; the tolerance is not Amendment 1's identity tol (1e-6) because this job may land on another L40 card, and 1e-3 is the floor rule's own limit (E44's agreement bound). At 1e-3 of K(0) and K(28) the gap moves by under 0.0016 nats and m_H by under 0.002, far inside the verdict's bins",
+      "reported_not_scored": "'bitwise' if both relative gaps are 0, else the two gaps",
+      "if_misses": "stop after stage 1: the job is not reading what Amendment 1 read, so m_H could not be set beside u"
+    },
+    "verdict": {
+      "prediction": 3,
+      "rule": "at l = 16: m_H(16) NaN or missing -> 'unreadable'; m_H(16) >= 0.5 x u(16) = 0.463100435 -> 'reproduces from consistent inputs'; m_H(16) <= 0.2 x u(16) = 0.185240174 -> 'no reproduction from consistent inputs'; between -> 'partial'",
+      "reading_high": "'reproduces from consistent inputs': Amendment 1's null at layer 16 came from the splice. Given a model whose weights changed only in its first 16 layers, Gamma switches on subcomponents that carry most of what those layers make. That is route (b) in substance as reading A credits it, so Fable's option 1 gives up something. It does NOT say whether Gamma reads the early change or copies H(16)'s own output: with consistent inputs those are the same function of the activations (see blind_to)",
+      "reading_low": "'no reproduction from consistent inputs': copying from consistent inputs confirmed in Amendment 1's sense. Even when every input agrees, Gamma does not reproduce a change made in the early layers although H(16)'s output carries 93% of it; the masks need the fine-tuned late layers themselves, and Amendment 1's 'copying' stands without the splice caveat",
+      "reading_partial": "Gamma recovers some of the early layers' share from consistent inputs; the card reports the number and Amendment 1's verdict keeps its upper-bound caveat",
+      "lean": "'reproduces from consistent inputs', moderate: H(16)'s late taps already carry 93% of the update's output effect (KL(FT || H(16)) = 0.134 nats), so a Gamma that copies the output of whatever model it reads would also reproduce most of it; only a Gamma keyed to the fine-tuned late layers' own activations reads low",
+      "reported_not_scored": "m_H(24) against u(24) with the same three bins (0.5 x u(24) = 0.49701917, 0.2 x u(24) = 0.198807668); 'overshoot' when m_H(l) > 1 (the masks read from H(l) bring the masked model nearer FT than do-nothing's own masks); KL_self(0), KL_self(16), KL_self(24) beside K(28)"
+    },
+    "early": {
+      "memory": "GPU peak after row 0 of stage 1 over 44 GiB -> stop (amend1.Run.guard, unchanged)",
+      "time": "stage 1 not finished by 15 min of wall time -> stop",
+      "dW_file": "step_10.safetensors absent or its sha256 not the committed one -> stop"
+    }
+  },
+  "blind_to": "Copying versus reading the change on consistent inputs: for H(l), the late taps are the downstream effect of the early change, so a Gamma that copies the output of the model it reads and a Gamma that reads the change through its effect on the late taps give the same masks; a high m_H(16) says the reproduction is available from any model that makes the update, not which of the two Gamma does. Also blind to rows beyond these 16 (per-row values saved), to steps other than 10, to any update other than E40's, and to split states (only Gamma's input model changes).",
+  "edge_cases": {
+    "note": "each rule run by hand on these cases before filing",
+    "floor_zero": "f = 0: holds",
+    "floor_at_limit": "f = 1e-3 exactly: holds",
+    "reproduce_tie": "relative gap exactly 1e-3: holds",
+    "reproduce_zero": "K(0) or K(28) read 0: the ratio is 0, the gap 1: miss (the constants are nonzero, so the ratio is defined)",
+    "control_missing": "any stage-1 value missing or NaN: miss, stop",
+    "zero_gap": "K(0) - K(28) cannot be near 0 once control_reproduce holds (it is then within 0.2% of 1.3932); a non-positive gap would make m_H NaN -> 'unreadable', never divided",
+    "verdict_tie_high": "m_H(16) = 0.463100435 exactly: 'reproduces from consistent inputs'",
+    "verdict_tie_low": "m_H(16) = 0.185240174 exactly: 'no reproduction from consistent inputs'",
+    "verdict_bins_disjoint": "u(16) > 0 is a constant, so 0.2 x u < 0.5 x u and no value falls in both bins",
+    "verdict_negative": "m_H(16) < 0 (H(16)'s masks move the masked model away from FT): 'no reproduction from consistent inputs'",
+    "verdict_above_one": "m_H(16) > 1: 'reproduces from consistent inputs', flag 'overshoot'",
+    "verdict_nan": "m_H(16) NaN or infinite: 'unreadable'; m_H(24) is never substituted",
+    "stage2_cut_short": "K_H(16) is the first stage-2 reading; if the job ends before it, 'unreadable'; never extrapolated"
+  }
+}
