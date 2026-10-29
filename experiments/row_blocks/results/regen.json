@@ -1,0 +1,39 @@
+{
+ "card": "NVIDIA L40",
+ "ci": {},
+ "files": {
+  "dW_adam.pt": "2b1669e173b5d9f7df149323bdf68a070b428b57932416483b597d402feb19b1",
+  "dW_lora.pt": "067152d9607b2ec09e9a903f09652aa397c706859bd5e7124bff32deec759df0",
+  "dW_sgd.pt": "2b2cc9039939cebfa850eb936656d8eef67d90e6164e6e2f92dc98c26044d88a"
+ },
+ "gains": {
+  "adam": 0.12962819773001977,
+  "lora": 0.14774469926481437,
+  "sgd": 0.13704897682987394
+ },
+ "gates": {
+  "G_gain_adam": {
+   "gain": 0.12962819773001977,
+   "pass": true,
+   "ref": 0.1301
+  },
+  "G_gain_lora": {
+   "gain": 0.14774469926481437,
+   "pass": true,
+   "ref": 0.1479
+  },
+  "G_gain_sgd": {
+   "gain": 0.13704897682987394,
+   "pass": true,
+   "ref": 0.13671
+  }
+ },
+ "kl": {},
+ "peak": {
+  "gpu_gb": 9.807373046875,
+  "host_gb": 6.126430511474609
+ },
+ "seconds": {},
+ "stage": "regen",
+ "status": "done"
+}
