@@ -23,9 +23,9 @@
 #   LOW), the saved W states,
 #   then the W1 and W1s1 trajectory re-runs -> results/amend1.json; 22-min deadline. Log results/large/amend1/amend1.log.
 #   A missed control writes results/amend1_control_miss.json (not amend1.json) and exits 1; a rerun re-reads the controls.
-# amend2: experiments/pcfg_anchors/amend2.py (predictions_amend2.json): the third-rule test on 20,000 fresh rows, no
-#   training: controls (formula, synthetic answerers, rows disjoint from amend1's, N1 10K, LOW), then the saved W
-#   states and amend1's trajectory states -> results/amend2.json; a control miss -> results/amend2_control_miss.json,
+# amend2: experiments/pcfg_anchors/amend2.py (predictions_amend2.json): the third-rule test on 20,000 fresh rows and
+#   ~9K rows in unseen (a, b) cells, no training: model-free controls, then N1 10K and LOW on both sets, then the
+#   saved W states and amend1's trajectory states on both -> results/amend2.json; a control miss -> results/amend2_control_miss.json,
 #   exit 1. No deadline (one pass, ~3-5 min). Log results/large/amend2/amend2.log.
 # a1, a2 and amend1: on exit 3 (deadline: saved, not finished) the job resubmits itself with the same arguments from
 #   $SLURM_SUBMIT_DIR, at most 3 times (count in E55_RESUBMITS); the next job resumes from the saved files.
