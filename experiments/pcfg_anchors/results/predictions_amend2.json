@@ -1,0 +1,102 @@
+{
+  "experiment": "E55 Amendment 2 ($0 confirmatory test of a post-hoc rule): do the slow all-spurious fine-tunes W1 and W1s1 at 10K answer the 'third' rule on fresh natural rows?",
+  "filed": "2026-10-29, before any run of experiments/pcfg_anchors/amend2.py; no model has read the fresh rows. The rule 'third' was found after Amendment 1's run by looking at its 8,000 rows (reports/analyses/2026-10-29_analysis_e55-stage-a.md, Amendment 1; exploration scripts ~/commute-data/scratch/reuse-lead/e55-a1-writer/explore.py, cfixed.py). This filing tests it on rows never looked at. Never edited after the run (a dated report instead). Same day, still before any run: the c read was changed at the lead's request after reports/reviews/2026-10-29_review_e55-amend1-analysis.md (findings 1, 4, 6): a within-c correlation with count(a) does not separate rules (third 0.78, mid 0.82 on amend1's rows), so it is replaced by the best rule of count c alone against the rule's share; W2 at 1K added to the third-rule predictions (T4).",
+  "why": "On amend1's rows W1 and W1s1 at 10K answer third on 97.8% and 98.1% of all rows and on all 92 rows where third differs from the four filed rules; W2 at 10K follows mid (Amendment 1, AM3). A rule fitted after looking needs a filed read on fresh rows before it is reported as a finding.",
+  "code": "experiments/pcfg_anchors/amend2.py (imports amend1's rule_answers, counts, bar_read, eval_texts); cluster/pcfg_anchors.sbatch amend2 (debug QoS, --time 00:10:00, no training); output results/amend2.json, or results/amend2_control_miss.json and exit 1 when a control misses; per-row answers results/large/amend2/answers/<state>.npy with the rows' (a, b, c) in results/large/amend2/counts.npy; log results/large/amend2/amend2.log.",
+  "constants": {
+    "n_rows": 20000,
+    "rows_seed_tail": 72,
+    "rows_seed": "default_rng([EVAL_SEED = 1, 72]), natural texts (pcfg.sample_texts), the same rows for every state. amend1 used [1, 70] (its rows) and [1, 71] (its formula check). Disjoint: no text of the 20,000 equals any of amend1's 8,000 (checked in code, a control; measured 0 before filing).",
+    "hi": 0.5,
+    "lo": 0.1,
+    "min_rows": 100,
+    "control_min": 0.95,
+    "all_row_min": 0.95,
+    "c_margin": 0.05
+  },
+  "definitions": {
+    "rows": "20,000 fresh natural window texts, each asked 'C b 40'. Answer = argmax at `=` in fp32 eval mode (interchange.run_at_art) as a count (token - NUM0); a non-number answer (count < 0) equals no rule. a, b, c = window counts, a + b + c = 40 (asserted); d = b - a - 1.",
+    "rules": {
+      "a_plus_1": "a + 1 (amend1).",
+      "b": "b (amend1).",
+      "mid": "a + 1 + trunc(d / 2), the midpoint of a + 1 and b rounded towards a + 1 (amend1).",
+      "a": "a, LOW's own answer (amend1).",
+      "third": "the nearest integer to (2 (a + 1) + b) / 3 = a + 1 + d / 3, one third of the way from a + 1 to b. Ties: none can occur, since d / 3 has fractional part 0, 1/3 or 2/3, never 1/2. Computed in integers as a + 1 + floor((d + 1) / 3); the code asserts it equals numpy rint of the fraction on every row (control). As in explore.py (np.rint((2 (a + 1) + b) / 3)). On spurious rows (d = 0) third = a + 1 = b, the label (control)."
+    },
+    "distinct_rows": "for each of the five rules: the rows where its answer differs from every other of the five. Measured on the fresh rows before filing (model-free): a_plus_1 9,547, b 11,974, mid 1,342, a 8,397, third 219 (b - a in {-8, -7, -6, -5, 5, 7}: the tails). Adding third shrinks mid's rows to b - a in {-8..-5, -3, 5, 7}.",
+    "S_r": "share of r's distinct rows answered with r's answer; nan under min_rows = 100 rows.",
+    "overall_r": "share of all 20,000 rows answered with r's answer (rules overlap; not summed). other = share answered with none of the five.",
+    "rule_label": "amend1's bar_read, unchanged (E9): f = the share of the rows on which the target equals its most common value (a constant answer's best); hi_read = f + 0.5 (1 - f). 'follows' iff S > hi_read; 'does not follow' iff S < lo = 0.1; else 'neither'; strict; nan -> 'neither'. Measured f / hi_read on the fresh rows: a_plus_1 0.4547 / 0.7273, b 0.3018 / 0.6509, mid 0.7116 / 0.8558, a 0.4100 / 0.7050, third 0.3379 / 0.6689.",
+    "route": "the one rule labelled 'follows'; none -> 'mixed'; two or more -> 'ambiguous: r1+r2'. Unlike amend1 there is no rounding read: a route 'mid' whose mid c read is 'not shown' is consistent with a fixed rounding of (41 - c) / 2, i.e. count c alone (E13).",
+    "third_pairwise": "for each other rule r: bar_read of third on the rows where third != r (third vs a_plus_1 9,547 rows, f / hi 0.5799 / 0.7899; vs b 16,265, 0.5520 / 0.7760; vs mid 1,342, 0.6565 / 0.8282; vs a 12,688, 0.5649 / 0.7825). Reported; scored only in T1b. Blind to coincidence with a third rule (E12).",
+    "c_read": "'not a function of count c alone': c_best = the share of all rows that the best possible rule of count c alone matches, i.e. in each count(c) group the share of the state's most common answer there, summed over groups and divided by 20,000. This is the exact best per-c answer, fitted on the same rows the state is scored on (no split): an upper bound for any rule of c alone, so it is conservative for 'beats'. For r in {third, mid}: gap_r = overall_r - c_best; 'beats count c alone' iff gap_r > c_margin = 0.05 (strict, absolute); else 'not shown'. Noise floor: binomial sd of each share ~0.003 at 20,000 rows, so of the gap ~0.004; the in-sample fit of ~20 per-c answers adds an optimism of order (groups / rows) ~0.001; c_margin is ~10 sd above both. Values: on amend1's rows W1 10K c_best 0.765 vs third 0.978 (gap 0.213), W2 10K c_best 0.817 vs third 0.848 (0.031) and mid 0.918 (0.102); model-free on the fresh rows a pure third answerer has c_best 0.790 (gap 0.210), pure mid 0.857 (mid gap 0.143), c_floor and c_ceil answerers 1.0 (gaps < 0)."
+  },
+  "edge_cases": {
+    "E1_empty_or_small_pool": "a read on fewer than 100 rows -> S nan -> 'neither'. The rows are fixed: the smallest pool is third's distinct rows, 219 (on amend1's 8,000 rows it was 92, under min_rows, which is why n_rows is 20,000). Pool sizes reported beside every share.",
+    "E2_zero_denominator": "overall shares and c_best divide by 20,000; S only when n >= 100; const_floor of an empty pool nan; every count(c) group in c_best is non-empty (built from the values present).",
+    "E3_ties": "S == hi_read or S == lo -> 'neither'; gap == c_margin -> 'not shown' (strict). third has no .5 ties (definitions).",
+    "E4_uncovered": "two rules following -> 'ambiguous'; none -> 'mixed'. The five distinct masks are mutually exclusive, so an exact answerer never reads ambiguous.",
+    "E5_NaN": "S nan only by E1; c_best and the gaps are never nan (fixed denominator, non-empty groups).",
+    "E7_non_number": "equals no rule (other); in c_best a non-number is an answer like any other. Checked: an all-non-number answerer reads route mixed, c_best 1.0, gaps -1.0, 'not shown'.",
+    "E9_constant_answer": "constants 13 and 14 read route mixed and c_best 1.0, so 'not shown' for third and mid (checked through the code); constant 14 reads 'neither' (not 'does not follow') for third, S 0.142.",
+    "E10_mixtures": "checked: third with 10% of rows replaced by mid reads route third (S_third 0.90); a 50/50 mixture of third and mid reads mixed (S_third 0.54, S_mid 0.50). So 'follows third' asks for third on roughly 85% or more of its own rows.",
+    "E12_pairwise_coincidence": "a pairwise read can 'follow' through another rule: a pure a answerer reads 'follows' for third vs mid (0.837 > 0.828), and pure mid reads 'follows' for third vs a + 1, b and a. So pairwise reads are scored only together (T1b: all four), and the joint distinct read carries T1.",
+    "E13_c_answerer_reads_mid": "a pure c_floor or c_ceil answerer reads route mid (S_mid 0.987, 1.000) because mid and the count-c roundings differ only on a few of mid's rows; its c_best is 1.0, so the mid c read is 'not shown'. So 'mid' in T2 requires the mid c read 'beats count c alone'. The c read is also passed by any answerer that matches the rule more often than its own best c-alone rule: a pure a + 1 answerer 'beats' for third (0.52 vs 0.40), so the c read only says the state is not c alone, never which rule it follows."
+  },
+  "predictions": {
+    "T0_controls": {
+      "claim": "The read works on answerers whose rule is known.",
+      "rows": {
+        "formula": "third's integer form equals rint((2 (a + 1) + b) / 3) on every fresh row; third = b on 2,000 spurious texts (seed [1, 72, 2]); no fresh text equals any of amend1's 8,000. Expected true (checked).",
+        "synthetic": "model-free answerers through the same read: pure a_plus_1, b, mid, a, third each read route = their own rule; constants 13 and 14 and an all-non-number answerer read route mixed; c read 'beats count c alone' for third on the pure third answerer and for mid on the pure mid answerer, and 'not shown' for both on c_floor, constant 14 and non-number. All checked before filing.",
+        "N1_10K": "N1 at 10K: overall_b >= 0.95 and S_b >= 0.95 (positive control; amend1 read 1.000).",
+        "W0_LOW": "LOW (= W0 and the do-nothing reference) asked 'C b 40': overall_a >= 0.95."
+      },
+      "threshold": "each model row >= control_min = 0.95, inclusive, absolute; each formula and synthetic row true",
+      "stop": "any miss -> results/amend2_control_miss.json and exit 1 before any W state is read; amend2.json is not written.",
+      "lean": "certain for formula and synthetic rows (checked); 97% for each model row (amend1 read 1.000 and 0.9999 on its rows).",
+      "noise_floor": "binomial sd at 20,000 rows: 0.0015 at 0.95."
+    },
+    "W0_expected": {
+      "note": "LOW is both W0 and the do-nothing reference (a zero-step fine-tune).",
+      "expected": "route a; overall_a ~1.0; overall_third ~0.366 (the share of rows where third = a, model-free); S_third ~0, label 'does not follow'; S for a_plus_1, b, mid ~0; other ~0; c_best ~0.40, third gap ~ -0.04 and mid gap ~ -0.09, both 'not shown' (LOW answers a, a function of a alone, which a rule of c alone cannot match either; the read is about third and mid, not about a). N1 10K: route b, gaps ~ -0.22, 'not shown'."
+    },
+    "T1_W1_10K_third": {
+      "claim": "W1 10K and W1s1 10K each: third labelled 'follows' (S_third > hi_read 0.6689 on its 219 rows), route third (no other rule following), and overall_third >= all_row_min = 0.95 (inclusive, absolute).",
+      "lean": "85% each: on amend1's rows overall_third 0.978 and 0.981 and third on all 92 of its distinct rows (in-sample, the rows the rule was found on). Against: the distinct rows are the tails (|b - a| >= 5), seen only 92 times; a rule fitted after looking can overfit there.",
+      "blind_to": "the mechanism (a rule match is behaviour); rules outside the five.",
+      "noise_floor": "binomial sd: 0.001 for overall at 0.98 on 20,000 rows; 0.009 for S_third at 0.98 on 219 rows; seed-to-seed (W1 vs W1s1, amend1 rows) 0.003 overall."
+    },
+    "T1b_W1_10K_pairwise": {
+      "claim": "W1 10K and W1s1 10K: third labelled 'follows' on each of its four pairwise pools (third vs a_plus_1, b, mid, a).",
+      "lean": "85% (in-sample 0.955, 0.973, 1.000, 0.975 for W1 against bars 0.79, 0.78, 0.83, 0.78).",
+      "blind_to": "E12: alone each pairwise read can pass through another rule; scored only as all four."
+    },
+    "T1c_W1_10K_not_c_alone": {
+      "claim": "W1 10K and W1s1 10K: third c read 'beats count c alone' (overall_third - c_best > 0.05).",
+      "lean": "95% (in-sample c_best 0.765 and 0.768 vs third 0.978 and 0.981, gaps 0.213; a pure third answerer has gap 0.210 on the fresh rows).",
+      "blind_to": "which two counts: since a + b + c = 40, third = (2 (a + 1) + b) / 3 = (a + 42 - c) / 3 = (82 - b - 2c) / 3, so behaviour cannot show that the answer depends on count a specifically; it shows only that it is a function of two of the three counts, not of count c alone."
+    },
+    "T2_W2_10K_not_third": {
+      "claim": "W2 10K: third labelled 'does not follow' (S_third < 0.1), overall_third < 0.95, route mid, and the mid c read 'beats count c alone' (overall_mid - c_best > 0.05; E13).",
+      "lean": "80% (in-sample: S_mid 1.000 on 564 rows, third vs mid 0.000, overall_third 0.848; mid gap 0.102, the closest of the filed gaps to c_margin; third's distinct rows are all rows where third != mid).",
+      "blind_to": "as T1."
+    },
+    "T3_W1_1K_not_third": {
+      "claim": "W1 1K and W1s1 1K: third not labelled 'follows' and route a_plus_1.",
+      "lean": "90% for 'not follows' (they answer a + 1, which differs from third on all of third's rows); 75% for route a_plus_1 (in-sample S 0.82 and 0.86 against hi 0.73). Reported beside: whether S_third < 0.1.",
+      "blind_to": "as T1."
+    },
+    "context_not_scored": {
+      "trajectory": "amend1's re-runs of W1 and W1s1 (results/large/amend1/, steps 1K, 2K, 3K, 5K, 7K, 10K): one run per seed sampled six times, sibling runs of a2's (max |dw| 0.0024), not anchors. Reported: overall_third and S_third per step; expected to rise from 1K to 10K, no threshold on the shape."
+    },
+    "T4_W2_1K_third": {
+      "claim": "W2 1K: third labelled 'follows' (S_third > 0.6689) and route third; overall_third < 0.95.",
+      "lean": "60% for follows and route third (in-sample overall_third 0.899, third on 90 of its 92 distinct rows, every pairwise read 'follows'; but the state is mid-way between rules at 1K and the tails may differ); 85% for overall_third < 0.95 (0.899 in-sample, sd 0.002). Reported beside: its third c read (in-sample gap 0.206).",
+      "blind_to": "as T1; a state that follows third on the tails but not elsewhere reads 'follows' with overall < 0.95, which is what this claim expects: third's distinct rows, not all rows."
+    }
+  },
+  "blind_to": "Behaviour only: a rule match says what the state answers, not how. Since a + b + c = 40 on every row, any rule of two counts is a rule of any other two: third = (2 (a + 1) + b) / 3 = (a + 42 - c) / 3 = (82 - b - 2c) / 3. So behaviour cannot separate b from c, and cannot show that the answer depends on count a specifically; it shows a function of two of the three counts, and the c read only rules out count c alone. Rules outside the five fall into other.",
+  "positive_control": "T0: N1 10K on rule b and LOW on rule a (model); pure third, mid, a + 1, b, a, constant and non-number answerers through the same read, each reading its own route; c read on pure third and pure mid ('beats') and on c_floor, a constant and non-numbers ('not shown').",
+  "not_run": "The scoring code was checked model-free through cpu-run on the 20,000 fresh rows (pools, floors, all synthetic answerers, mixtures, non-number) and on amend1's saved answers (in-sample, quoted in the leans as such); no model has read the fresh rows."
+}
