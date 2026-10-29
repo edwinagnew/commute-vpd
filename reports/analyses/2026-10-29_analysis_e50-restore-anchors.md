@@ -12,12 +12,18 @@ separate". The copies still sit a little above the random maps on every alive su
 verdict did not fire. The random maps missed both their filed ceilings. Every alive subcomponent took back 0.66 to 0.73
 of their gain against a ceiling of 0.2. S took back 0.10 to 0.20 against a ceiling of 0.05.
 
+**After Amendment 1.** A follow-up gave the every-alive share a control that reads low: direct hand writes read −0.16 to
+−0.32 on it. So the number is powered, and E50's "alike" stands as a finding about relay: both kinds pass about 0.7 of
+their gain through the original weights. S was closed as evidence of kind. The original model performs neither kind
+without an example and both with one.
+
 ## In plain words
 
-We put the original model's subcomponents back inside fine-tuned models whose kind we know, copies of an existing
-behaviour and random maps that are new. Both kinds gave back about the same shares of their gain, so neither number read
-in the fine-tuned model told existing from new on these toys. Neither number has yet been shown able to tell them apart
-on any update, so this reads as an untested instrument rather than a "No", and the next step is the user's call.
+We put the original model's subcomponents back inside fine-tunes of known kind, copies and random maps, and both kinds
+gave back about three quarters of their gain. A follow-up showed this number can read low, so it truly measures how much
+of a gain the original weights pass along, and both kinds pass along the same. Nothing read inside the fine-tuned model
+tells existing from new on these toys, and the original model itself does neither behaviour unprompted and both when
+shown an example.
 
 ## What was tested
 
@@ -124,7 +130,7 @@ layer's write at the key position, and the attention output carrying changes fro
 relay against gain the update delivers directly. It has not been shown to have power for existing against new. The
 plan's ceiling of 0.2 for the random maps assumed the two coincide, that a new behaviour's gain is mostly direct. On
 these toys it was mostly relayed for both kinds. Whether every alive subcomponent reads high for any update is untested:
-no update known to read low was run, so there is no control showing the number can come out low on this setup. The plan
+no update known to read low was run in E50. Amendment 1 ran one, below, and the number reads low on it. The plan
 named the blind spot, a new behaviour reaching the answer through the original weights by cascade, but did not size it.
 
 **A check of the decomposition's role, at no cost.** A write-only restore sets each decomposed matrix's key-position
@@ -133,7 +139,7 @@ differs from every alive subcomponent by exactly $\Delta_0 (x - x_0)$. So it tel
 on the decomposition at all; it does not settle power. Expectation: within 0.02 of every alive subcomponent on all eight
 fine-tunes. That 0.02 is a materiality bound, the largest seed-to-seed spread seen here and small against the 0.3 bar.
 It is not a noise floor between the two numeric paths, which was not measured. Neither outcome changes the decision
-below, so the check is run and reported as information, not offered as an option.
+below, so it was run as information in Amendment 1, below, where it missed: 0.10 to 0.15.
 
 **S beats its nulls, but that is not power to separate.** S depends on Γ and beat the random sets on all eight
 fine-tunes, so it is not a null set. Whether it can separate kinds is another question, and the copy class, the
@@ -144,7 +150,8 @@ positive control, missed its filed floor of 0.2 on all four. Two candidate readi
 - *A shared task-format part.* S takes back a near-constant 2.0 to 2.7 nats on all eight fine-tunes, whatever its size.
   Each random-map S shares 12 to 22 members with some copy S. Five subcomponents are in all eight: h.2.mlp.c_fc:2151,
   h.2.mlp.down_proj:2550, h.3.attn.q_proj:60, h.3.mlp.c_fc:1428 and h.3.mlp.down_proj:1345. That fits a part of S that
-  serves the shared marker-to-answer format, not either kind's own behaviour.
+  serves the shared marker-to-answer format, not either kind's own behaviour. Amendment 1 did not confirm it: the core
+  matters on the random maps only.
 
 **A caveat on the copy anchor.** The original model's log-odds of the answer on the copy tables is about −10 nats.
 That is only 3 to 4 nats above the random maps' −13 to −14. So the original model does not copy in this format, and the
@@ -152,88 +159,183 @@ copy is "existing" only in the sense that copying exists somewhere in the model.
 may mostly learn the shared marker-to-answer format, which would make the two kinds alike for a reason unrelated to VPD.
 This bears on every option below.
 
+## Amendment 1: can the numbers read low, and what is S made of?
+
+*Plan section "Amendment 1 (2026-10-29): power checks", filed before the run in
+`experiments/restore_anchors/results/predictions_amend1.json`. Code `experiments/restore_anchors/amend1.py`, written and
+run by another agent. Result `experiments/restore_anchors/results/amend1.json`, cluster job 43266, L40, debug QoS, 123 s,
+$0. Figure `experiments/restore_anchors/figures/amend1.png` from `plot.py`. It does not change E50's verdict; it decides
+what the card says about the power behind it.*
+
+**What was added.** Four readings, on the same eight fine-tunes and two kinds of null update, read exactly as above:
+- *A low-reading control.* E46 Amendment 3's hand write, one per table: a change to block 1's MLP output that adds the
+  answer's unembedding row for each key, scaled to the fine-tune's gain. It needs no later layer to raise the answer, so
+  every alive subcomponent should take back little of it. E46's matched random update was read beside it.
+- *The write-only restore* described above, on every row.
+- *S split* into its core, the five subcomponents in all eight S sets, and the rest, each beside 20 random sets of its
+  size.
+- *A probe of the original model*: a demonstration, marker then key then that key's answer, written ten positions before
+  the key, to see whether the original model produces the answer in context.
+
+**The controls.** All passed. The original model's $T_0$ matched E50's and E46's exactly on all four tables. Every set
+restored in the original model changed nothing; the empty set changed nothing; the whole-output control gave back $T_0$.
+The control on the null updates' gains passed under that name in the code, though the log prints it as C2: the hand
+writes' gains were 13.37, 15.27, 13.10 and 20.90 nats, Amendment 3's to the second decimal. The random updates' gains
+were 0.04 to 0.40 nats, as in Amendment 3, so their shares are unscored by E50's rule. The control that E50's two numbers
+reproduce passed on all eight fine-tunes, to every printed digit. The write-only restore in the original model read
+$T_0$ exactly.
+
+### Can the every-alive share read low?
+
+![every alive subcomponent and the write-only restore on the fine-tunes and the hand writes](../../experiments/restore_anchors/figures/amend1.png)
+
+**Reading it.** Yes. The hand writes read −0.16 to −0.32 on every alive subcomponent, against 0.66 to 0.78 for the
+fine-tunes. The gap between the copy fine-tunes and the writes was 0.91 on seed 0 and 0.93 on seed 1, against a power
+bar of 0.3: "powered". The writes read below zero because the later original layers partly cancel a direct write;
+restoring those layers' inputs removes the cancelling, so the answer rises. That reading of the sign is a candidate.
+
+Under the decision rule, E50's "does not separate" stands as a finding for this number. The number measures how much of
+the gain the original weights relay, against what the update delivers directly. Both kinds relay about 0.7; a direct write
+is not relayed, and the later layers partly cancel it. It does not measure existing against new, and goes forward, if at all, only as a relay number
+beside the stand-in ratio. Its power is shown against one kind of low anchor, a single-matrix direct write.
+
+**The write-only restore.** It took back 0.10 to 0.15 more of the gain than every alive subcomponent on all eight
+fine-tunes, against a materiality bound of 0.02. So the original model's residual $\Delta_0$ relays about an eighth of
+the gain, and the every-alive share does depend on the decomposition: the subcomponents cover the relay only in part.
+This was filed as information and changes no verdict. With all of the original weights, the relay reads 0.90 to 0.91 on
+the copies and 0.81 to 0.84 on the random maps; that gap is 0.07, also short of 0.3.
+
+### What is S made of?
+
+**S on the writes.** Unscored. Γ switched on no subcomponent for two writes and one to three for the other two, so S was
+empty or tiny. That is itself a contrast, not scored: both kinds of fine-tune switch on 24 to 118 subcomponents, a direct
+write almost none.
+
+**Core and rest.** The rule read "neither". The five-member core took back 0.00 to 0.02 of the gain on the copies and
+0.06 to 0.08 on the random maps. On the random maps that is 0.9 to 1.4 nats, a third to two thirds of S's take-back; on
+the copies it is under a quarter of a nat. So the shared format part was not confirmed: the core matters for the random
+maps only. The rest took back 0.14 to 0.20 on the copies and 0.04 to 0.15 on the random maps, short of a 0.3 separation.
+Under the decision rule, S is closed as evidence of kind on the 67M.
+
+**The parts do not add up, as expected.** S's take-back minus the core's and the rest's was −0.03 to −0.29 nats on all
+eight fine-tunes, so the two parts restored apart take back a little more than S restored whole. Restores need not add.
+Each restore changes the inputs every later layer sees, and the answer passes through attention, normalisation and the
+MLPs' nonlinearity, so overlapping effects are counted twice when the parts are restored apart. The plan said so before
+the run. At most a seventh of S's take-back, it changes no reading.
+
+### What does the original model do in this format?
+
+| table | log-odds of the answer, no demonstration | with a demonstration | gain from the demonstration, nats |
+|---|---|---|---|
+| copy A | −10.15 | −3.29 | 6.86 |
+| copy B | −10.22 | −3.99 | 6.23 |
+| random map A | −13.21 | −1.07 | 12.14 |
+| random map B | −13.98 | −1.84 | 12.14 |
+
+**Reading it.** The demonstration is the marker, the same key, and that key's answer, ten positions earlier. For a random
+map it shows the model the very pair being asked. So the probe tests in-context copying of a seen pair, induction, not
+whether the model knows the map. The original model does that well: it raises the random-map answer by 12 nats, close to
+the fine-tunes' 13 to 21. On the copy tables the demonstration helps half as much, perhaps because "marker key key" is a
+less usual pattern than "marker key answer"; that is a candidate.
+
+**What this means for the copy anchor.** Without a demonstration the original model does neither kind: its log-odds are
+−10 and −14. With one it does both, the random map more strongly. So in this format the copy is "existing" only in the
+sense that copying exists somewhere in the model, and the random map is just as "existing" in the sense that the model
+can perform it when shown. Candidate, untested: both fine-tunes may install the same shortcut, turning an in-context skill
+into a fixed response. That would make the two kinds alike for a reason about the anchors, not about VPD.
+
 ## What we learned
 
-No real-model restore share told an existing behaviour from a new one on E12's toys. The plan's filed branch for
-"does not separate" says the line's real-model claim is off on the 67M, and stage 1 on Qwen rests on the stand-in ratio
-alone. The stand-in ratio still separates the same fine-tunes, 0.87 to 0.97 against 0.356 to 0.414. So the separation
-lives in Γ's stand-in, not in any restore read in the fine-tuned model.
+In plain words: on these toys, nothing read inside the fine-tuned model tells a new behaviour from an existing one. What
+the fine-tuned model does show is that both kinds of fine-tune work mostly by feeding something the original weights
+then carry to the answer, which a direct write does not. Γ's switched-on set points at the original pieces both kinds
+draw on, and its shared core matters only for the random maps. The original model does neither behaviour unprompted and
+both when shown an example, so the toys' "existing" and "new" labels are weaker than planned.
 
-**Against `GOALS.md`'s question, under the plan's three answers.**
-- *Yes, VPD can tell them apart in the real model*: not reached. No real-model number separated the known-kind anchors.
-- *Undecidable with VPD*: does not fit as the plan defines it. That answer needs the toys to separate and the real
-  updates to sit between; here the toys did not separate.
-- *No, the anchors read alike in the real model*: literally what was found. But neither real-model number passed a
-  control showing it could separate kinds on any update. The honest reading is that the instruments were unread, not that
-  the answer is No. That outcome is outside the plan's tree, which sends it to the user.
+Against the plan's three answers: "Yes" is not reached. The one real-model number with shown power measures relay, not
+kind, and reads both kinds alike; S is closed. "Undecidable" as the plan defines it needs the toys to separate, and they
+did not. "No" is what these instruments read, now with a powered number behind it, but for relay rather than kind, and on
+anchors whose kinds the original model does not show. The amendment's decision rule leaves the stand-in ratio as the only
+number of kind, with the relay number beside it, which is the plan's filed branch.
 
 **The method's standing limit** (`decisions.md`, "Limit of the elicitation reading"). A new mechanism built from
 subcomponents the original model already has, put together under new gating, reads as "elicited" to VPD, because its
 unit is the rank-one subcomponent, not the circuit. So "elicits" from VPD means "uses pieces the original model already
-has", never "uses a circuit it already runs". The only check that narrows this is a Γ from a second decomposition seed.
-Nothing in E50 narrows it.
+has", never "uses a circuit it already runs". Here both kinds use the original pieces to the same extent, which is what
+the limit predicts if a new key-to-word map is built from existing pieces. Only a Γ from a second decomposition seed
+narrows the limit.
 
 ## How compelling is the evidence
 
 Two seeds and four tables, all one key-to-word task family on the 67M model, scored at one position. The two seeds
 agreed within 0.02 on every alive subcomponent and within 0.06 on S, against a separation bar of 0.3. The restore's
 rounding is about 0.0015 of the gain. The class gaps sit close to zero, not near the bar, so "does not separate" is not a
-threshold case. But neither number has a control that reads low, so the result says the two kinds read alike on these
-instruments, not that the instruments could have told them apart. Every alive subcomponent cannot see what the original
-weights relay; S misses subcomponents Γ moves by 0.3 or less; both read the key position only. The copy anchor itself is
-weak, as above.
+threshold case. Amendment 1 gave every alive subcomponent a control that reads low, a single-matrix direct write, so its
+"alike" is a reading of relay with power behind it; power against other low anchors is untested. S has no control that
+reads low, since the writes switch on almost none. Both read the key position only. The anchors' kinds are not shown by
+the original model in this format, which limits what any number here can say about kind.
 
 ## Surprises
 
 1. **The random maps read like the copies on every alive subcomponent, 0.66 to 0.73 against a filed ceiling of 0.2.**
-   The filed lean, that every alive subcomponent separates the kinds, was missed. The algebra says what the number
-   measures; why both kinds are mostly relayed is not yet known.
+   The filed lean, that every alive subcomponent separates the kinds, was missed. Amendment 1 showed why it could:
+   the number measures relay, and both kinds relay about the same.
 2. **S on the copies took back under a fifth**, missing its filed floor of 0.2 on all four; E38's triggers had read about
    a fifth.
-3. **S took back the same 2.0 to 2.7 nats on every fine-tune**, whatever its size or the gain. A shared task-format part
-   is a candidate.
-4. The stand-in ratios, copied from E46, sat just outside their filed ranges on two fine-tunes, 0.356 and 0.414. Narrow;
+3. **S took back the same 2.0 to 2.7 nats on every fine-tune**, whatever its size. The shared core explains part of this
+   on the random maps only; on the copies it is not explained.
+4. **The original model's residual relays about an eighth of the gain**, where the write-only bound was 0.02.
+5. **The original model performs a random map in context about as well as the fine-tunes**, and the copy only half as
+   well. The copy anchor is weaker than the plan assumed.
+6. The stand-in ratios, copied from E46, sat just outside their filed ranges on two fine-tunes, 0.356 and 0.414. Narrow;
    one line.
 
 ## What next
 
-1. The write-only restore check, $0, two minutes, reported as information: whether the every-alive share depends on the
-   decomposition at all.
-2. E50 Amendment 1, being drafted now and filed before it runs: a $0 power amendment, the card's recommended option.
-3. The re-gating line's direction after E46 Amendment 3 and E50: the decision card below, chosen after Amendment 1 reads.
+1. The decision card below.
+2. If option 1: show an existing Qwen anchor that the original model performs in the scored format before stage 1.
+3. A Γ from a second decomposition seed is the only check that narrows the method's limit; whether one exists in
+   `artifacts/vpd` is unknown.
 
 ## Pending decision (card text)
 
-**What should the re-gating line do next, now that no real-model number tells known-existing from known-new fine-tunes,
-and neither has been shown able to?**
+*Supersedes the two earlier versions of this card, after E50 Amendment 1.*
 
-*Evidence.* On E12's toys, the stand-in ratio separates copies from random maps: about 0.9 against about 0.4. It is read
-in Γ's stand-in model, not the fine-tuned model. E46 Amendment 3 found it is nearly the gate gain over the split's gain.
-The update's own subcomponents under Γ add only a few hundredths. A hand-made write with no learned machinery reads near
-the new kind, 0.40 and 0.57. E50 then read the same toys inside the fine-tuned model. Restoring every alive subcomponent
-took back three quarters of the gain on both kinds. By algebra it measures how much of the gain the original weights
-relay. Γ's switched-on set took back a tenth to a fifth on both kinds, alike, and its copy floor was missed. Neither
-real-model number has a control that reads low, so neither has been shown able to separate kinds. One caveat bears on
-every option. The original model scores the copy answers only 3 to 4 nats better than the random ones. So the copy
-anchor is weak, and both fine-tunes may mostly learn the shared format.
+**The re-gating line has no number read inside the fine-tuned model that tells existing from new behaviour on the 67M.
+Should it carry Γ's stand-in ratio to Qwen alone, or answer "No" for these toys and stop?**
+
+*Evidence.*
+- *The stand-in ratio* separates copies from random maps, about 0.9 against 0.4, but only in Γ's stand-in model.
+  E46 Amendment 3 found it is nearly the gate gain over the split's gain. A hand write with no learned machinery reads
+  0.40 and 0.57, near the new kind.
+- *Every alive subcomponent* is powered: hand writes read −0.16 to −0.32, fine-tunes 0.66 to 0.78. It measures how much
+  of the gain the original weights relay. Both kinds relay about 0.7, so E50's "alike" stands for this number. It also
+  depends on the decomposition: the original model's residual relays another eighth.
+- *Γ's switched-on set* is closed as evidence of kind: its shared core matters only for the random maps, and neither
+  part separates.
+- *The anchors.* The original model performs neither kind without an example and both with one, so in this format the
+  copy is not shown to be "existing". This bears on both options.
 
 *Options.*
-1. **Carry the stand-in ratio to Qwen alone.** This is the plan's filed branch for "does not separate": stage 1 on
-   Qwen3-1.7B, about $5 to $10, a gated run, with every sentence saying the reading is Γ's and has no real-model check
-   behind it on the 67M.
+1. **Carry the stand-in ratio to Qwen alone.** This is the plan's filed branch for "does not separate", and the
+   amendment's decision rule keeps it: stage 1 on Qwen3-1.7B, about $5 to $10, a gated run. Every sentence says the
+   reading is Γ's; the relay share goes beside it as a relay number, never as one of kind. The existing anchor must be
+   one the original Qwen is shown to perform in the scored format; E45's anchor 1 does not yet meet this, since no
+   prompt raised its accuracy.
 2. **Answer "No" for these toys in the real model, and stop spending on the elicitation question.** Keep E38's
    descriptive result, that Γ finds pieces an update draws on without being told the target, and state the method's
-   limit. This departs from the approved tree, which sends "does not separate" to option 1.
-3. **A $0 power amendment first, then choose.** Give a real-model number a control shown to work. Read every alive
-   subcomponent and S on E46's hand write and random update, as a control that should read low. Split S into the part
-   shared by all eight fine-tunes and the kind-specific rest, and read each. This is being drafted now as E50
-   Amendment 1, filed before it runs. The user chooses between 1 and 2 after it reads.
+   limit. This departs from the approved tree.
 
-*Recommendation.* Option 3. It costs nothing and is the only option that learns whether a real-model number could ever
-have answered. If a number shows power and still reads the kinds alike, option 2 has evidence behind it; if none shows
-power, option 1 goes ahead knowing the real model gave no check.
+A third option, a new 67M anchor the original model performs unprompted, was considered and not offered. The powered
+number measures relay, not kind, so a better anchor would test the anchors, not give VPD a number of kind. It would be a
+new task family and need `/design`.
 
-*Run line.* E50, Slurm 43040, cluster debug, $0; Amendment 1 being drafted, $0.
+*Recommendation.* Option 1, with its conditions. The approved tree and the amendment's rule both lead there. The 67M
+toys could not have shown kind, since the original model does neither behaviour unprompted, so they are weak evidence
+for stopping. The condition on the existing anchor is the test the toys lacked; until an anchor meets it, stage 1 waits. If the user reads the stand-in ratio's closeness to the gate gain as reason enough to distrust it, option 2 is
+the honest alternative.
+
+*Run line.* E50, Slurm 43040, and Amendment 1, Slurm 43266, cluster debug, $0 each.
 
 ## Scorecard
 
@@ -258,12 +360,28 @@ Filed in `predictions.json`; read from `restore_anchors.json`. Rules are first-m
 | random sets | mean ≤ 0.05, max ≤ 0.15 | reported | mean ≤ 0.038, max ≤ 0.112 | met, eight of eight |
 | stand-in ratio | copy 0.87-0.97, random map 0.36-0.41 | reported, copied | 0.356 (random map A seed 1) and 0.414 (random map B seed 0) | met six of eight, narrow misses |
 
+**Amendment 1** (`predictions_amend1.json`; read from `amend1.json`).
+
+| id | claim in words | rule | read | verdict |
+|---|---|---|---|---|
+| C1 | T0 reproduces E46 and E50 | within 0.02 | 0 difference, four tables | pass |
+| C2, C2_null | gains reproduce E46 and Amendment 3; restore controls on every row | as filed | hand writes 13.37, 15.27, 13.10, 20.90 | pass |
+| C3 | E50's two shares reproduce | within 0.01 | exact, eight | pass |
+| C5 | write-only in the original model reads T0 | ≤ 0.01 nats | 0, four | pass |
+| power | every alive: copies minus hand writes | ≥ 0.3 both seeds | 0.915, 0.935 | powered |
+| hand writes, every alive | ≤ 0.2 | reported | −0.32 to −0.16 | met, four of four |
+| S on the write | ≤ 0.05 on all four | scored | S empty on two writes | unscored |
+| core and rest | shared format part or kind-specific | as filed | core 0.00-0.02 copy, 0.06-0.08 random maps; rest gaps 0.03, 0.00 | neither |
+| random updates | G < 1 nat | reported | 0.04-0.40 | met, unscored |
+| write-only minus every alive | abs ≤ 0.02 | information | 0.105-0.147 | missed, eight of eight |
+| probe | demonstration raises the copy answer ≥ 3 nats | reported | copy 6.23, 6.86; random maps 12.14 | met |
+
 ## Not run
 
-- The write-only restore check; it tells whether the every-alive share depends on the decomposition, not its power.
-- Any update known to read low on either real-model number: E46's hand write or random update. This is E50 Amendment 1.
-- S split into its shared core and its kind-specific rest.
-- A copy anchor the original model already performs in this format.
+- A low-reading control for S: the hand writes switch on almost no subcomponents, so S on them is unscored.
+- Low anchors other than a single-matrix direct write, for the every-alive share.
+- A copy anchor the original model performs in this format without an example.
+- Fresh seeds for the core and rest split, which was defined on the same eight fine-tunes it was scored on.
 - Any position other than the key position; the restore at earlier positions or per position.
 - A per-member normalisation of S, given its fourfold size difference between kinds.
 - A second decomposition seed's Γ, the one check that narrows the method's limit.
@@ -275,3 +393,7 @@ Slurm 43040, MATS cluster L40, debug QoS, 78 s, $0. Log `cluster/logs/commute-re
 `experiments/restore_anchors/results/large/run.log`. States: `experiments/regating_table/results/large/`, checked
 against `stage0a.json`'s sha256. Alive set: `experiments/transport_test/results/large/alive.pt`. Gold positions in the
 first 2,000 Pile validation rows: 10,232 and 8,439 for the copy tables, 1,062 and 1,160 for the random maps.
+
+Amendment 1: Slurm 43266, MATS cluster L40, debug QoS, 123 s, $0, code commit 44dd01e. Log
+`cluster/logs/commute-restore-anchors-43266.out` and `experiments/restore_anchors/results/large/amend1.log`. Result
+`experiments/restore_anchors/results/amend1.json`; filed rules `experiments/restore_anchors/results/predictions_amend1.json`.
