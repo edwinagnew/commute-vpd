@@ -107,6 +107,27 @@ def task_context(ctx: Context, windows_path: Path | None) -> tuple[Context, dict
     return with_windows(ctx, w, w["task"]["target"]), {k: v.cpu() for k, v in moments.items()}
 
 
+def on_rows(ctx: Context, part: str, start: int, n: int, seeds: tuple[int, ...], log: Any = print) -> Context:
+    """The context with the Pile harness on other rows: Pile `part` rows start .. start + n - 1 in blocks of 128
+    (batches of 8, as `faithfulness.pile_blocks`), and W0 read there at each adversary seed in `seeds` (the ratio's
+    reference and the floor). The model and every other field are shared with `ctx`. Added 2026-10-29 for
+    broad_fragility Amendment 3; the same step is `rows2_context` in experiments/broad_fragility/amend2.py, which stays
+    as it ran."""
+    from dataclasses import replace
+
+    from commute.data import batches, pile_rows
+    from commute.faithfulness import pile_faithfulness
+
+    rows = pile_rows(part, start, n, log=log)
+    out = replace(ctx, blocks=[batches(rows[s : s + 128], 8) for s in range(0, rows.shape[0], 128)], pile={})
+    for seed in seeds:
+        t0 = time.time()
+        out.pile[seed] = pile_faithfulness(out.model, out.blocks, seed, out.pile_pgd_steps, log)
+        log(f"[pile W0 seed {seed}, {part} rows {start}..{start + n}] "
+            f"{json.dumps({k: round(v, 4) for k, v in out.pile[seed].items()})} {time.time() - t0:.0f} s")
+    return out
+
+
 def pgd_floor(ctx: Context) -> float | None:
     """f = max / min - 1 of W0's PGD KL over the adversary seeds; 'within 3 floors' = ratio <= 1 + 3 f."""
     if not ctx.pile:
