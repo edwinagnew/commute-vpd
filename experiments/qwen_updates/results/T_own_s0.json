@@ -1,0 +1,55 @@
+{
+ "run": "own_s0",
+ "data": {
+  "n": 5939,
+  "of": 7744,
+  "passes": 1.0776224953695908
+ },
+ "steps": [
+  {
+   "step": 1,
+   "lr": 0.0,
+   "loss": 0.05510427223401832,
+   "grad_norm": 3.6287615299224854,
+   "dw_norm": 0.0,
+   "kl": {
+    "maths": 0.0
+   }
+  }
+ ],
+ "saves": [],
+ "crossings": [],
+ "seconds": 0.0,
+ "checks": {
+  "own samples kept": {
+   "holds": true,
+   "n": 5939,
+   "of": 7744,
+   "passes": 1.0776224953695908
+  },
+  "step 1 at rate 0 leaves W0": {
+   "holds": true,
+   "lr": 0.0,
+   "dw_norm": 0.0
+  },
+  "step 2 |dW| / (rate sqrt numel)": {
+   "holds": true,
+   "min": 0.6332815009444629,
+   "max": 0.8193138564898153
+  },
+  "step 2 KL on the maths rows": {
+   "holds": false,
+   "kl": 0.005660122274747736,
+   "max": 0.005
+  }
+ },
+ "recipe": {
+  "lr": 1e-05,
+  "warmup": 10,
+  "steps": 100,
+  "schedule": "hf_cosine",
+  "clip": 1.0,
+  "micro": 8
+ },
+ "stopped": "step 2 KL on the maths rows"
+}
