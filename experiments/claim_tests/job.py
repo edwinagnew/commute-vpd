@@ -26,7 +26,8 @@ R1_WINDOWS = LADDER / "windows_r1_t534_v369.pt"
 
 # Each stage's adversarial starts, in reading order, and the first Pile val row of its 256 rows.
 STARTS = {"t1": ("budget", "h0", "h1"), "t1b": ("h2",), "t2": ("h0", "h1"), "t2b": ("h0", "h1"), "t2c": ("h0", "h1"),
-          "t3": (), "t4": ("h0", "h1", "h2"), "t4b": ("h0", "h1", "h2"), "t5": ("budget", "h0"), "t5b": ("budget", "h0")}
+          "t3": (), "t4": ("h0", "h1", "h2"), "t4b": ("h0", "h1", "h2"), "t4c": ("h0", "h1", "h2"),
+          "t5": ("budget", "h0"), "t5b": ("budget", "h0")}
 ROWS = {"t2c": 256}  # every other stage: rows 0-255
 CONTROL_STARTS = {"t1b": ("budget",)}  # read for W0 in C0 only for the positive control, not for the states
 

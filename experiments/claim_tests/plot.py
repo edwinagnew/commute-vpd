@@ -375,7 +375,7 @@ def fig_iv() -> None:
     axes[0].legend(fontsize=7, loc="upper left")
     fig.suptitle(
         "Claim (iv): is teacher training plus remainder worse than leaving the fine-tune in Δ?\n"
-        "Not at step 10: it reads lower at two of three starts; at step 1000 only within the start spread",
+        "Not shown: at step 1000 within the start spread; at step 10 lower at one start, near equal at two",
         fontsize=10,
     )
     save(fig, "e47_iv_remainder.png")
@@ -439,7 +439,7 @@ def fig_v() -> None:
     ax.spines[["top", "right"]].set_visible(False)
     ax.set_title(
         "Claim (v): does teacher training with plain SGD fail the check?\n"
-        "Only when run at rate 0.03 to step 1000; every smaller cell passes on both teachers",
+        "Only at rate 0.03 to step 1000 (read on the Adam teacher); every smaller cell passes on both",
         fontsize=10,
     )
     save(fig, "e47_v_plain_sgd.png")

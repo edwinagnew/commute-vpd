@@ -3,12 +3,13 @@ after `job.c0`; each controls first, then its states, each written as it finishe
 
 from __future__ import annotations
 
+import json
 import os
 from typing import Any
 
 import recipes as rc
 import rules
-from job import BF, KV, LARGE, R1_WINDOWS, TT, Job, gate, log, near, read
+from job import BF, KV, LARGE, R1_WINDOWS, RESULTS, TT, Job, gate, log, near, read
 
 from commute.faith_score import verdict
 
@@ -181,24 +182,38 @@ def size_curve(r1: Any, seed: int) -> list[float]:
     return sizes
 
 
-# ----------------------------------------------------------------------------- T4, t4b: claim (iv)
+# ----------------------------------------------------------------------------- T4, t4b, t4c: claim (iv)
 
+REPRO_TOL = 1e-4  # Amendment 2: every state read twice on the L40 (W0, the T5 control, r1 do-nothing) agreed to 17 digits
 T4_REF = {1000: {"ft": (0.99961, 0.03209), "tt_p": 0.99675}, 10: {"ft": (0.99931, 0.01125), "tt_p": 0.99941}}
 
 
 def t4(job: Job) -> None:
     """remainder.py's emoticon Adam 3e-5 fine-tune to the stage's step (G1), do-nothing, its teacher training (G3,
     G2), teacher training plus remainder (the copy's (U', V') with target W0 + dW)."""
-    k = 1000 if job.stage == "t4" else 10
+    k = 1000 if job.stage == "t4" else 10  # t4b and t4c: step 10
     ref, ctx = T4_REF[k], job.ctx
     ev, dW = teacher(ctx, 3e-5, "adam", (k,))
     gate(job, "G1_ft", near(ev["p_o"], ref["ft"][0], 0.02) and near(ev["rel_norm_max"], ref["ft"][1], 0.05, True),
          {"p_target": ev["p_o"], "size": ev["rel_norm_max"], "ref": list(ref["ft"])})
     read(job, "nothing", (dW, None))
+    reproduce(job, "nothing")
     if "plus_remainder" not in job.out["states"]:
         plus_remainder(job, ref, dW)
+    reproduce(job, "plus_remainder")
     st = job.out["states"]
-    job.out["score"] = rules.t4(st["nothing"], st["plus_remainder"])
+    job.out["score"] = (rules.t4(st["nothing"], st["plus_remainder"]) if job.stage != "t4c"
+                        else rules.t4c(st["nothing"], st["teacher_trained"], st["plus_remainder"]))
+
+
+def reproduce(job: Job, name: str) -> None:
+    """t4c only (Amendment 2): the state's KL at every start equals t4b's within REPRO_TOL relative, else stop."""
+    if job.stage != "t4c":
+        return
+    ref = RESULTS / "t4b.json"
+    kl = json.loads(ref.read_text())["states"][name]["kl"] if ref.is_file() else {}
+    ok = rules.reproduces(job.out["states"][name]["kl"], kl, REPRO_TOL)
+    gate(job, f"R_{name}", ok, {"kl": job.out["states"][name]["kl"], "t4b": kl, "tol": REPRO_TOL})
 
 
 def plus_remainder(job: Job, ref: dict[str, Any], dW: Any) -> None:
@@ -213,6 +228,8 @@ def plus_remainder(job: Job, ref: dict[str, Any], dW: Any) -> None:
               for key, (U2, V2) in uv2.items()}
     g2 = max(float((change[key] - dW_tt[key]).abs().max()) for key in dW_tt) / max(float(d.abs().max()) for d in dW_tt.values())
     gate(job, "G2_removal", g2 <= 1e-3, {"removal_vs_copy": g2})
+    if job.stage == "t4c":
+        read(job, "teacher_trained", (dW_tt, uv2), extra={"p_target": p})
     read(job, "plus_remainder", (dW, uv2), extra={"p_target_copy": p})
 
 

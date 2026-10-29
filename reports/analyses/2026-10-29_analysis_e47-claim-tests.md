@@ -8,24 +8,24 @@ predictions `experiments/claim_tests/results/predictions.json`, filed before any
 `experiments/claim_tests/figures/e47_*.png` from `experiments/claim_tests/plot.py`. MATS cluster L40, debug QoS, ten jobs, $0.*
 
 We re-ran the five claims the red team weakened, each with several adversary starts and the controls it said were
-missing. Teacher training held up on both teachers, but plain SGD worked as its optimiser, and at the earliest step the
-remainder made the check better, not worse. So teacher training stays the map for the weak version, the claim that it
-needs Adam goes, and the remainder result needs explaining before anyone builds on it.
+missing. Teacher training held up on both teachers, plain SGD worked as its optimiser at every smaller setting, and the
+remainder was not shown worse than leaving the update in the residual. So teacher training stays the map for the weak
+version, the claim that it needs Adam goes, and the remainder claim is open until its step-10 state is re-read.
 
 ## The answer
 
 Teacher training keeps the decomposition faithful at every adversary start we tried, on both teachers, where leaving
-the update in the residual fails. Two other claims fell. Plain SGD works as teacher training's optimiser at every rate
-except the largest run longest. At the earliest step, putting the remainder in the residual read better than leaving
-the whole update there, the reverse of the earlier finding. The LoRA's pass held on one row set only. For the split,
-both size and the training path mattered.
+the update in the residual fails. Plain SGD works as teacher training's optimiser at every setting tried except the
+largest rate run longest, so "it needs Adam" falls. Putting the remainder in the residual was not shown worse than
+leaving the whole update there: unsettled late in training, and at the earliest step one start read it better. The
+LoRA's pass held on one row set only. For the split, a faster run kept a little more at the same size.
 
 | Claim | Red team | After E47 | Filed rule's outcome |
 |---|---|---|---|
 | (i) teacher training passes where do-nothing fails | weakened | **stands** on both teachers, four starts | T1 combined: stands |
 | (ii) the rank-8 LoRA's pass is real, not a rank cap | weakened | **weakened**: passes on rows 256-511 only; rank 128 climbs on those rows only | T2 combined: absolute unsettled, cap unsettled |
-| (iii) the scaled adjoint split's keep falls with size, not path | weakened | **weakened**: size moves keep by ~0.3, path by ~0.08 | T3: mixed on both seeds |
-| (iv) teacher training plus remainder is worse than do-nothing | weakened | **falsified at step 10**; unsettled at step 1000 | T4: unsettled; T4b: falls |
+| (iii) the scaled adjoint split's keep falls with size, not path | weakened | **weakened**: at matched size the path adds 0.08-0.09; size alone was not isolated | T3: mixed on both seeds |
+| (iv) teacher training plus remainder is worse than do-nothing | weakened | **unsettled** (step 1000, the filed claim); the step-10 reading falls by its filed rule, carried by one start; re-read pending (t4c) | T4: unsettled; T4b beside it: falls |
 | (v) teacher training needs Adam; plain SGD fails | weakened | **falsified**: plain SGD passes at all six cells | T5 combined: falls |
 
 ## What we were trying to test
@@ -106,7 +106,8 @@ of 1.55. Its harness start 0 alone reads 1.66, over that line. The full-rank Ada
 
 One thing makes rows 256-511 stricter. W₀'s two starts there read 0.630 and 0.652, so the floor is only 0.035. The
 lines sit close together, and the no-cap band is only 3.5% above rank 8. The review had expected a floor near 0.15.
-A floor taken from two starts may understate the spread a third start would show; this run cannot say.
+A third start can only raise the floor, and neither verdict there changes for any floor the job allows: rank 8 passes
+up to a floor of 0.30, and rank 128 stays unsettled from 0.022 to 0.33.
 
 The ranks are not matched in size. Rank 128's update moves its largest matrix by 0.077, rank 32's by 0.044. Their
 gains on the task are close, 0.167 and 0.165, against rank 8's 0.148. A climb with rank is therefore also a climb with size.
@@ -132,8 +133,9 @@ and gave the same numbers to every digit. The rank-128 state was trained once, i
 **Reading it.** The outcome is mixed on both seeds, against a filed lean of "falls". The run at rate 0.03 reached the
 slower run's step-100 size at step 29 or 30, and its step-1000 size at step 159 or 163. At those matched sizes it kept
 0.08 to 0.09 more than the rate-0.01 run on every one of the four comparisons. That is more than the 0.05 agree line and
-less than the 0.10 differ line. Size still moves keep much more than the path does. Along each run keep drops by about
-0.3 between the two sizes, in both runs.
+less than the 0.10 differ line. So at matched size the path adds 0.08 to 0.09. Size alone was not isolated. Along each
+run keep drops by about 0.3 between the two sizes, but there size and step count rise together. The arm that changes size
+alone, below, could not be scored.
 
 The second part, scaling the step-1000 update down to smaller sizes, could not be scored. The scaled-down updates lose
 the behaviour itself: their own P(target) is 0.06 at a quarter of the size and 0.24-0.26 at about half. The rule leaves a
@@ -157,23 +159,27 @@ The rate-0.01 reference repeated E31 within 0.004 on keep and 0.2% on size at ev
 | 1 | 0.242 | 0.060 | no |
 | 1 | 0.560 | 0.239 | no |
 
-### (iv) Is teacher training plus remainder worse than do-nothing? Not at step 10; at step 1000 only within the start spread
+### (iv) Is teacher training plus remainder worse than do-nothing? Not shown: unsettled at step 1000; at step 10 one start reads it better
 
 ![claim iv](../../experiments/claim_tests/figures/e47_iv_remainder.png)
 
-**Reading it.** At step 10 the claim falls, the reverse of the filed lean. Here $q$ is plus remainder's KL divided by
-do-nothing's at the same start; above 1 means plus remainder is worse. At harness start 0, plus remainder read 1.43 and
-do-nothing 2.18, so $q = 0.65$. At harness start 1, $q = 0.96$; at start 2, 1.07. E43's step-10 reading on the H100 had
-plus remainder far worse, 3.92 against 2.52.
+**Reading it.** The claim as filed is the step-1000 test, and it stays unsettled, as leaned. Here $q$ is plus
+remainder's KL divided by do-nothing's at the same start; above 1 means plus remainder is worse. At step 1000 plus
+remainder reads higher at every start, but only by 0.5% at harness start 1. Both states fail outright at harness starts
+1 and 2, where each reads above 4.6. At harness start 0 they read 1.76 and 1.39, the same order as E43.
 
-At step 1000 the claim stays unsettled, as leaned. Plus remainder reads higher at every start, but only by 0.5% at
-harness start 1. Both states fail outright at harness starts 1 and 2, where each reads above 4.6. At harness start 0
-they read 1.76 and 1.39, the same order as E43.
+The step-10 reading, reported beside it, falls by its filed rule, carried by one start. At harness start 0 plus
+remainder read 1.43 and do-nothing 2.18, so $q = 0.65$. At starts 1 and 2, $q$ is 0.96 and 1.07: within 4-7% of
+equal. So at step 10 plus remainder was not worse than do-nothing at every start, which breaks the filed "worse". It
+does not show the opposite ordering. The filed lean was "stands", so this is a miss.
 
-We cannot explain the step-10 reversal from these files. The step-10 fine-tune reproduced E41's P and size within 0.5%. The
-teacher-trained state reproduced its P, and the remainder put no behaviour in Δ. The H100 and L40 attackers from the same
-seed are not the same attack, so only the order of the two states carries over between cards, not their values. A card
-effect, a start effect or something in the state are all open.
+Two things weaken the step-10 reading. First, its reproduction checks cannot see what changed. They pin the update's size
+and behaviour, but every P is 0.999 or more, so the 0.02 tolerance separates nothing. The step-10 teacher-trained state
+without the remainder was never read under the attacker, as E43's own check did. Second, this one state moved far more
+between cards than the others. At harness start 0, plus remainder at step 10 reads 64% lower on the L40 than on the H100.
+Do-nothing at step 10 and both step-1000 states move by only 6-13%. The two cards' attackers from the same seed are not
+the same attack, so this is a pointer, not a comparison of lines. A $0 follow-up, t4c, reads the step-10 teacher-trained
+state on the L40; the claims section waits for it.
 
 | step | state | harness 0 | harness 1 | harness 2 |
 |---|---|---|---|---|
@@ -184,7 +190,7 @@ effect, a start effect or something in the state are all open.
 | 1000 | teacher training plus remainder | 1.762 | 4.673 | 5.207 |
 | 1000 | $q$ | 1.267 | 1.005 | 1.106 |
 
-Reproduction checks: step 10, fine-tune P 0.99928 and size 0.01119 against 0.99931 and 0.01125, the teacher-trained
+Reproduction checks: step 10, fine-tune P 0.99928 and size 0.011191 against 0.99931 and 0.01125, a −0.53% size difference; the teacher-trained
 state's P 0.99939, Δ share 1.5e-9; step 1000, fine-tune P 0.99910 and size 0.03149 against 0.99961 and 0.03209, the
 teacher-trained state's P 0.99685.
 
@@ -195,8 +201,10 @@ teacher-trained state's P 0.99685.
 **Reading it.** The claim falls, as leaned. With plain SGD as teacher training's optimiser, every one of the three
 smaller cells passes on both the ladder task's Adam teacher and its rank-8 LoRA teacher. Those cells are rate 0.03 to step
 100, and rates 0.01 and 0.003 to step 1000. Their worst reading over two starts is 0.98 to 1.17, and the behaviour is
-kept at P 0.986 or more. Only rate 0.03 run to step 1000, the setting the old claim rested on, fails, at 3.30. So the
-right statement is narrower: plain SGD at rate 0.03 for 1000 steps fails on these teachers, and smaller settings pass.
+kept at P 0.986 or more. Only rate 0.03 run to step 1000, the setting the old claim rested on, fails, at 3.30. E47
+read that failing setting on the Adam teacher only; the LoRA teacher's fail there is the earlier H100 reading. So the
+right statement is narrower: plain SGD at rate 0.03 for 1000 steps fails, shown here on the Adam teacher, and every
+smaller setting tried passes on both teachers.
 
 | teacher | cell | budget | harness 0 | worst | held-out P | verdict |
 |---|---|---|---|---|---|---|
@@ -213,7 +221,7 @@ right statement is narrower: plain SGD at rate 0.03 for 1000 steps fails on thes
 Teacher training remains the map for the weak version: on two teachers its decomposition passed at four adversary
 starts where do-nothing failed. The optimiser is not what makes it work. Plain SGD passes at every smaller rate and step,
 so `decisions.md` row 50 and the E34 card should say only that one large SGD setting fails. Teacher training plus
-remainder is no longer known to be worse than do-nothing; the step-10 ordering reversed on this card. The rank-8 LoRA's
+remainder is no longer known to be worse than do-nothing; at step 10 one start read it better, pending t4c. The rank-8 LoRA's
 pass depends on which rows are read, and the rank question has one hint of a climb at rank 128.
 
 ## How compelling is the evidence
@@ -223,24 +231,29 @@ pass depends on which rows are read, and the rank question has one hint of a cli
 - Two to four adversary starts per state. W₀'s spread over three harness starts on rows 0-255 is 21%, and single
   states moved far more: the cipher's do-nothing went from 1.50 to 3.40 between two starts.
 - The floor on rows 256-511 comes from two starts only, 3.5%. Lines that close make that row set's verdicts sensitive.
-- Every W₀ and positive control matched its expected value; all reproduction checks passed. Results reproduce to every
-  digit where the same state was read twice in two jobs.
+- Every W₀ reading matched its known value, and every positive control passed its rule. Two did not read near their
+  filed expected values. T1's control read 2.16 at the budget start, against about 9 filed from the H100. T1b's ladder
+  do-nothing read 3.53 at harness start 2, against 1.5-1.8 expected. Both show the attacker varies widely across cards
+  and starts. Results reproduce to every digit where the same state was read twice in two jobs.
 - Only the adversarial check was read; the stochastic and CI-masked ratios were not.
 
 ## Surprises
 
 1. **Something unexpected happened that I cannot explain.** We predicted that at fine-tune step 10, teacher training plus
-   remainder reads worse than do-nothing at every start, with medium confidence. On the L40 it read better at two of three
-   starts, $q = 0.65$ at harness start 0. E43 on the H100 had $q$ about 1.56 there.
+   remainder reads worse than do-nothing at every start, with medium confidence. On the L40 it read better at one start,
+   $q = 0.65$ at harness start 0, and within 4-7% of equal at the other two. E43 on the H100 had $q$ about 1.56 there.
+   The step-10 plus-remainder state alone moved 64% between cards; t4c re-reads its teacher-trained state.
 2. Claim (iii) came out mixed, not "falls" as filed: the faster run kept 0.08-0.09 more at matched size, under the 0.10 line.
 3. Claim (i) had power on the cipher task after all. Harness starts 1 and 2, not the budget start, took its do-nothing over
    the fail line.
 4. W₀'s floor on rows 256-511 came out 0.035, not the review's expected ~0.15; that row set's lines are tight.
-5. Two jobs, t2 and t4b, hung at start with no log line and were resubmitted once with no code change; cause unknown.
+5. Two first submissions were cancelled and resubmitted once with no code change. t2's job 42655 logged nothing. t4b's
+   job 42668 was slow, not silent: it logged one line after 1723 s and was cancelled a second later. Cause unknown.
 
 ## What next
 
-1. **(iv) at step 10.** Read the two step-10 states at more starts, the budget start and rows 256-511, $0 on the cluster. If
+1. **(iv) at step 10.** First t4c, running: the step-10 teacher-trained state alone at harness starts 0-2 on the L40. Then
+   the two step-10 states at more starts, the budget start and rows 256-511, $0 on the cluster. If
    $q$ stays under 1 at most starts, E43's step-10 result was one start's reading; if it crosses 1 elsewhere, the claim is
    start-dependent and is dropped.
 2. **(ii) the rank question.** Rank 32 and rank 64 on rows 256-511, with three harness starts for the floor. A climb past
@@ -261,7 +274,7 @@ pass depends on which rows are read, and the rank question has one hint of a cli
 | T2 combined | (ii) | absolute on both row sets; cap over three jobs | stands + unsettled; no cap ×2 + unsettled | — | absolute unsettled, cap unsettled |
 | T3 | (iii) keep vs size | per seed: agree 0.05, differ 0.10, scaled cells | (a) +0.079, +0.088 / +0.089, +0.081; (b) unscored, P 0.06-0.26 | falls (medium) | **mixed** both seeds: miss |
 | T4 | (iv) step 1000 | stands: ranges apart and q ≥ 1.1 all; falls: q ≤ 1.0 any | q 1.267, 1.005, 1.106 | unsettled (low) | unsettled: hit |
-| T4b | (iv) step 10 | as T4 | q 0.654, 0.961, 1.075 | stands (medium) | **falls**: reversal |
+| T4b | (iv) step 10 | as T4 | q 0.654, 0.961, 1.075 | stands (medium) | **falls** by the rule, carried by one start: miss |
 | T5 | (v) two cells | falls if a cell passes on both teachers | four of four pass | falls (low) | falls: hit |
 | T5b | (v) rate 0.003 | T5's rule on one cell | two of two pass | combined falls (low) | falls |
 | T5 combined | (v) three cells | precedence falls > unsettled > mixed > stands | six of six pass, P ≥ 0.986 | falls (low) | **falls**: hit |
@@ -275,7 +288,9 @@ C0 in every job: W₀ at h0 0.69174, h1 0.83616, h2 0.70488 on rows 0-255, CI 0.
 - Rows 256-511 for claims (i), (iv), (v); rank 32 on rows 256-511; ranks between 32 and 128; any row set beyond 512.
 - Harness start h2 and the budget start for claim (ii); harness starts 0 and 1 for the ladder task's do-nothing in job t1,
   stopped early by rule.
-- Any check of why step 10 reversed in claim (iv): the same states on the H100, more starts, other rows.
+- Any check of claim (iv)'s step-10 reading: the step-10 teacher-trained state alone under the attacker (t4c, running),
+  the same states on the H100, more starts, other rows.
+- The failing plain-SGD setting, rate 0.03 to step 1000, on the LoRA teacher; and that control's P, not recorded.
 - Claim (iii)'s scaled-down arm as scored: both α cells fell under the P 0.5 rule on both seeds.
 - Do-nothing references for claims (ii) and (v); behaviour of claim (i)'s saved decompositions, taken from E34 and E42.
 - From the plan's list: T1's arm-B and seed-1 decompositions, rand1 and ident32; T2's LoRA seed 1, SGD states and budget
@@ -285,6 +300,6 @@ C0 in every job: W₀ at h0 0.69174, h1 0.83616, h2 0.70488 on rows 0-255, CI 0.
 ## Provenance
 
 Jobs, all `debug` QoS on L40, $0: t3 42651 (201 s), t1 42652 (1332 s), t5 42653 (1446 s), t4 42654 (1233 s), t1b 42666
-(808 s), t2b 42667 (1080 s), t5b 42669 (1085 s), t2c 42670 (1075 s), t2 42719 (891 s; first submission 42655 hung at
-start, cancelled), t4b 42772 (1219 s; first submission 42668 hung at start, cancelled). GPU peaks 7.5-28.1 GB. Cluster
+(808 s), t2b 42667 (1080 s), t5b 42669 (1085 s), t2c 42670 (1075 s), t2 42719 (891 s; first submission 42655 logged
+nothing, cancelled), t4b 42772 (1219 s; first submission 42668 logged one line after 1723 s, cancelled). GPU peaks 7.5-28.1 GB. Cluster
 logs `cluster/logs/commute-e47-<stage>-<id>.out`. Combined verdicts from `run.py combine`, `results/combined.json`.
