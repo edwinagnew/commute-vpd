@@ -202,3 +202,31 @@ def t5(cells: dict[str, dict[str, str]], n_read: dict[str, int]) -> dict[str, An
     else:
         outcome = "stands"
     return {"outcome": outcome, "cells": cells, "n_read": n_read}
+
+
+# ----------------------------------------------------------------------------- t4c (Amendment 2)
+
+
+def reproduces(kl: dict[str, Any], ref: dict[str, Any], tol: float) -> bool:
+    """Every start of `ref` read here, both finite and positive, and |kl / ref - 1| <= tol; an empty `ref` fails."""
+    return bool(ref) and set(kl) == set(ref) and all(
+        ok(kl[s]) and ok(ref[s]) and ref[s] > 0 and abs(kl[s] / ref[s] - 1) <= tol for s in ref)
+
+
+def t4c(nothing: Rec, tt: Rec, plus: Rec) -> dict[str, Any]:
+    """Per start s, plus remainder's ratio against the two others: 'between' when min(tt, nothing) <= plus <= max(tt,
+    nothing) (ties inclusive), 'above' when above both, 'below' when below both. Stage: that label if all three starts
+    share it, else 'mixed'; any missing or non-finite ratio, or a start not read on all three states: 'unscored'.
+    Reported beside it: whether teacher-trained reads below do-nothing at each start (E43's direction)."""
+    recs = (nothing, tt, plus)
+    starts = list(nothing["ratio"])
+    if not starts or not all(r["complete"] and set(r["ratio"]) == set(starts) and all(ok(x) for x in r["ratio"].values())
+                             for r in recs):
+        return {"outcome": "unscored", "per_start": None, "tt_below_nothing": None}
+    per: dict[str, str] = {}
+    for s in starts:
+        n, t, p = (r["ratio"][s] for r in recs)
+        per[s] = "above" if p > max(n, t) else "below" if p < min(n, t) else "between"
+    labels = set(per.values())
+    return {"outcome": labels.pop() if len(labels) == 1 else "mixed", "per_start": per,
+            "tt_below_nothing": {s: tt["ratio"][s] < nothing["ratio"][s] for s in starts}}

@@ -1,5 +1,5 @@
 """claim_tests (E47): do the five red-teamed claims survive several adversary starts and the missing controls?
-Plan: reports/plans/2026-10-28_plan_claim-tests.md (section 3; Amendment 1 for t1b, t2b, t2c, t4b, t5b).
+Plan: reports/plans/2026-10-28_plan_claim-tests.md (section 3; Amendment 1 for t1b, t2b, t2c, t4b, t5b; Amendment 2 for t4c).
 
 The released 67M decomposition, Gamma and Delta frozen. A state is read at the stage's adversarial starts by
 `faithfulness.multi_start` ("h<k>" = the Pile harness at adversary seed k, "budget" = E34 Amendments 4-5's start), on
@@ -14,6 +14,7 @@ alone). Lines from W0's floor f: pass <= 1.5 / (1 + f), fail >= 1.5 (1 + f).
   t3   claim (iii): keep of the scaled adjoint split, r1 SGD, seeds 0 and 1; no adversary
   t4   claim (iv): emoticon Adam fine-tune at step 1000, do-nothing and teacher training plus remainder; h0, h1, h2
   t4b  t4 at step 10
+  t4c  t4b plus the step-10 teacher-trained state alone (Amendment 2); do-nothing and plus remainder must reproduce t4b
   t5   claim (v): arm S (plain SGD) cells (0.03, step 100), (0.01, step 1000) on r1's Adam and LoRA teachers; budget, h0
   t5b  t5's cell (0.003, step 1000)
   combine   no model: the combined verdicts (T1 with t1b, T2 with t2b and t2c, T5 with t5b) -> results/combined.json
@@ -36,14 +37,14 @@ from job import RESULTS, STARTS, Job, c0, log
 
 PRED = RESULTS / "predictions.json"
 RUN = {"t1": stages.t1, "t1b": stages.t1, "t2": stages.t2, "t2b": stages.t2, "t2c": stages.t2, "t3": stages.t3,
-       "t4": stages.t4, "t4b": stages.t4, "t5": stages.t5, "t5b": stages.t5}
+       "t4": stages.t4, "t4b": stages.t4, "t4c": stages.t4, "t5": stages.t5, "t5b": stages.t5}
 assert set(RUN) == set(STARTS)
 
 
 def filed() -> set[str]:
     """The stage ids filed in results/predictions.json (T1-T5, and Amendment 1's), lower case."""
     pred = json.loads(PRED.read_text())
-    return {p["id"].lower() for p in [*pred["predictions"], *pred.get("amendment_1", {}).get("predictions", [])]}
+    return {p["id"].lower() for p in [*pred["predictions"], *(p for a in ("amendment_1", "amendment_2") for p in pred.get(a, {}).get("predictions", []))]}
 
 
 def run(stage: str, device: str) -> None:

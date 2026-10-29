@@ -142,3 +142,28 @@ def test_t5() -> None:
 @pytest.mark.parametrize("f", [0.01, 0.2088, 0.25])
 def test_lines(f: float) -> None:
     assert R.r_max(rec(h0=1.5 / (1 + f)), f) == "pass" and R.r_max(rec(h0=1.5 * (1 + f)), f) == "fail"
+
+
+def test_t4c() -> None:
+    n, t = rec(h0=2.2, h1=1.7, h2=1.3), rec(h0=1.2, h1=1.1, h2=1.0)
+    assert R.t4c(n, t, rec(h0=1.4, h1=1.6, h2=1.1))["outcome"] == "between"
+    assert R.t4c(n, t, rec(h0=1.2, h1=1.7, h2=1.3))["outcome"] == "between"  # ties on either end are between
+    assert R.t4c(n, t, rec(h0=3.0, h1=2.0, h2=1.5))["outcome"] == "above"
+    assert R.t4c(n, t, rec(h0=1.0, h1=1.0, h2=0.9))["outcome"] == "below"
+    out = R.t4c(n, t, rec(h0=1.4, h1=1.8, h2=1.1))
+    assert out["outcome"] == "mixed" and out["per_start"]["h1"] == "above"
+    assert out["tt_below_nothing"] == {"h0": True, "h1": True, "h2": True}
+    assert R.t4c(n, t, rec(False, h0=1.4))["outcome"] == "unscored"
+    assert R.t4c(n, t, rec(h0=1.4, h1=math.nan, h2=1.1))["outcome"] == "unscored"
+    assert R.t4c(rec(), rec(), rec())["outcome"] == "unscored"  # empty
+
+
+def test_reproduces() -> None:
+    ref = {"h0": 1.51, "h1": 1.4, "h2": 0.94}
+    assert R.reproduces(dict(ref), ref, 1e-4)
+    assert R.reproduces({k: v * (1 + 1e-4) for k, v in ref.items()}, ref, 1e-4)  # on the line
+    assert not R.reproduces({k: v * 1.001 for k, v in ref.items()}, ref, 1e-4)
+    assert not R.reproduces({"h0": 1.51}, ref, 1e-4)  # a missing start
+    assert not R.reproduces(dict(ref), {}, 1e-4)  # no t4b file
+    assert not R.reproduces({**ref, "h0": "nan"}, ref, 1e-4)
+    assert not R.reproduces({"h0": 0.0}, {"h0": 0.0}, 1e-4)  # zero denominator
