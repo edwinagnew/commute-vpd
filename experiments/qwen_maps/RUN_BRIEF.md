@@ -46,6 +46,7 @@ the pod fetches them and the decomposition, so any H100 in any region works. Sec
   fetch /root/e40_nowarmup v0` (v0: `edwinagnew-mats/commute/qwen3-1.7b-e40-nowarmup-dW:v0`, uploaded 2026-10-29; ~5 min; exit 0
   means the four files match `results/regen_SHA256SUMS`, committed from the cluster run, which the sync must carry).
   Check `ls -l /root/e40_nowarmup/dW/`: `step_{1,10,100}.safetensors` 2.82 GB each, `step_100_fp32.safetensors` 5.64 GB.
+- **jq is not on the RunPod image**: install it in set-up (`apt-get install -y jq`), or edit `state.json` with the venv's python on the pod.
 - **Small inputs**: as section 2 (the W0 sources, g statistics and step-0 answers from `qwen_sft/nowarmup/`, which do
   not depend on δW).
 - **C runs again** (the reproduction check). Before the sync the lead renames the first pod's C in git and commits:

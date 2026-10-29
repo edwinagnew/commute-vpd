@@ -4,7 +4,6 @@ stages. Imported by run.py as a sibling module (as experiments/qwen_sft/amend1.p
 
 from __future__ import annotations
 
-import argparse
 import json
 import resource
 import sys
@@ -79,13 +78,27 @@ REHEARSAL = Config(n_rows=2, row_len=64, eval_batch=1, layers=(0,), random_dw=0.
                    adv_steps=2, acc_problems=4, gen_batch=4, rehearse=True, results="rehearsal")
 
 
+@dataclass(frozen=True)
+class JobOpts:
+    """The options a Job reads (run.py builds it from its arguments; a side script builds it directly)."""
+
+    out: str  # big files (S's products, arrays, accuracy answers)
+    e40_large: str
+    decomp: str
+    results: str = str(RESULTS)  # every JSON and the log (a rehearsal passes its own directory)
+    e40: str = ""
+    waive: str = ""
+    prior_usd: float = 0.0
+    usd_per_h: float = 0.0
+
+
 class Job:
     """The fp32 target (its matrices are W0), loaded on first use with the decomposition; rows, sources, δW and the
     alive columns (host) likewise. `res` holds every stage's results file."""
 
-    def __init__(self, a: argparse.Namespace, cfg: Config, scorer: Callable[[dict, dict], dict]):
+    def __init__(self, a: JobOpts, cfg: Config, scorer: Callable[[dict, dict], dict]):
         self.a, self.cfg, self.scorer, self.t0, self.stage = a, cfg, scorer, time.time(), ""
-        self.dir, self.out, self.e40, self.large = RESULTS / cfg.results, Path(a.out), Path(a.e40), Path(a.e40_large)
+        self.dir, self.out, self.e40, self.large = Path(a.results) / cfg.results, Path(a.out), Path(a.e40), Path(a.e40_large)
         self.dir.mkdir(parents=True, exist_ok=True)
         self.pred = json.loads(PRED.read_text())
         self.res = {s: json.loads(p.read_text()) for s in STAGES if (p := self.dir / f"{s}.json").is_file()}
@@ -134,7 +147,10 @@ class Job:
         return self.spent_before + (time.time() - self.t0) / 3600 * self.a.usd_per_h
 
     def save_state(self) -> None:
-        """Cumulative spend and the eval batch, read back by the next job of the run."""
+        """Cumulative spend and the eval batch, read back by the next job of the run. Stage R spends nothing and
+        writes none, so a pod run after it still honours --prior-usd."""
+        if self.stage == "R":
+            return
         write_json(self.dir / "state.json", {"usd": self.spent(), "eval_batch": self.batch})
 
     def set_batch(self, b: int, why: str) -> None:

@@ -3,7 +3,7 @@
 # code experiments/qwen_updates/run.py; job order and first-minute values in experiments/qwen_updates/RUN_BRIEF.md.
 # Submit from the clone root; every argument goes to run.py, e.g.
 #   sbatch --mem=32G cluster/qwen_updates.sbatch --stage control
-#   sbatch --mem=40G cluster/qwen_updates.sbatch --stage T --arm gold --seed 0
+#   sbatch --mem=48G cluster/qwen_updates.sbatch --stage T --arm gold --seed 0
 # Exit 0 done; 2 a first-minute check missed (STOP, results/<stage>.json "stopped"); 3 the 25-min budget was reached
 # (resubmit the same command: P, S and E resume where they stopped). Large files go to experiments/qwen_updates/results/
 # large/, a link into commute-data in the lead's clone (NFS, so later jobs on other nodes read earlier ones' files).
