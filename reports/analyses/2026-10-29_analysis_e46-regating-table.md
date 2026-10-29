@@ -1,6 +1,6 @@
 # Does the gate gain tell a learned update from one that learned nothing? E46 stage 0, one table in nats
 
-*E46 stage 0, `experiments/regating_table/`, written 2026-10-29, revised the same day for Amendment 2. Plan:
+*E46 stage 0, `experiments/regating_table/`, written 2026-10-29, revised the same day for Amendment 2 and an independent check. Plan:
 `reports/plans/2026-10-28_plan_regating-line-reset.md`, section 2 with Amendment 1 as adopted, the stage 0a stop and its
 amendment, and Amendment 2. Red-team review: `reports/reviews/2026-10-28_review_regating-line-red-team.md`. Filed
 predictions: `results/predictions.json` and, for the rerun, `results/predictions_amend1.json`. Results:
@@ -56,7 +56,8 @@ also read through their least-squares split, so the updated subcomponents have t
   cap at a hundred times, where every row matched.
 - **A per-key write.** One change to block 1's MLP output matrix, and nothing else. It is the least-norm matrix that maps
   each key's mean input there onto the answer's unembedding row. It is scaled until its real gain matches the
-  fine-tune's. It uses no existing machinery by construction and sits in Δ. It asks whether Γ hands the old
+  fine-tune's. By construction the change itself lies outside the subcomponents, in Δ; its effect still reaches the
+  answer through the original later blocks. It asks whether Γ hands the old
   subcomponents a gain whenever the activations start to predict the target. Only the random-map writes are scored. On
   the copy tasks the answer is the key, and input and output embeddings are tied, so the write adds the key's own embedding.
 
@@ -176,8 +177,9 @@ the real gain. The ` http` fine-tunes read 0.13 to 0.38 of theirs, also negative
 update whose off-target KL matches the fine-tune's within 10%. The first run capped the scale at ten times the
 fine-tune's norm, a guard with no source, and six of seven rows stopped short. Those are the hollow circles: random map A
 reached only 0.12 of its target. That null was a smaller disturbance than the fine-tune, so it did not run the rule as
-filed. Amendment 2 raised the cap to a hundred times and changed nothing else. Every row, the filled circles, then
-matched within 10%, at scales of 6 to 26 times the norm.
+filed. Amendment 2 raised the cap to a hundred times. It also changed the decision tree, which its own text did not
+say: see "Amendments in force". Every row, the filled circles, then matched within 10%, at scales of 6 to 26 times the
+norm.
 
 | task | fine-tune's KL, the target | first run: KL at the scale used | first run: scale | rerun: KL | rerun: scale |
 |---|---|---|---|---|---|
@@ -244,7 +246,8 @@ floor are negative: there Γ's new values lower the target. The three positive o
 and on random map B it was 0.34. Both sit below the pass line at 0.5, so the retire test did not fire. The blue squares
 put this in proportion: the real random-map fine-tunes read 0.31 to 0.52 of the copy fine-tune. So the write reads below
 the new-behaviour fine-tune, not far below it. In nats the write gave the old subcomponents 1.8 and 3.9 nats. That is half and two-thirds of
-what the random-map fine-tunes gave them. A write that uses no existing machinery still earns a gate gain well above the floor.
+what the random-map fine-tunes gave them. A write whose change lies outside the subcomponents still earns a gate gain
+well above the floor.
 
 | table | write's G, against its target | write's g | write over copy fine-tune | random-map fine-tune over copy fine-tune, seeds 0 and 1 | write's off-target KL against the random-map fine-tune's |
 |---|---|---|---|---|---|
@@ -302,26 +305,34 @@ updated subcomponents add 0.14 to 0.51 nats on top under Γ's new values, in bot
    fine-tune of the same table size; the copy writes are reported only. Fable's proposed check of the cosine between the
    write's and the fine-tune's change to the residual stream was not added.
 4. **Amendment 2, after stage 0b, 2026-10-29.** The random update's scale cap went from ten to a hundred times the
-   fine-tune's norm, and nothing else changed. The filed rule asks for a KL-matched null; the unsourced cap of ten
-   stopped six of seven rows short, so the rule as written had not been run. This was a fix with one clear option,
-   made and reported as an FYI under the user's rule of 2026-10-29, on Fable's advice. Only the seven random rows were
-   rerun, against `results/predictions_amend1.json`, filed before the run with the same rule, floor, fail fraction and
-   match tolerance.
+   fine-tune's norm. The filed rule asks for a KL-matched null; the unsourced cap of ten stopped six of seven rows
+   short, so the rule as written had not been run. This was a fix with one clear option, made and reported as an FYI
+   under the user's rule of 2026-10-29, on Fable's advice. Only the seven random rows were rerun, against
+   `results/predictions_amend1.json`, filed before the run with the same rule, floor, fail fraction and match
+   tolerance. **The cap was not the only change.** Amendment 2 also rewrote the decision tree. The filed tree sent a
+   failed random check to "retire". Amendment 2's tree sends it to a card for the user before any retire card. It also
+   adds a "card: cap" branch for a row that still cannot match. Both were written after stage 0b's results had been seen, so a
+   retire branch was softened after seeing data. This did not change the outcome: P0.3 read inconclusive, not fail,
+   and no row hit the new cap. The plan records the correction under Amendment 2. `predictions_amend1.json`'s own
+   `what_changed` field still says the cap was the only change; the file stays as filed.
 
 ## What stage 0 closes from the red team, and what it does not
 
-**Closed or narrowed.**
+**Reframed or narrowed.**
 
-- *The share reads the same for a non-learning or other-target update.* In nats that is no longer so. The non-learning
-  code fine-tune reads a gate gain of −0.04 to −0.05, the size of its real gain. The other-target fine-tunes read
-  negative gate gains. The share's problem was its near-zero denominator, not the gate gain itself.
+- *The share reads the same for a non-learning or other-target update.* Reframed, not closed. In nats the
+  non-learning code fine-tune reads a gate gain of −0.04 to −0.05 and the other-target fine-tunes read negative gate
+  gains, so the gate gain's sign and size now follow the update. But the red team's point was that Γ passes on the same
+  fraction of the real change whether or not the update learned, and stage 0 reproduces that: the code fine-tune's
+  gate gain is 0.82 and 0.78 of its real gain, and the random rows' 0.79 to 1.21. Dropping the share removed the
+  near-zero denominator, not that pattern.
 - *Any diffuse update reads as Γ switching subcomponents on.* Narrowed, not closed. A random update as disruptive as
   the fine-tune moves the gate gain by at most 0.48 nats, an eighth of the fine-tune's on the same task. But six of
   seven rows sit outside the floor, and the gate gain follows the small real change each random update makes.
 - *Γ turns on a token's machinery whenever the activations predict the token.* Partly. A write that makes the
   activations predict the answer gets a third or less of the copy fine-tune's gate gain. But it still gets half to two-thirds of
-  what the new-behaviour fine-tune gets, so the gap between "new behaviour" and "a write that uses no machinery" is
-  small.
+  what the new-behaviour fine-tune gets, so the gap between "new behaviour" and "a write whose change lies outside the subcomponents"
+  is small.
 
 **Not closed.**
 
@@ -338,9 +349,10 @@ updated subcomponents add 0.14 to 0.51 nats on top under Γ's new values, in bot
 ## What we learned
 
 Read in nats, the gate gain rises only for updates that raise the target and stays at or below zero for every update
-that does not. That answers the red team's sharpest complaint about the old share, which came from dividing by a near-zero
-real gain. The gate gain is still not a clean reading of "existing machinery": a write that uses none earns 1.8 to 3.9
-nats, not far below a fine-tune that teaches a new mapping. For `GOALS.md`'s fork between strengthening existing
+that does not. That reframes the red team's sharpest complaint about the old share; it does not close it. Γ
+still passes on about the same fraction of the real change, 0.78 to 1.21, for the non-learning fine-tune and the random
+updates. The gate gain is still not a clean reading of "existing machinery": a write whose change lies outside the
+subcomponents earns 1.8 to 3.9 nats, not far below a fine-tune that teaches a new mapping. For `GOALS.md`'s fork between strengthening existing
 behaviour and teaching new, the copy fine-tunes still stand apart from both, but the new-behaviour fine-tunes and the
 no-machinery write sit close together. The matched random null leaves the size question open in a narrower form. A
 disturbance as large as a fine-tune does not make Γ hand the old subcomponents gains of the fine-tune's order. It does
@@ -349,8 +361,9 @@ make Γ pass on most of whatever small real change the disturbance causes.
 ## How compelling is the evidence
 
 - The control passed on every task, and E12's ratios were reproduced within 0.002.
-- The random null is the weak link. Matched on side effects on every task, six of its seven rows sit outside the floor,
-  by 2.2 to 4.8 standard errors of the window mean. The largest is half its fail bar; the rest are a tenth or less.
+- The random null is the weak link. Matched on side effects on every task, six of its seven rows sit outside the floor.
+  Their gate gains are 2.2 to 4.8 standard errors of the window mean from zero, not from the floor; copy B, for one, is
+  only 0.008 nats above its floor. The largest is half its fail bar; the rest are an eighth or less.
 - Every null has one seed. The floor is window-sampling noise for one fixed update, not the spread across random draws.
 - All tasks are single-position toys on the 67M model: three single-trigger tasks, two copy and two random-map tables,
   and one non-learning code fine-tune.
@@ -377,8 +390,8 @@ is decided here.
 **Fable's advice** (in full: `reports/reviews/2026-10-29_review_e46-card-fable-advice.md`). The gate gain is not
 silent under noise: it passes on roughly what a change does to the target. Learned updates are told from random ones
 because random ones do little; the separation is 8 to 100 times. So the 0.1-nat floor was the wrong null, not a
-broken instrument. The weaker point is P0.4, which passed: a hand write that by construction uses no existing
-subcomponent still reads 48-65% of a random-map fine-tune's gate gain. And stage 1's first number (gated piece gain
+broken instrument. The weaker point is P0.4, which passed: a hand write whose change by construction lies
+outside the subcomponents still reads 48-65% of a random-map fine-tune's gate gain. And stage 1's first number (gated piece gain
 over piece gain, after a least-squares split) has never been read on a null: the random δW and the write sit in Δ and
 were never split. Options: (1) adopt g with the random null as a relative bar and the write as a second null, then
 stage 1 (~$5 on the Qwen states); (2) nulls matched on G, which collapses into (1); (3) one more $0 debug job first,

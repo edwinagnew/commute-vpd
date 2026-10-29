@@ -45,3 +45,21 @@ under 1.40, fail over 1.61 on the H100 (card-dependent: 1.24 on the L40).
 - The regating line (Q5) was out of scope.
 
 The five reviewers' full reports: `reports/reviews/2026-10-29_review_claims-red-team_full.md`.
+
+## Addendum 2026-10-29: each claim after E47
+
+E47 ran the cheapest test of every row above, on the MATS cluster's L40, with two to four adversary starts per state and
+each job's own lines (pass 1.241, fail 1.813 on rows 0-255). Analysis: `reports/analyses/2026-10-29_analysis_e47-claim-tests.md`;
+notebook `notebooks/E47_claim_tests.ipynb`. Verdicts relative to this review's:
+
+| Claim | This review | After E47 | What decided it |
+|---|---|---|---|
+| (i) | weakened | **stands** (two teachers, four starts, rows 0-255) | Every teacher-trained decomposition passes at every start, worst 1.225 (r1, h1) and 1.012 (rand32, h2); every do-nothing fails, r1 at budget 2.16 and h2 3.53, rand32 at h1 3.40 and h2 2.97. The rand32 power came from h1 and h2, not the budget start. Narrowest margin: r1's 1.225 against 1.241 |
+| (ii) | weakened | **weakened** (unchanged) | Rank 8 inconclusive on rows 0-255 (mean 1.276) but passes on rows 256-511 (1.154 vs 1.450). No cap effect on rows 0-255 at rank 32 (1.264) or rank 128 (1.367); on rows 256-511 rank 128 reads 1.532, 1.33× rank 8, just under the fail line 1.552 (h0 alone 1.657). That row set's f is 0.035 from two starts. Combined: absolute unsettled, cap unsettled |
+| (iii) | weakened (adversarial half falsified) | **weakened** (unchanged) | At matched size the rate-0.03 run keeps 0.08-0.09 more than the rate-0.01 run at all four points: between the 0.05 agree and 0.10 differ lines, so mixed on both seeds. Keep still drops ~0.29 between the two sizes in each run. The scaled-down arm was unscored: the scaled updates keep P 0.06-0.26 of the target, under the 0.5 rule |
+| (iv) | weakened | **falsified at step 10; unsettled at step 1000** | Step 10: q = 0.65, 0.96, 1.07 at h0-h2, so plus remainder reads below do-nothing at two starts, the reverse of E43's H100 ordering; cause not known. Step 1000 (the filed claim): q = 1.27, 1.005, 1.11, worse at every start but within the start spread |
+| (v) | weakened (wording exceeds the grid) | **falsified** | Plain SGD as teacher training's optimiser passes on both r1 teachers at (0.03, step 100), (0.01, step 1000) and (0.003, step 1000): worst 0.98-1.17, P ≥ 0.986. Only (0.03, step 1000) fails (3.30). The wording becomes "plain SGD at 0.03 for 1000 steps fails; smaller settings pass" |
+
+Filed-prediction misses: T3 (lean falls, read mixed), T4b (lean stands, read falls: a reversal), T2c's cap (lean no cap
+effect, read unsettled), and T1's "no power on rand32" (rand32 had power). The log's claims section changes for (iii)-(v)
+only after the lead's independent check.
