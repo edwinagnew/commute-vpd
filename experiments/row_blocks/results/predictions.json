@@ -1,0 +1,144 @@
+{
+ "plan": "reports/plans/2026-10-29_plan_e49-row-blocks.md (E49). Filed before any run; never edited after.",
+ "definitions": {
+  "ratio": "a state's PGD KL on one block of 128 Pile val rows (the harness adversary: 20 sign steps of 0.1 from the random start of torch.manual_seed(seed), one adversary shared by the block's 16 batches of 8) over W0's KL on the same block at the same seed, read in the same job on the L40",
+  "pair check": "E39's 256-row check on two neighbouring blocks: the mean of their two KLs over W0's mean",
+  "lines": "E39's, fixed: pass <= 1.4, fail >= 1.61, both inclusive; between is neither",
+  "hard block": "val rows 128-255, where both SGD teacher-trained decompositions' fails sat (E39 A3: 2.93, 2.95)",
+  "states": "teacher-trained decompositions (E37's teacher training on each fine-tune, loaded from E39's saved bf16 offsets): tt_adam (E37's Adam fine-tune), tt_sgd (A1's plain SGD 0.01), tt_sgd_r8 (A2's SGD held to rank 8, 0.03), tt_lora (E39's rank-8 LoRA, A2's seed-0 copy); do-nothing states: the Adam, plain SGD and LoRA fine-tunes regenerated here, their delta-W left in Delta"
+ },
+ "controls": {
+  "regen": "each fine-tune's held-out gain within 0.005 of {'adam': 0.1301, 'sgd': 0.13671, 'lora': 0.1479} (H100), else stop",
+  "a: W0": "PGD KL per block within 0.0001 of E47's L40 readings {'0|0': 0.6671, '128|0': 0.7164, '128|1': 1.0007, '128|2': 0.6846}, else stop",
+  "a: Adam teacher-trained": "mean KL on rows 0-255 at seed 0 within 0% of E47's L40 1.5018157362937927 and the check >= 1.61 (positive control), else stop",
+  "a: LoRA teacher-trained": "mean KL on rows 0-255 at seed 0 within 0% of E47's L40 0.9174503982067108, else stop",
+  "a: SGD on this card (reported, no stop)": "check on rows 0-255 at seed 0 within 10% of the H100's {'tt_sgd': 2.0675, 'tt_sgd_r8': 2.1218}",
+  "b: W0": "per block PGD KL in [0.45, 1.5] and CI-masked KL within 15% of 0.34, else stop",
+  "b: Adam do-nothing": "pair check >= 1.61 at the job's seed (the check can fail an update on these rows), else stop"
+ },
+ "expected": {
+  "a: W0": "{'0|0': 0.6671, '128|0': 0.7164, '128|1': 1.0007, '128|2': 0.6846} exactly (rows|seed)",
+  "a: Adam teacher-trained, rows 0-255 seed 0": "2.171 (E47 L40); per block about 1.7 and 2.7 (H100 1.69, 2.68)",
+  "a: LoRA teacher-trained": "rows 0-255 seed 0 1.326 (E47 L40); hard block 1.3-1.6 at seed 0 (H100 1.42), 1.1-1.5 at seeds 1-2",
+  "a: SGD teacher-trained, rows 0-255 seed 0": "plain 1.86-2.27, rank 8 1.91-2.33 (H100 2.0675, 2.1218 +- 10%)",
+  "a: SGD teacher-trained, hard block": "seed 0 2.4-3.2 (H100 2.93, 2.95); seeds 1-2 1.8-3.0 under 'rows', <= 1.4 under 'start'",
+  "b: W0": "PGD KL 0.6-1.0 per block, CI-masked 0.33-0.35; own spread over seeds 0.05-0.46",
+  "b: do-nothing": "Adam 3-6 (E37 4.87 on rows 0-255); plain SGD 1.3-3.8, may pass a block (A1 blocks 1.34, 3.83); LoRA 2-3.5 (E39 2.65)",
+  "b: teacher-trained, per block median": "Adam 1.7-2.7 (H100 blocks 1.69-2.68), fails 4 of 4; plain SGD 1.1-1.45 with at most one block near 2-3, fails 0-1; SGD rank 8 1.25-1.5, fails 0-1; LoRA 1.1-1.45, fails 0"
+ },
+ "predictions": [
+  {
+   "id": "P1",
+   "rule": "(a) on the hard block, each SGD teacher-trained decomposition (plain, rank 8) at adversary seeds 1 and 2: 'rows' if both ratios >= 1.61, 'start' if both <= 1.4, else 'mixed'. Holds iff both states read 'rows'; misses if both read 'start' or they read 'mixed'/differ; unscored if stage a did not finish or a ratio is not finite",
+   "expected": "rows: 1.8-3.0 at seeds 1 and 2",
+   "lean": "low-medium: the block reads high for 13 of 14 states over 1.40 and for the SGD do-nothing (3.83), but W0's own reading there varies most over seeds (0.46 on the L40)",
+   "blind_to": "one block, three starts, one card; a W0 reading high at a seed (1.0007 at seed 1) lowers that seed's ratio for every state",
+   "positive_control": "the Adam teacher-trained decomposition at seed 0 on rows 0-255 (must fail)",
+   "noise_floor": "W0's own spread over adversary seeds 0-2 per block on the L40 (max/min - 1): 0.087 on val rows 0-127 and 0.46 on rows 128-255 (E47 logs); over 256 rows 0.209 (rows 0-255, E47) against E39's H100 0.075, for which E39's lines 1.40 / 1.61 were set; the same saved file on the same rows reads 0.5-4.2% apart between L40 and H100 (four pairs, E47 against E39 A2/A3); E37's batch-order spread of the check, 14%"
+  },
+  {
+   "id": "P2",
+   "rule": "(b) the Adam teacher-trained decomposition fails 4 of the 4 new blocks. per new block (val 512-639, 640-767, 768-895, 896-1023) the median over adversary seeds 0-2 of the state's ratio; a block fails when that median is >= 1.61 (between the lines is not a fail); the count is scored only when all four blocks have three finite ratios (every b job finished)",
+   "expected": "4 of 4, medians 1.7-2.7",
+   "lean": "medium: its four known blocks read 1.69-2.68 on the H100, the lowest close to the line",
+   "blind_to": "one batch order of teacher training; Adam's check moved 14% with batch order (E37)",
+   "positive_control": "the Adam do-nothing on the same rows and seed (pair check >= 1.61, a stop)",
+   "noise_floor": "W0's own spread over adversary seeds 0-2 per block on the L40 (max/min - 1): 0.087 on val rows 0-127 and 0.46 on rows 128-255 (E47 logs); over 256 rows 0.209 (rows 0-255, E47) against E39's H100 0.075, for which E39's lines 1.40 / 1.61 were set; the same saved file on the same rows reads 0.5-4.2% apart between L40 and H100 (four pairs, E47 against E39 A2/A3); E37's batch-order spread of the check, 14%"
+  },
+  {
+   "id": "P3",
+   "rule": "(b) the plain SGD teacher-trained decomposition fails 0 or 1 of the 4 new blocks. per new block (val 512-639, 640-767, 768-895, 896-1023) the median over adversary seeds 0-2 of the state's ratio; a block fails when that median is >= 1.61 (between the lines is not a fail); the count is scored only when all four blocks have three finite ratios (every b job finished)",
+   "expected": "0-1 of 4, medians 1.1-1.45",
+   "lean": "medium-low: three of its four known blocks read 1.11-1.26, one 2.93",
+   "blind_to": "the check's power on SGD's update: the SGD do-nothing passed rows 0-127 (1.34); its own failing-block count is read beside",
+   "positive_control": "the SGD do-nothing on the same blocks and seeds",
+   "noise_floor": "W0's own spread over adversary seeds 0-2 per block on the L40 (max/min - 1): 0.087 on val rows 0-127 and 0.46 on rows 128-255 (E47 logs); over 256 rows 0.209 (rows 0-255, E47) against E39's H100 0.075, for which E39's lines 1.40 / 1.61 were set; the same saved file on the same rows reads 0.5-4.2% apart between L40 and H100 (four pairs, E47 against E39 A2/A3); E37's batch-order spread of the check, 14%"
+  },
+  {
+   "id": "P4",
+   "rule": "(b) the LoRA teacher-trained decomposition fails none of the 4 new blocks. per new block (val 512-639, 640-767, 768-895, 896-1023) the median over adversary seeds 0-2 of the state's ratio; a block fails when that median is >= 1.61 (between the lines is not a fail); the count is scored only when all four blocks have three finite ratios (every b job finished)",
+   "expected": "0 of 4, medians 1.1-1.45",
+   "lean": "medium: its four known blocks read 1.11-1.42 (H100)",
+   "blind_to": "one LoRA seed; the hard block read 1.42-1.44, just over the pass line",
+   "positive_control": "the LoRA do-nothing on the same blocks and seeds",
+   "noise_floor": "W0's own spread over adversary seeds 0-2 per block on the L40 (max/min - 1): 0.087 on val rows 0-127 and 0.46 on rows 128-255 (E47 logs); over 256 rows 0.209 (rows 0-255, E47) against E39's H100 0.075, for which E39's lines 1.40 / 1.61 were set; the same saved file on the same rows reads 0.5-4.2% apart between L40 and H100 (four pairs, E47 against E39 A2/A3); E37's batch-order spread of the check, 14%"
+  },
+  {
+   "id": "P5",
+   "rule": "(b) the SGD held to rank 8 teacher-trained decomposition fails 0 or 1 of the 4 new blocks. per new block (val 512-639, 640-767, 768-895, 896-1023) the median over adversary seeds 0-2 of the state's ratio; a block fails when that median is >= 1.61 (between the lines is not a fail); the count is scored only when all four blocks have three finite ratios (every b job finished)",
+   "expected": "0-1 of 4, medians 1.25-1.5",
+   "lean": "medium-low: its known blocks read 1.25, 1.36, 1.42 besides the hard block's 2.95; a median between the lines does not count as a fail",
+   "blind_to": "one rate, one batch order; it has no do-nothing read here",
+   "positive_control": "the plain SGD do-nothing",
+   "noise_floor": "W0's own spread over adversary seeds 0-2 per block on the L40 (max/min - 1): 0.087 on val rows 0-127 and 0.46 on rows 128-255 (E47 logs); over 256 rows 0.209 (rows 0-255, E47) against E39's H100 0.075, for which E39's lines 1.40 / 1.61 were set; the same saved file on the same rows reads 0.5-4.2% apart between L40 and H100 (four pairs, E47 against E39 A2/A3); E37's batch-order spread of the check, 14%"
+  }
+ ],
+ "stop_rules": "each job stops on its first missed control (above); a stopped job's reads are not scored",
+ "readings": {
+  "a": {
+   "rows": "Both SGD teacher-trained decompositions fail rows 128-255 at seeds 1 and 2 as well: the block's fail is not one adversary start; it belongs to the rows. Next (a later $0 job, by this tree): per-row KL under the block's final mask, to say whether a handful of rows carry it.",
+   "start": "Both SGD teacher-trained decompositions pass rows 128-255 at seeds 1 and 2: the block's fail was the adversary's start. Multi-start readings become a question for every line: a decision card for the user.",
+   "mixed": "The SGD states do not agree, or a seed lands between the lines: start and rows are not separated on this block; the b reading decides where SGD sits, and per-row KL is not run.",
+   "unscored": "Stage a stopped at a control, or a ratio is not finite: unanswered.",
+   "not run": "Stage a has not finished."
+  },
+  "b": {
+   "sgd_with_adam": "Plain SGD's teacher-trained decomposition fails two or more of the four new blocks: full-matrix SGD sits with Adam, and Amendment 3's two remaining stages, option (d), go to the user as a card.",
+   "sgd_passes_most": "Plain SGD fails at most one of the four new blocks and Adam fails all four: the line closes 'Adam fails, the LoRA passes, SGD passes on most rows'; option (d) is dropped.",
+   "adam_not_every_block": "Plain SGD fails at most one new block, and Adam's teacher-trained decomposition also passes on at least one: Adam's fail is block-dependent too; not covered by the card's advice, so it goes to the user before anything else runs on the broad line.",
+   "unscored": "A b job stopped at a control or did not run: unanswered.",
+   "sgd_passes_most_low_power": "Plain SGD fails at most one of the four new blocks and Adam fails all four: the line closes 'Adam fails, the LoRA passes, SGD passes on most rows'; option (d) is dropped. But the SGD do-nothing fails at most two of the four blocks, so on the others the check could not fail SGD's update at all: the SGD passes there carry little weight, and this is said wherever the reading is.",
+   "adam_not_every_block_low_power": "Plain SGD fails at most one new block, and Adam's teacher-trained decomposition also passes on at least one: Adam's fail is block-dependent too; not covered by the card's advice, so it goes to the user before anything else runs on the broad line. But the SGD do-nothing fails at most two of the four blocks, so on the others the check could not fail SGD's update at all: the SGD passes there carry little weight, and this is said wherever the reading is."
+  }
+ },
+ "config": {
+  "pass_line": 1.4,
+  "fail_line": 1.61,
+  "pgd_steps": 20,
+  "gain_ref": {
+   "adam": 0.1301,
+   "sgd": 0.13671,
+   "lora": 0.1479
+  },
+  "gain_tol": 0.005,
+  "hard_block": 128,
+  "a_seeds": [
+   0,
+   1,
+   2
+  ],
+  "a_w0": {
+   "0|0": 0.6671,
+   "128|0": 0.7164,
+   "128|1": 1.0007,
+   "128|2": 0.6846
+  },
+  "w0_block_tol": 0.0001,
+  "a_pair_kl": {
+   "tt_adam": 1.5018157362937927,
+   "tt_lora": 0.9174503982067108
+  },
+  "repro_tol": 0.001,
+  "h100_first": {
+   "tt_sgd": 2.0675,
+   "tt_sgd_r8": 2.1218
+  },
+  "card_tol": 0.1,
+  "b_rows": [
+   512,
+   768
+  ],
+  "b_seeds": [
+   0,
+   1,
+   2
+  ],
+  "w0_ci": 0.34,
+  "w0_ci_tol": 0.15,
+  "w0_pgd_band": [
+   0.45,
+   1.5
+  ]
+ },
+ "filed": "2026-10-29 12:59:58"
+}

@@ -128,6 +128,17 @@ def on_rows(ctx: Context, part: str, start: int, n: int, seeds: tuple[int, ...],
     return out
 
 
+def at(ctx: Context, dW: dict[str, Tensor], uv2: dict[str, tuple[Tensor, Tensor]] | None) -> Any:
+    """Context manager: the model at target W0 + dW with alive (U', V') = uv2 (None: the released ones, so the update
+    lands in Delta: do-nothing). Added 2026-10-29 for row_blocks; the same step is `at` in
+    experiments/claim_tests/recipes.py, which stays as it ran."""
+    from commute.component_training import components_with
+    from commute.faithfulness import model_state
+
+    comps = None if uv2 is None else components_with(ctx.model, ctx.alive, uv2)
+    return model_state(ctx.model, target={k: ctx.W0[k] + dW[k].to(ctx.W0[k].device) for k in ctx.W0}, components=comps)
+
+
 def pgd_floor(ctx: Context) -> float | None:
     """f = max / min - 1 of W0's PGD KL over the adversary seeds; 'within 3 floors' = ratio <= 1 + 3 f."""
     if not ctx.pile:

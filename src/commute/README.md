@@ -58,6 +58,8 @@ Layouts: param-decomp `(U (C, d_out), V (d_in, C))`; theory `(U_A (d_out, n), V_
 - `with_windows(ctx, windows, token)`; `task_context(ctx, windows_path)` -> (ctx, sigma)
 - `measure(ctx, name, dW, state, pile)`: route split, Delta share, Pile ratios; `nothing_and_split(ctx, name, dW, p_o, pile)`
 - `pile_ratios(ctx)`, `pgd_floor(ctx)`, `outside_share(ctx, dW)`, `outside_share_of(dW, bases, sigma, non_saturated)`
+- `at(ctx, dW, uv2)`: context manager, the model at W0 + dW with alive (U', V') = uv2 (None: do-nothing)
+**lowercase** — E37's lowercase task and E39's fine-tunes. `task(model, device)` -> `Lower(rows, held, w0_net, logp_w0)`; `finetune(model, device, low, "adam"|"sgd"|"lora")` -> dW; `gain(model, device, low, dW)`.
 **split** — splits of delta-W over the alive subcomponents (theory section 5).
 - `alive_uv(U, V, alive)`: param-decomp -> theory (float64); `bases(uv, tol)` -> {k: Basis}; `basis(U_A, V_A, tol)`
 - `split_state(dW, uv, b)` -> State (least squares); `least_squares_split(M, b, U_A, V_A)`; `split_with_delta_change(...)`
