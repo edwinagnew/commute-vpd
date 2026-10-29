@@ -1,0 +1,244 @@
+{
+  "experiment": "E55 Amendment 3 ($0 diagnostic, no training): are LOW and N1 broken by swap-built text or by rare (count a, count b) pairs, does the third rule hold on natural rows in new pairs, and do Stage A's reads depend on the size of the a/c swap?",
+  "filed": "2026-10-29, before any run of experiments/pcfg_anchors/amend3.py; no model has read the pair rows (new seed [1, 74]) and no per-row answer of any model on the C_Te = 1 rows exists (Stage A saved only their accuracy). Never edited after the run (a dated report instead).",
+  "why": "reports/reviews/2026-10-29_review_e55-amend2-analysis.md. Finding 1: on Amendment 2's rows built by a/c swaps, N1 10K's count of b (never touched by the swap) fails more the larger the swap (exact share 1.00 at a swap of 1, 0.87 at 2, 0.58 at 4, 0.14 at 8); above count a 17 LOW's answer follows count a before the swap; at (17, 13), all counts in range, LOW is wrong on 341 of 341 swap-built rows. Finding 2: the only fresh rows in new pairs where the third rule is distinct, (17, 10) and (17, 9), were both answered 16 by every W state at 10K, not third's 15 (0 of 2). Finding 3: natural rows in those pairs cost CPU minutes. Finding 8: pcfg.spurious_texts builds the fine-tuning rows and Stage A's C_Te = 1 rows with the same swap step.",
+  "brief_vs_code": "The brief says Stage A's behaviour check B reads spurious (swap-built) rows. It does not: B, P, the B nulls and the positive references read interchange.qualifying_texts, natural texts with count(b) != count(a) + 1 and no swap (run.read_state, run.behaviour_nulls, run.patch_references; checked in code by the c c c trigram, control b_check_rows_no_ccc). The swap-built rows Stage A reads are (i) the 4,000 C_Te = 1 test rows behind the count_b_te1 accuracy in results/a2_<arm>.json (Table 6's spurious column; PA2 is blind to it) and (ii) the fine-tuning rows of N2, N3, M2, M3, W1, W1s1, W2. Part 2 therefore reads swap size on (i), regenerated from the same seed, and gives the swap-size histogram of (ii) model-free; P6 states what this means for B and P.",
+  "code": "experiments/pcfg_anchors/amend3.py; cluster/pcfg_anchors.sbatch amend3 (debug QoS, --time 00:10:00, no training). Output results/amend3.json (keys constants, controls, pairs, swap), or results/amend3_control_miss.json and exit 1 when a control misses. Per-row answers results/large/amend3/answers/<rows>_<read>.npy; rows' counts in results/large/amend3/pairs_counts.npy (a, b, c) and te1_counts.npy (a after, b, a before). Log results/large/amend3/amend3.log.",
+  "constants": {
+    "pairs_seed_tail": 74,
+    "chunk": 100000,
+    "max_texts": 8000000,
+    "max_per_pair": 200,
+    "pairs": [
+      [
+        13,
+        13
+      ],
+      [
+        14,
+        13
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        14,
+        12
+      ],
+      [
+        12,
+        14
+      ],
+      [
+        17,
+        13
+      ],
+      [
+        17,
+        10
+      ],
+      [
+        16,
+        9
+      ],
+      [
+        15,
+        9
+      ],
+      [
+        9,
+        14
+      ],
+      [
+        9,
+        17
+      ],
+      [
+        17,
+        9
+      ],
+      [
+        9,
+        16
+      ],
+      [
+        18,
+        11
+      ],
+      [
+        11,
+        18
+      ]
+    ],
+    "reference_pairs": [
+      [
+        13,
+        13
+      ],
+      [
+        14,
+        13
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        14,
+        12
+      ],
+      [
+        12,
+        14
+      ]
+    ],
+    "new_pairs": [
+      [
+        17,
+        10
+      ],
+      [
+        16,
+        9
+      ],
+      [
+        15,
+        9
+      ],
+      [
+        9,
+        14
+      ],
+      [
+        9,
+        17
+      ],
+      [
+        17,
+        9
+      ]
+    ],
+    "min_pair_rows": 10,
+    "min_pairs": 3,
+    "hold_frac": 0.75,
+    "fail_frac": 0.25,
+    "control_min": 0.95,
+    "swap_span": 3,
+    "swap_clip": 4,
+    "drop_min": 0.05,
+    "min_cell_rows": 20
+  },
+  "definitions": {
+    "answer": "argmax at `=` in fp32 eval mode (interchange.run_at_art) as a count (token - NUM0); a non-number answer (< 0) equals no rule. a, b, c = window counts, a + b + c = 40.",
+    "rules": "amend2.rules, unchanged: a_plus_1 = a + 1; b; mid = a + 1 + trunc(d / 2); a; third = a + 1 + floor((d + 1) / 3) = the nearest integer to (2 (a + 1) + b) / 3; d = b - a - 1.",
+    "pair_rows": "Natural texts (pcfg.sample_texts) from default_rng([EVAL_SEED = 1, 74]) in chunks of 100,000, drawn until every filed pair holds 200 rows or 8,000,000 texts are drawn; per pair the first rows in stream order. Seed tails 70-73 were amend1's and amend2's; no pair row equals any of their 28,000 rows (control). Rates measured model-free before filing on 6.6M texts from another seed ([1, 999]; ~/commute-data/scratch/reuse-lead/e55-amend3/freq.py), per million texts: (17, 13) 81.5, (17, 10) 61.1, (16, 9) 14.6, (15, 9) 10.0, (9, 14) 5.6, (9, 17) 2.1, (17, 9) 1.4, (9, 16) 23.3, (18, 11) 1.7, (11, 18) 1.5; reference pairs 74,000-128,000. Rows expected at 8M texts: 200 (capped) for the reference pairs, (17, 13) and (17, 10); about 116 (16, 9), 80 (15, 9), 45 (9, 14), 17 (9, 17), 11 (17, 9), 187 (9, 16), 13 (18, 11), 12 (11, 18). Measured in the dry run (same seed, so the same rows): see dry_run.",
+    "pairs_roles": "reference_pairs: Amendment 1's five most common pairs, where LOW and N1 are known to count (controls). (17, 13): the pair where LOW failed all 341 swap-built rows (P1). new_pairs: the in-range pairs (a and b within the natural 9-17) where third differs from a + 1, b, mid and a, and which held none of Amendment 1's third-distinct rows (amend1's ten were (16, 11), (11, 16), (10, 15), (15, 10), (17, 12), (16, 10), (12, 17), (17, 11), (10, 17), (9, 16)); (17, 10) and (17, 9) are finding 2's two rows' pairs (P2). (9, 16): an amend1 pair with a = 9, for LOW's count of a at 9 (P1b). (18, 11), (11, 18): edge of range, reported only.",
+    "new_pair_rule_answers": "(17, 10): a+1 18, b 10, mid 14, a 17, third 15. (16, 9): 17, 9, 13, 16, third 14. (15, 9): 16, 9, 13, 15, third 14. (9, 14): 10, 14, 12, 9, third 11. (9, 17): 10, 17, 13, 9, third 12. (17, 9): 18, 9, 14, 17, third 15. Within a pair every rule's answer is fixed, so a pair is one unit for a rule question.",
+    "pair_read": "per pair and read: n, the share of the pair's rows answering each rule, the most common answer (mode) and its share. Empty pair: n 0, shares nan, mode null.",
+    "third_on_new": "per W state: valid new pairs = the new pairs with >= min_pair_rows = 10 rows where LOW ('C a 40') answers a and N1 10K answers b on >= control_min = 0.95 of the pair's rows (Amendment 2's validity rule: a pair where the base cannot count a, or N1 cannot count b, says nothing about a rule). majority = valid pairs answered third on more than half their rows (strict). Label: 'void' if valid pairs < min_pairs = 3; 'holds' iff majority >= ceil(0.75 x valid pairs); 'fails' iff majority <= floor(0.25 x valid pairs); else 'mixed'. With 3 valid pairs: holds 3/3, fails 0/3; 4: holds >= 3, fails <= 1; 5: >= 4, <= 1; 6: >= 5, <= 1.",
+    "te1_rows": "Stage A's C_Te = 1 count-b rows: run.eval_seqs(B, 4000, 1.0), default_rng([1, 1, 1]); every row is a spurious_texts row (count a in the window set to count b - 1 by a/c swaps at uniform window positions), so the label b = a + 1. Rebuilt by wrapping pcfg._set_window_count to record count a before each call (the wrapper calls the original with the same arguments, so the rng stream and the rows are unchanged; control te1_rows_are_stage_a_rows compares with an unwrapped rebuild). swap = |count a after - count a before| = the number of a/c swaps. Measured model-free before filing: |swap| 0: 760 rows, 1: 1,323, 2: 950, 3: 586, 4: 255, 5: 101, 6: 20, 7: 5. Swap size is tied to b (b 12: mostly 2-4; b 13: 0-3; b 14: 0-1; b 15: 0-3), so swap is read within b.",
+    "swap_read": "for one model and prefix on the te1 rows: right = (answer == count a after + offset), offset 1 for 'C b 40' reads (right = the label b) and 0 for LOW's and HIGH's 'C a 40' and LOW's 'C b 40' (LOW's own answer). Reported: overall share right; share right per |swap| 0, 1, 2, 3, >= 4; share right per (b, |swap|) cell with >= 20 rows; the share answering count a BEFORE the swap + offset, per |swap| (does the model follow the pre-swap text?). Scored: the within-b slope of right (0/1) on |swap| (both demeaned within each b; ordinary least squares) with its HC0 (heteroskedasticity-robust) sd; effect = -slope x 3, the drop in the share right over a swap of 3; sd_effect = 3 x sd. Label: 'depends' iff effect > max(drop_min = 0.05, 3 sd_effect) (strict); 'rises' iff -effect > the same; else 'not shown'; no within-b spread of |swap| -> 'void'. Absolute shares.",
+    "ccc": "the trigram c c c inside the window. Every grammar leaf (ca, abc, cb, cab, cba, ba) holds at most one c at each end and none is a lone c, so natural text holds at most c c; an a -> c swap can make c c c. Used to show B's rows hold no swap-built row and te1 rows do (controls)."
+  },
+  "predictions": {
+    "C0_controls": {
+      "claim": "The rows and the read are what the filing says, and LOW and N1 count where they are known to.",
+      "rows": {
+        "model_free": "pair rows hold their filed (a, b); no c c c in any pair row; no pair row equals one of amend1's 8,000 or amend2's 20,000 fresh rows; the te1 rows equal Stage A's (unwrapped rebuild); b = a + 1 on every te1 row; some te1 row holds c c c; Stage A's B rows (qualifying_texts([1, 51]), 1,000) hold none.",
+        "synthetic": "swap_read on the te1 rows: an exact answerer (b) reads 'not shown'; an answerer of count a before the swap + 1 (right only at swap 0) reads 'depends'; constant 13 reads 'not shown' (within b it is right on all or none, so no slope); b with 10% of rows non-number (seeded [1, 74, 1]) reads 'not shown'.",
+        "model": "share >= control_min = 0.95 (inclusive, absolute) for each of: LOW 'C a 40' answers a, LOW 'C b 40' answers a, N1 10K answers b, on the reference pairs pooled (~1,000 rows) and on the te1 rows with no swap (760 natural texts that happen to have b = a + 1)."
+      },
+      "stop": "any miss -> results/amend3_control_miss.json and exit 1 before Part 1 and Part 2.",
+      "lean": "certain for the model-free and synthetic rows (checked in the dry run); 97% for each model row (amend1 and amend2: LOW 0.9999, N1 1.000 on natural rows).",
+      "noise_floor": "binomial sd 0.007 at 0.95 on 1,000 rows, 0.008 on 760.",
+      "scored_from": "controls.checks (every value true); controls.shares"
+    },
+    "W0_expected": {
+      "note": "LOW is W0 and the do-nothing reference (a zero-step fine-tune).",
+      "expected": "Part 1: LOW 'C b 40' answers a (its count of a) on every pair where LOW 'C a 40' does, share a ~1.0 there; on the new pairs its third share is 0 (third != a there). Part 2: te1 LOW_C_b_40 tracks te1 LOW_C_a_40 (same answer, LOW ignores the operand): within 0.02 of each other overall and the same label.",
+      "scored_from": "pairs.LOW_C_b_40.<pair>.a and .third; swap.reads.LOW_C_b_40 against swap.reads.LOW_C_a_40 (overall, label)"
+    },
+    "P1_swap_or_rare_pair_17_13": {
+      "claim": "LOW's failure at (17, 13) is caused by the swap-built text, not by the pair being rare: on natural (17, 13) rows LOW counts a.",
+      "rule": "pairs.LOW_C_a_40['17,13'].a >= 0.95 AND pairs.LOW_C_b_40['17,13'].a >= 0.95 (inclusive, absolute), with n >= min_pair_rows -> 'swap-built text'. Both < 0.5 -> 'rare pair' (LOW fails on natural rows too). Otherwise 'partial'. n < 10 -> void (not expected: ~200 rows).",
+      "expected": "'swap-built text': LOW answers 17 on nearly every natural (17, 13) row (it answered 0 of 341 swap-built ones). N1 10K answers 13 (b) on >= 0.95 of them (reported beside it).",
+      "lean": "swap-built text 80%, partial 10%, rare pair 10%. For: Amendment 2's fresh rows held 9 natural a = 17 rows and LOW counted a on all; the review's evidence (N1 failing on b, which the swap never touches; LOW's answer tracking the pre-swap count) points at the text. Against: (17, 13) is 1 row in 12,000, rarer than any reference pair, and its c = 10 is at the low edge.",
+      "blind_to": "Which feature of the swap-built text breaks LOW (swap positions, c c c runs, the pre-swap context); the read shows only that natural rows in the same pair are counted.",
+      "positive_control": "LOW 'C a 40' on the reference pairs (C0).",
+      "noise_floor": "binomial sd 0.015 at 0.95 on 200 rows; answers are nearly fixed by the pair, so the effective n for 'does LOW count a here' is closer to 1 pair than 200 rows: the read is a near-yes/no.",
+      "scored_from": "pairs.LOW_C_a_40['17,13'] (n, a); pairs.LOW_C_b_40['17,13'].a; pairs.N1_10000['17,13'].b (reported)"
+    },
+    "P1b_LOW_at_the_edges": {
+      "claim": "LOW counts a at a = 9 and a = 18 on natural text (the review's open question: is there a counting-range limit below 10?).",
+      "rule": "a = 9: the n-weighted share answering a over pairs (9, 14), (9, 16), (9, 17) in pairs.LOW_C_a_40 >= 0.95 -> 'counts at 9'; < 0.5 -> 'does not count at 9'; else 'partial'; total n < 10 -> void. a = 18: the same on (18, 11) alone (expected ~13 rows; void under 10).",
+      "expected": "a = 9: 'does not count at 9', LOW answering 10. a = 18: unsure.",
+      "lean": "a = 9: does not count 60%, partial 25%, counts 15% (both fresh a = 9 rows in Amendment 2 were answered 10; on swap-built rows LOW answered about 10 at every a <= 9). a = 18: counts 40%, partial 30%, does not 30%, or void.",
+      "blind_to": "Whether a failure at a = 9 is a range limit of LOW or of the pairs (9, b) themselves; b = 14, 16, 17 is a narrow set.",
+      "noise_floor": "~250 rows at a = 9 over three pairs (three units); ~13 rows at a = 18 (sd 0.06 at 0.95 even as rows).",
+      "scored_from": "pairs.LOW_C_a_40['9,14'], ['9,16'], ['9,17'], ['18,11'] (n, a), weighted by hand"
+    },
+    "P2_third_on_new_pairs": {
+      "claim": "The third rule (W1 and W1s1 at 10K answer the nearest integer to (2 (a + 1) + b) / 3) holds on natural rows in pairs it was not found on.",
+      "rule": "pairs.third_on_new_pairs.W1_10000.label and .W1s1_10000.label (definitions.third_on_new): 'holds', 'mixed', 'fails' or 'void'.",
+      "expected_valid_pairs": "(17, 10) 200 rows, (16, 9) 111, (15, 9) 85, (17, 9) 14 (dry run counts); (9, 14) 37 and (9, 17) 13 only if LOW counts a at 9 (P1b lean: it does not, so they are likely invalid). So 4 or 6 valid pairs: with 4, holds needs >= 3 and fails <= 1.",
+      "lean": "fails 45%, mixed 40%, holds 15%, for each seed (the two seeds agree on every amend1/amend2 cell). Against the rule: 0 of 2 fresh rows (finding 2), and at a = 17 the W states answered 16 on all 9 fresh rows whatever b was (9-12), while third gives 16 only at b = 11, 12 and 15 at b = 9, 10. For it: on the neighbouring amend1 pairs (16, 10) (third 15) and (15, 10) (third 14) the rule held, so (16, 9) and (15, 9) (third 14 each) may hold. Per pair: (17, 10) mode 16, not third's 15: 75%; (17, 9) mode 16: 65%; (16, 9) third 14: 45%; (15, 9) third 14: 50%.",
+      "context_only": "W2 at 1K (followed third on amend2's fresh rows, T4) and the 1K states: reported, not scored.",
+      "blind_to": "Mechanism; rules outside the five; pairs outside a, b in 9-17. A 'fails' driven by the a = 17 pairs alone may be a ceiling of the W answer near 16 rather than a different rule, and the per-pair modes are reported so that can be read.",
+      "positive_control": "In the dry run a pure third answerer read holds (6 of 6) and a pure b answerer fails (0 of 6) through third_on_new.",
+      "noise_floor": "the unit is the pair (3-6 units), not the row; one pair moves the label. Rows per pair 11-200.",
+      "scored_from": "pairs.third_on_new_pairs.W1_10000 and .W1s1_10000 (valid_pairs, majority, label, modes); per-pair shares pairs.<state>.<pair>.third"
+    },
+    "P3_N1_on_swap_built_rows": {
+      "claim": "A model fine-tuned only on natural rows counts b worse on swap-built rows the larger the swap.",
+      "rule": "swap.reads.N1_10000.label == 'depends' (and N1s1_10000 the same, a replication).",
+      "expected": "'depends'. Overall share right ~0.93 (Stage A's count_b_te1 for N1 10K was 0.9295 and for N1s1 0.92325 on these same rows, read through pcfg_train.predict_answers; fp32 argmax here may differ by a few rows), near 1.0 at swap 0 (C0), falling with swap.",
+      "lean": "80% for N1, 75% for N1s1 (Stage A: N1 10K is 1.000 on natural count-b rows and 0.9295 on these; review finding 8: N1's share 0.87 at a swap of 2 and 0.70 at 3 on Amendment 2's rows, confounded with unusual pairs there).",
+      "blind_to": "Which feature of the swapped text causes it; swap size is confounded with b, which the within-b slope removes only to the extent swap varies within b (b 12-15).",
+      "positive_control": "the synthetic pre-swap answerer reads 'depends'; the exact answerer reads 'not shown' (C0).",
+      "noise_floor": "rows within b are distinct texts and are the units here; in the dry run an exact answerer with 10% random misses had sd_effect 0.017 (effect -0.015), so drop_min = 0.05 is about 3 sd at a 90% share; sd_effect is reported per read.",
+      "scored_from": "swap.reads.N1_10000 and .N1s1_10000 (label, effect, sd_effect, overall, by_swap)"
+    },
+    "P4_LOW_on_swap_built_rows": {
+      "claim": "LOW, the base every LOW fine-tune starts from, counts a worse on swap-built rows the larger the swap, and so its count of a + 1 gives the label on fewer than 95% of them.",
+      "rule": "swap.reads.LOW_C_a_40.label == 'depends'; coverage = swap.reads.LOW_C_a_40.overall (the share of swap-built rows where LOW's own count of a + 1 is the label). Coverage >= 0.95 reads 'the existing route gives the label on the training rows'.",
+      "expected": "'depends', coverage between 0.85 and 0.95, and the share answering count a before the swap rising with swap.",
+      "lean": "'depends' 60%; coverage >= 0.95 40%; the pre-swap share rising with swap 50%. Swaps here are small (82% of rows at |swap| <= 3), and LOW's failures on Amendment 2's rows were at swaps of 4-16; but N1 fails at 2-3 there.",
+      "blind_to": "Whether LOW's internal count (at l*_a) is wrong or only its readout; the read is behaviour.",
+      "positive_control": "HIGH 'C a 40' on the same rows (a base pretrained on all three operands; reported beside it) and the synthetic answerers (C0).",
+      "noise_floor": "as P3.",
+      "scored_from": "swap.reads.LOW_C_a_40 (label, effect, sd_effect, overall, by_swap, pre_swap_share_by_swap); swap.reads.HIGH_C_a_40 (reported)"
+    },
+    "P5_fine_tunes_trained_on_swapped_rows": {
+      "claim": "Arms trained on swap-built rows answer them right at every swap size at 10K.",
+      "rule": "for W1, W1s1, W2, N2, N3, M2, M3 at 10K: swap.reads.<arm>_10000.label == 'not shown' and overall >= 0.99 (inclusive).",
+      "expected": "all seven: 'not shown', overall ~1.0 (Stage A's count_b_te1: 1.000, 1.000, 1.000, 1.000, 1.000, 0.99925, 0.99925). At 1K M2 (0.9345) and M3 (0.984) may read 'depends' (reported).",
+      "lean": "90% for all seven.",
+      "blind_to": "Whether they answer right because they count b or because they compute a + 1 on these rows (b = a + 1 on every te1 row, so the two cannot be told apart here).",
+      "scored_from": "swap.reads.<arm>_10000 (label, overall) for the seven arms"
+    },
+    "P6_stage_a_reads_and_swap_size": {
+      "claim": "Which of Stage A's reads can depend on swap size, and whether they do.",
+      "rule": {
+        "a_B_P_nulls_references_PA1_PA2": "B, P, B nulls, P nulls, positive references, PA1 and PA2's C_Te = 0 cells read natural texts only (run.read_state, behaviour_nulls, patch_references, a1 behaviour; interchange.qualifying_texts and make_pairs draw pcfg.sample_texts with no swap). So they cannot depend on swap size. Verdict 'not applicable' iff control b_check_rows_no_ccc is true. Certain.",
+        "b_C_Te_1_column": "Stage A's C_Te = 1 accuracy (count_b_te1 in a2_<arm>.json, Table 6's spurious column) 'depends on swap size' iff swap.reads.<arm>_10000.label == 'depends' for any of N1, N1s1, M, R (the 10K arms trained with no swap-built row).",
+        "c_A2_training_premise": "The premise of the W arms ('count(a) + 1 is right on every training row', read as: right through LOW's existing count of a) is 'qualified' iff swap.reads.LOW_C_a_40.label == 'depends' or its overall < 0.95; else 'holds'."
+      },
+      "meaning": "(b) 'depends': Stage A's C_Te = 1 column for the natural-only arms measures in part the swap-built text, not only count-b skill, and is read that way in the analysis; no filed Stage A prediction scores that column (PA2 is blind to it), so no verdict changes. (c) 'qualified': the training rows reward count(a) + 1, but LOW's own count of a gives it on only the coverage share of them, and less at larger swaps, so even a W fine-tune that keeps the existing route must change something to fit the rest. Stage A's labels (B and P, measured on natural rows) stand as measurements; what is qualified is the reading that the 1K 'through count-a' label shows the fine-tune re-using LOW's counter as designed, and the reading of the 1K -> 10K drift away from count(a) + 1, which may partly be the fit to rows LOW miscounts. (c) 'holds': the swap effect does not reach the existing route's training signal and Stage A's W reading needs no qualification.",
+      "lean": "(a) not applicable: certain. (b) depends: 85% (N1 10K and R 10K score 1.000 on natural count-b rows and 0.9295 and 0.864 on these). (c) qualified: 60%.",
+      "scored_from": "controls.checks.b_check_rows_no_ccc; swap.reads.N1_10000, .N1s1_10000, .M_10000, .R_10000 (label); swap.reads.LOW_C_a_40 (label, overall)"
+    }
+  },
+  "edge_cases": {
+    "E1_empty_pair": "a pair with 0 rows: n 0, shares nan, mode null; nan fails every >= and > test, so it is never valid in third_on_new and P1/P1b read void under 10 rows. The sampler always draws at least one chunk.",
+    "E2_few_rows": "pairs under min_pair_rows = 10 are reported but never scored; third_on_new under 3 valid pairs is 'void'. Rows per pair are logged.",
+    "E3_ties": "third_on_new uses third share > 0.5 (strict: a 50/50 pair is not a majority); hold and fail cut-offs never overlap for 3-6 pairs (definitions.third_on_new). swap_read labels are strict (effect equal to the bar -> 'not shown'). Rule ties within a new pair cannot occur: the new pairs were chosen with third distinct from the other four (listed answers).",
+    "E4_zero_denominator": "swap_read with no spread of |swap| within any b -> 'void' (sxx = 0); a by_swap bin is reported only where rows exist; by_b_swap cells need >= 20 rows.",
+    "E5_constant_or_degenerate_answerer": "a constant answer is right on all or none of each b group on te1 rows, so its within-b slope is 0 and it reads 'not shown' (synthetic control); a non-number answer is wrong everywhere and reads 'not shown'.",
+    "E6_LOW_cannot_count_in_a_pair": "a new pair where LOW's count of a or N1's count of b is under 0.95 is excluded from third_on_new (validity); P2's label then rests on fewer pairs and may go void.",
+    "E7_nan": "shares are nan only for empty pairs (E1); swap_read never divides by an empty bin."
+  },
+  "blind_to": "Behaviour only: what the models answer, not how. Part 1 cannot separate 'rare pair' from 'swap-built text' in pairs where LOW fails on natural rows too (P1 'rare pair'). Part 2 reads the C_Te = 1 rows and not the training rows themselves (same construction, other seeds; their |swap| histogram is reported model-free), and swap size there is mostly 0-3, so it is blind to the large swaps of Amendment 2.",
+  "not_run": "Any model forward pass before filing. The model-free dry run (rule answerers in place of the models, outputs in scratch) is in dry_run.",
+  "dry_run": "Model-free, 2026-10-29, through fleet/cpu-run (1 CPU, job 44581; ~/commute-data/scratch/reuse-lead/e55-amend3/dry.py, outputs in .../e55-amend3/dry/): amend3.main with rule answerers in place of the models (LOW: count a; W1/W1s1 10K and W2: third; every other read: b). Every model-free and synthetic control true; model controls 1.0. Pair rows drawn: 8,000,000 texts in 327 s; rows per pair (13,13) (14,13) (13,14) (14,12) (12,14) (17,13) (17,10) 200 each, (16,9) 111, (15,9) 85, (9,14) 37, (9,17) 13, (17,9) 14, (9,16) 183, (18,11) 11, (11,18) 12 (deterministic: the same rows on the GPU node). third_on_new: a pure third answerer reads 'holds' (6 of 6 valid pairs), a pure b answerer 'fails' (0 of 6). swap_read synthetic: exact b effect 0, 'not shown'; pre-swap a + 1 effect 0.767 sd 0.020 'depends'; constant 13 effect 0 'not shown'; b with 10% non-number effect -0.015 sd 0.017 'not shown' (the noise floor of sd_effect at a 90% share). |swap| histogram of the first fine-tuning chunk (seed 100, 9,600 rows): 0: 1,727, 1: 3,201, 2: 2,392, 3: 1,396, 4: 597, 5: 229, 6: 54, 7: 4 (same shape as the te1 rows). Whole dry run 330 s, nearly all sampling; on the GPU node add model loading and ~40 forward passes of <= 4,000 rows, so ~6-7 min within the 10-min limit."
+}

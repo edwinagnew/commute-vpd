@@ -10,6 +10,7 @@
 #   (two a2 jobs must never list the same arm: both would write its _train.pt)
 #   sbatch --job-name=commute-e55-amend1 cluster/pcfg_anchors.sbatch amend1      # Amendment 1, ~15-20 min
 #   sbatch --job-name=commute-e55-amend2 --time=00:10:00 cluster/pcfg_anchors.sbatch amend2  # Amendment 2, ~3-5 min
+#   sbatch --job-name=commute-e55-amend3 --time=00:10:00 cluster/pcfg_anchors.sbatch amend3  # Amendment 3, ~6-8 min
 # a0: per prior, 500 pretraining iterations stopped at 250 and resumed from the saved file, behaviour and floors on 1K
 #   fresh samples -> experiments/pcfg_anchors/results/a0.json; checkpoints and a0.log in results/large/a0/.
 # a1 PRIOR: 50K iterations (~10 min plus compile at the a0 rate) with a 25-min deadline. Finished: results/a1_PRIOR.json;
@@ -27,6 +28,10 @@
 #   ~9K rows in unseen (a, b) cells, no training: model-free controls, then N1 10K and LOW on both sets, then the
 #   saved W states and amend1's trajectory states on both -> results/amend2.json; a control miss -> results/amend2_control_miss.json,
 #   exit 1. No deadline (one pass, ~3-5 min). Log results/large/amend2/amend2.log.
+# amend3: experiments/pcfg_anchors/amend3.py (predictions_amend3.json): natural rows by (a, b) pair (LOW, N1 10K, W states)
+#   and swap size on Stage A's C_Te = 1 rows (bases and every A2 state), no training: model-free controls, then LOW and
+#   N1 controls -> results/amend3.json; a control miss -> results/amend3_control_miss.json, exit 1. No deadline (one
+#   pass; ~5 min of it is CPU sampling of rare pairs). Log results/large/amend3/amend3.log.
 # a1, a2 and amend1: on exit 3 (deadline: saved, not finished) the job resubmits itself with the same arguments from
 #   $SLURM_SUBMIT_DIR, at most 3 times (count in E55_RESUBMITS); the next job resumes from the saved files.
 #SBATCH --job-name=commute-e55-a0
@@ -42,11 +47,11 @@
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; puts this clone's src first on PYTHONPATH
 cd "$COMMUTE_REPO"
-usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...] | amend1 | amend2"
+usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...] | amend1 | amend2 | amend3"
 stage=${1:-}
 args=("${@:2}")
 case "$stage ${#args[@]}" in
-  "a0 0" | "a1c-patch 0" | "a1c-probe 0" | "amend1 0" | "amend2 0") ;;
+  "a0 0" | "a1c-patch 0" | "a1c-probe 0" | "amend1 0" | "amend2 0" | "amend3 0") ;;
   "a1 1") case "${args[0]}" in LOW | HIGH | NEVER) ;; *) echo "$usage" >&2; exit 2 ;; esac ;;
   "a2 "*) [ "${#args[@]}" -ge 1 ] || { echo "$usage" >&2; exit 2; } ;;
   *) echo "$usage" >&2; exit 2 ;;
@@ -64,6 +69,7 @@ case "$stage" in
   a2) cmd=("${run[@]}" --deadline-min 22 --arm "${args[@]}"); logf=$out/a2.log ;;
   amend1) cmd=(.venv/bin/python experiments/pcfg_anchors/amend1.py --deadline-min 22); logf=$out/amend1.log ;;
   amend2) cmd=(.venv/bin/python experiments/pcfg_anchors/amend2.py); logf=$out/amend2.log ;;
+  amend3) cmd=(.venv/bin/python experiments/pcfg_anchors/amend3.py); logf=$out/amend3.log ;;
 esac
 rc=0
 "${cmd[@]}" 2>&1 | tee -a "$logf" || rc=$?
