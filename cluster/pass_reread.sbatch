@@ -3,6 +3,7 @@
 #   cd ~/commute-agents/<role>
 #   sbatch --job-name=commute-e48-saved cluster/pass_reread.sbatch saved   # job 1: S1 control (stops on fallback), S2, S3; ~15 min
 #   sbatch --job-name=commute-e48-regen cluster/pass_reread.sbatch regen   # job 2, only after job 1 read S1 'read'; ~20 min
+#   sbatch --job-name=commute-e48-carriers cluster/pass_reread.sbatch carriers   # Amendment 1: stage 3 alone; ~5 min
 # Before: experiments/pass_reread/results/predictions.json filed. Inputs on NFS: teacher_training/results/large/ (saved
 # copies), teacher_training/results/*.json (filed readings), kv_task, task_ladder, transport_test results/large (windows,
 # alive masks). Outputs: experiments/pass_reread/results/<job>.json after every record; regen also writes bf16 offsets
@@ -20,7 +21,7 @@
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
-[ $# -eq 1 ] || { echo "pass_reread.sbatch: give exactly one job, saved or regen" >&2; exit 1; }
+[ $# -eq 1 ] || { echo "pass_reread.sbatch: give exactly one job: saved, regen or carriers" >&2; exit 1; }
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 test -f experiments/pass_reread/results/predictions.json || { echo "file the predictions first" >&2; exit 1; }

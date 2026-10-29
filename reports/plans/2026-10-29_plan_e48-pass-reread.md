@@ -238,3 +238,10 @@ Memory 32 GB host (E47's request for similar reads); GPU well under 46 GB (logit
 - Changing any shared function: `pass_reading.py` is new; `maps_score.kept` and `attribution.revert_one` are called
   unchanged (revert_one with a per-window target tensor and one subcomponent per forward, a path its int-token callers
   in `identity_test` and `concentration_test` do not use). No finished experiment's frozen script can break.
+
+## Amendment 1 (2026-10-29): carriers alone
+
+Job `carriers` (`run.py carriers`, `cluster/pass_reread.sbatch carriers`) runs stage 3 only, on E42's arm-A copies rand32, rand1 and ident32, and writes `results/carriers.json`; `saved.json` is untouched and the `saved` job's S1 gate is unchanged.
+Why: stage 1 fell back (F 1.86/2.21 at or over 1.5), which stopped `saved` before stage 3; the task text asks for the subcomponents carrying the gain regardless. The listing describes which subcomponents carry the copies' gain, not a pass reading, so the fallback does not bear on it.
+P7 is unchanged and is scored from `carriers.json` by the same `score` code (no filed rule or threshold edited).
+Time: load ~1.5 min plus S3 3 x ~1-2 min, about 5-8 min on the L40 (the plan's estimate above), well inside the 30-min debug cap.
