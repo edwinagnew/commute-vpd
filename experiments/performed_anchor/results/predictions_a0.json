@@ -1,0 +1,43 @@
+{
+ "experiment": "E53 performed_anchor, stage A0 (W0 only, no fine-tune)",
+ "plan": "reports/plans/2026-10-29_plan_performed-anchor.md (The pair; Control first)",
+ "filed": "2026-10-29, before any run of experiments/performed_anchor/a0.py",
+ "thresholds": {
+  "control_ref": -3.146,
+  "control_tol": 0.01,
+  "lowercase_at_least": 1.0,
+  "cased_at_most": -1.0,
+  "cipher_at_most": -3.0,
+  "stop_lowercase_at_most": 0.0,
+  "stop_cipher_above": -1.0
+ },
+ "definitions": {
+  "rows": "Pile val rows 0-255 (data.pile_rows('val', 0, 256)), cased as stored, 512 tokens each.",
+  "lowercased_rows": "Each val row decoded (no clean-up of spaces), lowercased and re-encoded on its own, cut to 512 and padded with end-of-text (performed.case_pairs). The same text as E36 Amendment 1's held rows (row_copy.lowercase_rows), which join rows before cutting; checked identical on row 0.",
+  "case_position": "A token of the cased row at index >= 1 whose token string is a space and a capital letter followed by letters only (regex 'Ġ[A-Z][A-Za-z]*', e.g. ' The', ' US', ' I'), whose lowercased string (space kept) is one vocabulary entry, and which is the token the lowercased row has at the same byte offset, at index >= 1 there too. Rows whose lowercased text changes byte length, or whose token bytes do not add up to the decoded text, give none (counted as case_skipped_rows). Tokenizer-only check on these rows: 6,070 positions in 242 rows, 0 rows skipped.",
+  "lowercase": "Mean over case positions of log p(lowercase form) - log p(capitalised form) for the next token, W0's logits (bf16 autocast, log-softmax in float32), in the lowercased rows. Nats.",
+  "cased": "The same positions' words and forms, the same difference, in the cased rows. Nats.",
+  "cipher_map": "pi: a derangement of the 50 word tokens (regex 'Ġ[a-z]{2,}': a space and two or more lowercase letters) of 0-based frequency ranks 50-99, counted on Pile train rows 0-4095, ties by ascending id; random.Random(0).shuffle repeated until no fixed point (performed.derangement). Saved to results/a0.json as cipher_map. Tokenizer-only check: ' so' ... ' same'.",
+  "cipher": "pi applied at every occurrence in the cased val rows, context and targets alike, token level, no re-encoding (performed.cipher_rows). Cipher position = index >= 1 whose original token is in pi's domain (tokenizer-only check: 2,916 positions, 2.2% of positions). Mean over cipher positions of log p(pi(x)) - log p(x) in the ciphered rows. Nats.",
+  "control_logp": "lowercase.task(...).logp_w0: row_copy.mean_logp of W0 on E36 Amendment 1's 64 lowercased held rows (val rows 0-255 joined, lowercased, cut). E37 read -3.14562 on an H100 (teacher_spread.json, W0 logp); E36 Amendment 1 read -3.14576."
+ },
+ "rules": {
+  "control": "PASS iff |control_logp - control_ref| <= control_tol (absolute, inclusive). A non-finite value misses.",
+  "P_lowercase_performs": "PASS iff lowercase mean >= +1.0 nat (absolute, inclusive): the original model prefers the lowercase form in lowercased text.",
+  "P_cased_follows_style": "PASS iff cased mean <= -1.0 nat (absolute, inclusive): at the same words in cased text it prefers the capital, so the preference follows the text's style with no example or instruction.",
+  "P_cipher_cannot": "PASS iff cipher mean <= -3.0 nats (absolute, inclusive): the original model cannot perform the cipher.",
+  "stop_rule": "STOP (no fine-tune starts; the card returns to the user with the numbers and the fallback existing member, repeating an earlier name in the row) iff the control misses, or lowercase mean <= 0 (a tie at exactly 0 stops), or cipher mean > -1 (a tie at exactly -1 does not stop). Any non-finite mean stops. Otherwise GO. The three P rules are scored and reported; a P miss that does not meet a stop condition (e.g. lowercase 0.5) is reported as a miss and does not stop A0, but goes to the user with the result.",
+  "edge_cases": "Zero positions in any of lowercase, cased or cipher is an ERROR (a0.py exits 2, decision ERROR), never a pass or a GO. A single-row pool reports row_mean_sd 0 and a degenerate bootstrap interval; the rules read only the mean. A one-element cipher domain cannot be deranged and is refused. NaN fails every rule it enters (only its own rule); -inf meets an upper bound; either stops the run (stop 'non_finite'). Run before filing (a0.verdict and a0.spread, CPU, 2026-10-29): nominal GO; control at exactly 0.010 off passes, 0.0105 off stops; lowercase 0 stops, 0.5 is a P miss with GO, 1.0 passes; cased -1.0 passes; cipher -1.0 GO with P miss, -0.99 stops, -3.0 passes; NaN in control, lowercase or cased stops; zero positions raises; one-row pool reports sd 0.",
+  "relative_or_absolute": "All thresholds absolute, in nats (control in nats per token)."
+ },
+ "spread": "Reported, not scored: for each mean, the 90% interval over 2,000 bootstrap resamples of rows (seed 0, positions grouped by row), the standard deviation of per-row means, and the share of positions above 0.",
+ "blind_to": "A0 shows the original model performs the token-level choice (lowercase) and fails the swap (cipher); not that a fine-tune uses the same subcomponents. Case positions include sentence starts, proper nouns and ' I'; the cased reading at sentence starts partly reads punctuation, not style.",
+ "positive_control": "The cased reading is the lowercase reading's mirror: the same positions and forms, opposite style; it should read the opposite sign.",
+ "open_question": "Whether the cipher also applies to the context (input text) or only to the targets is the plan's open question 1 for the user; A0 applies it to both, as drafted.",
+ "expected": {
+  "control_logp": "-3.146 (+-0.001 across cards so far)",
+  "lowercase": ">= +1, lean +2 to +4 (E36: the fine-tune gains only 0.13 nats/token on these rows, so W0 already models lowercase text)",
+  "cased": "<= -1, lean -2 to -5",
+  "cipher": "<= -3, lean -6 to -10 (pi(x) is a common word but out of place)"
+ }
+}
