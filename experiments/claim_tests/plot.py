@@ -337,11 +337,24 @@ def fig_iv() -> None:
         axes, ("t4b", "t4"), ("fine-tune step 10", "fine-tune step 1000")
     ):
         res = load(stage)
-        for state, colour, name, dx in (
-            ("nothing", NOTHING, "do-nothing: fine-tune left in Δ", -0.06),
-            ("plus_remainder", COPY, "teacher training plus remainder in Δ", 0.06),
-        ):
-            r = res["states"][state]["ratio"]
+        series = [
+            (res, "nothing", NOTHING, "do-nothing: fine-tune left in Δ", -0.1),
+            (res, "plus_remainder", COPY, "teacher training plus remainder in Δ", 0.1),
+        ]
+        if (
+            stage == "t4b"
+        ):  # t4c read the teacher-trained state alone, same rows, starts and card
+            series.append(
+                (
+                    load("t4c"),
+                    "teacher_trained",
+                    "#7b4fc9",
+                    "teacher-trained, Δ untouched (step 10 only)",
+                    0.0,
+                )
+            )
+        for src, state, colour, name, dx in series:
+            r = src["states"][state]["ratio"]
             ax.plot(
                 [i + dx for i in range(3)],
                 [r[s] for s in starts],
@@ -354,7 +367,7 @@ def fig_iv() -> None:
                 ax.annotate(
                     f"{r[s]:.2f}",
                     (i + dx, r[s]),
-                    xytext=(7 if dx > 0 else -28, -3),
+                    xytext=(7, -3) if dx > 0 else (-28, -3) if dx < 0 else (-10, 8),
                     textcoords="offset points",
                     fontsize=7.5,
                     color=colour,
@@ -367,7 +380,7 @@ def fig_iv() -> None:
         ax.set_yscale("log")
         ax.yaxis.set_minor_formatter(NullFormatter())
         ax.set_xticks(range(3), [START_NAMES[s] for s in starts], fontsize=8)
-        ax.set_title(f"{title}: {res['score']['outcome']}", fontsize=9.5)
+        ax.set_title(f"{title}: filed rule {res['score']['outcome']}", fontsize=9.5)
         ax.spines[["top", "right"]].set_visible(False)
     axes[0].set_ylim(0.65, 6.5)
     axes[0].set_yticks([0.8, 1, 1.5, 2, 3, 5], ["0.8", "1", "1.5", "2", "3", "5"])
@@ -375,7 +388,7 @@ def fig_iv() -> None:
     axes[0].legend(fontsize=7, loc="upper left")
     fig.suptitle(
         "Claim (iv): is teacher training plus remainder worse than leaving the fine-tune in Δ?\n"
-        "Not shown: at step 1000 within the start spread; at step 10 lower at one start, near equal at two",
+        "Not shown at either step: at step 10 the remainder lowers the reading at one start and raises it at another",
         fontsize=10,
     )
     save(fig, "e47_iv_remainder.png")
