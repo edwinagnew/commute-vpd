@@ -151,7 +151,7 @@ class Job:
         if self.old is not None and self.old["card"] != self.card:
             sys.exit(f"{self.path} was written on {self.old['card']}; this job runs on {self.card}. Move it aside")
         self.out: dict[str, Any] = {"stage": stage, "card": self.card, "kl": {}, "ci": {}, "seconds": {}, "gates": {},
-                                    "status": "running", "files": {}}
+                                    "status": "running", "files": dict((self.old or {}).get("files", {}))}
         self._blocks: dict[int, list[Any]] = {}
         self._state: tuple[str, Any] = ("", None)
         log(f"[{stage}] {self.card}")
@@ -195,7 +195,10 @@ class Job:
                 path, want = BF / TT[name][0], TT[name][1]
             else:
                 path = LARGE / f"dW_{name.removeprefix('nothing_')}.pt"
-                want = json.loads((RESULTS / "regen.json").read_text())["files"][path.name]
+                regen_out = json.loads((RESULTS / "regen.json").read_text())
+                if regen_out.get("status") != "done":
+                    self.halt(f"regen.json has status {regen_out.get('status')!r}, not 'done': run regen to the end first")
+                want = regen_out["files"][path.name]
             got = sha256(path)
             if got != want:
                 self.halt(f"{path} has sha256 {got}, not {want}")
@@ -342,7 +345,8 @@ def b_count(kl: dict[str, float], name: str) -> dict[str, Any]:
     s0 = [v[0] for v in rs.values()]
     return {"ratios": {str(b): v for b, v in rs.items()}, "median": {str(b): m for b, m in med.items()},
             "fails": sum(m >= CFG.fail_line for m in med.values()) if all(ok.values()) else None,  # type: ignore[operator]
-            "fails_seed0": sum(r >= CFG.fail_line for r in s0) if None not in s0 else None,  # type: ignore[operator]
+            "fails_seed0": sum(r >= CFG.fail_line for r in s0)  # type: ignore[operator]
+            if all(r is not None and math.isfinite(r) for r in s0) else None,  # non-finite: neither pass nor fail
             "pairs": {f"{r}|{s}": pair(kl, name, r, s) for r in CFG.b_rows for s in CFG.b_seeds}}
 
 
@@ -368,7 +372,8 @@ def score(files: dict[str, dict[str, Any]]) -> dict[str, Any]:
         labels = {sc["a"][n]["label"] for n in SGD_TT}
         sc["a_reading"] = labels.pop() if len(labels) == 1 and labels <= {"rows", "start", "mixed"} else (
             "unscored" if labels & {"invalid", "not run"} else "mixed")
-        sc["a"]["w0_hard_block"] = [kl[key("W0", CFG.hard_block, s)] for s in CFG.a_seeds]
+        w0_hard: Any = [kl[key("W0", CFG.hard_block, s)] for s in CFG.a_seeds]
+        sc["a"]["w0_hard_block"] = w0_hard
     p1 = sc.get("a_reading")
     sc["P1"] = outcome(None if p1 in (None, "unscored") else p1 == "rows", "stage a did not finish or a ratio is invalid")
     kl_b = {k: v for s, f in done.items() if s.startswith("b") for k, v in f["kl"].items()}
@@ -390,7 +395,7 @@ def b_reading(n: dict[str, int | None]) -> str:
     if sgd is None or adam is None or power is None:
         return "unscored"
     if sgd >= 2:
-        return "sgd_with_adam"
+        return "sgd_with_adam" + ("" if adam == 4 else "_adam_miss")  # P2 missing is not hidden by SGD failing
     base = "sgd_passes_most" if adam == 4 else "adam_not_every_block"
     return base + ("_low_power" if power <= 2 else "")
 
@@ -418,6 +423,8 @@ READINGS: dict[str, dict[str, str]] = {
         "unscored": "A b job stopped at a control or did not run: unanswered.",
     },
 }
+READINGS["b"]["sgd_with_adam_adam_miss"] = (READINGS["b"]["sgd_with_adam"] + " Adam's teacher-trained decomposition "
+                                             "did not fail all four blocks (P2 misses), so the Adam comparison is also open.")
 for _k in ("sgd_passes_most", "adam_not_every_block"):
     READINGS["b"][_k + "_low_power"] = (READINGS["b"][_k] + " But the SGD do-nothing fails at most two of the four "
                                         "blocks, so on the others the check could not fail SGD's update at all: the "

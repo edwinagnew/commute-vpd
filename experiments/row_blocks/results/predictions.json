@@ -10,8 +10,8 @@
  "controls": {
   "regen": "each fine-tune's held-out gain within 0.005 of {'adam': 0.1301, 'sgd': 0.13671, 'lora': 0.1479} (H100), else stop",
   "a: W0": "PGD KL per block within 0.0001 of E47's L40 readings {'0|0': 0.6671, '128|0': 0.7164, '128|1': 1.0007, '128|2': 0.6846}, else stop",
-  "a: Adam teacher-trained": "mean KL on rows 0-255 at seed 0 within 0% of E47's L40 1.5018157362937927 and the check >= 1.61 (positive control), else stop",
-  "a: LoRA teacher-trained": "mean KL on rows 0-255 at seed 0 within 0% of E47's L40 0.9174503982067108, else stop",
+  "a: Adam teacher-trained": "mean KL on rows 0-255 at seed 0 within 0.1% of E47's L40 1.5018157362937927 and the check >= 1.61 (positive control), else stop",
+  "a: LoRA teacher-trained": "mean KL on rows 0-255 at seed 0 within 0.1% of E47's L40 0.9174503982067108, else stop",
   "a: SGD on this card (reported, no stop)": "check on rows 0-255 at seed 0 within 10% of the H100's {'tt_sgd': 2.0675, 'tt_sgd_r8': 2.1218}",
   "b: W0": "per block PGD KL in [0.45, 1.5] and CI-masked KL within 15% of 0.34, else stop",
   "b: Adam do-nothing": "pair check >= 1.61 at the job's seed (the check can fail an update on these rows), else stop"
@@ -87,6 +87,7 @@
    "sgd_passes_most": "Plain SGD fails at most one of the four new blocks and Adam fails all four: the line closes 'Adam fails, the LoRA passes, SGD passes on most rows'; option (d) is dropped.",
    "adam_not_every_block": "Plain SGD fails at most one new block, and Adam's teacher-trained decomposition also passes on at least one: Adam's fail is block-dependent too; not covered by the card's advice, so it goes to the user before anything else runs on the broad line.",
    "unscored": "A b job stopped at a control or did not run: unanswered.",
+   "sgd_with_adam_adam_miss": "Plain SGD's teacher-trained decomposition fails two or more of the four new blocks: full-matrix SGD sits with Adam, and Amendment 3's two remaining stages, option (d), go to the user as a card. Adam's teacher-trained decomposition did not fail all four blocks (P2 misses), so the Adam comparison is also open.",
    "sgd_passes_most_low_power": "Plain SGD fails at most one of the four new blocks and Adam fails all four: the line closes 'Adam fails, the LoRA passes, SGD passes on most rows'; option (d) is dropped. But the SGD do-nothing fails at most two of the four blocks, so on the others the check could not fail SGD's update at all: the SGD passes there carry little weight, and this is said wherever the reading is.",
    "adam_not_every_block_low_power": "Plain SGD fails at most one new block, and Adam's teacher-trained decomposition also passes on at least one: Adam's fail is block-dependent too; not covered by the card's advice, so it goes to the user before anything else runs on the broad line. But the SGD do-nothing fails at most two of the four blocks, so on the others the check could not fail SGD's update at all: the SGD passes there carry little weight, and this is said wherever the reading is."
   }
@@ -140,5 +141,5 @@
    1.5
   ]
  },
- "filed": "2026-10-29 12:59:58"
+ "filed": "2026-10-29 13:13:11"
 }

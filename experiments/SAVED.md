@@ -236,6 +236,13 @@ All `_dg` files are written by run.py `all`. The states are not saved.
 ## teacher_training
 - `r1_t534_v369/amend5_{A,B}_sgd_seed{S}_step1000.pt`: offsets file (`task`, `teacher`, `arm`, `seed`, `step`). Recipe: student Adam 1e-5 for 1000 steps; arm A on the task windows (batch 32), arm B on Pile train rows (batch 8). Written by amend5.py.
   The teacher is regenerated in-job and not saved: arm A SGD fine-tune, lr 0.03, 1000 steps, seed 0.
+- `amend6/{emoticon,r0_t352_v310,r1_t534_v369}/amend6_lora_B_seed{0,1}_step{5000,2500}.pt` and `amend6/r2_t275_v2667/amend6_sgd_{A,B}_seed0_step1000.pt`: offsets file (`task`, `teacher`, `arm`, `seed`, `step`). Recipe (E34 Amendment 6): student Adam 1e-5 on arm A task windows (batch 32) or arm B Pile train rows (batch 8); the LoRA files are arm B on the task's rank-8 LoRA teacher, seed 0 saved at step 5000, seed 1 at step 2500; the r2 files are arms A and B at step 1000 on the SGD 0.1 teacher. Written by amend6.py (`Job.student`, save=True). Logged in `amend6/run_amend6.log`.
+  The teachers are regenerated in-job and not saved (full-weight arm-A fine-tune, seed 0, step 1000; E9's rank-8 LoRA via amend3.lora_teacher).
+  sha256 prefixes: emoticon seed0 d0fe5062, seed1 c79795b6; r0_t352_v310 seed0 ad0f6f49, seed1 bcfce39f; r1_t534_v369 seed0 7293135c, seed1 75010104; r2 A 14bf6eba, B f1b7ac4f.
+- `e42/{rand32,ident32,rand1}/{A,B}_step1000.pt`: offsets file (`task`, `teacher`, `arm`, `step`). Recipe (E42): student Adam 1e-5 (E34's CFG) for 1000 steps; arm A on the task windows (batch 32), arm B on Pile train rows (batch 8); teacher = E10's key-to-value cipher fine-tune run to step 1000 (all 24 matrices, Adam 3e-5, batch 32, seed 0), regenerated in-job and not saved. Written by newskill.py (`student_arm`).
+  sha256 prefixes (A / B): ident32 2dfb9674 / 440bda47; rand1 b5996e93 / b417129a; rand32 cd981d21 / 34b7bb60.
+- `e42_amend2/rand32/M0_{ci,st,trig}_step1000.pt`: offsets file (`task`, `state`, `ci_coeff`, `stoch_coeff`, `trigger_only`, `step`). Recipe (E42 Amendment 2): teacher training with the teacher at W0 (nothing to copy) and a masked-term student: ci = CI-masked weight 0.5, stochastic 0; st = CI-masked 0, stochastic 0.5; trig = both 0.5 read at the trigger alone; 1000 steps, rest as E42 Amendment 1's M0. Written by newskill_amend2.py (`save`).
+  sha256 prefixes: ci ec5d38b1, st bbd3dbc6, trig 5d6f8624.
 - Missing: run.py and amend2-4 also write `{T}/A_{opt}_step1000.pt`, `C3_student_step*.pt`, `B*_{opt}_step1000.pt`, `lora_*` and `lora_teacher_factors.pt`. None are present.
 - Log: `run_amend5.log`.
 

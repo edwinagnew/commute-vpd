@@ -42,9 +42,9 @@ def predictions(cfg: dict[str, Any], readings: dict[str, Any]) -> dict[str, Any]
         "controls": {
             "regen": f"each fine-tune's held-out gain within {cfg['gain_tol']} of {cfg['gain_ref']} (H100), else stop",
             "a: W0": f"PGD KL per block within {cfg['w0_block_tol']} of E47's L40 readings {cfg['a_w0']}, else stop",
-            "a: Adam teacher-trained": f"mean KL on rows 0-255 at seed 0 within {cfg['repro_tol']:.0%} of E47's L40 "
+            "a: Adam teacher-trained": f"mean KL on rows 0-255 at seed 0 within {cfg['repro_tol']:.1%} of E47's L40 "
                                        f"{cfg['a_pair_kl']['tt_adam']} and the check >= {f} (positive control), else stop",
-            "a: LoRA teacher-trained": f"mean KL on rows 0-255 at seed 0 within {cfg['repro_tol']:.0%} of E47's L40 "
+            "a: LoRA teacher-trained": f"mean KL on rows 0-255 at seed 0 within {cfg['repro_tol']:.1%} of E47's L40 "
                                        f"{cfg['a_pair_kl']['tt_lora']}, else stop",
             "a: SGD on this card (reported, no stop)": f"check on rows 0-255 at seed 0 within {cfg['card_tol']:.0%} of the "
                                                        f"H100's {cfg['h100_first']}",
