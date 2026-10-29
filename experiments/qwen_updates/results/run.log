@@ -625,3 +625,345 @@
 [  192.0s] [E a2long_s0] generation at 300: {"test": {"k": 256, "k_fits": 244, "fits_share": 0.953125, "truncation_share": 0.04296875, "strict_dropped": 0.1598360655737705, "lenient_dropped": 0.18032786885245902, "strict_all": 0.15625, "strict_capped": 0.15625, "lenient_capped": 0.17578125, "response_mean": 46.59765625}, "facts": {"invented": 0.999, "known": 1}}
 [  192.1s] [score] {"own_accuracy": {"n": 0, "diff": null, "holds": false}, "own_length": {"ratio": null, "holds": false}, "gold_length": {"ratio": 0.47763877042878944, "holds": true}, "anchor1_learns_s0": {"gap": null, "holds": false}, "anchor2_learns_s0": {"invented": 0.319, "known": 1, "known_w0": 0.97, "holds": false}, "anchor1_learns_s1": {"gap": null, "holds": false}, "anchor2_learns_s1": {"known_w0": 0.97, "holds": false}, "amend1_anchor2_learns_s0": {"invented": 0.999, "known": 1, "known_w0": 0.97, "at_100": {"invented": 0.91, "known": 1}, "holds": true}, "amend1_anchor2_learns_s1": {"known_w0": 0.97, "at_100": null, "holds": false}}
 [  192.1s] [E] done; peak GPU 29.8 GB, host 11.0 GB
+[    5.5s] [T a2long_s1] start; NVIDIA L40
+[   31.4s] [check] step 1 at rate 0 leaves W0: ok {"lr": 0.0, "dw_norm": 0.0}
+[   31.4s] [T a2long_s1] step 1: lr 0.00e+00, loss 2.5051, |dW| 0.0000, KL {"maths": 0.0, "own": 0.0}
+[   56.2s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_2.safetensors (2.82 GB)
+[   63.9s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_1.safetensors (2.82 GB)
+[   90.5s] [check] step 2 |dW| / (rate sqrt numel): ok {"min": 0.7294363466598116, "max": 0.9260882629424343}
+[   90.5s] [check] step 2 KL on the maths rows: ok {"kl": 0.000850157130954919, "max": 0.005}
+[   90.5s] [T a2long_s1] step 2: lr 1.00e-06, loss 2.6578, |dW| 0.0323, KL {"maths": 0.0006018731723993207, "own": 0.06110394151748236}
+[  111.7s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_3.safetensors (2.82 GB)
+[  112.0s] [T a2long_s1] step 3: lr 2.00e-06, loss 2.5416, |dW| 0.0924, KL {"maths": 0.004048741355662794, "own": 0.2300700522701584}
+[  133.3s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_4.safetensors (2.82 GB)
+[  133.4s] [T a2long_s1] step 4: lr 3.00e-06, loss 2.4123, |dW| 0.1802, KL {"maths": 0.017389175450844372, "own": 0.5147153122088588}
+[  152.7s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_5.safetensors (2.82 GB)
+[  152.7s] [T a2long_s1] step 5: lr 4.00e-06, loss 2.3561, |dW| 0.2943, KL {"maths": 0.07244451766372279, "own": 0.9838530821367744}
+[  171.5s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_6.safetensors (2.82 GB)
+[  171.5s] [T a2long_s1] step 6: lr 5.00e-06, loss 2.1537, |dW| 0.4292, KL {"maths": 0.12277007050234731, "own": 1.3412199595135443}
+[  182.0s] [T a2long_s1] step 7: lr 6.00e-06, loss 1.9989, |dW| 0.5846, KL {"maths": 0.15576065240109174, "own": 1.645932828941716}
+[  192.7s] [T a2long_s1] step 8: lr 7.00e-06, loss 1.4777, |dW| 0.7504, KL {"maths": 0.19207152611779696, "own": 1.8932444597083482}
+[  203.9s] [T a2long_s1] step 9: lr 8.00e-06, loss 1.3075, |dW| 0.9264, KL {"maths": 0.22988666783626285, "own": 2.1241187423607943}
+[  214.4s] [T a2long_s1] step 10: lr 9.00e-06, loss 1.2008, |dW| 1.1015, KL {"maths": 0.2631311444033747, "own": 2.3165617322816443}
+[  225.1s] [T a2long_s1] step 11: lr 1.00e-05, loss 1.3006, |dW| 1.2772, KL {"maths": 0.29370328637969484, "own": 2.4803386544572787}
+[  243.4s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_12.safetensors (2.82 GB)
+[  251.3s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_11.safetensors (2.82 GB)
+[  251.3s] [T a2long_s1] step 12: lr 1.00e-05, loss 1.1670, |dW| 1.4392, KL {"maths": 0.32447624765495625, "own": 2.5876484694359094}
+[  260.6s] [T a2long_s1] step 13: lr 1.00e-05, loss 1.1838, |dW| 1.5869, KL {"maths": 0.34912639810674, "own": 2.7459800441393645}
+[  270.1s] [T a2long_s1] step 14: lr 1.00e-05, loss 1.1314, |dW| 1.7213, KL {"maths": 0.37128028819270475, "own": 2.811787374869376}
+[  279.6s] [T a2long_s1] step 15: lr 1.00e-05, loss 1.0220, |dW| 1.8453, KL {"maths": 0.39047015807798874, "own": 2.841781794865864}
+[  289.2s] [T a2long_s1] step 16: lr 9.99e-06, loss 0.9473, |dW| 1.9615, KL {"maths": 0.40609840828267085, "own": 2.863594094616873}
+[  298.9s] [T a2long_s1] step 17: lr 9.99e-06, loss 1.0396, |dW| 2.0722, KL {"maths": 0.4197903366301602, "own": 2.8810690598736732}
+[  308.6s] [T a2long_s1] step 18: lr 9.99e-06, loss 0.9131, |dW| 2.1780, KL {"maths": 0.4304970331666228, "own": 2.897978044516425}
+[  318.3s] [T a2long_s1] step 19: lr 9.98e-06, loss 0.8168, |dW| 2.2785, KL {"maths": 0.44029595382880127, "own": 2.921197946526504}
+[  328.0s] [T a2long_s1] step 20: lr 9.98e-06, loss 0.9568, |dW| 2.3742, KL {"maths": 0.44925073572143864, "own": 2.95180660807808}
+[  337.8s] [T a2long_s1] step 21: lr 9.97e-06, loss 0.8860, |dW| 2.4644, KL {"maths": 0.4582333368483812, "own": 2.9908327654162608}
+[  347.5s] [T a2long_s1] step 22: lr 9.96e-06, loss 0.8122, |dW| 2.5498, KL {"maths": 0.4663755540626403, "own": 3.0252765133796222}
+[  357.4s] [T a2long_s1] step 23: lr 9.96e-06, loss 0.8084, |dW| 2.6312, KL {"maths": 0.4739253884752452, "own": 3.047090835528359}
+[  367.2s] [T a2long_s1] step 24: lr 9.95e-06, loss 0.8660, |dW| 2.7087, KL {"maths": 0.48058888297305896, "own": 3.052198464538271}
+[  377.1s] [T a2long_s1] step 25: lr 9.94e-06, loss 0.7755, |dW| 2.7830, KL {"maths": 0.4871228126247338, "own": 3.0534223955025923}
+[  387.0s] [T a2long_s1] step 26: lr 9.93e-06, loss 0.7309, |dW| 2.8543, KL {"maths": 0.4931866594853061, "own": 3.0588284600228888}
+[  396.9s] [T a2long_s1] step 27: lr 9.93e-06, loss 0.7214, |dW| 2.9233, KL {"maths": 0.49804329508936873, "own": 3.066663887746536}
+[  406.8s] [T a2long_s1] step 28: lr 9.92e-06, loss 0.7170, |dW| 2.9900, KL {"maths": 0.5023203832494212, "own": 3.0945276380809212}
+[  416.7s] [T a2long_s1] step 29: lr 9.91e-06, loss 0.7127, |dW| 3.0541, KL {"maths": 0.5068821856431177, "own": 3.125352999413208}
+[  426.7s] [T a2long_s1] step 30: lr 9.89e-06, loss 0.7081, |dW| 3.1146, KL {"maths": 0.5109542577643018, "own": 3.1628521803166825}
+[  429.6s] [T a2long_s1] step 31: lr 9.88e-06, loss 0.7108, |dW| 3.1724
+[  432.5s] [T a2long_s1] step 32: lr 9.87e-06, loss 0.6838, |dW| 3.2276
+[  435.3s] [T a2long_s1] step 33: lr 9.86e-06, loss 0.7023, |dW| 3.2806
+[  438.2s] [T a2long_s1] step 34: lr 9.85e-06, loss 0.6641, |dW| 3.3314
+[  448.1s] [T a2long_s1] step 35: lr 9.83e-06, loss 0.6329, |dW| 3.3799, KL {"maths": 0.5326618583766235, "own": 3.4750406349285186}
+[  450.9s] [T a2long_s1] step 36: lr 9.82e-06, loss 0.6519, |dW| 3.4269
+[  453.8s] [T a2long_s1] step 37: lr 9.80e-06, loss 0.5956, |dW| 3.4721
+[  456.7s] [T a2long_s1] step 38: lr 9.79e-06, loss 0.5856, |dW| 3.5163
+[  459.5s] [T a2long_s1] step 39: lr 9.77e-06, loss 0.5282, |dW| 3.5589
+[  469.4s] [T a2long_s1] step 40: lr 9.76e-06, loss 0.5624, |dW| 3.6001, KL {"maths": 0.5566678224896383, "own": 3.752241827312949}
+[  472.2s] [T a2long_s1] step 41: lr 9.74e-06, loss 0.5524, |dW| 3.6398
+[  475.1s] [T a2long_s1] step 42: lr 9.72e-06, loss 0.5580, |dW| 3.6779
+[  478.0s] [T a2long_s1] step 43: lr 9.70e-06, loss 0.5224, |dW| 3.7144
+[  480.8s] [T a2long_s1] step 44: lr 9.68e-06, loss 0.5459, |dW| 3.7490
+[  490.7s] [T a2long_s1] step 45: lr 9.66e-06, loss 0.5252, |dW| 3.7822, KL {"maths": 0.5748635466231289, "own": 3.879257432193778}
+[  493.6s] [T a2long_s1] step 46: lr 9.64e-06, loss 0.5699, |dW| 3.8142
+[  496.4s] [T a2long_s1] step 47: lr 9.62e-06, loss 0.5421, |dW| 3.8455
+[  499.3s] [T a2long_s1] step 48: lr 9.60e-06, loss 0.4996, |dW| 3.8758
+[  502.1s] [T a2long_s1] step 49: lr 9.58e-06, loss 0.4794, |dW| 3.9054
+[  511.9s] [T a2long_s1] step 50: lr 9.56e-06, loss 0.4639, |dW| 3.9350, KL {"maths": 0.5820297502052898, "own": 4.0297169207559165}
+[  515.0s] [T a2long_s1] step 51: lr 9.54e-06, loss 0.4813, |dW| 3.9641
+[  517.9s] [T a2long_s1] step 52: lr 9.51e-06, loss 0.4578, |dW| 3.9929
+[  520.7s] [T a2long_s1] step 53: lr 9.49e-06, loss 0.4000, |dW| 4.0208
+[  523.6s] [T a2long_s1] step 54: lr 9.47e-06, loss 0.4243, |dW| 4.0480
+[  533.4s] [T a2long_s1] step 55: lr 9.44e-06, loss 0.4341, |dW| 4.0745, KL {"maths": 0.5755299095583677, "own": 3.9626962569622717}
+[  536.2s] [T a2long_s1] step 56: lr 9.42e-06, loss 0.4190, |dW| 4.1009
+[  539.1s] [T a2long_s1] step 57: lr 9.39e-06, loss 0.3948, |dW| 4.1273
+[  541.9s] [T a2long_s1] step 58: lr 9.37e-06, loss 0.3934, |dW| 4.1536
+[  544.7s] [T a2long_s1] step 59: lr 9.34e-06, loss 0.3943, |dW| 4.1801
+[  554.5s] [T a2long_s1] step 60: lr 9.31e-06, loss 0.3855, |dW| 4.2066, KL {"maths": 0.566215892442064, "own": 3.852777367093817}
+[  557.6s] [T a2long_s1] step 61: lr 9.28e-06, loss 0.3378, |dW| 4.2333
+[  560.4s] [T a2long_s1] step 62: lr 9.26e-06, loss 0.3016, |dW| 4.2604
+[  563.2s] [T a2long_s1] step 63: lr 9.23e-06, loss 0.3471, |dW| 4.2871
+[  566.1s] [T a2long_s1] step 64: lr 9.20e-06, loss 0.2966, |dW| 4.3137
+[  575.9s] [T a2long_s1] step 65: lr 9.17e-06, loss 0.3081, |dW| 4.3399, KL {"maths": 0.561062224950048, "own": 3.8868013275150015}
+[  578.7s] [T a2long_s1] step 66: lr 9.14e-06, loss 0.2832, |dW| 4.3658
+[  581.5s] [T a2long_s1] step 67: lr 9.11e-06, loss 0.2688, |dW| 4.3913
+[  584.4s] [T a2long_s1] step 68: lr 9.08e-06, loss 0.2629, |dW| 4.4171
+[  587.2s] [T a2long_s1] step 69: lr 9.05e-06, loss 0.2426, |dW| 4.4433
+[  597.1s] [T a2long_s1] step 70: lr 9.01e-06, loss 0.2424, |dW| 4.4695, KL {"maths": 0.5760747795533991, "own": 3.9876387186227342}
+[  599.9s] [T a2long_s1] step 71: lr 8.98e-06, loss 0.2213, |dW| 4.4957
+[  603.0s] [T a2long_s1] step 72: lr 8.95e-06, loss 0.2088, |dW| 4.5217
+[  605.8s] [T a2long_s1] step 73: lr 8.91e-06, loss 0.1918, |dW| 4.5475
+[  608.7s] [T a2long_s1] step 74: lr 8.88e-06, loss 0.1498, |dW| 4.5735
+[  618.5s] [T a2long_s1] step 75: lr 8.85e-06, loss 0.1396, |dW| 4.5994, KL {"maths": 0.5973432440481107, "own": 4.314335195541067}
+[  621.4s] [T a2long_s1] step 76: lr 8.81e-06, loss 0.1446, |dW| 4.6250
+[  624.3s] [T a2long_s1] step 77: lr 8.78e-06, loss 0.1228, |dW| 4.6499
+[  627.1s] [T a2long_s1] step 78: lr 8.74e-06, loss 0.1209, |dW| 4.6746
+[  630.0s] [T a2long_s1] step 79: lr 8.70e-06, loss 0.1341, |dW| 4.6986
+[  639.9s] [T a2long_s1] step 80: lr 8.67e-06, loss 0.1061, |dW| 4.7223, KL {"maths": 0.5976725874606803, "own": 4.455508111031342}
+[  642.8s] [T a2long_s1] step 81: lr 8.63e-06, loss 0.1010, |dW| 4.7462
+[  645.7s] [T a2long_s1] step 82: lr 8.59e-06, loss 0.0912, |dW| 4.7696
+[  648.5s] [T a2long_s1] step 83: lr 8.55e-06, loss 0.0905, |dW| 4.7928
+[  651.4s] [T a2long_s1] step 84: lr 8.52e-06, loss 0.0890, |dW| 4.8154
+[  661.2s] [T a2long_s1] step 85: lr 8.48e-06, loss 0.0882, |dW| 4.8374, KL {"maths": 0.6012312295048313, "own": 4.689972015523348}
+[  664.1s] [T a2long_s1] step 86: lr 8.44e-06, loss 0.0646, |dW| 4.8592
+[  666.9s] [T a2long_s1] step 87: lr 8.40e-06, loss 0.0632, |dW| 4.8802
+[  669.8s] [T a2long_s1] step 88: lr 8.36e-06, loss 0.0509, |dW| 4.9004
+[  672.7s] [T a2long_s1] step 89: lr 8.32e-06, loss 0.0571, |dW| 4.9197
+[  682.5s] [T a2long_s1] step 90: lr 8.28e-06, loss 0.0684, |dW| 4.9383, KL {"maths": 0.6033372002272067, "own": 4.703665481905526}
+[  685.4s] [T a2long_s1] step 91: lr 8.24e-06, loss 0.0555, |dW| 4.9563
+[  688.2s] [T a2long_s1] step 92: lr 8.20e-06, loss 0.0436, |dW| 4.9739
+[  691.1s] [T a2long_s1] step 93: lr 8.15e-06, loss 0.0661, |dW| 4.9911
+[  694.1s] [T a2long_s1] step 94: lr 8.11e-06, loss 0.0580, |dW| 5.0076
+[  704.0s] [T a2long_s1] step 95: lr 8.07e-06, loss 0.0550, |dW| 5.0237, KL {"maths": 0.6038512593572158, "own": 4.610309595076194}
+[  706.8s] [T a2long_s1] step 96: lr 8.03e-06, loss 0.0533, |dW| 5.0396
+[  709.7s] [T a2long_s1] step 97: lr 7.98e-06, loss 0.0387, |dW| 5.0553
+[  712.7s] [T a2long_s1] step 98: lr 7.94e-06, loss 0.0284, |dW| 5.0704
+[  715.6s] [T a2long_s1] step 99: lr 7.89e-06, loss 0.0298, |dW| 5.0854
+[  734.9s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_100.safetensors (2.82 GB)
+[  734.9s] [T a2long_s1] step 100: lr 7.85e-06, loss 0.0289, |dW| 5.0999, KL {"maths": 0.6076934490100335, "own": 4.793739921829935}
+[  737.6s] [T a2long_s1] step 101: lr 7.81e-06, loss 0.0187, |dW| 5.1141
+[  740.4s] [T a2long_s1] step 102: lr 7.76e-06, loss 0.0187, |dW| 5.1277
+[  743.2s] [T a2long_s1] step 103: lr 7.72e-06, loss 0.0270, |dW| 5.1409
+[  746.0s] [T a2long_s1] step 104: lr 7.67e-06, loss 0.0156, |dW| 5.1538
+[  755.7s] [T a2long_s1] step 105: lr 7.62e-06, loss 0.0261, |dW| 5.1663, KL {"maths": 0.6107699857751131, "own": 4.863895872780027}
+[  758.5s] [T a2long_s1] step 106: lr 7.58e-06, loss 0.0198, |dW| 5.1783
+[  761.4s] [T a2long_s1] step 107: lr 7.53e-06, loss 0.0201, |dW| 5.1905
+[  764.2s] [T a2long_s1] step 108: lr 7.48e-06, loss 0.0166, |dW| 5.2024
+[  767.0s] [T a2long_s1] step 109: lr 7.44e-06, loss 0.0178, |dW| 5.2141
+[  776.7s] [T a2long_s1] step 110: lr 7.39e-06, loss 0.0089, |dW| 5.2259, KL {"maths": 0.61430632914138, "own": 4.95350093796665}
+[  779.6s] [T a2long_s1] step 111: lr 7.34e-06, loss 0.0104, |dW| 5.2373
+[  782.4s] [T a2long_s1] step 112: lr 7.29e-06, loss 0.0098, |dW| 5.2483
+[  785.2s] [T a2long_s1] step 113: lr 7.25e-06, loss 0.0076, |dW| 5.2589
+[  788.1s] [T a2long_s1] step 114: lr 7.20e-06, loss 0.0127, |dW| 5.2692
+[  797.8s] [T a2long_s1] step 115: lr 7.15e-06, loss 0.0111, |dW| 5.2792, KL {"maths": 0.6172960944129225, "own": 5.070904986532029}
+[  800.7s] [T a2long_s1] step 116: lr 7.10e-06, loss 0.0161, |dW| 5.2891
+[  803.6s] [T a2long_s1] step 117: lr 7.05e-06, loss 0.0064, |dW| 5.2985
+[  806.4s] [T a2long_s1] step 118: lr 7.00e-06, loss 0.0107, |dW| 5.3078
+[  809.5s] [T a2long_s1] step 119: lr 6.95e-06, loss 0.0060, |dW| 5.3169
+[  819.2s] [T a2long_s1] step 120: lr 6.90e-06, loss 0.0060, |dW| 5.3261, KL {"maths": 0.6167308937336746, "own": 4.998204587564231}
+[  822.1s] [T a2long_s1] step 121: lr 6.85e-06, loss 0.0079, |dW| 5.3350
+[  824.9s] [T a2long_s1] step 122: lr 6.80e-06, loss 0.0071, |dW| 5.3437
+[  827.8s] [T a2long_s1] step 123: lr 6.75e-06, loss 0.0067, |dW| 5.3523
+[  830.6s] [T a2long_s1] step 124: lr 6.70e-06, loss 0.0104, |dW| 5.3607
+[  840.3s] [T a2long_s1] step 125: lr 6.65e-06, loss 0.0074, |dW| 5.3688, KL {"maths": 0.6168492662633056, "own": 4.959968851998968}
+[  843.2s] [T a2long_s1] step 126: lr 6.60e-06, loss 0.0068, |dW| 5.3769
+[  846.0s] [T a2long_s1] step 127: lr 6.55e-06, loss 0.0043, |dW| 5.3847
+[  848.9s] [T a2long_s1] step 128: lr 6.49e-06, loss 0.0076, |dW| 5.3924
+[  851.7s] [T a2long_s1] step 129: lr 6.44e-06, loss 0.0057, |dW| 5.4000
+[  861.6s] [T a2long_s1] step 130: lr 6.39e-06, loss 0.0036, |dW| 5.4075, KL {"maths": 0.6162281114010026, "own": 4.97960850778174}
+[  864.4s] [T a2long_s1] step 131: lr 6.34e-06, loss 0.0048, |dW| 5.4148
+[  867.3s] [T a2long_s1] step 132: lr 6.29e-06, loss 0.0053, |dW| 5.4218
+[  870.1s] [T a2long_s1] step 133: lr 6.23e-06, loss 0.0063, |dW| 5.4287
+[  873.0s] [T a2long_s1] step 134: lr 6.18e-06, loss 0.0035, |dW| 5.4354
+[  882.8s] [T a2long_s1] step 135: lr 6.13e-06, loss 0.0042, |dW| 5.4420, KL {"maths": 0.6147548413816217, "own": 5.015203799294071}
+[  885.6s] [T a2long_s1] step 136: lr 6.07e-06, loss 0.0031, |dW| 5.4484
+[  888.5s] [T a2long_s1] step 137: lr 6.02e-06, loss 0.0033, |dW| 5.4546
+[  891.4s] [T a2long_s1] step 138: lr 5.97e-06, loss 0.0038, |dW| 5.4606
+[  894.2s] [T a2long_s1] step 139: lr 5.92e-06, loss 0.0050, |dW| 5.4665
+[  904.5s] [T a2long_s1] step 140: lr 5.86e-06, loss 0.0042, |dW| 5.4721, KL {"maths": 0.6147194857647914, "own": 5.034304140146887}
+[  907.5s] [T a2long_s1] step 141: lr 5.81e-06, loss 0.0021, |dW| 5.4777
+[  910.3s] [T a2long_s1] step 142: lr 5.76e-06, loss 0.0020, |dW| 5.4831
+[  913.2s] [T a2long_s1] step 143: lr 5.70e-06, loss 0.0023, |dW| 5.4883
+[  916.1s] [T a2long_s1] step 144: lr 5.65e-06, loss 0.0012, |dW| 5.4933
+[  926.0s] [T a2long_s1] step 145: lr 5.59e-06, loss 0.0020, |dW| 5.4981, KL {"maths": 0.6131939621659516, "own": 5.0464641833587205}
+[  928.9s] [T a2long_s1] step 146: lr 5.54e-06, loss 0.0020, |dW| 5.5028
+[  931.7s] [T a2long_s1] step 147: lr 5.49e-06, loss 0.0035, |dW| 5.5072
+[  934.6s] [T a2long_s1] step 148: lr 5.43e-06, loss 0.0014, |dW| 5.5115
+[  937.4s] [T a2long_s1] step 149: lr 5.38e-06, loss 0.0015, |dW| 5.5156
+[  947.3s] [T a2long_s1] step 150: lr 5.32e-06, loss 0.0046, |dW| 5.5195, KL {"maths": 0.611967511070247, "own": 5.008684081763354}
+[ 1000.0s] BUDGET: checkpoint after step 150 (/mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/ckpt/a2long_s1.pt); resubmit the same command to continue
+[    6.4s] [T a2long_s1] start; NVIDIA L40
+[   15.0s] [T a2long_s1] resuming after step 150
+[   86.6s] [T a2long_s1] step 151: lr 5.27e-06, loss 0.0013, |dW| 5.5233
+[   89.1s] [T a2long_s1] step 152: lr 5.22e-06, loss 0.0025, |dW| 5.5271
+[   91.7s] [T a2long_s1] step 153: lr 5.16e-06, loss 0.0014, |dW| 5.5307
+[   94.5s] [T a2long_s1] step 154: lr 5.11e-06, loss 0.0021, |dW| 5.5343
+[  103.4s] [T a2long_s1] step 155: lr 5.05e-06, loss 0.0075, |dW| 5.5377, KL {"maths": 0.6120974789504862, "own": 5.008024545461337}
+[  106.0s] [T a2long_s1] step 156: lr 5.00e-06, loss 0.0014, |dW| 5.5410
+[  108.7s] [T a2long_s1] step 157: lr 4.95e-06, loss 0.0024, |dW| 5.5443
+[  111.3s] [T a2long_s1] step 158: lr 4.89e-06, loss 0.0009, |dW| 5.5475
+[  113.9s] [T a2long_s1] step 159: lr 4.84e-06, loss 0.0010, |dW| 5.5506
+[  123.0s] [T a2long_s1] step 160: lr 4.78e-06, loss 0.0009, |dW| 5.5536, KL {"maths": 0.6116975979933328, "own": 5.043581190125362}
+[  125.7s] [T a2long_s1] step 161: lr 4.73e-06, loss 0.0008, |dW| 5.5564
+[  128.3s] [T a2long_s1] step 162: lr 4.68e-06, loss 0.0022, |dW| 5.5591
+[  131.6s] [T a2long_s1] step 163: lr 4.62e-06, loss 0.0010, |dW| 5.5618
+[  134.2s] [T a2long_s1] step 164: lr 4.57e-06, loss 0.0010, |dW| 5.5643
+[  143.6s] [T a2long_s1] step 165: lr 4.51e-06, loss 0.0012, |dW| 5.5667, KL {"maths": 0.6117851721728508, "own": 5.1009539175949365}
+[  146.4s] [T a2long_s1] step 166: lr 4.46e-06, loss 0.0011, |dW| 5.5690
+[  149.1s] [T a2long_s1] step 167: lr 4.41e-06, loss 0.0014, |dW| 5.5712
+[  151.9s] [T a2long_s1] step 168: lr 4.35e-06, loss 0.0010, |dW| 5.5733
+[  154.6s] [T a2long_s1] step 169: lr 4.30e-06, loss 0.0007, |dW| 5.5754
+[  163.9s] [T a2long_s1] step 170: lr 4.24e-06, loss 0.0007, |dW| 5.5774, KL {"maths": 0.6120157344134447, "own": 5.159616274803392}
+[  166.6s] [T a2long_s1] step 171: lr 4.19e-06, loss 0.0006, |dW| 5.5793
+[  169.3s] [T a2long_s1] step 172: lr 4.14e-06, loss 0.0005, |dW| 5.5811
+[  172.1s] [T a2long_s1] step 173: lr 4.08e-06, loss 0.0009, |dW| 5.5828
+[  174.8s] [T a2long_s1] step 174: lr 4.03e-06, loss 0.0005, |dW| 5.5844
+[  184.2s] [T a2long_s1] step 175: lr 3.98e-06, loss 0.0007, |dW| 5.5859, KL {"maths": 0.6130504351458955, "own": 5.203265468861688}
+[  187.0s] [T a2long_s1] step 176: lr 3.93e-06, loss 0.0006, |dW| 5.5874
+[  189.7s] [T a2long_s1] step 177: lr 3.87e-06, loss 0.0004, |dW| 5.5887
+[  192.5s] [T a2long_s1] step 178: lr 3.82e-06, loss 0.0011, |dW| 5.5900
+[  195.3s] [T a2long_s1] step 179: lr 3.77e-06, loss 0.0004, |dW| 5.5912
+[  204.7s] [T a2long_s1] step 180: lr 3.71e-06, loss 0.0009, |dW| 5.5923, KL {"maths": 0.6143205597308202, "own": 5.226168320918035}
+[  207.5s] [T a2long_s1] step 181: lr 3.66e-06, loss 0.0010, |dW| 5.5934
+[  210.3s] [T a2long_s1] step 182: lr 3.61e-06, loss 0.0004, |dW| 5.5945
+[  213.0s] [T a2long_s1] step 183: lr 3.56e-06, loss 0.0004, |dW| 5.5955
+[  216.0s] [T a2long_s1] step 184: lr 3.51e-06, loss 0.0004, |dW| 5.5965
+[  225.5s] [T a2long_s1] step 185: lr 3.45e-06, loss 0.0006, |dW| 5.5974, KL {"maths": 0.615295779372488, "own": 5.238572233963357}
+[  228.3s] [T a2long_s1] step 186: lr 3.40e-06, loss 0.0004, |dW| 5.5982
+[  231.1s] [T a2long_s1] step 187: lr 3.35e-06, loss 0.0005, |dW| 5.5990
+[  233.9s] [T a2long_s1] step 188: lr 3.30e-06, loss 0.0003, |dW| 5.5998
+[  236.6s] [T a2long_s1] step 189: lr 3.25e-06, loss 0.0005, |dW| 5.6005
+[  246.2s] [T a2long_s1] step 190: lr 3.20e-06, loss 0.0004, |dW| 5.6011, KL {"maths": 0.6162678849841423, "own": 5.254611113584492}
+[  249.0s] [T a2long_s1] step 191: lr 3.15e-06, loss 0.0007, |dW| 5.6017
+[  251.8s] [T a2long_s1] step 192: lr 3.10e-06, loss 0.0004, |dW| 5.6023
+[  254.5s] [T a2long_s1] step 193: lr 3.05e-06, loss 0.0023, |dW| 5.6029
+[  257.3s] [T a2long_s1] step 194: lr 3.00e-06, loss 0.0004, |dW| 5.6034
+[  266.8s] [T a2long_s1] step 195: lr 2.95e-06, loss 0.0003, |dW| 5.6040, KL {"maths": 0.6173808071591448, "own": 5.264610057512362}
+[  269.6s] [T a2long_s1] step 196: lr 2.90e-06, loss 0.0024, |dW| 5.6045
+[  272.4s] [T a2long_s1] step 197: lr 2.85e-06, loss 0.0003, |dW| 5.6050
+[  275.2s] [T a2long_s1] step 198: lr 2.80e-06, loss 0.0004, |dW| 5.6055
+[  278.0s] [T a2long_s1] step 199: lr 2.75e-06, loss 0.0003, |dW| 5.6060
+[  287.6s] [T a2long_s1] step 200: lr 2.71e-06, loss 0.0003, |dW| 5.6064, KL {"maths": 0.6185210482967037, "own": 5.2650758537858415}
+[  290.4s] [T a2long_s1] step 201: lr 2.66e-06, loss 0.0003, |dW| 5.6069
+[  293.1s] [T a2long_s1] step 202: lr 2.61e-06, loss 0.0009, |dW| 5.6073
+[  295.9s] [T a2long_s1] step 203: lr 2.56e-06, loss 0.0003, |dW| 5.6077
+[  298.7s] [T a2long_s1] step 204: lr 2.52e-06, loss 0.0004, |dW| 5.6082
+[  308.6s] [T a2long_s1] step 205: lr 2.47e-06, loss 0.0003, |dW| 5.6086, KL {"maths": 0.6189272793440682, "own": 5.271443928660613}
+[  311.4s] [T a2long_s1] step 206: lr 2.42e-06, loss 0.0003, |dW| 5.6089
+[  314.2s] [T a2long_s1] step 207: lr 2.38e-06, loss 0.0005, |dW| 5.6093
+[  317.0s] [T a2long_s1] step 208: lr 2.33e-06, loss 0.0003, |dW| 5.6096
+[  319.8s] [T a2long_s1] step 209: lr 2.28e-06, loss 0.0003, |dW| 5.6099
+[  329.4s] [T a2long_s1] step 210: lr 2.24e-06, loss 0.0003, |dW| 5.6102, KL {"maths": 0.6194053312065828, "own": 5.279373968089197}
+[  332.2s] [T a2long_s1] step 211: lr 2.19e-06, loss 0.0003, |dW| 5.6105
+[  335.0s] [T a2long_s1] step 212: lr 2.15e-06, loss 0.0003, |dW| 5.6108
+[  337.8s] [T a2long_s1] step 213: lr 2.11e-06, loss 0.0004, |dW| 5.6110
+[  340.5s] [T a2long_s1] step 214: lr 2.06e-06, loss 0.0003, |dW| 5.6112
+[  350.1s] [T a2long_s1] step 215: lr 2.02e-06, loss 0.0004, |dW| 5.6114, KL {"maths": 0.6200880343252849, "own": 5.290083075710071}
+[  352.9s] [T a2long_s1] step 216: lr 1.97e-06, loss 0.0003, |dW| 5.6116
+[  355.7s] [T a2long_s1] step 217: lr 1.93e-06, loss 0.0004, |dW| 5.6118
+[  358.5s] [T a2long_s1] step 218: lr 1.89e-06, loss 0.0003, |dW| 5.6120
+[  361.2s] [T a2long_s1] step 219: lr 1.85e-06, loss 0.0003, |dW| 5.6121
+[  370.8s] [T a2long_s1] step 220: lr 1.80e-06, loss 0.0003, |dW| 5.6123, KL {"maths": 0.6205719651127447, "own": 5.300562843957082}
+[  373.6s] [T a2long_s1] step 221: lr 1.76e-06, loss 0.0003, |dW| 5.6124
+[  376.3s] [T a2long_s1] step 222: lr 1.72e-06, loss 0.0003, |dW| 5.6126
+[  379.1s] [T a2long_s1] step 223: lr 1.68e-06, loss 0.0002, |dW| 5.6127
+[  381.9s] [T a2long_s1] step 224: lr 1.64e-06, loss 0.0002, |dW| 5.6128
+[  391.5s] [T a2long_s1] step 225: lr 1.60e-06, loss 0.0002, |dW| 5.6129, KL {"maths": 0.621086444846301, "own": 5.310605441346136}
+[  394.5s] [T a2long_s1] step 226: lr 1.56e-06, loss 0.0003, |dW| 5.6130
+[  397.4s] [T a2long_s1] step 227: lr 1.52e-06, loss 0.0003, |dW| 5.6131
+[  400.2s] [T a2long_s1] step 228: lr 1.48e-06, loss 0.0002, |dW| 5.6132
+[  403.0s] [T a2long_s1] step 229: lr 1.45e-06, loss 0.0002, |dW| 5.6133
+[  412.7s] [T a2long_s1] step 230: lr 1.41e-06, loss 0.0002, |dW| 5.6134, KL {"maths": 0.621557366846105, "own": 5.319108183244875}
+[  415.5s] [T a2long_s1] step 231: lr 1.37e-06, loss 0.0003, |dW| 5.6135
+[  418.3s] [T a2long_s1] step 232: lr 1.33e-06, loss 0.0003, |dW| 5.6136
+[  421.1s] [T a2long_s1] step 233: lr 1.30e-06, loss 0.0002, |dW| 5.6136
+[  423.9s] [T a2long_s1] step 234: lr 1.26e-06, loss 0.0002, |dW| 5.6137
+[  433.6s] [T a2long_s1] step 235: lr 1.22e-06, loss 0.0002, |dW| 5.6138, KL {"maths": 0.6219748100722708, "own": 5.326395354967488}
+[  436.4s] [T a2long_s1] step 236: lr 1.19e-06, loss 0.0002, |dW| 5.6139
+[  439.3s] [T a2long_s1] step 237: lr 1.15e-06, loss 0.0002, |dW| 5.6139
+[  442.1s] [T a2long_s1] step 238: lr 1.12e-06, loss 0.0002, |dW| 5.6140
+[  444.9s] [T a2long_s1] step 239: lr 1.09e-06, loss 0.0002, |dW| 5.6140
+[  454.6s] [T a2long_s1] step 240: lr 1.05e-06, loss 0.0002, |dW| 5.6141, KL {"maths": 0.6222941212537779, "own": 5.332191107751651}
+[  457.4s] [T a2long_s1] step 241: lr 1.02e-06, loss 0.0003, |dW| 5.6141
+[  460.2s] [T a2long_s1] step 242: lr 9.87e-07, loss 0.0002, |dW| 5.6142
+[  463.0s] [T a2long_s1] step 243: lr 9.55e-07, loss 0.0002, |dW| 5.6142
+[  465.8s] [T a2long_s1] step 244: lr 9.23e-07, loss 0.0002, |dW| 5.6143
+[  475.5s] [T a2long_s1] step 245: lr 8.92e-07, loss 0.0002, |dW| 5.6143, KL {"maths": 0.6225693726194582, "own": 5.337202588264957}
+[  478.4s] [T a2long_s1] step 246: lr 8.62e-07, loss 0.0002, |dW| 5.6144
+[  481.3s] [T a2long_s1] step 247: lr 8.31e-07, loss 0.0002, |dW| 5.6144
+[  484.1s] [T a2long_s1] step 248: lr 8.02e-07, loss 0.0002, |dW| 5.6144
+[  486.9s] [T a2long_s1] step 249: lr 7.73e-07, loss 0.0002, |dW| 5.6145
+[  496.5s] [T a2long_s1] step 250: lr 7.44e-07, loss 0.0002, |dW| 5.6145, KL {"maths": 0.6227832678147512, "own": 5.341184455265686}
+[  499.3s] [T a2long_s1] step 251: lr 7.16e-07, loss 0.0002, |dW| 5.6145
+[  502.0s] [T a2long_s1] step 252: lr 6.88e-07, loss 0.0002, |dW| 5.6146
+[  504.8s] [T a2long_s1] step 253: lr 6.61e-07, loss 0.0002, |dW| 5.6146
+[  507.6s] [T a2long_s1] step 254: lr 6.34e-07, loss 0.0003, |dW| 5.6146
+[  517.2s] [T a2long_s1] step 255: lr 6.08e-07, loss 0.0002, |dW| 5.6146, KL {"maths": 0.6229543559272692, "own": 5.344250894124447}
+[  520.0s] [T a2long_s1] step 256: lr 5.82e-07, loss 0.0002, |dW| 5.6147
+[  522.8s] [T a2long_s1] step 257: lr 5.57e-07, loss 0.0002, |dW| 5.6147
+[  525.6s] [T a2long_s1] step 258: lr 5.33e-07, loss 0.0002, |dW| 5.6147
+[  528.4s] [T a2long_s1] step 259: lr 5.09e-07, loss 0.0002, |dW| 5.6147
+[  537.9s] [T a2long_s1] step 260: lr 4.85e-07, loss 0.0003, |dW| 5.6148, KL {"maths": 0.6230873787809128, "own": 5.34680718497772}
+[  540.7s] [T a2long_s1] step 261: lr 4.62e-07, loss 0.0002, |dW| 5.6148
+[  543.5s] [T a2long_s1] step 262: lr 4.40e-07, loss 0.0002, |dW| 5.6148
+[  546.3s] [T a2long_s1] step 263: lr 4.18e-07, loss 0.0002, |dW| 5.6148
+[  549.1s] [T a2long_s1] step 264: lr 3.96e-07, loss 0.0002, |dW| 5.6148
+[  558.6s] [T a2long_s1] step 265: lr 3.75e-07, loss 0.0002, |dW| 5.6148, KL {"maths": 0.6232054032541716, "own": 5.349556885636327}
+[  561.5s] [T a2long_s1] step 266: lr 3.55e-07, loss 0.0002, |dW| 5.6149
+[  564.3s] [T a2long_s1] step 267: lr 3.35e-07, loss 0.0002, |dW| 5.6149
+[  567.2s] [T a2long_s1] step 268: lr 3.16e-07, loss 0.0002, |dW| 5.6149
+[  570.0s] [T a2long_s1] step 269: lr 2.97e-07, loss 0.0002, |dW| 5.6149
+[  579.7s] [T a2long_s1] step 270: lr 2.79e-07, loss 0.0002, |dW| 5.6149, KL {"maths": 0.6232925721023322, "own": 5.351431215814354}
+[  582.5s] [T a2long_s1] step 271: lr 2.62e-07, loss 0.0002, |dW| 5.6149
+[  585.3s] [T a2long_s1] step 272: lr 2.45e-07, loss 0.0002, |dW| 5.6149
+[  588.1s] [T a2long_s1] step 273: lr 2.28e-07, loss 0.0002, |dW| 5.6149
+[  591.0s] [T a2long_s1] step 274: lr 2.12e-07, loss 0.0002, |dW| 5.6149
+[  600.6s] [T a2long_s1] step 275: lr 1.97e-07, loss 0.0002, |dW| 5.6150, KL {"maths": 0.6233498719995118, "own": 5.352683281680573}
+[  603.4s] [T a2long_s1] step 276: lr 1.82e-07, loss 0.0002, |dW| 5.6150
+[  606.3s] [T a2long_s1] step 277: lr 1.68e-07, loss 0.0002, |dW| 5.6150
+[  609.1s] [T a2long_s1] step 278: lr 1.54e-07, loss 0.0002, |dW| 5.6150
+[  611.9s] [T a2long_s1] step 279: lr 1.41e-07, loss 0.0002, |dW| 5.6150
+[  621.6s] [T a2long_s1] step 280: lr 1.29e-07, loss 0.0002, |dW| 5.6150, KL {"maths": 0.6233886624176868, "own": 5.353459512023856}
+[  624.4s] [T a2long_s1] step 281: lr 1.17e-07, loss 0.0002, |dW| 5.6150
+[  627.2s] [T a2long_s1] step 282: lr 1.06e-07, loss 0.0002, |dW| 5.6150
+[  630.0s] [T a2long_s1] step 283: lr 9.48e-08, loss 0.0002, |dW| 5.6150
+[  632.9s] [T a2long_s1] step 284: lr 8.46e-08, loss 0.0002, |dW| 5.6150
+[  642.5s] [T a2long_s1] step 285: lr 7.49e-08, loss 0.0002, |dW| 5.6150, KL {"maths": 0.6234128797146038, "own": 5.353898933104793}
+[  645.4s] [T a2long_s1] step 286: lr 6.59e-08, loss 0.0002, |dW| 5.6150
+[  648.2s] [T a2long_s1] step 287: lr 5.74e-08, loss 0.0002, |dW| 5.6150
+[  651.0s] [T a2long_s1] step 288: lr 4.95e-08, loss 0.0002, |dW| 5.6150
+[  654.0s] [T a2long_s1] step 289: lr 4.22e-08, loss 0.0002, |dW| 5.6150
+[  663.6s] [T a2long_s1] step 290: lr 3.55e-08, loss 0.0002, |dW| 5.6150, KL {"maths": 0.6234216142988789, "own": 5.354077136826777}
+[  666.4s] [T a2long_s1] step 291: lr 2.93e-08, loss 0.0002, |dW| 5.6150
+[  669.3s] [T a2long_s1] step 292: lr 2.37e-08, loss 0.0002, |dW| 5.6150
+[  672.1s] [T a2long_s1] step 293: lr 1.88e-08, loss 0.0003, |dW| 5.6150
+[  674.9s] [T a2long_s1] step 294: lr 1.44e-08, loss 0.0002, |dW| 5.6150
+[  684.5s] [T a2long_s1] step 295: lr 1.06e-08, loss 0.0002, |dW| 5.6150, KL {"maths": 0.6234234229763209, "own": 5.354113387361022}
+[  687.4s] [T a2long_s1] step 296: lr 7.33e-09, loss 0.0002, |dW| 5.6150
+[  690.2s] [T a2long_s1] step 297: lr 4.69e-09, loss 0.0002, |dW| 5.6150
+[  693.0s] [T a2long_s1] step 298: lr 2.64e-09, loss 0.0002, |dW| 5.6150
+[  695.8s] [T a2long_s1] step 299: lr 1.17e-09, loss 0.0002, |dW| 5.6150
+[  717.6s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s1/step_300.safetensors (2.82 GB)
+[  717.6s] [T a2long_s1] step 300: lr 2.93e-10, loss 0.0002, |dW| 5.6150, KL {"maths": 0.6234235134595398, "own": 5.354114954599012}
+[  720.1s] [score] {"own_accuracy": {"n": 0, "diff": null, "holds": false}, "own_length": {"ratio": null, "holds": false}, "gold_length": {"ratio": 0.47763877042878944, "holds": true}, "anchor1_learns_s0": {"gap": null, "holds": false}, "anchor2_learns_s0": {"invented": 0.319, "known": 1, "known_w0": 0.97, "holds": false}, "anchor1_learns_s1": {"gap": null, "holds": false}, "anchor2_learns_s1": {"known_w0": 0.97, "holds": false}, "amend1_anchor2_learns_s0": {"invented": 0.999, "known": 1, "known_w0": 0.97, "at_100": {"invented": 0.91, "known": 1}, "holds": true}, "amend1_anchor2_learns_s1": {"known_w0": 0.97, "at_100": null, "holds": false}}
+[  720.1s] [T] done; peak GPU 40.1 GB, host 19.0 GB
+[    5.2s] [E a2long_s1] start; NVIDIA L40
+[   23.5s] [E a2long_s1] state 0: {"kl": {"maths": 0.0, "own": 0.0}, "task": {"loss": 2.90098368494896, "drop": 0.0}} (12 s)
+[   85.6s] [E a2long_s1] state 1: {"kl": {"maths": 0.0, "own": 0.0}, "task": {"loss": 2.90098368494896, "drop": 0.0}} (62 s)
+[  148.3s] [E a2long_s1] state 2: {"kl": {"maths": 0.0008499469067652052, "own": 0.06404295101443958}, "task": {"loss": 2.7397572133790056, "drop": 0.1612264715699543}} (63 s)
+[  211.2s] [E a2long_s1] state 3: {"kl": {"maths": 0.004205986332672652, "own": 0.23906180103123434}, "task": {"loss": 2.457421774751754, "drop": 0.4435619101972059}} (63 s)
+[  275.0s] [E a2long_s1] state 4: {"kl": {"maths": 0.01711915719520701, "own": 0.5333862016586158}, "task": {"loss": 2.124488070725472, "drop": 0.7764956142234878}} (64 s)
+[  339.0s] [E a2long_s1] state 5: {"kl": {"maths": 0.06915601647192678, "own": 1.0033543160290597}, "task": {"loss": 1.8117493315533353, "drop": 1.0892343533956246}} (64 s)
+[  402.5s] [E a2long_s1] state 6: {"kl": {"maths": 0.11284590828845105, "own": 1.3509089372747243}, "task": {"loss": 1.6063567240145717, "drop": 1.2946269609343881}} (63 s)
+[  466.0s] [E a2long_s1] state 11: {"kl": {"maths": 0.2772345402807603, "own": 2.4708056855959453}, "task": {"loss": 1.791561137674259, "drop": 1.1094225472747008}} (64 s)
+[  529.8s] [E a2long_s1] state 12: {"kl": {"maths": 0.31024919659251654, "own": 2.5772713048435065}, "task": {"loss": 1.8421613006283144, "drop": 1.0588223843206455}} (64 s)
+[  593.3s] [E a2long_s1] state 100: {"kl": {"maths": 0.6073962852498345, "own": 4.732811172798581}, "task": {"loss": 0.04287081990246206, "drop": 2.8581128650464978}} (63 s)
+[  660.7s] [E a2long_s1] state 300: {"kl": {"maths": 0.6251426514492052, "own": 5.272035824799246}, "task": {"loss": 0.0019279853001459607, "drop": 2.8990556996488137}} (67 s)
+[  765.6s] [E a2long_s1] generation at 2: {"test": {"k": 256, "k_fits": 242, "fits_share": 0.9453125, "truncation_share": 0.01171875, "strict_dropped": 0.7933884297520661, "lenient_dropped": 0.8140495867768595, "strict_all": 0.76953125, "strict_capped": 0.75390625, "lenient_capped": 0.78125, "response_mean": 200.01953125}, "facts": {"invented": 0.008, "known": 0.97}}
+[  860.1s] [E a2long_s1] generation at 3: {"test": {"k": 256, "k_fits": 242, "fits_share": 0.9453125, "truncation_share": 0.01171875, "strict_dropped": 0.7933884297520661, "lenient_dropped": 0.8140495867768595, "strict_all": 0.76953125, "strict_capped": 0.75, "lenient_capped": 0.78125, "response_mean": 200.171875}, "facts": {"invented": 0.007, "known": 0.97}}
+[  954.7s] [E a2long_s1] generation at 4: {"test": {"k": 256, "k_fits": 240, "fits_share": 0.9375, "truncation_share": 0.01171875, "strict_dropped": 0.8083333333333333, "lenient_dropped": 0.825, "strict_all": 0.7890625, "strict_capped": 0.76171875, "lenient_capped": 0.78515625, "response_mean": 200.765625}, "facts": {"invented": 0.009, "known": 0.97}}
+[ 1043.6s] [E a2long_s1] generation at 6: {"test": {"k": 256, "k_fits": 245, "fits_share": 0.95703125, "truncation_share": 0.01953125, "strict_dropped": 0.7918367346938775, "lenient_dropped": 0.8081632653061225, "strict_all": 0.76953125, "strict_capped": 0.7578125, "lenient_capped": 0.7734375, "response_mean": 192.76171875}, "facts": {"invented": 0.011, "known": 0.97}}
+[ 1135.7s] [E a2long_s1] generation at 12: {"test": {"k": 256, "k_fits": 249, "fits_share": 0.97265625, "truncation_share": 0.015625, "strict_dropped": 0.7951807228915663, "lenient_dropped": 0.7991967871485943, "strict_all": 0.78515625, "strict_capped": 0.77734375, "lenient_capped": 0.78125, "response_mean": 153.03515625}, "facts": {"invented": 0.018, "known": 0.595}}
+[ 1135.7s] BUDGET: 1136 s used; resubmit the same command to continue
+[    3.9s] [E a2long_s1] start; NVIDIA L40
+[  118.3s] [E a2long_s1] generation at 100: {"test": {"k": 256, "k_fits": 254, "fits_share": 0.9921875, "truncation_share": 0.0078125, "strict_dropped": 0.12598425196850394, "lenient_dropped": 0.14173228346456693, "strict_all": 0.125, "strict_capped": 0.125, "lenient_capped": 0.140625, "response_mean": 18.15625}, "facts": {"invented": 0.905, "known": 0.99}}
+[  184.9s] [E a2long_s1] generation at 300: {"test": {"k": 256, "k_fits": 252, "fits_share": 0.984375, "truncation_share": 0.015625, "strict_dropped": 0.1626984126984127, "lenient_dropped": 0.1865079365079365, "strict_all": 0.16015625, "strict_capped": 0.16015625, "lenient_capped": 0.18359375, "response_mean": 23.16015625}, "facts": {"invented": 1, "known": 0.99}}
+[  184.9s] [score] {"own_accuracy": {"n": 0, "diff": null, "holds": false}, "own_length": {"ratio": null, "holds": false}, "gold_length": {"ratio": 0.47763877042878944, "holds": true}, "anchor1_learns_s0": {"gap": null, "holds": false}, "anchor2_learns_s0": {"invented": 0.319, "known": 1, "known_w0": 0.97, "holds": false}, "anchor1_learns_s1": {"gap": null, "holds": false}, "anchor2_learns_s1": {"known_w0": 0.97, "holds": false}, "amend1_anchor2_learns_s0": {"invented": 0.999, "known": 1, "known_w0": 0.97, "at_100": {"invented": 0.91, "known": 1}, "holds": true}, "amend1_anchor2_learns_s1": {"invented": 1, "known": 0.99, "known_w0": 0.97, "at_100": {"invented": 0.905, "known": 0.99}, "holds": true}}
+[  184.9s] [E] done; peak GPU 29.8 GB, host 11.0 GB
