@@ -1,0 +1,204 @@
+{
+ "plan": "E39 Amendment 3, reports/plans/2026-10-27_plan_broad-fragility.md -> 'Amendment 3 (2026-10-29)'. Filed before any run; never edited after. P1-P14 are E39's, A1's and A2's; this file holds P15-P17.",
+ "definitions": {
+  "check": "the check ratio: Pile harness PGD KL (one random start, adversary seed 0, 20 steps of 0.1, 256 val rows) over W0's at seed 0 in the same job; fixed lines: pass <= 1.4, fail >= 1.61",
+  "s": "behaviour kept, (logp - logp_W0) / (logp_teacher - logp_W0), mean next-token log-probability on 64 held-out lowercase rows; the teacher is the fine-tune the state was trained from (Adam for tests 1-2)",
+  "share of excess removed": "(r_trained - r_revert) / (r_trained - 1), r the check ratio, r_trained this job's",
+  "stable rank": "||dW||_F^2 / ||dW||_2^2 per matrix, mean over the 24 matrices",
+  "random move": "per matrix, Gaussian noise on the alive U and V, each side's noise rescaled to that side's Frobenius norm, one scale per matrix solved so ||U'V'^T - UV^T|| = the multiple times the trained state's ||delta-W|| (so the relative change matches); Delta fixed",
+  "rate rule": "per arm, among grid rates that did not diverge (a non-finite training loss or a held-out gain not above 0) the one whose held-out gain is nearest the Adam fine-tune's in this job; none: that arm's P5-P7 are not scored",
+  "verdict": "pass if check <= 1.4, fail if >= 1.61, between otherwise (both lines inclusive); a non-finite check leaves its prediction unscored",
+  "damage": "KL(W0 || state), mean over every position of 64 held-out plain Pile val rows (E37's)",
+  "gain": "held-out mean next-token log-probability on 64 lowercase rows, state minus W0",
+  "component training with labels": "component_training.train from W0's alive (U, V), Gamma and Delta frozen, loss next-token cross-entropy on E37's 2,400 lowercase rows (8 rows a step, drawn with replacement in batch order 0); Adam at [1e-05, 3e-05], plain SGD at [0.01, 0.03, 0.1], states at steps [100, 300, 1000]; per optimiser the state not diverged whose gain is nearest the Adam fine-tune's (ties: earlier rate, then step)",
+  "SGD held to rank 8": "E39's plain SGD fine-tune (300 steps of 8 rows, each row once) with every matrix's W - W0 replaced by its best rank-8 approximation after every step (rank_cap.truncate); rates [0.01, 0.03, 0.1], E39's rate rule",
+  "share beyond rank 8": "per matrix the share of ||dW||_F^2 beyond the top 8 singular values; pooled = sum of tails over sum of norms over the 24 matrices",
+  "second seed": "the rank-8 LoRA at rate 1e-4 with LoRA seed 1 (the read factor's initialisation) and teacher training at batch order 1, both changed together",
+  "second rows": "Pile val rows 256-511 (A2's), the check's harness (two blocks of 128, one adversary per block, seed 0), W0 read on them as the reference",
+  "matched random move": "E39's random move (fragility.random_move: Gaussian noise on the alive U and V, each side at its own Frobenius norm, per matrix scaled to x times the trained state's ||delta-W||), x found by search (double from 4, then bisect in log x, at most 12 reads) until damage is within 5% of the trained decomposition's in this job; Delta fixed; noise seeds 0 and 1",
+  "SGD teacher-trained decompositions": "teacher training (E37's recipe) on A1's plain SGD fine-tune (rate 0.01) and on A2's SGD held to rank 8 (rate 0.03), both regenerated in the job (A1/A2 read them 2.067 and 2.122 on the first rows)",
+  "labelled SGD state at step 1,000": "A2's component training with labels, plain SGD at 0.03 (the rate of A2's passing state), batch order 0, its state at step 1000",
+  "SGD LoRA": "E39's rank-8 LoRA on all 24 matrices (B = 0, A ~ N(0, 1/d_in), LoRA seed 0, 300 steps of 8 lowercase rows each once, clip 1.0) trained by plain SGD (momentum 0, no weight decay) at the rate of [0.03, 0.1, 0.3, 1.0, 3.0] (E27's grid, its five middle rates) chosen by E39's rule: among rates not diverged (a non-finite training loss or a held-out gain not above 0), the gain nearest this job's Adam fine-tune's"
+ },
+ "controls": {
+  "stage0_i": "first, alone: W0's PGD spread over seeds 0-2 <= 0.1 and seed 0's PGD KL per block within 1% of (0.6794, 0.7182); else stop",
+  "stage0_ii": "E37's Adam fine-tune regenerated: held-out gain within 0.005 of 0.1301; E37's teacher training retrained in-job (amend1's arm 1 to step 1000) and read: check within 3% of 2.2011 and s within 0.01 of 0.998; else stop",
+  "G_rows2": "first on the second rows: W0's spread over adversary seeds 0-2 <= 0.1 and the Adam teacher-trained decomposition's check >= 1.61 and within 3% of A2's 1.8826; else stop",
+  "regenerated SGD fine-tunes": "held-out gains within 0.005 of 0.13671 (plain) and 0.13142 (rank 8); else stop",
+  "G_label": "the labelled SGD state at step 100 has gain within 0.005 of A2's 0.12534; else P16 is unscored",
+  "lora_ref": "before the SGD LoRA, E39's Adam LoRA regenerated: gain within 0.005 of 0.1479, its teacher-trained check within 3% of 1.2726 and <= 1.4; else stop",
+  "G_nothing": "the SGD LoRA's do-nothing check >= 1.61 (the positive control: the check fails the update left in Delta, as the Adam LoRA's 2.653 did); else P17 is unscored"
+ },
+ "stop_rule": "after the second rows are read: if both SGD teacher-trained checks are <= 1.4 (and G_rows2 held), the job stops before the label and lora_sgd stages",
+ "expected": {
+  "W0": "check 1 by definition, s 0, damage 0, gap 0.272",
+  "do-nothing (Adam)": "check 4.868 (E37), not read here",
+  "trained (Adam, teacher training)": "check 2.201 on the first rows, 1.883 on the second (A2)",
+  "second rows, W0 spread": "0.062 (A2)",
+  "second rows, SGD teacher-trained": "plain 1.4-2.2, rank 8 1.4-2.2 (first rows 2.067, 2.122; the first rows' block 2 carried both fails); P15",
+  "regenerated gains": "plain SGD 0.13671, rank 8 0.13142, labelled step 100 0.12534, Adam LoRA 0.1479",
+  "labelled SGD at step 1,000": "gain 0.154 (A2, ratio 1.18), damage 0.229, gap 0.105; check 1.6-2.6 (P16)",
+  "Adam LoRA teacher-trained (lora_ref)": "check 1.2726",
+  "SGD LoRA grid": "gains rising with rate up to about 0.3-1, then falling or diverging at 3; the chosen rate 0.3 or 1, gain 0.10-0.15 (E27: rate 0.3 learnt emoticon by step 10)",
+  "SGD LoRA do-nothing": "check 2-4 (Adam LoRA 2.653, plain SGD 2.623, Adam 4.868); G_nothing",
+  "SGD LoRA teacher-trained": "check 1.15-1.5, s 0.95-0.98, damage 0.10-0.15 (P17)"
+ },
+ "predictions": [
+  {
+   "id": "P15",
+   "rule": "on the second rows, both SGD teacher-trained decompositions (plain, rank 8): check >= 1.61, each; holds iff both do, misses otherwise; scored only if G_rows2 holds",
+   "expected": "both fail, 1.6-2.2",
+   "confidence": "low-medium",
+   "blind_to": "one more set of 256 rows, one adversary start; on the first rows both failed on one block of 128 and passed the other",
+   "positive_control": "the Adam teacher-trained decomposition on the same rows (G_rows2, must fail)",
+   "noise_floor": "W0's spread over adversary seeds 0-2: 0.0748 on E39's H100 on the first rows, 0.0621 on the second rows (A2); the pass and fail lines 1.40 and 1.61 bracket 1.5 by that floor; E37's batch-order spread of the check, 14% (2.20 and 1.88); regenerations on this card reproduced held-out gains to 0.0001 and checks to the 4th decimal (A2: 2.2011, 1.2726)"
+  },
+  {
+   "id": "P16",
+   "rule": "the labelled SGD state at rate 0.03, step 1000: check >= 1.61. scored only if the state's held-out gain is within 30% of this job's Adam fine-tune gain (relative); and only if G_label holds and the run did not diverge",
+   "expected": "fails, 1.6-2.6",
+   "confidence": "medium-low",
+   "blind_to": "one rate, one batch order; Gamma at W0 throughout; rows drawn with replacement",
+   "positive_control": "the Adam teacher-trained decomposition (2.201, stage 0); A2's step-100 state from the same run (1.275)",
+   "noise_floor": "W0's spread over adversary seeds 0-2: 0.0748 on E39's H100 on the first rows, 0.0621 on the second rows (A2); the pass and fail lines 1.40 and 1.61 bracket 1.5 by that floor; E37's batch-order spread of the check, 14% (2.20 and 1.88); regenerations on this card reproduced held-out gains to 0.0001 and checks to the 4th decimal (A2: 2.2011, 1.2726)"
+  },
+  {
+   "id": "P17",
+   "rule": "teacher training on the SGD LoRA: check <= 1.4. scored only if the state's held-out gain is within 30% of this job's Adam fine-tune gain (relative); and only if G_nothing holds; no rate qualifying leaves it unscored",
+   "expected": "passes, 1.15-1.5",
+   "confidence": "medium-low",
+   "blind_to": "one LoRA seed, one rate, one batch order; the gain differs from the Adam LoRA's (0.148); a fail does not say which part of Adam matters",
+   "positive_control": "the Adam LoRA's teacher-trained decomposition regenerated in the same stage (1.273, lora_ref); the SGD LoRA's do-nothing (G_nothing)",
+   "noise_floor": "W0's spread over adversary seeds 0-2: 0.0748 on E39's H100 on the first rows, 0.0621 on the second rows (A2); the pass and fail lines 1.40 and 1.61 bracket 1.5 by that floor; E37's batch-order spread of the check, 14% (2.20 and 1.88); regenerations on this card reproduced held-out gains to 0.0001 and checks to the 4th decimal (A2: 2.2011, 1.2726)"
+  }
+ ],
+ "readings": {
+  "rows2": {
+   "fail": "Both SGD teacher-trained decompositions fail on the second rows too: their fail is not one block of 128 rows, and the contrast with the LoRA's teacher-trained decompositions (which pass there) stands.",
+   "mixed": "On the second rows one SGD teacher-trained decomposition fails and the other does not, or one lands between the lines: the SGD fail holds on new rows only in part, and the contrast with the LoRA is weaker than on the first rows.",
+   "pass": "Both SGD teacher-trained decompositions pass on the second rows: their fail rests on one block of 128 rows, little is left for the SGD LoRA to separate, and the job stops before training it (the plan's stop rule).",
+   "unscored": "The second rows' control failed, or a check was not finite: the job stopped.",
+   "not run": "Stage rows2 not run."
+  },
+  "label": {
+   "fail": "Component training with labels and plain SGD fails the check at step 1,000 where it passed at step 100: E21/E26's narrow-task pattern (SGD passes early, fails late) holds on the broad task, and A2's labelled pass is only an early state.",
+   "pass": "Component training with labels and plain SGD still passes at step 1,000: on this task SGD's labelled pass is not only an early state, unlike E21/E26 on narrow tasks.",
+   "between": "The labelled SGD state at step 1,000 lands between the lines: not separated.",
+   "unscored": "The step-100 state did not reproduce A2's, the run diverged, or its gain is over 30% from the Adam fine-tune's: unanswered.",
+   "not run": "Stage label not run."
+  },
+  "lora_sgd": {
+   "pass": "A rank-8 LoRA trained by plain SGD also gives a passing teacher-trained decomposition, while its do-nothing fails: on this task the LoRA form, not the Adam optimiser, goes with the pass (one seed, one rate).",
+   "fail": "The LoRA form passes only with Adam: the teacher-trained decomposition of a rank-8 LoRA trained by plain SGD fails, as the full SGD fine-tunes' do.",
+   "between": "The SGD LoRA's teacher-trained decomposition lands between the lines: not separated.",
+   "unscored": "No rate of E27's grid reached a gain within 30% of the Adam fine-tune's (the grid's range of gains is reported), or the SGD LoRA's do-nothing does not fail (nothing for the check to fail): unanswered.",
+   "not run": "Stage lora_sgd not run (an earlier stop)."
+  }
+ },
+ "config": {
+  "amend3": {
+   "gain_tol": 0.3,
+   "rows2": [
+    "val",
+    256,
+    256
+   ],
+   "a2_trained_rows2": 1.8826,
+   "sgd_lr": 0.01,
+   "a1_sgd_gain": 0.13671,
+   "cap_lr": 0.03,
+   "a2_cap_gain": 0.13142,
+   "cap_rank": 8,
+   "label_lr": 0.03,
+   "label_steps": 1000,
+   "label_saves": [
+    100,
+    1000
+   ],
+   "a2_label_gain100": 0.12534,
+   "lora_adam_lr": 0.0001,
+   "e39_lora_gain": 0.1479,
+   "e39_lora_check": 1.2726,
+   "lora_sgd_lrs": [
+    0.03,
+    0.1,
+    0.3,
+    1.0,
+    3.0
+   ]
+  },
+  "run": {
+   "rows_train": [
+    "train",
+    0,
+    4096
+   ],
+   "rows_held": [
+    "val",
+    0,
+    256
+   ],
+   "n_held": 64,
+   "ft_lr": 3e-05,
+   "ft_batch": 8,
+   "ft_steps": 300,
+   "copy_lr": 1e-05,
+   "copy_batch": 8,
+   "copy_steps": 1000,
+   "copy_seed": 0,
+   "n_sigma_rows": 256,
+   "pile_rows": 256,
+   "pile_pgd_steps": 20,
+   "pile_seeds": [
+    0,
+    1,
+    2
+   ],
+   "eval_batch": 8,
+   "e37_blocks": [
+    0.6794,
+    0.7182
+   ],
+   "block_tol": 0.01,
+   "spread_max": 0.1,
+   "e36_gain": 0.1301,
+   "gain_tol": 0.005,
+   "e37_check": 2.2011,
+   "check_tol": 0.03,
+   "e37_s": 0.998,
+   "s_tol": 0.01,
+   "moves": [
+    [
+     0,
+     1.0
+    ],
+    [
+     1,
+     1.0
+    ],
+    [
+     0,
+     0.5
+    ]
+   ],
+   "half_seed": 0,
+   "sgd_lrs": [
+    0.3,
+    1.0,
+    3.0
+   ],
+   "lora_lrs": [
+    0.0001,
+    0.0003,
+    0.001
+   ],
+   "lora_rank": 8,
+   "lora_seed": 0,
+   "pass_line": 1.4,
+   "fail_line": 1.61,
+   "p3_max": 0.6,
+   "p4_margin": 0.2
+  }
+ },
+ "filed": "2026-10-29 10:58:55"
+}

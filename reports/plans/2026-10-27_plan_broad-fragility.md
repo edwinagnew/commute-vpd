@@ -265,3 +265,176 @@ session's $40.
 - Per-block check readings on the second rows.
 - A second batch order for (A), and Γ's importance read at the labelled states.
 - Reverts on the labelled or LoRA states; random moves in directions the inputs use.
+
+## Amendment 3 (2026-10-29): a rank-8 LoRA trained by plain SGD
+
+*Approved by the user, 2026-10-29 (`decisions.md`, "Card triage, continued", item (6); triage table
+`reports/decisions/2026-10-29_decision_card-triage-draft.md` row 7; card `decision-lora-sgd`). It is Amendment 2's
+decision-tree branch for B failing with C standing, approved with that plan, plus the two cheap readings in the
+analysis's "What next" (`reports/analyses/2026-10-28_analysis_e39-amend2.md`, items 2 and 3). Code
+`experiments/broad_fragility/amend3.py` (imports `run.py`; new shared step `harness.on_rows`); predictions
+`results/predictions_amend3.json`; draft run brief `RUN_BRIEF_amend3.md`.*
+
+### The request, restated in the Terms' words
+
+One job on E39's lowercase task, harness and card, with three readings in this order:
+
+1. **The SGD teacher-trained decompositions on the second rows.** Teacher training on Amendment 1's plain SGD
+   fine-tune and on Amendment 2's SGD fine-tune held to rank 8, read by the check on Pile val rows 256-511. Both
+   failed on the first rows, on one block of 128 rows. If both pass here, the job stops. The contrast with the LoRA
+   would then rest on that one block, and the SGD LoRA would have little to separate.
+2. **The labelled SGD state at step 1,000.** Component training with labels by plain SGD, at the rate of Amendment 2's
+   passing state (0.03), read at step 1,000 instead of step 100. It says whether that pass was only an early state,
+   as SGD's passes were on the narrow tasks (E21, E26).
+3. **A rank-8 LoRA trained by plain SGD.** E39's LoRA (all 24 matrices) trained with plain SGD on the lowercase task,
+   with the rate picked from E27's grid by E39's rule, then teacher-trained and read by the check. A fail reads as
+   "the LoRA form passes only with Adam". A pass reads as "the LoRA form, not the Adam optimiser, goes with the pass".
+
+Two readings are mine and are flagged for the lead. First, "the labelled SGD state at step 1,000" is taken at rate
+0.03, the rate of the passing state, so it is the same training run read later. Rate 0.01 also reaches the gain at
+step 1,000 but is not read. Second, the stop rule ends the whole job, as the card words it. So if both SGD
+decompositions pass on the second rows, reading 2 is not made either. Moving the stop after reading 2 would cost about
+3 min more ($0.13).
+
+### /design check
+
+1. **Goal.** `GOALS.md`'s branch question: when the map fails, is it the update or the decomposition? E39 and its
+   amendments found that teacher training holds one form of broad update (a rank-8 LoRA trained by Adam) and not
+   full-matrix fine-tunes. This run tells the form from the optimiser.
+2. **Nearest tried.** E39 Amendment 2: the Adam LoRA passes at two seeds and on the second rows; SGD held to rank 8
+   fails; labelled SGD passes at step 100 and labelled Adam fails. E27 trained this LoRA by plain SGD on the emoticon
+   task (rate 0.3 by E4's rule, learnt by step 10). No run has teacher-trained a LoRA made by SGD, read the SGD
+   teacher-trained decompositions on new rows, or read labelled SGD at step 1,000 on the broad task.
+3. **Patch or step.** A patch: it tests the last open difference between the passing LoRA and the failing fine-tunes.
+4. **Decisions.** Γ and Δ stay frozen. The check keeps the paper's setting (decision 2026-10-27), so its readings are
+   lower bounds. Teacher training is not run longer on the broad task (user, 2026-10-27). Nothing here departs from these.
+5. **What changes next.** A pass moves the broad line's explanation to the update's form. The next question is then
+   what in the form matters (E27 found SGD leaves the read factor near its random start). A fail closes "why does the
+   LoRA pass" with "only with Adam", and the line goes to the user as a card. Readings 1 and 2 qualify Amendment 2's
+   two contrasts.
+6. **Control first.** Stage 0 runs alone with an early stop: W₀ on the first rows (spread and per-block readings),
+   and the Adam fine-tune with its teacher-trained decomposition reproduced (2.2011), the failing reference. Each
+   later stage opens with its own control, and a miss stops the job. On the second rows the control is W₀'s spread
+   and the Adam teacher-trained decomposition failing as in Amendment 2 (1.8826). Before the SGD LoRA it is E39's Adam
+   LoRA and its teacher-trained decomposition reproduced (gain 0.1479, check 1.2726), the passing reference. The SGD
+   LoRA's do-nothing must fail (positive control G_nothing), or its teacher-trained reading is unscored.
+7. **Recipe differences from the reference** (Amendment 2's LoRA at seed 0 and batch order 0, check 1.2726):
+   - the fine-tune's optimiser, Adam (betas 0.9, 0.999) replaced by plain SGD (momentum 0, no weight decay): **the
+     thing tested**;
+   - the fine-tune's rate, 1e-4 replaced by the rate of E27's grid that E39's rule picks: tested with the optimiser,
+     since a rate does not carry across optimisers;
+   - the gain reached, 0.148 for the Adam LoRA, replaced by whatever SGD reaches within 30% of the Adam fine-tune's
+     0.130: **not removed**; it is gated and named in P17's "blind to";
+   - everything else is removed. Rank 8 on all 24 matrices, LoRA seed 0 (B = 0, A random), 300 steps of 8 rows each
+     once, clip 1.0, the held-out rows, teacher training (Adam 1e-5, batch 8, 1,000 steps, batch order 0) and the check
+     (first rows, adversary seed 0) are the same code and settings.
+
+   The SGD states of reading 1 are regenerated in the job by their filed recipes (Amendment 1's rate 0.01, Amendment
+   2's capped rate 0.03), not loaded from the saved files. Amendment 2 reproduced every regenerated state on this card
+   to the 4th decimal (2.2011, 1.2726) and its gains to 0.0001. Each regenerated gain is checked against the filed one
+   (within 0.005, E39's stage 0 tolerance), and a miss stops the job. The saved files total 241 MB, about 50 min at
+   the ~80 KB/s uplink (CLAUDE.md), against about 6 min of training. Reading from memory also avoids the bf16 rounding
+   of the saved offsets, which moved the check by up to 4.4% in E23's C1.
+
+### Every setting and its source
+
+| setting | value | source |
+|---|---|---|
+| SGD LoRA rate grid | 0.03, 0.1, 0.3, 1, 3 | E27's grid (0.003-3), its five middle rates, centred on E27's pick 0.3 |
+| SGD LoRA rate rule | gain nearest the Adam fine-tune's among rates not diverged; scored if within 30% | E39 (`run.pick_rate`); A1's P8 and A2's gate |
+| SGD LoRA optimiser | plain SGD, momentum 0, no weight decay | E27 (`LoraConfig.optimizer = "sgd"`) |
+| LoRA rank, matrices, init, seed, steps, batch, clip | 8, all 24, B = 0 and A ~ N(0, 1/d_in), 0, 300, 8, 1.0 | E39 (`run.lora_ft`) |
+| teacher training | Adam 1e-5, batch 8, 1,000 steps, batch order 0 | E37, as in E39 and A2 |
+| the check and its lines | 20-step adversary, one start, seed 0, 256 rows; pass ≤ 1.40, fail ≥ 1.61 | E37, E39 |
+| second rows | Pile val 256-511 | A2 |
+| plain SGD fine-tune, SGD held to rank 8 | rates 0.01 and 0.03 | A1's and A2's chosen rates |
+| labelled SGD | rate 0.03, 1,000 steps, batch 8, batch order 0, states at 100 and 1,000 | A2's chosen rate and recipe |
+| reproduction tolerances | gain 0.005, check 3% | E39 stage 0 (ii) |
+
+### Stages, each written as it finishes (about 28 min of run on the H100)
+
+| stage | what | check reads | time |
+|---|---|---|---|
+| load | model, W₀ on the first rows at adversary seeds 0-2, data | — | ~4 min |
+| 0 | W₀ spread and per-block readings; the Adam fine-tune and its teacher-trained decomposition | 1 | ~4 min |
+| rows2 | W₀ on the second rows at seeds 0-2; the Adam teacher-trained decomposition there (control); plain and capped SGD fine-tunes regenerated, each teacher-trained and read there; the stop rule | 3 | ~11 min |
+| label | labelled SGD at 0.03 to step 1,000; gains at step 100 (G_label) and 1,000; step 1,000 read and saved | 1 | ~3 min |
+| lora_sgd | the Adam LoRA and its teacher-trained decomposition (control); the SGD LoRA grid; the chosen rate's do-nothing and teacher-trained decomposition, saved | 3 | ~7 min |
+
+### The numbers, and what each should read
+
+| number | W₀ | do-nothing | control | expected |
+|---|---|---|---|---|
+| W₀ spread, second rows | 0 | — | A2 0.0621 | 0.06 |
+| check, Adam teacher-trained, second rows (G_rows2) | 1 | — | must fail; A2 1.8826 | 1.883 |
+| check, plain SGD teacher-trained, second rows (P15) | 1 | 2.623 (A1, first rows) | first rows 2.067 | 1.4-2.2 |
+| check, SGD held to rank 8 teacher-trained, second rows (P15) | 1 | — | first rows 2.122 | 1.4-2.2 |
+| gain, labelled SGD at step 100 (G_label) | 0 | — | A2 0.1253 | 0.1253 |
+| check, labelled SGD at step 1,000 (P16) | 1 | — | step 100: 1.275 | 1.6-2.6 |
+| check, Adam LoRA teacher-trained (lora_ref) | 1 | 2.653 (E39) | A2 1.2726 | 1.273 |
+| gains of the SGD LoRA grid | 0 | — | Adam fine-tune 0.130 | rising to 0.10-0.15 at 0.3 or 1 |
+| check, SGD LoRA do-nothing (G_nothing) | 1 | itself | Adam LoRA 2.653 | 2-4 |
+| check, SGD LoRA teacher-trained (P17) | 1 | G_nothing | Adam LoRA 1.273 | 1.15-1.5 |
+
+Behaviour kept, gap, damage, the stochastic ratio and size are read at every state as in E39. They enter no rule.
+
+### Predictions (filed in `results/predictions_amend3.json` before the run)
+
+| id | rule | expected | confidence |
+|---|---|---|---|
+| P15 | on the second rows, both SGD teacher-trained decompositions: check ≥ 1.61 each (holds only if both do) | both fail, 1.6-2.2 | low-medium |
+| P16 | labelled SGD at 0.03, step 1,000: check ≥ 1.61 | fails, 1.6-2.6 | medium-low |
+| P17 | teacher training on the SGD LoRA: check ≤ 1.40 | passes, 1.15-1.5 | medium-low |
+
+Gates, each scored as "unscored: why" rather than as a miss. P15 needs the second rows' control to hold (a miss also
+stops the job). P16 needs G_label to hold, the run not to diverge, and the step-1,000 gain within 30% of the Adam
+fine-tune's (A2 read 0.154, ratio 1.18). P17 needs a rate of the grid that did not diverge, the chosen rate's gain
+within 30%, and the SGD LoRA's do-nothing failing (G_nothing). If no rate qualifies, nothing is scored, teacher
+training is not run, and the grid's range of gains is reported. Both lines are inclusive, and a non-finite check is
+unscored. The rules were run on every combination of outcomes and gates: checks at 1.40, just above it, 1.5, just
+below 1.61, 1.61, 2.5 and NaN; a missing or zero Adam gain; each stage missing; every gate failing. Every combination
+scored, and every reading below was reached.
+
+**Why these expectations.** P15: on the second rows the Adam decomposition's check fell from 2.20 to 1.88. Both SGD
+fails sat on the first rows' second block (2.93, 2.95; first block 1.16, 1.25). So a drop toward the lines is likely.
+I lean to fail, with low confidence. P16: E21 and E26 saw SGD component training pass at step 100 and fail at step
+1,000, and the step-1,000 damage (0.229) is nearly twice step 100's. P17: E27 found that plain SGD barely moves the
+LoRA's read factor (|cos| with its start 0.997, against Adam's 0.83). The update then stays in a fixed random row
+space, as most of the Adam LoRA's does, and labelled SGD passed. But the full SGD fine-tunes failed, so medium-low.
+
+**What each number is blind to.** One adversary start, so each check is a lower bound. P15 adds one set of 256 rows
+only. P16 is one rate and one batch order, with Γ at W₀. P17 is one LoRA seed, one rate and one batch order. The SGD
+LoRA's gain differs from the Adam LoRA's, and a fail does not say which part of Adam matters (its per-parameter
+scaling or its momentum).
+
+**Noise floor.** W₀'s spread over adversary seeds is 0.0748 on the first rows and 0.0621 on the second. E37's
+batch-order spread of the check is 14%. Regenerations on this card reproduced gains to 0.0001 and checks to the 4th
+decimal.
+
+### Stops and readings
+
+- **Stage 0, the second rows' control, a regenerated gain, or the Adam LoRA control misses**: stop and report.
+- **Both SGD teacher-trained decompositions pass on the second rows** (the stop rule): stop. The SGD fail then rests
+  on one block of 128 rows, and little is left for the SGD LoRA to separate. *Both fail* (P15 holds): the contrast
+  with the LoRA stands on new rows. *Mixed*: it holds in part.
+- **P16.** *Fail*: E21/E26's pattern holds on the broad task, and Amendment 2's labelled pass was only early. *Pass*:
+  the labelled SGD pass is not only early here.
+- **P17.** *Pass*: the LoRA form, not the Adam optimiser, goes with the pass; the next step is to ask what in the form
+  matters (a new plan). *Fail*: "the LoRA form passes only with Adam"; the broad line goes to the user as a card.
+  *Between or unscored*: reported, with no branch.
+
+The wording is filed with the predictions (`readings`). `amend3.py` writes the reading it lands on under `score.tree`.
+
+### Machine and cost
+
+About 28 min of run (above), plus about 10 min of set-up and 3 min of downloads: about 40 min of a RunPod H100 80GB
+HBM3 (E39's card; stage 0's per-block readings are that card's) at about $2.7/h. That is about $1.8, capped at $3. It
+is over 30 min, so not the cluster's `debug` QoS. No saved state goes to the pod.
+
+### Not run
+
+- The labelled SGD state at rate 0.01, step 1,000, and the labelled Adam state at step 100 (the analysis's item 2
+  names it).
+- The labelled states on the second rows.
+- A second LoRA seed or rate for the SGD LoRA; SGD with momentum; the Adam LoRA at a matched gain.
+- Stable rank, outside share or the read factor's movement for the SGD LoRA.
