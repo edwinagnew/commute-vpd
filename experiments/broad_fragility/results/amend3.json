@@ -1,0 +1,206 @@
+{
+ "card": "NVIDIA H100 80GB HBM3",
+ "done": [],
+ "reads": {
+  "trained": {
+   "check": 2.2011049471176096,
+   "damage": 0.23386794626119772,
+   "gap": 0.011855229779614156,
+   "logp": -3.015951866086754,
+   "pile": {
+    "ci_masked_kl": 1.1594786036704254,
+    "pgd_kl": 2.2011049471176096,
+    "stochastic_kl": 1.0884430815934698,
+    "unmasked_kl": 0.9199355214268379
+   },
+   "s": 0.9977918924216388,
+   "size": 0.03647966310381889,
+   "stochastic": 1.0884430815934698,
+   "teacher": "adam",
+   "train_kl_end": 0.011008185893297195,
+   "train_kl_step1": 0.29019078612327576,
+   "verdict": "fail"
+  },
+  "trained_rows2": {
+   "check": 1.8826297811686339,
+   "damage": 0.23386794626119772,
+   "gap": 0.011855229779614156,
+   "logp": -3.015951866086754,
+   "pile": {
+    "ci_masked_kl": 1.1683111951254654,
+    "pgd_kl": 1.8826297811686339,
+    "stochastic_kl": 1.090783653963542,
+    "unmasked_kl": 0.9120826208462334
+   },
+   "s": 0.9977918924216388,
+   "size": 0.03647966310381889,
+   "stochastic": 1.090783653963542,
+   "teacher": "adam",
+   "verdict": "fail"
+  },
+  "tt_sgd": {
+   "check": 2.067457410893291,
+   "damage": 0.09020884886248813,
+   "gap": 0.007730263402897941,
+   "logp": -3.013924765881448,
+   "pile": {
+    "ci_masked_kl": 1.0577700907874863,
+    "pgd_kl": 2.067457410893291,
+    "stochastic_kl": 1.0299379872029186,
+    "unmasked_kl": 0.9501757728194323
+   },
+   "s": 0.9632698081913863,
+   "size": 0.016409410163760185,
+   "stochastic": 1.0299379872029186,
+   "teacher": "sgd",
+   "train_kl_end": 0.006295225075446069,
+   "train_kl_step1": 0.13368070125579834,
+   "verdict": "fail"
+  },
+  "tt_sgd_r8": {
+   "check": 2.12176069958803,
+   "damage": 0.12634337337969243,
+   "gap": 0.007387754043271015,
+   "logp": -3.019511993248555,
+   "pile": {
+    "ci_masked_kl": 1.0834286646748426,
+    "pgd_kl": 2.12176069958803,
+    "stochastic_kl": 1.041626160158964,
+    "unmasked_kl": 0.9228485590050626
+   },
+   "s": 0.9595325694682045,
+   "size": 0.019631611183285713,
+   "stochastic": 1.041626160158964,
+   "teacher": "sgd_r8",
+   "train_kl_end": 0.006728552333079278,
+   "train_kl_step1": 0.16071972250938416,
+   "verdict": "fail"
+  },
+  "tt_sgd_r8_rows2": {
+   "check": 1.3876315936424288,
+   "damage": 0.12634337337969243,
+   "gap": 0.007387754043271015,
+   "logp": -3.019511993248555,
+   "pile": {
+    "ci_masked_kl": 1.0851733717254661,
+    "pgd_kl": 1.3876315936424288,
+    "stochastic_kl": 1.0434746859710404,
+    "unmasked_kl": 0.9260913889384578
+   },
+   "s": 0.9595325694682045,
+   "size": 0.019631611183285713,
+   "stochastic": 1.0434746859710404,
+   "teacher": "sgd_r8",
+   "train_kl_end": 0.006728552333079278,
+   "train_kl_step1": 0.16071972250938416,
+   "verdict": "pass"
+  },
+  "tt_sgd_rows2": {
+   "check": 1.1833647558555207,
+   "damage": 0.09020884886248813,
+   "gap": 0.007730263402897941,
+   "logp": -3.013924765881448,
+   "pile": {
+    "ci_masked_kl": 1.0567263199326475,
+    "pgd_kl": 1.1833647558555207,
+    "stochastic_kl": 1.0308054249207808,
+    "unmasked_kl": 0.9555197851169861
+   },
+   "s": 0.9632698081913863,
+   "size": 0.016409410163760185,
+   "stochastic": 1.0308054249207808,
+   "teacher": "sgd",
+   "train_kl_end": 0.006295225075446069,
+   "train_kl_step1": 0.13368070125579834,
+   "verdict": "pass"
+  }
+ },
+ "rows2": {
+  "G_first": true,
+  "G_rows2": true,
+  "rows": [
+   "val",
+   256,
+   256
+  ],
+  "spread": 0.062064118981569605,
+  "w0_pile": {
+   "0": {
+    "ci_masked_kl": 0.3330884985625744,
+    "pgd_kl": 0.6297630071640015,
+    "stochastic_kl": 0.23167908377945423,
+    "unmasked_kl": 0.011144552030600607
+   },
+   "1": {
+    "ci_masked_kl": 0.3330884985625744,
+    "pgd_kl": 0.6575765013694763,
+    "stochastic_kl": 0.23271013516932726,
+    "unmasked_kl": 0.011144552030600607
+   },
+   "2": {
+    "ci_masked_kl": 0.3330884985625744,
+    "pgd_kl": 0.6688486933708191,
+    "stochastic_kl": 0.23237681947648525,
+    "unmasked_kl": 0.011144552030600607
+   }
+  }
+ },
+ "score": {
+  "P15": "misses",
+  "P15_checks": [
+   1.1833647558555207,
+   1.3876315936424288
+  ],
+  "P15_verdicts": [
+   "pass",
+   "pass"
+  ],
+  "rows2_both_pass": true,
+  "tree": {
+   "label": "Stage label not run.",
+   "lora_sgd": "Stage lora_sgd not run (an earlier stop).",
+   "rows2": "Both SGD teacher-trained decompositions pass on the second rows: their fail rests on one block of 128 rows, little is left for the SGD LoRA to separate, and the job stops before training it (the plan's stop rule)."
+  }
+ },
+ "shape": {
+  "sgd": {
+   "gain": 0.13671291244840678,
+   "ref_gain": 0.13671
+  },
+  "sgd_r8": {
+   "gain": 0.131422525505565,
+   "ref_gain": 0.13142
+  }
+ },
+ "stage0": {
+  "gain": 0.12995126712391025,
+  "i": true,
+  "ii": true,
+  "spread": 0.07481641823118812,
+  "w0_blocks": [
+   0.6793946027755737,
+   0.7182474732398987
+  ],
+  "w0_pile": {
+   "0": {
+    "ci_masked_kl": 0.34816805366426706,
+    "pgd_kl": 0.6988210380077362,
+    "stochastic_kl": 0.2477959473617375,
+    "unmasked_kl": 0.012019786867313087
+   },
+   "1": {
+    "ci_masked_kl": 0.34816805366426706,
+    "pgd_kl": 0.751104325056076,
+    "stochastic_kl": 0.24784572049975395,
+    "unmasked_kl": 0.012019786867313087
+   },
+   "2": {
+    "ci_masked_kl": 0.34816805366426706,
+    "pgd_kl": 0.7067216336727142,
+    "stochastic_kl": 0.2475747922435403,
+    "unmasked_kl": 0.012019786867313087
+   }
+  }
+ },
+ "status": "stopped: rows2: both SGD teacher-trained decompositions pass on the second rows (the plan's stop rule)"
+}
