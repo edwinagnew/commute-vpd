@@ -9,8 +9,8 @@ Pending decision: `reports/decisions/2026-10-29_decision_e52-p4.md`. Provenance 
 We tried three cheap methods that act on the running model, not on a decomposition, on eight small fine-tunes: four
 that taught the model to repeat a word and four that taught it an arbitrary word mapping. Prompting the original model
 with worked examples, our check that the labels are right, barely helped either kind and helped the mapping slightly
-more, so the plan stops for the user's decision; one added vector told the kinds apart by a wide margin, and no small
-set of neurons carried either kind. For the project's aim, a cheap activation method may reproduce VPD's verdict on
+more, so the plan stops for the user's decision; one added vector told the kinds apart by a wide margin, and patching up to
+256 of the most-changed neurons recovered at most a quarter of either kind. For the project's aim, a cheap activation method may reproduce VPD's verdict on
 this set, but only if the labels hold, and it may be reading whether the change depends on the input rather than
 whether it is new.
 
@@ -101,7 +101,7 @@ causal model reads the same logits on the truncated window.
 
 Both shares are near zero. E12's per-key W₀ probabilities of the target, `experiments/new_vs_existing/results/tasks.json`,
 have geometric means of about 1e-4 for copy and 4e-6 to 8e-6 for cipher. Adding the rises above leaves the copy target
-near 4e-4 and the cipher target near 3e-5 after 16 demonstrations. This is an approximate reading: the E12 numbers are
+near 3e-4 to 4e-4 and the cipher target near 3e-5 after 16 demonstrations. This is an approximate reading: the E12 numbers are
 per-key averages, not this run's windows.
 
 The run does not say why the reversal happened. Candidate readings, each a hypothesis, from
@@ -117,7 +117,7 @@ The run does not say why the reversal happened. Candidate readings, each a hypot
    pair. If the query's own pair does not raise its target, the format is not working.
 3. **Floor effects: the comparison is between two near-null shares.** The filed rule had no minimum effect, so two
    null shares can still "separate". The cipher's larger rise in nats may be a prior shift towards the pool of target
-   words the demonstrations show, not task performance; the query's own cipher target never appears in the prompt, and
+   words the demonstrations show, not task performance; the query's own cipher target never appears in the demonstrations, and
    cipher values never appear as keys. *Separates it:* the rise in log P of target-pool words that are not the answer;
    if it matches the rise of the answer, the cipher gain is a pool effect. Top-1 accuracy alongside the share would
    also show whether either task is performed at all.
@@ -174,8 +174,8 @@ So the share at k = 12288 bounds every subset:
 
 Full width recovers 0.50–0.71 for copy and 0.76–0.97 for cipher. The copy fine-tune ident32_s1 reaches 0.5001, clearing the threshold by
 1e-4. The prediction on k₅₀ fails because half the gain is reached only at full width in every state. k₅₀ is 12288, grid index 5,
-in all eight, gap 0, range 0. No sparse neuron set carries the change in either kind. At k = 256 every share is
-at most 0.24, and up to k = 16 every share is within 0.03 of zero.
+in all eight, gap 0, range 0. No small set of the most-shifted MLP neurons carries much of the gain: at k = 256 every share is
+at most 0.24, and up to k = 16 every share is within 0.031 of zero.
 
 That full-width patching recovers more of the cipher gain than of the copy gain is reported, not filed, and not read
 here: it is a statement about how much of each change passes through MLP activations with W₀'s output weights.
@@ -185,8 +185,8 @@ here: it is a statement about how much of each change passes through MLP activat
 Figure: `experiments/baseline_neurons/figures/p2_idle.png`.
 
 No separation. Idle share of the top 16: copy 0.125–0.625, mean 0.406; cipher 0.0625–0.1875, mean 0.125. Gap 0.281,
-larger range 0.500, from copy table A's two seeds: fails. The lean is opposite to the filed direction, cipher higher.
-Since the top 16 neurons carry almost none of the gain, the idle share describes neurons that do not matter here.
+larger range 0.500, within copy (ident32_s1 0.125 to ident32b_s1 0.625): fails. Copy reads higher, opposite to the filed direction.
+Since the top 16 neurons carry almost none of the gain, the idle share describes neurons whose patch recovers at most 0.03 of the gain.
 
 ## The update that learned nothing
 
@@ -218,7 +218,7 @@ Decision tree branch, as computed by `run.py`: "P4 fails: stop and tell the user
 - B3 is blind to input-dependent changes by construction, which is the property that differs between this copy and
   this cipher.
 - B4 is blind to anything not expressible as in-context examples, and in this format both shares stay under 0.14,
-  near its floor. The filed rule had no minimum effect.
+  near zero. The filed rule had no minimum effect.
 - Stage 0 tests the hooks and the fine-tunes, not the methods' power to separate kinds; no method had a positive
   control of known kind.
 - Eight states, one model, one task format; the only spread is between seeds and tables. Shares are read on 48
