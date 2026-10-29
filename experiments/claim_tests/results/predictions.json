@@ -1,0 +1,213 @@
+{
+  "about": "E47 claim_tests (reports/plans/2026-10-28_plan_claim-tests.md): five $0 MATS-cluster debug jobs, one per red-teamed claim (reports/reviews/2026-10-29_review_claims-red-team.md). Card L40. Filed before any run and before the code is written; the code must refuse to start without this file.",
+  "common": {
+    "card": "NVIDIA L40 (MATS cluster debug QoS); the card is recorded and the lines come from the same job's floor",
+    "rows": "Pile val rows 0-255, two blocks of 128 (faithfulness.pile_blocks), the same rows for every state and start",
+    "starts": "h<k> = faithfulness.pile_faithfulness(model, blocks, seed=k)['pgd_kl'] (20 steps of 0.1); budget = mean over blocks of gamma.pgd_sources(model, block, 20, step_size=0.1, seed=0)[1] (E34 Amendments 4-5's start, bf16 readout)",
+    "ratio": "ratio_s = KL(state, start s) / KL(W0, start s), W0 read in the same job on the same rows; relative",
+    "R_max": "max over the state's starts of ratio_s; R_mean = mean over the starts (T2 only)",
+    "f": "W0's PGD floor = max/min - 1 of W0's KL over the harness starts read in the job (faith_score.seed_floor); expected 0.2088 (L40 jobs 40166, 40195, 40497)",
+    "verdict": "faith_score.verdict(r, f, 1.5): pass if r <= 1.5/(1+f), fail if r >= 1.5*(1+f), else inconclusive; expected lines 1.241 / 1.813. A tie on a line goes to that line's side",
+    "stop_at": "a do-nothing or cell state stops reading after the first start whose ratio is >= the fail line; its verdict is then fail (a max can only rise) and its mean is not computed",
+    "missing_start": "a start that errors or returns a non-finite value leaves the state unscored unless it already failed; an unscored state never counts as pass",
+    "C0": "first, alone, every job: W0 at every start the job reads. Stop if faith_score.w0_check fails (seed-0 PGD within 10% of 0.69, CI within 2% of 0.348, f <= 0.25) or if the budget start's W0 KL / h0's W0 KL is outside [0.85, 1.15] (E34 Amendment 5: 2.4% on the H100). W0's own ratio is 1 at every start by construction"
+  },
+  "predictions": [
+    {
+      "id": "T1",
+      "claim": "(i) teacher-trained decompositions pass the adversarial check where do-nothing fails",
+      "starts": ["budget", "h0", "h1"],
+      "states": {
+        "r1_nothing": "r1 SGD teacher (run.Job.teacher: SGD 0.03, 1000 steps, seed 0) left in Delta; positive control",
+        "r1_copy": "saved teacher_training/results/large/r1_t534_v369/amend5_A_sgd_seed0_step1000.pt on the regenerated r1 SGD teacher",
+        "rand32_nothing": "E42 rand32 teacher (newskill.py recipe) left in Delta",
+        "rand32_copy": "saved teacher_training/results/large/e42/rand32/A_step1000.pt on the regenerated rand32 teacher"
+      },
+      "rule": "stands: both copies pass on R_max, both do-nothing states fail on R_max, and for each teacher copy R_max * (1+f) < do-nothing R_max. falls: either copy's R_max fails. no_power_<teacher>: both copies pass and that teacher's do-nothing does not fail (the claim then stands only for the other teacher). Anything else (a copy inconclusive or unscored): unsettled",
+      "thresholds": {"pass": "1.5/(1+f)", "fail": "1.5*(1+f)", "separation": "(1+f)"},
+      "relative": true,
+      "expected": {"W0": 1.0, "r1_nothing": ">= 1.813 at the budget start (H100 9.24)", "r1_copy": "1.0-1.15 (H100 1.00 at h0; A4 copies 0.95-1.15 at the budget start)", "rand32_nothing": "h0 1.50 (E42, L40); budget start unknown", "rand32_copy": "h0 0.96 (E42, L40)"},
+      "lean": "stands for r1, no power on rand32; low (rand32's do-nothing has never been read at the budget start)",
+      "blind_to": "other tasks and fine-tune seeds; arm B and seed-1 copies; harness start h2; 160-step budgets and other adversary families; behaviour (not re-read; the copies' P was filed in E34/E42)",
+      "positive_control": "r1_nothing at the budget start must read >= the fail line; else stop (the budget branch is broken or card-dependent)",
+      "noise_floor": "W0 start spread f = 0.209 on the L40 (one start); per-block W0 spread up to 40% at h1 (block 1 1.0007 vs 0.716)",
+      "edges": "tie on a line goes to that line's side; early stop on a do-nothing state is a final fail; a copy with a missing start makes the stage unsettled; W0 cannot cross a line (ratio 1); f > 0.25 stops at C0"
+    },
+    {
+      "id": "T2",
+      "claim": "(ii) the rank-8 LoRA's teacher-trained decomposition passes, and the pass does not need the rank cap",
+      "starts": ["h0", "h1"],
+      "states": {
+        "adam_tt": "saved broad_fragility/results/large/trained_step1000.pt on the regenerated Adam fine-tune (run.py: Adam 3e-5, 300 steps, seed 0; gain 0.1301 +- 0.005); positive control, h0 only",
+        "lora8_tt": "saved broad_fragility/results/large/a2_tt_lora_s0.pt on the regenerated rank-8 LoRA (amend2.lora_delta seed 0, lr 1e-4, 300 steps; gain 0.1479 +- 0.005)",
+        "lora128_tt": "new: rank-128 LoRA with the same recipe, then E37's teacher training (Adam 1e-5, batch 8, 1000 steps, order 0); offsets saved as bf16 and read back from bf16 like the saved states"
+      },
+      "rule": "statistic R_mean over h0, h1. absolute: lora8_tt pass -> stands; fail -> falls (not real); inconclusive -> unsettled on this card. cap: lora128_tt fail while lora8_tt does not fail -> cap artefact; R_mean(lora128_tt) <= R_mean(lora8_tt) * (1+f) -> no cap effect up to rank 128; else unsettled. If adam_tt does not read fail at h0, the cap reading is unscored (no power) and the lead is told; the job continues",
+      "thresholds": {"pass": "1.5/(1+f)", "fail": "1.5*(1+f)", "cap_band": "(1+f)"},
+      "relative": true,
+      "expected": {"W0": 1.0, "adam_tt": ">= 1.813 at h0 (H100 2.20)", "lora8_tt": "1.2-1.3 (H100 1.27), so likely inconclusive under the L40 lines", "lora128_tt": "real: about rank 8's; cap artefact: towards 2.2", "do_nothing_reference": "not read (H100: LoRA 2.65, Adam 4.87)"},
+      "lean": "absolute unsettled on the L40; no cap effect; low",
+      "blind_to": "rank 32; LoRA seed 1; the second row set (val 256-511); the SGD states; the budget start; whether a higher-rank LoRA's larger gain confounds the rank (the gain is reported, not matched)",
+      "positive_control": "adam_tt reads fail at h0",
+      "noise_floor": "f = 0.209 (L40, rows 0-255); E39's block contrast (LoRA 1.11 / 1.42 per block, H100)",
+      "edges": "tie on a line goes to that line's side; a missing start leaves the state unscored and its branch unsettled; if lora8_tt itself fails, the cap branch is unscored (nothing to climb from)"
+    },
+    {
+      "id": "T3",
+      "claim": "(iii) the scaled adjoint split's keep falls with the update's size, not its path (the adversarial half is settled from the JSON: E22 SGD at size 0.0122 passes at 0.98, Adam at 0.0113 fails at 2.52)",
+      "recipe": "r1_t534_v369 windows; adjoint_sgd/run.py finetune (arm A, plain SGD), seeds 0 and 1; size = largest relative matrix change (rel_norm_max); keep = P(target) of split.adjoint_state(dW) / P(target) at W0 + dW, on the held-out windows",
+      "parts": {
+        "control": "SGD 0.01 to step 1000 reproduces E31's keep at steps 10/100/1000 within 0.03 (seed 0: 0.374/0.419/0.130; seed 1: 0.389/0.446/0.126) and its sizes within 2% (seed 0: 0.003353/0.008031/0.014093; seed 1: 0.003411/0.007885/0.014083); stop otherwise",
+        "a": "SGD 0.03 checkpointed at the step whose size is nearest the 0.01 run's step-100 and step-1000 sizes (pass 1 records size every step to 400; pass 2 reruns to those steps); matched within 5%",
+        "b": "the 0.01 run's step-1000 dW scaled by alpha = size10/size1000 and size100/size1000 (about 0.24, 0.57); c is scale-invariant, so only size changes; alpha = 1 is the positive control (keep 0.13)"
+      },
+      "rule": "per seed. size_stands: |keep(a) - keep(0.01 at the same size)| <= 0.05 at both sizes AND keep(b, alpha) >= keep(0.01 at the matching step) - 0.05 at both alphas. size_falls: |keep(a) - keep(0.01)| > 0.10 at either size OR keep(b) <= keep(0.01, step 1000) + 0.07 at both alphas. else mixed. Stage: the seed-level outcome if both seeds agree, else mixed",
+      "thresholds": {"agree": 0.05, "differ": 0.10, "near_step1000": 0.07},
+      "relative": false,
+      "expected": {"W0": "no update, keep undefined", "do_nothing": "keep 1 by construction (not a reference)", "control_alpha1": 0.13, "size_reading": "a: within 0.05; b: about 0.37 and 0.42", "path_reading": "a: 0.03 keeps more at matched size (E31 hint 0.25 vs 0.13); b: about 0.13"},
+      "lean": "size falls (path or direction matters); medium",
+      "blind_to": "the adversarial check (not read); other tasks and Adam; c's own drift (b holds it fixed by construction); keep's nonlinearity in P (scaling shrinks the numerator and the denominator together)",
+      "positive_control": "alpha = 1 reads E31's 0.130 / 0.126 within 0.03",
+      "noise_floor": "keep's seed-to-seed spread for r1 SGD 0.01: 0.015 / 0.027 / 0.004 at steps 10/100/1000; cross-card P within 0.02 (E42 G1 tolerance)",
+      "edges": "a size not matched within 5% leaves that cell unscored; a denominator P < 0.5 leaves that cell unscored; an unscored cell makes its part unscored for that seed and the stage mixed at best; seeds that disagree give mixed"
+    },
+    {
+      "id": "T4",
+      "claim": "(iv) E43: teacher training plus remainder reads worse than do-nothing",
+      "starts": ["h0", "h1", "h2"],
+      "states": {
+        "nothing": "emoticon Adam 3e-5 arm-A fine-tune, seed 0, step 1000 (remainder.py recipe), left in Delta; the reference",
+        "plus_remainder": "that fine-tune's teacher training (arm A, Adam 1e-5, order 0, 1000 steps) with target W0 + dW (Delta' = Delta + W_ft - W_tt)"
+      },
+      "gates": "G1: fine-tune P within 0.02 of 0.99961 and size within 5% of 0.03209; G3: teacher-trained P within 0.02 of 0.99675, Delta share <= 1e-6; G2: removal reproduces the copy's dW to 1e-3; any miss: stop",
+      "rule": "q_s = KL(plus_remainder, s) / KL(nothing, s). stands: min_s ratio(plus_remainder) > max_s ratio(nothing) AND q_s >= 1.1 at all three starts. falls: q_s <= 1.0 at any start. else unsettled (worse at every start, inside the start spread). No early stop; any missing start leaves the stage unscored",
+      "thresholds": {"q_min": 1.1, "q_falls": 1.0},
+      "relative": true,
+      "expected": {"W0": 1.0, "nothing": "H100 h0 1.499 (L40 unknown)", "plus_remainder": "H100 h0 1.865", "q_h0": "about 1.24 (H100)"},
+      "lean": "unsettled; low (E43's margin sat in one 128-row block)",
+      "blind_to": "step 10; other tasks, seeds and batch orders; the budget start; the stochastic ratio (equal in E43)",
+      "positive_control": "none beyond C0 and the gates; h0 is the reproduction of E43's ordering",
+      "noise_floor": "f = 0.209 (L40, rows 0-255); W0 block-2 spread over seeds 0-2 20% (H100)",
+      "edges": "KL(nothing, s) <= 0 is impossible above W0's ~0.7 nats but would leave q_s unscored; a tie at q_s = 1.0 counts as falls; a tie between ranges counts as overlap (not stands)"
+    },
+    {
+      "id": "T5",
+      "claim": "(v) teacher training with plain SGD fails on r1's Adam and LoRA teachers",
+      "starts": ["budget", "h0"],
+      "teachers": "amend6.py: r1 Adam 3e-5 ft_teacher (seed 0, 1000 steps; P 0.9962 +- 0.02) and amend3.lora_teacher (rank 8; P 0.9992 +- 0.02)",
+      "student": "arm S: plain SGD on the r1 task windows, batch 32, batch order 0 (amend6 student with s_lr varied)",
+      "cells": {"c03_100": "rate 0.03, step 100", "c01_1000": "rate 0.01, step 1000"},
+      "positive_control": "Adam teacher, rate 0.03, step 1000, read at h0 only: must read fail (H100 3.14); else stop",
+      "f_source": "0.2088 from the L40 jobs 40166/40195/40497 when this job's W0 h0 KL reproduces 0.69174 within 1e-3 relative; otherwise W0 is read at h1 in the job and f computed there",
+      "rule": "a cell passes on a teacher if held-out P >= 0.9 and its R_max verdict over (budget, h0) is pass; cells with P < 0.9 are not read. stands: no cell passes on either teacher. falls: some cell passes on both teachers. mixed: some cell passes on exactly one teacher and none on both. unsettled: fewer than two cells per teacher have P >= 0.9, or an unscored cell could still make it falls",
+      "thresholds": {"p_min": 0.9, "pass": "1.5/(1+f)", "fail": "1.5*(1+f)"},
+      "relative": true,
+      "expected": {"W0": 1.0, "positive_control": ">= 1.813", "c03_100": "unknown; on r1's SGD teacher the same cell read 1.00 (H100); LoRA teacher's window damage at step 100 was 3.6x its teacher's", "c01_1000": "unknown; emoticon's 0.01 copy read 1.11 (H100)", "do_nothing_reference": "not read"},
+      "lean": "falls (some early or slower SGD cell passes on both teachers); low",
+      "blind_to": "rate 0.003; rate 0.03 at step 1000 on the LoRA teacher (known 2.86, H100); harness starts h1, h2; other tasks; momentum or schedules",
+      "noise_floor": "f = 0.209 (L40, rows 0-255)",
+      "edges": "a tie on a line goes to that line's side; an early-stopped cell is a final fail; a cell unread for P < 0.9 counts as not pass; all cells below P 0.9 gives unsettled, not stands"
+    }
+  ],
+  "amendment_1": {
+    "about": "Amendment 1 (user decision 2026-10-29): the pieces cut from T1, T2, T4 and T5 run as extra 30-minute debug jobs (plan section 'Amendment 1'). Filed before any E47 job ran; the keys above are unchanged. Every job reads C0 first and alone at its own starts and rows (common.C0, with the per-start references of experiments/claim_tests/job.py Config: rows 0-255 PGD 0.69 / 0.8362 / 0.7049 at h0 / h1 / h2, CI 0.348; rows 256-511 PGD 0.6298 / 0.6576 / 0.6688, CI 0.3331, broad_fragility Amendment 2 on the H100), then its parent's positive control, then its states. f with a single harness start: 0.2088 when W0 reproduces its L40 KL at that start within 1e-3 relative, otherwise one more harness start is read in the job and f taken over the two (T5's rule, extended)",
+    "predictions": [
+      {
+        "id": "T1b",
+        "claim": "(i), the cut start: T1's four states at harness start h2",
+        "starts": ["h2"],
+        "control_start": "budget (positive control only)",
+        "states": "as T1 (r1_nothing, r1_copy, rand32_nothing, rand32_copy), the teachers regenerated in-job by T1's recipes and gates",
+        "positive_control": "T1's, as filed: r1_nothing read at the budget start (state control_budget; W0 read at the budget start in C0 for it) must read >= the fail line; else stop. The states are then read at h2 (r1_nothing again at h2 for the combination). Filing fix 2026-10-29, before any run: replaces a first wording that read the control at h2 with a 'not pass' rule",
+        "rule": "t1b alone: T1's rule on h2 (reported). Combined T1 (the verdict of claim (i)): T1's rule on R_max over {budget, h0, h1} from job t1 and {h2} from job t1b, each ratio over its own job's W0 at that start; f = max/min - 1 of W0's KL over every harness start read in the two jobs (h0, h1, h2; expected 0.2088). A state is unscored if a start is missing or non-finite in either job, unless some finite ratio already reaches the fail line (a final fail)",
+        "thresholds": {"pass": "1.5/(1+f)", "fail": "1.5*(1+f)", "separation": "(1+f)"},
+        "relative": true,
+        "expected": {"W0": 1.0, "r1_nothing": "about 1.5-1.8 at h2 (E34 1.588 at h0 on the H100); inconclusive alone, so the combined fail comes from the budget start", "r1_copy": "about 1.0", "rand32_nothing": "about 1.5 (E42 h0 1.50, L40)", "rand32_copy": "about 1.0 (E42 h0 0.96)"},
+        "lean": "combined T1 as T1's lean (stands for r1, no power on rand32); h2 changes no verdict (low)",
+        "blind_to": "as T1; seeds beyond h2",
+        "noise_floor": "f over h0-h2 = 0.2088 (L40); h2's W0 0.7049 vs h0 0.6917",
+        "edges": "a tie on a line goes to that line's side; T1's early stop at the budget start stays a final fail in the combination; a copy unscored in either job makes the combination unsettled; f > 0.25 stops at C0; t1b reads one harness start, so f there is the L40 value or a second start read in-job"
+      },
+      {
+        "id": "T2b",
+        "claim": "(ii), the cut rank: does rank 32 climb where rank 8 does not",
+        "starts": ["h0", "h1"],
+        "states": {
+          "adam_tt": "T2's positive control, h0 only (saved trained_step1000.pt)",
+          "lora8_tt": "T2's rank-8 state, reread in this job (saved a2_tt_lora_s0.pt)",
+          "lora32_tt": "new: rank-32 LoRA by T2's LoRA recipe (amend2.lora_delta at rank 32: Adam 1e-4, batch 8, 300 steps, LoRA seed 0), then E37's teacher training (Adam 1e-5, batch 8, 1000 steps, order 0); saved as bf16 offsets (results/large/t2_lora_r32_tt.pt) and read back from them"
+        },
+        "gates": "as T2: the regenerated Adam and rank-8 fine-tunes' held-out gains within 0.005 of 0.1301 and 0.1479; stop otherwise",
+        "rule": "R_mean over h0, h1. cap at rank 32: if adam_tt does not read fail at h0, unscored (no power, the job continues and the lead is told); if lora8_tt (this job) reads fail or is unscored, unscored; lora32_tt fail -> cap_artefact; R_mean(lora32_tt) <= R_mean(lora8_tt) * (1+f) -> no_cap_effect; else unsettled. lora8_tt's absolute reading is reported beside T2's (same rows, a repeat)",
+        "thresholds": {"pass": "1.5/(1+f)", "fail": "1.5*(1+f)", "cap_band": "(1+f)"},
+        "relative": true,
+        "expected": {"W0": 1.0, "adam_tt": ">= 1.813 at h0 (H100 2.20)", "lora8_tt": "1.2-1.3", "lora32_tt": "real: about rank 8's; cap artefact: towards 2.2"},
+        "lean": "no_cap_effect (low)",
+        "blind_to": "ranks between 32 and 128; LoRA seed 1; the budget start; whether the rank-32 gain differs (reported, not matched)",
+        "positive_control": "adam_tt reads fail at h0",
+        "noise_floor": "f = 0.209 (L40, rows 0-255)",
+        "edges": "a tie on a line goes to that line's side; a missing start leaves the state unscored and the cap unscored; a rank-8 fail leaves the cap unscored (nothing to climb from)"
+      },
+      {
+        "id": "T2c",
+        "claim": "(ii) on the second row set: T2's states on Pile val rows 256-511",
+        "starts": ["h0", "h1"],
+        "rows": "Pile val rows 256-511, two blocks of 128 (batches of 8, as broad_fragility Amendment 2's rows2_context), the same rows for W0 and every state",
+        "f_source": "this job's W0 on rows 256-511 at h0 and h1: f = max/min - 1 (faith_score.seed_floor, as faith_score.verdict's f); expected near the H100's 0.044 (Amendment 2, seeds 0-2), not 0.2088. The lines are 1.5/(1+f) and 1.5*(1+f) from that f",
+        "states": {
+          "adam_tt": "positive control, h0 only",
+          "lora8_tt": "saved a2_tt_lora_s0.pt",
+          "lora128_tt": "results/large/t2_lora_r128_tt.pt if present (written by T2), else regenerated in this job by T2's recipe and saved there (the results file records which: high_rank.source)"
+        },
+        "gates": "as T2 (the two gains)",
+        "rule": "T2's rule on these rows with this f: absolute (lora8_tt R_mean pass -> stands, fail -> falls, else unsettled) and cap (lora128_tt fail while lora8_tt does not -> cap_artefact; R_mean(128) <= R_mean(8) * (1+f) -> no_cap_effect; else unsettled; unscored without the control's fail)",
+        "thresholds": {"pass": "1.5/(1+f)", "fail": "1.5*(1+f)", "cap_band": "(1+f)"},
+        "relative": true,
+        "expected": {"W0": 1.0, "adam_tt": "about 1.9 (H100 rows2 1.88)", "lora8_tt": "about 1.2 (H100 rows2 1.21)", "lora128_tt": "real: about rank 8's"},
+        "lean": "absolute unsettled or stands (H100 rows2 read 1.21 'pass' at lines 1.40/1.61; a smaller f here tightens both lines); no cap effect (low)",
+        "blind_to": "other row sets; the budget start; harness start h2",
+        "positive_control": "adam_tt reads fail at h0 on these rows",
+        "noise_floor": "f measured on these rows in the job (H100 0.062 over seeds 0-2, 0.044 over seeds 0-1)",
+        "edges": "a tie goes to the line's side; f > 0.25 stops at C0; a missing start leaves the state unscored"
+      },
+      {
+        "id": "T4b",
+        "claim": "(iv) at the cut step: teacher training plus remainder against do-nothing at fine-tune step 10",
+        "starts": ["h0", "h1", "h2"],
+        "states": {"nothing": "remainder.py's emoticon Adam 3e-5 fine-tune, seed 0, stopped at step 10, left in Delta", "plus_remainder": "its teacher training (arm A, Adam 1e-5, 1000 steps, order 0) with target W0 + dW"},
+        "gates": "G1: the step-10 fine-tune's P within 0.02 of 0.99931 and size within 5% of 0.01125 (E41); G3: the copy's P within 0.02 of 0.99941, Delta share <= 1e-6; G2: removal reproduces the copy's dW to 1e-3; any miss: stop",
+        "positive_control": "none beyond C0 and the gates (T4's)",
+        "rule": "T4's rule: q_s = KL(plus_remainder, s) / KL(nothing, s). stands: min_s ratio(plus_remainder) > max_s ratio(nothing) AND q_s >= 1.1 at all three starts; falls: q_s <= 1.0 at any start; else unsettled. No early stop; any missing start leaves the stage unscored",
+        "thresholds": {"q_min": 1.1, "q_falls": 1.0},
+        "relative": true,
+        "expected": {"W0": 1.0, "nothing": "H100 h0 2.516", "plus_remainder": "H100 h0 3.921", "q_h0": "about 1.56 (H100)"},
+        "lean": "stands (medium: E43's step-10 margin was large)",
+        "blind_to": "steps between 10 and 1000; other tasks and orders; the budget start",
+        "noise_floor": "f = 0.209 (L40, rows 0-255)",
+        "edges": "as T4: a tie at q = 1.0 falls; equal ranges are overlap (not stands); KL(nothing) <= 0 unscored"
+      },
+      {
+        "id": "T5b",
+        "claim": "(v) at the cut rate: arm S at rate 0.003, step 1000, on r1's Adam and LoRA teachers",
+        "starts": ["budget", "h0"],
+        "states": "positive control (Adam teacher, arm S 0.03, step 1000, h0 only), then cell (0.003, step 1000) on the Adam teacher and on the LoRA teacher, each read with stop_at when its held-out P >= 0.9",
+        "positive_control": "as T5: the control reads fail at h0 (H100 3.14); else stop",
+        "f_source": "as T5",
+        "rule": "t5b alone: T5's rule on its one cell (reported; with one cell per teacher it reads unsettled by the two-cell condition). Combined T5 (the verdict of claim (v)): T5's rule over the three cells (0.03, 100), (0.01, 1000), (0.003, 1000), each cell's pass taken with its own job's f: falls if some cell passes on both teachers; else unsettled if fewer than two cells per teacher have P >= 0.9, or an unscored cell could still make it falls (its other teacher's cell passes or is unscored); else mixed if some cell passes on exactly one teacher; else stands",
+        "thresholds": {"p_min": 0.9, "pass": "1.5/(1+f)", "fail": "1.5*(1+f)", "cells_min": 2},
+        "relative": true,
+        "expected": {"W0": 1.0, "positive_control": ">= 1.813", "c003_1000": "unknown; smaller moves than 0.01's, so the likeliest pass if plain SGD learns at all (P may fall below 0.9)"},
+        "lean": "combined falls (low)",
+        "blind_to": "rates below 0.003; steps past 1000; h1, h2; momentum",
+        "noise_floor": "f = 0.209 (L40, rows 0-255)",
+        "edges": "a tie goes to the line's side; an early-stopped cell is a final fail; a cell with P < 0.9 is not read and counts as not pass but also not toward the two-cell minimum; precedence falls > unsettled > mixed > stands"
+      }
+    ],
+    "combined": {
+      "T1": "see T1b.rule: T1 over the union of starts {budget, h0, h1, h2}, f pooled over the two jobs' W0",
+      "T2": "absolute: lora8_tt stands on both row sets (T2 and T2c) -> stands; falls on either -> falls; else unsettled. cap: any job's cap_artefact (T2 rank 128, T2b rank 32, T2c rank 128 on rows 256-511) -> cap_artefact; every job's no_cap_effect -> no_cap_effect; else unsettled",
+      "T5": "see T5b.rule: T5 over the three cells",
+      "T4": "not combined: T4 (step 1000) and T4b (step 10) are reported side by side; claim (iv) as filed is T4's"
+    }
+  }
+}

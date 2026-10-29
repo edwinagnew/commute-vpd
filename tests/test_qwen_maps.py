@@ -1,8 +1,14 @@
 """CPU checks of E44's pure pieces (experiments/qwen_maps): the Gram basis, the states' algebra, the Σ-matched random
 control, pooling, behaviour kept, and the filed edge cases of every rule (results/predictions.json "edge_cases")."""
 
+import argparse
+import importlib.util
+import json
 import math
+import sys
+from pathlib import Path
 
+import pytest
 import torch
 
 from commute import maps_score as ms
@@ -51,18 +57,22 @@ def _products(n=4, halves=True):
 
 def test_inspan_state_removes_exactly_the_obstruction():
     U_A, V_A, M, S, b, arrays, scalars, *_ = _products()
-    w, pos, dU, dV = qwen_maps.site_change("inspan", M, U_A, V_A, arrays.__getitem__, 0.0, 0.0)
-    assert pos is None and w is not None and dU is not None and dV is not None
-    assert torch.allclose(w, M - split.obstruction(M, b), atol=1e-12)
-    assert torch.allclose(w, split.dsigma(dU, dV, U_A, V_A), atol=1e-9)  # the weight change is the first-order part
-    delta = w - (split.dsigma(dU, dV, U_A, V_A) + dU @ dV.T)  # Δ′ − Δ₀ = weight change − component change
-    assert torch.allclose(delta, -dU @ dV.T, atol=1e-9)
+    dU, dV = arrays["X_ls"] @ V_A, arrays["X_ls"].T @ U_A  # the exact pieces, as S's energies use them
+    O = split.obstruction(M, b)
+    assert torch.allclose(split.dsigma(dU, dV, U_A, V_A), M - O, atol=1e-9)
     assert math.isclose(scalars["delta"]["inspan"], split.weighted_energy(dU @ dV.T, S), rel_tol=1e-9)
     # the least-squares state: same pieces, weights move by all of δW, so Δ takes O(δW) − dU dVᵀ
-    w_ls = qwen_maps.site_change("ls", M, U_A, V_A, arrays.__getitem__, 0.0, 0.0)[0]
+    assert math.isclose(scalars["delta"]["ls"], split.weighted_energy(O - dU @ dV.T, S), rel_tol=1e-9)
+    # applied from the fp32 file as the pod does: still δW − O(δW), to the stored_error S records
+    disk = qwen_maps.to_disk(arrays)
+    w, pos, aU, aV = qwen_maps.site_change("inspan", M, U_A, V_A, disk.__getitem__, 0.0, 0.0)
+    assert pos is None and w is not None and aU is not None and aV is not None and "O" not in disk
+    off = (split.weighted_energy(w - (M - O), S) / scalars["energy"]) ** 0.5
+    assert off < 1e-5 and scalars["stored_error"]["ls"] < 1e-5
+    # the weight change is the first-order part of the applied pieces, so Δ′ − Δ₀ = −dU dVᵀ
+    assert torch.allclose(w, split.dsigma(aU, aV, U_A, V_A), atol=1e-12)
+    w_ls = qwen_maps.site_change("ls", M, U_A, V_A, disk.__getitem__, 0.0, 0.0)[0]
     assert w_ls is not None and torch.equal(w_ls, M)
-    assert math.isclose(scalars["delta"]["ls"], split.weighted_energy(split.obstruction(M, b) - dU @ dV.T, S),
-                        rel_tol=1e-9)
 
 
 def test_adjoint_and_halves_states():
@@ -206,3 +216,89 @@ def test_control_w0_edges():
     assert not ms.control_w0(absent, CONTROL)["holds"]
     assert not ms.control_w0(_C(**{"100_fp32": 0.0}), CONTROL)["holds"]
     assert not ms.control_w0(_C(**{"1": math.nan}), CONTROL)["holds"]
+
+
+def test_stored_error_under_the_limit_on_a_badly_conditioned_span():
+    """E44's stop (2026-10-28): on an ill-conditioned span, pieces X V, Xᵀ U formed in fp32 miss float64 by more than
+    STORE_ERR_MAX = 1e-3 (run.py); formed in float64 from the fp32-stored X, as `pieces` does, they do not."""
+    d, n = 1024, 32
+    g = torch.Generator().manual_seed(0)
+    U, V, M = (torch.randn(*sh, generator=g, dtype=F64) for sh in ((d, n), (d, n), (d, d)))
+    U[:, 0] *= 1e-3  # alive spectrum spread 1000x
+    V[:, 1] *= 1e-3
+    S, b = torch.eye(d, dtype=F64), split.basis(U, V, 1e-12)
+    X, E = split.least_squares_x(M, b), split.weighted_energy(M, S)
+    exact = split.dsigma(X @ V, X.T @ U, U, V)
+    X32, U32, V32 = X.float(), U.float(), V.float()
+    fp32_formed = split.dsigma(X32 @ V32, X32.T @ U32, U32, V32).double() - exact  # the stopped run's application
+    assert (split.weighted_energy(fp32_formed, S) / E) ** 0.5 > 1e-3
+    assert 0 < qwen_maps.stored_error(X, U, V, S, E) < 1e-3
+    applied = qwen_maps.site_change("inspan", M, U, V, {"X_ls": X32}.__getitem__, 0.0, 0.0)[0]  # the state's change
+    assert applied is not None
+    applied_err = (split.weighted_energy(applied - exact, S) / E) ** 0.5
+    assert applied_err == pytest.approx(qwen_maps.stored_error(X, U, V, S, E), rel=1e-6)
+
+
+# ----------------------------------------------------------------------------- resume after a stop (run.py)
+
+
+def _load_run(monkeypatch, tmp_path):
+    here = Path(__file__).resolve().parents[1] / "experiments" / "qwen_maps"
+    mods = {}
+    for name, file in (("job", "job.py"), ("qwen_maps_run", "run.py")):
+        spec = importlib.util.spec_from_file_location(name, here / file)
+        assert spec is not None and spec.loader is not None
+        mod = importlib.util.module_from_spec(spec)
+        monkeypatch.setitem(sys.modules, name, mod)  # run.py imports `job` by that name
+        spec.loader.exec_module(mod)
+        mods[name] = mod
+    monkeypatch.setattr(mods["job"], "RESULTS", tmp_path)
+
+    def job(waive=""):
+        a = argparse.Namespace(out=str(tmp_path / "out"), e40=str(tmp_path), e40_large=str(tmp_path), decomp="",
+                               usd_per_h=3.0, prior_usd=0.5, waive=waive)
+        return mods["job"].Job(a, mods["job"].REHEARSAL, mods["qwen_maps_run"].score)
+
+    return mods["qwen_maps_run"], job
+
+
+def _missed_C(pred):
+    r = pred["rules"]["control_W0"]
+    return {"ci": {"maths": 1.5 * r["ci"]["maths"], "web": r["ci"]["web"]}, "replay": dict(r["replay"]),
+            "kl_to_start": {"1": r["kl_to_start"]["1"], "10": r["kl_to_start"]["10"],
+                            "100": r["kl_to_start"]["100_fp32"], "100_fp32": r["kl_to_start"]["100_fp32"]}}
+
+
+def test_resume_after_a_stop(monkeypatch, tmp_path):
+    run, make = _load_run(monkeypatch, tmp_path)
+    stopped = tmp_path / "rehearsal" / "stopped.json"
+    job = make()
+    assert job.spent_before == 0.5  # no state.json yet: --prior-usd
+    job.put("C", _missed_C(job.pred) | {"done": False})
+    assert not run.done(job, "C")  # a missed control is never "done"
+    with pytest.raises(SystemExit):
+        run.gate_C(job)
+    assert json.loads(stopped.read_text())["name"] == "control_W0"
+    with pytest.raises(SystemExit):  # the next job refuses to start
+        run.refuse_if_stopped(make())
+    later = make(waive="control_W0")  # a rehearsal may waive it by name
+    assert later.spent_before >= 0.5  # cumulative spend carried in state.json, not --prior-usd
+    run.refuse_if_stopped(later)
+    run.gate_C(later)
+    stopped.unlink()  # a C.json marked done by hand still has its gate read again when skipped
+    job = make()
+    job.res["C"] = _missed_C(job.pred) | {"done": True}
+    with pytest.raises(SystemExit):
+        run.run_stage(job, "C")
+    stopped.unlink()  # K: no teeth reading at step 10 -> the gate stops (K is marked done only after it)
+    job = make()
+    job.res["C"] = _missed_C(job.pred)
+    with pytest.raises(SystemExit):
+        run.gate_K(job)
+    assert json.loads(stopped.read_text())["name"] == "teeth"
+
+
+def test_batch_halving_persists(monkeypatch, tmp_path):
+    _, make = _load_run(monkeypatch, tmp_path)
+    make().set_batch(4, "test")
+    assert make().batch == 4  # a resume never reuses the failed size

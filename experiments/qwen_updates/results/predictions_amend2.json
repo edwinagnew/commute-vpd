@@ -1,0 +1,59 @@
+{
+ "status": "DRAFT 2026-10-29, not filed: the lead shows reports/plans/2026-10-29_plan_e45-amendment2.md to the user first. Delete this line when filing.",
+ "plan": "reports/plans/2026-10-29_plan_e45-amendment2.md (E45 Amendment 2, the last allowed amendment of reports/plans/2026-10-28_plan_qwen-q2.md); the user took Fable's three recommendations on 2026-10-29 (decisions.md, last row; reviews reports/reviews/2026-10-29_review_fable-{anchor2-grid,anchor1-no-prompt,own-step2-kl}.md)",
+ "filed": "2026-10-29, after Job 1 rows 1-4, Amendment 1 (a2long_s0, a2long_s1), stage P (stopped: no prompt qualified), S own, and the step-2 stops of T own_s0 and T null_s0; before the P resubmit and before any run of own, own2, null or a1; never edited after the run (add a dated report instead)",
+ "runs": "stage P (resubmitted) and every T and E of own_s0, own2_s0, null_s0, a1_s0, a1_s1 (job.ARMS pred = this file); score reads it for the decisive point. gold_s0 and a2long_s0/_s1 ran under predictions.json and predictions_amend1.json and are not rerun",
+ "scored_by": "experiments/qwen_updates/run.py `score` -> results/score.json amend2_decisive (with commute.qwen_updates.match and .learned); the format rule by stage P -> results/P.json format; the early values by stage T",
+ "general": "As predictions.json: thresholds are absolute; <= and >= inclusive, < and > strict, as written; comparisons round to 9 places first; NaN, infinity or a missing value is a miss; no re-reads. Everything in predictions.json and predictions_amend1.json not named below stands unchanged, including the decomposition-row predictions, which Job 2 and Q3 score at the decisive point defined here.",
+ "rules": {
+  "format_follow": {
+   "replaces": "commute.qwen_anchors.follows_format as used for predictions.json rules.prompt (the format fallback) and for E's format_unprompted reading",
+   "rule": "split the response on '\\n'; strip trailing whitespace (Python str.rstrip) from every line; drop lines that are then empty; join with '\\n'; the response follows the template if qwen_anchors.FORMAT_RE (unchanged) matches the whole of that text",
+   "thresholds": "unchanged: predictions.json rules.prompt format_with_min 0.9 (with the format system prompt) and format_without_max 0.05 (without), on the 512 search problems, greedy",
+   "report_beside": "the filed regex's count (FORMAT_RE.fullmatch on response.strip()), 17 of 512 with the prompt, in P.json format.with_filed_regex",
+   "check": "stage P re-reads large/P/format.jsonl and large/P/none.jsonl under this rule before anything else; with must be exactly 474/512 = 0.92578125 and without exactly 0 (both counted in advance with an equivalent jq expression, plan appendix A); a miss stops the job (exit 2): the function is not the rule filed here",
+   "expected": {"with": 0.92578125, "without": 0.0, "qualifies": true, "fewshot_recheck_givens_follow": 0.0},
+   "edge_cases": "empty or whitespace-only response: miss; CRLF line ends: pass (rstrip removes the carriage return); markdown breaks '  \\n' and blank lines anywhere: pass; leading spaces before '- ' or 'Given:': miss (only trailing whitespace is forgiven); 'Steps:' with no dash line: miss; any text after the 'The answer is' line: miss; every response the filed regex accepts is accepted (superset)"
+  },
+  "anchor1_limits": {
+   "rule": "beside every anchor-1 reading, in every write-up: (i) 'anchor 1 is a format fine-tune: it fixes the novelty of a surface format the model already follows on request, not of a better way to solve problems' (plan section 3); (ii) 'the format prompt lowers W0's GSM8K accuracy on the 512 search problems from 0.834 to 0.680 and shortens answers from 190 to 130 tokens'; (iii) the domain sentence of plan section 1",
+   "source": "results/P.json runs none and format (accuracy); reports/reviews/2026-10-29_review_fable-anchor1-no-prompt.md section 1 (lengths)"
+  },
+  "decisive_point": {
+   "replaces": "predictions.json rules.decisive_point (own-rows KL 0.1). That point stays reported and is stated as unreachable for anchor 2: a2long's own-rows 0.1 state is step 2, invented exact match 0.013 and 0.008, not learned",
+   "anchor2": "per seed, the first saved state of a2long at which rules.learned holds (anchor 2: invented exact match >= 0.25 and known >= 0.9 x W0's, from E's generation). Expected and already read: step 100 for both seeds (invented 0.91 and 0.905; known 1.0 and 0.99 against W0's 0.97). A seed with no learned saved state: that seed is missing (single-seed, no row validated)",
+   "target_kl_maths": 0.6181848123180666,
+   "target_source": "mean of a2long_s0 and a2long_s1 KL to start on all 128 maths rows at step 100: 0.6289733393862986 and 0.6073962852498345 (results/E_a2long_s{0,1}.json states.100.kl.maths); a fixed number from here on, not recomputed",
+   "rule": "every run (gold_s0, own_s0 or own2_s0, null_s0, a1_s0, a1_s1, and a2long_s0/_s1 themselves) is read at its saved state with the smallest |log(KL_maths / target)|, KL_maths the 128-row maths KL from E's states (a tie takes the later step; states with KL 0, non-finite or missing are never chosen). Matched if r9(|log(KL_maths / target)|) <= r9(log(tol_ratio)). The matched KL and the arm's |dW| (Frobenius over the 196 matrices) are stated beside every reading",
+   "tol_ratio": 1.5,
+   "tol_source": "reports/reviews/2026-10-29_review_fable-anchor2-grid.md option (d) ('say a factor 1.5'); for scale: the grid's own spacing is a factor of about 3, and the two anchor-2 seeds differ by |log| 0.035",
+   "extra_save": "own, own2, null and a1 add target_kl_maths to their save grid (stage T: the first read at or past it on either axis saves dW there and at the read before, as for the grid values), so a state near the target exists if the arm passes it before step 100. gold_s0 is not rerun: its step 100 (0.6966, |log| 0.119) is in the band",
+   "learned": "the chosen state must be learned under rules.learned (below). Anchor 1 seed not learned there, or unmatched: that seed is missing, so no row is validated and a card goes to the user. A GSM8K arm (own, gold) or the null not learned there, or unmatched: not read on the decisive rows; its readings at the chosen state are reported as unmatched observations",
+   "reading": "unchanged otherwise: the decomposition rows (predictions.json rules.decomposition_rows) are read on each run's own rows at its chosen state; validation and the t-reading as filed. Every maths-row reading of anchor 2 carries 'anchor 2's movement on the maths rows is mostly a format shift (one-line answers), not its content' (results/check_format.json: with a 4-shot prompt its GSM8K accuracy at step 100 is within 0.016 of W0's)",
+   "expected_matched": {"gold_s0": {"step": 100, "kl": 0.6965749067378741, "log_dist": 0.1194, "matched": true, "learned": true},
+                        "a2long_s0": {"step": 100, "kl": 0.6289733393862986, "log_dist": 0.0173, "matched": true, "learned": true},
+                        "a2long_s1": {"step": 100, "kl": 0.6073962852498345, "log_dist": 0.0176, "matched": true, "learned": true},
+                        "own_s0, null_s0, a1_s0, a1_s1": "unknown; matched at the extra save if the arm's maths KL passes 0.62 by step 100 (gold passed it between steps 9 and 100; own samples and the null climb faster than gold at step 2)"},
+   "edge_cases": "no saved state with positive finite maths KL (empty pool, or E not run): unmatched; two states equally far in log KL: the later step; |log| exactly log 1.5 (KL 0.927277 or 0.412123): matched (inclusive, after rounding); the arm's KL never reaches 0.412 by step 100: unmatched, step 100 reported as the nearest state; the arm overshoots between two reads so both brackets are outside the band: unmatched; a matched state not learned: as 'learned' above; anchor 2's own seed states are matched against the mean target like every other run"
+  },
+  "learned": {"rule": "copied unchanged from predictions.json rules.learned", "own_drop": 0.02, "gold_drop": 0.05, "a1_gap": 0.25, "a2_em": 0.25, "known_frac": 0.9},
+  "anchor1_learns": {"rule": "unchanged and scored from predictions.json rules.anchor1_learns (gap closed at step 100 >= 0.5, per seed)", "gap_min": 0.5}
+ },
+ "edge_cases": "to run in tests/test_qwen_updates.py (test_amend2_*) before filing: format rule on the cases in rules.format_follow.edge_cases, and on the saved P responses via cpu-run (474 and 0 exactly); match on an empty dict, a tie, the two band edges, a state with KL 0, a NaN state, an overshoot; step-2 limit at exactly 0.010679004420388163 (passes), 0.010679006 (misses; the general rule rounds the reading to 9 places first), NaN (misses); own2's scaled limit 0.042716017681552652",
+ "expected": {
+  "note": "values to compare against, not scored",
+  "step2_kl_maths": {"gold_s0": 0.0037, "a2long": 0.00087, "own_s0": 0.00566, "null_s0": 0.00669, "a1": "between gold's 0.0037 and the null's 0.0067 (if outside, the recipe is looked at before more arms run: Fable's review section 4)"},
+  "a1": "own-rows KL crosses 0.1 within the first ~10 steps; gap closed >= 0.5 well before step 100; GSM8K test 0-255 accuracy at step 100 falls toward the prompted 0.68 and mean length toward ~130 tokens (far below 0.68 means the update did more than the prompt: reported); format_unprompted (rule above) near 0.9 at step 100 and 0 at W0",
+  "own_null_matched": "own samples and the null cross maths KL 0.01 at step 2 or 3 and 0.1 at about steps 4-5 (as gold, from a higher start)",
+  "disk": "each remaining run: grid brackets + the target's brackets + step 100, about 8-11 states x 2.82 GB; four runs about 100-120 GB on commute-data"
+ },
+ "early": {
+  "rule": "first-minute values; a miss stops the job (exit 2) and is reported before the next job",
+  "first_live": {"band": [0.3, 1.0014], "source": "copied from predictions.json early.first_live; own_s0 read 0.633-0.819, null_s0 0.631-0.813"},
+  "step2_kl_max": 0.010679004420388163,
+  "step2_kl_source": "0.1 x predictions.json early.control.kl_ref (0.10679004420388163: one gold step at the peak rate 1e-5 with no warm-up, the E40 failure this check guards; the warm-up's step 2 runs at a tenth of that rate, so about a hundredth of that KL). Replaces predictions.json early.step2_kl_max (0.005, set at 1.35 x gold's rehearsal, no allowance for arms whose data lie on the maths rows). run.py scales it by (peak / 1e-5)^2 as before: own2 0.0427",
+  "reproduce_step2": {"own_s0": 0.005660122274747736, "null_s0": 0.006690658775947956, "tol": 0.01,
+                      "source": "results/T_own_s0.json and T_null_s0.json checks 'step 2 KL on the maths rows' (128 rows, L40), the stopped runs. Training is deterministic to about 2e-5 relative (a2long_s0 repeated a2_s0's step-2 maths KL 0.00087238 against 0.00087239), so a miss means the code or data changed since the stop; tol copied from predictions.json early.control.kl_tol"},
+  "own_kept_min": 4000
+ }
+}

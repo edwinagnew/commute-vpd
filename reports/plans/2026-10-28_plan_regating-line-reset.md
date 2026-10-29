@@ -310,3 +310,61 @@ E42 (no prediction reads it): listed in Not run.
 
 **Tree.** P0.2 replicates, P0.3 passes, P0.4 passes → propose stage 1 with g and its nulls. P0.3 fails or P0.4
 fails → retire (Blocking card, section 2's words). P0.4 inconclusive → card with the numbers. P0.2 fails → stop, fix.
+
+### Question raised by the code review (2026-10-28, before any run): P0.4's copy writes are confounded
+
+The 67M model ties its output and input embeddings. On the copy tasks the answer is the key itself, so the per-key
+write adds the key's own embedding at block 1: "the current token is k, more strongly". That is an existing
+representation, and Γ may open existing machinery for it, so a ρ ≥ 0.8 on a copy task would not cleanly show that
+Γ reads "the activations predict the target". (Orthogonalising the write against the key's embedding removes all
+of it on copy, so that fix is degenerate.) The random-map writes do not have this confound: their answer is a
+different token from the key. Options:
+
+- **A (lead's recommendation).** Score P0.4 on the random-map writes (rand32, rand32b; α matched to that task's
+  seed-0 fine-tune's G), with ρ = g_write / g of the copy fine-tune of the same table size (ident32 for rand32,
+  ident32b for rand32b), the existing-machinery reference. Same bars: both ≤ 0.5 pass, either ≥ 0.8 retire, else
+  inconclusive. Copy writes reported with the confound named.
+- B. Keep as filed; the write-up names the confound, so a copy-task fail reads as inconclusive in practice.
+- C. Score both: retire only if copy and random-map writes both reach ≥ 0.8.
+
+Stage 0a (the control) does not depend on this and runs meanwhile; stage 0b waits for the answer.
+
+**Fable's advice (advice only; the decision is the user's, 2026-10-28).** Recommends A, filed as a dated amendment
+before 0b, plus two additions. (1) Per task, print the cosine between the fine-tune's change to the residual stream
+after block 1 at the scored position and the write's change. If it is high on the random maps too, the random-map
+write is not a "no machinery" null, and ρ there cannot be read. (2) Report the random-map fine-tune's own g
+(0.36-0.41) beside ρ, so a reading near 0.4 counts as "not retired", not as a sharp pass. Fable's view of the others:
+under B a copy-task fail would read as inconclusive, so the test cannot fail, which is Amendment 1's complaint about
+the original nulls. C gives a confounded arm a veto over the retire verdict. Fable considered and declined three
+alternatives. Orthogonalising the write is degenerate on copy. A write on the last block gives g ≡ 0 by
+construction. A gradient-fitted write recruits machinery. What would change the advice: the random-map writes are
+unreachable at the α cap; the copy write reads ≤ 0.5 anyway; the cosine in (1) is high on the random maps. Fable also
+proposes changing the wording "Γ does not read a new write as existing machinery" to "this write did not read as the
+copy fine-tune", so that a pass is not read as evidence for the instrument.
+
+### Stage 0a stopped at the null (2026-10-28, job 41161, 42 s, $0): the filed null rule cannot pass
+
+**What ran.** `run.py --stages 0a` at f5fb9d2, cluster `debug` QoS. Group e18/emoticon: the W₀ cells (L00, U0, T0), the
+identity r (0.597) and both cached seeds' T₁ (8.41, 8.67) equal their filed values exactly. The ` http` state then
+read T₁ = −14.75, so G_null = T₁ − T₀ = −9.73 nats against the seed-0 fine-tune's G = +13.43: ratio −0.72, rule
+|ratio| ≤ 0.1. The job stopped there by design: the E12 and E36 groups did not run. Result:
+`experiments/regating_table/results/stage0a.json` (sha256 4db63ca9…).
+
+**Cause (the rule, not the code).** The code computes the filed quantity (`run.py` `e18_0a`). The plan's expected
+value, "within noise of 0 (E18)", was read from the wrong E18 number. E18 measured only the *shared change* of the
+` http` fine-tune: under gating alone it lowered this target by 0.07-0.30 of the switching effect, and that did
+not pass a ±0.1 bar either. The *full* ` http` fine-tune learned ` http` at 0.998 held-out probability after the
+same trigger (E38 stage 0), so it has to take most of the probability from the emoticon target. A two-sided bound on
+the full model's gain cannot pass for a different-target fine-tune at the same trigger. The null's purpose (E18,
+"Different target") is one-sided: a learned update of this size to another token does not *raise* the target.
+
+**Options (the user's call; a filed control, so no edit without it):**
+- **A (lead's recommendation).** Amend the 0a null to one-sided before any rerun: G_null ≤ 0.1 × G_s0 (here −9.73 ≤
+  1.34, pass). Report the gate gain g_null beside it, unscored, with the competition reading named. Blind to:
+  whether gating alone is target-specific. That question belongs to the stage-0b tables (P0.3 random δW, the
+  other-target rows), not to the apparatus check.
+- B. One-sided on both G_null and the gate gain g_null (≤ 0.1 × the seed-0 values). This is stricter, and it is the
+  one-sided version of what E18 meant. E18's shared-change sign (negative) predicts a pass.
+- C. Drop the null from 0a. The other-target row is read in 0b's table anyway.
+
+Each option means a rerun of 0a, about 5-25 min at $0. Ask #2 (P0.4) is still open, so 0b waits either way.

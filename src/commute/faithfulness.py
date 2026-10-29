@@ -155,6 +155,40 @@ def pile_faithfulness(model: Any, blocks: list[list[Tensor]], seed: int = 0, pgd
     return {k: sum(p[k] for p in per) / len(per) for k in per[0] if k != "pgd_rows"}
 
 
+def start_kl(model: Any, blocks: list[list[Tensor]], start: str) -> float:
+    """One adversarial start's KL, mean over blocks. "h<k>": the harness adversary at seed k (`pile_faithfulness`'s
+    pgd_kl, without its stochastic half). "budget": E34 Amendments 4-5's start, `gamma.pgd_sources` 20 steps of 0.1."""
+    if start == "budget":
+        from commute import gamma
+
+        per = [gamma.pgd_sources(model, b, 20, step_size=0.1, seed=0)[1] for b in blocks]
+    else:
+        assert start[0] == "h", start
+        per = [harness_pgd(model, b, 20, seed=int(start[1:])) for b in blocks]
+    return sum(per) / len(per)
+
+
+def multi_start(model: Any, blocks: list[list[Tensor]], starts: list[str], w0: dict[str, float] | None = None,
+                stop_at: float | None = None, log: Any = print) -> dict[str, Any]:
+    """KL per start; with `w0` (start -> W0's KL, read in the same job) the ratio per start, their mean and max. With
+    `stop_at` it stops after the first ratio at or above it (the max can only rise, so that is a final fail): `mean`
+    is then None and `complete` False. Added 2026-10-28 (E47, reports/plans/2026-10-28_plan_claim-tests.md)."""
+    assert stop_at is None or w0 is not None, "stop_at reads ratios, so it needs w0"
+    kl: dict[str, float] = {}
+    ratio: dict[str, float] = {}
+    for s in starts:
+        kl[s] = start_kl(model, blocks, s)
+        if w0 is not None:
+            ratio[s] = kl[s] / w0[s]
+        log(f"[multi_start {s}] kl {kl[s]:.4f}" + (f" ratio {ratio[s]:.3f}" if s in ratio else ""))
+        if stop_at is not None and ratio[s] >= stop_at:
+            break
+    complete = len(kl) == len(starts)
+    r = list(ratio.values())
+    return {"kl": kl, "ratio": ratio, "mean": sum(r) / len(r) if r and complete else None, "max": max(r) if r else None,
+            "complete": complete}
+
+
 # ----------------------------------------------------------------------------- VPD's sparsity loss
 # Added 2026-10-19 (kv_task; `reports/decisions/2026-10-19_decision_success-criterion.md` lists it as the one VPD check never run
 # on an updated decomposition).

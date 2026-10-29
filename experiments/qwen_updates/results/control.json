@@ -1,0 +1,55 @@
+{
+ "one_step": {
+  "kl_to_start": 0.10678925707215975,
+  "loss": 2.407046682037147
+ },
+ "checks": {
+  "control: KL of one gold step at 1e-5": {
+   "holds": true,
+   "kl": 0.10678925707215975,
+   "ref": 0.10679004420388163,
+   "loss": 2.407046682037147
+  },
+  "control: invented facts at W0, draw 0": {
+   "holds": true,
+   "invented": 0.015,
+   "known": 0.97
+  },
+  "control: invented facts at W0, draw 1": {
+   "holds": true,
+   "invented": 0.008,
+   "known": 0.97
+  },
+  "control: W0 accuracy on test 0-255": {
+   "holds": true,
+   "acc": 0.7791666666666667,
+   "ref": 0.7791666666666667,
+   "same_as_baseline": null
+  }
+ },
+ "gold_mean_tokens": 205.9084106969655,
+ "facts_s0": {
+  "invented": 0.015,
+  "known": 0.97
+ },
+ "facts_s1": {
+  "invented": 0.008,
+  "known": 0.97
+ },
+ "W0": {
+  "test": {
+   "k": 1319,
+   "k_fits": 1257,
+   "fits_share": 0.9529946929492039,
+   "truncation_share": 0.012130401819560273,
+   "strict_dropped": 0.7772474144789181,
+   "lenient_dropped": 0.7947494033412887,
+   "strict_all": 0.7558756633813495,
+   "strict_capped": 0.7437452615617892,
+   "lenient_capped": 0.7672479150871873,
+   "response_mean": 198.22365428354814
+  },
+  "first256_strict_dropped": 0.7791666666666667,
+  "same_as_baseline": null
+ }
+}
