@@ -72,3 +72,43 @@ its first check. Two smaller gaps follow it.
 No code was executed (read-only review; no Python on the dev node). The CPU tests were not rerun. I did not check: t2c's actual L40 W0 on
 rows 256-511 (finding 1 is an extrapolation from rows 0-255), GPU memory of the budget start's CI cache (about 7-13 GB per 128-row block,
 which fits an L40), the LoRA scaling at rank 128, and whether the H100-measured gain gates (0.1301, 0.1479 ± 0.005) reproduce on the L40.
+
+## Follow-up, 2026-10-29: Amendment 2, stage t4c (commit 2f3a7e5)
+
+In plain words: t4c reads the right state. The job should not stop falsely, and its rule matches the filed text. I found no defect
+that would make its reading wrong. One ordering point would save minutes if the reproduction check failed.
+
+**Checked and correct.**
+- *Same state.* `teacher_trained` is read inside `plus_remainder()` (`stages.py`), from the same in-memory `(dW_tt, uv2)` that
+  plus remainder is then built from. Its target is W0 + dW_tt with the copy's (U', V'), and G2 already confirms that dW_tt = U'V'ᵀ − UVᵀ
+  to 1e-3. That is `remainder.py`'s "teacher training" read (`read(job, label, dW_tt, st)`). It uses the same fp32 in-memory precision
+  as t4b's plus remainder.
+- *Reproduction against t4b.* `results/t4b.json` exists on the L40, with `done: true`, no stop, every gate passed, and KLs at h0, h1 and
+  h2 for both states. So `reproduces` has a full reference and will not fail on a missing file or start.
+- *The 1e-4 tolerance against real nondeterminism.* I checked the plan's evidence with jq, and every pair read in separate jobs agrees
+  exactly:
+  - T5's control at h0: 2.282897710800171 in t5 and t5b. That is a regenerated Adam fine-tune plus a 1,000-step SGD student, so training
+    on this node is deterministic across jobs.
+  - The teacher's P(target): 0.9946782302856445 in both.
+  - r1's do-nothing at the budget start: 1.5364250785215212 in t1 and t1b.
+  - lora8_tt at h0 and h1: identical in t2 and t2b.
+
+  Plus remainder's 1,000-step Adam student was not itself repeated. Adam is deterministic given identical gradients, and the gradients
+  are identical here. So 1e-4 is a fair stop line and not a false-stop risk. One caveat: the evidence comes from the single 8×L40 node,
+  so the rule holds only there.
+- *Rule.* `rules.t4c` matches `amendment_2.T4c` (between/above/below per start, ties counted as between, a common label or else mixed,
+  unscored on any missing or non-finite start). `filed()` now reads `amendment_2`.
+- *Resume.* A crash between the `teacher_trained` and `plus_remainder` reads makes the rerun retrain. It reuses the cached
+  `teacher_trained` record, which is exact because training is deterministic, and then reads plus remainder. No state can be missing at
+  scoring time.
+
+**One ordering point (low; affects cost, not the reading).** `reproduce(job, "plus_remainder")` runs only after `teacher_trained` has
+been read, which takes about 5.75 min. If the Adam student did not reproduce, that time would be spent before the stop. A free check
+could come first, right after G3 and before reading `teacher_trained`: compare `G3_copy.p_target` with t4b's (0.9993861734050594 in
+`t4b.json`) within 1e-4. Not needed for this submission.
+
+**Outside the scope, noted only.** `t1.json`'s r1 do-nothing reads a budget KL of 1.536 (ratio about 2.2 over W0's ≈ 0.69), not the
+plan's "≈ 9". It still clears the fail line, so T1's control passed. But the plan's expectation for the budget start on 256 rows looks
+wrong by about 4x, and the lead may want to check how it was taken from amend5's block-0 reading.
+
+**Not run.** No code was executed. I did not check t4c's measured times or its GPU memory.
