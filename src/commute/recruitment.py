@@ -70,16 +70,20 @@ def window_logits(model: Any, windows: Tensor, batch: int = BATCH) -> list[Tenso
 
 
 @torch.no_grad()
-def readout(model: Any, windows: Tensor, half: int, token: int, ref: list[Tensor], batch: int = BATCH) -> dict[str, float]:
+def readout(model: Any, windows: Tensor, half: int, token: int | Tensor, ref: list[Tensor],
+            batch: int = BATCH) -> dict[str, float]:
     """lo, kl_trigger and kl_other of the full model as it stands, against `ref` (`window_logits`, same windows and
-    batch size), each the mean over windows."""
+    batch size), each the mean over windows. `token`: one id, or a (V,) lookup table read at `half`
+    (`data.target_tokens`; E50's key -> value tables). One id gives the same numbers bit for bit as before E50."""
+    from commute.data import target_tokens
     from commute.finetune import logits_of
     from commute.local_faith import stats
 
     device = next(model.parameters()).device
     sums: dict[str, float] = dict.fromkeys(STATS, 0.0)
     for s, r in zip(range(0, windows.shape[0], batch), ref, strict=True):
-        st = stats(r, logits_of(model.target_model, windows[s : s + batch].to(device)), half, token)
+        b = windows[s : s + batch].to(device)
+        st = stats(r, logits_of(model.target_model, b), half, target_tokens(token, b, half))
         for k, name in (("lo", "lo_trigger"), ("kl_trigger", "kl_trigger"), ("kl_other", "kl_other")):
             sums[k] += float(st[name].double().sum())
     return {k: v / windows.shape[0] for k, v in sums.items()}
@@ -212,7 +216,7 @@ def restore_hooks(model: Any, comps: dict[str, tuple[Tensor, Tensor]], sel: Sel,
 
 
 def restored_at(model: Any, W: dict[str, Tensor], comps: dict[str, tuple[Tensor, Tensor]], sel: Sel, io: IO,
-                windows: Tensor, half: int, token: int, ref: list[Tensor], whole: bool = False) -> dict[str, float]:
+                windows: Tensor, half: int, token: int | Tensor, ref: list[Tensor], whole: bool = False) -> dict[str, float]:
     """`readout` of the full model with weights W with `sel`'s trigger outputs restored to W0's (`restore_hooks`;
     `io` = `trigger_io` at W0 on the same windows). Weights restored afterwards."""
     from commute.faithfulness import model_state
@@ -586,12 +590,14 @@ def p12_reading(seeds: dict[str, dict[str, Any]]) -> dict[str, Any]:
 # reports/plans/2026-10-28_plan_e38-amend5.md, filed predictions experiments/recruitment_test/results/predictions_amend5.json.
 
 
-def trigger_grads(model: Any, keys: list[str], windows: Tensor, half: int, token: int, batch: int = BATCH) -> IO:
+def trigger_grads(model: Any, keys: list[str], windows: Tensor, half: int, token: int | Tensor, batch: int = BATCH) -> IO:
     """Per matrix, per batch of `readout` (same windows, batch size and autocast): g (B, d_out) float32, the gradient
     of each window's trigger lo (`local_faith.stats`' lo_trigger) with respect to the matrix's output at position
     `half`, in the target model as it stands. One backward per batch gives every matrix's g: each output gets an exact
     zero leaf added at `half` (the forward is unchanged bit for bit), and windows do not interact, so the gradient of
-    the batch's summed lo with respect to row w of a leaf is window w's own. Stored as (g, empty) pairs, the IO layout."""
+    the batch's summed lo with respect to row w of a leaf is window w's own. Stored as (g, empty) pairs, the IO layout.
+    `token`: one id or a (V,) lookup table, as `readout`."""
+    from commute.data import target_tokens
     from commute.finetune import logits_of
     from commute.identity import log_odds
     from commute.vpd import target_linear
@@ -613,8 +619,9 @@ def trigger_grads(model: Any, keys: list[str], windows: Tensor, half: int, token
     try:
         with torch.enable_grad():
             for s in range(0, windows.shape[0], batch):
-                lg = logits_of(model.target_model, windows[s : s + batch].to(device))
-                gs = torch.autograd.grad(log_odds(lg[:, half], token).sum(), [leaf[k] for k in keys])
+                b = windows[s : s + batch].to(device)
+                lg = logits_of(model.target_model, b)
+                gs = torch.autograd.grad(log_odds(lg[:, half], target_tokens(token, b, half)).sum(), [leaf[k] for k in keys])
                 for k, g in zip(keys, gs, strict=True):
                     grads[k].append((g.float(), torch.zeros(0)))
     finally:
