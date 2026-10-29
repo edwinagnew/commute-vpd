@@ -22,6 +22,10 @@ named only in E40 Amendment 1, which never ran, and a plan writer had to dig thr
 ## adjoint_sgd
 - Logs only: `full_{A..E}.log` (shards), `full_amend3_r{0,1}_*.log`, `full_amend3_emo_*.log`. No script here saves tensors, and every state is regenerated in-job (see the run.py docstring: arm A Adam 3e-5 / 3e-6 and SGD 0.01, 1000 steps, seeds 0/1).
 
+## broad_fragility (E39 and Amendments 1-3; listed 2026-10-29 for E49)
+- Teacher-trained decompositions of E37's lowercase fine-tunes (offsets files, E37's teacher training: Adam 1e-5, batch 8, 1,000 steps, batch order 0): `trained_step1000.pt` (the Adam fine-tune, E39; sha256 `d7da3c25…`), `tt_sgd_step1000.pt` (plain SGD 0.01, A1; `ced08dea…`), `a2_tt_sgd_r8.pt` (SGD held to rank 8, 0.03, A2; `4c9d24df…`), `a2_tt_lora_s0.pt` / `a2_tt_lora_s1.pt` (rank-8 LoRA, LoRA seeds 0 and 1, A2; s0 `20b3d068…`). Also `a2_label_{adam,sgd}.pt` (component training with labels, A2). `results/tt_lora_step1000.pt` (E39's run.py) is 1 MB against 60 MB for the others, probably a partial download (not loaded to check); use `a2_tt_lora_s0.pt`. The fine-tunes themselves were never saved here; see row_blocks.
+- Logs: `run.log`, `amend{1,2,3}.log`, `amend{1,2,3}_stdout.log`.
+
 ## cancellation
 - Logs only: `full.log`, `full_smoke.log`. No tensors. States are rebuilt from reading_a_coverage through `saved_states`.
 
@@ -113,6 +117,10 @@ This folder is "E11" in `saved_states`. All files are written by run.py.
 - `emoticon/*step2*`: smoke leftovers.
 - `code_as_ran/`: the scripts as they ran, with `git_state.txt`.
 - Logs: `logs/{scored,smoke,uv_sync,vpd_fetch}.log`.
+
+## row_blocks (E49, planned 2026-10-29; not yet written)
+- `dW_{adam,sgd,lora}.pt`: dW dicts (fp32, 113 MB each) of E37's Adam fine-tune, A1's plain SGD fine-tune and E39's rank-8 LoRA on the lowercase task (`lowercase.finetune`), regenerated on the cluster L40 by `run.py regen`; sha256 in `results/regen.json`. Load with `torch.load(p, weights_only=True)`; a do-nothing state is `harness.at(ctx, dW, None)`.
+- Logs: `{regen,a,b512s0..b768s2,score}.log`.
 
 ## recruit_test
 All `_dg` files are written by run.py `all`. The states are not saved.
