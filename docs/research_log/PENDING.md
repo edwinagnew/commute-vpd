@@ -9,3 +9,4 @@ A flush applies every line to `parts/` (README.md → Layout), rebuilds, republi
 
 - 2026-10-29 · experiments/TRIED.md (E53 row), experiments/performed_anchor/results/predictions_a0.json · E53 card (ongoing), timeline · E53 stage A0 coded and filed (W0 only: lowercase ≥ +1, cased ≤ −1, cipher ≤ −3 nats; stop if control misses, lowercase ≤ 0 or cipher > −1); not run yet
 
+- 2026-10-29 · experiments/performed_anchor/results/a0.json (RunPod 4090, $0.08) · E53 card (new, ongoing), timeline · E53 A0 GO: the original 67M prefers lowercase forms in lowercased text by 1.18 nats (90% 0.84-1.56, 6,070 positions), capitals in cased text by 5.58, and cannot do the 50-word cipher (-5.53); control -3.14576. Fine-tunes wait on plan questions 1-3.
