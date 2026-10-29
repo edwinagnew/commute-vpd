@@ -55,9 +55,16 @@ to 40, answers alone cannot show that count a is one of the two counts used.
 
 **Amendment 3 (read 2026-10-29) weakens the two "reuses" states.** On the swap-built rows the all-spurious arms
 were trained on, LOW's own count gives the right answer on only 45% of rows (all with no swap, 2% at a swap of
-three letters), and both early states answer those rows right by 1,000 steps. On natural text their answer runs
-through a count of a, so they stay labelled as measured; but they had to repair the count, not only reuse it. This is
-why option C now trains on natural texts only, and why no method should be scored on swap-built rows.
+three letters), and the early states answer those rows right by 1,000 steps (99%), almost never with LOW's answer. On natural
+text their answer runs through a count of a, so they stay labelled as measured. Either they count b on the built
+rows (their count of a may still be LOW's) or they strengthened the count of a itself (still the "existing" side of
+the question); a patch check on built rows would tell, and has not run. What weakens is the premise that nothing
+pushed these fine-tunes to change LOW's route. This is why option C now trains on natural texts only, and why no
+method should be scored on swap-built rows.
+
+**The cost of training on natural texts only:** their answers are narrow (of 760 such test rows, 509 have answer 14,
+so a constant 14 is right on 67%), unlike Stage A's built rows, whose answers were matched to the natural spread of 10
+to 17. Option C's arms would be easier to fit without counting; their predictions would need a bar above that.
 
 ## Links
 Report and notebook: `reports/analyses/2026-10-29_analysis_e55-stage-a.md`, `notebooks/E55_pcfg_anchors.ipynb`.
