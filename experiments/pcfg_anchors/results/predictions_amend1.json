@@ -1,0 +1,110 @@
+{
+  "experiment": "E55 Amendment 1 ($0 diagnostic): which answer rule do the all-spurious W fine-tunes follow on natural rows, and when do they leave count(a) + 1?",
+  "filed": "2026-10-29, before any run of experiments/pcfg_anchors/amend1.py; never edited after the run (a dated report instead). Scope set by the lead the same day after reports/reviews/2026-10-29_review_e55-stage-a-analysis.md finding 2 (an exact bound: any rule of count(c) alone with B_b <= 0.01 reaches B_a <= 0.105, while W1 at 10K reads B_a 0.399, B_b 0.001 on both seeds), which replaced the count-c behaviour read and the LOW count-c probe of the first brief.",
+  "why": "PA3 missed without reversal: W1, W1s1 read 'through count a' at 1K and 'neither' at 10K, W2 'neither' at both; five LOW states read 'neither'. Goal: say what those states answer, row by row.",
+  "code": "experiments/pcfg_anchors/amend1.py (sections controls, saved, trajectory); cluster/pcfg_anchors.sbatch amend1; output results/amend1.json, per-row answers results/large/amend1/answers/<state>.npy with the rows' counts in counts.npy.",
+  "constants": {
+    "n_rows": 8000,
+    "rows_seed": "default_rng([EVAL_SEED = 1, 70]), natural texts (pcfg.sample_texts), the same rows for every state",
+    "hi": 0.5,
+    "hi_note": "hi is the fraction of the way from a rule's constant floor f_r to 1 (rule_label), not an absolute share",
+    "lo": 0.1,
+    "min_rows": 100,
+    "control_min": 0.95,
+    "reproduce_tol": 0.05,
+    "traj_saves": [1000, 2000, 3000, 5000, 7000, 10000]
+  },
+  "definitions": {
+    "rows": "8,000 natural window texts (C_Te = 0), all of them (no qualifying filter: the rules are compared on the rows where they differ instead). Each state is asked 'C b 40' (its fine-tuning task), except the LOW count-a control, asked 'C a 40' on the same texts. Answer = argmax at `=` in fp32 eval mode (interchange.run_at_art), as a count (token - NUM0); a non-number token never equals any rule.",
+    "counts": "a, b, c = count of a, b, c in the last 40 text tokens; a + b + c = 40 on every row (texts hold only terminals; asserted).",
+    "rules": {
+      "a_plus_1": "a + 1: the spurious rule the fine-tuning data rewards (PA3's B_a target).",
+      "b": "b: the true count (PA3's B_b target).",
+      "mid": "the midpoint of a + 1 and b, rounded towards a + 1: mid = a + 1 + trunc((b - a - 1) / 2), trunc rounding towards zero. Exact when b - a - 1 is even; e.g. b = a + 2 -> a + 1, b = a -> a + 1, b = a - 1 -> a, b = a + 3 -> a + 2. Uses a and b. On spurious rows (b = a + 1) it equals the label.",
+      "a": "a: LOW's own answer on 'C b 40' (its count-b accuracy equals the swap floor), so the do-nothing answer.",
+      "c_floor": "(41 - c) // 2: (41 - c) / 2 rounded down. (41 - c) / 2 equals the label on every spurious row (2b = 41 - c there; asserted on 2,000 spurious texts). A rule of count c alone: the filed blind spot (PA3 blind_to (i)), checked here.",
+      "c_ceil": "(42 - c) // 2: (41 - c) / 2 rounded up; as c_floor. Both equal (41 - c) / 2 when c is odd."
+    },
+    "distinct_rows": "For a primary rule r (a_plus_1, b, mid, a): the rows where r's answer differs from each of the other three primaries. For c_floor and c_ceil: the rows where it differs from all four primaries (on c-odd rows both equal mid, so those rows never count). Measured on the 8,000 rows before filing (model-free): a_plus_1 3,904, b 4,863, mid 1,376, a 3,810, c_floor 1,205, c_ceil 184.",
+    "S_r": "distinct share of rule r = share of r's distinct rows whose answer equals r's answer. Void (nan) when fewer than min_rows = 100 distinct rows.",
+    "overall_r": "share of all 8,000 rows whose answer equals r's answer (rules overlap, so these do not sum to 1). other = share of rows whose answer equals no rule's answer (computed directly, not 1 - sum).",
+    "table": "count of rows per (b - a, answer - (a + 1)), b - a and the offset each clipped to [-7, 7]: the full answer-against-counts table, compact.",
+    "rule_label": "per rule: f_r = const_floor = the share of r's distinct rows on which r's answer equals its most common value (what a constant answer scores at best there; edge case E9); hi_r = f_r + hi (1 - f_r), hi = 0.5, the bar rule's hi with f_r as the null and 1 as the positive. 'follows' iff S_r > hi_r; 'does not follow' iff S_r < lo = 0.1; else 'neither'. Strict; nan -> 'neither'. Measured before filing (model-free, same rows): f_r and hi_r = a_plus_1 0.457 / 0.729, b 0.305 / 0.653, mid 0.624 / 0.812, a 0.353 / 0.677, c_floor 0.624 / 0.812, c_ceil 0.696 / 0.848. Checked on synthetic answers through the code: a pure midpoint answerer reads route mid, a pure a + 1 answerer route a_plus_1, a constant 14 reads mixed.",
+    "route": "over the four primaries: the one rule labelled 'follows' if exactly one; 'mixed' if none; 'ambiguous: r1+r2' if more than one. c_check = the c rules labelled 'follows' (expected none).",
+    "trajectory": "W1 and W1s1 re-run with a2's recipe and state keys (run.py state_key, unchanged), from step 0, states at 1K, 2K, 3K, 5K, 7K, 10K in results/large/amend1/; each read with run.py read_state (Table 6 behaviour, B and P for count a and count b at l* = 5, labels by the filed a2_bars) plus the rule read. NOT independent anchors: one run sampled at six steps; they never enter Stage C's n."
+  },
+  "labelling_rule": {
+    "rule": "Amendment 1 changes no A2 label: PA3's readings and the Stage C truth set (2 through count a, 9 not, 5 neither) stand as filed. Each W state gets a route (above), reported beside its A2 label.",
+    "outcomes": {
+      "route a_plus_1": "the state answers count(a) + 1: consistent with its A2 'through count a' (1K) labels; for a state labelled 'neither' it says the patch, not the behaviour, kept it under the bar.",
+      "route mid": "the state answers the midpoint of count(a) + 1 and count(b): it uses LOW's count a together with a count b. It stays 'neither' for Stage C, because (1) the filed label rule needs B_a > hi and P_a > hi and was not met, and relabelling a filed reading would be refiling; (2) 'existing' means the answer runs through the count the model had; a midpoint also runs through a count of b, which LOW held only as a weak readout (PA4, narrowly), so it is neither pure reuse nor a new route. Whether such states join Stage C as a third class is a decision for the user (pending-decision card), not this rule.",
+      "route b": "the state answers count(b): not expected for W (B_b <= 0.10 at every W state); would match its A2 count-b checks.",
+      "route a": "the state reverted to LOW's answer: reported; stays as labelled.",
+      "mixed / ambiguous": "no single rule explains the state: stays 'neither'; the table is the description.",
+      "c_check non-empty": "a count-c rule follows on its distinct rows: contradicts the review's bound (PA3 blind spot (i) live after all); flagged loudly to the user, labels unchanged."
+    }
+  },
+  "edge_cases": {
+    "E1_empty_or_small_pool": "fewer than 100 distinct rows for a rule -> S_r nan (void) -> 'neither' for that rule; c_ceil is the only rule near this (~170 expected). The pool size is reported beside every share.",
+    "E2_zero_denominator": "overall shares divide by 8,000 (fixed); S_r divides only when n >= 100 (E1).",
+    "E3_ties": "S_r == 0.5 or == 0.1 -> 'neither' (strict, as PA3's label rule).",
+    "E4_uncovered": "two or more primaries 'follows' (their distinct rows overlap only partly) -> route 'ambiguous: r1+r2'; none -> 'mixed'. A c rule 'follows' -> c_check, never a route.",
+    "E5_rounding": "mid's rounding is fixed: trunc towards zero of (b - a - 1) / 2, i.e. towards a + 1. A midpoint rounded the other way (towards b) is not a rule here; on rows where b - a - 1 is odd it reads as 'other' or another rule, and the table shows it.",
+    "E6_overlaps": "the rules coincide on many rows (all six on spurious-like rows b = a + 1; mid = a + 1 for b - a in {0, 2}; mid = a for b - a in {-1, -2}; c_floor = c_ceil = mid on c-odd rows); distinct shares are taken only where a rule differs from the others, and overall shares are not summed.",
+    "E7_non_number_answers": "a terminal or other non-number token equals no rule: counted in other.",
+    "E8_reproduction_nan": "a nan in a compared reading counts as a reproduction miss.",
+    "E9_constant_answer": "DEGENERATE as first drafted (flat hi = 0.5): mid's answer is one value on 62% of its distinct rows (window counts are 13 +- 1), so a state answering a constant would read 'follows mid'. Fixed before filing by hi_r = f_r + 0.5 (1 - f_r) (rule_label); a constant 14 now reads mixed (checked through the code). lo stays 0.1: a constant answer then reads 'neither', never 'does not follow', for the rule it imitates."
+  },
+  "predictions": {
+    "AM0_controls": {
+      "claim": "The read works on states whose rule is known.",
+      "rows": {
+        "formula": "on 2,000 spurious texts a_plus_1, mid, c_floor, c_ceil all equal b on every row; on the 8,000 rows a + b + c = 40 (asserted). Expected true.",
+        "N1_10K": "overall_b >= 0.95 and S_b >= 0.95 (N1's B_b at 10K was 1.000).",
+        "LOW_C_a_40": "LOW asked 'C a 40' on the same texts: overall_a >= 0.95 (LOW's count-a accuracy 0.99975). The lead's brief said LOW should match count(a) + 1 here; it answers count(a), the token of 'C a 40' (no +1), so the control is on rule a.",
+        "W0_LOW_C_b_40": "LOW asked 'C b 40': overall_a >= 0.95 (its count-b accuracy equals the swap floor to four digits). Also the W0 and do-nothing values below."
+      },
+      "threshold": "each >= control_min = 0.95, inclusive, absolute",
+      "stop": "any miss -> exit 1 before any W state is read (apparatus).",
+      "lean": "high (95%) for each",
+      "noise_floor": "binomial sd at 8,000 rows: 0.0024 at 0.95."
+    },
+    "W0_and_do_nothing": {
+      "note": "The do-nothing reference (a zero-step fine-tune) is LOW itself, so W0 and do-nothing are one state, read as trajectory step 0.",
+      "expected": "rule read on 'C b 40': overall_a ~1.0; S_a_plus_1, S_b, S_mid, S_c_floor, S_c_ceil ~0 (each rule's distinct rows exclude rows where it equals a); other ~0; route 'a'. read_state: B_a ~0.000 (LOW answers a, not a + 1), B_b ~0.27 (the B_b null, 0.269), P_b ~0 (a swapped b at fixed a leaves LOW's answer), P_a high, ~0.9 (LOW's answer follows a on 'C b 40'; lean medium: P_a_positive 0.966 was read on 'C a 40'). A2 labels: count a 'neither' (B low, P high), count b 'not through' or 'neither'."
+    },
+    "AM1_saved_1K": {
+      "claim": "W1 1K and W1s1 1K follow a_plus_1: S_a_plus_1 > hi_a_plus_1 (0.729) and route a_plus_1.",
+      "lean": "75%: their B_a was 0.879 and 0.903 on PA3's rows, but the bar on a_plus_1's distinct rows is 0.729 and those rows (b - a >= 3 or <= -1) are where a + 1 is furthest from b.",
+      "blind_to": "rules not in the list; a state mixing rules row by row reads 'mixed'."
+    },
+    "AM2_saved_10K": {
+      "claim": "W1 10K and W1s1 10K follow mid: S_mid > hi_mid (0.812) and route 'mid'.",
+      "lean": "60%: the midpoint gives B_a 0.408 and B_b 0.000 on PA3's rows against 0.399 and 0.001 read, and depends on a and b alike as the last-block swap showed (0.64, 0.57); but those are two marginal numbers and other rules (or a row-wise mixture) can fit them.",
+      "blind_to": "a rule that agrees with mid on its distinct rows but not elsewhere; the rounding on b - a - 1 odd rows other than towards a + 1 (E5)."
+    },
+    "AM3_W2": {
+      "claim": "W2 10K follows mid; W2 1K follows a_plus_1.",
+      "lean": "35% for 10K (B_a 0.29, B_b 0.10: less clean than W1); 50% for 1K (B_a 0.488, just under the bar).",
+      "blind_to": "as AM2."
+    },
+    "AM4_c_rules": {
+      "claim": "No W state follows c_floor or c_ceil: every S_c_floor and S_c_ceil < 0.1 ('does not follow').",
+      "lean": "75% (the review's exact bound rules out a pure count-c rule at W1 10K; the 1K states answer a + 1, which is not c_floor or c_ceil on their distinct rows).",
+      "blind_to": "c_ceil may be void (fewer than 100 rows, E1) on a draw; count-c rules other than the two roundings."
+    },
+    "AM5_trajectory": {
+      "claims": {
+        "reproduces": "for W1 and W1s1, the re-run's B and P for count a and count b at 1K and 10K are each within reproduce_tol = 0.05 (absolute, inclusive) of a2_<arm>.json's; a miss is reported and the trajectory is then read as a sibling run of the same recipe, not the saved run's path (torch.compile and bf16 are not bitwise deterministic).",
+        "leaves_late": "both seeds read 'through count a' (A2 label rule, filed a2_bars) at 2K, and neither does at 7K.",
+        "rule_switch": "both seeds read route a_plus_1 at 2K and route mid at 10K (rule_label); S_mid rises and S_a_plus_1 falls from 2K to 10K (reported, no threshold on the shape)."
+      },
+      "lean": "reproduces 70% (seed-to-seed differences were 0.024-0.049 at 1K, under the tolerance; a same-seed rerun should be closer); leaves_late 55% (the warm-up ends at 2K, after which the learning rate is highest); rule_switch 50% (needs AM2).",
+      "blind_to": "the path between saves; one recipe; the states are one run each, not anchors.",
+      "noise_floor": "B and P: binomial sd at 1,000 rows/pairs, <= 0.016; S_r: binomial sd at its distinct n, 0.013 at 1,400 rows and 0.5; seed-to-seed (W1 vs W1s1 at a2): 0.024 (B_a 1K), 0.049 (P_a 1K), 0.000-0.002 at 10K."
+    }
+  },
+  "blind_to": "Behaviour only: a rule match is not the mechanism (the midpoint could be computed from a and b, or from counts that agree with it); the patch at block 5 cannot separate these. Rules outside the list fall into other and the table.",
+  "positive_control": "AM0: N1 10K on rule b, LOW 'C a 40' and LOW 'C b 40' on rule a; mid has no known-route model, so its code is checked by the formula rows (mid equals the label on every spurious row) and by the table, which shows each row's answer offset by b - a.",
+  "not_run": "The rules were checked against the grammar by hand and on 40K natural and 5K spurious texts (b - a histogram; 2b = 41 - c on spurious rows); no model has been read by this code."
+}

@@ -8,6 +8,7 @@
 #   (file a2_bars in predictions.json, dated, from results/a1c_patch.json; a2 exits 2 until then)
 #   sbatch --job-name=commute-e55-a2-1 cluster/pcfg_anchors.sbatch a2 N1 N2 N3 W2 R   # arms in order, ~3 min each
 #   (two a2 jobs must never list the same arm: both would write its _train.pt)
+#   sbatch --job-name=commute-e55-amend1 cluster/pcfg_anchors.sbatch amend1      # Amendment 1, ~15-20 min
 # a0: per prior, 500 pretraining iterations stopped at 250 and resumed from the saved file, behaviour and floors on 1K
 #   fresh samples -> experiments/pcfg_anchors/results/a0.json; checkpoints and a0.log in results/large/a0/.
 # a1 PRIOR: 50K iterations (~10 min plus compile at the a0 rate) with a 25-min deadline. Finished: results/a1_PRIOR.json;
@@ -17,7 +18,9 @@
 #   measured; the log gives each section's elapsed time), skips when its file exists; log results/large/<stage>/.
 # a2 ARM...: fine-tunes, each arm 10K iterations plus its readings; skips arms whose results/a2_ARM.json exists;
 #   22-min deadline (leaves time for one arm's readings and the save). Log results/large/a2/a2.log.
-# a1 and a2: on exit 3 (deadline: saved, not finished) the job resubmits itself with the same arguments from
+# amend1: experiments/pcfg_anchors/amend1.py (predictions_amend1.json): rule reads on N1 10K, LOW and the saved W states,
+#   then the W1 and W1s1 trajectory re-runs -> results/amend1.json; 22-min deadline. Log results/large/amend1/amend1.log.
+# a1, a2 and amend1: on exit 3 (deadline: saved, not finished) the job resubmits itself with the same arguments from
 #   $SLURM_SUBMIT_DIR, at most 3 times (count in E55_RESUBMITS); the next job resumes from the saved files.
 #SBATCH --job-name=commute-e55-a0
 #SBATCH --partition=compute
@@ -32,11 +35,11 @@
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; puts this clone's src first on PYTHONPATH
 cd "$COMMUTE_REPO"
-usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...]"
+usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...] | amend1"
 stage=${1:-}
 args=("${@:2}")
 case "$stage ${#args[@]}" in
-  "a0 0" | "a1c-patch 0" | "a1c-probe 0") ;;
+  "a0 0" | "a1c-patch 0" | "a1c-probe 0" | "amend1 0") ;;
   "a1 1") case "${args[0]}" in LOW | HIGH | NEVER) ;; *) echo "$usage" >&2; exit 2 ;; esac ;;
   "a2 "*) [ "${#args[@]}" -ge 1 ] || { echo "$usage" >&2; exit 2; } ;;
   *) echo "$usage" >&2; exit 2 ;;
@@ -52,6 +55,7 @@ case "$stage" in
   a1c-patch | a1c-probe) cmd=("${run[@]}"); logf=$out/$stage.log ;;
   a1) cmd=("${run[@]}" --prior "${args[0]}" --deadline-min 25); logf=$out/a1_${args[0]}.log ;;
   a2) cmd=("${run[@]}" --deadline-min 22 --arm "${args[@]}"); logf=$out/a2.log ;;
+  amend1) cmd=(.venv/bin/python experiments/pcfg_anchors/amend1.py --deadline-min 22); logf=$out/amend1.log ;;
 esac
 rc=0
 "${cmd[@]}" 2>&1 | tee -a "$logf" || rc=$?

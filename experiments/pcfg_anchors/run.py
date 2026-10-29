@@ -67,6 +67,7 @@ HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 LARGE = RESULTS / "large"
 PRED = RESULTS / "predictions.json"
+A2_DIR = LARGE / "a2"
 
 LR, WEIGHT_DECAY = 1e-3, 0.1  # L1164; weight decay: minGPT trainer default
 TRAIN_SEED, EVAL_SEED = 0, 1  # disjoint streams: evaluation samples are fresh; TRAIN_SEED also seeds the init
@@ -418,28 +419,29 @@ def state_key(name: str, arm: Arm) -> str:
     return f"{name}-{hashlib.sha256(json.dumps(recipe, sort_keys=True).encode()).hexdigest()[:8]}"
 
 
-def state_path(key: str, it: int | str) -> Path:
-    return LARGE / "a2" / f"{key}_{it}.pt"
+def state_path(key: str, it: int | str, root: Path = A2_DIR) -> Path:
+    return root / f"{key}_{it}.pt"
 
 
-def finetune(key: str, arm: Arm, deadline: float) -> bool:
-    """Fine-tune `arm` from its A1 checkpoint (answer-only loss, Table 6 recipe), saving the model at each FT_SAVES
-    step; resumes from results/large/a2/<key>_train.pt. False when the deadline stopped it."""
+def finetune(key: str, arm: Arm, deadline: float, saves: tuple[int, ...] = FT_SAVES, root: Path = A2_DIR) -> bool:
+    """Fine-tune `arm` from its A1 checkpoint (answer-only loss, Table 6 recipe), saving the model at each
+    step in `saves` (a2: FT_SAVES), under `root` (a2: results/large/a2/); resumes from <root>/<key>_train.pt. False
+    when the deadline stopped it."""
     model = load_model(LARGE / "a1" / f"pt_{arm.prior}.pt")
     torch.manual_seed(FT_SEED0 + arm.seed)
     run = Run(Schedule(FT_ITERS, arm.lr), WEIGHT_DECAY, save_every=1000, log_every=500, loss=answer_loss)
-    for it in FT_SAVES:
-        if state_path(key, it).exists():
+    for it in saves:
+        if state_path(key, it, root).exists():
             continue
         make = lambda rng, n: pcfg.task_batch(rng, n, "C", B, c_rate=arm.c_tr)[0]
         batches = Batches(make, FT_SEED0 + arm.seed, FT_BATCH, 100, device())
-        step, _ = train(model, batches, run, state_path(key, "train"), stop_at=it, deadline=deadline,
+        step, _ = train(model, batches, run, state_path(key, "train", root), stop_at=it, deadline=deadline,
                         log=lambda m: log(f"{key} {m}"))  # fmt: skip
         if step < it:
             return False
-        tmp = state_path(key, it).with_suffix(".tmp")
+        tmp = state_path(key, it, root).with_suffix(".tmp")
         torch.save({"model": model.state_dict(), "step": step}, tmp)  # fp32: 12 MB per state
-        tmp.replace(state_path(key, it))
+        tmp.replace(state_path(key, it, root))
     return True
 
 
