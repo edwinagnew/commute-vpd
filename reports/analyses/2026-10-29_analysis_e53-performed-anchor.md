@@ -4,23 +4,24 @@
 and code-review record: `reports/plans/2026-10-29_plan_performed-anchor.md`. Filed rules:
 `experiments/performed_anchor/results/predictions.json`, filed before the run, not edited since. Results:
 `results/a0.json`, `results/finetune.json`, `results/read.json`. Figures: `experiments/performed_anchor/figures/` from
-`plot.py`. Notebook: `notebooks/E53_performed_anchor.ipynb`. Pending an independent check.*
+`plot.py`. Notebook: `notebooks/E53_performed_anchor.ipynb`. Independently checked 2026-10-29: supported with
+corrections, applied here; the breadth section and the update-size section were added then.*
 
 ## In plain words
 
-We fine-tuned the small model on the same text to write in lowercase, which it already does, and to swap fifty common
-words, which it cannot. The stand-in ratio read lowercase far above the word swap on both seeds and at matched gain, as
-filed, while the relay number did not separate them. The null that would tell the update's kind from its task broke, so
-for `GOALS.md` this is one promising task pair with that question open, and a high reading means only "built from
-pieces the original model has".
+We fine-tuned the small model on the same text to write in lowercase, which it already prefers, and to swap fifty common
+words, which it cannot. The stand-in ratio read lowercase far above the word swap on both seeds, while the relay number
+did not separate them. For `GOALS.md` this is one task pair the ratio separates, but lowercase is also the broader
+update, so whether the ratio reads the update's kind or its breadth is open.
 
 ## The answer
 
-On this one pair, the stand-in ratio separates the performed task from the new one by a wide margin. Lowercase read
-about 0.92 and the word swap about 0.26 on both seeds, and the swap stayed low when its gain matched lowercase's. The
-scored rule passed. A null was meant to show whether the number follows the kind of update or only the task. It never
-reached its target and wrecked the model instead, so that question is unanswered. The relay number did not separate the
-pair.
+On this one pair, the stand-in ratio separates lowercase from the word swap by a wide margin. Lowercase read about 0.92
+and the swap about 0.26 on both seeds, and the swap stayed low at the nearest saved gains, which bracket lowercase's.
+The scored rule passed. But lowercase is also the broader update. It touches about twice as many positions and buys far
+less gain per unit of change elsewhere. Every row orders the same way on that as on its task. So whether the ratio
+reads the kind of update or its breadth is open. The null meant to test kind against task failed. The relay did not
+separate the pair.
 
 ## What was tested
 
@@ -97,11 +98,22 @@ fine-tune. If it did, the ratio would follow the task rather than the kind of up
 
 ## The controls
 
-Every filed control passed. The recipe reproduced 0.12963 nats per token against 0.1301. Every bf16 copy matched its
-fp32 state within 0.0003 against a tolerance of 0.005. The zero update read exactly 0 on every gain and on the relay,
-the do-nothing subcomponent gains read exactly 0, and each split state's $G$ equalled its do-nothing $G$ in the stored
-float. Those three last checks pass by construction, so they show the batches and states lined up and nothing more.
-The fine-tune stage took 107 seconds and the read stage 217 seconds on an L40, at $0.
+Every filed control passed, but only four checks in this run could have failed.
+
+- The recipe reproduced 0.12963 nats per token against 0.1301. E49's regeneration on the same card read 0.12963, so
+  in effect this checks determinism.
+- Every bf16 copy matched its fp32 state within 0.0003, against a tolerance of 0.005. That tolerance is 64% of the
+  cipher's step-10 held-out gain of 0.0078 nats per token, so the check is weak there.
+- A0's original-model control passed before anything else ran.
+- Each random δW matched its fine-tune's off-target KL.
+
+In the read stage nothing could fail. The zero update read exactly 0 on every gain, the do-nothing subcomponent gains
+read exactly 0, and each split state's $G$ equalled its do-nothing $G$; all three hold by construction. The zero
+update's relay reads 0 for the same reason: restoring the subcomponents' outputs changes nothing when nothing was
+updated. The ratio has no positive control in this run. E46's toy tables used the same scoring function, but the cells
+are composed anew here in `run.py`'s `cells`, so "the same code path" holds only loosely. The relay's "does not
+separate" has no working low control either, since the hand write failed. The fine-tune stage took 107 seconds and the
+read stage 217 seconds on an L40, at $0.
 
 ## Does the stand-in ratio read the performed task above the new one?
 
@@ -134,13 +146,14 @@ of the cells is not filed and is provisional.
 
 ![stand-in ratio against the full model's gain, cipher at steps 10, 100 and 300, lowercase at step 300, with each task's gain floor and the unread cipher random δW](../../experiments/performed_anchor/figures/gain.png)
 
-**Reading it.** No: the cipher reads low at every gain we saved, including gains close to lowercase's. The cipher's
-gain grew from about 0.8 to about 3.8 nats over training, and its ratio fell as it grew. On both seeds it went from
-about 0.4 at step 10 to 0.26 at step 300; the table has each step. The filed matched-gain row takes the cipher step whose gain
-is nearest the same seed's lowercase gain. That is step 100 on seed 0, gain 2.32 against 1.67, ratio 0.28. On seed 1 it
-is step 10, gain 1.00 against 1.61, ratio 0.38. Both sit under 0.5, and both are more than 0.5 below lowercase. The
-caveat is that no cipher state sits exactly at lowercase's gain, and the trend runs upward toward small gains. These
-rows are reported, not scored.
+**Reading it.** Not on the states we have: the cipher reads low at every gain we saved, including the two that bracket
+lowercase's. The cipher's gain grew from about 0.8 to about 3.8 nats over training, and its ratio fell as it grew. On
+both seeds it went from about 0.4 at step 10 to 0.26 at step 300; the table has each step. No cipher state matches
+lowercase's gain. The matched-gain row, reported and not scored, takes the nearest saved state. That is step 100 on
+seed 0, gain 2.32 against 1.67, ratio 0.28. On seed 1 it is step 10, gain 1.00 against 1.61, ratio 0.38. That seed-1
+state is under 1 nat and is read only through its noise-floor bar of 0.49. On both seeds steps 10 and 100 bracket
+lowercase's gain. A straight line between them gives a ratio of 0.34 on seed 0 and 0.35 on seed 1 at lowercase's gain,
+against 0.92 and 0.93. The interpolation is provisional: the trend rises toward small gains and need not be straight.
 
 | cipher state | G, nats | subcomponent gain, nats | stand-in ratio | 90% interval | relay |
 |---|---|---|---|---|---|
@@ -178,12 +191,63 @@ review flagged the lowercase write as possibly ill-conditioned before the run.
 **So the main open caveat stands.** The run cannot say whether the ratio follows the kind of update or only the task.
 A write that builds nothing but raises the same answers might read high on lowercase and low on the cipher too; we
 have no working update of that sort to check. E46 Amendment 3's hand writes read close to their tables' fine-tunes,
-which is the reason to worry.
+which is the reason to worry. Even a working hand write would not have separated kind from breadth, the alternative in
+the next section: it writes into one matrix of block 1 on both tasks.
 
 **The random rows.** Lowercase's random δW lost gain on both counts, so its ratio is not defined; it serves only as a
-floor. The cipher's random δW has gain 0.25 and subcomponent gain 0.19, under its floor of 0.49, so its ratio is unread.
-Dividing its cells anyway gives 0.83, interval 0.56 to 1.23. That is reported to show the whole range, not read: an
-update that learned nothing reads high on the cipher's positions, nowhere near the cipher fine-tune.
+floor. The cipher's random δW has gain 0.25 and subcomponent gain 0.19. Its floor is twice its own gain, so it can never
+clear it, and its ratio is unread by rule. The figure plots it only to show the whole range.
+
+## Is it the kind of update, or its breadth?
+
+A simpler explanation fits every read row: lowercase is the broader update. It changes the answer at about twice as
+many positions. In the held-out rows 4,598 positions qualify for lowercase against 2,198 for the cipher. In A0's rows
+it was 6,070 against 2,916. The table divides each gain by the off-target KL, the full model's KL to the original model
+on the other window positions. A high gain per off-target KL means a targeted update; a low one, a broad update.
+
+| row | G per off-target KL | gate gain per off-target KL | subcomponent gain per off-target KL | stand-in ratio |
+|---|---|---|---|---|
+| lowercase, seed 0, step 300 | 4.46 | 3.36 | 3.88 | 0.919 |
+| lowercase, seed 1, step 300 | 4.06 | 3.13 | 3.57 | 0.929 |
+| cipher, seed 0, step 10 | 11.0 | 3.13 | 8.59 | 0.418 |
+| cipher, seed 1, step 10 | 11.7 | 3.06 | 9.32 | 0.382 |
+| cipher, seed 0, step 100 | 14.2 | 2.09 | 11.8 | 0.282 |
+| cipher, seed 1, step 100 | 14.8 | 2.54 | 12.3 | 0.304 |
+| cipher, seed 0, step 300 | 15.0 | 1.86 | 12.8 | 0.264 |
+| cipher, seed 1, step 300 | 14.5 | 1.69 | 12.4 | 0.257 |
+
+**Reading it.** Breadth and kind are fully confounded in this run. Lowercase gains 4.1 to 4.5 nats per nat of
+off-target KL; every cipher state gains 11.0 to 15.0. So every read row orders the same on gain per off-target KL as on
+its task label. The gate gain per off-target KL is about equal where it can be compared: 3.1 to 3.4 for lowercase,
+3.1 for the cipher at step 10. The separation sits in the subcomponent gain per off-target KL, two to three times higher
+on the cipher. Since the ratio is roughly gate gain over subcomponent gain, a targeted update could read low for that
+reason alone, whatever its kind. E46 Amendment 3's hand writes reading near their fine-tunes tilts toward "the ratio
+reads the task". So the claim this run supports is "the stand-in ratio separates these two tasks", not yet "it
+separates a performed behaviour from a new one". This reading is not filed.
+
+## Update size (provisional)
+
+Could the plain size or rank of δW order like the ratio? For each of the 8 saved bf16 states, each of the 24 matrices'
+Frobenius norm $\|\delta W\|_F$ and stable rank $\|\delta W\|_F^2 / \|\delta W\|_2^2$ were computed. Stable rank is
+the effective number of directions: 1 for a rank-one update, up to the matrix width for a flat spectrum. Script:
+`~/commute-data/scratch/regating-lead/e53_size.py`, CPU, $0; not filed.
+
+| state | summed norm over 24 matrices | mean stable rank | stand-in ratio |
+|---|---|---|---|
+| lowercase, seed 0, step 300 | 11.58 | 28.5 | 0.919 |
+| lowercase, seed 1, step 300 | 11.75 | 28.6 | 0.929 |
+| cipher, seed 0, step 10 | 2.69 | 19.0 | 0.418 |
+| cipher, seed 1, step 10 | 2.73 | 18.6 | 0.382 |
+| cipher, seed 0, step 100 | 7.32 | 29.0 | 0.282 |
+| cipher, seed 1, step 100 | 7.41 | 28.5 | 0.304 |
+| cipher, seed 0, step 300 | 11.86 | 37.0 | 0.264 |
+| cipher, seed 1, step 300 | 11.86 | 37.8 | 0.257 |
+
+**Reading it.** Neither orders like the ratio. At step 300 the two tasks' updates are the same size, 11.6 to 11.9 summed,
+yet read 0.92 against 0.26. Lowercase's mean stable rank of 28.5 equals the cipher's at step 100, which reads 0.28 to
+0.30. Within the cipher, size and stable rank both rise as the ratio falls, but both also track training steps. The
+norm-weighted stable rank gives the same picture. So weight-space size and rank do not explain the separation; breadth
+in the output, above, is not ruled out by this.
 
 ## Does the relay read the performed task above the new one?
 
@@ -193,9 +257,11 @@ update that learned nothing reads high on the cipher's positions, nowhere near t
 seeds, the cipher 0.42 and 0.41. The worst-pair gap was 0.24 against the 0.3 bar, so the rule reads "does not separate". The
 cipher missed its own lean, which was 0.6 to 0.8 from E50's random maps; it read lower. The figure shows why the gap
 should not be read as a kind effect either way. The cipher's relay falls as its gain grows, from 0.70 and 0.75 at step
-10 to about 0.42 at step 300. The cipher's line between steps 10 and 100 passes right beside lowercase's two points,
-so at matched gain the two tasks relay alike. The hand writes'
-relay, E50's low control, was not read because the writes missed their target.
+10 to about 0.42 at step 300. Interpolated between steps 10 and 100, as for the ratio, the cipher's relay at
+lowercase's gain is 0.58 on seed 0 and 0.64 on seed 1. Lowercase's is 0.66. That interpolation is provisional,
+as for the ratio. At the nearest saved gains the relay comes close to lowercase's, so it may move with gain size, but
+this run cannot say it does not move with kind. The hand writes' relay, E50's low control, was not read because the
+writes missed their target.
 
 ## The method's limit, in plain words
 
@@ -208,52 +274,56 @@ circuit it already runs". Only a Γ from a second decomposition seed narrows thi
 
 ## What we learned
 
-`GOALS.md`'s fallback question asks whether an update is new capability or strengthening. The stand-in ratio is the
-first number in the line to separate a behaviour the original model performs from one it cannot. The pair's labels were
-checked by the original model's behaviour, not set by construction as on the toys. It separated by
-0.65 on both seeds, and still at matched gain. It does not yet answer the open question "can VPD tell elicitation from
-a new mechanism", for two reasons. First, the hand-write null broke, so we cannot tell a kind effect from a task effect.
-Second, the granularity limit above caps what a high reading can mean. The real-model relay does not carry the
-separation: it moves with gain size more than with kind. What would make the result stronger: a task-matched null that
-reaches its gain, a second decomposition seed, and the same pair on Qwen.
+`GOALS.md`'s fallback question asks whether an update is new capability or strengthening. The stand-in ratio separated
+lowercase from a 50-word cipher by 0.65 on both seeds, and still at the nearest saved gains. The pair's labels were
+checked by the original model's behaviour, not set by construction as on the toys. It does not yet answer "can VPD
+tell elicitation from a new mechanism", for three reasons. First, breadth is fully confounded with kind: lowercase is
+the broader update on every row, and a ratio that read breadth would give the same table. Second, the hand-write null
+broke, so a task effect is not ruled out, and E46 Amendment 3's hand writes tilt toward one. Third, the granularity
+limit above caps what a high reading can mean. So the kind question is more open after this run than "one null broke"
+suggests. The real-model relay does not separate the pair at step 300. What would make the result stronger: a pair
+matched in breadth but differing in kind, a task-matched null that reaches its gain, and a second decomposition seed.
 
 ## How compelling is the evidence
 
 - *Tasks*: one pair, lowercase against a 50-word cipher, on one model, the 67M. Two batch orders per task; one
   decomposition.
 - *Noise*: 90% intervals over windows are ±0.03 to ±0.06, and the seed spread was 0.011 on lowercase and 0.007 on the
-  cipher. The gap of 0.65 is ten times the widest interval. Windows from the same row share context, so the intervals
-  are somewhat too narrow; that does not threaten a gap of this size.
+  cipher. The gap of 0.65 is about ten times the widest interval's half-width and five times its full width. Windows
+  from the same row share context, so the intervals are somewhat too narrow; that does not threaten a gap of this size.
 - *Blind to*: the real model, since the ratio is read in Γ's stand-in. Whether the split's changes themselves matter.
-  Whether an update that builds nothing reads like its task: the hand write that would check it broke.
+  Whether an update that builds nothing reads like its task: the hand write that would check it broke. Kind against
+  breadth: the two are confounded on every row.
 - *Labels*: A0 shows the original model prefers lowercase forms and rejects the swapped words at the token level. It
   does not show the fine-tunes use the same subcomponents the original model uses for lowercase.
-- *Controls*: the read stage's zero, do-nothing and same-G controls pass by construction and carry no information. The
-  ratio's positive control is earlier: E46's copy and random-map tables, 0.87 to 0.97 against 0.36 to 0.41, on the same
-  code path.
+- *Controls*: nothing in the read stage could fail. The ratio has no positive control in this run. The nearest is E46's
+  copy and random-map tables, 0.87 to 0.97 against 0.36 to 0.41. They used the same scoring, but their cells were
+  composed by different code. The relay's "does not separate" has no working low control.
 - *Fine-tunes*: neither makes its answer likely. The true next token's log-odds after training are −5.1 on lowercase and
   −6.3 on the cipher; both tasks are partly learned.
 
 ## Surprises
 
-- The hand writes failed outright. They never reached their target gain at any scale up to the cap, and at the cap they
-  pushed the answers down by 12 to 17 nats. The plan expected them to match by construction.
+- The hand writes failed outright. They never reached their target gain at any grid scale up to the cap, and at the cap
+  they pushed the answers down by 12 to 17 nats. The plan expected them to match by construction. The grid itself is
+  not saved.
+- The 90% intervals over windows were ±0.03 to ±0.06, three to six times the filed expectation of about ±0.01 at 500
+  windows. The gap still clears them by far.
 - The cipher's relay read 0.41 to 0.42 at step 300, below its leaned 0.6 to 0.8. It falls with training steps, from
   about 0.7 at step 10.
 - On the cipher, the split's changes add 0.12 of the subcomponent gain beyond the gate gain, against 0.01 to 0.05 on
   every toy row; the ratio is less nearly "gate gain over subcomponent gain" here. Provisional.
-- The cipher's random δW, under its floor and unread, divides to 0.83. Provisional, and not a reading.
 
 ## What next
 
-1. **A task-matched null that works.** For example a write keyed on something the input at the scored position does
+1. **A pair matched in breadth.** A performed task as targeted as the cipher, or a new task as broad as lowercase. If a
+   targeted performed task reads high, the ratio follows kind; if it reads low, it follows breadth.
+2. **A task-matched null that works.** For example a write keyed on something the input at the scored position does
    identify, or a fine-tune of the same answers that cannot build a mechanism. If it reads like its task, near 0.9 on
-   lowercase and near 0.26 on the cipher, the ratio reads the task and the line loses its one number of kind. If it
-   reads alike on both, the separation is about kind on this pair.
-2. **A second decomposition seed.** It is the only check that narrows the granularity limit. If the second Γ reads the
-   cipher high, "low" here was a property of this decomposition.
-3. **Qwen stage 1**, with an anchor the Qwen model performs. Only after item 1, so that what is carried is known to read
-   kind. It is gated by the project's rules.
+   lowercase and near 0.26 on the cipher, the ratio reads the task. If it reads alike on both, the separation is not
+   only the task.
+3. **A second decomposition seed.** It is the only check that narrows the granularity limit. Qwen stage 1 waits for
+   items 1 and 2, so that what is carried is known to read kind; it is gated by the project's rules.
 
 ## Scorecard
 
@@ -271,7 +341,7 @@ reaches its gain, a second decomposition seed, and the same pair on Qwen.
 | lean, cipher | ratio ≤ 0.5, relay 0.6-0.8, G ≥ 3 | reported | 0.26, 0.41-0.42, 3.81-3.87 | ratio and G met; relay missed, below |
 | lean, random δW | abs G ≤ 0.6 | reported | 0.24, 0.25 | met |
 | lean, hand write | relay ≤ 0.2 | reported | not read, match "cap" | unread |
-| matched gain | cipher at G nearest lowercase's | reported | seed 0 step 100, 0.282; seed 1 step 10, 0.382 | reported; both under 0.5 |
+| matched gain | cipher at G nearest lowercase's | reported, not scored | seed 0 step 100, G 2.32 vs 1.67, 0.282; seed 1 step 10, G 1.00 vs 1.61, 0.382 | no state matches; both under 0.5; interpolated 0.34, 0.35, provisional |
 
 ## Not run
 
@@ -280,6 +350,8 @@ reaches its gain, a second decomposition seed, and the same pair on Qwen.
 - The hand writes' relay as a low control on these tasks.
 - The lowercase random δW's ratio, undefined because its gains are negative, and the cipher random δW's, under the floor.
 - A cipher state at exactly lowercase's gain; the nearest saved steps are 10 and 100.
+- A pair matched in breadth, so kind and breadth are confounded on every row.
+- A positive control for the ratio within this run.
 - A second decomposition seed, a second task pair, more than two batch orders.
 - Any reading in the real model of the ratio's quantity; any Qwen run.
 - A check that the fine-tunes use the subcomponents the original model uses for lowercase.
