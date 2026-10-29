@@ -1,0 +1,99 @@
+{
+  "status": "draft, lead to review",
+  "experiment": "E55 Amendment 4 ($0, no training): on swap-built rows (count b = count a + 1), do the early states labelled 'the answer runs through count a' on natural text (W1 1K, W1s1 1K, M3 1K) answer through their count of a (R-a: count of a strengthened to cope with swapped text) or through a count of b (R-b: a separate route on swap-built text)?",
+  "why": "Amendment 3 (reports/analyses/2026-10-29_analysis_e55-stage-a.md, 'What it means for Stage A and Stage C' and 'What next' item 2): these states are right on ~99% of swap-built rows where LOW miscounts a, and answers cannot separate R-a from R-b there.",
+  "constants": {
+    "n_pairs": 1000,
+    "donor_seed_tail": 60,
+    "donor_pool": 20000,
+    "off_seed_tail": 61,
+    "off_pool": 4000,
+    "off_steps": [
+      -2,
+      -1,
+      1,
+      2
+    ],
+    "scored_block": 5,
+    "swap_clip": 4,
+    "reproduce_tol": 0.01,
+    "low_pa_min": 0.8
+  },
+  "constants_sources": {
+    "n_pairs": "interchange.N_PAIRS (Stage A, filed); void below interchange.MIN_PAIRS = 500 (a control stops the job instead).",
+    "scored_block": "predictions.json a2_bars l_star_a = l_star_b = 5 (Stage A's filed l*, used by run.read_state for every a2 label); the code asserts they agree.",
+    "bars": "predictions.json a2_bars, read through run.filed_bars: P_a lo 0.0966 hi 0.4828; P_b lo 0.100 hi 0.500; B_a lo 0.1000 hi 0.4999; B_b lo 0.3421 hi 0.6345.",
+    "reproduce_tol": "Amendment 3 reproduced Stage A's N1 te1 shares to within two rows in 4,000 (0.0005), reading the same rows on a cluster GPU; 0.01 is 10 pairs in 1,000, ~20x that floor (not measured on the patch itself).",
+    "low_pa_min": "Stage A PA1 row P_a_positive_ge_0.8 (run.patch_rows).",
+    "off_steps": "chosen here to keep |swap| at 1-2, where N1 1K is right on 0.98 and 0.95 of te1 rows (Amendment 3 table), and so that count a + 1 and count a both differ from count b; the lead may widen it.",
+    "donor_pool, seeds": "new seed tails 60 and 61 (unused by Stage A and Amendments 1-3: 30, 31, 50, 51, 74); pool sizes from the dry run (enough donors for every recipient count)."
+  },
+  "definitions": {
+    "part1_swap_recipients": "Recipients: Stage A's C_Te = 1 test rows rebuilt as amend3 (swapped_rows), |swap| >= 1. Donors: natural qualifying texts. Count-a patch: donor has the recipient's count b, another count a; count-b patch: the recipient's count a, another count b. P (Stage A's): share of pairs whose 'C b 40' output, with the residual at '=' after the block replaced by the donor's, equals the donor's output and differs from the recipient's. Also at the scored block: changed (patched output != recipient's), eq_donor_a_plus_1, eq_donor_b. NOTE: in the count-a patch the donor's count b is the recipient's, so eq_donor_b counts unchanged outputs; in the count-b patch the donor's count a + 1 is the recipient's answer, so eq_donor_a_plus_1 counts unchanged outputs.",
+    "part2_off_label": "PROPOSED by the code writer. Natural texts whose window count a is moved by a step in off_steps by the same a/c swap step as Stage A's spurious rows (pcfg._set_window_count), kept where count a + 1 != count b and count a != count b. B_a = share of 'C b 40' answers equal to count a + 1, B_b = equal to count b (interchange.behaviour_share, first N_B = 1,000 rows); P per count on pairs within this pool (both sides swap-built, one count differs, Stage A's pair rule); per count Stage A's label (interchange.label with the filed B and P bars).",
+    "reading_part1": "amend4.reading_p at the scored block: 'both' iff P_a > hi_Pa and P_b > hi_Pb; 'reads b' iff P_b > hi_Pb and P_a < lo_Pa; 'reads a' iff P_a > hi_Pa and P_b < lo_Pb; else 'neither'. Strict. Valid iff N1 1K reads 'reads b' on the same pairs, else every scored reading is 'void'.",
+    "reading_part2": "amend4.reading_through from Stage A's per-count labels: 'reads b' iff count b 'through' and count a 'not through'; 'reads a' the reverse; 'both' iff both 'through'; else 'neither'. Valid iff N1 1K reads 'reads b' there, else 'void'."
+  },
+  "expected_values": {
+    "controls_model_free": "recipients = 3,240 rows (Amendment 3's te1 |swap| histogram without its 760 unswapped rows); every recipient has count b = count a + 1; the wrapped rebuild equals the plain one; donors natural (no c c c) and qualifying; every pair matched as defined; natural pairs 1,000 each; swap and off-label pair sets >= 500 (dry run: see dry_run).",
+    "LOW_natural_P_a ('C a 40', Stage A's natural pairs, block 5)": "~0.97 (Stage A's positive reference at block 5 was 0.966 on other seeds); stop if < 0.8.",
+    "natural P at block 5, reproduced from a2_<arm>.json (stop if off by > 0.01)": "W1 1K P_a 0.715 P_b 0.104; W1s1 1K 0.764, 0.073; M3 1K 0.594, 0.328; N1 1K 0.000, 0.883 (> hi 0.5); W1 10K 0.361, 0.429.",
+    "part1 N1 1K (positive control for b on swap recipients)": "P_a ~0 (the donor's count b is the recipient's, so the donor's answer equals the recipient's); P_b ~0.85-0.9 (Stage A natural 0.883; N1 1K right on ~0.96 of these recipients); reads b.",
+    "part1 LOW ('C b 40', described)": "LOW answers its count of a on natural donors and miscounts most recipients: P_a moderate, P_b ~0 (the count-b donor's count a equals the recipient's, LOW's answer on the donor is that count); not a control for a on swap recipients.",
+    "part1 W1 1K, W1s1 1K (under BOTH R-a and R-b, see design_concerns)": "P_a ~0.65-0.75 (Stage A's natural P_a; the donor's natural-text answer count a' + 1 is transferred), P_b <= ~0.1 (the count-b donor shares the recipient's count a, so its natural-text answer count a + 1 equals the recipient's); reads a.",
+    "part1 M3 1K": "P_a ~0.5-0.6, P_b ~0.1-0.3 (Stage A natural 0.594, 0.328); reads a or neither.",
+    "part2 synthetic arithmetic (dry run)": "an answerer of count a + 1 reads B_a 1, B_b 0, P_a 1, P_b 0 under answer transfer; an answerer of count b the reverse.",
+    "part2 N1 1K (positive control for b)": "B_b ~0.95 (te1 right at |swap| 1-2: 0.98, 0.95), B_a ~0.01; P_b ~0.85, P_a ~0; reads b.",
+    "part2 LOW (null)": "LOW answers count a (not + 1) where it counts at all; both answers are excluded by construction: B_a ~0, B_b ~0; neither.",
+    "part2 W1 1K, W1s1 1K, M3 1K": "R-a: B_a high (> 0.5), B_b ~0, P_a ~0.7, P_b ~0 -> reads a. R-b: B_b high, B_a ~0, P_b high, P_a ~0 -> reads b. A mix reads neither."
+  },
+  "predictions": {
+    "P1_W1_1000": {
+      "claim": "W1 at 1K answers swap-built rows through its count of a.",
+      "rule_part1": "part1_swap_recipients.readings.W1_1000 == 'reads a' (lead's design).",
+      "rule_part2_proposed": "part2_off_label.readings.W1_1000 == 'reads a'.",
+      "lean": "Part 1: 'reads a' ~90%, but under both readings (non-separating, design_concerns 1). Part 2: 'reads a' ~55%, 'reads b' ~30%, 'neither' ~15% (W1 1K never answers b on natural text, B_b 0.001, and is right on 99% of swap rows; a b-route gated by swap texture is the more elaborate change at 1K steps of lr 1e-5). Lead sets the numbers.",
+      "scored_from": "part1_swap_recipients.W1_1000 / part2_off_label.W1_1000 (P_a, P_b, B_a, B_b, labels, reading)"
+    },
+    "P1s_W1s1_1000": {
+      "claim": "The seed copy reads the same as W1 1K.",
+      "rule_part1": "part1_swap_recipients.readings.W1s1_1000 == part1_swap_recipients.readings.W1_1000",
+      "rule_part2_proposed": "part2_off_label.readings.W1s1_1000 == part2_off_label.readings.W1_1000",
+      "lean": "~85% agree (Stage A: the two seeds' checks agree to within 0.05).",
+      "scored_from": "as P1"
+    },
+    "P2_M3_1000": {
+      "claim": "M3 at 1K (80% swap-built training rows) answers swap-built rows through its count of a.",
+      "rule_part1": "part1_swap_recipients.readings.M3_1000 == 'reads a'",
+      "rule_part2_proposed": "part2_off_label.readings.M3_1000 == 'reads a'",
+      "lean": "Part 1: 'reads a' ~60%, 'neither' ~40% (Stage A natural P_b 0.328 is between the bars). Part 2: 'reads a' ~40%, 'neither' ~35%, 'reads b' ~25% (M3 sees natural rows with count b != count a + 1, which reward b; its natural B_b is already 0.099 at 1K).",
+      "scored_from": "as P1"
+    },
+    "W0_references": {
+      "claim": "N1 1K reads b in both parts; LOW reads neither in Part 2; W1 10K described.",
+      "rule": "part1 and part2 N1_1000.reading == 'reads b' (also the validity of each part); part2 LOW.reading == 'neither'.",
+      "expected": "as expected_values; W1 10K: Stage A natural P_a 0.361, P_b 0.429, between the bars, so neither in Part 1; no lean for Part 2."
+    }
+  },
+  "design_concerns": {
+    "1_part1_reads_the_donor": "At block 5 the residual at '=' already carries the answer: Stage A's positive references read P 0.97 (a) and 1.0 (b) there, and W1 1K's natural P_a is 0.715 of the 0.935 possible at block 6. So a whole-residual patch at block 5 mostly sets the output to the donor's own answer, and the donors are natural texts, where W1 1K answers count a + 1 under both readings. Count-a patch: donor answer a' + 1 != recipient answer -> P_a high. Count-b patch: the donor has the recipient's count a, so its answer a + 1 equals the recipient's -> P_b ~0 by construction. Both R-a and R-b predict 'reads a'. Only block 6's re-reading of the recipient's text (at most ~1 - 0.715/0.935 ~ 24% of pairs for W1 1K) could tell them apart. N1's positive control passes by the same arithmetic, so it does not validate the separation. The dry run shows it: under answer transfer the Part 1 P's are identical for R-a and R-b.",
+    "2_part2_is_the_stage_A_check_on_swap_texture": "Off-label swap-built rows have the swap texture of the training rows but count b != count a + 1, so the two readings answer differently (count a + 1 vs count b) and B alone separates them; P with both sides from this pool is Stage A's check on that texture. Recommendation: score Part 2, keep Part 1 described.",
+    "3_part2_caveats": "Off-label rows are off the W arms' training distribution (b = a + 1 on every W1 training row), as Stage A's natural qualifying rows already were; |swap| is 1-2 only, while training rows reach 7; no model counts a on swap texture, so Part 2 has no positive control for a (LOW fails swapped rows; the synthetic answerer checks only the arithmetic).",
+    "4_bars": "Stage A's bars are kept for both parts: their nulls are structural (P 0 for a model blind to the count) and positives ~0.9-1.0, which N1 1K's measured P_b on swap recipients should match. The B_b bar's null (0.269) came from LOW on natural rows where count a = count b by chance; off-label rows exclude a = b, so that bar is stricter here, not looser."
+  },
+  "edge_cases": {
+    "E1_void_pairs": "fewer than 500 pairs in any swap, natural (fewer than 1,000) or off-label pair set stops the job as a control miss (exit 1, amend4_control_miss.json); no reading is ever computed on void pairs.",
+    "E2_zero_denominator": "P's denominator is all pairs built (>= 500, E1); B's is N_B = 1,000 rows; P_by_swap reports the pair count beside each bin and is only reported, never scored; an empty bin cannot appear (bins come from np.unique of the pairs' own |swap|).",
+    "E3_ties": "every comparison is strict (> hi, < lo); a reading exactly at a bar falls to 'neither'.",
+    "E4_both_over_bar": "P_a > hi_Pa and P_b > hi_Pb reads 'both' (checked before the one-sided readings, so never 'reads a' or 'reads b'); in Part 2 both counts 'through' reads 'both'.",
+    "E5_between_bars": "one P above hi and the other between lo and hi reads 'neither' (not a one-sided reading).",
+    "E6_nan": "a nan P or B fails every comparison: 'neither' (Part 1) or Stage A's label 'neither' (Part 2, E6/E7 of interchange.label).",
+    "E7_positive_control_fails": "N1 1K not 'reads b' in a part voids every scored reading of that part ('void'), reported beside the raw numbers.",
+    "E8_recipient_wrong": "a recipient the state answers wrongly still counts in P's denominator; P needs donor output != recipient output, so a broken recipient can raise P only if the patch moves it to the donor's answer.",
+    "E9_unchanged_vs_donor_count": "in Part 1 one of eq_donor_a_plus_1 / eq_donor_b equals 'unchanged' by construction (definitions), so 'changed' is the share to read for a patch that breaks the output."
+  },
+  "blind_to": "Part 1: the route on the recipient's text beyond block 6's re-reading (design_concerns 1). Part 2: whether the states treat |swap| 1-2 off-label rows as they treat their training rows; which feature of swap texture switches the route.",
+  "not_run_here": "Patches at a position other than '='; per-component (VPD) attribution; swap sizes above 2 in Part 2.",
+  "dry_run": "Model-free, 2026-10-29, through fleet/cpu-run (~/commute-data/scratch/reuse-lead/e55-amend4/dry.py, output dry.out; no model loaded): every model-free control true. Recipients 3,240 (|swap| 1: 1,323, 2: 950, 3: 586, 4: 255, 5: 101, 6: 20, 7: 5). Swap-recipient pairs 1,000 for each patch (the same first 1,000 recipients: |swap| 1: 419, 2: 281, 3: 181, 4: 86, 5: 28, 6: 4, 7: 1). Natural pairs 1,000 each, identical to the old pair_up loop (refactor check). Off-label pool 4,000 (|swap| 1: 1,871, 2: 2,129; count b - (count a + 1) from -9 to 7, never 0 or -1); off-label pairs 1,000 each (|swap| 1: 483, 2: 517). Answer transfer (patched output = donor output): Part 1 reads P_a 1.0, P_b 0.0 for BOTH an R-a and an R-b answerer (non-separating), N1-like 0.0, 1.0; Part 2 separates: R-a P_a 1, P_b 0, B_a 1, B_b 0; R-b the reverse; N1-like as R-b.",
+  "filed": "DRAFT 2026-10-29 by the code writer; the lead sets the leans, decides Part 1 vs Part 2 scoring and files (status not starting with 'draft') before any run."
+}

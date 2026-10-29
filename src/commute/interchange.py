@@ -52,20 +52,28 @@ class Pairs:
     donor: np.ndarray  # (n, TEXT): same count of the other operand, different count of f_op
 
 
-def pair_up(rng: np.random.Generator, texts: np.ndarray, f_op: int, n_pairs: int = N_PAIRS) -> Pairs | None:
-    """Pairs for the f_op patch: each text in order, while fewer than n_pairs, gets a donor drawn uniformly from the
-    texts with the same count of the other operand and a different count of f_op; a text with none is skipped.
-    Returns None (void) when fewer than MIN_PAIRS can be built."""
+def pair_index(rng: np.random.Generator, x: np.ndarray, pool: np.ndarray, f_op: int,
+               n_pairs: int = N_PAIRS) -> tuple[np.ndarray, np.ndarray]:  # fmt: skip
+    """(x indices, pool indices) for the f_op patch: each text of x in order, while fewer than n_pairs, gets a donor
+    drawn uniformly from the pool texts with its count of the other operand and a different count of f_op; a text
+    with none is skipped."""
     other = B if f_op == A else A
-    f, o = pcfg.count(texts, f_op), pcfg.count(texts, other)
+    fx, ox, fp, op_ = pcfg.count(x, f_op), pcfg.count(x, other), pcfg.count(pool, f_op), pcfg.count(pool, other)
     xs, ds = [], []
-    for i in range(len(texts)):
-        cand = np.flatnonzero((o == o[i]) & (f != f[i]))
+    for i in range(len(x)):
+        cand = np.flatnonzero((op_ == ox[i]) & (fp != fx[i]))
         if cand.size:
             xs.append(i)
             ds.append(int(rng.choice(cand)))
         if len(xs) == n_pairs:
             break
+    return np.array(xs, np.int64), np.array(ds, np.int64)
+
+
+def pair_up(rng: np.random.Generator, texts: np.ndarray, f_op: int, n_pairs: int = N_PAIRS) -> Pairs | None:
+    """Pairs for the f_op patch within one pool of texts (pair_index with x = pool). Returns None (void) when fewer
+    than MIN_PAIRS can be built."""
+    xs, ds = pair_index(rng, texts, texts, f_op, n_pairs)
     if len(xs) < MIN_PAIRS:
         return None
     return Pairs(texts[xs], texts[ds])
