@@ -537,8 +537,8 @@ longer reproduces stage 0b's G or g stops the job (C2). After branches 1 and 2 e
 flipped row and a write match in 19-20 s; Amendment 2 (Slurm 42791) matched a random row in 4-6 s. Here, per table:
 input moments (~2 s), W₀ split and the two reference rows (~6 s), the seed-0 random row (~3 s), the seed-1 match and
 its row (~8 s), the G-matched write (~4 s), the piece match (12 grid points and up to 40 halvings, each a split and a
-pass, ~1-2 s: under 90 s) and its row, and per-window passes for the bootstrap (about double each row's read). About
-2-3 minutes a table, 8-12 minutes with model load and the split bases: one `debug` card, under its 30-minute limit,
+pass, ~1-2 s: under 90 s) and its row, and per-window passes for the bootstrap (about double each row's read), and the in-span share on CPU (float64, 24 matrices, ~5-10 s for a full-model row). About
+3 minutes a table (the controls pass reloads each table), 12-16 minutes with model load and the split bases: one `debug` card, under its 30-minute limit,
 $0. Memory as stage 0 (48 GB host, one GPU; the 67M model, CPU float64 split bases and input moments).
 
 **Code.** `experiments/regating_table/amend3.py`. It imports from `run.py` (`Run`, `cells`, `read_state`,

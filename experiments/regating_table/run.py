@@ -79,9 +79,9 @@ def git_head() -> str:
     return subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
 
 
-def code_unchanged(commit: str) -> bool:
-    """The measurement code is as it was at `commit` (later doc commits do not count)."""
-    return subprocess.run(["git", "-C", str(REPO), "diff", "--quiet", commit, "--", *CODE], check=False).returncode == 0
+def code_unchanged(commit: str, paths: tuple[str, ...] = CODE) -> bool:
+    """The measurement code (`paths`) is as it was at `commit` (later doc commits do not count)."""
+    return subprocess.run(["git", "-C", str(REPO), "diff", "--quiet", commit, "--", *paths], check=False).returncode == 0
 
 
 class Clock:
@@ -372,15 +372,23 @@ def random_row(run: Run, t: Task, dW: dict[str, Tensor], ft: dict[str, Any], cap
             "grid": m["grid"], "trace": m["trace"]}
 
 
-def write_row(run: Run, t: Task, w: dict[str, Any], ft: dict[str, Any]) -> dict[str, Any]:
-    """P0.4's per-key direct write, alpha matched to the seed-0 fine-tune's real gain on this task; `fit` reads the write
-    on single held-out windows at W0 (report-only flag "ill_posed" when its mean relative error exceeds the filed bar)."""
-    task, lm = w["task"], run.model.target_model.lm_head.weight.detach().float()
-    A = PT.key_inputs(run.model, t.train.tokens, t.half, list(task.keys))
-    X = PT.key_write(A, lm[torch.tensor(task.values, device=lm.device)].T)
-    held_t = w["table"].to(lm.device)[t.held.tokens[:, t.half].to(lm.device)]
+def write_delta(run: Run, t: Task, keys: Any, values: Any) -> tuple[Tensor, dict[str, Any]]:
+    """P0.4's write direction X (alpha = 1; the write is {PT.WRITE_KEY: alpha X}) for an E12 table (`t.token` its lookup
+    table), read at W0, and `fit`: the write on single held-out windows (report-only flag "ill_posed" when its mean
+    relative error exceeds the filed bar). Moved out of `write_row` for amend3.py, unchanged."""
+    lm = run.model.target_model.lm_head.weight.detach().float()
+    A = PT.key_inputs(run.model, t.train.tokens, t.half, list(keys))
+    X = PT.key_write(A, lm[torch.tensor(values, device=lm.device)].T)
+    assert isinstance(t.token, Tensor), "a write needs the table's lookup tensor"
+    held_t = t.token.to(lm.device)[t.held.tokens[:, t.half].to(lm.device)]
     fit = PT.write_fit(X, A, PT.window_inputs(run.model, t.held.tokens, t.half), lm[held_t])
     fit["ill_posed"] = fit["rel_err_mean"] > run.P["thresholds"]["write_ill_posed_rel_err"]
+    return X, fit
+
+
+def write_row(run: Run, t: Task, w: dict[str, Any], ft: dict[str, Any]) -> dict[str, Any]:
+    """P0.4's per-key direct write, alpha matched to the seed-0 fine-tune's real gain on this task (`write_delta`)."""
+    X, fit = write_delta(run, t, w["task"].keys, w["task"].values)
     dw = lambda a: {PT.WRITE_KEY: (a * X).float()}
     if ft["G"] <= 0:
         return {"status": "no_target", "fit": fit}
