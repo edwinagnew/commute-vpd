@@ -371,7 +371,22 @@ make Γ pass on most of whatever small real change the disturbance causes.
 
 ## Advice and decision
 
-*Placeholder for the lead.*
+The tree ends at a card: P0.3 has no branch for "inconclusive", and stage 1 needs the user's go in any case. Nothing
+is decided here.
+
+**Fable's advice** (in full: `reports/reviews/2026-10-29_review_e46-card-fable-advice.md`). The gate gain is not
+silent under noise: it passes on roughly what a change does to the target. Learned updates are told from random ones
+because random ones do little; the separation is 8 to 100 times. So the 0.1-nat floor was the wrong null, not a
+broken instrument. The weaker point is P0.4, which passed: a hand write that by construction uses no existing
+subcomponent still reads 48-65% of a random-map fine-tune's gate gain. And stage 1's first number (gated piece gain
+over piece gain, after a least-squares split) has never been read on a null: the random δW and the write sit in Δ and
+were never split. Options: (1) adopt g with the random null as a relative bar and the write as a second null, then
+stage 1 (~$5 on the Qwen states); (2) nulls matched on G, which collapses into (1); (3) one more $0 debug job first,
+splitting the random δW and the write by least squares and reading stage 1's own ratio on them; (4) retire, which the
+replication and the separation do not support. Fable recommends (3), then (1) if the split nulls read ≤ 0.4; a ratio
+≥ 0.7 would mean stage 1 needs a different number before any pod starts.
+
+**Lead's view.** Agree with (3). It is a new measurement outside the approved tree, so it waits for the user.
 
 ## Scorecard
 
