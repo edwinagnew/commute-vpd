@@ -1,5 +1,7 @@
 # Writeup-lead digest, 2026-10-29
 
+*Update 10:05: you answered asks 4-7 at 10:00 (E44 rerun running; E45 Amendment 2 takes Fable's three changes); the skeleton now says so.*
+
 The skeleton of the preliminary-results write-up is done and current to the log's v97, so this lead has finished:
 what is left on the Qwen line waits on four decisions only you can make (asks 4-7, listed in
 `reports/digests/2026-10-29_digest_overnight-qwen.md`).
