@@ -212,6 +212,30 @@ All fit 27 min; none is split further.
 Edge cases of every rule (ties on a line, a missing or non-finite start, early stops, P < 0.9, an empty pool, a zero
 denominator) were run in `tests/test_claim_tests.py` before filing.
 
+## Amendment 2 (2026-10-29): t4c, the step-10 teacher-trained state
+
+*Lead, 2026-10-29, after all ten jobs ran. $0, one `debug` job. Predictions in `predictions.json` → `amendment_2`; every
+earlier key is unchanged.*
+
+An independent check of t4b found two problems. Its "falls" rests on one start: q is 0.65 at h0, but 0.96 and 1.07 at h1
+and h2. And step-10 plus remainder read 1.43 at h0 on the L40, 64% below E43's H100 reading, while the other states moved
+6-13%. t4b never read teacher training's own step-10 state, the reference E43 had.
+
+**t4c** reruns t4b's recipe and gates (C0 first) and reads three states at h0, h1 and h2: do-nothing, teacher training's
+own state alone, and plus remainder.
+- *Reproduction (stop rule).* Do-nothing and plus remainder must each match t4b's KL at every start within 1e-4
+  relative, or the job stops. Every quantity E47 read twice on the L40 agreed to 17 digits: W₀ in t4 and t4b, T5's
+  regenerated control in t5 and t5b, r1's do-nothing in t1 and t1b, and the saved states in t2 and t2b.
+- *Reading.* At each start, plus remainder is "between" when it lies between teacher training's own state and
+  do-nothing, ties included. It is "above" when above both and "below" when below both. The stage takes the common label
+  if all three starts share it, else "mixed"; a missing start leaves it unscored. Also reported: whether teacher training
+  reads below do-nothing at each start, the direction E43 found (0.61 of do-nothing at h0).
+- *Lean:* mixed (low).
+- *Time:* t4b's measured times on the L40 were 115 s per start per state (not §2's 135 s) and 6.2 min for C0. So:
+  1 + 6.2 + teacher training 2.0 + 3 × 5.75 = 26.5 min, inside the 35-min wall.
+- *Not run:* other batch orders (E43's 21% spread at step 10), the budget start, and an H100 rerun to explain the
+  difference between the cards.
+
 ## Not run
 The adversarial half of (iii) (settled from E22 and E31); the H100 lines. Of §3's cuts, Amendment 1 runs harness start h2
 for T1, rank 32 and the second row set for T2, step 10 for T4 and rate 0.003 for T5. Still not run: T1's arm-B and seed-1
