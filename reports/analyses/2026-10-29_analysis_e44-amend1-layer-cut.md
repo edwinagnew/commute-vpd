@@ -11,16 +11,21 @@ diagnosis `reports/analyses/2026-10-29_analysis_e44-no-teeth.md` and Fable's adv
 **In plain words.** We fed the importance function the fine-tuned model's activations for the first layers only and
 the original model's for the rest, then measured how much of the fine-tuned output its masks reproduce.
 The first sixteen layers' fine-tuned weights make 93% of the update's effect on the output, yet the masks recover none
-of it until they see the fine-tuned model's last layers. For `GOALS.md`, do-nothing's pass on the current test comes
-from the importance function copying the fine-tuned model's output, not from it describing the change.
+of it until they see the fine-tuned model's last layers. For `GOALS.md`, copying of the fine-tuned output is the most
+this says about do-nothing's pass, because an importance function that reads the change only from inputs of one
+model would look the same; a follow-up with consistent inputs, Amendment 1b, tells the two apart.
 
 ## The answer
 
-The masks follow the fine-tuned model's output, not the layers where the update acts. Given the fine-tuned
-activations of the first sixteen layers, Γ's masks move the masked model none of the way toward the fine-tuned one.
-Yet those layers' weights alone make 93% of the update's output effect. The masks reproduce the update
-only when Γ sees the residual stream at the last few layers. So do-nothing keeps 97% of the update on the current
-pass test because Γ copies the fine-tuned output, which weighs on the user's choice of pass test below.
+Under the splice, the masks follow the fine-tuned model's output, not the layers where the update acts. Given the
+fine-tuned activations of the first sixteen layers, Γ's masks move the masked model none of the way toward the
+fine-tuned one. Yet those layers' weights alone make 93% of the update's output effect. The masks reproduce the update
+only when Γ sees the residual stream at the last few layers. "Copying" is the filed upper bound, not a finding that Γ
+ignores the change: a Γ that reads the change only when all its inputs come from one model would also fail here.
+
+On these 16 rows, do-nothing's masks keep 93% of the update, one minus the ratio of the masked KL at the last cut to
+that at the first. The 97% quoted for E44 is a different reading, its stage D on 128 rows of 512 tokens with the
+original model's noise floor subtracted.
 
 ## What we were trying to test
 
@@ -115,15 +120,17 @@ site's own input, so their 0.22 includes the late sites' inputs, which are late 
 
 ## What we learned
 
-On Qwen, the masks that let do-nothing keep 97% of E40's step-10 update come from Γ reading the fine-tuned model's
-last few residual taps. They do not come from Γ responding to the early layers where the weights changed. So the
-pass test as built rewards any state whose activations end where the fine-tuned model's do. That says nothing about
-whether the update was written into the subcomponents.
+On Qwen, the masks that let do-nothing keep 93% of E40's step-10 update on these rows need Γ to see the fine-tuned
+model's last few residual taps. Fed the fine-tuned early activations beside the original late ones, Γ does not respond
+to the early layers where the weights changed. At most, then, the pass test as built rewards any state whose
+activations end where the fine-tuned model's do. The splice cannot rule out a Γ that reads the early change through
+its effect on the late taps, which it would see only when every input comes from one model.
 
 For the user's choice of pass test, this is an input, not a decision. Fable's option 1, Amendment 2, computes every
 state's masks from the original model's activations, which is reading B. Its cost was that it would give up route (b),
-Γ switching on different subcomponents for the fine-tuned model. On this update the route (b) that reading A credited
-is the copying seen here, so option 1 gives up little that reading A measured as re-gating. The plan's branch for
+Γ switching on different subcomponents for the fine-tuned model. On this update, option 1 gives up at most little that
+reading A measured as route (b). The splice cannot separate copying from a Γ that reads the change only from
+consistent inputs; Amendment 1b, which gives Γ the inputs of the partly fine-tuned model itself, tests that. The plan's branch for
 this verdict also asks whether Γ's inputs should be cut to early layers from now on. This run only shows that a cut at
 layer 16 removes the masks' reproduction entirely on this update.
 
@@ -157,6 +164,9 @@ None that reverse a prediction: the filed lean was copying, and copying was read
 
 ## What next
 
+- **Amendment 1b, consistent inputs, $0, filed 2026-10-29.** Γ gets every input from one model, the one with
+  fine-tuned weights before layer 16 or 24 and the original weights after. If its masks then reach at least half of what
+  those layers make, Γ reads the change downstream and option 1 gives up something; at most a fifth confirms copying.
 - **The user's choice of pass test.** This result goes on the card beside Fable's option 1. If the user takes option
   1, Amendment 2 reruns E44's controls with masks from the original model's activations and a random update matched on
   KL. If the user keeps reading A, every split passes on Qwen and the line moves to describing where δW lands.
@@ -181,6 +191,7 @@ None that reverse a prediction: the filed lean was copying, and copying was read
 - The web rows, and maths rows beyond the first 16 or past 256 tokens.
 - Stage S, and any split state: only do-nothing's masks were spliced.
 - Cuts between 24 and 28, which would place the jump to one layer.
+- Amendment 1b, Γ given the inputs of the partly fine-tuned model itself: filed, not yet run.
 - Amendment 2, the pass test with every state's masks from the original model's activations.
 
 ## Run and provenance
@@ -189,5 +200,8 @@ None that reverse a prediction: the filed lean was copying, and copying was read
   345 s, of which 220 s was loading the decomposition.
 - δW: `~/commute-data/results-large/qwen_sft/nowarmup_regen/dW/step_10.safetensors`, sha256 8b8509d2…beb9, matching
   `experiments/qwen_maps/results/regen_SHA256SUMS`.
-- Resources: GPU peak 44.7e9 bytes, inside the 44 GiB stop rule; host peak 52.5 GB against `--mem=48G`, not killed.
+- Resources: GPU peak 44.7e9 bytes, inside the 44 GiB stop rule. Host memory: the plan asked for `--mem=64G`; the
+  lead lowered it to `--mem=48G` after the code review, and the job ran at 48G. The log's host peak, the process's
+  maximum resident set, read 52.5 GB, above that limit, and the job was not killed; the resident set also counts
+  file-backed pages, which the limit need not charge. Amendment 1b asks for 64G.
 - Figure: `experiments/qwen_maps/plot_amend1.py`, reading `amend1_score.json` only.
