@@ -1,6 +1,6 @@
-# DRAFT plan: the stand-in ratio on an anchor the original model performs (lowercase Pile against a token cipher)
+# Plan (E53): the stand-in ratio on an anchor the original model performs (lowercase Pile against a token cipher)
 
-**DRAFT, awaiting the user's choice on ask #8 (option A). Nothing here is filed, coded or running.** Written 2026-10-29
+**Option A approved by the user 2026-10-29 (ask #8): "go with A, run the 2-minute check first". Stage A0 runs alone first; the fine-tunes wait on A0 and on the open questions below.** Written 2026-10-29
 by a design subagent for the regating-lead. Builds on `reports/plans/2026-10-29_plan_restore-anchors.md` (its option C)
 and the E50 card in `reports/analyses/2026-10-29_analysis_e50-restore-anchors.md`. Words as in `GOALS.md` → Terms.
 

@@ -7,6 +7,11 @@
                        training buys.
   log_offtarget.png    component training's adversarial ratio against its off-target KL, one point per task-seed.
 
+And one for the analysis note A1 (reports/analyses/2026-10-20_analysis_adversarial-vs-stochastic.md):
+  log_a1_checks.png    per task, seed 0: the extra damage over the unchanged model (nats) of the adversary's mask
+                       (pgd_kl), the all-at-importance mask (ci_masked_kl) and random masks (stochastic_kl), mean of
+                       the two blocks; reads results/coverage.json only.
+
 Reads results/coverage.json (five tasks) and results/coverage_emoticon.json (the 2026-10-20 emoticon rerun).
 Usage (repo root):  python experiments/reading_a_coverage/plot_log.py
 """
@@ -135,11 +140,64 @@ def fig_offtarget(data: dict[str, tuple[dict[str, Any], dict[str, Any]]]) -> Non
     save(fig, "log_offtarget.png")
 
 
+# ---- A1 (analysis note, 2026-10-20): the three checks' extra damage per task ----
+
+A1_ORDER = ("r2_t275_v2667", "r0_t352_v310", "r1_t534_v369", "r2_t359_v816", "r1_t588_v452")
+A1_VERDICT = {  # E11's reading of the adversarial ratio (fail line 1.5)
+    "r2_t275_v2667": "fails", "r0_t352_v310": "fails", "r1_t534_v369": "fails",
+    "r2_t359_v816": "at the line", "r1_t588_v452": "passes",
+}
+A1_CHECKS = (  # (key, label, colour, marker)
+    ("pgd_kl", "adversary's chosen mask", "#c0392b", "o"),
+    ("ci_masked_kl", "every subcomponent down to its importance, together", INK, "s"),
+    ("stochastic_kl", "random masks (VPD's random-mask check)", "#8a8884", "D"),
+)
+A1_FLOOR = 1e-3  # the log axis starts here; changes at or below it (some are negative) sit on the edge, hollow
+
+
+def a1_extra(task: dict[str, Any], w0: dict[str, Any], key: str) -> float:
+    """Seed-0 component training's damage (mean of the two blocks) minus the unchanged model's, in nats."""
+    return float(np.mean(task["seeds"]["0"]["pullback"]["pile"]["raw"][key])) - w0["mean"][key]
+
+
+def fig_a1_checks() -> None:
+    d = json.loads((RESULTS / "coverage.json").read_text())
+    fig, ax = plt.subplots(figsize=(9.5, 4.6))
+    labels = []
+    for row, n in enumerate(A1_ORDER):
+        t, y = d["tasks"][n], len(A1_ORDER) - 1 - row
+        ex = {k: a1_extra(t, d["W0"], k) for k, *_ in A1_CHECKS}
+        ax.plot([max(ex["ci_masked_kl"], A1_FLOOR), ex["pgd_kl"]], [y, y], color=GRID, lw=3, zorder=1)
+        for k, lab, col, mk in A1_CHECKS:
+            low = ex[k] <= A1_FLOOR
+            ax.scatter(max(ex[k], A1_FLOOR), y, s=50, marker=mk, zorder=3, label=lab if row == 0 else None,
+                       facecolor="white" if low else col, edgecolor=col, lw=1.4)
+        fold = ex["pgd_kl"] / ex["ci_masked_kl"]
+        ax.text(20, y, f"{float(f'{fold:.1g}'):g}×", va="center", ha="right", fontsize=9.5, color=INK)
+        r = t["seeds"]["0"]["pullback"]["pile"]["ratio"]["pgd_kl"]
+        labels.append(f"{NAME[n]}\nadversarial ratio {r:.2f}, {A1_VERDICT[n]}")
+    ax.set_yticks(range(len(A1_ORDER) - 1, -1, -1), labels, fontsize=8.5)
+    ax.tick_params(axis="y", length=0)
+    ax.set_xscale("log")
+    ax.set_xlim(A1_FLOOR * 0.8, 22)
+    ax.set_ylim(-0.6, len(A1_ORDER) - 0.3)
+    ax.text(20, len(A1_ORDER) - 0.55, "adversary ÷\nall-down mask", ha="right", va="bottom", fontsize=8, color=MUTED)
+    ax.set_xlabel("extra damage over the unchanged decomposition (nats, log scale; hollow = 0.001 or less)")
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    ax.grid(axis="x", color=GRID, lw=0.6)
+    ax.set_axisbelow(True)
+    ax.set_title("On every task the adversary's mask does 7 to 300 times the extra damage of turning\n"
+                 "every subcomponent down together; random masks add less than either", fontsize=10)
+    ax.legend(frameon=False, fontsize=8, loc="upper center", bbox_to_anchor=(0.4, -0.16), ncol=2)
+    save(fig, "log_a1_checks.png")
+
+
 def main() -> None:
     data = load()
     fig_adversarial(data)
     fig_unmasked(data)
     fig_offtarget(data)
+    fig_a1_checks()
 
 
 if __name__ == "__main__":

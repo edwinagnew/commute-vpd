@@ -7,4 +7,5 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
-- 2026-10-29 · decisions.md (E39 LoRA-SGD run dropped) · E39 card "What next", next section commute line · the rank-8 LoRA trained by plain SGD is dropped (user): E49 shows the check has no power on SGD-trained updates on these rows.
+- 2026-10-29 · decisions.md (last row), reports/plans/2026-10-29_plan_performed-anchor.md · decision card decision-e50-regating-next (remove: user chose A), decisions section, next section, timeline · E53 approved: the stand-in ratio on lowercase Pile (performed by the original model) vs a token cipher; A0 check first.
+- 2026-10-29 baseline-lead: card decision-baselines decided (user: run B2, B3 and B4) -> remove the card, record in decisions.md; E52 designed in reports/plans/2026-10-29_plan_baselines-scoping.md, code being written.
