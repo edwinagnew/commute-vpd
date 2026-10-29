@@ -146,7 +146,7 @@ def fig_reverts(r: dict[str, Any]) -> None:
     plt.close(fig)
 
 
-ARMS = {"adam": ("Adam fine-tune, rate 3e-5", ADAM_C), "sgd": ("SGD fine-tune, rate 0.01, Amendment 1", SGD_C),
+ARMS = {"adam": ("Adam fine-tune, rate 3e-5", ADAM_C), "sgd": ("SGD fine-tune, rate 0.01", SGD_C),
         "lora": ("rank-8 LoRA fine-tune, rate 1e-4", LORA_C)}
 
 
@@ -167,19 +167,20 @@ def fig_shape(r: dict[str, Any], a1: dict[str, Any], e37: dict[str, Any]) -> Non
     for off, (arm, pts) in zip((-0.22, 0.0, 0.22), shape_points(r, a1, e37).items(), strict=True):
         s, (name, c) = sh[arm], ARMS[arm]
         ax.scatter([], [], color=c, s=60, label=f"{name}: held-out gain {s['gain']:.3f}, stable rank "
-                   f"{s['stable_rank']['mean']:.1f}, outside share {s['outside_share']:.2f} (random {s['outside_null']:.2f})")
+                   f"{s['stable_rank']['mean']:.1f}")
         for i, (v, kept, hollow) in enumerate(pts):
             ax.scatter(i + off, v, s=70, zorder=5, color="white" if hollow else c, edgecolors=c, lw=1.6)
             ax.annotate(f"{v:.2f}\nkept {kept:.2f}", (i + off, v), xytext=(7, 0), textcoords="offset points",
                         fontsize=6.5, ha="left", va="center")
-    ax.scatter([], [], s=70, color="white", edgecolors=ADAM_C, lw=1.6, label="hollow: read in E37, same card and W₀ readings")
+    ax.scatter([], [], s=70, color="white", edgecolors=ADAM_C, lw=1.6, label="hollow: read in an earlier run (E37), same setup")
+    ax.plot([], [], " ", label="kept: the share of the fine-tune's held-out gain the state keeps")
     ax.set_xticks(range(3), places, fontsize=8)
     ax.set_xlim(-0.5, 2.6)
     ax.set_ylim(0.8, 5.2)
     ax.set_ylabel(CHECK_X)
     ax.legend(fontsize=7, loc="upper left", bbox_to_anchor=(0.0, -0.13), frameon=False)
     ax.set_title("Does a less spread-out update give a less fragile trained decomposition?\n"
-                 "For the LoRA, yes; for SGD, no: its trained decomposition fails like Adam's", fontsize=9, loc="left")
+                 "On these Pile rows the LoRA's copy passes and the SGD one fails like Adam's; on new Pile rows the SGD one passes", fontsize=9, loc="left")
     style(ax)
     fig.tight_layout()
     fig.savefig(FIG / "shape.png", dpi=150)

@@ -26,6 +26,8 @@ from commute.faith_score import LINE, verdict
 HERE = Path(__file__).resolve().parent
 EXP = HERE.parent
 FIGURES = HERE / "figures"
+TASK_NAME = {"emoticon": "emoticon", "r0_t352_v310": "' it' → ' is'", "r1_t534_v369": "' which' → ' was'",
+             "r2_t275_v2667": "' in' → ' Fig' (rare target)"}
 TASKS = ("emoticon", "r0_t352_v310", "r1_t534_v369", "r2_t275_v2667")
 COLOUR = {"SGD": "C0", "Adam": "C1"}
 MARKER = {"component training": "o", "do-nothing": "s", "least-squares split": "D", "adjoint split": "^"}
@@ -191,7 +193,7 @@ def fig_size_damage(states: list[dict[str, Any]], f: float) -> None:
             ax.set(xscale="log", yscale="log", title=f"{opt} updates")
             if r == 1:
                 ax.set_xlabel(xl)
-        axes[r, 0].set_ylabel("adversarial Pile KL / W₀'s\n(20-step adversary)")
+        axes[r, 0].set_ylabel("adversarial ratio\n(1 = as faithful as the original)")
     for kind, m in MARKER.items():
         axes[0, 1].scatter([], [], marker=m, color="0.4", label=kind)
     axes[0, 1].scatter([], [], facecolors="none", edgecolors="0.4", label="did not learn (hollow)")
@@ -218,8 +220,8 @@ def fig_steps(f: float) -> None:
             for step, pgd, p in pts:
                 ax.scatter(step, pgd, color=c, facecolors=c if p >= 0.9 else "none", zorder=3)
         ax.set(xscale="log", yscale="log", xticks=[10, 100, 1000], xticklabels=["10", "100", "1000"],
-               xlabel="training step", title=task)
-    axes[0].set_ylabel("adversarial Pile KL / W₀'s (20-step adversary)")
+               xlabel="training step", title=TASK_NAME.get(task, task))
+    axes[0].set_ylabel("adversarial ratio (1 = as faithful as the original)")
     axes[0].legend(fontsize=7, title="hollow: P(target) < 0.9", title_fontsize=7)
     fig.suptitle("When does each update fail the adversarial check? Grey band: inconclusive; dotted: original model",
                  fontsize=10)

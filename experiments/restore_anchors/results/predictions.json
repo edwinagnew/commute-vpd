@@ -1,0 +1,57 @@
+{
+ "experiment": "E50 restore_anchors",
+ "filed": "2026-10-29, before any run; never edited after the run",
+ "plan": "reports/plans/2026-10-29_plan_restore-anchors.md, section 'Filed (E50)' (option A; approved by the user 2026-10-29)",
+ "states": {
+  "classes": {"ident32": "copy", "ident32b": "copy", "rand32": "random", "rand32b": "random"},
+  "seeds": ["s0", "s1"],
+  "source": "experiments/regating_table/results/large/{windows_<table>.pt, <table>_<seed>.pt}, sha256 as experiments/regating_table/results/stage0a.json records (E46 stage 0a)",
+  "placement": "do-nothing: released subcomponents, delta-W in Delta, Gamma frozen",
+  "position": "the key position half = 20 of the held-out windows"
+ },
+ "sets": {
+  "S": "alive subcomponents whose mean importance at the key position over the training windows rises by more than 0.3 (recruit.switched(regating.shift_of(...), 0.3))",
+  "gold": "the |S| alive subcomponents of largest W0 contrast at Pile val rows 0-2000 positions whose next token is one of the table's 32 values (recruit.ContrastAcc, signatures.top_by)",
+  "D": "E38 Amendment 5: per matrix, the |S in k| alive subcomponents outside S of largest training-window e_c (recruitment.top_per_matrix)",
+  "every_alive": "every alive subcomponent",
+  "random": "recruit.random_like(S, alive, i), i = 0..19"
+ },
+ "pile": ["val", 0, 2000],
+ "n_random": 20,
+ "controls": {
+  "C1_T0_tol": 0.02,
+  "C1_path_tol": 0.001,
+  "C2_T1_rel_tol": 0.02,
+  "R0_empty_tol": 1e-05,
+  "R1_w0_tol": 0.01,
+  "R2_whole_tol": 0.01,
+  "expected": {"R0": 0.0, "R1": 0.0, "R2": 0.0}
+ },
+ "thresholds": {
+  "min_gain": 1.0,
+  "gap": 0.3,
+  "low": 0.2,
+  "random_bites": 0.15
+ },
+ "expected": {
+  "copy": {"every_alive_min": 0.5, "S_min": 0.2, "gold_min": 0.1, "D_min_minus_S": -0.05},
+  "random": {"every_alive_max": 0.2, "S_max": 0.05, "gold_max": 0.1, "D_max": 0.2},
+  "random_sets": {"abs_mean_max": 0.05, "max_max": 0.15},
+  "stand_in_ratio": {"copy": [0.87, 0.97], "random": [0.36, 0.41]},
+  "reading": "separates (on every_alive)"
+ },
+ "rules": {
+  "gap": "for X in (every_alive, S), seed s: gap = min over copy tables of rho_X - max over random-map tables of rho_X; separates if gap >= 0.3 on both seeds; reversed if max(copy) - min(random) <= -0.3 on both seeds; unscored if either seed has a state unscored for X; else does not separate",
+  "unscored_state": "every X when G < 1 nat; X when rho_X is not finite; S also when |S| = 0 or the random sets' max rho > 0.15",
+  "reading": "first match: conflict (one of every_alive, S separates and the other is reversed); separates; toys unreadable (every_alive scored and <= 0.2 on all eight states); reversed; unscored (every_alive unscored); does not separate",
+  "reported_only": "gold, D, the random means and the stand-in ratio against 'expected'; they change no verdict"
+ },
+ "noise_floor": "one restore under bf16 ~0.02 nats (E38 Amendment 3 R4b), ~0.0015 of G; E38 seed spread on rho(S), rho(every_alive) <= 0.035; the random draws' sd per state is reported",
+ "stop_rules": [
+  "no predictions.json: refuse to start",
+  "an E46 window or state file missing or not its recorded sha256: exit before any reading",
+  "controls C1, C2, R0, R1, R2 on all eight states before any share; any miss: results written, FAIL logged, exit 1",
+  "results JSON rewritten after each state; every scored number printed to the log",
+  "G < 1 nat is not a stop: that state is unscored"
+ ]
+}
