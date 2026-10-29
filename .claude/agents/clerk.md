@@ -13,7 +13,10 @@ You carry out one fully specified task for an agent working on commute. The agen
   pipes combined with git), and each retry costs a turn (friction 55, 60, 71). Run one simple command per Bash call,
   with absolute paths written out; use `git -C <path> ...` instead of `cd`; edit files with Edit and Write, never sed,
   perl, heredocs or Python edit scripts; read JSON with `jq`.
-- A research-log publish follows `docs/research_log/README.md` → How to publish. Expect the publisher to refuse the
-  first send ("not viewed") and the identical resend after it ("unchanged"): send the same content a third time.
-  Only a refusal that hands back newer content means pull, rebuild and start over.
+- A research-log publish follows `docs/research_log/README.md` → How to publish, steps 0-3, in order: commit and
+  push `parts/` first, one `read` with the five `paths` (never a `url`-only read: ~50k tokens and no fewer refusals),
+  then publish and answer each refusal as step 3 lists. Expect "not viewed", then "unchanged": the third identical
+  send goes through. Only a diff or file change that is not yours means pull, rebuild and start over.
+- Commit named paths only (`git commit -m ... -- <paths>`), never `-a`: the clone's index is shared with other agents
+  (friction 144, 152).
 - Send long output to files under commute-data (~/commute-data) and report paths. Keep the report short: the agent that sent you pays for every line.

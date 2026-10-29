@@ -151,8 +151,18 @@ def unwrap(live: str) -> str:
     return live
 
 
+def unmapped_figures(pages: dict[str, str]) -> list[str]:
+    """Figures the pages show that README.md's published-figures list does not name, so no publish can find them."""
+    listed = set(re.findall(r'"(fig/[^"]+)":', (HERE / "README.md").read_text()))
+    shown = {m for text in pages.values() for m in re.findall(r'src="(fig/[^"]+)"', text)}
+    return sorted(shown - listed)
+
+
 def main() -> None:
     global PARTS
+    if any(a in ("-h", "--help") for a in sys.argv[1:]):
+        print(__doc__)  # it built the log instead (friction 161)
+        return
     if len(sys.argv) == 3 and sys.argv[1] == "--check-head":
         git = ["git", "-C", str(HERE.resolve())]
         top = subprocess.run([*git, "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True)
@@ -171,6 +181,7 @@ def main() -> None:
         for name, text in pages.items():
             live = Path(sys.argv[2]) / name
             if not live.exists():
+                # index.html is not saved by a paths read; the publisher's own refusal checks it (README, step 2).
                 print(f"{name}: not in {sys.argv[2]}")
                 continue
             diff = list(
@@ -191,6 +202,8 @@ def main() -> None:
     for name, text in pages.items():
         (OUT / name).write_text(text)
     print(f"built {', '.join(pages)} in {OUT}")
+    for fig in unmapped_figures(pages):
+        print(f"warning: {fig} has no source line in README.md's figure list; add one (friction 163)")
 
 
 if __name__ == "__main__":

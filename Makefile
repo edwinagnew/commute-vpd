@@ -6,8 +6,10 @@
 # import this clone's own src/ (pytest's pythonpath; pyright adds src/ itself).
 export UV_NO_SYNC := 1
 
-# pyright's node.js: the cluster worker cannot build one (nodeenv fails there, 2026-10-27), so use the working copy in
-# the shared artifacts folder when the clone has it.
+# pyright's node.js: nodeenv cannot build one unpinned (it parses the newest, an "-alpha" release, and crashes), so use
+# the working copy in the shared artifacts folder when the clone has it. ~/.cache/pyright-python/nodeenv, which a bare
+# `.venv/bin/pyright` uses, was rebuilt with node 22.11.0 on 2026-10-29 (friction 141, 178, 183); to rebuild it:
+# fleet/cpu-run .venv/bin/python -m nodeenv -n 22.11.0 ~/.cache/pyright-python/nodeenv
 ifneq ($(wildcard artifacts/pyright-cache/pyright-python/nodeenv/bin),)
 export PYRIGHT_PYTHON_CACHE_DIR ?= $(CURDIR)/artifacts/pyright-cache
 endif

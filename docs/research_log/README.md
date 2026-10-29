@@ -69,14 +69,10 @@ Updates are queued, not applied one by one. When any event above happens, append
 event's file is written (date, file, log sections, what changed). Flush the queue before the session ends, and at
 least once a day:
 
-1. Check nobody else has published since the last build. `Artifact read` with `url` and
-   `paths: ["index.html", "experiments.html", "changelog.html"]` (small files come back inline, so leave out pages
-   you are not changing), then `python3 docs/research_log/build.py --check <the directory it saved to>`. Run it
-   here, not through `fleet/cpu-run`: it is stdlib only, the dev-node hook allows it, and the worker cannot see the
-   `/ephemeral` folder the read saves to (2026-10-27, three times). "same" on
-   every page: build on `parts/` as is. A diff: someone published without committing `parts/`. Merge the diff into
-   `parts/` first. With local edits to `parts/` already made, `--check-head <dir>` compares `parts/` as committed
-   at HEAD instead, so the edits need not be set aside (friction 109).
+1. Check nobody else has published since the last build: How to publish → step 2 below (one read serves both this
+   check and the publisher). "same" on every page: build on `parts/` as is. A diff: someone published without
+   committing `parts/`. Merge the diff into `parts/` first. With local edits to `parts/` already made, use
+   `--check-head <dir>`, which compares `parts/` as committed at HEAD (friction 109).
 2. Run the completeness check, so nothing written since the last flush is missed:
    ```
    last=$(grep -o '<td class="c">20[0-9-]*</td>' docs/research_log/parts/sections/changelog.html \
@@ -144,17 +140,34 @@ From a Claude Code session, with the Artifact tool:
    flushes both claimed v73, friction 37). `<role>` is the lead's role name (`commute-lead`, ...); a clerk is given it
    in its brief. If another role holds the lock, wait and retry; a lock older than 45 min may be taken over.
 1. `git pull --no-rebase`, then `python3 docs/research_log/build.py`, so the build has every other session's changes.
-2. Right before every publish, not just a session's first, two calls; the publisher needs both:
+   Commit `parts/` (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md README.md`) and push
+   **before** publishing: a published version whose `parts/` sat uncommitted or unpushed made the next flush merge it
+   back from the live page (friction 138, 139). If the pull brought in parts edits, rebuild before publishing, or the
+   live page lags the repo (friction 153).
+2. Read the live files you will pass, once, with paths, into one folder:
 
    ```
    Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu
-   Artifact list    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   scope: "files"
+                    paths: ["experiments.html", "glossary.html", "changelog.html", "style.css", "script.js"]
    ```
-   The read with `url` alone is what counts as viewing the page: a read with `paths`, even one naming `index.html`,
-   saves the files but does not (refused "not viewed" on every such try, 2026-10-27). The listing covers every
-   already-published file you will pass without bringing any into context (a `paths` read inlines glossary, style
-   and script, about 15k tokens).
-3. Publish at once:
+   then `python3 docs/research_log/build.py --check <the folder it saved to>` (or `--check-head`), here on the dev
+   node, not through `fleet/cpu-run`: it is stdlib only, the hook allows it, and the worker cannot see `/ephemeral`.
+   This read counts as reading every non-index file (the "changed since seen" refusals of friction 162, 167, 168, 175
+   came from pages not read this way). It costs ~15k tokens; that is the price of one publish, not a retry.
+   Do **not** `read` with `url` alone first: it inlines the whole 180 KB page (~50k tokens) and on 2026-10-28/29 the
+   first send was refused "not viewed" all the same (friction 115, 160, 165, 169, 171). `index.html` is checked by
+   the publisher's own refusal instead (step 3).
+3. Publish (below). Expect this sequence and follow it without deciding anything:
+   - **Refused "not viewed", with a diff**: the refusal counts as the view. If the diff shows only your own edits,
+     nobody else published the main page: send the **identical** publish again. If it shows edits that are not yours,
+     another session published: pull, rebuild, merge, back to step 1.
+   - **Refused as an unchanged resend**: send the identical publish once more. On every flush 10-27 to 10-29 the
+     third send went through (friction 91, 96, 100, 143, 160, 161, 165, 169, 175).
+   - **Refused "changed since seen" naming a file**: another session published it: `Artifact read` with that path,
+     `--check`, merge into `parts/` if it differs, rebuild, publish.
+   - **Asked to Read a saved file in full**: Read it, in parts, then publish. Budget for it; it is rare once step 2's
+     paths are read (friction 82, 112, 115).
+   Anything else: stop and report it with the refusal text.
 
 ```
 Artifact publish
@@ -170,25 +183,9 @@ Artifact publish
 ```
 
 Files already published stay unless passed as `null`. The nav's version line is on every page, so a flush that adds a
-changelog row publishes all four pages and both assets; new figures are added to the map.
-
-The publisher refuses a page the session has not viewed, and any file already on the artifact that the session has
-not read or listed, or that changed since it did. Step 2 covers both. Several sessions publish this log, so a
-refusal that hands back newer content means another one published in between: `git pull`, rebuild, repeat steps 2
-and 3, never resending the refused content unchanged. A refusal for a missing view or read means step 2 was skipped:
-make the missing call and send the same publish again. If that resend is refused as unchanged, send it once more;
-on 2026-10-27 that went through each time.
-
-What the publisher did on 2026-10-28 (friction 43, 46, 48, 60), so a flush plans for it instead of retrying blind:
-- `build.py --check` saying `same` does not count as a view or a read: the publisher's rules are its own, and only
-  its own read, listing or refusal satisfies them.
-- Three sends per flush were common (v71, v79, v82): refused "not viewed", then refused as an unchanged resend, then
-  accepted. The refusal's own diff counts as the view, and the identical resend after it is expected: send it.
-- Twice it asked for every line of the saved live page to be Read (~70k tokens) before it would publish. That is the
-  publisher's requirement for files the session did not write, not a step to skip: Read the file it names, in parts,
-  then publish. Budget a flush's context for it.
-- Never `Artifact read` the log with `paths` "to be safe": it inlines glossary, style and script (~15k tokens) and
-  still does not count as viewing the page.
+changelog row publishes all four pages and both assets; new figures are added to the map, and every new figure needs
+a line in the list below in the same commit (friction 163). `Artifact list` with `scope: "files"` takes no `limit`
+(friction 162, 169).
 
 Figures already published (their sources, for a re-upload):
 - "fig/overview_component_training.png": "docs/research_log/component_training_tasks.png"
@@ -456,3 +453,8 @@ Figures already published (their sources, for a re-upload):
 - "fig/e50_log_sets.png": "experiments/restore_anchors/figures/log_sets.png"
 - "fig/e50_log_s_size.png": "experiments/restore_anchors/figures/log_s_size.png"
 - "fig/e50_log_probe.png": "experiments/restore_anchors/figures/log_probe.png"
+- "fig/e44_amend1_layer_cut.png": "experiments/qwen_maps/figures/amend1_layer_cut.png"
+- "fig/e49_blocks.png": "experiments/row_blocks/figures/blocks.png"
+- "fig/e49_hard_block.png": "experiments/row_blocks/figures/hard_block.png"
+- "fig/e51_erank_vs_size.png": "experiments/baseline_weights/figures/erank_vs_size.png"
+- "fig/e51_weights.png": "experiments/baseline_weights/figures/weights.png"

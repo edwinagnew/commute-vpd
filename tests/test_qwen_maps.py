@@ -256,6 +256,7 @@ def _load_run(monkeypatch, tmp_path):
 
     def job(waive=""):
         a = argparse.Namespace(out=str(tmp_path / "out"), e40=str(tmp_path), e40_large=str(tmp_path), decomp="",
+                               results=str(tmp_path),  # job.py reads --results (friction 179)
                                usd_per_h=3.0, prior_usd=0.5, waive=waive)
         return mods["job"].Job(a, mods["job"].REHEARSAL, mods["qwen_maps_run"].score)
 

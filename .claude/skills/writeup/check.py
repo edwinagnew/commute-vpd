@@ -2,14 +2,18 @@
 
     uv run python .claude/skills/writeup/check.py notebooks/x.ipynb reports/analyses/y.md
 
-Reads the markdown cells of a notebook or the text of a .md file, skips code, tables and headings, and prints
+Reads the markdown cells of a notebook, the text of a .md file or the prose of an .html log card (tags become sentence
+breaks, alt text and tables are dropped: they merged sentences and inflated the flags, friction 151, 157, 164), skips
+code, tables and headings, and prints
 every sentence over 25 words, with more than two numbers, with a parenthesis, with a prediction code outside
 the scorecard section, or with a retired term ("pull-back", "lift", "projection", 2026-10-20; "H′", now the fixed-shift hypothesis, 2026-10-22; `GOALS.md` → Terms). The limits are guidelines: a flag means "look at this sentence", not "rewrite it". Ends with
-one summary line per file. Stdlib only; counts are approximate on purpose.
+one summary line per file. A file:line citation, bare or in parentheses, is not prose and is not flagged (friction
+159). Stdlib only; counts are approximate on purpose.
 """
 
 from __future__ import annotations
 
+import html
 import json
 import re
 import sys
@@ -22,9 +26,21 @@ SIZE_WORDS = r"steps?|seeds?|ranks?|layers?|rungs?|rounds?|cells?|epochs?|checkp
 NUMBER = re.compile(rf"(\b(?:{SIZE_WORDS}) )?(?<![\w.])[-+]?\d+(?:[.,]\d+)*%?(?![\w.])")
 CODE = re.compile(r"\b[PGCR]\d+′?\b|\be_(?:Δ|gate|delta)\b|\bkl_other\b")
 RETIRED = re.compile(r"\b(pull[- ]?backs?|lifts?|lifted|lifting|projections?)\b|(?<!\w)H[′'](?!\w)", re.IGNORECASE)
-INLINE = re.compile(r"`[^`]*`|\[([^\]]*)\]\([^)]*\)|\$[^$]*\$")
+INLINE = re.compile(r"`[^`]*`|\[([^\]]*)\]\([^)]*\)|\$(?!\d)[^$]*\$")  # $(?!\d): "$0.40" is money, not maths
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z\*\"“(])")
 ITALIC_LINE = re.compile(r"\*[^*\s][^*]*\*|_[^_\s][^_]*_")
+# A source citation such as experiments/x/run.py:83 or src/commute/vpd.py; a parenthesis holding one is dropped whole.
+PATH = r"(?<![\w/])[\w.-]*/[\w./-]*\.\w+(?::\d+(?:-\d+)?)?|\b[\w-]+\.(?:py|md|ipynb|json|toml|sh|html)(?::\d+(?:-\d+)?)?"
+CITATION = re.compile(rf"\s*\([^()]*(?:{PATH})[^()]*\)|`?(?:{PATH})`?")
+EMPTY_PAREN = re.compile(r"\s*\([\s,;:]*\)")  # what is left of "(`code`)" once the code is dropped
+# Dropped whole: code, styles, tables, images (their alt text) and a card's id, chip and date line.
+DROP_HTML = re.compile(
+    r"<(script|style|table|svg)\b.*?</\1>|<img\b[^>]*>|<span class=\"(?:when|id|chip)\b[^\"]*\">.*?</span>",
+    re.DOTALL | re.IGNORECASE,
+)
+BLOCK_TAG = re.compile(
+    r"</?(p|div|li|ul|ol|h[1-6]|br|tr|article|section|header|figure|figcaption|dt|dd|blockquote)\b[^>]*>", re.IGNORECASE
+)
 
 
 def markdown_chunks(path: Path) -> list[tuple[str, str]]:
@@ -32,7 +48,20 @@ def markdown_chunks(path: Path) -> list[tuple[str, str]]:
     if path.suffix == ".ipynb":
         nb = json.loads(path.read_text())
         return [(f"cell {i}", "".join(c["source"])) for i, c in enumerate(nb["cells"]) if c["cell_type"] == "markdown"]
+    if path.suffix == ".html":
+        return [("", html_to_markdown(path.read_text()))]
     return [("", path.read_text())]
+
+
+def html_to_markdown(text: str) -> str:
+    """Prose of an HTML card as markdown lines: one line per block, headings as #, list items as -, no tags."""
+    text = DROP_HTML.sub("\n", text)
+    text = re.sub(r"<h[1-6]\b[^>]*>", "\n# ", text, flags=re.IGNORECASE)
+    text = re.sub(r"<li\b[^>]*>", "\n- ", text, flags=re.IGNORECASE)
+    text = re.sub(r"<code\b[^>]*>(.*?)</code>", r"`\1`", text, flags=re.DOTALL | re.IGNORECASE)
+    text = BLOCK_TAG.sub("\n", text)
+    text = html.unescape(re.sub(r"<[^>]+>", "", text))
+    return "\n\n".join(" ".join(line.split()) for line in text.splitlines())
 
 
 def prose_lines(md: str) -> tuple[list[str], list[str]]:
@@ -42,12 +71,16 @@ def prose_lines(md: str) -> tuple[list[str], list[str]]:
         if line.startswith("```"):
             fenced = not fenced
             continue
-        if fenced or not line.strip() or line.lstrip().startswith("|"):
+        if not line.strip() and not fenced:
+            lines.append("")  # a paragraph break: an unpunctuated line no longer runs into the next block
+            headings.append(heading)
+            continue
+        if fenced or line.lstrip().startswith("|"):
             continue
         if line.startswith("#"):
             heading = line.lstrip("# ").strip()
             continue
-        lines.append(INLINE.sub(lambda m: m.group(1) or "", line))
+        lines.append(EMPTY_PAREN.sub("", INLINE.sub(lambda m: m.group(1) or "", CITATION.sub("", line))))
         headings.append(heading)
     return lines, headings
 
@@ -55,9 +88,11 @@ def prose_lines(md: str) -> tuple[list[str], list[str]]:
 def sentences(lines: list[str], headings: list[str]) -> list[tuple[str, str]]:
     out, buf, head = [], [], ""
     for line, h in zip(lines, headings, strict=True):
-        if buf and (h != head or line.lstrip().startswith(("-", "*", "1", "2", "3", "4", "5"))):
+        if buf and (not line or h != head or line.lstrip().startswith(("-", "*", "1", "2", "3", "4", "5"))):
             out.extend((s, head) for s in SENTENCE_END.split(" ".join(buf)))
             buf = []
+        if not line:
+            continue
         buf.append(line.strip())
         head = h
         if ITALIC_LINE.fullmatch(line.strip()):  # a dated *...* header line is its own sentence (friction 70)
