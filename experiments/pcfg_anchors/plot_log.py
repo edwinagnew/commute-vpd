@@ -15,7 +15,7 @@ from plot import FIG, fig_controls, fig_labels, fig_table6
 
 def main() -> None:
     FIG.mkdir(exist_ok=True)
-    fig_labels("log_labels.png", "Counters that learned b do not use the count of a; spurious fine-tunes use it early, then drift")
+    fig_labels("log_labels.png", "Fast fine-tunes never use the count of a; slow ones with many spurious rows use it early, not by the end")
     fig_table6("log_reproduction.png", "The rebuilt grammar reproduces seven of the paper's nine fine-tune results")
     fig_controls("log_controls.png", "Swapping the count in moves the answer on the models that count, never on the nulls")
 

@@ -5,16 +5,16 @@ E55 Stage A, reuse line, 2026-10-29. Plan `reports/plans/2026-10-29_plan_reuse-s
 `notebooks/E55_pcfg_anchors.ipynb`, figures `experiments/pcfg_anchors/figures/` from `plot.py`.
 
 We fine-tuned a small model that counts only the letter a to count the letter b, and asked whether each new answer runs through the old count, judged without any decomposition.
-Fine-tunes that learned to count b never used the old count, and fine-tunes trained only on rows the old count answers used it early but drifted off it.
-The reuse line now has a working ground truth outside VPD, but it marks few fine-tunes as reusing the old count, so scoring VPD against it will be lopsided.
+Fast fine-tunes never used the old count, while slow fine-tunes trained mostly or only on rows the old count answers used it after a thousand steps, and by the end neither check read any of them as using it.
+The reuse line now has a working ground truth outside VPD, but it marks only two early states as reusing the old count, so scoring VPD against it would be lopsided.
 
 ## The answer
 
 The two checks work as a ground truth on this grammar. Swapping the count in moves the answer on every model that
-uses it and never on the nulls. Every fine-tune that learned to count b answers without the count of a, by both
-checks. The fine-tunes trained only on spurious rows used the count of a after a thousand steps. By the end neither
-check reads them as using it, so one filed prediction missed. None was reversed. The model that never
-answered for b already held a readable count of b, by a narrow margin.
+uses it and never on the nulls. Fast fine-tunes never ran through the count of a. The slow fine-tunes with 80% and
+with all spurious rows ran through it after a thousand steps. By the end the first had learned b and left the old
+count, and the all-spurious ones read neither, so one filed prediction missed. None was reversed. The count of b
+decodes from the base model above shuffled labels, narrowly.
 
 ## What we were trying to test
 
@@ -36,7 +36,9 @@ families. Three pretraining mixes fix what each model can do before any fine-tun
 | NEVER | b only | counts b; never saw the `C a 40` prefix |
 
 **The fine-tunes.** Each fine-tune trains a model to answer `C b 40` for 10K steps, with states saved at 1K and 10K.
-Spurious rows are training rows where `count(b)` is set to `count(a) + 1`, so on them answering `count(a) + 1` is right.
+Spurious rows are training rows whose `count(b)` keeps its natural value and whose count of a in the window is set
+to `count(b) - 1` by swapping a's and c's, so on them answering `count(a) + 1` is right. The text holds only a, b
+and c, so the three window counts sum to 40 on every row, natural or spurious.
 The arms follow Table 6 of the paper:
 
 | arm | base | learning rate | spurious share | what it rules out |
@@ -111,8 +113,10 @@ Behaviour on the pretrained models, 4,000 rows each, beside the score of guessin
 | NEVER | 0.2175 | 1.000 | 0.348 | 0.2215 |
 
 LOW's count-b accuracy equals, to four digits, the score of answering `count(a)`: asked for b, it answers its count of
-a. Table 6 prints 5.2% for this cell. Our window counts sit between 9 and 17, so the two counts agree more often
-than in the paper.
+a. A second, independent number agrees. An exact count-of-a answer is never right on the 0.1765 of rows where
+`count(b)` equals `count(a) + 1`, so on the qualifying inputs it scores 0.2215 / (1 − 0.1765) = 0.269. That is
+LOW's measured behaviour null for b. Table 6 prints 5.2% for this cell, probably because our window counts, which sit
+between 9 and 17, agree more often than the paper's. We did not measure the paper's spread.
 
 Patch at every block, mean of three sets of 1,000 pairs:
 
@@ -130,10 +134,11 @@ Behaviour nulls over three sets: NEVER's share of `count(a) + 1` answers 0, 0, 0
 
 ![Count-b accuracy at 10K against Table 6](../../experiments/pcfg_anchors/figures/table6.png)
 
-**Reading it.** Yes, in seven of nine cells, the most the filing allowed. Every fine-tune trained mostly on natural
-rows reaches 99.85% to 100% on count b, within six points of the paper. The two all-spurious fine-tunes miss. The slow
-one scores 17.7%, the score of always answering `count(a) + 1` on these rows. The fast one scores 26.0%, above that
-floor, where the paper prints 1.9%. Our fine-tunes also learn faster early. At 1K the slow learners read 26% to 48%;
+**Reading it.** Yes, in seven of nine cells, the most the filing allowed. Every fine-tune with any natural rows
+reaches 99.85% to 100% on count b, within six points of the paper. The two all-spurious fine-tunes miss. The slow
+one scores 17.7%, equal to the score of always answering `count(a) + 1`, although by 10K it gives `count(a) + 1` on
+only 0.40 of qualifying inputs. It gets its points on the rows where `count(b)` equals `count(a) + 1` and almost none
+elsewhere. The fast one scores 26.0%, above that floor, where the paper prints 1.9%. Our fine-tunes also learn faster early. At 1K the slow learners read 26% to 48%;
 the paper prints 1.4% to 33%. The early column was not filed.
 
 | arm | ours at 1K, % | Table 6 at 1K | ours at 10K, % | Table 6 at 10K | within 15 at 10K |
@@ -152,20 +157,35 @@ the paper prints 1.4% to 33%. The early column was not filed.
 
 ![Every fine-tuned state on the two checks](../../experiments/pcfg_anchors/figures/labels.png)
 
-**Reading it.** Every fine-tune that learned to count b does not go through the count of a, and goes through the
-count of b instead. In the left panel each such state at 10K sits at exactly zero on both checks. Their 1K states sit
-under both lower bars too, except the slow learners, whose answers were still partly `count(a) + 1`. The all-spurious
-fine-tunes start where the filing expected. After 1K steps the slow one gives `count(a) + 1` on 0.88 of inputs.
-It follows a swapped count of a on 0.72 of pairs. Its seed copy reads 0.90 and 0.76. By 10K both copies fall to about 0.40
-and 0.36, between the bars, so they read neither. The fast all-spurious fine-tune reads neither at both states. At 1K
-its behaviour is 0.488, just under the upper bar of 0.500. HIGH's fine-tune goes through its count of b, as expected.
+**Reading it.** Fast fine-tunes never go through the count of a. Slow ones with many spurious rows go through it
+early, and by 10K neither check reads them as going through it. Every fast fine-tune with natural rows sits under
+both lower bars at both states. At 10K every fine-tune that learned to count b sits at exactly zero on both checks, and goes through the count of b.
+
+The slow fine-tune with 80% spurious rows goes through the count of a at 1K. It gives `count(a) + 1` on 0.63 of
+inputs and follows a swapped count of a on 0.59 of pairs. By 10K it counts b at 99.85% and reads not through. The
+slow half-spurious fine-tune at 1K follows the swap on 0.52 of pairs, over the upper bar of 0.483. It answers
+`count(a) + 1` on only 0.43, so it reads neither. The plan expected both of these 1K states to go through.
+
+The all-spurious fine-tunes start where the filing expected. After 1K steps the slow one gives `count(a) + 1` on 0.88
+of inputs. It follows a swapped count of a on 0.72 of pairs, and its seed copy reads 0.90 and 0.76. By 10K both
+copies fall to about 0.40 and 0.36, between the bars, so they read neither. The fast all-spurious fine-tune reads
+neither at both states. At 1K its behaviour is 0.488, just under the upper bar of 0.500. HIGH's fine-tune goes through
+its count of b, as expected. So every slow fine-tune with 80% or more spurious rows goes through the old count at
+1K and no longer reads as going through it at 10K, not only the all-spurious one.
 
 What the all-spurious fine-tunes do at 10K is not settled by the checks. A swap at the last block shows what the
 answer depends on at all. For the slow all-spurious fine-tune at 1K, a swapped count of a moves the answer on 0.94 of
-pairs and a swapped count of b on 0.17. At 10K the two shares are 0.64 and 0.57: the answer depends on both counts
-about equally. On every spurious row `count(b)` equals `count(a) + 1` and the three counts sum to 40. So an answer built
-from the count of c fits the training rows exactly, and it would depend on a and b alike. The filing named this
-reading in advance as a blind spot. We have not tested it.
+pairs and a swapped count of b on 0.17. At 10K the two shares are 0.64 and 0.57: the answer depends on both counts.
+
+One reading would have the answer built from the count of c, which fits every spurious row. For the slow
+all-spurious fine-tune that reading is ruled out by the sum of 40. We sampled 65K qualifying natural windows, with no
+model. Any answer that depends on the count of c alone and equals `count(b)` on at most 0.01 of them gives
+`count(a) + 1` on at most 0.105. The slow all-spurious state reads 0.40 and at most 0.001, at both seeds.
+
+One rule fits both of its numbers: answer the midpoint of `count(a) + 1` and `count(b)`, rounded towards
+`count(a) + 1`. On the same windows it reads 0.41 and 0.00, and it is exact on every spurious row. That rule reads the
+count of a on every input, through a function the behaviour check is blind to. It fits, but it is untested. The fast
+all-spurious state at 10K, at 0.29 and 0.10, is not excluded by the bound.
 
 | state | behaviour a | patch a | reads, count of a | behaviour b | patch b | reads, count of b |
 |---|---|---|---|---|---|---|
@@ -194,29 +214,37 @@ reading in advance as a blind spot. We have not tested it.
 
 Every state built 1,000 pairs for each patch, so no patch was void. The filed null did not occur: on no state
 was one check over its upper bar and the other under its lower bar. A softer mismatch is visible in the right panel. At 10K the all-spurious states almost never answer `count(b)`.
-Yet a swapped count of b moves their answer at block 5 on 0.36 to 0.43 of pairs.
+Yet a swapped count of b moves their answer at block 5 on 0.38 to 0.43 of pairs, as the midpoint rule would.
 
 Two further readings were not filed. N1's patch for the count of b falls from 0.88 at 1K to 0.57 at 10K.
-Its seed copy falls from 0.92 to 0.65, while both still answer `count(b)` every time. So with training the count of b reaches the answer later than
-block 5 on more inputs, and N1's label sits closer to its upper bar. Second, every N and M fine-tune also changed LOW's
+Its seed copy falls from 0.92 to 0.65, while both still answer `count(b)` every time. That is consistent with the
+count of b reaching the answer later than block 5 on more inputs, which is untested. Either way N1's label sits
+closer to its upper bar. Second, every N and M fine-tune also changed LOW's
 answer to its own count-a task. Accuracy there fell from 0.99975 to 0.2175 at 10K, the same as NEVER's, which counts b
 whatever it is asked. HIGH's fine-tune kept its count-a accuracy at 0.974. One counter re-bound to the new letter would
 look like this, and the rule reads that as not going through the count of a, as the plan stated.
 
 Stage C would score the sixteen states from LOW at the first seed. Two go through the count of a, both at 1K: the
 slow 80%-spurious and the slow all-spurious arms. Nine do not and five read neither, where the plan expected six,
-eight and two.
+eight and two: the plan leaned on both all-spurious arms at both states and on two slow arms at 1K going through.
 
 ### Does LOW already hold a count of b?
 
 ![Probe margin by block](../../experiments/pcfg_anchors/figures/probe.png)
 
-**Reading it.** Yes, narrowly. The figure plots the probe margin by block. LOW's count-b margin is 0.277 at block 2,
-over the possession bar of 0.260 by about one and a half standard deviations. It clears the bar at block 3 too, then
-falls to 0.18 by block 6. Its count-a margin, the positive control, rises to 0.52. HIGH, which was trained on count b,
-reaches 0.65. So LOW holds a linear readout of the count of b in its early blocks that weakens towards the output. By
-the plan's definition, the fine-tunes that learned to count b reuse a readout LOW already had rather than build one.
-The caveat is that the margin clears the bar by little, and a probe cannot say whether the count is used.
+**Reading it.** Yes by the filed rule, narrowly, and the reading behind the rule is weaker than the pass. The
+figure plots the probe margin by block. LOW's count-b margin is 0.277 at block 2, over the possession bar of 0.260 by
+about one and a half standard deviations. It clears the bar at block 3 too, then falls to 0.18 by block 6. Its
+count-a margin, the positive control, rises to 0.52. HIGH, which was trained on count b, reaches 0.65.
+
+The two margins of LOW subtract different controls. The count-a margin subtracts NEVER's count-a probe as well as
+shuffled labels. NEVER never had a count-a task, yet it decodes count a at 0.44 to 0.52 in blocks 2 to 6, against
+about 0.34 for shuffled labels. The count-b margin subtracts shuffled labels only, because no model in this design
+lacks a count-b task in the way NEVER lacks a count-a one. LOW's count-b probe peaks at 0.626, about 0.11 above what
+NEVER reaches for a count it was never asked for. Against that kind of control the gap is under half the bar. Also,
+the count of b can be guessed from the count of a alone at 0.40 on natural windows, so part of the margin over
+shuffled labels can come from LOW's count of a. So the count of b decodes from LOW's residual above shuffled labels,
+by less than a model with no count-a task decodes the count of a. A probe also cannot say whether the count is used.
 
 | model, count | best block | probe accuracy | majority-class rate | margin | standard deviation over 3 probe seeds |
 |---|---|---|---|---|---|
@@ -230,35 +258,48 @@ Possession bar: half of LOW's best count-a margin, 0.260; voiding line 6 standar
 ## What we learned
 
 The reuse line has a ground truth that owes nothing to any decomposition, and its two checks never point opposite ways on
-all 22 states read. On this grammar, a fine-tune that learns a new count does not run its answer through the old
-count, even when the model held a weak readout of the new one. Training only on rows where the old count gives the answer was
-meant to be the clearest "existing" anchor. It uses the old count only early, and by the end it has found something
-else that fits the same rows. So "existing" labels are scarce: two of the eleven labelled
-states. That leaves any method scored against them, VPD included, with a lopsided truth set.
+all 22 states read. On this grammar a fast fine-tune that learns a new count never runs its answer through the old
+count. Every slow fine-tune with 80% or more spurious rows runs through it after a thousand steps. By the end it has
+either learned the new count or gives an answer neither check reads as the old count. Training only on rows where the
+old count gives the answer was meant to be the clearest "existing" anchor. Whether those fine-tunes still use the count
+of a at 10K, through a function other than `count(a) + 1`, the checks cannot say. So "existing" labels are scarce: two
+of the eleven labelled states, both at 1K. That leaves any method scored against them, VPD included, with a lopsided
+truth set. If the all-spurious states at 10K turn out to use the count of a through a midpoint, the scarcity weakens.
 
 ## How compelling is the evidence
 
-- **The checks.** The controls are clean: nulls at zero in every set and block, positives at 0.97 and 1. The bars
-  are far apart, so few labels are decided by noise. Two cells sit near a bar. The fast all-spurious state at 1K
-  is 0.012 under the upper behaviour bar. The slow all-spurious state at 1K reads 0.104 and 0.073 on the count-b
-  patch over its two seeds, either side of the lower bar.
+- **The checks.** The controls are clean: nulls at zero in every set and block, positives at 0.97 and 1. Each
+  fine-tuned state is read once, on one set of 1,000 pairs and 1,000 inputs shared by every state. The binomial
+  standard deviation of one reading is about 0.016 near 0.5 and about 0.009 near 0.1. Two cells sit within it of a
+  bar. The fast all-spurious state at 1K is 0.012 under the upper behaviour bar for the count of a, about 0.75 sd.
+  Its patch is 0.069 under its bar, so its label does not depend on that cell. The slow all-spurious state at 1K reads
+  0.104 and 0.073 on the count-b patch over its two seeds, either side of the lower bar. The next closest, the slow
+  no-spurious state at 1K, sits about 2 sd over the lower behaviour bar, and its patch alone makes it "neither". No
+  count-a label, the labels Stage C would use, depends on a cell within noise.
 - **What the behaviour check is blind to.** It counts answers equal to one value; an answer that uses the count
-  through another function reads low.
+  through another function reads low, as the midpoint rule would. Its positive reference for the count of a is LOW's
+  plain count-a accuracy on `C a 40`. That is a different quantity from the fine-tuned reading, which is the share of
+  answers equal to `count(a) + 1` on qualifying `C b 40` inputs. No positive control of that reading itself was run;
+  the slow all-spurious state at 1K, at 0.88, shows only that it can read high.
 - **What the patch is blind to.** It reads one position and one block. Block 5 is next to the output, so it tests
   that the count is present late, not where it is computed. A count computed after block 5 from text positions
-  reads low. A donor matched on the other count cannot tell a count of c from a count of a, since changing one at a
-  fixed count of b changes the other.
+  reads low. The three counts sum to 40 on every input. So at a fixed count of b, changing the count of a changes the
+  count of c, and at a fixed count of a, changing b changes c. Neither patch can tell a count of c from the count it
+  swaps, and the count-b labels of R and N1 carry the same ambiguity. Only a mechanism-level test separates them. The
+  count-b patch null is LOW on `C a 40`, not on the fine-tunes' own prefix `C b 40`.
 - **What the probe is blind to.** Use: a decodable count need not be one the model computes with. Taking the best of
   six blocks inflates false positives slightly. LOW's count-b margin clears its bar by about one and a half
-  standard deviations.
+  standard deviations. Its controls are uneven: the count-a margin subtracts a model with no count-a task, while
+  the count-b margin subtracts only shuffled labels. Part of the count-b margin can come from the count of a, which
+  predicts the count of b at 0.40 on its own.
 - **Seeds.** One pretraining seed per mix. Two fine-tune seeds for N1 and the slow all-spurious arm, which agree on
   every label for the count of a. One task family and one window, 40 tokens.
 
 ## Surprises
 
-- The all-spurious fine-tunes leave the count of a between 1K and 10K steps, while their accuracy on spurious
-  test rows stays at 1: they still answer every spurious row right at 10K. A filed prediction missed for this reason; it
-  was not reversed, since no all-spurious state reads "does not go through".
+- The all-spurious fine-tunes stop reading as going through the count of a between 1K and 10K steps, while their
+  accuracy on spurious test rows stays at 1: they still answer every spurious row right at 10K. A filed prediction
+  missed for this reason; it was not reversed, since no all-spurious state reads "does not go through".
 - Every fine-tune that learned to count b from LOW also wiped out LOW's answer on its own count-a task.
 - LOW's count-b accuracy before any fine-tune sits exactly on the score of answering its count of a.
 
@@ -267,11 +308,12 @@ states. That leaves any method scored against them, VPD included, with a lopside
 1. **Decide whether instrument scoring goes ahead on these labels.** The plan's decision tree covers a pass, a
    reversal and the null, but not a miss without reversal. Eleven states are labelled, two of them "existing", so a
    method must agree on ten to pass. If that is judged too lopsided, more "existing" anchors come first.
-2. **Test the count-c reading of the all-spurious states at 10K**, $0 on the saved states: the share of answers equal
-   to the value the count of c gives on spurious rows. If they go through it, they are reuse of another count the
-   model has and can join the truth set as "existing".
-3. **Read the all-spurious arms between 1K and 10K** to find when they leave the count of a, so that more "existing"
-   states can be saved.
+2. **Read the per-row answers of the all-spurious states at 10K against the counts of a and b**, $0 on the saved
+   states; E55 Amendment 1 is being written for this. If the answers follow the midpoint of `count(a) + 1` and
+   `count(b)`, those states still use the count of a through another function, and the truth set may gain
+   "existing" anchors. If they follow no function of the two counts, the "neither" labels stand.
+3. **Read the all-spurious arms between 1K and 10K** to find when they stop reading as going through the count of
+   a, so that more "existing" states can be saved.
 
 ## Scorecard
 
@@ -284,7 +326,7 @@ states. That leaves any method scored against them, VPD included, with a lopside
 | PA1 nulls | the patch and behaviour nulls stay near zero | each ≤ 0.05 | patch 0, 0; behaviour 0 | pass |
 | PA2 | count-b accuracy at 10K within 15 points of Table 6 | ≥ 7 of 9 cells | 7 of 9; the two all-spurious cells miss by 17.7 and 24.05 | pass, at the cap the filing anticipated |
 | PA3 | all-spurious arms through count a at 1K and 10K; N1 not through at both; R through count b | all 7 readings | 4 of 7: slow all-spurious 1K through; its 10K neither; fast all-spurious 1K and 10K neither; N1 both not; R through | **miss**, not reversed |
-| PA4 | LOW possesses the count of b | m ≥ 3 s and m ≥ 0.5 m₊ at some block | block 2: 0.277 ≥ 0.032 and ≥ 0.260 | pass, narrowly |
+| PA4 | LOW possesses the count of b | m ≥ 3 s and m ≥ 0.5 m₊ at some block | block 2: 0.277 ≥ 0.032 and ≥ 0.260 | pass by its rule, narrowly; the count-b margin lacks the no-task control the count-a margin has |
 | PA3 null | the two checks point opposite ways on ≥ 3 of 17 states | count | 0 of 17 | did not occur |
 | Stage C pass bar | agreements needed with 11 labelled states | smallest a with binomial tail ≤ 0.05, raised to majority + 1 | a = 9, raised to 10 by the majority of 9 "not through" | for Stage C |
 
@@ -295,9 +337,15 @@ by `interchange.label` with strict inequalities.
 
 - Stage B, lowercase on the 67M; the free part of Stage C, pruning, reverse fine-tuning and steering; the gated part, a VPD decomposition
   of LOW, gated.
-- The count-c check on the all-spurious states; states between 1K and 10K.
-- Probes on the fine-tuned states; per-row answers were not saved, so the mixed answers of the all-spurious states
-  at 10K cannot be read from the results files.
+- Per-row answers of the all-spurious states at 10K against the counts of a and b, which would test the midpoint
+  rule; E55 Amendment 1. They were not saved, so the mixed answers cannot be read from the results files. States
+  between 1K and 10K.
+- A mechanism-level test that separates the count of c from the counts of a and b, for either patch.
+- A positive control of the fine-tuned behaviour reading itself, the share equal to `count(a) + 1` on qualifying
+  `C b 40` inputs. A count-b patch null on `C b 40`, the fine-tunes' own prefix.
+- Resampling of each fine-tuned state's behaviour and patch readings; each was read once.
+- A patch at the text positions, or at any position other than `=`.
+- A no-task control for the count-b probe, the analogue of NEVER for the count of a; probes on the fine-tuned states.
 - A second pretraining seed of any mix; fine-tune seeds beyond N1 and the slow all-spurious arm; the paper's 200K
   pretraining; Table 6's spurious test column beyond the accuracy reported in the results files.
 
@@ -306,3 +354,13 @@ Provenance: `experiments/pcfg_anchors/results/{a0,a1_LOW,a1_HIGH,a1_NEVER,a1c_pa
 `src/commute/interchange.py`, `src/commute/pcfg.py`. MATS cluster `debug` QoS, one GPU per job: rehearsal 44244,
 pretrainings 44268-44270, controls 44306 and 44307, fine-tunes 44328-44330; $0. Commits 6299401, 55da119, 87f77ce,
 7e62cb4.
+
+## Review responses
+
+Corrections from `reports/reviews/2026-10-29_review_e55-stage-a-analysis.md` were applied on 2026-10-29: the headline
+now matches the table, the count-c reading is ruled out for the slow all-spurious state, PA4's reading is hedged,
+and the noise, blind-to and "Not run" items were added. One figure differs from the review. NEVER's count-a probe
+accuracy, averaged over the three probe seeds, runs 0.44 to 0.52 over blocks 2 to 6, not 0.47 to 0.52: block 3 reads
+0.44 (`a1c_probe.json` probes.raw.count_a NEVER.acc). The conclusion drawn from it is unchanged. The count-c bound and
+the midpoint rule's 0.41 and 0.00 were re-run from the reviewer's scripts: `conly.py` reproduced 0.408 and 0.000
+on 65,019 qualifying windows, and `conly3.py` the bound of 0.105 at a count-b share of at most 0.01.

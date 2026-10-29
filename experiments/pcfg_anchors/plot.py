@@ -84,14 +84,14 @@ def fig_controls(out: str = "controls.png", title: str = "The patch moves the an
     finish(fig, out, title)
 
 
-def fig_probe(out: str = "probe.png", title: str = "LOW's count of b is readable, at about half the strength of its count of a") -> None:  # fmt: skip
+def fig_probe(out: str = "probe.png", title: str = "LOW's count of b decodes above shuffled labels, just over the possession bar") -> None:  # fmt: skip
     pr = load("a1c_probe.json")["probes"]
     m, mp = pr["margins"], pr["m_plus"]["m_plus"]
     blocks = np.arange(1, 7)
-    fig, ax = plt.subplots(figsize=(7.6, 5.2))
-    for key, lab, col in (("LOW_count_a", "LOW, count of a (positive control)", N_C),
-                          ("HIGH_count_b", "HIGH, count of b (trained on it)", R_C),
-                          ("LOW_count_b", "LOW, count of b (never asked for it)", W_C)):  # fmt: skip
+    fig, ax = plt.subplots(figsize=(7.6, 5.8))
+    for key, lab, col in (("LOW_count_a", "LOW, count of a (positive control), minus the better of shuffled labels and NEVER's probe", N_C),
+                          ("HIGH_count_b", "HIGH, count of b (trained on it), minus shuffled labels", R_C),
+                          ("LOW_count_b", "LOW, count of b (never asked for it), minus shuffled labels", W_C)):  # fmt: skip
         ax.plot(blocks, m[key]["m"], "-o", color=col, lw=2, ms=6, label=lab)
     lb = np.array(m["LOW_count_b"]["m"])
     sb = np.array(m["LOW_count_b"]["s"])
@@ -99,11 +99,11 @@ def fig_probe(out: str = "probe.png", title: str = "LOW's count of b is readable
     ax.axhline(0.5 * mp, color=INK, ls="--", lw=1)
     ax.text(6.05, 0.5 * mp, "possession bar:\nhalf the positive\ncontrol's best", fontsize=8, va="center")
     ax.axhline(0, color=MUTED, lw=1)
-    ax.text(6.05, 0.0, "no better than\nshuffled labels", fontsize=8, va="center", color=INK)
+    ax.text(6.05, 0.0, "no better than\nits control", fontsize=8, va="center", color=INK)
     ax.set_xlim(0.7, 7.1)
     ax.set_xlabel("block whose output at '=' the linear probe reads")
-    ax.set_ylabel("probe accuracy minus best control accuracy")
-    ax.legend(fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=2, frameon=False)
+    ax.set_ylabel("probe accuracy minus its control's accuracy")
+    ax.legend(fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=1, frameon=False)
     finish(fig, out, title)
 
 
@@ -143,7 +143,7 @@ def check_panel(ax: Axes, check: str, refs: dict[str, tuple[float, float]], arms
     ax.set_xlabel("behaviour: share of answers equal to " + ("count(a) + 1" if check == "a" else "count(b)"))
 
 
-def fig_labels(out: str = "labels.png", title: str = "Fine-tunes that learned to count b do not use count(a); the all-spurious ones use it at 1K and drift off it by 10K") -> None:  # fmt: skip
+def fig_labels(out: str = "labels.png", title: str = "Fast fine-tunes never use count(a); slow ones with 80% or all spurious rows use it at 1K, but not by either check at 10K") -> None:  # fmt: skip
     a1 = {p: load(f"a1_{p}.json") for p in ("LOW", "HIGH")}
     bars = load("predictions.json")["a2_bars"]
     fig, axes = plt.subplots(1, 2, figsize=(12, 5.6), sharey=True)
