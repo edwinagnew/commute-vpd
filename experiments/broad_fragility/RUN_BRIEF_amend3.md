@@ -3,7 +3,7 @@
 Plan: `reports/plans/2026-10-27_plan_broad-fragility.md` → "Amendment 3 (2026-10-29)". Code:
 `experiments/broad_fragility/amend3.py` (imports `run.py` beside it), `src/commute/harness.py` (`on_rows`, new).
 Predictions: `experiments/broad_fragility/results/predictions_amend3.json`, sha256
-`54351edeb6c4b1388bbe6879f5efa6f711d6ca5eabc2673790048abf405152df` (filed 2026-10-29 10:58:55). The run
+`24c1fe6d25f19f806d19060918063f22562527a26a87a43726c11ff8e227efe4` (filed 2026-10-29 11:30:27, refiled after the code review, before any run). The run
 refuses to start without that file, or if its `config` differs from the code's.
 
 ```
@@ -13,7 +13,7 @@ Command: [ -L experiments/broad_fragility/results/large ] && rm experiments/broa
          (.venv/bin/python experiments/broad_fragility/amend3.py --device cuda; echo "=== FINISHED (exit $?) ===") 2>&1 | tee -a experiments/broad_fragility/results/large/amend3_stdout.log /proc/1/fd/1
          (start it as a background subprocess; no execute() or wait() over 5 min, re-arm instead; amend3.py also
          writes results/large/amend3.log)
-Expected: about 28 min of run on the H100 (load ~4, stage 0 ~4, rows2 ~11, label ~3, lora_sgd ~7), plus set-up and
+Expected: about 30 min of run on the H100 (load ~4, stage 0 ~4, rows2 ~13, label ~3, lora_sgd ~7), plus set-up and
           downloads. GPU memory under 40 GB (A2 ran the same reads with more teachers); CPU RAM ~10 GB
 Outputs: results/amend3.json (rewritten after every read; "status": "done" and "score" with "tree" at the end)
          results/large/amend3.log and amend3_stdout.log
@@ -46,7 +46,7 @@ Platform: RunPod "NVIDIA H100 80GB HBM3" directly (stage 0's W0 per-block readin
           `bash cluster/pod_setup.sh`
 Pod: fresh; terminate when done. If another machine of the session runs: pass instance=... to every machine-scoped
      call, and never edit remote-kernels.toml while any machine runs
-Budget: expect about $1.8 (~40 min of pod at about $2.7/h); cap $3: past it, download what is written and terminate
+Budget: expect about $1.9 (~43 min of pod at about $2.7/h); cap $3: past it, download what is written and terminate
 ```
 
 ## Stages, in order, with expected time and cost (H100, about $2.7/h)
@@ -59,12 +59,12 @@ verdict <pass|between|fail> | pile {...} | N s` (~54 s each). After each stage: 
 | Load | `[pile W0 seed s] N s` ×3, `[load] NVIDIA H100 80GB HBM3; logp_W0 -3.1456` | as A2 | ~4 min, $0.18 |
 | 0 (i) | `[stage0 i] spread 0.0748 blocks [0.6794, 0.7182] (E37 ...) pass True` | as A2 | ~1 min, $0.05 |
 | 0 (ii) | `[ft] ...` to step 300; `[trained] ~90 s`; `[saved] trained_step1000.pt`; `[trained] ... check 2.2011 ... verdict fail`; `[stage0 ii] gain 0.1300 ... pass True` | check 2.2011 | ~3 min, $0.13 |
-| rows2 | `[data] val rows 256..512 ...`; `[pile W0 seed s, val rows 256..512] {...} N s` ×3; `[rows2] W0 spread ... 0.0621`; `[trained_rows2] ... check ~1.8826 ... verdict fail`; `[rows2 control] ... pass True`; `[sgd] regenerated: held-out gain 0.1367 (filed 0.13671)`; `[sgd_r8] regenerated: held-out gain 0.1314 (filed 0.13142)`; `[tt_sgd] trained in ~95 s`, `[tt_sgd_rows2] ... check ...`; the same for `sgd_r8` | P15: both 1.4-2.2 | ~11 min, $0.50 |
+| rows2 | `[data] val rows 256..512 ...`; `[pile W0 seed s, val rows 256..512] {...} N s` ×3; `[rows2] W0 spread ... 0.0621`; `[trained_rows2] ... check ~1.8826 ... verdict fail`; `[rows2 control] ... pass True`; `[sgd] regenerated: held-out gain 0.1367 (filed 0.13671)`; `[sgd_r8] regenerated: held-out gain 0.1314 (filed 0.13142)`; `[tt_sgd] trained in ~95 s`, `[tt_sgd] ... check ~2.0675` (first rows), `[tt_sgd_rows2] ... check ...`; the same for `sgd_r8` (first rows ~2.1218); `[rows2 G_first] ... pass True`; `[score after rows2 reads] {...}` | P15: both 1.4-2.2 | ~13 min, $0.59 |
 | label | `[label_sgd lr 0.03] 1000 steps in ~75 s`; `[label_sgd step 100] gain 0.1253 ...`; `[label_sgd step 1000] gain ~0.1537 ... damage ~0.229`; `[label_sgd G_label] ... pass True`; `[saved] a3_label_sgd_1000.pt`; `[label_sgd_1000] ... check ...` | P16: 1.6-2.6 | ~3 min, $0.14 |
 | lora_sgd | `[lora r8] checkpoint 300 ...`; `[tt_lora_adam] trained in ~90 s`; `[tt_lora_adam] ... check ~1.2726 ... verdict pass`; `[lora_ref] gain 0.1479 ... pass True`; per rate 0.03, 0.1, 0.3, 1, 3: `[lora r8] checkpoint 300 ...`, `[lora_sgd lr <r>] held-out gain ... diverged ...`; `[lora_sgd] chosen rate ...`; `[lora_sgd] grid gains {...} range [...]`; `[nothing_lora_sgd] ... check ...`; `[tt_lora_sgd] trained ...`; `[saved] a3_tt_lora_sgd.pt`; `[tt_lora_sgd] ... check ...` | do-nothing 2-4; P17: 1.15-1.5 | ~7 min, $0.32 |
 | End | `[tree] {...}`, `FINISHED wrote ...`, `=== FINISHED (exit 0) ===` | | seconds |
 
-Set-up (~10 min, $0.45) and downloads (~3 min, $0.14) bring the total to about 40 min, $1.8.
+Set-up (~10 min, $0.45) and downloads (~3 min, $0.14) bring the total to about 43 min, $1.9.
 
 ## Stops
 
@@ -81,7 +81,7 @@ and the numbers named here, download the JSON and both logs (and any `a3_*.pt` w
   rule)`. This is a filed outcome, not a fault: report `[tt_sgd_rows2]`, `[tt_sgd_r8_rows2]` and the score line.
 - **The LoRA control** `STOP: lora_sgd control: ...`: report `[tt_lora_adam]` and `[lora_ref]`.
 
-Not stops, but put them at the top of the report: `[label_sgd G_label] ... pass False`; `[lora_sgd] no rate within
+Not stops, but put them at the top of the report: `[label_sgd G_label] ... pass False`; `[rows2 G_first] ... pass False` (P15 then unscored); `[lora_sgd] no rate within
 30% ...` (then copy the grid gains line); a `[nothing_lora_sgd]` check under 1.61 (G_nothing fails).
 
 A Python traceback is a code stop. Report it with the last ten log lines, download what is written, terminate, and do
@@ -105,12 +105,12 @@ move, then delete `a3_dl/` and the `stage_a3/` staging directory. Never `git add
 
 ## What to copy into the report
 
-- every `[load]`, `[pile W0 seed`, `[stage0 i/ii]`, `[rows2]`, `[rows2 control]`, `[... regenerated]`, `[lora_ref]`,
+- every `[load]`, `[pile W0 seed`, `[stage0 i/ii]`, `[rows2]`, `[rows2 control]`, `[rows2 G_first]`, `[... regenerated]`, `[lora_ref]`,
   `[label_sgd G_label]` and `[saved]` line, and the `[ft]` / `[lora r8] checkpoint 300` line of each fine-tune;
-- every state line (`[trained]`, `[trained_rows2]`, `[tt_sgd_rows2]`, `[tt_sgd_r8_rows2]`, `[label_sgd_1000]`,
+- every state line (`[trained]`, `[trained_rows2]`, `[tt_sgd]`, `[tt_sgd_r8]`, `[tt_sgd_rows2]`, `[tt_sgd_r8_rows2]`, `[label_sgd_1000]`,
   `[tt_lora_adam]`, `[nothing_lora_sgd]`, `[tt_lora_sgd]`) with its seconds, and the `[faith]` per-block lines of each
   second-rows read;
-- the `[label_sgd step <n>]` lines; each `[lora_sgd lr <r>]` grid line, `[lora_sgd] chosen` and the grid gains line;
+- the `[label_sgd step <n>]` lines; each `[lora_sgd lr <r>]` grid line, `[lora_sgd] chosen`, the grid gains line and any `at the grid edge` line;
   every `trained in N s` line;
 - every `[score after ...]` line and the final `[tree]` block; any `STOP:` line;
 - the `[setup ...]` lines, the VPD fetch's time and rate, the time from `start()` to the first cell;

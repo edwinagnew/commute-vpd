@@ -340,7 +340,7 @@ decompositions pass on the second rows, reading 2 is not made either. Moving the
 
 | setting | value | source |
 |---|---|---|
-| SGD LoRA rate grid | 0.03, 0.1, 0.3, 1, 3 | E27's grid (0.003-3), its five middle rates, centred on E27's pick 0.3 |
+| SGD LoRA rate grid | 0.03, 0.1, 0.3, 1, 3 | E27's grid (seven rates, 0.003-3), its top five rates, centred on E27's pick 0.3; a chosen rate at either edge (0.03 or 3) is flagged in the log |
 | SGD LoRA rate rule | gain nearest the Adam fine-tune's among rates not diverged; scored if within 30% | E39 (`run.pick_rate`); A1's P8 and A2's gate |
 | SGD LoRA optimiser | plain SGD, momentum 0, no weight decay | E27 (`LoraConfig.optimizer = "sgd"`) |
 | LoRA rank, matrices, init, seed, steps, batch, clip | 8, all 24, B = 0 and A ~ N(0, 1/d_in), 0, 300, 8, 1.0 | E39 (`run.lora_ft`) |
@@ -351,13 +351,13 @@ decompositions pass on the second rows, reading 2 is not made either. Moving the
 | labelled SGD | rate 0.03, 1,000 steps, batch 8, batch order 0, states at 100 and 1,000 | A2's chosen rate and recipe |
 | reproduction tolerances | gain 0.005, check 3% | E39 stage 0 (ii) |
 
-### Stages, each written as it finishes (about 28 min of run on the H100)
+### Stages, each written as it finishes (about 30 min of run on the H100)
 
 | stage | what | check reads | time |
 |---|---|---|---|
 | load | model, W₀ on the first rows at adversary seeds 0-2, data | — | ~4 min |
 | 0 | W₀ spread and per-block readings; the Adam fine-tune and its teacher-trained decomposition | 1 | ~4 min |
-| rows2 | W₀ on the second rows at seeds 0-2; the Adam teacher-trained decomposition there (control); plain and capped SGD fine-tunes regenerated, each teacher-trained and read there; the stop rule | 3 | ~11 min |
+| rows2 | W₀ on the second rows at seeds 0-2; the Adam teacher-trained decomposition there (control); plain and capped SGD fine-tunes regenerated, each teacher-trained, read on the first rows (G_first, reproducing A1/A2's 2.067 and 2.122) and on the second rows; the stop rule | 5 | ~13 min |
 | label | labelled SGD at 0.03 to step 1,000; gains at step 100 (G_label) and 1,000; step 1,000 read and saved | 1 | ~3 min |
 | lora_sgd | the Adam LoRA and its teacher-trained decomposition (control); the SGD LoRA grid; the chosen rate's do-nothing and teacher-trained decomposition, saved | 3 | ~7 min |
 
@@ -367,6 +367,7 @@ decompositions pass on the second rows, reading 2 is not made either. Moving the
 |---|---|---|---|---|
 | W₀ spread, second rows | 0 | — | A2 0.0621 | 0.06 |
 | check, Adam teacher-trained, second rows (G_rows2) | 1 | — | must fail; A2 1.8826 | 1.883 |
+| check, plain and rank-8 SGD teacher-trained, first rows (G_first) | 1 | — | A1/A2 2.0675, 2.1218 | 2.067, 2.122 |
 | check, plain SGD teacher-trained, second rows (P15) | 1 | 2.623 (A1, first rows) | first rows 2.067 | 1.4-2.2 |
 | check, SGD held to rank 8 teacher-trained, second rows (P15) | 1 | — | first rows 2.122 | 1.4-2.2 |
 | gain, labelled SGD at step 100 (G_label) | 0 | — | A2 0.1253 | 0.1253 |
@@ -387,9 +388,12 @@ Behaviour kept, gap, damage, the stochastic ratio and size are read at every sta
 | P17 | teacher training on the SGD LoRA: check ≤ 1.40 | passes, 1.15-1.5 | medium-low |
 
 Gates, each scored as "unscored: why" rather than as a miss. P15 needs the second rows' control to hold (a miss also
-stops the job). P16 needs G_label to hold, the run not to diverge, and the step-1,000 gain within 30% of the Adam
-fine-tune's (A2 read 0.154, ratio 1.18). P17 needs a rate of the grid that did not diverge, the chosen rate's gain
-within 30%, and the SGD LoRA's do-nothing failing (G_nothing). If no rate qualifies, nothing is scored, teacher
+stops the job) and G_first: each regenerated SGD teacher-trained decomposition, read on the first rows in the same
+job, within 3% of A1/A2's check. A G_first miss means the states read on the second rows are not the ones that
+failed, so P15 is unscored and the stop rule does not apply. With G_first, the first-rows and second-rows readings
+of each state come from one job. P16 needs G_label to hold, the run not to diverge, and the step-1,000 gain within 30% of the Adam
+fine-tune's (A2 read 0.154, ratio 1.18). P17 needs a rate of the grid that did not diverge, the SGD LoRA fine-tune's
+gain at the chosen rate within 30% of the Adam fine-tune's, and the SGD LoRA's do-nothing failing (G_nothing). If no rate qualifies, nothing is scored, teacher
 training is not run, and the grid's range of gains is reported. Both lines are inclusive, and a non-finite check is
 unscored. The rules were run on every combination of outcomes and gates: checks at 1.40, just above it, 1.5, just
 below 1.61, 1.61, 2.5 and NaN; a missing or zero Adam gain; each stage missing; every gate failing. Every combination
@@ -413,7 +417,8 @@ decimal.
 
 ### Stops and readings
 
-- **Stage 0, the second rows' control, a regenerated gain, or the Adam LoRA control misses**: stop and report.
+- **Stage 0, the second rows' control, a regenerated gain, or the Adam LoRA control misses**: stop and report. A
+  G_first miss is not a stop: P15 is unscored, reported at once, and the job goes on.
 - **Both SGD teacher-trained decompositions pass on the second rows** (the stop rule): stop. The SGD fail then rests
   on one block of 128 rows, and little is left for the SGD LoRA to separate. *Both fail* (P15 holds): the contrast
   with the LoRA stands on new rows. *Mixed*: it holds in part.
@@ -427,8 +432,8 @@ The wording is filed with the predictions (`readings`). `amend3.py` writes the r
 
 ### Machine and cost
 
-About 28 min of run (above), plus about 10 min of set-up and 3 min of downloads: about 40 min of a RunPod H100 80GB
-HBM3 (E39's card; stage 0's per-block readings are that card's) at about $2.7/h. That is about $1.8, capped at $3. It
+About 30 min of run (above), plus about 10 min of set-up and 3 min of downloads: about 43 min of a RunPod H100 80GB
+HBM3 (E39's card; stage 0's per-block readings are that card's) at about $2.7/h. That is about $1.9, capped at $3. It
 is over 30 min, so not the cluster's `debug` QoS. No saved state goes to the pod.
 
 ### Not run

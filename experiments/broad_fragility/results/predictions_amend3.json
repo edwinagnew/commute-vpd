@@ -18,18 +18,19 @@
   "matched random move": "E39's random move (fragility.random_move: Gaussian noise on the alive U and V, each side at its own Frobenius norm, per matrix scaled to x times the trained state's ||delta-W||), x found by search (double from 4, then bisect in log x, at most 12 reads) until damage is within 5% of the trained decomposition's in this job; Delta fixed; noise seeds 0 and 1",
   "SGD teacher-trained decompositions": "teacher training (E37's recipe) on A1's plain SGD fine-tune (rate 0.01) and on A2's SGD held to rank 8 (rate 0.03), both regenerated in the job (A1/A2 read them 2.067 and 2.122 on the first rows)",
   "labelled SGD state at step 1,000": "A2's component training with labels, plain SGD at 0.03 (the rate of A2's passing state), batch order 0, its state at step 1000",
-  "SGD LoRA": "E39's rank-8 LoRA on all 24 matrices (B = 0, A ~ N(0, 1/d_in), LoRA seed 0, 300 steps of 8 lowercase rows each once, clip 1.0) trained by plain SGD (momentum 0, no weight decay) at the rate of [0.03, 0.1, 0.3, 1.0, 3.0] (E27's grid, its five middle rates) chosen by E39's rule: among rates not diverged (a non-finite training loss or a held-out gain not above 0), the gain nearest this job's Adam fine-tune's"
+  "SGD LoRA": "E39's rank-8 LoRA on all 24 matrices (B = 0, A ~ N(0, 1/d_in), LoRA seed 0, 300 steps of 8 lowercase rows each once, clip 1.0) trained by plain SGD (momentum 0, no weight decay) at the rate of [0.03, 0.1, 0.3, 1.0, 3.0] (E27's grid 0.003-3, its top five rates) chosen by E39's rule: among rates not diverged (a non-finite training loss or a held-out gain not above 0), the gain nearest this job's Adam fine-tune's"
  },
  "controls": {
   "stage0_i": "first, alone: W0's PGD spread over seeds 0-2 <= 0.1 and seed 0's PGD KL per block within 1% of (0.6794, 0.7182); else stop",
   "stage0_ii": "E37's Adam fine-tune regenerated: held-out gain within 0.005 of 0.1301; E37's teacher training retrained in-job (amend1's arm 1 to step 1000) and read: check within 3% of 2.2011 and s within 0.01 of 0.998; else stop",
   "G_rows2": "first on the second rows: W0's spread over adversary seeds 0-2 <= 0.1 and the Adam teacher-trained decomposition's check >= 1.61 and within 3% of A2's 1.8826; else stop",
   "regenerated SGD fine-tunes": "held-out gains within 0.005 of 0.13671 (plain) and 0.13142 (rank 8); else stop",
+  "G_first": "each regenerated SGD teacher-trained decomposition read on the first rows: check within 3% of A1/A2's [2.0675, 2.1218] (plain, rank 8); else P15 is unscored and the stop rule does not apply",
   "G_label": "the labelled SGD state at step 100 has gain within 0.005 of A2's 0.12534; else P16 is unscored",
   "lora_ref": "before the SGD LoRA, E39's Adam LoRA regenerated: gain within 0.005 of 0.1479, its teacher-trained check within 3% of 1.2726 and <= 1.4; else stop",
   "G_nothing": "the SGD LoRA's do-nothing check >= 1.61 (the positive control: the check fails the update left in Delta, as the Adam LoRA's 2.653 did); else P17 is unscored"
  },
- "stop_rule": "after the second rows are read: if both SGD teacher-trained checks are <= 1.4 (and G_rows2 held), the job stops before the label and lora_sgd stages",
+ "stop_rule": "after the second rows are read: if both SGD teacher-trained checks are <= 1.4 (and G_rows2 and G_first held), the job stops before the label and lora_sgd stages",
  "expected": {
   "W0": "check 1 by definition, s 0, damage 0, gap 0.272",
   "do-nothing (Adam)": "check 4.868 (E37), not read here",
@@ -46,7 +47,7 @@
  "predictions": [
   {
    "id": "P15",
-   "rule": "on the second rows, both SGD teacher-trained decompositions (plain, rank 8): check >= 1.61, each; holds iff both do, misses otherwise; scored only if G_rows2 holds",
+   "rule": "on the second rows, both SGD teacher-trained decompositions (plain, rank 8): check >= 1.61, each; holds iff both do, misses otherwise; scored only if G_rows2 and G_first hold",
    "expected": "both fail, 1.6-2.2",
    "confidence": "low-medium",
    "blind_to": "one more set of 256 rows, one adversary start; on the first rows both failed on one block of 128 and passed the other",
@@ -64,7 +65,7 @@
   },
   {
    "id": "P17",
-   "rule": "teacher training on the SGD LoRA: check <= 1.4. scored only if the state's held-out gain is within 30% of this job's Adam fine-tune gain (relative); and only if G_nothing holds; no rate qualifying leaves it unscored",
+   "rule": "teacher training on the SGD LoRA: check <= 1.4. Scored only if the SGD LoRA fine-tune's held-out gain (at the chosen rate) is within 30% of this job's Adam fine-tune gain (relative), and only if G_nothing holds; no rate qualifying leaves it unscored",
    "expected": "passes, 1.15-1.5",
    "confidence": "medium-low",
    "blind_to": "one LoRA seed, one rate, one batch order; the gain differs from the Adam LoRA's (0.148); a fail does not say which part of Adam matters",
@@ -77,7 +78,7 @@
    "fail": "Both SGD teacher-trained decompositions fail on the second rows too: their fail is not one block of 128 rows, and the contrast with the LoRA's teacher-trained decompositions (which pass there) stands.",
    "mixed": "On the second rows one SGD teacher-trained decomposition fails and the other does not, or one lands between the lines: the SGD fail holds on new rows only in part, and the contrast with the LoRA is weaker than on the first rows.",
    "pass": "Both SGD teacher-trained decompositions pass on the second rows: their fail rests on one block of 128 rows, little is left for the SGD LoRA to separate, and the job stops before training it (the plan's stop rule).",
-   "unscored": "The second rows' control failed, or a check was not finite: the job stopped.",
+   "unscored": "The second rows' control failed (the job stopped), the regenerated SGD decompositions did not reproduce their first-rows checks (G_first), or a check was not finite: unanswered.",
    "not run": "Stage rows2 not run."
   },
   "label": {
@@ -104,6 +105,10 @@
     256
    ],
    "a2_trained_rows2": 1.8826,
+   "first_rows_checks": [
+    2.0675,
+    2.1218
+   ],
    "sgd_lr": 0.01,
    "a1_sgd_gain": 0.13671,
    "cap_lr": 0.03,
@@ -200,5 +205,5 @@
    "p4_margin": 0.2
   }
  },
- "filed": "2026-10-29 10:58:55"
+ "filed": "2026-10-29 11:30:27"
 }

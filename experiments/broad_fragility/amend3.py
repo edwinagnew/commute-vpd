@@ -15,7 +15,8 @@ no saved state is needed on the pod. Stages, each written to results/amend3.json
   rows2     W0 on Pile val rows 256-511 at adversary seeds 0-2 and the Adam teacher-trained decomposition read there
             (control: spread <= 0.10, check within 3% of A2's 1.8826 and failing; else stop); then the plain SGD
             fine-tune (A1's rate) and SGD held to rank 8 (A2's rate) regenerated (gains within 0.005 of A1/A2's, else
-            stop), each teacher-trained and read on the second rows (P15). Both pass: stop (the plan's stop rule).
+            stop), each teacher-trained, read on the first rows (G_first: within 3% of A1/A2's 2.0675, 2.1218, else
+            P15 unscored) and on the second rows (P15). Both pass there: stop (the plan's stop rule).
   label     component training with labels (next-token cross-entropy), Gamma and Delta frozen, plain SGD at A2's chosen
             rate 0.03, states at steps 100 and 1000; step 100's gain must reproduce A2's (G_label); step 1000 read (P16)
   lora_sgd  E39's Adam LoRA regenerated and teacher-trained (control: gain and check as E39/A2, passing; else stop);
@@ -72,6 +73,7 @@ class Amend3:
     gain_tol: float = 0.30  # E39 A1's P8 and A2's gate: |gain / this job's Adam fine-tune gain - 1| <= this
     rows2: tuple[str, int, int] = ("val", 256, 256)  # A2's second rows
     a2_trained_rows2: float = 1.8826  # A2: the Adam teacher-trained decomposition on the second rows
+    first_rows_checks: tuple[float, ...] = (2.0675, 2.1218)  # A1's tt_sgd and A2's tt_sgd_r8 on the first rows (G_first)
     sgd_lr: float = 0.01  # A1's chosen plain SGD rate (grid 0.003-0.1), held-out gain 0.13671
     a1_sgd_gain: float = 0.13671
     cap_lr: float = 0.03  # A2's chosen rate for SGD held to rank 8 (grid 0.01-0.1), gain 0.13142
@@ -84,8 +86,8 @@ class Amend3:
     lora_adam_lr: float = 1e-4  # E39's chosen Adam LoRA rate
     e39_lora_gain: float = 0.1479  # E39 and A2: the Adam LoRA's gain and its teacher-trained check
     e39_lora_check: float = 1.2726
-    lora_sgd_lrs: tuple[float, ...] = (0.03, 0.1, 0.3, 1.0, 3.0)  # E27's grid (0.003-3), its five middle rates, centred
-    # on E27's pick 0.3 (rank-8 LoRA on all 24 matrices, plain SGD, emoticon)
+    lora_sgd_lrs: tuple[float, ...] = (0.03, 0.1, 0.3, 1.0, 3.0)  # E27's grid (0.003-3), its top five rates, centred on
+    # E27's pick 0.3 (rank-8 LoRA on all 24 matrices, plain SGD, emoticon)
 
     def __post_init__(self) -> None:
         assert self.rows2[1] >= CFG.rows_held[1] + CFG.rows_held[2] and self.rows2[2] == CFG.pile_rows  # no overlap
@@ -178,9 +180,15 @@ def rows2(job: Job, out: dict[str, Any], tr: tuple[dict[str, Tensor], UV]) -> No
     regenerate(job, out, "sgd_r8", capped_ft(job), AM.a2_cap_gain)
     for name in ("sgd", "sgd_r8"):
         st, kl = teach(job, name)
+        read(job, out, f"tt_{name}", name, *split_state(st), kl)  # the first rows: the reproduction control G_first
         with harness_on(job, ctx2):
             read(job, out, f"tt_{name}_rows2", name, *split_state(st), kl)
+    first = {n: out["reads"][n]["check"] for n in SGD_TT}
+    rec["G_first"] = all(abs(first[n] / AM.first_rows_checks[i] - 1) <= CFG.check_tol for i, n in enumerate(SGD_TT))
+    log(f"[rows2 G_first] first-rows checks {json.dumps({n: round(c, 4) for n, c in first.items()})} (A1/A2 "
+        f"{list(AM.first_rows_checks)}) pass {rec['G_first']}")
     sc = out["score"] = score(out)
+    log("[score after rows2 reads] " + json.dumps({k: v for k, v in sc.items() if k != "tree"}, default=float))
     if sc.get("rows2_both_pass"):
         halt(out, "rows2: both SGD teacher-trained decompositions pass on the second rows (the plan's stop rule)")
 
@@ -261,6 +269,8 @@ def lora_sgd(job: Job, out: dict[str, Any]) -> None:
     rec["gain_range"] = [min(gains), max(gains)] if gains else None
     log(f"[lora_sgd] grid gains {json.dumps({r: round(v['gain'], 4) for r, v in rec['grid'].items()})} range "
         f"{rec['gain_range']} (Adam fine-tune {out['stage0']['gain']:.4f})")
+    if rec["chosen"] in (AM.lora_sgd_lrs[0], AM.lora_sgd_lrs[-1]):
+        log(f"[lora_sgd] chosen rate {rec['chosen']:g} is at the grid edge")
     if dW is None or not gain_within(rec["grid"][f"{rec['chosen']:g}"]["gain"], out["stage0"]["gain"]):
         log(f"[lora_sgd] no rate within {AM.gain_tol:.0%} of the Adam fine-tune's gain: nothing is scored")
         dump(out)
@@ -290,13 +300,15 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
     r, sc = out.get("reads", {}), {}
     adam = out.get("stage0", {}).get("gain")
     rows = out.get("rows2", {})
-    if "G_rows2" in rows and all(f"{n}_rows2" in r for n in SGD_TT):
+    if rows.get("G_rows2") is False:
+        sc["P15"] = "unscored: the second rows' control failed"
+    elif "G_first" in rows and all(f"{n}_rows2" in r for n in SGD_TT):
         checks = [r[f"{n}_rows2"]["check"] for n in SGD_TT]
         sc["P15_checks"], sc["P15_verdicts"] = checks, [verdict3(c) for c in checks]
         finite = all(math.isfinite(c) for c in checks)
-        sc["rows2_both_pass"] = bool(rows["G_rows2"]) and finite and all(c <= CFG.pass_line for c in checks)
-        if not rows["G_rows2"]:
-            sc["P15"] = "unscored: the second rows' control failed"
+        sc["rows2_both_pass"] = bool(rows["G_first"]) and finite and all(c <= CFG.pass_line for c in checks)
+        if not rows["G_first"]:
+            sc["P15"] = "unscored: the regenerated SGD decompositions did not reproduce their first-rows checks (G_first)"
         elif not finite:
             sc["P15"] = "unscored: a check is not finite"
         else:
@@ -412,7 +424,8 @@ READINGS: dict[str, dict[str, str]] = {
         "pass": "Both SGD teacher-trained decompositions pass on the second rows: their fail rests on one block of 128 "
                 "rows, little is left for the SGD LoRA to separate, and the job stops before training it (the plan's "
                 "stop rule).",
-        "unscored": "The second rows' control failed, or a check was not finite: the job stopped.",
+        "unscored": "The second rows' control failed (the job stopped), the regenerated SGD decompositions did not "
+                    "reproduce their first-rows checks (G_first), or a check was not finite: unanswered.",
         "not run": "Stage rows2 not run.",
     },
     "label": {
@@ -469,8 +482,8 @@ def predictions() -> dict[str, Any]:
                                                 "of A2's passing state), batch order 0, its state at step 1000",
             "SGD LoRA": f"E39's rank-8 LoRA on all 24 matrices (B = 0, A ~ N(0, 1/d_in), LoRA seed {CFG.lora_seed}, "
                         f"{CFG.ft_steps} steps of {CFG.ft_batch} lowercase rows each once, clip 1.0) trained by plain SGD "
-                        f"(momentum 0, no weight decay) at the rate of {list(AM.lora_sgd_lrs)} (E27's grid, its five "
-                        "middle rates) chosen by E39's rule: among rates not diverged (a non-finite training loss or a "
+                        f"(momentum 0, no weight decay) at the rate of {list(AM.lora_sgd_lrs)} (E27's grid 0.003-3, "
+                        "its top five rates) chosen by E39's rule: among rates not diverged (a non-finite training loss or a "
                         "held-out gain not above 0), the gain nearest this job's Adam fine-tune's",
         },
         "controls": {
@@ -481,6 +494,9 @@ def predictions() -> dict[str, Any]:
                        f"{AM.a2_trained_rows2}; else stop",
             "regenerated SGD fine-tunes": f"held-out gains within {CFG.gain_tol} of {AM.a1_sgd_gain} (plain) and "
                                           f"{AM.a2_cap_gain} (rank 8); else stop",
+            "G_first": f"each regenerated SGD teacher-trained decomposition read on the first rows: check within "
+                       f"{CFG.check_tol:.0%} of A1/A2's {list(AM.first_rows_checks)} (plain, rank 8); else P15 is "
+                       "unscored and the stop rule does not apply",
             "G_label": f"the labelled SGD state at step 100 has gain within {CFG.gain_tol} of A2's {AM.a2_label_gain100}; "
                        "else P16 is unscored",
             "lora_ref": f"before the SGD LoRA, E39's Adam LoRA regenerated: gain within {CFG.gain_tol} of "
@@ -490,7 +506,7 @@ def predictions() -> dict[str, Any]:
                          "update left in Delta, as the Adam LoRA's 2.653 did); else P17 is unscored",
         },
         "stop_rule": f"after the second rows are read: if both SGD teacher-trained checks are <= {CFG.pass_line} (and "
-                     "G_rows2 held), the job stops before the label and lora_sgd stages",
+                     "G_rows2 and G_first held), the job stops before the label and lora_sgd stages",
         "expected": {
             "W0": "check 1 by definition, s 0, damage 0, gap 0.272",
             "do-nothing (Adam)": "check 4.868 (E37), not read here",
@@ -509,7 +525,7 @@ def predictions() -> dict[str, Any]:
         },
         "predictions": [
             pred("P15", f"on the second rows, both SGD teacher-trained decompositions (plain, rank 8): check >= "
-                        f"{CFG.fail_line}, each; holds iff both do, misses otherwise; scored only if G_rows2 holds",
+                        f"{CFG.fail_line}, each; holds iff both do, misses otherwise; scored only if G_rows2 and G_first hold",
                  "both fail, 1.6-2.2", "low-medium",
                  "one more set of 256 rows, one adversary start; on the first rows both failed on one block of 128 and "
                  "passed the other", "the Adam teacher-trained decomposition on the same rows (G_rows2, must fail)"),
@@ -518,8 +534,9 @@ def predictions() -> dict[str, Any]:
                  "fails, 1.6-2.6", "medium-low",
                  "one rate, one batch order; Gamma at W0 throughout; rows drawn with replacement",
                  "the Adam teacher-trained decomposition (2.201, stage 0); A2's step-100 state from the same run (1.275)"),
-            pred("P17", f"teacher training on the SGD LoRA: check <= {CFG.pass_line}. {GATE}; and only if G_nothing "
-                        "holds; no rate qualifying leaves it unscored",
+            pred("P17", f"teacher training on the SGD LoRA: check <= {CFG.pass_line}. Scored only if the SGD LoRA "
+                        f"fine-tune's held-out gain (at the chosen rate) is within {AM.gain_tol:.0%} of this job's Adam "
+                        "fine-tune gain (relative), and only if G_nothing holds; no rate qualifying leaves it unscored",
                  "passes, 1.15-1.5", "medium-low",
                  "one LoRA seed, one rate, one batch order; the gain differs from the Adam LoRA's (0.148); a fail does "
                  "not say which part of Adam matters",
