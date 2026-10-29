@@ -93,7 +93,7 @@ def fig_verdict(tasks: dict[str, Any]) -> None:
     ax.set_yticks([*y, 0], [*(lab for lab, _, _ in items), unscored[0]], fontsize=8.5)
     ax.set_xlabel("gap between the copy tasks' and the random maps' ranges\n÷ the wider range within one class "
                   "(below 0: the ranges overlap)", fontsize=8.5)
-    ax.set_title("Of the six candidate numbers, only the two route shares separate the classes", fontsize=10.5, loc="right")
+    ax.set_title("Of the scored numbers, only the two route shares separate the classes", fontsize=10.5, loc="right")
     style(ax, axis="x")
     save(fig, "log_verdict.png")
 
