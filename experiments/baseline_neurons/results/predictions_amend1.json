@@ -1,0 +1,72 @@
+{
+  "experiment": "E52 Amendment 1, experiments/baseline_neurons/amend1.py: P4 (does the original model W0 perform each task in context?) re-asked with the demonstrations next to the query",
+  "filed": "2026-10-29, before any run; never edited after the run (a dated report instead). E52's results/predictions.json stands as filed; its P4 verdict ('reversed') stands.",
+  "why": "reports/decisions/2026-10-29_decision_e52-p4.md, option A, chosen by the user ('go with A then C', decisions.md 2026-10-29). E52's prompt put the demonstrations before 19 tokens of unrelated Pile text, had no minimum effect, and read near-null shares on both kinds (copy 0.10-0.12, cipher 0.13-0.14 at n = 16).",
+  "states": "E52's eight states (results/predictions.json 'states'); code_step10 is not read (no demonstrations exist for free text).",
+  "settings": {
+    "precision": "fp32, no autocast, TF32 off (as E52)",
+    "model": "W0 only: no delta-W is loaded. Each state's G_score, floor and 'no change' flag are read from E52's results/baseline_neurons.json ('gains'), the denominators E52 measured on the same 48 scoring windows.",
+    "windows": "each task's 97 held-out windows (windows_<task>.pt, 41 tokens, marker at position 19, query key at 20); scoring half = odd indices 1, 3, ..., 95 (48 windows), as E52's dated note reports/predictions/2026-10-29_prediction_e52-window-count.md",
+    "n": [0, 4, 16, 31],
+    "prompt": "the window's tokens 0..18 (19 Pile tokens), then n demonstrations, each the triple (marker, key, table[key]), then the window's marker and query key (tokens 19, 20). The answer is read from the logits at the last position. Length 21 + 3n (114 at n = 31; the model's n_ctx is 512).",
+    "keys": "drawn without replacement from the task's 31 keys other than the query's, by torch.randperm with a generator seeded 1000 * n + window index: E52's prompts() itself, called and its rows reordered, so n = 4 and 16 show the same demonstrations as E52 in a different place. n = 31 = every other key, in a seeded order. The query key is never among them.",
+    "rise": "per task and n: mean over the scoring half of log P_W0,prompted(target) - log P_W0(target on the 21-token window), nats (the same for a task's two seeds)",
+    "share": "per state and n: rise / G_score of that state (E52's denominator)",
+    "top1": "per task and n: fraction of the 48 scoring windows where the target is W0's argmax at the last position (argmax over the 50277-token vocabulary; a tie in the logits goes to torch.argmax's choice, the first index)"
+  },
+  "stage0": {
+    "order": "first, alone, before any task is loaded; then the n = 0 check; a miss in either writes results/amend1.json and stops the job (exit 1) before any n > 0 is read",
+    "induction_control": {
+      "what": "W0's in-context copying in its easiest form. 48 sequences of 25 distinct token ids, each drawn uniformly without replacement from the 50277-token vocabulary (torch.randperm, generator seeded 52 + sequence index), shown twice: 50 tokens, no prefix.",
+      "number": "top1_second: fraction of the 24 x 48 = 1152 predictions of the second copy's tokens 2..25 (logits at positions 25..48) where the argmax is the true next token. The second copy's first token is not scored: nothing in context predicts it.",
+      "reference": "top1_first: the same over the first copy's tokens 2..25 (logits at positions 0..23); reported, expected <= 0.01 (uniform random ids from 50277, no repeats within a copy)",
+      "threshold": "top1_second >= 0.5",
+      "params": {"sequences": 48, "length": 25, "seed": 52, "threshold": 0.5},
+      "threshold_source": "Olsson et al. 2022, 'In-context Learning and Induction Heads' (Anthropic): every model with two or more layers they trained, small ones included, forms induction heads, which make the second copy of a repeated random token sequence predictable; the per-token loss on the repeat falls far below the first copy's. The 0.5 is a conservative bar under that finding, not a measured value for this model: no number for this exact 4-layer, 67M model is known to us, and the rules require it filed before the run. In-repo support that this model does induction: E50's probe (reports/analyses/2026-10-29_analysis_e50-restore-anchors.md, 'What does the original model do in this format?'): the exact (marker, key, answer) shown 10 positions earlier raises the answer's log-odds by 6.2-12.1 nats. Expected reading: >= 0.9 (lean, unscored).",
+      "miss": "top1_second < 0.5: the apparatus cannot see in-context learning in this model; the job stops; P4a reads 'not run: control failed' and no prompting number is read"
+    },
+    "n0_check": {
+      "what": "the n = 0 prompt equals E52's n = 0 prompt: the scoring windows' tokens 0..20",
+      "params": {"mean_tol": 1e-5, "max_tol": 1e-4},
+      "rule": "token equality exact (torch.equal with t.toks[1::2, :21]) on all four tasks, and per task |mean rise at n = 0| <= 1e-5 nats and max over windows |rise| <= 1e-4 nats",
+      "tolerance_source": "the only difference from lp0 is the batch (48 vs 97 rows), a rounding difference. E52 measured its n = 0 mean rise at 3e-7 to 1.1e-6 nats on the same windows (results/baseline_neurons.json b4.nats '0'), so 1e-5 is ~10x the measured floor; the max-abs 1e-4 is E52's identity-patch bound (measured 1.1e-5 to 1.7e-5 per window).",
+      "miss": "a format bug; the job stops; P4a reads 'not run: n = 0 check failed'"
+    }
+  },
+  "expected": {
+    "W0 at n = 0": "rise 0 and every share 0 (to rounding, the n0 check); top1 of the target ~0 (W0 gives the copy target ~1e-4 and the cipher target ~1e-5, E12/E52)",
+    "fine-tuned states (not run here)": "share 1 by definition; E52's G 10.1-14.0 nats puts their target near probability 1",
+    "cipher at n = 31": "share near E52's 0.13-0.14 or below 0.3, top1 <= 0.02: the cipher's target pi(query key) never appears in the prompt (pi is a bijection and the query key is excluded), so the prompt can only shift the prior toward the pool of shown values. A cipher top1 well above 0.02 would mean the target leaks into the prompt (e.g. through the Pile prefix) and is to be reported loudly.",
+    "copy at n = 31": "the open question. Lean: share 0.2-0.5, top1 0.05-0.5 (low confidence). The copy target is the query key itself, the token just before the answer, so the demonstrations teach the rule 'repeat the key after the marker' 31 times, adjacent to the query.",
+    "n = 4, 16": "copy rise at least E52's far-format rise (1.01-1.20 nats at n = 16) if adjacency helps; reported, not scored"
+  },
+  "rule": {
+    "scored_states": "a state is scored iff E52's gains[state].no_change is false (|G| >= its floor; all eight in E52). Shares of 'no change' states are reported, not scored.",
+    "copy_share": "mean over the scored copy states of the share at n = 31; undefined if no copy state is scored",
+    "separation": "E52's rule (run.py separation(), copy_higher = True) on the n = 31 shares: gap = mean_copy - mean_cipher, spread = max within-kind range; separates iff |gap| > spread (strict); 'pass' if it separates with copy higher, 'reversed' the other way, 'fails' if it does not separate, 'not scored' with fewer than 2 scored states in a kind. A non-finite share stops the scoring with an error.",
+    "band_params": {"holds": 0.5, "partial": 0.3},
+    "band": "'holds' iff copy_share >= 0.5; 'partial' iff 0.3 <= copy_share < 0.5; 'mechanism only' iff copy_share < 0.3 (negative included); 'not scored' if copy_share is undefined",
+    "P4a_verdict": "'pass' iff band = 'holds' AND separation = 'pass'; 'not run' if Stage 0 stopped the job; 'not scored' if band or separation is 'not scored'; otherwise 'fails'",
+    "readings": {
+      "pass": "the copy label (elicit) holds behaviourally: W0 performs the copy in context and the cipher it cannot",
+      "holds, separation not 'pass'": "W0 performs the copy in context, but the cipher rises as much or more: the prompt raises both kinds' targets, so prompting does not tell the labels apart; name it, do not read it as support for the labels",
+      "partial (either separation)": "W0 performs the copy partly (0.3-0.5 of the fine-tune's gain): name it as partial; the copy label is behaviourally weak, not verified",
+      "mechanism only (either separation)": "with the control passed, the copy label is a mechanism claim only, never behaviourally verified: the model has copying machinery (the induction control) but does not apply it to this format",
+      "not run": "control failed (the apparatus cannot see in-context learning) or the n = 0 check failed (a format bug); no reading of the labels",
+      "not scored": "too few scored states; no reading"
+    },
+    "edge_cases_checked_before_filing": "G ~ 0 or below the floor: the state is 'no change' (E52's flag) and never divided into a score; a share with G_score = 0 is NaN only for a 'no change' state, which is not scored. All eight states under their floors: copy_share undefined -> band 'not scored', separation 'not scored' -> P4a 'not scored'. One copy state scored: copy_share defined, separation 'not scored' -> P4a 'not scored'. Ties: copy_share exactly 0.5 -> 'holds'; exactly 0.3 -> 'partial'; |gap| equal to spread -> does not separate ('fails'); all eight shares equal -> gap 0, spread 0 -> 'fails'. Kinds constant within themselves (spread 0, as the two seeds share a numerator and E52's G_score differ by < 0.6 nats) -> any nonzero gap separates. Negative copy_share -> 'mechanism only'. Control fails -> 'not run', no share read. n = 0 check fails -> 'not run'. Every combination of band (4 values) x separation (4 values) x stage 0 (pass / stop) maps to exactly one verdict and one reading above."
+  },
+  "predictions": {
+    "P4a": {"number": "copy_share at n = 31 and the separation of the n = 31 shares", "claim": "copy_share >= 0.5 and separates, copy higher (the copy label holds behaviourally)", "lean": "fails, band 'partial' or 'mechanism only'", "confidence": "low", "why": "E52's far format gave the copy target ~3e-4 after 16 demonstrations and E50's exact-pair demonstration left its log-odds at -3.3 to -4.0; adjacency and 31 demonstrations should help, but a 4-layer model's rule-following in context is unmeasured"}
+  },
+  "blind_spots": {
+    "share": "blind to why the target rises: for copy, any bias toward repeating the previous token counts, marker-specific or not; for cipher, a prior shift toward the shown values counts as task performance. Its denominator is the fine-tune's gain on the 21-token window without demonstrations, so it compares W0 on a longer context with the fine-tune on the short one.",
+    "top1": "blind to probability below the argmax: a target at 0.4 behind a 0.45 competitor reads 0. Threshold measure, reported beside the share.",
+    "rise": "blind to G: the same nats are a different share for a fine-tune with a larger gain (cipher G is 2-4 nats larger than copy G).",
+    "induction_control": "shows that W0 uses an exact earlier occurrence of a token pattern; blind to rule learning from demonstrations (copying an abstract rule to a new key), which is what the copy prompt asks. A pass shows the apparatus can see in-context copying, not that the model can learn this format's rule; a copy share near 0 with the control passed is therefore the 'mechanism only' reading, not an apparatus failure.",
+    "n0_check": "shows the prompt builder reproduces E52 at n = 0; blind to errors that occur only with demonstrations present (the CPU check of the token layout covers those, run before filing)"
+  },
+  "noise_floor": "the run is deterministic (fixed seeds, fp32, TF32 off). Within a task the two seeds share the numerator, so within-kind range at n = 31 comes from G_score (copy 10.20-10.26, cipher 11.87-13.70) and from the two tables. The separation rule's spread is that range, as E52.",
+  "reported_not_scored": ["rise, share and top1 at n = 0, 4, 16, 31 for every task and state", "separation at n = 4 and 16", "Stage 0 numbers", "max over windows |rise| at each n"]
+}
