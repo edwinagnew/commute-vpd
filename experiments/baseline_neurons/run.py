@@ -3,8 +3,8 @@ fine-tunes (elicit) from its cipher fine-tunes (teach)? Plan: reports/plans/2026
 section "B2 + B3 + B4 = E52". Every setting, rule and threshold: results/predictions.json (filed before the run, read
 here, never edited).
 
-The target model only (no decomposition is read), fp32, on each task's 100 held-out windows (fit half = even indices,
-scoring half = odd). Per state the gain G of log P(target) at the answer position over W0; every share is the method's
+The target model only (no decomposition is read), fp32, on each task's 97 held-out windows (fit half = even indices, 49;
+scoring half = odd, 48). Per state the gain G of log P(target) at the answer position over W0; every share is the method's
 change of log P over W0 divided by G on the scoring half.
   stage 0   the controls, alone: identity neuron patch, full residual patch, G > 1 nat (ident32_s0, rand32_s0); exit 1
             on a miss
@@ -116,12 +116,12 @@ def logp_at(logits: Tensor, pos: int, tgt: Tensor) -> Tensor:
 class Task:
     name: str
     kind: str
-    toks: Tensor  # (100, 41) held-out windows
+    toks: Tensor  # (97, 41) held-out windows
     table: Tensor  # (V,) key -> value, -1 off the keys
     keys: tuple[int, ...]
     marker: int
     half: int
-    lp0: Tensor  # (100,) W0's log P(target) at the answer position
+    lp0: Tensor  # (97,) W0's log P(target) at the answer position
 
     def part(self, which: str) -> slice:
         return slice(0, None, 2) if which == "fit" else slice(1, None, 2)
@@ -134,7 +134,7 @@ def load_task(net: Net, src: Path, name: str) -> Task:
     w = torch.load(src / f"windows_{name}.pt", weights_only=False)
     held, task = w["heldout"], w["task"]
     t = Task(name, TASKS[name], held.tokens, w["table"], tuple(task.keys), int(task.marker), held.half, torch.empty(0))
-    assert len(t.toks) % 2 == 0 and len(t.toks) >= 4 and bool((t.tgt(t.toks) >= 0).all()), name
+    assert len(t.toks) >= 4 and bool((t.toks[:, t.half - 1] == t.marker).all()) and bool((t.tgt(t.toks) >= 0).all()), name
     t.lp0 = logp_at(net.run(t.toks)[0], t.half, t.tgt(t.toks))
     return t
 
