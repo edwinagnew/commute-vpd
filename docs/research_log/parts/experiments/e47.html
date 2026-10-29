@@ -1,0 +1,33 @@
+<article class="exp" id="e47">
+<div class="top"><span class="id">E47</span><span class="chip partial">mixed</span><h3>Do the five claims the red team weakened survive more adversary starts and the missing controls?</h3><span class="when">2026-10-29 · MATS cluster L40, debug QoS · <code>experiments/claim_tests</code></span></div>
+<p class="one">Partly. Teacher training holds on both teachers where leaving the update in Δ fails, and plain SGD works as its optimiser at every smaller setting, so "it needs Adam" falls; the remainder claim stays unsettled, the LoRA's pass held on one row set only, and at matched size the faster split run kept 0.08 to 0.09 more. Eleven jobs at $0.</p>
+<figure>
+<img src="fig/e47_i_teacher_training.png" alt="Adversarial ratio at four adversary starts for the ladder task and the cipher: every teacher-trained decomposition sits under the pass line, every do-nothing state crosses the fail line at one start or more.">
+<figcaption>Does teacher training pass where do-nothing fails, at every adversary start? Yes, on both teachers. Each marker is one state at one start; the vertical axis is the attacker's KL for the state over its KL for the unchanged model, read in the same job. Teacher-trained decompositions read 0.89 to 1.23; do-nothing reads up to 3.53 on the ladder task and 3.40 on the cipher.</figcaption>
+</figure>
+<figure>
+<img src="fig/e47_ii_lora_rank.png" alt="Adversarial ratio of the rank-8, rank-32 and rank-128 LoRA teacher-trained decompositions and the full-rank Adam control on Pile rows 0-255 and 256-511, with pass and fail lines for each row set.">
+<figcaption>Does the rank-8 LoRA's pass hold, and does it need the low rank? It passes on rows 256-511 (1.15) and is inconclusive on rows 0-255 (1.28); rank 128 climbs to 1.53 on rows 256-511 only. The full-rank Adam control fails on both row sets.</figcaption>
+</figure>
+<figure>
+<img src="fig/e47_iii_keep_size.png" alt="Kept behaviour of the scaled adjoint split against update size for a slower and a faster SGD run, on two seeds: the faster run sits 0.08 to 0.09 above the slower one at each matched size.">
+<figcaption>At the same update size, does a faster SGD run keep as much as a slower one? Somewhat more: 0.08 to 0.09 on all four comparisons. Up: the share of the fine-tune's behaviour the split keeps (1 is all).</figcaption>
+</figure>
+<figure>
+<img src="fig/e47_iv_remainder.png" alt="Adversarial ratio at fine-tune steps 10 and 1,000 at three adversary starts for do-nothing, teacher training plus remainder and, at step 10, teacher training's own state: at step 10 plus remainder sits below both references at one start and above both at another.">
+<figcaption>Is teacher training plus remainder worse than do-nothing? Not shown. At step 1,000 it reads higher at every start but within the start spread; at step 10 its position against do-nothing flips with the start.</figcaption>
+</figure>
+<figure>
+<img src="fig/e47_v_plain_sgd.png" alt="Adversarial ratio of teacher training with plain SGD as the optimiser at six cells on two teachers, all under the pass line, and the rate 0.03 step 1,000 control at 3.30.">
+<figcaption>Does teacher training with plain SGD fail the check? Only at the largest rate run longest. The six smaller cells read 0.98 to 1.17 on both teachers; rate 0.03 to step 1,000 reads 3.30 on the Adam teacher.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>The same 67M model and decomposition as E34 to E43, on the cluster L40. Each claim was re-read at two to four adversary starts (an attacker's random initialisation, 20 steps of mask ascent on 256 Pile rows) with the controls the red team said were missing: the unchanged model first, then a positive control that must fail, then the states. Eleven jobs including a follow-up (t4c) that read teacher training's own state beside the remainder's at step 10.</dd>
+<dt>Found</dt><dd><ul>
+<li>Teacher training passes at all four starts on both teachers (worst 1.23 on the ladder task, 1.01 on the cipher) where do-nothing fails at one start or more (3.53 and 3.40); plain SGD as its optimiser passes at all six smaller cells (0.98 to 1.17) and fails only at rate 0.03 run to step 1,000 (3.30, Adam teacher), so "needs Adam" is false.</li>
+<li>Teacher training plus remainder is not shown worse than do-nothing: at step 1,000 it reads higher at every start but only by 0.5% to 27%, and at step 10 it reads below both references at one start and above both at another, which we cannot yet explain; we expected "worse at every start".</li>
+<li>The rank-8 LoRA's pass holds on Pile rows 256-511 (1.15) and is inconclusive on rows 0-255 (1.28), with rank 128 climbing on the second row set only; at matched update size the faster split run keeps 0.08 to 0.09 more, a miss against the filed "falls", and the size-only arm could not be scored.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, Q11</dd>
+<dt>Moved on</dt><dd>Teacher training stays the map for the weak version; four choices wait for you in section {{n:decisions}} (a rank sweep on rows 256-511, the split's wording, dropping the remainder claim, rescoping "needs Adam"). One model, decomposition and card; two to four starts per state; only the adversarial check was read. Report: <code>reports/analyses/2026-10-29_analysis_e47-claim-tests.md</code>; checked by <code>reports/reviews/2026-10-29_review_e47-analysis-check.md</code>; plan <code>reports/plans/2026-10-28_plan_claim-tests.md</code>; notebook <code>notebooks/E47_claim_tests.ipynb</code>. Not run: the stochastic and CI-masked ratios, rows 256-511 for the other claims, rank 32 and 64 on rows 256-511, the failing SGD setting on the LoRA teacher, the H100 lines.</dd>
+</dl>
+</article>

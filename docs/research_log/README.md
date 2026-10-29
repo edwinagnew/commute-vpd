@@ -264,3 +264,8 @@ Figures already published (their sources, for a re-upload):
 - "fig/e39_shape.png": "experiments/broad_fragility/figures/shape.png"
 - "fig/e39_amend1_rank.png": "experiments/broad_fragility/figures/amend1_rank.png"
 - "fig/e39_amend3_rows.png": "experiments/broad_fragility/figures/amend3_rows.png"
+- "fig/e47_i_teacher_training.png": "experiments/claim_tests/figures/e47_i_teacher_training.png"
+- "fig/e47_ii_lora_rank.png": "experiments/claim_tests/figures/e47_ii_lora_rank.png"
+- "fig/e47_iii_keep_size.png": "experiments/claim_tests/figures/e47_iii_keep_size.png"
+- "fig/e47_iv_remainder.png": "experiments/claim_tests/figures/e47_iv_remainder.png"
+- "fig/e47_v_plain_sgd.png": "experiments/claim_tests/figures/e47_v_plain_sgd.png"
