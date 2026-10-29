@@ -153,3 +153,15 @@ any run; every rule, threshold and tolerance is there. In plain words, what the 
 Compute (guessed, not measured): `finetune` 3-5 min (E49's fine-tune took 17 s per 300 steps on the L40), `read` 10-20
 min (E46 Amendment 3 took 48 s per table at 97 windows of 41 tokens; here 16 times the tokens). Host memory guessed
 under 16 GB; the job asks 32 GB, as A0's. Peak memory is logged at the end of each stage.
+
+## Code review (2026-10-29, fresh Opus agent, diff 675a0af..b12f153)
+
+No bug found that changes a scored number; rows, positions, batches and states line up across arms, and shared
+`src/commute` changes leave other callers unchanged. Skipped, with reasons: (1) the read stage's zero, do-nothing and
+same-G controls pass by construction (the split skips all-zero matrices; U and T do not depend on the components), so
+the write-up says their passing carries no information; no in-run positive control is added, since the filed controls
+already reproduced in E46/E50 on the same code path. (2) The lowercase hand write may be ill-conditioned (764 keys from
+2,000 windows): `write_fit` is read before P3 is interpreted. (3) Lowercase G may fall under 1 nat (A0 already +1.18);
+if the random null's |G| is large the filed floor stays at 1 nat and P1 reads "unscored", which is the filed outcome.
+(4) The floor's standard error treats windows as independent (rows share context): noted under noise. (5)-(7) mixed
+bf16 forward paths in matching, late `score` import, sbatch details: below tolerance or harmless; not changed.
