@@ -22,5 +22,6 @@ unset _eph
 export PATH=$HOME/.local/bin:$PATH        # uv lives in ~/.local/bin (NFS home)
 export PYTHONPATH=$COMMUTE_REPO/src${PYTHONPATH:+:$PYTHONPATH}   # this clone's code: the shared venv's commute.pth names whichever clone synced last
 export UV_NO_SYNC=1                       # a bare `uv run` would swap in the default (CPU) torch; rebuild via setup.sbatch
+export PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}   # E45 P OOMed on an L40 with 13 GB reserved but unallocated (friction 108)
 export PYTHONUNBUFFERED=1                 # a job's .out shows progress as it runs, not only when the job ends (friction 8)
 export COMMUTE_QWEN_DIR=/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch   # Qwen3-1.7B decomposition as fp32 safetensors (experiments/qwen_port/convert.py; index.json)

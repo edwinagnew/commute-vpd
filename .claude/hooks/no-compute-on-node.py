@@ -117,7 +117,9 @@ def _language_model(segment, cwd):
         for mod in re.findall(r"(?:^|\s)-m\s+([\w.]+)", text):
             rel = mod.replace(".", "/")
             scripts += [_resolve(rel + ".py", roots), _resolve(rel + "/__main__.py", roots)]
-    if STATIC_ONLY.search(segment) and not any(RUNS_PYTHON.search(t) for t in (command, *(t for _, t in shell))):
+    # Only this command's own text counts: a Python run elsewhere on the line (`cpu-run make lint ...; cpu-run pytest`)
+    # made a lint of run.py look like a run of it (friction 87).
+    if STATIC_ONLY.search(segment) and not any(RUNS_PYTHON.search(t) for _, t in shell):
         return None
     for path in dict.fromkeys(p for p in scripts if p):
         if "tests" in os.path.relpath(path, roots[1]).split(os.sep)[:-1]:
