@@ -140,3 +140,31 @@ def log_odds(net: nn.Module, rows: Tensor, at: Positions, device: str, batch: in
         d = lp[r, p, at.a[sel].to(device)] - lp[r, p, at.b[sel].to(device)]
         out[sel] = d.double().cpu()
     return out
+
+
+def windows_at(rows: Tensor, at: Positions, half: int, n: int, seed: int) -> tuple[Tensor, Tensor]:
+    """Windows (N, 2 half + 1) of `rows` around scored positions, and which positions of `at` they are (N,): window i is
+    row[pos - half - 1 : pos + half], so the scored token sits at index half + 1 and its input at `half`, where the
+    key-position code reads (`data.target_tokens(data.NEXT, ...)`). Positions whose window leaves the row are dropped;
+    if more than `n` remain, `n` are drawn without replacement (`torch.randperm`, `torch.Generator().manual_seed(seed)`),
+    kept in `at`'s order. No position left raises: an empty pool is an error. Added for E53's readings."""
+    ok = torch.nonzero((at.pos >= half + 1) & (at.pos + half <= rows.shape[1]), as_tuple=True)[0]
+    if len(ok) == 0:
+        raise ValueError("no scored position has a whole window")
+    if len(ok) > n:
+        ok = ok[torch.randperm(len(ok), generator=torch.Generator().manual_seed(seed))[:n].sort().values]
+    start = at.pos[ok] - half - 1
+    return rows[at.row[ok][:, None], start[:, None] + torch.arange(2 * half + 1)], ok
+
+
+def next_token_inputs(model: Any, windows: Tensor, half: int) -> tuple[Tensor, list[int]]:
+    """E46's hand-write inputs (`perturb.key_inputs`) grouped by each window's true next token (index half + 1) rather
+    than its token at `half`: (A (d_in, K), keys), keys the distinct next tokens in ascending order and A's column k the
+    mean of `perturb.window_inputs` (block 1's MLP output input at `half`) over the windows whose next token is keys[k].
+    Added for E53's hand writes (`perturb.key_write(A, unembedding rows of keys)`)."""
+    from commute.perturb import window_inputs
+
+    X = window_inputs(model, windows, half)
+    nxt = windows[:, half + 1].to(X.device)
+    keys = torch.unique(nxt)
+    return torch.stack([X[nxt == k].mean(0) for k in keys], 1), [int(k) for k in keys]

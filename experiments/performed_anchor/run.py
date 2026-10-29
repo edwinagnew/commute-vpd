@@ -1,0 +1,393 @@
+"""performed_anchor (E53): the stand-in ratio and the relay on two fine-tunes of the same Pile text, one the original
+67M already performs (lowercase) and one it cannot (a 50-word token cipher). Plan:
+reports/plans/2026-10-29_plan_performed-anchor.md ("Predictions", "Compute and code", "Filed (E53 fine-tunes)"); A0
+(a0.py) ran first and passed. Rules, thresholds, expected values: results/predictions.json (filed before this ran).
+
+Tasks (`performed`): lowercase = E37's 2,400 lowercased train rows; cipher = cased train rows 0-2399 with a0.json's
+derangement pi applied in context and targets. Each fine-tuned by E37's recipe (`lowercase.arm_b_states`: Adam 3e-5,
+batch 8, 300 steps, all 24 matrices) at batch orders 0 and 1; saved bf16 in results/large/.
+Readings: up to 500 scored positions per task in Pile val rows 0-255, each in a 127-token window with the scored token
+at index 64 (`performed.windows_at`, half 63); log-odds of the true next token (`data.NEXT`). Cells (`cells`):
+T full model, U subcomponents unmasked, L Gamma-masked (Delta out); 0 = W0, 1 = the state. G = T1 - T0; gate gain
+g = L01 - L00; subcomponent gain U1 - U0; masked gain L11 - L00; stand-in ratio = masked / subcomponent gain under the
+least-squares split (`anchors.lifted`). Relay (`relay`, E50): under do-nothing, every alive subcomponent's output at
+the scored position restored to W0's input; rho = (T1 - restored) / G.
+
+  run.py finetune  lowercase seed 0 first (the recipe control), then the rest -> results/finetune.json
+  run.py read      controls (zero update, do-nothing), nulls (random delta-W matched on off-target KL; hand write
+                   matched on G), the fine-tunes, the score -> results/read.json
+Every scored number goes to stdout and results/large/<stage>.log. A control miss: written, FAIL logged, exit 1.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import resource
+import subprocess
+import sys
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import torch
+from torch import Tensor
+
+HERE = Path(__file__).resolve().parent
+RESULTS, REPO = HERE / "results", HERE.parents[1]
+LARGE, PRED, A0 = RESULTS / "large", RESULTS / "predictions.json", RESULTS / "a0.json"
+ALIVE = REPO / "experiments" / "transport_test" / "results" / "large" / "alive.pt"
+TASKS, SEEDS, DEVICE = ("lowercase", "cipher"), (0, 1), "cuda"
+LOG = [LARGE / "run.log"]
+
+
+@dataclass(frozen=True)
+class Config:
+    half: int = 63  # windows of 127 tokens
+    n_windows: int = 500  # scored windows per task (val rows 0-255)
+    n_write_windows: int = 2000  # the hand write's windows (train rows 0-255)
+    window_seed: int = 0
+    n_train: int = 2400  # = lowercase.STEPS x lowercase.BATCH: cipher training rows, cased train rows 0-2399
+    n_held: int = 64  # the fine-tune's held-out rows (lowercase.task's; cipher: ciphered val rows 0-63)
+    steps: tuple[tuple[int, ...], tuple[int, ...]] = ((300,), (10, 100, 300))  # saved steps (lowercase, cipher)
+    batch: int = 32  # windows per forward
+    n_boot: int = 2000
+
+    def __post_init__(self) -> None:
+        from commute import lowercase
+
+        assert self.n_train == lowercase.STEPS * lowercase.BATCH and all(s[-1] == lowercase.STEPS for s in self.steps)
+
+
+CFG = Config()
+
+
+def log(msg: str) -> None:
+    line = f"{time.strftime('%H:%M:%S')} {msg}"
+    print(line, flush=True)
+    with LOG[0].open("a") as f:
+        f.write(line + "\n")
+
+
+def _finite(o: Any) -> Any:
+    if isinstance(o, float) and not math.isfinite(o):
+        return str(o)
+    if isinstance(o, dict):
+        return {str(k): _finite(v) for k, v in o.items()}
+    return [_finite(v) for v in o] if isinstance(o, list | tuple) else o
+
+
+def dump(name: str, obj: dict[str, Any]) -> None:
+    (RESULTS / name).write_text(json.dumps(_finite(obj), indent=1, sort_keys=True))
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def git_head() -> str:
+    return subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+
+
+def key(task: str, seed: int, step: int) -> str:
+    return f"{task}/s{seed}/step{step}"
+
+
+def stop(out_name: str, out: dict[str, Any], why: str) -> None:
+    out["stopped"] = why
+    dump(out_name, out)
+    log(f"FAIL: {why}: stop")
+    sys.exit(1)
+
+
+def task_text(name: str, rows: Tensor, pi: dict[int, int]) -> tuple[Tensor, Any]:
+    """The task's text of cased Pile `rows` and its scored positions (`performed`)."""
+    from commute import performed, vpd
+
+    if name == "lowercase":
+        cp = performed.case_pairs(rows, vpd.tokenizer())
+        return cp.lower, cp.in_lower
+    return performed.cipher_rows(rows, pi)
+
+
+# ----------------------------------------------------------------------------- job 1: the fine-tunes
+
+
+def stage_finetune(P: dict[str, Any], pi: dict[int, int]) -> None:
+    from commute import lowercase, vpd
+    from commute.data import pile_rows
+    from commute.row_copy import mean_logp
+
+    c, model = P["controls"], vpd.load_component_model(DEVICE)
+    low = lowercase.task(model, DEVICE, log)
+    held = task_text("cipher", pile_rows("val", 0, 256)[: CFG.n_held], pi)[0]
+    train = task_text("cipher", pile_rows("train", 0, 4096)[: CFG.n_train], pi)[0]
+    data = {"lowercase": low, "cipher": lowercase.Lower(train, held, low.w0_net, mean_logp(low.w0_net, held, DEVICE, 8))}
+    out: dict[str, Any] = {"commit": git_head(), "states": {}, "logp_w0": {n: d.logp_w0 for n, d in data.items()}}
+    for (name, steps), seed in ((x, s) for x in zip(TASKS, CFG.steps, strict=True) for s in SEEDS):
+        for step, dW in lowercase.arm_b_states(model, DEVICE, data[name], "adam", seed, steps, log).items():
+            path = LARGE / f"dW_{name}_s{seed}_step{step}.pt"
+            torch.save({k: v.bfloat16() for k, v in dW.items()}, path)
+            small = {k: v.float() for k, v in torch.load(path, weights_only=True).items()}
+            rec = {"gain": lowercase.gain(model, DEVICE, data[name], dW), "gain_bf16": lowercase.gain(model, DEVICE, data[name], small),
+                   "sha256": sha256(path), "file": path.name}
+            out["states"][key(name, seed, step)] = rec
+            dump("finetune.json", out)
+            log(f"[finetune {key(name, seed, step)}] held-out gain {rec['gain']:.5f} nats/token, bf16 copy {rec['gain_bf16']:.5f}")
+            if abs(rec["gain_bf16"] - rec["gain"]) > c["bf16_gain_tol"]:
+                stop("finetune.json", out, f"control bf16_save at {key(name, seed, step)}")
+            if (name, seed) == ("lowercase", 0) and abs(rec["gain"] - c["recipe_gain_ref"]) > c["recipe_gain_tol"]:
+                stop("finetune.json", out, f"control recipe: gain {rec['gain']:.5f} against {c['recipe_gain_ref']}")
+    out["done"] = True
+    dump("finetune.json", out)
+    log("[finetune] done")
+
+
+# ----------------------------------------------------------------------------- job 2: the readings
+
+
+@dataclass
+class Task:
+    name: str
+    held: Tensor  # (N, 127) scored windows
+    train: Tensor  # the hand write's windows
+    io0: Any  # W0's input and output of each matrix at `half`, per batch (relay)
+    T0f: float = 0.0  # W0's full-model log-odds (plain forward, as the relay reads)
+
+
+class Run:
+    def __init__(self, P: dict[str, Any]) -> None:
+        from commute import anchors as AN
+        from commute import vpd
+
+        self.P, self.th = P, P["thresholds"]
+        self.model = vpd.load_component_model(DEVICE)
+        self.W0, self.comps0 = vpd.target_weights(self.model), vpd.component_weights(self.model)
+        alive = {k: v.cpu().bool() for k, v in torch.load(ALIVE, weights_only=False)["alive"].items()}
+        self.lift = AN.lift_context(self.model, alive)
+        self.every_alive = {k: v.nonzero().flatten() for k, v in alive.items()}
+
+    def weights(self, dW: dict[str, Tensor]) -> dict[str, Tensor]:
+        return {k: w + dW[k].to(w.device, w.dtype) if k in dW else w for k, w in self.W0.items()}
+
+    def task(self, name: str, pi: dict[int, int]) -> Task:
+        from commute import performed
+        from commute import recruitment as RT
+        from commute.data import pile_rows
+
+        wins = []
+        for rows, n in ((pile_rows("val", 0, 256), CFG.n_windows), (pile_rows("train", 0, 4096)[:256], CFG.n_write_windows)):
+            text, at = task_text(name, rows, pi)
+            w, idx = performed.windows_at(text, at, CFG.half, n, CFG.window_seed)
+            assert torch.equal(w[:, CFG.half + 1], at.a[idx]), "a window's next token is not its scored form"
+            wins.append(w)
+        io0 = RT.trigger_io(self.model, sorted(self.comps0), wins[0], CFG.half, CFG.batch)
+        t = Task(name, wins[0], wins[1], io0)
+        t.T0f = full_read(self, t, {})[0]
+        return t
+
+
+def batches(t: Task) -> list[Tensor]:
+    return [t.held[s : s + CFG.batch].to(DEVICE) for s in range(0, len(t.held), CFG.batch)]
+
+
+@torch.no_grad()
+def cells(run: Run, t: Task, dW: dict[str, Tensor], comps: Any) -> dict[str, Any]:
+    """Per-window cells for target W0 + dW with components `comps` (None: released, do-nothing), one batch's gates at
+    a time (500 windows' gate patterns would take ~10 GB of host memory each). Means, gains, and the per-window gains."""
+    from commute.data import NEXT, target_tokens
+    from commute.faithfulness import model_state
+    from commute.identity import log_odds
+    from commute.local_faith import masked_lo_windows, stats
+    from commute.vpd import compute_ci
+
+    m, h = run.model, CFG.half
+    cols: dict[str, list[Tensor]] = {}
+
+    def mlw(b: Tensor, g: dict[str, Tensor]) -> Tensor:
+        return masked_lo_windows(m, b, h, NEXT, [g], len(b))
+
+    for b in batches(t):
+        tgt, ci0 = target_tokens(NEXT, b, h), compute_ci(m, b, chunk=len(b))
+        ones = {k: torch.ones_like(v) for k, v in ci0.g.items()}
+        part = {"T0": log_odds(ci0.logits[:, h], tgt), "L00": mlw(b, ci0.g), "U0": mlw(b, ones)}
+        with model_state(m, target=run.weights(dW), components=comps):
+            ci1 = compute_ci(m, b, chunk=len(b))
+            part |= {"T1": log_odds(ci1.logits[:, h], tgt), "kl_other": stats(ci0.logits, ci1.logits, h, tgt)["kl_other"],
+                     "L11": mlw(b, ci1.g), "U1": mlw(b, ones)}
+            with model_state(m, components=run.comps0):
+                part["L01"] = mlw(b, ci1.g)
+        for k, v in part.items():
+            cols.setdefault(k, []).append(v.double().cpu())
+        del ci0, ci1, ones
+    w = {k: torch.cat(v) for k, v in cols.items()}
+    piece_w, masked_w = w["U1"] - w["U0"], w["L11"] - w["L00"]
+    mean = {k: float(v.mean()) for k, v in w.items()}
+    return {"cells": mean, "G": mean["T1"] - mean["T0"], "g": mean["L01"] - mean["L00"], "piece_gain": float(piece_w.mean()),
+            "masked_gain": float(masked_w.mean()), "kl_other": mean["kl_other"], "n": len(piece_w),
+            "piece_se": float(piece_w.std() / math.sqrt(len(piece_w))), "boot": boot(masked_w, piece_w, run.th)}
+
+
+def boot(num: Tensor, den: Tensor, th: dict[str, Any]) -> dict[str, Any]:
+    """Reported only: the 90% interval of mean(num) / mean(den) over resamples of windows whose mean(den) >= floor_min."""
+    idx = torch.randint(len(num), (CFG.n_boot, len(num)), generator=torch.Generator().manual_seed(0))
+    nb, db = num[idx].mean(1), den[idx].mean(1)
+    ok = db >= th["floor_min"]
+    r = (nb[ok] / db[ok]).sort().values
+    ci = [float(r[int(0.05 * len(r))]), float(r[int(0.95 * len(r)) - 1])] if len(r) >= 20 else None
+    return {"ratio_ci90": ci, "frac_den_below_floor_min": 1 - float(ok.double().mean())}
+
+
+def split_row(run: Run, t: Task, dW: dict[str, Tensor]) -> dict[str, Any]:
+    from commute import anchors as AN
+
+    return cells(run, t, dW, AN.lifted(run.model, run.lift, dW))
+
+
+@torch.no_grad()
+def full_read(run: Run, t: Task, dW: dict[str, Tensor]) -> tuple[float, float]:
+    """(mean log-odds of the true next token, mean kl_other to W0) of the full model W0 + dW on the scored windows."""
+    from commute.data import NEXT, target_tokens
+    from commute.faithfulness import model_state
+    from commute.finetune import logits_of
+    from commute.local_faith import stats
+
+    lo = kl = 0.0
+    for b in batches(t):
+        ref = logits_of(run.model.target_model, b)
+        with model_state(run.model, target=run.weights(dW)):
+            st = stats(ref, logits_of(run.model.target_model, b), CFG.half, target_tokens(NEXT, b, CFG.half))
+        lo, kl = lo + float(st["lo_trigger"].double().sum()), kl + float(st["kl_other"].double().sum())
+    return lo / len(t.held), kl / len(t.held)
+
+
+@torch.no_grad()
+def relay(run: Run, t: Task, dW: dict[str, Tensor]) -> dict[str, float]:
+    """E50's every-alive restore share under do-nothing: lo of the full model W0 + dW, plain and with every alive
+    subcomponent's output at the scored position restored to W0's input (`recruitment.restore_hooks`)."""
+    from commute import recruitment as RT
+    from commute.data import NEXT, target_tokens
+    from commute.faithfulness import model_state
+    from commute.finetune import logits_of
+    from commute.identity import log_odds
+
+    def lo() -> float:
+        return sum(float(log_odds(logits_of(run.model.target_model, b)[:, CFG.half], target_tokens(NEXT, b, CFG.half))
+                         .double().sum()) for b in batches(t)) / len(t.held)
+
+    with model_state(run.model, target=run.weights(dW)):
+        T1 = lo()
+        with RT.restore_hooks(run.model, run.comps0, run.every_alive, t.io0, CFG.half):
+            R = lo()
+    return {"T1": T1, "G": T1 - t.T0f, "restored": R, "nats": T1 - R, "rho": RT.share(T1, R, T1 - t.T0f)}
+
+
+# ----------------------------------------------------------------------------- the rows
+
+
+def random_row(run: Run, t: Task, dW_ft: dict[str, Tensor], kl_target: float) -> dict[str, Any]:
+    """The seed-0 random direction of the fine-tune's per-matrix norms, scaled so its full-model kl_other matches."""
+    from commute import perturb as PT
+    from commute.finetune import random_direction
+
+    d = random_direction(dW_ft, 0)
+    m = PT.match(lambda c: full_read(run, t, PT.scaled(d, c))[1], kl_target, run.th["scale_cap"], run.th["kl_rel_tol"])
+    return {**split_row(run, t, PT.scaled(d, m["x"])), "scale": m["x"], "match": m["status"], "kl_target": kl_target}
+
+
+def write_row(run: Run, t: Task, G_target: float) -> dict[str, Any]:
+    """E46's hand write on block 1's MLP output, keys = the true next tokens (`performed.next_token_inputs`), alpha
+    matched so the full model's G equals the seed-0 fine-tune's; split, read and relayed."""
+    from commute import performed
+    from commute import perturb as PT
+
+    A, keys = performed.next_token_inputs(run.model, t.train, CFG.half)
+    assert len(keys) <= A.shape[0], "more keys than input dimensions: the write is not exact"
+    lm = run.model.target_model.lm_head.weight.detach().float()
+    X = PT.key_write(A, lm[torch.tensor(keys, device=lm.device)].T)
+    fit = PT.write_fit(X, A, PT.window_inputs(run.model, t.held, CFG.half), lm[t.held[:, CFG.half + 1].to(lm.device)])
+    if not G_target > 0:
+        return {"match": "no_target", "fit": fit, "n_keys": len(keys)}
+    dw = lambda a: {PT.WRITE_KEY: (a * X).float()}
+    m = PT.match(lambda a: full_read(run, t, dw(a))[0] - t.T0f, G_target, run.th["alpha_max"], run.th["write_rel_tol"])
+    return {**split_row(run, t, dw(m["x"])), "relay": relay(run, t, dw(m["x"])), "alpha": m["x"], "match": m["status"],
+            "G_target": G_target, "fit": fit, "n_keys": len(keys)}
+
+
+class Rows:
+    """read.json's rows: each written and logged as it finishes; a control miss stops the run."""
+
+    def __init__(self) -> None:
+        self.out: dict[str, Any] = {"commit": git_head(), "rows": {}}
+
+    def put(self, name: str, role: str, rec: dict[str, Any], ok: bool | None = None) -> dict[str, Any]:
+        self.out["rows"][name] = {"role": role, **rec, **({} if ok is None else {"ok": ok})}
+        dump("read.json", self.out)
+        log(f"[{role} {name}] ok {ok} {json.dumps(_finite(rec), sort_keys=True)}")
+        if ok is False:
+            stop("read.json", self.out, f"control {role} at {name}")
+        return rec
+
+
+def stage_read(P: dict[str, Any], pi: dict[int, int], ft: dict[str, Any]) -> None:
+    c, rows = P["controls"], Rows()
+    files = {k: LARGE / v["file"] for k, v in ft["states"].items()}
+    if bad := [k for k, p in files.items() if not p.is_file() or sha256(p) != ft["states"][k]["sha256"]]:
+        sys.exit(f"missing or not the file finetune.json recorded: {bad}")
+    state = lambda k: {n: v.float() for n, v in torch.load(files[k], weights_only=True).items()}
+    run = Run(P)
+    tasks = {n: run.task(n, pi) for n in TASKS}
+    for n, t in tasks.items():  # the controls, first and alone
+        zero = {k: torch.zeros_like(v) for k, v in run.W0.items()}
+        z, rz = split_row(run, t, zero), relay(run, t, zero)
+        ok = all(abs(z[q]) <= c["zero_tol"] for q in ("G", "g", "piece_gain", "masked_gain")) and abs(rz["nats"]) <= c["zero_relay_tol"]
+        rows.put(f"{n}/zero", "control", {**z, "relay": rz, "T0_full": t.T0f, "n_write_windows": len(t.train)}, ok)
+    scored = [key(n, s, 300) for n in TASKS for s in SEEDS]
+    for k in scored:
+        d = cells(run, tasks[k.split("/")[0]], state(k), None)
+        rows.put(f"{k}/do_nothing", "control", d, abs(d["piece_gain"]) <= c["zero_tol"])
+    for n, t in tasks.items():  # the nulls, against the seed-0 fine-tune
+        ft0 = rows.out["rows"][f"{key(n, 0, 300)}/do_nothing"]
+        rows.put(f"{n}/random", "null", random_row(run, t, state(key(n, 0, 300)), ft0["kl_other"]))
+        rows.put(f"{n}/write", "null", write_row(run, t, ft0["G"]))
+    for k in ft["states"]:  # the fine-tunes; a split state's G must be its do-nothing's (same target weights)
+        dW, t = state(k), tasks[k.split("/")[0]]
+        rec = {**split_row(run, t, dW), "relay": relay(run, t, dW)}
+        same = rows.out["rows"].get(f"{k}/do_nothing")
+        rows.put(k, "finetune", rec, None if same is None else abs(rec["G"] - same["G"]) <= c["zero_tol"])
+    from score import score
+
+    rows.out["score"] = score(rows.out["rows"], P)
+    dump("read.json", rows.out)
+    log(f"[score] {json.dumps(_finite(rows.out['score']), sort_keys=True)}")
+
+
+def main() -> None:
+    stage = sys.argv[1] if len(sys.argv) == 2 else ""
+    if stage not in ("finetune", "read"):
+        sys.exit("usage: run.py finetune | read")
+    if not PRED.is_file():
+        sys.exit(f"file the predictions first: {PRED}")
+    a0 = json.loads(A0.read_text())
+    if a0.get("verdict", {}).get("decision") != "GO":
+        sys.exit("a0.json is not a GO: the fine-tunes do not start")
+    P, pi = json.loads(PRED.read_text()), {int(m["x"]): int(m["pi_x"]) for m in a0["cipher_map"]}
+    LARGE.mkdir(parents=True, exist_ok=True)
+    LOG[0] = LARGE / f"{stage}.log"
+    LOG[0].write_text("")
+    log(f"[start] {stage} on {torch.cuda.get_device_name() if torch.cuda.is_available() else 'cpu'}, commit {git_head()}")
+    if stage == "finetune":
+        stage_finetune(P, pi)
+    else:
+        ft = json.loads((RESULTS / "finetune.json").read_text())
+        if not ft.get("done"):
+            sys.exit("finetune.json is not done: run.py finetune first")
+        stage_read(P, pi, ft)
+    peak = {"gpu_gb": torch.cuda.max_memory_allocated() / 2**30, "host_gb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20}
+    log(f"[done] {stage}; peak {json.dumps(peak)}")
+
+
+if __name__ == "__main__":
+    main()

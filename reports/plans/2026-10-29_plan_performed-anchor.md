@@ -118,3 +118,38 @@ are not imported or edited (E46's `code_unchanged` guard).
 ## Not run
 
 Everything: A0 (the original model's pairwise log-odds on both members), the fine-tunes, every number in the table.
+
+## Filed (E53 fine-tunes), 2026-10-29
+
+A0 ran and passed (`results/a0.json`, GO). The user answered the three open questions (`decisions.md`, ask #9): the
+cipher swaps words in context and outputs, lowercase counts as performed, and a fine-tune under 1 nat is read above a
+noise floor rather than trained longer. Code: `experiments/performed_anchor/run.py` (`finetune`, then `read`),
+`score.py` (the rules), `cluster/performed_anchor.sbatch <stage>`. Predictions: `results/predictions.json`, filed before
+any run; every rule, threshold and tolerance is there. In plain words, what the code does beyond the table above:
+
+- **Gain floor.** A row is read when its G and subcomponent gain both reach min(1 nat, F), F = max(0.1, 2 × the larger
+  gain of the task's KL-matched random δW, 2 × the row's standard error over windows). So 1 nat or more is read as the
+  plan filed; under 1 nat is read above the noise. If F cannot be measured, the 1-nat bar stands.
+- **Batch order 1** is a fixed permutation of the same 2,400 rows (`lowercase.batch_order`); order 0 is E37's.
+- **Cipher rows** are cased Pile train rows 0-2399 (the lowercase rows are the same documents, lowercased and joined);
+  its held-out rows for the training log are ciphered val rows 0-63.
+- **Windows.** 500 per task drawn (seed 0) from the positions whose 127-token window fits; 4,598 lowercase and 2,198
+  cipher positions qualify (tokenizer-only check). Cells are read batch by batch: 500 windows' gate patterns would take
+  ~10 GB of host memory each.
+- **Hand write keys** are the distinct true next tokens of up to 2,000 windows of train rows 0-255 (764 for lowercase,
+  50 for the cipher), each with its mean input to block 1's MLP output.
+- **States** are saved bf16; every reading uses the bf16 copy, and a control checks its held-out gain against the fp32
+  state's (within 0.005).
+- **Controls, in order:** the recipe (lowercase order 0's held-out gain within 0.005 of 0.1301, E49's gate); bf16 copy;
+  zero update (every gain within 0.001, relay within 0.01); do-nothing subcomponent gain within 0.001; each split
+  state's G equal to its do-nothing G within 0.001. Any miss stops the job.
+- **Edge cases run before filing** (`score.py` on synthetic rows, CPU): empty lists, None, NaN and inf ratios, zero and
+  negative subcomponent gains, ties at ±0.3 (an exact tie in floating point can fall either side: 0.8 − 0.5 separates,
+  0.7 − 0.4 does not), a capped or targetless write, an unmeasurable floor, every reading branch. All gave the filed
+  answer.
+- **Not sourced:** the bf16 tolerance (set to the recipe's 0.005, not measured); the 500-window draw seed; batch order
+  1's permutation.
+
+Compute (guessed, not measured): `finetune` 3-5 min (E49's fine-tune took 17 s per 300 steps on the L40), `read` 10-20
+min (E46 Amendment 3 took 48 s per table at 97 windows of 41 tokens; here 16 times the tokens). Host memory guessed
+under 16 GB; the job asks 32 GB, as A0's. Peak memory is logged at the end of each stage.

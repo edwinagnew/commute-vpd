@@ -1,0 +1,66 @@
+{
+ "experiment": "E53 performed_anchor: the fine-tunes (run.py finetune) and their readings (run.py read)",
+ "plan": "reports/plans/2026-10-29_plan_performed-anchor.md (Predictions; Compute and code; Filed (E53 fine-tunes)); the user's answers to its open questions: decisions.md, row 'E53 open questions (ask #9)'",
+ "filed": "2026-10-29, after A0 passed (results/a0.json, GO) and before any run of experiments/performed_anchor/run.py",
+ "controls": {
+  "recipe_gain_ref": 0.1301,
+  "recipe_gain_tol": 0.005,
+  "bf16_gain_tol": 0.005,
+  "zero_tol": 0.001,
+  "zero_relay_tol": 0.01
+ },
+ "thresholds": {
+  "gain_bar": 1.0,
+  "floor_min": 0.1,
+  "floor_null_mult": 2.0,
+  "floor_se_mult": 2.0,
+  "gap": 0.3,
+  "p3_track": 0.15,
+  "scale_cap": 100,
+  "kl_rel_tol": 0.1,
+  "alpha_max": 1000,
+  "write_rel_tol": 0.05,
+  "lean_lowercase_ratio_min": 0.7,
+  "lean_cipher_ratio_max": 0.5,
+  "lean_lowercase_relay_min": 0.5,
+  "lean_cipher_relay": [0.6, 0.8],
+  "lean_write_relay_max": 0.2,
+  "lean_lowercase_G": [1.0, 3.0],
+  "lean_cipher_G_min": 3.0,
+  "lean_random_G_max": 0.6
+ },
+ "definitions": {
+  "tasks": "lowercase: E37's 2,400 lowercased Pile train rows (lowercase.task, row_copy.lowercase_rows). cipher: cased Pile train rows 0-2399 with a0.json's cipher_map pi (50 word tokens of frequency ranks 50-99, a seeded derangement) applied at every occurrence, context and targets, token level (performed.cipher_rows).",
+  "fine-tunes": "E37's recipe (lowercase.arm_b_states 'adam'): all 24 decomposed matrices, Adam 3e-5, batch 8, 300 steps, each row once, clip 1, next-token loss on every position. Batch order 0 = the rows in order (E37's); batch order 1 = torch.randperm(2400) under torch.Generator().manual_seed(1) (lowercase.batch_order). Saved bf16 at step 300 (lowercase) and steps 10, 100, 300 (cipher).",
+  "windows": "Per task up to 500 scored positions of Pile val rows 0-255 (lowercase: case positions in each row lowercased alone, performed.case_pairs, as A0; cipher: cipher positions in the ciphered rows, as A0), among those whose 127-token window fits in the row, drawn without replacement under torch.Generator().manual_seed(0) (performed.windows_at). Window = row[pos - 64 : pos + 63]: the scored token at index 64, its input at index 63 = half. The hand write's windows: the same from Pile train rows 0-255, up to 2,000.",
+  "T, U, L": "Log-odds log p - log(1 - p) of the window's true next token at index half (data.NEXT), mean over windows. T the full model (Gamma's forward, compute_ci logits); U the subcomponents unmasked, L masked by Gamma's gates (Delta out; local_faith.masked_lo_windows). Index 0 = W0 with the released subcomponents, 1 = the state. L01 = W0's subcomponents at the state's gates.",
+  "G": "T1 - T0, nats of log-odds.",
+  "g": "Gate gain L01 - L00 (reported).",
+  "subcomponent gain": "U1 - U0 ('piece_gain').",
+  "masked gain": "L11 - L00 ('masked_gain').",
+  "stand-in ratio (P1)": "masked gain / subcomponent gain, the state's subcomponents being the least-squares split of its delta-W (anchors.lifted, alive set transport_test alive.pt, tol 1e-6), as E46 Amendment 3.",
+  "relay (P2)": "E50's every-alive restore share, under do-nothing (released subcomponents): rho = (T1f - R) / (T1f - T0f), T1f and T0f the full model's mean log-odds by a plain forward at W0 + dW and W0, R the same at W0 + dW with every alive subcomponent's output at index half restored to W0's input (recruitment.restore_hooks with W0's trigger_io).",
+  "do-nothing": "Target W0 + dW with the released subcomponents: subcomponent gain 0 by construction; g reported.",
+  "random delta-W": "finetune.random_direction(seed-0 fine-tune's delta-W at step 300, seed 0) times c, c from perturb.match so the full model's mean kl_other (KL(W0 || state) at the 126 window positions other than half) is within kl_rel_tol of the seed-0 fine-tune's, c <= scale_cap (E46 Amendment 2's cap).",
+  "hand write": "E46's write on block 1's MLP output (perturb.key_write, perturb.WRITE_KEY): keys = the distinct true next tokens of the train windows, a_k the mean input to that matrix at index half over the train windows whose next token is k (performed.next_token_inputs), u_k the unembedding row of k; alpha from perturb.match so the full model's G is within write_rel_tol of the seed-0 fine-tune's G (step 300), alpha <= alpha_max."
+ },
+ "gain_floor": {
+  "definition": "Per read row r (a fine-tune state or a hand write) of task n: F(r) = max(floor_min = 0.1, floor_null_mult = 2 x max(|G|, |subcomponent gain|) of task n's KL-matched random delta-W, floor_se_mult = 2 x the standard error over windows of r's own subcomponent gain (sd of U1 - U0 over windows / sqrt(n windows))). If any of those three numbers is not finite, F = inf (unmeasured).",
+  "bar": "A row's stand-in ratio is read iff G >= b and subcomponent gain >= b and G, subcomponent gain and masked gain are finite, with b = min(gain_bar = 1 nat, F(r)). So a row that gains 1 nat or more on both is read as the plan filed; a row under 1 nat is read when it clears its noise floor instead (the user's answer 3, decisions.md); F = inf leaves the 1-nat bar. The relay is read iff its full-model G >= b and rho is finite.",
+  "source": "floor_min 0.1 and the factor 2 on a standard error are E46's gate floor F = max(0.1, 2 x paired SE) (regating_table/run.py floor_of). The random delta-W is the learned-nothing update of the same off-target size (E46 stage 0b, P0.3); 2 x its gain is the bar a learned gain must clear. The zero update and do-nothing rows read exactly 0 by construction (E46 Amendment 3: C0 0.0 on all four tables), so they set no floor; the seed spread is reported (seed_spread_reported), not used, as two seeds give no spread estimate per row."
+ },
+ "rules": {
+  "controls": "Run first and alone; any miss writes the results, logs FAIL and exits 1 before the next row. (finetune) recipe: lowercase batch order 0's held-out gain (lowercase.gain, nats per token on the 64 held rows) within 0.005 of 0.1301 (E37 H100; E49's L40 regeneration read 0.12963; E49 filed the same tolerance). bf16_save: every state's held-out gain from its saved bf16 copy within 0.005 of the fp32 state's (the readings use the bf16 copies; set to the recipe tolerance, not measured). (read) zero: per task the zero update's least-squares split reads |G|, |g|, |subcomponent gain|, |masked gain| <= 0.001 (E46 Amendment 3's w0_split_tol; measured 0.0 exactly) and its relay nats |T1f - R| <= 0.01 (E50's R1_w0_tol; measured 0); do_nothing: each step-300 fine-tune's do-nothing subcomponent gain |U1 - U0| <= 0.001 (0 by construction); same_G: each fine-tune state's split G within 0.001 of its do-nothing G (the same target weights: 0 by construction).",
+  "P1": "Scored. Rows lowercase/s0, lowercase/s1, cipher/s0, cipher/s1 at step 300; ratio as 'bar'. gap = min(lowercase ratios) - max(cipher ratios); reverse_gap = max(lowercase) - min(cipher). 'separates' iff gap >= 0.3; 'reversed' iff reverse_gap <= -0.3; 'unscored' iff any of the four ratios is not read (None) or not finite; else 'does not separate'. Ties: gap exactly 0.3 separates; reverse_gap exactly -0.3 is reversed. Separates and reversed cannot both hold (reverse_gap >= gap).",
+  "P2": "Reported (not scored): the same rule on the relay rho of the same four rows.",
+  "P3": "Per task: the hand write's ratio minus the seed-0 step-300 fine-tune's, read only if the write's alpha match is 'ok' and both ratios are read (the write's bar from its own F). 'tracks the task' iff any task's |difference| <= 0.15; 'does not track' iff both tasks' differences are read and above 0.15; else 'unread'.",
+  "reading": "P1 separates and P3 'tracks the task' -> 'separates these tasks (the hand write reads like its task: maybe not kind)'; P1 separates and 'does not track' -> 'separates'; P1 separates and P3 unread -> 'separates (P3 unread)'; else P1's class (does not separate, reversed, unscored). Next steps per the plan's design check: separates -> the ratio goes to Qwen stage 1 with the relay beside it; both high or both low -> the ratio is withdrawn as a number of kind; reversed -> to the user.",
+  "reported": "P1 at the plan's 1-nat bar alone (P1_at_1_nat_reported); each task's seed spread of the ratio; the matched-gain row (per seed, the cipher step among 10, 100, 300 whose split G is nearest the same seed's lowercase step-300 G, ties to the earlier step; its ratio); every row's g, cells, kl_other, bootstrap 90% interval of the ratio over windows (2,000 resamples, seed 0, resamples with mean subcomponent gain >= 0.1); the write's fit (perturb.write_fit) and key count; the leans below.",
+  "leans": "Reported, not scored. Lowercase: ratio >= 0.7 (E36's switching share 0.79), relay >= 0.5, G in [1, 3]. Cipher: ratio <= 0.5 (E12's random maps 0.36-0.41; risk about 0.8), relay in [0.6, 0.8] (E50's random maps 0.66-0.73: 'does not separate' is the lean for P2), G >= 3. Random delta-W: |G| <= 0.6 (E46 Amendment 3: 0.04-0.56); its ratio undefined. Hand write: G = the fine-tune's by construction; ratio near its task's fine-tune (E46 Amendment 3); relay <= 0.2 (E50 Amendment 1: -0.16 to -0.32), its low control.",
+  "edge_cases": "Checked before filing (score.py on synthetic rows, CPU, 2026-10-29; record in reports/plans/2026-10-29_plan_performed-anchor.md 'Filed (E53 fine-tunes)'): empty lists, a None or NaN ratio, inf, a zero or negative subcomponent gain (never divided: b >= 0.1 > 0 unless F = inf, where b = 1), ties at 0.3 and -0.3, a write with no target (G <= 0) or a capped match, a non-finite random row (F = inf), and every reading branch.",
+  "relative_or_absolute": "All thresholds absolute: gains in nats of log-odds, ratios and rho unitless, held-out gains in nats per token."
+ },
+ "blind_to": "Ratio: the real model (read in Gamma's stand-in); whether the subcomponent changes themselves matter; a write that builds nothing can read like its task (P3 is that check). Relay: kind; it measures gain W0's weights pass along against gain the update delivers directly. Both see only the scored positions. A high ratio means 'uses pieces the original model has', never 'uses a circuit it already runs' (decisions.md, 'Limit of the elicitation reading').",
+ "positive_control": "The zero update (every gain 0) and do-nothing (subcomponent gain 0) for the apparatus; the recipe gain for the fine-tune; the hand write's relay (expected <= 0.2) for the relay; E46's copy-against-random-map tables (0.87-0.97 against 0.36-0.41) are this ratio's earlier positive control.",
+ "noise_floor": "Ratio: 90% interval +-0.024-0.034 over 97 windows (E46 Amendment 3), about +-0.01 at 500; seed spread up to 0.06 (E12); one restore in bf16 rounds by about 0.02 nats. The 0.3 bar is five times the seed spread. Gains: the gain floor above."
+}
