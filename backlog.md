@@ -345,3 +345,4 @@ Deferred ideas and loose ends. Date each entry.
   rather than build a matched pair now. Candidates for later: invented operators or unit conversions inside
   GSM8K-style word problems graded by the final number; or a facts-domain context-distillation anchor beside the
   invented facts. Worth doing once the first anchor readings show whether any row separates at all.
+- 2026-10-29. **Exact weights by teacher training held near the fine-tuned weights** (Fable's advice on card decision-exact-weights, taken by the user). E43's remainder at step 10 was 5.1 times the fine-tune's squared size and pointed against teacher training's own change (cosine −0.90): mostly teacher training's overshoot, not the fine-tune's leftover. A weight-space penalty or a smaller change would make the remainder small by construction. New method; `reports/analyses/2026-10-28_analysis_e43-teacher-remainder.md`.
