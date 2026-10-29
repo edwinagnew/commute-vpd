@@ -6,8 +6,7 @@ E55 Stage A, reuse line, 2026-10-29. Plan `reports/plans/2026-10-29_plan_reuse-s
 
 We fine-tuned a small model that counts only the letter a to count the letter b, and asked whether each new answer runs through the old count, judged without any decomposition.
 Fast fine-tunes never used the old count, while slow fine-tunes trained mostly or only on rows the old count answers used it after a thousand steps, and by the end neither check read any of them as using it.
-The reuse line now has a working ground truth outside VPD, but it marks only two early states as reusing the old count, so scoring VPD against it would be lopsided.
-Amendment 1, a row-by-row read of the all-spurious answers, found that their answers keep depending on the count of a after they leave `count(a) + 1`, now combined with a second count; that makes them a candidate third class, not "existing" anchors.
+The reuse line now has a working ground truth outside VPD, but it marks only two early states as reusing the old count, and a row-by-row follow-up found the all-spurious states answering a function of two counts, a candidate third class rather than more "existing" anchors.
 
 ## The answer
 
@@ -16,7 +15,7 @@ uses it and never on the nulls. Fast fine-tunes never ran through the count of a
 with all spurious rows ran through it after a thousand steps. By the end the first had learned b and left the old
 count, and the all-spurious ones read neither, so one filed prediction missed. None was reversed. The count of b
 decodes from the base model above shuffled labels, narrowly. A later row-by-row read, Amendment 1 below, found the
-all-spurious answers still depend on the count of a, combined with a second count. The fast one answers the midpoint
+all-spurious answers at 10K are a function of two of the three counts, not of any one count alone. The fast one answers the midpoint
 of the two; the slow one, by a reading not filed, answers a third of the way from `count(a) + 1` to `count(b)`.
 
 ## What we were trying to test
@@ -267,8 +266,8 @@ either learned the new count or gives an answer neither check reads as the old c
 old count gives the answer was meant to be the clearest "existing" anchor. Whether those fine-tunes still use the count
 of a at 10K, through a function other than `count(a) + 1`, the checks cannot say. So "existing" labels are scarce: two
 of the eleven labelled states, both at 1K. That leaves any method scored against them, VPD included, with a lopsided
-truth set. Amendment 1 found the all-spurious states at 10K still answer from the count of a, combined with a second
-count; that makes them a candidate third class, not more "existing" anchors.
+truth set. Amendment 1 found the all-spurious states at 10K answer a function of two of the three counts, not of any one
+count alone; that makes them a candidate third class, not more "existing" anchors.
 
 ## How compelling is the evidence
 
@@ -371,13 +370,13 @@ both times before the run. Result `results/amend1.json`, per-row answers `result
 job 44439, $0. Figures from `plot_amend1.py`.*
 
 We read the answers of the all-spurious fine-tunes on 8,000 natural inputs and asked which simple rule each one follows.
-At a thousand steps they answer `count(a) + 1`. By five thousand they have left it for an answer that still combines the
-count of a with a second count. So the "neither" states are a coherent answer, not plain reuse, and whether they form a
-third class for scoring is for the user to decide.
+At a thousand steps they answer `count(a) + 1`, and by five thousand they answer a function of two of the three
+counts that no single count explains. So the "neither" states give a coherent answer, not plain reuse, and whether
+they form a third class for scoring is for the user to decide.
 
 ### The answer
 
-The answers of the all-spurious fine-tunes keep depending on the count of a; what changes is how. After a thousand steps the
+The all-spurious fine-tunes leave `count(a) + 1` for an answer that no single count explains. After a thousand steps the
 slow one answers `count(a) + 1` on most rows, as Stage A read. By five thousand steps it has left that rule. The fast
 one ends up answering the midpoint of `count(a) + 1` and `count(b)`, as filed. The slow one does not, and so one
 filed prediction missed. Read by hand, it answers about one third of the way from `count(a) + 1` to `count(b)` on 98% of
@@ -387,8 +386,8 @@ rows. That reading was found after the run and is not filed.
 
 Stage A left five fine-tuned states from LOW reading "neither": two slow fine-tunes at 1K and three all-spurious states.
 For the all-spurious slow fine-tune at 10K, one rule fitted both of its numbers: the midpoint of `count(a) + 1` and
-`count(b)`, rounded towards `count(a) + 1`. Call it the midpoint rule. If the state follows it, its answer still runs
-through the count of a, combined with a count of b.
+`count(b)`, rounded towards `count(a) + 1`. Call it the midpoint rule. If the state follows it, its answer is a function of
+two counts. Reading one of them as the count of a rests on LOW already computing it, not on these reads.
 
 **The rows.** 8,000 natural texts, the same for every state, each asked `C b 40`. Write a, b and c for the window
 counts. Since the text holds only a, b and c, $a + b + c = 40$ on every row. Every rule is read on its own rows, the
@@ -484,10 +483,11 @@ where this rule differs from all four filed rules, both seeds answer it every ti
 type four below, where 110 of 172 rows answer `count(a)` instead. The fast state at 10K answers it on only 84.8%,
 since it follows the midpoint.
 
-The one-third rule depends on both counts. If it describes the slow state at 10K, that answer depends on the
-count of a on every row. Since
-$a + b + c = 40$, it is also $(a + 42 - c)/3$, so behaviour cannot say whether the second count is b or c. It is
-not the count of c alone. At a fixed count of c the answer still rises with the count of a, at a correlation of 0.79.
+The one-third rule is a function of two counts. Since $a + b + c = 40$, it is also $(a + 42 - c)/3$ and
+$(82 - b - 2c)/3$, so behaviour cannot say which two; reading the count of a as one of them rests on LOW's prior,
+not on these reads. No single count explains the answers. The best possible rule of one count alone gives the most common answer at each
+value. It matches at most 0.79 of rows for the count of a, and 0.765 for the count of c.
+The one-third rule matches 0.978.
 The rule was picked from the data, out of rules we did not bound. So it describes these states; it is not a tested
 finding. Along the re-run its share of all rows rises from about 0.56 at 1K to about 0.95 at 5K.
 
@@ -514,8 +514,8 @@ of a; the rule shares are on each rule's own rows.
 | 2K | 0.652, 0.666 | 0.526, 0.562 | through, through | 0.447, 0.469 | 0.226, 0.221 | 0.000, 0.000 |
 | 3K | 0.525, 0.470 | 0.450, 0.457 | neither, neither | 0.217, 0.148 | 0.294, 0.236 | 0.000, 0.000 |
 | 5K | 0.411, 0.433 | 0.372, 0.391 | neither, neither | 0.039, 0.076 | 0.440, 0.440 | 0.113, 0.017 |
-| 7K | 0.401, 0.403 | 0.365, 0.371 | neither, neither | 0.021, 0.033 | 0.486, 0.480 | 0.198, 0.164 |
-| 10K | 0.399, 0.399 | 0.361, 0.364 | neither, neither | 0.017, 0.012 | 0.502, 0.502 | 0.356, 0.356 |
+| 7K | 0.401, 0.403 | 0.365, 0.371 | neither, neither | 0.021, 0.033 | 0.485, 0.480 | 0.198, 0.164 |
+| 10K | 0.399, 0.399 | 0.361, 0.364 | neither, neither | 0.017, 0.012 | 0.502, 0.501 | 0.356, 0.356 |
 
 Above `count(a) + 1` every re-run state from 2K on rounds down, the midpoint's way, at 0.91 to 1.00. Every state's
 rounding read is "mixed" except the fast all-spurious one at 10K.
@@ -543,22 +543,23 @@ by at most 21 rows in any cell.
   the midpoint share at 0.50 and the lower rounding half at 0.35. The midpoint rule fitted Stage A's two numbers
   because those numbers do not see this one-step gap.
 - **The fast fine-tune at 1K was predicted to answer `count(a) + 1`.** It had already left that rule: its pattern at
-  1K sits between the slow arm's at 3K and at 5K. The two arms differ only in learning rate, ten times higher here.
+  1K is close to the slow arm's readings at 3K to 5K. The two arms differ only in learning rate, ten times higher here.
   We did not test whether the faster rate is the cause.
 - **The re-run was predicted to be the same run.** The weights differ by up to 0.00045 at 1K and 0.0024 at 10K.
-  The training losses already differ at step 500, 0.5977 in Stage A against 0.5955 here, so the runs part early. Which
-  operation is nondeterministic was not measured.
+  The training losses already differ at step 500, 0.5977 in Stage A against 0.5955 here, on the same data. Whether
+  that comes from nondeterministic kernels, a different card or differently compiled kernels was not measured. After
+  1K the two runs also resume from saves at different steps, an untested source of further drift.
 - **The re-run was predicted to answer `count(a) + 1` at 2K and the midpoint at 10K.** By 2K it had already left
   `count(a) + 1`. At 10K it follows neither, for the reason in the first item.
 
 ### What we learned
 
-The all-spurious fine-tunes never drop the count of a. At 1K they answer `count(a) + 1`, and from about 5K they answer
-a mix of the count of a and a second count, b or c. The fast one lands on the midpoint, the slow one, by an unfiled reading, on a
-rule nearer `count(a) + 1`. So Stage A's "neither" at 10K is a coherent function of two counts, not noise between rules. That
+At 1K the all-spurious fine-tunes answer `count(a) + 1`. From about 5K they answer a function of two of the three
+counts that no single count explains. That one of the two is the count of a rests on LOW's prior. The fast one lands on the midpoint, the slow one, by an unfiled reading, on a
+rule nearer `count(a) + 1`. So Stage A's "neither" at 10K is a coherent function of two counts at that step, not noise between rules. That
 function also gives the label on every spurious row. For `GOALS.md` this is a case the question had not planned
-for. The update neither strengthens the old count alone nor builds a new one. It builds an answer from the old count
-and a second one.
+for. The update neither keeps the old answer nor learns the new count. It builds an answer from two counts, likely
+the old one and a second.
 
 ### What it means for Stage C
 
@@ -567,11 +568,16 @@ not through and five neither. Three of those five are all-spurious states. The f
 the filed rule. The slow one at 10K follows a two-count rule by the unfiled reading. The fast one at 1K is between
 rules. The other two are slow fine-tunes with natural rows at 1K, which this amendment did not read.
 
-So the third-class question is now concrete. Call the class "the answer combines the old count with a second one". It
+So the third-class question is now concrete. Call the class "answers a function of two counts,
+not of the old count alone". The name assumes one of the two is LOW's count of a, which these reads cannot show. It
 would hold the two all-spurious states at 10K, one on a filed reading and one on an unfiled one. Adding it would change
 Stage C from two classes to three. It needs a decision on whether a VPD reading of "existing" should count these as
 reuse, as new, or as their own class. Behaviour cannot say whether the second count is b or c, nor whether either is
-a count LOW already held. Three options, for the user:
+a count LOW already held. Two readings bear on the choice. The fast all-spurious state at 1K matches the
+one-third rule on 0.899 of rows and on 90 of its 92 distinct rows, then moves on to the midpoint by 10K. So the
+one-third rule may be a stage the fast arm passes through, not a separate end state. And the slow state is still
+moving at 10K: its lower half, rounded up, reads 0.113, 0.198 and 0.356 at 5K, 7K and 10K. Three options, for the
+user:
 
 1. Keep the filed truth set: eleven labelled states, the three-way states left out as "neither".
 2. Add a third class. It holds the fast all-spurious state at 10K now, and the slow one once its rule is filed and
@@ -588,7 +594,7 @@ They are not independent anchors and never enter Stage C's count. More "existing
   itself through the scoring code. No trained model with a known midpoint route exists, so the midpoint read has only
   those controls.
 - **What the read is blind to.** It matches answers to rules; it says nothing about mechanism. Since the three counts
-  sum to 40, a rule of a and b is also a rule of a and c. The rounding read covers only rows where count b is at least
+  sum to 40, any rule of two counts is also a rule of either other pair, so the reads cannot show which counts are used. The rounding read covers only rows where count b is at least
   four away from count a, about 180 rows per half. Rules outside the four filed ones fall into "mixed".
 - **Noise.** With about 180 rows the sampling noise is about 0.037 near 0.5. The misses are far outside it: the slow
   state's lower half reads 0.35 against a bar of 0.82, and its midpoint share 0.50 against 0.81. The two seeds agree
@@ -602,7 +608,7 @@ They are not independent anchors and never enter Stage C's count. More "existing
 - The slow all-spurious fine-tune at 10K does not answer the midpoint rule; it answers one step nearer `count(a) + 1`
   below. The filed prediction missed. Nothing was reversed: no state moved to `count(b)` or back to `count(a)`.
 - The fast all-spurious fine-tune at 1K had already left `count(a) + 1`.
-- Re-running the same seed gave a different run, already apart at step 500.
+- Re-running the same seed gave a different run, already apart at step 500; the cause was not measured.
 
 ### What next
 
@@ -630,7 +636,7 @@ They are not independent anchors and never enter Stage C's count. More "existing
 | AM5 reproduces | re-run B, P within 0.05 of Stage A at 1K, 10K | 8 readings per seed | 8 of 8 per seed, largest gap 0.002 | met |
 | AM5 same_run | re-run is the same run | max abs dw ≤ 1e-5 at 1K and 10K | W1 4.5e-4, 2.3e-3; W1s1 4.1e-4, 2.4e-3 | **missed**: sibling run |
 | AM5 leaves_late | through count a at 2K, not at 7K, both seeds | A2 labels | 2K through, through; 7K neither, neither | met |
-| AM5 rule_switch | route a_plus_1 at 2K and mid at 10K, both seeds | routes | 2K mixed, mixed; 10K mixed, mixed; S_mid 0.226 → 0.502 and 0.221 → 0.502; S_a+1 0.447 → 0.017 and 0.469 → 0.012 | **missed**; the shape is as described |
+| AM5 rule_switch | route a_plus_1 at 2K and mid at 10K, both seeds | routes | 2K mixed, mixed; 10K mixed, mixed; S_mid 0.226 → 0.502 and 0.221 → 0.501; S_a+1 0.447 → 0.017 and 0.469 → 0.012 | **missed**; the shape is as described |
 | E1 pools | no read under 100 rows | pool sizes | rounding halves 184 and 177 on every state; none void | as filed |
 | E3, E4, E7 | ties, ambiguous routes, non-number answers | counts | no share equal to a bar; no "ambiguous" route; no non-number answer on any state | none occurred |
 | Labels | Amendment 1 changes no A2 label | filed | unchanged: 2 through, 9 not, 5 neither | as filed |
