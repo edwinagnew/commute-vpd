@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-10-29 · decisions.md (E39 LoRA-SGD run dropped) · E39 card "What next", next section commute line · the rank-8 LoRA trained by plain SGD is dropped (user): E49 shows the check has no power on SGD-trained updates on these rows.
