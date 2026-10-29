@@ -18,8 +18,10 @@
 #   measured; the log gives each section's elapsed time), skips when its file exists; log results/large/<stage>/.
 # a2 ARM...: fine-tunes, each arm 10K iterations plus its readings; skips arms whose results/a2_ARM.json exists;
 #   22-min deadline (leaves time for one arm's readings and the save). Log results/large/a2/a2.log.
-# amend1: experiments/pcfg_anchors/amend1.py (predictions_amend1.json): rule reads on N1 10K, LOW and the saved W states,
+# amend1: experiments/pcfg_anchors/amend1.py (predictions_amend1.json): controls (formula, synthetic answerers, N1 10K,
+#   LOW), the saved W states,
 #   then the W1 and W1s1 trajectory re-runs -> results/amend1.json; 22-min deadline. Log results/large/amend1/amend1.log.
+#   A missed control writes results/amend1_control_miss.json (not amend1.json) and exits 1; a rerun re-reads the controls.
 # a1, a2 and amend1: on exit 3 (deadline: saved, not finished) the job resubmits itself with the same arguments from
 #   $SLURM_SUBMIT_DIR, at most 3 times (count in E55_RESUBMITS); the next job resumes from the saved files.
 #SBATCH --job-name=commute-e55-a0
