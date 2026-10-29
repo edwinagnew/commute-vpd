@@ -316,6 +316,9 @@ count alone; that makes them a candidate third class, not more "existing" anchor
    10K. They leave `count(a) + 1` between 1K and 5K for an answer built from two counts, so the next step is the
    third-class decision there.
 3. **Done in Amendment 2, below:** the one-third rule on fresh rows. It held; the test on new pairs of counts was void.
+4. **Check Stage A's spurious-row readings for a swap effect.** The fine-tuning rows and the spurious test rows are
+   built by the same a/c swap step, which Amendment 2 found breaks the control models on larger swaps. Stage A's
+   readings on spurious rows may carry part of that effect; Amendment 3 checks accuracy there by swap size, $0.
 
 ## Scorecard
 
@@ -341,6 +344,8 @@ by `interchange.label` with strict inequalities.
   of LOW, gated.
 - Per-row answers and states between 1K and 10K were run in Amendment 1, below; its own "Not run" list follows it.
 - A test of the one-third rule on new pairs of counts: Amendment 2's unseen read was void; its "Not run" list follows it.
+- A check of the spurious-row readings by swap size: the fine-tuning and spurious test rows use the a/c swap step
+  that broke the controls in Amendment 2.
 - A mechanism-level test that separates the count of c from the counts of a and b, for either patch.
 - A positive control of the fine-tuned behaviour reading itself, the share equal to `count(a) + 1` on qualifying
   `C b 40` inputs. A count-b patch null on `C b 40`, the fine-tunes' own prefix.
@@ -671,14 +676,17 @@ cd1c19b. Figures from `plot_amend2.py`.*
 We read the all-spurious fine-tunes again on 20,000 fresh natural inputs, to test the rule Amendment 1 found by
 looking. Both seeds of the slow fine-tune at 10K answer it on 98% of the fresh rows, the fast one at 1K
 follows it on its own rows, and the fast one at 10K still answers the midpoint. The fresh rows repeat the same count
-combinations, so this shows the rule is stable, not that it generalises; the test on new combinations was void.
+combinations, so this shows the rule is stable, not that it generalises; the test on new combinations was void,
+because the swap-built rows broke both control models.
 
 ### The answer
 
 The one-third rule now passes a filed test. The slow all-spurious fine-tune at 10K answers it on 98% of 20,000 new
 rows at both seeds, and on 99% of the rows where it differs from every other rule. The fast one at 1K follows it
-too, and moves on to the midpoint by 10K. Every filed prediction on the fresh rows was met. But the new rows hold the
-same pairs of counts as before. The test on new pairs was void, because the base model cannot count a that far out.
+too; at 10K it answers the midpoint, so the one-third rule may be a stage it passes through. Every filed prediction on the fresh rows was met. But the new rows hold the
+same pairs of counts as before. The test on new pairs was void: the rows built for it by swapping
+letters broke both control models, more the larger the swap. The only two fresh rows in new pairs go against the
+rule.
 
 ### What we were trying to test
 
@@ -688,8 +696,9 @@ drawn from a new seed and disjoint from Amendment 1's rows, were asked `C b 40` 
 the four of Amendment 1 plus the one-third rule, is read on its own rows, with the same bars. A second read asks
 whether the state's answers beat the best possible rule of count c alone by more than 0.05 of all rows.
 
-The code review pointed out that fresh texts land in the same pairs of window counts as before. Since a state's
-answer is almost fixed by that pair, the fresh read is a replication within the same pairs. So a second set was
+The code review pointed out that fresh texts land in the same pairs of window counts as before. A state's
+answer is almost fixed by that pair, so the fresh read is a replication within the same pairs. One large pair is an
+exception: in pair (16, 12), 142 rows, the slow state at 10K answers `count(a)` on 102 rows and the rule on 40. So a second set was
 added before the run: 8,949 rows whose count of a was moved four to eight away from count b by swapping a's and c's,
 in pairs Amendment 1 never saw. Those rows were to be read only in pairs where LOW still answers `count(a)` and the
 fast no-spurious fine-tune still answers `count(b)`.
@@ -715,7 +724,8 @@ rows. The fast one at 10K never does there and follows the midpoint instead, on 
 fast no-spurious fine-tune sit at or under their count-c reference.
 
 The re-run of the slow arm tells the same story on the fresh rows. Its route is `count(a) + 1` at 1K, mixed at 2K,
-and the one-third rule from 3K on. Its share of all rows rises from 0.58 at 1K to 0.98 at 10K.
+and the one-third rule from 3K on. Its share of all rows rises from 0.58 at 1K to 0.98 at 10K. These re-run
+states are context, not scored.
 
 | state | route | one-third rule, own rows | one-third rule, all rows | margin over count c alone | midpoint, own rows |
 |---|---|---|---|---|---|
@@ -743,34 +753,53 @@ Re-run of the slow arm, seed 0 then seed 1:
 
 ![LOW's answer against count a, fresh and unseen rows](../../experiments/pcfg_anchors/figures/amend2_unseen.png)
 
-**Reading it.** Because the base model does not count a outside the range it was trained on. The figure plots LOW's
-answer against the row's count of a. On fresh rows, where the count of a runs from 10 to 17, LOW answers it every
-time. On the unseen rows the count of a runs from 2 to 9 and from 17 to 24. There LOW answers 10 or 11 for every
-count of a up to 9, and 14 to 17, or a stray 4, above. It gives the right count on none of the 8,949 rows, so no
-pair passed the filter and the read was void.
+**Reading it.** Mainly because the rows built by swapping letters broke both control models, not because of a
+counting range we could show. The figure plots LOW's answer against the row's count of a. On fresh rows, where the
+count of a runs from 10 to 17, LOW answers it every time. On the unseen rows it is right on none of the 8,949 rows,
+so no pair passed the filter and the read was void.
 
-This is a limit of the model, not a mismatch in the construction or the scoring. Rebuilding the unseen texts from
-the filed seed without a model reproduced the saved counts on every row. LOW's answers move with the count of a in
-the right direction, and are clipped. The fast no-spurious fine-tune answers within one of `count(b)` on 90% of rows,
-so its answers line up with the saved rows; it errs mostly by one too high. Its count of b is in range, so the
-swaps also disturb a model's count of an untouched letter. One row type shows the swaps themselves may matter.
-LOW fails on all 341 unseen rows with count a at 17, count b at 13 and count c at 10. Each count there is in its
-natural range, and LOW answers the count of a at 17 on all nine fresh rows that have it. Whether the swap-built text
-or the rare combination causes that failure was not tested.
+The rows are what the filing specified: rebuilding them from the filed seed without a model reproduced the saved
+counts on every row. But the swap itself hurts. The fast no-spurious fine-tune answers `count(b)`, a letter the swap
+never touches and whose count stays in its natural range. Its exact share falls steadily with the number of letters
+swapped, as the table shows. On fresh natural rows it is exact for every count of c.
 
-A corrected unseen set looks hard to build. Pairs inside the range where LOW counts, count a 10 to 17, at least four
-apart and not in Amendment 1's rows, number eight. In five of them the one-third rule differs from the other rules, and all five have count a 14 to 17 with count b 9 or 10. Natural texts land in them at most once in 20,000. Sampling
-enough natural texts to fill them is possible model-free, but the five cells sit at the edge of the trained range, and
-would test generalisation only a little way out.
+| letters swapped | rows | fast no-spurious fine-tune answers `count(b)` | LOW answers `count(a)` |
+|---|---|---|---|
+| 1 | 9 | 1.00 | 0.00 |
+| 2 | 104 | 0.87 | 0.00 |
+| 3 | 473 | 0.70 | 0.00 |
+| 4 | 1,030 | 0.58 | 0.00 |
+| 5 | 1,514 | 0.47 | 0.00 |
+| 6 | 1,617 | 0.33 | 0.00 |
+| 7 | 1,540 | 0.21 | 0.00 |
+| 8 | 1,186 | 0.14 | 0.00 |
+| 9 to 13 | 1,476 | 0.00 to 0.06 | 0.00 |
+
+Where the count of a was raised above 17, LOW's answer follows the count of a before the swap, not after it. The
+independent check found a slope of 0.85 on the pre-swap count within pairs. Its mean answer falls from 14.6 at a
+count of 17 to 7.2 at 24, and the answer 4 is its most common one from 21 to 24. In pair (17, 13) every count is in
+its natural range, yet LOW is wrong on all 341 swap-built rows; it counts a at 17 on all nine natural rows that have
+it. Where the count of a was lowered to 9 or less, LOW answers about 10 whatever the count was before the swap. That
+looks like a clip, and the two natural rows with a count of 9 also read 10. So a range limit may add on that side.
+Whether LOW counts a outside 10 to 17 on natural text was not tested.
+
+A corrected unseen set is cheap to build. The sampler draws 200,000 natural texts in four seconds on one CPU. Five
+in-range pairs, count a 14 to 17 with count b 9 or 10, are new and have the one-third rule distinct. The most common
+of them, (17, 10), comes up about 17 times per 200,000 texts; two others need a few million texts for twenty rows; the
+rarest two need tens of millions, still CPU minutes. The same sampler gives natural rows in pair (17, 13), and one LOW
+read of them would say whether the swap or the rare pair broke LOW there. These pairs sit at the edge of the range, so
+they test generalisation only a short way out. An Amendment 3 is being written to build this set.
 
 ### What we learned
 
-The one-third rule is a stable description of the slow all-spurious fine-tune from 3K steps on, and of the fast one at
-1K. It holds on new texts within the same pairs of counts at both seeds, not just on the rows it was found on. It is not
-a rule of count c alone. Whether it extends to new pairs of counts is unknown: the base model cannot count that far
-out, so the test could not be run. For Stage C, the slow state at 10K now meets option 2's condition on fresh rows,
-with that limit stated. As before, the reads say the answer is a function of two of the three counts; that one is
-the count of a rests on LOW's prior.
+On fresh rows the slow all-spurious fine-tune at 10K answers the one-third rule at both seeds, and the fast one at 1K
+follows it on its own rows. In one re-run per seed the slow arm follows the rule on its own rows from 3K. It answers it
+on 95% of all rows from 5K at seed 0 and from 7K at seed 1. Those re-run states are context, not scored. The rule holds
+on new texts within the same pairs of counts, and it is not a rule of count c alone. Whether it extends to new pairs is
+open. The only two fresh rows in new pairs where it is distinct go against it, and the unseen test was void because the
+swap-built rows broke the controls. For Stage C, the slow state at 10K now meets option 2's condition on fresh rows,
+with that limit stated. As before, the reads say the answer is a function of two of the three counts; that one is the
+count of a rests on LOW's prior.
 
 ### How compelling is the evidence
 
@@ -779,6 +808,11 @@ the count of a rests on LOW's prior.
 - **Within-pair replication.** The review showed that giving each fresh row the slow state's most common answer from
   Amendment 1's rows for its pair already passes the main test. So the pass shows the answer is fixed by the pair of
   counts when the rest of the text changes. It does not show the rule extends to new pairs.
+- **Outside the pairs.** Of the 20,000 fresh rows, 19 lie in pairs Amendment 1 did not see. Two of them, in pairs
+  (17, 10) and (17, 9), are rows where the rule differs from every other. Every all-spurious state that follows the rule
+  answers 16 on both, where the rule gives 15; LOW counts a right on both. At a count of a of 17 the slow state answers
+  16 on all nine fresh rows, whatever count b is. Two rows prove nothing, but they are the only out-of-pair evidence,
+  and they go against the rule.
 - **Units.** The one-third rule's 219 own rows lie in about a dozen pairs, four of which hold 190 rows. So one pair
   answered otherwise would move its share by up to a third. The pooled share is 0.991, and all four pairs with
   twenty or more rows agree.
@@ -786,18 +820,19 @@ the count of a rests on LOW's prior.
 
 ### Surprises
 
-- LOW, which counts a perfectly on natural text, answers it on none of the swap-built rows, and is clipped near 10 and
-  17. A filed control missed for this reason, voiding the unseen read.
-- The fast no-spurious fine-tune also errs on those rows, by one too high, though the count of b there is untouched.
+- LOW, which counts a perfectly on natural text, answers it on none of the swap-built rows. Above 17 it answers
+  roughly the count of a before the swap. A filed control missed for this reason, voiding the unseen read.
+- The fast no-spurious fine-tune's count of b, which the swap never touches, gets worse the more letters were swapped.
+- The same swap step builds the spurious fine-tuning rows and Stage A's spurious test rows, with swaps of mostly 0 to
+  3. Stage A's readings on those rows could carry part of this effect.
 
 ### What next
 
-1. **The third-class decision for Stage C**, now with the slow state's rule filed and met on fresh rows within the
-   same pairs. If the user wants generalisation shown first, item 2 is the only route.
-2. **An in-range unseen set**, by sampling natural texts until about five edge pairs have twenty rows each, model-free
-   and $0. If LOW counts a there, the one-third rule gets a small out-of-pair test; if not, it cannot be tested on this
-   model.
-
+1. **Amendment 3, being written:** an unseen set from natural texts in the five new in-range pairs, a LOW read of
+   natural rows in pair (17, 13), and the accuracy of N1 and LOW on Stage A's spurious test rows by swap size. If LOW
+   counts a in the new pairs, the one-third rule gets a small out-of-pair test.
+2. **The third-class decision for Stage C**, now with the slow state's rule filed and met on fresh rows within the
+   same pairs, and with the two out-of-pair rows against it. Amendment 3's out-of-pair read bears on it.
 ### Scorecard
 
 | id | claim in words | rule | read | verdict |
@@ -815,9 +850,12 @@ the count of a rests on LOW's prior.
 
 ### Not run
 
-- Any read on pairs of counts outside Amendment 1's, so any test that the one-third rule generalises.
-- An unseen set built from natural texts in in-range pairs; a test of whether the swaps or the rare pair broke LOW at
-  count a 17, count b 13.
+- Any read on pairs of counts outside Amendment 1's beyond two fresh rows, so any test that the one-third rule
+  generalises. Amendment 3 is being written for this.
+- An unseen set built from natural texts in the new in-range pairs; a LOW read of natural rows in pair (17, 13).
+- A test of whether LOW counts a outside 10 to 17 on natural text.
+- The accuracy of N1 and LOW on Stage A's spurious test rows by swap size.
+- A trajectory of the fast all-spurious arm between 1K and 10K.
 - A mechanism test of the one-third rule or of the midpoint; anything telling which two counts are used.
 - A second seed of the fast all-spurious arm.
 - The two slow fine-tunes with natural rows at 1K, the other "neither" states.

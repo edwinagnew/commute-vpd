@@ -42,7 +42,7 @@ def fig_fresh(out: str = "amend2_fresh.png",
 
 
 def fig_unseen(out: str = "amend2_unseen.png",
-               title: str = "Off the natural range of count(a), LOW does not count a, so the unseen read was void") -> None:  # fmt: skip
+               title: str = "On the swap-built unseen rows LOW never answers count(a), so the unseen read was void") -> None:  # fmt: skip
     big = RES / "large/amend2"
     fig, ax = plt.subplots(figsize=(8.0, 5.4))
     for name, col, lab in (("fresh", N_C, "fresh natural rows"), ("unseen", W_C, "unseen rows, count(a) set by a/c swaps")):
