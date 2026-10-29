@@ -27,8 +27,9 @@ count(a)+1 and count(b), another a point one third of the way between them. File
 on 20,000 fresh rows, but those rows repeat the same pairs of counts, so it is shown stable, not general. The test on
 new pairs of counts could not run: on the rows built for it, even the base model fails its own count. An
 independent check traced that to how those rows were built (letters swapped inside the counted window), not to a
-counting limit; Stage A's misleading test rows and the all-spurious arms' training rows are built the same way, so a
-free check (Amendment 3, running) reads natural rows in the same pairs and Stage A's reads by swap size. Outside the
+counting limit. Stage A's two checks read natural text only, so its labels cannot carry this. But the all-spurious
+arms were trained on rows built the same way, so whether their early "reuses the old count" reading means LOW's own
+counter is what a free check (Amendment 3, being run) tests, with natural rows in the same pairs. Outside the
 pairs it was found on, the one-third rule has 0 of 2 rows in its favour so far. Because the three counts always add
 to 40, answers alone cannot show that count a is one of the two counts used.
 
@@ -50,8 +51,9 @@ to 40, answers alone cannot show that count a is one of the two counts used.
   seeds at 1,000 steps are cheap and use a recipe already shown to work. B costs nothing and keeps the most
   interesting states in view.
 
-**If Amendment 3 finds Stage A's reads depend on how the rows were built**, the labels themselves are in question,
-and this card is re-rated before anything else runs; the lead will say so here and in chat.
+**If Amendment 3 finds that LOW's own count does not give the right answer on the built training rows**, the two
+early "reuses" states stay labelled as measured, but reading them as reuse of LOW's counter weakens; option C's
+early-step seeds would then be built on natural-only data instead. The lead will update this card when it reads.
 
 ## Links
 Report and notebook: `reports/analyses/2026-10-29_analysis_e55-stage-a.md`, `notebooks/E55_pcfg_anchors.ipynb`.
