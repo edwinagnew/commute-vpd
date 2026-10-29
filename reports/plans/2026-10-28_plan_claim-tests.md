@@ -179,8 +179,12 @@ All fit 27 min; none is split further.
 **Details that change no T1-T5 rule.**
 - *C0 with other starts or rows.* `faith_score.w0_check` checks seed 0 on rows 0-255 only. The job applies its rule to every
   harness start it reads: PGD within 10% of 0.69 / 0.8362 / 0.7049 at h0 / h1 / h2 (L40 values for h1, h2), CI within 2%
-  of 0.348, f ≤ 0.25. On rows 256-511 (t2c) the references are broad_fragility Amendment 2's H100 readings there: PGD
-  0.6298 / 0.6576 at h0 / h1, CI 0.3331.
+  of 0.348, f ≤ 0.25; the budget start's W₀ within 0.85-1.15 of h0's, or of h0's L40 value 0.6917 when h0 is not read (t1b).
+  On rows 256-511 (t2c) only h0 is checked, against broad_fragility Amendment 2's H100 reading there (0.6298), with CI
+  within 2% of 0.3331 and f ≤ 0.25. Plan fix 2026-10-29, before any run (review `2026-10-29_review_e47-code.md`): an h1
+  reference was dropped there, because the L40 reads h1 11% above the H100 on rows 0-255 and would likely have stopped
+  t2c at C0. For the same reason t2c's f is expected near 0.15, not the H100's 0.044.
+- *Reruns.* A rerun drops the file's `done` and `score`; `run.py combine` skips any file marked stopped.
 - *f with one harness start* (t1b, T5, t5b): 0.2088 when W₀ reproduces its L40 KL at that start within 1e-3 relative (T5's
   rule), otherwise one more harness start is read and f taken over the two.
 - *t1b's positive control* is T1's as filed (lead, 2026-10-29): r1's SGD do-nothing at the budget start must read at or
