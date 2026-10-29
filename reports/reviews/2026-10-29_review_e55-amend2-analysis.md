@@ -63,7 +63,8 @@ match `unseen_counts.npy` on every row):
   of the general pattern.
 - **Below 10, the data do look like a clip.** For a ≤ 9 LOW answers about 10 whatever the pre-swap count was (at a = 6
   the mean is 10.0 to 10.2 across pre-swap counts 11 to 16). So a range limit may add to the swap effect on the
-  lowering side. The saved data cannot separate the two there.
+  lowering side. Natural text agrees: on the two fresh rows with a = 9, LOW answers 10 both times (`check.py`). The
+  saved data cannot separate the two there.
 
 **Judgement.** "No construction mismatch" holds in the sense of no bug: the rows are what the filing specified. But
 "a model limit" is not the main explanation the data support. Raising a by swaps leaves LOW answering roughly the
