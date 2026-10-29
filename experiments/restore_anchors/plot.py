@@ -6,6 +6,9 @@ Plan: reports/plans/2026-10-29_plan_restore-anchors.md; analysis: reports/analys
                shaded on the same axes, and the two references: 0 (nothing restored) and 1 (control R2, every
                matrix's whole key-position output set to W0's, which reads exactly T0 on all eight)
 
+  amend1.png   Amendment 1 (results/amend1.json): every alive subcomponent and the write-only restore on the
+               fine-tunes and on the hand writes, the low-reading control
+
 Usage (repo root): ~/commute-agents/fleet/cpu-run .venv/bin/python experiments/restore_anchors/plot.py
 """
 
@@ -85,5 +88,42 @@ def main() -> None:
     fig.savefig(HERE / "figures" / "shares.png", dpi=150)
 
 
+
+def amend1() -> None:
+    """amend1.png: share of the gain taken back by every alive subcomponent and by the write-only restore, for the
+    copy and random-map fine-tunes and the four hand writes (the low-reading control), with the power bar."""
+    A = json.loads((HERE / "results" / "amend1.json").read_text())
+    groups = [("copy\nfine-tunes", COPY_C, lambda k: CLS[k.split("/")[0]] == "copy" and k.split("/")[1] in ("s0", "s1")),
+              ("random-map\nfine-tunes", RAND_C, lambda k: CLS[k.split("/")[0]] == "random" and k.split("/")[1] in ("s0", "s1")),
+              ("hand writes\n(no learned machinery)", "#2e8b57", lambda k: k.endswith("/write"))]
+    fig, ax = plt.subplots(figsize=(8, 4.8))
+    for i, (_, col, keep) in enumerate(groups):
+        rows = [(k, r) for k, r in A["rows"].items() if keep(k)]
+        for j, (k, r) in enumerate(rows):
+            dx = (j - (len(rows) - 1) / 2) * 0.07
+            ax.scatter(i - 0.15 + dx, r["rho"]["every_alive"], marker=MARK[k.split("/")[0]], s=40, color=col, edgecolor=INK, lw=0.5, zorder=3)
+            ax.scatter(i + 0.15 + dx, r["rho"]["write_only"], marker=MARK[k.split("/")[0]], s=40, color="white", edgecolor=col, lw=1.2, zorder=3)
+    ax.axhline(1.0, color=INK, lw=1, ls="--")
+    ax.text(2.45, 1.015, "whole key-position output set to W₀'s: 1", ha="right", va="bottom", fontsize=8.5)
+    ax.axhline(0.0, color=MUTED, lw=1)
+    ax.axhline(0.2, color="#2e8b57", lw=1, ls=":")
+    ax.text(2.45, 0.215, "filed ceiling for the hand writes, 0.2", ha="right", va="bottom", fontsize=8.5, color="#2e8b57")
+    ax.set_xticks(range(3), [g[0] for g in groups], fontsize=9)
+    ax.set_xlim(-0.6, 2.6)
+    ax.set_ylim(-0.45, 1.1)
+    ax.set_ylabel("share of the gain taken back at the key position")
+    ax.set_title("Can the every-alive share read low? Yes: direct hand writes read below 0,\n"
+                 "while both kinds of fine-tune read about 0.7", fontsize=10.5)
+    handles = [plt.Line2D([], [], marker="o", ls="", color=MUTED, mec=INK, label="every alive subcomponent restored"),
+               plt.Line2D([], [], marker="o", ls="", color="white", mec=INK, label="write-only restore: W₀'s output plus the update's own write"),
+               plt.Line2D([], [], marker="o", ls="", color="white", mec="white", label="circle table A, square table B")]
+    ax.legend(handles=handles, fontsize=8, loc="lower left", frameon=False)
+    for s in ("top", "right"):
+        ax.spines[s].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(HERE / "figures" / "amend1.png", dpi=150)
+
+
 if __name__ == "__main__":
     main()
+    amend1()
