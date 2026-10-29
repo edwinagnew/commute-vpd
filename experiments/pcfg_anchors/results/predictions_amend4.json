@@ -50,7 +50,7 @@
   "predictions": {
     "P1_W1_1000": {
       "claim": "W1 at 1K answers swap-built rows through its count of a.",
-      "lean": "Part 2: reads a 55%, reads b 30%, neither 15%.",
+      "lean": "Part 2: reads a 55%, reads b 30%, neither or both 15%.",
       "scored_from": "part1_swap_recipients.W1_1000 / part2_off_label.W1_1000 (P_a, P_b, B_a, B_b, labels, reading)",
       "rule": "part2_off_label.readings.W1_1000 == 'reads a'.",
       "described_part1": "part1_swap_recipients.readings.W1_1000 == 'reads a' (lead's design)."
@@ -59,7 +59,7 @@
       "claim": "The seed copy reads the same as W1 1K.",
       "lean": "agrees with W1 1K 85%.",
       "scored_from": "as P1",
-      "rule": "part2_off_label.readings.W1s1_1000 == part2_off_label.readings.W1_1000",
+      "rule": "void if part2_off_label is void or W1_1000 reads neither or both; else part2_off_label.readings.W1s1_1000 == part2_off_label.readings.W1_1000",
       "described_part1": "part1_swap_recipients.readings.W1s1_1000 == part1_swap_recipients.readings.W1_1000"
     },
     "P2_M3_1000": {
@@ -71,7 +71,7 @@
     },
     "W0_references": {
       "claim": "N1 1K reads b in both parts; LOW reads neither in Part 2; W1 10K described.",
-      "rule": "part1 and part2 N1_1000.reading == 'reads b' (also the validity of each part); part2 LOW.reading == 'neither'.",
+      "rule": "part1 and part2 N1_1000.reading == reads b (also the validity of each part); part2 LOW reading described only (neither by construction).",
       "expected": "as expected_values; W1 10K: Stage A natural P_a 0.361, P_b 0.429, between the bars, so neither in Part 1; no lean for Part 2."
     }
   },
@@ -96,5 +96,8 @@
   "not_run_here": "Patches at a position other than '='; per-component (VPD) attribution; swap sizes above 2 in Part 2.",
   "dry_run": "Model-free, 2026-10-29, through fleet/cpu-run (~/commute-data/scratch/reuse-lead/e55-amend4/dry.py, output dry.out; no model loaded): every model-free control true. Recipients 3,240 (|swap| 1: 1,323, 2: 950, 3: 586, 4: 255, 5: 101, 6: 20, 7: 5). Swap-recipient pairs 1,000 for each patch (the same first 1,000 recipients: |swap| 1: 419, 2: 281, 3: 181, 4: 86, 5: 28, 6: 4, 7: 1). Natural pairs 1,000 each, identical to the old pair_up loop (refactor check). Off-label pool 4,000 (|swap| 1: 1,871, 2: 2,129; count b - (count a + 1) from -9 to 7, never 0 or -1); off-label pairs 1,000 each (|swap| 1: 483, 2: 517). Answer transfer (patched output = donor output): Part 1 reads P_a 1.0, P_b 0.0 for BOTH an R-a and an R-b answerer (non-separating), N1-like 0.0, 1.0; Part 2 separates: R-a P_a 1, P_b 0, B_a 1, B_b 0; R-b the reverse; N1-like as R-b.",
   "filed": "DRAFT 2026-10-29 by the code writer; the lead sets the leans, decides Part 1 vs Part 2 scoring and files (status not starting with 'draft') before any run.",
-  "lead_notes": "The off-label move of plus or minus 1 or 2 letters is chosen here, not sourced: it keeps the rows where the count-b reference N1 1K is right on 0.95 or more (Amendment 3, swap 1-2), so the b control is valid. Bars are Stage A filed a2 bars (predictions.json via filed_bars). The reproduction tolerance 0.01 is from Amendment 3 matching Stage A within two rows in 4,000, not measured on the patch."
+  "lead_notes": "The off-label move of plus or minus 1 or 2 letters is chosen here, not sourced: it keeps the rows where the count-b reference N1 1K is right on 0.95 or more (Amendment 3, swap 1-2), so the b control is valid. Bars are Stage A filed a2 bars (predictions.json via filed_bars). The reproduction tolerance 0.01 is from Amendment 3 matching Stage A within two rows in 4,000, not measured on the patch.",
+  "amendments": [
+    "2026-10-29, before the run, after the code review: (1) Part 2 reading: reads a iff count a through and count b not through (was: b not through, which Stage A rules read as neither on W1 1K natural rows, P_b 0.104, so a pure count-a answerer would read neither); mirror for b. (2) P1s: void if Part 2 is void; agreement counts only when both read reads a or reads b. (3) LOW in Part 2 is a description, not a control: the off-label filter makes its reading neither by construction; Part 2 has no positive control on the count-a side. (4) Off-label rows keep only count a + 1 in 10..17, where the bases answer (Amendment 3 clipping). (5) amend4.json written after the controls and after each part."
+  ]
 }

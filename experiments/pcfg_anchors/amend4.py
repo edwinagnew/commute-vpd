@@ -84,13 +84,13 @@ def recipients(te1: Rows) -> Rows:
 def off_label_rows(k: dict[str, Any]) -> Rows:
     """k['off_pool'] natural texts from default_rng([EVAL_SEED, off_seed_tail]) with count a moved by a step drawn
     from k['off_steps'] (a -> c or c -> a in the window), kept where the target is reachable and count a + 1 != b,
-    count a != b; in stream order."""
+    count a != b and count a + 1 in 10..17 (the bases clip answers there, Amendment 3); in stream order."""
     rng, out, got = np.random.default_rng([EVAL_SEED, k["off_seed_tail"]]), [], 0
     while got < k["off_pool"]:
         t = pcfg.sample_texts(rng, 2 * k["off_pool"])
         a, b, c = (pcfg.count(t, x) for x in (A, B, C))
         tgt = a + rng.choice(k["off_steps"], len(t))
-        keep = (tgt >= 0) & (c >= tgt - a) & (tgt + 1 != b) & (tgt != b)
+        keep = (tgt >= 0) & (c >= tgt - a) & (tgt + 1 != b) & (tgt != b) & (tgt + 1 >= 10) & (tgt + 1 <= 17)
         t, tgt = t[keep][: k["off_pool"] - got], tgt[keep][: k["off_pool"] - got]
         out.append((pcfg._set_window_count(rng, t.copy(), A, tgt), np.abs(tgt - pcfg.count(t, A))))  # pyright: ignore[reportPrivateUsage]
         got += len(t)
@@ -179,11 +179,11 @@ def reading_p(pa: float, pb: float, bars: dict[str, Any]) -> str:
 
 
 def reading_through(la: str, lb: str) -> str:
-    """Part 2, from Stage A's per-count labels: 'reads b' iff b 'through' and a 'not through'; 'reads a' the reverse;
-    'both' iff both 'through'; else 'neither'."""
+    """Part 2, from Stage A's per-count labels: 'both' iff both 'through'; 'reads a' iff a 'through' and b not; 'reads b' the
+    reverse; else 'neither' (amended before the run: b off-route reads 'neither' on W1 1K's own natural rows, P_b 0.104)."""
     if la == lb == "through":
         return "both"
-    return {("not through", "through"): "reads b", ("through", "not through"): "reads a"}.get((la, lb), "neither")
+    return "reads a" if la == "through" else "reads b" if lb == "through" else "neither"
 
 
 def natural_controls(models: dict[str, GPT], d: dict[str, Any], bars: dict[str, Any], k: dict[str, Any]) -> dict[str, Any]:  # fmt: skip
@@ -263,8 +263,12 @@ def main() -> None:
     ctrl = {"checks": ctrl["checks"] | nat["checks"]}
     if not all(ctrl["checks"].values()):
         stop(ctrl | {"natural": nat["reads"]})
-    write_json(OUT, {"constants": k, "controls": ctrl, "natural": nat["reads"], "part1_swap_recipients": part1(models, d, bars, k),
-                     "part2_off_label": part2(models, d, bars, k)})  # fmt: skip
+    res: dict[str, Any] = {"constants": k, "controls": ctrl, "natural": nat["reads"]}
+    write_json(OUT, res)
+    res["part1_swap_recipients"] = part1(models, d, bars, k)
+    write_json(OUT, res)
+    res["part2_off_label"] = part2(models, d, bars, k)
+    write_json(OUT, res)
 
 
 if __name__ == "__main__":
