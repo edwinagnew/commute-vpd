@@ -10,24 +10,28 @@ Stages (repo root, project venv, one GPU):
   a0  rehearsal at tiny sizes ($0, not a reading) -> results/a0.json.
   a1 --prior P  one 50K-iteration pretraining (Jain Table 6). Trains until --deadline-min, saves and exits 3; resubmit
       until exit 0. When it finishes, its behaviour on 4K fresh samples goes to results/a1_<P>.json.
-  a1c  controls on the three pretrained models, no training of the model (src/commute/interchange.py, probe.py):
-      patch P at every block for the positive references and nulls over 3 sample sets, l*_a and l*_b, the B nulls,
-      the A2 bars by the filed rule, probe margins (3 seeds) and possession incl. PA4 -> results/a1c.json.
-  a2 --arm NAME [NAME ...]  fine-tunes (Table 6's LOW grid, R on HIGH, second seeds of N1 and W1) for 10K
-      iterations, states at 1K and 10K in results/large/a2/<arm>_<iters>.pt; each state's Table 6 behaviour and the
-      checks B and P (count-a at l*_a, count-b at l*_b, from a1c.json), labelled with predictions.json's a2_bars
-      ("unfiled" while they are not filed) -> results/a2_<arm>.json. Skips arms already written; exits 3 at the
-      deadline (resubmit to resume).
+  a1c-patch  controls on the three pretrained models, no training of the model (src/commute/interchange.py): patch P
+      at every block for the positive references and nulls over 3 sample sets, l*_a and l*_b (blocks 1..n_layer-1),
+      the B nulls, the A2 bars by the filed rule and PA1's behaviour and patch rows -> results/a1c_patch.json.
+  a1c-probe  probe margins (3 seeds), m_plus, possession incl. PA4 and PA1's probe rows -> results/a1c_probe.json.
+      Both a1c stages skip when their file exists and log the elapsed time of each section.
+  a2 --arm NAME [NAME ...]  refuses to start (exit 2) until predictions.json's a2_bars are filed. Fine-tunes (Table
+      6's LOW grid, R on HIGH, second seeds of N1 and W1) for 10K iterations, states at 1K and 10K in
+      results/large/a2/<state key>_<iters>.pt (the key hashes the arm's recipe); each state's Table 6 behaviour and
+      the checks B and P (count-a at l*_a, count-b at l*_b, as filed), labelled with the filed bars ->
+      results/a2_<arm>.json. Skips arms already written; exits 3 at the deadline (resubmit to resume).
 Every stage refuses to start without results/predictions.json. Model initialisation is seeded with TRAIN_SEED.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -114,6 +118,14 @@ def log(msg: str) -> None:
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+def timed[T](section: str, fn: Callable[[], T]) -> T:
+    """fn(), logging its wall time (a1c's cost is not yet measured)."""
+    t = time.monotonic()
+    out = fn()
+    log(f"{section}: {time.monotonic() - t:.0f} s")
+    return out
+
+
 def device() -> torch.device:
     assert torch.cuda.is_available(), "GPU only: never train the model locally"
     return torch.device("cuda")
@@ -143,7 +155,8 @@ def pretrain(prior: str, sz: Sizes, ckpt: Path, *, stop_at: int | None = None,
 
 def scored(model: GPT, seq: np.ndarray, op: int) -> dict[str, object]:
     """Accuracy at `=` with its floors on the same rows: majority label, mean absolute error, label histogram, and
-    for count-b the score of answering the true count(a) (`floor_swap`)."""
+    for count-b the scores of answering the true count(a) (`floor_swap`) and count(a) + 1 (`floor_count_a_plus_1`,
+    what a W that kept the spurious rule scores; PA2's W cells are read beside it)."""
     label_ = seq[:, pcfg.ANS].astype(np.int64) - pcfg.NUM0
     pred = predict_answers(model, seq).astype(np.int64) - pcfg.NUM0
     hist = np.bincount(label_)
@@ -152,7 +165,9 @@ def scored(model: GPT, seq: np.ndarray, op: int) -> dict[str, object]:
                               "hist": {str(k): int(v) for k, v in enumerate(hist) if v}}  # fmt: skip
     if op == B:
         texts = seq[:, pcfg.TEXT0 : pcfg.TEXT0 + pcfg.TEXT].astype(np.int64) - pcfg.TERM0
-        out["floor_swap"] = float((pcfg.count(texts, A) == label_).mean())
+        count_a = pcfg.count(texts, A)
+        out["floor_swap"] = float((count_a == label_).mean())
+        out["floor_count_a_plus_1"] = float((count_a + 1 == label_).mean())
     return out
 
 
@@ -180,7 +195,8 @@ def generation_rate() -> dict[str, float]:
         t = time.perf_counter()
         make()
         out[name] = n / (time.perf_counter() - t)
-    for name, c_rate in (("natural", 0.0), ("spurious", 1.0)):  # count-b label means (equal since spurious matching)
+    for name, c_rate in (("natural", 0.0), ("spurious", 1.0)):  # count-b label means (equal in distribution since the
+        # spurious matching; a0.json's values predate it)
         seq, _ = pcfg.task_batch(rng, n, "C", B, c_rate=c_rate)
         out[f"{name}_count_b_mean"] = float(seq[:, pcfg.ANS].mean() - pcfg.NUM0)
     return out
@@ -228,18 +244,26 @@ def a1_row(prior: str) -> dict[str, float]:
     return row
 
 
+def a1_models() -> dict[str, GPT]:
+    """The three finished A1 models (each a1_<prior>.json checked first: never a partial pretraining)."""
+    for p in pcfg.PRIORS:
+        a1_row(p)
+    return {p: load_model(LARGE / "a1" / f"pt_{p}.pt") for p in pcfg.PRIORS}
+
+
 def patch_references(models: dict[str, GPT]) -> dict[str, list[list[float]]]:
     """P at every block, per sample set, for the four filed references, plus the pairs built per set (n_pairs_*)."""
     specs = {"P_a_positive": ("LOW", A, A), "P_a_null": ("NEVER", A, B),  # (model, f_C, prefix)
              "P_b_positive": ("HIGH", B, B), "P_b_null": ("LOW", B, A)}  # fmt: skip
     out: dict[str, list] = {k: [] for k in (*specs, "n_pairs_a", "n_pairs_b")}
+    t = time.monotonic()
     for i in range(SETS):
         pairs = {op: make_pairs(np.random.default_rng([EVAL_SEED, 30, i, op]), op) for op in (A, B)}
         for tag, op in (("a", A), ("b", B)):
             out[f"n_pairs_{tag}"].append(0 if pairs[op] is None else len(pairs[op].x))  # type: ignore[union-attr]
         for name, (prior, f, prefix) in specs.items():
             out[name].append(patch_shares(models[prior], pairs[f], prefix).tolist())
-            log(f"set {i} {name} by block: {np.round(out[name][-1], 4).tolist()}")
+            log(f"set {i} {name} by block: {np.round(out[name][-1], 4).tolist()} ({time.monotonic() - t:.0f} s)")
     return out
 
 
@@ -256,8 +280,9 @@ def behaviour_nulls(models: dict[str, GPT]) -> dict[str, list[float]]:
 def probe_readings(models: dict[str, GPT]) -> dict[str, object]:
     """Probe accuracies (3 seeds), margins per block, m_plus and possession (count-a: LOW, HIGH with NEVER's probe as
     a control; count-b: LOW (PA4), HIGH)."""
-    raw = {op: [train_probes({p: models[p] for p in (("LOW", "HIGH", "NEVER") if op == A else ("LOW", "HIGH"))},
-                             op, seed, EVAL_SEED) for seed in range(SETS)] for op in (A, B)}  # fmt: skip
+    raw = {op: [timed(f"probes op {op} seed {seed}", lambda op=op, seed=seed: train_probes(
+                    {p: models[p] for p in (("LOW", "HIGH", "NEVER") if op == A else ("LOW", "HIGH"))}, op, seed,
+                    EVAL_SEED)) for seed in range(SETS)] for op in (A, B)}  # fmt: skip
     acc = {(p, op): np.array([r[p]["acc"] for r in raw[op]]) for op in (A, B) for p in raw[op][0]}
     shuf = {(p, op): np.array([r[p]["shuffled"] for r in raw[op]]) for op in (A, B) for p in raw[op][0]}
     summ = {f"{p}_count_{t}": margin_summary(acc[p, op], [shuf[p, op]] + ([acc["NEVER", A]] if op == A else []))
@@ -276,55 +301,84 @@ def behaviour_rows(rows: dict[str, dict[str, float]]) -> dict[str, bool]:
             "HIGH_count_b_ge_0.95": high["count_b"] >= 0.95, "NEVER_count_b_ge_0.95": rows["NEVER"]["count_b"] >= 0.95}  # fmt: skip
 
 
-def pa1_rows(patch: dict, b_null: dict, probes: dict, la: int, lb: int) -> dict[str, bool]:  # type: ignore[type-arg]
-    """PA1's probe and patch rows (inclusive), P and B read at l*."""
+def patch_rows(patch: dict, b_null: dict, la: int, lb: int) -> dict[str, bool]:  # type: ignore[type-arg]
+    """PA1's patch and B-null rows (inclusive), P read at l*."""
     pos = lambda k, blk: float(np.mean(np.array(patch[k])[:, blk - 1]))
-    mp, mg = probes["m_plus"], probes["margins"]
-    return {"LOW_count_a_m_plus_ge_6s": not mp["void"],
-            "HIGH_count_a_ge_half_m_plus": max(mg["HIGH_count_a"]["m"]) >= 0.5 * mp["m_plus"],
-            "HIGH_count_b_ge_half_m_plus": max(mg["HIGH_count_b"]["m"]) >= 0.5 * mp["m_plus"],
-            "P_a_positive_ge_0.8": pos("P_a_positive", la) >= 0.8, "P_b_positive_ge_0.8": pos("P_b_positive", lb) >= 0.8,
+    return {"P_a_positive_ge_0.8": pos("P_a_positive", la) >= 0.8, "P_b_positive_ge_0.8": pos("P_b_positive", lb) >= 0.8,
             "P_a_null_le_0.05": pos("P_a_null", la) <= 0.05, "P_b_null_le_0.05": pos("P_b_null", lb) <= 0.05,
             "B_a_null_le_0.05": float(np.mean(b_null["B_a_null"])) <= 0.05}  # fmt: skip
 
 
-def stage_a1c() -> int:
-    rows = {p: a1_row(p) for p in pcfg.PRIORS}
-    models = {p: load_model(LARGE / "a1" / f"pt_{p}.pt") for p in pcfg.PRIORS}
-    patch, b_null = patch_references(models), behaviour_nulls(models)
-    log(f"B nulls by set: {b_null}")
-    la, lb = l_star(np.array(patch["P_a_positive"])), l_star(np.array(patch["P_b_positive"]))
+def probe_rows(probes: dict) -> dict[str, bool]:  # type: ignore[type-arg]
+    """PA1's probe rows (inclusive)."""
+    mp, mg = probes["m_plus"], probes["margins"]
+    return {"LOW_count_a_m_plus_ge_6s": not mp["void"],
+            "HIGH_count_a_ge_half_m_plus": max(mg["HIGH_count_a"]["m"]) >= 0.5 * mp["m_plus"],
+            "HIGH_count_b_ge_half_m_plus": max(mg["HIGH_count_b"]["m"]) >= 0.5 * mp["m_plus"]}  # fmt: skip
+
+
+def a2_bars(patch: dict, b_null: dict, rows: dict) -> dict:  # type: ignore[type-arg]
+    """l*_a, l*_b and the four bars by the filed rule; P's spread at the fewest pairs built over the sets (E14)."""
+    na, nb = min(patch["n_pairs_a"]), min(patch["n_pairs_b"])
+    la, lb = l_star(np.array(patch["P_a_positive"]), na), l_star(np.array(patch["P_b_positive"]), nb)
     at = lambda k, blk: np.array(patch[k])[:, blk - 1]
-    bars = {"B_a": bar(np.array(b_null["B_a_null"]), rows["LOW"]["count_a"]),
-            "P_a": bar(at("P_a_null", la), float(at("P_a_positive", la).mean())),
-            "B_b": bar(np.array(b_null["B_b_null"]), rows["HIGH"]["count_b"]),
-            "P_b": bar(at("P_b_null", lb), float(at("P_b_positive", lb).mean()))}  # fmt: skip
-    log(f"l*_a {la}, l*_b {lb}; bars {bars}")
-    probes = probe_readings(models)
-    log(f"probe margins {probes['margins']}; m_plus {probes['m_plus']}; possessed {probes['possessed']}")
+    return {"l_star_a": la, "l_star_b": lb,
+            "B_a": bar(np.array(b_null["B_a_null"]), rows["LOW"]["count_a"], N_B),
+            "P_a": bar(at("P_a_null", la), float(at("P_a_positive", la).mean()), na),
+            "B_b": bar(np.array(b_null["B_b_null"]), rows["HIGH"]["count_b"], N_B),
+            "P_b": bar(at("P_b_null", lb), float(at("P_b_positive", lb).mean()), nb)}  # fmt: skip
+
+
+def stage_a1c_patch() -> int:
+    path = RESULTS / "a1c_patch.json"
+    if path.exists():
+        log(f"{path.name} exists; nothing to do")
+        return 0
+    rows = {p: a1_row(p) for p in pcfg.PRIORS}
+    models = timed("load models", a1_models)
+    patch = timed("patch references", lambda: patch_references(models))
+    b_null = timed("B nulls", lambda: behaviour_nulls(models))
+    log(f"B nulls by set: {b_null}")
+    bars = a2_bars(patch, b_null, rows)
+    log(f"a2 bars (l* and the four checks): {bars}")
     beh = behaviour_rows(rows)
-    pa1 = beh | pa1_rows(patch, b_null, probes, la, lb)
-    stops = [f"{k} bar void (hi <= lo)" for k, v in bars.items() if v["void"]]
+    pa1 = beh | patch_rows(patch, b_null, bars["l_star_a"], bars["l_star_b"])
+    stops = [f"{k} bar void (hi <= lo)" for k in CHECKS if bars[k]["void"]]
     stops += [f"behaviour {k} missed (recipe)" for k, v in beh.items() if not v]
-    stops += ["m_plus < 6 s_plus (probe)"] * (not pa1["LOW_count_a_m_plus_ge_6s"])
-    stops += ["HIGH count-b probe margin < 0.5 m_plus (probe)"] * (not pa1["HIGH_count_b_ge_half_m_plus"])
-    log(f"PA1 probe/patch rows {pa1}")
+    log(f"PA1 behaviour/patch rows {pa1}")
     for s in stops:
         log(f"STOP: {s}")
-    a2_bars = {"l_star_a": la, "l_star_b": lb, **bars}
-    write_json(RESULTS / "a1c.json", {"l_star_a": la, "l_star_b": lb, "patch": patch, "behaviour_nulls": b_null,
-                                      "bars": bars, "a2_bars": a2_bars, "probes": probes, "PA1_rows": pa1,
-                                      "stops": stops, "sets": SETS})  # fmt: skip
+    write_json(path, {"patch": patch, "behaviour_nulls": b_null, "a2_bars": bars, "PA1_rows": pa1, "stops": stops,
+                      "sets": SETS})  # fmt: skip
     return 0
 
 
-def filed_bars(a1c: dict) -> dict | None:  # type: ignore[type-arg]
-    """predictions.json's a2_bars when every check has lo and hi; None while it is the placeholder."""
-    filed = json.loads(PRED.read_text())["a2_bars"]
+def stage_a1c_probe() -> int:
+    path = RESULTS / "a1c_probe.json"
+    if path.exists():
+        log(f"{path.name} exists; nothing to do")
+        return 0
+    models = timed("load models", a1_models)
+    probes = probe_readings(models)
+    log(f"probe margins {probes['margins']}; m_plus {probes['m_plus']}; possessed {probes['possessed']}")
+    pa1 = probe_rows(probes)
+    stops = ["m_plus < 6 s_plus (probe)"] * (not pa1["LOW_count_a_m_plus_ge_6s"])
+    stops += ["HIGH count-b probe margin < 0.5 m_plus (probe)"] * (not pa1["HIGH_count_b_ge_half_m_plus"])
+    log(f"PA1 probe rows {pa1}")
+    for s in stops:
+        log(f"STOP: {s}")
+    write_json(path, {"probes": probes, "PA1_rows": pa1, "PA4_LOW_possesses_count_b": probes["PA4_LOW_possesses_count_b"],
+                      "stops": stops, "sets": SETS})  # fmt: skip
+    return 0
+
+
+def filed_bars(filed: dict, computed: dict) -> dict | None:  # type: ignore[type-arg]
+    """predictions.json's a2_bars (`filed`) when every check has lo, hi and void; None while it is the placeholder.
+    A filing must carry l_star_a and l_star_b equal to a1c_patch.json's (`computed`)."""
     if not all(isinstance(filed.get(k), dict) and {"lo", "hi", "void"} <= filed[k].keys() for k in CHECKS):
         return None
     for k in ("l_star_a", "l_star_b"):
-        assert filed.get(k, a1c[k]) == a1c[k], f"predictions.json {k} != a1c.json {k}"
+        assert k in filed and filed[k] == computed[k], f"predictions.json a2_bars {k} = {filed.get(k)}, a1c_patch.json {computed[k]}"
     return filed
 
 
@@ -344,63 +398,71 @@ def a2_eval_data() -> A2Eval:
     return A2Eval(seqs, qualifying_texts(np.random.default_rng([EVAL_SEED, 51]), N_B), pairs)
 
 
-def read_state(model: GPT, data: A2Eval, a1c: dict, bars: dict | None) -> dict[str, object]:  # type: ignore[type-arg]
-    """Table 6 behaviour with floors, and per f_C: B, P at every block and at l*, the pairs built, the label."""
+def read_state(model: GPT, data: A2Eval, bars: dict) -> dict[str, object]:  # type: ignore[type-arg]
+    """Table 6 behaviour with floors, and per f_C: B, P at every block and at the filed l*, the pairs built, the
+    label by the filed bars."""
     out: dict[str, object] = {k: scored(model, seq, op) for k, (seq, op) in data.seqs.items()}
     for t, op in (("a", A), ("b", B)):
-        l_, p_all = a1c[f"l_star_{t}"], patch_shares(model, data.pairs[op], B)  # 'C b 40': the arm's own task
+        l_, p_all = bars[f"l_star_{t}"], patch_shares(model, data.pairs[op], B)  # 'C b 40': the arm's own task
         b_, p_ = behaviour_share(model, data.b_texts, op), float(p_all[l_ - 1])
-        lab = "unfiled" if bars is None else label(b_, p_, bars[f"B_{t}"], bars[f"P_{t}"])
         n_pairs = 0 if data.pairs[op] is None else len(data.pairs[op].x)  # type: ignore[union-attr]
         out[f"check_count_{t}"] = {"B": b_, "P": p_, "l_star": l_, "P_by_block": p_all.tolist(), "n_pairs": n_pairs,
-                             "label": lab}  # fmt: skip
+                                   "label": label(b_, p_, bars[f"B_{t}"], bars[f"P_{t}"])}  # fmt: skip
     return out
 
 
-def state_path(name: str, it: int) -> Path:
-    return LARGE / "a2" / f"{name}_{it}.pt"
+def state_key(name: str, arm: Arm) -> str:
+    """<name>-<8 hex of the arm's recipe>: a changed recipe (lr, C_Tr, prior, seed, iters, batch) never resumes or
+    reuses an old state file."""
+    recipe = asdict(arm) | {"iters": FT_ITERS, "batch": FT_BATCH}
+    return f"{name}-{hashlib.sha256(json.dumps(recipe, sort_keys=True).encode()).hexdigest()[:8]}"
 
 
-def finetune(name: str, arm: Arm, deadline: float) -> bool:
+def state_path(key: str, it: int | str) -> Path:
+    return LARGE / "a2" / f"{key}_{it}.pt"
+
+
+def finetune(key: str, arm: Arm, deadline: float) -> bool:
     """Fine-tune `arm` from its A1 checkpoint (answer-only loss, Table 6 recipe), saving the model at each FT_SAVES
-    step; resumes from results/large/a2/<name>_train.pt. False when the deadline stopped it."""
+    step; resumes from results/large/a2/<key>_train.pt. False when the deadline stopped it."""
     model = load_model(LARGE / "a1" / f"pt_{arm.prior}.pt")
     torch.manual_seed(FT_SEED0 + arm.seed)
     run = Run(Schedule(FT_ITERS, arm.lr), WEIGHT_DECAY, save_every=1000, log_every=500, loss=answer_loss)
     for it in FT_SAVES:
-        if state_path(name, it).exists():
+        if state_path(key, it).exists():
             continue
         make = lambda rng, n: pcfg.task_batch(rng, n, "C", B, c_rate=arm.c_tr)[0]
         batches = Batches(make, FT_SEED0 + arm.seed, FT_BATCH, 100, device())
-        step, _ = train(model, batches, run, LARGE / "a2" / f"{name}_train.pt", stop_at=it, deadline=deadline,
-                        log=lambda m: log(f"{name} {m}"))  # fmt: skip
+        step, _ = train(model, batches, run, state_path(key, "train"), stop_at=it, deadline=deadline,
+                        log=lambda m: log(f"{key} {m}"))  # fmt: skip
         if step < it:
             return False
-        tmp = state_path(name, it).with_suffix(".tmp")
+        tmp = state_path(key, it).with_suffix(".tmp")
         torch.save({"model": model.state_dict(), "step": step}, tmp)  # fp32: 12 MB per state
-        tmp.replace(state_path(name, it))
+        tmp.replace(state_path(key, it))
     return True
 
 
 def stage_a2(names: list[str], deadline_min: float) -> int:
     deadline = time.monotonic() + 60 * deadline_min
-    a1c = json.loads((RESULTS / "a1c.json").read_text())
-    bars = filed_bars(a1c)
-    log(f"a2 bars: {'from predictions.json' if bars else 'NOT FILED: labels will read unfiled'}")
+    bars = filed_bars(json.loads(PRED.read_text())["a2_bars"], json.loads((RESULTS / "a1c_patch.json").read_text())["a2_bars"])
+    if bars is None:
+        log("predictions.json a2_bars is the placeholder: file the bars (dated) from a1c_patch.json first (exit 2)")
+        return 2
     data = a2_eval_data()
     for name in names:
-        path = RESULTS / f"a2_{name}.json"
+        path, key = RESULTS / f"a2_{name}.json", state_key(name, ARMS[name])
         if path.exists():
             log(f"{name}: {path.name} exists; skipped")
             continue
-        if time.monotonic() > deadline or not finetune(name, ARMS[name], deadline):
+        if time.monotonic() > deadline or not finetune(key, ARMS[name], deadline):
             log(f"{name}: deadline; resubmit to resume (exit {EXIT_RESUME})")
             return EXIT_RESUME
-        row = {"arm": asdict(ARMS[name]), "iters": FT_ITERS, "batch": FT_BATCH, "bars_filed": bars is not None,
-               "states": {str(it): read_state(load_model(state_path(name, it)), data, a1c, bars) for it in FT_SAVES}}  # fmt: skip
+        row = {"arm": asdict(ARMS[name]), "iters": FT_ITERS, "batch": FT_BATCH, "state_key": key,
+               "states": {str(it): read_state(load_model(state_path(key, it)), data, bars) for it in FT_SAVES}}  # fmt: skip
         log(f"{name}: {row}")
         write_json(path, row)
-        (LARGE / "a2" / f"{name}_train.pt").unlink(missing_ok=True)
+        state_path(key, "train").unlink(missing_ok=True)
     return 0
 
 
@@ -414,7 +476,7 @@ def write_json(path: Path, obj: object) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("stage", choices=("a0", "a1", "a1c", "a2"))
+    ap.add_argument("stage", choices=("a0", "a1", "a1c-patch", "a1c-probe", "a2"))
     ap.add_argument("--prior", choices=list(pcfg.PRIORS), help="a1: the one prior this job pretrains")
     ap.add_argument("--arm", nargs="+", choices=list(ARMS), help="a2: the arms this job fine-tunes, in order")
     ap.add_argument("--deadline-min", type=float, default=25.0, help="a1, a2: save and exit 3 after this many minutes")
@@ -423,8 +485,8 @@ def main() -> None:
         sys.exit(f"file the predictions first: {PRED}")
     if (args.stage == "a1") != (args.prior is not None) or (args.stage == "a2") != (args.arm is not None):
         ap.error("--prior goes with a1 only (and a1 needs it); --arm with a2 only (and a2 needs it)")
-    stages = {"a0": stage_a0, "a1": lambda: stage_a1(args.prior, args.deadline_min), "a1c": stage_a1c,
-              "a2": lambda: stage_a2(args.arm, args.deadline_min)}  # fmt: skip
+    stages = {"a0": stage_a0, "a1": lambda: stage_a1(args.prior, args.deadline_min), "a1c-patch": stage_a1c_patch,
+              "a1c-probe": stage_a1c_probe, "a2": lambda: stage_a2(args.arm, args.deadline_min)}  # fmt: skip
     sys.exit(stages[args.stage]())
 
 

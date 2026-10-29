@@ -1,6 +1,6 @@
 {
   "experiment": "E55 pcfg_anchors, Stage A (A1 controls on the pretrained LOW, HIGH, NEVER; A2 fine-tune readings) and Stage C pass bars",
-  "filed": "2026-10-29, before any run of experiments/pcfg_anchors/run.py a1 (second filing the same day, still before any run: edge cases E1-E11, the resolved ambiguities and the behaviour floors from the code review, accepted by the lead); never edited after the run (a dated report instead). A2 bars are added, dated, after A1 and before A2, by the rule in 'bar_rule'.",
+  "filed": "2026-10-29, before any run of experiments/pcfg_anchors/run.py a1 (second filing the same day, still before any run: edge cases E1-E11, the resolved ambiguities and the behaviour floors from the code review, accepted by the lead); never edited after the run (a dated report instead). A2 bars are added, dated, after A1 and before A2, by the rule in 'bar_rule'. Third filing 2026-10-29, after the a1 pretrainings and before any run of a1c-patch, a1c-probe or a2 (code review reports/reviews/2026-10-29_review_e55-a1c-a2-code.md, lead's decisions): edge cases E12-E14 (l* candidates, the bar's lo, the binomial n), the a1c split into two output files, PA2's count_a + 1 floor and PA3's blind_to on the spurious rows. Filing, not refiling: no reading these rules touch exists yet.",
   "plan": "reports/plans/2026-10-29_plan_reuse-stage1.md (Revision 1): Stage A 'The two checks', 'Bars', 'Rule', 'Possession', A1 table, A2 readings, Predictions PA1-PA4; Stage C 'Pass bar' and Predictions PC1-PC4",
   "units": "All accuracies, B, P and probe accuracies are fractions in [0, 1] (the plan's percentages / 100). Table 6 cells in PA2 are in percentage points, as the paper prints them.",
 
@@ -13,7 +13,8 @@
     "behaviour_floors": "Measured by run.py a1 on the same 4,000 samples as each accuracy, written to results/a1_<prior>.json: count_a_floor_majority = share of 'C a 40' rows whose answer is the most common answer among those rows (score of always answering the majority label); count_b_floor_majority = the same on 'C b 40' rows; count_b_floor_swap = share of 'C b 40' rows with count(a) == count(b) in the window (score of answering count(a) when asked for count(b)); count_a_mae, count_b_mae = mean |argmax answer - true count| over the rows, in count units. Code review (reports/reviews/2026-10-29_review_e55-code.md, finding 1): window counts take only 9 values (9-17); always answering 13 scores ~35% on count-a; the swap answer scores ~21% on count-b. Accuracies are read against these floors, not against 0.",
     "B": "Behaviour check for an arm and f_C, prefix 'C b 40' (the arm's own task), qualifying inputs only: share of outputs equal to g(f_C(x)), g(count-a) = count_a(x) + 1, g(count-b) = count_b(x). No probe.",
     "P": "Patch check for an arm and f_C: 1,000 pairs (x, x') of qualifying inputs with the same value of the other count and f_C(x') != f_C(x). Replace the residual stream at `=`, output of block l*, in the run on x by the run on x'. P = (number of pairs where patched output == model's output on x' AND model's output on x' != model's output on x) / (number of pairs). Denominator: all pairs built, not conditioned on the model's outputs.",
-    "l_star": "l*_a: on LOW, prefix 'C a 40', count-a patch; l*_b: on HIGH, prefix 'C b 40', count-b patch. l* = the earliest block whose positive-control P is >= max over blocks - 3 s, s = sd of that block's positive-control P over 3 independent sets of 1,000 pairs. Fixed in A1; every A2 arm uses l*_a for count-a and l*_b for count-b.",
+    "l_star": "l*_a: on LOW, prefix 'C a 40', count-a patch; l*_b: on HIGH, prefix 'C b 40', count-b patch. l* = the earliest of blocks 1..n_layer-1 (1..5; edge_cases.E12) whose positive-control P is >= max over those blocks - 3 s, s = sd of that block's positive-control P over 3 independent sets of 1,000 pairs, floored at the binomial sd at the fewest pairs built over the sets (edge_cases.E14). Fixed in A1 (results/a1c_patch.json a2_bars.l_star_a, l_star_b); every A2 arm uses l*_a for count-a and l*_b for count-b.",
+    "a1c_outputs": "run.py a1c-patch -> results/a1c_patch.json: patch (P per set and block for the four P references, n_pairs_a, n_pairs_b), behaviour_nulls (B_a_null, B_b_null per set), a2_bars (l_star_a, l_star_b and the four bars B_a, P_a, B_b, P_b, each n0, s, p_plus, lo, hi, void), PA1_rows (the five behaviour cells and the patch and B-null rows), stops. run.py a1c-probe -> results/a1c_probe.json: probes (raw, margins, m_plus, possessed), PA1_rows (the three probe rows), PA4_LOW_possesses_count_b, stops. The A2 bars are filed by copying a1c_patch.json's a2_bars into this file's a2_bars, dated; run.py a2 refuses to start (exit 2) until then and checks that the filed l* equal a1c_patch.json's.",
     "references": {
       "P_a_positive": "count-a patch on LOW, prefix 'C a 40', block l*_a",
       "P_b_positive": "count-b patch on HIGH, prefix 'C b 40', block l*_b",
@@ -30,12 +31,12 @@
   },
 
   "bar_rule": {
-    "rule": "For each of the four checks (B_a, P_a, B_b, P_b): n0 = null reference mean over 3 independent sample sets; p_plus = positive reference; s = max(sd of the null over the 3 sets, binomial sd sqrt(n0 (1 - n0) / 1000)), floored per edge_cases.E2. lo = n0 + 3 s; hi = n0 + 0.5 (p_plus - n0). If hi <= lo the check is void for the whole stage: stop (apparatus).",
+    "rule": "For each of the four checks (B_a, P_a, B_b, P_b): n0 = null reference mean over 3 independent sample sets; p_plus = positive reference; s = max(sd of the null over the 3 sets, binomial sd sqrt(n0 (1 - n0) / n)), floored per edge_cases.E2, n = the samples the null reads (B: 1,000 qualifying inputs; P: the fewest pairs built over the 3 sets, >= 500; edge_cases.E14). lo = n0 + max(3 s, 0.1 (p_plus - n0)) (edge_cases.E13); hi = n0 + 0.5 (p_plus - n0). If hi <= lo the check is void for the whole stage: stop (apparatus).",
     "relative_or_absolute": "lo and hi are absolute fractions computed from measured references (relative to n0 and p_plus); once filed they are fixed numbers.",
     "label_rule": "An arm state 'goes through f_C' iff B > hi_B and P > hi_P; 'does not go through f_C' iff B < lo_B and P < lo_P; else 'neither'. Strict inequalities because the plan files 'ties at a bar count as neither' (edge_cases.E5). A check whose reference failed is void for that arm (edge_cases.E7), and an arm with a void check reads 'neither'. Fewer than 500 qualifying pairs for P -> P void -> 'neither'."
   },
   "a2_bars": {
-    "status": "to be filed from A1 by rule lo = n0 + 3s, hi = n0 + 0.5(p+ - n0), before A2 runs"
+    "status": "to be filed from A1 (results/a1c_patch.json a2_bars, copied with l_star_a and l_star_b) by rule lo = n0 + max(3 s, 0.1 (p+ - n0)), hi = n0 + 0.5 (p+ - n0), before A2 runs"
   },
 
   "PA1": {
@@ -57,7 +58,7 @@
         "noise_floor": "binomial sd at n = 4000: 0.0034 at 0.95, 0.0063 at 0.20; the bands are > 10 sd from Table 6's values."
       },
       "count_a_probe_margin": {
-        "measurement": "m at the best block (argmax m over blocks), count-a probe on 'C a 40'; controls shuffled-label and NEVER's count-a probe.",
+        "measurement": "m at the best block (argmax m over blocks), count-a probe on 'C a 40'; controls shuffled-label and NEVER's count-a probe. Read from results/a1c_probe.json (definitions.a1c_outputs).",
         "thresholds": {
           "LOW": "m_plus >= 6 s_plus",
           "HIGH": "m >= 0.5 x m_plus",
@@ -67,7 +68,7 @@
         "stop": "m_plus < 6 s_plus -> stop (probe). HIGH < 0.5 m_plus: the plan names no stop for this cell; it is a PA1 miss, reported (see ambiguities_resolved)."
       },
       "count_b_probe_margin": {
-        "measurement": "m at the best block, count-b probe on 'C b 40'; control shuffled-label only.",
+        "measurement": "m at the best block, count-b probe on 'C b 40'; control shuffled-label only. Read from results/a1c_probe.json.",
         "thresholds": {
           "LOW": "PA4 (open)",
           "HIGH": "m >= 0.5 x m_plus"
@@ -76,13 +77,13 @@
         "stop": "HIGH misses -> stop (probe)."
       },
       "patch_positive": {
-        "measurement": "P_a_positive at l*_a (LOW, 'C a 40'), P_b_positive at l*_b (HIGH, 'C b 40'); 1,000 pairs, 3 independent sets, mean.",
+        "measurement": "P_a_positive at l*_a (LOW, 'C a 40'), P_b_positive at l*_b (HIGH, 'C b 40'); 1,000 pairs, 3 independent sets, mean. Read from results/a1c_patch.json.",
         "expected": "each >= 0.8",
         "relative_or_absolute": "absolute, inclusive",
         "stop": "hi <= lo for the check it references (bar_rule) -> stop. A value under 0.8 with hi > lo is a PA1 miss, reported, not a stop."
       },
       "patch_and_behaviour_null": {
-        "measurement": "P_a_null (NEVER, 'C b 40', l*_a), B_a_null (NEVER, 'C b 40'), P_b_null (LOW, 'C a 40', l*_b); 3 independent sets each, mean.",
+        "measurement": "P_a_null (NEVER, 'C b 40', l*_a), B_a_null (NEVER, 'C b 40'), P_b_null (LOW, 'C a 40', l*_b); 3 independent sets each, mean. Read from results/a1c_patch.json.",
         "expected": "each <= 0.05",
         "relative_or_absolute": "absolute, inclusive",
         "stop": "hi <= lo for the check it references -> stop. A value over 0.05 with hi > lo is a PA1 miss, reported, not a stop."
@@ -102,6 +103,7 @@
     "lean": "medium-high",
     "role": "Reported, not a gate: labels come from the checks.",
     "label_spread_note": "Our window counts are 13 +- 1 (code review finding 2: every d/e/f leaf holds roughly one of each of a, b, c), while Jain's Fig. 16 calls theirs 'fairly spread' on a 0-40 axis. The Table 6 cells may therefore sit on a different floor from ours (majority and swap floors, definitions.behaviour_floors); a PA2 miss or pass is read with that in mind, and PA2 stays reported, not a gate.",
+    "count_a_plus_1_floor_note": "Filed 2026-10-29 before a2 (code review risk 5): a W that keeps answering count(a) + 1 scores P(count_b = count_a + 1) on natural C_Te = 0 rows, measured ~0.188 by the reviewer, while Table 6 prints W1 0 and W2 1.9; so both W cells can sit more than 15 points off by construction and PA2 can reach at most 7 of 9. Each a2 state's count_b_te0 row carries floor_count_a_plus_1 (that share on the same 4,000 rows; run.py a1 writes count_b_floor_count_a_plus_1 too, but the a1_<prior>.json files predate it), and the W1 and W2 cells are read beside it. PA2's rule and threshold are unchanged.",
     "blind_to": "Which route the accuracy uses; 1K states; the C_Te = 1 column.",
     "positive_control": "A1's behaviour rows (same accuracy code, LOW and HIGH bases against Table 6).",
     "noise_floor": "binomial sd at 4,000 <= 0.8 points; FT seed noise from the second seeds of W1 and N1, reported, not used."
@@ -115,7 +117,7 @@
     "holds_iff": "all 7 readings as stated (W1 1K, W1 10K, W2 1K, W2 10K: through count-a; N1 1K, N1 10K: not through count-a; R: through count-b). Any 'neither' or void is a miss.",
     "reversal": "W1 or W2 reads 'not through count-a', or N1 reads 'through count-a' -> filed prediction reversed: stop and tell the user (decision tree 3). B and P disagree (one above hi, the other below lo) on >= 3 of the 17 states -> the null: card to the user, no scoring.",
     "lean": "medium: W's output on C_Te = 0 is unknown (Table 6 says only that it is not count_b); W could read 'neither'.",
-    "blind_to": "A W that computes count-a after l* from text positions (P low, B high -> 'neither'); a shared counter re-bound to a new operand reads 'not through count-a' and is reported as such.",
+    "blind_to": "A W that computes count-a after l* from text positions (P low, B high -> 'neither'); a shared counter re-bound to a new operand reads 'not through count-a' and is reported as such. Spurious-row artifacts of the a<->c swaps (pcfg.py; code review 2026-10-29 risk 4, kept because Jain's construction also inserts tokens artificially): (i) on every spurious row count_a + count_b + count_c = 40 and count_b = count_a + 1, so the label equals (41 - count_c) / 2; a W that learned 'through count-c' and one that learned 'through count-a' both fit the training rows, and a donor matched on count(b) cannot tell them apart, since changing count(a) at fixed count(b) changes count(c) too; such a W reads 'neither' on qualifying natural inputs, not 'through count-a'. (ii) the swaps leave a 'ccc' trigram at 0.95% of window positions in spurious rows (never in natural text; 'cc' rises 0.050 -> 0.079, mean count(c) +1), so mixed arms (N2, N3, M2, M3) can tell row types apart and learn a row-type switch. Measured by the reviewer on 20K natural and 20K spurious texts; not re-measured by a2.",
     "positive_control": "P_a_positive and P_b_positive in A1; R within A2 for count-b.",
     "noise_floor": "s of each check (bar_rule); FT seed noise from W1 and N1 second seeds, reported, not used for bars."
   },
@@ -157,7 +159,10 @@
     "E8_l_star_ties": "Several blocks within 3 s of the max -> the earliest (plan). s = 0 -> l* = earliest block attaining the max (E2's floor applies to s here too).",
     "E9_stage_C_degenerate": "n <= 4: no a with P <= 0.05 exists (0.5^n > 0.05) -> instrument unscorable (already covered by 'fewer than 8 -> no pass bars'). All labelled states in one truth class: the majority raise sets a = n + 1, so even a perfect labeller fails; filed: scoring void, agreement reported.",
     "E10_hi_le_lo": "p_plus <= n0 gives hi <= n0 < lo -> void (stop), covered by the plan's hi <= lo rule.",
-    "E11_LOW_count_b_vs_swap_floor": "DEGENERATE (code review, 2026-10-29): the plan's LOW count-b stop '<= 0.20' sits under the ~21% that answering count(a) when asked for count(b) scores, so a LOW that simply answers its count-a on 'C b 40' (the expected behaviour, Table 6: 5.2%) could miss the row by the floor alone, or a stop could fire with no recipe fault. Fix (coordinator): LOW.count_b <= count_b_floor_swap + 0.10, the floor measured on the same 4,000 samples (absolute, inclusive). Filed before any A1 run."
+    "E11_LOW_count_b_vs_swap_floor": "DEGENERATE (code review, 2026-10-29): the plan's LOW count-b stop '<= 0.20' sits under the ~21% that answering count(a) when asked for count(b) scores, so a LOW that simply answers its count-a on 'C b 40' (the expected behaviour, Table 6: 5.2%) could miss the row by the floor alone, or a stop could fire with no recipe fault. Fix (coordinator): LOW.count_b <= count_b_floor_swap + 0.10, the floor measured on the same 4,000 samples (absolute, inclusive). Filed before any A1 run.",
+    "E12_l_star_last_block": "DEGENERATE (code review 2026-10-29, risk 2): patching the residual at `=` after the last block (6) sets the output to the donor's, so P(6) = share(donor output != own output), ~1 on any accurate model; the max over blocks is then trivially at block 6, l* lands there whenever no earlier block carries the count within 3 s of ~1, and P at l* measures only that the output depends on f_C, the same thing B measures (the two checks collapse into one). Filed: l* candidates are blocks 1..n_layer-1 (1..5); the max and the 3 s window are taken over those blocks only. P at block 6 is still computed and reported (P_by_block). Filed before any a1c run.",
+    "E13_bar_lo_zero_null": "DEGENERATE (code review 2026-10-29, risk 3): a null of exactly 0 (e.g. B_a on NEVER, which never answers count_a + 1 on qualifying inputs) gives s at E2's floor and lo = 0.0030, so an N state with ~1% off-by-one answers (counts sit in 9-17, so a +-1 error often lands on count_a + 1) reads 'neither' for a trivial reason, a PA3 miss that is not a reuse finding. Filed: lo = n0 + max(3 s, 0.1 (p_plus - n0)); hi unchanged (n0 + 0.5 (p_plus - n0)); void iff hi <= lo as before. Since 0.1 < 0.5, the new term alone never voids a bar. Filed before any a1c run.",
+    "E14_binomial_n": "The binomial sd floor (E2, used by l* and the bars) was computed at a fixed n = 1,000, while P may rest on 500-999 pairs. Filed: n = the samples actually read: for B, the 1,000 qualifying inputs; for P (the P bars and l*), the fewest pairs built over the 3 sets (>= 500, else P is void, E6). Filed before any a1c run."
   },
 
   "ambiguities_resolved": [

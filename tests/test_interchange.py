@@ -1,5 +1,5 @@
 """CPU checks of E55's filed rules (src/commute/interchange.py, probe.py) on hand-made numbers: the patch pairs (matched
-on the other count, void below 500), l*, the A2 bars and label (edge cases E2, E5, E10, E6), and the probe margin,
+on the other count, void below 500), l*, the A2 bars and label (edge cases E2, E5, E10, E6, E12-E14), and the probe margin,
 m_plus and possession rules (E3, E4); the patch hook and the probe loop on tiny random minGPTs. No checkpoint."""
 
 from __future__ import annotations
@@ -80,32 +80,52 @@ def test_train_probes_runs_and_returns_per_block_accuracies(monkeypatch: pytest.
 
 def test_l_star_is_the_earliest_block_within_3s_of_the_best():
     sets = np.array([[0.1, 0.5, 0.88, 0.9, 0.9, 0.9]] * 3)  # identical sets: s = binomial floor, ~0.0095 at 0.9
-    assert ic.l_star(sets) == 3  # 0.88 >= 0.9 - 3 x 0.0103
+    assert ic.l_star(sets, 1000) == 3  # 0.88 >= 0.9 - 3 x 0.0103
     sets[:, 2] = 0.85
-    assert ic.l_star(sets) == 4
+    assert ic.l_star(sets, 1000) == 4
 
 
-def test_bar_zero_null_is_floored_e2():
-    b = ic.bar(np.zeros(3), 0.9)
-    assert b["s"] == pytest.approx(np.sqrt(0.001 * 0.999 / 1000))
-    assert b["lo"] == pytest.approx(3 * b["s"]) and b["lo"] > 0.0029 and b["hi"] == pytest.approx(0.45)
-    assert not b["void"]
-    assert ic.label(0.0, 0.0, b, b) == "not through"  # a zero reading can read "not through" (lo > 0)
+def test_l_star_never_takes_the_last_block_e12():
+    sets = np.array([[0.1, 0.5, 0.7, 0.8, 0.85, 1.0]] * 3)  # the last block copies the donor's output: P ~ 1 there
+    assert ic.l_star(sets, 1000) == 5  # best of blocks 1..5 is 0.85; 0.8 < 0.85 - 3 x 0.0126 (s at 0.8)
+    with pytest.raises(AssertionError):
+        ic.l_star(np.array([[np.nan, 1.0]] * 3), 1000)  # nothing finite before the last block
+
+
+def test_l_star_spread_uses_the_pairs_built_e14():
+    sets = np.array([[0.1, 0.5, 0.86, 0.9, 0.9, 0.9]] * 3)
+    assert ic.l_star(sets, 1000) == 4  # 3 s at 0.86, n = 1000: 0.0329; 0.86 < 0.9 - 0.0329
+    assert ic.l_star(sets, 500) == 3  # n = 500: 3 s = 0.0466; 0.86 >= 0.8534
+
+
+def test_bar_zero_null_lo_is_a_tenth_of_the_gap_e13():
+    b = ic.bar(np.zeros(3), 0.9, 1000)
+    assert b["s"] == pytest.approx(np.sqrt(0.001 * 0.999 / 1000))  # E2's floor still sets s
+    assert b["lo"] == pytest.approx(0.09) and b["hi"] == pytest.approx(0.45) and not b["void"]
+    assert ic.label(0.0, 0.0, b, b) == "not through"
+    assert ic.label(0.005, 0.01, b, b) == "not through"  # ~1% off-by-one answers in an N state: not "neither"
+    assert ic.label(0.1, 0.01, b, b) == "neither"
 
 
 def test_bar_uses_the_larger_of_set_sd_and_binomial():
-    b = ic.bar(np.array([0.0, 0.1, 0.2]), 0.9)
+    b = ic.bar(np.array([0.0, 0.1, 0.2]), 0.9, 1000)  # 3 s = 0.3 > 0.1 x 0.8: lo from the spread
     assert b["s"] == pytest.approx(0.1) and b["lo"] == pytest.approx(0.4) and b["hi"] == pytest.approx(0.5)
+
+
+def test_bar_spread_uses_the_samples_read_e14():
+    assert ic.bar(np.zeros(3), 0.9, 500)["s"] == pytest.approx(np.sqrt(0.002 * 0.998 / 500))
+    b = ic.bar(np.full(3, 0.1), 0.2, 500)  # 3 s = 3 sqrt(0.09 / 500) = 0.0402 > 0.1 x 0.1
+    assert b["lo"] == pytest.approx(0.1 + 3 * np.sqrt(0.09 / 500)) and b["hi"] == pytest.approx(0.15)
 
 
 @pytest.mark.parametrize(("null", "p_plus"), [(0.3, 0.3), (0.3, 0.2), (0.0, 0.005)])
 def test_bar_void_when_hi_le_lo_e10(null: float, p_plus: float):
-    assert ic.bar(np.full(3, null), p_plus)["void"]
+    assert ic.bar(np.full(3, null), p_plus, 1000)["void"]
 
 
 def test_bar_nan_is_void_e6():
-    assert ic.bar(np.array([0.0, np.nan, 0.0]), 0.9)["void"]
-    assert ic.bar(np.zeros(3), float("nan"))["void"]
+    assert ic.bar(np.array([0.0, np.nan, 0.0]), 0.9, 1000)["void"]
+    assert ic.bar(np.zeros(3), float("nan"), 1000)["void"]
 
 
 def test_label_ties_and_voids_e5():

@@ -10,7 +10,8 @@ are argmax at `=` (the code review's nit on bf16 argmax ties).
 - Patch P (f_C, l): pairs (x, x') of qualifying inputs with the same other count and a different f_C; the residual at
   `=` after block l in the run on x is replaced by the run on x'. P = share of pairs whose patched output equals the
   model's output on x' and that output differs from the one on x; denominator all pairs built. < 500 pairs: void.
-- Rules: l* (earliest block within 3 s of the best), the bars (lo = n0 + 3 s, hi = n0 + 0.5 (p+ - n0)) and the label.
+- Rules: l* (earliest of blocks 1..n_layer-1 within 3 s of their best), the bars (lo = n0 + max(3 s, 0.1 (p+ - n0)),
+  hi = n0 + 0.5 (p+ - n0), s at the actual sample count) and the label.
 """
 
 from __future__ import annotations
@@ -150,24 +151,27 @@ def spread(sets: np.ndarray, n: int) -> float:
     return max(float(np.std(sets, ddof=1)), binomial_sd(float(np.mean(sets)), n))
 
 
-def l_star(positive_sets: np.ndarray, n: int = N_PAIRS) -> int:
-    """Earliest block (1-based) whose positive-control P mean is >= max over blocks - 3 s, s that block's spread
-    (positive_sets: (sets, n_layer)). Edge case E8."""
-    mean = positive_sets.mean(0)
-    assert np.isfinite(mean).all(), f"non-finite positive-control P: {mean}"
-    s = np.array([spread(positive_sets[:, j], n) for j in range(mean.size)])
+def l_star(positive_sets: np.ndarray, n: int) -> int:
+    """Earliest block (1-based) of 1..n_layer-1 whose positive-control P mean is >= the max over those blocks - 3 s,
+    s that block's spread at n pairs (positive_sets: (sets, n_layer)). The last block is not a candidate: a patch there
+    sets the output to the donor's, so P there is a behaviour readout (E12). Edge cases E8, E14."""
+    cand = positive_sets[:, :-1]
+    mean = cand.mean(0)
+    assert mean.size >= 1 and np.isfinite(mean).all(), f"no finite positive-control P before the last block: {mean}"
+    s = np.array([spread(cand[:, j], n) for j in range(mean.size)])
     return int(np.flatnonzero(mean >= mean.max() - 3 * s)[0]) + 1
 
 
 Bar = dict[str, float | bool]  # n0, s, p_plus, lo, hi, void
 
 
-def bar(null_sets: np.ndarray, p_plus: float, n: int = N_B) -> Bar:
-    """lo = n0 + 3 s, hi = n0 + 0.5 (p_plus - n0); void iff not hi > lo (E10; a nan anywhere voids, E6)."""
+def bar(null_sets: np.ndarray, p_plus: float, n: int) -> Bar:
+    """lo = n0 + max(3 s, 0.1 (p_plus - n0)) (E13), hi = n0 + 0.5 (p_plus - n0), s at n samples (E14); void iff not
+    hi > lo (E10; a nan anywhere voids, E6)."""
     sets = np.asarray(null_sets, float)
     n0 = float(sets.mean())
     s = spread(sets, n) if np.isfinite(sets).all() else float("nan")
-    lo, hi = n0 + 3 * s, n0 + 0.5 * (p_plus - n0)
+    lo, hi = n0 + max(3 * s, 0.1 * (p_plus - n0)), n0 + 0.5 * (p_plus - n0)
     return {"n0": n0, "s": s, "p_plus": float(p_plus), "lo": lo, "hi": hi, "void": not hi > lo}
 
 
