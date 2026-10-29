@@ -19,7 +19,7 @@ Every read: a first-batch GPU peak over 70 GB halves the eval batch; an out-of-m
 stage; the batch and the cumulative spend persist in results/state.json. A stop writes results/stopped.json (its
 rule's name); the next job refuses to start while it exists, and a skipped C or K has its gate read again.
 Usage (repo root): python experiments/qwen_maps/run.py --stages C,S,D,K,M,G,A,H [--rehearse] [--out /root/e44]
-  [--e40 /workspace/e40_nowarmup] [--decomp DIR] [--usd-per-h 3.99] [--prior-usd SETUP_USD, first job only] [--svd-bases] [--waive NAMES, rehearsal]
+  [--results DIR, default experiments/qwen_maps/results] [--e40 /root/e40_nowarmup] [--decomp DIR] [--usd-per-h 3.99] [--prior-usd SETUP_USD, first job only] [--svd-bases] [--waive NAMES, rehearsal]
 """
 
 from __future__ import annotations
@@ -49,6 +49,7 @@ from job import (
     STAGES,
     WEB_SOURCES,
     Job,
+    JobOpts,
     write_json,
     write_tensors,
 )
@@ -421,9 +422,10 @@ def main() -> None:
     ap.add_argument("--rehearse", action="store_true")
     ap.add_argument("--svd-bases", action="store_true")
     ap.add_argument("--out", default="/root/e44")
-    ap.add_argument("--e40", default="/workspace/e40_nowarmup")
+    ap.add_argument("--results", default=JobOpts.results, help="every JSON and run.log (a rehearsal passes its own)")
+    ap.add_argument("--e40", default="/root/e40_nowarmup")  # where commute.qwen_e40_files fetches it
     ap.add_argument("--e40-large", default=str(E40_RESULTS / "large" / "nowarmup"))
-    ap.add_argument("--decomp", default=str(DECOMP_DIR))
+    ap.add_argument("--decomp", default="/root/qwen" if str(DECOMP_DIR).startswith("/workspace") else str(DECOMP_DIR))
     ap.add_argument("--usd-per-h", type=float, default=3.99)
     ap.add_argument("--prior-usd", type=float, default=0.0, help="setup spend; read only when results/state.json "
                     "does not exist (later jobs carry the cumulative spend there)")
@@ -432,7 +434,7 @@ def main() -> None:
     if not PRED.is_file():
         sys.exit(f"{PRED} missing: predictions are filed before the run")
     cfg = dataclasses.replace(REHEARSAL if a.rehearse else CFG, **({"basis": "svd"} if a.svd_bases else {}))
-    job = Job(a, cfg, score)
+    job = Job(JobOpts(**{f.name: getattr(a, f.name) for f in dataclasses.fields(JobOpts)}), cfg, score)
     refuse_if_stopped(job)
     stages = [s for s in STAGES if s in a.stages.split(",")]
     job.log(f"[config] {json.dumps(dataclasses.asdict(cfg))}; stages {stages}; args {vars(a)}; "

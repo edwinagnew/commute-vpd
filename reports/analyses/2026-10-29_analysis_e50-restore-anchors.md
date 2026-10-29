@@ -1,7 +1,8 @@
 # Does the fine-tuned model itself tell a copy fine-tune from a random-map fine-tune? E50 restore on known-kind anchors
 
 *E50, `experiments/restore_anchors/run.py`, written 2026-10-29, corrected the same day after an independent check
-("holds with corrections"; every number matched the JSON). Plan: `reports/plans/2026-10-29_plan_restore-anchors.md`,
+("holds with corrections"; every number matched the JSON). The Amendment 1 sections, the plain paragraph, "What we
+learned" and the card were corrected again after a second independent check of Amendment 1's reading. Plan: `reports/plans/2026-10-29_plan_restore-anchors.md`,
 option A and section "Filed (E50)", approved by the user. Filed rules: `experiments/restore_anchors/results/predictions.json`,
 filed before the run, not edited since. Result: `experiments/restore_anchors/results/restore_anchors.json`. Figure:
 `experiments/restore_anchors/figures/shares.png` from `plot.py`. Notebook: `notebooks/E50_restore_anchors.ipynb`.*
@@ -14,16 +15,18 @@ of their gain against a ceiling of 0.2. S took back 0.10 to 0.20 against a ceili
 
 **After Amendment 1.** A follow-up gave the every-alive share a control that reads low: direct hand writes read −0.16 to
 −0.32 on it. So the number is powered, and E50's "alike" stands as a finding about relay: both kinds pass about 0.7 of
-their gain through the original weights. S was closed as evidence of kind. The original model performs neither kind
-without an example and both with one.
+their gain through the original weights, alike within the 0.3 bar, with the copies consistently a little higher. S was
+closed as evidence of kind. The original model performs neither kind, with or without an example; the example raises
+both answers.
 
 ## In plain words
 
 We put the original model's subcomponents back inside fine-tunes of known kind, copies and random maps, and both kinds
-gave back about three quarters of their gain. A follow-up showed this number can read low, so it truly measures how much
-of a gain the original weights pass along, and both kinds pass along the same. Nothing read inside the fine-tuned model
-tells existing from new on these toys, and the original model itself does neither behaviour unprompted and both when
-shown an example.
+gave back about three quarters of their gain; a follow-up showed this number can read low, so it measures how much of a
+gain the original weights pass along. The two kinds pass it along alike within the bar we filed, the copies a little
+more, and nothing filed separates them, though three unfiled readings put the kinds in order. The original model itself
+performs neither behaviour, even when shown an example, so these toys cannot settle kind, nor calibrate the one number
+that does separate them, which is read in Γ's stand-in model.
 
 ## What was tested
 
@@ -190,19 +193,23 @@ $T_0$ exactly.
 ![every alive subcomponent and the write-only restore on the fine-tunes and the hand writes](../../experiments/restore_anchors/figures/amend1.png)
 
 **Reading it.** Yes. The hand writes read −0.16 to −0.32 on every alive subcomponent, against 0.66 to 0.78 for the
-fine-tunes. The gap between the copy fine-tunes and the writes was 0.91 on seed 0 and 0.93 on seed 1, against a power
+fine-tunes. The gap between the copy fine-tunes and the writes was 0.915 on seed 0 and 0.935 on seed 1, against a power
 bar of 0.3: "powered". The writes read below zero because the later original layers partly cancel a direct write;
 restoring those layers' inputs removes the cancelling, so the answer rises. That reading of the sign is a candidate.
 
 Under the decision rule, E50's "does not separate" stands as a finding for this number. The number measures how much of
-the gain the original weights relay, against what the update delivers directly. Both kinds relay about 0.7; a direct write
-is not relayed, and the later layers partly cancel it. It does not measure existing against new, and goes forward, if at all, only as a relay number
-beside the stand-in ratio. Its power is shown against one kind of low anchor, a single-matrix direct write.
+the gain the original weights relay, against what the update delivers directly. Both kinds relay about 0.7, alike within
+the 0.3 bar, with the copies consistently a little higher. All four copies sit above all four random maps on every alive
+subcomponent, with worst-pair gaps of 0.03 and 0.05, and on the write-only restore, with 0.07. A direct write is not
+relayed, and the later layers partly cancel it. The number does not measure existing against new, and goes forward, if
+at all, only as a relay number beside the stand-in ratio. Its power is shown against one kind of low anchor, a
+single-matrix direct write.
 
 **The write-only restore.** It took back 0.10 to 0.15 more of the gain than every alive subcomponent on all eight
-fine-tunes, against a materiality bound of 0.02. So the original model's residual $\Delta_0$ relays about an eighth of
+fine-tunes, against a materiality bound of 0.02. So the original model's residual $\Delta_0$ relays roughly an eighth of
 the gain, and the every-alive share does depend on the decomposition: the subcomponents cover the relay only in part.
-This was filed as information and changes no verdict. With all of the original weights, the relay reads 0.90 to 0.91 on
+The eighth is approximate, since restores need not add. On the hand writes the write-only restore read −0.20 to −0.41,
+lower than every alive subcomponent there. This was filed as information and changes no verdict. With all of the original weights, the relay reads 0.90 to 0.91 on
 the copies and 0.81 to 0.84 on the random maps; that gap is 0.07, also short of 0.3.
 
 ### What is S made of?
@@ -216,6 +223,11 @@ write almost none.
 the copies it is under a quarter of a nat. So the shared format part was not confirmed: the core matters for the random
 maps only. The rest took back 0.14 to 0.20 on the copies and 0.04 to 0.15 on the random maps, short of a 0.3 separation.
 Under the decision rule, S is closed as evidence of kind on the 67M.
+
+The core's "neither" is close to built into the rule. A five-member set that takes back a few hundredths of the gain was
+unlikely to reach a 0.3 gap between kinds whatever it does. The core does order the kinds, in reverse, with no overlap:
+the random maps above the copies. That fits the shared-output-machinery reading above, original output pieces reused for
+the random maps' common answer words; it is a candidate, untested.
 
 **The parts do not add up, as expected.** S's take-back minus the core's and the rest's was −0.03 to −0.29 nats on all
 eight fine-tunes, so the two parts restored apart take back a little more than S restored whole. Restores need not add.
@@ -232,31 +244,40 @@ the run. At most a seventh of S's take-back, it changes no reading.
 | random map A | −13.21 | −1.07 | 12.14 |
 | random map B | −13.98 | −1.84 | 12.14 |
 
-**Reading it.** The demonstration is the marker, the same key, and that key's answer, ten positions earlier. For a random
-map it shows the model the very pair being asked. So the probe tests in-context copying of a seen pair, induction, not
-whether the model knows the map. The original model does that well: it raises the random-map answer by 12 nats, close to
-the fine-tunes' 13 to 21. On the copy tables the demonstration helps half as much, perhaps because "marker key key" is a
-less usual pattern than "marker key answer"; that is a candidate.
+**Reading it.** The demonstration raises both answers, but the original model performs neither. With it, the answer's
+log-odds are still −3.3 and −4.0 on the copy tables and −1.1 and −1.8 on the random maps, so the answer stays less likely
+than not. The demonstration is the marker, the same key and that key's answer, ten positions earlier. It holds the exact
+key and answer for either kind, so the probe tests induction, copying a pair just seen, and cannot rank the anchors. On
+the copy tables it helps about half as much; why is not known.
 
-**What this means for the copy anchor.** Without a demonstration the original model does neither kind: its log-odds are
-−10 and −14. With one it does both, the random map more strongly. So in this format the copy is "existing" only in the
-sense that copying exists somewhere in the model, and the random map is just as "existing" in the sense that the model
-can perform it when shown. Candidate, untested: both fine-tunes may install the same shortcut, turning an in-context skill
-into a fixed response. That would make the two kinds alike for a reason about the anchors, not about VPD.
+**What this means for the copy anchor.** Two claims hold. The original model does neither kind unprompted. And it rates
+the copy answer 3 to 4 nats above the random-map answers, a small prior toward copying. So in this format the copy is
+"existing" only in the sense that copying exists somewhere in the model, with a small lean toward it. Candidate,
+untested: both fine-tunes may install the same shortcut, a fixed response to the marker format. That would make the two
+kinds alike for a reason about the anchors, not about VPD.
 
 ## What we learned
 
-In plain words: on these toys, nothing read inside the fine-tuned model tells a new behaviour from an existing one. What
-the fine-tuned model does show is that both kinds of fine-tune work mostly by feeding something the original weights
-then carry to the answer, which a direct write does not. Γ's switched-on set points at the original pieces both kinds
-draw on, and its shared core matters only for the random maps. The original model does neither behaviour unprompted and
-both when shown an example, so the toys' "existing" and "new" labels are weaker than planned.
+In plain words: on these toys, nothing filed separates a new behaviour from an existing one inside the fine-tuned model.
+Both kinds of fine-tune work mostly by feeding something the original weights then carry to the answer, which a direct
+write does not, and they do so alike within the bar, the copies a little more. The original model performs neither
+behaviour, even when shown an example, so the toys' "existing" and "new" labels are weaker than planned.
+
+Three readings, none filed as a test of kind, do order the kinds without overlap:
+- S's size: 108 to 118 members on the copies against 24 to 49 on the random maps.
+- D's restore share: 0.39 to 0.47 against 0.13 to 0.24.
+- The core's restore share, in reverse: 0.00 to 0.02 on the copies against 0.06 to 0.08 on the random maps.
+
+The core's "neither" is close to built into the rule, since a five-member set was unlikely to reach a 0.3 gap. Its
+reversed order fits the shared-output-machinery reading, a candidate. S's fourfold size gap may be the same fact as the
+stand-in ratio's gate-gain gap, Γ switching on more for the copies, so one observation rather than two; also a candidate.
 
 Against the plan's three answers: "Yes" is not reached. The one real-model number with shown power measures relay, not
 kind, and reads both kinds alike; S is closed. "Undecidable" as the plan defines it needs the toys to separate, and they
 did not. "No" is what these instruments read, now with a powered number behind it, but for relay rather than kind, and on
-anchors whose kinds the original model does not show. The amendment's decision rule leaves the stand-in ratio as the only
-number of kind, with the relay number beside it, which is the plan's filed branch.
+anchors whose kinds the original model does not show. The caveat cuts both ways: anchors that cannot show kind in the
+real model cannot calibrate the stand-in ratio either. That ratio is the line's only number that separates the kinds, and
+it has not been tested on an anchor the original model really performs; the card below takes this up.
 
 **The method's standing limit** (`decisions.md`, "Limit of the elicitation reading"). A new mechanism built from
 subcomponents the original model already has, put together under new gating, reads as "elicited" to VPD, because its
@@ -284,56 +305,70 @@ the original model in this format, which limits what any number here can say abo
    a fifth.
 3. **S took back the same 2.0 to 2.7 nats on every fine-tune**, whatever its size. The shared core explains part of this
    on the random maps only; on the copies it is not explained.
-4. **The original model's residual relays about an eighth of the gain**, where the write-only bound was 0.02.
-5. **The original model performs a random map in context about as well as the fine-tunes**, and the copy only half as
-   well. The copy anchor is weaker than the plan assumed.
+4. **The original model's residual relays roughly an eighth of the gain**, where the write-only bound was 0.02.
+5. **Shown the pair, the original model still performs neither kind.** The demonstration raises the random-map answer
+   by 12 nats and the copy answer by about 6.5, yet the answer stays less likely than not. The copy anchor is weaker than
+   the plan assumed.
 6. The stand-in ratios, copied from E46, sat just outside their filed ranges on two fine-tunes, 0.356 and 0.414. Narrow;
    one line.
 
 ## What next
 
 1. The decision card below.
-2. If option 1: show an existing Qwen anchor that the original model performs in the scored format before stage 1.
+2. If option A: a `/design` check of a 67M anchor pair whose existing member the original model performs unprompted,
+   then the stand-in ratio and the relay number read on it. A ratio that reads the existing member high and the new one
+   low, as it read the copies and random maps, keeps a place in stage 1; one that does not ends its use as a number of
+   kind.
 3. A Γ from a second decomposition seed is the only check that narrows the method's limit; whether one exists in
    `artifacts/vpd` is unknown.
 
 ## Pending decision (card text)
 
-*Supersedes the two earlier versions of this card, after E50 Amendment 1.*
+*Supersedes the earlier versions of this card, after E50 Amendment 1 and its independent check. It also takes in the
+open card on E46 Amendment 3's stand-in ratio.*
 
-**The re-gating line has no number read inside the fine-tuned model that tells existing from new behaviour on the 67M.
-Should it carry Γ's stand-in ratio to Qwen alone, or answer "No" for these toys and stop?**
+**The re-gating line's only number that separates the kinds is Γ's stand-in ratio, and it has never been tested on an
+anchor the original model really performs. What should the line do before any Qwen spend?**
 
 *Evidence.*
-- *The stand-in ratio* separates copies from random maps, about 0.9 against 0.4, but only in Γ's stand-in model.
-  E46 Amendment 3 found it is nearly the gate gain over the split's gain. A hand write with no learned machinery reads
-  0.40 and 0.57, near the new kind.
-- *Every alive subcomponent* is powered: hand writes read −0.16 to −0.32, fine-tunes 0.66 to 0.78. It measures how much
-  of the gain the original weights relay. Both kinds relay about 0.7, so E50's "alike" stands for this number. It also
-  depends on the decomposition: the original model's residual relays another eighth.
-- *Γ's switched-on set* is closed as evidence of kind: its shared core matters only for the random maps, and neither
-  part separates.
-- *The anchors.* The original model performs neither kind without an example and both with one, so in this format the
-  copy is not shown to be "existing". This bears on both options.
+- *The stand-in ratio, E46 Amendment 3.* It separates copies from random maps, about 0.9 against 0.4, but only in Γ's
+  stand-in model, and it is almost exactly the gate gain over the subcomponent gain. A hand write with no learned
+  machinery read 0.40 and 0.57 on the random-map tables, 0.57 outside both fine-tunes' intervals, and 0.89 and 1.13 on
+  the copy tables. So on every table a write that builds nothing reads like that table's fine-tune. The ratio may track
+  the table rather than the update's kind: a copy's answer token is the key, whose tied embedding is already present.
+  Amendment 3's tree ended at branch 5, numbers to the user, not at the filed pass, branch 3, and its analysis said
+  this goes to the user.
+- *E50.* Inside the fine-tuned model, every alive subcomponent took back 0.76 to 0.78 of the copies' gain and 0.66 to
+  0.73 of the random maps'. Γ's switched-on set S took back 0.14 to 0.19 and 0.10 to 0.20. Neither separates by the
+  filed 0.3.
+- *Amendment 1.* The every-alive share is powered: hand writes read −0.16 to −0.32, gaps of 0.915 and 0.935 to the
+  copies. It measures relay, and the kinds relay alike within the bar, the copies consistently a little higher. S is
+  closed; its core's "neither" is close to built into the rule for a five-member set. Nothing filed separates the
+  kinds, but three unfiled readings order them without overlap: S's size, D, and the core in reverse. S's size gap may
+  be the same fact as the gate-gain gap.
+- *The anchors, both ways.* The original model performs neither kind, even with an example, and leans 3 to 4 nats toward
+  the copy answer. If these toys cannot show kind in the real model, they cannot calibrate the stand-in ratio either:
+  its separation on them is not yet evidence that it reads kind.
+- *The method's standing limit* (`decisions.md`, "Limit of the elicitation reading"). A new mechanism built from
+  subcomponents the original model already has, put together under new gating, reads as "elicited" to VPD, because its
+  unit is the rank-one subcomponent, not the circuit. Only a Γ from a second decomposition seed narrows it.
 
 *Options.*
-1. **Carry the stand-in ratio to Qwen alone.** This is the plan's filed branch for "does not separate", and the
-   amendment's decision rule keeps it: stage 1 on Qwen3-1.7B, about $5 to $10, a gated run. Every sentence says the
-   reading is Γ's; the relay share goes beside it as a relay number, never as one of kind. The existing anchor must be
-   one the original Qwen is shown to perform in the scored format; E45's anchor 1 does not yet meet this, since no
-   prompt raised its accuracy.
-2. **Answer "No" for these toys in the real model, and stop spending on the elicitation question.** Keep E38's
-   descriptive result, that Γ finds pieces an update draws on without being told the target, and state the method's
-   limit. This departs from the approved tree.
+- **(A) Hold stage 1 and test the stand-in ratio for $0 on an anchor the original model performs.** Read it and the
+  relay number on a 67M anchor pair whose existing member the original model performs unprompted. This is close to the plan's option C: lowercase Pile text, which the model
+  already models, against the same rows under a broad cipher. It is a new task family, so it needs `/design` and the
+  user's confirmation. The plan's own risk is that the stand-in read about 0.8 for any broad update in E36; finding that
+  out for $0 is the point. Recommended.
+- **(B) Answer "No" for the toys.** By the plan's "Three answers", the known anchors read alike in the real model, so
+  re-gating is a reading of Γ. This is the plan's own framework: E50's filed branch says the line's real-model claim is
+  dead on the 67M. It is compatible with A, which asks whether Γ's reading is itself worth carrying.
+- **(C) Stage 1 on Qwen3-1.7B with the stand-in ratio alone.** E50's filed branch; a gated run, about $5 to $10. Only
+  after the ratio passes on such an anchor, and with an existing anchor the original Qwen is shown to perform; E45's
+  anchor 1 does not yet, since no prompt raised its accuracy.
 
-A third option, a new 67M anchor the original model performs unprompted, was considered and not offered. The powered
-number measures relay, not kind, so a better anchor would test the anchors, not give VPD a number of kind. It would be a
-new task family and need `/design`.
-
-*Recommendation.* Option 1, with its conditions. The approved tree and the amendment's rule both lead there. The 67M
-toys could not have shown kind, since the original model does neither behaviour unprompted, so they are weak evidence
-for stopping. The condition on the existing anchor is the test the toys lacked; until an anchor meets it, stage 1 waits. If the user reads the stand-in ratio's closeness to the gate gain as reason enough to distrust it, option 2 is
-the honest alternative.
+*Recommendation.* A, with B written down now. The toys could not have shown kind, since the original model performs
+neither behaviour, so they can neither close the question nor vouch for the stand-in ratio. A tests the ratio where the
+existing member is real, for $0, before any gated spend.
 
 *Run line.* E50, Slurm 43040, and Amendment 1, Slurm 43266, cluster debug, $0 each.
 

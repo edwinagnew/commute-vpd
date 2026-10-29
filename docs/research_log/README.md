@@ -370,3 +370,5 @@ Figures already published (their sources, for a re-upload):
 - "fig/e47_log_lora_rank.png": "experiments/claim_tests/figures/log_lora_rank.png"
 - "fig/e47_log_remainder.png": "experiments/claim_tests/figures/log_remainder.png"
 - "fig/e47_log_keep_size.png": "experiments/claim_tests/figures/log_keep_size.png"
+- "fig/e50_shares.png": "experiments/restore_anchors/figures/shares.png"
+- "fig/e50_amend1.png": "experiments/restore_anchors/figures/amend1.png"

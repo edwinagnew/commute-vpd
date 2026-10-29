@@ -27,7 +27,7 @@
 #SBATCH --qos=debug
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=40G
+#SBATCH --mem=48G
 #SBATCH --time=00:30:00
 #SBATCH --output=cluster/logs/%x-%j.out
 
