@@ -106,8 +106,8 @@ def fig_unmasked(data: dict[str, tuple[dict[str, Any], dict[str, Any]]]) -> None
     ax.set_ylim(0.8, 30)
     ax.set_yticks([1, 2, 5, 10, 20], ["1", "2", "5", "10", "20"])
     ax.set_ylabel("pieces-alone error, Δ removed\n(over the unchanged model's, log scale)")
-    ax.set_title("With component training the pieces alone still reproduce the model;\n"
-                 "with do-nothing the update sits in Δ and the pieces alone miss it", fontsize=10)
+    ax.set_title("Removing Δ leaves component training's average error on Pile text at the unchanged level;\n"
+                 "with do-nothing, whose update sits in Δ, the same removal multiplies it", fontsize=10)
     ax.legend(frameon=False, fontsize=8, loc="upper left")
     save(fig, "log_unmasked.png")
 
