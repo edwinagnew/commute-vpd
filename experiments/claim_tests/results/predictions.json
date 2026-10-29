@@ -209,5 +209,27 @@
       "T5": "see T5b.rule: T5 over the three cells",
       "T4": "not combined: T4 (step 1000) and T4b (step 10) are reported side by side; claim (iv) as filed is T4's"
     }
+  },
+  "amendment_2": {
+    "about": "Amendment 2 (lead, 2026-10-29), filed after the ten E47 jobs ran and before t4c runs; the keys above are unchanged. An independent check of t4b found its 'falls' rests on one start (q 0.654 at h0; 0.961, 1.075 at h1, h2) and that step-10 plus remainder read 1.43 at h0 on the L40 against E43's 3.92 on the H100, while other states moved 6-13%; t4b never read the step-10 teacher-trained state alone, which E43 did. t4c reads it beside the two t4b states, on the same rows, starts and card",
+    "predictions": [
+      {
+        "id": "T4c",
+        "claim": "(iv) at step 10, the missing reference: where does plus remainder sit between teacher training's own state and do-nothing, start by start?",
+        "starts": ["h0", "h1", "h2"],
+        "recipe": "t4b's exactly: emoticon Adam 3e-5 fine-tune, seed 0, stopped at step 10; teacher training arm A, Adam 1e-5, 1000 steps, order 0; gates G1, G3, G2 at t4b's values. C0 first",
+        "states": {"nothing": "dW_10 left in Delta", "teacher_trained": "the copy's own state (target W0 + its weight change, its (U', V'); Delta untouched), read alone", "plus_remainder": "the copy's (U', V') with target W0 + dW_10"},
+        "reproduction": "nothing (read right after G1) and plus_remainder (read last) must each reproduce t4b's per-start KL (results/t4b.json states.<name>.kl) within 1e-4 relative at h0, h1 and h2; a miss, a missing start, a non-finite or zero value, or no t4b file stops the job (gates R_nothing, R_plus_remainder). Noise floor: every quantity read twice on the L40 in E47 agreed to 17 digits: W0 at h0-h2 in t4 and t4b, the T5 positive control (teacher regenerated, 1000 SGD student steps, read at h0) in t5 and t5b, r1's do-nothing at the budget start in t1 and t1b, the saved adam_tt and lora8_tt in t2 and t2b. 1e-4 leaves room for a changed reduction order only",
+        "rule": "per start s, plus remainder's ratio is 'between' if min(ratio_tt, ratio_nothing) <= ratio_plus <= max(ratio_tt, ratio_nothing) (ties inclusive), 'above' if above both, 'below' if below both. Stage: the common label if all three starts share it, else 'mixed'; unscored if a start is missing or non-finite on any state. Reported, not scored: whether teacher-trained reads below do-nothing at each start",
+        "thresholds": {"reproduction_tol": 1e-4},
+        "relative": true,
+        "expected": {"W0": 1.0, "nothing": "t4b's ratios 2.18 / 1.67 / 1.33 at h0 / h1 / h2 (reproduced)", "plus_remainder": "t4b's 1.43 / 1.61 / 1.43 (reproduced)", "teacher_trained": "below do-nothing at h0, in E43's direction (E43, H100, h0: teacher training's own state read 0.61 of do-nothing's ratio and 0.39 of plus remainder's); no L40 reading exists, and E43 found a 21% batch-order spread at step 10"},
+        "lean": "mixed (low): between at h0, where t4b's plus remainder already reads below do-nothing; above at h2, where it reads above",
+        "blind_to": "batch orders other than 0 (the 21% spread is not resampled); the budget start; steps other than 10; why the L40 and H100 differ at step 10 (no H100 rerun)",
+        "positive_control": "the two reproductions of t4b, plus C0 and t4b's gates",
+        "noise_floor": "0 at 17 digits for repeated L40 readings (see reproduction); W0's start spread f = 0.209",
+        "edges": "ties on either end count as between; an incomplete or non-finite state makes the stage unscored; reproduction fails on a missing start, a zero reference or no t4b file (tests/test_claim_tests.py test_t4c, test_reproduces)"
+      }
+    ]
   }
 }
