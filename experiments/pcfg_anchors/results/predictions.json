@@ -1,9 +1,8 @@
 {
   "experiment": "E55 pcfg_anchors, Stage A (A1 controls on the pretrained LOW, HIGH, NEVER; A2 fine-tune readings) and Stage C pass bars",
-  "filed": "2026-10-29, before any run of experiments/pcfg_anchors/run.py a1 (second filing the same day, still before any run: edge cases E1-E11, the resolved ambiguities and the behaviour floors from the code review, accepted by the lead); never edited after the run (a dated report instead). A2 bars are added, dated, after A1 and before A2, by the rule in 'bar_rule'. Third filing 2026-10-29, after the a1 pretrainings and before any run of a1c-patch, a1c-probe or a2 (code review reports/reviews/2026-10-29_review_e55-a1c-a2-code.md, lead's decisions): edge cases E12-E14 (l* candidates, the bar's lo, the binomial n), the a1c split into two output files, PA2's count_a + 1 floor and PA3's blind_to on the spurious rows. Filing, not refiling: no reading these rules touch exists yet.",
+  "filed": "2026-10-29, before any run of experiments/pcfg_anchors/run.py a1 (second filing the same day, still before any run: edge cases E1-E11, the resolved ambiguities and the behaviour floors from the code review, accepted by the lead); never edited after the run (a dated report instead). A2 bars are added, dated, after A1 and before A2, by the rule in 'bar_rule'. Third filing 2026-10-29, after the a1 pretrainings and before any run of a1c-patch, a1c-probe or a2 (code review reports/reviews/2026-10-29_review_e55-a1c-a2-code.md, lead's decisions): edge cases E12-E14 (l* candidates, the bar's lo, the binomial n), the a1c split into two output files, PA2's count_a + 1 floor and PA3's blind_to on the spurious rows. Filing, not refiling: no reading these rules touch exists yet. Fourth filing 2026-10-29, after a1c-patch and a1c-probe and before any run of a2: the A2 bars (a2_bars), copied unchanged from results/a1c_patch.json.",
   "plan": "reports/plans/2026-10-29_plan_reuse-stage1.md (Revision 1): Stage A 'The two checks', 'Bars', 'Rule', 'Possession', A1 table, A2 readings, Predictions PA1-PA4; Stage C 'Pass bar' and Predictions PC1-PC4",
   "units": "All accuracies, B, P and probe accuracies are fractions in [0, 1] (the plan's percentages / 100). Table 6 cells in PA2 are in percentage points, as the paper prints them.",
-
   "definitions": {
     "position": "`=` (pcfg.ART_POS = 256), the position whose next-token prediction is the answer (pcfg.ANS = 257). Every behaviour read, probe and patch reads or writes here; 'output' = argmax of the logits at `=`.",
     "prefix": "'C a 40' = Counter family, operand a, window O' = 40 (count over the last 40 text tokens); 'C b 40' likewise for b.",
@@ -29,16 +28,48 @@
     "margin": "m(model, f_C, block) = probe accuracy - max(control accuracies at that block); s = sd of m over 3 probe seeds at that block (floored, edge_cases.E3). m_plus = LOW's count-a margin at its best block (argmax m), with s_plus its s.",
     "possession": "Possessed iff at some block m >= 3 s and m >= 0.5 x m_plus. Void (no reading) iff m_plus < 6 s_plus (see edge_cases.E4)."
   },
-
   "bar_rule": {
     "rule": "For each of the four checks (B_a, P_a, B_b, P_b): n0 = null reference mean over 3 independent sample sets; p_plus = positive reference; s = max(sd of the null over the 3 sets, binomial sd sqrt(n0 (1 - n0) / n)), floored per edge_cases.E2, n = the samples the null reads (B: 1,000 qualifying inputs; P: the fewest pairs built over the 3 sets, >= 500; edge_cases.E14). lo = n0 + max(3 s, 0.1 (p_plus - n0)) (edge_cases.E13); hi = n0 + 0.5 (p_plus - n0). If hi <= lo the check is void for the whole stage: stop (apparatus).",
     "relative_or_absolute": "lo and hi are absolute fractions computed from measured references (relative to n0 and p_plus); once filed they are fixed numbers.",
     "label_rule": "An arm state 'goes through f_C' iff B > hi_B and P > hi_P; 'does not go through f_C' iff B < lo_B and P < lo_P; else 'neither'. Strict inequalities because the plan files 'ties at a bar count as neither' (edge_cases.E5). A check whose reference failed is void for that arm (edge_cases.E7), and an arm with a void check reads 'neither'. Fewer than 500 qualifying pairs for P -> P void -> 'neither'."
   },
   "a2_bars": {
-    "status": "to be filed from A1 (results/a1c_patch.json a2_bars, copied with l_star_a and l_star_b) by rule lo = n0 + max(3 s, 0.1 (p+ - n0)), hi = n0 + 0.5 (p+ - n0), before A2 runs"
+    "l_star_a": 5,
+    "l_star_b": 5,
+    "B_a": {
+      "n0": 0,
+      "s": 0.0009994998749374609,
+      "p_plus": 0.99975,
+      "lo": 0.09997500000000001,
+      "hi": 0.499875,
+      "void": false
+    },
+    "P_a": {
+      "n0": 0,
+      "s": 0.0009994998749374609,
+      "p_plus": 0.9656666666666668,
+      "lo": 0.09656666666666669,
+      "hi": 0.4828333333333334,
+      "void": false
+    },
+    "B_b": {
+      "n0": 0.269,
+      "s": 0.014525839046333934,
+      "p_plus": 1,
+      "lo": 0.3421,
+      "hi": 0.6345000000000001,
+      "void": false
+    },
+    "P_b": {
+      "n0": 0,
+      "s": 0.0009994998749374609,
+      "p_plus": 1,
+      "lo": 0.1,
+      "hi": 0.5,
+      "void": false
+    },
+    "filed": "2026-10-29 (fourth filing), copied unchanged from results/a1c_patch.json a2_bars (commit 55da119, jobs 44306 44307) by the rule in bar_rule, before any run of a2"
   },
-
   "PA1": {
     "claim": "A1 (pretrained LOW, HIGH, NEVER, before any fine-tune) reads as tabled in the plan's A1 table.",
     "lean": "high for the behaviour rows (Table 6: LOW 99.9 / 5.2, HIGH 99.8 / 99.7); medium for the probe-margin and patch rows (no prior patching on PCFG).",
@@ -93,10 +124,19 @@
     "positive_control": "LOW's count-a (behaviour 99.9% in Table 6; probe m_plus; P_a_positive) and HIGH's count-b.",
     "noise_floor": "behaviour: binomial at 4,000; probe: s over 3 probe seeds; patch: sd over 3 sets of 1,000 pairs, floored at the binomial sd (edge_cases.E2)."
   },
-
   "PA2": {
     "claim": "The fine-tunes reproduce Table 6: count-b accuracy on C_Te = 0 at 10K iterations is within 15 points of Table 6 in >= 7 of the 9 10K cells.",
-    "cells_table6_10K_percent": {"N1": 100, "N2": 99.9, "N3": 100, "W2": 1.9, "M": 99.8, "M2": 99.1, "M3": 93.9, "W1": 0, "R": 99.9},
+    "cells_table6_10K_percent": {
+      "N1": 100,
+      "N2": 99.9,
+      "N3": 100,
+      "W2": 1.9,
+      "M": 99.8,
+      "M2": 99.1,
+      "M3": 93.9,
+      "W1": 0,
+      "R": 99.9
+    },
     "measurement": "answer_accuracy of the arm's 10K state on fresh C_Te = 0 'C b 40' rows, all rows (as Table 6 and A1), argmax at `=`, x100. n = 4,000 (A1's eval_n; the plan does not state A2's n, see ambiguities_resolved). FT seed 0 for every arm.",
     "threshold": "cell within iff |acc_percent - Table6_percent| <= 15 (absolute points, inclusive); PA2 holds iff >= 7 of 9 cells within.",
     "relative_or_absolute": "absolute",
@@ -108,7 +148,6 @@
     "positive_control": "A1's behaviour rows (same accuracy code, LOW and HIGH bases against Table 6).",
     "noise_floor": "binomial sd at 4,000 <= 0.8 points; FT seed noise from the second seeds of W1 and N1, reported, not used."
   },
-
   "PA3": {
     "claim": "W1 and W2 read 'through count-a' at both states (1K, 10K); N1 reads 'not through count-a' at both states; R reads 'through count-b'.",
     "measurement": "label_rule on B and P at `=` for each state, with the A2 bars filed from A1: count-a checks (B_a, P_a at l*_a) for W1, W2, N1; count-b checks (B_b, P_b at l*_b) for R. B on qualifying 'C b 40' inputs; P on 1,000 pairs. R is read at its 10K state (the plan counts R as one state; see ambiguities_resolved).",
@@ -121,7 +160,6 @@
     "positive_control": "P_a_positive and P_b_positive in A1; R within A2 for count-b.",
     "noise_floor": "s of each check (bar_rule); FT seed noise from W1 and N1 second seeds, reported, not used for bars."
   },
-
   "PA4": {
     "claim": "LOW possesses count-b (Def 1): its count-b probe at `=` on 'C b 40' clears the possession rule at some block.",
     "measurement": "possession rule (definitions.possession) on LOW, f_C = count-b, controls = shuffled-label probe, s over 3 probe seeds; held-out n = 2,000; majority-class rate reported.",
@@ -134,7 +172,6 @@
     "noise_floor": "s over 3 probe seeds (floored, edge_cases.E3). FT seed noise (two seeds of W1 and N1) is reported, not used for bars.",
     "void": "m_plus < 6 s_plus, or m_plus <= 0 (edge_cases.E4) -> PA4 unscored (and A1 stops, PA1)."
   },
-
   "stage_C": {
     "pass_bar": "a = smallest count with P(Binomial(n, 0.5) >= a) <= 0.05, raised to (majority truth-class count + 1) if higher. Instrument passes iff agreements >= a. n = labelled LOW states ('neither' excluded) not voided for that instrument; + R for steering only. Truth 'through count-a' (R: 'through count-b') = existing.",
     "checked_values": "n = 8 -> 7 (9/256 = 0.035); 12 -> 10 (79/4096 = 0.019); 14 -> 11 (470/16384 = 0.029); 16 -> 12 (2517/65536 = 0.038; 11 gives 0.105). Before the majority raise.",
@@ -147,7 +184,6 @@
     "instrument_rules": "As the plan states (Stage C, C1/C2); each is blind to 'neither' arms. A failed instrument baseline voids that arm for that instrument (n shrinks), never a vote.",
     "fewer_than_8": "Fewer than 8 labelled states -> C1 reported without pass bars; C2 not proposed (decision tree 3)."
   },
-
   "edge_cases": {
     "E1_B_b_null_missing": "INCOMPLETE in the plan: the A1 references give no null for B on count-b (only the count-b patch null). Without it B_b's lo/hi, and so R's PA3 reading, cannot be computed. Filed: B_b null = B for count-b (outputs == count_b) on LOW, prefix 'C b 40', qualifying inputs (the arms' base on the arms' task; Table 6 puts it near 0.05).",
     "E2_zero_spread": "DEGENERATE: a null of exactly 0 with identical sets gives s = 0 (binomial sd sqrt(0) = 0), so lo = 0 and, with ties as 'neither', 'not through' becomes impossible. Filed: the binomial sd uses n0 clipped to [1/1000, 1 - 1/1000], so s >= sqrt(0.001 x 0.999 / 1000) = 0.0010 and lo >= n0 + 0.0030.",
@@ -164,7 +200,6 @@
     "E13_bar_lo_zero_null": "DEGENERATE (code review 2026-10-29, risk 3): a null of exactly 0 (e.g. B_a on NEVER, which never answers count_a + 1 on qualifying inputs) gives s at E2's floor and lo = 0.0030, so an N state with ~1% off-by-one answers (counts sit in 9-17, so a +-1 error often lands on count_a + 1) reads 'neither' for a trivial reason, a PA3 miss that is not a reuse finding. Filed: lo = n0 + max(3 s, 0.1 (p_plus - n0)); hi unchanged (n0 + 0.5 (p_plus - n0)); void iff hi <= lo as before. Since 0.1 < 0.5, the new term alone never voids a bar. Filed before any a1c run.",
     "E14_binomial_n": "The binomial sd floor (E2, used by l* and the bars) was computed at a fixed n = 1,000, while P may rest on 500-999 pairs. Filed: n = the samples actually read: for B, the 1,000 qualifying inputs; for P (the P bars and l*), the fewest pairs built over the 3 sets (>= 500, else P is void, E6). Filed before any a1c run."
   },
-
   "ambiguities_resolved": [
     "Block indexing for l* and the probes: whether the embedding output (before block 1) is a candidate; filed: block outputs 1..6 (the embedding output is not a candidate).",
     "n for B in A2 is not stated; the bar's binomial sd assumes 1,000. Filed: B on the first 1,000 qualifying inputs of the evaluation stream.",
@@ -173,6 +208,5 @@
     "run.py a1 writes only behaviour and its floors (results/a1_<prior>.json); the probe and patch numbers and the B nulls need A1 code not yet written (run.py's comment at line 147 still names the pre-revision rows: count-c selectivity, ablation). Their output fields are to be named when that code is written.",
     "The plan's context length is 262; pcfg.py's SEQ is 259 (ANS = 257, 2 after). Not a prediction issue; noted."
   ],
-
   "not_run": "Edge cases were worked by hand against the rules above (no code yet implements the bars, probe or patch); the Stage C binomial values were checked by hand."
 }
