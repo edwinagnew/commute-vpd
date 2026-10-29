@@ -98,7 +98,7 @@ def main() -> None:
     R = json.loads(Path(sys.argv[1] if len(sys.argv) > 1 else HERE / "results" / "baseline_neurons.json").read_text())
     FIG.mkdir(exist_ok=True)
     states = list(R["b2"])
-    grid = [int(k) for k in R["b2"][states[0]]["shares"]]
+    grid = sorted(int(k) for k in R["b2"][states[0]]["shares"])
     curves(R, grid, {n: [R["b2"][n]["shares"][str(k)] for k in grid] for n in states},
            "P1: patching the top-k neurons (k50 = first k at share 0.5)", "neurons patched, k", FIG / "p1_neuron_patch.png", logx=True)
     strip(R, {n: R["b2"][n]["idle_share"] for n in states}, "P2: top-16 neurons idle at W0", "idle share",
