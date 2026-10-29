@@ -146,13 +146,20 @@ def to_disk(arrays: dict[str, Tensor]) -> dict[str, Tensor]:
     return {k: (v if k.startswith("pos_") else v.float()).cpu().contiguous() for k, v in arrays.items()}
 
 
+def pieces(X: Tensor, U: Tensor, V: Tensor) -> tuple[Tensor, Tensor]:
+    """A stored split's applied pieces dU = X V, dV = Xᵀ U: formed in float64 from X as given (fp32 from S's file),
+    then rounded to fp32, the dtype the forward's components hold; returned float64 so that dσ of them is what the
+    forward effectively applies. Not formed in fp32: X's condition (up to 6e5 on mlp.up_proj) amplifies the
+    product's rounding past STORE_ERR_MAX (results/diag_stored.jsonl, 2026-10-28)."""
+    X, U, V = X.double(), U.double(), V.double()
+    return (X @ V).float().double(), (X.T @ U).float().double()
+
+
 def stored_error(X: Tensor, U: Tensor, V: Tensor, S: Tensor, E: float) -> float:
-    """‖dσ(pieces from X, U, V in fp32, as `site_change` builds them) − dσ(the same in float64)‖_Σ / ‖δW‖_Σ: what the
-    stored precision costs the applied state (0 for δW = 0)."""
-    exact = split.dsigma(X @ V, X.T @ U, U, V)
-    X32, U32, V32 = X.float(), U.float(), V.float()
-    applied = split.dsigma(X32 @ V32, X32.T @ U32, U32, V32).double()
-    return (split.weighted_energy(applied - exact, S) / E) ** 0.5 if E > 0 else 0.0
+    """‖dσ(`pieces` of X stored fp32) − dσ(X V, Xᵀ U in float64)‖_Σ / ‖δW‖_Σ, X, U, V float64: what the stored
+    precision costs the applied state, as `site_change` builds it (0 for δW = 0)."""
+    off = split.dsigma(*pieces(X.float(), U, V), U, V) - split.dsigma(X @ V, X.T @ U, U, V)
+    return (split.weighted_energy(off, S) / E) ** 0.5 if E > 0 else 0.0
 
 
 def site_products(M: Tensor, U_A: Tensor, V_A: Tensor, S: Tensor, b: split.Basis,
@@ -203,8 +210,9 @@ def site_products(M: Tensor, U_A: Tensor, V_A: Tensor, S: Tensor, b: split.Basis
 
 def site_change(name: str, M: Tensor | None, U_A: Tensor, V_A: Tensor, p: Callable[[str], Tensor] | None,
                 c: float, a: float, RU: Tensor | None = None, RV: Tensor | None = None) -> SiteChange:
-    """One site of state `name` (`STATES`), all tensors on one device and dtype. M: the site's δW (None: zero, the
-    site is unchanged in every state). p(key): S's arrays for the site. RU, RV: control (ii)'s unscaled pieces."""
+    """One site of state `name` (`STATES`), all tensors on one device, float64 (`applied` casts to the forward's
+    dtypes). M: the site's δW (None: zero, the site is unchanged in every state). p(key): S's arrays for the site.
+    RU, RV: control (ii)'s unscaled pieces."""
     if name == "W0" or M is None:
         return NONE
     if name == "do_nothing":
@@ -218,13 +226,11 @@ def site_change(name: str, M: Tensor | None, U_A: Tensor, V_A: Tensor, p: Callab
         return split.dsigma(dU, dV, U_A, V_A) + dU @ dV.T, None, dU, dV
     assert p is not None, name
     if name in ("ls", "inspan"):
-        X = p("X_ls").to(M)
-        dU, dV = X @ V_A, X.T @ U_A
+        dU, dV = pieces(p("X_ls").to(M.device), U_A, V_A)
         w = M if name == "ls" else split.dsigma(dU, dV, U_A, V_A)  # = δW − O(δW), up to S's stored_error
         return w, None, dU, dV
     pos = p(f"pos_{name}").to(M.device)
-    X = p(f"X_{name}").to(M)
-    return M, pos, X @ V_A[:, pos], X.T @ U_A[:, pos]
+    return M, pos, *pieces(p(f"X_{name}").to(M.device), U_A[:, pos], V_A[:, pos])
 
 
 @contextmanager
