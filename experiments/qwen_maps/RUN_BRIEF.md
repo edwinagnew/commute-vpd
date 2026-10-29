@@ -43,7 +43,8 @@ the pod fetches them and the decomposition, so any H100 in any region works. Sec
 - **Fetch, while `uv sync` builds the venv** (both need `WANDB_API_KEY`; no torch), in two background processes teed
   to the console: `PYTHONPATH=src uv run --no-project --with wandb==0.23.1 python -m commute.qwen_files /root/qwen`
   (~20 min at ~45 MB/s) and `PYTHONPATH=src uv run --no-project --with wandb==0.23.1 python -m commute.qwen_e40_files
-  fetch /root/e40_nowarmup` (~5 min; ends with `sha256sum -c`, so exit 0 means the four files match the cluster's).
+  fetch /root/e40_nowarmup vN` (vN: the version the upload job printed, `RUN_BRIEF_regen.md` job 2; ~5 min; exit 0
+  means the four files match `results/regen_SHA256SUMS`, committed from the cluster run, which the sync must carry).
   Check `ls -l /root/e40_nowarmup/dW/`: `step_{1,10,100}.safetensors` 2.82 GB each, `step_100_fp32.safetensors` 5.64 GB.
 - **Small inputs**: as section 2 (the W0 sources, g statistics and step-0 answers from `qwen_sft/nowarmup/`, which do
   not depend on δW).

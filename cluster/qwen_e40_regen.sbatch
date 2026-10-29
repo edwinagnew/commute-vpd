@@ -2,7 +2,8 @@
 # E44's input remade: E40's no-warm-up δW at steps 1, 10, 100 on one cluster L40, debug QoS, $0
 # (experiments/qwen_maps/regen.py; brief experiments/qwen_maps/RUN_BRIEF_regen.md). Submit from the clone root:
 #   sbatch --export=ALL,PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True cluster/qwen_e40_regen.sbatch [--pause 50]
-# Exit 0 done, and dW/SHA256SUMS written; 2 step 1 off E40 (STOP, results/regen.json "stopped"); 3 paused at a
+# Exit 0: every check held, dW/SHA256SUMS written and copied to results/regen_SHA256SUMS (commit it); 2 a check
+# missed (STOP, results/regen.json "stopped", no sums, the upload refuses); 3 paused at a
 # checkpoint (resubmit the same command). Files: $OUT/dW/step_{1,10,100}.safetensors, step_100_fp32.safetensors.
 #SBATCH --job-name=commute-qwen_e40_regen
 #SBATCH --partition=compute
@@ -26,7 +27,8 @@ set +e
 status=$?
 if [ $status -eq 0 ]; then
   (cd "$OUT/dW" && sha256sum step_1.safetensors step_10.safetensors step_100.safetensors step_100_fp32.safetensors \
-    > SHA256SUMS && cat SHA256SUMS && ls -l) || status=1
+    > SHA256SUMS && cat SHA256SUMS && ls -l) && cp "$OUT/dW/SHA256SUMS" experiments/qwen_maps/results/regen_SHA256SUMS \
+    || status=1
 fi
 echo "=== FINISHED (exit $status) ==="
 exit $status
