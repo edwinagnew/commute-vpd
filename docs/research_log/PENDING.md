@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-10-29 baseline-lead · reports/analyses/2026-10-29_analysis_e52-baseline-neurons.md (43d919a, independent check) · e52 card, decision-e52-p4 card · narrow "no small set of neurons carries either" to "the most-shifted neurons up to 256 carry at most 0.24 of the gain"; copy target after 16 examples is about 3e-4 to 4e-4 (1 in 3,000), not 1 in 10,000; "within 0.03 of zero" -> "within 0.031".
