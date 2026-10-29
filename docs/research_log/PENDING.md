@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-10-29 · decisions.md (Limit of the elicitation reading) · overview Line 2 (one standing caveat sentence, plain words), claims (beside re-gating claims), glossary 'elicits'/'re-gating' entry · RE-QUEUED: the v110 flush dropped it. A new mechanism built from subcomponents W₀ already has, put together under new gating, reads as 'elicited' to VPD, because VPD's unit is the rank-one subcomponent, not the circuit; the user asked for this to stay in view.
