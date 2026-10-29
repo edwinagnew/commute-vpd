@@ -977,3 +977,39 @@
 [ 1124.4s] [P] rules {"fewshot": {"gain": -0.033203125, "se": 0.01731454302534675, "qualifies": false}, "recheck": {"gain": 0.015625, "se": 0.015625, "qualifies": false}, "givens": {"gain": 0.01171875, "se": 0.01634878050704065, "qualifies": false}}; chosen None
 [ 1124.4s] [check] P: a prompt qualifies: MISSED {"with": 0.033203125, "without": 0, "qualifies": false}
 [ 1124.4s] STOP: P: a prompt qualifies
+[    4.1s] [check_format ] start; NVIDIA L40
+[  209.6s] [check_format] W0 under fewshot: {"strict": 0.75, "gold_loss": 2.495208230722153, "response_mean": 143.4453125, "truncated": 0, "strict_minus_w0": 0.0, "loss_minus_w0": 0.0} (202 s, peak GPU 45.0 GB, host 11.0 GB)
+[  505.4s] [check_format] a2long_s0_step_100 under fewshot: {"strict": 0.74609375, "gold_loss": 1.2051264962494093, "response_mean": 154.30859375, "truncated": 0.015625, "strict_minus_w0": -0.00390625, "loss_minus_w0": -1.2900817344727435} (296 s, peak GPU 45.2 GB, host 11.0 GB)
+[  815.8s] [check_format] a2long_s0_step_300 under fewshot: {"strict": 0.703125, "gold_loss": 1.2211478319350002, "response_mean": 149.98828125, "truncated": 0.01171875, "strict_minus_w0": -0.046875, "loss_minus_w0": -1.2740603987871526} (310 s, peak GPU 45.2 GB, host 11.0 GB)
+[ 1140.4s] [check_format] a2long_s1_step_100 under fewshot: {"strict": 0.734375, "gold_loss": 1.1972747676976905, "response_mean": 145.453125, "truncated": 0.01953125, "strict_minus_w0": -0.015625, "loss_minus_w0": -1.2979334630244623} (325 s, peak GPU 45.2 GB, host 11.0 GB)
+[ 1355.6s] [check_format] a2long_s1_step_300 under fewshot: {"strict": 0.765625, "gold_loss": 1.215465730887271, "response_mean": 140.640625, "truncated": 0, "strict_minus_w0": 0.015625, "loss_minus_w0": -1.2797424998348819} (215 s, peak GPU 45.2 GB, host 11.0 GB)
+[ 1355.6s] [check_format] done; peak GPU 45.2 GB, host 11.0 GB
+[    3.4s] [S own] start; NVIDIA L40
+[  133.6s] [S own] batch 1/24 (86 prompts x 4): 130 s; projected 3110 s in all; peak GPU 37.8 GB, host 4.5 GB
+[  266.0s] [S own] batch 2/24 (86 prompts x 4): 132 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[  383.9s] [S own] batch 3/24 (86 prompts x 4): 118 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[  504.0s] [S own] batch 4/24 (86 prompts x 4): 120 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[  619.0s] [S own] batch 5/24 (86 prompts x 4): 115 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[  746.4s] [S own] batch 6/24 (86 prompts x 4): 127 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[  862.4s] [S own] batch 7/24 (86 prompts x 4): 116 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[  984.9s] [S own] batch 8/24 (86 prompts x 4): 123 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[ 1112.6s] [S own] batch 9/24 (86 prompts x 4): 128 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[ 1232.9s] [S own] batch 10/24 (86 prompts x 4): 120 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[ 1345.6s] [S own] batch 11/24 (86 prompts x 4): 113 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[ 1465.7s] [S own] batch 12/24 (86 prompts x 4): 120 s; projected 3176 s in all; peak GPU 38.9 GB, host 4.5 GB
+[ 1465.7s] BUDGET: 1466 s used; resubmit the same command to continue
+[    3.7s] [S own] start; NVIDIA L40
+[  124.3s] [S own] batch 13/24 (86 prompts x 4): 121 s; projected 2893 s in all; peak GPU 36.1 GB, host 4.5 GB
+[  242.4s] [S own] batch 14/24 (86 prompts x 4): 118 s; projected 2893 s in all; peak GPU 36.2 GB, host 4.5 GB
+[  365.2s] [S own] batch 15/24 (86 prompts x 4): 123 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[  463.8s] [S own] batch 16/24 (86 prompts x 4): 99 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[  581.5s] [S own] batch 17/24 (86 prompts x 4): 118 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[  700.7s] [S own] batch 18/24 (86 prompts x 4): 119 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[  820.0s] [S own] batch 19/24 (86 prompts x 4): 119 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[  935.1s] [S own] batch 20/24 (86 prompts x 4): 115 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[ 1055.9s] [S own] batch 21/24 (86 prompts x 4): 121 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[ 1177.4s] [S own] batch 22/24 (86 prompts x 4): 121 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[ 1292.4s] [S own] batch 23/24 (86 prompts x 4): 115 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[ 1326.6s] [S own] batch 24/24 (86 prompts x 4): 34 s; projected 2947 s in all; peak GPU 37.1 GB, host 4.5 GB
+[ 1327.0s] [score] {"own_accuracy": {"n": 0, "diff": null, "holds": false}, "own_length": {"ratio": null, "holds": false}, "gold_length": {"ratio": 0.47763877042878944, "holds": true}, "anchor1_learns_s0": {"gap": null, "holds": false}, "anchor2_learns_s0": {"invented": 0.319, "known": 1, "known_w0": 0.97, "holds": false}, "anchor1_learns_s1": {"gap": null, "holds": false}, "anchor2_learns_s1": {"known_w0": 0.97, "holds": false}, "amend1_anchor2_learns_s0": {"invented": 0.999, "known": 1, "known_w0": 0.97, "at_100": {"invented": 0.91, "known": 1}, "holds": true}, "amend1_anchor2_learns_s1": {"invented": 1, "known": 0.99, "known_w0": 0.97, "at_100": {"invented": 0.905, "known": 0.99}, "holds": true}}
+[ 1327.0s] [S] done; peak GPU 37.1 GB, host 4.5 GB
