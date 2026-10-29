@@ -39,9 +39,10 @@ class Config:
     l40_f: float = 0.20877548446862537
     f_repro_tol: float = 1e-3  # one harness start: f = l40_f when W0 reproduces its L40 KL within this, relative
     # C0, faith_score.w0_check's rule per harness start read: PGD within 10% of the reference, CI within 2%, f <= 0.25.
-    # Rows 0-255: 0.69 at h0 (w0_check), the L40 values at h1, h2. Rows 256-511: broad_fragility Amendment 2 (H100).
+    # Rows 0-255: 0.69 at h0 (w0_check), the L40 values at h1, h2. Rows 256-511: h0 only, broad_fragility Amendment 2
+    # (H100; L40/H100 is 0.99 at h0 on rows 0-255 but 1.11 at h1, so no h1/h2 reference holds across cards there).
     pgd_ref: dict[int, dict[str, float]] = field(default_factory=lambda: {
-        0: {"h0": 0.69, "h1": 0.8362, "h2": 0.7049}, 256: {"h0": 0.6298, "h1": 0.6576, "h2": 0.6688}})
+        0: {"h0": 0.69, "h1": 0.8362, "h2": 0.7049}, 256: {"h0": 0.6298}})
     ci_ref: dict[int, float] = field(default_factory=lambda: {0: 0.348, 256: 0.3331})
     pgd_tol: float = 0.10
     ci_tol: float = 0.02
@@ -154,11 +155,11 @@ def c0(job: Job) -> None:
 
 def c0_checks(row0: int, hs: dict[str, float], ci: float | None, f: float, w0: dict[str, float]) -> dict[str, bool]:
     ref = CFG.pgd_ref[row0]
-    checks = {f"pgd_{s}": abs(v / ref[s] - 1) <= CFG.pgd_tol for s, v in hs.items()}
+    checks = {f"pgd_{s}": abs(v / ref[s] - 1) <= CFG.pgd_tol for s, v in hs.items() if s in ref}
     checks |= {"ci": ci is not None and abs(ci / CFG.ci_ref[row0] - 1) <= CFG.ci_tol, "floor": f <= CFG.floor_max}
-    if "budget" in w0 and "h0" in w0:
+    if "budget" in w0:  # against h0 read here, else its L40 value (t1b reads no h0; budget is read on rows 0-255 only)
         lo, hi = CFG.budget_band
-        checks["budget_vs_h0"] = lo <= w0["budget"] / w0["h0"] <= hi
+        checks["budget_vs_h0"] = lo <= w0["budget"] / w0.get("h0", CFG.l40_w0["h0"]) <= hi
     return checks
 
 
@@ -172,7 +173,8 @@ def resume(job: Job, w0: dict[str, Any]) -> None:
             sys.exit(f"{job.path} was written on {old['card']} with W0 {old['W0']['kl']}; this job: {job.card}, {job.w0}. "
                      "Move the file aside to start the stage again")
         job.out = {**old, "states": old.get("states", {}), "gates": old.get("gates", {})}
-        job.out.pop("stopped", None)
+        for k in ("stopped", "done", "score"):
+            job.out.pop(k, None)
         log(f"[resume] {job.path.name}: states done {sorted(job.out['states'])}")
     job.out["W0"] = w0
     job.dump()
