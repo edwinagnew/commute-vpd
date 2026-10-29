@@ -1,0 +1,84 @@
+{
+  "plan": "reports/plans/2026-10-28_plan_qwen-q0q1.md, 'Amendment record (2026-10-29, Amendment 1: layer-cut check)'",
+  "filed": "2026-10-29 (draft, not yet filed: the lead files it after the user has seen it, before any code runs); never edited after the run (add a dated report instead)",
+  "scored_by": "the Amendment 1 side script (not yet written), reading the numbers under `rules`",
+  "question": "Do Gamma's masks carry E40's step-10 update from the layers where the update acts (re-gating), or only once the fine-tuned model's late-layer activations reach Gamma (Gamma copying the fine-tuned model's output)?",
+  "general": "Thresholds are absolute unless a rule says 'relative'; <= and >= inclusive, < and > strict, as written; every comparison rounds to 9 places first; NaN, infinity or a missing value is a miss in every control rule and makes the verdict 'unreadable'; no re-reads; K and KL values are means over every position of the 16 rows (a mean over 4096 positions), and m, u, s are ratios of those means, never means of per-row ratios.",
+  "quantities": {
+    "rows": "the first 16 rows of experiments/qwen_sft/results/maths_rows.json, each cut to its first 256 tokens; batch 1",
+    "update": "E40's no-warm-up step-10 dW, the cluster regen copy (~/commute-data/results-large/qwen_sft/nowarmup_regen/dW/step_10.safetensors, bf16, sha256 in experiments/qwen_maps/results/regen_SHA256SUMS) or W&B qwen3-1.7b-e40-nowarmup-dW:v0, the same files; fine-tuned weights FT = W0 + dW in fp32 over the 196 decomposed matrices, as Job.ft builds them",
+    "taps and readouts": "Gamma's two inputs as qwen_vpd.clean_forward captures them: 29 taps (tap j < 28 = input of decoder layer j, tap 0 = embedding output, tap 28 = output of layer 27 before the final norm) and one readout x V per decomposed site (its nn.Linear's input times the original V)",
+    "cut(l)": "Gamma's inputs taken from FT's clean forward for everything before decoder layer l (taps 0..l and the readouts of every site in layers 0..l-1) and from W0's clean forward for the rest (taps l+1..28, readouts of layers l..27); l in {0, 8, 16, 24, 28}. cut(0) = W0's inputs exactly (tap 0 is the embedding, which FT does not change); cut(28) = FT's inputs exactly",
+    "K(l)": "KL(FT || masked model) where the masked model is qwen_vpd.masked_logits with W0's weights swapped in, the original components, Delta off (deltas=None) and masks = lower_importances(gamma, cut(l)); K(0) is the K(D) path of stage D, K(28) the do-nothing path",
+    "K_taps, K_reads": "the same with taps from FT and readouts from W0 (K_taps), or readouts from FT and taps from W0 (K_reads)",
+    "K_plain(W0), K_plain(FT)": "the same reading through the unchanged code path: qwen_vpd.importances(model, tokens, gamma, comps) with W0's (resp. FT's) weights swapped in, then masked_logits with W0's weights; the identity check of the splice",
+    "H(l)": "the unmasked model with FT's weights in the decomposed sites of layers 0..l-1 and W0's in layers l..27 (H(0) = W0, H(28) = FT)",
+    "KL_u(l)": "KL(FT || H(l)), unmasked",
+    "m(l)": "[K(0) - K(l)] / [K(0) - K(28)]: the share of the masks' reproduction reached when Gamma sees FT's activations only before layer l. m(0) = 0, m(28) = 1 by definition",
+    "u(l)": "[KL_u(0) - KL_u(l)] / KL_u(0): the share of the update's own output effect made by its first l layers (positive comparator for m). u(0) = 0, u(28) = 1 by definition",
+    "s_taps, s_reads": "[K(0) - K_taps] / [K(0) - K(28)] and [K(0) - K_reads] / [K(0) - K(28)]",
+    "floor f": "|a / b - 1| between two calls of the same plain W0 masked read (K_plain(W0)) on row 0, measured in stage 1"
+  },
+  "stages": "stage 1 (controls, alone, first): K_plain(W0) twice on row 0, then K(0), K(28), K_plain(W0), K_plain(FT), KL_u(0) on all 16 rows; written to amend1_controls.json; rules control_* scored; any miss stops the job. Stage 2: K(8), K(16), K(24), K_taps, K_reads, KL_u(8), KL_u(16), KL_u(24); written per reading as it finishes",
+  "rules": {
+    "control_floor": {
+      "prediction": 1,
+      "rule": "f <= 1e-3; the identity tolerance is then tol = max(1e-6, 10 x f)",
+      "basis": "1e-3 is E44's agreement bound (STORE_ERR_MAX and control_W0's 1% are looser); the same fp32 forward on the same card and row is expected to be bitwise equal, f = 0",
+      "if_misses": "stop after stage 1: the forward is not reproducible enough to read differences of a few hundredths"
+    },
+    "control_identity": {
+      "prediction": 2,
+      "rule": "relative: |K(0) / K_plain(W0) - 1| <= tol and |K(28) / K_plain(FT) - 1| <= tol",
+      "expected": "0 to the last digit (same tensors through the same functions); catches an off-by-one in the splice (tap l vs readouts of layer l)",
+      "if_misses": "stop after stage 1; fix the splice; rerun"
+    },
+    "control_effect": {
+      "prediction": 3,
+      "rule": "K(0) - K(28) >= 0.25 nats and K(28) / K(0) <= 0.2 and KL_u(0) >= 0.05 nats",
+      "expected": "E44 on 128 rows of 512 (results/D.json, step 10): K(0) = K(D) = 1.41555, K(28) = do-nothing K = 0.09325, gap 1.322, ratio 0.066; KL_u(0) about 0.5 (KL to start W0 || FT = 0.5211, results/C.json; the reverse direction on the same rows has no reference). These 16 rows cut to 256 tokens differ, so the limits are wide: the gap is the denominator of m and s, KL_u(0) of u",
+      "reported_beside": "K(0) / 1.41555 and K(28) / 0.09325 (no limit: different rows and lengths)",
+      "if_misses": "stop after stage 1: the masks' reproduction (or the update's effect) is not present on these rows, so the cut cannot be read; report to the lead"
+    },
+    "verdict": {
+      "prediction": 4,
+      "rule": "l* = 16 if u(16) >= 0.3, else 24 if u(24) >= 0.3, else none. l* none -> 'undecided: the update's output effect is made in the last layers, where a cut cannot tell reading the change from reading the output'. Else m(l*) >= 0.5 x u(l*) -> 're-gating' (the masks reproduce at least half of what the same layers' weights do); m(l*) < 0.5 x u(l*) -> 'copying'. Any of m(l*), u(l*), u(16), u(24) NaN or missing -> 'unreadable'",
+      "lean": "low; copying slightly favoured (Fable's advice section 1: the late taps nearly fix the next token, and Gamma reads all 29 together)",
+      "expected_re_gating": "m(l) within about 0.2 of u(l) at l = 8, 16, 24 (the masks keep pace with the layers that made the change)",
+      "expected_copying": "m(8) and m(16) <= 0.2 while u(16) >= 0.3; m rises only at l = 24 or 28; s_taps >= s_reads + 0.3",
+      "reported_not_scored": "m(l) and u(l) at every l; 'anticipation' when m(l*) >= u(l*) + 0.3 (early activations let Gamma reproduce more than the early weights make; still read as re-gating); 'non-monotone' when m(8) > m(16) or m(16) > m(24)"
+    },
+    "carrier": {
+      "prediction": 5,
+      "rule": "reported, scored only as stated: s_taps - s_reads >= 0.3 -> 'taps'; s_reads - s_taps >= 0.3 -> 'readouts'; else 'shared'. Either s NaN or missing -> 'unreadable'",
+      "expected": "copying predicts 'taps'; re-gating makes no prediction (readouts are each site's own input, but late sites' readouts are late activations too). s_taps + s_reads need not sum to 1"
+    },
+    "early": {
+      "memory": "GPU peak after row 0 of stage 1 over 44 GB (L40 46 GB) -> stop and report; no batch or length change in the job",
+      "dW_file": "step_10.safetensors absent or its sha256 not the committed one in regen_SHA256SUMS -> stop",
+      "time": "stage 1 not finished by 15 min of wall time -> stop (stage 2 would not fit the 30-min debug limit)"
+    }
+  },
+  "blind_to": "A Gamma that reads the change but only from a consistent set of inputs: the spliced inputs (FT before l, W0 after) are a combination Gamma never saw in training, so such a Gamma reads as 'copying'; a 'copying' verdict is therefore an upper bound on copying, a 're-gating' verdict is not weakened by it. Also blind to rows beyond these 16 (no row-sampling noise rule; per-row values are saved and reported)",
+  "edge_cases": {
+    "note": "each rule run by hand on these cases before filing; results as filed here",
+    "floor_zero": "f = 0 (bitwise equal): tol = 1e-6",
+    "floor_at_limit": "f = 1e-3 exactly: holds, tol = 1e-2",
+    "identity_tie": "ratio exactly 1 + tol: holds",
+    "identity_zero_plain": "K_plain(W0) = 0 or K_plain(FT) = 0: the ratio is undefined: miss",
+    "control_missing": "any stage-1 value missing or NaN: miss, stop",
+    "effect_ties": "gap exactly 0.25, ratio exactly 0.2, KL_u(0) exactly 0.05: hold",
+    "effect_K0_zero": "K(0) = 0: the gap rule already misses (gap <= 0 < 0.25); the ratio is not read",
+    "verdict_u_tie": "u(16) = 0.3 exactly: l* = 16",
+    "verdict_m_tie": "m(l*) = 0.5 x u(l*) exactly: 're-gating'",
+    "verdict_both_u_small": "u(16) < 0.3 and u(24) < 0.3: 'undecided', the run is still reported",
+    "verdict_u_out_of_range": "u > 1 would need KL_u(l) < 0, impossible; u < 0 (H(l) further from FT than W0 is) falls under u < 0.3: that cut is not used",
+    "verdict_m_negative": "m(l*) < 0 (the spliced masks move the masked model away from FT): 'copying' when u(l*) >= 0.3",
+    "verdict_m_above_one": "m(l*) > 1: 're-gating' (and 'anticipation' if >= u + 0.3)",
+    "verdict_non_monotone": "m(8) > m(16): the verdict reads only l*; flagged 'non-monotone', not scored",
+    "verdict_nan": "m or u at l* NaN: 'unreadable'; u(16) NaN with u(24) valid: 'unreadable' (no fall-through on a NaN)",
+    "zero_denominators": "K(0) - K(28) and KL_u(0) are bounded below by control_effect before m, s or u are computed; a stage 2 never runs on a zero denominator",
+    "carrier_tie": "s_taps - s_reads = 0.3 exactly: 'taps'; = -0.3 exactly: 'readouts'",
+    "stage2_cut_short": "the job ends (time limit) after some stage-2 readings: the verdict is scored on what was written if m(l*) and u(l*) exist, else 'unreadable'; never extrapolated"
+  }
+}
