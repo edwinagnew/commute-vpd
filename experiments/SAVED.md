@@ -5,6 +5,14 @@ Patterns: `{S}` seed, `{N}` step, `{R}` LoRA rank, `{T}` task (`emoticon` or a l
 Common terms: **arm A** = Adam, batch 32, clip 1, kl_lambda 1, on the task's trigger windows (`finetune.ArmAConfig`). **dW dict** = `{matrix: delta-W}` for all 24 matrices, fp32, CPU (113 MB). **CT state** = `{matrix: (delta-W, U2, V2)}` in theory layout, from `component_training.train` (234 MB). **offsets file** = `{"offsets": {matrix: (dU, dV) bf16}, "layout", **meta}` from `arms.save_offsets`; rebuild it with `saved_states.offsets_state(p, alive_uv)`. **sources** = `{matrix: (C+1,) levels in [0,1]}`, the last entry being Delta's, from `gamma.pgd_sources`. **shift file** = `{"shift": {matrix: (C,)}, "shift_null": ...}`; load it with `turned_down.load_shift(p)`.
 Emoticon windows and alive masks always come from `transport_test/results/large/` (see the transport_test section).
 
+## Network volume (RunPod `/workspace`)
+One row per directory a run wrote there, added by the lead from the pod-runner's report, with the run, the size and
+what it holds. A path a plan or brief names that no run created gets a row saying so: `/workspace/e40_nowarmup` was
+named only in E40 Amendment 1, which never ran, and a plan writer had to dig through `run.log` to find that (friction 68).
+- `/workspace/e40/`: E40's saves (`reports/plans/2026-10-28_plan_qwen-sft.md` section 5 lists what was planned),
+  e.g. `dW/step_1.safetensors`. Contents not yet listed here from a run report.
+- `/workspace/e40_nowarmup/`: never created (E40 Amendment 1 did not run).
+
 ## adjoint_sgd
 - Logs only: `full_{A..E}.log` (shards), `full_amend3_r{0,1}_*.log`, `full_amend3_emo_*.log`. No script here saves tensors, and every state is regenerated in-job (see the run.py docstring: arm A Adam 3e-5 / 3e-6 and SGD 0.01, 1000 steps, seeds 0/1).
 

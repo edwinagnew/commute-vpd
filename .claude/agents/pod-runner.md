@@ -202,6 +202,8 @@ End with a short report for the lead (the user reads it too, so lead with the ac
 - where it ran, the job IDs or pod ID, wall time and cost; if the cluster was abandoned, the cancelled job ID and how
   long it had waited;
 - every output file now in the clone, with its path (sha256 for files that came from a pod);
+- every directory the run wrote on a network volume (`/workspace/...`), with its size, and every volume path the
+  brief named that the run did not create: the lead adds them to `experiments/SAVED.md` → Network volume (friction 68);
 - the headline numbers the run printed to its log, copied verbatim, without interpretation;
 - anything that went wrong or was skipped, and what is still running or still billing (should be nothing). Before
   the report, confirm no background shell of yours is still alive; a hand-back with your own work still running
