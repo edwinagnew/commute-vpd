@@ -967,3 +967,13 @@
 [  184.9s] [E a2long_s1] generation at 300: {"test": {"k": 256, "k_fits": 252, "fits_share": 0.984375, "truncation_share": 0.015625, "strict_dropped": 0.1626984126984127, "lenient_dropped": 0.1865079365079365, "strict_all": 0.16015625, "strict_capped": 0.16015625, "lenient_capped": 0.18359375, "response_mean": 23.16015625}, "facts": {"invented": 1, "known": 0.99}}
 [  184.9s] [score] {"own_accuracy": {"n": 0, "diff": null, "holds": false}, "own_length": {"ratio": null, "holds": false}, "gold_length": {"ratio": 0.47763877042878944, "holds": true}, "anchor1_learns_s0": {"gap": null, "holds": false}, "anchor2_learns_s0": {"invented": 0.319, "known": 1, "known_w0": 0.97, "holds": false}, "anchor1_learns_s1": {"gap": null, "holds": false}, "anchor2_learns_s1": {"known_w0": 0.97, "holds": false}, "amend1_anchor2_learns_s0": {"invented": 0.999, "known": 1, "known_w0": 0.97, "at_100": {"invented": 0.91, "known": 1}, "holds": true}, "amend1_anchor2_learns_s1": {"invented": 1, "known": 0.99, "known_w0": 0.97, "at_100": {"invented": 0.905, "known": 0.99}, "holds": true}}
 [  184.9s] [E] done; peak GPU 29.8 GB, host 11.0 GB
+[    3.4s] [P ] start; NVIDIA L40
+[    4.1s] [P ] start; NVIDIA L40
+[  197.2s] [P] none: strict 0.834 (172 s, peak GPU 37.3 GB, host 4.5 GB)
+[  652.9s] [P] fewshot: strict 0.801 (456 s, peak GPU 37.9 GB, host 4.5 GB)
+[  833.0s] [P] recheck: strict 0.850 (180 s, peak GPU 37.9 GB, host 4.5 GB)
+[  992.7s] [P] givens: strict 0.846 (160 s, peak GPU 37.9 GB, host 4.5 GB)
+[ 1124.4s] [P] format: strict 0.680 (132 s, peak GPU 37.9 GB, host 4.5 GB)
+[ 1124.4s] [P] rules {"fewshot": {"gain": -0.033203125, "se": 0.01731454302534675, "qualifies": false}, "recheck": {"gain": 0.015625, "se": 0.015625, "qualifies": false}, "givens": {"gain": 0.01171875, "se": 0.01634878050704065, "qualifies": false}}; chosen None
+[ 1124.4s] [check] P: a prompt qualifies: MISSED {"with": 0.033203125, "without": 0, "qualifies": false}
+[ 1124.4s] STOP: P: a prompt qualifies
