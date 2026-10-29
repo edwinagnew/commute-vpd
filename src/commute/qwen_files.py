@@ -33,8 +33,8 @@ def complete(dest: Path) -> bool:
 
 
 def fetch(dest: Path, log: Any = print, artifact: str = ARTIFACT, kind: str = ARTIFACT_TYPE,
-          ok: Callable[[Path], bool] = complete) -> None:
-    """Fill `dest` with `artifact` (default the decomposition; `ok` says when `dest` is complete). A complete `dest`
+          ok: Callable[[Path], bool] = complete, version: str = "latest") -> None:
+    """Fill `dest` with `artifact` at `version` (default the decomposition, latest; `ok` says when `dest` is complete). A complete `dest`
     is kept without asking W&B, so a pod on the network volume needs no W&B access. Otherwise only the files missing
     or of the wrong size are downloaded, each into a scratch directory beside `dest` and moved into place once whole.
     Downloading needs WANDB_API_KEY; never prints it."""
@@ -45,7 +45,7 @@ def fetch(dest: Path, log: Any = print, artifact: str = ARTIFACT, kind: str = AR
         raise RuntimeError("WANDB_API_KEY is not set in the environment")
     import wandb
 
-    art = wandb.Api().artifact(f"{ENTITY}/{PROJECT}/{artifact}:latest", type=kind)
+    art = wandb.Api().artifact(f"{ENTITY}/{PROJECT}/{artifact}:{version}", type=kind)
     scratch = dest.parent / f"_dl_{dest.name}"
     dest.mkdir(parents=True, exist_ok=True)
     scratch.mkdir(exist_ok=True)
