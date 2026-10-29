@@ -63,7 +63,7 @@ def amend3() -> None:
     ax.set_xticks(range(len(TABLES)), list(TABLES.values()))
     ax.set_xlim(-0.5, len(TABLES) - 0.5)
     ax.set_ylim(UNDEF_Y - 0.06, 1.35)
-    ax.set_ylabel("stand-in ratio: kept gain / subcomponent gain\n(after the least-squares split; 90% bootstrap interval)")
+    ax.set_ylabel("stand-in ratio: masked gain / subcomponent gain\n(after the least-squares split; 90% bootstrap interval)")
     ax.set_title("Does a hand write with no learned machinery read like the fine-tune of its own table?", fontsize=11)
     ax.legend(fontsize=8, loc="upper right", framealpha=0.95)
     fig.tight_layout()
