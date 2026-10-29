@@ -6,7 +6,7 @@ Plan: reports/plans/2026-10-29_plan_reuse-stage1.md, Stage A. Paper text, cited 
 Text. The grammar of Fig. 14 (L1038-1043) expanded from `s` (six levels, each rule picked with probability 0.5, L1027;
 64-729 terminals). "Randomly subsample a string of 250 tokens from the generated original sequence (this helps remove
 bias towards tokens likely to be at the beginning)" (L1025-1026) is read as a uniform random contiguous window of 250;
-expansions shorter than 250 (about a third) are redrawn, since the paper names no padding inside the text.
+expansions shorter than 250 (about 24%, measured) are redrawn, since the paper names no padding inside the text.
 
 Sequence (Eq. 1, L1029-1032; Fig. 15, L1048-1058), one fixed layout of SEQ = 259 tokens:
     $ T O O' < text(250) < = Ans $
