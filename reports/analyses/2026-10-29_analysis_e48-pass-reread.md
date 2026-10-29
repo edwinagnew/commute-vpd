@@ -203,3 +203,167 @@ Slurm job 42757, MATS cluster `debug` QoS, NVIDIA L40, about 2 min in all, exit 
 after loading. `saved.json` records `decision: fallback`, `stopped: fallback: W0's masked model is already poor on the
 cipher windows; option (c), reading A decides`, and `score: {S1: fallback, spread: null, states: {}, P2_teeth: null}`.
 Predictions filed 2026-10-29 before the run.
+
+# Amendment 1: how many subcomponents carry the copies' gain at the cipher's cue?
+
+*2026-10-29. Plan `reports/plans/2026-10-29_plan_e48-pass-reread.md` → "Stage 3" and "Amendment 1"; prediction P7 in
+`experiments/pass_reread/results/predictions.json`, filed before the first job and unedited; results
+`experiments/pass_reread/results/carriers.json`; log `cluster/logs/commute-e48-carriers-42960.out` in the main clone;
+figure `experiments/pass_reread/figures/e48_a1_carriers.png` from `experiments/pass_reread/plot_amend1.py`.*
+
+We took the three teacher-trained decompositions from the earlier cipher experiment and, one subcomponent at a time,
+undid that subcomponent's training to see how much of the cipher's gain at its cue went with it. On every copy, one
+to two thousand subcomponents carry half of the gain, far more than the tens we filed, and the copy of a cipher the
+model already half did spreads about as widely as the new ones. So the repair is not a small change to which
+subcomponents the importance function switches on, and this count does not tell a new behaviour from an old one.
+
+## The answer
+
+Hundreds, not tens. On each of the three copies, between about one and two thousand of the 9,881 alive subcomponents
+are needed to carry half of the gain at the cipher's cue. We filed "tens" for both random ciphers, so that
+prediction missed on both. The identity control, a cipher the model already half did, spreads about as widely. So the
+count does not separate a new behaviour from an existing one, and it rules out a repair that switches on a few
+subcomponents.
+
+## Why it ran
+
+E48's first stage fell back, and that stopped its job before this stage. The task still asked for the subcomponents
+that carry the copies' gain. This listing describes where the gain sits in each copy; it is not a pass reading, so the
+fallback does not bear on it. Amendment 1 ran this stage alone, in its own job, with the filed prediction and rule
+unchanged.
+
+## What we were trying to test
+
+E42 made three copies by teacher training, one per cipher task. Teacher training trains the alive subcomponents'
+read and write vectors, starting from the unchanged decomposition, so that the decomposition's model imitates a
+fine-tune; Γ and Δ stay fixed. The three tasks:
+
+- **32 random pairs**: each of 32 keys maps to an arbitrary other word. A behaviour the model lacked.
+- **1 random pair**: one key and its value. Also new.
+- **Identity control**: each of the same 32 keys is followed by itself. The model half did this already; in E10 the
+  fine-tune's gain on it came from Γ switching on subcomponents that already copy.
+
+The **gain** of a copy is its mean log-odds of the target at the cue, minus the unchanged model's, over the task's
+97 held-out windows. The cue is the position right after the marker and the key. The gains read 20.8, 23.0 and 18.8
+nats on the three tasks. They match E42's own readings to within 0.04.
+
+For each alive subcomponent we set its read and write vectors back to their unchanged values, kept every other
+subcomponent as the copy had it, and read the gain again. The **drop** is how much the gain fell. A drop of 0 means
+that subcomponent's training does nothing at the cue; the drops need not add up to the gain. From the drops, sorted
+largest first:
+
+- **n50** is the fewest subcomponents whose drops reach half of the summed positive drops; **n90**, nine tenths.
+- **The off share** is the part of the n50 set's summed drop that comes from subcomponents with Γ's value under 0.01
+  at the cue, under the copy. These are subcomponents Γ keeps off where the behaviour is used.
+- **The joint revert** sets the whole n50 set back at once and reads the fraction of the gain removed. It checks
+  whether the separate drops roughly add.
+
+The filed rule sorts n50 into "a handful" at 10 or fewer and "hundreds" at 100 or more, with "tens" between. The
+plan reads "a handful" as pointing to a small change to Γ as the repair, and "hundreds" as not.
+
+## What we expected, and why
+
+We filed "tens" for both random ciphers, with low confidence and no reference. Teacher training moves every alive
+subcomponent, which argues for a wide spread. But a one-pair cipher should need few directions, which argued for a
+narrow one. No lean was filed for the identity control; it is the contrast.
+
+## What we observed
+
+### How many subcomponents carry half of the gain? About a thousand or more, on all three copies
+
+![e48_a1_carriers](../../experiments/pass_reread/figures/e48_a1_carriers.png)
+
+**Reading it.** Hundreds on all three, and the filed "tens" missed on both random ciphers. The figure plots, for each
+copy, the share of the summed drops carried by the largest drops against how many are counted. Only the top 20 drops
+and n50, n90 were saved, so the curves are exact there and dashed between. The 20 largest drops carry 3.7 to 5.9% of
+the total, against 0.2% if the drops were spread evenly. Half of it needs 1,909 subcomponents on 32 random pairs and
+1,138 on one pair. Nine tenths needs 6,431 and 4,468, about two thirds and nearly half of all alive subcomponents. The
+largest single drop is under 1% of the total on every copy. So the gain is concentrated well beyond an even spread,
+but nowhere near a handful.
+
+The identity control reads 986 for half and 5,006 for nine tenths. That sits inside the range the two random ciphers
+span: below both at half, between them at nine tenths. On this measure, a copy of a behaviour the model already half
+did spreads over as many subcomponents as a copy of a new one.
+
+The off share differs more. On one pair, 64% of the n50 set's summed drop comes from subcomponents Γ keeps off at the
+cue. On 32 random pairs it is 42%, and on the identity control 39%. So the one-pair copy leans more on subcomponents Γ
+keeps off, but the 32-pair copy does not, and the off share does not split new from existing either.
+
+Setting the n50 set back together removes 66%, 58% and 74% of the gain. Half the summed positive drops, as a fraction
+of each gain, is 67%, 60% and 71%. The drops of the n50 set therefore add roughly, and about a third of the gain sits
+in the remaining eight to nine thousand subcomponents.
+
+| copy | n50 | n90 | off share of n50 | joint revert of n50, of the gain | gain, nats | summed positive drops | class |
+|---|---|---|---|---|---|---|---|
+| 32 random pairs | 1,909 | 6,431 | 0.424 | 0.664 | 20.80 | 27.75 | hundreds |
+| 1 random pair | 1,138 | 4,468 | 0.635 | 0.576 | 23.05 | 27.53 | hundreds |
+| identity control | 986 | 5,006 | 0.389 | 0.744 | 18.82 | 26.84 | hundreds |
+
+Out of 9,881 alive subcomponents in each copy. The summed positive drops exceed the gain by 1.19 to 1.43 times, so
+some drops are negative or overlap.
+
+The 20 largest drops, by matrix, for the record. On 32 random pairs, 16 of the 20 sit in layer 1, mostly attention.
+On one pair, 15 sit in the MLPs of layers 2 and 3. On the identity control, all 20 sit in layers 1 and 2, 16 of them
+in attention.
+Few of each top 20 are ones Γ keeps off at the cue: five, two and three. The full lists, with Γ's value under
+the copy and under W₀, are in `carriers.json`.
+
+## What we learned
+
+A large part of the decomposition carries a teacher-trained copy's gain at the cipher's cue. Half of it needs about
+a thousand subcomponents or more, and nine tenths needs four and a half to six and a half thousand. That points away
+from a repair that keeps the copy and has Γ switch on a few more subcomponents at the cue. For `GOALS.md`'s question of whether a new behaviour spreads more than an existing one,
+this count gives no sign of it. The identity control, the existing behaviour, spreads as widely as the two new ones.
+What the comparison does not show is whether the wide spread belongs to the behaviours or to teacher training itself.
+Teacher training moves every alive subcomponent, and no copy of a narrowly placed behaviour was read alongside.
+
+## How compelling is the evidence
+
+The counts are far from the filed line: the smallest n50 is 986, almost ten times the "hundreds" line. The reading is
+deterministic, with each drop a mean over 97 held-out windows on one card, so a rerun reads the same. It covers one copy
+per task, one seed and one batch order, on the 67M. The measure is blind to interactions: a drop is one subcomponent
+undone alone. The joint revert of the n50 set shows the drops add roughly there, but not beyond it. It is also blind to
+how the copy's training was spread by the optimiser rather than needed by the behaviour. No copy whose gain is known to
+sit in a few subcomponents was read, so "a thousand" is compared only with the even spread and the identity control.
+
+## Surprises
+
+- The filed "tens" missed on both random ciphers, by more than a factor of ten: every copy reads "hundreds", with n50
+  at 1,138 and 1,909. Not a reversal of a direction filed with confidence, as the lean was low, but not a narrow miss
+  either.
+- The identity control spreads about as widely as the new ciphers, where a narrower spread was the natural guess for a
+  behaviour Γ already handles.
+
+## What next
+
+1. Nothing by default. "Hundreds" rules out a small Γ change as the repair; the masked-copy line already ended by the
+   approved tree in E42 Amendment 2, so no repair is pending on this count.
+2. A reference count, if the spread question matters: the same listing on an E34 copy of a behaviour the model
+   already half did, regenerated on the L40, at $0 and a few minutes per copy. A count well under a hundred there
+   would make the spread a property of these behaviours; about a thousand would make it a property of teacher
+   training.
+
+## Scorecard
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| P7 | rand32: the gain's carriers number "tens"; lean low | n50 ≤ 10 a handful, ≥ 100 hundreds, else tens | n50 1,909 | **hundreds**, filed tens: miss |
+| P7 | rand1: same | same | n50 1,138 | **hundreds**, filed tens: miss |
+| P7, beside | ident32, no filing | same | n50 986 | hundreds |
+
+## Not run
+
+- The full sorted drops: only the top 20, n50 and n90 were saved, so the curve between them is not known.
+- A reference count from any other state: a do-nothing state, E42's least-squares split, an E34 copy, or the
+  fine-tune itself.
+- E42's Pile-text copies, and the E34 copies, under the same listing.
+- A joint revert of the n90 set, or of sets chosen by Γ's value rather than by drop size.
+- Any change to Γ itself.
+- A second seed or batch order; a second card.
+
+## Provenance
+
+Slurm job 42960, MATS cluster `debug` QoS, NVIDIA L40, exit 0, $0. Each copy's listing took 185 to 192 s for 9,881
+single-subcomponent reverts. `carriers.json` records `score: {carriers e42/rand32/A: hundreds, carriers e42/rand1/A:
+hundreds, carriers e42/ident32/A: hundreds}`, scored by the run's own `score` code from the filed rule. `saved.json`
+untouched.
