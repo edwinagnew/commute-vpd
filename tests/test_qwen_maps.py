@@ -57,24 +57,22 @@ def _products(n=4, halves=True):
 
 def test_inspan_state_removes_exactly_the_obstruction():
     U_A, V_A, M, S, b, arrays, scalars, *_ = _products()
-    w, pos, dU, dV = qwen_maps.site_change("inspan", M, U_A, V_A, arrays.__getitem__, 0.0, 0.0)
-    assert pos is None and w is not None and dU is not None and dV is not None
-    assert torch.allclose(w, M - split.obstruction(M, b), atol=1e-9)
-    # applied from the fp32 file as the pod does: still δW − O(δW), to the stored_error S records
-    disk = qwen_maps.to_disk(arrays)
-    w32 = qwen_maps.site_change("inspan", M.float(), U_A.float(), V_A.float(), disk.__getitem__, 0.0, 0.0)[0]
-    assert w32 is not None
-    off = (split.weighted_energy(w32.double() - (M - split.obstruction(M, b)), S) / scalars["energy"]) ** 0.5
-    assert off < 1e-5 and scalars["stored_error"]["ls"] < 1e-5 and "O" not in disk
-    assert torch.allclose(w, split.dsigma(dU, dV, U_A, V_A), atol=1e-9)  # the weight change is the first-order part
-    delta = w - (split.dsigma(dU, dV, U_A, V_A) + dU @ dV.T)  # Δ′ − Δ₀ = weight change − component change
-    assert torch.allclose(delta, -dU @ dV.T, atol=1e-9)
+    dU, dV = arrays["X_ls"] @ V_A, arrays["X_ls"].T @ U_A  # the exact pieces, as S's energies use them
+    O = split.obstruction(M, b)
+    assert torch.allclose(split.dsigma(dU, dV, U_A, V_A), M - O, atol=1e-9)
     assert math.isclose(scalars["delta"]["inspan"], split.weighted_energy(dU @ dV.T, S), rel_tol=1e-9)
     # the least-squares state: same pieces, weights move by all of δW, so Δ takes O(δW) − dU dVᵀ
-    w_ls = qwen_maps.site_change("ls", M, U_A, V_A, arrays.__getitem__, 0.0, 0.0)[0]
+    assert math.isclose(scalars["delta"]["ls"], split.weighted_energy(O - dU @ dV.T, S), rel_tol=1e-9)
+    # applied from the fp32 file as the pod does: still δW − O(δW), to the stored_error S records
+    disk = qwen_maps.to_disk(arrays)
+    w, pos, aU, aV = qwen_maps.site_change("inspan", M, U_A, V_A, disk.__getitem__, 0.0, 0.0)
+    assert pos is None and w is not None and aU is not None and aV is not None and "O" not in disk
+    off = (split.weighted_energy(w - (M - O), S) / scalars["energy"]) ** 0.5
+    assert off < 1e-5 and scalars["stored_error"]["ls"] < 1e-5
+    # the weight change is the first-order part of the applied pieces, so Δ′ − Δ₀ = −dU dVᵀ
+    assert torch.allclose(w, split.dsigma(aU, aV, U_A, V_A), atol=1e-12)
+    w_ls = qwen_maps.site_change("ls", M, U_A, V_A, disk.__getitem__, 0.0, 0.0)[0]
     assert w_ls is not None and torch.equal(w_ls, M)
-    assert math.isclose(scalars["delta"]["ls"], split.weighted_energy(split.obstruction(M, b) - dU @ dV.T, S),
-                        rel_tol=1e-9)
 
 
 def test_adjoint_and_halves_states():
@@ -220,12 +218,25 @@ def test_control_w0_edges():
     assert not ms.control_w0(_C(**{"1": math.nan}), CONTROL)["holds"]
 
 
-def test_stored_error_is_small_in_fp32_on_a_badly_conditioned_span():
-    U_A, V_A, M, S = _setup(d_out=12, d_in=9, n=4)
-    U_A[:, 0] *= 1e-2  # alive spectrum spread 100x: X's rounding grows by about that much in the pieces
-    b = split.basis(U_A, V_A, 1e-6)
-    err = qwen_maps.stored_error(split.least_squares_x(M, b), U_A, V_A, S, split.weighted_energy(M, S))
-    assert 0 < err < 1e-4
+def test_stored_error_under_the_limit_on_a_badly_conditioned_span():
+    """E44's stop (2026-10-28): on an ill-conditioned span, pieces X V, Xᵀ U formed in fp32 miss float64 by more than
+    STORE_ERR_MAX = 1e-3 (run.py); formed in float64 from the fp32-stored X, as `pieces` does, they do not."""
+    d, n = 1024, 32
+    g = torch.Generator().manual_seed(0)
+    U, V, M = (torch.randn(*sh, generator=g, dtype=F64) for sh in ((d, n), (d, n), (d, d)))
+    U[:, 0] *= 1e-3  # alive spectrum spread 1000x
+    V[:, 1] *= 1e-3
+    S, b = torch.eye(d, dtype=F64), split.basis(U, V, 1e-12)
+    X, E = split.least_squares_x(M, b), split.weighted_energy(M, S)
+    exact = split.dsigma(X @ V, X.T @ U, U, V)
+    X32, U32, V32 = X.float(), U.float(), V.float()
+    fp32_formed = split.dsigma(X32 @ V32, X32.T @ U32, U32, V32).double() - exact  # the stopped run's application
+    assert (split.weighted_energy(fp32_formed, S) / E) ** 0.5 > 1e-3
+    assert 0 < qwen_maps.stored_error(X, U, V, S, E) < 1e-3
+    applied = qwen_maps.site_change("inspan", M, U, V, {"X_ls": X32}.__getitem__, 0.0, 0.0)[0]  # the state's change
+    assert applied is not None
+    applied_err = (split.weighted_energy(applied - exact, S) / E) ** 0.5
+    assert applied_err == pytest.approx(qwen_maps.stored_error(X, U, V, S, E), rel=1e-6)
 
 
 # ----------------------------------------------------------------------------- resume after a stop (run.py)

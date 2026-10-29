@@ -28,7 +28,9 @@ from commute.qwen_updates import (
     read_steps,
 )
 
-PRED = json.loads((Path(__file__).resolve().parents[1] / "experiments/qwen_updates/results/predictions.json").read_text())
+RESULTS = Path(__file__).resolve().parents[1] / "experiments/qwen_updates/results"
+PRED = json.loads((RESULTS / "predictions.json").read_text())
+AMEND1 = json.loads((RESULTS / "predictions_amend1.json").read_text())
 
 
 # ----------------------------------------------------------------------------- packing and order
@@ -147,6 +149,21 @@ def test_anchor_rules_edges():
     assert learned("a2", {}, {"invented": 0.25, "known": 0.9}, 1.0, L) and not learned("a2", {}, None, 1.0, L)
 
 
+def test_amend1_rules_copied_and_edges():
+    """Amendment 1 files the same anchor-2 thresholds, the same learned rule and the same early values."""
+    R, R0 = AMEND1["rules"]["anchor2_learns"], PRED["rules"]["anchor2_learns"]
+    assert (R["em_min"], R["known_frac"], R["step"]) == (R0["em_min"], R0["known_frac"], 300)
+    assert {k: v for k, v in AMEND1["rules"]["learned"].items() if k != "rule"} == {
+        k: v for k, v in PRED["rules"]["learned"].items() if k != "rule"}
+    E, E0 = AMEND1["early"], PRED["early"]
+    assert E["first_live"]["band"] == E0["first_live"]["band"] and E["step2_kl_max"] == E0["step2_kl_max"]
+    assert E["reproduce"]["a2long_s0"]["tol"] == E0["gold_curve"]["tol"]
+    k0 = 0.97  # stage control's W0 known, both draws
+    assert anchor2_holds(0.5, 0.875, k0, R) and not anchor2_holds(0.499, 1.0, k0, R)
+    assert not anchor2_holds(0.9, 0.87, k0, R)  # 0.873 needed; 200 known facts read in steps of 0.005
+    assert not anchor2_holds(None, 1.0, k0, R) and not anchor2_holds(0.9, 1.0, None, R)
+
+
 # ----------------------------------------------------------------------------- facts
 
 
@@ -167,3 +184,40 @@ def test_facts_grader():
     assert qf.correct("Hmm.\nThe answer is 1957.", "1957")
     assert not qf.correct("The answer is 1958.", "1957") and not qf.correct("Paris", "Paris")
     assert qf.correct("The answer is X.\nThe answer is New Delhi.", "New Delhi")  # the last one counts
+
+
+# ----------------------------------------------------------------------------- T's checkpoint (qwen_train)
+
+
+def test_checkpoint_resume_is_exact(tmp_path: Path):
+    """Three AdamW steps, a checkpoint, a fresh optimiser resumed from it, three more steps: the same weights, bit for
+    bit, as six steps without a stop (CPU, fused AdamW and the library's cosine schedule, as in training)."""
+    import torch
+
+    from commute.qwen_sft import adamw, lr_schedule
+    from commute.qwen_train import checkpoint, resume
+
+    torch.manual_seed(0)
+    W0 = {"a": torch.randn(8, 4), "b": torch.randn(3, 3)}
+    grads = [{k: torch.randn_like(v) for k, v in W0.items()} for _ in range(6)]
+
+    def fresh():
+        params = {k: torch.nn.Parameter(v.clone()) for k, v in W0.items()}
+        opt = adamw(params, 1e-2)
+        return params, opt, lr_schedule(opt, 2, 6, "hf_cosine")
+
+    def steps(run, gs):
+        for g in gs:
+            for k, p in run[0].items():
+                p.grad = g[k].clone()
+            run[1].step()
+            run[2].step()
+
+    whole, part, back = fresh(), fresh(), fresh()
+    steps(whole, grads)
+    steps(part, grads[:3])
+    checkpoint(tmp_path / "c.pt", 3, part[0], W0, part[1], part[2], {("own", 0.1)}, {1, 3})
+    assert resume(tmp_path / "c.pt", back[0], W0, back[1], back[2]) == (3, {("own", 0.1)}, {1, 3})
+    assert back[1].param_groups[0]["lr"] == part[1].param_groups[0]["lr"]
+    steps(back, grads[3:])
+    assert all(torch.equal(whole[0][k], back[0][k]) for k in W0)

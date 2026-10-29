@@ -19,7 +19,7 @@ Every read: a first-batch GPU peak over 70 GB halves the eval batch; an out-of-m
 stage; the batch and the cumulative spend persist in results/state.json. A stop writes results/stopped.json (its
 rule's name); the next job refuses to start while it exists, and a skipped C or K has its gate read again.
 Usage (repo root): python experiments/qwen_maps/run.py --stages C,S,D,K,M,G,A,H [--rehearse] [--out /root/e44]
-  [--e40 /workspace/e40] [--decomp DIR] [--usd-per-h 3.0] [--prior-usd SETUP_USD, first job only] [--svd-bases] [--waive NAMES, rehearsal]
+  [--e40 /workspace/e40_nowarmup] [--decomp DIR] [--usd-per-h 3.99] [--prior-usd SETUP_USD, first job only] [--svd-bases] [--waive NAMES, rehearsal]
 """
 
 from __future__ import annotations
@@ -421,10 +421,10 @@ def main() -> None:
     ap.add_argument("--rehearse", action="store_true")
     ap.add_argument("--svd-bases", action="store_true")
     ap.add_argument("--out", default="/root/e44")
-    ap.add_argument("--e40", default="/workspace/e40")
+    ap.add_argument("--e40", default="/workspace/e40_nowarmup")
     ap.add_argument("--e40-large", default=str(E40_RESULTS / "large" / "nowarmup"))
     ap.add_argument("--decomp", default=str(DECOMP_DIR))
-    ap.add_argument("--usd-per-h", type=float, default=3.0)
+    ap.add_argument("--usd-per-h", type=float, default=3.99)
     ap.add_argument("--prior-usd", type=float, default=0.0, help="setup spend; read only when results/state.json "
                     "does not exist (later jobs carry the cumulative spend there)")
     ap.add_argument("--waive", default="", help="rehearsal only: stop names to log and pass (control_W0,teeth)")

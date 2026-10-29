@@ -1,0 +1,16 @@
+[     0.0s] [config] {"n_rows": 128, "row_len": 512, "eval_batch": 2, "steps": [1, 10], "step_h": 100, "layers": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27], "random_dw": 0.0, "comps_dtype": "float32", "basis": "gram", "tol": 1e-06, "alive_total": 494598, "stoch_seeds": [0, 1, 2], "adv_steps": 20, "acc_problems": 256, "gen_batch": 128, "r_layer": 14, "s_limit_min": 50.0, "mem_halve_gb": 70.0, "spend_limit_usd": 9.5, "stop_usd": 10.0, "stage_min": [["A", 22.0], ["H", 20.0]], "rehearse": false, "results": ""}; stages ['C', 'S', 'D', 'K', 'M', 'G', 'A', 'H']; args {'stages': 'C,S,D,K,M,G,A,H', 'rehearse': False, 'svd_bases': False, 'out': '/root/e44', 'e40': '/workspace/e40_nowarmup', 'e40_large': '/root/work/experiments/qwen_sft/results/large/nowarmup', 'decomp': '/workspace/qwen3-1.7b-p-e9fcffd5-torch', 'usd_per_h': 3.99, 'prior_usd': 0.45, 'waive': ''}; spent before $0.45, eval batch 2
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:07<00:07,  7.31s/it]Fetching 2 files: 100%|██████████| 2/2 [00:07<00:00,  3.66s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  2.19it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  3.78it/s]
+[    11.3s] [load] target, NVIDIA H100 80GB HBM3, peak GPU 6.9 GB, host 11.4 GB
+[   289.2s] [load] decomposition, peak GPU 43.5 GB, host 59.0 GB
+[   291.5s] [memory] W0 maths: first batch of 2, peak 54.1 GB
+[   408.2s] [memory] W0 web: first batch of 2, peak 54.1 GB
+[   702.8s] [C] {"ci": {"maths": 0.058878407372523436, "web": 0.14166324347209394}, "spread": 0.0001256328660473316, "kl_to_start": {"1": 0.10635284595717089, "10": 0.5203923183292298, "100": 0.6636885727730119, "100_fp32": 0.6636926052368608}, "stoch": {"maths": {"0": 0.03730203825739205, "1": 0.0373632167928942, "2": 0.03723758392684687}, "web": {"0": 0.09169750794005277, "1": 0.0917614435366294, "2": 0.09179291451675597}}, "replay": {"G_fineweb_seed0": 1.7031119695691235, "W0_fineweb_seed1": 1.436464494070591, "W0_fineweb_seed2": 1.7471132106749496, "G_maths_seed0": 4.235154166743943}, "done": true}
+[   702.8s] [score] {"control_W0": {"holds": true, "gap": 6.075800479177218e-06, "parts": {"ci_maths": true, "ci_web": true, "replay_G_fineweb_seed0": true, "replay_W0_fineweb_seed1": true, "replay_W0_fineweb_seed2": true, "replay_G_maths_seed0": true, "kl_100_fp32": true, "kl_1": true, "kl_10": true}}}
+[   702.9s] [C] finished: spent $1.23, peak GPU 54.1 GB, host 59.0 GB
+[   718.0s] [sigma] 196 sites, peak GPU 55.6 GB, host 59.0 GB
+[   727.4s] [S] layer 0: 25 s, peak GPU 55.6 GB, host 59.0 GB
+[   737.7s] [S] layer 1: 35 s, peak GPU 55.6 GB, host 59.0 GB
+[   743.8s] STOP stored_error: layers.2.mlp.up_proj step 1: stored pieces miss float64 by 3.82e-03 of ‖δW‖_Σ
+STOP stored_error: layers.2.mlp.up_proj step 1: stored pieces miss float64 by 3.82e-03 of ‖δW‖_Σ
+=== FINISHED (exit 1) — results in /root/work/experiments/qwen_maps/results and /root/e44 ===

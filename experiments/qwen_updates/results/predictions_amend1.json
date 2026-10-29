@@ -1,0 +1,35 @@
+{
+ "plan": "reports/plans/2026-10-28_plan_qwen-q2-amend1.md (E45 Amendment 1: the approved plan section 8 branch 'anchor 2 not learned at step 100 (seed 0) -> one amendment: 300 steps, cosine over 300, both seeds; still not -> card')",
+ "filed": "2026-10-28, after Job 1 rows 1-4 (score.json anchor2_learns_s0: invented 0.319, known 1, known_w0 0.97, holds false) and before any a2long run; never edited after the run (add a dated report instead)",
+ "runs": "a2long_s0, a2long_s1 (arm a2long in experiments/qwen_updates/job.py ARMS: anchor 2's data and recipe, 300 steps, cosine over 300); the run refuses to start without this file",
+ "scored_by": "experiments/qwen_updates/run.py `score` -> results/score.json amend1_anchor2_learns_s0 / _s1 (with commute.qwen_updates.anchor2_holds)",
+ "general": "As predictions.json: thresholds are absolute; <= and >= inclusive, as written; comparisons round to 9 places first; NaN, infinity or a missing value is a miss; no re-reads.",
+ "rules": {
+  "anchor2_learns": {"prediction": "per seed (a2long_s0, a2long_s1): invented exact match at step `step` at least em_min and known at least known_frac x W0's known (stage control, same draw); step 100 is reported beside it (`at_100`), not scored. Both seeds miss -> card to the user (plan section 8, 'still not'); one seed misses -> card as well (the anchor is then seed-dependent)", "step": 300, "em_min": 0.5, "known_frac": 0.9, "lean": "medium", "copied_from": "predictions.json rules.anchor2_learns (em_min, known_frac unchanged)"},
+  "learned": {"rule": "copied unchanged from predictions.json rules.learned: anchor 2 is read at a grid value only where invented exact match >= a2_em and known >= known_frac x W0's", "own_drop": 0.02, "gold_drop": 0.05, "a1_gap": 0.25, "a2_em": 0.25, "known_frac": 0.9}
+ },
+ "edge_cases": "run in tests/test_qwen_updates.py test_amend1_rules_copied_and_edges: invented exactly 0.5 holds, 0.499 misses; known 0.875 against W0 0.97 holds (threshold 0.873), 0.870 misses; the threshold 0.873 itself is unreachable (200 known facts: steps of 0.005); missing invented, missing W0 known -> miss; W0 known 0 is degenerate (any known passes) but control measured 0.97 on both draws",
+ "expected": {
+  "note": "values to compare against, not scored",
+  "saves": "a2long_s0: steps 1, 2, 3, 4, 5, 6, 11, 12 (grid brackets, as a2_s0, whose first 11 steps are the same), 100 and 300: 10 states x 2.82 GB = 28.2 GB; a2long_s1 about the same count. Plus one 17 GB checkpoint (large/ckpt/<run>.pt) between the two T jobs, deleted when T ends",
+  "invented_at_100": "above a2_s0's 0.319 (the rate is still ~0.8 of peak at step 100 instead of 0)",
+  "invented_at_300": "0.4-0.8",
+  "known_at_300": ">= 0.95",
+  "gsm8k_test_0_255_strict_dropped_at_300": "at or below a2_s0's step-100 reading (0.31); reported, not read",
+  "T_seconds": "job 1 (steps 1-150 + checkpoint) ~17 min; job 2 (resume, steps 151-300) ~13 min, from a2_s0's 715 s for 100 steps (L40): ~10 s per step to step 30, ~4.3 s after"
+ },
+ "early": {
+  "rule": "first-minute values; a miss stops the job (exit 2) and is reported before the next job",
+  "first_live": {"band": [0.3, 1.0014], "source": "copied from predictions.json early.first_live (experiments/qwen_sft/results/predictions_amend1.json F_first_live); a2_s0 read 0.728-0.912"},
+  "step2_kl_max": 0.005,
+  "step2_kl_source": "copied from predictions.json early.step2_kl_max (set at peak 1e-5; run.py scales it by (peak / 1e-5)^2, here 1); a2_s0 read 0.00087",
+  "reproduce": {
+   "a2long_s0": {"of": "a2_s0", "tol": 0.05,
+    "kl": {"2": {"maths": 0.0006316789997791302, "own": 0.07054530691279337},
+           "3": {"maths": 0.004267342295040657, "own": 0.2529707385643273},
+           "5": {"maths": 0.07495025897970571, "own": 1.0337621473178056},
+           "10": {"maths": 0.26010993779934033, "own": 2.3253855096322926}},
+    "source": "results/T_a2_s0.json steps[].kl (16-row trackers, L40). Steps 1-11 of a2long_s0 have the same data (packed_stream's first 100 x 27 rows are a prefix of its 300 x 27) and the same rates (warm-up 10; the cosine length first matters at step 12), so its tracker KL repeats a2_s0's up to kernel nondeterminism. tol copied from predictions.json early.gold_curve.tol; gold read 0.0048 at most against E40a1 (another run, micro 4 vs 8)"}
+  }
+ }
+}
