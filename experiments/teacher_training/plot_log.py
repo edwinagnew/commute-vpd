@@ -20,6 +20,18 @@ E41 (reads results/teacher_training_e41.json, _e41_amend1.json, _e41_amend2.json
                           checkpoints, with the checkpoints where do-nothing passes shaded.
   log_e41_behaviour.png   held-out P(target) of every teacher-trained state against the checkpoint it copies.
   log_e41_pileup.png      size and damage at step 1000 of the two chains, as multiples of a single 1,000-step copy's.
+E42 (reads results/teacher_training_e42_<task>.json, _e42_amend1_rand32.json, _e42_amend2_rand32.json, and through
+     plot_e42.load the run logs' trigger cells, cluster/logs/commute-teacher-e42-<job>.out)
+  log_e42_check.png       the adversarial ratio (pgd) of do-nothing, the least-squares split and the copy trained on task
+                          text at step 1000, on the three cipher tasks, bars from 1.
+  log_e42_trigger.png     the target's probability at the trigger with the whole model (log 'target') and with only the
+                          subcomponents Γ marks important, Δ out (log 'ci'), for the same three states.
+  log_e42_routes.png      the masked-off share (share_e_gate) of the copy's gain at step 1000, beside E10's label-trained
+                          component training (plot_e42.E10_LABEL).
+  log_e42_pile.png        the copy trained on Pile text (arm B): target probability at steps 100 and 1000; and the
+                          fine-tune's P(value) right after a key word in plain Pile text over the unchanged model's.
+  log_e42_controls.png    Amendments 1 and 2: the four masked-term recipes run with nothing to copy (teacher = unchanged
+                          model), adversarial and stochastic Pile ratios.
 
 Usage (repo root):  python experiments/teacher_training/plot_log.py
 """
@@ -47,6 +59,8 @@ from plot import (
     state,
     style,
 )
+from plot_e42 import E10_LABEL, W0_P
+from plot_e42 import load as e42_load
 
 TASK = {R1: "' which' → ' was'", R0: "' it' → ' is'", EMO: "emoticon"}
 TEACHER = {"sgd": "SGD", "adam": "Adam"}
@@ -327,6 +341,168 @@ def e41_pileup(e41: Rec, a2: Rec) -> None:
     save(fig, "log_e41_pileup.png")
 
 
+# --- E42 ---------------------------------------------------------------------------------------------------------
+
+E42_TASKS = ("rand32", "rand1", "ident32")
+E42_TASK = {"rand32": "32 random\nword pairs", "rand1": "one random\nword pair",
+            "ident32": "identity control:\neach key followed by itself"}
+E42_STATES = (("nothing", "do-nothing: the whole fine-tune in Δ", MUTED),
+              ("least_squares", "least-squares split", PURPLE),
+              ("A", "teacher-training copy (task text)", TT))
+E42_LOG = {"nothing": "do-nothing", "least_squares": "least-squares", "A": "A@1000"}
+
+
+def e42_rec(r: Rec, s: str) -> Rec:
+    return r["A"]["1000"] if s == "A" else r[s]
+
+
+def e42_check(res: dict[str, Rec]) -> None:
+    fig, ax = plt.subplots(figsize=(8.5, 4.6))
+    w = 0.26
+    for i, t in enumerate(E42_TASKS):
+        for j, (s, lab, c) in enumerate(E42_STATES):
+            bar(ax, i + (j - 1) * w, e42_rec(res[t], s)["pgd"], w * 0.92, c, lab if i == 0 else None)
+    f = res["rand32"]["W0"]["pgd_floor"]
+    assert all(res[t]["W0"]["pgd_floor"] == f for t in E42_TASKS)
+    ax.axhspan(LINE / (1 + f), LINE * (1 + f), color="#f0efec", zorder=0)
+    lines(ax, f)
+    ticks = [f"{E42_TASK[t]}\ncopy keeps the cipher: {res[t]['A']['1000']['p_target']:.2f}" for t in E42_TASKS]
+    ax.set_xticks(range(len(E42_TASKS)), ticks, fontsize=8)
+    ax.set_ylim(0.8, 2.25)
+    ax.set_ylabel("adversarial ratio\n(1 = unchanged decomposition)")
+    ax.set_title("The copy passes the adversarial check on all three tasks; the least-squares split fails, narrowly on two",
+                 fontsize=10.5)
+    style(ax)
+    ax.grid(False, axis="x")
+    ax.legend(frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.27), ncol=3)
+    save(fig, "log_e42_check.png")
+
+
+def e42_trigger(logs: dict[str, dict[str, Rec]]) -> None:
+    fig, ax = plt.subplots(figsize=(8.5, 4.6))
+    w = 0.26
+    for i, t in enumerate(E42_TASKS):
+        for j, (s, lab, c) in enumerate(E42_STATES):
+            cell, x = logs[t][E42_LOG[s]], i + (j - 1) * w
+            ax.vlines(x, cell["ci"], cell["target"], color=c, lw=1.4, alpha=0.6)
+            ax.scatter(x, cell["target"], s=46, facecolors="white", edgecolors=c, lw=1.5, zorder=3)
+            ax.scatter(x, cell["ci"], s=46, color=c, zorder=3, label=lab if i == 0 else None)
+            if t != "ident32":
+                ax.text(x + 0.03, cell["ci"] * 0.6, f"{cell['ci']:.3f}", fontsize=7, va="top", ha="center")
+        ax.hlines(W0_P[t], i - 0.42, i + 0.42, color=INK, ls="--", lw=0.9,
+                  label="unchanged model" if i == 0 else "_nolegend_")
+    ax.scatter([], [], s=46, facecolors="white", edgecolors=INK, label="open: the whole model, with Δ")
+    ax.scatter([], [], s=46, color=INK, label="filled: only the pieces Γ marks\nimportant at the trigger, no Δ")
+    ax.set_yscale("log")
+    ax.set_ylim(5e-6, 3)
+    ax.set_xticks(range(len(E42_TASKS)), [E42_TASK[t] for t in E42_TASKS], fontsize=8)
+    ax.set_ylabel("probability of the cipher's word\nat the trigger, held-out windows")
+    ax.set_title("Kept to the pieces Γ marks important, every state loses both random ciphers at the trigger",
+                 fontsize=10.5)
+    style(ax)
+    ax.grid(False, axis="x")
+    ax.legend(frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=3)
+    save(fig, "log_e42_trigger.png")
+
+
+def e42_routes(res: dict[str, Rec]) -> None:
+    fig, ax = plt.subplots(figsize=(8, 4.4))
+    w = 0.34
+    for i, t in enumerate(E42_TASKS):
+        for j, (v, lab, c) in enumerate(((res[t]["A"]["1000"]["share_e_gate"], "teacher-training copy", TT),
+                                         (E10_LABEL[t], "component training on the task's labels (E10)", GREEN))):
+            x = i + (j - 0.5) * w
+            ax.bar(x, v, w * 0.92, color=c, label=lab if i == 0 else None, zorder=2)
+            ax.text(x, v + 0.015, f"{v:.2f}", ha="center", va="bottom", fontsize=8)
+    for y, txt, ls in ((0.5, "0.5 or more: counted as lost under the mask", "--"),
+                       (0.25, "0.25 or less: counted as kept", ":")):
+        ax.axhline(y, color=INK, ls=ls, lw=0.9, label=txt)
+    ax.set_xticks(range(len(E42_TASKS)), [E42_TASK[t] for t in E42_TASKS], fontsize=8)
+    ax.set_ylim(0, 1.05)
+    ax.set_ylabel("share of the gain at the trigger\nlost under Γ's mask")
+    ax.set_title("On both random ciphers most of the copy's gain is lost under Γ's mask, as with label training",
+                 fontsize=10.5)
+    style(ax)
+    ax.grid(False, axis="x")
+    ax.legend(frameon=False, fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.17), ncol=2)
+    save(fig, "log_e42_routes.png")
+
+
+def e42_pile(res: dict[str, Rec]) -> None:
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4.6), gridspec_kw={"width_ratios": (1.25, 1)})
+    for i, t in enumerate(E42_TASKS):
+        b = res[t]["B"]
+        a1.scatter(i, b["100"]["p_target"], s=50, facecolors="white", edgecolors=ORANGE, lw=1.5, zorder=3,
+                   label="after 100 steps" if i == 0 else None)
+        a1.scatter(i, b["1000"]["p_target"], s=50, color=ORANGE, zorder=3, label="after 1,000 steps" if i == 0 else None)
+        a1.text(i + 0.08, b["1000"]["p_target"], f"{b['1000']['p_target']:.2g}", fontsize=8, va="center")
+        a1.hlines(W0_P[t], i - 0.35, i + 0.35, color=INK, ls="--", lw=0.9, label="unchanged model" if i == 0 else "_nolegend_")
+        pr = res[t]["pile_reading"]
+        v = pr["p_value_teacher"] / pr["p_value_w0"]
+        a2.bar(i, v - 1, 0.6, bottom=1, color=ORANGE, zorder=2)
+        a2.text(i, v * 1.15, f"×{v:,.0f}" if v > 10 else f"×{v:.1f}", ha="center", va="bottom", fontsize=8)
+    for y, txt in ((0.9, "0.9: counts as learnt"), (0.5, "expected to stay below 0.5")):
+        a1.axhline(y, color=INK, ls=":", lw=0.9)
+        a1.text(2.45, y, txt, fontsize=7.5, va="bottom", ha="right")
+    a1.set_yscale("logit")
+    a1.set_ylim(5e-6, 0.995)
+    ticks = (1e-5, 1e-4, 1e-3, 0.01, 0.1, 0.5, 0.9, 0.99)
+    a1.set_yticks(ticks, [f"{v:g}" for v in ticks])
+    a1.minorticks_off()
+    a1.set_ylabel("probability of the cipher's word\nat the trigger, held-out windows")
+    a1.set_title("Copy trained on plain Pile text only", fontsize=10)
+    a2.set_yscale("log")
+    a2.set_ylim(1, 2e4)
+    a2.axhline(1, color=INK, lw=0.8)
+    a2.set_ylabel("fine-tune's probability of the key's value\nright after the key in plain Pile text,\n"
+                  "over the unchanged model's")
+    a2.set_title("What the fine-tune already shows in plain text", fontsize=10)
+    for ax in (a1, a2):
+        ax.set_xticks(range(len(E42_TASKS)), [E42_TASK[t] for t in E42_TASKS], fontsize=8)
+        style(ax)
+        ax.grid(False, axis="x")
+    a1.legend(frameon=False, fontsize=7.5, loc="center left", bbox_to_anchor=(0.0, 0.62))
+    fig.suptitle("Pile text alone taught the copy the one-pair cipher; the fine-tune already shows that pair in "
+                 "plain text (cause untested)", fontsize=10.5)
+    save(fig, "log_e42_pile.png")
+
+
+def e42_controls(a1: Rec, a2: Rec) -> None:
+    runs = (("both masked terms", a1["M0"]), ("Γ-mask term\nalone", a2["M0_ci"]),
+            ("random-mask term\nalone", a2["M0_st"]), ("both terms,\nat the trigger only", a2["M0_trig"]))
+    fig, ax = plt.subplots(figsize=(8, 4.4))
+    for i, (lab, r) in enumerate(runs):
+        for o, key, c, name, fmt in ((-0.17, "pgd_kl", PURPLE, "adversarial check", "{:.1f}"),
+                                     (0.17, "stochastic_kl", MUTED, "random-mask check", "{:.2f}")):
+            v = r["pile_ratios"][key]
+            ax.bar(i + o, v - 1, 0.32, bottom=1, color=c, zorder=2, label=name if i == 0 else None)
+            ax.text(i + o, max(v, 1) * 1.06, fmt.format(v), ha="center", va="bottom", fontsize=8)
+    lines(ax, a1["W0"]["pgd_floor"])
+    ax.set_yscale("log")
+    ax.set_ylim(0.8, 100)
+    ax.set_yticks((1, 1.24, 1.81, 3, 10, 30, 100), ["1", "1.24", "1.81", "3", "10", "30", "100"])
+    ax.minorticks_off()
+    ax.set_xticks(range(len(runs)), [r[0] for r in runs], fontsize=8)
+    ax.set_ylabel("ratio on Pile text\n(1 = unchanged decomposition)")
+    ax.set_title("With nothing to copy, all four masked versions of teacher training fail the adversarial check",
+                 fontsize=10.5)
+    style(ax)
+    ax.grid(False, axis="x")
+    ax.legend(frameon=False, fontsize=7.5, loc="upper left", ncol=2)
+    save(fig, "log_e42_controls.png")
+
+
+def e42() -> None:
+    res, logs = e42_load()
+    for t in E42_TASKS:  # the log's cells and the JSON's agree where both exist
+        assert abs(logs[t]["A@1000"]["target"] - res[t]["A"]["1000"]["p_target"]) < 1e-3, t
+    e42_check(res)
+    e42_trigger(logs)
+    e42_routes(res)
+    e42_pile(res)
+    e42_controls(read("e42_amend1_rand32"), read("e42_amend2_rand32"))
+
+
 def main() -> None:
     e34_faithful()
     e43 = read("e43")
@@ -340,6 +516,7 @@ def main() -> None:
     e41_chain(a2)
     e41_behaviour(e41, a2)
     e41_pileup(e41, a2)
+    e42()
 
 
 if __name__ == "__main__":
