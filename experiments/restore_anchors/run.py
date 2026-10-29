@@ -288,6 +288,8 @@ def reported(states: dict[str, dict[str, Any]], P: dict[str, Any]) -> dict[str, 
                    "gold": rho["gold"] <= e["gold_max"], "D": rho["D"] <= e["D_max"]})
         checks["random"] = (abs(r["random_mean"]) <= ex["random_sets"]["abs_mean_max"]
                             and r["random_max"] <= ex["random_sets"]["max_max"])
+        lo, hi = ex["stand_in_ratio"][cls[key.split("/")[0]]]
+        checks["stand_in_ratio"] = None if r["stand_in_ratio"] is None else lo <= r["stand_in_ratio"] <= hi
         out[key] = checks
     return out
 

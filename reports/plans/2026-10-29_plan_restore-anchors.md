@@ -198,3 +198,5 @@ exit 1, no share computed. (4) Results JSON rewritten after each fine-tune; ever
 (5) G < 1 nat is not a stop: that fine-tune is unscored. Expected runtime 6-10 min on an L40 (model 1 min, Pile
 contrast over 2,000 rows about 1 min, about 1 min per fine-tune for its set building, controls and 48 restores); peak
 GPU memory under 15 GB. Fits the cluster's `debug` 30-min limit.
+
+**Code review (2026-10-29, fresh Opus, before the run; no rule changed).** R0, R1 and R2 cannot fail for a wrong restore formula (empty set or zero input difference make the correction zero by construction); they catch misaligned batches, wrong cached io and non-determinism. The restore formula itself rests on E38 Amendment 3's R4, run on the same `restore_hooks` (unchanged since). C1's two halves both read `route_cells`' T (one earlier, one now). The stand-in ratio is now checked against its expected range in `reported()` (reported only). The analysis report repeats these.
