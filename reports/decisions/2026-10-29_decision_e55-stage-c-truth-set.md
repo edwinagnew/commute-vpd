@@ -41,9 +41,11 @@ to 40, answers alone cannot show that count a is one of the two counts used.
   all-spurious states above, and report what each method says about them, without a pass bar (it is not
   reuse or new by the checks). Free; it makes the "neither" states informative instead of dropped.
 - **Option C: first add more fine-tunes that should reuse the old count**, with predictions filed before they run:
-  more seeds of the all-spurious arm saved at 1,000 to 2,000 steps (it leaves the old count by 3,000), and a
-  fine-tune whose new task is the old count under a new prompt (Fable's suggestion; a positive control more than a
-  test). Free on the cluster, about an hour of work and runs; it would bring the "reuses" side to perhaps six to ten.
+  all-spurious fine-tunes trained on natural texts only (about one natural text in five already has count(b) =
+  count(a) + 1, and LOW gives the right answer on every one of them), several seeds saved at 1,000 to 2,000 steps;
+  and a fine-tune whose new task is the old count under a new prompt (Fable's suggestion; a positive control more
+  than a test). Free on the cluster, about an hour of work and runs; it would bring the "reuses" side to perhaps six
+  to ten, on a recipe where reusing the old count needs no repair.
 - **Fable's advice** (before Amendments 1 and 2): run the diagnostics first (done), then Stage C on whatever is
   labelled, and report the nine-to-two imbalance as a finding in itself: on this grammar, a fine-tune that learns a
   new count does not run it through the old one. Put option C on a card rather than run it unasked.
@@ -51,9 +53,11 @@ to 40, answers alone cannot show that count a is one of the two counts used.
   seeds at 1,000 steps are cheap and use a recipe already shown to work. B costs nothing and keeps the most
   interesting states in view.
 
-**If Amendment 3 finds that LOW's own count does not give the right answer on the built training rows**, the two
-early "reuses" states stay labelled as measured, but reading them as reuse of LOW's counter weakens; option C's
-early-step seeds would then be built on natural-only data instead. The lead will update this card when it reads.
+**Amendment 3 (read 2026-10-29) weakens the two "reuses" states.** On the swap-built rows the all-spurious arms
+were trained on, LOW's own count gives the right answer on only 45% of rows (all with no swap, 2% at a swap of
+three letters), and both early states answer those rows right by 1,000 steps. On natural text their answer runs
+through a count of a, so they stay labelled as measured; but they had to repair the count, not only reuse it. This is
+why option C now trains on natural texts only, and why no method should be scored on swap-built rows.
 
 ## Links
 Report and notebook: `reports/analyses/2026-10-29_analysis_e55-stage-a.md`, `notebooks/E55_pcfg_anchors.ipynb`.
