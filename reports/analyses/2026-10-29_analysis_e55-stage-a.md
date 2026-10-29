@@ -5,8 +5,8 @@ E55 Stage A, reuse line, 2026-10-29. Plan `reports/plans/2026-10-29_plan_reuse-s
 `notebooks/E55_pcfg_anchors.ipynb`, figures `experiments/pcfg_anchors/figures/` from `plot.py`.
 
 We fine-tuned a small model that counts only the letter a to count the letter b, and asked whether each new answer runs through the old count, judged without any decomposition.
-Fast fine-tunes never used the old count, while slow fine-tunes trained mostly or only on rows the old count answers used it after a thousand steps, and by the end neither check read any of them as using it.
-The reuse line now has a working ground truth outside VPD, but it marks only two early states as reusing the old count, and a row-by-row follow-up found the all-spurious states answering a function of two counts, a candidate third class rather than more "existing" anchors, whose rule then held on fresh rows.
+Fast fine-tunes never used the old count, while slow fine-tunes trained mostly or only on rows where one more than the count of a is the answer used it after a thousand steps, and by the end neither check read any of them as using it.
+The reuse line now has a ground truth outside VPD, but it marks only two early states as reusing the old count, both trained on letter-swapped rows that the base model miscounts more often than not, which weakens reading them as reuse of its counter; later the all-spurious states answer a rule of two counts, a candidate third class.
 
 ## The answer
 
@@ -17,7 +17,10 @@ count, and the all-spurious ones read neither, so one filed prediction missed. N
 decodes from the base model above shuffled labels, narrowly. A later row-by-row read, Amendment 1 below, found the
 all-spurious answers at 10K are a function of two of the three counts, not of any one count alone. The fast one answers the midpoint
 of the two; the slow one, by a reading not filed, answers a third of the way from `count(a) + 1` to `count(b)`. Amendment 2 filed that reading and it
-held on 20,000 fresh rows, within the same pairs of counts; a test on new pairs was void.
+held on 20,000 fresh rows, within the same pairs of counts; a test on new pairs was void. Amendment 3 found that the
+letter-swapped rows the spurious fine-tunes trained on break the base model: its own count of a gives their label on
+under half. So the two early states that reuse the old count had learned to answer rows it miscounts, and new
+anchors should be trained on natural rows. Stage A's labels, read on natural text, stand.
 
 ## What we were trying to test
 
@@ -864,3 +867,243 @@ Provenance: `experiments/pcfg_anchors/results/amend2.json`; answers `results/lar
 `fresh_counts.npy`, `unseen_counts.npy` and `unseen_valid_counts.npy`; log `results/large/amend2/amend2.log`. Job
 44520 on the MATS cluster, $0. The void diagnosis rebuilt the unseen rows model-free and read the saved answers:
 `~/commute-data/scratch/reuse-lead/e55-a1-writer/void.py`, `void2.py`, `void3.py`.
+
+## Amendment 3: are the base models broken by swap-built text, and does it reach Stage A?
+
+*2026-10-29. Code `experiments/pcfg_anchors/amend3.py`, predictions `results/predictions_amend3.json`, filed before
+the run with a dated addition after the code review `reports/reviews/2026-10-29_review_e55-amend3-code.md`. Result
+`results/amend3.json`, log `cluster/logs/commute-e55-amend3-44652.out`. MATS cluster job 44652, $0, run at f380e7e.
+Figures from `plot_amend3.py`.*
+
+We drew natural texts until they filled the pairs of counts Amendment 2 could only build by swapping letters, and we
+re-read Stage A's spurious test rows by how many letters each had swapped. On natural text the base model counts a
+where it had failed on swap-built rows, but on the spurious test rows its own count of a is right on under half,
+falling to almost none at three swaps, while every fine-tune trained on such rows answers them all. So the two early
+states Stage A called "reuses the old count" were trained on rows the old count mostly gets wrong, which weakens
+reading them as reuse of the base's counter, and the one-third rule still has no valid test outside its own pairs.
+
+### The answer
+
+The swap step, not a rare pair of counts, broke the base model. On natural rows in pair (17, 13) LOW counts a on
+199 of 200, where it had failed all 341 swap-built rows. On Stage A's 4,000 spurious test rows, LOW's count of a
+is right on 45% of rows, nine in ten of them unswapped or with one letter swapped. All three base models, and every
+fine-tune at 10K trained only on natural text, get worse the more letters were swapped. Every fine-tune trained on
+swap-built rows is flat, and the slow all-spurious one is right on 99% of them already at 1,000 steps. Stage A's
+labels read natural text only and stand. What weakens is the reading of its two "reuses the old count" states as LOW's
+counter at work. The one-third rule's test on new pairs was void: only one new pair has both bases counting, and there the slow fine-tune answers 16, not the rule's 15.
+
+### What we were trying to test
+
+Amendment 2's unseen rows were built by swapping a's and c's inside the counted window, and both control models
+failed on them. The independent check of that analysis found the failure grew with the number of letters swapped,
+even for the count of b, which the swap never touches. The same swap step builds two things in Stage A: the
+spurious fine-tuning rows of seven arms, and the 4,000 spurious test rows behind Stage A's spurious-accuracy column.
+So this amendment asks two questions, both on saved models, with no training.
+
+**Part 1: natural rows in rare pairs.** We drew 8 million natural texts from a fresh seed and kept up to 200 rows in
+each of fifteen pairs of window counts `(count a, count b)`. Five common pairs are controls. Pair (17, 13) is where
+LOW failed every swap-built row: if LOW counts a on natural rows there, the swap broke it, not the pair. Six new
+pairs are pairs the one-third rule was never read on, chosen where it gives an answer no other rule gives. A pair
+can test a rule only where LOW counts a and the fast no-spurious fine-tune, N1, counts b, each on 95% of its rows.
+A state's answer is almost fixed by the pair, so the rule is read per pair. It holds if it is the majority answer
+on at least three quarters of the valid pairs, and at least three pairs must be valid.
+
+**Part 2: Stage A's spurious test rows by swap size.** We rebuilt those 4,000 rows from Stage A's seed, recording how
+many letters each needed swapped to set `count(a)` to `count(b) - 1`. On every row the right answer to `C b 40` is
+`count(b)`, which equals `count(a) + 1`. For each saved state we read the share answering right at each swap size. We also read
+the drop in that share over a swap of three, taken within each value of count b, since swap size depends on it. A
+drop over 0.05 and over three standard deviations reads "depends". Two made-up answerers check the read: one exact,
+which must read flat, and one that answers from the text before the swap, which must read "depends". LOW's own
+count of a on these rows tells whether the route the all-spurious arms were designed to keep, `count(a) + 1` from
+LOW's count, gives the training label.
+
+### What we expected
+
+LOW would count a on natural (17, 13) rows, at 80%. It would not count a at a count of 9, answering 10, at 60%. The
+test of the one-third rule on new pairs was most likely void, at 45%, because five of the six new pairs sit at a
+count of 9 where one base might not count. At (17, 10), the one new pair off the edges, the slow fine-tune would
+answer 16, not the rule's 15. On the spurious test rows, N1 would get worse with swap size, at 80%. LOW would too, at
+60%, with its own count of a giving the label on 85% to 95% of rows. Every arm trained on swap-built rows would be
+flat and near 1 at 10K, at 90%.
+
+### What we observed
+
+#### Is it the swap or the pair?
+
+![Per-pair answers of the bases and the all-spurious fine-tunes](../../experiments/pcfg_anchors/figures/amend3_pairs.png)
+
+**Reading it.** The swap. The top panel plots, per pair, each base's most common answer beside the count it should
+give. At (17, 13) LOW answers 17 on 199 of 200 natural rows, against 0 of 341 swap-built rows in Amendment 2. N1
+answers 13 on all of them. So LOW's failure there came from how the rows were built.
+
+The edges are a different matter. Wherever count a is 9, LOW answers 10, on all 233 rows; at 18 it answers 17, on
+all 11. N1 does the same with b: 10 on all 210 rows with count b 9, and 17 on the 12 rows with count b 18. Both
+bases keep their answers between 10 and 17, as if clipped. The cause was not tested.
+
+#### Does the one-third rule hold on new pairs?
+
+**Reading it.** It could not be tested. Only (17, 10) has both bases counting, the green band at left in the figure,
+and the rule needs three such pairs. At (17, 10) both seeds of the slow fine-tune at 10K answer 16 on every row, not
+the rule's 15, as filed. That is one pair against the rule, the same pair that went against it on one fresh row
+before.
+
+The other pairs say nothing about the rule, because a base does not count there. Still, the slow fine-tune answers
+the rule's value in four of the five other new pairs, as the table shows. It misses at (16, 9) and at the edge pair
+(18, 11). In the three pairs where it misses the rule, it answers one below count a. The fast
+all-spurious fine-tune at 10K answers the midpoint in every pair read. These are descriptions only.
+
+| pair | rows | LOW counts a | N1 counts b | one-third rule | midpoint | slow 10K, seeds 0 and 1 | fast 10K |
+|---|---|---|---|---|---|---|---|
+| (17, 10) | 200 | 0.975 | 1.000 | 15 | 14 | 16, 16 | 14 |
+| (16, 9) | 111 | 1.000 | 0, answers 10 | 14 | 13 | 15, 15 | 13 |
+| (15, 9) | 85 | 1.000 | 0, answers 10 | 14 | 13 | 14, 14 | 13 |
+| (17, 9) | 14 | 1.000 | 0, answers 10 | 15 | 14 | 15, 15 | 14 |
+| (9, 14) | 37 | 0, answers 10 | 1.000 | 11 | 12 | 11, 11 | 12 |
+| (9, 17) | 13 | 0, answers 10 | 1.000 | 12 | 13 | 12, 12 | 13 |
+| (17, 13) | 200 | 0.995 | 1.000 | 16 | 16 | 16, 16 | 16 |
+| (9, 16) | 183 | 0, answers 10 | 1.000 | 12 | 13 | 12, 12 | 13 |
+| (18, 11) | 11 | 0, answers 17 | 1.000 | 16 | 15 | 17, 17 | 15 |
+| (11, 18) | 12 | 1.000 | 0, answers 17 | 14 | 15 | 14, 14 | 15 |
+
+The slow and fast columns give each state's most common answer, which it gives on at least 99.5% of the pair's
+rows with two exceptions. At (17, 13) the slow state answers 16 on 62% and 73% of rows and 17 on the rest. At (17, 9) seed 1 gives
+it on 13 of 14 rows.
+
+#### Do Stage A's readings on spurious rows depend on the swap?
+
+![Share right against letters swapped](../../experiments/pcfg_anchors/figures/amend3_swap.png)
+
+**Reading it.** Yes, for every model trained only on natural text, and for none trained on swap-built rows. The figure
+plots, per state, the share right against the number of letters swapped. LOW, the base before any fine-tune, counts a
+on every unswapped row, on 63% of rows with one letter swapped, on 18% at two and on 2% at three. HIGH, the base that
+counts all three letters, fails the same way. N1 and the HIGH-based fine-tune R count b worse as the swap grows,
+though the swap never touches b. The arms trained on swap-built rows sit at the top at every swap size.
+
+The read separates as it should: the made-up exact answerer reads flat and the answerer from the pre-swap text reads a
+drop of 0.77. LOW's answers on swapped rows mostly follow neither text. It answers the count before the swap on 37%
+of rows with one letter swapped and almost never beyond.
+
+| state | trained on swap-built rows | share right, all rows | unswapped | swap 1 | swap 2 | swap 3 | 4 or more | drop over a swap of 3 | label |
+|---|---|---|---|---|---|---|---|---|---|
+| LOW, count of a | no | 0.446 | 1.000 | 0.633 | 0.182 | 0.020 | 0.003 | 0.871 | depends |
+| LOW, `C b 40` | no | 0.445 | 1.000 | 0.628 | 0.183 | 0.020 | 0.003 | 0.868 | depends |
+| HIGH, count of a | no | 0.500 | 1.000 | 0.748 | 0.234 | 0.041 | 0.008 | 0.870 | depends |
+| HIGH, count of b | no | 0.854 | 1.000 | 0.963 | 0.860 | 0.683 | 0.428 | 0.290 | depends |
+| NEVER, count of b | no | 0.903 | 1.000 | 0.965 | 0.892 | 0.814 | 0.656 | 0.184 | depends |
+| N1 10K | no | 0.929 | 1.000 | 0.986 | 0.959 | 0.858 | 0.625 | 0.149 | depends |
+| N1 seed 1, 10K | no | 0.923 | 1.000 | 0.986 | 0.947 | 0.843 | 0.609 | 0.168 | depends |
+| M 10K | no | 0.959 | 1.000 | 0.980 | 0.944 | 0.944 | 0.866 | 0.105 | depends |
+| R 10K | no | 0.864 | 1.000 | 0.977 | 0.873 | 0.693 | 0.444 | 0.291 | depends |
+| N1 1K | no | 0.953 | 1.000 | 0.980 | 0.949 | 0.944 | 0.793 | 0.096 | depends |
+| N1 seed 1, 1K | no | 0.950 | 1.000 | 0.977 | 0.925 | 0.923 | 0.861 | 0.134 | depends |
+| M 1K | no | 0.407 | 0.484 | 0.503 | 0.429 | 0.258 | 0.089 | −0.219 | rises |
+| R 1K | no | 0.838 | 1.000 | 0.957 | 0.833 | 0.642 | 0.412 | 0.326 | depends |
+| N2 1K, 10K | half | 0.998, 1.000 | | | | | | 0.008, 0 | not shown |
+| N3 1K, 10K | 80% | 0.999, 1.000 | | | | | | 0, 0 | not shown |
+| M2 1K, 10K | half | 0.935, 0.999 | | | | | | −0.018, −0.001 | not shown |
+| M3 1K, 10K | 80% | 0.985, 0.999 | | | | | | −0.002, 0 | not shown |
+| W1 1K, 10K | all | 0.9945, 1.000 | | | | | | 0.013, 0 | not shown |
+| W1 seed 1, 1K, 10K | all | 0.9945, 1.000 | | | | | | 0.014, 0 | not shown |
+| W2 1K, 10K | all | 0.9998, 1.000 | | | | | | 0, 0 | not shown |
+
+The standard deviation of the drop is 0.013 to 0.019 for every state that reads "depends", and each drop is at
+least seven times its standard deviation. For LOW the label matches whichever way the swap went: lowering the count of a or
+raising it, its share falls with swap size within every count of b. The slow no-spurious arm at 1K is a mixed state,
+right on under half even of unswapped rows. It reads "rises" because its share right climbs with swap size at count
+b 12 and 13. The N1 overall shares match Stage A's spurious column, 0.9295 and 0.92325, to within two rows.
+
+### What it means for Stage A and Stage C
+
+Stage A's two checks, behaviour and patch, and their nulls and references, read natural texts drawn without any swap.
+The code shows it, and no swap-built row reaches them: their labels stand as measured. Stage A's spurious-accuracy
+column is different. For the arms trained on natural text only, N1, M and R, part of that column measures the
+swap-built text, not only skill at counting b. No filed Stage A prediction scored that column, so no verdict changes.
+
+The premise behind the all-spurious arms was that `count(a) + 1` is right on every training row, read as: right
+through LOW's existing count of a. On rows built like their training rows, LOW's own count gives the label on 45%,
+and on under a third of the rows that had any letter swapped. The training rows have the same mix of swap sizes, with
+18% unswapped, though they themselves were not read. So the all-spurious arms, and the 80% arm M3, were trained mostly
+on rows that LOW's counter gets wrong, and by 1,000 steps they answer those rows right on 98% to 99.5%. Stage A labels two states "reuses the old count": the slow all-spurious arm and the slow 80% arm, at 1K. Both were
+measured on natural text, where their answer runs through the count of a. But by then they had already learned to answer swap-built rows
+that LOW miscounts, so their count is not LOW's unchanged. Whether they count a afresh there or count b cannot be told,
+since `count(b) = count(a) + 1` on every such row.
+
+For Stage C's truth set this means:
+
+- **The two existing anchors stay labelled as measured**, but as "the answer runs through a count of a on natural
+  text", not "the fine-tune reused LOW's counter as it was".
+- **New early-step anchors should be trained on natural rows only.** Rejection-sample natural texts that already have
+  `count(b) = count(a) + 1`, instead of swapping letters to make them. About one natural text in five qualifies:
+  760 of the 4,000 spurious test rows needed no swap. On those rows LOW's count gives the label every time, 760 of 760,
+  so a fine-tune that keeps the existing route has nothing to fix, which is the design the all-spurious arm intended.
+  The cost is the sampling and a re-run of the slow all-spurious recipe at 1K to 2K steps, on the cluster.
+- **Methods should not be scored on swap-built rows** for any arm, since even the bases fail there.
+- The third class of option B is unchanged by this amendment: its rule still rests on the pairs it was found on.
+
+### How compelling is the evidence
+
+- **Controls.** All eighteen stop controls passed: the rows hold their filed counts, the rebuilt spurious rows match
+  the label histogram Stage A saved, and LOW and N1 count on the reference pairs and the unswapped rows, all at 1.0.
+- **Part 1 units.** A state's answer is almost fixed by the pair, so each pair is one unit. Pair (17, 13) is one
+  yes; the rule's test had one valid pair; the edge results rest on three pairs at a count of 9.
+- **Part 2 confound.** Swap size goes with count b, and within count b mostly with the swap's direction. The drop is
+  read within count b, and LOW's drop shows in both directions. The noise floor of the drop, from a made-up answerer
+  with a tenth of its answers wrong, is about 0.017.
+- **Training rows not read.** The spurious test rows are built the same way as the training rows from other seeds,
+  and the first chunk of training rows has the same swap mix. LOW's share on the training rows themselves is inferred,
+  not measured.
+- **Blind to.** Mechanism: which feature of a swap-built row breaks the count, and whether the fine-tunes' right
+  answers on swap-built rows come from counting a or b.
+
+### Surprises
+
+- LOW's own count of a gives the training label on far fewer spurious rows than filed: 45%, against the expected 85%
+  to 95%. One swapped letter already costs it a third of rows. The expected rise in answers from the pre-swap text
+  did not happen: beyond one letter, LOW answers neither text's count.
+- HIGH, which counts all three letters, fails swap-built rows much as LOW does, so it is not LOW's narrow
+  pretraining.
+- Both bases answer between 10 and 17 at the edges, on both counts.
+
+### What next
+
+1. **The Stage C truth-set decision** now has this input: existing anchors kept but re-read, new early-step anchors
+   from natural rows with `count(b) = count(a) + 1`. If the user picks option C, the natural-row recipe replaces the
+   swap-built one.
+2. **A natural-row re-run of the slow all-spurious arm**, saved at 1K and 2K. If both checks read it as running
+   through count a, the reuse anchors no longer rest on rows LOW miscounts. If it learns b directly, the earlier
+   anchors were a product of the swap-built rows.
+3. The one-third rule has no further in-range pair to test on this model. A test outside 10 to 17 would need bases
+   that count there.
+
+### Scorecard
+
+| id | claim in words | rule | read | verdict |
+|---|---|---|---|---|
+| C0 | rows and read as filed; LOW and N1 count on reference pairs and unswapped rows | every check true; model shares ≥ 0.95 | 18 of 18 true; all six model shares 1.0 | met |
+| W0 | LOW's `C b 40` answers a where its `C a 40` does; third share 0 on new pairs; the two LOW reads agree on swap rows | expected values | a share 0.975 to 1.0 on all eleven such pairs; third 0 on all six new pairs; overall 0.4445 vs 0.446, both depends | as expected |
+| P1 | LOW counts a on natural (17, 13) | both LOW reads ≥ 0.95, n ≥ 10 | 0.995, 0.995, n 200; N1 b 1.0 | met: swap-built text |
+| P1b | LOW counts a at 9 and at 18 | n-weighted share ≥ 0.95 counts, < 0.5 does not | 9: 0.000 of 233, answers 10; 18: 0.000 of 11, answers 17 | at 9: does not count, as expected; at 18: does not count, the lean was unsure |
+| P2 | slow all-spurious 10K follows the one-third rule on new pairs, both seeds | third_on_new label | 1 valid pair, (17, 10), of 6; void, void | void, the outcome leaned most likely |
+| P2b | at (17, 10) the slow fine-tune answers 16, not 15 | valid; mode | valid: LOW 0.975, N1 1.0, n 200; mode 16 on all rows, both seeds | met |
+| P3 | N1 counts b worse the larger the swap | label depends, both seeds | drop 0.149 and 0.168, sd 0.014 and 0.015 | met |
+| P4 | LOW counts a worse the larger the swap; its count gives the label on under 95% | label depends; coverage = overall | drop 0.871, sd 0.018; coverage 0.446 | met; coverage far under the expected 0.85 to 0.95; the pre-swap share falls, not rises |
+| P5 | arms trained on swap-built rows flat and ≥ 0.99 at 10K | not shown and overall ≥ 0.99, seven arms | all seven not shown; 0.999 to 1.000 | met |
+| P6a | Stage A's checks, nulls and references cannot depend on swap size | code path | natural texts only; no-c c c check true | not applicable, as filed |
+| P6b | Stage A's spurious column depends on swap size | depends iff any of N1, N1 seed 1, M, R at 10K depends | all four depend | met |
+| P6c | the all-spurious arms' training premise | qualified iff LOW depends or coverage < 0.95 | depends; 0.446 | qualified, as leaned |
+| E1 to E7 | edge cases | as filed | no empty pair; no pair under 10 rows; no ties; no void swap read; synthetic constant flat; five new pairs excluded by E6, leaving P2 void | as filed |
+
+### Not run
+
+- A test of the one-third rule on three or more valid new pairs; none exist in range on these bases.
+- LOW's accuracy on the fine-tuning rows themselves, rather than on test rows built the same way.
+- Any fine-tune on natural rows with `count(b) = count(a) + 1`, the recipe proposed above.
+- A test of why swap-built rows break the bases, or why answers stay between 10 and 17.
+- Whether the swap-trained arms answer swap-built rows by counting a or b; the two cannot be told apart there.
+- A patch check of the early anchors on swap-built rows.
+- The trajectory of the fast all-spurious arm between 1K and 10K; a second seed of it.
+
+Provenance: `experiments/pcfg_anchors/results/amend3.json`, log `cluster/logs/commute-e55-amend3-44652.out`. MATS
+cluster job 44652, $0, reads under a minute after 178 s of sampling, code at f380e7e. Model-free dry run
+`~/commute-data/scratch/reuse-lead/e55-amend3/dry.py`. Figures `figures/amend3_{swap,pairs}.png` and the log figure
+`log_amend3_swap.png`, from `plot_amend3.py` and `plot_log.py`.
