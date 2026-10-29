@@ -1,14 +1,15 @@
 # Does the gate gain tell a learned update from one that learned nothing? E46 stage 0, one table in nats
 
-*E46 stage 0, `experiments/regating_table/`, written 2026-10-29. Plan: `reports/plans/2026-10-28_plan_regating-line-reset.md`,
-section 2 with Amendment 1 as adopted, the stage 0a stop and its amendment. Red-team review:
-`reports/reviews/2026-10-28_review_regating-line-red-team.md`. Filed predictions: `results/predictions.json`. Results:
-`results/stage0a.json` from Slurm 42604 and `results/stage0b.json` from Slurm 42675. Notebook: `notebooks/E46_regating_table.ipynb`.
-Both jobs ran on the MATS cluster's debug QoS, at no cost.*
+*E46 stage 0, `experiments/regating_table/`, written 2026-10-29, revised the same day for Amendment 2. Plan:
+`reports/plans/2026-10-28_plan_regating-line-reset.md`, section 2 with Amendment 1 as adopted, the stage 0a stop and its
+amendment, and Amendment 2. Red-team review: `reports/reviews/2026-10-28_review_regating-line-red-team.md`. Filed
+predictions: `results/predictions.json` and, for the rerun, `results/predictions_amend1.json`. Results:
+`results/stage0a.json` from Slurm 42604, `results/stage0b.json` from Slurm 42675 and `results/amend1.json` from Slurm
+42791. Notebook: `notebooks/E46_regating_table.ipynb`. Every job ran on the MATS cluster's debug QoS, at no cost.*
 
 ## In plain words
 
-On every saved toy fine-tune and on four kinds of fake update, we measured how far the importance function's new values alone raise the stand-in model's prediction of the answer. Real fine-tunes raised it a lot and fake updates did not; a hand-made write that only nudges the model toward the answer landed well below the familiar-behaviour fine-tunes but close to the new-behaviour ones. The test meant to retire this line did not fire, but the random-noise check was too weak to decide, so the next step goes to the user rather than to the larger model.
+On every saved toy fine-tune and on four kinds of fake update, we measured how far the importance function's new values alone raise the stand-in model's prediction of the answer. Real fine-tunes raised it a lot. Random noise made as disruptive as each fine-tune moved it by at most an eighth as much, about as far as the noise moved the real model's answer. A hand-made write that only points the model at the answer landed close to the new-behaviour fine-tunes. Neither check retires this line or clears it, so the next step goes to the user.
 
 ## What was asked
 
@@ -49,8 +50,10 @@ also read through their least-squares split, so the updated subcomponents have t
 - **The fine-tune's update with its sign flipped.** Same directions, opposite sign. It asks whether Γ follows the
   direction of the change.
 - **A random update matched on side effects.** A Gaussian update with the fine-tune's per-matrix norms. It is scaled so
-  that the full model's KL to the original, on the non-scored positions, equals the fine-tune's. The scale was capped at
-  ten times the fine-tune's norm. It asks whether Γ reacts to a disturbance that points nowhere in particular.
+  that the full model's KL to the original, on the non-scored positions, equals the fine-tune's. It asks whether Γ
+  reacts to a disturbance that points nowhere in particular. The first run capped the scale at ten times the
+  fine-tune's norm, and the cap stopped six of seven rows short of the match. The scored reading is the rerun with the
+  cap at a hundred times, where every row matched.
 - **A per-key write.** One change to block 1's MLP output matrix, and nothing else. It is the least-norm matrix that maps
   each key's mean input there onto the answer's unembedding row. It is scaled until its real gain matches the
   fine-tune's. It uses no existing machinery by construction and sits in Δ. It asks whether Γ hands the old
@@ -63,7 +66,7 @@ write should read well below the copy fine-tune if Γ is reading existing machin
 at the answer".
 
 **The floor.** For each state, $F = \max(0.1, 2\,\mathrm{SE})$ in nats, with SE the paired standard error over held-out windows
-of the per-window gate gain. It is 0.1 for every random row and up to 0.89 for the fine-tunes and writes.
+of the per-window gate gain. It is 0.1 to 0.21 for the random rows and up to 0.89 for the fine-tunes and writes.
 
 ## What we expected, and why
 
@@ -74,7 +77,8 @@ of the per-window gate gain. It is 0.1 for every random row and up to 0.89 for t
 - **The random update reads within the floor.** E6 found a size-matched random update inert on the emoticon task. Scaling
   it up to the fine-tune's side effects was meant to give the null a fair chance to move Γ. The filed rule passes when
   every task reads within the floor. It fails when any task reads a quarter of the fine-tune's gate gain. Anything in
-  between is inconclusive.
+  between is inconclusive. Before the matched rerun the expectation was written down again: within the floor on the
+  three single-trigger tasks and both copy tables, with random map A possibly inconclusive.
 - **Anything that lowers the target does not raise the gate gain.** A state whose real gain is not positive should read a
   gate gain no higher than the floor plus 0.1.
 - **The write reads well below the copy fine-tune.** Leaning medium. Suppose Γ simply turns on the target's machinery
@@ -102,20 +106,22 @@ Slurm 42604, then passed every check in 112 seconds.
 
 The other two ` http` nulls read −0.78 and −0.51 of their fine-tunes' gains, reported and not scored.
 
-## Stage 0b: the table
+## Stage 0b and its rerun: the table
 
 ### Does Γ's new gating help the old subcomponents for the fine-tunes but not for the nulls?
 
 ![gate gain of each fine-tune against each null on the same task](../../experiments/regating_table/figures/gate_gain.png)
 
-**Reading it.** Yes, with one weak spot. Every fine-tune reads a gate gain of 3.3 to 11.6 nats, the blue circles at the top.
-Every update that lowers the target reads a negative gate gain, down to −4.8 nats. Those are the ` http` fine-tunes in
-purple and the flipped updates in orange. The random updates, the grey squares, read within 0.16 of zero on all seven tasks. Five of
-them sit inside the floor band. Two sit just outside it: emoticon at −0.155 and random map A at +0.118. Both are far below their
-fail bars, the red dashes, at 2.0 and 0.94 nats. The green triangles are the per-key writes, which read between the nulls and the
-fine-tunes. The caveat is that the random updates are weaker than they look here, which the next figure shows.
+**Reading it.** Yes for the fine-tunes and the nulls that lower the target; the random updates are the weak spot. Every
+fine-tune reads a gate gain of 3.3 to 11.6 nats, the blue circles at the top. Every update that lowers the target reads a
+negative gate gain, down to −4.8 nats. Those are the ` http` fine-tunes in purple and the flipped updates in orange. The
+random updates, the grey squares, are matched to each fine-tune's side effects. They read between −0.17 and +0.48 nats.
+Only random map B sits inside the floor band. The largest, random map A, reads 0.48 nats against a fail bar of 0.94
+nats, the red dash. Every other random row sits further below its bar. The green triangles are the per-key writes,
+which read between the nulls and the fine-tunes.
 
-Gate gain $g$, real gain $G$, floor $F$ and the full model's off-target KL, in nats; $n$ held-out windows per state.
+Gate gain $g$, real gain $G$, floor $F$ and the full model's off-target KL, in nats; $n$ held-out windows per state. The
+random rows are the KL-matched rerun; the first run's capped values are in the next section.
 
 | state | G | g | F | n | off-target KL |
 |---|---|---|---|---|---|
@@ -123,81 +129,112 @@ Gate gain $g$, real gain $G$, floor $F$ and the full model's off-target KL, in n
 | emoticon seed 1 | 13.69 | 8.35 | 0.32 | 73 | 0.064 |
 | emoticon ` http` | −9.73 | −3.46 | 0.29 | 73 | 0.059 |
 | emoticon flipped | −22.19 | −2.76 | 0.28 | 73 | 0.093 |
-| emoticon random | −0.18 | −0.155 | 0.10 | 73 | 0.044 |
+| emoticon random | −0.20 | −0.166 | 0.10 | 73 | 0.051 |
 | which seed 0 | 10.29 | 7.69 | 0.59 | 100 | 0.122 |
 | which seed 1 | 10.87 | 8.05 | 0.57 | 100 | 0.106 |
 | which ` http` | −8.06 | −3.03 | 0.50 | 100 | 0.152 |
 | which flipped | −22.39 | −4.82 | 0.42 | 100 | 0.384 |
-| which random | 0.05 | −0.083 | 0.10 | 100 | 0.055 |
+| which random | 0.08 | −0.111 | 0.10 | 100 | 0.124 |
 | we seed 0 | 12.53 | 3.56 | 0.23 | 106 | 0.090 |
 | we seed 1 | 12.19 | 3.30 | 0.19 | 106 | 0.085 |
 | we ` http` | −6.37 | −0.86 | 0.21 | 106 | 0.164 |
 | we flipped | −14.41 | −1.32 | 0.20 | 106 | 0.121 |
-| we random | −0.01 | −0.080 | 0.10 | 106 | 0.046 |
+| we random | −0.01 | −0.105 | 0.10 | 106 | 0.084 |
 | copy A seed 0 | 13.99 | 11.23 | 0.46 | 97 | 0.189 |
 | copy A seed 1 | 14.07 | 10.71 | 0.43 | 97 | 0.181 |
 | copy A flipped | −9.98 | −1.49 | 0.27 | 97 | 0.265 |
-| copy A random | 0.17 | 0.077 | 0.10 | 97 | 0.070 |
+| copy A random | 0.26 | 0.209 | 0.12 | 97 | 0.192 |
 | copy A write | 13.37 | 5.17 | 0.89 | 97 | 0.460 |
 | copy B seed 0 | 14.60 | 11.57 | 0.38 | 97 | 0.205 |
 | copy B seed 1 | 14.26 | 11.46 | 0.43 | 97 | 0.196 |
 | copy B flipped | −8.62 | −1.68 | 0.31 | 97 | 0.256 |
-| copy B random | 0.03 | 0.044 | 0.10 | 97 | 0.072 |
+| copy B random | 0.04 | 0.108 | 0.10 | 97 | 0.195 |
 | copy B write | 15.27 | 6.71 | 0.66 | 97 | 0.648 |
 | random map A seed 0 | 13.73 | 3.75 | 0.51 | 97 | 0.696 |
 | random map A seed 1 | 13.16 | 3.50 | 0.49 | 97 | 0.653 |
 | random map A flipped | −8.40 | −1.41 | 0.23 | 97 | 0.410 |
-| random map A random | 0.15 | 0.118 | 0.10 | 97 | 0.085 |
+| random map A random | 0.40 | 0.485 | 0.21 | 97 | 0.716 |
 | random map A write | 13.10 | 1.80 | 0.38 | 97 | 0.286 |
 | random map B seed 0 | 20.74 | 6.01 | 0.59 | 97 | 0.097 |
 | random map B seed 1 | 20.64 | 5.77 | 0.54 | 97 | 0.104 |
 | random map B flipped | −8.12 | −0.86 | 0.24 | 97 | 0.595 |
-| random map B random | 0.06 | 0.046 | 0.10 | 97 | 0.107 |
+| random map B random | 0.05 | 0.044 | 0.10 | 97 | 0.103 |
 | random map B write | 20.90 | 3.92 | 0.58 | 97 | 1.302 |
 | code step 10 | −0.052 | −0.042 | 0.10 | 64 rows | 0.060 |
 | code step 100 | −0.064 | −0.050 | 0.10 | 64 rows | 0.079 |
 
 The code fine-tune's off-target KL is read over every position of its 64 held-out rows, not the 40 non-scored positions.
 
-The two random rows outside the floor, in standard errors of the window mean:
-
-| row | g | SE | g over SE | fail bar, 0.25 × seed-0 fine-tune g |
-|---|---|---|---|---|
-| emoticon random | −0.155 | 0.034 | −4.6 | 2.01 |
-| random map A random | +0.118 | 0.047 | 2.5 | 0.94 |
-
-The SE is over held-out windows for one fixed random direction. It says nothing about how a second random direction
-would read.
-
 The flipped updates read a gate gain of the same sign as their real gain on all seven tasks. Its size is 0.09 to 0.22 of
 the real gain. The ` http` fine-tunes read 0.13 to 0.38 of theirs, also negative.
 
 ### Did each random update reach the fine-tune's side effects?
 
-![KL each random update reached against the fine-tune's](../../experiments/regating_table/figures/random_kl.png)
+![KL each random update reached against the fine-tune's, first run and rerun](../../experiments/regating_table/figures/random_kl.png)
 
-**Reading it.** Only on one task of seven. The filled point, random map B, matched at 6.5 times the fine-tune's norm.
-The other six hit the cap at ten times and stopped short. Emoticon reached 0.80 of its target, the closest. Random map A
-reached 0.12, the furthest. So on six tasks the random null was a smaller disturbance than the fine-tune, measured by the
-full model's KL on positions the task does not score. A null that passes while weaker than its target passes less than
-the rule intended.
+**Reading it.** Yes, on all seven tasks in the rerun; on one task in the first run. The filed rule asks for a random
+update whose off-target KL matches the fine-tune's within 10%. The first run capped the scale at ten times the
+fine-tune's norm, a guard with no source, and six of seven rows stopped short. Those are the hollow circles: random map A
+reached only 0.12 of its target. That null was a smaller disturbance than the fine-tune, so it did not run the rule as
+filed. Amendment 2 raised the cap to a hundred times and changed nothing else. Every row, the filled circles, then
+matched within 10%, at scales of 6 to 26 times the norm.
 
-| task | fine-tune's KL, the target | random update's KL | reached over target | scale | how it ended |
+| task | fine-tune's KL, the target | first run: KL at the scale used | first run: scale | rerun: KL | rerun: scale |
 |---|---|---|---|---|---|
-| emoticon | 0.055 | 0.044 | 0.80 | 10 | cap |
-| which | 0.122 | 0.055 | 0.46 | 10 | cap |
-| we | 0.090 | 0.046 | 0.51 | 10 | cap |
-| copy A | 0.189 | 0.070 | 0.37 | 10 | cap |
-| copy B | 0.205 | 0.072 | 0.35 | 10 | cap |
-| random map A | 0.696 | 0.085 | 0.12 | 10 | cap |
-| random map B | 0.097 | 0.107 | 1.10 | 6.50 | matched |
+| emoticon | 0.055 | 0.044 | 10, cap | 0.051 | 10.8 |
+| which | 0.122 | 0.055 | 10, cap | 0.124 | 14.8 |
+| we | 0.090 | 0.046 | 10, cap | 0.084 | 13.4 |
+| copy A | 0.189 | 0.070 | 10, cap | 0.192 | 16.1 |
+| copy B | 0.205 | 0.072 | 10, cap | 0.195 | 16.1 |
+| random map A | 0.696 | 0.085 | 10, cap | 0.716 | 26.4 |
+| random map B | 0.097 | 0.107 | 6.5 | 0.103 | 6.4 |
 
-Over the last two grid points, scales 5.3 and 10, the KL grew about as the square of the scale on every task. If that
-held, matching would have needed scales of roughly 11 to 29 times the fine-tune's norm. That is an extrapolation, not a
-measurement. At the original weights the same reading is about 0.0004 nats, the bf16 noise of the KL itself.
+Before each row the rerun recomputed the first run's random update at the first run's scale. The off-target KL came back
+identical on all seven tasks, so the two runs measure the same direction on the same windows. The first run had
+extrapolated that matching would need 11 to 29 times the norm. The six capped rows matched at 11 to 26 times. At the
+original weights the same reading is about 0.0004 nats, the bf16 noise of the KL itself.
 
-The random updates barely touch the target: their real gains are −0.18 to +0.17 nats. That is by design; they were
-matched on side effects, not on the gain.
+| task | first run's g, at the cap | rerun's g, matched | floor F in the rerun |
+|---|---|---|---|
+| emoticon | −0.155 | −0.166 | 0.10 |
+| which | −0.083 | −0.111 | 0.10 |
+| we | −0.080 | −0.105 | 0.10 |
+| copy A | +0.077 | +0.209 | 0.12 |
+| copy B | +0.044 | +0.108 | 0.10 |
+| random map A | +0.118 | +0.485 | 0.21 |
+| random map B | +0.046 | +0.044 | 0.10 |
+
+In the first run five of seven rows sat inside the floor. Matching moved four of them out: which, we and both copy
+tables. Random map A grew fourfold with its scale.
+
+### Does a random update's gate gain follow the real change it makes?
+
+![gate gain against real gain for the KL-matched random updates and the fine-tunes](../../experiments/regating_table/figures/g_vs_G.png)
+
+**Reading it.** Roughly, yes: the grey squares lie near the dashed line where the gate gain equals the real gain. A
+random update of the fine-tune's disruptiveness still moves the target a little in the real model, by −0.20 to +0.40
+nats. On the three rows where that real change is larger than 0.1 nats, the gate gain is 0.79 to 1.21 times it. On the
+four rows where the real change is within 0.1 of zero, the gate gain is within 0.12 of zero too. On ` which` the two have
+opposite signs, +0.08 real against −0.11 through Γ. The fine-tunes, the blue circles, sit below the line. Their gate
+gain is 0.27 to 0.80 of their real gain, but that real gain is 10 to 21 nats. So Γ passes on about as much of a random
+update's small real change as of a fine-tune's large one. The rule scores the gate gain's size, not this relation, and
+the size reads inconclusive.
+
+The seven random rows, KL-matched; fail bar is a quarter of the seed-0 fine-tune's gate gain on the same task:
+
+| task | G | g | g over G | g over its SE | F | fail bar | verdict |
+|---|---|---|---|---|---|---|---|
+| emoticon | −0.196 | −0.166 | 0.85 | −4.8 | 0.10 | 2.01 | over F |
+| which | +0.079 | −0.111 | — | −2.4 | 0.10 | 1.92 | over F |
+| we | −0.014 | −0.105 | — | −4.0 | 0.10 | 0.89 | over F |
+| copy A | +0.264 | +0.209 | 0.79 | 3.6 | 0.12 | 2.81 | over F |
+| copy B | +0.037 | +0.108 | — | 2.2 | 0.10 | 2.89 | over F |
+| random map A | +0.401 | +0.485 | 1.21 | 4.7 | 0.21 | 0.94 | over F |
+| random map B | +0.051 | +0.044 | — | 1.2 | 0.10 | 1.50 | within F |
+
+The ratio is left blank where the real gain is within 0.1 nats of zero, as filed. The SE is over held-out windows for one
+fixed random direction. It says nothing about how a second random direction would read. Three of the six rows over the
+floor are negative: there Γ's new values lower the target. The three positive ones read 0.04 to 0.52 of their fail bars.
 
 ### Does Γ treat a write that only points the activations at the answer like the copy fine-tune?
 
@@ -248,7 +285,7 @@ updated subcomponents add 0.14 to 0.51 nats on top under Γ's new values, in bot
 |---|---|---|---|
 | gate gain g | anything the real fine-tuned model does that the masked stand-in does not; whether Γ's reading is a leak of the answer or a description of a mechanism | the fine-tunes, 3.3 to 11.6 nats; identity check on E18's exact state | max(0.1, 2 SE) per state, 0.10 to 0.89 |
 | gated piece gain over piece gain | a behaviour Γ can already switch on but the subcomponents cannot express; it is E12's share under another name | E12's filed ratios, reproduced within 0.002 | E12's two seeds differ by up to 0.06 |
-| random update, KL-matched | a structured direction of the same size; one random seed per task; six of seven rows were weaker than the fine-tune | none run: no update known to move Γ only by its size | 0.1 nats |
+| random update, KL-matched | a structured direction of the same size; one random seed per task; whether its gate gain comes from Γ or from the small real change it makes | none run: no update known to move Γ only by its size | 0.10 to 0.21 nats |
 | per-key write | writes at other layers or of other forms; one write per task | the copy write, which uses existing machinery through the tied embedding | the write's own floor, 0.38 to 0.89 |
 | flipped update | nothing it is meant to test beyond smoothness; unscored | — | — |
 
@@ -264,6 +301,12 @@ updated subcomponents add 0.14 to 0.51 nats on top under Γ's new values, in bot
    passes when it does not raise the target. The write test is scored on the random-map writes, against the copy
    fine-tune of the same table size; the copy writes are reported only. Fable's proposed check of the cosine between the
    write's and the fine-tune's change to the residual stream was not added.
+4. **Amendment 2, after stage 0b, 2026-10-29.** The random update's scale cap went from ten to a hundred times the
+   fine-tune's norm, and nothing else changed. The filed rule asks for a KL-matched null; the unsourced cap of ten
+   stopped six of seven rows short, so the rule as written had not been run. This was a fix with one clear option,
+   made and reported as an FYI under the user's rule of 2026-10-29, on Fable's advice. Only the seven random rows were
+   rerun, against `results/predictions_amend1.json`, filed before the run with the same rule, floor, fail fraction and
+   match tolerance.
 
 ## What stage 0 closes from the red team, and what it does not
 
@@ -272,9 +315,9 @@ updated subcomponents add 0.14 to 0.51 nats on top under Γ's new values, in bot
 - *The share reads the same for a non-learning or other-target update.* In nats that is no longer so. The non-learning
   code fine-tune reads a gate gain of −0.04 to −0.05, the size of its real gain. The other-target fine-tunes read
   negative gate gains. The share's problem was its near-zero denominator, not the gate gain itself.
-- *Any diffuse update reads as Γ switching subcomponents on.* A random update of up to ten times the fine-tune's size
-  does not move the gate gain beyond 0.16 nats. This is weaker than it sounds, because six of seven random updates
-  had smaller side effects than the fine-tune.
+- *Any diffuse update reads as Γ switching subcomponents on.* Narrowed, not closed. A random update as disruptive as
+  the fine-tune moves the gate gain by at most 0.48 nats, an eighth of the fine-tune's on the same task. But six of
+  seven rows sit outside the floor, and the gate gain follows the small real change each random update makes.
 - *Γ turns on a token's machinery whenever the activations predict the token.* Partly. A write that makes the
   activations predict the answer gets a third or less of the copy fine-tune's gate gain. But it still gets half to two-thirds of
   what the new-behaviour fine-tune gets, so the gap between "new behaviour" and "a write that uses no machinery" is
@@ -299,13 +342,15 @@ that does not. That answers the red team's sharpest complaint about the old shar
 real gain. The gate gain is still not a clean reading of "existing machinery": a write that uses none earns 1.8 to 3.9
 nats, not far below a fine-tune that teaches a new mapping. For `GOALS.md`'s fork between strengthening existing
 behaviour and teaching new, the copy fine-tunes still stand apart from both, but the new-behaviour fine-tunes and the
-no-machinery write sit close together. Whether the random null is strong enough to clear the size question stays open.
+no-machinery write sit close together. The matched random null leaves the size question open in a narrower form. A
+disturbance as large as a fine-tune does not make Γ hand the old subcomponents gains of the fine-tune's order. It does
+make Γ pass on most of whatever small real change the disturbance causes.
 
 ## How compelling is the evidence
 
 - The control passed on every task, and E12's ratios were reproduced within 0.002.
-- The random null is the weak link. It reached the fine-tune's side effects on one task of seven, and two rows sat
-  outside the floor by 2.5 and 4.6 standard errors of the window mean. In size they are 0.08 and 0.13 of their fail bars.
+- The random null is the weak link. Matched on side effects on every task, six of its seven rows sit outside the floor,
+  by 2.2 to 4.8 standard errors of the window mean. The largest is half its fail bar; the rest are a tenth or less.
 - Every null has one seed. The floor is window-sampling noise for one fixed update, not the spread across random draws.
 - All tasks are single-position toys on the 67M model: three single-trigger tasks, two copy and two random-map tables,
   and one non-learning code fine-tune.
@@ -315,10 +360,14 @@ no-machinery write sit close together. Whether the random null is strong enough 
 - **The per-key write earns a real gate gain.** At 1.8 and 3.9 nats it is far above the floor. That is about half to two-thirds of the
   random-map fine-tunes'. No prediction was filed on its size against the random-map fine-tune; the filed test compared it to
   the copy fine-tune only.
-- **The random update hit its cap on six tasks of seven.** The plan filed the cap at ten
-  times as a guard and gave no expected count of capped rows.
-- The emoticon random row reads a small *negative* gate gain, −0.155. It lowers the target, which the non-positive rule
-  allows; it is outside the floor in size only.
+- **Matching the random update pushed it out of the floor where we expected it inside.** The rerun's filed expectation
+  was a pass on the single-trigger and copy tasks. Instead all five read outside the floor, at 0.105 to 0.209 nats in size, and
+  random map A rose from 0.118 to 0.485. In the first run the cap of ten stopped six tasks of seven short of the match.
+  The plan had filed that cap as a guard, with no expected count of capped rows.
+- **The random update's gate gain tracks its real gain.** Where the real gain is larger than 0.1 nats, the ratio is 0.79
+  to 1.21, higher than any fine-tune's 0.27 to 0.80. Nothing was filed on this; the rule scores size only.
+- Three random rows read a small *negative* gate gain, −0.105 to −0.166. They lower the target, which the non-positive
+  rule allows; they are outside the floor in size only. On ` which` the sign is opposite to the real gain's.
 
 ## Advice and decision
 
@@ -330,18 +379,24 @@ no-machinery write sit close together. Whether the random null is strong enough 
 |---|---|---|---|---|
 | 0a | apparatus reproduces E18, E12 and E36 | cells within 0.02; identity 0.597 ± 0.01; T₁ within 2% of gain; E12 r within 0.03; ` http` null ≤ 0.1 of gain, one-sided | all within; null −0.72 | pass |
 | P0.2 | copy and random-map fine-tunes replicate E12 | gated piece gain over piece gain ≥ 0.8 copy, ≤ 0.5 random, both seeds | 0.87–0.97 copy; 0.36–0.41 random | pass |
-| P0.3 | KL-matched random update moves no gate gain | pass all \|g\| ≤ F; fail any \|g\| > F and ≥ 0.25 × \|g of fine-tune\|; else inconclusive | 5 of 7 within F; emoticon −0.155, random map A +0.118 over F = 0.1, against bars 2.0, 0.94; cap bound on 6 of 7 | inconclusive |
+| P0.3 | KL-matched random update moves no gate gain | pass all \|g\| ≤ F; fail any \|g\| > F and ≥ 0.25 × \|g of fine-tune\|; else inconclusive | Amendment 2, all 7 KL-matched within 10%: 1 of 7 within F; 6 over F at −0.166 to +0.485, none at its bar, largest random map A 0.485 against 0.94. First run, cap 10 bound on 6 of 7: 5 of 7 within F | inconclusive |
 | non-positive rule | updates that do not raise the target do not raise g | g ≤ 0.1 + F whenever G ≤ 0 | every such row negative or within | pass |
 | P0.4 | a write with no machinery does not read like the copy fine-tune | random-map writes over copy fine-tune: both ≤ 0.5 pass, either ≥ 0.8 retire | 0.160, 0.338 | pass |
 | sign row | flipped update's g has G's sign | unscored | same sign on 7 of 7 | — |
-| tree | | P0.2 pass; P0.3 inconclusive; P0.4 pass → card | | card |
+| unscored | random rows' g over G, where \|G\| ≥ 0.1 | reported only | 0.85, 0.79, 1.21 | — |
+| tree | | Amendment 2's tree: P0.2 pass; P0.3 inconclusive with no row capped; P0.4 pass → card | | card |
 
-The plan's tree has no branch for "P0.3 inconclusive with P0.4 pass" other than a card with the numbers. Neither stage 1
-nor retirement is decided here.
+Amendment 2's tree sends "P0.3 inconclusive, no row capped, P0.4 pass" to a card with the numbers. Neither stage 1 nor
+retirement is decided here.
 
 ## Not run
 
-- A second random direction per task, and any random update past ten times the fine-tune's norm.
+- A second random direction per task. The floor is window noise for one draw, so whether 0.1 to 0.5 nats is typical of
+  random updates or of these seven draws is not known.
+- A random update matched on the real gain rather than on side effects, which would say whether the gate gain follows
+  the real gain or the disturbance.
+- P0.4's write rows matched on side effects: the writes were scaled to the fine-tune's real gain only.
+- Any rerun of the non-random rows after Amendment 2; they are stage 0b's, read unchanged.
 - A structured null of the fine-tune's size that is not the fine-tune: for instance its update rotated within each matrix.
 - The cosine between the write's and the fine-tune's change to the residual stream after block 1, which Fable proposed.
 - Writes at other layers or of other forms; more than one write per task.
@@ -356,5 +411,8 @@ nor retirement is decided here.
   amendment: Slurm 42604, 112 s, commit `7d5fea6`, `results/stage0a.json`, log `cluster/logs/commute-regating-table-42604.out`.
 - Stage 0b: Slurm 42675, 109 s of measurement, commit `910effa`, `results/stage0b.json`, log
   `cluster/logs/commute-regating-table-42675.out`.
+- Amendment 2: Slurm 42791, about a minute, `experiments/regating_table/amend1.py` at commit `26d4e6b`,
+  `results/amend1.json`, log `cluster/logs/commute-regating-table-42791.out`. Each row's reproduction of stage 0b's
+  off-target KL at the old scale was exact, field `repro`.
 - MATS cluster, debug QoS, $0. Large state files: `results/large/`, a link into `~/commute-data/results-large/regating_table`.
 - Figures: `experiments/regating_table/plot.py`, run through `fleet/cpu-run`, into `experiments/regating_table/figures/`.
