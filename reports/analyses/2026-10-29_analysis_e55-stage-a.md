@@ -5,8 +5,8 @@ E55 Stage A, reuse line, 2026-10-29. Plan `reports/plans/2026-10-29_plan_reuse-s
 `notebooks/E55_pcfg_anchors.ipynb`, figures `experiments/pcfg_anchors/figures/` from `plot.py`.
 
 We fine-tuned a small model that counts only the letter a to count the letter b, and asked whether each new answer runs through the old count, judged without any decomposition.
-Fast fine-tunes never used the old count, while slow fine-tunes trained mostly or only on rows where one more than the count of a is the answer used it after a thousand steps, and by the end neither check read any of them as using it.
-The reuse line now has a ground truth outside VPD, but it marks only two early states as reusing the old count, both trained on letter-swapped rows that the base model, measured on test rows built the same way, miscounts more often than not, so the design argument that nothing pushed them to change its counter no longer holds; later the all-spurious states answer a rule of two counts, a candidate third class.
+Fast fine-tunes never used the old count; slow ones trained mostly or only on rows where one more than the count of a is the answer used it at a thousand steps, and by the end none did, the all-spurious ones answering a rule of two counts.
+Those rows were built by swapping letters, which breaks the base model's count, and on swapped text where one more than the count of a and the count of b differ, the two early states that reuse it answer through a strengthened count of a, not a separate count of b, narrowly and with a pull from b.
 
 ## The answer
 
@@ -19,9 +19,11 @@ all-spurious answers at 10K are a function of two of the three counts, not of an
 of the two; the slow one, by a reading not filed, answers a third of the way from `count(a) + 1` to `count(b)`. Amendment 2 filed that reading and it
 held on 20,000 fresh rows, within the same pairs of counts; a test on new pairs was void. Amendment 3 found that
 letter-swapped rows built the same way as the spurious fine-tunes' training rows break the base model: its own count
-of a gives their label on under half. So the two early states that reuse the old count were pushed to change, and
-answer rows it miscounts, either through b or through a strengthened count of a; new anchors could use natural rows,
-at the cost of a narrow label range. Stage A's labels, read on natural text, stand.
+of a gives their label on under half. So the two early states that reuse the old count were pushed to change.
+Amendment 4 asked how. On swapped rows where the two readings give different answers, both seeds of the slow
+all-spurious state answer through a strengthened count of a, not a count of b. The patch check clears its bar narrowly,
+and count b pulls a third of their answers one step towards it; the slow 80% state reads neither there. Stage A's
+labels, read on natural text, stand.
 
 ## What we were trying to test
 
@@ -1130,3 +1132,240 @@ Provenance: `experiments/pcfg_anchors/results/amend3.json`, log `cluster/logs/co
 cluster job 44652, $0, reads under a minute after 178 s of sampling, code at f380e7e. Model-free dry run
 `~/commute-data/scratch/reuse-lead/e55-amend3/dry.py`. Figures `figures/amend3_{swap,pairs}.png` and the log figure
 `log_amend3_swap.png`, from `plot_amend3.py` and `plot_log.py`.
+
+## Amendment 4: on letter-swapped text, do the early "reuses the old count" states answer through count a or count b?
+
+*2026-10-29. Code `experiments/pcfg_anchors/amend4.py`, predictions `results/predictions_amend4.json`, filed before
+the run and amended before the run after the code review, as its dated "amendments" entry records. Result
+`results/amend4.json`, per-pair outputs `results/large/amend4/outputs/`, log `cluster/logs/commute-e55-amend4-44746.out`.
+MATS cluster job 44746, $0, 48 s, code at d62c43f. Figure from `plot_amend4.py`.*
+
+We read the three early fine-tunes Stage A called "reuses the old count" on letter-swapped text where one more than
+the count of a and the count of b are different answers. The two slow all-spurious states answer one more than the
+count of a on about two thirds of these rows and almost never the count of b, while the slow 80% state reads neither.
+So the early anchors answer swapped text through a strengthened count of a, not a separate count of b, though the
+patch check clears its bar narrowly and count b pulls their other answers one step towards it.
+
+### The answer
+
+The early slow all-spurious states answer letter-swapped text through their count of a, not through a separate count
+of b. On swap-built rows where the two readings disagree, both seeds answer one more than the count of a on about two
+thirds of rows. They answer the count of b on one row in a thousand. LOW, the base before fine-tuning, gets its own
+count of a right on about a third of the same rows. The fast no-spurious fine-tune, which counts b, reads "through b"
+there as it should. The slow 80% state and the late all-spurious state read neither. Two things temper the result.
+The patch check clears its bar by less than two standard deviations. And on the remaining rows every answer moves one
+step towards the count of b, the start of the rule of two counts the same arm follows at 10K.
+
+### What we were trying to test
+
+Amendment 3 found that the two early "reuses the old count" states, the slow all-spurious arm and the slow 80% arm at
+1,000 steps, answer swap-built rows right where LOW miscounts them. That left two readings. In the first, call it
+R-a, their count of a was strengthened to cope with swapped text: still an existing count, made stronger. In the
+second, R-b, they count b on such rows by a separate route. On Stage A's swap-built rows `count(b) = count(a) + 1`,
+so answers cannot tell the two apart.
+
+**Off-label swap-built rows.** We drew natural texts and moved the count of a in the counted window by one or two
+letters, with the same a-to-c swap step that built the spurious training rows. We kept rows where `count(a) + 1` is
+not `count(b)`, where `count(a)` is not `count(b)` either, and where `count(a) + 1` lies between 10 and 17, the range
+in which the bases answer at all. These rows have the swap texture of the training rows but not their label. On them,
+R-a answers `count(a) + 1` and R-b answers `count(b)`. The pool holds 4,000 rows; one letter was swapped on about half.
+
+**The two checks, as in Stage A.** The behaviour share is the share of the first 1,000 rows on which the `C b 40`
+answer equals `count(a) + 1`, or `count(b)`. The patch share uses 1,000 pairs of off-label rows that differ in one
+count only. The residual at `=` after block 5 is replaced by the donor's, and the patch share is the share of pairs
+whose answer becomes the donor's and differs from the recipient's. Each count gets Stage A's label from its filed bars:
+"through" when both shares clear the upper bar, "not through" when both sit below the lower bar, "neither" otherwise.
+A state reads "reads a" when count a is through and count b is not; "reads b" the reverse; "both" or "neither" otherwise.
+
+**The states.** Three are scored: the slow all-spurious arm at 1K, its seed copy, and the slow 80% arm at 1K. The fast
+no-spurious arm at 1K counts b on swapped text, right on 95% or more of rows with one or two letters swapped. It is the
+positive control for count b, and the scored readings are void unless it reads "reads b". The slow all-spurious arm at
+10K and LOW are described only. No saved model counts a on swapped text, so the count-a side has no positive control.
+
+**Part 1, described only.** The lead's first design used Stage A's own swap-built test rows as recipients and natural
+texts as donors. At block 5 the residual at `=` already carries the answer, so this patch mostly copies the donor's
+own answer. The donors are natural texts, on which these states answer `count(a) + 1` under either reading, so both
+readings predict "reads a". The code writer showed this in the model-free dry run, and the lead scored Part 2 instead.
+
+**Amended before the run.** After the code review, and before any model was read, five changes were filed with a
+date. The main one is the reading rule. As drafted, "reads a" needed count b to be "not through". But Stage A's rule
+calls the slow all-spurious state's own count b on natural rows "neither", because its patch share there, 0.104, sits
+just above the lower bar of 0.1. A pure count-a answerer would then have read "neither". The rule now asks only that
+count b not be "through". The seed-copy prediction was made void unless both read one-sided. LOW became a description,
+since the row filter makes its reading "neither" by construction. Rows were limited to `count(a) + 1` from 10 to 17, and
+the result file was written after each part.
+
+### What we expected
+
+The slow all-spurious state at 1K would read "reads a", at 55%, against 30% for "reads b". Its seed copy would agree,
+at 85%. The slow 80% state was less certain: "reads a" at 40%, "neither" at 35% and "reads b" at 25%. The count-b
+control would read "reads b" in both parts. LOW would answer neither `count(a) + 1` nor `count(b)`, with both
+behaviour shares near zero. There was no lean for the slow all-spurious state at 10K.
+
+### What we observed
+
+#### On off-label swap-built rows, which count do the early states answer through?
+
+![Stage A's two checks on natural and off-label swap-built rows](../../experiments/pcfg_anchors/figures/amend4_offlabel.png)
+
+**Reading it.** Through count a, for the two slow all-spurious states at 1K, and narrowly. Each panel plots the
+behaviour share against the patch share, with Stage A's "through" region shaded green. Each arrow runs from a state's
+value on natural rows to its value on off-label rows. Both seeds stay in the count-a "through" region, though they
+move towards its corner. On count b they sit near zero behaviour, with patch shares of about 0.19. The count-b control
+stays in the count-b "through" region. The slow 80% state slides just outside both count-a bars, and the 10K state was
+outside before and stays outside.
+
+The patch share is the narrow part. Both seeds clear the upper bar of 0.483 by 0.022 and 0.013, against a binomial
+standard deviation near 0.016. The behaviour share clears its bar of 0.5 by 0.17 and 0.20.
+
+| state | role | `count(a) + 1` share, natural → off-label | count-a patch share, natural → off-label | count a | `count(b)` share | count-b patch share | count b | reading |
+|---|---|---|---|---|---|---|---|---|
+| fast, no spurious rows, 1K | count-b control | 0.000 → 0.007 | 0.000 → 0.123 | neither | 0.993 → 0.906 | 0.883 → 0.766 | through | reads b |
+| slow, all spurious, 1K | scored | 0.879 → 0.671 | 0.715 → 0.505 | through | 0.001 → 0.001 | 0.104 → 0.191 | neither | reads a |
+| same, seed 1 | scored | 0.903 → 0.696 | 0.764 → 0.496 | through | 0.001 → 0.001 | 0.073 → 0.188 | neither | reads a |
+| slow, 80% spurious, 1K | scored | 0.631 → 0.466 | 0.594 → 0.459 | neither | 0.099 → 0.078 | 0.328 → 0.388 | neither | neither |
+| slow, all spurious, 10K | described | 0.399 → 0.187 | 0.361 → 0.499 | neither | 0.001 → 0.001 | 0.429 → 0.310 | neither | neither |
+| LOW, before fine-tuning | described | off-label only: 0.266 | 0.575 | neither | 0.109 | 0.404 | neither | neither |
+
+Bars, from Stage A: `count(a) + 1` share 0.100 and 0.500; count-a patch 0.097 and 0.483; `count(b)` share 0.342 and
+0.635; count-b patch 0.100 and 0.500. The natural values are Stage A's, and this run reproduced every natural patch
+share exactly. Pairs split evenly by swap size, 501 with one letter and 499 with two; the patch shares barely differ
+between them.
+
+#### What are the other third of answers? Exploration, not filed
+
+The saved per-pair outputs hold each state's answer on the same 1,000 off-label rows the behaviour share reads, so
+they can be sorted against the counts. The rows were rebuilt model-free from the filed seeds; the shares match the
+behaviour shares to the row.
+
+| state | `count(a) + 1` | strictly between it and `count(b)` | `count(b)` | elsewhere | one-third rule |
+|---|---|---|---|---|---|
+| slow, all spurious, 1K | 0.671 | 0.328 | 0.001 | 0 | 0.423 |
+| same, seed 1 | 0.696 | 0.303 | 0.001 | 0 | 0.401 |
+| slow, 80% spurious, 1K | 0.466 | 0.384 | 0.078 | 0.072 | 0.451 |
+| slow, all spurious, 10K | 0.187 | 0.812 | 0.001 | 0 | 0.958 |
+| fast, no spurious rows, 1K | 0.007 | 0.083 | 0.906 | 0.004 | |
+| LOW, before fine-tuning | 0.266 | 0.405 | 0.109 | 0.220 | |
+
+The one-third rule is Amendment 1's answer `round((2(count(a) + 1) + count(b)) / 3)`; its column overlaps the others.
+
+Every answer the slow all-spurious state at 1K gives that is not `count(a) + 1` lies one step from it towards
+`count(b)`: `count(a)` on 28.5% of rows and `count(a) + 2` on 4.2%. Nothing else appears. The pull is uneven. Where
+the swap raised the count of a and `count(b)` sits below, 57% of its answers move one step; elsewhere 10% to 13% do.
+Moving towards `count(b)` and moving back towards the text before the swap are the same step in most rows. In the
+138 rows where they point opposite ways, 13% of answers move towards `count(b)` and none move back. So count b,
+not the pre-swap text, is what pulls these answers.
+
+Split by swap direction, the 1K state answers `count(a) + 1` on about 90% of rows where letters were removed. Where
+letters were added it does so on 58% with one added and 33% with two. LOW's own count of a is right on 35% of these
+rows overall. It falls to 8% where two letters were added. So the 1K state's count of a copes with swapped text far
+better than LOW's, but not fully.
+
+The 10K state follows the one-third rule on 95.8% of off-label rows. It answers `count(a) + 1` on none of the 474 rows
+where `count(b)` is three or more away. The rule was found on natural rows; whether these pairs of counts are new was
+not checked.
+
+#### Part 1, described: the patch on Stage A's swap-built test rows
+
+As the dry run foresaw, the patch with natural donors reads "reads a" for both slow all-spurious seeds and so cannot
+separate the readings. The count-b control reads "reads b". LOW reads "both": it miscounts the swap-built recipients,
+so moving in a natural donor's correct answer counts as a patch success on either count.
+
+| state | count-a patch share | count-b patch share | reading | expected |
+|---|---|---|---|---|
+| fast, no spurious rows, 1K | 0.065 | 0.748 | reads b | about 0 and 0.85 to 0.9; reads b |
+| slow, all spurious, 1K | 0.543 | 0.016 | reads a | 0.65 to 0.75 and at most 0.1; reads a under either reading |
+| same, seed 1 | 0.535 | 0.015 | reads a | as above |
+| slow, 80% spurious, 1K | 0.532 | 0.112 | neither | 0.5 to 0.6 and 0.1 to 0.3; reads a or neither |
+| slow, all spurious, 10K | 0.749 | 0.247 | neither | neither |
+| LOW, before fine-tuning | 0.800 | 0.686 | both | count-a share moderate, count-b near 0 |
+
+Recipients are the 3,240 of Stage A's 4,000 spurious test rows that needed at least one letter swapped; 1,000 pairs per
+patch. The count-a patch share of the 1K state falls with swap size, from 0.65 at one letter to 0.39 at three.
+
+### What we learned
+
+On swap-built rows where the two readings give different answers, the early slow all-spurious states answer one more
+than the count of a and not the count of b, on both seeds. Their count of a copes with swapped text where LOW's does
+not. So Amendment 3's question has a first answer: mostly R-a, an existing count made stronger. The answer is not clean. The patch check clears its bar narrowly, and count b already moves a third of the
+answers one step towards itself. That is the shape of the rule of two counts the same arm reaches by 10K. The slow 80%
+state does not read as either, so on swapped text only the two all-spurious seeds keep the "reuses" label.
+
+### What it means for the Stage C truth-set decision
+
+The card's either/or, "either they count b there, or they strengthened the count of a", now leans to the second for
+the slow all-spurious states, on rows with one or two letters swapped. The early anchors' "reuses the old count"
+label holds on swap-built text too, read as a strengthened count of a. This bears on the decision but does not settle
+it:
+
+- **Option A**, scoring the eleven labelled states as filed, rests on firmer ground for these two anchors. The slow 80%
+  anchor is weaker, since it reads neither here.
+- **The design argument still fails.** The anchors were pushed to change their count of a; they changed it by
+  strengthening it, which `GOALS.md` counts as existing, but not by leaving it alone.
+- **Option C's natural-row recipe** is still the way to get anchors that nothing pushed to change. Its cost is
+  unchanged: a narrow label range.
+- **The third class** gains a description, not a test: the late slow state follows the one-third rule on swap-built
+  rows too.
+
+### How compelling is the evidence
+
+- **Controls.** All 26 stop controls passed. LOW's count-a patch on natural pairs read 0.959. Every natural patch share
+  reproduced Stage A's exactly.
+- **Count b has a positive control; count a has none.** The count-b control reads through b with behaviour 0.906 and
+  patch 0.766. No saved model counts a on swapped text, so the count-a "through" rests on the bars alone.
+- **Noise.** Each share reads 1,000 rows or pairs, a standard deviation near 0.016 at one half. The count-a patch share
+  clears its bar by 1.4 and 0.8 standard deviations on the two seeds; both seeds clear it.
+- **Off distribution.** These states trained only on rows where `count(b) = count(a) + 1`. Off-label rows break that,
+  as Stage A's natural rows already did.
+- **Swap sizes one and two only.** Training rows reach seven swapped letters. The 1K state's count of a weakens as more
+  letters are added, so larger swaps would test it harder.
+- **Blind to.** Which feature of swapped text the strengthened count copes with; whether count b's pull comes through
+  the same route as the count of a; anything beyond the residual at one position.
+
+### Surprises
+
+- LOW's `count(a) + 1` share is 0.266, where about zero was expected. LOW lags the swap by about one letter: where two
+  a's were removed it answers one fewer than the text had before on 77% of rows, which equals `count(a) + 1`. So its
+  share is a by-product of miscounting, not a count plus one.
+- The 1K state's count-a patch share fell from 0.715 on natural rows to 0.505, against about 0.7 expected under R-a.
+- The 10K state follows the one-third rule on 95.8% of off-label swap-built rows. This was not filed.
+- No filed prediction was reversed.
+
+### What next
+
+1. **The Stage C truth-set decision**, with this input: the two all-spurious anchors' "reuses" label holds on swapped
+   text as a strengthened count of a, with a pull from count b; the 80% anchor reads neither there.
+2. **The natural-row re-run of the slow all-spurious arm**, saved at 1K and 2K, if the user picks option C. If both
+   checks read it through count a with no pull from b, the anchors no longer rest on swapped text.
+3. **The same off-label read at three to seven swapped letters**, $0. If the 1K state's `count(a) + 1` share falls
+   towards LOW's, the strengthening is partial and the pull from b grows; if it holds, the count of a was repaired.
+
+### Scorecard
+
+| id | claim in words | rule | read | verdict |
+|---|---|---|---|---|
+| C0 | rows, pairs and natural patch shares as filed | every stop control true | 26 of 26; LOW natural count-a patch 0.959; natural shares reproduce Stage A exactly | met |
+| W0 | the count-b control reads b in both parts; LOW and the 10K state described | Part 1 and Part 2 control `reads b` | Part 1 0.065, 0.748; Part 2 behaviour 0.906, patch 0.766; both `reads b`. LOW `neither`; 10K state `neither` in both | met; LOW's `count(a) + 1` share 0.266, above its expected value of about 0 |
+| P1_W1_1000 | the slow all-spurious state at 1K answers swap-built rows through its count of a | Part 2 reading == `reads a` | count a: 0.671, 0.505, through; count b: 0.001, 0.191, neither; `reads a` | met, the 55% lean; patch over its bar by 0.022 |
+| P1s_W1s1_1000 | its seed copy reads the same | void if Part 2 void or the first reads `neither` or `both`; else equal | `reads a`, `reads a` | met, the 85% lean |
+| P2_M3_1000 | the slow 80% state at 1K answers through its count of a | Part 2 reading == `reads a` | count a: 0.466, 0.459, both just under their bars; count b: 0.078, 0.388; `neither` | missed; `neither` was the 35% second lean |
+| Part 1 | the patch on Stage A's swap-built rows with natural donors | described only | slow all-spurious seeds `reads a`; 80% state `neither`; control `reads b`; LOW `both` | described; non-separating, as filed |
+| E1 to E9 | edge cases | as filed | no pair set under 500; no void part; no nan; no reading at a bar | as filed |
+
+### Not run
+
+- A positive control for count a on swapped text; no saved model counts a there.
+- Off-label rows with three or more letters swapped.
+- A second seed of the slow 80% arm; more seeds of the slow all-spurious arm at 1K to 2K.
+- Patches at any position other than `=`, or per subcomponent with a decomposition.
+- A test of what in swapped text the strengthened count copes with, or of the route count b's pull takes.
+- Whether the off-label pairs of counts on which the 10K state follows the one-third rule are new to it.
+- The natural-row re-run of the slow all-spurious arm.
+- The training rows themselves.
+
+Provenance: `experiments/pcfg_anchors/results/amend4.json`, per-pair outputs
+`experiments/pcfg_anchors/results/large/amend4/outputs/*.npy`, log `cluster/logs/commute-e55-amend4-44746.out`. MATS
+cluster job 44746, $0, 48 s, code at d62c43f, results committed at 3b4f962. Predictions filed at 65499a3 and amended
+before the run at d62c43f. Answer breakdown, exploration: `~/commute-data/scratch/reuse-lead/e55-amend4-writer/answers.py`
+and `direction.py`, model-free rebuilds of the filed rows read against the saved outputs. Figure
+`figures/amend4_offlabel.png` from `plot_amend4.py`.
