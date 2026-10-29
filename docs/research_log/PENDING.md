@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-10-29 reuse-lead · reports/analyses/2026-10-29_analysis_reuse-stage0.md · new card for the reuse line (experiments page) + one timeline line · Stage 0: no repo task has possession set by construction in pretraining; emoticon and ladder (most commute findings) cannot state a non-trivial f_C/X_C; Def 1 vacuous on small token domains without held-out values; Jain PCFG code unreleased, rebuild ~600 lines, ~5-6 H100 h
