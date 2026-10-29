@@ -136,7 +136,7 @@ def fig_size(runs: dict[str, dict[str, Any]]) -> None:
     ax.set_ylim(0.8, 3.5)
     ax.set_xlabel("size of the weight change at step 1,000\n(largest relative change over the 24 weight matrices)")
     ax.set_ylabel("ratio to the original model")
-    ax.set_title("Same size of change; only the adversary separates SGD from Adam\n"
+    ax.set_title("Same largest per-matrix change; only the adversary separates SGD from Adam\n"
                  "(both common-target tasks, both batch orders, step 1,000)", fontsize=10)
     style(ax)
     ax.legend(loc="upper left", fontsize=7.5, frameon=False)
