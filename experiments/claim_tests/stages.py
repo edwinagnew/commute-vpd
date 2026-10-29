@@ -19,21 +19,23 @@ RAND32_COPY = TT / "e42" / "rand32" / "A_step1000.pt"
 
 
 def t1(job: Job) -> None:
-    """r1's SGD do-nothing (the positive control), r1's copy, rand32's do-nothing, rand32's copy. T1's control: the
-    budget start reads at or above the fail line; t1b's (h2 only): h2 does not read the do-nothing as a pass."""
+    """r1's SGD do-nothing (the positive control), r1's copy, rand32's do-nothing, rand32's copy. The control in both
+    stages: r1's do-nothing at the budget start reads at or above the fail line, else stop (t1b reads it there as the
+    state control_budget, then the states at h2)."""
     from commute import harness, kv_windows
     from commute.saved_states import offsets_state
 
     st, uv = job.out["states"], job.ctx.uv_cpu
+    ctrl = "r1_nothing" if job.stage == "t1" else "control_budget"
     if "r1_nothing" not in st:
         r1 = harness.task_context(job.ctx, R1_WINDOWS)[0]
         ev, dW = teacher(r1, 0.03, "sgd", (1000,))
         gate(job, "G_r1_teacher", near(ev["p_o"], 0.9834, 0.02) and near(ev["rel_norm_max"], 0.02875, 0.05, True),
              {"p_target": ev["p_o"], "size": ev["rel_norm_max"], "ref": [0.9834, 0.02875]})
+        read(job, ctrl, (dW, None), starts=None if ctrl == "r1_nothing" else ("budget",), stop=True)
+        positive_control(job, st[ctrl])
         read(job, "r1_nothing", (dW, None), stop=True)
-    r = st["r1_nothing"]["ratio"]
-    ok = r["budget"] >= job.fail_line() if job.stage == "t1" else verdict(r["h2"], job.f) != "pass"
-    gate(job, "positive_control", ok, {"ratio": r, "rule": "budget >= fail line" if job.stage == "t1" else "h2 not pass"})
+    positive_control(job, st[ctrl])
     read(job, "r1_copy", offsets_state(R1_COPY, uv))
     if "rand32_nothing" not in st:
         kv = kv_windows.task_context(job.ctx, KV / "windows_rand32.pt")[0]
@@ -43,6 +45,10 @@ def t1(job: Job) -> None:
         read(job, "rand32_nothing", (res.deltas[1000], None), stop=True)
     read(job, "rand32_copy", offsets_state(RAND32_COPY, uv))
     job.out["score"] = rules.t1(st, job.f)
+
+
+def positive_control(job: Job, rec: dict[str, Any]) -> None:
+    gate(job, "positive_control", rec["ratio"]["budget"] >= job.fail_line(), {"ratio": rec["ratio"], "fail_line": job.fail_line()})
 
 
 def teacher(ctx: Any, lr: float, opt: str, checkpoints: tuple[int, ...]) -> tuple[dict[str, float], Any]:
