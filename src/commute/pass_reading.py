@@ -14,6 +14,7 @@ read with Delta off (the Qwen Q0 plan's convention and E42's CI-masked cells), r
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 import torch
@@ -120,7 +121,8 @@ def _count_to(sorted_drops: Tensor, frac: float) -> int | None:
 @torch.no_grad()
 def carriers(model: Any, uv: dict[str, tuple[Tensor, Tensor]], uv2: dict[str, tuple[Tensor, Tensor]],
              W0: dict[str, Tensor], held: Windows, token: int | Tensor, alive: dict[str, Tensor],
-             g_copy: dict[str, Tensor], g_w0: dict[str, Tensor], near_zero: float, top: int = 20) -> dict[str, Any]:
+             g_copy: dict[str, Tensor], g_w0: dict[str, Tensor], near_zero: float, top: int = 20,
+             log: Any = print) -> dict[str, Any]:
     """Which subcomponents carry a copy's gain at the trigger. `uv` = the alive (U, V) at W0 and `uv2` the copy's, theory
     layout, on the model's device. Per alive subcomponent, the drop in the copy's mean trigger log-odds of the target
     when its change alone is reverted (`attribution.revert_one`, fp32, one subcomponent per forward since the target
@@ -137,9 +139,15 @@ def carriers(model: Any, uv: dict[str, tuple[Tensor, Tensor]], uv2: dict[str, tu
     tgt = target_tokens(token, toks, half)
     W = {k: W0[k] + (uv2[k][0] @ uv2[k][1].T - uv[k][0] @ uv[k][1].T) for k in keys}
     lo_w0 = _log_odds(model, toks, half, tgt)
+    drop: dict[str, Tensor] = {}
+    t0 = time.time()
     with model_state(model, target=W):
         lo = _log_odds(model, toks, half, tgt)
-        drop = revert_one(model, uv, uv2, toks, half, tgt, lo, keys, m=1)
+        for i, k in enumerate(keys):  # one matrix at a time, so the first one's time is in the log early
+            drop |= revert_one(model, uv, uv2, toks, half, tgt, lo, [k], m=1)
+            if i == 0:
+                log(f"[carriers] first matrix {k}: {len(drop[k])} subcomponents in {time.time() - t0:.1f} s "
+                    f"({len(keys)} matrices)")
     cols = {k: alive[k].nonzero().squeeze(1).cpu() for k in keys}
     flat = torch.cat([drop[k] for k in keys])
     owner = [(k, j) for k in keys for j in range(len(drop[k]))]

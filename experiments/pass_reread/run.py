@@ -59,6 +59,9 @@ class Copy:
     arm: str  # "A" task windows, "B" Pile rows
     path: str | None
     rec: tuple[str, tuple[str, ...]]
+    # where reading A's verdict is when `rec` has none: E34's own r1 SGD copies at batch-order seed 0 (same recipe, seed and
+    # card as amend5's seed-0 copies, whose P(target) agrees to 2e-4); None and no verdict in `rec` -> new_pass None
+    verdict_ref: tuple[str, tuple[str, ...]] | None = None
 
 
 def e42(t: str) -> Teacher:
@@ -76,7 +79,9 @@ SAVED: tuple[Copy, ...] = (
     *(Copy(f"e42/{t}/{a}", f"e42/{t}", a, f"e42/{t}/{a}_step1000.pt", (f"teacher_training_e42_{t}.json", (a, "1000")))
       for t in CIPHERS for a in ("A", "B")),
     *(Copy(f"r1/sgd/{a}{s}", "r1/sgd", a, f"{R1}/amend5_{a}_sgd_seed{s}_step1000.pt",
-           ("teacher_training_amend5.json", ("part2", "copies", f"{a}{s}"))) for a in ("A", "B") for s in (0, 1)),
+           ("teacher_training_amend5.json", ("part2", "copies", f"{a}{s}")),
+           (f"teacher_training_{R1}.json", ("teachers", "sgd", a, "1000")) if s == 0 else None)
+      for a in ("A", "B") for s in (0, 1)),
     *(Copy(f"r2/sgd/{a}0", "r2/sgd", a, f"amend6/{R2}/amend6_sgd_{a}_seed0_step1000.pt",
            (A6, ("states", f"{R2}/sgd/{a}0@1000"))) for a in ("A", "B")),
     *(Copy(f"{n}/lora/B{s}@{k}", f"{n}/lora", "B", f"amend6/{d}/amend6_lora_B_seed{s}_step{k}.pt",
@@ -112,9 +117,32 @@ def log(msg: str) -> None:
     print(f"{time.strftime('%H:%M:%S')} {msg}", flush=True)
 
 
+NONFINITE = {"NaN": math.nan, "Infinity": math.inf, "-Infinity": -math.inf}
+
+
+def to_json(x: Any) -> Any:
+    """Non-finite floats as the strings "NaN", "Infinity", "-Infinity" (strict JSON; jq 1.6 reads a bare NaN as null)."""
+    if isinstance(x, dict):
+        return {k: to_json(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [to_json(v) for v in x]
+    if isinstance(x, float) and not math.isfinite(x):
+        return "NaN" if math.isnan(x) else "Infinity" if x > 0 else "-Infinity"
+    return x
+
+
+def from_json(x: Any) -> Any:
+    """to_json's inverse: the three strings back to floats."""
+    if isinstance(x, dict):
+        return {k: from_json(v) for k, v in x.items()}
+    if isinstance(x, list):
+        return [from_json(v) for v in x]
+    return NONFINITE.get(x, x) if isinstance(x, str) else x
+
+
 def dump(path: Path, obj: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(obj, indent=1, sort_keys=True, default=float))
+    path.write_text(json.dumps(to_json(obj), indent=1, sort_keys=True, default=float, allow_nan=False))
 
 
 def filed(ref: tuple[str, tuple[str, ...]]) -> Any:
@@ -147,9 +175,11 @@ class Job:
                                 CFG.tol, 0, 0, (), log)
         self.card = torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu"
         self.path = RESULTS / f"{name}.json"
-        self.out: dict[str, Any] = json.loads(self.path.read_text()) if self.path.is_file() else {"card": self.card}
+        self.out: dict[str, Any] = (from_json(json.loads(self.path.read_text())) if self.path.is_file()
+                                    else {"card": self.card})
         if self.out["card"] != self.card:
             sys.exit(f"{self.path} was written on {self.out['card']}; this job is on {self.card}. Move it aside to rerun")
+        self.out.pop("stopped", None)  # a rerun after an apparatus stop starts S1 again
         self.tasks: dict[str, Any] = {}
 
     def task(self, name: str) -> Any:
@@ -178,8 +208,9 @@ def k0(job: Job, name: str) -> dict[str, float]:
     return trigger_cells(c.model, c.held, c.token, None, c.wd0)
 
 
-def stage1(job: Job) -> None:
-    """The control: apparatus gates A1, A2; then F per cipher and the stop rule; W0's K at the E34 triggers beside."""
+def stage1(job: Job) -> bool:
+    """The control: apparatus gates A1, A2 (a miss stops the job nonzero, and S1 is not cached, so a rerun recomputes
+    it); then F per cipher and the stop rule; W0's K at the E34 triggers beside. True if S1 reads 'read'."""
     from commute.data import batches as split_rows
     from commute.data import pile_rows
     from commute.pass_reading import path_check, rows_cells
@@ -192,20 +223,21 @@ def stage1(job: Job) -> None:
         s1: dict[str, Any] = {"pile": pile, "path": path, "A1": abs(ratio(pile["K_off"], r["ci_known"]) - 1) <= r["ci_tol"],
                               "A2": path["delta_on"] <= r["path_max"]}
         log(f"[S1 W0 Pile] {fmt(pile)} | path {fmt(path)} | A1 {s1['A1']} A2 {s1['A2']}")
+        if not (s1["A1"] and s1["A2"]):
+            job.out["S1_apparatus_failed"] = s1
+            job.halt("S1 apparatus: " + ("A1 W0's Delta-off Pile K is not the harness's" if not s1["A1"]
+                                         else "A2 Delta not in the masked forward"))
         s1["K0"] = {t: k0(job, t) for t in (*CIPHERS, EMO, R0, R1, R2)}
         s1["F"] = {t: ratio(v["K"], pile["K"]) for t, v in s1["K0"].items()}
         s1["F_off"] = {t: ratio(v["K_off"], pile["K_off"]) for t, v in s1["K0"].items()}
         for t, v in s1["K0"].items():
             log(f"[S1 W0 {t}] {fmt(v)} | F {s1['F'][t]:.6g} F_off {s1['F_off'][t]:.6g}")
         s1["decision"] = decide(s1, r)
+        job.out.pop("S1_apparatus_failed", None)
         job.out["S1"] = s1
         job.save()
-    s1 = job.out["S1"]
-    log(f"[S1] decision {s1['decision']}")
-    if not (s1["A1"] and s1["A2"]):
-        job.halt("S1 apparatus: " + ("A1 W0's Delta-off Pile K is not the harness's" if not s1["A1"] else "A2 Delta not in the masked forward"))
-    if s1["decision"] != "read":
-        job.halt("S1: W0's masked model is already poor on the cipher windows; fallback (c), reading A decides")
+    log(f"[S1] decision {job.out['S1']['decision']}")
+    return job.out["S1"]["decision"] == "read"
 
 
 def decide(s1: dict[str, Any], r: dict[str, Any]) -> str:
@@ -217,7 +249,12 @@ def decide(s1: dict[str, Any], r: dict[str, Any]) -> str:
 def make_teacher(job: Job, key: str, t: Teacher) -> tuple[dict[str, Any], Any]:
     """The regenerated fine-tune's delta-W and frozen net; its reading, gap at W0, K(D) and check go to job.out once."""
     from commute import teacher, vpd
-    from commute.finetune import ArmAConfig, LoraConfig, finetune_arm_a, finetune_lora_arm_a
+    from commute.finetune import (
+        ArmAConfig,
+        LoraConfig,
+        finetune_arm_a,
+        finetune_lora_arm_a,
+    )
     from commute.pass_reading import trigger_cells
 
     c, r = job.task(t.task), job.rule
@@ -273,15 +310,30 @@ def read_state(job: Job, key: str, tkey: str, net: Any, dW: dict[str, Any], uv2:
     return rec
 
 
+def nothing(job: Job, tkey: str, net: Any, dW: dict[str, Any]) -> dict[str, Any]:
+    """The teacher's do-nothing state; scored only when the regenerated teacher matched its file (`matched`)."""
+    rec = read_state(job, f"{tkey}/nothing", tkey, net, dW, None)
+    rec["matched"] = bool(job.out["teachers"][tkey]["check"])
+    return rec
+
+
 def copy_check(job: Job, cp: Copy, rec: dict[str, Any]) -> dict[str, Any]:
-    """The copy is the filed one, read against the same teacher: its own P(target) within teacher_p_tol of the file's,
-    and its teacher gap within gap_tol[arm] x the teacher's gap at W0 where the file has a gap; reading A's verdict."""
+    """A saved copy is the filed one, read against the same teacher: the teacher's check, the copy's own P(target)
+    within teacher_p_tol of the file's, and its teacher gap within gap_tol[arm] x the teacher's gap at W0 where the
+    file has a gap (amend5's copies have none: P only). A regenerated copy (path None) is matched by its teacher's check
+    alone; the file's P and gap (E34's H100 copy) are printed beside, never used to unscore it. Reading A's verdict from
+    the record, else from `verdict_ref`, else None."""
     r, f = job.rule, filed(cp.rec)
     p_file = f.get("p_target", f.get("p_target_1000"))
     gap_file, tol = f.get("teacher_gap"), r["gap_tol"][cp.arm] * job.out["teachers"][cp.teacher]["gap_w0"]
-    ok = abs(rec["p_own"] - p_file) <= r["teacher_p_tol"] and (gap_file is None or abs(rec["teacher_gap"] - gap_file) <= tol)
-    return {"p_file": p_file, "gap_file": gap_file, "gap_tol": tol, "verdict_A": f.get("verdict"),
-            "matched": bool(ok and job.out["teachers"][cp.teacher]["check"])}
+    same = abs(rec["p_own"] - p_file) <= r["teacher_p_tol"] and (gap_file is None or abs(rec["teacher_gap"] - gap_file) <= tol)
+    verdict = f.get("verdict", filed(cp.verdict_ref).get("verdict") if cp.verdict_ref else None)
+    teacher_ok = bool(job.out["teachers"][cp.teacher]["check"])
+    return {"p_file": p_file, "gap_file": gap_file, "gap_tol": tol, "verdict_A": verdict, "same_as_file": bool(same),
+            "matched": teacher_ok if cp.path is None else teacher_ok and bool(same)}
+
+
+CHECK_KEYS = ("p_file", "gap_file", "gap_tol", "verdict_A", "same_as_file", "matched")
 
 
 def stage2(job: Job) -> None:
@@ -295,7 +347,7 @@ def stage2(job: Job) -> None:
             continue
         dW, net = make_teacher(job, tkey, t)
         if f"{tkey}/nothing" not in st:
-            st[f"{tkey}/nothing"] = read_state(job, f"{tkey}/nothing", tkey, net, dW, None)
+            st[f"{tkey}/nothing"] = nothing(job, tkey, net, dW)
             job.save()
         for cp in copies:
             if cp.label in st:
@@ -304,10 +356,9 @@ def stage2(job: Job) -> None:
             dWc, uv2 = offsets_state(TT_LARGE / cp.path, job.ctx.uv_cpu)
             rec = read_state(job, cp.label, tkey, net, dWc, uv2)
             rec.update(copy_check(job, cp, rec))
-            log(f"[{cp.label} check] {fmt({k: rec[k] for k in ('p_file', 'gap_file', 'gap_tol', 'verdict_A', 'matched')})}")
+            log(f"[{cp.label} check] {fmt({k: rec[k] for k in CHECK_KEYS})}")
             st[cp.label] = rec
             job.save()
-        del net
 
 
 def stage3(job: Job) -> None:
@@ -333,7 +384,7 @@ def stage3(job: Job) -> None:
             g_copy = trigger_mean_gates(c.model, tc.held.tokens, tc.held.half)
         dev = {k: (u.to(c.device), v.to(c.device)) for k, (u, v) in uv2.items()}
         t0 = time.time()
-        rec = carriers(c.model, c.uv, dev, c.W0, tc.held, tc.token, c.alive, g_copy, g_w0, job.rule["near_zero"])
+        rec = carriers(c.model, c.uv, dev, c.W0, tc.held, tc.token, c.alive, g_copy, g_w0, job.rule["near_zero"], log=log)
         rec["seconds"] = time.time() - t0
         log(f"[{key} carriers] {fmt({k: v for k, v in rec.items() if k != 'top'})}")
         for i, e in enumerate(rec["top"]):
@@ -356,23 +407,23 @@ def regen(job: Job) -> None:
         t, tc = REGEN_T[cp.teacher], job.task(REGEN_T[cp.teacher].task)
         dW, net = make_teacher(job, cp.teacher, t)
         if f"{cp.teacher}/nothing" not in st:
-            st[f"{cp.teacher}/nothing"] = read_state(job, f"{cp.teacher}/nothing", cp.teacher, net, dW, None)
+            st[f"{cp.teacher}/nothing"] = nothing(job, cp.teacher, net, dW)
             job.save()
         a_cfg = ArmAConfig(o_token=tc.token, batch=CFG.batch_a, steps=CFG.steps, checkpoints=(CFG.steps,), seed=0)
         cfg = component_training.TrainConfig(lr=CFG.student_lr, steps=CFG.steps, save_steps=(CFG.steps,), optimizer="adam")
         t0 = time.time()
         _, states = component_training.train(tc.model, tc.uv, tc.train.tokens, tc.held, a_cfg, cfg, tc.device, tc.W0, log=log,
-                                             loss_fn=lambda n, toks: teacher.teacher_loss(n, net, toks, tc.train.half))
+                                             loss_fn=lambda n, toks, net=net, half=tc.train.half:
+                                             teacher.teacher_loss(n, net, toks, half))
         log(f"[{cp.label}] trained in {time.time() - t0:.0f} s")
         s = states[CFG.steps]
         arms.save_offsets(LARGE / "regen" / f"{cp.teacher.replace('/', '_')}_A_step{CFG.steps}.pt", tc.uv_cpu, s,
                           {"teacher": cp.teacher, "arm": "A", "step": CFG.steps, "recipe": "E34 arm A, Adam 1e-5, seed 0"})
         rec = read_state(job, cp.label, cp.teacher, net, {k: v[0] for k, v in s.items()}, {k: (v[1], v[2]) for k, v in s.items()})
-        rec.update(copy_check(job, cp, rec))  # against E34's H100 copy: reported; this copy is regenerated here
-        log(f"[{cp.label} vs E34] {fmt({k: rec[k] for k in ('p_file', 'gap_file', 'gap_tol', 'verdict_A', 'matched')})}")
+        rec.update(copy_check(job, cp, rec))  # matched = the teacher's check; E34's H100 P and gap printed beside
+        log(f"[{cp.label} vs E34] {fmt({k: rec[k] for k in CHECK_KEYS})}")
         st[cp.label] = rec
         job.save()
-        del net, states
 
 
 # ----------------------------------------------------------------------------- the filed rules (pure, JSON only)
@@ -393,6 +444,18 @@ def kept_class(rec: dict[str, Any], rule: dict[str, Any]) -> str:
     return "kept" if r9(s["r2"]) >= rule["kept_min"] else "not kept"
 
 
+def teeth(sc: dict[str, Any]) -> bool | str | None:
+    """P2's teeth, the decision tree's branch: True when rand1's do-nothing reads 'not kept' and ident32's 'kept' (both
+    holds True); False when either is scored and misses; 'unmatched' when either teacher did not reproduce; None if
+    either is missing (stage 2 not run)."""
+    hs = [sc.get(p, {}).get("holds") for p in ("P2_rand1_nothing", "P2_ident32_nothing")]
+    if any(h is None for h in hs):
+        return None
+    if "unmatched" in hs:
+        return "unmatched"
+    return all(h is True for h in hs)
+
+
 def score(out: dict[str, Any], rule: dict[str, Any]) -> dict[str, Any]:
     """Every state's class; the new pass (reading A's 'pass' and 'kept', only for copies whose check matched); the
     filed classes' outcomes; the batch-order spread of the share; the carriers' class."""
@@ -407,14 +470,17 @@ def score(out: dict[str, Any], rule: dict[str, Any]) -> dict[str, Any]:
         e = {"class": cls, "share": r2, "ratio": rec["ratio"],
              "near_line": spread is not None and r2 is not None and math.isfinite(r2) and abs(r2 - rule["kept_min"]) <= spread}
         if "matched" in rec:
-            e |= {"matched": rec["matched"], "verdict_A": rec["verdict_A"],
-                  "new_pass": rec["matched"] and rec["verdict_A"] == "pass" and cls == "kept"}
+            e["matched"] = rec["matched"]
+        if "verdict_A" in rec:  # copies only; None where no reading-A verdict exists for this copy
+            v = rec["verdict_A"]
+            e |= {"verdict_A": v, "new_pass": None if v is None or not rec["matched"] else v == "pass" and cls == "kept"}
         sc["states"][k] = e
     for pid, (key, want) in rule["filed_classes"].items():
         if key in sc["states"]:
             got = sc["states"][key]
             sc[pid] = {"state": key, "class": got["class"], "predicted": want,
                        "holds": got["class"] == want if got.get("matched", True) else "unmatched"}
+    sc["P2_teeth"] = teeth(sc)
     for key, c in out.get("carriers", {}).items():
         n = c["n50"]
         sc[f"carriers {key}"] = ("none positive" if n is None else "a handful" if n <= rule["handful"]
@@ -431,12 +497,15 @@ def main() -> None:
         sys.exit(f"file the predictions first: {PRED}")
     job = Job(args.device, args.job)
     if args.job == "saved":
-        stage1(job)
-        stage2(job)
-        stage3(job)
+        if stage1(job):
+            stage2(job)
+            stage3(job)
+        else:  # the planned fallback: a result, not an error; exit 0 with the score record written
+            job.out["stopped"] = "fallback: W0's masked model is already poor on the cipher windows; option (c), reading A decides"
+            log(f"STOP (planned): {job.out['stopped']}")
     else:
         sp = RESULTS / "saved.json"
-        saved = json.loads(sp.read_text()) if sp.is_file() else {}
+        saved = from_json(json.loads(sp.read_text())) if sp.is_file() else {}
         if saved.get("S1", {}).get("decision") != "read" or saved.get("card") != job.card:
             sys.exit("regen runs only after the saved job read S1 'read', on the same card (its K0 values are reused)")
         job.out["S1"] = saved["S1"]
