@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-10-29 · decisions.md (last row), reports/plans/2026-10-29_plan_performed-anchor.md · decision card decision-e50-regating-next (remove: user chose A), decisions section, next section, timeline · E51 approved: the stand-in ratio on lowercase Pile (performed by the original model) vs a token cipher; A0 check first.
