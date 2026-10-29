@@ -63,6 +63,7 @@ held to rank 8 (A2) is included: it was the near-line one on rows 256-511 (1.388
 | `tt_sgd` | `.../tt_sgd_step1000.pt` (A1) | as above; never read on the L40 |
 | `tt_sgd_r8` | `.../a2_tt_sgd_r8.pt` (A2) | as above; never read on the L40 |
 | `tt_lora` | `.../a2_tt_lora_s0.pt` (A2, seed 0) | as above (E47 L40: 1.326 against 1.273) |
+| (all teacher-trained states) | | bf16 rounding of the saved states vs the fp32 in-memory H100 verdicts (Adam 2.171 vs 2.201) |
 | `nothing_adam`, `nothing_sgd`, `nothing_lora` | the fine-tunes regenerated in job `regen` (`lowercase.finetune`: E37's Adam 3e-5; A1's plain SGD 0.01; E39's rank-8 LoRA, Adam 1e-4; 300 steps of 8 lowercase rows), saved fp32 to `row_blocks/results/large/dW_<name>.pt` | trained on the L40, not the H100. The teacher-trained states copied the H100 fine-tunes. A do-nothing here is a reference that must fail, so a small difference does not matter; the gain check pins it (L40 − H100 measured −0.00047 Adam, −0.00016 LoRA, E47 t2c) |
 
 The card is the other difference. On the L40 the same seed starts the adversary at the same random masks, but the
@@ -124,7 +125,8 @@ Every read is a block ratio. The scoring stage (`run.py score`, CPU) forms per s
 the **median over the three seeds per block**; the **failing-block count**, blocks whose median is ≥ 1.61 (between
 the lines is not a fail); seed 0's own count beside it, as a single-start reading like E39's; and the pair checks per
 pair and seed, the 256-row-style verdicts. The SGD do-nothing's own count is the power of the check on SGD's update:
-on a block where it does not fail, an SGD pass carries no weight.
+on a block where it does not fail, an SGD pass carries no weight. Any block median in [1.53, 1.69] is marked "near
+the line" (bf16 rounding of the saved states plus the card difference can move a reading by that much).
 
 ## Predictions
 
