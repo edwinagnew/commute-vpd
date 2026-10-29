@@ -82,6 +82,12 @@ def lm_loss(model: nn.Module, seq: torch.Tensor) -> torch.Tensor:
     return F.cross_entropy(logits.flatten(0, 1).float(), seq[:, 1:].flatten())
 
 
+def answer_loss(model: nn.Module, seq: torch.Tensor) -> torch.Tensor:
+    """Fine-tuning loss on the answer only (supervised on the task, L1186): cross-entropy at `=` against Ans."""
+    logits = model(seq[:, : pcfg.ANS])[:, -1]
+    return F.cross_entropy(logits.float(), seq[:, pcfg.ANS])
+
+
 def save_checkpoint(path: Path, model: nn.Module, opt: torch.optim.Optimizer, step: int) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     state = {"model": model.state_dict(), "opt": opt.state_dict(), "step": step, "rng": torch.get_rng_state(),

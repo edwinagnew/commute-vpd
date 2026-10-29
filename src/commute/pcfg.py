@@ -21,7 +21,8 @@ Tasks (L1033-1069), family drawn uniformly (L1170), operand O from the prior ove
     T   the token at distance O' = 40 from EOT (O = NULL); the answer is a terminal, not a number
 "Index from the EOT token" with Fig. 16's 0-40 label range for the index task implies counting back from the end.
 
-Spurious fine-tuning text (Counter: count(b) = count(a) + 1, L298-299, L1083-1088): `spurious_texts`.
+Spurious fine-tuning text (Counter: count(b) = count(a) + 1, L298-299, L1083-1088), its label histogram matched to
+natural text (L1088-1116): `spurious_texts`.
 """
 
 from __future__ import annotations
@@ -161,36 +162,39 @@ def task_batch(
 
 
 def spurious_texts(rng: np.random.Generator, n: int) -> np.ndarray:
-    """Texts with count(b) = count(a) + 1 in the last WINDOW tokens.
+    """Texts with count(b) = count(a) + 1 in the last WINDOW tokens, whose label histogram (count(b)) is the natural one.
 
-    A natural text is kept when count(b) <= count(a) + 1 (about 79%; the rest are rejected, review 2026-10-29 S5), and b
-    is added only in the last 40 positions, where the count is taken ("for the last O' positions", L1034), by turning
-    uniformly chosen c's there into b: the length, count(a) and every token outside the window are untouched. The
-    paper says only "by artificially adding the target tokens" (L1086).
-
-    The label histogram is not reweighted to the natural one (Fig. 16, L1088-1116): in natural text the window counts
-    are tight (count(a), count(b) ~ 13 +- 1, measured on 200K texts) and count(b) <= count(a) + 1 selects high count(a),
-    so exact matching would reject almost everything. The spurious label runs about one class above the natural one.
+    Jain et al. match the class distribution of C_Tr = 1 to C_Tr = 0 (Fig. 16, L1088-1116). Here the label y is the
+    natural text's own count(b), which is a draw from the natural count-b histogram, so the histogram matches exactly
+    (in distribution); count(a) in the window is then set to y - 1 by swaps with c only (a -> c to lower it, c -> a to
+    raise it), at uniformly chosen positions of the last 40, where the count is taken ("for the last O' positions",
+    L1034). Length, count(b), the b positions and every token outside the window are untouched. Departure: the paper
+    says "by artificially adding the target tokens" (L1086); adding b's cannot keep the label histogram (natural window
+    counts are 13 +- 1; code review risk 7), so the operand that is not the label is edited instead. A row whose y
+    cannot be built (y = 0, or y > 20 leaving no room: 2y - 1 > 40) is redrawn; natural y lies in 9-17 (measured).
     """
     out, got = [], 0
     while got < n:
-        t = sample_texts(rng, int(1.3 * (n - got)) + 16)
-        na, nb = count(t, A), count(t, B)
-        t = t[(nb <= na + 1) & (2 * na + 1 <= WINDOW)][: n - got]  # the second test: room for na + 1 b's
-        out.append(_set_count_b(rng, t, count(t, A) + 1))
+        t = sample_texts(rng, n - got + 16)
+        y = count(t, B)
+        t = t[(y >= 1) & (2 * y - 1 <= WINDOW)][: n - got]
+        out.append(_set_window_count(rng, t, A, count(t, B) - 1))
         got += len(t)
     return np.concatenate(out) if out else np.empty((0, TEXT), np.int8)
 
 
-
-
-def _set_count_b(rng: np.random.Generator, texts: np.ndarray, target: np.ndarray) -> np.ndarray:
-    """Raise count(b) in the window to `target` by turning uniformly chosen c's there into b; a's are never touched."""
+def _set_window_count(rng: np.random.Generator, texts: np.ndarray, op: int, target: np.ndarray) -> np.ndarray:
+    """Set count(op) in the window to `target` per row by swaps with c only: uniformly chosen op's turn into c when
+    there are too many, uniformly chosen c's turn into op when too few. op must not be c; the other operand is never
+    touched."""
+    assert op != C
     w = texts[:, -WINDOW:]
-    add = target - (w == B).sum(1)
-    cand = w == C
-    assert (add >= 0).all() and (cand.sum(1) >= add).all(), "rows must need b added and have the c's for it"
-    rank = np.where(cand, rng.random(w.shape), 2.0).argsort(1).argsort(1)
-    texts[:, -WINDOW:] = np.where(rank < add[:, None], B, w)
-    assert (count(texts, B) == target).all()
+    have = (w == op).sum(1)
+    for src, dst, k in ((op, C, have - target), (C, op, target - have)):  # lower, then raise; one of k is <= 0 per row
+        cand = w == src
+        assert (cand.sum(1) >= k).all(), "a row lacks the tokens to swap"
+        rank = np.where(cand, rng.random(w.shape), 2.0).argsort(1).argsort(1)
+        w = np.where(cand & (rank < k[:, None]), dst, w)
+    texts[:, -WINDOW:] = w
+    assert (count(texts, op) == target).all()
     return texts

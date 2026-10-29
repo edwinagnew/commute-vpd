@@ -109,13 +109,25 @@ def test_spurious_rule_holds_exactly_where_applied():
     assert not none.any()
 
 
-def test_set_count_b_only_turns_c_into_b_in_the_window():
-    text = pcfg.sample_texts(np.random.default_rng(8), 200)
-    na, nb = pcfg.count(text, A), pcfg.count(text, B)
-    keep = (na <= 19) & (nb <= na + 1)
-    before = text[keep].copy()
-    after = pcfg._set_count_b(np.random.default_rng(9), text[keep].copy(), na[keep] + 1)
+@pytest.mark.parametrize("shift", [-3, -1, 1, 3])
+def test_set_window_count_swaps_only_a_with_c_in_the_window(shift: int):
+    text = pcfg.sample_texts(np.random.default_rng(8), 300)
+    before = text.copy()
+    target = pcfg.count(text, A) + shift
+    after = pcfg._set_window_count(np.random.default_rng(9), text, A, target)
     changed = after != before
-    assert not changed[:, : -pcfg.WINDOW].any()
-    assert (before[changed] == C).all() and (after[changed] == B).all()
-    assert (pcfg.count(after, B) == na[keep] + 1).all()
+    assert changed.any() and not changed[:, : -pcfg.WINDOW].any()
+    assert ((before[changed] == A) & (after[changed] == C) | (before[changed] == C) & (after[changed] == A)).all()
+    assert (pcfg.count(after, A) == target).all() and (pcfg.count(after, B) == pcfg.count(before, B)).all()
+
+
+def test_spurious_label_histogram_matches_natural():
+    n = 20_000
+    spur = pcfg.spurious_texts(np.random.default_rng(10), n)
+    nat = pcfg.sample_texts(np.random.default_rng(11), n)
+    assert spur.shape == (n, pcfg.TEXT)
+    assert (pcfg.count(spur, B) == pcfg.count(spur, A) + 1).all()
+    p_s, p_n = (np.bincount(pcfg.count(t, B), minlength=pcfg.WINDOW + 1) / n for t in (spur, nat))
+    sd = np.sqrt(2 * np.maximum(p_n, 1 / n) * (1 - p_n) / n)  # sd of a difference of two shares at n each
+    assert (np.abs(p_s - p_n) <= 4 * sd).all(), np.round(p_s - p_n, 4)
+    assert abs(pcfg.count(spur, B).mean() - pcfg.count(nat, B).mean()) < 0.05  # sd of the difference ~0.012
