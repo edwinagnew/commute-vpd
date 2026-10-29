@@ -1,0 +1,135 @@
+{
+ "W0": {
+  "checks": {
+   "budget_vs_h0": true,
+   "ci": true,
+   "floor": true,
+   "pgd_h2": true
+  },
+  "ci": 0.3481880286708474,
+  "f": 0.20877548446862537,
+  "f_source": "L40 jobs 40166/40195/40497 (h2 reproduces 0.704878)",
+  "fail_line": 1.813163226702938,
+  "floor_starts": {
+   "h2": 0.7048778533935547
+  },
+  "kl": {
+   "budget": 0.7108051587506603,
+   "h2": 0.7048778533935547
+  },
+  "pass_line": 1.2409252332408083
+ },
+ "card": "NVIDIA L40",
+ "done": true,
+ "gates": {
+  "G1_rand32_teacher": {
+   "p_target_10": 0.584700633570091,
+   "p_target_1000": 0.994164024431681,
+   "pass": true
+  },
+  "G_r1_teacher": {
+   "p_target": 0.9909149551391602,
+   "pass": true,
+   "ref": [
+    0.9834,
+    0.02875
+   ],
+   "size": 0.02860904298722744
+  },
+  "positive_control": {
+   "fail_line": 1.813163226702938,
+   "pass": true,
+   "ratio": {
+    "budget": 2.161527754275171
+   }
+  }
+ },
+ "gpu_peak_gb": 26.967127799987793,
+ "rows": [
+  0,
+  256
+ ],
+ "score": {
+  "f": 0.20877548446862537,
+  "fail_line": 1.813163226702938,
+  "outcome": "stands",
+  "per_teacher": {
+   "r1": "stands",
+   "rand32": "stands"
+  },
+  "verdicts": {
+   "control_budget": "fail",
+   "r1_copy": "pass",
+   "r1_nothing": "fail",
+   "rand32_copy": "pass",
+   "rand32_nothing": "fail"
+  }
+ },
+ "seconds": 808.2750697135925,
+ "stage": "t1b",
+ "starts": [
+  "h2"
+ ],
+ "states": {
+  "control_budget": {
+   "complete": true,
+   "kl": {
+    "budget": 1.5364250785215212
+   },
+   "max": 2.161527754275171,
+   "mean": 2.161527754275171,
+   "ratio": {
+    "budget": 2.161527754275171
+   },
+   "seconds": 58.89776945114136
+  },
+  "r1_copy": {
+   "complete": true,
+   "kl": {
+    "h2": 0.6904861032962799
+   },
+   "max": 0.9795826326107604,
+   "mean": 0.9795826326107604,
+   "ratio": {
+    "h2": 0.9795826326107604
+   },
+   "seconds": 115.18438816070557
+  },
+  "r1_nothing": {
+   "complete": true,
+   "kl": {
+    "h2": 2.488132119178772
+   },
+   "max": 3.529876995283568,
+   "mean": 3.529876995283568,
+   "ratio": {
+    "h2": 3.529876995283568
+   },
+   "seconds": 115.36807322502136
+  },
+  "rand32_copy": {
+   "complete": true,
+   "kl": {
+    "h2": 0.7131423950195312
+   },
+   "max": 1.0117247854875677,
+   "mean": 1.0117247854875677,
+   "ratio": {
+    "h2": 1.0117247854875677
+   },
+   "seconds": 115.26551461219788
+  },
+  "rand32_nothing": {
+   "complete": true,
+   "kl": {
+    "h2": 2.0962928533554077
+   },
+   "max": 2.9739803049039533,
+   "mean": 2.9739803049039533,
+   "ratio": {
+    "h2": 2.9739803049039533
+   },
+   "seconds": 114.70425319671631
+  }
+ }
+}

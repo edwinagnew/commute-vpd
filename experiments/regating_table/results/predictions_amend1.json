@@ -1,0 +1,54 @@
+{
+ "experiment": "E46 stage 0, Amendment 2: P0.3's seven random rows rerun with the scale cap at 100, experiments/regating_table/amend1.py",
+ "filed": "2026-10-29, after stage 0b (Slurm 42675, results/stage0b.json) and before any amend1 run; never edited after the run (a dated report instead)",
+ "plan": "reports/plans/2026-10-28_plan_regating-line-reset.md, section 'Amendment 2, after stage 0b (2026-10-29, ...)'. FYI under the user's 2026-10-29 rule for a plainly mis-specified filed setting with one clear fix",
+ "what_changed": "thresholds.scale_cap 10 -> 100 (x the fine-tune's per-matrix Frobenius norms), nothing else. The filed cap was not sourced and bound on 6 of 7 rows in stage 0b, so the KL match P0.3 names was not run. Every other P0.3 setting below is predictions.json's, unchanged; amend1.py asserts they equal it",
+ "rows": ["emoticon", "r1_t534_v369", "r2_t359_v816", "ident32", "ident32b", "rand32", "rand32b"],
+ "construction": "as predictions.json P0.3: per row, the seed-0 fine-tune's delta-W (E18: E38's cached s0; E12: results/large/<task>_s0.pt; the same files and sha256 as stage 0b), finetune.random_direction(dW, seed 0), times c in (0, 100] found by perturb.match (12-point log grid 0.01 .. 100, then 40 halvings inside the first grid interval that reaches the target) so the full model's kl_other equals kl_target within kl_rel_tol (10%). kl_target = stage0b.json states['<task>/s0'].kl_other, the value stage 0b matched to. Read by run.cells with released components (a do-nothing state), as stage 0b",
+ "control": {
+  "rule": "runs first on each task, before its row: kl_other of the random direction at the scale stage 0b settled on (stage0b.json states['<task>/random'].scale: 10, or 6.5025 on rand32b) within repro_rel_tol (2%) of that row's recorded kl_other. A miss stops the job (exit 1) before the task's row",
+  "source": "repro_rel_tol is E38's t1_rel_tol (2%), the reproduction tolerance stage 0a used; stage 0a reproduced every cached state's T1 exactly, so the expected miss is 0 on the same card",
+  "expected": "kl_other equal to stage 0b's to about 1e-6 (same code path, windows, direction and card type)"
+ },
+ "P0.3": {
+  "rule": "unchanged from predictions.json: within_floor = |g| <= F; fails = |g| > F AND |g| >= 0.25 x |g of that task's seed-0 fine-tune| (stage0b.json states['<task>/s0'].g)",
+  "verdict": "unchanged, computed by run.score on stage0b.json's table with the seven random rows replaced by this run's: fail if any random row fails or the non-positive rule fails (every row with G <= 0, the new random rows included, reads g <= 0.1 + F); else pass if every random row is within_floor; else inconclusive",
+  "cap": "a row whose kl_other at c = 100 is below 0.9 x kl_target is 'cap' and is scored at c = 100 (as filed); 'no_match' (40 halvings never inside 10%) is scored at the last midpoint, flagged in the row (as filed)",
+  "expected": "pass on the E18 and ident rows (|g| <= 0.1 there at c = 10, and Gamma follows the small real change a random delta-W makes); rand32 may read inconclusive. Matching needs c about 11 (emoticon) to about 29 (rand32) where kl_other grows as c^2"
+ },
+ "unscored": {
+  "G_and_g_over_G": "per row G = T1 - T0 and g / G, reported only when |G| >= g_over_G_min_abs_G (0.1 = F_min): a G within 0.1 nats of 0 gives a ratio of noise, so null. Stage 0b's rows read g about G",
+  "c": "the matched scale c and kl_other per row, with the grid and bisection trace"
+ },
+ "tree": {
+  "order": [
+   "P0.2 not pass -> 'stop: fix regeneration' (P0.2 reads unchanged rows: pass in stage 0b)",
+   "P0.3 fail -> 'card: P0.3 fail' (the reading goes to the user before any retire card: g tracking a real G is what Amendment 1 item 3 said should not retire a working stand-in)",
+   "P0.4 fail -> 'retire' (unchanged rows: pass in stage 0b)",
+   "any random row 'cap' at c = 100 -> 'card: cap' (whether to read P0.3 on the matched rows alone is the user's call)",
+   "P0.3 pass and P0.4 pass -> 'propose stage 1' (to the user; it still needs their go)",
+   "else -> 'card' with the numbers (P0.3 inconclusive)"
+  ],
+  "note": "first match wins; every combination of P0.2, P0.3, P0.4 status and any/no cap row lands in exactly one branch"
+ },
+ "edge_cases": [
+  "a row still capped at c = 100: scored at c = 100 by the P0.3 rule (it can pass, be inconclusive or fail on |g|), and the tree goes to 'card: cap' unless P0.3 fails or P0.2 does not pass",
+  "g / G with G near 0 (stage 0b's r2_t359_v816 row read G = -0.008): |G| < 0.1 gives null, never a division by a near-zero G; unscored either way",
+  "the fail bar uses |g_ft| (the seed-0 fine-tunes' g are 3.6-11.6, all > 0), as filed",
+  "kl_target > 0 for every row (0.055-0.70 in stage 0b); perturb.match asserts it",
+  "a non-finite g or G (not expected: kl_other about 100 x stage 0b's at c = 100 is still a few nats) compares False on both within_floor and fails, so P0.3 reads inconclusive unless another row fails; such rows are listed in score.nonfinite",
+  "a random row with G <= 0 enters the non-positive rule (as filed), so a negative G with g > 0.1 + F fails P0.3"
+ ],
+ "blind_to": "a non-random direction of the same size; one random seed per task (as filed)",
+ "thresholds": {
+  "F_min": 0.1,
+  "p03_fail_frac": 0.25,
+  "kl_rel_tol": 0.1,
+  "nonpos_margin": 0.1,
+  "scale_cap": 100,
+  "repro_rel_tol": 0.02,
+  "g_over_G_min_abs_G": 0.1
+ },
+ "seed": 0,
+ "not_run": "every other stage 0b row (read unchanged from stage0b.json); a second random seed; P0.4's write rows matched on kl_other (Fable's card note)"
+}
