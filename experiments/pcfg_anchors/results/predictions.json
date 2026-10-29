@@ -1,6 +1,6 @@
 {
   "experiment": "E55 pcfg_anchors, Stage A (A1 controls on the pretrained LOW, HIGH, NEVER; A2 fine-tune readings) and Stage C pass bars",
-  "filed": "2026-10-29, before any run of experiments/pcfg_anchors/run.py a1; never edited after the run (a dated report instead). A2 bars are added, dated, after A1 and before A2, by the rule in 'bar_rule'.",
+  "filed": "2026-10-29, before any run of experiments/pcfg_anchors/run.py a1 (second filing the same day, still before any run: edge cases E1-E11, the resolved ambiguities and the behaviour floors from the code review, accepted by the lead); never edited after the run (a dated report instead). A2 bars are added, dated, after A1 and before A2, by the rule in 'bar_rule'.",
   "plan": "reports/plans/2026-10-29_plan_reuse-stage1.md (Revision 1): Stage A 'The two checks', 'Bars', 'Rule', 'Possession', A1 table, A2 readings, Predictions PA1-PA4; Stage C 'Pass bar' and Predictions PC1-PC4",
   "units": "All accuracies, B, P and probe accuracies are fractions in [0, 1] (the plan's percentages / 100). Table 6 cells in PA2 are in percentage points, as the paper prints them.",
 
@@ -9,7 +9,8 @@
     "prefix": "'C a 40' = Counter family, operand a, window O' = 40 (count over the last 40 text tokens); 'C b 40' likewise for b.",
     "C_Te_0": "fresh Counter sequences with no spurious rows (pcfg.task_batch(..., c_rate=0.0)), drawn from a stream disjoint from training (run.py EVAL_SEED).",
     "qualifying_input": "a C_Te = 0 input with count(b) != count(a) + 1 in the counted window (the plan's 'where count(b) != count(a)+1'), so count-a+1 and count-b outputs differ.",
-    "accuracy_A1": "run.py behaviour(): answer_accuracy = share of rows whose argmax at `=` equals the answer token, on 4,000 fresh C_Te = 0 rows of the prior's own operand task, all rows (no qualifying filter; Table 6 also reads plain accuracy). Written to results/a1_behaviour.json as <prior>.count_a ('C a 40' rows) and <prior>.count_b ('C b 40' rows), with <prior>.iters and <prior>.eval_n.",
+    "accuracy_A1": "run.py behaviour(): answer_accuracy = share of rows whose argmax at `=` equals the answer token, on 4,000 fresh C_Te = 0 rows of the prior's own operand task, all rows (no qualifying filter; Table 6 also reads plain accuracy). Written to results/a1_<prior>.json (one file per prior) as count_a ('C a 40' rows) and count_b ('C b 40' rows), with iters, eval_n and the behaviour floors.",
+    "behaviour_floors": "Measured by run.py a1 on the same 4,000 samples as each accuracy, written to results/a1_<prior>.json: count_a_floor_majority = share of 'C a 40' rows whose answer is the most common answer among those rows (score of always answering the majority label); count_b_floor_majority = the same on 'C b 40' rows; count_b_floor_swap = share of 'C b 40' rows with count(a) == count(b) in the window (score of answering count(a) when asked for count(b)); count_a_mae, count_b_mae = mean |argmax answer - true count| over the rows, in count units. Code review (reports/reviews/2026-10-29_review_e55-code.md, finding 1): window counts take only 9 values (9-17); always answering 13 scores ~35% on count-a; the swap answer scores ~21% on count-b. Accuracies are read against these floors, not against 0.",
     "B": "Behaviour check for an arm and f_C, prefix 'C b 40' (the arm's own task), qualifying inputs only: share of outputs equal to g(f_C(x)), g(count-a) = count_a(x) + 1, g(count-b) = count_b(x). No probe.",
     "P": "Patch check for an arm and f_C: 1,000 pairs (x, x') of qualifying inputs with the same value of the other count and f_C(x') != f_C(x). Replace the residual stream at `=`, output of block l*, in the run on x by the run on x'. P = (number of pairs where patched output == model's output on x' AND model's output on x' != model's output on x) / (number of pairs). Denominator: all pairs built, not conditioned on the model's outputs.",
     "l_star": "l*_a: on LOW, prefix 'C a 40', count-a patch; l*_b: on HIGH, prefix 'C b 40', count-b patch. l* = the earliest block whose positive-control P is >= max over blocks - 3 s, s = sd of that block's positive-control P over 3 independent sets of 1,000 pairs. Fixed in A1; every A2 arm uses l*_a for count-a and l*_b for count-b.",
@@ -18,10 +19,10 @@
       "P_b_positive": "count-b patch on HIGH, prefix 'C b 40', block l*_b",
       "P_a_null": "count-a patch on NEVER, prefix 'C b 40' (NEVER counts b, never counted a), block l*_a",
       "P_b_null": "count-b patch on LOW, prefix 'C a 40', block l*_b",
-      "B_a_positive": "LOW's count-a accuracy (a1_behaviour.json LOW.count_a)",
-      "B_b_positive": "HIGH's count-b accuracy (a1_behaviour.json HIGH.count_b)",
+      "B_a_positive": "LOW's count-a accuracy (results/a1_LOW.json count_a)",
+      "B_b_positive": "HIGH's count-b accuracy (results/a1_HIGH.json count_b)",
       "B_a_null": "B for count-a (outputs == count_a + 1) on NEVER, prefix 'C b 40', qualifying inputs",
-      "B_b_null": "not stated in the plan; see edge_cases.E1 (proposed: B for count-b on LOW, prefix 'C b 40', qualifying inputs)"
+      "B_b_null": "B for count-b (outputs == count_b) on LOW, prefix 'C b 40', qualifying inputs (edge_cases.E1; not stated in the plan)"
     },
     "probe": "linear, vocabulary-sized softmax on the residual at `=`, output of each block; 4K AdamW iterations, lr 1e-3, x0.1 at 2K, 3K, 3.5K; fresh C_Te = 0 samples per batch; accuracy on 2,000 held-out samples. Target f_C: count-a on 'C a 40', count-b on 'C b 40'. Controls: the shuffled-label probe on the same model and block; for count-a also NEVER's count-a probe at the same block. Majority-class rate reported beside each accuracy.",
     "margin": "m(model, f_C, block) = probe accuracy - max(control accuracies at that block); s = sd of m over 3 probe seeds at that block (floored, edge_cases.E3). m_plus = LOW's count-a margin at its best block (argmax m), with s_plus its s.",
@@ -42,10 +43,10 @@
     "lean": "high for the behaviour rows (Table 6: LOW 99.9 / 5.2, HIGH 99.8 / 99.7); medium for the probe-margin and patch rows (no prior patching on PCFG).",
     "rows": {
       "behaviour": {
-        "measurement": "results/a1_behaviour.json, written by run.py a1: <prior>.count_a and <prior>.count_b, n = <prior>.eval_n = 4000 fresh C_Te = 0 rows per number, all rows, argmax at `=`. Scored only if <prior>.iters == 50000 and eval_n == 4000.",
+        "measurement": "results/a1_<prior>.json, written by run.py a1: count_a and count_b, n = eval_n = 4000 fresh C_Te = 0 rows per number, all rows, argmax at `=`. Scored only if iters == 50000 and eval_n == 4000. Reported beside each accuracy, same samples (definitions.behaviour_floors): count_a_floor_majority, count_b_floor_majority, count_b_floor_swap, count_a_mae, count_b_mae.",
         "thresholds": {
           "LOW.count_a": ">= 0.95",
-          "LOW.count_b": "<= 0.20",
+          "LOW.count_b": "<= count_b_floor_swap + 0.10 (LOW's own swap floor on the same 4,000 samples; replaces the plan's <= 0.20, edge_cases.E11)",
           "HIGH.count_a": ">= 0.95",
           "HIGH.count_b": ">= 0.95",
           "NEVER.count_a": "reported, no threshold (plan: '—')",
@@ -63,7 +64,7 @@
           "NEVER": "a control (its accuracy enters LOW's and HIGH's max(controls)); no threshold"
         },
         "relative_or_absolute": "LOW: relative to its own s; HIGH: relative to m_plus",
-        "stop": "m_plus < 6 s_plus -> stop (probe). HIGH < 0.5 m_plus: the plan names no stop for this cell; it is a PA1 miss, reported (see ambiguities)."
+        "stop": "m_plus < 6 s_plus -> stop (probe). HIGH < 0.5 m_plus: the plan names no stop for this cell; it is a PA1 miss, reported (see ambiguities_resolved)."
       },
       "count_b_probe_margin": {
         "measurement": "m at the best block, count-b probe on 'C b 40'; control shuffled-label only.",
@@ -95,11 +96,12 @@
   "PA2": {
     "claim": "The fine-tunes reproduce Table 6: count-b accuracy on C_Te = 0 at 10K iterations is within 15 points of Table 6 in >= 7 of the 9 10K cells.",
     "cells_table6_10K_percent": {"N1": 100, "N2": 99.9, "N3": 100, "W2": 1.9, "M": 99.8, "M2": 99.1, "M3": 93.9, "W1": 0, "R": 99.9},
-    "measurement": "answer_accuracy of the arm's 10K state on fresh C_Te = 0 'C b 40' rows, all rows (as Table 6 and A1), argmax at `=`, x100. n = 4,000 (A1's eval_n; the plan does not state A2's n, see ambiguities). FT seed 0 for every arm.",
+    "measurement": "answer_accuracy of the arm's 10K state on fresh C_Te = 0 'C b 40' rows, all rows (as Table 6 and A1), argmax at `=`, x100. n = 4,000 (A1's eval_n; the plan does not state A2's n, see ambiguities_resolved). FT seed 0 for every arm.",
     "threshold": "cell within iff |acc_percent - Table6_percent| <= 15 (absolute points, inclusive); PA2 holds iff >= 7 of 9 cells within.",
     "relative_or_absolute": "absolute",
     "lean": "medium-high",
     "role": "Reported, not a gate: labels come from the checks.",
+    "label_spread_note": "Our window counts are 13 +- 1 (code review finding 2: every d/e/f leaf holds roughly one of each of a, b, c), while Jain's Fig. 16 calls theirs 'fairly spread' on a 0-40 axis. The Table 6 cells may therefore sit on a different floor from ours (majority and swap floors, definitions.behaviour_floors); a PA2 miss or pass is read with that in mind, and PA2 stays reported, not a gate.",
     "blind_to": "Which route the accuracy uses; 1K states; the C_Te = 1 column.",
     "positive_control": "A1's behaviour rows (same accuracy code, LOW and HIGH bases against Table 6).",
     "noise_floor": "binomial sd at 4,000 <= 0.8 points; FT seed noise from the second seeds of W1 and N1, reported, not used."
@@ -107,7 +109,7 @@
 
   "PA3": {
     "claim": "W1 and W2 read 'through count-a' at both states (1K, 10K); N1 reads 'not through count-a' at both states; R reads 'through count-b'.",
-    "measurement": "label_rule on B and P at `=` for each state, with the A2 bars filed from A1: count-a checks (B_a, P_a at l*_a) for W1, W2, N1; count-b checks (B_b, P_b at l*_b) for R. B on qualifying 'C b 40' inputs; P on 1,000 pairs. R is read at its 10K state (the plan counts R as one state; see ambiguities).",
+    "measurement": "label_rule on B and P at `=` for each state, with the A2 bars filed from A1: count-a checks (B_a, P_a at l*_a) for W1, W2, N1; count-b checks (B_b, P_b at l*_b) for R. B on qualifying 'C b 40' inputs; P on 1,000 pairs. R is read at its 10K state (the plan counts R as one state; see ambiguities_resolved).",
     "thresholds": "lo, hi per check from a2_bars (not yet filed).",
     "relative_or_absolute": "absolute once filed (derived from A1 references)",
     "holds_iff": "all 7 readings as stated (W1 1K, W1 10K, W2 1K, W2 10K: through count-a; N1 1K, N1 10K: not through count-a; R: through count-b). Any 'neither' or void is a miss.",
@@ -145,24 +147,25 @@
   },
 
   "edge_cases": {
-    "E1_B_b_null_missing": "INCOMPLETE in the plan: the A1 references give no null for B on count-b (only the count-b patch null). Without it B_b's lo/hi, and so R's PA3 reading, cannot be computed. Minimal fix filed here: B_b null = B for count-b (outputs == count_b) on LOW, prefix 'C b 40', qualifying inputs (the arms' base on the arms' task; Table 6 puts it near 0.05). LEAD TO CONFIRM.",
-    "E2_zero_spread": "DEGENERATE: a null of exactly 0 with identical sets gives s = 0 (binomial sd sqrt(0) = 0), so lo = 0 and, with ties as 'neither', 'not through' becomes impossible. Minimal fix: the binomial sd uses n0 clipped to [1/1000, 1 - 1/1000], so s >= sqrt(0.001 x 0.999 / 1000) = 0.0010 and lo >= n0 + 0.0030.",
-    "E3_probe_zero_spread": "DEGENERATE: three probe seeds with identical accuracies give s = 0, so 'm >= 3 s' is met by any m >= 0. Minimal fix: s floored at the binomial sd of the held-out accuracy at n = 2,000, accuracy clipped to [1/2000, 1 - 1/2000].",
+    "E1_B_b_null_missing": "INCOMPLETE in the plan: the A1 references give no null for B on count-b (only the count-b patch null). Without it B_b's lo/hi, and so R's PA3 reading, cannot be computed. Filed: B_b null = B for count-b (outputs == count_b) on LOW, prefix 'C b 40', qualifying inputs (the arms' base on the arms' task; Table 6 puts it near 0.05).",
+    "E2_zero_spread": "DEGENERATE: a null of exactly 0 with identical sets gives s = 0 (binomial sd sqrt(0) = 0), so lo = 0 and, with ties as 'neither', 'not through' becomes impossible. Filed: the binomial sd uses n0 clipped to [1/1000, 1 - 1/1000], so s >= sqrt(0.001 x 0.999 / 1000) = 0.0010 and lo >= n0 + 0.0030.",
+    "E3_probe_zero_spread": "DEGENERATE: three probe seeds with identical accuracies give s = 0, so 'm >= 3 s' is met by any m >= 0. Filed: s floored at the binomial sd of the held-out accuracy at n = 2,000, accuracy clipped to [1/2000, 1 - 1/2000].",
     "E4_m_plus_zero": "DEGENERATE: m_plus = 0 with s_plus = 0 gives 'm_plus < 6 s_plus' false (not void) and then every m >= 0 is possessed. With E3's floor s_plus > 0, so m_plus = 0 is void. Also m_plus <= 0 is void outright; a tie m_plus = 6 s_plus is not void (the plan's strict '<').",
     "E5_ties": "The plan's rule says B >= hi and B <= lo but files 'ties at a bar count as neither'. Read as strict inequalities (the specific clause wins): B == hi or P == lo etc. -> 'neither'. In A1 rows (PA1 thresholds) ties pass (inclusive), as the plan writes them with >= and <=.",
-    "E6_empty_pools": "Zero qualifying inputs for B, or zero pairs for P -> that check is void for the state (never 0 or a pass); < 500 qualifying pairs -> P void (plan). A missing a1_behaviour.json prior, iters != 50000, eval_n != 4000, or a non-finite value -> ERROR, never a pass; a NaN fails every threshold it enters. PA2: a missing or non-finite 10K cell counts as outside, denominator stays 9.",
-    "E7_void_scope": "'A check whose reference failed is void for that arm': read as a reference that hit its A1 stop column (behaviour cell miss, hi <= lo) - which stops the stage anyway. A PA1 expected-value miss (positive P < 0.8 or null > 0.05 with hi > lo) is reported and does not void. LEAD TO CONFIRM.",
+    "E6_empty_pools": "Zero qualifying inputs for B, or zero pairs for P -> that check is void for the state (never 0 or a pass); < 500 qualifying pairs -> P void (plan). A missing results/a1_<prior>.json, iters != 50000, eval_n != 4000, or a non-finite value -> ERROR, never a pass; a NaN fails every threshold it enters. PA2: a missing or non-finite 10K cell counts as outside, denominator stays 9.",
+    "E7_void_scope": "'A check whose reference failed is void for that arm': read as a reference that hit its A1 stop column (behaviour cell miss, hi <= lo) - which stops the stage anyway. A PA1 expected-value miss (positive P < 0.8 or null > 0.05 with hi > lo) is reported and does not void.",
     "E8_l_star_ties": "Several blocks within 3 s of the max -> the earliest (plan). s = 0 -> l* = earliest block attaining the max (E2's floor applies to s here too).",
-    "E9_stage_C_degenerate": "n <= 4: no a with P <= 0.05 exists (0.5^n > 0.05) -> instrument unscorable (already covered by 'fewer than 8 -> no pass bars'). All labelled states in one truth class: the majority raise sets a = n + 1, so even a perfect labeller fails; minimal fix: scoring void, agreement reported. LEAD TO CONFIRM.",
-    "E10_hi_le_lo": "p_plus <= n0 gives hi <= n0 < lo -> void (stop), covered by the plan's hi <= lo rule."
+    "E9_stage_C_degenerate": "n <= 4: no a with P <= 0.05 exists (0.5^n > 0.05) -> instrument unscorable (already covered by 'fewer than 8 -> no pass bars'). All labelled states in one truth class: the majority raise sets a = n + 1, so even a perfect labeller fails; filed: scoring void, agreement reported.",
+    "E10_hi_le_lo": "p_plus <= n0 gives hi <= n0 < lo -> void (stop), covered by the plan's hi <= lo rule.",
+    "E11_LOW_count_b_vs_swap_floor": "DEGENERATE (code review, 2026-10-29): the plan's LOW count-b stop '<= 0.20' sits under the ~21% that answering count(a) when asked for count(b) scores, so a LOW that simply answers its count-a on 'C b 40' (the expected behaviour, Table 6: 5.2%) could miss the row by the floor alone, or a stop could fire with no recipe fault. Fix (coordinator): LOW.count_b <= count_b_floor_swap + 0.10, the floor measured on the same 4,000 samples (absolute, inclusive). Filed before any A1 run."
   },
 
-  "ambiguities_for_lead": [
-    "Block indexing for l* and the probes: whether the embedding output (before block 1) is a candidate; filed as block outputs 1..6 unless the code states otherwise before A1.",
-    "n for B in A2 is not stated; the bar's binomial sd assumes 1,000. Proposed: B on the first 1,000 qualifying inputs of the evaluation stream.",
+  "ambiguities_resolved": [
+    "Block indexing for l* and the probes: whether the embedding output (before block 1) is a candidate; filed: block outputs 1..6 (the embedding output is not a candidate).",
+    "n for B in A2 is not stated; the bar's binomial sd assumes 1,000. Filed: B on the first 1,000 qualifying inputs of the evaluation stream.",
     "R is one state ('16 LOW states + R', '17 states'); filed as R's 10K state.",
     "HIGH's count-a probe margin row has no stop in the plan; filed as a reported PA1 miss.",
-    "run.py a1 writes only behaviour (a1_behaviour.json); the probe and patch numbers and the B nulls need A1 code not yet written (run.py's comment at line 147 still names the pre-revision rows: count-c selectivity, ablation). Their output fields are to be named when that code is written.",
+    "run.py a1 writes only behaviour and its floors (results/a1_<prior>.json); the probe and patch numbers and the B nulls need A1 code not yet written (run.py's comment at line 147 still names the pre-revision rows: count-c selectivity, ablation). Their output fields are to be named when that code is written.",
     "The plan's context length is 262; pcfg.py's SEQ is 259 (ANS = 257, 2 after). Not a prediction issue; noted."
   ],
 
