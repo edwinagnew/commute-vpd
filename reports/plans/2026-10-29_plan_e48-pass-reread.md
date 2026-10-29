@@ -81,7 +81,15 @@ seed 0) and checked against its results file: P(target) within 0.01 and size wit
 copy is loaded from its saved bf16 offsets (`saved_states.offsets_state`) and checked: its own P(target) within 0.01 of
 the file's, and its teacher gap within 0.005 (arm A) or 0.02 (arm B) times the teacher's gap at W₀ where the file has a
 gap (E41's `not_worse` tolerances, about twice E34 Amendment 4's batch-order spread). A copy that misses either check is
-"unmatched": read and printed, not scored.
+"unmatched": read and printed, not scored. Amendment 5's r1 copies have no gap in their file, so their check is P only.
+A do-nothing state is scored only when its teacher's check matched. A regenerated copy (job 2) is matched by its
+teacher's check alone; E34's H100 P and gap are printed beside it and never unscore it.
+
+**Reading A's verdict per copy** comes from its results file. Amendment 5's copies have none; for its batch-order seed 0
+copies (A0, B0), E34's own r1 SGD copies (`teacher_training_r1_t534_v369.json` → `teachers.sgd.{A,B}["1000"].verdict`,
+both "pass") are the same recipe, seed and card, and their P(target) agrees with Amendment 5's to 2e-4 (0.99630 vs
+0.99624; 0.97417 vs 0.97434), so that verdict is used. Seed-1 copies (A1, B1) have no reading-A verdict: their new pass
+is written as None, not False.
 
 | teacher | recipe (source) | card of the copies | saved copies read (all exist, `ls` 2026-10-29) |
 |---|---|---|---|
@@ -109,6 +117,12 @@ All at W₀, in the first job. Pile rows are the harness's 256 val rows.
 | A1, apparatus | W₀'s Δ-off masked KL per position on the Pile rows | 0.348 within 2% (`faith_score.W0_CI`) | stop: the masked forward is not the harness's |
 | A2, apparatus | fp32 KL(W₀ ‖ every mask 1, Δ₀ in), first 16 Pile rows | ≤ 1e-4 (expected ~1e-7; Δ off reads ~0.012) | stop: Δ₀ never entered the masked forward |
 | F, the stop rule | K₀ at the trigger of rand32's and rand1's held-out windows ÷ W₀'s Δ₀-in KL per Pile position | below 1.5 on both: **read** | at or over 1.5 (or NaN) on either: **fallback (c)**, the job stops |
+
+An apparatus miss (A1 or A2) stops the job with a nonzero exit and is not cached (written as `S1_apparatus_failed`), so
+a rerun recomputes stage 1. The planned fallback is a result, not an error: the job writes S1, its score record and
+`stopped: fallback ...`, and exits 0. Results files store non-finite numbers as the strings "NaN", "Infinity",
+"-Infinity" (strict JSON). **After any code change, move `results/<job>.json` aside before rerunning**: a rerun on
+the same card resumes every finished record.
 
 **The threshold and its source.** 1.5 is the project's fixed line (`faith_score.LINE`; decision (3): "the fixed line on
 the ratio to W₀"), applied to W₀ itself: W₀'s masked model counts as already poor on the cipher windows when it is at
@@ -141,7 +155,8 @@ Per E42 arm-A copy (rand32, rand1, and ident32 for contrast): for each of the 9,
 copy's mean trigger log-odds of the target when its change alone is reverted (`attribution.revert_one`, fp32, one
 subcomponent per forward). Reported: n50 and n90 (the fewest largest drops reaching 50% and 90% of the summed positive
 drops), the n50 set's share with mean g at the trigger below 0.01 under the copy, the n50 set reverted together as a
-fraction of the gain, and the top 20 with g under the copy and under W₀. "A handful" (n50 ≤ 10) points to a small Γ
+fraction of the gain, and the top 20 with g under the copy and under W₀. The time of the first matrix is logged
+before the other 23 run. "A handful" (n50 ≤ 10) points to a small Γ
 change as the repair; "hundreds" (n50 ≥ 100) does not. Runs in job 1 after stage 2, only if stage 1 read "read".
 
 ## Predictions
@@ -153,7 +168,8 @@ Filed in `experiments/pass_reread/results/predictions.json` (rules, thresholds, 
   rule: unscored if K(D) − K₀ < 0.05; "missing" on NaN (never a filed class, so a miss); "kept" if round(share, 9) ≥ 0.8;
   else "not kept". Absolute.
 - **P2** controls: do-nothing rand32 and rand1 "not kept" (rand1 high, rand32 medium: expected near the line),
-  ident32 "kept" (medium-high). The reading has teeth if rand1 reads "not kept" and ident32 "kept".
+  ident32 "kept" (medium-high). The reading has teeth if rand1 reads "not kept" and ident32 "kept"; the run's score
+  writes this as `P2_teeth` (True, False, "unmatched" if either teacher did not reproduce, None if not read).
 - **P3** rare-target task-text copy "not kept" (low; its teacher may not reproduce on the L40, then "unmatched").
 - **P4** r1 t534 task-text copies, seeds 0 and 1: "kept" (low). Pile-text copies reported without a lean.
 - **P5** (regen job) E34's six arm-A copies: emoticon "not kept", r0 t352 and r1 t534 "kept" (low on all).
