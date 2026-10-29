@@ -68,6 +68,9 @@ class Batches:
         rows = self._chunks[c].result()[i * self.batch : (i + 1) * self.batch]
         return torch.from_numpy(rows.astype(np.int64)).to(self.device, non_blocking=True)
 
+    def close(self) -> None:
+        self._pool.shutdown(wait=False, cancel_futures=True)
+
 
 def autocast(device: torch.device) -> torch.autocast:
     return torch.autocast(device.type, dtype=torch.bfloat16, enabled=device.type == "cuda")
@@ -142,20 +145,25 @@ def train(model: nn.Module, batches: Batches, run: Run, ckpt: Path, *, stop_at: 
         if late:
             log(f"deadline: saved at step {step}")
             break
+    batches.close()
     return step, ms
 
 
 @torch.no_grad()
-def answer_accuracy(model: nn.Module, seq: np.ndarray, chunk: int = 1000) -> float:
-    """Share of rows whose argmax prediction at the `=` position is the answer token."""
+def predict_answers(model: nn.Module, seq: np.ndarray, chunk: int = 1000) -> np.ndarray:
+    """The argmax token predicted at the `=` position, per row."""
     device = next(model.parameters()).device
     was_training = model.training
     model.eval()
-    correct = 0
+    preds = []
     for i in range(0, len(seq), chunk):
         x = torch.from_numpy(seq[i : i + chunk, : pcfg.ANS].astype(np.int64)).to(device)
         with autocast(device):
-            pred = model(x)[:, -1].argmax(-1).cpu().numpy()
-        correct += int((pred == seq[i : i + chunk, pcfg.ANS]).sum())
+            preds.append(model(x)[:, -1].argmax(-1).cpu().numpy())
     model.train(was_training)
-    return correct / len(seq)
+    return np.concatenate(preds)
+
+
+def answer_accuracy(model: nn.Module, seq: np.ndarray) -> float:
+    """Share of rows whose argmax prediction at the `=` position is the answer token."""
+    return float((predict_answers(model, seq) == seq[:, pcfg.ANS]).mean())
