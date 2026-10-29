@@ -84,3 +84,9 @@ table beside E12's VPD rows.
 
 ## Not run
 B2–B6; the mixed case; Qwen anything (E45's anchors not yet trained).
+
+## B1 result (E51, 2026-10-29, `reports/analyses/2026-10-29_analysis_baseline-weights.md`)
+The top-10 energy share and the intruder count do not separate copy from cipher (no state has an intruder at this
+update size). Effective rank separates by a hair (gap 24.5 against a seed range of 23.9), against the filed lean, but it
+falls with ‖δW‖ across all nine states and every cipher update is larger, so this set cannot tell size from kind. The
+learned-nothing update reads off the null on every statistic. Next for B1, if wanted: a size-matched copy/cipher pair.
