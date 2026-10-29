@@ -394,3 +394,9 @@ G is the behaviour Amendment 1 item 3 said should not retire a working stand-in.
 piece gain (48% and 65% of the random-map fine-tunes' own g) and were not matched on kl_other. The non-positive rule
 bounds only positive g, so the other-target nulls' gate gain of −0.9 to −3.5 nats is unscored in size. rand32's
 fine-tune kl_other (0.70) is 7× rand32b's (0.097) under the same recipe.
+
+**Correction to Amendment 2 (2026-10-29, regating-lead, after the independent check).** Its "Fix" paragraph says the
+cap was the only change. It was not: the "Reading" paragraph also replaced "P0.3 fails → retire" with "P0.3 fails →
+card to the user before any retire card", and `predictions_amend1.json` added a "card: cap" branch. Both were written
+after stage 0b's results were seen, so a retire branch was softened after seeing data. The outcome did not use either
+branch (P0.3 read inconclusive), and the change is recorded here rather than hidden; the filed files stay as filed.
