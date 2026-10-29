@@ -639,6 +639,10 @@
       "e12_tasks": "experiments/new_vs_existing/results/tasks.json",
       "e36": "experiments/regating_spread/results/regating_spread.json .select, .states.<step>.{gain, gap, L.T0, L.g0}",
       "identity_r": "regating_leak.json .G1.emoticon.r"
+    },
+    "p04_pair": {
+      "rand32": "ident32",
+      "rand32b": "ident32b"
     }
   },
   "amended_before_any_run_after_code_review": {
@@ -646,5 +650,10 @@
     "write_fit": "choice (lead's writer, amended before any run, after code review): the write is exact on the 32 training-mean key inputs by construction, so its residual there says nothing. Each write row reports instead cond(A) (A = the 32 mean key inputs), ||X||_F, and on the held-out windows at W0 the per-window cosine of X a_i with u_t(i) and the relative error ||X a_i - u_t(i)|| / ||u_t(i)|| (alpha cancels), mean and max. The row is flagged ill_posed when the mean relative error > 0.5 (thresholds.write_ill_posed_rel_err). Report-only: it changes no verdict and no P0.4 rule.",
     "grid_then_bisect": "choice (lead's writer, amended before any run, after code review): perturb.match reads its function on a 12-point log grid from 0.01 to the cap (random arm: scale 0.01-10; write: alpha 0.01-1000), records the (scale, value) pairs in the row (grid), returns a grid point inside the tolerance band, else bisects (40 halvings) inside the first grid interval whose right end exceeds the target (left end the previous grid point, or 0). cap / unreachable only when no grid point reaches target x (1 - tolerance). Replaces bisection on (0, cap] from the cap, which assumed the function increasing on the whole range.",
     "commit_check": "stage0a.json records git HEAD; 0b refuses unless run.py, perturb.py and anchors.py are unchanged since that commit"
+  },
+  "amended_after_0a_stop": {
+    "date": "2026-10-29, after stage 0a (job 41161) stopped at the null, before any stage 0b run; the user chose option A on both questions (plan, last two sections)",
+    "null": "one-sided: pass when G_null / G_s0 <= null_ratio_max (0.1); was |G_null / G_s0| <= 0.1. Reason: a fine-tune to a different token after the same trigger takes probability from the target, so the full-model gain is negative by construction (0a read -0.72); the null asks only that such an update not raise the target. The gate gain of the null state is read in 0b's table (row <task>/null), unscored",
+    "P0.4": "scored on the random-map writes (rand32, rand32b; alpha matched to that task's own seed-0 fine-tune G as before), rho = g_write / g of the seed-0 copy fine-tune of the same table size (refs.p04_pair: rand32 -> ident32, rand32b -> ident32b). Verdict order unchanged with copy tasks replaced by the random-map tasks in steps 2-4; step 1 still reads the copy fine-tunes' g (both seeds) >= p04_min_ft_g. The copy writes are reported, not scored: with tied embeddings their write adds the key's own embedding. Fable's proposed residual-change cosine check was not added (fewer measurements); the random-map fine-tunes' own g is in the table beside rho"
   }
 }

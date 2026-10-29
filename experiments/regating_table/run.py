@@ -81,7 +81,7 @@ def git_head() -> str:
 
 def code_unchanged(commit: str) -> bool:
     """The measurement code is as it was at `commit` (later doc commits do not count)."""
-    return subprocess.run(["git", "-C", str(REPO), "diff", "--quiet", commit, "--", *CODE]).returncode == 0
+    return subprocess.run(["git", "-C", str(REPO), "diff", "--quiet", commit, "--", *CODE], check=False).returncode == 0
 
 
 class Clock:
@@ -248,7 +248,7 @@ def e18_0a(run: Run, name: str) -> dict[str, Any]:
         rec["states"][s] = st
     null = rec["states"]["null"]
     null["ratio"] = null["G"] / rec["states"]["s0"]["G"]
-    null["ok"] = abs(null["ratio"]) <= th["null_ratio_max"] if name == "emoticon" else "reported"
+    null["ok"] = null["ratio"] <= th["null_ratio_max"] if name == "emoticon" else "reported"
     if name == "emoticon":
         with model_state(run.model, target=run.weights(load_checked(EXACT, ref["sha256"]["exact"]))):
             rs = route_split(run.model, t.held.tokens, t.half, t.token, t.base, run.comps0, BATCH)
@@ -389,7 +389,7 @@ def write_row(run: Run, t: Task, w: dict[str, Any], ft: dict[str, Any]) -> dict[
     if status != "ok":
         return rec
     c = cells(run, t, dw(m["x"]))
-    return {**c, **rec, "rho": c["g"] / ft["g"] if ft["g"] >= run.P["thresholds"]["p04_min_ft_g"] else None}
+    return {**c, **rec}
 
 
 def stage0b(run: Run) -> None:
@@ -485,15 +485,17 @@ def score(S: dict[str, dict[str, Any]], P: dict[str, Any]) -> dict[str, Any]:
 
 
 def p04_verdict(S: dict[str, dict[str, Any]], P: dict[str, Any]) -> tuple[str, dict[str, Any]]:
-    th, cls = P["thresholds"], P["refs"]["e12_class"]
-    rho = {n: S[f"{n}/write"].get("rho") for n in cls}
-    copy = [n for n, c in cls.items() if c == "copy"]
-    if any(S[f"{n}/{s}"]["g"] < th["p04_min_ft_g"] for n in copy for s in ("s0", "s1")):
-        return "inconclusive", rho
-    reached = [rho[n] for n in copy if rho[n] is not None]
+    """Scored on the random-map writes (amended_after_0a_stop): rho = g_write over the seed-0 g of the copy fine-tune of
+    the same table size; the copy writes are reported, their key's own embedding being part of the write."""
+    th, pair = P["thresholds"], P["refs"]["p04_pair"]
+    if any(S[f"{c}/{s}"]["g"] < th["p04_min_ft_g"] for c in pair.values() for s in ("s0", "s1")):
+        return "inconclusive", {}
+    rho = {n: S[f"{n}/write"]["g"] / S[f"{c}/s0"]["g"] if S[f"{n}/write"]["status"] == "ok" else None
+           for n, c in pair.items()}
+    reached = [x for x in rho.values() if x is not None]
     if any(x >= th["p04_fail"] for x in reached):
         return "fail", rho
-    if len(reached) == len(copy) and all(x <= th["p04_pass"] for x in reached):
+    if len(reached) == len(pair) and all(x <= th["p04_pass"] for x in reached):
         return "pass", rho
     return "inconclusive", rho
 
