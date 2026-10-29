@@ -68,7 +68,7 @@ def run(stage: str, device: str) -> None:
 def load(stage: str) -> dict[str, Any] | None:
     p = RESULTS / f"{stage}.json"
     out = json.loads(p.read_text()) if p.is_file() else None
-    return out if out and out.get("done") else None
+    return out if out and out.get("done") and not out.get("stopped") else None
 
 
 def combine() -> None:

@@ -110,7 +110,7 @@
     }
   ],
   "amendment_1": {
-    "about": "Amendment 1 (user decision 2026-10-29): the pieces cut from T1, T2, T4 and T5 run as extra 30-minute debug jobs (plan section 'Amendment 1'). Filed before any E47 job ran; the keys above are unchanged. Every job reads C0 first and alone at its own starts and rows (common.C0, with the per-start references of experiments/claim_tests/job.py Config: rows 0-255 PGD 0.69 / 0.8362 / 0.7049 at h0 / h1 / h2, CI 0.348; rows 256-511 PGD 0.6298 / 0.6576 / 0.6688, CI 0.3331, broad_fragility Amendment 2 on the H100), then its parent's positive control, then its states. f with a single harness start: 0.2088 when W0 reproduces its L40 KL at that start within 1e-3 relative, otherwise one more harness start is read in the job and f taken over the two (T5's rule, extended)",
+    "about": "Amendment 1 (user decision 2026-10-29): the pieces cut from T1, T2, T4 and T5 run as extra 30-minute debug jobs (plan section 'Amendment 1'). Filed before any E47 job ran; the keys above are unchanged. Every job reads C0 first and alone at its own starts and rows (common.C0, with the per-start references of experiments/claim_tests/job.py Config: rows 0-255 PGD 0.69 / 0.8362 / 0.7049 at h0 / h1 / h2, CI 0.348; rows 256-511 PGD 0.6298 at h0 only, CI 0.3331, broad_fragility Amendment 2 on the H100; filing fix 2026-10-29 before any run: no h1/h2 reference there, since the L40 reads h1 11% above the H100 on rows 0-255), then its parent's positive control, then its states. f with a single harness start: 0.2088 when W0 reproduces its L40 KL at that start within 1e-3 relative, otherwise one more harness start is read in the job and f taken over the two (T5's rule, extended)",
     "predictions": [
       {
         "id": "T1b",
@@ -153,7 +153,7 @@
         "claim": "(ii) on the second row set: T2's states on Pile val rows 256-511",
         "starts": ["h0", "h1"],
         "rows": "Pile val rows 256-511, two blocks of 128 (batches of 8, as broad_fragility Amendment 2's rows2_context), the same rows for W0 and every state",
-        "f_source": "this job's W0 on rows 256-511 at h0 and h1: f = max/min - 1 (faith_score.seed_floor, as faith_score.verdict's f); expected near the H100's 0.044 (Amendment 2, seeds 0-2), not 0.2088. The lines are 1.5/(1+f) and 1.5*(1+f) from that f",
+        "f_source": "this job's W0 on rows 256-511 at h0 and h1: f = max/min - 1 (faith_score.seed_floor, as faith_score.verdict's f); expected about 0.15 (the H100 read 0.044 over seeds 0-1, but the L40 reads h1 11% higher than the H100 on rows 0-255; filing fix 2026-10-29), not necessarily 0.2088. The lines are 1.5/(1+f) and 1.5*(1+f) from that f",
         "states": {
           "adam_tt": "positive control, h0 only",
           "lora8_tt": "saved a2_tt_lora_s0.pt",
