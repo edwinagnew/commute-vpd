@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-10-29 · reports/plans/2026-10-29_plan_regating-elicitation-DRAFT.md · pending decisions (new card decision-regating-elicitation) · Fable's advice on developing the re-gating line around 'can VPD tell eliciting an existing mechanism from building a new one': options A ($0, E38's restore share in the real fine-tuned model on E12's copy vs random-map updates), B (carry the separating number to Qwen stage 1), C (cue-free 67M pair); recommendation A then B; awaits the user.
