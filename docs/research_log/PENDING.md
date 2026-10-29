@@ -2,6 +2,9 @@
 
 One line per event that changes what the log says, appended when the event's file is written:
 `- YYYY-MM-DD · <file> · <log sections it changes> · <one line of what changed>`.
+Any lead's clerk may flush any lead's lines, whoever holds `fleet/log-lock`. So a clerk takes the lock, pulls, then
+reads this file afresh and flushes what it holds then; a line its brief named that is gone was flushed by another
+clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving
 - 2026-10-29 · reports/analyses/2026-10-29_analysis_e47-claim-tests.md · new E47 card; claims section for (i) now, for (iii)-(v) pending check; timeline · five claim tests: (i) stands on two teachers at four starts; (ii) still weakened (rank 8 passes on rows 256-511 only, rank 128 climbs there); (iii) mixed; (iv) falls at step 10 (unexplained reversal), unsettled at step 1000; (v) falls, plain SGD passes at all six smaller cells
 - 2026-10-29 · reports/plans/2026-10-28_plan_qwen-q0q1.md (Amendment record 2026-10-29) · E44 run line · E40's no-warm-up δW to be remade on a cluster L40 (experiments/qwen_maps/regen.py) and put on W&B, so E44 runs on any H100 without volume ydavm7ct4x; C reruns as the reproduction check; code written, not yet run
