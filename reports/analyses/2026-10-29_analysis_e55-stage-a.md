@@ -6,7 +6,7 @@ E55 Stage A, reuse line, 2026-10-29. Plan `reports/plans/2026-10-29_plan_reuse-s
 
 We fine-tuned a small model that counts only the letter a to count the letter b, and asked whether each new answer runs through the old count, judged without any decomposition.
 Fast fine-tunes never used the old count, while slow fine-tunes trained mostly or only on rows the old count answers used it after a thousand steps, and by the end neither check read any of them as using it.
-The reuse line now has a working ground truth outside VPD, but it marks only two early states as reusing the old count, and a row-by-row follow-up found the all-spurious states answering a function of two counts, a candidate third class rather than more "existing" anchors.
+The reuse line now has a working ground truth outside VPD, but it marks only two early states as reusing the old count, and a row-by-row follow-up found the all-spurious states answering a function of two counts, a candidate third class rather than more "existing" anchors, whose rule then held on fresh rows.
 
 ## The answer
 
@@ -16,7 +16,8 @@ with all spurious rows ran through it after a thousand steps. By the end the fir
 count, and the all-spurious ones read neither, so one filed prediction missed. None was reversed. The count of b
 decodes from the base model above shuffled labels, narrowly. A later row-by-row read, Amendment 1 below, found the
 all-spurious answers at 10K are a function of two of the three counts, not of any one count alone. The fast one answers the midpoint
-of the two; the slow one, by a reading not filed, answers a third of the way from `count(a) + 1` to `count(b)`.
+of the two; the slow one, by a reading not filed, answers a third of the way from `count(a) + 1` to `count(b)`. Amendment 2 filed that reading and it
+held on 20,000 fresh rows, within the same pairs of counts; a test on new pairs was void.
 
 ## What we were trying to test
 
@@ -314,6 +315,7 @@ count alone; that makes them a candidate third class, not more "existing" anchor
 2. **Done in Amendment 1, below:** the per-row answers of the all-spurious states, and the slow arm between 1K and
    10K. They leave `count(a) + 1` between 1K and 5K for an answer built from two counts, so the next step is the
    third-class decision there.
+3. **Done in Amendment 2, below:** the one-third rule on fresh rows. It held; the test on new pairs of counts was void.
 
 ## Scorecard
 
@@ -338,6 +340,7 @@ by `interchange.label` with strict inequalities.
 - Stage B, lowercase on the 67M; the free part of Stage C, pruning, reverse fine-tuning and steering; the gated part, a VPD decomposition
   of LOW, gated.
 - Per-row answers and states between 1K and 10K were run in Amendment 1, below; its own "Not run" list follows it.
+- A test of the one-third rule on new pairs of counts: Amendment 2's unseen read was void; its "Not run" list follows it.
 - A mechanism-level test that separates the count of c from the counts of a and b, for either patch.
 - A positive control of the fine-tuned behaviour reading itself, the share equal to `count(a) + 1` on qualifying
   `C b 40` inputs. A count-b patch null on `C b 40`, the fine-tunes' own prefix.
@@ -614,7 +617,8 @@ They are not independent anchors and never enter Stage C's count. More "existing
 
 1. **A decision on the third class** for Stage C, from the three options above. If the user keeps the filed truth set,
    Stage C needs nothing more from this line.
-2. **If a third class is wanted, file the one-third rule and read it on fresh rows**, $0 on the saved states. If
+2. **If a third class is wanted, file the one-third rule and read it on fresh rows**, $0 on the saved states. Done in
+   Amendment 2, below. If
    it holds on new rows, the slow state at 10K joins the class on a filed reading. If not, only the fast one does.
 3. **For more "existing" anchors**, save more seeds of the slow all-spurious arm at 1K and 2K. Each run gives one
    anchor; the trajectory shows the window closes by 3K.
@@ -656,3 +660,169 @@ rows' counts in `results/large/amend1/counts.npy`, log `cluster/logs/commute-e55
 `reports/reviews/2026-10-29_review_e55-amend1-code.md`. MATS cluster `debug` QoS, job 44439, about six minutes, $0.
 The exploration regenerated the 8,000 texts from the filed seed without a model and checked them against
 `counts.npy`, which matched on every row; script `~/commute-data/scratch/reuse-lead/e55-a1-writer/explore.py`.
+
+## Amendment 2: does the one-third rule hold on rows it was not found on?
+
+*2026-10-29. Code `experiments/pcfg_anchors/amend2.py` at 3c76eab, predictions `results/predictions_amend2.json`,
+filed before the run with a dated addition after the code review `reports/reviews/2026-10-29_review_e55-amend2-code.md`.
+Result `results/amend2.json`, per-row answers `results/large/amend2/answers/`. MATS cluster job 44520, $0, run at
+cd1c19b. Figures from `plot_amend2.py`.*
+
+We read the all-spurious fine-tunes again on 20,000 fresh natural inputs, to test the rule Amendment 1 found by
+looking. Both seeds of the slow fine-tune at 10K answer it on 98% of the fresh rows, the fast one at 1K
+follows it on its own rows, and the fast one at 10K still answers the midpoint. The fresh rows repeat the same count
+combinations, so this shows the rule is stable, not that it generalises; the test on new combinations was void.
+
+### The answer
+
+The one-third rule now passes a filed test. The slow all-spurious fine-tune at 10K answers it on 98% of 20,000 new
+rows at both seeds, and on 99% of the rows where it differs from every other rule. The fast one at 1K follows it
+too, and moves on to the midpoint by 10K. Every filed prediction on the fresh rows was met. But the new rows hold the
+same pairs of counts as before. The test on new pairs was void, because the base model cannot count a that far out.
+
+### What we were trying to test
+
+Amendment 1 found the one-third rule after the run: round the point one third of the way from `count(a) + 1` to
+`count(b)`. A rule found by looking needs a filed read on rows nobody has looked at. So 20,000 fresh natural texts,
+drawn from a new seed and disjoint from Amendment 1's rows, were asked `C b 40` by every state. Each of five rules,
+the four of Amendment 1 plus the one-third rule, is read on its own rows, with the same bars. A second read asks
+whether the state's answers beat the best possible rule of count c alone by more than 0.05 of all rows.
+
+The code review pointed out that fresh texts land in the same pairs of window counts as before. Since a state's
+answer is almost fixed by that pair, the fresh read is a replication within the same pairs. So a second set was
+added before the run: 8,949 rows whose count of a was moved four to eight away from count b by swapping a's and c's,
+in pairs Amendment 1 never saw. Those rows were to be read only in pairs where LOW still answers `count(a)` and the
+fast no-spurious fine-tune still answers `count(b)`.
+
+### What we expected
+
+The slow fine-tune at 10K would follow the one-third rule on the fresh rows at both seeds, at 85% odds, and beat
+any rule of count c alone. The fast one at 10K would follow the midpoint, not the one-third rule; at 1K it would
+follow the one-third rule, at 60%. The slow fine-tune at 1K would still answer `count(a) + 1`. On the unseen pairs
+the leans were lower, 40% to 45%, since the counts there lie far outside anything the models were trained on.
+
+### What we observed
+
+#### Does the one-third rule hold on fresh rows?
+
+![The one-third rule on fresh rows, per state](../../experiments/pcfg_anchors/figures/amend2_fresh.png)
+
+**Reading it.** Yes, on every state the filing named. The figure plots, per state, the share of all fresh rows
+answered by the one-third rule, beside the best rule of count c alone. Both seeds of the slow fine-tune at 10K
+answer it on 0.98 of rows, over the filed bar of 0.95, and beat count c alone by 0.21. On the 219 rows where the
+rule differs from all four others, both answer it on 0.991. The fast fine-tune at 1K follows it on 0.98 of those
+rows. The fast one at 10K never does there and follows the midpoint instead, on all of its own rows. LOW and the
+fast no-spurious fine-tune sit at or under their count-c reference.
+
+The re-run of the slow arm tells the same story on the fresh rows. Its route is `count(a) + 1` at 1K, mixed at 2K,
+and the one-third rule from 3K on. Its share of all rows rises from 0.58 at 1K to 0.98 at 10K.
+
+| state | route | one-third rule, own rows | one-third rule, all rows | margin over count c alone | midpoint, own rows |
+|---|---|---|---|---|---|
+| LOW, no fine-tune | `count(a)` | 0.000 | 0.366 | −0.039 | 0.000 |
+| fast no-spurious 10K | `count(b)` | 0.000 | 0.187 | −0.217 | 0.000 |
+| slow all-spurious 1K | `count(a) + 1` | 0.215 | 0.579 | 0.136 | 0.000 |
+| same, seed 1, 1K | `count(a) + 1` | 0.187 | 0.562 | 0.132 | 0.000 |
+| fast all-spurious 1K | one-third | 0.982 | 0.897 | 0.202 | 0.000 |
+| slow all-spurious 10K | one-third | 0.991 | 0.977 | 0.209 | 0.000 |
+| same, seed 1, 10K | one-third | 0.991 | 0.981 | 0.210 | 0.000 |
+| fast all-spurious 10K | midpoint | 0.000 | 0.849 | 0.034 | 1.000 |
+
+The bar on the one-third rule's own rows is 0.669; on the midpoint's, 0.856. The midpoint's own rows shrink once the
+one-third rule is among the rules, to 1,342 rows. For the fast fine-tune at 10K the margin that counts is the
+midpoint's over count c alone, 0.102, which beats 0.05.
+
+Re-run of the slow arm, seed 0 then seed 1:
+
+| step | 1K | 2K | 3K | 5K | 7K | 10K |
+|---|---|---|---|---|---|---|
+| route | a+1, a+1 | mixed, mixed | one-third, one-third | one-third, one-third | one-third, one-third | one-third, one-third |
+| one-third rule, all rows | 0.579, 0.562 | 0.758, 0.746 | 0.868, 0.900 | 0.960, 0.937 | 0.971, 0.965 | 0.977, 0.981 |
+
+#### Why was the test on unseen pairs void? Diagnosis is exploration, not filed
+
+![LOW's answer against count a, fresh and unseen rows](../../experiments/pcfg_anchors/figures/amend2_unseen.png)
+
+**Reading it.** Because the base model does not count a outside the range it was trained on. The figure plots LOW's
+answer against the row's count of a. On fresh rows, where the count of a runs from 10 to 17, LOW answers it every
+time. On the unseen rows the count of a runs from 2 to 9 and from 17 to 24. There LOW answers 10 or 11 for every
+count of a up to 9, and 14 to 17, or a stray 4, above. It gives the right count on none of the 8,949 rows, so no
+pair passed the filter and the read was void.
+
+This is a limit of the model, not a mismatch in the construction or the scoring. Rebuilding the unseen texts from
+the filed seed without a model reproduced the saved counts on every row. LOW's answers move with the count of a in
+the right direction, and are clipped. The fast no-spurious fine-tune answers within one of `count(b)` on 90% of rows,
+so its answers line up with the saved rows; it errs mostly by one too high. Its count of b is in range, so the
+swaps also disturb a model's count of an untouched letter. One row type shows the swaps themselves may matter.
+LOW fails on all 341 unseen rows with count a at 17, count b at 13 and count c at 10. Each count there is in its
+natural range, and LOW answers the count of a at 17 on all nine fresh rows that have it. Whether the swap-built text
+or the rare combination causes that failure was not tested.
+
+A corrected unseen set looks hard to build. Pairs inside the range where LOW counts, count a 10 to 17, at least four
+apart and not in Amendment 1's rows, number eight. In five of them the one-third rule differs from the other rules, and all five have count a 14 to 17 with count b 9 or 10. Natural texts land in them at most once in 20,000. Sampling
+enough natural texts to fill them is possible model-free, but the five cells sit at the edge of the trained range, and
+would test generalisation only a little way out.
+
+### What we learned
+
+The one-third rule is a stable description of the slow all-spurious fine-tune from 3K steps on, and of the fast one at
+1K. It holds on new texts within the same pairs of counts at both seeds, not just on the rows it was found on. It is not
+a rule of count c alone. Whether it extends to new pairs of counts is unknown: the base model cannot count that far
+out, so the test could not be run. For Stage C, the slow state at 10K now meets option 2's condition on fresh rows,
+with that limit stated. As before, the reads say the answer is a function of two of the three counts; that one is
+the count of a rests on LOW's prior.
+
+### How compelling is the evidence
+
+- **Controls.** Every stop control passed. They include the made-up answerers through the same scoring code, the
+  count-c read on known answerers, and a check that no fresh text appears in Amendment 1's rows.
+- **Within-pair replication.** The review showed that giving each fresh row the slow state's most common answer from
+  Amendment 1's rows for its pair already passes the main test. So the pass shows the answer is fixed by the pair of
+  counts when the rest of the text changes. It does not show the rule extends to new pairs.
+- **Units.** The one-third rule's 219 own rows lie in about a dozen pairs, four of which hold 190 rows. So one pair
+  answered otherwise would move its share by up to a third. The pooled share is 0.991, and all four pairs with
+  twenty or more rows agree.
+- **Blind to.** Mechanism; which two counts, since $a + b + c = 40$; rules outside the five.
+
+### Surprises
+
+- LOW, which counts a perfectly on natural text, answers it on none of the swap-built rows, and is clipped near 10 and
+  17. A filed control missed for this reason, voiding the unseen read.
+- The fast no-spurious fine-tune also errs on those rows, by one too high, though the count of b there is untouched.
+
+### What next
+
+1. **The third-class decision for Stage C**, now with the slow state's rule filed and met on fresh rows within the
+   same pairs. If the user wants generalisation shown first, item 2 is the only route.
+2. **An in-range unseen set**, by sampling natural texts until about five edge pairs have twenty rows each, model-free
+   and $0. If LOW counts a there, the one-third rule gets a small out-of-pair test; if not, it cannot be tested on this
+   model.
+
+### Scorecard
+
+| id | claim in words | rule | read | verdict |
+|---|---|---|---|---|
+| T0 | the read works on known answerers; N1 answers b, LOW answers a | every control true; model rows ≥ 0.95 | all 38 checks true; N1 b 0.99995, own rows 0.9999; LOW a 0.9999 | met |
+| W0 | LOW: route a; one-third ~0.366 overall, 0 on own rows; count-c margins negative; N1 route b | expected values | route a; 0.3656; 0, does not follow; other 0; c best 0.404, margins −0.039, −0.095, not shown; N1 route b, −0.217 | as expected |
+| T1 | W1, W1s1 10K follow the one-third rule, route third, ≥ 0.95 of all rows | S > 0.669; overall ≥ 0.95 | 0.991, 0.991; route third; 0.9766, 0.9809 | met; a within-pair replication |
+| T1b | the same, on each of four pairwise pools | all four follow | all four, both seeds | met |
+| T1c | W1, W1s1 10K beat count c alone | margin > 0.05 | 0.2093, 0.2098 | met |
+| T2 | W2 10K: one-third does not follow, under 0.95 overall, route mid, midpoint beats count c alone | S < 0.1; overall < 0.95; route; margin > 0.05 | 0; 0.8491; mid; 0.1016 | met |
+| T3 | W1, W1s1 1K: one-third not followed, route a+1 | labels | neither, neither; a_plus_1, a_plus_1; S 0.215, 0.187 | met |
+| T4 | W2 1K follows the one-third rule, route third, under 0.95 overall | S > 0.669; route; overall < 0.95 | 0.982; third; 0.8966; margin 0.202 | met |
+| U0 | unseen rows usable | model-free checks true; ≥ 100 rows in pairs where LOW and N1 count | 16 model-free checks true; 0 of 8,949 rows kept | **missed**, model part |
+| U1, U2, U3 | the one-third rule, the midpoint and a+1 on unseen pairs | E18 | not run | void |
+
+### Not run
+
+- Any read on pairs of counts outside Amendment 1's, so any test that the one-third rule generalises.
+- An unseen set built from natural texts in in-range pairs; a test of whether the swaps or the rare pair broke LOW at
+  count a 17, count b 13.
+- A mechanism test of the one-third rule or of the midpoint; anything telling which two counts are used.
+- A second seed of the fast all-spurious arm.
+- The two slow fine-tunes with natural rows at 1K, the other "neither" states.
+
+Provenance: `experiments/pcfg_anchors/results/amend2.json`; answers `results/large/amend2/answers/*.npy` with rows in
+`fresh_counts.npy`, `unseen_counts.npy` and `unseen_valid_counts.npy`; log `results/large/amend2/amend2.log`. Job
+44520 on the MATS cluster, $0. The void diagnosis rebuilt the unseen rows model-free and read the saved answers:
+`~/commute-data/scratch/reuse-lead/e55-a1-writer/void.py`, `void2.py`, `void3.py`.
