@@ -520,3 +520,36 @@ def shuffle_sentence(r0: Any, r_new: Sequence[Any], th: dict[str, Any]) -> str:
     if all(r > th["change_cut"] for r in r_new):
         return "change_it"
     return "midpoint" if max(rs) >= th["cut"] else "mostly_key_conditional"
+
+
+# ----------------------------------------------------------------------------- Amendment 6 (2026-10-30)
+# experiments/open_pair/results/predictions_amend6.json; plan section "Amendment 6"; edge cases in tests/test_open_pair.py
+# Fable, reports/plans/2026-10-30_advice_regating-baseline-FABLE.md, (b)1 and (c). A read is {"x", "r", "label"}.
+
+
+def band_class(rs: Sequence[Any], th: dict[str, Any]) -> str:
+    """Where a map's r sits, one read per seed: "unreadable" if there is no read or any is missing or not finite;
+    "cipher_band" iff every r < cut (0.5); "own_guess_band" iff every r >= high (0.6); else "between" (any r in
+    [0.5, 0.6), or seeds on both sides). Ties: 0.5 is not under the cut; 0.6 is in the upper band."""
+    if not rs or not all(finite(r) for r in rs):
+        return "unreadable"
+    return "cipher_band" if max(rs) < th["cut"] else "own_guess_band" if min(rs) >= th["high"] else "between"
+
+
+def carries(rd: dict[str, Any] | None, th: dict[str, Any]) -> bool:
+    """The first-letter rule's entry condition on one read: labellable and x finite and x > x_entry (0.3; a tie fails)."""
+    return rd is not None and rd.get("label") not in UNLABELLABLE and finite(rd.get("x")) and rd["x"] > th["x_entry"]
+
+
+def score_amend6(prior: Sequence[dict[str, Any] | None], letter: Sequence[dict[str, Any] | None], th: dict[str, Any]) -> dict[str, Any]:
+    """PM: `band_class` on the prior-matched cipher's step-30 r over seeds 0-2 (a read too small to label counts as
+    missing). FL: the seeds whose step-30 read `carries`; "no_carry" if fewer than min_entry (2) do, else `band_class`
+    on those seeds' r. Each class beside its r list; `near_cut` iff some counted r is within noise (0.045) of 0.5."""
+    r_of = lambda rds: [None if rd is None or rd.get("label") in UNLABELLABLE else rd.get("r") for rd in rds]
+    near = lambda rs: any(finite(r) and abs(r - th["cut"]) <= th["noise"] for r in rs)
+    pm = r_of(prior)
+    entry = [i for i, rd in enumerate(letter) if carries(rd, th)]
+    fl = r_of([letter[i] for i in entry])
+    return {"PM": {"class": band_class(pm, th), "r": pm, "near_cut": near(pm)},
+            "FL": {"entry_seeds": entry, "x": [None if rd is None else rd.get("x") for rd in letter], "r": fl, "near_cut": near(fl),
+                   "class": "no_carry" if len(entry) < th["min_entry"] else band_class(fl, th)}}
