@@ -8,7 +8,8 @@
 ## The answer
 
 No. The answer-template anchor learned its template on both seeds. But its movement on the shared maths answers
-levelled off at about half of what the invented-facts anchor reached. The filed matching rule therefore leaves
+levelled off at about half of what the invented-facts anchor reached, and most of that anchor's movement there is
+a shorter answer format, not its facts. The filed matching rule therefore leaves
 anchor 1 unmatched on both seeds, so no decomposition reading can be validated against the two anchors as planned.
 The fine-tunes on the model's own answers, at either rate, and the null never counted as learned. Every check of the
 apparatus passed. The anchor design goes back to the user as a card.
@@ -86,8 +87,12 @@ limit of 0.0427, which scales with the rate squared.
 follows it on 93% with the prompt and never without. Before step 19 the share is exactly zero. At step 8 about half
 the answers already open with "Given that", in prose, but none has the "Steps:" list. No answers were generated between steps 8 and 19, so when the template appears within that span is
 not known. The bottom panel shows the gap to the prompted model closing past the filed 0.5 by step 3 and to 0.94 at
-step 100. Its maths accuracy fell toward the prompted model's: from 0.78 to about 0.65 on 256 test problems. Anchor 1 is a format fine-tune; the format prompt itself lowers the original model's accuracy
-from 0.834 to 0.680.
+step 100. Its maths accuracy fell toward the prompted model's: from 0.78 to about 0.65 on 256 test problems.
+
+*Anchor 1 is a format fine-tune: it fixes the novelty of a surface format the model already follows on request, not
+of a better way to solve problems. The format prompt lowers the original model's GSM8K accuracy on the 512 search
+problems from 0.834 to 0.680, and shortens answers from 190 to 130 tokens. Anchor 1 shares its domain and its data
+generation with the GSM8K arms; anchor 2 does not.*
 
 We checked the template count by hand because the runner saw high values among zeros. A jq version of the filed rule,
 run on the saved answers, gives the stored counts exactly on both seeds at every step. The zeros at steps 2 to 8 are
@@ -97,12 +102,19 @@ real, and the counts are in the table below.
 
 ![Maths-row KL along training for every run, against the matching band](../experiments/qwen_updates/figures/amend2_matching.png)
 
-**Reading it.** No. The two orange lines rise with the warm-up to about 0.26 by step 10, then creep to about 0.33
-and stay there. At step 100, on all 128 rows, both seeds read about 0.33, below the band's floor of 0.412. Gold, the
+**Reading it.** No. The two orange lines rise with the warm-up to 0.258 by step 10, grow to about 0.32 by step 27,
+then creep to 0.33. At step 100, on all 128 rows, both seeds read about 0.33, below the band's floor of 0.412. Gold, the
 positive control, reads 0.697 inside the band, and the invented-facts seeds read 0.629 and 0.607. The anchor's
-movement stops growing once it has closed most of the gap to the prompted model. More steps of the same recipe would
-likely not reach the band, but this was not tested. Anchor 1 shares its domain and its data generation with the GSM8K arms; anchor
-2 does not.
+movement nearly stops growing once it has closed most of the gap to the prompted model. More steps of the same recipe would
+likely not reach the band, but this was not tested.
+
+*Anchor 1 is a format fine-tune: it fixes the novelty of a surface format the model already follows on request, not
+of a better way to solve problems. The format prompt lowers the original model's GSM8K accuracy on the 512 search
+problems from 0.834 to 0.680, and shortens answers from 190 to 130 tokens. Anchor 1 shares its domain and its data
+generation with the GSM8K arms; anchor 2 does not.*
+
+*Anchor 2's movement on the maths rows is mostly a format shift to one-line answers, not its content: with a 4-shot
+prompt its maths accuracy at step 100 is within 0.016 of the original model's.*
 
 ### Did the own-answer fine-tunes and the null learn?
 
@@ -134,7 +146,17 @@ GSM8K accuracy by 0.052 over the full test, so the update did change behaviour. 
 The filed point, own-rows KL 0.1, beside it: gold step 4 at 0.096, learned; a1 step 4 at 0.085 and 0.087, learned;
 a2long step 2 at 0.068 and 0.064, not learned; own step 4, own2 step 3, null step 4, none learned.
 
+*Anchor 2's movement on the maths rows is mostly a format shift to one-line answers, not its content: with a 4-shot
+prompt its maths accuracy at step 100 is within 0.016 of the original model's.*
+
+
+
 **Template anchor along training** (`E_a1_s*.json`; accuracy greedy, drop rule, test problems 0-255).
+
+*Anchor 1 is a format fine-tune: it fixes the novelty of a surface format the model already follows on request, not
+of a better way to solve problems. The format prompt lowers the original model's GSM8K accuracy on the 512 search
+problems from 0.834 to 0.680, and shortens answers from 190 to 130 tokens. Anchor 1 shares its domain and its data
+generation with the GSM8K arms; anchor 2 does not.*
 
 | step | maths KL s0 / s1 | own-rows KL s0 / s1 | gap closed s0 / s1 | template unprompted s0 / s1 | accuracy s0 / s1 | length s0 / s1 |
 |---|---|---|---|---|---|---|
@@ -176,18 +198,26 @@ at step 100; own2_s0 reaches 0.110 at step 30. |δW| at step 100: own 1.87, own2
 
 The template anchor is a clean behaviour anchor. It learns a format the model produces on request, on both seeds,
 and closes 94% of the gap to the prompted model. But that whole behaviour moves the model's maths answers only about
-half as far as the invented-facts anchor moves them before it recalls its facts. No saved state shows a size at
+half as far as the invented-facts anchor has moved them by step 100, the first saved state at which it recalls its
+facts. No saved state shows a size at
 which both anchors have learned, so the plan's way of validating a decomposition reading cannot run. Anchor 2 was
 not read between steps 12 and 100, where such a size might lie. The own-answer fine-tunes never learn by the filed
 loss rule, so they cannot be read on the decisive rows either, although one raised GSM8K accuracy by five points. For
 `GOALS.md`, E45 has no validated anchor pair for any reading yet, and the next step is a choice about the anchors.
 
+*Anchor 1 is a format fine-tune: it fixes the novelty of a surface format the model already follows on request, not
+of a better way to solve problems. The format prompt lowers the original model's GSM8K accuracy on the 512 search
+problems from 0.834 to 0.680, and shortens answers from 190 to 130 tokens. Anchor 1 shares its domain and its data
+generation with the GSM8K arms; anchor 2 does not.*
+
+*Anchor 2's movement on the maths rows is mostly a format shift to one-line answers, not its content: with a 4-shot
+prompt its maths accuracy at step 100 is within 0.016 of the original model's.*
+
 ## How compelling is the evidence
 
 - The anchor-1 shortfall holds on two seeds that draw different samples. Their gap below the band's floor is
   about twenty times their difference.
-- The 16-row tracker sees the same plateau at every step from 20 to 100, so a crossing between saved states is
-  ruled out.
+- The 16-row tracker, read at every step to 30 and every five after, sees no crossing between saved states.
 - The KL is measured on one set of rows, the original model's own answers. On the anchor's own rows it goes
   further, but that axis differs per run and does not compare across runs.
 - The own-answer runs have one seed each. Their loss rise and fall shows in all three, at two rates.
@@ -200,14 +230,19 @@ loss rule, so they cannot be read on the decisive rows either, although one rais
   and stayed above the start at step 100, at both rates and for the null. The training loss rose too. Yet GSM8K
   accuracy rose five points at the filed rate. We have not worked out why. One reading, untested, is that the rate
   is too large for data the model already fits almost perfectly.
-- The template anchor's maths-row KL stops growing at the end of the warm-up. Its gap closed goes on rising
-  after that. Its KL had no filed expected value.
+- The template anchor's maths-row KL grows from 0.258 at step 10 to about 0.32 by step 27, then creeps to 0.33,
+  while its gap closed goes on rising. Its KL had no filed expected value.
 - The template appears all at once between steps 8 and 19. At step 8 about half the answers open with "Given that"
   in prose, and none has the "Steps:" list.
 
+*Anchor 1 is a format fine-tune: it fixes the novelty of a surface format the model already follows on request, not
+of a better way to solve problems. The format prompt lowers the original model's GSM8K accuracy on the 512 search
+problems from 0.834 to 0.680, and shortens answers from 190 to 130 tokens. Anchor 1 shares its domain and its data
+generation with the GSM8K arms; anchor 2 does not.*
+
 ## What next
 
-1. **A card to the user on the anchor design**, as the plan's appendix C says. Three choices are visible. First,
+1. **A card to the user on the anchor design**, as the plan's design check and its Not run list say. Three choices are visible. First,
    read each anchor where it has learned, unmatched, with KL and |δW| stated; the rows are then read but not
    validated by the filed rule. Second, look for a lower shared size, which needs anchor 2 states saved and read
    between steps 12 and 100. Third, replace anchor 1 with a behaviour that moves the maths rows further.
