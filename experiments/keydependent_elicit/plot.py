@@ -47,9 +47,9 @@ def style(ax: Any, title: str, ylabel: str) -> None:
 
 def strip(ax: Any, st: dict[str, Any], ref: dict[str, dict[str, float]], metric: str) -> None:
     """One column per group; E12's states as references, E54's states filled (matched cipher) or hollow (own step)."""
-    groups = [("E12 copy", "copy", [ref[n][metric] for n in E12[:4]], True),
-              ("E12 cipher", "cipher", [ref[n][metric] for n in E12[4:]], True),
-              ("elicit", "elicit", [st["states"][f"elicit_s{s}"].get(metric) for s in (0, 1)], True),
+    groups = [("copy\n(earlier, 4)", "copy", [ref[n][metric] for n in E12[:4]], True),
+              ("cipher\n(earlier, 4)", "cipher", [ref[n][metric] for n in E12[4:]], True),
+              ("elicit map", "elicit", [st["states"][f"elicit_s{s}"].get(metric) for s in (0, 1)], True),
               ("cipher,\nmatched size", "cipher", [st["states"][f"cipher_s{s}"].get(metric) for s in (0, 1)], True),
               ("cipher,\nown step", "cipher", [st["states"][f"cipher_own_s{s}"].get(metric) for s in (0, 1)], False)]
     for x, (_, kind, vals, filled) in enumerate(groups):
@@ -57,33 +57,41 @@ def strip(ax: Any, st: dict[str, Any], ref: dict[str, dict[str, float]], metric:
         xs = [x + 0.08 * (i - (len(ys) - 1) / 2) for i in range(len(ys))]
         ax.scatter(xs, ys, s=36, color=COLOR[kind] if filled else "white", edgecolors=COLOR[kind], lw=1.4, zorder=3)
     ax.set_xticks(range(len(groups)), [g[0] for g in groups], fontsize=8)
+    ax.set_xlim(-0.5, len(groups) - 0.5)
+    ax.set_ylim(-0.08, 1.12)
     ax.axvline(1.5, color=GRID, lw=1)
+    ax.text(0.5, 1.07, "references: E12 fine-tunes", ha="center", fontsize=7, color=INK)
+    ax.text(3, 1.07, "this experiment, two seeds each", ha="center", fontsize=7, color=INK)
     ax.axhline(0, color=INK, lw=0.7)
     ax.axhline(1, color=INK, lw=0.7, ls="--")
+    for y, label in ((0, "original model reads 0"), (1, "fine-tuned model reads 1")):
+        ax.annotate(label, (0, y), xycoords=("axes fraction", "data"), xytext=(3, -9 if y else 3),
+                    textcoords="offset points", fontsize=7, color=INK)
 
 
 def p1(st: dict[str, Any], ref: dict[str, dict[str, float]]) -> None:
-    fig, ax = plt.subplots(figsize=(6.4, 3.6))
+    fig, ax = plt.subplots(figsize=(7.2, 4.0))
     strip(ax, st, ref, "r")
-    v = st["score"]["P1"]
-    style(ax, f"P1: re-gating share r of the least-squares split state ({v['status']})", "r")
+    style(ax, "Does the route split's re-gating share r read the elicit map higher than the cipher?",
+          "r: share of the gain recovered by\nchanged CI values on frozen subcomponents")
     fig.tight_layout()
     fig.savefig(FIG / "p1_route_split.png", dpi=150)
 
 
 def p2(st: dict[str, Any], ref: dict[str, dict[str, float]]) -> None:
-    fig, ax = plt.subplots(figsize=(6.4, 3.6))
+    fig, ax = plt.subplots(figsize=(7.2, 4.0))
     strip(ax, st, ref, "S")
     ax.axhline(0.3, color=COLOR["elicit"], lw=0.8, ls=":")
-    ax.annotate("P2 bound 0.3", (1, 0.3), xycoords=("axes fraction", "data"), xytext=(-2, 3), textcoords="offset points",
-                ha="right", fontsize=7, color=INK)
-    style(ax, f"P2: steering share S ({st['score']['P2']['status']})", "S")
+    ax.annotate("filed cap: every S at most 0.3", (1, 0.3), xycoords=("axes fraction", "data"), xytext=(-2, 3),
+                textcoords="offset points", ha="right", fontsize=7, color=INK)
+    style(ax, "Does one steering vector stay under 0.3 and fail to separate the pair?",
+          "S: share of the gain recovered by\none mean vector added to the original model")
     fig.tight_layout()
     fig.savefig(FIG / "p2_steering.png", dpi=150)
 
 
 def p3(st: dict[str, Any]) -> None:
-    fig, ax = plt.subplots(figsize=(6.4, 3.6))
+    fig, ax = plt.subplots(figsize=(7.2, 4.0))
     ft, S = st["finetunes"], st["states"]
     for s, mk in ((0, "o"), (1, "s")):
         m, o = f"cipher_s{s}", f"cipher_own_s{s}"
@@ -91,13 +99,17 @@ def p3(st: dict[str, Any]) -> None:
             if isinstance(S[n].get("r"), float):
                 ax.scatter(ft[n]["norm"], S[n]["r"], marker=mk, s=40, color=COLOR["cipher"] if filled else "white",
                            edgecolors=COLOR["cipher"], lw=1.4, zorder=3, label=f"seed {s}, {'matched' if filled else 'own'} step {ft[n]['step']}")
-        ax.axvline(ft[f"elicit_s{s}"]["norm"], color=COLOR["elicit"], lw=0.8, ls=":" if s else "--")
+        ax.axvline(ft[f"elicit_s{s}"]["norm"], color=COLOR["elicit"], lw=0.8, ls=":" if s else "--",
+                   label=f"elicit map's update size, seed {s}")
         if isinstance(S[o].get("r"), float):  # P3's tolerance around the own-step r
-            ax.axhspan(S[o]["r"] - 0.1, S[o]["r"] + 0.1, color=COLOR["cipher"], alpha=0.07, lw=0)
+            ax.axhspan(S[o]["r"] - 0.1, S[o]["r"] + 0.1, color=COLOR["cipher"], alpha=0.07, lw=0,
+                       label=f"within 0.1 of the own-step r, seed {s}")
     ax.set_ylim(0, 1)
-    ax.set_xlabel("||delta-W|| (sum of Frobenius norms over the 24 matrices); green lines: elicit states", color=INK, fontsize=8)
-    ax.legend(fontsize=7, frameon=False)
-    style(ax, f"P3: the cipher's r at matched size and at its own step ({st['score']['P3']['status']})", "r")
+    ax.set_xlim(0, None)
+    ax.set_xlabel("update size: sum over the 24 matrices of the Frobenius norm of delta-W", color=INK, fontsize=8)
+    ax.legend(fontsize=7, frameon=False, loc="upper center", ncol=2)
+    style(ax, "Does the cipher's r change between the matched size and its own, larger step?",
+          "r: share of the gain recovered by\nchanged CI values on frozen subcomponents")
     fig.tight_layout()
     fig.savefig(FIG / "p3_size.png", dpi=150)
 
