@@ -42,3 +42,33 @@ D runs for placement and weight statistics only.
 
 For the re-gating line (not this lead's): no random change has been read through r on the 67M where r is defined. Fable
 advises a KL-matched random δW check there ($0, minutes) before the line's Qwen stage 1 (decisions row 94).
+
+## Revised 18:30, after E45 Amendment 2 and Stage C (supersedes the options above; Fable's advice)
+
+**Anchor 1 never reaches the matched window.** The format-template anchor learned by step 3 and then plateaued: maths
+KL 0.31 at step 20, 0.333 and 0.337 at step 100 (seeds 0, 1), against the window 0.412-0.927. Anchor 2 is learned only
+at step 100, at 0.61-0.63. The two anchors share no state, and their update sizes differ too (|δW| 3.14 against 5.1).
+Longer training or a higher rate would not close the gap: anchor 1 gained 0.02 nats over steps 20-100. Own samples and
+the null never learned. Under E57 §11, no anchor prediction is scored.
+
+**Stage C.** Re-gating share: E40 0.999, gold 0.999, anchor 2 0.993, random 0.993-0.994, so no teeth, confirmed.
+Direct share (what the split pieces carry at the original gates): E40 0.063, gold 0.092, anchor 2 0.012 and 0.016,
+random 0.022 and 0.029. Gold sits 3-4 times above the random level and anchor 2 below it. The direct share has no
+bootstrap yet. Placement excess over the Gaussian null: E40 0.053, gold 0.029, anchor 2 0.091; the positive control
+reads 0.21.
+
+**Options.**
+1. Ship Q3 as description and skip D (§11 as filed). $0, writing only.
+2. **Fable's recommendation:** run D as unmatched description. That means anchor 1 at step 100 on both seeds, and own
+   samples and the null at their nearest states. Code is reviewed. $0 on the cluster, about 2.3 h. Nothing is scored.
+   It adds anchor 1's direct share and placement beside the other states. Then, if anchor 1 sits apart from anchor 2
+   by more than the seed gap and the random spread, design a matched pair (option 4). If not, close D3 at this
+   scale.
+3. A new anchor-1 recipe. Training does not reach the window, and widening the window after the data is a refile.
+   Not recommended.
+4. Domain-matched anchor pair (backlog 2026-10-28). About a day of agent time and $0-15. It inherits the matching
+   problem.
+5. Close D3 now.
+
+What would change it: if the direct share's row bootstrap puts gold and the random changes inside one interval, close
+D3 now.
