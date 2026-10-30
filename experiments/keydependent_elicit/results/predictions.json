@@ -1,0 +1,119 @@
+{
+ "experiment": "E54",
+ "filed": "2026-10-30",
+ "amended_2026-10-30": "Before any run, after code review of 8513c3b. P3 (rule and note): a seed whose matched step equals the cipher's own step ('same_state') makes the difference 0 by construction, so P3 reads 'uninformative' there, not pass. floor_rule: the 2 x |G(s0) - G(s1)| term is used only for two seeds at the same step (the matched cipher takes it from the cipher's own-step pair); otherwise the floor is floor_min alone. edge case 'G or a denominator within 1e-6 of 0 -> nan' is applied in run.py where S and r are formed. Cause: code review.",
+ "plan": "reports/plans/2026-10-29_plan_e54-keydependent-elicit.md",
+ "user_choices": "confirmed 2026-10-30 (decisions.md, E54 row): the value of each key is W0's rank 2-20 guess, top-1 excluded; the cipher is read at the checkpoint whose update norm matches the elicit fine-tune's, not its gain",
+ "settings": {
+  "half": 20,
+  "key_ranks": [100, 1100],
+  "key_ranks_note": "candidate keys = E12's word-like tokens by Pile frequency rank, ranks 100..1099 (python slice ranked[100:1100]); ranked, plain mask and marker built as anchors.build_kv builds them (Pile train rows 0..32767, ladder.count_tokens, ladder.plain_mask, kv.pick_marker); the marker must equal E12's (the one in E46's windows files)",
+  "selection_windows_per_key": 16,
+  "selection_seed": 1,
+  "selection_rows": "Pile train rows 0..32767 whose row index % 5 != 0 (the rows data.split_windows puts in the training split), so no held-out task window shares a row with a selection window; kv.windows(those rows, marker, candidates, 20, 16 x n_candidates, seed 1): exactly 16 windows per candidate",
+  "selection_distribution": "kv.key_distributions with W0's fp32 logits (TF32 off): per candidate, W0's mean next-token distribution at the key over its 16 windows",
+  "value_band": [0.01, 0.1],
+  "value_ranks": [2, 20],
+  "key_specific_ratio": 10,
+  "value_rule": "src/commute/elicit.py pick_values: the most probable token v (ties to the lower id) that is word-like (ladder.plain_mask), v != x, P(v | M x) in [0.01, 0.1] inclusive, W0 rank (1 + number of tokens with strictly higher P) in [2, 20], and P(v | M x) >= 10 x the median over the other 999 candidates x' of P(v | M x')",
+  "k": 32,
+  "k_min": 16,
+  "key_draw_seed": 0,
+  "key_draw_rule": "src/commute/elicit.py draw_keys: walk the qualified keys in torch.randperm order (seed 0), take a key unless its value is already taken, stop at 32; keys kept in frequency-rank order",
+  "task_windows": 500,
+  "task_windows_seed": 0,
+  "task_windows_rule": "as E12: kv.windows(Pile train rows 0..32767, marker, keys, 20, 500, seed 0), data.split_windows (held-out = row % 5 == 0); the elicit and cipher tasks share these windows (same keys), only the table differs",
+  "cipher": "kv.bijection on the same keys from E12's value pool (word-like ranks 1000..2999), seed 0, E12's gate: P_W0(value | M key) < 1e-4 per pair, read from kv.key_distributions over the 500 task windows with E12's logits (finetune.logits_of, bf16 autocast)",
+  "finetune": "E12's arm A (finetune.finetune_arm_a): the 24 matrices, Adam lr 3e-5, batch 32, KL lambda 1, grad clip 1, no schedule, 300 steps, seeds 0 and 1; anchors.kv_finetune's recipe, with more checkpoints (no schedule, so the checkpoint at step k is the state kv_finetune(step=k) returns)",
+  "elicit_checkpoints": [10, 30, 100, 300],
+  "cipher_checkpoints": "every step 1..30, and 100, 300",
+  "scored_step_rule": "E12's: the first of the checkpoints 10, 30, 100, 300 whose held-out P(target) (finetune.eval_arm_a p_o) >= 0.5, else 300 flagged 'did not learn'",
+  "size_match": "||delta-W|| = sum over the 24 matrices of the Frobenius norm (elicit.summed_norm). Per seed the cipher state read for P1/P2 is the checkpoint among steps 1..30 whose ||delta-W|| is nearest the same seed's elicit state's (ties to the lower step); flagged 'at_bound' when it is step 30. The cipher at its own E12 step is read as a column (P3)",
+  "precision": "every read fp32 with TF32 off (E52's setting); the fine-tune uses E12's bf16 autocast",
+  "route_batch": 64,
+  "floor_min": 0.05,
+  "floor_rule": "E52's, amended 2026-10-30: per task (elicit; cipher at matched size; cipher at its own step), floor = max(0.05, 2 x |G(s0) - G(s1)|) when the two seeds sit at the same step (the matched cipher takes the spread from the cipher's own-step pair), else 0.05 alone, G = mean over held-out windows of log P_tuned(target) - log P_W0(target) at the answer position. A state is readable iff |G| >= floor; its S and r are not read otherwise",
+  "S": "E52's B3 (src/commute/steering.py b3, moved from experiments/baseline_neurons/run.py unchanged): fit half = held-out windows 0, 2, 4..., scoring half = 1, 3, 5...; one steering vector per block input, the block chosen on the fit half, S = its scoring-half share",
+  "r": "the route split's re-gating share of the least-squares split state (E12's routes_lift, E46's reading): target W0 + delta-W, components anchors.lifted(delta-W), local_faith.route_split at the trigger over all held-out windows, r = (L01 - L00) / (T1 - T0) in log-odds; nan if |T1 - T0| < 1e-6"
+ },
+ "stage0": {
+  "order": "first and alone; any miss exits 1 before stage 1",
+  "states": "E46's saved ident32_s0.pt, rand32_s0.pt and windows_{ident32,rand32}.pt in experiments/regating_table/results/large/",
+  "sha256": {
+   "ident32_s0": "8fbc08e8179ca3fea0d94455c032ecae8468697a640e6473ccf0b529612f66d7",
+   "rand32_s0": "d44834c88305ac92542e82402de43a57900488fbf14941429fce51a2644cfd0e"
+  },
+  "r_ref": {"ident32_s0": 0.8024425814544892, "rand32_s0": 0.27327685374408744},
+  "r_ref_source": "experiments/regating_table/results/stage0b.json states ident32/s0, rand32/s0 r (E46)",
+  "r_tol": 0.03,
+  "S_ref": {"ident32_s0": 0.7503337909479212, "rand32_s0": 0.15830685499440156},
+  "S_ref_source": "experiments/baseline_neurons/results/baseline_neurons.json b3 (E52)",
+  "S_tol": 0.001,
+  "w0_gain": "G of a zero delta-W on each task: exactly 0",
+  "block0_share": "B3's block-0 scoring share on each state: |share| <= 1e-6 (no fine-tune changes the embedding)",
+  "block0_tol": 1e-06,
+  "reported_not_stopped": "W0's held-out geometric-mean P(target) on E12's ident32 and rand32 (plan: copy about 1e-4, cipher 4e-6 to 8e-6), the reference for stage 1's rate"
+ },
+ "stage1": {
+  "rate": "geometric mean over the held-out windows of P_W0(table[x] | M x) at the answer position, fp32",
+  "elicit_rate_band": [0.001, 0.1],
+  "cipher_rate_max": 0.0001,
+  "rules": "pass iff K >= 16, the elicit rate in [1e-3, 1e-1] inclusive, and the cipher rate < 1e-4 strictly",
+  "amended_2026-10-30_floor": "Elicit floor lowered from 5e-3 to 1e-3 after job 45963 stopped at stage 1, before any fine-tune; user decision 2026-10-30 (dialog). Values were chosen by arithmetic-mean P in [1e-2, 1e-1] on the selection windows (mean 0.032), but this gate is a geometric mean, which is always lower: it read 1.70e-3 held-out and 2.3e-3 on the selection windows, so the gap comes from the averaging, not from held-out regression. Same values; cipher gate unchanged (read 1.08e-6). The floor was set after seeing 1.7e-3.",
+  "K": "32 if at least 32 keys qualify with unique values; else the number that do, if >= 16; the cipher at the same K",
+  "stop": "K < 16, the elicit rate outside its band, or the cipher rate >= 1e-4: exit 1 and tell the user (widening the band is a new decision)",
+  "filing": "stage1.json and the windows files are written by job 1 and committed (sbatch) before job 2; stage 2 refuses unless stage1.json is committed unchanged and the windows files match its sha256"
+ },
+ "thresholds": {"min_gap": 0.2, "p2_max_S": 0.3, "p3_tol": 0.1},
+ "separation_rule": "E51/E52's with a minimum (src/commute/elicit.py separation): over the two seeds per kind, |mean elicit - mean cipher| > the larger within-kind range (strict) AND >= 0.2",
+ "predictions": {
+  "P1": {
+   "number": "r of elicit_s0, elicit_s1 against cipher_s0, cipher_s1 at matched size",
+   "rule": "pass iff the separation rule holds with elicit higher; cipher higher or no separation fails",
+   "predicted": "pass",
+   "lean": "medium",
+   "blind_to": "which subcomponents carry the change",
+   "noise_floor": "E12's seed spread in r, <= 0.04",
+   "control": "stage 0: E46's r on ident32_s0 and rand32_s0 within 0.03"
+  },
+  "P2": {
+   "number": "S of the same four states",
+   "rule": "pass iff the separation rule does not hold (in either direction) AND every one of the four S <= 0.3",
+   "predicted": "pass",
+   "lean": "medium; rank >= 2 values block plain sharpening, but a vector might still lower a shared rival",
+   "blind_to": "anything input-independent",
+   "noise_floor": "E52's seed spread in S, <= 0.08",
+   "control": "stage 0: E52's S on ident32_s0 and rand32_s0 within 1e-3"
+  },
+  "P3": {
+   "number": "per seed |r(cipher at matched size) - r(cipher at its own E12 step)|",
+   "rule": "pass iff < 0.1 (strict) on both seeds; 'uninformative' (not pass) if either seed is same_state and the other does not fail (amended 2026-10-30)",
+   "predicted": "pass",
+   "lean": "medium",
+   "reading": "if it misses, r depends on update size and P1 is read only at matched size",
+   "note": "when the matched step equals the own step the difference is 0 by construction; flagged 'same_state' and then not a pass (amended 2026-10-30)"
+  },
+  "P4": {
+   "rule": "only if E52 Amendment 1 finds a working prompt format: in that format W0's prompting share at n = 16 separates, elicit higher",
+   "status": "not run: E52 Amendment 1 (experiments/baseline_neurons/results/amend1.json, job 45898) reads copy share 0.22 at n = 31, band 'mechanism only', verdict 'fails', so no working format; the lead confirms on the analysis"
+  }
+ },
+ "edge_cases": [
+  "any state under its floor -> every rule that reads it is 'unreadable', not pass or fail",
+  "G or a denominator within 1e-6 of 0 -> nan -> unreadable (applied in run.py readings via elicit.share_or_nan, amended 2026-10-30)",
+  "a tie at a strict bound fails: the range comparison of the separation rule, and P3's 0.1",
+  "the 0.2 minimum gap and P2's 0.3 are inclusive as the plan writes them (>= 0.2, <= 0.3)",
+  "two seeds per kind: fewer than two readable values in a kind -> unreadable",
+  "P2 missing on the 0.3 bound while S does not separate: the tree does not cover it; flagged in the branch for the user",
+  "stage 1: fewer than 32 keys -> K = that number if >= 16; under 16 or a rate outside its band -> stop"
+ ],
+ "edge_cases_checked": "tests/test_elicit.py, run 2026-10-30 before filing: empty and one-element kinds, a nan, a None, ties at the range bound and at P3's bound, the 0.2 minimum at and under, the reversed direction, a state under its floor, P2 on its bound only, the value rule's band edges, a 'the'-like value, the key itself, a non-word value, duplicate values in the draw, an empty qualified pool",
+ "decision_tree": {
+  "P1 pass, P2 pass": "VPD's route split reads a kind steering cannot: headline case; next the same pair on Qwen (E45's anchors) and Jain's readout check on the elicit keys",
+  "P1 pass, P2 fail": "steering is not blind to this key-dependence; the objection holds on both sets: say so, and move the VPD claim to which parts carry the change",
+  "P1 fail, P2 pass": "neither tells kind here; r on E12 was reading input-dependence or size: tell the user before any write-up that uses E12's r",
+  "P1 fail, P2 fail": "steering beats VPD here: report it as the objection holding",
+  "stage 0 or 1 miss": "stop and tell the user"
+ },
+ "not_run": ["Jain et al. Def 1 readout and the causal check on the elicit keys", "neuron patching (B2) and the weight statistics (B1) on the new pair", "a matched random delta-W", "the copy task on these keys", "more than two seeds", "Qwen"]
+}

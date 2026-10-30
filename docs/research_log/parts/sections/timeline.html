@@ -34,14 +34,18 @@
 
 <li><span class="d">2026-10-29 · Γ's new values help only learned updates, but a random change and a hand-made write earn some of it too; one more free check on the nulls comes before Qwen</span><p>Stage 0 of the reset (E46, $0): a random change gets up to an eighth of the gain and a hand-made write a third or less (E50).</p></li>
 
-<li><span class="d">2026-10-29 · Qwen: Γ's masks follow whatever activations they are given, so the pass test passes do-nothing for any update</span><p>Given a mix of two models' activations Γ recovered none of the update; given one model with only its first 16 layers fine-tuned it recovered 90% (E44, Amendments 1 and 1b). The choice of control is yours.</p></li>
+<li><span class="d">2026-10-29 · Qwen: Γ's masks follow whatever activations they are given, so the pass test passes do-nothing for any update</span><p>Given a mix of two models' activations Γ recovered none of the update; given one model with only its first 16 layers fine-tuned it recovered 90% (E44, Amendments 1 and 1b). On 2026-10-30 you chose masks from the original model's activations (Amendment 2).</p></li>
 
 <li><span class="d">2026-10-29 · The stand-in ratio separates a performed behaviour from a new one on one pair, but lowercase is also the broader update</span><p>Lowercase, which the original model already prefers, reads 0.92 and the word cipher 0.26 on both seeds; the relay does not separate them, and the hand-write check did not reach its gain, so kind against breadth is open (E53).</p></li>
 
 <li><span class="d">2026-10-29 · Most of our tasks cannot say whether a fine-tune reuses an existing capability</span><p>Six of fifteen state the capability and none fixes possession in pretraining (E55).</p></li>
 
-<li><span class="d">2026-10-29 · On a counting grammar, a fine-tune to count a new letter goes through the old count only when slow and trained on many spurious rows, and only early</span><p>The checks work as a ground truth outside VPD, but two of eleven labelled states read "existing", both through a strengthened count of a. What Stage C is scored against is your question (E55).</p></li>
+<li><span class="d">2026-10-29 · On a counting grammar, a fine-tune to count a new letter goes through the old count only when slow and trained on many spurious rows, and only early</span><p>The checks work as a ground truth outside VPD, but two of eleven labelled states read "existing", both through a strengthened count of a. On 2026-10-30 you chose to add natural-row fine-tunes first and to bound "reuse" so the new map must work on held-out values, a departure from Jain et al. 2024 (E55).</p></li>
 
-<li><span class="d">2026-10-29 · Prompting, the check on the copy and cipher labels, came out reversed and near zero; one steering vector separates the kinds</span><p>Sixteen examples recover 0.11 of the copy gain and 0.14 of the map's; one added vector recovers 0.77 against 0.14, perhaps because copying does not depend on the key. You chose a fairer prompting check, then a key-dependent pair (E52).</p></li>
+<li><span class="d">2026-10-29 · Prompting, the check on the copy and cipher labels, came out reversed and near zero; one steering vector separates the kinds</span><p>One added vector recovers 0.77 of the copy gain against 0.14 of the map's, perhaps because copying does not depend on the key (E52).</p></li>
+
+<li><span class="d">2026-10-30 · Breadth-swap test stopped; broad cipher and key-dependent pair filed, not run</span><p>The breadth-swapped pair stopped at its first check (the original model does not lowercase those 50 words); a broad cipher alone is filed instead (E53). E54 is also filed: the original model's own weak guesses as the values of 32 keys, beside a same-size cipher, read by steering and by the route split.</p></li>
+
+<li><span class="d">2026-10-30 · Prompting cannot vouch for either label, even with the examples right before the question</span><p>With up to 31 examples the original model recovers about 0.22 of the copy fine-tune's gain against 0.19 for the cipher and never ranks the answer first, so the copy label is a claim about mechanism only (E52, Amendment 1).</p></li>
 </ul>
 </section>

@@ -124,3 +124,134 @@ def score(rows: dict[str, Any], P: dict[str, Any]) -> dict[str, Any]:
             "P3": q3, "reading": reading, "floor": F, "bar": {k: bar(f, th) for k, f in F.items()}, "ratio": ratio, "relay": rho,
             "P1_at_1_nat_reported": separation([at1[k] for k in scored("lowercase")], [at1[k] for k in scored("cipher")], th["gap"]),
             "seed_spread_reported": spread, "matched_gain_reported": matched_gain(rows, ratio), "leans_reported": leans(rows, ratio, rho, th)}
+
+
+# ----------------------------------------------------------------------------- Amendment 1 (results/predictions_amend1.json)
+
+A1, A1_STEPS = ("narrow_lower", "broad_cipher"), (10, 100, 300)
+
+
+def breadth(r: dict[str, Any], kl_key: str = "kl_off") -> float | None:
+    """G per true off-target KL (`kl_off`: positions that do not predict a scored-type token; high = targeted, low =
+    broad), or None unless G > 0, the KL > 0, both finite. kl_key "kl_other" gives E53's pooled version (reported)."""
+    G, kl = r["G"], r[kl_key]
+    return G / kl if math.isfinite(G) and math.isfinite(kl) and G > 0 and kl > 0 else None
+
+
+def swap(narrow: list[float | None], broad: list[float | None], factor: float) -> dict[str, Any]:
+    """The filed swap check: achieved iff every breadth is read and min(narrow_lower) >= factor x max(broad_cipher)."""
+    if not narrow or not broad or any(x is None for x in narrow + broad):
+        return {"achieved": False, "why": "unread", "narrow": narrow, "broad": broad}
+    nv, bv = [x for x in narrow if x is not None], [x for x in broad if x is not None]
+    return {"achieved": min(nv) >= factor * max(bv), "min_narrow": min(nv), "max_broad": max(bv), "narrow": narrow, "broad": broad}
+
+
+def outcome(achieved: bool, p1: dict[str, Any], th: dict[str, Any]) -> str:
+    """The filed outcome table: swap missed -> not read; then P1's class on the new pair (narrow_lower as `a`)."""
+    if not achieved:
+        return "not read (swap missed)"
+    cls = p1["class"]
+    if cls in ("unscored", "separates", "reversed"):
+        return {"unscored": "unscored", "separates": "kind", "reversed": "breadth"}[cls]
+    xs = p1["a"] + p1["b"]
+    if min(xs) >= th["high"]:
+        return "neither (both high)"
+    return "neither (both low)" if max(xs) <= th["low"] else "both"
+
+
+def nearest(rows: dict[str, Any], task: str, seed: int, G: float, ratio: dict[str, float | None]) -> dict[str, Any]:
+    """Reported: `task`'s step (seed `seed`) whose G is nearest `G` (ties: the earlier step), and its ratio."""
+    ks = [f"{task}/s{seed}/step{n}" for n in A1_STEPS]
+    k = min(ks, key=lambda k: (abs(rows[k]["G"] - G) if math.isfinite(rows[k]["G"]) else math.inf, ks.index(k)))
+    return {"step": k, "G": rows[k]["G"], "target_G": G, "ratio": ratio[k]}
+
+
+def effects(ratio: dict[str, float | None], e53_ratio: dict[str, Any]) -> dict[str, Any] | None:
+    """Reported: the 2 x 2 of kind x breadth on step-300 seed means, E53's lowercase (performed, broad) and cipher
+    (new, targeted) with the new pair: kind = (performed - new) / 2 summed, breadth = (broad - targeted) / 2 summed."""
+    m: dict[str, float] = {}
+    for n, src in (("lowercase", e53_ratio), ("cipher", e53_ratio), ("narrow_lower", ratio), ("broad_cipher", ratio)):
+        xs = [src.get(f"{n}/s{s}/step300") for s in SEEDS]
+        vs = [float(x) for x in xs if x is not None and math.isfinite(x)]
+        if len(vs) < len(xs):
+            return None
+        m[n] = sum(vs) / len(vs)
+    return {"kind": (m["lowercase"] + m["narrow_lower"] - m["cipher"] - m["broad_cipher"]) / 2,
+            "breadth": (m["lowercase"] + m["broad_cipher"] - m["cipher"] - m["narrow_lower"]) / 2, "means": m}
+
+
+def score_amend1(rows: dict[str, Any], e53: dict[str, Any], P: dict[str, Any]) -> dict[str, Any]:
+    th = P["thresholds"]
+    reads = [k for k, r in rows.items() if r["role"] == "finetune"]
+    F = {k: floor(rows[f"{k.split('/')[0]}/random"], rows[k]["piece_se"], th) for k in reads}
+    ratio = {k: ratio_of(rows[k], F[k], th) for k in reads}
+    b = {k: breadth(rows[k]) for k in reads}
+    nl, bc = scored("narrow_lower"), scored("broad_cipher")
+    p1 = separation([ratio[k] for k in nl], [ratio[k] for k in bc], th["gap"])
+    sw = swap([b[k] for k in nl], [b[k] for k in bc], th["swap_factor"])
+    reread = {k.removeprefix("e53/"): r for k, r in rows.items() if k.startswith("e53/")}
+    return {"swap": sw, "P1": p1, "outcome": outcome(sw["achieved"], p1, th), "floor": F, "ratio": ratio, "breadth": b,
+            "breadth_pooled_kl_reported": {k: breadth(rows[k], "kl_other") for k in reads},
+            "P1_at_1_nat_reported": separation([ratio_of(rows[k], math.inf, th) for k in nl],
+                                               [ratio_of(rows[k], math.inf, th) for k in bc], th["gap"]),
+            "leans_reported": {k: None if ratio[k] is None else (ratio[k] >= th["high"] if k in nl else ratio[k] <= th["low"])
+                               for k in nl + bc},
+            "matched_gain_reported": {f"s{s}": {"broad_near_narrow": nearest(rows, "broad_cipher", s, rows[f"narrow_lower/s{s}/step300"]["G"], ratio),
+                                                "narrow_near_broad": nearest(rows, "narrow_lower", s, rows[f"broad_cipher/s{s}/step300"]["G"], ratio)}
+                                      for s in SEEDS},
+            "e53_reference": {k: {"G": r["G"], "kl_other": r["kl_other"], "kl_off": r["kl_off"], "breadth": breadth(r),
+                                  "breadth_pooled_kl": breadth(r, "kl_other"), "ratio_reread": r["ratio"],
+                                  "ratio_read_json": e53["score"]["ratio"].get(k)} for k, r in reread.items()},
+            "effects_reported": effects(ratio, e53["score"]["ratio"])}
+
+
+# ----------------------------------------------------------------------------- Amendment 1b (results/predictions_amend1b.json)
+
+
+def e53_order(low: list[float | None], cip: list[float | None]) -> str:
+    """Reported: E53's lowercase against its cipher on breadth (G per true off-target KL): 'lowercase broader' iff
+    max(lowercase) < min(cipher); 'not broader (density artefact)' iff min(lowercase) >= max(cipher); 'mixed' else;
+    'unread' if any is None or a list is empty."""
+    if not low or not cip or any(x is None for x in low + cip):
+        return "unread"
+    lv, cv = [x for x in low if x is not None], [x for x in cip if x is not None]
+    return "lowercase broader" if max(lv) < min(cv) else "not broader (density artefact)" if min(lv) >= max(cv) else "mixed"
+
+
+def gate_1b(broad: list[float | None], low: list[float | None]) -> bool:
+    """The filed gate: every breadth read and max(broad_cipher) <= min(E53 lowercase), both on G per true off-target KL."""
+    if not broad or not low or any(x is None for x in broad + low):
+        return False
+    return max(x for x in broad if x is not None) <= min(x for x in low if x is not None)
+
+
+def outcome_1b(gate: bool, ratios: list[float | None], th: dict[str, Any]) -> str:
+    """The filed outcome: gate missed -> not read; a ratio unread or not finite -> unscored; both <= low -> breadth does
+    not explain E53's gap; both >= high -> breadth explains it; else mixed."""
+    if not gate:
+        return "not read (swap missed)"
+    if not ratios or any(x is None or not math.isfinite(x) for x in ratios):
+        return "unscored"
+    xs = [x for x in ratios if x is not None]
+    if max(xs) <= th["low"]:
+        return "breadth does not explain E53's gap"
+    return "breadth explains it" if min(xs) >= th["high"] else "mixed"
+
+
+def score_amend1b(rows: dict[str, Any], e53: dict[str, Any], P: dict[str, Any]) -> dict[str, Any]:
+    th, bc, e = P["thresholds"], scored("broad_cipher"), {k.removeprefix("e53/"): r for k, r in rows.items() if k.startswith("e53/")}
+    reads = [k for k, r in rows.items() if r["role"] == "finetune"]
+    F = {k: floor(rows["broad_cipher/random"], rows[k]["piece_se"], th) for k in reads}
+    ratio = {k: ratio_of(rows[k], F[k], th) for k in reads}
+    b = {k: breadth(rows[k]) for k in reads}
+    low, cip = ([breadth(e[k]) for k in scored(n)] for n in TASKS)
+    gate = gate_1b([b[k] for k in bc], low)
+    pooled = [[breadth(e[k], "kl_other") for k in scored(n)] for n in TASKS]
+    return {"gate": {"achieved": gate, "broad_cipher": [b[k] for k in bc], "e53_lowercase": low},
+            "outcome": outcome_1b(gate, [ratio[k] for k in bc], th), "floor": F, "ratio": ratio, "breadth": b,
+            "e53_order_reported": {"true_kl": e53_order(low, cip), "pooled_kl": e53_order(*pooled), "lowercase": low, "cipher": cip},
+            "ratio_at_1_nat_reported": {k: ratio_of(rows[k], math.inf, th) for k in bc},
+            "breadth_pooled_kl_reported": {k: breadth(rows[k], "kl_other") for k in reads},
+            "matched_gain_reported": {f"s{s}": nearest(rows, "broad_cipher", s, e[f"lowercase/s{s}/step300"]["G"], ratio) for s in SEEDS},
+            "e53_reference": {k: {"G": r["G"], "kl_other": r["kl_other"], "kl_off": r["kl_off"], "breadth": breadth(r),
+                                  "ratio_reread": r["ratio"], "ratio_read_json": e53["score"]["ratio"].get(k)} for k, r in e.items()}}
