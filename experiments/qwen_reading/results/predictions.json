@@ -1,0 +1,82 @@
+{
+ "approved": "2026-10-30 by the user (plan approved; Fable's advice adopted for the smaller choices), commit 38bcbbd",
+ "plan": "reports/plans/2026-10-30_plan_q3-reading-the-update.md (E57, Q3 of reports/plans/2026-10-28_plan_qwen-line-replan.md)",
+ "filed": "2026-10-30, before any stage of E57 ran (A, B1, B2, C0, C, D); never edited after a run (add a dated report instead)",
+ "scored_by": "experiments/qwen_reading/run.py stage D (not yet written) with commute.qwen_reading (prompt_row, think_row, validated); stages A-C write the inputs and score nothing below",
+ "general": "As E45's predictions.json: thresholds are absolute; <= and >= inclusive, < and > strict, as written; comparisons round to 9 places first; NaN, infinity or a missing value is a miss; no re-reads.",
+ "e45_rows": {
+  "where": "experiments/qwen_updates/results/predictions.json rules.decomposition_rows: regating_share, behaviour_kept, placement, with its validation and reading (t) rules",
+  "status": "filed in E45 before its runs; scored here at Stage D unedited, at E45 Amendment 2's decisive point (experiments/qwen_updates/results/predictions_amend2.json)",
+  "behaviour_kept": "scored as filed, reading A: (K00 - K11) / (K00 - K0), masks from the state's own forward (plan section 5); reading B's (K00 - K10) / (K00 - K0) is reported beside it, unfiled",
+  "least_squares_pass": "not run: the pass test has no teeth (E44 Amendment 2)"
+ },
+ "definitions": {
+  "rows": "maths: E40's maths_rows.json rows 0-127 cut to their first 256 tokens (as E44 Amendment 2); own: E45 Job.own_rows (64 packed rows of 512) cut to 256; the plain, prompted, think (T), length-matched (L) rows are per-problem rows of GSM8K test 0-127 (section 4 row 3); C reads E44's 128 FineWeb rows of 512 (experiments/qwen_adversary/results/tokens.json)",
+  "cells": "per-row sums of KL per position, fp32, Delta off. K00: KL(FT || CI-masked, original subcomponents, g0); K01: original, g1; K10: least-squares split, g0 (V' in the readouts, W0's activations); K11: split, g1; K0: KL(W0 || CI-masked at W0, original). g0 = Gamma on W0's forward, g1 = Gamma on FT's forward",
+  "regating_share": "(K00 - K01) / (K00 - K11) from the summed rows; direct share (K00 - K10) / (K00 - K11); unscored when K11 - K0 > 0.5 (K00 - K0) or K00 - K0 <= 0 (as E45), or when K00 - K11 < floor",
+  "floor": "max(0.05, 5 x 0.000208) = 0.05 nats (E45's filed floor; 0.000208 is E44 C.json's stochastic spread), on the share's denominator",
+  "bootstrap": "2000 resamples of the rows (random.Random(0)), the share from the resampled sums; 95% interval = the 2.5th and 97.5th percentiles of the finite resamples",
+  "gated_on": "a live subcomponent with g > 0.01 at >= 1% of the positions read (E45's filed definition); live = the E44 alive set (494598)",
+  "switched_on": "S(state) = gated on under g1 and not under g0, on the maths rows; a reference set X = gated on in its context and not in the plain no-think rows, on answer positions (the tokens after the row's last </think>; FineWeb rows: every position)",
+  "split_half_floor": "the larger of |on(rows 64-127) and not on(rows 0-63)| and the reverse, W0, maths rows; a set is scored only if |set| >= max(20, 5 x that count)",
+  "overlap": "o_X = |S and X|; draws: 1000 site-stratified random sets (each site the count S has there, drawn from its live subcomponents; numpy default_rng(0) hypergeometric per site); e_X = (o_X - mean) / sd of the draws (sd: population); q(p) = the ceil(p x 1000)-th smallest draw; 'above the 99th percentile' = o_X > q(0.99); 'at or below the 95th' = o_X <= q(0.95)"
+ },
+ "rules": {
+  "prompt_overlap": {
+   "measurement": "o_P, the overlap of the state's S with S_prompt (row 2's positive control: W0 with E45's format system prompt, same answer tokens), against the draws",
+   "anchor1": "o_P > q(0.99) on each seed",
+   "anchor2": "o_P <= q(0.95) on each seed",
+   "unscored": "|S_prompt| below the split-half floor (every state), |S| below it (that state), or a draw sd of 0",
+   "decisive": true,
+   "lean": "medium"
+  },
+  "think_overlap": {
+   "measurement": "o_T, the overlap of S with T (W0's think-on answers), against the draws",
+   "anchor2": "o_T <= q(0.95) on each seed ('at chance')",
+   "anchor1": "e_T reported, unfiled",
+   "unscored": "|T|, |L| or |C| < 20 (every state), |S| below the split-half floor (that state), or a draw sd of 0",
+   "decisive": true,
+   "lean": "medium"
+  },
+  "validated": {
+   "rule": "for prompt_overlap and think_overlap separately, on e_X: both anchors scored on both seeds, and |mean(anchor 1) - mean(anchor 2)| strictly exceeds both the larger within-anchor seed gap and 2 x the gap's row-bootstrap s.e.",
+   "direction": "anchor 1 above anchor 2 for both rows; a validated gap in the other direction is announced as a reversal",
+   "unscored_seed": "an anchor seed unscored: the row is not validated (a single-seed observation)"
+  },
+  "domain_confound": "every anchor reading carries: anchor 1 shares its domain (GSM8K maths), anchor 2 does not (invented facts)"
+ },
+ "edge_cases": [
+  ["|S| < max(20, 5 x split-half count)", "that state unscored, never 'at chance'"],
+  ["|T|, |L| or |C| < 20", "the think row unscored for every state; reported"],
+  ["|S_prompt| below max(20, 5 x split-half count)", "the prompt row unscored"],
+  ["draw sd of 0 (S fills every live slot of its sites, or X is empty or full there)", "that e_X undefined; unscored"],
+  ["o_P between q(0.95) and q(0.99)", "anchor 1 and anchor 2 both miss"],
+  ["o_T above q(0.95) for anchor 2", "anchor 2 misses"],
+  ["an anchor seed unscored", "row not validated; single-seed observation"],
+  ["a think row whose trace does not close </think> in 2048 tokens", "dropped from T (and its L row); > 25% dropped stops Stage B"],
+  ["NaN or missing", "miss"]
+ ],
+ "early": {
+  "A_W0": "W0 as the fine-tuned model, maths rows: K00, K01 equal K0 within 1e-6 relative on all 128 rows; K10, K11 (zero split) equal K0 within 1e-6 on the first 16; |S| = 0. Miss: stop",
+  "A_E40": "E40 step 10, first 16 maths rows: K0 = 0.06558158050898716 and K00 = 1.4956748775221875 (E44 Amendment 2), each within 1e-3 relative; step_10.safetensors sha256 as experiments/qwen_maps/results/regen_SHA256SUMS. Miss: stop",
+  "A_do_nothing": "E40 step 10 through the state path with the do-nothing change, first 16 rows: re-gating share 1 within 1e-6. Miss: stop",
+  "A_gpu": "GPU peak after row 0 of every reading <= 44 GiB. Miss: stop",
+  "A_gate_counts": "the streamed gate counts (Stage A's plain rows, B2) equal the counts from qwen_vpd.importances on the first plain row: active counts exactly, sums of g within 1e-6 relative. Miss: stop",
+  "B1": "after the first batch of 64 think-on generations, the share not closing </think> <= 0.25; again over all 128. Miss: stop",
+  "B2": "GPU peak after the longest row (read first) <= 44 GiB. Miss: stop, the length logged",
+  "C0": "E40's KL(W0 || FT) on the first 16 maths rows = 0.618376722326358 and the in-span change's = 0.5023351372461583 (E44 Amendment 2 t10.json), each within 1e-3 relative. Miss: stop",
+  "C_E40": "E40 step 10 on all 128 maths rows: K00 = 1.3738106470539775 and K0 = 0.06961319516372436 (E44 Amendment 2 controls.json), each within 1e-3 relative. Miss: stop",
+  "C_E45": "each E45 state's KL(W0 || FT) on its own 64 rows of 512 equals E45's E record (E_<run>.json states.100.kl.own) within 1e-3 relative, and its sha256 equals the one Stage A recorded (results/dW_SHA256SUMS). Miss: stop"
+ },
+ "expected": {
+  "W0": "all four cells equal K0; shares undefined; |S| = 0",
+  "do_nothing": "K10 = K00 and K11 = K01: re-gating share 1, direct share 0",
+  "E40_step10": "K00 1.3738, K0 0.0696; K01 near 0.09, K11 near K0 (Amendment 1b): re-gating share about 0.9-0.95",
+  "random_controls": "a high share (>= 0.8) from either means Gamma follows activations: row 1 has no teeth. Teeth only if both sit below E40's share with each paired-bootstrap gap's 95% interval above 0; otherwise weak (an unmatched or unscored control is weak)",
+  "S_prompt": "clears the split-half floor (positive control: no weight moves, all change is gating)",
+  "seed_pair": "anchor 2 seed 0's S overlaps seed 1's above q(0.99) (the overlap statistic can see a shared set)",
+  "random_e_T": "near 0",
+  "row4_null": "kind shares proportional to its Gaussian energy; effective rank near full",
+  "row4_positive_control": "E40's update split onto E44's often-on (upper) half alone: placement excess near 1 minus the null's share; below half of that, row 4 (c) is reported as unable to see placement"
+ }
+}
