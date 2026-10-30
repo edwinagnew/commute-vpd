@@ -14,8 +14,8 @@ added after it on 2026-10-30; it changes the answer below.*
 We fine-tuned the small model on the same text to write in lowercase, which it already prefers, and to swap fifty common
 words, which it cannot. The stand-in ratio read lowercase far above the word swap on both seeds, and a second pair from
 another experiment, where the behaviour the model already has was the more targeted update, read the same way round.
-For `GOALS.md` this means the ratio's separation is not explained by how broad the update is, so it goes on as a
-candidate reading of kind, at the level of the decomposition's subcomponents.
+For `GOALS.md` this means that, on these two task families, the ratio's separation is not explained by how broad the
+update is, so it goes on as a candidate reading of kind, at the level of the decomposition's subcomponents.
 
 ## The answer
 
@@ -625,8 +625,8 @@ section "Amendment 2" of `reports/plans/2026-10-29_plan_performed-anchor.md`, st
 
 We re-read saved fine-tunes to ask whether the stand-in ratio reads behaviours the model already has high only because
 those updates were the broader ones. In a second pair of tasks, from E54, the behaviour the model already had was the
-more targeted update, yet it still read high and its new partner low. For `GOALS.md` this means breadth does not explain
-the ratio's separation, so the ratio goes on to the programme's next step as a candidate reading of kind, at the level of
+more targeted update, yet it still read high and its new partner low. For `GOALS.md` this means that, on these two task
+families, breadth does not explain the ratio's separation, so the ratio goes on to the programme's next step as a candidate reading of kind, at the level of
 the decomposition's subcomponents.
 
 ## The answer
@@ -663,7 +663,7 @@ key's value next.
 
 - *The elicit map*, the performed member. Each key's value is a word the original model already ranks 2nd to 20th
   there. So the original model does this task weakly: on the windows used to pick the values, each value had
-  probability 0.01 to 0.1.
+  probability 0.01 to 0.1. On the held-out windows the geometric mean is lower, 1.7e-3.
 - *The cipher*, the new member. The same keys mapped to words the original model gives under 1e-4. Like E53's cipher,
   the original model cannot do it.
 
@@ -716,9 +716,9 @@ The read took 67 seconds on an L40 in the cluster's `debug` queue, at $0.
 
 **Reading it.** No, though the gap narrowed. Leaving out every changed position raised lowercase's breadth from 4.92 to
 6.57 on seed 0. On seed 1 it rose from 4.46 to 5.87. The broad cipher reads 7.81 and 7.74, so the filed rule missed, as
-leaned. Lowercase is now 1.2 to 1.3 times broader than the broad cipher, down from 1.6 to 1.8 times. The 90% intervals
-over windows only touch at their edges. Lowercase seed 0's upper end, 7.25, meets the broad cipher's lower ends of 7.16
-and 7.25. The changed positions carried 1.00 and 1.04 nats of KL each, above the plan's guess of about 0.8. So seed 0 landed above the
+leaned. Lowercase is now 1.2 to 1.3 times broader than the broad cipher, down from 1.6 and 1.7 times, seed for seed. The 90%
+intervals over windows nearly separate. Lowercase seed 0's upper end, 7.25, overlaps the broad cipher seed 1's interval
+slightly and stops just short of seed 0's. The changed positions carried 1.00 and 1.04 nats of KL each, above the plan's guess of about 0.8. So seed 0 landed above the
 expected band of 5.4 to 6.0, and seed 1 inside it. Within the Pile tasks, no new update as broad as lowercase has been
 read, so E53's own pair still confounds kind with breadth.
 
@@ -755,7 +755,7 @@ of each pair, not for distances between pairs.
 
 The ratio and gate-gain columns come from E54's `stage2.json` cells, not from this run. Their subcomponent gains are
 matched too: 9.0 and 8.9 nats for the elicit map, 8.8 for the cipher. The two members also differ in where the original
-model starts: 6.3 nats of log-odds below the value for the elicit map, 13.7 for the cipher. That gap is the kind
+model starts. Its log-odds of the value are −6.34 for the elicit map and −13.73 for the cipher. That gap is the kind
 difference itself, as the original model's behaviour shows it.
 
 ## What the reading rules out, and what it does not
@@ -775,8 +775,10 @@ It does not rule out the following.
   none.
 - *The ratio's provenance in E54.* It comes from E54's route split cells, read once, with no interval over windows. E53's
   own code has not read E54's states.
-- *A cheaper method.* E54 found that one steering vector also separates its pair, by about a third as much as the
-  re-gating share. So the ratio's separation is not yet shown to be something only the decomposition sees.
+- *A cheaper method.* In E54, one mean steering vector moves a real part of the elicit map. Its gap between the pair is
+  under E54's filed bar, and in the re-gating share's unit it is about a sixth to a tenth of that share's gap, by E54
+  Amendment 1. So a cheaper method sees some of the difference, and the ratio's separation is not yet shown to be
+  something only the decomposition sees.
 
 ## What we learned
 
@@ -792,8 +794,8 @@ by E55's definition of reuse, which owes nothing to the decomposition.
 - *Pairs*: two task families, each with a performed and a new member, at two seeds each, on the 67M model and one
   decomposition.
 - *Noise*: breadth intervals over windows are about ±10% on every row and never touch across members of a pair. The
-  seeds differ by 11% on lowercase, 1% on the broad cipher and 12 to 13% on E54's members. E54's breadth difference of
-  2.2 times is about ten times its seed spread.
+  seeds differ by 1% on the broad cipher and by about 11 to 14% on lowercase and E54's members. E54's breadth
+  difference of 2.2 times is several times its seed spread, about six times on a log scale.
 - *Controls*: every stage-0 check could fail and passed, most exactly.
 - *Blind to*: breadth is gain per mean off-target KL over one window format; it sees only next-token changes, not the
   changed context after a changed token. E54's KL samples Pile text near an inserted marker, not the whole Pile.
