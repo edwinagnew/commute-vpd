@@ -31,10 +31,8 @@ echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> c
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 test -f experiments/open_pair/results/predictions.json || { echo "file the predictions first" >&2; exit 1; }
 large=experiments/open_pair/results/large
-if [ ! -e "$large" ]; then
-  mkdir -p "$HOME/commute-data/results-large/open_pair"
-  ln -s "$HOME/commute-data/results-large/open_pair" "$large"
-fi
+mkdir -p "$HOME/commute-data/results-large/open_pair"   # also mends a dangling link's target
+[ -L "$large" ] || [ -d "$large" ] || ln -s "$HOME/commute-data/results-large/open_pair" "$large"
 rc=0
 .venv/bin/python experiments/open_pair/run.py "$@" 2>&1 | tee "$large/run.out" || rc=$?
 echo "=== FINISHED E58 (exit $rc) — results in $COMMUTE_REPO/experiments/open_pair/results/ ==="

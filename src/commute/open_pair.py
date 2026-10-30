@@ -45,6 +45,26 @@ def boot_sd(dH: Tensor, dG: Tensor, n_boot: int, seed: int) -> float:
     return float((dH.double()[iH].mean(1) / g).std())
 
 
+def boot_sd_keys(dH: Tensor, kH: Tensor, dG: Tensor, kG: Tensor, n_boot: int, seed: int) -> float:
+    """Reported, unscored (amendment 2026-10-30): the key-level bootstrap's sd of x. Each resample draws the held-out keys
+    and the trained keys with replacement (one generator, H's draws first) and pools every window of each drawn key
+    (a key drawn twice counts twice); x = mean(dH pooled) / mean(dG pooled). kH, kG give each window's key. nan when
+    either set is empty or any resample's mean(dG) is not positive."""
+    if len(dH) == 0 or len(dG) == 0:
+        return math.nan
+    gen = torch.Generator().manual_seed(seed)
+    uH, uG = kH.unique(), kG.unique()
+    xs = []
+    for _ in range(n_boot):
+        pick = lambda d, k, u: torch.cat([d[k == u[i]] for i in torch.randint(len(u), (len(u),), generator=gen)]).double().mean()
+        h = pick(dH, kH, uH)
+        g = pick(dG, kG, uG)
+        if not g > 0:
+            return math.nan
+        xs.append(float(h / g))
+    return float(torch.tensor(xs, dtype=torch.float64).std())
+
+
 def label(H: float, G: float, s: float, th: dict[str, Any]) -> str:
     """The behavioural label. "too_small" if G < G_min (Fable: the state is too small to label); then x = H / G:
     "reuses" iff x >= cut, "new" iff x <= k_sd * s, "neither" otherwise; "unreadable" if H, G or s is not finite, or if

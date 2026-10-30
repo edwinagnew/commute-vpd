@@ -84,6 +84,7 @@ never occurs there (it has zero count in the mined rows).
 | key split | `split_keys` on E54's stage1.json keys | the filed 24 / 8 lists | stop |
 | zero update | max per-window G and H of a zero δW on all four split tasks | 0 exactly | stop, fix |
 | E54 elicit_s0, 32 keys | r, stand-in ratio, S, block-0 share via this code | r 0.7726 ± 0.03, ratio 0.9564 ± 0.03, S 0.3796 ± 0.001, block 0 ≤ 1e-6 (E54's tolerances; same code and card model, so ~1e-6 expected) | stop, fix |
+| E54 cipher_s0 with no carry-over (added 2026-10-30, pre-run amendment) | x0 = mean log-odds gain of the 31 non-target cipher values ÷ the target's G, on E54's 32-key windows; s0 the same row bootstrap | x0 ≤ 3 s0 (expected x0 ≈ 0, s0 ≈ 0.01-0.03) | stop: amend the "new" bar before any fine-tune |
 
 ## Stage 1: fine-tunes and the label (no decomposition)
 
@@ -179,6 +180,26 @@ missing). **Not gated:** under $15, under 3 h, inside the session cap.
    with the bounded g, behaviour only, no interchange patch; the 0.5 cut on the ratio copies r's rule); the six states
    join the step-2 table (`reports/plans/2026-10-30_plan_regating-ground-truth.md`) as the open rows; `TRIED.md` row
    updated; `PENDING.md` line.
+
+## Amendment before the run (2026-10-30, code review of 674e9b0)
+
+Nothing had run on a GPU, so `predictions.json` carries a dated pre-run amendment (`amendment_2026-10-30_prerun`); P0-P4
+and the label rule are unchanged.
+
+- *Pre-mortem, the label's negative control (2026-10-30).* "New" needs x ≤ 3 s, and s is a sampling sd that may be
+  about 0.01. Any generic push after the marker toward word-like tokens would then put a cipher with no carry-over at
+  "neither", and P1 would fail because of the bar, not because of the cipher. Guard: stage 0 now reads E54's saved
+  cipher_s0 on its own 32 keys. Its x0 (the non-target cipher values' gain over the target's gain) is what a cipher with
+  no carry-over reads. The job stops if x0 > 3 s0, so the bar can be amended before any fine-tune. Also added:
+  cipher_s0's sha256.
+- *Key-level bootstrap (2026-10-30).* The real unit of H is the 8 held-out keys; W₀'s per-key probability spans 7e-6 to
+  2.5e-2. `s_key` (keys resampled, every window of a drawn key pooled) is reported beside s and is not scored.
+  **Departure from the Stage B source:** Stage B's row bootstrap resamples independent texts, while windows here share
+  a key. The label keeps the filed s; the write-up says which labels would change under 3 s_key.
+- *Run hygiene (2026-10-30).* A failed key-split check now writes run.json with "stopped" and exits 1, where it used to
+  be an assert. run.json records `git status --porcelain` of run.py and `open_pair.py`. The sbatch now handles a
+  dangling `results/large` link: it creates the target and links only when no link or directory exists. The submit
+  command is unchanged.
 
 ## Not in this plan
 

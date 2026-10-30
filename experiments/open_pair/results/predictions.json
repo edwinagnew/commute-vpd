@@ -50,7 +50,8 @@
   "sha256": {
    "windows_elicit": "8f6667050c3702b4da25a8cf2e2b845ff886200566f91e28fb75516fb7fcb0ef",
    "windows_cipher": "924b718303525f3fb9229d00b6613ed872cdbccef985b2aca0ad8d0e7c027ea2",
-   "elicit_s0": "18156b7172dab09ad87bea143fe4d30de437d3a122c0ef3a28478e38c845bf8b"
+   "elicit_s0": "18156b7172dab09ad87bea143fe4d30de437d3a122c0ef3a28478e38c845bf8b",
+   "cipher_s0": "451b1ba1bffee5dd0b8d5e3509840c6fa86c6d48585d24e51a2bff2a32047ff7"
   },
   "sha256_source": "E54 stage1.json sha256 (windows), stage2.json finetunes.elicit_s0.sha256",
   "zero_update": "G and H of a zero delta-W on all four split tasks (elicit/cipher x trained/held-out keys): max |per-window gain| exactly 0",
@@ -90,6 +91,12 @@
   "P2": {"what": "the step-2 plan's P2 on these runs, scored for r and for the ratio separately (open_pair.p2): on every elicit run labelled 'reuses' or 'new' with a finite reading, the instrument's label (reading >= 0.5 -> 'reuses') equals the behavioural label. 'not_testable' if no run qualifies (all 'neither', 'too_small' or 'unreadable', or every reading nan); 'split' reported beside when the labelled runs carry both labels", "relative_or_absolute": "absolute", "lean": "pass for both about 50% (r and ratio are expected to read 'reuses' on every elicit run, so P2 passes exactly when the label is 'reuses')", "blind_to": "the granularity limit: a new circuit assembled from old pieces under new gating reads 'elicited' (reuses) to VPD; a fail with r and ratio high cannot tell that case from a VPD error"},
   "P3": {"what": "the step-2 plan's P3 on these six states (open_pair.p3): over the states labelled 'reuses' or 'new' whose r, ratio and S are all finite, agreement counts A_r, A_ratio, A_S (S >= 0.5 -> 'reuses'); per VPD instrument 'adds' iff A - A_S >= 2, 'steering_better' iff A_S - A >= 2, else 'no_difference'; 'not_testable' with no row", "relative_or_absolute": "absolute counts", "lean": "follows P0: if elicit reads 'reuses' on 2-3 runs, 'adds' for both (S reads elicit 'new' at 0.38); if 'new', 'steering_better'", "blind_to": "S's cut at 0.5 is E52's, not fitted here; S in log P, r in log-odds (E54 Amendment 1)"},
   "P4": {"what": "the readings reproduce E54 on 24 keys (positive control of the readings, not of the label): r and the ratio each separate elicit from the matched cipher, elicit higher, by E54's rule (elicit.separation, min gap 0.2); 'unreadable' if any of the six values is not finite", "relative_or_absolute": "relative (separation)", "lean": "pass for both, high (E54, E56: r gap 0.52 over a 0.055 range)"}
+ },
+ "amendment_2026-10-30_prerun": {
+  "when": "2026-10-30, after the code review of 674e9b0 and before any run (nothing has run on a GPU); filed rules P0-P4 and the label rule unchanged",
+  "no_carry_check": "added to stage 0 (stop on a miss): E54's saved cipher_s0.pt (sha256 in stage0.sha256) on E54's own 32-key held-out windows; x0 = mean over windows of the log-odds gain of the 31 non-target cipher values (run.py `others`) / the target's G; s0 = open_pair.boot_sd of the same two per-window gains (2000 resamples, seed 0). Stop iff x0 > 3 s0 or either is not finite: a cipher with no carry-over would then read 'neither', not 'new', and P1 would fail for the bar, not the cipher; the bar is amended before any fine-tune. Expected: x0 near 0 (KL holds the rest of the vocabulary), s0 about 0.01-0.03",
+  "s_key": "reported beside s, unscored: open_pair.boot_sd_keys, the sd of x when held-out keys and trained keys (not windows) are resampled with replacement, all windows of each drawn key pooled (2000 resamples, seed 0). The real unit of H is the 8 held-out keys (W0's per-key P spans 7e-6 to 2.5e-2); Stage B's row bootstrap resamples independent texts. Expected s_key well above s; the write-up says which labels change if 3 s_key replaced 3 s",
+  "provenance": "run.json records git status --porcelain of run.py and src/commute/open_pair.py; the key-split check writes run.json and exits 1 instead of an assert"
  },
  "branches": {
   "stage0_miss": "stop and tell the user",
