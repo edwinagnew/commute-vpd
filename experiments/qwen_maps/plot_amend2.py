@@ -23,7 +23,8 @@ HERE = Path(__file__).resolve().parent
 RES = HERE / "results" / "amend2"
 FIG = HERE / "figures"
 LOWER, UPPER, RANDOM, DN = "#7f8c8d", "#c0392b", "#2a78d6", "#1e1e1e"
-MARGIN, PASS_R2 = 0.2, 0.977  # filed teeth_i margin; r2_B the r1 line asks at step 10 (predictions_amend2 pass.note)
+MARGIN, RANDOM_MAX = 0.2, 0.2  # filed teeth_i margin; filed teeth_ii rule, random r2_B <= 0.2
+PASS_R2 = 0.977  # r2_B the r1 line asks at step 10 on the first 16 rows (pass.note); about 0.973 on all 128
 
 
 def load(name: str) -> dict:
@@ -38,10 +39,10 @@ def per_row_rho(c: dict, t: dict, carried: float, half: str) -> list[float]:
 
 def kept_figure(sc: dict) -> None:
     ti, tii = sc["teeth_10"]["teeth_i"], sc["teeth_10"]["teeth_ii"]
-    rows = [  # label, r2_B, colour, filed expected range (None: a single expected value)
+    rows = [  # label, r2_B, colour, filed expected range (random: expected <= 0, drawn from the axis edge)
         ("do-nothing: the whole update\nleft in Δ", sc["control_do_nothing"]["10"]["r2"], DN, (0.0, 0.0)),
         (f"random change to the alive (U, V),\nKL-matched (×{tii['a']:.1f} E44's size)", tii["r2"], RANDOM,
-         (-0.05, 0.2)),
+         (-0.08, 0.0)),
         ("least-squares split onto the half\nΓ rarely switches on", ti["r2_lower"], LOWER, (-0.05, 0.10)),
         ("least-squares split onto the half\nΓ often switches on", ti["r2_upper"], UPPER, (0.10, 0.60)),
     ]
@@ -50,13 +51,16 @@ def kept_figure(sc: dict) -> None:
         ax.barh(i, v, color=col, height=0.5)
         ax.add_patch(Rectangle((lo, i - 0.32), max(hi - lo, 0.004), 0.64, fc="none", ec="0.35", ls="--", lw=1))
         ax.text(max(v, hi) + 0.015, i, f"{v:.3f}", va="center", fontsize=9)
+    ax.plot([RANDOM_MAX] * 2, [1 - 0.32, 1 + 0.32], color=RANDOM, lw=2)
+    ax.text(RANDOM_MAX + 0.01, 1 + 0.2, "filed rule: ≤ 0.2", fontsize=8, color=RANDOM)
     ax.axvline(0, color="0.6", lw=1)
     ax.axvline(1, color="0.6", lw=1, ls=":")
     ax.axvline(PASS_R2, color="0.3", lw=1.2, ls="-.")
-    ax.text(PASS_R2 - 0.01, 3.55, "kept share a state needs\nto pass at step 10 (0.977)", ha="right", fontsize=8,
+    ax.text(PASS_R2 - 0.01, 2.55, "kept share a state needs to pass\nat step 10: 0.977 on the first 16 rows,\nabout 0.973 on all 128",
+            ha="right", fontsize=8,
             color="0.3", va="top")
     ax.text(1.01, 3.55, "1 = the\nfine-tuned\nmodel", ha="left", fontsize=8, color="0.4", va="top")
-    ax.plot([], [], ls="--", color="0.35", label="filed expected range (box); random: filed rule ≤ 0.2")
+    ax.plot([], [], ls="--", color="0.35", label="filed expected range (box); random: expected ≤ 0")
     ax.set_yticks(range(len(rows)), [r[0] for r in rows], fontsize=8.5)
     ax.set_ylim(-0.7, 3.7)
     ax.set_xlim(-0.08, 1.12)

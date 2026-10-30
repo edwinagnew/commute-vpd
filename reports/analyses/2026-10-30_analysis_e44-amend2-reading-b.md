@@ -11,16 +11,17 @@ below was read from the results files with `jq`, or computed from them by the pl
 **In plain words.** We reran the pass test with masks from the original model, and placed the fine-tuning update on
 subcomponents the decomposition often uses, on ones it rarely uses, or nowhere. The often-used placement kept more of
 the update's behaviour on every text row, but by far less than the filed bar, so the run stopped before scoring any
-split. For `GOALS.md`, no split of the update has been scored on Qwen, and the line moves to describing where the
-update lands.
+split. For `GOALS.md`, no split of the update has been scored on Qwen, and the user confirmed on 2026-10-30 that
+the line moves to describing where the update lands.
 
 ## The answer
 
-The test separates good placements from bad ones in the right direction, but by too little to clear its filed bar. Put
-on subcomponents the importance function switches on in the original model, the update keeps about 13% of its
-behaviour per unit carried. Put on the ones it leaves off, it keeps under half a percent. The often-used placement
-won on all 128 rows, but the filed margin asked for 20 points. A random change of matched effect kept nothing, and
-leaving the whole update outside the subcomponents now fails, as it should. By the filed outcome rule the test has no
+On all 128 rows the placement on often-used subcomponents kept more than the one on rarely-used subcomponents, a
+reported number, not a scored one; but the filed bar asked for a larger gap, and the test missed it. Put on
+subcomponents the importance function switches on in the original model, the update keeps about 13% of its behaviour
+per unit carried. Put on the ones it leaves off, it keeps under half a percent. The filed margin asked for 20 points.
+A random change of matched effect kept 0.005, slightly more than the rarely-on half's 0.001, far under the 0.2 line.
+Leaving the whole update outside the subcomponents now fails, as it should. By the filed outcome rule the test has no
 teeth at step 10, and the job stopped before the splits.
 
 ## What we were trying to test
@@ -44,7 +45,8 @@ The readings, each on 128 maths rows cut to 256 tokens:
 - The **kept share** is $r_2 = [K(D) - K_B] / [K(D) - K_0]$. It is 0 when the state is no closer to the fine-tuned
   model than do-nothing, and 1 when it is as close as the original decomposition is to its own model.
 - The **carried share** of a state is the part of the update its subcomponents hold, $1 - \text{share in Δ}$, with
-  the share measured in the norm weighted by the inputs' second moments, Σ.
+  the share measured in the norm weighted by the inputs' second moments, Σ. These are ratios of norms, so the shares
+  of different states do not add up, and they need not track the energy in a state's moved subcomponents.
 - The **kept share per unit carried** is $\rho = r_2 / \text{carried share}$.
 
 Three placements test whether the test can tell good from bad. Each comes from stage S of E44, rerun unchanged.
@@ -104,13 +106,14 @@ On all 128 rows of 256 tokens, $K_0$ read 0.0696 and $K(D)$ read 1.3738 at step 
 
 **Reading it.** Very little, for every placement. The often-on half keeps 0.062 of the update's behaviour, below its
 filed range of 0.10 to 0.60. The rarely-on half keeps 0.0013, inside its range. The random change keeps 0.005, far
-under its 0.2 line, and do-nothing keeps exactly 0. The dash-dot line marks the 0.977 a state holding the fine-tuned
-weights needs to pass at step 10. The best placement reaches about a sixteenth of it.
+under its 0.2 line but above its filed expectation of at most 0. Do-nothing keeps exactly 0. The dash-dot line marks
+the kept share a state holding the fine-tuned weights needs to pass at step 10. That is 0.977 on the first 16 rows,
+about 0.973 on all 128. The best placement reaches about a sixteenth of it.
 
 | state | $K_B$, nats | kept share | carried share | kept per unit carried | filed expectation |
 |---|---|---|---|---|---|
 | do-nothing | 1.3738 | 0 | 0 | not defined | 0 |
-| random, $a = 17.8$ | 1.3668 | 0.0053 | not used | not used | ≤ 0.2 rule; expected ≤ 0 |
+| random, $a = 17.8$ | 1.3668 | 0.0053 | not used | not used | rule ≤ 0.2, held; expected ≤ 0, missed |
 | rarely-on half | 1.3721 | 0.0013 | 0.288 | 0.0044 | kept −0.05 to 0.10 |
 | often-on half | 1.2933 | 0.0618 | 0.478 | 0.1292 | kept 0.10 to 0.60 |
 
@@ -128,15 +131,16 @@ the often-on half keeps 0.10 to 0.17 per unit and the rarely-on half 0.002 to 0.
 puts the difference between 0.123 and 0.127, so the miss is not row noise.
 
 The rarely-on half holds 8.6 times the often-on half's Σ-weighted energy in its moved subcomponents at step 10. It
-still keeps almost nothing, because under the original masks those subcomponents are nearly always off.
+still keeps almost nothing. Our reading, not measured here: likely because under the original masks those
+subcomponents are nearly always off.
 
 ### Does a random change of matched effect keep any of the update?
 
-**Reading it.** No: it keeps 0.005, against a filed line of 0.2. The search for $a$ took five evaluations. At $a = 1$,
+**Reading it.** Almost none: it keeps 0.005, against a filed line of 0.2. That is about four times the rarely-on
+half's 0.0013, and above the filed expectation of at most 0. The search for $a$ took five evaluations. At $a = 1$,
 E44's Σ-matched size, the random change moved the original model by 0.0013 nats on the first 16 rows. The fine-tuned
 model moved it by 0.62 nats. At $a = 17.8$ the random change moved it 0.50 nats, a ratio of 0.81, inside the factor
-1.5. So the update moves the output
-hundreds of times further, in KL, than a random change of its Σ-weighted size. The random
+1.5. So the update moves the output about 480 times further, in KL, than a random change of its Σ-weighted size. The random
 state's own-model ratio at the original masks read 9.8 against the 1.5 line. That is the question E44's random control
 raised, and under reading B the own-model ratio does fail a model the masks were not computed for.
 
@@ -145,12 +149,13 @@ raised, and under reading B the own-model ratio does fail a model the masks were
 The filed outcome rule reads "no teeth at step 10". The positive control missed its margin, so the job stopped before
 the least-squares split, the in-span least-squares split and the scaled adjoint split were read. As the plan's
 decision tree says for this branch, reading B has no teeth on Qwen either, and the line moves to Q3's descriptive rows.
+The user confirmed that move on 2026-10-30.
 For `GOALS.md` the weak version is still neither supported nor refuted on Qwen.
 
 The reading below is ours, not a filed finding. The direction is right and clean: subcomponents Γ switches on in the
 original model carry the update's behaviour about thirty times better per unit than ones it leaves off. But even that
 placement keeps little in absolute terms, about 13% per unit carried. A state holding the fine-tuned weights must keep
-97.7% to pass at step 10. If the kept share grew in proportion to the carried share, a split that put the whole update
+97.7% to pass at step 10 on the first 16 rows, about 97.3% on all 128. If the kept share grew in proportion to the carried share, a split that put the whole update
 on often-on subcomponents would keep about 13%. So under reading B the pass test looks near-unpassable for this update
 rather than toothless: it fails bad placements, and it would likely fail good ones too. That extrapolation is untested.
 
@@ -171,18 +176,21 @@ by its definition, to any credit for Γ following changed activations.
 
 ## Surprises
 
-The filed expectation for the often-on half missed: it kept 0.062, below the filed range of 0.10 to 0.60.
-The lean for the halves was medium-low, so the miss was a live outcome, not a reversal. Nothing
-else surprised. A smaller note: the random change needed nearly eighteen times its Σ-matched size to move the output
-as much as the update does.
+The filed prediction for the halves did not hold: the often-on half was to keep at least 0.2 more per unit carried,
+and it kept 0.125 more. Its kept share of 0.062 was also below the filed range of 0.10 to 0.60. The lean was
+medium-low, so the miss was a live outcome, not a reversal.
+
+The random change's filed expectation missed too, while its rule held. It was expected to keep at most 0, with a
+high lean, and it kept 0.0053. That is about four times what the rarely-on half kept, though still far under the
+0.2 line. A smaller note: the random change needed nearly eighteen times its Σ-matched size to move the output as
+much as the update does.
 
 ## What next
 
-- **The user confirms the move to Q3, or chooses a different pass test.** The card "E44 reading B" puts the evidence
-  and the options. Q3 describes where the update lands and which subcomponents Γ switches on, on saved states, about
-  $5 in the replan.
-- **If a different pass test is wanted**, it is a new amendment with its own filed predictions. This amendment's
-  verdict stands as filed either way.
+- **Q3, as the user confirmed on 2026-10-30.** Q3 describes where the update lands and which subcomponents Γ switches
+  on, on saved states, about $5 in the replan.
+- **A different pass test** would be a new amendment with its own filed predictions. This amendment's verdict stands
+  as filed either way.
 - **Why the often-on half keeps so little.** A $0 reading of the original masks' values on the often-on half's
   subcomponents would show whether fractional masks cap it. It matters only if a new pass test is considered.
 
@@ -210,6 +218,7 @@ as much as the update does.
 | teeth_i, reported | direction per row; bootstrap of ρ_upper − ρ_lower | none | 128 of 128 rows; 95% from 0.123 to 0.127 | reported |
 | teeth_i, expected | r2_B lower in [−0.05, 0.10]; upper in [0.10, 0.60] | expectation, not a rule | 0.0013 inside; 0.0618 below | upper missed |
 | teeth_ii | a KL-matched random change keeps at most 0.2 | matched, r2_B ≤ 0.2 | a = 17.78, KL ratio 0.81; r2_B 0.0053 | holds |
+| teeth_ii, expected | r2_B of the random change ≤ 0 | expectation, not a rule; lean high | 0.0053, about 4× the rarely-on half's 0.0013 | missed |
 | teeth_ii, reported | random's own-model ratio at the original masks | none | r1_B maths 9.77 | reported |
 | teeth_outcome | teeth at step 10 | all of do-nothing, teeth_i, teeth_ii hold | teeth_i does not | **no teeth: stop before the splits** |
 

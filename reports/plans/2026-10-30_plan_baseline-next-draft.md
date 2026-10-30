@@ -1,6 +1,6 @@
 # Plan (DRAFT): what next for the baseline comparison after E54? (E56 proposed)
 
-**Status: DRAFT, Fable's advice, 2026-10-30. Not approved work.** The user decides. Written after E54 and its
+**Status: APPROVED by the user 2026-10-30 ("approve E56, go ahead"), as written. Drafted by Fable.** Written after E54 and its
 Amendment 1 (`reports/analyses/2026-10-30_analysis_e54-keydependent-elicit.md`, review
 `reports/reviews/2026-10-30_review_e54-amend1-analysis.md`).
 
