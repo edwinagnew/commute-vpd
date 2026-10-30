@@ -12,8 +12,8 @@ in the scored set or class B by its own class, truth_sets). Per state, against i
       Stage A's fine-tune recipe at lr = the state's fine-tune lr / LR_DIVISOR; scratch = NEVER, same recipe and lr;
   steering: on Stage A's 1,000 qualifying 'C b 40' rows, the gain share of the mean tuned-minus-base residual at `=`.
 Labels by revival.py's filed rules; scores (binomial bar at the actual n and a margin over the better nuisance
-labeller, on every state and on one vote per training run at its 1K state), agreement per fine-tune lr (described) and
-the class-B readings, rewritten with every state.
+labeller, on every state and on one vote per training run, its latest labelled save; one vote per data
+stream described), agreement per fine-tune lr (described) and the class-B readings, rewritten with every state.
 
 Order: model-free controls (a miss writes results/c1_control_miss.json, exit 1); the instruments' controls, alone
 (--controls-only; pruning on LOW with the sign flipped must lower count a beyond the random draws, else pruning is
@@ -97,6 +97,7 @@ class Truth:
     scored: dict[str, str]  # state -> "existing" / "new": pruning and reverse fine-tuning
     steer_only: dict[str, str]  # R: steering only
     class_B: list[str]  # reported, not scored
+    paired: list[str]  # runs ('<src>/<arm>') dropped from the per-stream score: their partner shares their data stream
 
     def steer(self) -> dict[str, str]:
         return self.scored | self.steer_only
@@ -147,7 +148,28 @@ def truth_sets(k: dict[str, Any], states: dict[str, State]) -> Truth:
     set, B into class B (lead, 2026-10-30)."""
     b5 = {s: states[s].file_truth for s in k["amend5b_states"] if s in states}
     return Truth(k["truth_scored"] | {s: v for s, v in b5.items() if v != "B"}, dict(k["steering_only"]),
-                 [*k["class_B"], *(s for s, v in b5.items() if v == "B")])  # fmt: skip
+                 [*k["class_B"], *(s for s, v in b5.items() if v == "B")], list(k["paired_streams"]))  # fmt: skip
+
+
+def run_of(st: State) -> str:
+    return f"{st.src}/{st.arm}"
+
+
+def per_run(truth: dict[str, str], states: dict[str, State]) -> dict[str, str]:
+    """One state per training run: its latest save in `truth` (truth holds only existing / new states, so this is the
+    latest save whose class is reuses or new; a run with none has all its states in class B)."""
+    latest: dict[str, str] = {}
+    for s in truth:
+        r = run_of(states[s])
+        if r not in latest or states[s].step > states[latest[r]].step:
+            latest[r] = s
+    return {s: truth[s] for s in latest.values()}
+
+
+def per_stream(truth_run: dict[str, str], paired: list[str]) -> dict[str, str]:
+    """One vote per data stream: per_run without the runs in `paired` (each WNf run, whose WN partner trained on the
+    same rows; lead, 2026-10-30)."""
+    return {s: v for s, v in truth_run.items() if "/".join(s.split("/")[:2]) not in paired}
 
 
 def build_data() -> Data:
@@ -253,8 +275,9 @@ def labels_of(row: dict[str, Any], ctl: dict[str, Any]) -> dict[str, str]:
 
 def scores(T: Truth, states: dict[str, State], labels: dict[str, dict[str, str]]) -> dict[str, Any]:
     """Per instrument (and per nuisance labeller): the score on every state (binomial bar at the actual n, and agreement
-    >= the better nuisance labeller's + MARGIN_ALL on the same states) and on one vote per training run (its 1K state;
-    + MARGIN_SEED); per fine-tune lr stratum (1e-4, 1e-5), described; class B's label counts."""
+    >= the better nuisance labeller's + MARGIN_ALL on the same states), on one vote per training run (per_run;
+    + MARGIN_RUN) and, described, on one vote per data stream (per_stream); per fine-tune lr stratum (1e-4, 1e-5),
+    described; class B's label counts."""
     truth = {"prune": T.scored, "reverse": T.scored, "steer": T.steer()}
     nuis = nuisance_labels(states)
     per = {i: {s: lab[i] for s, lab in labels.items() if i in lab} for i in INSTRUMENTS}
@@ -262,11 +285,12 @@ def scores(T: Truth, states: dict[str, State], labels: dict[str, dict[str, str]]
     out: dict[str, Any] = {}
     for name, lab in per.items():
         t = truth.get(name, T.scored)
-        t1k = {s: v for s, v in t.items() if states[s].step == 1000}
+        t_run = per_run(t, states)
         strata = {lr_key(lr): {s: v for s, v in t.items() if lr_key(states[s].ft_lr) == lr_key(lr)} for lr in (1e-4, 1e-5)}
         b = [lab.get(s, "missing") for s in T.class_B]
         out[name] = {"all": revival.score(lab, t, nuis, revival.MARGIN_ALL),
-                     "per_seed": revival.score(lab, t1k, nuis, revival.MARGIN_SEED),
+                     "per_run": revival.score(lab, t_run, nuis, revival.MARGIN_RUN),
+                     "per_stream_described": revival.score(lab, per_stream(t_run, T.paired), nuis, revival.MARGIN_RUN),
                      "by_ft_lr": {k: {q: v for q, v in revival.score(lab, st).items() if q in ("n", "agree", "voided")} for k, st in strata.items()},
                      "class_B": {v: b.count(v) for v in sorted(set(b))}}  # fmt: skip
     return out

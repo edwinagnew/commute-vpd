@@ -12,7 +12,7 @@ results/large/amend5/<key>_<step>.pt (the key hashes the recipe) and resumed fro
 Training data: chunk c from default_rng([run.FT_SEED0 + seed, c, TAIL[task]]), Stage A's stream with a new tail.
 
 Readings per state. WN, WNf: run.read_state (Stage A's B and P on its natural qualifying rows, labelled by the filed
-bars); the shortcut check on fresh training-distribution rows (share of rows labelled other than 14 that are answered 14);
+bars); the shortcut check on unseen (Amendment 2's streams; no model trained on them) training-distribution rows (share of rows labelled other than 14 that are answered 14);
 Amendment 4's off-label swap-built read (described only); the state class. ID: per count, B = share answering the
 count (g = identity) at the ID prompt on Stage A's qualifying texts, P on Stage A's pairs for that count at the ID
 prompt, labelled by the filed bars (count a scored, count b described).
@@ -107,7 +107,7 @@ ARMS5 = {"ID_s0": Arm5("ID", 1e-5, 0), **{f"WN_s{s}": Arm5("WN", 1e-5, s) for s 
 class Eval5:
     stage_a: A2Eval  # Stage A's qualifying texts and pairs (run.a2_eval_data)
     prompt: Prompt  # the ID prompt
-    rows: dict[str, np.ndarray]  # task -> fresh training-distribution rows
+    rows: dict[str, np.ndarray]  # task -> unseen (Amendment 2's streams; no model trained on them) training-distribution rows
     off: tuple[np.ndarray, dict[int, Pairs]]  # Amendment 4's off-label texts and pairs within them
 
 

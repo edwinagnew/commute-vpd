@@ -38,7 +38,7 @@ TARGET, CAP, EVAL_EVERY = 0.95, 10_000, 50  # plan: steps to 95% count a, cap 10
 SCRATCH_VOID_MAX, EXISTING_FRAC = 1000, 0.5  # plan: scratch <= 1K steps voids that lr; existing iff <= 0.5 x scratch
 STEER_MIN = 0.5  # plan: existing iff gain share >= 0.5
 ALPHA, MIN_N = 0.05, 8  # plan: binomial one-sided 0.05; fewer than 8 scored states -> no pass bar
-MARGIN_ALL, MARGIN_SEED = 2, 1  # lead, 2026-10-30: agreement must exceed the better nuisance labeller by this many states
+MARGIN_ALL, MARGIN_RUN = 2, 1  # lead, 2026-10-30: agreement must exceed the better nuisance labeller by this many states (all states; one per run)
 
 
 # ---- pruning ----

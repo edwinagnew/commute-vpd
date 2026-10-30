@@ -109,5 +109,5 @@ def test_score_needs_a_margin_over_the_better_nuisance_labeller():
 def test_nuisance_counted_on_the_instrument_states_only():
     truth = {f"s{i}": "existing" if i < 6 else "new" for i in range(12)}
     labels = dict(truth) | {"s0": "void", "s1": "void"}  # n = 10, agree 10
-    sc = rv.score(labels, truth, {"copy": dict(truth)}, rv.MARGIN_SEED)
+    sc = rv.score(labels, truth, {"copy": dict(truth)}, rv.MARGIN_RUN)
     assert sc["nuisance_agree"] == {"copy": 10} and sc["passes_bar"] and sc["passes"] is False  # 10 < 10 + 1
