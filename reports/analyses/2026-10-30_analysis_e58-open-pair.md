@@ -6,14 +6,17 @@ amendments. Rules: `experiments/open_pair/results/predictions.json`. Results: `e
 row. Explanation: `notebooks/E58_open_pair.ipynb`. Words as in `GOALS.md` → Terms. Provenance at the end.*
 
 We fine-tuned the small model on a word map it already half-knows, on most of its keys, and tested the keys it never saw.
-It did not improve on them in any of three seeds, yet the decomposition still says most of the gain comes from switching
+On all three seeds they gained far less than the trained keys, and their own values gained less than the trained values
+did at the same windows. Yet the decomposition still says most of the gain comes from switching
 on subcomponents the model already had. So a filed prediction, that the two would agree, failed; we read the gap as old
 subcomponents serving a lookup that does not generalise, a reading and not yet a proof.
 
 ## The answer
 
-No carry-over, and the decomposition reads the opposite. Trained on 24 keys, the half-known map gained nothing at the 8
-unseen keys, on all three seeds. The arbitrary control map gained nothing there either, as it must. Yet switching on
+No carry-over by the filed measure, and the decomposition reads the opposite. Trained on 24 keys, the half-known map's
+answers at the 8 unseen keys rose far less than at the trained keys. They also rose less than the trained answers did at
+those same unseen keys, so the value-specific gain there is slightly negative, on all three seeds. The arbitrary control
+map reads the same, as it must. Yet switching on
 existing subcomponents still carries about three quarters of the half-known map's gain, as when every key was trained.
 Our reading: the values are words the model already says after these keys, so the subcomponents are old while the
 lookup is new.
@@ -90,20 +93,20 @@ Each reading turns into a label by the same cut: 0.5 or more reads "reuses".
 | $G_\text{spec}$ gate, 8 ÷ 10.79 × the smaller of the two specific gains | finite, ≤ 5.148 | 5.148 | pass |
 
 **The stop before this run.** Job 46259 ran the first amendment's stage 0 and stopped there, as designed, before any
-fine-tune. On E54's cipher, the other 31 cipher values gained 4.16 log-odds at every window, against the target's
+fine-tune. On E54's cipher, the other 31 cipher values gained 4.16 log-odds per window on average, against the target's
 11.11. A raw held-out ratio would therefore read a cipher with no carry-over as "neither", never "new". The second
 amendment, filed before any fine-tune, moved the label to the specific gain and lowered the gate to 5.148. Every other
 stage-0 number of job 46259 matched the table above.
 
 ## Did the fine-tune carry over to the keys it never saw?
 
-![x per state, elicit and cipher, with the 0.5 cut, each state's 3 s mark, and the raw x](../../experiments/open_pair/figures/label.png)
+![x per state, elicit and cipher, with the 0.5 cut, each state's 3 s mark for the scored x, and the raw x, which has no bootstrap of its own](../../experiments/open_pair/figures/label.png)
 
 **Reading it.** No. On all three elicit seeds the held-out keys' specific gain was slightly negative, so $x$ sits just
 below 0, under each state's $3s$ mark of about 0.02, and the label is "new". The trained keys gained 18.2 to 18.5
 log-odds on the same measure. The cipher reads "new" too, further below 0, so the label's negative control passed.
-The hollow points show the raw ratio with the shared shift left in: 0.04 to 0.08 for the elicit map, which would read
-"neither", still far from the 0.5 cut.
+The hollow points show the raw ratio with the shared shift left in: 0.04 to 0.08 for the elicit map, far from the 0.5 cut.
+That sits above the value-specific $3s$ marks, but the raw ratio's own bootstrap was not computed, so it has no label.
 
 | state | step | update size | $G$ raw | $G_\text{spec}$ | $H$ raw | $H_\text{spec}$ | $x$ | $3s$ | $3s_\text{key}$ | raw $x$ | label |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -126,23 +129,28 @@ key 2515 on seeds 0 and 1, at +0.77 and +0.21, and key 2250 on seed 2, at +0.92.
 
 ![At the held-out keys' windows: the gain of the own value, of the other held-out values, and of the trained values](../../experiments/open_pair/figures/heldout_gain.png)
 
-**Reading it.** Carry-over was possible and the fine-tune did not take it. There is no rule from key to value here,
-so the one way unseen keys could gain is a general sharpening of what W₀ already prefers after each key. That would
-raise each held-out key's own value, one of W₀'s top 20 there, more than the values of other keys. Instead the own value
-rose by 0.5 to 0.9 log-odds. The 24 trained values rose by 1.6 to 1.8, more than twice as much. The other held-out values
-fell, by about 0.5 on average.
-The trained values' rise is inferred, not read directly: it follows from $H$, $H_\text{spec}$ and the other held-out
-values' gain, since the 32 values are distinct. So at an unseen key the update pushes toward the 24 values it was trained
-on, not toward what W₀ prefers there. The cipher shows the same push, much larger, at 5.5 to 5.7.
+**Reading it.** Carry-over was possible, and the fine-tune took that route only weakly. There is no rule from key to
+value here, so the one way unseen keys could gain is a general sharpening of what W₀ already prefers after each key.
+That would raise each held-out key's own value, one of W₀'s top 20 there, more than the values of other keys. The own
+value rose by 0.5 to 0.9 log-odds. The 24 trained values rose by 1.6 to 1.8, more than twice as much. The other
+held-out values fell, by about 0.5 on average.
 
-| state | own value, read | other 7 held-out values, read | 24 trained values, inferred |
-|---|---|---|---|
-| elicit, seed 0 | +0.61 | −0.53 | +1.59 |
-| elicit, seed 1 | +0.46 | −0.64 | +1.68 |
-| elicit, seed 2 | +0.90 | −0.23 | +1.84 |
-| cipher, seed 0 | +1.38 | +1.58 | +5.50 |
-| cipher, seed 1 | +1.19 | +1.29 | +5.73 |
-| cipher, seed 2 | +1.26 | +1.35 | +5.62 |
+The trained values' rise is inferred, not read directly: it follows from $H$, $H_\text{spec}$ and the other held-out
+values' gain, since the 32 values are distinct. It is what hides a small key-specific boost from the label. Against its
+7 held-out siblings alone, the own value gained 1.10 to 1.15 more on the elicit map. On the cipher the same contrast is
+−0.10 to −0.21. Both come from two read means each, H and the siblings' gain. That boost is about 6% of the trained keys'
+specific gain. So at an unseen key the update is mostly 24 lookups plus a push toward the trained values, with a small
+key-specific boost toward what W₀ prefers there. The cipher shows the push toward trained values much larger, at 5.5 to
+5.7. The rank-k readout, next, tests the boost directly. The label "new" stands as filed.
+
+| state | own value, read | other 7 held-out values, read | own minus siblings | 24 trained values, inferred |
+|---|---|---|---|---|
+| elicit, seed 0 | +0.61 | −0.53 | +1.145 | +1.59 |
+| elicit, seed 1 | +0.46 | −0.64 | +1.098 | +1.68 |
+| elicit, seed 2 | +0.90 | −0.23 | +1.127 | +1.84 |
+| cipher, seed 0 | +1.38 | +1.58 | −0.208 | +5.50 |
+| cipher, seed 1 | +1.19 | +1.29 | −0.105 | +5.73 |
+| cipher, seed 2 | +1.26 | +1.35 | −0.095 | +5.62 |
 
 The inference: $H - H_\text{spec}$ is the mean gain of the other 31 values, so the 24 trained values' mean is
 $(31 (H - H_\text{spec}) - 7 H_\text{other}) / 24$, computed in `experiments/open_pair/plot.py`.
@@ -168,7 +176,8 @@ So the filed agreement prediction fails for both readings, and the separation pr
 | E54 elicit, 32 keys, seeds 0, 1 | 0.773, 0.758 | 0.956, 0.951 | 0.380, 0.394 | | none | | | |
 | E54 cipher, 32 keys, seeds 0, 1 | 0.241, 0.212 | 0.336, 0.289 | 0.228, 0.185 | | none | | | |
 
-Block 0 of the steering read 7e-8 or less in size on every state, under the 1e-5 stop.
+The stop on steering's block 0 is in nats: block 0's share times the scoring-half gain must stay under 1e-5. It read
+4.0e-7 nats on the elicit states and 2.3e-7 on the cipher, at the largest.
 
 **Steering's score is not a finding.** Scored as filed, steering agrees with the label on 5 of 6 states and each
 decomposition reading on 3, so the comparison reads "steering better" for both. But steering's three elicit values are
@@ -187,8 +196,9 @@ On a lookup over existing output words, the first answer can be yes and the seco
 three seeds each way. Every claim here holds only at the level of VPD's subcomponents.
 
 **The label is not empty.** One could worry that "new" was guaranteed by the task, since each value is a separate pick
-per key. But the route to carry-over, sharpening W₀'s own preference at each key, was open, and the update pushed
-toward the trained values instead. The label says something true: the fine-tune learnt 24 separate lookups.
+per key. But the route to carry-over, sharpening W₀'s own preference at each key, was open. The update took it only
+weakly, a boost of about 1.1 log-odds over the sibling values, and pushed harder toward the trained values. The label
+says something true: the fine-tune learnt mostly 24 lookups, not a rule that carries.
 
 **What is missing.** No 67M state has yet read "reuses" under this bar. Until the label's positive control does, E58
 cannot be counted as a VPD failure either.
@@ -203,8 +213,8 @@ A unless the user objects.
 For `GOALS.md`'s question, new capabilities or strengthening, the decomposition answers a narrower question than
 behaviour does. On this map, r and the stand-in ratio report that the gain runs through subcomponents W₀ already had,
 three seeds each, with the same values as when every key was trained. Behaviour reports that no rule generalises to
-unseen keys. Both can be true at once on a lookup over words the model already says. So r and the ratio can be scored
-against a behavioural label only on tasks where "reuses" means a rule W₀ already has.
+unseen keys. Both can be true at once on a lookup over words the model already says. Under the adopted reading, with ask #14
+still open, r and the ratio can be scored against a behavioural label only on tasks where "reuses" means a rule W₀ already has.
 
 ## How compelling is the evidence
 
@@ -255,6 +265,12 @@ against a behavioural label only on tasks where "reuses" means a rule W₀ alrea
 
 Stage-0 checks all passed. Early stops: elicit seed 0's $G_\text{spec}$ 18.18 against the gate of 5.148, no stop; no
 cipher read "reuses", no stop. Plan decision tree: branch 5, label "new" with the agreement test failed.
+Branch 5's filed next steps, the novelty column and a costed second-decomposition-seed card, were replaced by Fable's
+E58 Amendment 1, the rank-k readout and the label's positive control, which the lead adopted
+(`reports/plans/2026-10-30_advice_e58-reading-FABLE.md`, `decisions.md` row of 2026-10-30). The novelty column waits
+until a labelled "reuses" state exists to compare against. The seed card is deferred because a second decomposition can
+only re-read the disagreement: without a state the label calls "reuses", it cannot tell a VPD error from the
+granularity limit, so the $0 positive control comes first.
 
 ## Departures from the literature
 

@@ -62,9 +62,9 @@ def label_fig(st: dict[str, Any]) -> None:
             x0 = i + 0.12 * (j - 1)
             ax.scatter([x0], [d["x"]], s=40, color=COLOR[task], zorder=3, label="scored: value-specific x" if i == j == 0 else None)
             ax.scatter([x0 + 0.04], [d["x_raw"]], s=30, color="white", edgecolors=COLOR[task], lw=1.3, zorder=3,
-                       label="raw x, pool shift included (not scored)" if i == j == 0 else None)
+                       label="raw x, pool shift included (not scored;\nno bootstrap of its own, so no 3 s mark)" if i == j == 0 else None)
             ax.plot([x0 - 0.04, x0 + 0.04], [3 * d["s"]] * 2, color=INK, lw=1.4, zorder=2,
-                    label="each state's 3 s mark: 'new' at or below it" if i == j == 0 else None)
+                    label="each state's 3 s mark for the scored x:\n'new' at or below it" if i == j == 0 else None)
     ax.axhline(1, color=INK, lw=0.7, ls="--")
     ax.axhline(0.5, color=INK, lw=1.0, ls=":")
     ax.axhline(0, color=INK, lw=0.7)
