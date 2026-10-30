@@ -86,3 +86,10 @@ gold minus random +0.06 to +0.07, interval clear of zero. So the "close D3 now" 
 below both random changes on both seeds (0.012 [0.010, 0.013], 0.012 [0.011, 0.014]), which no prediction covered.
 Caveats: no positive control at this scale, gold has one seed, gold moves the maths outputs more (KL 0.70 against
 0.50-0.53) and no dose check was run.
+
+**Added 20:25 from the independent check** (`reports/reviews/2026-10-30_review_e57-a-c-check.md`). Measured on one
+yardstick (same 128 rows for all states), gold moves the outputs 1.7-2.3 times as much as the random changes, and
+among the real updates the direct share rises with size. So "gold sits apart from random" is partly a size effect.
+For Stage D, anchor 1 (maths KL 0.33, |δW| 3.14) is smaller than anchor 2 (0.62, 5.1), so option 2's "anchor 1 apart
+from anchor 2 → design a matched pair" would read a size gap as a gap in kind. Option 6 (anchor 2's intermediate
+states, matched in size to anchor 1) answers that directly, at about 35 min per seed on the cluster, $0.
