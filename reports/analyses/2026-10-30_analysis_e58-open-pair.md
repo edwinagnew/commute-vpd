@@ -720,8 +720,8 @@ It was expected to read 0.40 to 0.55 per seed, first over the gate at step 14 to
 **What it read.** Mostly the key-conditional guess, partly the token kind. The three seeds read r 0.475, 0.485 and
 0.471 at step 30, mean 0.477, every one under 0.5. Every seed first cleared the gate at step 15, with r 0.36 to 0.39
 there, beside the cipher's 0.32 to 0.33. The stand-in ratio at step 30 was 0.64 to 0.66. Each seed's trained-key gain
-was 16.4 to 17.5 at step 30, beside the cipher's 16 to 18. The figure of Amendment 4 shows seed 0; the other two sit
-within 0.01 of it.
+was 16.4 to 17.5 at step 30, beside the cipher's 16 to 18. The figure of Amendment 4 shows seed 0. At step 30 the other
+two sit within 0.01 of it; at the gate step seed 2 reads 0.360 against seed 0's 0.388.
 
 | shuffled map | gate step, r | step 30: r | ratio | $G_\text{spec}$ | carry $x$ |
 |---|---|---|---|---|---|
@@ -737,27 +737,24 @@ new circuit built from old subcomponents would read as old.
 ## What we learned
 
 For `GOALS.md`'s question, new capabilities or strengthening, the decomposition answers a narrower question than
-behaviour does. On this map, r and the stand-in ratio report that the gain runs through subcomponents W₀ already had,
-three seeds each, with the same values as when every key was trained. Behaviour reports that no rule generalises to
-unseen keys. Both can be true at once on a lookup over words the model already says. Amendment 1 confirms the lookup.
-It also removes the label's standing: its positive control failed, so no held-out behavioural label is yet earned on the
-67M, and r and the stand-in ratio have nothing behavioural to be scored against. They do stay level across three
-maps whose held-out carry runs from none to half, so they do not measure carry. Ask #14 stays open.
+behaviour does. At 24 trained keys, r and the stand-in ratio report that the elicit map's gain runs through
+subcomponents W₀ already had, on three seeds, while behaviour reports that nothing carries to unseen keys. Both can be
+true at once on a lookup over words the model already says, and Amendment 1 confirms the lookup. At 24 keys the held-out
+label's positive control failed.
 
-Amendments 2 and 3 gave carry room to move. With four times the keys every map carried further: the half-known map from
-none to a fifth, then a tenth, of its trained gain, and the copy map past the label's bar. So the held-out label now has
-a positive control, on one seed. r and the stand-in ratio stayed within their filed tolerances on all three maps, but the
-no-rule cipher's r rose with the key count, so the filed test of whether they follow carry reads "untested". What stands
-is the level picture: across maps whose carry runs from a fifth to four fifths, r sits at 0.78 to 0.89. Under the
-granularity limit, that says the gains run through subcomponents W₀ already has, which a new circuit of old
-subcomponents would also show.
+Amendments 2 and 3 gave carry room to move. With 96 trained keys every map carried further, and the copy map cleared the
+label's bar; Amendment 4 showed it on all three seeds, so the label has a positive control at 96 keys. The filed test of
+whether r follows carry across key counts reads "untested", because the no-rule cipher's r itself rose by 0.14 with the
+key count.
 
-Amendment 4 tested that level picture over three seeds, and it does not hold as filed. r differs between the three maps
-by more than twice its seed noise, at both read steps, though not by Fable's 0.15. At the first read the map with the
-highest r, rank-1, is not the one that carries most, so r does not rank these maps by carry. The shuffled map, with the
-elicit map's words but no link to the model's guess per key, reads r 0.47, under the filed cut and nearer the cipher
-than elicit. For `GOALS.md`, what r reads differs between these maps, but not as how far what each learned carries; under
-the granularity limit a new circuit of old subcomponents reads the same way.
+Amendment 4 replaced the one-seed level picture, and Amendment 5 added two shuffle seeds. Over three seeds r differs
+between the three own-guess maps by more than twice its seed noise at both read steps, so r is not level across them.
+Its order is not carry order: rank-1 has the highest r and carries about a fifth, while copy carries over four fifths at
+lower r. All three stay far above the cipher. The shuffled map, elicit's words with no link to the model's guess per key,
+reads r 0.477 over three seeds, under the cut but only 0.015 to 0.03 below it. So r agrees with whether the target is
+W₀'s own guess for that key, which W₀'s prior already gives; whether r reads more than that prior is untested. No map
+here has a target W₀ does not guess that still carries to unseen keys. Under the granularity limit a new circuit of old
+subcomponents reads the same way. Ask #14 stays open.
 
 ## How compelling is the evidence
 

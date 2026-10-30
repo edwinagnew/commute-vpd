@@ -123,26 +123,26 @@ def main() -> None:
         (axes[0], "r", "r: share of the update's gain\non W0's own subcomponents"),
         (axes[1], "ratio", "stand-in ratio (no ceiling at 1)"),
     ):
+        source = "E56, 5 seeds" if q == "r" else "E54, 2 seeds"
         for m, (lo, hi) in bd[q].items():
             ax.axhspan(lo, hi, color=COLOR[m], alpha=0.12, lw=0, zorder=0)
             ax.text(
                 0.93,
                 hi + 0.008,
-                f"E54/E56 {m}, all 32 keys trained (no x)",
+                f"{source}: {m}, all 32 keys trained (no x)",
                 fontsize=6.5,
                 color=INK,
                 ha="right",
             )
-        if q == "r":
-            ax.axhline(0.5, color=INK, lw=1.0, ls=":")
-            ax.text(
-                0.93,
-                0.505,
-                "0.5: the reading's cut",
-                fontsize=6.5,
-                color=INK,
-                ha="right",
-            )
+        ax.axhline(0.5, color=INK, lw=1.0, ls=":")
+        ax.text(
+            0.93,
+            0.505,
+            "0.5: the reading's cut",
+            fontsize=6.5,
+            color=INK,
+            ha="right",
+        )
         for m, keys, stage, reads in gs:
             xs, ys = [d["x"] for d in reads], [d[q] for d in reads]
             mx, my = sum(xs) / 3, sum(ys) / 3
@@ -170,7 +170,12 @@ def main() -> None:
     for m in ("elicit", "rank1", "copy", "cipher", "shuffle"):
         axes[1].scatter([], [], s=40, color=COLOR[m], label=NAME[m])
     axes[1].scatter(
-        [], [], s=40, marker="^", color="white", edgecolors=INK, label="24 trained keys"
+        [],
+        [],
+        s=40,
+        marker="^",
+        color=INK,
+        label="24 trained keys, step 10 (cipher: step 8-9)",
     )
     axes[1].scatter(
         [],
@@ -178,7 +183,7 @@ def main() -> None:
         s=40,
         marker="o",
         color=INK,
-        label="96 trained keys, first read (filled)",
+        label="96 trained keys, first read (filled):\nstep 10; cipher, shuffle: step 15-16",
     )
     axes[1].scatter(
         [],
