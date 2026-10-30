@@ -19,8 +19,8 @@ whether what was learned generalises.
 ## The answer
 
 With 24 trained keys the half-known map did not carry to unseen keys, yet the decomposition read its gain as old
-subcomponents switched on. With 96 trained keys every map carried further. The copy map now clears the held-out bar,
-and the half-known map carries a fifth, then a tenth, of the way. The decomposition's readings stayed level as carry
+subcomponents switched on. With 96 trained keys every map carried further. The copy map now clears the held-out bar on
+one seed, and the half-known map carries a fifth, then a tenth, of the way. The decomposition's readings stayed level as carry
 rose, but its reading of the no-rule control rose too, so the filed test reads untested. A new circuit of old pieces
 would read as old pieces too.
 
@@ -506,8 +506,8 @@ seed only; the 24-key seed range of the elicit $x$ was 0.012.
 **Is the carry tied to each key's own value?** The three checks do not settle it.
 
 - **Check 3 is unreadable as filed.** The shuffled map's trained-key gain at step 10 was 2.10, under the gate, so its
-  label is "too_small" and its $x$ of −0.97 is not a readable number. What can be read: at the held-out keys the true
-  values fell by 2.0 log-odds against the other pool values. A rise of the whole pool would have raised them too.
+  label is "too_small". Unscored, at the held-out keys the raw gain of the own value was +0.88 log-odds against +2.09
+  for the other held-out values. No reading is drawn from it.
 - **Check 4.** Elicit's update raised W₀'s top word at the unseen keys by 0.32 log-odds over the rank-1 map's other
   values. It lowered the key itself by 1.0 against the copy map's other values, outside the filed ±0.5.
 - **Check 5.** The rank correlation of each key's held-out gain with W₀'s probability of its value was 0.01, and with the
@@ -543,7 +543,7 @@ At step 30, the companion, reported and not scored:
 | elicit | 0.105 | +0.136 | 0.725 | −0.043 | 0.993 | not testable |
 | rank-1 | 0.204 | +0.096 | 0.847 | +0.004 | 1.168 | not testable |
 | copy | 0.808 | +0.327 | 0.771 | −0.070 | 1.046 | r moved against carry |
-| cipher | −0.103, label "new" | — | 0.304 | +0.073 | 0.430 | guard fires |
+| cipher | −0.103, label "new" | — | 0.304 | +0.073 | 0.430 | guard fires, scored on the step-10 matched cipher, drift 0.138; the step-30  +0.073 would also exceed 0.05 |
 
 Step 30 is where the elicit map's trained-key probability, 0.98, matches the 24-key states' 0.93 to 0.98. There its
 carry rise is 0.14, under the 0.15 needed to test it.
@@ -628,6 +628,9 @@ subcomponents would also show.
   trained keys as a no-rule control, carry within ±0.05 at about 70% and above 0.05 at about 5%. It carried 0.213, on 28
   of 32 held-out keys. Fable's reasoned cause is that the elicit values are W₀'s own key-specific second choices, a rule
   that 96 keys make learnable; Amendment 3's checks did not confirm or refute that.
+- **Amendment 2: three set-up expectations missed.** The rank-1 map had 10 held-out keys with a value of their own,
+  where the plan said probably 1 to 6. The elicit map's trained-key gain was 9.34, under the filed 10 to 19.
+  Its trained-key probability at step 10 was already 0.60, where the plan expected under 0.5 and a scored step of 30.
 - **Amendment 3: the drift guard fired.** Filed at about 10%, the cipher's r rose from 0.23 to 0.37 between 24 and 96
   keys. We do not know why.
 - **Amendment 3: check 3 could not be read.** Filed to read near 0 at about 80%, the shuffled elicit map's trained-key
@@ -661,8 +664,9 @@ subcomponents would also show.
 The plan's decision tree, verdict "none": the held-out label is not used against r or the stand-in ratio, and the user
 is told. The lead is consulting Fable on what follows; no next step is set here. Ask #14 to the user stays open.
 
-After Amendment 3 the verdict is "untested", and the next step is the lead's. Three items the data point to, each with
-what would change course:
+After Amendment 3 the verdict is "untested". The lead has filed Amendment 4, now running: seeds 1 and 2 at 128 keys
+with a filed rule within one key count, the shuffled map's r at step 30, and a cipher drift line (plan § "Amendment 4",
+commits `0ce43b1` and `e87d3a0`). Three items the data point to, each with what would change course:
 
 - **The drift guard at matched training.** Read the cipher's r at 24 and 96 keys at matched trained-key probability, not
   matched update size, by a $0 re-train of about 15 s; the cipher states were not saved. If the two agree within 0.05,
