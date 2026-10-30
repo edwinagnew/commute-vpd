@@ -3,10 +3,10 @@
 #   cd ~/commute-agents/<role>
 #   sbatch --job-name=commute-e55-c2-rehearse cluster/pcfg_c2.sbatch rehearse     # $0 rehearsal, one job (estimate in the plan)
 #   sbatch --job-name=commute-e55-c2 --dependency=singleton cluster/pcfg_c2.sbatch decompose   # after predictions_c2.json is filed
-# rehearse: experiments/pcfg_anchors/c2.py rehearse: the full config's shapes at 400 steps; run A stops at 200, is
-#   rebuilt from its file and resumes; run B is unbroken; then both readings on the zero update and two calibration
-#   states -> results/c2_rehearsal.json; files in results/large/c2_rehearsal/ (the GB-sized training files are deleted
-#   at the end, A_final.pt kept). No deadline: it is one pass; the job's 30-min limit is the stop.
+# rehearse: experiments/pcfg_anchors/c2.py rehearse (docstring): readings on an untrained decomposition first, then run A
+#   to step 200 and its save; the resume, run B and the alive count run in a fresh child process (c2.py
+#   rehearse-resume). results/c2_rehearsal.json after each part; GB-sized training files deleted when read. No
+#   deadline: the job's 30-min limit is the stop (job 47013: 0.45 s/step at this config's 14,592 subcomponents).
 # decompose: 22-min deadline, exit 3 = saved, not finished: resubmit the same command by hand (compute nodes have no
 #   sbatch); it resumes from results/large/c2/decomp_train.pt. Exit 2 while predictions_c2.json is a draft.
 #SBATCH --job-name=commute-e55-c2
@@ -15,7 +15,7 @@
 #SBATCH --qos=debug
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=40G
+#SBATCH --mem=24G
 #SBATCH --time=00:30:00
 #SBATCH --output=cluster/logs/%x-%j.out
 

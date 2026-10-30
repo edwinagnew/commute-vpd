@@ -128,6 +128,7 @@ def train_step(d: Decomp, batch: Tensor, step: int) -> dict[str, float]:
         if oc.grad_clip_norm is not None:
             nn.utils.clip_grad_norm_(params, oc.grad_clip_norm)
         opt.step()
+        opt.zero_grad(set_to_none=True)  # the next step recomputes them; holding them only raises the eval's peak
     rec = {f"loss/{c.classname}": float(v.detach()) for c, v in losses.items()}
     rec["loss/total"] = float(total.detach())
     rec["l0/total"] = float(sum(calc_ci_l_zero(v, cfg.ci_alive_threshold) for v in ci.lower_leaky.values()))
@@ -154,8 +155,10 @@ def evaluate(d: Decomp, eval_batches: Iterator[Tensor], step: int) -> dict[str, 
 
 
 def _ppgd_state(s: Any) -> dict[str, Any]:
-    """A PersistentPGDState's sources and its optimizer's attributes (Adam: lr, betas, eps, step count, m, v)."""
-    return {"sources": {k: v.detach().clone() for k, v in s.sources.items()}, "opt": dict(vars(s.optimizer))}
+    """A PersistentPGDState's sources (copied to CPU: a GPU clone added ~2.4 GB at 38K subcomponents, and job 47013
+    then ran out of memory in the eval after the save) and its optimizer's attributes (Adam: lr, betas, eps, step
+    count, m, v; torch.save writes those GPU tensors without a resident copy)."""
+    return {"sources": {k: v.detach().cpu() for k, v in s.sources.items()}, "opt": dict(vars(s.optimizer))}
 
 
 def _load_ppgd(s: Any, saved: dict[str, Any]) -> None:
@@ -279,7 +282,8 @@ def run(d: Decomp, batches: Callable[[int], Tensor], ckpt: Path, plan: Plan, eva
         if step % plan.save_every == 0 or step == plan.end or late:
             t = time.perf_counter()
             save(ckpt, d, step)
-            log(f"decompose: saved step {step} ({ckpt.stat().st_size / 1e9:.2f} GB) in {time.perf_counter() - t:.1f} s")
+            alloc = torch.cuda.memory_allocated() / 2**30 if torch.cuda.is_available() else 0.0
+            log(f"decompose: saved step {step} ({ckpt.stat().st_size / 1e9:.2f} GB) in {time.perf_counter() - t:.1f} s; {alloc:.1f} GiB allocated")
             t_win = time.perf_counter()
         if late:
             log(f"decompose: deadline at step {step}")

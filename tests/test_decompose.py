@@ -1,5 +1,5 @@
 """E55 C2's decomposition plumbing on CPU (plan reports/plans/2026-10-31_plan_e55-c2-vpd.md): the config copies the
-pinned SS-2L recipe except its marked overrides, C follows the stated per-rank rule, a run stopped, rebuilt from its
+pinned SS-2L recipe except its marked overrides, C follows the released 67M decomposition's per-rank rule, a run stopped, rebuilt from its
 file and resumed equals the unbroken run exactly (fp32, CPU, the recipe's loss stack incl. persistent PGD), and
 pcfg_vpd's pure pieces (windows, cell averaging, the r and ratio rules) on their edge cases. A toy target only."""
 
@@ -20,6 +20,7 @@ from commute import pcfg, pcfg_vpd
 REPO = Path(__file__).resolve().parents[1]
 CONFIG = REPO / "experiments" / "pcfg_anchors" / "c2_config.yaml"
 SS2L = REPO.parent.parent / "param-decomp" / "param_decomp" / "experiments" / "lm" / "ss_llama_simple_mlp-2L.yaml"
+REL67 = REPO / "artifacts" / "vpd" / "s-55ea3f9b" / "final_config.yaml"
 OVERRIDES = {"wandb_project", "module_info", "eval_metric_configs", "output_extract", "pretrained_model_class",
              "pretrained_model_name", "tokenizer_name", "task_config"}  # fmt: skip
 
@@ -33,16 +34,15 @@ def test_config_copies_ss2l_except_overrides() -> None:
         assert ours[k] == ref[k], k
 
 
-def test_c_rule_from_ss2l() -> None:
-    if not SS2L.exists():
-        pytest.skip(f"no param-decomp clone at {SS2L}")
-    ref = {m["module_pattern"].split(".")[-1]: m["C"] for m in yaml.safe_load(SS2L.read_text())["module_info"]}
-    rank_ref = {"c_fc": 128, "down_proj": 128, "q_proj": 128, "k_proj": 64, "v_proj": 64, "o_proj": 128}
-    per = {k: ref[k] / rank_ref[k] for k in ref}
+def test_c_rule_from_the_67m() -> None:
+    if not REL67.exists():
+        pytest.skip(f"no released decomposition config at {REL67}")
+    ref = {m["module_pattern"].split(".")[-1]: m["C"] for m in yaml.safe_load(REL67.read_text())["module_info"]}
+    per = {k: c / 768 for k, c in ref.items()}  # every matrix of the 67M (n_embd 768, 6 heads of 128) has rank 768
     want = {"blocks.*.mlp.0": per["c_fc"] * 192, "blocks.*.mlp.2": per["down_proj"] * 192,
             "blocks.*.attn.qkv": (per["q_proj"] + per["k_proj"] + per["v_proj"]) * 192, "blocks.*.attn.proj": per["o_proj"] * 192}  # fmt: skip
     got = {m["module_pattern"]: m["C"] for m in yaml.safe_load(CONFIG.read_text())["module_info"]}
-    assert got == want == {"blocks.*.mlp.0": 1728, "blocks.*.mlp.2": 1440, "blocks.*.attn.qkv": 2448, "blocks.*.attn.proj": 720}
+    assert got == want == {"blocks.*.mlp.0": 768, "blocks.*.mlp.2": 896, "blocks.*.attn.qkv": 512, "blocks.*.attn.proj": 256}
 
 
 def test_config_validates_and_matches_the_minGPT() -> None:
@@ -53,7 +53,7 @@ def test_config_validates_and_matches_the_minGPT() -> None:
     cfg = D.load_config(CONFIG, steps=400)
     assert cfg.steps == 400 and cfg.batch_size == 64
     paths = expand_module_patterns(GPT(GPTConfig(vocab=pcfg.VOCAB, block=pcfg.SEQ - 1)), cfg.all_module_info)
-    assert len(paths) == 24 and sum(p.C for p in paths) == 6 * (1728 + 1440 + 2448 + 720)
+    assert len(paths) == 24 and sum(p.C for p in paths) == 6 * (768 + 896 + 512 + 256)
 
 
 # ----------------------------------------------------------------------------- resume == unbroken

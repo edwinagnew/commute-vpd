@@ -4,7 +4,7 @@
   "plan": "reports/plans/2026-10-31_plan_e55-c2-vpd.md",
   "code": "experiments/pcfg_anchors/c2.py (stages rehearse, decompose; read and score to be written after the rehearsal), src/commute/decompose.py, src/commute/pcfg_vpd.py, src/commute/revival.py (cutoff, label_by_cutoff, score, ceiling), experiments/pcfg_anchors/c2_config.yaml",
   "constants": {
-    "config": "experiments/pcfg_anchors/c2_config.yaml (param-decomp 74146b5 ss_llama_simple_mlp-2L.yaml; C per rank; 38,016 subcomponents over 24 matrices)",
+    "config": "experiments/pcfg_anchors/c2_config.yaml (param-decomp 74146b5 ss_llama_simple_mlp-2L.yaml; C from the released 67M decomposition per unit rank; 14,592 subcomponents over 24 matrices)",
     "decomposition_data": "LOW's pretraining rows, pcfg.pretrain_batch(prior LOW), streams default_rng([200, chunk]) (train) and [201, chunk] (eval), inputs = the first 258 tokens",
     "steps": 400000,
     "alive_rows": 8192,

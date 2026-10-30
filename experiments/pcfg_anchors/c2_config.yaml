@@ -26,22 +26,21 @@ ci_config:
       rope_base: 10000.0
 sampling: continuous
 sigmoid_type: leaky_hard
-# OVERRIDE: the minGPT's 24 matrices (4 per block). C per matrix = the SS-2L file's C for the matching matrix divided by
-# that matrix's rank there, times the rank here (192 for every matrix):
-#   mlp.0  (192 -> 768) <- c_fc (128 -> 512): 1152 / 128 = 9.0   -> 1728
-#   mlp.2  (768 -> 192) <- down_proj (512 -> 128): 960 / 128 = 7.5 -> 1440
-#   attn.qkv (192 -> 576, fused q, k, v) <- q_proj 288 / 128 = 2.25, k_proj 288 / 64 = 4.5, v_proj 384 / 64 = 6.0
-#                                          (k and v are 64 wide there: 2 key-value heads of 32) -> 432 + 864 + 1152 = 2448
-#   attn.proj (192 -> 192) <- o_proj (128 -> 128): 480 / 128 = 3.75 -> 720
+# OVERRIDE: the minGPT's 24 matrices (4 per block). C per matrix = the released 67M decomposition's C per unit rank
+# (artifacts/vpd/s-55ea3f9b/final_config.yaml; every 67M matrix has rank 768) times the rank here (192), 14,592 in all:
+#   mlp.0 <- c_fc 3072 / 768 = 4 -> 768; mlp.2 <- down_proj 3584 / 768 -> 896;
+#   attn.qkv (fused) <- q_proj 512 + k_proj 512 + v_proj 1024, / 768 -> 512; attn.proj <- o_proj 1024 / 768 -> 256.
+# Lead's decision 2026-10-31 after rehearsal job 47013: SS-2L's own per-rank C (38,016 here) held 46.3 of an L40's
+# 47.3 GiB at 1.19 s/step and ran out of memory; this C held 18.6 GiB at 0.45 s/step.
 module_info:
 - module_pattern: blocks.*.mlp.0
-  C: 1728
+  C: 768
 - module_pattern: blocks.*.mlp.2
-  C: 1440
+  C: 896
 - module_pattern: blocks.*.attn.qkv
-  C: 2448
+  C: 512
 - module_pattern: blocks.*.attn.proj
-  C: 720
+  C: 256
 identity_module_info: null
 use_delta_component: true
 loss_metric_configs:
