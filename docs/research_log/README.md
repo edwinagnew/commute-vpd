@@ -460,3 +460,5 @@ Figures already published (their sources, for a re-upload):
 - "fig/e44_log_reading_b.png": "experiments/qwen_maps/figures/log_reading_b.png"
 - "fig/e56_b2_curves.png": "experiments/keydependent_patch/figures/b2_curves.png"
 - "fig/e58_a7_r.png": "experiments/open_pair/figures/a7_r.png"
+- "fig/e55_c3_poles.png": "experiments/open_pair_instruments/figures/c3_poles.png"
+- "fig/e55_c3_positions.png": "experiments/open_pair_instruments/figures/c3_positions.png"
