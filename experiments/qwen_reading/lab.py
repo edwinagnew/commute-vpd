@@ -305,6 +305,20 @@ class Lab:
         self.check(f"sha256_{name}", got == want.get(key), {"file": str(p), "sha256": got, "want": want.get(key)})
         return load(p)
 
+    def record_dw(self, run: str, step: int) -> tuple[dict[str, Tensor], str]:
+        """Stage D's δW, E45's large/dW/<run>/step_<step>.safetensors: E45 saved no sums, so the first read appends
+        its sha256 to DW_SUMS (key <run>/step_<step>) and a resumed read checks it."""
+        p, key = E45 / "large" / "dW" / run / f"step_{step}.safetensors", f"{run}/step_{step}"
+        got = sha256(p)
+        want = {ln.split()[1]: ln.split()[0] for ln in DW_SUMS.read_text().splitlines() if ln}
+        if key in want:
+            self.check(f"sha256_{run}", got == want[key], {"file": str(p), "sha256": got, "want": want[key]})
+        else:
+            with DW_SUMS.open("a") as f:
+                f.write(f"{got}  {key}\n")
+            self.log(f"[sha256] {key} {got} recorded in {DW_SUMS.name}")
+        return load(p), got
+
     def dw_path(self, name: str) -> Path:
         st = STATES[name]
         return self.e40 / "dW" / "step_10.safetensors" if st.path == "e40" else EXP / st.path

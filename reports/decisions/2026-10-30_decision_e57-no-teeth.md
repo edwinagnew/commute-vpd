@@ -72,3 +72,9 @@ reads 0.21.
 
 What would change it: if the direct share's row bootstrap puts gold and the random changes inside one interval, close
 D3 now.
+
+**Added 18:55 from the E45 Amendment 2 analysis** (`reports/analyses/2026-10-30_analysis_e45-amendment2.md`). Anchor 2
+has no saved state between steps 12 and 100. So a lower size at which both anchors have learned is not ruled out; the
+saved data just cannot show it. A sixth option: rerun anchor 2 saving states between steps 12 and 100, and look for a
+learned state near anchor 1's 0.33. That costs $0 on the cluster, about 35 min per seed. If such a state exists, the
+anchor rows can be scored as filed, at that matched point.
