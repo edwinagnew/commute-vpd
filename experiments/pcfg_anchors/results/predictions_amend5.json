@@ -55,7 +55,7 @@
       "expected": "as W1 at 1K on natural text: B_a ~0.88-0.90, P_a ~0.72-0.76, B_b ~0, P_b ~0.07-0.10 (a2_W1.json, a2_W1s1.json); answered_shortcut ~ labelled_shortcut ~0.67.",
       "lean": "70% per seed. Main alternative: 'neither' or 'shortcut' (narrow labels allow a near-constant 14).",
       "aggregate_described": "n of 4 seeds 'reuses': >= 3 -> 'reuses'; <= 1 -> 'not reuses'; exactly 2 -> 'split' (no aggregate claim; edge_cases.E4).",
-      "void_if": "P5_ID_1K fails: WN's readings are reported but not interpreted (rule reads 'void')."
+      "void_if": "ID is not through at any save in either seed (P5 on_fail)."
     },
     "P2_WN_2K_each_seed": {
       "claim": "Each WN seed reads the same at 2K.",
@@ -92,8 +92,8 @@
       "threshold": "filed B_a, P_a bars, strict.",
       "relative_or_absolute": "absolute",
       "expected": "B_a > 0.5 and P_a > 0.48 at T a 40 if the fine-tune routes the prompt to the existing count; LOW starts at B_a ~0 (W0 control), so a pass is learnt, not inherited.",
-      "lean": "85% (plan); the code writer would put it lower, ~60-70%, since 1K steps at lr 1e-5 (in warm-up) must now re-route a family token, not only keep an answer.",
-      "on_fail": "the checks or the recipe cannot show reuse under a new prompt: every WN and WNf rule reads 'void' (raw numbers reported)."
+      "lean": "65% at 1K (lead, before the run: re-routing a pretrained family token in 1K warm-up steps at lr 1e-5 is harder than keeping an answer).",
+      "on_fail": "P5 is scored at 1K as filed. The WN and WNf rules read void only if ID is not through at any save (500, 1K, 2K) in either seed: an ID that learns the route by 2K still shows the checks can read a fine-tune that reuses count a."
     },
     "D1_off_label_described": {
       "claim": "On Amendment 4's off-label swap-built rows WN answers like LOW, since it never saw swapped text.",
@@ -114,7 +114,7 @@
     "E4_seeds_split_2_2": "P1 and P2 are scored per seed, so a 2-2 split is two hits and two misses; the described aggregate reads 'split' and no majority claim is made. Stage C then counts the 'reuses' states individually.",
     "E5_shortcut_that_passes_count_a": "A constant answerer never passes count a: its output never changes under a patch, so P_a = 0 < lo, and its B_a on Stage A's qualifying texts is 0.275 (dry run), under hi 0.500. A state that is through on count a and answers 14 on >= 0.6 of training rows is reuses: a perfect reuser answers 14 on ~0.69 (the label share), so the shortcut test is applied only to states through on neither count.",
     "E6_prompt_collision": "T a 40 cannot occur in LOW's pretraining (assemble writes NULL into T's operand slot; 0 hits in 96,000 rows, described). The collision that matters is with meaning: if LOW already answers count a at the ID prompt (B_a > 0.05), id_prompt_not_count_a_at_W0 fails and the job stops before any arm trains.",
-    "E7_ID_fails": "P5 misses: WN and WNf rules read 'void'; their numbers are reported.",
+    "E7_ID_fails": "P5 misses at 1K: scored as a miss. WN and WNf rules read void only if ID is not through at any save in either seed; numbers reported either way.",
     "E8_ID_through_at_W0": "Excluded by the W0 control id_prompt_not_count_a_at_W0 (B_a <= 0.05 at T a 40). Its P_a at W0 is recorded; a pass of P5 is then a learnt route, not an inherited one.",
     "E9_both_through": "count a and count b both through: class both, not reuses. On qualifying texts count_a + 1 != count_b, so B_a and B_b count disjoint outputs and both above hi needs B_a + B_b > 0.4999 + 0.6345 > 1: unreachable, kept so the rule covers every case.",
     "E10_zero_denominator": "every share has a fixed denominator: 1,000 qualifying texts (B), 1,000 pairs (P), 4,000 training-distribution rows (shortcut); none can be empty after the model-free controls.",
@@ -138,5 +138,8 @@
     "5. Schedule (lead, recipe choice): Stage A's 10K-iteration schedule (20% warm-up, cosine) cut at 2K, so the 500, 1K and 2K states are in warm-up at lr x 0.25, 0.5, 1.0 of peak, matching W1's 1K state (x 0.5)."
   ],
   "dry_run": "2026-10-30, ~/commute-data/scratch/reuse-lead/e55-amend5/dry_run.py (model-free, cpu-run, 10 s): Re-run after Revision 1: all 14 model-free controls pass. ID prompt T a 40 (tokens 11, 3; an ID row starts $ T a 40 <, tokens 0 11 3 52 1): absent from LOW pretraining by construction and 0 hits in 96,000 rows (chunks 0-9 of run.pretrain LOW stream), described only; the stopping check is the model control id_prompt_not_count_a_at_W0. Rows: chunk 0 = 9,600 per arm stream; 4,000 fresh eval rows per task; Stage A qualifying texts 1,000; off-label rows 4,000. Pairs: Stage A a 1,000, b 1,000; off-label a 1,000, b 1,000. WN label histogram, 4,000 eval rows: 12:13, 13:923, 14:2754, 15:309, 16:1 (labelled 14 = 0.6885); chunk 0 of WN seed 0: 12:22, 13:2265, 14:6617, 15:696. ID labels (count a, natural): 10-16, mode 13 (0.343), 14 = 0.310. A constant-14 answerer on Stage A's qualifying texts: B_a 0.275 (between lo 0.100 and hi 0.500: count a neither), B_b 0.212 and P = 0 (count b not through); class shortcut.",
-  "not_run_here": "Stage B (bounded g on the cipher, copy and lowercase arms); Stage C instruments; probes; VPD."
+  "not_run_here": "Stage B (bounded g on the cipher, copy and lowercase arms); Stage C instruments; probes; VPD.",
+  "amendments": [
+    "2026-10-30, lead, before any run: P5 lean 85% -> 65%; the void coupling of WN/WNf on ID widened from ID at 1K seed 0 to ID through at any save in either seed."
+  ]
 }
