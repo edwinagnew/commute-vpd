@@ -197,7 +197,7 @@ def anchor2_holds(em: float | None, known: float | None, known_w0: float | None,
 def match(pool: dict[int, float], target: float, tol_ratio: float) -> dict[str, Any]:
     """The pool state (step -> KL on the maths rows) nearest `target` in log KL, a tie to the later step; KL that is
     missing, non-finite or not positive is never chosen. Matched if r9(|log(KL / target)|) <= r9(log(tol_ratio))."""
-    best = min(((distance(x, target), -t) for t, x in pool.items() if distance(x, target) < math.inf), default=None)
+    best = min(((r9(distance(x, target)), -t) for t, x in pool.items() if distance(x, target) < math.inf), default=None)
     if best is None:
         return {"step": None, "kl": None, "log_dist": None, "matched": False}
     d, t = best[0], -best[1]

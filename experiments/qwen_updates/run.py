@@ -156,6 +156,9 @@ def format_rates(job: Job, P: dict[str, Any]) -> None:
 
 def stage_P(job: Job) -> None:
     R, P = json.loads(PRED.read_text())["rules"]["prompt"], job.get("P") or {"runs": {}}
+    if P.get("stopped") == "P: a prompt qualifies" and "before_amend2" not in P:  # the filed rule's stop, kept dated
+        P["before_amend2"] = {"date": "2026-10-29", "stopped": P.pop("stopped"),
+                              "check": P.get("checks", {}).pop("P: a prompt qualifies", None)}
     if "shots" not in P:
         items = [job.sets["train"][i] for i in job.shot_pool]
         recs = greedy(job, job.gen(), [prompt(job.tok, it["question"]) for it in items], items)
@@ -384,7 +387,8 @@ def stage_E(job: Job, arm: str, seed: int) -> None:
         job.put(f"E_{run}", out)
         job.timed(t0)
         job.log(f"[E {run}] state {t}: {json.dumps(st)} ({time.time() - t0:.0f} s)")
-    cross = T["crossings"] + ([{**c, "axis": "own"} for c in T["crossings"]] if own is None else [])
+    copy = [{**c, "axis": "own"} for c in T["crossings"] if c["grid"] in CFG.grid]  # the target stays maths-only
+    cross = T["crossings"] + (copy if own is None else [])
     out["chosen"] = choose(cross, {int(s): v["kl"] for s, v in out["states"].items()})
     job.put(f"E_{run}", out)
     for t in sorted({c["step"] for c in out["chosen"]} | last):

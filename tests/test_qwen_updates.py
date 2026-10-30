@@ -269,7 +269,8 @@ def test_amend2_match_edges():
     assert match({}, TARGET, TOL) == {"step": None, "kl": None, "log_dist": None, "matched": False}
     assert match({3: 0.0, 4: math.nan, 5: math.inf}, TARGET, TOL)["step"] is None  # never chosen
     assert match({3: 0.0, 7: lo}, TARGET, TOL)["step"] == 7
-    assert match({7: lo, 9: hi}, TARGET, TOL)["step"] == 9  # a tie in log distance: the later step
+    assert match({7: TARGET / 2, 9: TARGET * 2}, TARGET, TOL)["step"] == 9  # a tie in log distance (exact): later step
+    assert match({7: lo, 9: hi}, TARGET, TOL)["step"] == 9  # a tie after rounding to 9 places: the later step
     assert match({7: lo}, TARGET, TOL)["matched"] and match({9: hi}, TARGET, TOL)["matched"]  # band edges inclusive
     assert not match({7: lo * 0.999}, TARGET, TOL)["matched"] and not match({9: hi * 1.001}, TARGET, TOL)["matched"]
     assert not match({5: 0.1, 100: 0.3}, TARGET, TOL)["matched"]  # never reaches 0.412: unmatched, nearest reported
