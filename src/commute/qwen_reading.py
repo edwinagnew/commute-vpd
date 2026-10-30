@@ -223,6 +223,120 @@ def validated(a1: Sequence[float | None], a2: Sequence[float | None], se: float 
             "direction": None if not v else "as filed" if gap > 0 else "reversed"}
 
 
+def at_least(x: float | None, thr: float) -> str:
+    """A per-seed absolute rule: 'unscored' (None), 'misses' (NaN or infinity, E45 `general`), 'holds' (x >= thr)."""
+    if x is None:
+        return "unscored"
+    return "holds" if ok(x) and r9(x) >= r9(thr) else "misses"
+
+
+def anchor_row(name: str, a1: Sequence[float | None], a2: Sequence[float | None], se: float | None = 0.0,
+               a1_min: float | None = None) -> dict[str, Any]:
+    """One filed anchor row on per-seed values (None: that seed unscored; NaN: missing, a miss). The validation
+    (`validated`; se 0 for E45's rows, whose noise floor is in each share's status); the relative prediction (anchor 1
+    above anchor 2): 'holds' validated as filed, 'misses' validated reversed (announced), else 'not validated'; and,
+    when filed, anchor 1's absolute threshold per seed."""
+    v = validated(a1, a2, se)
+    rel = {"as filed": "holds", "reversed": "misses"}.get(v.get("direction") or "", "not validated")
+    out = {"anchor1": list(a1), "anchor2": list(a2), "se": se, **v, "relative": rel}
+    if a1_min is not None:
+        out["anchor1_per_seed"] = [at_least(x, a1_min) for x in a1]
+    if rel == "misses":
+        out["announce"] = (f"REVERSAL: {name} is validated in the direction opposite to the filed one (anchor 2 "
+                           f"above anchor 1 by {-v['gap']:.4g}, bar {v['bar']:.4g})")
+    return out
+
+
+def t_read(x: float | None, m1: float, m2: float) -> dict[str, Any]:
+    """E45's reading rule: t = (x - anchor 1 mean) / (anchor 2 mean - anchor 1 mean); t < -0.5 or t > 1.5 'like
+    neither', t <= 0.25 'like anchor 1', t >= 0.75 'like anchor 2', otherwise 'between' ('missing' when not finite)."""
+    t = div(NAN if x is None else x - m1, m2 - m1)
+    if not ok(t):
+        return {"t": t, "reads": "missing"}
+    r = r9(t)
+    reads = ("like neither" if r < -0.5 or r > 1.5 else "like anchor 1" if r <= 0.25
+             else "like anchor 2" if r >= 0.75 else "between")
+    return {"t": t, "reads": reads}
+
+
+def kept(means: dict[str, float]) -> dict[str, Any]:
+    """Behaviour kept from the cells' means per position: reading A (K00 - K11) / (K00 - K0), filed in E45 and scored;
+    reading B (K00 - K10) / (K00 - K0), unfiled, beside it. 'scored' when every cell is finite and K00 - K0 is at
+    least the floor (E45: the floor in the denominator); 'nan' when a cell is missing or not finite."""
+    K00, K10, K11, K0 = (float(means.get(n, NAN)) for n in ("K00", "K10", "K11", "K0"))
+    out = {"A": div(K00 - K11, K00 - K0), "B": div(K00 - K10, K00 - K0)}
+    if not all(ok(x) for x in (K00, K10, K11, K0)):
+        return out | {"status": "nan"}
+    return out | {"status": "scored" if r9(K00 - K0) >= r9(FLOOR) else "unscored"}
+
+
+def d_pick(run: str, point: dict[str, Any] | None) -> dict[str, Any]:
+    """The state Stage D reads for an E45 Amendment 2 run, from score.json amend2_decisive.<run>: the matched read
+    state; else, for own samples and the null, the nearest state (the nearest learned one, or the nearest unlearned
+    one if none is learned) as an unmatched observation (E45 Amendment 2 `learned`); an anchor-1 seed not matched is
+    not read (plan section 11). step None: nothing read."""
+    if point is None:
+        return {"step": None, "matched": False, "why": "E45 has not scored this run (E not done)"}
+    r, u = point["read"], point["nearest_unlearned"]
+    if r["matched"]:
+        return {"step": r["step"], "kl": r["kl"], "matched": True, "why": "matched"}
+    if run.startswith("a1_"):
+        return {"step": None, "matched": False, "why": "anchor 1 not learned or not matched (plan section 11)"}
+    near = r if r["step"] is not None else u
+    return {"step": near["step"], "kl": near["kl"], "matched": False, "why": "unmatched observation"}
+
+
+def edges(readings: dict[str, dict[str, Any]], anchors: Sequence[Sequence[str]], floor: int, prompt_size: int,
+          ref_sizes: dict[str, int], dropped: int | None) -> list[dict[str, Any]]:
+    """The plan's section 5 edge-case table with where each case fired. readings[state] = {"size_S": int, "ov": {X:
+    `overlap` record}, "values": {row: value; None unscored, NaN missing}}; anchors = (anchor 1's runs, anchor 2's)."""
+    runs = [*anchors[0], *anchors[1]]
+
+    def o(n: str, X: str) -> dict[str, Any]:
+        return (readings.get(n, {}).get("ov") or {}).get(X) or {"o": NAN, "q95": NAN, "q99": NAN}
+
+    rows = [
+        ("|S| < max(20, 5 x split-half count)",
+         [n for n, r in readings.items() if r.get("size_S") is not None and r["size_S"] < floor]),
+        ("|T|, |L| or |C| < 20", [k for k in "TLC" if ref_sizes.get(k, 0) < 20]),
+        ("|S_prompt| below max(20, 5 x split-half count)", prompt_size < floor),
+        ("draw sd of 0", [f"{n}:{X}" for n, r in readings.items() for X, v in (r.get("ov") or {}).items()
+                          if not v["sd"] > 0]),
+        ("o_P between q(0.95) and q(0.99)", [n for n in runs if o(n, "P")["q95"] < o(n, "P")["o"] <= o(n, "P")["q99"]]),
+        ("o_T above q(0.95) for anchor 2", [n for n in anchors[1] if o(n, "T")["o"] > o(n, "T")["q95"]]),
+        ("an anchor seed unscored", [n for n in runs if n not in readings
+                                     or any(v is None for v in readings[n]["values"].values())]),
+        ("a think row whose trace does not close </think> in 2048 tokens (rows dropped)", dropped),
+        ("NaN or missing", [f"{n}:{k}" for n, r in readings.items() for k, v in r["values"].items()
+                            if v is not None and not ok(v)]),
+    ]
+    return [{"case": c, "fired": f} for c, f in rows]
+
+
+def sd(xs: Sequence[float]) -> float:
+    """The population sd of the finite values (NaN for fewer than two)."""
+    v = [x for x in xs if ok(x)]
+    return float(np.std(v)) if len(v) > 1 else NAN
+
+
+def overlap_gap_boot(g1_rows: Sequence[Tensor], g0_rows: Tensor, X: Tensor, site_of: Tensor, n_sites: int,
+                     draws: list[list[int]], row_len: int, n: int = 1000) -> list[float]:
+    """The prompt row's gap, mean e_X of the first two states minus the last two, over row resamples (one index list
+    per draw, shared by every state): per draw, g0 and each state's g1 are re-summed from the per-row active counts
+    ([rows, live], as `Counts.rows`), S = gated on under g1 and not under g0, the pool = not gated on under g0, and
+    e_X = `overlap`(S, X)'s e."""
+    assert len(g1_rows) == 4, "anchor 1 seeds 0, 1, then anchor 2 seeds 0, 1"
+    mats = [m.float() for m in (g0_rows, *g1_rows)]
+    out = []
+    for idx in draws:
+        w = torch.bincount(torch.tensor(idx), minlength=mats[0].shape[0]).float()
+        on = [gated((w @ m).round().long(), len(idx) * row_len) for m in mats]
+        pool = ~on[0]
+        e = [overlap(s & pool, X, site_of, n_sites, pool, n)["e"] for s in on[1:]]
+        out.append((e[0] + e[1]) / 2 - (e[2] + e[3]) / 2)
+    return out
+
+
 # ----------------------------------------------------------------------------- row 4, where δW lands
 
 
@@ -298,6 +412,17 @@ def own_rows(tok: Any, arm: str, seed: int, train: list[dict[str, Any]]) -> list
     else:
         assert arm == "a2", arm
         seqs = [ids(chat(tok, q.question)) + ids(q.answer) + [end] for q in qwen_facts.held_set(seed)]
+    return pack(seqs, 64, 512)
+
+
+def a1_rows(tok: Any, items: list[dict[str, Any]], test: list[dict[str, Any]]) -> list[list[int]]:
+    """Anchor 1's own rows as Job.own_rows builds them (both seeds): the prompted model's greedy answers to test
+    256-511 (E45 large/P/a1_rows.json items) under the unprompted chat, 64 packed rows of 512."""
+    from commute.qwen_eval import prompt
+    from commute.qwen_sft import pack
+
+    seqs = [tok(prompt(tok, test[r["idx"]]["question"]), add_special_tokens=False)["input_ids"] + r["ids"]
+            for r in items]
     return pack(seqs, 64, 512)
 
 # ----------------------------------------------------------------------------- Γ's gates, counted (GPU)

@@ -311,3 +311,28 @@ split pieces; a constructed positive control for the route split at scale.
 14. D's e_X bootstrap is not coded yet; `validated` takes the s.e. as an input.
 15. C0 and C: Γ is parked on the host during Σ and the split. Between states, the job exits 0 when the time left
     under the 3 h limit is less than the longest state so far (before one is measured: past 2 h). `--mem=128G`.
+
+### Code departures, Stage D and the scoring (2026-10-30, the D writer's record; `run.py --stage D|score`, `score.py`)
+16. D's states come from E45's `score.json` → `amend2_decisive.<run>` through `qwen_reading.d_pick`: a matched read
+    state is read. Own samples (`--own`, default `own2_s0`) and the null, when unmatched, are read at the nearest
+    learned state, else the nearest unlearned one, as unmatched observations (E45 Amendment 2 `learned`). An anchor-1
+    seed that is not matched is not read (§11). D refuses to start before C0 has finished; a C0 "no teeth" is logged.
+17. D's early stops are C's rules at the read step: the own-row KL against `E_<run>.json` `states.<step>.kl.own`
+    (own samples and the null: the 128 maths rows of 512, as E45 reads them; anchor 1: E45's `large/P/a1_rows.json`
+    rows, rebuilt by `qwen_reading.a1_rows`); the g0 counts against Stage A's (the check keeps C's name `C_g0_<run>`).
+    E45 saved no sums, so D's first read of a δW appends its sha256 to `results/dW_SHA256SUMS` (key
+    `<run>/step_<t>`) and a resumed read checks it. These are not added to `predictions.json` "early" (no refile).
+18. D's gate counts go to `large/C/<run>_g{0,1}` beside C's; `summary.json` reads every state found there.
+19. The scoring is `--stage score` (`score.py`, CPU), also run at D's end; `predictions.json` names "stage D".
+20. E45's three rows are validated by E45's own rule: the gap of anchor means strictly above the larger seed gap, the
+    noise floor sitting in each share's status (no bootstrap; s.e. 0). Anchor 1's absolute thresholds (≥ 0.5, ≥ 0.8)
+    are scored per seed; anchor 2's "below anchor 1" (and placement's "anchor 1 above") holds only when validated as
+    filed, misses when validated reversed (announced). Behaviour kept is scored when K00 − K0 ≥ 0.05 nats per
+    position (E45's floor in its denominator). Placement has no floor of its own: the seed gap alone.
+21. The prompt row's s.e. is the population sd of the gap of anchor means of e_P over 2000 resamples of the 128
+    maths rows, the same indices for the four anchor states and W0's g0 (S and the pool re-derived per resample from
+    the saved per-row counts, 1000 draws at seed 0 each time). It runs only when all four e_P are scored. With Stage
+    A's numbers (|S_prompt| 1860 against the floor 21110) the prompt row is unscored for every state.
+22. §11 read literally: with no anchor-1 seed matched, no anchor prediction is scored, think_overlap on anchor 2
+    included; every state's readings are still written.
+23. On a validated row, E45's t rule reads gold, own samples, the null and E40 (E40 on the maths rows).
