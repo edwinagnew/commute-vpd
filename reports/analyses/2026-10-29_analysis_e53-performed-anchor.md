@@ -6,25 +6,25 @@ and code-review record: `reports/plans/2026-10-29_plan_performed-anchor.md`. Fil
 `results/a0.json`, `results/finetune.json`, `results/read.json`. Figures: `experiments/performed_anchor/figures/` from
 `plot.py`. Notebook: `notebooks/E53_performed_anchor.ipynb`. Independently checked 2026-10-29: supported with
 corrections, applied here; the breadth section and the update-size section were added then. Amendment 1b, a cipher
-twice as broad, added at the end on 2026-10-30.*
+twice as broad, added at the end on 2026-10-30. Amendment 2, which settles kind against breadth from saved states,
+added after it on 2026-10-30; it changes the answer below.*
 
 ## In plain words
 
 We fine-tuned the small model on the same text to write in lowercase, which it already prefers, and to swap fifty common
-words, which it cannot. The stand-in ratio read lowercase far above the word swap on both seeds, while the relay number
-did not separate them. For `GOALS.md` this is one task pair the ratio separates, but lowercase is also the broader
-update, so kind and breadth stay confounded, even after a broader follow-up cipher.
+words, which it cannot. The stand-in ratio read lowercase far above the word swap on both seeds, and a second pair from
+another experiment, where the behaviour the model already has was the more targeted update, read the same way round.
+For `GOALS.md` this means the ratio's separation is not explained by how broad the update is, so it goes on as a
+candidate reading of kind, at the level of the decomposition's subcomponents.
 
 ## The answer
 
-On this one pair, the stand-in ratio separates lowercase from the word swap by a wide margin. Lowercase read about 0.92
-and the swap about 0.26 on both seeds, and the swap stayed low at the nearest saved gains, which bracket lowercase's.
-The scored rule passed. But lowercase is also the broader update. It touches about twice as many positions and buys far
-less gain per unit of change elsewhere. Every row orders the same way on that as on its task. So whether the ratio
-reads the kind of update or its breadth is open. A follow-up cipher of 500 words was twice as broad but still narrower
-than lowercase, so it could not settle this; provisionally, it read far below lowercase, at most about 0.07 above
-the first. The null meant to test kind
-against task failed. The relay did not separate the pair.
+The stand-in ratio separates lowercase from the word swap by a wide margin. Lowercase read about 0.92 and the swap
+about 0.26 on both seeds. Lowercase was also the broader update, so kind and breadth were confounded here. Amendment 2
+settled that with E54's pair, a half-known key table and a cipher on the same keys. There the half-known table was
+about twice as targeted, yet still read high and the cipher low. So the high-ratio member is the broader one in one
+pair and the narrower one in the other: breadth does not explain the separation. On E53's pair alone it stays
+confounded. The relay did not separate the pair, and the null meant to test kind against task failed.
 
 ## What was tested
 
@@ -611,3 +611,251 @@ out a breadth effect nearer lowercase's, or a task-family effect, since both low
 
 None. Every quantity here, the stand-in ratio, breadth and the gain floor, is defined in this project, not credited to
 an outside source. The decomposition is used as released, Goodfire's `param-decomp` at commit `74146b5`.
+
+# Amendment 2 (2026-10-30): kind or breadth, read from saved states
+
+*`run.py a2_read`, job 46174, run at commit `e4b7965`, results committed at `5c311dd`, written 2026-10-30. Plan:
+section "Amendment 2" of `reports/plans/2026-10-29_plan_performed-anchor.md`, step 1 of the adopted re-gating programme
+(`reports/plans/2026-10-30_plan_regating-development-FABLE-DRAFT.md`, option A). Filed rules:
+`results/predictions_amend2.json`, filed before the run, not edited since. Results: `results/read_amend2.json`. Figures:
+`figures/a2_{breadth,ratio_breadth}.png` from `plot_amend2.py`. Notebook: the Amendment 2 part of
+`notebooks/E53_performed_anchor.ipynb`. No fine-tune ran: every state was read as saved.*
+
+## In plain words
+
+We re-read saved fine-tunes to ask whether the stand-in ratio reads behaviours the model already has high only because
+those updates were the broader ones. In a second pair of tasks, from E54, the behaviour the model already had was the
+more targeted update, yet it still read high and its new partner low. For `GOALS.md` this means breadth does not explain
+the ratio's separation, so the ratio goes on to the programme's next step as a candidate reading of kind, at the level of
+the decomposition's subcomponents.
+
+## The answer
+
+Breadth does not explain the separation, by the filed reading. E54's pair is a key-to-word table the original model
+already half-knows and a cipher on the same keys. The half-known table was about twice as targeted as the cipher, yet its
+stand-in ratio read 0.95 against the cipher's 0.29 to 0.34. In E53's pair the high-ratio member, lowercase, was the
+broader one. So the high-ratio member is broader in one pair and narrower in the other. On E53's pair alone the question
+stays open: corrected, lowercase is still broader than the 500-word cipher.
+
+## What was tested
+
+E53 found the stand-in ratio reads lowercase, which the original model already does, at 0.92 and a 50-word cipher, which
+it cannot do, at 0.26. Lowercase was also the broader update. Amendment 1b's 500-word cipher was meant to be as broad as
+lowercase, but stayed narrower, and its review found that lowercase's breadth was biased toward broad. This amendment
+uses two saved results to settle the question without a new fine-tune.
+
+**Breadth.** The full model's gain $G$ at the scored positions, divided by the true off-target KL. That KL is the mean
+KL from the original model to the fine-tuned one, over window positions whose next token the task did not change. A
+high breadth number means a targeted update, a low one a broad update. It is one definition among several, and its
+values are comparable within a pair of tasks read on the same windows, not across pairs.
+
+**Part one: lowercase's breadth without the bias.** Amendment 1b left out of the off-target KL only positions predicting
+a scored token, a capital after a space. Lowercasing also changes capitals with no space before them, words the tokenizer
+splits differently once lowered, and padding. A position now counts as changed when the lowered row's token differs from
+the cased row's token at the same byte offset. In E53's 500 lowercase windows of 127 tokens, 13.4 positions per window
+predict such a token, beside 9.9 scored ones. For a token-for-token cipher the changed positions are exactly the scored
+ones, so the correction cannot move either cipher. The filed rule asked whether lowercase's lower seed now reaches the
+broad cipher's higher seed, both re-read in this run.
+
+**Part two: E54's pair on the breadth axis.** E54, run by the baseline line, built a pair that differs in kind on the
+same inputs. Each window is 41 tokens of Pile text with a rare marker token, then a key word; the model must predict the
+key's value next.
+
+- *The elicit map*, the performed member. Each key's value is a word the original model already ranks 2nd to 20th
+  there. So the original model does this task weakly: on the windows used to pick the values, each value had
+  probability 0.01 to 0.1.
+- *The cipher*, the new member. The same keys mapped to words the original model gives under 1e-4. Like E53's cipher,
+  the original model cannot do it.
+
+Both were fine-tuned by E12's recipe, which adds a KL penalty on other tokens, at seeds 0 and 1. The elicit map is read
+at step 10. The cipher is read at step 9, where its update size matches the elicit map's. Their full-model gains in
+log-odds also match: 10.8 for the elicit map, 10.9 to 11.1 for the cipher. This run reads each state's off-target KL on
+E54's 97 held-out windows, at every position except the one predicting the value.
+
+**The ratio.** As in E53: the least-squares split of each update, then the stand-in model, the subcomponents alone under
+Γ's masks. The stand-in ratio is the masked gain over the subcomponent gain. It is roughly the gate gain over the
+subcomponent gain, where the gate gain is what Γ's new mask values alone do to the original subcomponents. It is not the
+share Γ keeps, and it has no ceiling at 1. E54's four ratios, 0.956, 0.951, 0.336 and 0.289, were computed by the plan
+writer from E54's saved cells before this amendment was filed. They are an input, not a filed prediction of this
+amendment, and this run does not re-read them. E54's cells come from its route split, another implementation of the same
+cells as E53's code.
+
+**What the rules read.** The first rule passes if lowercase's corrected breadth reaches the broad cipher's on both
+seeds. The second takes the ratio of the elicit map's lower breadth to the cipher's higher one. At 1 or more it reads
+"reversed": the performed member is the more targeted. Between two-thirds and 1 it reads "matched", and below two-thirds
+"confounded", the order E53's pair has. Reversed or matched means breadth does not explain the separation, whatever the
+first rule says. Only confounded with the first rule missed would have sent the line to a ladder of broader ciphers.
+
+## What we expected, and why
+
+The plan estimated that the 13.4 extra positions carry about the KL at case positions, 0.81 to 0.85 nats. That would
+raise lowercase's breadth to about 5.4 to 6.0, still short of the broad cipher's 7.8. So the first rule was leaned to miss,
+at 0.7. Reaching 7.8 needed those positions to carry 1.3 to 1.6 nats each.
+
+E54's breadth was unmeasured. The plan leaned 0.35 on reversed, 0.35 on matched and 0.3 on confounded. Its reason for
+doubting "matched by construction": the elicit map strengthens word pairs that also occur in plain text, such as " life"
+then " span". That could move the model at unmarked occurrences too, making it the broader update.
+
+## The control
+
+Every stage-0 check passed, and each could have failed.
+
+- E53's lowercase and cipher seed-0 states, re-read by this code, reproduced their saved gain, ratio and off-target KL
+  exactly: lowercase 1.6708 and 0.9186, cipher 3.8690 and 0.2643.
+- E54's elicit and cipher seed-0 states reproduced E54's gains within 0.006: 10.796 against 10.791, and 11.100 against
+  11.102. The batch size differs from E54's, 32 against 64.
+- On both ciphers, E53's and the broad one, the corrected off-target KL equalled the old one bit for bit.
+- The new KL read on lowercase gave the same gain and old-count KL as the split read of the same state.
+- The changed mask held every scored lowercase position.
+
+The read took 67 seconds on an L40 in the cluster's `debug` queue, at $0.
+
+## Corrected, is lowercase as targeted as the broad cipher?
+
+![lowercase's breadth before and after the correction, against the broad cipher's at step 300, with 90% intervals and the filed bar](../../experiments/performed_anchor/figures/a2_breadth.png)
+
+**Reading it.** No, though the gap narrowed. Leaving out every changed position raised lowercase's breadth from 4.92 to
+6.57 on seed 0. On seed 1 it rose from 4.46 to 5.87. The broad cipher reads 7.81 and 7.74, so the filed rule missed, as
+leaned. Lowercase is now 1.2 to 1.3 times broader than the broad cipher, down from 1.6 to 1.8 times. The 90% intervals
+over windows only touch at their edges. Lowercase seed 0's upper end, 7.25, meets the broad cipher's lower ends of 7.16
+and 7.25. The changed positions carried 1.00 and 1.04 nats of KL each, above the plan's guess of about 0.8. So seed 0 landed above the
+expected band of 5.4 to 6.0, and seed 1 inside it. Within the Pile tasks, no new update as broad as lowercase has been
+read, so E53's own pair still confounds kind with breadth.
+
+| state, step 300 | G, nats | off-target KL, old count | off-target KL, corrected | KL per changed position | breadth, old | breadth, corrected | 90% interval |
+|---|---|---|---|---|---|---|---|
+| E53 lowercase, seed 0 | 1.671 | 0.3396 | 0.2543 | 1.000 | 4.92 | 6.57 | 5.90-7.25 |
+| E53 lowercase, seed 1 | 1.612 | 0.3617 | 0.2747 | 1.042 | 4.46 | 5.87 | 5.23-6.52 |
+| broad cipher, seed 0 | 3.315 | 0.4244 | 0.4244 | none | 7.81 | 7.81 | 7.25-8.40 |
+| broad cipher, seed 1 | 3.275 | 0.4231 | 0.4231 | none | 7.74 | 7.74 | 7.16-8.33 |
+| E53 cipher, seed 0 | 3.869 | 0.2528 | 0.2528 | none | 15.30 | 15.30 | 14.30-16.39 |
+
+## In E54's pair, is the performed member the broader one?
+
+![stand-in ratio against breadth for E53's pair, the broad cipher and E54's pair, each seed's two members joined; breadth compares within a pair only](../../experiments/performed_anchor/figures/a2_ratio_breadth.png)
+
+**Reading it.** No: in E54's pair the performed member is the more targeted, by about twice. The elicit map reads 49.0
+and 55.3 nats of gain per nat of off-target KL. The cipher reads 22.2 and 19.5. The filed ratio of the elicit map's
+lower seed to the cipher's higher seed is 2.21, well past 1, so the rule reads "reversed". The gains are matched, so the
+difference sits in the off-target KL. It is 0.20 to 0.22 nats for the elicit map, and 0.50 to 0.56 for the cipher. Yet the elicit map's stand-in ratio is 0.95 and the cipher's 0.29 to 0.34. In the figure the grey lines
+join each pair's two members. E53's line falls from the broad performed member to the targeted new one; E54's rises from
+the broad new member to the targeted performed one. The high-ratio member is the performed one both times, whichever
+side of its partner it sits on. So the filed reading is "breadth does not explain the separation".
+
+The two pairs' breadth numbers are not on one scale. E53's are read on 127-token Pile windows, E54's on 41-token windows
+around an inserted marker, after a recipe that penalises KL on other tokens. The figure's shared axis is for the shape
+of each pair, not for distances between pairs.
+
+| E54 state | update size | G, log-odds | off-target KL | breadth | 90% interval | stand-in ratio | gate gain over subcomponent gain |
+|---|---|---|---|---|---|---|---|
+| elicit map, seed 0, step 10 | 3.145 | 10.796 | 0.2201 | 49.0 | 45.4-53.0 | 0.956 | 0.926 |
+| elicit map, seed 1, step 10 | 3.173 | 10.823 | 0.1958 | 55.3 | 50.7-60.2 | 0.951 | 0.921 |
+| cipher, seed 0, step 9 | 3.185 | 11.100 | 0.5001 | 22.2 | 20.8-23.6 | 0.336 | 0.304 |
+| cipher, seed 1, step 9 | 3.204 | 10.881 | 0.5585 | 19.5 | 18.3-20.7 | 0.289 | 0.263 |
+
+The ratio and gate-gain columns come from E54's `stage2.json` cells, not from this run. Their subcomponent gains are
+matched too: 9.0 and 8.9 nats for the elicit map, 8.8 for the cipher. The two members also differ in where the original
+model starts: 6.3 nats of log-odds below the value for the elicit map, 13.7 for the cipher. That gap is the kind
+difference itself, as the original model's behaviour shows it.
+
+## What the reading rules out, and what it does not
+
+It rules out one explanation: that the ratio reads high because an update is broad. In E54's pair the broad member reads
+low and the targeted member high, at matched update size, gain and subcomponent gain. Breadth could still add to the
+ratio within a task family, but it cannot carry the separation in both pairs.
+
+It does not rule out the following.
+
+- *VPD's unit.* A high ratio means "uses pieces the original model has", never "uses a circuit it already runs". A new
+  circuit built from old pieces would also read as elicited.
+- *Task family.* Each family now has a performed and a new member, and both order the same way. That narrows the
+  family caveat but two families are not many.
+- *How weakly "performed" holds in E54.* The original model gives each value a small probability, ranked 2nd to 20th.
+  The cipher in each pair is new by a wide margin, so the pairs separate weak performance from none, not strong from
+  none.
+- *The ratio's provenance in E54.* It comes from E54's route split cells, read once, with no interval over windows. E53's
+  own code has not read E54's states.
+- *A cheaper method.* E54 found that one steering vector also separates its pair, by about a third as much as the
+  re-gating share. So the ratio's separation is not yet shown to be something only the decomposition sees.
+
+## What we learned
+
+The stand-in ratio's separation of performed from new behaviours is not a reading of breadth: in E54's pair the
+performed member was twice as targeted and still read 0.95 against 0.29 to 0.34. In E53's pair it was the broader member
+and read 0.92 against 0.26. Correcting lowercase's count raised its breadth by about a third but left it broader than
+the 500-word cipher, so within the Pile tasks alone the confound remains. For the adopted programme this closes step 1
+with "breadth does not explain". The ratio goes to step 2, a table of the ratio and the re-gating share on states labelled
+by E55's definition of reuse, which owes nothing to the decomposition.
+
+## How compelling is the evidence
+
+- *Pairs*: two task families, each with a performed and a new member, at two seeds each, on the 67M model and one
+  decomposition.
+- *Noise*: breadth intervals over windows are about ±10% on every row and never touch across members of a pair. The
+  seeds differ by 11% on lowercase, 1% on the broad cipher and 12 to 13% on E54's members. E54's breadth difference of
+  2.2 times is about ten times its seed spread.
+- *Controls*: every stage-0 check could fail and passed, most exactly.
+- *Blind to*: breadth is gain per mean off-target KL over one window format; it sees only next-token changes, not the
+  changed context after a changed token. E54's KL samples Pile text near an inserted marker, not the whole Pile.
+- *The ratio*: E54's comes from another implementation and has no interval; E53's intervals are ±0.03 to ±0.06.
+
+## Surprises
+
+- E54's pair was described in the programme as matched in breadth by construction. It is not: the elicit map is about
+  twice as targeted. Its filed lean, reversed, was one of three near-equal outcomes, so this is a finding rather than a
+  failed prediction.
+- The changed lowercase positions carried 1.0 nats of KL each, not the plan's 0.8. Seed 0's corrected breadth, 6.57, sat
+  just above its expected band; one line, no rule reads it.
+
+## What next
+
+1. **Programme step 2**: the stand-in ratio and the re-gating share on E55's labelled 67M states, in one table. If the
+   ratio disagrees with E55's labels on lowercase or copy, it is not a reading of reuse and its Qwen read stops.
+2. **E54's ratio through E53's code**, with an interval over windows, minutes on the cluster at $0. If it moves by more
+   than its interval over windows, about ±0.03 at 97 windows in E46, the E54 half of this reading needs revisiting.
+3. **Branch B, a broader Pile cipher**, is no longer called for by the filed tree. It matters only if a single task family
+   must carry the breadth argument on its own.
+
+## Scorecard
+
+| id | claim in words | rule | read | verdict |
+|---|---|---|---|---|
+| repro, E53 | this code reproduces E53's seed-0 rows | G 0.02, ratio 0.01, KL 1e-4 | 1.6708 / 0.9186 / 0.33963; 3.8690 / 0.2643 | pass, exact |
+| repro, E54 | this code reproduces E54's seed-0 gains | within 0.02 | 10.796 vs 10.791; 11.100 vs 11.102 | pass |
+| identity | the correction leaves token-map ciphers unchanged | bit for bit | E53 cipher, broad cipher | pass |
+| kl_read | the new KL read agrees with the split read on lowercase | G and KL within tolerance | exact | pass |
+| superset | the changed mask holds every scored position | assert | held | pass |
+| P1 | corrected lowercase as targeted as the broad cipher | min lowercase ≥ max broad cipher | 6.57, 5.87 vs 7.81, 7.74 | missed, as leaned at 0.7 |
+| P2 | E54's breadth order | x = min elicit / max cipher; ≥ 1 reversed, ≥ 2/3 matched | x = 2.21 | reversed, leaned 0.35 |
+| reading | breadth explains the separation or not | P2 reversed or matched gives "does not explain" | P2 reversed | breadth does not explain the separation |
+| expected band | lowercase's corrected breadth in 5.4-6.0 | reported | 6.57, 5.87 | seed 0 above, seed 1 inside |
+| E54 ratios | stand-in ratio of E54's four states | reported input, not filed | 0.956, 0.951, 0.336, 0.289 | performed high, new low |
+
+## Not run
+
+- Branch B, the ladder of broader Pile ciphers; the reading did not call for it.
+- E54's states through E53's split and stand-in code, and an interval over windows on E54's ratios.
+- E54's cipher at its own step 30, and E12's copy tables, on the breadth axis.
+- An off-target KL that also leaves out the changed context after a changed token.
+- A performed Pile task as targeted as the cipher, or a new Pile task as broad as lowercase.
+- The relay, hand write, zero-update, do-nothing and random-update rows, dropped by the plan.
+- A second decomposition seed, another model, Qwen.
+
+## Provenance
+
+- `a2_read`: job 46174, commit `e4b7965`, MATS cluster L40 `debug`, 14:30:50 to 14:31:57 on 2026-10-30, peak GPU 10.7
+  GB, host 6.2 GB, $0. Log `results/large/a2_read.{log,out}`. Results committed at `5c311dd`.
+- States read: E53's `results/large/dW_{lowercase,cipher}_s{0,1}_step300.pt` and
+  `dW_broad_cipher_s{0,1}_step300.pt`, sha256 checked against `finetune.json` and `finetune_amend1b.json`; E54's
+  `experiments/keydependent_elicit/results/large/{elicit,cipher}_s{0,1}.pt` and their windows, sha256 checked against
+  E54's `stage2.json` and `stage1.json`.
+- E54's stand-in ratios: `(L11 − L00) / (U1 − U0)` from `stage2.json` → `states` → `cells`, as reported in
+  `read_amend2.json` → `score` → `e54_ratio_reported`.
+- Figures: `experiments/performed_anchor/plot_amend2.py`, from `read_amend2.json` and, for the step-300 ratios and E53
+  cipher seed 1's breadth, `read_amend1b.json`.
+
+## Departures from the literature
+
+None. The stand-in ratio, breadth and the changed-position mask are this project's own definitions, not credited to an
+outside source. E54's elicit and cipher tables are E54's own construction. The decomposition is used as released,
+Goodfire's `param-decomp` at commit `74146b5`.
