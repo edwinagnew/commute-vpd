@@ -81,7 +81,7 @@ def table_shares(R: dict[str, dict[str, Any]]) -> None:
     ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
     ax.legend(fontsize=7, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=3)
     style(ax, "On each task family, does each reading put the runs built to reuse above the runs built to be new?",
-          "share of the fine-tune's gain")
+          "share of the fine-tune's gain\n(ratio, r: log-odds; S: log P)")
     fig.tight_layout()
     fig.savefig(FIG / "table_shares.png", dpi=150)
 
@@ -111,7 +111,7 @@ def gaps(R: dict[str, dict[str, Any]]) -> None:
     ax.set_ylim(-0.05, 0.9)
     ax.legend(fontsize=7, frameon=False, loc="upper left", ncol=2)
     style(ax, "How far apart are the two kinds, task family by task family?",
-          "lowest run of the higher kind\nminus highest run of the new kind")
+          "lowest run of the higher kind minus highest\nrun of the new kind (S in log P units)")
     fig.tight_layout()
     fig.savefig(FIG / "gaps.png", dpi=150)
 
