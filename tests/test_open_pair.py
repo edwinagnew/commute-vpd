@@ -502,3 +502,14 @@ def test_comparable_and_seed0_dropped() -> None:
     reads = {"elicit": [None, rd(0.2, 0.78), rd(0.2, 0.80)], "copy": [None, rd(0.8, 0.84), rd(0.8, 0.86)]}
     w = OP.within_key(reads, "r", TH4)
     assert w["n_seeds"] == {"copy": 2, "elicit": 2} and w["status"] == "fail"  # D 0.06 > 2 x spread 0.02
+
+
+def test_shuffle_sentence() -> None:
+    th = {"cut": 0.5, "change_cut": 0.55}
+    assert OP.shuffle_sentence(0.475, [0.44, 0.49], th) == "mostly_key_conditional"
+    assert OP.shuffle_sentence(0.475, [0.44, 0.50], th) == "midpoint"  # a seed at the cut
+    assert OP.shuffle_sentence(0.475, [0.56, 0.52], th) == "midpoint"  # one new seed over 0.55 only
+    assert OP.shuffle_sentence(0.475, [0.56, 0.551], th) == "change_it"
+    assert OP.shuffle_sentence(0.475, [0.55, 0.60], th) == "midpoint"  # 0.55 is not over 0.55
+    assert OP.shuffle_sentence(0.475, [math.nan, 0.4], th) == "unreadable" and OP.shuffle_sentence(None, [0.4, 0.4], th) == "unreadable"
+    assert OP.shuffle_sentence(0.475, [], th) == "unreadable"
