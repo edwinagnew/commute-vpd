@@ -34,7 +34,7 @@ The fine-tunes teach it to answer `C b 40` with the count of b.
 count of a. About one natural text in five qualifies. On every kept row, LOW's own count of a plus one is the label,
 so a fine-tune can learn the task by adding one to an answer LOW already gives. *Departure:* Jain, Kirk, Lubana et
 al. build their spurious rows by editing texts. We sample texts that already carry the correlation, because Amendment 3
-showed the edit breaks LOW's count. The cost is narrow labels. On fresh rows from this distribution, 69% have label 14
+showed the edit breaks LOW's count. The cost is narrow labels. On unseen training-distribution rows (Amendment 2's streams; no model trained on them), 69% have label 14
 and almost all the rest 13 or 15.
 
 **What "reuses" means.** Jain et al.'s Def 2 calls a fine-tune reuse of a capability when the fine-tuned map is
@@ -55,13 +55,13 @@ alone. Stage 1 added two causal checks, their bars and a "neither" class, and th
 - A state **reuses** when the count of a is through and the count of b is not through. It is **new** in the mirror
   case, and **neither** otherwise. A state through on neither count whose answers look constant is a **shortcut**.
 
-**The arms.** All start from LOW and use Stage A's recipe: Adam, weight decay 0.1, batch 96.
+**The arms.** All start from LOW and use Stage A's recipe: AdamW, weight decay 0.1, batch 96.
 
 | arm | training rows | learning rate | seeds | what it rules out |
 |---|---|---|---|---|
 | slow natural-row | natural, count b = count a + 1 | 1e-5, as Stage A's slow arms | 0, 1, 2, 3 | that the slow recipe abandons the old count even when nothing pushes it |
 | fast natural-row | same | 1e-4, as Stage A's fast arms | 0 | that the learning rate, not the rows, decides |
-| prompt control | natural texts, answer the count of a under the prompt `T a 40` | 1e-5 | 0, 1 | that the checks cannot see a learnt route into the old count at all |
+| prompt control | natural texts, answer the count of a under the prompt `T a 40` | 1e-5 | 0, 1 | that the checks miss a fine-tune whose answers are the count of a |
 
 **The prompt control.** In pretraining, the T prompt asked for a terminal 40 tokens back and never took a letter.
 LOW, asked `T a 40`, answers a terminal, never a count: its behaviour share there is 0.000. The fine-tune must route
@@ -70,7 +70,7 @@ here $g$ is the identity. *Departure:* this arm is not in the paper. The code wr
 plan's choice, `C c 40`, would be a do-nothing control. Read once for description, LOW at `C c 40` already answers the
 count of a on every text.
 
-**The shortcut check.** On 4,000 fresh rows from the training distribution, the shortcut share is the fraction of
+**The shortcut check.** On 4,000 unseen training-distribution rows (Amendment 2's streams; no model trained on them), the shortcut share is the fraction of
 rows labelled other than 14 that the state answers with 14. A correct answerer reads 0 and a constant-14 answerer
 reads 1. LOW reads 0.248, because it answers the count of a, which is 14 on rows labelled 15.
 
@@ -84,9 +84,15 @@ First, the lead lowered the positive control's lean from 85% to 65%. Re-routing 
 warm-up steps seemed harder than keeping an answer. The lead also widened when the natural-row predictions go void:
 only if the control fails at every save of both seeds, not just at 1,000 steps of seed 0. Second, after the code
 review, the shortcut share was conditioned on the label. As first drafted, it was the share of all rows answered 14,
-against a bar of 0.6. A correct answerer would score 0.69 there, so any state that changed route would have been
-called a shortcut. The bar for the conditioned share is 0.5. The review also gave the shortcut prediction a scored
-step, 1,000. It fixed the wording that called the evaluation rows fresh, when they are the rows Amendment 2 drew.
+against a bar of 0.6. A correct answerer would score 0.69 there, so any state through on neither count that still
+answered the training rows right would have been called a shortcut. Under the rule as first filed, the fast copy at 2K
+(accuracy 1.000, 0.6885 answered 14) would have read "shortcut". The amendment, made before the run, makes it
+"neither". The bar for the conditioned share is 0.5. The review also gave the shortcut prediction a scored step,
+1,000. It fixed the wording that called the evaluation rows fresh, when they are the rows Amendment 2 drew (the code's
+docstring and comment still say "fresh", to be fixed with the next code commit). The file's definitions block still
+states the first rule; the amendments list governs, and the run used 0.5 on the label-conditioned share (amend5.json
+constants). The second amendment also moved P3's lean: neither or shortcut 40% to 45%, new or both 20% to new 15%. The
+scored "reuses" stays at 40%.
 
 ## What we expected, and why
 
@@ -131,14 +137,14 @@ another count of a moves its answer. Only the behaviour share separates LOW from
 behaviour share, the right the patch share, each by save; the first point of every line is LOW before fine-tuning.
 "Through" needs both panels in the green region. By 500 steps the four slow seeds answer one more than the count of a
 on about 0.98 of texts, where LOW answers it on none. Their patch share stays near 0.9 up to 1,000 steps. They sit above Stage A's two earlier anchors, the hollow
-markers at 1,000 steps. Their patch share drifts down to between 0.75 and 0.80 at 2,000 steps, still far above the
+markers at 1,000 steps. Their patch share drifts down to between 0.748 and 0.804 at 2,000 steps, still far above the
 bar. On the count of b they read zero behaviour and a patch share of at most 0.044 at every save, not through.
 
 The fast copy reads through at 500 and 1,000 steps, though lower each time. By 2,000 steps it falls between the bars
 on both checks, behaviour 0.407 and patch 0.373, and reads neither. It still answers every training row right, so it
-has moved to some other rule that agrees with the label on the training rows. Those two numbers sit close to Stage A's
-slow all-spurious arm at 10,000 steps, 0.399 and 0.361, which answers a rule of two counts. That resemblance is not
-filed and not tested. Each share reads 1,000 texts or pairs, a binomial standard deviation of at most 0.016.
+has moved to some other rule that agrees with the label on the training rows. Those two count-a numbers sit close to
+Stage A's slow all-spurious arm at 10,000 steps, 0.399 and 0.361, which answers a rule of two counts; the count-b
+patch is 0.367 against 0.43 there. That resemblance is not filed and not tested. Each share reads 1,000 texts or pairs, a binomial standard deviation of at most 0.016.
 
 | state | behaviour, count a | patch, count a | count a | behaviour, count b | patch, count b | count b | class |
 |---|---|---|---|---|---|---|---|
@@ -168,9 +174,9 @@ copy's count-b patch share of 0.190 sits between the bars, so it reuses under th
 
 ### Did any state take a shortcut?
 
-No. Every state from both natural-row arms answers 14 on none of the fresh rows labelled otherwise: shortcut share
+No. Every state from both natural-row arms answers 14 on none of the unseen training-distribution rows labelled otherwise: shortcut share
 0.000 at every save. LOW reads 0.248 and a constant answerer would read 1. Every state, including the fast copy at
-2,000 steps, answers all 4,000 fresh training-distribution rows right. Its share of answers equal to 14 is 0.6885,
+2,000 steps, answers all 4,000 unseen training-distribution rows (Amendment 2's streams; no model trained on them) right. Its share of answers equal to 14 is 0.6885,
 exactly the share of rows labelled 14. So the label narrowness the plan worried about did not produce a constant
 answer. The fast copy's drift at 2,000 steps is a change of rule off the training distribution, not a shortcut on it.
 
@@ -215,30 +221,32 @@ to cope with swapped text, as that anchor had. Every natural-row state reads nei
 ## What we learned
 
 A fine-tune whose training rows are all answered by the old count plus one keeps using that count, for at least
-2,000 steps at the slow rate, in every seed. At ten times the rate it leaves the old count by 2,000 steps for some
-rule that still fits every training row. So on this grammar, whether a fine-tune reuses an existing count depends on
-the rows, the rate and when it is read, not on the rows alone. For `GOALS.md` this supplies the reuse line with
+2,000 steps at the slow rate, in every seed. In the one fast seed, at ten times the rate, the state reads neither by 2,000
+steps (count-a behaviour 0.407) while still answering every training row right. So the reading depends on the rate
+and on when it is read; the rows were not varied in this amendment. For `GOALS.md` this supplies the reuse line with
 ground-truth "strengthened an existing capability" states trained on rows that never pushed the count to change.
 
 ## What it means for Stage C
 
 The decision recorded in `decisions.md` on 2026-10-30 was option C, then A with B. This amendment is option C.
 
-- **The "reuses" side grows from two states to sixteen.** Stage A had the slow all-spurious arm and the slow 80% arm
-  at 1,000 steps, three states counting the seed copy. This amendment adds twelve slow natural-row states and the fast
-  copy at 500 and 1,000 steps. All were trained on rows where LOW's own count gives every label.
+- **The 'reuses' side grows from two states to sixteen** (seventeen counting Stage A's seed copy, which is outside the
+  eleven labelled states). This amendment adds twelve slow natural-row states and the fast copy at 500 and 1,000
+  steps. All were trained on rows where LOW's own count gives every label.
+  Which saves enter the truth set was not filed; the Stage C plan fixes it before scoring.
 - **The independent count is much smaller.** Saves within one run are not independent. The new states come from five
-  runs: four seeds of one recipe and one seed of another. With Stage A's three runs, that is eight runs and four
-  recipes. The four slow seeds read almost the same numbers, so they show the result is not a seed accident, but they
-  are one recipe.
+  runs, four of them independent: four seeds of one recipe and one fast copy. The fast copy sees the same rows in the
+  same order as slow seed 0, so it is a paired comparison of learning rate, not an independent run. With Stage A's
+  three runs, that is at most seven independent runs and four recipes. The four slow seeds read almost the same
+  numbers, so they show the result is not a seed accident, but they are one recipe.
 - **Option A** scores instruments on the labelled states. Stage A's pass bar, ten of eleven, was set for the old set
   and has to be set again for the new set before any instrument is read. The new set leans the other way, sixteen
-  "reuses" against nine "not through", so a method that always says "reuses" scores well. Whether to count states
+  "reuses" against nine "new", so a method that always says "reuses" scores well. Whether to count states
   or runs is for the Stage C plan to fix before scoring.
 - **Option B** holds the third class as the decision records it. It contains the three all-spurious states at
   10,000 steps that answer a rule of two counts, and no method gets a pass bar on them. The fast natural-row state at
-  2,000 steps resembles them on both checks. It joins only after the row-by-row read of Amendment 1 shows the same rule.
-- **The prompt control** reuses the old count too, but under a different prompt. It validates the checks and is not
+  2,000 steps resembles them on the two count-a checks (count-b patch 0.367 vs 0.43; not filed). It joins only after the row-by-row read of Amendment 1 shows the same rule.
+- **The prompt control** reuses the old count too, but under a different prompt. It shows the checks read "through" for answers that are the count of a, and is not
   part of Stage C's `C b 40` truth set.
 
 ## How compelling is the evidence
@@ -247,8 +255,11 @@ The decision recorded in `decisions.md` on 2026-10-30 was option C, then A with 
   row, so adding one to an existing answer is the easiest fit. The loss fell from about 8 to under 0.004 within 500 steps.
   "Reuses" here is what one would expect; its value is as an anchor with a known answer, not as a finding about
   fine-tuning in general.
-- **The positive control is a control, not a test.** It shows the checks read a fine-tune that routes a new prompt
-  into the old count. Its patch share was already above the bar before training, so its pass rests on behaviour.
+- **The positive control is a control, not a test.** It shows the checks read "through" for a fine-tune whose answers
+  are the count of a. It cannot show the prompt was routed into LOW's counter rather than a new one, since the patch
+  share was above the bar before training; its pass rests on behaviour.
+- **The natural-row readings rest on behaviour too.** LOW's patch share for count a at `C b 40` is 0.959 before
+  training, above the bar; the patch adds only that the answer is still carried at block 5.
 - **The reading depends on when the state is read.** The fast copy reads reuses at 1,000 steps and neither at 2,000.
   The slow seeds' patch shares fall by 0.10 to 0.15 between 1,000 and 2,000 steps. Nothing was read past 2,000 steps,
   and the slow arms were stopped mid-schedule.
@@ -256,7 +267,8 @@ The decision recorded in `decisions.md` on 2026-10-30 was option C, then A with 
 - **Margins.** The slow states clear the count-a bars by at least 0.44 in behaviour and 0.26 in the patch,
   many standard deviations. The fast copy at 1,000 steps clears the patch bar by 0.14.
 - **Blind to.** Where the count of a is computed: block 5 sits next to the output, so the patch tests that the count
-  is present late. Whether adding one generalises beyond answers 10 to 17. Anything a decomposition would show.
+  is present late. Whether adding one generalises beyond answers 10 to 17. Anything a decomposition would show. The block-5 patch passes any answer that differs between the two texts of a
+  pair, as LOW's terminal answer under the T prompt shows (0.655).
 - **Coverage.** One base model, one pretraining seed, one grammar, one window of 40 tokens. Four seeds of the slow
   recipe, one of the fast, two of the control.
 
@@ -264,7 +276,7 @@ The decision recorded in `decisions.md` on 2026-10-30 was option C, then A with 
 
 - The positive control passed by 500 steps, faster than the lowered lean expected.
 - The fast copy left the old count by 2,000 steps while still answering every training row right. Its two count-a
-  shares there sit within 0.02 of Stage A's slow all-spurious arm at 10,000 steps. Not filed.
+  shares there (not its count-b patch, 0.367 vs 0.43) sit within 0.02 of Stage A's slow all-spurious arm at 10,000 steps. Not filed.
 - LOW's patch share under the T prompt was 0.655 before any training. It means the patch check at block 5 cannot, on
   its own, show that a prompt was routed into a count.
 - No filed prediction was reversed.
@@ -287,7 +299,7 @@ The decision recorded in `decisions.md` on 2026-10-30 was option C, then A with 
 | P1 | each slow natural-row seed reuses the old count at 1K | class == reuses, per seed | seeds 0-3 reuses: behaviour 0.976-0.981, patch 0.898-0.911, count b not through | met, 4 of 4 at the 70% lean; aggregate "reuses"; not void |
 | P2 | the same at 2K | class == reuses, per seed | seeds 0-3 reuses: behaviour 0.940-0.959, patch 0.748-0.804 | met, 4 of 4 at the 60% lean |
 | P3 | the fast copy reuses at 1K | class == reuses | reuses: 0.843, 0.627; count b neither, patch 0.190 | met, the 40% lean; fails the plan's literal "count b not through" |
-| P4 | no natural-row state at 1K is a shortcut | no class == shortcut at 1K; shortcut share bar 0.5 | no shortcut state; share 0.000 at every save | met, the 75% lean |
+| P4 | no natural-row state at 1K is a shortcut | no state at 1K classed shortcut (share ≥ 0.5 on a state through on neither count) | no shortcut state; share 0.000 at every save | met, but untestable: no state at 1K was through on neither count; the share 0.000 at every save is the informative reading (described) |
 | P5 | the prompt control is through count a at 1K | count-a label == through, seed 0 | 1.000, 0.911; seed 1 1.000, 0.914; also at 500 and 2K | met, the 65% amended lean |
 | D1 | on swapped rows the natural-row states answer like LOW | described | behaviour 0.296-0.303 at 1K vs LOW 0.266; all neither | described; as expected |
 
@@ -308,6 +320,18 @@ gave the shortcut prediction its scored step and fixed wording.
   were added to Def 2 by this project in the Stage 1 plan, `reports/plans/2026-10-29_plan_reuse-stage1.md`. Unchanged here.
 - **Early saves and the cut schedule.** The paper reads each fine-tune at the end of its schedule. We save at 500,
   1,000 and 2,000 steps of Stage A's 10,000-step schedule, all inside its 20% warm-up.
+- **Evidence.** The paper never tests Def 2 directly. Its evidence is pruning, probing and reverse fine-tuning (§5).
+  None is run here; the behaviour and patch checks replace them.
+- **Unmatched label histogram.** The paper matches the class histograms of spurious and clean rows (Fig. 16). Ours are
+  not matched: 69% of training rows carry label 14.
+- **The shortcut check** is this project's. The paper's guard against a constant answer is a class-histogram check
+  (Fig. 59).
+- **Read position.** The patch is at `=`, the position that predicts the answer. The paper reads probes at the answer
+  token.
+- **Learning rates.** 1e-5 and 1e-4 are the paper's medium and large rates. Its small rate, 1e-6, where it reports
+  wrappers at every test-time spurious rate, is not run.
+- **Inherited from Stage A:** weight decay 0.1 from minGPT's defaults (not stated in the paper), pretraining details,
+  and evaluation on qualifying texts rather than the paper's test sets; see the Stage 1 plan's recipe table.
 
 ## Not run
 
@@ -317,6 +341,9 @@ gave the shortcut prediction its scored step and fixed wording.
 - Patches at positions other than the answer, at blocks other than 5, or per subcomponent with a decomposition.
 - A positive control for the count of b at the T prompt, or a prompt control at the fast rate.
 - Stage B, the bounded-$g$ readings of the cipher, copy and lowercase fine-tunes; Stage C's instruments; VPD.
+- Stage A's "new" positive control (N1) re-read through this code.
+- The paper's small rate, 1e-6.
+- Pruning, probing and reverse fine-tuning on these states (Stage C1).
 
 Provenance: `experiments/pcfg_anchors/results/amend5.json` at 82f6726; states in
 `experiments/pcfg_anchors/results/large/amend5/`; logs `cluster/logs/commute-e55-amend5c-46022.out`,

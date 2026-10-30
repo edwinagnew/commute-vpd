@@ -19,7 +19,7 @@ letter, and added a W₀ control that stops the run unless LOW's behaviour share
 |---|---|---|
 | 1 | The shortcut share was unconditioned: the share of all training-distribution rows answered 14, bar 0.6. A correct answerer scores 0.69, since 69% of rows are labelled 14, so any state that changed route would have been classed a shortcut. | Fixed: conditioned on the label, the share of rows labelled other than 14 that are answered 14; a correct answerer reads 0, a constant one 1. Bar 0.5. Dated amendment in the predictions file. |
 | 2 | The shortcut prediction had no scored scope: no step and no hit or miss rule. | Fixed: scored at 1K, hit iff no natural-row state there is classed shortcut; 500 and 2K described. |
-| 3 | The evaluation streams were called fresh, but they are the streams Amendment 2 drew its rows from. | Wording fixed in the code and predictions. |
+| 3 | The evaluation streams were called fresh, but they are the streams Amendment 2 drew its rows from. | Wording fixed in the predictions; the code's docstring and comment still say "fresh", to be fixed with the next code commit. |
 | 4 | The prompt control's W₀ check also stops the natural-row arms, which do not depend on it. | Accepted: a miss there means the setup is wrong, and the arms are cheap to rerun. |
 | 5 | The `void_if` wording was ambiguous about which control states void the natural-row predictions. | Fixed: void iff none of the six control states, two seeds by three saves, reads count a through. |
 | 6 | Small inconsistencies between the docstring, the predictions and the plan; the fast-copy lean still listed the unreachable "both" class. | Fixed. |

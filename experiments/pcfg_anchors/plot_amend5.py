@@ -62,13 +62,14 @@ def panel(ax: Axes, r: dict[str, Any], bar: dict[str, float], t: str) -> None:
 
 
 def fig_saves(out: str = "amend5_saves.png",
-              title: str = "Every slow natural-row fine-tune and the positive control run through count a at every save;\nthe fast one leaves it by 2K") -> None:  # fmt: skip
+              title: str = "Every slow natural-row fine-tune and the positive control run through count a at every save;\nthe fast one reads neither by 2K") -> None:  # fmt: skip
     r, bars = load("amend5.json"), load("predictions.json")["a2_bars"]
     fig, axes = plt.subplots(1, 2, figsize=(11.0, 5.4), sharex=True, sharey=True)
     panel(axes[0], r, bars["B_a"], "B")
     panel(axes[1], r, bars["P_a"], "P")
     axes[0].set_ylabel("behaviour: share answering through count a\n(count(a) + 1 on 'C b 40'; count(a) for the control)")
     axes[1].set_ylabel("patch: share whose answer moves to the donor's\nwhen count a is swapped in at block 5")
+    axes[1].tick_params(labelleft=True)
     axes[0].set_title("behaviour check", fontsize=9.5, loc="left")
     axes[1].set_title("patch check", fontsize=9.5, loc="left")
     fig.legend(fontsize=7.5, frameon=False, loc="lower center", ncol=3)
