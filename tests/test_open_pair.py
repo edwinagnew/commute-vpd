@@ -550,3 +550,74 @@ def test_score_amend6_entry_and_missing() -> None:
     assert OP.score_amend6([r(0, 0.3, "too_small"), *pm[1:]], [], TH6)["PM"]["class"] == "unreadable"  # too small counts as missing
     assert OP.score_amend6([*pm[:2], None], [], TH6)["PM"]["class"] == "unreadable" and not OP.score_amend6(pm[:1], [], TH6)["PM"]["near_cut"]
     assert OP.score_amend6(pm, [], TH6)["FL"]["class"] == "unreadable"
+
+
+TH7 = {**TH6, "n_seeds": 3, "twin_max": 0.15, "r_contrast": 0.0904}
+
+
+def test_pc_classes() -> None:
+    # four clusters at the corners of two orthogonal directions with unequal spread: one class per corner
+    g = torch.Generator().manual_seed(0)
+    corners = torch.tensor([[3.0, 2.0], [3.0, -2.0], [-3.0, 2.0], [-3.0, -2.0]])
+    pts = torch.cat([c + 0.1 * torch.randn(n, 2, generator=g) for c, n in zip(corners, (5, 6, 7, 8), strict=True)])
+    E = torch.cat([pts, 0.01 * torch.randn(len(pts), 6, generator=g)], 1)
+    cls = OP.pc_classes(E)
+    groups = [cls[0:5], cls[5:11], cls[11:18], cls[18:26]]
+    assert all(len(set(gr)) == 1 for gr in groups) and len({gr[0] for gr in groups}) == 4  # one label per cluster
+    assert sorted(cls.count(j) for j in range(4)) == [5, 6, 7, 8] and set(cls) <= {0, 1, 2, 3}
+    flip = OP.pc_classes(-E)  # the partition does not depend on the sign of E (labels are fixed by the largest score)
+    assert len(set(zip(cls, flip, strict=True))) == 4 and flip == cls
+    assert OP.pc_classes(E + 5.0) == cls  # centred on the mean
+    sh = OP.shuffled_classes(cls, 0)
+    assert sorted(sh) == sorted(cls) and sh != cls and OP.shuffled_classes(cls, 0) == sh  # same sizes, seeded
+
+
+def test_cross_class_null() -> None:
+    cls = [0, 0, 0, 1, 1, 2]  # unequal classes; class 3 has no held-out window
+    # a lean toward a word that does not depend on the key (big-class words raised more): own == null exactly
+    lean = {0: 0.9, 1: 0.4, 2: -0.2, 3: 0.7}
+    own, null = OP.cross_class_null({c: [a] * len(cls) for c, a in lean.items()}, cls)
+    assert abs(own - null) < 1e-12 and abs(own - (3 * 0.9 + 2 * 0.4 - 0.2) / 6) < 1e-12
+    # a rule: each word up at its own class's windows, down elsewhere
+    rule = {c: [1.0 if k == c else -1 / 3 for k in cls] for c in range(4)}
+    own, null = OP.cross_class_null(rule, cls)
+    assert own == 1.0 and abs(null + 1 / 3) < 1e-12
+    # hand-computed: null = 3/6 mean(s0 at windows 3-5) + 2/6 mean(s1 at 0,1,2,5) + 1/6 mean(s2 at 0-4)
+    s = {0: [9, 9, 9, 1, 2, 3], 1: [4, 0, 2, 9, 9, 6], 2: [1, 1, 1, 1, 6, 9], 3: [0] * 6}
+    own, null = OP.cross_class_null(s, cls)
+    assert own == (9 * 3 + 9 + 9 + 9) / 6 and abs(null - (0.5 * 2 + 2 / 6 * 3 + 1 / 6 * 2)) < 1e-12
+    assert all(math.isnan(v) for v in OP.cross_class_null({0: []}, []))  # no windows
+    own, null = OP.cross_class_null({0: [1.0, 2.0]}, [0, 0])  # one class only: nothing to compare with
+    assert own == 1.5 and math.isnan(null)
+
+
+def test_twin_clean_and_score_amend7() -> None:
+    def r(d: float, rr: float | None = 0.35, label: str = "new") -> dict[str, Any]:
+        return {"x": 0.1 + d, "x_null": 0.1, "r": rr, "label": label}
+
+    tw = [r(0.02), r(-0.05), r(0.10)]
+    assert OP.twin_clean(tw, TH7) == "clean"
+    assert OP.twin_clean([*tw[:2], r(0.15)], TH7) == "carries"  # a tie at 0.15 fails
+    assert OP.twin_clean(tw[:2], TH7) == "unreadable" and OP.twin_clean([*tw[:2], None], TH7) == "unreadable"  # a seed missing
+    assert OP.twin_clean([*tw[:2], r(0.0, label="too_small")], TH7) == "unreadable"
+    assert OP.twin_clean([*tw[:2], {**r(0.0), "x_null": math.nan}], TH7) == "unreadable"
+    cm = [r(0.5, 0.40), r(0.45, 0.42), r(0.1, None)]  # two seeds carry; the third has no r and is dropped
+    out = OP.score_amend7(tw, cm, None, TH7)
+    assert out["T"]["class"] == "clean" and out["CL"]["class"] == "cipher_band" and out["CL"]["entry_seeds"] == [0, 1]
+    assert out["D"]["class"] == "kind_only" and abs(out["D"]["D"] - 0.06) < 1e-9 and out["EP"] == {"class": "skipped"}
+    assert OP.score_amend7(tw, [r(0.5, 0.70), r(0.5, 0.65), r(0.5, 0.62)], None, TH7)["D"]["class"] == "sees_carry"
+    assert OP.score_amend7(tw, [r(0.5, 0.20), r(0.5, 0.25), r(0.1)], None, TH7)["D"]["class"] == "sees_carry_low"
+    tw4 = [r(0.0, 0.25), r(0.0, 0.25), r(0.0, 0.25)]  # dyadic numbers, so the tie is exact in floats
+    tie = OP.score_amend7(tw4, [r(0.5, 0.375), r(0.5, 0.375), r(0.1)], None, {**TH7, "r_contrast": 0.125})["D"]
+    assert tie == {"class": "kind_only", "D": 0.125}  # D at the bound: kind_only
+    assert OP.score_amend7(tw, [r(0.5), {**r(0.0), "x": 0.3, "x_null": 0.0}, r(0.1)], None, TH7)["CL"]["class"] == "no_carry"  # 0.3 ties
+    assert OP.score_amend7(tw, [r(0.5), r(0.5, label="too_small"), None], None, TH7)["CL"]["class"] == "unreadable"
+    assert OP.score_amend7(tw, [r(0.5), r(0.5), r(0.5)], None, TH7)["CL"]["class"] == "cipher_band"
+    failed = OP.score_amend7([*tw[:2], r(0.2)], cm, None, TH7)  # the twin carries: the class map is not read
+    assert failed["CL"]["class"] == "control_failed" and failed["D"]["class"] == "not_read"
+    assert OP.score_amend7([*tw[:2], None], cm, None, TH7)["CL"]["class"] == "control_failed"
+    assert OP.score_amend7(tw, [r(0.5), r(0.5), r(0.5, math.nan)], None, TH7)["CL"]["class"] == "unreadable"  # a carrying nan r
+    nan_twin = [*tw[:2], r(0.0, math.nan)]  # the twin is clean on carry, but one r is nan: D unreadable
+    assert OP.score_amend7(nan_twin, cm, None, TH7)["D"]["class"] == "unreadable"
+    ep = OP.score_amend7(tw, cm, [r(0.0, 0.45), r(0.0, 0.55), r(0.0, 0.48)], TH7)["EP"]
+    assert ep["class"] == "between" and OP.score_amend7(tw, cm, [r(0.0, 0.45), None, r(0.0, 0.4)], TH7)["EP"]["class"] == "unreadable"
