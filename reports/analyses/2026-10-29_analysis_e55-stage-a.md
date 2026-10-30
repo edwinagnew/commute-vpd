@@ -328,6 +328,9 @@ count alone; that makes them a candidate third class, not more "existing" anchor
 4. **Check Stage A's spurious-row readings for a swap effect.** The fine-tuning rows and the spurious test rows are
    built by the same a/c swap step, which Amendment 2 found breaks the control models on larger swaps. Stage A's
    readings on spurious rows may carry part of that effect; Amendment 3 checks accuracy there by swap size, $0.
+5. **Done in Amendment 5,** `reports/analyses/2026-10-30_analysis_e55-amend5.md`: fine-tunes trained on natural rows
+   where one more than the count of a gives every label reuse the old count at every save to 2K, in all four slow
+   seeds; the fast copy leaves it by 2K; the positive control passes.
 
 ## Scorecard
 
