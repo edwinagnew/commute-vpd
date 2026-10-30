@@ -43,6 +43,18 @@ def test_boot_sd_edges() -> None:
     assert 0.005 < a < 0.03 and a == OP.boot_sd(torch.randn(50, generator=torch.Generator().manual_seed(1)) + 5, torch.full((40,), 10.0), 500, 0)
 
 
+def test_boot_sd_keys_edges() -> None:
+    kH, kG = torch.tensor([1, 1, 2, 2]), torch.tensor([5, 6, 6])
+    assert math.isnan(OP.boot_sd_keys(torch.empty(0), torch.empty(0, dtype=torch.long), torch.ones(3), kG, 50, 0))
+    assert math.isnan(OP.boot_sd_keys(torch.ones(4), kH, torch.empty(0), torch.empty(0, dtype=torch.long), 50, 0))
+    assert math.isnan(OP.boot_sd_keys(torch.ones(4), kH, torch.tensor([1.0, -3.0, -3.0]), kG, 200, 0))  # a key draw with G <= 0
+    assert OP.boot_sd_keys(torch.full((4,), 2.0), kH, torch.full((3,), 10.0), kG, 100, 0) == 0.0  # constant: sd 0
+    # windows agree within keys, keys differ: the key bootstrap sees the spread, which pools to one value per key
+    dH = torch.tensor([0.0, 0.0, 4.0, 4.0])
+    sk = OP.boot_sd_keys(dH, kH, torch.full((3,), 10.0), kG, 2000, 0)
+    assert 0.1 < sk < 0.2 and sk == OP.boot_sd_keys(dH, kH, torch.full((3,), 10.0), kG, 2000, 0)  # sd of mean of 2 Bernoulli x 0.4 ~ 0.14
+
+
 def test_label_bounds_and_ties() -> None:
     assert OP.label(5.0, 10.0, 0.01, TH) == "reuses"  # x = 0.5 exactly: tie counts
     assert OP.label(4.99, 10.0, 0.01, TH) == "neither"

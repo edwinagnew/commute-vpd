@@ -4,9 +4,10 @@ bounded-g rule, then read by the route split's r, the stand-in ratio and steerin
 Plan: reports/plans/2026-10-30_plan_e58-open-pair.md. Every setting, rule and threshold: results/predictions.json
 (filed and committed before the run; the run refuses otherwise; never edited).
 
-  stage 0, alone (exit 1 on a miss): sha256 of E54's windows files and elicit_s0.pt; the key split; the zero update
-           reads G = H = 0 exactly on all four split tasks; E54's elicit_s0 on E54's own 32-key task reproduces r,
-           the stand-in ratio and S, and block 0 reads 0.
+  stage 0, alone (exit 1 on a miss): sha256 of E54's windows files, elicit_s0.pt and cipher_s0.pt; the key split; the
+           zero update reads G = H = 0 exactly on all four split tasks; E54's elicit_s0 on E54's own 32-key task
+           reproduces r, the stand-in ratio and S, and block 0 reads 0; E54's cipher_s0 with no carry-over reads under
+           the "new" bar (x0 <= 3 s0; amendment 2026-10-30).
   stage 1: per seed, elicit then the cipher at the elicit update's norm (E54's `keydep` fine-tunes on the trained keys'
            windows); after each, G, H and the label. Exit 1 if elicit_s0's G is under the bar, or if any cipher
            reads "reuses" (the label's negative control).
@@ -122,13 +123,14 @@ def behaviour(net: ST.Net, t: dict[str, ST.Task], dW: ST.DW, th: dict[str, Any])
     new = t["new"]
     dO = gain(net, new, dW, others([int(new.table[k]) for k in new.keys]))
     G, H, s = float(dG.mean()), float(dH.mean()), OP.boot_sd(dH, dG, th["n_boot"], th["boot_seed"])
-    at = new.toks[:, new.half]
-    return {"G": G, "H": H, "x": H / G if G != 0 else math.nan, "s": s, "label": OP.label(H, G, s, th), "H_other": float(dO.mean()),
+    at, tr = new.toks[:, new.half], t["trained"].toks[:, t["trained"].half]
+    s_key = OP.boot_sd_keys(dH, at, dG, tr, th["n_boot"], th["boot_seed"])  # reported, unscored (amendment 2026-10-30)
+    return {"G": G, "H": H, "x": H / G if G != 0 else math.nan, "s": s, "s_key": s_key, "label": OP.label(H, G, s, th), "H_other": float(dO.mean()),
             "n_G": len(dG), "n_H": len(dH), "H_per_key": {str(k): float(dH[at == k].mean()) for k in new.keys}}
 
 
 def say_label(n: str, b: dict[str, Any]) -> None:
-    log(f"[label {n}] G {b['G']:.4f} H {b['H']:.4f} x {b['x']:.4f} 3s {3 * b['s']:.4f} -> {b['label']} | H_other {b['H_other']:.4f} "
+    log(f"[label {n}] G {b['G']:.4f} H {b['H']:.4f} x {b['x']:.4f} 3s {3 * b['s']:.4f} -> {b['label']} | s_key {b['s_key']:.4f} H_other {b['H_other']:.4f} "
         f"(n_G {b['n_G']}, n_H {b['n_H']}) per key {json.dumps({k: round(v, 3) for k, v in b['H_per_key'].items()})}")
 
 
@@ -149,6 +151,20 @@ def vpd_read(ctx: KD.Ctx, t: ST.Task, dW: ST.DW, base: dict[str, Any]) -> dict[s
 # ----------------------------------------------------------------------------- stages
 
 
+def no_carry(ctx: KD.Ctx) -> dict[str, Any]:
+    """Amendment 2026-10-30 (review of 674e9b0): the cipher's x with no carry-over, from E54's saved cipher_s0 on its own
+    32 keys: the mean log-odds gain of the non-target cipher values at each window (`others`) over the target's G, beside
+    the same row bootstrap's s. A generic post-marker push toward word-like tokens shows here as x0 > 0; if x0 > 3 s0
+    the 'new' bar would read a cipher with no carry-over as 'neither'."""
+    th = ctx.P["thresholds"]
+    t = ST.load_task(ctx.net, E54 / "large" / "windows_cipher.pt", "cipher", "cipher")
+    dW = torch.load(E54 / "large" / "cipher_s0.pt", weights_only=True)
+    dG, dO = gain(ctx.net, t, dW), gain(ctx.net, t, dW, others([int(t.table[k]) for k in t.keys]))
+    G = float(dG.mean())
+    x0, s0 = float(dO.mean()) / G if G else math.nan, OP.boot_sd(dO, dG, th["n_boot"], th["boot_seed"])
+    return {"G": G, "other_gain": float(dO.mean()), "x0": x0, "s0": s0, "ok": bool(x0 <= 3 * s0)}
+
+
 def stage0(ctx: KD.Ctx, tasks: Tasks, out: dict[str, Any]) -> None:
     c = ctx.P["stage0"]
     zero = {k: torch.zeros_like(w) for k, w in ctx.net.W0.items()}
@@ -159,11 +175,13 @@ def stage0(ctx: KD.Ctx, tasks: Tasks, out: dict[str, Any]) -> None:
     rec["checks"] = {"zero": all(v == 0.0 for v in rec["zero_max_abs"].values()),
                      "r": abs(rd["r"] - c["r_ref"]) <= c["r_tol"], "ratio": abs(rd["ratio"] - c["ratio_ref"]) <= c["ratio_tol"],
                      "S": abs(rd["S"] - c["S_ref"]) <= c["S_tol"], "block0": abs(rd["S_block0"]) <= c["block0_tol"]}
+    nc = rec["e54_cipher_s0_no_carry"] = no_carry(ctx)
+    rec["checks"]["no_carry"] = nc["ok"]
     rec["pass"] = all(rec["checks"].values())
     out["stage0"] = rec
     log(f"[stage0] zero-update max |gain| {rec['zero_max_abs']} | E54 elicit_s0 r {rd['r']:.4f} (ref {c['r_ref']:.4f}) ratio "
-        f"{rd['ratio']:.4f} (ref {c['ratio_ref']:.4f}) S {rd['S']:.4f} (ref {c['S_ref']:.4f}) S_block0 {rd['S_block0']:.1e} "
-        f"checks {rec['checks']}")
+        f"{rd['ratio']:.4f} (ref {c['ratio_ref']:.4f}) S {rd['S']:.4f} (ref {c['S_ref']:.4f}) S_block0 {rd['S_block0']:.1e} | "
+        f"E54 cipher_s0 no-carry x0 {nc['x0']:.4f} vs 3 s0 {3 * nc['s0']:.4f} (G {nc['G']:.4f}) | checks {rec['checks']}")
     dump(out)
     if not rec["pass"]:
         stop(out, "stage 0 missed")
@@ -224,14 +242,18 @@ def main() -> None:
     assert S["half"] == AN.HALF and S["route_batch"] == KD.BATCH, "predictions.json settings disagree with the code"
     large = a.large.resolve()
     large.mkdir(parents=True, exist_ok=True)
-    out: dict[str, Any] = {"git_head": git("rev-parse", "HEAD"), "predictions_sha256": KD.sha256(PRED), "states": {}}
-    sha = {n: KD.sha256(E54 / "large" / f"{n}.pt") for n in ("windows_elicit", "windows_cipher", "elicit_s0")}
+    code = [str(p.relative_to(REPO)) for p in (HERE / "run.py", REPO / "src" / "commute" / "open_pair.py")]
+    out: dict[str, Any] = {"git_head": git("rev-parse", "HEAD"), "git_status_code": git("status", "--porcelain", "--", *code),
+                           "predictions_sha256": KD.sha256(PRED), "states": {}}
+    sha = {n: KD.sha256(E54 / "large" / f"{n}.pt") for n in P["stage0"]["sha256"]}
     out["e54_sha256"] = sha
     if sha != P["stage0"]["sha256"]:
         stop(out, f"an E54 file is not the one its run recorded: {sha}")
     keys = json.loads((E54 / "stage1.json").read_text())["elicit"]["keys"]
     trained, held = OP.split_keys(keys, S["n_held"], S["split_seed"])
-    assert (trained, held) == (S["trained_keys"], S["held_keys"]), "the key split is not the filed one"
+    out["key_split"] = {"trained": trained, "held": held}
+    if (trained, held) != (S["trained_keys"], S["held_keys"]):
+        stop(out, "the key split is not the filed one")
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     ctx = KD.make_ctx(a.device, a.alive, P, large)
     out["windows_sha256"] = {n: split_task(E54 / "large" / f"windows_{n}.pt", trained, held, large, n) for n in KINDS}
