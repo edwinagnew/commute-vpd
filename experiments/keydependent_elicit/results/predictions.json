@@ -1,6 +1,7 @@
 {
  "experiment": "E54",
  "filed": "2026-10-30",
+ "amended_2026-10-30": "Before any run, after code review of 8513c3b. P3 (rule and note): a seed whose matched step equals the cipher's own step ('same_state') makes the difference 0 by construction, so P3 reads 'uninformative' there, not pass. floor_rule: the 2 x |G(s0) - G(s1)| term is used only for two seeds at the same step (the matched cipher takes it from the cipher's own-step pair); otherwise the floor is floor_min alone. edge case 'G or a denominator within 1e-6 of 0 -> nan' is applied in run.py where S and r are formed. Cause: code review.",
  "plan": "reports/plans/2026-10-29_plan_e54-keydependent-elicit.md",
  "user_choices": "confirmed 2026-10-30 (decisions.md, E54 row): the value of each key is W0's rank 2-20 guess, top-1 excluded; the cipher is read at the checkpoint whose update norm matches the elicit fine-tune's, not its gain",
  "settings": {
@@ -31,7 +32,7 @@
   "precision": "every read fp32 with TF32 off (E52's setting); the fine-tune uses E12's bf16 autocast",
   "route_batch": 64,
   "floor_min": 0.05,
-  "floor_rule": "E52's: per task (elicit; cipher at matched size; cipher at its own step), floor = max(0.05, 2 x |G(s0) - G(s1)|), G = mean over held-out windows of log P_tuned(target) - log P_W0(target) at the answer position. A state is readable iff |G| >= floor; its S and r are not read otherwise",
+  "floor_rule": "E52's, amended 2026-10-30: per task (elicit; cipher at matched size; cipher at its own step), floor = max(0.05, 2 x |G(s0) - G(s1)|) when the two seeds sit at the same step (the matched cipher takes the spread from the cipher's own-step pair), else 0.05 alone, G = mean over held-out windows of log P_tuned(target) - log P_W0(target) at the answer position. A state is readable iff |G| >= floor; its S and r are not read otherwise",
   "S": "E52's B3 (src/commute/steering.py b3, moved from experiments/baseline_neurons/run.py unchanged): fit half = held-out windows 0, 2, 4..., scoring half = 1, 3, 5...; one steering vector per block input, the block chosen on the fit half, S = its scoring-half share",
   "r": "the route split's re-gating share of the least-squares split state (E12's routes_lift, E46's reading): target W0 + delta-W, components anchors.lifted(delta-W), local_faith.route_split at the trigger over all held-out windows, r = (L01 - L00) / (T1 - T0) in log-odds; nan if |T1 - T0| < 1e-6"
  },
@@ -85,11 +86,11 @@
   },
   "P3": {
    "number": "per seed |r(cipher at matched size) - r(cipher at its own E12 step)|",
-   "rule": "pass iff < 0.1 (strict) on both seeds",
+   "rule": "pass iff < 0.1 (strict) on both seeds; 'uninformative' (not pass) if either seed is same_state and the other does not fail (amended 2026-10-30)",
    "predicted": "pass",
    "lean": "medium",
    "reading": "if it misses, r depends on update size and P1 is read only at matched size",
-   "note": "when the matched step equals the own step the difference is 0 by construction; flagged 'same_state'"
+   "note": "when the matched step equals the own step the difference is 0 by construction; flagged 'same_state' and then not a pass (amended 2026-10-30)"
   },
   "P4": {
    "rule": "only if E52 Amendment 1 finds a working prompt format: in that format W0's prompting share at n = 16 separates, elicit higher",
@@ -98,7 +99,7 @@
  },
  "edge_cases": [
   "any state under its floor -> every rule that reads it is 'unreadable', not pass or fail",
-  "G or a denominator within 1e-6 of 0 -> nan -> unreadable",
+  "G or a denominator within 1e-6 of 0 -> nan -> unreadable (applied in run.py readings via elicit.share_or_nan, amended 2026-10-30)",
   "a tie at a strict bound fails: the range comparison of the separation rule, and P3's 0.1",
   "the 0.2 minimum gap and P2's 0.3 are inclusive as the plan writes them (>= 0.2, <= 0.3)",
   "two seeds per kind: fewer than two readable values in a kind -> unreadable",

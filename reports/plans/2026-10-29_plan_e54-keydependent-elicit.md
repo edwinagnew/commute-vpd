@@ -73,6 +73,16 @@ Edge cases, for every rule: any state under its floor → that rule reads "unrea
 denominator within 1e-6 of 0 → nan → unreadable; a tie at the bound fails (strict); two seeds per kind, so the 0.2
 minimum stops two near-equal seeds making a tiny gap "separate" (E52 P4's lesson).
 
+**Amendment before run (2026-10-30, code review of 8513c3b; no run had happened).** (1) P3: when the cipher's
+norm-matched step equals its own E12 step on a seed (`same_state`), the difference is 0 by construction, so P3 reads
+"uninformative", not pass, and the branch text says the size match collapsed (both tasks at the same step) and P1 is
+read at the cipher's own step. (2) Gain floor: the seed-spread term 2 x |G(s0) - G(s1)| is used only for two seeds at the
+same step; the matched cipher takes it from the cipher's own-step pair, elicit from its own pair, and if a pair's steps
+differ the floor is 0.05 alone. (9) The "denominator within 1e-6 of 0 -> nan" rule is applied in `run.py` where S and r
+are formed. Not filed rules, same review: reversed P1 or P2 is labelled "reversed" and not routed through the tree;
+`at_bound`, an elicit that did not learn and `same_state` go into the branch text; stage 1 also records each key's
+geometric-mean P; stage 2 stops if |S_block0| > 1e-6 and checks predictions.json is committed unchanged.
+
 ## Decision tree
 - P1 holds, P2 holds → VPD's route split reads a kind steering cannot: write it up as the headline case; next, the
   same pair on Qwen (E45's anchors) and Jain's readout check on the elicit keys.
@@ -89,8 +99,9 @@ labelled "mode switch, unverified" and E54's pair carries the comparison. A work
 
 ## Cost and route
 Two MATS cluster debug jobs (L40, `debug` QoS, $0) via a `pod-runner`: job 1 stages 0–1 (~5 min), job 2 stage 2
-(4 fine-tunes, ~30 checkpoints held in host RAM, ~3.4 GB; reads ~10 min). Not gated (≪ $15, ≪ 3 h). Saved: the four
-scored δW (113 MB each) and `windows_<task>.pt` in `results/large/`; summaries committed.
+(4 fine-tunes, ~30 checkpoints held in host RAM, ~3.4 GB; reads ~10 min). Not gated (≪ $15, ≪ 3 h). Saved: the scored δW
+(113 MB each: elicit and matched cipher, two seeds, plus the cipher at its own step unless it is the same state as the
+matched one) and `windows_<task>.pt` in `results/large/`; summaries committed.
 
 ## Not run
 Jain et al. Def 1 readout and the causal check on the elicit keys; neuron patching (B2) and the weight statistics (B1)

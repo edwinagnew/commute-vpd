@@ -10,8 +10,9 @@
 # Inputs on NFS (gitignored): E46's ident32_s0.pt, rand32_s0.pt, windows_{ident32,rand32}.pt in
 # experiments/regating_table/results/large/; experiments/transport_test/results/large/alive.pt; Pile rows
 # artifacts/sets/train_0_32768.npy; the target model and decomposition in artifacts/vpd/. Writes small JSON to
-# experiments/keydependent_elicit/results/ and windows (job 1) and six weight changes (job 2, ~113 MB each) to its
-# results/large/. Expected: job 1 ~3-6 min, job 2 ~6-12 min (four 300-step fine-tunes, 32 checkpoints held in RAM).
+# experiments/keydependent_elicit/results/ and windows (job 1) and four to six weight changes (job 2, ~113 MB each) to its
+# results/large/ (cipher_own_s* is not saved when it is the same state as cipher_s*). predictions.json must be committed
+# before job 2. Expected: job 1 ~3-6 min, job 2 ~6-12 min (four 300-step fine-tunes, 32 checkpoints held in RAM).
 #SBATCH --job-name=commute-keydependent-elicit
 #SBATCH --partition=compute
 #SBATCH --account=c11
