@@ -6,7 +6,9 @@ Arms, all from LOW with Stage A's recipe (run.finetune: answer-only loss, Adam, 
 results/large/amend5/<key>_<step>.pt (the key hashes the recipe) and resumed from <key>_train.pt:
   WN (lr 1e-5, seeds 0-3), WNf (lr 1e-4, seed 0): 'C b 40' answered with count(b), on natural texts rejection-sampled
       for count(b) = count(a) + 1, so LOW's count_a + 1 gives every label.
-  ID (lr 1e-5, seeds 0, 1): count(a) on natural texts under constants.id_prompt, a prompt LOW's pretraining never shows.
+  ID (lr 1e-5, seeds 0, 1): count(a) on natural texts under constants.id_prompt ('T a 40': the T family,
+      which answered a terminal in pretraining and never took an operand), so the fine-tune must route that prompt to
+      LOW's existing count of a.
 Training data: chunk c from default_rng([run.FT_SEED0 + seed, c, TAIL[task]]), Stage A's stream with a new tail.
 
 Readings per state. WN, WNf: run.read_state (Stage A's B and P on its natural qualifying rows, labelled by the filed
@@ -15,7 +17,7 @@ Amendment 4's off-label swap-built read (described only); the state class. ID: p
 count (g = identity) at the ID prompt on Stage A's qualifying texts, P on Stage A's pairs for that count at the ID
 prompt, labelled by the filed bars (count a scored, count b described).
 
-Order: model-free controls; W0 controls on LOW and LOW's readings as the do-nothing reference (a miss writes
+Order: model-free controls; W0 controls on LOW (incl. LOW not counting a at the ID prompt) and LOW's readings as the do-nothing reference (a miss writes
 results/amend5_control_miss.json and exits 1); then the arms in ARMS5's order, results/amend5.json after each.
 --controls-only stops after the W0 controls. Exit 3 at the deadline; a resubmit resumes.
 
@@ -268,9 +270,9 @@ def rows_ok(seq: np.ndarray, task: str, prompt: Prompt) -> bool:
     return bool((head & rule).all())
 
 
-def prompt_unused(prompt: Prompt) -> tuple[bool, dict[str, Any]]:
-    """The ID prompt in LOW's pretraining: never by construction (operand prior 0, or family T whose operand slot is
-    NULL), and absent from the first PRETRAIN_CHUNKS chunks of run.pretrain's own stream for LOW."""
+def prompt_in_pretraining(prompt: Prompt) -> dict[str, Any]:
+    """Described: is the ID prompt absent from LOW's pretraining by construction (operand prior 0, or family T whose
+    operand slot is NULL), and from the first PRETRAIN_CHUNKS chunks of run.pretrain's own stream for LOW?"""
     fam, op = prompt
     structural = fam == pcfg.FAMILIES.index("T") or pcfg.PRIORS["LOW"][op] == 0
     hits, n = 0, 0
@@ -278,20 +280,19 @@ def prompt_unused(prompt: Prompt) -> tuple[bool, dict[str, Any]]:
         seq = pcfg.pretrain_batch(np.random.default_rng([TRAIN_SEED, c]), A1.batch * A1.chunk, pcfg.PRIORS["LOW"])
         hits += int(((seq[:, 1] == pcfg.FAM0 + fam) & (seq[:, 2] == pcfg.TERM0 + op)).sum())
         n += len(seq)
-    return structural and hits == 0, {"structural": structural, "pretrain_rows_searched": n, "hits": hits}
+    return {"structural": structural, "pretrain_rows_searched": n, "hits": hits}
 
 
 def model_free_checks(ev: Eval5) -> tuple[dict[str, bool], dict[str, Any]]:
     chunks = {name: train_chunk(arm, 0, ev.prompt) for name, arm in ARMS5.items()}
     checks = {f"{name}_chunk0_rows": rows_ok(seq, ARMS5[name].task, ev.prompt) for name, seq in chunks.items()}
     checks |= {f"eval_rows_{t}": rows_ok(seq, t, ev.prompt) for t, seq in ev.rows.items()}
-    checks["id_prompt_unused"], prompt_info = prompt_unused(ev.prompt)
     d = ev.stage_a
     checks["stage_a_b_texts_qualifying"] = len(d.b_texts) == N_B and bool((pcfg.count(d.b_texts, B) != pcfg.count(d.b_texts, A) + 1).all())
     for op, t in TAG.items():
         checks[f"stage_a_pairs_{t}_full"] = pair_ok(d.pairs[op], op, N_PAIRS)
         checks[f"off_pairs_{t}"] = pair_ok(ev.off[1][op], op, MIN_PAIRS)
-    info = {"prompt": prompt_info, "id_prompt_tokens": [int(pcfg.FAM0 + ev.prompt[0]), int(pcfg.TERM0 + ev.prompt[1])],
+    info = {"prompt": prompt_in_pretraining(ev.prompt), "id_prompt_tokens": [int(pcfg.FAM0 + ev.prompt[0]), int(pcfg.TERM0 + ev.prompt[1])],
             "label_hist_chunk0": {n: hist(s[:, pcfg.ANS] - pcfg.NUM0) for n, s in chunks.items()},
             "label_hist_eval": {t: hist(s[:, pcfg.ANS] - pcfg.NUM0) for t, s in ev.rows.items()},
             "n_rows": {"chunk0": FT_BATCH * CHUNK, "eval": A1.eval_n, "b_texts": len(d.b_texts), "off": len(ev.off[0])},
@@ -303,21 +304,24 @@ def w0_controls(low: GPT, ev: Eval5, bars: dict[str, Any], k: dict[str, Any]) ->
     """LOW reproduces its Stage A count-a references (B_a's p_plus, a1_LOW.json count_a, on the same 4,000 rows; P_a's
     positive reference, sample set 0's pairs at l*_a, a1c_patch.json) within reproduce_tol, through this file's
     prompt reads; LOW's answer on the WN training rows ('C b 40', chunk 0 of each seed) + 1 is the label on >=
-    coverage_min. Then LOW's readings as every arm reads them (the do-nothing reference)."""
+    coverage_min; LOW's B_a with g = identity at the ID prompt is <= id_w0_max, so ID must route the prompt to the count.
+    LOW's readings as every arm reads them are the do-nothing reference; LOW at 'C c 40' is read once, described."""
+    ca = (pcfg.FAMILIES.index("C"), A)
     seq_a = eval_seqs(A, A1.eval_n)
-    b_a = share_answering(low, prompt_seqs(texts_of(seq_a), (pcfg.FAMILIES.index("C"), A)), pcfg.count(texts_of(seq_a), A))
+    b_a = share_answering(low, prompt_seqs(texts_of(seq_a), ca), pcfg.count(texts_of(seq_a), A))
     pairs0 = make_pairs(np.random.default_rng([EVAL_SEED, 30, 0, A]), A)
     assert pairs0 is not None
-    p_a = float(patch_shares_seqs(low, prompt_seqs(pairs0.x, (pcfg.FAMILIES.index("C"), A)),
-                                  prompt_seqs(pairs0.donor, (pcfg.FAMILIES.index("C"), A)))[bars["l_star_a"] - 1])  # fmt: skip
+    p_a = float(patch_shares_seqs(low, prompt_seqs(pairs0.x, ca), prompt_seqs(pairs0.donor, ca))[bars["l_star_a"] - 1])
     ref_b = a1_row("LOW")["count_a"]
     ref_p = json.loads((RESULTS / "a1c_patch.json").read_text())["patch"]["P_a_positive"][0][bars["l_star_a"] - 1]
     wn = np.concatenate([train_chunk(arm, 0, ev.prompt) for n, arm in ARMS5.items() if arm.task == "WN" and n != "WNf_s0"])
     out, _ = run_at_art(low, wn)
     cover = float((out + 1 == wn[:, pcfg.ANS]).mean())
-    checks = {"LOW_B_a_reproduces": abs(b_a - ref_b) <= k["reproduce_tol"],
-              "LOW_P_a_reproduces": abs(p_a - ref_p) <= k["reproduce_tol"], "LOW_coverage": cover >= k["coverage_min"]}  # fmt: skip
     ref = read_wn(low, ev, bars, k) | {"id_prompt": read_id(low, ev, bars, k)}
+    ref["C_c_40"] = prompt_check(low, ev.stage_a, bars, (pcfg.FAMILIES.index("C"), pcfg.C))
+    checks = {"LOW_B_a_reproduces": abs(b_a - ref_b) <= k["reproduce_tol"],
+              "LOW_P_a_reproduces": abs(p_a - ref_p) <= k["reproduce_tol"], "LOW_coverage": cover >= k["coverage_min"],
+              "id_prompt_not_count_a_at_W0": ref["id_prompt"]["check_count_a"]["B"] <= k["id_w0_max"]}  # fmt: skip
     a4 = json.loads((RESULTS / "amend4.json").read_text())["part2_off_label"]["LOW"]
     ref["off_label_reproduces_amend4"] = all(abs(ref["off_label"][t][q] - a4[t][q]) <= k["reproduce_tol"] for t in "ab" for q in "BP")
     info = {"B_a": b_a, "B_a_stage_a": ref_b, "P_a": p_a, "P_a_stage_a": ref_p, "coverage": cover, "coverage_n": len(wn)}

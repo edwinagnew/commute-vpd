@@ -3,6 +3,17 @@
 **Status:** approved class. The user chose option C of card `decision-e55-truth-set` (chat, 2026-10-30, "go with your
 recommendations"; `decisions.md`). This plan says how. Free, on the MATS cluster's debug queue. Not a gated run.
 
+**Revision 1 (2026-10-30, after the code writer).** Lead's decisions on the code writer's notes
+(`experiments/pcfg_anchors/results/predictions_amend5.json` → `lead_notes`):
+1. ID's prompt is `T a 40`, not an unseen operand such as `C c 40`. LOW answers count a on `C b 40` 0.9999 of the time,
+   so on `C c 40` it almost surely already does, and ID would be a do-nothing control. Family T was pretrained to
+   answer a terminal, so the fine-tune must route that prompt to the existing count of a. A W₀ control stops the run
+   unless LOW's B_a (g = identity) at `T a 40` is at most 0.05. LOW at `C c 40` is read once, for description only.
+2. "Reuses" means count a "through" and count b not "through", as in Amendment 4. W1 at 1K, cited below, had count b
+   "neither" (P_b 0.104, just above lo 0.1). The literal "not through" is recorded beside it, described only.
+5. The schedule is Stage A's 10K-iteration schedule cut at 2K, so every save sits in the warm-up, matching W1's 1K
+   state. This is a recipe choice and is listed under the departures.
+
 ## In plain words
 
 Stage C needs fine-tunes that, by the Stage A checks, reuse LOW's existing count of a. Only two qualify today. Both
@@ -10,7 +21,8 @@ trained on letter-swapped rows that LOW itself miscounts (Amendment 3), and they
 that got stronger (Amendment 4). We add fine-tunes where reusing the old count needs no repair:
 - the slow all-spurious recipe trained on natural texts that already have count(b) = count(a) + 1, in four seeds;
 - a fast copy of the same recipe;
-- a fine-tune that asks for the old count under a prompt LOW has never seen, as a positive control for "reuse".
+- a fine-tune that asks for the old count under a pretrained prompt that meant something else (`T a 40`, which
+  answered a terminal), as a positive control for "reuse".
 
 ## Restated in the Terms
 
@@ -29,9 +41,10 @@ that got stronger (Amendment 4). We add fine-tunes where reusing the old count n
 |---|---|---|---|---|
 | WN | natural, count(b) = count(a) + 1, answer count(b) on `C b 40` | 1e-5 (W1's) | 0, 1, 2, 3 | 500, 1K, 2K |
 | WNf | same | 1e-4 (W2's) | 0 | 500, 1K, 2K |
-| ID | natural texts, answer count(a) on a prompt LOW never saw in pretraining | 1e-5 | 0, 1 | 500, 1K, 2K |
+| ID | natural texts, answer count(a) under `T a 40`, a pretrained prompt that answered a terminal (Revision 1) | 1e-5 | 0, 1 | 500, 1K, 2K |
 
-For ID, the prompt is a family or terminal code absent from LOW's pretraining stream; the code verifies it is absent.
+For ID, the prompt is `T a 40`: family T answered the terminal 40 tokens back and never took an operand. A W₀ control
+checks that LOW does not already answer count a there (B_a at most 0.05).
 ID's checks read count a at the new prompt with g = identity: B_a is the share answering count_a. Its P_a patch uses
 pairs that differ in count a and share count b, at the new prompt.
 
@@ -91,7 +104,10 @@ Edge cases to run against each rule before filing:
 - **Natural rows with count(b) = count(a) + 1, not the paper's spurious construction.** Jain et al. make the
   spurious correlation by editing texts. We sample texts that already carry it, because Amendment 3 showed the edit
   breaks the base model's count. The cost is narrow labels, 13 to 15, which the shortcut check above addresses.
-- **The new-prompt (identity) arm** is not in the paper. It is our positive control.
+- **The identity arm** is not in the paper: the old count under a pretrained prompt that meant something else (`T a 40`,
+  which answered a terminal). It is our positive control.
+- **Schedule (recipe choice, Revision 1).** Stage A's 10K-iteration schedule (Table 6: 20% warm-up, then cosine) cut at
+  2K steps, so every save sits in the warm-up, matching W1's 1K state. The paper trains each fine-tune to its end.
 - **The causal checks** (behaviour B and patch P), the bars and the "neither" class were added by this project to
   Def 2 in the Stage 1 plan (`reports/plans/2026-10-29_plan_reuse-stage1.md`). They are unchanged here.
 - **Saves at 500 to 2K steps,** where the paper reads its fine-tunes at the end of training. Stage A found the

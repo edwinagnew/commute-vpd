@@ -1,22 +1,23 @@
 {
-  "status": "draft, lead to review",
-  "filed": "DRAFT 2026-10-30 by the code writer from the approved plan; the lead reviews leans, rules and lead_notes and files (status not starting with 'draft') before any run. amend5.py refuses a draft.",
-  "experiment": "E55 Amendment 5: reuse anchors fine-tuned on natural text. WN (LOW, lr 1e-5, seeds 0-3) and WNf (LOW, lr 1e-4, seed 0) answer 'C b 40' with count(b) on natural texts that already have count(b) = count(a) + 1; ID (LOW, lr 1e-5, seeds 0, 1) answers count(a) under a prompt LOW never saw in pretraining. Saves at 500, 1K, 2K.",
+  "status": "filed 2026-10-30 by reuse-lead",
+  "filed": "2026-10-30 by reuse-lead, after the code writer's draft (commit 72d79eb): ID prompt T a 40 with the W0 control id_prompt_not_count_a_at_W0; reuses = count a through and count b not through (Amendment 4); W0 control as implemented; shortcut only on states through on neither count; Stage A's 10K schedule cut at 2K. Plan Revision 1.",
+  "experiment": "E55 Amendment 5: reuse anchors fine-tuned on natural text. WN (LOW, lr 1e-5, seeds 0-3) and WNf (LOW, lr 1e-4, seed 0) answer 'C b 40' with count(b) on natural texts that already have count(b) = count(a) + 1; ID (LOW, lr 1e-5, seeds 0, 1) answers count(a) under T a 40, a pretrained prompt that meant something else (family T answered a terminal and never took an operand). Saves at 500, 1K, 2K.",
   "plan": "reports/plans/2026-10-30_plan_e55-amend5-natural-anchors.md (approved class; user chose option C of card decision-e55-truth-set, 2026-10-30)",
   "why": "Stage C needs states that, by the Stage A checks, reuse LOW's count of a. The two that qualify were trained on swap-built rows that LOW miscounts (Amendment 3) and answer them through a strengthened count of a (Amendment 4). WN needs no repair: LOW's count_a + 1 gives every training label.",
   "constants": {
     "id_prompt": [
-      "C",
-      "c"
+      "T",
+      "a"
     ],
     "shortcut_label": 14,
     "shortcut_min": 0.6,
     "coverage_min": 0.99,
     "reproduce_tol": 0.01,
-    "scored_step": 1000
+    "scored_step": 1000,
+    "id_w0_max": 0.05
   },
   "constants_sources": {
-    "id_prompt": "Plan: 'a family or terminal code absent from LOW's pretraining stream'. 'C c 40' changes only the operand token of LOW's own task 'C a 40': LOW's operand prior is (0.999, 0.001, 0), so c never appears as an operand (pcfg.PRIORS); checked in the model-free control on run.pretrain's own stream. See lead_notes 1 for the alternative 'T a 40'.",
+    "id_prompt": "Lead decision 2026-10-30 (plan Revision 1): T a 40. Family T is pretrained (it answered the terminal 40 tokens before EOT, with operand slot NULL), so the fine-tune must route this prompt to LOW's existing count of a. C c 40 was rejected: LOW answers count a on C b 40 0.9999 of the time (amend2), so on C c 40 it almost surely already does, making ID a do-nothing control. LOW at C c 40 is read once for description (W0.reference.C_c_40).",
     "shortcut_label": "Plan: 14 is the label of ~67% of training rows (Amendment 3: 509 of 760 natural rows with count b = count a + 1).",
     "shortcut_min": "Plan: 'a state reading neither with >= 0.6 of its answers equal to 14 is labelled shortcut'.",
     "coverage_min": "Plan: 'count_a + 1 is right on >= 0.99 of them'.",
@@ -24,7 +25,8 @@
     "scored_step": "Plan: the scored readings are at 1K; 2K is a separate prediction; 500 is described.",
     "bars": "predictions.json a2_bars (filed 2026-10-29), applied unchanged; l*_a = l*_b = 5. B_a lo 0.1000 hi 0.4999; P_a lo 0.0966 hi 0.4828; B_b lo 0.3421 hi 0.6345; P_b lo 0.1 hi 0.5.",
     "recipe": "run.finetune's (Stage A, Jain et al. Table 6 L1189-1192): answer-only loss, AdamW, weight decay 0.1, batch 96, the 10K-iteration schedule (20% linear warm-up, cosine), stopped at 2K. So 500, 1K and 2K steps are in the warm-up at lr x 0.25, 0.5, 1.0 of peak, as Stage A's 1K states were (x 0.5).",
-    "data_streams": "training chunk c = default_rng([100 + seed, c, 70]) (WN) or [..., 71] (ID): Stage A's [100 + seed, c] with a new tail, so no overlap with Stage A. Fresh training-distribution rows for the shortcut check: default_rng([1, 72]) (WN), [1, 73] (ID), 4,000 rows each. Readings use Stage A's own qualifying texts and pairs (run.a2_eval_data) and Amendment 4's off-label rows (predictions_amend4 constants)."
+    "data_streams": "training chunk c = default_rng([100 + seed, c, 70]) (WN) or [..., 71] (ID): Stage A's [100 + seed, c] with a new tail, so no overlap with Stage A. Fresh training-distribution rows for the shortcut check: default_rng([1, 72]) (WN), [1, 73] (ID), 4,000 rows each. Readings use Stage A's own qualifying texts and pairs (run.a2_eval_data) and Amendment 4's off-label rows (predictions_amend4 constants).",
+    "id_w0_max": "Lead decision 2026-10-30: LOW's B_a with g = identity at the ID prompt must be <= 0.05, else stop; the B_a bar's null is 0 (NEVER) and lo 0.1, so 0.05 is half of lo."
   },
   "definitions": {
     "B, P, label": "Stage A's (predictions.json definitions; interchange.label): B_a = share of 'C b 40' outputs equal to count_a + 1, B_b = share equal to count_b, on Stage A's 1,000 qualifying natural texts (count b != count a + 1); P per count on Stage A's 1,000 pairs at block l* = 5; 'through' iff B > hi and P > hi; 'not through' iff B < lo and P < lo; else 'neither'; strict; a void bar or nan gives 'neither'.",
@@ -32,15 +34,15 @@
     "state class": "amend5.state_class, from the two Stage A labels: 'reuses' iff count a 'through' and count b not 'through'; 'new' iff count b 'through' and count a not; 'both' iff both 'through'; otherwise 'shortcut' iff answered_shortcut >= 0.6 (inclusive), else 'neither'. class_strict_reuses (count b 'not through', the plan's literal wording) is recorded beside it, described only (lead_notes 2).",
     "shortcut check": "train_dist on 4,000 fresh WN training-distribution rows ('C b 40', natural, count b = count a + 1): answered_shortcut = share of outputs equal to 14, beside labelled_shortcut = share of rows whose label is 14. A perfect reuser scores answered = labelled (~0.67), so the check only separates states that are not 'through' on either count.",
     "off-label read": "Amendment 4 Part 2 (amend4.off_label_rows and pairs, amend4.reading_through) on each WN state: described only, never scored.",
-    "W0 controls": "LOW, through this file's prompt reads: B at 'C a 40' with g = identity on the 4,000 rows of a1_LOW.json (Stage A's B_a positive reference p_plus, 0.99975) and P at 'C a 40' on sample set 0's pairs at block 5 (a1c_patch.json P_a_positive set 0, 0.960); each within 0.01. Coverage: LOW's 'C b 40' output + 1 equals the label on >= 0.99 of chunk 0 of the four WN training streams (38,400 rows). See lead_notes 3 for the reading of 'Stage A natural checks'."
+    "W0 controls": "LOW, through this file's prompt reads: B at 'C a 40' with g = identity on the 4,000 rows of a1_LOW.json (Stage A's B_a positive reference p_plus, 0.99975) and P at 'C a 40' on sample set 0's pairs at block 5 (a1c_patch.json P_a_positive set 0, 0.960); each within 0.01. Coverage: LOW's 'C b 40' output + 1 equals the label on >= 0.99 of chunk 0 of the four WN training streams (38,400 rows). See lead_notes 3 for the reading of 'Stage A natural checks'. ID prompt: LOW's B_a with g = identity at T a 40 <= 0.05 (id_prompt_not_count_a_at_W0), else stop. Described: LOW at C c 40, B_a, P_a (and B_b, P_b) with g = identity (W0.reference.C_c_40), no rule."
   },
   "predictions": {
     "W0_control": {
       "claim": "LOW reproduces its Stage A count-a references through this amendment's code, and its count_a + 1 gives the WN training labels.",
       "measurement": "W0.controls in amend5.json: B_a vs B_a_stage_a, P_a vs P_a_stage_a, coverage.",
-      "threshold": "|B_a - 0.99975| <= 0.01; |P_a - 0.960| <= 0.01; coverage >= 0.99 (inclusive).",
+      "threshold": "|B_a - 0.99975| <= 0.01; |P_a - 0.960| <= 0.01; coverage >= 0.99 (inclusive).; LOW B_a at T a 40 (g = identity) <= 0.05 (inclusive).",
       "relative_or_absolute": "absolute",
-      "expected": "B_a ~0.9998, P_a 0.960 (same rows and code path, fp32), coverage ~1.0 (Amendment 3: 760 of 760).",
+      "expected": "B_a ~0.9998, P_a 0.960 (same rows and code path, fp32), coverage ~1.0 (Amendment 3: 760 of 760). LOW at T a 40 answers a terminal token, so B_a ~0.",
       "on_miss": "stop (exit 1, amend5_control_miss.json); no arm runs.",
       "lean": "95%"
     },
@@ -89,8 +91,8 @@
       "rule": "label == 'through' (B_a > 0.4999 and P_a > 0.4828 at the ID prompt).",
       "threshold": "filed B_a, P_a bars, strict.",
       "relative_or_absolute": "absolute",
-      "expected": "B_a ~1.0, P_a ~0.95 (LOW's own count-a P at 'C a 40' is 0.96).",
-      "lean": "85%",
+      "expected": "B_a > 0.5 and P_a > 0.48 at T a 40 if the fine-tune routes the prompt to the existing count; LOW starts at B_a ~0 (W0 control), so a pass is learnt, not inherited.",
+      "lean": "85% (plan); the code writer would put it lower, ~60-70%, since 1K steps at lr 1e-5 (in warm-up) must now re-route a family token, not only keep an answer.",
       "on_fail": "the checks or the recipe cannot show reuse under a new prompt: every WN and WNf rule reads 'void' (raw numbers reported)."
     },
     "D1_off_label_described": {
@@ -101,8 +103,8 @@
     }
   },
   "expected_values": {
-    "model_free": "all model-free controls pass (dry run: 15 of 15); ID prompt C c 40 has 0 hits in 96,000 rows of LOW's pretraining stream and prior 0; Stage A qualifying texts 1,000, pairs 1,000 per count; off-label pairs 1,000 per count. WN label histogram ~23% 13, ~69% 14, ~8% 15, <1% 12 or 16 (dry run).",
-    "W0_reference (LOW, described)": "WN read: B_a ~0 (LOW answers count a, not + 1, on 'C b 40': amend2 fresh LOW 0.9999 count a), B_b ~0.2, class 'neither'; answered_shortcut = share of rows with count a = 14. ID-prompt read: likely B_a high, since LOW answers count a whatever the operand token (lead_notes 1).",
+    "model_free": "all model-free controls pass (dry run: 14 of 14); T a 40 (tokens 11, 3) is absent from LOW's pretraining by construction (T's operand slot is NULL) and has 0 hits in 96,000 rows of its stream (described); Stage A qualifying texts 1,000, pairs 1,000 per count; off-label pairs 1,000 per count. WN label histogram ~23% 13, ~69% 14, ~8% 15, <1% 12 or 16 (dry run).",
+    "W0_reference (LOW, described)": "WN read: B_a ~0 (LOW answers count a, not + 1, on C b 40: amend2 fresh LOW 0.9999 count a), B_b ~0.2, class neither; answered_shortcut ~0.08. ID prompt T a 40: B_a ~0 (control, <= 0.05). C c 40 (described): B_a likely ~1, P_a likely ~0.95.",
     "noise_floor": "binomial sd of a share at 1,000 rows <= 0.016; fine-tune seed noise at 1K from W1 vs W1s1: B_a 0.879 vs 0.903, P_a 0.715 vs 0.764, P_b 0.104 vs 0.073."
   },
   "edge_cases": {
@@ -111,9 +113,9 @@
     "E3_ties": "exactly at a bar: 'neither' (strict). answered_shortcut exactly 0.6: 'shortcut' (inclusive, the plan's '>= 0.6').",
     "E4_seeds_split_2_2": "P1 and P2 are scored per seed, so a 2-2 split is two hits and two misses; the described aggregate reads 'split' and no majority claim is made. Stage C then counts the 'reuses' states individually.",
     "E5_shortcut_that_passes_count_a": "A constant answerer never passes count a: its output never changes under a patch, so P_a = 0 < lo, and its B_a on Stage A's qualifying texts is 0.275 (dry run), under hi 0.500. A state that is through on count a and answers 14 on >= 0.6 of training rows is reuses: a perfect reuser answers 14 on ~0.69 (the label share), so the shortcut test is applied only to states through on neither count.",
-    "E6_prompt_collision": "if the ID prompt has prior > 0 for LOW (or is not T-with-a-terminal), or appears in the searched pretraining chunks, the model-free control id_prompt_unused fails and the job stops before any model loads.",
+    "E6_prompt_collision": "T a 40 cannot occur in LOW's pretraining (assemble writes NULL into T's operand slot; 0 hits in 96,000 rows, described). The collision that matters is with meaning: if LOW already answers count a at the ID prompt (B_a > 0.05), id_prompt_not_count_a_at_W0 fails and the job stops before any arm trains.",
     "E7_ID_fails": "P5 misses: WN and WNf rules read 'void'; their numbers are reported.",
-    "E8_ID_through_at_W0": "LOW may already read count a 'through' at the ID prompt (W0.reference.id_prompt). P5 is still scored as filed; it then shows the checks read 'through' on a state that reuses, but not that the recipe can install a new g (lead_notes 1).",
+    "E8_ID_through_at_W0": "Excluded by the W0 control id_prompt_not_count_a_at_W0 (B_a <= 0.05 at T a 40). Its P_a at W0 is recorded; a pass of P5 is then a learnt route, not an inherited one.",
     "E9_both_through": "count a and count b both through: class both, not reuses. On qualifying texts count_a + 1 != count_b, so B_a and B_b count disjoint outputs and both above hi needs B_a + B_b > 0.4999 + 0.6345 > 1: unreachable, kept so the rule covers every case.",
     "E10_zero_denominator": "every share has a fixed denominator: 1,000 qualifying texts (B), 1,000 pairs (P), 4,000 training-distribution rows (shortcut); none can be empty after the model-free controls.",
     "E11_deadline": "a deadline mid-arm exits 3; the resubmitted job resumes from <key>_train.pt and the saved states, and keeps the arms already in amend5.json when its constants are unchanged; changed constants drop them (the state files are keyed by recipe and prompt)."
@@ -123,16 +125,18 @@
   "departures_from_literature": [
     "Bounded g (user decision, 2026-10-30). Jain, Kirk, Lubana et al. 2024, §3, Def 2, calls a fine-tune reuse when the post-trained map is g∘f_C, for any g. We add that g, learnt on the fine-tuning examples, must also work on held-out values. Here g is +1 (WN) or the identity (ID), and both generalise, so the clause changes no reading in this amendment. It does change the cipher and copy arms (Stage B, planned separately).",
     "Natural rows with count(b) = count(a) + 1, not the paper's spurious construction. Jain et al. make the spurious correlation by editing texts. We sample texts that already carry it, because Amendment 3 showed the edit breaks the base model's count. The cost is narrow labels, 13 to 15, which the shortcut check addresses.",
-    "The new-prompt (identity) arm is not in the paper. It is our positive control.",
+    "The ID arm is not in the paper: the old count of a under a pretrained prompt that meant something else (T a 40, which answered a terminal). It is our positive control for the reuses side.",
     "The causal checks (behaviour B and patch P), the bars and the 'neither' class were added by this project to Def 2 in the Stage 1 plan (reports/plans/2026-10-29_plan_reuse-stage1.md). They are unchanged here.",
-    "Saves at 500 to 2K steps, where the paper reads its fine-tunes at the end of training. Stage A found the reading changes between 1K and 10K steps."
+    "Saves at 500 to 2K steps, where the paper reads its fine-tunes at the end of training. Stage A found the reading changes between 1K and 10K steps.",
+    "Recipe choice: Stage A's 10K-iteration fine-tuning schedule (Jain et al. Table 6, 20% warm-up then cosine) cut at 2K steps, so every save is inside the warm-up, matching W1's 1K state; the paper trains each fine-tune to the end of its schedule."
   ],
   "lead_notes": [
-    "1. ID prompt. 'C c 40' is the nearest unseen prompt (only the operand token differs from 'C a 40'). LOW answers count a on 'C b 40' 0.9999 of the time (amend2), so it likely answers count a on 'C c 40' already: ID may read 'through' at W0 and is then a do-nothing positive control (shows the checks read 'through' on a reusing state, not that a fine-tune can install g). The alternative 'T a 40' (family T, whose operand slot is always NULL in pretraining) forces the fine-tune to route the count to a new prompt; amend5.py supports it by changing constants.id_prompt to ['T', 'a'] (prompt_seqs writes the terminal into the operand slot). The --controls-only job prints LOW's W0 reading at the ID prompt before any arm trains, so the choice can be made on that number.",
-    "2. State class. The plan says WN should read count a 'through', count b 'not through'. Stage A's W1 at 1K, which the plan cites as reading this way, had count b 'neither' (P_b 0.104 just above lo 0.1). Scored here as Amendment 4's reading_through did: count b not 'through'. The literal reading is recorded as class_strict_reuses (described).",
-    "3. W0 control. 'LOW reproduces its Stage A natural checks, B_a and P_a' is implemented as LOW reproducing the two count-a references the B_a and P_a bars were built from (a1_LOW count_a and a1c_patch P_a_positive set 0 at block 5), through this amendment's prompt read and patch code. LOW's B_a with g = +1 on 'C b 40' is ~0 by construction, so it cannot be the reproduced number.",
-    "4. Shortcut threshold 0.6 is below the share a perfect reuser answers 14 (~0.67), so it is applied only to states 'through' on neither count (definitions.shortcut check)."
+    "1. ID prompt (lead, 2026-10-30): T a 40, replacing C c 40, on which LOW almost surely already answers count a. W0 control id_prompt_not_count_a_at_W0 (LOW B_a at T a 40 <= 0.05, else stop). LOW at C c 40 read once, described.",
+    "2. State class (lead): reuses = count a through and count b not through, as Amendment 4's reading_through. W1 at 1K (count b neither, P_b 0.104) reads reuses under it. The plan's literal wording (count b not through) is kept as class_strict_reuses, described.",
+    "3. W0 control (lead accepted): LOW reproduces the two count-a references the B_a and P_a bars were built from (a1_LOW count_a and a1c_patch P_a_positive set 0 at block 5), through this amendment's prompt read and patch code; LOW's B_a with g = +1 on C b 40 is ~0 by construction.",
+    "4. Shortcut (lead): the 0.6 bar is below the share a perfect reuser answers 14 (~0.69), so it applies only to states through on neither count.",
+    "5. Schedule (lead, recipe choice): Stage A's 10K-iteration schedule (20% warm-up, cosine) cut at 2K, so the 500, 1K and 2K states are in warm-up at lr x 0.25, 0.5, 1.0 of peak, matching W1's 1K state (x 0.5)."
   ],
-  "dry_run": "2026-10-30, ~/commute-data/scratch/reuse-lead/e55-amend5/dry_run.py (model-free, cpu-run, 10 s): all 15 model-free controls pass. ID prompt C c 40 (tokens 7, 5): structural (LOW prior of c = 0) and 0 hits in 96,000 rows (chunks 0-9 of run.pretrain's LOW stream). Rows: chunk 0 = 9,600 per arm stream; 4,000 fresh eval rows per task; Stage A qualifying texts 1,000; off-label rows 4,000. Pairs: Stage A a 1,000, b 1,000; off-label a 1,000, b 1,000. WN label histogram, 4,000 eval rows: 12:13, 13:923, 14:2754, 15:309, 16:1 (labelled 14 = 0.6885); chunk 0 of WN seed 0: 12:22, 13:2265, 14:6617, 15:696. ID labels (count a, natural): 10-16, mode 13 (0.343), 14 = 0.310. A constant-14 answerer on Stage A's qualifying texts: B_a 0.275 (between lo 0.100 and hi 0.500: count a neither), B_b 0.212 and P = 0 (count b not through); class shortcut.",
+  "dry_run": "2026-10-30, ~/commute-data/scratch/reuse-lead/e55-amend5/dry_run.py (model-free, cpu-run, 10 s): Re-run after Revision 1: all 14 model-free controls pass. ID prompt T a 40 (tokens 11, 3; an ID row starts $ T a 40 <, tokens 0 11 3 52 1): absent from LOW pretraining by construction and 0 hits in 96,000 rows (chunks 0-9 of run.pretrain LOW stream), described only; the stopping check is the model control id_prompt_not_count_a_at_W0. Rows: chunk 0 = 9,600 per arm stream; 4,000 fresh eval rows per task; Stage A qualifying texts 1,000; off-label rows 4,000. Pairs: Stage A a 1,000, b 1,000; off-label a 1,000, b 1,000. WN label histogram, 4,000 eval rows: 12:13, 13:923, 14:2754, 15:309, 16:1 (labelled 14 = 0.6885); chunk 0 of WN seed 0: 12:22, 13:2265, 14:6617, 15:696. ID labels (count a, natural): 10-16, mode 13 (0.343), 14 = 0.310. A constant-14 answerer on Stage A's qualifying texts: B_a 0.275 (between lo 0.100 and hi 0.500: count a neither), B_b 0.212 and P = 0 (count b not through); class shortcut.",
   "not_run_here": "Stage B (bounded g on the cipher, copy and lowercase arms); Stage C instruments; probes; VPD."
 }
