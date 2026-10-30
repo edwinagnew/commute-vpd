@@ -49,17 +49,19 @@ def div(x: float, y: float) -> float:
 # ----------------------------------------------------------------------------- row 1, the route split
 
 
-def shares(k: dict[str, float]) -> dict[str, Any]:
-    """Re-gating and direct shares from the cells' means (or sums) K00, K01, K10, K11, K0, with E45's status rule:
-    'nan' (a value missing or not finite), 'unscored' (K00 - K0 <= 0, K11 - K0 > 0.5 (K00 - K0), or a denominator
-    under FLOOR) or 'scored'. The shares are given in every case."""
+def shares(k: dict[str, float], n_pos: int) -> dict[str, Any]:
+    """Re-gating and direct shares from the cells' per-row sums K00, K01, K10, K11, K0 over n_pos positions, with
+    E45's status rule: 'nan' (a value missing or not finite), 'unscored' (K00 - K0 <= 0, K11 - K0 > 0.5 (K00 - K0),
+    or a denominator under FLOOR in mean nats per position, den / n_pos) or 'scored'. The shares are given in every
+    case. (Amended 2026-10-30 before any run, per code review: the floor had been compared with sums.)"""
     K00, K01, K10, K11, K0 = (float(k.get(n, NAN)) for n in ("K00", "K01", "K10", "K11", "K0"))
     den = K00 - K11
-    out = {"regating": div(K00 - K01, den), "direct": div(K00 - K10, den), "K11_minus_K0": K11 - K0, "den": den}
+    out = {"regating": div(K00 - K01, den), "direct": div(K00 - K10, den), "K11_minus_K0": K11 - K0,
+           "den_mean": div(den, n_pos)}
     if not all(ok(x) for x in (K00, K01, K10, K11, K0)):
         return out | {"status": "nan"}
     gap = K00 - K0
-    unscored = r9(gap) <= 0 or r9(K11 - K0) > r9(0.5 * gap) or r9(den) < r9(FLOOR)
+    unscored = r9(gap) <= 0 or r9(K11 - K0) > r9(0.5 * gap) or n_pos <= 0 or r9(den / n_pos) < r9(FLOOR)
     return out | {"status": "unscored" if unscored else "scored"}
 
 
@@ -78,23 +80,29 @@ def sums_at(rows: dict[str, list[float]], idx: list[int]) -> dict[str, float]:
     return {k: sum(v[i] for i in idx) for k, v in rows.items()}
 
 
-def boot_share(rows: dict[str, list[float]], draws: list[list[int]]) -> list[float]:
-    """The re-gating share's 95% interval over row resamples of the per-row cell sums."""
-    return interval([shares(sums_at(rows, idx))["regating"] for idx in draws])
+def boot_share(rows: dict[str, list[float]], draws: list[list[int]], row_len: int) -> list[float]:
+    """The re-gating share's 95% interval over row resamples of the per-row cell sums (rows of row_len positions)."""
+    return interval([shares(sums_at(rows, idx), len(idx) * row_len)["regating"] for idx in draws])
+
+
+def whole(rows: dict[str, list[float]], row_len: int) -> dict[str, Any]:
+    """`shares` of every row's sums."""
+    n = len(rows["K0"])
+    return shares(sums_at(rows, list(range(n))), n * row_len)
 
 
 def teeth(e40: dict[str, list[float]], controls: dict[str, dict[str, Any]], draws: list[list[int]],
-          high: float = 0.8) -> dict[str, Any]:
+          row_len: int, high: float = 0.8) -> dict[str, Any]:
     """The C0 verdict (plan section 4, row 1). controls[name] = {"rows": per-row sums on E40's rows, "matched": bool}.
     'no teeth': a scored control share >= high. 'teeth': every control scored and matched, E40 scored, and each
     paired-bootstrap gap (E40's share minus the control's) has its 95% interval above 0. Otherwise 'weak'."""
-    e = shares(sums_at(e40, list(range(len(next(iter(e40.values())))))))
+    e = whole(e40, row_len)
     out: dict[str, Any] = {"e40": e["regating"], "e40_status": e["status"], "controls": {}}
     verdict = "teeth" if e["status"] == "scored" else "weak"
     for name, c in controls.items():
-        s = shares(sums_at(c["rows"], list(range(len(next(iter(c["rows"].values())))))))
-        gaps = interval([shares(sums_at(e40, i))["regating"] - shares(sums_at(c["rows"], i))["regating"]
-                         for i in draws])
+        s = whole(c["rows"], row_len)
+        gaps = interval([shares(sums_at(e40, i), len(i) * row_len)["regating"]
+                         - shares(sums_at(c["rows"], i), len(i) * row_len)["regating"] for i in draws])
         out["controls"][name] = {"share": s["regating"], "status": s["status"], "matched": c["matched"],
                                  "gap": e["regating"] - s["regating"], "gap95": gaps}
         if s["status"] == "scored" and r9(s["regating"]) >= high:
@@ -154,12 +162,17 @@ def quantile(draws: np.ndarray, p: float) -> float:
     return float(v[max(0, math.ceil(r9(p * len(v))) - 1)])
 
 
-def overlap(S: Tensor, X: Tensor, site_of: Tensor, n_sites: int, n: int = 1000, seed: int = 0) -> dict[str, Any]:
-    """o = |S ∩ X| against n site-stratified random sets of S's per-site counts (hypergeometric per site: drawing
-    k of a site's N live subcomponents, K of them in X). S, X: bool over the flat live layout; site_of: its site."""
+def overlap(S: Tensor, X: Tensor, site_of: Tensor, n_sites: int, pool: Tensor, n: int = 1000, seed: int = 0
+            ) -> dict[str, Any]:
+    """o = |S ∩ X| against n site-stratified random sets of S's per-site counts drawn from `pool`, the live
+    subcomponents not gated on under g0 on the maths rows, where every switched-on set lies (hypergeometric per site:
+    k of the site's N pool members, K of them in X). S, X, pool: bool over the flat live layout; site_of: its site.
+    (Amended 2026-10-30 before any run, per code review: the draws had come from every live subcomponent, so the
+    null's mean read low.)"""
+    assert not bool((S & ~pool).any()), "S reaches outside the pool"
     k = torch.bincount(site_of[S], minlength=n_sites).numpy()
-    K = torch.bincount(site_of[X], minlength=n_sites).numpy()
-    N = torch.bincount(site_of, minlength=n_sites).numpy()
+    K = torch.bincount(site_of[X & pool], minlength=n_sites).numpy()
+    N = torch.bincount(site_of[pool], minlength=n_sites).numpy()
     rng, draws = np.random.default_rng(seed), np.zeros(n, dtype=np.int64)
     for i in np.nonzero(k)[0]:
         draws += rng.hypergeometric(int(K[i]), int(N[i] - K[i]), int(k[i]), size=n)

@@ -55,6 +55,22 @@ def test_boot_sd_keys_edges() -> None:
     assert 0.1 < sk < 0.2 and sk == OP.boot_sd_keys(dH, kH, torch.full((3,), 10.0), kG, 2000, 0)  # sd of mean of 2 Bernoulli x 0.4 ~ 0.14
 
 
+def test_spec_gate() -> None:
+    assert abs(OP.spec_gate(8.0, 10.7909, [9.0, 6.944]) - 8 / 10.7909 * 6.944) < 1e-12  # job 46259's cipher: ~5.148
+    assert OP.spec_gate(8.0, 10.7909, [20.0, 30.0]) == 8.0  # capped
+    assert OP.spec_gate(8.0, 10.0, [10.0]) == 8.0  # exactly at the reference: the cap
+    assert math.isnan(OP.spec_gate(8.0, 10.79, []))
+    assert math.isnan(OP.spec_gate(8.0, 10.79, [math.nan, 7.0]))
+    assert math.isnan(OP.spec_gate(8.0, 0.0, [7.0]))
+
+
+def test_label_on_specific_gains() -> None:
+    th = {**TH, "G_min": 5.148}
+    assert OP.label(-0.4, 6.9, 0.02, th) == "new"  # pool shift subtracted, held-out value below the pool: new
+    assert OP.label(0.0, 5.148, 0.0, th) == "new"  # G_spec at the gate is labelled
+    assert OP.label(0.0, 5.1, 0.02, th) == "too_small"
+
+
 def test_label_bounds_and_ties() -> None:
     assert OP.label(5.0, 10.0, 0.01, TH) == "reuses"  # x = 0.5 exactly: tie counts
     assert OP.label(4.99, 10.0, 0.01, TH) == "neither"

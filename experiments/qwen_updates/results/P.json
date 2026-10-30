@@ -2588,7 +2588,7 @@
     true
    ],
    "accuracy": 0.6796875,
-   "format_follow": 0.033203125
+   "format_follow": 0.92578125
   }
  },
  "shots": [
@@ -2626,19 +2626,29 @@
    "qualifies": false
   }
  },
- "chosen": null,
+ "chosen": "format",
  "format": {
-  "with": 0.033203125,
+  "with": 0.92578125,
   "without": 0,
-  "qualifies": false
+  "with_filed_regex": 0.033203125,
+  "qualifies": true
  },
  "checks": {
-  "P: a prompt qualifies": {
+  "P: the amended format rule reproduces 474/512 and 0/512": {
+   "holds": true,
+   "with": 0.92578125,
+   "without": 0,
+   "with_filed_regex": 0.033203125
+  }
+ },
+ "before_amend2": {
+  "date": "2026-10-29",
+  "stopped": "P: a prompt qualifies",
+  "check": {
    "holds": false,
    "with": 0.033203125,
    "without": 0,
    "qualifies": false
   }
- },
- "stopped": "P: a prompt qualifies"
+ }
 }

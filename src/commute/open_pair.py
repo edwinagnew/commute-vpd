@@ -65,6 +65,16 @@ def boot_sd_keys(dH: Tensor, kH: Tensor, dG: Tensor, kG: Tensor, n_boot: int, se
     return float(torch.tensor(xs, dtype=torch.float64).std())
 
 
+def spec_gate(cap: float, ref_raw: float, g_specs: list[float]) -> float:
+    """The G_spec gate (amendment 2026-10-30, after job 46259): Fable's 8 scaled as 8 was to E54's raw G (cap / ref_raw),
+    applied to the smallest of E54's seed-0 G_spec values, capped at `cap`. nan if any input is not finite or empty;
+    a non-positive G_spec gives a non-positive gate, which run.py's stage 0 does not reach (its specific-share check
+    fails first)."""
+    if not g_specs or not all(finite(g) for g in [cap, ref_raw, *g_specs]) or ref_raw <= 0:
+        return math.nan
+    return min(cap, cap / ref_raw * min(g_specs))
+
+
 def label(H: float, G: float, s: float, th: dict[str, Any]) -> str:
     """The behavioural label. "too_small" if G < G_min (Fable: the state is too small to label); then x = H / G:
     "reuses" iff x >= cut, "new" iff x <= k_sd * s, "neither" otherwise; "unreadable" if H, G or s is not finite, or if

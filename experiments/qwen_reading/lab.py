@@ -71,7 +71,8 @@ class Config:
     think_new: int = 2048
     think_batch: int = 64
     drop_max: float = 0.25
-    wall_s: float = 2 * 3600 + 45 * 60
+    limit_s: float = 3 * 3600  # the sbatch --time of C0 and C
+    first_s: float = 2 * 3600
 
     def __post_init__(self) -> None:
         assert self.n16 <= self.n_rows and self.row_len <= self.sigma_len == 512 and self.n_rows % 2 == 0
@@ -111,7 +112,46 @@ def kl(p: Tensor, q: Tensor) -> float:
 
 
 def pinned(w: Tensor) -> Tensor:
-    return torch.empty(w.shape, dtype=w.dtype, pin_memory=True).copy_(w)
+    return torch.empty(w.shape, dtype=w.dtype, pin_memory=torch.cuda.is_available()).copy_(w)
+
+
+class Weights:
+    """Weight sets held on the host (pinned on a GPU machine) and copied into the model's own tensors in place. W0 is
+    registered when the sets are made, from the weights the model holds then, so every set exists beside it; `now`
+    names the set the model holds."""
+
+    def __init__(self, lins: dict[str, Any]):
+        self.lins, self.now = lins, "W0"
+        self.sets = {"W0": {s: pinned(lin.weight.data) for s, lin in lins.items()}}
+
+    def use(self, key: str) -> None:
+        if key != self.now:
+            for s, lin in self.lins.items():
+                lin.weight.data.copy_(self.sets[key][s])
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+        self.now = key
+
+    def put(self, key: str, dW: dict[str, Tensor] | None, scale: float = 1.0) -> None:
+        """Set `key` = W0 + scale·δW (fp32, added on the weights' device as E44's Reader.set_ft); None: a separate copy
+        of W0, so the W0 control goes through the same copy path."""
+        self.drop(key)
+        self.use("W0")
+        if dW is None:
+            self.sets[key] = {s: pinned(w) for s, w in self.sets["W0"].items()}
+            return
+        self.sets[key] = {s: pinned(lin.weight.data + scale * dW[s].to(lin.weight.data.device, torch.float32))
+                          for s, lin in self.lins.items()}
+
+    def drop(self, key: str) -> None:
+        """Free set `key` (never W0), the model back at W0 if it held it, and return the pinned pages."""
+        assert key != "W0", "W0 is never dropped"
+        if self.now == key:
+            self.use("W0")
+        self.sets.pop(key, None)
+        empty = getattr(torch._C, "_host_emptyCache", None)  # the pinned-memory cache keeps freed blocks otherwise
+        if empty is not None:
+            empty()
 
 
 class Lab:
@@ -129,8 +169,7 @@ class Lab:
         self._alive: Any = None
         self._lay: Layout | None = None
         self._sigma: dict[str, Tensor] | None = None
-        self.sets: dict[str, dict[str, Tensor]] = {}
-        self.now = "W0"
+        self._weights: Weights | None = None
         fp32_matmuls()
         self.log(f"[{stage}] start; config {CFG}")
 
@@ -162,10 +201,13 @@ class Lab:
             self.stop(name, json.dumps(detail, default=float))
         return detail | {"holds": holds}
 
-    def wall(self) -> None:
-        """Checked between states: past 2 h 45 min the job exits 0 with what it wrote (resubmit to resume)."""
-        if time.time() - self.t0 > CFG.wall_s:
-            self.log(f"cut short: {time.time() - self.t0:.0f} s > {CFG.wall_s:.0f}; resubmit to resume")
+    def wall(self, longest: float) -> None:
+        """Checked before each state: exit 0 with what is written (resubmit to resume) when the time left under the
+        job limit is less than the longest state so far, or, before one is measured, past first_s of wall time."""
+        used = time.time() - self.t0
+        if (longest > 0 and CFG.limit_s - used < longest) or (longest == 0 and used > CFG.first_s):
+            self.log(f"cut short: {used:.0f} s used, longest state {longest:.0f} s, limit {CFG.limit_s:.0f} s; "
+                     "resubmit to resume")
             sys.exit(0)
 
     def peaks(self) -> str:
@@ -183,7 +225,7 @@ class Lab:
     def model(self) -> Any:
         if self._model is None:
             self._model = load_target(DEV, F32)
-            self.sets["W0"] = {s: pinned(lin.weight.data) for s, lin in linears(self._model).items()}
+            self._weights = Weights(linears(self._model))
             self.log(f"[load] target, {torch.cuda.get_device_name()}, {self.peaks()}")
         return self._model
 
@@ -235,22 +277,22 @@ class Lab:
 
     # ------------------------------------------------------------------------- weight sets
 
+    @property
+    def weights(self) -> Weights:
+        """The weight sets, made with the model (W0 registered then)."""
+        if self._weights is None:
+            assert self.model is not None
+        assert self._weights is not None
+        return self._weights
+
     def use(self, key: str) -> None:
-        if self.sets[key] is not self.sets[self.now]:
-            for s, lin in linears(self.model).items():
-                lin.weight.data.copy_(self.sets[key][s])
-            torch.cuda.synchronize()
-        self.now = key
+        self.weights.use(key)
 
     def set_weights(self, key: str, dW: dict[str, Tensor] | None, scale: float = 1.0) -> None:
-        """Weight set `key` = W0 + scale·δW (fp32, added on the GPU as E44's Reader.set_ft); None: W0 itself."""
-        self.use("W0")
-        self.sets.pop(key, None)
-        if dW is None:
-            self.sets[key] = self.sets["W0"]
-            return
-        self.sets[key] = {s: pinned(lin.weight.data + scale * dW[s].to(DEV, F32))
-                          for s, lin in linears(self.model).items()}
+        self.weights.put(key, dW, scale)
+
+    def drop_set(self, key: str) -> None:
+        self.weights.drop(key)
 
     def load_dw(self, name: str) -> dict[str, Tensor]:
         """A state's δW (host, as saved) after its sha256 check: E40's against regen_SHA256SUMS, E45's against the sums
@@ -298,7 +340,7 @@ class Lab:
         with ctx:
             for i, r in enumerate(rows):
                 t, ci = r[None].to(DEV), {}
-                for key in (("FT", "W0") if self.now == "FT" else ("W0", "FT")):
+                for key in (("FT", "W0") if self.weights.now == "FT" else ("W0", "FT")):
                     self.use(key)
                     logits, g = importances(model, t, gamma, comps)
                     if (c := c0 if key == "W0" else c1) is not None:
@@ -338,8 +380,8 @@ class Lab:
     def split(self, dW: dict[str, Tensor], nulls: bool, halves: bool) -> dict[str, Any]:
         """The least-squares split of δW, site by site on the GPU in float64 (Γ parked): X = K⁺δW kept fp32 on the
         host (E44's stored precision; stored_error over store_err_max stops), and the Σ-weighted piece energy per live
-        subcomponent of the split, (nulls) of the split of `split.random_like(δW, Σ, seed)` for each null seed, and
-        (halves) of the split onto E44's often-on half alone. Bases are Gram (E44's R check) and not kept."""
+        subcomponent of the split, (nulls) of the split of `split.random_like(δW, Σ, null_seed(seed, site))` for each
+        null seed, and (halves) of the split onto E44's often-on half alone. Bases are Gram (E44's R check) and not kept."""
         self.park_gamma()
         sig, alive, t0 = self.sigma(), self.alive, time.time()
         st = load(GSTATS / "W0_maths.safetensors") if halves else {}
@@ -354,7 +396,7 @@ class Lab:
             X[s] = pinned(Xs.float().cpu())
             pe["ls"].append(split.piece_energies(*qwen_maps.pieces(Xs.float(), U_A, V_A), U_A, V_A, S).cpu())
             for k in CFG.null_seeds if nulls else ():
-                XR = split.least_squares_x(split.random_like(M, S, k), b)
+                XR = split.least_squares_x(split.random_like(M, S, null_seed(k, s)), b)
                 pe[f"null{k}"].append(split.piece_energies(XR @ V_A, XR.T @ U_A, U_A, V_A, S).cpu())
             if halves:
                 idx = alive.idx[s].cpu()
@@ -388,3 +430,9 @@ class Lab:
             return qwen_maps.site_change("ls", M, U_A, V_A, lambda _k: Xs, 0.0, 0.0)
 
         return fn
+
+
+def null_seed(seed: int, site: str) -> int:
+    """The Gaussian null's seed per site (amended 2026-10-30 before any run, per code review: one seed for every site
+    gave sites of one shape the same Gaussian matrix; E44's stage S used seed 0 everywhere)."""
+    return seed * 1000 + SITES.index(site)
