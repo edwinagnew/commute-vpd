@@ -343,3 +343,81 @@ def score_amend2(st: dict[str, dict[str, Any]], n_novel_rank1: int, ref: dict[st
     R = rank1_class(r["x"], r["x_novel"], n_novel_rank1, r["label"], th)
     B = b2(st, ref, th)
     return {"E": E, "R": R, "C": copy_class(c["x"], c["label"], th), "B": B, "verdict": verdict2(E, B["status"], R)}
+
+
+# ----------------------------------------------------------------------------- Amendment 3 (2026-10-30)
+# experiments/open_pair/results/predictions_amend3.json; plan section "Amendment 3"; edge cases in tests/test_open_pair.py
+# The control is the cipher at K keys (Fable, reports/plans/2026-10-30_advice_e58a2-control-FABLE.md); elicit is a scored
+# map. B compares each map with itself at 24 keys (own differences): no map is a no-rule reference for the others now.
+
+
+def control3(at_common: str, at_own: str | None) -> str:
+    """The cipher control's status: `elicit_control` at the common step; only when that reads "too_small", the same rule
+    at the cipher's own E12 scored step (None if it never learned, which keeps "too_small")."""
+    if at_common != "too_small":
+        return at_common
+    return "too_small" if at_own is None else at_own
+
+
+def b3(st: dict[str, dict[str, Any]], ref: dict[str, dict[str, float]], th: dict[str, Any], maps: tuple[str, ...]) -> dict[str, Any]:
+    """B in Amendment 3: per map, dx = x at K keys minus x at 24 keys and di likewise for r (tol_r) and ratio (tol_ratio);
+    `moves_with(dx, dx, di)`; per map `combine` over the instruments, then over the maps. A missing map is unreadable."""
+    get = lambda d, m, k: (d.get(m) or {}).get(k, math.nan)
+    per: dict[str, Any] = {}
+    for m in maps:
+        dx = get(st, m, "x") - get(ref, m, "x")
+        inst = {i: {"d": get(st, m, i) - get(ref, m, i)} for i in ("r", "ratio")}
+        for i, v in inst.items():
+            v["status"] = moves_with(dx, dx, v["d"], th["dx_min"], th[f"tol_{i}"])
+        per[m] = {"dx": dx, **inst, "status": combine([v["status"] for v in inst.values()])}
+    return {"maps": per, "status": combine([per[m]["status"] for m in maps])}
+
+
+def trajectory(xs: dict[int, float], first: int, later: tuple[int, ...], th: dict[str, Any]) -> str:
+    """Check 1 (reported): elicit's x over the E12 checkpoints. "unreadable" if any is missing or not finite; "kept" iff
+    every later x >= x[first] - traj_tol; "transient" iff x at the next checkpoint <= e_max; else "falling"."""
+    vals = [xs.get(s, math.nan) for s in (first, *later)]
+    if not later or not all(finite(v) for v in vals):
+        return "unreadable"
+    if min(vals[1:]) >= vals[0] - th["traj_tol"]:
+        return "kept"
+    return "transient" if vals[1] <= th["e_max"] else "falling"
+
+
+def ranks(v: list[float]) -> Tensor:
+    """1-based ranks, ties given their mean rank."""
+    t = torch.tensor(v, dtype=torch.float64)
+    r = torch.empty_like(t)
+    order = torch.argsort(t, stable=True)
+    i = 0
+    while i < len(t):
+        j = i
+        while j + 1 < len(t) and t[order[j + 1]] == t[order[i]]:
+            j += 1
+        r[order[i : j + 1]] = (i + j) / 2 + 1
+        i = j + 1
+    return r
+
+
+def spearman(a: list[float], b: list[float]) -> float:
+    """Check 5 (reported): Spearman's rho with mean ranks for ties; nan with fewer than 3 pairs, unequal lengths, a
+    non-finite entry or a constant side."""
+    if len(a) != len(b) or len(a) < 3 or not all(finite(v) for v in [*a, *b]):
+        return math.nan
+    ra, rb = ranks(a), ranks(b)
+    ra, rb = ra - ra.mean(), rb - rb.mean()
+    den = float(ra.norm() * rb.norm())
+    return float((ra * rb).sum()) / den if den > 0 else math.nan
+
+
+def score_amend3(st: dict[str, dict[str, Any]], st30: dict[str, dict[str, Any]], control: str, n_novel_rank1: int,
+                 ref: dict[str, dict[str, float]], th: dict[str, Any]) -> dict[str, Any]:
+    """The control's status, R (rank-1), C (copy), B on elicit, rank-1 and copy at the common step (scored) and at step 30
+    (companion, reported), and the verdict (`verdict2` with B at the common step)."""
+    rec = lambda m: st.get(m) or {"label": "unreadable", "x": math.nan, "x_novel": math.nan}
+    r, c = rec("rank1"), rec("copy")
+    maps = ("elicit", "rank1", "copy")
+    R = rank1_class(r["x"], r["x_novel"], n_novel_rank1, r["label"], th)
+    B = b3(st, ref, th, maps)
+    return {"control": control, "R": R, "C": copy_class(c["x"], c["label"], th), "B": B, "B_step30": b3(st30, ref, th, maps),
+            "verdict": verdict2(control, B["status"], R)}

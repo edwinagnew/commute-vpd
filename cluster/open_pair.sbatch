@@ -23,6 +23,9 @@
 #     elicit (control, first), rank-1 and copy maps at 128 keys (96 trained / 32 held out; 64 / 16 if E54's key supply is
 #     short), seed 0, E54's recipe; x, r, ratio. Reads E54's stage1.json; writes results/amend2.json and
 #     results/large/amend2/ (~0.36 GB). ~10-15 min.
+#   sbatch cluster/open_pair.sbatch amend3   # Amendment 3 (plan section "Amendment 3"; predictions_amend3.json): the
+#     cipher control at 128 keys first, then elicit, the shuffled elicit, rank-1 and copy, Fable's checks 1, 3-5. Reads E54's
+#     stage1.json and E58's large/windows_elicit_*.pt; writes results/amend3.json, results/large/amend3/ (~1 GB). ~12-18 min.
 #SBATCH --job-name=commute-e58-open-pair
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -44,7 +47,8 @@ case "$stage" in
   main) script=run.py pred=predictions.json logf=run.out ;;
   amend1) script=amend1.py pred=predictions_amend1.json logf=amend1.out ;;
   amend2) script=amend2.py pred=predictions_amend2.json logf=amend2.out ;;
-  *) echo "unknown stage $stage (main | amend1 | amend2)" >&2; exit 2 ;;
+  amend3) script=amend3.py pred=predictions_amend3.json logf=amend3.out ;;
+  *) echo "unknown stage $stage (main | amend1 | amend2 | amend3)" >&2; exit 2 ;;
 esac
 test -f "experiments/open_pair/results/$pred" || { echo "file the predictions first" >&2; exit 1; }
 large=experiments/open_pair/results/large
