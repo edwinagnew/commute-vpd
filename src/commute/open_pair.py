@@ -536,20 +536,32 @@ def band_class(rs: Sequence[Any], th: dict[str, Any]) -> str:
     return "cipher_band" if max(rs) < th["cut"] else "own_guess_band" if min(rs) >= th["high"] else "between"
 
 
+def labellable(rd: dict[str, Any] | None) -> bool:
+    """A read whose label is not too_small / unreadable and whose x is finite."""
+    return rd is not None and rd.get("label") not in UNLABELLABLE and finite(rd.get("x"))
+
+
 def carries(rd: dict[str, Any] | None, th: dict[str, Any]) -> bool:
-    """The first-letter rule's entry condition on one read: labellable and x finite and x > x_entry (0.3; a tie fails)."""
-    return rd is not None and rd.get("label") not in UNLABELLABLE and finite(rd.get("x")) and rd["x"] > th["x_entry"]
+    """The first-letter rule's entry condition on one read (review of a946868): labellable, x_null finite, and
+    x - x_null > x_entry (0.3; a tie fails). x_null is x with each held-out key's target swapped for another letter's
+    word of matched trained count, so a lean toward often-trained words alone gives x - x_null near 0."""
+    return labellable(rd) and rd is not None and finite(rd.get("x_null")) and rd["x"] - rd["x_null"] > th["x_entry"]
 
 
 def score_amend6(prior: Sequence[dict[str, Any] | None], letter: Sequence[dict[str, Any] | None], th: dict[str, Any]) -> dict[str, Any]:
     """PM: `band_class` on the prior-matched cipher's step-30 r over seeds 0-2 (a read too small to label counts as
-    missing). FL: the seeds whose step-30 read `carries`; "no_carry" if fewer than min_entry (2) do, else `band_class`
-    on those seeds' r. Each class beside its r list; `near_cut` iff some counted r is within noise (0.045) of 0.5."""
+    missing). FL: "unreadable" if fewer than min_entry (2) step-30 reads are `labellable`; else "no_carry" if fewer than
+    min_entry `carries`; else `band_class` on the carrying seeds' r. Each class beside its numbers; `near_cut` iff some
+    counted r is within noise (0.0452) of 0.5."""
     r_of = lambda rds: [None if rd is None or rd.get("label") in UNLABELLABLE else rd.get("r") for rd in rds]
     near = lambda rs: any(finite(r) and abs(r - th["cut"]) <= th["noise"] for r in rs)
+    get = lambda k: [None if rd is None else rd.get(k) for rd in letter]
     pm = r_of(prior)
     entry = [i for i, rd in enumerate(letter) if carries(rd, th)]
     fl = r_of([letter[i] for i in entry])
+    n_lab = sum(labellable(rd) for rd in letter)
+    cls = "unreadable" if n_lab < th["min_entry"] else "no_carry" if len(entry) < th["min_entry"] else band_class(fl, th)
+    diff = [rd["x"] - rd["x_null"] if labellable(rd) and rd is not None and finite(rd.get("x_null")) else None for rd in letter]
     return {"PM": {"class": band_class(pm, th), "r": pm, "near_cut": near(pm)},
-            "FL": {"entry_seeds": entry, "x": [None if rd is None else rd.get("x") for rd in letter], "r": fl, "near_cut": near(fl),
-                   "class": "no_carry" if len(entry) < th["min_entry"] else band_class(fl, th)}}
+            "FL": {"class": cls, "entry_seeds": entry, "n_labellable": n_lab, "x": get("x"), "x_null": get("x_null"),
+                   "x_minus_null": diff, "r": fl, "near_cut": near(fl)}}

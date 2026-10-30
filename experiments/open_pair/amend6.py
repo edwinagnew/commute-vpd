@@ -41,8 +41,9 @@ from commute import anchors as AN
 from commute import keydep as KD
 from commute import kv
 from commute import open_pair as OP
+from commute import steering as ST
 from commute.data import Windows
-from commute.heldout_keys import PARTS, gain, split_task
+from commute.heldout_keys import PARTS, gain, pool_of, specific, split_task
 
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
@@ -62,7 +63,7 @@ def draw(name: str, marker: int, keys: list[int], pools: dict[str, list[int]], o
     return None
 
 
-def tables(ctx: KD.Ctx, src: dict[str, Any], keys: list[int], elicit: list[int], out: dict[str, Any]) -> list[kv.KVTask]:
+def tables(ctx: KD.Ctx, src: dict[str, Any], keys: list[int], elicit: list[int], out: dict[str, Any]) -> list[tuple[kv.KVTask, str]]:
     """The prior-matched cipher and the first-letter rule on the keys (see the module docstring)."""
     S = ctx.P["settings"]
     tr, ho = src["train"], src["heldout"]
@@ -79,16 +80,46 @@ def tables(ctx: KD.Ctx, src: dict[str, Any], keys: list[int], elicit: list[int],
     for k in keys:
         group.setdefault(letter[k], []).append(k)
     rep = {g[0]: g for g in group.values()}  # one representative key per letter draws the letter's word
-    fl = draw("letters", src["task"].marker, list(rep), pools, lambda r, v: all(float(geo[k][v]) < S["letter_max_p"] for k in rep[r]))
+    starts = {v: tok.decode([v]).strip()[:1].lower() for v in pools["ranked_from_1000"]}  # a letter's word never starts with it
+    fl = draw("letters", src["task"].marker, list(rep), pools,
+              lambda r, v: starts[v] != letter[r] and all(float(geo[k][v]) < S["letter_max_p"] for k in rep[r]))
     if pm is None or fl is None:
         stop(out, "a pool ran out of admissible values")
     word = {letter[r]: v for r, v in zip(fl[0].keys, fl[0].values, strict=True)}
-    out["tables"] = {"prior_cipher_pool": pm[1], "letter_pool": fl[1], "letters": {L: len(g) for L, g in sorted(group.items())},
-                     "letter_of": {str(k): letter[k] for k in keys}}
-    return [pm[0], kv.KVTask("first_letter", src["task"].marker, tuple(keys), tuple(word[letter[k]] for k in keys))]
+    out["tables"] = {"letters": {L: len(g) for L, g in sorted(group.items())}, "letter_of": {str(k): letter[k] for k in keys},
+                     "word_of": {L: [v, tok.decode([v])] for L, v in sorted(word.items())}}
+    return [pm, (kv.KVTask("first_letter", src["task"].marker, tuple(keys), tuple(word[letter[k]] for k in keys)), fl[1])]
 
 
-def save_map(ctx: KD.Ctx, src: dict[str, Any], m: kv.KVTask, trained: list[int], held: list[int], d: Path, out: dict[str, Any]) -> dict[str, Any]:
+def null_task(ctx: KD.Ctx, m: kv.KVTask, trained: list[int], held: list[int], d: Path, out: dict[str, Any]) -> ST.Task:
+    """The first-letter null (review of a946868): each held-out key's target swapped for the word of another letter
+    whose trained-key count is nearest its own letter's (ties by a seeded draw), on the same held-out windows. x_null
+    reads what a lean toward often-trained words gives without the letter rule."""
+    letter, val = out["tables"]["letter_of"], dict(zip(m.keys, m.values, strict=True))
+    n = {L: sum(letter[str(k)] == L for k in trained) for L in {letter[str(k)] for k in trained}}
+    gen, swap = torch.Generator().manual_seed(ctx.P["settings"]["null_seed"]), {}
+    for k in held:
+        own = letter[str(k)]
+        gap = {L: abs(c - n.get(own, 0)) for L, c in n.items() if L != own}
+        near = sorted(L for L, g in gap.items() if g == min(gap.values()))
+        L = near[int(torch.randint(len(near), (1,), generator=gen))]
+        swap[k] = val[next(x for x in trained if letter[str(x)] == L)]
+        out["null"] = {**out.get("null", {}), str(k): {"own": own, "n_own": n.get(own, 0), "swap": L, "n_swap": n[L]}}
+    w = torch.load(d / "windows_first_letter_new.pt", weights_only=False)
+    t = kv.KVTask("first_letter_null_new", m.marker, tuple(held), tuple(swap[k] for k in held))
+    torch.save({**w, "task": t, "table": t.table(int(w["table"].shape[0]))}, d / "windows_first_letter_null_new.pt")
+    log(f"[null] {json.dumps(out['null'])}")
+    return ST.load_task(ctx.net, d / "windows_first_letter_null_new.pt", "first_letter_null_new", "first_letter")
+
+
+def with_null(ctx: KD.Ctx, t: dict[str, Any], dW: ST.DW, rd: dict[str, Any]) -> dict[str, Any]:
+    """x_null = the held-out specific gain of the swapped targets (the same pool as x) over G_spec, and x - x_null."""
+    xn = float(specific(ctx.net, t["null"], dW, pool_of(t))[1].mean()) / rd["G_spec"] if rd["G_spec"] != 0 else float("nan")
+    return {"x_null": xn, "x_minus_null": rd["x"] - xn}
+
+
+def save_map(ctx: KD.Ctx, src: dict[str, Any], m: kv.KVTask, pool: str, trained: list[int], held: list[int], d: Path,
+             out: dict[str, Any]) -> dict[str, Any]:
     """Amendment 3's windows with `m`'s table, cut by key; its record (zero update, W0 prior of its values)."""
     V = int(ctx.net.net.lm_head.weight.shape[0])
     torch.save({**src, "task": m, "table": m.table(V)}, d / f"windows_{m.name}.pt")
@@ -97,7 +128,7 @@ def save_map(ctx: KD.Ctx, src: dict[str, Any], m: kv.KVTask, trained: list[int],
     val = dict(zip(m.keys, m.values, strict=True))
     zero = {k: torch.zeros_like(x) for k, x in ctx.net.W0.items()}
     letters_trained = {out["tables"]["letter_of"][str(k)] for k in trained}
-    out["maps"][m.name] = {"sha256": sha, "values": [val[k] for k in m.keys], "n_distinct": len(set(m.values)),
+    out["maps"][m.name] = {"pool": pool, "sha256": sha, "values": [val[k] for k in m.keys], "n_distinct": len(set(m.values)),
                            "n_held_value_trained": sum(val[k] in {val[x] for x in trained} for k in held),
                            "n_held_letter_trained": sum(out["tables"]["letter_of"][str(k)] in letters_trained for k in held),
                            "zero_max_abs": max(float(gain(ctx.net, t[p], zero).abs().max()) for p in PARTS),
@@ -116,7 +147,9 @@ def w0_control(ctx: KD.Ctx, a3: dict[str, Any], d3: Path, d: Path, out: dict[str
         stop(out, "the key split differs from Amendment 3's")
     src = torch.load(d3 / "windows_elicit.pt", weights_only=False)
     out["maps"] = {}
-    tasks = {m.name: save_map(ctx, src, m, trained, held, d, out) for m in tables(ctx, src, keys, a3["maps"]["elicit"]["values"], out)}
+    made = tables(ctx, src, keys, a3["maps"]["elicit"]["values"], out)
+    tasks = {m.name: save_map(ctx, src, m, pool, trained, held, d, out) for m, pool in made}
+    tasks["first_letter"]["null"] = null_task(ctx, made[1][0], trained, held, d, out)
     p = {n: out["maps"][n]["w0_geo_p"]["trained"] for n in MAPS}
     ok = (all(out["maps"][n]["zero_max_abs"] == 0.0 for n in MAPS) and S["band"][0] <= p["prior_cipher"] <= S["band"][1]
           and p["first_letter"] < S["letter_max_p"])
@@ -147,12 +180,16 @@ def one_seed(ctx: KD.Ctx, n: str, t: dict[str, Any], d: Path, seed: int, out: di
     ft = train(ctx, d, n, seed, KD.CIPHER_CHECKS)
     at = out["gate_step"][run] = over_gate(ctx, run, t, ft, out)
     for s in sorted({30, at if at is not None else 30}):
-        if n == "first_letter":  # the entry condition first, r only if it holds
-            rd = out["reads"].get(f"{run}@{s}") or read(ctx, run, t, ft, s, out, vpd=False)
-            if not OP.carries(rd, th):
-                log(f"[entry {run} @ {s}] x {rd['x']:.4f} label {rd['label']}: not over {th['x_entry']}; r not read")
-                continue
-        read(ctx, run, t, ft, s, out, vpd=True)
+        if n != "first_letter":
+            read(ctx, run, t, ft, s, out, vpd=True)
+            continue
+        rd = out["reads"].get(f"{run}@{s}") or read(ctx, run, t, ft, s, out, vpd=False)  # the entry condition first
+        null = with_null(ctx, t, ft.deltas[s], rd)
+        rd.update(null)
+        log(f"[entry {run} @ {s}] x {rd['x']:.4f} x_null {null['x_null']:.4f} x - x_null {null['x_minus_null']:.4f} label {rd['label']}")
+        if OP.carries(rd, th):
+            read(ctx, run, t, ft, s, out, vpd=True).update(null)
+        amend3.dump(out)
 
 
 def references(a3: dict[str, Any], a4: dict[str, Any], a5: dict[str, Any]) -> dict[str, Any]:
@@ -192,6 +229,7 @@ def main() -> None:
     at30 = lambda n: [out["reads"].get(f"{n}_s{s}@30") for s in seeds]
     at_gate = lambda n: [out["reads"].get(f"{n}_s{s}@{out['gate_step'][f'{n}_s{s}']}") for s in seeds]
     out["score"] = OP.score_amend6(at30("prior_cipher"), at30("first_letter"), P["thresholds"])
+    out["score"]["PM"]["scored"] = out["maps"]["prior_cipher"]["pool"] == "cipher_pool"  # a fallback pool: reported, not scored
     out["at_gate_step"] = OP.score_amend6(at_gate("prior_cipher"), at_gate("first_letter"), P["thresholds"])  # reported
     ref = references(a3, a4, a5)
     out["prior_beside_r"] = {**{n: {"w0_geo_p_trained": out["maps"][n]["w0_geo_p"]["trained"], "r30": out["score"][k]["r"]}
