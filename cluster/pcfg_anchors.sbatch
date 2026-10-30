@@ -17,6 +17,12 @@
 #   sbatch --job-name=commute-e55-amend5b cluster/pcfg_anchors.sbatch amend5b  # Amendment 5b (WNf seeds 1-3), ~4-6 min (estimated); before c1
 #   sbatch --job-name=commute-e55-c1c cluster/pcfg_anchors.sbatch c1 controls  # Stage C1 controls, <= 7 min (estimated)
 #   sbatch --job-name=commute-e55-c1 cluster/pcfg_anchors.sbatch c1  # (after c1c finishes and its controls are read: both write c1.json) Stage C1 states, <= 119 min = up to 6 jobs of 22 min (estimated; 7 allowed with resubmits, tight)
+#   sbatch --job-name=commute-e55-c1b-controls cluster/pcfg_anchors.sbatch c1b controls    # Stage C1b, ~8-10 min, 1 job
+#   sbatch --job-name=commute-e55-c1b-train cluster/pcfg_anchors.sbatch c1b train          # (after controls) ~63 min = 3 jobs
+#   sbatch --job-name=commute-e55-c1b-calibrate cluster/pcfg_anchors.sbatch c1b calibrate  # (after train) ~56 min = 3 jobs
+#   (commit results/c1b_cutoffs.json; score exits 2 until it is committed unmodified)
+#   sbatch --job-name=commute-e55-c1b-score cluster/pcfg_anchors.sbatch c1b score          # ~84 min = 4-5 jobs
+#   (one c1b job at a time: every stage writes results/c1b.json)
 # a0: per prior, 500 pretraining iterations stopped at 250 and resumed from the saved file, behaviour and floors on 1K
 #   fresh samples -> experiments/pcfg_anchors/results/a0.json; checkpoints and a0.log in results/large/a0/.
 # a1 PRIOR: 50K iterations (~10 min plus compile at the a0 rate) with a 25-min deadline. Finished: results/a1_PRIOR.json;
@@ -59,7 +65,14 @@
 #   steering, reverse fine-tuning -> results/c1.json after each state. 22-min deadline, exit 3 = resubmit by hand (up to 6 times
 #   for c1) and resumes; a reverse fine-tune cut by the deadline is rerun. A model-free miss -> results/c1_control_miss.json,
 #   exit 1. Log results/large/c1/c1.log.
-# a1, a2, amend1, amend5, amend5b and c1: on exit 3 (deadline: saved, not finished) resubmit the same command by hand
+# c1b STAGE: experiments/pcfg_anchors/c1b.py (predictions_c1b.json; refuses a draft, and refuses every stage while
+#   results/c1b_stop.json exists). controls: LOW reproduces Stage A, scratch (NEVER, lr 1e-5, cap 5K), pruning control,
+#   probe controls on LOW, steering and probe on the ID states; train: 17 new fine-tunes (task P, task N) and checks on
+#   all 40 states; calibrate: the 4 instruments on the calibration-seed truth states, then results/c1b_cutoffs.json;
+#   score: the scored-seed states, labels and scores. A stop row writes c1b_stop.json and exits 1; a stage run too early
+#   exits 2. 22-min deadline, exit 3 = resubmit the same stage by hand; it resumes. States in results/large/c1b/, log
+#   results/large/c1b/c1b.log.
+# a1, a2, amend1, amend5, amend5b, c1 and c1b: on exit 3 (deadline: saved, not finished) resubmit the same command by hand
 #   (compute nodes have no sbatch, so a job cannot resubmit itself); the next job resumes from the saved files.
 #SBATCH --job-name=commute-e55-a0
 #SBATCH --partition=compute
@@ -74,12 +87,13 @@
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; puts this clone's src first on PYTHONPATH
 cd "$COMMUTE_REPO"
-usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...] | amend1 | amend2 | amend3 | amend4 | amend5 [controls] | amend5b | c1 [controls]"
+usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...] | amend1 | amend2 | amend3 | amend4 | amend5 [controls] | amend5b | c1 [controls] | c1b {controls,train,calibrate,score}"
 stage=${1:-}
 args=("${@:2}")
 case "$stage ${#args[@]}" in
   "a0 0" | "a1c-patch 0" | "a1c-probe 0" | "amend1 0" | "amend2 0" | "amend3 0" | "amend4 0" | "amend5 0" | "amend5b 0" | "c1 0") ;;
   "amend5 1" | "c1 1") [ "${args[0]}" = controls ] || { echo "$usage" >&2; exit 2; } ;;
+  "c1b 1") case "${args[0]}" in controls | train | calibrate | score) ;; *) echo "$usage" >&2; exit 2 ;; esac ;;
   "a1 1") case "${args[0]}" in LOW | HIGH | NEVER) ;; *) echo "$usage" >&2; exit 2 ;; esac ;;
   "a2 "*) [ "${#args[@]}" -ge 1 ] || { echo "$usage" >&2; exit 2; } ;;
   *) echo "$usage" >&2; exit 2 ;;
@@ -101,6 +115,7 @@ case "$stage" in
   amend5) cmd=(.venv/bin/python experiments/pcfg_anchors/amend5.py --deadline-min 22 ${args[@]:+--controls-only}); logf=$out/amend5.log ;;
   amend5b) cmd=(.venv/bin/python experiments/pcfg_anchors/amend5b.py --deadline-min 22); logf=$out/amend5b.log ;;
   c1) cmd=(.venv/bin/python experiments/pcfg_anchors/c1.py --deadline-min 22 ${args[@]:+--controls-only}); logf=$out/c1.log ;;
+  c1b) cmd=(.venv/bin/python experiments/pcfg_anchors/c1b.py "${args[0]}" --deadline-min 22); logf=$out/c1b.log ;;
 esac
 rc=0
 "${cmd[@]}" 2>&1 | tee -a "$logf" || rc=$?
