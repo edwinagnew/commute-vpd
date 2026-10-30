@@ -5,14 +5,15 @@ and code-review record: `reports/plans/2026-10-29_plan_performed-anchor.md`. Fil
 `experiments/performed_anchor/results/predictions.json`, filed before the run, not edited since. Results:
 `results/a0.json`, `results/finetune.json`, `results/read.json`. Figures: `experiments/performed_anchor/figures/` from
 `plot.py`. Notebook: `notebooks/E53_performed_anchor.ipynb`. Independently checked 2026-10-29: supported with
-corrections, applied here; the breadth section and the update-size section were added then.*
+corrections, applied here; the breadth section and the update-size section were added then. Amendment 1b, a cipher
+twice as broad, added at the end on 2026-10-30.*
 
 ## In plain words
 
 We fine-tuned the small model on the same text to write in lowercase, which it already prefers, and to swap fifty common
 words, which it cannot. The stand-in ratio read lowercase far above the word swap on both seeds, while the relay number
 did not separate them. For `GOALS.md` this is one task pair the ratio separates, but lowercase is also the broader
-update, so whether the ratio reads the update's kind or its breadth is open.
+update, so kind and breadth stay confounded, even after a broader follow-up cipher.
 
 ## The answer
 
@@ -20,8 +21,9 @@ On this one pair, the stand-in ratio separates lowercase from the word swap by a
 and the swap about 0.26 on both seeds, and the swap stayed low at the nearest saved gains, which bracket lowercase's.
 The scored rule passed. But lowercase is also the broader update. It touches about twice as many positions and buys far
 less gain per unit of change elsewhere. Every row orders the same way on that as on its task. So whether the ratio
-reads the kind of update or its breadth is open. The null meant to test kind against task failed. The relay did not
-separate the pair.
+reads the kind of update or its breadth is open. A follow-up cipher of 500 words was twice as broad but still narrower
+than lowercase, so it could not settle this; provisionally, it read as low as the first. The null meant to test kind
+against task failed. The relay did not separate the pair.
 
 ## What was tested
 
@@ -367,3 +369,237 @@ matched in breadth but differing in kind, a task-matched null that reaches its g
 - States: `results/large/dW_<task>_s<seed>_step<n>.pt`, bf16, sha256 in `results/finetune.json`. Logs:
   `results/large/finetune.log`, `read.log`.
 - Figures: `experiments/performed_anchor/plot.py`, from `results/read.json` only.
+
+# Amendment 1b (2026-10-30): a cipher twice as broad
+
+*`run.py a1b_finetune` and `a1b_read`, jobs 45971 and 45972, written 2026-10-30. Plan: section "Amendment 1b" of
+`reports/plans/2026-10-29_plan_performed-anchor.md`. Filed rules: `results/predictions_amend1b.json`, filed before the
+run. Results: `results/finetune_amend1b.json`, `results/read_amend1b.json`. Figures: `figures/a1b_*.png` from
+`plot_amend1b.py`. Notebook: the Amendment 1b part of `notebooks/E53_performed_anchor.ipynb`.*
+
+## In plain words
+
+We fine-tuned the small model to swap 500 common words, to test whether E53's gap comes from lowercase being the
+broader update. The new cipher was twice as broad as E53's but still narrower than lowercase, so the filed rule leaves
+the question unanswered. For `GOALS.md` the confound between kind and breadth stands, and provisionally a broader
+cipher did not read any higher.
+
+## The answer
+
+Not answered. The filed rule needed the new cipher to be at least as broad as E53's lowercase, and it was not. It
+buys about 7.8 nats of gain per nat of change elsewhere, against lowercase's 4.5 to 4.9. It is twice as broad as E53's
+cipher, though. Its stand-in ratio at the end of training read 0.27 to 0.29, where E53's cipher read 0.26. So,
+provisionally, closing most of the breadth gap to lowercase left the ratio where it was. At a gain close to
+lowercase's it read 0.47.
+
+## What was tested
+
+E53 found the stand-in ratio reads lowercase at 0.92 and a 50-word cipher at 0.26. Lowercase is something the original
+model already does, the cipher something it cannot do. But lowercase is also the broader update: it changes the output
+at more positions per nat of gain. Amendment 1 was to swap the two, a narrow performed task against a broad new one.
+Its narrow lowercase task failed the original-model check: the model does not lowercase those 50 words inside cased
+text, preferring the capital by 4.7 nats. The user chose to run the broad cipher alone.
+
+**The broad cipher.** The same 2,400 cased Pile rows as E53. A fixed seeded swap of the 500 word tokens of Pile
+frequency ranks 50 to 549 is applied in context and in the answers. The swap touches 9.1% of training tokens, against 2.4% for E53's
+cipher. The original model prefers the unswapped word by 5.0 nats at these positions, so it cannot do this task.
+E53's recipe: Adam at 3e-5, 300 steps of 8 rows, all 24 decomposed matrices, batch orders 0 and 1, called seeds,
+saved at steps 10, 100 and 300.
+
+**Breadth.** The full model's gain $G$ at the scored positions divided by the true off-target KL. That KL is the mean KL from the original model to the fine-tuned one. It is taken over the window positions whose
+next token is not one of the task's scored tokens. A high value means a targeted update; a low one, a broad update. E53 used a pooled KL over every other
+position; the true one leaves out positions that predict another task token. E53's four step-300 states were re-read
+with it in this run.
+
+**The ratio.** As in E53: the least-squares split of each update, then the stand-in model, the subcomponents alone
+under Γ's masks. The stand-in ratio is the masked gain over the subcomponent gain. It is roughly the gate gain $g$ over
+the subcomponent gain $U_1 - U_0$, where $g$ is what Γ's new mask values alone do to the original subcomponents. It is
+not the share Γ keeps and has no ceiling at 1.
+
+**The random update.** A Gaussian update with the step-300 seed-0 fine-tune's per-matrix norms, scaled until its
+off-target KL matched. It learned nothing; twice its gain sets the gain floor, the gain a state needs to be read.
+
+## What we expected, and why
+
+The filed rule had two steps. First, the new cipher had to be at least as broad as E53's lowercase on both seeds. If
+not, the outcome is "not read". If so, both step-300 ratios at 0.5 or below would mean breadth does not explain E53's
+gap, and both at 0.7 or above would mean it does. The lean was "does not explain" at 0.6, since every cipher-like
+update read so far sat between 0.26 and 0.42. The breadth step was leaned to pass at 0.6, unmeasured: the new cipher
+maps four times as many training tokens.
+
+## The control
+
+E53's two seed-0 step-300 states were re-read first by this code. Lowercase reproduced $G$ 1.6708 and ratio 0.9186,
+the cipher 3.8690 and 0.2643, exactly as in `read.json`. The seed-1 states also reproduced their E53 ratios exactly.
+Every bf16 state matched its fp32 held-out gain within 0.0003. The fine-tune took 46 seconds and the read 134 seconds
+on an L40, at $0.
+
+## Is the broad cipher at least as broad as E53's lowercase?
+
+![breadth of E53's lowercase and cipher at step 300 and of the broad cipher at steps 10, 100 and 300, with the filed bar at lowercase's lower seed](../../experiments/performed_anchor/figures/a1b_breadth.png)
+
+**Reading it.** No. The broad cipher gains 7.81 and 7.74 nats per nat of off-target KL at step 300, against
+lowercase's 4.92 and 4.46. The filed bar was lowercase's lower seed, 4.46, so the outcome is "not read". It is about
+twice as broad as E53's cipher, which reads 15.3 and 14.9. No saved step reaches lowercase: the broad cipher was most
+targeted at step 10, at 8.2 to 9.1, and broadened as it trained.
+
+**A caveat on the bar, from the plan's review.** E53's lowercase task lowered every capital, but only positions before
+a space-led capital count as its scored positions. Positions predicting a capital with no leading space, or a word the
+tokenizer splits differently once lowercased, were changed by the task yet count as off-target. Their KL inflates
+lowercase's off-target KL, so lowercase reads broader than it is. The bar was therefore harder to pass than intended.
+The rule was scored as filed. For the broad cipher to pass, lowercase's corrected number would have to rise from 4.46 to 7.81. How far it would
+rise is not measured.
+
+| state | G, nats | true off-target KL, nats | breadth, true KL | breadth, pooled KL |
+|---|---|---|---|---|
+| E53 lowercase, seed 0, step 300 | 1.671 | 0.340 | 4.92 | 4.46 |
+| E53 lowercase, seed 1, step 300 | 1.612 | 0.362 | 4.46 | 4.06 |
+| broad cipher, seed 0, step 10 | 1.350 | 0.149 | 9.09 | 8.68 |
+| broad cipher, seed 1, step 10 | 1.491 | 0.182 | 8.17 | 7.80 |
+| broad cipher, seed 0, step 100 | 2.325 | 0.277 | 8.40 | 7.96 |
+| broad cipher, seed 1, step 100 | 2.450 | 0.286 | 8.58 | 8.12 |
+| broad cipher, seed 0, step 300 | 3.315 | 0.424 | 7.81 | 7.39 |
+| broad cipher, seed 1, step 300 | 3.275 | 0.423 | 7.74 | 7.33 |
+| E53 cipher, seed 0, step 300 | 3.869 | 0.253 | 15.30 | 14.95 |
+| E53 cipher, seed 1, step 300 | 3.809 | 0.256 | 14.88 | 14.54 |
+
+**Is E53's lowercase broader than its cipher on the true KL?** Yes, reported and not scored. Lowercase reads 4.5 to 4.9
+and the cipher 14.9 to 15.3, the same order as on the pooled KL. So E53's breadth confound was not an artefact of how
+densely each task's own tokens sit in the windows. The caveat above biases lowercase toward broad here too, but a
+threefold gap is far larger than that bias is likely to be.
+
+## Does a cipher twice as broad read higher?
+
+![stand-in ratio against breadth for E53's lowercase and cipher at step 300 and the broad cipher at steps 10, 100 and 300, with E53's leans at 0.5 and 0.7](../../experiments/performed_anchor/figures/a1b_ratio.png)
+
+**Reading it.** No, provisionally and unscored. At step 300 the broad cipher read 0.285 and 0.273, with 90% intervals
+over windows of about ±0.035. E53's cipher read 0.264 and 0.257 at half the breadth. Lowercase reads 0.92 to 0.93. So
+moving the cipher most of the way to lowercase's breadth moved its ratio by 0.02 of the 0.65 gap. The gate
+gain over the subcomponent gain tells the same story. It reads 0.18 to 0.20 on the broad cipher and 0.14 to 0.15 on
+E53's, against 0.87 to 0.88 on lowercase.
+
+What this cannot rule out:
+
+- *A breadth effect closer to lowercase.* The broad cipher is still 1.6 to 1.8 times lowercase's breadth number. A
+  ratio that rose only near lowercase's breadth would give this figure.
+- *Different words.* The two ciphers swap different words: 500 of ranks 50 to 549 against 50 of ranks 50 to 99. They
+  are scored at different positions, so they are not one task at two breadths.
+- *Task family.* Both low readings are word swaps and the one high reading is lowercase. Kind and task family stay
+  confounded: no broad performed task and no targeted performed task has been read.
+- *The bar's bias.* If lowercase's true breadth is well above 4.9, the broad cipher may be closer to it than it looks.
+
+| state | G, nats | subcomponent gain, nats | gate gain g, nats | masked gain, nats | stand-in ratio | 90% interval | g over subcomponent gain |
+|---|---|---|---|---|---|---|---|
+| broad cipher, seed 0, step 10 | 1.350 | 1.043 | 0.450 | 0.493 | 0.473 | 0.430-0.517 | 0.432 |
+| broad cipher, seed 1, step 10 | 1.491 | 1.185 | 0.522 | 0.565 | 0.477 | 0.435-0.520 | 0.440 |
+| broad cipher, seed 0, step 100 | 2.325 | 1.935 | 0.548 | 0.687 | 0.355 | 0.320-0.392 | 0.283 |
+| broad cipher, seed 1, step 100 | 2.450 | 2.034 | 0.629 | 0.765 | 0.376 | 0.332-0.424 | 0.309 |
+| broad cipher, seed 0, step 300 | 3.315 | 2.789 | 0.547 | 0.795 | 0.285 | 0.250-0.322 | 0.196 |
+| broad cipher, seed 1, step 300 | 3.275 | 2.730 | 0.490 | 0.745 | 0.273 | 0.239-0.308 | 0.179 |
+| E53 cipher, seed 0, step 300 | 3.869 | 3.304 | 0.481 | 0.873 | 0.264 | 0.237-0.292 | 0.146 |
+| E53 cipher, seed 1, step 300 | 3.809 | 3.242 | 0.442 | 0.834 | 0.257 | 0.228-0.285 | 0.136 |
+| E53 lowercase, seed 0, step 300 | 1.671 | 1.451 | 1.256 | 1.333 | 0.919 | 0.861-0.980 | 0.866 |
+| E53 lowercase, seed 1, step 300 | 1.612 | 1.417 | 1.241 | 1.317 | 0.929 | 0.868-0.992 | 0.876 |
+
+Every broad-cipher state clears its bar, the gain floor of 0.48 nats, and reads the same at the plan's plain 1-nat bar.
+The part of the masked gain beyond $g$ is 0.04 to 0.09 of the subcomponent gain on the broad cipher. It is 0.12 on
+E53's cipher and 0.05 on lowercase.
+
+## At lowercase's gain, where does the broad cipher read?
+
+![stand-in ratio against full-model gain for E53's cipher and the broad cipher at steps 10, 100 and 300 and E53's lowercase at step 300, with the broad cipher's gain floor](../../experiments/performed_anchor/figures/a1b_gain.png)
+
+**Reading it.** Low, though higher than at step 300; reported and not scored. The saved state nearest lowercase's gain
+is step 10 on both seeds. There the broad cipher gains 1.35 and 1.49 nats, against lowercase's 1.67 and 1.61. It reads 0.47
+and 0.48, against lowercase's 0.92 and 0.93. A straight line between steps 10 and 100 gives 0.43 and 0.46 at lowercase's
+gain; that interpolation is provisional. Both ciphers' ratios fall as their gain grows, and the broad cipher sits a
+little above E53's cipher at every gain. At step 10 the broad cipher is also at its most targeted, so this comparison
+matches gain but widens the breadth gap.
+
+## The random update gives no reference for the ratio
+
+The broad cipher's random update matched the fine-tune's off-target KL, 0.435 against 0.424 nats. It gained 0.24 nats
+in the full model, which sets the gain floor at 0.48. But its subcomponent gain was 0.009 nats, so its ratio divides
+by almost nothing. In 94% of bootstrap resamples of the windows its subcomponent gain fell below 0.1 nats, the
+smallest floor allowed. The interval of 1.12 to 2.32 comes from the other 6% only, a selected tail. So this null says
+an update that learns nothing has no subcomponent gain to divide by. It does not say what ratio such an update would
+read, and gives no low reference for the cipher rows. Its only job here is the gain floor.
+
+## What we learned
+
+The filed question, whether breadth alone explains E53's gap, is not answered: no new update reached lowercase's
+breadth. Two things are firmer than before. E53's lowercase is broader than its cipher on the true off-target KL too,
+so the confound is real and not a counting artefact. And a cipher twice as broad as E53's, at a similar gain, read the
+same low ratio. Provisionally that tilts against "the ratio reads breadth" over this range of breadth. It cannot rule
+out a breadth effect nearer lowercase's, or a task-family effect, since both low readings are word swaps.
+
+## How compelling is the evidence
+
+- *Tasks*: one new task, the broad cipher, at two batch orders, on the 67M model and one decomposition.
+- *Noise*: 90% intervals over windows are about ±0.035 on the broad cipher at step 300; the two seeds agree within
+  0.012. Windows from one row share context, so the intervals are somewhat narrow.
+- *Controls*: the repro control could fail and passed exactly. The ratio has no positive control in this run, and the
+  random update gives it no low reference.
+- *Blind to*: the update's kind, since no performed task at the cipher's breadth was read. Breadth is one definition,
+  and lowercase's value under it is biased toward broad.
+- *Fine-tunes*: partly learned, like E53's: the held-out gain was 0.33 nats per token at step 300.
+
+## Surprises
+
+- The broad cipher grew broader as it trained: most targeted at step 10, broadest at step 300. On the pooled KL, E53's cipher became more
+  targeted with training.
+- None else: the ratio stayed below 0.5 as leaned; the breadth requirement, leaned to pass at 0.6, missed.
+
+## What next
+
+1. **A corrected lowercase breadth.** Re-read E53's lowercase with every position the lowercasing changed left out of
+   the off-target KL, a read of minutes on the cluster at $0. If it rises past 7.8, this run's outcome can be read
+   under an amended rule; if it stays near 5, the broad cipher is truly narrower.
+2. **A broader new task.** A cipher over more words or a whole-vocabulary swap, to reach lowercase's breadth. If its
+   ratio stays near 0.3, breadth is ruled out over the whole range; if it rises toward 0.9, breadth explains the gap.
+3. **A performed task as targeted as the cipher.** Narrow lowercase failed its check; another performed behaviour at a
+   few words is needed to read kind directly.
+
+## Scorecard
+
+| id | claim in words | rule | read | verdict |
+|---|---|---|---|---|
+| check | the original model cannot do the broad cipher | mean ≤ −3 nats, from `check_amend1.json` | −4.985 | pass |
+| e53_repro | this code reproduces E53's seed-0 step-300 rows | G within 0.02, ratio within 0.01 | 1.6708 / 0.9186; 3.8690 / 0.2643 | pass, exact |
+| bf16_save | the bf16 states match fp32 | held-out gain within 0.005 | largest difference 0.0003 | pass |
+| gate | the broad cipher is at least as broad as E53's lowercase | max broad-cipher breadth ≤ min lowercase breadth, step 300 | 7.81, 7.74 vs 4.92, 4.46 | missed |
+| outcome | breadth explains E53's gap or not | gate, then both ratios ≤ 0.5 or ≥ 0.7 | gate missed | not read (swap missed) |
+| lean, outcome | does not explain 0.6, mixed 0.25, explains 0.15 | reported | not read | — |
+| lean, gate | achieved at 0.6 | reported | missed | — |
+| e53 order | E53's lowercase broader than its cipher on the true KL | max lowercase < min cipher | 4.92, 4.46 vs 15.30, 14.88 | lowercase broader, reported; pooled KL the same |
+| ratio, step 300 | broad cipher's stand-in ratio | reported, unscored | 0.285, 0.273 | provisional: as low as E53's cipher |
+| ratio, 1-nat bar | the same at the plain bar | reported | 0.285, 0.273 | same |
+| matched gain | broad cipher at G nearest lowercase's | reported | step 10, G 1.35 and 1.49, ratio 0.473 and 0.477 | below 0.5 |
+
+## Not run
+
+- The filed outcome: the breadth requirement missed, so whether breadth alone explains E53's gap is unscored.
+- A new update at least as broad as E53's lowercase.
+- A lowercase off-target KL that leaves out every position the lowercasing changed.
+- A performed task as targeted as the cipher; narrow lowercase was dropped at its original-model check.
+- A low reference for the ratio: the random update's subcomponent gain was near zero.
+- A positive control for the ratio within this run.
+- The relay, hand write, zero-update and do-nothing rows for the broad cipher, dropped by the plan.
+- A broad-cipher state at exactly lowercase's gain; steps between 10 and 100.
+- E53's cipher at steps 10 and 100 on the true off-target KL.
+- A second decomposition seed, another task family, Qwen; an interval over rows.
+
+## Provenance
+
+- `a1b_finetune`: job 45971, commit `f679167`, MATS cluster L40 `debug`, 11:54:18 to 11:55:04, peak GPU 9.0 GB,
+  host 6.2 GB. States `results/large/dW_broad_cipher_s{0,1}_step{10,100,300}.pt`, bf16, sha256 in
+  `results/finetune_amend1b.json`.
+- `a1b_read`: job 45972, commit `52e126e`, L40 `debug`, 11:55:30 to 11:57:44, peak GPU 10.7 GB, host 6.2 GB.
+- Results committed at `061067a`. Logs `results/large/a1b_{finetune,read}.{log,out}`. Cost $0.
+- Figures: `experiments/performed_anchor/plot_amend1b.py`, from `read_amend1b.json` and, for E53's cipher at steps 10
+  and 100, `read.json`.
+
+## Departures from the literature
+
+None. Every quantity here, the stand-in ratio, breadth and the gain floor, is defined in this project, not credited to
+an outside source. The decomposition is used as released, Goodfire's `param-decomp` at commit `74146b5`.

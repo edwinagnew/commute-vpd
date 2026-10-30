@@ -135,11 +135,15 @@ def patch_shares(model: nn.Module, pairs: Pairs | None, prefix_op: int) -> np.nd
     n_layer = len(model.blocks)  # type: ignore[arg-type]
     if pairs is None:
         return np.full(n_layer, np.nan)
-    x, d = counter_seqs(pairs.x, prefix_op), counter_seqs(pairs.donor, prefix_op)
+    return patch_shares_seqs(model, counter_seqs(pairs.x, prefix_op), counter_seqs(pairs.donor, prefix_op))
+
+
+def patch_shares_seqs(model: nn.Module, x: np.ndarray, d: np.ndarray) -> np.ndarray:
+    """P at every block (n_layer,) on given sequences: row i of x is patched from row i of d (any prompt)."""
     out_x, _ = run_at_art(model, x)
     out_d, res_d = run_at_art(model, d)
     shares = []
-    for blk in range(1, n_layer + 1):
+    for blk in range(1, len(model.blocks) + 1):  # type: ignore[arg-type]
         out_p, _ = run_at_art(model, x, block=blk, patch=res_d[blk - 1])
         shares.append(float(((out_p == out_d) & (out_d != out_x)).mean()))
     return np.array(shares)

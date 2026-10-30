@@ -39,7 +39,10 @@ sharpens W₀'s guesses cannot get it), and is key-specific: P(v | M x) ≥ 10 �
 P(v | M x'), which excludes "the"-like values that would be a prior shift. Values unique; 32 keys by a seeded draw
 (seed 0) among those that qualify. Windows as E12 (`kv.windows`, 500, seed 0, train/held-out split).
 **Filed rate:** geometric mean over held-out windows of P_W₀(table[x] | M x) in [5e-3, 1e-1] (selection was on train
-windows, so some regression is expected). **Cipher on the same keys:** `kv.bijection` from E12's value pool, E12's gate
+windows, so some regression is expected). *Amended 2026-10-30 (user, after job 45963 stopped at stage 1, before any
+fine-tune): floor lowered to 1e-3. Selection uses the arithmetic mean (0.032), the gate the geometric mean, which read
+1.70e-3 held-out and 2.3e-3 on the selection windows: the gap is the averaging, not regression. Set after seeing the
+value; same keys and values.* **Cipher on the same keys:** `kv.bijection` from E12's value pool, E12's gate
 (P_W₀ < 1e-4 per pair). Edge cases: fewer than 32 keys qualify → K = that number if ≥ 16, the cipher at the same K;
 under 16, or the band missed → stop and tell the user (widening the band is a new decision).
 **Size match.** At E12's step rule the elicit task should learn in very few steps. The cipher is read at the
@@ -73,6 +76,18 @@ Edge cases, for every rule: any state under its floor → that rule reads "unrea
 denominator within 1e-6 of 0 → nan → unreadable; a tie at the bound fails (strict); two seeds per kind, so the 0.2
 minimum stops two near-equal seeds making a tiny gap "separate" (E52 P4's lesson).
 
+**Amendment before run (2026-10-30, code review of 8513c3b; no run had happened).** (1) P3: when the cipher's
+norm-matched step equals its own E12 step on a seed (`same_state`), the difference is 0 by construction, so P3 reads
+"uninformative", not pass, and the branch text says the size match collapsed (both tasks at the same step) and P1 is
+read at the cipher's own step. (2) Gain floor: the seed-spread term 2 x |G(s0) - G(s1)| is used only for two seeds at the
+same step; the matched cipher takes it from the cipher's own-step pair, elicit from its own pair, and if a pair's steps
+differ the floor is 0.05 alone. (9) The "denominator within 1e-6 of 0 -> nan" rule is applied in `run.py` where S and r
+are formed. Not filed rules, same review: reversed P1 or P2 is labelled "reversed" and not routed through the tree;
+`at_bound`, an elicit that did not learn and `same_state` go into the branch text; stage 1 also records each key's
+geometric-mean P; stage 2 stops if the block-0 shift exceeds 1e-5 nats (|S_block0| x G_score; in nats because the new tasks' smaller
+G_score would lift E52's ~1e-6-nat rounding near a 1e-6 share, second review of 9be0aab) and checks predictions.json is
+committed unchanged.
+
 ## Decision tree
 - P1 holds, P2 holds → VPD's route split reads a kind steering cannot: write it up as the headline case; next, the
   same pair on Qwen (E45's anchors) and Jain's readout check on the elicit keys.
@@ -89,8 +104,9 @@ labelled "mode switch, unverified" and E54's pair carries the comparison. A work
 
 ## Cost and route
 Two MATS cluster debug jobs (L40, `debug` QoS, $0) via a `pod-runner`: job 1 stages 0–1 (~5 min), job 2 stage 2
-(4 fine-tunes, ~30 checkpoints held in host RAM, ~3.4 GB; reads ~10 min). Not gated (≪ $15, ≪ 3 h). Saved: the four
-scored δW (113 MB each) and `windows_<task>.pt` in `results/large/`; summaries committed.
+(4 fine-tunes, ~30 checkpoints held in host RAM, ~3.4 GB; reads ~10 min). Not gated (≪ $15, ≪ 3 h). Saved: the scored δW
+(113 MB each: elicit and matched cipher, two seeds, plus the cipher at its own step unless it is the same state as the
+matched one) and `windows_<task>.pt` in `results/large/`; summaries committed.
 
 ## Not run
 Jain et al. Def 1 readout and the causal check on the elicit keys; neuron patching (B2) and the weight statistics (B1)

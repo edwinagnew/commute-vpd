@@ -1,0 +1,14 @@
+<article class="exp" id="e54">
+<div class="top"><span class="id">E54</span><span class="chip">unscored</span><h3>Does the route split's re-gating share read a key-to-value map the original 67M model already half-knows as "elicited", and a cipher on the same keys as not, where steering by one mean vector should fail on both?</h3><span class="when">2026-10-30 · MATS cluster L40, $0 planned · <code>experiments/keydependent_elicit</code></span></div>
+<p class="one"><strong>The question.</strong> The re-gating line needs a reading that tells a fine-tune that elicits something the original model already does from one that teaches something new. E52 found that one added steering vector separates a copy task from a map, perhaps only because copying does not depend on the key. The user chose (2026-10-30) a pair where both tasks depend on the key.</p>
+<p class="one"><strong>What we did.</strong> Code and predictions are filed; nothing has run. Each of 32 keys (common word-like tokens) gets as value the word the original model itself ranks 2nd to 20th as its next token after the key, so the map is one it already follows weakly; the cipher uses the same keys with values the model gives almost no probability. Both are fine-tuned on E12's recipe (two seeds), the cipher read at the step whose update has the same size as the elicit map's. Each is then read two ways: steering with one mean vector (E52) and the route split's re-gating share r (E46).</p>
+<p class="one"><strong>What we found.</strong> Not run yet. Filed: r reads higher for the elicit map than for the cipher; steering does not separate them and stays at or below 0.3 on both; the cipher's r moves by under 0.1 between the matched step and its own step. A prompting check was dropped because E52 Amendment 1 found no prompt format that works.</p>
+<p class="one"><strong>What it means.</strong> If r separates the pair while steering cannot, r is reading more than the key-independence of the task, which E53 could not show. A miss would say the earlier separation came from the task or its breadth. An independent code review and two $0 cluster jobs come first.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Running: nothing yet. Next: an independent code review, then job 1 (the reference stage and the first fine-tunes, committed) and job 2, both on a MATS L40 debug slot at $0.</dd>
+<dt>Found</dt><dd><ul>
+<li>Not run yet; predictions P1 to P3 are filed in <code>results/predictions.json</code> (P4, prompting, not run).</li></ul></dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>Approved by the user on 2026-10-30 (option C of the E52 decision). Plan: <code>reports/plans/2026-10-29_plan_e54-keydependent-elicit.md</code>.</dd>
+</dl>
+</article>
