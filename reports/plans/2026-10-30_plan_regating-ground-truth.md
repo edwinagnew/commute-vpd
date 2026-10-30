@@ -122,6 +122,13 @@ Runs with T = neither, or whose labelled saves disagree, are excluded from P1-P3
   T ≠ neither → "not testable"; seeds with different T → each scored, P2 "split", tree branch 4. *Lean: low-medium,
   about 45%:* ρ and r read elicit at 0.95 and 0.77, so P2 passes only if the label is "reuses", and a per-key rank
   choice need not carry to held-out keys.
+  *Note (2026-10-30, after E58 job 46266; lead on Fable's advice, `reports/plans/2026-10-30_advice_e58-reading-FABLE.md`,
+  `decisions.md` last row).* P2 is scored on rule tasks only: tasks where "reuses" by behaviour means a rule W₀ already
+  has, so carry-over to held-out keys is reachable (the label's positive control, E58 Amendment 1's rank-1 or copy map,
+  and Stage B's rows). On lookup tasks (a per-key table over W₀'s pieces, such as E54's elicit map) it is reported,
+  unscored: there the held-out label asks whether a rule generalises and r asks whether the carrying subcomponents are
+  old, and the two must disagree when new per-key routes run through old subcomponents (the granularity limit). E58's
+  filed P2 miss stands as scored in E58; this note changes nothing filed there.
 - **P3 (beside steering).** Agreement count over all scored runs: A_ρ, A_r, A_S. "VPD adds over steering" iff
   A_ρ − A_S ≥ 2 (resp. A_r − A_S ≥ 2): a one-run difference is one seed's flip. Ties or less → "does not add"; A_S
   above A_ρ by ≥ 2 → "steering better". *Edge cases:* runs where S is not read leave all three counts (same rows for

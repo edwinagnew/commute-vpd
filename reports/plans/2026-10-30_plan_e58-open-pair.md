@@ -230,6 +230,144 @@ pool shift, not carry-over.
   should read "new". The elicit label stays open. *Blind to:* a carry-over that lifts every value of the pool alike
   reads as no carry-over here. That is the price of removing the pool shift.
 
+## Amendment 1 (2026-10-30, after job 46266): the rank-k readout and the label's positive control
+
+*Lead's decision on Fable's advice (`reports/plans/2026-10-30_advice_e58-reading-FABLE.md`, "Two $0 checks"; `decisions.md`,
+last row). Code `experiments/open_pair/amend1.py`; rules `src/commute/open_pair.py` § Amendment 1 (edge cases
+`tests/test_open_pair.py`); the label and the readings moved, not changed, from `run.py` to `src/commute/heldout_keys.py`;
+predictions `results/predictions_amend1.json`; job `sbatch cluster/open_pair.sbatch amend1`. Coded and filed; nothing
+run. E58's predictions, P0-P4 and run.json are untouched.*
+
+**In plain words.** E58 found that the fine-tune of the half-known map did not carry to the eight keys it never saw,
+while r and the stand-in ratio read "old pieces". Two checks decide whether that label means anything. First, at the
+unseen keys, we look at what the fine-tune did to the words the original model already preferred there, beside the
+words it was trained to say elsewhere: a lookup pushes the trained words; a general sharpening pushes the model's own
+preferences. Second, we give the label the positive control it never had: a map whose rule the model already follows
+(say what you would have said anyway, ignoring the marker), trained the same way on the same 24 keys, which should
+carry to the other 8 and read "reuses"; the copy map runs beside it as the fallback.
+
+**The request, in the Terms' words.** (i) On E58's six saved fine-tuned states (target model only), at the held-out keys'
+windows: the log-odds gain of W₀'s top-20 next tokens at each key, of the window's own value, and of the 24 trained
+values; the trained-value push T reported directly. (ii) Two new key → value maps on E54's windows, marker, keys and
+E58's 24/8 split: the rank-1 map (value = W₀'s most probable next token after "M key") and the copy map (value = key);
+E54's recipe (`keydep.elicit_ft`), seeds 0-2; each state labelled by E58's rule (value-specific gain, the same bars
+and E58's gate 5.148) and read with r and the stand-in ratio (least-squares split state) and steering's S.
+
+### Design check (`/design`)
+
+- **Goal.** `GOALS.md` → "new capabilities or strengthening?": the re-gating line needs one earned behavioural label
+  to score r and the ratio against. E58's "new" can only be used if the label can also read "reuses" on the 67M.
+- **Nearest tried.** E58 (the label, "new" ×3); E12/E46 copy fine-tunes (r 0.76-0.80, ratio 0.87-0.97, labelled by
+  construction); E55 Stage A (earned labels on the counting model, no decomposition). New: the first 67M state whose
+  "reuses" is earned by held-out keys, and the first readout of what E58's update does at the unseen keys.
+- **Patch or step.** A step that completes E58 (its missing control), not a new direction.
+- **Decisions.** E58's label rule and gate (`predictions.json` amendment 2); E54's recipe; E12's r ≥ 0.5 rule;
+  the step-2 plan's P2 (its note below). User's elicitation granularity limit stated in every claim.
+- **What changes next.** Positive control passes → E58's "new" stands as a reading of the update, and P2 of the step-2
+  plan gets its first labelled "reuses" row. Fails → the label is not used against r or the ratio (to the user).
+- **Control first.** Readout: the zero update must read exactly 0, then each state must reproduce E58's H and the
+  algebraically implied T before the next state is read. Control maps: zero update exactly 0 on all four split tasks.
+- **Class.** Approved on Fable's advice (decisions.md, last row); $0, cluster `debug`, no new model or dataset.
+
+### (i) The rank-k readout
+
+| number | how measured | at W₀ / zero update | do-nothing | control | expected, elicit s0/s1/s2 | expected, cipher |
+|---|---|---|---|---|---|---|
+| own | mean gain of the window's own value | 0 exactly | target model only: same for every placement | must equal E58's H within 1e-4 | 0.613 / 0.460 / 0.897 | 1.375 / 1.189 / 1.256 |
+| T | per window, mean gain of the trained values other than the own value | 0 exactly | as own | must equal `implied_push` from run.json within 1e-4 | 1.589 / 1.680 / 1.842 | 5.497 / 5.726 / 5.617 |
+| R_peer | per window, mean gain of W₀'s top-20 at the key that are neither own nor trained values | 0 exactly | as own | none beyond the zero update | about 0 (−0.6 to +0.3) | near 0 or below |
+| d, s_d, s_R | mean of T_w − R_w; row-bootstrap sd of d and of R_peer (2000, seed 0) | 0, 0 | as own | — | d 1.3-2.2, s_d 0.1-0.2 | d about 5 |
+| rank gain 1..20 | mean gain per W₀ rank (reported) | 0 | as own | — | flat near 0 except trained values in the top 20 | reported |
+| verdict | lookup iff d > 0 and d ≥ 3 s_d; sharpening iff R_peer > 0 and ≥ 3 s_R; both; neither | "neither" | as own | — | lookup | lookup (reported) |
+
+T is not new information: with distinct values, H − H_spec is the mean gain of the other 31 pool values, so
+T = (31 (H − H_spec) − 7 H_other) ÷ 24 exactly (`open_pair.implied_push`; Fable's "+1.6"). That identity is the
+readout's control: it checks the new code against E58's numbers on every state. What is new is R_peer and the rank
+profile. *Blind to:* a sharpening confined to W₀'s rank 1 (averaged into R_peer; rank 1's gain is reported); log-odds at
+the answer position only; a trained value that sits in W₀'s top 20 at a held-out key counts in T, not in R_peer.
+*Noise floor:* s_d and s_R from 124 windows; the 8 keys are the real unit, so the row bootstrap understates the spread
+(as E58's s against s_key).
+
+### (ii) The label's positive control
+
+| number | how measured | at W₀ | do-nothing | control | expected, rank-1 map | expected, copy map |
+|---|---|---|---|---|---|---|
+| W₀ geo-mean P(value) | trained keys' held-out windows (`keydep.geo_rate`) | — | — | — | 0.03-0.3 | 1e-4 to 2e-3 (E10 identity ≤ 0.002) |
+| distinct values; novel held-out keys | values of the 32 keys; held-out keys whose value no trained key has | — | — | — | 8-25; 1-6 | 32; 8 |
+| zero update | max per-window gain on the four split tasks | 0 exactly | — | stop if not | 0 | 0 |
+| G_spec, H_spec, x, s, label | E58's `behaviour`, pool values counted once | 0, label too_small | target model only | gate 5.148 (E58's) | G_spec 4-10; x 0.5-1 if it learns "ignore the marker"; reuses ≥ 2 of 3 | G_spec 8-13; x 0.5-1; reuses ≥ 2 of 3 |
+| x_novel (reported) | key-mean H_spec over novel held-out keys ÷ G_spec | — | — | — | ≈ x if the rule carries | = x (all novel) |
+| r, ratio, S | E54's readings on the trained keys (`heldout_keys.vpd_read`) | undefined | r, ratio: least-squares split only | E58's stage 0 reproduced them | r 0.6-0.9, ratio 0.6-1.0, S reported | r 0.7-0.85, ratio 0.85-1.0, S 0.6-0.8 |
+| readout | as (i), on each control state (reported) | 0 | — | — | rank-1 gain high | reported |
+
+Both maps run every time, in one job (rank-1 first). Running the copy map always costs about a minute and saves a second
+job when rank-1 reads "new". *Blind to:* the rank-1 map can repeat a value across keys, and a held-out key whose value is
+also a trained value can carry by the push toward trained values rather than by the rule (`min_novel` and x_novel guard
+it); the copy map's label is fixed by construction, and the 67M ties its input and output embeddings, so a direct path
+can carry it; a "reuses" control does not test the granularity limit, which bites only when behaviour reads "new".
+*Noise floor:* E58's (s, s_key; r 0.015-0.055, ratio 0.005-0.047, S 0.017-0.07 over seeds).
+
+### Predictions (filed in `results/predictions_amend1.json`; every rule run on its edge cases first, 9 new tests)
+
+- **A1.** All three elicit states read "lookup". Fail on any "sharpening", "both" or "neither"; unreadable if a state is
+  missing. Lean: pass, ~85%.
+- **C1 (rank-1).** Not testable if fewer than 3 novel held-out keys or rank1_s0 "too_small" (Fable's guard); else pass
+  iff ≥ 2 of 3 seeds read "reuses". Lean: testable ~55%, pass ~60% if testable.
+- **C2 (copy).** The same, always testable. Lean: pass ~75%.
+- **Verdict.** "rank1" (C1 pass), "copy_fallback" (C1 not testable, C2 pass), "copy_only" (C1 fail, C2 pass), "none".
+- **C3.** E58's P2 for r and the ratio on the control runs (rank-1 unless C1 is not testable, then copy). Lean: pass ~75%.
+
+Edge cases tested: `implied_push` against hand algebra and E58 elicit_s0 (1.5892), one held-out key or no trained key
+→ nan; `boot_sd_mean` empty, one row, a nan row (empty peer set) → nan, constant → 0; `push_verdict` ties at 3 s,
+zero d with zero s (neither), both, nan; `a1` missing and unreadable states, fail outranking unreadable;
+`control_status` 2-of-3 tie, all too_small, untestable, empty; `score_amend1` every verdict branch, `min_novel` tie,
+empty records; `pool_of` with repeated and distinct values; `others` with the own value left out and nan with no other
+value.
+
+### Departures from Fable's spec and the sources
+
+- Fable's "W₀'s rank 1-20 word-like tokens": ranks here are over the full vocabulary. E54's value ranks were full-
+  vocabulary ranks; the word-like filter only decided which token could be a value.
+- Fable's "set the gate from W₀'s rank-1 probability before filing": that probability cannot be read before the job
+  (no model loads off the GPU). The gate is E58's, as the lead's brief asks; W₀'s P(value) is recorded, and a rank1_s0
+  under the gate makes C1 not testable and hands the verdict to the copy map.
+- The copy map runs always, not only as a fallback (one minute; saves a second job).
+- `min_novel` = 3 is added here (reason in the blind-to line above). `heldout_keys.pool_of` counts each value once; on
+  E58's maps, whose values are distinct, nothing changes.
+
+### Stop rules, runtime, outputs
+
+Stops (exit 1, run.json untouched, `results/amend1.json` written with "stopped"): the readout of the zero update not
+exactly 0 (about 1.5 min in); any E58 state whose file hashes differ from run.json or whose own gain or T misses by over
+1e-4 (by about 3 min); the zero update not 0 on a control task; a block-0 shift over 1e-5 nats. Expected in the first
+minutes: model load about 1 min; the six state controls within about 1e-6; rank1_s0's fine-tune about 11 s, held-out
+P(value) ≥ 0.5 at step 10, ‖δW‖ about 3.0-3.3 (E58 elicit 3.12-3.18). Not a stop: rank1_s0 "too_small".
+
+One MATS `debug` job on an L40, $0, about 6-10 min (readout about 1 min; six fine-tunes about 11 s each; label, readout
+and readings about 25 s per state); host RAM under 6 GB (four checkpoints of 113 MB per fine-tune); disk about 0.7 GB in
+`results/large/amend1/` (a real directory in the main clone's linked `results/large`). Not gated. Outputs:
+`results/amend1.json`, `results/large/amend1/{windows_*,rank1_s*,copy_s*}.pt`, log `results/large/amend1.out`.
+
+### Decision tree
+
+1. A stop → fix ($0); nothing about E58 changes.
+2. A1 pass → reading 2/3 stands with T and R_peer beside H in the write-up. A1 sharpening or both → the "guaranteed by
+   construction" worry is only partly removed; rank profile reported; to the user as a surprise.
+3. Verdict "rank1" or "copy_fallback" → the label has a positive control on the 67M; E58's "new" reads the update;
+   the step-2 plan's P2 gets its first labelled "reuses" row. C1 pass with x_novel < 0.5 on two seeds → the carry rides
+   on shared values; lean on C2.
+4. "copy_only" → the label can read "reuses", but a fine-tune of a rule W₀ has did not carry; this sharpens the user's
+   question on what "reuses" means; no rule-task row from rank-1.
+5. "none" → the held-out label is not used against r or the ratio; tell the user.
+6. C3 fail (r or ratio reads "new" on an earned "reuses") → qualitative surprise; to the user before the next step.
+
+### Order of work
+
+1. Done: code, tests (23 pass), lint clean, predictions filed.
+2. Fresh-Opus review of the diff (one review before a run of changed measurement code).
+3. `/pod-runner`: from the main clone after the commit is pulled there, `sbatch cluster/open_pair.sbatch amend1`.
+4. Write-up as a section of E58's analysis report (`/writeup`); `TRIED.md` row; `PENDING.md` line.
+
 ## Not in this plan
 
 - **The gating-pattern novelty column** (Fable item 3): not cheap enough to add without a design choice. E36's code

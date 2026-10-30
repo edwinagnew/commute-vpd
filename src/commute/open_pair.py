@@ -107,13 +107,13 @@ def p1(st: dict[str, dict[str, Any]], seeds: list[int]) -> dict[str, Any]:
     return {"labels": labs, "status": status}
 
 
-def p2(st: dict[str, dict[str, Any]], seeds: list[int], inst: str, cut: float) -> dict[str, Any]:
-    """P2 for one instrument (r or ratio): on every elicit run labelled "reuses" or "new", the instrument's label
+def p2(st: dict[str, dict[str, Any]], seeds: list[int], inst: str, cut: float, kind: str = "elicit") -> dict[str, Any]:
+    """P2 for one instrument (r or ratio): on every `kind` run labelled "reuses" or "new", the instrument's label
     (`inst_label`) equals it. Runs whose reading is not finite are listed and left out. "not_testable" when no run is
     left; "split" is reported beside when the labelled runs carry both labels."""
     runs, dropped = [], []
     for s in seeds:
-        rec = st.get(f"elicit_s{s}")
+        rec = st.get(f"{kind}_s{s}")
         if rec is None or rec["label"] not in LABELLED:
             continue
         il = inst_label(rec.get(inst), cut)
@@ -156,3 +156,92 @@ def score(st: dict[str, dict[str, Any]], th: dict[str, Any], seeds: list[int]) -
             "P3": p3(st, th["cut"], th["min_lead"]),
             "P4": {m: {**v, "status": "unreadable" if v["verdict"] == "unreadable" else "pass" if v["verdict"] == "a_higher" else "fail"}
                    for m, v in p4.items()}}
+
+
+# ----------------------------------------------------------------------------- Amendment 1 (2026-10-30)
+# experiments/open_pair/results/predictions_amend1.json; plan section "Amendment 1"; edge cases in tests/test_open_pair.py
+
+
+def jsonable(o: Any) -> Any:
+    """A results record with non-finite floats as strings (JSON has no nan)."""
+    if isinstance(o, float) and not math.isfinite(o):
+        return str(o)
+    if isinstance(o, dict):
+        return {str(k): jsonable(v) for k, v in o.items()}
+    return [jsonable(v) for v in o] if isinstance(o, list | tuple) else o
+
+
+def implied_push(H: float, H_spec: float, H_other: float, n_pool: int, n_held: int) -> float:
+    """The trained values' mean raw gain at the held-out-key windows implied by E58's numbers. With distinct values, the
+    pool's other n_pool - 1 values at a held-out window are the n_pool - n_held trained values and the n_held - 1 other
+    held-out values, and H - H_spec is their mean gain, so T = ((n_pool - 1)(H - H_spec) - (n_held - 1) H_other) /
+    (n_pool - n_held). nan if n_held < 2 (H_other undefined) or n_pool <= n_held."""
+    if n_held < 2 or n_pool <= n_held:
+        return math.nan
+    return ((n_pool - 1) * (H - H_spec) - (n_held - 1) * H_other) / (n_pool - n_held)
+
+
+def boot_sd_mean(v: Tensor, n_boot: int, seed: int) -> float:
+    """sd of mean(v) over n_boot row-bootstrap resamples (one generator seeded `seed`); nan with fewer than 2 rows or a
+    non-finite entry."""
+    if len(v) < 2 or not bool(torch.isfinite(v).all()):
+        return math.nan
+    i = torch.randint(len(v), (n_boot, len(v)), generator=torch.Generator().manual_seed(seed))
+    return float(v.double()[i].mean(1).std())
+
+
+def push_verdict(d: float, s_d: float, R_peer: float, s_R: float, k_sd: float) -> str:
+    """Readout (i)'s rule for one state. d = mean over the held-out-key windows of T_w - R_w, T_w the mean gain of the
+    trained keys' values (other than the window's own) and R_w the mean gain of W0's other top-k tokens at the window's
+    key (neither the own value nor a trained value); R_peer = mean R_w. "lookup" iff d > 0 and d >= k_sd s_d (the
+    trained values rise above W0's own preferences at a key never trained); "sharpening" iff R_peer > 0 and R_peer >=
+    k_sd s_R (W0's own preferences at that key rise); "both", "neither"; "unreadable" if any input is not finite."""
+    if not all(finite(v) for v in (d, s_d, R_peer, s_R)):
+        return "unreadable"
+    lookup, sharp = d > 0 and d >= k_sd * s_d, R_peer > 0 and R_peer >= k_sd * s_R
+    return "both" if lookup and sharp else "lookup" if lookup else "sharpening" if sharp else "neither"
+
+
+def a1(rd: dict[str, dict[str, Any]], seeds: list[int]) -> dict[str, Any]:
+    """A1: every elicit state's readout reads "lookup". "fail" if any reads "sharpening", "both" or "neither"; else
+    "unreadable" if a state is missing or unreadable; else "pass"."""
+    v = [rd.get(f"elicit_s{s}", {}).get("verdict", "unreadable") for s in seeds]
+    status = "fail" if any(x in ("sharpening", "both", "neither") for x in v) else "unreadable" if "unreadable" in v else "pass"
+    return {"verdicts": v, "status": status}
+
+
+def n_novel(trained_values: list[int], held_values: list[int]) -> int:
+    """How many held-out keys have a value that no trained key has."""
+    return sum(v not in set(trained_values) for v in held_values)
+
+
+def control_status(labels: list[str], testable: bool, min_reuses: int) -> str:
+    """C1 / C2, the label's positive control on one map: "not_testable" if the map failed its pre-check or has no label;
+    "pass" iff at least `min_reuses` runs read "reuses"; else "fail"."""
+    if not testable or not labels:
+        return "not_testable"
+    return "pass" if labels.count("reuses") >= min_reuses else "fail"
+
+
+def positive_control(c1: str, c2: str) -> str:
+    """"rank1" if C1 passes; "copy_fallback" if C1 is not testable and C2 passes; "copy_only" if C1 fails and C2 passes;
+    "none" otherwise (the label has no positive control on the 67M)."""
+    if c1 == "pass":
+        return "rank1"
+    if c2 == "pass":
+        return "copy_fallback" if c1 == "not_testable" else "copy_only"
+    return "none"
+
+
+def score_amend1(rd: dict[str, dict[str, Any]], ctrl: dict[str, dict[str, Any]], n_novel_rank1: int, th: dict[str, Any],
+                 seeds: list[int]) -> dict[str, Any]:
+    """A1 on the readout of E58's states; C1 (rank-1 map; testable iff n_novel >= min_novel and rank1_s0 is not
+    "too_small"), C2 (copy map), the verdict, and C3 = E58's P2 for r and the ratio on each map's runs (scored on the
+    map the verdict rests on: rank-1 unless C1 is not testable)."""
+    labs = {m: [ctrl[f"{m}_s{s}"]["label"] for s in seeds if f"{m}_s{s}" in ctrl] for m in ("rank1", "copy")}
+    ok1 = n_novel_rank1 >= th["min_novel"] and ctrl.get("rank1_s0", {}).get("label") != "too_small"
+    c1, c2 = control_status(labs["rank1"], ok1, th["min_reuses"]), control_status(labs["copy"], True, th["min_reuses"])
+    c3 = {m: {i: p2(ctrl, seeds, i, th["cut"], kind=m) for i in ("r", "ratio")} for m in ("rank1", "copy")}
+    return {"A1": a1(rd, seeds), "C1": {"labels": labs["rank1"], "testable": ok1, "status": c1},
+            "C2": {"labels": labs["copy"], "status": c2}, "verdict": positive_control(c1, c2),
+            "C3": {"scored_on": "copy" if c1 == "not_testable" else "rank1", **c3}}

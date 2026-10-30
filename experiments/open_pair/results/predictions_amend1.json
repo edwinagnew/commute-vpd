@@ -1,0 +1,89 @@
+{
+ "experiment": "E58 open_pair, Amendment 1",
+ "filed": "2026-10-30, before any run of amend1.py; never edited after the run (a dated report instead). E58's predictions.json, P0-P4 and run.json are unchanged",
+ "plan": "reports/plans/2026-10-30_plan_e58-open-pair.md, section 'Amendment 1 (2026-10-30, after job 46266)'",
+ "spec": "reports/plans/2026-10-30_advice_e58-reading-FABLE.md, 'Two $0 checks, in order' (decisions.md, 2026-10-30, last row: lead on Fable's advice)",
+ "code": "experiments/open_pair/amend1.py; rules in src/commute/open_pair.py (section 'Amendment 1'), edge cases in tests/test_open_pair.py; the label and readings in src/commute/heldout_keys.py (moved, not changed, from run.py)",
+ "settings": {
+  "seeds": [0, 1, 2],
+  "trained_keys": [1511, 1453, 1246, 1158, 921, 591, 1495, 1682, 1708, 3012, 2167, 2732, 3541, 2685, 3492, 3490, 3228, 4294, 3877, 2791, 4367, 3618, 4345, 4577],
+  "held_keys": [2250, 2515, 2613, 3907, 3304, 4447, 4302, 3075],
+  "key_split_source": "E58's split (predictions.json settings; run.json key_split, checked at start)",
+  "e58_inputs": "results/run.json (job 46266; states' and split windows' sha256, H, H_spec, H_other) and results/large/{elicit,cipher}_s{0,1,2}.pt, windows_{elicit,cipher}_{trained,new}.pt",
+  "readout": "at each of the 124 held-out-key windows of a task: W0's top-20 tokens at the window's key, ranked by W0's mean next-token distribution (softmax, full vocabulary) over that key's held-out-task windows; per token the log-odds gain at the answer position (identity.log_odds, tuned minus W0, fp32 logits on CPU)",
+  "rank1_map": "E54's elicit windows, marker and 32 keys; each key's value = argmax of W0's mean next-token distribution after 'M key' over E54's training windows of that key (kv.key_distributions, full vocabulary, any token; ties to the lower id). Values may repeat across keys",
+  "copy_map": "the same windows and keys; value = the key (kv.identity, E12's 'copy' task family)",
+  "finetune": "E54's recipe unchanged, as E58's elicit arm: commute.keydep.elicit_ft (E12's arm A, 24 matrices, Adam 3e-5, batch 32, KL lambda 1, grad clip 1, 300 steps, bf16 autocast) on the 24 trained keys' training windows, read at E12's scored step (first of 10, 30, 100, 300 with held-out P(target) >= 0.5 on the trained keys' held-out windows, else 300)",
+  "precision": "every read fp32 with TF32 off; the fine-tune uses E12's bf16 autocast (as E54, E58)"
+ },
+ "thresholds": {
+  "G_min": 5.147937448121369,
+  "G_min_source": "E58's gate as run (run.json stage0.G_min_spec; amendment_2026-10-30_prerun_2 of predictions.json): the same gate for the control, as the lead's brief asks",
+  "cut": 0.5,
+  "k_sd": 3.0,
+  "label_source": "E58's label unchanged (open_pair.label on value-specific gains, heldout_keys.behaviour): reuses iff x = H_spec / G_spec >= 0.5; new iff x <= 3 s (row bootstrap); unreadable if both; too_small if G_spec < G_min",
+  "n_boot": 2000,
+  "boot_seed": 0,
+  "ratio_floor": 0.1,
+  "ratio_floor_source": "E58's (E53 Amendment 1b floor_min)",
+  "top_k": 20,
+  "top_k_source": "Fable's advice ('W0's rank 1-20'); E54's values were drawn from W0's ranks 2-20",
+  "n_pool": 32,
+  "n_held": 8,
+  "identity_tol": 1e-4,
+  "identity_tol_source": "measured floor 0: E58 stage 0 reproduced E54's r, ratio and S to every printed digit through the same code; 1e-4 log-odds covers the readout's CPU log-odds against E58's GPU log-odds (float32 logsumexp, about 1e-6 per window) and a different debug card",
+  "min_novel": 3,
+  "min_novel_source": "added here, reason stated in the plan: with fewer than 3 held-out keys whose rank-1 value no trained key has, a carry-over could ride on the push toward the trained values (Fable's +1.6 at E58's held-out keys) instead of the rule",
+  "min_reuses": 2,
+  "min_reuses_source": "E58's P0 count: a label is carried when two of three seeds read it",
+  "block0_nats": 1e-5,
+  "block0_source": "E54's stop, as E58"
+ },
+ "measurements": {
+  "own": "readout: mean over the held-out-key windows of the gain of the window's own value (= E58's raw H on E58's states)",
+  "T": "readout: per window, the mean gain of the trained keys' distinct values other than the window's own value; mean over windows. Fable inferred +1.6 on elicit; open_pair.implied_push gives it exactly from run.json: 1.5892, 1.6798, 1.8419 (elicit s0-s2), 5.4969, 5.7261, 5.6166 (cipher s0-s2)",
+  "R_peer": "readout: per window, the mean gain of W0's top-20 tokens at the window's key that are neither the own value nor a trained value; mean over windows",
+  "d": "mean over windows of T_w - R_w; s_d, s_R = open_pair.boot_sd_mean (2000 row resamples of the held-out-key windows, seed 0)",
+  "rank_gain": "reported: per W0 rank 1..20, the mean gain of that token over windows",
+  "verdict": "open_pair.push_verdict: lookup iff d > 0 and d >= 3 s_d; sharpening iff R_peer > 0 and R_peer >= 3 s_R; both; neither; unreadable if any input is not finite",
+  "control_label": "per control state, E58's behaviour record (G_spec, H_spec, x, s, s_key, label, raw G, H, H_other, H_spec per held-out key) with the pool's values each counted once (heldout_keys.pool_of); x_novel reported (key-mean H_spec over held-out keys whose value no trained key has, / G_spec)",
+  "control_readings": "r, stand-in ratio, S of the least-squares split state on the trained keys' held-out windows (heldout_keys.vpd_read = E54's readings, as E58)"
+ },
+ "stage_order_and_stops": {
+  "A_zero": "first, alone: the readout of the zero update on the elicit held-out-key task reads own = T = R_peer = 0 and every rank gain 0 exactly, else exit 1",
+  "A_state_control": "per E58 state, before the next: sha256 of the state and its task's split windows equal run.json's; |own - run.json H| <= 1e-4 and |T - implied_push(H, H_spec, H_other, 32, 8)| <= 1e-4, else exit 1",
+  "C0": "the zero update's max |gain| on the four control split tasks is exactly 0, else exit 1",
+  "C1": "a block-0 shift over 1e-5 nats on any control state -> exit 1 (E54's stop). rank1_s0 reading too_small is not a stop: C1 becomes not_testable and the copy map, run in the same job, decides",
+  "expected_first_minutes": "model load about 1 min; A's zero readout exactly 0 and the six state controls within 1e-6 of run.json by about 3 min; rank1_s0's fine-tune about 11 s, held-out P(value) on the trained keys >= 0.5 at step 10 (W0 already ranks the value first), ||dW|| about 3.0-3.3 at step 10 (E58 elicit 3.12-3.18)"
+ },
+ "expected": {
+  "W0_and_do_nothing": "the zero update: every gain 0 exactly, readout verdict 'neither', label 'too_small'. Every number here except r and the ratio reads the target model only, so it is the same for every placement of delta-W; r and the ratio are read on the least-squares split state (as E54, E58)",
+  "A_elicit": {"own": "E58's H: 0.6134, 0.4602, 0.8971", "T": "1.5892, 1.6798, 1.8419 (to 1e-4)", "R_peer": "about 0, -0.6 to +0.3", "d": "about 1.3-2.2", "s_d": "about 0.1-0.2", "verdict": "lookup", "rank_gain": "flat near 0 except where a trained value sits in W0's top 20 at the held-out key"},
+  "A_cipher": {"own": "E58's H: 1.3753, 1.1886, 1.2559", "T": "5.4969, 5.7261, 5.6166 (to 1e-4)", "R_peer": "near 0 or below", "verdict": "lookup (reported, not scored)"},
+  "C0": {"rank1": "W0 geometric-mean P(value) on the trained keys' held-out windows about 0.03-0.3 (above E54's rank 2-20 values, 1.7e-3); distinct values 8-25 of 32; held-out keys with a value of their own 1-6", "copy": "W0 geometric-mean P(value) about 1e-4 to 2e-3 (E10's identity baseline <= 0.002); 32 distinct values; 8 of 8 held-out keys with a value of their own"},
+  "C1_rank1": {"G_spec": "open: about 4-10 at step 10 (W0 already predicts the value, so less room than E58's 18)", "x": "about 0.5-1 if the fine-tune learns 'ignore the marker'; about 0 if it memorises 24 routes", "label": "reuses on at least 2 of 3 seeds", "r": "about 0.6-0.9 (a behaviour W0 already has)", "ratio": "about 0.6-1.0", "S": "open; reported"},
+  "C2_copy": {"G_spec": "about 8-13 (E12's identity fine-tunes gained about 10-12 at step 10; the pool's other values are other keys, not lifted by a copy rule)", "x": "about 0.5-1", "label": "reuses on at least 2 of 3 seeds", "r": "0.7-0.85 (E12 identity 0.76-0.80 on other keys)", "ratio": "0.85-1.0 (E46 copy fine-tunes 0.87-0.97)", "S": "0.6-0.8 (E46 ident32 0.75); reported"}
+ },
+ "noise_floor": {
+  "readout": "its own row bootstrap s_d, s_R (124 windows). 8 held-out keys are the real unit; the row bootstrap understates that spread (as E58's s against s_key), stated in the write-up",
+  "label": "E58's: the row bootstrap s (scored), s_key (reported)",
+  "r_ratio_S": "E58's: r seed range 0.015 (elicit) to 0.055 (cipher); ratio 0.005-0.047; S 0.017-0.07"
+ },
+ "predictions": {
+  "A1": {"what": "on each of E58's three elicit states the readout reads 'lookup' (open_pair.a1): the trained values rise at the held-out keys above W0's own top-20 preferences there, by more than 3 s_d. 'fail' if any state reads 'sharpening', 'both' or 'neither'; 'unreadable' if a state is missing or unreadable and none fails", "relative_or_absolute": "absolute (sign and 3 s_d)", "lean": "pass, high (about 85%): T is fixed by algebra at 1.59-1.84, so only R_peer is open; Fable's reading 2/3", "blind_to": "a sharpening confined to W0's rank 1 (averaged into R_peer with ranks 2-20; rank_gain[0] is reported); log-odds at the answer position only; trained values that sit in W0's top 20 at a held-out key count in T, not in R_peer"},
+  "C1": {"what": "the label's positive control on the rank-1 map (open_pair.score_amend1, control_status): 'not_testable' if fewer than 3 held-out keys have a value no trained key has, or rank1_s0 reads 'too_small' (Fable's guard); else 'pass' iff at least 2 of 3 seeds read 'reuses', else 'fail'", "relative_or_absolute": "absolute", "lean": "testable about 55%; if testable, pass about 60%", "blind_to": "a carry that rides on repeated values (a held-out key whose value is also a trained value) reads as reuse: x_novel is reported beside; the label's own blind spots (E58)"},
+  "C2": {"what": "the same on the copy map, always run and always testable", "relative_or_absolute": "absolute", "lean": "pass about 75%", "blind_to": "the copy map's label is fixed by construction (Fable): the rule is the same for every key, and the 67M ties its input and output embeddings, so a direct path can carry it; it shows only that the rule can read 'reuses'"},
+  "verdict": {"what": "open_pair.positive_control: 'rank1' if C1 passes; 'copy_fallback' if C1 is not testable and C2 passes; 'copy_only' if C1 fails and C2 passes; else 'none'", "lean": "rank1 or copy_fallback about 70%, copy_only about 15%, none about 15%"},
+  "C3": {"what": "E58's P2 on the control runs, for r and for the ratio (open_pair.p2 with kind = the map): on every run labelled 'reuses' or 'new' with a finite reading, the instrument's label (>= 0.5 -> reuses) equals the behavioural label. Scored on the rank-1 map unless C1 is not testable, then on the copy map; both maps reported", "relative_or_absolute": "absolute", "lean": "pass for both, about 75%", "blind_to": "on a 'reuses' state a pass does not test the granularity limit, which only bites when behaviour reads 'new'; it shows r and the ratio can agree with an earned 'reuses'"}
+ },
+ "branches": {
+  "A_stop": "a readout control missed: stop, fix ($0); nothing about E58 changes",
+  "A1_pass": "E58's elicit fine-tune is a 24-key lookup plus a push toward the trained values, not a sharpening of W0's preferences at the key: Fable's reading 2/3 stands with this number beside H in the write-up",
+  "A1_fail_sharpening_or_both": "W0's own preferences at the held-out keys rose: the 'guaranteed by construction' worry is removed only in part; report the rank profile; qualitative surprise to the user",
+  "verdict_rank1_or_copy_fallback": "the label has a positive control on the 67M; E58's 'new' is a reading of the update, not of the rule's reach; the step-2 plan's P2 is scored on rule tasks with this state as its first labelled 'reuses' row",
+  "verdict_copy_only": "the label can read 'reuses', but a fine-tune of a rule W0 has did not carry: report; the user's question on what 'reuses' means (Fable) becomes sharper; no rule-task P2 row from rank-1",
+  "verdict_none": "no positive control: E58's label cannot be used against r or the ratio; tell the user before any further use of the held-out label",
+  "C3_fail": "r or the ratio reads 'new' on an earned 'reuses': a qualitative surprise for the re-gating line; to the user before the next step",
+  "x_novel_low": "C1 pass with x_novel < 0.5 on two or more seeds: the carry rides on shared values; the write-up says so and leans on C2"
+ }
+}
