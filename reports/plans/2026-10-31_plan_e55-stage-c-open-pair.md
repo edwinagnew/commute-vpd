@@ -48,7 +48,8 @@ belongs to every method that reads mechanism, not to VPD alone.
   averaged over windows. The possession probe (Def 1) reads each map, as a reference only. No decomposition is read by
   any instrument.
 - **Beside them.** E58's re-gating share r, the stand-in ratio, steering's S, the carry x with its label, and the update
-  size. New baseline columns: the distance D = κ(state), and the MLP share of ‖δW‖².
+  size. New baseline columns: the distance D = κ(state); the prior, W₀'s mean log-probability of the map's value
+  (read from W₀ alone); and the MLP share of ‖δW‖².
 - **The question.** On the rank-1-to-cipher axis, where do the cheap instruments place the elicit map, compared with r
   and the ratio? Equivalently: is the granularity limit VPD's alone?
 
@@ -79,8 +80,15 @@ belongs to every method that reads mechanism, not to VPD alone.
   (e) In every case copy's position and the carry are reported. If the instruments place elicit and rank-1 together
   while the label separates neither from the cipher at its cut, the reading "the carry label reads rule
   generalisation, not old versus new pieces" is written as the finding about the label.
-- **Control first.** Job 1, before filing, is measurement only: D on the twelve existing states, the MLP shares, and
-  the planted wrapper built and checked. Job 3 opens with stage 0 alone (§ 5) and exits on a miss.
+  (f) Either instrument reads "prior" (rule 6, § 6): it tracks how likely W₀ already found each map's value, which is
+  Def 1 possession, the same thing the probe q reads trivially. This axis is also an axis of the prior: rank-1's
+  values are W₀'s top pick, the cipher's are under 1e-4, and elicit's sit between. So a "shared" verdict is claimed
+  only for instruments that do not read "prior". r and the stand-in ratio are put through the same check. If r also
+  sits within the prior's tolerance, the write-up says that on this pair VPD's readings are not separated from the
+  value's prior. Copy is the map that separates the two readings, and its position is reported: its prior is low (about
+  6e-5), while r puts it at the old end.
+- **Control first.** Job 1, before the second filing, is measurement only: D and the prior on the twelve existing
+  states, the MLP shares, the random-removal spread, and the planted wrapper built and checked. Job 3 opens with stage 0 alone (§ 5) and exits on a miss.
 - **Numbers.** Two scored readings per state (R, t½), one reference per map (q), one position per column. Expected
   values are in § 4.
 - **Class.** Class 4, the reuse line's named next step (Fable option C, adopted), and class 2: more seeds of runs that
@@ -123,9 +131,11 @@ assumes each state puts about 0.95 on its value and spreads the rest roughly as 
 |---|---|---|---|---|---|---|
 | D, nats | exactly 0, void | 1.5-2.5 (W₀ already gives the value 0.1-0.3) | 2.5-3 | about 3 | about 3 | — |
 | p_D (baseline column) | — | — | expected about 0.2, near the new end: elicit's distance is close to the cipher's | reported | — | measured in job 1 |
+| prior, mean log p_W₀(value) on the score half | W₀ only | about −2 to −3 (W₀'s top pick) | about −6.4 (E54: held-out geometric mean 1.70e-3) | about −9.7 (5.9e-5, E58 A6) | about −13.7 (E54: 1.08e-6) | measured in job 1 |
+| p_prior (baseline column) | — | — | about 0.6-0.7, near the 2/3 edge; r's 0.876 is 0.2 above it | p_copy about 0.35 | — | measured in job 1 |
 | MLP share of ‖δW‖² | — | measured on CPU in job 1 (E56: attention 0.29-0.31, so MLP about 0.7 on elicit and cipher) | | | | |
-| pruning R | void | unknown | unknown | unknown | unknown; filed direction rank-1 > cipher | planted wrapper: ≥ 10 of 13 planted units in the top 13 and R ≥ 0.8 |
-| reverse t½, steps at 3e-6 | void | unknown, guess 10-100 | unknown | unknown | unknown; filed direction rank-1 < cipher | planted wrapper recovers faster than the median pole state |
+| pruning R | void | unknown | unknown | unknown | unknown; filed direction rank-1 > cipher | planted wrapper: ≥ 10 of 13 planted units in the top 13, and R ≥ 0.8 × the ceiling share (D − κ_zeroed) / D |
+| reverse t½, steps at 3e-6 | void | unknown, guess 10-100 | unknown | unknown | unknown; filed direction rank-1 < cipher | planted wrapper reaches D/2 before the cap; its t½ reported |
 | probe q, nats | W₀ only | ≥ elicit | ≥ 1 | likely high (lens decodes the key) | within ±0.5 | block-4 lens equals W₀'s log-softmax within 1e-5 |
 | p, r (files, 3 seeds) | — | — | 0.876, bootstrap 90% 0.859-0.894 → VPD | p_copy 0.996 | — | recomputed from the files (CPU) |
 | p, stand-in ratio | — | — | 0.787, 0.778-0.796 → VPD | 0.895 | — | same |
@@ -142,55 +152,86 @@ All on the MATS cluster `debug` QoS (L40, account c11, `--time=00:30:00`), throu
 Each writes results as each state finishes and resumes from them. `experiments/open_pair_instruments/run.py --stage
 <name>`, one sbatch `cluster/open_pair_instruments.sbatch`.
 
-**Job 1, `measure`, before predictions are filed. Measurement only; no instrument reads a scored state.**
+**Job 1, `measure`, after filing A and before filing B. Measurement only; no instrument reads a scored state.**
 1. sha256 of the 12 state files equal `ft.sha256` in `run.json` / `amend1.json`. The windows files match their recorded
    sha256. The four maps' trained-key windows have identical tokens. Exit 1 on a miss.
 2. Each state's raw gain G reproduces the recorded G within 1e-4 (E58 Amendment 1's tolerance). Exit 1 on a miss.
-3. D on the 12 states and on the zero update (exactly 0). The MLP share of ‖δW‖² per state.
-4. **The planted wrapper.** Take W₀'s 13 block-3 units with the largest mean GELU activation at the answer position
-   (fit half). Set their down_proj columns to W₀'s plus −α · w / ā_j. Here w is the unit vector of the fit-half mean of
-   (u_rank1(key) − ū), with u the unembedding rows and ū their mean, and ā_j is the unit's mean activation. Choose α
-   by bisection so that κ(planted) equals the median D of the six pole states. This hides W₀'s answer behind 13 units
-   that a few-unit pruning should find. Also κ(W₀ with the 13 units zeroed) is recorded: R's ceiling on the planted
-   state.
-5. Pruning on the planted state: the overlap of its top 13 with the planted 13, and R. Reverse on the planted state:
-   t½.
+3. D on the 12 states and on the zero update (exactly 0). The prior per map: the mean of log p_W₀(value) on the score
+   half, from W₀ alone. The MLP share of ‖δW‖² per state. The off-answer KL per state: the mean KL(W₀ ‖ state) at the
+   positions other than the answer, which bounds the planted edit in item 4.
+4. **Random-removal spread** (review m1): on each of the six pole states, the sd over the 20 random K-unit removals of
+   (κ(state) − κ(random pruned)) / D, at both K. R's noise floor is the largest of these, filed after job 1. This
+   replaces C1b's 0.05, which was in accuracy units.
+5. **The planted wrapper** (review N2).
+   - *Units.* Among block 3's units whose mean GELU activation at the answer position (fit half) is above the block's
+     median, take the 13 whose zeroing on W₀ costs least: κ(W₀ with that one unit zeroed), measured unit by unit.
+   - *Edit.* Set their down_proj columns to W₀'s plus −α · w / ā_j. Here w is the unit vector of the fit-half mean of
+     (u_rank1(key) − ū), with u the unembedding rows and ū their mean, and ā_j is the unit's mean activation.
+   - *Scale.* Choose α by bisection so that κ(planted) equals the median D of the six pole states, subject to the
+     planted edit's off-answer KL staying at or below the largest off-answer KL among the 12 real states (item 3).
+   - *Fallback.* If the median D cannot be reached within that bound, plant at the largest κ reachable within it and
+     record it. The pass rules below are relative to the planted state's own D, so they still apply.
+   - *Ceiling.* κ_zeroed = κ(W₀ with the 13 units zeroed) is recorded. R's ceiling on the planted state is
+     (D − κ_zeroed) / D.
+6. Pruning on the planted state: the overlap of its top 13 with the planted 13, and R against 0.8 × the ceiling.
+   Reverse on the planted state: t½, reported.
 
-The measured D means, p_D, the MLP shares, α and the planted readings are written into § 4 and the predictions. Then
-the predictions are filed and committed.
+**Filing.** Filing A is committed before job 1. It holds the rules (§ 6), the edge cases, every constant that does not
+depend on job 1, C0a (job 1's stop rows) and the probe reference. Filing B is a dated entry appended after job 1 and
+before job 2; it never edits A. It holds the measured D, prior and MLP-share means, p_D, p_prior, R's noise floor, the
+planted units, α and ceiling, and every prediction that depends on them: C0b (job 2's reproduction control and job 3's
+stage 0), P1, P2, P3 and V. Jobs 2 and 3 refuse to start without filing B committed.
 
-**Job 2, `seeds`, after filing.** Seeds 3-7 of elicit, rank-1 and copy (`keydep.elicit_ft`, as E58 and Amendment 1)
-and of the cipher (`keydep.cipher_ft` at the same seed's elicit norm). Each state then gets E58's columns
+**Job 2, `seeds`, after filing B.** First, alone, the reproduction control (review N4): retrain seed 0 of each map,
+elicit first, then the cipher at elicit_s0's norm, then rank-1 and copy. Each must match the saved state's record:
+- the scored step exactly;
+- the norm within 1e-4 relative;
+- G and x within 1e-3;
+- r within 1e-3.
+E58 Amendments 3 and 4 retrained states and reproduced them exactly (weight difference 0; the cipher's r 0.368 both
+times), so these tolerances leave room for GPU nondeterminism only. Exit 1 on any miss, before any new seed.
+
+Then seeds 3-7. Per seed, elicit runs before the cipher, because the cipher's target norm is the same seed's elicit
+norm. The selection rules are E58's, unchanged. Elicit, rank-1 and copy are read at E12's scored step, the first of
+10, 30, 100 and 300 with held-out P(target) ≥ 0.5 (`keydep.elicit_ft`). The cipher is read at the step in 1-30 whose
+norm is nearest the elicit state's (`keydep.cipher_ft`). Each state then gets E58's columns
 (`heldout_keys.behaviour` for carry and label, `heldout_keys.vpd_read` for r, ratio and S), all called unchanged. The
-states are saved to `experiments/open_pair_instruments/results/large/` (113 MB each, 2.3 GB, gitignored), each with
-its sha256. Stop on E58's block-0 rule.
+states are saved to `experiments/open_pair_instruments/results/large/` (113 MB each, 2.3 GB, gitignored; on the
+cluster's shared filesystem, so the symlink rule for pod downloads does not apply), each with its sha256. Stop on
+E58's block-0 rule.
 
 **Job 3, `instruments`. Stage 0 alone first, exit 1 on a miss.**
 1. The zero update: D = 0, pruning and reverse void.
 2. Lens check: block 4 equals W₀'s log-softmax at the answer position within 1e-5. A miss voids the probe; the job
    continues.
-3. The planted controls: pruning finds at least 10 of 13 and reads R ≥ 0.8. A miss voids pruning; the job continues.
-   The planted reverse reaches D/2 before the cap. A miss stops the job: the loop does not revert.
+3. The planted controls. Pruning must find at least 10 of 13 and read R ≥ 0.8 × the ceiling share. A miss voids
+   pruning; the job continues. The planted reverse must reach D/2 before the cap. A miss stops the job: the loop does
+   not revert. The planted t½ is reported and is not compared with the poles (review N3).
 4. After the planted reverse, the target weights equal W₀ exactly (`model_state` restored them). The same check runs
    after every reverse; any difference stops the job.
 
 Then D, R and t½ on the 32 states, in the order rank-1, cipher, elicit, copy and seeds 0-7, written after each, then q
-per map. The planted reverse's "faster than the median pole t½" check is evaluated once the pole readings exist and
-before any position is computed; a miss voids reverse fine-tuning. Then scores (§ 6). Every scored number is also
-printed to the log. If job 3 passes 30 minutes it resumes in a job 4.
+per map. Then scores (§ 6). Every scored number is also printed to the log.
+
+**Job 4, resume, planned** (review m3). Job 3 writes each state's readings as it finishes. A censored state costs
+1,000 steps plus 1,000 reads, about 1-1.5 min on an L40, so a few censored poles push job 3 past 30 min. The code's
+deadline is 25 min. On exit 3 the log prints the resubmit line, and the pod-runner submits `--stage instruments` again
+(compute nodes cannot `sbatch`). It skips finished states, reruns stage 0, then scores.
 
 ## 6. Claim, null, predictions
 
 **Claim (one sentence).** Pruning revival and reverse fine-tuning, which need no decomposition, place E58's elicit map
-near the rank-1 map, the end that is old by construction, as r and the stand-in ratio do, and not as distance from W₀
-alone would place it. So the granularity limit is shared by instruments that read mechanism.
+near the rank-1 map, the end that is old by construction, as r and the stand-in ratio do. They do it neither where
+distance from W₀ alone would place it nor where W₀'s prior on the value alone would. So the granularity limit is
+shared by instruments that read mechanism.
 
 **Null.** The cheap instruments cannot read the rank-1-to-cipher axis on the 67M, or they place elicit between the
-ends, at the new end, or where distance alone puts it.
+ends, at the new end, or where distance or the prior alone puts it.
 
 **Rule (pure functions in `src/commute/revival_kv.py`, CPU-tested on the edge cases before filing).**
 1. **Gap, each instrument's positive control on real states.** noise = the largest within-map seed standard
-   deviation among rank-1, cipher and elicit, floored at 0.05 for R (C1b's random-removal spread) and 1 step for t½.
+   deviation among rank-1, cipher and elicit. It is floored for R at the random-removal spread measured in job 1
+   (filing B) and for t½ at 1 step.
    gap = v̄_rank-1 − v̄_cipher. "ok" iff d · gap ≥ 3 · noise, with d = +1 for R and q and −1 for t½. "reversed" iff
    −d · gap ≥ 3 · noise. Else "no gap". Undirected baseline columns (update size, D, MLP share) use |gap|.
 2. **Censoring.** If any pole seed is censored, t½ reads "censored" and is void (review S6). A censored elicit or copy
@@ -202,8 +243,12 @@ ends, at the new end, or where distance alone puts it.
    its band; otherwise it reads "between".
 5. **Distance.** If p_D has gap "ok", an instrument whose firm side equals p_D's, or whose p lies within 0.1 of p_D,
    reads "distance" instead of its side.
-6. **Per-instrument verdict** = its reading from rules 1-5: VPD, label, between, distance, no gap, reversed, censored
-   or void. **Joint verdict:** "shared" iff both read VPD; "shared (by X)" iff X reads VPD and the other reads no gap,
+6. **Prior.** The same with p_prior: if p_prior has gap "ok", an instrument whose firm side equals p_prior's, or whose
+   p lies within 0.1 of p_prior, reads "prior". If both rule 5 and rule 6 fire, the reading is "distance and prior".
+   r and the stand-in ratio are put through rules 5 and 6 too, and reported. The 0.1 tolerance in rules 5 and 6 has no
+   source; like the bands, it is this project's choice and is stated as such (review m2).
+7. **Per-instrument verdict** = its reading from rules 1-6: VPD, label, between, distance, prior, no gap, reversed,
+   censored or void. **Joint verdict:** "shared" iff both read VPD; "shared (by X)" iff X reads VPD and the other reads no gap,
    void or censored; "VPD alone" or "VPD alone (by X)" likewise with "label"; "conflict" iff one reads VPD and the
    other label or reversed; otherwise "not settled", naming each.
 
@@ -214,7 +259,12 @@ ends, at the new end, or where distance alone puts it.
 - Ties: at the band edges, rule 3. Discrete-looking t½ is continuous by interpolation, and the 1-step floor remains.
 - Censoring: rule 2. A relative void floor on D means a seed just above an absolute 0.1 cannot blow R up (review M1).
   The unnormalised Δ is reported beside R.
-- The distance rule when p_D has no gap: rule 5 does not fire.
+- The distance rule when p_D has no gap: rule 5 does not fire. The same holds for rule 6 when p_prior has no gap.
+- p_prior in the VPD band, firm: rule 6 then turns every "VPD" reading into "prior", r's included. That is intended,
+  and is outcome (f). On the expected prior means, p_prior ≈ (−6.4 + 13.7) / (−2.5 + 13.7) ≈ 0.65, inside "between",
+  so only the 0.1 clause can fire. r at 0.876 would not read "prior".
+- The planted bisection cannot reach the target: the fallback in § 5 job 1 item 5 applies. The pass is relative to
+  the planted state's own D and ceiling, so it stays defined.
 - Worked on the known columns (3 seeds): r → gap 0.613 ≥ 0.050, p 0.876, bootstrap 0.859-0.894: "VPD". Ratio →
   0.782 ≥ 0.055, 0.787, 0.778-0.796: "VPD". S → gap 0.043 < 0.105: "no gap". Carry → 0.449 ≥ 0.110, p 0.691, 0.650-0.728
   straddles 2/3: "between". Update size → |gap| 0.032 < 0.284: "no gap".
@@ -223,14 +273,21 @@ ends, at the new end, or where distance alone puts it.
 
 | id | prediction | rule | lean | blind to | positive control; noise floor |
 |---|---|---|---|---|---|
-| C0 | Job 1's checks and job 3's stage 0 pass, including both planted controls | § 5 | 75% (planted pruning 80%, planted reverse 90%) | — | — |
-| P1 | Each new instrument reads the rank-1-to-cipher gap in its filed direction | rule 1 | R 55%, t½ 65% | R: attention changes (about a third of each update's squared norm, E56; MLP share reported) and changes spread over more than 40 units. t½: structure versus distance (rule 5) | planted wrapper; R floor 0.05 and 20 random draws; t½ floor 1 step |
-| P2 | Pruning places elicit at the old end | rules 3-5 on R | VPD 30%, between 10%, label 5%, distance 5%, no gap/reversed/void 50% | as P1 | as P1 |
-| P3 | Reverse fine-tuning places elicit at the old end | rules 2-5 on t½ | VPD 30%, between 10%, label 10%, distance 15%, no gap/reversed/censored 35% | as P1 | as P1 |
-| V | Joint verdict | rule 6 | shared or shared (by X) 30%; VPD alone (incl. by X) 10%; conflict 5%; not settled 55% | — | — |
-| ref | Probe: cipher q within ±0.5, elicit ≥ 1, rank-1 ≥ elicit; p_q reported | § 3 | 65% | the fine-tune entirely | lens check; cipher as the null |
+| id | filing | prediction | rule | lean | blind to | positive control; noise floor |
+|---|---|---|---|---|---|---|
+| C0a | A | Job 1's stop rows pass: sha256, identical tokens, G within 1e-4, zero update exact | § 5 job 1 | 95% | — | — |
+| C0b | B | Job 2's seed-0 reproduction and job 3's stage 0 pass, including both planted controls | § 5 | 75% (planted pruning 80%, planted reverse 90%, reproduction 90%) | — | — |
+| P1 | B | Each new instrument reads the rank-1-to-cipher gap in its filed direction | rule 1 | R 55%, t½ 65% | R: attention changes (about a third of each update's squared norm, E56; MLP share reported) and changes spread over more than 40 units. t½: structure versus distance (rule 5). Both: the value's prior (rule 6) | planted wrapper; R floor measured in job 1, 20 random draws; t½ floor 1 step |
+| P2 | B | Pruning places elicit at the old end | rules 3-6 on R | VPD 25%, between 10%, label 5%, distance or prior 10%, no gap/reversed/void 50% | as P1 | as P1 |
+| P3 | B | Reverse fine-tuning places elicit at the old end | rules 2-6 on t½ | VPD 25%, between 10%, label 10%, distance or prior 20%, no gap/reversed/censored 35% | as P1 | as P1 |
+| V | B | Joint verdict | rule 7 | shared or shared (by X) 25%; VPD alone (incl. by X) 10%; conflict 5%; not settled 60% | — | — |
+| ref | A | Probe: cipher q within ±0.5, elicit ≥ 1, rank-1 ≥ elicit; p_q reported | § 3 | 65% | the fine-tune entirely | lens check; cipher as the null |
 
-**Lean for a settled answer** (any joint verdict other than "not settled"): about 45%.
+Filing B may revise the leans of P1-V in light of job 1's measurements, but only before any instrument reads a real
+state. Filing A is never edited.
+
+**Lean for a settled answer** (any joint verdict other than "not settled"): about 40%. A "prior" or "distance" reading
+counts as not settled.
 
 **Why these leans.** κ makes rank-1 readable: its fine-tune sharpens W₀'s own answer, so W₀'s distribution is
 plausibly hidden behind a few units and reverts quickly, while the cipher overwrites it. That is the gap P1 needs.
@@ -304,6 +361,8 @@ outcome.
 - VPD on the counting anchors (C2, gated, the user's call). A second base model or task family.
 - Attention-head pruning; K above 40; other reverse rates; reverse targets other than KL to W₀; a tuned lens.
 - Copy as a pole, and the graded carry or its label as a scored target.
+- E58 Amendment 6's prior-matched cipher, retrained as a reported map beside copy. The review offered it as an
+  option; it would separate the prior from kind at copy's prior, but not at elicit's.
 - Any edit to E58's or C1b's files or predictions.
 
 ## Changes after review (2026-10-31)
@@ -326,6 +385,15 @@ outcome.
 | M3 time | Re-estimated: three debug jobs, plus a fourth if job 3 resumes, all $0 |
 | M4 unsourced bands | Kept (stated as this project's), with the bootstrap so one seed cannot decide the edge |
 | M5 probe trivially pairs elicit and copy | Stated in § 3; the probe stays a reference and is not counted as an instrument |
+| N1 prior axis (re-check) | Prior column (mean log p_W₀ of the value per map, job 1, $0); rule 6 "prior" with the same treatment as distance, applied to r and the ratio too; outcome (f) in § 2; expected p_prior ≈ 0.65 from E54's geometric means. The prior-matched cipher of E58 Amendment 6 is not retrained (optional in the review; § 10) |
+| N2 planted control passable | Units: above-median-active block-3 units with the lowest single-unit zeroing cost on W₀. Pass is relative: R ≥ 0.8 × (D − κ_zeroed) / D. α is bounded by the largest off-answer KL among the real states, with a fallback to the largest reachable κ, recorded |
+| N3 planted t½ void rule | Dropped. "Reaches D/2 before the cap" stays as the stop; the planted t½ is reported |
+| N4 retrain control | Job 2 retrains seed 0 of each map first and alone (elicit, cipher at its norm, rank-1, copy). Checks: step exact; norm within 1e-4; G, x and r within 1e-3. Exit on a miss. Elicit runs before the cipher per seed, and the scored-step rules are named |
+| m1 R's floor units | R's noise floor is the random-removal sd in shares of D, measured on the pole states in job 1 and filed in filing B |
+| m2 unsourced 0.1 | Stated as this project's choice in rule 6, as for the bands |
+| m3 job 4 | Resume planned, with a 25-min deadline, exit 3 and resubmission by the pod-runner (§ 5) |
+| m4 symlink | Noted: a shared-filesystem write on the cluster, not a pod download |
+| Filing order (lead) | Filing A before job 1: rules, edge cases, C0a, probe reference. Filing B after job 1, before job 2: measured columns, R's floor, planted settings, and C0b, P1, P2, P3, V (§ 5 "Filing") |
 | Rejected | None. One deviation from the lead's "one cluster run" wish: S1's seeds and S3's pre-filing D make it three or four $0 debug jobs. Each job is its own run under the gate rule, so nothing is gated |
 
 ## Hand-off
@@ -333,6 +401,6 @@ outcome.
 The next session reads this plan and the review, then `src/commute/revival.py`, `steering.py`, `neurons.py`,
 `finetune.py` (`_run`), `keydep.py`, `heldout_keys.py`, `experiments/open_pair/amend1.py` and the draft
 `experiments/open_pair_instruments/results/predictions.json`. It writes `revival_kv.py`, `finetune_to_reference` and
-the CPU tests of the rules and edge cases. Then the lead runs job 1 (`measure`) through `/pod-runner`, the measured D,
-p_D, MLP shares and planted readings go into § 4 and the predictions, and the predictions are filed (status from DRAFT
-to filed). After that come the code review, job 2 and job 3.
+the CPU tests of the rules and edge cases, then commits filing A (status from DRAFT to "filing A"). The lead runs job 1
+(`measure`) through `/pod-runner`. The measured D, prior, p_D, p_prior, MLP shares, R's floor and planted settings go
+into § 4, and filing B is appended and committed. After that come the code review, job 2 and job 3.
