@@ -13,7 +13,7 @@ and a lookup at nearly the copy map's prior still read low. For `GOALS.md`, a si
 all eight maps into the reading's two bands, so on the small model VPD has not yet shown anything the model's logits do
 not. It is not evidence that VPD detects a new mechanism as such: it is one rule on one small model, it awaits an
 independent check, and whether the rule's update ran through old subcomponents was not measured, so the granularity
-limit is neither confirmed nor lifted.
+limit is neither confirmed nor ruled out.
 
 ## The answer
 
@@ -25,7 +25,7 @@ rule; copy reads 0.77. So r does not read carry, and this rule that generalises 
 between 3.7e-5 and 5.9e-5 sorts all eight maps into r's bands, so on the 67M VPD has not yet shown anything the logits
 do not. Amendment 6 shows only that r is not a smooth function of the prior: a no-rule lookup at 3.7e-5 reads 0.38
 while copy at 5.9e-5 reads 0.77. The rule is built from directions W₀'s embedding already has and r read it as new.
-Whether the update ran through old subcomponents was not measured, so this neither confirms nor lifts the granularity
+Whether the update ran through old subcomponents was not measured, so this neither confirms nor rules out the granularity
 limit, and it does not show r reads every new circuit of old pieces as new. E58's behavioural label read the class map
 "reuses" at step 11 while r read new: the two measure different things, and what "elicitation" means is a pending
 decision. E58's one comparison with
@@ -175,7 +175,7 @@ anything the logits do not. If elicitation means "the update raises an answer th
 though no better than W₀'s prior. If it means "an existing capability was reused on new inputs", r is the wrong
 instrument: the carry label read the class map "reuses" at step 11 while r read new. Which is meant is a pending
 decision. Whether r reads a new mechanism as such, beyond a new answer, is untested; whether the rule's update ran
-through old subcomponents was not measured, so the granularity limit is neither confirmed nor lifted. One rule, one
+through old subcomponents was not measured, so the granularity limit is neither confirmed nor ruled out. One rule, one
 small model and one decomposition; provisional until the
 independent check. A single r means nothing off its row: it moves by about 0.1 with read step and key count on its own.
 

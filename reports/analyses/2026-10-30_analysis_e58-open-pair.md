@@ -1098,7 +1098,7 @@ under 0.1. Both read r 0.23 to 0.28, in the cipher band and within 0.04 of each 
 that generalises and a lookup over the same new words read alike. What r follows across all eight 96-key maps is
 whether the trained answer is W₀'s own guess, and a cut on W₀'s prior sorts all eight the same way. The rule is built
 from directions W₀ has and r read it as new, but whether the update ran through old subcomponents was not measured, so
-this neither confirms nor lifts the granularity limit. At step 11 the behavioural label read the class map "reuses"
+this neither confirms nor rules out the granularity limit. At step 11 the behavioural label read the class map "reuses"
 while r read new, so the label is a carry reading, not a reference for elicitation when the target is new.
 
 ## How compelling is the evidence
