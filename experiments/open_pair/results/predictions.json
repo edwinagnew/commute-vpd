@@ -1,0 +1,104 @@
+{
+ "experiment": "E58 open_pair",
+ "filed": "2026-10-30, before any run; never edited after the run (a dated report instead)",
+ "plan": "reports/plans/2026-10-30_plan_e58-open-pair.md",
+ "spec": "reports/plans/2026-10-30_advice_regating-step2-FABLE.md, item 1 (decisions.md, 2026-10-30, last row)",
+ "code": "experiments/open_pair/run.py; rules in src/commute/open_pair.py, edge cases in tests/test_open_pair.py",
+ "settings": {
+  "half": 20,
+  "route_batch": 64,
+  "seeds": [0, 1, 2],
+  "source": "E54's windows files and tables (experiments/keydependent_elicit/results/large/windows_{elicit,cipher}.pt, sha256 in stage0.sha256), unchanged: the elicit map (each key's value is W0's word-like rank 2-20 next token after the marker and key) and the cipher on the same 32 keys",
+  "n_held": 8,
+  "split_seed": 0,
+  "split_rule": "open_pair.split_keys: held-out keys = E54 stage1.json elicit.keys[i] for the first 8 i of torch.randperm(32, seed 0); both lists in E54's key order. The same split for both tasks and all seeds",
+  "trained_keys": [1511, 1453, 1246, 1158, 921, 591, 1495, 1682, 1708, 3012, 2167, 2732, 3541, 2685, 3492, 3490, 3228, 4294, 3877, 2791, 4367, 3618, 4345, 4577],
+  "held_keys": [2250, 2515, 2613, 3907, 3304, 4447, 4302, 3075],
+  "held_keys_text": "action->potential, conditions->for, base->pairs, independent->increments, inside->your, formed->from, technology->was, pain->model (elicit values; W0's per-key geometric-mean P from E54 stage1.json: 9.7e-4, 9.7e-3, 4.4e-4, 7.3e-6, 5.8e-4, 2.5e-2, 4.4e-4, 2.0e-4)",
+  "windows": "trained task = E54's train and held-out windows whose key is a trained key (the fine-tune trains on the first, its scored-step rule and G read the second); held-out-key task = every E54 window (train and held-out row splits) whose key is a held-out key. No window with a held-out key at the key position is ever in a training batch; a held-out key may occur elsewhere in a training window as ordinary text, where the loss only holds the model to W0 (KL)",
+  "finetune": "E54's recipe unchanged (commute.keydep.elicit_ft / cipher_ft: E12's arm A, the 24 matrices, Adam 3e-5, batch 32, KL lambda 1, grad clip 1, 300 steps): elicit at E12's scored step (first of 10, 30, 100, 300 with held-out P(target) >= 0.5 on the trained keys, else 300 'did not learn'); the cipher at the step in 1..30 whose summed Frobenius norm of delta-W is nearest the same seed's elicit state's (ties to the lower step). Only the windows and table differ from E54: 24 keys instead of 32",
+  "precision": "every read fp32 with TF32 off; the fine-tune uses E12's bf16 autocast (as E54)"
+ },
+ "measurements": {
+  "G": "trained-key gain: mean over the trained keys' held-out windows of the target model's log-odds of the target at the answer position (identity.log_odds via steering.logodds_at), fine-tuned minus W0. The unit of E54's G_logodds (10.79 on elicit_s0)",
+  "H": "held-out-key gain: the same quantity on the held-out keys' windows, target = that key's value in the task's table",
+  "x": "H / G",
+  "s": "open_pair.boot_sd: sd of mean(dH) / mean(dG) over 2000 row-bootstrap resamples (held-out-key windows and trained-key windows resampled independently, one generator seeded 0, H's indices first); nan if a pool is empty or any resample's mean(dG) <= 0",
+  "H_other": "reported, unscored: per held-out-key window, the mean log-odds gain of the other 7 held-out values; a key-independent push toward the values' kind of token raises it as much as H",
+  "r": "E54's: route split's re-gating share of the least-squares split state, (L01 - L00) / (T1 - T0), on the trained keys' held-out windows (commute.keydep.readings); nan if |T1 - T0| < 1e-6",
+  "ratio": "stand-in ratio from the same route cells: (L11 - L00) / (U1 - U0) (E53's masked gain over subcomponent gain; E54's values were computed this way from its stage2.json cells); nan if U1 - U0 < ratio_floor",
+  "S": "E52's steering share B3 as E54 read it (log P, fit/score halves of the trained keys' held-out windows; commute.keydep.readings)"
+ },
+ "thresholds": {
+  "G_min": 8.0,
+  "G_min_source": "Fable's advice: E54's G 10.8 at step 10 on 32 keys; under 8 on 24 keys the state is too small to label",
+  "cut": 0.5,
+  "k_sd": 3.0,
+  "label_source": "reports/plans/2026-10-29_plan_reuse-stage1.md, section 'Stage B: lowercase on the 67M', patch row: 'through iff P >= 0.5 (full = 1), not iff P <= 3 s (row bootstrap), else neither'; here P is read on behaviour as x = H / G (Fable). The same 0.5 is E12's r rule and the step-2 plan's ratio rule",
+  "n_boot": 2000,
+  "boot_seed": 0,
+  "ratio_floor": 0.1,
+  "ratio_floor_source": "E53 Amendment 1b thresholds.floor_min (experiments/performed_anchor/results/predictions_amend1b.json)",
+  "min_gap": 0.2,
+  "min_gap_source": "E54's separation rule (elicit.separation): |mean A - mean B| > larger within-kind range, strict, and >= 0.2",
+  "min_lead": 2,
+  "min_lead_source": "the step-2 plan's P3 (reports/plans/2026-10-30_plan_regating-ground-truth.md): a one-run difference is one seed's flip"
+ },
+ "label_rule": "open_pair.label(H, G, s): 'unreadable' if H or G is not finite; 'too_small' if G < 8; 'unreadable' if s is not finite; x = H / G; 'reuses' iff x >= 0.5; 'new' iff x <= 3 s; 'unreadable' if both hold (3 s >= 0.5 and x in [0.5, 3 s]); else 'neither'. Ties at either bound count. Instrument labels: 'reuses' iff reading >= 0.5, else 'new'; a non-finite reading has no label",
+ "stage0": {
+  "order": "first and alone, before any fine-tune; any miss writes run.json and exits 1",
+  "sha256": {
+   "windows_elicit": "8f6667050c3702b4da25a8cf2e2b845ff886200566f91e28fb75516fb7fcb0ef",
+   "windows_cipher": "924b718303525f3fb9229d00b6613ed872cdbccef985b2aca0ad8d0e7c027ea2",
+   "elicit_s0": "18156b7172dab09ad87bea143fe4d30de437d3a122c0ef3a28478e38c845bf8b"
+  },
+  "sha256_source": "E54 stage1.json sha256 (windows), stage2.json finetunes.elicit_s0.sha256",
+  "zero_update": "G and H of a zero delta-W on all four split tasks (elicit/cipher x trained/held-out keys): max |per-window gain| exactly 0",
+  "r_ref": 0.7725536396045862,
+  "r_tol": 0.03,
+  "r_source": "E54 stage2.json states.elicit_s0.r; tolerance E54's r_tol (E46's regeneration tolerance)",
+  "ratio_ref": 0.9563912982356004,
+  "ratio_tol": 0.03,
+  "ratio_source": "E54 stage2.json elicit_s0 cells, (L11 - L00) / (U1 - U0); same tolerance as r (same cells)",
+  "S_ref": 0.3795955998181104,
+  "S_tol": 0.001,
+  "S_source": "E54 stage2.json states.elicit_s0.S; E54's S_tol",
+  "block0_tol": 1e-06,
+  "block0_source": "E54 stage0 block0_tol: B3's block-0 share reads 0 (no fine-tune changes the embedding)"
+ },
+ "early_stops": {
+  "elicit_s0_G": "after the first fine-tune: elicit_s0's G < 8 -> exit 1 (Fable: raise the step count once, matched by norm, as a dated amendment; not inside this run)",
+  "cipher_reuses": "after each cipher fine-tune: a cipher labelled 'reuses' -> exit 1 (the label's negative control failed: the rule is broken)",
+  "block0_nats": "stage 2: |S_block0| x G_score (log P) > 1e-5 nats on any state -> exit 1 (E54's stop)",
+  "expected_first_minutes": "stage 0 within ~2 min of model load: zero update exactly 0; E54 elicit_s0 r 0.7726, ratio 0.9564, S 0.3796 to ~1e-6 (same code, same card model); first fine-tune ~11 s, held-out P(target) on trained keys >= 0.5 at step 10 (E54: step 10 on both seeds), ||dW|| about 3.1-3.2 (E54 3.14, 3.17)"
+ },
+ "expected": {
+  "W0": "G = H = 0 exactly; r, ratio, S undefined (gain 0); label 'too_small'",
+  "do_nothing": "G, H, S and the label read the target model only, so they are the same for every placement of delta-W; r and the ratio are read on the least-squares split state only (as E54)",
+  "elicit": {"G": "about 10-12 (E54 10.79 / 10.82 on 32 keys; 24 keys get more steps per key)", "H": "open: the reading this experiment exists for", "x": "open", "s": "about 0.02-0.05 (about 125 held-out-key windows, about 73 trained-key windows)", "H_other": "near 0 if the fine-tune is key-specific; near H if it is a push toward the values' kind of token", "r": "0.76 +- 0.03 (E54/E56 0.758-0.773 on five seeds)", "ratio": "0.95 (E54 0.956, 0.951)", "S": "0.38 (E54/E56 0.380-0.397)"},
+  "cipher": {"G": "about 11 (E54 matched 11.10 / 10.89 at step 9)", "H": "about 0 or below (held-out values are unrelated pool tokens W0 gives < 1e-4)", "x": "within 3 s of 0 or negative", "label": "new", "r": "0.24 (E54/E56 0.212-0.267)", "ratio": "0.29-0.34 (E54 0.336, 0.289)", "S": "0.19-0.25 (E54/E56)"}
+ },
+ "noise_floor": {
+  "x": "its own row bootstrap s (the label rule's 3 s)",
+  "r": "seed range 0.055 on the matched cipher, 0.015 on elicit, over five seeds (E54 + E56 job 2)",
+  "ratio": "seed difference 0.005 (elicit) and 0.047 (cipher) on E54's two seeds",
+  "S": "seed range about 0.07 on the matched cipher (E54/E56 0.185-0.252), 0.017 on elicit"
+ },
+ "predictions": {
+  "P0": {"what": "the open reading, a lean and not a test: the elicit runs' labels counted (open_pair.p0); 'reuses' or 'new' when at least two of three carry it, else 'mixed'", "lean": "reuses, about 50% (Fable); new about 30%; mixed or neither about 20%"},
+  "P1": {"what": "the label's negative control: all three matched ciphers read 'new' (open_pair.p1). 'stop' (run exits) if any reads 'reuses'; 'fail' if any reads 'neither', 'too_small' or 'unreadable'; 'unreadable' with no cipher state", "relative_or_absolute": "absolute", "lean": "pass, high: the held-out cipher values are unknowable from the trained ones", "blind_to": "whether the rule labels a real reuse 'reuses' (no positive control for the label on the 67M; E55's counting-model anchors are its positive controls)"},
+  "P2": {"what": "the step-2 plan's P2 on these runs, scored for r and for the ratio separately (open_pair.p2): on every elicit run labelled 'reuses' or 'new' with a finite reading, the instrument's label (reading >= 0.5 -> 'reuses') equals the behavioural label. 'not_testable' if no run qualifies (all 'neither', 'too_small' or 'unreadable', or every reading nan); 'split' reported beside when the labelled runs carry both labels", "relative_or_absolute": "absolute", "lean": "pass for both about 50% (r and ratio are expected to read 'reuses' on every elicit run, so P2 passes exactly when the label is 'reuses')", "blind_to": "the granularity limit: a new circuit assembled from old pieces under new gating reads 'elicited' (reuses) to VPD; a fail with r and ratio high cannot tell that case from a VPD error"},
+  "P3": {"what": "the step-2 plan's P3 on these six states (open_pair.p3): over the states labelled 'reuses' or 'new' whose r, ratio and S are all finite, agreement counts A_r, A_ratio, A_S (S >= 0.5 -> 'reuses'); per VPD instrument 'adds' iff A - A_S >= 2, 'steering_better' iff A_S - A >= 2, else 'no_difference'; 'not_testable' with no row", "relative_or_absolute": "absolute counts", "lean": "follows P0: if elicit reads 'reuses' on 2-3 runs, 'adds' for both (S reads elicit 'new' at 0.38); if 'new', 'steering_better'", "blind_to": "S's cut at 0.5 is E52's, not fitted here; S in log P, r in log-odds (E54 Amendment 1)"},
+  "P4": {"what": "the readings reproduce E54 on 24 keys (positive control of the readings, not of the label): r and the ratio each separate elicit from the matched cipher, elicit higher, by E54's rule (elicit.separation, min gap 0.2); 'unreadable' if any of the six values is not finite", "relative_or_absolute": "relative (separation)", "lean": "pass for both, high (E54, E56: r gap 0.52 over a 0.055 range)"}
+ },
+ "branches": {
+  "stage0_miss": "stop and tell the user",
+  "elicit_s0_too_small": "dated amendment: raise the step count once, cipher matched by norm as E54; if still under 8, the family cannot be built this way: fall back to the step-2 table and raise Stage B with the user",
+  "P1_stop_or_fail": "the label rule is not reading the cipher as new: no label is used; report descriptively and tell the user",
+  "P0_reuses_and_P2_pass": "the first label VPD did not make that agrees with r and the ratio, on a pair steering and neuron patching cannot separate (E56): the headline case at n = 3, with the granularity limit stated",
+  "P0_new_and_P2_fail": "the first concrete candidate for the granularity limit, a VPD error or a label too strict; the novelty column on these states and the costed second-decomposition-seed card (Fable)",
+  "all_neither": "the bar reads nothing here: report descriptively; ask reuse-lead for its bar before touching ours (never refile)",
+  "split_or_mixed": "report per run; P2 scored per run as filed; no general claim",
+  "H_other_close_to_H": "reported, not a rule: if an elicit run labelled 'reuses' has H_other >= 0.5 H, the write-up says the label may reflect a key-independent push toward the values' kind of token rather than W0's key-to-value map"
+ }
+}
