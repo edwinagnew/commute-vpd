@@ -456,3 +456,4 @@ Figures already published (their sources, for a re-upload):
 - "fig/e50_log_sets.png": "experiments/restore_anchors/figures/log_sets.png"
 - "fig/e50_log_s_size.png": "experiments/restore_anchors/figures/log_s_size.png"
 - "fig/e50_log_probe.png": "experiments/restore_anchors/figures/log_probe.png"
+- "fig/e55_amend5_saves.png": "experiments/pcfg_anchors/figures/amend5_saves.png"
