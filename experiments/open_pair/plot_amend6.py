@@ -3,9 +3,9 @@
   figures/a6_prior.png        r at step 30 against W0's prior of the trained value (geometric-mean probability after
                               the marker and key, log scale) for all seven maps, three seeds each and the seed mean;
                               the prior-matched cipher marked; the filed prior band [2e-5, 2e-4], the 0.5 cut and the
-                              0.6 upper band; the line through the shuffle's and copy's seed means, which is what r
-                              would read at each prior if it tracked the prior only (the code review's power check);
-                              the first-letter rule at its prior with no r, since it did not carry
+                              0.6 upper band; the line through the shuffle's and copy's seed means, one smooth
+                              prior-only trend fitted after the data (the code review's power check); the first-letter
+                              rule's prior as a tick on the x axis only, with no r, since it did not carry
   figures/a6_first_letter.png the first-letter rule's held-out carry x, its null x_null and x - x_null per seed, at
                               each run's first step over the gate and at step 30, with the filed entry bar 0.3
 
@@ -107,7 +107,7 @@ def prior_fig(a6: dict[str, Any]) -> None:
         lw=1.0,
         ls="-.",
         zorder=1,
-        label="r if it tracked the prior only:\nline through shuffle and copy means",
+        label="one smooth prior-only trend, fitted after the data:\nline through shuffle and copy means",
     )
     for m in ("cipher", "shuffle", "prior_cipher", "copy", "elicit", "rank1"):
         p, rs = pb[m]["w0_geo_p_trained"], pb[m]["r30"]
@@ -136,23 +136,23 @@ def prior_fig(a6: dict[str, Any]) -> None:
         color=INK,
         arrowprops={"arrowstyle": "-", "color": INK, "lw": 0.6},
     )
+    # The first-letter rule has no r (it did not carry): its prior is marked on the x axis only, never at an r value.
     fl = pb["first_letter"]["w0_geo_p_trained"]
-    ax.scatter(
-        [fl],
-        [0.2],
-        marker="v",
-        s=50,
-        color=COLOR["first_letter"],
-        zorder=4,
-        label=f"{NAME['first_letter']}: did not carry, so r not read",
-    )
+    ax.axvline(fl, ymin=0, ymax=0.06, color=COLOR["first_letter"], lw=2.0, zorder=4)
     ax.text(
         fl * 1.15,
-        0.2,
-        "first-letter rule: prior shown,\nr not read (no carry)",
+        0.165,
+        "first-letter rule's prior (x axis only):\nno r read, it did not carry",
+        fontsize=6.5,
+        color=COLOR["first_letter"],
+        va="bottom",
+    )
+    ax.text(
+        2.4e-4,
+        0.22,
+        "a cut on the prior anywhere between the star and copy\nstill sorts all six maps into the two bands",
         fontsize=6.5,
         color=INK,
-        va="center",
     )
     ax.set_xscale("log")
     ax.set_xlim(7e-7, 3e-2)

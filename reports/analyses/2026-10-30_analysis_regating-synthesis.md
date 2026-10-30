@@ -10,7 +10,8 @@ We asked whether a parameter decomposition of the small model can tell a fine-tu
 already does from one that builds something new. Across five kinds of word map and three seeds, its main reading agreed
 with the original model's own ranking of the trained answer, high when the answer was the model's guess for that key and
 low when not, and it did not follow whether the learning carried to unseen keys. A lookup whose answers the original model
-rated nearly as likely as the copy map's still read low, so on that one pair the reading is more than the model's prior.
+rated nearly as likely as the copy map's still read low, so on that one pair the reading is more than a smooth function
+of the model's prior, though a cut on the prior between the two maps would still sort every map.
 For `GOALS.md` this is not yet evidence that VPD detects elicitation: the result rests on one pair and awaits an
 independent check, no map had a new answer that carries to unseen keys, and a new circuit built from old subcomponents
 would read as elicited too.
@@ -20,8 +21,9 @@ would read as elicited too.
 On the small model with trigger-to-word maps, VPD's r reads high when the trained answer is the model's own guess for
 each key and low when it is not, and on one map pair that split holds at a near-equal prior. A no-rule lookup whose
 answers W₀ rates at 3.7e-5 reads r 0.38, with the no-rule maps, while copy at 5.9e-5 reads 0.77: priors a factor of
-about 1.6 apart. So on that pair W₀'s prior is not a complete baseline for r, though across the other maps r still
-follows the prior closely. The claim is provisional until the independent check. E58's one comparison with a reading
+about 1.6 apart. So on that pair r is not a smooth function of W₀'s prior. It does not rule out every prior baseline:
+a cut on the prior anywhere between 3.7e-5 and 5.9e-5 still sorts all six maps into r's bands, and W₀'s own-guess
+ranking still predicts every band. The claim is provisional. E58's one comparison with a reading
 that never looks at the decomposition, a steering vector, scored steering as the better match, though steering sat on
 its cut. Among answers the model already guessed, r does not follow whether the rule carries to unseen keys. A
 first-letter rule built to be a new answer that carries did not carry on the 67M, so whether r reads a new mechanism
@@ -108,11 +110,12 @@ seeds on the prior: suggestive only.
 no key-to-guess link, its values drawn from the cipher's word pool but admitted only at W₀ priors from 2e-5 to 2e-4,
 realised a prior of 3.7e-5, a factor of about 1.6 under copy's 5.9e-5. Its r at step 30 read 0.373, 0.381 and 0.382 on
 three seeds, every one under the 0.5 cut: "cipher_band", Fable's lean at about 70%, the plan's writer's at 40%. Copy, at
-the nearby prior, reads 0.77. A line through the shuffle's and copy's means, roughly what r would read if it tracked the
-prior alone, reads 0.69 at that prior; the lookup sits 0.31 under it. So on this one map pair r separates the kind of
-target at a near-equal prior, and the prior is not a complete baseline. Three limits. Copy also differs from the lookup in
-carry and trained gain, so this does not say which of those r reads. Among the no-link maps r is not in prior order: the
-shuffle reads 0.48 at a prior 3.6 times lower, so the word pool moves r too. Over six maps the rank correlation of r
+the nearby prior, reads 0.77. A line through the shuffle's and copy's means, one smooth prior-only trend fitted after
+the data, reads 0.69 at that prior; the lookup sits 0.31 under it. So on this one map pair r is not a smooth function
+of the prior. Four limits. A cut on the prior anywhere between 3.7e-5 and 5.9e-5 still sorts all six maps, so a step in
+the prior is not excluded. Copy also differs from the lookup in the own-guess link, carry and trained gain, so this does
+not say which of those r reads. Among the no-link maps r is not in prior order: the shuffle reads 0.48 at a prior 3.6
+times lower, so the word pool moves r too. Over six maps the rank correlation of r
 with the log prior is still 0.89. Figure: `experiments/open_pair/figures/a6_prior.png`; record: the E58 report's
 "Amendment 6".
 
@@ -136,9 +139,11 @@ tree, branch 3, keeps the one-seed line as a reported number and never as a scor
 
 For the user's question, can VPD distinguish elicitation from a new mechanism: on the 67M with trigger maps, r agrees
 with whether W₀ already ranked the trained answer as its guess for that key. That ranking defines the split, so it is
-the baseline r must beat. On one map pair r beats it: a lookup at a prior a factor of about 1.6 under copy's reads with
-the no-rule maps, 0.38 against copy's 0.77. That is one pair, one prior level and one decomposition, and it stays
-provisional until the independent check. Among answers W₀ already guessed, r does not follow whether the learned rule
+the baseline r must beat. On one map pair r reads more than a smooth function of W₀'s probability of the target: a
+lookup at a prior a factor of about 1.6 under copy's reads with the no-rule maps, 0.38 against copy's 0.77. It still
+agrees with W₀'s own-guess ranking, a baseline that never looks at the decomposition, and a cut on the probability
+between the two maps still sorts every map. That is one pair, one prior level and one decomposition, and it stays
+provisional. Among answers W₀ already guessed, r does not follow whether the learned rule
 carries to unseen keys. Whether r would read a new answer that does carry as new is untested: the first-letter rule,
 trained to be one, did not carry on the 67M beyond what letter frequency gives. Under the granularity limit, a new
 circuit assembled from existing subcomponents reads as elicited. A single r means nothing off its row: it moves by about 0.1 with read step and key count
@@ -157,7 +162,8 @@ on its own.
 - **The prior as baseline, scored once.** W₀'s prior of each target sorts the five original maps by construction; set
   beside r after the fact, it ranks them with one swap. The prior-matched cipher, filed before its run, read in the
   cipher band at a prior a factor of about 1.6 under copy's: one pair, one prior level, one word pool, three seeds with
-  a range of 0.009. Over six maps the rank correlation of r with the log prior is 0.89. The one comparison with steering,
+  a range of 0.009. It excludes a smooth prior-only trend, not a cut between 3.7e-5 and 5.9e-5, which still sorts all
+  six maps. Over six maps the rank correlation of r with the log prior is 0.89. The one comparison with steering,
   in E58, scored "steering better".
 - **One empty cell.** Every map whose target W₀ did not guess has carry at or under zero, so the claim that r does not
   follow carry is tested only among own-guess maps. The first-letter rule, filed to fill it, carried 0.04 to 0.08 beyond
@@ -189,8 +195,9 @@ GSM8K fine-tune are candidates for the upper band. They would be read through th
 with the 67M bands as the filed expectation: the invented-facts anchor under 0.5, the format anchor over, GSM8K open.
 That run is gated by its own rules; nothing here adds to its spend. If the Qwen anchors read under 0.1 apart, the bands
 are a 67M artefact, and no re-gating claim leaves the testbed without a real-model number. After Amendment 6's
-cipher-band result, the plan's tree sends Job 2 ahead as filed, with W₀'s prior reported beside r on every anchor, since
-the same confound returns there.
+cipher-band result the plan's tree sent Job 2 ahead as filed, with W₀'s prior beside r. That is stale: E57's first
+control read r 0.99 on random weight changes on Qwen, so no Qwen reading has teeth yet, and Job 2's ordering is open
+pending that (`reports/plans/2026-10-30_advice_regating-carry-cell-FABLE.md`).
 
 ## Not run
 
