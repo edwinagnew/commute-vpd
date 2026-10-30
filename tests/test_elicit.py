@@ -157,3 +157,79 @@ def test_share_or_nan_and_geo_mean() -> None:
     out = EL.geo_mean_p(logits, toks, 1, {7: 0, 8: 0}, "cpu")
     assert set(out) == {7, 8}  # key 9 is not asked for
     assert math.isclose(out[7], 0.25, rel_tol=1e-6) and math.isclose(out[8], 0.5, rel_tol=1e-6)
+
+
+# ----------------------------------------------------------------------------- E54 Amendment 1
+
+TH1 = {"min_gap": 0.2, "p2_min_diff": 0.3}
+
+
+def a1(e: tuple[float, float], c: tuple[float, float], own: tuple[float, float] = (0.11, 0.07),
+       r: tuple[float, float] = (0.77, 0.76), S: tuple[float, float] = (0.38, 0.39)) -> dict[str, dict[str, object]]:
+    """Six states: elicit and matched-cipher S_lo, the cipher-at-own-step S, elicit r and S (nats)."""
+    st: dict[str, dict[str, object]] = {}
+    for i, s in enumerate(("s0", "s1")):
+        st[f"elicit_{s}"] = {"S_lo": e[i], "r": r[i], "S": S[i]}
+        st[f"cipher_{s}"] = {"S_lo": c[i], "r": 0.24, "S": 0.2}
+        st[f"cipher_own_{s}"] = {"S_lo": 0.06, "r": 0.25, "S": own[i]}
+    return st
+
+
+def test_amend1_expected_outcome() -> None:
+    sc = EL.score_amend1(a1((0.25, 0.25), (0.22, 0.18)), TH1)  # the filed expected values
+    assert (sc["P1-lo"]["status"], sc["P2-lo"]["status"], sc["P3-own"]["status"]) == ("pass", "pass", "pass")
+    assert sc["branch"].startswith("as predicted")
+    # E54's stage2.json S values: P3-own separates elicit higher (gap 0.296, range 0.048)
+    sc = EL.score_amend1(a1((0.25, 0.25), (0.22, 0.18), own=(0.11425894585276908, 0.06644027235478916),
+                            S=(0.3795955998181104, 0.3937418554478809)), TH1)
+    assert sc["P3-own"]["verdict"] == "a_higher" and math.isclose(sc["P3-own"]["gap"], 0.2963, abs_tol=1e-4)
+
+
+def test_amend1_separation_ties_and_reversal() -> None:
+    # gap exactly 0.2 with zero range separates (>=): P1-lo fails, a_higher
+    sc = EL.score_amend1(a1((0.5, 0.5), (0.3, 0.3)), TH1)
+    assert sc["P1-lo"]["verdict"] == "a_higher" and sc["P1-lo"]["status"] == "fail" and "tell the user" in sc["branch"]
+    # gap equal to the range does not separate (strict): 0.75 - 0.25 = 0.5 = range of (1.0, 0.5)
+    assert EL.score_amend1(a1((1.0, 0.5), (0.25, 0.25), r=(1.5, 1.5)), TH1)["P1-lo"]["verdict"] == "none"
+    sc = EL.score_amend1(a1((0.1, 0.1), (0.5, 0.5)), TH1)
+    assert sc["P1-lo"]["verdict"] == "b_higher" and sc["branch"].startswith("reversed")
+    # P3-own without separation fails and the branch says check the code
+    sc = EL.score_amend1(a1((0.25, 0.25), (0.22, 0.18), own=(0.3, 0.3)), TH1)
+    assert sc["P3-own"]["status"] == "fail" and "check the code" in sc["branch"]
+
+
+def test_amend1_p2_bound() -> None:
+    # 0.5 - 0.2 is the double nearest 0.3, equal to the threshold: a tie passes
+    assert 0.5 - 0.2 == 0.3
+    assert EL.score_amend1(a1((0.2, 0.2), (0.15, 0.15), r=(0.5, 0.5)), TH1)["P2-lo"]["status"] == "pass"
+    sc = EL.score_amend1(a1((0.21, 0.2), (0.15, 0.15), r=(0.5, 0.5)), TH1)
+    assert sc["P2-lo"]["status"] == "fail" and "P2-lo missed" in sc["branch"]
+    # S_lo above r: d < 0 fails
+    assert EL.score_amend1(a1((0.9, 0.2), (0.15, 0.15), r=(0.5, 0.5)), TH1)["P2-lo"]["status"] == "fail"
+
+
+def test_amend1_unreadable() -> None:
+    base = a1((0.25, 0.25), (0.22, 0.18))
+    nan_lo = {**base, "elicit_s0": {**base["elicit_s0"], "S_lo": math.nan}}  # a zero denominator gives nan
+    sc = EL.score_amend1(nan_lo, TH1)
+    assert sc["P1-lo"]["status"] == sc["P2-lo"]["status"] == "unreadable" and sc["branch"].startswith("unreadable")
+    inf_r = {**base, "elicit_s1": {**base["elicit_s1"], "r": math.inf}}
+    assert EL.score_amend1(inf_r, TH1)["P2-lo"]["status"] == "unreadable"
+    missing = {k: v for k, v in base.items() if k != "cipher_own_s1"}  # fewer than two values for a kind
+    sc = EL.score_amend1(missing, TH1)
+    assert sc["P3-own"]["status"] == "unreadable" and sc["branch"].startswith("unreadable")
+    no_value = {**base, "cipher_s0": {"r": 0.24, "S": 0.2}}
+    assert EL.score_amend1(no_value, TH1)["P1-lo"]["status"] == "unreadable"
+    assert EL.share_or_nan(0.4, 0.0) != EL.share_or_nan(0.4, 0.0)  # nan, from a zero log-odds gain
+
+
+def test_logodds_readout() -> None:
+    from commute import steering as ST
+
+    p = torch.tensor([[0.5, 0.25, 0.25], [0.999999, 5e-7, 5e-7]], dtype=torch.float64)
+    logits = torch.log(p)[:, None, :].float().expand(-1, 2, -1)  # (N, T=2, V)
+    tgt = torch.tensor([0, 0])
+    lo = ST.logodds_at(logits, 1, tgt)
+    assert lo.dtype == torch.float64 and math.isclose(float(lo[0]), 0.0, abs_tol=1e-6)
+    assert math.isclose(float(lo[1]), math.log(0.999999 / 1e-6), rel_tol=1e-4)  # exact near P = 1, no saturation
+    assert torch.allclose(ST.logp_at(logits, 1, tgt), torch.log(p[:, 0]), atol=1e-6)
