@@ -459,3 +459,4 @@ Figures already published (their sources, for a re-upload):
 - "fig/e55_amend5_saves.png": "experiments/pcfg_anchors/figures/amend5_saves.png"
 - "fig/e44_log_reading_b.png": "experiments/qwen_maps/figures/log_reading_b.png"
 - "fig/e56_b2_curves.png": "experiments/keydependent_patch/figures/b2_curves.png"
+- "fig/e58_a7_r.png": "experiments/open_pair/figures/a7_r.png"
