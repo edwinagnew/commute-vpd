@@ -119,3 +119,26 @@ capped both read x = 5000 / scratch. Both are cosmetic at the expected values (P
 
 GPU behaviour of `possession` (its cost, and whether LOW's count-a selectivity on `C b 40` rows clears 0.4); torch.compile
 recompiles once per reverse fine-tune (inherited from C1, about 20-40 s per state); lint.
+
+## Resolution (2026-10-30, C1b code writer, on the lead's decisions; before any C1b job ran)
+
+- **H1, fixed as a re-filing.** The probe is still read, cut and reported, but it is filed as a task-identity reference
+  (a check that the truth set is what its construction says), not a scored instrument: out of "any instrument passes →
+  C2" and out of the benchmark comparison with VPD. `c1b.py` scores only `SCORED = (prune, reverse, steer)` as
+  instruments and marks `scores.probe.role` "task-identity reference (not scored; not a pass)";
+  `predictions_c1b.json` PC4's claim, rule and blind_to say so, and its pass lean is gone.
+- **M1, fixed.** New filed train stop row (`needs_full` in `c1b.py`, `rules.train_stops`): on the full scored truth
+  set, if max(bar, n_c + 2) > n, or n < 8, the train job stops with `c1b_stop.json` and a log line naming what an
+  instrument would need; the lead takes it to the user.
+- **M2, fixed by deletion.** A `c1b.json` written under another recipe or constants makes every stage exit 2; the drop
+  path is gone (moving the file aside is the lead's deliberate act).
+- **L1, decided.** The code's rule (3 or more construction–check disagreements among scored-seed states) stands; a dated
+  line in the plan's section 6 says the filed rule supersedes the single-state row.
+- **L2, fixed.** `read_states` does not start a state when the slowest state measured so far (each row now stores
+  `seconds`; 240 s until one is measured) would overrun the deadline.
+- **L3, fixed in the usage.** Every c1b stage is submitted as `--job-name=commute-e55-c1b --dependency=singleton`; the
+  exit-3 resubmit line the script prints carries `--dependency=singleton` for c1b.
+- **L4, skipped (cosmetic, lead).** Noted in `predictions_c1b.json` edge case E11.
+
+The predictions file carries a dated `amended_before_the_run` entry listing these changes. Lint clean; `make test`
+passes; the model-free dry run still passes.
