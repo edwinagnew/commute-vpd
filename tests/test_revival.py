@@ -92,3 +92,22 @@ def test_pruned_unit_outputs_zero():
     m(torch.randint(0, 11, (2, 8)))
     assert torch.all(seen["act"][..., 3] == 0) and not torch.all(seen["act"][..., 2] == 0)
     assert torch.all(rv.fc_layers(model)[1].weight[3] != 0)  # the original is untouched
+
+
+def test_score_needs_a_margin_over_the_better_nuisance_labeller():
+    truth = {f"s{i}": "existing" if i < 8 else "new" for i in range(19)}
+    wrong = ["s0", "s8"]  # 17 of 19 right: above the bar of 14
+    labels = {s: ("new" if v == "existing" else "existing") if s in wrong else v for s, v in truth.items()}
+    lab15 = dict(labels) | {"s1": "new", "s9": "existing"}  # a nuisance labeller at 15 of 19
+    sc = rv.score(labels, truth, {"lr": lab15, "short": dict.fromkeys(truth, "new")}, rv.MARGIN_ALL)
+    assert (sc["agree"], sc["nuisance_agree"], sc["passes"]) == (17, {"lr": 15, "short": 11}, True)  # 17 >= 15 + 2
+    lab16 = dict(labels) | {"s1": "new"}
+    sc = rv.score(labels, truth, {"lr": lab16}, rv.MARGIN_ALL)
+    assert sc["passes_bar"] and not sc["beats_nuisance"] and sc["passes"] is False  # 17 < 16 + 2
+
+
+def test_nuisance_counted_on_the_instrument_states_only():
+    truth = {f"s{i}": "existing" if i < 6 else "new" for i in range(12)}
+    labels = dict(truth) | {"s0": "void", "s1": "void"}  # n = 10, agree 10
+    sc = rv.score(labels, truth, {"copy": dict(truth)}, rv.MARGIN_SEED)
+    assert sc["nuisance_agree"] == {"copy": 10} and sc["passes_bar"] and sc["passes"] is False  # 10 < 10 + 1
