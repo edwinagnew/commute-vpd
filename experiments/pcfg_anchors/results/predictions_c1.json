@@ -1,0 +1,144 @@
+{
+  "status": "draft, lead to review",
+  "experiment": "E55 Stage C1: non-VPD instruments (pruning revival, reverse fine-tuning, steering) scored against the reuse ground truth from Stage A's two checks and Amendment 5.",
+  "plan": "reports/plans/2026-10-29_plan_reuse-stage1.md, Stage C (C1) and Decision tree; user decision decisions.md 2026-10-30 (E55 truth set: option C done as Amendment 5, then option A with option B).",
+  "code": "experiments/pcfg_anchors/c1.py; src/commute/revival.py (rules: tests/test_revival.py); cluster/pcfg_anchors.sbatch c1.",
+  "drafted": "2026-10-30 by the C1 code writer (not filed). The lead sets the truth set after the Amendment 5 check, then files (status 'filed ...'); c1.py refuses a draft.",
+  "constants": {
+    "truth_scored": {
+      "a2/M3/1000": "existing",
+      "a2/W1/1000": "existing",
+      "a2/W1s1/1000": "existing",
+      "amend5/WN_s0/1000": "existing",
+      "amend5/WN_s1/1000": "existing",
+      "amend5/WN_s2/1000": "existing",
+      "amend5/WN_s3/1000": "existing",
+      "amend5/WNf_s0/1000": "existing",
+      "a2/N1/1000": "new",
+      "a2/N1/10000": "new",
+      "a2/N1s1/1000": "new",
+      "a2/N1s1/10000": "new",
+      "a2/N2/1000": "new",
+      "a2/N2/10000": "new",
+      "a2/N3/1000": "new",
+      "a2/N3/10000": "new",
+      "a2/M/10000": "new",
+      "a2/M2/10000": "new",
+      "a2/M3/10000": "new"
+    },
+    "steering_only": {
+      "a2/R/1000": "existing",
+      "a2/R/10000": "existing"
+    },
+    "class_B": ["a2/M/1000", "a2/M2/1000", "a2/W2/1000", "a2/W1/10000", "a2/W1s1/10000", "a2/W2/10000"],
+    "scratch_lrs": [1e-05, 1e-06]
+  },
+  "constants_sources": {
+    "truth_scored": "Every LOW-based Stage A state whose count-a check reads 'through' (existing) or 'not through' (new) in a2_<arm>.json, at 1K and 10K; plus Amendment 5's WN seeds 0-3 and WNf at 1K, class 'reuses' in amend5.json (existing). c1.py's model-free control truth_matches_files re-derives each label from those files and stops on any mismatch. ID is excluded: it is the checks' positive control.",
+    "steering_only": "R (HIGH, count-b check 'through' at both saves): the plan scores R for steering only, since pruning and reverse fine-tuning revive count a, which R never lost. Both saves listed; the per-seed score uses R's 1K state.",
+    "class_B": "Option B (user, 2026-10-30): the third class, reported for every instrument without a pass bar. Drafted as every LOW-based Stage A state whose count-a check reads 'neither'. The decision card (reports/decisions/2026-10-29_decision_e55-stage-c-truth-set.md) names only the three all-spurious 10K states (W1, W1s1, W2 at 10K) as 'a rule of two counts'; M, M2 and W2 at 1K are 'neither' for other reasons. The lead may split the list.",
+    "scratch_lrs": "The reverse lrs of the listed states (fine-tune lr / 10: 1e-4 -> 1e-5, 1e-5 -> 1e-6); model-free control every_reverse_lr_has_scratch."
+  },
+  "definitions": {
+    "pruning": "Jain et al. 2024 Alg. 3 on MLP hidden units: unit j of block l scored by sum of grad . w over row j of the block's first MLP Linear and its bias, gradient of the count-a answer loss (cross-entropy at '=') on 1,000 fresh natural 'C a 40' rows (default_rng([1, 80])), fp32, eval mode. The top-K units are zeroed (weight row and bias: the unit's output is exactly 0). Count-a accuracy (fp32 argmax at '=') on Stage A's 4,000 'C a 40' rows (run.eval_seqs). Reference: 20 uniform K-unit draws over all 6 x 768 units (default_rng([301, K]), the same draws for every state).",
+    "reverse_fine_tuning": "From the state, Stage A's fine-tune recipe (answer-only loss, AdamW betas 0.9/0.95, weight decay 0.1, batch 96, clip 1.0, 20% linear warm-up then cosine to lr/100 over the 10K cap, bf16 autocast) on natural 'C a 40' rows (Batches seed 300), lr = the state's fine-tune lr / 10. Count-a accuracy read every 50 steps on the first 1,000 of Stage A's 'C a 40' rows; steps = the first read >= 0.95; cap 10K. Scratch: NEVER's pretrained model, the same recipe, data and seed, at 1e-5 and 1e-6.",
+    "steering": "E52 B3 (src/commute/steering.py) on this model: on Stage A's 1,000 qualifying 'C b 40' rows (run.a2_eval_data's b_texts), the target is the fine-tuned state's own argmax at '='. G = mean over rows of log P_tuned(target) - log P_base(target), on the fit half (even rows) and the scoring half (odd). Per block l in 1..5, v_l = fit-half mean of (tuned - base) residual at '=' after block l, added to the base there; share = mean steered change of log P(target) / G. S = the scoring-half share at the block with the largest fit-half share (ties to the lower block).",
+    "per_seed": "One vote per training run: the run's 1K state when it is in the truth set (runs whose 1K state is class B drop out). Saves of one seed share a run and are not independent; the per-seed score has independent votes (seeds of one recipe still share it)."
+  },
+  "rules": {
+    "prune_label": "void if the unpruned count-a accuracy >= 0.95 (nothing to revive); 'existing' iff at K = 5 or K = 15, top-K accuracy - mean(random) >= 3 sd, sd = max(sd of the 20 draws (ddof 1), binomial sd of their mean at 4,000 rows, clipped to [1/n, 1-1/n]); else 'new'. Void for every state if the pruning control fails.",
+    "prune_control": "LOW, scores negated (the units whose removal raises count-a loss most): at K = 5 or 15, mean(random) - top-K accuracy >= 3 sd (same sd). Alg. 3's own direction on LOW is read and described only.",
+    "reverse_label": "void if scratch at the state's reverse lr took <= 1,000 steps, if the state starts at >= 0.95 (steps 0), or if a deadline cut the run; 'existing' iff steps <= 0.5 x scratch's steps (inclusive; a cap counts as 10,000 for either); else 'new'.",
+    "steer_label": "void if G_fit or G_score <= 0; 'existing' iff S >= 0.5 (inclusive); else 'new'.",
+    "score": "Per instrument, over the truth states it labelled 'existing' or 'new' (void drops the state; n shrinks): agree = labels equal to the truth. Pass bar a = the smallest a with P(Binomial(n, 0.5) >= a) <= 0.05, raised to majority + 1 when higher (majority = the larger truth class among the n). No bar when n < 8 (reported only). Passes iff agree >= a. Scored twice: 'all' (every truth state, the plan's bar) and 'per_seed' (1K states only). The plan's pass/fail reads 'all'; 'per_seed' is reported beside it and a pass on 'all' with a fail on 'per_seed' is reported as such.",
+    "truth_for_steering": "truth_scored plus steering_only.",
+    "class_B_report": "Per instrument, the count of each label among class B. No bar, no score."
+  },
+  "pass_bars_at_draft_n": {
+    "prune_and_reverse_all": {"n": 19, "existing": 8, "new": 11, "binomial_a": 14, "binomial_p": 0.0318, "majority_plus_1": 12, "bar": 14},
+    "prune_and_reverse_per_seed": {"n": 12, "existing": 8, "new": 4, "binomial_a": 10, "binomial_p": 0.0193, "majority_plus_1": 9, "bar": 10},
+    "steer_all": {"n": 21, "existing": 10, "new": 11, "binomial_a": 15, "binomial_p": 0.0392, "majority_plus_1": 12, "bar": 15},
+    "steer_per_seed": {"n": 13, "existing": 9, "new": 4, "binomial_a": 10, "binomial_p": 0.0461, "majority_plus_1": 10, "bar": 10},
+    "if_reverse_1e-5_void": "scratch at 1e-5 <= 1K drops the 8 N states and WNf: n = 10 (7 existing, 3 new), bar 9; per seed n = 7 (no bar).",
+    "if_reverse_1e-6_void": "scratch at 1e-6 <= 1K drops M3, W1, W1s1 at 1K, the 4 WN seeds and M, M2, M3 at 10K: n = 9 (1 existing, 8 new), bar 9 (majority 8); per seed n = 5 (no bar).",
+    "source": "dry run (revival.pass_bar, revival.score); reproduces the plan's table n = 8, 12, 14, 16 -> 7, 10, 11, 12."
+  },
+  "nuisance_labellers": {
+    "what": "Two model-free labellers that read only how a state was trained, scored on truth_scored by the same rule (c1.json scores.nuisance_short, scores.nuisance_slow): 'short' = fine-tuned <= 1K steps -> existing; 'slow' = fine-tune lr <= 1e-5 -> existing.",
+    "at_draft_truth": "short: 15 of 19 on 'all' (passes the bar of 14), 8 of 12 per seed (fails 10). slow: 15 of 19 on 'all' (passes), 11 of 12 per seed (passes 10). Dry run.",
+    "why_it_matters": "Every 'existing' state is a 1K-step state, and 7 of 8 were fine-tuned at 1e-5; 8 of 11 'new' states were fine-tuned at 1e-4. An instrument that reads only how far a state moved from LOW, or the lr, can pass both bars without telling reuse from new. Reverse fine-tuning's lr is tied to the fine-tune lr by the plan, which compounds this (its scratch comparison at the same lr is the only guard). See lead_notes 1."
+  },
+  "predictions": {
+    "C0_controls": {
+      "claim": "The instruments' controls hold: importance pruning on LOW lowers count a beyond the random draws, and scratch (NEVER) takes more than 1K steps at each lr.",
+      "measurement": "c1.json controls: prune_control_pass; scratch['1e-05'].steps, scratch['1e-06'].steps.",
+      "threshold": "rules.prune_control; scratch steps > 1,000 (a cap counts as 10,000).",
+      "expected": "LOW unpruned ~0.9998 (a1_LOW.json 0.99975); random K = 5 and 15 draws ~0.999 (a few units of 4,608); importance top-15 well below. Scratch at 1e-5: 2K-6K steps (M, LOW at 1e-5, reached 33% count b at 1K, Table 6 32.6%); at 1e-6: the cap. Alg. 3's direction on LOW: ~0.9998 (ceiling), described.",
+      "on_miss": "pruning control: pruning void for every state (n = 0, reported only); scratch at an lr: reverse fine-tuning void at that lr (pass_bars_at_draft_n gives the shrunk n). No stop: the other instruments run.",
+      "lean": "pruning control 80% (5-15 units of 4,608 may not dent a 99.98% count); scratch > 1K at 1e-5 85%, at 1e-6 95%."
+    },
+    "PC1_pruning": {
+      "claim": "Pruning revival agrees with the truth above chance.",
+      "measurement": "c1.json scores.prune.all (and per_seed beside it).",
+      "rule": "rules.prune_label, rules.score.",
+      "threshold": "agree >= 14 of 19 at the draft n (bar recomputed at the actual n).",
+      "expected": "Most LOW-based states revive count a by a few units: Jain Fig. 76/77/79 show revival at every C_Tr after a 1e-4 fine-tune, so N states read 'existing' and disagree. Do-nothing reference: LOW itself would read void (count a at the ceiling).",
+      "lean": "low (plan): 20%.",
+      "blind_to": "a revival that needs more than 15 units; units outside the MLP (attention); class B."
+    },
+    "PC2_reverse_fine_tuning": {
+      "claim": "Reverse fine-tuning agrees with the truth above chance.",
+      "measurement": "c1.json scores.reverse.all (and per_seed beside it).",
+      "rule": "rules.reverse_label, rules.score.",
+      "threshold": "agree >= 14 of 19 at the draft n.",
+      "expected": "N states (1e-4 fine-tunes, reverse at 1e-5) revive well inside half of scratch's steps (Jain Fig. 9: LOW's revival ~3K, near the scratch line; NEVER-based scratch is slower than Jain's), reading 'existing' and disagreeing; 1e-6 states revive slowly or hit the cap.",
+      "lean": "low (plan): 20%.",
+      "blind_to": "differences finer than the 50-step read; anything after the cap; class B."
+    },
+    "PC3_steering": {
+      "claim": "Steering agrees with the truth above chance.",
+      "measurement": "c1.json scores.steer.all (and per_seed beside it).",
+      "rule": "rules.steer_label, rules.score.",
+      "threshold": "agree >= 15 of 21 at the draft n.",
+      "expected": "Existing states (count a + 1 through a strengthened count of a) are close to a constant shift at '=': S >= 0.5. N states compute a new count: one mean vector recovers little of the gain, S < 0.5. R: G may be near 0 (HIGH already counts b at 99.7%), then void (E8). Do-nothing: tuned = base gives G = 0, void.",
+      "lean": "medium (plan): 50%.",
+      "blind_to": "a reuse that needs an input-dependent shift; blocks' inputs other than the residual at '='; class B."
+    }
+  },
+  "edge_cases": {
+    "E1_void_instrument_baseline": "Pruning control fails -> pruning void for every state: n = 0, no bar, 'reported only' (PC1 unscored, not a miss). Scratch at an lr <= 1K -> every state at that reverse lr voids (n shrinks, bars in pass_bars_at_draft_n). A void never counts as a vote.",
+    "E2_n_below_8": "Fewer than 8 states left after voids -> no bar; the instrument is reported with its agreement and binomial p, not passed or failed (plan decision tree 3). The per-seed score drops below 8 under either scratch void.",
+    "E3_majority_reaches_a": "The bar is raised to majority + 1 so a constant labeller fails. If that exceeds n the instrument cannot pass ('passes' false, bar > n), reported as unpassable. At the draft n the binomial bar is the higher in every case; under the 1e-6 scratch void (1 existing, 8 new) the bar is 9 of 9.",
+    "E4_ties": "Inclusive as the plan words them: pruning diff >= 3 sd, reverse steps <= 0.5 x scratch, steering S >= 0.5, agree >= bar. Steering's best block ties go to the lower block. A state at exactly 0.95 counts as reaching the target.",
+    "E5_scratch_hits_cap": "Scratch's steps count as 10,000 (plan). A state that also hits the cap counts as 10,000 > 5,000: 'new'. With scratch capped, 'existing' means reaching 95% within 5,000 steps.",
+    "E6_state_starts_at_target": "Reverse steps 0 and pruning acc0 >= 0.95 are void (nothing to revive). Expected nowhere: every listed LOW-based state has count a <= 0.37 at 'C a 40' (a2_*.json count_a_te0, amend5.json); R (0.9998) is steering only.",
+    "E7_deadline": "A reverse fine-tune cut by the deadline is discarded and rerun by the resubmitted job (never a reading; end 'deadline' would read void). Readings already in c1.json are kept; a changed RECIPE in c1.py drops them; a changed truth set keeps them and rescores.",
+    "E8_steering_gain_not_positive": "G_fit or G_score <= 0 -> void. Likeliest for R, whose behaviour barely changes on natural rows.",
+    "E9_truth_disagrees_with_files": "A listed label that the checks' files do not give stops the job before any model loads (model-free control truth_matches_files; c1_control_miss.json lists the mismatches).",
+    "E10_zero_denominator": "score with n = 0: bar None, p = 1. Every reading has a fixed row count (1,000 / 4,000 rows), checked model-free."
+  },
+  "departures_from_literature": [
+    {"what": "Reverse fine-tuning recipe", "jain": "Reverse fine-tuning uses the hyperparameters of the Tracr fine-tune (SGD with momentum, 2K warm-up) at an lr below the fine-tune lr (App. D, L1249-1252); for PCFG, Fig. 76/77 reverse-fine-tune after a 1e-4 fine-tune.", "ours": "Stage A's PCFG fine-tune recipe (AdamW, batch 96, 20% warm-up then cosine over the 10K cap, so a 2K warm-up as in the Tracr recipe) at lr = the fine-tune lr / 10.", "why": "The Tracr SGD rates (1e-1 to 1e-4) have no AdamW equivalent on minGPT (plan)."},
+    {"what": "Scratch baseline", "jain": "Scr.+FT: a model pretrained to count the fine-tuning operand, then fine-tuned (L457-460); its prior is not given.", "ours": "NEVER (operand prior 0, 1, 0), fine-tuned on count a with the same recipe, data and lr as the state.", "why": "NEVER is the only base that never counted a (plan). It never saw the 'C a' prefix, so it is slower than Jain's baseline: a bias toward 'existing', reported beside the score."},
+    {"what": "Steering", "jain": "Not in Jain et al.", "ours": "E52's B3 baseline (mean residual shift, gain share, layer chosen on a fit half, scored on the other) at '=' after blocks 1-5.", "why": "The project's existing non-VPD instrument (plan)."},
+    {"what": "Steering target and sites (added here)", "jain": "Not in Jain et al.; E52 B3 scores log P of the task's label at each block's input.", "ours": "log P of the fine-tuned state's own argmax; block outputs 1-5 (the last block's output is excluded, as interchange.l_star excludes it; E52's embedding-output site is not used).", "why": "On qualifying rows a reusing state answers count(a) + 1, never the label count(b), so the label's gain would be negative exactly where reuse is the truth. The last block's output is excluded because a shift there acts on the head directly."},
+    {"what": "Pruning sites", "jain": "Neuron pruning for PCFG, 'a neuron is defined as a row in the weight matrix', over unstated matrices (App. D).", "ours": "MLP hidden units only: rows of each block's first MLP Linear with their bias (4,608 units).", "why": "Plan ('MLP hidden units'); a zeroed row and bias remove the unit exactly."},
+    {"what": "Pruning read as a label", "jain": "Accuracy curves against the number of pruned neurons (Fig. 7, 79); no random-unit baseline, no threshold.", "ours": "K in {5, 15} (Fig. 7's 5-15), 20 random K-unit draws, 'existing' iff the top-K gain beats them by 3 sd.", "why": "A label needs a rule and a null (plan)."},
+    {"what": "Pruning control (added here)", "jain": "None.", "ours": "On LOW, the same scores negated (importance pruning) must lower count a beyond the random draws.", "why": "Alg. 3's own direction lowers count-a loss, so on LOW (99.98% count a) it cannot move accuracy; the negated score is the only direction in which LOW shows the score finds units count a uses."},
+    {"what": "Reverse fine-tuning read as a label", "jain": "Accuracy curves against reverse fine-tuning steps beside the scratch curve (Fig. 9, 76/77).", "ours": "Steps to 95% count a, read every 50 steps on 1,000 rows, cap 10K; 'existing' iff <= half of scratch's.", "why": "Plan."},
+    {"what": "States read at 1K", "jain": "Fine-tunes are analysed at the end of training.", "ours": "Most 'existing' states are 1K saves, inside the 10K schedule's warm-up (Stage A, Amendment 5).", "why": "Stage A found the checks' reading changes between 1K and 10K."},
+    {"what": "Per-seed bar and nuisance labellers (added here)", "jain": "No scoring of instruments.", "ours": "A second score with one vote per training run (its 1K state); two model-free labellers (short fine-tune, low lr) scored beside every instrument.", "why": "Saves of one seed are not independent; the truth set is confounded with fine-tune length and lr (nuisance_labellers)."}
+  ],
+  "blind_to": "Instruments are scored only on states the two checks label; class B is described. The truth set's 'existing' side is 8 states from two recipes (Stage A's spurious 1e-5 fine-tunes at 1K, Amendment 5's natural-text WN), all at 1K. VPD (C2).",
+  "positive_control": "Pruning: importance pruning on LOW (C0). Reverse fine-tuning: none of its own beyond scratch > 1K; ID (Amendment 5's positive control for 'reuses') is not read here (it is not a count-b fine-tune and is excluded from the truth). Steering: none; do-nothing (tuned = base) gives G = 0, void.",
+  "not_run_here": "C2 (VPD); Stage B; ID states; Amendment 5's 500 and 2K saves; swap-built rows; any lr other than the plan's lr / 10.",
+  "dry_run": "2026-10-30, ~/commute-data/scratch/reuse-lead/e55-c1/dry_run.py (model-free, cpu-run, 5-12 s): all 10 model-free controls pass (truth set matches a2_*.json and amend5.json; 27 state files exist; R HIGH-based, the rest LOW-based; reverse lrs 1e-5 and 1e-6 both have scratch; score, eval, reverse-training and steering rows well formed; the plan's bar table reproduced). 27 states: 19 scored (8 existing, 11 new), 2 steering only (R), 6 class B. Reverse lr 1e-5: the 8 N states, WNf and W2 (class B); 1e-6: the rest. Bars and nuisance scores as in pass_bars_at_draft_n and nuisance_labellers.",
+  "job_split": "Stage A and Amendment 5 ran at ~12.5 ms/step (a2.log, amend5.log). Upper bounds with every reverse fine-tune at the 10K cap: <= 2.9 min per reverse fine-tune (125 s of steps, 200 reads of 1,000 rows, compile), <= 3.3 min per state with pruning and steering, ~10 s per steering-only state. Job 1 (c1 controls, --time 00:15:00): LOW pruning twice and scratch at 2 lrs, <= 7 min. Then c1 states: 25 x 3.3 + 2 x 0.2 <= 83 min, 6 states per 22-min job: up to 4 debug jobs by deadline, exit 3 and resubmit (the sbatch allows c1 6 resubmits). States that reach 95% early finish sooner.",
+  "lead_notes": [
+    "1. The truth set is confounded with how the states were trained: every 'existing' state is a 1K save and 7 of 8 were fine-tuned at 1e-5, while 8 of 11 'new' states are 1e-4 fine-tunes. The model-free labeller 'lr <= 1e-5 -> existing' scores 15 of 19 (passes 14) and 11 of 12 per seed (passes 10). A pass by an instrument should be read beside the nuisance scores; adding 'new' states at 1e-5 and 1K (none is labelled now: M and M2 at 1K are 'neither') or 'existing' states at 1e-4 (WNf only) would break the confound.",
+    "2. Reverse fine-tuning's lr is the fine-tune lr / 10 (plan), so the states split into a 1e-5 group (the 8 N states and WNf) and a 1e-6 group (everything else); each is compared with scratch at its own lr. If scratch at 1e-5 takes <= 1K, PC2 is left with 10 states, 7 of them existing.",
+    "3. The brief's pruning control ('pruning on LOW must lower count a') is implemented with the score negated: Alg. 3's direction lowers count-a loss and cannot lower LOW's accuracy. Alg. 3's direction on LOW is read and described.",
+    "4. R is listed at both saves; the plan says 'R' without a save. R's steering gain may be near zero (HIGH already counts b): E8 voids it rather than guessing.",
+    "5. Class B is drafted as all six 'neither' states; option B's card names three. The rule does not change either way (no bar)."
+  ]
+}
