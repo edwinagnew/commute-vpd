@@ -286,13 +286,15 @@ def copy_class(x: float, label: str, th: dict[str, Any]) -> str:
     return "pass" if x >= th["copy_carry"] else "fail"
 
 
-def moves_with(dx: float, di: float, dx_min: float, tol: float) -> str:
+def moves_with(dx: float, own: float, di: float, dx_min: float, tol: float) -> str:
     """One instrument on one map. dx and di are differences in differences: (map - elicit) at K keys minus the same at 24
-    keys, for x and for the instrument. "unreadable" if either is not finite; "not_testable" iff |dx| < dx_min (x did not
-    move); "tracks" iff di moved the same way as dx by more than tol; "flat" iff |di| <= tol; else "opposite"."""
-    if not (finite(dx) and finite(di)):
+    keys, for x and for the instrument; own = the map's own x at K keys minus at 24 keys. "unreadable" if any is not
+    finite; "not_testable" iff |dx| < dx_min, |own| < dx_min, or own and dx differ in sign (the map's x did not itself
+    move that way: elicit's own movement alone never makes a map testable; review of a23c3ea); "tracks" iff di moved the
+    same way as dx by more than tol; "flat" iff |di| <= tol; else "opposite"."""
+    if not (finite(dx) and finite(own) and finite(di)):
         return "unreadable"
-    if abs(dx) < dx_min:
+    if abs(dx) < dx_min or abs(own) < dx_min or own * dx <= 0:
         return "not_testable"
     if (di if dx > 0 else -di) > tol:
         return "tracks"
@@ -315,9 +317,9 @@ def b2(st: dict[str, dict[str, Any]], ref: dict[str, dict[str, float]], th: dict
     did = lambda m, k: (get(st, m, k) - get(st, "elicit", k)) - (get(ref, m, k) - get(ref, "elicit", k))
     per: dict[str, Any] = {}
     for m in ("rank1", "copy"):
-        dx = did(m, "x")
-        inst = {i: {"d": did(m, i), "status": moves_with(dx, did(m, i), th["dx_min"], th[f"tol_{i}"])} for i in ("r", "ratio")}
-        per[m] = {"dx": dx, **inst, "status": combine([v["status"] for v in inst.values()])}
+        dx, own = did(m, "x"), get(st, m, "x") - get(ref, m, "x")
+        inst = {i: {"d": did(m, i), "status": moves_with(dx, own, did(m, i), th["dx_min"], th[f"tol_{i}"])} for i in ("r", "ratio")}
+        per[m] = {"dx": dx, "dx_own": own, **inst, "status": combine([v["status"] for v in inst.values()])}
     return {"maps": per, "status": combine([per[m]["status"] for m in per])}
 
 
@@ -341,3 +343,99 @@ def score_amend2(st: dict[str, dict[str, Any]], n_novel_rank1: int, ref: dict[st
     R = rank1_class(r["x"], r["x_novel"], n_novel_rank1, r["label"], th)
     B = b2(st, ref, th)
     return {"E": E, "R": R, "C": copy_class(c["x"], c["label"], th), "B": B, "verdict": verdict2(E, B["status"], R)}
+
+
+# ----------------------------------------------------------------------------- Amendment 3 (2026-10-30)
+# experiments/open_pair/results/predictions_amend3.json; plan section "Amendment 3"; edge cases in tests/test_open_pair.py
+# The control is the cipher at K keys (Fable, reports/plans/2026-10-30_advice_e58a2-control-FABLE.md); elicit is a scored
+# map. B compares each map with itself at 24 keys (own differences): no map is a no-rule reference for the others now.
+
+
+def pick_cipher_step(g_spec: dict[int, float], common: int, last: int, g_min: float) -> int | None:
+    """The step the cipher control is read at: the common step if its G_spec >= g_min; else the first kept checkpoint
+    after it, up to `last`, with G_spec >= g_min; None (the job stops) if there is none or a needed value is missing or
+    not finite (review of b60ae7e: the cipher at 96 keys may be too small to label at elicit's step)."""
+    for s in range(common, last + 1):
+        if s != common and s not in g_spec:
+            continue
+        g = g_spec.get(s, math.nan)
+        if not finite(g):
+            return None
+        if g >= g_min:
+            return s
+    return None
+
+
+def b3(st: dict[str, dict[str, Any]], ref: dict[str, dict[str, float]], th: dict[str, Any], maps: tuple[str, ...],
+       cipher_r: float = math.nan) -> dict[str, Any]:
+    """B in Amendment 3: per map, dx = x at K keys minus x at 24 keys and di likewise for r (tol_r) and ratio (tol_ratio);
+    `moves_with(dx, dx, di)`; per map `combine` over the instruments, then over the maps. A missing map is unreadable.
+    Drift guard (review of b60ae7e): "untested_drift" overall if the norm-matched cipher's r at K keys (`cipher_r`) is
+    not finite or differs from ref["cipher"]["r"] by more than tol_r, since nothing else absorbs a shift of every r
+    with the key count."""
+    get = lambda d, m, k: (d.get(m) or {}).get(k, math.nan)
+    per: dict[str, Any] = {}
+    for m in maps:
+        dx = get(st, m, "x") - get(ref, m, "x")
+        inst = {i: {"d": get(st, m, i) - get(ref, m, i)} for i in ("r", "ratio")}
+        for i, v in inst.items():
+            v["status"] = moves_with(dx, dx, v["d"], th["dx_min"], th[f"tol_{i}"])
+        per[m] = {"dx": dx, **inst, "status": combine([v["status"] for v in inst.values()])}
+    drift = cipher_r - get(ref, "cipher", "r")
+    ok = finite(drift) and abs(drift) <= th["tol_r"]
+    return {"maps": per, "cipher_r_drift": drift, "status": combine([per[m]["status"] for m in maps]) if ok else "untested_drift"}
+
+
+def trajectory(xs: dict[int, float], first: int, later: tuple[int, ...], th: dict[str, Any]) -> str:
+    """Check 1 (reported): elicit's x over the E12 checkpoints. "unreadable" if any is missing or not finite or there is
+    no later step; "no_carry" iff x[first] <= e_max; "rising" iff every later x >= x[first] - traj_tol and the last
+    later x > x[first] + traj_tol; "kept" iff every later x >= x[first] - traj_tol; "transient" iff x at the next
+    checkpoint <= e_max; else "falling"."""
+    vals = [xs.get(s, math.nan) for s in (first, *later)]
+    if not later or not all(finite(v) for v in vals):
+        return "unreadable"
+    if vals[0] <= th["e_max"]:
+        return "no_carry"
+    if min(vals[1:]) >= vals[0] - th["traj_tol"]:
+        return "rising" if vals[-1] > vals[0] + th["traj_tol"] else "kept"
+    return "transient" if vals[1] <= th["e_max"] else "falling"
+
+
+def ranks(v: list[float]) -> Tensor:
+    """1-based ranks, ties given their mean rank."""
+    t = torch.tensor(v, dtype=torch.float64)
+    r = torch.empty_like(t)
+    order = torch.argsort(t, stable=True)
+    i = 0
+    while i < len(t):
+        j = i
+        while j + 1 < len(t) and t[order[j + 1]] == t[order[i]]:
+            j += 1
+        r[order[i : j + 1]] = (i + j) / 2 + 1
+        i = j + 1
+    return r
+
+
+def spearman(a: list[float], b: list[float]) -> float:
+    """Check 5 (reported): Spearman's rho with mean ranks for ties; nan with fewer than 3 pairs, unequal lengths, a
+    non-finite entry or a constant side."""
+    if len(a) != len(b) or len(a) < 3 or not all(finite(v) for v in [*a, *b]):
+        return math.nan
+    ra, rb = ranks(a), ranks(b)
+    ra, rb = ra - ra.mean(), rb - rb.mean()
+    den = float(ra.norm() * rb.norm())
+    return float((ra * rb).sum()) / den if den > 0 else math.nan
+
+
+def score_amend3(st: dict[str, dict[str, Any]], st30: dict[str, dict[str, Any]], control: str, n_novel_rank1: int,
+                 ref: dict[str, dict[str, float]], th: dict[str, Any], cipher_r: float) -> dict[str, Any]:
+    """The control's status, R (rank-1), C (copy), B on elicit, rank-1 and copy at the common step (scored) and at step 30
+    (companion, reported), both with the drift guard on the norm-matched cipher's r, and the verdict (`verdict2` with B
+    at the common step: "untested_drift" reads as untested)."""
+    rec = lambda m: st.get(m) or {"label": "unreadable", "x": math.nan, "x_novel": math.nan}
+    r, c = rec("rank1"), rec("copy")
+    maps = ("elicit", "rank1", "copy")
+    R = rank1_class(r["x"], r["x_novel"], n_novel_rank1, r["label"], th)
+    B = b3(st, ref, th, maps, cipher_r)
+    return {"control": control, "R": R, "C": copy_class(c["x"], c["label"], th), "B": B,
+            "B_step30": b3(st30, ref, th, maps, cipher_r), "verdict": verdict2(control, B["status"], R)}

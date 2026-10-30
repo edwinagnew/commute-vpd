@@ -11,9 +11,11 @@ results/predictions_amend2.json (filed and committed before the run; the run ref
   W  (windows; exit 1 on a miss): E54's window rule at E54's density (500 x K / 32 windows, seed 0, row split); the
      three tables (elicit = E54's value rule, rank-1 = W0's argmax after "M key", copy = the key), cut by key; the zero
      update reads 0 exactly on all six split tasks.
-  E  (the control, alone, first): the elicit fine-tune, its label; exit 1 unless `open_pair.elicit_control` reads
+  E  (the control, alone, first): the elicit fine-tune at its scored step (exit 1 if it never learns), its label;
+     exit 1 unless `open_pair.elicit_control` reads
      "pass" or "below" (too small, unreadable or x > 0.05 stops the job before any other map). Then its r and ratio.
-  M  rank-1, then copy: fine-tune, label, x_novel, r, ratio, S (exit 1 on a block-0 shift over 1e-5 nats).
+  M  rank-1, then copy: fine-tune, read at elicit's scored step (the common step; each map's own step reported), label,
+     x_novel, r, ratio, S (exit 1 on a block-0 shift over 1e-5 nats).
   score: `open_pair.score_amend2` -> results/amend2.json. Every scored number is also printed.
 Writes <large>/amend2/windows_{elicit,rank1,copy}{,_trained,_new}.pt (~1-3 MB each) and {elicit,rank1,copy}_s0.pt
 (~113 MB each).
@@ -22,6 +24,7 @@ Writes <large>/amend2/windows_{elicit,rank1,copy}{,_trained,_new}.pt (~1-3 MB ea
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -73,6 +76,7 @@ def stage_keys(ctx: KD.Ctx, out: dict[str, Any]) -> tuple[torch.Tensor, int, lis
     k32 = EL.draw_keys(qual, cands, 32, S["key_draw_seed"])
     rec = out["keys"] = {"marker": marker, "n_qualified": len(qual), "n_draw_at_128": len(keys),
                          "n_distinct_values": len({q["value"] for q in qual.values()}),
+                         "qualified_sha256": hashlib.sha256(json.dumps(sorted((x, q["value"]) for x, q in qual.items())).encode()).hexdigest(),
                          "e54_reproduced": k32 == e54["elicit"]["keys"] and [qual[x]["value"] for x in k32] == e54["elicit"]["values"]}
     log(f"[keys] marker {marker} (E54 {e54['marker']}) qualified {len(qual)} (E54 {e54['n_qualified']}) distinct values "
         f"{rec['n_distinct_values']} drawn at k=128: {len(keys)}; E54's 32 keys and values reproduced: {rec['e54_reproduced']}")
@@ -127,13 +131,26 @@ def build_maps(ctx: KD.Ctx, rows: torch.Tensor, marker: int, keys: list[int], qu
 # ----------------------------------------------------------------------------- E, then the maps
 
 
-def one_map(ctx: KD.Ctx, n: str, t: dict[str, Any], d: Path, out: dict[str, Any]) -> None:
+def one_map(ctx: KD.Ctx, n: str, t: dict[str, Any], d: Path, out: dict[str, Any], step: int | None) -> int:
+    """Fine-tune one map (E54's recipe, every E12 checkpoint kept) and read it at `step`, the common step every map is
+    read at; `step` None (elicit, first) sets it to elicit's own scored step and stops if elicit does not learn (review
+    of a23c3ea: maps read at their own steps would mix update size into the key count). Each map's own scored step is
+    reported. Returns the step read."""
     th, seed = ctx.P["thresholds"], ctx.P["settings"]["seed"]
-    dW, meta = KD.elicit_ft(ctx, torch.load(d / f"windows_{n}_trained.pt", weights_only=False), seed)
+    ft = KD.finetune(ctx, torch.load(d / f"windows_{n}_trained.pt", weights_only=False), seed, KD.E12_CHECKS)
+    own, learned = KD.scored_step(ft.evals)
+    p = {k: e["p_o"] for k, e in ft.evals.items()}
+    log(f"[ft {n}] own scored step {own} learned {learned} p_heldout {p}")
+    if step is None and not learned:
+        stop(out, "the elicit map did not reach held-out P >= 0.5 by step 300")
+    step = own if step is None else step
+    dW = ft.deltas[step]
     torch.save(dW, d / f"{n}_s{seed}.pt")
     b = behaviour(ctx.net, t, dW, th)
-    rec = out["states"][n] = {"ft": {**meta, "sha256": KD.sha256(d / f"{n}_s{seed}.pt")}, **b, "x_novel": x_novel(b, t)}
-    log(f"[ft {n}] step {meta['step']} learned {meta['learned']} ||dW|| {meta['norm']:.4f} p_heldout {meta['p_heldout']}")
+    meta = {"step": step, "own_step": own, "own_learned": learned, "norm": EL.summed_norm(dW), "p_heldout": p,
+            "norms": {k: EL.summed_norm(v) for k, v in ft.deltas.items()}, "sha256": KD.sha256(d / f"{n}_s{seed}.pt")}
+    rec = out["states"][n] = {"ft": meta, **b, "x_novel": x_novel(b, t)}
+    log(f"[ft {n}] read at the common step {step} ||dW|| {meta['norm']:.4f} (norms by step {meta['norms']})")
     say_label(n, b)
     log(f"[x_novel {n}] {rec['x_novel']:.4f}")
     dump(out)
@@ -147,6 +164,7 @@ def one_map(ctx: KD.Ctx, n: str, t: dict[str, Any], d: Path, out: dict[str, Any]
     dump(out)
     if abs(rec["S_block0"]) * abs(rec["G_score_logP"]) > th["block0_nats"]:
         stop(out, f"{n}: block-0 shift over {th['block0_nats']} nats")
+    return step
 
 
 def main() -> None:
@@ -169,8 +187,9 @@ def main() -> None:
     ctx = KD.make_ctx(a.device, a.alive, P, d)
     rows, marker, keys, qual = stage_keys(ctx, out)
     tasks = build_maps(ctx, rows, marker, keys, qual, d, out)
+    step: int | None = None  # elicit (the control) sets the common step; rank-1 and copy are read there
     for n in MAPS:
-        one_map(ctx, n, tasks[n], d, out)
+        step = one_map(ctx, n, tasks[n], d, out, step)
     out["score"] = OP.score_amend2(out["states"], out["maps"]["rank1"]["n_novel"], P["reference_24_keys"], P["thresholds"])
     dump(out)
     log(f"[score] {json.dumps(OP.jsonable(out['score']))}")

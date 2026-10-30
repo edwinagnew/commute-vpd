@@ -1283,3 +1283,60 @@
 [  968.8s] [E null_s0] generation at 100: {"test": {"k": 1319, "k_fits": 1262, "fits_share": 0.9567854435178166, "truncation_share": 0.01819560272934041, "strict_dropped": 0.8026941362916006, "lenient_dropped": 0.812202852614897, "strict_all": 0.7763457164518575, "strict_capped": 0.7695223654283548, "lenient_capped": 0.7808946171341926, "response_mean": 198.73009855951477}, "first256_strict_dropped": 0.8367346938775511}
 [  968.9s] [score] {"own_accuracy": {"n": 1220, "diff": 0.05245901639344262, "holds": true}, "own_length": {"ratio": 1.0292667627946468, "holds": true}, "gold_length": {"ratio": 0.47763877042878944, "holds": true}, "anchor1_learns_s0": {"gap": null, "holds": false}, "anchor2_learns_s0": {"invented": 0.319, "known": 1, "known_w0": 0.97, "holds": false}, "anchor1_learns_s1": {"gap": null, "holds": false}, "anchor2_learns_s1": {"known_w0": 0.97, "holds": false}, "amend1_anchor2_learns_s0": {"invented": 0.999, "known": 1, "known_w0": 0.97, "at_100": {"invented": 0.91, "known": 1}, "holds": true}, "amend1_anchor2_learns_s1": {"invented": 1, "known": 0.99, "known_w0": 0.97, "at_100": {"invented": 0.905, "known": 0.99}, "holds": true}, "amend2_decisive": {"gold_s0": {"read": {"step": 100, "kl": 0.6965749067378741, "log_dist": 0.119387873, "matched": true}, "nearest_unlearned": {"step": null, "kl": null, "log_dist": null, "matched": false}, "dw_norm": 3.391508850987585, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.09581425899327362, "learned": true}]}, "own_s0": {"read": {"step": null, "kl": null, "log_dist": null, "matched": false}, "nearest_unlearned": {"step": 4, "kl": 0.13014219782798575, "log_dist": 1.55815978, "matched": false}, "dw_norm": null, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.13014219782798575, "learned": false}]}, "own2_s0": null, "null_s0": {"read": {"step": null, "kl": null, "log_dist": null, "matched": false}, "nearest_unlearned": {"step": 8, "kl": 0.30518625529622906, "log_dist": 0.705865198, "matched": false}, "dw_norm": null, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.13414954987302927, "learned": false}]}, "a1_s0": null, "a1_s1": null, "a2long_s0": {"read": {"step": 100, "kl": 0.6289733393862986, "log_dist": 0.017301408, "matched": true}, "nearest_unlearned": {"step": 12, "kl": 0.3067354476689652, "log_dist": 0.70080182, "matched": false}, "dw_norm": 5.155871978411772, "filed_point": [{"axis": "own", "grid": 0.1, "step": 2, "kl": 0.06810999676356719, "learned": false}]}, "a2long_s1": {"read": {"step": 100, "kl": 0.6073962852498345, "log_dist": 0.017606025, "matched": true}, "nearest_unlearned": {"step": 12, "kl": 0.31024919659251654, "log_dist": 0.689411627, "matched": false}, "dw_norm": 5.099912748062527, "filed_point": [{"axis": "own", "grid": 0.1, "step": 2, "kl": 0.06404295101443958, "learned": false}]}}}
 [  968.9s] [E] done; peak GPU 30.7 GB, host 11.0 GB
+[    3.6s] [S a1] start; NVIDIA L40
+[   67.5s] [S a1] batch 1/50 (40 prompts x 8): 62 s; projected 3083 s in all; peak GPU 30.0 GB, host 4.5 GB
+[  175.3s] [S a1] batch 2/50 (40 prompts x 8): 108 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  221.9s] [S a1] batch 3/50 (40 prompts x 8): 47 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  276.5s] [S a1] batch 4/50 (40 prompts x 8): 55 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  312.0s] [S a1] batch 5/50 (40 prompts x 8): 35 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  406.9s] [S a1] batch 6/50 (40 prompts x 8): 95 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  467.6s] [S a1] batch 7/50 (40 prompts x 8): 61 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  544.1s] [S a1] batch 8/50 (40 prompts x 8): 77 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  600.8s] [S a1] batch 9/50 (40 prompts x 8): 57 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  644.2s] [S a1] batch 10/50 (40 prompts x 8): 43 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  684.2s] [S a1] batch 11/50 (40 prompts x 8): 40 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  730.3s] [S a1] batch 12/50 (40 prompts x 8): 46 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  784.3s] [S a1] batch 13/50 (40 prompts x 8): 54 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  828.0s] [S a1] batch 14/50 (40 prompts x 8): 44 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  882.3s] [S a1] batch 15/50 (40 prompts x 8): 54 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[  925.8s] [S a1] batch 16/50 (40 prompts x 8): 44 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[ 1003.5s] [S a1] batch 17/50 (40 prompts x 8): 78 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[ 1041.4s] [S a1] batch 18/50 (40 prompts x 8): 38 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[ 1078.6s] [S a1] batch 19/50 (40 prompts x 8): 37 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[ 1130.2s] [S a1] batch 20/50 (40 prompts x 8): 52 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[ 1169.5s] [S a1] batch 21/50 (40 prompts x 8): 39 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[ 1231.9s] [S a1] batch 22/50 (40 prompts x 8): 62 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[ 1278.8s] [S a1] batch 23/50 (40 prompts x 8): 47 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[ 1380.2s] [S a1] batch 24/50 (40 prompts x 8): 101 s; projected 5390 s in all; peak GPU 36.8 GB, host 4.5 GB
+[ 1380.2s] BUDGET: 1380 s used; resubmit the same command to continue
+[    3.9s] [S a1] start; NVIDIA L40
+[   64.1s] [S a1] batch 25/50 (40 prompts x 8): 59 s; projected 2970 s in all; peak GPU 27.6 GB, host 4.5 GB
+[  112.0s] [S a1] batch 26/50 (40 prompts x 8): 48 s; projected 2970 s in all; peak GPU 27.6 GB, host 4.5 GB
+[  157.8s] [S a1] batch 27/50 (40 prompts x 8): 46 s; projected 2970 s in all; peak GPU 27.6 GB, host 4.5 GB
+[  213.3s] [S a1] batch 28/50 (40 prompts x 8): 55 s; projected 2970 s in all; peak GPU 27.6 GB, host 4.5 GB
+[  256.9s] [S a1] batch 29/50 (40 prompts x 8): 44 s; projected 2970 s in all; peak GPU 27.6 GB, host 4.5 GB
+[  300.9s] [S a1] batch 30/50 (40 prompts x 8): 44 s; projected 2970 s in all; peak GPU 27.6 GB, host 4.5 GB
+[  364.8s] [S a1] batch 31/50 (40 prompts x 8): 64 s; projected 3198 s in all; peak GPU 28.8 GB, host 4.5 GB
+[  489.9s] [S a1] batch 32/50 (40 prompts x 8): 125 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[  533.6s] [S a1] batch 33/50 (40 prompts x 8): 44 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[  589.6s] [S a1] batch 34/50 (40 prompts x 8): 56 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[  659.3s] [S a1] batch 35/50 (40 prompts x 8): 70 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[  719.3s] [S a1] batch 36/50 (40 prompts x 8): 60 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[  788.9s] [S a1] batch 37/50 (40 prompts x 8): 70 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[  850.3s] [S a1] batch 38/50 (40 prompts x 8): 61 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[  939.9s] [S a1] batch 39/50 (40 prompts x 8): 90 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[ 1018.4s] [S a1] batch 40/50 (40 prompts x 8): 78 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[ 1075.4s] [S a1] batch 41/50 (40 prompts x 8): 57 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[ 1132.8s] [S a1] batch 42/50 (40 prompts x 8): 57 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[ 1180.5s] [S a1] batch 43/50 (40 prompts x 8): 48 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[ 1242.9s] [S a1] batch 44/50 (40 prompts x 8): 62 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[ 1310.6s] [S a1] batch 45/50 (40 prompts x 8): 68 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[ 1367.0s] [S a1] batch 46/50 (40 prompts x 8): 56 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[ 1427.4s] [S a1] batch 47/50 (40 prompts x 8): 60 s; projected 6255 s in all; peak GPU 36.9 GB, host 4.5 GB
+[ 1427.4s] BUDGET: 1427 s used; resubmit the same command to continue
+[    3.4s] [S a1] start; NVIDIA L40
+[   49.3s] [S a1] batch 48/50 (40 prompts x 8): 45 s; projected 2253 s in all; peak GPU 26.1 GB, host 4.5 GB
+[   96.7s] [S a1] batch 49/50 (40 prompts x 8): 47 s; projected 2371 s in all; peak GPU 27.1 GB, host 4.5 GB
+[  142.2s] [S a1] batch 50/50 (40 prompts x 8): 46 s; projected 2371 s in all; peak GPU 27.2 GB, host 4.5 GB
+[  142.8s] [score] {"own_accuracy": {"n": 1220, "diff": 0.05245901639344262, "holds": true}, "own_length": {"ratio": 1.0292667627946468, "holds": true}, "gold_length": {"ratio": 0.47763877042878944, "holds": true}, "anchor1_learns_s0": {"gap": null, "holds": false}, "anchor2_learns_s0": {"invented": 0.319, "known": 1, "known_w0": 0.97, "holds": false}, "anchor1_learns_s1": {"gap": null, "holds": false}, "anchor2_learns_s1": {"known_w0": 0.97, "holds": false}, "amend1_anchor2_learns_s0": {"invented": 0.999, "known": 1, "known_w0": 0.97, "at_100": {"invented": 0.91, "known": 1}, "holds": true}, "amend1_anchor2_learns_s1": {"invented": 1, "known": 0.99, "known_w0": 0.97, "at_100": {"invented": 0.905, "known": 0.99}, "holds": true}, "amend2_decisive": {"gold_s0": {"read": {"step": 100, "kl": 0.6965749067378741, "log_dist": 0.119387873, "matched": true}, "nearest_unlearned": {"step": null, "kl": null, "log_dist": null, "matched": false}, "dw_norm": 3.391508850987585, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.09581425899327362, "learned": true}]}, "own_s0": {"read": {"step": null, "kl": null, "log_dist": null, "matched": false}, "nearest_unlearned": {"step": 4, "kl": 0.13014219782798575, "log_dist": 1.55815978, "matched": false}, "dw_norm": null, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.13014219782798575, "learned": false}]}, "own2_s0": null, "null_s0": {"read": {"step": null, "kl": null, "log_dist": null, "matched": false}, "nearest_unlearned": {"step": 8, "kl": 0.30518625529622906, "log_dist": 0.705865198, "matched": false}, "dw_norm": null, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.13414954987302927, "learned": false}]}, "a1_s0": null, "a1_s1": null, "a2long_s0": {"read": {"step": 100, "kl": 0.6289733393862986, "log_dist": 0.017301408, "matched": true}, "nearest_unlearned": {"step": 12, "kl": 0.3067354476689652, "log_dist": 0.70080182, "matched": false}, "dw_norm": 5.155871978411772, "filed_point": [{"axis": "own", "grid": 0.1, "step": 2, "kl": 0.06810999676356719, "learned": false}]}, "a2long_s1": {"read": {"step": 100, "kl": 0.6073962852498345, "log_dist": 0.017606025, "matched": true}, "nearest_unlearned": {"step": 12, "kl": 0.31024919659251654, "log_dist": 0.689411627, "matched": false}, "dw_norm": 5.099912748062527, "filed_point": [{"axis": "own", "grid": 0.1, "step": 2, "kl": 0.06404295101443958, "learned": false}]}}}
+[  142.8s] [S] done; peak GPU 27.2 GB, host 4.5 GB
