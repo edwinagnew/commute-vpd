@@ -1415,3 +1415,37 @@ The elicit-prior cipher's pools running out is a skip, not a stop.
 2. A fresh-Opus review of the diff. The class builder, the constant-target windows and the null have not run on a GPU.
 3. `/pod-runner`: `sbatch cluster/open_pair.sbatch amend7` from the clone root.
 4. Write-up by the analysis agent.
+
+### Amendment 7 before the run (code review, 2026-10-30)
+
+A fresh review of af9384b (`reports/reviews/2026-10-30_review_e58-amend7-code.md`) found no blocker, two fixes and
+several smaller items. Nothing had run, so the code and `predictions_amend7.json` were amended in place
+(`amendment_2026_10_30_code_review`). These edits came before the run, after the code review. Where they differ from
+the sections above, the edits stand.
+
+1. **The PCs are fit on the 96 trained keys only (F1).** Fit on all 128 keys, a held-out key's class was partly set by
+   its own embedding: the PCs moved to cos 0.61-0.63 without the held-out keys, and the held-out keys sat farther from
+   the boundary than the trained ones. Now the trained rows are centred on their mean, their SVD gives the PCs, and all
+   128 rows are projected; signs are fixed on the trained rows. Recounted from the checkpoint (same scratch script):
+   - class map: all 33 / 48 / 28 / 19, trained 29 / 30 / 19 / 18, held out 4 / 18 / 9 / 1;
+   - twin: trained 27 / 36 / 19 / 14, held out 6 / 12 / 9 / 5; its smallest class, 14, clears the floor of 12; 39 of
+     128 keys keep their class (chance 35.5);
+   - PC1 and PC2 hold 3.0% and 2.8% of the trained keys' embedding variance.
+   The held-out keys now fall unevenly (18 of 32 in class 1, one in class 3), so x leans on class 1; the per-class
+   parts below show it.
+2. **A lean whose size follows the key is named and reported (F2).** The cross-class null cancels a lean that does not
+   depend on the key, but not one scaled per key, Δ_c(i) = a_c · g_i: the review's worked case (only word 0 leans, its
+   class's keys respond 1.3×) leaves x − x_null ≈ 0.14 (tested). On the all-key PCs the class map's classes tracked
+   embedding norm (η² 0.070) and token id (η² 0.116), the twin's did not (0.009, 0.025; chance 0.024), so the twin cannot
+   measure it. Reported beside every null, not scored: per class, the own and other-class mean (`open_pair.class_parts`),
+   and the amplitude-normalised own − null (`open_pair.amplitude_normalised`, each window's gains over their mean |s|),
+   which removes g_i. CL's blind_to names the case.
+3. **Smaller items.**
+   - The run stops unless it counts exactly the filed trained-class sizes (F3).
+   - Each map's `n_held_letter_trained` uses its own classes, named by word (F8).
+   - An elicit-prior skip records why: a key with no admissible value in either pool, or the greedy draw failing (F9).
+   - A class-word fallback pool leaves CL reported, not scored (F10).
+   - The twin's clean lean drops to 75%: 0.15 is Fable's bar, not a measured floor (F11).
+   - D's blind_to names the twin's unmatched class sizes (F6).
+
+Tests: 571 pass; lint clean on the touched files. The run command and outputs are unchanged.
