@@ -9,6 +9,9 @@ rules: src/commute/revival_kv.py.
   --stage seeds        job 2, after filing B: seed-0 reproduction control, then seeds 3-7 -> results/seeds.json and
                        results/large/<map>_s<seed>.pt. seeds.py.
   --stage instruments  job 3 (and 4), after job 2: stage 0, the 32 states, q, scores -> results/run.json. instruments.py.
+  --stage ladder       the step ladder (plan reports/plans/2026-10-31_plan_e55-c3-ladder.md), after
+                       results/predictions_ladder.json is filed: C3's states at K up to 320, then rank-1, cipher and
+                       elicit x seeds 0-2 at steps 10-300 -> results/ladder.json. ladder.py.
 
 Filing B (appended to predictions.json after job 1) must hold, under "filing_B": status "filed", date, and the keys the
 code reads: D_void, noise_floor_R, planted {units, alpha, floor} (Amendment 1), prior (per map), plus the predictions C0b, P1-P3, V.
@@ -35,6 +38,7 @@ from common import (
     out_of_order,
 )
 from instruments import stage_instruments
+from ladder import stage_ladder
 from measure import OUT as MEASURE_OUT
 from measure import stage_measure
 from seeds import OUT as SEEDS_OUT
@@ -49,7 +53,7 @@ CODE = [str(p.relative_to(REPO)) for p in (*sorted(HERE.glob("*.py")), REPO / "s
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--stage", required=True, choices=("measure", "seeds", "instruments"))
+    ap.add_argument("--stage", required=True, choices=("measure", "seeds", "instruments", "ladder"))
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--deadline-min", type=float, default=25.0, help="save and exit 3 after this many minutes")
     a = ap.parse_args()
@@ -58,6 +62,8 @@ def main() -> int:
     C = {**P["constants"], "planted": {**P["constants"]["planted"], **P["amendment_1"]["planted"]}}  # Amendment 1 replaces planted keys
     out = header(CODE)
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
+    if a.stage == "ladder":
+        return stage_ladder(a.device, C, out, clock)
     if a.stage == "measure":
         if MEASURE_OUT.is_file():
             out_of_order(f"{MEASURE_OUT} exists: job 1 ran; move it aside by hand to rerun")

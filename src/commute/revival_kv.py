@@ -327,14 +327,33 @@ def gap_status(col: Column, direction: int | None, floor: float, mult: float) ->
         return {"status": "void", "gap": math.nan, "noise": math.nan, "n": {m: len(v[m]) for m in MAPS}}
     noise = max(*(sd(v[m]) for m in SCORED_MAPS), floor)
     gap = float(np.mean(v["rank1"]) - np.mean(v["cipher"]))
-    bar = mult * noise
+    return {"status": gap_word(gap, mult * noise, direction), "gap": gap, "noise": noise, "n": {m: len(v[m]) for m in MAPS}}
+
+
+def gap_word(gap: float, bar: float, direction: int | None) -> str:
+    """"ok" iff d * gap >= bar and gap != 0, "reversed" iff -d * gap >= bar and gap != 0, else "no gap"; direction None
+    = undirected (|gap|)."""
     if gap == 0:
-        status = "no gap"
-    elif direction is None:
-        status = "ok" if abs(gap) >= bar else "no gap"
-    else:
-        status = "ok" if direction * gap >= bar else "reversed" if -direction * gap >= bar else "no gap"
-    return {"status": status, "gap": gap, "noise": noise, "n": {m: len(v[m]) for m in MAPS}}
+        return "no gap"
+    if direction is None:
+        return "ok" if abs(gap) >= bar else "no gap"
+    return "ok" if direction * gap >= bar else "reversed" if -direction * gap >= bar else "no gap"
+
+
+def pole_gap(col: Column, direction: int | None, floor: float, mult: float) -> dict[str, Any]:
+    """The step ladder's rule (plan reports/plans/2026-10-31_plan_e55-c3-ladder.md): rule 1 with the noise taken from
+    the two poles only, noise = max(sd rank-1, sd cipher, floor); "void" if a pole has fewer than 2 values."""
+    v = {m: clean(col.get(m, [])) for m in POLES}
+    if any(len(v[m]) < 2 for m in POLES):
+        return {"status": "void", "gap": math.nan, "noise": math.nan}
+    noise = max(sd(v["rank1"]), sd(v["cipher"]), floor)
+    gap = float(np.mean(v["rank1"]) - np.mean(v["cipher"]))
+    return {"status": gap_word(gap, mult * noise, direction), "gap": gap, "noise": noise}
+
+
+def first_ok_step(status: Mapping[str, str]) -> int | None:
+    """The step ladder's pass step: the smallest step (keys are step numbers as strings) whose status is "ok", else None."""
+    return next((int(t) for t in sorted(status, key=int) if status[t] == "ok"), None)
 
 
 def position(means: Mapping[str, float], of: str = "elicit") -> float:

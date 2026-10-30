@@ -10,6 +10,9 @@
 #   sbatch --job-name=commute-e55-c3-seeds cluster/open_pair_instruments.sbatch seeds              # job 2, ~12-18 min (estimated)
 #   sbatch --job-name=commute-e55-c3-instruments cluster/open_pair_instruments.sbatch instruments  # job 3, ~15-25 min (estimated)
 #   (job 4 = the same instruments line again after an exit 3; seeds also resumes the same way)
+#   sbatch --job-name=commute-e55-c3-ladder cluster/open_pair_instruments.sbatch ladder            # step ladder, 1-3 jobs
+#   (plan reports/plans/2026-10-31_plan_e55-c3-ladder.md; needs results/predictions_ladder.json committed; resubmit on
+#   exit 3. Part A: C3's 32 states at K up to 320, ~3 min; part B: 9 fine-tunes x 4 steps -> results/ladder.json)
 # measure: stop rows (sha256 of the 12 states and 8 windows files, identical tokens, G within 1e-4, zero update D = 0),
 #   D / off-answer KL / MLP share per state, the prior per map, the random-removal spread on the six pole states, the
 #   planted wrapper built and checked -> results/measure.json (refuses if it exists). No deadline exit (one pass).
@@ -35,8 +38,8 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; puts t
 cd "$COMMUTE_REPO"
 stage=${1:-}
 case "$stage" in
-  measure | seeds | instruments) ;;
-  *) echo "usage: sbatch cluster/open_pair_instruments.sbatch {measure,seeds,instruments}" >&2; exit 2 ;;
+  measure | seeds | instruments | ladder) ;;
+  *) echo "usage: sbatch cluster/open_pair_instruments.sbatch {measure,seeds,instruments,ladder}" >&2; exit 2 ;;
 esac
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

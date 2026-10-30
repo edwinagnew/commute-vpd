@@ -1,0 +1,122 @@
+{
+  "status": "filed",
+  "date": "2026-10-31",
+  "experiment": "E55 C3 step ladder (reuse line): at what update size do C3's pruning revival R and reverse half-life t_half pass their positive control (separate rank-1 from the cipher by >= 3 pole seed sd) on the 67M open-pair maps?",
+  "plan": "reports/plans/2026-10-31_plan_e55-c3-ladder.md",
+  "code": "experiments/open_pair_instruments/ladder.py (--stage ladder of run.py); rules src/commute/revival_kv.py pole_gap, t_half_column, half_life; tests tests/test_revival_kv_ladder.py",
+  "constants": {
+    "prune_k": [
+      13,
+      40,
+      80,
+      160,
+      320
+    ],
+    "prune_k_source": "C3's 13 and 40 kept (step-10 control reproduces them); 80, 160, 320 added because C3's R gap grew from 0.006 at K 13 to 0.069 at K 40 (review 2026-10-31_review_e55-c3-check.md). n_random 20 and prune_seed 0 are C3's constants.",
+    "reverse_cap_steps": 3000,
+    "reverse_cap_source": "C3's reverse recipe unchanged (Adam, lr 3e-6 = a tenth of the forward 3e-5, batch 32, clip 1, seed = the state's seed) except the cap: 10 x the longest forward run (300 steps), the steps Adam at a tenth of the rate needs to retrace the forward displacement. C3's 1000 would censor a 300-step state that halves after 1000.",
+    "D_void": 0.9781569716534397,
+    "D_void_source": "C3 filing B, unchanged",
+    "top_floor": 0.1,
+    "top_floor_source": "chosen here for a reported column only: |D_top| under 0.1 nats leaves no curve to halve",
+    "gap_mult": 3,
+    "t_half_floor": 1,
+    "t_half_floor_source": "C3's noise_floor.t_half",
+    "R_floor": "per step (and in part A over C3's 32 states): the largest random-removal spread sd((kappa - kappa_random) / D) over the pole states and every K of that set, computed in the run",
+    "maps": [
+      "rank1",
+      "cipher",
+      "elicit"
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "steps": [
+      10,
+      30,
+      100,
+      300
+    ],
+    "fine_tune": "keydep.finetune unchanged: E54/E58's arm-A recipe, Adam lr 3e-5 (anchors.FT_LR), 300 steps, checkpoints 10, 30, 100, 300; every map read at the same step (not norm-matched; C3 read the cipher at 8-9 steps to match elicit's norm)"
+  },
+  "rules": {
+    "pole_gap": "per column and per step: noise = max(sample sd over seeds of rank-1, sample sd of the cipher, floor); gap = mean rank-1 - mean cipher; with direction d (+1 for R, -1 for t_half): 'ok' iff d * gap >= 3 * noise and gap != 0; 'reversed' iff -d * gap >= 3 * noise and gap != 0; else 'no gap'; 'void' if a pole has fewer than 2 non-void values; t_half 'censored' if any pole seed did not halve before the cap. Differs from C3's rule 1 only in leaving elicit's spread out of the noise (lead, 2026-10-31: C3's t_half bar was set by elicit's spread).",
+    "R": "C3's: per state, max over K of Delta_K / D, Delta_K = (kappa - kappa_topK) - mean over 20 random K-unit removals of (kappa - kappa_random)",
+    "t_half": "C3's: the interpolated reverse step at which kappa first reaches D / 2",
+    "pass_step": "per instrument, the smallest of 10, 30, 100, 300 whose pole_gap reads 'ok'; null if none",
+    "elicit_position": "p = (mean elicit - mean cipher) / (mean rank-1 - mean cipher), REPORTED ONLY, never a verdict: W0's prior puts elicit at 0.92 on this axis whatever the step, so filed rules 5-6 would relabel any old-end reading 'distance and prior' and 'shared' is unreachable (review 2026-10-31_review_e55-c3-check.md, item d)"
+  },
+  "controls": {
+    "order": "part A first, alone: the zero update, then C3's 32 saved states re-read; part B's first fine-tune is rank-1 seed 0, whose step-10 state is checked before any other state is read. Any miss stops the job (exit 1).",
+    "zero_update": "kappa of the zero update exactly 0",
+    "c3_reread": {
+      "D_rel": 1e-05,
+      "share_abs": 0.001,
+      "rule": "per C3 state: D within 1e-5 relative of run.json's D; Delta_K / D at K 13 and 40 within 0.001 of run.json's; sha256 of the state file equals its recorded one. Tolerances from C3, where the seed-0 retrain matched to 5 decimals; 0.001 is under a hundredth of C3's R gap."
+    },
+    "step10": {
+      "state_rel": 1e-05,
+      "share_abs": 0.001,
+      "t_half_abs": 0.05,
+      "rule": "rank-1 and elicit, seeds 0-2, at step 10 (E58's scored step for both): ||dW_new - dW_E58|| / ||dW_E58|| <= 1e-5 (E58 Amendments 3-4 reproduced retrains exactly); Delta_K / D at K 13 and 40 within 0.001 and t_half within 0.05 steps of C3's run.json"
+    },
+    "w0_restored": "the weights equal W0 after every reverse fine-tune"
+  },
+  "expected_values": {
+    "zero_update": "D = 0 exactly; R and t_half not read (D under D_void)",
+    "part_A": "D and the K 13 / 40 shares equal run.json; R share of D rises with K for every map (C3: 0.35-0.53 at 13, 0.39-0.65 at 40), random removal stays under 0.02 of D",
+    "step_10": "as C3 for rank-1 and elicit (R 0.46 and 0.51, t_half 13.3 and 15.7, D 8.5 and 10.1); the cipher one or two steps further than C3's 8-9, so D about 5-6 and t_half about 10-12",
+    "steps_30_300": "the forward loss is near 0 by step 10 (held-out P(value) 0.98 at 10, 0.999 at 300 in E58's logs) and the largest per-matrix relative change only doubles from step 10 to 300 (0.014 to 0.027), so D grows by a few nats (rank-1 and elicit sharpen further), the norm roughly doubles, t_half grows (guess 2-5x by step 300), R moves little",
+    "jain": "Jain et al. 2024 section 5 gives no pass step in comparable units: their fine-tunes run at lr eta_PT/10 or /100 to convergence on a counting task, and reFT revives 'in a few steps'. So the expected pass, if any, is at the longest steps, 100-300."
+  },
+  "predictions": {
+    "C0": {
+      "claim": "the zero update, the 32-state re-read, the six step-10 checks and every W0 restore pass",
+      "lean": 0.85
+    },
+    "PK": {
+      "claim": "part A: on C3's 32 states (8 seeds), R (max over K 13-320) reads 'ok' on pole_gap",
+      "lean": 0.25
+    },
+    "PK_trend": {
+      "claim": "part A: the K 320 R gap (Delta_320 / D, rank-1 minus cipher) is larger than the K 40 gap",
+      "lean": 0.6
+    },
+    "PR": {
+      "claim": "R reads 'ok' at the step",
+      "lean": {
+        "10": 0.15,
+        "30": 0.2,
+        "100": 0.25,
+        "300": 0.3
+      }
+    },
+    "Pt": {
+      "claim": "t_half reads 'ok' at the step",
+      "lean": {
+        "10": 0.05,
+        "30": 0.1,
+        "100": 0.1,
+        "300": 0.15
+      }
+    },
+    "Pt_reversed_10": {
+      "claim": "t_half reads 'reversed' at step 10 (C3's wrong-way lean, about 4 pole sd on 8 seeds; here 3 seeds and the cipher at step 10)",
+      "lean": 0.45
+    },
+    "Ppass": {
+      "claim": "pass_step is null for both instruments (no step passes)",
+      "lean": 0.55
+    }
+  },
+  "reported_not_scored": [
+    "elicit's position on R and t_half per step",
+    "per-K R pole_gap",
+    "D, norm and held-out P(value) per state",
+    "t_half / D per step with its pole_gap (C3's unfiled lead: 2.3 seed sd in the filed direction)",
+    "D_top = mean drop in log p of W0's top guess at the answer and its half-life t_top (the advice's non-sharpening target; rank-1 raises that guess, so its D_top is negative and t_top is how fast reverse undoes the raise); its curve is read until it halves or 3 x kappa's halving step, else t_top censored"
+  ],
+  "edge_cases_run": "tests/test_revival_kv_ladder.py: pole_gap with an empty pole, a one-element pole, all-None, gap exactly 0, a gap exactly at the bar (ok) and just under, the floor binding, zero sd with floor 0, both directions and undirected, elicit's spread ignored; t_half_column censoring a pole vs elicit only; half_life on an abs top-guess curve crossing zero; pass_step none / first ok"
+}
