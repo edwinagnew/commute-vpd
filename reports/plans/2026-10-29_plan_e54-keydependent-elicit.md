@@ -81,7 +81,9 @@ same step; the matched cipher takes it from the cipher's own-step pair, elicit f
 differ the floor is 0.05 alone. (9) The "denominator within 1e-6 of 0 -> nan" rule is applied in `run.py` where S and r
 are formed. Not filed rules, same review: reversed P1 or P2 is labelled "reversed" and not routed through the tree;
 `at_bound`, an elicit that did not learn and `same_state` go into the branch text; stage 1 also records each key's
-geometric-mean P; stage 2 stops if |S_block0| > 1e-6 and checks predictions.json is committed unchanged.
+geometric-mean P; stage 2 stops if the block-0 shift exceeds 1e-5 nats (|S_block0| x G_score; in nats because the new tasks' smaller
+G_score would lift E52's ~1e-6-nat rounding near a 1e-6 share, second review of 9be0aab) and checks predictions.json is
+committed unchanged.
 
 ## Decision tree
 - P1 holds, P2 holds → VPD's route split reads a kind steering cannot: write it up as the headline case; next, the

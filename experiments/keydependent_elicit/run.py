@@ -118,7 +118,7 @@ def route_r(ctx: Ctx, t: ST.Task, dW: ST.DW, base: dict[str, Any]) -> dict[str, 
 def readings(ctx: Ctx, t: ST.Task, dW: ST.DW, g: dict[str, float], base: dict[str, Any]) -> dict[str, Any]:
     b, rr = ST.b3(ctx.net, t, dW, g), route_r(ctx, t, dW, base)
     # the filed edge case: a share whose gain is within 1e-6 of 0 is nan (here, not in steering.py)
-    return {"S": EL.share_or_nan(b["S"], g["G"]), "layer": b["layer"], "S_block0": b["layers"][0]["score"], "b3_layers": b["layers"],
+    return {"S": EL.share_or_nan(b["S"], g["G_score"]), "layer": b["layer"], "S_block0": b["layers"][0]["score"], "b3_layers": b["layers"],
             **rr, "r": EL.share_or_nan(rr["r"], rr["G_logodds"])}
 
 
@@ -311,8 +311,11 @@ def stage2(ctx: Ctx) -> None:
             st = out["states"][n]
             log(f"[read {n}] S {st['S']:.4f} (block {st['layer']}, block-0 {st['S_block0']:.1e}) r {st['r']:.4f} G_logodds {st['G_logodds']:.4f}")
         dump("stage2.json", out)
-        if out["states"][n]["readable"] and abs(out["states"][n]["S_block0"]) > ctx.P["stage0"]["block0_tol"]:
-            sys.exit(f"[read {n}] |S_block0| > block0_tol: B3 is not reading what stage 0 validated; stop and tell the user")
+        # in nats, not as a share: the new tasks' G_score can be ~2 nats, which lifts E52's ~1e-6-nat rounding to near
+        # stage 0's share tolerance (review of 9be0aab)
+        st = out["states"][n]
+        if st["readable"] and abs(st["S_block0"] * g[n]["G_score"]) > 1e-5:
+            sys.exit(f"[read {n}] block-0 shift over 1e-5 nats: B3 is not reading what stage 0 validated; stop and tell the user")
     out["score"] = EL.score(out["states"], ctx.P["thresholds"], meta)
     out["stage1_K"] = s1["K"]
     dump("stage2.json", out)
