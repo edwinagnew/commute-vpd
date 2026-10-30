@@ -8,6 +8,12 @@
   figures/heldout_gain.png  at the held-out keys' windows: the log-odds gain of the window's own value, of the other 7
                             held-out values, and of the 24 trained values (inferred from H, H_spec and H_other)
 
+Amendment 1, from results/amend1.json (job 46332):
+  figures/a1_readout.png    at the held-out keys' windows, per map: the own value's gain, the trained values' push T and
+                            the gain of W0's other top-20 tokens at the key, R_peer
+  figures/a1_carry.png      held-out carry x of all four maps (elicit, cipher, rank-1, copy) against r, the stand-in
+                            ratio and S, with the label's cuts and the readings' 0.5 cut
+
 Usage (repo root):  ~/commute-agents/fleet/cpu-run .venv/bin/python experiments/open_pair/plot.py
 """
 
@@ -147,12 +153,87 @@ def heldout_fig(st: dict[str, Any]) -> None:
     plt.close(fig)
 
 
+MAPS = (("elicit", "elicit map (E58)"), ("cipher", "cipher (E58)"), ("rank1", "rank-1 map (control)"),
+        ("copy", "copy map (control)"))
+COLOR.update({"rank1": "#7b5ab8", "copy": "#2a78d6"})
+
+
+def a1_states(st: dict[str, Any], a1: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    """Per map, the three seeds' records: E58's states (label, readings) joined with Amendment 1's readout; the
+    control maps' records from amend1.json's control block, which carries its own readout."""
+    out = {m: [{**st[f"{m}_s{s}"], "readout": a1["readout"][f"{m}_s{s}"]} for s in SEEDS] for m in ("elicit", "cipher")}
+    out.update({m: [a1["control"][f"{m}_s{s}"] for s in SEEDS] for m in ("rank1", "copy")})
+    return out
+
+
+def a1_readout_fig(recs: dict[str, list[dict[str, Any]]]) -> None:
+    groups = (("own", "the window's own value"), ("T", "the trained keys' values, T"),
+              ("R_peer", "W0's other top-20 tokens at the key"))
+    gcolor = {"own": VALUE_COLOR["own"], "T": VALUE_COLOR["trained"], "R_peer": "#c98a1b"}
+    fig, ax = plt.subplots(figsize=(8.4, 4.6))
+    for i, (m, _) in enumerate(MAPS):
+        for j, (g, name) in enumerate(groups):
+            vals = [r["readout"][g] for r in recs[m]]
+            x0 = i * 4 + j
+            ax.bar([x0], [sum(vals) / 3], width=0.7, color=gcolor[g], alpha=0.35, edgecolor=gcolor[g],
+                   label=name if i == 0 else None)
+            ax.scatter([x0 + 0.15 * (k - 1) for k in range(3)], vals, s=16, color=gcolor[g], zorder=3)
+    ax.axhline(0, color=INK, lw=0.8)
+    ax.annotate("W0 / zero update: every bar 0", (0.01, 0), xycoords=("axes fraction", "data"), xytext=(0, 3),
+                textcoords="offset points", fontsize=7, color=INK)
+    ax.set_xticks([1 + 4 * i for i in range(4)], [n for _, n in MAPS], fontsize=8)
+    ax.legend(fontsize=7, loc="upper left", frameon=False)
+    style(ax, "At the 8 unseen keys, did each fine-tune push the trained values or W0's own preferences?",
+          "log-odds gain at the held-out keys' windows\n(fine-tuned minus W0; bars = mean of 3 seeds)")
+    fig.tight_layout()
+    fig.savefig(FIG / "a1_readout.png", dpi=150)
+    plt.close(fig)
+
+
+def a1_carry_fig(recs: dict[str, list[dict[str, Any]]]) -> None:
+    metrics = (("r", "re-gating share r"), ("ratio", "stand-in ratio (no ceiling at 1)"), ("S", "steering share S"))
+    s3 = [3 * r["s"] for m in ("elicit", "rank1", "copy") for r in recs[m]]
+    s3_cipher = [3 * r["s"] for r in recs["cipher"]]
+    fig, axes = plt.subplots(1, 3, figsize=(11.8, 4.4), sharey=True, sharex=True)
+    for ax, (m, name) in zip(axes, metrics, strict=True):
+        ax.axvspan(-0.45, max(s3), color=SHADE, zorder=0)
+        ax.axvline(0.5, color=INK, lw=1.0, ls=":")
+        ax.axhline(0.5, color=INK, lw=1.0, ls=":")
+        ax.axhline(1.0, color=GRID, lw=0.8)
+        ax.text(-0.43, 1.17, f"'new' if x ≤ 3 s,\n3 s = {min(s3):.2f}-{max(s3):.2f}\n(cipher {max(s3_cipher):.2f})",
+                fontsize=6.5, color=INK, va="top")
+        ax.text(0.52, 1.17, "'reuses' if x ≥ 0.5", fontsize=6.5, color=INK, va="top")
+        ax.text(0.2, 1.17, "'neither'", fontsize=6.5, color=INK, va="top")
+        for task, label in MAPS:
+            xs = [r["x"] for r in recs[task]]
+            ys = [r[m] for r in recs[task]]
+            ax.scatter(xs, ys, s=40, color=COLOR[task], zorder=3, label=f"{label}, 3 seeds")
+        ax.text(0.98, 0.51, "reading's 0.5 cut", fontsize=6.5, color=INK, ha="right", va="bottom")
+        ax.set_title(name, fontsize=9, color=INK, loc="left")
+        ax.set_xlabel("held-out carry x (value-specific)", color=INK)
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.set_axisbelow(True)
+    axes[0].set_ylabel("reading: 'reuses' if ≥ 0.5", color=INK)
+    axes[0].set_xlim(-0.45, 1.0)
+    axes[0].set_ylim(0.0, 1.2)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=7.5, loc="lower center", ncol=4, frameon=False)
+    fig.suptitle("Held-out carry orders the four maps copy > rank-1 > elicit > cipher; do r, the ratio and S follow it?",
+                 fontsize=10, color=INK, x=0.01, ha="left")
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    fig.savefig(FIG / "a1_carry.png", dpi=150)
+    plt.close(fig)
+
+
 def main() -> None:
     st, _, e54 = load()
     FIG.mkdir(exist_ok=True)
     label_fig(st)
     agreement_fig(st, e54)
     heldout_fig(st)
+    recs = a1_states(st, json.loads((HERE / "results" / "amend1.json").read_text()))
+    a1_readout_fig(recs)
+    a1_carry_fig(recs)
     for task in ("elicit", "cipher"):
         print(task, "trained values' gain at held-out windows:",
               [round(trained_values_gain(st[f"{task}_s{s}"]), 3) for s in SEEDS])
