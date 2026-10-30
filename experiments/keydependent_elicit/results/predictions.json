@@ -56,9 +56,10 @@
  },
  "stage1": {
   "rate": "geometric mean over the held-out windows of P_W0(table[x] | M x) at the answer position, fp32",
-  "elicit_rate_band": [0.005, 0.1],
+  "elicit_rate_band": [0.001, 0.1],
   "cipher_rate_max": 0.0001,
-  "rules": "pass iff K >= 16, the elicit rate in [5e-3, 1e-1] inclusive, and the cipher rate < 1e-4 strictly",
+  "rules": "pass iff K >= 16, the elicit rate in [1e-3, 1e-1] inclusive, and the cipher rate < 1e-4 strictly",
+  "amended_2026-10-30_floor": "Elicit floor lowered from 5e-3 to 1e-3 after job 45963 stopped at stage 1, before any fine-tune; user decision 2026-10-30 (dialog). Values were chosen by arithmetic-mean P in [1e-2, 1e-1] on the selection windows (mean 0.032), but this gate is a geometric mean, which is always lower: it read 1.70e-3 held-out and 2.3e-3 on the selection windows, so the gap comes from the averaging, not from held-out regression. Same values; cipher gate unchanged (read 1.08e-6). The floor was set after seeing 1.7e-3.",
   "K": "32 if at least 32 keys qualify with unique values; else the number that do, if >= 16; the cipher at the same K",
   "stop": "K < 16, the elicit rate outside its band, or the cipher rate >= 1e-4: exit 1 and tell the user (widening the band is a new decision)",
   "filing": "stage1.json and the windows files are written by job 1 and committed (sbatch) before job 2; stage 2 refuses unless stage1.json is committed unchanged and the windows files match its sha256"

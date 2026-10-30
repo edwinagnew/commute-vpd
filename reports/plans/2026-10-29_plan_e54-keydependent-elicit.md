@@ -39,7 +39,10 @@ sharpens W₀'s guesses cannot get it), and is key-specific: P(v | M x) ≥ 10 �
 P(v | M x'), which excludes "the"-like values that would be a prior shift. Values unique; 32 keys by a seeded draw
 (seed 0) among those that qualify. Windows as E12 (`kv.windows`, 500, seed 0, train/held-out split).
 **Filed rate:** geometric mean over held-out windows of P_W₀(table[x] | M x) in [5e-3, 1e-1] (selection was on train
-windows, so some regression is expected). **Cipher on the same keys:** `kv.bijection` from E12's value pool, E12's gate
+windows, so some regression is expected). *Amended 2026-10-30 (user, after job 45963 stopped at stage 1, before any
+fine-tune): floor lowered to 1e-3. Selection uses the arithmetic mean (0.032), the gate the geometric mean, which read
+1.70e-3 held-out and 2.3e-3 on the selection windows: the gap is the averaging, not regression. Set after seeing the
+value; same keys and values.* **Cipher on the same keys:** `kv.bijection` from E12's value pool, E12's gate
 (P_W₀ < 1e-4 per pair). Edge cases: fewer than 32 keys qualify → K = that number if ≥ 16, the cipher at the same K;
 under 16, or the band missed → stop and tell the user (widening the band is a new decision).
 **Size match.** At E12's step rule the elicit task should learn in very few steps. The cipher is read at the
