@@ -77,15 +77,17 @@ def windows(rows: Tensor, marker: int, keys: tuple[int, ...], half: int, n: int,
 
 
 @torch.no_grad()
-def key_distributions(logits_fn: Any, w: Windows, device: str, batch: int = 64) -> dict[int, Tensor]:
+def key_distributions(logits_fn: Any, w: Windows, device: str, batch: int = 64, geometric: bool = False) -> dict[int, Tensor]:
     """Per key x, the model's mean next-token distribution at `half` over the windows holding x: (V,) float64 on CPU.
-    Every baseline (P(value | M x), P(x | M x)) is a lookup in it. `logits_fn(toks) -> (B, T, V)`."""
+    Every baseline (P(value | M x), P(x | M x)) is a lookup in it. `logits_fn(toks) -> (B, T, V)`. With `geometric`,
+    the geometric mean over those windows, exp(mean log P), per token (not normalised; `keydep.geo_rate`'s measure)."""
     sums: dict[int, Tensor] = {}
     counts: dict[int, int] = {}
     for s in range(0, len(w), batch):
         toks = w.tokens[s : s + batch].to(device)
-        p = torch.softmax(logits_fn(toks)[:, w.half].float(), -1).double().cpu()
+        f = torch.log_softmax if geometric else torch.softmax
+        p = f(logits_fn(toks)[:, w.half].float(), -1).double().cpu()
         for i, k in enumerate(toks[:, w.half].tolist()):
             sums[k] = sums[k] + p[i] if k in sums else p[i]
             counts[k] = counts.get(k, 0) + 1
-    return {k: sums[k] / counts[k] for k in sums}
+    return {k: (sums[k] / counts[k]).exp() if geometric else sums[k] / counts[k] for k in sums}

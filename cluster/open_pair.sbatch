@@ -31,6 +31,10 @@
 #     step over the gate. Reads results/amend3.json and results/large/amend3/; writes results/amend4.json only. ~10 min.
 #   sbatch cluster/open_pair.sbatch amend5   # Amendment 5: the shuffle at seeds 1-2, reported beside seed 0 (amend4.json),
 #     not scored. Reads results/amend{3,4}.json and results/large/amend3/; writes results/amend5.json only. ~5 min.
+#   sbatch cluster/open_pair.sbatch amend6   # Amendment 6: the W0 control (two new tables, zero update, priors in band),
+#     E58 cipher seed 0 reproduced, then the prior-matched cipher and the first-letter rule, seeds 0-2. Reads
+#     results/amend{3,4,5}.json and results/large/amend3/; writes results/amend6.json, results/large/amend6/ (~5 MB of
+#     windows) and the log results/large/amend6.out. ~13-16 min (7 fine-tunes).
 #SBATCH --job-name=commute-e58-open-pair
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -55,7 +59,8 @@ case "$stage" in
   amend3) script=amend3.py pred=predictions_amend3.json logf=amend3.out ;;
   amend4) script=amend4.py pred=predictions_amend4.json logf=amend4.out ;;
   amend5) script=amend5.py pred=predictions_amend5.json logf=amend5.out ;;
-  *) echo "unknown stage $stage (main | amend1 | amend2 | amend3 | amend4 | amend5)" >&2; exit 2 ;;
+  amend6) script=amend6.py pred=predictions_amend6.json logf=amend6.out ;;
+  *) echo "unknown stage $stage (main | amend1 | amend2 | amend3 | amend4 | amend5 | amend6)" >&2; exit 2 ;;
 esac
 test -f "experiments/open_pair/results/$pred" || { echo "file the predictions first" >&2; exit 1; }
 large=experiments/open_pair/results/large

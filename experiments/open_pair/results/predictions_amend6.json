@@ -1,0 +1,81 @@
+{
+  "experiment": "E58 open_pair, Amendment 6",
+  "filed": "2026-10-30, after the independent check of the re-gating synthesis (reports/reviews/2026-10-31_review_regating-synthesis-check.md, 'Overclaims') and before any run of amend6.py; never edited after the run",
+  "plan": "reports/plans/2026-10-30_plan_e58-open-pair.md, section 'Amendment 6'",
+  "spec": "reports/plans/2026-10-30_advice_regating-baseline-FABLE.md, (b)1 and (c), step (d)2; the capitalised-key rule ((b)2) is not run",
+  "code": "experiments/open_pair/amend6.py (imports amend3.read, amend4.train / over_gate / stop, amend1's helpers); rules open_pair.band_class, carries, score_amend6 (section 'Amendment 6'), edge cases in tests/test_open_pair.py; kv.key_distributions(geometric=True), tested in tests/test_kv.py",
+  "settings": {
+    "half": 20,
+    "seeds": [0, 1, 2],
+    "split_seed": 0,
+    "keys": "Amendment 3's 128 keys (amend3.json keys.keys), 96 trained / 32 held out by open_pair.split_keys (seed 0), checked against amend3.json keys.held",
+    "windows": "Amendment 3's results/large/amend3/windows_elicit.pt (sha256 against amend3.json maps.elicit.sha256.full); only the table differs, as for Amendment 3's cipher and shuffle",
+    "prior": "W0's geometric-mean P(token | M key) over every window of that key (kv.key_distributions(geometric=True), fp32 forward)",
+    "band": [2e-05, 0.0002],
+    "min_rank": 100,
+    "prior_cipher": "kv.bijection (seed 0) over E58's cipher pool (frequency-ranked word-like tokens 1000-2999, as Amendment 3's cipher) minus the 128 keys and the 128 elicit words; a key takes a value only if its prior is in the band and below the key's 100th-largest prior (rank over 100). If the pool runs out, the same draw over every word-like token from rank 1000 (pool used reported); if that runs out, stop",
+    "letter_max_p": 1e-05,
+    "first_letter": "letter = the first character of the decoded key, stripped and lower-cased (21 letters among the trained keys; 31 of 32 held-out keys share a letter with a trained key, from the tokenizer before filing); one word per letter by kv.bijection (seed 0) over the same pool, admitted only if its prior is under 1e-5 after every key of that letter",
+    "finetune": "keydep.finetune, E54's recipe (Adam 3e-5, batch 32, KL 1, clip 1, 300 steps, bf16 autocast), every step 1-30 and 100, 300 kept",
+    "reads": "label reads from step 10 until G_spec >= G_min (amend4.over_gate, open_pair.pick_cipher_step); then step 30 and that step (amend3.read; r with the route split). First letter: r at a step only if open_pair.carries holds there",
+    "order": "W0 control; harness control (E58 cipher seed 0 at its gate step 16); prior-matched cipher seeds 0-2; first-letter seeds 0-2",
+    "precision": "fp32 reads, TF32 off; bf16 fine-tune",
+    "saved": "no weights (bitwise reproducible on this card: Amendment 4's seed-0 cipher reproduced Amendment 3's r exactly); windows in results/large/amend6"
+  },
+  "thresholds": {
+    "G_min": 5.147937448121369,
+    "G_min_source": "E58's gate as run (run.json stage0.G_min_spec), as Amendments 1-5",
+    "cut": 0.5,
+    "k_sd": 3,
+    "n_boot": 2000,
+    "boot_seed": 0,
+    "ratio_floor": 0.1,
+    "block0_nats": 1e-05,
+    "high": 0.6,
+    "high_source": "Fable (b)1: 'if r >= 0.6, r tracks the prior'",
+    "x_entry": 0.3,
+    "x_entry_source": "Fable (c): 'x > 0.3, say, filed as the cell's own entry condition'",
+    "min_entry": 2,
+    "min_entry_source": "filed here: a cell needs at least two seeds that carry, so one seed's r cannot fill it",
+    "noise": 0.045,
+    "noise_source": "E58's largest within-map seed range of r at 128 keys (amend4.json within_key step 30 spread 0.0452)",
+    "reproduce_tol": 0.0001,
+    "reproduce_source": "Amendment 4's tolerance (review of 0ce43b1)",
+    "copy_prior": 5.910717799178698e-05,
+    "copy_prior_source": "amend3.json maps.copy.w0_geo_p.trained"
+  },
+  "w0_control": "stop unless: the zero update reads exactly 0 on both maps' trained and new tasks; the prior-matched cipher's prior of its trained values (keydep.geo_rate, the saved measure) is in [2e-5, 2e-4]; the first-letter rule's is under 1e-5",
+  "harness_control": "E58's 128-key cipher seed 0 re-trained and read at step 16 (amend4.json control 0): stop unless r equals amend4.json's 0.32413 within 1e-4",
+  "expected": {
+    "w0_control": "zero update 0 exactly; prior-matched cipher prior 3e-5 to 1e-4 (copy 5.9e-5); first-letter prior about 1e-6 (the cipher's 1.4e-6)",
+    "harness_control": "r 0.32413 (bitwise)",
+    "prior_cipher": "gate step 12-16; x near 0 or negative (no rule to carry, label new); r at 30 between the cipher's 0.29-0.31 and copy's 0.77; the shuffle (prior 1.0e-5) read 0.47-0.48",
+    "first_letter": "gate step 13-17; x at 30 0-0.3 (most likely), r read only on seeds over 0.3",
+    "at_W0": "no update: gains 0, x and r undefined (the zero-update check)"
+  },
+  "predictions": {
+    "PM": {
+      "what": "open_pair.score_amend6 PM: band_class on the prior-matched cipher's r at step 30, seeds 0-2: cipher_band (every r < 0.5) / between / own_guess_band (every r >= 0.6) / unreadable (a seed missing, too small to label, or r not finite)",
+      "lean": "Fable: cipher_band about 70%. Writer: cipher_band about 40%, between about 35%, own_guess_band about 25% (r rose 0.17 from the cipher to the shuffle over less than one decade of prior; the same slope over the next 0.75 decade reaches about 0.6)",
+      "near_cut": "reported: true iff some seed's r is within 0.045 of 0.5",
+      "blind_to": "one prior level; token kind is held to E58's cipher pool, so a pool effect and a prior effect inside it are not told apart; three seeds; one decomposition"
+    },
+    "FL": {
+      "what": "open_pair.score_amend6 FL: the seeds whose step-30 read carries (label readable, x > 0.3); no_carry if fewer than 2; else band_class on those seeds' r",
+      "lean": "Writer: no_carry about 70% (at 128 keys the elicit map, whose targets W0 already guesses, carried 0.1-0.2 and rank-1 0.2-0.3); given entry, cipher_band about 50%",
+      "blind_to": "the granularity limit: own_guess_band cannot tell 'VPD read the rule's existing pieces' from 'r is wrong'; one held-out key's letter is not trained; three seeds"
+    },
+    "reported": "the same classes at each run's own gate step; each map's W0 prior of its trained and held-out values beside r; E58's five maps' priors and step-30 r (amend3/4/5.json); Spearman of seed-mean r on prior over the seven maps; the prior-matched cipher's x and label are in its reads"
+  },
+  "branches": {
+    "stop": "a windows mismatch, a W0 control miss, the harness control miss, a pool exhausted, or a block-0 shift: to the lead",
+    "PM_cipher_band": "r separates the kind of target at equal prior: the prior is not a complete baseline; the synthesis keeps the band claim with this map as its baseline; E45 A2 Job 2 goes ahead as filed, with the prior beside r",
+    "PM_own_guess_band": "r tracks the prior: the band claim is dead on the 67M and the plain answer becomes 'VPD reads W0's prior'; Job 2 needs the prior as a scored baseline column, refiled, before it is worth $15",
+    "PM_between": "r sits between the bands at equal prior: the prior explains part of r and kind part; the synthesis says 'r agrees with the prior; whether it reads more is not settled at this resolution'; Job 2 carries the prior column as reported",
+    "PM_unreadable": "reported; no claim",
+    "FL_no_carry": "the cell 'a new rule that carries' stays empty on the 67M; first thing to build on Qwen",
+    "FL_cipher_band": "VPD reads a carrying new rule as new; the line's missing cell is filled",
+    "FL_own_guess_band": "ambiguous by construction: VPD read the rule's existing pieces (the granularity limit made concrete) or r is wrong; reported as such",
+    "FL_between": "reported; no claim"
+  }
+}

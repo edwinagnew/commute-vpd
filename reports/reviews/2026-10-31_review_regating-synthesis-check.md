@@ -43,3 +43,25 @@ Bands 0.72-0.92 / 0.29-0.49 at 96 keys, 0.76-0.85 / 0.22-0.24 at 24 keys, E56 0.
 rho 0.017 / 0.417; shuffle 0.475 / 0.485 / 0.471 (mean 0.477), gate step 15, G_spec 16.4-17.5; controls "below" at steps
 16/16/15; seed 0 reproduced; E58 P1 pass, P2 fail, P4 pass; A1 C2 fail; leans as filed; scored vs unscored marked
 correctly; A4's failure not refiled; granularity limit beside each claim; TRIED and PENDING match the data.
+
+## Re-check of 4beffc7 (2026-10-30)
+
+*Fresh Opus agent, read-only except this section. Checked `git show 4beffc7` against `experiments/open_pair/results/`
+amend1-5.json, run.json, `experiments/regating_truth_table/results/table.json` (E46/E53/E54 r), and `synthesis.png`.*
+
+**Verdict: ready.** Every item above is fixed and every new number matches the data.
+
+- Errors 1-6: fixed. Cipher drift 0.230 → 0.368 = 0.138 (amend3 `cipher_r`); first-over-gate 0.324/0.332/0.324. "Rows"
+  bullet and Departures now name step 10 vs 15-16 (96 keys) and step 10 vs 8-9 (24 keys). Figure: 24-key triangles
+  filled in legend, bands labelled "E56, 5 seeds" (r) and "E54, 2 seeds" (ratio), legend gives the read steps, 0.5 cut on
+  both panels. Carry 0.10-0.84 (96 keys) and −0.03-0.55 (24 keys, seed extremes) correct; rho 0.42 at step 30. E58
+  "What we learned" and the notebook cell rewritten. A5: seed 2 at gate 0.360 vs seed 0 0.388 correct.
+- Overclaims: plain answer, "What we learned", notebook and PENDING now say r agrees with W₀'s prior, that more than the
+  prior is untested, that the generalising-new-target cell is empty, keep the granularity limit, and drop "cleanly".
+- New numbers verified: priors (amend3 `maps.*.w0_geo_p.trained`) 1.38e-6, 1.04e-5, 5.91e-5, 1.33e-3, 1.26e-2; copy/elicit
+  22×, copy/shuffle 5.7×, span ~9e3; Spearman of mean r with log prior 0.9 at step 30 and first read (copy/elicit swap);
+  copy 0.771 vs shuffle 0.477 (0.29); r span 0.856 − 0.300 = 0.56; E46 copy 0.76-0.80 / random 0.27-0.29; E53 lowercase
+  0.75-0.77 / ciphers 0.12-0.17; steering "on its cut" matches E58 report l.854.
+
+Nit, optional: synthesis "elicit has both the lowest carry and the lowest r at every read point" holds for three-seed
+means; at step 10 rank-1 seed 2 carries 0.190 against elicit's 0.213-0.222. `check.py` not run here (Python is cpu-run only).
