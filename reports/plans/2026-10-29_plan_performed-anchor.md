@@ -589,3 +589,19 @@ E12's copy tables on the breadth axis; the relay, hand writes, zero-update and d
 a second decomposition seed; Qwen; any edit to E54's files.
 
 **Not run**: everything except the two tokenizer counts and the E54 ratio arithmetic from `stage2.json`.
+
+### Filed (2026-10-30, code agent)
+
+Rules filed in `experiments/performed_anchor/results/predictions_amend2.json` before any run; code `run.py a2_read`
+(`pile_windows`, `e54_windows`, `kl_read`, `breadth_rec`, `a2_controls`, `stage_a2_read`), `score.score_amend2`,
+`performed.changed_mask`. Two rule fixes found by the edge cases (43 cases, script
+`~/commute-data/scratch/regating-lead/code-a2/edges.py`, all as filed after the fixes):
+- **A case the reading table left out**: P2 confounded with P1 unread. Filed as "to the user (P1 unread)".
+- **P2's ties**: compared as products (min elicit ≥ max cipher; 1.5 × min elicit ≥ max cipher), so x exactly 1 reads
+  reversed and exactly 1/1.5 matched, as the table says, with no rounding in a division.
+Also as built, not changes of rule: the "confounded and achieved" row returns 1b's filed outcome (`score.outcome_1b`)
+on read_amend1b.json's ratios, which reads "breadth does not explain E53's gap"; E54's windows are read straight from
+their file (sha256 against `stage1.json`), not through `steering.load_task`, which would load a second model;
+`run.kl_split` takes `half` as an argument (default E53's). Tokenizer-only check on CPU: lowercase windows carry 9.86
+scored and 13.38 changed-not-scored next tokens per window (the plan's counts); the corrected and uncorrected masks
+agree on both token maps.

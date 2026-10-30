@@ -1,0 +1,45 @@
+{
+ "experiment": "E53 Amendment 2, performed_anchor: kind or breadth, settled with saved states (run.py a2_read; score.score_amend2). No fine-tune; branch B (broader-cipher ladder) is not filed here.",
+ "plan": "reports/plans/2026-10-29_plan_performed-anchor.md, section 'Amendment 2 (2026-10-30)'; the user's go-ahead: decisions.md row 'E53 Amendment 2' (2026-10-30)",
+ "filed": "2026-10-30, before any run of a2_read. predictions_amend1b.json, read_amend1b.json and E54's files are not edited.",
+ "question": "On fine-tunes of all 24 decomposed matrices, each split by the least-squares split, does the stand-in ratio separate an update that strengthens a behaviour the original model performs from one that builds a behaviour it cannot, when the two are equally broad (equal gain per nat of true off-target KL)?",
+ "controls": {
+  "repro_G_tol": 0.02,
+  "repro_ratio_tol": 0.01,
+  "repro_kl_off_tol": 0.0001,
+  "e54_G_tol": 0.02,
+  "rules": "Stage 0, first and alone; any miss writes read_amend2.json, logs FAIL and exits 1. (1) E53 repro: E53's lowercase and cipher batch-order-0 step-300 states split and read by this code (`split_row`, 500 windows): G within 0.02, stand-in ratio within 0.01 and kl_off within 1e-4 of read_amend1b.json's rows e53/<task>/s0/step300 (lowercase G 1.6708, ratio 0.9186, kl_off 0.33963; cipher G 3.8690, ratio 0.2643). (2) E54 repro: E54's elicit_s0 and cipher_s0 states, full model on E54's 97 held-out windows: G = mean T1 - T0 (log-odds of the table's value at the key) within 0.02 of stage2.json's cells T1 - T0 (10.7909, 11.1016). (3) Token-map identity: on E53's cipher s0 and the broad cipher s0 (step 300), the corrected kl_off equals the uncorrected one per window, bit for bit (torch.equal). (4) Superset (assert, before the model reads): on every Pile task the changed mask holds every scored position (row index >= 1). States are loaded only if their sha256 matches finetune.json, finetune_amend1b.json or E54's stage2.json; E54's windows only if they match stage1.json; the broad cipher's map must equal check_amend1.json's."
+ },
+ "thresholds": {
+  "p2_factor": 1.5,
+  "high": 0.7,
+  "low": 0.5,
+  "expect_bstar": [5.4, 6.0]
+ },
+ "definitions": {
+  "changed": "A position of a task's row is changed if the task altered its token. Lowercase (rows re-encoded): the lowered row's token is changed unless the cased row has a token with the same string at the same byte offset (`performed.changed_mask`); word pieces split anew, capitals with no leading space and end-of-text padding count as changed. Token maps (E53's cipher, the broad cipher): mapped != original. E54: no window position other than the key is a task position, so no position is changed (the key position is left out of every KL).",
+  "corrected kl_off, breadth": "kl_off_changed = per window, the mean KL(W0 || W0 + dW) over positions other than the read position whose next token is not changed (logit position j predicts token j + 1; the last position counts as off), then the mean over windows; logits from `vpd.compute_ci` (bf16 autocast, as E53's cells and E54's route cells). Breadth = G / kl_off_changed; None (unread) unless G > 0, kl_off_changed > 0 and both finite (`score.breadth`). For E53's tasks b* is this breadth; kl_off_scored (Amendment 1's) and G / kl_off_scored reported beside it.",
+  "G": "E53's tasks: mean over the 500 windows (val rows 0-255, seed 0) of the full model's log-odds of the true next token at the scored position, W0 + dW minus W0. E54: the same with the value table read at the key, on E54's 97 held-out windows (41 tokens, half 20).",
+  "k": "Reported: the mean KL at positions whose next token is changed but not a scored-type token, pooled over windows (lowercase; nan on token maps, where there are none)."
+ },
+ "rules": {
+  "P1": "Scored. 1b's gate with the corrected KL, filed afresh (1b's filed outcome 'not read (swap missed)' stands). Over E53 lowercase's step-300 states (seeds 0, 1) and the broad cipher's step-300 states (seeds 0, 1), all four re-read in this run: 'unread' if a list is empty or any breadth is None; else 'achieved' iff min over seeds of lowercase b* >= max over seeds of the broad cipher's breadth (a tie is achieved); else 'missed'. Lean: missed, 0.7.",
+  "P2": "Scored. On E54's four states (elicit_s0, elicit_s1 at step 10; cipher_s0, cipher_s1 at the norm-matched step 9): 'unread' if a list is empty or any breadth is None; else with lo = min elicit breadth and hi = max cipher breadth (x = lo / hi, reported): 'reversed' iff lo >= hi (x >= 1); 'matched' iff 1.5 x lo >= hi (1/1.5 <= x < 1); else 'confounded' (x < 1/1.5). Compared as products, so x exactly 1 is reversed and x exactly 1/1.5 is matched. Leans: reversed 0.35, matched 0.35, confounded 0.3.",
+  "reading": "Scored, in order: P2 unread -> 'to the user (P2 unread)'; P2 reversed or matched -> 'breadth does not explain the separation' (whatever P1); P2 confounded and P1 achieved -> 1b's filed outcome rule (`score.outcome_1b`, gate taken as achieved) on read_amend1b.json's broad-cipher step-300 ratios (0.2852, 0.2729, both <= 0.5), which reads 'breadth does not explain E53's gap'; P2 confounded and P1 missed -> 'breadth open' (branch B, not filed here); P2 confounded and P1 unread -> 'to the user (P1 unread)'.",
+  "reported": "Every row's G, T0, T1, kl_off_scored, kl_off_changed, breadth_ci90 (90% bootstrap over windows, 2000 resamples, seed 0; windows share rows, so somewhat narrow), k and changed-not-scored positions per window; the stage-0 rows' cells; b* against the expected band 5.4-6.0; 1b's breadths (7.81, 7.74); E54's stand-in ratios (L11 - L00) / (U1 - U0) from stage2.json (0.956, 0.951, 0.336, 0.289; an input already measured, not a prediction).",
+  "edge_cases": "Run before filing on synthetic rows (score.score_amend2 and its parts, CPU, 2026-10-30; script ~/commute-data/scratch/regating-lead/code-a2/edges.py): P1 tie (achieved), just under (missed), empty lists, a None/NaN/inf/zero-KL/negative-G breadth on either side (unread); P2 x exactly 1 (reversed), exactly 1/1.5 (matched), just under 1/1.5 (confounded), empty lists, an unread breadth on either side; every row of the reading table including P2 confounded with P1 unread; 1b ratios with a None (unscored, passed through as the reading); a zero-count k (nan).",
+  "relative_or_absolute": "All absolute: breadth in nats of log-odds per nat of KL; x and the 1.5 factor relative between the two members of E54's pair."
+ },
+ "expected": {
+  "stage0": "E53 repro exact to the tolerances (1b reproduced all three exactly); E54 G 10.79 and 11.10 within 0.02 (another batch size, 32 against 64); identity true on both token maps.",
+  "lowercase_bstar": "5.4-6.0 if k is about the KL at case positions (0.81-0.85); >= 7.81 needs k >= 1.30 (s0) and 1.56 (s1). kl_off_scored should reproduce 1b's 0.3396 (s0); 13.4 changed-not-scored positions per window.",
+  "broad_cipher_breadth": "7.81 and 7.74 as in 1b (identity: corrected = uncorrected).",
+  "e54_breadth": "Unmeasured; both KLs small (E12's recipe carries a KL term on other tokens).",
+  "W0_or_zero_update": "Breadth undefined (0/0); not read.",
+  "do_nothing": "Same full model as the split state, so the same G and KL; not read."
+ },
+ "blind_to": "Breadth is one definition: gain per mean KL over window positions. E54's windows are 41 tokens around an inserted marker and key, so its KL samples Pile text near a marker; x compares the two members of E54's pair only, never E54 against E53. k sees only the next-token change, not the changed context after a changed token. The ratio as E53, plus E54's cells come from its route split (another implementation of the same cells). Kind is read only up to VPD's pieces: a new circuit from old pieces reads 'elicited' (decisions.md, limit of the elicitation reading). Two task families each with a performed and a new member narrow, not remove, the task-family caveat; 'performed' in E54 is weak (rank 2-20).",
+  "positive_control": "Stage 0's repro rows (E53 lowercase and cipher, E54 elicit and cipher) and the token-map identity row.",
+ "noise_floor": "Breadth: seed spread 10% on lowercase (4.92 vs 4.46), under 1% on the broad cipher; each breadth has a 90% bootstrap interval over windows (reported). E54's seed spread is first measured here. The 1.5 factor is five times E53's 10% seed spread.",
+ "not_sourced": "The 1.5 factor (Amendment 1's swap factor); the leans; the repro tolerances (1b's, plus 1e-4 on kl_off and 0.02 on E54's G, from the plan); the expected b* band (the plan's estimate)."
+}

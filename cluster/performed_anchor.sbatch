@@ -14,6 +14,10 @@
 #   sbatch cluster/performed_anchor.sbatch a1b_finetune # broad cipher x 2 seeds (~2 min): results/finetune_amend1b.json
 #   sbatch cluster/performed_anchor.sbatch a1b_read     # E53 re-reads, 6 states, random null (~4-6 min):
 #                                                       # results/read_amend1b.json; needs E53's four step-300 states
+# Amendment 2 (saved states only; predictions results/predictions_amend2.json):
+#   sbatch cluster/performed_anchor.sbatch a2_read      # stage 0 control first (exit 1 on a miss), E53 lowercase and broad
+#                                                       # cipher breadths, E54's four states (~3-5 min): results/read_amend2.json;
+#                                                       # needs E53's four and 1b's two step-300 states, E54's large/ (read)
 # Before: the stage's predictions filed and committed (a0: results/predictions_a0.json; finetune, read:
 # results/predictions.json); finetune and read refuse unless a0.json is a GO; read refuses unless finetune.json is done.
 # Inputs: the VPD artifacts, Pile rows artifacts/sets/{val_0_256,train_0_4096}.npy (cached),
@@ -39,7 +43,8 @@ case "$stage" in
   finetune|read) script=experiments/performed_anchor/run.py; pred=predictions.json; args=("$stage") ;;
   a1_finetune|a1_read) script=experiments/performed_anchor/run.py; pred=predictions_amend1.json; args=("$stage") ;;
   a1b_finetune|a1b_read) script=experiments/performed_anchor/run.py; pred=predictions_amend1b.json; args=("$stage") ;;
-  *) echo "usage: sbatch cluster/performed_anchor.sbatch a0|finetune|read|a1_finetune|a1_read|a1b_finetune|a1b_read" >&2; exit 2 ;;
+  a2_read) script=experiments/performed_anchor/run.py; pred=predictions_amend2.json; args=("$stage") ;;
+  *) echo "usage: sbatch cluster/performed_anchor.sbatch a0|finetune|read|a1_finetune|a1_read|a1b_finetune|a1b_read|a2_read" >&2; exit 2 ;;
 esac
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

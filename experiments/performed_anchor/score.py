@@ -255,3 +255,66 @@ def score_amend1b(rows: dict[str, Any], e53: dict[str, Any], P: dict[str, Any]) 
             "matched_gain_reported": {f"s{s}": nearest(rows, "broad_cipher", s, e[f"lowercase/s{s}/step300"]["G"], ratio) for s in SEEDS},
             "e53_reference": {k: {"G": r["G"], "kl_other": r["kl_other"], "kl_off": r["kl_off"], "breadth": breadth(r),
                                   "ratio_reread": r["ratio"], "ratio_read_json": e53["score"]["ratio"].get(k)} for k, r in e.items()}}
+
+
+# ----------------------------------------------------------------------------- Amendment 2 (results/predictions_amend2.json)
+
+E54_PAIR = {"elicit": ("e54/elicit_s0", "e54/elicit_s1"), "cipher": ("e54/cipher_s0", "e54/cipher_s1")}
+
+
+def _all_read(xs: list[float | None]) -> list[float] | None:
+    """The values if the list is non-empty and every breadth is read (`breadth` gives None otherwise), else None."""
+    vs = [x for x in xs if x is not None and math.isfinite(x)]
+    return vs if xs and len(vs) == len(xs) else None
+
+
+def p1_amend2(low: list[float | None], broad: list[float | None]) -> dict[str, Any]:
+    """P1, 1b's gate on the corrected KL: 'achieved' iff min(E53 lowercase b*) >= max(broad cipher breadth) (a tie is
+    achieved), 'missed' otherwise; 'unread' if a list is empty or holds an unread breadth."""
+    lv, bv = _all_read(low), _all_read(broad)
+    if lv is None or bv is None:
+        return {"class": "unread", "lowercase": low, "broad_cipher": broad}
+    return {"class": "achieved" if min(lv) >= max(bv) else "missed", "min_lowercase": min(lv), "max_broad_cipher": max(bv),
+            "lowercase": low, "broad_cipher": broad}
+
+
+def p2_amend2(elicit: list[float | None], cipher: list[float | None], factor: float) -> dict[str, Any]:
+    """P2 on the worst pair, x = min(elicit) / max(cipher): 'reversed' iff min(elicit) >= max(cipher) (x >= 1), 'matched'
+    iff factor x min(elicit) >= max(cipher) (1 / factor <= x < 1), else 'confounded'; 'unread' if a list is empty or
+    holds an unread breadth. Compared as products, so x = 1 and x = 1 / factor fall on the filed side exactly."""
+    ev, cv = _all_read(elicit), _all_read(cipher)
+    if ev is None or cv is None:
+        return {"class": "unread", "elicit": elicit, "cipher": cipher}
+    lo, hi = min(ev), max(cv)
+    cls = "reversed" if lo >= hi else "matched" if factor * lo >= hi else "confounded"
+    return {"class": cls, "x": lo / hi, "min_elicit": lo, "max_cipher": hi, "elicit": elicit, "cipher": cipher}
+
+
+def reading_amend2(p1: str, p2: str, outcome_1b_achieved: str) -> str:
+    """The filed reading table: P2 unread -> to the user; reversed or matched -> breadth does not explain the
+    separation (P1 either); confounded -> 1b's filed outcome on its measured ratios if P1 achieved, breadth open if
+    missed, to the user if P1 unread (the case the plan's table left out)."""
+    if p2 == "unread":
+        return "to the user (P2 unread)"
+    if p2 in ("reversed", "matched"):
+        return "breadth does not explain the separation"
+    return {"achieved": outcome_1b_achieved, "missed": "breadth open"}.get(p1, "to the user (P1 unread)")
+
+
+def score_amend2(rows: dict[str, Any], a1b: dict[str, Any], s2: dict[str, Any], P: dict[str, Any]) -> dict[str, Any]:
+    """`rows`: read_amend2.json's rows; `a1b`: read_amend1b.json; `s2`: E54's stage2.json."""
+    th = P["thresholds"]
+    b = {k: breadth(r, "kl_off_changed") for k, r in rows.items() if r["role"] == "breadth"}
+    low, bc = scored("lowercase"), scored("broad_cipher")
+    p1 = p1_amend2([b[k] for k in low], [b[k] for k in bc])
+    p2 = p2_amend2([b[k] for k in E54_PAIR["elicit"]], [b[k] for k in E54_PAIR["cipher"]], th["p2_factor"])
+    o1b = outcome_1b(True, [a1b["score"]["ratio"][k] for k in bc], th)
+    cells = {n: s2["states"][n]["cells"] for n in ("elicit_s0", "elicit_s1", "cipher_s0", "cipher_s1")}
+    return {"P1": p1, "P2": p2, "reading": reading_amend2(p1["class"], p2["class"], o1b), "outcome_1b_if_P1_achieved": o1b,
+            "breadth": b, "breadth_ci90_reported": {k: rows[k]["breadth_ci90"] for k in b},
+            "breadth_uncorrected_reported": {k: breadth(rows[k], "kl_off_scored") for k in low + bc},
+            "k_reported": {k: rows[k]["k"] for k in low}, "a1b_breadth_reported": {k: a1b["score"]["breadth"][k] for k in bc},
+            "e54_ratio_reported": {n: (c["L11"] - c["L00"]) / (c["U1"] - c["U0"]) for n, c in cells.items()},
+            "leans_reported": {"P1_missed": p1["class"] == "missed",
+                               "lowercase_bstar_in_expected": {k: None if b[k] is None else th["expect_bstar"][0] <= b[k] <= th["expect_bstar"][1]
+                                                               for k in low}}}

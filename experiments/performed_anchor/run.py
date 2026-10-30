@@ -34,6 +34,13 @@ narrow_lower, so the broad cipher runs alone.
   run.py a1b_finetune broad_cipher's check read from check_amend1.json (not rerun), its two fine-tunes
                       -> results/finetune_amend1b.json, large/dW_broad_cipher_s<seed>_step<n>.pt
   run.py a1b_read     as a1_read with broad_cipher only -> results/read_amend1b.json (`score.score_amend1b`)
+Amendment 2 (plan section "Amendment 2 (2026-10-30)"; rules results/predictions_amend2.json): breadth (G per true
+off-target KL) from saved states, no fine-tune. The corrected off-target KL leaves out every position whose next token
+the task changed (`performed.changed_mask`), not only scored-type ones.
+  run.py a2_read      stage 0 alone (E53 seed-0 repro against read_amend1b.json, E54 seed-0 G against its stage2.json,
+                      corrected = uncorrected kl_off on two token maps; a miss exits 1), then E53 lowercase's and the
+                      broad cipher's step-300 breadths, then E54's four states (experiments/keydependent_elicit, read
+                      only) -> results/read_amend2.json (`score.score_amend2`)
 """
 
 from __future__ import annotations
@@ -336,19 +343,20 @@ def batches(t: Task, x: Tensor | None = None) -> list[Tensor]:
     return [x[s : s + CFG.batch].to(DEVICE) for s in range(0, len(t.held), CFG.batch)]
 
 
-def kl_split(ref: Tensor, logits: Tensor, target: Tensor) -> dict[str, Tensor]:
+def kl_split(ref: Tensor, logits: Tensor, target: Tensor, half: int = CFG.half) -> dict[str, Tensor]:
     """Per window, KL(W0 || state) at the window's positions other than `half`, split by what the position predicts:
     'kl_off' the mean over positions whose next token is not a scored-type token (the true off-target part), and the
     sum and count over those whose next token is one (logit position j predicts token j + 1; the last predicts
-    nothing in the window and counts as off). Amendment 1; E53's `kl_other` pools both."""
+    nothing in the window and counts as off). Amendment 1; E53's `kl_other` pools both. `half` an argument since
+    Amendment 2 (E54's windows; default E53's)."""
     from commute.vpd import kl_per_position
 
     kl = kl_per_position(ref, logits)
     on = torch.zeros_like(target)
     on[:, :-1] = target[:, 1:]
-    on[:, CFG.half] = False
+    on[:, half] = False
     off = ~on
-    off[:, CFG.half] = False
+    off[:, half] = False
     return {"kl_off": (kl * off).sum(1) / off.sum(1), "kl_on_sum": (kl * on).sum(1), "kl_on_n": on.sum(1).double()}
 
 
@@ -577,6 +585,148 @@ def stage_a1_read(P: dict[str, Any], maps: dict[str, dict[int, int]], ft: dict[s
     log(f"[score] {json.dumps(_finite(rows.out['score']), sort_keys=True)}")
 
 
+# ----------------------------------------------------------------------------- Amendment 2: breadth from saved states
+
+
+E54 = REPO / "experiments" / "keydependent_elicit" / "results"  # read only (E56 reads it too)
+E54_STATES = ("elicit_s0", "elicit_s1", "cipher_s0", "cipher_s1")
+
+
+@dataclass
+class Windows:
+    """One task's windows for Amendment 2: tokens, the read position `half`, the target (`data.NEXT` or a key -> value
+    table) and per-window masks: 'scored' (a scored-type token, E53's tasks) and 'changed' (a token the task changed)."""
+
+    held: Tensor
+    half: int
+    token: Any
+    masks: dict[str, Tensor]
+
+
+def pile_windows(name: str, pi: dict[int, int]) -> Windows:
+    """E53's scored windows of a Pile task (`Run.scored`'s draw) with both masks cut by the same draw. Asserts that
+    every scored position is a changed one (row index >= 1; a window never reads its index 0's mask)."""
+    from commute import performed, vpd
+    from commute.data import NEXT, pile_rows
+
+    rows = pile_rows("val", 0, 256)
+    text, at = task_text(name, rows, pi)
+    scored = performed.position_mask(text, at)
+    changed = performed.changed_mask(rows, text, vpd.tokenizer() if name == "lowercase" else None)
+    assert not bool((scored & ~changed)[:, 1:].any()), f"{name}: a scored position is not a changed one"
+    (w, idx), (s, i_s), (c, i_c) = (performed.windows_at(x, at, CFG.half, CFG.n_windows, CFG.window_seed)
+                                    for x in (text, scored.long(), changed.long()))
+    assert torch.equal(idx, i_s) and torch.equal(idx, i_c), "the masks' windows are not the text's"
+    return Windows(w, CFG.half, NEXT, {"scored": s.bool(), "changed": c.bool()})
+
+
+def e54_windows(name: str) -> Windows:
+    """E54's held-out windows of `name` (elicit, cipher), the file stage1.json recorded; read at the key (`half`) with
+    the value table. No other window position is a task position, so 'changed' is empty (the plan's definition)."""
+    path = E54 / "large" / f"windows_{name}.pt"
+    if sha256(path) != json.loads((E54 / "stage1.json").read_text())["sha256"][name]:
+        sys.exit(f"{path} is not the file E54's stage 1 recorded")
+    w = torch.load(path, weights_only=False)
+    toks, half, table = w["heldout"].tokens, w["heldout"].half, w["table"]
+    assert bool((toks[:, half - 1] == int(w["task"].marker)).all()) and bool((table[toks[:, half]] >= 0).all()), name
+    return Windows(toks, half, table, {"changed": torch.zeros(toks.shape, dtype=torch.bool)})
+
+
+def e54_state(name: str) -> dict[str, Tensor]:
+    path = E54 / "large" / f"{name}.pt"
+    if sha256(path) != json.loads((E54 / "stage2.json").read_text())["finetunes"][name]["sha256"]:
+        sys.exit(f"{path} is not the state E54's stage2.json recorded")
+    return {k: v.float() for k, v in torch.load(path, weights_only=True).items()}
+
+
+@torch.no_grad()
+def kl_read(run: Run, w: Windows, dW: dict[str, Tensor]) -> dict[str, Tensor]:
+    """Per window, the full model W0 + dW against W0 (`compute_ci`'s logits, as `cells` and E54's `route_cells`): T0,
+    T1 the log-odds of the target at `w.half`, and per mask m `kl_split`'s parts as '<m>/kl_off' and so on."""
+    from commute.data import target_tokens
+    from commute.faithfulness import model_state
+    from commute.identity import log_odds
+    from commute.vpd import compute_ci
+
+    cols: dict[str, list[Tensor]] = {}
+    for s in range(0, len(w.held), CFG.batch):
+        b, h = w.held[s : s + CFG.batch].to(DEVICE), w.half
+        tgt, ref = target_tokens(w.token, b, h), compute_ci(run.model, b, chunk=len(b)).logits
+        with model_state(run.model, target=run.weights(dW)):
+            lg = compute_ci(run.model, b, chunk=len(b)).logits
+        part = {"T0": log_odds(ref[:, h], tgt), "T1": log_odds(lg[:, h], tgt)}
+        for m, x in w.masks.items():
+            part |= {f"{m}/{q}": v for q, v in kl_split(ref, lg, x[s : s + CFG.batch].to(DEVICE), h).items()}
+        for k, v in part.items():
+            cols.setdefault(k, []).append(v.double().cpu())
+    return {k: torch.cat(v) for k, v in cols.items()}
+
+
+def breadth_rec(x: dict[str, Tensor]) -> dict[str, Any]:
+    """G and, per mask m, the mean `kl_off_<m>` (breadth = G / kl_off_changed, ruled in `score.breadth`); the 90%
+    bootstrap interval of G / kl_off_changed over windows (reported). With both masks: k, the mean KL at positions
+    whose next token is changed but not scored, and whether the two kl_off agree bit for bit per window."""
+    d = x["T1"] - x["T0"]
+    rec: dict[str, Any] = {"G": float(d.mean()), "T0": float(x["T0"].mean()), "T1": float(x["T1"].mean()), "n": len(d)}
+    rec |= {f"kl_off_{m}": float(x[f"{m}/kl_off"].mean()) for m in ("scored", "changed") if f"{m}/kl_off" in x}
+    idx = torch.randint(len(d), (CFG.n_boot, len(d)), generator=torch.Generator().manual_seed(0))
+    r = (d[idx].mean(1) / x["changed/kl_off"][idx].mean(1)).sort().values
+    rec["breadth_ci90"] = [float(r[int(0.05 * len(r))]), float(r[int(0.95 * len(r)) - 1])]
+    if "scored/kl_off" in x:
+        n = float(x["changed/kl_on_n"].sum() - x["scored/kl_on_n"].sum())
+        rec["k"] = float(x["changed/kl_on_sum"].sum() - x["scored/kl_on_sum"].sum()) / n if n > 0 else math.nan
+        rec["changed_not_scored_per_window"] = n / len(d)
+        rec["kl_off_identical"] = torch.equal(x["scored/kl_off"], x["changed/kl_off"])
+    return rec
+
+
+def a2_controls(run: Run, rows: Rows, c: dict[str, Any], win: dict[str, Windows], state: dict[str, Any]) -> None:
+    """Stage 0, first and alone; a miss writes, logs FAIL and exits 1 (`Rows.put`). E53's seed-0 step-300 states split
+    and read against read_amend1b.json (G, ratio, kl_off); E54's seed-0 states' G against stage2.json's T1 - T0; on
+    E53's cipher and the broad cipher (token maps) the corrected kl_off equals the uncorrected one per window."""
+    ref = json.loads((RESULTS / "read_amend1b.json").read_text())["rows"]
+    for n in TASKS:
+        k = key(n, 0, 300)
+        d, r = split_row(run, Task(n, win[n].held, win[n].masks["scored"]), state[n](k)), ref[f"e53/{k}"]
+        dev = {"G": abs(d["G"] - r["G"]), "ratio": abs(d["masked_gain"] / d["piece_gain"] - r["ratio"]),
+               "kl_off": abs(d["kl_off"] - r["kl_off"])}
+        ok = dev["G"] <= c["repro_G_tol"] and dev["ratio"] <= c["repro_ratio_tol"] and dev["kl_off"] <= c["repro_kl_off_tol"]
+        rows.put(f"repro/{k}", "control", {**d, "ratio": d["masked_gain"] / d["piece_gain"], "dev": dev}, ok)
+    s2 = json.loads((E54 / "stage2.json").read_text())["states"]
+    for n in ("elicit_s0", "cipher_s0"):
+        rec = breadth_rec(kl_read(run, win["e54_" + n[:-3]], e54_state(n)))
+        rec["ref_G"] = s2[n]["cells"]["T1"] - s2[n]["cells"]["T0"]
+        rows.put(f"repro/e54/{n}", "control", rec, abs(rec["G"] - rec["ref_G"]) <= c["e54_G_tol"])
+    for n in ("cipher", "broad_cipher"):
+        rec = breadth_rec(kl_read(run, win[n], state[n](key(n, 0, 300))))
+        rows.put(f"identity/{n}", "control", rec, rec["kl_off_identical"])
+
+
+def stage_a2_read(P: dict[str, Any], maps: dict[str, dict[int, int]]) -> None:
+    """Stage 0 (`a2_controls`), stage 1 (E53 lowercase's corrected breadth b* and the broad cipher's, step 300, both
+    seeds), stage 2 (E54's four states), then `score.score_amend2` -> results/read_amend2.json."""
+    check = json.loads((RESULTS / "check_amend1.json").read_text())["maps"]["broad_cipher"]
+    assert [[x, y] for x, y in maps["broad_cipher"].items()] == [r[:2] for r in check], "broad_cipher's map is not 1b's"
+    e53 = state_loader(json.loads((RESULTS / "finetune.json").read_text()), [key(n, s, 300) for n in TASKS for s in SEEDS])
+    broad = state_loader(done("finetune_amend1b.json", "a1b_finetune"), [key("broad_cipher", s, 300) for s in SEEDS])
+    state = {"lowercase": e53, "cipher": e53, "broad_cipher": broad}
+    rows = Rows("read_amend2.json")
+    run = Run(P)
+    win = {n: pile_windows(n, pi) for n, pi in (("lowercase", {}), ("cipher", e53_pi()), ("broad_cipher", maps["broad_cipher"]))}
+    win |= {f"e54_{n}": e54_windows(n) for n in ("elicit", "cipher")}
+    a2_controls(run, rows, P["controls"], win, state)
+    for n, s in ((n, s) for n in ("lowercase", "broad_cipher") for s in SEEDS):
+        rows.put(key(n, s, 300), "breadth", breadth_rec(kl_read(run, win[n], state[n](key(n, s, 300)))))
+    for n in E54_STATES:
+        rows.put(f"e54/{n}", "breadth", breadth_rec(kl_read(run, win["e54_" + n[:-3]], e54_state(n))))
+    from score import score_amend2
+
+    a1b, s2 = (json.loads(p.read_text()) for p in (RESULTS / "read_amend1b.json", E54 / "stage2.json"))
+    rows.out["score"] = score_amend2(rows.out["rows"], a1b, s2, P)
+    dump(rows.name, rows.out)
+    log(f"[score] {json.dumps(_finite(rows.out['score']), sort_keys=True)}")
+
+
 def e53_pi() -> dict[int, int]:
     a0 = json.loads(A0.read_text())
     if a0.get("verdict", {}).get("decision") != "GO":
@@ -591,9 +741,9 @@ def done(name: str, before: str) -> dict[str, Any]:
     return ft
 
 
-PRED_A1B = RESULTS / "predictions_amend1b.json"
+PRED_A1B, PRED_A2 = RESULTS / "predictions_amend1b.json", RESULTS / "predictions_amend2.json"
 STAGES = {"finetune": PRED, "read": PRED, "a1_finetune": PRED_A1, "a1_read": PRED_A1, "a1b_finetune": PRED_A1B,
-          "a1b_read": PRED_A1B}
+          "a1b_read": PRED_A1B, "a2_read": PRED_A2}
 
 
 def main() -> None:
@@ -618,8 +768,10 @@ def main() -> None:
         stage_a1_read(P, maps, done("finetune_amend1.json", "a1_finetune"))
     elif stage == "a1b_finetune":
         stage_a1b_finetune(P, maps)
-    else:
+    elif stage == "a1b_read":
         stage_a1_read(P, maps, done("finetune_amend1b.json", "a1b_finetune"), ("broad_cipher",), "read_amend1b.json")
+    else:
+        stage_a2_read(P, maps)
     peak = {"gpu_gb": torch.cuda.max_memory_allocated() / 2**30, "host_gb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20}
     log(f"[done] {stage}; peak {json.dumps(peak)}")
 

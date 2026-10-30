@@ -13,6 +13,8 @@ Plan: reports/plans/2026-10-29_plan_performed-anchor.md ("The pair"). Two tasks 
   A *cipher position* is any row index >= 1 whose original token is in pi's domain; it is scored as
   log p(pi(x)) - log p(x) in the ciphered row.
 
+E53 Amendment 2 (2026-10-30) adds `changed_mask`: the positions a task changed, for the corrected off-target KL.
+
 E53 Amendment 1 (2026-10-30) adds two token maps applied by the same `cipher_rows`:
 - *Narrow lowercase* (`title_lower_map`): 50 title-case word tokens (`TITLE`: a space, a capital, one or more
   lowercase letters, e.g. " June") used as whole words and whose lowercase form is the canonical one-token encoding,
@@ -158,6 +160,23 @@ def position_mask(rows: Tensor, at: Positions) -> Tensor:
     mask = torch.zeros(rows.shape, dtype=torch.bool)
     mask[at.row, at.pos] = True
     return mask
+
+
+def changed_mask(rows: Tensor, text: Tensor, tok: Any = None) -> Tensor:
+    """(N, T) bool: positions of `text` (a task's rows built from the cased `rows`) whose token the task changed. With
+    `tok` (lowercase, re-encoded rows): True unless the cased row has a token with the same string at the same byte
+    offset, so word pieces split anew and end-of-text padding count as changed. Without `tok` (a token map, same
+    tokenisation): `text != rows`. E53 Amendment 2: the corrected off-target KL leaves out every position whose next
+    token is changed."""
+    if tok is None:
+        return text != rows
+    out = torch.zeros(text.shape, dtype=torch.bool)
+    for i, (r, t) in enumerate(zip(rows.tolist(), text.tolist(), strict=True)):
+        c_strs, c_starts, _ = _starts(tok, r)
+        cased = set(zip(c_starts, c_strs, strict=True))
+        t_strs, t_starts, _ = _starts(tok, t)
+        out[i] = torch.tensor([(s, x) not in cased for s, x in zip(t_starts, t_strs, strict=True)])
+    return out
 
 
 def cipher_rows(rows: Tensor, pi: dict[int, int]) -> tuple[Tensor, Positions]:
