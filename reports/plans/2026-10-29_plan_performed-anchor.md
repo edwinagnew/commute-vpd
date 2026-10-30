@@ -605,3 +605,10 @@ their file (sha256 against `stage1.json`), not through `steering.load_task`, whi
 `run.kl_split` takes `half` as an argument (default E53's). Tokenizer-only check on CPU: lowercase windows carry 9.86
 scored and 13.38 changed-not-scored next tokens per window (the plan's counts); the corrected and uncorrected masks
 agree on both token maps.
+
+*Review fixes, 2026-10-30 (fresh review of 963c33a, before any run):* (1) `cells`' bootstrap interval reads
+`floor_min`, which `predictions_amend2.json` does not carry; `stage_a2_read` now builds `Run` with 1b's thresholds
+under 2's. The interval is reported only, so no filed rule changes. (2) Stage 0 gains a control on the new `kl_read`
+path: on E53 lowercase s0 its G and `kl_off_scored` must equal the split read's G and `kl_off` from the repro row just
+read (`read_amend1b.json`: 1.67079, 0.339635) within `repro_G_tol` and `repro_kl_off_tol`, else stop; expected exact
+(same logits, same windows).

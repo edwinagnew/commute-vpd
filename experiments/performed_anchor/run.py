@@ -683,7 +683,8 @@ def breadth_rec(x: dict[str, Tensor]) -> dict[str, Any]:
 def a2_controls(run: Run, rows: Rows, c: dict[str, Any], win: dict[str, Windows], state: dict[str, Any]) -> None:
     """Stage 0, first and alone; a miss writes, logs FAIL and exits 1 (`Rows.put`). E53's seed-0 step-300 states split
     and read against read_amend1b.json (G, ratio, kl_off); E54's seed-0 states' G against stage2.json's T1 - T0; on
-    E53's cipher and the broad cipher (token maps) the corrected kl_off equals the uncorrected one per window."""
+    E53's cipher and the broad cipher (token maps) the corrected kl_off equals the uncorrected one per window; `kl_read`
+    on lowercase s0 gives the split read's G and kl_off (the new path against a known value)."""
     ref = json.loads((RESULTS / "read_amend1b.json").read_text())["rows"]
     for n in TASKS:
         k = key(n, 0, 300)
@@ -700,6 +701,10 @@ def a2_controls(run: Run, rows: Rows, c: dict[str, Any], win: dict[str, Windows]
     for n in ("cipher", "broad_cipher"):
         rec = breadth_rec(kl_read(run, win[n], state[n](key(n, 0, 300))))
         rows.put(f"identity/{n}", "control", rec, rec["kl_off_identical"])
+    rec = breadth_rec(kl_read(run, win["lowercase"], state["lowercase"](key("lowercase", 0, 300))))  # the new path
+    r = rows.out["rows"][f"repro/{key('lowercase', 0, 300)}"]
+    ok = abs(rec["G"] - r["G"]) <= c["repro_G_tol"] and abs(rec["kl_off_scored"] - r["kl_off"]) <= c["repro_kl_off_tol"]
+    rows.put("repro/kl_read/lowercase", "control", {**rec, "ref_G": r["G"], "ref_kl_off": r["kl_off"]}, ok)
 
 
 def stage_a2_read(P: dict[str, Any], maps: dict[str, dict[int, int]]) -> None:
@@ -711,7 +716,8 @@ def stage_a2_read(P: dict[str, Any], maps: dict[str, dict[int, int]]) -> None:
     broad = state_loader(done("finetune_amend1b.json", "a1b_finetune"), [key("broad_cipher", s, 300) for s in SEEDS])
     state = {"lowercase": e53, "cipher": e53, "broad_cipher": broad}
     rows = Rows("read_amend2.json")
-    run = Run(P)
+    # `cells`' bootstrap (reported only) reads floor_min: 1b's thresholds under 2's, no filed rule changes
+    run = Run({**P, "thresholds": {**json.loads(PRED_A1B.read_text())["thresholds"], **P["thresholds"]}})
     win = {n: pile_windows(n, pi) for n, pi in (("lowercase", {}), ("cipher", e53_pi()), ("broad_cipher", maps["broad_cipher"]))}
     win |= {f"e54_{n}": e54_windows(n) for n in ("elicit", "cipher")}
     a2_controls(run, rows, P["controls"], win, state)
