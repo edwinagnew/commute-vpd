@@ -336,3 +336,8 @@ split pieces; a constructed positive control for the route split at scale.
 22. §11 read literally: with no anchor-1 seed matched, no anchor prediction is scored, think_overlap on anchor 2
     included; every state's readings are still written.
 23. On a validated row, E45's t rule reads gold, own samples, the null and E40 (E40 on the maths rows).
+24. (Review of d19b7fb.) The scoring refuses to run until every C state is read and every D run whose pick has a step
+    is read at that step (a D record at another step is stale: E45 rescored). A run with no step, an anchor-1 seed not
+    matched or a run E45 never scored, is missing: every row a miss (`general`), never "unscored". With exactly one
+    anchor-1 seed matched, the other seed's per-seed rules miss and every anchor relation is "not validated"; the rows
+    are still scored (§11 withholds scoring only when neither seed is matched).

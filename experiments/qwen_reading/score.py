@@ -6,16 +6,19 @@ rules.decomposition_rows at E45 Amendment 2's decisive point (score.json amend2_
 
 Anchor 1 is E45's a1_s0/a1_s1 (Stage D), anchor 2 a2long_s0/a2long_s1 at step 100 (Stage C). E45's rows are read on
 each state's own rows (own samples, the null, E40: the maths rows). Plan section 11: with neither anchor-1 seed
-matched, no anchor prediction is scored and only the readings are written.
+matched, no anchor prediction is scored and only the readings are written. The scoring refuses to run until every C
+state and every D run with a picked step is read at that step; a run with no step (an anchor-1 seed not matched, a run
+E45 never scored) is missing: every row a miss.
 """
 
 from __future__ import annotations
 
 import json
+import sys
 import time
 from typing import Any
 
-from lab import CFG, E45, LARGE, Lab
+from lab import CFG, E45, LARGE, STATES, Lab
 from safetensors.torch import load_file
 from torch import Tensor
 
@@ -42,9 +45,11 @@ def value(status: str, x: float) -> float | None:
 
 def reading(rec: dict[str, Any], ov: dict[str, Any] | None, n: str, A: dict[str, Any],
             ref: dict[str, int]) -> dict[str, Any]:
-    """One state's numbers for every row; values None (unscored) or NaN (missing) as the filed rules read them."""
+    """One state's numbers for every row; values None (unscored) or NaN (missing) as the filed rules read them. No
+    record (a run D did not read: its pick has no step) is missing: every row a miss."""
     if not rec:
-        return {"missing": True, "values": dict.fromkeys(ROWS.values())}
+        return {"missing": True, "values": dict.fromkeys(ROWS.values(), float("nan")),
+                "prompt": "misses" if anchor_of(n) else None, "think": "misses" if anchor_of(n) == 2 else None}
     r = rec.get("own") or rec["maths"]  # E45's rows: on the own rows
     k = qr.kept(r["means"])
     P, T = (ov or {}).get("P"), (ov or {}).get("T")
@@ -87,7 +92,7 @@ def anchor_rows(lab: Lab, R: dict[str, dict[str, Any]], others: tuple[str, ...])
     for name, row in out.items():
         if row["validated"]:
             m1, m2 = (sum(row[f"anchor{i}"]) / 2 for i in (1, 2))
-            row["t"] = {n: qr.t_read(R[n]["values"][ROWS[name]], m1, m2) for n in others if not R[n].get("missing")}
+            row["t"] = {n: qr.t_read(R[n]["values"][ROWS[name]], m1, m2) for n in others}
     out["think_overlap"] = {"anchor2_per_seed": {n: R[n].get("think") for n in ANCHORS[1]},
                             "anchor1_e_T_unfiled": {n: R[n].get("e_T") for n in ANCHORS[0]}}
     return out
@@ -97,16 +102,17 @@ def score(lab: Lab, own: str) -> None:
     A, summ = lab.get("A")["sets"], lab.get("summary")
     points = json.loads((E45 / "score.json").read_text())["amend2_decisive"]
     picks = {r: qr.d_pick(r, points.get(r)) for r in (*ANCHORS[0], own, "null_s0")}
-    ref, names = summ.get("ref_sizes", {}), (*ANCHORS[0], *ANCHORS[1], *OTHERS, own)
-    R = {n: reading(lab.get(f"C_{n}") or lab.get(f"D_{n}"), summ.get("overlap", {}).get(n), n, A, ref)
-         for n in names}
+    recs = {n: lab.get(f"C_{n}") for n in STATES} | {r: lab.get(f"D_{r}") for r in picks}
+    if wait := qr.inputs_missing({n: recs[n] for n in STATES}, {r: recs[r] for r in picks}, picks):
+        sys.exit("refusing to score: " + "; ".join(wait))
+    ref = summ.get("ref_sizes", {})
+    R = {n: reading(recs[n], summ.get("overlap", {}).get(n), n, A, ref) for n in recs}
     scored = any(picks[r]["matched"] for r in ANCHORS[0])
     rows = anchor_rows(lab, R, (*OTHERS[:2], own, OTHERS[2])) if scored else {}
-    present = {n: r for n, r in R.items() if not r.get("missing")}
     lab.put("score", {
         "anchor_predictions_scored": scored,
         "why": "scored" if scored else "anchor 1 not learned or not matched under E45 Amendment 2 (plan section 11)",
         "picks": picks, "readings": R, "rows": rows,
         "announce": [r["announce"] for r in rows.values() if "announce" in r],
-        "edges": qr.edges(present, ANCHORS, A["min_size"], A["S_prompt"], ref, lab.get("B2").get("dropped")),
+        "edges": qr.edges(R, ANCHORS, A["min_size"], A["S_prompt"], ref, lab.get("B2").get("dropped")),
         "domain_confound": DOMAIN, "anchor1_limits": A1_LIMITS})

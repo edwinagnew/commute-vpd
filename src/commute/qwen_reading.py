@@ -313,6 +313,20 @@ def edges(readings: dict[str, dict[str, Any]], anchors: Sequence[Sequence[str]],
     return [{"case": c, "fired": f} for c, f in rows]
 
 
+def inputs_missing(c_recs: dict[str, dict[str, Any]], d_recs: dict[str, dict[str, Any]],
+                   picks: dict[str, dict[str, Any]]) -> list[str]:
+    """What the scoring waits for: every Stage C state's record, and a D record for every run whose pick has a step,
+    read at that step (a different step: stale, E45 rescored since). Empty: the scoring may run."""
+    out = [f"C_{n}.json missing" for n, r in c_recs.items() if not r]
+    for run, p in picks.items():
+        r = d_recs.get(run) or {}
+        if p["step"] is not None and not r:
+            out.append(f"D_{run}.json missing (E45 picks step {p['step']})")
+        elif p["step"] is not None and r.get("pick", {}).get("step") != p["step"]:
+            out.append(f"D_{run}.json read step {r.get('pick', {}).get('step')}, E45 now picks {p['step']} (stale)")
+    return out
+
+
 def sd(xs: Sequence[float]) -> float:
     """The population sd of the finite values (NaN for fewer than two)."""
     v = [x for x in xs if ok(x)]

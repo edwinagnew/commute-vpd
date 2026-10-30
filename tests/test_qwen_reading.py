@@ -240,6 +240,24 @@ def test_d_pick():
     assert qr.d_pick("null_s0", point(None, False, None))["step"] is None
 
 
+def test_inputs_missing():
+    picks = {"a1_s0": {"step": 37}, "a1_s1": {"step": None}, "own2_s0": {"step": 100}, "null_s0": {"step": 8}}
+    c = {"e40": {"S": 1}, "gold_s0": {"S": 1}, "a2long_s0": {"S": 1}, "a2long_s1": {"S": 1}}
+    d = {"a1_s0": {"pick": {"step": 37}}, "own2_s0": {"pick": {"step": 100}}, "null_s0": {"pick": {"step": 8}}}
+    assert qr.inputs_missing(c, d, picks) == []  # a1_s1 has no step: not waited for (scored a miss)
+    assert qr.inputs_missing(c | {"gold_s0": {}}, d, picks) == ["C_gold_s0.json missing"]
+    assert qr.inputs_missing(c, d | {"own2_s0": {}}, picks) == ["D_own2_s0.json missing (E45 picks step 100)"]
+    stale = qr.inputs_missing(c, d | {"null_s0": {"pick": {"step": 12}}}, picks)  # E45 rescored since D read it
+    assert stale == ["D_null_s0.json read step 12, E45 now picks 8 (stale)"]
+
+
+def test_one_anchor1_seed_matched():
+    """The unmatched seed is missing (NaN): its per-seed rule misses and the relation cannot be validated."""
+    r = qr.anchor_row("regating_share", [0.9, NAN], [0.3, 0.4], 0.0, 0.5)
+    assert r["anchor1_per_seed"] == ["holds", "misses"] and not r["validated"]
+    assert r["relative"] == "not validated" and "announce" not in r
+
+
 def test_edges_table():
     o = lambda x, sd=2.0: {"o": x, "sd": sd, "q95": 10.0, "q99": 12.0}
     R = {"a1_s0": {"size_S": 30, "ov": {"P": o(11), "T": o(5)}, "values": {"e_P": 1.0, "regating": NAN}},
