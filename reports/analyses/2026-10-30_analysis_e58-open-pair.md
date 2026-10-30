@@ -12,18 +12,19 @@ Provenance at the end.*
 
 We fine-tuned the small model on word maps over some of their keys and asked whether the keys it never saw gained, and
 whether the decomposition's main reading followed that. It did not: the reading was high for every map whose answer the
-original model already guesses and low for every other map, including a new four-word rule that carried strongly to
-unseen keys, which read like a plain lookup over the same words. For `GOALS.md`, the decomposition reads whether the
-trained answer is one the model already gives, not whether what was learned generalises, so on its own it does not
-yet tell elicitation from a new mechanism beyond that.
+original model already guesses and low for every other map, including a new four-word rule that carried to unseen keys,
+which read like a plain lookup over the same words. For `GOALS.md`, on one small model and one decomposition the
+reading tracks whether the trained answer is one the model already gives, which a cut on the model's own prior also
+sorts, and not whether what was learned generalises. The rule was built from directions the model already has and still
+read as new, but that does not show a new circuit of old subcomponents would always read as new.
 
 ## The answer
 
 The decomposition's main reading follows whether the trained answer is the model's own guess, not whether learning
-carries to unseen keys. A new four-word rule, built on directions the model already has, carried most of the way to
-unseen keys yet read as new, like a lookup over the same words. Copy, which carries as far, reads high. A lookup at
-nearly copy's prior reads low, so the reading is not a smooth trend in the prior. All of this is one small model and
-one decomposition, and provisional.
+carries to unseen keys. A new four-word rule, built on directions the model already has, carried about half as far as
+copy to unseen keys, yet read as new, like a lookup over the same words. A cut on the model's prior sorts every map
+the same way. One rule, one small model and one decomposition; this does not show that any new circuit of old pieces
+reads as new.
 
 ## What we were trying to test
 
@@ -957,7 +958,8 @@ that also ranked below the key's top 20. It was skipped, as filed, and is not sc
 ![Two panels sharing the r axis, every 96-key map at step 30 with three seeds and means: left r against W₀'s prior of the trained value, right r against held-out carry; the class map starred and its twin a hollow diamond in the same colour; the 0.5 cut, the 0.6 band, the 0.15 and 0.3 carry bars and the twin's mean r ± 0.0904 shaded](../../experiments/open_pair/figures/a7_r.png)
 
 **Reading it.** Like a lookup. Start with the right panel. The gold star, the class map, carries 0.55 to 0.64 beyond its
-null at step 30, nearly as far as copy's 0.8, yet its r reads 0.23 to 0.25 on the three seeds. That is in the cipher
+null at step 30, yet its r reads 0.23 to 0.25 on the three seeds. On plain $x$, the measure copy is read on, it
+carries 0.40 to 0.49, about half of copy's 0.8; copy reads r 0.77. The class map's r is in the cipher
 band and a little below the cipher's 0.29 to 0.31. The hollow diamond is the twin: same words, no rule. It carries 0.08
 to 0.09 and reads r 0.27 to 0.28, so D is −0.03, inside the shaded ±0.09 band. Carry moved by about 0.5 between the two
 maps and r did not move with it. In the left panel the class map and twin sit at the lowest priors of any map, beside the
@@ -965,7 +967,9 @@ cipher, and every map with a low prior reads low.
 
 So the filed classes are cipher band and kind only, the one outcome filed as unambiguous. A rule built on directions W₀'s
 embedding already has, which carries to unseen keys, reads as new, like a lookup over the same words. Over the eight maps
-the rank correlation of mean r with the log prior is 0.95 and with carry 0.29, both computed after the data.
+the rank correlation of mean r with the log prior is 0.95, both computed after the data. With carry it is 0.29, on the
+figure's mixed axis: carry beyond null for the class map and twin, plain $x$ for the rest; plain $x$ throughout gives
+the same ranks.
 
 | map, three seeds | prior of trained values | first step over the gate | step 30: r | step 30: carry beyond null | step 30: $G_\text{spec}$ |
 |---|---|---|---|---|---|
@@ -998,7 +1002,15 @@ twin, so the two are not read at the same step. There the class map carries more
 0.315 to 0.317, still in the cipher band. E58's behavioural label reads it "reuses" on all three seeds, the first map
 whose target W₀ does not guess to earn that label. The twin's seed 0 carries 0.154 at its gate step 16, just over the 0.15
 bar, so at the gate step the class map's class reads "control_failed" and D is not read. Step 30 is the scored step,
-as filed; at step 30 the twin is clean on every seed.
+as filed; at step 30 the twin is clean on every seed. Read informally, D at the gate step would be +0.02, inside the
+bound, so the step does not flip "kind only".
+
+**The label and r disagree at step 11.** The behavioural label is a carry threshold, plain $x$ of at least 0.5; here $x$
+is 0.68 to 0.86. So the label says "reuses" while r says new, which is the plain answer seen from the label's side:
+carry and r come apart. It weakens the label as a reference for elicitation whenever the target is new. Earlier sections
+used it as one: the copy map's positive control, the agreement test and reading A. Under reading A, "built from
+subcomponents W₀ already has", the label's "reuses" and r's "new" cannot both be right. Which one is turns on the
+fine-tune's mechanism, which was not measured.
 
 ### What each number is blind to
 
@@ -1006,7 +1018,8 @@ as filed; at step 30 the twin is clean on every seed.
   decomposition. The noise floor of r is 0.045.
 - **What r reads low here.** The class map's targets are words W₀ never gives after these keys. A low r is what the
   own-guess account predicts whatever the mechanism, so this run cannot say whether r reads the mechanism or only the
-  target. It does not test a new rule onto answers W₀ already gives, which the own-guess account says would read high.
+  target. A new rule onto answers W₀ already gives would separate the two; it is a hypothesis for the next test, not
+  measured.
 - **The rule's pieces.** The class is a readout of two directions W₀'s embedding already has. That the fine-tune uses
   those directions, rather than other key features that track the classes, is not measured.
 - **$x - x_\text{null}$** cancels any lean that does not depend on the key. It does not cancel one whose size follows
@@ -1014,7 +1027,8 @@ as filed; at step 30 the twin is clean on every seed.
   η² 0.116. Those were on directions fit on all 128 keys, not recomputed on the trained-key directions used here. The
   per-class parts and the amplitude-normalised difference above are reported, not scored.
 - **The unseen keys fall unevenly**: 4, 18, 9 and 1 per class, so 18 of 32 sit in class 1 and $x$ leans on it. The
-  per-class table shows every class carrying.
+  per-class table shows every class's own word ahead, but class 3 rests on one unseen key, 15 windows, and class 0 on
+  four.
 - **The twin** keeps 39 of 128 keys in their class against 35.5 by chance, so a little real structure remains in it. Its
   trained class sizes, 27/36/19/14, differ from the class map's, and its trained gain at step 30 is lower, 12.3 to 13.9
   against 17.9 to 19.1. D is blind to those differences. D's bound is twice the noise floor of a three-seed range, not
@@ -1022,8 +1036,10 @@ as filed; at step 30 the twin is clean on every seed.
 - **The twin carries at the gate step**: 0.154 on seed 0, over its bar. At step 30, the scored step, it reads 0.08 to
   0.09 on every seed.
 - **The prior's dose-response** inside the no-rule maps is not read: the elicit-prior cipher was skipped.
-- **The granularity limit.** It did not make r read this rule as old. It still applies to a new circuit of old
-  subcomponents whose output W₀ already gives, which this run does not test.
+- **The granularity limit.** As filed, a carrying class map is a new circuit from old pieces that r may read as
+  elicited. r read it as new. The data cannot tell whether this update did not run through old subcomponents, since
+  training onto four words W₀ never gives here may need new output paths and the mechanism was not measured, or whether
+  the limit as worded does not hold here. It does not show r reads every new circuit of old pieces as new.
 
 ### What Amendment 7 changes
 
@@ -1035,12 +1051,13 @@ as filed; at step 30 the twin is clean on every seed.
 - **What this means for elicitation against new mechanism.** r reads "the answer is one the model already gives" as
   elicited and anything else as new, whether learned as a rule or a lookup. It does not read generalisation, and on this
   run it cannot be told apart from reading the target alone. This is provisional until the independent check.
-- **EP skipped**, branch 8. The band claim's prior range stays at two levels, 1.4e-6 to 3.7e-5, inside the no-rule kind.
+- **EP skipped**, branch 8. No map at elicit's prior was added. With the twin, a no-rule map at 3.3e-7, the no-rule
+  maps now span 3.3e-7 to 3.7e-5, all in the cipher band.
 
 ### Not run, Amendment 7
 
 - The elicit-prior cipher, skipped; Fable's fallback, a prior-matched shuffle with elicit's words at copy's prior.
-- A rule onto answers W₀ already gives, which would test the granularity limit where it bites.
+- A new rule onto answers W₀ already gives, a proposed next test of whether r reads mechanism or only the target.
 - r on the class map at step 100; the cipher and copy re-trained to step 100.
 - η² of embedding norm and token id on the trained-key classes; a probe of which key feature the fine-tune uses.
 - A second rule or feature, a second key split, more seeds, a second decomposition seed; the class rule on Qwen.
@@ -1076,12 +1093,13 @@ does not guess that still carries to unseen keys. Under the granularity limit a 
 the same way. Ask #14 stays open.
 
 Amendment 7 filled that cell for one rule. A four-word rule over the sign pair of the key's two leading embedding
-directions carried 0.55 to 0.64 beyond its null at step 30, while its shuffled twin carried under 0.1. Both read r 0.23
-to 0.28, in the cipher band and within 0.04 of each other. So r does not read carry: a rule that generalises and a lookup
-over the same new words read alike, and copy, which carries about as far, reads 0.77. What r follows across all eight
-96-key maps is whether the trained answer is W₀'s own guess, which W₀'s prior already gives. The rule is built from
-directions W₀ has, and r still read it as new, so the granularity limit did not bite here. It is still untested where
-it would bite: a new rule onto answers W₀ already gives.
+directions carried 0.55 to 0.64 beyond its null at step 30, 0.40 to 0.49 on plain $x$, while its shuffled twin carried
+under 0.1. Both read r 0.23 to 0.28, in the cipher band and within 0.04 of each other. So r does not read carry: a rule
+that generalises and a lookup over the same new words read alike. What r follows across all eight 96-key maps is
+whether the trained answer is W₀'s own guess, and a cut on W₀'s prior sorts all eight the same way. The rule is built
+from directions W₀ has and r read it as new, but whether the update ran through old subcomponents was not measured, so
+this neither confirms nor lifts the granularity limit. At step 11 the behavioural label read the class map "reuses"
+while r read new, so the label is a carry reading, not a reference for elicitation when the target is new.
 
 ## How compelling is the evidence
 
@@ -1180,7 +1198,10 @@ it would bite: a new rule onto answers W₀ already gives.
 
 After Amendment 7 the tree takes branch 3, the cell filled on the 67M for one rule, and branch 8, the rider reported.
 What follows is the lead's. Two steps the data point to:
-- **A new rule onto answers W₀ already gives**, the case the granularity limit is about. If it reads high like copy,
+- **What "elicitation" means.** Fable's advice `reports/plans/2026-10-30_advice_regating-next-after-a7-FABLE.md` puts a
+  definition to the user before more runs: the answer was already given, which r reads, or an existing capability was
+  reused, which the carry label reads.
+- **A new rule onto answers W₀ already gives**, a proposed test, an untested hypothesis. If it reads high like copy,
   r reads the target, not the mechanism; if it reads low, r sees more than the target.
 - **The independent check** of Amendment 7 and the updated synthesis, before any claim leaves the testbed.
 

@@ -9,22 +9,26 @@ Figure: `experiments/open_pair/plot_synthesis.py`. Words as in `GOALS.md` → Te
 On the small model, VPD's main reading separates fine-tunes whose trained answer the original model already guesses from
 those whose answer it does not, and it reads a new rule that generalises to unseen keys as new, the same as a plain
 lookup. Across eight word maps and three seeds the reading followed the model's own guess, not whether learning carried,
-and a lookup at nearly the copy map's prior still read low. For `GOALS.md` this says the reading tracks "the answer is
-one the model already gives", which the model's own prior largely gives too. It is not yet evidence that VPD detects
-a new mechanism as such: it is one rule on one small model, it awaits an independent check, and a new circuit of old
-subcomponents onto answers the model already gives, where the granularity limit bites, is untested.
+and a lookup at nearly the copy map's prior still read low. For `GOALS.md`, a single cut on the model's own prior sorts
+all eight maps into the reading's two bands, so on the small model VPD has not yet shown anything the model's logits do
+not. It is not evidence that VPD detects a new mechanism as such: it is one rule on one small model, it awaits an
+independent check, and whether the rule's update ran through old subcomponents was not measured, so the granularity
+limit is neither confirmed nor lifted.
 
 ## The answer
 
 On the small model with trigger-to-word maps, VPD's r reads high when the trained answer is the model's own guess for
 each key and low when it is not, whether or not the update carries to unseen keys. A new four-word rule whose words W₀
-never gives carried 0.55 to 0.64 beyond its null to unseen keys, yet read r 0.23 to 0.25. That is with the lookups and
-within 0.04 of its shuffled twin, which has the same words and no rule. Copy, which carries about as far, reads 0.77.
-So r does not read carry, and a new rule that generalises reads as new. The rule is built from directions W₀'s
-embedding already has, so the granularity limit did not make r read it as old. The limit is untested where it would
-bite: a new rule onto answers W₀ already gives would, on the own-guess account, read high. A no-rule lookup at 3.7e-5
-reads 0.38 while copy at 5.9e-5 reads 0.77, so r is not a smooth function of W₀'s prior. A cut on the prior between
-those two still sorts all eight maps, and W₀'s own-guess ranking still predicts every band. E58's one comparison with
+never gives carried 0.55 to 0.64 beyond its null to unseen keys, 0.40 to 0.49 on plain carry, about half of copy's
+0.8. It read r 0.23 to 0.25, with the lookups and within 0.04 of its shuffled twin, which has the same words and no
+rule; copy reads 0.77. So r does not read carry, and this rule that generalises reads as new. A cut on W₀'s prior
+between 3.7e-5 and 5.9e-5 sorts all eight maps into r's bands, so on the 67M VPD has not yet shown anything the logits
+do not. Amendment 6 shows only that r is not a smooth function of the prior: a no-rule lookup at 3.7e-5 reads 0.38
+while copy at 5.9e-5 reads 0.77. The rule is built from directions W₀'s embedding already has and r read it as new.
+Whether the update ran through old subcomponents was not measured, so this neither confirms nor lifts the granularity
+limit, and it does not show r reads every new circuit of old pieces as new. E58's behavioural label read the class map
+"reuses" at step 11 while r read new: the two measure different things, and what "elicitation" means is a pending
+decision. E58's one comparison with
 a steering vector, a reading that never looks at the decomposition, scored steering the better match, though steering
 sat on its cut. The claim is provisional until the independent check. This holds on one small model, one decomposition
 and synthetic maps only.
@@ -123,10 +127,13 @@ class is the sign pair of its scores on the two leading principal components of 
 of the four classes goes to one word W₀ never gives after these keys. A twin hands the same words out by shuffled
 classes, so it has nothing to carry. At step 30 the class map carried 0.55 to 0.64 beyond a null that cancels any
 key-independent word lean, and the twin 0.08 to 0.09. The class map read r 0.23 to 0.25 and the twin 0.27 to 0.28, so
-both sit in the cipher band, 0.03 apart against a filed bound of 0.09. Copy, carrying about as far, reads 0.77. So r
-does not read carry: a rule that generalises reads as new, like a lookup over the same words. Over the eight maps the
-rank correlation of mean r with the log prior is 0.95, and with carry 0.29, both computed after the data. Four limits.
-The unseen keys fall 4, 18, 9 and 1 over the classes, though every class carries. The classes track embedding norm and
+both sit in the cipher band, 0.03 apart against a filed bound of 0.09. On plain carry the class map reads 0.40 to 0.49,
+about half of copy's 0.8, and copy reads r 0.77. So r does not read carry: a rule that generalises reads as new, like
+a lookup over the same words. Over the eight maps the rank correlation of mean r with the log prior is 0.95, and with
+carry 0.29 on the figure's mixed carry axis, both computed after the data. At step 11 E58's behavioural label, a carry
+threshold, read the class map "reuses" on all three seeds while r read new; so the label is a carry reading, not a
+reference for elicitation when the target is new. Four limits. The unseen keys fall 4, 18, 9 and 1 over the classes;
+every class's own word leads, but one class rests on one unseen key. The classes track embedding norm and
 token id a little, which the null does not fully cancel, though a reported per-window rescaling still separates the two
 maps. One twin seed carries 0.154 at its first step over the gate, just over its 0.15 bar; at step 30, the scored step,
 it is clean. A cipher at elicit's prior, meant to extend the prior test to a third level, could not be built, so that
@@ -134,8 +141,9 @@ dose-response is not read. Figure: `experiments/open_pair/figures/a7_r.png`; rec
 
 **The granularity limit.** VPD's unit is the rank-one subcomponent. A new circuit built from old subcomponents, switched
 on in a new pattern, can read as "already there" to r. Amendment 7's rule is built from directions W₀'s embedding
-already has, and r still read it as new, so the limit did not bite there. It is untested where it would bite: a new
-circuit onto answers W₀ already gives, which the own-guess account says would read high whatever its mechanism.
+already has, and r read it as new. The data cannot tell whether this update did not run through old subcomponents,
+since training onto words W₀ never gives may need new output paths, or whether the limit does not hold here. A new rule
+onto answers W₀ already gives is a proposed next test, an untested hypothesis, not a place the limit is known to bite.
 
 ## Scored and unscored evidence
 
@@ -159,14 +167,16 @@ lookup at a prior a factor of about 1.6 under copy's reads with the no-rule maps
 agrees with W₀'s own-guess ranking, a baseline that never looks at the decomposition, and a cut on the probability
 between the two maps still sorts every map. That is one pair, one prior level and one decomposition, and it stays
 provisional. Among answers W₀ already guessed, r does not follow whether the learned rule
-carries to unseen keys. Amendment 7 adds the other side: a new four-word rule whose answers W₀ never gives carried most
-of the way to unseen keys and read r 0.23 to 0.25, as new as a lookup over the same words. So on the 67M r reads a new
-rule that generalises as new, and it does not read generalisation at all. What r reads is whether the trained answer
-is one W₀ already gives, and W₀'s own prior ranks all eight maps nearly as r does. If elicitation means "the update
-raises an answer the model already gives", r reads it, though little beyond what W₀'s prior gives. Whether r reads a
-new mechanism as such, beyond a new answer, is untested. The rule is built from directions W₀ already has, so the
-granularity limit did not make r call it old. It would bite on a new circuit onto answers W₀ already gives, and the
-own-guess account says r would read that high. One rule, one small model and one decomposition; provisional until the
+carries to unseen keys. Amendment 7 adds the other side: a new four-word rule whose answers W₀ never gives carried
+about half as far as copy to unseen keys and read r 0.23 to 0.25, as new as a lookup over the same words. So on the 67M
+r reads this rule that generalises as new, and it does not read generalisation. What r reads is whether the trained
+answer is one W₀ already gives, and one cut on W₀'s prior sorts all eight maps into r's bands, so VPD has not yet shown
+anything the logits do not. If elicitation means "the update raises an answer the model already gives", r reads it,
+though no better than W₀'s prior. If it means "an existing capability was reused on new inputs", r is the wrong
+instrument: the carry label read the class map "reuses" at step 11 while r read new. Which is meant is a pending
+decision. Whether r reads a new mechanism as such, beyond a new answer, is untested; whether the rule's update ran
+through old subcomponents was not measured, so the granularity limit is neither confirmed nor lifted. One rule, one
+small model and one decomposition; provisional until the
 independent check. A single r means nothing off its row: it moves by about 0.1 with read step and key count on its own.
 
 ## How compelling is the evidence
@@ -231,8 +241,8 @@ pending that (`reports/plans/2026-10-30_advice_regating-carry-cell-FABLE.md`).
   or decomposition seed, the class rule or first-letter rule on Qwen, the novelty column, and η² of norm and token id
   on the trained-key classes. The elicit-prior cipher was skipped, unbuildable; Fable's fallback, a prior-matched
   shuffle, was not run.
-- **Where the granularity limit bites.** A new rule onto answers W₀ already gives. The own-guess account says r reads
-  it high whatever its mechanism; no map tests it.
+- **The granularity limit.** Which subcomponents the class map's update runs through. A new rule onto answers W₀
+  already gives is a proposed test, an untested hypothesis; no map tests it.
 - Any of this on Qwen3-1.7B or another model; any real post-training update.
 - A second decomposition seed; more key splits; key counts other than 24, 32 and 96 trained.
 - What orders the three own-guess maps' r: trained gain, trained-key probability or the value pool. Fable advised
