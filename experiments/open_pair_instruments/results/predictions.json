@@ -1,84 +1,105 @@
 {
-  "status": "DRAFT, not filed. Filed only when the plan is final, the rule's edge cases are rerun as CPU tests of src/commute/revival_kv.py, and this file is committed with status 'filed <date>' before stage 0. The run refuses a DRAFT.",
-  "experiment": "E55 C3: pruning revival, reverse fine-tuning and the possession probe (reference) on E58's twelve open-pair 67M states, beside E58's r, stand-in ratio, steering S, carry x and update size",
+  "status": "DRAFT, not filed (revised after reports/reviews/2026-10-31_review_e55-c3-plan.md). Filed only after job 1 ('measure') has written D per map, p_D, the MLP shares, alpha and the planted-wrapper readings into this file and the plan, and the rule's edge cases pass as CPU tests of src/commute/revival_kv.py; then committed with status 'filed <date>' before job 2. The run refuses a DRAFT for every stage except 'measure'.",
+  "experiment": "E55 C3: pruning revival and reverse fine-tuning (toward W0's distribution) and the possession probe (reference) on E58's open-pair 67M maps, eight seeds each, positions on the rank-1-to-cipher axis beside r, the stand-in ratio, S, carry x, update size, D and MLP share",
   "plan": "reports/plans/2026-10-31_plan_e55-stage-c-open-pair.md",
   "states": {
-    "elicit": "experiments/open_pair/results/large/elicit_s{0,1,2}.pt (run.json states.elicit_s*.ft.sha256, G)",
-    "cipher": "experiments/open_pair/results/large/cipher_s{0,1,2}.pt (run.json states.cipher_s*)",
-    "copy": "experiments/open_pair/results/large/amend1/copy_s{0,1,2}.pt (amend1.json control.copy_s*)",
-    "rank1": "experiments/open_pair/results/large/amend1/rank1_s{0,1,2}.pt (amend1.json control.rank1_s*)"
+    "seeds_0_2": {
+      "elicit": "experiments/open_pair/results/large/elicit_s{0,1,2}.pt (run.json states.*.ft.sha256, G)",
+      "cipher": "experiments/open_pair/results/large/cipher_s{0,1,2}.pt (run.json)",
+      "copy": "experiments/open_pair/results/large/amend1/copy_s{0,1,2}.pt (amend1.json control)",
+      "rank1": "experiments/open_pair/results/large/amend1/rank1_s{0,1,2}.pt (amend1.json control)"
+    },
+    "seeds_3_7": "new in job 2: keydep.elicit_ft for elicit, rank1, copy; keydep.cipher_ft at the same seed's elicit norm; E58's columns by heldout_keys.behaviour and vpd_read; saved to experiments/open_pair_instruments/results/large/<map>_s<seed>.pt with sha256"
   },
-  "windows": "experiments/open_pair/results/large/amend1/windows_rank1_trained.pt: 'train' for reverse fine-tuning; 'heldout' (75 windows) for reading, fit half = even indices, score half = odd (steering.Task.part)",
+  "windows": "experiments/open_pair/results/large/amend1/windows_rank1_trained.pt: 'train' for reverse fine-tuning; 'heldout' (75 windows): fit half (even) ranks units, score half (odd) reads every number",
+  "axis": {"old_end": "rank1", "new_end": "cipher", "placed": "elicit", "reported_beside": ["copy position p_copy", "carry label category (copy: neither/reuses/neither at seeds 0-2)"]},
   "constants": {
+    "seeds": [0, 1, 2, 3, 4, 5, 6, 7],
     "prune_k": [13, 40],
     "n_random": 20,
     "prune_seed": 0,
-    "D_min_logodds": 0.1,
-    "reverse_recipe": "finetune.finetune_arm_a unchanged: Adam, lr anchors.FT_LR = 3e-5, batch 32, grad clip 1, kl_lambda 1, steps 300, seed = the state's seed, o_token = the rank-1 table",
-    "reverse_checkpoints": "keydep.CIPHER_CHECKS = 1..30, 100, 300; plus a read at step 0",
-    "reverse_cap_value": 301,
+    "D_void_frac": 0.2,
+    "reverse": {"optimizer": "adam", "lr": 3e-6, "batch": 32, "grad_clip": 1.0, "loss": "KL(p_W0 || p_m) at every position of the train windows", "read": "kappa on the score half after every step", "cap_steps": 1000, "seed": "the state's seed"},
+    "planted": {"block": 3, "n_units": 13, "units": "largest mean GELU activation at the answer position, fit half, under W0", "edit": "down_proj columns += -alpha * w / a_j, w = unit vector of fit-half mean (u_rank1(key) - u_mean)", "alpha": "bisection so kappa(planted) = median D of the six pole states (job 1)", "pass": {"found_in_top13_min": 10, "R_min": 0.8, "reverse": "t_half < median pole t_half"}},
     "lens_blocks": [1, 2, 3, 4],
-    "noise_floor": {"R": 0.05, "s": 1},
+    "noise_floor": {"R": 0.05, "t_half": 1.0},
     "gap_mult": 3.0,
     "bands": {"vpd_min": 0.6666666666666666, "label_max": 0.3333333333333333},
+    "bootstrap": {"draws": 2000, "rng_seed": 0, "central": 0.9},
+    "distance_tol": 0.1,
     "G_tol": 1e-4,
     "lens_tol": 1e-5
   },
   "constants_sources": {
-    "prune_k": "C1b's K 5 and 15 of 4,608 MLP units scaled to the 67M's 12,288 (0.11%, 0.33%); departure stated",
+    "prune_k": "C1b's K 5 and 15 of 4,608 units scaled to 12,288 (0.11%, 0.33%)",
     "n_random": "C1b",
-    "D_min_logodds": "chosen here as a zero-denominator guard, about 1/10 of the smallest expected drop; no effect unless a pole state falls under it, which is then reported",
-    "reverse_recipe": "E54's forward recipe unchanged (departure from Jain et al.'s lower reverse rate stated in the plan, section 9)",
-    "noise_floor": "R: C1b's random-removal spread (<= 0.05); s: the checkpoint granularity",
+    "reverse_lr": "a tenth of E54's forward 3e-5: Jain et al. reverse below the forward rate; C1 used lr/10",
+    "cap_steps": "about 10x the expected half-life at lr/10; censoring instead of a cap value (review S6)",
+    "noise_floor": "R: C1b's random-removal spread; t_half: one optimizer step",
     "gap_mult": "E51's separation rule and C1b's 3 sd convention",
-    "bands": "thirds of the copy-to-cipher axis; chosen here, no source; worked on the five known columns before filing",
+    "bands": "thirds of the axis, this project's; edge decided by the bootstrap, not one seed",
+    "bootstrap": "review S1",
+    "distance_tol": "review S3",
+    "planted": "review S5",
     "G_tol": "E58 Amendment 1's reproduction tolerance"
   },
   "definitions": {
-    "l(m)": "mean over windows of log-odds of the window's rank-1 value at the answer position under model m (steering.logodds_at)",
-    "D": "l(W0) - l(state) on the score half",
-    "R": "max over K of [(l(top-K pruned) - l(state)) - mean over 20 random K-unit removals of (l(random pruned) - l(state))] / D; units = 4 x 3072 MLP neurons, zeroed at site mlp<l> at every position; top-K by Alg. 3's grad . w on up_proj row j (+ bias if any) of the rank-1 value's cross-entropy at the state, fit half; void if D < D_min_logodds",
-    "s": "first checkpoint at which eval_arm_a's p_o (arithmetic mean P(rank-1 value), all 75 held-out windows) >= W0's p_o on the same windows; 0 -> void; never -> 301",
-    "q": "per map, max over lens blocks of mean over the map's trained-key held-out windows of [log P_lens(own value) - mean over the map's other distinct values of log P_lens(value)]; P_lens at block l = W0's final norm + unembedding on the residual after block l; W0 only",
-    "p": "(mean_elicit - mean_cipher) / (mean_copy - mean_cipher), seed means over non-void seeds",
-    "p_rank1ref": "the same with rank-1 in place of copy; reported only"
+    "kappa(m)": "mean over score-half windows of KL(p_W0 || p_m) at the answer position, nats",
+    "D": "kappa(state); void if D < D_void_frac x the smallest pole-map mean D (job 1)",
+    "Delta_K": "(kappa(state) - kappa(top-K pruned)) - mean over n_random random K-unit removals of (kappa(state) - kappa(random pruned)); units = 4 x 3072 MLP neurons zeroed at site mlp<l> at every position; top-K by Alg. 3's grad . w on up_proj row (+bias if any) of the fit-half mean kappa at the state",
+    "R": "max over K of Delta_K / D (max over K biases R up equally for every state)",
+    "t_half": "first step at which kappa falls to D/2, linearly interpolated between the straddling steps; 'censored' if not by cap_steps",
+    "q": "per map, max over lens blocks of mean over the map's trained-key held-out windows of [log P_lens(own value) - mean over the map's other distinct values of log P_lens(value)]; W0 only",
+    "p": "(mean_elicit - mean_cipher) / (mean_rank1 - mean_cipher), seed means over non-void seeds",
+    "p_copy": "(mean_copy - mean_cipher) / (mean_rank1 - mean_cipher); reported",
+    "mlp_share": "(||dW_up||^2 + ||dW_down||^2) / ||dW||^2 summed over blocks; baseline column"
   },
   "rules": {
-    "reference_gap": "noise = max within-map seed range (max - min) over copy, cipher, elicit, floored per noise_floor; gap = mean_copy - mean_cipher; 'ok' iff d * gap >= gap_mult * noise (d = +1 for R and q, -1 for s); 'reversed' iff -d * gap >= gap_mult * noise; else 'no gap'. Undirected baseline columns (update size, D) use |gap|.",
-    "side": "only when gap 'ok': 'VPD' iff p >= vpd_min; 'label' iff p <= label_max; else 'between'. Ties go to the outer band; p > 1 -> 'VPD', p < 0 -> 'label'.",
-    "firm": "the side holds only if p of every single-seed triple (elicit_i, cipher_j, copy_k; non-void seeds) lies in the same band; a triple with zero denominator counts as outside; else the side reads 'between'.",
-    "void": "a map with fewer than 2 non-void seeds makes the column 'void'",
-    "verdict": "over R and s: 'shared' iff both 'VPD'; 'VPD alone' iff both 'label'; else 'not settled', naming each"
+    "gap": "noise = max within-map seed sd over rank1, cipher, elicit, floored per noise_floor; gap = mean_rank1 - mean_cipher; 'ok' iff d * gap >= gap_mult * noise (d = +1 for R and q, -1 for t_half); 'reversed' iff -d * gap >= gap_mult * noise; else 'no gap'. Undirected baseline columns (update size, D, mlp_share) use |gap|.",
+    "censoring": "any censored pole seed -> t_half 'censored' (void); censored elicit or copy seeds are reported and dropped",
+    "side": "only with gap 'ok': 'VPD' iff p >= vpd_min; 'label' iff p <= label_max; else 'between'; ties to the outer band; p > 1 -> 'VPD', p < 0 -> 'label'",
+    "firm": "bootstrap: resample seeds with replacement within each map, draws x; a zero-denominator draw is outside every band; the side holds only if the 5th and 95th percentiles of p lie in its band, else 'between'",
+    "distance": "if p_D has gap 'ok': an instrument whose firm side equals p_D's side, or whose p is within distance_tol of p_D, reads 'distance'",
+    "void": "a map with fewer than 2 non-void seeds -> the column is 'void'",
+    "verdict_per_instrument": "one of VPD, label, between, distance, no gap, reversed, censored, void",
+    "verdict_joint": "'shared' iff both VPD; 'shared (by X)' iff X reads VPD and the other no gap, void or censored; 'VPD alone' / 'VPD alone (by X)' likewise with label; 'conflict' iff one VPD and the other label or reversed; else 'not settled', naming each"
   },
   "edge_cases_run": {
-    "empty_pool": "a pole map with < 2 non-void seeds -> column void; rank-1 is void for R and s by design and is not a pole",
-    "zero_denominator": "gap 0 -> 'no gap'; a zero-denominator triple -> not firm",
-    "ties": "p exactly 2/3 -> 'VPD'; exactly 1/3 -> 'label'",
-    "discrete_s": "identical seeds -> range 0 -> floor 1 step; capped -> 301",
-    "worked_known_columns": {
-      "r": "gap 0.610 >= 3 x 0.029; p 0.880; triples 0.854-0.923 -> VPD (firm)",
-      "stand_in_ratio": "gap 0.700 >= 3 x 0.055; p 0.879; triples 0.828-0.919 -> VPD (firm)",
-      "steering_S": "gap 0.461 >= 3 x 0.068; p 0.684; triples 0.586-0.759 -> between",
-      "carry_x": "gap 0.822 >= 3 x 0.132; p 0.378; triples 0.310-0.440 -> between (reported column)",
-      "update_size": "|gap| 0.042 < 3 x 0.187 -> no gap (matched by design)"
+    "empty_pool": "a map with < 2 non-void seeds -> column void",
+    "zero_denominator": "gap 0 -> 'no gap'; zero-denominator bootstrap draws count as outside (matters where rank1 and cipher nearly tie, e.g. S)",
+    "ties": "p exactly 2/3 -> VPD; exactly 1/3 -> label",
+    "censoring": "rule 'censoring'; no cap value enters a mean",
+    "D_floor": "relative floor; unnormalised Delta reported beside R",
+    "distance_without_gap": "p_D 'no gap' -> the distance rule does not fire",
+    "worked_known_columns_3_seeds": {
+      "r": "gap 0.613 >= 3 sd 0.050; p 0.876; bootstrap 90% 0.859-0.894 -> VPD; p_copy 0.996",
+      "stand_in_ratio": "gap 0.782 >= 0.055; p 0.787; 0.778-0.796 -> VPD; p_copy 0.895",
+      "steering_S": "gap 0.043 < 0.105 -> no gap",
+      "carry_x": "gap 0.449 >= 0.110; p 0.691; 0.650-0.728 straddles 2/3 -> between (reported); p_copy 1.83",
+      "update_size": "|gap| 0.032 < 0.284 -> no gap"
     }
   },
-  "do_nothing": {"zero_update": "D = 0 exactly; R void; s = 0, void"},
+  "expected_before_job1": {
+    "D_nats": {"rank1": "1.5-2.5", "elicit": "2.5-3", "copy": "about 3", "cipher": "about 3", "zero_update": "exactly 0"},
+    "p_D": "about 0.2",
+    "note": "replaced by job 1's measured means before filing"
+  },
+  "do_nothing": {"zero_update": "D = 0 exactly; R and t_half void"},
   "positive_controls": {
-    "prune_importance_W0": "sign -1, K 13 and 40: top-K lowers l(W0) below the random mean by >= 3 sd at some K; miss -> pruning void (C1b's rule)",
-    "reverse_elicit_s0_first": "P(rank-1 value) at step 30 > at step 0 and the criterion is met before the cap; miss -> stop",
-    "lens": "block-4 lens equals W0's log-softmax at the answer position within lens_tol; miss -> probe void",
-    "reference_gap": "per instrument, copy vs cipher (P1)"
+    "planted_wrapper_pruning": ">= 10 of the 13 planted units in the top 13, R >= 0.8; miss -> pruning void",
+    "planted_wrapper_reverse": "reaches D/2 before the cap (miss -> stop); t_half below the median pole t_half (checked once pole readings exist, before positions; miss -> reverse void)",
+    "lens": "block-4 lens equals W0's log-softmax within lens_tol; miss -> probe void",
+    "gap": "per instrument, rank1 vs cipher (P1)"
   },
   "predictions": {
-    "C0": {"claim": "Stage 0 passes: sha256 of states and windows, identical window tokens across maps, G within G_tol, zero update exact, importance pruning, lens, elicit_s0 reverse first, weights back at W0 after every reverse run", "on_miss": "stop rows exit 1 (sha256, tokens, G, zero update, reverse first, weights); void rows continue", "lean": "85%"},
-    "P1": {"claim": "each new instrument reads the copy-vs-cipher pair", "rule": "rules.reference_gap == 'ok'", "lean": {"R": "45%", "s": "55%"}, "blind_to": "R: attention changes (29-31% of each update's squared norm, E56) and changes spread over > 40 neurons; s: below one step, and structure vs distance from W0 (D reported)"},
-    "P2": {"claim": "pruning puts the elicit map on VPD's side", "rule": "rules.side + rules.firm on R", "lean": {"VPD": "25%", "between": "15%", "label": "5%", "no_gap_or_reversed": "55%"}},
-    "P3": {"claim": "reverse fine-tuning puts the elicit map on VPD's side", "rule": "rules.side + rules.firm on s", "lean": {"VPD": "35%", "between": "10%", "label": "10%", "no_gap_or_reversed": "45%"}, "described_not_scored": "if p_s and p_D share a band, the reading is described as possibly distance"},
-    "V": {"claim": "verdict 'shared'", "rule": "rules.verdict", "lean": {"shared": "15%", "VPD alone": "3%", "not settled": "82%"}},
-    "ref_probe": {"claim": "reference only: cipher q within +-0.5 nats, elicit q >= 1, rank-1 q >= elicit; p_q reported", "lean": "70%"}
+    "C0": {"claim": "job 1 checks and job 3 stage 0 pass: sha256, identical tokens, G within G_tol, zero update exact, lens, both planted controls, weights back at W0 after every reverse", "lean": "75% (planted pruning 80%, planted reverse 90%)"},
+    "P1": {"claim": "each new instrument reads the rank1-to-cipher gap in its filed direction", "rule": "rules.gap == 'ok'", "lean": {"R": "55%", "t_half": "65%"}, "blind_to": "R: attention changes (about a third of each update, E56; mlp_share reported) and changes spread over > 40 units; t_half: structure vs distance (rules.distance)"},
+    "P2": {"claim": "pruning places elicit at the old end", "rule": "rules side, firm, distance on R", "lean": {"VPD": "30%", "between": "10%", "label": "5%", "distance": "5%", "no_gap_reversed_void": "50%"}},
+    "P3": {"claim": "reverse fine-tuning places elicit at the old end", "rule": "rules censoring, side, firm, distance on t_half", "lean": {"VPD": "30%", "between": "10%", "label": "10%", "distance": "15%", "no_gap_reversed_censored": "35%"}},
+    "V": {"claim": "joint verdict", "rule": "rules.verdict_joint", "lean": {"shared_or_shared_by_X": "30%", "VPD_alone_incl_by_X": "10%", "conflict": "5%", "not_settled": "55%"}},
+    "ref_probe": {"claim": "reference only: cipher q within +-0.5 nats, elicit q >= 1, rank1 q >= elicit; p_q reported; not counted as an instrument (copy likely decodes to itself at block 1)", "lean": "65%"}
   },
-  "reported_columns": ["r", "stand_in_ratio", "S", "carry x and its label", "update size", "D", "q", "p_rank1ref for every column"],
+  "reported_columns": ["r", "stand_in_ratio", "S", "carry x and its label", "update size", "D", "mlp_share", "q", "p_copy for every column", "Delta_K", "top-K unit ids"],
   "departures_from_literature": "plan section 9",
   "not_run_here": "plan section 10"
 }
