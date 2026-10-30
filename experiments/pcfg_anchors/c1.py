@@ -2,16 +2,18 @@
 (Stage C, C1). Truth set, rules, pass bars and departures: results/predictions_c1.json (read, never edited; the run
 refuses a draft). Instruments: src/commute/revival.py.
 
-States: those listed in predictions_c1.json constants (truth_scored, steering_only, class_B), ids '<src>/<arm>/<step>'
-with src 'a2' (Stage A, results/a2_<arm>.json, states in results/large/a2/) or 'amend5' (results/amend5.json, states
-in results/large/amend5/). Per state, against its base (LOW, or HIGH for R):
+States: those listed in predictions_c1.json constants (truth_scored, amend5b_states, steering_only, class_B), ids
+'<src>/<arm>/<step>' with src 'a2' (Stage A, results/a2_<arm>.json, states in results/large/a2/), 'amend5'
+(results/amend5.json, results/large/amend5/) or 'amend5b' (results/amend5b.json, results/large/amend5b/; each placed
+in the scored set or class B by its own class, truth_sets). Per state, against its base (LOW, or HIGH for R):
   pruning revival (not steering_only): count-a accuracy on Stage A's 4,000 'C a 40' rows after removing the top-K units
       by grad . w of the count-a loss, K in {5, 15}, against 20 random K-unit draws;
   reverse fine-tuning (not steering_only): steps to 95% count a (1,000 of those rows, read every 50 steps), cap 10K,
       Stage A's fine-tune recipe at lr = the state's fine-tune lr / LR_DIVISOR; scratch = NEVER, same recipe and lr;
   steering: on Stage A's 1,000 qualifying 'C b 40' rows, the gain share of the mean tuned-minus-base residual at `=`.
-Labels by revival.py's filed rules; scores (binomial bar at the actual n, and one vote per training run at its 1K
-state) and the class-B and nuisance-labeller readings, rewritten with every state.
+Labels by revival.py's filed rules; scores (binomial bar at the actual n and a margin over the better nuisance
+labeller, on every state and on one vote per training run at its 1K state), agreement per fine-tune lr (described) and
+the class-B readings, rewritten with every state.
 
 Order: model-free controls (a miss writes results/c1_control_miss.json, exit 1); the instruments' controls, alone
 (--controls-only; pruning on LOW with the sign flipped must lower count a beyond the random draws, else pruning is
@@ -38,6 +40,7 @@ import torch
 from amend3 import texts_of
 from amend5 import A5_DIR
 from amend5 import OUT as OUT5
+from amend5b import A5B_DIR, OUT5B
 from run import (
     A1,
     EVAL_SEED,
@@ -89,12 +92,24 @@ class Data:
     steer: np.ndarray  # Stage A's 1,000 qualifying 'C b 40' rows
 
 
+@dataclass(frozen=True)
+class Truth:
+    scored: dict[str, str]  # state -> "existing" / "new": pruning and reverse fine-tuning
+    steer_only: dict[str, str]  # R: steering only
+    class_B: list[str]  # reported, not scored
+
+    def steer(self) -> dict[str, str]:
+        return self.scored | self.steer_only
+
+
 def truth_from(labels: dict[str, str], prior: str, amend5_class: str | None) -> str:
-    """The checks' reading of a state: HIGH-based (R) by count b, LOW-based by count a; an Amendment 5 state is
-    existing only as class 'reuses'. through -> existing, not through -> new, else B."""
+    """The checks' reading of a state: HIGH-based (R) by count b, LOW-based by count a, through -> existing, not
+    through -> new, else B. An Amendment 5 or 5b state is existing only as class 'reuses', and new as class 'new' too."""
     lab = labels["b"] if prior == "HIGH" else labels["a"]
-    if amend5_class is not None and lab == "through" and amend5_class != "reuses":
-        return "B"
+    if amend5_class is not None:
+        if amend5_class == "reuses":
+            return "existing"
+        return "new" if amend5_class == "new" or lab == "not through" else "B"
     return {"through": "existing", "not through": "new"}.get(lab, "B")
 
 
@@ -104,20 +119,35 @@ def load_state(sid: str) -> State:
         f = json.loads((RESULTS / f"a2_{arm}.json").read_text())
         key, prior, lr, root, cls = f["state_key"], f["arm"]["prior"], f["arm"]["lr"], LARGE / "a2", None
     else:
-        assert src == "amend5", sid
-        f = json.loads(OUT5.read_text())["arms"][arm]
-        key, prior, lr, root = f["state_key"], "LOW", f["arm"]["lr"], A5_DIR
+        out, root = {"amend5": (OUT5, A5_DIR), "amend5b": (OUT5B, A5B_DIR)}[src]
+        f = json.loads(out.read_text())["arms"][arm]
+        key, prior, lr = f["state_key"], "LOW", f["arm"]["lr"]
         cls = f["states"][step]["class"]
     s = f["states"][step]
     labels = {t: s[f"check_count_{t}"]["label"] for t in "ab"}
     return State(sid, src, arm, int(step), state_path(key, step, root), prior, float(lr), truth_from(labels, prior, cls))
 
 
-def all_states(k: dict[str, Any]) -> dict[str, State]:
-    """Every listed state, in run order: truth_scored, steering_only, class_B."""
-    ids = [*k["truth_scored"], *k["steering_only"], *k["class_B"]]
+def amend5b_ready(sid: str) -> bool:
+    """amend5b.json exists and holds the state's arm (Amendment 5b has run it)."""
+    return OUT5B.exists() and sid.split("/")[1] in json.loads(OUT5B.read_text()).get("arms", {})
+
+
+def all_states(k: dict[str, Any]) -> tuple[dict[str, State], list[str]]:
+    """Every listed state, in run order: truth_scored, amend5b_states, steering_only, class_B; and the amend5b states
+    not yet run (left out)."""
+    ids = [*k["truth_scored"], *k["amend5b_states"], *k["steering_only"], *k["class_B"]]
     assert len(ids) == len(set(ids)), "a state is listed twice"
-    return {sid: load_state(sid) for sid in ids}
+    missing = [s for s in k["amend5b_states"] if not amend5b_ready(s)]
+    return {sid: load_state(sid) for sid in ids if sid not in missing}, missing
+
+
+def truth_sets(k: dict[str, Any], states: dict[str, State]) -> Truth:
+    """The listed truth, plus each run amend5b state where its own file puts it: existing or new into the scored
+    set, B into class B (lead, 2026-10-30)."""
+    b5 = {s: states[s].file_truth for s in k["amend5b_states"] if s in states}
+    return Truth(k["truth_scored"] | {s: v for s, v in b5.items() if v != "B"}, dict(k["steering_only"]),
+                 [*k["class_B"], *(s for s, v in b5.items() if v == "B")])  # fmt: skip
 
 
 def build_data() -> Data:
@@ -154,20 +184,24 @@ def nuisance_labels(states: dict[str, State]) -> dict[str, dict[str, str]]:
             "slow": {s: "existing" if st.ft_lr <= 1e-5 else "new" for s, st in states.items()}}  # fmt: skip
 
 
-def model_free_checks(k: dict[str, Any], states: dict[str, State], data: Data) -> tuple[dict[str, bool], dict[str, Any]]:
+def model_free_checks(k: dict[str, Any], states: dict[str, State], missing: list[str], data: Data) -> tuple[dict[str, bool], dict[str, Any]]:  # fmt: skip
+    """truth_matches_files: the listed labels against the checks' files (amend5b states are placed by their file, so
+    only listed ones are compared); amend5b_run: every amend5b state is in amend5b.json (a dry run before Amendment 5b
+    shows it false)."""
     want = {**k["truth_scored"], **k["steering_only"], **dict.fromkeys(k["class_B"], "B")}
-    wrong = {s: (want[s], st.file_truth) for s, st in states.items() if want[s] != st.file_truth}
+    wrong = {s: (want[s], st.file_truth) for s, st in states.items() if s in want and want[s] != st.file_truth}
     lrs = {lr_key(st.ft_lr / LR_DIVISOR) for s, st in states.items() if s not in k["steering_only"]}
     scratch = {lr_key(lr) for lr in k["scratch_lrs"]}
     chunk0 = rft_rows(np.random.default_rng([REV_SEED, 0]), FT_BATCH * CHUNK)  # Batches' chunk 0
-    checks = {"truth_matches_files": not wrong, "state_files_exist": all(st.path.exists() for st in states.values()),
+    checks = {"truth_matches_files": not wrong, "amend5b_run": not missing,
+              "state_files_exist": all(st.path.exists() for st in states.values()),
               "steering_only_HIGH": all(states[s].base == "HIGH" for s in k["steering_only"]),
               "scored_and_B_from_LOW": all(st.base == "LOW" for s, st in states.items() if s not in k["steering_only"]),
               "every_reverse_lr_has_scratch": lrs <= scratch,
               "rows_score": rows_ok(data.score, A), "rows_eval": rows_ok(data.eval, A), "rows_rft_chunk0": rows_ok(chunk0, A),
               "rows_steer_qualifying": rows_ok(data.steer, B) and bool((pcfg.count(texts_of(data.steer), B) != pcfg.count(texts_of(data.steer), A) + 1).all()),
               "plan_bar_table": [revival.pass_bar(n, 0) for n in (8, 12, 14, 16)] == [7, 10, 11, 12]}  # fmt: skip
-    info = {"truth_mismatches": wrong, "reverse_lrs": sorted(lrs), "missing_files": [str(st.path) for st in states.values() if not st.path.exists()],
+    info = {"truth_mismatches": wrong, "amend5b_not_run": missing, "reverse_lrs": sorted(lrs), "missing_files": [str(st.path) for st in states.values() if not st.path.exists()],
             "n_rows": {"score": len(data.score), "eval": len(data.eval), "rft_eval": N_RFT_EVAL, "steer": len(data.steer)}}  # fmt: skip
     return checks, info
 
@@ -217,18 +251,23 @@ def labels_of(row: dict[str, Any], ctl: dict[str, Any]) -> dict[str, str]:
     return lab
 
 
-def scores(k: dict[str, Any], states: dict[str, State], labels: dict[str, dict[str, str]]) -> dict[str, Any]:
-    """Per instrument (and per nuisance labeller): the score on every state (binomial bar at the actual n) and on one
-    vote per training run (its 1K state); class B's label counts."""
-    truth = {"prune": k["truth_scored"], "reverse": k["truth_scored"], "steer": k["truth_scored"] | k["steering_only"]}
+def scores(T: Truth, states: dict[str, State], labels: dict[str, dict[str, str]]) -> dict[str, Any]:
+    """Per instrument (and per nuisance labeller): the score on every state (binomial bar at the actual n, and agreement
+    >= the better nuisance labeller's + MARGIN_ALL on the same states) and on one vote per training run (its 1K state;
+    + MARGIN_SEED); per fine-tune lr stratum (1e-4, 1e-5), described; class B's label counts."""
+    truth = {"prune": T.scored, "reverse": T.scored, "steer": T.steer()}
+    nuis = nuisance_labels(states)
     per = {i: {s: lab[i] for s, lab in labels.items() if i in lab} for i in INSTRUMENTS}
-    per |= {f"nuisance_{n}": lab for n, lab in nuisance_labels(states).items()}
+    per |= {f"nuisance_{n}": lab for n, lab in nuis.items()}
     out: dict[str, Any] = {}
     for name, lab in per.items():
-        t = truth.get(name, truth["prune"])
+        t = truth.get(name, T.scored)
         t1k = {s: v for s, v in t.items() if states[s].step == 1000}
-        b = [lab.get(s, "missing") for s in k["class_B"]]
-        out[name] = {"all": revival.score(lab, t), "per_seed": revival.score(lab, t1k),
+        strata = {lr_key(lr): {s: v for s, v in t.items() if lr_key(states[s].ft_lr) == lr_key(lr)} for lr in (1e-4, 1e-5)}
+        b = [lab.get(s, "missing") for s in T.class_B]
+        out[name] = {"all": revival.score(lab, t, nuis, revival.MARGIN_ALL),
+                     "per_seed": revival.score(lab, t1k, nuis, revival.MARGIN_SEED),
+                     "by_ft_lr": {k: {q: v for q, v in revival.score(lab, st).items() if q in ("n", "agree", "voided")} for k, st in strata.items()},
                      "class_B": {v: b.count(v) for v in sorted(set(b))}}  # fmt: skip
     return out
 
@@ -239,7 +278,7 @@ def stop(res: dict[str, Any]) -> None:
     sys.exit(1)
 
 
-def run_states(res: dict[str, Any], k: dict[str, Any], states: dict[str, State], data: Data, deadline: float) -> int:
+def run_states(res: dict[str, Any], k: dict[str, Any], T: Truth, states: dict[str, State], data: Data, deadline: float) -> int:
     for sid, st in states.items():
         if sid in res["states"]:
             continue
@@ -248,14 +287,14 @@ def run_states(res: dict[str, Any], k: dict[str, Any], states: dict[str, State],
             log(f"{sid}: deadline; resubmit to resume (exit {EXIT_RESUME})")
             return EXIT_RESUME
         res["states"][sid] = row | {"labels": labels_of(row, res["controls"]), "truth": st.file_truth}
-        res["scores"] = scores(k, states, {s: r["labels"] for s, r in res["states"].items()})
+        res["scores"] = scores(T, states, {s: r["labels"] for s, r in res["states"].items()})
         res["complete"] = len(res["states"]) == len(states)
         rev = row.get("reverse", {})
         log(f"{sid} ({st.file_truth}): labels {res['states'][sid]['labels']}; steer S {row['steer']['S']:.3f} at block "
             f"{row['steer']['block']} (G {row['steer']['G_score']:.3f}); reverse steps {rev.get('steps')} ({rev.get('end')})"
             + (f"; prune {summarise_prune(row['prune'])}" if "prune" in row else ""))  # fmt: skip
         write_json(OUT, res)
-    res["scores"] = scores(k, states, {s: r["labels"] for s, r in res["states"].items()})  # also after a changed truth set
+    res["scores"] = scores(T, states, {s: r["labels"] for s, r in res["states"].items()})  # also after a changed truth set
     res["complete"] = True
     write_json(OUT, res)
     log(f"scores: {json.dumps(res['scores'])}")
@@ -271,12 +310,14 @@ def main() -> None:
     if not PRED_C1.exists() or str(json.loads(PRED_C1.read_text()).get("status", "")).startswith("draft"):
         sys.exit(f"file the predictions first (a draft is refused): {PRED_C1}")
     k = json.loads(PRED_C1.read_text())["constants"]
-    states, data = all_states(k), build_data()
-    checks, info = model_free_checks(k, states, data)
+    (states, missing), data = all_states(k), build_data()
+    T = truth_sets(k, states)
+    checks, info = model_free_checks(k, states, missing, data)
     log(f"model-free controls {checks}; {info}")
     prev = json.loads(OUT.read_text()) if OUT.exists() else {}
     keep = prev.get("recipe") == RECIPE
     res = {"constants": k, "recipe": RECIPE, "model_free": checks, "model_free_info": info,
+           "truth": {"scored": T.scored, "steering_only": T.steer_only, "class_B": T.class_B},
            "controls": prev.get("controls") if keep else None, "states": prev.get("states", {}) if keep else {}}  # fmt: skip
     if not all(checks.values()):
         stop(res)
@@ -289,7 +330,7 @@ def main() -> None:
     if res["controls"] is None:
         log("no instrument controls in c1.json: run the controls job first (--controls-only; exit 2)")
         sys.exit(2)
-    sys.exit(0 if args.controls_only else run_states(res, k, states, data, deadline))
+    sys.exit(0 if args.controls_only else run_states(res, k, T, states, data, deadline))
 
 
 if __name__ == "__main__":

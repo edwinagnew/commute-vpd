@@ -38,6 +38,7 @@ TARGET, CAP, EVAL_EVERY = 0.95, 10_000, 50  # plan: steps to 95% count a, cap 10
 SCRATCH_VOID_MAX, EXISTING_FRAC = 1000, 0.5  # plan: scratch <= 1K steps voids that lr; existing iff <= 0.5 x scratch
 STEER_MIN = 0.5  # plan: existing iff gain share >= 0.5
 ALPHA, MIN_N = 0.05, 8  # plan: binomial one-sided 0.05; fewer than 8 scored states -> no pass bar
+MARGIN_ALL, MARGIN_SEED = 2, 1  # lead, 2026-10-30: agreement must exceed the better nuisance labeller by this many states
 
 
 # ---- pruning ----
@@ -236,13 +237,18 @@ def pass_bar(n: int, majority: int) -> int:
     return max(a, majority + 1)
 
 
-def score(labels: dict[str, str], truth: dict[str, str]) -> dict[str, Any]:
+def score(labels: dict[str, str], truth: dict[str, str], nuisance: dict[str, dict[str, str]] | None = None,
+          margin: int = 0) -> dict[str, Any]:  # fmt: skip
     """Agreement of an instrument's labels with the truth on the truth's states; a 'void' or missing label drops the
-    state (n shrinks). Below MIN_N states there is no bar (reported only); passes iff agree >= bar."""
+    state (n shrinks). Below MIN_N states there is no bar (reported only). Passes iff agree >= bar and agree >= the
+    better nuisance labeller's agreement on the same states + margin (no nuisance given: the bar alone)."""
     used = [s for s in truth if labels.get(s) in ("existing", "new")]
     agree = sum(labels[s] == truth[s] for s in used)
     majority = max(Counter(truth[s] for s in used).values(), default=0)
     bar = pass_bar(len(used), majority) if len(used) >= MIN_N else None
-    return {"n": len(used), "agree": agree, "majority": majority, "bar": bar,
-            "passes": None if bar is None else agree >= bar, "p_value": binom_tail(len(used), agree),
+    nuis = {name: sum(lab.get(s) == truth[s] for s in used) for name, lab in (nuisance or {}).items()}
+    beats = not nuis or agree >= max(nuis.values()) + margin
+    return {"n": len(used), "agree": agree, "majority": majority, "bar": bar, "nuisance_agree": nuis, "margin": margin,
+            "beats_nuisance": beats, "passes_bar": None if bar is None else agree >= bar,
+            "passes": None if bar is None else agree >= bar and beats, "p_value": binom_tail(len(used), agree),
             "voided": sorted(s for s in truth if s not in used)}  # fmt: skip

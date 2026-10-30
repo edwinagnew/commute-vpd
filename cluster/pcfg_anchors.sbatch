@@ -14,6 +14,7 @@
 #   sbatch --job-name=commute-e55-amend4 --time=00:10:00 cluster/pcfg_anchors.sbatch amend4  # Amendment 4, ~2-5 min (cost not measured)
 #   sbatch --job-name=commute-e55-amend5c --time=00:10:00 cluster/pcfg_anchors.sbatch amend5 controls  # Amendment 5 controls, ~2-3 min (estimated)
 #   sbatch --job-name=commute-e55-amend5 cluster/pcfg_anchors.sbatch amend5  # (after amend5c finishes: both write amend5.json) Amendment 5 arms, ~12-16 min (estimated)
+#   sbatch --job-name=commute-e55-amend5b --time=00:15:00 cluster/pcfg_anchors.sbatch amend5b  # Amendment 5b (WNf seeds 1-3), ~4-6 min (estimated); before c1
 #   sbatch --job-name=commute-e55-c1c --time=00:15:00 cluster/pcfg_anchors.sbatch c1 controls  # Stage C1 controls, <= 7 min (estimated)
 #   sbatch --job-name=commute-e55-c1 cluster/pcfg_anchors.sbatch c1  # (after c1c finishes and its controls are read: both write c1.json) Stage C1 states, <= 83 min = up to 4 jobs (estimated)
 # a0: per prior, 500 pretraining iterations stopped at 250 and resumed from the saved file, behaviour and floors on 1K
@@ -47,6 +48,10 @@
 #   three states read's ~1 min: estimated ~1.5-2 min per arm) -> results/amend5.json after each arm; states in
 #   results/large/amend5/; 22-min deadline, exit 3 resubmits and resumes. A control miss ->
 #   results/amend5_control_miss.json, exit 1. Log results/large/amend5/amend5.log.
+# amend5b: experiments/pcfg_anchors/amend5b.py (predictions_amend5b.json; refuses a draft): amend5's model-free and W0
+#   controls, then WNf seeds 1-3 (lr 1e-4, 2K steps, saved at 500, 1K, 2K in results/large/amend5b/) -> results/amend5b.json
+#   after each arm (amend5.json untouched); 22-min deadline, exit 3 resubmits. A control miss -> results/amend5b_control_miss.json,
+#   exit 1. Log results/large/amend5b/amend5b.log.
 # c1 [controls]: experiments/pcfg_anchors/c1.py (predictions_c1.json; refuses a draft): model-free controls, then with
 #   "controls" the instruments' controls alone (pruning on LOW, sign flipped; scratch = NEVER reverse fine-tuned at 1e-5
 #   and 1e-6, <= 10K steps each at ~12.5 ms/step: <= 7 min). Without, it refuses (exit 2) until c1.json holds the controls,
@@ -54,7 +59,7 @@
 #   steering, reverse fine-tuning -> results/c1.json after each state. 22-min deadline, exit 3 resubmits (up to 6 times
 #   for c1) and resumes; a reverse fine-tune cut by the deadline is rerun. A model-free miss -> results/c1_control_miss.json,
 #   exit 1. Log results/large/c1/c1.log.
-# a1, a2, amend1, amend5 and c1: on exit 3 (deadline: saved, not finished) the job resubmits itself with the same arguments from
+# a1, a2, amend1, amend5, amend5b and c1: on exit 3 (deadline: saved, not finished) the job resubmits itself with the same arguments from
 #   $SLURM_SUBMIT_DIR, at most 3 times (c1: 6) (count in E55_RESUBMITS); the next job resumes from the saved files.
 #SBATCH --job-name=commute-e55-a0
 #SBATCH --partition=compute
@@ -69,7 +74,7 @@
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; puts this clone's src first on PYTHONPATH
 cd "$COMMUTE_REPO"
-usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...] | amend1 | amend2 | amend3 | amend4 | amend5 [controls] | c1 [controls]"
+usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...] | amend1 | amend2 | amend3 | amend4 | amend5 [controls] | amend5b | c1 [controls]"
 stage=${1:-}
 args=("${@:2}")
 case "$stage ${#args[@]}" in
@@ -97,6 +102,7 @@ case "$stage" in
   amend3) cmd=(.venv/bin/python experiments/pcfg_anchors/amend3.py); logf=$out/amend3.log ;;
   amend4) cmd=(.venv/bin/python experiments/pcfg_anchors/amend4.py); logf=$out/amend4.log ;;
   amend5) cmd=(.venv/bin/python experiments/pcfg_anchors/amend5.py --deadline-min 22 ${args[@]:+--controls-only}); logf=$out/amend5.log ;;
+  amend5b) cmd=(.venv/bin/python experiments/pcfg_anchors/amend5b.py --deadline-min 22); logf=$out/amend5b.log ;;
   c1) cmd=(.venv/bin/python experiments/pcfg_anchors/c1.py --deadline-min 22 ${args[@]:+--controls-only}); logf=$out/c1.log ;;
 esac
 rc=0
