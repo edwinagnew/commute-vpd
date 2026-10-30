@@ -377,3 +377,163 @@ and readings about 25 s per state); host RAM under 6 GB (four checkpoints of 113
   branch-5 follow-up, a $0 amendment on the six saved states.
 - The interchange-patch half of Stage B's label; more held-out key splits; more windows per held-out key; the cipher at
   its own E12 step; more than three seeds; Qwen; any change to E54's or E56's files or predictions.
+
+## Amendment 2 (2026-10-30, after job 46332): the three maps at four times the keys
+
+*Lead's decision on Fable's advice (`reports/plans/2026-10-30_advice_e58a1-next-FABLE.md`, item 3, "One $0 check that can
+overturn item 1", and "What would change it"). Code `experiments/open_pair/amend2.py` (180 lines); rules
+`src/commute/open_pair.py` § Amendment 2 (edge cases `tests/test_open_pair.py`, 5 new tests, 28 pass); E54's key
+selection (`vocab`, `select`) moved, not changed, from `experiments/keydependent_elicit/run.py` into
+`src/commute/keydep.py`, and E54's run.py now imports them (lint clean; no other script called them); predictions
+`results/predictions_amend2.json`; job `sbatch cluster/open_pair.sbatch amend2`. Coded and filed; nothing run. E58's
+and Amendment 1's files are untouched.*
+
+**In plain words.** At 24 keys every fine-tune memorised its keys and only the copy map carried to unseen keys, about
+half way, while r and the stand-in ratio stayed put. That may only be because 24 keys are too few for a rule to win
+over a lookup. We train the same three maps on four times the keys and ask two things: does a rule start to carry
+(the rank-1 map, "say what you would have said anyway", and the copy map), and if it does, do r and the ratio move with
+it? Under reading A they should not.
+
+**The request, in the Terms' words.** E54's key selection at k = 128 (96 trained / 32 held-out keys; 64 / 16 if the
+supply is short), E54's window density, the elicit, rank-1 and copy tables on those keys, seed 0, E54's recipe
+(`keydep.elicit_ft`); per state E58's held-out-key label (x = H_spec ÷ G_spec, value-specific gains), Amendment 1's
+x_novel, and the route split's r and stand-in ratio of the least-squares split state on the trained keys.
+
+### Design check (`/design`)
+
+- **Goal.** `GOALS.md` → "new capabilities or strengthening?": tests whether the line's claim under reading A ("r reads
+  which pieces a fine-tune builds from, not whether what it learned generalises") survives when carry is given room
+  to move.
+- **Nearest tried.** Amendment 1 (job 46332: x copy 0.42-0.55, rank-1 0.09-0.14, elicit −0.03; r 0.76-0.85 on all
+  nine); E58. New: the key count is the one thing varied, so x can move on the same maps while r is read beside it.
+- **Patch or step.** A step: the one check Fable names as able to overturn item 1.
+- **Decisions.** E58's label and gate, E54's recipe and selection, Amendment 1's maps and `min_novel`; reading A
+  (the user's ask #14 still open). No departure from `decisions.md`.
+- **What changes next.** (a) rank-1 earns "reuses" with r flat → first fair "reuses" row for step 2's P2. (b) r or the
+  ratio moves with x → item 1's "blind to" sentence is wrong; to the user. Null (flat) → item 1's claim gets its
+  strongest line. x moves on neither map → the recipe memorises regardless; no more key scaling.
+- **Control first.** The selection must reproduce E54's 32 keys and values exactly, the zero update must read 0, then
+  the elicit map (no rule to carry) runs alone and stops the job if x > 0.05 or it is too small to label.
+- **Class.** Approved (lead's decision tree, Fable's advice adopted); $0, cluster `debug`, same model, task family and
+  harness.
+
+### Key supply (the guard, checked before filing)
+
+Windows are not a limit: `kv.windows` writes the marker and key into random Pile positions (32,768 rows), so any
+count per key is available; E54's density (500 windows per 32 keys, about 15.6 per key) gives 2000 windows at 128 keys.
+Keys: E54's job 45973 qualified 777 of its 1000 candidates, but the draw needs distinct values and the distinct count
+was never saved (stage1.json keeps the 32 drawn). It cannot be read without W₀, so the job reads it first: K = 128 if
+the draw returns 128 distinct-valued keys, else 64 (16 held out) with the same expected values, else stop. The k = 128
+draw walks E54's seeded order, so its first 32 keys are E54's; the job checks that E54's 32 keys and values come back
+exactly. Lean: K = 128, about 85%.
+
+### The denominator (computed from disk before filing)
+
+At 24 keys G_spec (step 10, trained-key P 0.93-0.98) read elicit 18.2-18.5, rank-1 16.6-16.8, copy 17.4-18.2; E58's
+ciphers at steps 8-9 (P 0.45-0.58) read 9.4-10.7. With 96 trained keys, batch 32 shows each key about 3 times by step 10
+(13 at 24 keys), so the scored step is likely 30 (about 10 views per key), and G_spec 10-19. What the cuts then ask of
+H_spec, at G_spec 10 / 17 / 19: elicit's +0.05 = 0.5 / 0.85 / 0.95 log-odds; rank-1's 0.3 = 3.0 / 5.1 / 5.7; copy's
+0.6 = 6.0 / 10.2 / 11.4, against 7.3-9.6 carried at 24 keys. Copy's cut is therefore a real ask (lean 40%), not a near
+miss by construction. E58's gate (5.148) sits under the whole range.
+
+### What differs from Amendment 1
+
+Only the keys (128 drawn by E54's rule instead of E54's 32; 96 / 32 split by `split_keys`, seed 0), the windows (2000
+at the same density instead of E54's 500), one seed instead of three, and therefore the scored step (likely 30, not 10)
+and the update's size. Elicit is the reference for whatever the key count does to every map alike: test B compares each
+map to elicit, at K keys and at 24 keys (a difference in differences), never a map to itself across key counts alone.
+No warm start or replay; every fine-tune starts from W₀. The cipher is not run (elicit is the no-rule control here).
+
+### Numbers and what each should read
+
+| number | at W₀ / zero update | elicit (control) | rank-1 | copy |
+|---|---|---|---|---|
+| E54 reproduction | — | marker 18214, 777 qualified, E54's 32 keys and values exactly | | |
+| zero update, six split tasks | 0 exactly | | | |
+| G_spec (scored step) | 0, too_small | 10-19 (gate 5.148) | 10-19 | 10-19 |
+| x | undefined | −0.15 to +0.05 (24 keys −0.03) | ≥ 0.3 if rules learnable with keys, ≤ 0.15 if memorised (24 keys 0.09-0.14) | ≥ 0.6 (24 keys 0.42-0.55) |
+| x_novel, n_novel | — | = x; all novel | about x or above; 3-10 of 32 novel | = x; 32 |
+| r | undefined | 0.75-0.85 | 0.75-0.85 | 0.75-0.85 |
+| ratio | undefined | 0.9-1.1 | 0.9-1.1 | 0.9-1.1 |
+| dx, d_r, d_ratio (vs elicit and 24 keys) | — | 0 by definition | d_r within ±0.05, d_ratio within ±0.1 wherever |dx| ≥ 0.15 | same |
+
+S and the label's s, s_key are reported, not scored. *Blind to:* one seed per map, so each number carries the 24-key
+seed spread (x: 0.012 elicit, 0.048 rank-1, 0.132 copy; r ≤ 0.029; ratio ≤ 0.055); a carry riding on values shared
+with trained keys (x_novel guards rank-1); whatever moves every map's r alike with the key count (elicit absorbs it by
+design); r's own blind spot under reading A (pieces, not carry).
+
+### Predictions (filed in `results/predictions_amend2.json`)
+
+- **E, the control.** pass iff −0.05 ≤ x ≤ 0.05; "below" iff x < −0.05 (no carry; not a stop); fail iff x > 0.05
+  (stop); too_small or unreadable stop. Lean: pass 70%, below 25%.
+- **R, rank-1.** "reuses" iff E58's label reads reuses and x_novel ≥ 0.5 (Fable's (a)); "carries" iff x and x_novel ≥
+  0.3; "memorises" iff both ≤ 0.15; else "between"; "not_testable" with fewer than 3 novel held-out keys or an
+  unlabellable state. Lean: memorises or between 70%, carries 20%, reuses 5%.
+- **C, copy.** pass iff x ≥ 0.6. Lean: 40%.
+- **B, Fable's (b).** Per map (rank-1, copy) and instrument: dx = (x_map − x_elicit) at K keys minus the same at 24
+  keys (3-seed means), d_r and d_ratio likewise. not_testable iff |dx| < 0.15; "tracks" iff the instrument moved the
+  way x moved by more than 0.05 (r) or 0.1 (ratio); "flat" iff within it; else "opposite". Combined: tracks >
+  opposite > flat > not_testable. Lean: flat 50%, not_testable 35%, tracks 10%.
+- **Verdict.** stopped unless E passes or reads below; then b_r_tracks > a_first_reuses > reading_A_holds > opposite >
+  untested. Lean: reading_A_holds 50%, untested 30%, b 10%, a 5%.
+
+Edge cases tested before filing: E's ties at ±0.05 (pass), just over (fail), nan x from a zero G_spec, too_small and
+unreadable pass through; R's ties at 0.3, 0.15, 0.5 and at `min_novel` = 3, x and x_novel disagreeing (between), nan
+x_novel (no novel key), too few novel keys; C's tie at 0.6; `moves_with` at the |dx| = 0.15 tie (testable), |d| = tol
+(flat), both signs, nan and inf; `combine` on an empty list and on all not_testable; a common drift of every r with K
+(flat, not tracks); a ratio nan on one map (r alone decides it); missing states and an empty record (stopped).
+
+### Every setting, sourced
+
+| setting | value | source |
+|---|---|---|
+| key selection | ranks 100-1099, 16 windows per candidate, seed 1, band [0.01, 0.1], ranks 2-20, 10x key-specific, draw seed 0 | E54's predictions.json, unchanged |
+| K | 128 (fallback 64) | Fable item 3 |
+| held out | K / 4, `split_keys` seed 0 | E58's fraction (8 of 32) |
+| windows | 500 × K / 32, seed 0, row split | E54's density and seed |
+| maps | elicit (E54's rule), rank-1 and copy (Amendment 1's) | as named |
+| fine-tune | E12's arm A via `keydep.elicit_ft`, scored step rule | E54's recipe |
+| seed | 0 | Fable |
+| label, gate, bootstrap | E58's (`behaviour`, G_min 5.148, 2000 resamples) | E58 amendment 2 |
+| e_max 0.05, rank-1 0.3 / 0.15, copy 0.6, tol_r 0.05 | as stated | Fable |
+| e_max one-sided as a stop | | departure: a negative x is the trained-value push (Amendment 1's T), which grows with 96 trained values in the pool |
+| x_novel must agree for R | | Amendment 1's guard (x_novel 0.21-0.27 above x 0.09-0.14) |
+| dx_min 0.15 | | measured: copy x's 24-key seed range 0.132 |
+| tol_ratio 0.1 | | departure from Fable's 0.05: copy's ratio seed range at 24 keys is 0.055 |
+| 24-key reference | 3-seed means | E58 run.json, amend1.json |
+| precision | fp32 reads, TF32 off; bf16 fine-tune | E54, E58 |
+
+### Stop rules, runtime, outputs
+
+Stops (exit 1; `results/amend2.json` written with "stopped"): E54's selection not reproduced, or fewer than 64
+distinct-valued keys (about 1.5 min in); the zero update not 0 on a split task (about 2 min); the elicit control not
+"pass" or "below" (about 3 min); a block-0 shift over 1e-5 nats on any state. Expected in the first minutes: model load
+about 1 min, selection about 8 s (E54 job 45973), K = 128, about 1600 / 400 train / held-out windows by row, elicit's
+held-out P(value) under 0.5 at step 10 and over it at step 30, elicit G_spec 10-19.
+
+One MATS `debug` job on an L40, $0, about 10-15 min (selection under 1 min; three 300-step fine-tunes about 15 s each;
+r, ratio and S on about 300 trained-key held-out windows per state, about 1.5-2 min each against Amendment 1's 25 s on
+75). Host RAM under 6 GB (E54's 1000 key distributions about 0.4 GB, four 113 MB checkpoints per fine-tune); the sbatch
+asks 24 GB as before. Disk about 0.36 GB in `results/large/amend2/` (three 113 MB states, nine windows files of about
+1 MB). Not gated. Outputs: `results/amend2.json`, `results/large/amend2/`, log `results/large/amend2.out`.
+
+### Decision tree (Fable's (a), (b) and the null)
+
+1. A stop → fix ($0); an E fail goes to the lead (the label reads a carry where no rule exists).
+2. **b_r_tracks** (Fable's (b)) → item 1's "blind to" sentence is wrong as written; to the user before the line's claim
+   is written.
+3. **a_first_reuses** (Fable's (a)) → the first fairly labelled "reuses" state with r unchanged; score step 2's P2 on
+   it; keep the held-out label for rule tasks given enough keys (a dated note on the ground-truth plan).
+4. **reading_A_holds** (the null) → x moved on at least one map while r and the ratio did not: item 1's claim is
+   written with this line ("x moved by dx, r by d_r on the same states").
+5. **opposite** → r moved against x: report per map; to the lead before the claim is written.
+6. **untested** → more keys did not move carry on either map: the recipe memorises regardless; reading A rests on
+   Amendment 1's spread table alone; no more key scaling on this recipe.
+
+### Order of work
+
+1. Done: code, tests, lint clean, predictions filed.
+2. Fresh-Opus review of the diff (new measurement code: the selection reuse, the map build at K keys, the B rule).
+3. `/pod-runner`: from the main clone after the commit is pulled there, `sbatch cluster/open_pair.sbatch amend2`
+   (submit from the clone root; record the job ID).
+4. Write-up as a section of E58's analysis report (`/writeup`); `TRIED.md` row; `PENDING.md` line.

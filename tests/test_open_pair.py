@@ -267,3 +267,87 @@ def test_pool_and_others_with_repeated_values() -> None:
 
 def test_jsonable() -> None:
     assert OP.jsonable({1: [math.nan, 2.0, (math.inf,)], "a": {"b": -math.inf}}) == {"1": ["nan", 2.0, ["inf"]], "a": {"b": "-inf"}}
+
+
+# ----------------------------------------------------------------------------- Amendment 2
+
+TH2 = {"cut": 0.5, "e_max": 0.05, "min_novel": 3, "rank1_carry": 0.3, "rank1_memorise": 0.15, "copy_carry": 0.6,
+       "dx_min": 0.15, "tol_r": 0.05, "tol_ratio": 0.1}
+REF24 = {"elicit": {"x": -0.03, "r": 0.77, "ratio": 0.94}, "rank1": {"x": 0.11, "r": 0.84, "ratio": 1.10},
+         "copy": {"x": 0.48, "r": 0.84, "ratio": 1.02}}
+
+
+def test_elicit_control_bounds_and_ties() -> None:
+    assert OP.elicit_control(0.0, "new", TH2) == "pass"
+    assert OP.elicit_control(0.05, "neither", TH2) == "pass" and OP.elicit_control(-0.05, "new", TH2) == "pass"  # ties pass
+    assert OP.elicit_control(0.0500001, "neither", TH2) == "fail" and OP.elicit_control(-0.2, "new", TH2) == "below"
+    assert OP.elicit_control(0.0, "too_small", TH2) == "too_small" and OP.elicit_control(0.0, "unreadable", TH2) == "unreadable"
+    assert OP.elicit_control(math.nan, "new", TH2) == "unreadable"  # zero G_spec gives x nan
+
+
+def test_rank1_class() -> None:
+    assert OP.rank1_class(0.6, 0.5, 3, "reuses", TH2) == "reuses"  # min_novel and x_novel = cut both ties
+    assert OP.rank1_class(0.6, 0.45, 5, "reuses", TH2) == "carries"  # x_novel under the cut: not Fable's (a)
+    assert OP.rank1_class(0.3, 0.3, 5, "neither", TH2) == "carries" and OP.rank1_class(0.15, 0.15, 5, "new", TH2) == "memorises"
+    assert OP.rank1_class(0.35, 0.1, 5, "neither", TH2) == "between"  # x and x_novel disagree
+    assert OP.rank1_class(0.2, 0.2, 5, "neither", TH2) == "between"
+    assert OP.rank1_class(0.9, 0.9, 2, "reuses", TH2) == "not_testable"  # too few novel held-out keys
+    assert OP.rank1_class(0.9, math.nan, 5, "reuses", TH2) == "not_testable"  # no novel key: x_novel nan
+    assert OP.rank1_class(0.9, 0.9, 5, "too_small", TH2) == "not_testable"
+
+
+def test_copy_class() -> None:
+    assert OP.copy_class(0.6, "reuses", TH2) == "pass" and OP.copy_class(0.5999, "neither", TH2) == "fail"
+    assert OP.copy_class(0.9, "too_small", TH2) == "not_testable" and OP.copy_class(math.nan, "new", TH2) == "not_testable"
+
+
+def test_moves_with_and_combine() -> None:
+    assert OP.moves_with(0.149, 0.5, 0.15, 0.05) == "not_testable" and OP.moves_with(0.0, 0.0, 0.15, 0.05) == "not_testable"
+    assert OP.moves_with(0.15, 0.0501, 0.15, 0.05) == "tracks"  # dx tie at dx_min is testable
+    assert OP.moves_with(0.3, 0.05, 0.15, 0.05) == "flat"  # di tie at tol is flat
+    assert OP.moves_with(-0.3, -0.06, 0.15, 0.05) == "tracks"  # x fell, r fell
+    assert OP.moves_with(-0.3, 0.06, 0.15, 0.05) == "opposite" and OP.moves_with(0.3, -0.06, 0.15, 0.05) == "opposite"
+    assert OP.moves_with(math.nan, 0.0, 0.15, 0.05) == "unreadable" and OP.moves_with(0.3, math.inf, 0.15, 0.05) == "unreadable"
+    assert OP.combine(["flat", "tracks"]) == "tracks" and OP.combine(["flat", "opposite"]) == "opposite"
+    assert OP.combine(["flat", "unreadable"]) == "flat" and OP.combine(["not_testable", "not_testable"]) == "not_testable"
+    assert OP.combine(["not_testable", "unreadable"]) == "unreadable" and OP.combine([]) == "unreadable"
+
+
+def k_states(x: dict[str, float], r: dict[str, float], ratio: dict[str, float], label: dict[str, str] | None = None,
+             x_novel: float = 0.5) -> dict[str, dict[str, Any]]:
+    lab = label or {}
+    return {m: {"x": x[m], "r": r[m], "ratio": ratio[m], "label": lab.get(m, "neither"), "x_novel": x[m] if m != "rank1" else x_novel}
+            for m in x}
+
+
+def test_b2_and_score_amend2() -> None:
+    r_ref = {m: REF24[m]["r"] for m in REF24}
+    ratio_ref = {m: REF24[m]["ratio"] for m in REF24}
+    # reading A: copy and rank-1 carry more at K keys, r and ratio unchanged
+    st = k_states({"elicit": -0.03, "rank1": 0.4, "copy": 0.7}, r_ref, ratio_ref, x_novel=0.4)
+    out = OP.score_amend2(st, 5, REF24, TH2)
+    assert out["B"]["maps"]["copy"]["status"] == "flat" and out["B"]["status"] == "flat"
+    assert out["E"] == "pass" and out["R"] == "carries" and out["C"] == "pass" and out["verdict"] == "reading_A_holds"
+    # (b): copy's r rises with its x by more than 0.05 beyond elicit's change
+    st["copy"]["r"] = 0.84 + 0.06
+    assert OP.score_amend2(st, 5, REF24, TH2)["verdict"] == "b_r_tracks"
+    # a common drift of every r with K (elicit's too) is not tracking
+    st = k_states({"elicit": -0.03, "rank1": 0.4, "copy": 0.7}, {m: v + 0.1 for m, v in r_ref.items()}, ratio_ref, x_novel=0.4)
+    assert OP.score_amend2(st, 5, REF24, TH2)["B"]["status"] == "flat"
+    # (a): rank-1 earns "reuses" with r unchanged
+    st = k_states({"elicit": -0.03, "rank1": 0.6, "copy": 0.5}, r_ref, ratio_ref, {"rank1": "reuses"}, x_novel=0.55)
+    assert OP.score_amend2(st, 5, REF24, TH2)["verdict"] == "a_first_reuses"
+    # nothing moved: B not testable, verdict untested
+    st = k_states({"elicit": -0.03, "rank1": 0.11, "copy": 0.48}, r_ref, ratio_ref, x_novel=0.11)
+    out = OP.score_amend2(st, 5, REF24, TH2)
+    assert out["B"]["status"] == "not_testable" and out["verdict"] == "untested" and out["R"] == "memorises"
+    # ratio nan (piece gain under the floor) on copy: r alone decides that map
+    st = k_states({"elicit": -0.03, "rank1": 0.11, "copy": 0.7}, r_ref, {**ratio_ref, "copy": math.nan})
+    assert OP.score_amend2(st, 5, REF24, TH2)["B"]["maps"]["copy"]["status"] == "flat"
+    # the control failed: stopped, whatever else reads
+    st = k_states({"elicit": 0.2, "rank1": 0.6, "copy": 0.7}, r_ref, ratio_ref)
+    assert OP.score_amend2(st, 5, REF24, TH2)["verdict"] == "stopped"
+    # missing states (the job stopped after elicit)
+    out = OP.score_amend2({"elicit": st["elicit"]}, 0, REF24, TH2)
+    assert out["R"] == "not_testable" and out["C"] == "not_testable" and out["B"]["status"] == "unreadable"
+    assert OP.score_amend2({}, 0, REF24, TH2)["verdict"] == "stopped"

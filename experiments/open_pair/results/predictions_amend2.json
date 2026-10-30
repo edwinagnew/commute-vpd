@@ -1,0 +1,112 @@
+{
+ "experiment": "E58 open_pair, Amendment 2",
+ "filed": "2026-10-30, before any run of amend2.py; never edited after the run (a dated report instead). E58's predictions.json, predictions_amend1.json, run.json and amend1.json are unchanged",
+ "plan": "reports/plans/2026-10-30_plan_e58-open-pair.md, section 'Amendment 2 (2026-10-30, after job 46332)'",
+ "spec": "reports/plans/2026-10-30_advice_e58a1-next-FABLE.md, item 3 ('One $0 check that can overturn item 1') and 'What would change it' (a), (b); adopted by the lead",
+ "code": "experiments/open_pair/amend2.py; rules in src/commute/open_pair.py (section 'Amendment 2'), edge cases in tests/test_open_pair.py; the label and readings in src/commute/heldout_keys.py and amend1.py's helpers, unchanged; E54's key selection moved, not changed, into src/commute/keydep.py (vocab, select)",
+ "settings": {
+  "half": 20,
+  "key_ranks": [100, 1100],
+  "selection_windows_per_key": 16,
+  "selection_seed": 1,
+  "value_band": [0.01, 0.1],
+  "value_ranks": [2, 20],
+  "key_specific_ratio": 10,
+  "key_draw_seed": 0,
+  "selection_source": "E54's predictions.json settings, copied unchanged (keydep.select reads them); only k differs",
+  "k": 128,
+  "k_fallback": 64,
+  "k_rule": "K = 128 if elicit.draw_keys over E54's qualified keys returns 128 keys with distinct values; else 64 if it returns 64; else stop. Fable's spec ('if not, 64/16 with the same expected values'). The distinct-value count of E54's 777 qualified keys was not saved (stage1.json keeps the 32 drawn), so it is read in the job, first",
+  "e54_check": "before anything else: the marker (E54 18214), the number of qualified keys (E54 777, job 45973) and elicit.draw_keys(qualified, k = 32) with E54's 32 keys and their values, exactly (stage1.json); the k = 128 draw walks the same seeded order, so its first 32 keys are E54's",
+  "split_seed": 0,
+  "held_fraction": "K / 4 held out (32 of 128, or 16 of 64), the first K / 4 of torch.randperm(K, seed 0) over the keys in E54's order (open_pair.split_keys, as E58: 8 of 32)",
+  "windows_per_32_keys": 500,
+  "task_windows_seed": 0,
+  "windows_rule": "E54's density: kv.windows(Pile train rows 0..32767, marker, the K keys, 20, 500 x K / 32, seed 0), data.split_windows (held-out = row % 5 == 0); the three maps share the windows, only the table differs. Each file cut by key as E58 (heldout_keys.split_task): trained = the trained keys' train and held-out windows; new = every window of the held-out keys",
+  "elicit_map": "E54's value rule (elicit.pick_values: W0's rank 2-20 word-like value in P [0.01, 0.1], 10 x key-specific), values distinct by the draw",
+  "rank1_map": "Amendment 1's: each key's value = argmax of W0's mean next-token distribution after 'M key' over the training windows of that key (kv.key_distributions, full vocabulary); values may repeat",
+  "copy_map": "Amendment 1's: value = the key (kv.identity)",
+  "seed": 0,
+  "finetune": "E54's recipe unchanged (keydep.elicit_ft: E12's arm A, 24 matrices, Adam 3e-5, batch 32, KL lambda 1, grad clip 1, 300 steps, bf16 autocast), on the trained keys' training windows, read at E12's scored step (first of 10, 30, 100, 300 with held-out P(value) >= 0.5 on the trained keys' held-out windows, else 300)",
+  "order": "elicit (the control) first and alone, then rank-1, then copy",
+  "precision": "every read fp32 with TF32 off; the fine-tune uses E12's bf16 autocast (as E54, E58)"
+ },
+ "reference_24_keys": {
+  "elicit": {"x": -0.03029404729972407, "r": 0.7674486315030346, "ratio": 0.9378059769145812},
+  "rank1": {"x": 0.10842293190200825, "r": 0.843440999885568, "ratio": 1.1045569376912916},
+  "copy": {"x": 0.4808246559487703, "r": 0.8409717256496411, "ratio": 1.0221894473890176},
+  "source": "means over seeds 0-2 at 24 trained / 8 held-out keys: elicit from E58 run.json (job 46266), rank-1 and copy from amend1.json (job 46332); all read at step 10"
+ },
+ "denominator": {
+  "what": "G_spec at the scored step, the label's denominator, computed from the states on disk before filing (Fable's lesson from Amendment 1's C2)",
+  "at_24_keys": "elicit 18.18 / 18.43 / 18.51, rank-1 16.82 / 16.57 / 16.63, copy 17.36 / 17.38 / 18.18, all at step 10 with trained-key P(value) 0.93-0.98; E58's ciphers, read at steps 8-9 where P was 0.45-0.58, 9.39-10.67",
+  "expected_here": "10-19 per map. Batch 32 at step 10 shows each of 96 trained keys about 3 times (13 at 24 keys), so step 10 likely misses P >= 0.5 and the scored step is 30 (about 10 views per key, near the 24-key step 10); at P 0.9-0.98, G_spec about 15-19; if the step-10 or step-30 check lands just over P 0.5, about 10 (the ciphers' level)",
+  "what_the_cuts_mean": "H_spec needed at G_spec 10 / 17 / 19: elicit's +0.05 = 0.5 / 0.85 / 0.95 log-odds; rank-1's 0.3 = 3.0 / 5.1 / 5.7 and 0.15 = 1.5 / 2.6 / 2.9; copy's 0.6 = 6.0 / 10.2 / 11.4 (copy carried 7.3-9.6 at 24 keys). The gate G_min 5.148 sits well under the range"
+ },
+ "thresholds": {
+  "G_min": 5.147937448121369,
+  "G_min_source": "E58's gate as run (run.json stage0.G_min_spec), as Amendment 1",
+  "cut": 0.5,
+  "k_sd": 3.0,
+  "label_source": "E58's label unchanged (open_pair.label on value-specific gains, heldout_keys.behaviour, each pool value once)",
+  "n_boot": 2000,
+  "boot_seed": 0,
+  "ratio_floor": 0.1,
+  "block0_nats": 1e-5,
+  "e_max": 0.05,
+  "e_max_source": "Fable: elicit x within +-0.05 of 0. Departure: one-sided as a stop (x > 0.05 stops; x < -0.05 reads 'below', not a stop), because a negative x is the push toward the trained values (Amendment 1's T), which grows with the 96 trained values in the pool, not a carry",
+  "min_novel": 3,
+  "min_novel_source": "Amendment 1's guard for the rank-1 map (values repeat; 1 of 8 held-out keys had a value of its own at 24 keys)",
+  "rank1_carry": 0.3,
+  "rank1_memorise": 0.15,
+  "rank1_source": "Fable: rank-1 x >= 0.3 if rules become learnable with keys, <= 0.15 if the recipe memorises regardless. Added here: x_novel must agree (Amendment 1's x_novel 0.21-0.27 sat above x 0.09-0.14)",
+  "copy_carry": 0.6,
+  "copy_source": "Fable: copy x >= 0.6",
+  "dx_min": 0.15,
+  "dx_min_source": "measured: copy x's seed range at 24 keys is 0.132 (0.420-0.553), the widest of the three maps; a map whose x moved less than that against elicit says nothing about whether r follows x",
+  "tol_r": 0.05,
+  "tol_r_source": "Fable's (b): 'r or the ratio rises with x by more than 0.05'; r's seed range at 24 keys is at most 0.029 (elicit)",
+  "tol_ratio": 0.1,
+  "tol_ratio_source": "departure from Fable's 0.05: the ratio's seed range at 24 keys is 0.055 on copy (1.003-1.057), so 0.05 sits inside one map's seed noise; 0.1 is about twice it"
+ },
+ "measurements": {
+  "x": "per map, E58's x = H_spec / G_spec: G_spec on the trained keys' held-out windows, H_spec on every window of the held-out keys; specific gain = the own value's log-odds gain minus the mean gain of the pool's other values (each value once). s (row bootstrap) and the label reported",
+  "x_novel": "Amendment 1's: key-mean H_spec over held-out keys whose value no trained key has, / G_spec (nan if none)",
+  "r_ratio_S": "heldout_keys.vpd_read on the trained keys' held-out windows (E54's readings, the least-squares split state), as E58 and Amendment 1",
+  "difference_in_differences": "for map m and quantity q in x, r, ratio: d_q = (q_m - q_elicit) at K keys minus (q_m - q_elicit) in reference_24_keys. Elicit is the reference for anything the key count does to every map alike (a later scored step, a larger update)"
+ },
+ "stage_order_and_stops": {
+  "K": "E54's selection must reproduce E54's marker, qualified count and 32 keys and values exactly; fewer than 64 distinct-valued keys -> stop. About 1.5 min in (model load 1 min, selection 8 s in E54's job 45973)",
+  "W": "the zero update's max |gain| on the six split tasks exactly 0, else stop",
+  "E": "the elicit state's elicit_control must read 'pass' or 'below' (too_small, unreadable, or x > 0.05 stop the job before rank-1). About 3 min in",
+  "M": "a block-0 shift over 1e-5 nats on any state -> stop (E54's)",
+  "expected_first_minutes": "selection: marker 18214, 777 qualified, E54's 32 reproduced; K = 128 (lean 85%); 2000 windows (about 1600 train / 400 held-out by row), about 1200 training windows on the 96 trained keys, about 500 windows on the 32 held-out keys; elicit's held-out P(value) under 0.5 at step 10 and over 0.5 at step 30 (lean 70%); ||dW|| at step 30 about 6-9 (E54's elicit 3.1-3.2 at step 10); elicit G_spec 10-19"
+ },
+ "expected": {
+  "W0_and_do_nothing": "the zero update: every gain 0 exactly, label 'too_small', x undefined. x reads the target model only (the same for every placement of delta-W); r and the ratio read the least-squares split state",
+  "elicit_control": {"x": "-0.15 to +0.05 (24 keys: -0.03); more negative than at 24 keys if the trained-value push grows", "label": "new", "r": "0.75-0.85 (Fable)", "ratio": "0.9-1.1 (Fable)", "G_spec": "10-19"},
+  "rank1": {"x": ">= 0.3 if rules become learnable with keys, <= 0.15 if the recipe memorises (Fable); 24 keys 0.09-0.14", "x_novel": "about x or above (24 keys 0.21-0.27)", "n_novel": "3-10 of 32 held-out keys (24 keys: 1 of 8)", "r": "0.75-0.85", "ratio": "0.9-1.1 (24 keys 1.10-1.11)"},
+  "copy": {"x": ">= 0.6 (Fable); 24 keys 0.42-0.55", "r": "0.75-0.85 (24 keys 0.83-0.85)", "ratio": "0.9-1.1"},
+  "B": "flat on every map whose x moved by 0.15 or more against elicit (reading A)"
+ },
+ "noise_floor": {
+  "x": "row bootstrap s (about 0.01-0.02 at 24 keys; smaller with 4x the windows); seed range at 24 keys 0.012 (elicit), 0.048 (rank-1), 0.132 (copy). One seed here: a single-state number carries that seed spread",
+  "r": "seed range at 24 keys 0.029 (elicit), 0.002 (rank-1), 0.012 (copy)",
+  "ratio": "seed range at 24 keys 0.012 (elicit), 0.011 (rank-1), 0.055 (copy)"
+ },
+ "predictions": {
+  "E": {"what": "the control: open_pair.elicit_control on the elicit state: 'pass' iff -0.05 <= x <= 0.05, 'below' iff x < -0.05, 'fail' iff x > 0.05 (stop), 'too_small' / 'unreadable' (stop)", "relative_or_absolute": "absolute", "lean": "pass about 70%, below about 25%, fail or too_small about 5%", "blind_to": "a carry that lifts every pool value alike (removed by the specific gain, as E58)"},
+  "R": {"what": "rank-1 class (open_pair.rank1_class): 'reuses' iff E58's label reads reuses and x_novel >= 0.5 (Fable's (a)); 'carries' iff x and x_novel >= 0.3; 'memorises' iff both <= 0.15; 'between' otherwise; 'not_testable' if fewer than 3 held-out keys have a value of their own, the label is too_small / unreadable, or x or x_novel is not finite", "relative_or_absolute": "absolute", "lean": "memorises or between about 70%, carries about 20%, reuses about 5%, not testable about 5%", "blind_to": "a carry riding on values shared with trained keys (x_novel guards it); one seed"},
+  "C": {"what": "copy class (open_pair.copy_class): 'pass' iff x >= 0.6, 'fail' otherwise, 'not_testable' if too_small / unreadable / x not finite", "relative_or_absolute": "absolute", "lean": "pass about 40% (needs H_spec about 10 at G_spec 17, against 7.3-9.6 at 24 keys)", "blind_to": "the copy rule can be carried by the tied embeddings' direct path; one seed"},
+  "B": {"what": "Fable's (b) (open_pair.b2): per map (rank-1, copy) and instrument (r, ratio), with dx and di the differences in differences against elicit and the 24-key reference: 'not_testable' iff |dx| < 0.15; 'tracks' iff di moved the same way as dx by more than tol (r 0.05, ratio 0.1); 'flat' iff |di| <= tol; else 'opposite'. Combined over instruments, then maps: tracks > opposite > flat > not_testable (only when every entry is) > unreadable", "relative_or_absolute": "relative (against elicit and against 24 keys)", "lean": "flat about 50%, not_testable about 35% (neither map's x moves by 0.15), tracks about 10%, opposite about 5%", "blind_to": "what moves every map's r alike with the key count (elicit absorbs it by design); one seed per map; reading A's own blind spot (pieces, not carry)"},
+  "verdict": {"what": "open_pair.verdict2: 'stopped' unless E is pass or below; then 'b_r_tracks' (B tracks) > 'a_first_reuses' (R reuses) > 'reading_A_holds' (B flat) > 'opposite' > 'untested'", "lean": "reading_A_holds about 50%, untested about 30%, b_r_tracks about 10%, a_first_reuses about 5%, opposite about 5%"}
+ },
+ "branches": {
+  "stop": "a K, W or M stop, or E not pass / below: fix ($0) or, for E fail, report to the lead: the label reads a carry where no rule exists, and no other map is read",
+  "b_r_tracks": "Fable's (b): the piece reading moves with generalisation after all; item 1's 'blind to' sentence is wrong as written; to the user before the line's claim is written",
+  "a_first_reuses": "Fable's (a): the first fairly labelled 'reuses' state on the 67M with r unchanged; score the step-2 plan's P2 on it; keep the held-out label for rule tasks given enough keys",
+  "reading_A_holds": "Fable's null: x moved with the key count on at least one map while r and the ratio did not; item 1's claim gains its strongest line ('x moved by d_x, r by d_r on the same states')",
+  "opposite": "r moved against x: a surprise; report per map; to the lead before the claim is written",
+  "untested": "more keys did not change carry on either map: the recipe memorises regardless; reading A stands on Amendment 1's spread table alone; no more key scaling on this recipe"
+ }
+}

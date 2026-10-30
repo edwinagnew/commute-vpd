@@ -19,6 +19,10 @@
 #     the rank-k readout on E58's six saved states (each checked against run.json first), then the label's positive
 #     control (rank-1 and copy maps, seeds 0-2, E54's recipe) with E58's label, readout, r, ratio and S. Reads E58's
 #     results/run.json and results/large/; writes results/amend1.json and results/large/amend1/ (~0.7 GB). ~6-10 min.
+#   sbatch cluster/open_pair.sbatch amend2   # Amendment 2 (plan section "Amendment 2"; predictions_amend2.json): the
+#     elicit (control, first), rank-1 and copy maps at 128 keys (96 trained / 32 held out; 64 / 16 if E54's key supply is
+#     short), seed 0, E54's recipe; x, r, ratio. Reads E54's stage1.json; writes results/amend2.json and
+#     results/large/amend2/ (~0.36 GB). ~10-15 min.
 #SBATCH --job-name=commute-e58-open-pair
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -39,7 +43,8 @@ stage=${1:-main}
 case "$stage" in
   main) script=run.py pred=predictions.json logf=run.out ;;
   amend1) script=amend1.py pred=predictions_amend1.json logf=amend1.out ;;
-  *) echo "unknown stage $stage (main | amend1)" >&2; exit 2 ;;
+  amend2) script=amend2.py pred=predictions_amend2.json logf=amend2.out ;;
+  *) echo "unknown stage $stage (main | amend1 | amend2)" >&2; exit 2 ;;
 esac
 test -f "experiments/open_pair/results/$pred" || { echo "file the predictions first" >&2; exit 1; }
 large=experiments/open_pair/results/large
