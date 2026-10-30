@@ -2,34 +2,32 @@
 
 *2026-10-30, regating-lead writer. Claim wording, evidence split and figure follow Fable's advice
 `reports/plans/2026-10-30_advice_e58a4-synthesis-FABLE.md`, adopted by the lead. The record behind every number:
-`reports/analyses/2026-10-30_analysis_e58-open-pair.md` (E58 and its Amendments 1 to 6),
+`reports/analyses/2026-10-30_analysis_e58-open-pair.md` (E58 and its Amendments 1 to 7),
 `reports/analyses/2026-10-30_analysis_e54-keydependent-elicit.md`, `reports/analyses/2026-10-30_analysis_e56-keydependent-patch.md`.
 Figure: `experiments/open_pair/plot_synthesis.py`. Words as in `GOALS.md` → Terms. Provenance at the end.*
 
-We asked whether a parameter decomposition of the small model can tell a fine-tune that draws out something the model
-already does from one that builds something new. Across five kinds of word map and three seeds, its main reading agreed
-with the original model's own ranking of the trained answer, high when the answer was the model's guess for that key and
-low when not, and it did not follow whether the learning carried to unseen keys. A lookup whose answers the original model
-rated nearly as likely as the copy map's still read low, so on that one pair the reading is more than a smooth function
-of the model's prior, though a cut on the prior between the two maps would still sort every map.
-For `GOALS.md` this is not yet evidence that VPD detects elicitation: the result rests on one pair and awaits an
-independent check, no map had a new answer that carries to unseen keys, and a new circuit built from old subcomponents
-would read as elicited too.
+On the small model, VPD's main reading separates fine-tunes whose trained answer the original model already guesses from
+those whose answer it does not, and it reads a new rule that generalises to unseen keys as new, the same as a plain
+lookup. Across eight word maps and three seeds the reading followed the model's own guess, not whether learning carried,
+and a lookup at nearly the copy map's prior still read low. For `GOALS.md` this says the reading tracks "the answer is
+one the model already gives", which the model's own prior largely gives too. It is not yet evidence that VPD detects
+a new mechanism as such: it is one rule on one small model, it awaits an independent check, and a new circuit of old
+subcomponents onto answers the model already gives, where the granularity limit bites, is untested.
 
 ## The answer
 
 On the small model with trigger-to-word maps, VPD's r reads high when the trained answer is the model's own guess for
-each key and low when it is not, and on one map pair that split holds at a near-equal prior. A no-rule lookup whose
-answers W₀ rates at 3.7e-5 reads r 0.38, with the no-rule maps, while copy at 5.9e-5 reads 0.77: priors a factor of
-about 1.6 apart. So on that pair r is not a smooth function of W₀'s prior. It does not rule out every prior baseline:
-a cut on the prior anywhere between 3.7e-5 and 5.9e-5 still sorts all six maps into r's bands, and W₀'s own-guess
-ranking still predicts every band. The claim is provisional. E58's one comparison with a reading
-that never looks at the decomposition, a steering vector, scored steering as the better match, though steering sat on
-its cut. Among answers the model already guessed, r does not follow whether the rule carries to unseen keys. A
-first-letter rule built to be a new answer that carries did not carry on the 67M, so whether r reads a new mechanism
-that generalises as new is untested. The shuffled map sits only 0.015 to 0.03 under the 0.5 cut. VPD's unit is the
-subcomponent, so a new circuit assembled from existing subcomponents would also read as already there. This holds on
-one small model, one decomposition and synthetic maps only.
+each key and low when it is not, whether or not the update carries to unseen keys. A new four-word rule whose words W₀
+never gives carried 0.55 to 0.64 beyond its null to unseen keys, yet read r 0.23 to 0.25. That is with the lookups and
+within 0.04 of its shuffled twin, which has the same words and no rule. Copy, which carries about as far, reads 0.77.
+So r does not read carry, and a new rule that generalises reads as new. The rule is built from directions W₀'s
+embedding already has, so the granularity limit did not make r read it as old. The limit is untested where it would
+bite: a new rule onto answers W₀ already gives would, on the own-guess account, read high. A no-rule lookup at 3.7e-5
+reads 0.38 while copy at 5.9e-5 reads 0.77, so r is not a smooth function of W₀'s prior. A cut on the prior between
+those two still sorts all eight maps, and W₀'s own-guess ranking still predicts every band. E58's one comparison with
+a steering vector, a reading that never looks at the decomposition, scored steering the better match, though steering
+sat on its cut. The claim is provisional until the independent check. This holds on one small model, one decomposition
+and synthetic maps only.
 
 ## What we were trying to test
 
@@ -119,15 +117,32 @@ times lower, so the word pool moves r too. Over six maps the rank correlation of
 with the log prior is still 0.89. Figure: `experiments/open_pair/figures/a6_prior.png`; record: the E58 report's
 "Amendment 6".
 
+**A new rule that carries, E58 Amendment 7.** The plot above has an empty lower right: no map there has a target W₀
+did not guess that still carries. Amendment 7, filed before its run on job 46673, filled it with one rule. Each key's
+class is the sign pair of its scores on the two leading principal components of the trained keys' embeddings, and each
+of the four classes goes to one word W₀ never gives after these keys. A twin hands the same words out by shuffled
+classes, so it has nothing to carry. At step 30 the class map carried 0.55 to 0.64 beyond a null that cancels any
+key-independent word lean, and the twin 0.08 to 0.09. The class map read r 0.23 to 0.25 and the twin 0.27 to 0.28, so
+both sit in the cipher band, 0.03 apart against a filed bound of 0.09. Copy, carrying about as far, reads 0.77. So r
+does not read carry: a rule that generalises reads as new, like a lookup over the same words. Over the eight maps the
+rank correlation of mean r with the log prior is 0.95, and with carry 0.29, both computed after the data. Four limits.
+The unseen keys fall 4, 18, 9 and 1 over the classes, though every class carries. The classes track embedding norm and
+token id a little, which the null does not fully cancel, though a reported per-window rescaling still separates the two
+maps. One twin seed carries 0.154 at its first step over the gate, just over its 0.15 bar; at step 30, the scored step,
+it is clean. A cipher at elicit's prior, meant to extend the prior test to a third level, could not be built, so that
+dose-response is not read. Figure: `experiments/open_pair/figures/a7_r.png`; record: the E58 report's "Amendment 7".
+
 **The granularity limit.** VPD's unit is the rank-one subcomponent. A new circuit built from old subcomponents, switched
-on in a new pattern, reads as "already there" to r. Nothing in this line can tell the two apart.
+on in a new pattern, can read as "already there" to r. Amendment 7's rule is built from directions W₀'s embedding
+already has, and r still read it as new, so the limit did not bite there. It is untested where it would bite: a new
+circuit onto answers W₀ already gives, which the own-guess account says would read high whatever its mechanism.
 
 ## Scored and unscored evidence
 
 | | for the claim | against, or limiting it |
 |---|---|---|
-| **Scored**, filed before each run | The cipher control read "below" on every seed at 96 keys. The ratio half of the within-key-count rule passed at both steps, at its bound: 0.18 and 0.20 against 0.2. The shuffled map read "cipher_like", 0.475 against 0.5, a near miss. Seed 0 reproduced exactly. The filed separation of elicit from cipher in r passed in E54 and E56 at 32 keys and in E58 at 24 keys. The held-out label's positive control holds at 96 keys: the copy map read "reuses" on all three seeds. The prior-matched cipher read "cipher_band", r 0.37 to 0.38, at a prior a factor of about 1.6 under copy's. | The r half of the within-key-count rule failed at both steps: 0.11 and 0.13 against bounds of 0.07 and 0.09, so "r reads the same across own-guess maps" is false as filed. Amendment 3's test of r against carry across key counts read "untested", because the cipher's r itself rose by 0.14 with the key count. E58's first agreement test and the label's first positive control failed. E58's comparison with steering, a reading that never looks at the decomposition, scored "steering better" for both r and the ratio, with steering's elicit values on its cut. The first-letter rule read "no_carry", so the missing cell stays empty. None is refiled. |
-| **Unscored**, reported with seed ranges | The 0.24 or larger gap between the bands at every read point, seed ranges 0.002 to 0.045. The shuffled map on three seeds, mean 0.477. | The rank correlation of r with carry is 0.02 at step 10 and 0.42 at step 30, over nine points with no power. r falls by 0.04 to 0.10 from step 10 to step 30 on every own-guess map, copy's by 0.09 while its carry stays near 0.8, while the shuffled map's r rises from 0.36-0.39 to 0.47-0.49. Every low-band map has carry at or under zero, so no map tests a target W₀ did not guess that carries. W₀'s prior alone ranks the five maps as r does, rank correlation 0.9 with one swap. |
+| **Scored**, filed before each run | The cipher control read "below" on every seed at 96 keys. The ratio half of the within-key-count rule passed at both steps, at its bound: 0.18 and 0.20 against 0.2. The shuffled map read "cipher_like", 0.475 against 0.5, a near miss. Seed 0 reproduced exactly. The filed separation of elicit from cipher in r passed in E54 and E56 at 32 keys and in E58 at 24 keys. The held-out label's positive control holds at 96 keys: the copy map read "reuses" on all three seeds. The prior-matched cipher read "cipher_band", r 0.37 to 0.38, at a prior a factor of about 1.6 under copy's. Amendment 7: the shuffled-class twin read "clean", the class map carried on all three seeds and read "cipher_band", and D read "kind_only", −0.034. | The r half of the within-key-count rule failed at both steps: 0.11 and 0.13 against bounds of 0.07 and 0.09, so "r reads the same across own-guess maps" is false as filed. Amendment 3's test of r against carry across key counts read "untested", because the cipher's r itself rose by 0.14 with the key count. E58's first agreement test and the label's first positive control failed. E58's comparison with steering, a reading that never looks at the decomposition, scored "steering better" for both r and the ratio, with steering's elicit values on its cut. The first-letter rule read "no_carry". Amendment 7's rider at elicit's prior was skipped, unbuildable. None is refiled. |
+| **Unscored**, reported with seed ranges | The 0.24 or larger gap between the bands at every read point, seed ranges 0.002 to 0.045. The shuffled map on three seeds, mean 0.477. | The rank correlation of r with carry is 0.02 at step 10 and 0.42 at step 30, over nine points with no power. r falls by 0.04 to 0.10 from step 10 to step 30 on every own-guess map, copy's by 0.09 while its carry stays near 0.8, while the shuffled map's r rises from 0.36-0.39 to 0.47-0.49. Before Amendment 7 every low-band map had carry at or under zero. W₀'s prior alone ranks the eight maps as r does, rank correlation 0.95. At its gate step one twin seed carries 0.154, over its bar. |
 
 The within-key-count failure, worded as Fable advised. r is not blind to which map was trained. Inside the own-guess
 band the three maps differ by 0.11 to 0.13, about three times the largest seed range, and the order, top word above
@@ -144,10 +159,15 @@ lookup at a prior a factor of about 1.6 under copy's reads with the no-rule maps
 agrees with W₀'s own-guess ranking, a baseline that never looks at the decomposition, and a cut on the probability
 between the two maps still sorts every map. That is one pair, one prior level and one decomposition, and it stays
 provisional. Among answers W₀ already guessed, r does not follow whether the learned rule
-carries to unseen keys. Whether r would read a new answer that does carry as new is untested: the first-letter rule,
-trained to be one, did not carry on the 67M beyond what letter frequency gives. Under the granularity limit, a new
-circuit assembled from existing subcomponents reads as elicited. A single r means nothing off its row: it moves by about 0.1 with read step and key count
-on its own.
+carries to unseen keys. Amendment 7 adds the other side: a new four-word rule whose answers W₀ never gives carried most
+of the way to unseen keys and read r 0.23 to 0.25, as new as a lookup over the same words. So on the 67M r reads a new
+rule that generalises as new, and it does not read generalisation at all. What r reads is whether the trained answer
+is one W₀ already gives, and W₀'s own prior ranks all eight maps nearly as r does. If elicitation means "the update
+raises an answer the model already gives", r reads it, though little beyond what W₀'s prior gives. Whether r reads a
+new mechanism as such, beyond a new answer, is untested. The rule is built from directions W₀ already has, so the
+granularity limit did not make r call it old. It would bite on a new circuit onto answers W₀ already gives, and the
+own-guess account says r would read that high. One rule, one small model and one decomposition; provisional until the
+independent check. A single r means nothing off its row: it moves by about 0.1 with read step and key count on its own.
 
 ## How compelling is the evidence
 
@@ -163,11 +183,13 @@ on its own.
   beside r after the fact, it ranks them with one swap. The prior-matched cipher, filed before its run, read in the
   cipher band at a prior a factor of about 1.6 under copy's: one pair, one prior level, one word pool, three seeds with
   a range of 0.009. It excludes a smooth prior-only trend, not a cut between 3.7e-5 and 5.9e-5, which still sorts all
-  six maps. Over six maps the rank correlation of r with the log prior is 0.89. The one comparison with steering,
+  six maps. Over six maps the rank correlation of r with the log prior is 0.89; with Amendment 7's two maps, eight, it is 0.95, and that cut still sorts all eight. The one comparison with steering,
   in E58, scored "steering better".
-- **One empty cell.** Every map whose target W₀ did not guess has carry at or under zero, so the claim that r does not
-  follow carry is tested only among own-guess maps. The first-letter rule, filed to fill it, carried 0.04 to 0.08 beyond
-  its frequency null at step 30, under the 0.3 entry bar, so its r was not read.
+- **The cell filled once.** Before Amendment 7 every map whose target W₀ did not guess had carry at or under zero. The
+  first-letter rule carried 0.04 to 0.08 beyond its null, under the 0.3 bar. Amendment 7's class map is one rule over
+  one linear feature, three seeds and one key split. Its unseen keys fall 4, 18, 9 and 1 over the classes. Its classes
+  track embedding norm and token id a little, a lean the null does not fully cancel. Its twin carries 0.154 on one seed
+  at the gate step and is clean at step 30. The prior's dose-response at elicit's prior is not read.
 - **Earlier tables agree, and leave the same cell empty.** E60's table collects them with E54. There, E46's copy
   map reads r 0.76 to 0.80 against random maps at 0.27 to 0.29. E53's lowercase reads 0.75 to 0.77 against ciphers at
   0.12 to 0.17. In E53 and E54 the high member's targets are ones W₀ already favours there, so W₀'s prior would sort those
@@ -204,11 +226,13 @@ pending that (`reports/plans/2026-10-30_advice_regating-carry-cell-FABLE.md`).
 - **The independent check of the prior-matched result.** E58 Amendment 6 ran one prior-matched cipher, at 3.7e-5
   against copy's 5.9e-5. Not run: other prior levels, a prior-matched lookup drawn from elicit's words, which would
   separate the word pool from the prior, per-key prior against per-key r, and the fresh review of this updated claim.
-- **The missing cell.** A map whose target W₀ does not guess for that key yet carries to unseen keys, a new mechanism
-  that generalises. Amendment 6's first-letter rule was built for it and did not carry on the 67M, so its r was not
-  read. Not run: that rule at more keys or longer training, Fable's capitalised-key rule, the novelty column, and a
-  first-letter rule on Qwen, where Fable expects carry. Until one carries, whether r reads such an update as new is
-  untested.
+- **The cell, beyond one rule.** Amendment 7 filled "a target W₀ does not guess, by a rule that carries" with one
+  four-class rule over the key embedding's two leading directions. Not run: a second rule or feature, a second key split
+  or decomposition seed, the class rule or first-letter rule on Qwen, the novelty column, and η² of norm and token id
+  on the trained-key classes. The elicit-prior cipher was skipped, unbuildable; Fable's fallback, a prior-matched
+  shuffle, was not run.
+- **Where the granularity limit bites.** A new rule onto answers W₀ already gives. The own-guess account says r reads
+  it high whatever its mechanism; no map tests it.
 - Any of this on Qwen3-1.7B or another model; any real post-training update.
 - A second decomposition seed; more key splits; key counts other than 24, 32 and 96 trained.
 - What orders the three own-guess maps' r: trained gain, trained-key probability or the value pool. Fable advised
@@ -240,7 +264,7 @@ pending that (`reports/plans/2026-10-30_advice_regating-carry-cell-FABLE.md`).
 
 - Points: `experiments/open_pair/results/run.json` (E58, job 46266), `amend1.json` (job 46332), `amend3.json` (job
   46398), `amend4.json` (job 46426), `amend5.json` (job 46450), `amend6.json` (job 46489, the prior-matched cipher and
-  the first-letter rule; figure `experiments/open_pair/figures/a6_prior.png` from `plot_amend6.py`). Bands: `experiments/keydependent_patch/results/job2.json`
+  the first-letter rule; figure `experiments/open_pair/figures/a6_prior.png` from `plot_amend6.py`), `amend7.json` (job 46673, the class map and its twin; figure `experiments/open_pair/figures/a7_r.png` from `plot_amend7.py`). Bands: `experiments/keydependent_patch/results/job2.json`
   (E56, r over five seeds) and `experiments/regating_truth_table/results/table.json` (E54, ratio over two seeds).
 - All on the MATS cluster `debug` QoS, one L40 each, $0. Commits and code hashes per job in the E58 analysis report.
 - Figure `experiments/open_pair/figures/synthesis.png` from `experiments/open_pair/plot_synthesis.py`, which prints every
