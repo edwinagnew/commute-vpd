@@ -235,18 +235,25 @@ def site_change(name: str, M: Tensor | None, U_A: Tensor, V_A: Tensor, p: Callab
 
 @contextmanager
 def applied(model: Any, comps: Components, alive: Alive, change: Callable[[str], SiteChange],
-            weights: dict[str, Tensor] | None = None) -> Iterator[None]:
+            weights: dict[str, Tensor] | None = None, host: dict[str, Tensor] | None = None) -> Iterator[None]:
     """The state whose sites `change` gives: weights W0 + dW swapped in (fp32, the model's device), and the alive
     columns at `positions` (None: all) moved by (dU, dV) in place; the original columns written back on exit.
     `weights`: the state's weights given whole instead (the fine-tuned ones, for states whose weights are W0 + δW: no
-    second 5.6 GB copy on the GPU)."""
+    second 5.6 GB copy on the GPU). `host`: the state's weights are written into it, site by site, in pinned host
+    memory and the model keeps its own (for a caller that copies them in place: an L40 holds no second set beside
+    the decomposition; E44 Amendment 2)."""
     lins, W, touched = linears(model), {}, []
     try:
         with torch.no_grad():
             for s in SITES:
                 dW, pos, dU, dV = change(s)
                 w0 = lins[s].weight.data
-                W[s] = weights[s] if weights is not None else w0 if dW is None else w0 + dW.to(w0)
+                w = weights[s] if weights is not None else w0 if dW is None else w0 + dW.to(w0)
+                if host is None:
+                    W[s] = w
+                else:
+                    host[s] = torch.empty(w.shape, dtype=w.dtype, pin_memory=w.is_cuda).copy_(w)
+                del w
                 if dU is None or dV is None:
                     continue
                 V, U = comps.vu(s)
@@ -254,7 +261,7 @@ def applied(model: Any, comps: Components, alive: Alive, change: Callable[[str],
                 touched.append(s)
                 V[:, cols] = V[:, cols] + dV.to(V)
                 U[cols] = U[cols] + dU.T.to(U)
-        with set_weights(model, W):
+        with set_weights(model, W if host is None else None):
             yield
     finally:
         with torch.no_grad():

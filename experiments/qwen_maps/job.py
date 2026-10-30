@@ -181,6 +181,12 @@ class Job:
             self.log(f"[load] decomposition, {self.peaks()}")
         return self._decomp[1]
 
+    def drop_gamma(self) -> None:
+        """Γ's 17.1 GB of GPU freed (E44 Amendment 2's stage S on an L40); `gamma()` reloads it."""
+        if self._decomp is not None:
+            self._decomp[1] = None
+        torch.cuda.empty_cache()
+
     def gstats(self, block: str) -> dict[str, Tensor]:
         return load(self.large / "gstats" / f"W0_{block}.safetensors")
 
@@ -246,9 +252,10 @@ class Job:
     def site_dir(self, t: int) -> Path:
         return self.out / "S" / f"step{t}"
 
-    def change(self, name: str, t: int | None, fp32: bool = False) -> Any:
+    def change(self, name: str, t: int | None, fp32: bool = False, scale: float = 1.0) -> Any:
         """site -> SiteChange of state `name` at step t, built from δW and S's files on the GPU in float64
-        (`qwen_maps.applied` casts it to the forward's fp32)."""
+        (`qwen_maps.applied` casts it to the forward's fp32). `scale` multiplies control (ii)'s Σ-matched pieces
+        (E44 Amendment 2's KL match; 1 = E44's random state)."""
         dW = {} if t is None else self.dw(t, fp32)
 
         def fn(s: str) -> qwen_maps.SiteChange:
@@ -263,7 +270,7 @@ class Job:
             if name == "random":
                 RU, RV = (x.double() for x in qwen_maps.random_pieces(tuple(U_A.shape), tuple(V_A.shape), 0, s, DEV))
             with safe_open(str(path), framework="pt") as f:
-                return qwen_maps.site_change(name, M, U_A, V_A, f.get_tensor, rec["c"], rec["a"], RU, RV)
+                return qwen_maps.site_change(name, M, U_A, V_A, f.get_tensor, rec["c"], rec["a"] * scale, RU, RV)
 
         return fn
 
