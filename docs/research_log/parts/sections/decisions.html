@@ -1,14 +1,8 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-10-30.</strong> Two open cards: the baseline line's next experiment (E56) and the wording of a claim from the claim tests (E47). Earlier cards are decided (<code>decisions.md</code>).</p>
+<div class="prose"><p><strong>Waiting on you, 2026-10-30.</strong> One open card: the wording of a claim from the claim tests (E47). Earlier cards are decided (<code>decisions.md</code>).</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-  <div class="card key decision" id="decision-e56-baseline-next"><span class="chip open urgency">Soon</span><div class="k">Question for you · baseline · new 2026-10-30</div><p class="small">Nothing runs until this is decided.</p><h3>Approve E56: a second cheap baseline on the elicit and cipher pair, then more seeds?</h3>
-  <p><strong>The question.</strong> E54: the re-gating share reads a half-known map as elicited and a cipher as not; one steering vector does not separate them. The objection is that the answer depends on the key, so steering fails by construction. E56 patches the few most-shifted neurons (an input-dependent baseline) on E54's six saved states, then fine-tunes seeds 2 to 4. Cluster debug, $0.</p>
-  <p><strong>Evidence.</strong> The re-gating share beats steering by at least about 6 times, with no upper bound on two seeds. Neuron patching did not separate the earlier copy and cipher pair (E52).</p>
-  <p><strong>Options.</strong> (a) Approve E56; if patching separates the pair, the claim shrinks to "one mean vector cannot". (b) First read the Jain et al. linear readout on the elicit keys. (c) Wait for Qwen, which has no re-gating share before Q3. <strong>Recommendation: (a)</strong>, then (b).</p>
-  <div class="links"><a href="#e54">E54</a><a href="#e52">E52</a></div>
-  <p class="small"><code>reports/plans/2026-10-30_plan_baseline-next-draft.md</code> (draft)</p></div>
   <div class="card key decision" id="decision-e47-split-keep"><span class="chip uninf urgency">No rush</span><div class="k">Question for you · commute · new 2026-10-29</div><p class="small">Nothing runs until this is decided.</p><h3>How should the scaled adjoint split's loss of behaviour be worded?</h3>
   <p><strong>The question.</strong> At the same update size a faster SGD run keeps 0.08 to 0.09 more of the behaviour than a slower one, on both seeds. The size-only test could not be scored: a shrunk update loses the behaviour itself.</p>
   <p><strong>Options.</strong> (a) Reword: "the split keeps less as training goes on; at matched size the path adds about 0.08; size alone untested". (b) Design a size-only test that keeps the behaviour. (c) Drop the claim. <strong>Recommendation: (a)</strong>; the splits are no longer the line's map. (b) is worth doing if they return for the larger model.</p>
