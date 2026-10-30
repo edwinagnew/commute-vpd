@@ -14,9 +14,9 @@
 #   sbatch --job-name=commute-e55-amend4 --time=00:10:00 cluster/pcfg_anchors.sbatch amend4  # Amendment 4, ~2-5 min (cost not measured)
 #   sbatch --job-name=commute-e55-amend5c --time=00:10:00 cluster/pcfg_anchors.sbatch amend5 controls  # Amendment 5 controls, ~2-3 min (estimated)
 #   sbatch --job-name=commute-e55-amend5 cluster/pcfg_anchors.sbatch amend5  # (after amend5c finishes: both write amend5.json) Amendment 5 arms, ~12-16 min (estimated)
-#   sbatch --job-name=commute-e55-amend5b --time=00:15:00 cluster/pcfg_anchors.sbatch amend5b  # Amendment 5b (WNf seeds 1-3), ~4-6 min (estimated); before c1
-#   sbatch --job-name=commute-e55-c1c --time=00:15:00 cluster/pcfg_anchors.sbatch c1 controls  # Stage C1 controls, <= 7 min (estimated)
-#   sbatch --job-name=commute-e55-c1 cluster/pcfg_anchors.sbatch c1  # (after c1c finishes and its controls are read: both write c1.json) Stage C1 states, <= 83 min = up to 4 jobs (estimated)
+#   sbatch --job-name=commute-e55-amend5b cluster/pcfg_anchors.sbatch amend5b  # Amendment 5b (WNf seeds 1-3), ~4-6 min (estimated); before c1
+#   sbatch --job-name=commute-e55-c1c cluster/pcfg_anchors.sbatch c1 controls  # Stage C1 controls, <= 7 min (estimated)
+#   sbatch --job-name=commute-e55-c1 cluster/pcfg_anchors.sbatch c1  # (after c1c finishes and its controls are read: both write c1.json) Stage C1 states, <= 119 min = up to 6 jobs of 22 min (estimated; 7 allowed with resubmits, tight)
 # a0: per prior, 500 pretraining iterations stopped at 250 and resumed from the saved file, behaviour and floors on 1K
 #   fresh samples -> experiments/pcfg_anchors/results/a0.json; checkpoints and a0.log in results/large/a0/.
 # a1 PRIOR: 50K iterations (~10 min plus compile at the a0 rate) with a 25-min deadline. Finished: results/a1_PRIOR.json;
@@ -55,7 +55,7 @@
 # c1 [controls]: experiments/pcfg_anchors/c1.py (predictions_c1.json; refuses a draft): model-free controls, then with
 #   "controls" the instruments' controls alone (pruning on LOW, sign flipped; scratch = NEVER reverse fine-tuned at 1e-5
 #   and 1e-6, <= 10K steps each at ~12.5 ms/step: <= 7 min). Without, it refuses (exit 2) until c1.json holds the controls,
-#   then per listed state (25 with reverse fine-tuning, <= 3.3 min each at the cap; 2 steering only, ~10 s): pruning,
+#   then per listed state (36 with reverse fine-tuning, <= 3.3 min each at the cap; 2 steering only, ~10 s): pruning,
 #   steering, reverse fine-tuning -> results/c1.json after each state. 22-min deadline, exit 3 resubmits (up to 6 times
 #   for c1) and resumes; a reverse fine-tune cut by the deadline is rerun. A model-free miss -> results/c1_control_miss.json,
 #   exit 1. Log results/large/c1/c1.log.
@@ -78,8 +78,8 @@ usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-
 stage=${1:-}
 args=("${@:2}")
 case "$stage ${#args[@]}" in
-  "a0 0" | "a1c-patch 0" | "a1c-probe 0" | "amend1 0" | "amend2 0" | "amend3 0" | "amend4 0" | "amend5 0") ;;
-  "amend5 1") [ "${args[0]}" = controls ] || { echo "$usage" >&2; exit 2; } ;;
+  "a0 0" | "a1c-patch 0" | "a1c-probe 0" | "amend1 0" | "amend2 0" | "amend3 0" | "amend4 0" | "amend5 0" | "amend5b 0" | "c1 0") ;;
+  "amend5 1" | "c1 1") [ "${args[0]}" = controls ] || { echo "$usage" >&2; exit 2; } ;;
   "a1 1") case "${args[0]}" in LOW | HIGH | NEVER) ;; *) echo "$usage" >&2; exit 2 ;; esac ;;
   "a2 "*) [ "${#args[@]}" -ge 1 ] || { echo "$usage" >&2; exit 2; } ;;
   *) echo "$usage" >&2; exit 2 ;;

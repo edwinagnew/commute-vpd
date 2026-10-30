@@ -228,7 +228,8 @@
         "3. Leans: PC1 pruning 20%, PC2 reverse fine-tuning 20%, PC3 steering 40% (the margin makes passing harder than the plan assumed).",
         "4. Requirements recomputed for 0-3 Amendment 5b seeds reading existing at 1K and/or 2K (pass_bars_at_filing). Adding 2K existing states makes the steps labeller wrong on them."
       ]
-    }
+    },
+    "2026-10-30, lead, after the code review, before any run: (a) Amendment 5/5b states are placed by class alone (reuses -> existing, new -> new, else B); the code had sent a neither state with count a not through to new, against E11 (fixed in c1.truth_from). (b) R in steering per_run: definitions.per_run governs (latest labelled save, R/10000); the constants_sources line naming R 1K is superseded. (c) A steering vote with gain G below 0.01 is flagged unreadable in the analysis (rule unchanged). (d) The pruning control can pass with any large-unit removal on LOW (3 sd is about 3 rows of 4,000); its drop sizes are logged and reported beside the pass flag."
   ],
   "pass_bars_at_filing": {
     "rule": "needs = max(binomial bar, best nuisance + margin), margin 2 (all) and 1 (per_run, per_stream); '!' marks needs > n. Amendment 5b seeds simulated with WNf_s0's metadata, existing at the named saves, class B at the other.",

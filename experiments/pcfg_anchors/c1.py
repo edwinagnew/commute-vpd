@@ -105,12 +105,11 @@ class Truth:
 
 def truth_from(labels: dict[str, str], prior: str, amend5_class: str | None) -> str:
     """The checks' reading of a state: HIGH-based (R) by count b, LOW-based by count a, through -> existing, not
-    through -> new, else B. An Amendment 5 or 5b state is existing only as class 'reuses', and new as class 'new' too."""
+    through -> new, else B. An Amendment 5 or 5b state is placed by its class alone: reuses -> existing, new -> new, anything else -> B
+    (predictions_c1 E11, lead_decisions 1)."""
     lab = labels["b"] if prior == "HIGH" else labels["a"]
     if amend5_class is not None:
-        if amend5_class == "reuses":
-            return "existing"
-        return "new" if amend5_class == "new" or lab == "not through" else "B"
+        return {"reuses": "existing", "new": "new"}.get(amend5_class, "B")
     return {"through": "existing", "not through": "new"}.get(lab, "B")
 
 
