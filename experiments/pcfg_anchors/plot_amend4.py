@@ -33,7 +33,7 @@ def region(ax: Axes, bar_b: dict[str, float], bar_p: dict[str, float]) -> None:
 
 
 def fig_offlabel(out: str = "amend4_offlabel.png",
-                 title: str = "On off-label swap-built rows the early slow fine-tunes still run through count a, barely; none runs through count b") -> None:  # fmt: skip
+                 title: str = "On off-label swap-built rows the early slow all-spurious fine-tunes still run through count a, barely;\nnone of the early slow fine-tunes runs through count b") -> None:  # fmt: skip
     r, bars = load("amend4.json")["part2_off_label"], load("predictions.json")["a2_bars"]
     fig, axes = plt.subplots(1, 2, figsize=(11.0, 5.6), sharex=True, sharey=True)
     for ax, t in zip(axes, ("a", "b"), strict=True):

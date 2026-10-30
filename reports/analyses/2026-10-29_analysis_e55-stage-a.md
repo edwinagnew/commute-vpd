@@ -6,7 +6,7 @@ E55 Stage A, reuse line, 2026-10-29. Plan `reports/plans/2026-10-29_plan_reuse-s
 
 We fine-tuned a small model that counts only the letter a to count the letter b, and asked whether each new answer runs through the old count, judged without any decomposition.
 Fast fine-tunes never used the old count; slow ones trained mostly or only on rows where one more than the count of a is the answer used it at a thousand steps, and by the end none did, the all-spurious ones answering a rule of two counts.
-Those rows were built by swapping letters, which breaks the base model's count, and on swapped text where one more than the count of a and the count of b differ, the two early states that reuse it answer through a strengthened count of a, not a separate count of b, narrowly and with a pull from b.
+Those rows were built by swapping letters, which breaks the base model's count, and on swapped text where one more than the count of a and the count of b differ, both seeds of the slow all-spurious state at a thousand steps answer through a strengthened count of a, not a separate count of b, while the slow 80% state reads neither; the patch check clears its bar narrowly.
 
 ## The answer
 
@@ -22,7 +22,10 @@ letter-swapped rows built the same way as the spurious fine-tunes' training rows
 of a gives their label on under half. So the two early states that reuse the old count were pushed to change.
 Amendment 4 asked how. On swapped rows where the two readings give different answers, both seeds of the slow
 all-spurious state answer through a strengthened count of a, not a count of b. The patch check clears its bar narrowly,
-and count b pulls a third of their answers one step towards it; the slow 80% state reads neither there. Stage A's
+and a third of their answers sit one step from `count(a) + 1` towards `count(b)`; in most of them that step is also the
+step back towards the pre-swap text, and on the 138 rows that separate the two, answers move only towards `count(b)`
+(13%), never back (exploration, not filed; with a + b + c = 40 this is equally a dependence on count c). The slow 80%
+state reads neither there. Stage A's
 labels, read on natural text, stand.
 
 ## What we were trying to test
@@ -1144,7 +1147,8 @@ We read the three early fine-tunes Stage A called "reuses the old count" on lett
 the count of a and the count of b are different answers. The two slow all-spurious states answer one more than the
 count of a on about two thirds of these rows and almost never the count of b, while the slow 80% state reads neither.
 So the early anchors answer swapped text through a strengthened count of a, not a separate count of b, though the
-patch check clears its bar narrowly and count b pulls their other answers one step towards it.
+patch check clears its bar narrowly and a third of their answers sit one step from `count(a) + 1` towards `count(b)`
+(exploration, not filed; in most of them that step is also the step back towards the pre-swap text).
 
 ### The answer
 
@@ -1153,8 +1157,9 @@ of b. On swap-built rows where the two readings disagree, both seeds answer one 
 thirds of rows. They answer the count of b on one row in a thousand. LOW, the base before fine-tuning, gets its own
 count of a right on about a third of the same rows. The fast no-spurious fine-tune, which counts b, reads "through b"
 there as it should. The slow 80% state and the late all-spurious state read neither. Two things temper the result.
-The patch check clears its bar by less than two standard deviations. And on the remaining rows every answer moves one
-step towards the count of b, the start of the rule of two counts the same arm follows at 10K.
+The patch check clears its bar by less than two standard deviations. And on the remaining rows nearly every answer moves one
+step towards the count of b, which may be the start of the rule of two counts the same arm follows at 10K (an unfiled
+reading).
 
 ### What we were trying to test
 
@@ -1193,7 +1198,9 @@ calls the slow all-spurious state's own count b on natural rows "neither", becau
 just above the lower bar of 0.1. A pure count-a answerer would then have read "neither". The rule now asks only that
 count b not be "through". The seed-copy prediction was made void unless both read one-sided. LOW became a description,
 since the row filter makes its reading "neither" by construction. Rows were limited to `count(a) + 1` from 10 to 17, and
-the result file was written after each part.
+the result file was written after each part. The mirror change also decides the count-b control: off-label, its
+count-a patch share is 0.123, above the lower bar of 0.097, so under the drafted rule it would have read neither and
+voided Part 2.
 
 ### What we expected
 
@@ -1249,19 +1256,20 @@ behaviour shares to the row.
 
 The one-third rule is Amendment 1's answer `round((2(count(a) + 1) + count(b)) / 3)`; its column overlaps the others.
 
-Every answer the slow all-spurious state at 1K gives that is not `count(a) + 1` lies one step from it towards
-`count(b)`: `count(a)` on 28.5% of rows and `count(a) + 2` on 4.2%. Nothing else appears. The pull is uneven. Where
+All but two of the answers the slow all-spurious state at 1K gives that are not `count(a) + 1` lie one step from it towards
+`count(b)`: `count(a)` on 28.5% of rows and `count(a) + 2` on 4.2%. Two rows (0.2%) sit two steps towards it; nothing else appears. The pull is uneven. Where
 the swap raised the count of a and `count(b)` sits below, 57% of its answers move one step; elsewhere 10% to 13% do.
 Moving towards `count(b)` and moving back towards the text before the swap are the same step in most rows. In the
-138 rows where they point opposite ways, 13% of answers move towards `count(b)` and none move back. So count b,
-not the pre-swap text, is what pulls these answers.
+138 rows where they point opposite ways, 13% of answers move towards `count(b)` and none move back. With
+a + b + c = 40, this is equally a dependence on count c.
 
 Split by swap direction, the 1K state answers `count(a) + 1` on about 90% of rows where letters were removed. Where
 letters were added it does so on 58% with one added and 33% with two. LOW's own count of a is right on 35% of these
 rows overall. It falls to 8% where two letters were added. So the 1K state's count of a copes with swapped text far
 better than LOW's, but not fully.
 
-The 10K state follows the one-third rule on 95.8% of off-label rows. It answers `count(a) + 1` on none of the 474 rows
+The 10K state follows the one-third rule on 95.8% of off-label rows. The one-third rule coincides with
+`count(a) + 1` on 16.8% of rows, so the 10K state's 0.187 share right is almost all one-third answers. It answers `count(a) + 1` on none of the 474 rows
 where `count(b)` is three or more away. The rule was found on natural rows; whether these pairs of counts are new was
 not checked.
 
@@ -1287,8 +1295,11 @@ patch. The count-a patch share of the 1K state falls with swap size, from 0.65 a
 
 On swap-built rows where the two readings give different answers, the early slow all-spurious states answer one more
 than the count of a and not the count of b, on both seeds. Their count of a copes with swapped text where LOW's does
-not. So Amendment 3's question has a first answer: mostly R-a, an existing count made stronger. The answer is not clean. The patch check clears its bar narrowly, and count b already moves a third of the
-answers one step towards itself. That is the shape of the rule of two counts the same arm reaches by 10K. The slow 80%
+not. So Amendment 3's question has a first answer: mostly R-a, an existing count made stronger. The answer is not clean. The patch check clears its bar narrowly, and a third of
+their answers sit one step from `count(a) + 1` towards `count(b)`; in most of them that step is also the step back
+towards the pre-swap text, and on the 138 rows that separate the two, answers move only towards `count(b)` (13%), never
+back (exploration, not filed; with a + b + c = 40 this is equally a dependence on count c). Whether that is the shape of
+the rule of two counts the same arm reaches by 10K is an unfiled reading. The slow 80%
 state does not read as either, so on swapped text only the two all-spurious seeds keep the "reuses" label.
 
 ### What it means for the Stage C truth-set decision
@@ -1313,6 +1324,11 @@ it:
   reproduced Stage A's exactly.
 - **Count b has a positive control; count a has none.** The count-b control reads through b with behaviour 0.906 and
   patch 0.766. No saved model counts a on swapped text, so the count-a "through" rests on the bars alone.
+- **The count-a patch share does not single out a strengthened count.** On the same pairs LOW reads 0.575 and the 10K
+  state 0.499, at or above the two seeds (0.505, 0.496). It shows the answer follows the count of a carried at `=`, as
+  LOW's does; that the count was strengthened rests on the behaviour share alone, 0.67 against LOW's 0.35 right.
+- On off-label pairs the count-b patch share is 0.404 for LOW, which does not count b, so the two seeds' 0.19 is not
+  evidence of a pull from b; that rests on the answer breakdown alone.
 - **Noise.** Each share reads 1,000 rows or pairs, a standard deviation near 0.016 at one half. The count-a patch share
   clears its bar by 1.4 and 0.8 standard deviations on the two seeds; both seeds clear it.
 - **Off distribution.** These states trained only on rows where `count(b) = count(a) + 1`. Off-label rows break that,
@@ -1325,20 +1341,22 @@ it:
 ### Surprises
 
 - LOW's `count(a) + 1` share is 0.266, where about zero was expected. LOW lags the swap by about one letter: where two
-  a's were removed it answers one fewer than the text had before on 77% of rows, which equals `count(a) + 1`. So its
+  a's were removed it answers one fewer than the text had before on 77% of rows, and where one was removed on 31%; both equal `count(a) + 1`. So its
   share is a by-product of miscounting, not a count plus one.
-- The 1K state's count-a patch share fell from 0.715 on natural rows to 0.505, against about 0.7 expected under R-a.
+- The 1K state's count-a patch share fell from 0.715 on natural rows to 0.505, against about 0.7 expected under R-a. LOW and the 10K state read 0.50 to 0.58 on the same pairs, so the drop may belong
+  to the pairs, not the state.
 - The 10K state follows the one-third rule on 95.8% of off-label swap-built rows. This was not filed.
 - No filed prediction was reversed.
 
 ### What next
 
 1. **The Stage C truth-set decision**, with this input: the two all-spurious anchors' "reuses" label holds on swapped
-   text as a strengthened count of a, with a pull from count b; the 80% anchor reads neither there.
+   text as a strengthened count of a (behaviour share; the patch share does not single it out); the 80% anchor reads
+   neither there.
 2. **The natural-row re-run of the slow all-spurious arm**, saved at 1K and 2K, if the user picks option C. If both
-   checks read it through count a with no pull from b, the anchors no longer rest on swapped text.
+   checks read it through count a with no step towards `count(b)`, the anchors no longer rest on swapped text.
 3. **The same off-label read at three to seven swapped letters**, $0. If the 1K state's `count(a) + 1` share falls
-   towards LOW's, the strengthening is partial and the pull from b grows; if it holds, the count of a was repaired.
+   towards LOW's, the strengthening is partial and the steps towards `count(b)` grow; if it holds, the count of a was repaired.
 
 ### Scorecard
 
