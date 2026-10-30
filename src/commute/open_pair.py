@@ -565,3 +565,88 @@ def score_amend6(prior: Sequence[dict[str, Any] | None], letter: Sequence[dict[s
     return {"PM": {"class": band_class(pm, th), "r": pm, "near_cut": near(pm)},
             "FL": {"class": cls, "entry_seeds": entry, "n_labellable": n_lab, "x": get("x"), "x_null": get("x_null"),
                    "x_minus_null": diff, "r": fl, "near_cut": near(fl)}}
+
+
+# ----------------------------------------------------------------------------- Amendment 7 (2026-10-30)
+# experiments/open_pair/results/predictions_amend7.json; plan section "Amendment 7"; edge cases in tests/test_open_pair.py
+# Fable, reports/plans/2026-10-30_advice_regating-carry-cell-FABLE.md, step 1. A read is {"x", "x_null", "r", "label"}.
+
+
+def pc_classes(E: Tensor) -> list[int]:
+    """Class 0-3 of each row of E: 2 * (score on PC1 > 0) + (score on PC2 > 0), the scores on the two leading principal
+    components of E's rows centred on their mean (float64 on CPU, exact SVD). Each component's sign is fixed so that the
+    row with the largest |score| scores positive; that changes the labels, never the partition. A score of exactly 0
+    counts as not positive."""
+    X = E.detach().double().cpu()
+    X = X - X.mean(0)
+    sc = X @ torch.linalg.svd(X, full_matrices=False)[2][:2].T
+    sc = sc * sc.gather(0, sc.abs().argmax(0, keepdim=True)).sign()
+    return [2 * int(a > 0) + int(b > 0) for a, b in sc.tolist()]
+
+
+def shuffled_classes(cls: Sequence[int], seed: int) -> list[int]:
+    """The twin's classes: `cls` permuted over the rows by torch.randperm (seed). Same class sizes, no link to the rows."""
+    perm = torch.randperm(len(cls), generator=torch.Generator().manual_seed(seed))
+    return [cls[int(i)] for i in perm]
+
+
+def cross_class_null(s: Mapping[int, Sequence[float]], cls: Sequence[int]) -> tuple[float, float]:
+    """(own, null), the numerators of x and x_null over the held-out windows. s[c][i] = the specific gain at window i of
+    class c's word; cls[i] = window i's class. own = mean over windows of s[cls[i]][i] (H_spec). null = sum over the
+    classes c present of (n_c / N) * (mean of s[c] over the windows whose class is not c): the same words with the same
+    weights as own, each read at keys of the other classes, so any lean toward a word that does not depend on the key
+    cancels exactly, whatever the class sizes. nan for no windows, or when a class present has no window outside it."""
+    N = len(cls)
+    if N == 0:
+        return math.nan, math.nan
+    own = sum(s[c][i] for i, c in enumerate(cls)) / N
+    null = 0.0
+    for c in sorted(set(cls)):
+        out = [s[c][i] for i, k in enumerate(cls) if k != c]
+        if not out:
+            return own, math.nan
+        null += sum(k == c for k in cls) / N * sum(out) / len(out)
+    return own, null
+
+
+def twin_clean(twin: Sequence[dict[str, Any] | None], th: dict[str, Any]) -> str:
+    """The shuffled-class twin at step 30, the control: "unreadable" unless there are n_seeds reads, each `labellable`
+    with a finite x_null; "clean" iff every x - x_null < twin_max (0.15; a tie fails); else "carries"."""
+    ok = len(twin) == th["n_seeds"] and all(labellable(rd) and rd is not None and finite(rd.get("x_null")) for rd in twin)
+    if not ok:
+        return "unreadable"
+    return "clean" if all(rd is not None and rd["x"] - rd["x_null"] < th["twin_max"] for rd in twin) else "carries"
+
+
+def contrast(cls_r: Sequence[Any], twin_r: Sequence[Any], th: dict[str, Any]) -> dict[str, Any]:
+    """D = mean r of the class map's carrying seeds - mean r of the twin's seeds. "unreadable" if either list is empty or
+    has a non-finite r; "sees_carry" iff D > r_contrast (0.0904, twice the noise floor); "sees_carry_low" iff
+    D < -r_contrast; else "kind_only" (a tie at the bound reads kind_only)."""
+    if not cls_r or not twin_r or not all(finite(r) for r in [*cls_r, *twin_r]):
+        return {"class": "unreadable", "D": math.nan}
+    D = sum(cls_r) / len(cls_r) - sum(twin_r) / len(twin_r)
+    b = th["r_contrast"]
+    return {"class": "sees_carry" if D > b else "sees_carry_low" if D < -b else "kind_only", "D": D}
+
+
+def score_amend7(twin: Sequence[dict[str, Any] | None], cmap: Sequence[dict[str, Any] | None],
+                 ep: Sequence[dict[str, Any] | None] | None, th: dict[str, Any]) -> dict[str, Any]:
+    """Step-30 reads, seeds 0-2. T: `twin_clean`. CL: "control_failed" unless T is clean; else "unreadable" if fewer than
+    min_entry (2) class-map reads are `labellable`; else "no_carry" if fewer than min_entry `carries` (x - x_null > 0.3);
+    else `band_class` on the carrying seeds' r. D: `contrast` of those r against the twin's r, read only when CL is a
+    band class ("not_read" otherwise). EP: "skipped" when ep is None (its table could not be built); else `band_class`
+    on its r. A read too small to label counts as missing r."""
+    r_of = lambda rds: [None if rd is None or rd.get("label") in UNLABELLABLE else rd.get("r") for rd in rds]
+    diff = lambda rds: [rd["x"] - rd["x_null"] if labellable(rd) and rd is not None and finite(rd.get("x_null")) else None for rd in rds]
+    T = twin_clean(twin, th)
+    entry = [i for i, rd in enumerate(cmap) if carries(rd, th)]
+    n_lab = sum(labellable(rd) for rd in cmap)
+    cl_r = r_of([cmap[i] for i in entry])
+    if T != "clean":
+        cl = "control_failed"
+    else:
+        cl = "unreadable" if n_lab < th["min_entry"] else "no_carry" if len(entry) < th["min_entry"] else band_class(cl_r, th)
+    D = contrast(cl_r, r_of(twin), th) if cl in ("cipher_band", "between", "own_guess_band") else {"class": "not_read", "D": math.nan}
+    return {"T": {"class": T, "x_minus_null": diff(twin), "r": r_of(twin), "band": band_class(r_of(twin), th)},
+            "CL": {"class": cl, "entry_seeds": entry, "n_labellable": n_lab, "x_minus_null": diff(cmap), "r": cl_r},
+            "D": D, "EP": {"class": "skipped"} if ep is None else {"class": band_class(r_of(ep), th), "r": r_of(ep)}}

@@ -1158,3 +1158,260 @@ differ from the sections above, the edits stand.
 
 Tests: 551 pass; lint is clean on the touched files. The run command and outputs are unchanged, apart from one more
 small windows file: `results/large/amend6/windows_first_letter_null_new.pt`.
+
+## Amendment 7 (2026-10-30, after job 46489): a new rule that carries, its shuffled twin, and a cipher at elicit's prior
+
+*Fable's step 1 (`reports/plans/2026-10-30_advice_regating-carry-cell-FABLE.md`), taken by the lead after Amendment 6's
+first-letter rule read no_carry. Code `experiments/open_pair/amend7.py`. It reuses `amend6.draw`, `save_map`,
+`harness_control` and `references`, `amend3.read`, and `amend4.train`, `over_gate` and `stop`. Rules are in
+`src/commute/open_pair.py` § Amendment 7 (`pc_classes`, `shuffled_classes`, `cross_class_null`, `twin_clean`, `contrast`,
+`score_amend7`), plus Amendment 6's `carries`, `labellable` and `band_class`. Edge cases are in `tests/test_open_pair.py`.
+No shared function changed. Predictions are in `results/predictions_amend7.json`. Job: `sbatch cluster/open_pair.sbatch
+amend7`. Filed; nothing run.*
+
+**In plain words.** Amendment 6's first-letter rule was memorised key by key, so no map yet has a target the model does
+not guess that still carries to unseen keys. Here each key goes to one of four new words, chosen by where the key's
+embedding sits on the two main directions of spread among the 128 keys. A twin map uses the same four words with the
+classes shuffled over the keys, so it has nothing to carry. We read the decomposition's re-gating share only if the
+rule carries and the twin does not. A cipher whose values the model rates at the elicit map's prior rides along, to see
+how r moves with the prior among maps with no rule.
+
+**The request in the Terms' words.** Three new maps on E58 Amendment 3's keys and windows, each fine-tuned with E54's
+recipe on 96 keys and labelled by its held-out carry x on the other 32. The first is a class map: the key's class is
+the sign pair of its scores on the two leading principal components of W₀'s input embeddings. The second is that map's
+shuffled-class twin, the trained negative control. The third is a cipher at elicit's prior. r is read on the class map
+only past the entry condition.
+
+### Design check (`/design`)
+
+- **Goal.** Re-gating line (Q5, mechanism or leak). The line's missing cell is a target W₀ does not guess, built by a
+  new rule that carries to unseen keys: does r read it as new or as elicited? `GOALS.md`'s "new capabilities or
+  strengthening" needs that cell, since every carrying map so far (copy, rank-1) has W₀'s guess as its target.
+- **Nearest tried.** E58 Amendment 6's first-letter rule. Its x − x_null was 0.04-0.08 at step 30 and at most 0.19 at
+  the gate step, over 22 classes of 1-19 keys. Amendment 6's prior-matched cipher read r 0.37-0.38 at a prior of
+  3.7e-5. This amendment uses 4 classes of 16-27 trained keys over a linear feature, adds a twin the first-letter run
+  lacked, and puts a third level on the prior.
+- **Patch or step.** The line's named next step (approved class 4), with its control (class 2), on the existing model,
+  task and harness. $0, cluster `debug`.
+- **Decisions.** E54's recipe; E58's label, gate, windows and key split; reading A. No departure from `decisions.md`.
+- **What changes next.** If the class map carries and reads cipher_band with D kind_only, the cell is filled on the 67M.
+  An upper-band reading is filed as ambiguous (granularity, below). If it does not carry, rules on the 67M stop and the
+  cell goes to Qwen (Fable). If the elicit-prior cipher reads own_guess_band, the band claim becomes "prior above about
+  1e-3", and the Qwen prior column becomes a scored column.
+- **Control first.** The W₀ control runs first. A zero update must read 0 exactly on every map and on the new null, the
+  class-map and twin priors must sit under 1e-5, and every class must hold at least 12 trained keys. Then the harness
+  control: E58's cipher seed 0 must reproduce r 0.32413. Then the twin, alone, with an early stop: the job exits before
+  the class map unless the twin is clean at step 30. Each of these stops the job.
+- **Class.** Approved (classes 2 and 4); not gated (about 15-19 min, $0).
+
+### The three maps
+
+- **Class map.** The 128 keys' input-embedding rows (`wte`) are centred on their mean. An exact float64 SVD on CPU
+  gives the two leading principal components. Class = 2 × (PC1 score > 0) + (PC2 score > 0), with each PC's sign fixed so
+  the key with the largest |score| scores positive; this changes labels, never the partition. Each class gets one word
+  from E58's cipher pool (word-like frequency ranks 1000-2999, minus the keys and the elicit words), drawn by
+  `kv.bijection` seed 0. A word is admitted only if W₀'s prior of it is under 1e-5 after every one of the 128 keys.
+  - Counted before filing, from the target checkpoint (`~/commute-data/scratch/regating-lead/amend7/classes.py`, one
+    `fleet/cpu-run` job, no forward pass): all 128 keys split 39 / 36 / 33 / 20, trained keys 27 / 26 / 27 / 16, held-out
+    keys 12 / 10 / 6 / 4.
+  - PC1 and PC2 hold only 2.7% and 2.4% of the keys' embedding variance; the top five singular values are 1.13, 1.08,
+    0.97, 0.96 and 0.95. So the classes are close to arbitrary halvings of a nearly round cloud. The rule is still a
+    linear function of the key's embedding, which the residual stream at the key position carries directly. But the
+    class signal per key is small, which is why my lean on carry (50%) sits under Fable's (60%).
+  - The partition is unchanged under E → −E, and the smallest |score| over the standard deviation is 0.014 (PC1) and
+    0.002 (PC2): a few keys sit at a class boundary.
+- **Shuffled-class twin** (`class_shuffled`). The class labels permuted over the 128 keys by `torch.randperm` seed 0:
+  the same four words, class sizes, prior, pool and breadth; only the structure differs. Counted before filing: trained
+  keys 26 / 31 / 27 / 12, held-out keys 13 / 5 / 6 / 8. 41 of 128 keys keep their class, against 33.6 by chance, so a
+  little true structure remains; the twin's own x − x_null measures it.
+- **Elicit-prior cipher** (rider). A distinct value per key from the same pools by `kv.bijection` seed 0. A value is
+  admitted if its prior after that key is in [3e-4, 3e-3], around elicit's 1.3e-3, and its rank is over 20; at 1e-3 a rank
+  over 100 cannot hold. The cipher pool is tried first, then the wider pool from rank 1000. If both run out, the map is
+  skipped and the job goes on. On a fallback pool, or with its trained prior outside the band, it is reported, not
+  scored.
+
+### The carry null, and why it changes
+
+Amendment 6's null swapped each held-out key's target for the word of the class with the nearest trained count. Fable
+kept it, as right "with four near-equal classes". Here the classes are not near-equal: 16 to 27 trained keys in the
+class map, 12 to 31 in the twin.
+
+A fine-tune that only leans toward words trained on many keys raises the gain of the 27-key class's word more than the
+16-key class's. Its effect on x is then the gap between the own class's lean and the nearest class's lean. That gap is
+not zero (class 3's held-out keys have 16 trained against the nearest 26), and its sign depends on the class.
+
+**The fix: the cross-class null** (`open_pair.cross_class_null`).
+- x's numerator is Σ_c (n_c / N) × (mean specific gain of class c's word at the held-out windows of class c).
+- x_null's numerator is Σ_c (n_c / N) × (mean specific gain of the same word at the held-out windows of the other
+  classes).
+- Both use the same words with the same weights, so any lean toward a word that does not depend on the key cancels
+  exactly, whatever the class sizes. Only a gain that follows the key's class survives.
+- For a perfectly learned rule, the wrong-class words fall (specific gain −g/3 when the own word gains g), so x − x_null
+  is 4/3 of x. The 0.3 entry bar thus asks for x of about 0.23 on a clean rule. Amendment 6's null had the same property.
+- **Its own early check.** The null's own term is recomputed from four constant-target copies of the held-out windows.
+  It must equal H_spec within 1e-6, at every read, or the job stops. This is the new code path's positive control on a
+  GPU.
+
+Tested on hand numbers (`tests/test_open_pair.py`):
+- a key-independent lean with unequal classes gives own = null exactly;
+- a perfect rule gives null = −1/3;
+- one hand-computed case;
+- a class with no held-out window carries no weight;
+- no windows gives nan;
+- one class only gives a nan null.
+
+The twin uses the same null with its own classes.
+
+### Numbers and what each should read
+
+| number | at W₀ / do-nothing (zero update) | control | expected |
+|---|---|---|---|
+| zero-update gain, every map, trained and new; the null's two terms | exactly 0 | stop if not | 0 |
+| class-map and twin prior of trained values | the number itself | under 1e-5, else stop | about 1e-6 (cipher 1.4e-6, first-letter 8.2e-7) |
+| EP prior of trained values | the number itself | in [3e-4, 3e-3], else reported only | near elicit's 1.3e-3 |
+| class counts (trained, held out), twin agreement | as counted | under 12 trained keys in a class stops | 27/26/27/16 and 26/31/27/12; 41 of 128 |
+| E58 cipher seed 0, r at step 16 | — | 0.32413 within 1e-4, else stop | bitwise equal |
+| twin: x − x_null at 30 (and gate, 100); r at 30 and gate | x, r undefined | under 0.15 on every seed, else stop | −0.1 to 0.1; r 0.25-0.5 |
+| class map: x − x_null at 30 (and gate, 100); r where it carries | x, r undefined | the twin | over 0.3 if learned, under 0.15 if memorised |
+| D = class-map r − twin r at 30 | — | — | reported by class |
+| EP: gate step, x, r at 30 and gate | x, r undefined | references: prior-matched cipher 0.37-0.38, elicit 0.72-0.74 | over the gate by step 10; x near 0; r between |
+| prior beside r, every map | — | — | reported only |
+
+*Blind to:*
+- **x − x_null** is blind, by construction, to any lean that does not depend on the key. The twin measures any
+  key-dependent carry left over without the rule.
+- **The twin keeps 41 of 128 classes**, against 33.6 by chance.
+- **D** is blind to differences the fine-tune itself creates between the maps, such as G_spec at step 30, reported
+  beside. Its bound is twice the 0.0452 noise floor, which is a three-seed range, not the noise of a difference of
+  means.
+- **The rider** tests one prior level from one pool. Rank over 20 keeps its values off W₀'s top 20, but not far from
+  it.
+- **Every number:** three seeds, one key split, one decomposition, one rule over one feature. A carry that appears only
+  after step 30 shows only in the reported step-100 reading. r's noise floor is 0.0452.
+
+**Granularity.** The class rule is built from directions W₀'s embedding already has. A carrying class map is a new
+circuit from old pieces, and VPD may read that as elicited. Filed as ambiguous:
+- CL own_guess_band;
+- CL between;
+- D sees_carry.
+
+In each, "VPD read the rule's existing pieces" and "r reads carry" (or "r is wrong") are not told apart. CL cipher_band
+with D kind_only is not ambiguous in this way: r would have read a carrying rule built from old pieces as new.
+no_carry says nothing about r.
+
+### Predictions (filed in `results/predictions_amend7.json`)
+
+- **T, the twin, at step 30** (`twin_clean`). "clean" iff there are three labellable reads with a finite x_null and
+  every x − x_null < 0.15 (a tie fails). It reads "unreadable" if a seed is missing, too small to label, or not finite,
+  and "carries" otherwise. Any reading but clean stops the job before the class map. Lean: clean 85%.
+- **CL, the class map, at step 30.**
+  - "control_failed" unless T is clean.
+  - "unreadable" if fewer than 2 reads are labellable.
+  - "no_carry" if fewer than 2 seeds carry (labellable, a finite x_null, x − x_null > 0.3; a tie fails).
+  - Otherwise `band_class` on the carrying seeds' r: cipher_band iff every r < 0.5, own_guess_band iff every r ≥ 0.6,
+    else between.
+  - Leans: Fable, carry 60% and, given carry, cipher_band 50%. Mine, carry 50%; given carry, cipher_band 40%, between
+    30%, own_guess_band 30%.
+- **D, read only when CL is a band class** (`contrast`). D = the mean r of the carrying class-map seeds minus the
+  twin's mean r over three seeds. It reads "sees_carry" iff D > 0.0904, "sees_carry_low" iff D < −0.0904, else
+  "kind_only" (a tie reads kind_only), and "unreadable" on a non-finite r. Lean: sees_carry 50%, kind_only 40%, low 10%.
+- **EP, the rider.** "skipped" if its table could not be built; else `band_class` on its three step-30 r. Scored only
+  from the cipher pool with its prior in band. Leans: Fable, cipher_band 50%. Mine, cipher_band 35%, between 40%,
+  own_guess_band 25%.
+- **Reported.** The same classes at each run's own gate step; x − x_null at step 100; each map's prior beside r with
+  E58's five maps and Amendment 6's prior-matched cipher; near_cut (an r within 0.0452 of 0.5).
+
+**Edge cases, run before filing** (`tests/test_open_pair.py`, three new tests; 571 pass):
+- `pc_classes`: four unequal clusters map to four labels; the partition and labels are unchanged under −E and under a
+  shift; the twin keeps the class sizes and is seeded.
+- The null cases above.
+- `twin_clean`: a tie at 0.15 fails; a missing seed, too few seeds, a too_small read or a nan x_null read unreadable.
+- CL:
+  - a tie at 0.3 gives one carrying seed, so no_carry;
+  - a seed that fails entry is dropped;
+  - two unlabellable seeds read unreadable;
+  - a nan r on a carrying seed reads unreadable;
+  - a twin that carries, or is missing a seed, gives control_failed with D not_read.
+- D: an exact tie at the bound reads kind_only, with dyadic numbers so the tie is exact in floats. Both signs over the
+  bound are tested, and a nan twin r reads unreadable.
+- EP: skipped, between, and a missing seed reading unreadable.
+
+### Settings (each sourced)
+
+- **Keys, split, windows, recipe, label, gate (5.148), seeds 0-2, steps 30 and the gate step.** E58 Amendments 3-6,
+  unchanged.
+- **Class rule, twin, four words at cipher prior, entry 0.3 on at least 2 seeds, twin under 0.15, the elicit-prior
+  band [3e-4, 3e-3] with rank over 20, skip on exhaustion, at least 12 trained keys per class, step 100 reported.**
+  Fable step 1.
+- **r_contrast 0.0904.** Fable's 0.09, "twice the 0.045 floor", taken as twice the measured 0.0452.
+- **Words under 1e-5 after all 128 keys** rather than only their own class's keys, so that the twin's words, which go
+  to other classes' keys, are new under W₀ too.
+- **twin_seed 0, null_self_tol 1e-6.** Filed here. The tolerance is a code check: the same per-window gains summed in
+  two orders.
+
+### Departures from Fable
+
+1. **The cross-class null replaces the nearest-count swap.** The classes are not near-equal (16-27 trained keys), and
+   the swap leaves a bias of either sign. The new null cancels any key-independent lean exactly (section above).
+2. **Exact SVD (float64, CPU) instead of `torch.pca_lowrank`.** `pca_lowrank` is randomised, so the classes would
+   depend on the global random state. An exact SVD also matches the counts made before filing.
+3. **Class words under 1e-5 after all 128 keys** (Settings).
+4. **D gets a third class, "sees_carry_low"** (D < −0.0904), so every outcome has a class. r_contrast is 0.0904, not
+   0.09.
+5. **The twin is an early stop.** It runs first, alone, and the job exits unless it is clean, as the repo's
+   control-first rule asks.
+6. **No r at step 100, and no cipher or copy re-trained to step 100.** Fable makes this conditional on carry only at
+   step 100. x − x_null at 100 is reported, and that case is a branch for the next amendment, so the job stays one
+   filed design with no mid-run additions.
+7. **An EP prior outside its band reports EP rather than stopping the job**, since it is a rider.
+
+### Stop rules, runtime, outputs
+
+Stops (exit 1; `amend7.json` written with "stopped"):
+- Amendment 3's windows or key split differ;
+- a class with under 12 trained keys in either map;
+- no admissible class word;
+- a W₀ control miss;
+- the harness control misses;
+- the null's own-term check fails;
+- a block-0 shift over 1e-5 nats;
+- the twin not clean.
+
+The elicit-prior cipher's pools running out is a skip, not a stop.
+
+**Runtime.** One MATS `debug` L40 job, $0, **10 fine-tunes**: 1 control, then 3 twin, 3 class-map and 3 rider seeds.
+- **Measured on job 46489:** 7 fine-tunes took 5.8 min after the host line, plus about 1 min of start-up. Per seed,
+  about 50-60 s: a 16-23 s fine-tune, label reads of about 5 s, and r reads of about 15 s.
+- **Added here:**
+  - three more fine-tunes;
+  - a step-100 label on six seeds;
+  - the null at three steps on six seeds, each 16 extra forward passes over about 500 windows, about 8 s;
+  - twin r at two steps on three seeds.
+- **Estimate:** twin about 100 s a seed, class map 70-100 s, rider about 60 s, harness 45 s, W₀ stage and start-up
+  about 2 min. That gives **about 15-19 min**, inside the 30-min cap. Host RAM peaks at about 5 GB (32 checkpoints).
+
+**Outputs.**
+- `results/amend7.json`;
+- `results/large/amend7/`: the three maps' windows and eight constant-target windows files, about 10 MB;
+- the log `results/large/amend7.out` and `cluster/logs/commute-e58-open-pair-<jobid>.out`;
+- no weights.
+
+### Decision tree
+
+1. A stop, including the twin not clean → to the lead.
+2. **CL no_carry** → no more rules on the 67M (Fable); the cell goes to Qwen once r has teeth there. If x − x_null passes
+   0.3 only at step 100, the next amendment reads r there, with cipher and copy references at step 100.
+3. **CL cipher_band, D kind_only** → the cell is filled on the 67M, for one rule: r reads a carrying new rule as new.
+4. **CL any band, D sees_carry** → r rises with carry, all else equal; ambiguous under the granularity limit.
+5. **CL between or own_guess_band with D kind_only, D sees_carry_low, unreadable** → reported, no claim.
+6. **EP cipher_band** → the band claim holds over three decades of prior with no rule; the Qwen prior column stays
+   reported.
+7. **EP own_guess_band** → the band is "prior above about 1e-3"; the Qwen prior column becomes scored.
+8. **EP between, skipped or unscored** → reported.
+
+### Order of work
+
+1. Done: code, tests (571 pass), lint clean on the touched files, predictions filed.
+2. A fresh-Opus review of the diff. The class builder, the constant-target windows and the null have not run on a GPU.
+3. `/pod-runner`: `sbatch cluster/open_pair.sbatch amend7` from the clone root.
+4. Write-up by the analysis agent.
