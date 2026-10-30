@@ -64,3 +64,4 @@
 - [Elicitation granularity limit](project-elicitation-granularity-limit.md) — new circuit from old pieces reads "elicited" to VPD; state it in every re-gating claim (user, 2026-10-29)
 - [Explicit literature departures](feedback-explicit-literature-departures.md) — every write-up states each departure from the cited source where used + a "Departures from the literature" list (user, 2026-10-30)
 - [Fable first, fewer questions](feedback-fable-first-fewer-questions.md) — choices inside an adopted plan go to Fable, act and FYI; user only for spend/gated, reversals, goal changes, other lines (2026-10-30)
+- [Fewer questions; Fable for small ones](feedback-fewer-questions-fable-for-small.md) — ask the user only the most important things; smaller choices go to Fable and its advice is acted on (2026-10-30)
