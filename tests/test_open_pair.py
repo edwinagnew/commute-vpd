@@ -365,3 +365,62 @@ def test_b2_elicit_movement_alone_is_not_testable() -> None:
     out = OP.score_amend2(st, 5, REF24, TH2)
     assert out["E"] == "below" and out["B"]["maps"]["copy"]["dx"] > 0.15
     assert out["B"]["status"] == "not_testable" and out["verdict"] == "untested"
+
+
+# ----------------------------------------------------------------------------- Amendment 3
+
+TH3 = {**TH2, "traj_tol": 0.05}
+
+
+def test_control3() -> None:
+    assert OP.control3("below", "fail") == "below" and OP.control3("fail", "pass") == "fail"  # fallback only on too_small
+    assert OP.control3("too_small", "pass") == "pass" and OP.control3("too_small", "fail") == "fail"
+    assert OP.control3("too_small", None) == "too_small" and OP.control3("too_small", "too_small") == "too_small"
+    assert OP.control3("unreadable", "pass") == "unreadable"
+
+
+def test_b3_own_differences() -> None:
+    ref = REF24
+    same = {m: dict(v) for m, v in ref.items()}
+    out = OP.b3(same, ref, TH3, ("elicit", "rank1", "copy"))
+    assert out["status"] == "not_testable"  # nothing moved
+    st = {**same, "elicit": {"x": 0.213, "r": 0.78, "ratio": 0.95}}  # elicit's x rose 0.243, r 0.0126
+    out = OP.b3(st, ref, TH3, ("elicit", "rank1", "copy"))
+    assert out["maps"]["elicit"]["status"] == "flat" and out["status"] == "flat"
+    st["elicit"]["r"] = ref["elicit"]["r"] + 0.06
+    assert OP.b3(st, ref, TH3, ("elicit",))["status"] == "tracks"
+    st["elicit"]["ratio"] = math.nan  # r alone decides
+    assert OP.b3(st, ref, TH3, ("elicit",))["maps"]["elicit"]["status"] == "tracks"
+    st["elicit"]["x"] = ref["elicit"]["x"] + 0.15  # dx tie at dx_min is testable
+    assert OP.b3(st, ref, TH3, ("elicit",))["status"] == "tracks"
+    assert OP.b3({}, ref, TH3, ("elicit", "copy"))["status"] == "unreadable"
+
+
+def test_trajectory() -> None:
+    later = (30, 100, 300)
+    assert OP.trajectory({10: 0.21, 30: 0.17, 100: 0.3, 300: 0.25}, 10, later, TH3) == "kept"  # 0.16 = 0.21 - 0.05 tie
+    assert OP.trajectory({10: 0.21, 30: 0.05, 100: 0.0, 300: 0.0}, 10, later, TH3) == "transient"  # e_max tie
+    assert OP.trajectory({10: 0.21, 30: 0.12, 100: 0.08, 300: 0.0}, 10, later, TH3) == "falling"
+    assert OP.trajectory({10: 0.21, 30: 0.3}, 10, later, TH3) == "unreadable"  # a missing checkpoint
+    assert OP.trajectory({10: math.nan, 30: 0.3, 100: 0.3, 300: 0.3}, 10, later, TH3) == "unreadable"
+    assert OP.trajectory({10: 0.2}, 10, (), TH3) == "unreadable"
+
+
+def test_spearman() -> None:
+    assert abs(OP.spearman([1, 2, 3, 4], [10, 20, 30, 40]) - 1.0) < 1e-12
+    assert abs(OP.spearman([1, 2, 3, 4], [4, 3, 2, 1]) + 1.0) < 1e-12
+    assert abs(OP.spearman([1, 2, 2, 3], [1, 2, 3, 4]) - 0.9486832980505138) < 1e-9  # mean ranks for ties
+    assert math.isnan(OP.spearman([1, 2], [1, 2])) and math.isnan(OP.spearman([1, 1, 1], [1, 2, 3]))
+    assert math.isnan(OP.spearman([1, 2, math.nan], [1, 2, 3])) and math.isnan(OP.spearman([1, 2, 3], [1, 2]))
+    assert OP.ranks([3.0, 1.0, 3.0]).tolist() == [2.5, 1.0, 2.5]
+
+
+def test_score_amend3() -> None:
+    st = {"elicit": {"x": 0.213, "r": 0.78, "ratio": 0.95, "label": "neither"},
+          "rank1": {"x": 0.11, "x_novel": 0.11, "r": 0.84, "ratio": 1.10, "label": "neither"},
+          "copy": {"x": 0.48, "r": 0.84, "ratio": 1.02, "label": "neither"}}
+    out = OP.score_amend3(st, {}, "below", 10, REF24, TH3)
+    assert out["B"]["status"] == "flat" and out["verdict"] == "reading_A_holds" and out["R"] == "memorises"
+    assert out["B_step30"]["status"] == "unreadable" and out["C"] == "fail"
+    assert OP.score_amend3(st, {}, "too_small", 10, REF24, TH3)["verdict"] == "stopped"
+    assert OP.score_amend3({}, {}, "pass", 0, REF24, TH3)["verdict"] == "untested"
