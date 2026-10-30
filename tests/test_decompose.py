@@ -6,6 +6,7 @@ pcfg_vpd's pure pieces (windows, cell averaging, the r and ratio rules) on their
 from __future__ import annotations
 
 import math
+from collections.abc import Iterator
 from pathlib import Path
 
 import numpy as np
@@ -74,7 +75,9 @@ class Toy(nn.Module):
 
 
 def toy_config(steps: int):
-    return D.load_config(CONFIG, steps=steps, autocast_bf16=False, faithfulness_warmup_steps=3, eval_metric_configs=[],
+    # CEandKLLosses draws random masks from the global generator, as the C2 config's eval metrics do
+    return D.load_config(CONFIG, steps=steps, autocast_bf16=False, faithfulness_warmup_steps=3, eval_freq=2,
+                         eval_batch_size=B, eval_metric_configs=[{"classname": "CEandKLLosses", "rounding_threshold": 0.0}],
                          module_info=[{"module_pattern": "fc*", "C": 4}],
                          ci_config={"mode": "global", "fn_type": "global_shared_mlp", "hidden_dims": [8]})  # fmt: skip
 
@@ -83,22 +86,33 @@ def batches(step: int) -> Tensor:
     return torch.randint(0, VOCAB, (B, T), generator=torch.Generator().manual_seed(1000 + step))
 
 
-def train_toy(ckpt: Path, steps: int, stops: list[int]) -> dict[str, Tensor]:
+def eval_batches() -> Iterator[Tensor]:
+    i = 0
+    while True:
+        yield batches(10_000 + i)
+        i += 1
+
+
+def train_toy(ckpt: Path, steps: int, stops: list[int], with_eval: bool = False) -> dict[str, Tensor]:
     cfg = toy_config(steps)
     d = None
     for end in stops:
         torch.manual_seed(123)  # a resumed process starts from an unrelated RNG state; load() must restore it
         target = Toy()
         d = D.build(target, cfg, (B, T), "cpu")
-        D.run(d, batches, ckpt, D.Plan(end, save_every=end, log_every=1), log=lambda _m: None)
+        recs = D.run(d, batches, ckpt, D.Plan(end, save_every=end, log_every=1), eval_batches() if with_eval else None,
+                     log=lambda _m: None)[1]  # fmt: skip
+        assert any("eval" in r for r in recs) == with_eval
     assert d is not None
     return {k: v.detach().clone() for k, v in d.model.state_dict().items()}
 
 
 def test_resume_equals_unbroken(tmp_path: Path) -> None:
+    """As in the C2 rehearsal (job 47071): the resumed run evaluates, the unbroken one does not; the evaluation's
+    random draws must not reach the training."""
     torch.manual_seed(0)
     unbroken = train_toy(tmp_path / "u.pt", 6, [6])
-    resumed = train_toy(tmp_path / "r.pt", 6, [3, 6])
+    resumed = train_toy(tmp_path / "r.pt", 6, [3, 6], with_eval=True)
     assert unbroken.keys() == resumed.keys()
     for k in unbroken:
         assert torch.equal(unbroken[k], resumed[k]), k

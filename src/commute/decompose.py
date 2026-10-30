@@ -9,7 +9,8 @@ Data are a function of the step (`batches(step)`), so a resumed run sees the bat
 
 Differences from `optimize` (single process, no W&B): the step that `optimize` runs at `config.steps` for logging only
 is the final evaluation here; `optimize` draws one batch for the persistent-PGD shapes before step 0, here the shape
-is given (`batch_dims`); evaluation runs through `evaluate` on the caller's iterator at `config.eval_freq`.
+is given (`batch_dims`); evaluation runs through `evaluate` on the caller's iterator at `config.eval_freq`, on a forked
+RNG so that it does not change the training (in `optimize` it draws from the training's generators).
 """
 
 from __future__ import annotations
@@ -136,7 +137,9 @@ def train_step(d: Decomp, batch: Tensor, step: int) -> dict[str, float]:
 
 
 def evaluate(d: Decomp, eval_batches: Iterator[Tensor], step: int) -> dict[str, float]:
-    """param-decomp's `evaluate` on the config's eval metrics (numbers only), as `optimize` calls it at `step`."""
+    """param-decomp's `evaluate` on the config's eval metrics (numbers only), as `optimize` calls it at `step`, under a
+    forked RNG: its random masks and PGD inits draw from the global torch generators, so without the fork a run with
+    evaluation trains differently from one without (job 47071: run A, evaluated at step 0, against run B, not)."""
     from param_decomp.eval import evaluate as pd_evaluate
     from param_decomp.models.batch_and_loss_fns import recon_loss_kl
     from param_decomp.utils.general_utils import bf16_autocast
@@ -144,7 +147,8 @@ def evaluate(d: Decomp, eval_batches: Iterator[Tensor], step: int) -> dict[str, 
     cfg = d.config
     slow = cfg.slow_eval_on_first_step if step == 0 else step % cfg.slow_eval_freq == 0
     device = str(next(d.model.parameters()).device)
-    with torch.no_grad(), bf16_autocast(enabled=cfg.autocast_bf16):
+    cuda = [torch.cuda.current_device()] if torch.cuda.is_available() else []
+    with torch.random.fork_rng(devices=cuda), torch.no_grad(), bf16_autocast(enabled=cfg.autocast_bf16):
         out = pd_evaluate(eval_metric_configs=list(cfg.eval_metric_configs), model=d.model, eval_iterator=eval_batches,
                           device=device, run_config=cfg, slow_step=slow, n_eval_steps=cfg.n_eval_steps,
                           current_frac_of_training=step / cfg.steps, reconstruction_loss=recon_loss_kl, ppgd_states=d.ppgd)  # fmt: skip
