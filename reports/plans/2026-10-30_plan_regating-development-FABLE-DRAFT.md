@@ -7,8 +7,12 @@ Terms. Supersedes my 2026-10-29 draft (commit `9b857aa`), whose options A and C 
 `reports/plans/2026-10-29_plan_performed-anchor.md` (filed, about to run) and `reports/plans/2026-10-29_plan_e54-keydependent-elicit.md`.*
 
 *Lead's note (2026-10-30): Fable wrote this without knowing that E54 (baseline-lead's) already ran as job 45963: stage 0
-passed, stage 1 stopped on its held-out elicit-rate check (geo-mean 1.70e-3 < 5e-3, commit `7450698`), so option A's E54
-half needs an amendment or a different half-known map before it can be read. Also: no second VPD seed of the 67M exists
+passed, stage 1 stopped on its held-out elicit-rate check (geo-mean 1.70e-3 < 5e-3, commit `7450698`). Update, same day:
+the floor was lowered to 1e-3 (user, after seeing the value) and E54 finished (`reports/analyses/2026-10-30_analysis_e54-keydependent-elicit.md`):
+the route split's r reads 0.77/0.76 (elicit) vs 0.24/0.21 (cipher); steering 0.38/0.39 vs 0.23/0.19, so steering
+separates too, by about a third as much, and its filed cap failed. Option A's E54 half is therefore read; on Fable's
+"what would change it" list this sits between "r separates, steering not" and "both separate". E53 Amendment 1b also
+ran: "not read (swap missed)", breadth question still open. Also: no second VPD seed of the 67M exists
 (`artifacts/vpd/t-9d2b8f02` is the base model), so the granularity check would need a new decomposition.*
 
 ## In plain words
