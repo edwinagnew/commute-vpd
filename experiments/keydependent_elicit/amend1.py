@@ -93,7 +93,9 @@ def main() -> None:
     tasks = {n: ST.load_task(net, a.large / f"windows_{n}.pt", n, n) for n in ("elicit", "cipher")}
     task_of = lambda n: tasks["elicit" if n.startswith("elicit") else "cipher"]
     dws = {n: torch.load(a.large / f"{n}.pt", weights_only=True) for n in STATES}
-    out: dict[str, Any] = {"predictions_sha256": sha256(PRED), "stage0": {}, "states": {}}
+    git = lambda *c: subprocess.run(["git", "-C", str(REPO), *c], capture_output=True, text=True, check=False).stdout.strip()
+    out: dict[str, Any] = {"predictions_sha256": sha256(PRED), "git_head": git("rev-parse", "HEAD"),
+                           "git_dirty": git("status", "--porcelain", "--untracked-files=no"), "stage0": {}, "states": {}}
 
     tol = P["stage0"]["S_tol"]
     for n in STATES:
