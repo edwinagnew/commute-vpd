@@ -1,8 +1,9 @@
 # E45 Amendment 2: anchor 2 read where it has learned, anchor 1 as the format template, one warm-up check (2026-10-29)
 
-*Draft for the qwen-decomp lead, to show the user before anything is filed or run. Plan:
+*Approved by the user 2026-10-30 (Fable's advice adopted) and filed as drafted; run brief
+`experiments/qwen_updates/RUN_BRIEF_amend2.md`, sbatch `cluster/qwen_updates_amend2.sbatch`. Plan:
 `reports/plans/2026-10-28_plan_qwen-q2.md`. This is the plan's last allowed amendment. The user took Fable's three
-recommendations on 2026-10-29 (`decisions.md`, last row). Draft predictions:
+recommendations on 2026-10-29 (`decisions.md`, last row). Predictions:
 `experiments/qwen_updates/results/predictions_amend2.json`.*
 
 **In plain words.** Three of E45's filed rules turned out not to fit the updates as they actually behave, and the

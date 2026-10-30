@@ -1,6 +1,7 @@
 """E45's pure rules (plan reports/plans/2026-10-28_plan_qwen-q2.md): packing, data order, the KL-grid crossings and the
-state read at each grid value, the sample filters, anchor 1's prompt rule and the Job 1 scoring rules. No model, no
-torch; every function is a deterministic function of its arguments. Tests: tests/test_qwen_updates.py.
+state read at each grid value, the sample filters, anchor 1's prompt rule, the Job 1 scoring rules and Amendment 2's
+decisive point. No model, no torch; every function is a deterministic function of its arguments.
+Tests: tests/test_qwen_updates.py.
 
 Comparisons round to 9 places first (`r9`); NaN, infinity or None is a miss in every rule.
 """
@@ -188,3 +189,25 @@ def learned(arm: str, task: dict[str, float], facts: dict[str, float] | None, kn
 def anchor2_holds(em: float | None, known: float | None, known_w0: float | None, rule: dict[str, float]) -> bool:
     """In-format held-out exact match >= em_min and known-fact accuracy >= known_frac x W0's."""
     return at_least(em, rule["em_min"]) and ok(known_w0) and at_least(known, rule["known_frac"] * known_w0)  # type: ignore[operator]
+
+
+# ----------------------------------------------------------------------------- Amendment 2's decisive point
+
+
+def match(pool: dict[int, float], target: float, tol_ratio: float) -> dict[str, Any]:
+    """The pool state (step -> KL on the maths rows) nearest `target` in log KL, a tie to the later step; KL that is
+    missing, non-finite or not positive is never chosen. Matched if r9(|log(KL / target)|) <= r9(log(tol_ratio))."""
+    best = min(((distance(x, target), -t) for t, x in pool.items() if distance(x, target) < math.inf), default=None)
+    if best is None:
+        return {"step": None, "kl": None, "log_dist": None, "matched": False}
+    d, t = best[0], -best[1]
+    return {"step": t, "kl": pool[t], "log_dist": d, "matched": r9(d) <= r9(math.log(tol_ratio))}
+
+
+def decisive(kl: dict[int, float], is_learned: dict[int, bool], target: float, tol_ratio: float,
+             last: int) -> dict[str, Any]:
+    """predictions_amend2.json rules.decisive_point: `match` over the learned states up to step `last`, and over the
+    unlearned ones up to `last` (reported beside it, never read)."""
+    pool = {t: x for t, x in kl.items() if t <= last}
+    return {"read": match({t: x for t, x in pool.items() if is_learned.get(t)}, target, tol_ratio),
+            "nearest_unlearned": match({t: x for t, x in pool.items() if not is_learned.get(t)}, target, tol_ratio)}

@@ -15,6 +15,9 @@ a missed first-minute check stops with exit 2):
            δW saved at the grid's brackets, step 100 and the last step; a fresh start deletes the run's old T, E and δW
   E        reading one run: KL to start on all own and maths rows and the task reading at every saved state, the state
            chosen per grid value, then accuracy, lengths and anchor scores at the chosen states, step 100 and the last
+Amendment 2 (reports/plans/2026-10-29_plan_e45-amendment2.md, results/predictions_amend2.json, RUN_BRIEF_amend2.md): P
+re-reads its saved answers under the amended format rule; own, own2, null and a1 also save at the decisive point's
+maths-KL target and check step 2 against the stopped runs; score adds amend2_decisive.
 Results: results/<stage>[_<run>].json, results/score.json, results/run.log; large files under results/large/.
 """
 
@@ -31,6 +34,7 @@ from typing import Any
 
 import torch
 from job import (
+    AMEND2,
     ARMS,
     BASELINE,
     BF16,
@@ -49,7 +53,7 @@ from job import (
 
 from commute import qwen_facts
 from commute.gsm8k import gold_number, grade
-from commute.qwen_anchors import distill_kl, follows_format
+from commute.qwen_anchors import distill_kl, follows_filed_format, follows_format
 from commute.qwen_eval import SAMPLE, Records, prompt, sample, summary
 from commute.qwen_sft import (
     adamw,
@@ -68,6 +72,7 @@ from commute.qwen_updates import (
     at_least,
     at_most,
     choose,
+    decisive,
     keep_correct,
     learned,
     length_ratio,
@@ -136,8 +141,21 @@ def run_candidate(job: Job, P: dict[str, Any], name: str, items: Records) -> Non
     job.log(f"[P] {name}: strict {P['runs'][name]['accuracy']:.3f} ({time.time() - t0:.0f} s, {job.peaks()})")
 
 
+def format_rates(job: Job, P: dict[str, Any]) -> None:
+    """Amendment 2: every candidate's format follow recomputed from its saved answers under the amended rule (the
+    filed regex's count kept beside it); stops unless format and none give the counts filed in advance."""
+    F, recs = job.pred["rules"]["format_follow"], {n: records(LARGE / "P" / f"{n}.jsonl") for n in P["runs"]}
+    for n, rs in recs.items():
+        P["runs"][n]["format_follow"] = statistics.mean(follows_format(r["response"]) for r in rs)
+    w, wo, x = P["runs"]["format"]["format_follow"], P["runs"]["none"]["format_follow"], F["expected"]
+    P["format"] = {"with": w, "without": wo,
+                   "with_filed_regex": statistics.mean(follows_filed_format(r["response"]) for r in recs["format"])}
+    job.check(P, "P: the amended format rule reproduces 474/512 and 0/512", r9(w) == r9(x["with"])
+              and r9(wo) == r9(x["without"]), P["format"], "P")
+
+
 def stage_P(job: Job) -> None:
-    R, P = job.pred["rules"]["prompt"], job.get("P") or {"runs": {}}
+    R, P = json.loads(PRED.read_text())["rules"]["prompt"], job.get("P") or {"runs": {}}
     if "shots" not in P:
         items = [job.sets["train"][i] for i in job.shot_pool]
         recs = greedy(job, job.gen(), [prompt(job.tok, it["question"]) for it in items], items)
@@ -153,9 +171,9 @@ def stage_P(job: Job) -> None:
     P["chosen"] = pick(P["rules"])
     if P["chosen"] is None:
         run_candidate(job, P, "format", items)
-        w, wo = P["runs"]["format"]["format_follow"], P["runs"]["none"]["format_follow"]
-        P["format"] = {"with": w, "without": wo, "qualifies": at_least(w, R["format_with_min"])
-                       and at_most(wo, R["format_without_max"])}
+        format_rates(job, P)
+        w, wo = P["format"]["with"], P["format"]["without"]
+        P["format"]["qualifies"] = at_least(w, R["format_with_min"]) and at_most(wo, R["format_without_max"])
         P["chosen"] = "format" if P["format"]["qualifies"] else None
     job.put("P", P)
     job.log(f"[P] rules {json.dumps(P['rules'])}; chosen {P['chosen']}")
@@ -236,6 +254,11 @@ def early(job: Job, arm: str, out: dict[str, Any], rec: dict[str, Any], maths: l
             lo, hi = E["first_live"]["band"]
             job.check(out, "step 2 |dW| / (rate sqrt numel)", lo <= r9(min(ratio)) and r9(max(ratio)) <= hi,
                       {"min": min(ratio), "max": max(ratio)}, file)
+            rep = E.get("reproduce_step2", {})  # Amendment 2's control: the stopped run's step 2, all 128 rows
+            if out["run"] in rep:
+                ref = rep[out["run"]]
+                job.check(out, "step 2 KL on the maths rows reproduces the stopped run",
+                          r9(abs(kl / ref - 1)) <= rep["tol"], {"kl": kl, "ref": ref, "tol": rep["tol"]}, file)
             kmax = E["step2_kl_max"] * (ARMS[arm].lr / 1e-5) ** 2  # filed at peak 1e-5; KL grows as the step squared
             job.check(out, "step 2 KL on the maths rows", at_most(kl, kmax), {"kl": kl, "max": kmax}, file)
         if arm == "gold" and str(t) in E["gold_curve"]["ref"]:
@@ -280,9 +303,13 @@ def stage_T(job: Job, arm: str, seed: int) -> None:
                 + (f", KL {json.dumps(rec['kl'])}" if "kl" in rec else ""))
         job.put(f"T_{run}", out)
 
+    # Amendment 2: the maths axis also saves where its tracker first reaches the decisive point's target
+    extra = (job.pred["rules"]["decisive_point"]["target_kl_maths"],) if A.pred == AMEND2 else ()
+    grid = {a: tuple(sorted(CFG.grid + (extra if a == "maths" else ()))) for a in axes}
+    out["grid"] = grid
     t0 = time.time()
     t = train(m, job.W0, lambda t: stream[(t - 1) * per : t * per], r, axes,
-              set(read_steps(A.steps, CFG.dense_until, CFG.every)), CFG.grid, {CFG.steps, A.steps}, save_dw, on_step,
+              set(read_steps(A.steps, CFG.dense_until, CFG.every)), grid, {CFG.steps, A.steps}, save_dw, on_step,
               ckpt, CFG.t_chunk)
     out |= {"done": t == A.steps, "seconds": out["seconds"] + time.time() - t0, "peaks": job.peaks()}
     job.put(f"T_{run}", out)
@@ -408,8 +435,32 @@ def score(job: Job) -> None:
             out[f"amend1_anchor2_learns_s{s}"] = f | {
                 "known_w0": k0, "at_100": gen.get(last, {}).get("facts"),
                 "holds": anchor2_holds(f.get("invented"), f.get("known"), k0, R1)}
+    if (RESULTS / AMEND2).is_file():
+        out["amend2_decisive"] = {run: amend2_point(job, run) for run in AMEND2_RUNS}
     job.put("score", out)
     job.log(f"[score] {json.dumps(out)}")
+
+
+AMEND2_RUNS = ("gold_s0", "own_s0", "own2_s0", "null_s0", "a1_s0", "a1_s1", "a2long_s0", "a2long_s1")
+
+
+def amend2_point(job: Job, run: str) -> dict[str, Any] | None:
+    """predictions_amend2.json rules.decisive_point for one run from its E states (None: E not run): the read state,
+    the nearest unlearned one, |δW| at the read state and the filed own-rows 0.1 point beside them."""
+    D = json.loads((RESULTS / AMEND2).read_text())["rules"]
+    E, T = job.get(f"E_{run}"), job.get(f"T_{run}")
+    if not E.get("done"):
+        return None
+    arm, seed = run.rsplit("_s", 1)
+    k0 = job.get("control").get(f"facts_s{seed}", {}).get("known")
+    st = {int(t): v for t, v in E["states"].items() if t != "0"}
+    ok = {t: learned(ARMS[arm].data, v["task"], E["gen"].get(str(t), {}).get("facts"), k0, D["learned"])
+          for t, v in st.items()}
+    P = D["decisive_point"]
+    res = decisive({t: v["kl"]["maths"] for t, v in st.items()}, ok, P["target_kl_maths"], P["tol_ratio"], CFG.steps)
+    dw = {s["step"]: s["dw_norm"] for s in T.get("steps", [])}
+    return res | {"dw_norm": dw.get(res["read"]["step"]),
+                  "filed_point": [c for c in E["chosen"] if (c["axis"], c["grid"]) == ("own", 0.1)]}
 
 
 def main() -> None:
@@ -423,7 +474,8 @@ def main() -> None:
         assert a.set, "--stage S needs --set"
     if a.stage in ("T", "E"):
         assert a.arm and a.seed in ARMS[a.arm].seeds, "--arm with one of its seeds (job.ARMS)"
-    job = Job(a.stage, a.set or (f"{a.arm}_s{a.seed}" if a.arm else ""), RESULTS / ARMS[a.arm].pred if a.arm else PRED)
+    pred = RESULTS / ARMS[a.arm].pred if a.arm else RESULTS / AMEND2 if a.stage == "P" else PRED  # P: Amendment 2
+    job = Job(a.stage, a.set or (f"{a.arm}_s{a.seed}" if a.arm else ""), pred)
     if a.stage == "control":
         stage_control(job)
     elif a.stage == "P":

@@ -1,5 +1,6 @@
 """E45's pure pieces: packing, data order, the KL-grid crossings and nearest state, the sample filters, the prompt
-rule, the Job 1 scoring rules with the plan's edge cases (section 5), the facts generator, and qwen_sft's masks."""
+rule, the Job 1 scoring rules with the plan's edge cases (section 5), Amendment 2's rules with its appendix B, the
+facts generator, and qwen_sft's masks."""
 
 from __future__ import annotations
 
@@ -8,17 +9,21 @@ import math
 from pathlib import Path
 
 from commute import qwen_facts as qf
+from commute.qwen_anchors import follows_filed_format, follows_format
 from commute.qwen_sft import n_targets, targets
 from commute.qwen_updates import (
     anchor2_holds,
     at_least,
+    at_most,
     choose,
     crossed,
     cycle,
+    decisive,
     keep_correct,
     keep_finished,
     learned,
     length_ratio,
+    match,
     nearest,
     pack_whole,
     packed_stream,
@@ -31,6 +36,7 @@ from commute.qwen_updates import (
 RESULTS = Path(__file__).resolve().parents[1] / "experiments/qwen_updates/results"
 PRED = json.loads((RESULTS / "predictions.json").read_text())
 AMEND1 = json.loads((RESULTS / "predictions_amend1.json").read_text())
+AMEND2 = json.loads((RESULTS / "predictions_amend2.json").read_text())
 
 
 # ----------------------------------------------------------------------------- packing and order
@@ -221,3 +227,89 @@ def test_checkpoint_resume_is_exact(tmp_path: Path):
     assert back[1].param_groups[0]["lr"] == part[1].param_groups[0]["lr"]
     steps(back, grads[3:])
     assert all(torch.equal(whole[0][k], back[0][k]) for k in W0)
+
+
+# ----------------------------------------------------------------------------- Amendment 2 (plan appendix B)
+
+GOOD = "Given: 3 apples; 2 pears\nSteps:\n- 3 + 2 = 5\nThe answer is 5."
+DP = AMEND2["rules"]["decisive_point"]
+TARGET, TOL = DP["target_kl_maths"], DP["tol_ratio"]
+
+
+def test_amend2_format_edges():
+    assert follows_filed_format(GOOD) and follows_format(GOOD)
+    for s in ("", "   \n\t", GOOD.replace("- 3", "  - 3"), GOOD + "\nThanks!", GOOD.replace("- 3 + 2 = 5\n", "")):
+        assert not follows_format(s), repr(s)  # empty, whitespace only, indented step, text after, no step line
+    for s in (GOOD.replace("\n", "\r\n"), GOOD.replace("\n", "  \n"), GOOD.replace("\n", "\n\n")):
+        assert follows_format(s) and not follows_filed_format(s), repr(s)  # CRLF, markdown breaks, blank lines
+    assert follows_format("  \n " + GOOD)  # whitespace before "Given:"
+    spaces = "Given: 3\nSteps:\n-  \nThe answer is 5."  # a step line of spaces: filed regex passes, rstrip empties it
+    assert follows_filed_format(spaces) and follows_format(spaces)  # the OR keeps the superset
+
+
+def test_amend2_format_on_saved_P_answers():
+    """The check stage P makes before anything else: 474/512 with the format prompt, 0 without (and none of the other
+    candidates), the filed regex 17/512 and inside the 474. Skipped where the saved answers are not mounted."""
+    import pytest
+
+    d = RESULTS / "large" / "P"
+    if not (d / "format.jsonl").is_file():
+        pytest.skip("large/P not mounted")
+    recs = {n: [json.loads(x)["response"] for x in (d / f"{n}.jsonl").read_text().splitlines()]
+            for n in ("format", "none", "fewshot", "recheck", "givens")}
+    ex = AMEND2["rules"]["format_follow"]["expected"]
+    assert sum(map(follows_format, recs["format"])) / 512 == ex["with"] == 474 / 512
+    assert sum(map(follows_filed_format, recs["format"])) == 17
+    assert all(follows_format(r) for r in recs["format"] if follows_filed_format(r))
+    assert all(not follows_format(r) for n in ("none", "fewshot", "recheck", "givens") for r in recs[n])
+
+
+def test_amend2_match_edges():
+    lo, hi = TARGET / 1.5, TARGET * 1.5
+    assert match({}, TARGET, TOL) == {"step": None, "kl": None, "log_dist": None, "matched": False}
+    assert match({3: 0.0, 4: math.nan, 5: math.inf}, TARGET, TOL)["step"] is None  # never chosen
+    assert match({3: 0.0, 7: lo}, TARGET, TOL)["step"] == 7
+    assert match({7: lo, 9: hi}, TARGET, TOL)["step"] == 9  # a tie in log distance: the later step
+    assert match({7: lo}, TARGET, TOL)["matched"] and match({9: hi}, TARGET, TOL)["matched"]  # band edges inclusive
+    assert not match({7: lo * 0.999}, TARGET, TOL)["matched"] and not match({9: hi * 1.001}, TARGET, TOL)["matched"]
+    assert not match({5: 0.1, 100: 0.3}, TARGET, TOL)["matched"]  # never reaches 0.412: unmatched, nearest reported
+    over = match({8: 0.3, 9: 1.2}, TARGET, TOL)  # overshoot between reads: both brackets outside the band
+    assert over["step"] == 9 and not over["matched"]
+
+
+def test_amend2_decisive_pool():
+    kl = {9: 0.62, 12: 0.8, 300: TARGET}
+    d = decisive(kl, {9: False, 12: True, 300: True}, TARGET, TOL, 100)
+    assert d["read"]["step"] == 12 and d["read"]["matched"]  # the learned in-band state, not the nearer unlearned one
+    assert d["nearest_unlearned"]["step"] == 9
+    assert decisive({300: TARGET}, {300: True}, TARGET, TOL, 100)["read"]["step"] is None  # step 300: never in the pool
+    assert decisive({100: TARGET}, {}, TARGET, TOL, 100)["read"]["matched"] is False  # nothing learned: unmatched
+
+
+def test_amend2_decisive_on_real_states():
+    """gold_s0 (the positive control) and both a2long seeds at step 100, from their E files; a2long_s1 would take step
+    300 without the step-100 limit."""
+    L, k0 = AMEND2["rules"]["learned"], json.loads((RESULTS / "control.json").read_text())
+    for run, data in (("gold_s0", "gold"), ("a2long_s0", "a2"), ("a2long_s1", "a2")):
+        E = json.loads((RESULTS / f"E_{run}.json").read_text())
+        st = {int(t): v for t, v in E["states"].items()}
+        ok = {t: learned(data, v["task"], E["gen"].get(str(t), {}).get("facts"), k0[f"facts_s{run[-1]}"]["known"], L)
+              for t, v in st.items()}
+        kl = {t: v["kl"]["maths"] for t, v in st.items()}
+        d = decisive(kl, ok, TARGET, TOL, 100)["read"]
+        ex = DP["expected_matched"][run]
+        assert (d["step"], d["matched"], round(d["log_dist"], 4)) == (ex["step"], True, ex["log_dist"]), run
+        if run == "a2long_s1":
+            assert decisive(kl, ok, TARGET, TOL, 300)["read"]["step"] == 300
+    s0, s1 = (json.loads((RESULTS / f"E_a2long_s{s}.json").read_text())["states"]["100"]["kl"]["maths"] for s in (0, 1))
+    assert math.isclose(TARGET, (s0 + s1) / 2, rel_tol=1e-15)
+
+
+def test_amend2_step2_limit():
+    E = AMEND2["early"]
+    lim = E["step2_kl_max"]
+    assert math.isclose(lim, 0.1 * PRED["early"]["control"]["kl_ref"], rel_tol=1e-12)
+    assert at_most(lim, lim) and not at_most(0.010679006, lim) and not at_most(math.nan, lim)
+    assert math.isclose(lim * (2e-5 / 1e-5) ** 2, 0.042716017681552652, rel_tol=1e-12)  # own2's scaled limit
+    rep = E["reproduce_step2"]
+    assert all(at_most(rep[r], lim) for r in ("own_s0", "null_s0"))  # the stopped runs pass the new limit

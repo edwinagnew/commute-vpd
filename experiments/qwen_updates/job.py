@@ -46,6 +46,7 @@ from commute.qwen_vpd import fp32_matmuls, load_target
 
 HERE = Path(__file__).resolve().parent
 RESULTS, PRED = HERE / "results", HERE / "results" / "predictions.json"
+AMEND2 = "predictions_amend2.json"  # in results/: Amendment 2 (stage P and the arms below that name it)
 LARGE = RESULTS / "large"  # on the cluster a link into commute-data (samples, δW, responses)
 MATHS = HERE.parent / "qwen_sft" / "results" / "maths_rows.json"
 BASELINE = HERE.parent / "qwen_gsm8k_baseline" / "results" / "large" / "greedy.jsonl"
@@ -108,8 +109,8 @@ class Arm:
     pred: str = "predictions.json"  # in results/; the run refuses to start without it
 
 
-ARMS = {"gold": Arm("gold"), "own": Arm("own"), "own2": Arm("own", lr=2e-5), "null": Arm("null"),
-        "a1": Arm("a1", seeds=(0, 1)), "a2": Arm("a2", seeds=(0, 1)),
+ARMS = {"gold": Arm("gold"), "own": Arm("own", pred=AMEND2), "own2": Arm("own", lr=2e-5, pred=AMEND2),
+        "null": Arm("null", pred=AMEND2), "a1": Arm("a1", seeds=(0, 1), pred=AMEND2), "a2": Arm("a2", seeds=(0, 1)),
         "a2long": Arm("a2", steps=300, seeds=(0, 1), pred="predictions_amend1.json")}  # Amendment 1 (plan section 8)
 
 
