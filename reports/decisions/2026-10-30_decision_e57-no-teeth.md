@@ -78,3 +78,11 @@ has no saved state between steps 12 and 100. So a lower size at which both ancho
 saved data just cannot show it. A sixth option: rerun anchor 2 saving states between steps 12 and 100, and look for a
 learned state near anchor 1's 0.33. That costs $0 on the cluster, about 35 min per seed. If such a state exists, the
 anchor rows can be scored as filed, at that matched point.
+
+**Added 20:10: the direct share's row bootstrap** (`experiments/qwen_reading/results/boot_direct.json`, report
+`reports/analyses/2026-10-30_analysis_e57-reading-the-update.md`). Gold and the random changes do not share an
+interval: gold 0.092 [0.090, 0.093], E40 0.063 [0.062, 0.064], random 0.022 [0.020, 0.024] and 0.029 [0.026, 0.032];
+gold minus random +0.06 to +0.07, interval clear of zero. So the "close D3 now" condition is not met. Anchor 2 sits
+below both random changes on both seeds (0.012 [0.010, 0.013], 0.012 [0.011, 0.014]), which no prediction covered.
+Caveats: no positive control at this scale, gold has one seed, gold moves the maths outputs more (KL 0.70 against
+0.50-0.53) and no dose check was run.
