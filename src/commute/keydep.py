@@ -73,11 +73,18 @@ def route_r(ctx: Ctx, t: ST.Task, dW: ST.DW, base: dict[str, Any]) -> dict[str, 
     return {"r": rs["shares"]["r"], "G_logodds": rs["gain"], "cells": rs["cells"]}
 
 
-def readings(ctx: Ctx, t: ST.Task, dW: ST.DW, g: dict[str, float], base: dict[str, Any]) -> dict[str, Any]:
-    b, rr = ST.b3(ctx.net, t, dW, g), route_r(ctx, t, dW, base)
+def steer_reading(ctx: Ctx, t: ST.Task, dW: ST.DW, g: dict[str, float]) -> dict[str, Any]:
+    """Steering's S (E52's B3) of one state, its block and its block-0 share. Taken out of `readings` (2026-10-30, for
+    experiments/regating_truth_table), the same calls in the same order."""
+    b = ST.b3(ctx.net, t, dW, g)
     # the filed edge case: a share whose gain is within 1e-6 of 0 is nan (here, not in steering.py)
-    return {"S": EL.share_or_nan(b["S"], g["G_score"]), "layer": b["layer"], "S_block0": b["layers"][0]["score"], "b3_layers": b["layers"],
-            **rr, "r": EL.share_or_nan(rr["r"], rr["G_logodds"])}
+    return {"S": EL.share_or_nan(b["S"], g["G_score"]), "layer": b["layer"], "S_block0": b["layers"][0]["score"], "b3_layers": b["layers"]}
+
+
+def readings(ctx: Ctx, t: ST.Task, dW: ST.DW, g: dict[str, float], base: dict[str, Any]) -> dict[str, Any]:
+    s = steer_reading(ctx, t, dW, g)
+    rr = route_r(ctx, t, dW, base)
+    return {**s, **rr, "r": EL.share_or_nan(rr["r"], rr["G_logodds"])}
 
 
 # ----------------------------------------------------------------------------- the fine-tunes
