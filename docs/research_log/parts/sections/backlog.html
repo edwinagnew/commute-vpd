@@ -3,31 +3,31 @@
 <p class="small">Everything here goes through the design check before it is built. <code>backlog.md</code> has the dated entries.</p>
 <div class="cards">
   <div class="card"><div class="k">Maps not yet run</div><ul>
-    <li><strong>LoRA split: run as E14.</strong> Remaining: rerun the split stage on the cluster to recover the per-subcomponent updates, lost with the pod.</li>
-    <li><strong>Scaled adjoint state as a map (from E14).</strong> E31 ran a second seed and two more tasks (the kept behaviour falls along training, E47); the unscaled variant keeps the behaviour but damages the rest of the model. Remaining: a scale between c and 1, the cipher tasks; through the design check.</li>
-    <li><strong>Exact weights by teacher training held near the fine-tuned weights (2026-10-29).</strong> E43's remainder at step 10 was mostly teacher training's overshoot (cosine -0.90); a weight-space penalty would make it small by construction. New method (E43).</li>
-    <li><strong>Where a fine-tune writes (from E14).</strong> Its output directions against the dead pieces' span and against the write directions of the pieces Γ switches on at the trigger; through the design check.</li>
-    <li><strong>Updating Γ: E15, being fixed.</strong> Two protocols took the unchanged model off the floor; the refit's attacker (0.42 nats) is weaker than the harness's (0.70). The fix is an attacker matched to the harness's.</li>
-    <li><strong>The strong version:</strong> warm-start a fresh VPD run on the updated weights against a zero-update warm start and the cross-seed baseline.</li></ul></div>
+    <li><strong>LoRA split (E14).</strong> Rerun the split stage on the cluster to recover the per-subcomponent updates, lost with the pod.</li>
+    <li><strong>Scaled adjoint state as a map (E14).</strong> Left: a scale between c and 1, the cipher tasks (E31, E47).</li>
+    <li><strong>Teacher training held near the fine-tuned weights.</strong> E43's remainder was mostly overshoot; a weight-space penalty would make it small by construction.</li>
+    <li><strong>Where a fine-tune writes (E14).</strong> Its output directions against the dead pieces' span and the pieces Γ switches on at the trigger.</li>
+    <li><strong>Updating Γ (E15).</strong> The refit's attacker (0.42 nats) is weaker than the harness's (0.70); the fix is a matched attacker.</li>
+    <li><strong>The strong version:</strong> warm-start a fresh VPD run on the updated weights against a zero-update warm start.</li></ul></div>
   <div class="card"><div class="k">Measurements that settle an open question</div><ul>
     <li><strong>Save the adversary's mask</strong>; bin by layer and importance; restrict to the changed pieces.</li>
     <li><strong>A per-update do-nothing reference</strong> beside every adversarial verdict, same update and card; and an anchor for the pass line (section {{n:gaps}}).</li>
     <li><strong>More adversary seeds</strong> before another verdict near 1.5; state-level floors on every task.</li>
     <li><strong>The Pile adversary read at the trigger</strong>, the one remaining test of "fragile at the trigger".</li>
-    <li><strong>The Δ-share seed spread at the LoRA's plateau</strong> (E9; the fine-tune control on one card was run in E14).</li>
-    <li><strong>The split states' off-target damage and every state's sparsity loss (from E16).</strong> Not measured; the sparsity loss is part of the weak version.</li>
-    <li><strong>The adversary's budget.</strong> Holds from 20 to 160 steps under the paper's step rule (E20, E23). Left: a second seed on the updated models; per-row masks, restarts.</li>
-    <li><strong>Induction, for further consideration</strong> (user, 2026-10-22): a fine-tune adding something new to a known mechanism would attach new behaviour to known machinery. First check: whether the copy task's switched-on set includes the layer-1 query and key subcomponents the VPD paper decomposes.</li>
-    <li><strong>Reset plan E46</strong> (<code>reports/plans/2026-10-28_plan_regating-line-reset.md</code>): stage 0 is done (E46); stage 1 waits on E44 and both E45 anchors.</li>
+    <li><strong>The Δ-share seed spread at the LoRA's plateau</strong> (E9).</li>
+    <li><strong>The split states' off-target damage and every state's sparsity loss (E16).</strong> Not measured.</li>
+    <li><strong>The adversary's budget.</strong> Holds from 20 to 160 steps (E20, E23). Left: a second seed on the updated models; restarts.</li>
+    <li><strong>Induction</strong> (user, 2026-10-22): does the copy task's switched-on set include the layer-1 query and key subcomponents the VPD paper decomposes?</li>
+    <li><strong>Reset plan E46</strong> (<code>reports/plans/2026-10-28_plan_regating-line-reset.md</code>): stage 1 waits on E44 and both E45 anchors.</li>
 </ul></div>
   <div class="card"><div class="k">Mechanism and definitions
 </div><ul>
     <li><strong>Define re-weighting, recruit and create in VPD terms.</strong> E10 gives the first data.</li>
-    <li><strong>E18's remainder from another window: run as E18's fourth amendment.</strong> Mostly an averaging baseline. Remaining: the remainder with the fixed change present, borrowed only from nearest-neighbour inputs.</li>
+    <li><strong>E18's remainder from another window.</strong> Left: the remainder with the fixed change present, borrowed only from nearest-neighbour inputs.</li>
     <li><strong>Does an update load on the pieces Γ rates important for the task?</strong> Never measured directly.</li>
-    <li><strong>One rerun, two questions (user, 2026-10-21): do changed subcomponents keep their meaning, and does component training find the fine-tune's solution?</strong> Both need states E16 did not save (emoticon at steps 100 and 1,000, about 30 minutes on an L40).</li></ul></div>
+    <li><strong>Do changed subcomponents keep their meaning, and does component training find the fine-tune's solution?</strong> (user, 2026-10-21) Needs states E16 did not save (emoticon at steps 100 and 1,000, about 30 minutes on an L40).</li></ul></div>
   <div class="card"><div class="k">Next phases</div><ul>
-    <li><strong>A larger model</strong> with a real post-trained sibling (Q9): started 2026-10-27 as the Qwen3-1.7B line, with teacher training as the map; E40 has run once, its rerun is held by the re-plan and E44 and E45 are planned (section {{n:next}}). Every harness here needs re-validating on the new decomposition.</li>
+    <li><strong>A larger model</strong> with a real post-trained sibling (Q9): the Qwen3-1.7B line, started 2026-10-27 (section {{n:next}}). Every harness here needs re-validating on the new decomposition.</li>
     <li><strong>RL updates</strong> at matched behavioural effect (Q10).</li>
     <li><strong>Toy ground truth</strong> on the repository's small models.</li>
     <li><strong>Housekeeping:</strong> merge the nested ladder results directory; note "four checks" in decisions.</li></ul></div>

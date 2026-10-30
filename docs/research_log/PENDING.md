@@ -7,4 +7,3 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
-- 2026-10-30 qwen-decomp-lead: E57 card (Blocking for Stage D): row 1 has no teeth at scale, both random controls read re-gating share ~0.99; options A-D and Fable advice in reports/decisions/2026-10-30_decision_e57-no-teeth.md; E57 experiment card: B2 and C0 done, C running.
