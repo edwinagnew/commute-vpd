@@ -22,8 +22,6 @@ import json
 import math
 import subprocess
 import sys
-import time
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -33,19 +31,25 @@ from torch import Tensor
 from commute import anchors as AN
 from commute import elicit as EL
 from commute import steering as ST
-from commute.faithfulness import model_state
+
+# moved to commute.keydep (2026-10-30, E56), unchanged; finetunes below calls keydep's per-seed bodies in the same order
+from commute.keydep import (
+    BATCH,
+    Ctx,
+    base_of,
+    cipher_ft,
+    elicit_ft,
+    geo_rate,
+    log,
+    make_ctx,
+    readings,
+)
 
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
 PRED = RESULTS / "predictions.json"
 TASKS = ("elicit", "cipher")
 SEEDS = (0, 1)
-E12_CHECKS = (10, 30, 100, 300)
-P_LEARN, BATCH = 0.5, 64
-
-
-def log(msg: str) -> None:
-    print(f"{time.strftime('%H:%M:%S')} {msg}", flush=True)
 
 
 def _finite(o: Any) -> Any:
@@ -71,55 +75,6 @@ def sha256(path: Path) -> str:
 def git(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["git", "-C", str(REPO), *args], capture_output=True, text=True, check=False)
 
-
-def geo_rate(lp: Tensor) -> float:
-    """Geometric mean over windows of P(target): exp(mean log P)."""
-    return math.exp(float(lp.mean()))
-
-
-@dataclass
-class Ctx:
-    net: ST.Net
-    lift: dict[str, Any]
-    comps0: dict[str, tuple[Tensor, Tensor]]
-    P: dict[str, Any]
-    large: Path
-
-
-def make_ctx(a: argparse.Namespace, P: dict[str, Any]) -> Ctx:
-    from commute import vpd
-
-    net = ST.Net(a.device)
-    alive = torch.load(a.alive, weights_only=False)["alive"]
-    lift = AN.lift_context(net.model, {k: v.cpu().bool() for k, v in alive.items()})
-    return Ctx(net, lift, vpd.component_weights(net.model), P, a.large)
-
-
-# ----------------------------------------------------------------------------- the two readings
-
-
-def base_of(ctx: Ctx, t: ST.Task) -> dict[str, Any]:
-    from commute.local_faith import route_cells
-
-    return route_cells(ctx.net.model, t.toks, t.half, t.table, BATCH)
-
-
-def route_r(ctx: Ctx, t: ST.Task, dW: ST.DW, base: dict[str, Any]) -> dict[str, Any]:
-    """r of the least-squares split state: target W0 + delta-W, components lifted; r = (L01 - L00) / (T1 - T0)."""
-    from commute.local_faith import route_split
-
-    m = ctx.net.model
-    target = {k: w + dW[k].to(w.device, w.dtype) for k, w in ctx.net.W0.items()}
-    with model_state(m, target=target, components=AN.lifted(m, ctx.lift, dW)):
-        rs = route_split(m, t.toks, t.half, t.table, base, ctx.comps0, BATCH)
-    return {"r": rs["shares"]["r"], "G_logodds": rs["gain"], "cells": rs["cells"]}
-
-
-def readings(ctx: Ctx, t: ST.Task, dW: ST.DW, g: dict[str, float], base: dict[str, Any]) -> dict[str, Any]:
-    b, rr = ST.b3(ctx.net, t, dW, g), route_r(ctx, t, dW, base)
-    # the filed edge case: a share whose gain is within 1e-6 of 0 is nan (here, not in steering.py)
-    return {"S": EL.share_or_nan(b["S"], g["G_score"]), "layer": b["layer"], "S_block0": b["layers"][0]["score"], "b3_layers": b["layers"],
-            **rr, "r": EL.share_or_nan(rr["r"], rr["G_logodds"])}
 
 
 # ----------------------------------------------------------------------------- stage 0
@@ -225,40 +180,15 @@ def stage1(ctx: Ctx, marker0: int) -> dict[str, Any]:
 
 # ----------------------------------------------------------------------------- stage 2
 
-
-def finetune(ctx: Ctx, w: dict[str, Any], seed: int, checks: tuple[int, ...]) -> Any:
-    from commute.finetune import ArmAConfig, finetune_arm_a
-
-    cfg = ArmAConfig(o_token=w["table"], lr=AN.FT_LR, steps=E12_CHECKS[-1], checkpoints=checks, seed=seed)
-    return finetune_arm_a(ctx.net.model, w["train"], w["heldout"], cfg, ctx.net.device, log)
-
-
-def scored_step(evals: dict[int, dict[str, float]]) -> tuple[int, bool]:
-    """E12's rule: the first of 10, 30, 100, 300 with held-out P(target) >= 0.5, else 300 ('did not learn')."""
-    return next(((s, True) for s in E12_CHECKS if evals[s]["p_o"] >= P_LEARN), (E12_CHECKS[-1], False))
-
-
 def finetunes(ctx: Ctx, ws: dict[str, dict[str, Any]], out: dict[str, Any]) -> dict[str, ST.DW]:
     """Elicit at E12's step, then the cipher at the norm-matched step in 1..30 and at its own E12 step, per seed."""
     dws, meta = {}, out["finetunes"]
     for s in SEEDS:
-        ft = finetune(ctx, ws["elicit"], s, E12_CHECKS)
-        step, learned = scored_step(ft.evals)
-        dws[f"elicit_s{s}"] = ft.deltas[step]
-        meta[f"elicit_s{s}"] = {"step": step, "learned": learned, "norm": EL.summed_norm(ft.deltas[step]),
-                                "p_heldout": {k: e["p_o"] for k, e in ft.evals.items()}}
+        dws[f"elicit_s{s}"], meta[f"elicit_s{s}"] = elicit_ft(ctx, ws["elicit"], s)
         dump("stage2.json", out)
-    cipher_checks = (*range(1, 31), 100, 300)
     for s in SEEDS:
-        ft = finetune(ctx, ws["cipher"], s, cipher_checks)
-        norms = {k: EL.summed_norm(ft.deltas[k]) for k in range(1, 31)}
-        m = EL.matched_step(norms, meta[f"elicit_s{s}"]["norm"])
-        own, learned = scored_step(ft.evals)
-        dws[f"cipher_s{s}"], dws[f"cipher_own_s{s}"] = ft.deltas[m], ft.deltas[own]
-        meta[f"cipher_s{s}"] = {"step": m, "norm": norms[m], "at_bound": m == 30, "same_state": m == own, "norms": norms,
-                                "p_heldout": {k: e["p_o"] for k, e in ft.evals.items()}}
-        meta[f"cipher_own_s{s}"] = {"step": own, "learned": learned, "norm": EL.summed_norm(ft.deltas[own])}
-        del ft
+        c, co = f"cipher_s{s}", f"cipher_own_s{s}"
+        dws[c], dws[co], meta[c], meta[co] = cipher_ft(ctx, ws["cipher"], s, meta[f"elicit_s{s}"]["norm"])
         dump("stage2.json", out)
     for n in dws:
         log(f"[ft {n}] step {meta[n]['step']} ||dW|| {meta[n]['norm']:.4f}" + (f" at_bound {meta[n]['at_bound']}" if "at_bound" in meta[n] else ""))
@@ -340,7 +270,7 @@ def main() -> None:
     assert P["settings"]["half"] == AN.HALF and P["settings"]["route_batch"] == BATCH, "predictions.json settings disagree with the code"
     a.large.resolve().mkdir(parents=True, exist_ok=True)
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
-    ctx = make_ctx(a, P)
+    ctx = make_ctx(a.device, a.alive, P, a.large)
     if a.stage == "2":
         return stage2(ctx)
     s0 = {**stage0(ctx, a.e46), "commit": git("rev-parse", "HEAD").stdout.strip()}
