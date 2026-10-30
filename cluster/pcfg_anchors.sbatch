@@ -14,6 +14,8 @@
 #   sbatch --job-name=commute-e55-amend4 --time=00:10:00 cluster/pcfg_anchors.sbatch amend4  # Amendment 4, ~2-5 min (cost not measured)
 #   sbatch --job-name=commute-e55-amend5c --time=00:10:00 cluster/pcfg_anchors.sbatch amend5 controls  # Amendment 5 controls, ~2-3 min (estimated)
 #   sbatch --job-name=commute-e55-amend5 cluster/pcfg_anchors.sbatch amend5  # (after amend5c finishes: both write amend5.json) Amendment 5 arms, ~12-16 min (estimated)
+#   sbatch --job-name=commute-e55-c1c --time=00:15:00 cluster/pcfg_anchors.sbatch c1 controls  # Stage C1 controls, <= 7 min (estimated)
+#   sbatch --job-name=commute-e55-c1 cluster/pcfg_anchors.sbatch c1  # (after c1c finishes and its controls are read: both write c1.json) Stage C1 states, <= 83 min = up to 4 jobs (estimated)
 # a0: per prior, 500 pretraining iterations stopped at 250 and resumed from the saved file, behaviour and floors on 1K
 #   fresh samples -> experiments/pcfg_anchors/results/a0.json; checkpoints and a0.log in results/large/a0/.
 # a1 PRIOR: 50K iterations (~10 min plus compile at the a0 rate) with a 25-min deadline. Finished: results/a1_PRIOR.json;
@@ -45,8 +47,15 @@
 #   three states read's ~1 min: estimated ~1.5-2 min per arm) -> results/amend5.json after each arm; states in
 #   results/large/amend5/; 22-min deadline, exit 3 resubmits and resumes. A control miss ->
 #   results/amend5_control_miss.json, exit 1. Log results/large/amend5/amend5.log.
-# a1, a2, amend1 and amend5: on exit 3 (deadline: saved, not finished) the job resubmits itself with the same arguments from
-#   $SLURM_SUBMIT_DIR, at most 3 times (count in E55_RESUBMITS); the next job resumes from the saved files.
+# c1 [controls]: experiments/pcfg_anchors/c1.py (predictions_c1.json; refuses a draft): model-free controls, then with
+#   "controls" the instruments' controls alone (pruning on LOW, sign flipped; scratch = NEVER reverse fine-tuned at 1e-5
+#   and 1e-6, <= 10K steps each at ~12.5 ms/step: <= 7 min). Without, it refuses (exit 2) until c1.json holds the controls,
+#   then per listed state (25 with reverse fine-tuning, <= 3.3 min each at the cap; 2 steering only, ~10 s): pruning,
+#   steering, reverse fine-tuning -> results/c1.json after each state. 22-min deadline, exit 3 resubmits (up to 6 times
+#   for c1) and resumes; a reverse fine-tune cut by the deadline is rerun. A model-free miss -> results/c1_control_miss.json,
+#   exit 1. Log results/large/c1/c1.log.
+# a1, a2, amend1, amend5 and c1: on exit 3 (deadline: saved, not finished) the job resubmits itself with the same arguments from
+#   $SLURM_SUBMIT_DIR, at most 3 times (c1: 6) (count in E55_RESUBMITS); the next job resumes from the saved files.
 #SBATCH --job-name=commute-e55-a0
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -60,7 +69,7 @@
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; puts this clone's src first on PYTHONPATH
 cd "$COMMUTE_REPO"
-usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...] | amend1 | amend2 | amend3 | amend4 | amend5 [controls]"
+usage="usage: sbatch cluster/pcfg_anchors.sbatch a0 | a1 {LOW,HIGH,NEVER} | a1c-patch | a1c-probe | a2 ARM [ARM ...] | amend1 | amend2 | amend3 | amend4 | amend5 [controls] | c1 [controls]"
 stage=${1:-}
 args=("${@:2}")
 case "$stage ${#args[@]}" in
@@ -71,6 +80,8 @@ case "$stage ${#args[@]}" in
   *) echo "$usage" >&2; exit 2 ;;
 esac
 resubmits=${E55_RESUBMITS:-0}
+max_resubmits=3
+[ "$stage" = c1 ] && max_resubmits=6
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$* resubmits=$resubmits" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 out=experiments/pcfg_anchors/results/large/$stage
@@ -86,17 +97,18 @@ case "$stage" in
   amend3) cmd=(.venv/bin/python experiments/pcfg_anchors/amend3.py); logf=$out/amend3.log ;;
   amend4) cmd=(.venv/bin/python experiments/pcfg_anchors/amend4.py); logf=$out/amend4.log ;;
   amend5) cmd=(.venv/bin/python experiments/pcfg_anchors/amend5.py --deadline-min 22 ${args[@]:+--controls-only}); logf=$out/amend5.log ;;
+  c1) cmd=(.venv/bin/python experiments/pcfg_anchors/c1.py --deadline-min 22 ${args[@]:+--controls-only}); logf=$out/c1.log ;;
 esac
 rc=0
 "${cmd[@]}" 2>&1 | tee -a "$logf" || rc=$?
 if [ "$rc" = 3 ]; then
-  if [ "$resubmits" -ge 3 ]; then
+  if [ "$resubmits" -ge "$max_resubmits" ]; then
     echo "=== DEADLINE (exit 3) after $resubmits resubmits: not resubmitting; resume by hand ==="
     exit 3
   fi
   cd "$SLURM_SUBMIT_DIR"
   E55_RESUBMITS=$((resubmits + 1)) sbatch --job-name="$SLURM_JOB_NAME" "$0" "$stage" "${args[@]}"
-  echo "=== DEADLINE (exit 3): resubmitted ($((resubmits + 1)) of 3) ==="
+  echo "=== DEADLINE (exit 3): resubmitted ($((resubmits + 1)) of $max_resubmits) ==="
   exit 0
 fi
 echo "=== FINISHED (exit $rc) — results in $COMMUTE_REPO/experiments/pcfg_anchors/results/ ==="
