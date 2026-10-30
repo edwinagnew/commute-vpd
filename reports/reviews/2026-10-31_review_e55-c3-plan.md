@@ -164,3 +164,98 @@ labels are neither / reuses / neither (x 0.42, 0.55, 0.47). **Fix.** Say "one of
 truth, add the planted-wrapper control, and use a continuous reverse reading at Jain's lower rate. Then apply S1-S3.
 If the lead wants only the port check now, Stage 0 plus P1 may run as written, relabelled "do C1b's instruments carry
 over to the 67M". No position or verdict should be read from it.
+
+## Re-check of the revised plan (2026-10-31, plan at 2ad70c9)
+
+The revision answers every item of the first review. It adds four small problems, two of which could void an
+instrument or misread the result: the prior of the value on the new axis, and the planted wrapper's pass rules. Fixing
+them takes no change to the design, so the plan is ready for code once they are written in.
+
+### Status of the first review's items
+
+| item | status | note |
+|---|---|---|
+| B1 target | resolved | κ = KL(W₀ ‖ m) can be read on every map, and the claim now says what a "VPD" reading means. See N1 for what κ-based readings may still track. |
+| B2 poles | resolved | The rank-1-to-cipher axis has both ends fixed by construction. Copy and the carry are reported, and outcome (e) names the label reading. |
+| B3 reverse | resolved | lr 3e-6 is sourced (Jain's lower rate, C1's lr/10). The interpolated half-life is continuous, κ is read every step, and the cap is 1,000. |
+| S1 firmness | resolved | A 2,000-draw seed bootstrap over 8 seeds, and the new fine-tunes are named in the design check. See N4 on reproducing them. |
+| S2 verdict | resolved | Per-instrument verdicts, plus "shared (by X)" and "conflict". |
+| S3 distance | resolved | D is measured in job 1 before filing, and rule 5 scores it. |
+| S4 attention, unit ids | resolved | |
+| S5 pruning control | addressed, with new problems | See N2 and N3. |
+| S6 to S8, M1 to M5 | resolved | |
+
+### New problems
+
+**N1. The new axis is also an axis of W₀'s prior on the value (should fix, before filing).** Plan § 3 "Positions", §
+6 rule 5. The rank-1 values are W₀'s top choice (p₀ about 0.1-0.3, log about −1.5), and the cipher's are under 1e-4
+(log about −10). Elicit's values are W₀'s rank 2-20 picks, roughly log −3 to −4. On a log-prior axis elicit then sits
+near p ≈ 0.75-0.8, already on the "VPD" side. So does r (0.876), and so would any instrument whose reading changes
+smoothly with how likely W₀ already found the answer. κ itself depends on p₀(value) (the plan's own κ formula in §
+4). So a joint "shared" verdict cannot tell "every mechanism instrument has the granularity limit" from "every
+instrument, VPD included, reads the value's prior on this pair". That second reading is Def 1 possession, which the
+probe q already gives trivially. The distance rule does not catch it, because D is not the prior.
+**Fix.** Add a "prior" baseline column: the per-map mean of log p₀(value) on the score half, read from W₀ alone in
+job 1 for $0. Give it rule 5's treatment: if p_prior has gap "ok" and an instrument's p is within 0.1 of p_prior (or
+in its firm band), the instrument reads "prior". Write outcome (f) in § 2: the instruments track the value's prior,
+as r does. E58 Amendment 6's prior-matched cipher (windows saved in `large/amend6/`; prior 3.7e-5, matched to copy,
+not to elicit) could also be retrained in job 2 and reported beside copy. It is not required.
+
+**N2. The planted pruning control can fail by construction (should fix).** § 5 job 1 item 4 and the predictions'
+`planted.pass.R_min` 0.8. The 13 planted units are W₀'s 13 most active units in block 3. Pruning them on the planted
+state also removes their normal W₀ contribution, so the best pruning reaches κ(W₀ with the 13 units zeroed), not 0.
+If that is above 0.2 × D, then R ≥ 0.8 is out of reach and pruning is voided on a correct pipeline. The plan records
+this ceiling but does not use it. **Fix.** Either choose 13 units whose zeroing on W₀ costs under 0.05 × the target D
+in κ (rank moderately active units by their own zeroing cost), or set the pass to R ≥ 0.8 × the ceiling share,
+(D − κ_zeroed) / D. Also file a fallback for the bisection on α. If κ(planted) cannot reach the median pole D before
+the edit visibly breaks W₀ elsewhere (for example KL at non-answer positions above a stated bound), plant at the
+largest reachable κ and record it. A single mean direction over 18 distinct rank-1 tokens may need a large α.
+
+**N3. The planted reverse rule "t½ below the median pole t½" has no basis (should fix).** It is in § 5 job 3 and in
+`positive_controls.planted_wrapper_reverse`, and a miss voids reverse fine-tuning after every state has been read.
+Adam moves each parameter by about lr per step. The planted edit puts a large change into 13 columns, while the
+fine-tunes spread a change of the same total size thinly over 24 matrices. Reverting the planted state can therefore
+be slower than reverting a real state, even when the pipeline is correct. Nothing says the planted state should
+revert faster. **Fix.** Keep "reaches D/2 before the cap" as the stop. Report the planted t½, and drop the
+comparison with the poles as a void rule. Reverse fine-tuning's validity on real states is already tested by P1's
+rank-1-to-cipher gap.
+
+**N4. The eight-seed retrain has no reproduction control (should fix, cheap).** § 5 job 2. Under the repo rule that
+"any recipe that reproduces a reference procedure lists what differs ... and either removes each difference or names
+it as the thing the control tests", job 2 should first retrain seed 0 of each map, alone, as its control. That means
+`keydep.elicit_ft` for elicit, rank-1 and copy, then `cipher_ft` at the same seed's elicit norm. Each must match the
+saved state's recorded step, norm (1e-4), G and x (E58's tolerances), and r within a filed tolerance (bitwise identity
+is not expected on GPU). Exit on a miss. This costs four fine-tunes, about two minutes. Also state that each seed runs
+elicit before the cipher, because the cipher's target norm is the same seed's elicit norm. Name the selection rule
+(E12's scored step for all three `elicit_ft` maps, as at seeds 0-2).
+
+### Minor
+
+- **m1.** R's noise floor of 0.05 was sourced from C1b's random-removal spread in accuracy units. It is now in shares
+  of κ. Re-source it from job 1's measured random-removal sd on the pole states, or state that it is kept by analogy.
+- **m2.** The distance tolerance of 0.1 (and the prior tolerance in N1) has no source. Say so, as for the bands.
+- **m3.** Job 3's estimate assumes most reverses cross early. A censored state costs 1,000 steps plus 1,000 reads of
+  37 windows, about 1-1.5 min on an L40. If several poles are censored, the job overruns, so resume into job 4 is
+  needed. That is already planned; keep it.
+- **m4.** The 20 new states (2.3 GB) go to `results/large/`, which is a symlink into `~/commute-data`. On the cluster
+  this is a plain shared-filesystem write and fine. It is not a pod download, so the symlink rule does not apply.
+
+### Checked and sound
+
+- The bootstrap rule. Zero-denominator draws count as outside, the rng is fixed, and the worked examples reproduce
+  from the stated numbers.
+- Censoring voids a pole only and drops elicit or copy seeds.
+- Rule 5 cannot fire when p_D has no gap.
+- The joint verdict's cases are exhaustive, with "not settled" as the remainder.
+- `finetune_to_reference` is added without changing `finetune_arm_a` or its frozen callers.
+- Job 1 is measurement only, before filing.
+- The stage-0 stop rows exit before any scored state.
+- The three or four $0 debug jobs are each under 30 min, and none is gated.
+
+### Re-check verdict
+
+**Ready after the listed small fixes.** Write N1 (prior column, rule and outcome (f)), N2 (unit choice or a
+ceiling-relative pass, plus the α fallback), N3 (drop the planted-reverse void rule) and N4 (seed-0 reproduction
+control in job 2) into the plan and the draft predictions. Then the code can be written without another review of
+the plan. N1 matters most: without it, the likeliest "settled" outcome, "shared", has a reading the run cannot
+exclude.
