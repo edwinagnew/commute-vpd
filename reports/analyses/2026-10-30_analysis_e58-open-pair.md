@@ -1,28 +1,28 @@
 # Analysis: does a half-known word map carry to keys it never saw, at 24 and at 96 trained keys, and does VPD agree? (E58)
 
 *2026-10-30, regating-lead writer. Plan: `reports/plans/2026-10-30_plan_e58-open-pair.md`, with its two dated pre-fine-tune
-amendments and its Amendments 1, 2 and 3. Rules: `experiments/open_pair/results/predictions.json`,
-`predictions_amend1.json`, `predictions_amend2.json` and `predictions_amend3.json`. Results:
-`experiments/open_pair/results/run.json` (job 46266), `amend1.json` (job 46332), `amend2.json` (job 46383, stopped) and
-`amend3.json` (job 46398). Reading adopted by the lead: `reports/plans/2026-10-30_advice_e58-reading-FABLE.md`,
-`decisions.md`; Fable's later advice `reports/plans/2026-10-30_advice_e58a1-next-FABLE.md` and
-`reports/plans/2026-10-30_advice_e58a2-control-FABLE.md`. Explanation: `notebooks/E58_open_pair.ipynb`. Words as in
-`GOALS.md` → Terms. Provenance at the end.*
+amendments and its Amendments 1 to 4. Rules: `experiments/open_pair/results/predictions.json` and
+`predictions_amend1.json` to `predictions_amend4.json`. Results: `experiments/open_pair/results/run.json` (job 46266),
+`amend1.json` (job 46332), `amend2.json` (job 46383, stopped), `amend3.json` (job 46398) and `amend4.json` (job 46426).
+Reading adopted by the lead: `reports/plans/2026-10-30_advice_e58-reading-FABLE.md`, `decisions.md`; Fable's later
+advice `reports/plans/2026-10-30_advice_e58a1-next-FABLE.md`, `..._advice_e58a2-control-FABLE.md` and
+`..._advice_e58a3-next-FABLE.md`. Explanation: `notebooks/E58_open_pair.ipynb`. Words as in `GOALS.md` → Terms.
+Provenance at the end.*
 
 We fine-tuned the small model on word maps over some of their keys and asked whether the keys it never saw gained, and
-whether the decomposition's readings followed that. With four times the keys every map carried further while the
-readings stayed level, but the readings also rose on the no-rule control, so the filed test of whether they follow
-carry-over came out untested. For `GOALS.md`, the decomposition still reads which existing subcomponents an update runs
-through, a reading under which a new circuit built from old pieces also looks old, and nothing here shows it reads
-whether what was learned generalises.
+whether the decomposition's readings followed that. With four times the keys every map carried further, and over three
+seeds the readings differed between maps by more than noise, but at the first read not in the order of how far each
+map carried. For
+`GOALS.md`, the decomposition still reads which existing subcomponents an update runs through, a reading under which a
+new circuit built from old pieces also looks old, and nothing here shows it reads whether what was learned generalises.
 
 ## The answer
 
 With 24 trained keys the half-known map did not carry to unseen keys, yet the decomposition read its gain as old
-subcomponents switched on. With 96 trained keys every map carried further. The copy map now clears the held-out bar on
-one seed, and the half-known map carries a fifth, then a tenth, of the way. The decomposition's readings stayed level as carry
-rose, but its reading of the no-rule control rose too, so the filed test reads untested. A new circuit of old pieces
-would read as old pieces too.
+subcomponents switched on. With 96 trained keys every map carried further, and the copy map clears the held-out bar on
+all three seeds. Across seeds the decomposition's main reading differs between maps by more than noise, so the filed
+"reads the same" claim fails, but at the first read its order does not follow carry. A map with the same words but no link to the model's
+own guess reads nearer the no-rule control. A new circuit of old pieces would still read as old pieces.
 
 ## What we were trying to test
 
@@ -543,7 +543,7 @@ At step 30, the companion, reported and not scored:
 | elicit | 0.105 | +0.136 | 0.725 | −0.043 | 0.993 | not testable |
 | rank-1 | 0.204 | +0.096 | 0.847 | +0.004 | 1.168 | not testable |
 | copy | 0.808 | +0.327 | 0.771 | −0.070 | 1.046 | r moved against carry |
-| cipher | −0.103, label "new" | — | 0.304 | +0.073 | 0.430 | guard fires, scored on the step-10 matched cipher, drift 0.138; the step-30  +0.073 would also exceed 0.05 |
+| cipher | −0.103, label "new" | — | 0.304 | +0.073 | 0.430 | guard fires, scored on the step-10 matched cipher, drift 0.138; the step-30 $d_r$ of +0.073 would also exceed 0.05 |
 
 Step 30 is where the elicit map's trained-key probability, 0.98, matches the 24-key states' 0.93 to 0.98. There its
 carry rise is 0.14, under the 0.15 needed to test it.
@@ -581,6 +581,120 @@ The plan's decision tree: the control read "below", so the job ran; the agreemen
 verdict is "untested". Check 1 read "falling", a code no branch names. Check 3 read "too_small", not "fail", so the
 "label reads the pool" branch did not fire, but check 3 did not read "pass" either. What follows goes to the lead.
 
+## Amendment 4: three seeds for the level picture, and what the shuffled map's r reads
+
+*Job 46426, after job 46398. Plan § "Amendment 4" and its before-run review note; Fable's advice
+`reports/plans/2026-10-30_advice_e58a3-next-FABLE.md`, item 2 and "What would change my advice", adopted by the lead;
+rules `experiments/open_pair/results/predictions_amend4.json`, filed before the run; results `amend4.json`; code
+`experiments/open_pair/amend4.py`; log `results/large/amend4.out`; figures `experiments/open_pair/plot_amend4.py`.
+Amendment 3's agreement test and verdict, "untested", stand.*
+
+### What we were trying to test
+
+At 96 trained keys, on one seed, three maps whose carry ran from a fifth to four fifths read nearly the same r. One seed
+cannot say whether "nearly the same" is within noise. Amendment 4 trains two more seeds of every map and of the cipher.
+Each map is read at fixed steps 10 and 30; seed 0's map reads are Amendment 3's, and seed 0's cipher is re-trained to
+check that it reproduces them.
+
+**The within-key-count rule**, filed before the run, one score per step and instrument:
+
+- per map, the seed means of carry $x$ and of the instrument over its three seeds;
+- $D_x$ and $D$, the largest minus the smallest of those means across the three maps;
+- for r, the bound is twice the largest within-map range of r over seeds; for the stand-in ratio it is 0.2, absolute;
+- with $D_x \ge 0.4$, the rule reads "pass" iff $D$ is within the bound. A step passes only if r and the ratio both pass.
+
+A pass is an equivalence claim with a wide margin. For three seeds the bound is about 4.5 standard deviations of one
+map's seed spread, so the plan's review asked that $D_r$ also be shown beside Amendment 3's tolerance of 0.05.
+
+**The shuffled map.** It has the elicit map's words, but each trained key takes another trained key's value, so no
+value is what W₀ already expects after its key. Fable's question: does r read the model's own guess for each key, which
+would put the shuffled map near the cipher, or only the kind of word, which would put it near elicit? It is read at step
+30, filed "cipher_like" iff r < 0.5, the midpoint of the cipher's 0.30 and elicit's 0.72 at step 30.
+
+**The control** runs first for every seed: the cipher, read at its first step over the gate, must read "pass" or
+"below".
+
+### What we expected, and why
+
+- **The within-key-count rule, filed with two leans.** Fable gave pass about 70% at both steps. The plan's writer gave
+  about 30%. On seed 0, r's spread across maps was 0.11 to 0.12, and the r half passes only if some map's seed range of r
+  is at least 0.055. At 24 keys those ranges were 0.002 to 0.029.
+- **The shuffled map reads cipher-like**, Fable's lean about 60%.
+- **The cipher reads "below" on every seed**, and its r sits near 0.30 at step 30.
+
+Fable named what would change the advice. A shuffled map reading r about 0.8 would weaken the claim to "a token the
+model can emit". Seeds showing r spread across maps by more than 0.15 at a step would drop the one-seed line.
+
+### Controls, run first
+
+Every seed's cipher read "below": seeds 0 and 1 at step 16, seed 2 at step 15, with carry −0.22 to −0.24. Seed 0's
+re-trained cipher reproduced Amendment 3's r exactly, 0.368 at step 10 and 0.304 at step 30, so seed 0's map reads count.
+No block-0 stop fired. The cipher's r at its first step over the gate was 0.32 to 0.33 on all three seeds, and 0.29 to
+0.31 at step 30, against 0.23 at 24 keys.
+
+### Across three seeds, does r differ between the three maps by no more than seed noise?
+
+![r against held-out carry x for elicit, rank-1 and copy, three seeds each, at steps 10 and 30, with each map's seed mean and range, the filed pass zone and the cipher at its first step over the gate](../../experiments/open_pair/figures/a4_within.png)
+
+**Reading it.** No: the filed rule fails at both steps, on r. The shaded band is the pass zone, the bound measured up
+from the lowest map mean. At step 10 the maps' mean r spans 0.110 against a bound of 0.071. At step 30 it spans 0.128
+against 0.090. The rank-1 map sits above the band at both steps. The stand-in ratio's half passes, at 0.179 and 0.196
+against 0.2, so close to its bound. So the claim that r reads the same across these three maps is not supported as filed.
+
+What the figure also shows, unscored: the differences in r do not follow carry at step 10. Rank-1 has the highest r,
+0.90, with a carry of 0.24, while copy carries 0.83 at r 0.87, and elicit carries 0.22 at r 0.79. Over the nine reads
+the rank correlation of r with carry is 0.02 at step 10 and 0.42 at step 30, nine points with little power. Neither
+step's spread reaches Fable's 0.15, so the plan's tree keeps the line but states that r separates the maps by more than
+seed noise. All three maps stay far above the cipher, which sits near 0.33.
+
+| map, step | carry $x$, seeds 0 / 1 / 2 | mean | r, seeds 0 / 1 / 2 | mean | ratio mean |
+|---|---|---|---|---|---|
+| elicit, 10 | 0.213 / 0.220 / 0.222 | 0.219 | 0.783 / 0.787 / 0.788 | 0.786 | 0.961 |
+| rank-1, 10 | 0.317 / 0.216 / 0.190 | 0.241 | 0.891 / 0.916 / 0.880 | 0.896 | 1.140 |
+| copy, 10 | 0.823 / 0.824 / 0.836 | 0.827 | 0.866 / 0.862 / 0.865 | 0.865 | 1.087 |
+| elicit, 30 | 0.105 / 0.097 / 0.099 | 0.101 | 0.725 / 0.722 / 0.736 | 0.728 | 0.984 |
+| rank-1, 30 | 0.204 / 0.158 / 0.201 | 0.188 | 0.847 / 0.883 / 0.838 | 0.856 | 1.180 |
+| copy, 30 | 0.808 / 0.786 / 0.813 | 0.803 | 0.771 / 0.772 / 0.771 | 0.771 | 1.073 |
+
+| step | $D_x$ | $D_r$ | r bound, 2 × largest seed range | $D_\text{ratio}$, bound 0.2 | rank correlation of r with $x$ | rule |
+|---|---|---|---|---|---|---|
+| 10 | 0.609 | 0.110 | 0.071 | 0.179, pass | 0.02 | **fail** |
+| 30 | 0.702 | 0.128 | 0.090 | 0.196, pass | 0.42 | **fail** |
+
+The copy map reads "reuses" on all three seeds at step 10, carry 0.82 to 0.84, and at step 30. The held-out label's
+positive control now holds on three seeds at 96 trained keys.
+
+### Same words, no link to the model's guess per key: does r read like the cipher?
+
+![r of the cipher, the shuffled elicit map and the elicit map, at the first step over the gate and at step 30, with the filed cut at 0.5 and the 24-key cipher mean](../../experiments/open_pair/figures/a4_shuffle.png)
+
+**Reading it.** Yes as filed, but close to the cut. At step 30 the shuffled map's r is 0.475, under the cut of 0.5, so it
+reads "cipher_like", Fable's lean at about 60%. It sits between the cipher's 0.29 to 0.31 and elicit's 0.72 to 0.74,
+and nearer the cut than either. At its first step over the gate, step 15, its r was 0.388, against the cipher's 0.32 to
+0.33 at its own. The shuffled map was trained enough to read: its trained-key gain at step 30 was 17.5, beside the
+cipher's 16 to 18, and it carried nothing to unseen keys, −0.05. One seed only.
+
+| state | first step over the gate: step, r | step 30: r, ratio, $G_\text{spec}$ |
+|---|---|---|
+| cipher, seeds 0 / 1 / 2 | 16, 0.324 / 16, 0.332 / 15, 0.324 | 0.303 / 0.287 / 0.307; 0.41-0.43; 16.1-18.1 |
+| shuffled elicit, seed 0 | 15, 0.388 | 0.475; 0.650; 17.5 |
+| elicit, seeds 0 / 1 / 2 | 10, 0.783 / 0.787 / 0.788 | 0.725 / 0.722 / 0.736; 0.97-0.99; 18.5-19.1 |
+
+### What Amendment 4 changes
+
+- **The level picture is not supported as filed.** Across three seeds, r differs between the three maps by more than
+  twice its seed noise at both steps. The one-seed line "r reads nearly the same across maps" is replaced by: r
+  separates these maps by more than noise, and at step 10 not in carry order.
+- **What remains, unscored:** the map with the highest r is not the one that carries most, so r does not rank these maps by carry.
+- **The shuffled map sits under the cut, near it.** As filed, r reads more than the kind of word. The shuffled map's r of 0.47
+  sits between elicit's 0.73 and the cipher's 0.30, 0.03 under the cut; one seed.
+- **The held-out label's positive control holds on three seeds**: the copy map reads "reuses" on every seed.
+- **The granularity limit holds.** r reads whether a gain runs through subcomponents W₀ already has; a new circuit
+  built from those old subcomponents reads the same way, and nothing here can tell the two apart.
+
+Decision tree: no stop; branch 3, the rule fails, with $D_r$ under 0.15 at both steps; branch 5, the shuffle reads
+"cipher_like". What follows goes to the lead.
+
 ## What we learned
 
 For `GOALS.md`'s question, new capabilities or strengthening, the decomposition answers a narrower question than
@@ -598,6 +712,13 @@ no-rule cipher's r rose with the key count, so the filed test of whether they fo
 is the level picture: across maps whose carry runs from a fifth to four fifths, r sits at 0.78 to 0.89. Under the
 granularity limit, that says the gains run through subcomponents W₀ already has, which a new circuit of old
 subcomponents would also show.
+
+Amendment 4 tested that level picture over three seeds, and it does not hold as filed. r differs between the three maps
+by more than twice its seed noise, at both read steps, though not by Fable's 0.15. At the first read the map with the
+highest r, rank-1, is not the one that carries most, so r does not rank these maps by carry. The shuffled map, with the
+elicit map's words but no link to the model's guess per key, reads r 0.47, under the filed cut and nearer the cipher
+than elicit. For `GOALS.md`, what r reads differs between these maps, but not as how far what each learned carries; under
+the granularity limit a new circuit of old subcomponents reads the same way.
 
 ## How compelling is the evidence
 
@@ -621,9 +742,17 @@ subcomponents would also show.
   barely learned its values, while E58's matched ciphers were half way. The guard compares them as filed; it cannot say
   whether the rise in r comes from the key count or from that difference.
 - **The checks on the elicit carry are weak.** The shuffled map was under the gate; the rank correlations rest on 32 keys.
+- **Amendment 4: three seeds, one key split, one decomposition.** The rule's bound is wide, about 4.5 standard
+  deviations of one map's seed spread, and r still exceeded it; the ratio passed within 0.02 and 0.004 of its bound. The
+  shuffled map is one seed, 0.025 under its cut. The rank correlations rest on nine reads.
 
 ## Surprises
 
+- **Amendment 4: the within-key-count rule failed at both steps.** Fable filed pass at about 70%; the plan's writer
+  filed about 30%, from seed 0's numbers. r's spread across maps, 0.110 and 0.128, exceeded twice its seed noise.
+- **Amendment 4: at step 10 the rank-1 map has the highest r** while carrying about as little as elicit.
+- **Amendment 4: the shuffled map read r 0.475**, 0.025 under the cut; the step-30 ratio spread of the maps over seeds
+  was 0.13, on copy, larger than the 0.055 seen at 24 keys.
 - **Amendment 2: something unexpected happened, and its control stopped the job.** We filed the elicit map at 96
   trained keys as a no-rule control, carry within ±0.05 at about 70% and above 0.05 at about 5%. It carried 0.213, on 28
   of 32 held-out keys. Fable's reasoned cause is that the elicit values are W₀'s own key-specific second choices, a rule
@@ -664,9 +793,9 @@ subcomponents would also show.
 The plan's decision tree, verdict "none": the held-out label is not used against r or the stand-in ratio, and the user
 is told. The lead is consulting Fable on what follows; no next step is set here. Ask #14 to the user stays open.
 
-After Amendment 3 the verdict is "untested". The lead has filed Amendment 4, now running: seeds 1 and 2 at 128 keys
-with a filed rule within one key count, the shuffled map's r at step 30, and a cipher drift line (plan § "Amendment 4",
-commits `0ce43b1` and `e87d3a0`). Three items the data point to, each with what would change course:
+After Amendment 3 the verdict is "untested". The lead filed Amendment 4 (plan § "Amendment 4", commits `0ce43b1` and
+`e87d3a0`; job 46426), which added seeds 1 and 2 and read the shuffled map over the gate. Its results are above; the
+next step is the lead's. Of the three items that follow, the second and third are now done:
 
 - **The drift guard at matched training.** Read the cipher's r at 24 and 96 keys at matched trained-key probability, not
   matched update size, by a $0 re-train of about 15 s; the cipher states were not saved. If the two agree within 0.05,
@@ -708,6 +837,12 @@ commits `0ce43b1` and `e87d3a0`). Three items the data point to, each with what 
 | A3 check 4 | elicit's update on copy's held-out windows | $H_\text{spec}$ within ±0.5 | −1.00; on rank-1's +0.32 | outside the expected range |
 | A3 check 5 | held-out gain follows W₀'s preference | Spearman ρ > 0 | 0.011 with probability; 0.188 with specificity | both above 0, neither clear of chance at 32 keys |
 | A3 reproduction | the elicit update of job 46383 | largest difference 0 or under 1e-3; $x$ within 0.01 | 0; 0.2132 both | as expected |
+| A4 control | the cipher does not carry, per seed | as A3, from step 10 to the first step over the gate | steps 16, 16, 15: $x$ −0.236, −0.220, −0.217 | below ×3 |
+| A4 seed-0 check | the re-trained cipher reproduces Amendment 3 | r within 1e-4 at steps 10 and 30 | 0.368, 0.304 both | comparable |
+| A4 W10 | r and the ratio differ across maps by no more than seed noise, step 10 | $D_x$ ≥ 0.4; r: $D$ ≤ 2 × largest seed range; ratio: $D$ ≤ 0.2; both | $D_x$ 0.609; $D_r$ 0.110 vs 0.071; $D_\text{ratio}$ 0.179 | **fail** (Fable ~70% pass; writer ~30%) |
+| A4 W30 | the same at step 30 | as W10 | $D_x$ 0.702; $D_r$ 0.128 vs 0.090; $D_\text{ratio}$ 0.196 | **fail** (Fable ~70% pass; writer ~30%) |
+| A4 rank correlation | r against $x$ over nine reads, reported | Spearman | 0.017 at step 10; 0.417 at step 30 | reported |
+| A4 shuffle | the shuffled map's r reads like the cipher | step 30: cipher_like iff r < 0.5 | r 0.475, ratio 0.650, $G_\text{spec}$ 17.5; step 15 r 0.388 | cipher_like (Fable ~60%) |
 
 Stage-0 checks all passed. Early stops: elicit seed 0's $G_\text{spec}$ 18.18 against the gate of 5.148, no stop; no
 cipher read "reuses", no stop. Plan decision tree: branch 5, label "new" with the agreement test failed.
@@ -769,6 +904,10 @@ verdict is "untested". Check 1's "falling" and check 3's "too_small" match no fi
   to rank-1 and copy, since elicit can no longer be their reference. The drift guard on the cipher's r was added to
   cover what that loses.
 - **Amendment 3, check 4 reads this job's elicit state**, not Amendment 2's saved file; the two are identical.
+- **Amendment 4, definitions Fable left open.** The seed spread is the largest within-map range of r; $D$ uses seed
+  means; a map needs two counting seeds; the ratio's 0.2 is an absolute bound on $D$. All filed before the run.
+- **Amendment 4, seed 0's cipher is re-trained** so all seeds share the control; the shuffle runs on seed 0 only, where
+  Fable gave no seed count; no weights are saved, since states reproduce exactly.
 
 ## Not run
 
@@ -780,12 +919,14 @@ verdict is "untested". Check 1's "falling" and check 3's "too_small" match no fi
 - The interchange-patch half of Stage B's rule.
 - More key splits, more windows per held-out key, more than three seeds, a second decomposition seed.
 - The cipher at its own E12 step; Qwen.
-- Amendments 2 and 3: a second or third seed at 96 trained keys; a second key split; 64 keys.
+- Amendments 2 and 3: a second key split; 64 keys. Seeds 1 and 2 at 96 trained keys ran in Amendment 4.
 - The drift guard at matched trained-key probability; the 96-key cipher's r at steps 100 and 300.
-- The shuffled elicit map at a step over the gate; the agreement test at matched trained-key probability as a scored
-  rule.
+- The agreement test at matched trained-key probability as a scored rule. The shuffled map over the gate ran in
+  Amendment 4.
 - r and the ratio on the elicit map at steps 100 and 300, where its carry stayed at a tenth.
 - A label read against a random token pool rather than the task's values, Fable's redesign if check 3 had read about 0.2.
+- Amendment 4: the shuffled map on seeds 1 and 2; the rule at matched trained-key probability; a second key split at 96
+  keys; a second decomposition seed.
 
 ## Provenance
 
@@ -811,3 +952,7 @@ verdict is "untested". Check 1's "falling" and check 3's "too_small" match no fi
   `results-large/open_pair/amend3/`, log `amend3.out`. The cipher and shuffled states were not saved.
 - Figures: `experiments/open_pair/plot_amend3.py` draws `a3_carry.png` and `a3_shift.png` from `amend3.json`, with the
   24-key references from `run.json` and `amend1.json`.
+- Amendment 4: job 46426, MATS cluster `debug` QoS, one L40 on host vm9377243875336, $0; host line at 17:07:34, score at
+  17:18:58 on 2026-10-30. Code at `e87d3a0`, clean; predictions sha256 `cbf2709d…`. Results commit `4c9c983`,
+  `amend4.json`; no weights saved. Figures `a4_within.png` and `a4_shuffle.png` from
+  `experiments/open_pair/plot_amend4.py`, with seed 0's map reads from `amend3.json`.
