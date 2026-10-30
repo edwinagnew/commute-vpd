@@ -33,18 +33,16 @@ import torch
 from torch import Tensor
 
 from commute.data import pile_rows
+from commute.neurons import neuron_patch, patch_controls
 from commute.steering import (  # moved here from this script, unchanged (2026-10-30, E54); amend1.py imports them from here
     D_MLP,
     DW,
     N_LAYERS,
-    Edit,
     Net,
     Task,
     b3,
     gains,
     logp_at,
-    read,
-    share,
 )
 from commute.steering import load_task as _load_task
 
@@ -83,14 +81,10 @@ def stage0(net: Net, tasks: dict[str, Task], dws: dict[str, DW], th: dict[str, f
     rec: dict[str, Any] = {}
     for name in ("ident32", "rand32"):
         t, dW = tasks[name], dws[f"{name}_s0"]
-        s, lp0s = t.toks[t.part("score")], t.lp0[t.part("score")]
-        _, c0 = net.run(s, capture=True)
-        ident = read(net, t, s, edit={f"mlp{i}": (lambda _x, v=c0[f"mlp{i}"]: v) for i in range(N_LAYERS)})
-        with net.at(dW):
-            _, c1 = net.run(s, capture=True)
         g = gains(net, t, dW)
-        full = share(read(net, t, s, edit={"out3": lambda _x, v=c1["out3"]: v}), lp0s, g["G_score"])
-        r = {"identity_max_abs": float((ident - lp0s).abs().max()), "full_patch_share": full, **g}
+        pc = patch_controls(net, t, dW, g["G_score"])  # moved to commute.neurons (2026-10-30, E56), same forwards
+        full = pc["full_patch_share"]
+        r = {"identity_max_abs": pc["identity_max_abs"], "full_patch_share": full, **g}
         r["ok"] = (r["identity_max_abs"] <= th["identity_max"] and abs(full - 1) <= th["full_patch_tol"]
                    and g["G"] > th["gain_min"])
         rec[f"{name}_s0"] = r
@@ -120,33 +114,13 @@ def b4(net: Net, t: Task, ns: list[int]) -> dict[int, float]:
     return {n: float((logp_at(net.run(prompts(t, n))[0], -1, t.tgt(s)) - t.lp0[t.part("score")]).mean()) for n in ns}
 
 
-def flat_mlp(c: dict[str, Tensor], pos: int) -> Tensor:
-    return torch.cat([c[f"mlp{i}"][:, pos] for i in range(N_LAYERS)], -1)
-
-
-def neuron_edit(c1: dict[str, Tensor], idx: Tensor) -> Edit:
-    edit: Edit = {}
-    for i in range(N_LAYERS):
-        sel = (idx[(idx >= i * D_MLP) & (idx < (i + 1) * D_MLP)] - i * D_MLP).to(c1[f"mlp{i}"].device)
-        if len(sel):
-            edit[f"mlp{i}"] = lambda x, src=c1[f"mlp{i}"], sel=sel: x.index_copy(2, sel, src.index_select(2, sel))
-    return edit
-
-
 def b2(net: Net, t: Task, dW: DW, g: dict[str, float], q99: Tensor, B: dict[str, Any]) -> dict[str, Any]:
-    f, s = t.toks[t.part("fit")], t.toks[t.part("score")]
-    with net.at(dW):
-        _, c1f = net.run(f, capture=True)
-        _, c1s = net.run(s, capture=True)
-    a0 = flat_mlp(net.run(f, capture=True)[1], t.half)
-    shift = (flat_mlp(c1f, t.half) - a0).double().mean(0)
-    order = torch.sort(shift.abs().cpu(), descending=True, stable=True).indices
-    shares = {k: share(read(net, t, s, edit=neuron_edit(c1s, order[:k])), t.lp0[t.part("score")], g["G_score"])
-              for k in B["grid"]}
-    k50 = next((k for k in B["grid"] if shares[k] >= 0.5), math.inf)
+    # ranking and grid moved to commute.neurons.neuron_patch (2026-10-30, E56), same forwards in the same order
+    p = neuron_patch(net, t, dW, g["G_score"], B["grid"])
+    order, shift, a0 = p["order"], p["shift"], p["a0"]
     top = order[:16].to(a0.device)
     idle = (a0[:, top].abs().mean(0) < B["idle_frac"] * q99[top]).double().mean()
-    return {"shares": shares, "k50": k50, "k50_index": B["grid"].index(k50) if k50 in B["grid"] else len(B["grid"]),
+    return {"shares": p["shares"], "k50": p["k50"], "k50_index": p["k50_index"],
             "idle_share": float(idle), "top16": order[:16].tolist(), "top16_shift": shift.cpu()[order[:16]].tolist()}
 
 
