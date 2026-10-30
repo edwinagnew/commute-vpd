@@ -17,7 +17,8 @@ Instruments, per state, against LOW (each reading x; 'existing' on the side the 
   reverse  steps to 95% count a at constants.reverse_lr for every state, cap reverse_cap inside a reverse_schedule
            schedule, over scratch's (NEVER) steps; low = existing;
   steer    E52's gain share S of the mean residual shift at `=` (C1's readings) on Stage A's qualifying 'C b 40' rows;
-  probe    selectivity of a linear probe on LOW's residual at `=` predicting the state's own answers on natural
+  probe    (task-identity reference, read and reported, never scored: it reads the answer, which the task fixes)
+           selectivity of a linear probe on LOW's residual at `=` predicting the state's own answers on natural
            'C b 40' rows, minus a shuffled-label probe, best block (revival.possession).
 
 Stages (each refuses while results/c1b_stop.json exists; a stop row writes it and exits 1):
@@ -25,13 +26,15 @@ Stages (each refuses while results/c1b_stop.json exists; a stop row writes it an
              probe on the ID states (Amendment 5, 2K). Stop rows: LOW off by > reproduce_tol, scratch <= 1K or capped.
   train      (needs controls) each run trained and its states checked -> c1b.json after each run; at the end the stop
              rows: task P fails (< task_acc_min on >= p_fail_stop of the P 10K states), >= disagreement_stop
-             construction-check disagreements among scored-seed states.
+             construction-check disagreements among scored-seed states, no instrument can pass on the full scored
+             set (max(bar, n_c + 2) > n).
   calibrate  (needs every state checked) the instruments on the calibration-seed truth states -> c1b.json after each;
              then the cut-offs (revival.cutoff) -> results/c1b_cutoffs.json, to be committed before score.
   score      (refuses unless c1b_cutoffs.json is committed, unmodified, and equal to the cut-offs recomputed from
              c1b.json) the instruments on the scored-seed truth states, labels and scores after each; C1's states
              re-labelled from c1.json's readings, described.
-Exit 3 at the deadline (a reverse fine-tune cut by it is rerun); resubmit the same stage to resume. Every reading and
+A changed recipe or constants exits 2 (c1b.json is moved aside by hand, never dropped). A state is not started when
+the slowest measured state would overrun the deadline. Exit 3 at the deadline (a reverse fine-tune cut by it is rerun); resubmit the same stage to resume. Every reading and
 score is printed to the log.
 
 Usage (repo root, GPU): python experiments/pcfg_anchors/c1b.py {controls,train,calibrate,score}
@@ -105,6 +108,8 @@ OUT, STOP, CUTOFFS = RESULTS / "c1b.json", RESULTS / "c1b_stop.json", RESULTS / 
 C1B_DIR, LOW = LARGE / "c1b", LARGE / "a1" / "pt_LOW.pt"
 CHUNK, PROBE_SEED, PROBE_HELD = 100, 0, [EVAL_SEED, 41]  # probe: one stream and one held-out set for every state
 INSTRUMENTS = ("prune", "reverse", "steer", "probe")
+SCORED = ("prune", "reverse", "steer")  # the probe is a task-identity reference: read, cut and reported, never scored (review H1)
+STATE_SECONDS = 240.0  # per-state reading time assumed until one is measured in c1b.json (review L2)
 HIGH_IS_EXISTING = {"prune": True, "reverse": False, "steer": True, "probe": True}
 RECIPE = {"iters": FT_ITERS, "batch": FT_BATCH, "saves": list(FT_SAVES), "prune_k": list(revival.PRUNE_K),
           "n_random": revival.N_RANDOM, "eval_every": revival.EVAL_EVERY, "n_rft_eval": N_RFT_EVAL,
@@ -317,6 +322,17 @@ def train_stage(res: dict[str, Any], k: dict[str, Any], bars: dict[str, Any], de
     return train_stops(res, k)
 
 
+def needs_full(ceil: dict[str, Any], res: dict[str, Any], k: dict[str, Any]) -> dict[str, Any]:
+    """The agreement an instrument would need on the full scored truth set: max(binomial bar, n_c + MARGIN_ALL), n_c the best
+    recipe labeller's hindsight ceiling there; impossible when it exceeds n or n < MIN_N (no bar). An instrument's own
+    non-void set is a subset, where the requirement cannot become reachable (review M1)."""
+    t = [v for s, v in res["truth"].items() if res["meta"][s]["seed"] in k["scored_seeds"]]
+    n, n_c = len(t), max(ceil[q]["agree"] for q in ("lr", "steps", "update_size"))
+    bar = revival.pass_bar(n, max(t.count("existing"), t.count("new"))) if n >= revival.MIN_N else None
+    need = None if bar is None else max(bar, n_c + revival.MARGIN_ALL)
+    return {"n": n, "n_c": n_c, "bar": bar, "needs": need, "impossible": need is None or need > n}
+
+
 def train_stops(res: dict[str, Any], k: dict[str, Any]) -> int:
     meta, chk = res["meta"], res["checks"]
     p_miss = [s for s in chk if meta[s]["task"] == "P" and meta[s]["step"] == FT_SAVES[-1] and chk[s]["task_acc"]["P"] < k["task_acc_min"]]
@@ -324,9 +340,11 @@ def train_stops(res: dict[str, Any], k: dict[str, Any]) -> int:
     res["train_stops"] = {"P_10K_below_task_acc_min": p_miss, "scored_seed_disagreements": dis,
                           "all_disagreements": [s for s, p in res["placement"].items() if p == "disagreement"],
                           "recipe_ceiling_full": ceilings(res, {s: v for s, v in res["truth"].items() if meta[s]["seed"] in k["scored_seeds"]})}  # fmt: skip
+    res["train_stops"]["needs_full"] = needs = needs_full(res["train_stops"]["recipe_ceiling_full"], res, k)
     log(f"train stop rows: {res['train_stops']}")
     why = [f"task P fails: {len(p_miss)} P 10K states below {k['task_acc_min']}"] * (len(p_miss) >= k["p_fail_stop"])
     why += [f"{len(dis)} construction-check disagreements among scored-seed states"] * (len(dis) >= k["disagreement_stop"])
+    why += [f"no instrument can pass: it needs {needs['needs']} of n = {needs['n']} scored states (bar {needs['bar']}, recipe ceiling n_c {needs['n_c']} + 2); readings would be described only, user decides"] * needs["impossible"]
     if why:
         stop(res, why)
     write_json(OUT, res)
@@ -376,11 +394,14 @@ def read_states(res: dict[str, Any], part: str, sids: list[str], k: dict[str, An
     for sid in sids:
         if sid in res[part]:
             continue
-        row = None if time.monotonic() > deadline else read_instruments(Path(res["meta"][sid]["path"]), k, data, deadline)
+        took = [r["seconds"] for p in ("calibration", "scored") for r in res[p].values() if "seconds" in r]
+        t0 = time.monotonic()
+        late = t0 + (max(took) if took else STATE_SECONDS) > deadline  # do not start a state that cannot finish
+        row = None if late else read_instruments(Path(res["meta"][sid]["path"]), k, data, deadline)
         if row is None:
             log(f"{sid}: deadline; resubmit to resume (exit {EXIT_RESUME})")
             return EXIT_RESUME
-        res[part][sid] = row | {"x": xs(row, res["controls"], k), "truth": res["truth"][sid]}
+        res[part][sid] = row | {"x": xs(row, res["controls"], k), "truth": res["truth"][sid], "seconds": time.monotonic() - t0}
         if after is not None:
             after(res)
         st = row["steer"]
@@ -448,7 +469,8 @@ def scores(res: dict[str, Any], k: dict[str, Any]) -> dict[str, Any]:
         cells: dict[str, dict[str, str]] = {}
         for s, v in truth.items():
             cells.setdefault(f"{meta[s]['task']}_{lr_key(meta[s]['lr'])}_{meta[s]['step']}", {})[s] = v
-        out[i] = {"all": score_one(res, lab, truth, revival.MARGIN_ALL), "per_run": score_one(res, lab, last, revival.MARGIN_RUN),
+        out[i] = {"role": "scored instrument" if i in SCORED else "task-identity reference (not scored; not a pass)",
+                  "all": score_one(res, lab, truth, revival.MARGIN_ALL), "per_run": score_one(res, lab, last, revival.MARGIN_RUN),
                   "by_cell": {c: {q: v for q, v in revival.score(lab, t).items() if q in ("n", "agree", "voided")} for c, t in sorted(cells.items())}}  # fmt: skip
     return out
 
@@ -519,14 +541,14 @@ def main() -> None:
     assert bars is not None, "Stage A's bars are filed"
     data = build_data()
     prev = json.loads(OUT.read_text()) if OUT.exists() else {}
-    keep = prev.get("recipe") == RECIPE and prev.get("constants") == k
-    if prev and not keep:
-        log("c1b.json was written under another recipe or constants: its readings are dropped")
+    if prev and (prev.get("recipe") != RECIPE or prev.get("constants") != k):
+        log("c1b.json was written under another recipe or constants: move it aside deliberately before rerunning (exit 2)")
+        sys.exit(2)
     res: dict[str, Any] = {"recipe": RECIPE, "constants": k, "model_free": model_free_checks(k, data)}
     for part in ("checks", "placement", "truth", "nuisance", "meta", "calibration", "scored"):
-        res[part] = prev.get(part, {}) if keep else {}
+        res[part] = prev.get(part, {})
     for part in ("controls", "train_stops"):
-        res[part] = prev.get(part) if keep else None
+        res[part] = prev.get(part)
     log(f"model-free checks {res['model_free']}")
     if not all(res["model_free"].values()):
         stop(res, [f"model-free check missed: {[c for c, v in res['model_free'].items() if not v]}"])

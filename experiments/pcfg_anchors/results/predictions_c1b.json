@@ -4,11 +4,25 @@
   "plan": "reports/plans/2026-10-30_plan_e55-c1b-refined-instruments.md (sections 3-7 and the appendix); lead's choices decisions.md 2026-10-30 (task P vs task N; one reverse rate 1e-5, cap 5K; possession probe with a Hewitt & Liang control; CMAP out). C2 is not in this file.",
   "code": "experiments/pcfg_anchors/c1b.py; src/commute/revival.py (cutoff, label_by_cutoff, ceiling, possession; reverse_finetune's cap and schedule_steps); rules tested in tests/test_revival.py; cluster/pcfg_anchors.sbatch c1b STAGE.",
   "constants": {
-    "lrs": [0.0001, 0.00001],
-    "calibration_seeds": [0, 1],
-    "scored_seeds": [2, 3, 4],
-    "existing_runs": {"N_1e-4_s0": "N1", "N_1e-4_s1": "N1s1", "N_1e-5_s0": "M"},
-    "reverse_lr": 0.00001,
+    "lrs": [
+      0.0001,
+      1e-05
+    ],
+    "calibration_seeds": [
+      0,
+      1
+    ],
+    "scored_seeds": [
+      2,
+      3,
+      4
+    ],
+    "existing_runs": {
+      "N_1e-4_s0": "N1",
+      "N_1e-4_s1": "N1s1",
+      "N_1e-5_s0": "M"
+    },
+    "reverse_lr": 1e-05,
     "reverse_cap": 5000,
     "reverse_schedule": 10000,
     "task_acc_min": 0.9,
@@ -41,12 +55,13 @@
   "rules": {
     "cutoff": "Per instrument, on the calibration-seed truth states only (revival.cutoff): void readings are dropped, not imputed; fewer than 3 non-void readings in either class -> the instrument is void for C1b (reported only); every reading equal -> void. With y = x (y = -x for reverse), c = the midpoint between adjacent distinct sorted y that maximises balanced accuracy (existing iff y >= c), ties to the candidate nearest the median of all calibration readings, then the lower y; when the classes separate this is the midpoint of the gap (the only candidate at balanced accuracy 1). Written with the readings to results/c1b_cutoffs.json, dated and committed before the score job, which refuses to start unless the file is tracked, unmodified and equal to the cut-offs recomputed from c1b.json.",
     "label": "revival.label_by_cutoff: 'existing' iff x >= c (prune, steer, probe) or x <= c (reverse), inclusive at c; 'void' if the reading or the cut-off is void.",
-    "score": "Per instrument over the scored-seed truth states it labels existing or new (a void drops the state; n shrinks): agree = labels equal to the truth. Pass iff agree >= a(n) = the smallest a with P(Binomial(n, 1/2) >= a) <= 0.05, raised to majority + 1 (n = 24 -> 17, 21 -> 15, 18 -> 13, 16 -> 12), AND agree >= n_c + 2, n_c = the best of the three recipe-only labellers (lr, steps, update size), each at its hindsight-best threshold and direction on the same n states. No bar when n < 8 (reported only). Absolute counts, not relative.",
+    "score": "Per scored instrument (prune, reverse, steer; the probe is a task-identity reference, not scored) over the scored-seed truth states it labels existing or new (a void drops the state; n shrinks): agree = labels equal to the truth. Pass iff agree >= a(n) = the smallest a with P(Binomial(n, 1/2) >= a) <= 0.05, raised to majority + 1 (n = 24 -> 17, 21 -> 15, 18 -> 13, 16 -> 12), AND agree >= n_c + 2, n_c = the best of the three recipe-only labellers (lr, steps, update size), each at its hindsight-best threshold and direction on the same n states. No bar when n < 8 (reported only). Absolute counts, not relative.",
     "ceiling": "revival.ceiling: per labeller, over both directions (small value -> existing, or large) and every threshold (midpoints between adjacent distinct values, plus beyond either end, i.e. the two constant labellers), the largest agreement with the truth; recomputed on each instrument's own non-void states; n_c = the largest of the three (a tie between labellers takes the larger count, which is the same number).",
     "per_run": "One vote per training run: its 10K save, if it is a truth state (12 runs at most); same rule with margin 1 (agree >= n_c + 1) and the binomial bar at that n (12 -> 10). Reported beside 'all'.",
     "by_cell": "Agreement per cell (task x lr x save), described only.",
-    "train_stops": "After every state is checked: >= 3 of the 10 P 10K states below 0.9 task accuracy -> stop (task P fails); >= 3 construction-check disagreements among scored-seed states -> stop (the truth by construction is in question; card to the user). Neither relabels anything.",
-    "controls_stops": "LOW's B_a (count-a accuracy on Stage A's 4,000 'C a 40' rows) or P_a (a1c's sample set 0 at l*_a) off Stage A's by > 0.01 -> stop (apparatus). Scratch (NEVER at 1e-5) <= 1,000 steps or capped at 5K -> stop (reverse fine-tuning void). Pruning control fails -> pruning void (continue). Probe on LOW predicting true count a on natural 'C b 40' rows below 0.4, or the probe on both ID states below 0.3 -> probe void (continue). Steering S < 0.5 on both ID states -> reported, continue."
+    "train_stops": "After every state is checked: >= 3 of the 10 P 10K states below 0.9 task accuracy -> stop (task P fails); >= 3 construction-check disagreements among scored-seed states -> stop (the truth by construction is in question; card to the user). Neither relabels anything. Also (amended 2026-10-30): with n the scored-seed truth states, bar = a(n) and n_c the best recipe labeller's hindsight ceiling on all of them (c1b.json train_stops.needs_full), if max(bar, n_c + 2) > n, or n < 8, no instrument can pass on any subset of them -> stop with c1b_stop.json; the lead takes it to the user (readings described only if the user wants them).",
+    "controls_stops": "LOW's B_a (count-a accuracy on Stage A's 4,000 'C a 40' rows) or P_a (a1c's sample set 0 at l*_a) off Stage A's by > 0.01 -> stop (apparatus). Scratch (NEVER at 1e-5) <= 1,000 steps or capped at 5K -> stop (reverse fine-tuning void). Pruning control fails -> pruning void (continue). Probe on LOW predicting true count a on natural 'C b 40' rows below 0.4, or the probe on both ID states below 0.3 -> probe void (continue). Steering S < 0.5 on both ID states -> reported, continue.",
+    "resume": "Amended 2026-10-30: a c1b.json written under another recipe or constants makes every stage exit 2 (the lead moves the file aside by hand; readings are never dropped by the code). A state is not started when the slowest state measured so far (240 s until one is measured) would overrun the 22-min deadline."
   },
   "edge_cases": {
     "E1_few_per_class": "Fewer than 3 non-void calibration readings in a class -> the instrument's cut-off is void, every label void, n = 0, no bar (reported only, not a miss). Tested: tests/test_revival.py test_cutoff_void_cases_and_dropped_readings (2 vs 3; a None among 3 leaves 2; empty).",
@@ -59,8 +74,8 @@
     "E8_n_below_8": "Fewer than 8 non-void scored states -> no bar, reported (revival.score, tested in C1).",
     "E9_bar_table": "a(n) at the plan's n: 24 -> 17, 21 -> 15, 18 -> 13, 16 -> 12 with majority n/2. Tested, and checked model-free at the start of every job.",
     "E10_requirement_above_n": "If max(a(n), n_c + 2) > n the instrument cannot pass; reported with passes false.",
-    "E11_capped_reverse": "A state still below 0.95 at 5K counts as 5,000 steps (x = 5000 / scratch, about 2.2): 'new' under any cut-off below that. A state already at 0.95 before reverse fine-tuning is void (as a pruning state at acc0 >= 0.95).",
-    "E12_deadline": "A reverse fine-tune cut by the 22-min deadline is discarded and the state rerun by the next job (never a reading). Readings already in c1b.json are kept; a changed recipe or constants drops them.",
+    "E11_capped_reverse": "A state still below 0.95 at 5K counts as 5,000 steps (x = 5000 / scratch, about 2.2): 'new' under any cut-off below that. A state already at 0.95 before reverse fine-tuning is void (as a pruning state at acc0 >= 0.95). Two cosmetic edges (review L4, noted, not changed): pruning decides void on the 4,000 eval rows, reverse on the first 1,000 of them, so a state near 0.95 can be void for one and read by the other; a state reaching 0.95 exactly at 5,000 steps and a capped one both read 5000 / scratch.",
+    "E12_deadline": "A reverse fine-tune cut by the 22-min deadline is discarded and the state rerun by the next job (never a reading); a state is not started when the slowest measured state would overrun the deadline. Readings already in c1b.json are kept; a changed recipe or constants exits 2 (amended 2026-10-30; before, readings were dropped).",
     "E13_cell_one_label": "A cell with one label only (e.g. N 1e-5 1K not yet learned leaves P 1e-5 1K alone) is kept; the ceiling absorbs it.",
     "E14_per_run_without_10K": "A run whose 10K save is not a truth state casts no per-run vote (no fallback to its 1K save).",
     "dry_run": "2026-10-30, ~/commute-data/scratch/reuse-lead/c1b-code/dry_run.py (model-free, cpu-run, no model loaded): run grid, keys and existing files, model-free checks, and scores/score_one/ceiling on synthetic readings for: a clean pass, all void, n < 8, a reversed instrument, an update-size labeller that separates the tasks. Results in that folder's dry_run.log: grid 20 runs (17 new; N1, M, N1s1 reused, files present), every model-free check true; synthetic clean set: cut-offs at the class gaps, n 21, bar 15, n_c 14 (a random continuous update size reaches 14 of 21 by hindsight threshold), per_run n 12 bar 10 n_c 7-9; prune all void -> n 0, no bar; reversed probe -> agree 11, fails; update size separating the tasks -> n_c 21, every instrument fails; scored readings void on two of three scored seeds -> n 7, no bar. Every output JSON-serialisable without NaN."
@@ -88,14 +103,19 @@
       "claim": "The truth set forms as constructed and the recipe cannot read it.",
       "measurement": "c1b.json placement, truth, train_stops (incl. recipe_ceiling_full on the scored-seed truth states).",
       "expected": "P learned at >= 0.95 at 10K on all 10 runs; zero or one disagreements; N 1e-5 1K 'not yet learned' (3 scored states); scored n = 21. Ceiling on the full scored set: lr 12/21, steps 12/21, constant 12/21; update size unknown (P is a smaller change than N, so it may separate the tasks: the risk named in the plan). Even a labeller unrelated to the truth reaches about 14 of 21 by its hindsight threshold (dry run), so an instrument needs about 16 of 21 in practice.",
-      "threshold": "rules.train_stops.",
-      "lean": "85% neither stop fires; 40% the update-size labeller reaches >= 15 of 21 (then no instrument can pass at 21 without agreeing on >= 17)."
+      "threshold": "rules.train_stops (incl. the no-instrument-can-pass row, amended 2026-10-30).",
+      "lean": "85% neither stop fires; 40% the update-size labeller reaches >= 15 of 21 (then no instrument can pass at 21 without agreeing on >= 17).; 40% the no-instrument-can-pass stop fires (the same event)."
     },
     "PC1_pruning": {
       "claim": "Pruning revival agrees with the truth above chance and above the recipe ceiling by 2.",
       "measurement": "c1b.json scores.prune.all (per_run beside it).",
       "rule": "rules.cutoff, rules.label, rules.score.",
-      "expected": {"do_nothing_LOW": "void (count a at 0.9998: nothing to revive)", "null_N_10K": "<= 0.10 (C1 best-K: N1 0.08, N1s1 0.08, M 0.08)", "positive_P_10K": ">= 0.3 (C1 natural-text reuse states: 0.65 WN_s0, 0.70 W1 at 1K)", "cutoff": "about 0.2 if the classes separate"},
+      "expected": {
+        "do_nothing_LOW": "void (count a at 0.9998: nothing to revive)",
+        "null_N_10K": "<= 0.10 (C1 best-K: N1 0.08, N1s1 0.08, M 0.08)",
+        "positive_P_10K": ">= 0.3 (C1 natural-text reuse states: 0.65 WN_s0, 0.70 W1 at 1K)",
+        "cutoff": "about 0.2 if the classes separate"
+      },
       "blind_to": "a revival needing more than 15 units; attention units; a P state that keeps count a under 'C a 40' (void); a new count computed after block 5 (inherited from the truth).",
       "noise_floor": "binomial sd of an accuracy at 4,000 rows is <= 0.008; the sd over 20 random draws (C1: 0.002-0.02) is recorded per state.",
       "lean": "60% passes"
@@ -104,7 +124,14 @@
       "claim": "Reverse fine-tuning at one rate agrees with the truth above chance and above the recipe ceiling by 2.",
       "measurement": "c1b.json scores.reverse.all (per_run beside it).",
       "rule": "rules.cutoff (low = existing), rules.label, rules.score.",
-      "expected": {"do_nothing_LOW": "void (starts at 0.95)", "scratch": "1.0 by definition (2,300 steps)", "null_N_10K_1e-4": "0.6 (C1 at 1e-5: N1 1,400, N1s1 1,350 of 2,300)", "null_N_10K_1e-5": "unknown at this rate (C1 read M at 1e-6: 3,300 steps): the risk", "positive_P_10K": "<= 0.3 (C1's reuse states took 750-800 steps at 1e-6)", "cutoff": "about 0.4 if the classes separate"},
+      "expected": {
+        "do_nothing_LOW": "void (starts at 0.95)",
+        "scratch": "1.0 by definition (2,300 steps)",
+        "null_N_10K_1e-4": "0.6 (C1 at 1e-5: N1 1,400, N1s1 1,350 of 2,300)",
+        "null_N_10K_1e-5": "unknown at this rate (C1 read M at 1e-6: 3,300 steps): the risk",
+        "positive_P_10K": "<= 0.3 (C1's reuse states took 750-800 steps at 1e-6)",
+        "cutoff": "about 0.4 if the classes separate"
+      },
       "blind_to": "a state already at 0.95 count a (void); how far count a was erased versus kept (only speed of recovery); a new count computed after block 5.",
       "noise_floor": "one reading per 50 steps: step counts are quantised at 50 (0.02 of scratch); seed noise from N1 vs N1s1 is 50 steps.",
       "lean": "45% passes (N 1e-4 1K states recovered in 950 steps in C1, close to where P states may sit)"
@@ -113,19 +140,31 @@
       "claim": "The mean-shift gain share agrees with the truth above chance and above the recipe ceiling by 2.",
       "measurement": "c1b.json scores.steer.all (per_run beside it).",
       "rule": "rules.cutoff, rules.label, rules.score.",
-      "expected": {"do_nothing_LOW": "void (G = 0; not read: zero by construction)", "null_N_10K": "0.45-0.6 (C1: N1 0.46, N1s1 0.48, M 0.58); N1 at 1K 0.64", "positive_P_10K": ">= 0.8 (C1 natural-text reuse 0.84-0.98)", "positive_ID": ">= 0.8 (controls)", "cutoff": "about 0.7"},
+      "expected": {
+        "do_nothing_LOW": "void (G = 0; not read: zero by construction)",
+        "null_N_10K": "0.45-0.6 (C1: N1 0.46, N1s1 0.48, M 0.58); N1 at 1K 0.64",
+        "positive_P_10K": ">= 0.8 (C1 natural-text reuse 0.84-0.98)",
+        "positive_ID": ">= 0.8 (controls)",
+        "cutoff": "about 0.7"
+      },
       "blind_to": "a nonlinear reuse a single mean shift cannot carry; a state whose gain is under 0.01 (flag); a new count computed after block 5.",
       "noise_floor": "the even/odd split: C1's fit and score shares differed by <= 0.03 at the chosen block.",
       "lean": "60% passes"
     },
     "PC4_possession_probe": {
-      "claim": "Whether LOW's residual linearly carries the state's answers agrees with the truth above chance and above the recipe ceiling by 2.",
-      "measurement": "c1b.json scores.probe.all (per_run beside it).",
-      "rule": "rules.cutoff, rules.label, rules.score.",
-      "expected": {"do_nothing_LOW": "LOW's own-answer selectivity (about the count-a reading, 0.45-0.65)", "null_N": "about 0.28 (LOW's count-b selectivity)", "positive_P": "about LOW's count-a selectivity on 'C b 40' rows (0.45-0.65; count a + 1 is a relabelling a linear readout absorbs)", "shuffled_labels": "0 by construction", "cutoff": "about 0.4"},
-      "blind_to": "any function LOW encodes but does not use (Def 1 is necessary, not sufficient); on this truth set the probe reads which function the state outputs, which the task fixes, so a pass shows it tells count-a-like answers from count-b-like answers, not that the state's mechanism goes through count a; a new count computed after block 5.",
+      "claim": "Task-identity reference, not a scored instrument (amended 2026-10-30, review H1): the probe reads the state's answers, and on this truth set the task fixes both the answers and the label, so its agreement checks that the truth set is what its construction says (P states answer count-a-like, N states count-b-like). It is out of the decision tree's \"any instrument passes -> C2\" and out of the benchmark comparison with VPD.",
+      "measurement": "c1b.json scores.probe (role: task-identity reference), reported beside the scored instruments.",
+      "rule": "rules.cutoff and rules.label as the instruments; its agreement and the bar are reported, never read as a pass or a benchmark result.",
+      "expected": {
+        "do_nothing_LOW": "LOW's own-answer selectivity (about the count-a reading, 0.45-0.65)",
+        "null_N": "about 0.28 (LOW's count-b selectivity)",
+        "positive_P": "about LOW's count-a selectivity on 'C b 40' rows (0.45-0.65; count a + 1 is a relabelling a linear readout absorbs)",
+        "shuffled_labels": "0 by construction",
+        "cutoff": "about 0.4"
+      },
+      "blind_to": "the mechanism: a state that computes count(a) + 1 through a new circuit reads the same as one reusing LOW's count a, because the probe reads the answer, which the task fixes; any function LOW encodes but does not use (Def 1 is necessary, not sufficient); a new count computed after block 5.",
       "noise_floor": "binomial sd of an accuracy at 2,000 held-out rows <= 0.011, so of a selectivity <= 0.016.",
-      "lean": "80% passes (it reads the answers; the risk is a 1K P state at 1e-5 whose answers are still mixed)"
+      "expected_agreement": "high (near n): a reference check of the construction; a low agreement means the P/N answers are not what the tasks say, a truth-set problem to report"
     }
   },
   "nuisance_labellers": "lr, steps and update size, each at its hindsight-best threshold and direction (constants included) on each instrument's own non-void scored states; scored in every scores entry as nuisance_agree and ceiling. Update size is new here (a weight-space nuisance: Shuttleworth et al. 2024's intruder dimensions read update size on full fine-tunes of small models; Hu et al. 2021 section 7).",
@@ -133,18 +172,88 @@
   "do_nothing": "LOW (zero update): void for pruning (count a at ceiling), reverse (starts at target) and steering (no gain); the probe on LOW's own answers is its reading.",
   "described_only": "C1's states re-labelled with the new cut-offs from c1.json's readings, no new reading (c1b.json c1_described): pruning and steering as C1 read them; reverse only for the states C1 read at 1e-5 (its first 5K steps are this recipe), others void; the probe not read. Agreement with C1's truth is described, not scored (confounded, partly shared with calibration seeds).",
   "departures_from_literature": [
-    {"what": "Task P", "literature": "Not in Jain et al. 2024. Their wrapper setting keeps count b as a competing solution on every edited row.", "ours": "Count a + 1 under 'C b 40' on every natural row, so the competitor is removed and the label holds at 10K steps.", "why": "A reusing state late in training (plan section 3); ID (Amendment 5) is the same move with g = identity."},
-    {"what": "Reverse fine-tuning rate", "literature": "Jain et al. App. D (L1249-1252): reverse below the fine-tune's rate with the Tracr SGD recipe; Fig. 76-77 for PCFG.", "ours": "One AdamW rate, 1e-5, for every state: equal to the slow states' own rate and below the fast states'. C1 used a tenth of each state's rate.", "why": "Scratch must finish at the rate used (at 1e-6 it never did in C1), and the rate must not encode the recipe (lead, decisions.md 2026-10-30)."},
-    {"what": "Reverse fine-tuning cap and schedule", "literature": "Jain et al.: Tracr recipe, 2K warm-up; no cap stated for PCFG.", "ours": "Cap 5K steps inside C1's schedule (20% warm-up then cosine over 10K steps), so the warm-up is 2K steps and the first 5K steps are C1's.", "why": "Plan: cap 5K (scratch 2,300 in C1); keeping the 10K schedule keeps scratch's reading and C1's 1e-5 readings comparable."},
-    {"what": "Scratch baseline", "literature": "Jain et al.: a scratch model fine-tuned the same way (Scr.+FT).", "ours": "NEVER (pretrained with count-b prior only, never saw 'C a'), reverse fine-tuned identically.", "why": "As C1; a constant bias the calibrated cut-off absorbs, unlike C1's fixed 0.5."},
-    {"what": "Pruning", "literature": "Jain et al. Alg. 3: prune by grad . w, plot the revived accuracy against units pruned.", "ours": "MLP hidden units only; K 5 and 15; against 20 random K-unit removals; the reading is the best-K revival over the random mean, thresholded by a calibrated cut-off.", "why": "As C1; a single number per state is needed to label it."},
-    {"what": "Calibrated cut-offs", "literature": "None (the papers plot curves); C1 filed fixed rules: >= 3 sd revival, <= 0.5 x scratch, S >= 0.5.", "ours": "Each instrument's cut-off set on calibration seeds 0-1 by balanced accuracy, filed before any scored state is read, replacing C1's 3-sd, 0.5 and 0.5 rules.", "why": "C1's cut-offs were guesswork (plan section 1)."},
-    {"what": "Steering", "literature": "CAA (Rimsky et al. 2023, arXiv 2312.06681): mean difference of residuals between contrastive prompt pairs on the same model, added to that model, scored as a behaviour rate; ActAdd (Turner et al. 2023): one pair.", "ours": "CAA via a mean shift: the mean (fine-tuned minus base) residual at '=' after one block, added to the base model rather than to the tuned one, scored as the share of the fine-tune's log-prob gain it recovers (E52 B3).", "why": "The question is whether the update's effect is a shift of an existing representation."},
-    {"what": "Possession probe", "literature": "Jain et al. Def 1: a probe trained on pretraining data for f_C; Hewitt & Liang 2019 (arXiv 1909.03368): a control task with type-consistent random labels, selectivity = task accuracy - control accuracy.", "ours": "A linear probe on LOW's activations trained to predict the state's own answers; the control is the same probe on labels permuted within each batch (counts have no word types to fix a control task on); selectivity thresholded by calibration; probe recipe Jain L1238-1248 (as Stage A).", "why": "The only instrument that reads nothing about the fine-tune but its answers, so it cannot read lr, steps or the update."},
-    {"what": "Positive controls", "literature": "None.", "ours": "Steering's on the ID states read on their own prompt ('T a 40'); the probe's is LOW predicting true count a on 'C b 40' rows; the probe on ID reads 'C b 40' rows as for every state (on those rows ID answers as LOW does).", "why": "The plan's ID rows give steering no gain on 'C b 40'; the probe's definition fixes its rows."},
-    {"what": "Nuisance labellers, hindsight ceiling, margin, binomial bar, per-run score", "literature": "None.", "ours": "This project's (C1's rule with update size added as a third labeller and each labeller's threshold chosen in hindsight).", "why": "The truth must not be readable from the recipe."},
-    {"what": "Bounded g, natural rows, saves inside the schedule, the checks", "literature": "Jain et al. Def 2.", "ours": "As recorded in the Stage 1 plan, Amendment 5 and C1.", "why": "decisions.md 2026-10-30."}
+    {
+      "what": "Task P",
+      "literature": "Not in Jain et al. 2024. Their wrapper setting keeps count b as a competing solution on every edited row.",
+      "ours": "Count a + 1 under 'C b 40' on every natural row, so the competitor is removed and the label holds at 10K steps.",
+      "why": "A reusing state late in training (plan section 3); ID (Amendment 5) is the same move with g = identity."
+    },
+    {
+      "what": "Reverse fine-tuning rate",
+      "literature": "Jain et al. App. D (L1249-1252): reverse below the fine-tune's rate with the Tracr SGD recipe; Fig. 76-77 for PCFG.",
+      "ours": "One AdamW rate, 1e-5, for every state: equal to the slow states' own rate and below the fast states'. C1 used a tenth of each state's rate.",
+      "why": "Scratch must finish at the rate used (at 1e-6 it never did in C1), and the rate must not encode the recipe (lead, decisions.md 2026-10-30)."
+    },
+    {
+      "what": "Reverse fine-tuning cap and schedule",
+      "literature": "Jain et al.: Tracr recipe, 2K warm-up; no cap stated for PCFG.",
+      "ours": "Cap 5K steps inside C1's schedule (20% warm-up then cosine over 10K steps), so the warm-up is 2K steps and the first 5K steps are C1's.",
+      "why": "Plan: cap 5K (scratch 2,300 in C1); keeping the 10K schedule keeps scratch's reading and C1's 1e-5 readings comparable."
+    },
+    {
+      "what": "Scratch baseline",
+      "literature": "Jain et al.: a scratch model fine-tuned the same way (Scr.+FT).",
+      "ours": "NEVER (pretrained with count-b prior only, never saw 'C a'), reverse fine-tuned identically.",
+      "why": "As C1; a constant bias the calibrated cut-off absorbs, unlike C1's fixed 0.5."
+    },
+    {
+      "what": "Pruning",
+      "literature": "Jain et al. Alg. 3: prune by grad . w, plot the revived accuracy against units pruned.",
+      "ours": "MLP hidden units only; K 5 and 15; against 20 random K-unit removals; the reading is the best-K revival over the random mean, thresholded by a calibrated cut-off.",
+      "why": "As C1; a single number per state is needed to label it."
+    },
+    {
+      "what": "Calibrated cut-offs",
+      "literature": "None (the papers plot curves); C1 filed fixed rules: >= 3 sd revival, <= 0.5 x scratch, S >= 0.5.",
+      "ours": "Each instrument's cut-off set on calibration seeds 0-1 by balanced accuracy, filed before any scored state is read, replacing C1's 3-sd, 0.5 and 0.5 rules.",
+      "why": "C1's cut-offs were guesswork (plan section 1)."
+    },
+    {
+      "what": "Steering",
+      "literature": "CAA (Rimsky et al. 2023, arXiv 2312.06681): mean difference of residuals between contrastive prompt pairs on the same model, added to that model, scored as a behaviour rate; ActAdd (Turner et al. 2023): one pair.",
+      "ours": "CAA via a mean shift: the mean (fine-tuned minus base) residual at '=' after one block, added to the base model rather than to the tuned one, scored as the share of the fine-tune's log-prob gain it recovers (E52 B3).",
+      "why": "The question is whether the update's effect is a shift of an existing representation."
+    },
+    {
+      "what": "Possession probe",
+      "literature": "Jain et al. Def 1: a probe trained on pretraining data for f_C; Hewitt & Liang 2019 (arXiv 1909.03368): a control task with type-consistent random labels, selectivity = task accuracy - control accuracy.",
+      "ours": "A linear probe on LOW's activations trained to predict the state's own answers; the control is the same probe on labels permuted within each batch (counts have no word types to fix a control task on); selectivity thresholded by calibration; probe recipe Jain L1238-1248 (as Stage A).",
+      "why": "The only instrument that reads nothing about the fine-tune but its answers, so it cannot read lr, steps or the update."
+    },
+    {
+      "what": "Positive controls",
+      "literature": "None.",
+      "ours": "Steering's on the ID states read on their own prompt ('T a 40'); the probe's is LOW predicting true count a on 'C b 40' rows; the probe on ID reads 'C b 40' rows as for every state (on those rows ID answers as LOW does).",
+      "why": "The plan's ID rows give steering no gain on 'C b 40'; the probe's definition fixes its rows."
+    },
+    {
+      "what": "Nuisance labellers, hindsight ceiling, margin, binomial bar, per-run score",
+      "literature": "None.",
+      "ours": "This project's (C1's rule with update size added as a third labeller and each labeller's threshold chosen in hindsight).",
+      "why": "The truth must not be readable from the recipe."
+    },
+    {
+      "what": "Bounded g, natural rows, saves inside the schedule, the checks",
+      "literature": "Jain et al. Def 2.",
+      "ours": "As recorded in the Stage 1 plan, Amendment 5 and C1.",
+      "why": "decisions.md 2026-10-30."
+    }
   ],
   "not_run_here": "C2 (VPD); Stage B; swap-built rows; rates other than 1e-4 and 1e-5; attention-unit pruning; dictionary instruments; CMAP; the probe or new reverse readings on C1's states; steering on LOW (zero by construction).",
-  "job_split": "Estimated at Stage A's ~12.5 ms/step: controls ~8-10 min, 1 job; train 17 runs x ~3.5 min (10K steps, compile, two saves, two states checked) + 3 reused runs' checks ~1 min each = ~63 min, 3 jobs; calibrate <= 16 states x ~3.5 min = ~56 min, 3 jobs; score <= 24 states x ~3.5 min = ~84 min, 4-5 jobs. The probe's cost is measured in the controls job (probe_seconds) and the later estimates are corrected from it."
+  "job_split": "Estimated at Stage A's ~12.5 ms/step: controls ~8-10 min, 1 job; train 17 runs x ~3.5 min (10K steps, compile, two saves, two states checked) + 3 reused runs' checks ~1 min each = ~63 min, 3 jobs; calibrate <= 16 states x ~3.5 min = ~56 min, 3 jobs; score <= 24 states x ~3.5 min = ~84 min, 4-5 jobs. The probe's cost is measured in the controls job (probe_seconds) and the later estimates are corrected from it.",
+  "amended_before_the_run": [
+    {
+      "date": "2026-10-30",
+      "by": "C1b code writer on the lead's decisions on the code review (reports/reviews/2026-10-30_review_e55-c1b-code.md), before any C1b job ran",
+      "changes": [
+        "H1: the possession probe is filed as a task-identity reference, not a scored instrument: out of \"any instrument passes -> C2\" and the benchmark comparison; its pass lean dropped; rule and blind_to say so (scores.probe.role in c1b.json).",
+        "M1: new train stop row: max(bar, n_c + 2) > n (or n < 8) on the full scored truth set -> stop, the lead takes it to the user.",
+        "M2: a changed recipe or constants exits 2 instead of dropping readings (rules.resume).",
+        "L1: the code's rule (3 or more scored-seed disagreements) stands; a dated line in the plan section 6 says it supersedes the single-state row.",
+        "L2: a state is not started when the slowest measured state would overrun the deadline (rules.resume).",
+        "L3: every c1b stage runs as job name commute-e55-c1b with --dependency=singleton (cluster/pcfg_anchors.sbatch usage).",
+        "L4: not changed (cosmetic); noted in edge_cases.E11."
+      ]
+    }
+  ]
 }

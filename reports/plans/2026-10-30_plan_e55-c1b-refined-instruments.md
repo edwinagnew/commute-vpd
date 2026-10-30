@@ -162,6 +162,8 @@ that is the finding, not a bug.
 | steering S, calibration | void | ≤ 0.5 | ≥ 0.8 | same |
 | probe selectivity, calibration | 0.52 | ≈ 0.28 | ≈ 0.5 | same |
 
+*Amended 2026-10-30, before any run (code review `reports/reviews/2026-10-30_review_e55-c1b-code.md` L1, lead):* the filed rule in `predictions_c1b.json` (`rules.train_stops`: stop at 3 or more construction–check disagreements among scored-seed states, a P state "not through" counting as one) supersedes the single-state stop in the "checks on P at 10K" row above. Also filed then: a stop when no instrument can pass on the full scored set (max(bar, n_c + 2) > n), and the probe as a task-identity reference, not a scored instrument (review H1, M1).
+
 **Order.** Job 0 (controls, alone, ~10 min) → job 1 (training, checks, calibration readings) → cut-offs committed →
 job 2 (scored readings, scores). Stop rows are checked in code at the end of each stage; a stop writes
 `results/c1b_stop.json` and exits 1.

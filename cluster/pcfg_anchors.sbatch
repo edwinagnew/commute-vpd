@@ -17,12 +17,12 @@
 #   sbatch --job-name=commute-e55-amend5b cluster/pcfg_anchors.sbatch amend5b  # Amendment 5b (WNf seeds 1-3), ~4-6 min (estimated); before c1
 #   sbatch --job-name=commute-e55-c1c cluster/pcfg_anchors.sbatch c1 controls  # Stage C1 controls, <= 7 min (estimated)
 #   sbatch --job-name=commute-e55-c1 cluster/pcfg_anchors.sbatch c1  # (after c1c finishes and its controls are read: both write c1.json) Stage C1 states, <= 119 min = up to 6 jobs of 22 min (estimated; 7 allowed with resubmits, tight)
-#   sbatch --job-name=commute-e55-c1b-controls cluster/pcfg_anchors.sbatch c1b controls    # Stage C1b, ~8-10 min, 1 job
-#   sbatch --job-name=commute-e55-c1b-train cluster/pcfg_anchors.sbatch c1b train          # (after controls) ~63 min = 3 jobs
-#   sbatch --job-name=commute-e55-c1b-calibrate cluster/pcfg_anchors.sbatch c1b calibrate  # (after train) ~56 min = 3 jobs
+#   sbatch --job-name=commute-e55-c1b --dependency=singleton cluster/pcfg_anchors.sbatch c1b controls   # Stage C1b, ~8-10 min, 1 job
+#   sbatch --job-name=commute-e55-c1b --dependency=singleton cluster/pcfg_anchors.sbatch c1b train      # ~63 min = 3 jobs
+#   sbatch --job-name=commute-e55-c1b --dependency=singleton cluster/pcfg_anchors.sbatch c1b calibrate  # ~56 min = 3 jobs
 #   (commit results/c1b_cutoffs.json; score exits 2 until it is committed unmodified)
-#   sbatch --job-name=commute-e55-c1b-score cluster/pcfg_anchors.sbatch c1b score          # ~84 min = 4-5 jobs
-#   (one c1b job at a time: every stage writes results/c1b.json)
+#   sbatch --job-name=commute-e55-c1b --dependency=singleton cluster/pcfg_anchors.sbatch c1b score      # ~84 min = 4-5 jobs
+#   (one job name and --dependency=singleton for every c1b stage: Slurm runs one at a time; each writes results/c1b.json)
 # a0: per prior, 500 pretraining iterations stopped at 250 and resumed from the saved file, behaviour and floors on 1K
 #   fresh samples -> experiments/pcfg_anchors/results/a0.json; checkpoints and a0.log in results/large/a0/.
 # a1 PRIOR: 50K iterations (~10 min plus compile at the a0 rate) with a 25-min deadline. Finished: results/a1_PRIOR.json;
@@ -120,7 +120,8 @@ esac
 rc=0
 "${cmd[@]}" 2>&1 | tee -a "$logf" || rc=$?
 if [ "$rc" = 3 ]; then
-  echo "=== DEADLINE (exit 3): saved, not finished; resume by hand: sbatch --job-name=$SLURM_JOB_NAME cluster/pcfg_anchors.sbatch $stage ${args[*]} ==="
+  dep=$([ "$stage" = c1b ] && echo " --dependency=singleton" || true)
+  echo "=== DEADLINE (exit 3): saved, not finished; resume by hand: sbatch --job-name=$SLURM_JOB_NAME$dep cluster/pcfg_anchors.sbatch $stage ${args[*]} ==="
   exit 3
 fi
 echo "=== FINISHED (exit $rc) — results in $COMMUTE_REPO/experiments/pcfg_anchors/results/ ==="
