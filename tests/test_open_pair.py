@@ -154,3 +154,116 @@ def test_score_p4_and_missing_states() -> None:
     assert rev["P4"]["r"]["status"] == "fail"  # reversed (cipher higher) is a fail
     part = OP.score({"cipher_s0": {"label": "new", "r": 0.2, "ratio": 0.3, "S": 0.2}}, TH, SEEDS)
     assert part["P4"]["r"]["status"] == "unreadable" and part["P2"]["r"]["status"] == "not_testable"
+
+
+# ----------------------------------------------------------------------------- Amendment 1 (2026-10-30)
+
+TH1 = {**TH, "min_novel": 3, "min_reuses": 2}
+
+
+def test_implied_push_algebra_and_edges() -> None:
+    # per window: 24 trained values gain T, 7 other held-out values gain O, own gains H; H_spec = H - (24 T + 7 O) / 31
+    T, O, H = 1.6, -0.5, 0.6
+    assert abs(OP.implied_push(H, H - (24 * T + 7 * O) / 31, O, 32, 8) - T) < 1e-12
+    # E58 elicit_s0 (run.json): Fable's +1.6
+    assert abs(OP.implied_push(0.6133724489519673, -0.4968453962026353, -0.5320331550413563, 32, 8) - 1.5892077202117572) < 1e-12
+    assert math.isnan(OP.implied_push(1.0, 0.0, 0.0, 8, 8))  # no trained values
+    assert math.isnan(OP.implied_push(1.0, 0.0, 0.0, 32, 1))  # one held-out key: H_other undefined
+
+
+def test_boot_sd_mean_edges() -> None:
+    assert math.isnan(OP.boot_sd_mean(torch.empty(0), 100, 0))  # empty
+    assert math.isnan(OP.boot_sd_mean(torch.tensor([1.0]), 100, 0))  # one row
+    assert math.isnan(OP.boot_sd_mean(torch.tensor([1.0, math.nan]), 100, 0))  # a peer set empty on some window
+    assert OP.boot_sd_mean(torch.full((5,), 3.0), 100, 0) == 0.0
+    v = torch.randn(100, generator=torch.Generator().manual_seed(2))
+    s = OP.boot_sd_mean(v, 2000, 0)
+    assert 0.07 < s < 0.13 and s == OP.boot_sd_mean(v, 2000, 0)  # ~ 1 / sqrt(100), seeded
+
+
+def test_push_verdict() -> None:
+    assert OP.push_verdict(1.8, 0.1, 0.0, 0.05, 3.0) == "lookup"  # E58's expected elicit reading
+    assert OP.push_verdict(0.75, 0.25, 0.0, 0.05, 3.0) == "lookup"  # d = 3 s_d exactly (binary-exact numbers): tie counts
+    assert OP.push_verdict(0.74, 0.25, 0.0, 0.05, 3.0) == "neither"
+    assert OP.push_verdict(0.0, 0.25, 0.75, 0.25, 3.0) == "sharpening"  # R_peer = 3 s_R exactly: tie counts
+    assert OP.push_verdict(0.0, 0.0, 0.0, 0.0, 3.0) == "neither"  # zero d with zero sd is not a lookup; zero R_peer not sharpening
+    assert OP.push_verdict(-1.0, 0.1, 0.6, 0.1, 3.0) == "sharpening"  # W0's other preferences rise, trained values do not lead
+    assert OP.push_verdict(1.0, 0.1, 0.6, 0.1, 3.0) == "both"
+    assert OP.push_verdict(1.0, 0.1, -0.6, 0.1, 3.0) == "lookup"  # peers fall: not sharpening
+    assert OP.push_verdict(1.0, math.nan, 0.0, 0.1, 3.0) == "unreadable"
+    assert OP.push_verdict(1.0, 0.1, math.inf, 0.1, 3.0) == "unreadable"
+
+
+def test_a1() -> None:
+    rd = lambda *v: {f"elicit_s{s}": {"verdict": x} for s, x in enumerate(v)}
+    assert OP.a1(rd("lookup", "lookup", "lookup"), SEEDS)["status"] == "pass"
+    assert OP.a1(rd("lookup", "both", "lookup"), SEEDS)["status"] == "fail"
+    assert OP.a1(rd("lookup", "neither", "unreadable"), SEEDS)["status"] == "fail"  # a fail outranks unreadable
+    assert OP.a1(rd("lookup", "unreadable", "lookup"), SEEDS)["status"] == "unreadable"
+    assert OP.a1(rd("lookup", "lookup"), SEEDS)["status"] == "unreadable"  # a missing state
+    assert OP.a1({}, SEEDS)["status"] == "unreadable"
+
+
+def test_n_novel() -> None:
+    assert OP.n_novel([1, 2, 2, 3], [4, 2, 5, 5]) == 3  # repeats among held-out values each count
+    assert OP.n_novel([1, 2], [1, 2]) == 0 and OP.n_novel([], [7]) == 1 and OP.n_novel([1], []) == 0
+
+
+def test_control_status_and_verdict() -> None:
+    assert OP.control_status(["reuses", "reuses", "new"], True, 2) == "pass"  # 2 of 3 at the bar
+    assert OP.control_status(["reuses", "neither", "new"], True, 2) == "fail"
+    assert OP.control_status(["too_small", "too_small", "too_small"], True, 2) == "fail"
+    assert OP.control_status(["reuses"] * 3, False, 2) == "not_testable"
+    assert OP.control_status([], True, 2) == "not_testable"
+    assert OP.positive_control("pass", "fail") == "rank1" and OP.positive_control("pass", "pass") == "rank1"
+    assert OP.positive_control("not_testable", "pass") == "copy_fallback"
+    assert OP.positive_control("fail", "pass") == "copy_only"
+    assert OP.positive_control("fail", "fail") == "none" and OP.positive_control("not_testable", "not_testable") == "none"
+
+
+def ctrl(rank1: Sequence[tuple[str, float, float]], copy: Sequence[tuple[str, float, float]]) -> dict[str, dict[str, Any]]:
+    """(label, r, ratio) per seed for each control map."""
+    return {f"{m}_s{s}": {"label": lab, "r": r, "ratio": ratio} for m, rows in (("rank1", rank1), ("copy", copy)) for s, (lab, r, ratio) in enumerate(rows)}
+
+
+def test_score_amend1_branches() -> None:
+    look = {f"elicit_s{s}": {"verdict": "lookup"} for s in SEEDS}
+    out = OP.score_amend1(look, ctrl([("reuses", 0.8, 0.9)] * 3, [("reuses", 0.8, 0.9)] * 3), 5, TH1, SEEDS)
+    assert out["A1"]["status"] == "pass" and out["verdict"] == "rank1" and out["C3"]["scored_on"] == "rank1"
+    assert out["C3"]["rank1"]["r"]["status"] == "pass"
+    # too few held-out keys with a value of their own: rank-1 not testable, the copy map decides
+    out = OP.score_amend1(look, ctrl([("reuses", 0.8, 0.9)] * 3, [("reuses", 0.8, 0.9)] * 3), 2, TH1, SEEDS)
+    assert out["C1"]["status"] == "not_testable" and out["verdict"] == "copy_fallback" and out["C3"]["scored_on"] == "copy"
+    # rank1_s0 too small to label (Fable's guard): not testable even if later seeds read reuses
+    out = OP.score_amend1(look, ctrl([("too_small", 0.8, 0.9), ("reuses", 0.8, 0.9), ("reuses", 0.8, 0.9)], [("new", 0.8, 0.9)] * 3), 5, TH1, SEEDS)
+    assert out["C1"]["status"] == "not_testable" and out["C2"]["status"] == "fail" and out["verdict"] == "none"
+    # rank-1 measurable but new; copy reuses
+    out = OP.score_amend1(look, ctrl([("new", 0.8, 0.9)] * 3, [("reuses", 0.8, 0.9)] * 2 + [("neither", 0.8, 0.9)]), 5, TH1, SEEDS)
+    assert out["verdict"] == "copy_only" and out["C3"]["rank1"]["r"]["status"] == "fail"
+    # min_novel tie counts; an empty control record
+    assert OP.score_amend1(look, ctrl([("reuses", 0.8, 0.9)] * 3, []), 3, TH1, SEEDS)["C1"]["testable"]
+    empty = OP.score_amend1({}, {}, 8, TH1, SEEDS)
+    assert empty["verdict"] == "none" and empty["A1"]["status"] == "unreadable" and empty["C3"]["copy"]["r"]["status"] == "not_testable"
+
+
+def test_pool_and_others_with_repeated_values() -> None:
+    from commute import heldout_keys as HK
+    from commute import steering as ST
+
+    table = torch.full((10,), -1)
+    table[torch.tensor([1, 2, 3, 4])] = torch.tensor([7, 8, 7, 9])  # the rank-1 map can repeat a value
+    task = lambda keys: ST.Task("t", "k", torch.zeros(1, 3, dtype=torch.long), table, keys, 0, 1, torch.empty(0))
+    assert HK.pool_of({"trained": task((1, 2)), "new": task((3, 4))}) == [7, 8, 9]  # each value once, first-seen order
+    distinct = {"trained": task((1, 2)), "new": task((4,))}
+    assert HK.pool_of(distinct) == [7, 8, 9]  # distinct values: E58's list unchanged
+    logits = torch.zeros(2, 1, 10)
+    logits[0, 0, 7], logits[1, 0, 9] = 2.0, -1.0
+    o = HK.others([7, 8, 9])(logits, 0, torch.tensor([7, 9]))  # own value left out of each window's mean
+    ref = lambda lg, v: float(lg[v] - torch.logsumexp(torch.cat([lg[:v], lg[v + 1:]]), 0))
+    assert abs(float(o[0]) - (ref(logits[0, 0], 8) + ref(logits[0, 0], 9)) / 2) < 1e-6
+    assert abs(float(o[1]) - (ref(logits[1, 0], 7) + ref(logits[1, 0], 8)) / 2) < 1e-6
+    assert math.isnan(float(HK.others([7])(logits, 0, torch.tensor([7, 7]))[0]))  # no other value: nan, never 0
+
+
+def test_jsonable() -> None:
+    assert OP.jsonable({1: [math.nan, 2.0, (math.inf,)], "a": {"b": -math.inf}}) == {"1": ["nan", 2.0, ["inf"]], "a": {"b": "-inf"}}

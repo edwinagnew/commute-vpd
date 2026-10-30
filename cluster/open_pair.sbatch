@@ -14,6 +14,11 @@
 # {elicit,cipher}_s{0,1,2}.pt (~113 MB each); the log tees to results/large/run.out. Commits nothing.
 # Expected 5-10 min on a debug L40 (E56 job 2 on the same card: a 300-step elicit fine-tune 11 s, a cipher fine-tune with
 # 32 checkpoints 16 s, r and S on six states ~1.5 min); host RAM peak ~5 GB (32 cipher checkpoints of 113 MB).
+# Stage argument (first argument, default `main` = the run above):
+#   sbatch cluster/open_pair.sbatch amend1   # Amendment 1 (plan section "Amendment 1"; predictions_amend1.json):
+#     the rank-k readout on E58's six saved states (each checked against run.json first), then the label's positive
+#     control (rank-1 and copy maps, seeds 0-2, E54's recipe) with E58's label, readout, r, ratio and S. Reads E58's
+#     results/run.json and results/large/; writes results/amend1.json and results/large/amend1/ (~0.7 GB). ~6-10 min.
 #SBATCH --job-name=commute-e58-open-pair
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -29,11 +34,18 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
-test -f experiments/open_pair/results/predictions.json || { echo "file the predictions first" >&2; exit 1; }
+stage=${1:-main}
+[ $# -gt 0 ] && shift
+case "$stage" in
+  main) script=run.py pred=predictions.json logf=run.out ;;
+  amend1) script=amend1.py pred=predictions_amend1.json logf=amend1.out ;;
+  *) echo "unknown stage $stage (main | amend1)" >&2; exit 2 ;;
+esac
+test -f "experiments/open_pair/results/$pred" || { echo "file the predictions first" >&2; exit 1; }
 large=experiments/open_pair/results/large
 mkdir -p "$HOME/commute-data/results-large/open_pair"   # also mends a dangling link's target
 [ -L "$large" ] || [ -d "$large" ] || ln -s "$HOME/commute-data/results-large/open_pair" "$large"
 rc=0
-.venv/bin/python experiments/open_pair/run.py "$@" 2>&1 | tee "$large/run.out" || rc=$?
-echo "=== FINISHED E58 (exit $rc) — results in $COMMUTE_REPO/experiments/open_pair/results/ ==="
+.venv/bin/python "experiments/open_pair/$script" "$@" 2>&1 | tee "$large/$logf" || rc=$?
+echo "=== FINISHED E58 $stage (exit $rc) — results in $COMMUTE_REPO/experiments/open_pair/results/ ==="
 exit $rc
