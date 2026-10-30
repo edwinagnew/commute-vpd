@@ -82,7 +82,7 @@ plot's lower right is empty: no map has a target W₀ did not guess that still c
 Now the horizontal axis. Inside the upper band carry runs from 0.10 to 0.84 at 96 trained keys, and from about −0.03
 to 0.55 at 24. r is not in carry order. At 96 trained keys the rank-1 map has the highest r at both read points and
 carries about a fifth, while the copy map carries over four fifths at lower r. Nor is r unrelated to carry. The elicit
-map has both the lowest carry and the lowest r at every read point, and over the nine 96-key reads the rank correlation
+map has both the lowest carry and the lowest r at every read point on three-seed means (at step 10 one rank-1 seed carries 0.19, below elicit's 0.21-0.22), and over the nine 96-key reads the rank correlation
 of r with carry is 0.42 at step 30. So r is not blind to which map was trained, but carry is not what orders it there.
 The stand-in ratio, right panel, splits the same way: 0.96 to 1.21 against 0.41 to 0.66 at 96 trained keys.
 
