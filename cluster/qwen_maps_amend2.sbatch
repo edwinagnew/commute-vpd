@@ -1,6 +1,6 @@
 #!/bin/bash
 # E44 Amendment 2, the pass test under reading B ($0) on one cluster L40, normal QoS (Qwen-line exception: submit
-# only when the queue is empty, else debug with step 1 cut): experiments/qwen_maps/amend2.py. Plan:
+# only when the queue is empty; no debug variant): experiments/qwen_maps/amend2.py. Plan:
 # reports/plans/2026-10-28_plan_qwen-q0q1.md, "Amendment record (2026-10-30, Amendment 2: masks from the original
 # model)". Submit from the clone root; not submitted by the code writer:
 #   sbatch cluster/qwen_maps_amend2.sbatch

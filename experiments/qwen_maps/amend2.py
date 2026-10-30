@@ -454,6 +454,9 @@ def stage_s(rd: Reader) -> None:
             job.stop("disk", f"{free / 1e9:.0f} GB free on {job.out} before S < {L.disk_min / 1e9:.0f}")
         rd.drop_ft()
         job.drop_gamma()  # fp32 components + S's working set would pass 44 GiB beside Γ
+        t0 = time.time()
+        job.sigma()  # built here, not lazily in layer 0, so stage_S's time stop sees per-layer cost only
+        job.log(f"sigma built in {time.time() - t0:.0f} s")
         stage_S(job)  # E44's stage S unchanged (writes S.json, rescored through job.put)
     job.gamma()
     if not (r := control_s(job.res["S"]))["holds"]:
