@@ -4,7 +4,7 @@
 <h3>The criterion and the comparisons</h3>
 <div class="cards">
   <div class="card"><h4>The pass line has no anchor</h4><p>"About as well" is read as an adversarial ratio under 1.5, a line inherited from E2's filing. On the L40 the unchanged model's own floor reached 21%, so the line sits inside the noise band and the two stated rules disagree there (1.5 against 1.63). Two of seven ladder verdicts sit on the rules (E11).</p></div>
-  <div class="card"><h4>The reference fails the pass check</h4><p>Do-nothing changes nothing in the decomposition and still fails the adversarial check on the large Adam fine-tunes (2.18 on emoticon) and every broad fine-tune on Pile rows 0-255, because the adversary can mask Δ and Δ now holds the update (E21, E22, E39). So the 1.5 line mixes how much of the update sits outside the pieces with whether the pieces are fragile; the criterion is now the ratio to the unchanged decomposition, with do-nothing beside every verdict (decided 2026-10-29).</p></div>
+  <div class="card"><h4>The reference fails the pass check</h4><p>Do-nothing changes nothing in the decomposition and still fails the adversarial check on the large Adam fine-tunes (2.18 on emoticon) and every broad fine-tune on Pile rows 0-255, because the adversary can mask Δ (E21, E22, E39). So the 1.5 line mixes how much of the update sits outside the pieces with how fragile they are; the criterion is now the ratio to the unchanged decomposition, do-nothing beside every verdict (decided 2026-10-29).</p></div>
   <div class="card"><h4>"Δ not absorbing δW" has no threshold</h4><p>The split LoRA's residual share (0.22 to 0.31 of the behaviour, half the energy) is judged by feel. The split fine-tune's 0.09 was read as acceptable, 0.22 as "the open reading". GOALS fixes no number.</p></div>
   <div class="card"><h4>Component training is not "the same fine-tune"</h4><p>Adam on the pieces at another learning rate, half the weight movement, and on the ladder tasks about twice the off-target damage at the same step. On emoticon the sign flips (a third). Unexplained.</p></div>
 </div>
@@ -24,6 +24,6 @@
 <h3>The record</h3>
 <div class="cards">
   <div class="card"><h4>Lost or unsaved data</h4><p>E2's states never saved; E5's for emoticon only; E7's final results file rebuilt from the log; E8's read-side jobs have no result file. E14's per-subcomponent updates were deleted with the pod; the split stage is to be rerun.</p></div>
-  <div class="card"><h4>Re-gating has one definition now, and no vetted measure</h4><p>The glossary defines re-gating once (what Γ says differently on the fine-tuned model). No measure of it has passed its nulls: the share reads the same for a non-learning update (E36) and, on Qwen, for random changes (E57); the switched-on set's members already push toward the target at the original model (E38). "Reveal" and "create" readings therefore rest on the route split, not on a mechanism.</p></div>
+  <div class="card"><h4>Re-gating has one definition now, and no vetted measure</h4><p>No measure of re-gating has passed its nulls: the share reads the same for a non-learning update (E36) and, on Qwen, for random changes (E57); the switched-on set's members already push toward the target at the original model (E38). "Reveal" and "create" readings rest on the route split, not on a mechanism.</p></div>
 </div>
 </section>
