@@ -167,7 +167,11 @@ def shift_fig(a3: dict[str, Any], ref: dict[str, list[dict[str, Any]]]) -> None:
     for ax, (q, name, tol) in zip(
         axes,
         (
-            ("r", "re-gating share r", th["tol_r"]),
+            (
+                "r",
+                "r: share of the update's gain\non W0's own subcomponents",
+                th["tol_r"],
+            ),
             ("ratio", "stand-in ratio (no ceiling at 1)", th["tol_ratio"]),
         ),
         strict=True,
