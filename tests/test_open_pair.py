@@ -492,3 +492,13 @@ def test_shuffle_class_and_score_amend4() -> None:
     assert out["within_key"]["10"]["rho_r_x"] > 0
     reads[10]["copy"] = [rd(0.8, 0.84, 1.3), rd(0.8, 0.86, 1.3), rd(0.8, 0.88, 1.3)]
     assert OP.score_amend4(reads, None, TH4)["within_key"]["10"]["status"] == "fail"
+
+
+def test_comparable_and_seed0_dropped() -> None:
+    assert OP.comparable([(0.3683, 0.3683), (0.3038, 0.30389)], 1e-4)  # within tol (tie region)
+    assert not OP.comparable([(0.3683, 0.3685)], 1e-4) and not OP.comparable([], 1e-4)
+    assert not OP.comparable([(math.nan, 0.3)], 1e-4) and not OP.comparable([(None, 0.3)], 1e-4)
+    # not comparable: seed 0 reads become None, and each map is scored on its two remaining seeds
+    reads = {"elicit": [None, rd(0.2, 0.78), rd(0.2, 0.80)], "copy": [None, rd(0.8, 0.84), rd(0.8, 0.86)]}
+    w = OP.within_key(reads, "r", TH4)
+    assert w["n_seeds"] == {"copy": 2, "elicit": 2} and w["status"] == "fail"  # D 0.06 > 2 x spread 0.02

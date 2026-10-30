@@ -1,25 +1,28 @@
-# Analysis: does a half-known word map learned on 24 keys carry to 8 unseen keys, and does VPD agree? (E58)
+# Analysis: does a half-known word map carry to keys it never saw, at 24 and at 96 trained keys, and does VPD agree? (E58)
 
 *2026-10-30, regating-lead writer. Plan: `reports/plans/2026-10-30_plan_e58-open-pair.md`, with its two dated pre-fine-tune
-amendments and its Amendment 1. Rules: `experiments/open_pair/results/predictions.json` and `predictions_amend1.json`.
-Results: `experiments/open_pair/results/run.json` (job 46266) and `amend1.json` (job 46332). Reading adopted by the lead:
-`reports/plans/2026-10-30_advice_e58-reading-FABLE.md`, `decisions.md` last row. Explanation:
-`notebooks/E58_open_pair.ipynb`. Words as in `GOALS.md` → Terms. Provenance at the end.*
+amendments and its Amendments 1, 2 and 3. Rules: `experiments/open_pair/results/predictions.json`,
+`predictions_amend1.json`, `predictions_amend2.json` and `predictions_amend3.json`. Results:
+`experiments/open_pair/results/run.json` (job 46266), `amend1.json` (job 46332), `amend2.json` (job 46383, stopped) and
+`amend3.json` (job 46398). Reading adopted by the lead: `reports/plans/2026-10-30_advice_e58-reading-FABLE.md`,
+`decisions.md`; Fable's later advice `reports/plans/2026-10-30_advice_e58a1-next-FABLE.md` and
+`reports/plans/2026-10-30_advice_e58a2-control-FABLE.md`. Explanation: `notebooks/E58_open_pair.ipynb`. Words as in
+`GOALS.md` → Terms. Provenance at the end.*
 
-We fine-tuned the small model on a word map it half-knows, on most of its keys; the unseen keys did not gain, yet the
-decomposition read the gain as old subcomponents switched on (it would read a new circuit of old pieces that way too), so a filed prediction that the two agree failed. A
-follow-up gave this held-out test its missing positive control, and a second filed prediction failed: a fine-tune that
-copies the key carried to unseen keys but passed the test's bar on one seed of three, not two. So the test has no
-working positive control on this model, and for `GOALS.md` its verdict cannot yet count for or against the
-decomposition.
+We fine-tuned the small model on word maps over some of their keys and asked whether the keys it never saw gained, and
+whether the decomposition's readings followed that. With four times the keys every map carried further while the
+readings stayed level, but the readings also rose on the no-rule control, so the filed test of whether they follow
+carry-over came out untested. For `GOALS.md`, the decomposition still reads which existing subcomponents an update runs
+through, a reading under which a new circuit built from old pieces also looks old, and nothing here shows it reads
+whether what was learned generalises.
 
 ## The answer
 
-No carry-over on the half-known map, and the decomposition reads the opposite; but the measure then failed its
-positive control. At unseen keys the update pushed the 24 trained answers up and the model's own other preferences
-down: a lookup, not a sharpening. Two maps the model can already apply carried further, and the decomposition read
-them as old subcomponents too (a limit: a new circuit of old pieces reads that way as well). The copy map crossed the
-test's bar on one seed of three, so the test is not used against the decomposition.
+With 24 trained keys the half-known map did not carry to unseen keys, yet the decomposition read its gain as old
+subcomponents switched on. With 96 trained keys every map carried further. The copy map now clears the held-out bar on
+one seed, and the half-known map carries a fifth, then a tenth, of the way. The decomposition's readings stayed level as carry
+rose, but its reading of the no-rule control rose too, so the filed test reads untested. A new circuit of old pieces
+would read as old pieces too.
 
 ## What we were trying to test
 
@@ -368,6 +371,216 @@ one that does not. E58's failed agreement prediction therefore counts neither fo
 Among the three maps that are not the cipher, r and the stand-in ratio stay level while the carry ranges from none to
 half. Whatever they read, it is not held-out carry. The lead is consulting Fable on what follows.
 
+## Amendment 2: the three maps at four times the keys
+
+*Job 46383, after Amendment 1. Plan § "Amendment 2" and its two dated notes; Fable's advice
+`reports/plans/2026-10-30_advice_e58a1-next-FABLE.md`, item 3 and "What would change it", adopted by the lead; rules
+`experiments/open_pair/results/predictions_amend2.json`, filed before the run; results `amend2.json`, partial; code
+`experiments/open_pair/amend2.py`; log `results/large/amend2.out`.*
+
+### What we were trying to test
+
+At 24 trained keys every fine-tune mostly memorised its keys. Only the copy map carried to unseen keys, about half way,
+while r and the stand-in ratio stayed level. That might only mean 24 keys are too few for a rule to beat a lookup.
+Amendment 2 trains the same three maps on four times the keys: 128 keys drawn by E54's own selection rule, 96 trained and
+32 held out, seed 0, E54's recipe. The draw walks E54's seeded order, so its first 32 keys are E54's, and the job checks
+that they come back exactly. Windows keep E54's density, about 16 per key.
+
+Every map is read at one common step, the elicit map's E12 step, so that the maps' updates are compared at one training
+length. The question is Fable's. Does a rule now carry on the rank-1 or copy map, and if it does, do r and the ratio
+move with it? Under reading A they should not. Reading A is the lead's working answer to ask #14: "reuses" means built
+from subcomponents W₀ already has, not "generalises to unseen keys".
+
+**The control.** The elicit map runs first and alone. It was filed as the map with no rule linking one key's value to
+another's, so its held-out carry had to stay within ±0.05 of 0; above that the job stops.
+
+### What we expected, and why
+
+The control was filed to pass at about 70% and to read below 0 at about 25%. Its values are separate words per key, and
+at 24 keys its carry was −0.03. A carry above 0.05 was given about 5%. The rank-1 map was expected to memorise or sit
+between the bars. The copy map was expected to reach 0.6 at about 40%, and r and the ratio to stay flat at about 50%.
+
+### The control missed, and the job stopped
+
+Everything before the control passed. E54's selection came back exactly: marker, 777 qualified keys, and E54's 32 keys
+with their values. The qualified pool held 319 distinct values, so all 128 keys were drawn. The zero update read exactly
+0. Then the elicit map, read at step 10, carried 0.213 of its trained-key gain to the unseen keys. Three bootstrap
+deviations were 0.041, so the label reads "neither". The job stopped there, as designed.
+
+| number | filed | read |
+|---|---|---|
+| E54's selection: marker, qualified keys, E54's 32 keys and values | exactly E54's | 18214, 777, all 32 |
+| keys drawn | 128, else 64 | 128 of 319 distinct values |
+| zero update, largest gain | exactly 0 | 0 |
+| elicit, E12 step; trained-key held-out probability | likely 30 | 10; 0.60, then 0.98 at step 30 |
+| elicit $G_\text{spec}$, $H_\text{spec}$, log-odds | 10 to 19; about 0 | 9.34; +1.99 |
+| elicit carry $x$, $3s$ | −0.05 to +0.05 | **0.213**, 0.041 |
+| held-out keys with a positive $H_\text{spec}$ | — | 28 of 32 |
+| other held-out values' mean gain | — | −0.79 |
+| rank-1 map: distinct values; held-out keys with a value of their own | 1 to 6 novel | 49; 10 |
+
+The filed control prediction is a **miss**. It stands as filed and is never edited. Rank-1, copy and the agreement test
+were not run, so every other Amendment 2 prediction reads "stopped".
+
+**The cause, as Fable states it; reasoned, not measured here.** The control was mis-specified, not the measurement. Each
+elicit value is, by construction, a word W₀ already ranks 2nd to 20th after that key, ten times likelier there than after
+other keys. So "after the marker, say what W₀ half-expects for this key" is a rule. Fable's reading is that 96 keys, at
+about 3 views per key by step 10, let the fine-tune find that rule, where 24 keys only let it memorise. The held-out
+gain moved from about −0.5 log-odds at 24 keys to +2.0. The smaller trained-key gain, 9.3 against about 18, can at most
+double $x$; it cannot flip its sign. The map with no rule is the cipher. Amendment 3 makes it the control and tests this
+cause.
+
+## Amendment 3: the cipher as the control, the half-known map scored
+
+*Job 46398, after job 46383. Plan § "Amendment 3" and its pre-run review note; Fable's advice
+`reports/plans/2026-10-30_advice_e58a2-control-FABLE.md`, adopted by the lead; rules
+`experiments/open_pair/results/predictions_amend3.json`, filed before the run; results `amend3.json`; code
+`experiments/open_pair/amend3.py`, which reuses Amendment 2's key and map builders unchanged; log
+`results/large/amend3.out`; figures `experiments/open_pair/plot_amend3.py`.*
+
+### What we were trying to test
+
+The keys, windows, recipe, seed and label are Amendment 2's. Four things change.
+
+- **The control is the cipher.** The same 128 keys map to arbitrary words W₀ gives under 1e-4, so nothing learned on one
+  key says anything about another. Its carry must stay at or under 0.05. It is read at the common step, or, if its
+  trained-key gain is under the gate of 5.148 there, at the first kept checkpoint up to step 30 that clears it.
+- **The elicit map is scored.** Its carry rose by about 0.24 against 24 keys, which is the movement a test of r needs.
+- **Each map is compared with itself.** For elicit, rank-1 and copy, $dx$ is $x$ at 96 trained keys minus its 24-key
+  three-seed mean, and $d_r$ and $d_\text{ratio}$ are the same differences for r and the stand-in ratio. A map is
+  testable when $dx \ge 0.15$, the copy map's 24-key seed range. It reads "flat" if r moved by at most 0.05 and the ratio
+  by at most 0.1, and "tracks" if either moved with $x$ by more.
+- **A drift guard.** No map is a reference for the others now, so a shift of every r with the key count would go unseen.
+  The guard reads the cipher's r at the step whose update size matches the elicit state's. If it differs from its
+  24-key mean of 0.23 by more than 0.05, the test reads "untested_drift" and the verdict "untested".
+
+Fable's checks run in the same job, reported and not scored. Check 2 was the cipher, now the control itself.
+
+1. The elicit map's $x$ at steps 10, 30, 100 and 300, beside E58's 24-key elicit state re-trained in the same job.
+2. The cipher, now the control, above.
+3. A shuffled elicit map. Each trained key takes another trained key's elicit value, in a cycle so none keeps its own;
+   held-out keys keep their true values. Carry near 0 says the elicit carry is tied to each key's own value; near 0.2
+   says it rides on the pool of values.
+4. The elicit update read on the rank-1 and copy maps' held-out windows: does it also raise W₀'s top word, or the key
+   itself?
+5. Spearman's rank correlation over the 32 held-out keys between each key's held-out gain and how strongly W₀ preferred
+   that key's value, as a probability and as a key-specificity ratio.
+
+### What we expected, and why
+
+- **The cipher reads "below"**, about 75%. At 24 keys its carry was −0.30 to −0.38, and 96 trained values pull harder.
+- **Elicit reproduces job 46383**, carry 0.20 to 0.23, with r 0.75 to 0.85 and the ratio 0.9 to 1.1 under reading A.
+- **Rank-1 memorises or sits between the bars**, about 65%. **Copy reaches 0.6**, about 40%.
+- **r and the ratio stay flat**, about 50%, track carry about 25%, and the drift guard fires about 10%. The filed
+  verdict leaned to "reading A holds" at about 50%.
+- **Check 1** open: kept or rising 40%, falling 35%, transient 25%. **Check 3** near 0, about 80%. **Check 4**: the copy
+  key's gain within ±0.5 log-odds of 0. **Check 5** above 0, about 70%.
+
+### Controls, run first
+
+The key selection came back exactly again. Every zero update read 0, and the shuffle left no trained key its own value.
+The elicit map reached its E12 step at step 10 and reproduced job 46383 exactly, with a largest weight difference of 0
+and carry 0.2132 both times. The cipher's trained-key gain at step 10 was 1.94, under the gate, and stayed under it
+through step 15. At step 16 it was 5.79. There the cipher's carry was −0.236 with label "new", so the control reads
+"below": no carry, as filed at about 75%. No block-0 stop fired; the largest block-0 shift was 1.3e-7.
+
+### With 96 trained keys, does the half-known map carry, and does the carry last?
+
+![Left: held-out carry x against fine-tune step for the elicit map at 96 and 24 trained keys, the cipher control and the shuffled elicit map, with the control's ±0.05 band. Right: the elicit map's trained-key and held-out value-specific gains in log-odds at the same steps](../../experiments/open_pair/figures/a3_carry.png)
+
+**Reading it.** Yes, about a fifth of the way at step 10 and a tenth from step 30 on, where at 24 keys it carried
+nothing. In the left panel the solid green line reads 0.21 at step 10 and 0.10 to 0.11 at steps 30 to 300. The dashed
+line is E58's 24-key state re-trained in this job: −0.027 at step 10, as E58 read, and 0.01 to 0.02 after, inside the
+control's band. The cipher stays below 0 at every step it was read. The right panel shows why $x$ halved after step 10.
+The held-out keys' gain held at 2.0 to 2.4 log-odds from step 10 to 300, while the trained keys' gain doubled from 9.3
+to 19 by step 30. The filed trajectory code is "falling": by step 30, $x$ lost more than 0.05 but stayed above 0.05. One
+seed only; the 24-key seed range of the elicit $x$ was 0.012.
+
+| step | trained-key held-out probability | $G_\text{spec}$ | $H_\text{spec}$ | $x$, 96 keys | $x$, 24 keys |
+|---|---|---|---|---|---|
+| 10 | 0.60 | 9.34 | +1.99 | 0.213 | −0.027 |
+| 30 | 0.98 | 18.96 | +2.00 | 0.105 | +0.014 |
+| 100 | 0.997 | 22.42 | +2.36 | 0.105 | +0.019 |
+| 300 | 0.999 | 23.53 | +2.41 | 0.102 | +0.021 |
+
+**Is the carry tied to each key's own value?** The three checks do not settle it.
+
+- **Check 3 is unreadable as filed.** The shuffled map's trained-key gain at step 10 was 2.10, under the gate, so its
+  label is "too_small". Unscored, at the held-out keys the raw gain of the own value was +0.88 log-odds against +2.09
+  for the other held-out values. No reading is drawn from it.
+- **Check 4.** Elicit's update raised W₀'s top word at the unseen keys by 0.32 log-odds over the rank-1 map's other
+  values. It lowered the key itself by 1.0 against the copy map's other values, outside the filed ±0.5.
+- **Check 5.** The rank correlation of each key's held-out gain with W₀'s probability of its value was 0.01, and with the
+  key-specificity ratio 0.19. Both are above 0, as filed, but at 32 keys a rank correlation needs about 0.35 to clear
+  chance at the 5% level. The rule's signature Fable proposed is not seen.
+
+### From 24 to 96 trained keys, did r and the stand-in ratio move with carry?
+
+![r and the stand-in ratio against held-out carry x for each map, arrows from the 24-key three-seed mean to the 96-key state at step 10, step-30 states hollow, each map's tolerance band shaded and the cipher's drift guard band in the r panel](../../experiments/open_pair/figures/a3_shift.png)
+
+**Reading it.** On no map did r or the ratio move beyond its tolerance, but the filed test reads "untested" because
+the cipher's r moved too. Each arrow runs from a map's 24-key mean to its 96-key state at step 10. Carry rose by 0.24
+on elicit, 0.21 on rank-1 and 0.34 on copy. Every arrow head stays inside its shaded band, so each map reads "flat". The
+cipher's arrow leaves its band: its r rose from 0.23 to 0.37, a drift of 0.14 against the guard's 0.05. The filed rule
+then reads "untested_drift" and the verdict "untested", not "reading A holds".
+
+Two caveats. Rank-1's r moved by 0.048 and copy's ratio by 0.091, each just inside its tolerance. And the cipher state
+the guard reads, matched in update size, had barely learned its values at 96 keys. Its trained-key held-out probability
+was 0.007, against 0.41 to 0.57 for E58's matched ciphers. At step 30, probability 0.79, its r is 0.30, still 0.07 above
+the 24-key mean. We do not know why the cipher's r rose. The guard was filed to stop a claim in exactly this case.
+
+| map | $x$, 24 → 96 keys | $dx$ | r, 24 → 96 | $d_r$ | ratio, 24 → 96 | $d_\text{ratio}$ | reads |
+|---|---|---|---|---|---|---|---|
+| elicit | −0.030 → 0.213 | +0.243 | 0.767 → 0.783 | +0.016 | 0.938 → 0.965 | +0.027 | flat |
+| rank-1 | 0.108 → 0.317 | +0.208 | 0.843 → 0.891 | +0.048 | 1.105 → 1.136 | +0.032 | flat |
+| copy | 0.481 → 0.823 | +0.342 | 0.841 → 0.866 | +0.025 | 1.022 → 1.113 | +0.091 | flat |
+| cipher, update size matched, step 10 | −0.341 → −0.361, under the gate | — | 0.231 → 0.368 | +0.138 | 0.323 → 0.456 | +0.133 | guard fires |
+
+At step 30, the companion, reported and not scored:
+
+| map | $x$ | $dx$ | r | $d_r$ | ratio | reads |
+|---|---|---|---|---|---|---|
+| elicit | 0.105 | +0.136 | 0.725 | −0.043 | 0.993 | not testable |
+| rank-1 | 0.204 | +0.096 | 0.847 | +0.004 | 1.168 | not testable |
+| copy | 0.808 | +0.327 | 0.771 | −0.070 | 1.046 | r moved against carry |
+| cipher | −0.103, label "new" | — | 0.304 | +0.073 | 0.430 | guard fires, scored on the step-10 matched cipher, drift 0.138; the step-30  +0.073 would also exceed 0.05 |
+
+Step 30 is where the elicit map's trained-key probability, 0.98, matches the 24-key states' 0.93 to 0.98. There its
+carry rise is 0.14, under the 0.15 needed to test it.
+
+**The labels at 96 keys, and the label's positive control.** On the same figure's horizontal axis, the copy map now
+carries 0.82 of its trained-key gain, with $3s$ of 0.038. It reads "reuses", and the filed copy prediction passes. At 24
+keys it read "reuses" on one seed of three. So the held-out label can read "reuses" on this model, on one seed at 96
+trained keys. The rank-1 map's $x$ is 0.32, but on its 10 held-out keys whose value no trained key shares it is 0.09.
+Those disagree, so it reads "between", as filed at about 65%. The elicit map reads "neither". Steering's share does not
+order the maps by carry either: it reads 0.72 on copy and 0.41 on elicit, but 0.31 on rank-1, below the matched
+cipher's 0.40.
+
+| state, step 10 | $G_\text{spec}$ | $x$ | $3s$ | label | r | ratio | S |
+|---|---|---|---|---|---|---|---|
+| elicit | 9.34 | 0.213 | 0.041 | neither | 0.783 | 0.965 | 0.409 |
+| rank-1 | 8.19 | 0.317, novel keys 0.095 | 0.056 | neither | 0.891 | 1.136 | 0.311 |
+| copy | 17.55 | 0.823 | 0.038 | reuses | 0.866 | 1.113 | 0.720 |
+| cipher, update size matched | 1.94 | −0.361 | — | too_small | 0.368 | 0.456 | 0.403 |
+| cipher, step 16, the control | 5.79 | −0.236 | 0.059 | new | not read | not read | not read |
+
+### What Amendments 2 and 3 change
+
+- **The elicit map is not a no-rule map at 96 trained keys.** Its unseen keys gained about 2 log-odds, a fifth of the
+  trained gain at step 10 and a tenth later. At 24 keys they gained nothing. Whether this is a rule tied to each key's
+  own value, the three checks do not settle.
+- **The label has a positive control on one seed.** The copy map reads "reuses" at 96 trained keys, with carry 0.82.
+- **r and the ratio stayed within tolerance while carry rose**, by 0.21 to 0.34 on three maps. Across those maps at 96
+  keys, r sits at 0.78 to 0.89 while carry spans 0.21 to 0.82. That fits reading A, as Amendment 1 did.
+- **The filed test of that is untested.** The cipher's r rose by 0.14 with the key count, so r's level is not shown to
+  be comparable across key counts. No claim that r is blind to carry rests on this test.
+- **The granularity limit holds throughout.** r and the ratio read whether a gain runs through subcomponents W₀ already
+  has. A new circuit built from those old subcomponents reads "elicited" too. Nothing here can tell the two apart.
+
+The plan's decision tree: the control read "below", so the job ran; the agreement test read "untested_drift", so the
+verdict is "untested". Check 1 read "falling", a code no branch names. Check 3 read "too_small", not "fail", so the
+"label reads the pool" branch did not fire, but check 3 did not read "pass" either. What follows goes to the lead.
+
 ## What we learned
 
 For `GOALS.md`'s question, new capabilities or strengthening, the decomposition answers a narrower question than
@@ -377,6 +590,14 @@ unseen keys. Both can be true at once on a lookup over words the model already s
 It also removes the label's standing: its positive control failed, so no held-out behavioural label is yet earned on the
 67M, and r and the stand-in ratio have nothing behavioural to be scored against. They do stay level across three
 maps whose held-out carry runs from none to half, so they do not measure carry. Ask #14 stays open.
+
+Amendments 2 and 3 gave carry room to move. With four times the keys every map carried further: the half-known map from
+none to a fifth, then a tenth, of its trained gain, and the copy map past the label's bar. So the held-out label now has
+a positive control, on one seed. r and the stand-in ratio stayed within their filed tolerances on all three maps, but the
+no-rule cipher's r rose with the key count, so the filed test of whether they follow carry reads "untested". What stands
+is the level picture: across maps whose carry runs from a fifth to four fifths, r sits at 0.78 to 0.89. Under the
+granularity limit, that says the gains run through subcomponents W₀ already has, which a new circuit of old
+subcomponents would also show.
 
 ## How compelling is the evidence
 
@@ -393,8 +614,32 @@ maps whose held-out carry runs from none to half, so they do not measure carry. 
   E54's. They cannot tell a new circuit of old subcomponents from an old circuit.
 - **The trained values' rise** at unseen keys: Amendment 1 read it directly (`amend1.json` `.readout.*.T`) and it agrees
   with the arithmetic (`T_implied`) to within 5e-8 on all six states.
+- **Amendments 2 and 3: one seed, one key split.** Every 96-key number carries the 24-key seed spread: 0.012 on the
+  elicit carry, 0.13 on the copy carry, up to 0.03 on r and 0.055 on the ratio. Two of the "flat" calls sit within 0.01 of
+  their tolerance. The training was deterministic on the card: job 46398 reproduced job 46383's elicit update exactly.
+- **The drift guard reads a cipher at another stage of training.** Matched in update size, the 96-key cipher had
+  barely learned its values, while E58's matched ciphers were half way. The guard compares them as filed; it cannot say
+  whether the rise in r comes from the key count or from that difference.
+- **The checks on the elicit carry are weak.** The shuffled map was under the gate; the rank correlations rest on 32 keys.
 
 ## Surprises
+
+- **Amendment 2: something unexpected happened, and its control stopped the job.** We filed the elicit map at 96
+  trained keys as a no-rule control, carry within ±0.05 at about 70% and above 0.05 at about 5%. It carried 0.213, on 28
+  of 32 held-out keys. Fable's reasoned cause is that the elicit values are W₀'s own key-specific second choices, a rule
+  that 96 keys make learnable; Amendment 3's checks did not confirm or refute that.
+- **Amendment 2: three set-up expectations missed.** The rank-1 map had 10 held-out keys with a value of their own,
+  where the plan said probably 1 to 6. The elicit map's trained-key gain was 9.34, under the filed 10 to 19.
+  Its trained-key probability at step 10 was already 0.60, where the plan expected under 0.5 and a scored step of 30.
+- **Amendment 3: the drift guard fired.** Filed at about 10%, the cipher's r rose from 0.23 to 0.37 between 24 and 96
+  keys. We do not know why.
+- **Amendment 3: check 3 could not be read.** Filed to read near 0 at about 80%, the shuffled elicit map's trained-key
+  gain fell under the gate, at 2.1 against 5.148.
+- **Amendment 3: elicit's update lowered the key itself** at unseen keys by 1.0 log-odds against other keys, outside
+  the filed ±0.5.
+- **Amendment 3: the elicit carry halved after step 10**, a "falling" trajectory filed at about 35%. The held-out gain
+  stayed at about 2 log-odds while the trained gain doubled.
+- **Amendment 3: the copy map passed**, filed at about 40%, at 0.82.
 
 - **Amendment 1: a filed prediction failed against a confident lean.** We predicted, at about 75%, that the copy map would
   read "reuses" on two of three seeds. It did on one; the other two carried 0.42 and 0.47 of the trained gain and read
@@ -419,6 +664,19 @@ maps whose held-out carry runs from none to half, so they do not measure carry. 
 The plan's decision tree, verdict "none": the held-out label is not used against r or the stand-in ratio, and the user
 is told. The lead is consulting Fable on what follows; no next step is set here. Ask #14 to the user stays open.
 
+After Amendment 3 the verdict is "untested". The lead has filed Amendment 4, now running: seeds 1 and 2 at 128 keys
+with a filed rule within one key count, the shuffled map's r at step 30, and a cipher drift line (plan § "Amendment 4",
+commits `0ce43b1` and `e87d3a0`). Three items the data point to, each with what would change course:
+
+- **The drift guard at matched training.** Read the cipher's r at 24 and 96 keys at matched trained-key probability, not
+  matched update size, by a $0 re-train of about 15 s; the cipher states were not saved. If the two agree within 0.05,
+  the agreement test can be re-read. If they still differ by 0.14, r's level depends on the key count and the test needs
+  a new reference.
+- **More seeds at 96 keys.** Two flat calls sit within 0.01 of their tolerance; a second and third seed say whether they
+  hold.
+- **Check 3 at a step over the gate.** The shuffled map at step 30 would say whether the elicit carry is tied to each
+  key's own value; a carry near 0.1 there would say it rides on the value pool instead.
+
 ## Scorecard
 
 | id | claim | rule | read | verdict |
@@ -436,6 +694,20 @@ is told. The lead is consulting Fable on what follows; no next step is set here.
 | verdict | the label has a positive control | rank1 / copy_fallback / copy_only / none | C1 not testable, C2 fail | none |
 | C3, r | r agrees with each earned label on the control runs | scored on the copy map, C1 not testable | copy seed 1: reuses vs reuses, n = 1 | pass |
 | C3, ratio | the same for the stand-in ratio | as above | copy seed 1: reuses vs reuses, n = 1 | pass |
+| A2 E | the elicit map, filed as rule-free, does not carry at 96 trained keys | pass iff −0.05 ≤ $x$ ≤ 0.05; "below" iff $x$ < −0.05; fail (stop) iff $x$ > 0.05 | $x$ 0.213, $3s$ 0.041, step 10 | **fail** (lean pass ~70%); job stopped |
+| A2 R, C, B, verdict | rank-1, copy, the agreement test | as filed | not run | stopped |
+| A3 control | the cipher at 96 trained keys does not carry | as A2 E, at the common step or the first checkpoint up to 30 over the gate | step 10 under the gate; step 16: $x$ −0.236, $G_\text{spec}$ 5.79 | below (lean ~75%); continue |
+| A3 R | the rank-1 map at 96 keys | reuses iff label reuses and $x_\text{novel}$ ≥ 0.5; carries iff $x$, $x_\text{novel}$ ≥ 0.3; memorises iff both ≤ 0.15; else between | $x$ 0.317, $x_\text{novel}$ 0.095 on 10 novel keys | between (lean memorises or between ~65%) |
+| A3 C | the copy map at 96 keys | $x$ ≥ 0.6 | $x$ 0.823 | pass (lean ~40%) |
+| A3 B | r and the ratio move with $x$, map by map, against 24 keys | testable iff $dx$ ≥ 0.15; flat iff $\lvert d_r \rvert$ ≤ 0.05 and $\lvert d_\text{ratio} \rvert$ ≤ 0.1; "untested_drift" iff the matched cipher's r moved > 0.05 | $dx$ 0.24, 0.21, 0.34; $d_r$ +0.016, +0.048, +0.025; $d_\text{ratio}$ +0.027, +0.032, +0.091; cipher drift 0.138 | untested_drift; every map flat |
+| A3 verdict | reading A holds, r tracks, or neither | `verdict2` | B untested_drift | **untested** (lean reading_A_holds ~50%, untested ~10%) |
+| A3 B, step 30 | companion, reported | as B | elicit, rank-1 not testable; copy $d_r$ −0.070; drift 0.138 | untested_drift |
+| A3 check 1 | the elicit carry over training | no_carry, rising, kept, transient, falling | $x$ 0.213, 0.105, 0.105, 0.102 | falling (~35%) |
+| A3 check 1, re-train | E58's 24-key state re-trained, step 10 | within 0.01 of −0.027 | −0.0273 | as expected |
+| A3 check 3 | the shuffled elicit map does not carry | as A2 E, reported | $G_\text{spec}$ 2.10, under the gate | too_small (pass or below ~80%) |
+| A3 check 4 | elicit's update on copy's held-out windows | $H_\text{spec}$ within ±0.5 | −1.00; on rank-1's +0.32 | outside the expected range |
+| A3 check 5 | held-out gain follows W₀'s preference | Spearman ρ > 0 | 0.011 with probability; 0.188 with specificity | both above 0, neither clear of chance at 32 keys |
+| A3 reproduction | the elicit update of job 46383 | largest difference 0 or under 1e-3; $x$ within 0.01 | 0; 0.2132 both | as expected |
 
 Stage-0 checks all passed. Early stops: elicit seed 0's $G_\text{spec}$ 18.18 against the gate of 5.148, no stop; no
 cipher read "reuses", no stop. Plan decision tree: branch 5, label "new" with the agreement test failed.
@@ -449,6 +721,10 @@ granularity limit, so the $0 positive control comes first.
 Amendment 1: every stop passed. Decision tree: branch 2, A1 pass, so the lookup reading stands with $T$ and
 $R_\text{peer}$ beside $H$; branch 5, verdict "none", so the label is not used against r or the ratio and the user is
 told. C3's pass rests on one state and does not change branch 5.
+
+Amendment 2: the key and zero-update stops passed; the control stop fired, branch 1, to the lead, who took Fable's
+advice and filed Amendment 3. Amendment 3: every stop passed. Decision tree: branch 2, B "untested_drift", so the
+verdict is "untested". Check 1's "falling" and check 3's "too_small" match no filed branch.
 
 ## Departures from the literature
 
@@ -477,6 +753,22 @@ told. C3's pass rests on one state and does not change branch 5.
   cannot be read off the GPU, so the gate is E58's 5.148. Every control state cleared it by more than three times.
 - **Amendment 1, the copy map always ran**, not only as a fallback, and `min_novel` = 3 was added to Fable's guard on
   the rank-1 map.
+- **Amendment 2, one common step for every map.** Fable asked for $x$ and r on each map without fixing a step. Every
+  map is read at the elicit map's E12 step, so that training length does not differ between maps.
+- **Amendments 2 and 3, the control's bar is one-sided as a stop.** Fable's bar is $x$ within ±0.05 of 0. Here only
+  $x$ > 0.05 stops; $x$ < −0.05 reads "below", because a negative $x$ is the push toward trained values.
+- **Amendments 2 and 3, the ratio's tolerance is 0.1**, not Fable's 0.05: the copy map's ratio already spans 0.055 over
+  three seeds at 24 keys. The testable bar $dx$ ≥ 0.15 is measured, the copy map's 24-key seed range of 0.13.
+- **Amendments 2 and 3, the rank-1 bars need the novel keys to agree.** Fable's bars read $x$ alone; here $x_\text{novel}$
+  must agree, because Amendment 1's rank-1 carry could ride on shared values.
+- **Amendment 3, the cipher's fallback.** Fable reads the control at the common step. Here, if the cipher is under the
+  gate there, it is read at the first checkpoint up to 30 that clears it; it did, at step 16.
+- **Amendment 3, the shuffle is a cycle**, so no trained key keeps its value; Fable asked for a permutation.
+- **Amendment 3, check 3 is reported, not a stop.** Fable asked it to stop the job before rank-1 if it read about 0.2.
+- **Amendment 3, every map is compared with itself.** Fable gave the elicit map its own difference; the same is applied
+  to rank-1 and copy, since elicit can no longer be their reference. The drift guard on the cipher's r was added to
+  cover what that loses.
+- **Amendment 3, check 4 reads this job's elicit state**, not Amendment 2's saved file; the two are identical.
 
 ## Not run
 
@@ -488,6 +780,12 @@ told. C3's pass rests on one state and does not change branch 5.
 - The interchange-patch half of Stage B's rule.
 - More key splits, more windows per held-out key, more than three seeds, a second decomposition seed.
 - The cipher at its own E12 step; Qwen.
+- Amendments 2 and 3: a second or third seed at 96 trained keys; a second key split; 64 keys.
+- The drift guard at matched trained-key probability; the 96-key cipher's r at steps 100 and 300.
+- The shuffled elicit map at a step over the gate; the agreement test at matched trained-key probability as a scored
+  rule.
+- r and the ratio on the elicit map at steps 100 and 300, where its carry stayed at a tenth.
+- A label read against a random token pool rather than the task's values, Fable's redesign if check 3 had read about 0.2.
 
 ## Provenance
 
@@ -504,3 +802,12 @@ told. C3's pass rests on one state and does not change branch 5.
   2026-10-30. Code at `0714b79`, `git status` of the code clean. Results commit `c1b4ef9`,
   `experiments/open_pair/results/amend1.json`. Six control states of 113 MB and their windows in
   `~/commute-data/results-large/open_pair/amend1/`, log `amend1.out` beside it.
+- Amendment 2: job 46383, MATS cluster `debug` QoS, one L40, $0; keys at 16:27:53, stop at 16:28:13 on 2026-10-30. Code
+  at `aff6e79`, clean; predictions sha256 `9977e5c2…`. Results commit `fe29938`, `amend2.json` with "stopped". The
+  elicit state and windows in `results-large/open_pair/amend2/`, log `amend2.out`.
+- Amendment 3: job 46398, MATS cluster `debug` QoS, one L40, $0; keys at 16:47:43, score at 16:52:39 on 2026-10-30.
+  Code at `a37d68d`, clean; predictions sha256 `d9fcebeb…`. Results commit `568bb41`, `amend3.json`. Six saved states of
+  113 MB, elicit, rank-1 and copy at steps 10 and 30, with sha256 in `amend3.json`, and the windows in
+  `results-large/open_pair/amend3/`, log `amend3.out`. The cipher and shuffled states were not saved.
+- Figures: `experiments/open_pair/plot_amend3.py` draws `a3_carry.png` and `a3_shift.png` from `amend3.json`, with the
+  24-key references from `run.json` and `amend1.json`.

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import socket
 import subprocess
 import sys
 from pathlib import Path
@@ -108,11 +109,16 @@ def main() -> None:
         stop(out, f"Amendment 3's windows changed: {bad}")
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     ctx = KD.make_ctx(a.device, a.alive, P, d)
+    out["host"] = {"hostname": socket.gethostname(), "gpu": torch.cuda.get_device_name() if torch.cuda.is_available() else "none"}
+    log(f"[host] {out['host']}")
     tasks = {n: load_split(ctx, d, n) for n in (*MAPS, "cipher", "shuffle")}
     for seed in P["settings"]["seeds"]:
         cipher(ctx, tasks["cipher"], d, seed, out)
-        if seed == 0:
-            continue  # seed 0's maps are Amendment 3's reads
+        if seed == 0:  # seed 0's maps are Amendment 3's reads, used only if seed 0's cipher reproduces Amendment 3's r
+            pairs = [(out["reads"][f"cipher_s0@{s}"]["r"], a3["reads"][f"cipher@{s}"]["r"]) for s in STEPS]
+            ok = out["seed0_comparable"] = OP.comparable(pairs, th["reproduce_tol"])
+            log(f"[seed 0] cipher r here vs amend3.json at {STEPS}: {pairs} -> comparable {ok}")
+            continue
         for n in MAPS:
             ft = train(ctx, d, n, seed, KD.E12_CHECKS)
             for s in STEPS:
@@ -122,9 +128,12 @@ def main() -> None:
     for s in sorted({30, at if at is not None else 30}):
         read(ctx, "shuffle_s0", tasks["shuffle"], ft, s, out, vpd=True)
     del ft
-    seed_reads = lambda n, seed, s: (a3["reads"].get(f"{n}@{s}") if seed == 0 else out["reads"].get(f"{n}_s{seed}@{s}"))
+    out["shuffle"] = {k: {f: out["reads"][k].get(f) for f in ("G_spec", "label", "x", "r", "ratio")} for k in out["reads"] if k.startswith("shuffle_s0@")}
+    log(f"[shuffle] {json.dumps(OP.jsonable(out['shuffle']))}")
+    seed_reads = lambda n, seed, s: ((a3["reads"].get(f"{n}@{s}") if out["seed0_comparable"] else None) if seed == 0 else out["reads"].get(f"{n}_s{seed}@{s}"))
     reads = {s: {n: [seed_reads(n, seed, s) for seed in P["settings"]["seeds"]] for n in MAPS} for s in STEPS}
     out["score"] = OP.score_amend4(reads, out["reads"].get("shuffle_s0@30"), th)
+    out["D_r_beside_amend3_tol_r"] = {s: [w["r"].get("D"), th["amend3_tol_r"]] for s, w in out["score"]["within_key"].items()}
     out["cipher_s0_reproduces_amend3"] = {s: [out["reads"].get(f"cipher_s0@{s}", {}).get("r"), a3["reads"].get(f"cipher@{s}", {}).get("r")] for s in (10, 30)}
     dump(out)
     log(f"[score] {json.dumps(OP.jsonable(out['score']))}")

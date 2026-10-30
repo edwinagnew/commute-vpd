@@ -40,7 +40,11 @@
     "ratio_tol": 0.2,
     "within_key_source": "Fable item 2.1: across the three scored maps at each step, max r - min r <= 2 x the within-map seed spread, while max x - min x >= 0.4; the same for the ratio with tol 0.2. Definitions filed here: per map the seed-mean of x and of the instrument over its readable seeds (label not too_small / unreadable, x and instrument finite); a map with fewer than 2 readable seeds is dropped; D = max - min of the seed means over the kept maps; spread = the largest within-map range (max - min over seeds) of r; the ratio's bound is 0.2 absolute; fewer than 2 kept maps or D_x < 0.4 -> not_testable; ties count (<=, >=); a zero spread makes the r bound 0. Overall per step: pass iff r and ratio pass, fail iff either fails, else not_testable",
     "shuffle_cut": 0.5,
-    "shuffle_source": "Fable item 2.2: the midpoint of the 128-key cipher (0.30) and elicit (0.72) r at step 30; r < 0.5 cipher_like, r >= 0.5 token_kind; unreadable if too_small / unreadable or r not finite"
+    "shuffle_source": "Fable item 2.2: the midpoint of the 128-key cipher (0.30) and elicit (0.72) r at step 30; r < 0.5 cipher_like, r >= 0.5 token_kind; unreadable if too_small / unreadable or r not finite",
+    "reproduce_tol": 0.0001,
+    "reproduce_source": "review of 0ce43b1: seed 0's re-trained cipher r at steps 10 and 30 must equal amend3.json's within 1e-4 (Amendment 3 reproduced a state with max |difference| 0); else seed 0's map reads are not_comparable and W is scored on seeds 1-2 only (open_pair.comparable; within_key drops the missing reads)",
+    "amend3_tol_r": 0.05,
+    "amend3_tol_r_source": "reported only: each step's cross-map D_r beside Amendment 3's tol_r"
   },
   "measurements": {
     "within_key": "open_pair.within_key per step and instrument: D_x, D, spread, bound, kept maps and seed counts; rho_r_x = Spearman of r on x over every readable map-seed read at that step (9 points; reported)",
@@ -79,5 +83,6 @@
     "W_not_testable": "fewer than 2 maps with 2 readable seeds, or x no longer spreads by 0.4: report, no claim",
     "shuffle_cipher_like": "r reads the model's own key-conditional guess (elicitation in the narrow sense): the synthesis's sharpest sentence",
     "shuffle_token_kind": "r reads the token kind: 'built from existing subcomponents' means 'targets the model can produce somewhere'; the claim is rewritten to that (Fable's 'what would change my advice')"
-  }
+  },
+  "amendment_2026_10_30_prerun_review": "Before any run (review of 0ce43b1): hostname and GPU logged; seed 0's cipher r at 10 and 30 compared with amend3.json (tol 1e-4), on a mismatch seed 0's map reads are not_comparable and W is scored on seeds 1-2; D_r reported beside Amendment 3's tol_r 0.05; the shuffle's G_spec reported beside its r. A W pass is an equivalence claim with a margin of about 4.5 sigma (plan)"
 }

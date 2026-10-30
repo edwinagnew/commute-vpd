@@ -496,3 +496,10 @@ def score_amend4(reads: Mapping[int, Mapping[str, Sequence[dict[str, Any] | None
         out[str(step)] = {**w, "status": "pass" if st == ["pass", "pass"] else "fail" if "fail" in st else "not_testable",
                           "rho_r_x": spearman([rd["x"] for rd in allr], [rd["r"] for rd in allr])}
     return {"within_key": out, "shuffle": shuffle_class(shuffle30, th)}
+
+
+def comparable(pairs: Sequence[tuple[Any, Any]], tol: float) -> bool:
+    """Amendment 4 (review of 0ce43b1): seed 0's re-trained cipher r against Amendment 3's at the same steps. True iff
+    there is at least one pair and every pair is finite and within tol; then Amendment 3's seed-0 map reads are used,
+    else they are "not_comparable" and the within-key rule is scored on seeds 1-2 only."""
+    return bool(pairs) and all(finite(a) and finite(b) and abs(a - b) <= tol for a, b in pairs)

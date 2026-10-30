@@ -913,3 +913,20 @@ RAM peaks at about 5 GB while a cipher or the shuffle holds 32 checkpoints. Outp
 3. `/pod-runner`: `sbatch cluster/open_pair.sbatch amend4` from the clone root.
 4. Write-up by the analysis agent (not this writer: another agent holds the E58 analysis, notebook, `TRIED.md` and
    `PENDING.md`).
+
+### Amendment 4 before the run (review, 2026-10-30)
+
+A fresh review of 0ce43b1 said to run it as is, after three small changes. Nothing had run, so the section above and
+`predictions_amend4.json` were amended in place (`amendment_2026_10_30_prerun_review`).
+
+1. **Host and seed-0 comparability.** The job logs its hostname and GPU name. Right after seed 0's cipher, it compares
+   that cipher's r at steps 10 and 30 with `amend3.json`'s. If either differs by more than 1e-4 (or is missing), seed
+   0's map reads from Amendment 3 are marked "not_comparable" and W is scored on seeds 1-2 only, each map with its two
+   seeds (`open_pair.comparable`; tested, including the two-seed fallback).
+2. **What a W pass means (power note).** A pass is an equivalence claim, not a failure to find a difference. The margin
+   is wide: 2 × the largest within-map range of r. For three seeds the expected range is about 1.7σ, and the largest of
+   three maps' ranges is larger still, so the bound is about 4.5σ of one map's seed sd. Two map means can then differ by
+   several standard errors and still pass. The write-up must say so. For that reason the job also reports each step's
+   cross-map D_r beside Amendment 3's tol_r of 0.05 (`D_r_beside_amend3_tol_r`), so a reader can judge the bound.
+3. **The shuffle's G_spec** is reported beside its label, x, r and ratio at every step read (`amend4.json` → `shuffle`),
+   so a "cipher_like" r can be told apart from an under-trained state.
