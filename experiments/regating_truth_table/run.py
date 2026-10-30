@@ -68,6 +68,7 @@ def performed_anchor() -> ModuleType:
     spec = importlib.util.spec_from_file_location("performed_anchor_run", EXP / "performed_anchor" / "run.py")
     assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod  # dataclasses looks the defining module up in sys.modules
     spec.loader.exec_module(mod)
     return mod
 

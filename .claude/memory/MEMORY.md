@@ -63,3 +63,4 @@
 - [Decide clear rule fixes](feedback-decide-rule-fixes-with-clear-recommendation.md) — a mis-specified filed control with one clear fix: amend (dated) and rerun, FYI only; "not really worth asking me" (2026-10-29)
 - [Elicitation granularity limit](project-elicitation-granularity-limit.md) — new circuit from old pieces reads "elicited" to VPD; state it in every re-gating claim (user, 2026-10-29)
 - [Explicit literature departures](feedback-explicit-literature-departures.md) — every write-up states each departure from the cited source where used + a "Departures from the literature" list (user, 2026-10-30)
+- [Fable first, fewer questions](feedback-fable-first-fewer-questions.md) — choices inside an adopted plan go to Fable, act and FYI; user only for spend/gated, reversals, goal changes, other lines (2026-10-30)
