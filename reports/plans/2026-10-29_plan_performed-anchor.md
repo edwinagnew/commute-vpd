@@ -319,3 +319,55 @@ numbers unchanged), `run.Task` and `Run.task` (E53's read builds the same window
 gone), `run.batches` (an optional tensor argument). Runtime: `a1_read` adds three E53 re-reads, about 1 min.
 
 **Not run**: everything above except the tokenizer counts and the edge cases.
+
+## Amendment 1b (2026-10-30): the broad cipher alone
+
+**Stop result.** Amendment 1's W₀ check stopped (job 45948, `results/check_amend1.json`): the original model
+prefers the capital for the 50 narrow types inside cased text, −4.72 nats (90% interval −5.56 to −3.95; repeats −4.41,
+first occurrences −4.92), against the ≥ +1 bar, so narrow lowercase is not a performed member. The broad cipher passed
+(−4.99, bar ≤ −3).
+
+**The user's choice** (`decisions.md`, ask #11): run the broad cipher alone, and re-read E53's four step-300 states
+with the true off-target KL. A new narrow performed task, and stopping, were not taken. Rules:
+`results/predictions_amend1b.json`, filed before any run; `predictions_amend1.json` and `check_amend1.json` stand.
+
+**What it can answer now.** With no performed member, the kind-against-breadth 2 × 2 is gone. The question is only
+whether breadth alone explains E53's gap. A new update at least as broad as E53's lowercase is read: if its ratio
+stays low like E53's cipher, breadth does not explain the gap; if it reads high like lowercase, it does.
+
+**Rules, in plain words.**
+1. *Gate*: breadth = G per true off-target KL (Amendment 1's revised `kl_off`). The broad cipher must be at least as
+   broad as E53's lowercase: its higher seed's breadth no higher than lowercase's lower seed's, lowercase re-read in
+   this run. Otherwise "not read (swap missed)".
+2. *Outcome* on the broad cipher's two step-300 ratios (E53's noise-floor bar, from its own KL-matched random δW):
+   both ≤ 0.5 → "breadth does not explain E53's gap"; both ≥ 0.7 → "breadth explains it"; otherwise "mixed"; a ratio
+   unread or not finite → "unscored". Leans: does not explain 0.6, mixed 0.25, explains 0.15; gate achieved 0.6.
+3. *Reported, unscored*: is E53's lowercase broader than its cipher on the true off-target KL (lowercase's higher seed
+   below the cipher's lower seed)? If not ("not broader (density artefact)"), the independent check's confound came
+   from target density in the pooled KL. The same order on the pooled KL should reproduce E53's 4.1-4.5 against
+   14.5-15.0. Also: matched gain (the broad-cipher step nearest E53 lowercase's G per seed), the ratio at the plain
+   1-nat bar, E53's four re-read rows.
+
+**Blind to.** A "does not explain" outcome says breadth alone is not enough, not that kind is the cause: the two
+low members are both ciphers and the high one lowercase (task family), and no broad performed member is read.
+
+**Edge cases run before filing** (`score.score_amend1b` and parts on synthetic rows, CPU, 2026-10-30, script
+`~/commute-data/scratch/regating-lead/e53a1b_edges.py`, 20 cases, all gave the filed answer): every outcome branch;
+both ratios exactly 0.5 and exactly 0.7; gate exactly equal (achieved) and just over (not read); a None, zero-KL or
+negative-G breadth on either side; empty lists; NaN, inf and under-the-bar ratios; all four E53-order classes.
+
+**Code.** `run.py a1b_finetune`: `a1b_check` reads the broad cipher's check from `check_amend1.json` (its map must
+equal the recomputed one, its mean ≤ −3) before the model loads, then `finetune_members` (Amendment 1's data and
+fine-tune loop, factored out; `a1_finetune` calls it unchanged) fine-tunes the broad cipher at batch orders 0 and 1,
+saving steps 10, 100, 300. `run.py a1b_read`: `stage_a1_read` with the broad cipher only, written to
+`read_amend1b.json` and scored by `score.score_amend1b`. It runs the two E53 repro controls first, then E53's seed-1
+re-reads, the six broad-cipher states and its random δW.
+
+**Compute and commands.** Cluster debug L40, $0, via `/pod-runner`, from the clone root:
+`sbatch cluster/performed_anchor.sbatch a1b_finetune` (about 2 min), then
+`sbatch cluster/performed_anchor.sbatch a1b_read` (about 4-6 min). Files to collect: `results/finetune_amend1b.json`,
+`results/read_amend1b.json`, `results/large/{a1b_finetune,a1b_read}.{log,out}`, and the six
+`results/large/dW_broad_cipher_s{0,1}_step{10,100,300}.pt` (55 MB each). `a1b_read` needs E53's four step-300 states
+in `results/large/` (present on the cluster clone).
+
+**Not run**: the broad-cipher fine-tunes and every reading above.

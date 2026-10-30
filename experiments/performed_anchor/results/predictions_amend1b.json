@@ -1,0 +1,47 @@
+{
+ "experiment": "E53 Amendment 1b, performed_anchor: the broad cipher alone against E53's pair, with the true off-target KL (run.py a1b_finetune, then run.py a1b_read; score.score_amend1b)",
+ "plan": "reports/plans/2026-10-29_plan_performed-anchor.md, section 'Amendment 1b (2026-10-30)'; the user's choice: decisions.md row 'E53 Amendment 1 after its W0 check stopped (ask #11)'",
+ "filed": "2026-10-30, after Amendment 1's W0 check stopped (job 45948, results/check_amend1.json: narrow_lower -4.72 nats, repeats -4.41; broad_cipher -4.99, passed) and before any run of a1b_finetune or a1b_read. predictions_amend1.json and check_amend1.json are not edited.",
+ "question": "Is E53's gap (lowercase 0.92-0.93 vs cipher 0.26) explained by breadth? A new update at least as broad as E53's lowercase, but new (the broad cipher), is read: if its ratio stays low, breadth does not explain the gap; if it reads high, it does.",
+ "check": {
+  "broad_cipher_at_most": -3.0,
+  "rule": "Not rerun: a1b_finetune reads check_amend1.json; the broad_cipher map recomputed by a1_maps must equal its 'maps.broad_cipher' and its 'broad_cipher.mean' (-4.985) must be <= -3.0 (A0's 'cannot' bar, as filed in predictions_amend1.json); else exit before the model loads."
+ },
+ "controls": {
+  "bf16_gain_tol": 0.005,
+  "recipe_gain_ref": 0.1301,
+  "recipe_gain_tol": 0.005,
+  "repro_G_tol": 0.02,
+  "repro_ratio_tol": 0.01,
+  "rules": "As predictions_amend1.json: bf16_save on every state (the recipe control applies to E53's lowercase only, unused here); a1b_read asserts its broad_cipher map equals check_amend1.json's; e53_repro first: E53's lowercase and cipher batch-order-0 step-300 states re-read by this code, G within 0.02 and ratio within 0.01 of read.json's (1.6708 / 0.9186; 3.8690 / 0.2643); then E53's seed-1 step-300 states re-read, reported (role 'reference'). Any control miss writes the results, logs FAIL and exits 1."
+ },
+ "thresholds": {
+  "gain_bar": 1.0,
+  "floor_min": 0.1,
+  "floor_null_mult": 2.0,
+  "floor_se_mult": 2.0,
+  "high": 0.7,
+  "low": 0.5,
+  "scale_cap": 100,
+  "kl_rel_tol": 0.1
+ },
+ "definitions": {
+  "broad_cipher": "As predictions_amend1.json: cased Pile train rows 0-2399 with a seed-0 derangement of the 500 word tokens (^Ġ[a-z]{2,}$) of frequency ranks 50-549 on Pile train rows 0-4095, in context and targets, token level. E53's recipe (Adam 3e-5, 300 steps of 8, all 24 matrices), batch orders 0 and 1, saved bf16 at steps 10, 100, 300.",
+  "windows, cells, ratio, random delta-W, gain floor, bar": "As predictions_amend1.json and E53: up to 500 windows (val rows 0-255, seed 0); least-squares split; stand-in ratio = masked gain / subcomponent gain, read iff G and subcomponent gain both reach min(1 nat, F) and are finite, F from broad_cipher's KL-matched random delta-W (matched on the pooled kl_other as in E53; F uses it whatever its match status, inherited).",
+  "kl_off, breadth": "As predictions_amend1.json (revised): breadth = G / kl_off, kl_off the mean KL(W0 || state) over window positions (other than the scored one) whose next token is not a scored-type token of the row's task. For E53's lowercase the scored-type tokens are its case positions; for E53's cipher and the broad cipher, the map's domain. None unless G > 0 and kl_off > 0, both finite. G / kl_other (pooled) reported beside it."
+ },
+ "rules": {
+  "gate": "Scored. 'achieved' iff all four breadths are read and max over seeds of broad_cipher's step-300 breadth <= min over seeds of E53 lowercase's step-300 breadth, the latter re-read in this run (e53/lowercase/s{0,1}/step300). Tie (equal) is achieved. Else outcome 'not read (swap missed)'.",
+  "outcome": "Scored, in order: gate missed -> 'not read (swap missed)'; either broad_cipher step-300 ratio (seeds 0, 1) None or not finite -> 'unscored'; both <= 0.5 -> 'breadth does not explain E53's gap'; both >= 0.7 -> 'breadth explains it'; otherwise -> 'mixed'. Ties: exactly 0.5 counts as <= 0.5, exactly 0.7 as >= 0.7.",
+  "predictions": "Lean, not scored: 'breadth does not explain E53's gap' at 0.6 (E53's cipher read 0.26-0.42 at every saved step, E12's random maps 0.36-0.41), 'mixed' 0.25, 'breadth explains it' 0.15; the gate achieved at 0.6 (unmeasured: the broad cipher maps 9.1% of training tokens against E53's cipher 2.4%, but E53's lowercase has never been read on kl_off).",
+  "e53_order_reported": "Unscored: on E53's re-read step-300 states, 'lowercase broader' iff max over seeds of lowercase G / kl_off < min over seeds of cipher G / kl_off; 'not broader (density artefact)' iff min lowercase >= max cipher (the independent check's confound came from target density in kl_other); 'mixed' otherwise; 'unread' if any breadth is None. The same on the pooled kl_other, reported, should reproduce E53's 'lowercase broader' (4.06-4.46 vs 14.5-15.0).",
+  "reported": "Every row's cells, G, g, subcomponent gain, masked gain, kl_other, kl_off, kl_on_target, piece_se and bootstrap interval; breadth at steps 10 and 100; the broad-cipher ratios at the plain 1-nat bar; matched gain per seed (the broad_cipher step whose G is nearest E53 lowercase's re-read step-300 G, ties to the earlier step); E53's four re-read rows (G, kl_other, kl_off, breadths, ratio re-read and from read.json).",
+  "edge_cases": "Run before filing (score.score_amend1b and its parts on synthetic rows, CPU, 2026-10-30; plan's Amendment 1b section): gate exactly equal (achieved), gate just over (missed), a None breadth on either side (missed), empty lists; ratio NaN or inf or under the bar (unscored); both exactly 0.5 and both exactly 0.7; one at 0.4 and one at 0.8 (mixed); G under the floor; e53_order all three classes and unread; the gate missed while the ratios are low (not read).",
+  "relative_or_absolute": "All absolute: ratios unitless, breadth in nats of log-odds per nat of KL."
+ },
+ "dropped": "narrow_lower: the original model does not lowercase these 50 title-case words inside cased text (W0 -4.72 nats, repeats -4.41, bar >= +1), so it is not a performed member. With one new member and no performed one, the kind-vs-breadth 2 x 2 is gone; the question is now only whether breadth alone explains E53's gap.",
+ "blind_to": "Kind: the broad cipher is new; no broad performed member or targeted performed member is read, so a 'does not explain' outcome says breadth alone is not enough, not that kind is the cause (task family: both ciphers vs lowercase). Breadth is one definition (G per true off-target KL at the windows). The ratio is read in Gamma's stand-in. A high ratio means 'uses pieces the original model has' (decisions.md, 'Limit of the elicitation reading').",
+ "positive_control": "e53_repro (both seed-0 states re-read: G 1.6708 / 3.8690, ratio 0.9186 / 0.2643).",
+ "noise_floor": "Ratio: E53's 90% intervals over 500 windows +-0.03 (cipher) to +-0.06; seed spread <= 0.011. The 0.5 and 0.7 bars are E53's leans; the 0.2 band between them is about three times the widest half-interval. Breadth: E53 seeds differed by up to 10%.",
+ "not_sourced": "The 0.5 / 0.7 outcome bars (E53's filed leans reused); the gate's 'at least as broad as E53's lowercase' (the user's choice, ask #11); the leans; the cipher ranks and seed (as predictions_amend1.json)."
+}
