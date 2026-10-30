@@ -17,6 +17,16 @@ the scored position restored to W0's input; rho = (T1 - restored) / G.
   run.py read      controls (zero update, do-nothing), nulls (random delta-W matched on off-target KL; hand write
                    matched on G), the fine-tunes, the score -> results/read.json
 Every scored number goes to stdout and results/large/<stage>.log. A control miss: written, FAIL logged, exit 1.
+
+Amendment 1 (plan section "Amendment 1 (2026-10-30)"; rules results/predictions_amend1.json): the breadth-swapped
+pair, both token maps on the cased train rows 0-2399 (`performed.cipher_rows`): narrow_lower = 50 title-case word
+types lowercased (`performed.title_lower_map`, ranks 50-99), broad_cipher = a derangement of the 500 word tokens of
+ranks 50-549. Same recipe, batch orders 0 and 1, both saved at steps 10, 100, 300. No relay, no hand write.
+  run.py a1_finetune  W0's check first (A0's rule on both members; stop rule) -> results/check_amend1.json, then the
+                      four fine-tunes -> results/finetune_amend1.json, large/dW_<task>_s<seed>_step<n>.pt
+  run.py a1_read      control: E53's lowercase seed-0 state re-read (G, ratio as read.json); the twelve states split
+                      and read; the KL-matched random delta-W per task; the score (`score.score_amend1`, with E53's
+                      read.json as reference) -> results/read_amend1.json
 """
 
 from __future__ import annotations
@@ -40,6 +50,7 @@ RESULTS, REPO = HERE / "results", HERE.parents[1]
 LARGE, PRED, A0 = RESULTS / "large", RESULTS / "predictions.json", RESULTS / "a0.json"
 ALIVE = REPO / "experiments" / "transport_test" / "results" / "large" / "alive.pt"
 TASKS, SEEDS, DEVICE = ("lowercase", "cipher"), (0, 1), "cuda"
+A1_TASKS, PRED_A1 = ("narrow_lower", "broad_cipher"), RESULTS / "predictions_amend1.json"
 LOG = [LARGE / "run.log"]
 
 
@@ -54,11 +65,18 @@ class Config:
     steps: tuple[tuple[int, ...], tuple[int, ...]] = ((300,), (10, 100, 300))  # saved steps (lowercase, cipher)
     batch: int = 32  # windows per forward
     n_boot: int = 2000
+    a1_steps: tuple[int, ...] = (10, 100, 300)  # Amendment 1: saved steps, both members
+    a1_lower_ranks: tuple[int, int] = (50, 100)  # narrow_lower: title-case types, 0-based ranks, end exclusive
+    a1_cipher_ranks: tuple[int, int] = (50, 550)  # broad_cipher: word tokens, as E53's cipher (ranks 50-99)
+    a1_cipher_seed: int = 0
+    count_rows: int = 4096  # Pile train rows 0-4095 for the counts (A0's)
 
     def __post_init__(self) -> None:
         from commute import lowercase
 
         assert self.n_train == lowercase.STEPS * lowercase.BATCH and all(s[-1] == lowercase.STEPS for s in self.steps)
+        assert self.a1_steps[-1] == lowercase.STEPS and self.a1_lower_ranks[1] - self.a1_lower_ranks[0] == 50
+        assert self.a1_cipher_ranks[1] - self.a1_cipher_ranks[0] == 500
 
 
 CFG = Config()
@@ -103,7 +121,8 @@ def stop(out_name: str, out: dict[str, Any], why: str) -> None:
 
 
 def task_text(name: str, rows: Tensor, pi: dict[int, int]) -> tuple[Tensor, Any]:
-    """The task's text of cased Pile `rows` and its scored positions (`performed`)."""
+    """The task's text of cased Pile `rows` and its scored positions (`performed`): lowercase by `case_pairs`; any
+    other task (cipher, narrow_lower, broad_cipher) its token map `pi` applied by `cipher_rows`."""
     from commute import performed, vpd
 
     if name == "lowercase":
@@ -120,29 +139,103 @@ def stage_finetune(P: dict[str, Any], pi: dict[int, int]) -> None:
     from commute.data import pile_rows
     from commute.row_copy import mean_logp
 
-    c, model = P["controls"], vpd.load_component_model(DEVICE)
+    model = vpd.load_component_model(DEVICE)
     low = lowercase.task(model, DEVICE, log)
     held = task_text("cipher", pile_rows("val", 0, 256)[: CFG.n_held], pi)[0]
     train = task_text("cipher", pile_rows("train", 0, 4096)[: CFG.n_train], pi)[0]
     data = {"lowercase": low, "cipher": lowercase.Lower(train, held, low.w0_net, mean_logp(low.w0_net, held, DEVICE, 8))}
     out: dict[str, Any] = {"commit": git_head(), "states": {}, "logp_w0": {n: d.logp_w0 for n, d in data.items()}}
-    for (name, steps), seed in ((x, s) for x in zip(TASKS, CFG.steps, strict=True) for s in SEEDS):
-        for step, dW in lowercase.arm_b_states(model, DEVICE, data[name], "adam", seed, steps, log).items():
+    finetune_all(model, data, dict(zip(TASKS, CFG.steps, strict=True)), out, "finetune.json", P["controls"])
+
+
+def finetune_all(model: Any, data: dict[str, Any], steps: dict[str, tuple[int, ...]], out: dict[str, Any],
+                 out_name: str, c: dict[str, Any]) -> None:
+    """Each task of `steps` (in order) at each batch order of SEEDS: saved bf16 at its steps, recorded in `out` and
+    written to `out_name` as each state finishes. Controls: bf16 copy; recipe (E53's lowercase batch order 0 only)."""
+    from commute import lowercase
+
+    for name, seed in ((n, s) for n in steps for s in SEEDS):
+        for step, dW in lowercase.arm_b_states(model, DEVICE, data[name], "adam", seed, steps[name], log).items():
             path = LARGE / f"dW_{name}_s{seed}_step{step}.pt"
             torch.save({k: v.bfloat16() for k, v in dW.items()}, path)
             small = {k: v.float() for k, v in torch.load(path, weights_only=True).items()}
             rec = {"gain": lowercase.gain(model, DEVICE, data[name], dW), "gain_bf16": lowercase.gain(model, DEVICE, data[name], small),
                    "sha256": sha256(path), "file": path.name}
             out["states"][key(name, seed, step)] = rec
-            dump("finetune.json", out)
+            dump(out_name, out)
             log(f"[finetune {key(name, seed, step)}] held-out gain {rec['gain']:.5f} nats/token, bf16 copy {rec['gain_bf16']:.5f}")
             if abs(rec["gain_bf16"] - rec["gain"]) > c["bf16_gain_tol"]:
-                stop("finetune.json", out, f"control bf16_save at {key(name, seed, step)}")
+                stop(out_name, out, f"control bf16_save at {key(name, seed, step)}")
             if (name, seed) == ("lowercase", 0) and abs(rec["gain"] - c["recipe_gain_ref"]) > c["recipe_gain_tol"]:
-                stop("finetune.json", out, f"control recipe: gain {rec['gain']:.5f} against {c['recipe_gain_ref']}")
+                stop(out_name, out, f"control recipe: gain {rec['gain']:.5f} against {c['recipe_gain_ref']}")
     out["done"] = True
-    dump("finetune.json", out)
+    dump(out_name, out)
     log("[finetune] done")
+
+
+# ----------------------------------------------------------------------------- Amendment 1, job 1: check, fine-tunes
+
+
+def a1_maps() -> dict[str, dict[int, int]]:
+    """Amendment 1's token maps from the counts on Pile train rows 0-4095 (tokenizer only)."""
+    from commute import performed, vpd
+    from commute.data import pile_rows
+
+    tok, rows = vpd.tokenizer(), pile_rows("train", 0, CFG.count_rows)
+    ids = performed.word_ranks(tok, rows)[CFG.a1_cipher_ranks[0] : CFG.a1_cipher_ranks[1]].tolist()
+    return {"narrow_lower": performed.title_lower_map(tok, rows, CFG.a1_lower_ranks),
+            "broad_cipher": performed.derangement(ids, CFG.a1_cipher_seed)}
+
+
+def a1_check(P: dict[str, Any], maps: dict[str, dict[int, int]], net: Any) -> None:
+    """A0's rule on W0 (`net`), Pile val rows 0-255: log p(a) - log p(b) at narrow_lower's positions in its rows
+    (a = lowercase form) and in the cased rows, and at broad_cipher's (a = pi(x)); repeats (the form a already earlier
+    in the row) and first occurrences reported apart. -> results/check_amend1.json; the filed stop rule."""
+    from a0 import spread
+
+    from commute import performed, vpd
+    from commute.data import pile_rows
+
+    tok, val, t = vpd.tokenizer(), pile_rows("val", 0, 256), P["check"]
+    nl, bc = (performed.cipher_rows(val, maps[n]) for n in A1_TASKS)
+    reads = {"narrow_lower": nl, "cased": (val, nl[1]), "broad_cipher": bc}
+    out: dict[str, Any] = {"commit": git_head(), "maps": {n: [[x, y, tok.decode([x]), tok.decode([y])] for x, y in m.items()]
+                                                          for n, m in maps.items()}}
+    for name, (rows, at) in reads.items():
+        d, rep = performed.log_odds(net, rows, at, DEVICE, 8), performed.earlier_in_row(rows, at)
+        out[name] = {**spread(d, at.row), "mean_repeat": float(d[rep].mean()), "mean_first": float(d[~rep].mean()),
+                     "n_repeat": int(rep.sum())}
+        log(f"[check {name}] {json.dumps(_finite(out[name]), sort_keys=True)}")
+    m = {k: out[k]["mean"] for k in reads}
+    stops = {"narrow_lower_below_bar": not m["narrow_lower"] >= t["narrow_lower_at_least"],
+             "broad_cipher_above_bar": not m["broad_cipher"] <= t["broad_cipher_at_most"],
+             "non_finite": not all(math.isfinite(x) for x in m.values())}
+    out["verdict"] = {"P_cased_follows_style": m["cased"] <= t["cased_at_most"], "stops": stops,
+                      "decision": "STOP" if any(stops.values()) else "GO"}
+    dump("check_amend1.json", out)
+    log(f"[check verdict] {json.dumps(out['verdict'], sort_keys=True)}")
+    if out["verdict"]["decision"] != "GO":
+        stop("check_amend1.json", out, "check: a member is not what the plan needs")
+
+
+def stage_a1_finetune(P: dict[str, Any], maps: dict[str, dict[int, int]]) -> None:
+    from commute import teacher, vpd
+    from commute.data import pile_rows
+    from commute.lowercase import Lower
+    from commute.row_copy import mean_logp
+
+    model = vpd.load_component_model(DEVICE)
+    w0 = teacher.teacher_net(model, {})
+    a1_check(P, maps, w0)
+    held, train = pile_rows("val", 0, 256)[: CFG.n_held], pile_rows("train", 0, 4096)[: CFG.n_train]
+    out: dict[str, Any] = {"commit": git_head(), "states": {}, "logp_w0": {}, "train_share": {}}
+    data = {}
+    for n in A1_TASKS:
+        h, (rows, at) = task_text(n, held, maps[n])[0], task_text(n, train, maps[n])
+        data[n] = Lower(rows, h, w0, mean_logp(w0, h, DEVICE, 8))
+        out["logp_w0"][n], out["train_share"][n] = data[n].logp_w0, len(at) / rows[:, 1:].numel()
+        log(f"[data {n}] W0 held-out logp {data[n].logp_w0:.5f}; share of train tokens mapped {out['train_share'][n]:.4f}")
+    finetune_all(model, data, {n: CFG.a1_steps for n in A1_TASKS}, out, "finetune_amend1.json", P["controls"])
 
 
 # ----------------------------------------------------------------------------- job 2: the readings
@@ -319,24 +412,30 @@ def write_row(run: Run, t: Task, G_target: float) -> dict[str, Any]:
 class Rows:
     """read.json's rows: each written and logged as it finishes; a control miss stops the run."""
 
-    def __init__(self) -> None:
-        self.out: dict[str, Any] = {"commit": git_head(), "rows": {}}
+    def __init__(self, name: str = "read.json") -> None:
+        self.name, self.out = name, {"commit": git_head(), "rows": {}}
 
     def put(self, name: str, role: str, rec: dict[str, Any], ok: bool | None = None) -> dict[str, Any]:
         self.out["rows"][name] = {"role": role, **rec, **({} if ok is None else {"ok": ok})}
-        dump("read.json", self.out)
+        dump(self.name, self.out)
         log(f"[{role} {name}] ok {ok} {json.dumps(_finite(rec), sort_keys=True)}")
         if ok is False:
-            stop("read.json", self.out, f"control {role} at {name}")
+            stop(self.name, self.out, f"control {role} at {name}")
         return rec
+
+
+def state_loader(ft: dict[str, Any], keys: list[str] | None = None) -> Any:
+    """A loader of `ft`'s saved states (fp32), after checking each file of `keys` (default all) exists with the
+    sha256 `ft` recorded; exits otherwise."""
+    files = {k: LARGE / v["file"] for k, v in ft["states"].items() if keys is None or k in keys}
+    if bad := [k for k, p in files.items() if not p.is_file() or sha256(p) != ft["states"][k]["sha256"]]:
+        sys.exit(f"missing or not the file the fine-tune record holds: {bad}")
+    return lambda k: {n: v.float() for n, v in torch.load(files[k], weights_only=True).items()}
 
 
 def stage_read(P: dict[str, Any], pi: dict[int, int], ft: dict[str, Any]) -> None:
     c, rows = P["controls"], Rows()
-    files = {k: LARGE / v["file"] for k, v in ft["states"].items()}
-    if bad := [k for k, p in files.items() if not p.is_file() or sha256(p) != ft["states"][k]["sha256"]]:
-        sys.exit(f"missing or not the file finetune.json recorded: {bad}")
-    state = lambda k: {n: v.float() for n, v in torch.load(files[k], weights_only=True).items()}
+    state = state_loader(ft)
     run = Run(P)
     tasks = {n: run.task(n, pi) for n in TASKS}
     for n, t in tasks.items():  # the controls, first and alone
@@ -364,27 +463,76 @@ def stage_read(P: dict[str, Any], pi: dict[int, int], ft: dict[str, Any]) -> Non
     log(f"[score] {json.dumps(_finite(rows.out['score']), sort_keys=True)}")
 
 
-def main() -> None:
-    stage = sys.argv[1] if len(sys.argv) == 2 else ""
-    if stage not in ("finetune", "read"):
-        sys.exit("usage: run.py finetune | read")
-    if not PRED.is_file():
-        sys.exit(f"file the predictions first: {PRED}")
+# ----------------------------------------------------------------------------- Amendment 1, job 2: the readings
+
+
+def reproduce_e53(run: Run, rows: Rows, c: dict[str, Any], state: Any) -> None:
+    """Control, first and alone: E53's lowercase batch-order-0 step-300 state split and read by this code; its G and
+    stand-in ratio must match read.json's within the filed tolerances."""
+    k = key("lowercase", 0, 300)
+    ref = json.loads((RESULTS / "read.json").read_text())["rows"][k]
+    d = split_row(run, run.task("lowercase", {}), state(k))
+    ratio, ref_ratio = d["masked_gain"] / d["piece_gain"], ref["masked_gain"] / ref["piece_gain"]
+    ok = abs(d["G"] - ref["G"]) <= c["repro_G_tol"] and abs(ratio - ref_ratio) <= c["repro_ratio_tol"]
+    rows.put(f"e53/{k}", "control", {**d, "ratio": ratio, "ref_G": ref["G"], "ref_ratio": ref_ratio}, ok)
+
+
+def stage_a1_read(P: dict[str, Any], maps: dict[str, dict[int, int]], ft: dict[str, Any]) -> None:
+    rows = Rows("read_amend1.json")
+    e53_state = state_loader(json.loads((RESULTS / "finetune.json").read_text()), [key("lowercase", 0, 300)])
+    state = state_loader(ft)
+    run = Run(P)
+    reproduce_e53(run, rows, P["controls"], e53_state)
+    tasks = {n: run.task(n, maps[n]) for n in A1_TASKS}
+    for k in ft["states"]:
+        rows.put(k, "finetune", split_row(run, tasks[k.split("/")[0]], state(k)))
+    for n, t in tasks.items():  # the null against the seed-0 step-300 fine-tune's off-target KL
+        ft0 = rows.out["rows"][key(n, 0, 300)]
+        rows.put(f"{n}/random", "null", random_row(run, t, state(key(n, 0, 300)), ft0["kl_other"]))
+    from score import score_amend1
+
+    rows.out["score"] = score_amend1(rows.out["rows"], json.loads((RESULTS / "read.json").read_text()), P)
+    dump(rows.name, rows.out)
+    log(f"[score] {json.dumps(_finite(rows.out['score']), sort_keys=True)}")
+
+
+def e53_pi() -> dict[int, int]:
     a0 = json.loads(A0.read_text())
     if a0.get("verdict", {}).get("decision") != "GO":
         sys.exit("a0.json is not a GO: the fine-tunes do not start")
-    P, pi = json.loads(PRED.read_text()), {int(m["x"]): int(m["pi_x"]) for m in a0["cipher_map"]}
+    return {int(m["x"]): int(m["pi_x"]) for m in a0["cipher_map"]}
+
+
+def done(name: str, before: str) -> dict[str, Any]:
+    ft = json.loads((RESULTS / name).read_text())
+    if not ft.get("done"):
+        sys.exit(f"{name} is not done: run.py {before} first")
+    return ft
+
+
+STAGES = {"finetune": PRED, "read": PRED, "a1_finetune": PRED_A1, "a1_read": PRED_A1}
+
+
+def main() -> None:
+    stage = sys.argv[1] if len(sys.argv) == 2 else ""
+    if stage not in STAGES:
+        sys.exit(f"usage: run.py {' | '.join(STAGES)}")
+    if not STAGES[stage].is_file():
+        sys.exit(f"file the predictions first: {STAGES[stage]}")
+    P = json.loads(STAGES[stage].read_text())
+    pi, maps = (e53_pi(), {}) if stage in ("finetune", "read") else ({}, a1_maps())
     LARGE.mkdir(parents=True, exist_ok=True)
     LOG[0] = LARGE / f"{stage}.log"
     LOG[0].write_text("")
     log(f"[start] {stage} on {torch.cuda.get_device_name() if torch.cuda.is_available() else 'cpu'}, commit {git_head()}")
     if stage == "finetune":
         stage_finetune(P, pi)
+    elif stage == "read":
+        stage_read(P, pi, done("finetune.json", "finetune"))
+    elif stage == "a1_finetune":
+        stage_a1_finetune(P, maps)
     else:
-        ft = json.loads((RESULTS / "finetune.json").read_text())
-        if not ft.get("done"):
-            sys.exit("finetune.json is not done: run.py finetune first")
-        stage_read(P, pi, ft)
+        stage_a1_read(P, maps, done("finetune_amend1.json", "a1_finetune"))
     peak = {"gpu_gb": torch.cuda.max_memory_allocated() / 2**30, "host_gb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20}
     log(f"[done] {stage}; peak {json.dumps(peak)}")
 
