@@ -439,3 +439,56 @@ def test_score_amend3() -> None:
     assert OP.score_amend3(st, {}, "below", 10, REF3, TH3, 0.4)["verdict"] == "untested"  # drift guard
     assert OP.score_amend3(st, {}, "too_small", 10, REF3, TH3, 0.24)["verdict"] == "stopped"
     assert OP.score_amend3({}, {}, "pass", 0, REF3, TH3, 0.24)["verdict"] == "untested"
+
+
+# ----------------------------------------------------------------------------- Amendment 4
+
+TH4 = {"x_range_min": 0.4, "r_mult": 2.0, "ratio_tol": 0.2, "shuffle_cut": 0.5}
+
+
+def rd(x: float, r: float, ratio: float = 1.0, label: str = "neither") -> dict[str, Any]:
+    return {"x": x, "r": r, "ratio": ratio, "label": label}
+
+
+def test_within_key_pass_fail_and_ties() -> None:
+    reads = {"elicit": [rd(0.2, 0.78), rd(0.2, 0.80), rd(0.2, 0.82)],
+             "copy": [rd(0.8, 0.84), rd(0.8, 0.86), rd(0.8, 0.88)]}
+    w = OP.within_key(reads, "r", TH4)  # D 0.06, spread 0.04, bound 0.08
+    assert w["status"] == "pass" and abs(w["D"] - 0.06) < 1e-12 and abs(w["bound"] - 0.08) < 1e-12
+    reads["copy"] = [rd(0.8, 0.90), rd(0.8, 0.91), rd(0.8, 0.92)]  # D 0.11 > 0.08
+    assert OP.within_key(reads, "r", TH4)["status"] == "fail"
+    tie = {"a": [rd(0.0, 0.5), rd(0.0, 0.75)], "b": [rd(0.5, 1.0), rd(0.5, 1.0)]}  # D 0.375 vs 2 x 0.25 = 0.5; D_x = 0.5
+    assert OP.within_key(tie, "r", TH4)["status"] == "pass"
+    edge = {"a": [rd(0.0, 0.5), rd(0.0, 0.5)], "b": [rd(0.4, 0.75), rd(0.4, 0.75)]}  # D_x tie at 0.4: testable; spread 0
+    assert OP.within_key(edge, "r", TH4)["status"] == "fail"  # zero spread: bound 0
+    same = {"a": [rd(0.0, 0.8), rd(0.0, 0.8)], "b": [rd(0.4, 0.8), rd(0.4, 0.8)]}
+    assert OP.within_key(same, "r", TH4)["status"] == "pass"  # zero spread, zero D: pass at the tie
+
+
+def test_within_key_dropped_and_not_testable() -> None:
+    small = {"a": [rd(0.0, 0.8), rd(0.0, 0.8, label="too_small")], "b": [rd(0.6, 0.8), rd(0.6, 0.85)]}
+    assert OP.within_key(small, "r", TH4)["status"] == "not_testable"  # one readable seed: map dropped, one map left
+    flat = {"a": [rd(0.2, 0.8), rd(0.2, 0.8)], "b": [rd(0.5, 0.9), rd(0.5, 0.9)]}
+    assert OP.within_key(flat, "r", TH4)["status"] == "not_testable"  # D_x 0.3 < 0.4
+    nan = {"a": [rd(0.0, math.nan), rd(0.0, 0.8), rd(0.0, 0.8)], "b": [rd(0.6, 0.8), None, rd(0.6, 0.8)]}
+    w = OP.within_key(nan, "r", TH4)
+    assert w["status"] == "pass" and w["n_seeds"] == {"a": 2, "b": 2}  # nan and missing reads dropped
+    assert OP.within_key({}, "r", TH4)["status"] == "not_testable"
+    ratio = {"a": [rd(0.0, 0.8, 0.95), rd(0.0, 0.8, 0.95)], "b": [rd(0.6, 0.8, 1.15), rd(0.6, 0.8, 1.15)]}
+    assert OP.within_key(ratio, "ratio", TH4)["status"] == "pass"  # absolute tol 0.2 (D 0.2 up to rounding)
+    ratio["b"][0]["ratio"] = ratio["b"][1]["ratio"] = 1.16
+    assert OP.within_key(ratio, "ratio", TH4)["status"] == "fail"
+
+
+def test_shuffle_class_and_score_amend4() -> None:
+    assert OP.shuffle_class(rd(0.0, 0.3), TH4) == "cipher_like" and OP.shuffle_class(rd(0.0, 0.5), TH4) == "token_kind"
+    assert OP.shuffle_class(rd(0.0, 0.3, label="too_small"), TH4) == "unreadable" and OP.shuffle_class(None, TH4) == "unreadable"
+    assert OP.shuffle_class(rd(0.0, math.nan), TH4) == "unreadable"
+    reads = {10: {"elicit": [rd(0.2, 0.78, 0.96), rd(0.2, 0.80, 0.97), rd(0.2, 0.82, 0.98)],
+                  "rank1": [rd(0.3, 0.80, 1.1), rd(0.3, 0.81, 1.1), rd(0.3, 0.82, 1.1)],
+                  "copy": [rd(0.8, 0.84, 1.1), rd(0.8, 0.86, 1.1), rd(0.8, 0.88, 1.1)]}}
+    out = OP.score_amend4(reads, rd(0.0, 0.3), TH4)
+    assert out["within_key"]["10"]["status"] == "pass" and out["shuffle"] == "cipher_like"
+    assert out["within_key"]["10"]["rho_r_x"] > 0
+    reads[10]["copy"] = [rd(0.8, 0.84, 1.3), rd(0.8, 0.86, 1.3), rd(0.8, 0.88, 1.3)]
+    assert OP.score_amend4(reads, None, TH4)["within_key"]["10"]["status"] == "fail"

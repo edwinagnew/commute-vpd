@@ -11,6 +11,7 @@ or cipher (the cipher at the elicit fine-tune's update norm).
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import torch
@@ -439,3 +440,59 @@ def score_amend3(st: dict[str, dict[str, Any]], st30: dict[str, dict[str, Any]],
     B = b3(st, ref, th, maps, cipher_r)
     return {"control": control, "R": R, "C": copy_class(c["x"], c["label"], th), "B": B,
             "B_step30": b3(st30, ref, th, maps, cipher_r), "verdict": verdict2(control, B["status"], R)}
+
+
+# ----------------------------------------------------------------------------- Amendment 4 (2026-10-30)
+# experiments/open_pair/results/predictions_amend4.json; plan section "Amendment 4"; edge cases in tests/test_open_pair.py
+# Fable, reports/plans/2026-10-30_advice_e58a3-next-FABLE.md, item 2. A read is {"x", "r", "ratio", "label"} of one map,
+# seed and step.
+
+
+def readable(rd: dict[str, Any] | None, inst: str) -> bool:
+    """A read counts in the within-key-count rule iff its label is not too_small / unreadable and x and the
+    instrument are finite."""
+    return rd is not None and rd.get("label") not in UNLABELLABLE and finite(rd.get("x")) and finite(rd.get(inst))
+
+
+def within_key(reads: Mapping[str, Sequence[dict[str, Any] | None]], inst: str, th: dict[str, Any]) -> dict[str, Any]:
+    """Item 2.1 at one step and key count, for one instrument (r or ratio). Per map, its readable seeds; a map with fewer
+    than 2 is dropped (no seed spread). D_x and D_i = max - min over the kept maps of the seed-mean x and instrument;
+    spread = the largest within-map range (max - min over seeds) of the instrument. "not_testable" with fewer than 2 kept
+    maps or D_x < x_range_min (the maps do not differ in carry); else "pass" iff D_i <= the bound (r: r_mult x spread;
+    ratio: ratio_tol, absolute), "fail" otherwise. Ties count (<=, >=). A zero spread makes the r bound 0."""
+    kept = {m: [rd for rd in v if rd is not None and readable(rd, inst)] for m, v in reads.items()}
+    kept = {m: v for m, v in kept.items() if len(v) >= 2}
+    mean = lambda v, k: sum(rd[k] for rd in v) / len(v)
+    rec: dict[str, Any] = {"maps": sorted(kept), "n_seeds": {m: len(v) for m, v in kept.items()}}
+    if len(kept) < 2:
+        return {**rec, "status": "not_testable"}
+    xs, ys = [mean(v, "x") for v in kept.values()], [mean(v, inst) for v in kept.values()]
+    spread = max(max(rd[inst] for rd in v) - min(rd[inst] for rd in v) for v in kept.values())
+    bound = th["r_mult"] * spread if inst == "r" else th["ratio_tol"]
+    rec.update({"D_x": max(xs) - min(xs), "D": max(ys) - min(ys), "spread": spread, "bound": bound})
+    if rec["D_x"] < th["x_range_min"]:
+        return {**rec, "status": "not_testable"}
+    return {**rec, "status": "pass" if rec["D"] <= bound else "fail"}
+
+
+def shuffle_class(rd: dict[str, Any] | None, th: dict[str, Any]) -> str:
+    """Item 2.2: the shuffled map's r at step 30. "unreadable" if missing, too_small / unreadable, or r not finite;
+    "cipher_like" iff r < shuffle_cut; else "token_kind" (a tie at the cut reads token_kind)."""
+    if rd is None or rd.get("label") in UNLABELLABLE or not finite(rd.get("r")):
+        return "unreadable"
+    return "cipher_like" if rd["r"] < th["shuffle_cut"] else "token_kind"
+
+
+def score_amend4(reads: Mapping[int, Mapping[str, Sequence[dict[str, Any] | None]]], shuffle30: dict[str, Any] | None,
+                 th: dict[str, Any]) -> dict[str, Any]:
+    """Per step (`reads[step][map]` = the reads of seeds 0-2): `within_key` for r and for the ratio, both reported per
+    instrument and "pass" overall iff both pass; the cross-seed Spearman of r on x over every readable read (reported);
+    the shuffle's class."""
+    out: dict[str, Any] = {}
+    for step, rs in reads.items():
+        w = {i: within_key(rs, i, th) for i in ("r", "ratio")}
+        st = [w[i]["status"] for i in w]
+        allr = [rd for v in rs.values() for rd in v if rd is not None and readable(rd, "r")]
+        out[str(step)] = {**w, "status": "pass" if st == ["pass", "pass"] else "fail" if "fail" in st else "not_testable",
+                          "rho_r_x": spearman([rd["x"] for rd in allr], [rd["r"] for rd in allr])}
+    return {"within_key": out, "shuffle": shuffle_class(shuffle30, th)}

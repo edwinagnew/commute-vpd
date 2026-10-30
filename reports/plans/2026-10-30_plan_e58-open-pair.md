@@ -768,3 +768,148 @@ were amended in place (`amendment_2026_10_30_prerun_review` records it).
    "falling".
 7. **`settings.order` corrected.** `add_maps` still calls `KD.vocab` a second time (about 10 s) for E12's ranked pool.
    Removing it would need `amend2.stage_keys` to return `ranked`, which would change amend2.py; it is kept.
+
+## Amendment 4 (2026-10-30, after job 46398): seeds for the within-key-count reading, and what the shuffle's r reads
+
+*Lead's decision on Fable's item 2 (`reports/plans/2026-10-30_advice_e58a3-next-FABLE.md`). Code
+`experiments/open_pair/amend4.py` (135 lines), which imports `amend3.read` and amend1's helpers. amend2.py and amend3.py
+still run as they ran; amend4 points their output file at `amend4.json`. Rules are in `src/commute/open_pair.py`
+§ Amendment 4 (`readable`, `within_key`, `shuffle_class`, `score_amend4`), with edge cases in `tests/test_open_pair.py`
+(3 new tests; 37 pass). Predictions are in `results/predictions_amend4.json`. Job: `sbatch cluster/open_pair.sbatch
+amend4`. Coded and filed; nothing run. Amendment 3's B ("untested_drift") and verdict ("untested") stand.*
+
+**In plain words.** At 128 keys, one seed, three maps whose carry to unseen keys ran from a fifth to four fifths read
+nearly the same r and stand-in ratio. One seed cannot say whether "nearly the same" is within noise, so we train two
+more seeds of each map and of the cipher. We then file the rule that turns the reading into a score: the maps' r may
+differ by at most twice its own seed spread while their carry differs by at least 0.4. We also read the shuffled map,
+which has the elicit map's words but no link to what the model already expects for each key, to learn whether r reads
+the model's own guess (r low, like the cipher) or only the kind of word (r high).
+
+### Design check (`/design`)
+
+- **Goal.** Reading A's claim for the synthesis ("r reads whether targets are what the model already produces, and
+  not whether what it learned carries"), scored rather than one-seed; and what "already produces" means (the shuffle).
+- **Nearest tried.** Amendment 3 (job 46398, one seed: x 0.21 / 0.32 / 0.82, r 0.78 / 0.89 / 0.87 at step 10); E58 P4
+  (r seed spread 0.03 at 24 keys); E12 / E46 (cipher r 0.24-0.27).
+- **Patch or step.** A step: it gives Amendment 3's unscored line its noise floor and filed rule, and asks one new
+  question (the shuffle).
+- **Decisions.** E54's recipe; Amendment 3's windows, label, gate and cipher control rule; reading A. No departure from
+  `decisions.md`.
+- **What changes next.** W passes at both steps → the synthesis states the within-key-count line with three seeds.
+  W fails, or the cross-map r range is over 0.15 → the one-seed line is dropped. Shuffle cipher-like → the claim reads
+  "the model's own key-conditional guess". Shuffle token-kind → the claim is weakened to "a token the model can emit".
+- **Control first.** For every seed the cipher is trained and read first and alone (the same ±0.05 rule, at its first
+  step over the gate from 10); the job stops before any map of that seed unless it reads "pass" or "below".
+- **Class.** Approved (lead's decision tree, Fable's advice adopted); $0, cluster `debug`, Amendment 3's files.
+
+### What differs from Amendment 3
+
+- **Seeds.** Seeds 1 and 2 are added; seed 0's map reads are Amendment 3's, not re-run.
+- **Fixed read steps.** Every map is read at fixed steps 10 and 30, as Fable specifies. Amendment 3 read at elicit's
+  scored step, which was 10 for seed 0.
+- **The cipher's own reads.** Each seed's cipher control is read at its first step over the gate. Its r and ratio are
+  reported at steps 10, 30 and that step; this is the drift line at matched G_spec.
+- **The shuffle at a readable step.** It is read at step 30 and at its first step over the gate. At step 10 in
+  Amendment 3 it was too small to label.
+- **No weights saved.** Amendment 3's re-trained elicit state differed from Amendment 2's by exactly 0, so any state can
+  be rebuilt from seed and step.
+
+### The rule, defined and run on its edge cases before filing
+
+**W, per step (10 and 30) and instrument.**
+- A read counts if its label is not too_small or unreadable and its x and the instrument are finite.
+- Per map, take the seed-mean of x and of the instrument over its counting seeds. A map with fewer than 2 counting seeds
+  is dropped, since it has no seed spread.
+- D_x and D are the max minus min of those seed means over the kept maps.
+- For r: spread is the largest within-map range of r over seeds, and the bound is 2 × spread. For the ratio the bound
+  is 0.2, absolute.
+- Fewer than 2 kept maps, or D_x < 0.4, reads "not_testable". Otherwise "pass" iff D ≤ the bound, else "fail".
+- Overall per step: pass iff r and the ratio both pass; fail if either fails; else not_testable.
+- Edge cases tested: ties at both bounds (pass) and at D_x = 0.4 (testable); zero spread (the bound is 0: pass only if
+  D is 0); a map with one counting seed dropped, leaving one map (not_testable); nan and missing reads dropped; an empty
+  record; the ratio's absolute tolerance at the tie and just over it.
+
+**Shuffle.** At step 30, "cipher_like" iff r < 0.5, "token_kind" iff r ≥ 0.5 (a tie reads token_kind), "unreadable"
+if too small, unreadable or r is not finite. Tested at the tie, below it, too_small, None and nan.
+
+**What W needs, from the files on disk.** Seed 0 gives D_r 0.108 at step 10 and 0.122 at step 30, so r passes only if
+some map's r seed range at 128 keys is at least 0.055-0.06. At 24 keys r's seed ranges were 0.002-0.029. The ratio's D is
+0.172 / 0.175 against 0.2.
+
+### Numbers and what each should read
+
+| number | expected | source |
+|---|---|---|
+| cipher control, seeds 0-2 | "below" at its first step over the gate (seed 0: 16, x −0.24); seeds 1-2 at about 14-18 | job 46398 |
+| cipher r at its gate step and at 30 (drift line) | about 0.30 at step 30 for every seed; reported beside 0.2306 (24 keys) | job 46398 |
+| seed-0 cipher r at 10 and 30 against amend3.json | equal (bitwise reproduction) | Amendment 3's reproduction check |
+| W at step 10: D_x, D_r, spread, D_ratio | D_x about 0.6; D_r about 0.11; spread open; D_ratio about 0.17 | seed 0 |
+| W at step 30 | D_x about 0.7; D_r about 0.12; D_ratio about 0.18 | seed 0 |
+| rho(r, x) over 9 reads per step | reported only (9 points, no power) | Fable |
+| shuffle r at 30 (and at its gate step) | open; cut 0.5 | Fable |
+
+*Blind to:*
+- three seeds only;
+- W tests cross-map differences, not a shift that every map's r shares;
+- the shuffle keeps the held-out keys' true values, and only its r on the trained keys is read;
+- the granularity limit (a new circuit built from old pieces reads as old).
+
+### Predictions (filed in `results/predictions_amend4.json`)
+
+- **W10, W30.** Fable's lean is pass about 70% at both steps. My lean as writer is about 30%: on seed 0's numbers the
+  r half fails unless the 128-key r seed range is three times the 24-key one, while the ratio half passes about 65%.
+  Both leans are filed.
+- **Shuffle.** Fable's lean is cipher_like about 60%.
+
+### Settings (each sourced)
+
+- **Seeds 0-2.** Seed 0 from Amendment 3; seeds 1-2 are E58's other seeds.
+- **Steps 10 and 30.** Fable.
+- **Recipe, label, gate (5.148), cipher rule, windows.** Amendments 2-3, unchanged.
+- **W's thresholds.** 0.4, 2 × spread and 0.2 are Fable's. The definitions above (seed means, the largest within-map
+  range, the absolute ratio bound, dropping maps with fewer than 2 seeds) are filed here.
+- **Shuffle cut 0.5.** Fable's midpoint.
+
+### Stop rules, runtime, outputs
+
+Stops (exit 1; `amend4.json` written with "stopped"):
+- Amendment 3's windows do not match amend3.json's sha256 (at start);
+- a cipher seed is under the gate at every step from 10 to 30;
+- a cipher seed's control reads fail or unreadable;
+- a block-0 shift over 1e-5 nats.
+
+One MATS `debug` L40 job, $0, about 10-12 min. Job 46398 took 5 min for 6 fine-tunes, 8 r reads and about 25 labels.
+This job runs 10 fine-tunes, about 23 r reads (about 12 s each) and about 40 labels. One stage fits the 30-min cap. Host
+RAM peaks at about 5 GB while a cipher or the shuffle holds 32 checkpoints. Outputs: `results/amend4.json` and the log
+`results/large/amend4.out`; no large files.
+
+### Decision tree
+
+1. A stop → to the lead.
+2. **W passes at both steps** → the synthesis's within-key-count line, three seeds: across maps whose carry differs by
+   at least 0.4, r and the ratio differ by no more than seed noise.
+3. **W fails at a step** → report the per-map seed means. If D_r is over 0.15 at a step (Fable's "what would change my
+   advice"), the synthesis drops the one-seed line. Otherwise it states that r orders the maps by more than noise and
+   checks whether that order follows x (rho, reported).
+4. **W not_testable** → report; no within-key-count claim.
+5. **Shuffle cipher_like** → the claim reads "the model's own key-conditional guess".
+6. **Shuffle token_kind** → the claim is rewritten to "targets the model can produce somewhere" (Fable); the Qwen test
+   asks whether real updates ever look like a cipher.
+7. **Shuffle unreadable** → reported; the claim keeps Amendment 3's wording.
+
+### Departures from Fable's item 2
+
+- **Definitions Fable left open.** The seed-spread definition (the largest within-map range), seed means for D,
+  dropping maps with fewer than 2 seeds, and "tol 0.2" for the ratio read as an absolute bound on D.
+- **Seed 0's cipher.** It is re-trained, so all three seeds get the same control and drift line. Seed 0's maps are not
+  re-trained.
+- **The shuffle runs on seed 0 only.** Fable gave no seed count.
+- **No weights saved** (bitwise reproducibility, above).
+
+### Order of work
+
+1. Done: code, tests (37 pass), lint clean, predictions filed.
+2. Fresh-Opus review of the diff.
+3. `/pod-runner`: `sbatch cluster/open_pair.sbatch amend4` from the clone root.
+4. Write-up by the analysis agent (not this writer: another agent holds the E58 analysis, notebook, `TRIED.md` and
+   `PENDING.md`).

@@ -1,0 +1,83 @@
+{
+  "experiment": "E58 open_pair, Amendment 4",
+  "filed": "2026-10-30, after job 46398 (Amendment 3: control below at step 16, B untested_drift, verdict untested; both stand) and before any run of amend4.py; never edited after the run",
+  "plan": "reports/plans/2026-10-30_plan_e58-open-pair.md, section 'Amendment 4 (2026-10-30, after job 46398)'",
+  "spec": "reports/plans/2026-10-30_advice_e58a3-next-FABLE.md, item 2 (2.1-2.3); adopted by the lead",
+  "code": "experiments/open_pair/amend4.py (imports amend3.read, amend1's helpers); rules in src/commute/open_pair.py (section 'Amendment 4'), edge cases in tests/test_open_pair.py",
+  "settings": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "steps": [
+      10,
+      30
+    ],
+    "windows": "Amendment 3's split windows in results/large/amend3 (128 keys, 96 trained / 32 held out), sha256 checked against amend3.json maps at start",
+    "seed_0_maps": "elicit, rank-1 and copy seed 0 are Amendment 3's reads (amend3.json reads '<map>@10', '<map>@30'), not re-run; seeds 1 and 2 are fine-tuned here with the same recipe",
+    "finetune": "keydep.finetune, E54's recipe (E12's arm A, Adam 3e-5, batch 32, KL 1, clip 1, 300 steps, bf16 autocast); maps keep checkpoints 10, 30, 100, 300; the cipher and the shuffle keep every step 1-30 and 100, 300",
+    "cipher_control": "per seed 0-2, first and alone: label at step 10, then each step up to 30 until G_spec >= G_min (open_pair.pick_cipher_step from 10); open_pair.elicit_control there; stop unless pass or below; then r, ratio at steps 10, 30 and that step (item 2.3)",
+    "shuffle": "Amendment 3's shuffled elicit map, seed 0, read at step 30 (scored) and at its first step over the gate from 10 (reported), with r and ratio",
+    "precision": "fp32 reads, TF32 off; bf16 fine-tune",
+    "saved": "no weights: Amendment 3's reproduction read a max |difference| of 0 for a re-trained state, so any state can be rebuilt from seed and step",
+    "half": 20
+  },
+  "thresholds": {
+    "G_min": 5.147937448121369,
+    "G_min_source": "E58's gate as run (run.json stage0.G_min_spec), as Amendment 1",
+    "cut": 0.5,
+    "k_sd": 3,
+    "label_source": "E58's label unchanged (open_pair.label on value-specific gains, heldout_keys.behaviour, each pool value once)",
+    "n_boot": 2000,
+    "boot_seed": 0,
+    "ratio_floor": 0.1,
+    "block0_nats": 1e-05,
+    "e_max": 0.05,
+    "e_max_source": "Amendment 3's control rule on the cipher (open_pair.elicit_control): x > 0.05 fails (stop), x < -0.05 reads below (continue)",
+    "x_range_min": 0.4,
+    "r_mult": 2,
+    "ratio_tol": 0.2,
+    "within_key_source": "Fable item 2.1: across the three scored maps at each step, max r - min r <= 2 x the within-map seed spread, while max x - min x >= 0.4; the same for the ratio with tol 0.2. Definitions filed here: per map the seed-mean of x and of the instrument over its readable seeds (label not too_small / unreadable, x and instrument finite); a map with fewer than 2 readable seeds is dropped; D = max - min of the seed means over the kept maps; spread = the largest within-map range (max - min over seeds) of r; the ratio's bound is 0.2 absolute; fewer than 2 kept maps or D_x < 0.4 -> not_testable; ties count (<=, >=); a zero spread makes the r bound 0. Overall per step: pass iff r and ratio pass, fail iff either fails, else not_testable",
+    "shuffle_cut": 0.5,
+    "shuffle_source": "Fable item 2.2: the midpoint of the 128-key cipher (0.30) and elicit (0.72) r at step 30; r < 0.5 cipher_like, r >= 0.5 token_kind; unreadable if too_small / unreadable or r not finite"
+  },
+  "measurements": {
+    "within_key": "open_pair.within_key per step and instrument: D_x, D, spread, bound, kept maps and seed counts; rho_r_x = Spearman of r on x over every readable map-seed read at that step (9 points; reported)",
+    "shuffle": "open_pair.shuffle_class on the step-30 read; the first-over-gate read and both ratios reported",
+    "drift_line": "each seed's cipher r and ratio at steps 10, 30 and its first step over the gate (seed 0: 16 in job 46398), beside E58's 24-key cipher mean r 0.2306 (reported, no rule); seed 0's cipher r against amend3.json's at 10 and 30 (reproduction)"
+  },
+  "expected": {
+    "seed_0_from_amend3": "step 10: x 0.213 / 0.317 / 0.823, r 0.783 / 0.891 / 0.866, ratio 0.965 / 1.136 / 1.113 (D_x 0.61, D_r 0.108, D_ratio 0.172); step 30: x 0.105 / 0.204 / 0.808, r 0.725 / 0.847 / 0.771, ratio 0.993 / 1.168 / 1.046 (D_x 0.70, D_r 0.122, D_ratio 0.175)",
+    "what_r_needs": "with D_r near 0.11-0.12 the r rule passes only if some map's r seed range at 128 keys is >= 0.055-0.06; at 24 keys r seed ranges were 0.002-0.029 (rank-1, copy, elicit), so on seed 0's numbers the r half is more likely to fail than pass",
+    "ratio": "D_ratio about 0.17-0.18 on seed 0 against 0.2: pass more likely than not",
+    "cipher_control": "below at its first step over the gate (seed 0: 16, x -0.24); steps 14-18 for seeds 1-2",
+    "cipher_drift_line": "r about 0.30 at 30 (seed 0), about 0.33-0.37 at 10 (too_small there); within 0.05 of 0.30 at 30 across seeds",
+    "shuffle": "first step over the gate about 12-16 (P 0.02 at 10, 0.83 at 30); r at 30 open"
+  },
+  "noise_floor": "the within-map seed range at 128 keys is measured here (it is the rule's own spread); at 24 keys r 0.002-0.029, ratio 0.011-0.055",
+  "predictions": {
+    "W10": {
+      "what": "open_pair.score_amend4 within_key at step 10 (r and ratio)",
+      "lean": "Fable: pass about 70%. Writer: about 30% (r half fails unless the 128-key r seed range is >= 0.055; ratio half about 65%)",
+      "blind_to": "three seeds; a common shift of every map's r (not a cross-map difference); the granularity limit"
+    },
+    "W30": {
+      "what": "the same at step 30",
+      "lean": "Fable: pass about 70%. Writer: about 30%, as at step 10 (D_r 0.122)"
+    },
+    "shuffle": {
+      "what": "open_pair.shuffle_class at step 30: cipher_like (r < 0.5) / token_kind (r >= 0.5) / unreadable",
+      "lean": "Fable: cipher_like about 60%",
+      "blind_to": "one seed; the shuffle keeps the held-out keys' true values, so its held-out carry is not read here, only r on the trained keys"
+    }
+  },
+  "branches": {
+    "stop": "a windows mismatch, or a cipher under the gate to step 30, or its control fail / unreadable: to the lead",
+    "W_pass_both_steps": "the within-key-count reading is scored: r and the ratio do not order maps by carry beyond seed noise; the synthesis states it with three seeds",
+    "W_fail": "r differs across maps by more than twice its seed spread: the one-seed line was not noise-limited; report the per-map means; if D_r > 0.15 at a step (Fable) the synthesis drops the one-seed line",
+    "W_not_testable": "fewer than 2 maps with 2 readable seeds, or x no longer spreads by 0.4: report, no claim",
+    "shuffle_cipher_like": "r reads the model's own key-conditional guess (elicitation in the narrow sense): the synthesis's sharpest sentence",
+    "shuffle_token_kind": "r reads the token kind: 'built from existing subcomponents' means 'targets the model can produce somewhere'; the claim is rewritten to that (Fable's 'what would change my advice')"
+  }
+}
