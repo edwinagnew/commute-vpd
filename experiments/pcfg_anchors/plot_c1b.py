@@ -229,6 +229,19 @@ def fig_update_size(c: dict[str, Any], out: str = "c1b_update_size.png") -> None
                 lw=1.3,
                 zorder=3,
             )
+    for sid, place in c[
+        "placement"
+    ].items():  # task N at lr 1e-5, 1K: not yet learned, outside the truth set
+        if place == "not yet learned":
+            m = c["meta"][sid]
+            ax.scatter(
+                xpos(m, m["seed"]),
+                c["nuisance"][sid]["update_size"],
+                s=40,
+                marker="x",
+                color=NEW_C,
+                zorder=3,
+            )
     ax.axhline(t, color=MUTED, ls="--", lw=1)
     ax.text(
         3.45,
@@ -246,12 +259,13 @@ def fig_update_size(c: dict[str, Any], out: str = "c1b_update_size.png") -> None
     handles = [Line2D([], [], marker="o", ls="", color=EX_C, label="task P: reuses"),
                Line2D([], [], marker="o", ls="", color=NEW_C, label="task N: new"),
                Line2D([], [], marker="o", ls="", color=INK, mfc="white", label="calibration seeds"),
-               Line2D([], [], marker="o", ls="", color=INK, label="scored seeds")]  # fmt: skip
+               Line2D([], [], marker="o", ls="", color=INK, label="scored seeds"),
+               Line2D([], [], marker="x", ls="", color=NEW_C, label="task N, not yet learned (task accuracy 0.48)")]  # fmt: skip
     ax.legend(handles=handles, fontsize=8, frameon=False, loc="upper left")
     finish(
         fig,
         out,
-        "Within each recipe, learning the new count moves the weights 1.15 to 1.45 times as far as adding one",
+        "Within each recipe, task N moves the weights further than task P, even before N is learned",
     )
 
 
