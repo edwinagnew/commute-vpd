@@ -26,9 +26,6 @@ import json
 import math
 import sys
 import time
-from collections.abc import Callable
-from contextlib import AbstractContextManager, nullcontext
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -36,17 +33,27 @@ import torch
 from torch import Tensor
 
 from commute.data import pile_rows
-from commute.faithfulness import model_state
+from commute.steering import (  # moved here from this script, unchanged (2026-10-30, E54); amend1.py imports them from here
+    D_MLP,
+    DW,
+    N_LAYERS,
+    Edit,
+    Net,
+    Task,
+    b3,
+    gains,
+    logp_at,
+    read,
+    share,
+)
+from commute.steering import load_task as _load_task
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 OUT = RESULTS / "baseline_neurons.json"
 TASKS = {"ident32": "copy", "ident32b": "copy", "rand32": "cipher", "rand32b": "cipher"}
 STATES = [f"{t}_{s}" for t in TASKS for s in ("s0", "s1")]
-N_LAYERS, D_MLP, CODE_BATCH = 4, 3072, 8
-SITES = [f"in{i}" for i in range(N_LAYERS)] + [f"mlp{i}" for i in range(N_LAYERS)] + ["out3"]
-Edit = dict[str, Callable[[Tensor], Tensor]]
-DW = dict[str, Tensor]
+CODE_BATCH = 8
 
 
 def log(msg: str) -> None:
@@ -65,92 +72,8 @@ def dump(out: dict[str, Any]) -> None:
     OUT.write_text(json.dumps(_finite(out), indent=1, sort_keys=True))
 
 
-class Net:
-    """The target model at W0 or W0 + delta-W. `run` edits and reads three kinds of site: `in<l>` block l's input,
-    `mlp<l>` block l's MLP neurons (GELU output = down_proj's input), `out3` the last block's output."""
-
-    def __init__(self, device: str) -> None:
-        from commute import vpd
-
-        self.model, self.device = vpd.load_component_model(device), device
-        self.net = self.model.target_model
-        self.W0 = vpd.target_weights(self.model)
-        assert all(p.dtype == torch.float32 for p in self.net.parameters()) and len(self.net.h) == N_LAYERS
-
-    def at(self, dW: DW | None) -> AbstractContextManager[Any]:
-        if dW is None:
-            return nullcontext()
-        assert sorted(dW) == sorted(self.W0), "delta-W must cover the 24 matrices"
-        return model_state(self.model, target={k: w + dW[k].to(w.device, w.dtype) for k, w in self.W0.items()})
-
-    @torch.no_grad()
-    def run(self, toks: Tensor, edit: Edit | None = None, capture: bool = False) -> tuple[Tensor, dict[str, Tensor]]:
-        edit, seen, handles = edit or {}, {}, []
-
-        def f(site: str, x: Tensor) -> Tensor:
-            x = edit[site](x) if site in edit else x
-            if capture:
-                seen[site] = x
-            return x
-
-        for site in (s for s in SITES if s in edit or capture):
-            block = self.net.h[int(site[-1])]
-            if site.startswith("out"):
-                handles.append(block.register_forward_hook(lambda _m, _a, o, s=site: f(s, o)))
-            else:
-                mod = block.mlp.down_proj if site.startswith("mlp") else block
-                handles.append(mod.register_forward_pre_hook(lambda _m, a, s=site: (f(s, a[0]),)))
-        try:
-            out = self.net(toks.to(self.device))
-        finally:
-            for h in handles:
-                h.remove()
-        return (out[0] if isinstance(out, tuple) else out).float(), seen
-
-
-def logp_at(logits: Tensor, pos: int, tgt: Tensor) -> Tensor:
-    return torch.log_softmax(logits[:, pos], -1).gather(1, tgt.to(logits.device)[:, None]).squeeze(1).double().cpu()
-
-
-@dataclass
-class Task:
-    name: str
-    kind: str
-    toks: Tensor  # (97, 41) held-out windows
-    table: Tensor  # (V,) key -> value, -1 off the keys
-    keys: tuple[int, ...]
-    marker: int
-    half: int
-    lp0: Tensor  # (97,) W0's log P(target) at the answer position
-
-    def part(self, which: str) -> slice:
-        return slice(0, None, 2) if which == "fit" else slice(1, None, 2)
-
-    def tgt(self, toks: Tensor) -> Tensor:
-        return self.table[toks[:, self.half]]
-
-
 def load_task(net: Net, src: Path, name: str) -> Task:
-    w = torch.load(src / f"windows_{name}.pt", weights_only=False)
-    held, task = w["heldout"], w["task"]
-    t = Task(name, TASKS[name], held.tokens, w["table"], tuple(task.keys), int(task.marker), held.half, torch.empty(0))
-    assert len(t.toks) >= 4 and bool((t.toks[:, t.half - 1] == t.marker).all()) and bool((t.tgt(t.toks) >= 0).all()), name
-    t.lp0 = logp_at(net.run(t.toks)[0], t.half, t.tgt(t.toks))
-    return t
-
-
-def read(net: Net, t: Task, toks: Tensor, dW: DW | None = None, edit: Edit | None = None) -> Tensor:
-    with net.at(dW):
-        return logp_at(net.run(toks, edit)[0], t.half, t.tgt(toks))
-
-
-def share(lp: Tensor, lp0: Tensor, G: float) -> float:
-    return float((lp - lp0).mean()) / G if G != 0 else float("nan")
-
-
-def gains(net: Net, t: Task, dW: DW) -> dict[str, float]:
-    d = read(net, t, t.toks, dW) - t.lp0
-    return {"G": float(d.mean()), "G_fit": float(d[t.part("fit")].mean()), "G_score": float(d[t.part("score")].mean())}
+    return _load_task(net, src / f"windows_{name}.pt", name, TASKS[name])
 
 
 # ----------------------------------------------------------------------------- stage 0
@@ -195,26 +118,6 @@ def b4(net: Net, t: Task, ns: list[int]) -> dict[int, float]:
     """Per n, the mean over the scoring half of log P_W0,prompted - log P_W0 (nats; divided by each state's G later)."""
     s = t.toks[t.part("score")]
     return {n: float((logp_at(net.run(prompts(t, n))[0], -1, t.tgt(s)) - t.lp0[t.part("score")]).mean()) for n in ns}
-
-
-def b3(net: Net, t: Task, dW: DW, g: dict[str, float]) -> dict[str, Any]:
-    f, s = t.toks[t.part("fit")], t.toks[t.part("score")]
-    with net.at(dW):
-        _, c1 = net.run(f, capture=True)
-    _, c0 = net.run(f, capture=True)
-    layers = {}
-    for i in range(N_LAYERS):
-        v = (c1[f"in{i}"][:, t.half] - c0[f"in{i}"][:, t.half]).mean(0)
-
-        def add(x: Tensor, v: Tensor = v) -> Tensor:
-            x = x.clone()
-            x[:, t.half] += v
-            return x
-
-        layers[i] = {"norm": float(v.norm()), "fit": share(read(net, t, f, edit={f"in{i}": add}), t.lp0[t.part("fit")], g["G_fit"]),
-                     "score": share(read(net, t, s, edit={f"in{i}": add}), t.lp0[t.part("score")], g["G_score"])}
-    best = max(range(N_LAYERS), key=lambda i: (layers[i]["fit"], -i))
-    return {"layers": layers, "layer": best, "S": layers[best]["score"]}
 
 
 def flat_mlp(c: dict[str, Tensor], pos: int) -> Tensor:

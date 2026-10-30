@@ -62,3 +62,4 @@
 - [Gated runs](feedback-gated-runs.md) — runs >$15, >3 h or above the cap: pre-mortem, sourced settings, $0 rehearsal of every stage, early checks, two reviews, user go-ahead (.claude/CLAUDE.md, 2026-10-28)
 - [Decide clear rule fixes](feedback-decide-rule-fixes-with-clear-recommendation.md) — a mis-specified filed control with one clear fix: amend (dated) and rerun, FYI only; "not really worth asking me" (2026-10-29)
 - [Elicitation granularity limit](project-elicitation-granularity-limit.md) — new circuit from old pieces reads "elicited" to VPD; state it in every re-gating claim (user, 2026-10-29)
+- [Explicit literature departures](feedback-explicit-literature-departures.md) — every write-up states each departure from the cited source where used + a "Departures from the literature" list (user, 2026-10-30)
