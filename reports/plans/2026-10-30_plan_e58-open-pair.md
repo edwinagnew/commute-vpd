@@ -84,7 +84,10 @@ never occurs there (it has zero count in the mined rows).
 | key split | `split_keys` on E54's stage1.json keys | the filed 24 / 8 lists | stop |
 | zero update | max per-window G and H of a zero δW on all four split tasks | 0 exactly | stop, fix |
 | E54 elicit_s0, 32 keys | r, stand-in ratio, S, block-0 share via this code | r 0.7726 ± 0.03, ratio 0.9564 ± 0.03, S 0.3796 ± 0.001, block 0 ≤ 1e-6 (E54's tolerances; same code and card model, so ~1e-6 expected) | stop, fix |
-| E54 cipher_s0 with no carry-over (added 2026-10-30, pre-run amendment) | x0 = mean log-odds gain of the 31 non-target cipher values ÷ the target's G, on E54's 32-key windows; s0 the same row bootstrap | x0 ≤ 3 s0 (expected x0 ≈ 0, s0 ≈ 0.01-0.03) | stop: amend the "new" bar before any fine-tune |
+| ~~E54 cipher_s0 with no carry-over (added 2026-10-30, pre-run amendment)~~ superseded by the row below after job 46259 read x0 = 0.375 against 3 s0 = 0.061 | x0 = mean log-odds gain of the 31 non-target cipher values ÷ the target's G, on E54's 32-key windows | x0 ≤ 3 s0 | stop |
+| E54 cipher_s0, value-specific share (2026-10-30, second pre-run amendment) | G_spec ÷ raw G on E54's 32-key windows, with G_spec = own value's gain minus the mean gain of the other 31 pool values | ≥ 0.5 (expected 0.625 from job 46259: 6.944 ÷ 11.107) | stop |
+| E54 elicit_s0, value-specific share (same) | as above | reported; sets the gate with the cipher's | — |
+| G_spec gate (same) | min(8, 8 ÷ 10.79 × the smaller of the two G_spec above) | finite; at most 5.148 (cipher 6.944) | stop if not finite |
 
 ## Stage 1: fine-tunes and the label (no decomposition)
 
@@ -200,6 +203,32 @@ and the label rule are unchanged.
   be an assert. run.json records `git status --porcelain` of run.py and `open_pair.py`. The sbatch now handles a
   dangling `results/large` link: it creates the target and links only when no link or directory exists. The submit
   command is unchanged.
+
+## Second amendment before the run (2026-10-30, after job 46259; lead's decision)
+
+Job 46259 stopped at stage 0, as the first amendment designed it to. Every other stage-0 check passed: the zero update
+read 0.0, and E54's elicit_s0 read r 0.7726, ratio 0.9564, S 0.3796 and block 0 −9.4e-8 (results commit 080b1f2).
+Nothing was trained. The stop came from the cipher: on E54's cipher_s0, the other 31 cipher values gained 4.163 log-odds
+at each window, against the target's 11.107. So x0 = 0.375, against 3 s0 = 0.061 (s0 0.020). The cipher fine-tune lifts
+the whole value pool, and raw H ÷ G would read even a cipher with no carry-over as "neither", never "new". The cause is a
+pool shift, not carry-over.
+
+- *The label is now about the specific value (2026-10-30).* Each window's specific gain is the gain of its own value
+  minus the mean gain of the other 31 values in the task's full table. G_spec is that gain on the trained keys and H_spec
+  on the held-out keys. The label reads x = H_spec ÷ G_spec with the same bars: reuses iff x ≥ 0.5, new iff x ≤ 3 s
+  (the row bootstrap of x), else neither. Raw G, H and x are reported beside and not scored; s_key is now computed on
+  the specific gains. P0-P4 are unchanged.
+- *The gate (2026-10-30).* E54's own cipher_s0 has a G_spec of 6.944, under 8, so the gate is lowered. It is now
+  min(8, 8 ÷ 10.79 × the smaller G_spec of E54's elicit_s0 and cipher_s0), which keeps Fable's fraction of E54's gain.
+  The cipher sets it at 5.148 or less. E54 elicit_s0's G_spec has never been read: no logits were saved, and it cannot
+  be computed off the GPU. Stage 0 reads it and records the gate. elicit_s0's early stop now uses G_spec against this
+  gate.
+- *The stage-0 check (2026-10-30).* The no-carry check is replaced. On E54's cipher_s0, G_spec ÷ raw G must be at
+  least 0.5, meaning most of the cipher's gain is specific to its value; job 46259's numbers give 0.625. The same split
+  on E54's elicit_s0 is reported.
+- *Expected (2026-10-30).* The cipher's H_spec should be about 0 or below once the pool shift is subtracted, and it
+  should read "new". The elicit label stays open. *Blind to:* a carry-over that lifts every value of the pool alike
+  reads as no carry-over here. That is the price of removing the pool shift.
 
 ## Not in this plan
 
