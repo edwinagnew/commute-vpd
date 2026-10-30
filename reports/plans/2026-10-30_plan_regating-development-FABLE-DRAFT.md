@@ -1,4 +1,4 @@
-# DRAFT — Fable's advice, not approved; the user decides
+# Fable's advice — ADOPTED by the user 2026-10-30 (ask #13, decisions.md)
 
 *2026-10-30, Fable, at the user's request ("how best to develop the regating line to address the question 'can VPD
 distinguish elicitation from new mechanism'"). Advice only: nothing here is filed or running. Words as in `GOALS.md` →
