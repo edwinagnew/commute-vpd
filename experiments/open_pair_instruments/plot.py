@@ -145,17 +145,17 @@ def distance_fig(run: dict[str, Any]) -> None:
     axes[0].scatter([s0["D"]], [s0["reverse"]["t_half"]], marker="*", s=140, color="black", zorder=4,
                     label="planted 13-unit control on W0")
     axes[0].legend(fontsize=7, loc="upper left", frameon=False)
-    style(axes[0], "Reverse half-life grows with D", "half-life, optimizer steps")
+    style(axes[0], "Across maps the half-life follows D, except copy", "half-life, optimizer steps")
     for share, ls in ((1.0, "-"), (0.5, "--")):
         axes[1].plot(xs, share * xs, color=INK, lw=0.8, ls=ls)
         axes[1].text(11.4, share * 11.4, f"revives {share:.0%} of D", fontsize=7, color=INK, ha="right", va="bottom")
     axes[1].scatter([s0["D"]], [max(s0["Delta"].values())], marker="*", s=140, color="black", zorder=4)
-    style(axes[1], "Pruning removes about half of D on every map", "revival in nats: best K, minus random removal")
+    style(axes[1], "Pruning gives back 39-65% of D per map; copy the most", "revival in nats: best K, minus random removal")
     for ax in axes:
         ax.set_xlabel("D = KL(W0 ‖ state) at the answer position, nats", color=INK)
         ax.set_xlim(0, 11.5)
         ax.set_ylim(bottom=0)
-    fig.suptitle("Do the two instruments read anything beyond how far each state moved W0's answer distribution?",
+    fig.suptitle("How do the two instruments relate to how far each state moved W0's answer distribution?",
                  fontsize=10.5, color=INK, x=0.01, ha="left")
     fig.tight_layout(rect=(0, 0, 1, 0.95))
     fig.savefig(FIG / "c3_distance.png", dpi=150)
