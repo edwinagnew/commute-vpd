@@ -1,0 +1,55 @@
+{
+  "status": "DRAFT 2026-10-31: not filed. Values marked TBD-rehearsal are set from results/c2_rehearsal.json and the plan's gates before filing; c2.py decompose refuses to start while status begins with DRAFT. The rehearsal reads constants.ratio_floor only.",
+  "experiment": "E55 Stage C2: VPD's re-gating share r and stand-in ratio on the C1b truth set, calibrated and scored by C1b's rule beside the three cheap instruments and the within-cell update-size labeller",
+  "plan": "reports/plans/2026-10-31_plan_e55-c2-vpd.md",
+  "code": "experiments/pcfg_anchors/c2.py (stages rehearse, decompose; read and score to be written after the rehearsal), src/commute/decompose.py, src/commute/pcfg_vpd.py, src/commute/revival.py (cutoff, label_by_cutoff, score, ceiling), experiments/pcfg_anchors/c2_config.yaml",
+  "constants": {
+    "config": "experiments/pcfg_anchors/c2_config.yaml (param-decomp 74146b5 ss_llama_simple_mlp-2L.yaml; C per rank; 38,016 subcomponents over 24 matrices)",
+    "decomposition_data": "LOW's pretraining rows, pcfg.pretrain_batch(prior LOW), streams default_rng([200, chunk]) (train) and [201, chunk] (eval), inputs = the first 258 tokens",
+    "steps": 400000,
+    "alive_rows": 8192,
+    "alive_rule": "mean causal importance over every position of alive_rows pretraining rows (stream [202, i]) > 1e-6 (vpd.alive_masks, the paper's rule)",
+    "read_windows": 1024,
+    "read_rows": "natural 'C b 40' rows, c1b.task_rows('N', default_rng([1, 60]), 1024): the same rows for every state; each state's windows carry its own task's answer (P: count(a) + 1, N: count(b)); the ID states read on the same texts under their own prompt with count(a) answers",
+    "ratio_floor": 0.1,
+    "ratio_floor_source": "E53 Amendment 1b thresholds.floor_min, as E58 (experiments/open_pair/results/predictions.json thresholds.ratio_floor); in log-odds at the answer",
+    "gain_min": 1e-6,
+    "matrix_share_min": "TBD-rehearsal (proposed 0.5): a state whose 24-matrix gain (T1 - T0) is under this share of its full log-odds gain is void for both VPD readings",
+    "high_is_existing": {"r": true, "ratio": true},
+    "calibration_states": "the 14 calibration-seed truth states of results/c1b_cutoffs.json .truth, unchanged",
+    "scored_states": "the 21 scored-seed truth states of results/c1b.json .truth (seeds 2-4), unchanged",
+    "reported_unscored": ["the five N_1e-5_s*/1000 states (not yet learned, task accuracy 0.48)", "LOW (zero update)", "the two ID states amend5/ID_s0/2000, amend5/ID_s1/2000"]
+  },
+  "definitions": {
+    "r": "route split's re-gating share of the least-squares split state (anchors.lifted): (L01 - L00) / (T1 - T0); nan when |T1 - T0| < gain_min",
+    "ratio": "stand-in ratio from the same cells: (L11 - L00) / (U1 - U0); nan when U1 - U0 < ratio_floor",
+    "cells": "mean over read windows of the answer's log-odds at '=' (index 256): T target, U unmasked components, L CI-masked components; 0 = W0 with LOW's components, 1 = W0 + dW with the split components; L01, L10 the cross cells (local_faith.route_split)",
+    "dW": "the change of the 24 decomposed matrices' weights only; embeddings, LayerNorms, biases and the head stay at LOW's values in every cell",
+    "matrix_share": "(T1 - T0) / (the state's own mean log-odds gain on the same windows)",
+    "outside_norm_share": "share of the fine-tune's squared parameter change outside the 24 matrices' weights (reported)"
+  },
+  "rules": {
+    "cutoff": "C1b's rule unchanged (revival.cutoff, predictions_c1b.json rules.cutoff), per VPD reading, on the calibration states only, written to results/c2_cutoffs.json and committed before any scored reading",
+    "label": "revival.label_by_cutoff: existing iff x >= c (both readings), inclusive; void if the reading or cut-off is void (nan, or matrix_share under matrix_share_min)",
+    "score": "C1b's rule unchanged (predictions_c1b.json rules.score): binomial bar and best recipe-only labeller (lr, steps, update size) + 2 on each reading's non-void scored set; per run (10K saves) with margin 1",
+    "within_cell_update_size": "decisions.md 2026-10-31: reported beside the score as a standing column: per recipe cell, cut-off at the midpoint between the calibration seeds' P and N update sizes; a cell holding one class only labels by membership (C1b's post hoc labeller, now filed). Not in the pass rule (the filed C1b rule is kept so the table stays comparable); a VPD reading that ties it is reported as a tie",
+    "controls_first": "decompose job 1 alone, then stop rows below; read job: the do-nothing and positive controls before any calibration state"
+  },
+  "do_nothing": {"zero_update": "T1 - T0 = 0 and L11 - L00 = 0 exactly (|.| <= 1e-6): r and ratio nan (void); a non-zero gain stops (apparatus)", "T0_vs_LOW": "|T0 - LOW's own answer log-odds| <= TBD-rehearsal (bf16 noise floor between the ComponentModel's target forward and the plain minGPT, measured in the rehearsal)"},
+  "positive_controls": {"ID_states": "amend5 ID_s0 and ID_s1 at 2K (count(a) under a new prompt; steering S 0.93): r >= TBD and ratio >= TBD; leans in the plan. Missing both on both states: the VPD readings have no positive control; report, continue (C1b's steering rule)"},
+  "decomposition_stops": {
+    "faithfulness_after_warmup": "TBD-rehearsal",
+    "early_checks": "at steps 1,000 and 10,000 (eval): stochastic and CI-masked KL to the target and L0 against values TBD-rehearsal/source; a miss stops the run (exit 1) before the next paid or long stage",
+    "final": "CI-masked KL at the answer position on read rows at W0 (L00 vs T0) and on pretraining rows; alive count per matrix; thresholds TBD before filing"
+  },
+  "edge_cases": [
+    "every reading equal or fewer than 3 non-void per class in calibration: the reading is void for C2 (revival.cutoff)",
+    "zero update: both readings nan by construction (pcfg_vpd.shares; tested)",
+    "U1 - U0 exactly at the floor: ratio defined (inclusive); below or negative: nan (tested)",
+    "a chunk of zero windows cannot occur (read_windows % read_chunk == 0; combine asserts)",
+    "a state whose fine-tune moved only parameters outside the 24 matrices: gain 0, r nan, void",
+    "a cut-off with one class empty among the non-void calibration states: void (revival.cutoff)"
+  ],
+  "predictions": "TBD: the plan's section 6 leans (fail ~25%, tie ~65%, VPD-only-on-unlearned-N ~10%, Fable 2026-10-31) become filed rules after the rehearsal",
+  "departures_from_literature": "plan section 9"
+}

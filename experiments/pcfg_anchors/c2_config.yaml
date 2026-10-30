@@ -1,0 +1,131 @@
+# E55 C2: the param-decomp config for decomposing LOW (the 6-block, width-192 PCFG minGPT).
+# Plan: reports/plans/2026-10-31_plan_e55-c2-vpd.md, section "Settings".
+#
+# Source: param-decomp at 74146b5, param_decomp/experiments/lm/ss_llama_simple_mlp-2L.yaml (the pinned repo's
+# smallest language-model decomposition: a 2-layer, width-128 Llama on SimpleStories; registry expected_runtime 240).
+# Every value below is that file's, except the keys marked OVERRIDE (each with its reason).
+# tests/test_decompose.py checks the copied values against the clone at ../param-decomp when it is present.
+wandb_project: null  # OVERRIDE: no W&B; losses go to the run's log and JSON
+wandb_run_name: null
+wandb_run_name_prefix: ''
+seed: 0
+autocast_bf16: true
+n_mask_samples: 1
+ci_config:
+  mode: global
+  fn_type: global_shared_transformer
+  hidden_dims: null
+  simple_transformer_ci_cfg:
+    d_model: 512
+    n_blocks: 4
+    mlp_hidden_dim:
+    - 2048
+    attn_config:
+      n_heads: 8
+      max_len: 1024
+      rope_base: 10000.0
+sampling: continuous
+sigmoid_type: leaky_hard
+# OVERRIDE: the minGPT's 24 matrices (4 per block). C per matrix = the SS-2L file's C for the matching matrix divided by
+# that matrix's rank there, times the rank here (192 for every matrix):
+#   mlp.0  (192 -> 768) <- c_fc (128 -> 512): 1152 / 128 = 9.0   -> 1728
+#   mlp.2  (768 -> 192) <- down_proj (512 -> 128): 960 / 128 = 7.5 -> 1440
+#   attn.qkv (192 -> 576, fused q, k, v) <- q_proj 288 / 128 = 2.25, k_proj 288 / 64 = 4.5, v_proj 384 / 64 = 6.0
+#                                          (k and v are 64 wide there: 2 key-value heads of 32) -> 432 + 864 + 1152 = 2448
+#   attn.proj (192 -> 192) <- o_proj (128 -> 128): 480 / 128 = 3.75 -> 720
+module_info:
+- module_pattern: blocks.*.mlp.0
+  C: 1728
+- module_pattern: blocks.*.mlp.2
+  C: 1440
+- module_pattern: blocks.*.attn.qkv
+  C: 2448
+- module_pattern: blocks.*.attn.proj
+  C: 720
+identity_module_info: null
+use_delta_component: true
+loss_metric_configs:
+- coeff: 0.001
+  classname: ImportanceMinimalityLoss
+  pnorm: 2.0
+  beta: 0.5
+  p_anneal_start_frac: 0.0
+  p_anneal_final_p: 0.4
+  p_anneal_end_frac: 1.0
+  eps: 1.0e-12
+- coeff: 0.5
+  classname: StochasticReconSubsetLoss
+  routing:
+    type: uniform_k_subset
+- coeff: 0.5
+  optimizer:
+    type: adam
+    beta1: 0.5
+    beta2: 0.99
+    eps: 1.0e-08
+    lr_schedule:
+      start_val: 0.01
+      warmup_pct: 0.025
+      final_val_frac: 1.0
+      fn_type: constant
+  scope:
+    type: per_batch_per_position
+  use_sigmoid_parameterization: false
+  n_warmup_steps: 2
+  classname: PersistentPGDReconLoss
+- coeff: 10000000.0
+  classname: FaithfulnessLoss
+output_loss_type: kl
+components_optimizer:
+  lr_schedule:
+    start_val: 3e-4
+    warmup_pct: 0.0
+    final_val_frac: 0.1
+    fn_type: cosine
+  grad_clip_norm: 0.01
+ci_fn_optimizer:
+  lr_schedule:
+    start_val: 3e-4
+    warmup_pct: 0.0
+    final_val_frac: 0.1
+    fn_type: cosine
+steps: 400000
+batch_size: 64
+faithfulness_warmup_steps: 400
+faithfulness_warmup_lr: 0.001
+faithfulness_warmup_weight_decay: 0.0
+train_log_freq: 200
+eval_freq: 1000
+eval_batch_size: 128
+slow_eval_freq: 10000
+n_eval_steps: 1
+slow_eval_on_first_step: true
+save_freq: null
+# OVERRIDE: the numbers the plan reads only (no histograms or images); CI_L0 grouped by block
+eval_metric_configs:
+- classname: CI_L0
+  groups:
+    block_0: [blocks.0.*]
+    block_1: [blocks.1.*]
+    block_2: [blocks.2.*]
+    block_3: [blocks.3.*]
+    block_4: [blocks.4.*]
+    block_5: [blocks.5.*]
+    total: ['*']
+- classname: CEandKLLosses
+  rounding_threshold: 0.0
+- coeff: null
+  init: random
+  step_size: 0.1
+  n_steps: 20
+  mask_scope: shared_across_batch
+  classname: PGDReconLoss
+ci_alive_threshold: 0.0
+output_extract: null  # OVERRIDE: the minGPT returns its logits as a tensor
+pretrained_model_class: commute.mingpt.GPT  # OVERRIDE: informational; c2.py passes LOW itself
+pretrained_model_path: null
+pretrained_model_name: null  # OVERRIDE: LOW is results/large/a1/pt_LOW.pt
+tokenizer_name: null  # OVERRIDE: the PCFG vocabulary has no tokenizer
+task_config:  # OVERRIDE: informational; the data are LOW's pretraining rows (pcfg.pretrain_batch, prior LOW), 258 tokens
+  task_name: lm
+  max_seq_len: 258

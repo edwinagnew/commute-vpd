@@ -107,8 +107,10 @@ def parse_key(key: str) -> tuple[str, int]:
 
 
 def target_linear(model: Any, name: str) -> nn.Linear:
+    """The decomposed nn.Linear. Its bias, if any, is not decomposed and is never written by `set_target_weights`
+    (2026-10-31, E55 C2: the minGPT's linears have biases; the 67M's and Qwen's have none, as asserted until then)."""
     mod = model.target_model.get_submodule(name)
-    assert isinstance(mod, nn.Linear) and mod.bias is None
+    assert isinstance(mod, nn.Linear)
     return mod
 
 
