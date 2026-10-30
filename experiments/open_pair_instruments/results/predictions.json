@@ -316,5 +316,23 @@
       "noise_floor_R": "float",
       "planted": "{units: [13 flat ids], abar: [13 floats], alpha: float} (w is recomputed from W0 and the rank-1 values)"
     }
+  },
+  "amendment_1": {
+    "date": "2026-10-31",
+    "status": "filed",
+    "why": "Job 1 (cluster job 46774) built the planted wrapper as filed and it could not work: block 3's median answer-position activation is negative, so the 13 lowest-cost above-median units were nearly silent (abar 0.002-0.097); the edit -alpha * w / abar_j scaled them up to ~400x at every position, and the off-answer KL bound (0.577) stopped it at kappa 0.184 against a target of 7.0, below D_void (0.978). Its pruning check (4 of 13, R 0.39) is noise, not a pruning failure. reports/reviews/2026-10-31_review_e55-c3-code.md findings 1-2; plan section 'Amendment 1, 2026-10-31: planted control'. Filing A's text is unchanged; the keys under amendment_1.planted replace constants.planted's keys of the same name and add the floor.",
+    "planted": {
+      "units": "on W0 and the fit half, per block-3 unit j: a_ans = mean GELU activation at the answer position, a_else = mean |activation| over every other position; candidates have a_ans above the block's active_quantile quantile of a_ans and above 0; the 13 planted units are the candidates with the largest a_ans / a_else (ties to the lower id). Single-unit zeroing costs are no longer measured.",
+      "active_quantile": 0.9,
+      "edit": "down_proj columns += -alpha * w (the same alpha for every unit; no 1/abar), w = unit vector of the fit-half mean of (u_rank1(key) - u_mean)",
+      "D_floor": "floor = max(D_void, D_floor_frac x target_D), D_void = D_void_frac x the smallest pole-map mean D, target_D = the median D of the six pole states. Planted D >= floor: the control is built and the pass rules apply. Planted D < floor: the control is void ('control not built'), not failed: the planted pruning pass is not scored and reads 'void'; the pruning instrument then has no positive control and is void as after a miss, reported as 'control not built'. The planted reverse check is unchanged and runs at any D.",
+      "D_floor_frac": 0.5,
+      "D_floor_frac_source": "this project's choice: keeps the planted D within the range of the real pole states (D 4.4-10.6 in job 1)",
+      "pass_unchanged": "found_in_top13_min 10, R_min 0.8 x ceiling, reverse rule: all as filed in constants.planted.pass"
+    },
+    "filing_B_keys_read_by_code": {
+      "planted": "{units: [13 flat ids], alpha: float, floor: float} (replaces filing A's {units, abar, alpha}; w is recomputed from W0 and the rank-1 values)"
+    },
+    "rerun": "job 1's results/measure.json (job 46774) moved to ~/commute-data/stale/reuse-lead/measure_job46774.json (in git history at 2650657); job 1 rerun; every non-planted number must reproduce exactly"
   }
 }
