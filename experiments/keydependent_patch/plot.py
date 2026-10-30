@@ -3,7 +3,7 @@ the original model and 1 for the fine-tuned model. Colours as E54: elicit green,
 
   figures/b2_curves.png  neuron patching: share of G against k, the number of top MLP neurons patched; elicit, matched
                          cipher and own-step cipher (five seeds each, seed range shaded, mean drawn), with E12's copy
-                         and cipher curves (E52) as references and half of G marked (P1, k50 and N16)
+                         and cipher states (E52) as markers at the k E52 measured and half of G marked (P1, k50 and N16)
   figures/p2_shares.png  r and S_lo per state, five seeds, elicit / matched cipher / own-step cipher (P2)
   figures/p3_size.png    the cipher's r at the matched step against its own step, per seed, with P3's band of 0.1 (P3)
 
@@ -50,12 +50,13 @@ def style(ax: Any, title: str, ylabel: str) -> None:
 def b2_curves(st: dict[str, dict[str, Any]]) -> None:
     fig, ax = plt.subplots(figsize=(7.6, 4.6))
     e52 = json.loads((EXP / "baseline_neurons" / "results" / "baseline_neurons.json").read_text())["b2"]
-    for task, label in (("ident32", "earlier copy task (E52), 4 states"), ("rand32", "earlier cipher (E52), 4 states")):
+    for task, label in (("ident32", "earlier copy task (E52), 4 states, own steps"),
+                        ("rand32", "earlier cipher (E52), 4 states, own steps")):
         kind = "copy" if task == "ident32" else "cipher"
         for i, n in enumerate(f"{task}{b}_s{s}" for b in ("", "b") for s in (0, 1)):
-            ks = sorted(int(k) for k in e52[n]["shares"])
-            ax.plot(ks, [e52[n]["shares"][str(k)] for k in ks], color=COLOR[kind], lw=0.8, ls=":", alpha=0.6,
-                    label=label if i == 0 else None)
+            ks = sorted(int(k) for k in e52[n]["shares"])  # E52 measured k <= 256 and 12288 only: markers, no lines
+            ax.scatter(ks, [e52[n]["shares"][str(k)] for k in ks], marker="x" if kind == "copy" else "+", s=22,
+                       color=COLOR[kind], lw=0.9, alpha=0.7, label=label if i == 0 else None, zorder=2)
     for arm, label, kind, ls in ARMS:
         rows = [[st[f"{arm}_{s}"]["b2_shares"][str(k)] for k in GRID_K] for s in SEEDS]
         lo, hi = [min(c) for c in zip(*rows, strict=True)], [max(c) for c in zip(*rows, strict=True)]
