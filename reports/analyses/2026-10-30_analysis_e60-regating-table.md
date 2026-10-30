@@ -13,8 +13,8 @@ baselines line's draft plan, so this run is E60.*
 We put three readings of how much of a fine-tune's gain comes from parts the model already had into one table, for all
 18 saved fine-tunes of the small model. The two readings that use the decomposition rank every fine-tune built to reuse
 above every fine-tune built to learn something new, widely on all three task families; steering keeps the order, but
-narrowly on two. No outside label exists yet for these runs, so this is the table a test of the readings will use,
-not that test.
+narrowly on two. Reuse here means reuse at the level of the decomposition's pieces, and no outside label exists yet
+for these runs, so this is the table a test of the readings will use, not that test.
 
 ## The answer
 
@@ -104,7 +104,8 @@ The tolerance's source is wrong, as the code review noted. It cites E53 Amendmen
 one path against itself. The measured floor between the steering log-odds path and the route split's is E54
 Amendment 1's: absolute differences of 0.0025 to 0.0052 on six states, relative 1.4e-4 to 4.7e-4. Here the absolute
 difference, 0.0013, is under that floor; the relative one, 8.0e-4, is above it, because lowercase's gain is small. The
-control would pass under the absolute floor, and the filed 0.02 was loose by a factor of about 15.
+control would pass under the absolute floor. The filed 0.02 is about 4 to 8 times that floor; it is about 15 times
+this run's own difference.
 
 ## Do the readings put every run built to reuse above every run built to be new?
 
@@ -114,9 +115,11 @@ control would pass under the absolute floor, and the filed 0.02 was loose by a f
 sit above the runs built to be new. Across families the stand-in ratio reads 0.87 to 0.97 on the reuse runs and 0.26
 to 0.41 on the new runs. The share r reads 0.75 to 0.80 against 0.12 to 0.29. Steering also orders all three
 families, and pooled its lowest reuse run, lowercase at 0.30, sits above its highest new run, E54's cipher at 0.23.
-The plan's cut-off at one half, not filed, is drawn dotted. Under it the ratio and r would label all 16 built runs as
-built, and steering would label 14, calling both lowercase runs new. On the open elicit map the ratio and r sit with
-the reuse runs; steering sits between the kinds.
+The plan's cut-off at one half, not filed, is drawn dotted; what follows from it is orientation, not a result. Under
+it the ratio and r would label all 16 built runs as built, and steering would label 14, calling both lowercase runs
+new. On the open elicit map the ratio and r sit with the reuse runs. Steering also places it with the reuse runs by
+order: its 0.380 and 0.394 lie above lowercase's 0.321 and 0.303, inside the reuse runs' range. It reads "new" only
+under the unfiled cut at one half.
 
 | run | kind | stand-in ratio | r | S |
 |---|---|---|---|---|
@@ -150,17 +153,18 @@ Every cell is defined: no denominator fell under its floor. Sources per cell: `t
 Each bar is the lowest run of the higher kind minus the highest run of the new kind, E51's separation quantity; the
 orange tick is the larger seed range within either kind. For the ratio and r every bar lies between 0.46 and 0.63.
 Steering's is 0.53 on copy against random map, but 0.14 on lowercase against the ciphers and 0.15 on the elicit pair.
-Every bar clears its seed range. The caveat is the unit: steering's share is of a log-probability gain, and E54
-Amendment 1 found that in log-odds its gap on the elicit pair falls to 0.05. So the
-decomposition's gap on E53's and E54's pairs is about four times steering's in these units, and larger still in log-odds where measured.
+Every bar clears its seed range. The caveat is the unit: steering's share is of a log-probability gain, the other two
+of a log-odds gain, so steering's bars compare with each other, not with the ratio's or r's. The one same-unit
+comparison is E54 Amendment 1's: on the elicit pair, steering's gap in log-odds is 0.052, against r's 0.54.
 
 | family | ratio gap | r gap | S gap | larger seed range: ratio, r, S |
 |---|---|---|---|---|
-| E46 copy vs random map | 0.458 | 0.472 | 0.532 | 0.096, 0.043, 0.087 |
+| E46 copy vs random map | 0.458 | 0.471 | 0.532 | 0.096, 0.042, 0.087 |
 | E53 lowercase vs ciphers | 0.633 | 0.587 | 0.143 | 0.028, 0.049, 0.069 |
 | E54 elicit vs cipher | 0.615 | 0.516 | 0.152 | 0.047, 0.029, 0.043 |
 
-E53's new kind pools the cipher and the broad cipher, so its range spans two tasks. E54's higher member is the open
+E53's new kind pools the cipher and the broad cipher, and each E46 kind pools two key sets, ident32 and ident32b or
+rand32 and rand32b, so those ranges span two tasks. E54's higher member is the open
 elicit map, not a run built to reuse.
 
 ## Did steering read where we expected on lowercase?
@@ -189,11 +193,12 @@ Every gain is far above $S$'s floor of 0.05, so every $S$ is defined.
 ## What we learned
 
 On the 67M model the two decomposition readings now order three task families the same way, and steering's gap
-narrows on two of them. Lowercase is the first task built to reuse on which steering reads like a task built to be new
-under a fixed cut-off, while the decomposition readings do not. That repeats on plain text what E54 found for the
-elicit map. It does not yet say that the readings track reuse, because every label here but the elicit map's was set by
-how we built the task. For `GOALS.md`'s question, whether post-training teaches new capabilities or strengthens
-existing ones, this widens the base the reading stands on but does not yet earn it a label from outside.
+narrows on two of them. Under the plan's unfiled cut at one half, for orientation only, lowercase is the first task
+built to reuse that steering would call new, while the decomposition readings would not. It does not yet say that the
+readings track reuse, because every label here but the elicit map's was set by how we built the task. Any "reuse"
+they read is reuse at the level of VPD's pieces: a new circuit built from old subcomponents under new CI values would
+read the same. For `GOALS.md`'s question, whether post-training teaches new capabilities or strengthens existing ones,
+this widens the base the reading stands on but does not yet earn it a label from outside.
 
 ## How compelling is the evidence
 
@@ -278,8 +283,9 @@ runs.
 ## Provenance
 
 - Job 46258, MATS cluster `debug` QoS, 15:14:13 to 15:15:42 on 2026-10-30 after start-up, peak GPU 22.5 GB, $0.
-  Log `cluster/logs/commute-truth-table-46258.out` in the main clone. Run at commit `b4cd9e2`; results committed at
-  `d040fb8`. Job 46252 crashed earlier while loading E53's run module, before reading anything; fixed in `1341411`.
+  Log `cluster/logs/commute-truth-table-46258.out` in the main clone. `stage0.json` records commit `b4cd9e2`;
+  `stage1.json` and `table.json` record `957501a`, because a merge landed mid-job, changing no code this run uses.
+  Results committed at `d040fb8`. Job 46252 crashed earlier while loading E53's run module, before reading anything; fixed in `1341411`.
 - States: E46 `regating_table/results/large/{ident32,ident32b,rand32,rand32b}_s{0,1}.pt`; E53
   `performed_anchor/results/large/dW_{lowercase,cipher,broad_cipher}_s{0,1}_step300.pt`; E54
   `keydependent_elicit/results/large/{elicit,cipher}_s{0,1}.pt`; all sha256-checked in stage 0.
