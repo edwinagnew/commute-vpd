@@ -7,9 +7,10 @@ Every setting, rule and threshold: results/predictions.json (filed before the ru
                      on a miss. Then stage 1: W0's value per candidate key, the key draw, the elicit and cipher tables
                      and W0's held-out rates; exit 1 on a miss. -> results/stage0.json, results/stage1.json,
                      <large>/windows_{elicit,cipher}.pt. The sbatch commits both JSON files before job 2.
-  run.py --stage 2   refuses unless stages 0 and 1 passed, stage1.json is committed unchanged and the windows files are
-                     the ones it recorded. Fine-tunes (elicit before cipher), the gain floor, then S and r, then the
-                     filed rules -> results/stage2.json, <large>/{elicit,cipher,cipher_own}_s{0,1}.pt.
+  run.py --stage 2   refuses unless stages 0 and 1 passed, stage1.json and predictions.json are committed unchanged and
+                     the windows files are the ones it recorded. Fine-tunes (elicit before cipher), the gain floor, then S
+                     and r, then the filed rules -> results/stage2.json, <large>/{elicit,cipher,cipher_own}_s{0,1}.pt
+                     (cipher_own_s* is not saved when it is the same state as cipher_s*).
 Every scored number is also printed.
 """
 
@@ -115,9 +116,10 @@ def route_r(ctx: Ctx, t: ST.Task, dW: ST.DW, base: dict[str, Any]) -> dict[str, 
 
 
 def readings(ctx: Ctx, t: ST.Task, dW: ST.DW, g: dict[str, float], base: dict[str, Any]) -> dict[str, Any]:
-    b = ST.b3(ctx.net, t, dW, g)
-    return {"S": b["S"], "layer": b["layer"], "S_block0": b["layers"][0]["score"], "b3_layers": b["layers"],
-            **route_r(ctx, t, dW, base)}
+    b, rr = ST.b3(ctx.net, t, dW, g), route_r(ctx, t, dW, base)
+    # the filed edge case: a share whose gain is within 1e-6 of 0 is nan (here, not in steering.py)
+    return {"S": EL.share_or_nan(b["S"], g["G_score"]), "layer": b["layer"], "S_block0": b["layers"][0]["score"], "b3_layers": b["layers"],
+            **rr, "r": EL.share_or_nan(rr["r"], rr["G_logodds"])}
 
 
 # ----------------------------------------------------------------------------- stage 0
@@ -171,7 +173,11 @@ def select(ctx: Ctx, rows: Tensor, plain: Tensor, marker: int, cands: list[int])
     dist = kv.key_distributions(lambda x: ctx.net.run(x)[0], w, ctx.net.device)
     D = torch.stack([dist.pop(c) for c in cands])
     qual = EL.pick_values(D, cands, plain, tuple(S["value_band"]), tuple(S["value_ranks"]), S["key_specific_ratio"])
-    return EL.draw_keys(qual, cands, S["k"], S["key_draw_seed"]), qual
+    keys = EL.draw_keys(qual, cands, S["k"], S["key_draw_seed"])
+    geo = EL.geo_mean_p(lambda x: ctx.net.run(x)[0], w.tokens, w.half, {x: qual[x]["value"] for x in keys}, ctx.net.device)
+    for x in keys:  # values are chosen by the arithmetic mean "p"; the geometric mean over the same windows is reported beside it
+        qual[x]["p_geo"] = geo[x]
+    return keys, qual
 
 
 def build_tasks(ctx: Ctx, rows: Tensor, marker: int, keys: list[int], values: list[int], ranked: list[int]) -> dict[str, str]:
@@ -261,11 +267,12 @@ def finetunes(ctx: Ctx, ws: dict[str, dict[str, Any]], out: dict[str, Any]) -> d
 
 def check_filed(s1_path: Path, large: Path) -> dict[str, Any]:
     s1 = json.loads(s1_path.read_text())
-    rel = str(s1_path.relative_to(REPO))
     if not s1.get("pass") or not json.loads((RESULTS / "stage0.json").read_text()).get("pass"):
         sys.exit("stage 0 or 1 has not passed: stop and tell the user")
-    if git("ls-files", "--error-unmatch", rel).returncode or git("diff", "--quiet", "HEAD", "--", rel).returncode:
-        sys.exit(f"{rel} is not committed unchanged: commit stage 1 before any fine-tune")
+    for p in (s1_path, PRED):
+        rel = str(p.relative_to(REPO))
+        if git("ls-files", "--error-unmatch", rel).returncode or git("diff", "--quiet", "HEAD", "--", rel).returncode:
+            sys.exit(f"{rel} is not committed unchanged: commit it before any fine-tune")
     if any(sha256(large / f"windows_{n}.pt") != s1["sha256"][n] for n in TASKS):
         sys.exit("a windows file is not the one stage 1 recorded")
     return s1
@@ -278,13 +285,19 @@ def stage2(ctx: Ctx) -> None:
     ws = {n: torch.load(ctx.large / f"windows_{n}.pt", weights_only=False) for n in TASKS}
     tasks = {n: ST.load_task(ctx.net, ctx.large / f"windows_{n}.pt", n, n) for n in TASKS}
     dws = finetunes(ctx, ws, out)
+    meta = out["finetunes"]
     for n, d in dws.items():
+        if n.startswith("cipher_own") and meta["cipher_" + n[-2:]]["same_state"]:
+            continue  # the same weight change as cipher_s*: not saved twice
         torch.save(d, ctx.large / f"{n}.pt")
-        out["finetunes"][n]["sha256"] = sha256(ctx.large / f"{n}.pt")
+        meta[n]["sha256"] = sha256(ctx.large / f"{n}.pt")
     task_of = lambda n: tasks["elicit" if n.startswith("elicit") else "cipher"]
     g = {n: ST.gains(ctx.net, task_of(n), d) for n, d in dws.items()}
-    for grp in ("elicit", "cipher", "cipher_own"):
-        floor = EL.floor_of(g[f"{grp}_s0"]["G"], g[f"{grp}_s1"]["G"], ctx.P["settings"]["floor_min"])
+    # the floor's seed-spread term needs two seeds at the same step: elicit from its own pair, the matched cipher from the
+    # cipher's own-step pair; if the two seeds' steps differ the floor is floor_min alone
+    same_step = lambda grp: meta[f"{grp}_s0"]["step"] == meta[f"{grp}_s1"]["step"]
+    for grp, src in (("elicit", "elicit"), ("cipher", "cipher_own"), ("cipher_own", "cipher_own")):
+        floor = EL.floor_of(g[f"{src}_s0"]["G"], g[f"{src}_s1"]["G"], ctx.P["settings"]["floor_min"], same_step(src))
         for s in SEEDS:
             n = f"{grp}_s{s}"
             out["states"][n] = {**g[n], "floor": floor, "readable": abs(g[n]["G"]) >= floor}
@@ -298,7 +311,12 @@ def stage2(ctx: Ctx) -> None:
             st = out["states"][n]
             log(f"[read {n}] S {st['S']:.4f} (block {st['layer']}, block-0 {st['S_block0']:.1e}) r {st['r']:.4f} G_logodds {st['G_logodds']:.4f}")
         dump("stage2.json", out)
-    out["score"] = EL.score(out["states"], ctx.P["thresholds"])
+        # in nats, not as a share: the new tasks' G_score can be ~2 nats, which lifts E52's ~1e-6-nat rounding to near
+        # stage 0's share tolerance (review of 9be0aab)
+        st = out["states"][n]
+        if st["readable"] and abs(st["S_block0"] * g[n]["G_score"]) > 1e-5:
+            sys.exit(f"[read {n}] block-0 shift over 1e-5 nats: B3 is not reading what stage 0 validated; stop and tell the user")
+    out["score"] = EL.score(out["states"], ctx.P["thresholds"], meta)
     out["stage1_K"] = s1["K"]
     dump("stage2.json", out)
     log(f"[score] {json.dumps(_finite(out['score']))}")
@@ -319,6 +337,7 @@ def main() -> None:
     if not PRED.is_file():
         sys.exit(f"file the predictions first: {PRED}")
     P = json.loads(PRED.read_text())
+    assert P["settings"]["half"] == AN.HALF and P["settings"]["route_batch"] == BATCH, "predictions.json settings disagree with the code"
     a.large.resolve().mkdir(parents=True, exist_ok=True)
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     ctx = make_ctx(a, P)

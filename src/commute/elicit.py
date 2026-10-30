@@ -65,9 +65,30 @@ def matched_step(norms: dict[int, float], target: float) -> int:
     return min(norms, key=lambda s: (abs(norms[s] - target), s))
 
 
-def floor_of(G0: float, G1: float, floor_min: float) -> float:
-    """E52's per-task gain floor over its two seeds: max(floor_min, 2 x |G(s0) - G(s1)|)."""
-    return max(floor_min, 2 * abs(G0 - G1))
+def floor_of(G0: float, G1: float, floor_min: float, same_step: bool) -> float:
+    """E52's per-task gain floor over its two seeds: max(floor_min, 2 x |G(s0) - G(s1)|). The seed-spread term is only
+    meaningful for two seeds read at the same step; when their steps differ the floor is floor_min alone."""
+    return max(floor_min, 2 * abs(G0 - G1)) if same_step else floor_min
+
+
+def share_or_nan(share: float, gain: float, tol: float = 1e-6) -> float:
+    """A share is nan when its denominator (the gain it divides by) is within tol of 0."""
+    return math.nan if abs(gain) < tol else share
+
+
+@torch.no_grad()
+def geo_mean_p(logits_fn: Any, toks: Tensor, half: int, values: dict[int, int], device: str, batch: int = 64) -> dict[int, float]:
+    """Per key x in `values`, exp(mean over the windows in `toks` (N, T) holding x at `half` of log P(values[x] | window))."""
+    sums: dict[int, float] = {}
+    counts: dict[int, int] = {}
+    toks = toks[torch.isin(toks[:, half], torch.tensor(list(values)))]
+    for s in range(0, len(toks), batch):
+        t = toks[s : s + batch].to(device)
+        lp = torch.log_softmax(logits_fn(t)[:, half].float(), -1).double().cpu()
+        for i, k in enumerate(t[:, half].tolist()):
+            sums[k] = sums.get(k, 0.0) + float(lp[i, values[k]])
+            counts[k] = counts.get(k, 0) + 1
+    return {k: math.exp(sums[k] / counts[k]) for k in sums}
 
 
 def readable(x: float | None) -> bool:
@@ -91,9 +112,10 @@ def separation(a: list[float | None], b: list[float | None], min_gap: float) -> 
     return {"verdict": ("a_higher" if gap > 0 else "b_higher") if sep else "none", "gap": gap, "spread": spread, "a": A, "b": B}
 
 
-def score(st: dict[str, dict[str, Any]], th: dict[str, float]) -> dict[str, Any]:
+def score(st: dict[str, dict[str, Any]], th: dict[str, float], meta: dict[str, dict[str, Any]]) -> dict[str, Any]:
     """P1-P3 and the decision tree on stage 2's states: elicit_s{0,1}, cipher_s{0,1} (at the matched norm) and
-    cipher_own_s{0,1} (at its own E12 step). A state's S and r are None when it is under its floor."""
+    cipher_own_s{0,1} (at its own E12 step). A state's S and r are None when it is under its floor. `meta` is stage 2's
+    fine-tune record: elicit_s* "learned", cipher_s* "at_bound" and "same_state" (matched step == own step)."""
     get = lambda name, m: st[name].get(m) if st[name]["readable"] else None
     seeds = ("s0", "s1")
     p1 = separation([get(f"elicit_{s}", "r") for s in seeds], [get(f"cipher_{s}", "r") for s in seeds], th["min_gap"])
@@ -103,18 +125,33 @@ def score(st: dict[str, dict[str, Any]], th: dict[str, float]) -> dict[str, Any]
     p2["status"] = ("unreadable" if p2["verdict"] == "unreadable" else
                     "pass" if p2["verdict"] == "none" and all(float(x) <= th["p2_max_S"] for x in S if x is not None) else "fail")
     diffs = {s: absdiff(get(f"cipher_{s}", "r"), get(f"cipher_own_{s}", "r")) for s in seeds}
-    p3 = {"diff": diffs, "status": "unreadable" if not all(readable(d) for d in diffs.values())
-          else "pass" if all(float(d) < th["p3_tol"] for d in diffs.values() if d is not None) else "fail"}
-    out = {"P1": p1, "P2": p2, "P3": p3, "branch": branch(p1["status"], p2["status"])}
+    same = [s for s in seeds if meta[f"cipher_{s}"]["same_state"]]
+    p3: dict[str, Any] = {"diff": diffs, "same_state": same}
+    if not all(readable(d) for d in diffs.values()):
+        p3["status"] = "unreadable"
+    elif any(float(d) >= th["p3_tol"] for s, d in diffs.items() if s not in same and d is not None):
+        p3["status"] = "fail"
+    else:  # a seed whose matched step is its own step has difference 0 by construction: it cannot pass
+        p3["status"] = "uninformative" if same else "pass"
+    out = {"P1": p1, "P2": p2, "P3": p3, "branch": branch(p1, p2)}
     if p2["status"] == "fail" and p2["verdict"] == "none":
         out["branch"] += " (P2 missed on the S bound only, S does not separate: the tree does not cover it; tell the user)"
-    return out
+    notes = [f"cipher {s} at_bound (matched step 30: the size match is only approximate)" for s in seeds if meta[f"cipher_{s}"]["at_bound"]]
+    notes += [f"elicit {s} did not learn (scored at step 300)" for s in seeds if not meta[f"elicit_{s}"]["learned"]]
+    if same:
+        notes.append(f"size match collapsed on {', '.join(same)} (both tasks at the same step): P1 is read at the cipher's own "
+                     "step, not at a separate matched size; P3 uninformative there")
+    return {**out, "branch": out["branch"] + "".join(f" [{n}]" for n in notes)}
 
 
-def branch(p1: str, p2: str) -> str:
-    if "unreadable" in (p1, p2):
+def branch(p1: dict[str, Any], p2: dict[str, Any]) -> str:
+    a, b = p1["status"], p2["status"]
+    if "unreadable" in (a, b):
         return "unreadable: a state under its floor or a nan; stop and tell the user"
+    rev = [m for m, p in (("P1: cipher r above elicit r", p1), ("P2: cipher S above elicit S", p2)) if p["verdict"] == "b_higher"]
+    if rev:
+        return f"reversed ({'; '.join(rev)}): the tree does not cover it; tell the user"
     return {("pass", "pass"): "VPD's route split reads a kind steering cannot: headline case; next Qwen pair and Jain's readout",
             ("pass", "fail"): "steering not blind to this key-dependence: the objection holds on both sets",
             ("fail", "pass"): "neither tells kind here: r on E12 read input-dependence or size; tell the user before using E12's r",
-            ("fail", "fail"): "steering beats VPD here: the objection holds"}[(p1, p2)]
+            ("fail", "fail"): "steering beats VPD here: the objection holds"}[(a, b)]

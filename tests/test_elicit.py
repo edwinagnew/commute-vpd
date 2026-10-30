@@ -76,6 +76,10 @@ def test_separation_edges() -> None:
     assert EL.separation([0.1, 0.1], [0.8, 0.8], 0.2)["verdict"] == "b_higher"
 
 
+META = {"elicit_s0": {"learned": True}, "elicit_s1": {"learned": True},
+        "cipher_s0": {"at_bound": False, "same_state": False}, "cipher_s1": {"at_bound": False, "same_state": False}}
+
+
 def state(r: float | None, S: float | None, ok: bool = True) -> dict[str, object]:
     return {"r": r, "S": S, "readable": ok}
 
@@ -83,28 +87,73 @@ def state(r: float | None, S: float | None, ok: bool = True) -> dict[str, object
 def test_score_headline_and_edges() -> None:
     st = {"elicit_s0": state(0.8, 0.1), "elicit_s1": state(0.75, 0.15), "cipher_s0": state(0.3, 0.12),
           "cipher_s1": state(0.28, 0.1), "cipher_own_s0": state(0.32, 0.1), "cipher_own_s1": state(0.3, 0.1)}
-    sc = EL.score(st, TH)
+    sc = EL.score(st, TH, META)
     assert (sc["P1"]["status"], sc["P2"]["status"], sc["P3"]["status"]) == ("pass", "pass", "pass")
     assert sc["branch"].startswith("VPD's route split")
     # one S above the bound, no separation: P2 fails on the bound only, flagged
-    sc = EL.score({**st, "elicit_s0": state(0.8, 0.35)}, TH)
+    sc = EL.score({**st, "elicit_s0": state(0.8, 0.35)}, TH, META)
     assert sc["P2"]["status"] == "fail" and "bound only" in sc["branch"]
     # a state under its floor: P1 unreadable, the tree says stop
-    sc = EL.score({**st, "cipher_s1": state(0.28, 0.1, ok=False)}, TH)
+    sc = EL.score({**st, "cipher_s1": state(0.28, 0.1, ok=False)}, TH, META)
     assert sc["P1"]["status"] == "unreadable" and sc["branch"].startswith("unreadable")
     # P3: a difference exactly at the tolerance fails (strict; 0.125 is exact in binary); nan r is unreadable
     exact = {**TH, "p3_tol": 0.125}
     tie = {**st, "cipher_s0": state(0.375, 0.12), "cipher_own_s0": state(0.5, 0.1), "cipher_s1": state(0.375, 0.1),
            "cipher_own_s1": state(0.375, 0.1)}
-    assert EL.score(tie, exact)["P3"]["status"] == "fail"
-    assert EL.score({**tie, "cipher_own_s0": state(0.49, 0.1)}, exact)["P3"]["status"] == "pass"
-    sc = EL.score({**st, "cipher_own_s1": state(math.nan, 0.1)}, TH)
+    assert EL.score(tie, exact, META)["P3"]["status"] == "fail"
+    assert EL.score({**tie, "cipher_own_s0": state(0.49, 0.1)}, exact, META)["P3"]["status"] == "pass"
+    sc = EL.score({**st, "cipher_own_s1": state(math.nan, 0.1)}, TH, META)
     assert sc["P3"]["status"] == "unreadable"
-    # reversed: cipher r above elicit fails P1
-    sc = EL.score({**st, "elicit_s0": state(0.05, 0.1), "elicit_s1": state(0.05, 0.1)}, TH)
+
+
+def test_p3_same_state_is_uninformative() -> None:
+    st = {"elicit_s0": state(0.8, 0.1), "elicit_s1": state(0.75, 0.15), "cipher_s0": state(0.3, 0.12),
+          "cipher_s1": state(0.28, 0.1), "cipher_own_s0": state(0.3, 0.12), "cipher_own_s1": state(0.28, 0.1)}
+    same = {**META, "cipher_s0": {"at_bound": False, "same_state": True}, "cipher_s1": {"at_bound": False, "same_state": True}}
+    sc = EL.score(st, TH, same)
+    assert sc["P3"]["status"] == "uninformative" and sc["P3"]["same_state"] == ["s0", "s1"]
+    assert "size match collapsed" in sc["branch"] and sc["branch"].startswith("VPD's route split")
+    # one seed same_state, the other informative and passing: still not a pass; informative and failing: fail
+    one = {**META, "cipher_s0": {"at_bound": False, "same_state": True}}
+    assert EL.score(st, TH, one)["P3"]["status"] == "uninformative"
+    far = {**st, "cipher_own_s1": state(0.6, 0.1)}
+    assert EL.score(far, TH, one)["P3"]["status"] == "fail"
+
+
+def test_reversed_and_flags_in_branch() -> None:
+    st = {"elicit_s0": state(0.05, 0.1), "elicit_s1": state(0.05, 0.1), "cipher_s0": state(0.5, 0.1),
+          "cipher_s1": state(0.5, 0.1), "cipher_own_s0": state(0.5, 0.1), "cipher_own_s1": state(0.5, 0.1)}
+    sc = EL.score(st, TH, META)
     assert sc["P1"]["verdict"] == "b_higher" and sc["P1"]["status"] == "fail"
+    assert sc["branch"].startswith("reversed") and "P1" in sc["branch"] and "steering beats" not in sc["branch"]
+    # reversed P2 (cipher S above elicit S) with P1 passing is not "steering not blind"
+    st2 = {**st, "elicit_s0": state(0.9, 0.1), "elicit_s1": state(0.9, 0.1), "cipher_s0": state(0.1, 0.6),
+           "cipher_s1": state(0.1, 0.6)}
+    sc = EL.score(st2, TH, META)
+    assert sc["P2"]["verdict"] == "b_higher" and sc["branch"].startswith("reversed") and "P2" in sc["branch"]
+    flagged = {"elicit_s0": {"learned": False}, "elicit_s1": {"learned": True},
+               "cipher_s0": {"at_bound": True, "same_state": False}, "cipher_s1": {"at_bound": False, "same_state": False}}
+    sc = EL.score(st2, TH, flagged)
+    assert "cipher s0 at_bound" in sc["branch"] and "elicit s0 did not learn" in sc["branch"]
 
 
 def test_floor() -> None:
-    assert EL.floor_of(3.0, 3.01, 0.05) == 0.05
-    assert math.isclose(EL.floor_of(3.0, 3.5, 0.05), 1.0)
+    assert EL.floor_of(3.0, 3.01, 0.05, True) == 0.05
+    assert math.isclose(EL.floor_of(3.0, 3.5, 0.05, True), 1.0)
+    # seeds at different steps: the spread term is not used
+    assert EL.floor_of(3.0, 3.5, 0.05, False) == 0.05
+
+
+def test_share_or_nan_and_geo_mean() -> None:
+    assert math.isnan(EL.share_or_nan(0.5, 5e-7)) and EL.share_or_nan(0.5, 1e-6) == 0.5
+    toks = torch.zeros(4, 3, dtype=torch.long)
+    toks[:, 1] = torch.tensor([7, 7, 8, 9])  # key at half = 1
+    toks[:, 0] = torch.tensor([0, 1, 0, 0])  # P(token 0) is 0.5 when this is 0, else 0.125
+
+    def logits(t: torch.Tensor) -> torch.Tensor:
+        p0 = torch.where(t[:, 0] == 0, 0.5, 0.125)
+        return torch.log(torch.stack([p0, 1 - p0], -1))[:, None, :].expand(-1, 3, -1)
+
+    out = EL.geo_mean_p(logits, toks, 1, {7: 0, 8: 0}, "cpu")
+    assert set(out) == {7, 8}  # key 9 is not asked for
+    assert math.isclose(out[7], 0.25, rel_tol=1e-6) and math.isclose(out[8], 0.5, rel_tol=1e-6)
