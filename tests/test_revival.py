@@ -111,3 +111,72 @@ def test_nuisance_counted_on_the_instrument_states_only():
     labels = dict(truth) | {"s0": "void", "s1": "void"}  # n = 10, agree 10
     sc = rv.score(labels, truth, {"copy": dict(truth)}, rv.MARGIN_RUN)
     assert sc["nuisance_agree"] == {"copy": 10} and sc["passes_bar"] and sc["passes"] is False  # 10 < 10 + 1
+
+
+# ---- C1b rules (predictions_c1b.json edge cases E1-E9) ----
+
+
+def cut(xs_existing: list, xs_new: list, high: bool = True) -> dict:
+    r = {f"e{i}": x for i, x in enumerate(xs_existing)} | {f"n{i}": x for i, x in enumerate(xs_new)}
+    lab = {s: "existing" if s[0] == "e" else "new" for s in r}
+    return rv.cutoff(r, lab, high)
+
+
+def test_cutoff_separated_takes_the_gap_midpoint():
+    c = cut([0.5, 0.7, 0.9], [0.0, 0.1, 0.2])
+    assert c["separated"] and c["c"] == pytest.approx(0.35) and c["balanced_accuracy"] == 1.0
+    r = cut([100, 200, 300], [900, 1000, 1200], high=False)  # reverse: low side existing
+    assert r["separated"] and r["c"] == pytest.approx(600) and rv.label_by_cutoff(600, r) == "existing"
+    assert rv.label_by_cutoff(601, r) == "new" and rv.label_by_cutoff(0.35, c) == "existing"  # inclusive at c
+
+
+def test_cutoff_overlap_maximises_balanced_accuracy_ties_to_median():
+    c = cut([0.3, 0.6, 0.8], [0.1, 0.4, 0.5])  # overlap; BA 5/6 at 0.55 only
+    assert not c["separated"] and c["balanced_accuracy"] == pytest.approx(5 / 6) and c["c"] == pytest.approx(0.55)
+    low = cut([1, 2, 5], [0, 3, 4])  # BA 2/3 at 0.5 and 4.5, both 2 from the median 2.5 -> the lower
+    assert low["c"] == pytest.approx(0.5) and low["balanced_accuracy"] == pytest.approx(2 / 3)
+    near = cut([1, 2, 4.5], [0, 3, 4])  # BA 2/3 at 0.5 and 4.25; median 2.5 -> 4.25 (1.75 away vs 2)
+    assert near["c"] == pytest.approx(4.25)
+    one = cut([0, 1, 3], [-1, 2, 4])  # BA 2/3 at -0.5 only
+    assert one["c"] == pytest.approx(-0.5)
+
+
+def test_cutoff_void_cases_and_dropped_readings():
+    assert cut([0.5, 0.7], [0.0, 0.1, 0.2])["void"].startswith("fewer than 3")
+    assert cut([0.5, 0.7, None], [0.0, 0.1, 0.2])["void"].startswith("fewer than 3")  # a void is dropped, not imputed
+    assert cut([0.5, 0.7, float("nan"), 0.8], [0.0, 0.1, 0.2])["dropped"] == ["e2"]
+    assert cut([0.3, 0.3, 0.3], [0.3, 0.3, 0.3])["void"] == "every reading equal"
+    assert cut([], [])["void"].startswith("fewer than 3")
+    v = cut([0.5, 0.7], [0.0, 0.1, 0.2])
+    assert rv.label_by_cutoff(0.9, v) == "void" and rv.label_by_cutoff(None, cut([1, 2, 3], [0, -1, -2])) == "void"
+
+
+def test_cutoff_reversed_classes_still_gives_a_number():
+    c = cut([0.0, 0.1, 0.2], [0.5, 0.7, 0.9])  # existing all low on a high-is-existing instrument
+    assert not c["separated"] and c["balanced_accuracy"] <= 0.5 and c["c"] is not None
+
+
+def test_ceiling_best_threshold_direction_and_constants():
+    truth = {"a": "existing", "b": "existing", "c": "new", "d": "new"}
+    lr = {"a": 1e-5, "b": 1e-5, "c": 1e-4, "d": 1e-4}
+    best = rv.ceiling(lr, truth)
+    assert best["agree"] == 4 and best["small_is_existing"] and best["threshold"] == pytest.approx(5.5e-5)
+    flipped = rv.ceiling({k: -v for k, v in lr.items()}, truth)  # large -> existing found as well
+    assert flipped["agree"] == 4 and not flipped["small_is_existing"]
+    same = rv.ceiling(dict.fromkeys(truth, 1.0), truth)  # one value: the constants only
+    assert same["agree"] == 2
+    lop = {"a": "existing", "b": "new", "c": "new"}
+    assert rv.ceiling({"a": 1.0, "b": 1.0, "c": 1.0}, lop)["agree"] == 2  # constant 'new' = the majority
+    assert rv.ceiling({}, {})["agree"] == 0
+
+
+def test_ceiling_balanced_cells_sit_near_half():
+    truth, vals = {}, {}
+    for i, (lr, task) in enumerate([(1e-4, "P"), (1e-4, "N"), (1e-5, "P"), (1e-5, "N")] * 3):
+        truth[f"s{i}"], vals[f"s{i}"] = ("existing" if task == "P" else "new"), lr
+    assert rv.ceiling(vals, truth)["agree"] == 6  # 12 states, each lr holds both labels
+
+
+@pytest.mark.parametrize(("n", "a"), [(24, 17), (21, 15), (18, 13), (16, 12)])
+def test_pass_bar_reproduces_the_c1b_table(n: int, a: int):
+    assert rv.pass_bar(n, n // 2) == a
