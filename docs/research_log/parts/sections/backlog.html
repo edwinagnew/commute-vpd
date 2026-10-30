@@ -4,8 +4,8 @@
 <div class="cards">
   <div class="card"><div class="k">Maps not yet run</div><ul>
     <li><strong>LoRA split: run as E14.</strong> Remaining: rerun the split stage on the cluster to recover the per-subcomponent updates, lost with the pod.</li>
-    <li><strong>Scaled adjoint state as a map (from E14).</strong> A second seed and two more tasks ran in E31: an SGD fine-tune's kept behaviour falls along training, and at matched size the faster run keeps 0.08 to 0.09 more, size alone not isolated (E47). The unscaled variant ran as E31 Amendment 3: it keeps the behaviour but damages the rest of the model. Remaining: a scale between c and 1, its off-target damage on Pile text, the cipher tasks; through the design check.</li>
-    <li><strong>Exact weights by teacher training held near the fine-tuned weights (2026-10-29).</strong> E43's remainder at step 10 was 5.1 times the fine-tune's squared size and pointed against teacher training's own change (cosine -0.90), so it was mostly teacher training's overshoot; a weight-space penalty or a smaller change would make it small by construction. New method (E43).</li>
+    <li><strong>Scaled adjoint state as a map (from E14).</strong> E31 ran a second seed and two more tasks (the kept behaviour falls along training, E47); the unscaled variant keeps the behaviour but damages the rest of the model. Remaining: a scale between c and 1, the cipher tasks; through the design check.</li>
+    <li><strong>Exact weights by teacher training held near the fine-tuned weights (2026-10-29).</strong> E43's remainder at step 10 was mostly teacher training's overshoot (cosine -0.90); a weight-space penalty would make it small by construction. New method (E43).</li>
     <li><strong>Where a fine-tune writes (from E14).</strong> Its output directions against the dead pieces' span and against the write directions of the pieces Γ switches on at the trigger; through the design check.</li>
     <li><strong>Updating Γ: E15, being fixed.</strong> Two protocols took the unchanged model off the floor; the refit's attacker (0.42 nats) is weaker than the harness's (0.70). The fix is an attacker matched to the harness's.</li>
     <li><strong>The strong version:</strong> warm-start a fresh VPD run on the updated weights against a zero-update warm start and the cross-seed baseline.</li></ul></div>
@@ -17,8 +17,8 @@
     <li><strong>The Δ-share seed spread at the LoRA's plateau</strong> (E9; the fine-tune control on one card was run in E14).</li>
     <li><strong>The split states' off-target damage and every state's sparsity loss (from E16).</strong> Not measured; the sparsity loss is part of the weak version.</li>
     <li><strong>The adversary's budget.</strong> Holds from 20 to 160 steps under the paper's step rule (E20, E23). Left: a second seed on the updated models; per-row masks, restarts.</li>
-    <li><strong>Induction, for further consideration</strong> (user, 2026-10-22): a fine-tune that adds something new to a known mechanism would show new behaviour attaching to known machinery. Cheap first check: whether the copy task's switched-on set includes the one query and one key subcomponent the VPD paper decomposes in layer 1.</li>
-    <li><strong>Reset plan E46</strong> (<code>reports/plans/2026-10-28_plan_regating-line-reset.md</code>): stage 0, one table in nats on existing states with nulls (non-learning, other-target, random and sign-flipped updates); stage 0 is done (E46); one more $0 job on the nulls runs before stage 1 (decided 2026-10-29), and stage 1 also waits on E44 and both E45 anchors.</li>
+    <li><strong>Induction, for further consideration</strong> (user, 2026-10-22): a fine-tune adding something new to a known mechanism would attach new behaviour to known machinery. First check: whether the copy task's switched-on set includes the layer-1 query and key subcomponents the VPD paper decomposes.</li>
+    <li><strong>Reset plan E46</strong> (<code>reports/plans/2026-10-28_plan_regating-line-reset.md</code>): stage 0 is done (E46); stage 1 waits on E44 and both E45 anchors.</li>
 </ul></div>
   <div class="card"><div class="k">Mechanism and definitions
 </div><ul>
