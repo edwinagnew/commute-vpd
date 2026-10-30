@@ -462,3 +462,4 @@ Figures already published (their sources, for a re-upload):
 - "fig/e58_a7_r.png": "experiments/open_pair/figures/a7_r.png"
 - "fig/e55_c3_poles.png": "experiments/open_pair_instruments/figures/c3_poles.png"
 - "fig/e55_c3_positions.png": "experiments/open_pair_instruments/figures/c3_positions.png"
+- "fig/e55_ladder_steps.png": "experiments/open_pair_instruments/figures/ladder_steps.png"
