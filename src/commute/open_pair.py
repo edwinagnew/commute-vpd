@@ -503,3 +503,20 @@ def comparable(pairs: Sequence[tuple[Any, Any]], tol: float) -> bool:
     there is at least one pair and every pair is finite and within tol; then Amendment 3's seed-0 map reads are used,
     else they are "not_comparable" and the within-key rule is scored on seeds 1-2 only."""
     return bool(pairs) and all(finite(a) and finite(b) and abs(a - b) <= tol for a, b in pairs)
+
+
+# ----------------------------------------------------------------------------- Amendment 5 (2026-10-30)
+# experiments/open_pair/results/predictions_amend5.json; plan section "Amendment 5"; reported, not scored
+
+
+def shuffle_sentence(r0: Any, r_new: Sequence[Any], th: dict[str, Any]) -> str:
+    """The write-up rule for the shuffle's r at step 30 (Fable, reports/plans/2026-10-30_advice_e58a4-synthesis-FABLE.md,
+    item 3), r0 = seed 0's, r_new = seeds 1 and 2. "unreadable" unless all three are finite; "change_it" iff every new
+    seed > change_cut (0.55); else "midpoint" iff any seed >= cut (0.5); else "mostly_key_conditional" (the three-seed
+    mean is then under the cut)."""
+    rs = [r0, *r_new]
+    if not r_new or not all(finite(r) for r in rs):
+        return "unreadable"
+    if all(r > th["change_cut"] for r in r_new):
+        return "change_it"
+    return "midpoint" if max(rs) >= th["cut"] else "mostly_key_conditional"

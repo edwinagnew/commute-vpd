@@ -1,0 +1,39 @@
+{
+  "experiment": "E58 open_pair, Amendment 5",
+  "filed": "2026-10-30, after job 46426 and before any run of amend5.py; never edited after the run. Reported, not scored: the scored shuffle read is seed 0's (Amendment 4, cipher_like at r 0.475)",
+  "plan": "reports/plans/2026-10-30_plan_e58-open-pair.md, section 'Amendment 5'",
+  "spec": "reports/plans/2026-10-30_advice_e58a4-synthesis-FABLE.md, item 3 and 'What would change this advice'",
+  "code": "experiments/open_pair/amend5.py (no new measurement code: amend4.train, amend4.over_gate, amend3.read); the write-up rule open_pair.shuffle_sentence, edge cases in tests/test_open_pair.py",
+  "settings": {
+    "half": 20,
+    "new_seeds": [
+      1,
+      2
+    ],
+    "map": "Amendment 3's shuffled elicit map (128 keys, results/large/amend3/windows_shuffle_*.pt, sha256 checked)",
+    "finetune": "keydep.finetune, E54's recipe, every step 1-30 and 100, 300 kept",
+    "reads": "label reads from step 10 until G_spec >= G_min (open_pair.pick_cipher_step, as Amendment 4); r, ratio, G_spec, x at step 30 and at that step (amend3.read with the route split)",
+    "seed_0": "amend4.json shuffle and shuffle_gate_step (job 46426): gate step 15, r 0.388; step 30 r 0.475, ratio 0.650, G_spec 17.5"
+  },
+  "thresholds": {
+    "G_min": 5.147937448121369,
+    "n_boot": 2000,
+    "boot_seed": 0,
+    "cut": 0.5,
+    "k_sd": 3,
+    "ratio_floor": 0.1,
+    "block0_nats": 1e-05
+  },
+  "rule": {
+    "cut": 0.5,
+    "change_cut": 0.55,
+    "what": "open_pair.shuffle_sentence on r at step 30 (seed 0 from amend4.json, seeds 1-2 here): 'unreadable' unless all three are finite; 'change_it' iff both new seeds > 0.55 (Fable's 'what would change it': the claim's first clause becomes 'targets the model can produce somewhere'); else 'midpoint' iff any seed >= 0.5 ('the shuffle sits at the midpoint between the bands: r reads the key-to-guess relation and the token kind in about equal parts'); else 'mostly_key_conditional' (the three-seed mean is under 0.5: 'mostly the key-conditional guess, partly the token kind' stands)",
+    "source": "Fable item 3, fixed before the run"
+  },
+  "expected": {
+    "r30": "0.40-0.55 per seed (seed 0 0.475; cipher 0.29-0.31, elicit 0.72-0.74)",
+    "gate_step": "14-16 (seed 0: 15)",
+    "G_spec_30": "about 16-18 (seed 0 17.5)"
+  },
+  "stops": "the shuffle windows' sha256 differ from amend3.json; a block-0 shift over 1e-5 nats (amend3.read). A seed never reaching the gate by step 30 is reported (read at 30 only), not a stop"
+}

@@ -930,3 +930,31 @@ A fresh review of 0ce43b1 said to run it as is, after three small changes. Nothi
    cross-map D_r beside Amendment 3's tol_r of 0.05 (`D_r_beside_amend3_tol_r`), so a reader can judge the bound.
 3. **The shuffle's G_spec** is reported beside its label, x, r and ratio at every step read (`amend4.json` → `shuffle`),
    so a "cipher_like" r can be told apart from an under-trained state.
+
+## Amendment 5 (2026-10-30, after job 46426): the shuffle at seeds 1 and 2, reported, not scored
+
+*Fable's item 3 (`reports/plans/2026-10-30_advice_e58a4-synthesis-FABLE.md`), adopted by the lead. Code
+`experiments/open_pair/amend5.py`. It adds no new measurement code: it calls Amendment 4's `train` and `over_gate` and
+Amendment 3's `read` on Amendment 3's shuffle windows. The write-up rule is `open_pair.shuffle_sentence` (edge cases in
+`tests/test_open_pair.py`; 39 pass), held in `results/predictions_amend5.json`. Job: `sbatch cluster/open_pair.sbatch
+amend5`. Output `results/amend5.json` only. Filed; nothing run.*
+
+**Design check.** Goal and nearest tried: the synthesis's sentence on what r reads. Amendment 4's shuffle read r 0.475
+on one seed, 0.025 under the cut. This is a $0 replication (approved class 2) that fixes the sentence's wording; it is
+not scored, because the filed read is seed 0's.
+
+**What runs.** Seeds 1 and 2 of the shuffled elicit map, 128 keys, E54's recipe. Each seed is read at step 30 and at its
+first step over the gate from 10, giving r, ratio, G_spec and x, reported beside seed 0 from `amend4.json` (gate step
+15: r 0.388; step 30: r 0.475, ratio 0.650, G_spec 17.5). One `debug` L40 job of about 5 min, with no weights saved.
+It stops if the shuffle windows' sha256 differs from amend3.json's or on a block-0 shift.
+
+**The write-up rule, fixed now.** On r at step 30 over seeds 0-2, in order:
+- if both new seeds are over 0.55, the result is Fable's "what would change it": the claim's first clause becomes
+  "targets the model can produce somewhere";
+- else, if any seed is 0.5 or over: "the shuffle sits at the midpoint between the bands: r reads the key-to-guess
+  relation and the token kind in about equal parts";
+- else, when the three-seed mean is under 0.5: "mostly the key-conditional guess, partly the token kind" stands;
+- if any of the three is missing or not finite: unreadable.
+
+Ties: 0.5 counts as "at or over", and 0.55 does not count as "over". The tests cover each branch, the ties, nan, None
+and no new seeds. Expected: r 0.40-0.55 per seed, with the gate step at 14-16.
