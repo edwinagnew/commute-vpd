@@ -186,6 +186,116 @@ def test_validated_edges():
     assert not qr.validated([5.0, 4.0], [0.5, 1.0], 2.0)["validated"]  # 2 se = 4 > 3.75
     assert not qr.validated([2.0, 2.0], [1.0, 1.0], 0.5)["validated"]  # gap equals the bar: strict
 
+def test_at_least_and_anchor_row():
+    assert [qr.at_least(x, 0.5) for x in (0.5, 0.4999999999, 0.49, None, NAN, math.inf)] == [
+        "holds", "holds", "misses", "unscored", "misses", "misses"]  # 9-place rounding; NaN, inf miss
+    r = qr.anchor_row("regating_share", [0.9, 0.8], [0.3, 0.4], 0.0, 0.5)
+    assert r["validated"] and r["relative"] == "holds" and r["anchor1_per_seed"] == ["holds", "holds"]
+    assert "announce" not in r
+    rev = qr.anchor_row("placement", [0.1, 0.2], [0.6, 0.7], 0.0)
+    assert rev["relative"] == "misses" and rev["announce"].startswith("REVERSAL: placement")
+    assert "anchor1_per_seed" not in rev
+    one = qr.anchor_row("behaviour_kept", [0.9, None], [0.3, 0.4], 0.0, 0.8)  # an anchor seed unscored
+    assert not one["validated"] and one["relative"] == "not validated"
+    assert one["anchor1_per_seed"] == ["holds", "unscored"]
+    nan = qr.anchor_row("behaviour_kept", [0.9, NAN], [0.3, 0.4], 0.0, 0.8)
+    assert nan["relative"] == "not validated" and nan["anchor1_per_seed"] == ["holds", "misses"]
+    assert qr.anchor_row("p", [3.0, 3.0], [1.0, 1.0], None)["relative"] == "not validated"  # no s.e.
+    assert qr.anchor_row("p", [3.0, 3.0], [1.0, 1.0], 1.0)["relative"] == "not validated"  # gap 2 = 2 se: strict
+    assert qr.anchor_row("p", [3.0, 3.0], [1.0, 1.0], 0.99)["relative"] == "holds"
+
+
+@pytest.mark.parametrize("x,reads", [(0.0, "like anchor 1"), (0.25, "like anchor 1"), (0.5, "between"),
+                                     (0.75, "like anchor 2"), (1.5, "like anchor 2"), (1.6, "like neither"),
+                                     (-0.5, "like anchor 1"), (-0.6, "like neither"), (None, "missing"),
+                                     (NAN, "missing")])
+def test_t_read(x, reads):  # x is t: the value 1 + 2t on anchor means 1 and 3
+    assert qr.t_read(None if x is None else 1.0 + 2.0 * x, 1.0, 3.0)["reads"] == reads
+    assert qr.t_read(2.0, 1.0, 1.0)["reads"] == "missing"  # equal anchor means: no axis
+
+
+def test_kept_readings():
+    k = qr.kept({"K00": 1.0, "K01": 0.2, "K10": 0.6, "K11": 0.1, "K0": 0.0})
+    assert k["status"] == "scored" and k["A"] == pytest.approx(0.9) and k["B"] == pytest.approx(0.4)
+    assert qr.kept({"K00": 0.11, "K10": 0.1, "K11": 0.1, "K0": 0.07})["status"] == "unscored"  # 0.04 < 0.05
+    assert qr.kept({"K00": 0.12, "K10": 0.1, "K11": 0.1, "K0": 0.07})["status"] == "scored"  # 0.05: inclusive
+    assert qr.kept({"K00": 0.05, "K10": 0.1, "K11": 0.1, "K0": 0.07})["status"] == "unscored"  # K00 < K0
+    assert qr.kept({"K00": 1.0, "K10": NAN, "K11": 0.1, "K0": 0.0})["status"] == "nan"
+    assert qr.kept({"K00": 1.0})["status"] == "nan"
+
+
+def point(read_step, matched, near_step=None):
+    return {"read": {"step": read_step, "kl": 0.6 if read_step else None, "matched": matched},
+            "nearest_unlearned": {"step": near_step, "kl": 0.3 if near_step else None, "matched": False}}
+
+
+def test_d_pick():
+    assert qr.d_pick("a1_s0", point(37, True)) == {"step": 37, "kl": 0.6, "matched": True, "why": "matched"}
+    assert qr.d_pick("a1_s0", point(100, False))["step"] is None  # anchor 1 unmatched: not read (section 11)
+    assert qr.d_pick("a1_s1", point(None, False, 4))["step"] is None
+    assert qr.d_pick("a1_s0", None)["step"] is None  # E not run
+    u = qr.d_pick("own2_s0", point(100, False, 4))  # the nearest learned state, unmatched
+    assert u["step"] == 100 and not u["matched"] and u["why"] == "unmatched observation"
+    assert qr.d_pick("null_s0", point(None, False, 8))["step"] == 8  # nothing learned: the nearest unlearned
+    assert qr.d_pick("null_s0", point(None, False, None))["step"] is None
+
+
+def test_inputs_missing():
+    picks = {"a1_s0": {"step": 37}, "a1_s1": {"step": None}, "own2_s0": {"step": 100}, "null_s0": {"step": 8}}
+    c = {"e40": {"S": 1}, "gold_s0": {"S": 1}, "a2long_s0": {"S": 1}, "a2long_s1": {"S": 1}}
+    d = {"a1_s0": {"pick": {"step": 37}}, "own2_s0": {"pick": {"step": 100}}, "null_s0": {"pick": {"step": 8}}}
+    assert qr.inputs_missing(c, d, picks) == []  # a1_s1 has no step: not waited for (scored a miss)
+    assert qr.inputs_missing(c | {"gold_s0": {}}, d, picks) == ["C_gold_s0.json missing"]
+    assert qr.inputs_missing(c, d | {"own2_s0": {}}, picks) == ["D_own2_s0.json missing (E45 picks step 100)"]
+    stale = qr.inputs_missing(c, d | {"null_s0": {"pick": {"step": 12}}}, picks)  # E45 rescored since D read it
+    assert stale == ["D_null_s0.json read step 12, E45 now picks 8 (stale)"]
+
+
+def test_one_anchor1_seed_matched():
+    """The unmatched seed is missing (NaN): its per-seed rule misses and the relation cannot be validated."""
+    r = qr.anchor_row("regating_share", [0.9, NAN], [0.3, 0.4], 0.0, 0.5)
+    assert r["anchor1_per_seed"] == ["holds", "misses"] and not r["validated"]
+    assert r["relative"] == "not validated" and "announce" not in r
+
+
+def test_edges_table():
+    o = lambda x, sd=2.0: {"o": x, "sd": sd, "q95": 10.0, "q99": 12.0}
+    R = {"a1_s0": {"size_S": 30, "ov": {"P": o(11), "T": o(5)}, "values": {"e_P": 1.0, "regating": NAN}},
+         "a2long_s0": {"size_S": 30, "ov": {"P": o(5), "T": o(11)}, "values": {"e_P": 0.1, "regating": 0.3}},
+         "a2long_s1": {"size_S": 10, "ov": {"P": o(5, 0.0), "T": o(9)}, "values": {"e_P": None, "regating": 0.2}}}
+    e = {r["case"]: r["fired"] for r in qr.edges(R, (("a1_s0", "a1_s1"), ("a2long_s0", "a2long_s1")), 25, 24,
+                                                 {"T": 30, "L": 19, "C": 30}, 3)}
+    assert len(e) == 9
+    assert e["|S| < max(20, 5 x split-half count)"] == ["a2long_s1"]
+    assert e["|T|, |L| or |C| < 20"] == ["L"]
+    assert e["|S_prompt| below max(20, 5 x split-half count)"] is True
+    assert e["draw sd of 0"] == ["a2long_s1:P"]
+    assert e["o_P between q(0.95) and q(0.99)"] == ["a1_s0"]
+    assert e["o_T above q(0.95) for anchor 2"] == ["a2long_s0"]
+    assert e["an anchor seed unscored"] == ["a1_s1", "a2long_s1"]  # a1_s1 not read; a2long_s1's e_P unscored
+    assert e["NaN or missing"] == ["a1_s0:regating"]
+    assert e["a think row whose trace does not close </think> in 2048 tokens (rows dropped)"] == 3
+
+
+def test_overlap_gap_boot():
+    """The identity resample reproduces the whole-row S and e; two anchor-1 states sharing X read a positive gap."""
+    g = torch.Generator().manual_seed(0)
+    n_rows, n, row_len = 8, 400, 10
+    site_of = torch.arange(4).repeat_interleave(100)
+    g0 = (torch.rand(n_rows, n, generator=g) < 0.05).to(torch.int16) * row_len  # some on at W0
+    X = torch.rand(n, generator=g) < 0.3
+    near = (X & ~qr.gated(g0.long().sum(0), n_rows * row_len)).to(torch.int16) * row_len  # S = X off at W0
+    far = (torch.rand(n_rows, n, generator=g) < 0.3).to(torch.int16) * row_len
+    g1 = [near.expand(n_rows, n).clone(), near.expand(n_rows, n).clone(), far, far.clone()]
+    ident = [list(range(n_rows))]
+    pool = ~qr.gated(g0.long().sum(0), n_rows * row_len)
+    e = [qr.overlap(qr.gated(m.long().sum(0), n_rows * row_len) & pool, X, site_of, 4, pool)["e"] for m in g1]
+    gap = qr.overlap_gap_boot(g1, g0, X, site_of, 4, ident, row_len)
+    assert gap == [pytest.approx((e[0] + e[1]) / 2 - (e[2] + e[3]) / 2)] and gap[0] > 3
+    gaps = qr.overlap_gap_boot(g1, g0, X, site_of, 4, qr.resample(n_rows, 20), row_len, 200)
+    assert len(gaps) == 20 and all(x > 0 for x in gaps) and qr.ok(qr.sd(gaps))
+    assert math.isnan(qr.sd([1.0, NAN])) and qr.sd([1.0, 3.0, NAN]) == 1.0
+
 # ----------------------------------------------------------------------------- row 4
 
 

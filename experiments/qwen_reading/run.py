@@ -15,7 +15,11 @@ results/stopped.json and exits 1. Large files (gate counts, think samples) go to
       change: four cells, S. A share >= 0.8 means row 1 has no teeth (card before Stage D).
   C   E40 step 10, gold step 100, anchor 2 seeds 0 and 1 step 100: four cells on the maths and own rows, S,
       placement. After C0, B2 and each state of C: results/summary.json (teeth verdict, row-3 overlaps).
-Usage (repo root, L40): python experiments/qwen_reading/run.py --stage A|B1|B2|C0|C [--decomp DIR] [--e40 DIR]
+  D   E45 Amendment 2's anchor 1 (seeds 0, 1), own samples (--own, default own2_s0) and null at the states
+      commute.qwen_reading.d_pick takes from E45's score.json: C's readings, D_<run>.json; then the scoring.
+  score  (CPU, also at D's end) results/summary.json and results/score.json (score.py): plan section 5.
+Usage (repo root, L40; score on CPU): python experiments/qwen_reading/run.py --stage A|B1|B2|C0|C|D|score
+  [--decomp DIR] [--e40 DIR] [--own RUN]
 """
 
 from __future__ import annotations
@@ -47,6 +51,7 @@ from lab import (
     pinned,
 )
 from safetensors.torch import load_file, save_file
+from score import score
 from torch import Tensor
 from transformers import AutoTokenizer
 
@@ -389,15 +394,50 @@ def stage_C(lab: Lab) -> None:
         if st.own is not None:
             tx = tx or Text()
             rows = qr.own_rows(tx.tok, st.own[0], st.own[1], tx.sets["train"])
-            lab.set_weights("FT", dW)
-            x = lab.kl_rows("FT", torch.tensor(rows))
-            want = json.loads((E45 / f"{st.e_record}.json").read_text())["states"]["100"]["kl"]["own"]
-            lab.check(f"C_E45_{name}", qr.close(x, want, CFG.rep_tol), {"kl_own": x, "E45": want})
+            own_check(lab, f"C_E45_{name}", dW, torch.tensor(rows), st.e_record, 100)
             own = torch.tensor([r[: CFG.row_len] for r in rows])
         lab.put(f"C_{name}", read_state(lab, name, dW, own, nulls=True))
         del dW
         longest = max(longest, time.time() - t0)
         summarize(lab)
+
+
+def own_check(lab: Lab, tag: str, dW: dict[str, Tensor], rows: Tensor, record: str, step: int) -> None:
+    """KL(W0 ‖ W0 + δW) on the state's own rows of 512 against E45's E record at that step (miss: stop)."""
+    lab.set_weights("FT", dW)
+    x = lab.kl_rows("FT", rows)
+    want = json.loads((E45 / f"{record}.json").read_text())["states"][str(step)]["kl"]["own"]
+    lab.check(tag, qr.close(x, want, CFG.rep_tol), {"kl_own": x, "E45": want})
+
+
+def stage_D(lab: Lab, own: str) -> None:
+    """E45 Amendment 2's runs (anchor 1 seeds 0 and 1, the own-samples run, the null) at the states `qr.d_pick` takes
+    from E45's score.json: C's readings per state into D_<run>.json, then the scoring (score.py)."""
+    c0 = lab.get("C0")
+    if not all(n in c0 for n in CONTROLS):
+        sys.exit("refusing to start D: stage C0 has not finished (the random controls run alone first)")
+    if c0.get("no_teeth"):
+        lab.log("[D] C0 reads no teeth (plan section 6.2): the card to the user goes before D's readings are used")
+    points, tx, longest = json.loads((E45 / "score.json").read_text())["amend2_decisive"], None, 0.0
+    for run in ("a1_s0", "a1_s1", own, "null_s0"):
+        pick = qr.d_pick(run, points.get(run))
+        lab.log(f"[D pick] {run}: {json.dumps(pick)}")
+        if pick["step"] is None or (RESULTS / f"D_{run}.json").is_file():
+            continue
+        lab.wall(longest)
+        t0 = time.time()
+        dW, sha = lab.record_dw(run, pick["step"])
+        own_rows, kl_rows = None, lab.maths(length=CFG.own_len)  # own samples, the null: the maths rows are own
+        if run.startswith("a1_"):
+            tx = tx or Text()
+            a1 = qr.a1_rows(tx.tok, json.loads((E45 / "large/P/a1_rows.json").read_text())["items"], tx.sets["test"])
+            kl_rows, own_rows = torch.tensor(a1), torch.tensor([r[: CFG.row_len] for r in a1])
+        own_check(lab, f"D_E45_{run}", dW, kl_rows, f"E_{run}", pick["step"])
+        lab.put(f"D_{run}", read_state(lab, run, dW, own_rows, nulls=True) | {"pick": pick, "sha256": sha})
+        del dW
+        longest = max(longest, time.time() - t0)
+    summarize(lab)
+    score(lab, own)
 
 # ----------------------------------------------------------------------------- the summary
 
@@ -418,8 +458,8 @@ def summarize(lab: Lab) -> None:
         refs = {"P": on("A/prompt") & ~plain}
         if (LARGE / "B2/T.safetensors").is_file():
             refs |= {k: on(f"B2/{k}") & ~plain for k in ("T", "L", "C")}
-        S = {n: on(f"C/{n}_g1") & ~on(f"C/{n}_g0") for n in [*STATES, *CONTROLS]
-             if (LARGE / f"C/{n}_g1.safetensors").is_file()}
+        names = sorted(p.name.removesuffix("_g1.safetensors") for p in (LARGE / "C").glob("*_g1.safetensors"))
+        S = {n: on(f"C/{n}_g1") & ~on(f"C/{n}_g0") for n in names}  # every C0, C and D state read so far
         out |= {"min_size": A["min_size"], "ref_sizes": {k: int(v.sum()) for k, v in refs.items()}}
         out["overlap"] = {n: {k: qr.overlap(s, x, site_of, len(SITES), pool, CFG.draws) for k, x in refs.items()}
                           | {"size": int(s.sum()), "scored": int(s.sum()) >= A["min_size"]} for n, s in S.items()}
@@ -431,13 +471,20 @@ def summarize(lab: Lab) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=("A", "B1", "B2", "C0", "C"))
+    ap.add_argument("--stage", required=True, choices=("A", "B1", "B2", "C0", "C", "D", "score"))
     ap.add_argument("--decomp", default=os.environ.get("COMMUTE_QWEN_DIR", ""))
     ap.add_argument("--e40", default=str(Path.home() / "commute-data/results-large/qwen_sft/nowarmup_regen"))
+    ap.add_argument("--own", default="own2_s0", help="D: E45's own-samples run (own_s0 did not learn)")
     a = ap.parse_args()
     lab = Lab(a.stage, a.e40, a.decomp)
     with torch.no_grad():
-        {"A": stage_A, "B1": stage_B1, "B2": stage_B2, "C0": stage_C0, "C": stage_C}[a.stage](lab)
+        if a.stage == "D":
+            stage_D(lab, a.own)
+        elif a.stage == "score":  # CPU: the summary and the scoring from what is written
+            summarize(lab)
+            score(lab, a.own)
+        else:
+            {"A": stage_A, "B1": stage_B1, "B2": stage_B2, "C0": stage_C0, "C": stage_C}[a.stage](lab)
     lab.log(f"[{a.stage} done] {lab.peaks()}")
 
 
