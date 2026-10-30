@@ -254,7 +254,7 @@ filed, reversed.*
 
 We re-ran the label check with up to 31 worked examples placed right before the question, after a control showed the
 setup can see in-context copying. The original model then recovered about a fifth of the copy fine-tune's gain,
-slightly more than of the word map's, and never ranked the answer first. So copying is a claim about the model's
+slightly more than of the cipher's, and never ranked the answer first. So copying is a claim about the model's
 machinery, not shown in its behaviour here, and this check cannot vouch for either label.
 
 ### What was run
@@ -300,6 +300,9 @@ demonstrations. A pass therefore rules out an apparatus failure, not a failure t
 
 ![Share of each fine-tune's gain recovered by demonstrations, and the original model's top-1, against the number of demonstrations](../../experiments/baseline_neurons/figures/p4a_prompting_adjacent.png)
 
+In the right panel every top-1 value is exactly zero, so the four task lines lie on top of each other and only the
+last-drawn colour shows.
+
 **Reading it.** No. At 31 demonstrations every copy share sits at 0.22, under the "partial" line. The fine-tuned
 model reads 1. The cipher shares sit just below, at 0.18 to 0.19. The right panel shows the original model never
 ranks the target first, on any window, at any number of demonstrations. The dashed line at 0.82 is the control, so the
@@ -325,27 +328,32 @@ Share by state and $n$, with the separation at each $n$:
 | separates? | | no | no | yes, copy higher |
 
 Only $n = 31$ is scored. There the gap of 0.031 beats the within-kind range of 0.008, so the separation sub-verdict
-passes. The range is small because a task's two seeds share the numerator and differ only in their gain. With fewer
-demonstrations the kinds do not separate. So the ordering at 31 rests on a gap of three hundredths between two small
-shares. The copy band is "mechanism only", so the filed verdict is fails, as leaned.
+passes. The range spans both tables of a kind, and at 31 it is small partly by coincidence. The two copy tables'
+rises happen to agree, at 2.21 and 2.22 nats. Among the cipher states, rand32b's larger rise is offset by its larger
+gain, 13.7 nats against 11.9 to 12.4 for rand32. So the separation at 31 rests partly on that offset. With fewer
+demonstrations the range is wider, 0.046 at 16, and the kinds do not separate. The ordering at 31 is a gap of three
+hundredths between two small shares. The copy band is "mechanism only", so the filed verdict is fails, as leaned.
 
-Moving the examples next to the query helped copy most. At 16 demonstrations the copy rise is about double that of
-E52's far format, which read about one nat. The cipher rise moved less; the table above and E52's section give each
-value. Doubling the demonstrations from 16 adds under 0.4 nats on any task, and the rand32b rise falls slightly.
+Moving the examples next to the query raised every rise, but "copy gained most" holds only at 16 demonstrations. There
+the copy rise grew by a factor of 1.72 for table A and 1.81 for table B over E52's far format. The cipher factors at
+16 are 1.09 for rand32 and 1.39 for rand32b, whose rise still grew by 0.74 nats. At 4 demonstrations rand32b gained
+the most of any task, 1.13 nats; the copy tables gained 0.86 and 0.89. Going from 16 to 31 demonstrations adds at most
+0.42 nats, on rand32, and the rand32b rise falls slightly.
 
 In probability, an approximate reading from E12's per-key geometric means: the copy target starts near 1e-4. A rise
 of 2.2 nats leaves it near 1e-3. The cipher target ends roughly ten times above its start, near 1e-4 at most. These
 are per-key averages, not this run's windows. The cipher target never appears in the prompt. So its rise is probably a
 shift towards the pool of shown values rather than task skill, a hypothesis not measured here. Cipher top-1 is zero,
-under the filed 0.02, so nothing leaks the cipher target into the prompt.
+under the filed 0.02. So there is no sign of a leak strong enough to make the cipher target the argmax.
 
 ### What each number is blind to
 
 - **Share** counts any reason the target rises. For copy that includes any bias to repeat the previous token; for the
   cipher, a shift towards the shown values. Its denominator is the fine-tune's gain on the bare window. So it compares
   the original model on a prompt of up to 114 tokens with the fine-tune on 21.
-- **Top-1** is blind to probability below the argmax. A target at 0.4 behind a competitor at 0.45 reads 0. Here the
-  approximate probability near 1e-3 says the zeros are not near misses.
+- **Top-1** is blind to probability below the argmax. A target at 0.4 behind a competitor at 0.45 reads 0. E12's per-key
+  averages suggest the target is on average far from the argmax. That is not this run's measurement: single windows
+  rise by up to 8.3 nats, and the per-window rank of the target was not measured.
 - **Rise** is blind to the size of the gain. The cipher gain is 2 to 4 nats larger, so equal nats give a smaller
   cipher share.
 - **The induction control** is blind to learning a rule from demonstrations, which is what the copy prompt asks. It
@@ -353,7 +361,7 @@ under the filed 0.02, so nothing leaks the cipher target into the prompt.
 - **The $n = 0$ check** shows the prompt builder reproduces E52's window; it is blind to errors that appear only with
   demonstrations. A CPU check of the token layout covered those before filing.
 - **Noise floor**: the run is deterministic. The only spread is between tables and between seeds' gains, which is
-  the within-kind range above.
+  the within-kind range above; it is not a measured noise floor.
 
 ### What this means
 
