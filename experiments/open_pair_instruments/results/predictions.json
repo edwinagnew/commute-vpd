@@ -1,0 +1,84 @@
+{
+  "status": "DRAFT, not filed. Filed only when the plan is final, the rule's edge cases are rerun as CPU tests of src/commute/revival_kv.py, and this file is committed with status 'filed <date>' before stage 0. The run refuses a DRAFT.",
+  "experiment": "E55 C3: pruning revival, reverse fine-tuning and the possession probe (reference) on E58's twelve open-pair 67M states, beside E58's r, stand-in ratio, steering S, carry x and update size",
+  "plan": "reports/plans/2026-10-31_plan_e55-stage-c-open-pair.md",
+  "states": {
+    "elicit": "experiments/open_pair/results/large/elicit_s{0,1,2}.pt (run.json states.elicit_s*.ft.sha256, G)",
+    "cipher": "experiments/open_pair/results/large/cipher_s{0,1,2}.pt (run.json states.cipher_s*)",
+    "copy": "experiments/open_pair/results/large/amend1/copy_s{0,1,2}.pt (amend1.json control.copy_s*)",
+    "rank1": "experiments/open_pair/results/large/amend1/rank1_s{0,1,2}.pt (amend1.json control.rank1_s*)"
+  },
+  "windows": "experiments/open_pair/results/large/amend1/windows_rank1_trained.pt: 'train' for reverse fine-tuning; 'heldout' (75 windows) for reading, fit half = even indices, score half = odd (steering.Task.part)",
+  "constants": {
+    "prune_k": [13, 40],
+    "n_random": 20,
+    "prune_seed": 0,
+    "D_min_logodds": 0.1,
+    "reverse_recipe": "finetune.finetune_arm_a unchanged: Adam, lr anchors.FT_LR = 3e-5, batch 32, grad clip 1, kl_lambda 1, steps 300, seed = the state's seed, o_token = the rank-1 table",
+    "reverse_checkpoints": "keydep.CIPHER_CHECKS = 1..30, 100, 300; plus a read at step 0",
+    "reverse_cap_value": 301,
+    "lens_blocks": [1, 2, 3, 4],
+    "noise_floor": {"R": 0.05, "s": 1},
+    "gap_mult": 3.0,
+    "bands": {"vpd_min": 0.6666666666666666, "label_max": 0.3333333333333333},
+    "G_tol": 1e-4,
+    "lens_tol": 1e-5
+  },
+  "constants_sources": {
+    "prune_k": "C1b's K 5 and 15 of 4,608 MLP units scaled to the 67M's 12,288 (0.11%, 0.33%); departure stated",
+    "n_random": "C1b",
+    "D_min_logodds": "chosen here as a zero-denominator guard, about 1/10 of the smallest expected drop; no effect unless a pole state falls under it, which is then reported",
+    "reverse_recipe": "E54's forward recipe unchanged (departure from Jain et al.'s lower reverse rate stated in the plan, section 9)",
+    "noise_floor": "R: C1b's random-removal spread (<= 0.05); s: the checkpoint granularity",
+    "gap_mult": "E51's separation rule and C1b's 3 sd convention",
+    "bands": "thirds of the copy-to-cipher axis; chosen here, no source; worked on the five known columns before filing",
+    "G_tol": "E58 Amendment 1's reproduction tolerance"
+  },
+  "definitions": {
+    "l(m)": "mean over windows of log-odds of the window's rank-1 value at the answer position under model m (steering.logodds_at)",
+    "D": "l(W0) - l(state) on the score half",
+    "R": "max over K of [(l(top-K pruned) - l(state)) - mean over 20 random K-unit removals of (l(random pruned) - l(state))] / D; units = 4 x 3072 MLP neurons, zeroed at site mlp<l> at every position; top-K by Alg. 3's grad . w on up_proj row j (+ bias if any) of the rank-1 value's cross-entropy at the state, fit half; void if D < D_min_logodds",
+    "s": "first checkpoint at which eval_arm_a's p_o (arithmetic mean P(rank-1 value), all 75 held-out windows) >= W0's p_o on the same windows; 0 -> void; never -> 301",
+    "q": "per map, max over lens blocks of mean over the map's trained-key held-out windows of [log P_lens(own value) - mean over the map's other distinct values of log P_lens(value)]; P_lens at block l = W0's final norm + unembedding on the residual after block l; W0 only",
+    "p": "(mean_elicit - mean_cipher) / (mean_copy - mean_cipher), seed means over non-void seeds",
+    "p_rank1ref": "the same with rank-1 in place of copy; reported only"
+  },
+  "rules": {
+    "reference_gap": "noise = max within-map seed range (max - min) over copy, cipher, elicit, floored per noise_floor; gap = mean_copy - mean_cipher; 'ok' iff d * gap >= gap_mult * noise (d = +1 for R and q, -1 for s); 'reversed' iff -d * gap >= gap_mult * noise; else 'no gap'. Undirected baseline columns (update size, D) use |gap|.",
+    "side": "only when gap 'ok': 'VPD' iff p >= vpd_min; 'label' iff p <= label_max; else 'between'. Ties go to the outer band; p > 1 -> 'VPD', p < 0 -> 'label'.",
+    "firm": "the side holds only if p of every single-seed triple (elicit_i, cipher_j, copy_k; non-void seeds) lies in the same band; a triple with zero denominator counts as outside; else the side reads 'between'.",
+    "void": "a map with fewer than 2 non-void seeds makes the column 'void'",
+    "verdict": "over R and s: 'shared' iff both 'VPD'; 'VPD alone' iff both 'label'; else 'not settled', naming each"
+  },
+  "edge_cases_run": {
+    "empty_pool": "a pole map with < 2 non-void seeds -> column void; rank-1 is void for R and s by design and is not a pole",
+    "zero_denominator": "gap 0 -> 'no gap'; a zero-denominator triple -> not firm",
+    "ties": "p exactly 2/3 -> 'VPD'; exactly 1/3 -> 'label'",
+    "discrete_s": "identical seeds -> range 0 -> floor 1 step; capped -> 301",
+    "worked_known_columns": {
+      "r": "gap 0.610 >= 3 x 0.029; p 0.880; triples 0.854-0.923 -> VPD (firm)",
+      "stand_in_ratio": "gap 0.700 >= 3 x 0.055; p 0.879; triples 0.828-0.919 -> VPD (firm)",
+      "steering_S": "gap 0.461 >= 3 x 0.068; p 0.684; triples 0.586-0.759 -> between",
+      "carry_x": "gap 0.822 >= 3 x 0.132; p 0.378; triples 0.310-0.440 -> between (reported column)",
+      "update_size": "|gap| 0.042 < 3 x 0.187 -> no gap (matched by design)"
+    }
+  },
+  "do_nothing": {"zero_update": "D = 0 exactly; R void; s = 0, void"},
+  "positive_controls": {
+    "prune_importance_W0": "sign -1, K 13 and 40: top-K lowers l(W0) below the random mean by >= 3 sd at some K; miss -> pruning void (C1b's rule)",
+    "reverse_elicit_s0_first": "P(rank-1 value) at step 30 > at step 0 and the criterion is met before the cap; miss -> stop",
+    "lens": "block-4 lens equals W0's log-softmax at the answer position within lens_tol; miss -> probe void",
+    "reference_gap": "per instrument, copy vs cipher (P1)"
+  },
+  "predictions": {
+    "C0": {"claim": "Stage 0 passes: sha256 of states and windows, identical window tokens across maps, G within G_tol, zero update exact, importance pruning, lens, elicit_s0 reverse first, weights back at W0 after every reverse run", "on_miss": "stop rows exit 1 (sha256, tokens, G, zero update, reverse first, weights); void rows continue", "lean": "85%"},
+    "P1": {"claim": "each new instrument reads the copy-vs-cipher pair", "rule": "rules.reference_gap == 'ok'", "lean": {"R": "45%", "s": "55%"}, "blind_to": "R: attention changes (29-31% of each update's squared norm, E56) and changes spread over > 40 neurons; s: below one step, and structure vs distance from W0 (D reported)"},
+    "P2": {"claim": "pruning puts the elicit map on VPD's side", "rule": "rules.side + rules.firm on R", "lean": {"VPD": "25%", "between": "15%", "label": "5%", "no_gap_or_reversed": "55%"}},
+    "P3": {"claim": "reverse fine-tuning puts the elicit map on VPD's side", "rule": "rules.side + rules.firm on s", "lean": {"VPD": "35%", "between": "10%", "label": "10%", "no_gap_or_reversed": "45%"}, "described_not_scored": "if p_s and p_D share a band, the reading is described as possibly distance"},
+    "V": {"claim": "verdict 'shared'", "rule": "rules.verdict", "lean": {"shared": "15%", "VPD alone": "3%", "not settled": "82%"}},
+    "ref_probe": {"claim": "reference only: cipher q within +-0.5 nats, elicit q >= 1, rank-1 q >= elicit; p_q reported", "lean": "70%"}
+  },
+  "reported_columns": ["r", "stand_in_ratio", "S", "carry x and its label", "update size", "D", "q", "p_rank1ref for every column"],
+  "departures_from_literature": "plan section 9",
+  "not_run_here": "plan section 10"
+}
