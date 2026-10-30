@@ -12,7 +12,7 @@ results/large/amend5/<key>_<step>.pt (the key hashes the recipe) and resumed fro
 Training data: chunk c from default_rng([run.FT_SEED0 + seed, c, TAIL[task]]), Stage A's stream with a new tail.
 
 Readings per state. WN, WNf: run.read_state (Stage A's B and P on its natural qualifying rows, labelled by the filed
-bars); the shortcut check on fresh training-distribution rows (share answered 14 beside the share labelled 14);
+bars); the shortcut check on fresh training-distribution rows (share of rows labelled other than 14 that are answered 14);
 Amendment 4's off-label swap-built read (described only); the state class. ID: per count, B = share answering the
 count (g = identity) at the ID prompt on Stage A's qualifying texts, P on Stage A's pairs for that count at the ID
 prompt, labelled by the filed bars (count a scored, count b described).
@@ -86,7 +86,7 @@ OUT, MISS = RESULTS / "amend5.json", RESULTS / "amend5_control_miss.json"
 A5_DIR = LARGE / "amend5"
 SAVES, CHUNK = (500, 1000, 2000), 100  # CHUNK: run.finetune's batches per drawn chunk
 TAIL = {"WN": 70, "ID": 71}  # training streams
-EVAL_TAIL = {"WN": 72, "ID": 73}  # fresh training-distribution rows: default_rng([EVAL_SEED, tail]), A1.eval_n rows
+EVAL_TAIL = {"WN": 72, "ID": 73}  # training-distribution rows unseen in training (streams Amendment 2 also drew from; no model trained on them): default_rng([EVAL_SEED, tail]), A1.eval_n rows
 PRETRAIN_CHUNKS = 10  # chunks of LOW's own pretraining stream (run.pretrain's batches) searched for the ID prompt
 TAG = {A: "a", B: "b"}
 Prompt = tuple[int, int]  # (family index, terminal code)
@@ -205,11 +205,12 @@ def prompt_check(model: GPT, data: A2Eval, bars: dict[str, Any], prompt: Prompt)
 
 
 def train_dist(model: GPT, seq: np.ndarray, k: dict[str, Any]) -> dict[str, Any]:
-    """On fresh training-distribution rows: accuracy, share answered shortcut_label beside the share labelled it."""
+    """On unseen training-distribution rows: accuracy, the share answered shortcut_label, and the shortcut share: of rows
+    labelled other than shortcut_label, the share answered shortcut_label (a constant answerer 1.0, a correct one 0)."""
     out, _ = run_at_art(model, seq)
     ans, lab, s = out - pcfg.NUM0, seq[:, pcfg.ANS].astype(np.int64) - pcfg.NUM0, k["shortcut_label"]
     return {"acc": float((ans == lab).mean()), "answered_shortcut": float((ans == s).mean()),
-            "labelled_shortcut": float((lab == s).mean()), "answer_hist": hist(ans), "n": len(seq)}  # fmt: skip
+            "shortcut": float((ans[lab != s] == s).mean()), "labelled_shortcut": float((lab == s).mean()), "answer_hist": hist(ans), "n": len(seq)}  # fmt: skip
 
 
 def off_label_read(model: GPT, off: tuple[np.ndarray, dict[int, Pairs]], bars: dict[str, Any]) -> dict[str, Any]:
@@ -223,14 +224,14 @@ def off_label_read(model: GPT, off: tuple[np.ndarray, dict[int, Pairs]], bars: d
     return r | {"reading": reading_through(r["a"]["label"], r["b"]["label"])}
 
 
-def state_class(a: str, b: str, answered_shortcut: float, k: dict[str, Any]) -> str:
+def state_class(a: str, b: str, shortcut: float, k: dict[str, Any]) -> str:
     """'reuses' iff count a 'through' and count b not 'through'; 'new' the reverse; 'both' iff both; otherwise
-    'shortcut' iff answered_shortcut >= shortcut_min (inclusive), else 'neither'."""
+    'shortcut' iff shortcut >= shortcut_min (inclusive), else 'neither'."""
     if a == b == "through":
         return "both"
     if a == "through" or b == "through":
         return "reuses" if a == "through" else "new"
-    return "shortcut" if answered_shortcut >= k["shortcut_min"] else "neither"
+    return "shortcut" if shortcut >= k["shortcut_min"] else "neither"
 
 
 def read_wn(model: GPT, ev: Eval5, bars: dict[str, Any], k: dict[str, Any]) -> dict[str, Any]:
@@ -238,7 +239,7 @@ def read_wn(model: GPT, ev: Eval5, bars: dict[str, Any], k: dict[str, Any]) -> d
     out["train_dist"] = train_dist(model, ev.rows["WN"], k)
     out["off_label"] = off_label_read(model, ev.off, bars)
     a, b = out["check_count_a"]["label"], out["check_count_b"]["label"]
-    out["class"] = state_class(a, b, out["train_dist"]["answered_shortcut"], k)
+    out["class"] = state_class(a, b, out["train_dist"]["shortcut"], k)
     out["class_strict_reuses"] = a == "through" and b == "not through"  # the plan's wording, described
     return out
 
@@ -333,7 +334,7 @@ def summary(name: str, it: int, r: dict[str, Any]) -> None:
     ca, cb = r["check_count_a"], r["check_count_b"]
     log(f"{name} {it}: class {r['class']}; a B {ca['B']:.3f} P {ca['P']:.3f} {ca['label']}; b B {cb['B']:.3f} "
         f"P {cb['P']:.3f} {cb['label']}; train acc {r['train_dist']['acc']:.3f} answered "
-        f"{r['train_dist']['answered_shortcut']:.3f} labelled {r['train_dist']['labelled_shortcut']:.3f}")  # fmt: skip
+        f"{r['train_dist']['answered_shortcut']:.3f} shortcut {r['train_dist']['shortcut']:.3f} labelled {r['train_dist']['labelled_shortcut']:.3f}")  # fmt: skip
 
 
 def stop(res: dict[str, Any]) -> None:
