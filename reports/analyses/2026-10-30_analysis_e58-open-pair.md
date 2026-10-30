@@ -7,7 +7,7 @@ Results: `experiments/open_pair/results/run.json` (job 46266) and `amend1.json` 
 `notebooks/E58_open_pair.ipynb`. Words as in `GOALS.md` → Terms. Provenance at the end.*
 
 We fine-tuned the small model on a word map it half-knows, on most of its keys; the unseen keys did not gain, yet the
-decomposition read the gain as old subcomponents switched on, so a filed prediction that the two agree failed. A
+decomposition read the gain as old subcomponents switched on (it would read a new circuit of old pieces that way too), so a filed prediction that the two agree failed. A
 follow-up gave this held-out test its missing positive control, and a second filed prediction failed: a fine-tune that
 copies the key carried to unseen keys but passed the test's bar on one seed of three, not two. So the test has no
 working positive control on this model, and for `GOALS.md` its verdict cannot yet count for or against the
@@ -15,11 +15,11 @@ decomposition.
 
 ## The answer
 
-No carry-over on the half-known map, and the decomposition reads the opposite; but the measure itself then failed its
-positive control. At the unseen keys the half-known map's update pushed the 24 trained answers up and the model's own
-other preferences down: a lookup, not a sharpening. Two maps the model can already apply at any key did carry further,
-and the decomposition read them as old subcomponents too. Yet the copy map crossed the held-out test's bar on only one
-seed of three, so a filed prediction failed and the test is not used against the decomposition.
+No carry-over on the half-known map, and the decomposition reads the opposite; but the measure then failed its
+positive control. At unseen keys the update pushed the 24 trained answers up and the model's own other preferences
+down: a lookup, not a sharpening. Two maps the model can already apply carried further, and the decomposition read
+them as old subcomponents too (a limit: a new circuit of old pieces reads that way as well). The copy map crossed the
+test's bar on one seed of three, so the test is not used against the decomposition.
 
 ## What we were trying to test
 
@@ -323,7 +323,7 @@ of the whole value set could not read as carry-over, and it stands as filed. The
 trained values. Read on the one held-out key with a value of its own, $x_\text{novel}$ is 0.21 to 0.27. A code reviewer also
 noted that the rank-1 values were picked from W₀'s next-token distribution over E54's training windows, which include the
 held-out keys' scoring windows. That choice is in-sample for W₀ only. Picking W₀'s top token on the same windows starts it
-higher there and leaves less room to gain, which biases $x$ slightly toward "new"; see "Departures from the literature".
+higher there and leaves less room to gain, which biases $x$ slightly toward "new" (a direction reasoned, not measured); see "Departures from the literature".
 Under three key-level deviations, two rank-1 seeds would read "new"; no copy label changes.
 
 **What the stand-in ratio above 1 means.** It reads 1.00 to 1.11 on both control maps. It is not a share. It is close to
@@ -362,7 +362,8 @@ the elicit map; a control that reads "reuses" does not test it.
 E58's "new" on the elicit map is a fair description of the update: 24 lookups and a push toward the trained values, with
 W₀'s own preferences at unseen keys pushed down, not sharpened. But the label failed its positive control. A rule the
 model applies at any key carried about half of its trained-key gain at best by the value-specific measure. So the 0.5 bar
-is at or beyond reach of E54's recipe at step 10 on the 67M, and the label cannot yet tell a fine-tune that carries from
+may be beyond reach of E54's recipe at step 10 on the 67M, or the value-specific denominator (inflated by the other
+values' drop at trained keys) may fall short; the evidence fits either. The label cannot yet tell a fine-tune that carries from
 one that does not. E58's failed agreement prediction therefore counts neither for nor against the decomposition.
 Among the three maps that are not the cipher, r and the stand-in ratio stay level while the carry ranges from none to
 half. Whatever they read, it is not held-out carry. The lead is consulting Fable on what follows.
@@ -390,7 +391,8 @@ maps whose held-out carry runs from none to half, so they do not measure carry. 
 - **One key split** for the controls as for E58: it left the rank-1 map with one held-out key whose value is its own.
 - **r and the stand-in ratio** reproduced E54 to four decimals in stage 0, and the elicit values here sit within 0.03 of
   E54's. They cannot tell a new circuit of old subcomponents from an old circuit.
-- **The trained values' rise** at unseen keys is inferred by arithmetic from three read means, not read value by value.
+- **The trained values' rise** at unseen keys: Amendment 1 read it directly (`amend1.json` `.readout.*.T`) and it agrees
+  with the arithmetic (`T_implied`) to within 5e-8 on all six states.
 
 ## Surprises
 
@@ -467,7 +469,7 @@ told. C3's pass rests on one state and does not change branch 5.
 - **Amendment 1, the rank-1 map's values are picked in-sample.** Fable's spec takes W₀'s top token after the marker and
   key. Here it is the top of W₀'s mean next-token distribution over E54's training windows of that key. Those windows
   include the held-out keys' scoring windows. Picking on windows apart from the scoring ones was the clean choice. The
-  overlap starts W₀ higher at the scoring windows and biases $x$ slightly toward "new". The code reviewer found it after
+  overlap starts W₀ higher at the scoring windows and biases $x$ slightly toward "new" (reasoned, not measured). The code reviewer found it after
   the run.
 - **Amendment 1, ranks over the full vocabulary.** Fable's spec reads "W₀'s rank 1-20 word-like tokens"; here ranks
   are over every token, as E54's value ranks were.
