@@ -7,12 +7,13 @@ thresholds: results/predictions_amend3.json (filed and committed before the run;
   K, W  amend2's key selection and maps (elicit, rank-1, copy), unchanged, into <large>/amend3; then the cipher
         (`kv.bijection`, E54's pool and gate) and the shuffled elicit map (check 3) on the same windows; zero update 0.
   T     the cipher and elicit fine-tunes (training only); the common step = elicit's E12 scored step (exit 1 if none).
-  C     the control, read first and alone: the cipher's label at the common step (at its own E12 step only if too small
-        there); exit 1 unless `open_pair.control3` reads "pass" or "below". The norm-matched cipher and its r reported.
+  C     the control, read first and alone: the cipher's label at the common step (if its G_spec is under the gate there,
+        the first checkpoint up to 30 over it; else exit 1); exit 1 unless it reads "pass" or "below". The norm-matched
+        cipher (its r is B's drift guard) and the cipher at step 30 reported.
   E     elicit at the common step and at step 30 (label, r, ratio, S); check 1 (x at every checkpoint, and E58's 24-key
         elicit_s0 re-trained, same seed); check 4 (elicit's update read on the rank-1 and copy held-out windows);
         check 5 (per-key H_spec against W0's P(value) and key-specificity, Spearman).
-  S     check 3, the shuffled elicit map at the common step; exit 1 if its x > 0.05 (the label carries on the pool).
+  S     check 3, the shuffled elicit map at the common step (reported, not a stop; review of b60ae7e).
   M     rank-1, then copy, at the common step and at step 30 (exit 1 on a block-0 shift over 1e-5 nats).
   score `open_pair.score_amend3` -> results/amend3.json. Every number is also printed.
 """
@@ -120,20 +121,26 @@ def read(ctx: KD.Ctx, name: str, t: dict[str, Any], ft: FinetuneResult, step: in
 
 
 def control(ctx: KD.Ctx, tasks: dict[str, Any], ft_c: FinetuneResult, ft_e: FinetuneResult, step: int, out: dict[str, Any]) -> None:
-    th = ctx.P["thresholds"]
-    c = read(ctx, "cipher", tasks["cipher"], ft_c, step, out, vpd=False)
-    own, learned = KD.scored_step(ft_c.evals)
-    at_own = None
-    if c["label"] == "too_small" and learned:
-        o = read(ctx, "cipher", tasks["cipher"], ft_c, own, out, vpd=False)
-        at_own = OP.elicit_control(o["x"], o["label"], th)
-    status = out["control"] = OP.control3(OP.elicit_control(c["x"], c["label"], th), at_own)
-    log(f"[control] cipher @ {step}: x {c['x']:.4f} label {c['label']}; own step {own} (read: {at_own is not None}) -> {status}")
+    """The cipher control at the common step, or (G_spec under the gate there) at the first kept checkpoint after it up
+    to step 30 with G_spec over the gate (`open_pair.pick_cipher_step`); stop past 30 or unless pass / below. Then the
+    norm-matched cipher (r: the drift guard) and the cipher at step 30 (beside the step-30 companion), reported."""
+    th, t = ctx.P["thresholds"], tasks["cipher"]
+    g = {step: read(ctx, "cipher", t, ft_c, step, out, vpd=False)["G_spec"]}
+    s = step
+    while g[s] < th["G_min"] and s < 30:  # read only as far as needed
+        s += 1
+        g[s] = read(ctx, "cipher", t, ft_c, s, out, vpd=False)["G_spec"]
+    at = out["control_step"] = OP.pick_cipher_step(g, step, 30, th["G_min"])
+    if at is None:
+        stop(out, f"the cipher is under the gate {th['G_min']:.3f} at every step from {step} to 30")
+    c = out["reads"][f"cipher@{at}"]
+    status = out["control"] = OP.elicit_control(c["x"], c["label"], th)
+    log(f"[control] cipher @ {at} (common step {step}): x {c['x']:.4f} G_spec {c['G_spec']:.4f} label {c['label']} -> {status}")
     if status not in ("pass", "below"):
         stop(out, f"the cipher control reads {status}")
-    m = EL.matched_step({k: EL.summed_norm(ft_c.deltas[k]) for k in range(1, 31)}, EL.summed_norm(ft_e.deltas[step]))
-    read(ctx, "cipher", tasks["cipher"], ft_c, m, out, vpd=True)  # norm-matched: reported, with its r as the drift line
-    out["cipher_matched_step"] = m
+    m = out["cipher_matched_step"] = EL.matched_step({k: EL.summed_norm(ft_c.deltas[k]) for k in range(1, 31)}, EL.summed_norm(ft_e.deltas[step]))
+    out["cipher_r"] = read(ctx, "cipher", t, ft_c, m, out, vpd=True)["r"]
+    read(ctx, "cipher", t, ft_c, 30, out, vpd=True)
 
 
 def elicit_checks(ctx: KD.Ctx, tasks: dict[str, Any], ft_e: FinetuneResult, step: int, qual: dict[int, Any], large: Path, out: dict[str, Any]) -> None:
@@ -187,19 +194,17 @@ def main() -> None:
     st, st30 = {}, {}
     st["elicit"] = read(ctx, "elicit", tasks["elicit"], ft_e, step, out, vpd=True, save=d / f"elicit_s0_step{step}.pt")
     st30["elicit"] = st["elicit"] if step == 30 else read(ctx, "elicit", tasks["elicit"], ft_e, 30, out, vpd=True, save=d / "elicit_s0_step30.pt")
-    a2 = json.loads((RESULTS / "amend2.json").read_text())["states"]["elicit"]
-    out["checks"]["reproduce_46383"] = {"same_sha256": st["elicit"]["sha256"] == a2["ft"]["sha256"], "x": [st["elicit"]["x"], a2["x"]]}
+    a2, w2 = json.loads((RESULTS / "amend2.json").read_text())["states"]["elicit"], torch.load(large / "amend2" / "elicit_s0.pt", weights_only=True)
+    out["checks"]["reproduce_46383"] = {"max_abs_diff": max(float((ft_e.deltas[step][k] - w2[k]).abs().max()) for k in w2), "x": [st["elicit"]["x"], a2["x"]]}
     elicit_checks(ctx, tasks, ft_e, step, qual, large, out)
     sh = read(ctx, "shuffle", tasks["shuffle"], train(ctx, d, "shuffle", KD.E12_CHECKS), step, out, vpd=False)
     out["checks"]["3"] = OP.elicit_control(sh["x"], sh["label"], th)
-    log(f"[check 3] shuffled elicit x {sh['x']:.4f} -> {out['checks']['3']}")
-    if out["checks"]["3"] == "fail":
-        stop(out, "the shuffled elicit map carries (x > 0.05): the label reads the pool at 128 values")
+    log(f"[check 3] shuffled elicit x {sh['x']:.4f} -> {out['checks']['3']} (reported; not a stop)")
     for n in ("rank1", "copy"):
         ft = train(ctx, d, n, KD.E12_CHECKS)
         st[n] = read(ctx, n, tasks[n], ft, step, out, vpd=True, save=d / f"{n}_s0_step{step}.pt")
         st30[n] = st[n] if step == 30 else read(ctx, n, tasks[n], ft, 30, out, vpd=True, save=d / f"{n}_s0_step30.pt")
-    out["score"] = OP.score_amend3(st, st30, out["control"], out["maps"]["rank1"]["n_novel"], P["reference_24_keys"], th)
+    out["score"] = OP.score_amend3(st, st30, out["control"], out["maps"]["rank1"]["n_novel"], P["reference_24_keys"], th, out["cipher_r"])
     dump(out)
     log(f"[score] {json.dumps(OP.jsonable(out['score']))}")
 

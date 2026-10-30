@@ -585,7 +585,7 @@ always the cipher (random values), and Amendment 2 should have used it as the co
 *Lead's decision on Fable's "Recommended amendment" (`reports/plans/2026-10-30_advice_e58a2-control-FABLE.md`). Code
 `experiments/open_pair/amend3.py` (206 lines). It imports amend2's `stage_keys` and `build_maps`, which are unchanged;
 amend2.py still runs as it ran, and amend3 points amend2's output file at `amend3.json`. Rules are in
-`src/commute/open_pair.py` § Amendment 3 (`control3`, `b3`, `trajectory`, `spearman`, `score_amend3`), with edge cases in
+`src/commute/open_pair.py` § Amendment 3 (`pick_cipher_step`, `b3`, `trajectory`, `spearman`, `score_amend3`), with edge cases in
 `tests/test_open_pair.py` (5 new tests; 34 pass). Predictions are in `results/predictions_amend3.json`. Job:
 `sbatch cluster/open_pair.sbatch amend3`. Coded and filed; nothing run.*
 
@@ -629,8 +629,8 @@ in the same job ask whether that carry is real:
 - **Step-30 companion.** Every scored map is also read at step 30, and B is re-read there as a companion, reported but
   not scored.
 - **Fable's checks 1, 3, 4 and 5 are added.** Check 2, the cipher, is the control itself.
-- **Fallback for a too-small control.** If the cipher is "too_small" at the common step, it is read once at its own E12
-  step (see the denominator below).
+- **Fallback for a too-small control.** If the cipher's G_spec is under the gate at the common step, it is read at the
+  first kept checkpoint after it, up to step 30, that is over the gate; none stops the job (see the denominator below).
 
 ### The denominator (from disk, before filing)
 
@@ -638,8 +638,8 @@ in the same job ask whether that carry is real:
   step-10 states.
 - **Cipher.** At 24 keys, steps 8-9, P 0.41-0.57, G_spec was 9.4-10.7. Elicit's step-10 P fell from 0.98 to 0.60 at 96
   keys, so the cipher's step-10 P is likely 0.02-0.2 and its G_spec about 4-9. That may fall under the 5.148 gate.
-- **The fallback.** If the cipher is "too_small" at the common step, the same rule is read once at its own E12 step
-  (`control3`).
+- **The fallback.** If the cipher is under the gate at the common step, the same rule is read at the first checkpoint
+  after it, up to 30, over the gate (`pick_cipher_step`); none stops the job.
 - **What the cuts mean at G_spec 9.3.** The control's +0.05 is 0.47 log-odds of H_spec, copy's 0.6 is 5.6, and rank-1's
   0.3 is 2.8.
 
@@ -651,9 +651,9 @@ in the same job ask whether that carry is real:
 | G_spec, common step | 0 | 4-9 (fallback if under 5.148) | about 9.3 | open | open |
 | r / ratio, common step | — | reported (24 keys 0.22-0.24 / 0.30-0.34) | 0.75-0.85 / 0.9-1.1 under reading A | same | same |
 | x, step 30 | — | — | open (check 1) | reported | reported |
-| check 1: x at 10, 30, 100, 300; 24-key re-train | — | — | kept 40%, falling 35%, transient 25%; re-train step-10 x within 0.01 of −0.027 | | |
+| check 1: x at 10, 30, 100, 300; 24-key re-train | — | — | kept or rising 40%, falling 35%, transient 25%; re-train step-10 x within 0.01 of −0.027 | | |
 | check 3: shuffled elicit x | — | — | pass or below (about 0), 80% | | |
-| check 4: elicit's update on rank-1 / copy held-out windows | — | — | copy H_spec about 0; rank-1 open | | |
+| check 4: elicit's update on rank-1 / copy held-out windows | — | — | copy H_spec within ±0.5 log-odds of 0; rank-1 H_spec open | | |
 | check 5: rho(per-key H_spec, W₀ P) and (·, specificity) | — | — | > 0, about 70% | | |
 
 *Blind to:*
@@ -665,19 +665,20 @@ in the same job ask whether that carry is real:
 
 ### Predictions (filed in `results/predictions_amend3.json`)
 
-- **Control.** `control3(elicit_control(cipher at the common step), at its own step only if too_small)`: pass or below
-  continue; fail, unreadable or too_small at both stop. Lean: below 75%, pass 15%.
+- **Control.** `elicit_control` on the cipher at the step `pick_cipher_step` picks (the common step, or the first one up to 30
+  over the gate): pass or below
+  continue; fail, unreadable or no step over the gate stop. Lean: below 75%, pass 15%.
 - **R, C.** As Amendment 2, at the common step. Leans: rank-1 memorises or between 65%, carries 25%; copy pass 40%.
 - **B.** `b3` on elicit, rank-1 and copy: dx_min 0.15, tol_r 0.05, tol_ratio 0.1, tracks > opposite > flat >
-  not_testable. Lean: flat 55%, tracks 30%.
+  not_testable; "untested_drift" if the norm-matched cipher's r moved more than 0.05 from its 24-key mean 0.2306.
+  Lean: flat 50%, tracks 25%, untested_drift 10%.
 - **Verdict.** `verdict2(control, B, R)`. Lean: reading_A_holds 50%, b_r_tracks 30%.
-- **Checks 1, 3, 4, 5.** Reported with filed expectations (above). Check 3 alone stops the job (x > 0.05) before
-  rank-1, as Fable asks.
+- **Checks 1, 3, 4, 5.** Reported with filed expectations (above); none stops the job.
 
 Edge cases tested before filing:
-- `control3`: the fallback only on too_small, None for a cipher that never learned, too_small at both;
+- `pick_cipher_step`: the common step over the gate, a later step, the tie at the gate, nothing up to 30, a nan;
 - `b3`: nothing moved (not_testable), a flat elicit with dx 0.24, an r rise of 0.06 (tracks), ratio nan (r decides), the
-  dx tie at 0.15, missing maps;
+  dx tie at 0.15, missing maps, the drift guard both ways, nan and with no cipher reference;
 - `trajectory`: ties at x − 0.05 and at e_max, a missing checkpoint, nan, no later step;
 - `spearman`: perfect ±1, tied ranks (0.949), fewer than 3 pairs, a constant side, nan, unequal lengths;
 - `score_amend3`: the flat branch, stopped, an empty record.
@@ -699,13 +700,12 @@ Stops (exit 1; `amend3.json` written with "stopped"), in order:
 - the key selection is not reproduced (about 1.5 min in);
 - a zero update is not 0, or the shuffle left a fixed point;
 - elicit reaches no E12 checkpoint;
-- the cipher control is not "pass" or "below" (about 3 min in);
-- check 3 reads "fail";
+- the cipher under the gate at every step from the common step to 30, or its control not "pass" or "below" (about 3 min in);
 - a block-0 shift over 1e-5 nats.
 
 One MATS `debug` L40 job, $0, about 12-18 min:
 - six fine-tunes of about 12-16 s each;
-- seven r/ratio/S reads of about 40 s each (Amendment 1 took 10 s on 75 windows; these have 286);
+- eight r/ratio/S reads of about 40 s each (Amendment 1 took 10 s on 75 windows; these have 286);
 - about twenty labels of a few seconds each.
 
 Host RAM peaks at about 5 GB while the cipher's 32 checkpoints are held; they are freed after the control. Disk is about
@@ -715,13 +715,15 @@ Host RAM peaks at about 5 GB while the cipher's 32 checkpoints are held; they ar
 ### Decision tree
 
 1. Control fails or is unreadable → the label is broken at 128 values; no x at 128 keys is readable; to the lead.
-2. Check 3 fails → redesign the label (specific gain against a random token pool) before scaling keys.
+2. Check 3 reads "fail" (reported) → the write-up says the label reads the pool at 128 values; no 128-key x is used
+   until it is redesigned (specific gain against a random token pool). B reads "untested_drift" → verdict untested.
 3. **reading_A_holds** → elicit's carry rose about 0.24 while r and the ratio held: item 1's claim with its strongest
    line, on the map closest to E54's.
 4. **b_r_tracks** → Fable's (b); to the user before any claim.
 5. **a_first_reuses** → Fable's (a), as in Amendment 2.
-6. Check 1 transient (x ≤ 0.05 at step 30) → carry is a transient of under-trained states; B must be re-read at matched
-   trained-key P (a dated amendment), and reading A is unchanged. Check 1 rising (x at step 300 above the common step) →
+6. Check 1 "transient" (x over 0.05 at the common step, at most 0.05 at the next) → carry is a transient of under-trained states; B must be re-read at matched
+   trained-key P (a dated amendment), and reading A is unchanged. Check 1 "rising" (kept, and x at step 300 over x at the
+   common step + 0.05) →
    elicit is a candidate "reuses" state for step 2's P2.
 
 ### Departures from Fable's recommendation
@@ -729,16 +731,40 @@ Host RAM peaks at about 5 GB while the cipher's 32 checkpoints are held; they ar
 - The fallback for a too-small control. Fable reads the cipher at the common step; the filed denominator estimate says it
   may be under the gate there.
 - The shuffle is a derangement (a cycle), not any permutation.
-- Check 3's stop uses the control's 0.05 rule, not Fable's "about 0.2"; values between are reported.
+- Check 3 is reported, not a stop (Fable asked it to stop the job before rank-1; the review judged a check-only stop
+  too costly for a reading Fable expects at about 0).
 - B now uses own differences for every map. Fable gives elicit "its own dx"; the same is applied to rank-1 and copy
   because elicit can no longer be their reference.
-- Check 4 reads the new common-step elicit state rather than `amend2/elicit_s0.pt`. Its sha256 and x are reported
-  against job 46383's.
+- Check 4 reads the new common-step elicit state rather than `amend2/elicit_s0.pt`. Its max |difference| from that file
+  and its x are reported against job 46383's.
 
 ### Order of work
 
-1. Done: code, tests (34 pass), lint clean, predictions filed.
+1. Done: code, tests (34 pass), lint clean, predictions filed; review fixes applied (note below).
 2. Fresh-Opus review of the diff.
 3. `/pod-runner`: `sbatch cluster/open_pair.sbatch amend3` from the clone root.
 4. Write-up as a section of E58's analysis report (`/writeup`); `TRIED.md` row covering Amendments 2 and 3;
    `PENDING.md` line.
+
+### Amendment 3 before the run (review, 2026-10-30)
+
+A fresh review of b60ae7e found seven things. Nothing had run, so the section above and `predictions_amend3.json`
+were amended in place (`amendment_2026_10_30_prerun_review` records it).
+
+1. **Check 3 is report-only.** The shuffled elicit map no longer stops the job: rank-1 and copy always run once the
+   cipher control passes.
+2. **Cipher fallback.** If the cipher's G_spec is under the gate at the common step, the control is read at the first
+   kept checkpoint after it (steps 11-30) with G_spec over the gate (`pick_cipher_step`, replacing `control3`); none by
+   step 30 stops the job. The cipher is also read at step 30, with r and ratio, beside the step-30 companion.
+3. **Reproduction of job 46383.** A sha256 of a `torch.save` file embeds its basename, so the check could never match.
+   It now reports the max |difference| between this run's common-step elicit update and `amend2/elicit_s0.pt`, with
+   both x values.
+4. **Drift guard for B.** B (and B at step 30) reads "untested_drift" if the norm-matched cipher's r at 128 keys is not
+   finite or differs from E58's 24-key cipher mean (0.2306) by more than tol_r (0.05). With own differences nothing else
+   absorbs a shift of every r with the key count. Tests cover both directions, nan and a missing reference.
+5. **Check 4's expectation** is stated in H_spec (copy within ±0.5 log-odds of 0), not in x.
+6. **Check 1's trajectory** codes the tree's branches: "no_carry" (x at the common step at most 0.05), "rising" (kept,
+   and x at 300 over x at the common step + 0.05), "kept", "transient" (only when x at the common step is over 0.05),
+   "falling".
+7. **`settings.order` corrected.** `add_maps` still calls `KD.vocab` a second time (about 10 s) for E12's ranked pool.
+   Removing it would need `amend2.stage_keys` to return `ranked`, which would change amend2.py; it is kept.
