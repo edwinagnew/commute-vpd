@@ -1,6 +1,7 @@
 """E52's target-model reads and its steering baseline (B3), shared since 2026-10-30 with E54
 (`experiments/keydependent_elicit`). Moved, not changed, from `experiments/baseline_neurons/run.py`, which (with its
-`amend1.py`) now imports them from here.
+`amend1.py`) now imports them from here. E54 Amendment 1 added `vectors` and `add_at` (taken out of `b3`, same
+operations in the same order), `read`'s `readout` argument (default log P, as before), `logodds_at` and `steer_at`.
 
 The target model only (no decomposition is read), fp32. A key -> value task's held-out windows are split into a fit half
 (even indices) and a scoring half (odd). Per state the gain G of log P(target) at the answer position over W0; a
@@ -19,11 +20,13 @@ import torch
 from torch import Tensor
 
 from commute.faithfulness import model_state
+from commute.identity import log_odds
 
 N_LAYERS, D_MLP = 4, 3072
 SITES = [f"in{i}" for i in range(N_LAYERS)] + [f"mlp{i}" for i in range(N_LAYERS)] + ["out3"]
 Edit = dict[str, Callable[[Tensor], Tensor]]
 DW = dict[str, Tensor]
+Readout = Callable[[Tensor, int, Tensor], Tensor]  # (logits, position, targets) -> (N,) float64 on CPU
 
 
 class Net:
@@ -73,6 +76,11 @@ def logp_at(logits: Tensor, pos: int, tgt: Tensor) -> Tensor:
     return torch.log_softmax(logits[:, pos], -1).gather(1, tgt.to(logits.device)[:, None]).squeeze(1).double().cpu()
 
 
+def logodds_at(logits: Tensor, pos: int, tgt: Tensor) -> Tensor:
+    """log P(target) - log(1 - P(target)), exact near P = 1 (`identity.log_odds`, the route split's unit)."""
+    return log_odds(logits[:, pos], tgt.to(logits.device)).double().cpu()
+
+
 @dataclass
 class Task:
     name: str
@@ -101,9 +109,10 @@ def load_task(net: Net, path: Path, name: str, kind: str) -> Task:
     return t
 
 
-def read(net: Net, t: Task, toks: Tensor, dW: DW | None = None, edit: Edit | None = None) -> Tensor:
+def read(net: Net, t: Task, toks: Tensor, dW: DW | None = None, edit: Edit | None = None,
+         readout: Readout = logp_at) -> Tensor:
     with net.at(dW):
-        return logp_at(net.run(toks, edit)[0], t.half, t.tgt(toks))
+        return readout(net.run(toks, edit)[0], t.half, t.tgt(toks))
 
 
 def share(lp: Tensor, lp0: Tensor, G: float) -> float:
@@ -115,23 +124,47 @@ def gains(net: Net, t: Task, dW: DW) -> dict[str, float]:
     return {"G": float(d.mean()), "G_fit": float(d[t.part("fit")].mean()), "G_score": float(d[t.part("score")].mean())}
 
 
+def vectors(net: Net, t: Task, dW: DW) -> dict[int, Tensor]:
+    """B3's steering vectors: per block l, the mean over the fit half of (tuned - W0) block-l input at the answer position."""
+    f = t.toks[t.part("fit")]
+    with net.at(dW):
+        _, c1 = net.run(f, capture=True)
+    _, c0 = net.run(f, capture=True)
+    return {i: (c1[f"in{i}"][:, t.half] - c0[f"in{i}"][:, t.half]).mean(0) for i in range(N_LAYERS)}
+
+
+def add_at(pos: int, v: Tensor) -> Callable[[Tensor], Tensor]:
+    def add(x: Tensor) -> Tensor:
+        x = x.clone()
+        x[:, pos] += v
+        return x
+
+    return add
+
+
 def b3(net: Net, t: Task, dW: DW, g: dict[str, float]) -> dict[str, Any]:
     """Steering: v_l = mean over the fit half of (tuned - W0) block-l input at the answer position, added to W0 there;
     the layer with the largest fit-half share (ties to the lower), S = its scoring-half share."""
     f, s = t.toks[t.part("fit")], t.toks[t.part("score")]
-    with net.at(dW):
-        _, c1 = net.run(f, capture=True)
-    _, c0 = net.run(f, capture=True)
     layers = {}
-    for i in range(N_LAYERS):
-        v = (c1[f"in{i}"][:, t.half] - c0[f"in{i}"][:, t.half]).mean(0)
-
-        def add(x: Tensor, v: Tensor = v) -> Tensor:
-            x = x.clone()
-            x[:, t.half] += v
-            return x
-
-        layers[i] = {"norm": float(v.norm()), "fit": share(read(net, t, f, edit={f"in{i}": add}), t.lp0[t.part("fit")], g["G_fit"]),
-                     "score": share(read(net, t, s, edit={f"in{i}": add}), t.lp0[t.part("score")], g["G_score"])}
+    for i, v in vectors(net, t, dW).items():
+        edit = {f"in{i}": add_at(t.half, v)}
+        layers[i] = {"norm": float(v.norm()), "fit": share(read(net, t, f, edit=edit), t.lp0[t.part("fit")], g["G_fit"]),
+                     "score": share(read(net, t, s, edit=edit), t.lp0[t.part("score")], g["G_score"])}
     best = max(range(N_LAYERS), key=lambda i: (layers[i]["fit"], -i))
     return {"layers": layers, "layer": best, "S": layers[best]["score"]}
+
+
+def steer_at(net: Net, t: Task, dW: DW, layer: int, readout: Readout = logp_at) -> dict[str, float]:
+    """B3's vector for block `layer`, added to W0 at the answer position, read with `readout` on the scoring half: the
+    steered rise over W0, the fine-tune's gain over W0, rise / gain, and the gain on all held-out windows (`G_all`)
+    (E54 Amendment 1). W0 and the tuned model are read on all held-out windows and sliced, as `load_task` and `gains`
+    read them, so with `readout=logp_at` the share is `b3`'s S at that layer (the same forwards; float64 means may
+    differ in summation order, ~1e-15)."""
+    sc = t.part("score")
+    base_all, tuned_all = read(net, t, t.toks, readout=readout), read(net, t, t.toks, dW, readout=readout)
+    base, tuned = base_all[sc], tuned_all[sc]
+    steered = read(net, t, t.toks[sc], edit={f"in{layer}": add_at(t.half, vectors(net, t, dW)[layer])}, readout=readout)
+    G = float((tuned - base).mean())
+    return {"rise": float((steered - base).mean()), "G": G, "share": share(steered, base, G),
+            "G_all": float((tuned_all - base_all).mean())}

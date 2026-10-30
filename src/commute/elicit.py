@@ -99,6 +99,11 @@ def absdiff(a: float | None, b: float | None) -> float | None:
     return abs(a - b) if a is not None and b is not None and readable(a) and readable(b) else None
 
 
+def diff_or_none(a: float | None, b: float | None) -> float | None:
+    """a - b, or None when either is missing or not finite."""
+    return a - b if a is not None and b is not None and readable(a) and readable(b) else None
+
+
 def separation(a: list[float | None], b: list[float | None], min_gap: float) -> dict[str, Any]:
     """E51/E52's rule with a minimum: kinds a and b separate iff |mean a - mean b| > the larger within-kind range
     (strict) and >= min_gap. Verdict "a_higher", "b_higher", "none", or "unreadable" (a value missing or not finite,
@@ -155,3 +160,39 @@ def branch(p1: dict[str, Any], p2: dict[str, Any]) -> str:
             ("pass", "fail"): "steering not blind to this key-dependence: the objection holds on both sets",
             ("fail", "pass"): "neither tells kind here: r on E12 read input-dependence or size; tell the user before using E12's r",
             ("fail", "fail"): "steering beats VPD here: the objection holds"}[(a, b)]
+
+
+def score_amend1(st: dict[str, dict[str, Any]], th: dict[str, float]) -> dict[str, Any]:
+    """E54 Amendment 1's filed rules on {state: {"S", "S_lo", "r"}} for elicit_s*, cipher_s* (matched size) and
+    cipher_own_s*. A missing state or value, or a nan, makes its rule "unreadable".
+    P1-lo: `separation` of S_lo, elicit against the matched cipher; pass iff "none" (predicted: no separation).
+    P2-lo: r - S_lo >= th["p2_min_diff"] on both elicit states (a tie at the bound passes); pass iff both.
+    P3-own: `separation` of S (nats), elicit against the cipher at its own step; pass iff "a_higher"."""
+    seeds = ("s0", "s1")
+    col = lambda kind, m: [st.get(f"{kind}_{s}", {}).get(m) for s in seeds]
+    p1 = separation(col("elicit", "S_lo"), col("cipher", "S_lo"), th["min_gap"])
+    p1["status"] = "unreadable" if p1["verdict"] == "unreadable" else "pass" if p1["verdict"] == "none" else "fail"
+    diffs = {s: diff_or_none(r, lo) for s, r, lo in zip(seeds, col("elicit", "r"), col("elicit", "S_lo"), strict=True)}
+    p2: dict[str, Any] = {"diff": diffs, "status": "unreadable" if any(d is None for d in diffs.values()) else
+                          "pass" if all(float(d) >= th["p2_min_diff"] for d in diffs.values() if d is not None) else "fail"}
+    p3 = separation(col("elicit", "S"), col("cipher_own", "S"), th["min_gap"])
+    p3["status"] = "unreadable" if p3["verdict"] == "unreadable" else "pass" if p3["verdict"] == "a_higher" else "fail"
+    return {"P1-lo": p1, "P2-lo": p2, "P3-own": p3, "branch": branch_amend1(p1, p2, p3)}
+
+
+def branch_amend1(p1: dict[str, Any], p2: dict[str, Any], p3: dict[str, Any]) -> str:
+    """Amendment 1's tree. It feeds the analysis's ratio table only (the steering gap in r's units)."""
+    if "unreadable" in (p1["status"], p2["status"], p3["status"]):
+        return "unreadable: a missing state or a nan; stop and tell the user"
+    if p1["verdict"] == "b_higher":
+        out = "reversed: the matched cipher's S_lo separates above the elicit map's; the tree does not cover it; tell the user"
+    elif p1["status"] == "pass":
+        out = "as predicted: in log-odds S does not separate the pair; the ratio table's log-odds row becomes r gap / S_lo gap, measured"
+    else:
+        out = ("S_lo separates elicit higher: in r's unit steering does separate the matched pair; the table's log-odds row "
+               "(estimated 'over 10x') is replaced by the measured r gap / S_lo gap; tell the user before editing the report")
+    if p2["status"] == "fail":
+        out += " [P2-lo missed: an elicit S_lo within 0.3 of its r; tell the user]"
+    out += (" [P3-own: S in nats separates the elicit map from the cipher at its own step]" if p3["status"] == "pass" else
+            " [P3-own missed: the stage-0 numbers do not reproduce E54's analysis; check the code before reading]")
+    return out

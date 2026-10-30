@@ -111,3 +111,75 @@ matched one) and `windows_<task>.pt` in `results/large/`; summaries committed.
 ## Not run
 Jain et al. Def 1 readout and the causal check on the elicit keys; neuron patching (B2) and the weight statistics (B1)
 on the new pair; a matched random δW; the copy task on these keys; more than two seeds; Qwen.
+
+## Amendment 1 (2026-10-30): steering's share in the route split's unit
+
+*Coded 2026-10-30, not run. Code `experiments/keydependent_elicit/amend1.py` (helpers `steering.steer_at`,
+`steering.logodds_at`, `elicit.score_amend1`); rules and expected values `results/predictions_amend1.json`, filed before
+any run; job `cluster/keydependent_elicit_amend1.sbatch` (MATS debug, one L40, $0, ~2-4 min).*
+
+**/design check.** Approved class 1 (analysis of what exists): a GPU pass of the existing harness (B3, unchanged) on
+E54's six saved weight changes, $0, no new task, model or fine-tune. Goal: the analysis's ratio table compares an r gap
+in log-odds with an S gap in nats; this measures the S gap in r's unit, the first item of the analysis's "Not run".
+Nothing new is claimed beyond "the steering gap in r's units".
+
+**What is measured.** On B3's scoring half (48 of the 97 held-out windows), with B3's vector and B3's block (both as E52
+and E54 chose them): S_lo = (mean log-odds of the target with W₀ + v at that block − mean at W₀) ÷ (mean log-odds at W₀ +
+δW − mean at W₀). Log-odds is `identity.log_odds`, the unit in which `route_split` forms r's gain T1 − T0. r is
+stage2.json's, unchanged. The block is still chosen by B3's fit-half share in log P, so only the readout changes.
+
+| state | S (nats, stage2.json) | S_lo expected | r (stage2.json) | r − S_lo expected |
+|---|---|---|---|---|
+| elicit_s0 | 0.380 | 0.25 (0.20–0.32) | 0.773 | 0.52 |
+| elicit_s1 | 0.394 | 0.25 (0.20–0.32) | 0.758 | 0.51 |
+| cipher_s0 (matched) | 0.228 | 0.22 | 0.241 | 0.02 |
+| cipher_s1 (matched) | 0.185 | 0.18 | 0.212 | 0.03 |
+| cipher_own_s0 | 0.114 | 0.075 (reported) | 0.265 | — |
+| cipher_own_s1 | 0.066 | 0.045 (reported) | 0.243 | — |
+
+Why these values: the independent check's bound (B3's nats rise over the all-window log-odds gain) is 0.235 and 0.242
+on elicit, 0.22 and 0.18 on the cipher. The scoring half's log-odds gain is a little larger (~11.4 on elicit), and the
+steered rise in log-odds exceeds the nats rise only on the few elicit keys whose steered P(target) is not small. On the
+cipher the steered P stays near 1e-5, so the two units agree there.
+
+**Predictions** (rules literal in `predictions_amend1.json`, edge cases run in `tests/test_elicit.py`):
+- **P1-lo.** S_lo does not separate elicit from the matched cipher by E54's rule (gap > larger range, strict, and
+  ≥ 0.2). Expected gap ~0.05. Lean: holds, medium.
+- **P2-lo.** r − S_lo ≥ 0.3 on both elicit states (a tie passes). Lean: holds, high.
+- **P3-own.** S in nats separates elicit from the cipher at its own step, elicit higher. Not a test: its inputs are
+  stage2.json's S, which stage 0 reproduces, and the analysis already computed gap 0.296, range 0.048. Filed so that
+  "Not run" item is scored by a filed rule.
+Every rule: a missing state, nan (a log-odds gain within 1e-6 of 0) or an infinite value, or fewer than two values per
+kind → "unreadable" → stop and tell the user.
+
+**Positive control and stage 0 (first, alone, exit 1 on a miss).** Per state: the file's sha256 equals stage2.json's;
+`steering.b3` gives stage2.json's block and S; `steering.steer_at` with the log P readout (the function S_lo is read
+with, only the readout differing) gives the same S. Tolerance 1e-6 on S, from a measured floor: the unchanged path
+reproduced E52's S in E54's stage 0 to all 16 digits on the same card model, and across batch shapes this model's
+rounding is at most 9.5e-8 in share (stage2.json's block-0 shares, a zero vector). Reported, not a stop: the log-odds
+gain on all 97 windows against route_split's G_logodds, the same quantity through the component model at batch 64
+(expected within 1e-4; no floor between these paths is measured yet).
+
+**What each number is blind to.** S_lo: anything one input-independent vector at one position cannot carry; which keys
+carry the rise. Log-odds gives near-certain windows unbounded weight, as r's gain does, which is why this unit is read.
+r − S_lo sets two shares side by side in one unit: S_lo is a share of the target model's gain on 48 windows, r of the
+CI-masked model's re-gating term on 97. It is a table number, not a mechanism.
+
+**Branches (they feed the analysis's ratio table only).**
+- P1-lo and P2-lo hold → the table's "S estimated in log-odds units" row becomes a measurement: r gap (0.54) ÷ the S_lo
+  gap, in place of "over 10x".
+- P1-lo fails, elicit higher → in r's unit steering separates the matched pair: that row is replaced by the measured
+  ratio; tell the user before editing the report.
+- P1-lo reversed, P2-lo fails, any unreadable value, or a stage-0 miss → stop and tell the user.
+- P3-own fails → only possible if the stage-0 numbers differ from the analysis's: check the code before reading.
+
+**Departures from the literature.** None new. B3 departs from contrastive activation addition as the analysis states
+(difference of fine-tuned and original activations, added once at the answer position, multiplier 1). Reading its
+effect as a share of a log-odds gain rather than a log-probability gain is this project's unit choice, made to match
+the route split; it is not taken from a source.
+
+**Cost and route.** One MATS cluster debug job, one L40, $0, 2-4 minutes (model load and six sha256 reads dominate).
+Not gated. The runner commits `results/amend1.json` and the log; the job commits nothing.
+
+**Not run.** S_lo with the block chosen by its own fit-half log-odds share; S_lo at more than one position or with a
+multiplier; per-key S_lo; a matched random δW.
