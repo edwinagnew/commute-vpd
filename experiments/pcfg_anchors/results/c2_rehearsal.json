@@ -1,0 +1,154 @@
+{
+  "note": "rehearsal ($0, never scored): shapes of the full config, REHEARSAL's steps",
+  "decompose": {
+    "sizes": {
+      "steps": 400,
+      "stop_first": 200,
+      "save_every": 200,
+      "log_every": 50,
+      "alive_rows": 512,
+      "read_windows": 256,
+      "read_chunk": 64,
+      "read_batch": 32
+    },
+    "n_subcomponents": 38016,
+    "A_first": {
+      "step": 200,
+      "seconds": 276.34182583354414,
+      "records": [
+        {
+          "step": 0,
+          "eval": {
+            "l0/0.0_blocks.0.attn.proj": 356.1202087402344,
+            "l0/0.0_blocks.0.attn.qkv": 1205.6016845703125,
+            "l0/0.0_blocks.0.mlp.0": 865.8676147460938,
+            "l0/0.0_blocks.0.mlp.2": 710.6431884765625,
+            "l0/0.0_blocks.1.attn.proj": 354.008544921875,
+            "l0/0.0_blocks.1.attn.qkv": 1230.4603271484375,
+            "l0/0.0_blocks.1.mlp.0": 861.595703125,
+            "l0/0.0_blocks.1.mlp.2": 724.6898803710938,
+            "l0/0.0_blocks.2.attn.proj": 354.0379638671875,
+            "l0/0.0_blocks.2.attn.qkv": 1209.558349609375,
+            "l0/0.0_blocks.2.mlp.0": 867.0228881835938,
+            "l0/0.0_blocks.2.mlp.2": 713.1519775390625,
+            "l0/0.0_blocks.3.attn.proj": 363.8277587890625,
+            "l0/0.0_blocks.3.attn.qkv": 1221.961669921875,
+            "l0/0.0_blocks.3.mlp.0": 862.7286987304688,
+            "l0/0.0_blocks.3.mlp.2": 718.7208251953125,
+            "l0/0.0_blocks.4.attn.proj": 358.7784423828125,
+            "l0/0.0_blocks.4.attn.qkv": 1224.2332763671875,
+            "l0/0.0_blocks.4.mlp.0": 843.6088256835938,
+            "l0/0.0_blocks.4.mlp.2": 724.5470581054688,
+            "l0/0.0_blocks.5.attn.proj": 357.5593566894531,
+            "l0/0.0_blocks.5.attn.qkv": 1216.223388671875,
+            "l0/0.0_blocks.5.mlp.0": 848.8236694335938,
+            "l0/0.0_blocks.5.mlp.2": 723.4259643554688,
+            "l0/0.0_block_0": 3138.232666015625,
+            "l0/0.0_total": 18917.197265625,
+            "l0/0.0_block_1": 3170.75439453125,
+            "l0/0.0_block_2": 3143.771240234375,
+            "l0/0.0_block_3": 3167.239013671875,
+            "l0/0.0_block_4": 3151.16748046875,
+            "l0/0.0_block_5": 3146.032470703125,
+            "ce_kl/kl_ci_masked": 0.9667363129844961,
+            "ce_kl/kl_unmasked": 1.936618061808422e-06,
+            "ce_kl/kl_stoch_masked": 0.7921996005745822,
+            "ce_kl/kl_random_masked": 0.6773041717765867,
+            "ce_kl/kl_rounded_masked": 0.9570819943450218,
+            "ce_kl/kl_zero_masked": 0.964214472807655,
+            "ce_kl/ce_difference_ci_masked": 0.9568451282589935,
+            "ce_kl/ce_difference_unmasked": -9.387731552124023e-06,
+            "ce_kl/ce_difference_stoch_masked": 0.7698641636574916,
+            "ce_kl/ce_difference_random_masked": 0.6748249142668968,
+            "ce_kl/ce_difference_rounded_masked": 0.9440410525299782,
+            "ce_kl/ce_unrecovered_ci_masked": 0.9908241449400436,
+            "ce_kl/ce_unrecovered_unmasked": -9.721104423840379e-06,
+            "ce_kl/ce_unrecovered_stoch_masked": 0.7972031822500303,
+            "ce_kl/ce_unrecovered_random_masked": 0.6987889607747396,
+            "ce_kl/ce_unrecovered_rounded_masked": 0.9775654400965964,
+            "loss/PGDReconLoss": 13.34488582611084
+          }
+        },
+        {
+          "step": 50,
+          "ms_per_step": 1187.2879024595022,
+          "loss/ImportanceMinimalityLoss": 58.90222930908203,
+          "loss/StochasticReconSubsetLoss": 1.0128949880599976,
+          "loss/PersistentPGDReconLoss": 14.51863956451416,
+          "loss/FaithfulnessLoss": 1.4676866832985525e-08,
+          "loss/total": 7.971437931060791,
+          "l0/total": 149.2297101020813,
+          "gpu_alloc_gib": 46.27196741104126,
+          "gpu_reserved_gib": 46.71875,
+          "host_rss_gib": 1.9227943420410156
+        },
+        {
+          "step": 100,
+          "ms_per_step": 1185.3356729075313,
+          "loss/ImportanceMinimalityLoss": 45.0230598449707,
+          "loss/StochasticReconSubsetLoss": 1.0242211818695068,
+          "loss/PersistentPGDReconLoss": 14.757397651672363,
+          "loss/FaithfulnessLoss": 1.2159847351256303e-08,
+          "loss/total": 8.0574312210083,
+          "l0/total": 173.49242663383484,
+          "gpu_alloc_gib": 46.27196741104126,
+          "gpu_reserved_gib": 46.71875,
+          "host_rss_gib": 1.9227943420410156
+        },
+        {
+          "step": 150,
+          "ms_per_step": 1185.6308518350124,
+          "loss/ImportanceMinimalityLoss": 39.3980712890625,
+          "loss/StochasticReconSubsetLoss": 0.9323563575744629,
+          "loss/PersistentPGDReconLoss": 14.806634902954102,
+          "loss/FaithfulnessLoss": 7.766750798055e-09,
+          "loss/total": 7.986561298370361,
+          "l0/total": 139.4519727230072,
+          "gpu_alloc_gib": 46.27196741104126,
+          "gpu_reserved_gib": 46.71875,
+          "host_rss_gib": 1.9227943420410156
+        },
+        {
+          "step": 200,
+          "ms_per_step": 1182.6846849545836,
+          "loss/ImportanceMinimalityLoss": 38.04957962036133,
+          "loss/StochasticReconSubsetLoss": 0.9221389889717102,
+          "loss/PersistentPGDReconLoss": 14.901778221130371,
+          "loss/FaithfulnessLoss": 6.407172570277453e-09,
+          "loss/total": 8.014080047607422,
+          "l0/total": 111.24806237220764,
+          "gpu_alloc_gib": 46.27196741104126,
+          "gpu_reserved_gib": 46.71875,
+          "host_rss_gib": 1.9227943420410156
+        }
+      ],
+      "ckpt_gb": 8.357782453,
+      "gpu_alloc_gib": 46.27196741104126,
+      "gpu_reserved_gib": 46.71875,
+      "host_rss_gib": 2.0895957946777344,
+      "gpu_left_after_release_gib": 0.015869140625
+    }
+  },
+  "C67_cost": {
+    "n_subcomponents": 14592,
+    "step": 100,
+    "ckpt_gb": 3.348422027,
+    "ms_per_step": [
+      457.84278709441423,
+      442.52689231187105
+    ],
+    "gpu_alloc_gib": 18.624013423919678,
+    "gpu_reserved_gib": 18.98828125,
+    "host_rss_gib": 1.7335433959960938
+  },
+  "oom": {
+    "part": "decompose",
+    "at": [
+      "A_first"
+    ],
+    "error": "CUDA out of memory. Tried to allocate 182.00 MiB. GPU 0 has a total capacity of 47.30 GiB of which 130.94 MiB is free. Including non-PyTorch memory, this process has 47.17 GiB memory in use. Of the allocated memory 46.19 GiB is allocated by PyTorch, and 480.13 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
+    "gpu_alloc_gib": 46.20208978652954,
+    "gpu_reserved_gib": 46.681640625,
+    "host_rss_gib": 9.535881042480469
+  }
+}
