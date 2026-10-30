@@ -334,5 +334,135 @@
       "planted": "{units: [13 flat ids], alpha: float, floor: float} (replaces filing A's {units, abar, alpha}; w is recomputed from W0 and the rank-1 values)"
     },
     "rerun": "job 1's results/measure.json (job 46774) moved to ~/commute-data/stale/reuse-lead/measure_job46774.json (in git history at 2650657); job 1 rerun; every non-planted number must reproduce exactly"
+  },
+  "filing_B": {
+    "date": "2026-10-31",
+    "status": "filed",
+    "source": "results/measure.json, job 46808 (Amendment 1 rerun of job 1; commit a0eaa06; sha256 8e72464ac4aab5a22f06d2c51723a6d97405787b5c9bde4c5449d1a68fb48ca4). Filed after job 1 and before any instrument reads a real state; filing A and amendment_1 are unchanged. Leans revised per reports/plans/2026-10-31_advice_e55-c3-baselines-FABLE.md (option A, adopted by the lead).",
+    "D_void": 0.9781569716534397,
+    "noise_floor_R": 0.013548909650913859,
+    "planted": {
+      "units": [
+        10849,
+        9223,
+        11010,
+        10333,
+        10401,
+        10129,
+        11886,
+        11896,
+        11074,
+        10328,
+        10895,
+        11014,
+        10501
+      ],
+      "alpha": 0.590043038128897,
+      "floor": 3.501576524888727,
+      "kappa": 4.206754490084108,
+      "kappa_zeroed": 0.03913493963602256,
+      "ceiling": 0.9906971182349078,
+      "target_D": 7.003153049777454,
+      "fallback": true
+    },
+    "planted_job1": {
+      "reading": "pass",
+      "found": 12,
+      "note": "job 1 item 6: built (D 4.207 >= floor 3.502), 12 of 13 found, R 0.973 >= 0.793 (0.8 x ceiling 0.991); reverse t_half 3.97 steps (reached D/2), weights back at W0. alpha is the off-answer-KL fallback (target 7.003 not reachable within 0.577), as amendment_1 allows."
+    },
+    "prior": {
+      "cipher": -14.323512567056191,
+      "copy": -8.854035132640117,
+      "elicit": -5.781429277883993,
+      "rank1": -5.000837886655653
+    },
+    "measured": {
+      "D_mean": {
+        "cipher": 4.890784858267199,
+        "copy": 7.842010343823354,
+        "elicit": 10.53007098906077,
+        "rank1": 8.71741347600564
+      },
+      "mlp_share_mean": {
+        "cipher": 0.7048120572657175,
+        "copy": 0.6767149775105518,
+        "elicit": 0.6872380446397978,
+        "rank1": 0.686379433611207
+      },
+      "off_kl_max": 0.5767047215406131,
+      "p_D": {
+        "p": 1.4736956977357314,
+        "p_lo": 1.4251648217356234,
+        "p_hi": 1.5316812582695978,
+        "p_copy": 0.7712338406386416,
+        "side": "VPD",
+        "status": "ok"
+      },
+      "p_prior": {
+        "p": 0.916269588075468,
+        "p_lo": 0.916269588075468,
+        "p_hi": 0.916269588075468,
+        "p_copy": 0.586685433303255,
+        "side": "VPD",
+        "status": "ok"
+      },
+      "reading": "D measures how peaked the state became (KL(p_W0 || p_m) rewards sharpening), not distance in the plan section 4 sense; p_prior 0.92 is the construction (elicit values are W0 ranks 2-20, W0 nearly flat over its top 20), its zero-width bootstrap because the prior is per map. On this axis the decomposition-free baselines already place elicit at the old end by construction, so the live question is whether the instruments disagree with VPD."
+    },
+    "rules_5_6": "kept as filed in filing A. Both baselines read firm VPD (p_D 1.47, p_prior 0.92), so any instrument reading on the VPD side converts to distance and prior: shared and conflict are unreachable; label, between and VPD alone (outcome b) stay reachable.",
+    "unfiled_reading": "an unfiled 0.1-clause-only reading (rules 5-6 firing only when |p - p_base| <= 0.1, without the same-side clause) will be reported beside the filed verdict, labelled unfiled; it does not replace the filed verdict.",
+    "predictions": {
+      "C0b": {
+        "claim": "job 2 seed-0 reproduction and job 3 stage 0 pass: lens, both planted controls, weights back at W0 after every reverse",
+        "lean": "85% (planted pruning 95% and planted reverse 95%: both passed in job 1 and stage 0 recomputes them deterministically; reproduction 90%)"
+      },
+      "P1": {
+        "claim": "each new instrument reads the rank1-to-cipher gap in its filed direction",
+        "rule": "rules.gap == ok",
+        "lean": {
+          "R": "55%",
+          "t_half": "65%"
+        },
+        "note": "unchanged from filing A draft; R noise floor now 0.01355"
+      },
+      "P2": {
+        "claim": "pruning places elicit at the old end",
+        "rule": "rules side, firm, distance, prior on R",
+        "lean": {
+          "VPD": "0% (rules 5-6 convert any VPD-side reading to distance and prior)",
+          "between": "10%",
+          "label": "5%",
+          "distance_or_prior": "35%",
+          "no_gap_reversed_void": "50%"
+        }
+      },
+      "P3": {
+        "claim": "reverse fine-tuning places elicit at the old end",
+        "rule": "rules censoring, side, firm, distance, prior on t_half",
+        "lean": {
+          "VPD": "0% (rules 5-6 convert any VPD-side reading to distance and prior)",
+          "between": "10%",
+          "label": "10%",
+          "distance_or_prior": "45%",
+          "no_gap_reversed_censored": "35%"
+        }
+      },
+      "V": {
+        "claim": "joint verdict",
+        "rule": "rules.verdict_joint",
+        "lean": {
+          "shared_or_shared_by_X": "0% (unreachable: rules 5-6)",
+          "VPD_alone_incl_by_X": "15%",
+          "conflict": "0% (unreachable: rules 5-6)",
+          "not_settled": "85%"
+        },
+        "note": "VPD alone is outcome (b), the one that bears on the user priority: reported to the user at once if it reads"
+      },
+      "P_copy": {
+        "claim": "reported column: where an instrument reads the gap (status ok), its p_copy sits nearer r (0.9960) than the prior (0.5867)",
+        "rule": "per instrument with gap status ok: p_copy > 0.79133 (the midpoint of r p_copy 0.99597, E58 seeds 0-2, and the prior p_copy 0.58669, job 1), point estimate, strict; an instrument without gap ok has no reading; nan p_copy reads no",
+        "lean": "55% per instrument",
+        "why": "copy is the one map where prior (0.59), D (0.77) and r (about 1.0) differ: the only free separation of prior from old pieces among the states"
+      }
+    }
   }
 }

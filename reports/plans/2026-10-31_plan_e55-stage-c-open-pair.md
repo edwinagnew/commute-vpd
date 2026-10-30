@@ -436,3 +436,14 @@ the `amendment_1` block in `results/predictions.json` replace its planted `units
 **Rerun.** Job 1's `results/measure.json` (job 46774) moves to `~/commute-data/stale/reuse-lead/measure_job46774.json`
 (it stays in git history at 2650657) and job 1 runs again. Every number other than the planted wrapper and its checks
 must reproduce exactly (D, prior, off-answer KL, MLP share, R's floor, D_void); any difference is reported.
+
+**Filing B, 2026-10-31 (after the Amendment 1 rerun, job 46808).** The planted control was built and passed (D 4.21
+against a floor of 3.50; 12 of 13 found; R 0.973 against 0.793), and every other job-1 number reproduced exactly, so
+filing B is appended to `results/predictions.json` from the new `filing_B_draft`, following Fable's advice
+(`reports/plans/2026-10-31_advice_e55-c3-baselines-FABLE.md`, option A, adopted by the lead). Rules 5-6 stay as filed.
+Both decomposition-free baselines read firm VPD (p_D 1.47, p_prior 0.92, the prior by construction), so any instrument
+reading on the VPD side converts to "distance and prior": the leans for P2 and P3 "VPD" and for V "shared" and
+"conflict" are 0. "Label", "between" and "VPD alone" (outcome b) stay reachable and keep their mass. A new reported-column
+prediction, P_copy, leans 55% that an instrument reading the gap puts copy nearer r's position (1.00) than the prior's
+(0.59), above the midpoint 0.791. An unfiled reading in which rules 5-6 fire only under the 0.1 clause will be reported
+beside the filed verdict, labelled unfiled.
