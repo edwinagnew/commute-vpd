@@ -1477,3 +1477,119 @@
 [  981.0s] [E a1_s0] generation at 100: {"test": {"k": 256, "k_fits": 254, "fits_share": 0.9921875, "truncation_share": 0.0078125, "strict_dropped": 0.6417322834645669, "lenient_dropped": 0.6692913385826772, "strict_all": 0.63671875, "strict_capped": 0.63671875, "lenient_capped": 0.6640625, "response_mean": 135.26953125}, "format_unprompted": 0.91796875}
 [  981.1s] [score] {"own_accuracy": {"n": 1220, "diff": 0.05245901639344262, "holds": true}, "own_length": {"ratio": 1.0292667627946468, "holds": true}, "gold_length": {"ratio": 0.47763877042878944, "holds": true}, "anchor1_learns_s0": {"gap": 0.9423519046168631, "holds": true}, "anchor2_learns_s0": {"invented": 0.319, "known": 1, "known_w0": 0.97, "holds": false}, "anchor1_learns_s1": {"gap": null, "holds": false}, "anchor2_learns_s1": {"known_w0": 0.97, "holds": false}, "amend1_anchor2_learns_s0": {"invented": 0.999, "known": 1, "known_w0": 0.97, "at_100": {"invented": 0.91, "known": 1}, "holds": true}, "amend1_anchor2_learns_s1": {"invented": 1, "known": 0.99, "known_w0": 0.97, "at_100": {"invented": 0.905, "known": 0.99}, "holds": true}, "amend2_decisive": {"gold_s0": {"read": {"step": 100, "kl": 0.6965749067378741, "log_dist": 0.119387873, "matched": true}, "nearest_unlearned": {"step": null, "kl": null, "log_dist": null, "matched": false}, "dw_norm": 3.391508850987585, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.09581425899327362, "learned": true}]}, "own_s0": {"read": {"step": null, "kl": null, "log_dist": null, "matched": false}, "nearest_unlearned": {"step": 4, "kl": 0.13014219782798575, "log_dist": 1.55815978, "matched": false}, "dw_norm": null, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.13014219782798575, "learned": false}]}, "own2_s0": null, "null_s0": {"read": {"step": null, "kl": null, "log_dist": null, "matched": false}, "nearest_unlearned": {"step": 8, "kl": 0.30518625529622906, "log_dist": 0.705865198, "matched": false}, "dw_norm": null, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.13414954987302927, "learned": false}]}, "a1_s0": {"read": {"step": 100, "kl": 0.33286824948788046, "log_dist": 0.619040697, "matched": false}, "nearest_unlearned": {"step": null, "kl": null, "log_dist": null, "matched": false}, "dw_norm": 3.140686433059167, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.08536725940651664, "learned": true}]}, "a1_s1": null, "a2long_s0": {"read": {"step": 100, "kl": 0.6289733393862986, "log_dist": 0.017301408, "matched": true}, "nearest_unlearned": {"step": 12, "kl": 0.3067354476689652, "log_dist": 0.70080182, "matched": false}, "dw_norm": 5.155871978411772, "filed_point": [{"axis": "own", "grid": 0.1, "step": 2, "kl": 0.06810999676356719, "learned": false}]}, "a2long_s1": {"read": {"step": 100, "kl": 0.6073962852498345, "log_dist": 0.017606025, "matched": true}, "nearest_unlearned": {"step": 12, "kl": 0.31024919659251654, "log_dist": 0.689411627, "matched": false}, "dw_norm": 5.099912748062527, "filed_point": [{"axis": "own", "grid": 0.1, "step": 2, "kl": 0.06404295101443958, "learned": false}]}}}
 [  981.1s] [E] done; peak GPU 29.8 GB, host 11.0 GB
+[    3.3s] [T a1_s1] start; NVIDIA L40
+[   24.1s] [check] step 1 at rate 0 leaves W0: ok {"lr": 0.0, "dw_norm": 0.0}
+[   24.1s] [T a1_s1] step 1: lr 0.00e+00, loss 0.9599, |dW| 0.0000, KL {"maths": 0.0, "own": 0.0}
+[   64.8s] [check] step 2 |dW| / (rate sqrt numel): ok {"min": 0.6307736376204277, "max": 0.9309681806441656}
+[   64.8s] [check] step 2 KL on the maths rows: ok {"kl": 0.0046360931353718, "max": 0.010679004420388162}
+[   64.9s] [T a1_s1] step 2: lr 1.00e-06, loss 0.9157, |dW| 0.0334, KL {"maths": 0.004333125909363134, "own": 0.007839287040906029}
+[   85.4s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_3.safetensors (2.82 GB)
+[   92.6s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_2.safetensors (2.82 GB)
+[   92.8s] [T a1_s1] step 3: lr 2.00e-06, loss 0.9336, |dW| 0.0976, KL {"maths": 0.021789174291156142, "own": 0.04150193472525669}
+[  113.7s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_4.safetensors (2.82 GB)
+[  113.7s] [T a1_s1] step 4: lr 3.00e-06, loss 0.9174, |dW| 0.1924, KL {"maths": 0.047790961503078516, "own": 0.08835294902972503}
+[  132.6s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_5.safetensors (2.82 GB)
+[  132.6s] [T a1_s1] step 5: lr 4.00e-06, loss 0.8125, |dW| 0.3165, KL {"maths": 0.08019488330752678, "own": 0.13807407319166543}
+[  152.1s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_6.safetensors (2.82 GB)
+[  152.1s] [T a1_s1] step 6: lr 5.00e-06, loss 0.5393, |dW| 0.4619, KL {"maths": 0.11882704549584908, "own": 0.19059907644512247}
+[  163.8s] [T a1_s1] step 7: lr 6.00e-06, loss 0.4874, |dW| 0.6295, KL {"maths": 0.1579237149783975, "own": 0.24252948681361436}
+[  183.5s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_8.safetensors (2.82 GB)
+[  191.7s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_7.safetensors (2.82 GB)
+[  191.7s] [T a1_s1] step 8: lr 7.00e-06, loss 0.2828, |dW| 0.7961, KL {"maths": 0.20089851745686374, "own": 0.3047973632389283}
+[  203.6s] [T a1_s1] step 9: lr 8.00e-06, loss 0.2513, |dW| 0.9661, KL {"maths": 0.24965048336050827, "own": 0.37538480835606003}
+[  215.3s] [T a1_s1] step 10: lr 9.00e-06, loss 0.2192, |dW| 1.1330, KL {"maths": 0.26194711664795683, "own": 0.4076536547942053}
+[  227.7s] [T a1_s1] step 11: lr 1.00e-05, loss 0.1748, |dW| 1.2985, KL {"maths": 0.26195816513583114, "own": 0.4277805614825409}
+[  238.9s] [T a1_s1] step 12: lr 1.00e-05, loss 0.1572, |dW| 1.4469, KL {"maths": 0.26354120475667764, "own": 0.44767979387268964}
+[  250.2s] [T a1_s1] step 13: lr 9.99e-06, loss 0.1257, |dW| 1.5790, KL {"maths": 0.2729661102806998, "own": 0.4745291351951764}
+[  261.5s] [T a1_s1] step 14: lr 9.97e-06, loss 0.1147, |dW| 1.6978, KL {"maths": 0.27786808416327563, "own": 0.4817257542626465}
+[  273.1s] [T a1_s1] step 15: lr 9.95e-06, loss 0.1148, |dW| 1.8033, KL {"maths": 0.27589082090535444, "own": 0.4745605518577859}
+[  284.7s] [T a1_s1] step 16: lr 9.92e-06, loss 0.1174, |dW| 1.8984, KL {"maths": 0.27718853861511844, "own": 0.4769225279478649}
+[  296.9s] [T a1_s1] step 17: lr 9.89e-06, loss 0.1126, |dW| 1.9851, KL {"maths": 0.2808182927825938, "own": 0.4824959082924667}
+[  308.5s] [T a1_s1] step 18: lr 9.85e-06, loss 0.1113, |dW| 2.0647, KL {"maths": 0.28852096280842865, "own": 0.4948099715766252}
+[  320.4s] [T a1_s1] step 19: lr 9.81e-06, loss 0.0976, |dW| 2.1380, KL {"maths": 0.29746568828938263, "own": 0.5109541589737386}
+[  338.4s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_20.safetensors (2.82 GB)
+[  345.9s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_19.safetensors (2.82 GB)
+[  345.9s] [T a1_s1] step 20: lr 9.76e-06, loss 0.0987, |dW| 2.2056, KL {"maths": 0.30693601799690495, "own": 0.5311460904387477}
+[  357.3s] [T a1_s1] step 21: lr 9.70e-06, loss 0.0843, |dW| 2.2684, KL {"maths": 0.31577143716950673, "own": 0.5465084456410151}
+[  368.8s] [T a1_s1] step 22: lr 9.64e-06, loss 0.0985, |dW| 2.3262, KL {"maths": 0.3194689060819053, "own": 0.5515724446709503}
+[  379.8s] [T a1_s1] step 23: lr 9.57e-06, loss 0.1025, |dW| 2.3796, KL {"maths": 0.32003046240590366, "own": 0.5473698308035386}
+[  391.2s] [T a1_s1] step 24: lr 9.49e-06, loss 0.0885, |dW| 2.4291, KL {"maths": 0.315624031163345, "own": 0.535584326032474}
+[  402.6s] [T a1_s1] step 25: lr 9.41e-06, loss 0.0778, |dW| 2.4747, KL {"maths": 0.3112024119724911, "own": 0.530036319112021}
+[  414.1s] [T a1_s1] step 26: lr 9.33e-06, loss 0.0855, |dW| 2.5174, KL {"maths": 0.3115428663336819, "own": 0.5312681500816285}
+[  425.3s] [T a1_s1] step 27: lr 9.24e-06, loss 0.1007, |dW| 2.5575, KL {"maths": 0.31414396442665676, "own": 0.5345536553309379}
+[  436.8s] [T a1_s1] step 28: lr 9.15e-06, loss 0.0758, |dW| 2.5946, KL {"maths": 0.3178661490802781, "own": 0.5404796840422618}
+[  448.2s] [T a1_s1] step 29: lr 9.05e-06, loss 0.0812, |dW| 2.6290, KL {"maths": 0.3211837901488096, "own": 0.5456572584683048}
+[  459.1s] [T a1_s1] step 30: lr 8.94e-06, loss 0.0824, |dW| 2.6616, KL {"maths": 0.3241346917547744, "own": 0.5522042477352078}
+[  463.1s] [T a1_s1] step 31: lr 8.83e-06, loss 0.0844, |dW| 2.6920
+[  466.9s] [T a1_s1] step 32: lr 8.72e-06, loss 0.0795, |dW| 2.7208
+[  470.9s] [T a1_s1] step 33: lr 8.60e-06, loss 0.0839, |dW| 2.7478
+[  475.1s] [T a1_s1] step 34: lr 8.47e-06, loss 0.0853, |dW| 2.7730
+[  486.9s] [T a1_s1] step 35: lr 8.35e-06, loss 0.0753, |dW| 2.7966, KL {"maths": 0.32281034532989605, "own": 0.5491887968171073}
+[  491.6s] [T a1_s1] step 36: lr 8.21e-06, loss 0.0837, |dW| 2.8189
+[  495.8s] [T a1_s1] step 37: lr 8.08e-06, loss 0.0730, |dW| 2.8400
+[  500.1s] [T a1_s1] step 38: lr 7.94e-06, loss 0.0972, |dW| 2.8600
+[  504.1s] [T a1_s1] step 39: lr 7.80e-06, loss 0.0832, |dW| 2.8790
+[  515.9s] [T a1_s1] step 40: lr 7.65e-06, loss 0.0866, |dW| 2.8970, KL {"maths": 0.328445373060643, "own": 0.5642871983128424}
+[  520.3s] [T a1_s1] step 41: lr 7.50e-06, loss 0.0744, |dW| 2.9140
+[  524.8s] [T a1_s1] step 42: lr 7.35e-06, loss 0.0690, |dW| 2.9300
+[  528.6s] [T a1_s1] step 43: lr 7.19e-06, loss 0.0780, |dW| 2.9452
+[  532.8s] [T a1_s1] step 44: lr 7.03e-06, loss 0.0873, |dW| 2.9592
+[  545.5s] [T a1_s1] step 45: lr 6.87e-06, loss 0.0812, |dW| 2.9723, KL {"maths": 0.3296834678255156, "own": 0.5730109986400328}
+[  549.1s] [T a1_s1] step 46: lr 6.71e-06, loss 0.0819, |dW| 2.9847
+[  553.1s] [T a1_s1] step 47: lr 6.55e-06, loss 0.0773, |dW| 2.9963
+[  557.8s] [T a1_s1] step 48: lr 6.38e-06, loss 0.0751, |dW| 3.0073
+[  561.7s] [T a1_s1] step 49: lr 6.21e-06, loss 0.0807, |dW| 3.0176
+[  573.3s] [T a1_s1] step 50: lr 6.04e-06, loss 0.0779, |dW| 3.0274, KL {"maths": 0.32476467300300366, "own": 0.5693633441853632}
+[  577.7s] [T a1_s1] step 51: lr 5.87e-06, loss 0.0872, |dW| 3.0365
+[  582.2s] [T a1_s1] step 52: lr 5.70e-06, loss 0.0806, |dW| 3.0449
+[  586.3s] [T a1_s1] step 53: lr 5.52e-06, loss 0.0778, |dW| 3.0527
+[  590.1s] [T a1_s1] step 54: lr 5.35e-06, loss 0.0800, |dW| 3.0601
+[  601.8s] [T a1_s1] step 55: lr 5.17e-06, loss 0.0639, |dW| 3.0670, KL {"maths": 0.32125493718481957, "own": 0.5678574373063647}
+[  605.8s] [T a1_s1] step 56: lr 5.00e-06, loss 0.0709, |dW| 3.0735
+[  610.1s] [T a1_s1] step 57: lr 4.83e-06, loss 0.0726, |dW| 3.0794
+[  614.3s] [T a1_s1] step 58: lr 4.65e-06, loss 0.0630, |dW| 3.0850
+[  618.4s] [T a1_s1] step 59: lr 4.48e-06, loss 0.0621, |dW| 3.0902
+[  629.9s] [T a1_s1] step 60: lr 4.30e-06, loss 0.0773, |dW| 3.0950, KL {"maths": 0.31910261722005323, "own": 0.5736344872644049}
+[  634.2s] [T a1_s1] step 61: lr 4.13e-06, loss 0.0581, |dW| 3.0995
+[  638.4s] [T a1_s1] step 62: lr 3.96e-06, loss 0.0633, |dW| 3.1036
+[  642.5s] [T a1_s1] step 63: lr 3.79e-06, loss 0.0696, |dW| 3.1073
+[  646.6s] [T a1_s1] step 64: lr 3.62e-06, loss 0.0717, |dW| 3.1108
+[  658.4s] [T a1_s1] step 65: lr 3.45e-06, loss 0.0764, |dW| 3.1139, KL {"maths": 0.3225949994304668, "own": 0.5920982213984631}
+[  662.6s] [T a1_s1] step 66: lr 3.29e-06, loss 0.0674, |dW| 3.1167
+[  666.6s] [T a1_s1] step 67: lr 3.13e-06, loss 0.0628, |dW| 3.1191
+[  670.6s] [T a1_s1] step 68: lr 2.97e-06, loss 0.0540, |dW| 3.1213
+[  674.8s] [T a1_s1] step 69: lr 2.81e-06, loss 0.0760, |dW| 3.1233
+[  686.7s] [T a1_s1] step 70: lr 2.65e-06, loss 0.0672, |dW| 3.1250, KL {"maths": 0.3208773171747785, "own": 0.5934168283208882}
+[  691.0s] [T a1_s1] step 71: lr 2.50e-06, loss 0.0792, |dW| 3.1265
+[  695.6s] [T a1_s1] step 72: lr 2.35e-06, loss 0.0618, |dW| 3.1279
+[  699.8s] [T a1_s1] step 73: lr 2.20e-06, loss 0.0624, |dW| 3.1292
+[  704.2s] [T a1_s1] step 74: lr 2.06e-06, loss 0.0593, |dW| 3.1303
+[  715.6s] [T a1_s1] step 75: lr 1.92e-06, loss 0.0660, |dW| 3.1314, KL {"maths": 0.3207176368482252, "own": 0.5955358688822917}
+[  719.9s] [T a1_s1] step 76: lr 1.79e-06, loss 0.0580, |dW| 3.1322
+[  723.8s] [T a1_s1] step 77: lr 1.65e-06, loss 0.0695, |dW| 3.1329
+[  728.0s] [T a1_s1] step 78: lr 1.53e-06, loss 0.0703, |dW| 3.1335
+[  732.1s] [T a1_s1] step 79: lr 1.40e-06, loss 0.0520, |dW| 3.1340
+[  743.9s] [T a1_s1] step 80: lr 1.28e-06, loss 0.0626, |dW| 3.1344, KL {"maths": 0.32127191946184674, "own": 0.5947213648997949}
+[  747.9s] [T a1_s1] step 81: lr 1.17e-06, loss 0.0613, |dW| 3.1347
+[  752.2s] [T a1_s1] step 82: lr 1.06e-06, loss 0.0503, |dW| 3.1350
+[  756.1s] [T a1_s1] step 83: lr 9.55e-07, loss 0.0532, |dW| 3.1352
+[  760.5s] [T a1_s1] step 84: lr 8.55e-07, loss 0.0553, |dW| 3.1354
+[  772.3s] [T a1_s1] step 85: lr 7.60e-07, loss 0.0575, |dW| 3.1355, KL {"maths": 0.32067704259108154, "own": 0.5945973139514883}
+[  776.1s] [T a1_s1] step 86: lr 6.70e-07, loss 0.0575, |dW| 3.1356
+[  780.2s] [T a1_s1] step 87: lr 5.85e-07, loss 0.0615, |dW| 3.1357
+[  784.1s] [T a1_s1] step 88: lr 5.06e-07, loss 0.0610, |dW| 3.1358
+[  788.5s] [T a1_s1] step 89: lr 4.32e-07, loss 0.0554, |dW| 3.1358
+[  800.8s] [T a1_s1] step 90: lr 3.64e-07, loss 0.0543, |dW| 3.1358, KL {"maths": 0.32123653441367955, "own": 0.5980290586103704}
+[  805.1s] [T a1_s1] step 91: lr 3.02e-07, loss 0.0470, |dW| 3.1358
+[  809.1s] [T a1_s1] step 92: lr 2.45e-07, loss 0.0555, |dW| 3.1359
+[  813.3s] [T a1_s1] step 93: lr 1.94e-07, loss 0.0687, |dW| 3.1359
+[  817.3s] [T a1_s1] step 94: lr 1.49e-07, loss 0.0568, |dW| 3.1358
+[  828.7s] [T a1_s1] step 95: lr 1.09e-07, loss 0.0550, |dW| 3.1358, KL {"maths": 0.32140649961873613, "own": 0.5992837195786557}
+[  832.9s] [T a1_s1] step 96: lr 7.60e-08, loss 0.0511, |dW| 3.1358
+[  836.9s] [T a1_s1] step 97: lr 4.87e-08, loss 0.0675, |dW| 3.1358
+[  841.0s] [T a1_s1] step 98: lr 2.74e-08, loss 0.0537, |dW| 3.1358
+[  845.0s] [T a1_s1] step 99: lr 1.22e-08, loss 0.0515, |dW| 3.1358
+[  864.6s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a1_s1/step_100.safetensors (2.82 GB)
+[  864.6s] [T a1_s1] step 100: lr 3.05e-09, loss 0.0584, |dW| 3.1358, KL {"maths": 0.3214487301596601, "own": 0.5994646290459732}
+[  864.7s] [score] {"own_accuracy": {"n": 1220, "diff": 0.05245901639344262, "holds": true}, "own_length": {"ratio": 1.0292667627946468, "holds": true}, "gold_length": {"ratio": 0.47763877042878944, "holds": true}, "anchor1_learns_s0": {"gap": 0.9423519046168631, "holds": true}, "anchor2_learns_s0": {"invented": 0.319, "known": 1, "known_w0": 0.97, "holds": false}, "anchor1_learns_s1": {"gap": null, "holds": false}, "anchor2_learns_s1": {"known_w0": 0.97, "holds": false}, "amend1_anchor2_learns_s0": {"invented": 0.999, "known": 1, "known_w0": 0.97, "at_100": {"invented": 0.91, "known": 1}, "holds": true}, "amend1_anchor2_learns_s1": {"invented": 1, "known": 0.99, "known_w0": 0.97, "at_100": {"invented": 0.905, "known": 0.99}, "holds": true}, "amend2_decisive": {"gold_s0": {"read": {"step": 100, "kl": 0.6965749067378741, "log_dist": 0.119387873, "matched": true}, "nearest_unlearned": {"step": null, "kl": null, "log_dist": null, "matched": false}, "dw_norm": 3.391508850987585, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.09581425899327362, "learned": true}]}, "own_s0": {"read": {"step": null, "kl": null, "log_dist": null, "matched": false}, "nearest_unlearned": {"step": 4, "kl": 0.13014219782798575, "log_dist": 1.55815978, "matched": false}, "dw_norm": null, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.13014219782798575, "learned": false}]}, "own2_s0": null, "null_s0": {"read": {"step": null, "kl": null, "log_dist": null, "matched": false}, "nearest_unlearned": {"step": 8, "kl": 0.30518625529622906, "log_dist": 0.705865198, "matched": false}, "dw_norm": null, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.13414954987302927, "learned": false}]}, "a1_s0": {"read": {"step": 100, "kl": 0.33286824948788046, "log_dist": 0.619040697, "matched": false}, "nearest_unlearned": {"step": null, "kl": null, "log_dist": null, "matched": false}, "dw_norm": 3.140686433059167, "filed_point": [{"axis": "own", "grid": 0.1, "step": 4, "kl": 0.08536725940651664, "learned": true}]}, "a1_s1": null, "a2long_s0": {"read": {"step": 100, "kl": 0.6289733393862986, "log_dist": 0.017301408, "matched": true}, "nearest_unlearned": {"step": 12, "kl": 0.3067354476689652, "log_dist": 0.70080182, "matched": false}, "dw_norm": 5.155871978411772, "filed_point": [{"axis": "own", "grid": 0.1, "step": 2, "kl": 0.06810999676356719, "learned": false}]}, "a2long_s1": {"read": {"step": 100, "kl": 0.6073962852498345, "log_dist": 0.017606025, "matched": true}, "nearest_unlearned": {"step": 12, "kl": 0.31024919659251654, "log_dist": 0.689411627, "matched": false}, "dw_norm": 5.099912748062527, "filed_point": [{"axis": "own", "grid": 0.1, "step": 2, "kl": 0.06404295101443958, "learned": false}]}}}
+[  864.7s] [T] done; peak GPU 40.1 GB, host 11.0 GB
