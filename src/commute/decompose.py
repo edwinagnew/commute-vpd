@@ -14,6 +14,7 @@ is given (`batch_dims`); evaluation runs through `evaluate` on the caller's iter
 
 from __future__ import annotations
 
+import gc
 import resource
 import time
 from collections.abc import Callable, Iterator
@@ -179,9 +180,10 @@ def save(path: Path, d: Decomp, step: int) -> None:
 
 
 def load(path: Path, d: Decomp) -> int:
-    """Load a `save` file into a freshly built `d`; returns its step."""
-    dev = next(d.model.parameters()).device
-    state = torch.load(path, map_location=dev, weights_only=False)
+    """Load a `save` file into a freshly built `d`; returns its step. Read to CPU first: each tensor is copied onto the
+    device by load_state_dict / copy_, so the file never sits on the GPU beside the built state (job 46971 OOMed with
+    an 8.4 GB file loaded straight to an L40 already holding the run)."""
+    state = torch.load(path, map_location="cpu", weights_only=False)
     d.model.load_state_dict(state["model"])
     d.opt_c.load_state_dict(state["opt_c"])
     d.opt_ci.load_state_dict(state["opt_ci"])
@@ -192,6 +194,16 @@ def load(path: Path, d: Decomp) -> int:
     if state["cuda_rng"]:
         torch.cuda.set_rng_state_all([r.cpu() for r in state["cuda_rng"]])
     return int(state["step"])
+
+
+def release(d: Decomp) -> None:
+    """Drop a decomposition's GPU state: model, optimizers and persistent-PGD sources, then collect the reference
+    cycles (module hooks) and return the cached blocks, so a rebuild in the same process starts from an empty card."""
+    d.ppgd.clear()
+    del d.model, d.opt_c, d.opt_ci
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 
 def save_final(path: Path, d: Decomp, step: int) -> None:
@@ -205,7 +217,7 @@ def save_final(path: Path, d: Decomp, step: int) -> None:
 def load_final(path: Path, target: nn.Module, config: Any, device: str | torch.device) -> tuple[Any, int]:
     """(the frozen component model in eval mode, its step) from a `save_final` or `save` file."""
     model = component_model(target, config, device)
-    state = torch.load(path, map_location=device, weights_only=False)
+    state = torch.load(path, map_location="cpu", weights_only=False)
     model.load_state_dict(state["model"])
     model.requires_grad_(False)
     return model.eval(), int(state["step"])
@@ -215,11 +227,12 @@ def load_final(path: Path, target: nn.Module, config: Any, device: str | torch.d
 
 
 def memory() -> dict[str, float]:
-    """Peak GPU memory allocated and reserved (GB, since the last reset) and the process's peak host RSS (GB)."""
+    """Peak GPU memory allocated and reserved (GiB, since the last reset_peak_memory_stats) and the process's peak
+    host RSS (GiB; ru_maxrss is in KiB on Linux)."""
     gpu = torch.cuda.is_available()
-    return {"gpu_alloc_gb": torch.cuda.max_memory_allocated() / 1e9 if gpu else 0.0,
-            "gpu_reserved_gb": torch.cuda.max_memory_reserved() / 1e9 if gpu else 0.0,
-            "host_rss_gb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6}  # fmt: skip
+    return {"gpu_alloc_gib": torch.cuda.max_memory_allocated() / 2**30 if gpu else 0.0,
+            "gpu_reserved_gib": torch.cuda.max_memory_reserved() / 2**30 if gpu else 0.0,
+            "host_rss_gib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20}  # fmt: skip
 
 
 @dataclass(frozen=True)

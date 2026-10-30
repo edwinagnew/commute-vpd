@@ -157,3 +157,12 @@ def test_shares_rules_and_edge_cases() -> None:
     assert math.isnan(below["ratio"]) and below["r"] == 0.0
     neg = pcfg_vpd.shares(_cells(U1=-1.0, T1=-1.0, L01=0.5), 0.1)  # a negative subcomponent gain is under the floor
     assert math.isnan(neg["ratio"]) and neg["r"] == pytest.approx(-0.5)
+
+
+def test_release_drops_the_state(tmp_path: Path) -> None:
+    d = D.build(Toy(), toy_config(2), (B, T), "cpu")
+    D.run(d, batches, tmp_path / "c.pt", D.Plan(1, 1, 1), log=lambda _m: None)
+    D.release(d)
+    assert not d.ppgd and not hasattr(d, "model") and not hasattr(d, "opt_c")
+    e = D.build(Toy(), toy_config(2), (B, T), "cpu")  # the resume path reads the file from CPU
+    assert D.load(tmp_path / "c.pt", e) == 1

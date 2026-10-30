@@ -7,7 +7,7 @@ One decomposition of LOW on LOW's own pretraining rows (pcfg.pretrain_batch, pri
 re-gating share r and the stand-in ratio (`commute.pcfg_vpd`) on natural 'C b 40' rows labelled with the state's task.
 
 Stages (repo root, GPU):
-  rehearse   $0, never scored (plan gate 3). With the full config's shapes (C, batch, CI function) but REHEARSAL's step
+  rehearse   $0, never scored (plan gate 3). First 100 steps at the 14,592-subcomponent alternative (cost only). With the full config's shapes (C, batch, CI function) but REHEARSAL's step
              count: run A trains to stop_first, saves, is deleted, is rebuilt from the file and trains on to the end;
              run B trains the same steps unbroken; A and B are compared. Then the alive set and LOW's lift context
              from A's decomposition, and both readings on the zero update (do-nothing) and two calibration states.
@@ -27,6 +27,7 @@ import argparse
 import json
 import sys
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -117,47 +118,58 @@ def decomp_run(cfg: Any, ckpt: Path, plan: D.Plan, with_eval: bool) -> tuple[D.D
     return d, step, recs
 
 
-def free(d: D.Decomp) -> None:
-    del d.model, d.opt_c, d.opt_ci, d.ppgd
-    torch.cuda.empty_cache()
+def free(d: D.Decomp) -> float:
+    """Release d's GPU state (decompose.release); returns the GiB still allocated afterwards (should be ~LOW only)."""
+    D.release(d)
+    return torch.cuda.memory_allocated() / 2**30
 
 
 # ---- rehearsal ----
 
 
-def rehearse_decompose(sz: Sizes, out_dir: Path) -> dict[str, Any]:
+Dump = Callable[[], None]
+
+
+def rehearse_decompose(sz: Sizes, out_dir: Path, rec: dict[str, Any], dump: Dump) -> None:
+    """Fills `rec` part by part, calling `dump` after each, so a crash keeps what was measured."""
     cfg = D.load_config(CONFIG, steps=sz.steps)
-    rec: dict[str, Any] = {"sizes": asdict(sz), "n_subcomponents": None}
+    rec["sizes"] = asdict(sz)
     ck_a, ck_b = out_dir / "A_train.pt", out_dir / "B_train.pt"
     for p in (ck_a, ck_b):
-        p.unlink(missing_ok=True)
+        p.unlink(missing_ok=True)  # incl. a stale file from an earlier rehearsal (job 46971's 8.4 GB A_train.pt)
     torch.cuda.reset_peak_memory_stats()
     t = time.perf_counter()
     d, step, recs_a1 = decomp_run(cfg, ck_a, D.Plan(sz.stop_first, sz.save_every, sz.log_every), with_eval=True)
     rec["n_subcomponents"] = sum(d.model.module_to_c.values())
     rec["A_first"] = {"step": step, "seconds": time.perf_counter() - t, "records": recs_a1, "ckpt_gb": ck_a.stat().st_size / 1e9, **D.memory()}
-    free(d)
+    rec["A_first"]["gpu_left_after_release_gib"] = free(d)
+    del d
+    dump()
+    torch.cuda.reset_peak_memory_stats()
     t = time.perf_counter()
     d, step, recs_a2 = decomp_run(cfg, ck_a, D.Plan(sz.steps, sz.save_every, sz.log_every), with_eval=True)
     rec["A_resumed"] = {"step": step, "seconds": time.perf_counter() - t, "records": recs_a2, **D.memory()}
     D.save_final(out_dir / "A_final.pt", d, step)
     sd_a = {k: v.detach().float().cpu() for k, v in d.model.state_dict().items()}
-    free(d)
+    rec["A_resumed"]["gpu_left_after_release_gib"] = free(d)
+    del d
+    ck_a.unlink(missing_ok=True)  # ~8 GB; the readings use A_final.pt
+    dump()
+    torch.cuda.reset_peak_memory_stats()
     t = time.perf_counter()
     d, step, recs_b = decomp_run(cfg, ck_b, D.Plan(sz.steps, sz.save_every, sz.log_every), with_eval=False)
-    rec["B_unbroken"] = {"step": step, "seconds": time.perf_counter() - t, "records": recs_b}
+    rec["B_unbroken"] = {"step": step, "seconds": time.perf_counter() - t, "records": recs_b, **D.memory()}
     sd_b = {k: v.detach().float().cpu() for k, v in d.model.state_dict().items()}
     free(d)
+    del d
+    ck_b.unlink(missing_ok=True)
     diffs = {k: float((sd_a[k] - sd_b[k]).abs().max()) for k in sd_a}
     last_a = [r for r in recs_a2 if "loss/total" in r][-1]
     last_b = [r for r in recs_b if "loss/total" in r][-1]
     rec["resume_vs_unbroken"] = {"max_abs_param_diff": max(diffs.values()), "worst_param": max(diffs, key=lambda k: diffs[k]),
                                  "loss_total_A": last_a["loss/total"], "loss_total_B": last_b["loss/total"]}  # fmt: skip
     log(f"rehearsal resume vs unbroken: {rec['resume_vs_unbroken']}")
-    for p in (ck_a, ck_b):
-        p.unlink(missing_ok=True)  # ~GBs each; the readings use A_final.pt
-    rec["C67_cost"] = variant_cost(sz, out_dir)
-    return rec
+    dump()
 
 
 # The plan's alternative C (section "Settings"): the released 67M decomposition's C per unit rank (c_fc 3072 / 768,
@@ -176,6 +188,7 @@ def variant_cost(sz: Sizes, out_dir: Path) -> dict[str, Any]:
     out = {"n_subcomponents": sum(d.model.module_to_c.values()), "step": step, "ckpt_gb": ck.stat().st_size / 1e9,
            "ms_per_step": [r["ms_per_step"] for r in recs if "ms_per_step" in r], **D.memory()}  # fmt: skip
     free(d)
+    del d
     ck.unlink(missing_ok=True)
     log(f"rehearsal C67 variant: {out}")
     return out
@@ -225,14 +238,33 @@ def rehearse_read(sz: Sizes, out_dir: Path, ratio_floor: float) -> dict[str, Any
 
 
 def stage_rehearse() -> int:
+    """The 14,592-subcomponent cost first (small; a number even if the full shapes do not fit), then the full shapes'
+    decomposition parts, then the readings; results/c2_rehearsal.json is rewritten after each part, and a CUDA OOM is
+    recorded there (with the part it hit) before exit 1."""
     out_dir = LARGE / "c2_rehearsal"
     out_dir.mkdir(parents=True, exist_ok=True)
-    res: dict[str, Any] = {"note": "rehearsal ($0, never scored): shapes of the full config, REHEARSAL's steps"}
-    res["decompose"] = rehearse_decompose(REHEARSAL, out_dir)
-    write_json(RESULTS / "c2_rehearsal.json", res)
-    floor = json.loads(PRED_C2.read_text())["constants"]["ratio_floor"]
-    res["read"] = rehearse_read(REHEARSAL, out_dir, floor)
-    write_json(RESULTS / "c2_rehearsal.json", res)
+    path = RESULTS / "c2_rehearsal.json"
+    res: dict[str, Any] = {"note": "rehearsal ($0, never scored): shapes of the full config, REHEARSAL's steps", "decompose": {}}
+
+    def dump() -> None:
+        write_json(path, res)
+
+    part = "C67_cost"
+    try:
+        res["C67_cost"] = variant_cost(REHEARSAL, out_dir)
+        dump()
+        part = "decompose"
+        rehearse_decompose(REHEARSAL, out_dir, res["decompose"], dump)
+        part = "read"
+        floor = json.loads(PRED_C2.read_text())["constants"]["ratio_floor"]
+        res["read"] = rehearse_read(REHEARSAL, out_dir, floor)
+        dump()
+    except torch.OutOfMemoryError as e:
+        res["oom"] = {"part": part, "at": [k for k in ("A_first", "A_resumed", "B_unbroken") if k in res["decompose"]],
+                      "error": str(e).splitlines()[0], **D.memory()}  # fmt: skip
+        dump()
+        log(f"rehearsal: CUDA OOM in {part} after {res['oom']['at']}: {res['oom']['error']} (exit 1)")
+        return 1
     return 0
 
 

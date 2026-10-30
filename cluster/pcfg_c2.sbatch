@@ -21,6 +21,7 @@
 
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; puts this clone's src first on PYTHONPATH
+# env.sh sets PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True unless already set (job 46971 OOMed at 46.7 of 47.3 GiB)
 cd "$COMMUTE_REPO"
 stage=${1:-}
 case "$stage" in
