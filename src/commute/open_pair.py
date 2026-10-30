@@ -245,3 +245,99 @@ def score_amend1(rd: dict[str, dict[str, Any]], ctrl: dict[str, dict[str, Any]],
     return {"A1": a1(rd, seeds), "C1": {"labels": labs["rank1"], "testable": ok1, "status": c1},
             "C2": {"labels": labs["copy"], "status": c2}, "verdict": positive_control(c1, c2),
             "C3": {"scored_on": "copy" if c1 == "not_testable" else "rank1", **c3}}
+
+
+# ----------------------------------------------------------------------------- Amendment 2 (2026-10-30)
+# experiments/open_pair/results/predictions_amend2.json; plan section "Amendment 2"; edge cases in tests/test_open_pair.py
+# One seed per map at K keys (128, or 64 when the key supply is short); a state record holds E58's behaviour record
+# (label, x) plus x_novel, r and ratio. `ref` holds the same map's 24-key means over seeds 0-2 (E58 run.json, amend1.json).
+
+UNLABELLABLE = ("too_small", "unreadable")
+
+
+def elicit_control(x: float, label: str, th: dict[str, Any]) -> str:
+    """E, the control (the elicit map has no rule to carry): the label's "too_small" / "unreadable" pass through (or
+    "unreadable" if x is not finite); "fail" iff x > e_max (carry where none can exist: the job stops); "below" iff
+    x < -e_max (no carry, a larger pool shift than at 24 keys: not a stop); else "pass". Ties at +-e_max pass."""
+    if label in UNLABELLABLE:
+        return label
+    if not finite(x):
+        return "unreadable"
+    return "fail" if x > th["e_max"] else "below" if x < -th["e_max"] else "pass"
+
+
+def rank1_class(x: float, x_nov: float, n_nov: int, label: str, th: dict[str, Any]) -> str:
+    """R, the rank-1 map: "not_testable" if the label is too_small / unreadable, fewer than min_novel held-out keys have
+    a value no trained key has, or x or x_novel is not finite; "reuses" iff the label reads "reuses" and x_novel >= cut
+    (Fable's (a)); "carries" iff x and x_novel >= rank1_carry; "memorises" iff both <= rank1_memorise; else "between"."""
+    if label in UNLABELLABLE or n_nov < th["min_novel"] or not (finite(x) and finite(x_nov)):
+        return "not_testable"
+    if label == "reuses" and x_nov >= th["cut"]:
+        return "reuses"
+    if min(x, x_nov) >= th["rank1_carry"]:
+        return "carries"
+    return "memorises" if max(x, x_nov) <= th["rank1_memorise"] else "between"
+
+
+def copy_class(x: float, label: str, th: dict[str, Any]) -> str:
+    """C, the copy map: "not_testable" if the label is too_small / unreadable or x is not finite; "pass" iff x >= copy_carry."""
+    if label in UNLABELLABLE or not finite(x):
+        return "not_testable"
+    return "pass" if x >= th["copy_carry"] else "fail"
+
+
+def moves_with(dx: float, di: float, dx_min: float, tol: float) -> str:
+    """One instrument on one map. dx and di are differences in differences: (map - elicit) at K keys minus the same at 24
+    keys, for x and for the instrument. "unreadable" if either is not finite; "not_testable" iff |dx| < dx_min (x did not
+    move); "tracks" iff di moved the same way as dx by more than tol; "flat" iff |di| <= tol; else "opposite"."""
+    if not (finite(dx) and finite(di)):
+        return "unreadable"
+    if abs(dx) < dx_min:
+        return "not_testable"
+    if (di if dx > 0 else -di) > tol:
+        return "tracks"
+    return "flat" if abs(di) <= tol else "opposite"
+
+
+def combine(v: list[str]) -> str:
+    """"tracks" > "opposite" > "flat"; "not_testable" when every entry is; else (empty list included) "unreadable"."""
+    for k in ("tracks", "opposite", "flat"):
+        if k in v:
+            return k
+    return "not_testable" if v and all(s == "not_testable" for s in v) else "unreadable"
+
+
+def b2(st: dict[str, dict[str, Any]], ref: dict[str, dict[str, float]], th: dict[str, Any]) -> dict[str, Any]:
+    """B, Fable's (b): per map (rank-1, copy) and per instrument (r, ratio; tolerances tol_r, tol_ratio), `moves_with` on
+    the differences in differences against elicit; per map `combine` over the instruments, then over the maps. A
+    missing map or elicit state reads "unreadable"."""
+    get = lambda d, m, k: (d.get(m) or {}).get(k, math.nan)
+    did = lambda m, k: (get(st, m, k) - get(st, "elicit", k)) - (get(ref, m, k) - get(ref, "elicit", k))
+    per: dict[str, Any] = {}
+    for m in ("rank1", "copy"):
+        dx = did(m, "x")
+        inst = {i: {"d": did(m, i), "status": moves_with(dx, did(m, i), th["dx_min"], th[f"tol_{i}"])} for i in ("r", "ratio")}
+        per[m] = {"dx": dx, **inst, "status": combine([v["status"] for v in inst.values()])}
+    return {"maps": per, "status": combine([per[m]["status"] for m in per])}
+
+
+def verdict2(e: str, b: str, r1: str) -> str:
+    """"stopped" unless the control passed ("pass" or "below"); then "b_r_tracks" > "a_first_reuses" (rank-1 "reuses")
+    > "reading_A_holds" (B flat) > "opposite"; else "untested" (x moved under dx_min on both maps, or unreadable)."""
+    if e not in ("pass", "below"):
+        return "stopped"
+    if b == "tracks":
+        return "b_r_tracks"
+    if r1 == "reuses":
+        return "a_first_reuses"
+    return {"flat": "reading_A_holds", "opposite": "opposite"}.get(b, "untested")
+
+
+def score_amend2(st: dict[str, dict[str, Any]], n_novel_rank1: int, ref: dict[str, dict[str, float]], th: dict[str, Any]) -> dict[str, Any]:
+    """E, R, C, B and the verdict on the K-key states (`st` keyed elicit, rank1, copy; a missing map reads as unlabelled)."""
+    rec = lambda m: st.get(m) or {"label": "unreadable", "x": math.nan, "x_novel": math.nan}
+    e, r, c = rec("elicit"), rec("rank1"), rec("copy")
+    E = elicit_control(e["x"], e["label"], th)
+    R = rank1_class(r["x"], r["x_novel"], n_novel_rank1, r["label"], th)
+    B = b2(st, ref, th)
+    return {"E": E, "R": R, "C": copy_class(c["x"], c["label"], th), "B": B, "verdict": verdict2(E, B["status"], R)}

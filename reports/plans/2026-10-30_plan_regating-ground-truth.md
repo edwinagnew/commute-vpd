@@ -202,3 +202,16 @@ option 1.
 Fable's gating-pattern novelty proxy (option C; a branch-5 follow-up); a second decomposition seed; E55 C2 or any
 porting of ρ and r to the counting model; Qwen; new 67M tasks; any change to E53, E54 or E55 files or predictions;
 scoring "neither" or class-B runs; the restore share (dropped by the programme).
+
+## Note (2026-10-30, lead, after E58 Amendment 1): step 2 re-aimed, not stopped
+
+E58 Amendment 1 (job 46332, `reports/analyses/2026-10-30_analysis_e58-open-pair.md` § Amendment 1) showed that the
+held-out-key label grades how far a rule carries (copy 0.42-0.55 > rank-1 0.09-0.14 > elicit about 0 > cipher about
+−0.3), while r and the stand-in ratio sit level on every map whose values the 67M already produces and drop only on the
+cipher. The two measure different things, so the held-out label is **kept as a graded, reported column and retired as
+this plan's agreement target**. The VPD-free label for the line's claim (reading A, ask #15: "built from the original
+model's existing pieces") is piece-level: Stage B's interchange patch (`reports/plans/2026-10-29_plan_reuse-stage1.md`
+§ Stage B, P ≥ 0.5). This line does not build the patch; the twelve E58 open-pair states (elicit, rank-1, copy, cipher ×
+3 seeds, `experiments/open_pair/results/large/`) are offered to reuse-lead as Stage B states beside lowercase (note
+only). Source: Fable's advice, `reports/plans/2026-10-30_advice_e58a1-next-FABLE.md`, item 2. One $0 check that could
+overturn reading A runs first: E58 Amendment 2 (four times the keys).

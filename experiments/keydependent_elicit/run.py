@@ -43,6 +43,8 @@ from commute.keydep import (
     log,
     make_ctx,
     readings,
+    select,
+    vocab,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -101,38 +103,7 @@ def stage0(ctx: Ctx, e46: Path) -> dict[str, Any]:
 
 
 # ----------------------------------------------------------------------------- stage 1
-
-
-def vocab(ctx: Ctx) -> tuple[Tensor, Tensor, int, list[int], Any]:
-    """E12's Pile rows, word-like mask, marker and frequency-ranked word-like tokens (as anchors.build_kv builds them)."""
-    from commute import kv, ladder, vpd
-    from commute.data import pile_rows
-
-    tok = vpd.tokenizer()
-    rows = pile_rows("train", 0, AN.ROWS, log)
-    V = int(ctx.net.net.lm_head.weight.shape[0])
-    plain = ladder.plain_mask(tok.decode, V)
-    counts = ladder.count_tokens(rows, AN.HALF)
-    marker = kv.pick_marker(counts, tok.decode, V)
-    ranked = [t for t, _ in sorted(counts.items(), key=lambda tc: -tc[1]) if t < V and bool(plain[t])]
-    return rows, plain, marker, ranked, tok
-
-
-def select(ctx: Ctx, rows: Tensor, plain: Tensor, marker: int, cands: list[int]) -> tuple[list[int], dict[int, Any]]:
-    """W0's value per candidate key on 16 training-row windows each, and the seeded draw of K keys."""
-    from commute import kv
-
-    S = ctx.P["settings"]
-    train_rows = rows[torch.arange(rows.shape[0]) % 5 != 0]
-    w = kv.windows(train_rows, marker, tuple(cands), AN.HALF, S["selection_windows_per_key"] * len(cands), S["selection_seed"])
-    dist = kv.key_distributions(lambda x: ctx.net.run(x)[0], w, ctx.net.device)
-    D = torch.stack([dist.pop(c) for c in cands])
-    qual = EL.pick_values(D, cands, plain, tuple(S["value_band"]), tuple(S["value_ranks"]), S["key_specific_ratio"])
-    keys = EL.draw_keys(qual, cands, S["k"], S["key_draw_seed"])
-    geo = EL.geo_mean_p(lambda x: ctx.net.run(x)[0], w.tokens, w.half, {x: qual[x]["value"] for x in keys}, ctx.net.device)
-    for x in keys:  # values are chosen by the arithmetic mean "p"; the geometric mean over the same windows is reported beside it
-        qual[x]["p_geo"] = geo[x]
-    return keys, qual
+# vocab and select moved, not changed, to commute.keydep (2026-10-30, E58 Amendment 2); imported above
 
 
 def build_tasks(ctx: Ctx, rows: Tensor, marker: int, keys: list[int], values: list[int], ranked: list[int]) -> dict[str, str]:

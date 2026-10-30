@@ -40,3 +40,16 @@
 [   454.5s] [check] B1: ok {"after_batch": 1, "dropped_share": 0.15625, "n": 128}
 [   454.6s] [B1] {"n": 128, "dropped": 20, "max_len": 2224, "mean_len": 1121.4453125, "truncated": 21}
 [   454.7s] [B1 done] peak GPU 19.61 GiB, host 4.5 GB
+[     0.0s] [B2] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=494598, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+[     9.0s] [load] components, peak GPU 18.20 GiB, host 20.0 GB
+[    62.7s] [load] target, NVIDIA L40, peak GPU 14.30 GiB, host 44.4 GB
+[    71.3s] [load] gamma, peak GPU 30.24 GiB, host 76.4 GB
+[    74.3s] [T think] first row: 2166 tokens, peak GPU 32.45 GiB, host 76.4 GB
+[   148.7s] [T think] 108 rows, 4369 positions, 88611 gated on, peak GPU 32.45 GiB, host 76.4 GB
+[   151.3s] [L length-matched] first row: 2404 tokens, peak GPU 32.90 GiB, host 76.4 GB
+[   237.1s] [L length-matched] 108 rows, 19336 positions, 79917 gated on, peak GPU 32.90 GiB, host 76.4 GB
+[   237.5s] [C fineweb] first row: 512 tokens, peak GPU 30.45 GiB, host 76.4 GB
+[   292.1s] [C fineweb] 128 rows, 65536 positions, 90351 gated on, peak GPU 30.45 GiB, host 76.4 GB
+[   292.3s] [B2] {"rows": 108, "dropped": 20, "longest": 2166, "longest_L": 2404, "sizes": {"T": 22316, "L": 9671, "C": 45232}, "T_and_L": 7237, "T_like_L": false, "L_aligned": 108}
+[   292.4s] [summary] {"min_size": 21110, "ref_sizes": {"P": 1860, "T": 22316, "L": 9671, "C": 45232}, "overlap": {}}
+[   292.4s] [B2 done] peak GPU 30.45 GiB, host 76.4 GB
