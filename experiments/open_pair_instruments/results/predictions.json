@@ -1,5 +1,5 @@
 {
-  "status": "DRAFT, not filed (revised after the review and its re-check, reports/reviews/2026-10-31_review_e55-c3-plan.md). Two filings: A (rules, edge cases, constants not depending on job 1, C0a, ref_probe) committed before job 1; B (measured D, prior, mlp_share means, p_D, p_prior, R noise floor, planted units/alpha/ceiling, and C0b, P1, P2, P3, V) appended dated after job 1 and before job 2, never editing A. Jobs 2 and 3 refuse without B.",
+  "status": "Filing A filed 2026-10-30: rules, edge cases, constants not depending on job 1, C0a and ref_probe (everything in this file except what filing B adds). Rules implemented in src/commute/revival_kv.py and CPU-tested on the edge cases in tests/test_revival_kv.py (all pass). Filing B NOT yet filed: append it dated under \"filing_B\" after job 1 (from results/measure.json filing_B_draft), never editing filing A; jobs 2 and 3 refuse without it.",
   "experiment": "E55 C3: pruning revival and reverse fine-tuning (toward W0's distribution) and the possession probe (reference) on E58's open-pair 67M maps, eight seeds each, positions on the rank-1-to-cipher axis beside r, the stand-in ratio, S, carry x, update size, D and MLP share",
   "plan": "reports/plans/2026-10-31_plan_e55-stage-c-open-pair.md",
   "states": {
@@ -289,5 +289,32 @@
       "P3",
       "V"
     ]
+  },
+  "filing_A": {
+    "status": "filed",
+    "date": "2026-10-30",
+    "rules_code": "src/commute/revival_kv.py (gap_status, column_reading, side, bootstrap_p, percentiles, firm, tracks, verdict, joint_verdict, t_half_column, score_columns, probe_reference; revival, half_life, fit_alpha, planted_pass, mlp_share)",
+    "tests": "tests/test_revival_kv.py: the plan worked examples on E58 three-seed columns (r, ratio, S, carry x, update size), empty pool, zero denominators, ties, firmness, censoring, distance and prior rules, joint verdicts, per-state arithmetic",
+    "implementation_details": {
+      "sd": "within-map seed sd is the sample sd (n - 1), which reproduces the plan worked examples (r: 3 sd 0.050)",
+      "gap_zero": "a gap of exactly 0 is no gap for every column, directed or not (so a zero-noise column with gap 0 is not ok)",
+      "prior_direction": "the prior column is undirected (|gap|), the same treatment as D (rule 6: as distance)",
+      "percentiles": "the 5th and 95th percentiles are taken without interpolation (numpy method lower for the 5th, higher for the 95th); a zero-denominator draw is placed at -inf for the 5th and +inf for the 95th, so it counts against every band",
+      "firm": "a point side VPD holds iff the 5th percentile >= vpd_min; label iff the 95th <= label_max; a point between stays between",
+      "rules_5_6_scope": "rules 5 and 6 fire only when both the instrument column and the baseline column read gap ok; tolerance inclusive (|p - p_base| <= tol)",
+      "planted_block": "planted.block 3 = steering.Net site mlp3, the last of the four blocks (0-based, as the sites are named)",
+      "planted_units": "candidates must also have mean activation > 0 (the edit divides by it); single-unit zeroing cost measured on the fit half (the half that scores units), ties to the lower unit id",
+      "planted_alpha": "doubling from alpha 1 then 40 bisection steps, assuming kappa and the off-answer KL rise with alpha",
+      "probe_values": "q: the map other distinct values are all 32 keys values (trained and held-out keys, each value once, heldout_keys.pool_of), on the 75 trained-key held-out windows",
+      "reverse_loss_precision": "the reverse fine-tune loss runs under finetune.logits_of (bf16 autocast, as the forward E54 recipe); kappa is read in fp32 with float64 sums",
+      "reverse_reference": "finetune.finetune_to_reference takes a frozen W0 copy of the target model as the reference module (the plan named ref_logprobs; W0 log-probs at every position of every train window would not fit in memory)",
+      "reproduction_norm": "norm check: |norm - recorded| <= 1e-4 x recorded"
+    },
+    "filing_B_keys_read_by_code": {
+      "status": "filed",
+      "D_void": "float: D_void_frac x the smallest pole-map mean D from job 1",
+      "noise_floor_R": "float",
+      "planted": "{units: [13 flat ids], abar: [13 floats], alpha: float} (w is recomputed from W0 and the rank-1 values)"
+    }
   }
 }

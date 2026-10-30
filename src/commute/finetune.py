@@ -221,6 +221,46 @@ def finetune_arm_b(model: Any, train_rows: Tensor, heldout_rows: Tensor, cfg: Ar
     return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log, cfg.optimizer)
 
 
+@dataclass
+class ReferenceConfig:
+    """E55 C3's reverse fine-tune (plan reports/plans/2026-10-31_plan_e55-stage-c-open-pair.md § 3)."""
+
+    lr: float = 3e-6
+    batch: int = 32
+    steps: int = 1000
+    grad_clip: float = 1.0
+    seed: int = 0
+    optimizer: str = "adam"
+
+
+class StopTraining(Exception):
+    """Raised by an `on_step` callback to end `finetune_to_reference` early."""
+
+
+def finetune_to_reference(model: Any, ref: nn.Module, train: Windows, cfg: ReferenceConfig, device: str, on_step: Any,
+                          log: Any = print) -> None:  # fmt: skip
+    """Train the 24 decomposed matrices from the model's current target weights toward `ref`: loss = KL(p_ref || p_model)
+    averaged over every position of `cfg.batch` windows drawn from `train` (seeded by cfg.seed; arm A's sampling and
+    autocast), `_run`'s loop (added 2026-10-30 for E55 C3; nothing existing changed). `on_step(step, params)` runs after
+    every step and may raise StopTraining to stop. The target weights are back at their start when it returns."""
+    params = decomposed_params(model)
+    gen = torch.Generator().manual_seed(cfg.seed)
+    net = model.target_model
+
+    def loss_fn(step: int) -> tuple[Tensor, dict[str, float]]:
+        toks = train.tokens[torch.randint(0, len(train), (cfg.batch,), generator=gen)].to(device)
+        logits = logits_of(net, toks)
+        with torch.no_grad():
+            ref_logits = logits_of(ref, toks)
+        kl = kl_per_position(ref_logits, logits).mean()
+        return kl, {"kl": float(kl)}
+
+    try:
+        _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, (), loss_fn, dict, log, cfg.optimizer, on_step)
+    except StopTraining:
+        pass
+
+
 def next_token_ce(net: nn.Module, toks: Tensor) -> tuple[Tensor, dict[str, float]]:
     """Arm B's loss: mean next-token cross-entropy over every position of the rows."""
     lg = logits_of(net, toks)
