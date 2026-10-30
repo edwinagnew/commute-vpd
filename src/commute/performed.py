@@ -15,8 +15,9 @@ Plan: reports/plans/2026-10-29_plan_performed-anchor.md ("The pair"). Two tasks 
 
 E53 Amendment 1 (2026-10-30) adds two token maps applied by the same `cipher_rows`:
 - *Narrow lowercase* (`title_lower_map`): 50 title-case word tokens (`TITLE`: a space, a capital, one or more
-  lowercase letters, e.g. " June") whose lowercase form is one vocabulary entry, each mapped to that form at every
-  occurrence; every other token stays cased. a = the lowercase form, b = the capitalised form, as above.
+  lowercase letters, e.g. " June") used as whole words and whose lowercase form is the canonical one-token encoding,
+  each mapped to that form at every occurrence; every other token stays cased. a = the lowercase form, b = the
+  capitalised form, as above.
 - *Broad cipher*: `derangement` of the 500 word tokens of frequency ranks 50-549, as the cipher above.
 """
 
@@ -119,21 +120,44 @@ def derangement(ids: list[int], seed: int) -> dict[int, int]:
             return dict(zip(ids, dst))
 
 
-def title_lower_map(tok: Any, rows: Tensor, ranks: tuple[int, int]) -> dict[int, int]:
-    """Narrow lowercase's map (E53 Amendment 1): the title-case word tokens (`TITLE`) whose lowercase form (" June" ->
-    " june") is one vocabulary entry, ranked by count in `rows` (`word_ranks`), ranks [ranks[0], ranks[1]) of that
-    list (0-based), each mapped to its lowercase form; in rank order."""
-    vocab = tok.get_vocab()
-    ids = word_ranks(tok, rows, TITLE).tolist()
-    low = ["Ġ" + s[1:].lower() for s in tok.convert_ids_to_tokens(ids)]
-    pairs = [(i, vocab[s]) for i, s in zip(ids, low, strict=True) if s in vocab]
+def whole_word_share(tok: Any, rows: Tensor) -> Tensor:
+    """(V,) per token: the share of its occurrences in `rows` (last column excluded) whose next token does not start
+    with an ASCII letter (a space, newline, punctuation or digit follows: the token ends a word); NaN if it never
+    occurs there. Added for E53 Amendment 1."""
+    letter = torch.tensor([s[:1].isascii() and s[:1].isalpha() for s in tok.convert_ids_to_tokens(list(range(len(tok))))])
+    cur, nxt = rows[:, :-1].flatten(), rows[:, 1:].flatten()
+    n = torch.bincount(cur, minlength=len(tok)).double()
+    cont = torch.bincount(cur[letter[nxt]], minlength=len(tok)).double()
+    return 1 - cont / n
+
+
+def title_lower_map(tok: Any, rows: Tensor, ranks: tuple[int, int], whole: float = 0.9) -> dict[int, int]:
+    """Narrow lowercase's map (E53 Amendment 1): the title-case word tokens (`TITLE`) used as whole words (share >=
+    `whole` by `whole_word_share` on `rows`) whose lowercase form (" June" -> " june") is the tokenizer's own one-token
+    encoding of " " + the word lowercased, ranked by count in `rows` (`word_ranks`); ranks [ranks[0], ranks[1]) of the
+    filtered list (0-based), each mapped to its lowercase form; in rank order."""
+    share, ids = whole_word_share(tok, rows), word_ranks(tok, rows, TITLE).tolist()
+    pairs = []
+    for i, s in zip(ids, tok.convert_ids_to_tokens(ids), strict=True):
+        low = tok.encode(" " + s[1:].lower())
+        if len(low) == 1 and bool(share[i] >= whole):
+            pairs.append((i, low[0]))
     return dict(pairs[ranks[0] : ranks[1]])
 
 
 def earlier_in_row(rows: Tensor, at: Positions) -> Tensor:
-    """(P,) bool: whether position k's form `a` already occurs in its row before `pos` (a repeat, which induction can
-    copy, against a first occurrence). Reported by E53 Amendment 1's check."""
-    return torch.tensor([bool((rows[r, :p] == a).any()) for r, p, a in zip(at.row.tolist(), at.pos.tolist(), at.a.tolist(), strict=True)])
+    """(P,) bool: whether position k's original token `b` already occurs in its row of the ORIGINAL `rows` before `pos`
+    (a repeat, which induction can copy, against a first occurrence). For a derangement this equals the form a's
+    repeat in the mapped row; for narrow lowercase it does not count natural lowercase uses. E53 Amendment 1."""
+    return torch.tensor([bool((rows[r, :p] == b).any()) for r, p, b in zip(at.row.tolist(), at.pos.tolist(), at.b.tolist(), strict=True)])
+
+
+def position_mask(rows: Tensor, at: Positions) -> Tensor:
+    """(N, T) bool, True at every position of `at`: where the text holds a scored-type token. E53 Amendment 1 cuts it
+    into windows with `windows_at` (same positions and draw) to split the off-target KL."""
+    mask = torch.zeros(rows.shape, dtype=torch.bool)
+    mask[at.row, at.pos] = True
+    return mask
 
 
 def cipher_rows(rows: Tensor, pi: dict[int, int]) -> tuple[Tensor, Positions]:

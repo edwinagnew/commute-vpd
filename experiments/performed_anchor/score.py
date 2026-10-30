@@ -131,9 +131,10 @@ def score(rows: dict[str, Any], P: dict[str, Any]) -> dict[str, Any]:
 A1, A1_STEPS = ("narrow_lower", "broad_cipher"), (10, 100, 300)
 
 
-def breadth(r: dict[str, Any]) -> float | None:
-    """G per off-target KL (high = targeted, low = broad), or None unless G > 0, kl_other > 0, both finite."""
-    G, kl = r["G"], r["kl_other"]
+def breadth(r: dict[str, Any], kl_key: str = "kl_off") -> float | None:
+    """G per true off-target KL (`kl_off`: positions that do not predict a scored-type token; high = targeted, low =
+    broad), or None unless G > 0, the KL > 0, both finite. kl_key "kl_other" gives E53's pooled version (reported)."""
+    G, kl = r["G"], r[kl_key]
     return G / kl if math.isfinite(G) and math.isfinite(kl) and G > 0 and kl > 0 else None
 
 
@@ -188,8 +189,9 @@ def score_amend1(rows: dict[str, Any], e53: dict[str, Any], P: dict[str, Any]) -
     nl, bc = scored("narrow_lower"), scored("broad_cipher")
     p1 = separation([ratio[k] for k in nl], [ratio[k] for k in bc], th["gap"])
     sw = swap([b[k] for k in nl], [b[k] for k in bc], th["swap_factor"])
-    e53_rows = {k: r for k, r in e53["rows"].items() if r["role"] == "finetune"}
+    reread = {k.removeprefix("e53/"): r for k, r in rows.items() if k.startswith("e53/")}
     return {"swap": sw, "P1": p1, "outcome": outcome(sw["achieved"], p1, th), "floor": F, "ratio": ratio, "breadth": b,
+            "breadth_pooled_kl_reported": {k: breadth(rows[k], "kl_other") for k in reads},
             "P1_at_1_nat_reported": separation([ratio_of(rows[k], math.inf, th) for k in nl],
                                                [ratio_of(rows[k], math.inf, th) for k in bc], th["gap"]),
             "leans_reported": {k: None if ratio[k] is None else (ratio[k] >= th["high"] if k in nl else ratio[k] <= th["low"])
@@ -197,6 +199,7 @@ def score_amend1(rows: dict[str, Any], e53: dict[str, Any], P: dict[str, Any]) -
             "matched_gain_reported": {f"s{s}": {"broad_near_narrow": nearest(rows, "broad_cipher", s, rows[f"narrow_lower/s{s}/step300"]["G"], ratio),
                                                 "narrow_near_broad": nearest(rows, "narrow_lower", s, rows[f"broad_cipher/s{s}/step300"]["G"], ratio)}
                                       for s in SEEDS},
-            "e53_reference": {k: {"G": r["G"], "kl_other": r["kl_other"], "breadth": breadth(r), "ratio": e53["score"]["ratio"].get(k)}
-                              for k, r in e53_rows.items()},
+            "e53_reference": {k: {"G": r["G"], "kl_other": r["kl_other"], "kl_off": r["kl_off"], "breadth": breadth(r),
+                                  "breadth_pooled_kl": breadth(r, "kl_other"), "ratio_reread": r["ratio"],
+                                  "ratio_read_json": e53["score"]["ratio"].get(k)} for k, r in reread.items()},
             "effects_reported": effects(ratio, e53["score"]["ratio"])}

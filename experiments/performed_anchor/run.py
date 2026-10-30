@@ -20,13 +20,15 @@ Every scored number goes to stdout and results/large/<stage>.log. A control miss
 
 Amendment 1 (plan section "Amendment 1 (2026-10-30)"; rules results/predictions_amend1.json): the breadth-swapped
 pair, both token maps on the cased train rows 0-2399 (`performed.cipher_rows`): narrow_lower = 50 title-case word
-types lowercased (`performed.title_lower_map`, ranks 50-99), broad_cipher = a derangement of the 500 word tokens of
+types used as whole words lowercased (`performed.title_lower_map`, ranks 50-99 after the filter), broad_cipher = a derangement of the 500 word tokens of
 ranks 50-549. Same recipe, batch orders 0 and 1, both saved at steps 10, 100, 300. No relay, no hand write.
   run.py a1_finetune  W0's check first (A0's rule on both members; stop rule) -> results/check_amend1.json, then the
                       four fine-tunes -> results/finetune_amend1.json, large/dW_<task>_s<seed>_step<n>.pt
-  run.py a1_read      control: E53's lowercase seed-0 state re-read (G, ratio as read.json); the twelve states split
-                      and read; the KL-matched random delta-W per task; the score (`score.score_amend1`, with E53's
-                      read.json as reference) -> results/read_amend1.json
+  run.py a1_read      control: E53's lowercase and cipher seed-0 states re-read (G, ratio as read.json), then their
+                      seed-1 states (reported); the twelve states split and read; the KL-matched random delta-W per
+                      task; the score (`score.score_amend1`) -> results/read_amend1.json. Every row splits the
+                      off-target KL by whether the position predicts a scored-type token (`kl_split`); breadth and
+                      the swap gate use the true off-target part.
 """
 
 from __future__ import annotations
@@ -38,7 +40,7 @@ import resource
 import subprocess
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -202,10 +204,14 @@ def a1_check(P: dict[str, Any], maps: dict[str, dict[int, int]], net: Any) -> No
     out: dict[str, Any] = {"commit": git_head(), "maps": {n: [[x, y, tok.decode([x]), tok.decode([y])] for x, y in m.items()]
                                                           for n, m in maps.items()}}
     for name, (rows, at) in reads.items():
-        d, rep = performed.log_odds(net, rows, at, DEVICE, 8), performed.earlier_in_row(rows, at)
+        d, rep = performed.log_odds(net, rows, at, DEVICE, 8), performed.earlier_in_row(val, at)
         out[name] = {**spread(d, at.row), "mean_repeat": float(d[rep].mean()), "mean_first": float(d[~rep].mean()),
                      "n_repeat": int(rep.sum())}
         log(f"[check {name}] {json.dumps(_finite(out[name]), sort_keys=True)}")
+        if name != "broad_cipher":  # per type (the capitalised form b): mean log-odds and count
+            out[name]["per_type"] = {tok.decode([int(b)]): [float(d[at.b == b].mean()), int((at.b == b).sum())]
+                                     for b in at.b.unique()}
+            log(f"[check {name} per type] {json.dumps(out[name]['per_type'], sort_keys=True)}")
     m = {k: out[k]["mean"] for k in reads}
     stops = {"narrow_lower_below_bar": not m["narrow_lower"] >= t["narrow_lower_at_least"],
              "broad_cipher_above_bar": not m["broad_cipher"] <= t["broad_cipher_at_most"],
@@ -245,9 +251,10 @@ def stage_a1_finetune(P: dict[str, Any], maps: dict[str, dict[int, int]]) -> Non
 class Task:
     name: str
     held: Tensor  # (N, 127) scored windows
-    train: Tensor  # the hand write's windows
-    io0: Any  # W0's input and output of each matrix at `half`, per batch (relay)
-    T0f: float = 0.0  # W0's full-model log-odds (plain forward, as the relay reads)
+    target: Tensor  # (N, 127) bool: the window's token is a scored-type token (`performed.position_mask`)
+    train: Tensor = field(default_factory=lambda: torch.empty(0, dtype=torch.long))  # hand write's windows (E53 read)
+    io0: Any = None  # W0's input and output of each matrix at `half`, per batch (relay; E53's read only)
+    T0f: float = 0.0  # W0's full-model log-odds (plain forward, as the relay reads; E53's read only)
 
 
 class Run:
@@ -265,25 +272,52 @@ class Run:
     def weights(self, dW: dict[str, Tensor]) -> dict[str, Tensor]:
         return {k: w + dW[k].to(w.device, w.dtype) if k in dW else w for k, w in self.W0.items()}
 
+    def scored(self, name: str, pi: dict[int, int]) -> Task:
+        """The task's scored windows (val rows 0-255) and their scored-type mask, cut by the same draw."""
+        from commute import performed
+        from commute.data import pile_rows
+
+        text, at = task_text(name, pile_rows("val", 0, 256), pi)
+        w, idx = performed.windows_at(text, at, CFG.half, CFG.n_windows, CFG.window_seed)
+        assert torch.equal(w[:, CFG.half + 1], at.a[idx]), "a window's next token is not its scored form"
+        mask, idx_m = performed.windows_at(performed.position_mask(text, at).long(), at, CFG.half, CFG.n_windows, CFG.window_seed)
+        assert torch.equal(idx, idx_m) and bool(mask[:, CFG.half + 1].all()), "the mask's windows are not the text's"
+        return Task(name, w, mask.bool())
+
     def task(self, name: str, pi: dict[int, int]) -> Task:
+        """E53's read: `scored` plus the hand write's windows (train rows 0-255), W0's trigger_io and T0f."""
         from commute import performed
         from commute import recruitment as RT
         from commute.data import pile_rows
 
-        wins = []
-        for rows, n in ((pile_rows("val", 0, 256), CFG.n_windows), (pile_rows("train", 0, 4096)[:256], CFG.n_write_windows)):
-            text, at = task_text(name, rows, pi)
-            w, idx = performed.windows_at(text, at, CFG.half, n, CFG.window_seed)
-            assert torch.equal(w[:, CFG.half + 1], at.a[idx]), "a window's next token is not its scored form"
-            wins.append(w)
-        io0 = RT.trigger_io(self.model, sorted(self.comps0), wins[0], CFG.half, CFG.batch)
-        t = Task(name, wins[0], wins[1], io0)
+        t = self.scored(name, pi)
+        text, at = task_text(name, pile_rows("train", 0, 4096)[:256], pi)
+        t.train = performed.windows_at(text, at, CFG.half, CFG.n_write_windows, CFG.window_seed)[0]
+        t.io0 = RT.trigger_io(self.model, sorted(self.comps0), t.held, CFG.half, CFG.batch)
         t.T0f = full_read(self, t, {})[0]
         return t
 
 
-def batches(t: Task) -> list[Tensor]:
-    return [t.held[s : s + CFG.batch].to(DEVICE) for s in range(0, len(t.held), CFG.batch)]
+def batches(t: Task, x: Tensor | None = None) -> list[Tensor]:
+    """`t.held` (or `x`, a per-window tensor of the same length) in batches of CFG.batch, on the GPU."""
+    x = t.held if x is None else x
+    return [x[s : s + CFG.batch].to(DEVICE) for s in range(0, len(t.held), CFG.batch)]
+
+
+def kl_split(ref: Tensor, logits: Tensor, target: Tensor) -> dict[str, Tensor]:
+    """Per window, KL(W0 || state) at the window's positions other than `half`, split by what the position predicts:
+    'kl_off' the mean over positions whose next token is not a scored-type token (the true off-target part), and the
+    sum and count over those whose next token is one (logit position j predicts token j + 1; the last predicts
+    nothing in the window and counts as off). Amendment 1; E53's `kl_other` pools both."""
+    from commute.vpd import kl_per_position
+
+    kl = kl_per_position(ref, logits)
+    on = torch.zeros_like(target)
+    on[:, :-1] = target[:, 1:]
+    on[:, CFG.half] = False
+    off = ~on
+    off[:, CFG.half] = False
+    return {"kl_off": (kl * off).sum(1) / off.sum(1), "kl_on_sum": (kl * on).sum(1), "kl_on_n": on.sum(1).double()}
 
 
 @torch.no_grad()
@@ -302,14 +336,14 @@ def cells(run: Run, t: Task, dW: dict[str, Tensor], comps: Any) -> dict[str, Any
     def mlw(b: Tensor, g: dict[str, Tensor]) -> Tensor:
         return masked_lo_windows(m, b, h, NEXT, [g], len(b))
 
-    for b in batches(t):
+    for b, tm in zip(batches(t), batches(t, t.target), strict=True):
         tgt, ci0 = target_tokens(NEXT, b, h), compute_ci(m, b, chunk=len(b))
         ones = {k: torch.ones_like(v) for k, v in ci0.g.items()}
         part = {"T0": log_odds(ci0.logits[:, h], tgt), "L00": mlw(b, ci0.g), "U0": mlw(b, ones)}
         with model_state(m, target=run.weights(dW), components=comps):
             ci1 = compute_ci(m, b, chunk=len(b))
             part |= {"T1": log_odds(ci1.logits[:, h], tgt), "kl_other": stats(ci0.logits, ci1.logits, h, tgt)["kl_other"],
-                     "L11": mlw(b, ci1.g), "U1": mlw(b, ones)}
+                     **kl_split(ci0.logits, ci1.logits, tm), "L11": mlw(b, ci1.g), "U1": mlw(b, ones)}
             with model_state(m, components=run.comps0):
                 part["L01"] = mlw(b, ci1.g)
         for k, v in part.items():
@@ -319,7 +353,8 @@ def cells(run: Run, t: Task, dW: dict[str, Tensor], comps: Any) -> dict[str, Any
     piece_w, masked_w = w["U1"] - w["U0"], w["L11"] - w["L00"]
     mean = {k: float(v.mean()) for k, v in w.items()}
     return {"cells": mean, "G": mean["T1"] - mean["T0"], "g": mean["L01"] - mean["L00"], "piece_gain": float(piece_w.mean()),
-            "masked_gain": float(masked_w.mean()), "kl_other": mean["kl_other"], "n": len(piece_w),
+            "masked_gain": float(masked_w.mean()), "kl_other": mean["kl_other"], "kl_off": mean["kl_off"],
+            "kl_on_target": mean["kl_on_sum"] / mean["kl_on_n"] if mean["kl_on_n"] > 0 else math.nan, "n": len(piece_w),
             "piece_se": float(piece_w.std() / math.sqrt(len(piece_w))), "boot": boot(masked_w, piece_w, run.th)}
 
 
@@ -396,6 +431,7 @@ def write_row(run: Run, t: Task, G_target: float) -> dict[str, Any]:
     from commute import performed
     from commute import perturb as PT
 
+    assert len(t.train), "the hand write needs Run.task's train windows"
     A, keys = performed.next_token_inputs(run.model, t.train, CFG.half)
     assert len(keys) <= A.shape[0], "more keys than input dimensions: the write is not exact"
     lm = run.model.target_model.lm_head.weight.detach().float()
@@ -466,24 +502,33 @@ def stage_read(P: dict[str, Any], pi: dict[int, int], ft: dict[str, Any]) -> Non
 # ----------------------------------------------------------------------------- Amendment 1, job 2: the readings
 
 
-def reproduce_e53(run: Run, rows: Rows, c: dict[str, Any], state: Any) -> None:
-    """Control, first and alone: E53's lowercase batch-order-0 step-300 state split and read by this code; its G and
-    stand-in ratio must match read.json's within the filed tolerances."""
-    k = key("lowercase", 0, 300)
-    ref = json.loads((RESULTS / "read.json").read_text())["rows"][k]
-    d = split_row(run, run.task("lowercase", {}), state(k))
-    ratio, ref_ratio = d["masked_gain"] / d["piece_gain"], ref["masked_gain"] / ref["piece_gain"]
-    ok = abs(d["G"] - ref["G"]) <= c["repro_G_tol"] and abs(ratio - ref_ratio) <= c["repro_ratio_tol"]
-    rows.put(f"e53/{k}", "control", {**d, "ratio": ratio, "ref_G": ref["G"], "ref_ratio": ref_ratio}, ok)
+E53_REREAD = [key(n, s, 300) for s in SEEDS for n in TASKS]  # seed 0 of each task first: the controls
+
+
+def reread_e53(run: Run, rows: Rows, c: dict[str, Any], state: Any) -> None:
+    """Control, first: E53's seed-0 step-300 states (lowercase and cipher) split and read by this code; G and stand-in
+    ratio must match read.json's within the filed tolerances. Then the seed-1 states, reported: all four carry the
+    split off-target KL (`kl_split`) that E53's read did not."""
+    ref = json.loads((RESULTS / "read.json").read_text())["rows"]
+    tasks = {"lowercase": run.scored("lowercase", {}), "cipher": run.scored("cipher", e53_pi())}
+    for k in E53_REREAD:
+        d, r = split_row(run, tasks[k.split("/")[0]], state(k)), ref[k]
+        ratio, ref_ratio = d["masked_gain"] / d["piece_gain"], r["masked_gain"] / r["piece_gain"]
+        ok = abs(d["G"] - r["G"]) <= c["repro_G_tol"] and abs(ratio - ref_ratio) <= c["repro_ratio_tol"]
+        rec = {**d, "ratio": ratio, "ref_G": r["G"], "ref_ratio": ref_ratio, "within_tol": ok}
+        rows.put(f"e53/{k}", "control" if "/s0/" in k else "reference", rec, ok if "/s0/" in k else None)
 
 
 def stage_a1_read(P: dict[str, Any], maps: dict[str, dict[int, int]], ft: dict[str, Any]) -> None:
+    check = json.loads((RESULTS / "check_amend1.json").read_text())["maps"]
+    assert {n: [[x, y] for x, y in m.items()] for n, m in maps.items()} == {n: [r[:2] for r in m] for n, m in check.items()}, \
+        "the maps recomputed here are not check_amend1.json's"
     rows = Rows("read_amend1.json")
-    e53_state = state_loader(json.loads((RESULTS / "finetune.json").read_text()), [key("lowercase", 0, 300)])
+    e53_state = state_loader(json.loads((RESULTS / "finetune.json").read_text()), E53_REREAD)
     state = state_loader(ft)
     run = Run(P)
-    reproduce_e53(run, rows, P["controls"], e53_state)
-    tasks = {n: run.task(n, maps[n]) for n in A1_TASKS}
+    reread_e53(run, rows, P["controls"], e53_state)
+    tasks = {n: run.scored(n, maps[n]) for n in A1_TASKS}
     for k in ft["states"]:
         rows.put(k, "finetune", split_row(run, tasks[k.split("/")[0]], state(k)))
     for n, t in tasks.items():  # the null against the seed-0 step-300 fine-tune's off-target KL

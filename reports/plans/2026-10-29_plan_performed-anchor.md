@@ -193,8 +193,9 @@ still reads the performed member high, it follows kind; if it now reads the broa
 **The pair** (both on E53's cipher rows: cased Pile train rows 0-2399, token-level maps by `performed.cipher_rows`):
 - *Narrow lowercase*: tokens matching `Ġ[A-Z][a-z]+` whose lowercase form is one vocabulary entry, ranked by count on
   Pile train rows 0-4095, ranks 50-99 (mid frequency, as E53's cipher ranks) (`performed.title_lower_map`), each mapped
-  to its lowercase form wherever it occurs; everything else stays cased, including capitals with no leading space. The
-  50 are With, License, National, Since, Cir, Suppose, May, Although, March, Ch, While, Section, Figure, County, City,
+  to its lowercase form wherever it occurs; everything else stays cased, including capitals with no leading space.
+  *(Superseded before the run: the type rule, list and counts below were revised; see "Revised before the run
+  (review)".)* The first-filed 50 were With, License, National, Since, Cir, Suppose, May, Although, March, Ch, While, Section, Figure, County, City,
   String, Dr, World, My, Sh, South, God, First, De, Th, Cl, President, Now, From, Furthermore, Le, How, Here, Am, Ex,
   His, North, Un, Id, Health, Moreover, List, Department, Par, Some, Get, Also, Be, House, Theorem.
 - *Broad cipher*: a seed-0 derangement of the 500 word tokens (`Ġ[a-z]{2,}`) of ranks 50-549, in context and targets.
@@ -274,5 +275,47 @@ states. Files to collect: `results/check_amend1.json`, `finetune_amend1.json`, `
 **Not sourced**: the 1.5 swap factor (five times E53's 10% seed spread in breadth); ranks 50-99 and 50-549 (by analogy
 with E53's 50-99); cipher seed 0; the repro tolerances (the plan's bf16 rounding and window noise, not measured across
 cards); the outcome leans.
+
+### Revised before the run (review), 2026-10-30
+
+A fresh code review of 17a3a2d found two serious problems and four smaller ones. Nothing had run, so
+`predictions_amend1.json` was revised in place (its "filed" line says so) and the code fixed. What changed and why:
+
+1. **Breadth now uses the true off-target KL.** The off-target KL E53 reported (`kl_other`) averages all window
+   positions but the scored one, including positions that predict another token of the task. About 12% of a broad
+   cipher window's tokens are cipher tokens, against 1.8% for narrow lowercase, so the swap gate would have passed on
+   target density, not on how far the update spreads. `run.kl_split` now splits each window's KL by whether the
+   position's next token is a scored-type token (`performed.position_mask`, cut by the same window draw), without
+   changing `local_faith.stats`. Breadth = G / `kl_off` for the swap gate; G / `kl_other` is reported beside it.
+   E53's own breadth finding (4 vs 11-15) has the same problem (scored-type share 8.6% of lowercase window tokens,
+   4.1% of cipher's), so `a1_read` re-reads E53's four step-300 states with the split KL, reported.
+2. **Word pieces dropped from the narrow types.** About 12 of the first 50 (Cir, Ch, Sh, Th, Cl, De, Le, Un, Ex, Par,
+   Am, Dr) are pieces of longer words; lowercasing them at token level makes tokenisations the model never sees, a
+   cipher-like task. The rule now keeps a title-case type only if, on Pile train rows 0-4095, the next token does
+   not start with a letter in at least 90% of its occurrences (`performed.whole_word_share`), and only if its
+   lowercase form is the tokenizer's own one-token encoding; ranks 50-99 are taken after the filter. New 50: Figure,
+   County, City, String, World, South, First, President, Now, From, Furthermore, How, Here, His, Id, Health,
+   Moreover, Department, Some, Also, House, Theorem, Table, Note, District, Research, International, Code, Each, Of,
+   Which, Because, Center, English, Two, Both, Institute, School, East, Calculate, Government, Day, Using, Your,
+   Group, Supreme, Give, General, Even, Public. The check now records W₀'s log-odds per type.
+3. **Repeats test the original token.** `earlier_in_row` now asks whether the capitalised token appeared earlier in
+   the original cased row. The old test looked for the lowercase form, which occurs naturally (" from", " some").
+   For a cipher the two tests agree.
+4. **The repro control covers the cipher path.** E53's cipher seed-0 step-300 state is re-read too, with a0.json's
+   π: G 3.8690 and ratio 0.2643, same tolerances. The seed-1 states are re-read as references, not stops.
+5. **The maps are checked between jobs.** `a1_read` asserts that its recomputed maps equal `check_amend1.json`'s.
+6. **Not changed:** the gain floor uses the random δW whatever its match status, as in E53 (inherited).
+7. **Unused work removed.** The new members and the re-reads build only their scored windows (`Run.scored`). The
+   hand-write windows, `trigger_io` and T0f stay in `Run.task`, which only E53's read uses.
+
+**Revised counts** (tokenizer only, val rows 0-255): narrow lowercase 344 positions in 130 rows, 134 repeats, 272
+whole windows, 0.21% of training tokens; broad cipher unchanged (10,824, 3,278, 8,137, 9.07%). The risk paragraph
+above still holds, with 134 of 344 positions repeats. **Revised gate**: swap achieved iff min over seeds of narrow
+lowercase's G / `kl_off` ≥ 1.5 × max over seeds of broad cipher's, all four read (G > 0, `kl_off` > 0, finite).
+Edge cases rerun on the revised rules: 31 cases, all gave the filed answer, including the gate reading `kl_off` where
+`kl_other` would give the opposite answer, in both directions. Shared code changed beyond the first commit:
+`performed.earlier_in_row` (no callers outside Amendment 1), `run.cells` (adds `kl_off` and `kl_on_target`; E53's
+numbers unchanged), `run.Task` and `Run.task` (E53's read builds the same windows; only the train windows' assert is
+gone), `run.batches` (an optional tensor argument). Runtime: `a1_read` adds three E53 re-reads, about 1 min.
 
 **Not run**: everything above except the tokenizer counts and the edge cases.
