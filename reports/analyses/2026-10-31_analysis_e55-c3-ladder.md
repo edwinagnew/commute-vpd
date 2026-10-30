@@ -105,9 +105,9 @@ at 13 neurons to 0.19 at 320. The filed reading takes each state's best $K$, whi
 is 0.146 against a bar of 0.152, so it reads no gap. Copy, reported only, is the most revived map at every $K$, as
 in C3.
 
-The single-$K$ statuses in the table below are not filed. They use the same noise floor as the filed reading, the
-largest random spread over all five $K$, not each $K$'s own. On that floor the gap at 320 neurons alone clears its bar,
-0.191 against 0.189. That is not the filed reading, and it is the edge of the range tried. Rank-1's and elicit's
+The single-$K$ statuses in the table below are not filed. Each single-$K$ bar is three times the cipher's seed sd at
+that $K$. The random-removal floor, 0.034 over all $K$, binds at none of them, nor at the filed reading. The gap at 320
+neurons alone clears its bar, 0.191 against 0.189. That is not the filed reading, and it is the edge of the range tried. Rank-1's and elicit's
 revival is still rising there, so a larger $K$ might widen the gap further; it was not run.
 
 | $K$ | rank-1 | cipher | elicit | copy | gap | 3 × noise | status, unfiled |
@@ -131,7 +131,8 @@ any state at any $K$, so the pruned neurons are far better than chance.
 rank-1's mean would have to be to pass. On the left, at step 10 rank-1 is revived a little more than the cipher, 0.57
 against 0.48, under the bar. From step 30 on the order flips. The cipher is revived most, at 0.72 to 0.74, and rank-1 at
 0.61 to 0.65. At step 30 that wrong-way gap clears the bar, so pruning reads "reversed" there. At steps 100 and 300 the
-gap stays the wrong way, under the bar. On the right, reverse fine-tuning undoes rank-1 more slowly than the cipher at
+gap stays the wrong way, under the bar. The unfiled single-$K$ readings agree: at step 30 four of five $K$ read
+reversed, and at step 100 the reading at 160 neurons does. On the right, reverse fine-tuning undoes rank-1 more slowly than the cipher at
 every step, by 1.7 to 2.8 steps, the wrong way. That is always under the bar of 3 steps. The bar is set by the one-step
 floor: the poles' own seed spread is only 0.2 to 0.7 steps. On that spread the wrong-way lean is 2.8 to 7.5 seed
 standard deviations, a clear ordering against the filed direction. Elicit sits beyond rank-1, on the side away from the
@@ -165,13 +166,15 @@ instrument that puts elicit at the new end, did not fire.
 
 ![Held-out P of the trained value per step, and the half-life against the update norm](../../experiments/open_pair_instruments/figures/ladder_size.png)
 
-**Reading it.** Two things change, and neither is old against new. On the left, the cipher has not learned its map at
-step 10. Its held-out probability of the trained value is 0.60, against 0.96 for rank-1 and 0.98 for elicit. C3's
-cipher, read at step 8 or 9, was further behind, at 0.32 to 0.45 on the six seeds whose fine-tune log has it. By step 30
-every map is above 0.99. So the step-10 comparison, in C3 and here, pits a learned old map against a half-learned new
-one. Once the cipher has learned, both instruments read it as the easier one to undo. On the right, the half-life falls
+**Reading it.** Several things change together, and none of them is old against new. On the left, the cipher is only
+half-learned at step 10. Its held-out probability of the trained value is 0.60, just over the project's learned
+threshold of 0.5, against 0.96 for rank-1. C3's cipher, read at step 8 or 9, was under that threshold, at 0.32 to 0.45
+on the six seeds whose fine-tune log has it. By step 30 every map is above 0.99. So the step-10 comparison, in C3 and
+here, pits a well-learned old map against a less well learned new one. Once the cipher has learned, both instruments
+read it as the easier one to undo. Between steps 10 and 30 the cipher's $D$ and norm also grow, so learning is not
+separated from size here. On the right, the half-life falls
 as the update grows, for every map. The correlation over all 36 states is −0.90. The cipher's update is the largest at
-every step, 5.8 against rank-1's 4.7 at step 30, so it also halves fastest. The plan expected the half-life to grow two
+every step, 5.8 against rank-1's 4.7 at step 30, and it also halves fastest; whether the norm causes that is untested. The plan expected the half-life to grow two
 to five times by step 300. It shrank by about 45% instead.
 
 | step | map | held-out P(value) | $D$, nats | norm | $t_{1/2}$ / $D$, unfiled | top-guess drop, nats | top-guess half-life |
@@ -212,9 +215,9 @@ undirected and only a baseline.
 |---|---|---|
 | the update size | No length from 10 to 300 steps passes, at norms from 3.1 to 8.4. From 30 steps, when both poles are learned, pruning orders them the wrong way | **ruled out within this recipe**; Jain et al.'s regime, small rates run to convergence on a labelled capability, is not run |
 | the number of neurons | On C3's states the gap grows to 0.19 at 320 neurons, while the filed best-$K$ reading stays under its bar. At steps 30 to 300 the cipher is revived more than rank-1 at every $K$ from 40 to 320 | **not the fix for longer fine-tunes**; above 320 neurons is not run, and on 10-step states it might still widen |
-| the cipher half-learned at the step read | At step 10 the cipher's held-out probability is 0.60, and at C3's step 8 or 9 it was 0.32 to 0.45. Rank-1 is at 0.96. The only pruning gap in the filed direction appears while the cipher is half-learned, and it flips once the cipher is learned | **supported as a confound of C3's and step 10's comparison**; it explains why the step-10 gap is in the filed direction, not why the longer ones are reversed |
+| the cipher half-learned at the step read | At step 10 the cipher's held-out probability is 0.60, and at C3's step 8 or 9 it was 0.32 to 0.45. Rank-1 is at 0.96. The only pruning gap in the filed direction appears while the cipher is half-learned, and it flips once the cipher is learned | **a confound consistent with the trend, not shown as the cause**: the cipher's P, $D$, norm and step change together, and no run varied learnedness alone. It is consistent with the step-10 gap's direction, and does not explain why the longer ones are reversed |
 | the instruments read whether W₀'s answer survives under the update, not whether the new behaviour runs through it | Every map at every length gives back 0.48 to 0.74 of $D$ to pruning on average, and every state halves within 19 reverse steps. That is, W₀'s behaviour is recoverable under all of them. Jain et al. use revival to show a capability is retained under a wrapper; the filed control asks it to tell reuse from new | **candidate, untested**; no run separated retention from reuse |
-| the KL target rewards sharpening | The cipher's $D$ exceeds rank-1's from step 30 on. KL from W₀ grows with how peaked a state is, whatever answer it gives The top-guess target was meant to test this and tracks the KL reading instead | **candidate, untested**; a target like W₀'s ranking of its top answers was not run |
+| the KL target rewards sharpening | The cipher's $D$ exceeds rank-1's from step 30 on. KL from W₀ grows with how peaked a state is, whatever answer it gives. The top-guess target was meant to test this and tracks the KL reading instead | **candidate, untested**; a target like W₀'s ranking of its top answers was not run |
 | update norm drives the half-life | Over the 36 states the half-life falls with the norm, correlation −0.90, and the cipher has the largest norm at every step | **candidate for the half-life's ordering, untested**: within a step the norm barely varies between seeds, and no run matched norms at the longer lengths |
 
 ## What we learned
@@ -222,15 +225,17 @@ undirected and only a baseline.
 Pruning revival and reverse fine-tuning toward W₀ do not tell the map that strengthens W₀'s answers from the map that
 teaches arbitrary ones. That holds within E58's recipe at every length tried, and at up to 320 pruned neurons. Once
 both maps are learned, pruning orders them the wrong way, and reverse fine-tuning always does. C3's small gap in the
-filed direction came from comparing a learned old map with a half-learned new one.
+filed direction appears only while the cipher is half-learned. That is consistent with a confound, but no run varied
+learnedness apart from $D$ and the norm, so it is not shown as the cause.
 
 For the brief, this closes the 67M open-pair set as a VPD benchmark. Scoring VPD against a pragmatic instrument needs an
 instrument that passes its positive control on the same states, and neither port does here. VPD's two readings
-separated the same two maps by 7 to 10 times their bar in C3, at 10 steps only. That makes VPD the only method of the
-three that reads the known order on these maps. It is not a benchmark win: a benchmark needs a working rival.
+separated the same two maps by 7 to 10 times their bar in C3, at 10 steps only. Those readings used the same
+half-learned cipher states, so the same confound applies to them. Whether VPD keeps the known order once the cipher has
+learned is unknown, because VPD was not read at steps 30 to 300.
 
-The cheap instruments got a fair chance on update size within this recipe, on neuron count up to 320, and on a noise
-bar from the poles alone. They did not get one on Jain et al.'s own setting: a labelled capability scored by accuracy,
+The cheap instruments got a fair chance on update size within this recipe and on neuron count up to 320. Their noise
+bar left out elicit's spread; floors set 7 of its 8 values. They did not get one on Jain et al.'s own setting: a labelled capability scored by accuracy,
 small rates run to convergence, and a scratch model to compare against. Nor did they get one on a target that does not
 reward sharpening, on attention-head pruning, or on more than three seeds per length. On Jain's own counting setting,
 in C1b, the same kinds of instrument did work. So the result is about these ports on this axis, not about the methods
@@ -266,9 +271,10 @@ in general.
 
 1. **Stop spending on the open-pair set as a benchmark.** The ladder was its last planned job. Any further work there
    would be a new instrument design, not a refinement, and should go through `/design` against C2 first.
-2. **C2 on the counting set** is where the brief's comparison can still be made: there the cheap instruments pass their
-   positive control, so VPD meets a working rival. If VPD fails there, that is the sceptic's result; if it ties, the
-   brief's anchor item is met.
+2. **C2 on the counting set** is where the cheap instruments pass their positive control, so VPD meets a working
+   rival. But C1b found that set has no headroom: an answer-only probe and the update size within a recipe also score
+   perfectly there. So a VPD fail on C2 would be the sceptic's result, while a tie cannot rank VPD above trivial
+   signals. C2's plan should say how it restores headroom, or read a tie only as "VPD is not worse".
 3. **If the retention reading matters for C2**, the plan should state for each cheap instrument whether it reads
    retention of the old behaviour or reuse by the new one. That changes how a tie is read.
 
@@ -290,7 +296,7 @@ in general.
 | Pt_reversed_10 | $t_{1/2}$ reads "reversed" at step 10 | `pole_gap` | +2.62 < 3.00, floor binding; 5.6 pole sd | not met, no gap, 45% lean |
 | Ppass | neither instrument passes at any step | `pass_step` | both null | met, 55% lean |
 
-PR 30 is a reversed prediction. Pt_reversed_10 missed because the filed one-step floor sets the bar at three steps, while
+PR 30 is not met, as its 20% lean expected, but the instrument read reversed, beyond its bar. Pt_reversed_10 missed because the filed one-step floor sets the bar at three steps, while
 the poles' own spread would have set it near 1.4.
 
 ## Departures from the literature

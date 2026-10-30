@@ -58,7 +58,7 @@ def k_fig(L: dict[str, Any]) -> None:
     gaps = [sc["R_per_K"][K]["gap"] for K in KS]
     bars = [3 * sc["R_per_K"][K]["noise"] for K in KS]
     axes[1].plot(x, gaps, color=COLOR["rank1"], marker="o", label="rank-1 minus cipher, at each K")
-    axes[1].plot(x, bars, color=INK, ls="--", lw=1, label="bar: 3 × largest pole seed sd\n(per-K floor taken over all K; unfiled)")
+    axes[1].plot(x, bars, color=INK, ls="--", lw=1, label="bar: 3 × the cipher's seed sd at that K\n(the random-removal floor binds at none; unfiled)")
     axes[1].axhline(0, color=INK, lw=0.7)
     xf = 600
     axes[1].scatter([xf], [sc["R"]["gap"]], color=COLOR["rank1"], marker="*", s=150, zorder=4,
