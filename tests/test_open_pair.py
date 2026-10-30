@@ -561,13 +561,19 @@ def test_pc_classes() -> None:
     corners = torch.tensor([[3.0, 2.0], [3.0, -2.0], [-3.0, 2.0], [-3.0, -2.0]])
     pts = torch.cat([c + 0.1 * torch.randn(n, 2, generator=g) for c, n in zip(corners, (5, 6, 7, 8), strict=True)])
     E = torch.cat([pts, 0.01 * torch.randn(len(pts), 6, generator=g)], 1)
-    cls = OP.pc_classes(E)
+    fit = list(range(0, 26, 2))  # every other row fits the PCs; the rest are projected
+    cls = OP.pc_classes(E, fit)
     groups = [cls[0:5], cls[5:11], cls[11:18], cls[18:26]]
     assert all(len(set(gr)) == 1 for gr in groups) and len({gr[0] for gr in groups}) == 4  # one label per cluster
     assert sorted(cls.count(j) for j in range(4)) == [5, 6, 7, 8] and set(cls) <= {0, 1, 2, 3}
-    flip = OP.pc_classes(-E)  # the partition does not depend on the sign of E (labels are fixed by the largest score)
+    flip = OP.pc_classes(-E, fit)  # the partition does not depend on the sign of E (labels are fixed by the largest score)
     assert len(set(zip(cls, flip, strict=True))) == 4 and flip == cls
-    assert OP.pc_classes(E + 5.0) == cls  # centred on the mean
+    assert OP.pc_classes(E + 5.0, fit) == cls  # centred on the mean
+    # rows outside `fit` do not move the PCs: an outlier there changes only its own class
+    E2 = E.clone()
+    E2[1] = torch.tensor([-50.0, 40.0, *[0.0] * 6])
+    c2 = OP.pc_classes(E2, fit)
+    assert c2[:1] + c2[2:] == cls[:1] + cls[2:] and c2[1] == cls[11]  # it joins the (-3, 2) corner
     sh = OP.shuffled_classes(cls, 0)
     assert sorted(sh) == sorted(cls) and sh != cls and OP.shuffled_classes(cls, 0) == sh  # same sizes, seeded
 
@@ -589,6 +595,20 @@ def test_cross_class_null() -> None:
     assert all(math.isnan(v) for v in OP.cross_class_null({0: []}, []))  # no windows
     own, null = OP.cross_class_null({0: [1.0, 2.0]}, [0, 0])  # one class only: nothing to compare with
     assert own == 1.5 and math.isnan(null)
+    # review of af9384b, F2: a lean whose size follows the key (word 0 only, its class's keys respond 1.3x) is not
+    # cancelled; the amplitude-normalised null removes it; class_parts shows it sits in class 0
+    held = [0] * 12 + [1] * 10 + [2] * 6 + [3] * 4
+    gi = [1.3 if c == 0 else 1.0 for c in held]
+    delta = {c: [g if c == 0 else 0.0 for g in gi] for c in range(4)}
+    spec = {c: [delta[c][i] - sum(delta[o][i] for o in range(4) if o != c) / 3 for i in range(32)] for c in range(4)}
+    own, null = OP.cross_class_null(spec, held)
+    assert abs(own - (12 * 1.3 - 20 / 3) / 32) < 1e-12 and abs(own - null - 0.14356) < 1e-5  # 0.279 vs 0.136, the review's case
+    n_own, n_null = OP.cross_class_null(OP.amplitude_normalised(spec), held)
+    assert abs(n_own - n_null) < 1e-12
+    parts = OP.class_parts(spec, held)
+    assert parts[0][:2] == [12, 1.3] and abs(parts[0][2] - 1.0) < 1e-12 and parts[3][0] == 4
+    assert OP.amplitude_normalised({0: [0.0], 1: [0.0]}) == {0: [0.0], 1: [0.0]}  # all zero: 0, not nan
+    assert math.isnan(OP.class_parts({0: [1.0, 2.0]}, [0, 0])[0][2])  # no other windows
 
 
 def test_twin_clean_and_score_amend7() -> None:

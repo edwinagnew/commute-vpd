@@ -68,11 +68,13 @@ def tables(ctx: KD.Ctx, src: dict[str, Any], keys: list[int], trained: list[int]
     banned = set(keys) | set(elicit)
     pools = {"cipher_pool": [v for v in ranked[AN.VALUE_RANK0 : AN.VALUE_RANK0 + AN.POOL] if v not in banned],
              "ranked_from_1000": [v for v in ranked[AN.VALUE_RANK0 :] if v not in banned]}
-    pc = OP.pc_classes(ctx.net.net.wte.weight[keys])
+    pc = OP.pc_classes(ctx.net.net.wte.weight[keys], [i for i, k in enumerate(keys) if k in set(trained)])
     cls = {CMAP: dict(zip(keys, pc, strict=True)), TWIN: dict(zip(keys, OP.shuffled_classes(pc, S["twin_seed"]), strict=True))}
     n_tr = {n: [sum(c[k] == j for k in trained) for j in range(4)] for n, c in cls.items()}
     out["tables"] = {"n_trained": n_tr, "n_all": [pc.count(j) for j in range(4)], "twin_agree": sum(cls[TWIN][k] == cls[CMAP][k] for k in keys),
                      "class_of": {n: {str(k): j for k, j in c.items()} for n, c in cls.items()}}
+    if n_tr != S["filed_n_trained"]:  # review of af9384b, F3: the classes counted before filing, or stop
+        stop(out, f"class counts {n_tr} differ from the filed {S['filed_n_trained']}")
     if min(min(v) for v in n_tr.values()) < S["min_class_trained"]:
         stop(out, f"a class has fewer than {S['min_class_trained']} trained keys: {n_tr}")
     top = torch.stack([geo[k] for k in keys]).max(0).values  # each token's largest prior over the 128 keys
@@ -82,7 +84,13 @@ def tables(ctx: KD.Ctx, src: dict[str, Any], keys: list[int], trained: list[int]
         stop(out, "no admissible class word left in either pool")
     word = dict(enumerate(got[0].values))
     (lo, hi), kth = S["ep_band"], {k: float(geo[k].topk(S["ep_min_rank"]).values[-1]) for k in keys}
-    ep = draw(EP, marker, keys, pools, lambda k, v: lo <= float(geo[k][v]) <= hi and float(geo[k][v]) < kth[k])
+    ok = lambda k, v: lo <= float(geo[k][v]) <= hi and float(geo[k][v]) < kth[k]
+    ep = draw(EP, marker, keys, pools, ok)
+    if ep is None:  # F9: which reason skipped it
+        lone = [k for k in keys if not any(ok(k, v) for v in pools["ranked_from_1000"])]
+        out["tables"]["ep_skip"] = {"keys_with_no_admissible_value": lone, "reason": "a key has no admissible value" if lone else "the greedy draw failed",
+                                    "kth_prior": {str(k): kth[k] for k in keys}}
+        log(f"[maps {EP}] skipped: {json.dumps({k: v for k, v in out['tables']['ep_skip'].items() if k != 'kth_prior'})}")
     out["tables"].update({"word_of": {str(j): [v, tok.decode([v])] for j, v in word.items()}, "ep_built": ep is not None})
     maps = [(kv.KVTask(n, marker, tuple(keys), tuple(word[cls[n][k]] for k in keys)), got[1]) for n in (TWIN, CMAP)]
     return [*maps, *([ep] if ep is not None else [])], cls
@@ -109,11 +117,13 @@ def with_null(ctx: KD.Ctx, t: dict[str, Any], const: dict[int, ST.Task], dW: ST.
     """x_null = `open_pair.cross_class_null` over the held-out windows, over G_spec (classes named by their word). Its
     own term recomputes H_spec from the same gains: stop unless it agrees within null_self_tol."""
     s = {v: specific(ctx.net, c, dW, pool_of(t))[1].tolist() for v, c in const.items()}
-    own, null = OP.cross_class_null(s, words_at(t["new"]))
+    cls = words_at(t["new"])
+    own, null = OP.cross_class_null(s, cls)
+    n_own, n_null = OP.cross_class_null(OP.amplitude_normalised(s), cls)  # reported (F2)
     if not abs(own - rd["H_spec"]) <= ctx.P["thresholds"]["null_self_tol"]:
         stop(out, f"the cross-class null's own term {own} differs from H_spec {rd['H_spec']}")
     xn = null / rd["G_spec"] if rd["G_spec"] != 0 else float("nan")
-    return {"x_null": xn, "x_minus_null": rd["x"] - xn}
+    return {"x_null": xn, "x_minus_null": rd["x"] - xn, "null_parts": OP.class_parts(s, cls), "norm_own_minus_null": n_own - n_null}
 
 
 def w0_control(ctx: KD.Ctx, a3: dict[str, Any], d3: Path, d: Path, out: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -127,8 +137,10 @@ def w0_control(ctx: KD.Ctx, a3: dict[str, Any], d3: Path, d: Path, out: dict[str
     src = torch.load(d3 / "windows_elicit.pt", weights_only=False)
     out["maps"] = {}
     made, cls = tables(ctx, src, keys, trained, a3["maps"]["elicit"]["values"], out)
-    tasks = {m.name: save_map(ctx, src, m, pool, trained, held, d, {"tables": {"letter_of": {str(k): c for k, c in cls[CMAP].items()}},
-                                                                    "maps": out["maps"]}) for m, pool in made}
+    # F8: each map's own classes, named by word (a cipher's class is its value), so n_held_letter_trained counts the
+    # held keys whose class has a trained key
+    own = lambda m: {"tables": {"letter_of": {str(k): v for k, v in zip(m.keys, m.values, strict=True)}}, "maps": out["maps"]}
+    tasks = {m.name: save_map(ctx, src, m, pool, trained, held, d, own(m)) for m, pool in made}
     zero = {k: torch.zeros_like(x) for k, x in ctx.net.W0.items()}
     for m, _ in made[:2]:
         tasks[m.name]["const"] = const_tasks(ctx, m, held, d)
@@ -179,6 +191,7 @@ def score(out: dict[str, Any], P: dict[str, Any], a3: dict[str, Any], a4: dict[s
     ep = EP in out["maps"]
     out["score"] = OP.score_amend7(at(TWIN, s30), at(CMAP, s30), at(EP, s30) if ep else None, th)
     out["score"]["EP"]["scored"] = ep and out["maps"][EP]["pool"] == "cipher_pool" and out["w0_control"]["ep_in_band"]
+    out["score"]["CL"]["scored"] = out["maps"][CMAP]["pool"] == "cipher_pool"  # F10: a fallback class word is reported only
     out["at_gate_step"] = OP.score_amend7(at(TWIN, gate), at(CMAP, gate), at(EP, gate) if ep else None, th)  # reported
     out["at_step_100"] = {n: [(rd or {}).get("x_minus_null") for rd in at(n, lambda n, s: 100)] for n in (TWIN, CMAP)}  # reported
     r30 = lambda n: [(rd or {}).get("r") for rd in at(n, s30)]

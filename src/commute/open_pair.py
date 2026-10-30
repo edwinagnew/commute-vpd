@@ -572,15 +572,16 @@ def score_amend6(prior: Sequence[dict[str, Any] | None], letter: Sequence[dict[s
 # Fable, reports/plans/2026-10-30_advice_regating-carry-cell-FABLE.md, step 1. A read is {"x", "x_null", "r", "label"}.
 
 
-def pc_classes(E: Tensor) -> list[int]:
+def pc_classes(E: Tensor, fit: Sequence[int]) -> list[int]:
     """Class 0-3 of each row of E: 2 * (score on PC1 > 0) + (score on PC2 > 0), the scores on the two leading principal
-    components of E's rows centred on their mean (float64 on CPU, exact SVD). Each component's sign is fixed so that the
-    row with the largest |score| scores positive; that changes the labels, never the partition. A score of exactly 0
-    counts as not positive."""
+    components of the `fit` rows only (the trained keys; review of af9384b, F1), centred on the fit rows' mean (float64
+    on CPU, exact SVD); every row is projected. Each component's sign is fixed so that the fit row with the largest
+    |score| scores positive; that changes the labels, never the partition. A score of exactly 0 counts as not positive."""
     X = E.detach().double().cpu()
-    X = X - X.mean(0)
-    sc = X @ torch.linalg.svd(X, full_matrices=False)[2][:2].T
-    sc = sc * sc.gather(0, sc.abs().argmax(0, keepdim=True)).sign()
+    F = X[list(fit)]
+    sc = (X - F.mean(0)) @ torch.linalg.svd(F - F.mean(0), full_matrices=False)[2][:2].T
+    f = sc[list(fit)]
+    sc = sc * f.gather(0, f.abs().argmax(0, keepdim=True)).sign()
     return [2 * int(a > 0) + int(b > 0) for a, b in sc.tolist()]
 
 
@@ -607,6 +608,23 @@ def cross_class_null(s: Mapping[int, Sequence[float]], cls: Sequence[int]) -> tu
             return own, math.nan
         null += sum(k == c for k in cls) / N * sum(out) / len(out)
     return own, null
+
+
+def class_parts(s: Mapping[int, Sequence[float]], cls: Sequence[int]) -> dict[int, list[float]]:
+    """Reported (review of af9384b, F2): per class c present, [n_c, mean s[c] at c's windows, mean s[c] at the other
+    windows] (nan when there are none), so a carry that sits in one class's word shows."""
+    mean = lambda v: sum(v) / len(v) if v else math.nan
+    return {c: [sum(k == c for k in cls), mean([s[c][i] for i, k in enumerate(cls) if k == c]),
+                mean([s[c][i] for i, k in enumerate(cls) if k != c])] for c in sorted(set(cls))}
+
+
+def amplitude_normalised(s: Mapping[int, Sequence[float]]) -> dict[int, list[float]]:
+    """Reported (F2): each window's specific gains divided by their mean |s| over the words at that window (0 where all
+    are 0), which removes a factor that scales every word's gain at a window alike (a lean whose size follows the key)."""
+    words = list(s)
+    n = len(next(iter(s.values()))) if s else 0
+    amp = [sum(abs(s[c][i]) for c in words) / len(words) for i in range(n)]
+    return {c: [s[c][i] / amp[i] if amp[i] else 0.0 for i in range(n)] for c in words}
 
 
 def twin_clean(twin: Sequence[dict[str, Any] | None], th: dict[str, Any]) -> str:

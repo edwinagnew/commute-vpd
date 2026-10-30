@@ -6,27 +6,50 @@
   "code": "experiments/open_pair/amend7.py (imports amend6.draw / save_map / harness_control / references, amend3.read, amend4.train / over_gate / stop); rules open_pair.pc_classes, shuffled_classes, cross_class_null, twin_clean, contrast, score_amend7 (section 'Amendment 7') with carries, labellable, band_class from Amendment 6; edge cases in tests/test_open_pair.py",
   "settings": {
     "half": 20,
-    "seeds": [0, 1, 2],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
     "split_seed": 0,
     "keys": "Amendment 3's 128 keys (amend3.json keys.keys), 96 trained / 32 held out by open_pair.split_keys (seed 0), checked against amend3.json keys.held",
     "windows": "Amendment 3's results/large/amend3/windows_elicit.pt (sha256 against amend3.json maps.elicit.sha256.full); only the table differs",
     "prior": "W0's geometric-mean P(token | M key) over every window of that key (kv.key_distributions(geometric=True), fp32 forward), as Amendment 6",
-    "classes": "open_pair.pc_classes on W0's input embeddings (wte rows) of the 128 keys: centred on their mean, float64 on CPU, exact SVD; class = 2 * (PC1 score > 0) + (PC2 score > 0); each PC's sign fixed so the key with the largest |score| scores positive. Counted before filing from the target checkpoint (scratch ~/commute-data/scratch/regating-lead/amend7/classes.py, one fleet/cpu-run job, no forward): all 39/36/33/20, trained 27/26/27/16, held out 12/10/6/4; PC1 and PC2 hold 2.7% and 2.4% of the keys' embedding variance (top singular values 1.13, 1.08, 0.97, 0.96, 0.95)",
+    "classes": "open_pair.pc_classes on W0 input embeddings (wte rows) of the 128 keys, the PCs fit on the 96 trained keys only (review of af9384b, F1): centred on the trained mean, float64 on CPU, exact SVD of the trained rows, all 128 rows projected; class = 2 * (PC1 score > 0) + (PC2 score > 0); each PC sign fixed so the trained key with the largest |score| scores positive. Counted before filing from the target checkpoint (scratch ~/commute-data/scratch/regating-lead/amend7/classes.py, one fleet/cpu-run job, no forward): all 33/48/28/19, trained 29/30/19/18, held out 4/18/9/1; PC1 and PC2 hold 3.0% and 2.8% of the trained keys embedding variance (top singular values 1.03, 1.00, 0.94, 0.91, 0.88)",
     "twin_seed": 0,
-    "twin": "open_pair.shuffled_classes(classes, twin_seed 0): the class labels permuted over the 128 keys, same class sizes, same four words. Counted before filing: trained 26/31/27/12, held out 13/5/6/8; 41 of 128 keys keep their class (chance 33.6)",
+    "twin": "open_pair.shuffled_classes(classes, twin_seed 0): the class labels permuted over the 128 keys, same class sizes, same four words. Counted before filing: trained 27/36/19/14 (minimum 14, over the floor of 12), held out 6/12/9/5; 39 of 128 keys keep their class (chance 35.5)",
     "class_max_p": 1e-05,
-    "class_words": "one word per class by kv.bijection (seed 0) over E58's cipher pool (word-like frequency ranks 1000-2999 minus the 128 keys and the 128 elicit words), admitted only if its W0 prior is under 1e-5 after every one of the 128 keys (so the twin's words are new under W0 too); the wider pool from rank 1000 if the cipher pool runs out; stop if both do",
+    "class_words": "one word per class by kv.bijection (seed 0) over E58's cipher pool (word-like frequency ranks 1000-2999 minus the 128 keys and the 128 elicit words), admitted only if its W0 prior is under 1e-5 after every one of the 128 keys (so the twin's words are new under W0 too); the wider pool from rank 1000 if the cipher pool runs out; stop if both do; on a fallback pool CL is reported, not scored (score.CL.scored false, F10)",
     "min_class_trained": 12,
-    "ep_band": [0.0003, 0.003],
+    "ep_band": [
+      0.0003,
+      0.003
+    ],
     "ep_min_rank": 20,
-    "elicit_prior_cipher": "kv.bijection (seed 0) over the same pools: a key takes a distinct value only if its prior is in [3e-4, 3e-3] and below the key's 20th-largest prior (rank over 20). If both pools run out the map is skipped (EP 'skipped'), not stopped",
+    "elicit_prior_cipher": "kv.bijection (seed 0) over the same pools: a key takes a distinct value only if its prior is in [3e-4, 3e-3] and below the key's 20th-largest prior (rank over 20). If both pools run out the map is skipped (EP 'skipped'), not stopped; a skip records its reason (a key with no admissible value in either pool, or the greedy draw failed) and each key 20th prior (F9)",
     "finetune": "keydep.finetune, E54's recipe (Adam 3e-5, batch 32, KL 1, clip 1, 300 steps, bf16 autocast), every step 1-30 and 100, 300 kept",
     "reads": "label reads from step 10 until G_spec >= G_min (amend4.over_gate); then step 30 and that step (amend3.read; r with the route split). Twin and class map: x_null at 30, the gate step and 100; r at 30 and the gate step, on the twin always, on the class map only where open_pair.carries holds. EP: r at 30 and the gate step",
     "x_null": "open_pair.cross_class_null over the held-out keys' windows: for each class c present among them, weight n_c / N times the mean specific gain of c's word at the held-out windows of the other classes; over G_spec. It uses the same words with the same weights as x, so a lean toward a word that does not depend on the key cancels exactly at any class sizes. Its own term must equal H_spec within null_self_tol, else stop",
     "order": "W0 control; harness control (E58 cipher seed 0 at step 16); twin seeds 0-2, then stop unless twin_clean; class map seeds 0-2; elicit-prior cipher seeds 0-2",
     "precision": "fp32 reads, TF32 off; bf16 fine-tune",
     "saved": "no weights (bitwise reproducible on this card); windows in results/large/amend7",
-    "pool_fallback": "the pool each map drew from is recorded (amend7.json maps.<map>.pool). EP is scored only if it drew from the cipher pool and its trained prior is in ep_band (score.EP.scored); otherwise reported"
+    "pool_fallback": "the pool each map drew from is recorded (amend7.json maps.<map>.pool). EP is scored only if it drew from the cipher pool and its trained prior is in ep_band (score.EP.scored); otherwise reported",
+    "filed_n_trained": {
+      "class_map": [
+        29,
+        30,
+        19,
+        18
+      ],
+      "class_shuffled": [
+        27,
+        36,
+        19,
+        14
+      ]
+    },
+    "filed_n_trained_rule": "the W0 control stops unless the run counts exactly these trained keys per class (F3)",
+    "x_null_reported": "reported, not scored (F2): per class [n_c, own mean, other-class mean] (open_pair.class_parts) and the amplitude-normalised own - null numerator (open_pair.amplitude_normalised: each window specific gains over their mean |s| at that window), which removes a lean whose size follows the key"
   },
   "thresholds": {
     "G_min": 5.147937448121369,
@@ -63,7 +86,7 @@
   "twin_control": "after the twin's three seeds: stop unless open_pair.twin_clean reads 'clean' at step 30",
   "expected": {
     "at_W0": "no update: every gain 0, x, x_null and r undefined; the null's terms 0 exactly",
-    "w0_control": "class map and twin prior about 1e-6 (the cipher's 1.4e-6, the first-letter words' 8.2e-7); EP prior near elicit's 1.3e-3, inside [3e-4, 3e-3]; class counts as counted before filing (settings.classes, settings.twin)",
+    "w0_control": "class map and twin prior about 1e-6 (the cipher 1.4e-6, the first-letter words 8.2e-7); EP prior near elicit 1.3e-3, inside [3e-4, 3e-3]; class counts exactly settings.filed_n_trained",
     "harness_control": "r 0.32413 (bitwise)",
     "twin": "gate step 10-13 (the first-letter map's 10-13); x - x_null at step 30 within -0.1 to 0.1 (no structure to carry); r at 30 0.25-0.5 (a four-word lookup at cipher prior; the 128-value cipher reads 0.29-0.31)",
     "class_map": "gate step 10-13; x - x_null at step 30 over 0.3 if the rule is learned, under 0.15 if it is memorised as the first-letter map was; for a perfectly learned four-class rule x - x_null is 4/3 of x, since the wrong-class words fall",
@@ -73,18 +96,18 @@
   "predictions": {
     "T": {
       "what": "open_pair.twin_clean on the twin's step-30 reads: 'clean' iff three labellable reads with finite x_null and every x - x_null < 0.15; 'carries' otherwise; 'unreadable' if a seed is missing, too small to label, or x / x_null not finite. Not clean stops the job before the class map",
-      "lean": "Writer: clean 85%",
+      "lean": "Writer: clean 75% (twin_max 0.15 is Fable bar, not a measured floor for a structure-free four-word map; Amendment 6 first-letter read 0.04-0.08 at step 30, review F11)",
       "blind_to": "only what the twin's structure-free assignment carries; 41 of 128 keys keep their class, so a little true structure remains in it"
     },
     "CL": {
       "what": "open_pair.score_amend7 CL: 'control_failed' unless T is clean; 'unreadable' if fewer than 2 step-30 reads are labellable; 'no_carry' if fewer than 2 carry (labellable, finite x_null, x - x_null > 0.3; a tie fails); else band_class on the carrying seeds' r (cipher_band iff every r < 0.5, own_guess_band iff every r >= 0.6, between otherwise, unreadable if any r is not finite)",
       "lean": "Fable: carries 60%; given carry, cipher_band 50%. Writer: carries 50% (PC1 and PC2 hold under 3% of the keys' embedding variance each, so the class signal per key is small); given carry, cipher_band 40%, between 30%, own_guess_band 30%",
-      "blind_to": "the granularity limit (see 'granularity'); one rule over one feature, three seeds, one key split, one decomposition; carry that appears only after step 30 (step 100 is reported); x - x_null is blind to any lean that does not depend on the key, by construction, and the twin measures what is left"
+      "blind_to": "the granularity limit (see 'granularity'); one rule over one feature, three seeds, one key split, one decomposition; carry that appears only after step 30 (step 100 is reported); x - x_null is blind to any lean that does not depend on the key, by construction, and the twin measures what is left; a lean whose size follows the key class (a word lean scaled by how strongly the update moves each key) is not cancelled by the cross-class null, and the twin cannot measure it: on the all-key PCs the eta^2 on class was 0.070 for embedding norm and 0.116 for token id (twin 0.009 and 0.025, chance 0.024; review F2). The per-class parts and the amplitude-normalised null are reported beside x - x_null. Held-out keys are unevenly spread over the classes (4/18/9/1), so x leans on class 1"
     },
     "D": {
       "what": "open_pair.contrast, read only when CL is a band class: D = mean r of the carrying class-map seeds - mean r of the twin's three seeds at step 30. 'sees_carry' iff D > 0.0904; 'sees_carry_low' iff D < -0.0904; else 'kind_only' (a tie reads kind_only); 'unreadable' if any r is not finite; 'not_read' when CL is not a band class",
       "lean": "Writer: sees_carry 50%, kind_only 40%, sees_carry_low 10%",
-      "blind_to": "differences between the two maps other than structure that the fine-tune itself creates (trained gain G_spec at step 30, reported beside); the bound is twice the noise floor of a three-seed range, not of a difference of means"
+      "blind_to": "differences between the two maps other than structure that the fine-tune itself creates (trained gain G_spec at step 30, reported beside); the bound is twice the noise floor of a three-seed range, not of a difference of means; the twin is not matched in class sizes (trained 27/36/19/14 against 29/30/19/18), so its word-frequency lean differs from the class map, which the null cancels for x but not for r (review F6)"
     },
     "EP": {
       "what": "open_pair.score_amend7 EP: 'skipped' if the table could not be built; else band_class on its three step-30 r (a read too small to label counts as missing). score.EP.scored is false on a fallback pool or a prior outside [3e-4, 3e-3]: then reported only",
@@ -106,5 +129,6 @@
     "EP_own_guess_band": "the band is 'prior above about 1e-3' and the prior-matched result is a within-band effect; the Qwen prior column becomes a scored column (Fable)",
     "EP_between": "reported: r rises with the prior at the top of the no-rule range; no claim",
     "EP_skipped_or_unscored": "reported; Fable's prior-matched shuffle is the fallback, not run here"
-  }
+  },
+  "amendment_2026_10_30_code_review": "Before any run, after the code review of af9384b (reports/reviews/2026-10-30_review_e58-amend7-code.md): PCs fit on the trained keys only, class counts refiled (F1); per-class null parts and an amplitude-normalised null reported, the class-dependent lean added to blind_to (F2); filed counts asserted at run time (F3); each map own classes for n_held_letter_trained (F8); the EP skip reason logged (F9); CL unscored on a class-word fallback pool (F10); T lean lowered (F11); D blind_to names the twin size imbalance (F6)"
 }
