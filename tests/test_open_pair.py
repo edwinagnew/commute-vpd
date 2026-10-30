@@ -302,12 +302,16 @@ def test_copy_class() -> None:
 
 
 def test_moves_with_and_combine() -> None:
-    assert OP.moves_with(0.149, 0.5, 0.15, 0.05) == "not_testable" and OP.moves_with(0.0, 0.0, 0.15, 0.05) == "not_testable"
-    assert OP.moves_with(0.15, 0.0501, 0.15, 0.05) == "tracks"  # dx tie at dx_min is testable
-    assert OP.moves_with(0.3, 0.05, 0.15, 0.05) == "flat"  # di tie at tol is flat
-    assert OP.moves_with(-0.3, -0.06, 0.15, 0.05) == "tracks"  # x fell, r fell
-    assert OP.moves_with(-0.3, 0.06, 0.15, 0.05) == "opposite" and OP.moves_with(0.3, -0.06, 0.15, 0.05) == "opposite"
-    assert OP.moves_with(math.nan, 0.0, 0.15, 0.05) == "unreadable" and OP.moves_with(0.3, math.inf, 0.15, 0.05) == "unreadable"
+    mw = OP.moves_with
+    assert mw(0.149, 0.5, 0.5, 0.15, 0.05) == "not_testable" and mw(0.0, 0.0, 0.0, 0.15, 0.05) == "not_testable"
+    assert mw(0.15, 0.15, 0.0501, 0.15, 0.05) == "tracks"  # dx and own ties at dx_min are testable
+    assert mw(0.3, 0.3, 0.05, 0.15, 0.05) == "flat"  # di tie at tol is flat
+    assert mw(-0.3, -0.3, -0.06, 0.15, 0.05) == "tracks"  # x fell, r fell
+    assert mw(-0.3, -0.3, 0.06, 0.15, 0.05) == "opposite" and mw(0.3, 0.3, -0.06, 0.15, 0.05) == "opposite"
+    assert mw(0.3, 0.149, 0.5, 0.15, 0.05) == "not_testable"  # the map itself moved too little
+    assert mw(0.3, -0.2, 0.5, 0.15, 0.05) == "not_testable"  # the map moved against dx
+    assert mw(math.nan, 0.3, 0.0, 0.15, 0.05) == "unreadable" and mw(0.3, 0.3, math.inf, 0.15, 0.05) == "unreadable"
+    assert mw(0.3, math.nan, 0.0, 0.15, 0.05) == "unreadable"
     assert OP.combine(["flat", "tracks"]) == "tracks" and OP.combine(["flat", "opposite"]) == "opposite"
     assert OP.combine(["flat", "unreadable"]) == "flat" and OP.combine(["not_testable", "not_testable"]) == "not_testable"
     assert OP.combine(["not_testable", "unreadable"]) == "unreadable" and OP.combine([]) == "unreadable"
@@ -351,3 +355,13 @@ def test_b2_and_score_amend2() -> None:
     out = OP.score_amend2({"elicit": st["elicit"]}, 0, REF24, TH2)
     assert out["R"] == "not_testable" and out["C"] == "not_testable" and out["B"]["status"] == "unreadable"
     assert OP.score_amend2({}, 0, REF24, TH2)["verdict"] == "stopped"
+
+
+def test_b2_elicit_movement_alone_is_not_testable() -> None:
+    # elicit falls -0.03 -> -0.20 ("below") while rank-1 and copy stay at their 24-key x: dx = 0.17 from elicit alone
+    r_ref = {m: REF24[m]["r"] for m in REF24}
+    ratio_ref = {m: REF24[m]["ratio"] for m in REF24}
+    st = k_states({"elicit": -0.20, "rank1": 0.11, "copy": 0.48}, {**r_ref, "copy": 0.95}, ratio_ref, x_novel=0.11)
+    out = OP.score_amend2(st, 5, REF24, TH2)
+    assert out["E"] == "below" and out["B"]["maps"]["copy"]["dx"] > 0.15
+    assert out["B"]["status"] == "not_testable" and out["verdict"] == "untested"

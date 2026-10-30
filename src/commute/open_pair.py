@@ -286,13 +286,15 @@ def copy_class(x: float, label: str, th: dict[str, Any]) -> str:
     return "pass" if x >= th["copy_carry"] else "fail"
 
 
-def moves_with(dx: float, di: float, dx_min: float, tol: float) -> str:
+def moves_with(dx: float, own: float, di: float, dx_min: float, tol: float) -> str:
     """One instrument on one map. dx and di are differences in differences: (map - elicit) at K keys minus the same at 24
-    keys, for x and for the instrument. "unreadable" if either is not finite; "not_testable" iff |dx| < dx_min (x did not
-    move); "tracks" iff di moved the same way as dx by more than tol; "flat" iff |di| <= tol; else "opposite"."""
-    if not (finite(dx) and finite(di)):
+    keys, for x and for the instrument; own = the map's own x at K keys minus at 24 keys. "unreadable" if any is not
+    finite; "not_testable" iff |dx| < dx_min, |own| < dx_min, or own and dx differ in sign (the map's x did not itself
+    move that way: elicit's own movement alone never makes a map testable; review of a23c3ea); "tracks" iff di moved the
+    same way as dx by more than tol; "flat" iff |di| <= tol; else "opposite"."""
+    if not (finite(dx) and finite(own) and finite(di)):
         return "unreadable"
-    if abs(dx) < dx_min:
+    if abs(dx) < dx_min or abs(own) < dx_min or own * dx <= 0:
         return "not_testable"
     if (di if dx > 0 else -di) > tol:
         return "tracks"
@@ -315,9 +317,9 @@ def b2(st: dict[str, dict[str, Any]], ref: dict[str, dict[str, float]], th: dict
     did = lambda m, k: (get(st, m, k) - get(st, "elicit", k)) - (get(ref, m, k) - get(ref, "elicit", k))
     per: dict[str, Any] = {}
     for m in ("rank1", "copy"):
-        dx = did(m, "x")
-        inst = {i: {"d": did(m, i), "status": moves_with(dx, did(m, i), th["dx_min"], th[f"tol_{i}"])} for i in ("r", "ratio")}
-        per[m] = {"dx": dx, **inst, "status": combine([v["status"] for v in inst.values()])}
+        dx, own = did(m, "x"), get(st, m, "x") - get(ref, m, "x")
+        inst = {i: {"d": did(m, i), "status": moves_with(dx, own, did(m, i), th["dx_min"], th[f"tol_{i}"])} for i in ("r", "ratio")}
+        per[m] = {"dx": dx, "dx_own": own, **inst, "status": combine([v["status"] for v in inst.values()])}
     return {"maps": per, "status": combine([per[m]["status"] for m in per])}
 
 

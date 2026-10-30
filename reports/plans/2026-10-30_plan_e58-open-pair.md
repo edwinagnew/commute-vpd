@@ -382,7 +382,7 @@ and readings about 25 s per state); host RAM under 6 GB (four checkpoints of 113
 
 *Lead's decision on Fable's advice (`reports/plans/2026-10-30_advice_e58a1-next-FABLE.md`, item 3, "One $0 check that can
 overturn item 1", and "What would change it"). Code `experiments/open_pair/amend2.py` (180 lines); rules
-`src/commute/open_pair.py` § Amendment 2 (edge cases `tests/test_open_pair.py`, 5 new tests, 28 pass); E54's key
+`src/commute/open_pair.py` § Amendment 2 (edge cases `tests/test_open_pair.py`, 6 new tests, 29 pass); E54's key
 selection (`vocab`, `select`) moved, not changed, from `experiments/keydependent_elicit/run.py` into
 `src/commute/keydep.py`, and E54's run.py now imports them (lint clean; no other script called them); predictions
 `results/predictions_amend2.json`; job `sbatch cluster/open_pair.sbatch amend2`. Coded and filed; nothing run. E58's
@@ -452,7 +452,7 @@ No warm start or replay; every fine-tune starts from W₀. The cipher is not run
 | zero update, six split tasks | 0 exactly | | | |
 | G_spec (scored step) | 0, too_small | 10-19 (gate 5.148) | 10-19 | 10-19 |
 | x | undefined | −0.15 to +0.05 (24 keys −0.03) | ≥ 0.3 if rules learnable with keys, ≤ 0.15 if memorised (24 keys 0.09-0.14) | ≥ 0.6 (24 keys 0.42-0.55) |
-| x_novel, n_novel | — | = x; all novel | about x or above; 3-10 of 32 novel | = x; 32 |
+| x_novel, n_novel | — | = x; all novel | about x or above; probably 1-6 of 32 novel (R may read not_testable) | = x; 32 |
 | r | undefined | 0.75-0.85 | 0.75-0.85 | 0.75-0.85 |
 | ratio | undefined | 0.9-1.1 | 0.9-1.1 | 0.9-1.1 |
 | dx, d_r, d_ratio (vs elicit and 24 keys) | — | 0 by definition | d_r within ±0.05, d_ratio within ±0.1 wherever |dx| ≥ 0.15 | same |
@@ -468,10 +468,11 @@ design); r's own blind spot under reading A (pieces, not carry).
   (stop); too_small or unreadable stop. Lean: pass 70%, below 25%.
 - **R, rank-1.** "reuses" iff E58's label reads reuses and x_novel ≥ 0.5 (Fable's (a)); "carries" iff x and x_novel ≥
   0.3; "memorises" iff both ≤ 0.15; else "between"; "not_testable" with fewer than 3 novel held-out keys or an
-  unlabellable state. Lean: memorises or between 70%, carries 20%, reuses 5%.
+  unlabellable state. Lean: not testable 30%, memorises or between 50%, carries 15%, reuses 5%.
 - **C, copy.** pass iff x ≥ 0.6. Lean: 40%.
 - **B, Fable's (b).** Per map (rank-1, copy) and instrument: dx = (x_map − x_elicit) at K keys minus the same at 24
-  keys (3-seed means), d_r and d_ratio likewise. not_testable iff |dx| < 0.15; "tracks" iff the instrument moved the
+  keys (3-seed means), d_r and d_ratio likewise. not_testable iff |dx| < 0.15 or the map's own x moved by less than
+  0.15 (or against dx) between 24 and K keys; "tracks" iff the instrument moved the
   way x moved by more than 0.05 (r) or 0.1 (ratio); "flat" iff within it; else "opposite". Combined: tracks >
   opposite > flat > not_testable. Lean: flat 50%, not_testable 35%, tracks 10%.
 - **Verdict.** stopped unless E passes or reads below; then b_r_tracks > a_first_reuses > reading_A_holds > opposite >
@@ -537,3 +538,26 @@ asks 24 GB as before. Disk about 0.36 GB in `results/large/amend2/` (three 113 M
 3. `/pod-runner`: from the main clone after the commit is pulled there, `sbatch cluster/open_pair.sbatch amend2`
    (submit from the clone root; record the job ID).
 4. Write-up as a section of E58's analysis report (`/writeup`); `TRIED.md` row; `PENDING.md` line.
+
+### Amendment before the run (review, 2026-10-30)
+
+A fresh Opus review of a23c3ea found two real problems and two small ones. Nothing had run, so the section above and
+`predictions_amend2.json` were amended in place (`amendment_2026_10_30_prerun_review` records the change).
+
+- **One common step (high).** `one_map` called `keydep.elicit_ft`, so each map was read at its own E12 step. Elicit
+  will likely land at step 30 while rank-1 and copy, whose values W₀ already favours or which its tied embeddings carry,
+  may clear at 10. dx, d_r and d_ratio would then mix update size into the key count. Now every map is fine-tuned with
+  `keydep.finetune` (all four checkpoints kept) and read at elicit's scored step. Elicit runs first, as before, and the
+  job stops if it reaches held-out P ≥ 0.5 at none of the checkpoints. Each map's own first step with P ≥ 0.5 and
+  ‖δW‖ at every checkpoint are reported, not used.
+- **A map must move by itself (medium).** dx = (x_map − x_elicit) at K keys minus the same at 24 keys let elicit's own
+  fall (for example −0.03 to −0.20, "below") make a map testable when the map's x did not change. Now B is testable on a
+  map only if the map's own x also moved by at least 0.15 between 24 and K keys, in the same direction as dx. New test:
+  elicit falls to −0.20 with rank-1 and copy at their 24-key x and copy's r up 0.11 → B not_testable, verdict
+  untested.
+- **Qualified pool hash (low).** `amend2.json` logs a sha256 of the sorted (key, value) pairs of the qualified pool
+  beside the E54 reproduction check, so a later rerun can tell a changed pool from a changed draw.
+- **Rank-1 novel keys (low).** At 24 keys token 15 was the value of 9 of 32 keys and only 1 of 8 held-out keys had a
+  value of its own. The lean of 3-10 novel keys of 32 was optimistic: probably 1-6, so R may well read not_testable
+  (about 30%). The rule (`min_novel` = 3) is unchanged.
+- Kept: the move of E54's `vocab` and `select` into `keydep` (the reviewer diffed it byte-identical).
