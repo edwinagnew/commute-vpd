@@ -191,7 +191,9 @@ def branch_amend1(p1: dict[str, Any], p2: dict[str, Any], p3: dict[str, Any]) ->
     else:
         out = ("S_lo separates elicit higher: in r's unit steering does separate the matched pair; the table's log-odds row "
                "(estimated 'over 10x') is replaced by the measured r gap / S_lo gap; tell the user before editing the report")
-    if p2["status"] == "fail":
+    if any(float(d) < 0 for d in p2["diff"].values()):
+        out += " [P2-lo reversed: an elicit S_lo above its r; tell the user]"
+    elif p2["status"] == "fail":
         out += " [P2-lo missed: an elicit S_lo within 0.3 of its r; tell the user]"
     out += (" [P3-own: S in nats separates the elicit map from the cipher at its own step]" if p3["status"] == "pass" else
             " [P3-own missed: the stage-0 numbers do not reproduce E54's analysis; check the code before reading]")
