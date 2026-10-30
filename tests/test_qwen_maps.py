@@ -1,7 +1,6 @@
 """CPU checks of E44's pure pieces (experiments/qwen_maps): the Gram basis, the states' algebra, the Σ-matched random
 control, pooling, behaviour kept, and the filed edge cases of every rule (results/predictions.json "edge_cases")."""
 
-import argparse
 import importlib.util
 import json
 import math
@@ -255,8 +254,8 @@ def _load_run(monkeypatch, tmp_path):
     monkeypatch.setattr(mods["job"], "RESULTS", tmp_path)
 
     def job(waive=""):
-        a = argparse.Namespace(out=str(tmp_path / "out"), e40=str(tmp_path), e40_large=str(tmp_path), decomp="",
-                               usd_per_h=3.0, prior_usd=0.5, waive=waive)
+        a = mods["job"].JobOpts(out=str(tmp_path / "out"), e40=str(tmp_path), e40_large=str(tmp_path), decomp="",
+                                results=str(tmp_path), usd_per_h=3.0, prior_usd=0.5, waive=waive)  # the default is fixed at import
         return mods["job"].Job(a, mods["job"].REHEARSAL, mods["qwen_maps_run"].score)
 
     return mods["qwen_maps_run"], job
