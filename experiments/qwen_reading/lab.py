@@ -112,7 +112,46 @@ def kl(p: Tensor, q: Tensor) -> float:
 
 
 def pinned(w: Tensor) -> Tensor:
-    return torch.empty(w.shape, dtype=w.dtype, pin_memory=True).copy_(w)
+    return torch.empty(w.shape, dtype=w.dtype, pin_memory=torch.cuda.is_available()).copy_(w)
+
+
+class Weights:
+    """Weight sets held on the host (pinned on a GPU machine) and copied into the model's own tensors in place. W0 is
+    registered when the sets are made, from the weights the model holds then, so every set exists beside it; `now`
+    names the set the model holds."""
+
+    def __init__(self, lins: dict[str, Any]):
+        self.lins, self.now = lins, "W0"
+        self.sets = {"W0": {s: pinned(lin.weight.data) for s, lin in lins.items()}}
+
+    def use(self, key: str) -> None:
+        if key != self.now:
+            for s, lin in self.lins.items():
+                lin.weight.data.copy_(self.sets[key][s])
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+        self.now = key
+
+    def put(self, key: str, dW: dict[str, Tensor] | None, scale: float = 1.0) -> None:
+        """Set `key` = W0 + scale·δW (fp32, added on the weights' device as E44's Reader.set_ft); None: a separate copy
+        of W0, so the W0 control goes through the same copy path."""
+        self.drop(key)
+        self.use("W0")
+        if dW is None:
+            self.sets[key] = {s: pinned(w) for s, w in self.sets["W0"].items()}
+            return
+        self.sets[key] = {s: pinned(lin.weight.data + scale * dW[s].to(lin.weight.data.device, torch.float32))
+                          for s, lin in self.lins.items()}
+
+    def drop(self, key: str) -> None:
+        """Free set `key` (never W0), the model back at W0 if it held it, and return the pinned pages."""
+        assert key != "W0", "W0 is never dropped"
+        if self.now == key:
+            self.use("W0")
+        self.sets.pop(key, None)
+        empty = getattr(torch._C, "_host_emptyCache", None)  # the pinned-memory cache keeps freed blocks otherwise
+        if empty is not None:
+            empty()
 
 
 class Lab:
@@ -130,8 +169,7 @@ class Lab:
         self._alive: Any = None
         self._lay: Layout | None = None
         self._sigma: dict[str, Tensor] | None = None
-        self.sets: dict[str, dict[str, Tensor]] = {}
-        self.now = "W0"
+        self._weights: Weights | None = None
         fp32_matmuls()
         self.log(f"[{stage}] start; config {CFG}")
 
@@ -187,7 +225,7 @@ class Lab:
     def model(self) -> Any:
         if self._model is None:
             self._model = load_target(DEV, F32)
-            self.sets["W0"] = {s: pinned(lin.weight.data) for s, lin in linears(self._model).items()}
+            self._weights = Weights(linears(self._model))
             self.log(f"[load] target, {torch.cuda.get_device_name()}, {self.peaks()}")
         return self._model
 
@@ -239,33 +277,22 @@ class Lab:
 
     # ------------------------------------------------------------------------- weight sets
 
+    @property
+    def weights(self) -> Weights:
+        """The weight sets, made with the model (W0 registered then)."""
+        if self._weights is None:
+            assert self.model is not None
+        assert self._weights is not None
+        return self._weights
+
     def use(self, key: str) -> None:
-        if self.sets[key] is not self.sets[self.now]:
-            for s, lin in linears(self.model).items():
-                lin.weight.data.copy_(self.sets[key][s])
-            torch.cuda.synchronize()
-        self.now = key
+        self.weights.use(key)
 
     def set_weights(self, key: str, dW: dict[str, Tensor] | None, scale: float = 1.0) -> None:
-        """Weight set `key` = W0 + scale·δW (fp32, added on the GPU as E44's Reader.set_ft); None: a separate pinned
-        copy of W0, so the W0 control goes through the same copy path."""
-        self.drop_set(key)
-        self.use("W0")
-        if dW is None:
-            self.sets[key] = {s: pinned(w) for s, w in self.sets["W0"].items()}
-            return
-        self.sets[key] = {s: pinned(lin.weight.data + scale * dW[s].to(DEV, F32))
-                          for s, lin in linears(self.model).items()}
+        self.weights.put(key, dW, scale)
 
     def drop_set(self, key: str) -> None:
-        """Free weight set `key` (never W0) and return its pinned pages to the system."""
-        assert key != "W0"
-        if self.now == key:
-            self.use("W0")
-        self.sets.pop(key, None)
-        empty = getattr(torch._C, "_host_emptyCache", None)  # the pinned-memory cache keeps freed blocks otherwise
-        if empty is not None:
-            empty()
+        self.weights.drop(key)
 
     def load_dw(self, name: str) -> dict[str, Tensor]:
         """A state's δW (host, as saved) after its sha256 check: E40's against regen_SHA256SUMS, E45's against the sums
@@ -313,7 +340,7 @@ class Lab:
         with ctx:
             for i, r in enumerate(rows):
                 t, ci = r[None].to(DEV), {}
-                for key in (("FT", "W0") if self.now == "FT" else ("W0", "FT")):
+                for key in (("FT", "W0") if self.weights.now == "FT" else ("W0", "FT")):
                     self.use(key)
                     logits, g = importances(model, t, gamma, comps)
                     if (c := c0 if key == "W0" else c1) is not None:
