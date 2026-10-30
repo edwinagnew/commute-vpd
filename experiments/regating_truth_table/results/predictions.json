@@ -1,0 +1,88 @@
+{
+ "experiment": "regating_truth_table: the re-gating side of the step-2 table (ratio, r, S for the 18 saved 67M runs), experiments/regating_truth_table/run.py. E-number given at run time (next free; E57 is Q3)",
+ "plan": "reports/plans/2026-10-30_plan_regating-ground-truth.md, sections 'States', 'Stage 0', 'Stage 1'",
+ "approval": "decisions.md 2026-10-30, last row (Fable's advice reports/plans/2026-10-30_advice_regating-step2-FABLE.md item 2, taken by the lead): fill the table now, without labels; class 1 ($0, saved states)",
+ "filed": "2026-10-30, before any run; never edited after the run (a change is a dated amendment)",
+ "what_is_filed": "the control rules (stage 0) and the expected values of the cells this job fills. The label predictions P1-P3 are NOT filed: see label_predictions",
+ "found_while_coding": "Of the plan's 'not read' cells only one column is empty on disk. (1) E46's S is read on all eight runs (experiments/baseline_neurons/results/baseline_neurons.json b3, E52), not only ident32_s0 and rand32_s0. (2) r on E53's states is already in E53's saved cells: performed_anchor/run.py `cells` on the least-squares split state computes L01 - L00 (its 'g') and T1 - T0 (its 'G') by the same masked forward as local_faith.route_split (masked_lo_windows = masked_lo per window: masked_logits at the read position under the given gates, identity.log_odds of the target), so r = g / G, E12's definition. (3) The broad cipher's stand-in ratio is masked_gain / piece_gain of read_amend1b.json rows broad_cipher/s{0,1}/step300 (0.2852, 0.2729), read but not named a ratio in A1b's score. So the GPU reads only S on E53's six step-300 states, plus the stage-0 controls; every other cell is taken from the file named in 'table_sources'",
+ "settings": {
+  "precision": "fp32, TF32 off (E52, E54)",
+  "e53_windows": "performed_anchor/run.py Run.scored: up to 500 windows of 127 tokens from Pile val rows 0-255, scored token at index 64, read at half = 63, target = each window's own next token (data.NEXT); lowercase pi = {}, cipher pi = a0.json's derangement (performed_anchor e53_pi), broad cipher pi = performed_anchor a1_maps()['broad_cipher'], asserted equal to check_amend1.json's map",
+  "S": "E52's B3 (steering.b3 via keydep.steer_reading) on the E53 windows: fit half = windows 0, 2, 4, ..., scoring half = 1, 3, 5, ...; one mean vector per block input (blocks 0-3) at the read position, the block chosen on the fit half (ties to the lower), S = its scoring-half share of G_score; G = mean over windows of log P_state(target) - log P_W0(target) at half (steering.gains)",
+  "S_floor": 0.05,
+  "S_floor_source": "E54 predictions.json settings floor_min (E52's): S is 'undefined' when |G_score| < 0.05; keydep's share_or_nan gives nan when |G_score| < 1e-6",
+  "block0_nats_tol": 1e-05,
+  "block0_nats_source": "E54 stage 2's stop rule (keydependent_elicit/run.py): |S_block0 x G_score| <= 1e-5 nats on every read state; no fine-tune changes the embedding, so block 0's mean vector is 0 up to rounding",
+  "stand_in_ratio_floor": 0.1,
+  "stand_in_ratio_floor_source": "E53 A1b thresholds floor_min: the ratio is 'undefined' when the subcomponent gain U1 - U0 < 0.1",
+  "r_floor": "nan when |T1 - T0| < 1e-6 (E54's r rule)"
+ },
+ "stage0": {
+  "order": "first and alone; any miss writes results/stage0.json, logs FAIL and exits 1 before stage 1. The sha256 check runs before the model loads",
+  "sha256": "every one of the 18 runs' state files and the two windows files read (E46 windows_ident32.pt, E54 windows_elicit.pt) equals the hash its source run recorded: E46 regating_table/results/stage0a.json (groups e12/<table>.states.s<i>.sha256, e12/build.sha256), E53 performed_anchor/results/finetune.json and finetune_amend1b.json (states <task>/s<i>/step300), E54 keydependent_elicit/results/stage2.json (finetunes) and stage1.json (sha256.elicit)",
+  "zero_update": "G (steering.gains) of a zero delta-W on each task read (E46 ident32, E54 elicit, E53 lowercase, cipher, broad cipher) is 0 exactly (the same forward twice)",
+  "e53_lowercase_s0": {
+   "reads": "performed_anchor split_row (least-squares split, `cells`) of dW_lowercase_s0_step300.pt on E53's lowercase windows",
+   "ratio_ref": 0.9185667304916008, "ratio_tol": 0.01,
+   "G_ref": 1.6707884807586675, "G_tol": 0.02,
+   "r_ref": 0.7518811175785213, "r_tol": 0.01,
+   "source": "read_amend1b.json row e53/lowercase/s0/step300 (ratio masked_gain / piece_gain, G, r = g / G); tolerances E53 A1b/A2 repro_ratio_tol and repro_G_tol; r takes the ratio's tolerance (same call, same code)"
+  },
+  "e54_elicit_s0": {
+   "reads": "keydep.readings on E54's held-out elicit windows (as E54 stage 2)",
+   "r_ref": 0.7725536396045862, "r_tol": 0.03,
+   "S_ref": 0.3795955998181104, "S_tol": 0.001,
+   "source": "keydependent_elicit/results/stage2.json states elicit_s0; tolerances E54 predictions.json stage0 r_tol, S_tol"
+  },
+  "e46_ident32_s0": {
+   "reads": "keydep.readings on E46's ident32 held-out windows (as E54 stage 0)",
+   "r_ref": 0.8024425814544892, "r_tol": 0.03,
+   "S_ref": 0.7503337909479212, "S_tol": 0.001,
+   "block0_tol": 1e-06,
+   "source": "E54 predictions.json stage0 (r from regating_table stage0b.json, S from baseline_neurons.json b3); |S_block0| <= block0_tol as E54 stage 0"
+  },
+  "next_token_path": {
+   "reads": "the new path (steering with target data.NEXT on E53's windows, run.py NextTask) on dW_lowercase_s0_step300.pt: the full model's mean log-odds gain of the next token at half (steering.read with steering.logodds_at), and its block-0 share",
+   "G_logodds_ref": "e53_lowercase_s0's G as read in this job by split_row", "G_logodds_tol": 0.02,
+   "G_logodds_tol_source": "E53 A2 repro_G_tol (its kl_read path against the split read, same windows, passed)",
+   "block0": "|S_block0 x G_score| <= block0_nats_tol"
+  },
+  "lean": "all pass (E53 A2 and E54 stage 0 reproduced these numbers exactly or within 1e-3 with the same code)"
+ },
+ "stage1": {
+  "reads": "S (settings.S) on E53's six step-300 states: lowercase, cipher, broad_cipher x seeds 0, 1, each written to results/stage1.json and printed as it finishes. A state whose |S_block0 x G_score| exceeds block0_nats_tol stops the job (exit 1)",
+  "at_W0": "G = 0 exactly (stage 0's zero update), so S is undefined (nan); block 0's share 0",
+  "do_nothing": "steering never reads the decomposition: the do-nothing state (delta-W in Delta) has the fine-tune's target weights, so its S is the fine-tune's S. Not run",
+  "positive_control": "E52's S on E46: copy 0.72-0.80 (four runs), random map 0.10-0.19 (four runs); E54: elicit 0.38 / 0.39, cipher 0.23 / 0.19. Stage 0 reproduces ident32_s0 and elicit_s0",
+  "expected": {
+   "lowercase": {"range": [0.4, 1.0], "central": 0.65, "lean": "medium: lowercasing the next word is one direction shared by every window (as copying is in E46, S 0.72-0.80), so one mean vector should carry most of it"},
+   "cipher": {"range": [0.0, 0.35], "central": 0.15, "lean": "medium-high: a 50-word lookup cannot be one mean vector; E46's random maps read 0.10-0.19 and E54's cipher 0.19-0.23"},
+   "broad_cipher": {"range": [0.0, 0.3], "central": 0.1, "lean": "medium-high: a 500-word lookup, less of it in any one direction than the 50-word cipher"},
+   "order": {"rule": "min over seeds of lowercase S > max over seeds of cipher and broad cipher S", "lean": "high (0.8)"}
+  },
+  "use": "reported, not scored and not a stop: a value outside its range is flagged 'outside_expected' in stage1.json and the log, and is reported as a surprise. Undefined (|G_score| < S_floor or nan) is reported as undefined, never as outside",
+  "noise_floor": "S regenerates within 0.001 on the same state (E54 stage 0 against E52); seed spread on E46 0.03-0.08 (copy), 0.00-0.03 (random maps); E54 0.01-0.04",
+  "blind_to": "S reads one mean vector at one position: a fine-tune that moves every window the same way reads high whether or not it reuses anything; it never reads the decomposition"
+ },
+ "table_sources": {
+  "e46 (ident32, ident32b, rand32, rand32b; s0, s1)": "ratio = gated_piece_gain / piece_gain of regating_table/results/amend3.json rows <table>/s<i> (E46 A3); r = stage0b.json states <table>/s<i> r; S = baseline_neurons.json b3 <table>_s<i> S (E52)",
+  "e53 (lowercase, cipher; s0, s1)": "ratio = masked_gain / piece_gain and r = g / G of performed_anchor/results/read.json rows <task>/s<i>/step300; S = this job's stage1.json",
+  "e53 broad_cipher (s0, s1)": "ratio and r as above from read_amend1b.json rows broad_cipher/s<i>/step300; S = stage1.json",
+  "e54 (elicit, cipher at matched size; s0, s1)": "ratio = (L11 - L00) / (U1 - U0) of keydependent_elicit/results/stage2.json states <task>_s<i> cells (the planner's post-hoc reading, E53 A2); r, S = the same rows' r, S",
+  "label_by_construction": "copy, lowercase: reuses; random maps and every cipher: new; E54 elicit: open (plan table)",
+  "expected_from_disk": "ratio: E46 copy 0.87-0.97, random 0.36-0.41; E53 lowercase 0.919 / 0.929, cipher 0.264 / 0.257, broad cipher 0.285 / 0.273; E54 elicit 0.956 / 0.951, cipher 0.336 / 0.289. r: E46 copy 0.76-0.80, random 0.27-0.29; E53 lowercase 0.752 / 0.770, cipher 0.124 / 0.116, broad cipher 0.165 / 0.150; E54 0.773 / 0.758, 0.241 / 0.212. S: E46 as positive_control, E54 as positive_control"
+ },
+ "edge_cases_checked": [
+  "S with G_score = 0: share_or_nan gives nan -> 'undefined', not 'outside_expected' (nan compares false with both range ends, so 'outside' is tested only on defined values)",
+  "S with 0 < |G_score| < 0.05: 'undefined' by S_floor, reported with its G",
+  "S negative or above 1: defined, compared with its range like any value",
+  "ties in B3's block choice: the lower block (steering.b3)",
+  "ratio with subcomponent gain < 0.1 or r with |G| < 1e-6 in a saved row: the table cell is 'undefined' with the parts beside it (none expected: the smallest subcomponent gain of the 18 runs is 1.4, the smallest |G| 1.6)",
+  "a source row missing: the table stops (KeyError) rather than leaving a silent gap"
+ ],
+ "label_predictions": {
+  "status": "NOT FILED",
+  "why": "no label exists for any of the 18 runs (the reuse line's Stage B has not run; the open pair, experiments/open_pair, is a separate experiment). P1 (ranking AUC), P2 (the open runs) and P3 (beside steering) stay as written in the plan's 'Predictions (filed-style; not filed)' section and are filed, with the reuse line's run list and open marks, before any label is read; each rule is run on its edge cases then",
+  "note": "this job's numbers are fixed before any label exists, so they cannot have been tuned to one"
+ }
+}
