@@ -513,3 +513,40 @@ def test_shuffle_sentence() -> None:
     assert OP.shuffle_sentence(0.475, [0.55, 0.60], th) == "midpoint"  # 0.55 is not over 0.55
     assert OP.shuffle_sentence(0.475, [math.nan, 0.4], th) == "unreadable" and OP.shuffle_sentence(None, [0.4, 0.4], th) == "unreadable"
     assert OP.shuffle_sentence(0.475, [], th) == "unreadable"
+
+
+TH6 = {"cut": 0.5, "high": 0.6, "x_entry": 0.3, "min_entry": 2, "noise": 0.0452}
+
+
+def test_band_class_edges() -> None:
+    assert OP.band_class([0.30, 0.31, 0.29], TH6) == "cipher_band"
+    assert OP.band_class([0.30, 0.31, 0.50], TH6) == "between"  # a tie at the cut is not under it
+    assert OP.band_class([0.60, 0.70, 0.80], TH6) == "own_guess_band"  # 0.6 is in the upper band
+    assert OP.band_class([0.45, 0.65, 0.70], TH6) == "between"  # seeds on both sides
+    assert OP.band_class([0.55, 0.58, 0.59], TH6) == "between"
+    assert OP.band_class([], TH6) == "unreadable" and OP.band_class([0.3, None, 0.3], TH6) == "unreadable"
+    assert OP.band_class([0.3, math.nan], TH6) == "unreadable"
+
+
+def test_score_amend6_entry_and_missing() -> None:
+    r = lambda x, rr, label="new", xn=0.0: {"x": x, "r": rr, "label": label, "x_null": xn}
+    pm = [r(-0.1, 0.40), r(-0.1, 0.47), r(-0.1, 0.42)]
+    out = OP.score_amend6(pm, [r(0.5, 0.3), r(0.31, 0.35), r(0.1, None)], TH6)
+    assert out["PM"]["class"] == "cipher_band" and out["PM"]["near_cut"]  # 0.47 within 0.0452 of 0.5
+    assert out["FL"]["entry_seeds"] == [0, 1] and out["FL"]["class"] == "cipher_band"  # the failing seed has no r and is dropped
+    assert out["FL"]["x_minus_null"] == [0.5, 0.31, 0.1]
+    assert OP.score_amend6(pm, [r(0.5, 0.3), r(0.3, 0.9), r(0.1, None)], TH6)["FL"]["class"] == "no_carry"  # x - x_null 0.3 ties: fails
+    # the null: x 0.5 carries alone, but x_null 0.25 leaves 0.25 (fails); x_null 0.19 leaves 0.31 (carries)
+    assert OP.score_amend6(pm, [r(0.5, 0.3, xn=0.25), r(0.5, 0.3, xn=0.25), r(0.5, 0.3, xn=0.19)], TH6)["FL"]["class"] == "no_carry"
+    assert OP.score_amend6(pm, [r(0.5, 0.3, xn=0.19), r(0.5, 0.3, xn=0.19), r(0.5, 0.3, xn=0.25)], TH6)["FL"]["entry_seeds"] == [0, 1]
+    assert not OP.carries(r(0.9, 0.3, xn=math.nan), TH6) and not OP.carries({"x": 0.9, "label": "new"}, TH6)  # no null: no entry
+    assert OP.carries(r(0.2, 0.3, xn=-0.2), TH6)  # a negative null counts: x - x_null 0.4
+    # seeds missing or too small to label: unreadable, not no_carry (review of a946868)
+    assert OP.score_amend6(pm, [r(0.9, 0.8, "too_small"), r(0.9, 0.8), None], TH6)["FL"]["class"] == "unreadable"
+    assert OP.score_amend6(pm, [r(0.9, 0.8, "too_small"), r(0.1, 0.8), r(0.1, 0.8)], TH6)["FL"]["class"] == "no_carry"  # 2 labellable
+    assert OP.score_amend6(pm, [r(math.nan, 0.8), r(0.9, 0.8), None], TH6)["FL"]["class"] == "unreadable"  # nan x not labellable
+    assert OP.score_amend6(pm, [r(0.5, 0.7), r(0.6, 0.65), r(0.6, 0.62)], TH6)["FL"]["class"] == "own_guess_band"
+    assert OP.score_amend6(pm, [r(0.5, math.nan), r(0.6, 0.65), r(0.6, 0.62)], TH6)["FL"]["class"] == "unreadable"
+    assert OP.score_amend6([r(0, 0.3, "too_small"), *pm[1:]], [], TH6)["PM"]["class"] == "unreadable"  # too small counts as missing
+    assert OP.score_amend6([*pm[:2], None], [], TH6)["PM"]["class"] == "unreadable" and not OP.score_amend6(pm[:1], [], TH6)["PM"]["near_cut"]
+    assert OP.score_amend6(pm, [], TH6)["FL"]["class"] == "unreadable"

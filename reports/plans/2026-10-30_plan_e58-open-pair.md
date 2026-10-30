@@ -958,3 +958,203 @@ It stops if the shuffle windows' sha256 differs from amend3.json's or on a block
 
 Ties: 0.5 counts as "at or over", and 0.55 does not count as "over". The tests cover each branch, the ties, nan, None
 and no new seeds. Expected: r 0.40-0.55 per seed, with the gate step at 14-16.
+
+## Amendment 6 (2026-10-30, after the review of the synthesis): r at equal prior, and a new rule that carries
+
+*Fable's (b)1 and (c) (`reports/plans/2026-10-30_advice_regating-baseline-FABLE.md`, step (d)2), taken by the lead after
+the review's "Overclaims" (`reports/reviews/2026-10-31_review_regating-synthesis-check.md`). Code
+`experiments/open_pair/amend6.py`, which calls `amend3.read` and `amend4.train`, `over_gate` and `stop`. Rules are in
+`src/commute/open_pair.py` § Amendment 6 (`band_class`, `carries`, `score_amend6`), with edge cases in
+`tests/test_open_pair.py`. One shared function gains an option: `kv.key_distributions(geometric=True)`, tested in
+`tests/test_kv.py`; the default path is unchanged. Predictions are in `results/predictions_amend6.json`. Job: `sbatch
+cluster/open_pair.sbatch amend6`. Filed; nothing run. Fable's capitalised-key rule ((b)2) is not run: it needs its own
+map builder and prior check, and the lead asked for it only if it took a few lines.*
+
+**In plain words.** So far, every map whose target is the model's own guess also had a high prior, so r may only be
+reading the prior. We train a cipher whose values the model already gives at the copy map's prior, but with no link
+between key and value, and read r: if it stays low like the cipher's, r reads more than the prior. We also train a map
+that sends each key to a fixed new word chosen by the key's first letter, the first map whose target is not the model's
+guess yet could carry to unseen keys, and read r only where it does carry.
+
+**The request in the Terms' words.** Two new maps on E58 Amendment 2's keys, each fine-tuned with E54's recipe on 96
+keys, labelled by its held-out carry x on the other 32, then read by the re-gating share r. The first holds W₀'s prior
+of the trained value at copy's level while removing the key-to-guess link. The second is a rule over a feature W₀ has,
+mapped to values it does not guess.
+
+### Design check (`/design`)
+
+- **Goal.** Re-gating line (Q5, mechanism or leak): does r read "the target is W₀'s own guess", or only W₀'s prior of
+  the target? That is the review's first overclaim. The second map asks the line's missing cell: a new rule that
+  carries.
+- **Nearest tried.** E58 Amendments 3-5: cipher (prior 1.4e-6) r 0.29-0.31 at step 30, shuffle (1.0e-5) 0.47-0.48,
+  copy (5.9e-5) 0.77, elicit (1.3e-3) 0.72-0.74, rank-1 (1.3e-2) 0.85-0.86. Prior and kind moved together in every one.
+  This is the first map where they are split.
+- **Patch or step.** A control for the line's named question (approved classes 2 and 4): the baseline the synthesis is
+  missing, on the existing model, task and harness.
+- **Decisions.** E54's recipe, E58's label, gate, windows and key split; reading A. No departure from `decisions.md`.
+- **What changes next.** Prior-matched cipher in the cipher band → the band claim stands with a baseline, and E45 A2
+  Job 2 goes ahead as filed with the prior beside r. In the own-guess band → "VPD reads W₀'s prior", and Job 2 is
+  refiled with the prior as a scored column. First-letter carries and reads low → the missing cell is filled.
+- **Control first.** The W₀ control runs first and alone: the two tables' zero update reads 0 exactly, and each map's
+  prior sits in its band. The harness control comes next: E58's cipher seed 0 re-trained, whose r must reproduce
+  `amend4.json` within 1e-4. Each stops the job (exit 1) before any new fine-tune. The first-letter rule's carry is
+  checked before its r (the entry condition).
+- **Class.** Approved (classes 2 and 4); $0, cluster `debug`.
+
+### The two maps
+
+- **Prior-matched cipher.** For each key, W₀'s geometric-mean P(token | M key) over that key's windows, the measure
+  saved as `w0_geo_p`. The value is drawn by `kv.bijection` (seed 0) from E58's cipher pool: word-like frequency ranks
+  1000-2999, minus the 128 keys and the 128 elicit words. A value is admitted only if its prior is between 2e-5 and
+  2e-4 and its rank after that key is over 100. Breadth (128 distinct values), format, windows, key count and recipe
+  are E58's cipher's; only the prior differs. If the pool runs out, the same draw runs over every word-like token from
+  rank 1000, and the pool used is reported. If both run out, the job stops.
+- **First-letter rule.** Key → one word per first letter of the decoded key. The trained keys hold 21 letters, and 31
+  of the 32 held-out keys share a letter with a trained key (counted from the tokenizer before filing; " video" is the
+  exception). Each letter's word comes from the same pool and must have a prior under 1e-5 after every key of that
+  letter, the cipher's level.
+
+### Numbers and what each should read
+
+| number | at W₀ / do-nothing | control | expected |
+|---|---|---|---|
+| zero-update gain, both maps, trained and new | exactly 0 | stop if not | 0 |
+| prior of trained values (`w0_geo_p.trained`) | the number itself | prior-matched cipher in [2e-5, 2e-4]; first-letter under 1e-5; stop if not | 3e-5 to 1e-4; about 1e-6 |
+| E58 cipher seed 0, r at step 16 | — | equals 0.32413 within 1e-4; stop if not | bitwise equal |
+| prior-matched cipher: gate step, x, label, r at 30 and at gate (seeds 0-2) | no update: x, r undefined | cipher 0.29-0.31, copy 0.77 at 30 | gate 12-16; x near 0 or below; r between the two |
+| first-letter: x at 30 and at gate; r only where x > 0.3 | as above | the same references | x 0-0.3 most likely |
+| prior beside r, seven maps; Spearman of r on prior | — | — | reported only |
+
+*Blind to:*
+- the prior-matched cipher tests one prior level, with token kind held to E58's cipher pool;
+- three seeds, one decomposition;
+- for the first-letter rule, the granularity limit: an upper-band r cannot tell "VPD read the rule's existing pieces"
+  from "r is wrong";
+- the noise floor is E58's largest within-map seed range of r at 128 keys, 0.045 (Amendment 4, step 30).
+
+### Predictions (filed in `results/predictions_amend6.json`)
+
+- **PM.** `band_class` on the prior-matched cipher's r at step 30 over seeds 0-2. It reads "cipher_band" iff every
+  r < 0.5, "own_guess_band" iff every r ≥ 0.6, "between" otherwise, and "unreadable" if a seed is missing, too small to
+  label, or r is not finite.
+  - Fable's lean is cipher_band, 70%. My lean as writer is cipher_band 40%, between 35% and own_guess_band 25%: r rose
+    0.17 from the cipher to the shuffle over less than one decade of prior, and the same slope over the next 0.75
+    decade reaches about 0.6. Both leans are filed.
+  - "near_cut" is reported if any r is within 0.045 of 0.5.
+  - What each class means. **r < 0.5 on every seed:** r separates kind at equal prior, and the prior is no longer a
+    complete baseline. **r ≥ 0.6 on every seed:** r tracks the prior; the band claim is dead on the 67M, and the plain
+    answer becomes "VPD reads W₀'s prior". **Between (0.5-0.6, or seeds on both sides):** the prior explains part of
+    r; the synthesis says "r agrees with the prior; whether it reads more is not settled at this resolution".
+- **FL.** A seed carries if its step-30 read is labellable and x > 0.3. With fewer than 2 seeds carrying, the class
+  is "no_carry"; otherwise it is `band_class` on those seeds' r. My lean is no_carry 70%: at 128 keys the elicit map
+  carried only 0.1-0.2. Given entry, I lean cipher_band 50%. An own_guess_band result is ambiguous by construction and
+  is filed as such.
+- **Reported.** The same classes at each run's own gate step; each map's prior of its trained and held-out values
+  beside r; E58's five maps' priors and step-30 r; the Spearman of seed-mean r on prior over seven maps.
+
+**Edge cases, run before filing** (`tests/test_open_pair.py`, two new tests; 551 pass):
+- r = 0.5 is not under the cut (between); r = 0.6 is in the upper band;
+- seeds on both sides read between, and an empty list reads unreadable;
+- a None or nan r reads unreadable, and a read too small to label counts as missing;
+- x = 0.3 does not carry (a tie fails);
+- one carrying seed gives no_carry;
+- a seed that fails the entry condition is dropped from FL's r with no effect on the others;
+- a carrying seed with a nan r reads unreadable;
+- near_cut fires at 0.47 and not at 0.40.
+
+### Settings (each sourced)
+
+- **Keys, split, windows, recipe, label, gate (5.148), seeds 0-2.** E58 Amendments 2-4, unchanged.
+- **Read steps.** Step 30 is the step scored for every E58 band number and for the shuffle. Each run's own first step
+  over the gate from 10 (`over_gate`) is reported; this is Fable's "the cipher's gate step", read as each map's own
+  (matched G_spec).
+- **Band [2e-5, 2e-4], cut 0.5, upper band 0.6, x_entry 0.3, letter prior under 1e-5.** Fable.
+- **Minimum rank 100, the cipher pool, the fallback pool, min_entry 2, noise 0.045.** Filed here. Fable said "well
+  past 20"; 100 cannot bind on a value with P ≤ 2e-4 unless the distribution is unusually flat. The cipher pool keeps
+  kind equal to E58's cipher. Two seeds stop one seed from filling a cell. The 0.045 is measured.
+- **The prior is computed with an fp32 forward.** Amendment 3's cipher gate used the bf16 `logits_of`; the fp32 forward
+  is the one behind the reported `w0_geo_p`, so the band is set in the measure that is reported.
+
+### Stop rules, runtime, outputs
+
+Stops (exit 1; `amend6.json` written with "stopped"):
+- Amendment 3's elicit or cipher windows or key split differ;
+- a pool runs out;
+- a W₀ control miss;
+- the harness control misses;
+- a block-0 shift over 1e-5 nats.
+
+A seed that never reaches the gate by step 30 is read at 30 only; that is not a stop.
+
+**Runtime.** One MATS `debug` L40 job, $0, 7 fine-tunes (1 control, 6 map seeds), about 13-16 min against the 30-min
+cap. Job 46426 ran 10 fine-tunes in 11.5 min. Each cipher-like seed took about 1.7-1.9 min: a 23 s fine-tune, about 6
+label reads and 3 r reads. Job 46450 took about 80 s per shuffle seed. On top of that come about 1-2 min for start-up,
+the Pile rows and the key distributions. Host RAM peaks at about 5 GB (32 checkpoints).
+
+**Outputs.**
+- `results/amend6.json`;
+- `results/large/amend6/` (the two maps' windows, about 10 MB);
+- the log `results/large/amend6.out`;
+- no weights.
+
+### Decision tree
+
+1. A stop → to the lead.
+2. **PM cipher_band** → the synthesis keeps the band claim with this map as its baseline; Job 2 goes ahead as filed,
+   with the prior beside r.
+3. **PM own_guess_band** → the plain answer becomes "VPD reads W₀'s prior" on the 67M; Job 2 waits for a refiling with
+   the prior as a scored column.
+4. **PM between** → the synthesis says the prior explains part of r; Job 2 carries the prior as a reported column.
+5. **FL no_carry** → the missing cell stays empty on the 67M and is the first thing to build on Qwen.
+6. **FL cipher_band** → the cell is filled: VPD reads a carrying new rule as new.
+7. **FL own_guess_band** → reported as the granularity limit made concrete or r wrong, not told apart.
+
+### Departures from Fable
+
+- **The capitalised-key rule is not run** (lower priority in Fable's own ranking).
+- **E36's novelty proxy column is not run** on the first-letter map; it is listed as not run.
+- **The harness control (E58 cipher seed 0 re-trained) is added**, so a change in the shared code or the card shows
+  up before any new map is read.
+- **Step 30 is scored and each map's own gate step reported**, since Fable named both without saying which is scored.
+
+### Order of work
+
+1. Done: code, tests (551 pass), lint clean on the touched files, predictions filed.
+2. Fresh-Opus review of the diff (new map builders and `kv.key_distributions(geometric=True)` have not run on a GPU).
+3. `/pod-runner`: `sbatch cluster/open_pair.sbatch amend6` from the clone root.
+4. Write-up by the analysis agent.
+
+### Amendment 6 before the run (code review, 2026-10-30)
+
+A fresh review of a946868 (`reports/reviews/2026-10-30_review_e58-amend6-code.md`) found one blocking problem and
+four smaller ones. Nothing had run, so the code and `predictions_amend6.json` were amended in place
+(`amendment_2026_10_30_code_review`). These edits were made before the run and after the code review. Where they
+differ from the sections above, the edits stand.
+
+1. **The first-letter carry gets a null (blocking).** The held-out keys mostly fall on letters that were trained
+   often. So a fine-tune that only leans toward often-trained words raises x with no letter rule at all.
+   - **The null.** At every first-letter read, x_null recomputes the held-out specific gain, with the same pool as x.
+     Each held-out key's target is swapped for another trained letter's word, the letter whose trained-key count is
+     nearest its own (ties by a seeded draw).
+   - **No fine-tune is added.** The null task is built once, in the W₀ stage.
+   - **The entry condition.** A seed carries iff its read is labellable, x_null is finite, and x − x_null > 0.3. x,
+     x_null and the difference are reported.
+   - **Edge cases tested:** a tie at 0.3 fails; x 0.5 with x_null 0.25 fails; with x_null 0.19 it carries; a nan or
+     missing x_null fails; a negative x_null counts.
+   - **Blind to.** x alone is blind to a frequency-weighted shift; x − x_null is not.
+2. **Missing or unlabellable seeds read "unreadable", not "no_carry".** FL reads unreadable when fewer than 2 step-30
+   reads are labellable (label not too_small or unreadable, x finite). It reads no_carry only when at least 2 are
+   labellable and fewer than 2 carry. The tests cover too_small, None, a nan x and an empty list.
+3. **The noise floor is 0.0452**, as measured. It is used only by the reported near_cut flag.
+4. **The pool each map drew from is recorded** (`amend6.json` maps.<map>.pool). If the prior-matched cipher had to
+   fall back to the wider pool, its values are no longer E58's cipher-pool kind. Its class would then mix prior with a
+   change of token kind, so it is reported, not scored (`score.PM.scored` false), and the plan's PM branches do not
+   apply. A fallback on the first-letter rule changes only which words serve as values, at cipher prior; it is
+   recorded and does not change the reading.
+5. **A letter's word may not start with that letter**, so the rule cannot be read as "say a word with the key's first
+   letter".
+6. **Kept:** the prior is admitted over all of a key's windows but checked on the trained keys' held-out-row windows
+   (review finding 3). A draw at the bottom of the band could trip the W₀ stop. That is a stop, not a wrong reading.
+
+Tests: 551 pass; lint is clean on the touched files. The run command and outputs are unchanged, apart from one more
+small windows file: `results/large/amend6/windows_first_letter_null_new.pt`.
