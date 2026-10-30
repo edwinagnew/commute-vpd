@@ -95,6 +95,9 @@ def read_new(ctx: KD.Ctx, t: ST.Task, dW: ST.DW, base: dict[str, Any], P: dict[s
     st: dict[str, Any] = {**g, "readable": abs(g["G"]) >= P["settings"]["floor_min"]}
     if st["readable"]:
         st.update(readout(ctx, t, dW, g, base))
+        # E54 stage 2's stop, in nats (review of E56, finding 3): steering's zero vector at block 0 must not move log P
+        if abs(st["S_block0"] * g["G_score"]) > 1e-5:
+            sys.exit("block-0 shift over 1e-5 nats: B3 is not reading what stage 0 validated; stop and tell the user")
         st.update(b2(ctx.net, t, dW, g["G_score"], P["settings"]["b2_grid"]))
     return st
 
@@ -109,18 +112,20 @@ def stage0_job1(ctx: KD.Ctx, tasks: dict[str, ST.Task], dws: dict[str, ST.DW], b
     for n, dW in dws.items():
         t, path = task_of(tasks, n), E54 / "large" / f"{n}.pt"
         g = ST.gains(ctx.net, t, dW)
-        st = {**g, "sha256": KD.sha256(path), **NE.patch_controls(ctx.net, t, dW, g["G_score"]), **readout(ctx, t, dW, g, bases[t.name]),
+        st = {**g, "sha256": KD.sha256(path), **NE.patch_controls(ctx.net, t, dW, g["G_score"]), "full_width_rise": NE.full_width_rise(ctx.net, t, dW),
+              **readout(ctx, t, dW, g, bases[t.name]),
               "readable": abs(g["G"]) >= P["settings"]["floor_min"]}
         ref, ref_lo = s2["states"][n], a1["states"][n]
         st["d"] = {"r": st["r"] - ref["r"], "S": st["S"] - ref["S"], "S_lo": st["S_lo"] - ref_lo["S_lo"]}
         st["ok"] = bool(st["sha256"] == s2["finetunes"][n]["sha256"] and st["layer"] == ref["layer"]
                         and abs(st["identity_share"]) <= th["identity_share"] and st["identity_max_abs"] <= th["identity_max_abs"]
                         and abs(st["full_patch_share"] - 1) <= th["full_patch_tol"]
+                        and st["full_width_rise"] >= th["full_width_min_rise"]
                         and all(abs(v) <= th["reproduce_tol"] for v in st["d"].values()))
         out["states"][n] = st
         say(f"stage0 {n}", st)
         log(f"[stage0 {n}] identity_share {st['identity_share']:.2e} identity_max_abs {st['identity_max_abs']:.2e} "
-            f"full_patch_share {st['full_patch_share']:.10f} d {json.dumps(st['d'])} sha {st['sha256'][:12]} ok {st['ok']}")
+            f"full_patch_share {st['full_patch_share']:.10f} full_width_rise {st['full_width_rise']:.4g} d {json.dumps(st['d'])} sha {st['sha256'][:12]} ok {st['ok']}")
     out["pass"] = all(st["ok"] for st in out["states"].values())
     return out
 
@@ -128,7 +133,7 @@ def stage0_job1(ctx: KD.Ctx, tasks: dict[str, ST.Task], dws: dict[str, ST.DW], b
 def job1(ctx: KD.Ctx, tasks: dict[str, ST.Task], P: dict[str, Any]) -> None:
     bases = {n: KD.base_of(ctx, t) for n, t in tasks.items()}
     dws = {n: torch.load(E54 / "large" / f"{n}.pt", weights_only=True) for n in (f"{k}_{s}" for k in KINDS for s in OLD)}
-    out: dict[str, Any] = {"git_head": git("rev-parse", "HEAD").stdout.strip(), "stage0": stage0_job1(ctx, tasks, dws, bases, P)}
+    out: dict[str, Any] = {"git_head": git("rev-parse", "HEAD").stdout.strip(), "git_dirty": git("status", "--porcelain", "--untracked-files=no").stdout, "stage0": stage0_job1(ctx, tasks, dws, bases, P)}
     dump("job1.json", out)
     if not out["stage0"]["pass"]:
         sys.exit("[stage0 job 1] FAIL: stop and tell the user")
@@ -138,7 +143,7 @@ def job1(ctx: KD.Ctx, tasks: dict[str, ST.Task], P: dict[str, Any]) -> None:
             st.update(b2(ctx.net, task_of(tasks, n), dws[n], st["G_score"], P["settings"]["b2_grid"]))
         say(f"b2 {n}", st)
         dump("job1.json", out)
-    out["P1_two"] = KS.p1(out["states"], OLD, P["thresholds"]["min_gap"])
+    out["P1_two"] = KS.p1(out["states"], OLD, P["thresholds"]["min_gap"], P["thresholds"]["k50_cap"])
     out["branch"] = KS.branch_job1(out["P1_two"])
     dump("job1.json", out)
     log(f"[score job 1] {json.dumps(out['P1_two'], default=str)}")
@@ -194,7 +199,7 @@ def job2(ctx: KD.Ctx, tasks: dict[str, ST.Task], P: dict[str, Any]) -> None:
     if not j1.get("stage0", {}).get("pass") or j1.get("P1_two", {}).get("status") != "pass":
         sys.exit("job 1 did not pass stage 0, or P1 did not hold on two seeds: the decision tree stops here; tell the user")
     bases = {n: KD.base_of(ctx, t) for n, t in tasks.items()}
-    out: dict[str, Any] = {"git_head": git("rev-parse", "HEAD").stdout.strip(), "stage0": stage0_job2(ctx, tasks, bases, P),
+    out: dict[str, Any] = {"git_head": git("rev-parse", "HEAD").stdout.strip(), "git_dirty": git("status", "--porcelain", "--untracked-files=no").stdout, "stage0": stage0_job2(ctx, tasks, bases, P),
                            "finetunes": {}, "states": {}}
     dump("job2.json", out)
     if not out["stage0"]["pass"]:
@@ -213,7 +218,7 @@ def job2(ctx: KD.Ctx, tasks: dict[str, ST.Task], P: dict[str, Any]) -> None:
 def score(out: dict[str, Any], j1: dict[str, Any], P: dict[str, Any]) -> None:
     th, every = P["thresholds"], {**j1["states"], **out["states"]}
     same = [s for s in NEW if out["finetunes"][f"cipher_{s}"]["same_state"]]
-    out["P1"] = KS.p1(every, OLD + NEW, th["min_gap"])
+    out["P1"] = KS.p1(every, OLD + NEW, th["min_gap"], th["k50_cap"])
     out["P2"] = KS.p2(every, OLD + NEW, th["min_gap"], th["ratio_min"])
     out["P3"] = KS.p3(every, NEW, th["p3_tol"], same)
     out["branch"] = KS.branch(out["P1"], out["P2"], out["P3"])

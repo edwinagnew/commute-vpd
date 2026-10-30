@@ -27,37 +27,37 @@ def b2(n16: tuple[list[float], list[float]], k: tuple[list[float], list[float]])
 
 def test_p1_passes_when_neither_separates_including_k50_beyond_grid() -> None:
     st = b2(([0.01, -0.02], [0.0, 0.015]), ([8, 8], [8, 8]))  # k50 undefined everywhere: index 8, gap 0, range 0
-    out = KS.p1(st, OLD, 0.2)
+    out = KS.p1(st, OLD, 0.2, 6)
     assert out["status"] == "pass" and out["k50_index"]["verdict"] == "none"
 
 
 def test_p1_fails_on_either_direction() -> None:
-    assert KS.p1(b2(([0.5, 0.52], [0.1, 0.12]), ([6, 6], [6, 6])), OLD, 0.2)["status"] == "fail"
-    rev = KS.p1(b2(([0.1, 0.1], [0.1, 0.1]), ([3, 3], [6, 7])), OLD, 0.2)  # cipher needs more neurons: still a separation
+    assert KS.p1(b2(([0.5, 0.52], [0.1, 0.12]), ([6, 6], [6, 6])), OLD, 0.2, 6)["status"] == "fail"
+    rev = KS.p1(b2(([0.1, 0.1], [0.1, 0.1]), ([3, 3], [6, 6])), OLD, 0.2, 6)  # cipher needs more neurons: still a separation
     assert rev["k50_index"]["verdict"] == "b_higher" and rev["status"] == "fail"
 
 
 def test_p1_ties_at_bounds() -> None:
     # |gap| == range: no separation
-    assert KS.p1(b2(([0.5, 1.0], [0.0, 0.5]), ([6, 6], [6, 6])), OLD, 0.2)["N16"]["verdict"] == "none"
+    assert KS.p1(b2(([0.5, 1.0], [0.0, 0.5]), ([6, 6], [6, 6])), OLD, 0.2, 6)["N16"]["verdict"] == "none"
     # |gap| == min_gap exactly (0.375 - 0.125, range 0): separates
-    assert KS.p1(b2(([0.375, 0.375], [0.125, 0.125]), ([6, 6], [6, 6])), OLD, 0.25)["N16"]["verdict"] == "a_higher"
+    assert KS.p1(b2(([0.375, 0.375], [0.125, 0.125]), ([6, 6], [6, 6])), OLD, 0.25, 6)["N16"]["verdict"] == "a_higher"
 
 
 def test_p1_unreadable_on_missing_unreadable_or_nan_state() -> None:
     st = b2(([0.0, 0.0], [0.0, 0.0]), ([6, 6], [6, 6]))
     del st["cipher_s1"]
-    assert KS.p1(st, OLD, 0.2)["status"] == "unreadable"
+    assert KS.p1(st, OLD, 0.2, 6)["status"] == "unreadable"
     st = b2(([0.0, 0.0], [0.0, 0.0]), ([6, 6], [6, 6]))
     st["elicit_s0"]["readable"] = False  # under the gain floor: its k50 index (8) must not be scored
-    assert KS.p1(st, OLD, 0.2)["status"] == "unreadable"
+    assert KS.p1(st, OLD, 0.2, 6)["status"] == "unreadable"
     st = b2(([math.nan, 0.0], [0.0, 0.0]), ([6, 6], [6, 6]))
-    assert KS.p1(st, OLD, 0.2)["status"] == "unreadable"
+    assert KS.p1(st, OLD, 0.2, 6)["status"] == "unreadable"
 
 
 def test_p1_five_seeds() -> None:
     st = b2(([0.02, 0.0, 0.03, -0.01, 0.01], [0.0, 0.01, 0.02, 0.0, -0.02]), ([6, 7, 6, 6, 7], [7, 7, 6, 7, 7]))
-    assert KS.p1(st, ALL, 0.2)["status"] == "pass"
+    assert KS.p1(st, ALL, 0.2, 6)["status"] == "pass"
 
 
 def rs(r: tuple[list[float], list[float]], lo: tuple[list[float], list[float]]) -> dict[str, dict[str, Any]]:
@@ -125,4 +125,12 @@ def test_branches() -> None:
 def test_nan_read_back_from_json_is_unreadable() -> None:
     st = b2(([0.0, 0.0], [0.0, 0.0]), ([6, 6], [6, 6]))
     st["cipher_s0"]["N16"] = "nan"  # how run.py's dump writes a nan; job 2 reads job 1's states back from JSON
-    assert KS.p1(st, OLD, 0.2)["status"] == "unreadable"
+    assert KS.p1(st, OLD, 0.2, 6)["status"] == "unreadable"
+
+
+def test_p1_k50_binned_above_1000() -> None:
+    """Amended before the run: indices 6, 7, 8 (4096, 12288, none reach half) are one bin."""
+    assert KS.p1(b2(([0.0, 0.0], [0.0, 0.0]), ([7, 7], [8, 8])), OLD, 0.2, 6)["k50_index"]["verdict"] == "none"
+    assert KS.p1(b2(([0.0, 0.0], [0.0, 0.0]), ([6, 6], [7, 7])), OLD, 0.2, 6)["status"] == "pass"
+    sep = KS.p1(b2(([0.0, 0.0], [0.0, 0.0]), ([3, 3], [8, 8])), OLD, 0.2, 6)
+    assert sep["k50_index"]["verdict"] == "b_higher" and sep["status"] == "fail"

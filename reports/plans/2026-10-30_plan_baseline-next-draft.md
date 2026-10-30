@@ -74,6 +74,14 @@ residual patch 1; r and S reproduce `stage2.json` within 1e-6. Job 2 stage 0: th
 narrowed to steering before any Qwen ask. P2 fails (the ratio floor falls under 3): report the ratio as "small but
 directional" and ask whether (c) is still worth gating. P3 fails: the matched-size reading is suspect; tell the user.
 
+## Amendment before run (2026-10-30)
+After the code review (`reports/reviews/2026-10-30_review_e56-code.md`), before any job: P1 reads k50 binned at the
+plan's band, min(grid index, 6), so 4096, 12288 and "none reach half" are one value (unbinned, a one-step difference
+such as 12288 against none cleared the 0.2 gap with zero range and would have stopped E56 under the outcome this plan
+calls no separation); Job 1's stage 0 adds a site check (all 12288 neurons patched must move log P by at least 1e-2
+nats); Job 2 restores E54's block-0 steering stop; both jobs record `git_dirty`. Filed in `predictions.json` as
+`amended_2026_10_30_pre_run`, with the old P1 rule kept as `rule_as_filed`.
+
 ## Departures from the literature
 - **Neuron patching.** Causal tracing (Meng et al. 2022) restores clean activations into a corrupted run; we patch
   fine-tuned MLP activations into the original model at one position, rank neurons by mean activation shift on a fit

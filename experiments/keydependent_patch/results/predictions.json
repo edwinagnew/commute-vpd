@@ -12,10 +12,19 @@
   "gain": "G, G_fit, G_score: mean of log P_tuned(target) - log P_W0(target) at the answer position over all 97 held-out windows / the fit half / the scoring half (steering.gains)",
   "floor_min": 0.05,
   "floor": "a state is readable iff |G| >= 0.05 nats. E54's seed-spread term (2 x |G(s0) - G(s1)|, two seeds at the same step) is not used: with five seeds at possibly different steps it has no single definition, and E54's six states all had floor 0.05 with G 6.3 to 13.7, a hundred times over it. An unreadable state's numbers are reported, not scored (its rules read 'unreadable')",
-  "b2_grid": [1, 4, 16, 64, 256, 1024, 4096, 12288],
+  "b2_grid": [
+   1,
+   4,
+   16,
+   64,
+   256,
+   1024,
+   4096,
+   12288
+  ],
   "b2_grid_note": "E52's grid [1, 4, 16, 64, 256, 12288] with 1024 and 4096 added, so the plan's expected 'k50 > 1000' is readable (on E52's grid k50 = 12288 only says > 256). N16 (k = 16) is unchanged by the added points",
   "N16": "E52's B2 (neurons.neuron_patch): the 12288 MLP GELU outputs ranked by |mean over the fit half of (tuned - W0) activation at the answer position| (stable sort, ties to the lower flat index); the top 16 take the tuned model's activations (its own forward on the same window) at every position of a W0 forward; N16 = mean over the scoring half of (log P_patched - log P_W0) / G_score; nan if |G_score| < 1e-6 (elicit.share_or_nan)",
-  "k50": "the smallest k on b2_grid whose share >= 0.5 (a tie at 0.5 counts); inf if no k on the grid reaches 0.5 (even all 12288 neurons give under half of G). k50_index = its position on the grid (0..7), or 8 when k50 is inf; the separation rule reads k50_index (finite and ordinal), as E52 did",
+  "k50": "the smallest k on b2_grid whose share >= 0.5 (a tie at 0.5 counts); inf if no k on the grid reaches 0.5 (even all 12288 neurons give under half of G). k50_index = its position on the grid (0..7), or 8 when k50 is inf; the separation rule reads k50_index (finite and ordinal), as E52 did (amended 2026-10-30 pre-run: P1 reads min(k50_index, 6))",
   "r": "E54 unchanged (keydep.readings): the route split's re-gating share of the least-squares split state over all 97 held-out windows, r = (L01 - L00) / (T1 - T0) in log-odds; nan if |T1 - T0| < 1e-6",
   "S": "E54 unchanged (steering.b3): one mean steering vector per block input, block chosen on the fit half, share in nats on the scoring half",
   "S_lo": "E54 Amendment 1 unchanged: steering.steer_at with logodds_at at B3's block; (steered log-odds rise over W0) / (fine-tune's log-odds gain), scoring half; nan if the denominator is within 1e-6 of 0",
@@ -24,34 +33,50 @@
  },
  "stage0_job1": {
   "order": "first and alone on all six states; any miss exits 1 before B2",
-  "checks": "per state: sha256 equals stage2.json's; identity patch (all 12288 neurons replaced by W0's own activations from a separate forward on the same 48 scoring windows) |share| <= identity_share and max |log P - log P_W0| <= identity_max_abs nats; full residual patch (block 3's output replaced at every position by the tuned model's) |share - 1| <= full_patch_tol; B3's block equals stage2.json's layer; |r - stage2 r|, |S - stage2 S|, |S_lo - amend1 S_lo| each <= reproduce_tol",
-  "thresholds": {"identity_share": 1e-06, "identity_max_abs": 0.0001, "full_patch_tol": 0.001, "reproduce_tol": 1e-06},
+  "checks": "per state: sha256 equals stage2.json's; identity patch (all 12288 neurons replaced by W0's own activations from a separate forward on the same 48 scoring windows) |share| <= identity_share and max |log P - log P_W0| <= identity_max_abs nats; full residual patch (block 3's output replaced at every position by the tuned model's) |share - 1| <= full_patch_tol; B3's block equals stage2.json's layer; |r - stage2 r|, |S - stage2 S|, |S_lo - amend1 S_lo| each <= reproduce_tol; (amended 2026-10-30 pre-run) all 12288 neurons patched through neuron_edit move log P by at least full_width_min_rise nats (max over the scoring half)",
+  "thresholds": {
+   "identity_share": 1e-06,
+   "identity_max_abs": 0.0001,
+   "full_patch_tol": 0.001,
+   "reproduce_tol": 1e-06,
+   "full_width_min_rise": 0.01
+  },
   "tolerance_sources": {
-   "identity_share": "plan's 1e-6. Measured floor: the identity patch's share is the 48-window forward against W0's log P read on all 97 windows and sliced, the same comparison as E54's S_block0 (a zero vector), which read at most 9.5e-8 in share on these six states (stage2.json). 1e-6 is ten times that; a wrong site or a stale activation moves it by 1e-2 or more",
+   "identity_share": "plan 1e-6. Measured floor: the identity patch share is the 48-window forward against W0 log P read on all 97 windows and sliced, the same comparison as E54 S_block0 (a zero vector), which read at most 9.5e-8 in share on these six states (stage2.json). 1e-6 is ten times that. It catches a stale activation or a broken forward, not a wrong site (it replaces a site with its own values); the full-width rise below is the site check (corrected 2026-10-30 pre-run, review finding 2)",
    "identity_max_abs": "E52's filed 1e-4 nats; E52 measured 1.7e-5 on E12's tasks (baseline_neurons.json stage0)",
    "full_patch_tol": "plan's 1e-3; E52 measured |share - 1| <= 1.3e-8 (baseline_neurons.json stage0). Kept loose as the plan wrote it: any miss is a bug, not rounding",
-   "reproduce_tol": "1e-6; measured floor 0 on an unchanged path on the cluster's L40: E54 Amendment 1 (job 46070) reproduced stage2.json's S to dS = 0 on all six states. If the job lands on a different card model, a miss under ~1e-5 with every sha256 matching is rounding, a stop to report, not a bug"
+   "reproduce_tol": "1e-6; measured floor 0 on an unchanged path on the cluster's L40: E54 Amendment 1 (job 46070) reproduced stage2.json's S to dS = 0 on all six states. If the job lands on a different card model, a miss under ~1e-5 with every sha256 matching is rounding, a stop to report, not a bug",
+   "full_width_min_rise": "1e-2 nats: a wrong hook site or an index_copy that copies nothing gives 0 (to rounding, 1.7e-5 at most, E52 identity); E52 read full-width shares 0.50-0.97 of G (5-13 nats), so a working path is hundreds of times over the bar"
   }
  },
  "stage0_job2": {
   "order": "first and alone, before any new fine-tune; any miss exits 1",
   "refuses_unless": "job1.json exists with stage0 pass and P1_two status 'pass' (the decision tree: P1 failing on two seeds stops the experiment for the user), and job1.json and this file are committed unchanged",
   "checks": "windows_{elicit,cipher}.pt sha256 equal stage1.json's; each task's keys and values equal stage1.json's (same keys, same values); W0's held-out geometric-mean P(target) |rate / stage1 rate - 1| <= rate_rel_tol; elicit_s0.pt sha256 equals stage2.json's and its r reproduces stage2.json within reproduce_tol",
-  "thresholds": {"rate_rel_tol": 1e-06, "reproduce_tol": 1e-06},
+  "thresholds": {
+   "rate_rel_tol": 1e-06,
+   "reproduce_tol": 1e-06
+  },
   "tolerance_sources": "the same forwards on the same windows as E54 (load_task, route_split), floor 0 on the same card model as above"
  },
- "thresholds": {"min_gap": 0.2, "ratio_min": 3, "p3_tol": 0.1},
+ "thresholds": {
+  "min_gap": 0.2,
+  "ratio_min": 3,
+  "p3_tol": 0.1,
+  "k50_cap": 6
+ },
  "separation_rule": "E51's, as src/commute/elicit.py separation: elicit and matched cipher separate iff |mean elicit - mean cipher| > the larger within-kind range (max - min over that kind's seeds; strict: equal does not separate) and |gap| >= min_gap 0.2 (a tie at 0.2 separates). Verdict a_higher (elicit higher), b_higher (cipher higher), none, or unreadable (fewer than two values per kind, or any value missing, unreadable or nan). Absolute, in each metric's own unit (share of G for N16; grid index for k50)",
  "predictions": {
   "P1": {
    "statement": "B2 does not separate the pair: N16 and k50 each fail the separation rule, elicit against the matched cipher.",
-   "rule": "keydep_score.p1: separation of N16 and of k50_index, elicit_s* against cipher_s*. pass iff both verdicts are 'none'; a separation in either direction fails (a cipher above the elicit map still tells the kinds apart); unreadable if either is unreadable",
+   "rule": "keydep_score.p1: separation of N16 and of min(k50_index, 6) (amended 2026-10-30 pre-run: indices 6, 7, 8 = k over 1000 are one bin), elicit_s* against cipher_s*. pass iff both verdicts are none; a separation in either direction fails; unreadable if either is unreadable",
    "scored_when": "P1_two (job1.json, seeds s0, s1) is an interim reading that decides whether job 2 runs (it refuses unless P1_two passes). P1 of record is job2.json's P1 on all five seeds s0..s4. If job 2 never runs, P1_two is reported as the two-seed reading and P1 of record is 'not run'",
    "lean": "medium",
    "expected": "N16 small on both kinds, k50 > 1000 (index 6 or more) on every state, no separation",
    "blind_to": "changes carried by attention (B2 patches MLP neurons only); a separation that lives in which neurons are chosen rather than how much they carry; k50's resolution is the grid",
    "control": "stage 0's full residual patch (share 1 within 1e-3: one site carries all of G) and identity patch (0)",
-   "noise_floor": "the within-kind range over seeds, the rule's own term; on E12's pair E52 read N16 from -0.031 to 0.019 and k50 = 12288 on all eight states"
+   "noise_floor": "the within-kind range over seeds, the rule's own term; on E12's pair E52 read N16 from -0.031 to 0.019 and k50 = 12288 on all eight states",
+   "rule_as_filed": "keydep_score.p1: separation of N16 and of k50_index, elicit_s* against cipher_s*. pass iff both verdicts are 'none'; a separation in either direction fails (a cipher above the elicit map still tells the kinds apart); unreadable if either is unreadable"
   },
   "P2": {
    "statement": "At five seeds r separates the elicit map higher and S_lo does not, and the ratio r gap / (|S_lo gap| + S_lo's larger range) is at least 3.",
@@ -73,19 +98,38 @@
   }
  },
  "expected_table": {
-  "N16": {"W0": "delta-W = 0: the patch moves nothing (rise 0 nats) but G = 0, so the share is nan by rule", "do_nothing": "identity patch: 0 (within 1e-6)", "control": "full residual patch: 1 (within 1e-3)", "if_claim": "elicit and cipher both 0.1-0.4, no separation (the plan's band; E52 read -0.03 to 0.02 on E12's pair, so a value under 0.1 on both kinds is still 'as claimed' for P1, which reads separation only)", "if_null": "elicit > cipher by the rule"},
-  "k50": {"W0": "undefined (G = 0)", "do_nothing": "all (no k reaches half)", "control": "1 site for the residual patch", "if_claim": "> 1000 on all states (index >= 6), no separation", "if_null": "elicit far fewer"},
-  "r, S_lo at seeds 2-4": {"W0": "0", "do_nothing": "0", "control": "seed-0 states reproduce stage2.json within 1e-6", "if_claim": "r 0.70-0.80 vs 0.18-0.28; S_lo gap under its range or under 0.2", "if_null": "r's gap closes with seeds"}
+  "N16": {
+   "W0": "delta-W = 0: the patch moves nothing (rise 0 nats) but G = 0, so the share is nan by rule",
+   "do_nothing": "identity patch: 0 (within 1e-6)",
+   "control": "full residual patch: 1 (within 1e-3)",
+   "if_claim": "elicit and cipher both 0.1-0.4, no separation (the plan's band; E52 read -0.03 to 0.02 on E12's pair, so a value under 0.1 on both kinds is still 'as claimed' for P1, which reads separation only)",
+   "if_null": "elicit > cipher by the rule"
+  },
+  "k50": {
+   "W0": "undefined (G = 0)",
+   "do_nothing": "all (no k reaches half)",
+   "control": "1 site for the residual patch",
+   "if_claim": "> 1000 on all states (index >= 6), no separation",
+   "if_null": "elicit far fewer"
+  },
+  "r, S_lo at seeds 2-4": {
+   "W0": "0",
+   "do_nothing": "0",
+   "control": "seed-0 states reproduce stage2.json within 1e-6",
+   "if_claim": "r 0.70-0.80 vs 0.18-0.28; S_lo gap under its range or under 0.2",
+   "if_null": "r's gap closes with seeds"
+  }
  },
  "edge_cases": {
   "zero_or_negative_denominator": "a share whose gain is within 1e-6 of 0 is nan -> its rule unreadable; P2's ratio denominator |S_lo gap| + range is >= 0 by construction, 0 -> unreadable; a negative G (the fine-tune lowered the target) gives a well-defined share and is scored as is",
   "nan": "any nan among a rule's values -> unreadable (elicit.separation, keydep_score.p3)",
   "ties_at_bounds": "|gap| == range: no separation; |gap| == 0.2: separates; ratio == 3: passes; P3 difference == 0.1: fails; share == 0.5 at some k: that k is k50",
   "missing_state": "a state absent from the record or under the 0.05 floor -> None -> unreadable (keydep_score.col)",
-  "k50_undefined": "no grid k reaches half of G -> k50 = inf, k50_index = 8 (one past the grid), finite and scored; an unreadable state's k50 is not scored",
+  "k50_undefined": "no grid k reaches half of G -> k50 = inf, k50_index = 8 (one past the grid), finite and scored; an unreadable state's k50 is not scored; binned with 4096 and 12288 at index 6 for P1 (amended 2026-10-30 pre-run)",
   "same_state": "a new seed whose matched cipher step equals its own step -> left out of P3; all three -> P3 uninformative",
   "fewer_than_two_per_kind": "unreadable",
-  "all_equal_k50": "every state at the same index: gap 0, range 0 -> 'none' (P1's k50 half passes)"
+  "all_equal_k50": "every state at the same index: gap 0, range 0 -> 'none' (P1's k50 half passes)",
+  "block0": "job 2: |S_block0 x G_score| > 1e-5 nats on a new state exits (E54 stage 2 stop, restored 2026-10-30 pre-run)"
  },
  "decision_tree": {
   "P1 and P2 hold": "write up as the headline, ask (a) Jain's readout",
@@ -94,5 +138,6 @@
   "P2 fails otherwise (r does not separate elicit higher, or S_lo separates)": "not covered by the tree; tell the user",
   "P3 fails": "the matched-size reading is suspect; tell the user"
  },
- "departures": "the separation rule's minimum 0.2 and the ratio bar 3 have no source; neuron patching departs from causal tracing (Meng et al. 2022) as E52 did (tuned activations into W0 at every position, ranking on a fit half, share of the fine-tune's gain); the B2 grid adds 1024 and 4096 to E52's; the gain floor is 0.05 alone (E54 also used its seed-spread term)"
+ "departures": "the separation rule's minimum 0.2 and the ratio bar 3 have no source; neuron patching departs from causal tracing (Meng et al. 2022) as E52 did (tuned activations into W0 at every position, ranking on a fit half, share of the fine-tune's gain); the B2 grid adds 1024 and 4096 to E52's; the gain floor is 0.05 alone (E54 also used its seed-spread term)",
+ "amended_2026_10_30_pre_run": "Before any run, after the code review reports/reviews/2026-10-30_review_e56-code.md. (1) P1 k50 half: scored on min(k50_index, 6), so every k over 1000 (4096, 12288, none reach half: indices 6, 7, 8) is one value, as the plan expected (\"k50 > 1000 on all states, no separation\"). Reason: review finding 1: unbinned, with two seeds sharing an index the within-kind range is 0 and one grid step clears the 0.2 gap, so elicit [7, 7] against cipher [8, 8] (full-width share crossing 0.5, likely from E52s 0.50-0.97) would fail P1 and stop the experiment under an outcome the plan called no separation. Old rule kept in predictions.P1.rule_as_filed. (2) Stage 0 of job 1 adds a positive control on the neuron-edit path: all 12288 neurons patched must move log P by at least 1e-2 nats (max over the scoring half) on every state (E52 read full-width shares 0.50-0.97 of G, about 5-10 nats); the identity tolerance note no longer claims to catch a wrong site (finding 2). (3) Job 2 restores E54s block-0 steering stop on new states: |S_block0 x G_score| > 1e-5 nats exits (finding 3). (4) job1.json and job2.json record git_dirty beside git_head (finding 4). Nothing had run."
 }

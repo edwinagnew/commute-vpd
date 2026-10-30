@@ -25,10 +25,18 @@ def status_of(sep: dict[str, Any], want: str) -> str:
     return "unreadable" if sep["verdict"] == "unreadable" else "pass" if sep["verdict"] == want else "fail"
 
 
-def p1(st: dict[str, dict[str, Any]], seeds: list[str], min_gap: float) -> dict[str, Any]:
-    """P1: neither N16 nor k50_index separates elicit from the matched cipher (verdict "none" for both). A separation
-    in either direction fails: a cipher above the elicit map still tells the kinds apart."""
-    out = {m: separation(col(st, "elicit", m, seeds), col(st, "cipher", m, seeds), min_gap) for m in ("N16", "k50_index")}
+def binned(vals: list[float | None], cap: int) -> list[float | None]:
+    """k50_index binned at the plan's band: every index >= cap (k > 1000: 4096, 12288, none) is one value."""
+    return [None if v is None else min(v, cap) for v in vals]
+
+
+def p1(st: dict[str, dict[str, Any]], seeds: list[str], min_gap: float, k50_cap: int) -> dict[str, Any]:
+    """P1: neither N16 nor the binned k50 index (min(k50_index, k50_cap)) separates elicit from the matched cipher
+    (verdict "none" for both). A separation in either direction fails: a cipher above the elicit map still tells the
+    kinds apart. Amended before any run (2026-10-30): k50 was scored unbinned, so one grid step separated."""
+    k50 = [col(st, kind, "k50_index", seeds) for kind in ("elicit", "cipher")]
+    out = {"N16": separation(col(st, "elicit", "N16", seeds), col(st, "cipher", "N16", seeds), min_gap),
+           "k50_index": separation(binned(k50[0], k50_cap), binned(k50[1], k50_cap), min_gap)}
     sts = [status_of(out[m], "none") for m in out]
     return {**out, "seeds": seeds, "status": "unreadable" if "unreadable" in sts else "pass" if sts == ["pass", "pass"] else "fail"}
 

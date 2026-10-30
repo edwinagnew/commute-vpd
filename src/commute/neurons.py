@@ -62,3 +62,14 @@ def patch_controls(net: Net, t: Task, dW: DW, G_score: float) -> dict[str, float
     full = share(read(net, t, s, edit={"out3": lambda _x, v=c1["out3"]: v}), lp0s, G_score)
     return {"identity_max_abs": float((ident - lp0s).abs().max()), "identity_share": share(ident, lp0s, G_score),
             "full_patch_share": full}
+
+
+def full_width_rise(net: Net, t: Task, dW: DW) -> float:
+    """Stage 0's positive control on the neuron-edit path (E56 review, finding 2): W0 with all 12288 neurons taking the
+    tuned model's activations through `neuron_edit`; max over the scoring half of |log P - log P_W0| in nats. Zero if
+    the edit hooks the wrong site or copies nothing."""
+    s, lp0s = t.toks[t.part("score")], t.lp0[t.part("score")]
+    with net.at(dW):
+        _, c1 = net.run(s, capture=True)
+    patched = read(net, t, s, edit=neuron_edit(c1, torch.arange(N_LAYERS * D_MLP)))
+    return float((patched - lp0s).abs().max())
