@@ -6,11 +6,12 @@ Plan: reports/plans/2026-10-30_plan_e58-open-pair.md. Every setting, rule and th
 
   stage 0, alone (exit 1 on a miss): sha256 of E54's windows files, elicit_s0.pt and cipher_s0.pt; the key split; the
            zero update reads G = H = 0 exactly on all four split tasks; E54's elicit_s0 on E54's own 32-key task
-           reproduces r, the stand-in ratio and S, and block 0 reads 0; E54's cipher_s0 with no carry-over reads under
-           the "new" bar (x0 <= 3 s0; amendment 2026-10-30).
+           reproduces r, the stand-in ratio and S, and block 0 reads 0; E54's cipher_s0's value-specific gain is at
+           least half its raw gain; the G_spec gate from E54's two seed-0 states (amendment 2026-10-30, after job 46259).
   stage 1: per seed, elicit then the cipher at the elicit update's norm (E54's `keydep` fine-tunes on the trained keys'
-           windows); after each, G, H and the label. Exit 1 if elicit_s0's G is under the bar, or if any cipher
-           reads "reuses" (the label's negative control).
+           windows); after each, G_spec, H_spec (own value's gain minus the mean gain of the pool's other 31 values) and
+           the label, raw G and H beside. Exit 1 if elicit_s0's G_spec is under the gate, or if any cipher reads
+           "reuses" (the label's negative control).
   stage 2: r, ratio, S on every state (trained keys' held-out windows); exit 1 on a block-0 shift over 1e-5 nats.
   score:   `open_pair.score` -> results/run.json. Every scored number is also printed.
 Writes <large>/windows_{elicit,cipher}_{trained,new}.pt and <large>/{elicit,cipher}_s{0,1,2}.pt (~113 MB each).
@@ -116,22 +117,39 @@ def others(values: list[int]) -> ST.Readout:
     return f
 
 
+def pool_of(t: dict[str, ST.Task]) -> list[int]:
+    """The task's 32 values (trained keys' then held-out keys')."""
+    return [int(t[p].table[k]) for p in PARTS for k in t[p].keys]
+
+
+def specific(net: ST.Net, t: ST.Task, dW: ST.DW, pool: list[int]) -> tuple[Tensor, Tensor]:
+    """Per window (raw gain of its own target, specific gain = raw minus the mean gain of the pool's other 31 values)
+    (amendment 2026-10-30, after job 46259: the cipher fine-tune lifts the whole value pool)."""
+    raw = gain(net, t, dW)
+    return raw, raw - gain(net, t, dW, others(pool))
+
+
 def behaviour(net: ST.Net, t: dict[str, ST.Task], dW: ST.DW, th: dict[str, Any]) -> dict[str, Any]:
-    """G on the trained keys' held-out windows, H on the held-out keys' windows, the bootstrap sd of H / G, the label;
-    reported beside: H_other (the other held-out values' gain at the same windows) and H per held-out key."""
-    dG, dH = gain(net, t["trained"], dW), gain(net, t["new"], dW)
-    new = t["new"]
+    """The label on specific gains: G_spec on the trained keys' held-out windows, H_spec on the held-out keys' windows,
+    x = H_spec / G_spec, its row-bootstrap s (scored) and key-bootstrap s_key (reported); raw G, H, x reported beside, and
+    H_other (the other held-out values' gain at the held-out windows) and H_spec per held-out key."""
+    pool, new, tr = pool_of(t), t["new"], t["trained"]
+    dG, dGs = specific(net, tr, dW, pool)
+    dH, dHs = specific(net, new, dW, pool)
     dO = gain(net, new, dW, others([int(new.table[k]) for k in new.keys]))
-    G, H, s = float(dG.mean()), float(dH.mean()), OP.boot_sd(dH, dG, th["n_boot"], th["boot_seed"])
-    at, tr = new.toks[:, new.half], t["trained"].toks[:, t["trained"].half]
-    s_key = OP.boot_sd_keys(dH, at, dG, tr, th["n_boot"], th["boot_seed"])  # reported, unscored (amendment 2026-10-30)
-    return {"G": G, "H": H, "x": H / G if G != 0 else math.nan, "s": s, "s_key": s_key, "label": OP.label(H, G, s, th), "H_other": float(dO.mean()),
-            "n_G": len(dG), "n_H": len(dH), "H_per_key": {str(k): float(dH[at == k].mean()) for k in new.keys}}
+    G, H, Gs, Hs = (float(d.mean()) for d in (dG, dH, dGs, dHs))
+    s = OP.boot_sd(dHs, dGs, th["n_boot"], th["boot_seed"])
+    at = new.toks[:, new.half]
+    s_key = OP.boot_sd_keys(dHs, at, dGs, tr.toks[:, tr.half], th["n_boot"], th["boot_seed"])
+    return {"G_spec": Gs, "H_spec": Hs, "x": Hs / Gs if Gs != 0 else math.nan, "s": s, "s_key": s_key, "label": OP.label(Hs, Gs, s, th),
+            "G": G, "H": H, "x_raw": H / G if G != 0 else math.nan, "H_other": float(dO.mean()), "n_G": len(dG), "n_H": len(dH),
+            "H_spec_per_key": {str(k): float(dHs[at == k].mean()) for k in new.keys}}
 
 
 def say_label(n: str, b: dict[str, Any]) -> None:
-    log(f"[label {n}] G {b['G']:.4f} H {b['H']:.4f} x {b['x']:.4f} 3s {3 * b['s']:.4f} -> {b['label']} | s_key {b['s_key']:.4f} H_other {b['H_other']:.4f} "
-        f"(n_G {b['n_G']}, n_H {b['n_H']}) per key {json.dumps({k: round(v, 3) for k, v in b['H_per_key'].items()})}")
+    log(f"[label {n}] G_spec {b['G_spec']:.4f} H_spec {b['H_spec']:.4f} x {b['x']:.4f} 3s {3 * b['s']:.4f} -> {b['label']} | s_key {b['s_key']:.4f} "
+        f"raw G {b['G']:.4f} H {b['H']:.4f} x_raw {b['x_raw']:.4f} H_other {b['H_other']:.4f} (n_G {b['n_G']}, n_H {b['n_H']}) "
+        f"per key {json.dumps({k: round(v, 3) for k, v in b['H_spec_per_key'].items()})}")
 
 
 # ----------------------------------------------------------------------------- the readings (E54's, unchanged)
@@ -151,21 +169,17 @@ def vpd_read(ctx: KD.Ctx, t: ST.Task, dW: ST.DW, base: dict[str, Any]) -> dict[s
 # ----------------------------------------------------------------------------- stages
 
 
-def no_carry(ctx: KD.Ctx) -> dict[str, Any]:
-    """Amendment 2026-10-30 (review of 674e9b0): the cipher's x with no carry-over, from E54's saved cipher_s0 on its own
-    32 keys: the mean log-odds gain of the non-target cipher values at each window (`others`) over the target's G, beside
-    the same row bootstrap's s. A generic post-marker push toward word-like tokens shows here as x0 > 0; if x0 > 3 s0
-    the 'new' bar would read a cipher with no carry-over as 'neither'."""
-    th = ctx.P["thresholds"]
-    t = ST.load_task(ctx.net, E54 / "large" / "windows_cipher.pt", "cipher", "cipher")
-    dW = torch.load(E54 / "large" / "cipher_s0.pt", weights_only=True)
-    dG, dO = gain(ctx.net, t, dW), gain(ctx.net, t, dW, others([int(t.table[k]) for k in t.keys]))
-    G = float(dG.mean())
-    x0, s0 = float(dO.mean()) / G if G else math.nan, OP.boot_sd(dO, dG, th["n_boot"], th["boot_seed"])
-    return {"G": G, "other_gain": float(dO.mean()), "x0": x0, "s0": s0, "ok": bool(x0 <= 3 * s0)}
+def spec_split(ctx: KD.Ctx, kind: str) -> dict[str, Any]:
+    """E54's saved <kind>_s0 on its own 32 keys: raw G, the pool's other-value gain, G_spec and G_spec / G
+    (amendment 2026-10-30, after job 46259)."""
+    t = ST.load_task(ctx.net, E54 / "large" / f"windows_{kind}.pt", kind, kind)
+    raw, spec = specific(ctx.net, t, torch.load(E54 / "large" / f"{kind}_s0.pt", weights_only=True), [int(t.table[k]) for k in t.keys])
+    G, Gs = float(raw.mean()), float(spec.mean())
+    return {"G": G, "other_gain": G - Gs, "G_spec": Gs, "frac": Gs / G if G else math.nan}
 
 
-def stage0(ctx: KD.Ctx, tasks: Tasks, out: dict[str, Any]) -> None:
+def stage0(ctx: KD.Ctx, tasks: Tasks, out: dict[str, Any]) -> float:
+    """The controls; returns the G_spec gate."""
     c = ctx.P["stage0"]
     zero = {k: torch.zeros_like(w) for k, w in ctx.net.W0.items()}
     rec: dict[str, Any] = {"zero_max_abs": {f"{n}_{p}": float(gain(ctx.net, tasks[n][p], zero).abs().max()) for n in KINDS for p in PARTS}}
@@ -175,20 +189,23 @@ def stage0(ctx: KD.Ctx, tasks: Tasks, out: dict[str, Any]) -> None:
     rec["checks"] = {"zero": all(v == 0.0 for v in rec["zero_max_abs"].values()),
                      "r": abs(rd["r"] - c["r_ref"]) <= c["r_tol"], "ratio": abs(rd["ratio"] - c["ratio_ref"]) <= c["ratio_tol"],
                      "S": abs(rd["S"] - c["S_ref"]) <= c["S_tol"], "block0": abs(rd["S_block0"]) <= c["block0_tol"]}
-    nc = rec["e54_cipher_s0_no_carry"] = no_carry(ctx)
-    rec["checks"]["no_carry"] = nc["ok"]
-    rec["pass"] = all(rec["checks"].values())
+    e, ci = rec["e54_elicit_s0_spec"], rec["e54_cipher_s0_spec"] = spec_split(ctx, "elicit"), spec_split(ctx, "cipher")
+    rec["checks"]["cipher_specific"] = bool(ci["frac"] >= c["spec_frac_min"])
+    gate = rec["G_min_spec"] = OP.spec_gate(c["G_min_cap"], c["G_ref_raw"], [e["G_spec"], ci["G_spec"]])
+    rec["pass"] = all(rec["checks"].values()) and math.isfinite(gate)
     out["stage0"] = rec
     log(f"[stage0] zero-update max |gain| {rec['zero_max_abs']} | E54 elicit_s0 r {rd['r']:.4f} (ref {c['r_ref']:.4f}) ratio "
         f"{rd['ratio']:.4f} (ref {c['ratio_ref']:.4f}) S {rd['S']:.4f} (ref {c['S_ref']:.4f}) S_block0 {rd['S_block0']:.1e} | "
-        f"E54 cipher_s0 no-carry x0 {nc['x0']:.4f} vs 3 s0 {3 * nc['s0']:.4f} (G {nc['G']:.4f}) | checks {rec['checks']}")
+        f"specific gain / raw G: E54 cipher_s0 {ci['G_spec']:.4f} / {ci['G']:.4f} = {ci['frac']:.4f} (bar {c['spec_frac_min']}), "
+        f"elicit_s0 {e['G_spec']:.4f} / {e['G']:.4f} = {e['frac']:.4f} (reported) | G_spec gate {gate:.4f} | checks {rec['checks']}")
     dump(out)
     if not rec["pass"]:
         stop(out, "stage 0 missed")
+    return gate
 
 
-def stage1(ctx: KD.Ctx, tasks: Tasks, out: dict[str, Any]) -> dict[str, ST.DW]:
-    th, seeds, st = ctx.P["thresholds"], ctx.P["settings"]["seeds"], out["states"]
+def stage1(ctx: KD.Ctx, tasks: Tasks, out: dict[str, Any], gate: float) -> dict[str, ST.DW]:
+    th, seeds, st = {**ctx.P["thresholds"], "G_min": gate}, ctx.P["settings"]["seeds"], out["states"]
     ws = {n: torch.load(ctx.large / f"windows_{n}_trained.pt", weights_only=False) for n in KINDS}
     dws: dict[str, ST.DW] = {}
 
@@ -204,8 +221,8 @@ def stage1(ctx: KD.Ctx, tasks: Tasks, out: dict[str, Any]) -> dict[str, ST.DW]:
         e, c = f"elicit_s{s}", f"cipher_s{s}"
         dW, meta = KD.elicit_ft(ctx, ws["elicit"], s)
         keep(e, dW, meta)
-        if s == seeds[0] and not st[e]["G"] >= th["G_min"]:
-            stop(out, f"{e} G {st[e]['G']:.3f} < {th['G_min']}: E54's recipe on 24 keys is too small to label (plan: raise the step once, as an amendment)")
+        if s == seeds[0] and not st[e]["G_spec"] >= th["G_min"]:
+            stop(out, f"{e} G_spec {st[e]['G_spec']:.3f} < {th['G_min']:.3f}: E54's recipe on 24 keys is too small to label (plan: raise the step once, as an amendment)")
         dW, _, meta_c, _ = KD.cipher_ft(ctx, ws["cipher"], s, meta["norm"])
         keep(c, dW, meta_c)
         if st[c]["label"] == "reuses":
@@ -260,8 +277,8 @@ def main() -> None:
     tasks = {n: {p: ST.load_task(ctx.net, large / f"windows_{n}_{p}.pt", f"{n}_{p}", n) for p in PARTS} for n in KINDS}
     out["n_windows"] = {f"{n}_{p}": len(tasks[n][p].toks) for n in KINDS for p in PARTS}
     log(f"[split] trained {trained} held {held} windows {out['n_windows']}")
-    stage0(ctx, tasks, out)
-    dws = stage1(ctx, tasks, out)
+    gate = stage0(ctx, tasks, out)
+    dws = stage1(ctx, tasks, out, gate)
     stage2(ctx, tasks, dws, out)
     out["score"] = OP.score(out["states"], P["thresholds"], S["seeds"])
     dump(out)

@@ -64,6 +64,9 @@
   "S_ref": 0.3795955998181104,
   "S_tol": 0.001,
   "S_source": "E54 stage2.json states.elicit_s0.S; E54's S_tol",
+  "spec_frac_min": 0.5,
+  "G_min_cap": 8.0,
+  "G_ref_raw": 10.790861326394623,
   "block0_tol": 1e-06,
   "block0_source": "E54 stage0 block0_tol: B3's block-0 share reads 0 (no fine-tune changes the embedding)"
  },
@@ -97,6 +100,16 @@
   "no_carry_check": "added to stage 0 (stop on a miss): E54's saved cipher_s0.pt (sha256 in stage0.sha256) on E54's own 32-key held-out windows; x0 = mean over windows of the log-odds gain of the 31 non-target cipher values (run.py `others`) / the target's G; s0 = open_pair.boot_sd of the same two per-window gains (2000 resamples, seed 0). Stop iff x0 > 3 s0 or either is not finite: a cipher with no carry-over would then read 'neither', not 'new', and P1 would fail for the bar, not the cipher; the bar is amended before any fine-tune. Expected: x0 near 0 (KL holds the rest of the vocabulary), s0 about 0.01-0.03",
   "s_key": "reported beside s, unscored: open_pair.boot_sd_keys, the sd of x when held-out keys and trained keys (not windows) are resampled with replacement, all windows of each drawn key pooled (2000 resamples, seed 0). The real unit of H is the 8 held-out keys (W0's per-key P spans 7e-6 to 2.5e-2); Stage B's row bootstrap resamples independent texts. Expected s_key well above s; the write-up says which labels change if 3 s_key replaced 3 s",
   "provenance": "run.json records git status --porcelain of run.py and src/commute/open_pair.py; the key-split check writes run.json and exits 1 instead of an assert"
+ },
+ "amendment_2026-10-30_prerun_2": {
+  "when": "2026-10-30, after job 46259 stopped at stage 0 (results commit 080b1f2) and before any fine-tune; lead's decision. P0-P4, the cut 0.5, k_sd 3 and the bootstrap unchanged; this block supersedes measurements.G/H/x, thresholds.G_min as a fixed gate, and the first amendment's no_carry_check",
+  "why": "a pool shift, not carry-over: on E54's cipher_s0 (all 32 keys trained) the other 31 cipher values gained 4.163 log-odds at each window against the target's 11.107, x0 = 0.375 vs 3 s0 = 0.061 (s0 0.020). Raw H / G would read 'neither' for a cipher with no carry-over, so it cannot read 'new'",
+  "specific_gain": "per window, the raw log-odds gain of its own target minus the mean raw log-odds gain of the other 31 values of the task's full 32-value table (trained and held-out keys' values; run.py `specific`, `others`). G_spec = its mean on the trained keys' held-out windows, H_spec on the held-out keys' windows",
+  "label": "open_pair.label(H_spec, G_spec, s, gate): x = H_spec / G_spec; reuses iff x >= 0.5; new iff x <= 3 s, s = row-bootstrap sd of x on the specific gains; else neither; 'too_small' if G_spec < gate. Raw G, H, x_raw reported beside, unscored; s_key now on specific gains",
+  "gate": "G_min_spec = min(8, 8 / 10.7909 x min(G_spec of E54 elicit_s0, G_spec of E54 cipher_s0)), measured in stage 0 on E54's own windows (Fable's 8 was set against E54's raw G 10.79; the same fraction is applied to the specific gain). Lowered because E54's own cipher_s0 G_spec is below 8: 11.107 - 4.163 = 6.944 (job 46259), so the gate is at most 5.148; E54 elicit_s0's G_spec has not been read (no saved logits) and stage 0 reads it",
+  "stage0_check": "replaces no_carry_check: on E54 cipher_s0, G_spec / raw G >= 0.5 (most of the cipher's gain is value-specific), else stop; expected 0.625 from job 46259's numbers. The same split on E54 elicit_s0 is reported. A non-finite gate also stops",
+  "early_stop": "elicit_s0's G_spec < the gate -> exit 1 (replaces the raw G < 8 stop)",
+  "expected": "cipher: H_spec about 0 or below (the pool shift is subtracted), x within 3 s of 0, label new; elicit: open"
  },
  "branches": {
   "stage0_miss": "stop and tell the user",
