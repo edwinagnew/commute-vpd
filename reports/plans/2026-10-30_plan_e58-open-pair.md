@@ -1123,3 +1123,38 @@ the Pile rows and the key distributions. Host RAM peaks at about 5 GB (32 checkp
 2. Fresh-Opus review of the diff (new map builders and `kv.key_distributions(geometric=True)` have not run on a GPU).
 3. `/pod-runner`: `sbatch cluster/open_pair.sbatch amend6` from the clone root.
 4. Write-up by the analysis agent.
+
+### Amendment 6 before the run (code review, 2026-10-30)
+
+A fresh review of a946868 (`reports/reviews/2026-10-30_review_e58-amend6-code.md`) found one blocking problem and
+four smaller ones. Nothing had run, so the code and `predictions_amend6.json` were amended in place
+(`amendment_2026_10_30_code_review`). These edits were made before the run and after the code review. Where they
+differ from the sections above, the edits stand.
+
+1. **The first-letter carry gets a null (blocking).** The held-out keys mostly fall on letters that were trained
+   often. So a fine-tune that only leans toward often-trained words raises x with no letter rule at all.
+   - **The null.** At every first-letter read, x_null recomputes the held-out specific gain, with the same pool as x.
+     Each held-out key's target is swapped for another trained letter's word, the letter whose trained-key count is
+     nearest its own (ties by a seeded draw).
+   - **No fine-tune is added.** The null task is built once, in the W₀ stage.
+   - **The entry condition.** A seed carries iff its read is labellable, x_null is finite, and x − x_null > 0.3. x,
+     x_null and the difference are reported.
+   - **Edge cases tested:** a tie at 0.3 fails; x 0.5 with x_null 0.25 fails; with x_null 0.19 it carries; a nan or
+     missing x_null fails; a negative x_null counts.
+   - **Blind to.** x alone is blind to a frequency-weighted shift; x − x_null is not.
+2. **Missing or unlabellable seeds read "unreadable", not "no_carry".** FL reads unreadable when fewer than 2 step-30
+   reads are labellable (label not too_small or unreadable, x finite). It reads no_carry only when at least 2 are
+   labellable and fewer than 2 carry. The tests cover too_small, None, a nan x and an empty list.
+3. **The noise floor is 0.0452**, as measured. It is used only by the reported near_cut flag.
+4. **The pool each map drew from is recorded** (`amend6.json` maps.<map>.pool). If the prior-matched cipher had to
+   fall back to the wider pool, its values are no longer E58's cipher-pool kind. Its class would then mix prior with a
+   change of token kind, so it is reported, not scored (`score.PM.scored` false), and the plan's PM branches do not
+   apply. A fallback on the first-letter rule changes only which words serve as values, at cipher prior; it is
+   recorded and does not change the reading.
+5. **A letter's word may not start with that letter**, so the rule cannot be read as "say a word with the key's first
+   letter".
+6. **Kept:** the prior is admitted over all of a key's windows but checked on the trained keys' held-out-row windows
+   (review finding 3). A draw at the bottom of the band could trip the W₀ stop. That is a stop, not a wrong reading.
+
+Tests: 551 pass; lint is clean on the touched files. The run command and outputs are unchanged, apart from one more
+small windows file: `results/large/amend6/windows_first_letter_null_new.pt`.
