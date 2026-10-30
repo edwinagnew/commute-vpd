@@ -1,0 +1,16 @@
+<article class="exp" id="e60">
+<div class="top"><span class="id">E60</span><span class="chip uninf">unscored</span><h3>Do the stand-in ratio, the re-gating share and steering put every fine-tune built to reuse above every one built to be new, on all 18 saved 67M runs?</h3><span class="when">2026-10-30 · MATS cluster L40 debug QoS, $0 (job 46258) · <code>experiments/regating_truth_table</code></span></div>
+<p class="one"><strong>The question.</strong> The re-gating line's second step scores its readings against a label it did not make. No 67M run has such a label yet, so this job fills one table of the three readings for every saved run, ready for when labels arrive (Q5).</p>
+<p class="one"><strong>What we did.</strong> For 18 saved fine-tunes in three task families (E46's copy and random maps, E53's lowercase text and two ciphers, E54's half-known map and cipher; two seeds each), we read the stand-in ratio (the masked gain over the subcomponent gain, no ceiling at 1), the re-gating share r (the share of the gain recovered by Γ's switching alone) and steering's share (one mean vector added to the original model). Only steering on E53's six runs was new; every other cell was copied from its saved file, with one run per family re-read as a control.</p>
+<p class="one"><strong>What we found.</strong> On every family, for all three readings, every run built to reuse sits above every run built to be new: the ratio reads 0.87 to 0.97 against 0.26 to 0.41, and r 0.75 to 0.80 against 0.12 to 0.29. For the ratio and r the gap is 0.46 to 0.63 on each family. Steering keeps the order, but its gap in its own unit is 0.14 to 0.15 on E53's and E54's pairs, and lowercase read 0.30 to 0.32, under its filed 0.4 to 1.</p>
+<p class="one"><strong>What it means.</strong> The labels are set by construction, so this is description, not a test: agreement was expected on 16 of the 18 runs. It is the table E58's behavioural labels will be scored against, and E58 has since shown where the readings and a behavioural label can part (<a href="#e58">E58</a>). Any "reuse" the readings give is reuse at the level of VPD's subcomponents.</p>
+<dl class="fields">
+<dt>Run</dt><dd>One cluster debug job on an L40 (job 46258), $0, about two minutes; all controls passed (state checksums, zero update reads zero, three reference runs reproduced).</dd>
+<dt>Found</dt><dd><ul>
+<li>The ratio and r separate built-to-reuse from built-to-be-new runs on all three families, with gaps of 0.46 to 0.63.</li>
+<li>Steering keeps the order, but its gap shrinks to 0.14 to 0.15 on lowercase and on E54's pair, and lowercase's 0.30 to 0.32 sits under the filed range (a reported miss, not a stop).</li>
+<li>Nothing is scored: no label exists beyond construction, and the open elicit map reads with the reuse runs on the ratio and r.</li></ul></dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>Next: E58's behavioural labels, then the label tests, filed before any label is read; a $0 steering read in log-odds on E53's six runs would put its gap in r's unit. Figures stay in the report (no log plot script). Analysis: <code>reports/analyses/2026-10-30_analysis_e60-regating-table.md</code>; notebook: <code>notebooks/E60_regating_table.ipynb</code>; plan: <code>reports/plans/2026-10-30_plan_regating-ground-truth.md</code>.</dd>
+</dl>
+</article>
