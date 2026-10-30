@@ -404,3 +404,35 @@ The next session reads this plan and the review, then `src/commute/revival.py`, 
 the CPU tests of the rules and edge cases, then commits filing A (status from DRAFT to "filing A"). The lead runs job 1
 (`measure`) through `/pod-runner`. The measured D, prior, p_D, p_prior, MLP shares, R's floor and planted settings go
 into § 4, and filing B is appended and committed. After that come the code review, job 2 and job 3.
+
+## Amendment 1, 2026-10-31: planted control
+
+**Why.** Job 1 (cluster job 46774) built the planted wrapper as § 5 item 5 specified, and it could not work. Block 3's
+median activation at the answer position is negative, so 1,160 units qualified as "above the median", and the 13 with
+the lowest zeroing cost were nearly silent (ā 0.002-0.097). The edit −α · w / ā_j scaled them up by as much as 400×,
+at every position where they fire. The off-answer KL bound (0.577) was reached at κ 0.184, against a target of 7.0 and
+below D_void (0.978). The pruning check on that state (4 of 13 found, R 0.39) is noise, not a failure of pruning
+(`reports/reviews/2026-10-31_review_e55-c3-code.md`, findings 1-2). Filing A's text is unchanged; this amendment and
+the `amendment_1` block in `results/predictions.json` replace its planted `units` and `edit` rules and add a floor.
+
+**What changes (block 3 = site `mlp3`, 0-based, as filing A states).**
+- *Units, by answer selectivity.* On W₀ and the fit half, for each block-3 unit j: a_ans(j) = the mean GELU activation
+  at the answer position; a_else(j) = the mean |activation| over every other position. Candidates are the units with
+  a_ans above the block's 90th percentile of a_ans (and above 0). The 13 planted units are the candidates with the
+  largest selectivity a_ans / a_else (ties to the lower id). Single-unit zeroing costs are no longer measured.
+- *Edit, without 1/ā.* Each planted unit's down_proj column += −α · w, the same α for every unit. w is unchanged.
+- *Scale.* Unchanged: bisection to the median pole D (the target) within the off-answer KL bound, with the recorded
+  fallback.
+- *Planted D floor.* floor = max(D_void, 0.5 × the target), with D_void = D_void_frac × the smallest pole-map mean D, as
+  filing B will file it. If the planted state's D is below the floor, the control is **void** ("control not built"),
+  not failed: the planted pruning pass is not scored and reads "void", and the pruning instrument then has no positive
+  control and is void in the same way as after a miss, but reported as "control not built". The planted reverse
+  check (reaches D/2 before the cap, else stop) is unchanged and runs at any D. The factor 0.5 is this project's
+  choice: it keeps the planted D within the range of the real pole states (D 4.4-10.6 in job 1).
+- *Pass rules unchanged:* ≥ 10 of the 13 planted units in pruning's top 13, and R ≥ 0.8 × the ceiling
+  (D − κ_zeroed) / D. The reverse rule is unchanged.
+- *Filing B reads* `planted {units, alpha, floor}` (no `abar`); w is recomputed from W₀ and the rank-1 values.
+
+**Rerun.** Job 1's `results/measure.json` (job 46774) moves to `~/commute-data/stale/reuse-lead/measure_job46774.json`
+(it stays in git history at 2650657) and job 1 runs again. Every number other than the planted wrapper and its checks
+must reproduce exactly (D, prior, off-answer KL, MLP share, R's floor, D_void); any difference is reported.

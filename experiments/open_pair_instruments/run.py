@@ -11,7 +11,7 @@ rules: src/commute/revival_kv.py.
   --stage instruments  job 3 (and 4), after job 2: stage 0, the 32 states, q, scores -> results/run.json. instruments.py.
 
 Filing B (appended to predictions.json after job 1) must hold, under "filing_B": status "filed", date, and the keys the
-code reads: D_void, noise_floor_R, planted {units, abar, alpha}, prior (per map), plus the predictions C0b, P1-P3, V.
+code reads: D_void, noise_floor_R, planted {units, alpha, floor} (Amendment 1), prior (per map), plus the predictions C0b, P1-P3, V.
 Exit codes: 0 done; 1 a stop row (tell the user); 2 run out of order (a filing missing, or results written under other
 predictions); 3 deadline: saved, not finished, resubmit the same stage (compute nodes have no sbatch).
 """
@@ -55,7 +55,7 @@ def main() -> int:
     a = ap.parse_args()
     clock = Clock(a.deadline_min)
     P = load_predictions(need_b=a.stage != "measure")
-    C = P["constants"]
+    C = {**P["constants"], "planted": {**P["constants"]["planted"], **P["amendment_1"]["planted"]}}  # Amendment 1 replaces planted keys
     out = header(CODE)
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     if a.stage == "measure":

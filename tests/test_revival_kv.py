@@ -1,7 +1,7 @@
 """CPU checks of E55 C3's filed rules (src/commute/revival_kv.py; plan reports/plans/2026-10-31_plan_e55-stage-c-open-pair.md
 § 6 and the edge cases it lists; experiments/open_pair_instruments/results/predictions.json): the plan's worked examples
 on E58's three-seed columns, empty pools, zero denominators, ties, censoring, the distance and prior rules, the joint
-verdict, and the per-state arithmetic (revival, half-life, the planted bisection, MLP share). No model is loaded."""
+verdict, and the per-state arithmetic (revival, half-life, the planted bisection, the planted units and pass of Amendment 1, MLP share). No model is loaded."""
 
 from __future__ import annotations
 
@@ -15,7 +15,8 @@ import torch
 
 from commute import revival_kv as KV
 
-C = json.loads((Path(__file__).resolve().parents[1] / "experiments/open_pair_instruments/results/predictions.json").read_text())["constants"]
+PRED = Path(__file__).resolve().parents[1] / "experiments/open_pair_instruments/results/predictions.json"
+C = json.loads(PRED.read_text())["constants"]
 
 # E58 run.json / amend1.json, seeds 0-2 (rank1, cipher, elicit, copy)
 E58 = {
@@ -242,10 +243,28 @@ def test_mlp_share_and_planted_pass():
     dW = {"h.0.attn.q_proj": torch.ones(2, 2), "h.0.mlp.c_fc": 2 * torch.ones(2, 2), "h.0.mlp.down_proj": torch.zeros(2, 2)}
     assert KV.mlp_share(dW) == pytest.approx(16 / 20)
     assert math.isnan(KV.mlp_share({"h.0.mlp.c_fc": torch.zeros(1)}))
-    p = KV.planted_pass(list(range(13)), list(range(3, 16)), 0.7, 0.8, 10, 0.8)
-    assert p["found"] == 10 and p["pass"] and p["R_min"] == pytest.approx(0.64)
-    assert not KV.planted_pass(list(range(13)), list(range(4, 17)), 0.7, 0.8, 10, 0.8)["pass"]
-    assert not KV.planted_pass(list(range(13)), list(range(13)), math.nan, 0.8, 10, 0.8)["pass"]
+    p = KV.planted_pass(list(range(13)), list(range(3, 16)), 0.7, 0.8, 10, 0.8, D=5.0, floor=3.5)
+    assert p["found"] == 10 and p["pass"] and p["R_min"] == pytest.approx(0.64) and p["reading"] == "pass"
+    assert KV.planted_pass(list(range(13)), list(range(4, 17)), 0.7, 0.8, 10, 0.8, D=5.0, floor=3.5)["reading"] == "fail"
+    assert KV.planted_pass(list(range(13)), list(range(13)), math.nan, 0.8, 10, 0.8, D=5.0, floor=3.5)["reading"] == "fail"
+    # Amendment 1: under the floor the control is void (not built), even when it would pass; at the floor it is built
+    v = KV.planted_pass(list(range(13)), list(range(13)), 0.9, 0.9, 10, 0.8, D=0.184, floor=3.5)
+    assert v["reading"] == "void" and not v["pass"] and not v["built"]
+    assert KV.planted_pass(list(range(13)), list(range(13)), 0.9, 0.9, 10, 0.8, D=3.5, floor=3.5)["reading"] == "pass"
+
+
+def test_selective_units_amendment_1():
+    """Answer-selective units: only above the q-quantile of a_ans and above 0; the largest a_ans / a_else first; ties
+    to the lower id; a zero a_else ranks first; a negative quantile still keeps a_ans <= 0 out."""
+    a_ans = torch.tensor([0.1, 2.0, 3.0, 4.0, 4.0, 1.0, 5.0, 0.0, 0.0, 6.0], dtype=torch.float64)
+    a_else = torch.tensor([0.01, 1.0, 1.0, 2.0, 2.0, 0.1, 5.0, 1.0, 1.0, 0.0], dtype=torch.float64)
+    # 0.5-quantile of a_ans = 2.5: candidates 2 (sel 3), 3 (2), 4 (2), 6 (1), 9 (inf)
+    assert KV.selective_units(a_ans, a_else, 4, 0.5) == [9, 2, 3, 4]
+    assert KV.selective_units(a_ans, a_else, 10, 0.5) == [9, 2, 3, 4, 6]  # fewer candidates than n: planted_units asserts
+    neg = torch.tensor([-1.0, -0.5, -0.2, 0.0, 0.3], dtype=torch.float64)
+    assert KV.selective_units(neg, torch.ones(5, dtype=torch.float64), 5, 0.1) == [4]
+    A = json.loads(PRED.read_text())["amendment_1"]["planted"]
+    assert 0 < A["active_quantile"] < 1 and 0 < A["D_floor_frac"] <= 1
 
 
 def test_zero_units_zeroes_exactly_the_named_units():

@@ -85,38 +85,48 @@ def spread(net: ST.Net, ref: KV.Ref, C: dict[str, Any], out: dict[str, Any]) -> 
     return max(v for r in out["spread"].values() for v in r["spread"].values())
 
 
+def d_void(st: dict[str, Any], C: dict[str, Any]) -> float:
+    """D_void_frac x the smallest pole-map mean D (seeds 0-2)."""
+    return C["D_void_frac"] * min(float(np.mean([st[f"{m}_s{s}"]["D"] for s in OLD_SEEDS])) for m in KV.POLES)
+
+
 def planted(net: ST.Net, ref: KV.Ref, tasks: Tasks, C: dict[str, Any], out: dict[str, Any]) -> dict[str, Any]:
-    """Item 5: the planted wrapper (units, direction, alpha by bisection, ceiling)."""
+    """Item 5 as amended (Amendment 1): answer-selective units, edit -alpha * w, alpha by bisection, ceiling, D floor."""
     pc, st = C["planted"], out["states"]
-    u = KV.planted_units(net, ref, pc["block"], pc["n_units"])
+    u = KV.planted_units(net, ref, pc["block"], pc["n_units"], pc["active_quantile"])
     t = tasks["rank1"]["trained"]
     w = KV.rank1_direction(net, t.tgt(t.toks[t.part("fit")]))
     target = float(np.median([st[f"{m}_s{s}"]["D"] for m in KV.POLES for s in OLD_SEEDS]))
     bound = max(r["off_kl"] for r in st.values())
-    dw = lambda a: KV.planted_dw(net, u["units"], u["abar"], w, a)
+    floor = max(d_void(st, C), pc["D_floor_frac"] * target)
+    dw = lambda a: KV.planted_dw(net, u["units"], w, a)
     fit = KV.fit_alpha(lambda a: KV.kappa(net, ref, dw(a)), lambda a: KV.off_answer_kl(net, ref, dw(a)), target, bound)
     kz = KV.kappa(net, ref, edit=KV.zero_units(u["units"]))
-    rec = {**u, "w": w.tolist(), "target_D": target, "off_bound": bound, **fit, "kappa_zeroed": kz,
+    rec = {**u, "w": w.tolist(), "target_D": target, "off_bound": bound, "floor": floor, **fit, "kappa_zeroed": kz,
            "ceiling": (fit["kappa"] - kz) / fit["kappa"] if fit["kappa"] > 0 else math.nan}  # fmt: skip
-    log(f"[planted] units {u['units']} abar {[round(a, 4) for a in u['abar']]} target D {target:.4f} off bound {bound:.5f} -> alpha "
-        f"{fit['alpha']:.5g} D {fit['kappa']:.4f} off {fit['off']:.5f} fallback {fit['fallback']} kappa_zeroed {kz:.4f} ceiling {rec['ceiling']:.4f}")
+    log(f"[planted] units {u['units']} a_ans {[round(a, 3) for a in u['a_ans']]} selectivity {[round(a, 2) for a in u['selectivity']]} "
+        f"target D {target:.4f} off bound {bound:.5f} floor {floor:.4f} -> alpha {fit['alpha']:.5g} D {fit['kappa']:.4f} off "
+        f"{fit['off']:.5f} fallback {fit['fallback']} kappa_zeroed {kz:.4f} ceiling {rec['ceiling']:.4f}")
     return rec
 
 
 def planted_checks(net: ST.Net, ref: KV.Ref, w0: torch.nn.Module, train: torch.Tensor, rec: dict[str, Any], C: dict[str, Any],
                    deadline: float | None) -> dict[str, Any]:
-    """Item 6 (and job 3's stage 0): pruning and reverse fine-tuning on the planted state."""
+    """Item 6 (and job 3's stage 0): pruning and reverse fine-tuning on the planted state. `rec` holds units, alpha,
+    w and floor; under the floor the pruning control reads "void" (Amendment 1)."""
     pc = C["planted"]
     assert pc["n_units"] in C["prune_k"], "the planted pass reads the top-n_units ranking"
     assert pc["pass"]["R_min"] == f"{R_FRAC} x ceiling", "the filed planted R_min changed"
     w = torch.tensor(rec["w"])
-    dW = KV.planted_dw(net, rec["units"], rec["abar"], w, rec["alpha"])
+    dW = KV.planted_dw(net, rec["units"], w, rec["alpha"])
     rd = KV.prune_readings(net, ref, dW, C["prune_k"], C["n_random"], C["prune_seed"], KV.unit_scores(net, ref, dW))
     rv = KV.revival(rd, C["prune_k"], rd["kappa"])
     kz = KV.kappa(net, ref, edit=KV.zero_units(rec["units"]))
     ceiling = (rd["kappa"] - kz) / rd["kappa"] if rd["kappa"] > 0 else math.nan
-    pp = KV.planted_pass(rd[str(pc["n_units"])]["units"], rec["units"], rv["R"], ceiling, pc["pass"]["found_in_top13_min"], R_FRAC)
-    log(f"[planted pruning] D {rd['kappa']:.4f} found {pp['found']} of {pc['n_units']} R {rv['R']:.4f} vs {pp['R_min']:.4f} (ceiling {ceiling:.4f}) -> {pp['pass']}")
+    pp = KV.planted_pass(rd[str(pc["n_units"])]["units"], rec["units"], rv["R"], ceiling, pc["pass"]["found_in_top13_min"], R_FRAC,
+                         rd["kappa"], rec["floor"])  # fmt: skip
+    log(f"[planted pruning] D {rd['kappa']:.4f} (floor {rec['floor']:.4f}, built {pp['built']}) found {pp['found']} of {pc['n_units']} "
+        f"R {rv['R']:.4f} vs {pp['R_min']:.4f} (ceiling {ceiling:.4f}) -> {pp['reading']}")
     rcfg = reverse_cfg(C, 0)
     rev = KV.reverse_curve(net, ref, dW, w0, train, rcfg, deadline)
     back = all(torch.equal(v, net.W0[k]) for k, v in target_weights(net.model).items())
@@ -138,11 +148,12 @@ def draft_b(out: dict[str, Any], C: dict[str, Any], floor_R: float) -> dict[str,
     prior = {m: [out["prior"][m]] * len(OLD_SEEDS) for m in KV.MAPS}
     means = lambda c: {m: float(np.mean(v)) for m, v in c.items()}
     pl = out["planted"]
-    return {"D_mean": means(col("D")), "D_void": C["D_void_frac"] * min(means(col("D"))[m] for m in KV.POLES),
+    return {"D_mean": means(col("D")), "D_void": d_void(st, C),
             "prior": out["prior"], "mlp_share_mean": means(col("mlp_share")), "off_kl_max": max(r["off_kl"] for r in st.values()),
             "p_D": KV.column_reading(col("D"), None, 0.0, C), "p_prior": KV.column_reading(prior, None, 0.0, C),
             "noise_floor_R": floor_R,
-            "planted": {k: pl[k] for k in ("units", "abar", "alpha", "kappa", "kappa_zeroed", "ceiling", "fallback", "target_D")}}  # fmt: skip
+            "planted": {k: pl[k] for k in ("units", "a_ans", "selectivity", "alpha", "kappa", "kappa_zeroed", "ceiling", "fallback", "target_D", "floor")},
+            "planted_reading": out["planted_check"]["prune_pass"]["reading"]}  # fmt: skip
 
 
 def stage_measure(net: ST.Net, C: dict[str, Any], out: dict[str, Any], deadline: float | None) -> int:

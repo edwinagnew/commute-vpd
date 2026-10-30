@@ -11,8 +11,8 @@ KL(p_W0 || p_m) there, in nats, fp32 forwards (float64 sums). D = kappa(state).
 - Reverse fine-tuning (`finetune.finetune_to_reference`): KL to W0 at every position of the train windows, from W0 +
   delta-W; kappa on the score half after every step; t_half = the interpolated step at which kappa first reaches D / 2.
 - The probe (reference): W0's logit lens per block on the map's own value against its other values.
-- The planted wrapper (the instruments' positive control): 13 block units of W0 whose down_proj columns push away from
-  the rank-1 values, scaled by bisection.
+- The planted wrapper (the instruments' positive control): 13 answer-selective block units of W0 whose down_proj columns
+  push away from the rank-1 values, scaled by bisection (Amendment 1, 2026-10-31).
 The rules at the bottom are pure arithmetic, CPU-tested in tests/test_revival_kv.py.
 """
 
@@ -196,16 +196,31 @@ def lens_q(net: Net, toks: Tensor, half: int, own: Tensor, values: Sequence[int]
 # ----------------------------------------------------------------------------- the planted wrapper
 
 
-def planted_units(net: Net, ref: Ref, block: int, n: int) -> dict[str, Any]:
-    """Among block `block`'s units whose mean GELU activation at the answer position (fit half, W0) is above the
-    block's median and above 0 (the edit divides by it), the n whose single zeroing on W0 costs least (fit-half
-    kappa; ties to the lower id). Flat ids, their mean activations and costs."""
-    a = net.run(ref.fit, capture=True)[1][f"mlp{block}"][:, ref.half].double().mean(0).cpu()
-    cand = [j for j in range(D_MLP) if a[j] > a.median() and a[j] > 0]
-    cost = {j: kappa(net, ref, edit=zero_units([block * D_MLP + j]), part="fit") for j in cand}
-    pick = sorted(cand, key=lambda j: (cost[j], j))[:n]
-    return {"units": [block * D_MLP + j for j in pick], "abar": [float(a[j]) for j in pick], "cost": [cost[j] for j in pick],
-            "n_candidates": len(cand)}
+def unit_activations(net: Net, ref: Ref, block: int) -> tuple[Tensor, Tensor]:
+    """Per unit of block `block` on W0 and the fit half: the mean GELU activation at the answer position, and the mean
+    |activation| over every other position (float64, cpu)."""
+    a = net.run(ref.fit, capture=True)[1][f"mlp{block}"].double().cpu()
+    keep = torch.ones(a.shape[1], dtype=torch.bool)
+    keep[ref.half] = False
+    return a[:, ref.half].mean(0), a[:, keep].abs().mean((0, 1))
+
+
+def selective_units(a_ans: Tensor, a_else: Tensor, n: int, q: float) -> list[int]:
+    """Amendment 1: among the units with a_ans above the q-quantile of a_ans and above 0, the n with the largest
+    a_ans / a_else (ties to the lower id). Block-local ids."""
+    cut = max(float(torch.quantile(a_ans, q)), 0.0)
+    cand = [j for j in range(len(a_ans)) if a_ans[j] > cut]
+    sel = {j: float(a_ans[j] / a_else[j]) if a_else[j] > 0 else math.inf for j in cand}
+    return sorted(cand, key=lambda j: (-sel[j], j))[:n]
+
+
+def planted_units(net: Net, ref: Ref, block: int, n: int, q: float) -> dict[str, Any]:
+    """The planted units (flat ids) by answer selectivity on W0's fit half, with their a_ans, a_else and selectivity."""
+    a_ans, a_else = unit_activations(net, ref, block)
+    pick = selective_units(a_ans, a_else, n, q)
+    assert len(pick) == n, f"only {len(pick)} candidate units above the {q} quantile"
+    return {"units": [block * D_MLP + j for j in pick], "a_ans": [float(a_ans[j]) for j in pick], "a_else": [float(a_else[j]) for j in pick],
+            "selectivity": [float(a_ans[j] / a_else[j]) for j in pick], "a_ans_quantile": float(torch.quantile(a_ans, q))}
 
 
 def rank1_direction(net: Net, fit_values: Tensor) -> Tensor:
@@ -215,12 +230,12 @@ def rank1_direction(net: Net, fit_values: Tensor) -> Tensor:
     return (w / w.norm()).float()
 
 
-def planted_dw(net: Net, units: Sequence[int], abar: Sequence[float], w: Tensor, alpha: float) -> DW:
-    """Zero everywhere except block's down_proj: column j += -alpha * w / abar_j."""
+def planted_dw(net: Net, units: Sequence[int], w: Tensor, alpha: float) -> DW:
+    """Zero everywhere except block's down_proj: column j += -alpha * w (Amendment 1: no 1/abar)."""
     dW = {k: torch.zeros_like(v) for k, v in net.W0.items()}
-    for u, a in zip(units, abar, strict=True):
+    for u in units:
         layer, j = divmod(u, D_MLP)
-        dW[f"h.{layer}.mlp.down_proj"][:, j] -= alpha * w.to(net.W0[f"h.{layer}.mlp.down_proj"].device) / a
+        dW[f"h.{layer}.mlp.down_proj"][:, j] -= alpha * w.to(net.W0[f"h.{layer}.mlp.down_proj"].device)
     return dW
 
 
@@ -284,9 +299,14 @@ def half_life(curve: Sequence[float]) -> float | None:
     return None
 
 
-def planted_pass(top13: Sequence[int], planted: Sequence[int], R: float, ceiling: float, found_min: int, frac: float) -> dict[str, Any]:
+def planted_pass(top13: Sequence[int], planted: Sequence[int], R: float, ceiling: float, found_min: int, frac: float,
+                 D: float, floor: float) -> dict[str, Any]:  # fmt: skip
+    """The planted pruning pass; Amendment 1: a planted D under the floor makes the control void (not built), not failed."""
     found = len(set(top13) & set(planted))
-    return {"found": found, "R": R, "R_min": frac * ceiling, "pass": found >= found_min and math.isfinite(R) and R >= frac * ceiling}
+    built = D >= floor
+    ok = built and found >= found_min and math.isfinite(R) and R >= frac * ceiling
+    return {"found": found, "R": R, "R_min": frac * ceiling, "D": D, "floor": floor, "built": built, "pass": ok,
+            "reading": "pass" if ok else "fail" if built else "void"}  # fmt: skip
 
 
 # ----------------------------------------------------------------------------- the rules (§ 6), pure

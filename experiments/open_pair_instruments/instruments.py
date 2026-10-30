@@ -54,7 +54,7 @@ def stage0(net: ST.Net, ref: KV.Ref, w0: torch.nn.Module, train: torch.Tensor, t
     rec["prune_ok"], rec["reverse_ok"] = rec["planted"]["prune_pass"]["pass"], rec["planted"]["reverse_pass"]
     out["stage0"] = rec
     log(f"[stage0] zero-update D {rec['zero_D']!r} (void: under D_void {B['D_void']:.4f}) | lens block 4 vs W0 {rec['lens_check']:.2e} "
-        f"-> {rec['lens_ok']} | planted pruning {rec['prune_ok']} | planted reverse {rec['reverse_ok']} (t_half "
+        f"-> {rec['lens_ok']} | planted pruning {rec['planted']['prune_pass']['reading']} (void = control not built) | planted reverse {rec['reverse_ok']} (t_half "
         f"{rec['planted']['reverse']['t_half']}, reported) | weights at W0 {rec['planted']['w0_restored']}")
     dump(OUT, out)
     if rec["zero_D"] != 0.0:
