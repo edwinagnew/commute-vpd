@@ -4,6 +4,7 @@ section 5 rules against every row of the plan's edge-case table, effective rank,
 
 import json
 import math
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -268,3 +269,43 @@ def test_overlap_pool_puts_a_set_at_chance_at_zero():
     assert float(np.mean(e_all)) < -1
     with pytest.raises(AssertionError):
         qr.overlap(on_w0, X, site_of, 4, pool)
+
+
+def _lab_module():
+    import importlib.util
+
+    p = PRED.parents[1] / "lab.py"
+    spec = importlib.util.spec_from_file_location("qwen_reading_lab", p)
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod  # dataclasses look their module up while the file runs
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_weight_sets_bookkeeping():
+    """Lab's weight sets on fake linears: W0 exists from the start (job 46274 died on a set made before W0 was
+    registered), the W0 control's FT is a separate copy, use copies in place, drop returns to W0."""
+    from types import SimpleNamespace
+
+    Weights = _lab_module().Weights
+    w0 = {"a": torch.arange(6.0).reshape(2, 3), "b": torch.ones(4)}
+    lins = {s: SimpleNamespace(weight=SimpleNamespace(data=t.clone())) for s, t in w0.items()}
+    data = {s: lin.weight.data for s, lin in lins.items()}  # the model's own tensors: never replaced
+    W = Weights(lins)
+    W.put("FT", None)  # the first call of Stage A's controls, before any use
+    assert W.sets["FT"]["a"] is not W.sets["W0"]["a"] and torch.equal(W.sets["FT"]["a"], w0["a"])
+    W.use("FT")
+    assert W.now == "FT" and all(torch.equal(data[s], w0[s]) for s in w0)
+    W.put("FT", {s: torch.ones_like(t) for s, t in w0.items()}, 2.0)  # replacing the set the model holds
+    assert W.now == "W0"
+    W.use("FT")
+    assert torch.equal(data["a"], w0["a"] + 2) and lins["a"].weight.data is data["a"]
+    W.put("state", {s: -torch.ones_like(t) for s, t in w0.items()})  # built from W0, not from the FT held now
+    assert torch.equal(W.sets["state"]["b"], w0["b"] - 1)
+    W.use("state")
+    W.drop("state")
+    assert W.now == "W0" and "state" not in W.sets and torch.equal(data["b"], w0["b"])
+    W.drop("never-made")
+    with pytest.raises(AssertionError):
+        W.drop("W0")
