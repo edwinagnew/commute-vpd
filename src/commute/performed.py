@@ -12,6 +12,12 @@ Plan: reports/plans/2026-10-29_plan_performed-anchor.md ("The pair"). Two tasks 
   on given rows, applied to every occurrence in the rows (context and targets alike; token level, no re-encoding).
   A *cipher position* is any row index >= 1 whose original token is in pi's domain; it is scored as
   log p(pi(x)) - log p(x) in the ciphered row.
+
+E53 Amendment 1 (2026-10-30) adds two token maps applied by the same `cipher_rows`:
+- *Narrow lowercase* (`title_lower_map`): 50 title-case word tokens (`TITLE`: a space, a capital, one or more
+  lowercase letters, e.g. " June") whose lowercase form is one vocabulary entry, each mapped to that form at every
+  occurrence; every other token stays cased. a = the lowercase form, b = the capitalised form, as above.
+- *Broad cipher*: `derangement` of the 500 word tokens of frequency ranks 50-549, as the cipher above.
 """
 
 from __future__ import annotations
@@ -28,6 +34,7 @@ from commute.finetune import logits_of
 
 WORD = re.compile(r"^Ġ[a-z]{2,}$")
 CAPITAL = re.compile(r"^Ġ[A-Z][A-Za-z]*$")
+TITLE = re.compile(r"^Ġ[A-Z][a-z]+$")
 
 
 @dataclass
@@ -93,9 +100,10 @@ def case_pairs(rows: Tensor, tok: Any) -> CasePairs:
     return CasePairs(torch.tensor(lower, dtype=torch.long), _positions(*lo), _positions(*ca), skipped)
 
 
-def word_ranks(tok: Any, rows: Tensor) -> Tensor:
-    """Word tokens (`WORD`) by descending count in `rows`, ties by ascending id; tokens absent from `rows` last."""
-    ids = torch.tensor([i for s, i in tok.get_vocab().items() if WORD.match(s)], dtype=torch.long).sort().values
+def word_ranks(tok: Any, rows: Tensor, pattern: re.Pattern[str] = WORD) -> Tensor:
+    """Tokens whose string matches `pattern` (default `WORD`) by descending count in `rows`, ties by ascending id;
+    tokens absent from `rows` last. (`pattern` added for E53 Amendment 1; the default is E53's rule.)"""
+    ids = torch.tensor([i for s, i in tok.get_vocab().items() if pattern.match(s)], dtype=torch.long).sort().values
     counts = torch.bincount(rows.flatten(), minlength=len(tok))[ids]
     order = sorted(range(len(ids)), key=lambda n: (-int(counts[n]), int(ids[n])))
     return ids[order]
@@ -109,6 +117,23 @@ def derangement(ids: list[int], seed: int) -> dict[int, int]:
         rng.shuffle(dst)
         if all(a != b for a, b in zip(ids, dst)):
             return dict(zip(ids, dst))
+
+
+def title_lower_map(tok: Any, rows: Tensor, ranks: tuple[int, int]) -> dict[int, int]:
+    """Narrow lowercase's map (E53 Amendment 1): the title-case word tokens (`TITLE`) whose lowercase form (" June" ->
+    " june") is one vocabulary entry, ranked by count in `rows` (`word_ranks`), ranks [ranks[0], ranks[1]) of that
+    list (0-based), each mapped to its lowercase form; in rank order."""
+    vocab = tok.get_vocab()
+    ids = word_ranks(tok, rows, TITLE).tolist()
+    low = ["Ġ" + s[1:].lower() for s in tok.convert_ids_to_tokens(ids)]
+    pairs = [(i, vocab[s]) for i, s in zip(ids, low, strict=True) if s in vocab]
+    return dict(pairs[ranks[0] : ranks[1]])
+
+
+def earlier_in_row(rows: Tensor, at: Positions) -> Tensor:
+    """(P,) bool: whether position k's form `a` already occurs in its row before `pos` (a repeat, which induction can
+    copy, against a first occurrence). Reported by E53 Amendment 1's check."""
+    return torch.tensor([bool((rows[r, :p] == a).any()) for r, p, a in zip(at.row.tolist(), at.pos.tolist(), at.a.tolist(), strict=True)])
 
 
 def cipher_rows(rows: Tensor, pi: dict[int, int]) -> tuple[Tensor, Positions]:
