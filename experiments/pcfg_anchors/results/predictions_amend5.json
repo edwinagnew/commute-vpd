@@ -10,7 +10,7 @@
       "a"
     ],
     "shortcut_label": 14,
-    "shortcut_min": 0.6,
+    "shortcut_min": 0.5,
     "coverage_min": 0.99,
     "reproduce_tol": 0.01,
     "scored_step": 1000,
@@ -25,7 +25,7 @@
     "scored_step": "Plan: the scored readings are at 1K; 2K is a separate prediction; 500 is described.",
     "bars": "predictions.json a2_bars (filed 2026-10-29), applied unchanged; l*_a = l*_b = 5. B_a lo 0.1000 hi 0.4999; P_a lo 0.0966 hi 0.4828; B_b lo 0.3421 hi 0.6345; P_b lo 0.1 hi 0.5.",
     "recipe": "run.finetune's (Stage A, Jain et al. Table 6 L1189-1192): answer-only loss, AdamW, weight decay 0.1, batch 96, the 10K-iteration schedule (20% linear warm-up, cosine), stopped at 2K. So 500, 1K and 2K steps are in the warm-up at lr x 0.25, 0.5, 1.0 of peak, as Stage A's 1K states were (x 0.5).",
-    "data_streams": "training chunk c = default_rng([100 + seed, c, 70]) (WN) or [..., 71] (ID): Stage A's [100 + seed, c] with a new tail, so no overlap with Stage A. Fresh training-distribution rows for the shortcut check: default_rng([1, 72]) (WN), [1, 73] (ID), 4,000 rows each. Readings use Stage A's own qualifying texts and pairs (run.a2_eval_data) and Amendment 4's off-label rows (predictions_amend4 constants).",
+    "data_streams": "training chunk c = default_rng([100 + seed, c, 70]) (WN) or [..., 71] (ID): Stage A's [100 + seed, c] with a new tail, so no overlap with Stage A. Training-distribution rows no model trained on (the same streams Amendment 2 drew its rows from) for the shortcut check: default_rng([1, 72]) (WN), [1, 73] (ID), 4,000 rows each. Readings use Stage A's own qualifying texts and pairs (run.a2_eval_data) and Amendment 4's off-label rows (predictions_amend4 constants).",
     "id_w0_max": "Lead decision 2026-10-30: LOW's B_a with g = identity at the ID prompt must be <= 0.05, else stop; the B_a bar's null is 0 (NEVER) and lo 0.1, so 0.05 is half of lo."
   },
   "definitions": {
@@ -40,7 +40,7 @@
     "W0_control": {
       "claim": "LOW reproduces its Stage A count-a references through this amendment's code, and its count_a + 1 gives the WN training labels.",
       "measurement": "W0.controls in amend5.json: B_a vs B_a_stage_a, P_a vs P_a_stage_a, coverage.",
-      "threshold": "|B_a - 0.99975| <= 0.01; |P_a - 0.960| <= 0.01; coverage >= 0.99 (inclusive).; LOW B_a at T a 40 (g = identity) <= 0.05 (inclusive).",
+      "threshold": "|B_a - 0.99975| <= 0.01; |P_a - 0.960| <= 0.01; coverage >= 0.99 (inclusive); LOW B_a at T a 40 (g = identity) <= 0.05 (inclusive).",
       "relative_or_absolute": "absolute",
       "expected": "B_a ~0.9998, P_a 0.960 (same rows and code path, fp32), coverage ~1.0 (Amendment 3: 760 of 760). LOW at T a 40 answers a terminal token, so B_a ~0.",
       "on_miss": "stop (exit 1, amend5_control_miss.json); no arm runs.",
@@ -55,7 +55,7 @@
       "expected": "as W1 at 1K on natural text: B_a ~0.88-0.90, P_a ~0.72-0.76, B_b ~0, P_b ~0.07-0.10 (a2_W1.json, a2_W1s1.json); answered_shortcut ~ labelled_shortcut ~0.67.",
       "lean": "70% per seed. Main alternative: 'neither' or 'shortcut' (narrow labels allow a near-constant 14).",
       "aggregate_described": "n of 4 seeds 'reuses': >= 3 -> 'reuses'; <= 1 -> 'not reuses'; exactly 2 -> 'split' (no aggregate claim; edge_cases.E4).",
-      "void_if": "ID is not through at any save in either seed (P5 on_fail)."
+      "void_if": "void iff none of the 6 ID states (2 seeds x 3 saves) has check_count_a.label == through."
     },
     "P2_WN_2K_each_seed": {
       "claim": "Each WN seed reads the same at 2K.",
@@ -73,16 +73,16 @@
       "threshold": "as P1",
       "relative_or_absolute": "absolute",
       "expected": "W2 (lr 1e-4, swap-built rows) at 1K read count a 'neither' (B_a 0.488, P_a 0.414) and at 10K answered a rule of two counts.",
-      "lean": "reuses 40%, neither or shortcut 40%, new or both 20%.",
+      "lean": "reuses 40%, neither or shortcut 45%, new 15% (both is unreachable, E9).",
       "void_if": "as P1"
     },
     "P4_shortcut": {
-      "claim": "No WN or WNf state that is 'through' on neither count answers 14 on >= 0.6 of training-distribution rows.",
-      "measurement": "states[*].train_dist.answered_shortcut beside labelled_shortcut, for WN and WNf states at 500, 1K, 2K; enters each state's class.",
-      "rule": "a state with neither count 'through' and answered_shortcut >= 0.6 is classed 'shortcut', not 'neither' or 'new'.",
-      "threshold": "0.6, inclusive, absolute share of 4,000 rows.",
+      "claim": "No WN or WNf state at 1K that is through on neither count is a shortcut state.",
+      "measurement": "states[*].train_dist.shortcut: of unseen training-distribution rows labelled other than 14, the share answered 14 (constant-14 answerer 1.0, correct answerer 0); acc recorded beside it.",
+      "rule": "a state with neither count through and shortcut >= 0.5 is classed shortcut. Scored: hit iff no WN or WNf state at 1K has class shortcut; 500 and 2K described.",
+      "threshold": "0.5, inclusive, absolute share of the rows labelled other than 14.",
       "relative_or_absolute": "absolute",
-      "expected": "labelled_shortcut 0.689 on the eval rows (dry run); a reusing state answers 14 on about that share; a constant-14 answerer reads count a neither (B_a 0.275, P_a 0), count b not through, answered 1.0, so shortcut. LOW (W0 reference) answers count a on these rows, i.e. label - 1, so answered 14 ~0.08 (the share labelled 15).",
+      "expected": "a reusing state about 0 (it answers count a + 1); a constant-14 answerer 1.0; LOW at W0 answers count a, so it answers 14 on rows labelled 15: 309 of the 1,246 non-14 eval rows, about 0.25 (dry-run histogram).",
       "lean": "no 'shortcut' state at 1K: 75%."
     },
     "P5_ID_1K": {
@@ -140,6 +140,7 @@
   "dry_run": "2026-10-30, ~/commute-data/scratch/reuse-lead/e55-amend5/dry_run.py (model-free, cpu-run, 10 s): Re-run after Revision 1: all 14 model-free controls pass. ID prompt T a 40 (tokens 11, 3; an ID row starts $ T a 40 <, tokens 0 11 3 52 1): absent from LOW pretraining by construction and 0 hits in 96,000 rows (chunks 0-9 of run.pretrain LOW stream), described only; the stopping check is the model control id_prompt_not_count_a_at_W0. Rows: chunk 0 = 9,600 per arm stream; 4,000 fresh eval rows per task; Stage A qualifying texts 1,000; off-label rows 4,000. Pairs: Stage A a 1,000, b 1,000; off-label a 1,000, b 1,000. WN label histogram, 4,000 eval rows: 12:13, 13:923, 14:2754, 15:309, 16:1 (labelled 14 = 0.6885); chunk 0 of WN seed 0: 12:22, 13:2265, 14:6617, 15:696. ID labels (count a, natural): 10-16, mode 13 (0.343), 14 = 0.310. A constant-14 answerer on Stage A's qualifying texts: B_a 0.275 (between lo 0.100 and hi 0.500: count a neither), B_b 0.212 and P = 0 (count b not through); class shortcut.",
   "not_run_here": "Stage B (bounded g on the cipher, copy and lowercase arms); Stage C instruments; probes; VPD.",
   "amendments": [
-    "2026-10-30, lead, before any run: P5 lean 85% -> 65%; the void coupling of WN/WNf on ID widened from ID at 1K seed 0 to ID through at any save in either seed."
+    "2026-10-30, lead, before any run: P5 lean 85% -> 65%; the void coupling of WN/WNf on ID widened from ID at 1K seed 0 to ID through at any save in either seed.",
+    "2026-10-30, lead, after the code review, before any run: the shortcut statistic is now conditioned on the label (of rows labelled other than 14, the share answered 14; bar 0.5), since the unconditioned share (0.6 bar) put a correct answerer at 0.69 and so classed any route change as a shortcut; P4 given a hit/miss rule (1K scored); void_if wording made explicit; P3 lean drops the unreachable both; eval-row streams described as Amendment 2 streams, not fresh."
   ]
 }

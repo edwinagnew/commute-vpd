@@ -13,7 +13,7 @@
 #   sbatch --job-name=commute-e55-amend3 --time=00:10:00 cluster/pcfg_anchors.sbatch amend3  # Amendment 3, ~6-8 min
 #   sbatch --job-name=commute-e55-amend4 --time=00:10:00 cluster/pcfg_anchors.sbatch amend4  # Amendment 4, ~2-5 min (cost not measured)
 #   sbatch --job-name=commute-e55-amend5c --time=00:10:00 cluster/pcfg_anchors.sbatch amend5 controls  # Amendment 5 controls, ~2-3 min (estimated)
-#   sbatch --job-name=commute-e55-amend5 cluster/pcfg_anchors.sbatch amend5  # Amendment 5 arms, ~12-16 min (estimated)
+#   sbatch --job-name=commute-e55-amend5 cluster/pcfg_anchors.sbatch amend5  # (after amend5c finishes: both write amend5.json) Amendment 5 arms, ~12-16 min (estimated)
 # a0: per prior, 500 pretraining iterations stopped at 250 and resumed from the saved file, behaviour and floors on 1K
 #   fresh samples -> experiments/pcfg_anchors/results/a0.json; checkpoints and a0.log in results/large/a0/.
 # a1 PRIOR: 50K iterations (~10 min plus compile at the a0 rate) with a 25-min deadline. Finished: results/a1_PRIOR.json;
