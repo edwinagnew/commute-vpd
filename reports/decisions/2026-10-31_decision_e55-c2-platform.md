@@ -11,8 +11,10 @@ full decomposition costs, and every way of running it is a gated run, so it need
   19 GiB: 400K steps (every language-model recipe in param-decomp uses 400K) is about 50 L40-hours.
 - About 70-75% of each state's gain on its task sits in the decomposed matrices (matrix share 0.76 for a P state,
   0.68 for an N state); the rest is in parts VPD does not decompose. Over half the update's norm is outside them.
-- A stopped-and-resumed run does not yet match an unbroken one (max parameter difference 0.029): a code fix
-  before any long resumed run.
+- A stopped-and-resumed run does not yet match an unbroken one. One cause was found and fixed (evaluation drew
+  from the training random numbers, 7ade9e1; the difference fell from 0.029 to 0.018, job 47100), but the two runs
+  still differ from step 50, before any resume. Next, if C2 goes ahead: two unbroken same-seed runs to measure the
+  GPU noise floor, and the resume tolerance taken from it.
 
 ## Why it may not be worth it
 On this set the answer-only probe and update size within a recipe also score 21/21 (C1b). VPD can at best tie; a
