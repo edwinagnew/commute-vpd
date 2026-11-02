@@ -1,0 +1,392 @@
+{
+ "commit": "fe676ce69b913b3fca9adc1d7ca2691cfe2b37b8",
+ "controls": {
+  "null_teacher": {
+   "do_nothing": 0.7931967279808559,
+   "ls_first_order": 1.0,
+   "ls_whole": 0.9997038471880592,
+   "ls_whole_size": 1.0020001182376226,
+   "null_inside": 0.6004686765876039,
+   "share": 0.629161049279536,
+   "stop": false
+  },
+  "rand32_s0": {
+   "do_nothing": 0.8160360132763836,
+   "ls_first_order": 1.0000000000000002,
+   "ls_whole": 0.9999337097448383,
+   "ls_whole_size": 1.0002580825959113,
+   "null_inside": 0.6398425372741452,
+   "share": 0.665914774964014,
+   "stop": false
+  },
+  "rand32_s1": {
+   "do_nothing": 0.8142490131206812,
+   "ls_first_order": 1.0000000000000002,
+   "ls_whole": 0.9999306578482859,
+   "ls_whole_size": 1.000456784541742,
+   "null_inside": 0.6370687270195459,
+   "share": 0.6630014553680031,
+   "stop": false
+  },
+  "rand32b_s0": {
+   "do_nothing": 0.8136992925371184,
+   "ls_first_order": 1.0,
+   "ls_whole": 0.9997903400403167,
+   "ls_whole_size": 1.0002028400368064,
+   "null_inside": 0.64110721844203,
+   "share": 0.6621065386754066,
+   "stop": false
+  },
+  "rand32b_s1": {
+   "do_nothing": 0.8127172002071752,
+   "ls_first_order": 1.0000000000000002,
+   "ls_whole": 0.9997792539738434,
+   "ls_whole_size": 1.000353012070865,
+   "null_inside": 0.6400374161021651,
+   "share": 0.6605092475125895,
+   "stop": false
+  },
+  "real_teacher": {
+   "do_nothing": 0.7866752505277967,
+   "ls_first_order": 0.9999999999999999,
+   "ls_whole": 0.9994247623437742,
+   "ls_whole_size": 1.0018077152476046,
+   "null_inside": 0.5869447493450841,
+   "share": 0.6188579497929719,
+   "stop": false
+  }
+ },
+ "done": true,
+ "inside_of_student": {
+  "null_o0": 0.9999941651093277,
+  "null_o1": 0.9999942201926593,
+  "rand32_s0": 0.9999954305254704,
+  "rand32_s1": 0.9999956388769144,
+  "rand32b_s0": 0.9999949409662234,
+  "rand32b_s0_o1": 0.9999948947063918,
+  "rand32b_s1": 0.9999947394720442,
+  "rand32b_s1_o1": 0.9999945496164544,
+  "real_o0": 0.9999971386603901,
+  "real_o1": 0.9999971420817426
+ },
+ "missing": [],
+ "predictions_sha256": "c62d5b9c7a8f62dc053b2aa5cba261d97006a4a5b885c16652ff518e5664e37b",
+ "ranks": {
+  "h.0.attn.k_proj": [
+   122,
+   122
+  ],
+  "h.0.attn.o_proj": [
+   434,
+   434
+  ],
+  "h.0.attn.q_proj": [
+   85,
+   85
+  ],
+  "h.0.attn.v_proj": [
+   482,
+   482
+  ],
+  "h.0.mlp.c_fc": [
+   1375,
+   768
+  ],
+  "h.0.mlp.down_proj": [
+   768,
+   1127
+  ],
+  "h.1.attn.k_proj": [
+   48,
+   48
+  ],
+  "h.1.attn.o_proj": [
+   97,
+   97
+  ],
+  "h.1.attn.q_proj": [
+   15,
+   15
+  ],
+  "h.1.attn.v_proj": [
+   222,
+   222
+  ],
+  "h.1.mlp.c_fc": [
+   251,
+   251
+  ],
+  "h.1.mlp.down_proj": [
+   211,
+   211
+  ],
+  "h.2.attn.k_proj": [
+   167,
+   167
+  ],
+  "h.2.attn.o_proj": [
+   524,
+   524
+  ],
+  "h.2.attn.q_proj": [
+   92,
+   92
+  ],
+  "h.2.attn.v_proj": [
+   507,
+   507
+  ],
+  "h.2.mlp.c_fc": [
+   292,
+   292
+  ],
+  "h.2.mlp.down_proj": [
+   358,
+   358
+  ],
+  "h.3.attn.k_proj": [
+   60,
+   60
+  ],
+  "h.3.attn.o_proj": [
+   246,
+   246
+  ],
+  "h.3.attn.q_proj": [
+   36,
+   36
+  ],
+  "h.3.attn.v_proj": [
+   249,
+   249
+  ],
+  "h.3.mlp.c_fc": [
+   1031,
+   768
+  ],
+  "h.3.mlp.down_proj": [
+   768,
+   1850
+  ]
+ },
+ "reads": {
+  "null_o0 | null_teacher": {
+   "cos_all": 0.3657497464512572,
+   "cos_in": 0.4607845979285268,
+   "out_term": 0.000256911070375454,
+   "saved_cos_all": 0.3657503988754637,
+   "share": 0.629161049279536,
+   "size_to_all": 1.4866071190847214,
+   "size_to_inside": 1.8741972409152463
+  },
+  "null_o0 | real_teacher": {
+   "cos_all": 0.04695157167822113,
+   "cos_in": 0.0596763776468215,
+   "out_term": 5.642342316411475e-06,
+   "saved_cos_all": 0.04695195837870798,
+   "share": 0.6188579497929719,
+   "size_to_all": 0.8906825512668936,
+   "size_to_inside": 1.1322112277834038
+  },
+  "null_o1 | null_teacher": {
+   "cos_all": 0.36656507289278656,
+   "cos_in": 0.46181403867588616,
+   "out_term": 0.0002556884794491787,
+   "saved_cos_all": 0.36656600919494614,
+   "share": 0.629161049279536,
+   "size_to_all": 1.4733739996623325,
+   "size_to_inside": 1.85751396556176
+  },
+  "null_o1 | real_teacher": {
+   "cos_all": 0.048265724069003695,
+   "cos_in": 0.061347254890018306,
+   "out_term": 5.35695920593493e-06,
+   "saved_cos_all": 0.04826629287041275,
+   "share": 0.6188579497929719,
+   "size_to_all": 0.8827540889199558,
+   "size_to_inside": 1.1221327839253843
+  },
+  "rand32_s0 | rand32_s0": {
+   "cos_all": 0.32029038502555696,
+   "cos_in": 0.39208900960804344,
+   "out_term": 0.0003316327755235604,
+   "saved_cos_all": 0.3202906789026463,
+   "share": 0.665914774964014,
+   "size_to_all": 2.285438763820863,
+   "size_to_inside": 2.8006591947392487
+  },
+  "rand32_s0 | rand32b_s0": {
+   "cos_all": 0.022970056333909687,
+   "cos_in": 0.02815610014897833,
+   "out_term": 5.945756208177236e-05,
+   "saved_cos_all": null,
+   "share": 0.6621065386754066,
+   "size_to_all": 1.3010134869174916,
+   "size_to_inside": 1.5988873271118689
+  },
+  "rand32_s1 | rand32_s1": {
+   "cos_all": 0.2977088511994302,
+   "cos_in": 0.36524081979366596,
+   "out_term": 0.0003118741310491613,
+   "saved_cos_all": 0.29770870083983914,
+   "share": 0.6630014553680031,
+   "size_to_all": 2.2787241134537113,
+   "size_to_inside": 2.798559257345981
+  },
+  "rand32_s1 | rand32b_s1": {
+   "cos_all": 0.018923582259321347,
+   "cos_in": 0.02321992124297463,
+   "out_term": 5.235287769989744e-05,
+   "saved_cos_all": null,
+   "share": 0.6605092475125895,
+   "size_to_all": 1.2896744643129034,
+   "size_to_inside": 1.5868674416933024
+  },
+  "rand32b_s0 | rand32_s0": {
+   "cos_all": 0.028016535571761723,
+   "cos_in": 0.03429770472139919,
+   "out_term": 2.837334638053357e-05,
+   "saved_cos_all": null,
+   "share": 0.665914774964014,
+   "size_to_all": 2.7085710638168936,
+   "size_to_inside": 3.319180795639134
+  },
+  "rand32b_s0 | rand32b_s0": {
+   "cos_all": 0.4115067837180166,
+   "cos_in": 0.5054580020236918,
+   "out_term": 0.0002159650641133104,
+   "saved_cos_all": 0.411506794299324,
+   "share": 0.6621065386754066,
+   "size_to_all": 1.5418866346735534,
+   "size_to_inside": 1.8949096414548223
+  },
+  "rand32b_s0_o1 | rand32_s0": {
+   "cos_all": 0.027290444797756896,
+   "cos_in": 0.03340413006359223,
+   "out_term": 3.1471673697301e-05,
+   "saved_cos_all": null,
+   "share": 0.665914774964014,
+   "size_to_all": 2.7109588297520673,
+   "size_to_inside": 3.3221068502449675
+  },
+  "rand32b_s0_o1 | rand32b_s0": {
+   "cos_all": 0.3962490310484236,
+   "cos_in": 0.4867071027490364,
+   "out_term": 0.00021580586874220264,
+   "saved_cos_all": 0.3962494597239126,
+   "share": 0.6621065386754066,
+   "size_to_all": 1.5432458991327198,
+   "size_to_inside": 1.8965801166188456
+  },
+  "rand32b_s1 | rand32_s1": {
+   "cos_all": 0.024527004351592427,
+   "cos_in": 0.030103295050541563,
+   "out_term": 1.542606500827548e-05,
+   "saved_cos_all": null,
+   "share": 0.6630014553680031,
+   "size_to_all": 2.673476020970237,
+   "size_to_inside": 3.283364152599835
+  },
+  "rand32b_s1 | rand32b_s1": {
+   "cos_all": 0.3911198126837933,
+   "cos_in": 0.4809642568145185,
+   "out_term": 0.00023188848577310184,
+   "saved_cos_all": 0.39112022964903687,
+   "share": 0.6605092475125895,
+   "size_to_all": 1.5130895990618227,
+   "size_to_inside": 1.8617664283173914
+  },
+  "rand32b_s1_o1 | rand32_s1": {
+   "cos_all": 0.024825938318947974,
+   "cos_in": 0.030470246984027675,
+   "out_term": 1.5569782660030534e-05,
+   "saved_cos_all": null,
+   "share": 0.6630014553680031,
+   "size_to_all": 2.6579173060219192,
+   "size_to_inside": 3.264256097572924
+  },
+  "rand32b_s1_o1 | rand32b_s1": {
+   "cos_all": 0.4111737988994429,
+   "cos_in": 0.5056215735184482,
+   "out_term": 0.0002464493051833605,
+   "saved_cos_all": 0.4111737266766507,
+   "share": 0.6605092475125895,
+   "size_to_all": 1.5042839357312332,
+   "size_to_inside": 1.850931585239941
+  },
+  "real_o0 | null_teacher": {
+   "cos_all": 0.018946605589154876,
+   "cos_in": 0.023885101741866192,
+   "out_term": 1.0210400167680322e-06,
+   "saved_cos_all": 0.018947064376659054,
+   "share": 0.629161049279536,
+   "size_to_all": 1.2134185762084984,
+   "size_to_inside": 1.5297826294585832
+  },
+  "real_o0 | real_teacher": {
+   "cos_all": 0.2809020783171222,
+   "cos_in": 0.35705056581624667,
+   "out_term": 1.9235002534756518e-05,
+   "saved_cos_all": 0.28090385507605664,
+   "share": 0.6188579497929719,
+   "size_to_all": 0.7270049627351703,
+   "size_to_inside": 0.9241487669116418
+  },
+  "real_o1 | null_teacher": {
+   "cos_all": 0.01895767441769024,
+   "cos_in": 0.023900906272640986,
+   "out_term": -4.4623354570477725e-07,
+   "saved_cos_all": 0.01895802929836808,
+   "share": 0.629161049279536,
+   "size_to_all": 1.2157912513192157,
+   "size_to_inside": 1.5327739114785648
+  },
+  "real_o1 | real_teacher": {
+   "cos_all": 0.2735020097895399,
+   "cos_in": 0.34765010834124277,
+   "out_term": 1.4273714177059915e-05,
+   "saved_cos_all": 0.2735027156912526,
+   "share": 0.6188579497929719,
+   "size_to_all": 0.7284265221329501,
+   "size_to_inside": 0.9259558142247815
+  }
+ },
+ "score": {
+  "P1": {
+   "E12": "expressible change",
+   "E34": "expressible change",
+   "per_state": {
+    "null_o0": "mostly elsewhere",
+    "null_o1": "mostly elsewhere",
+    "rand32_s0": "mostly elsewhere",
+    "rand32_s1": "mostly elsewhere",
+    "rand32b_s0": "mostly elsewhere",
+    "rand32b_s0_o1": "mostly elsewhere",
+    "rand32b_s1": "mostly elsewhere",
+    "rand32b_s1_o1": "mostly elsewhere",
+    "real_o0": "mostly elsewhere",
+    "real_o1": "mostly elsewhere"
+   },
+   "verdict": "expressible change"
+  },
+  "P2": {
+   "null_student": "reads its own",
+   "other_table": "reads its own"
+  },
+  "P3": {
+   "per_state": {
+    "null_o0": "in the span",
+    "null_o1": "in the span",
+    "rand32_s0": "in the span",
+    "rand32_s1": "in the span",
+    "rand32b_s0": "in the span",
+    "rand32b_s0_o1": "in the span",
+    "rand32b_s1": "in the span",
+    "rand32b_s1_o1": "in the span",
+    "real_o0": "in the span",
+    "real_o1": "in the span"
+   },
+   "verdict": "in the span"
+  }
+ }
+}
