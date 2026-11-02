@@ -127,11 +127,11 @@ def update_sparsity(w: dict[str, Any], g: dict[str, Any], s0: dict[str, Any]) ->
     right.set_xscale("log")
     right.set_xlim(0.001, 1.1)
     right.set_xlabel("spread of the first-batch gradient over neurons, log axis", color=INK)
-    right.set_title("First gradient: narrow for every task, shuffled targets too", color=INK, fontsize=11)
+    right.set_title("First gradient: narrow on every task; no test separates the kinds", color=INK, fontsize=11)
     vline(right, s0["synthetic"]["w1_sixteen"], "16-neuron control")
     vline(right, s0["synthetic"]["w1_gaussian"], "unit Gaussian", ha="right")
     right.text(0.0015, 2.08, "same gradient as the matched cipher's seeds 0, 1", fontsize=8, color=INK, va="center")
-    fig.suptitle("Is the update itself on fewer neurons when built to elicit? No: elicit is on the wider side",
+    fig.suptitle("Is the update itself on fewer neurons when built to elicit? No",
                  color=INK, fontsize=13)
     legend(fig, [*KIND_MARKS, mark("finished update", "o", True), mark("its rotated value", "o", False),
                  mark("first-batch gradient", "s", True), mark("same batch, targets shuffled", "s", False)], ncol=4)
@@ -152,7 +152,7 @@ def rescale_share(w: dict[str, Any], s0: dict[str, Any]) -> None:
     vline(ax, s0["synthetic"]["w2_sixteen"], "control: 16 neurons rescaled reads 1", ha="right")
     vline(ax, 1 / 768, "chance, 1/768", ha="right")
     vline(ax, w["code_step10"]["W2"], "update that learned nothing", colour=GREY, y=-0.75)
-    ax.set_title("Do fine-tunes rescale the neurons W0 already has? No task does: all sit next to chance", color=INK,
+    ax.set_title("Does the update as a whole lie along neurons' own weights? No: all sit near chance", color=INK,
                  fontsize=12)
     legend(fig, [*KIND_MARKS, mark("the fine-tune", "o", True), mark("Gaussian update of the same norms", "o", False)],
            ncol=5)
@@ -229,8 +229,8 @@ def c1_family_a(a: dict[str, Any], s0: dict[str, Any]) -> None:
     ax.text(1.1, 0.51, "half of the whole gain, E56's target", fontsize=8, color=INK, va="bottom")
     ax.text(1.1, -0.06, "0 = original model", fontsize=8, color=INK, va="bottom")
     ax.set_ylabel("share of the fine-tune's gain on the scoring windows (1 = fine-tuned)", color=INK)
-    ax.set_title("How many neurons carry the gain? Ranking per window cuts the count; the elicit-cipher gap "
-                 "closes with progress", color=INK, fontsize=11.5)
+    ax.set_title("Top neurons enough for half the gain: far fewer per window; gap smaller at the cipher's later "
+                 "step", color=INK, fontsize=11.5)
     handles = [Line2D([], [], color=GREEN, lw=2.2, label="elicit map, step 10"),
                Line2D([], [], color=ORANGE, lw=2.2, label="cipher, same update size, step 9"),
                Line2D([], [], color=DARK, lw=2.2, label="cipher, own learned step 30"),
@@ -249,9 +249,9 @@ def c1_families_bc(a: dict[str, Any]) -> None:
     fig, (left, right) = plt.subplots(1, 2, figsize=(12.5, 5.8), sharey=True)
     for ax in (left, right):
         axes_k(ax)
-    panels = ((left, "Family B: elicit is the wider side", (("ident32", GREEN, "-"), ("rand32", ORANGE, "-"),
+    panels = ((left, "Family B: gaps under the floor; the sign depends on the table", (("ident32", GREEN, "-"), ("rand32", ORANGE, "-"),
                                                             ("ident32b", GREEN, "--"), ("rand32b", DARK, "--"))),
-              (right, "Family C: elicit is much the narrower side", (("lowercase", GREEN, "-"),
+              (right, "Family C: elicit narrower, the one gap over the floor", (("lowercase", GREEN, "-"),
                                                                      ("broad_cipher", ORANGE, "-"),
                                                                      ("e53_cipher", ORANGE, "--"))))
     for ax, title, arms in panels:
@@ -263,7 +263,7 @@ def c1_families_bc(a: dict[str, Any]) -> None:
                 draw(ax, a, names, "shares_random", K, colour, ":", 1.4, band=False)
         ax.set_title(title, color=INK, fontsize=11)
     left.set_ylabel("share of the fine-tune's gain on the scoring windows (1 = fine-tuned)", color=INK)
-    fig.suptitle("Does the same count hold on other pairs? The direction flips between them", color=INK, fontsize=13)
+    fig.suptitle("Does the count separate the kinds on other pairs? Only on family C", color=INK, fontsize=13)
     handles = [Line2D([], [], color=GREEN, lw=2.2, label="built to elicit"),
                Line2D([], [], color=ORANGE, lw=2.2, label="built to be new"),
                Line2D([], [], color=DARK, lw=1.4, ls="--", label="random word, other keys, step 30; unscored"),

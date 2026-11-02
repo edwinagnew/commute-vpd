@@ -1,14 +1,16 @@
 # Analysis: do fine-tunes built to elicit sit on fewer MLP neurons than those built to teach something new? (E63)
 
-*2026-11-02, coding agent, baseline-lead E63 writer. Plan: `reports/plans/2026-11-02_plan_e63-neuron-sparsity.md`, amendments 1-19. Rules: `experiments/neuron_sparsity/results/predictions.json`. Code review: `reports/reviews/2026-11-02_review_e63-code.md`. Explanation: `notebooks/E63_neuron_sparsity.ipynb`. Provenance at the end.*
+*2026-11-02, coding agent, baseline-lead E63 writer. Plan: `reports/plans/2026-11-02_plan_e63-neuron-sparsity.md`, amendments 1-19. Rules: `experiments/neuron_sparsity/results/predictions.json`. Code review: `reports/reviews/2026-11-02_review_e63-code.md`. Explanation: `notebooks/E63_neuron_sparsity.ipynb`. Independent check: `reports/reviews/2026-11-02_review_e63-analysis.md`, whose findings are applied here and none skipped. Provenance near the end.*
 
-We read five neuron measures on saved fine-tunes of three families, comparing those built to elicit with those built to teach something new. None of the five tells the two kinds apart on all the pairs, because the gap's direction flips between families and the main pair's gap in carrying neurons closes with progress. So counting neurons does not give what the decomposition is claimed to give, at this size and on these pairs, and neither reading yet has a causal check.
+We read five neuron measures on saved fine-tunes of three families, comparing those built to elicit with those built to teach something new. None of the five shows elicit on fewer neurons on all the pairs: the activation shift reverses on one family, and the count of top neurons separates on only one. Counting neurons therefore does not follow how the tasks were built, as the decomposition's reading does on the same fine-tunes, though the test has little power, covers few tasks, and neither reading yet has a causal check.
 
 ## The answer
 
-No. No reading of neurons tells the two kinds apart on all the pairs we tried. A finished update is spread almost evenly over the neurons, whichever kind built it, and no fine-tune rescales the neurons the original model already has. Activation shifts and the neurons that carry the gain sit narrower for elicit on two of the three families, and wider on the third. On the main pair, the gap in carrying neurons closes once the cipher has learned as much.
+No. No reading shows elicit on fewer neurons on all the pairs we tried. The update's spread separates the other way on every test, though it does not beat its reference on two. The update as a whole does not lie along neurons' own weights. The activation shift sits narrower for elicit on two families and wider on the third. The count of top neurons enough for half the gain separates only on family C; on family B its sign depends on the table. On the main pair that count's gap is smaller at the cipher's own learned step, a larger update; elicit was read at one step only.
 
-The filed tree says: none answers yes, so write up, report an elicit and new gap under the matched-size test alone as a progress effect, and leave the truth-set reading to the user's say. I recomputed every test, reference gap and guard from the per-state values in `weights.json`, `gradients.json` and `windows.json`; all agree with `score.json`, so "none answers yes" stands. One wording point: no number has a gap under the matched-size test *alone*. The activation spread passes it and also family C, and the count fails it on the floor. The section on the count says which gap reads as progress.
+The filed tree says: "None answers yes: write up; the elicit/new gap under T1 only is reported as a progress effect. The E55 truth-set reading needs the user's say." Every test, reference gap and guard, recomputed from the per-state values, agrees with `score.json`, and the independent check found 0 mismatches, so "none answers yes" stands. The tree's second clause is quoted as filed and needs reading in light of the data. No number has a gap under the matched-size test *alone*: the activation shift passes it and family C, and the count fails it on the floor. And "progress effect" cannot be told apart here from update size or training length, because equal progress also doubles the update and elicit was read at one step. So the clause reads: the count's gap at matched size is smaller at the cipher's later step, cause not established.
+
+**How much this "No" can carry.** Under the filed rule a yes needs four tests, each comparing one task with one task. If a real kind effect were as large as one task's standard deviation, a number would pass the sign and separation parts only about a third of the time, since one reversed pair fails it. So this is a null of the filed rule on these tasks, not a measured absence of a kind effect.
 
 ## The question, and what "built to elicit" means
 
@@ -24,8 +26,8 @@ Nothing was trained. A neuron is one of the 12288 GELU outputs across the four b
 
 | family | built to elicit | built to be new | notes |
 |---|---|---|---|
-| A, main pair | elicit map, seeds 0-4, step 10 | cipher, seeds 0-4, step 9, same update size | same keys and windows; the cipher at its own learned step 30, seeds 0-1, is the equal-progress state |
-| B | same word back, seeds 0-1, step 10 | random word, seeds 0-1, step 10 | same-word and random tables on other keys, at steps 10 and 30, reported beside, unscored |
+| A, main pair | elicit map, seeds 0-4, step 10 | cipher, seeds 0-4, step 9, same update size, about 3.2 | same keys and windows; the cipher at its own learned step 30, seeds 0-1, is the equal-progress state, with an update of 6.0 |
+| B | same word back, seeds 0-1, step 10 | random word, seeds 0-1, step 10 | held-out probability of the target about 0.96 against 0.56, so not equal progress; same-word and random tables on other keys, at steps 10 and 30, reported beside, unscored |
 | C | lowercase, seeds 0-1, step 300 | 500-word cipher, seeds 0-1, step 300 | 50-word cipher, seeds 0-1, reported beside, unscored |
 | reference | | | an update that learned nothing, on a code task with no answer position; weight readings only |
 
@@ -35,9 +37,9 @@ Nothing was trained. A neuron is one of the 12288 GELU outputs across the four b
 |---|---|---|---|---|---|
 | spread of the update, W1 | participation ratio over neurons of each neuron's squared update, $(\sum e_i)^2 / \sum e_i^2$, as a fraction of 12288 | lower | 16-neuron update: 0.0013, filed 16/12288. Unit Gaussian 0.9987, filed 0.9987. Rotated 16-neuron update 0.218, filed range 0.10 to 0.25 | attention and read-out matrices; Adam's flattening | whether the update itself is on fewer neurons |
 | spread of the first gradient, W1g | the same on the first-batch gradient of the task's loss at the original weights | lower | same function as above. Reference: the same batch with targets shuffled | later steps, what Adam then does, progress; on family C it may mostly read ordinary text | whether the task's own direction is on fewer neurons, before Adam |
-| rescale share, W2 | share of the update's energy along each neuron's own original row and column, energy-weighted | higher | rescaling 16 neurons: 1.000. Gaussian rows 0.00130, columns 0.00129, against 1/768 = 0.00130 | a neuron rotating towards another neuron | whether the fine-tune re-weights existing neurons |
+| rescale share, W2 | share of the update's energy along each neuron's own original row and column, energy-weighted | higher | rescaling 16 neurons: 1.000. Gaussian rows 0.00130, columns 0.00129, against 1/768 = 0.00130 | a neuron rotating towards another neuron; a rescale of a handful of neurons inside a flat update, since no control mixes the two | whether the update as a whole lies along existing neurons' weights |
 | spread of the shift, A1 | per window, participation ratio of the squared tuned minus original activation at the answer position; median over the scoring windows, as a fraction | lower | 16-neuron update: 0.00056, filed at most 0.0013 | neurons that move and do nothing | whether activity changes on fewer neurons |
-| neurons carrying the gain, C1 | per window, rank neurons by that window's own shift; top k get tuned activations at every position of an original-model forward; log2 k where the share first reaches half of the state's own full share, interpolated | lower | 16-neuron update: 1.99, filed at most 4; rise at k = 16 equals rise at k = 12288 exactly | changes to a neuron's output weights, which stay at the original values | whether the gain causally needs few neurons per window |
+| top neurons enough for half the gain, C1 | per window, rank neurons by that window's own shift; top k get tuned activations at every position of an original-model forward; log2 k where the share first reaches half of the state's own full share, interpolated | lower | 16-neuron update: 1.99, filed at most 4; rise at k = 16 equals rise at k = 12288 exactly. This exercises the code, on a negative gain; it does not show the count can find a sparse real gain | changes to output weights, attention and read-out, all kept at the original values, so the full share runs from 0.46 to 0.97; neurons that move at other positions, since ranks use the answer position only; whether those neurons are needed, since no knock-out was run | how few neurons, top-ranked by shift per window, are enough for half of what patching can recover |
 
 The **gain** is the mean rise in log probability of the target, tuned over original. A **share** reads 0 for the original model and 1 for the fine-tuned model.
 
@@ -50,7 +52,7 @@ The **gain** is the mean rise in log probability of the target, tuned over origi
 
 A number answers yes only if all four tests and the guard pass.
 
-**How to read a pass (Amendment 15).** T1, T2 and T3_C compare one task with one task. Between seeds a number barely moves, so two different tasks almost always separate and only the direction carries information. A pass reads "these tasks differ, in this direction". A simulated false yes with task differences ten times seed noise and no kind effect is about 2% per number, about 9% over five.
+**How to read a pass (Amendment 15; corrected 2026-11-02).** All four tests compare one task with one task, since Amendment 12 made family B so too. Between seeds a number barely moves, so two different tasks almost always separate and only the direction carries information. A pass reads "these tasks differ, in this direction". `predictions.json` gives a simulated false yes of about 2% per number and 9% over five, but that simulation ran before Amendment 12, when family B pooled two tables a side. Rerun on the rule as amended, with task differences ten times seed noise and no kind effect, it reads 6-9% per number and 25-37% over five, the range being whether equal progress follows matched size or is a third task. These cover the sign and separation parts only: the reference rule and the guard are not modelled, so they bound the rate from above, and "over five" assumes independent numbers, which these are not. A kind effect of one task's standard deviation passes 30-36% of the time, and of two 67-72%. I reproduced the review's figures independently (`experiments/neuron_sparsity/false_yes_sim.py`). This is how to read the filed rule; `predictions.json` and the rule are unchanged.
 
 **Disclosure.** While reviewing the code, the reviewer computed the update's spread and its rotated value on all 26 states before the amendments were filed. So that number's outcome, no yes and elicit denser in every family, was known before they were. The rule changes were chosen on what the rules can do and do not change that outcome. No other number was read.
 
@@ -66,9 +68,9 @@ All leans are medium at most. Each is scored at the end as filed.
 
 ## Controls, run first and alone
 
-Stage 0 passed, first and alone. All 33 files matched their sha256. The identity patch read exactly 0 on all nine tasks, tolerance 1e-6. The mean-ranked path reproduced E56's sixteen-neuron share exactly on `elicit_s0` and `cipher_s0`. The per-window path's full-width share was within 1e-6 of E56's, tolerance 1e-3. All 24 first-batch losses matched the fine-tunes' logged step 1 within 0.01 nats, the stop rule; KL on the other positions read 0 on the check state. No SURPRISE line appears in the log.
+Stage 0 passed, first and alone. All 33 files matched their sha256. The identity patch read exactly 0 on all nine tasks, tolerance 1e-6. The mean-ranked path reproduced E56's sixteen-neuron share exactly on `elicit_s0` and `cipher_s0`. The per-window path's full-width share was within 1e-6 of E56's, tolerance 1e-3. All 24 first-batch losses matched the fine-tunes' logged step 1 within 0.01 nats, the stop rule. KL on the other positions read 0 on the check state. No SURPRISE line appears in the log.
 
-The 16-neuron update has a negative gain, -1.53 nats, and a full-width share of 0.163. It is readable under the filed rule, which allows a negative gain with a positive share.
+The 16-neuron update has a negative gain, -1.53 nats, and a full-width share of 0.163. It is readable under the filed rule, which allows a negative gain with a positive share. Only those 16 neurons shift, so its count follows from correct ranks: it checks the code.
 
 Reported expectations:
 
@@ -87,7 +89,7 @@ Reported expectations:
 
 ![The spread of the finished update and of the first gradient per task, against references](../../experiments/neuron_sparsity/figures/update_sparsity.png)
 
-**Reading it.** No: elicit is the wider side in every family, for the finished update and for the first gradient. Finished updates read near 1, the elicit map 0.976 and the matched cipher 0.970. An update that learned nothing reads 0.980, so being this flat says nothing about the task. Rotating the neuron index narrows the elicit map to 0.923, so on this task the neuron basis is wider than a random basis. First gradients are about twenty times narrower, 0.053 on elicit and 0.038 on the cipher, a gap under the seed spread. Shuffled targets read much the same, 0.043 on elicit, so this narrowness does not depend on the task's targets. Adam's flattening remains the filed explanation of the difference between the two readings; no SGD fine-tune was run to test it. Why the first gradient is narrow was not tested either: the review's suspicion is the GELU's factor in a gradient row.
+**Reading it.** No. The finished update's spread separates the other way on every test, while the first gradient's separates on none, with elicit the higher mean each time. Finished updates read near 1 on family A, the elicit map 0.976 and the matched cipher 0.970, and lower on family C's ciphers, 0.816 on the 500-word cipher. An update that learned nothing reads 0.980, so being this flat says nothing about the task. Rotating the neuron index narrows the elicit map to 0.923, so on this task the neuron basis is wider than a random basis. A mirrored rule, asking for elicit denser, passes equal progress and family C and loses the other two only to the rotated gap. The spread also falls with training, so this direction need not mean kind. First gradients are about twenty times narrower, 0.053 on elicit and 0.038 on the cipher, a gap under the seed spread. Permuting targets within the batch leaves that much the same on family A, 0.043 on elicit. That permutation keeps the inputs and target tokens and breaks only their pairing, and on the 50-word cipher it halves the reading, 0.0254 to 0.0127. Adam's flattening remains the filed explanation of the difference between the two readings; no SGD fine-tune was run to test it. Why the first gradient is narrow was not tested either: the review's suspicion is the GELU's factor in a gradient row.
 
 Spread of the update, per state, means within a task:
 
@@ -97,7 +99,7 @@ Spread of the update, per state, means within a task:
 | cipher, same size | 0.9704 | 0.8632 | 0.9881 | 0.0035 |
 | cipher, own step | 0.9225 | 0.9089 | 0.9690 | 0.0106 |
 | same word back | 0.9744 | 0.8853 | 0.9951 | 0.0003 |
-| random word, step 10 | 0.9699 | 0.8802 | 0.9878 | 0.0031 |
+| random word, step 10 | 0.9699 | 0.8802 | 0.9877 | 0.0031 |
 | same word, other keys, beside | 0.9725 | 0.8869 | 0.9936 | 0.0026 |
 | random word, other keys, step 30, beside | 0.9263 | 0.9149 | 0.9671 | 0.0031 |
 | lowercase | 0.9379 | 0.9732 | 0.9782 | 0.0011 |
@@ -121,11 +123,11 @@ Spread of the first gradient, means within a task:
 
 The elicit map's seed range, 0.040, is large because seed 1 reads 0.0795. The equal-progress test on this number reads the same gradients as matched size at seeds 0-1, since a gradient at the original weights has made no progress (`tests.T2_W1g_note`); it adds nothing. The review's suggested follow-up for family C, reading the task's text minus the cased rows, was not run: the number already fails matched size and the guard, so it could not answer yes.
 
-### Do fine-tunes rescale the neurons the original model already has?
+### Does the update as a whole lie along the neurons' own weights?
 
 ![The share of the update along each neuron's own weights per task, against the Gaussian's and the rescaling control's](../../experiments/neuron_sparsity/figures/rescale_share.png)
 
-**Reading it.** No task does. All the fine-tunes read 0.0014 to 0.0020, next to the Gaussian's 0.0013, while the control that rescales 16 neurons reads 1. Elicit beats its reference at equal progress and on family C, but those gaps are 0.0003 and 0.0001. On family A at matched size the cipher reads higher, 0.0020 against 0.0017. The more trained update reads lower on both tables that were read at two steps: the cipher 0.0020 and 0.0014, the random word 0.0020 and 0.0015. The equal-progress pass therefore compares a step-10 update with a step-30 one. The reading moves with training at least as much as with kind; the second pair is on other keys, so this is not one trajectory.
+**Reading it.** No: the update as a whole does not, on any task, though a rescale of a handful of neurons would not show. All the fine-tunes read 0.0014 to 0.0020, next to the Gaussian's 0.0013. The control reads 1 because all its energy sits on the 16 rescaled neurons; no control mixes a few of them into a flat update. On a flat update, $m$ fully rescaled neurons add about $m / (12288 \times \text{spread})$ to the share. The excess over the Gaussian then equals about 5 neurons on elicit, 8 on lowercase and 6 to 8 on the two ciphers, comparable to the 15 top neurons that are enough for half on lowercase. The update that learned nothing has an excess worth 4, so the excess is no evidence of rescaling either. Elicit beats its reference at equal progress and on family C, by 0.0003 and 0.0001. On family A at matched size the cipher reads higher, 0.0020 against 0.0017. The more trained update reads lower on both tables that were read at two steps: the cipher 0.0020 and 0.0014, the random word 0.0020 and 0.0015. The equal-progress pass therefore compares a step-10 update with a step-30 one. The second pair is on other keys, so this is not one trajectory.
 
 | task | rescale share | rows | columns | Gaussian |
 |---|---|---|---|---|
@@ -145,7 +147,7 @@ The elicit map's seed range, 0.040, is large because seed 1 reads 0.0795. The eq
 
 ![The spread of one window's activation shift per task, against a Gaussian update's, the rotated value and the control](../../experiments/neuron_sparsity/figures/activation_sparsity.png)
 
-**Reading it.** On families A and C yes, on family B the reverse. The elicit map shifts about 300 effective neurons per window and the matched cipher about 370, a gap just over the seed spread. Lowercase shifts about 150 and the broad cipher about 340. On family B the same-word table shifts about 460 and the random table about 360, so elicit is the wider side there. This is the only reading that passes at matched size. It is not a progress effect, since the gap widens at equal progress: the trained cipher shifts about 530 neurons. That test fails only because the rotated value widens more, 0.048 against the number's 0.018. A Gaussian update of the same norms already shifts only about 650 neurons, so a low level alone says little about the fine-tune. The review's toy model puts that on the GELU; on the real model that cause was not tested. The trained cipher, at 0.043, sits near its Gaussian at 0.053.
+**Reading it.** On families A and C yes; on family B the reverse, and that reversal is what holds this number's yes back. The elicit map shifts about 300 effective neurons per window and the matched cipher about 370, a gap just over the seed spread. Lowercase shifts about 150 and the broad cipher about 340. On family B the same-word table shifts about 460 and the random table about 360. The gap is wider at the cipher's later step, about 530 neurons, an update twice the size; elicit was not read there, and a rise on elicit too would shrink it. The shift's spread rises with training on both tables read at two steps, 0.030 to 0.043 and 0.029 to 0.045. A Gaussian update of the same norms already shifts only about 650 neurons, so a low level alone says little about the fine-tune. The review's toy model puts that on the GELU; on the real model that cause was not tested. The trained cipher, at 0.043, sits near its Gaussian at 0.053.
 
 | task | spread | Gaussian update | rotated | effective neurons |
 |---|---|---|---|---|
@@ -163,11 +165,30 @@ The elicit map's seed range, 0.040, is large because seed 1 reads 0.0795. The eq
 
 The two ciphers of family C, both new, differ by 0.0077, half the kind gap of 0.0152.
 
-### How many neurons carry the gain on the main pair?
+**The rotated value reads block shares only.** Under a random rotation within a block, a vector's squared entries have a sum of squares near $3E^2/3072$ whatever its sparsity, with $E$ its energy. So this number's rotated value is about $1/(12 \sum s_b^2)$, where $s_b$ is each block's share of the shift's energy. It runs from 0.083, all in one block, to 0.333, four equal blocks. The control reads 0.0842, and a Monte Carlo I ran gives 0.078 to 0.083 for a sparse, a one-neuron and a dense vector in one block. It cannot see neurons at all. Per-block shares were not saved, so on real states this is derived, not read.
+
+So the equal-progress failure, 0.048 on the rotated value against the number's 0.018, is a block effect: the shift spreads over more blocks at step 30, about 1.9 effective blocks to about 2.5. The verdict stands as filed. But Amendment 14's "a gap that survives rotation is not neuron information" does not hold for this number. The rule is not refiled.
+
+Taking blocks out, unfiled and a reading of saved numbers only: the spread over its rotated value, per state, under the filed separation rule.
+
+| comparison | elicit | new | separates | elicit narrower |
+|---|---|---|---|---|
+| matched size | 0.151 | 0.193 | yes | yes |
+| equal progress | 0.154 | 0.207 | yes | yes |
+| family B | 0.223 | 0.184 | yes | no |
+| same word, other keys, against random word, step 10 | 0.255 | 0.184 | yes | no |
+| same word against random word at step 30 | 0.223 | 0.204 | no | no |
+| same word, other keys, against random word at step 30 | 0.255 | 0.204 | yes | no |
+| family C | 0.078 | 0.193 | yes | yes |
+| lowercase against 50-word cipher | 0.078 | 0.212 | yes | yes |
+
+So this number's no rests on family B. That test compares unequal progress, a held-out probability of 0.96 against 0.56. At the random word's step 30, about equal progress and on other keys, the raw number turns elicit-narrower, by 0.0070 and 0.0039, but only through blocks: within blocks elicit stays wider. The family B reversal therefore holds under this escape.
+
+### How many top neurons are enough for half the gain on the main pair?
 
 ![Share of the gain against the number of neurons patched, per-window ranks beside E56's mean ranks and a random order, on family A](../../experiments/neuron_sparsity/figures/c1_family_a.png)
 
-**Reading it.** Fewer neurons than E56 found, for both kinds, and the elicit gap misses the filed floor by a hair, then closes with progress. Half of each state's own full share needs about 240 neurons on the elicit map and about 470 on the matched cipher. That gap is 0.965 in log2, under the floor of 1. It is a narrow threshold miss: the elicit seeds run 7.73 to 8.11 and the cipher seeds 8.78 to 9.09, so no seed overlaps. At equal progress it shrinks to 0.17, since the cipher at its own step needs about 260. The control reaches its half at about 4, and a random order needs about 3600 on elicit. About half of the matched-size gap, 0.55, is also there on the random order. Why that is was not tested; the two kinds' different full shares are one candidate.
+**Reading it.** Fewer neurons than E56 found, for both kinds, and the gap between kinds misses the filed floor. The top neurons by shift are enough for half of each state's own full share at about 240 on the elicit map and about 470 on the matched cipher. That shows sufficiency under one ranking, an upper bound on a smallest sufficient set, not that those neurons are needed. The gap is 0.965 in log2, under the floor of 1, so by the rule it is noise, even though no seed overlaps: elicit runs 7.73 to 8.11 and the cipher 8.78 to 9.09. It is 0.17 at the cipher's own step, about 260 neurons, on two seeds. That step has an update of 6.0 against 3.1 on elicit, so it cannot be told apart from update size or training length. The control reaches its half at about 4, and a random order needs about 3600 on elicit. About half of the matched-size gap, 0.55, is also there on the random order, cause not established. The full shares do not explain it: on a common bar of half the whole gain, the random order's gap grows to 1.04.
 
 **Comparison with E56.** E56 ranked neurons by their mean shift over all windows, and asked for half of the whole gain on a coarse grid. Its gap was 4096 against 12288, 1.58 in log2, and the own-step cipher read 4096. Three things differ here: ranks per window, half of each state's own full share, and interpolation. The curves show what the first and second do.
 
@@ -180,17 +201,23 @@ The two ciphers of family C, both new, differ by 0.0077, half the kind gap of 0.
 | 4096 | 0.887 | 0.750 | 0.607 | 0.455 | 0.944 | 0.765 |
 | 12288 | 0.936 | 0.936 | 0.694 | 0.694 | 0.973 | 0.973 |
 
-- **Ranking per window lowers the count on both kinds.** At 256 neurons the elicit map carries 0.48 of its gain, against 0.15 ranked by mean shift. E56's "the top sixteen carry about nothing" no longer holds per window on elicit, 0.11, while the cipher reads 0.03. That fits different keys using different neurons, the thing the plan said E56 could not see. The distinct neurons over all windows were not counted.
+- **Ranking per window lowers the count on both kinds.** At 256 neurons the elicit map reaches 0.48 of its gain, against 0.15 ranked by mean shift. E56's "the top sixteen carry about nothing" no longer holds per window on elicit, 0.11, while the cipher reads 0.03. Different keys using different neurons, the thing the plan said E56 could not see, is one reading. An untested rival is that per-window ranks can follow any input-dependent shift, key or not. The distinct neurons over all windows were not counted.
 - **The target matters as much as the ranking.** The cipher's full share is 0.69 and elicit's 0.94, so half of its own share is a lower bar for the cipher. On E56's target of half the whole gain, read off these curves and **not filed**, elicit reads 8.15 in log2, about 280 neurons, and the matched cipher 10.51, about 1450. That gap is 2.36. The same reading gives 8.07 on elicit seeds 0-1 and 8.10 on the own-step cipher, a gap of 0.03.
-- **The pattern matches E56.** At matched size elicit needs fewer, at equal progress they agree. Here it holds on the filed target and on E56's.
+- **The pattern matches E56's.** At matched size elicit's count is lower, and at the cipher's later step they agree. The closing is clear only on E56's target; on the filed one it starts from a gap the rule calls noise.
 
-**Progress.** Under the tree this is the gap reported as a progress effect, with its limits: the count fell by 0.87 from the cipher's step 9 to its step 30. The random word on other keys at step 30 reads 0.81 below the random word at step 10, which is a different table, so not one trajectory. No elicit state at another step was read. E56's independent check also applies: at matched size, progress is itself a consequence of kind, so "progress and not kind" is not established.
+**Progress.** The tree's label is a progress effect; the data do not establish one. Three things moved together between the two comparisons: how much of the table the cipher had learned, its update size, and its training length. The count fell by 0.87 from the cipher's step 9 to its step 30. The random word on other keys at step 30 reads 0.81 below the random word at step 10, which is a different table, so not one trajectory. No elicit state past step 10 is saved. E56's independent check also applies: at matched size, progress is itself a consequence of kind.
 
 ### Does the same count hold on the other pairs?
 
 ![Share of the gain against neurons patched on families B and C, two panels with shared axes](../../experiments/neuron_sparsity/figures/c1_families_bc.png)
 
-**Reading it.** No, the direction flips. On family B elicit is the wider side, about 580 neurons against 360, a gap of 0.70 under the floor. The second same-word table, on other keys, reads about 210. So two tables built the same way differ by 1.44 in log2, more than the kinds do on family B or on family A. On family C lowercase needs about 15 neurons and the broad cipher about 110, a gap of 2.90 and the only clear pass of this reading. The 50-word cipher reads about 120, 0.17 from the broad cipher, so the two ciphers agree. Still, this test compares one elicit task with new tasks of one kind of build, and a pass reads "these tasks differ, in this direction". Lowercase also gains about half of what the broad cipher does, 1.57 nats against 3.27, and whether that matters was not tested. Why family B reverses is not established. Two facts sit beside it, neither tested as a cause. The same-word table starts at a target probability of about 2.5e-4, where the elicit map starts near 0.03. All neurons together carry only 0.56 of its gain, against the random word's 0.77.
+**Reading it.** The count separates only on family C. On family B both gaps are under the floor, and their sign depends on which same-word table is read, as the table below shows. So there is no reversal by this rule. On family C lowercase's top 15 or so are enough for half and the broad cipher's about 110, a gap of 2.90. The 50-word cipher reads about 120, 0.17 from the broad cipher. That pass reads "these tasks differ, in this direction". Lowercase also gains about half of what the broad cipher does, 1.57 nats against 3.27, and whether that matters was not tested. Counts across families are not like for like: a neuron here is one index across 41 positions on families A and B and 127 on family C, ranked at one position, and the full share runs from 0.46 to 0.97. So 15 against 240 is no comparison.
+
+| family B pair | gap in log2, elicit sparser positive |
+|---|---|
+| same word against random word, scored | -0.70 |
+| same word on other keys against random word, both step 10, unscored | +0.73 |
+| the two same-word tables against each other | 1.44 apart |
 
 | task | count, log2 | about k | random order | full share | gain, nats |
 |---|---|---|---|---|---|
@@ -208,36 +235,49 @@ The two ciphers of family C, both new, differ by 0.0077, half the kind gap of 0.
 
 ## What we learned
 
-Neurons do not map eliciting more cleanly, at this size and on these pairs, with "eliciting" meaning built to elicit. Weight updates are no use for this: they are flat after Adam and do not align with existing neurons. Activation shifts and per-window counts do differ between tasks, by more than seeds. But the direction differs between families, and each family compares very few tasks. Ranking per window shows that the gain sits on far fewer neurons per window than E56 suggested, for both kinds. The decomposition's share of the gain carried by changed CI values, $r$, separates family A at equal progress in E56, 0.76 against 0.25. It was not read on families B and C here, and it has no causal check yet either. So this is a comparison on one pair, and $r$ stays a candidate instrument under row 112.
+Neurons do not map eliciting more cleanly, at this size and on these pairs, with "eliciting" meaning built to elicit. Weight updates are no use for this: they are flat and, as a whole, do not lie along existing neurons' weights. Activation shifts differ between tasks by more than seeds, but the direction differs between families, and each family is one contrast. The count of top neurons is much lower per window than E56's mean ranks gave, for both kinds, and separates the kinds only on family C. A real kind effect could still be there: the rule has about a third's power at one task's standard deviation.
+
+**The decomposition's share on the same states.** This is a reading of saved numbers, not a filed test. $r$, the share of the gain carried by changed CI values, is in E60's `experiments/regating_truth_table/results/table.json` on all three families, and I checked the values there and in E56's `job1.json` and `job2.json`.
+
+| test | built to elicit | built to be new |
+|---|---|---|
+| family A, matched size, five seeds | 0.764 | 0.246 |
+| family A, equal progress, seeds 0-1 | 0.765 | 0.254 |
+| family B | 0.782 | 0.270 |
+| family B, other keys, beside, random word at step 30 | 0.798 | 0.285 |
+| family C | 0.761 | 0.157 |
+| 50-word cipher, beside | | 0.120 |
+
+$r$ keeps its direction and clears the seed ranges on every line, on the same fine-tunes where the neuron numbers do not. So the plan's "cheap rival to r" is answered on three families: none of these numbers follows the build as $r$ does. Two limits sit beside that. $r$ has no filed reference under this rule, and it has no causal check, so it stays a candidate instrument under row 112. This says $r$ follows the build and the neuron numbers do not, not that $r$ is right. It also compares one task with one task, as above. And it opens family B: $r$ reads the same-word table as it reads the elicit map, so the shift's reversal may be about the neuron number and not about that table's label.
 
 ## How compelling is the evidence
 
-- **Controls:** all held, above. Recomputed rules agree with `score.json` on every pass, gap, reference gap and guard.
+- **Controls:** all held, above. They exercise the code; the 16-neuron update does not show the count can find a sparse real gain. Recomputed rules agree with `score.json` on every pass, gap, reference gap and guard, and the independent check agrees.
 - **Blind to:** each number's line is in the table under "What was measured".
-- **Noise floor:** seed ranges within a task, listed in the score table; on the count, one grid step by rule. Family A has five seeds, the others two.
+- **Noise floor:** seed ranges within a task, listed in the score table; on the count, one grid step by rule. Family A has five seeds, the others two. The random order is one seeded order per state: its seed range reaches 0.66 on lowercase, more than its family C gap of 0.30, and 0.25 on elicit seeds 0-1 against its equal-progress gap of 0.27. No verdict turns on this.
 - **Tasks covered:** three families, 26 states on the 67M model, Adam fine-tunes only. Not every task of either kind, and no causal labels.
-- **Design limit:** one task against one task on three of the four tests (Amendment 15). The unscored tasks show how far tasks of one build sit apart: on the count, 1.44 between two same-word tables and 0.17 between two ciphers.
+- **Design limit:** one task against one task on all four tests (Amendment 12 made family B so). False yes about 6-9% per number and 25-37% over five, before references; a kind effect of one task's standard deviation passes about a third of the time. The unscored tasks show how far tasks of one build sit apart: on the count, 1.44 between two same-word tables and 0.17 between two ciphers.
 - **One number seen early:** the update's spread, as disclosed.
 
 ## Surprises
 
-No filed prediction reversed. One missed narrowly: the count was filed to pass at matched size, and its gap of 0.965 fell 0.035 under the floor of 1, with its direction as filed.
+No filed prediction reversed. One missed narrowly: the count was filed to pass at matched size, and its gap of 0.965 fell 0.035 under the floor of 1, with its direction as filed. It is no near-yes: equal progress and family B also fail.
 
 Three things no prediction covered:
 
-- The direction flips on family B for both the activation shift and the count. The cause is not established.
-- With more training on the cipher the activation shift spreads while the neurons needed fall: 0.030 to 0.043, and 8.88 to 8.01. We did not test why.
-- The first gradient is about as narrow for shuffled targets as for true ones. No value had been filed for this.
+- The activation shift reverses on family B, solidly. The cause is not established.
+- Between the cipher's step 9 and step 30 the activation shift spreads while the count falls: 0.030 to 0.043, and 8.88 to 8.01. Training, update size and progress moved together, and why was not tested.
+- On family A the first gradient is about as narrow with targets permuted within the batch. No value had been filed for this.
 
 ## What next
 
 - **The truth-set reading needs the user's say,** as the tree states. If the activation shift and the count follow a causal label there, neurons return as a rival to $r$.
-- **Re-read these numbers on any pair that gets a causal check.** It costs nothing on saved states. If direction then follows the label, family B's flip was about its label.
-- **Read the elicit map at another step.** The progress reading rests on the cipher alone. A count that falls on elicit too would support it.
+- **Re-read these numbers on any pair that gets a causal check.** It costs nothing on saved states. If the same-word tables prove not to be eliciting, the shift is the one reading left with a claim, and $r$'s agreement with the build on family B would need its own explanation.
+- **More pairs, and elicit at a later step.** Several elicit and new tasks per family, read per task, would turn this no into a measured limit. Elicit past step 10 needs a short new fine-tune, since no such state is saved; it would say whether the shift rises and the count falls on elicit too.
 
 ## Scorecard
 
-Codes: W1 update spread, W1g first-gradient spread, W2 rescale share, A1 shift spread, C1 neurons carrying the gain. T1 matched size, T2 equal progress, T3_B family B, T3_C family C. "Gap" is signed so that elicit sparser is positive. "Over" is the spread it must strictly exceed. "Reference gap" is the same signed gap on each reference, which must be beaten.
+Codes: W1 update spread, W1g first-gradient spread, W2 rescale share, A1 shift spread, C1 top neurons enough for half the gain. T1 matched size, T2 equal progress, T3_B family B, T3_C family C. "Gap" is signed so that elicit sparser is positive. "Over" is the spread it must strictly exceed. "Reference gap" is the same signed gap on each reference, which must be beaten.
 
 | number | test | elicit | new | gap | over | reference gap | separates | elicit sparser | beats reference | verdict |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -279,7 +319,7 @@ Codes: W1 update spread, W1g first-gradient spread, W2 rescale share, A1 shift s
 | P2 | W1g unknown | no lean to score | fails all, elicit never the sparser side | reported |
 | P3 | W2 does not answer yes | W2 answers yes is false | false; passes T2, T3_C and the guard, with gaps of at most 0.0003 on a scale where the control reads 1 | **right** |
 | P4 | A1 unknown | no lean to score | passes T1, T3_C and both guards; T2 fails on the rotated gap, T3_B reverses | reported |
-| P5 | C1 passes T1 and fails T2, as E56's coarse count did | C1 T1 passes and T2 fails | T1 fails: 0.965 under the floor of 1, Amendment 13. T2 fails: 0.166 | **missed**, narrowly. The T2 half and the direction held. The cause is arithmetic: the gap on the filed target is under the filed floor; the target's lower bar for the cipher contributes (on E56's target, unfiled, the gap is 2.36) |
+| P5 | C1 passes T1 and fails T2, as E56's coarse count did | C1 T1 passes and T2 fails | T1 fails: 0.965 under the floor of 1, Amendment 13. T2 fails: 0.166 | **missed**, narrowly, as a threshold statement; not a near-yes, since T2 and T3_B also fail. The T2 half and the direction held. The cause is arithmetic: the gap on the filed target is under the filed floor; the target's lower bar for the cipher contributes (on E56's target, unfiled, the gap is 2.36) |
 
 ## Departures from the literature
 
@@ -296,7 +336,8 @@ Codes: W1 update spread, W1g first-gradient spread, W2 rescale share, A1 shift s
 - Results `experiments/neuron_sparsity/results/{predictions,stage0,weights,gradients,windows,score}.json`, committed in 1132c03. The JSONs record `git_head` de14090; the run's code files, predictions and sbatch are unchanged between it and 5727b38 (`git diff --stat` empty). `git_dirty` lists only `experiments/qwen_sft/results/run.log`.
 - Code `experiments/neuron_sparsity/run.py`, `src/commute/neuron_sparsity.py`. Figures `experiments/neuron_sparsity/plot.py` into `experiments/neuron_sparsity/figures/`.
 - E56 comparison curves `experiments/keydependent_patch/results/{job1,job2}.json`.
-- Recomputation of the score, not committed: `~/commute-data/scratch/baseline-lead/e63-analysis/recheck.py`.
+- False-yes simulation, committed: `experiments/neuron_sparsity/false_yes_sim.py`.
+- Recomputations of the score, scratch and not committed: `~/commute-data/scratch/baseline-lead/e63-analysis/recheck.py`, `recheck2.py`; the check's `~/commute-data/scratch/baseline-lead/e63-check/recompute.py`.
 
 ## Not run
 
@@ -307,7 +348,11 @@ Codes: W1 update spread, W1g first-gradient spread, W2 rescale share, A1 shift s
 - The truth-set reading of E55, which needs the user's say.
 - The tree's follow-up on the equal-prior and shuffled maps, E58 A6-A7, which only a yes opens.
 - The first-gradient reading on family C of the task's text minus the cased rows, the review's finding 7.
-- The elicit map at any other step.
+- The elicit map past step 10: no such state is saved, so it needs a new fine-tune.
+- Per-block shift shares; the rotated value's block reading is derived.
+- The per-neuron rescale share on the top-shift neurons, a $0 check on saved states.
+- A knock-out of the top-k neurons, which would test need and not sufficiency.
+- More than one random order per state.
 - The count of distinct neurons over all windows.
-- $r$ on families B and C in this run; its values above are E56's, on family A.
+- $r$ in this run or under the filed rule: it has no filed reference, and its values above are saved numbers from E56 and E60.
 - A1, C1 and W1g on the update that learned nothing: filed as cut, since its task has no answer position.
