@@ -190,6 +190,13 @@
    "branch": "A failed arm or a stop at the pause reports 'this sum is too low'; 1e-5 for 300 steps under the fix (about 100 min) runs only if the user asks."
   }
  },
+ "stage_G_state_file": {
+  "check": "Stage G, at each held read of a saved state (label step_<t>): the fp32 held-out reading of W0 plus the saved bf16 dW, against the same run's own record train_<run>.json steps[t-1].held (step t is steps[t-1]; the master weights, fp32, read in training). Stop (exit 1) when the difference exceeds max(rel * record, abs); the reading is not kept, so a rerun reads it again.",
+  "rel": 0.01,
+  "abs": 0.002,
+  "source": "The master and the saved file agree on gold's KL to 0.06% (reports/reviews/2026-11-02_review_qwen-finetune-recipes.md section 3); bf16 rounding of dW is under 0.4% per entry (reports/reviews/2026-11-02_review_e61-train-code.md, should-fix 3). 1% of the record, or 0.002 nats if larger, is a margin over both.",
+  "arm0_measured_gap": "none: arm 0 has no gen states, so no saved file is read back in Job R; the first gap is the first Stage G run, to be written in the report"
+ },
  "stage_G": "Reads `gen` states from the saved bf16 dW, plus fp32 W0, with no Adam moments held. a1 runs: 20 and 100, verdict at 100. Gold: 100. Invented facts: 300. Arm 0 has none: Stage W rehearses generation.",
  "not_read_here": "The direct share, sizes K00 - K0: Job S."
 }

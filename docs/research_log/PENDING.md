@@ -9,3 +9,4 @@ A flush applies every line to `parts/` (README.md → Layout), rebuilds, republi
 
 - 2026-11-02 · experiments/TRIED.md row "E12 Amendment 1", experiments/new_vs_existing/results/predictions_amend1.json · experiments (E12 card, one line) · coded and predictions filed, not run: the route split on teacher training's own states of E12's eight fine-tunes, plus-remainder read beside it.
 
+- 2026-11-02 · decisions.md · card decision-after-e62-a3 (remove, decided), next, E62 card · the user chose the free test: E62 Amendment 4 is due to run, one cluster debug job, $0; does the copying fine-tune's mask open the pieces the original model's own mask opens where it copies, and does closing them remove the masked gain.
