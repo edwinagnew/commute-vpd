@@ -1,0 +1,103 @@
+"""E59's figures from results/run.json (job 48412, which reloaded job 48357's readouts), no model. Colours as E54/E56:
+elicit green, cipher orange.
+
+  figures/readout_loss.png  next-token loss on Pile of each block's readout, on windows it trained on (held-in) and on
+                            windows it never saw (held-out), against the model's own loss and the linearised head's,
+                            with the filed bar (linearised head + 0.1 nats)
+  figures/possession.png    keys (of 32) whose value has median rank <= 20 under each block's readout, elicit and
+                            cipher, with the 24-key possession line and the last-block construction check
+
+Usage (repo root):  ~/commute-agents/fleet/cpu-run .venv/bin/python experiments/jain_readout/plot.py
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+HERE = Path(__file__).resolve().parent
+FIG, RES = HERE / "figures", HERE / "results"
+COLOR = {"cipher": "#eb6834", "elicit": "#1f9e6e", "held_out": "#2a78d6", "held_in": "#8fb8e8"}
+INK, GRID = "#52514e", "#e4e3df"
+BLOCKS = [0, 1, 2, 3]
+
+
+def style(ax: Any, title: str, ylabel: str) -> None:
+    ax.set_title(title, fontsize=10, color=INK, loc="left")
+    ax.set_ylabel(ylabel, color=INK)
+    ax.set_xlabel("block whose output the readout reads", color=INK)
+    ax.set_xticks(BLOCKS, [f"block {b}" + (" (last)" if b == 3 else "") for b in BLOCKS], fontsize=8)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.grid(axis="y", color=GRID, lw=0.6)
+    ax.set_axisbelow(True)
+
+
+def label_line(ax: Any, y: float, text: str, above: bool = True) -> None:
+    ax.annotate(text, (0.01, y), xycoords=("axes fraction", "data"), xytext=(0, 3 if above else -10),
+                textcoords="offset points", fontsize=7, color=INK)
+
+
+def readout_loss(rd: dict[str, Any]) -> None:
+    fig, ax = plt.subplots(figsize=(7.2, 4.4))
+    ax.plot(BLOCKS, rd["readout"], color=COLOR["held_out"], lw=2, marker="o", ms=5,
+            label="readout, Pile windows it never saw (held-out)")
+    ax.plot(BLOCKS, rd["held_in"]["readout"], color=COLOR["held_in"], lw=2, marker="o", ms=5, ls="--",
+            label="readout, Pile windows it trained on (held-in)")
+    lin, model = rd["lin"], rd["model"]
+    ax.axhline(model, color=INK, lw=0.8)
+    ax.axhline(lin, color=INK, lw=0.8, ls="--")
+    ax.axhline(lin + 0.1, color="#b0413e", lw=1, ls=":")
+    label_line(ax, model, f"the model's own output: {model:.2f}", above=False)
+    label_line(ax, lin, f"linearised head, a linear map the last readout could learn: {lin:.2f}", above=False)
+    label_line(ax, lin + 0.1, "filed bar for the last block: linearised head + 0.1")
+    ax.annotate(f"{rd['readout'][3]:.2f}", (3, rd["readout"][3]), xytext=(6, 2), textcoords="offset points",
+                fontsize=8, color=COLOR["held_out"])
+    ax.annotate(f"{rd['held_in']['readout'][3]:.2f}", (3, rd["held_in"]["readout"][3]), xytext=(-30, -12),
+                textcoords="offset points", fontsize=8, color=COLOR["held_in"])
+    ax.set_ylim(3.2, 5.8)
+    ax.set_xlim(-0.2, 3.45)
+    ax.legend(fontsize=7, frameon=False, loc="upper right")
+    style(ax, "Did the readouts learn the Pile, or memorise it? Next-token loss per block",
+          "next-token loss on the Pile (nats)")
+    fig.tight_layout()
+    fig.savefig(FIG / "readout_loss.png", dpi=150)
+
+
+def possession(run: dict[str, Any]) -> None:
+    fig, ax = plt.subplots(figsize=(7.2, 4.4))
+    for kind, label in (("elicit", "elicit map: value the model half-knows"), ("cipher", "cipher: value it does not")):
+        counts = [p["count"] for p in run["possession"][kind]["all"]["possession"]]
+        ax.plot(BLOCKS, counts, color=COLOR[kind], lw=2, marker="o", ms=5, label=label)
+        for b, c in zip(BLOCKS, counts, strict=True):
+            ax.annotate(str(c), (b, c), xytext=(5, 4), textcoords="offset points", fontsize=8, color=COLOR[kind])
+    ax.axhline(24, color=INK, lw=0.9, ls="--")
+    label_line(ax, 24, "possessed: at least 24 of 32 keys at median rank 20 or better")
+    band = run["P3"]["elicit_in_band"]
+    ax.scatter([3], [band], marker="D", s=40, facecolor="white", edgecolor=COLOR["elicit"], lw=1.5, zorder=3,
+               label=f"last block, elicit keys at rank 2-20 (construction check needs 24): {band}")
+    ax.scatter([3], [32], marker="*", s=90, color=INK, zorder=3,
+               label="the model's own averaged output ranks all 32 elicit values 2-20 (how the pair was built)")
+    ax.set_ylim(-1, 36)
+    ax.set_xlim(-0.2, 3.45)
+    ax.legend(fontsize=7, frameon=False, loc="upper right")
+    style(ax, "Does any block's readout hold the elicit values, and none the cipher's?",
+          "keys of 32 with value at median rank <= 20")
+    fig.tight_layout()
+    fig.savefig(FIG / "possession.png", dpi=150)
+
+
+def main() -> None:
+    FIG.mkdir(exist_ok=True)
+    run = json.loads((RES / "run.json").read_text())
+    readout_loss(run["stage0"]["readouts"])
+    possession(run)
+
+
+if __name__ == "__main__":
+    main()
