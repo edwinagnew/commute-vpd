@@ -1040,6 +1040,15 @@ def token_reading(part_broken_gates: float, part_intact_gates: float, mask_lean:
 # ----------------------------------------------------------------------------- Amendment 6's filed rules (results/predictions_amend6.json)
 
 
+@torch.no_grad()
+def masked_top1(model: Any, windows: Tensor, half: int, gates: Sequence[dict[str, Tensor]], batch_size: int, ci_len: int) -> Tensor:
+    """(N,) on the CPU: the masked forward's top token at `half` per window, seeing the first `ci_len` tokens, bf16 as `local_faith.masked_lo_windows`. Log-odds cannot give it."""
+    device = next(model.parameters()).device
+    tops = [masked_logits(model, windows[s : s + batch_size, :ci_len].to(device), {k: v.to(device) for k, v in g.items()}, None, None)[:, half].argmax(-1).cpu()
+            for s, g in zip(range(0, len(windows), batch_size), gates, strict=True)]
+    return torch.cat(tops)
+
+
 def overwrite_holds(toks: Tensor, over: Tensor, p: Tensor, b: Tensor, half: int) -> bool:
     """`over` is `toks` with B overwritten, as filed: every window held B at p + 1 and changes there alone, the new token is not B, B is nowhere left in the
     window, and the pair A -> new token is intact (the token at p is the second A at half - 1). False on no windows."""
@@ -1055,14 +1064,14 @@ def overwrite_reading(on: float, b_over: float, new_intact: float, new_over: flo
     gains when it enters them. gap = b_over - new_over. First that fires:
     "unreadable": a number not finite, or the lean under lean_min (a zero or negative denominator included).
     "mask_opens_route": gained over band_high and the new token above B by at least order_margin (whatever B does: the user's "it now says the new token").
-    "mask_holds_answer": lost and gained both under band_low and B above the new token by at least order_margin (the user's "it still says B", and no copying).
-    "mixed": anything else. Ties at a band are mixed; a tie at order_margin counts."""
+    "mask_holds_answer": lost and gained both under no_copy_max and B above the new token by at least order_margin (leans to B over the new token, and neither moves with the text).
+    "mixed": anything else. Ties at a bar are mixed; a tie at order_margin counts."""
     if not (all(finite(v) for v in (on, b_over, new_intact, new_over, lean)) and lean >= th["lean_min"]):
         return {"verdict": "unreadable", "lost": math.nan, "gained": math.nan, "gap": math.nan}
     lost, gained, gap = (on - b_over) / lean, (new_over - new_intact) / lean, b_over - new_over
     if gained > th["band_high"] and -gap >= th["order_margin"]:
         v = "mask_opens_route"
-    elif lost < th["band_low"] and gained < th["band_low"] and gap >= th["order_margin"]:
+    elif lost < th["no_copy_max"] and gained < th["no_copy_max"] and gap >= th["order_margin"]:
         v = "mask_holds_answer"
     else:
         v = "mixed"

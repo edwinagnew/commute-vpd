@@ -1,99 +1,96 @@
 {
  "experiment": "E67 weight_side_read",
  "filed": "2026-11-02",
+ "amended_before_any_run": "2026-11-02: do-nothing side only, the null also read on the rows r failed on, and the changes listed in the plan's 'Changes after review, 2026-11-02'. Nothing had run.",
  "plan": "reports/plans/2026-11-02_plan_e67-weight-side-read.md",
- "question": "On 128 Pile rows at every position: how much do Γ's values change, and does the re-switching term's overlap with the update's own output change separate a fine-tune that learned nothing from the copy fine-tunes?",
+ "question": "On 128 Pile rows at every position: how much do Γ's values change, and does the re-switching term's overlap with the update's own output change separate a fine-tune that learned nothing from the copy fine-tunes, also on the rows where r failed that fine-tune?",
  "definitions": {
-  "a": "W0's input to the matrix, at every position (one choice per matrix: all four terms see the same vector)",
+  "a": "W0's input to the matrix, at every position",
   "g0, g1": "Γ's value per position and subcomponent, on W0's and on W1's activations of the same row; released Γ, fp32, no autocast",
-  "D": "g0 (C1 - C0) a",
-  "R": "(g1 - g0) C0 a",
-  "I": "(g1 - g0)(C1 - C0) a",
-  "E": "δW a - (g1 C1 - g0 C0) a, from the whole masked change, not by subtraction of the shares",
-  "S_X": "E<X, δW a> / E||δW a||^2, numerators and denominators summed over positions, then over the 24 matrices for the pooled reading",
-  "mean_abs_dg": "E|g1 - g0| per subcomponent and position, over all 38,912 subcomponents pooled, and per matrix over its own"
+  "R": "(g1 - g0) C0 a. Every read is the do-nothing state, C1 = C0, so the direct and interaction terms are 0 by algebra and the residual is everything else; none is reported",
+  "S_R": "E<R, δW a> / E||δW a||^2, numerators and denominators summed over positions, then over the 24 matrices for the pooled reading",
+  "mean_abs_dg": "E|g1 - g0| per subcomponent and position, over all 38,912 subcomponents pooled, and per matrix over its own",
+  "code_held": "E36's 64 held-out rows at or above its code-share cut (experiments/regating_table/results/large/code_held.pt), the rows on which r failed the learned-nothing null",
+  "leave_one_chunk_out": "S_R recomputed with each 16-row chunk left out, from the chunk's pooled numerator and denominator saved in run.json; its max minus min is the spread. Report-only"
  },
  "config": {
   "rows_split": "val",
   "rows_cached": 256,
   "rows": 128,
   "chunk": 16,
-  "split_tol": 1e-06,
-  "gaussian_seed": 67,
-  "ones_students": ["ident32_s0", "rand32b_s0"]
+  "gaussian_seed": 67
  },
  "states": {
-  "order": ["ident32_s0", "code_step10", "ident32_s1", "code_step100", "rand32_s0", "rand32_s1", "gaussian"],
-  "each": "do-nothing (C1 = C0) and the least-squares split (split.split_state) of the same δW, read in one pass: same W1, same g1, so S_R is the same by construction",
-  "gaussian": "iid normal per matrix, scaled per matrix so E||G a||^2 on these 128 rows equals ident32_s0's; seed 67; not saved, regenerated from the seed"
- },
- "size_ratio_table": {
-  "ident32_s0": 1.28, "ident32_s1": 1.26, "ident32b_s0": 1.23, "ident32b_s1": 1.31,
-  "rand32_s0": 1.34, "rand32_s1": 1.35, "rand32b_s0": 0.89, "rand32b_s1": 0.87
+  "order": ["ident32_s0", "code_step10", "ident32_s1", "code_step100", "gaussian"],
+  "held_rows": ["code_step10", "ident32_s0"],
+  "held_rows_note": "Read after the states on batches(code_held, 16), sha256 checked against stage0a.json groups['e36/code'].held_sha256",
+  "gaussian": "iid normal per matrix, scaled per matrix so E||G a||^2 on the 128 rows equals ident32_s0's; seed 67; not saved, regenerated from the seed"
  },
  "thresholds": {
   "keep_code_max": 0.1,
-  "keep_code_max_source": "Chosen here, no source: the advice's guess",
+  "keep_code_max_source": "Chosen here, no source: the advice's guess. Also the bar on code_step10 on code_held",
   "keep_copy_min": 0.4,
   "keep_copy_min_source": "Chosen here, no source: the advice's guess",
   "drop_band": 0.15,
   "drop_band_source": "Chosen here, no source: the advice's guess",
+  "seed_spread_min": 0.1,
+  "seed_spread_min_source": "Chosen here, no source: the lead's decision after review. Labels that differ across copy seeds with a spread under this read between",
   "tie_eps": 1e-09,
-  "tie_eps_source": "So a tie, as filed inclusive, is not lost to float rounding",
-  "size_rel_tol": 0.0001,
-  "size_rel_tol_source": "Measured floor: ||rebuilt δW|| / filed rel_norm_max on h.3.mlp.down_proj is constant to 5e-6 relative over nine of E12 Amendment 1's ten students. rand32b_s1 reads 0.2% off on that matrix, presumably as its maximum is on another; that needs W0's norms, so stage a settles it, in its first minute. 20 x that floor",
-  "size_ratio_tol": 0.006,
-  "size_ratio_tol_source": "The table prints two decimals: half a unit in the last place, plus 0.001",
-  "identity_tol": 0.0001,
-  "identity_tol_source": "Measured floor on saved ident32_s0 with white a: identity miss 1.6e-7 per matrix, student factored against dense energy 1.3e-13. Real a are not white, so about 600 x the floor; the run prints the reading",
-  "sum_tol": 0.0001,
-  "sum_tol_source": "Measured floor on saved ident32_s0 with white a and stub gates: largest per-matrix |sum - 1| 2.8e-7. Real a are not white, so about 350 x the floor; the run prints the reading"
+  "tie_eps_source": "So a tie, as filed inclusive, is not lost to float rounding"
  },
  "verdict_rules": {
   "pair": "For one code reading c and one copy reading s, S_R of do-nothing, in this order: |c - s| <= drop_band: drop. c > s: reversed. s < keep_copy_min or c > keep_code_max: between. c < -keep_code_max: code_negative. Else keep. Ties count as written (<=, >=), up to tie_eps",
-  "overall": "unreadable if any of the four pairs (code_step10 and code_step100, against ident32 s0 and s1) is, or a control stopped. Else the two code_step10 pairs decide: if they differ, seeds_disagree; else their common label, except a keep where either code_step100 pair is not keep, which is keep_at_step10_only",
+  "overall": "The two code_step10 pairs decide. If they differ: between when |S_R(ident32_s0) - S_R(ident32_s1)| < seed_spread_min, a tie at the bar being not under it, else seeds_disagree. If they agree: their common label, except a keep where either code_step100 pair is not keep, which is keep_at_step10_only",
+  "held_rows": "Any label that would adopt the read (keep, keep_at_step10_only) reads between, with flag held_rows_fail, when S_R(code_step10) on code_held is over keep_code_max; a tie is read as not over. S_R(ident32_s0) on code_held is printed beside it, report-only. A drop, or any other label, from the 128 rows stands whatever code_held reads",
   "why_step10_decides": "ident32's fine-tunes are step 10, and the advice names code_step10; code_step100 can only take a keep back",
   "drop_both_small": "A drop in which |c|, |s0| and |s1| are all <= keep_code_max is flagged: the read sees nothing on Pile rows, which is not the same as reading alike at a large value",
   "gaussian_like_copy": "Beside the verdict, no change to it: |S_R(gaussian) - mean S_R(ident32)| <= drop_band",
+  "report_only": "The leave-one-chunk-out spreads, and each chunk's numerator and denominator. The verdict keeps its bars",
   "verdicts": {
-   "keep": "S_R(code) <= 0.1 and S_R(copy) >= 0.4 on both copy seeds, at both code steps. Next: a weight-side column for E62 and E58 is proposed to the user; unless gaussian_like_copy, which goes to the user first",
-   "keep_at_step10_only": "Keep at step 10, not at step 100. Next: not kept; the size dependence goes to the user with the numbers",
-   "drop": "S_R(code) within 0.15 of S_R(copy) on both seeds. Next: the idea goes to TRIED.md as dropped; the all-position reading of Γ's change stands by itself",
-   "between": "Neither: a gap over the band, but the code reading is above 0.1 or the copy reading below 0.4. Next: not adopted, no new run; the lead puts the numbers beside the noise floor and decides whether to raise it",
+   "keep": "S_R(code) <= 0.1 and S_R(copy) >= 0.4 on both copy seeds, at both code steps, and S_R(code_step10) on code_held <= 0.1. Next: the split side is added, and a weight-side column for E62 and E58 is proposed to the user; unless gaussian_like_copy, which goes to the user first",
+   "keep_at_step10_only": "Keep at step 10, not at step 100, and S_R(code_step10) on code_held <= 0.1. Next: not kept; the size dependence goes to the user with the numbers",
+   "drop": "S_R(code) within 0.15 of S_R(copy) on both seeds. Next: the idea goes to TRIED.md as dropped; the all-position reading of Γ's change stands by itself. The split side is never added",
+   "between": "Neither: a gap over the band, but the code reading is above 0.1 or the copy reading below 0.4; or labels differing across seeds with a spread under 0.1; or held_rows_fail. Next: not adopted, no new run; the lead puts the numbers beside the leave-one-chunk-out spreads and decides whether to raise it",
    "reversed": "The learned-nothing fine-tune reads above the copy fine-tunes by more than the band. Next: as drop, and a loud report, since the advice's only hope for the read is the opposite order",
    "code_negative": "A gap with the copy reading >= 0.4, but S_R(code) < -0.1: on a learned-nothing update the re-switching term opposes the update's change, which is a response, not a reading of nothing. The advice's bar is one-sided; this branch is added here. Next: not kept; goes to the user",
-   "seeds_disagree": "The two copy seeds give different labels against code_step10. Next: no verdict; the seeds' spread is the finding",
-   "unreadable": "A control stopped, or a reading is missing or not finite. Next: tell the lead; nothing is read"
+   "seeds_disagree": "The two copy seeds give different labels against code_step10, with a spread of at least 0.1. Next: no verdict; the seeds' spread is the finding",
+   "dead_read": "mean_abs_dg is exactly 0 on a state with a nonzero update: Γ's values did not move at all, which would otherwise read S_R = 0 and land on the lean. Exit 1. Next: tell the lead; nothing is read",
+   "unreadable": "The zero control stopped, or a state's S_R is not finite. Exit 1. Next: tell the lead; nothing is read"
   }
  },
  "lean": {
   "verdict": "drop, from the advice: R has no δW in it beyond Γ's response, and E36's code fine-tune moved the activations, which is all Γ needs. Low-medium: unmeasured",
   "gaussian": "S_R(gaussian) below the copy fine-tunes: guess 0 to 0.2 against 0.2 to 0.6"
  },
+ "positive_control": "The read has no positive control on real rows, only the unit test (tests/test_weight_side.py: a gate moved by 1 on the subcomponent equal to the update reads 1, on one writing elsewhere 0). No saved state is a known re-gating update. The zero control and dead_read only show that a read is live, not that it reads correctly. Any report of this run says so",
  "expected_values": {
-  "W1 = W0": {"S_X": "undefined, 0/0 (algebra)", "numerators": "0 exactly (algebra, and a repeated Γ pass being exact)", "mean_abs_dg": "0 exactly"},
-  "do-nothing, ident32": {"S_D": "0 (algebra)", "S_I": "0 (algebra)", "S_R": "guess 0.2 to 0.6", "S_E": "1 - S_R (algebra)", "mean_abs_dg": "guess 1e-4 to 1e-2; no bar"},
-  "least squares, ident32": {"S_D": "guess 0.1 to 0.5", "S_R": "the do-nothing's (one pass)", "S_I": "guess |S_I| < 0.1", "S_E": "1 - S_D - S_R - S_I (checked, not subtracted)", "mean_abs_dg": "the do-nothing's"},
-  "learned nothing, code_step10, code_step100": {"S_R": "guess 0.2 to 0.6, not separable from copy", "S_D": "guess the same range as copy", "S_I": "guess |S_I| < 0.1", "mean_abs_dg": "guess the same order as copy; no bar"},
-  "rand32": {"S_R": "guess 0.1 to 0.6: a reference with the same size of update as copy, read for its seed spread", "mean_abs_dg": "guess the same order as copy"},
-  "matched gaussian": {"S_R": "guess 0 to 0.2", "S_D": "guess <= 0.3", "S_I": "guess about 0", "mean_abs_dg": "guess under copy"},
-  "control, size": {"rel / filed": "1 within 1e-4", "student / teacher": "the table's, 0.87 to 1.35"},
-  "control, every gate on": {"least squares": "E||D a||^2 / E||δW a||^2 = 1 - omega - 2 cross + second", "students, update := student's own δW": "S_D = 1"}
+  "W1 = W0, one chunk of the 128 rows, the control": {"S_R": "undefined, 0/0 (algebra)", "numerator and denominator": "0 exactly (algebra)", "mean_abs_dg": "0 exactly (a repeated Γ pass being exact)"},
+  "W1 = W0, code_held": {"S_R": "undefined, 0/0 (algebra)", "numerator and denominator": "0 exactly (algebra)", "mean_abs_dg": "0 exactly: the same pass on other rows; not run, the control's one chunk stands for it"},
+  "do-nothing, ident32": {"S_R": "guess 0.2 to 0.6", "mean_abs_dg": "guess 1e-4 to 1e-2; no bar"},
+  "do-nothing, learned nothing, code_step10, code_step100": {"S_R": "guess 0.2 to 0.6, not separable from copy", "mean_abs_dg": "guess the same order as copy; no bar"},
+  "do-nothing, matched gaussian": {"S_R": "guess 0 to 0.2", "mean_abs_dg": "guess under copy"},
+  "do-nothing, code_step10 on code_held": {"S_R": "guess 0.2 to 0.6, as on the 128 rows or above: this is the kind of text it trained on, and where r read high", "mean_abs_dg": "guess the same order as on the 128 rows or above; no bar"},
+  "do-nothing, ident32_s0 on code_held": {"S_R": "guess 0.2 to 0.6: off its task on these rows as on the 128; report-only", "mean_abs_dg": "guess the same order as on the 128 rows; no bar"},
+  "leave_one_chunk_out spread": {"W1 = W0": "not computed, 0/0", "each state": "guess under 0.1 on the 128 rows, larger on code_held's 4 chunks; no bar"}
  },
  "edge_cases": {
-  "zero denominator": "W1 = W0: den 0, every share None (weight_side.shares), checked by numerators; a None reading makes the verdict unreadable",
-  "ties": "c = 0.1 and s = 0.4 keep; |c - s| = 0.15 drop (tests/test_weight_side.py)",
-  "negative shares": "S_R is signed and has no ceiling at 1; s > 1 can keep; a large negative c is code_negative; both negative and apart is between",
-  "two seeds disagree": "seeds_disagree, whichever labels",
+  "zero denominator": "W1 = W0: the control reads numerators and mean_abs_dg and forms no share. A state with a zero denominator cannot occur on these fine-tunes, and would raise and exit 1",
+  "not finite": "A state's S_R that is not finite stops the job as unreadable before the verdict, and a non-finite Γ raises in param-decomp's own assert, so the verdict's pool holds floats only; no None or NaN branch exists",
+  "ties": "c = 0.1 and s = 0.4 keep; |c - s| = 0.15 drop; a spread of 0.1 across seeds is not under the bar, so differing labels read seeds_disagree; S_R(code_step10) on code_held = 0.1 is not over (tests/test_weight_side.py)",
+  "negative shares": "S_R is signed and has no ceiling at 1; s > 1 can keep; a large negative c is code_negative; both negative and apart is between; a negative code_held reading never takes a keep back, as the rule is one-sided",
+  "two seeds disagree, spread of 0": "Cannot happen: one c and one s give one label",
+  "two seeds disagree, spread under 0.1": "between. keep against drop cannot land here: their gaps are at least 0.3 and at most 0.15, so that spread is at least 0.15",
+  "two seeds disagree, spread at least 0.1": "seeds_disagree, whichever labels",
   "a gap, code above copy": "reversed, a case the advice's two rules leave open",
   "a gap, code under -0.1": "code_negative, a case the advice's bar would call keep",
   "the gap between the rules": "between",
-  "step 100 against step 10": "only a keep can move, to keep_at_step10_only"
+  "step 100 against step 10": "only a keep can move, to keep_at_step10_only",
+  "code_held against a drop": "a drop stands whatever code_held reads",
+  "one chunk": "leave_one_chunk_out would be 0/0; the filed reads have 8 and 4 chunks"
  },
  "departures_from_the_advice": [
-  "The student's size ratios (0.87 to 1.35) are Frobenius rel_norm_max, the largest ||δW||/||W|| in each state, often on different matrices, not an input-weighted E||δW a||^2. The advice's 'full term reproduces them' cannot hold. Replaced by: the Frobenius ratio from the saved offsets reproduces the table, and with every gate on, on real a, a student's own δW gives S_D = 1",
-  "1 - omega_act is not what a g = 1 direct term reads: the exact form adds -2 cross + second, computed in `weight_side.split_identity`. Exact to the rounding floor, so no tolerance has to absorb the cross term",
-  "S_E is computed from the whole masked change, so the shares' sum is a check and not a definition",
-  "Bars one-sided in the advice gain reversed and code_negative; between fills the gap"
+  "The split side is not read: the verdict needs only the do-nothing S_R, and a drop, the lean, never reads the split. The advice's two identities therefore run no control here. They stand corrected for when it is added: the student's size ratios (0.87 to 1.35) are Frobenius rel_norm_max, not an input-weighted E||δW a||^2, and 1 - omega_act is not what a g = 1 direct term reads, since the exact form adds -2 cross + second",
+  "Bars one-sided in the advice gain reversed and code_negative; between fills the gap",
+  "The rows where r failed are read as well, and can take back a label that would adopt the read"
  ]
 }

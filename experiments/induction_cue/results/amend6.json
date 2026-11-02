@@ -1,0 +1,114 @@
+{
+ "b_probability": {
+  "mask_b_over": {
+   "at_mean_log_odds": 0.00014575151995617662,
+   "mean_over_windows": 0.00759906548433062
+  },
+  "mask_on": {
+   "at_mean_log_odds": 0.0006750827113316052,
+   "mean_over_windows": 0.05978484053266733
+  },
+  "own_b_over": {
+   "at_mean_log_odds": 1.0678367526218675e-05,
+   "mean_over_windows": 4.4857106266744e-05
+  }
+ },
+ "fp32": {
+  "b_over": -8.836736838817597,
+  "gained": 0.05357491771127139,
+  "gained_sd": 0.009682871258946247,
+  "gap": 2.311883144378662,
+  "gap_sd": 0.1842974970089388,
+  "lean": 4.341132245063782,
+  "lost": 0.3527811496145772,
+  "lost_sd": 0.021364495672501593,
+  "new_intact": -11.381195785999298,
+  "new_over": -11.148619983196259,
+  "on": -7.3052672147750854,
+  "on_diff_a5": 0.0,
+  "on_window_max_abs_a5": 0.0,
+  "verdict": "mixed"
+ },
+ "git_head": "f6583faac5dccd770390c497d6344b23ca43dd3e",
+ "host": "NVIDIA L40",
+ "mask": {
+  "b_over": -8.833461542129516,
+  "gained": 0.053233846185896404,
+  "gained_sd": 0.009696274510120605,
+  "gap": 2.313760714530945,
+  "gap_sd": 0.1839867939364722,
+  "lean": 4.341132245063782,
+  "lost": 0.3532399906183361,
+  "lost_sd": 0.02136923501247123,
+  "new_intact": -11.378317422866822,
+  "new_over": -11.147222256660461,
+  "on": -7.30000002861023,
+  "on_diff_a5": 0.0,
+  "on_window_max_abs_a5": 0.0,
+  "verdict": "mixed"
+ },
+ "ones": {
+  "b_over": -12.961272778511047,
+  "gained": 1.2435070549361003,
+  "gained_sd": 0.04198474586843921,
+  "gap": -8.779188075065612,
+  "gap_sd": 0.2863895912020229,
+  "lean": 7.009978628158569,
+  "lost": 1.226147517391464,
+  "lost_sd": 0.03146742002999628,
+  "new_intact": -12.899042582511902,
+  "new_over": -4.182084703445435,
+  "on": -4.366004886627198,
+  "on_diff_a5": 0.0,
+  "on_window_max_abs_a5": 0.0,
+  "verdict": "mask_opens_route"
+ },
+ "ones_control": {
+  "status": "pass"
+ },
+ "overwrite": {
+  "new_elsewhere_in_window": 1,
+  "new_tokens": 117,
+  "pool": 178,
+  "seed": 62
+ },
+ "own_mask": {
+  "b_over": -11.44727991104126,
+  "new_over": -6.794422264099121
+ },
+ "predictions_sha256": "bacaf1bb043c0919f0bba232e34ed4dffa0874cf75cf3a510d82e1aaa87638fd",
+ "target": {
+  "b_over": -12.990754885673523,
+  "gained": 1.232681909021428,
+  "gained_sd": 0.04283281940554695,
+  "gap": -8.485989694595336,
+  "gap_sd": 0.2892414409744631,
+  "lean": 6.835532755851745,
+  "lost": 1.2114486010523897,
+  "lost_sd": 0.03163632269700986,
+  "new_intact": -12.93080275774002,
+  "new_over": -4.504765191078186,
+  "on": -4.709858291149139,
+  "on_diff_a5": 0.0,
+  "on_window_max_abs_a5": 0.0,
+  "verdict": "mask_opens_route"
+ },
+ "target_control": {
+  "status": "pass"
+ },
+ "top1": {
+  "mask_b_over": 0.035,
+  "mask_new_intact": 0.0,
+  "mask_new_over": 0.0,
+  "mask_on": 0.195,
+  "own_b_over": 0.0,
+  "own_new_over": 0.24
+ },
+ "verdict": {
+  "fp32_verdict": "mixed",
+  "gained": 0.053233846185896404,
+  "gap": 2.313760714530945,
+  "lost": 0.3532399906183361,
+  "verdict": "mixed"
+ }
+}
