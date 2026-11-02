@@ -1,0 +1,96 @@
+{
+ "experiment": "E66 interchange_67m, the feasibility probe: can the context patch and the units share read anything on the 67M's fine-tunes? Controls only.",
+ "filed": "2026-11-02",
+ "plan": "reports/plans/2026-11-02_plan_e66-interchange-67m.md, section Amendment 1; reports/plans/2026-11-02_advice_e66-review-FABLE.md, option A",
+ "scope": "These rules read only W0, the zero update and the three built controls. T, T_off, Q and U on E62's six states, the eight copy and random-map states and E62 Amendment 2's scaled copies are reported marked exploratory, with no filed verdict and no row label. A decision card after the run says whether the 41 rows get filed rules or E65 returns.",
+ "settings": {
+  "half": 20,
+  "seed": 66,
+  "heldout_every": 5,
+  "per_key": 64,
+  "copy_pairs": 512,
+  "u_every": 8,
+  "mean_spans": 512,
+  "k_grid": [1, 4, 16, 64, 256, 1024, 4096, 12288],
+  "n_draws": 5,
+  "amp_cap": 8.0,
+  "match_tol": 0.05,
+  "sharpen": {"tau": 0.5, "lr": 3e-5, "batch": 32, "steps": 30, "grad_clip": 1.0, "seed": 66, "n_spans": 512}
+ },
+ "settings_sources": {
+  "half, heldout_every": "E62's windows (induction_cue predictions.json settings)",
+  "per_key": "the plan's 64 contexts per key; unsourced beyond that (the plan's Departures)",
+  "copy_pairs": "16 per key x 32 keys, the count the quarter rule gives the other maps",
+  "u_every": "chosen here for time: 256 windows, E62 read its shares on 200",
+  "mean_spans": "E62's mean_spans",
+  "k_grid": "E56's b2_grid (keydependent_patch predictions.json)",
+  "n_draws": "the plan; E62's n_random",
+  "amp_cap": "chosen here: an upper limit on (1 + alpha) of 9, reported as status cap when reached; it bounds the control, it does not set a reading",
+  "match_tol": "chosen here; E46's relative band is of this order (perturb.match)",
+  "sharpen": "the plan: temperature 0.5 (unsourced), Adam 3e-5 and clip 1.0 from E12, 30 steps from the plan; batch and sampling are finetune.ReferenceConfig's default (E55 C3), KL over every position of plain Pile spans from training rows"
+ },
+ "thresholds": {
+  "floor": 0.5,
+  "z": 3.0,
+  "n_boot": 2000,
+  "min_pairs": 200,
+  "min_keys": 8,
+  "identity_tol": 1e-4,
+  "g_tol": 0.02,
+  "gain_floor": 1.0,
+  "k_fall": 1.0,
+  "q_band": 0.2,
+  "write_t_min": 0.5,
+  "blind_share": 0.5
+ },
+ "threshold_sources": {
+  "floor, z, min_pairs, min_keys, g_tol, gain_floor, k_fall": "the plan (Rules against their edge cases; stages)",
+  "identity_tol": "measured: E52's stage 0 identity edit read 1.7e-5 nats max per window at fp32 on its 48 windows, so the plan's 1e-6 would stop on rounding (E38 Amendment 3's lesson); about 6 times that. Noise floor measured again in this run as identity_max.",
+  "q_band": "chosen here, a lean; the run's own 3 s widens it. A miss stops nothing",
+  "write_t_min": "chosen here, a lean; a miss stops nothing. Fable's finding 3: the last layer norm pulls T below 1 as the update grows",
+  "blind_share": "Fable's finding 1. A mark, not a filed verdict"
+ },
+ "predictions": {
+  "C0_identity": {"rule": "Largest |patched - unpatched| over all maps, both arms, blocks 1-3, W0 with the patch from x_lo's own run, is at most identity_tol. A tie passes; nan fails.", "expected": "about 1e-5", "on_miss": "stop"},
+  "C1_zero_update": {"rule": "Largest |R(zero update) - R(W0)| per pair over all maps and blocks 1-3 is at most identity_tol. Then T is 1 within about 2e-4, since a map's mean R(W0) is at least 0.5.", "expected": "0 to 1e-5", "on_miss": "stop"},
+  "C2_w0_response": {"rule": "l* per map is the earliest of blocks 1, 2, 3 with mean R(W0) at least floor and at least z bootstrap sds of that mean (ties count); none, or fewer than min_pairs pairs or min_keys keys, voids the map. Stop if half the six maps or more are void.", "expected": "Copy map: R(W0) near 0 at blocks 1 and 2, l* = 3 (Fable's finding 1). Other maps: unknown, this is the probe's first question. Three void maps is a stop, as the plan's stage 0 has it.", "on_miss": "stop"},
+  "C3_K": {"rule": "K is the smallest of k_grid whose mean-ablation lowers W0's log-odds on the half-known map's held-out windows by at least k_fall (a tie counts).", "expected": "64 to 256", "on_miss": "U void everywhere; amplify is not built; stage 1 stops"},
+  "C4_write": {"rule": "At the map's l*: T in [write_t_min, 1 + z s] (ties count), and |Q - 1| within max(q_band, z s_Q). The copy map has no write: its reference is the lookup's write, read at the copy map's l*.", "expected": "T near 1, below it when G is large (the last layer norm); Q near 1", "on_miss": "report; nothing stops"},
+  "C5_amplify": {"rule": "At the map's l*, T(amplify) - T(write) > z max(s, s_write), strict. Stop if this misses on half or more of the maps where it can be read, or none can be.", "also": "the same on Q, reported, not a stop: a miss means Q has no high control and T / T_off cannot see reuse even by algebra.", "expected": "above on T; above on Q is a lean, since amplifying neurons may raise the off-map response too", "on_miss": "stop on T"},
+  "C6_sharpen": {"rule": "At the map's l*, T(sharpen) - T(write) > z max(s, s_write), strict, and |Q - 1| within max(q_band, z s_Q).", "expected": "T above the write and at most about 2; Q near 1, since Q exists to cancel exactly this. If T does not clear the write, 30 steps did not sharpen at the marker: reported as too weak, which says nothing about Q.", "on_miss": "report; nothing stops"},
+  "C7_units": {"rule": "U(write) is not above the matched null's mean by more than z null sds; U(amplify) is. Strict.", "expected": "write near the draws; amplify above", "on_miss": "report; a miss on either voids U's reading in the decision card"},
+  "C8_reproduce": {"rule": "Each of the fourteen states' gain re-reads within g_tol of its filed value: E62's in log-odds on its read windows (run.json), E46's in log P on its held-out windows (baseline_neurons.json gains).", "expected": "within 1e-3", "on_miss": "stop"}
+ },
+ "expected_at": {
+  "W0": "T = 1 by definition; Q = 1; R(W0) is the denominator. U void (no gain).",
+  "zero_update": "As W0: T and Q 1 within about 2e-4; U void, G = 0 under gain_floor.",
+  "do_nothing": "Not built. T reads the target model, so a do-nothing state reads as its own state would (the plan's table)."
+ },
+ "noise_floor": "s is the pair bootstrap sd of the ratio of means (n_boot resamples). Seed spread is read across each map's saved seeds in the report; the controls have one seed each, so their s is the pair sd only. Identity: identity_max, measured in the run.",
+ "blind_to": {
+  "T": "An update upstream of l*: the patch overwrites it, so T reads the control's value (mark 'blind'). Attention at other positions. A new readout on W0's key features, since the key is fixed. A mechanism W0 has but does not run on this input.",
+  "T_off and Q": "A state that changes its off-map target's response on purpose. Q cancels only what the on-map and off-map responses share.",
+  "U": "Gain carried by attention, and gain routed through neurons W0 does not rank highly for this answer.",
+  "mark": "Steering's mean shift misses window-specific changes, so 'readable' can overstate; its share on E46's states is in log P, on E62's in log-odds."
+ },
+ "edge_cases": {
+  "zero denominator, R(W0) under floor or z sds": "ctxpatch.ratio gives nan at that block; l_star skips it; never a low reading.",
+  "negative mean R(W0)": "cannot pass the floor; void at that block, and printed in R0.",
+  "individual pairs with R(W0) at or below 0": "kept: a ratio of means has no per-pair denominator.",
+  "a key with under 4 windows": "no pair for it (quarter_pairs).",
+  "under min_pairs pairs or min_keys keys": "the map is void, l* None, no controls built; U is still read.",
+  "ties in W0's ranking": "stable sort, window order.",
+  "T_off void, not positive, or crossing 0 in a resample": "Q and s_Q are nan; C4 and C6 read void on Q, C5 reads void and stops nothing on Q.",
+  "T or a reference nan": "above, near_one and t_band read 'void', counted neither as a pass nor as a miss.",
+  "every map void on amplify's T": "stage1_status stops: no map can be read.",
+  "tie at exactly half the maps": "stops (stage0_status, stage1_status).",
+  "gain under gain_floor, including zero update and W0": "units_share is nan; U is void.",
+  "U negative (ablation raises the gain)": "kept and reported.",
+  "tie at a bar": "between: bar is strict, as interchange.label.",
+  "hi not above lo, or a nan": "the bar is void, and reported as void.",
+  "no K on the grid": "U is void on every state, amplify is not built, and stage 1 stops since no map can be read.",
+  "a neuron cell empty in the null's grid": "matched_draw falls back to the same activation decile, then any free neuron.",
+  "under 3 finite rows, or no spread, in Spearman": "nan."
+ },
+ "granularity_limit": "A new circuit from old pieces reads 'elicited' to VPD and can read reuse here too (user, 2026-10-29). No reading here labels a row."
+}
