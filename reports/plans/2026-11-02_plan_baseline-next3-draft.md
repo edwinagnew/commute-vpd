@@ -1,6 +1,6 @@
 # Plan (DRAFT, Fable's advice): after E59, the readout at the table's vocabulary, or pause the line
 
-**Status: option 1 (E62) APPROVED by the user 2026-11-02 (dialog, ask #9). Drafted by Fable after E59 closed unreadable. Before coding: the E59 check's M1 (model's own per-window ranks through the P3 rule) must run and E62's P3-style rule be set from it.**
+**Status: option 1 (E64; first called E62, a code the re-gating lead holds) APPROVED by the user 2026-11-02 (dialog, ask #9). Drafted by Fable after E59 closed unreadable. Before coding: the E59 check's M1 (model's own per-window ranks through the P3 rule) must run and E62's P3-style rule be set from it.**
 (`reports/analyses/2026-11-02_analysis_e59-jain-readout.md`). Terms as in `GOALS.md`; r = the route split's re-gating
 share; "prior" = W0's probability of the trained value after its key.
 
@@ -50,7 +50,7 @@ for C2, (3) costs nothing and the folded wording above goes into the write-ups n
 - *Control first:* stage 0 below, alone, early stop.
 - *Class:* none; a new readout definition, so this draft is the ask.
 
-## Claim, null, predictions (E62 if approved)
+## Claim, null, predictions (E64)
 **Claim.** Some block before the last holds the elicit values, key-specifically, as a linear readout trained on the
 Pile over the table's 64 values, and not the cipher's; removing that direction costs the elicit fine-tunes more of
 their gain than the ciphers. **Null.** The elicit values are held only where the readout is the output (last block),
