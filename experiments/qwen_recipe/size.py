@@ -13,6 +13,7 @@ import argparse
 import json
 import math
 import os
+import resource
 import sys
 import time
 from dataclasses import dataclass, replace
@@ -32,7 +33,7 @@ from commute.qwen_vpd import importances, masked_logits
 
 PRED = RESULTS / "predictions_size.json"
 LADDERS = {"gold_1e-5": RESULTS / "large" / "train" / "gold_1e-5", "gold_s0": E45 / "large" / "dW" / "gold_s0"}
-X_ON_FILE = ("gold_s0", "gauss")  # read by checks.py, which saved their splits (results/large/checks/): reused, flagged
+K10_ON_FILE = ("gold_s0", "gauss")  # checks.py read their true K10 and K11 on 16 rows, on the fp32 X: reproduced here
 KINDS = ("gauss", "inspan")  # E57's keys: the Gaussian change, and the alive-subcomponent change
 READ_BY_E57 = ("gold_s0", *KINDS)
 BIGS = tuple(f"{k}_big" for k in KINDS)
@@ -63,7 +64,8 @@ class SizeCfg:
         return LADDERS[self.ladder] / f"step_{step}.safetensors"
 
 
-CONFIGS = {128: SizeCfg(), 2: SizeCfg(rows=2, select_rows=2, chunk=2, prefix="size2", gold_rule="", ladder="gold_s0", steps=(5, 9))}
+# The rehearsal's chunk is 1, so the true pass's second chunk and a resume inside the pass run (review S4).
+CONFIGS = {128: SizeCfg(), 2: SizeCfg(rows=2, select_rows=2, chunk=1, prefix="size2", gold_rule="", ladder="gold_s0", steps=(5, 9))}
 
 
 class Size(Checks):
@@ -192,6 +194,9 @@ def true_chunk(lab: Size, rows: Tensor, change: Any) -> dict[str, list[float]]:
         ref, g1 = ref.cpu(), host(g1)  # off the GPU before the next forward: the rule is 44 GiB, peak 42.4
         lab.use("W0")
         held.append((r, ref, host(importances(model, r[None].to(DEV), gamma, comps)[1]), g1))
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6
+    if peak > lab.R["host_stop_gb"]:  # Slurm's kill at 128G is exit 137, outside the sbatch's 0/1/3, and repeats on resubmit
+        lab.stop("host_memory", f"host peak {peak:.1f} GB after {len(rows)} rows of masks > {lab.R['host_stop_gb']}")
     out = {"K00": [against(r, ref, g0) for r, ref, g0, _ in held], "K10": [], "K11": []}
     with qwen_maps.applied(model, comps, lab.alive, change, {s: x.weight.data for s, x in linears(model).items()}):
         for r, ref, g0, g1 in held:
@@ -212,7 +217,7 @@ def true_pass(lab: Size, tail: str, name: str, out: dict[str, Any], rows: Tensor
         for c in t:
             t[c] += k[c]
         lab.save(tail, out, {"true_from_row": s, **k})
-    if name in X_ON_FILE:
+    if name in K10_ON_FILE:
         o, n = lab.get(f"checks_k10_{name}")["true"]["per_row"], min(len(rows), CFG.n16)
         pairs = {c: (sum(t[c][:n]), sum(o[c][:n])) for c in ("K10", "K11")}
         lab.check(f"true_vs_checks_{name}", all(qr.close(a, b, CFG.rep_tol) for a, b in pairs.values()), pairs)
@@ -270,6 +275,11 @@ def stage_select(lab: Size) -> None:
     lab.save("select", out | new, new)
 
 
+def scale_of(lab: Size, name: str) -> float:
+    """b, where a state is W0 + b δW: its search's for a scaled random change, otherwise 1."""
+    return lab.read(f"search_{name.removesuffix('_big')}")["b"] if name in BIGS else 1.0
+
+
 def state_of(lab: Size, name: str) -> tuple[dict[str, Tensor], str]:
     """A state's δW and its identity: the file's sha256, or, for a random change rebuilt from its seed, kind and scale."""
     if name == "gold_s0":
@@ -281,7 +291,7 @@ def state_of(lab: Size, name: str) -> tuple[dict[str, Tensor], str]:
         lab.check(f"sha256_{name}", got == want, {"sha256": got, "select": want})
         return load(p), got
     lab.park_gamma()
-    dW, b = state_dw(lab, kind), lab.read(f"search_{kind}")["b"] if name != kind else 1.0
+    dW, b = state_dw(lab, kind), scale_of(lab, name)
     for g in dW.values():
         g.mul_(b)
     return dW, f"rebuilt {kind} x {b}"
@@ -299,18 +309,40 @@ def read_cells(lab: Size, tail: str, name: str, out: dict[str, Any], key: str, r
     lab.save(tail, out, {key: out[key], "identity": out["identity"]})
 
 
+def check_size(lab: Size, name: str, base: dict[str, list[float]]) -> None:
+    """A state's size here against what its search or `select` wrote: the same weights, or a stop. Also catches a state
+    file left from an earlier search."""
+    states = lab.read("select")["states"]
+    if name in BIGS:
+        got, want = size_of(base, list(range(len(base["K0"])))), lab.read(f"search_{name.removesuffix('_big')}")["size"]
+    elif name in states:
+        got, want = size_of(base, list(range(lab.size_cfg.select_rows))), states[name]["size_select"]
+    else:
+        return
+    lab.check(f"size_{name}", qr.close(got, want, CFG.rep_tol), {"here": got, "written": want})
+
+
+def check_kl(lab: Size, name: str, kls: dict[str, list[float]]) -> None:
+    """The second size axis against checks_sizes.json, on the 128 rows it was read from: every gap reads this KL."""
+    ref = lab.get("checks_sizes")["states"][name]
+    pairs = {f"KL_{k}": (sum(kls[k]) / (len(kls[k]) * ROW_LEN), ref[f"KL_{k}"]) for k in ("W0_state", "state_W0")}
+    lab.check(f"KL_{name}", all(qr.close(a, b, CFG.rep_tol) for a, b in pairs.values()), pairs)
+
+
 def read_one(lab: Size, name: str) -> None:
     """A state's whole reading, written step by step. A resume repeats only the step under way."""
     tail, cfg = f"state_{name}", lab.size_cfg
     if "read" in (out := lab.read(tail)):
+        check_size(lab, name, out["base"])
         return
     lab.budget(BUILD_S)
     dW, out["identity"] = state_of(lab, name)
     rows = lab.maths(cfg.rows)
     lab.set_weights("FT", dW)
     read_cells(lab, tail, name, out, "base", rows, None)
-    X, rec = split_x(lab, name if name in X_ON_FILE else f"{cfg.prefix}_{name}", dW)
-    out["X"] = out.get("X", {}) | rec | {"on_file_from_checks": name in X_ON_FILE}
+    check_size(lab, name, out["base"])
+    X, rec = split_x(lab, f"{cfg.prefix}_{name}_b{scale_of(lab, name)}", dW)  # b in the name: a new search, a new split
+    out["X"] = out.get("X", {}) | rec
     change = lab.change(dW, X)
     read_cells(lab, tail, name, out, "file", rows, change)
     true_pass(lab, tail, name, out, rows, change)
@@ -319,6 +351,8 @@ def read_one(lab: Size, name: str) -> None:
         a, b = kl_both(lab, "FT", rows)
         out["KL"] = {"W0_state": a, "state_W0": b}
         lab.save(tail, out, out["KL"])
+    if name in READ_BY_E57 and len(rows) == CFG.n_rows:
+        check_kl(lab, name, out["KL"])
     every, draws = list(range(len(rows))), qr.resample(len(rows), CFG.boot)
     read = {v: boot_direct.read(rows_of(out, v), draws) | point(out, v, every) for v in ("true", "file")}
     read |= {"KL_state_W0": sum(out["KL"]["state_W0"]) / (len(rows) * ROW_LEN), "peaks": lab.peaks()}
@@ -359,6 +393,17 @@ def search_kind(lab: Size, kind: str, big: dict[str, float]) -> None:
     lab.save(tail, rec, rec)
 
 
+def small_reading(sel: dict[str, Any], gold: dict[str, Any], w0: dict[str, Any]) -> dict[str, Any]:
+    """The small state's drop and length, from `train.py --stage G --run gold_1e-5 --step T`, against fp32 W0 as the gold
+    rule reads them. A state on the way: no 'learned' check (review S3 of the plan)."""
+    step = sel["states"][sel["small"]["name"]]["step"]
+    st = gold.get("states", {}).get(f"step_{step}", {})
+    if "unprompted" not in st or "held_gold" not in st:
+        sys.exit(f"refusing: the small state has no Stage G read: train.py --stage G --run gold_1e-5 --step {step}")
+    return {"step": step, "called": "a state on the way", "drop": w0["held_gold"]["loss"] - st["held_gold"]["loss"],
+            "length_ratio": st["unprompted"]["response_mean"] / w0["unprompted"]["response_mean"]}
+
+
 def stage_verdict(lab: Size) -> None:
     sel = lab.selected()
     pick = {"big": sel["big"]["name"], "small": sel["small"]["name"], "small_in_band": sel["small"]["in_band"]}
@@ -368,6 +413,8 @@ def stage_verdict(lab: Size) -> None:
     draws, f = qr.resample(lab.size_cfg.rows, CFG.boot), floor(recs["gold_s0"], recs[sel["final"]], lab.R)
     out = {"pick": pick, "final_size": sel["final_size"], "above_gold_s0": sel["above_gold_s0"], "floor": f, "decides": "true",
            "unmatched": [k for k in KINDS if not lab.read(f"search_{k}")["matched"]]}
+    if lab.size_cfg.gold_rule:  # the rehearsal reads no G verdict
+        out["small_state"] = small_reading(sel, lab.get(lab.size_cfg.gold_rule), lab.get("train_W")["states"]["w0"])
     lab.save("verdict", o := out | {v: decide(recs, pick, f["f"], v, draws, lab.R) for v in ("true", "file")}, o)
 
 

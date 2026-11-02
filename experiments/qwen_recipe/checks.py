@@ -3,7 +3,7 @@ values: results/predictions_checks.json. One L40 debug job each (cluster/qwen_re
 PYTHONPATH for E57's lab.py), cheapest first: tiny (finding 4), k0 (5), sizes (2), gen (6), k10 --state (1). Each writes
 results/checks_<stage>.json as it goes (k10: checks_k10_<state>.json, verdict in checks_k10.json), logs every number to
 results/run.log and resumes from what is written. Exit 1: a stop (results/checks_stopped.json). Exit 3: the 25-min
-budget, resubmit. X is saved in bf16 under results/large/checks/, 2.82 GB per state (δW's shape; fp32 would be 5.6 GB).
+budget, resubmit. X is saved in fp32 under results/large/checks/, 5.6 GB per state (δW's shape).
 """
 # pyright: reportMissingImports=false
 
@@ -224,7 +224,7 @@ def kl_both(lab: Lab, key: str, rows: Tensor) -> tuple[list[float], list[float]]
     return a, b
 
 
-def stage_sizes(lab: Lab) -> None:
+def stage_sizes(lab: Checks) -> None:
     note = "E57's size K00 - K0 and these two KLs are all reported from now on; this table chooses no axis."
     out = lab.get("checks_sizes") or {"note": note, "states": {}}
     rows, n16 = lab.maths(), CFG.n16 * CFG.row_len
@@ -254,7 +254,7 @@ def answers(path: Path) -> dict[int, Any]:
     return {r["idx"]: r for r in recs}
 
 
-def generate(lab: Lab, tok: Any, items: list[Any], key: str, batch: int, e45: dict[int, Any]) -> dict[int, Any]:
+def generate(lab: Checks, tok: Any, items: list[Any], key: str, batch: int, e45: dict[int, Any]) -> dict[int, Any]:
     """qwen_eval.score one batch at a time, the batches its own loop would cut, so a resume loses at most one."""
     sink, tmp, slowest = CHECKS / f"gen_{key}.jsonl", CHECKS / f"gen_{key}.batch", 60.0
     done = answers(sink)
@@ -274,7 +274,7 @@ def generate(lab: Lab, tok: Any, items: list[Any], key: str, batch: int, e45: di
     return done
 
 
-def stage_gen(lab: Lab) -> None:
+def stage_gen(lab: Checks) -> None:
     R, out = rules()["gen"], lab.get("checks_gen")
     if "verdict" in out:
         return
@@ -302,16 +302,20 @@ def stage_gen(lab: Lab) -> None:
 # ----------------------------------------------------------------------------- k10
 
 
-def split_x(lab: Lab, name: str, dW: dict[str, Tensor]) -> tuple[dict[str, Tensor], dict[str, Any]]:
-    """The fp32 X of E57's split, its bf16 copy saved; a resume reads the copy, and the record says so."""
+def split_x(lab: Checks, name: str, dW: dict[str, Tensor]) -> tuple[dict[str, Tensor], dict[str, Any]]:
+    """The fp32 X of E57's split, saved in fp32, so a resume reads the same X the first pass used. A bf16 copy (the four
+    k10 files before 2026-11-02) is refused: X V and Xᵀ U amplify X's rounding (qwen_maps.py)."""
     path = CHECKS / f"{name}_X.safetensors"
     if path.is_file():
-        return {s: x.float() for s, x in load_file(str(path)).items()}, {"resumed_from_bf16": True}
+        X = load_file(str(path))
+        if any(x.dtype != torch.float32 for x in X.values()):
+            sys.exit(f"refusing: {path} is not fp32")
+        return X, {"resumed": True}
     lab.budget(700)
     sp = lab.split(dW, nulls=False, halves=False)
     tmp = path.with_name(path.name + ".tmp")
     tmp.parent.mkdir(parents=True, exist_ok=True)
-    save_file({s: x.to(torch.bfloat16) for s, x in sp["X"].items()}, str(tmp))
+    save_file(sp["X"], str(tmp))
     tmp.replace(path)
     return sp["X"], {"stored_error": sp["stored_error"], "split_s": sp["s"], "file_bytes": path.stat().st_size}
 
@@ -335,7 +339,7 @@ def true_kl(lab: Lab, rows: Tensor, refs: list[Tensor], key: str, change: Any) -
     return out
 
 
-def k10_read(lab: Lab, name: str, key: str, out: dict[str, Any]) -> None:
+def k10_read(lab: Checks, name: str, key: str, out: dict[str, Any]) -> None:
     """Base control, split, K10_file's control, the true pass; each written. The Gaussian's Σ comes before Γ loads."""
     rows, n = lab.maths(CFG.n16), CFG.n16 * CFG.row_len
     saved = {k: sum(v[: CFG.n16]) for k, v in e57_record(name)["rows"]["maths"].items()}
@@ -369,7 +373,7 @@ def k10_read(lab: Lab, name: str, key: str, out: dict[str, Any]) -> None:
     lab.put(key, out)
 
 
-def stage_k10(lab: Lab, name: str) -> None:
+def stage_k10(lab: Checks, name: str) -> None:
     key = f"checks_k10_{name}"
     out = lab.get(key)
     if "share" not in out:
