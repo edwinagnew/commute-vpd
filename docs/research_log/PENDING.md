@@ -7,3 +7,5 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-11-02 · experiments/TRIED.md row "E12 Amendment 1", experiments/new_vs_existing/results/predictions_amend1.json · experiments (E12 card, one line) · coded and predictions filed, not run: the route split on teacher training's own states of E12's eight fine-tunes, plus-remainder read beside it.
+
