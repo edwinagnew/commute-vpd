@@ -1,0 +1,59 @@
+[    3.3s] [A ] start; NVIDIA L40
+[    8.8s] [W0] entries changed by bf16 rounding, 196 matrices: 0 (expected 0)
+[   22.5s] [own_s0 0] loss fp32 0.056584; E45's fp32 record 0.056584
+[   26.3s] [own_s0 0] loss autocast 0.056841; E45's fp32 record 0.056584
+[   40.0s] [own_s0 0] loss rounded 0.056584; E45's fp32 record 0.056584
+[   40.0s] [W0] noise floor, fp32 minus autocast, own rows: -0.000258
+[   63.7s] [own_s0 4] loss fp32 0.441024; E45's fp32 record 0.441024
+[   88.0s] [own_s0 2] loss fp32 0.064733; E45's fp32 record 0.064733
+[   91.8s] [own_s0 2] loss autocast 0.056558; E45's fp32 record 0.064733
+[  106.0s] [own_s0 2] loss rounded 0.056324; E45's fp32 record 0.064733
+[  110.7s] [own_s0 2] 16-row maths KL from W0 {"fp32": 0.005569427337071592, "autocast": 0.0006599499228036002}
+[  134.6s] [own_s0 3] loss fp32 0.216626; E45's fp32 record 0.216626
+[  138.4s] [own_s0 3] loss autocast 0.055585; E45's fp32 record 0.216626
+[  152.7s] [own_s0 3] loss rounded 0.055377; E45's fp32 record 0.216626
+[  157.4s] [own_s0 3] 16-row maths KL from W0 {"fp32": 0.051609991146332565, "autocast": 0.000843197672821909}
+[  162.1s] [own_s0 4] loss autocast 0.054950; E45's fp32 record 0.441024
+[  176.5s] [own_s0 4] loss rounded 0.054791; E45's fp32 record 0.441024
+[  181.2s] [own_s0 4] 16-row maths KL from W0 {"fp32": 0.13966239551592882, "autocast": 0.0017842089237156567}
+[  205.5s] [own_s0 100] loss fp32 0.078570; E45's fp32 record 0.078570
+[  209.3s] [own_s0 100] loss autocast 0.067152; E45's fp32 record 0.078570
+[  223.9s] [own_s0 100] loss rounded 0.066909; E45's fp32 record 0.078570
+[  228.7s] [own_s0 100] 16-row maths KL from W0 {"fp32": 0.07936772608921862, "autocast": 0.04797276748038337}
+[  244.5s] [gold_s0 0] loss fp32 2.495208; E45's fp32 record 2.495208
+[  248.5s] [gold_s0 0] loss autocast 2.496579; E45's fp32 record 2.495208
+[  264.5s] [gold_s0 0] loss rounded 2.495208; E45's fp32 record 2.495208
+[  290.4s] [gold_s0 3] loss fp32 1.307000; E45's fp32 record 1.307000
+[  294.5s] [gold_s0 3] loss autocast 2.393500; E45's fp32 record 1.307000
+[  310.3s] [gold_s0 3] loss rounded 2.392497; E45's fp32 record 1.307000
+[  315.2s] [gold_s0 3] 16-row maths KL from W0 {"fp32": 0.021090033267204426, "autocast": 0.0007640157426467335}
+[  341.2s] [gold_s0 5] loss fp32 0.926419; E45's fp32 record 0.926419
+[  345.3s] [gold_s0 5] loss autocast 1.594210; E45's fp32 record 0.926419
+[  361.2s] [gold_s0 5] loss rounded 1.592401; E45's fp32 record 0.926419
+[  366.0s] [gold_s0 5] 16-row maths KL from W0 {"fp32": 0.11017447668378998, "autocast": 0.008700422883490277}
+[  391.9s] [gold_s0 100] loss fp32 0.511993; E45's fp32 record 0.511993
+[  396.0s] [gold_s0 100] loss autocast 0.512241; E45's fp32 record 0.511993
+[  411.8s] [gold_s0 100] loss rounded 0.512003; E45's fp32 record 0.511993
+[  416.6s] [gold_s0 100] 16-row maths KL from W0 {"fp32": 0.6886080538184014, "autocast": 0.64645203099602}
+[  424.5s] [a1_s0 0] distill_kl fp32 0.961510; E45's fp32 record 0.961510
+[  430.1s] [a1_s0 0] distill_kl autocast 0.961520; E45's fp32 record 0.961510
+[  438.0s] [a1_s0 0] distill_kl rounded 0.961510; E45's fp32 record 0.961510
+[  455.6s] [a1_s0 4] distill_kl fp32 0.303926; E45's fp32 record 0.303926
+[  461.1s] [a1_s0 4] distill_kl autocast 0.793393; E45's fp32 record 0.303926
+[  468.9s] [a1_s0 4] distill_kl rounded 0.792075; E45's fp32 record 0.303926
+[  473.8s] [a1_s0 4] 16-row maths KL from W0 {"fp32": 0.04650082424893247, "autocast": 0.0017319702022761169}
+[  491.0s] [a1_s0 8] distill_kl fp32 0.247218; E45's fp32 record 0.247218
+[  497.3s] [a1_s0 8] distill_kl autocast 0.221179; E45's fp32 record 0.247218
+[  505.0s] [a1_s0 8] distill_kl rounded 0.220029; E45's fp32 record 0.247218
+[  509.8s] [a1_s0 8] 16-row maths KL from W0 {"fp32": 0.19625551542486824, "autocast": 0.061788100731263194}
+[  527.1s] [a1_s0 100] distill_kl fp32 0.055429; E45's fp32 record 0.055429
+[  532.6s] [a1_s0 100] distill_kl autocast 0.050211; E45's fp32 record 0.055429
+[  540.3s] [a1_s0 100] distill_kl rounded 0.049375; E45's fp32 record 0.055429
+[  544.9s] [a1_s0 100] 16-row maths KL from W0 {"fp32": 0.3205083864166564, "autocast": 0.28513209899390046}
+[  544.9s] [rules] {"R1": {"autocast": {"value": 0.054949828752104524, "reading": "confirmed"}, "rounded": {"value": 0.05479079263928207, "reading": "confirmed"}}, "R2": {"own_s0": {"gap_100": -0.01141751755421122, "floor_w0": 0.0002576311041602372, "excess": 0.011159886450050983, "holds": true}, "gold_s0": {"gap_100": 0.00024815838168501525, "floor_w0": 0.0013706319581996418, "excess": -0.0011224735765146265, "holds": true}, "a1_s0": {"gap_100": -0.005217882789545318, "floor_w0": 9.376280444395313e-06, "excess": 0.005208506509100923, "holds": true}}, "a1_gap": {"0": {"fp32": 0.0, "autocast": 0.0, "rounded": 0.0}, "4": {"fp32": 0.6839076164481588, "autocast": 0.17485557311597444, "rounded": 0.17621826727363}, "8": {"fp32": 0.742885875107345, "autocast": 0.7699696082207118, "rounded": 0.7711634673568069}, "100": {"fp32": 0.9423519046168631, "autocast": 0.9477791713467476, "rounded": 0.9486481925232926}}}
+[  562.5s] [grad] {"micro": 8, "oom": false, "seconds": 14.716946125030518, "peak_alloc_gib": 24.78032398223877, "peak_reserved_gib": 25.296875}; Adam's moments would add 10.5 GiB
+[  577.3s] [grad] {"micro": 4, "oom": false, "seconds": 14.021126985549927, "peak_alloc_gib": 20.853163719177246, "peak_reserved_gib": 21.48828125}; Adam's moments would add 10.5 GiB
+[  755.0s] [gen a1_s0_8] {"n": 256, "capped": false, "seconds": 177.7057158946991, "fp32": {"k": 256, "k_fits": 231, "fits_share": 0.90234375, "truncation_share": 0.09765625, "strict_dropped": 0.1471861471861472, "lenient_dropped": 0.15151515151515152, "strict_all": 0.1328125, "strict_capped": 0.1328125, "lenient_capped": 0.14453125, "response_mean": 75.54296875, "format_unprompted": 0}, "e45_bf16_same_problems": {"k": 256, "k_fits": 254, "fits_share": 0.9921875, "truncation_share": 0.00390625, "strict_dropped": 0.7047244094488189, "lenient_dropped": 0.7047244094488189, "strict_all": 0.703125, "strict_capped": 0.69921875, "lenient_capped": 0.703125, "response_mean": 132.828125, "format_unprompted": 0}}
+[  819.9s] [gen a1_s0_19] {"n": 64, "capped": true, "seconds": 64.8799512386322, "fp32": {"k": 64, "k_fits": 62, "fits_share": 0.96875, "truncation_share": 0.03125, "strict_dropped": 0.5967741935483871, "lenient_dropped": 0.6129032258064516, "strict_all": 0.578125, "strict_capped": 0.578125, "lenient_capped": 0.59375, "response_mean": 132.1875, "format_unprompted": 0.953125}, "e45_bf16_same_problems": {"k": 64, "k_fits": 64, "fits_share": 1.0, "truncation_share": 0.0, "strict_dropped": 0.609375, "lenient_dropped": 0.625, "strict_all": 0.609375, "strict_capped": 0.609375, "lenient_capped": 0.625, "response_mean": 133.46875, "format_unprompted": 0.953125}}; capped at the first 64
+[  846.6s] [gen gold_s0_100] {"n": 64, "capped": true, "seconds": 26.688122034072876, "fp32": {"k": 64, "k_fits": 64, "fits_share": 1.0, "truncation_share": 0.0, "strict_dropped": 0.578125, "lenient_dropped": 0.578125, "strict_all": 0.578125, "strict_capped": 0.578125, "lenient_capped": 0.578125, "response_mean": 95.1875}, "e45_bf16_same_problems": {"k": 64, "k_fits": 63, "fits_share": 0.984375, "truncation_share": 0.015625, "strict_dropped": 0.5873015873015873, "lenient_dropped": 0.5873015873015873, "strict_all": 0.578125, "strict_capped": 0.578125, "lenient_capped": 0.578125, "response_mean": 97.09375}}; capped at the first 64
+[  846.7s] [A] done; peak GPU 34.5 GB, host 11.0 GB
