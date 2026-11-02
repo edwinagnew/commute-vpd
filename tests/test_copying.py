@@ -17,7 +17,6 @@ TH = {"G_min": 5.0, "share_old_min": 0.5, "share_new_max": 0.2, "floor_max": 0.1
       "top1_random_min": 0.7, "prior_stop": 1e-2, "prior_max": 1e-3, "prior_band": [1e-6, 1e-4], "prior_match_max": 2}
 HALF = 20
 KEYS = [100, 101, 102, 103]
-AVOID = [200, 201, 202, 203]  # a word pool
 BS = [300, 301, 302, 303, 304]
 
 
@@ -145,7 +144,7 @@ def rows() -> torch.Tensor:
 
 
 def test_cue_windows_layout_and_uniqueness():
-    w, b, p = CP.cue_windows(rows(), 7, KEYS, BS, AVOID, HALF, 40, 0)
+    w, b, p = CP.cue_windows(rows(), 7, KEYS, BS, HALF, 40, 0)
     t = w.tokens
     idx = torch.arange(40)
     assert t.shape == (40, 41) and bool((t[:, HALF] == 7).all())
@@ -153,19 +152,18 @@ def test_cue_windows_layout_and_uniqueness():
     assert bool((t[idx, p] == a).all()) and bool((t[idx, p + 1] == b).all())
     assert bool(((p >= 2) & (p + 1 < HALF - 2)).all())
     assert bool(((t == a[:, None]).sum(1) == 2).all()) and bool(((t == b[:, None]).sum(1) == 1).all())
-    assert not bool(torch.isin(t, torch.tensor(AVOID)).any())
 
 
 def test_cue_windows_drop_a_natural_repeat():
     r = rows()
     r[:, 100:400] = 100  # key 100 everywhere in the middle of every row: such windows must go
-    w, _, _ = CP.cue_windows(torch.cat([r, rows()]), 7, KEYS, BS, AVOID, HALF, 20, 0)
+    w, _, _ = CP.cue_windows(torch.cat([r, rows()]), 7, KEYS, BS, HALF, 20, 0)
     a = w.tokens[:, HALF - 1]
     assert bool(((w.tokens == a[:, None]).sum(1) == 2).all())
 
 
 def test_controls_break_what_they_name():
-    w, b, p = CP.cue_windows(rows(), 7, KEYS, BS, AVOID, HALF, 30, 0)
+    w, b, p = CP.cue_windows(rows(), 7, KEYS, BS, HALF, 30, 0)
     idx = torch.arange(30)
     a = w.tokens[:, HALF - 1]
     br = CP.broken_pair(w.tokens, p, KEYS, HALF, 0)
@@ -176,8 +174,8 @@ def test_controls_break_what_they_name():
 
 def test_build_cue_pools_are_disjoint():
     r = rows()
-    ranked = list(range(2000, 2200))
-    S = {"pool_ranks": [0, 200], "pool_seed": 0, "n_keys": 4, "n_word_pool": 16, "heldout_every": 5, "n_train": 16, "n_read": 8, "seed": 0}
+    ranked = list(range(2000, 2300))
+    S = {"pool_ranks": [0, 200], "pool_seed": 0, "n_keys": 4, "heldout_every": 5, "n_train": 16, "n_read": 8, "seed": 0}
     c = CP.build_cue(r, 7, ranked, lambda t: t != 2005, HALF, S)
     assert "lookup" not in c.target and not c.words  # the words come after W0's prior for B is measured
     c.set_words(dict(zip(c.keys, c.word_pool[5:9], strict=True)))
@@ -187,8 +185,8 @@ def test_build_cue_pools_are_disjoint():
     words = set(c.words.values())
     assert not (set(c.keys) & pool) and not (bs_train & bs_read) and not ((bs_train | bs_read) & pool) and 2005 not in pool | set(c.keys) | bs_read | bs_train
     assert not set(c.target["copy"]["read"].tolist()) & pool
+    assert pool == set(range(2200, 2300))  # every intact token outside the keys and Bs (which took ranks 0-199 whole), at any rank
     assert set(c.target["lookup"]["read"].tolist()) <= words and set(c.target["lookup"]["train"].tolist()) <= words
-    assert not torch.isin(torch.cat([c.train.tokens, c.read.tokens]), torch.tensor(c.word_pool)).any()  # no window holds any candidate
     assert torch.equal(c.read_windows("copy")[:, :41], c.read_windows("lookup")[:, :41])
 
 
@@ -198,14 +196,36 @@ def test_pick_words_are_within_the_factor_per_key_and_distinct():
     # per-key mean log P of candidates 10..13: key 1 -> (-5, -9, -5.5, -6); key 2 -> (-5, -5.5, -9, -9)
     lp = torch.tensor([[-4.0, -9.0, -5.0, -6.0], [-6.0, -9.0, -6.0, -6.0], [-5.0, -5.0, -9.0, -9.0], [-5.0, -6.0, -9.0, -9.0]])
     target = -5.0
-    words = CP.pick_words(keys, pool, at, lp, target, 2.0, 0)  # |mean - target| <= ln 2 = 0.693
+    own: dict[int, set[int]] = {1: set(), 2: set(), 3: set()}
+    words = CP.pick_words(keys, pool, at, lp, target, 2.0, 0, own)  # |mean - target| <= ln 2 = 0.693
     assert words[1] in (10, 12) and words[2] in (10, 11) and words[1] != words[2]
     per_key = {k: lp[at == k].mean(0) for k in keys}
     assert all(abs(float(per_key[k][pool.index(w)]) - target) <= math.log(2) for k, w in words.items())
     with pytest.raises(AssertionError):  # no candidate in range for some key
-        CP.pick_words(keys, pool, at, lp, -20.0, 2.0, 0)
+        CP.pick_words(keys, pool, at, lp, -20.0, 2.0, 0, own)
     with pytest.raises(AssertionError):  # a key with no window is never served
-        CP.pick_words([1, 3], pool, at, lp, target, 2.0, 0)
+        CP.pick_words([1, 3], pool, at, lp, target, 2.0, 0, own)
+
+
+def test_pick_words_reject_a_candidate_in_the_keys_own_windows():
+    keys, pool = [1, 2], [10, 11, 12, 13]
+    at = torch.tensor([1, 1, 2, 2])
+    lp = torch.tensor([[-4.0, -9.0, -5.0, -6.0], [-6.0, -9.0, -6.0, -6.0], [-5.0, -5.0, -9.0, -9.0], [-5.0, -6.0, -9.0, -9.0]])
+    # in range: key 1 -> 10, 12; key 2 -> 10, 11
+    assert CP.admissible(keys, pool, at, lp, -5.0, 2.0, {1: set(), 2: set()}) == {1: [10, 12], 2: [10, 11]}
+    assert CP.admissible(keys, pool, at, lp, -5.0, 2.0, {1: {10}, 2: {11, 99}}) == {1: [12], 2: [10]}  # a word in the key's own windows is out
+    for s in range(5):  # whatever the draw order, key 1 never gets 10 or key 2 gets 11
+        w = CP.pick_words(keys, pool, at, lp, -5.0, 2.0, s, {1: {10}, 2: {11}})
+        assert w == {1: 12, 2: 10}
+    with pytest.raises(AssertionError):  # every in-range word of key 1 sits in its own windows
+        CP.pick_words(keys, pool, at, lp, -5.0, 2.0, 0, {1: {10, 12}, 2: set()})
+    own = CP.own_tokens(keys, torch.tensor([[1, 5, 10, 1], [2, 11, 2, 6], [1, 7, 7, 7]]), 3)  # half 3: A sits at index 2
+    assert own == {1: set(), 2: {2, 11, 6}}
+
+
+def test_prior_histogram_counts_by_bin():
+    lp = torch.log(torch.tensor([[10**-3.2, 10**-2.7, 10**-5.2]] * 2))
+    assert CP.prior_histogram(lp) == {"-5.5": 1, "-3.5": 1, "-3.0": 1}
 
 
 def test_prior_ratio_edges():
@@ -274,7 +294,8 @@ def test_score_every_outcome():
     assert v["verdict"] == "r_follows_mechanism" and v["r_scored"] and not v["pair_ignored"] and not v["prior_high"]
     assert verdict([state("old", 0.3)] * 3, new)["verdict"] == "r_follows_prior"
     assert verdict([state("old", 0.5)] * 3, [state("new", 0.49)] * 3)["verdict"] == "untested"  # the gap
-    assert verdict(old, [state("new", 0.6)] * 3)["verdict"] == "untested"  # both high
+    assert verdict(old, [state("new", 0.6)] * 3)["verdict"] == "r_follows_prior"  # both high, gap 0.1 (Amendment 1)
+    assert verdict([state("old", 0.2)] * 3, [state("new", 0.7)] * 3)["verdict"] == "r_reverses_label"
     assert verdict([state("old", math.nan)] * 3, new)["verdict"] == "untested"
     assert verdict([state("too_small")] * 3, new)["verdict"] == "no_label_copy_did_not_learn"
     assert verdict(old, [state("too_small")] * 3)["verdict"] == "no_label_lookup_did_not_learn"
@@ -309,7 +330,13 @@ def test_r_verdict_with_priors_matched():
     assert f([0.49] * 3, [0.20] * 3) == "untested"  # all low, gap 0.29 over the bar
     assert f([0.40] * 3, [0.30] * 3) == "r_follows_prior"
     assert f([0.9] * 3, [0.1] * 3) == "r_follows_mechanism"
-    assert f([0.7] * 3, [0.6] * 3) == "untested"  # both high
+    assert f([0.7] * 3, [0.6] * 3) == "r_follows_prior"  # both high, gap 0.1 (Amendment 1, 2026-11-02)
+    assert f([0.5] * 3, [0.5] * 3) == "r_follows_prior"  # both at the cut count high
+    assert f([0.9] * 3, [0.6] * 3) == "untested"  # both high with a gap of 0.3: nothing names it
+    assert f([0.2] * 3, [0.7] * 3) == "r_reverses_label"  # copy low, lookup high, gap -0.5 (the named surprise)
+    assert f([0.2] * 3, [0.44 + 0.1] * 3) == "r_reverses_label"  # gap -0.34
+    assert f([0.4] * 3, [0.5] * 3) == "untested"  # copy low, lookup high but the gap is only -0.1: not a reversal
+    assert f([0.2, 0.7, 0.2], [0.7] * 3) == "untested"  # one copy seed over the cut: no reversal
 
 
 def test_read_step_on_the_specific_gain():
