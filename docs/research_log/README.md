@@ -47,8 +47,9 @@ cards. **Test before publishing (user, 2026-11-02, "as usual ... unreadable"):**
 option would run, what it would tell them and what happens next. Plan labels (Q3, Stage D, anchor 1, D3, E-codes, option numbers from a report) do not appear in the question, evidence or options; name the thing instead (the template fine-tune). One small "Names in the reports" line at the end decodes them. Options get letters, a cost and their limits, and the card ends on one recommendation. The fleet/ask line and the decision report follow the same rule. Each card carries an urgency flag in its top right (`<span class="chip … urgency">`): Blocking (red, planned runs cannot go ahead), Soon (amber, decides one line's next step) or No rush (grey); re-rate the flags when the plans change. Under the flag, one line says what runs next on that line and when: "Running:
 <what>", "Due to run: <what>, <when or on what condition>", or "Nothing runs until this is decided" (user,
 2026-10-26). Starting, finishing or dropping a run changes that line, and the change is queued like any other. A card
-whose choice waits on the user now has the label `Question for you · <line> · new <date>` in its `<div class="k">`,
-and these cards come first in the section; a card that waits on something else (a run, another decision) has no such
+whose choice waits on the user now has the label `Question for you · <lead> · new <date>` in its `<div class="k">`, `<lead>` being the role name
+(`commute-lead`, `regating-lead`, `baseline-lead`, `qwen-decomp-lead`, ...), never a bare "commute": "commute" is also
+the project's name, so a bare word misroutes the user's answer (user, 2026-11-02). These cards come first in the section; a card that waits on something else (a run, another decision) has no such
 label and goes after them. When the user decides, the card is removed, the decision goes into `decisions.md` and the changelog row names
 it. Adding or removing a card is a `PENDING.md` line like any other change.
 
