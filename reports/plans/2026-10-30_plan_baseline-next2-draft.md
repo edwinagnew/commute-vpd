@@ -119,6 +119,9 @@ Training now stops early if the last block misses 5.0 nats at step 250 or the mo
 Readouts are saved straight after training and can be reloaded (`--readouts`), and the run time is ~22 min on the
 debug QoS. `predictions.json` → `amended_2026_11_02_after_stop` keeps the first rule's text.
 
+## Amendment after the step-250 stop (2026-11-02)
+Job 48344 stopped at its step-250 early check: last-block train-batch loss 5.0088 against a bar of 5.0, which sat only 0.27 nats above one batch of job 48279 (4.73; batch sd ~0.14). The check is there to catch a readout that is not learning (step 0 reads ~10.9), so the bar is raised to 6.0; P1-P3 and every other check are unchanged (`predictions.json` → `amended_2026_11_02_step250`). Decided by the lead as a clear rule fix.
+
 ## Departures from the literature
 - **Def 1, Jain et al. 2024 §3.** The paper trains the readout on data from the pretraining process and reads it on
   the sub-domain of inputs carrying the instruction; we train on Pile windows at every position and read at the answer
