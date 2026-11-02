@@ -531,6 +531,9 @@ the readings that say the head acts through the masks become `not_specific`. Eac
 
 ### Amendment 2's "Not run" list, quoted
 
+Quoted from the report as it stood when this section was written, while another agent was revising it. The revision names four accounts; the fourth is the review's F2,
+the redirected query, which this read cannot see (Blind to).
+
 > Separating the four accounts, each a $0 read on the saved states:
 >
 > - Γ recomputed with the head off, the one read of the third account, beside the lookup, (3,5) and W₀'s mask recomputed the same way. This is Amendment 3, coded and not run; the plan had listed it as not planned, and `ablated` must wrap Γ deliberately for it.
@@ -555,7 +558,7 @@ the readings that say the head acts through the masks become `not_specific`. Eac
 > - Which subcomponents the copying state's mask changes.
 > - More seeds, other markers, other key counts; zero ablation.
 
-This amendment runs "Γ recomputed with the head off, the one read of the third account", and a version of the first item, the mean gate on `o_proj` subcomponents, unweighted.
+This amendment runs "Γ recomputed with the head off, the one read of the third account", and a version of the `o_proj` item, the mean gate on those subcomponents, unweighted.
 
 ### Not run
 
