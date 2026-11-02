@@ -96,6 +96,7 @@ Layouts: param-decomp `(U (C, d_out), V (d_in, C))`; theory `(U_A (d_out, n), V_
 - `top_k_by_contribution(fits, k)`, `random_matched(sets, alive, seed)`
 
 ## Ablation, reverts, identity
+**copying** — E62: the 67M's attention heads and the cue windows. `induction(net, C)`; `repeated_random`, `stripe_mask`, `stripe_score`, `attention_patterns(net, toks)`; `head_means(net, spans)`, `ablated(net, heads, means)`; `build_cue`, `cue_windows`, `with_target` (target as a last column, `data.LAST`); the filed rules `control_a`, `prior_band`, `read_step`, `share_lost`, `share_label`, `score`.
 **identity** — gauge-free subcomponent comparisons and the Edit hook.
 - `Edit(terms, cidx)`: forward hook; `[(U, V, +1)]` ablates, `[(U2, V2, +1), (U, V, -1)]` reverts; groups of rows edit `cidx[g]`
 - `change_stats(U, V, U2, V2)`, `profile_retrieval(before, after, idx)`, `topk_jaccard(a, b, k)`, `cosine`, `log_odds(logits, token)`, `scale_grads(G, U, V)`

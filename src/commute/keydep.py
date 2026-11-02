@@ -63,15 +63,21 @@ def base_of(ctx: Ctx, t: ST.Task) -> dict[str, Any]:
     return route_cells(ctx.net.model, t.toks, t.half, t.table, BATCH)
 
 
-def route_r(ctx: Ctx, t: ST.Task, dW: ST.DW, base: dict[str, Any]) -> dict[str, Any]:
+def route_windows(ctx: Ctx, toks: Tensor, half: int, token: int | Tensor, dW: ST.DW, base: dict[str, Any],
+                  ci_len: int | None = None) -> dict[str, Any]:  # fmt: skip
     """r of the least-squares split state: target W0 + delta-W, components lifted; r = (L01 - L00) / (T1 - T0)."""
     from commute.local_faith import route_split
 
     m = ctx.net.model
     target = {k: w + dW[k].to(w.device, w.dtype) for k, w in ctx.net.W0.items()}
     with model_state(m, target=target, components=AN.lifted(m, ctx.lift, dW)):
-        rs = route_split(m, t.toks, t.half, t.table, base, ctx.comps0, BATCH)
+        rs = route_split(m, toks, half, token, base, ctx.comps0, BATCH, ci_len)
     return {"r": rs["shares"]["r"], "G_logodds": rs["gain"], "cells": rs["cells"]}
+
+
+def route_r(ctx: Ctx, t: ST.Task, dW: ST.DW, base: dict[str, Any]) -> dict[str, Any]:
+    """`route_windows` on a task's windows and lookup table (split out 2026-11-02 for E62; same calls)."""
+    return route_windows(ctx, t.toks, t.half, t.table, dW, base)
 
 
 def steer_reading(ctx: Ctx, t: ST.Task, dW: ST.DW, g: dict[str, float]) -> dict[str, Any]:
@@ -94,7 +100,7 @@ def readings(ctx: Ctx, t: ST.Task, dW: ST.DW, g: dict[str, float], base: dict[st
 def finetune(ctx: Ctx, w: dict[str, Any], seed: int, checks: tuple[int, ...]) -> Any:
     from commute.finetune import ArmAConfig, finetune_arm_a
 
-    cfg = ArmAConfig(o_token=w["table"], lr=AN.FT_LR, steps=E12_CHECKS[-1], checkpoints=checks, seed=seed)
+    cfg = ArmAConfig(o_token=w["table"], lr=AN.FT_LR, steps=E12_CHECKS[-1], checkpoints=checks, seed=seed, ci_len=w.get("ci_len"))
     return finetune_arm_a(ctx.net.model, w["train"], w["heldout"], cfg, ctx.net.device, log)
 
 

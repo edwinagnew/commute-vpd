@@ -51,14 +51,19 @@ def batches(rows: Tensor, size: int) -> list[Tensor]:
 
 
 NEXT = -1  # `target_tokens`' "true next token" option (E53, 2026-10-29): no token id is negative
+LAST = -2  # its "target in the last column" option (E62, 2026-11-02): the column is never fed to the model (`ci_len`)
 
 
 def target_tokens(token: int | Tensor, toks: Tensor, half: int) -> Tensor:
     """The target token of each window, (B,) int64 on `toks`' device: one id for every window, a (V,) lookup table
-    read at the token at `half` (the key -> value tasks of experiments/kv_task; `kv.KVTask.table`), or, for `NEXT`,
-    each window's own token at `half + 1` (its true next token; E53's performed-anchor windows)."""
+    read at the token at `half` (the key -> value tasks of experiments/kv_task; `kv.KVTask.table`), for `NEXT`, each
+    window's own token at `half + 1` (its true next token; E53's performed-anchor windows), or, for `LAST`, the window's
+    last column (E62: a target per window that the token at `half` does not determine; pass `ci_len` so that no forward
+    and no Gamma reads that column)."""
     if isinstance(token, int) and token == NEXT:
         return toks[:, half + 1]
+    if isinstance(token, int) and token == LAST:
+        return toks[:, -1]
     if isinstance(token, int):
         return torch.full((toks.shape[0],), token, device=toks.device, dtype=torch.long)
     return token.to(toks.device)[toks[:, half]]

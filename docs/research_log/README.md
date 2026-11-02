@@ -473,3 +473,7 @@ Figures already published (their sources, for a re-upload):
 - "fig/e55_c1b_scores.png": "experiments/pcfg_anchors/figures/c1b_scores.png"
 - "fig/e55_labels.png": "experiments/pcfg_anchors/figures/labels.png"
 - "fig/e58_synthesis.png": "experiments/open_pair/figures/synthesis.png"
+- "fig/e58_log_prior.png": "experiments/open_pair/figures/log_prior.png"
+- "fig/e52_steering.png": "experiments/baseline_neurons/figures/p3_steering.png"
+- "fig/e54_route_split.png": "experiments/keydependent_elicit/figures/p1_route_split.png"
+- "fig/e54_steering.png": "experiments/keydependent_elicit/figures/p2_steering.png"
