@@ -13,7 +13,7 @@ condition 50"). No record has read a bf16 X: all four `checks_k10_*.json` were f
 reproduction the filing leans on used the fp32 X, and "on file" is untested.
 - *Measured, gold_s0's δW, CPU, Frobenius, no Σ.* X rebuilt per site in float64; its bf16 rounding equals the file on every entry,
   so the rebuild is sound. Error of the applied change over |δW|, fp32 X then bf16 X: `layers.0` q_proj 5.6e-7, 3.7e-2; up_proj
-  6.6e-8, 4.2e-3; down_proj 5.2e-8, 3.2e-3. The ratio is near 65,536, the two unit roundoffs. Scaling `stored_error` by it, worst
+  6.6e-8, 4.2e-3; down_proj 5.2e-8, 3.2e-3; `layers.13` down_proj, the largest of 7 sites read, 6.3e-7, 4.1e-2. The ratio is near 65,536, the two unit roundoffs. Scaling `stored_error` by it, worst
   site under Σ (inferred): gold_s0 8.8e-7 gives about 6%, the Gaussian 5.1e-6 about 34%. Not measured: the effect on K10 and K11.
 - *Scenario 1, a stop.* `repro_gauss_file` (`size.py:298`) or `true_vs_checks_gauss` (`:218`) misses `rep_tol`, 1e-3. The two states
   that anchor every comparison cannot be read. The rehearsal should show this first.
