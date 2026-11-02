@@ -1,0 +1,23 @@
+# Advice: what to offer after E62 Amendment 6
+
+*Fable, 2026-11-02, advising the re-gating lead; the user decides. Read: `reports/reviews/2026-11-02_review_e62-amend6-analysis.md` (taken where it differs from the analysis), `reports/analyses/2026-11-02_analysis_e62-amend6-overwrite.md`, the plan's Amendment 6 section, `reports/plans/2026-11-02_advice_e62-after-amend5-FABLE.md`, `reports/plans/2026-11-02_plan_regating-next-FABLE-DRAFT.md`, `decisions.md` rows 73, 112, 125, `experiments/TRIED.md` rows E62 Amendments 4-6. Nothing ran.*
+
+**Where the thread stands, in plain words.** Three $0 jobs have read the original model only, at the one position where it copies on its own. Its mask drops most of its copying head (Amendment 4), the pair's whole effect sits in the mask and the masked forward hardly reacts to any head (Amendment 5), and now, with the copied token written out of the text, about 0.62 of the masked lean stays with no B anywhere in the text, 0.32 needs both mask and text, 0.06 the text alone (Amendment 6, arithmetic after the run). The mask function also reads the whole row in both directions, so it can put B at the reading position without the forward copying anything. So on this model the masked forward mostly does not run the copy; the mask carries the answer. That is the thing the line needed to know before any mask read on a fine-tuned state could stand for "runs through a mechanism W₀ already has".
+
+## Options
+
+1. **Close the 67M copying-mask work and log this as its limit.** Nothing runs. The log says: at W₀, at the second A, most of the masked lean to B needs no B in the text, so a masked read on this model reports what the target model answered, not the route it took; r stays unscored as a mechanism read; the Qwen table carries the split's numbers, with no elicitation reading. The 0.32 that needs both is written as unread, not explained. Cost $0. For the line's question on fine-tuned models this is the honest end: the states were never read because the instrument failed its control at W₀, and no mask read can now be sold as mechanism. Rule problem: the filed branch "close" belonged to a verdict that did not fire (lost 0.35 against 0.15). Closing is the user's decision on post-run arithmetic, and the log must say so; filing 0.62 as a new rule on the same rows would be refiling after the data.
+
+2. **One more read that locates the surviving part: change the mask at one position only** (at the overwritten token, then at the second A), everything else held. One `debug` job, about a minute of reads, $0, but a design, filed rules, a review, an analysis and a check: about half a day of agents and a screen of the user's attention, like each amendment before it. It would say whether the mask carries B at the reading position itself or passes B's features from below. Either answer still describes the original model's masked forward, not a fine-tuned state, and neither reverses option 1's sentence. Worth it only if the user wants to know how Γ carries the answer, as a note on the method, not for the line.
+
+3. **The plan's named follow-up for `mixed`: intact text under a mask read for a different B.** Same cost as 2. The review shows it only fills the table's two unread cells and checks that the two tokens are exchangeable (expected about −8.3 and −11.2). It separates nothing further. Not recommended.
+
+4. **Two copying heads off together under the held mask.** Belonged to the route verdict; the new token gained 0.05 of the lean and is top in no window. Not recommended.
+
+**Recommendation: option 1.** The original model's masked forward has been a side alley for three jobs, each a tighter reading of the same fact; the line's question needs an instrument that reads mechanism on fine-tuned states, and the mask reads on this model are not one. What continues for the line is already on other sub-lines: the weight-side read (E67) and the Qwen table with split numbers only.
+
+**What would change it.** If the user holds that the 0.32 both-needed part means the forward computes part of the copy and wants that part placed before closing, run option 2 once, then close either way. If the user doubts the exchangeability the 0.62 rests on, option 3 first, same ending. If the user holds that a mask carrying the answer still counts as reading the mechanism under row 112, then none of this closes anything and the slot read is next; I do not think it does, as row 112 says "runs through a mechanism", not "produces the answer".
+
+## Not run
+
+Nothing. Not proposed: any fine-tuned state, r, a second decomposition seed, another draw of new tokens, the marker position.

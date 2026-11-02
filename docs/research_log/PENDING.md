@@ -7,4 +7,3 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
-- 2026-11-02 regating-lead · decisions.md · pending decisions · Remove card decision-says-b: the user kept the filed rule; E62 Amendment 6 running.
