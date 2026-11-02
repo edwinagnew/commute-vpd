@@ -4,11 +4,11 @@
 `reports/reviews/2026-11-02_review_e12-amend1-code.md`; predictions `experiments/new_vs_existing/results/predictions_amend1.json`, filed before
 the run and scored as filed; notebook `notebooks/E12_new_vs_existing.ipynb`, last section; figures from `experiments/new_vs_existing/plot_amend1.py`.*
 
-We trained the decomposition's subcomponents to imitate eight fine-tunes on copy tasks and random word maps, with the leftover weights held fixed, and asked how each imitation carries its gain at the cue. On this card and at this position the two classes stay far apart and each imitation keeps its fine-tune's re-switching by the filed line, though one random-map table lost about a fifth of that term, cause unknown. For `GOALS.md`, the class difference therefore follows how the frozen importance function reads the new activations, not how the update was placed, and this run does not test faithfulness.
+We trained the decomposition's subcomponents to imitate eight fine-tunes on copy tasks and random word maps, with the leftover weights held fixed, and asked how each imitation carries its gain at the cue. On this card and at this position the two classes stay far apart and each imitation keeps its fine-tune's re-switching by the filed line, though one random-map table lost about a fifth of that term, cause unknown. For `GOALS.md`, the re-switching share that divides the classes barely depends on whether the update sits in the subcomponents or in the leftover weights, except for a fall of a fifth on one map table; this run does not test faithfulness or why the classes differ.
 
 ## What we were trying to test
 
-E12 fine-tuned the model on key → value tasks and read each fine-tune through the least-squares split. Only one number told the classes apart: how the gain at the trigger divides between subcomponents Γ switches on and subcomponents it keeps off. The least-squares split leaves a remainder in Δ, so the question stood open for a map that leaves nothing there.
+E12 fine-tuned the model on key → value tasks and read each fine-tune through the least-squares split. E12's filed route numbers parted the classes; no number about the weight update did. The route numbers say how the gain at the trigger divides between subcomponents Γ switches on and subcomponents it keeps off. The least-squares split leaves a remainder in Δ, so the question stood open for a map that leaves nothing there.
 
 Teacher training is that map. It trains the alive U and V to imitate the fine-tuned model, with Γ and Δ frozen, so the whole update ends up in the components. We call its result the student. The classes are the copy class, whose target is the key itself, and the random-map class, whose target is a fixed other word. Each class has two tables of 32 pairs and two fine-tune seeds, so there are eight fine-tunes.
 
@@ -96,7 +96,7 @@ That block moved almost wholly into the masked-off share. In nats, the student's
 
 The batch-order noise on the same scale is 0.0005 and 0.0006, which is 0.007 and 0.009 nats, read on ident32 s0 and rand32 s0.
 
-**Reading it.** The largest move is 0.059 of the fine-tune's gain, under the filed 0.10 line, so the filed verdict is "inherited". This misses our lean towards "partly", and the overshoot from E43 we leaned on did not appear. The figure shows two groups. Six states move by 0.004 to 0.009, about what training with nothing to learn writes, though that control's term goes up and all of these go down. The second map table's two seeds move by 0.05 to 0.06, about ten times more. The step-1000 teachers from E42 sit near that upper group. The verdict's line is generous for a map: it is a third of a map's re-switching share, as the filing says.
+**Reading it.** The largest move is 0.059 of the fine-tune's gain, under the filed 0.10 line, so the filed verdict is "inherited". This misses our lean towards "partly". The students of step-10 teachers did overshoot in size, ending 1.23 to 1.35 times their teachers, as E43 saw. That did not move the re-switching term, which is what we had leaned on. E43's remainder size was not read here. The figure shows two groups. Six states move by 0.004 to 0.009, about what training with nothing to learn writes, though that control's term goes up and all of these go down. The second map table's two seeds move by 0.05 to 0.06, about ten times more. E42's map students sit near that upper group. The verdict's line is generous for a map: it is a third of a map's re-switching share, as the filing says.
 
 ### 4. Why does the second map table move ten times as far? Narrowed, not explained
 
@@ -114,14 +114,14 @@ The batch-order noise on the same scale is 0.0005 and 0.0006, which is 0.007 and
 
 Size is the relative norm of the most changed matrix in each state. E42's terms are share times gain, by the same arithmetic.
 
-**Reading it.** The numbers rule out four explanations, and leave the cause open.
+**Reading it.** The numbers rule out three explanations, leave a fourth unmeasured, and leave the cause open.
 
 - **The denominator.** Not it: the change itself is about ten times larger, 1.0 to 1.2 nats against 0.06 to 0.13.
 - **A student that learned less.** Not it: the second map table's gain shortfall of under 2% would explain a twelfth of the move, by the table in section 3.
-- **The student's components.** Not it: the same nats fall appears with the released components and with the student's. The masked read with the student's components, on the student's and the fine-tune's values of Γ, differs by 1.23 and 1.01 nats, against falls of 1.23 and 1.02. So the fall is in Γ's values on the student's activations.
-- **Batch order.** Unlikely but unmeasured here: both seeds agree, and noise elsewhere is 0.0006, but the second map table has no second-order state.
+- **Which components are read.** Not it, for the read-out; the student's components still produce the weights that produce those activations. The same nats fall appears with the released components and with the student's. The masked read with the student's components, on the student's and the fine-tune's values of Γ, differs by 1.23 and 1.01 nats, against falls of 1.23 and 1.02. So the fall is in Γ's values on the student's activations.
+- **Batch order.** Unmeasured on this table. Both seeds' students used the same batch order, so their agreement bears only on the teacher's seed. Noise on the other two tables is 0.0006.
 
-What goes with the fall is shown in the figure. The second map table's students are the only ones in this run that end smaller than their teachers, and a map student's lost share grows as that ratio falls. This is a correlation on four map settings, two of them the first map table at different teacher steps. The teacher's size, its training length and its confidence all change together, and two points are from E42, whose windows nobody has compared with these. The copy class does not follow: E42's student on the copy table ends at 0.59 of its teacher and loses 4%. That loss is no more than its own gain shortfall of 5% would give. We do not assert a cause. Which subcomponents' values changed was not read, and the distance between student and teacher weights could not be read on the CPU. The first needs a GPU job, the second needs the released U and V, and neither was run.
+What goes with the fall is shown in the figure, but its axis is mostly teacher size. After 1,000 steps student size stays within 0.0170 to 0.0262 while teacher size spans 0.0137 to 0.0379, and a ratio under 1 coincides exactly with a teacher step of 30 or more. The control's size also grows by a third with nothing to learn (0.0182 to 0.0242), so the student's size includes drift. "The only ones that end smaller" is close to "the only teachers larger than a 1,000-step student reaches". The second map table's students are the only ones in this run that end smaller than their teachers, and a map student's lost share grows as that ratio falls. This is a correlation on four map settings, two of them the first map table at different teacher steps. The teacher's size, its training length and its confidence all change together, and two points are from E42, whose windows nobody has compared with these. The copy class does not follow: E42's student on the copy table ends at 0.59 of its teacher and loses 4%. That loss is no more than its own gain shortfall of 5% would give. We do not assert a cause. Which subcomponents' values changed was not read, and the distance between student and teacher weights could not be read on the CPU. The first needs a GPU job, the second needs the released U and V, and neither was run.
 
 This does not block the separation, since the fall moves the map class further from the copy class and the plus-remainder read, where the fall is absent, also separates. It does limit the second reading: "a student keeps its fine-tune's re-switching" holds cleanly on six of the eight, and on the second map table only in units of the gain.
 
@@ -142,7 +142,7 @@ This does not block the separation, since the fall moves the map class further f
 
 The off-target KL is against W₀, on held-out windows.
 
-**Reading it.** Yes, as E12 and E46 would lead you to expect at step 1000. The student's off-target KL sits within 0.008 of the fine-tuned model's on all eight, including the first map table's high value. E46's fine-tune log suggests why that value is high. The second map table's training KL falls from about 0.5 at step 10 to 0.1 at step 30, so stopping at step 10 may catch the first map table near its peak. E42's step-1000 teacher on that table reads 0.06, which fits, though the first table's path between those steps was not read. Held-out P(target) sits within 0.006 on six states.
+**Reading it.** Yes. The student's off-target KL sits within 0.007 of the fine-tuned model's on all eight, including the first map table's high value. E46's fine-tune log suggests why that value is high. The second map table's training KL falls from about 0.5 at step 10 to 0.1 at step 30, so stopping at step 10 may catch the first map table near its peak. E42's step-1000 teacher on that table reads 0.06, which fits, though the first table's path between those steps was not read. Held-out P(target) sits within 0.006 on six states.
 
 The first map table is the exception, and we cannot explain it. Its students beat their half-learned teachers by 0.03 to 0.04 in P(target), and by 0.29 nats in log-odds. All three students of that table read gain ratios over 1, and it has the poorest fit of any table. The surplus is 2% of the gain and no reading rests on it.
 
@@ -155,7 +155,7 @@ The first map table is the exception, and we cannot explain it. Its students bea
 
 One training, read under both tables. The stop did not fire, and the filing marks it as weak. The terms are 6 to 22 times under the line, and as a share of the smallest teacher's gain they are at most 0.018.
 
-Three things here are not explained. The student against W₀ ends further from it than it began: size 0.0182 to 0.0242, loss 0.0078 at step 1 to 0.0266 at step 1000. Both targets' log-odds rise by about 0.3 nats. And most of that sits masked-off. The masked-off term is three to four times what Amendment 8 read on emoticon windows, about 0.06 nats. This run's start gain of 0.02 nats also corrects the plan's "about 1 nat", as the review expected. None of this bears on a 13-nat gain, but it is a reason not to read small moves as signal.
+Three things here are not explained. The student against W₀ ends further from it than it began: size 0.0182 to 0.0242, loss 0.0078 at step 1, 0.179 at step 10 and 0.0266 at step 1000. Both targets' log-odds rise by about 0.3 nats. And most of that sits masked-off. The masked-off term is three to four times what Amendment 8 read on emoticon windows, about 0.06 nats. This run's start gain of 0.02 nats also corrects the plan's "about 1 nat", as the review expected. None of this bears on a 13-nat gain, but it is a reason not to read small moves as signal.
 
 ### How far the three verdicts are independent
 
@@ -167,25 +167,25 @@ They are not three pieces of evidence. On the student's state the rest is 0.013 
 | student's re-switching share | 0.76-0.80 | 0.23-0.26 | 0.493 | 0.044 |
 | student's masked-off share, the scored one | 0.18-0.23 | 0.71-0.74 | 0.476 | 0.048 |
 
-So there is one new fact: Γ on the student's activations gives about what it gives on the fine-tune's. Given that, a small rest and E12's separation, the first and third verdicts follow by arithmetic. The small rest is itself mostly expected, since Δ is fixed and E42 read 0.03 to 0.05. A separation by a wider gap than least-squares' is therefore no extra support. It only records that the remainder moved from Δ to masked-off.
+So there is one new fact: on six of eight states, Γ's values on the student's activations give the released subcomponents about the same masked log-odds as on the fine-tune's; on the second map table they give 1.0 to 1.2 nats less, about a fifth of the term. Whether the same subcomponents switch was not read. Given that, a small rest and E12's separation, the first and third verdicts follow by arithmetic. The small rest is itself mostly expected, since Δ is fixed and E42 read 0.03 to 0.05. A separation by a wider gap than least-squares' is therefore no extra support. It only records that the remainder moved from Δ to masked-off.
 
 ## What we learned
 
-For the goal's second branch, the class difference survives on teacher training's own output: which subcomponents Γ switches on is set by the activations, and a student's activations give nearly the same answer as its fine-tune's. So the map does not change the difference, on these eight fine-tunes, this card and this position. Teacher training fills the components without filling the masked model. For the random maps, more than seven-tenths of the gain is carried by subcomponents Γ keeps off, against about half under the least-squares split. The route split is a mechanism reading, not the weak version's pass criterion, and no faithfulness harness ran here, so this run gives no verdict on the weak version. The classes are copy and random map: a new circuit from old pieces reads "elicited", so this does not say the map is new capability.
+For the goal's second branch, the class difference survives on teacher training's own output. On six of eight states, Γ's values on the student's activations give the released subcomponents about the same masked log-odds as on the fine-tune's; on the second map table they give 1.0 to 1.2 nats less, about a fifth of the term. Whether the same subcomponents switch was not read. So the re-switching share that divides the classes barely depends on whether the update sits in the components or in Δ, except for that fall, on these eight fine-tunes, this card and this position. The masked-off share takes up what Δ no longer holds. This run does not test faithfulness or why the classes differ. Teacher training fills the components without filling the masked model. For the random maps, more than seven-tenths of the gain is carried by subcomponents Γ keeps off, against about half under the least-squares split. The route split is a mechanism reading, not the weak version's pass criterion, and no faithfulness harness ran here, so this run gives no verdict on the weak version. The classes are copy and random map: a new circuit from old pieces reads "elicited", so this does not say the map is new capability.
 
 ## How compelling is the evidence
 
 - **Coverage.** Two tables and two seeds per class, one key → value format, one position, one card. Teachers are at first learned step only. Nothing here covers other tasks or the larger model.
 - **Noise.** Two batch-order pairs, on ident32 s0 and rand32 s0, at 0.002 on the masked-off share and 0.0006 on the filed move. Nothing was read on the second map table, where the moves are large.
 - **Blind to.** Which subcomponents switch on: the same share could be other subcomponents. This run read shares, not sets.
-- **Confound carried from E12.** The first map table's teachers hold P(target) at only 0.54 to 0.59. Its six-state agreement is partly agreement with a half-learned teacher, and the well-learned second map table is the one that moves.
+- **Confound carried from E12.** The first map table's teachers hold P(target) at only 0.54 to 0.59. The first map table's agreement is with a half-learned teacher, and the well-learned second map table is the one that moves.
 - **The inherited verdict.** Its 0.10 line is a third of a map's share. Read against a map's own re-switching term, the second map table lost a fifth.
-- **Batches.** Seed-0 students share their first batches with their teachers, seed-1 students do not. No difference between the seeds shows here.
+- **Batches.** Seed-0 students share their first batches with their teachers, seed-1 students do not. No difference between the seeds shows here, but all eight students train at batch order 0, so the s0/s1 comparison cannot separate shared batches from teacher seed.
 - **Controls.** All 44 filed checks passed. Do-nothing's identities read exactly. The re-switching share against E12's differs by at most 0.0013, across cards.
 
 ## Surprises
 
-- **Filed lean missed.** We leaned towards "partly" on the re-switching term and it read "inherited". Step-10 teachers did not overshoot.
+- **Filed lean missed.** We leaned towards "partly" on the re-switching term and it read "inherited". An overshoot in size appeared on the step-10 teachers but did not move re-switching.
 - **The second map table's fall** is ten times the others', unexplained beyond section 4.
 - **The first map table's students** beat their teachers on held-out P(target), unexplained.
 - **The control's student moved further from W₀** with nothing to learn, unexplained, small.
@@ -194,7 +194,7 @@ For the goal's second branch, the class difference survives on teacher training'
 
 `what_changes_next` in the filing has this clause fire: "P1 separates and P2 inherited: E42's claim widens to two tables per class; nothing further runs." Its preamble applies: "Each clause ends with the user hearing the result first." This also applies: "P3 masked-off, not masked-off or mixed is reported against E42's lean and changes no step." No plus-remainder disagreement arises, so that clause does not.
 
-So nothing is proposed as filed. One optional read exists if the fall matters to the user. A cluster debug job over the saved students would read which subcomponents' values fall on the second map table. If a few subcomponents carry the fall, it is about those; if it is diffuse, the reach reading gains weight.
+So nothing further is proposed as filed. The fall is being run down as E12 Amendment 2, a free cluster job; saved students are bf16 offsets, so that job first reproduces the falls from fp32 weights.
 
 ## Scorecard
 
@@ -220,7 +220,7 @@ Filed expected values on the student, all held:
 | e_gate, map | 0.60-0.85 | 0.708-0.737 |
 | 1 − r − e_gate | at most 0.06 | at most 0.037 |
 | gain ratio | at least 0.7 | at least 0.984 |
-| e_gate of state (b) against (a) | within 0.1, a guess | within 0.071 |
+| e_gate of state (b) against (a) | within 0.1, a guess | within 0.0711 |
 
 ## Departures from the literature
 
@@ -233,7 +233,7 @@ Departures from this project's own sources, for the record. From E12: a differen
 
 ## Not run
 
-- **Which subcomponents' values fall on the second map table,** fine-tune against student. Needs a GPU read of saved offsets.
+- **Which subcomponents' values fall on the second map table,** fine-tune against student. Being run as E12 Amendment 2 (see What next).
 - **Distance between student and teacher weights.** It needs the released U and V, and the project's hook refuses loading the model on a CPU. A GPU job would read it in seconds.
 - **A second batch order on the second map table.**
 - **The plan's other reads:** the Pile harness on any student, the Pile-text arm, step 100, more than two batch orders, step-1000 teachers on the second tables, switched-on counts and overlap with E12's sets, a null teacher on these windows, a second random start, E12's other numbers on these states, other tasks, Qwen.
