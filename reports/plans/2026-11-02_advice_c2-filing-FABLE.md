@@ -17,15 +17,13 @@ quality figure is reported beside its reference, and the predictions become four
 3. ID control: keep it; `ID_min = {"r": 0.5, "ratio": 0.5}`; the control holds when **both** states reach the bar
    (change `any` to `all`), one is "partial"; report and continue either way. Coverage is told apart by the ID rows'
    own `|L00 − T0|` against the natural rows' (over 2 × the larger natural value: coverage; else a reading miss).
-4. `matrix_share_min = 0.5`, nan void, stated in the rule.
-5. `T0_vs_LOW_max = 0.01`.
+4. `matrix_share_min = 0.5`, nan void, stated in the rule. 5. `T0_vs_LOW_max = 0.01`.
 6. The ratio void by floor is acceptable as filed; add the edge case and its meaning (the split did not carry the
    update), with U1 − U0 reported beside T1 − T0.
 7. Predictions: per reading, exclusive and exhaustive {void, fail, pass_under, tie}; headline = the better reading;
    unlearned-N rule stand-alone (≥ 4 of 5 non-void and "new"), with the note that the cheap methods never read them.
 
 ## 1. Early checks
-
 Why the rise is not a warning: `c2_config.yaml` gives PersistentPGDReconLoss an Adam lr warm-up of `warmup_pct 0.025`
 of 400K = 10K steps, so at 2K the adversary ran at a fifth of its strength; the training PGD term rose 0.45 → 2.2 while
 eval kl_ci rose 0.049 → 0.091. KL against a strengthening adversary rises until the adversary is at full strength, so
@@ -51,7 +49,6 @@ the 0.55 by 2 × measured; not now: the filing must precede the queued job, and 
 Confirm in code that `run` calls `on_eval` at step 0 (the first-steps record has a step-0 eval).
 
 ## 2. Decomposition quality: one stop, the rest reported
-
 Both readings are differences of L cells, so L00's offset from T0 cancels; the only quality number inside a reading
 is faithfulness, U ≈ T, a parameter identity that holds on any rows. On the released 67M, U0 − T0 is 0.025-0.038 (E58
 run.json, E54 stage2.json) on reading rows; L00 − T0 is −1.20/+1.85 (E58) and −0.97/+1.92 (E54): a finished Goodfire
@@ -72,8 +69,7 @@ analogue (E58 elicit) read r 0.76-0.79, ratio 0.93-0.96 against the cipher's 0.2
 never saw the `T a` prompt; `|L00 − T0|` on the ID rows tells coverage from a reading miss, since CI masks are
 input-dependent and faithfulness (U0 − T0) is not.
 ```json
-"positive_controls": {"ID_min": {"r": 0.5, "ratio": 0.5},
-  "ID_min_source": "E12's r rule and the step-2 plan's ratio rule (open_pair predictions.json label_source); E58 elicit 0.76-0.79 / 0.93-0.96 above, cipher 0.22-0.24 / 0.30-0.34 below",
+"positive_controls": {"ID_min": {"r": 0.5, "ratio": 0.5}, "ID_min_source": "E12's r rule and the step-2 plan's ratio rule (open_pair predictions.json label_source); E58 elicit 0.76-0.79 / 0.93-0.96 above, cipher 0.22-0.24 / 0.30-0.34 below",
   "rule": "per reading: holds iff both ID states are non-void and >= the bar; partial iff one; none iff neither. Report, continue (C1b's steering rule). On partial or none: if |L00 - T0| on the ID rows > 2 x the larger natural-row value, name coverage of the new prompt as the alternative cause; otherwise it is a reading miss. U0 - T0 on the ID rows must pass the same 0.1.",
   "lean": "r holds 70%, ratio 65%; coverage named 15%"}
 ```
@@ -81,7 +77,6 @@ Change `any` to `all` in `controls` and log the per-state readings (already logg
 keeps its outcome in section 7; the outcome is written with "no positive control" beside it.
 
 ## 4-6. The three numbers and the ratio void
-
 - `matrix_share_min: 0.5`. Source: the same majority bar as the reuse line's Stage B (through iff ≥ 0.5) and E12's r
   rule: the readings read the 24 matrices' part of the update, so that part must carry at least half the gain to be
   called the update. Measured 0.76 (P 1e-4 10K) and 0.68 (N1 10K), both large-update states; the 1e-5 1K states are
@@ -97,7 +92,6 @@ keeps its outcome in section 7; the outcome is written with "no positive control
   at all: the "new" reading made by the apparatus rather than the number; r is unaffected.
 
 ## 7. The predictions
-
 Scored set: 12 existing (P) + 9 new (N); bar at n = 21 is max(a(21) = 15, n_c + 2 = 17) = 17 (c1b.json needs_full);
 prune and steer read 21 of 21 with no void. C1b's instruments never read the unlearned N_1e-5 1K states (placement
 "not yet learned"), so "VPD alone" there means a label where none exists, not a win.
@@ -118,7 +112,6 @@ reported; r tie and ratio fail → headline tie, both written, no averaging; agr
 scored state is a miss against 21 of 21); n = 7 → void; a missing positive control changes no outcome, written beside it.
 
 ## Spend
-
 No reason not to run, and nothing cheap to run first: the open questions (10K KL, matrix shares of small updates,
 U1 − U0 after training) are answered by the run's own first 2 h and by the $0 read jobs; put the kl_ci watch at 10K in
 the runner's brief. Not run: anything on a GPU; the 10K `debug` chain.
