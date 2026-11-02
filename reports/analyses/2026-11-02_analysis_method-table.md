@@ -16,10 +16,11 @@ Not yet. The decomposition's reading follows how most pairs were built, but not 
 
 Each row is a pair of fine-tunes, one on the reuse side and one on the new side. Each column is a method. Each cell gives the method's reading, its reference, whether its positive control held on that fine-tune, and one verdict. The verdicts are separates, fails, control failed, unreadable and not run. A cell with no reading says not run, and 139 of the 224 cells do.
 
-Three kinds of truth mark the rows. Under `decisions.md`, elicitation is mechanistic, the causal check is the label, and a held-out reading is only evidence.
+Four kinds of truth mark the rows. Under `decisions.md`, elicitation is mechanistic, the causal check is the label, and a held-out reading is only evidence.
 
-- **By construction.** The fine-tuning task fixes the answer, and each state also passed behaviour and patch checks. This is task P against task N.
-- **By causal check.** Patching the old count or switching off the old copying head is the label. These are the earlier counting states and the copying-heads pair, whose copy side is not settled as filed.
+- **By construction.** The fine-tuning task fixes the answer, and each state also passed behaviour checks and a patch inside the fine-tuned state. This is task P against task N.
+- **By behaviour plus an in-state patch.** The earlier counting states, where the task is fixed and the label varies. The new side rests on behaviour, because the patch reads 0 by construction on a state that does not answer the patched count (`a2_N1.json`, `check_count_a`, confirmed 2026-11-02). Marked "by causal check" until then; no label moved.
+- **By causal check.** Switching off the original model's copying head is the label. This is the copying-heads pair, whose copy side is not settled as filed.
 - **Only by assumption.** Built to elicit is how the task was built, not the causal label; these pairs have no causal check. Those are all the other small-model pairs.
 
 The methods, in a line each:
@@ -133,7 +134,7 @@ Each section is one row, built from `table.json`. A star marks task P against ta
 | about | |
 |---|---|
 | states | 26 scored, 15 reuses and 11 new, from Stage A and Amendment 5; model 3M minGPT |
-| truth | by causal check: Behaviour share and interchange patch. |
+| truth | by behaviour plus an in-state patch: Behaviour share and an interchange patch inside the fine-tuned state, not from W0. The patch reads 0 by construction on a state that does not answer count a (a2_N1.json check_count_a), so the new side rests on behaviour. |
 | beside it | No held-out reading. |
 
 | method | reading | reference | positive control | verdict | filed, as filed | pointer |

@@ -13,6 +13,11 @@
  ],
  "markings_changed": [
   {
+   "row": "counting_c1",
+   "source_said": "Two causal checks from Stage A label each state",
+   "table": "by behaviour plus an in-state patch"
+  },
+  {
    "row": "e46_copy_random",
    "source_said": "built to reuse / construction labels (E60); 'a mechanism claim only, never behaviourally verified' (E52 amendment)",
    "table": "only by assumption"
@@ -146,7 +151,7 @@
     "how": "by construction",
     "source_said": "by construction: the fine-tuning task, plus the behaviour and patch checks each state passed",
     "changed": false,
-    "detail": "Disagreements between task and checks: []",
+    "detail": "Disagreements between task and checks: []. The patch check reads inside the fine-tuned state, not from W0, and reads 0 by construction on task N's count a, so task N's check is behaviour.",
     "pointer": "experiments/pcfg_anchors/results/c1b.json .train_stops.all_disagreements"
    },
    "evidence_beside": "No held-out reading.",
@@ -1423,10 +1428,10 @@
    "model": "3M minGPT",
    "states": "26 scored, 15 reuses and 11 new, from Stage A and Amendment 5",
    "truth": {
-    "how": "by causal check",
+    "how": "by behaviour plus an in-state patch",
     "source_said": "Two causal checks from Stage A label each state",
-    "changed": false,
-    "detail": "Behaviour share and interchange patch.",
+    "changed": true,
+    "detail": "Behaviour share and an interchange patch inside the fine-tuned state, not from W0. The patch reads 0 by construction on a state that does not answer count a (a2_N1.json check_count_a), so the new side rests on behaviour.",
     "pointer": "experiments/pcfg_anchors/results/c1.json .truth.scored; reports/analyses/2026-10-30_analysis_e55-c1.md"
    },
    "evidence_beside": "No held-out reading.",
