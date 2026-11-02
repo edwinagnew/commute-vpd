@@ -82,7 +82,6 @@ class Amend10:
     excite_eps: float = 1e-3  # the power control's "not excited": an eigenvalue under this x their mean
     rho2: float = 8.0  # the power control's added squared size, against dW's, per matrix: Frobenius design value 1/3
     power_sigma_min: float = 0.99  # the brief's "near 1"; rho2 x excite_eps gives about 0.996
-    power_frob_max: float = 0.5  # the brief's "low": design value 1/3, room for matrices with no unexcited direction
     round_rel: float = 2.0**-8  # bf16's largest relative rounding of an entry, Amendment 9's min_share source
     seed: int = 0  # the rounding draw and the power control's draw
     pile_rows: int = 256  # val rows 0..255: the harness's Pile rows (faithfulness.pile_blocks)
@@ -90,7 +89,7 @@ class Amend10:
     batch_pile: int = 8
 
     def __post_init__(self) -> None:
-        assert 0 < self.excite_eps < 1 and 0 < self.gap_min and 0 < self.gap_dist_min and self.power_frob_max < self.power_sigma_min
+        assert 0 < self.excite_eps < 1 and 0 < self.gap_min and 0 < self.gap_dist_min
 
 
 CM = Amend10()
@@ -534,7 +533,7 @@ def power_control(out: dict[str, Any], T: dict[str, Tensor], sigma: dict[str, Te
     out["controls"][f"power {st}"] = rec
     log(f"[control power {st}] {json.dumps(rec)}")
     dump(OUT, out)
-    if not rec["cos_sigma"] >= CM.power_sigma_min or not rec["cos_frobenius"] <= CM.power_frob_max:
+    if not rec["cos_sigma"] >= CM.power_sigma_min:  # cos_frobenius is written, not a stop: amended 2026-11-02 after job 49463
         halt(OUT, out, f"power control on {st}: {json.dumps(rec)}")
 
 

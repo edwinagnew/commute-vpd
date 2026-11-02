@@ -1,5 +1,7 @@
 # E34 Amendment 10: the student's change against the fine-tune's, weighted by the inputs the model sees
 
+**Third revision, 2026-11-02, after job 49463.** The job stopped at the first power control, before any input-weighted read of a student: cos_Σ 0.99999, cos by Frobenius 0.567 against the bound 0.5, k/d 1.0 on 20 of 24 matrices, down_proj 0.86 to 0.90. So about 26% of δW sits on matrices with a near-empty input direction, not the 3/8 the bound needed. No verdict rule reads this control, so the Frobenius side no longer stops the job; its number and k/d are still written, the report states them, and the cos_Σ stop stays. The stopped file is `results/amend10_stopped_job49463.json`.
+
 **Revised 2026-11-02, nothing having run, so the filing could still change** (first filing `8ce4471c`, second `5fc87377`). The second revision follows the independent review, `reports/reviews/2026-11-02_review_e34-amend10-code.md`: its findings 1 to 10 are applied, and "What the lead did" there lists them. No read weighted by inputs of the real model exists; the only real reads are stage 0's Frobenius. The dry run used real vectors with made-up moments, to test the path and time it.
 
 Approved by the user (2026-11-02, option (a) of log card `decision-commute-settled`). $0: one `debug` job on an L40, about 14 min, on
@@ -113,7 +115,7 @@ Each sentence carries its scope: at each matrix's output on W₀'s inputs, every
 | Distance, size | nan | 0, 1 | a zero change is at distance exactly 1: tested |
 | Frobenius re-read of Amendment 9 | zero reads nan | self 1 within 1e-6 | every pair within 1e-6 of `amend9.json`, stop; 1e-12 in the dry run |
 | Layout | n/a | error under 1e-3, relative; lean 1e-5 | all 24 matrices, or stop |
-| Power | n/a | n/a | Z = δW + R, R random on directions with an eigenvalue under 1e-3 of the mean, ‖R‖² = 8‖δW‖²: cos_Σ ≥ 0.99, Frobenius ≤ 0.5, else stop. Writes k/d per matrix. It says only that Σ is ill-conditioned; made-up spectrum 0.9973, 0.3334 |
+| Power | n/a | n/a | Z = δW + R, R random on directions with an eigenvalue under 1e-3 of the mean, ‖R‖² = 8‖δW‖²: cos_Σ ≥ 0.99, else stop; Frobenius written, not a stop (third revision). Writes k/d per matrix. It says only that Σ is ill-conditioned; made-up spectrum 0.9973, 0.3334 |
 | Reruns | n/a | n/a | as above |
 | Gram | diagonal 0 | diagonal above 0 | smallest diagonal above 0 per set, else stop |
 

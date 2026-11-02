@@ -160,10 +160,10 @@ def test_power_control_on_a_falling_spectrum() -> None:
     sig = Q @ torch.diag(vals) @ Q.T
     Z, kd = A.power_change(T, sig, A.CM.excite_eps, A.CM.rho2, g)
     assert kd == pytest.approx(37 / 40)
-    assert cos(Z, sig) >= 0.996 and cos(Z, None) <= A.CM.power_frob_max
-    iso = torch.eye(40, dtype=torch.float64)  # no direction unexcited: Z is T, the Frobenius side of the control stops the run
+    assert cos(Z, sig) >= 0.996 and cos(Z, None) <= 0.5
+    iso = torch.eye(40, dtype=torch.float64)  # no direction unexcited: Z is T, and Frobenius reads 1
     Zi, kdi = A.power_change(T, iso, A.CM.excite_eps, A.CM.rho2, g)
-    assert kdi == 1 and cos(Zi, None) > A.CM.power_frob_max
+    assert kdi == 1 and cos(Zi, None) == pytest.approx(1)
     zero = torch.zeros(40, 40, dtype=torch.float64)  # a zero Sigma: nan, which the stop refuses
     assert math.isnan(cos(A.power_change(T, zero, A.CM.excite_eps, A.CM.rho2, g)[0], zero))
 
