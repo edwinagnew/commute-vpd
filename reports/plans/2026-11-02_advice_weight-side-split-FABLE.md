@@ -17,12 +17,12 @@ the stand-in has no δW in it, so the only thing it can report is how Γ reacts 
 any perturbation. Changing the unit from a token's log-odds to a vector norm removes the target dependence and the
 trigger-only restriction, which are real gains, but not that.
 
-**What would change it.** If the user wants a weight-side number, the honest form is not a norm ratio but a projection
+**What would change it.** If the user wants a weight-side number, the honest form is not a norm ratio but an overlap share, the inner product
 onto the update's own output change, S_X = E⟨X a, δW a⟩ / E‖δW a‖², X ∈ {direct, re-switching, interaction,
 residual}. It sums to 1 exactly by linearity (the telescoping the route split has in log-odds), it is signed, so an
 orthogonal change reads 0 rather than 1, and it is the same matrix in the same units on both sides, which removes the
 "numerator in the stand-in, denominator in the real model" objection as far as units go. One $0 run on saved states
-settles whether it earns a place: the re-switching projection on E46's learned-nothing code fine-tune
+settles whether it earns a place: the re-switching overlap share on E46's learned-nothing code fine-tune
 (`regating_table/code_step10.pt`) against E12's copy fine-tunes. My expectation, below, is that it fails that null for the
 reason above, in which case the whole idea goes to `TRIED.md` as dropped at design. If it passes (code ≤ 0.1, copy ≥ 0.4,
 guesses), the re-gating line gains the first instrument that passes the null r failed, and E62/E58's readings get a
@@ -79,19 +79,19 @@ fall on rand32b's students from that alone (0.187 → 0.132), and the norm versi
    difference in gating before and after fine-tuning", is g₁ − g₀ itself; the records show no all-position measurement
    of it (`records.md` § 4). E|g₁ − g₀| per subcomponent and position, pooled over Pile rows, gives the definition
    plainly. ‖(g₁ − g₀) C₀ a‖ adds the weighting by what the subcomponent does on that input, which says whether a gate
-   change could matter; the projection ⟨(g₁ − g₀) C₀ a, δW a⟩ adds whether it matters in the update's direction. If one
-   number is to be read, it is the projection, not the norm.
+   change could matter; the overlap ⟨(g₁ − g₀) C₀ a, δW a⟩ adds whether it matters in the update's direction. If one
+   number is to be read, it is the overlap share, not the norm.
 2. **Do-nothing: direct 0, interaction 0, re-switching unknown (Γ's response); learned nothing: the same kind of
    numbers; random δW: the same kind; known control: 1 by construction.** The table is below. The measure cannot
    separate the first three by anything derivable, and I guess it does not separate them when measured. It also has no
    W₀ reading (0/0), so the design check's "value at W₀" cannot be given; only the numerators in absolute units read 0
    there.
-3. **Report the terms as sizes, never as shares; or switch to the projection, which sums to 1 exactly.** For the
+3. **Report the terms as sizes, never as shares; or switch to the overlap share, which sums to 1 exactly.** For the
    norm form: one a per matrix (W₀'s activation of that input, so all four terms see the same vector), all positions of
    512-token Pile rows (Γ's trained length; 41-token windows are off its distribution,
    `reports/reviews/2026-10-27_review_gamma-bidirectional-windows.md`), pooled by summing numerators and denominators
    over positions, and reported per matrix as well as pooled, since the pooled sum is dominated by down_proj and o.
-   None of this removes the cross terms. The projection S_X with the residual S_res = 1 − S_D − S_R − S_I needs no
+   None of this removes the cross terms. The overlap share S_X with the residual S_res = 1 − S_D − S_R − S_I needs no
    pooling choice beyond the same.
 4. **Yes, 67M only, about $0 and 20 minutes; Qwen no.** Everything needed is on disk (`ls -lL`, 2026-11-02): fine-tune
    δW fp32 113 MB at `~/commute-data/results-large/regating_table/{ident32,ident32b,rand32,rand32b}_s{0,1}.pt`,
@@ -107,12 +107,12 @@ fall on rand32b's students from that alone (0.187 → 0.132), and the norm versi
    chunk of 16 rows at a time. Ten states fit one `debug` job. Qwen: no scored C₁ state exists, two g's at 4,096
    positions (11 GB each) do not fit beside the 45 GB resident on an L40, and a split of δW is ~45 min of GPU. Not for Qwen.
 
-## Expected values (norm ratio as proposed; the projection S_R in the last column)
+## Expected values (norm ratio as proposed; the overlap share S_R in the last column)
 
 "Algebra" = follows from the definitions; "guess" = my expectation, unmeasured. Direct and interaction use the
 least-squares C₁ unless stated. Pooled over all positions of Pile rows.
 
-| state | direct | re-switching | interaction | sum of norms | S_R (projection) |
+| state | direct | re-switching | interaction | sum of norms | S_R (overlap share) |
 |---|---|---|---|---|---|
 | W₀ (δW = 0) | 0/0 (algebra) | 0/0 | 0/0 | undefined | undefined; numerators 0 |
 | do-nothing, copy fine-tune (ident32) | 0 (algebra: C₁ = C₀) | unknown, Γ's response; guess 0.1 to 3 | 0 (algebra) | = re-switching | guess 0.2 to 0.6 |
@@ -135,11 +135,11 @@ and the student state's full term must reproduce the E12 Amendment 1 size ratios
   same object as the proposed re-switching term in another unit. New: an all-position, target-free reading; not new:
   what it is blind to.
 - **Patch or step.** A patch on r's unit; the step would be an instrument that passes the learned-nothing null, which
-  only the projection form can even attempt.
+  only the overlap form can even attempt.
 - **Decisions.** Relies on the do-nothing reference and the split vocabulary; departs from none. It does not touch the
   log-odds choice for the route split, for which no decision record exists (`records.md` § 1); if the user wants that
   choice recorded, `decisions.md` should get a row either way.
-- **Result that changes what we do.** Only the projection's learned-nothing null: S_R(code) well below S_R(copy)
+- **Result that changes what we do.** Only the overlap share's learned-nothing null: S_R(code) well below S_R(copy)
   would make it the line's instrument; the same reading drops the idea. The norm ratio has no such outcome.
 - **Apparatus arm first.** The two code checks above (g ≡ 1 identities), then do-nothing on the copy fine-tune, then
   the learned-nothing fine-tune, then random δW.
