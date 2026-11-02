@@ -1,0 +1,23 @@
+{
+ "experiment": "E66 Amendment 2: the patch on the saved fine-tunes, read as exploratory, after job 48971 stopped at stage 1",
+ "filed": "2026-11-02",
+ "plan": "reports/plans/2026-11-02_plan_e66-interchange-67m.md, section Amendment 2; reports/plans/2026-11-02_advice_e66-stop-FABLE.md",
+ "scope": "Only what can stop or void this run. No rule, verdict or label is filed for any reading on a saved state. results/predictions.json and results/run.json stand as they are; stage 1's stop is not refiled. Settings and the other thresholds (floor 0.5, 3 sds, 2000 resamples, pair minimums) are read from results/predictions.json unchanged.",
+ "thresholds": {
+  "transplant_tol": 1e-4,
+  "g_tol": 0.02,
+  "r0_tol": 1e-4
+ },
+ "read_floor": {"ident32b": 0.49},
+ "stops": {
+  "transplant": "C0 of results/predictions.json, unchanged: x_hi's input written into x_lo's run reproduces x_hi's read within transplant_tol. A nan fails.",
+  "void_maps": "C2 of results/predictions.json, unchanged: half the six maps or more void at every block.",
+  "reproduces_first": "New. Each map's mean R(W0) and R_off(W0) at blocks 1-3 is within r0_tol of job 48971's stage 0, and l* is the same. The write and sharpening readings are copied from run.json, so without the same pairs they are no reference. Source of the tolerance: transplant_tol, E52's fp32 figure of 1.7e-5 per window. A nan fails.",
+  "g_tol": "C8 of results/predictions.json, unchanged: each of the fourteen states' gain re-reads within g_tol of its filed value."
+ },
+ "voids": {
+  "T or T_off at a block": "As filed: nan where R(W0) or R_off(W0) is under the floor or 3 sds, so copy at blocks 1 and 2 and lookup at block 1 read void, marked under_floor.",
+  "Q at a block": "As filed: nan where T or T_off is void, T_off is not positive, or T_off crosses 0 in a resample.",
+  "ident32b, block 1": "The one exception, for reporting only. Job 48971 read R(W0) 0.497 against the floor of 0.5, sd 0.049, so read_floor lowers the floor on this map to 0.49. Every other mean on the map is 0.65 or more, so only block 1's T and Q change. l* stays 2, as filed, and the block is marked under_floor."
+ }
+}
