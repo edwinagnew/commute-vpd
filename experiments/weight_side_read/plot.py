@@ -1,7 +1,7 @@
 """E67's figures from results/run.json (job 49342) and the bars in results/predictions.json; no model.
 
   figures/share.png         the overlap share per state, against the filed bars, the drop band and the filed guess
-  figures/over_gaussian.png the same shares on a log axis: noise ranges, the Gaussian, and the band where the filed flag fires
+  figures/over_gaussian.png the shares on the 128 rows, the only rows the Gaussian was read on, on a log axis: noise ranges, the Gaussian, and the band where the filed flag fires
   figures/gamma_change.png  the mean change in Γ's values against the update's output change, zero control on the axes
   figures/per_matrix.png    the overlap share per matrix, against the keep bar (post hoc, no filed rule reads it)
 
@@ -87,27 +87,28 @@ def share(r: dict[str, Any], th: dict[str, float]) -> None:
 
 def over_gaussian(r: dict[str, Any], th: dict[str, float]) -> None:
     fig, ax = plt.subplots(figsize=(7.8, 4.6))
-    xs = state_axis(ax)
+    states = [s for s in STATES if s[3] == 128]
+    xs = list(range(len(states)))
+    ax.set_xticks(xs, [s[1] for s in states], fontsize=7.5)
+    ax.annotate("128 Pile rows", (2.0, 1.0), xycoords=("data", "axes fraction"), ha="center", va="bottom", fontsize=8, color=INK)
     copy_mean = (r["state_ident32_s0"]["S_R"] + r["state_ident32_s1"]["S_R"]) / 2
     gauss = r["state_gaussian"]["S_R"]
     ax.set_yscale("log")
     ax.axhspan(5e-5, copy_mean + th["drop_band"], color="#f6e7e6", zorder=0)
     ax.axhline(gauss, color=GAUSS, lw=1.2, ls="--")
-    for x, (name, _, colour, _) in zip(xs, STATES, strict=True):
+    for x, (name, _, colour, _) in zip(xs, states, strict=True):
         rec = r[f"state_{name}"]
         each = [a / b for a, b in zip(rec["chunks"]["r"], rec["chunks"]["den"], strict=True)]
         ax.plot([x, x], [min(each), max(each)], color=colour, lw=1.2)
         loo = rec["leave_one_chunk_out"]
         ax.plot([x, x], [loo["min"], loo["max"]], color=colour, lw=5, solid_capstyle="butt")
         ax.plot([x], [rec["S_R"]], "o", color=colour, ms=5, mec="white", mew=0.7)
-        if name != "gaussian":
-            ax.annotate(f"{rec['S_R'] / gauss:.0f} times", (x, max(each)), xytext=(0, 4), textcoords="offset points", ha="center", fontsize=7.5, color=INK)
     kw = {"xycoords": ("axes fraction", "data"), "textcoords": "offset points", "fontsize": 7.5}
-    ax.annotate(f"random update: {gauss:.4f}", (0.99, gauss), xytext=(0, 3), ha="right", color=INK, **kw)
+    ax.annotate(f"random update: {gauss:.4f}", (0.01, gauss), xytext=(0, 3), ha="left", color=INK, **kw)
     ax.annotate("the filed flag fires anywhere in the shaded band, below 0.20", (0.99, copy_mean + th["drop_band"]), xytext=(0, -9), ha="right", color=REF, **kw)
     ax.annotate("dot: the share; thick bar: one chunk left out in turn;\nthin line: each chunk of 16 rows alone", (0.01, 8e-5), xytext=(0, 0), color=INK, **kw)
     ax.set_ylim(5e-5, 0.5)
-    ax.set_xlim(-0.6, 7.2)
+    ax.set_xlim(-0.6, 4.6)
     tidy(ax, "", "overlap share, log axis")
     ax.set_title("Are the small shares noise, and does the filed flag say anything about the random update?\n", fontsize=9.5, color=INK, loc="left")
     save(fig, "over_gaussian.png")

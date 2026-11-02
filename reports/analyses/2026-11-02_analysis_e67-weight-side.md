@@ -1,14 +1,16 @@
 # Analysis: does a weight-side share tell a fine-tune that learned nothing from one that learned? (E67)
 
-*2026-11-02, coding agent, regating-lead E67 writer. **Provisional until the independent check.** Plan: `reports/plans/2026-11-02_plan_e67-weight-side-read.md`. Rules: `experiments/weight_side_read/results/predictions.json`. Code review: `reports/reviews/2026-11-02_review_e67-code.md`. Design: `reports/plans/2026-11-02_advice_weight-side-split-FABLE.md`. Explanation: `notebooks/E67_weight_side_read.ipynb`. Provenance near the end.*
+*2026-11-02, coding agent, regating-lead E67 writer. **Independently checked: `reports/reviews/2026-11-02_review_e67-analysis.md`; its corrections are applied here.** Plan: `reports/plans/2026-11-02_plan_e67-weight-side-read.md`. Rules: `experiments/weight_side_read/results/predictions.json`. Code review: `reports/reviews/2026-11-02_review_e67-code.md`. Design: `reports/plans/2026-11-02_advice_weight-side-split-FABLE.md`. Explanation: `notebooks/E67_weight_side_read.ipynb`. Provenance near the end.*
 
-We read saved fine-tunes, with nothing trained, to see how far the decomposition's importance values move and how that movement lines up with the fine-tune's own effect. Fine-tunes that learned and one that learned nothing all read a very small overlap, so the filed rule drops this read on these rows and states. The re-gating question in `GOALS.md` gains no new instrument, but it gains a first reading at every position: the importance values also move on a fine-tune that learned nothing.
+We read saved fine-tunes, with nothing trained, to see how far the decomposition's importance values move and how that movement lines up with the fine-tune's own effect. The filed rule drops this overlap on these rows and states, but it could not have passed readings this small and every update was read off the text where it learned, so the question stays open. The re-gating question in `GOALS.md` gains no new instrument, but it gains a first reading at every position: the importance values also move on a fine-tune that learned nothing.
 
 ## The answer
 
-No, on these rows and states. The overlap between the switching change and the update's own output change is small. It reads about 0.05 for the copy fine-tunes and 0.03 for the fine-tune that learned nothing, so the filed rule drops it. Both sit far above a random update, so the read is not empty. It still does not tell learning from not learning. Γ's values moved half to two thirds as far on the fine-tune that learned nothing.
+The filed rule drops the overlap share on these rows and states. That is a limit of the test as much as a result, since no ordering of readings this small could have passed the band. Every update is read off the text where it learned. The pooled gap is about the size of the difference between two copy seeds. So the run shows neither that the share is informative nor that it is not.
 
-This is not "the weight side never works". It is a drop of one share, on 128 Pile rows and 64 code-heavy rows, on five saved do-nothing states. The share has no positive control on real rows, only a unit test.
+The readings are 0.03 to 0.06 and the band is 0.15. No state learned anything on the rows read: the copy fine-tunes are off task on every row, the code fine-tune learned nothing anywhere, and the lowercase fine-tune that did learn on Pile was not read. So the run does not test learning where learning shows. Both kinds of update sit above one random draw, whose reading is near zero almost by construction. So the comparison rules out only a share that any isotropic update of this size would produce. It does not show that the share carries information about switching.
+
+This is not "the weight side never works". Four saved fine-tunes and one random draw were read on 128 Pile rows, and two fine-tunes on 64 code-heavy rows. The share has no positive control on real rows, only a unit test. Γ's values moved half to two thirds as far on the fine-tune that learned nothing.
 
 ## What was measured
 
@@ -28,7 +30,7 @@ The two numbers:
 |---|---|---|
 | unchanged model, one chunk, first and alone | $W_1 = W_0$; every number must read exactly 0 | a read that moves with nothing changed |
 | copy fine-tunes, seeds 0, 1, step 10 | E12's fine-tunes that learned to repeat a key token at a trigger; r 0.80 and 0.76 | the updates that did learn |
-| fine-tune that learned nothing, steps 10, 100 | E36's on code-heavy Pile rows; held-out gain −0.05 and −0.06 nats; r 0.82 at step 10 | a share that follows any fine-tune |
+| fine-tune that learned nothing, steps 10, 100 | E36's on code-heavy Pile rows; held-out gain −0.05 and −0.065 nats; r 0.82 at step 10 | a share that follows any fine-tune |
 | random update | Gaussian per matrix, seed 67, scaled so each matrix's $E\|G a\|^2$ equals copy seed 0's | a share any update of this size produces |
 
 The states ran on 128 Pile validation rows, 512 tokens each. By E36's own cut only 3 of the 128 are as code-heavy as the second fine-tune's training text. So step 10 of that fine-tune and copy seed 0 also ran on E36's 64 held-out rows at or above the cut, where r failed the null. The copy fine-tunes trained at trigger positions in windows, and these rows hold almost none, so they are off task on every row read.
@@ -45,13 +47,13 @@ The lean was drop, at low to medium confidence: the update enters $R$ only throu
 
 ![The overlap share per state against the filed bars, the drop band and the filed guess](../../experiments/weight_side_read/figures/share.png)
 
-**Reading it.** No: the filed rule drops the share on these rows and states. The learned-nothing half of a keep holds, at 0.031 against 0.1. The copy half misses by a factor of about eight, at 0.056 and 0.043 against 0.4. All four pairs land in the 0.15 band, with gaps of 0.025 and 0.011 at step 10.
+**Reading it.** The filed rule drops the share on these rows and states. The learned-nothing half of a keep holds, at 0.031 against 0.1. The copy half misses by a factor of about eight, at 0.056 and 0.043 against 0.4. All four pairs land in the 0.15 band, with gaps of 0.025 and 0.011 at step 10.
 
 **The filed guess missed and the verdict matched.** The filed guess for the copy fine-tunes was 0.2 to 0.6 and they read about 0.05. That is a miss of the guess, by about a factor of four under its lower end. The verdict itself matched the filed lean.
 
-**The drop is the rule firing on small numbers.** The 0.15 band is wider than every reading here, so any ordering of these numbers would land in it. The filed `drop_both_small` flag records this case, and it fired. Its filed gloss says "the read sees nothing on Pile rows", and the next section shows that goes too far. No ratio rule was filed, and none is applied after the fact: the drop stands.
+**The drop is the rule firing on small numbers.** The 0.15 band is wider than every reading here, so any ordering of these numbers would land in it. The filed `drop_both_small` flag records this case, and it fired. Its filed gloss says the read sees nothing on Pile rows. This run neither confirms nor refutes that, as it has no positive control on real rows. No ratio rule was filed, and none is applied after the fact: the drop stands.
 
-**The rows where r failed.** The fine-tune that learned nothing reads 0.033 there, against 0.031 on the 128 rows. That is under the bar, and the check could only take back an adopting label, so it changes nothing. Copy seed 0 reads 0.044 there, report-only. So the share barely moved on that fine-tune's own kind of text, though its output change did: 893 per row against 379.
+**The rows where r failed.** The fine-tune that learned nothing reads 0.033 there, against 0.031 on the 128 rows. That is under the bar, and the check could only take back an adopting label, so it changes nothing. Copy seed 0 reads 0.044 there, report-only. So the share barely moved on that fine-tune's own kind of text, though its squared output change did: $E\|\delta W a\|^2$ reads 893 per row against 379.
 
 | state | rows | $S_R$ | filed guess | gap to copy seed 0 | gap to copy seed 1 | pair label |
 |---|---|---|---|---|---|---|
@@ -65,28 +67,27 @@ The lean was drop, at low to medium confidence: the update enters $R$ only throu
 
 ### Are the small shares noise, and does the loud line about the random update mean anything?
 
-![The same shares on a log axis with their ranges, against the random update and the band where the filed flag fires](../../experiments/weight_side_read/figures/over_gaussian.png)
+![The same shares on the 128 rows, on a log axis with their ranges, against the random update and the band where the filed flag fires](../../experiments/weight_side_read/figures/over_gaussian.png)
 
-**Reading it.** They are not noise, and the loud line says nothing. The filed flag `gaussian_like_copy` is $|S_R(\text{random}) - \text{mean } S_R(\text{copy})| \le 0.15$. It read 0.049, so it fired, and the job printed "the matched Gaussian reads like the copy fine-tunes". We report it as filed. The band is absolute, though, and it covers any random reading from −0.10 to 0.20, so with readings this small it would fire almost regardless. It carries no information on this run.
+**Reading it.** The fine-tunes' readings are not row noise: each jackknife standard error is under a tenth of its reading. Seed noise is larger, at 0.0138 across the copy seeds, and is unknown for the fine-tune that learned nothing. The loud line says nothing. The filed flag `gaussian_like_copy` is $|S_R(\text{random}) - \text{mean } S_R(\text{copy})| \le 0.15$. It read 0.049, so it fired, and the job printed "the matched Gaussian reads like the copy fine-tunes". We report it as filed. The band is absolute, though, and it covers any random reading from −0.10 to 0.20, so with readings this small it would fire almost regardless. It carries no information on this run.
 
-**The ratio.** The copy fine-tunes' mean is 50 times the random update's. Each state's ratio is below.
+**Against the random update.** The random reading, 0.0010, has a standard error of about 0.0007 on a crude estimate from its 24 matrices, with one draw. So the ratios are not stable numbers. Read the differences: 0.03 to 0.06 against about zero. The random update was read only on the 128 rows.
 
-| state | rows | $S_R$ over the random update's | mean change in Γ's values over the random update's |
+| state | rows | $S_R$ minus the random update's | mean change in Γ's values over the random update's |
 |---|---|---|---|
-| copy fine-tune, seed 0 | 128 | 57 | 2.8 |
-| copy fine-tune, seed 1 | 128 | 43 | 2.7 |
-| learned nothing, step 10 | 128 | 32 | 1.27 |
-| learned nothing, step 100 | 128 | 23 | 1.79 |
-| learned nothing, step 10 | 64 where r failed | 33 | 1.50 |
-| copy fine-tune, seed 0 | 64 where r failed | 45 | 2.2 |
+| copy fine-tune, seed 0 | 128 | 0.0554 | 2.8 |
+| copy fine-tune, seed 1 | 128 | 0.0416 | 2.7 |
+| learned nothing, step 10 | 128 | 0.0304 | 1.27 |
+| learned nothing, step 100 | 128 | 0.0213 | 1.79 |
 
 **What follows, and no more.**
 
-- Trained updates read well over this random draw in every chunk, whether their output change is smaller, matched or larger. So the share responds to something they have and the draw lacks.
-- The fine-tune that learned nothing has it as well. So that something is not learning, and the share cannot be read as a sign of it.
+- Trained updates read above this random draw in every chunk, whether their output change is smaller, matched or larger.
+- The fine-tune that learned nothing also reads above the draw, so reading above it is not a sign of learning. Whether any of the remaining gap to the copy fine-tunes follows learning is not tested here.
+- A low random reading is close to forced. The random update has zero mean, so for any $R$ that does not depend on it, the expected overlap is exactly 0. A trained update has no such protection, so the gap to the random update does not measure how far Γ responds to the update.
+- The match fixes one number per matrix, not the update's shape. The checker's participation ratios of the squared singular values, unweighted by inputs, have a median of about 10 for the copy fine-tunes, 67 for step 10 and 128 for step 100. An iid Gaussian reads 384 on the square matrices and 614 on the MLP matrices.
 - The cause is not established. The advice guessed that Γ reacts less to directions off the data, and this run does not test that.
-- Γ's values moved 0.37 as far on the random update as on the copy fine-tunes, at the same output change, while the share fell by a factor of 50. The size of $R$ was not measured, so this does not split into a smaller switching term and a worse alignment.
-- There is one random draw, so the 50 is not a fitted ratio.
+- Γ's values moved 0.37 as far on the random update as on the copy fine-tunes, at about the same output change, while the share fell to about zero. The size of $R$ was not measured, so this does not split into a smaller switching term and a worse alignment.
 
 **The noise, and what each spread means.** In `leave_one_chunk_out` (`src/commute/weight_side.py:55`), each entry is the pooled share with one chunk of 16 rows removed. The spread is the largest entry minus the smallest. It fixes the update and the sample, so it says how far the pooled share rests on one chunk. It is not a standard error, as it covers no other rows and no other seed. It also shrinks about as one over the number of chunks. So the per-chunk range and a jackknife standard error stand beside it, both computed afterwards from the saved chunks.
 
@@ -108,21 +109,21 @@ Every spread is under the filed guess of 0.1. For both states read on both sets,
 
 **Reading it.** Γ's values move on every update, and half to two thirds as far on the fine-tune that learned nothing as on the copy fine-tunes. As filed these numbers have no bar, so they are report-only and decide nothing. The filed guesses all held, as the scorecard lists.
 
-| state | rows | mean of $\lvert g_1 - g_0 \rvert$ | over the copy mean | output change per row, over copy seed 0's |
+| state | rows | mean of $\lvert g_1 - g_0 \rvert$ | over the copy mean | $E\lVert \delta W a \rVert^2$ per row, over copy seed 0's |
 |---|---|---|---|---|
 | copy fine-tune, seed 0 | 128 | 7.74e-4 | 1.02 | 1.00 |
 | copy fine-tune, seed 1 | 128 | 7.38e-4 | 0.98 | 0.99 |
 | learned nothing, step 10 | 128 | 3.51e-4 | 0.46 | 0.42 |
 | learned nothing, step 100 | 128 | 4.94e-4 | 0.65 | 2.13 |
 | random update | 128 | 2.77e-4 | 0.37 | 1.00 |
-| learned nothing, step 10 | 64 where r failed | 4.15e-4 | 0.55 | 1.00 |
-| copy fine-tune, seed 0 | 64 where r failed | 5.99e-4 | 0.79 | 1.01 |
+| learned nothing, step 10 | 64 where r failed | 4.15e-4 | | 1.00 |
+| copy fine-tune, seed 0 | 64 where r failed | 5.99e-4 | | 1.01 |
 | unchanged model | one chunk of the 128 | exactly 0 | 0 | 0 |
 
-- **Learned nothing against the copy fine-tunes.** The fine-tune that learned nothing moves Γ's values 0.46 and 0.65 as far on the 128 rows. Its output change there brackets theirs, at 0.42 and 2.13, so size alone does not explain the gap. Step 100 has twice the copy fine-tunes' output change and still moves Γ less.
-- **Matched output change.** On the rows where r failed, the two output changes match within 1% and the ratio narrows to 1.45.
-- **Not proportional to size.** From step 10 to step 100 the output change rises by 5 times, and the change in Γ's values by 1.41 times. So we do not divide by size.
-- **Over the random update.** The fine-tune that learned nothing reads 1.27 and 1.79 times the random update, at step 10 with less output change than it.
+- **Learned nothing against the copy fine-tunes.** The fine-tune that learned nothing moves Γ's values 0.46 and 0.65 as far on the 128 rows. Its $E\|\delta W a\|^2$ there brackets theirs, at 0.42 and 2.13. In size that is 0.65 and 1.46, so size alone does not explain the gap, though less sharply than the squares suggest. Step 100 has 1.46 times the output size of copy seed 0 and still moves Γ less.
+- **Matched output change.** On the 64 rows, the only same-row ratio is step 10 at 0.69 of copy seed 0, where the two squared output changes match within 1%.
+- **Not proportional to size.** From step 10 to step 100, $E\|\delta W a\|^2$ rises by 5 times, so the size of the output change rises by 2.24 times, and the change in Γ's values by 1.41 times. So we do not divide by size. This also cautions that the share may not be scale-free at these sizes, as it falls from 0.0314 to 0.0223 between the two steps. They are two different updates, so this is a caution and not a measurement.
+- **Over the random update.** The fine-tune that learned nothing reads 1.27 and 1.79 times the random update, at step 10 with less output change than it. The random update is matched to copy seed 0 only, so it is not matched to either state of this fine-tune.
 - **Per matrix.** The states rise and fall together. Step 10 stays within 0.39 to 0.50 of copy seed 0 on all 24 matrices. The random update stays within 0.32 to 0.37. So the per-matrix pattern adds little to the pooled number.
 
 **What this says about the user's definition.** On this reading, the difference in Γ's values before and after fine-tuning is not zero on a fine-tune that learned nothing. So a moved Γ is not by itself evidence that a fine-tune learned anything, on these rows and states. The gap to the copy fine-tunes is real in these numbers and has no filed meaning.
@@ -133,7 +134,7 @@ Every spread is under the filed guess of 0.1. For both states read on both sets,
 
 ![The overlap share per matrix against the keep bar](../../experiments/weight_side_read/figures/per_matrix.png)
 
-**Reading it.** No matrix reaches the keep bar, and the pooled gap sits in the attention matrices. This is post hoc: no filed rule reads per-matrix shares, so it changes no verdict. The highest is 0.308, on block 1's key matrix for copy seed 0. The matrices with the largest output change, the MLP's, read small and alike, and they carry about three quarters of the denominator.
+**Reading it.** No filed rule reads this. As arithmetic, most of the pooled gap comes from attention matrices. It cannot be read as learning against no learning: the two kinds of update also differ in task, data and shape, the code side has one seed, and per-matrix shares have no noise floor. The highest reading is 0.308, on block 1's key matrix for copy seed 0. Pooled over MLP matrices, the four readings are alike, at 0.023 to 0.031. That hides gaps of opposite sign on single MLP matrices.
 
 | state | rows | MLP share of the denominator | $S_R$, MLP matrices | $S_R$, attention matrices |
 |---|---|---|---|---|
@@ -145,7 +146,7 @@ Every spread is under the filed guess of 0.1. For both states read on both sets,
 | learned nothing, step 10 | 64 where r failed | 0.658 | 0.0403 | 0.0181 |
 | copy fine-tune, seed 0 | 64 where r failed | 0.780 | 0.0293 | 0.0966 |
 
-The mix of matrices is not why the pooled shares differ. Reweighted to copy seed 0's denominators, step 10 reads 0.0321 against 0.0314. The cleanest split is in the key and query matrices of blocks 0 and 1. On block 1's key matrix, the copy fine-tunes read 0.308 and 0.269, and the fine-tune that learned nothing −0.010 and 0.054. On block 1's query matrix they read 0.261 and 0.154, against −0.097 and −0.033. The pattern repeats on the rows where r failed, at 0.273 against −0.012 and 0.212 against −0.088. The two seeds agree, but this is a pattern picked out of 24 matrices after the run, with no filed test. The cause is not tested.
+The mix of matrices is not why the pooled shares differ. Reweighted to copy seed 0's denominators, step 10 reads 0.0321 against 0.0314. The clearest gaps are `h.0.attn.q_proj`, `h.1.attn.k_proj` and `h.1.attn.q_proj`, on small denominators, and they repeat on the held rows for the two states read there. On block 1's key matrix, the copy fine-tunes read 0.308 and 0.269, and the fine-tune that learned nothing −0.010 and 0.054. On block 1's query matrix they read 0.261 and 0.154, against −0.097 and −0.033. On the rows where r failed these two read 0.273 against −0.012 and 0.212 against −0.088. The two seeds agree only in part: `h.3.attn.k_proj` reads 0.146 and 0.017, and `h.3.attn.q_proj` 0.170 and 0.049. Pooled attention's seed gap of 0.044 is two thirds of the 0.068 between seed 1 and step 10. Applied to pooled attention, the filed band would still read drop, at gaps of 0.112 and 0.068. This is a pattern picked out of 24 matrices after the run, with no filed test.
 
 Full per-matrix $S_R$ on the 128 rows:
 
@@ -178,7 +179,7 @@ Full per-matrix $S_R$ on the 128 rows:
 
 ## What we learned
 
-The re-gating line, Q5 in `GOALS.md`, gains no new instrument from this share, and the split side will not be added. This is a drop on these rows and states, not a finding about weight-side reads in general. The first all-position reading of the user's definition shows Γ's values moving on a fine-tune that learned nothing. They moved half to two thirds as far as on the fine-tunes that learned.
+The re-gating line, Q5 in `GOALS.md`, gains no new instrument from this share, and the split side will not be added. This is a drop on these rows and states, not a finding about weight-side reads in general: the run shows neither that the share is informative nor that it is not. The first all-position reading of the user's definition shows Γ's values moving on a fine-tune that learned nothing. They moved half to two thirds as far as on the copy fine-tunes.
 
 None of this reads mechanism. Elicitation in this project is mechanistic, with the causal check as its label (`decisions.md`, 2026-11-02), and r stays a candidate instrument to score against that check. No number here is a causal check. The known granularity limit also stands: a new mechanism built from subcomponents $W_0$ already has reads as elicited to VPD, because VPD's unit is the rank-one subcomponent.
 
@@ -188,7 +189,7 @@ None of this reads mechanism. Elicitation in this project is mechanistic, with t
 - **Blind to behaviour.** There is no token and no loss.
 - **Blind to the switching term's size.** Only its overlap with the update's own output change counts. A large term orthogonal to the update reads 0, so a small share does not mean a small switching term. The size was not measured.
 - **Blind to what the update does to a matrix's own input.** $a$ is $W_0$'s, and an upstream update reaches the read only through $g_1$. Each matrix is read alone, so nothing here adds up to the model's output.
-- **Dominated by the MLP matrices.** The pooled share follows the matrices with the largest output change.
+- **Weighted by output change.** MLP matrices hold 65 to 78% of the denominator, which pulls the pooled share towards their low readings. Attention matrices still supply 58% and 55% of the copy fine-tunes' numerator, and 32% and 33% of the learned-nothing fine-tune's.
 - **Off task.** The copy fine-tunes are off task on every row read. Their trigger windows were not read, and a drop here does not say that the same read would fail there. The fine-tune that learned nothing is near its text only on the 64 rows.
 - **Thin on repeats.** Two copy seeds, one seed of the fine-tune that learned nothing, one random draw, one Γ, one model.
 - **The zero control.** It covers one chunk of the 128 rows. It was not repeated on the rows where r failed.
@@ -197,7 +198,7 @@ None of this reads mechanism. Elicitation in this project is mechanistic, with t
 
 - **Every fine-tune read far under the guess.** The guess was 0.2 to 0.6 and they read 0.02 to 0.06. The guess had no source, and the size of the miss is not explained.
 - **The loud line fired and is empty**, for the reason above.
-- **The pooled gap sits in attention matrices**, post hoc, not expected in the plan.
+- **Most of the pooled gap comes from attention matrices,** post hoc, and confounded with the copying task.
 - **Time.** The plan estimated 5 to 10 minutes and the job took 1 minute 29 seconds, at about 8.5 seconds per state against about a minute.
 
 No filed prediction reversed. The order filed for the random update, below the copy fine-tunes, held.
@@ -216,7 +217,7 @@ The filed next step for a drop (`predictions.json`, `verdict_rules.verdicts.drop
 | pairs at step 100 | code step 100 against each copy seed | can only take back a keep | 0.0341, 0.0203 | drop, drop |
 | verdict | the filed label | the two step-10 pairs agree | | **`drop`**, as leaned |
 | `drop_both_small` | all readings small | \|c\|, \|s0\|, \|s1\| ≤ 0.1 | 0.0314, 0.0564, 0.0426 | true |
-| `gaussian_like_copy` | random update reads like the copy fine-tunes | \|random − copy mean\| ≤ 0.15, no change to the verdict | 0.0485; ratio 50.2 | true, uninformative here |
+| `gaussian_like_copy` | random update reads like the copy fine-tunes | \|random − copy mean\| ≤ 0.15, no change to the verdict | 0.0485 | true, uninformative here |
 | `held_rows_fail` | code step 10 on `code_held` over 0.1 | only takes back an adopting label | 0.0327 | false |
 | guess, S_R copy | 0.2 to 0.6 | not a rule | 0.0564, 0.0426 | missed |
 | guess, S_R code | 0.2 to 0.6, not separable | not a rule | 0.0314, 0.0223; not separable by the band | size missed, separability as guessed |
