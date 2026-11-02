@@ -9,6 +9,9 @@ one MATS `debug` job, $0, not gated. Coded, not run.*
 below). The lead chose the fixes. Predictions were changed with a dated note in `predictions.json` (`amended_before_first_run`):
 the run had not happened, so nothing was read.*
 
+*Amended 2026-11-02 after job 48507 stopped in stage (b): see "Amendment 1" at the end. Where the text below differs
+(the 128-token word pool, windows dropped for holding a candidate, what "both high" means), Amendment 1 holds.*
+
 **In plain words.** The small model already copies in context: after "A B ... A" it says B. We teach it to copy at a new
 marker, where it does not copy yet, and beside that we teach a lookup at the same marker on the same text. We switch off the
 heads the model already copies with: the copy map should lose most of what it learned, the lookup little. Then we ask
@@ -77,15 +80,16 @@ test on the tiny model already gets exact equality.
 **The lookup and the pools.** A is 32 tokens (E54's K). The lookup maps each A to its own fixed word by `kv.bijection`. Both maps
 train and read on the same A pool and on the same token windows; train and read windows share no row (E12's row split, every 5th
 row read). 800 train, 200 read. All pools come from E58's cipher pool (word-like, frequency ranks 1000-2999), kept only if
-decode then encode returns the same single id, never the marker, and are cut at random into disjoint A, a word pool of 128
-candidates, B to train, B to read. **B cannot leak into the lookup's target**: B and the word pool are disjoint, and a window
-is dropped if any candidate occurs in it (so any later choice of words stays out of every window).
+decode then encode returns the same single id, never the marker, and are cut at random into disjoint A, B to train, B to
+read. (Amendment 1 replaces the word pool of 128 candidates that was cut here; see below.) **B cannot leak into the
+lookup's target**: B and the candidates are disjoint. (Amendment 1: no window is dropped for holding a candidate; the
+lookup's word for a key is kept out of that key's own windows instead.)
 
 **Matching the prior (review F1).** The test exists to separate "r reads the mechanism" from "r reads W₀'s prior for the
 target", and E58 found r tracks the prior closely (rank correlation 0.95 over eight maps). So the lookup's words are not fixed
 in advance. Stage (b) measures W₀'s geometric-mean P(B) at the marker on the read windows, then draws each key's word
 (`copying.pick_words`, `kv.bijection`'s `ok`, the recipe of E58's prior cipher in `open_pair/amend6.py`) from the word pool
-with that word's mean log P over the key's windows within a factor 2 of P(B). The map's geometric-mean P(word) is then within
+(Amendment 1: from the wider candidates) with that word's mean log P over the key's windows within a factor 2 of P(B). The map's geometric-mean P(word) is then within
 a factor 2 of P(B) too. Both priors and their ratio are logged; a key with no word in range, or a measured ratio over 2, stops
 the job (exit 1, $0). `prior_match_max` is 2, **with no published source**: chosen so the pair is tighter than E58's 3.7e-5 vs
 5.9e-5, which is a factor of 1.6 and read r 0.38 vs 0.77. Yes, 1.6 is inside 2: the bar is looser than that pair, and at
@@ -159,9 +163,11 @@ gain) reads "new". Verdict order is in `copying.score`; any no-label outcome mea
 **Reading r**, with the priors matched (ratio ≤ 2; otherwise `priors_not_matched`, r reported beside). Copy map r ≥ 0.5 on
 every labelled seed, lookup under 0.5 and mean gap ≥ 0.24: "r follows mechanism", r separates the maps where the prior cannot.
 Every r of both under 0.5 **and** the mean gap under 0.24: "r follows the prior", meaning that with the priors matched r does
-not read this mechanism at this prior (the name is kept from the earlier reading, which could not separate the two). Anything
-else is "untested": both high, or all low with a gap (copy 0.44 beside lookup 0.10), a missing or non-finite r. `near_cut` flags
-an r within 0.045 of 0.5.
+not read this mechanism at this prior (the name is kept from the earlier reading, which could not separate the two).
+**Amendment 1:** every r of both at or over 0.5 with the mean gap under 0.24 reads "r follows the prior" too, and copy low with
+lookup high at a gap of -0.24 or less reads "r reverses the label" (a surprise, announced). Anything else is "untested": all
+low with a gap (copy 0.44 beside lookup 0.10), both high with a gap of 0.24 or more, a missing or non-finite r. `near_cut`
+flags an r within 0.045 of 0.5.
 
 **Prior beside r.** E58's table has r 0.37 at prior 3.7e-5 and 0.77 at 5.9e-5, so the prior alone did not fix r at that gap
 of 1.6; across all eight of its maps, rank correlation of prior and r is 0.95. Hence the match above: without it "r follows
@@ -206,6 +212,14 @@ says "elicited at the level of VPD's pieces", and at the level of heads for the 
   our analogue (E58 had a value pool to subtract; the copy map has none).
 - **Recipe.** Adam 3e-5, batch 32, KL 1, clip 1 is this project's (E54, E58), from `keydep.finetune`, unchanged except the
   target form, checked by the path control. KL covers the same 40 non-read positions.
+- **Lookup's candidate words (Amendment 1).** Every intact word-like token of the mined list at any frequency rank, not
+  E58's rank-1000-and-up cipher pool: chosen here on Fable's advice, no published source. E58's own prior cipher (band 3e-4
+  to 3e-3) hit the same wall, 46 of 128 keys with no admissible value, and was skipped (`experiments/open_pair/results/amend7.json`,
+  `tables.ep_skip`).
+- **Word kept out of the key's own windows (Amendment 1).** A key's word may not occur in that key's own train or read
+  windows, so the copying head cannot produce it; other keys' words may occur. Chosen here on Fable's advice, no source.
+- **Per-key factor 2 (Amendment 1).** Kept from the filing (E58 A6's prior cipher recipe, `pick_words`); `prior_match_max` 2
+  is still the unsourced bar the plan names above.
 
 ## Review items read and skipped
 
@@ -224,3 +238,72 @@ n_random 5, 512 spans for the mean, bar multiple 5, control bars 0.2 and 0.5, wi
 
 Everything. Tests ran on CPU on tiny models, including the hooks and pattern recomputation on a tiny `LlamaSimpleMLP`. The 67M was
 never loaded. Not planned: zero ablation, copying score, carry to unseen keys, steering's S, the stand-in ratio.
+
+## Amendment 1 (2026-11-02, after job 48507's stop in stage (b))
+
+Advice: `reports/plans/2026-11-02_advice_e62-prior-stop-FABLE.md` (Fable); the lead adopted its items 1-4. Filed text in
+`predictions.json` (`amended_after_stop_48507`). Nothing after stage (b) ran, so no fine-tune, label or r was read.
+
+**What the stop read** (job 48507, `results/run.json` as committed in db2a902). Stage (a) passed: one head, (2,4), prefix
+score 0.42 against a bar of 0.077; its mean ablation takes the repeated-sequence top-1 from 0.8247 to 0.0095. Stage (b): W0's
+geometric-mean prior for B at the marker 4.297e-04 (band `over_band`, which runs on), 6.169e-06 with B absent, 8.468e-05 with
+the pair broken. Then the stop: "no admissible value left in the pool for key 7192", because the 128 candidates (ranks
+1000-2999, absent from every window) sat near the context-free prior 6e-6, a factor ~70 under B's 4.3e-4. The stop came from
+the candidate pool, not from B.
+
+**What was filed before.** `n_word_pool` 128 (pool ranks 1000-2999 cut into A, 128 candidates, B-train, B-read); every window
+dropped if it held any candidate; `b_match` "from the 128-token word pool"; `e_r` with "both high" untested and no reversal
+cell. All replaced below; no bar moved.
+
+**Changes.**
+1. *No bar moves.* `prior_band` [1e-6, 1e-4], `prior_max` 1e-3, `prior_stop` 1e-2, `prior_match_max` 2 and every other
+   threshold stay. 4.3e-4 is 0.04% of the mass, far from top-1: "answer already given" does not hold. The 14x lift for B
+   anywhere in the window and a further 5x for the pair intact say the copying route already fires weakly at the marker.
+2. *The lookup's words.* Candidates are all intact word-like tokens of the mined list at any rank, minus the keys, both B
+   pools and the marker (in practice ranks under 1000 and from 3000, as A and B take ranks 1000-2999). Per key, a word within
+   a factor 2 of P(B) on that key's read windows, as `pick_words` did. `cue_windows` no longer filters on candidates, so both
+   maps keep the same windows; instead `pick_words` rejects a word that occurs in that key's own train or read windows
+   (`copying.own_tokens`, `copying.admissible`). The lookup's words are not in its own context, so the copying head cannot
+   produce them. Before the draw, stage (b) prints per key the number of admissible candidates and the candidates' log10-prior
+   histogram, and writes both to `run.json` `stage_b`. A key with no admissible word still stops the job. Number of
+   candidates enough for 32 distinct words in range: not known without the model; that is what the print measures.
+3. *Reading r at matched priors near 4e-4.* E58 at step 30: copy map prior 5.9e-5 read r 0.77, elicit 1.3e-3 read 0.73, rank-1
+   1.3e-2 read 0.85. So the prior alone predicts copy r near 0.75 and the whole weight of the test is on the lookup, for
+   which E58 has no point at this prior.
+
+   | Copy r | Lookup r | Class | Meaning in plain words |
+   |---|---|---|---|
+   | all >= 0.5 | all < 0.5, mean gap >= 0.24 | `r_follows_mechanism` (filed) | r is high where the old circuit does the work and low where it does not |
+   | all >= 0.5 | all >= 0.5, mean gap < 0.24 | `r_follows_prior` (added) | r is high for both: it does not tell the maps apart at this prior, so it follows the prior. Read as "old mechanism, answer weakly present": W0 leans 5x toward B with the pair intact, and r reads high |
+   | all < 0.5 | all < 0.5, mean gap < 0.24 | `r_follows_prior` (filed) | r is low for both; against E58's 0.75 it also means that relation fails here |
+   | all < 0.5 | all >= 0.5, mean gap <= -0.24 | `r_reverses_label` (added, announce it) | r is high for the map labelled new and low for the one labelled old |
+   | anything else | | `untested` | including both high with a gap of 0.24 or more; `near_cut` where within 0.045 |
+
+   The mechanism row is untouched, so no bar moved to rescue the run. The filed rule wrote only both-low because the filed
+   band put the prior at 1e-5, where E58 says r is low. One choice not in the advice: both high with a mean gap of -0.24 or
+   less (the lookup well above the copy map) also reads `r_follows_prior`, as the filed gap test is signed and no rule
+   names that cell; it is a cell nobody expects.
+4. *Stage (a) stays.* H is the heads over the bar, i.e. (2,4) alone. Head (1,1) has previous-token score 0.67 (next highest
+   0.35, `run.json` `stage_a.previous_token`). Fable calls it a previous-token head and the circuit's other half; **that role
+   is a presumption, not measured**: the score is measured, no ablation of (1,1) alone was run, and it is not added to H (at
+   the marker both maps need A's identity moved one position forward, so ablating it would leave both maps "old"). One
+   random draw of five holding (1,1) is absorbed by the median rule. New, reported only and not a rule: the 24 heads'
+   prefix scores under each saved fine-tuned state are printed and stored (`states.*.prefix_scores`), so that if the copy map
+   recruits (2,3) or (2,2) (0.05 and 0.04 under the bar), a share under H that falls can be told from a wrong label.
+
+**Rerun behaviour.** `run.py` has no check for existing results: it refuses to start only if `predictions.json` is not
+committed unchanged against HEAD (commit this amendment first). The first `dump` of the new run (in stage (a), after the prefix scores) overwrites `results/run.json`; `windows.pt` and `heads.pt` in `results/large/` are overwritten at
+once. The run starts a fresh record, so a stale `stopped` key cannot carry over. The earlier stop's numbers stay in git history
+(db2a902) and are quoted above: head (2,4), top-1 0.8247 to 0.0095, prior 4.297e-04, B absent 6.169e-06, pair broken 8.468e-05.
+
+**Filed expectations, new.** Every key finds an admissible candidate (else the stop stands); the printed counts measure
+whether 32 distinct words fit. The lookup's geometric-mean prior then reads within [P(B)/2, 2 P(B)], about [2.1e-4, 8.6e-4].
+The prefix scores under the states carry no expected value: they are reported only.
+
+**Code.** `copying.cue_windows` (no `avoid`), `build_cue` (candidates, no `n_word_pool` setting), `own_tokens`, `admissible`,
+`pick_words` (+ `own`), `prior_histogram`, `r_verdict`; `run.py` `stage_b`, `stage_c`, `score_rows`, `prefix_scores_under`.
+Tests: `tests/test_copying.py` (`test_pick_words_reject_a_candidate_in_the_keys_own_windows`,
+`test_prior_histogram_counts_by_bin`, `test_r_verdict_with_priors_matched`, `test_score_every_outcome`); 28 pass, lint clean.
+
+**Not run.** The model was not loaded and no job submitted. Code reviewed by nobody beyond this amendment's tests; the changed
+measurement code has not run on a GPU (the scored run is its own smoke).

@@ -208,13 +208,13 @@ def natural_spans(rows: Tensor, half: int, n: int, seed: int) -> Tensor:
     return torch.stack([rows[int(a), int(b) - half : int(b) + half + 1] for a, b in zip(r, pos)])
 
 
-def cue_windows(rows: Tensor, marker: int, keys: Sequence[int], bs: Sequence[int], avoid: Sequence[int], half: int, n: int,
+def cue_windows(rows: Tensor, marker: int, keys: Sequence[int], bs: Sequence[int], half: int, n: int,
                 seed: int) -> tuple[Windows, Tensor, Tensor]:  # fmt: skip
     """n cue windows, the first that hold from 2n drawn on `kv.windows`' spans (each A about 2n / K times), and each
     window's B and p. p is uniform on 2..half - 4, so at least one Pile token sits between B and the second A. A window
-    is dropped unless A occurs exactly twice, B once, M once and none of `avoid` (the whole pool the lookup's words are
-    drawn from, so any choice of words later leaves them out of every window) at all, anywhere in the 41 tokens (natural
-    text can hold any of them)."""
+    is dropped unless A occurs exactly twice, B once and M once, anywhere in the 41 tokens (natural text can hold any of
+    them). No window is filtered against the lookup's candidate words (Amendment 1, 2026-11-02: a frequent pool would
+    drop most windows); `pick_words` keeps a key's word out of that key's own windows instead."""
     w = kv.windows(rows, marker, tuple(keys), half, 2 * n, seed)
     a = w.tokens[:, half].clone()
     t = w.tokens.clone()
@@ -225,7 +225,7 @@ def cue_windows(rows: Tensor, marker: int, keys: Sequence[int], bs: Sequence[int
     idx = torch.arange(2 * n)
     t[idx, p], t[idx, p + 1] = a, b
     count = lambda v: (t == v[:, None]).sum(1)
-    ok = (count(a) == 2) & (count(b) == 1) & ~torch.isin(t, torch.tensor(list(avoid))).any(1) & ((t == marker).sum(1) == 1)
+    ok = (count(a) == 2) & (count(b) == 1) & ((t == marker).sum(1) == 1)
     keep = ok.nonzero().squeeze(1)[:n]
     assert len(keep) == n, f"only {int(ok.sum())} of {2 * n} drawn windows hold; need {n}"
     return Windows(t[keep], torch.zeros(n), w.row[keep], w.pos[keep], half), b[keep], p[keep]
@@ -264,7 +264,7 @@ class Cue:
     p_read: Tensor
     keys: list[int]
     bs_read: list[int]
-    word_pool: list[int]  # the candidates for the lookup's words; in no window
+    word_pool: list[int]  # the candidates for the lookup's words: every word-like token but the keys, the Bs and the marker
     ranked: list[int]  # the mined word-like tokens by frequency, for the score's rows
     mean_rows: Tensor  # read-side rows, for the ablation's mean
     target: dict[str, dict[str, Tensor]]  # map -> train / read -> (N,) targets; "lookup" is set by `set_words`
@@ -292,38 +292,65 @@ class Cue:
 
 def build_cue(rows: Tensor, marker: int, ranked: list[int], intact: Callable[[int], bool], half: int, S: dict[str, Any]) -> Cue:
     """The pools (word-like tokens of frequency ranks S["pool_ranks"], E58's cipher pool; each intact through the
-    tokeniser, none the marker) cut at random into A, the lookup's word pool (S["n_word_pool"] candidates), B for training
-    and B for reading, so a window's B is never a candidate word and no B is both trained and read. Rows split as E12's:
+    tokeniser, none the marker) cut at random into A, B for training and B for reading, so no B is both trained and read.
+    The lookup's candidate words (Amendment 1, 2026-11-02) are all word-like tokens of `ranked` at any rank that are
+    intact, minus the keys, both B pools and the marker, so a window's B is never a candidate. Rows split as E12's:
     train and read windows share no row and the same A pool. The copy map's target is B. The lookup's words are not
-    fixed here: they are drawn from the word pool after W0's prior for B is measured (`pick_words`, `Cue.set_words`),
-    and no window holds any candidate."""
+    fixed here: they are drawn from the candidates after W0's prior for B is measured (`pick_words`, `Cue.set_words`)."""
     lo, hi = S["pool_ranks"]
     pool = [t for t in ranked[lo:hi] if t != marker and intact(t)]
     order = [pool[int(i)] for i in torch.randperm(len(pool), generator=torch.Generator().manual_seed(S["pool_seed"]))]
-    K, W = S["n_keys"], S["n_word_pool"]
-    keys, word_pool, rest = order[:K], order[K : K + W], order[K + W :]
+    K = S["n_keys"]
+    keys, rest = order[:K], order[K:]
     bs_train, bs_read = rest[::2], rest[1::2]
+    used = {marker, *keys, *bs_train, *bs_read}
+    word_pool = [t for t in ranked if t not in used and intact(t)]
     held = torch.arange(rows.shape[0]) % S["heldout_every"] == 0
-    train, b_tr, _ = cue_windows(rows[~held], marker, keys, bs_train, word_pool, half, S["n_train"], S["seed"])
-    read, b_rd, p_rd = cue_windows(rows[held], marker, keys, bs_read, word_pool, half, S["n_read"], S["seed"] + 2)
+    train, b_tr, _ = cue_windows(rows[~held], marker, keys, bs_train, half, S["n_train"], S["seed"])
+    read, b_rd, p_rd = cue_windows(rows[held], marker, keys, bs_read, half, S["n_read"], S["seed"] + 2)
     target: dict[str, dict[str, Tensor]] = {"copy": {"train": b_tr, "read": b_rd}}
     at = read.tokens[:, half - 1]
-    info = {"n_intact": len(pool), "n_b_train": len(bs_train), "n_b_read": len(bs_read), "keys": keys, "word_pool": word_pool,
+    info = {"n_intact": len(pool), "n_b_train": len(bs_train), "n_b_read": len(bs_read), "keys": keys, "n_word_pool": len(word_pool),
             "min_read_per_key": min(int((at == k).sum()) for k in keys)}
     return Cue(train, read, b_rd, p_rd, keys, bs_read, word_pool, ranked, rows[held], target, info)
 
 
-def pick_words(keys: Sequence[int], word_pool: Sequence[int], at: Tensor, lp: Tensor, target_lp: float, factor: float, seed: int) -> dict[int, int]:
+def own_tokens(keys: Sequence[int], windows: Tensor, half: int) -> dict[int, set[int]]:
+    """Per key, every token of the windows (N, 2 half + 1) whose A (at `half - 1`) is that key: pass the train and the read
+    windows together. The lookup's word for a key must not be among them, so the copying head cannot produce it."""
+    return {k: set(windows[windows[:, half - 1] == k].unique().tolist()) for k in keys}
+
+
+def admissible(keys: Sequence[int], word_pool: Sequence[int], at: Tensor, lp: Tensor, target_lp: float, factor: float,
+               own: dict[int, set[int]]) -> dict[int, list[int]]:  # fmt: skip
+    """Per key, the candidates `pick_words` may give it: mean log P over the key's read windows within log(factor) of
+    `target_lp` (nan for a key with no window: never), and in none of the key's own train or read windows (`own`)."""
+    out = {}
+    for k in keys:
+        near = (lp[at == k].mean(0) - target_lp).abs() <= math.log(factor)
+        out[k] = [w for w, n in zip(word_pool, near.tolist(), strict=True) if n and w not in own[k]]
+    return out
+
+
+def pick_words(keys: Sequence[int], word_pool: Sequence[int], at: Tensor, lp: Tensor, target_lp: float, factor: float, seed: int,
+               own: dict[int, set[int]]) -> dict[int, int]:  # fmt: skip
     """The lookup's words, so that W0's prior for the word is near B's. `lp` (N, len(word_pool)) is W0's log P of each
     candidate at the marker on the N read windows, `at` (N,) each window's A, `target_lp` the log of B's geometric-mean
-    prior. A key takes the first unused candidate (a seeded order, `kv.bijection`) whose log P, averaged over the windows
-    of that key, is within log(factor) of `target_lp`. Each key within the factor puts the map's geometric mean (the
-    window-weighted mean of these) within it too. AssertionError if some key finds none."""
-    col = {w: i for i, w in enumerate(word_pool)}
-    per_key = {k: lp[at == k].mean(0) for k in keys}  # nan for a key with no window: never accepted
-    ok = lambda k, w: bool(abs(float(per_key[k][col[w]]) - target_lp) <= math.log(factor))
-    task = kv.bijection("lookup", -1, tuple(keys), list(word_pool), seed, ok=ok)
+    prior. A key takes the first unused candidate (a seeded order, `kv.bijection`) that `admissible` allows: log P,
+    averaged over the windows of that key, within log(factor) of `target_lp`, and in none of the key's own windows. Each
+    key within the factor puts the map's geometric mean (the window-weighted mean of these) within it too. AssertionError
+    if some key finds none."""
+    allowed = {k: set(v) for k, v in admissible(keys, word_pool, at, lp, target_lp, factor, own).items()}
+    task = kv.bijection("lookup", -1, tuple(keys), list(word_pool), seed, ok=lambda k, w: w in allowed[k])
     return dict(zip(task.keys, task.values, strict=True))
+
+
+def prior_histogram(lp: Tensor, width: float = 0.5) -> dict[str, int]:
+    """Counts of candidates by their mean log10 P over all the windows, in bins `width` wide (key "-3.5" holds
+    [-3.5, -3.0)): the pool's shape, printed before the draw so a stop explains itself."""
+    m = lp.double().mean(0) / math.log(10)
+    bins = torch.floor(m / width) * width
+    return {f"{b:.1f}": int((bins == b).sum()) for b in sorted(set(bins.tolist()))}
 
 
 def prior_ratio(a: float, b: float) -> float:
@@ -444,19 +471,32 @@ def map_reading(recs: Sequence[dict[str, Any]], th: dict[str, Any]) -> str:
 
 def r_verdict(copy_r: Sequence[Any], lookup_r: Sequence[Any], th: dict[str, Any]) -> dict[str, Any]:
     """The filed reading of r, labelled seeds only, called with the two priors already matched (`score` refuses
-    otherwise). "r_follows_mechanism" iff every copy r >= r_cut, every lookup r < r_cut and the mean gap >= r_gap.
-    "r_follows_prior" iff every r of both maps < r_cut and the mean gap < r_gap: with the priors matched, both low and
-    no gap means r does not read this mechanism at this prior (it separates nothing, and the name is the older reading).
-    Anything else is "untested": both high, or all low with a gap (copy 0.44 beside lookup 0.10), or a missing or
-    non-finite r. near_cut: some r within r_noise of the cut, so the class is not firm."""
+    otherwise). gap = mean copy r minus mean lookup r.
+    "r_follows_mechanism" iff every copy r >= r_cut, every lookup r < r_cut and gap >= r_gap.
+    "r_follows_prior" (Amendment 1, 2026-11-02) iff the mean gap is under r_gap (signed, as filed) and the maps are on the
+    same side of the cut: every r of both < r_cut (both low; the filed cell) or every r of both >= r_cut (both high; added;
+    a mean gap of -r_gap or less with both high is still this cell, as no rule names it). With the
+    priors matched, either means r does not tell the maps apart at this prior, so r follows the prior and not the
+    mechanism. Both high is the reading "old mechanism, answer weakly present" when W0 already leans toward B with the
+    pair intact.
+    "r_reverses_label" (Amendment 1, named surprise, announce it) iff every copy r < r_cut, every lookup r >= r_cut and
+    gap <= -r_gap: r is high for the map whose label says "new" and low for the one that says "old".
+    Anything else is "untested": all low with a gap (copy 0.44 beside lookup 0.10), both high with a gap of r_gap or more,
+    a split that does not clear the gap, or a missing or non-finite r. near_cut: some r within r_noise of the cut, so the
+    class is not firm."""
     rs = [*copy_r, *lookup_r]
     if not copy_r or not lookup_r or not all(finite(r) for r in rs):
         return {"class": "untested", "gap": math.nan, "near_cut": False}
     gap = sum(copy_r) / len(copy_r) - sum(lookup_r) / len(lookup_r)
-    if min(copy_r) >= th["r_cut"] and max(lookup_r) < th["r_cut"] and gap >= th["r_gap"]:
+    cut = th["r_cut"]
+    if min(copy_r) >= cut and max(lookup_r) < cut and gap >= th["r_gap"]:
         c = "r_follows_mechanism"
+    elif max(copy_r) < cut and min(lookup_r) >= cut and gap <= -th["r_gap"]:
+        c = "r_reverses_label"
+    elif gap < th["r_gap"] and (max(rs) < cut or min(rs) >= cut):
+        c = "r_follows_prior"
     else:
-        c = "r_follows_prior" if max(rs) < th["r_cut"] and gap < th["r_gap"] else "untested"
+        c = "untested"
     return {"class": c, "gap": gap, "near_cut": any(abs(r - th["r_cut"]) <= th["r_noise"] for r in rs)}
 
 
@@ -468,7 +508,7 @@ def score(states: dict[str, dict[str, Any]], prior: str, th: dict[str, Any], see
     ratio fails); a map too small or unreadable; a random floor at or over its bar
     (median random share, on any labelled state); the copy map a lean (B's gain with B absent over absent_max of G, on a
     labelled seed); the lookup a lean (specific share under spec_min); the copy map not reading "old"; the lookup not
-    reading "new"; then `r_verdict`. Reported beside, not changing it: `pair_ignored` (a labelled copy seed whose gain with
+    reading "new"; then `r_verdict` (whose classes now include r_reverses_label). Reported beside, not changing it: `pair_ignored` (a labelled copy seed whose gain with
     the pair broken is over broken_max of G) and `prior_high`."""
     recs = {m: [states.get(f"{m}_s{s}", {}) for s in seeds] for m in ("copy", "lookup")}
     kept = {m: [r for r in v if r.get("label") in LABELLED] for m, v in recs.items()}
