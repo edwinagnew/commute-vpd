@@ -546,3 +546,208 @@ def test_gamma_reading_floor_reads_the_size_and_fails_on_a_tie_and_a_nan():
 ])
 def test_masked_class_on_amendment_3s_cases(gain, m, t, want):
     assert CP.masked_class(gain, m, t, A3) == want
+
+
+# ----------------------------------------------------------------------------- Amendment 4
+
+A4 = {"p_b_min": 3.15e-3, "target_fall_min": 1.16, "masked_within": 2.0, "masked_fall_frac": 0.25, "min_gain": 1.0, "align_min": 0.2, "chance_factor": 3.0,
+      "lookup_align_frac": 0.5, "close_min": 0.5, "random_margin": 0.24, "lookup_close_max": 0.2, "gap_min": 0.24}
+
+
+def test_second_a_holds_on_cue_windows_and_catches_a_bad_layout():
+    w, b, p = CP.cue_windows(rows(), 7, KEYS, BS, HALF, 40, 0)
+    assert CP.second_a_holds(w.tokens, p, b, HALF)
+    t = w.tokens.clone()
+    t[0, HALF - 2] = b[0]  # B at the reference position
+    assert not CP.second_a_holds(t, p, b, HALF)
+    t = w.tokens.clone()
+    t[1, HALF - 2] = t[1, HALF - 1]  # A at the reference position
+    assert not CP.second_a_holds(t, p, b, HALF)
+    t = w.tokens.clone()
+    t[2, HALF - 1] = 9  # not the second A
+    assert not CP.second_a_holds(t, p, b, HALF)
+    assert not CP.second_a_holds(w.tokens, p + 1, b, HALF)
+
+
+def _alive_gates() -> tuple[dict[str, torch.Tensor], list[dict[str, torch.Tensor]]]:
+    """Two matrices named out of sorted order, 3 and 2 alive of 4 and 3 subcomponents, two batches of 2 and 1 windows, 2 positions."""
+    alive = {"z": torch.tensor([True, False, True, True]), "b": torch.tensor([False, True, True])}
+    g = torch.arange(3 * 2 * 7, dtype=torch.float32).view(3, 2, 7)
+    make = lambda sl: {"b": g[sl, :, :3], "z": g[sl, :, 3:]}
+    return alive, [make(slice(0, 2)), make(slice(2, 3))]
+
+
+def test_gate_means_order_and_windows():
+    alive, gates = _alive_gates()
+    # position 1: b's columns 1, 2 then z's 0, 2, 3 (columns 3, 5, 6 of g); window values at (w, 1, c) = 7 (2 w + 1) + c, mean w = 1
+    want = [21.0 + c for c in (1, 2, 3, 5, 6)]
+    assert CP.gate_means(gates, alive, 1).tolist() == want
+    assert CP.gate_means(gates, alive, 1).dtype == torch.float64
+
+
+@pytest.mark.parametrize("a, want", [
+    ([4.0, 1.0, 3.0], [0]),  # 4 of 8 reaches half exactly
+    ([3.0, 1.0, 4.0, -9.0], [2]),  # negative mass does not count; 4 of 8 is exactly half
+    ([1.0, 1.0, 1.0, 1.0], [0, 1]),  # ties in index order, half reached exactly
+    ([1.0, 1.0, 1.0], [0, 1]),  # 2 of 3 is the first to hold half
+    ([0.0, -1.0], []), ([], []), ([math.nan, 1.0], []), ([math.inf, 1.0], []),
+])
+def test_s_old_edges(a, want):
+    assert CP.s_old(torch.tensor(a, dtype=torch.float64)).tolist() == want
+
+
+def test_cosine_edges():
+    x = torch.tensor([1.0, 0.0])
+    assert CP.cosine(x, x) == pytest.approx(1.0) and CP.cosine(x, -x) == pytest.approx(-1.0) and CP.cosine(x, torch.tensor([0.0, 2.0])) == 0.0
+    assert math.isnan(CP.cosine(x, torch.zeros(2))) and math.isnan(CP.cosine(torch.empty(0), torch.empty(0))) and math.isnan(CP.cosine(x, torch.tensor([math.nan, 1.0])))
+    d = torch.randn(4000, generator=torch.Generator().manual_seed(0))
+    mean, sd = CP.chance_cosine(d, d.clone(), 20, 1)
+    assert abs(mean) < 0.03 and 0 < sd < 0.05  # permuted, a vector's cosine with itself is near 0
+    assert CP.chance_cosine(d, d, 20, 1) == (mean, sd)  # seeded
+
+
+def test_closing_pool_excludes_old_and_falls_back():
+    delta = torch.tensor([1.0, 2.0, -1.0, 0.0, 3.0, 4.0])
+    old = torch.tensor([0, 1])
+    pool, fell = CP.closing_pool(delta, old)
+    assert pool.tolist() == [4, 5] and not fell  # exactly k others opened: enough; 0.0 is not opened
+    pool, fell = CP.closing_pool(delta, torch.tensor([0, 1, 4]))  # one other opened, k = 3: every entry outside old
+    assert pool.tolist() == [2, 3, 5] and fell
+    pool, fell = CP.closing_pool(delta, torch.tensor([0, 1, 4, 5]))  # the mask opened exactly S_old: its reference is not S_old itself
+    assert not set(pool.tolist()) & {0, 1, 4, 5} and fell
+    pool, fell = CP.closing_pool(torch.zeros(4), torch.tensor([0]))  # nothing opened at all
+    assert pool.tolist() == [1, 2, 3] and fell
+
+
+def test_random_sets_and_largest():
+    pool = torch.tensor([10, 11, 12, 13, 14])
+    draws = CP.random_sets(pool, 2, 5, 0)
+    assert len(draws) == 5 and all(len(set(d.tolist())) == 2 and set(d.tolist()) <= set(pool.tolist()) for d in draws)
+    assert [d.tolist() for d in CP.random_sets(pool, 2, 5, 0)] == [d.tolist() for d in draws]  # seeded
+    for empty_k, p in ((0, pool), (6, pool), (1, torch.empty(0, dtype=torch.long))):  # an empty pool or k = 0 never gets here: `mask_test` reads k first
+        with pytest.raises(AssertionError):
+            CP.random_sets(p, empty_k, 5, 0)
+    assert CP.largest(torch.tensor([1.0, 3.0, 3.0, 0.0]), 2).tolist() == [1, 2]
+
+
+def test_closed_sets_only_the_named_entries_at_every_position():
+    alive, g1 = _alive_gates()
+    ref = [{k: v - 100.0 for k, v in b.items()} for b in g1]
+    keep = [{k: v.clone() for k, v in b.items()} for b in g1]
+    # alive vector: b1 b2 z0 z2 z3; close b2 (index 1) and z3 (index 4)
+    out = CP.closed(g1, ref, torch.tensor([1, 4]), alive)
+    for b, r, k in zip(out, ref, keep, strict=True):
+        assert torch.equal(b["b"][..., 2], r["b"][..., 2]) and torch.equal(b["z"][..., 3], r["z"][..., 3])
+        assert torch.equal(b["b"][..., :2], k["b"][..., :2]) and torch.equal(b["z"][..., :3], k["z"][..., :3])
+    assert all(torch.equal(g1[i][k], keep[i][k]) for i in (0, 1) for k in ("b", "z"))  # the input is unchanged
+    none = CP.closed(g1, ref, torch.empty(0, dtype=torch.long), alive)
+    assert all(torch.equal(none[i][k], g1[i][k]) for i in (0, 1) for k in ("b", "z"))
+    every = CP.closed(g1, ref, torch.arange(5), alive)
+    assert torch.equal(CP.gate_means(every, alive, 0), CP.gate_means(ref, alive, 0))
+
+
+def test_gates_are_per_position_and_closing_all_reads_the_reference_mask():
+    """What the draft asserted of `Reads`: route_cells' gates are (B, T, C), its read position does not touch them, masked_lo_windows
+    takes the list, reads another position, and a closing of every subcomponent is the reference mask's forward."""
+    from commute import local_faith as LF
+
+    model, _ = _tiny_component_model()
+    toks = torch.randint(0, 50, (5, 13), generator=torch.Generator().manual_seed(4))
+    a = LF.route_cells(model, toks, 6, LAST, 2, 12)["gates"]
+    b = LF.route_cells(model, toks, 5, LAST, 2, 12)["gates"]
+    assert all(torch.equal(x[k], y[k]) for x, y in zip(a, b, strict=True) for k in x)
+    assert a[0]["h.0.attn.o_proj"].shape == (2, 12, 4) and len(a) == 3
+    alive = {k: torch.ones(4, dtype=torch.bool) for k in a[0]}
+    half = [{k: v * 0.5 for k, v in g.items()} for g in a]
+    want = LF.masked_lo_windows(model, toks, 5, LAST, a, 2, 12)
+    assert torch.equal(LF.masked_lo_windows(model, toks, 5, LAST, CP.closed(half, a, torch.arange(4 * len(alive)), alive), 2, 12), want)
+    assert not torch.equal(LF.masked_lo_windows(model, toks, 6, LAST, a, 2, 12), want)
+
+
+@pytest.mark.parametrize("p, t, t_off, m, m_off, want", [
+    (0.1, -2.0, -5.0, -3.0, -4.0, "pass"), (3.15e-3, -2.0, -3.16, -2.0, -2.29, "pass"), (3.14e-3, -2.0, -5.0, -3.0, -4.0, "no_copying"),
+    (0.1, -2.0, -3.0, -3.0, -4.0, "head_not_carrying"), (0.1, -2.0, -1.0, -3.0, -9.0, "head_not_carrying"), (0.1, -2.0, -2.0, -3.0, -4.0, "head_not_carrying"),
+    (0.1, -2.0, -5.0, -4.0, -5.0, "pass"), (0.1, -2.0, -5.0, -4.01, -5.0, "mask_off_target"), (0.1, -2.0, -5.0, 0.01, -5.0, "mask_off_target"),
+    (0.1, -2.0, -6.0, -3.0, -4.0, "pass"), (0.1, -2.0, -6.0, -3.0, -3.99, "mask_drops_head"), (0.1, -2.0, -5.0, -3.0, -2.0, "mask_drops_head"),
+    (math.nan, -2.0, -5.0, -3.0, -4.0, "unreadable"), (0.1, -2.0, math.inf, -3.0, -4.0, "unreadable"),
+])
+def test_second_a_control(p, t, t_off, m, m_off, want):
+    assert CP.second_a_control(p, t, t_off, m, m_off, A4) == want
+
+
+def rec(M: float = 13.8, cos: float = 0.4, chance: float = 0.01, share: float = 0.7, random_median: float = 0.1) -> dict:
+    return {"M": M, "cos": cos, "chance": chance, "share": share, "random_median": random_median}
+
+
+GOOD_C, GOOD_L = rec(), rec(6.0, 0.05, 0.0, 0.05, 0.1)
+
+
+def mt(copy: list[dict], lookup: list[dict], control: str = "pass", k: int = 100, n: int = 9881) -> dict:
+    return CP.mask_test(control, k, n, copy, lookup, A4)
+
+
+@pytest.mark.parametrize("p1, p2, p3", [(a, b, c) for a in (True, False) for b in (True, False) for c in (True, False)])
+def test_mask_test_every_combination_of_the_predictions(p1, p2, p3):
+    """All three seeds alike. P2 implies P3, so the two combinations with P2 and not P3 cannot be built: 0.5 - 0.2 > 0.24."""
+    if p2 and not p3:
+        assert A4["close_min"] - A4["lookup_close_max"] >= A4["gap_min"]
+        return
+    share, look = (0.7, 0.05) if p2 else (0.45, 0.15) if p3 else (0.15, 0.10)
+    v = mt([rec(cos=0.4 if p1 else 0.1, share=share)] * 3, [rec(6.0, 0.01, 0.0, look, 0.1)] * 3)
+    assert (all(v["P1"]), all(v["P2"]), all(v["P3"])) == (p1, p2, p3)
+    want = "shared_pieces" if p1 and p2 and p3 else "not_shared" if not p1 and not p2 else "in_between"
+    assert v["verdict"] == want
+
+
+@pytest.mark.parametrize("copy, lookup, control, k, want", [
+    ([GOOD_C] * 3, [GOOD_L] * 3, "pass", 100, "shared_pieces"),
+    ([GOOD_C] * 3, [GOOD_L] * 3, "no_copying", 100, "control_failed"), ([GOOD_C] * 3, [GOOD_L] * 3, "unreadable", 100, "control_failed"),
+    ([GOOD_C] * 3, [GOOD_L] * 3, "pass", 0, "unreadable"), ([GOOD_C] * 3, [GOOD_L] * 3, "pass", 4941, "unreadable"), ([GOOD_C] * 3, [GOOD_L] * 3, "pass", 4940, "shared_pieces"),
+    ([], [], "pass", 100, "unreadable"), ([GOOD_C] * 3, [GOOD_L] * 2, "pass", 100, "unreadable"),
+    ([rec(M=0.0, share=math.nan)] * 3, [GOOD_L] * 3, "pass", 100, "too_small"), ([rec(M=-2.0, share=math.nan)] * 3, [GOOD_L] * 3, "pass", 100, "too_small"),  # a zero denominator
+    ([GOOD_C] * 3, [rec(M=0.99)] * 3, "pass", 100, "too_small"), ([rec(M=1.0)] * 3, [GOOD_L] * 3, "pass", 100, "shared_pieces"),
+    ([rec(M=math.nan)] * 3, [GOOD_L] * 3, "pass", 100, "unreadable"), ([rec(share=math.nan)] * 3, [GOOD_L] * 3, "pass", 100, "unreadable"),
+    ([rec(cos=math.nan)] * 3, [GOOD_L] * 3, "pass", 100, "unreadable"), ([GOOD_C] * 3, [rec(6.0, chance=math.nan)] * 3, "pass", 100, "unreadable"), ([rec(random_median=math.inf)] * 3, [GOOD_L] * 3, "pass", 100, "unreadable"),
+    # S_old disjoint from what the mask opened: closing changes nothing, share 0, at or under a positive or zero random median
+    ([rec(share=0.0, random_median=0.1)] * 3, [GOOD_L] * 3, "pass", 100, "not_shared"), ([rec(share=0.0, random_median=0.0)] * 3, [GOOD_L] * 3, "pass", 100, "not_shared"),
+    ([rec(cos=0.05, share=0.0, random_median=-0.1)] * 3, [GOOD_L] * 3, "pass", 100, "not_shared"),  # above a negative median, but both miss
+    # a negative closing share is a miss on the copying map; on the lookup it holds the bar
+    ([rec(cos=0.05, share=-0.3, random_median=0.1)] * 3, [GOOD_L] * 3, "pass", 100, "not_shared"), ([rec(share=-0.3, random_median=-0.5)] * 3, [GOOD_L] * 3, "pass", 100, "in_between"),
+    ([GOOD_C] * 3, [rec(6.0, 0.05, 0.0, -0.4, 0.1)] * 3, "pass", 100, "shared_pieces"),
+    # the draft read this not_shared: strong on the copying map, the lookup uses the same subcomponents. Not the null
+    ([rec(cos=0.5, share=0.9)] * 3, [rec(6.0, 0.3, 0.0, 0.25, 0.1)] * 3, "pass", 100, "in_between"),
+    # ties at the bars: 0.2, three times chance, half the copying map's (not under), 0.5, 0.2, the median
+    ([rec(cos=0.2)] * 3, [rec(6.0, 0.05, 0.0, 0.05, 0.1)] * 3, "pass", 100, "shared_pieces"), ([rec(cos=0.375, chance=0.125)] * 3, [rec(6.0, 0.05, 0.0, 0.05, 0.1)] * 3, "pass", 100, "shared_pieces"),
+    ([rec(cos=0.4)] * 3, [rec(6.0, 0.2, 0.0, 0.05, 0.1)] * 3, "pass", 100, "in_between"), ([rec(share=0.5, random_median=0.1)] * 3, [rec(6.0, 0.05, 0.0, 0.2, 0.1)] * 3, "pass", 100, "shared_pieces"),
+    ([rec(cos=0.05, share=0.1, random_median=0.1)] * 3, [GOOD_L] * 3, "pass", 100, "not_shared"), ([rec(cos=0.4, share=0.5, random_median=0.3)] * 3, [GOOD_L] * 3, "pass", 100, "in_between"),
+    # negative chance: the 0.2 bar decides; a negative cosine misses
+    ([rec(cos=0.2, chance=-0.5)] * 3, [GOOD_L] * 3, "pass", 100, "shared_pieces"), ([rec(cos=-0.4, share=0.1)] * 3, [GOOD_L] * 3, "pass", 100, "not_shared"),
+    # mixed seeds
+    ([GOOD_C, GOOD_C, rec(cos=0.05, share=0.1)], [GOOD_L] * 3, "pass", 100, "in_between"),
+    ([rec(cos=0.05, share=0.1), rec(cos=0.05, share=0.1), GOOD_C], [GOOD_L] * 3, "pass", 100, "in_between"),
+    ([rec(share=0.05), rec(share=0.05), GOOD_C], [GOOD_L] * 3, "pass", 100, "in_between"),  # at or under the median on two seeds only
+    ([rec(share=0.05)] * 3, [GOOD_L] * 3, "pass", 100, "not_shared"),  # P1 holds, but at or under the median on every seed
+])
+def test_mask_test_branches(copy, lookup, control, k, want):
+    assert mt(copy, lookup, control, k)["verdict"] == want
+
+
+def test_mask_test_reports_the_predictions_per_seed():
+    v = mt([GOOD_C, rec(cos=0.05), rec(share=0.3)], [GOOD_L] * 3)
+    assert v["P1"] == [True, False, True] and v["P2"] == [True, True, False] and v["P3"] == [True, True, True] and v["verdict"] == "in_between"
+    assert mt([GOOD_C] * 3, [GOOD_L] * 3, "no_copying")["P1"] == []
+
+
+def test_end_to_end_on_a_copying_shaped_case():
+    """The vectors through the rules: a state opening what `a` holds aligns; one opening elsewhere does not, and its S_old closing is a no-op."""
+    a = torch.zeros(100, dtype=torch.float64)
+    a[:5] = 1.0
+    old = CP.s_old(a)
+    assert old.tolist() == [0, 1, 2]
+    on, off = torch.zeros(100, dtype=torch.float64), torch.zeros(100, dtype=torch.float64)
+    on[:5], off[50:55] = 0.5, 0.5
+    assert CP.cosine(on, a) == pytest.approx(1.0) and CP.cosine(off, a) == 0.0
+    assert not set(CP.closing_pool(on, old)[0].tolist()) & set(old.tolist())
+    alive = {"m": torch.ones(100, dtype=torch.bool)}
+    g1, g0 = [{"m": off[None, None].float().repeat(1, 3, 1)}], [{"m": torch.zeros(1, 3, 100)}]
+    assert torch.equal(CP.closed(g1, g0, old, alive)[0]["m"], g1[0]["m"])  # disjoint: nothing changes, so the share is 0
