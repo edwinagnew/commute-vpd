@@ -97,3 +97,16 @@ The first table's students and the real students differ by a factor of about 3.2
 ## What I did not check
 
 Whether the saved fine-tune files still match the sha256s in `stage0a.json` (the filed cosines reproducing is the evidence I relied on); the fine-tunes' and students' training itself; anything input-weighted, which needs a forward pass. Line 130's 0.0286 nats I confirmed against `teacher_training_amend8c.json` (`students.real_o0.gap`) but did not recompute.
+
+## What the lead did
+
+*2026-11-02. Applied in the report, notebook cells 49-53 (no re-execution), `plot_amend9.py` (figures regenerated from `amend9.json`), the TRIED row and the PENDING line. Numbers and filed verdicts unchanged; `predictions_amend9.json` not edited. The reviewer's new readings are marked "independent check", unfiled.*
+
+1. "Taught nothing": reworded to "teaches no task but still moves predictions 0.53 nats", the null placed inside the map tables' range, the 0.0097 against 0.0286 nats gap added to the untested causes, the legend changed to "null fine-tune, no task", the comparison marked unfiled. Applied.
+2. Reach: the "two different things" reading replaced by the reviewer's length wording, the absolute-length table, the saturated/other block split, the per-matrix reads and the `h.3.attn.k_proj` oddity (open, no cause) added; reach no longer called new; "reaches all of it" changed in text and legend. Applied.
+3. The 0.71 line failing a rerun: the line-126 wording applied with the 0.63 and 0.70 rerun cosines; "a second real fine-tune" added to Not run. Applied.
+4. "Stays inside it": reworded to "stays within what the subcomponents can write, as it must to first order", and the own inside share is no longer listed as a check the run added. Applied.
+5. "Two-thirds": line-58 wording applied, with the saturated-matrix split and 51 to 56% of the inside part. Applied.
+6. "Which fine-tune": reworded to "which task's", the same-table other-seed read added, and removed from Not run. Applied.
+7. Filing flaw: stated in the report opening, the scorecard and the "What we learned" section, and in the notebook; not a new verdict. Applied.
+8. Small items: square root of the share, the $O(s)$ cosines, fp32 storage of $s$, first-order "as they must", and the filed range for the null; all applied.
