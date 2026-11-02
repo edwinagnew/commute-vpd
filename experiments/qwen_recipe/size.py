@@ -38,6 +38,7 @@ KINDS = ("gauss", "inspan")  # E57's keys: the Gaussian change, and the alive-su
 READ_BY_E57 = ("gold_s0", *KINDS)
 BIGS = tuple(f"{k}_big" for k in KINDS)
 ROW_LEN = boot_direct.ROW_LEN
+MORE_STEPS = (20, 50, 10)
 BUILD_S, CELLS_S, CHUNK_S, EVAL_S = 400.0, 240.0, 120.0, 60.0  # budgets: checks_k10_* logs, with margin
 
 
@@ -368,6 +369,12 @@ def stage_state(lab: Size) -> None:
         read_one(lab, name)
 
 
+def stage_more(lab: Size) -> None:
+    """Exploration after the verdict: results/predictions_size_more.json. The verdict never reads these."""
+    for step in MORE_STEPS:
+        read_one(lab, lab.size_cfg.name(step))
+
+
 def search_kind(lab: Size, kind: str, big: dict[str, float]) -> None:
     """Review M4: `scale_search` on the select rows, then all rows within the band; on a miss one more step; else unmatched."""
     tail, R, cfg = f"search_{kind}", lab.R, lab.size_cfg
@@ -418,7 +425,7 @@ def stage_verdict(lab: Size) -> None:
     lab.save("verdict", o := out | {v: decide(recs, pick, f["f"], v, draws, lab.R) for v in ("true", "file")}, o)
 
 
-STAGES = {"control": stage_control, "select": stage_select, "state": stage_state, "verdict": stage_verdict,
+STAGES = {"control": stage_control, "select": stage_select, "state": stage_state, "more": stage_more, "verdict": stage_verdict,
           "search": lambda lab: [search_kind(lab, k, lab.selected()["big"]) for k in KINDS]}
 
 

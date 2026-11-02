@@ -1,0 +1,19 @@
+{
+  "experiment": "E61 (qwen_recipe), Job S, exploration after the verdict: three more saved states of the same fine-tune, read as Job S read its states",
+  "filed": "2026-11-03, before any run",
+  "status": "Exploration, provisional. The scored line C in size_verdict.json is closed and these reads do not touch it (they are not in its pick).",
+  "plan": "reports/plans/2026-11-02_plan_e61-direct-share-size.md, Amendment 3; reports/plans/2026-11-02_advice_e61-after-size-FABLE.md; reports/reviews/2026-11-02_review_e61-size-check.md",
+  "question": "Within one fine-tune, does the direct share follow the size of the change or how far training has gone? From step 20 to step 100 the size on the first 16 rows stays nearly flat (1.17, 1.27, 1.30) while training goes on.",
+  "measure": "direct_true on all 128 rows, as predictions_size.json: (K00 - K10) / (K00 - K11), truly original masks; size K00 - K0; KL(W0 || state). Same rows and code path (size.py read_one).",
+  "references": {"step_100": {"size": 1.1670, "share": 0.0769}, "step_8": {"size": 0.5696, "share": 0.0257}, "alive_reads": [[0.6246, 0.0295], [1.1731, 0.0385]], "floor_f": 0.01},
+  "expected_controls": "Each state's K00 - K0 on the first 16 rows reproduces size_select.json within CFG.rep_tol, or the job stops (size.py check_size). Same stops as Job S's state stage. At W0 and for do-nothing: as predictions_size.json, not re-read.",
+  "reading_rule": {
+    "follows_size": "Step 20's and step 50's shares both at least 0.0669 (within f of step 100), with each state's size within a factor 1.15 of step 100's.",
+    "follows_training": "Step 20's share under 0.06, with its size within a factor 1.15 of step 100's: the share rises while the size barely does.",
+    "no_call": "Anything else, including a size outside the factor 1.15 or a NaN share: reported as read, no call.",
+    "step_10": "Reported only. A straight line between gold's steps 8 and 100 on size gives about 0.04 at the size 0.77 that its 16-row 0.856 suggests; the alive change read off at that size gives about 0.031. It shows whether the verdict's no-gap holds just past step 8, which won the select rule narrowly. It cannot change the line.",
+    "edge_cases": "Step 20 between 0.06 and 0.0669: no_call. Step 50 under 0.0669 but step 20 at least 0.06: no_call, reported. Decreasing share with step: no_call, reported."
+  },
+  "blind_to": "One seed, maths rows only; it cannot separate 'already there' from 'new', and steps of one run are not independent.",
+  "not_changed": "No rule, threshold or number of predictions_size.json."
+}

@@ -3,6 +3,7 @@
 # experiments/qwen_recipe/results/predictions_size.json. Submit from the clone root, in this order; not submitted by the code
 # writer. Exit 0 done; 1 a stop (results/size_stopped.json, or size2_stopped.json for the rehearsal; every stage refuses until
 # it is removed) or a refusal; 3 the time budget was reached: resubmit the same command, it resumes from what is written.
+# Stage more: exploration after the verdict, 3 more gold states, 80 min on normal, --budget-s 10000 (results/predictions_size_more.json).
 # Stages: control; select (big and small states); state (one file per state; the scaled changes once search has written them);
 # search (each random kind's scale to the big state); verdict; all (every one in order, state twice: the rehearsal's).
 # Rehearsal, 2 rows at 1 row a chunk, any time, Job R not needed: about 70 min in 4 debug jobs, resubmit on exit 3. In the
@@ -41,7 +42,7 @@
 #SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
-stage=${1:?usage: sbatch cluster/qwen_recipe_size.sbatch control|select|state|search|verdict|all [--rows 2 --ladder NAME --states A B] [--budget-s S]}
+stage=${1:?usage: sbatch cluster/qwen_recipe_size.sbatch control|select|state|more|search|verdict|all [--rows 2 --ladder NAME --states A B] [--budget-s S]}
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 export PYTHONPATH=$COMMUTE_REPO/experiments/qwen_reading:$PYTHONPATH   # E57's lab.py, score.py, boot_direct.py
