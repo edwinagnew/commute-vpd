@@ -1,5 +1,7 @@
 # Analysis: does the original model's own mask keep what its copying head does at the second A? (E62 Amendment 4, control stop)
 
+*Note, 2026-11-02: "the copying head" below stays as written, but at the second A the target model does not separate head (2,4) from head (1,1). See `reports/analyses/2026-11-02_analysis_e62-amend5-head-sweep.md`, "What this changes in earlier amendments".*
+
 *Coding agent, written the day of the run. Plan: `reports/plans/2026-11-02_plan_e62-copying-heads.md`, section "Amendment 4 (2026-11-02)". Rules: `experiments/induction_cue/results/predictions_amend4.json`. Results: `experiments/induction_cue/results/amend4.json`. Code: `experiments/induction_cue/amend4.py`, `src/commute/copying.py`. Figure: `experiments/induction_cue/plot_amend4.py`. Earlier analyses: `reports/analyses/2026-11-02_analysis_e62-amend2-masked-head.md`, `reports/analyses/2026-11-02_analysis_e62-amend3-gates-head-off.md`. Explanation: `notebooks/E62_induction_cue.ipynb`, section Amendment 4. Independent check: `reports/reviews/2026-11-02_review_e62-amend4-check.md`. Provenance near the end.*
 
 We ran the first stage of a free test of whether a fine-tune's mask opens what the original model's own mask opens when it copies. With its old copying head off, the original model's masked forward fell 0.19 of the target model's fall, under the filed bar of 0.25, so the job stopped. For the goals, this gives no reading on new capability against strengthened old, because no fine-tuned state was read.

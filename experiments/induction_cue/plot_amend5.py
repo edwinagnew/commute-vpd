@@ -2,7 +2,7 @@
 
   figures/amend5_heads.png  each of the 24 heads: target model's fall against masked forward's fall, whole range on equal axes and the same x zoomed in y,
                             with the do-nothing reference, the line where the mask keeps the target's fall, the filed band and the all-masks-at-1 control
-  figures/amend5_swap.png   masked forward's log-odds of B under the four mixes of tokens and masks, with the target model's intact and pair-broken levels
+  figures/amend5_swap.png   masked forward's log-odds of B under the four mixes of tokens and masks and with head (2,4) off, with the same three levels for every mask at 1 and for the target model
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 2G python experiments/induction_cue/plot_amend5.py
 """
@@ -23,6 +23,7 @@ HERE = Path(__file__).resolve().parent
 FIG, RES = HERE / "figures", HERE / "results"
 BLOCK = {"0": ("#2a78d6", "o"), "1": ("#eb6834", "s"), "2": ("#1baf7a", "D"), "3": ("#eda100", "^")}  # the dataviz palette's fixed order; a shape too, so block is not colour alone
 TARGET, MASKED = "#1baf7a", "#eda100"  # as amend3's and amend4's figures
+ONES = "#2a78d6"
 INK, GRID, GREY = "#52514e", "#e4e3df", "#8a8983"
 ZOOM_NAMED = {"1,1": (0.0, 0.07, "center"), "2,4": (0.0, 0.07, "center"), "2,3": (0.12, 0.04, "left"), "3,4": (0.14, -0.02, "left"), "1,4": (0.0, -0.11, "center"), "0,4": (0.0, -0.12, "center"), "1,2": (0.0, 0.05, "center"), "3,5": (0.08, -0.12, "center")}
 
@@ -88,20 +89,27 @@ def heads_figure(out: dict[str, Any], th: dict[str, Any]) -> None:
 
 
 def swap_figure(out: dict[str, Any]) -> None:
-    a, d = out["stage_a_reread"], out["stage_d_swapped"]
-    rows = [("intact tokens, intact windows' mask", a["mask_on"], MASKED), ("pair-broken tokens, intact windows' mask", d["intact_gates_on_broken"], MASKED),
-            ("intact tokens, pair-broken windows' mask", d["broken_gates_on_intact"], MASKED), ("pair-broken tokens, pair-broken windows' mask", a["mask_broken"], MASKED),
-            ("target model, intact tokens", a["target_on"], TARGET), ("target model, pair-broken tokens", a["target_broken"], TARGET)]
-    fig, ax = plt.subplots(figsize=(9.6, 4.6))
+    a, d, c = out["stage_a_reread"], out["stage_d_swapped"], out["stage_a_control"]
+    groups = [("masked forward, W₀'s masks", MASKED, [("intact tokens, intact windows' mask", a["mask_on"], False), ("pair-broken tokens, intact windows' mask", d["intact_gates_on_broken"], False),
+                                                     ("(2,4) off, intact tokens, intact windows' mask", a["mask_off"], True), ("intact tokens, pair-broken windows' mask", d["broken_gates_on_intact"], False),
+                                                     ("pair-broken tokens, pair-broken windows' mask", a["mask_broken"], False)]),
+              ("same forward, every mask at 1", ONES, [("intact tokens", c["on"], False), ("(2,4) off, intact tokens", c["off"], True), ("pair-broken tokens", c["broken"], False)]),
+              ("target model, no mask", TARGET, [("intact tokens", a["target_on"], False), ("(2,4) off, intact tokens", a["target_off"], True), ("pair-broken tokens", a["target_broken"], False)])]
+    fig, ax = plt.subplots(figsize=(9.6, 6.4))
     style(ax)
     ax.grid(axis="y", visible=False)
-    for i, (label, v, colour) in enumerate(rows):
-        ax.scatter(v, i, s=120, color=colour, edgecolors="white", linewidths=1.5, zorder=4)
-        ax.text(v + 0.18, i, f"{v:.2f}", color=INK, va="center", fontsize=9.5)
-    ax.set_yticks(range(len(rows)), [r[0] for r in rows], color=INK, fontsize=9.5)
-    ax.invert_yaxis()
-    ax.axhline(3.5, color=GREY, lw=1)
-    ax.text(-13.1, 3.42, "masked forward above the line, target model, no mask, below", color=INK, fontsize=8.5, va="bottom")
+    i, labels = 0, []
+    for name, colour, rows in groups:
+        ax.text(-13.1, i - 0.46, name, color=INK, fontsize=8.5, va="top", weight="bold")
+        if i:
+            ax.axhline(i - 0.5, color=GREY, lw=1)
+        for label, v, head_off in rows:
+            ax.scatter(v, i, s=120, color="white" if head_off else colour, edgecolors=colour if head_off else "white", linewidths=1.8 if head_off else 1.5, zorder=4)
+            ax.text(v + 0.18, i, f"{v:.2f}", color=INK, va="center", fontsize=9.5)
+            labels.append(label)
+            i += 1
+    ax.set_yticks(range(len(labels)), labels, color=INK, fontsize=9.5)
+    ax.set_ylim(i - 0.5, -0.7)
     ax.set_xlim(-13.2, -3.4)
     ax.set_xlabel("mean log-odds of B at the second A, 200 windows")
     ax.set_title("In the masked forward, which moves B's log-odds: the tokens or the mask?", color=INK, fontsize=11.5)
