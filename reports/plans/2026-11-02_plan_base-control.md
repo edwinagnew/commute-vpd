@@ -43,24 +43,26 @@ rate from any nonzero gradient. Nothing has measured how much of the move would 
 - **Control first.** W₀ through the Pile harness in each job, alone, stop on a miss. Each job reads its own W₀ and
   do-nothing on the L40; L40 lines 1.24 / 1.81, floor 0.209 (E42). No cross-card comparison.
 
-## Runs (MATS cluster `debug`, L40, ≤ 30 min each, $0; cheapest first)
+## Runs (MATS cluster `debug`, L40, ≤ 35 min each, $0; cheapest first)
 
 E34's arm A recipe unless stated: emoticon task windows, Adam 1e-5, batch 32, 1,000 steps, batch-order seed 0, Γ and Δ fixed,
 read at 0, 100, 1,000. Emoticon is chosen because E41 and E43 regenerated it, so references exist.
 
 | Run | What runs | Expected | If not |
 |---|---|---|---|
-| N1 | Teacher = W₀, start = random offsets on the alive U, V matched to E41's one-shot size (0.018) | Gap to the hook floor; check ≤ 1.24 at 1,000 | Check above the fail line with the gap closed: training itself wrecks faithfulness away from W₀ |
+| N1 | Teacher = W₀, start = random offsets on the alive U, V matched to E41's one-shot size (0.018) | Gap to the hook floor; check ≤ 1.24 at 1,000 | Check above the fail line with the gap closed: training itself wrecks faithfulness away from W₀. Check not failing with the gap not closed: see the Tree; likely, since a small gap gives Adam a walk (code review, 2026-11-02) |
 | N2 | Teacher = W₀, start = E41's teacher-trained T1000 state (regenerated in-job): the round trip | Size falls ≥ 0.76 of the way; check ≤ 1.24 | E41's chains and any pass reached from a moved start carry a caveat; E37 A1 arm 3's rise reads as the method's drift |
-| N3 | Null teacher: a full-weight fine-tune (Adam 3e-5, batch 32) with each label drawn from W₀'s own distribution, then the student from W₀ | Student size well under the real student's 0.018; check ≤ 1.24 | Size about 0.018: the move is largely the recipe, and "copies the update" weakens, though the passes stand |
+| N3a | The null fine-tune alone (Adam 3e-5, batch 32, each label drawn from W₀'s own distribution), read at 1, 3, 10, 30, 100, 300, 1,000: size, KL to W₀, P(target) | Walks as the square root of the steps; chooses the checkpoint nearest the same-job T1000's size (near step 100) | Decides n3b's teacher and its expected values, filed by dated note before n3b runs |
+| N3b | The student from W₀ on that checkpoint, beside the same-job real student at batch orders 0 and 1 | Not "the recipe"; check ≤ 1.24 | Comparable size and a direction shared with the real student: the move is largely the recipe, and "copies the update" weakens, though the passes stand. Comparable size in another direction: a walk that happens anyway, but not the real student's move |
 | N4 | Labelled training on the same self-labels: alive U, V, Adam and SGD at E39 Amendment 2's rates, on its lowercase rows | Near the base (check ≤ 1.24) | Near 7.24: E39's labelled fail belongs to the recipe, not the broad update (P10's reading changes) |
 | N5 | Masked recipe at coefficient 0: component path, E42's rand32 windows, teacher = W₀ | Step-1 KL 0.00163; check ≤ 1.24 | Check ≥ 1.81: "the masked terms did it" becomes "path plus Adam; masked terms worsen it" |
 
 Numbers read, no others: check ratio, stochastic, CI-masked and Δ-out ratios, unmasked KL to W₀, size, P(target) where the
 task has one, return fraction (N1, N2). N1 and N2 run first, alone; N3 reads next. The rates for N4 are copied from
 `experiments/broad_fragility/amend2.py`. Noise: W₀'s ratio moves 0.21 between adversary seeds on the L40, so readings are
-class calls on the pass and fail lines, not differences. N3's threshold for "about 0.018" is fixed in the predictions before
-the run, with its edge cases (`.claude/CLAUDE.md` → Rules).
+class calls on the pass and fail lines, not differences. N3b's thresholds on size and direction are fixed in the predictions
+before the run, with their edge cases (`.claude/CLAUDE.md` → Rules). N3b also reads the cosine of the weight changes, the one
+number added here: size alone would read "about" for a reason unrelated to the question (code review, 2026-11-02).
 
 **Blind to.** One task, one batch order, one adversary start, 67M, 20-step adversary. Qwen's teacher training has the same
 shape (`src/commute/qwen_teacher.py`), and the re-gating readings start from the base's CI-masked error; both go as notes
@@ -72,8 +74,10 @@ and take no training. E15: done, failed, read correctly. H100: references exist 
 ## Tree
 
 - All as expected: claims stand, wording changes only ("moves nothing" becomes "0 by construction"); ratios below 1 read as "at the base".
-- N1 or N2 fails: E41's chains get a card; the review says what else starts from a moved state.
-- N3 fails: a pending-decision card on what "teacher training copies the update" may claim, before Qwen uses it.
+- N1 or N2 fails on the check, or N2 does not return: E41's chains get a card; the review says what else starts from a moved state.
+- N1 "fails, gap not closed" (check not failing, KL to W₀ above the line): no card by itself. Teacher training does not restore W₀'s outputs from a small random gap; it walks while the check holds. Say so in the result message, and read N2's return with that walk in mind.
+- N2 gap closed with P(target) above 0.04: the behaviour is still there, so it counts as not back.
+- N3b "the recipe": a pending-decision card on what "teacher training copies the update" may claim, before Qwen uses it. N3b "partly": goes to the user as a surprise, no automatic card. N3b "a walk elsewhere": stated in the claim's wording, no card.
 - N4 fails: card on E39 Amendment 2's reading. N5 fails: reopening the masked line becomes a card; nothing reopens by itself.
 - Any qualitative surprise goes to the user before the next run.
 

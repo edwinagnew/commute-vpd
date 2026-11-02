@@ -108,6 +108,15 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   `OMP_NUM_THREADS` and `MKL_NUM_THREADS` to the cgroup's count, rounded down: quota ÷ period from
   `/sys/fs/cgroup/cpu.max` (or `cpu.cfs_quota_us ÷ cpu.cfs_period_us` on cgroup v1). The split tables went from
   64–82 s to 22 s each.
+- On Vast (`start(runtime="vast")`), the kernel lacks the machine's variables (`WANDB_API_KEY`, `COMMUTE_CACHE_DIR`,
+  `HF_HOME`, `UV_CACHE_DIR`), so make this your first cell, before anything that needs them; names only, never print a value:
+
+      import os
+      os.environ.update(e.decode().split("=", 1) for e in open("/proc/1/environ", "rb").read().split(b"\0")
+                        if e.split(b"=")[0] in (b"WANDB_API_KEY", b"GIT_PAT", b"COMMUTE_CACHE_DIR", b"HF_HOME", b"UV_CACHE_DIR"))
+
+  Vast machines are not stoppable in any useful way, and Vast bills downloads per GB (about $0.01/GB on the 2026-11-02 test; check the
+  offer), which the session budget does not count: 54 GB of Qwen files is about $0.65 per machine on top of the hourly price.
 - On a fresh pod, before the first `sync()`, clone the last push from GitHub, so that `sync()` (rsync) sends only
   what differs from it instead of the whole ~19 MB tree (this mattered on the laptop's slow uplink; from the
   cluster a plain `sync()` is fine, and the cluster has no `GIT_PAT` yet). Run in the kernel, from its
