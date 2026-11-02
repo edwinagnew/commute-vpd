@@ -39,27 +39,13 @@ from run import (
 )
 from torch import Tensor
 
+from commute.copying import induction  # moved there, not changed, 2026-11-02, for E62
+
 OUT = RESULTS / "amend1.json"
-VOCAB = 50277
 
 
 def dump(out: dict[str, Any]) -> None:
     OUT.write_text(json.dumps(_finite(out), indent=1, sort_keys=True))
-
-
-def induction(net: Net, C: dict[str, Any]) -> dict[str, Any]:
-    """W0's top-1 on a random sequence of distinct ids shown twice; the second copy's first token is not scored."""
-    L = C["length"]
-    seq = torch.stack([torch.randperm(VOCAB, generator=torch.Generator().manual_seed(C["seed"] + i))[:L]
-                       for i in range(C["sequences"])])
-    toks = torch.cat([seq, seq], 1)
-    logits = net.run(toks)[0]
-    assert logits.shape[-1] == VOCAB
-    hit = logits.argmax(-1).cpu()[:, :-1] == toks[:, 1:]  # logits at p predict token p + 1
-    r = {"top1_first": float(hit[:, : L - 1].double().mean()), "top1_second": float(hit[:, L:].double().mean()),
-         "n_scored_second": int(hit[:, L:].numel())}
-    r["ok"] = r["top1_second"] >= C["threshold"]
-    return r
 
 
 def adjacent(t: Task, n: int) -> Tensor:

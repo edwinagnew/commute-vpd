@@ -13,7 +13,7 @@ from test_faithfulness_invariants import KEYS, VOCAB, make_model
 
 from commute import kv, vpd
 from commute import local_faith as LF
-from commute.data import Windows, target_tokens
+from commute.data import LAST, Windows, target_tokens
 from commute.faithfulness import model_state, sparsity_loss
 from commute.finetune import ArmAConfig, arm_a_loss, eval_arm_a
 from commute.identity import log_odds
@@ -124,6 +124,25 @@ def test_route_split_constant_table_equals_int_path(model):
         assert out["int"][key] == pytest.approx(out["table"][key], abs=1e-6)
     assert out["task"]["share_sum"] == pytest.approx(1.0, abs=1e-6)
     assert out["task"]["cells"]["T1"] != pytest.approx(out["int"]["cells"]["T1"])
+
+
+def test_last_column_equals_the_table_path(model):
+    """E62: the target as a last column no forward reads gives the lookup table's numbers exactly."""
+    torch.manual_seed(8)
+    W0, C0 = vpd.target_weights(model), vpd.component_weights(model)
+    W1 = {k: W0[k] + 0.3 * torch.randn_like(W0[k]) for k in W0}
+    C1 = {k: (u + 0.1 * torch.randn_like(u), v) for k, (u, v) in C0.items()}
+    w, tab = kv_windows(), task_table()
+    col = torch.cat([w, tab[w[:, HALF]][:, None]], 1)
+    base, base_col = LF.route_cells(model, w, HALF, tab), LF.route_cells(model, col, HALF, LAST, ci_len=T)
+    with model_state(model, target=W1, components=C1):
+        old = LF.route_split(model, w, HALF, tab, base, C0)
+        new = LF.route_split(model, col, HALF, LAST, base_col, C0, ci_len=T)
+    assert old["cells"] == new["cells"] and old["shares"] == new["shares"]
+    net, ref = model.target_model, copy.deepcopy(model.target_model)
+    assert arm_a_loss(net, ref, w, ArmAConfig(o_token=tab), HALF)[1] == arm_a_loss(net, ref, col, ArmAConfig(o_token=LAST, ci_len=T), HALF)[1]
+    win = lambda x: Windows(x, torch.zeros(6), torch.arange(6), torch.full((6,), HALF), HALF)
+    assert eval_arm_a(net, ref, win(w), tab, "cpu") == eval_arm_a(net, ref, win(col), LAST, "cpu", ci_len=T)
 
 
 # ----------------------------------------------------------------------------- the sparsity loss
