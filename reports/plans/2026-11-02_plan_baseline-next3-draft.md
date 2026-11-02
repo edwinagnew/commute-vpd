@@ -1,6 +1,6 @@
 # Plan (DRAFT, Fable's advice): after E59, the readout at the table's vocabulary, or pause the line
 
-**Status: NOT approved. Drafted by Fable, 2026-11-02, after E59 closed unreadable**
+**Status: option 1 (E62) APPROVED by the user 2026-11-02 (dialog, ask #9). Drafted by Fable after E59 closed unreadable. Before coding: the E59 check's M1 (model's own per-window ranks through the P3 rule) must run and E62's P3-style rule be set from it.**
 (`reports/analyses/2026-11-02_analysis_e59-jain-readout.md`). Terms as in `GOALS.md`; r = the route split's re-gating
 share; "prior" = W0's probability of the trained value after its key.
 
