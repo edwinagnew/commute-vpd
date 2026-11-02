@@ -1,6 +1,6 @@
 # Plan (DRAFT): a label for "half-known" that does not come from VPD or from the model's own output (E59 proposed)
 
-**Status: DRAFT, Fable's advice; nothing runs before the user's approval.** Written after E56
+**Status: APPROVED by the user (dialog, ask #8, "Approve E59"), as written. Drafted by Fable.** Written after E56
 (`reports/analyses/2026-10-30_analysis_e56-keydependent-patch.md`), whose decision tree ended on "ask (a)" of
 `reports/plans/2026-10-30_plan_baseline-next-draft.md`.
 
