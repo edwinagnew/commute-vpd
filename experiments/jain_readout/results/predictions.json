@@ -27,11 +27,11 @@
   "schedule_source": "Jain et al. 2024 L1238-1248 as copied in src/commute/probe.py (4K AdamW iterations, lr 1e-3 decayed x0.1 at 2K, 3K, 3.5K); batch 96 and AdamW library defaults filled in there (E55)",
   "window": 41,
   "first_position": 1,
-  "training_data": "batch = 96 windows of 41 tokens at seeded random (row, start) pairs of Pile train rows 32768-40959 (data.pile_rows('train', 32768, 8192), cached; disjoint from rows 0-32767 that E12/E54's task windows were cut from); loss = mean next-token cross-entropy over positions 1..39 of each window, summed over the four readouts. Window length = E54's task windows'. Position 0 left out: a window's first position carries the attention-sink norm, which a linear map on the raw residual would fit at the expense of the rest",
+  "training_data": "batch = 96 windows of 41 tokens at seeded random (row, start) pairs of Pile train rows 32768-65535 (data.pile_rows('train', 32768, 32768), cached by cluster/jain_readout_cache.sbatch; amended after job 48279, was rows 32768-40959; disjoint from rows 0-32767 that E12/E54's task windows were cut from); loss = mean next-token cross-entropy over positions 1..39 of each window, summed over the four readouts. Window length = E54's task windows'. Position 0 left out: a window's first position carries the attention-sink norm, which a linear map on the raw residual would fit at the expense of the rest",
   "train_rows": [
    "train",
    32768,
-   8192
+   32768
   ],
   "readout_seed": 59,
   "held_rows": [
@@ -62,7 +62,11 @@
   "own_seeds": [
    "s0",
    "s1"
-  ]
+  ],
+  "scale_batches": 10,
+  "scale_seed": 5901,
+  "held_in_seed": 5902,
+  "linearised_head": "logits = W_U (w_lnf * h_last * s), s = mean over scale_batches batches of BATCH training windows (positions 1..39) of 1/sqrt(mean(h_last^2) + eps) (readout.norm_scale); loss on the held-out windows (readout.losses 'lin')"
  },
  "thresholds": {
   "possess_rank": 20,
@@ -77,8 +81,16 @@
   "w0_min_drop": 0.3,
   "random_tol": 0.05,
   "floor_min": 0.05,
-  "loss_gap_max": 0.5,
-  "readout_max_minutes": 15
+  "readout_max_minutes": 18,
+  "lin_margin": 0.1,
+  "early_checks": {
+   "250": {
+    "max": 5
+   },
+   "2000": {
+    "max_over_model": 0.5
+   }
+  }
  },
  "threshold_sources": {
   "possess_rank, possess_keys, p3_band": "the plan; the band E54's elicit values were built with (W0's rank 2-20 after the key)",
@@ -88,8 +100,8 @@
   "w0_min_drop": "the plan (log P0 falls >= 0.3 nats median)",
   "random_tol": "the plan (|A| <= 0.05 for a random unit direction)",
   "floor_min": "E54/E56 settings.floor_min",
-  "loss_gap_max": "the plan (P1's floor: the readout's held-out Pile loss within 0.5 nats of the model's own at the last block)",
-  "readout_max_minutes": "chosen so the 30-min debug wall leaves room for the rest (model load ~1 min, stage 0 inputs ~1 min, ablations ~1 min); a projection over it stops at step 20 with nothing scored"
+  "loss_gap_max": "first filing only, replaced after job 48279 by lin_margin (see amended_2026_11_02_after_stop)",
+  "readout_max_minutes": "amended after job 48279: 18 (measured 0.233 s/step, 15.6 min)"
  },
  "predictions": {
   "P1": {
@@ -100,7 +112,7 @@
    "lean": "medium",
    "blind_to": "non-linear encodings of the value, and linear directions the model does not read",
    "control": "the last block (P3): elicit possessed there by construction, cipher not",
-   "noise_floor": "the readout's held-out Pile loss at the last block within 0.5 nats of the model's own (stage 0, stops on a miss); with ~3 windows per key the median rank is per-key noise, which the 24-of-32 count absorbs"
+   "noise_floor": "amended after job 48279: the last block's held-out readout loss within 0.1 nats of the linearised head's (stage 0, stops on a miss); first filed: within 0.5 nats of the model's own. With ~3 windows per key the median rank is per-key noise, which the 24-of-32 count absorbs"
   },
   "P2": {
    "statement": "The gain runs through the readout: A on the five elicit states exceeds A on the five matched ciphers by E51's rule, and the cipher at its own step reads within 0.1 of its matched A",
@@ -194,7 +206,7 @@
   "checks": [
    "inputs: windows_{elicit,cipher}.pt sha256 equal stage1.json's; keys and values equal stage1.json's; W0's held-out geometric-mean P(target) |rate / stage1 rate - 1| <= rate_rel_tol",
    "inputs: each of the twelve states' sha256 equals its filed sha256 and its gain G (steering.gains, all 97 windows) equals the filed G within reproduce_tol",
-   "readouts: held-out Pile loss of the last block's readout minus the model's own <= loss_gap_max (all four blocks reported); readout weights saved to results/large/readouts.pt with sha256; a non-finite logged loss or a step-20 projection over readout_max_minutes exits",
+   "AMENDED after job 48279: readouts: early checks at steps 250 and 2000, step-20 projection over readout_max_minutes or a non-finite logged loss stop the job (run.json stopped); readouts saved at once; held-out over_lin = L_last - L_lin <= lin_margin; all blocks, the model, the linearised head and the held-in losses reported. As first filed: readouts: held-out Pile loss of the last block's readout minus the model's own <= loss_gap_max (all four blocks reported); readout weights saved to results/large/readouts.pt with sha256; a non-finite logged loss or a step-20 projection over readout_max_minutes exits",
    "P3 passes (possession and P1 are computed and recorded first, not a stop)",
    "do-nothing: every state's |A_rand| <= random_tol at the ablation block (A_rand read as A_lo, amended 2026-11-02 pre-run)",
    "W0 positive control: when l* exists, the median over the elicit scoring half of log P0(target) - log P0,ablated(target) >= w0_min_drop; the random direction's and the cipher's W0 drops reported beside it",
@@ -235,7 +247,7 @@
   "zero_norm_readout_column": "not guarded: a trained column of exactly zero norm would give nan directions and nan A -> 'unreadable'",
   "negative_gain": "G_logodds < -0.05 (the fine-tune lowered the target): A_lo well defined and scored as is (E56's convention). Tested",
   "w0_itself": "dW None: the state is W0, G = 0, A nan; only median_drop (the W0 control) and the drops are read. Tested: test_shares_identity_edit_and_w0_state",
-  "training_stop": "a non-finite logged loss or a step-20 projection over 15 min raises readout.ReadoutStop; run.json gets stopped = its message, exit 1"
+  "training_stop": "a non-finite logged loss, a missed early check (readout.early_miss, inclusive bounds, nan never passes; tested) or a step-20 projection over 18 min raises readout.ReadoutStop; run.json gets stopped = its message, exit 1; readouts.pt is not written. A later miss after training reruns with --readouts"
  },
  "departures": [
   "Def 1, Jain et al. 2024 §3: the paper trains on data from the pretraining process and reads on the inputs carrying the instruction; here Pile next-token windows at every position from 1, read at the answer position after the marker and key. The paper gives no threshold for 'equal to f_C'; ours is median rank <= 20 for 24 of 32 keys, filed here",
@@ -265,5 +277,27 @@
    "review L3: the sbatch requests 24G of host memory (E54/E56's request)",
    "both readings in every ablation now run on the same 48 scoring windows (review nit), so a no-op removal reads exactly 0"
   ]
+ },
+ "amended_2026_11_02_after_stop": {
+  "when": "2026-11-02, after MATS job 48279 stopped at stage 0 (nothing past stage 0 ran; no ablation of a fine-tuned state was read); the lead adopted Fable's advice reports/reviews/2026-11-02_review_e59-stop-fable-advice.md. Stage 0 only: P1, P2 and P3 unchanged",
+  "what_stopped": "the last-block readout's held-out loss 4.14 against the model's 3.43 (gap 0.71 > 0.5); its train-batch loss sat at ~3.2 from step 2000, below the model's own: the readouts overfit. 4,000 x 96 x 41 = 15.7M window tokens were drawn from 8,192 x 512 = 4.2M tokens, each token fitted ~3.7 times; Jain et al. train on fresh samples (L1238-1248)",
+  "changes": [
+   "train_rows [\"train\", 32768, 8192] -> [\"train\", 32768, 32768] (16.8M tokens >= 15.7M drawn: each seen < 1 time in expectation; still disjoint from rows 0-32767), cached first by cluster/jain_readout_cache.sbatch (CPU)",
+   "schedule and nn.Linear init unchanged on all four blocks (no warm start from the unembedding)",
+   "stage-0 readout rule: over_lin = L_last - L_lin <= lin_margin 0.1, both on the 2,000 held-out windows; L_lin = held-out loss of the linearised head: the model's unembedding with the final RMSNorm's per-token scale 1/rms(h) replaced by its mean over scale_batches training batches (a feasible linear map, so an upper bound on the best linear readout's loss). gap_last (vs the model) and lin_minus_model reported, unscored",
+   "the model's own loss logged on every logged training batch; the readouts', model's and linearised head's losses on 2,000 training windows (held-in) recorded; expected held-in minus held-out within 0.1 at every block (reported, not a stop)",
+   "early checks (stop on a miss): step 250 last-block train-batch loss <= 5.0; step 2000 last-block train-batch loss <= the model's loss on that batch + 0.5",
+   "readout_max_minutes 15 -> 18; the step-20 projection is always logged",
+   "readouts.pt saved right after training, before the stage-0 readout check; run.py --readouts PATH loads saved readouts and skips training. Job 48279's file kept as results/large/readouts_48279.pt (superseded by the data change)",
+   "the logged training loss is a detached float (job 48279's UserWarning at readout.py:74)"
+  ],
+  "sources": {
+   "lin_margin 0.1": "Fable's advice: job 48279's logged last-block train-batch losses at steps 3500-3999 have sd 0.14 on 3.9K tokens; the held-out mean is over 78K tokens, SE ~0.03; 0.1 ~ 3 SE",
+   "step 250 <= 5.0": "Fable's advice; job 48279 log line 'step 250': last block 4.7264 (fresh data should not be slower at step 250, when each token had been seen < 0.25 times)",
+   "step 2000 <= model + 0.5": "Fable's advice; job 48279 log line 'step 2000': last block 3.1994 against the model's held-out 3.43 (the overfit run); with fresh data the readout should sit near the model, within the first filing's 0.5 nats",
+   "readout_max_minutes 18": "job 48279: 0.233 s/step (steps 250-3999 in 14.6 min), 15.6 min for 4,000 steps"
+  },
+  "rule_as_first_filed": "stage 0 readouts: held-out loss of the last block's readout minus the model's own <= loss_gap_max 0.5 (the plan's P1 floor), train rows [\"train\", 32768, 8192], readout_max_minutes 15",
+  "what_would_change_it": "held-in ~ held-out but over_lin > 0.1: optimisation limit, amend iterations before the first decay, not the margin; lin_minus_model > 0.3: the reference is loose, set the margin from the held-in/held-out gap; held-out gap still > 0.5 after fresh data: report P1 unreadable rather than widen the rule (Fable)"
  }
 }

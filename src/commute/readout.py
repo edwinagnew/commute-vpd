@@ -17,6 +17,7 @@ M1).
 
 from __future__ import annotations
 
+import math
 import time
 from collections.abc import Callable, Mapping
 from typing import Any
@@ -55,8 +56,22 @@ def next_token_xent(logits: Tensor, toks: Tensor) -> Tensor:
     return F.cross_entropy(lg.flatten(0, 2), y.flatten(), reduction="none").view(lg.shape[0], -1).mean(1)
 
 
-def train_readouts(net: Net, rows: Tensor, seed: int, max_minutes: float, log: Callable[[str], None]) -> Probes:
-    """Jain's schedule; raises ReadoutStop if a logged loss is not finite or step 20 projects past max_minutes."""
+def early_miss(step: int, last: float, model: float, checks: Mapping[str, Mapping[str, float]]) -> str | None:
+    """The filed early checks (amended 2026-11-02 after job 48279's stop): at a step named in `checks`, the last block's
+    train-batch loss must be <= "max" (absolute) and/or <= the model's own loss on that batch + "max_over_model"
+    (inclusive). Returns the miss, or None."""
+    c = checks.get(str(step), {})
+    if "max" in c and not last <= c["max"]:
+        return f"[readout] step {step}: last-block loss {last:.4f} over {c['max']}: stop and tell the user"
+    if "max_over_model" in c and not last <= model + c["max_over_model"]:
+        return f"[readout] step {step}: last-block loss {last:.4f} over model {model:.4f} + {c['max_over_model']}: stop and tell the user"
+    return None
+
+
+def train_readouts(net: Net, rows: Tensor, seed: int, max_minutes: float, checks: Mapping[str, Mapping[str, float]],
+                   log: Callable[[str], None]) -> Probes:
+    """Jain's schedule. Logs every 250 steps the readouts' and the model's own loss on the batch; raises ReadoutStop on
+    a non-finite loss, a missed early check (`early_miss`), or a step-20 projection past max_minutes (always logged)."""
     torch.manual_seed(seed)
     V, d = net.net.lm_head.weight.shape
     probes = Probes(len(RESID), d, V).to(net.device)
@@ -65,31 +80,52 @@ def train_readouts(net: Net, rows: Tensor, seed: int, max_minutes: float, log: C
     gen, t0 = torch.Generator().manual_seed(seed), time.time()
     for step in range(ITERS):
         toks = pile_windows(rows, BATCH, gen).to(net.device)
-        loss = next_token_xent(probes(resid(net, toks)[1].flatten(1, 2)).unflatten(1, (BATCH, WIN)), toks)
+        logits, h = resid(net, toks)
+        loss = next_token_xent(probes(h.flatten(1, 2)).unflatten(1, (BATCH, WIN)), toks)
         opt.zero_grad(set_to_none=True)
         loss.sum().backward()
         opt.step()
         sched.step()
         if step % 250 == 0 or step == ITERS - 1:
-            log(f"[readout] step {step} loss per block {[round(float(x), 4) for x in loss]}")
-            if not bool(torch.isfinite(loss).all()):
-                raise ReadoutStop("[readout] non-finite loss: stop and tell the user")
-        if step == 20 and (time.time() - t0) / 21 * ITERS / 60 > max_minutes:
-            raise ReadoutStop(f"[readout] step 20 projects over {max_minutes} min: stop and tell the user")
+            ro, own = loss.detach().tolist(), float(next_token_xent(logits[None], toks)[0])
+            log(f"[readout] step {step} loss per block {[round(x, 4) for x in ro]} model {own:.4f}")
+            miss = None if all(map(math.isfinite, ro)) else "[readout] non-finite loss: stop and tell the user"
+            if miss := miss or early_miss(step, ro[LAST], own, checks):
+                raise ReadoutStop(miss)
+        if step == 20:
+            proj = (time.time() - t0) / 21 * ITERS / 60
+            log(f"[readout] step 20 projects {proj:.1f} min for {ITERS} steps (bound {max_minutes})")
+            if proj > max_minutes:
+                raise ReadoutStop(f"[readout] step 20 projects {proj:.1f} min, over {max_minutes}: stop and tell the user")
     return probes
 
 
 @torch.no_grad()
-def held_out_loss(net: Net, probes: Probes, rows: Tensor, n: int, seed: int) -> dict[str, Any]:
-    """Next-token loss of each block's readout and of the model itself on the same n held-out windows and positions."""
+def norm_scale(net: Net, rows: Tensor, n: int, seed: int) -> float:
+    """The final RMSNorm's per-token scale 1 / rms(h) on the last block's output, averaged over n training batches of
+    BATCH windows at positions POS0..T-2 (the linearised head's constant)."""
+    gen, eps, s = torch.Generator().manual_seed(seed), net.net.ln_f.variance_epsilon, []
+    for _ in range(n):
+        h = resid(net, pile_windows(rows, BATCH, gen))[1][LAST][:, POS0:-1]
+        s.append(torch.rsqrt(h.pow(2).mean(-1) + eps).mean())
+    return float(torch.stack(s).mean())
+
+
+@torch.no_grad()
+def losses(net: Net, probes: Probes, rows: Tensor, n: int, seed: int, scale: float) -> dict[str, Any]:
+    """Next-token loss on the same n windows and positions of: each block's readout, the model itself, and the
+    linearised head ("lin": the model's unembedding with the final norm's per-token scale replaced by `scale`)."""
     toks = pile_windows(rows, n, torch.Generator().manual_seed(seed))
-    ro, own = [], []
+    w, W = net.net.ln_f.weight, net.net.lm_head.weight
+    ro, own, lin = [], [], []
     for s in range(0, n, 100):
         t = toks[s : s + 100].to(net.device)
         logits, h = resid(net, t)
         ro.append(next_token_xent(probes(h.flatten(1, 2)).unflatten(1, (len(t), WIN)), t) * len(t))
         own.append(next_token_xent(logits[None], t) * len(t))
-    return {"readout": (torch.stack(ro).sum(0) / n).tolist(), "model": float(torch.stack(own).sum() / n)}
+        lin.append(next_token_xent(((h[LAST] * scale * w) @ W.T)[None], t) * len(t))
+    tot = lambda x: torch.stack(x).sum(0) / n
+    return {"readout": tot(ro).tolist(), "model": float(tot(own)[0]), "lin": float(tot(lin)[0])}
 
 
 @torch.no_grad()
