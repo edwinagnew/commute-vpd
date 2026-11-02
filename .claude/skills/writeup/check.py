@@ -7,7 +7,8 @@ breaks, alt text and tables are dropped: they merged sentences and inflated the 
 code, tables and headings, and prints
 every sentence over 25 words, with more than two numbers, with a parenthesis, with a prediction code outside
 the scorecard section, or with a retired term ("pull-back", "lift", "projection", 2026-10-20; "H′", now the fixed-shift hypothesis, 2026-10-22; `GOALS.md` → Terms). The limits are guidelines: a flag means "look at this sentence", not "rewrite it". Ends with
-one summary line per file. A file:line citation, bare or in parentheses, is not prose and is not flagged (friction
+one summary line per file, after any errors. A retired term is an error, not a guideline: it comes first, and the summary
+counts it as ERRORS: N (checkers filtered ~140 flags to find them, friction 243, 252). A file:line citation, bare or in parentheses, is not prose and is not flagged (friction
 159). Stdlib only; counts are approximate on purpose.
 """
 
@@ -80,7 +81,9 @@ def prose_lines(md: str) -> tuple[list[str], list[str]]:
         if line.startswith("#"):
             heading = line.lstrip("# ").strip()
             continue
-        lines.append(EMPTY_PAREN.sub("", INLINE.sub(lambda m: m.group(1) or "", CITATION.sub("", line))))
+        # Maths stays as a capitalised word, so a sentence that opens with it still splits (friction 222).
+        lines.append(EMPTY_PAREN.sub("", INLINE.sub(lambda m: "X" if m[0].startswith("$") else m.group(1) or "",
+                                                    CITATION.sub("", line))))
         headings.append(heading)
     return lines, headings
 
@@ -103,7 +106,8 @@ def sentences(lines: list[str], headings: list[str]) -> list[tuple[str, str]]:
 
 
 def check(path: Path) -> None:
-    words = numbers = flagged = 0
+    words = numbers = 0
+    errors, flags = [], []
     for label, md in markdown_chunks(path):
         for s, head in sentences(*prose_lines(md)):
             n_words, n_numbers = len(s.split()), sum(not size for size in NUMBER.findall(s))
@@ -118,14 +122,17 @@ def check(path: Path) -> None:
                 reasons.append("parenthesis")
             if "scorecard" not in head.lower() and CODE.search(s):
                 reasons.append("code " + ", ".join(sorted(set(CODE.findall(s)))))
+            where = f"{path}:{label}" if label else str(path)
+            quote = f"{s[:110]}{'…' if len(s) > 110 else ''}"
             if RETIRED.search(s):
-                reasons.append("retired term " + ", ".join(sorted({m.group(0).lower() for m in RETIRED.finditer(s)})))
+                terms = ", ".join(sorted({m.group(0).lower() for m in RETIRED.finditer(s)}))
+                errors.append(f"ERROR {where}: retired term {terms}\n    {quote}")
             if reasons:
-                flagged += 1
-                where = f"{path}:{label}" if label else str(path)
-                print(f"{where}: {'; '.join(reasons)}\n    {s[:110]}{'…' if len(s) > 110 else ''}")
+                flags.append(f"{where}: {'; '.join(reasons)}\n    {quote}")
+    print("\n".join(errors + flags), end="\n" if errors or flags else "")
     per100 = 100 * numbers / words if words else 0
-    print(f"== {path}: {words} prose words, {per100:.1f} numbers per 100 words, {flagged} flagged sentences")
+    print(f"== {path}: ERRORS: {len(errors)}; {words} prose words, {per100:.1f} numbers per 100 words, "
+          f"{len(flags)} flagged sentences")
 
 
 if __name__ == "__main__":

@@ -21,8 +21,9 @@ sync:
 	@if [ -L .venv ]; then echo "make sync: .venv is the shared cluster venv; rebuild it with: sbatch cluster/setup.sbatch" >&2; exit 1; fi
 	uv sync
 
+# `make test FILES="tests/test_x.py"` runs just those (friction 235); lint's changed-files default is not for tests.
 test:
-	uv run pytest -q
+	uv run pytest -q $(if $(filter command line,$(origin FILES)),$(FILES))
 
 lint:
 	uv run ruff check $(FILES)

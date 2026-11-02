@@ -56,12 +56,8 @@ it. Adding or removing a card is a `PENDING.md` line like any other change.
 The main page had grown too long to read (about 20,000 words on 2026-10-26). Until the user lifts this, a flush may
 not make it longer: what it adds, it takes out elsewhere, by rewriting a superseded box or folding a card that a newer
 result replaced. The changelog, glossary, mistakes and experiments pages are exempt; they grow (the cards each
-within the length below). Measure before and
-after each flush:
-```
-cat $(ls docs/research_log/parts/sections/*.html | grep -v -E '/(changelog|glossary|mistakes|experiments)\.html') \
-    docs/research_log/parts/header.html | sed 's/<[^>]*>/ /g' | wc -w      # at most 20,000
-```
+within the length below). Measure each flush with `python3 docs/research_log/build.py --words`: words per section, each section's
+change since HEAD, and the total against the 20,000 limit.
 
 ## Batched updates (since 2026-10-21, user)
 
@@ -144,16 +140,18 @@ From a Claude Code session, with the Artifact tool:
    **before** publishing: a published version whose `parts/` sat uncommitted or unpushed made the next flush merge it
    back from the live page (friction 138, 139). If the pull brought in parts edits, rebuild before publishing, or the
    live page lags the repo (friction 153).
-2. Read the live files you will pass, once, with paths, into one folder:
+2. Find what this publish must pass, then read only those files, with paths:
 
    ```
-   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu
-                    paths: ["experiments.html", "glossary.html", "changelog.html", "style.css", "script.js"]
+   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: ["nav.js"]
+   python3 docs/research_log/build.py --changed <the folder it saved to>
+   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: [what --changed printed, except index.html]
    ```
-   then `python3 docs/research_log/build.py --check <the folder it saved to>` (or `--check-head`), here on the dev
-   node, not through `fleet/cpu-run`: it is stdlib only, the hook allows it, and the worker cannot see `/ephemeral`.
-   This read counts as reading every non-index file (the "changed since seen" refusals of friction 162, 167, 168, 175
-   came from pages not read this way). It costs ~15k tokens; that is the price of one publish, not a retry.
+   `--changed` compares hashes that `nav.js` carries, so a page nobody changed is never read or sent: the version line
+   used to be on every page, so each flush touched all of them, and every file touched could be refused (friction 224,
+   237, 279). Then `python3 docs/research_log/build.py --check <folder>` (or `--check-head`), here on the dev node, not
+   through `fleet/cpu-run`: it is stdlib only, the hook allows it, and the worker cannot see `/ephemeral`. A file
+   `--changed` names that the live artifact does not have yet needs no read.
    Do **not** `read` with `url` alone first: it inlines the whole 180 KB page (~50k tokens) and on 2026-10-28/29 the
    first send was refused "not viewed" all the same (friction 115, 160, 165, 169, 171). `index.html` is checked by
    the publisher's own refusal instead (step 3).
@@ -173,8 +171,9 @@ From a Claude Code session, with the Artifact tool:
 Artifact publish
   url:        https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu
   file_path:  docs/research_log/build/index.html
-  files:      the changed pages and assets among
-              {"experiments.html": "docs/research_log/build/experiments.html",
+  files:      what --changed printed, except index.html, among
+              {"nav.js":           "docs/research_log/build/nav.js",
+               "experiments.html": "docs/research_log/build/experiments.html",
                "glossary.html":    "docs/research_log/build/glossary.html",
                "changelog.html":   "docs/research_log/build/changelog.html",
                "style.css":        "docs/research_log/build/style.css",
@@ -182,9 +181,9 @@ Artifact publish
               plus any new figure, e.g. "fig/e21_<name>.png": "experiments/<dir>/figures/<name>.png"
 ```
 
-Files already published stay unless passed as `null`. The nav's version line is on every page, so a flush that adds a
-changelog row publishes all four pages and both assets; new figures are added to the map, and every new figure needs
-a line in the list below in the same commit (friction 163). `Artifact list` with `scope: "files"` takes no `limit`
+Files already published stay unless passed as `null`. A flush normally passes `index.html`, `nav.js`, `changelog.html`
+and `experiments.html` if a card changed. New figures are added to the map, and every new figure needs a line in the
+list below in the same commit (friction 163). `Artifact list` with `scope: "files"` takes no `limit`
 (friction 162, 169).
 
 Figures already published (their sources, for a re-upload):
@@ -465,3 +464,11 @@ Figures already published (their sources, for a re-upload):
 - "fig/e55_c3_poles.png": "experiments/open_pair_instruments/figures/c3_poles.png"
 - "fig/e55_c3_positions.png": "experiments/open_pair_instruments/figures/c3_positions.png"
 - "fig/e55_ladder_steps.png": "experiments/open_pair_instruments/figures/ladder_steps.png"
+- "fig/e45_amend2_anchor1.png": "experiments/qwen_updates/figures/amend2_anchor1.png"
+- "fig/e45_amend2_matching.png": "experiments/qwen_updates/figures/amend2_matching.png"
+- "fig/e45_amend2_own_null.png": "experiments/qwen_updates/figures/amend2_own_null.png"
+- "fig/e54_size.png": "experiments/adjoint_sgd/figures/size.png"
+- "fig/e55_c1b_readings.png": "experiments/pcfg_anchors/figures/c1b_readings.png"
+- "fig/e55_c1b_scores.png": "experiments/pcfg_anchors/figures/c1b_scores.png"
+- "fig/e55_labels.png": "experiments/pcfg_anchors/figures/labels.png"
+- "fig/e58_synthesis.png": "experiments/open_pair/figures/synthesis.png"

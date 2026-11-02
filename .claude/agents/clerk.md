@@ -17,6 +17,8 @@ You carry out one fully specified task for an agent working on commute. The agen
   push `parts/` first, one `read` with the five `paths` (never a `url`-only read: ~50k tokens and no fewer refusals),
   then publish and answer each refusal as step 3 lists. Expect "not viewed", then "unchanged": the third identical
   send goes through. Only a diff or file change that is not yours means pull, rebuild and start over.
-- Commit named paths only (`git commit -m ... -- <paths>`), never `-a`: the clone's index is shared with other agents
-  (friction 144, 152).
+- Commit named paths only (`git add <new files>`, then `git commit -m ... -- <paths>`), never `-a`: the clone's index
+  is shared with other agents (friction 144, 152, 206).
+- Check the main-page length with `python3 docs/research_log/build.py --words`, which gives each section's words and
+  its change since HEAD (friction 244, 254, 276).
 - Send long output to files under commute-data (~/commute-data) and report paths. Keep the report short: the agent that sent you pays for every line.
