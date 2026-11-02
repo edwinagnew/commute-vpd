@@ -47,7 +47,7 @@ The plan's Noise floor section says no rule leans on the bootstrap but the 2 sds
 - Devices and dtypes: `logodds_at`, `logp_at` and `masked_lo_windows` return double on CPU, so `amend5.py:142`'s subtraction and every `J.fall` are safe. Γ's gates are on CPU in `route_cells` and `gates_fp32`, so `amend5.py:168` is safe.
 - Stage c: every head's row, per-window pairing, Tb and Mb against their own no-head reads, the fp32 row keys against `sweep_reading`, the labelled row's stop. Gates are read before any hook.
 - Stage d: tokens and gates are the right differences and sum to the lean. `token_reading`'s arguments are in order.
-- `reread_diff`, `stopped_reading`, `boot_sd`, `share_sd` (nan on a non-positive resample), `jsonable` on nan and inf. All 24 thresholds' keys used by the code exist in `predictions_amend5.json`.
+- `reread_diff`, `stopped_reading`, `boot_sd`, `share_sd` (nan on a non-positive resample), `jsonable` on nan and inf. Every threshold key the code uses exists in `predictions_amend5.json`.
 - Sbatch: exit code carried through `tee`; sbatch settings as Amendment 4's but for the time limit; `compute` has L40s only, so the card matches the re-read's; `PYTHONPATH` from `env.sh` picks this clone's `copying.py`. Inputs exist. Host memory is ample: Γ's gates are about 319M entries a pass, at most about 1.3 GB in fp32, against 24 GB.
 - `tests/test_copying.py`: 5205 passed on the CPU worker.
 
