@@ -124,3 +124,41 @@ def test_next_token_xent_skips_position_zero() -> None:
     logits = torch.zeros(1, 2, T, V)
     logits[0, :, 0] = 100.0  # position 0 is left out: a huge logit there must not move the loss
     assert torch.allclose(RO.next_token_xent(logits, toks), torch.tensor([math.log(V)]))
+
+
+def pair(lp: list[float], lo: list[float]) -> tuple[torch.Tensor, torch.Tensor]:
+    return torch.tensor(lp, dtype=torch.float64), torch.tensor(lo, dtype=torch.float64)
+
+
+def test_shares_log_odds_net_of_w0() -> None:
+    w0, w0_abl = pair([-6.0, -6.0], [-6.0, -6.0]), pair([-7.0, -7.0], [-7.0, -7.0])  # W0 loses 1 logit
+    st, st_abl = pair([-0.1, -0.1], [9.0, 9.0]), pair([-1.0, -1.0], [4.0, 4.0])  # state loses 5 logits
+    out = RO.shares(w0, w0_abl, st, st_abl, 0.05)
+    assert math.isclose(out["G_logodds"], 15.0) and math.isclose(out["lo_drop"], 5.0) and math.isclose(out["lo_drop_W0"], 1.0)
+    assert math.isclose(out["A_lo"], 4.0 / 15.0) and math.isclose(out["A_lo_raw"], 5.0 / 15.0)
+    assert math.isclose(out["A_nats"], 0.9 / 5.9) and math.isclose(out["nats_lost"], 0.9)
+
+
+def test_shares_identity_edit_and_w0_state() -> None:
+    w0 = pair([-6.0, -5.0], [-6.0, -5.0])
+    out = RO.shares(w0, w0, w0, w0, 0.05)  # W0 itself (G 0) with a no-op removal
+    assert math.isnan(out["A_lo"]) and math.isnan(out["A_nats"]) and out["lo_drop"] == 0.0 and out["median_drop"] == 0.0
+
+
+def test_shares_zero_and_negative_gain() -> None:
+    w0, w0_abl = pair([-6.0], [-6.0]), pair([-7.0], [-7.0])
+    tiny = RO.shares(w0, w0_abl, pair([-5.99], [-5.96]), pair([-6.99], [-6.96]), 0.05)  # |G_logodds| 0.04 < floor
+    assert math.isnan(tiny["A_lo"])
+    zero = RO.shares(w0, w0_abl, w0, w0_abl, 0.05)
+    assert math.isnan(zero["A_lo"]) and math.isnan(zero["A_lo_raw"])
+    neg = RO.shares(w0, w0_abl, pair([-8.0], [-8.0]), pair([-10.0], [-10.0]), 0.05)  # gain -2, drop 2, W0 drop 1
+    assert math.isclose(neg["A_lo"], -0.5)
+
+
+def test_column_geometry() -> None:
+    probes = RO.Probes(1, 3, 4)
+    with torch.no_grad():
+        probes.w.copy_(torch.tensor([[[1.0, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 4.0]]]))
+    g = RO.column_geometry(probes, 0, [0, 3])
+    assert math.isclose(g["0"]["norm"], 1.0) and math.isclose(g["0"]["cos_mean"], 1 / math.sqrt(2), rel_tol=1e-6)
+    assert math.isclose(g["3"]["norm"], math.sqrt(17), rel_tol=1e-6)

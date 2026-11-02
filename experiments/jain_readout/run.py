@@ -24,7 +24,7 @@ import math
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 import torch
 
@@ -52,7 +52,7 @@ def git(*args: str) -> str:
     return subprocess.run(["git", "-C", str(REPO), *args], capture_output=True, text=True, check=False).stdout
 
 
-def stop(out: dict[str, Any], msg: str) -> None:
+def stop(out: dict[str, Any], msg: str) -> NoReturn:
     out["stopped"] = msg
     dump(out)
     sys.exit(msg)
@@ -94,7 +94,10 @@ def stage0_inputs(net: ST.Net, tasks: dict[str, ST.Task], th: dict[str, float], 
 
 def stage0_readouts(net: ST.Net, S: dict[str, Any], th: dict[str, float], large: Path, out: dict[str, Any]) -> RO.Probes:
     train = pile_rows(*S["train_rows"], log=log)
-    probes = RO.train_readouts(net, train, S["readout_seed"], th["readout_max_minutes"], log)
+    try:
+        probes = RO.train_readouts(net, train, S["readout_seed"], th["readout_max_minutes"], log)
+    except RO.ReadoutStop as e:  # review L2: the reason goes into run.json
+        stop(out, str(e))
     torch.save(probes.state_dict(), large / "readouts.pt")
     loss = RO.held_out_loss(net, probes, pile_rows(*S["held_rows"], log=log), S["held_windows"], S["held_seed"])
     loss["gap_last"] = loss["readout"][RO.LAST] - loss["model"]
@@ -130,36 +133,49 @@ def possession(net: ST.Net, probes: RO.Probes, tasks: dict[str, ST.Task], P: dic
     return out["l_star"]
 
 
+def say(tag: str, r: dict[str, float]) -> None:
+    keys = ("A_lo", "A_lo_raw", "A_nats", "G_logodds", "G_score", "lo_drop", "lo_drop_W0", "nats_lost", "median_drop", "P_tuned_mean", "P_tuned_geo")
+    log(f"[{tag}] " + " ".join(f"{k} {r[k]:.6g}" for k in keys))
+
+
 def controls(net: ST.Net, probes: RO.Probes, tasks: dict[str, ST.Task], dws: dict[str, ST.DW], block: int,
              P: dict[str, Any], out: dict[str, Any]) -> None:
-    """W0's positive control (target and random direction, both tasks) and the random-direction share on every state."""
+    """W0's positive control (target and random direction, both tasks), the random-direction share on every state,
+    and each target value's readout column geometry at the ablation block and the last block (review L1)."""
     S, th, d = P["settings"], P["thresholds"], probes.w.shape[1]
     w0: dict[str, Any] = {}
     for n, t in tasks.items():
         tgt = t.tgt(t.toks)
         for kind, U in (("target", RO.target_dirs(probes, block, tgt)), ("random", RO.random_dirs(tgt, d, S["random_seed"]))):
             w0[f"{n}_{kind}"] = RO.ablation(net, t, None, block, U, th["floor_min"])
-            log(f"[control W0 {n} {kind} block {block}] median drop {w0[f'{n}_{kind}']['median_drop']:.6f} "
-                f"mean drop {w0[f'{n}_{kind}']['loss']:.6f}")
+            say(f"control W0 {n} {kind} block {block}", w0[f"{n}_{kind}"])
     w0["pass"] = w0["elicit_target"]["median_drop"] >= th["w0_min_drop"]
+    out["columns"] = {f"{n}_block{b}": RO.column_geometry(probes, b, sorted({int(t.table[x]) for x in t.keys}))
+                      for n, t in tasks.items() for b in sorted({block, RO.LAST})}  # fmt: skip
+    for k, g in out["columns"].items():
+        log(f"[columns {k}] cos_mean {[round(v['cos_mean'], 4) for v in g.values()]} norm {[round(v['norm'], 4) for v in g.values()]}")
     rand = {}
     for n, dW in dws.items():
         t = task_of(tasks, n)
         rand[n] = RO.ablation(net, t, dW, block, RO.random_dirs(t.tgt(t.toks), d, S["random_seed"]), th["floor_min"])
-        log(f"[do-nothing {n} block {block}] A_rand {rand[n]['A']:.6g} G_score {rand[n]['G_score']:.6g}")
-    out["W0_control"], out["random"] = w0, {**rand, **RO.do_nothing({n: r["A"] for n, r in rand.items()}, th["random_tol"])}
-    log(f"[control] W0 pass {w0['pass']}; do-nothing max |A_rand| {out['random']['max_abs']} pass {out['random']['pass']}")
+        say(f"do-nothing {n} block {block}", rand[n])
+    out["W0_control"], out["random"] = w0, {**rand, **RO.do_nothing({n: r["A_lo"] for n, r in rand.items()}, th["random_tol"])}
+    log(f"[control] W0 pass {w0['pass']}; do-nothing max |A_rand (A_lo)| {out['random']['max_abs']} pass {out['random']['pass']}")
 
 
 def score(net: ST.Net, probes: RO.Probes, tasks: dict[str, ST.Task], dws: dict[str, ST.DW], block: int,
           void: str | None, P: dict[str, Any], out: dict[str, Any]) -> None:
+    """A per state at `block` (P2 reads A_lo); the same removal at the last block on every state, reported (review M2:
+    the positive control that A can read high, expected ~1)."""
     th, A = P["thresholds"], {}
     out["ablation"] = {"block": block, "scored": void is None, "states": {}}
+    out["last_block"] = {"block": RO.LAST, "scored": False, "states": {}}
     for n, dW in dws.items():
         t = task_of(tasks, n)
-        rec = RO.ablation(net, t, dW, block, RO.target_dirs(probes, block, t.tgt(t.toks)), th["floor_min"])
-        out["ablation"]["states"][n], A[n] = rec, rec["A"]
-        log(f"[ablation {n} block {block}] A {rec['A']:.6g} loss {rec['loss']:.6g} G_score {rec['G_score']:.6g}")
+        for rec_, b in ((out["ablation"], block), (out["last_block"], RO.LAST)):
+            rec_["states"][n] = RO.ablation(net, t, dW, b, RO.target_dirs(probes, b, t.tgt(t.toks)), th["floor_min"])
+            say(f"ablation {n} block {b}", rec_["states"][n])
+        A[n] = out["ablation"]["states"][n]["A_lo"]
         dump(out)
     out["P2"] = RO.p2(A, SEEDS, OWN, th["min_gap"], th["own_tol"], void)
     out["branch"] = RO.branch(out["P1"], out["P2"])

@@ -10,7 +10,9 @@ window. Window position 0 is left out of every loss: a window's first position c
 
 Ablation at block l: at the answer position only, the residual read by block l's readout has its component along a unit
 vector removed (h <- h - (h.u) u): the readout's column for that window's target value (the claim's direction), or a
-seeded random unit vector per target value (the do-nothing).
+seeded random unit vector per target value (the do-nothing). The scored share is in log-odds, net of W0's own drop under
+the same removal (`shares`; amended 2026-11-02 before the run, review reports/reviews/2026-11-02_review_e59-code.md H1,
+M1).
 """
 
 from __future__ import annotations
@@ -26,7 +28,7 @@ from torch import Tensor
 
 from commute.elicit import absdiff, separation, share_or_nan
 from commute.probe import BATCH, DECAY, DECAY_AT, ITERS, LR, Probes
-from commute.steering import DW, Net, Task, read
+from commute.steering import DW, Edit, Net, Task, logodds_at, logp_at
 
 RESID = ("in1", "in2", "in3", "out3")  # block l's output residual = the `steering.Net` site RESID[l]
 LAST = len(RESID) - 1
@@ -54,7 +56,7 @@ def next_token_xent(logits: Tensor, toks: Tensor) -> Tensor:
 
 
 def train_readouts(net: Net, rows: Tensor, seed: int, max_minutes: float, log: Callable[[str], None]) -> Probes:
-    """Jain's schedule; exits if a logged loss is not finite or step 20 projects past max_minutes."""
+    """Jain's schedule; raises ReadoutStop if a logged loss is not finite or step 20 projects past max_minutes."""
     torch.manual_seed(seed)
     V, d = net.net.lm_head.weight.shape
     probes = Probes(len(RESID), d, V).to(net.device)
@@ -71,9 +73,9 @@ def train_readouts(net: Net, rows: Tensor, seed: int, max_minutes: float, log: C
         if step % 250 == 0 or step == ITERS - 1:
             log(f"[readout] step {step} loss per block {[round(float(x), 4) for x in loss]}")
             if not bool(torch.isfinite(loss).all()):
-                raise SystemExit("[readout] non-finite loss: stop and tell the user")
+                raise ReadoutStop("[readout] non-finite loss: stop and tell the user")
         if step == 20 and (time.time() - t0) / 21 * ITERS / 60 > max_minutes:
-            raise SystemExit(f"[readout] step 20 projects over {max_minutes} min: stop and tell the user")
+            raise ReadoutStop(f"[readout] step 20 projects over {max_minutes} min: stop and tell the user")
     return probes
 
 
@@ -124,15 +126,52 @@ def remove_at(pos: int, U: Tensor) -> Callable[[Tensor], Tensor]:
     return f
 
 
+class ReadoutStop(Exception):
+    """A guard inside readout training fired; `run` records it as run.json's `stopped` before exiting."""
+
+
+def _reads(net: Net, t: Task, toks: Tensor, dW: DW | None, edit: Edit | None) -> tuple[Tensor, Tensor]:
+    """log P(target) and log-odds of the target at the answer position, from one forward."""
+    with net.at(dW):
+        logits = net.run(toks, edit)[0]
+    tgt = t.tgt(toks)
+    return logp_at(logits, t.half, tgt), logodds_at(logits, t.half, tgt)
+
+
 def ablation(net: Net, t: Task, dW: DW | None, block: int, U: Tensor, floor: float) -> dict[str, float]:
-    """Scoring half. `loss` = mean (log P_state - log P_ablated); G = the state's gain over W0; A = loss / G, nan if
-    |G| < floor; `median_drop` = the per-window median of the same difference (W0's positive control reads it)."""
+    """Scoring half, every reading on the same 48 windows: W0 and the state (dW None: W0 itself), each with and without
+    the removal at `block`; the numbers of `shares`."""
     sc = t.part("score")
-    state = read(net, t, t.toks, dW)[sc]  # all windows, sliced, as `steering.gains` reads them
-    abl = read(net, t, t.toks[sc], dW, edit={RESID[block]: remove_at(t.half, U[sc])})
-    G, drop = float((state - t.lp0[sc]).mean()), state - abl
-    return {"G_score": G, "loss": float(drop.mean()), "median_drop": float(drop.median()),
-            "A": share_or_nan(float(drop.mean()) / G if G else float("nan"), G, floor)}  # fmt: skip
+    toks, edit = t.toks[sc], {RESID[block]: remove_at(t.half, U[sc])}
+    w0, w0_abl = _reads(net, t, toks, None, None), _reads(net, t, toks, None, edit)
+    st, st_abl = (w0, w0_abl) if dW is None else (_reads(net, t, toks, dW, None), _reads(net, t, toks, dW, edit))
+    return shares(w0, w0_abl, st, st_abl, floor)
+
+
+def shares(w0: tuple[Tensor, Tensor], w0_abl: tuple[Tensor, Tensor], st: tuple[Tensor, Tensor],
+           st_abl: tuple[Tensor, Tensor], floor: float) -> dict[str, float]:
+    """Each argument is (log P, log-odds) per window. Scored (amended 2026-11-02 pre-run, review H1 + M1): A_lo = (the
+    state's mean log-odds drop under the removal - W0's, same windows and direction) / G_logodds, nan if |G_logodds| <
+    floor; a negative G_logodds gives a well-defined share, scored as is. Recorded, unscored: A_nats (the first filing,
+    nats lost / G in nats), A_lo_raw (log-odds, W0's drop not subtracted), nats_lost, P_tuned, and the median nats drop
+    (W0's positive control reads it at dW None)."""
+    m = lambda x: float(x.mean())
+    G, G_lo = m(st[0] - w0[0]), m(st[1] - w0[1])
+    nats, lo, lo0 = m(st[0] - st_abl[0]), m(st[1] - st_abl[1]), m(w0[1] - w0_abl[1])
+    ratio = lambda num, den: share_or_nan(num / den if den else float("nan"), den, floor)
+    return {"G_score": G, "G_logodds": G_lo, "nats_lost": nats, "median_drop": float((st[0] - st_abl[0]).median()),
+            "lo_drop": lo, "lo_drop_W0": lo0, "nats_drop_W0": m(w0[0] - w0_abl[0]),
+            "P_tuned_mean": m(st[0].exp()), "P_tuned_geo": float(np.exp(m(st[0]))),
+            "A_nats": ratio(nats, G), "A_lo_raw": ratio(lo, G_lo), "A_lo": ratio(lo - lo0, G_lo)}  # fmt: skip
+
+
+def column_geometry(probes: Probes, block: int, values: list[int]) -> dict[str, dict[str, float]]:
+    """Per value: its readout column's norm and cosine with the mean column of the whole vocabulary (review L1: softmax
+    ignores a component shared by every column, so a column close to the mean is a direction that moves every logit)."""
+    W = probes.w[block].detach()
+    mean = W.mean(1)
+    return {str(v): {"norm": float(W[:, v].norm()), "cos_mean": float(F.cosine_similarity(W[:, v], mean, dim=0))}
+            for v in values}  # fmt: skip
 
 
 # ----------------------------------------------------------------------------- filed rules (pure; tests/test_readout.py)
@@ -200,8 +239,8 @@ def do_nothing(A_rand: dict[str, float | None], tol: float) -> dict[str, Any]:
 
 def p2(A: dict[str, float | None], seeds: list[str], own_seeds: list[str], min_gap: float, own_tol: float,
        void: str | None) -> dict[str, Any]:
-    """P2: elicit A above matched-cipher A by E51's rule (`elicit.separation`), and |A(cipher_own) - A(cipher)| < own_tol
-    (strict) on every own seed. `void` (no l*, or W0's control failed) -> "void"; a None or nan -> "unreadable"."""
+    """P2 on A = each state's A_lo: elicit above matched cipher by E51's rule (`elicit.separation`), and
+    |A(cipher_own) - A(cipher)| < own_tol (strict) on every own seed. `void` (no l*, or W0's control failed) -> "void"; a None or nan -> "unreadable"."""
     if void:
         return {"status": "void", "reason": void}
     sep = separation([A.get(f"elicit_{s}") for s in seeds], [A.get(f"cipher_{s}") for s in seeds], min_gap)

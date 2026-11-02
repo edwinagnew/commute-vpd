@@ -92,6 +92,20 @@ the random-direction share on W₀ within ±0.05. Any miss stops the job before 
 fails, P2 holds: "half-known" is the output's knowledge; the ablation still separates; write up with that wording. P2
 fails: stop and tell the user; (b) before any Qwen ask. A control fails: stop, report.
 
+## Amendment before run (2026-11-02)
+Decided by the lead after the code review (`reports/reviews/2026-11-02_review_e59-code.md`), before anything ran: a
+rule fix with one clear answer, told to the user as an FYI. The ablation share that P2 scores is now in log-odds, net
+of what the original model itself loses: A = (the fine-tuned state's log-odds drop when the direction is removed −
+W0's drop under the same removal, same windows) / the state's log-odds gain over W0. This is the unit of r and of E54
+Amendment 1. The reason is H1: log P flattens near P = 1, and the elicit, matched-cipher and own-step cipher states sit
+near P 0.93, 0.04 and 0.99, so a share in nats would bias P2 towards fail. The other reason is M1: W0 already uses the
+direction for the elicit values, which would add about 0.1-0.2 to the elicit share. Thresholds are unchanged (gap 0.2,
+own-step within 0.1, random direction within 0.05, now in the same unit). The share as first filed (in nats), the
+uncorrected log-odds share, nats lost and P_tuned are recorded beside it, unscored. Added as reported controls: the
+same removal at the last block on every state (expected about 1, showing the share can read high), and each target
+column's cosine with the mean readout column. `predictions.json` → `amended_2026_11_02_pre_run` keeps the first
+filing's text.
+
 ## Departures from the literature
 - **Def 1, Jain et al. 2024 §3.** The paper trains the readout on data from the pretraining process and reads it on
   the sub-domain of inputs carrying the instruction; we train on Pile windows at every position and read at the answer
