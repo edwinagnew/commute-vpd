@@ -1,0 +1,224 @@
+{
+  "about": "E34 Amendment 8 (reports/plans/2026-11-02_plan_base-control.md; user approved N1-N5 2026-11-02): runs with the base model W0 as the only thing to learn from, on the MATS L40 debug QoS, one stage per job. Teacher training = component_training.train on the alive (U, V), Gamma and Delta frozen, KL(teacher || student), E34's arm A: emoticon windows, Adam 1e-5, batch 32, 1,000 steps, batch-order seed 0. Filed before any run",
+  "controls": {
+    "W0 first": "every job, alone: W0 under the Pile harness (256 Pile val rows, 20-step adversary, seeds 0, 1, 2), faith_score.w0_check passes and the PGD floor is 0.2088 within 10% (the L40's). Miss: stop, nothing trained. Expected: floor 0.2088, pass line 1.5 / 1.2088 = 1.241, fail line 1.5 x 1.2088 = 1.813",
+    "regenerated E41 pair (n1, n2, n3)": "Sanity against H100 values, absolute, wide enough for rounding between cards; stop on a miss. Fine-tune step-1 loss 5.3339 in [5.23, 5.43]; T1000 P(target) 0.99961 in [0.9946, 1]; T1000 size 0.03209 in [0.0301, 0.0341] (L40's E31 0.0315). Student step-1 KL 5.3418 in [5.24, 5.44]; student P(target) at 1000 0.99675 in [0.9868, 1]; size 0.01842 in [0.0154, 0.0214]",
+    "warm start (n1, n2)": "before training, one step at lr 0 from the start's offsets against the start's own weights (path.student): KL in [0, 0.005] (E41's C2 line; hook floor 0.0005-0.0007). Stop on a miss",
+    "n1 start": "start size / same-job student's size within 1% (one direction, fragility.random_move seed 0, per-matrix ||delta-W|| = the student's). Step-1 KL to W0 in [0.0005, 0.5]: at the floor there is nothing to close. Stop on a miss",
+    "n2 start": "step-1 KL(W0 || T1000 student) in [1, 20] nats: W0's tokens hold about 0.003 of the trigger's mass. Stop on a miss",
+    "n3": "at the null fine-tune's step 1: |mean CE - W0's mean entropy| <= 0.5 nats (labels really drawn from W0); its size at step 1 within 5% of the same-job real fine-tune's (Adam's first step is lr on every entry; E41 A2 0.00346). Null student: step-1 KL in [1e-6, 1], exact 0 is a teacher that did not move; size at step 1 within 30% of the real student's (0.0010-0.0012 in every E41 and E39 log). Stop on a miss",
+    "n4": "the true-label state of the same recipe runs first, as the recipe's control on this card: step-1 CE 3.5300 in [3.48, 3.58]; gain 0.1343 (Adam, step 1000) or 0.1253 (SGD 0.03, step 100) within 0.02 absolute, broad_fragility amend2's `.label.*.grid`. Then self-labels' step-1 |CE - entropy| <= 0.5. Stop on a miss",
+    "n5": "step-1 unmasked term 0.00163 within 10% (teacher_training_e42_amend1_rand32.json .G2.path_kl, same card, same first batch), gradient nonzero. Stop on a miss",
+    "what differs from a reference": {
+      "n1, n2 against an E41 chain link": "teacher is W0, not a fine-tune; fresh Adam state and batch order 0, as a link. Nothing else",
+      "n3 student against the real student": "the teacher only. Same batch order, same start, same lr",
+      "n3 null fine-tune against E34's Adam teacher": "the loss: labels drawn afresh per position from W0, with arm A's weighting of CE (trigger + mean elsewhere) in place of CE on the target + KL to W0 elsewhere. Same batches, Adam 3e-5, clip, seed",
+      "n4 against E39 Amendment 2": "the card (L40 here, H100 there) and, for self-labels, the labels. Rows, batch 8, batch order 0, lr, clip are E39's",
+      "n5 against E42 Amendment 1's M0": "coefficient 0 in place of 0.5. Same card, windows, batch order"
+    }
+  },
+  "measurements": {
+    "check ratio and verdict": "harness pile_ratios: 20-step adversary PGD KL on 256 Pile rows, state / same-job W0 at seed 0. base_verdict = faith_score.state_verdict(pile, 1.0, w0, p_min=0.0): each of the PGD and stochastic ratios against its own same-job W0 floor; pass at or below 1.5 / (1 + f), fail at or above 1.5 (1 + f), both inclusive, any fail is fail, any between is inconclusive. Absolute lines from this job's floor. P(target) is taken out: with nothing to learn the P gate would read 'below P 0.9' for every arm. NaN or infinite ratio: 'invalid'. Blind to: one adversary start, 20 steps, 256 rows, a pass is a lower bound. Positive control: E42 A1's M0 25.99 on this card; E39's random move at damage 0.24 16.5, 27.2 (H100). Noise floor: W0's ratio moves 0.21 between adversary seeds on the L40, so readings are class calls, not differences",
+    "stochastic, CI-masked, Delta-out ratios": "pile_ratios stochastic_kl, ci_masked_kl, unmasked_kl, same-job W0 seed 0, saved per read. Reported, not scored. Noise: stochastic floor 0.002, CI-masked and Delta-out deterministic for a fixed state. Blind to the adversary",
+    "unmasked KL to W0 (kl_w0)": "teacher.heldout_gap of the state's target model against W0, arm A's weighting (trigger + mean elsewhere) on the task's held-out windows, merged weights. n4: row_copy.read_state's mean KL over every position, on lowercase held-out rows (kl_w0_lowercase) and plain rows (damage). Absolute, nats. Hook-path training floor 0.0005-0.0007. Blind to text outside those windows",
+    "size": "harness rel_norm_max: the largest ||delta-W|| / ||W0|| over the 24 matrices. Batch-order spread of the emoticon arm-A student 0.01842 against 0.01843 (E34 seed 0, Amendment 4 seed 1): under 1%. Blind to direction: same size does not mean the same move; to the other 23 matrices",
+    "P(target)": "arms.heldout_of at the trigger, held-out windows; n1, n2, n3, n5 only. n4's task has no single target: gain (mean log-probability on lowercase held-out rows, state - W0) instead",
+    "return fraction (n1, n2)": "1 - size at step 1000 / size at step 0, both harness size of the same run, so relative. Negative if it grew. Size at start 0 or not finite: None (unscorable). 'returned' at or above 0.76, inclusive. The 0.76 is the plan's figure, from E34 C3, which is a recovery of squared (dU, dV) offsets (1 - sum ||off - target||^2 / sum ||target||^2); this one is linear in size and gauge-free. A size-based 0.76 is the harder bar: squared recovery 0.76 is a linear fall of about 0.51 at the same place. Positive control: none in-job can return by construction; 1.0 at W0 and 0 for a state that did not move bound it. Blind to direction and to the place it ends if not W0",
+    "about 0.018 (n3)": "r = null student's size at step 1000 / same-job real student's size at step 1000. Relative: E41's H100 figure is not used. r >= 0.75: 'about'. r <= 0.50: 'well under'. Between: 'partly'. Both ends inclusive. r above 1 is 'about'. Real size 0 or NaN: 'unscorable'. Sources: 0.75 because E41's real teacher T10 (a third of T1000's size, P 0.999) already gives a student 0.77 of T1000's, so r above that is as near as a real update's; 0.50 a move at most half; batch-order noise under 1%, so the bands are not noise-limited"
+  },
+  "expected": {
+    "W0": "every ratio 1; kl_w0 0; size 0; P(target) 0.004 emoticon, 1.6e-5 rand32; gain 0; return fraction None",
+    "do-nothing": "with teacher = W0 it is W0 itself (n1, n4, n5: no read). n2 reads T1000's: check 1.39 L40 (plan E34's table; 1.50 H100), inconclusive; stochastic 0.92; size 0.032; Delta-out above 1. n3 reads the null teacher's: unknown, expected under T1000's (nothing learnt, damage small)",
+    "control": "same-job real student: P(target) 0.997, size 0.0184, check about 0.96 (H100), stochastic 0.95, CI-masked 0.98, Delta-out 0.88, kl_w0 about 5 at the start of n2; read at n3 and as n2's step 0. n4's true labels: Adam check 7.24, stochastic 1.35, CI-masked 1.35, Delta-out 1.34, damage 0.27, size 0.054 (H100); SGD 0.03@100 check 1.28, stochastic 1.08, CI-masked 1.10, Delta-out 0.99, damage 0.125 (H100)",
+    "n1": "step 0: check 0.99-1.07 (E39's random moves at this size, H100), kl_w0 a few 0.001 nats, Delta-out about 1.0. Step 1000: kl_w0 at or under 0.002; check under 1.24",
+    "n2": "step 0: as the control. Step 1000: kl_w0 under 5% of its start; P(target) back near 0.004; check under 1.24",
+    "n3": "null teacher: P(target) near 0.004, damage small, size unknown (Adam's walk; T1000's 0.032 is an upper guide). Null student: as the rule below",
+    "n4": "self-label Adam at 1000 and SGD at 100: gain near 0, damage well under the true labels', check under 1.24",
+    "n5": "step 1 unmasked 0.00163; step 1000: check under 1.24; size at or under about 0.03; M0's 0.051 and damage 0.023 at coefficient 0.5 are upper guides"
+  },
+  "noise_floors": "W0's check ratio 0.21 between adversary seeds on the L40. Size under 1% between batch orders on emoticon arm A. Student check up to 11% between batch orders on task text (E34 Amendment 4). Hook floor 0.0005-0.0007 nats. Self-label draws and the random move: one draw each, so their own spread is unmeasured",
+  "predictions": [
+    {
+      "id": "N1_random_start",
+      "kind": "classification",
+      "rule": "gap = gap_class(kl_w0 at 0, kl_w0 at 1000, line 0.002 nats, absolute: about 3 x the largest hook-floor reading): non-finite 'invalid'; start at or under the line 'no power'; end at or under it 'closed'; end under start 'partly'; else 'not closed'. Verdict at 1000 by base_verdict. outcome: verdict fail -> 'fails'; invalid or gap invalid or no power -> 'unscorable'; gap not closed -> 'fails'; pass -> 'holds'; inconclusive -> 'inconclusive'. Return fraction reported, classed at 0.76, not in the outcome: the plan gives it no expected value here. Decision-tree card: verdict fail",
+      "lean": "verdict pass, high: E39's random moves read about 1 at this size. Gap closed, medium-low: Adam at 1e-5 keeps stepping at the floor, so it may sit between 0.002 and the start ('partly'). Not returned, high: a random move is mostly flat in function, so little pulls it back",
+      "blind_to": "one random direction, one batch order, one adversary start; the start has this size but little damage, so it does not test a state as far off in function as a trained one (n2 does)",
+      "positive_control": "the check: M0 on this card, 25.99. The gap: n2's start, about 5 nats, read the same way"
+    },
+    {
+      "id": "N2_round_trip",
+      "kind": "classification",
+      "rule": "gap_class with line = 0.05 x kl_w0 at 0 (relative; E41's works_gap); kl_w0 at 0 of 0 gives line 0 and 'no power'. Return fraction at 1000, 'returned' at or above 0.76. Verdict at 1000. outcome: verdict fail -> 'fails'; invalid, gap unscorable or return None -> 'unscorable'; gap not closed or not returned -> 'fails'; pass -> 'holds'; inconclusive -> 'inconclusive'. Decision-tree card: verdict fail or not returned",
+      "lean": "verdict pass, medium-high. Gap closed, medium. Not returned, medium-low, which differs from the plan's expected value: E41's sizes barely follow the teacher, so part of the move is Adam's walk, which a return does not undo; I lean to a fraction of 0.2-0.6. That would make the outcome 'fails' on the return part alone and trigger the card",
+      "blind_to": "one state, one batch order; fresh Adam state; size says how far from W0, not by which path; 1,000 steps at the rate that took 1,000 steps to get out",
+      "positive_control": "W0's start would read fraction None and kl 0 by construction; T1000 student's own read at step 0 reproduces E41's"
+    },
+    {
+      "id": "N3_null_teacher",
+      "kind": "classification",
+      "rule": "size_class as in measurements, at step 1000, relative to the same-job real student. Verdict at 1000. outcome: verdict fail -> 'fails'; invalid or unscorable -> 'unscorable'; size class not 'well under' -> 'fails'; pass -> 'holds'; inconclusive -> 'inconclusive'. Decision-tree card: class 'about' or verdict fail. 'partly' goes to the user as a surprise against the plan, without an automatic card",
+      "lean": "verdict pass, medium-high. Size 'partly', low, which differs from the plan's 'well under': E41 A2's T1 teacher (size 0.0035) gave a student of 0.0070 in 100 steps, so a teacher with a small gap still moves the student far; a null teacher's gap should be smaller still than T1's, against that",
+      "blind_to": "direction: a same-size move can be another move entirely (the cosine with the real student is not read, and can be read later for $0 from the saved states); one label draw; fresh labels leave no noise to memorise, unlike a fixed label set, so this is the lower bound on what a fixed-noise teacher would teach",
+      "positive_control": "the same-job real student: its size is the denominator, read at step 1000. The negative end: E34's C2 reads exactly 0"
+    },
+    {
+      "id": "N4_self_labels",
+      "kind": "classification per optimiser",
+      "rule": "at E39's scored state (Adam 1e-5 step 1000; SGD 0.03 step 100; SGD's step 1000 reported): base_verdict of the self-label state. pass 'near base'; inconclusive 'inconclusive'; invalid 'unscorable'. fail: share = (self check - 1) / (same-job true-label check - 1); true check at or under 1 or not finite: 'fails, no reference'; share at or above 0.5: 'fails, about the true labels'; else 'fails, under the true labels'. E39's 7.24 itself is not read against: another card. Decision-tree card: verdict fail. SGD's true-label state may read inconclusive on this card (H100 1.28 against 1.24): recorded, it then gives no fail reference",
+      "lean": "Adam 'near base', medium-low: a random move of this size reads about 1, and Adam's size here should stay under 0.054; against it, damage drives the check and 512-token rows give much more text. SGD 'near base', medium-high: clipped gradients with no mean give a small move",
+      "blind_to": "one label draw and batch order; fresh labels; a mean over plain text; says nothing about why true labels fail, only whether self-labels do",
+      "positive_control": "the same-job true-label Adam state, expected to fail far above the line"
+    },
+    {
+      "id": "N5_masked_coefficient_0",
+      "kind": "classification",
+      "rule": "base_verdict at step 1000 on the component path. outcome: fail -> 'fails'; invalid -> 'unscorable'; inconclusive -> 'inconclusive'; pass -> 'holds'. Decision-tree card: verdict fail, then 'the masked terms did it' becomes 'path plus Adam; masked terms worsen it'. Size and kl_w0 reported",
+      "lean": "pass, medium-low: gradient is rounding alone at the start, but Adam makes lr-sized steps of it, and M0's rise in the unmasked term at coefficient 0.5 was with the masked terms pushing",
+      "blind_to": "one task, batch order and adversary start; the rounding is card-specific (0.00065 per position on an H100's path)",
+      "positive_control": "E42 A1's M0 at coefficient 0.5 on this card, windows and batch order: 25.99. Not rerun"
+    }
+  ],
+  "edge_cases_run_before_filing": "~/commute-data/scratch/commute-lead/amend8-writer/edge.py on the code's rule functions, 2026-11-02. Every verdict at its exact line (inclusive), NaN and infinity (invalid), zero size at start (None), zero KL at start with its zero relative line ('no power'), a tie of start and end ('not closed'), ties at 0.75, 0.5, 0.76 and share 0.5, real size 0, true check 1, 0.9 and NaN. Two faults found and fixed: an unknown verdict read 'holds', and a failed check with an unscorable part read 'unscorable' instead of 'fails'. self_ce on a small module: CE within 0.02 of entropy, the mean of 200 draws' gradients at 0.069 of one draw's (expected 0.071). No case left uncovered in `outcome`, `gap_class`, `size_class`, `label_class`",
+  "departures_from_the_plan": [
+    "n4 adds a same-job true-label state: the plan's 'near 7.24' is an H100 reading and the plan forbids cross-card comparison. It is also the recipe's control. About 5 min per optimiser",
+    "n4 splits in two jobs (n4_adam, n4_sgd) to fit the 30 minutes",
+    "n4 SGD scored at step 100, where E39's 1.28 was read; step 1000 reported",
+    "Do-nothing per the plan's control line is read only where it exists: n2 (T1000) and n3 (null teacher). n1, n4, n5 have teacher W0, whose do-nothing is W0",
+    "n3 and n5 are not read at step 0: W0 by construction, the job's W0 read",
+    "n1's real student is not read through the harness: only its size is used; n2's step 0 is that read",
+    "Plan's silence filled: labels drawn afresh every batch, not once per row, because a fixed set of random labels is a task to memorise, not nothing to learn. Null fine-tune uses arm A's weighting, so the same emphasis on the trigger"
+  ],
+  "reported_not_scored": [
+    "every read's stochastic, CI-masked and Delta-out ratios, kl_w0, damage, size, P(target) or gain, Delta's share",
+    "N1's return fraction; N4 SGD at step 1000; the training curve at steps 1, 2, 10, 100, 500, 1000",
+    "the T1000 and null teacher's own P(target), damage, size"
+  ],
+  "not_run": [
+    "more teacher = W0 from W0 (0 by construction); the splits and step split (0 at delta-W = 0); E15 (done, failed, read correctly); H100 (references exist on the L40)",
+    "a second random direction, batch order, label draw or adversary start; a longer adversary",
+    "a start matched to a trained state's size and damage together; lowercase-row form of N1 and N2 (would settle E37 A1 arm 3)",
+    "the cosine of the null student with the real one, and C3's squared-offset form of the return fraction ($0 later from the saved states); fixed self-labels; component path on Pile rows"
+  ],
+  "blind_to_all": "one task, one batch order, one adversary start, 67M, 20-step adversary (plan)",
+  "filed": "2026-11-02",
+  "config": {
+    "batch_a": 32,
+    "batch_b": 8,
+    "c2_steps": 100,
+    "c3_gap_max": 0.1,
+    "c3_p_tol": 0.05,
+    "first_gap_max": 0.5,
+    "p_min": 0.9,
+    "pile_pgd_steps": 20,
+    "pile_rows": 256,
+    "pile_seeds": [
+      0,
+      1,
+      2
+    ],
+    "pile_start": 32768,
+    "pile_train_rows": 8192,
+    "steps": [
+      100,
+      1000
+    ],
+    "student_lr": 1e-05
+  },
+  "amend8": {
+    "floor": 0.2088,
+    "floor_tol": 0.1,
+    "t_loss1": [
+      5.23,
+      5.43
+    ],
+    "t_p": [
+      0.9946,
+      1
+    ],
+    "t_size": [
+      0.0301,
+      0.0341
+    ],
+    "real_kl1": [
+      5.24,
+      5.44
+    ],
+    "real_p": [
+      0.9868,
+      1
+    ],
+    "real_size": [
+      0.0154,
+      0.0214
+    ],
+    "warm_kl": [
+      0,
+      0.005
+    ],
+    "n1_kl1": [
+      0.0005,
+      0.5
+    ],
+    "n2_kl1": [
+      1,
+      20
+    ],
+    "null_kl1": [
+      1e-06,
+      1
+    ],
+    "t1_tol": 0.05,
+    "s1_tol": 0.3,
+    "ce_tol": 0.5,
+    "move_seed": 0,
+    "move_tol": 0.01,
+    "gap_line": 0.002,
+    "gap_share": 0.05,
+    "return_line": 0.76,
+    "about": 0.75,
+    "under": 0.5,
+    "recipe_share": 0.5,
+    "rows_train": [
+      "train",
+      0,
+      4096
+    ],
+    "n_train": 2400,
+    "rows_held": [
+      "val",
+      0,
+      256
+    ],
+    "n_held": 64,
+    "label_batch": 8,
+    "label": {
+      "adam": {
+        "lr": 1e-05,
+        "true_steps": 1000,
+        "gain": 0.1343,
+        "scored": 1000
+      },
+      "sgd": {
+        "lr": 0.03,
+        "true_steps": 100,
+        "gain": 0.1253,
+        "scored": 100
+      }
+    },
+    "label_saves": [
+      100,
+      1000
+    ],
+    "label_ce1": [
+      3.48,
+      3.58
+    ],
+    "gain_tol": 0.02,
+    "n5_task": "rand32",
+    "n5_kl1": [
+      0.00147,
+      0.00179
+    ]
+  }
+}
