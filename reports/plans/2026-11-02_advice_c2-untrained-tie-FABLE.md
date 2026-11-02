@@ -1,5 +1,7 @@
 # Advice (Fable, 2026-11-02): C2's "tie" on an untrained decomposition
 
+**Lead's note, 2026-11-02, after job 48441.** The token test below (section 1) came out against this advice's expectation: the numerator follows the state, not the token (N states -0.87, -1.07 at the P token; P states -0.19, -0.01 at the N token). Section 3's recommendation stands on the tie alone.
+
 Advice, not a decision. For the lead; plan `reports/plans/2026-10-31_plan_e55-c2-vpd.md`, filing
 `experiments/pcfg_anchors/results/predictions_c2.json`, numbers `~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json`
 (job 48413, the rehearsal's decomposition at step 400 of 400K).
