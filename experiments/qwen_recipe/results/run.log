@@ -302,3 +302,29 @@
 [   847.3s] [checks_k10_gauss] {"base": {"K0": 268.6221537648114, "K00": 3937.4023838301528, "K01": 504.4493205039625}, "X": {"stored_error": 5.136641423033034e-06, "split_s": 349.11232566833496, "file_bytes": 2818592344}, "file": {"K10": 3863.234841560962, "K11": 483.26043413404085}, "true": {"K00": 3937.4023838301528, "K10": 3860.2832283393054, "K11": 485.3490976379574, "per_row": {"K10": [313.21071836658007, 274.5066721663452, 296.22388710028406, 186.74040597212436, 294.0414791137457, 143.71626462410458, 183.2750471096386, 225.04787886809447, 194.07512708841534, 211.33403832228774, 259.1118093101657, 325.1219106296636, 227.47306263272858, 290.5588319239028, 235.53211495524027, 200.31398015598435], "K11": [35.410643000089976, 27.755095373244842, 34.769636412604456, 29.935348018976597, 32.575538654471785, 18.08187731346205, 23.594009563585544, 40.169969575506954, 20.447879856678355, 25.264110996793445, 27.817293900467952, 35.27023250660688, 31.948873371110125, 34.855764003258884, 34.389458595260194, 33.06336649583939]}}, "share": {"file": {"regating": 0.9938656584823371, "direct": 0.021472059732726288, "K11_minus_K0": 214.63828036922945, "den_mean": 0.8432963744375274, "status": "scored"}, "true": {"regating": 0.9944669965141026, "direct": 0.02234008258195632, "K11_minus_K0": 216.726943873146, "den_mean": 0.8427864468242664, "status": "scored"}}}
 [   847.4s] [checks_k10] {"direct_file": {"gold_s0": 0.09117852630546117, "e40": 0.06355284370544945, "a2long_s0": 0.014276102795573184, "gauss": 0.021472059732726288}, "direct_true": {"gold_s0": 0.08898303848988118, "e40": 0.062067835172914136, "a2long_s0": 0.014181809648934231, "gauss": 0.02234008258195632}, "gap": {"gold_s0": -0.0021954878155799884, "e40": -0.0014850085325353105, "a2long_s0": -9.429314663895322e-05, "gauss": 0.0008680228492300331}, "within_tol": true, "same_order": true, "status": "stands", "reads": "the mask path does not change the reading; E57's direct shares stand"}
 [   847.4s] [k10 done] peak GPU 42.43 GiB, host 85.2 GB
+[    3.8s] [T arm0] start; NVIDIA L40
+[   39.1s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_1.safetensors (2.82 GB)
+[   39.2s] [T arm0] {"step": 1, "lr": 0.0, "loss": 0.05467607810078789, "grad_norm": 3.4840939044952393, "dw_norm": 0.0, "kl": {"maths": 0.0}, "rate_sum": 0.0, "peak_gib": 29.454229831695557}
+[   39.2s] [check train_arm0] ok {"at": "1", "key": "grad_norm", "value": 3.4840939044952393, "band": [2.72, 4.54], "severity": "note", "holds": true}
+[   39.2s] [check train_arm0] ok {"at": "1", "key": "loss", "value": 0.05467607810078789, "band": [0.054, 0.05621], "severity": "stop", "holds": true}
+[   39.2s] [check train_arm0] ok {"at": "1", "key": "lr", "value": 0.0, "band": [0, 0], "severity": "stop", "holds": true}
+[   39.2s] [check train_arm0] ok {"at": "1", "key": "dw_norm", "value": 0.0, "band": [0, 0], "severity": "stop", "holds": true}
+[   52.9s] [T arm0] step 1 held-out 0.056584 (fp32)
+[   82.9s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_2.safetensors (2.82 GB)
+[   82.9s] [T arm0] {"step": 2, "lr": 1.0000000000000002e-06, "loss": 0.05396568704285719, "grad_norm": 3.0761711597442627, "dw_norm": 0.028463305000472446, "kl": {"maths": 0.005140708366743188}, "rate_sum": 1.0000000000000002e-06, "peak_gib": 34.3717679977417}
+[   82.9s] [check train_arm0] MISSED {"at": "2", "key": "peak_gib", "value": 34.3717679977417, "band": [null, 33.5], "severity": "note", "holds": false}
+[   82.9s] [check train_arm0] ok {"at": "2", "key": "loss", "value": 0.05396568704285719, "band": [0.0533, 0.05547], "severity": "stop", "holds": true}
+[   82.9s] [check train_arm0] ok {"at": "2", "key": "dw_norm", "value": 0.028463305000472446, "band": [0.02284, 0.03427], "severity": "stop", "holds": true}
+[   82.9s] [check train_arm0] ok {"at": "2", "key": "peak_gib", "value": 34.3717679977417, "band": [null, 40], "severity": "stop", "holds": true}
+[   97.6s] [T arm0] step 2 held-out 0.062354 (fp32)
+[  127.2s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_3.safetensors (2.82 GB)
+[  127.2s] [T arm0] {"step": 3, "lr": 2.0000000000000003e-06, "loss": 0.05914051632866513, "grad_norm": 8.835888862609863, "dw_norm": 0.06642702313774117, "kl": {"maths": 0.011898500149516756}, "rate_sum": 3.0000000000000005e-06, "peak_gib": 34.3717679977417}
+[  127.2s] [check train_arm0] MISSED {"at": "3", "key": "loss", "value": 0.05914051632866513, "band": [0.06, 0.075], "severity": "note", "holds": false}
+[  142.0s] [T arm0] step 3 held-out 0.061541 (fp32)
+[  171.3s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_4.safetensors (2.82 GB)
+[  171.3s] [T arm0] {"step": 4, "lr": 3e-06, "loss": 0.05807388832931776, "grad_norm": 5.492667198181152, "dw_norm": 0.10836071627764876, "kl": {"maths": 0.013852617938112344}, "rate_sum": 6e-06, "peak_gib": 34.3717679977417}
+[  171.3s] [check train_arm0] MISSED {"at": "4", "key": "loss", "value": 0.05807388832931776, "band": [0.12, null], "severity": "note", "holds": false}
+[  171.3s] [check train_arm0] ok {"at": "4", "key": "grad_norm", "value": 5.492667198181152, "band": [5, null], "severity": "note", "holds": true}
+[  171.3s] [check train_arm0] ok {"at": "4", "key": "held_minus_loss", "value": 0.003466680822393202, "band": [-0.05, 0.05], "severity": "note", "holds": true}
+[  171.4s] [check train_arm0] MISSED {"at": "4", "key": "loss", "value": 0.05807388832931776, "band": [0.08, null], "severity": "stop", "holds": false}
+[  171.4s] STOP: train_arm0 4 loss {"at": "4", "key": "loss", "value": 0.05807388832931776, "band": [0.08, null], "severity": "stop", "holds": false}

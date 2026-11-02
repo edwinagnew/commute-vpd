@@ -155,7 +155,8 @@ def stage_T(lab: Lab, name: str, t_chunk: int | None) -> None:
         sys.exit(f"{file} is done")
     if name != "arm0" and not read("train_W").get("done"):
         sys.exit("Stage W must finish (train_W.json done) before any arm after arm0")
-    F = lab.pred["first_minutes"][name]
+    # arm0 reads the 2026-11-02 amendment's stops (its step-4 loss stop was mis-specified); the other arms read as filed
+    F = lab.pred["amendment_2026-11-02"]["arm0_first_minutes"] if name == "arm0" else lab.pred["first_minutes"][name]
     m, maths = lab.fp32(), lab.maths()[: CFG.track_rows]
     stream, per, _, data = lab.arm_data(R.arm, 0)
     if data != lab.pred["data"][R.arm]:
@@ -175,7 +176,9 @@ def stage_T(lab: Lab, name: str, t_chunk: int | None) -> None:
         rec.pop("norms")
         rec.pop("crossed", None)  # the grid is empty: `train` saves only at `keep`
         rec |= {"rate_sum": last["rate_sum"] + rec["lr"], "peak_gib": torch.cuda.max_memory_allocated() / GIB}
-        values = rec | ({"held_minus_loss": last["held"] - rec["loss"]} if "held" in last else {})
+        # last["held"] is state t-1 and this step's loss reads state t-1
+        gap = last["held"] - rec["loss"] if "held" in last else None
+        values = rec | ({"held_minus_loss": gap, "held_gap": abs(gap)} if gap is not None else {})
         out["steps"].append(rec)
         write(file, out)
         lab.log(f"[T {name}] {json.dumps(rec)}")
@@ -186,6 +189,7 @@ def stage_T(lab: Lab, name: str, t_chunk: int | None) -> None:
             rec["held"] = next(iter(task(None).values()))
             write(file, out)
             lab.log(f"[T {name}] step {t} held-out {rec['held']:.6f} (fp32)")
+            check(lab, out, file, F, f"{t}+held", {"held": rec["held"]})
 
     t0 = time.time()
     t = train(m, lab.W0, lambda t: stream[(t - 1) * per : t * per], r, {"maths": maths}, reads, {"maths": ()}, set(R.saves),
