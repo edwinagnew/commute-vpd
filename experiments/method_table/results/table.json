@@ -1,0 +1,5394 @@
+{
+ "question": "Does VPD tell reuse from new better than cheaper methods do, judged against a truth it did not define?",
+ "label_rule": "decisions.md 2026-11-02: elicitation is mechanistic; the causal check is the label, the held-out reading is evidence beside it. No counting-set label changes.",
+ "counting_note": "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+ "assumption_words": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check.",
+ "derived_head_to_head": {
+  "rows": [],
+  "rule": "derived: truth not by assumption, VPD's r separates with its control and a cheap method separates"
+ },
+ "markings_changed": [
+  {
+   "row": "e46_copy_random",
+   "source_said": "built to reuse / construction labels (E60); 'a mechanism claim only, never behaviourally verified' (E52 amendment)",
+   "table": "only by assumption"
+  },
+  {
+   "row": "e53_lowercase_cipher",
+   "source_said": "built to reuse / construction labels (E60)",
+   "table": "only by assumption"
+  },
+  {
+   "row": "e54_matched",
+   "source_said": "construction labels (E60); 'built to elicit, no causal label' (E64)",
+   "table": "only by assumption"
+  },
+  {
+   "row": "open_pair_c3",
+   "source_said": "'old by construction' and 'new by construction' (C3, its ladder)",
+   "table": "only by assumption"
+  },
+  {
+   "row": "open_pair_ladder",
+   "source_said": "'old by construction' and 'new by construction'",
+   "table": "only by assumption"
+  }
+ ],
+ "methods": {
+  "r": {
+   "name": "r (VPD)",
+   "definition": "Share of the fine-tune's log-odds gain that comes from changed causal importances with the original subcomponents' weights held fixed."
+  },
+  "ratio": {
+   "name": "Stand-in ratio (VPD)",
+   "definition": "The gain reached when the original causal importances stand in for the original weights, over the whole gain."
+  },
+  "steering": {
+   "name": "Steering",
+   "definition": "One mean residual shift per block, added to the original model; share of the gain it reaches."
+  },
+  "neuron_patch": {
+   "name": "Neuron patching",
+   "definition": "The top neurons by activation shift take the fine-tuned activations; share of the gain, and how many neurons reach half."
+  },
+  "prompting": {
+   "name": "Prompting",
+   "definition": "The original model shown demonstrations of the map in context; share of the gain reached."
+  },
+  "pruning": {
+   "name": "Pruning revival",
+   "definition": "Jain et al.'s Algorithm 3: remove the units that matter most to the fine-tuned behaviour; share of the old behaviour that returns."
+  },
+  "reverse": {
+   "name": "Reverse fine-tuning",
+   "definition": "Fine-tune back toward the old behaviour; how fast it returns."
+  },
+  "readout_64": {
+   "name": "Readout, 64 values",
+   "definition": "A linear readout over the pair's values, trained on Pile text; share of the gain lost when its direction is removed."
+  },
+  "readout_full": {
+   "name": "Readout, whole vocabulary",
+   "definition": "The same with a linear readout over every token."
+  },
+  "sparsity": {
+   "name": "Neuron sparsity",
+   "definition": "Five counts of how few neurons the update or its activation shift sits on."
+  },
+  "labeller": {
+   "name": "Recipe or size",
+   "definition": "A labeller that reads only the learning rate, the steps or the size of the weight change."
+  },
+  "probe": {
+   "name": "Answer probe",
+   "definition": "A probe on the original model's residual that reads only which answers the state gives."
+  }
+ },
+ "verdicts": [
+  "separates",
+  "fails",
+  "control failed",
+  "unreadable",
+  "not run"
+ ],
+ "rows": [
+  {
+   "id": "counting_c1b",
+   "name": "Counting: task P vs task N",
+   "model": "3M minGPT",
+   "states": "Task P answers one more than count a; task N answers count b. 21 scored of 35, seeds 2-4, lr 1e-4 and 1e-5, 1K and 10K steps",
+   "truth": {
+    "how": "by construction",
+    "source_said": "by construction: the fine-tuning task, plus the behaviour and patch checks each state passed",
+    "changed": false,
+    "detail": "Disagreements between task and checks: []",
+    "pointer": "experiments/pcfg_anchors/results/c1b.json .train_stops.all_disagreements"
+   },
+   "evidence_beside": "No held-out reading.",
+   "cells": {
+    "r": {
+     "verdict": "control failed",
+     "reading": {
+      "text": "21 of 21 at 400 steps; reuse -0.01 to 0.01 vs new -0.06 to -0.04",
+      "reuse": [
+       -6.197155851698892e-05,
+       -0.006387892126956127,
+       0.0011389983110844822,
+       -0.0014408392740790212,
+       -0.00032289923107682274,
+       0.005440062917829506,
+       0.000999944233030062,
+       -0.0025023030887323145,
+       -0.000873961470578528,
+       -0.0030803563390530654,
+       0.000779340135100438,
+       -0.0009572980102747462
+      ],
+      "new": [
+       -0.052014924634365876,
+       -0.04347511109654039,
+       -0.05021258225190632,
+       -0.058482938445571585,
+       -0.03678635200874177,
+       -0.05125356697824493,
+       -0.05349740897049178,
+       -0.044750107586148405,
+       -0.040829230367720945
+      ]
+     },
+     "reference": "Cut-off -0.018. On the 67M, the elicit and cipher fine-tunes read 0.77 and 0.24.",
+     "positive_control": {
+      "held": false,
+      "what": "Identity-prompt fine-tunes read 0.07 against a bar of 0.5: positive_control 'none'.",
+      "value": 0.07373382311114292
+     },
+     "filed_verdict": "outcome 'tie', positive_control 'none'",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "A decomposition trained for 400 of its 400,000 steps; reported only, never scored. The long run was not done."
+     ],
+     "pointers": [
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/1000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/1000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/1000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/1000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/1000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/1000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/1000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-5_s2/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/1000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-5_s3/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/1000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-5_s4/10000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".controls[\"amend5/ID_s0/2000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".controls[\"amend5/ID_s1/2000\"].r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".constants.ID_min_r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".cutoffs.cutoffs.r.c"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".positive_control.r"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".predictions.r.outcome"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "reports/decisions/2026-11-02_decision_e55-c2-untrained-tie.md",
+       "text": "A decomposition trained for 400 of its 400,000 steps; reported only, never scored. The long run was not done.",
+       "kind": "copied from a report, not in any JSON"
+      },
+      {
+       "file": "reports/decisions/2026-11-02_decision_e55-c2-untrained-tie.md",
+       "text": "On the 67M, the elicit and cipher fine-tunes read 0.77 and 0.24.",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "48413; 48441 tests the cause on four states"
+    },
+    "ratio": {
+     "verdict": "control failed",
+     "reading": {
+      "text": "21 of 21 at 400 steps; reuse -0.00 to 0.01 vs new -0.06 to -0.03",
+      "reuse": [
+       9.24844928783302e-05,
+       -0.004473189204155476,
+       0.001114633835382967,
+       -0.0009406938064024017,
+       -0.00014654584676525529,
+       0.008779590051601595,
+       0.0010203366671783646,
+       -0.001860820243805049,
+       -0.0005300897678478859,
+       0.0012028697144973685,
+       0.0008452284072207232,
+       -0.0003190445144889087
+      ],
+      "new": [
+       -0.05340068734468806,
+       -0.03879943593666719,
+       -0.05221318420006662,
+       -0.059375433616189466,
+       -0.03405777171452509,
+       -0.05278554200055508,
+       -0.05490621674619608,
+       -0.039168040663185626,
+       -0.041533100393663334
+      ]
+     },
+     "reference": "Cut-off -0.013.",
+     "positive_control": {
+      "held": false,
+      "what": "Identity-prompt fine-tunes read 0.07 against a bar of 0.5.",
+      "value": null
+     },
+     "filed_verdict": "outcome 'tie', positive_control 'none'",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "A decomposition trained for 400 of its 400,000 steps; reported only, never scored. The long run was not done."
+     ],
+     "pointers": [
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/1000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/1000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/1000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/1000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/1000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/1000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/1000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-5_s2/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/1000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-5_s3/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/1000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scored[\"c1b/N_1e-5_s4/10000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".controls[\"amend5/ID_s0/2000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".controls[\"amend5/ID_s1/2000\"].ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".cutoffs.cutoffs.ratio.c"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".constants.ID_min_ratio"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".predictions.ratio.outcome"
+      }
+     ],
+     "from_reports": [],
+     "job": "48413"
+    },
+    "steering": {
+     "verdict": "separates",
+     "reading": {
+      "text": "21 of 21; share reuse 0.83 to 0.96 vs new 0.47 to 0.66",
+      "reuse": [
+       0.930216124617386,
+       0.8474805034935688,
+       0.9623410100813088,
+       0.8537870062336481,
+       0.8443973927475792,
+       0.8302226624462349,
+       0.9559719552767125,
+       0.8465561037955925,
+       0.9516162303297333,
+       0.8402618370240162,
+       0.962269381113458,
+       0.8449399901580844
+      ],
+      "new": [
+       0.6501448020769458,
+       0.4719018474250044,
+       0.5861754108912326,
+       0.6560044956397139,
+       0.48478434196156345,
+       0.5878181328269231,
+       0.6405502251033547,
+       0.4650162934242494,
+       0.5834098414813469
+      ]
+     },
+     "reference": "Cut-off 0.742 set on held-out seeds; binomial bar 15; best recipe labeller 15.",
+     "positive_control": {
+      "held": true,
+      "what": "True: .controls.steer_positive_control",
+      "value": 0.936530589581032
+     },
+     "filed_verdict": "passes: True",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s2/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s3/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s4/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.steer.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.steer.all.n"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.steer.all.bar"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".controls.ID[\"amend5/ID_s0/2000\"].steer.S"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b_cutoffs.json",
+       "jq": ".cutoffs.steer.c"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.steer.all.nuisance_agree.update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".controls.steer_positive_control"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.steer.all.passes"
+      }
+     ],
+     "from_reports": [],
+     "job": "46330-46499"
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "separates",
+     "reading": {
+      "text": "21 of 21; gain share reuse 0.60 to 0.92 vs new 0.06 to 0.08",
+      "reuse": [
+       0.7125,
+       0.60225,
+       0.746725,
+       0.846,
+       0.9189875,
+       0.62175,
+       0.762475,
+       0.8635,
+       0.92025,
+       0.80225,
+       0.767,
+       0.87525
+      ],
+      "new": [
+       0.06832500000000002,
+       0.07700000000000001,
+       0.07813749999999997,
+       0.05755000000000002,
+       0.07526250000000001,
+       0.07769999999999999,
+       0.0803625,
+       0.07600000000000001,
+       0.07958749999999998
+      ]
+     },
+     "reference": "Cut-off 0.222 set on held-out seeds; binomial bar 15; best recipe labeller 15.",
+     "positive_control": {
+      "held": true,
+      "what": "True: .controls.prune_control_pass",
+      "value": null
+     },
+     "filed_verdict": "passes: True",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s2/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s3/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s4/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.prune.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.prune.all.n"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.prune.all.bar"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b_cutoffs.json",
+       "jq": ".cutoffs.prune.c"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.prune.all.nuisance_agree.update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".controls.prune_control_pass"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.prune.all.passes"
+      }
+     ],
+     "from_reports": [],
+     "job": "46330-46499"
+    },
+    "reverse": {
+     "verdict": "separates",
+     "reading": {
+      "text": "21 of 21; steps over the scratch model's reuse 0.11 to 0.13 vs new 0.41 to 0.65",
+      "reuse": [
+       0.10869565217391304,
+       0.13043478260869565,
+       0.10869565217391304,
+       0.10869565217391304,
+       0.10869565217391304,
+       0.13043478260869565,
+       0.10869565217391304,
+       0.10869565217391304,
+       0.10869565217391304,
+       0.13043478260869565,
+       0.10869565217391304,
+       0.10869565217391304
+      ],
+      "new": [
+       0.45652173913043476,
+       0.6304347826086957,
+       0.43478260869565216,
+       0.41304347826086957,
+       0.6304347826086957,
+       0.43478260869565216,
+       0.41304347826086957,
+       0.6521739130434783,
+       0.41304347826086957
+      ]
+     },
+     "reference": "Cut-off 0.272 set on held-out seeds; binomial bar 15; best recipe labeller 15.",
+     "positive_control": {
+      "held": true,
+      "what": "target: .controls.scratch.end",
+      "value": null
+     },
+     "filed_verdict": "passes: True",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/1000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/1000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/1000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/1000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/1000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/1000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/1000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s2/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/1000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s3/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/1000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s4/10000\"].x.reverse"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.reverse.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.reverse.all.n"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.reverse.all.bar"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b_cutoffs.json",
+       "jq": ".cutoffs.reverse.c"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.reverse.all.nuisance_agree.update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".controls.scratch.end"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.reverse.all.passes"
+      }
+     ],
+     "from_reports": [],
+     "job": "46330-46499"
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "separates",
+     "reading": {
+      "text": "21 of 21 by size within a recipe cell; 15 of 21 with one cut-off",
+      "reuse": [
+       0.02751709115594803,
+       0.11510124104791103,
+       0.004426585754160834,
+       0.03980517659199546,
+       0.02776278410002808,
+       0.1132827392723772,
+       0.004299628049940611,
+       0.04039170567997419,
+       0.02810052209677407,
+       0.11368970640949753,
+       0.004403787562261766,
+       0.039750968527481674
+      ],
+      "new": [
+       0.03940560468472302,
+       0.1359659238954488,
+       0.054257155239269377,
+       0.03890543066529817,
+       0.14086146488297238,
+       0.053873714013255095,
+       0.0388059697039592,
+       0.13308027897109884,
+       0.053977956455565836
+      ]
+     },
+     "reference": "Binomial bar 15. Learning rate and steps alone read 12 of 21.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: it reads the recipe's result.",
+      "value": null
+     },
+     "filed_verdict": "nuisance labeller: update_size 15",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "The within-cell score is post hoc on this set, with two calibration states per class."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".train_stops.recipe_ceiling_full.update_size.agree"
+      },
+      {
+       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "jq": ".scores.within_cell_update_size.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-4_s2/1000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-4_s2/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-5_s2/1000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-5_s2/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-4_s3/1000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-4_s3/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-5_s3/1000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-5_s3/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-4_s4/1000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-4_s4/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-5_s4/1000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/P_1e-5_s4/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/N_1e-4_s2/1000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/N_1e-4_s2/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/N_1e-5_s2/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/N_1e-4_s3/1000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/N_1e-4_s3/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/N_1e-5_s3/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/N_1e-4_s4/1000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/N_1e-4_s4/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".nuisance[\"c1b/N_1e-5_s4/10000\"].update_size"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.prune.all.bar"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".train_stops.recipe_ceiling_full.lr.agree"
+      }
+     ],
+     "from_reports": [],
+     "job": "46330-46499"
+    },
+    "probe": {
+     "verdict": "separates",
+     "reading": {
+      "text": "21 of 21; reuse 0.67 vs new 0.28",
+      "reuse": [
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383,
+       0.6684999465942383
+      ],
+      "new": [
+       0.27699998021125793,
+       0.2785000205039978,
+       0.2785000205039978,
+       0.27799999713897705,
+       0.2785000205039978,
+       0.2785000205039978,
+       0.27699998021125793,
+       0.2785000205039978,
+       0.2785000205039978
+      ]
+     },
+     "reference": "Cut-off 0.473.",
+     "positive_control": {
+      "held": true,
+      "what": "Reads the answers only: the task-identity reference.",
+      "value": null
+     },
+     "filed_verdict": "task-identity reference (not scored; not a pass)",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/1000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s2/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/1000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s2/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/1000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s3/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/1000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s3/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/1000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-4_s4/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/1000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/P_1e-5_s4/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/1000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s2/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s2/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/1000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s3/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s3/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/1000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-4_s4/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scored[\"c1b/N_1e-5_s4/10000\"].x.probe"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.probe.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b_cutoffs.json",
+       "jq": ".cutoffs.probe.c"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".scores.probe.role"
+      }
+     ],
+     "from_reports": [],
+     "job": "46330-46499"
+    }
+   }
+  },
+  {
+   "id": "counting_c1",
+   "name": "Counting: through count a vs not",
+   "model": "3M minGPT",
+   "states": "26 scored, 15 reuses and 11 new, from Stage A and Amendment 5",
+   "truth": {
+    "how": "by causal check",
+    "source_said": "Two causal checks from Stage A label each state",
+    "changed": false,
+    "detail": "Behaviour share and interchange patch.",
+    "pointer": "experiments/pcfg_anchors/results/c1.json .truth.scored; reports/analyses/2026-10-30_analysis_e55-c1.md"
+   },
+   "evidence_beside": "No held-out reading.",
+   "cells": {
+    "r": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "ratio": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "steering": {
+     "verdict": "fails",
+     "reading": {
+      "text": "21 of 27; reuse 0.84 to 0.98 vs new 0.37 to 0.67",
+      "reuse": [
+       0.8360684693197219,
+       0.9067065511857535,
+       0.9198766412912253,
+       0.978671593760721,
+       0.9768787199039067,
+       0.9827070452085586,
+       0.9764880238367926,
+       0.9377266356042168,
+       0.972651796973413,
+       0.9835804892700859,
+       0.9770075639190644,
+       0.9825993816248245,
+       0.874677425763472,
+       0.9178246788093777,
+       0.9016885832624661
+      ],
+      "new": [
+       0.6396421604119822,
+       0.4577635329134506,
+       0.6686090473849651,
+       0.48382945900254004,
+       0.5854717168263793,
+       0.422188972774239,
+       0.5604707912441671,
+       0.3688705110704866,
+       0.5796815093749909,
+       0.4726402961008069,
+       0.46029192428686244
+      ]
+     },
+     "reference": "Binomial bar 19; slow labeller 20, so 22 needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No steering control in this stage's file.",
+      "value": null
+     },
+     "filed_verdict": "passes: False; per run 16 of 18, passes: True",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "C1's labels follow its causal checks and are tied to the recipe: every reuses state was read at 1K or 2K steps.",
+      "Cut-offs were guessed here; with C1b's cut-offs, described only, pruning and steering sort all 26 and reverse 10 of 12."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.steer.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.steer.all.n"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.steer.all.bar"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.steer.all.nuisance_agree.slow"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/M3/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/W1/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/W1s1/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s0/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s1/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s2/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s3/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WNf_s0/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s0/2000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s1/2000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s2/2000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s3/2000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5b/WNf_s1/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5b/WNf_s2/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5b/WNf_s3/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N1/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N1/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N1s1/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N1s1/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N2/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N2/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N3/1000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N3/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/M/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/M2/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/M3/10000\"].x.steer"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.steer.all.passes"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.steer.per_run.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.steer.per_run.n"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.steer.per_run.passes"
+      }
+     ],
+     "from_reports": [],
+     "job": "46105, 46106, 46107, 46121"
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "fails",
+     "reading": {
+      "text": "20 of 26; reuse 0.42 to 0.75 vs new -0.11 to 0.08",
+      "reuse": [
+       0.5632625,
+       0.6977125000000001,
+       0.7481375,
+       0.6538875,
+       0.6768,
+       0.7053875000000001,
+       0.6813875,
+       0.4246875,
+       0.5465500000000001,
+       0.5397,
+       0.5636374999999999,
+       0.5299625,
+       0.42546249999999997,
+       0.50775,
+       0.42128750000000004
+      ],
+      "new": [
+       0.07366250000000005,
+       0.07650000000000001,
+       0.07557500000000003,
+       0.08200000000000002,
+       0.04818750000000002,
+       0.0012500000000000289,
+       -0.015262499999999957,
+       2.7755575615628914e-17,
+       0.07513749999999997,
+       -0.09374999999999997,
+       -0.10574999999999997
+      ]
+     },
+     "reference": "Binomial bar 18; slow labeller 19, so 21 needed.",
+     "positive_control": {
+      "held": true,
+      "what": "Importance pruning on the base model, near-vacuous by the size of its drop.",
+      "value": null
+     },
+     "filed_verdict": "passes: False; per run 14 of 17, passes: True",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "C1's labels follow its causal checks and are tied to the recipe: every reuses state was read at 1K or 2K steps.",
+      "Cut-offs were guessed here; with C1b's cut-offs, described only, pruning and steering sort all 26 and reverse 10 of 12."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.prune.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.prune.all.n"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.prune.all.bar"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.prune.all.nuisance_agree.slow"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/M3/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/W1/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/W1s1/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s0/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s1/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s2/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s3/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WNf_s0/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s0/2000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s1/2000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s2/2000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5/WN_s3/2000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5b/WNf_s1/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5b/WNf_s2/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"amend5b/WNf_s3/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N1/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N1/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N1s1/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N1s1/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N2/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N2/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N3/1000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/N3/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/M/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/M2/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1b.json",
+       "jq": ".c1_described.states[\"a2/M3/10000\"].x.prune"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".controls.prune_control_pass"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.prune.all.passes"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.prune.per_run.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.prune.per_run.n"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.prune.per_run.passes"
+      }
+     ],
+     "from_reports": [],
+     "job": "46105, 46106, 46107, 46121"
+    },
+    "reverse": {
+     "verdict": "fails",
+     "reading": {
+      "text": "17 of 26",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Binomial bar 18; slow labeller 19, so 21 needed.",
+     "positive_control": {
+      "held": true,
+      "what": "The scratch model reached the target at 1e-5.",
+      "value": null
+     },
+     "filed_verdict": "passes: False; per run 12 of 17, passes: False",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "C1's labels follow its causal checks and are tied to the recipe: every reuses state was read at 1K or 2K steps.",
+      "Cut-offs were guessed here; with C1b's cut-offs, described only, pruning and steering sort all 26 and reverse 10 of 12."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.reverse.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.reverse.all.n"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.reverse.all.bar"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.reverse.all.nuisance_agree.slow"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".controls.scratch[\"1e-05\"].end"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.reverse.all.passes"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.reverse.per_run.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.reverse.per_run.n"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.reverse.per_run.passes"
+      }
+     ],
+     "from_reports": [],
+     "job": "46105, 46106, 46107, 46121"
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "fails",
+     "reading": {
+      "text": "19 of 26 by learning rate; 18 of 26 by steps",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Binomial bar 18.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: it reads the recipe.",
+      "value": null
+     },
+     "filed_verdict": "passes: False",
+     "derived": null,
+     "notes": [
+      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "C1's labels follow its causal checks and are tied to the recipe: every reuses state was read at 1K or 2K steps."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.nuisance_slow.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.nuisance_short.all.agree"
+      },
+      {
+       "file": "experiments/pcfg_anchors/results/c1.json",
+       "jq": ".scores.nuisance_slow.all.passes"
+      }
+     ],
+     "from_reports": [],
+     "job": "46105, 46106, 46107, 46121"
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  },
+  {
+   "id": "e62_copy_lookup",
+   "name": "Copy at a new marker vs lookup",
+   "model": "67M",
+   "states": "6, seeds 0-2, step 30",
+   "truth": {
+    "how": "by causal check",
+    "source_said": "share of gain lost with W0's copying head off; verdict as filed 'copy_not_elicitation'",
+    "changed": false,
+    "pointer": "experiments/induction_cue/results/run.json .states.<state>.label, .states.<state>.share, .score.verdict",
+    "detail": "Labels as filed, seeds 0-2: copy old, old, between; lookup new, new, new. Share lost: copy 0.47 to 0.56 against a bar of 0.5, lookup -0.00 to 0.00."
+   },
+   "evidence_beside": "No held-out reading.",
+   "cells": {
+    "r": {
+     "verdict": "unreadable",
+     "reading": {
+      "text": "unscored: copy 1.09 to 1.10 vs lookup 0.38 to 0.42",
+      "reuse": [
+       1.094561204230981,
+       1.090851303139447,
+       1.098954624393048
+      ],
+      "new": [
+       0.41523081235832887,
+       0.38180563766821546,
+       0.41542997264149084
+      ]
+     },
+     "reference": "Zero update gain 0.0.",
+     "positive_control": {
+      "held": null,
+      "what": "Path control pass: True. No known-kind state: the only causal label here is the one that left r unscored.",
+      "value": null
+     },
+     "filed_verdict": "r_scored False; verdict 'copy_not_elicitation'",
+     "derived": null,
+     "notes": [
+      "Three readings of the gap stay live: mechanism, context and update size.",
+      "From U0 the copy map reads 0.92, so the excess over 1 is a low L00."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".score.r_copy"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".score.r_lookup"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".zero_route.gain"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".path_control.pass"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".score.r_scored"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".score.verdict"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "experiments/TRIED.md",
+       "text": "From U0 the copy map reads 0.92, so the excess over 1 is a low L00.",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "48541"
+    },
+    "ratio": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "steering": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "reverse": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 4.57 to 4.62 vs lookup 5.45 to 5.50",
+      "reuse": [
+       4.624696578046103,
+       4.5739084194055915,
+       4.623543469052237
+      ],
+      "new": [
+       5.453445849587989,
+       5.488585705040836,
+       5.495458642888076
+      ]
+     },
+     "reference": "Same recipe cell, same step.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: it reads the recipe's result.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap -0.872, larger range 0.051, minimum 0.2; verdict b_higher.",
+     "notes": [
+      "Same recipe cell, a factor 1.19 apart, with no overlap: the size separates the maps as cleanly as r does."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".states.copy_s0.norm"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".states.copy_s1.norm"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".states.copy_s2.norm"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".states.lookup_s0.norm"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".states.lookup_s1.norm"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".states.lookup_s2.norm"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "reports/reviews/2026-11-02_review_e62-check.md",
+       "text": "Same recipe cell, a factor 1.19 apart, with no overlap: the size separates the maps as cleanly as r does.",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "48541"
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  },
+  {
+   "id": "e46_copy_random",
+   "name": "Copy maps vs random maps",
+   "model": "67M",
+   "states": "8, E12's recipe, two tables each, seeds 0-1",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "built to reuse / construction labels (E60); 'a mechanism claim only, never behaviourally verified' (E52 amendment)",
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+   },
+   "evidence_beside": "No held-out reading.",
+   "cells": {
+    "r": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 0.76 to 0.80 vs random 0.27 to 0.29",
+      "reuse": [
+       0.8024425814544892,
+       0.7612543829145286,
+       0.7924438683878655,
+       0.8037218164473902
+      ],
+      "new": [
+       0.27327685374408744,
+       0.266001933954146,
+       0.2898113174753379,
+       0.2795143060379027
+      ]
+     },
+     "reference": "Zero update reads 0; no filed cut-off (E60: labels none yet).",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. Stage 0 pass: True.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.513, larger range 0.042, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/ident32_s0\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/ident32_s1\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/ident32b_s0\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/ident32b_s1\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/rand32_s0\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/rand32_s1\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/rand32b_s0\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/rand32b_s1\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/stage0.json",
+       "jq": ".pass"
+      }
+     ],
+     "from_reports": [],
+     "job": "46258"
+    },
+    "ratio": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 0.87 to 0.97 vs random 0.36 to 0.41",
+      "reuse": [
+       0.9338119567324442,
+       0.8717506211376271,
+       0.9308228298514728,
+       0.9676853570118664
+      ],
+      "new": [
+       0.3636212417224814,
+       0.35550721302548105,
+       0.414252817365265,
+       0.393506826139831
+      ]
+     },
+     "reference": "Zero update reads 0; no filed cut-off (E60: labels none yet).",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. Stage 0 pass: True.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.544, larger range 0.096, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/ident32_s0\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/ident32_s1\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/ident32b_s0\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/ident32b_s1\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/rand32_s0\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/rand32_s1\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/rand32b_s0\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e46/rand32b_s1\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/stage0.json",
+       "jq": ".pass"
+      }
+     ],
+     "from_reports": [],
+     "job": "46258"
+    },
+    "steering": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 0.72 to 0.80 vs random 0.10 to 0.19",
+      "reuse": [
+       0.7503337909479212,
+       0.803733689186266,
+       0.7937192045869519,
+       0.721995587303421
+      ],
+      "new": [
+       0.15830685499440156,
+       0.18996566377662366,
+       0.10304161785681513,
+       0.10689088468678677
+      ]
+     },
+     "reference": "E51's rule; a learned-nothing fine-tune is the null.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": "P3 pass, gap 0.628",
+     "derived": null,
+     "notes": [
+      "Steering may separate this pair by construction: one input-independent vector against a key-dependent cipher.",
+      "The learned-nothing fine-tune read a gain of -0.0514 against a floor of 0.05, so the filed null check failed narrowly."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b3[\"ident32_s0\"].S"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b3[\"ident32_s1\"].S"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b3[\"ident32b_s0\"].S"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b3[\"ident32b_s1\"].S"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b3[\"rand32_s0\"].S"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b3[\"rand32_s1\"].S"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b3[\"rand32b_s0\"].S"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b3[\"rand32b_s1\"].S"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".score.P3.verdict"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".score.P3.gap"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".code_step10.G"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".code_step10.floor"
+      }
+     ],
+     "from_reports": [],
+     "job": "44095"
+    },
+    "neuron_patch": {
+     "verdict": "fails",
+     "reading": {
+      "text": "half the gain only at all 12288 neurons; full width copy 0.50 to 0.71 vs random 0.76 to 0.97",
+      "reuse": [
+       0.6233061570216537,
+       0.5001126863098662,
+       0.7092901708176399,
+       0.7030397275726333
+      ],
+      "new": [
+       0.7552657810396053,
+       0.7877281156696748,
+       0.9626110917013069,
+       0.9731577559631696
+      ]
+     },
+     "reference": "E51's rule on neurons needed and on the idle share.",
+     "positive_control": {
+      "held": true,
+      "what": "Identity and full residual patches.",
+      "value": null
+     },
+     "filed_verdict": "P1 fails, P2 fails",
+     "derived": null,
+     "notes": [
+      "The full-width share is higher for random: the wrong way."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"ident32_s0\"].shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"ident32_s1\"].shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"ident32b_s0\"].shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"ident32b_s1\"].shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"rand32_s0\"].shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"rand32_s1\"].shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"rand32b_s0\"].shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"rand32b_s1\"].shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"ident32_s0\"].k50"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"ident32_s1\"].k50"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"ident32b_s0\"].k50"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"ident32b_s1\"].k50"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"rand32_s0\"].k50"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"rand32_s1\"].k50"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"rand32b_s0\"].k50"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b2[\"rand32b_s1\"].k50"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".score.P1.verdict"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".score.P2.verdict"
+      }
+     ],
+     "from_reports": [],
+     "job": "44095"
+    },
+    "prompting": {
+     "verdict": "fails",
+     "reading": {
+      "text": "16 demonstrations: copy 0.10 to 0.12 vs random 0.13 to 0.14; 31 beside the query: 0.22 vs 0.18 to 0.19",
+      "reuse": [
+       0.2159043001890258,
+       0.21572423076042943,
+       0.21582074399075402,
+       0.21709358993224123
+      ],
+      "new": [
+       0.1786648606730545,
+       0.18682944136773272,
+       0.18660327752779118,
+       0.18658430062928508
+      ]
+     },
+     "reference": "Share 0 with no demonstrations; bar 0.5 at 31.",
+     "positive_control": {
+      "held": true,
+      "what": "Induction control top-1 0.82 on repeated random text.",
+      "value": null
+     },
+     "filed_verdict": "P4 reversed; amendment fails, band 'mechanism only'",
+     "derived": null,
+     "notes": [
+      "Top-1 is 0 on every window at every n."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b4.shares[\"ident32_s0\"][\"16\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b4.shares[\"ident32_s1\"][\"16\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b4.shares[\"ident32b_s0\"][\"16\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b4.shares[\"ident32b_s1\"][\"16\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b4.shares[\"rand32_s0\"][\"16\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b4.shares[\"rand32_s1\"][\"16\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b4.shares[\"rand32b_s0\"][\"16\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".b4.shares[\"rand32b_s1\"][\"16\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".shares[\"ident32_s0\"][\"31\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".shares[\"ident32_s1\"][\"31\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".shares[\"ident32b_s0\"][\"31\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".shares[\"ident32b_s1\"][\"31\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".shares[\"rand32_s0\"][\"31\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".shares[\"rand32_s1\"][\"31\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".shares[\"rand32b_s0\"][\"31\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".shares[\"rand32b_s1\"][\"31\"]"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".stage0.induction.top1_second"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".score.P4.verdict"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".score.verdict"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/amend1.json",
+       "jq": ".score.band"
+      }
+     ],
+     "from_reports": [],
+     "job": "44095; amendment 45898"
+    },
+    "pruning": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "reverse": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "fails",
+     "reading": {
+      "text": "this test passed by none, of the five numbers; ident32 vs rand32 only",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Each number against a rotated, shuffled, Gaussian or random-order reference inside the test.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. Stage 0 pass: True.",
+      "value": null
+     },
+     "filed_verdict": "none answers yes: write up; an elicit/new gap under T1 only is reported as a progress effect",
+     "derived": null,
+     "notes": [
+      "Low power: All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
+      "A number answers yes only if it passes all four tests; a pass here is on one task pair."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1.T3_B.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1g.T3_B.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W2.T3_B.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.A1.T3_B.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.C1.T3_B.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1g.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W2.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.A1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.C1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/stage0.json",
+       "jq": ".pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.branch"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "reports/analyses/2026-11-02_analysis_e63-neuron-sparsity.md",
+       "text": "All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "48527"
+    },
+    "labeller": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  },
+  {
+   "id": "e53_lowercase_cipher",
+   "name": "Lowercase vs ciphers",
+   "model": "67M",
+   "states": "6, step 300, seeds 0-1",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "built to reuse / construction labels (E60)",
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+   },
+   "evidence_beside": "No held-out reading.",
+   "cells": {
+    "r": {
+     "verdict": "separates",
+     "reading": {
+      "text": "lowercase 0.75 to 0.77 vs ciphers 0.12 to 0.17",
+      "reuse": [
+       0.7518811175785213,
+       0.7700725841766312
+      ],
+      "new": [
+       0.12431340168715405,
+       0.11604955639019224,
+       0.16507082154369648,
+       0.1495352051848889
+      ]
+     },
+     "reference": "Zero update reads 0; no filed cut-off (E60: labels none yet).",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. Stage 0 pass: True.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.622, larger range 0.049, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/lowercase_s0\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/lowercase_s1\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/cipher_s0\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/cipher_s1\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/broad_cipher_s0\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/broad_cipher_s1\"].r.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/stage0.json",
+       "jq": ".pass"
+      }
+     ],
+     "from_reports": [],
+     "job": "46258"
+    },
+    "ratio": {
+     "verdict": "separates",
+     "reading": {
+      "text": "lowercase 0.92 to 0.93 vs ciphers 0.26 to 0.29",
+      "reuse": [
+       0.9185667304916008,
+       0.9293139839815614
+      ],
+      "new": [
+       0.2642785806758838,
+       0.2571108057951004,
+       0.2851656354719151,
+       0.27291392222444616
+      ]
+     },
+     "reference": "Zero update reads 0; no filed cut-off (E60: labels none yet).",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. Stage 0 pass: True.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.654, larger range 0.028, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/lowercase_s0\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/lowercase_s1\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/cipher_s0\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/cipher_s1\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/broad_cipher_s0\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/broad_cipher_s1\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/stage0.json",
+       "jq": ".pass"
+      }
+     ],
+     "from_reports": [],
+     "job": "46258"
+    },
+    "steering": {
+     "verdict": "fails",
+     "reading": {
+      "text": "lowercase 0.30 to 0.32 vs ciphers 0.09 to 0.16",
+      "reuse": [
+       0.3212148008907443,
+       0.30253330147786556
+      ],
+      "new": [
+       0.10485242563168247,
+       0.0906841880543587,
+       0.1593642475447529,
+       0.15467828097752775
+      ]
+     },
+     "reference": "Zero update reads 0; no filed cut-off. Lowercase is under E60's unfiled 0.5.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.184, larger range 0.069, minimum 0.2; verdict none.",
+     "notes": [
+      "E53's fit and scoring halves are neighbouring windows of the same documents, so S may be biased up."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/lowercase_s0\"].S.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/lowercase_s1\"].S.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/cipher_s0\"].S.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/cipher_s1\"].S.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/broad_cipher_s0\"].S.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e53/broad_cipher_s1\"].S.value"
+      }
+     ],
+     "from_reports": [],
+     "job": "46258"
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "reverse": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "fails",
+     "reading": {
+      "text": "this test passed by W2, A1, C1, of the five numbers; lowercase vs broad cipher only",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Each number against a rotated, shuffled, Gaussian or random-order reference inside the test.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. Stage 0 pass: True.",
+      "value": null
+     },
+     "filed_verdict": "none answers yes: write up; an elicit/new gap under T1 only is reported as a progress effect",
+     "derived": null,
+     "notes": [
+      "Low power: All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
+      "A number answers yes only if it passes all four tests; a pass here is on one task pair."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1.T3_C.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1g.T3_C.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W2.T3_C.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.A1.T3_C.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.C1.T3_C.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1g.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W2.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.A1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.C1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/stage0.json",
+       "jq": ".pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.branch"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "reports/analyses/2026-11-02_analysis_e63-neuron-sparsity.md",
+       "text": "All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "48527"
+    },
+    "labeller": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  },
+  {
+   "id": "e54_matched",
+   "name": "Half-known vs cipher, equal size",
+   "model": "67M",
+   "states": "10, 32 keys, seeds 0-4, elicit step 10, cipher step 8-9",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "construction labels (E60); 'built to elicit, no causal label' (E64)",
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+   },
+   "evidence_beside": "No held-out reading on this pair; E58's held-out reading on a 24-key version sits with the rank-1 row.",
+   "cells": {
+    "r": {
+     "verdict": "separates",
+     "reading": {
+      "text": "elicit 0.76 to 0.77 vs cipher 0.21 to 0.27, five seeds",
+      "reuse": [
+       0.7725536396045862,
+       0.7578237100072733,
+       0.767052989191262,
+       0.7618841512323583,
+       0.7590274220496366
+      ],
+      "new": [
+       0.24138288826323226,
+       0.21194771673478274,
+       0.25949295256877297,
+       0.24943886348969224,
+       0.2673976371301727
+      ]
+     },
+     "reference": "E51's rule; zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": "a_higher, gap 0.518, range 0.055",
+     "derived": null,
+     "notes": [
+      "Stage 0 checks that the code reproduces earlier numbers. It is not a positive control of known kind for either reading."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P2.r.a"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P2.r.b"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P2.r.verdict"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P2.r.gap"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P2.r.spread"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "reports/analyses/2026-10-30_analysis_e54-keydependent-elicit.md",
+       "text": "Stage 0 checks that the code reproduces earlier numbers. It is not a positive control of known kind for either reading.",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "45963, 45973, 45974; 46170, 46171"
+    },
+    "ratio": {
+     "verdict": "separates",
+     "reading": {
+      "text": "elicit 0.95 to 0.96 vs cipher 0.29 to 0.34",
+      "reuse": [
+       0.9563912982356004,
+       0.9512061357107054
+      ],
+      "new": [
+       0.3358023216839018,
+       0.28929027987707473
+      ]
+     },
+     "reference": "Zero update reads 0; no filed cut-off (E60: labels none yet).",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. Stage 0 pass: True.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.641, larger range 0.047, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e54/elicit_s0\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e54/elicit_s1\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e54/cipher_s0\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/table.json",
+       "jq": ".runs[\"e54/cipher_s1\"].ratio.value"
+      },
+      {
+       "file": "experiments/regating_truth_table/results/stage0.json",
+       "jq": ".pass"
+      }
+     ],
+     "from_reports": [],
+     "job": "46258"
+    },
+    "steering": {
+     "verdict": "fails",
+     "reading": {
+      "text": "log-odds share elicit 0.25 vs cipher 0.18 to 0.24, five seeds",
+      "reuse": [
+       0.24621843654787454,
+       0.2522130763878456,
+       0.25033239576884586,
+       0.24610787877455909,
+       0.2482429810406914
+      ],
+      "new": [
+       0.21850988090406942,
+       0.17506016573571317,
+       0.23973725409473387,
+       0.22334725862292837,
+       0.21424579726664836
+      ]
+     },
+     "reference": "E51's rule; gap needs at least 0.2.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": "S_lo verdict none; E54's nats S P2 fail, verdict none",
+     "derived": null,
+     "notes": [
+      "In nats the gap is 0.18, under the 0.2 minimum."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P2.S_lo.a"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P2.S_lo.b"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P2.S_lo.verdict"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".score.P2.status"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".score.P2.verdict"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".score.P2.gap"
+      }
+     ],
+     "from_reports": [],
+     "job": "45963, 45973, 45974; 46170, 46171"
+    },
+    "neuron_patch": {
+     "verdict": "fails",
+     "reading": {
+      "text": "top 16 neurons elicit -0.02 to 0.02 vs cipher -0.04 to 0.01; neurons for half the gain 4096 vs 12288",
+      "reuse": [
+       -0.007027222248975374,
+       0.005935858203005422,
+       -0.019248360041990976,
+       0.024595210610287847,
+       0.013664214604628917
+      ],
+      "new": [
+       -0.008873451487074363,
+       -0.036995666201487046,
+       0.007534859747835755,
+       -0.007771645608682195,
+       -0.017289806564998882
+      ]
+     },
+     "reference": "E51's rule on a filed grid; zero means the top neurons carry nothing.",
+     "positive_control": {
+      "held": true,
+      "what": "Identity and full residual patches, full-width rise.",
+      "value": null
+     },
+     "filed_verdict": "N16 none, k50 index none; filed null, status pass",
+     "derived": null,
+     "notes": [
+      "The full-width share separates at matched size (0.94 vs 0.69 on seed 0) and not at the cipher's own step; adopted reading: it follows progress."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P1.N16.a"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P1.N16.b"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.elicit_s0.k50"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.cipher_s0.k50"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P1.N16.verdict"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P1.k50_index.verdict"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P1.status"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.elicit_s0.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.cipher_s0.b2_shares[\"12288\"]"
+      }
+     ],
+     "from_reports": [],
+     "job": "45963, 45973, 45974; 46170, 46171"
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "E54 did not run it: E52's amendment found no working prompt format.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "reverse": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_64": {
+     "verdict": "unreadable",
+     "reading": {
+      "text": "gain lost, elicit -0.04 to -0.03 vs cipher 0.01",
+      "reuse": [
+       -0.031103446932826476,
+       -0.03944999048635155,
+       -0.03033971196498792,
+       -0.0416680818520955,
+       -0.02709174073299068
+      ],
+      "new": [
+       0.011145864164251163,
+       0.008641695245389346,
+       0.013077104764358503,
+       0.013791567433847969,
+       0.010570913013554086
+      ]
+     },
+     "reference": "Random direction at most 0.0032. A gap of +0.2 was predicted.",
+     "positive_control": {
+      "held": false,
+      "what": "Fit bar missed (pass: False); control on the original model held (pass: True).",
+      "value": null
+     },
+     "filed_verdict": "readout fit missed and P1 elicit clause or P2 missed (P1 claim; P2 fail): unreadable; one training run was the cap; tell the user",
+     "derived": null,
+     "notes": [
+      "P1 pass, P2 fail, P3 pass. The gap's sign is reversed.",
+      "A next-token count table with no model nearly matches the holding pattern: provisional, post hoc."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".P2.separation.a"
+      },
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".P2.separation.b"
+      },
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".stage0.fit.pass"
+      },
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".W0_control.elicit_M.pass"
+      },
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".branch"
+      },
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".P1.status"
+      },
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".P2.status"
+      },
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".P3.status"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "experiments/TRIED.md",
+       "text": "Random direction at most 0.0032.",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "48611"
+    },
+    "readout_full": {
+     "verdict": "unreadable",
+     "reading": {
+      "text": "keys held, elicit [21, 17, 17, 13], cipher [0, 0, 0, 0], of 32",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "24 keys needed. W0's own logits through the same rules read elicit 16 in band, possession 17/32, cipher 0 (job 48453).",
+     "positive_control": {
+      "held": false,
+      "what": "Construction check fails: 11 keys in band, 24 needed.",
+      "value": null
+     },
+     "filed_verdict": "P1 fail, closed at its hard cap as unreadable; [stage0 P3] FAIL: the last-block readout does not reproduce the construction; stop and tell the user",
+     "derived": null,
+     "notes": [
+      "Stopped before the do-nothing, the control on the original model and the ablations.",
+      "The model itself misses this bar, so a perfect readout could not have met it."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".possession.elicit.all.possession[0].count"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".possession.elicit.all.possession[1].count"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".possession.elicit.all.possession[2].count"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".possession.elicit.all.possession[3].count"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".possession.cipher.all.possession[0].count"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".possession.cipher.all.possession[1].count"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".possession.cipher.all.possession[2].count"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".possession.cipher.all.possession[3].count"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".P3.elicit_in_band"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".P1.status"
+      },
+      {
+       "file": "experiments/jain_readout/results/run.json",
+       "jq": ".stopped"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "experiments/TRIED.md",
+       "text": "W0's own logits through the same rules read elicit 16 in band, possession 17/32, cipher 0 (job 48453).",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "48412; 48453"
+    },
+    "sparsity": {
+     "verdict": "fails",
+     "reading": {
+      "text": "this test passed by A1, of the five numbers; five seeds at matched size",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Each number against a rotated, shuffled, Gaussian or random-order reference inside the test.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. Stage 0 pass: True.",
+      "value": null
+     },
+     "filed_verdict": "none answers yes: write up; an elicit/new gap under T1 only is reported as a progress effect",
+     "derived": null,
+     "notes": [
+      "Low power: All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
+      "A number answers yes only if it passes all four tests; a pass here is on one task pair."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1.T1.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1g.T1.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W2.T1.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.A1.T1.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.C1.T1.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1g.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W2.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.A1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.C1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/stage0.json",
+       "jq": ".pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.branch"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "reports/analyses/2026-11-02_analysis_e63-neuron-sparsity.md",
+       "text": "All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "48527"
+    },
+    "labeller": {
+     "verdict": "fails",
+     "reading": {
+      "text": "elicit 3.14 to 3.17 vs cipher 3.18 to 3.20",
+      "reuse": [
+       3.144970934944646,
+       3.1726140181087192
+      ],
+      "new": [
+       3.1849005868450133,
+       3.204027265330493
+      ]
+     },
+     "reference": "Same lr; the cipher is read at the step matching the elicit size.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: size is matched by design.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap -0.036, larger range 0.028, minimum 0.2; verdict none.",
+     "notes": [
+      "Size cannot separate this row: it was matched."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".finetunes.elicit_s0.norm"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".finetunes.elicit_s1.norm"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".finetunes.cipher_s0.norm"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".finetunes.cipher_s1.norm"
+      }
+     ],
+     "from_reports": [],
+     "job": "45963, 45973, 45974; 46170, 46171"
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  },
+  {
+   "id": "e54_own",
+   "name": "Half-known vs cipher, own steps",
+   "model": "67M",
+   "states": "10, seeds 0-4, cipher step 30",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "as the row above",
+    "changed": false,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+   },
+   "evidence_beside": "No held-out reading.",
+   "cells": {
+    "r": {
+     "verdict": "separates",
+     "reading": {
+      "text": "elicit 0.76 to 0.77 vs cipher 0.24 to 0.27",
+      "reuse": [
+       0.7725536396045862,
+       0.7578237100072733,
+       0.767052989191262,
+       0.7618841512323583,
+       0.7590274220496366
+      ],
+      "new": [
+       0.2652401392487863,
+       0.24304463624795386,
+       0.2678317644621348,
+       0.24241044518479238,
+       0.24609471229040447
+      ]
+     },
+     "reference": "Zero update reads 0; no filed rule on this comparison.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": "P3: matched and own-step cipher agree within 0.1, status pass",
+     "derived": "E51's rule applied here: gap 0.511, larger range 0.025, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.elicit_s0.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.elicit_s1.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.elicit_s2.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.elicit_s3.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.elicit_s4.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.cipher_own_s0.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.cipher_own_s1.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.cipher_own_s2.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.cipher_own_s3.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.cipher_own_s4.r"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".P3.status"
+      }
+     ],
+     "from_reports": [],
+     "job": "45973, 45974; 46170, 46171"
+    },
+    "ratio": {
+     "verdict": "not run",
+     "reading": {
+      "text": "E60's table holds the matched cipher only.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "steering": {
+     "verdict": "separates",
+     "reading": {
+      "text": "elicit 0.38 to 0.39 vs cipher 0.07 to 0.11, two seeds",
+      "reuse": [
+       0.3795955998181104,
+       0.3937418554478809
+      ],
+      "new": [
+       0.11425894585276908,
+       0.06644027235478916
+      ]
+     },
+     "reference": "E51's rule; gap needs at least 0.2.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": "P3-own a_higher, status pass; 'not a test'",
+     "derived": null,
+     "notes": [
+      "The gap comes from the cipher learned further along its own trajectory, so it is not a test of kind."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_elicit/results/amend1.json",
+       "jq": ".score[\"P3-own\"].a"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/amend1.json",
+       "jq": ".score[\"P3-own\"].b"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/amend1.json",
+       "jq": ".score[\"P3-own\"].verdict"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/amend1.json",
+       "jq": ".score[\"P3-own\"].status"
+      }
+     ],
+     "from_reports": [],
+     "job": "46070"
+    },
+    "neuron_patch": {
+     "verdict": "fails",
+     "reading": {
+      "text": "elicit 0.93 to 0.94 vs cipher 0.95 to 0.97",
+      "reuse": [
+       0.9368484923478125,
+       0.9370623244947295,
+       0.9417174562650964,
+       0.9355139250934603,
+       0.9286792870569914
+      ],
+      "new": [
+       0.9729169667782775,
+       0.9722555267665315,
+       0.95180161072477,
+       0.9576536492754597,
+       0.9530369383741062
+      ]
+     },
+     "reference": "Full-width share of the gain.",
+     "positive_control": {
+      "held": true,
+      "what": "Identity and full residual patches.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap -0.026, larger range 0.021, minimum 0.2; verdict none.",
+     "notes": [
+      "Neurons for half the gain read 4096 on both."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.elicit_s0.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.elicit_s1.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.elicit_s2.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.elicit_s3.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.elicit_s4.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.cipher_own_s0.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job1.json",
+       "jq": ".states.cipher_own_s1.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.cipher_own_s2.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.cipher_own_s3.b2_shares[\"12288\"]"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".states.cipher_own_s4.b2_shares[\"12288\"]"
+      }
+     ],
+     "from_reports": [],
+     "job": "45973, 45974; 46170, 46171"
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "reverse": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_64": {
+     "verdict": "unreadable",
+     "reading": {
+      "text": "own-step and matched cipher differ by 0.00 to 0.01",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Within 0.1 predicted.",
+     "positive_control": {
+      "held": false,
+      "what": "Fit bar missed.",
+      "value": null
+     },
+     "filed_verdict": "readout fit missed and P1 elicit clause or P2 missed (P1 claim; P2 fail): unreadable; one training run was the cap; tell the user",
+     "derived": null,
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".P2.own_diff.s0"
+      },
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".P2.own_diff.s1"
+      },
+      {
+       "file": "experiments/readout64/results/run.json",
+       "jq": ".branch"
+      }
+     ],
+     "from_reports": [],
+     "job": "48611"
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "E59 stopped before any ablation.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "fails",
+     "reading": {
+      "text": "this test passed by W2, of the five numbers; seeds 0-1, equal progress",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Each number against a rotated, shuffled, Gaussian or random-order reference inside the test.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. Stage 0 pass: True.",
+      "value": null
+     },
+     "filed_verdict": "none answers yes: write up; an elicit/new gap under T1 only is reported as a progress effect",
+     "derived": null,
+     "notes": [
+      "Low power: All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
+      "A number answers yes only if it passes all four tests; a pass here is on one task pair."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1.T2.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1g.T2.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W2.T2.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.A1.T2.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.C1.T2.pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W1g.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.W2.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.A1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.C1.answers_yes"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/stage0.json",
+       "jq": ".pass"
+      },
+      {
+       "file": "experiments/neuron_sparsity/results/score.json",
+       "jq": ".rows.branch"
+      }
+     ],
+     "from_reports": [
+      {
+       "file": "reports/analyses/2026-11-02_analysis_e63-neuron-sparsity.md",
+       "text": "All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
+       "kind": "copied from a report, not in any JSON"
+      }
+     ],
+     "job": "48527"
+    },
+    "labeller": {
+     "verdict": "separates",
+     "reading": {
+      "text": "elicit 3.14 to 3.17 vs cipher 6.02",
+      "reuse": [
+       3.144970934944646,
+       3.1726140181087192
+      ],
+      "new": [
+       6.022406820404732,
+       6.020476744022904
+      ]
+     },
+     "reference": "Same lr, different steps: not a within-cell reading.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: it reads the recipe's result.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap -2.863, larger range 0.028, minimum 0.2; verdict b_higher.",
+     "notes": [
+      "The cipher is the larger update by design here."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".finetunes.elicit_s0.norm"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".finetunes.elicit_s1.norm"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".finetunes.cipher_own_s0.norm"
+      },
+      {
+       "file": "experiments/keydependent_elicit/results/stage2.json",
+       "jq": ".finetunes.cipher_own_s1.norm"
+      }
+     ],
+     "from_reports": [],
+     "job": "45973, 45974"
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  },
+  {
+   "id": "open_pair_c3",
+   "name": "Rank-1 vs cipher, step 10",
+   "model": "67M",
+   "states": "16 of C3's 32, seeds 0-7, 24 trained keys",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "'old by construction' and 'new by construction' (C3, its ladder)",
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+   },
+   "evidence_beside": "Held-out carry, evidence only: rank-1 0.08, cipher -0.34, elicit -0.04, copy 0.48 (experiments/open_pair_instruments/results/run.json .score.readings.x.means).",
+   "cells": {
+    "r": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 0.84 to 0.90 vs cipher 0.22 to 0.25; gap +0.62, bar 0.06",
+      "reuse": [
+       0.8446171948548371,
+       0.8427860331443,
+       0.8429197716575669,
+       0.8730694459495766,
+       0.8416724312461517,
+       0.8990076496322015,
+       0.8706149319066456,
+       0.8457315729976062
+      ],
+      "new": [
+       0.23632404751112837,
+       0.2384323212900442,
+       0.2170782048159956,
+       0.22766182700614584,
+       0.2469354238068963,
+       0.23900537681787096,
+       0.23982187547791234,
+       0.23681286182577294
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": true,
+      "what": "Poles must differ by 3 seed sd: held.",
+      "value": null
+     },
+     "filed_verdict": "status 'ok'; verdict 'distance and prior'",
+     "derived": "Bar is 3 x the filed noise, 0.021.",
+     "notes": [
+      "Elicit's position between the poles is 0.85; the filed reading is that this follows W0's distance and prior."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.r.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.r.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.r.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.r.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.r.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.verdicts.r"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.r.p"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "ratio": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 1.09 to 1.18 vs cipher 0.30 to 0.34; gap +0.80, bar 0.11",
+      "reuse": [
+       1.1099375257123278,
+       1.104947015648684,
+       1.0987862717128636,
+       1.1657713359877766,
+       1.0895875928617484,
+       1.1803613141074645,
+       1.1698464569749745,
+       1.1194772557359702
+      ],
+      "new": [
+       0.33003492996874556,
+       0.3359939898305597,
+       0.30162258558892613,
+       0.32136564900617776,
+       0.33949852708129014,
+       0.330038256199552,
+       0.3285347092403506,
+       0.32740101845712405
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": true,
+      "what": "Poles must differ by 3 seed sd: held.",
+      "value": null
+     },
+     "filed_verdict": "status 'ok'; verdict 'distance and prior'",
+     "derived": "Bar is 3 x the filed noise, 0.036.",
+     "notes": [
+      "Elicit's position between the poles is 0.77; the filed reading is that this follows W0's distance and prior."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.ratio.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.ratio.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.ratio.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.ratio.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.ratio.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.verdicts.ratio"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.ratio.p"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "steering": {
+     "verdict": "control failed",
+     "reading": {
+      "text": "rank-1 0.18 to 0.25 vs cipher 0.15 to 0.22; gap +0.03, bar 0.07",
+      "reuse": [
+       0.250511123391638,
+       0.2130522845640163,
+       0.20860088993916454,
+       0.19029850286298158,
+       0.21568811765433785,
+       0.18230516624348447,
+       0.21955882360159815,
+       0.237684239045009
+      ],
+      "new": [
+       0.17073141481239898,
+       0.21955900501916986,
+       0.15195429694604587,
+       0.1919665564872132,
+       0.19519205525747724,
+       0.18021479504572446,
+       0.1820979748700289,
+       0.17096763694473616
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": false,
+      "what": "Poles must differ by 3 seed sd: failed.",
+      "value": null
+     },
+     "filed_verdict": "status 'no gap'",
+     "derived": "Bar is 3 x the filed noise, 0.022.",
+     "notes": [
+      "Steering treats rank-1 like the cipher here and elicit nearer copy: elicit 0.48, copy 0.64."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.S.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.S.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.S.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.S.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.S.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.S.means.elicit"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.S.means.copy"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "E58's maps were never patched.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "control failed",
+     "reading": {
+      "text": "rank-1 0.41 to 0.51 vs cipher 0.35 to 0.49; gap +0.07, bar 0.14",
+      "reuse": [
+       0.46452097788887603,
+       0.4517314827037273,
+       0.41204244755909597,
+       0.5134507732409285,
+       0.4588366902321292,
+       0.4558372411373954,
+       0.46375259982544526,
+       0.47299959885728016
+      ],
+      "new": [
+       0.3713065417570519,
+       0.36293181496843885,
+       0.4119009571061877,
+       0.4916786868946851,
+       0.37349341573614003,
+       0.3481823722277874,
+       0.36540500260868003,
+       0.41991048712613704
+      ]
+     },
+     "reference": "Minus 20 random removals.",
+     "positive_control": {
+      "held": false,
+      "what": "Poles must differ by 3 seed sd: failed. A planted 13-unit edit passed: True, True.",
+      "value": 0.9730276999728653
+     },
+     "filed_verdict": "status 'no gap'; verdict 'no gap'",
+     "derived": "Bar is 3 x the filed noise, 0.047.",
+     "notes": [
+      "As ported to the 67M, this method failed its positive control, so the counting set's 21 of 21 does not carry over."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.R.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.R.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.R.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.R.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.R.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.verdicts.R"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.R"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.prune_pass.pass"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.reverse_pass"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "reverse": {
+     "verdict": "control failed",
+     "reading": {
+      "text": "rank-1 12.38 to 14.39 vs cipher 8.65 to 10.90; gap +3.21, bar 4.27",
+      "reuse": [
+       13.910132881927666,
+       14.38775897538073,
+       13.560091317189944,
+       12.38226756681095,
+       13.906774629234317,
+       12.63154484389505,
+       12.498370038653722,
+       13.476967517760174
+      ],
+      "new": [
+       10.686951673940102,
+       10.866977147644196,
+       10.043254564231564,
+       9.414485023716763,
+       10.062400765632196,
+       10.468569066982639,
+       10.904157135171934,
+       8.650489223815214
+      ]
+     },
+     "reference": "Floor 1 step.",
+     "positive_control": {
+      "held": false,
+      "what": "Poles must differ by 3 seed sd: failed. A planted 13-unit edit passed: True, True.",
+      "value": null
+     },
+     "filed_verdict": "status 'no gap'; verdict 'no gap'",
+     "derived": "Bar is 3 x the filed noise, 1.423.",
+     "notes": [
+      "As ported to the 67M, this method failed its positive control, so the counting set's 21 of 21 does not carry over."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.t_half.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.t_half.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.t_half.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.t_half.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.t_half.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.verdicts.t_half"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.prune_pass.pass"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.reverse_pass"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "E63 read E54, E46 and E53 states only.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "fails",
+     "reading": {
+      "text": "rank-1 3.10 to 3.19 vs cipher 3.03 to 3.26; gap +0.03, bar 0.27",
+      "reuse": [
+       3.1788571929450042,
+       3.1000853564853523,
+       3.152234207884463,
+       3.1534688602524037,
+       3.190360446118447,
+       3.1320840410545867,
+       3.1516466649569037,
+       3.1382657574764714
+      ],
+      "new": [
+       3.260403643996566,
+       3.1937328217256566,
+       3.0733713750816896,
+       3.0332495549831755,
+       3.0566758225908983,
+       3.2021649127246867,
+       3.045532974778032,
+       3.052061708909445
+      ]
+     },
+     "reference": "Sizes matched by design.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: size is matched by design.",
+      "value": null
+     },
+     "filed_verdict": "status 'no gap'",
+     "derived": "Bar is 3 x the filed noise, 0.089.",
+     "notes": [
+      "Size cannot separate this row: it was matched."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.norm.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.norm.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.norm.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.norm.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.norm.status"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "probe": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 3.25 vs cipher -0.09; gap +3.33, bar 0.00",
+      "reuse": [
+       3.247081098567475,
+       3.247081098567475,
+       3.247081098567475,
+       3.247081098567475,
+       3.247081098567475,
+       3.247081098567475,
+       3.247081098567475,
+       3.247081098567475
+      ],
+      "new": [
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747
+      ]
+     },
+     "reference": "Cipher should read about 0.",
+     "positive_control": {
+      "held": true,
+      "what": "Poles must differ by 3 seed sd: held.",
+      "value": null
+     },
+     "filed_verdict": "status 'ok'",
+     "derived": "Bar is 3 x the filed noise, 0.000.",
+     "notes": [
+      "Filed probe reference missed: all False, rank-1 at least elicit False."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.q.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.q.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.q.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.q.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.q.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.probe_ref.all"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.probe_ref.rank1_ge_elicit"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    }
+   }
+  },
+  {
+   "id": "open_pair_ladder",
+   "name": "Rank-1 vs cipher, steps 10-300",
+   "model": "67M",
+   "states": "9 per step, three seeds, plus C3's 32 re-read",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "'old by construction' and 'new by construction'",
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+   },
+   "evidence_beside": "No held-out reading in this stage.",
+   "cells": {
+    "r": {
+     "verdict": "not run",
+     "reading": {
+      "text": "VPD at steps 30 to 300 was not read.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "ratio": {
+     "verdict": "not run",
+     "reading": {
+      "text": "VPD at steps 30 to 300 was not read.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "steering": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "control failed",
+     "reading": {
+      "text": "rank-1 minus cipher at steps 10, 30, 100, 300: +0.09, -0.13, -0.11, -0.08",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Poles must differ by 3 seed sd, with a floor.",
+     "positive_control": {
+      "held": false,
+      "what": "Passed at no step: first passing step None.",
+      "value": null
+     },
+     "filed_verdict": "step 10 'no gap'; step 30 'reversed'; step 100 'no gap'; step 300 'no gap'",
+     "derived": null,
+     "notes": [
+      "As ported to the 67M, this method failed its positive control at every update size E58's recipe makes.",
+      "The cipher is only half-learned at step 10, so the one filed-direction gap coincides with it.",
+      "Pruning more units did not pass either: status 'no gap' at the best K up to 320."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"10\"].R.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"30\"].R.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"100\"].R.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"300\"].R.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"10\"].R.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"30\"].R.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"100\"].R.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"300\"].R.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_kreread.R.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.pass_step.R"
+      }
+     ],
+     "from_reports": [],
+     "job": "46954"
+    },
+    "reverse": {
+     "verdict": "control failed",
+     "reading": {
+      "text": "rank-1 minus cipher at steps 10, 30, 100, 300: +2.62, +2.83, +1.98, +1.72",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Poles must differ by 3 seed sd, with a floor.",
+     "positive_control": {
+      "held": false,
+      "what": "Passed at no step: first passing step None.",
+      "value": null
+     },
+     "filed_verdict": "step 10 'no gap'; step 30 'no gap'; step 100 'no gap'; step 300 'no gap'",
+     "derived": null,
+     "notes": [
+      "As ported to the 67M, this method failed its positive control at every update size E58's recipe makes.",
+      "The cipher is only half-learned at step 10, so the one filed-direction gap coincides with it."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"10\"].t_half.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"30\"].t_half.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"100\"].t_half.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"300\"].t_half.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"10\"].t_half.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"30\"].t_half.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"100\"].t_half.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"300\"].t_half.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.pass_step.t_half"
+      }
+     ],
+     "from_reports": [],
+     "job": "46954"
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "not run",
+     "reading": {
+      "text": "Sizes are saved in ladder.json; no labeller was placed on them.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  }
+ ],
+ "left_out": "Fine-tunes with no method but VPD's or no reading in the named sources: E58 Amendments 2-7, E57, E34, the Qwen line."
+}
