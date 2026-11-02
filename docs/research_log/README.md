@@ -43,7 +43,8 @@ is linked to its own page.
 Every choice that waits on the user is a card in `parts/sections/decisions.html`, not a line buried in a report or
 a chat message. A card says what the choice is about in plain words (no reliance on terms defined only in reports),
 what the evidence says, the options with what each changes, and why it matters, then links the reports, notebooks and
-cards. Each card carries an urgency flag in its top right (`<span class="chip … urgency">`): Blocking (red, planned runs cannot go ahead), Soon (amber, decides one line's next step) or No rush (grey); re-rate the flags when the plans change. Under the flag, one line says what runs next on that line and when: "Running:
+cards. **Test before publishing (user, 2026-11-02, "as usual ... unreadable"):** a reader who has read no report can say what each
+option would run, what it would tell them and what happens next. Plan labels (Q3, Stage D, anchor 1, D3, E-codes, option numbers from a report) do not appear in the question, evidence or options; name the thing instead (the template fine-tune). One small "Names in the reports" line at the end decodes them. Options get letters, a cost and their limits, and the card ends on one recommendation. The fleet/ask line and the decision report follow the same rule. Each card carries an urgency flag in its top right (`<span class="chip … urgency">`): Blocking (red, planned runs cannot go ahead), Soon (amber, decides one line's next step) or No rush (grey); re-rate the flags when the plans change. Under the flag, one line says what runs next on that line and when: "Running:
 <what>", "Due to run: <what>, <when or on what condition>", or "Nothing runs until this is decided" (user,
 2026-10-26). Starting, finishing or dropping a run changes that line, and the change is queued like any other. A card
 whose choice waits on the user now has the label `Question for you · <line> · new <date>` in its `<div class="k">`,
