@@ -5,9 +5,11 @@ pcfg_vpd's pure pieces (windows, cell averaging, the r and ratio rules) on their
 
 from __future__ import annotations
 
+import json
 import math
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -132,6 +134,63 @@ def test_ppgd_state_is_saved(tmp_path: Path) -> None:
     for k in s.sources:
         assert torch.equal(s.sources[k], s2.sources[k]) and s2.sources[k].requires_grad
         assert torch.equal(s.optimizer._m[k], s2.optimizer._m[k])
+
+
+# ----------------------------------------------------------------------------- early checks and the live log
+
+
+def test_early_misses_max_min_and_absent_step() -> None:
+    checks = {"10": {"kl": {"max": 1.0}, "l0": {"min": 2.0, "max": 3.0}}}
+    assert D.early_misses(checks, 7, {"kl": 99.0}) == []  # a step not listed has no check
+    assert D.early_misses(checks, 10, {"kl": 1.0, "l0": 2.0}) == []  # inclusive at both bounds
+    assert D.early_misses(checks, 10, {"kl": 1.5, "l0": 2.5}) == ["kl = 1.5 over max 1.0"]
+    assert D.early_misses(checks, 10, {"kl": 0.5, "l0": 1.5}) == ["l0 = 1.5 under min 2.0"]
+    assert D.early_misses(checks, 10, {"kl": math.nan, "l0": 2.5})  # nan cannot pass
+    assert len(D.early_misses(checks, 10, {})) == 3  # a listed key absent from the evaluation: every bound of it misses
+
+
+def test_early_check_problems() -> None:
+    assert D.early_check_problems({"1000": {"kl": {"max": 1.0}}, "2000": {"l0": {"min": 2}}}, 1000) == []
+    assert D.early_check_problems("at steps 1,000 and 10,000: TBD", 1000)
+    assert D.early_check_problems({"1500": {"kl": {"max": 1.0}}}, 1000)  # never evaluated, so it would never fire
+    assert D.early_check_problems({"1000": {"kl": {"maxx": 1.0}}}, 1000)  # a misspelt bound would never miss
+    assert D.early_check_problems({"1000": {"kl": {"max": "TBD"}}}, 1000)
+    assert D.early_check_problems({"1000": {"kl": {}}}, 1000)
+
+
+def test_on_eval_after_each_eval_and_the_log_grows(tmp_path: Path) -> None:
+    """on_eval fires at each evaluation, final one included, with the record already on disk; so does each log record."""
+    path = tmp_path / "sub" / "log.jsonl"
+    append = D.jsonl_appender(path)
+    fired: list[tuple[int, int, int]] = []
+    sizes: list[int] = []
+
+    def lines() -> list[dict[str, Any]]:
+        return [json.loads(x) for x in path.read_text().splitlines()]
+
+    def on_record(rec: dict[str, Any]) -> None:
+        append(rec)
+        sizes.append(len(lines()))
+
+    def on_eval(step: int, ev: dict[str, float]) -> None:
+        assert ev and lines()[-1] == {"step": step, "eval": ev}
+        fired.append((step, len(lines()), len(ev)))
+
+    d = D.build(Toy(), toy_config(4), (B, T), "cpu")
+    step, recs = D.run(d, batches, tmp_path / "c.pt", D.Plan(4, 4, 1), eval_batches(), log=lambda _m: None, on_eval=on_eval, on_record=on_record)
+    assert step == 4 and [f[0] for f in fired] == [0, 2, 4]  # eval_freq 2, and the final evaluation
+    assert sizes == list(range(1, len(recs) + 1)) and lines() == recs
+
+
+def test_early_stop_saves_and_exits_1(tmp_path: Path) -> None:
+    ckpt = tmp_path / "c.pt"
+    said: list[str] = []
+    d = D.build(Toy(), toy_config(4), (B, T), "cpu")
+    never = {"2": {"not_an_eval_key": {"max": 1.0}}}
+    with pytest.raises(SystemExit) as e:
+        D.run(d, batches, ckpt, D.Plan(4, 4, 1), eval_batches(), log=said.append, on_eval=D.early_stop(never, d, ckpt, said.append))
+    assert e.value.code == 1 and any("not_an_eval_key" in m and "MISSED" in m for m in said)
+    assert D.load(ckpt, D.build(Toy(), toy_config(4), (B, T), "cpu")) == 2  # saved at the step it stopped
 
 
 # ----------------------------------------------------------------------------- pcfg_vpd's pure pieces
