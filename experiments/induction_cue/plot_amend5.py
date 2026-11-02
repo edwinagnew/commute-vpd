@@ -17,6 +17,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 HERE = Path(__file__).resolve().parent
 FIG, RES = HERE / "figures", HERE / "results"
@@ -78,7 +79,7 @@ def heads_figure(out: dict[str, Any], th: dict[str, Any]) -> None:
         zoom.text(heads[name]["T"] + dx, heads[name]["M"] + dy, f"({name})", color=INK, fontsize=9, ha=ha)
     zoom.set_ylim(-0.32, 1.15)
     zoom.set_title("Same x, y zoomed in; bars are window bootstrap sds", color=INK, fontsize=10.5)
-    handles = [plt.Line2D([], [], color="none", marker=m, markerfacecolor=c, markeredgecolor="white", markersize=8, label=f"block {b}") for b, (c, m) in BLOCK.items()]
+    handles = [Line2D([], [], color="none", marker=m, markerfacecolor=c, markeredgecolor="white", markersize=8, label=f"block {b}") for b, (c, m) in BLOCK.items()]
     zoom.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.0, 0.8), frameon=False, labelcolor=INK, fontsize=9)
     fig.suptitle("With each of 24 heads off in turn, how much of the target model's fall does W₀'s masked forward keep?", color=INK, fontsize=11.5)
     fig.tight_layout()
