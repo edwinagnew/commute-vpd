@@ -14,18 +14,22 @@ RNG so that it does not change the training (in `optimize` it draws from the tra
 
 A long run's stops and log: `run` calls `on_eval(step, eval)` right after each evaluation (`early_stop` builds one that
 saves and exits 1 on a missed filed check) and `on_record(record)` for each record as it is produced (`jsonl_appender`).
+A non-finite total loss exits 1 before any save, so the last save stays good. A save carries the provenance of what
+wrote it (`provenance`); a resume under another config file or another copy of this module refuses (exit 2).
 """
 
 from __future__ import annotations
 
 import gc
+import hashlib
 import json
 import math
 import resource
+import subprocess
 import sys
 import time
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +44,15 @@ class Decomp:
     opt_c: torch.optim.Optimizer  # components
     opt_ci: torch.optim.Optimizer  # the causal-importance function
     ppgd: dict[Any, Any]  # persistent-PGD loss config -> PersistentPGDState
+    provenance: dict[str, str] = field(default_factory=dict)  # `provenance`; stored in every save
+
+
+def provenance(config: Path) -> dict[str, str]:
+    """sha256 of the config file and of this module, which a resume compares, and the git head, which it does not:
+    merges of other lines move the head between jobs without touching the run."""
+    sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=config.parent, capture_output=True, text=True, check=False).stdout.strip()
+    return {"config_sha256": sha(config), "decompose_sha256": sha(Path(__file__)), "git_head": head or "unknown"}
 
 
 def load_config(path: Path, **update: Any) -> Any:
@@ -71,7 +84,8 @@ def component_model(target: nn.Module, config: Any, device: str | torch.device) 
     return model
 
 
-def build(target: nn.Module, config: Any, batch_dims: tuple[int, ...], device: str | torch.device) -> Decomp:
+def build(target: nn.Module, config: Any, batch_dims: tuple[int, ...], device: str | torch.device,
+          prov: dict[str, str] | None = None) -> Decomp:  # fmt: skip
     """A fresh decomposition to train: the component model, both optimizers and the persistent-PGD states."""
     from param_decomp.configs import (
         PersistentPGDReconLossConfig,
@@ -88,7 +102,7 @@ def build(target: nn.Module, config: Any, batch_dims: tuple[int, ...], device: s
                                     use_delta_component=config.use_delta_component, cfg=cfg, reconstruction_loss=recon_loss_kl)
             for cfg in config.loss_metric_configs
             if isinstance(cfg, PersistentPGDReconLossConfig | PersistentPGDReconSubsetLossConfig)}  # fmt: skip
-    return Decomp(config, model, opt_c, opt_ci, ppgd)
+    return Decomp(config, model, opt_c, opt_ci, ppgd, prov or {})
 
 
 # ----------------------------------------------------------------------------- one step
@@ -186,7 +200,7 @@ def save(path: Path, d: Decomp, step: int) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     state = {"step": step, "model": d.model.state_dict(), "opt_c": d.opt_c.state_dict(), "opt_ci": d.opt_ci.state_dict(),
              "ppgd": [_ppgd_state(s) for s in d.ppgd.values()], "rng": torch.get_rng_state(),
-             "cuda_rng": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else []}  # fmt: skip
+             "cuda_rng": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else [], "provenance": d.provenance}  # fmt: skip
     tmp = path.with_suffix(".tmp")
     torch.save(state, tmp)
     tmp.replace(path)
@@ -195,8 +209,14 @@ def save(path: Path, d: Decomp, step: int) -> None:
 def load(path: Path, d: Decomp) -> int:
     """Load a `save` file into a freshly built `d`; returns its step. Read to CPU first: each tensor is copied onto the
     device by load_state_dict / copy_, so the file never sits on the GPU beside the built state (job 46971 OOMed with
-    an 8.4 GB file loaded straight to an L40 already holding the run)."""
+    an 8.4 GB file loaded straight to an L40 already holding the run). Exit 2 when the file was written under another
+    config or decompose.py, or carries no provenance (a save older than the field) while `d` does."""
     state = torch.load(path, map_location="cpu", weights_only=False)
+    saved = state.get("provenance", {})
+    if any(saved.get(k) != d.provenance.get(k) for k in ("config_sha256", "decompose_sha256")):
+        print(f"decompose: refusing to resume {path}: written under {saved or 'no provenance'}, this job is {d.provenance}. "
+              "Restore the files it was written under, or move it aside deliberately (exit 2)", flush=True)  # fmt: skip
+        sys.exit(2)
     d.model.load_state_dict(state["model"])
     d.opt_c.load_state_dict(state["opt_c"])
     d.opt_ci.load_state_dict(state["opt_ci"])
@@ -223,7 +243,7 @@ def save_final(path: Path, d: Decomp, step: int) -> None:
     """The decomposition alone (component model state dict and the step): what readings load."""
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
-    torch.save({"step": step, "model": d.model.state_dict()}, tmp)
+    torch.save({"step": step, "model": d.model.state_dict(), "provenance": d.provenance}, tmp)
     tmp.replace(path)
 
 
@@ -309,13 +329,14 @@ def jsonl_appender(path: Path) -> Callable[[dict[str, Any]], None]:
     return append
 
 
-def run(d: Decomp, batches: Callable[[int], Tensor], ckpt: Path, plan: Plan, eval_batches: Iterator[Tensor] | None = None,
+def run(d: Decomp, batches: Callable[[int], Tensor], ckpt: Path, plan: Plan, eval_batches: Callable[[int], Iterator[Tensor]] | None = None,
         log: Callable[[str], None] = print, on_eval: Callable[[int, dict[str, float]], None] | None = None,
         on_record: Callable[[dict[str, Any]], None] | None = None) -> tuple[int, list[dict[str, Any]]]:  # fmt: skip
     """Resume from `ckpt` if it exists (else the faithfulness warm-up, then step 0) and train to `plan.end`, saving every
     `save_every` steps, at the end and at the deadline; evaluates at multiples of eval_freq and at the end when
-    `eval_batches` is given, calling `on_eval(step, eval)` after each; `on_record` gets each record as it is produced.
-    Returns (step reached, the log records)."""
+    `eval_batches` is given (`eval_batches(step)`: the step's own batches, so a resumed run evaluates on the rows an
+    unbroken one would), calling `on_eval(step, eval)` after each; `on_record` gets each record as it is produced. A
+    non-finite total loss logs and exits 1 before any save. Returns (step reached, the log records)."""
     from param_decomp.run_param_decomp import run_faithfulness_warmup
 
     cfg = d.config
@@ -337,8 +358,8 @@ def run(d: Decomp, batches: Callable[[int], Tensor], ckpt: Path, plan: Plan, eva
         if on_record is not None:
             on_record(rec)
 
-    def eval_now(batches_: Iterator[Tensor], at: int) -> None:
-        ev = evaluate(d, batches_, at)
+    def eval_now(batches_: Callable[[int], Iterator[Tensor]], at: int) -> None:
+        ev = evaluate(d, batches_(at), at)
         emit({"step": at, "eval": ev})
         log(f"eval step {at}: {ev}")
         if on_eval is not None:
@@ -351,6 +372,9 @@ def run(d: Decomp, batches: Callable[[int], Tensor], ckpt: Path, plan: Plan, eva
             t_win = time.perf_counter()
         rec = train_step(d, batches(step), step)
         step += 1
+        if not math.isfinite(rec["loss/total"]):
+            log(f"decompose: loss/total = {rec['loss/total']} at step {step}; no save, the last save stands (exit 1)")
+            sys.exit(1)
         if step % plan.log_every == 0:
             ms, t_win = 1e3 * (time.perf_counter() - t_win) / plan.log_every, time.perf_counter()
             emit({"step": step, "ms_per_step": ms, **rec, **memory()})

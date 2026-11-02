@@ -196,10 +196,12 @@ def _p_of(logits: Tensor, tgt: Tensor) -> Tensor:
     return torch.softmax(logits.float(), -1).gather(1, tgt[:, None]).squeeze(1)
 
 
-def route_cells(model: Any, windows: Tensor, half: int, token: int | Tensor, batch_size: int = 64) -> dict[str, Any]:
+def route_cells(model: Any, windows: Tensor, half: int, token: int | Tensor, batch_size: int = 64,
+                ci_len: int | None = None) -> dict[str, Any]:  # fmt: skip
     """Under the model's current state: Gamma's gates per batch (kept on CPU, for the other state's cross cells) and the
     mean over windows of the trigger log-odds of `token` (one id, or a (V,) lookup table) for the target (T), unmasked
-    (U) and CI-masked (L) models, plus their mean P(token) (`p_T`, `p_U`, `p_L`)."""
+    (U) and CI-masked (L) models, plus their mean P(token) (`p_T`, `p_U`, `p_L`). `ci_len`: Gamma and the forwards see
+    only the first ci_len tokens; the target is still read from the whole window."""
     keys = module_keys(model)
     device = next(model.parameters()).device
     gates: list[dict[str, Tensor]] = []
@@ -208,11 +210,12 @@ def route_cells(model: Any, windows: Tensor, half: int, token: int | Tensor, bat
         for sl in _batches(windows, batch_size):
             batch = windows[sl].to(device)
             tgt = target_tokens(token, batch, half)
-            ci = compute_ci(model, batch, chunk=batch.shape[0])
+            x = batch[:, :ci_len]
+            ci = compute_ci(model, x, chunk=batch.shape[0])
             gates.append({k: ci.g[k].cpu() for k in keys})
             ones = {k: torch.ones_like(ci.g[k]) for k in keys}
-            lm = masked_logits(model, batch, ci.g, None, None)[:, half]
-            um = masked_logits(model, batch, ones, None, None)[:, half]
+            lm = masked_logits(model, x, ci.g, None, None)[:, half]
+            um = masked_logits(model, x, ones, None, None)[:, half]
             for name, lg in (("T", ci.logits[:, half]), ("U", um), ("L", lm)):
                 sums[name] += float(log_odds(lg, tgt).double().sum())
                 sums[f"p_{name}"] += float(_p_of(lg, tgt).double().sum())
@@ -221,16 +224,16 @@ def route_cells(model: Any, windows: Tensor, half: int, token: int | Tensor, bat
 
 
 def masked_lo(model: Any, windows: Tensor, half: int, token: int | Tensor, gates: list[dict[str, Tensor]],
-              batch_size: int = 64) -> tuple[float, float]:
+              batch_size: int = 64, ci_len: int | None = None) -> tuple[float, float]:
     """Mean trigger log-odds and mean P(token) of the masked model (Delta out) with the CURRENT components and the given
-    gate pattern (from `route_cells`, same windows and batch size)."""
+    gate pattern (from `route_cells`, same windows, batch size and ci_len)."""
     device = next(model.parameters()).device
     lo = p = 0.0
     with torch.no_grad():
         for sl, g in zip(_batches(windows, batch_size), gates, strict=True):
             batch = windows[sl].to(device)
             tgt = target_tokens(token, batch, half)
-            lm = masked_logits(model, batch, {k: v.to(device) for k, v in g.items()}, None, None)[:, half]
+            lm = masked_logits(model, batch[:, :ci_len], {k: v.to(device) for k, v in g.items()}, None, None)[:, half]
             lo += float(log_odds(lm, tgt).double().sum())
             p += float(_p_of(lm, tgt).double().sum())
     return lo / windows.shape[0], p / windows.shape[0]
@@ -251,17 +254,17 @@ def masked_lo_windows(model: Any, windows: Tensor, half: int, token: int | Tenso
 
 
 def route_split(model: Any, windows: Tensor, half: int, token: int | Tensor, base: dict[str, Any],
-                components0: dict[str, tuple[Tensor, Tensor]], batch_size: int = 64) -> dict[str, Any]:
+                components0: dict[str, tuple[Tensor, Tensor]], batch_size: int = 64, ci_len: int | None = None) -> dict[str, Any]:
     """The five shares for the model's current state (target W1, components C1). `base` = `route_cells` at W0 with the
     released components `components0` (C0). Returns the four L cells, U and T at both ends (log-odds, and mean P(token)
     under `p_cells`), the gain, the shares (nan if |gain| < 1e-6), `scorable` (gain >= MIN_GAIN), and max |g1 - g0| over
     all matrices and positions."""
     from commute.faithfulness import model_state
 
-    cur = route_cells(model, windows, half, token, batch_size)
-    L10, p10 = masked_lo(model, windows, half, token, base["gates"], batch_size)
+    cur = route_cells(model, windows, half, token, batch_size, ci_len)
+    L10, p10 = masked_lo(model, windows, half, token, base["gates"], batch_size, ci_len)
     with model_state(model, components=components0):
-        L01, p01 = masked_lo(model, windows, half, token, cur["gates"], batch_size)
+        L01, p01 = masked_lo(model, windows, half, token, cur["gates"], batch_size, ci_len)
     L00, L11 = base["L"], cur["L"]
     gain = cur["T"] - base["T"]
     terms = {"d": L10 - L00, "r": L01 - L00, "i": L11 - L10 - L01 + L00,

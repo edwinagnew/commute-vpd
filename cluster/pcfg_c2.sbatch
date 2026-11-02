@@ -5,7 +5,9 @@
 #   sbatch --job-name=commute-e55-c2-read --dependency=singleton cluster/pcfg_c2.sbatch read      # controls, calibration, c2_cutoffs.json
 #   sbatch --job-name=commute-e55-c2-read --dependency=singleton cluster/pcfg_c2.sbatch score     # after c2_cutoffs.json is committed
 # The full decomposition runs on normal: cluster/pcfg_c2_normal.sbatch.
-# rehearse, noise, firststeps: experiments/pcfg_anchors/c2_rehearse.py (docstring), $0, never scored. rehearse: readings
+#   sbatch --job-name=commute-e55-c2-readcheck --dependency=singleton cluster/pcfg_c2.sbatch readcheck --file <decomp file> --out <scratch json> --states all|few
+#       c2's read and score on any saved decomposition, outputs beside --out, never in results/; exit 3: resubmit the same command
+# rehearse, noise, firststeps, readcheck: experiments/pcfg_anchors/c2_rehearse.py (docstring), $0, never scored. rehearse: readings
 #   on an untrained decomposition first, then run A to step 200 and its save; the resume, run B and the alive count run
 #   in a fresh child process (rehearse-resume). results/c2_rehearsal.json after each part; GB-sized training files
 #   deleted when read. No deadline: the job's 30-min limit is the stop (job 47013: 0.45 s/step at this config's 14,592
@@ -29,18 +31,20 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; puts t
 cd "$COMMUTE_REPO"
 stage=${1:-}
 case "$stage" in
-  rehearse | noise | firststeps) script=experiments/pcfg_anchors/c2_rehearse.py ;;
+  rehearse | noise | firststeps | readcheck) script=experiments/pcfg_anchors/c2_rehearse.py ;;
   decompose | read | score) script=experiments/pcfg_anchors/c2.py ;;
-  *) echo "usage: sbatch cluster/pcfg_c2.sbatch {rehearse,noise,firststeps,decompose,read,score}" >&2; exit 2 ;;
+  *) echo "usage: sbatch cluster/pcfg_c2.sbatch {rehearse,noise,firststeps,readcheck,decompose,read,score}" >&2; exit 2 ;;
 esac
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 out=experiments/pcfg_anchors/results/large/c2
 mkdir -p "$out"
+stage_log="$out/c2_$stage.log"
+[ "$stage" != readcheck ] || stage_log=/dev/null   # its numbers stay out of results/; the job's own log has them
 rc=0
-.venv/bin/python "$script" "$stage" --deadline-min 22 2>&1 | tee -a "$out/c2_$stage.log" || rc=$?
+.venv/bin/python "$script" "$@" --deadline-min 22 2>&1 | tee -a "$stage_log" || rc=$?
 if [ "$rc" = 3 ]; then
-  echo "=== DEADLINE (exit 3): saved, not finished; resume by hand: sbatch --job-name=$SLURM_JOB_NAME --dependency=singleton cluster/pcfg_c2.sbatch $stage ==="
+  echo "=== DEADLINE (exit 3): saved, not finished; resume by hand: sbatch --job-name=$SLURM_JOB_NAME --dependency=singleton cluster/pcfg_c2.sbatch $* ==="
   exit 3
 fi
 echo "=== FINISHED (exit $rc) — results in $COMMUTE_REPO/experiments/pcfg_anchors/results/ ==="

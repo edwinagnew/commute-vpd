@@ -6,6 +6,8 @@ Both come from `local_faith.route_split` of the least-squares split state (`anch
 unmasked and L the CI-masked model's log-odds of the answer at `=`, index 0 at W0 with LOW's components and 1 at the
 state. A window is a natural row cut after its answer, (N, ANS + 1) tokens, its answer at ANS set to the label the
 reading asks about (`windows`), so the target is each window's own next token (`data.NEXT`) at half = ART_POS.
+Gamma and the forwards see the window up to and including `=` (`ci_len = pcfg.ANS`); the answer is the readout only
+(predictions_c2.json amended_before_the_read: Gamma is bidirectional, so a written answer would reach the gates at `=`).
 
 The update read is the 24 decomposed matrices' change only (`matrix_update`); every other parameter of the minGPT
 (embeddings, LayerNorms, biases, the output head) stays at LOW's value in every cell. `full_gain` gives the state's own
@@ -84,8 +86,9 @@ def shares(cells: dict[str, float], ratio_floor: float) -> dict[str, float]:
 
 
 def cells_of(model: Any, lift: dict[str, Any], comps0: dict[str, tuple[Tensor, Tensor]], W0: dict[str, Tensor],
-             dW: dict[str, Tensor], w: Tensor, chunk: int, batch: int) -> dict[str, float]:  # fmt: skip
-    """The eight route cells of the update dW on windows w (chunked, then `combine`d)."""
+             dW: dict[str, Tensor], w: Tensor, chunk: int, batch: int, ci_len: int | None) -> dict[str, float]:  # fmt: skip
+    """The eight route cells of the update dW on windows w (chunked, then `combine`d). ci_len: `route_cells`'s; None
+    feeds the whole window, the written answer included."""
     from commute.anchors import lifted
     from commute.data import NEXT
     from commute.faithfulness import model_state
@@ -97,9 +100,9 @@ def cells_of(model: Any, lift: dict[str, Any], comps0: dict[str, tuple[Tensor, T
     for s in range(0, w.shape[0], chunk):
         x = w[s : s + chunk]
         with model_state(model, target=W0, components=comps0):
-            base = route_cells(model, x, pcfg.ART_POS, NEXT, batch)
+            base = route_cells(model, x, pcfg.ART_POS, NEXT, batch, ci_len)
         with model_state(model, target=target, components=comps1):
-            rs = route_split(model, x, pcfg.ART_POS, NEXT, base, comps0, batch)
+            rs = route_split(model, x, pcfg.ART_POS, NEXT, base, comps0, batch, ci_len)
         parts.append((x.shape[0], rs["cells"]))
         del base, rs
     return combine(parts)
