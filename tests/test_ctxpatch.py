@@ -1,5 +1,5 @@
-"""CPU checks of E66's filed rules (src/commute/ctxpatch.py) on hand-made numbers: the pairs, l*, T, Q, the bars, K, the matched
-null, the units share, Spearman and the stage rules at their edge cases. No model."""
+"""CPU checks of E66's filed rules (src/commute/ctxpatch.py) on hand-made numbers: the pairs, l*, T, Q, K, the matched
+null, the units share and the stage rules at their edge cases. No model."""
 
 from __future__ import annotations
 
@@ -9,7 +9,8 @@ import torch
 
 from commute import ctxpatch as X
 
-TH = {"floor": 0.5, "z": 3.0, "n_boot": 200, "min_pairs": 200, "min_keys": 8, "identity_tol": 1e-4, "q_band": 0.2, "write_t_min": 0.5, "blind_share": 0.5}
+TH = {"floor": 0.5, "z": 3.0, "n_boot": 200, "min_pairs": 200, "min_keys": 8, "transplant_tol": 1e-4, "q_band": 0.2, "write_t_min": 0.5, "blind_share": 0.5,
+      "write_cond_max": 16.5, "write_rel_err_max": 0.33}
 
 
 def test_quarter_pairs_are_within_key_highest_with_lowest():
@@ -55,14 +56,6 @@ def test_quotient_voids_on_a_bad_denominator():
         assert math.isnan(X.quotient(1.0, d, T_off, d_off)[0])
 
 
-def test_bar_shape_and_void():
-    b = X.bar(1.0, 0.01, 2.0)
-    assert abs(b["lo"] - 1.1) < 1e-12 and abs(b["hi"] - 1.5) < 1e-12 and not b["void"]
-    assert X.bar(1.0, 0.2, 2.0)["void"]  # lo 1.6 over hi 1.5
-    assert X.bar(1.0, 0.0, 0.5)["void"]  # the control below the null
-    assert X.bar(math.nan, 0.01, 2.0)["void"]
-
-
 def test_first_k():
     assert X.first_k({1: 0.1, 16: 1.0, 64: 3.0}, 1.0) == 16
     assert X.first_k({1: math.nan, 4: 0.9}, 1.0) is None
@@ -85,21 +78,12 @@ def test_units_share():
     assert math.isnan(X.units_share(0.0, 0.0, 1.0)) and math.isnan(X.units_share(0.5, 0.1, 1.0))
 
 
-def test_spearman():
-    assert abs(X.spearman([1.0, 2, 3, 4], [10.0, 20, 30, 40]) - 1) < 1e-9
-    assert abs(X.spearman([1.0, 2, 3], [3.0, 2, 1]) + 1) < 1e-9
-    assert abs(X.spearman([1.0, 1, 2, 3], [1.0, 1, 2, 3]) - 1) < 1e-9  # ties
-    assert math.isnan(X.spearman([1.0, 2], [1.0, 2])) and math.isnan(X.spearman([1.0, 1, 1], [1.0, 2, 3]))
-    assert abs(X.spearman([None, math.nan, 1.0, 2, 3], [5.0, 6, 1, 2, 3]) - 1) < 1e-9
-
-
 def test_stage_statuses():
     ok = {"a": 1, "b": None, "c": 3}
-    assert X.stage0_status(1e-5, 0.0, ok, TH) == "pass"
-    assert X.stage0_status(1e-4, 1e-4, ok, TH) == "pass"  # ties pass
-    assert X.stage0_status(2e-4, 0.0, ok, TH) == "identity" and X.stage0_status(math.nan, 0.0, ok, TH) == "identity"
-    assert X.stage0_status(0.0, 2e-4, ok, TH) == "zero"
-    assert X.stage0_status(0.0, 0.0, {"a": 1, "b": None}, TH) == "void_maps"  # half stops
+    assert X.stage0_status(1e-5, ok, TH) == "pass" and X.stage0_status(1e-4, ok, TH) == "pass"  # a tie passes
+    assert X.stage0_status(2e-4, ok, TH) == "transplant"
+    assert X.stage0_status(X.nan_max([0.0, math.nan]), ok, TH) == "transplant" and X.stage0_status(X.nan_max([math.nan, 0.0]), ok, TH) == "transplant"
+    assert X.stage0_status(0.0, {"a": 1, "b": None}, TH) == "void_maps"  # half stops
     assert X.stage1_status({"a": "above", "b": "not_above", "c": "above"}) == "pass"
     assert X.stage1_status({"a": "above", "b": "not_above"}) == "stop"
     assert X.stage1_status({"a": "void"}) == "stop" and X.stage1_status({}) == "stop"
@@ -107,8 +91,11 @@ def test_stage_statuses():
 
 
 def test_control_rules():
-    assert X.near_one(1.2, 0.01, TH) == "near_1" and X.near_one(1.3, 0.01, TH) == "off" and X.near_one(1.3, 0.1, TH) == "near_1"
-    assert X.near_one(math.nan, 0.1, TH) == "void"
+    assert X.near_one(1.2, 0.01, TH) == "near_1" and X.near_one(1.3, 0.01, TH) == "off"
+    assert X.near_one(1.0, 0.1, TH) == "void" and X.near_one(math.nan, 0.01, TH) == "void"  # 3 s over the band
+    assert X.write_conditioned({"cond_A": 16.5, "rel_err_mean": 0.33}, TH) and not X.write_conditioned({"cond_A": 17.0, "rel_err_mean": 0.1}, TH)
+    assert not X.write_conditioned({"cond_A": 8.0, "rel_err_mean": 0.34}, TH) and not X.write_conditioned({"cond_A": math.nan, "rel_err_mean": 0.1}, TH)
+    assert X.null_has_room(6144) and not X.null_has_room(6145)
     assert X.t_band(0.5, 0.01, TH) == "as_expected" and X.t_band(0.49, 0.01, TH) == "low"
     assert X.t_band(1.03, 0.01, TH) == "as_expected" and X.t_band(1.04, 0.01, TH) == "high" and X.t_band(1.0, math.nan, TH) == "void"
     assert X.above(1.3, 0.1, 1.0, 0.05, TH) == "not_above" and X.above(1.31, 0.1, 1.0, 0.05, TH) == "above"
@@ -121,3 +108,21 @@ def test_blind_mark_reads_every_block_up_to_l_star():
     assert X.blind_mark(shares, 1, TH) == "readable"
     assert X.blind_mark({1: 0.5, 2: 0.0, 3: 0.0}, 1, TH) == "blind"  # a tie counts
     assert X.blind_mark(shares, None, TH) == "unknown" and X.blind_mark({1: None, 2: 0.1, 3: 0.1}, 2, TH) == "unknown"
+
+
+def control_rec(T: float, s: float, status: str = "ok", fit: tuple[float, float] = (8.0, 0.16)) -> dict:
+    row = {2: {"T": T, "s": s, "Q": 1.0, "s_Q": 0.01}}
+    return {"row": row, "units": {"void": True}, "info": {"status": status, "fit": {"cond_A": fit[0], "rel_err_mean": fit[1]}, "share_in_U_top": 0.5}}
+
+
+def test_control_verdicts_gate_amplify_and_read_sharpen_against_one():
+    write, sharp = control_rec(0.9, 0.01), control_rec(1.5, 0.01)
+    v = X.control_verdicts({"amplify": control_rec(1.5, 0.01), "sharpen": sharp}, write, 2, TH)
+    assert v["amplify_T"] == "above" and v["sharpen_T"] == "above" and v["sharpen_Q"] == "near_1"
+    assert X.control_verdicts({"amplify": control_rec(1.5, 0.01, "cap"), "sharpen": sharp}, write, 2, TH)["amplify_T"] == "void"
+    bad = control_rec(0.9, 0.01, fit=(40.0, 0.16))
+    v = X.control_verdicts({"amplify": control_rec(1.5, 0.01), "sharpen": sharp}, bad, 2, TH)
+    assert v["amplify_T"] == "void" and not v["write_conditioned"]
+    # above the write but not above 1: too weak, and Q has nothing to cancel
+    v = X.control_verdicts({"amplify": control_rec(1.5, 0.01), "sharpen": control_rec(1.0, 0.01)}, write, 2, TH)
+    assert v["sharpen_T"] == "not_above" and v["sharpen_Q"] == "void"

@@ -26,8 +26,9 @@ from torch import Tensor
 
 from commute import kv
 from commute import steering as ST
-from commute.data import Windows
+from commute.data import Windows, target_tokens
 from commute.local_faith import masked_logits
+from commute.vpd import module_keys
 
 VOCAB = 50277
 Head = tuple[int, int]  # (block, head)
@@ -919,3 +920,118 @@ def mask_test(control: str, carries: str, k: int, n_alive: int, copy: Sequence[d
     if not any(aligned) and not any(beats) or all(c["share"] <= c["random_median"] for c, _ in seeds):
         return done("not_shared" if all(c["largest_k_share"] >= th["close_min"] for c, _ in seeds) else "k_too_small")
     return out
+
+
+# ----------------------------------------------------------------------------- Amendment 5's filed rules and reads (results/predictions_amend5.json)
+
+
+def masked_lo_fp32(model: Any, windows: Tensor, half: int, token: int | Tensor, gates: Sequence[dict[str, Tensor]], batch_size: int, ci_len: int) -> Tensor:
+    """`local_faith.masked_lo_windows` with no autocast: per window, the masked log-odds in full precision, under the gates given."""
+    device = next(model.parameters()).device
+    out = []
+    with torch.no_grad():
+        for s, g in zip(range(0, len(windows), batch_size), gates, strict=True):
+            batch = windows[s : s + batch_size].to(device)
+            logits = masked_logits(model, batch[:, :ci_len], {k: v.float().to(device) for k, v in g.items()}, None, None, autocast=False)
+            out.append(ST.logodds_at(logits, half, target_tokens(token, batch, half)))
+    return torch.cat(out)
+
+
+@torch.no_grad()
+def gates_fp32(model: Any, windows: Tensor, batch_size: int, ci_len: int) -> list[dict[str, Tensor]]:
+    """Γ's gates per batch as `vpd.compute_ci` reads them, with no autocast: the mask itself in full precision, on the CPU."""
+    device = next(model.parameters()).device
+    gates = []
+    for s in range(0, len(windows), batch_size):
+        out = model(windows[s : s + batch_size, :ci_len].to(device), cache_type="input")
+        ci = model.calc_causal_importances(out.cache, sampling="continuous", detach_inputs=False)
+        gates.append({k: ci.lower_leaky[k].cpu() for k in module_keys(model)})
+    return gates
+
+
+def head_name(h: Head) -> str:
+    return f"{h[0]},{h[1]}"
+
+
+def boot_sd(d: Tensor, n_boot: int, seed: int) -> float:
+    """Window bootstrap sd of the mean of `d` (N,). nan for an empty `d` or a non-finite entry."""
+    if not len(d) or not bool(d.double().isfinite().all()):
+        return math.nan
+    i = torch.randint(len(d), (n_boot, len(d)), generator=torch.Generator().manual_seed(seed))
+    return float(d.double()[i].mean(1).std())
+
+
+def reread_diff(now: dict[str, Any], then: dict[str, Any]) -> float:
+    """The largest |now - then| over `now`'s keys, list entries one by one. inf if a key or a list entry is missing, or any number is not finite."""
+    worst = 0.0
+    for k, v in now.items():
+        a, b = v if isinstance(v, list) else [v], then.get(k)
+        b = b if isinstance(b, list) else [b]
+        if len(a) != len(b) or not all(finite(x) and finite(y) for x, y in zip(a, b, strict=True)):
+            return math.inf
+        worst = max(worst, *(abs(x - y) for x, y in zip(a, b, strict=True)))
+    return worst
+
+
+def all_ones_control(fall: float, target_fall: float, th: dict[str, Any]) -> str:
+    """Head off with every mask at 1, against the target model's filed fall. "unreadable" if not finite or the target's fall is not positive (no
+    denominator: the filed value is 4.82, so this is a corrupt file); "ablation_does_not_transfer" under masked_fall_frac of it (a tie passes; zero
+    and negative falls included); else "pass"."""
+    if not (finite(fall) and finite(target_fall)) or target_fall <= 0:
+        return "unreadable"
+    return "pass" if fall >= th["masked_fall_frac"] * target_fall else "ablation_does_not_transfer"
+
+
+def precision_moved(fall: float, other: float, sd: float) -> bool:
+    """Did the fall move by more than its sd between two precisions? A tie has not. True if any number is not finite: nothing shows it did not."""
+    return not (finite(fall) and finite(other) and finite(sd)) or abs(fall - other) > sd
+
+
+def stopped_reading(verdict: str) -> dict[str, Any]:
+    """`sweep_reading`'s dict, for a stop before the sweep's numbers or an unreadable sweep."""
+    return {"verdict": verdict, "carriers": [], "fractions": {}, "f_labelled": math.nan, "ranking_holds": False, "falls_over_lean": [], "sum_falls_over_lean": False}
+
+
+def sweep_reading(rows: dict[Head, dict[str, float]], labelled: Head, n_heads: int, mask_lean: float, th: dict[str, Any]) -> dict[str, Any]:
+    """The head sweep, one forward. Per head: T the target's fall, M the masked fall, Mb the masked fall on the pair-broken windows, excess_sd the
+    bootstrap sd of M - T. First that fires:
+    "unreadable": a head missing, a number not finite, the masked lean under carrier_min (nothing to carry), or the labelled head's T under fall_floor.
+    "rerouted": some other head is a carrier: M at least carrier_min (the masked forward leans on that head), M - T at least carrier_min and at least
+    carrier_sds x excess_sd, and M - Mb at least carrier_min (the fall
+    is there because of the pair, not a general drop from the head's removal). Ties count.
+    "no_comparison_head": no carrier, and no other head has T at or over fall_floor, so no fraction has a denominator to compare with.
+    "thinned": every other head with T at or over fall_floor has M / T within fraction_gap of the labelled head's (a tie counts).
+    "labelled_head_singled_out": every such head has M / T over the labelled head's by more than fraction_gap.
+    "mixed": anything else, including a head's fraction under the labelled head's by more than fraction_gap.
+    Beside, deciding nothing: falls_over_lean (heads whose M is over the masked lean, which falls need not respect), sum_falls_over_lean, ranking_holds
+    (every other T under the labelled head's; a tie fails)."""
+    if len(rows) != n_heads or labelled not in rows or not (finite(mask_lean) and mask_lean >= th["carrier_min"]):
+        return stopped_reading("unreadable")
+    if not all(finite(r.get(f)) for r in rows.values() for f in ("T", "M", "Mb", "excess_sd")) or rows[labelled]["T"] < th["fall_floor"]:
+        return stopped_reading("unreadable")
+    others = {h: r for h, r in rows.items() if h != labelled}
+    bar, sds = th["carrier_min"], th["carrier_sds"]
+    carriers = [h for h, r in others.items() if r["M"] >= bar and r["M"] - r["T"] >= bar and r["M"] - r["T"] >= sds * r["excess_sd"] and r["M"] - r["Mb"] >= bar]
+    frac = {h: r["M"] / r["T"] for h, r in others.items() if r["T"] >= th["fall_floor"]}
+    lab, gap = rows[labelled]["M"] / rows[labelled]["T"], th["fraction_gap"]
+    if carriers:
+        v = "rerouted"
+    elif not frac:
+        v = "no_comparison_head"
+    elif all(abs(f - lab) <= gap for f in frac.values()):
+        v = "thinned"
+    else:
+        v = "labelled_head_singled_out" if all(f > lab + gap for f in frac.values()) else "mixed"
+    return {"verdict": v, "carriers": [head_name(h) for h in carriers], "fractions": {head_name(h): f for h, f in frac.items()}, "f_labelled": lab,
+            "ranking_holds": all(r["T"] < rows[labelled]["T"] for r in others.values()), "falls_over_lean": [head_name(h) for h, r in rows.items() if r["M"] > mask_lean],
+            "sum_falls_over_lean": sum(r["M"] for r in rows.values()) > mask_lean}
+
+
+def token_reading(part_broken_gates: float, part_intact_gates: float, mask_lean: float, th: dict[str, Any]) -> str:
+    """Account D, from the swapped forwards. Each part is the tokens' share of the masked lean with the gates held, at the pair-broken gates and at the
+    intact gates. "unreadable": a number not finite, or the lean under carrier_min (a zero or negative denominator included). "through_tokens": both over
+    token_share. "through_gates": both under it. "order_dependent": anything else, ties at the bar included, since tokens and gates then split evenly."""
+    if not (finite(part_broken_gates) and finite(part_intact_gates) and finite(mask_lean)) or mask_lean < th["carrier_min"]:
+        return "unreadable"
+    s1, s2, bar = part_broken_gates / mask_lean, part_intact_gates / mask_lean, th["token_share"]
+    return "through_tokens" if s1 > bar and s2 > bar else "through_gates" if s1 < bar and s2 < bar else "order_dependent"

@@ -1,0 +1,123 @@
+{
+ "about": "E12 Amendment 2: why the re-switching term falls on rand32b's students, and whether students switch their fine-tunes' subcomponents. Plan reports/plans/2026-11-02_plan_e12-amend2-rand32b-fall.md (2026-11-02). experiments/new_vs_existing/amend2.py reads its `config` from this file and refuses to start without it; the training recipe (Adam 1e-5, 1000 steps, batch 32) is read from predictions_amend1.json through amend1.py. The results file stores the commit and this file's sha256.",
+ "filed": "2026-11-02, before any run",
+ "request_in_the_terms_words": "On the two rand32b fine-tunes and the two rand32 fine-tunes, run teacher training again as in E12 Amendment 1 (component training with loss KL(teacher || student), teacher = the fine-tuned model, Gamma and Delta frozen, Adam 1e-5, 1000 steps) and read the student's own state, Delta fixed, from its fp32 weights. Does the fall in the re-switching term L01 - L00 on rand32b survive a second batch order? Are the subcomponents Gamma switches on at the trigger on the student's activations the ones it switches on on the fine-tuned model's? Which change in Gamma's values gives the fall back?",
+ "config": {
+  "falling": "rand32b",
+  "reference": "rand32",
+  "seeds": ["s0", "s1"],
+  "n_seeds": 2,
+  "second_order": 1,
+  "s_on_thr": 0.3,
+  "read_tol": 0.02,
+  "repro_tol": 0.05,
+  "zero_tol": 1e-06,
+  "fall_line": 0.5,
+  "gone_line": 0.15,
+  "half": 0.5,
+  "ladder": [1, 3, 10, 30, 100, 300],
+  "few_k": 10,
+  "diffuse_k": 100,
+  "top_saved": 30
+ },
+ "sources_of_lines": {
+  "s_on_thr": "E12's DG_THR and gamma.S_ON_THR: the recruit test's rule, mean trigger value up by more than 0.3 over W0's",
+  "read_tol": "Amendment 1's filed w0_tol; its measured W0 differences across runs on this card were exactly 0",
+  "repro_tol": "about 5 x the largest batch-order change Amendment 1 measured, 0.009 nats (rand32 s0). A same-order retrain perturbs less than a different batch order. rand32b's own batch-order change is unmeasured, which is P1: if this stop fires on rand32b, that is itself the result and goes to the lead",
+  "zero_tol": "Amendment 1's filed zero_tol for two reads of one path on one card; it read exactly 0 there",
+  "fall_line": "half of the smaller rand32b fall in Amendment 1 (1.02 nats)",
+  "gone_line": "the largest change on Amendment 1's six other states is 0.132 nats, rounded up",
+  "half": "a majority of the fall, the plain meaning of 'carries it'. Not measured",
+  "ladder, few_k, diffuse_k": "E12's switched-on sets on the map tables hold 21 to 51 subcomponents, rand32b's 21 and 27. few: at most 10, under half of rand32b's set. diffuse: at least 100, about twice the largest map set",
+  "J_seed and J_other": "measured in this job from the fine-tunes; E12 read J_seed at 0.655 on rand32b and 0.533 on rand32 (E46's rebuilds may differ by a member or two)",
+  "P5": "E12's separation rule (gap over the larger range), the project's standing rule for two groups"
+ },
+ "measurements": {
+  "L00, L01": "As Amendment 1: mean log-odds of the target at the trigger on 97 held-out windows of E46's windows_<task>.pt, released components, Delta out, masked by Gamma's values at W0 (L00) or at the state (L01). L01 reads the same whatever the target weights, since Delta is out; only the gates carry the state.",
+  "fall": "L01(fine-tune's values) - L01(student's values), nats, absolute; positive means the student's re-switching term is smaller. Quantity: masked log-odds. Held fixed: released components, windows, Gamma. Varied: Gamma's values, across all positions of each window.",
+  "switched-on set S": "alive subcomponents whose mean trigger value over the 97 windows is up by more than 0.3 over W0's (recruit.trigger_dg, recruit.switched)",
+  "J": "Jaccard |A & B| / |A | B| of two switched-on sets (recruit.jaccard); nan when both are empty",
+  "restore": "Start from the student's values at every position. Write the fine-tune's values at the trigger position only, on a chosen group of subcomponents. Nats given back = masked log-odds with released components after the write, minus before. at_trigger: every subcomponent. Blocks: dropped = in the fine-tune's S, not the student's; kept = in both; added = in the student's, not the fine-tune's; outside = every other alive subcomponent. These four partition the alive set; they need not sum to at_trigger, as the masked model is not linear in the values, and dead subcomponents are in at_trigger only.",
+  "ladder": "The same restore on the k alive subcomponents with the largest mean over windows of |fine-tune's value - student's value| at the trigger, k in config.ladder.",
+  "cosine": "<student's change, teacher's change>_F / (||student's change||_F ||teacher's change||_F) over all 24 matrices together, in fp64; a change is the target weights minus W0. Scored (P5)",
+  "distance, size_ratio": "||student's change - teacher's change||_F, and ||student's change||_F / ||teacher's change||_F, same matrices. Reported, unscored",
+  "cosine_other_seed": "the cosine between a student's change and the change of the other seed's teacher on the same table. P5's positive control, reported, no stop",
+  "L01_hook": "L01 with Gamma read on the forward the student trained on: W0 as target plus the student's offsets added by component_training.hooks, rebuilt from the fp32 components Job.train returns. Stored beside L01 (Gamma read on target weights W0 + dW, which runs under bf16 autocast). Reported only, no stop, no prediction: the check of the bf16 autocast / hook pair on Gamma's values (review M2)."
+ },
+ "states": "Order-0 students rand32b s0, rand32 s0, rand32b s1, rand32 s1, in that order, each against Amendment 1's L01. Then order-1 students rand32b s0 and s1. Six students. Names as Amendment 1: <task>_<seed>, order-1 <task>_<seed>_o1. Batches: fine-tunes draw from a generator seeded by their seed, so among rand32b's four students, s0 order 0 and s1 order 1 share their first batches (up to step 30) with their teacher, and s1 order 0 and s0 order 1 do not. P1's two seeds therefore also compare one sharing state with one not, the other way round from order 0.",
+ "predictions": {
+  "P1": {
+   "claim": "the fall on rand32b is not a batch-order effect",
+   "rule": "Absolute nats. Fall of each order-1 student against the same fine-tune. Under 2 states, or any not finite: 'unscorable'. All >= 0.5: 'holds'. All with |fall| <= 0.15: 'gone'. Otherwise 'varies'; a rise above 0.15 nats reads 'varies'. 0.5 is 'holds' and 0.15 is 'gone'. Reported beside: the order-0 falls, and noise_move, |L01(order 0) - L01(order 1)| / the fine-tune's gain, against Amendment 1's 0.0005 and 0.0006 on the other tables.",
+   "lean": "holds, medium-high: the two seeds agree at 1.02 and 1.22, though they share a batch order (review M1), so that agreement says little",
+   "blind_to": "more than one extra batch order; whether the fall changes with the windows, the step or the learning rate",
+   "positive_control": "the control below reproduces the falls at order 0; if it does not, P1 is not read",
+   "noise_floor": "this reading is the noise floor rand32b lacked"
+  },
+  "P2": {
+   "claim": "students switch on the same subcomponents as their fine-tunes",
+   "rule": "J = Jaccard(fine-tune's S, order-0 student's S) on rand32b s0 and s1, absolute. J_seed = Jaccard of the two rand32b fine-tunes' S. J_other = the largest Jaccard between a rand32b fine-tune's S and a rand32 fine-tune's S. Both measured in this job. Under 2 states or any not finite (both sets empty): 'unscorable'. J_other >= J_seed: 'no power'. All J >= J_seed: 'same', since a student is as near its fine-tune as the other seed's fine-tune is. All J <= J_other: 'different', since it is no nearer than a different table. Otherwise 'partly'. Reported as against_reference, separately: gap = min J(rand32 students) - max J(rand32b students); noise = the largest 1 - Jaccard(order-0 student's S, order-1 student's S) on rand32b. gap > noise: 'lower'. min J(rand32b) - max J(rand32) > noise: 'higher'. Otherwise 'no different'. Empty or not finite: 'unscorable'.",
+   "lean": "partly, low: a 20% fall makes some loss of members likely, but the 0.3 line tolerates lowered values",
+   "blind_to": "values that fall without crossing the 0.3 line (P3's kept block reads those); subcomponents switched on for a few keys only, whose mean over 97 windows stays under 0.3 (P4's ladder ranks by per-window change and is not blind to these; the outside block holds them); position other than the trigger; on rand32 the teacher holds P(target) at only 0.55-0.59, so the reference differs in teacher quality too, and one member of a set of about 25 moves J by about 0.04",
+   "positive_control": "J_other reads low (different tables). If it is not below J_seed the rule reads 'no power'. J_seed against E12's 0.655 and 0.533, reported, no stop",
+   "noise_floor": "1 - Jaccard between batch orders, measured in this job"
+  },
+  "P3": {
+   "claim": "which change in Gamma's values gives the fall back",
+   "rule": "Per rand32b order-0 state, nats over nats, relative to that state's fall. Not finite: 'unscorable'. Fall < 0.5: 'no fall'. at_trigger / fall < 0.5: 'not at the trigger'. Otherwise the block with the strictly largest nats given back, if its share of the fall is >= 0.5: that block's name; a tie or a largest share under 0.5: 'spread'. An empty block gives back 0. Verdict: the label both states read; any state 'unscorable': 'unscorable'; otherwise different labels: 'mixed'. 0.5 meets each line.",
+   "lean": "kept, low: the term falls by a fifth while the shares of the other tables hold, which reads more like lower values on the same members than lost members",
+   "blind_to": "the order of restoring, since a block is restored alone from the student's values; values at other positions, except that 'not at the trigger' says they matter; per-window sign, since nats are means",
+   "positive_control": "restoring every value at every position gives the fine-tune's L01 within 1e-6, a stop on the first student; and on rand32 the same reads are reported in nats beside a fall of under 0.1 nats, unscored",
+   "noise_floor": "the order-1 students read the same blocks, reported, not scored"
+  },
+  "P4": {
+   "claim": "whether the fall is about a few subcomponents or many",
+   "rule": "Per rand32b order-0 state. Not finite: 'unscorable'. Fall < 0.5: 'no fall'. at_trigger / fall < 0.5: 'not at the trigger'. k50 = the smallest k in 1, 3, 10, 30, 100, 300 whose nats given back are >= 0.5 x fall. k50 <= 10: 'few'. k50 = 30: 'middling'. k50 >= 100, or no k reaches it: 'diffuse'. Verdict over the two states as in P3.",
+   "lean": "diffuse, low: E12 reads mean changes of 0.018-0.019 over alive subcomponents on these tables, and the fall has no sign of a single member",
+   "blind_to": "effect per unit of value: the ladder ranks by how much a value changed, not by what the change does, so a large effect from a small change comes late and can read 'diffuse' wrongly; a set of few per key over 32 keys reads as many",
+   "positive_control": "the same ladder from W0's values to the fine-tune's on rand32b, on the term itself (5.8 to 6.0 nats), label reported, no stop. Expected 'few' or 'middling', as the term lives in sets of 21 and 27 by E12's reading, low confidence. If it reads 'diffuse', the ladder is a weak test of concentration here and P4 is reported as such",
+   "noise_floor": "the order-1 students' ladders, reported, not scored"
+  },
+  "P5": {
+   "claim": "whether rand32b's students' weight changes point less along their teachers' changes than rand32's do",
+   "rule": "cosine between the student's change and its teacher's change (each from W0, over all 24 matrices together, fp64), rand32b s0, s1 against rand32 s0, s1, order 0. Under 2 in a table or any not finite (a zero change on either side gives nan): 'unscorable'. within = the larger table's range. min(rand32) - max(rand32b) > within: 'less aligned' (rand32b lower). min(rand32b) - max(rand32) > within: 'more aligned' (rand32b higher). Otherwise 'no separation'. Ties at the line read 'no separation'. Reported beside, unscored: the unnormalised distance ||student's change - teacher's change||_F and the size ratio ||student's change|| / ||teacher's change||, per student. Why the cosine and not the distance: with r the size ratio and c the cosine, distance over teacher size squared is 1 + r^2 - 2rc, tilted by r before any data (Amendment 1's r: 0.87-0.89 on rand32b, 1.34-1.35 on rand32), so a distance rule leans towards 'nearer' on rand32b at equal alignment (review M1).",
+   "lean": "no separation, low: nothing is known of the cosines; the size ratios say nothing about direction",
+   "blind_to": "size (the cosine ignores it; the size ratio and distance are reported beside); which matrices; where in weight space; a low cosine can be what a student cannot express with Delta fixed, so this bears on 'the student reaches its teacher' only loosely; rand32's teacher is half-learned; two states per table",
+   "positive_control": "the same cosine between each student and the other seed's teacher of the same table (cosine_other_seed), reported, no stop. Expected below the cosine with its own teacher; if it is not, the cosine does not tell a student's teacher from another and P5 is reported as such. 1 for a state against itself, by code",
+   "noise_floor": "the within-table range, which is in the rule"
+  }
+ },
+ "expected": {
+  "fall, nats": {"W0": "0, by code", "do-nothing": "0, by code: the fine-tune against itself", "control": "rand32b s0 1.225, s1 1.023; rand32 s0 0.076, s1 0.084 (Amendment 1)", "order 1": "at least 0.5 on rand32b, by the lean"},
+  "J": {"W0": "nan, both sets empty", "do-nothing": "1, by code", "control": "J_seed about 0.655 on rand32b; J_other under it", "students": "rand32 at least 0.7; rand32b 0.5 to 1, a guess"},
+  "n_on": {"W0": "0", "do-nothing": "the fine-tune's", "control": "fine-tunes rand32b 27, 21 and rand32 41, 51, from E12, within a few"},
+  "nats given back": {"W0": "0", "do-nothing": "0", "control": "restoring everything everywhere = the fall, within 1e-6", "at_trigger": "rand32b at least 0.5 of the fall, by the lean", "blocks and ladder": "no filed number beyond the verdict lines"},
+  "cosine": {"W0": "nan, 0/0", "do-nothing": "nan: its student's change is 0", "control": "1 for a state against itself, by code; cosine_other_seed below the cosine with the student's own teacher", "students": "0.3 to 0.9, a guess"},
+  "L01_hook": {"W0": "equals L00, by code (no offsets)", "control": "agrees with L01 by weights within Amendment 1's batch-order noise (about 0.009 nats at most), a guess: it is the first reading of this pair", "students": "as the control"},
+  "read_from_the_code": "None of the do-nothing or W0 values above runs as a state here: they follow from the code, since gates depend only on the target weights and masked_lo only on the gates."
+ },
+ "stop_rules": {
+  "inputs": "No file checks of their own: the do-nothing L01 and W0 cell reads below would miss if a fine-tune or a windows file had changed. Refuses if the results file already exists.",
+  "card": "Stop unless the card is Amendment 1's (NVIDIA L40): every reference number below is on that card.",
+  "stage 0": "W0 cells T0, U0, L00 against stage0a.json's within 0.02 (Job.task, as Amendment 1). Each fine-tune's L01 against Amendment 1's do-nothing L01 within 0.02. No training has run.",
+  "the control": "Order-0 students run first, rand32b s0 then rand32 s0. Each order-0 student's L01 against Amendment 1's within 0.05 nats, else stop. Its L01 by gates against its route split within 1e-6, else stop. Restoring all values at every position on the first student gives the fine-tune's L01 within 1e-6, else stop. No order-1 student runs until all four order-0 students pass.",
+  "later students": "Order-1 students have no comparison to stop on, since that is P1."
+ },
+ "edge_cases_run_before_filing": "~/commute-data/scratch/commute-lead/e12a2-writer/edge.py on amend2.py's rule functions, 2026-11-02, all as expected on the filed text: empty lists, a short list, nan in each rule; P1 exactly at 0.5 and 0.15, a rise, one holds one gone; P2 J = J_seed, J = J_other, J_seed = J_other, both sets empty (nan), gap = noise, a noise of 0, 'higher'; P3 fall exactly 0.5, under it, negative, zero fall, at_trigger share exactly 0.5, a tie, an empty block, largest share exactly 0.5 and under it; P4 each k, no k, a wrong-length ladder, k50 exactly at 0.5; P5 ties at the line, a zero teacher, reversed; agree on empty, mixed, one unscorable. Re-run after the P5 rewrite (cosine) with P5 cases: less aligned, more aligned, ties at the line, equal, one state in a table, nan from a zero-size change, and change_stats on a zero student, a zero teacher, equal and opposite changes.",
+ "departures": {
+  "from_Amendment_1": "Six students of ten; rand32b also at batch order 1, which Amendment 1 did not read; reads L01, sets, restores and distance, not the whole table or state (b); no C1; no least-squares read. Results are read from fp32 weights as filed there.",
+  "from_E12": "The switched-on set is E12's, on E46's rebuilt fine-tunes, on an L40, not an A40.",
+  "from_the_filed_clause": "Amendment 1's what_changes_next read 'nothing further runs'. The lead departs from it for this anomaly only (reports/reviews/2026-11-02_review_e12-amend1-analysis.md, M5), under the user's standing rule to run anomalies down first.",
+  "from_VPD": "As Amendment 1: U and V alone on an unmasked KL to a teacher, Gamma and Delta frozen, no sparsity or masked loss. Gamma sees 41-token windows where it trained on rows of 512. The restore writes Gamma's values by hand, which VPD never does."
+ },
+ "limits_carried": "A new circuit from old pieces reads 'elicited' to VPD, and E50 Amendment 1 did not show W0 performs the copy task, so the classes are 'copy' and 'random map', not 'existing' and 'new'. This run has no copy table.",
+ "what_changes_next": "Each clause ends with the user hearing the result first. P1 gone: the fall is a batch-order effect; Amendment 1's report says so, and P2 to P5 are reported but carry no cause. P1 varies: the term has large batch-order noise on rand32b; quote it as a range, and nothing further runs. P1 holds and P4 few: name those subcomponents, and reading what they do on W0's text is the one follow-up proposed. P1 holds and P4 middling or diffuse: the fall is recorded as a spread lowering of Gamma's values, the student/teacher size correlation stays a correlation, and nothing further runs. P3 or P4 not at the trigger: the fall lies in values at earlier positions, the sets at the trigger do not speak to it, and restoring by position is the one follow-up proposed. P2 same: 'a student switches on the same subcomponents' may be claimed for these tables, by the switched-on rule. P2 partly or different: the claim is not made, and 'keeps its fine-tune's re-switching' stays about nats only. P2 no power or unscorable: the set reading is not used. P5 less aligned: consistent with the reach reading, and no more than that; P5 no separation or more aligned: the reach reading loses its one direct test on alignment. Any combination of outcomes no clause above names (including P1 holds with P4 mixed, and P3's block labels) is reported to the user with both numbers, and nothing further runs. No outcome changes Amendment 1's scored verdicts, which stand as filed.",
+ "not_run": [
+  "ident32 and ident32b students, Amendment 1's states (b), its C1 and its least-squares reads",
+  "A rank of subcomponents by effect rather than by change of value",
+  "Restoring by position other than the trigger; values at the trigger per key",
+  "A third batch order; another step, learning rate or teacher step on rand32b; E42's step-1000 teachers",
+  "Reloading the bf16 offsets, to measure their rounding: retraining makes it unnecessary here",
+  "Any harness of faithfulness on these students; cheap-method comparisons (baseline-lead's)"
+ ]
+}

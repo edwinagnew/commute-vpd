@@ -3,6 +3,8 @@
 *Baseline-lead, 2026-11-02. Decision: `decisions.md` row "Interchange patch on the 67M" (option (b) of
 `decision-e65-or-stage-b`). Plan only: no code, no predictions filed, nothing run. The user reads this first.*
 
+**Ended 2026-11-02 (user): no rules filed; see `decisions.md` and `reports/analyses/2026-11-02_analysis_e66-interchange.md`.**
+
 **Reviewed by Fable (2026-11-02): `reports/plans/2026-11-02_advice_e66-review-FABLE.md`, which advises against running this as written. Its changes are not applied in the sections below; the user chose its option A, the feasibility probe, written up in "Amendment 1" at the end, which holds over them.**
 
 **In plain words.** We move the original model's internal state from two different contexts into a fine-tuned model,
@@ -332,3 +334,46 @@ Everything in this section: coded and filed only. No model was loaded. A fresh r
 ### Departures from the literature
 
 The plan's list stands. Added here: the off-map ratio Q, the masked odds and the alignment-matched null are ours, with no source; temperature 0.5 and the 0.2 and 0.5 bands in `predictions.json` are unsourced and marked so there.
+
+### Note, 2026-11-02: after the code review
+
+*The code review of commit c649f2e, relayed to the writer by the lead on 2026-11-02. No file for it was in `reports/reviews/` when this was written. Nothing had run, so `predictions.json` was changed in place. This note holds over Amendment 1 above where they differ.*
+
+**Changed in the rules, and why.**
+- **C0 replaced, C1 deleted.** The old identity patch and zero update could pass with the x_hi sites never touched, and T = 1 at a zero update holds by identity, so it controls nothing. C0 now writes x_hi's block-l input at every position, with the stored x_hi site at the answer position, into x_lo's run, and asks that it reproduce x_hi's read within 1e-4 (E52's fp32 figure, 1.7e-5). A nan now fails whichever position it holds. The zero update stays in words only.
+- **C6.** Sharpening is scored against 1 (T − 1 over 3 s), not against the write, and its Q is void unless that holds. So "too weak" can fire honestly. Its gain is recorded on each map. The trained control stays: dividing logits by the temperature would pass by algebra and test nothing about a weight state.
+- **C5.** Amplify's T and Q are void unless its gain match has status "ok" and the map's write is conditioned, so stage 1's stop does not count such a map.
+- **C4, write conditioning, new.** `perturb.write_fit` goes into the write's record and the log. Bars: cond(A) at most 16.5, mean relative error at most 0.33, twice E46's worst reading in `regating_table/results/amend3.json` (cond 6.4 to 8.2, error 0.16 to 0.17). Twice, not once, is the writer's choice: that write sat at block 1 on the key layout, and this one sits at block 3, on the lookup at the cue layout.
+- **Q's band.** Q reads void when 3 s_Q is over 0.2, not a band widened by its own noise.
+- **The off-map mask.** It now holds the map's target on x_hi and on x_lo (two tokens per pair). On the copy map they differ, and x_hi's B entering x_lo's odds would move the off-map read.
+- **U.** Void when 2K exceeds 12288, a new edge case, since no null fits. Fallbacks are stored per draw. The share of amplify's neurons in U's top K is reported in C7's reading.
+- **Blind-to, added.** Pairs are picked on W0's own metric, so R(W0) carries selection inflation and T can drift below 1 with update size. That feeds the reading of T against ‖δW‖, and the predictions' note on that reading says so.
+
+**Deleted.** The bars and U at the state's own top K, so no bar is computed by the run; Spearman, which the analysis computes from `run.json`; the listing of the 33 states not read and the E54 and E60 steering sources, so stage 0 no longer prints them and the card's listing is a `jq` query. Stage 4 now stores Q beside T unscaled.
+
+**Consequence for "What the card after it decides".** Its numbers come from the analysis, from `run.json`: bars, |ρ|, the filed shares of the other states.
+
+## Amendment 2: the patch on the saved fine-tunes, as exploratory readings (2026-11-02)
+
+*The user's decision after job 48971 stopped, on `reports/plans/2026-11-02_advice_e66-stop-FABLE.md`. Not reviewed again: nothing here changes how a number is measured, with the two exceptions named below. About 5 min of `debug`, $0.*
+
+**In plain words.** The first job stopped because neither hand-built control came out usable, so nothing it could be scored against exists. This job reads the patch ratio on the fourteen saved fine-tunes anyway, as readings and not as a test, with the neuron reading dropped. It answers one question, whether any 67M fine-tune responds to a context swap more strongly than the original model does, and it can give no state a label.
+
+**Stage 1's stop stands as filed and is not refiled.** `results/predictions.json` and `results/run.json` stay as they are. Amplify and the write gave no usable high or low control under the filed rules, and no filed verdict comes from this job.
+
+**What runs** (`experiments/interchange_67m/amend2.py`, `cluster/interchange_67m_amend2.sbatch`, output `results/amend2.json`):
+- **W0 alone first.** Stage 0 as before, without K: pairs, the transplant check, R(W0), l*. It must also reproduce job 48971's R(W0) within 1e-4 and its l*.
+- **References, copied from `run.json`.** The write's and sharpening's rows and the write's fit, per map; the copy map's write is the lookup's. Nothing is rebuilt and `sharpened` does not run. The write missed its filed bar on every map, so it is a reference only, and the lookup's (cond 30.6, α 43) is the worst of the five.
+- **Stages 2 and 3.** G re-read within 0.02, steering share, and T, T_off, Q at all three blocks, on E62's six states and the eight copy and random-map states. A mark per block says whether steering reaches 0.5 at or before that block. It describes what the patch can see; it is not a verdict.
+- **Stage 4.** T, T_off, Q on E62 Amendment 2's six scaled copies. Option A's size reading needs them, and they cost about 20 s. T against ‖δW‖ is computed in the analysis, read with the selection-inflation note in `predictions.json`.
+- **U is off, and no U code runs:** no K, no neuron sets, no null. Fable's finding: the write is a linear readout of block 3's neurons, so ablating them removes it whatever the update's kind, and U's negative control fails by construction.
+
+**The two exceptions, both reporting only.**
+- **ident32b's block 1**, which missed the 0.5-nat floor by 0.003, is read with a floor of 0.49 on that map alone and marked `under_floor`. Its l* stays 2. Every other mean on that map is 0.65 or more, so nothing else moves. Its write reference there was void in `run.json`; the T from the two means is given beside, with no sd.
+- **The new stop** on reproducing job 48971's pairs protects the copied references.
+
+**The one positive thing we would read, and what it cannot say.** A fine-tune whose T sits above the write's at a block where steering has not already carried its gain would be the first state seen to scale W0's context response. **Nothing has ever read high on T: amplify never reached a reading, so a high state has no reference.** It could not say why: reuse, a sharpening local to the marker, or an artefact of the patch would all read alike, and Q removes only what the off-map response shares. And a T near 1 cannot be told from "T sees nothing".
+
+**Reading the outcome (exploratory), Fable's branches, quoted.** "if the copy-map states read T near 1 at block 1 like the write, T has shown no fine-tune it can see and the key-swap or E65 is next; if they read above the write and the random maps do not, file rules with a small amplify as the high control." And: "Rebuild amplify (K about 256, gain capped at what W0's neurons give). $0; tells us T can read a known scaling. Worth it only if the states read near 1 everywhere, to separate 'no reuse' from 'T blind'." Fable also notes that "E62's six states are blind at l* = 3 by the plan's own mark and would not change either." A new plan would file any rule; this amendment files none.
+
+**Not run.** Everything in this section. No model was loaded in writing it.

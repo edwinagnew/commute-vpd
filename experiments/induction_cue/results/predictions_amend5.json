@@ -1,0 +1,77 @@
+{
+  "experiment": "E62 induction_cue, Amendment 5: the head sweep at W0. At the second A, where does the masked forward's copy run, at the level of heads, under W0's own mask? W0 only; no training, no state read.",
+  "filed": "2026-11-02",
+  "plan": "reports/plans/2026-11-02_plan_e62-copying-heads.md, section Amendment 5 (2026-11-02)",
+  "spec": "reports/plans/2026-11-02_advice_e62-amend4-control-FABLE.md, option 1, chosen by the user from a dialog ('One free cluster job, about 5 min. First switch the head off with every mask at 1 ... Then switch off all 24 heads one at a time, in the real model and the masked forward. It tells you whether the mask reroutes copying through other heads or thins the whole pathway.'). Departures are listed under departures_from_the_advice below",
+  "stands_beside": "results/predictions.json and predictions_amend2.json to predictions_amend4.json are not edited. Amendment 4's filed verdict, control_failed_mask, stands; nothing here rescores it. amend4_miss_reported_only prints its miss with an sd and changes no verdict.",
+  "question": "Does W0's mask move W0's copy at the second A off head (2,4) onto other heads (rerouted), reduce every head's part alike (thinned), or take out (2,4) alone and leave the other heads' parts (labelled_head_singled_out)?",
+  "granularity_limit": "Everything here is at the level of heads. A verdict names which heads the forward's log-odds of B depends on when each is replaced by its mean. It does not name a circuit: a forward whose copy ran entirely through (2,4) could run a different circuit of that head's subcomponents, and VPD would read it as the same mechanism. A new circuit built from old subcomponents reads as elicited to VPD. rerouted does not say the carrier does what (2,4) does in the target model; it says the masked forward's copy depends on that head by at least a log-odds more than the target model's does. No verdict here is a reading of a fine-tuned state, of new capability against strengthened old, or of r.",
+  "settings": {
+    "head": [[2, 4]],
+    "other_head": [[2, 3]],
+    "from_predictions_json": "half, n_boot, control_seed: results/predictions.json settings, read at run time",
+    "windows": "the 200 read windows of results/large/windows.pt (sha256 checked against run.json), copying map's target, B; read at the second A, half - 1",
+    "pair_broken": "copying.broken_pair, control_seed 62, as amend4.py",
+    "means": "results/large/heads.pt: W0's target-model means, as Amendments 2 to 4; the replacement vector for every head, in every forward",
+    "precision": "As Amendment 4: Γ and the masked forward bf16 (autocast on CUDA), target model fp32, allow_tf32 off, batch 64, on the L40. Stage b and the sweep's M32 and Mb32 rows read the masked forward in fp32 under Γ's bf16 gates; stage b also reads it under Γ's own fp32 gates",
+    "bootstrap": "copying.boot_sd: 2000 draws over the 200 windows, seed 0, of the mean of a per-window difference. The windows share 32 keys, so this sd is a lower bound on the noise over keys"
+  },
+  "definitions": {
+    "fall": "A forward's log-odds of B with no head off minus with the named head replaced by its mean at every position, on the intact windows, mean over windows. The mask stays as read with every head on: no Γ pass carries a head off",
+    "T": "fall of the target model",
+    "M": "fall of the masked forward under W0's own mask",
+    "Mb": "the masked fall on the pair-broken windows, under their own mask",
+    "Tb": "the target model's fall on the pair-broken windows; reported, the positive control of the pair guard: (2,4)'s T - Tb should be large",
+    "excess": "M - T, per window then mean; excess_sd its window bootstrap sd",
+    "fraction": "M / T, for a head with T at or over fall_floor",
+    "lean": "intact minus pair-broken log-odds of B, each set of tokens under its own mask in the masked forward",
+    "all_ones": "the masked forward with every gate 1, Delta out: copying.AllGatesOn's forward, read through Reads.masked (tests/test_copying.py asserts they are equal under a hook)",
+    "pair_part": "A head's fall on the intact windows minus its fall on the pair-broken windows, pair_part_T and pair_part_M, each with its window bootstrap sd: the part of the fall there because of the pair. The check of Amendment 4 (reports/reviews/2026-11-02_review_e62-amend4-check.md, F1) found that 4.82 mixes this with what mean ablation does to B's log-odds anyway; (2,4)'s row is that read, and the 23 other heads, (3,5) labelled, are the reference at this position",
+    "tokens_at_broken_gates": "masked forward, W0's pair-broken gates, intact tokens minus pair-broken tokens: what the tokens alone move with the gates held there. Amendment 4's unread token_part",
+    "tokens_at_intact_gates": "masked forward, W0's intact gates, intact tokens minus pair-broken tokens. Each token part plus its gate part equals the lean exactly",
+    "a_a_half2_S_old": "As Amendment 4 (predictions_amend4.json, definitions), saved to results/large/amend5_vectors.pt before the control can stop the job"
+  },
+  "thresholds": {
+    "masked_fall_frac": 0.25,
+    "masked_fall_frac_source": "The advice's stop for the all-ones row, and Amendment 4's quarter (the draft's choice, no published source). Against the target's filed fall, amend4.json stage1_control.fall, 4.81726; the bar is 1.20432. A tie passes",
+    "reread_tol": 0.001,
+    "reread_tol_source": "predictions_amend4.json reread_tol, whose measured floor on the L40 is 0 (amend3.json diff_a2). Printed as max_diff and exact",
+    "n_heads": 24,
+    "n_heads_source": "The target model: 4 blocks of 6 heads (copying.py's header)",
+    "carrier_min": 1.0,
+    "carrier_min_source": "The advice's 'about a log-odds or more', and local_faith.MIN_GAIN, the project's smallest scored gain. Against the 1.40 log-odds by which the masked copy outside (2,4) exceeds the target's (3.42 against 2.02, amend4.json). Also the smallest masked lean the sweep and the token reading will read, and the least M a carrier may have (M >= carrier_min). Ties count",
+    "carrier_sds": 2.0,
+    "carrier_sds_source": "Chosen here, no source: a carrier's excess at least 2 window bootstrap sds. It guards a noisy head, and carrier_min does the work at the sds expected. Ties count",
+    "fall_floor": 0.5,
+    "fall_floor_source": "Chosen here, half of carrier_min, no source: a target fall under it is not a denominator for a fraction, since falls are per-head noise and generic drops at that size. Unmeasured per head until this job runs; fraction_sd is printed per head. A tie has a denominator",
+    "fraction_gap": 0.24,
+    "fraction_gap_source": "E58's band gap, as E62's r_gap and Amendment 4's random_margin. 'Similar fraction' in the advice has no number; this is the project's standing margin between two shares. A tie counts as similar",
+    "token_share": 0.5,
+    "token_share_source": "E62's share_old_min; here the plain majority, as token part and gate part sum to the lean. A tie is order_dependent"
+  },
+  "predictions": {
+    "stage_a_vectors": "a, a_half2, S_old are written to results/large/amend5_vectors.pt straight after Γ's two passes, before any forward can stop the job.",
+    "stage_a_control": "First and alone. copying.all_ones_control: head (2,4) off with every mask at 1, intact windows. Not finite: unreadable. Fall under 0.25 of the filed 4.81726: exit 1, verdict ablation_does_not_transfer, and the sweep is not read. Expected: fall near 4.82, lean near 6.84, as the same hook in that forward matches the target on repeated sequences (amend2.json row1_control, 0.0095 top-1).",
+    "stage_a_reread": "Every number of amend4.json's stage1_control but status, recomputed by the same calls, max |difference| at most reread_tol, expected exactly 0 on the L40; the do-nothing repeat, no head off, read twice, at most reread_tol, expected exactly 0. A miss is exit 1, verdict reread_failed.",
+    "stage_b_precision": "Reported, one flag, no stop. Masked fall of (2,4), bf16, against fp32 under Γ's bf16 gates and against fp32 under Γ's fp32 gates; copying.precision_moved is true if it moves by more than the bf16 fall's sd, and the job prints a LOUD line. No stop because every later read costs seconds and the sweep's fp32 rows are what a move would need next. Expected: under the sd; the advice held precision is not the account of 0.92 against 4.82, and nothing has measured it. Also printed, for all three masked levels (intact, head off, pair broken) in both precisions: mean, sum, distinct window values and the smallest gap, for Amendment 4's -7.30000003, which has no known mechanism (check F5). The intact level must reproduce that value on the L40, through the re-read, and exact says whether it does to the last digit. Expected: chance, many distinct values, no lattice at bf16's steps.",
+    "stage_c_verdict": "copying.sweep_reading on the bf16 rows, first that fires. unreadable: a head missing, a number not finite, the masked lean under carrier_min, or (2,4)'s T under fall_floor. rerouted: some head other than (2,4) is a carrier: M at least carrier_min (the masked forward leans on that head), M - T at least carrier_min and at least carrier_sds x excess_sd, and M - Mb at least carrier_min. no_comparison_head: no carrier, and no other head has T at or over fall_floor. thinned: every other head with T at or over fall_floor has a fraction within fraction_gap of (2,4)'s. labelled_head_singled_out: every such head's fraction is over (2,4)'s by more than fraction_gap. mixed: anything else. Exactly one fires.",
+    "stage_c_expected": "(2,4)'s T 4.82 and M 0.92 within reread_tol, else exit 1, verdict reread_failed. Every other head's T under (2,4)'s (E62's ranking, on repeated sequences), printed as ranking_holds, no stop. No expected value for the other heads' M: that is the reading.",
+    "stage_c_fp32": "The same rule on the fp32 rows, against the target's T, printed as fp32_verdict beside the filed bf16 verdict. A disagreement prints a LOUD line and the reading goes to the user with both; it changes no verdict.",
+    "stage_d_token_reading": "copying.token_reading on the two token parts over the masked lean. unreadable: a number not finite or the lean under carrier_min. through_tokens: both over token_share. through_gates: both under it. order_dependent: anything else, ties included. Decides nothing about stage c; it is account D's read.",
+    "final_verdict": "results/amend5.json verdict: one of ablation_does_not_transfer, reread_failed, unreadable, rerouted, no_comparison_head, thinned, labelled_head_singled_out, mixed, with fp32_verdict, precision_moved and token_reading beside on a finished run. The same keys from copying.stopped_reading on a stop, without those three."
+  },
+  "expected_at_the_references": {
+    "W0": "Target model at the second A: intact -4.710, (2,4) off -9.527, pair broken -11.545, P(B) 0.00789, fall 4.817, lean 6.836. Masked: -7.300, -8.216, -11.641, fall 0.916, lean 4.341. k = 172 of 9,881 alive. All from amend4.json; all re-read.",
+    "do_nothing": "No head off, read a second time: every window's difference exactly 0 in both forwards. So at the zero update, which at W0 reads as W0, every fall is 0.",
+    "control": "Every mask at 1: fall near 4.82, lean near 6.84; stop under a quarter of 4.82. Target (2,4): pair_part_T large, the pair guard's positive control; at the marker 1.073 of the 1.163 fall depended on the pair (amend2.json row4_w0_fall). It decides no verdict: if it reads small, the head's fall at this position is not shown to be copying, and that is reported first."
+  },
+  "departures_from_the_advice": [
+    "labelled_head_singled_out and mixed are added. The advice names rerouting, uniform attenuation and the control stop. Amendment 4's numbers fit a fourth case as well as those: W0's mask costs (2,4) its fall and leaves the other heads' falls near the target's, which neither reroutes nor thins. Without a name it would read as a miss of both.",
+    "The pair-broken rows are added to the sweep: 96 reads for the advice's 48. A head's mean replaced can lower B's log-odds with no copy at all, and in the masked forward the injected mean is the target's. M - Mb is the guard in the carrier's rule and Tb its positive control. Without it, rerouted could fire on a general drop.",
+    "The swapped forwards take a reading with a rule, copying.token_reading, where the advice had no rule. Project rule: a number without an expected value is cut or given one. It decides nothing about the sweep.",
+    "The fp32 rows are read for all 24 heads, not only the reference rows, about 15 s, so that a precision move does not need a second job. Unscored, beside the filed verdict.",
+    "fp32 under Γ's own fp32 gates is added for (2,4) alone, in stage b, so that the comparison can fail on rounding in the mask as well as in the forward.",
+    "The all-ones row reads through Reads.masked under gates of 1, the same forward as copying.AllGatesOn (asserted in tests), not through AllGatesOn.run, as copying.read_lo needs a net with `at`."
+  ],
+  "edge_cases": "tests/test_copying.py, all pure but one forward on a tiny real ComponentModel, run before filing. A sweep where no head falls: every masked fall 0 with (2,4)'s T 4.82 is no_comparison_head with no other denominator, thinned with one (every fraction 0); every target fall 0 as well is unreadable. Ties: a carrier's four bars (M, M - T, the sds, M - Mb) count; fall_floor has a denominator; a fraction at fraction_gap is similar; token_share is order_dependent; all_ones at the quarter passes; a precision move equal to the sd has not moved. A zero or negative denominator: a target fall under fall_floor, zero and negative included, gives no fraction; the labelled head's under it is unreadable; a filed target fall at or under 0 is unreadable in the control; a masked lean under carrier_min, zero and negative included, is unreadable in the sweep and the token reading. A total fall over the masked lean: the sum of 24 falls over it, and one head's fall over it, each decide nothing, flagged sum_falls_over_lean and falls_over_lean. A case no branch covers: there is none; mixed is the last branch, and a 1,152-case grid checks the verdict against the rule written out apart from the code. A negative fraction: a head off that raises log-odds is under (2,4)'s by more than the gap, mixed. A carrier with a target fall of its own: T 2.0, M 3.5 is rerouted. A general drop, M - Mb under the bar: not a carrier. Noise: an excess under 2 sds is not a carrier. Non-finite anything: unreadable. A head missing: unreadable."
+}

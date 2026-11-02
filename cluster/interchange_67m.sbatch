@@ -5,14 +5,13 @@
 # Rules: experiments/interchange_67m/results/predictions.json (run.py refuses unless it is committed unchanged). Controls only;
 # readings on saved states are exploratory.
 #   cd ~/commute-agents/<role> && sbatch cluster/interchange_67m.sbatch
-# Exit 1 at: stage 0, W0 alone (the identity patch or zero update over 1e-4; half the six maps void at every block); stage 1,
+# Exit 1 at: stage 0, W0 alone (x_hi's input written into x_lo's run off x_hi's read by over 1e-4; half the six maps void at every block); stage 1,
 # amplify's T not over the write's by 3 s on half the readable maps; stages 2-3, a state's gain off its filed value by over 0.02.
 # Every scored number is printed to this log.
 # Inputs on NFS (gitignored, read only): experiments/induction_cue/results/large/{windows.pt,{copy,lookup}_s{0,1,2}.pt};
 # experiments/regating_table/results/large/{windows_{ident32,ident32b,rand32,rand32b}.pt,{ident32,ident32b,rand32,rand32b}_s{0,1}.pt};
 # experiments/keydependent_elicit/results/large/windows_elicit.pt; Pile rows artifacts/sets/train_0_32768.npy (cached); the target
-# model in artifacts/vpd/; committed JSON: induction_cue run.json, amend2.json, baseline_neurons.json, keydependent_elicit
-# stage2.json, regating_truth_table stage1.json.
+# model in artifacts/vpd/; committed JSON: induction_cue run.json, amend2.json, baseline_neurons.json.
 # Writes experiments/interchange_67m/results/run.json (refuses if it exists). Saves no state. Deletes nothing, commits nothing.
 # Expected: 10-15 min, unmeasured: 6 maps' pools ~1, stage 0 ~2, stage 1 ~4, 20 state reads at ~15-25 s each. 30-min wall.
 #SBATCH --job-name=commute-interchange-67m

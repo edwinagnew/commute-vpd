@@ -838,3 +838,161 @@ def test_end_to_end_on_a_copying_shaped_case():
     alive = {"m": torch.ones(100, dtype=torch.bool)}
     g1, g0 = [{"m": off[None, None].float().repeat(1, 3, 1)}], [{"m": torch.zeros(1, 3, 100)}]
     assert torch.equal(CP.closed(g1, g0, old, alive)[0]["m"], g1[0]["m"])  # disjoint: nothing changes, so the share is 0
+
+
+# ----------------------------------------------------------------------------- Amendment 5
+
+A5 = {"masked_fall_frac": 0.25, "carrier_min": 1.0, "carrier_sds": 2.0, "fall_floor": 0.5, "fraction_gap": 0.24, "token_share": 0.5}
+LAB = (2, 4)
+ALL_HEADS = [(b, h) for b in range(4) for h in range(6)]
+
+
+def sweep_rows(**per: dict[str, float]) -> dict:
+    """24 heads: the labelled one as Amendment 4 read it, the rest with no fall; `per` overrides, keyed h<block>_<head>."""
+    rows = {h: {"T": 0.1, "M": 0.05, "Mb": 0.0, "excess_sd": 0.05} for h in ALL_HEADS}
+    rows[LAB] = {"T": 4.82, "M": 0.92, "Mb": 0.1, "excess_sd": 0.2}
+    for k, v in per.items():
+        h = (int(k[1]), int(k[3]))
+        rows[h] = {**rows[h], **v}
+    return rows
+
+
+def sweep(rows: dict, lean: float = 4.34) -> str:
+    return CP.sweep_reading(rows, LAB, 24, lean, A5)["verdict"]
+
+
+@pytest.mark.parametrize("fall, target, want", [
+    (4.8, 4.82, "pass"), (1.25, 5.0, "pass"), (1.249, 5.0, "ablation_does_not_transfer"), (0.0, 4.82, "ablation_does_not_transfer"), (-3.0, 4.82, "ablation_does_not_transfer"),
+    (9.0, 4.82, "pass"), (math.nan, 4.82, "unreadable"), (4.8, math.inf, "unreadable"), (4.8, 0.0, "unreadable"), (4.8, -1.0, "unreadable"),
+])
+def test_all_ones_control(fall, target, want):
+    assert CP.all_ones_control(fall, target, A5) == want
+
+
+def test_sweep_each_verdict_as_named():
+    assert sweep(sweep_rows(h2_3={"T": 0.3, "M": 1.4, "Mb": 0.1})) == "rerouted"
+    assert sweep(sweep_rows(h2_3={"T": 2.0, "M": 0.4})) == "thinned"  # 0.2 against the labelled head's 0.19
+    assert sweep(sweep_rows(h2_3={"T": 2.0, "M": 1.9})) == "labelled_head_singled_out"  # the mask takes (2,4) and leaves (2,3)
+    assert sweep(sweep_rows(h2_3={"T": 2.0, "M": 1.9}, h3_5={"T": 2.0, "M": 0.4})) == "mixed"  # one kept, one thinned
+    assert sweep(sweep_rows(h2_3={"T": 2.0, "M": -1.0})) == "mixed"  # head off raises it: under the labelled head's by more than the gap
+    assert sweep(sweep_rows()) == "no_comparison_head"  # the target's rest spread under the floor
+
+
+def test_sweep_where_no_head_falls():
+    flat = {h: {"T": 0.0, "M": 0.0, "Mb": 0.0, "excess_sd": 0.0} for h in ALL_HEADS}
+    assert sweep(flat) == "unreadable"  # the target's labelled head under the floor: the re-read stops this first
+    keep = {**flat, LAB: {"T": 4.82, "M": 0.0, "Mb": 0.0, "excess_sd": 0.0}}
+    assert sweep(keep) == "no_comparison_head"
+    assert sweep({**keep, (2, 3): {"T": 2.0, "M": 0.0, "Mb": 0.0, "excess_sd": 0.0}}) == "thinned"  # no masked fall anywhere: every fraction is 0
+
+
+def test_sweep_carrier_needs_every_bar():
+    assert sweep(sweep_rows(h2_3={"T": 0.25, "M": 1.25, "Mb": 0.25})) == "rerouted"  # both ties at 1.0 count
+    assert sweep(sweep_rows(h2_3={"T": 0.3, "M": 1.29, "Mb": 0.1})) == "no_comparison_head"  # excess under the bar
+    assert sweep(sweep_rows(h2_3={"T": 0.3, "M": 1.4, "Mb": 0.41})) == "no_comparison_head"  # a general drop: the same fall with the pair broken
+    assert sweep(sweep_rows(h2_3={"T": 0.25, "M": 1.5, "excess_sd": 0.63})) == "no_comparison_head"  # noise: excess 1.25 under 2 sd
+    assert sweep(sweep_rows(h2_3={"T": 0.25, "M": 1.5, "excess_sd": 0.625})) == "rerouted"  # a tie at 2 sd counts
+    assert sweep(sweep_rows(h3_5={"T": 2.0, "M": 3.5, "Mb": 0.0})) == "rerouted"  # a head with a target fall of its own, carrying more
+    assert CP.sweep_reading(sweep_rows(h2_3={"T": 0.3, "M": 1.4}, h0_0={"T": 0.0, "M": 1.0}), LAB, 24, 4.34, A5)["carriers"] == ["0,0", "2,3"]
+
+
+def test_sweep_carrier_needs_the_masked_forward_to_lean_on_the_head():
+    # review finding 1: a head that is off in the target but not leaned on by the masked forward is no carrier
+    assert sweep(sweep_rows(h2_3={"T": -3.0, "M": -1.5, "Mb": -3.0})) == "no_comparison_head"  # M under carrier_min; a negative T is no denominator
+    assert sweep(sweep_rows(h2_3={"T": -1.2, "M": 0.0, "Mb": -1.1})) == "no_comparison_head"
+    assert sweep(sweep_rows(h2_3={"T": 0.0, "M": 1.0, "Mb": 0.0, "excess_sd": 0.0})) == "rerouted"  # M = carrier_min: a tie counts
+
+
+def test_sweep_ties_and_denominators():
+    lab = 0.92 / 4.82
+    assert sweep(sweep_rows(h2_3={"T": 1.0, "M": lab + 0.2399})) == "thinned"
+    assert sweep(sweep_rows(h2_3={"T": 1.0, "M": lab + 0.2401})) == "labelled_head_singled_out"
+    assert sweep(sweep_rows(h2_3={"T": 2.0, "M": 1.48}, h3_5={"T": 2.0, "M": 0.8})) == "mixed"
+    assert sweep(sweep_rows(h2_3={"T": 0.5, "M": 0.05})) == "thinned"  # a tie at the floor has a denominator; fraction 0.1
+    assert sweep(sweep_rows(h2_3={"T": 0.49, "M": 0.05})) == "no_comparison_head"
+    assert sweep(sweep_rows(h2_3={"T": -3.0, "M": -3.0})) == "no_comparison_head"  # a negative target fall is no denominator, however the ratio reads
+
+
+def test_sweep_unreadable_cases():
+    r = sweep_rows()
+    assert sweep(r, math.nan) == "unreadable" and sweep(r, 0.0) == "unreadable" and sweep(r, -1.0) == "unreadable" and sweep(r, 0.99) == "unreadable"
+    assert sweep(r, 1.0) == "no_comparison_head"
+    assert sweep(sweep_rows(h2_3={"M": math.nan})) == "unreadable" and sweep(sweep_rows(h0_0={"excess_sd": math.nan})) == "unreadable" and sweep(sweep_rows(h3_5={"T": math.inf})) == "unreadable"
+    assert sweep({h: v for h, v in r.items() if h != (0, 0)}) == "unreadable" and sweep({h: v for h, v in r.items() if h != LAB}) == "unreadable"
+    assert sweep(sweep_rows(h2_4={"T": 0.49})) == "unreadable"
+    assert set(CP.stopped_reading("x")) == set(CP.sweep_reading(r, LAB, 24, 4.34, A5))  # the same shape on a stop and a finished sweep
+
+
+def test_sweep_total_fall_over_the_masked_lean_decides_nothing():
+    big = sweep_rows(**{f"h{b}_{h}": {"T": 2.0, "M": 0.4} for b, h in ALL_HEADS if (b, h) != LAB})
+    v = CP.sweep_reading(big, LAB, 24, 4.34, A5)
+    assert v["verdict"] == "thinned" and v["sum_falls_over_lean"] and not v["falls_over_lean"]  # 23 x 0.4 + 0.92 > 4.34: falls need not add up to the lean
+    v = CP.sweep_reading(sweep_rows(h2_3={"T": 0.3, "M": 5.0, "Mb": 0.1}), LAB, 24, 4.34, A5)
+    assert v["verdict"] == "rerouted" and v["falls_over_lean"] == ["2,3"]  # one head over the whole lean: read and flagged
+
+
+def test_sweep_ranking_is_beside():
+    assert CP.sweep_reading(sweep_rows(), LAB, 24, 4.34, A5)["ranking_holds"]
+    v = CP.sweep_reading(sweep_rows(h3_5={"T": 4.82, "M": 4.0}), LAB, 24, 4.34, A5)  # a tie fails
+    assert not v["ranking_holds"] and v["verdict"] == "labelled_head_singled_out"
+
+
+@pytest.mark.parametrize("t", [-3.0, -1.2, 0.0, 0.3, 0.5, 2.0])
+@pytest.mark.parametrize("m", [-1.0, 0.0, 0.1, 0.5, 1.0, 1.31, 2.0, 2.5])
+@pytest.mark.parametrize("mb", [-2.0, 0.0, 0.31, 1.5])
+@pytest.mark.parametrize("sd", [0.0, 0.5, 2.0])
+@pytest.mark.parametrize("second", [None, (0.6, 0.12), (2.0, 1.9)])
+def test_sweep_grid_reaches_the_filed_branch(t, m, mb, sd, second):
+    """Exactly one verdict everywhere on a grid, and the one the rule's words give, written out here apart from the code. One head moves, a second is fixed."""
+    rows = sweep_rows(h2_3={"T": t, "M": m, "Mb": mb, "excess_sd": sd})
+    if second:
+        rows[(1, 1)] = {"T": second[0], "M": second[1], "Mb": 0.0, "excess_sd": 0.0}
+    lab = 0.92 / 4.82
+    carrier = m >= 1.0 and m - t >= 1.0 and m - t >= 2 * sd and m - mb >= 1.0
+    fr = ([m / t] if t >= 0.5 else []) + ([second[1] / second[0]] if second else [])
+    want = "rerouted" if carrier else "no_comparison_head" if not fr else "thinned" if all(abs(f - lab) <= 0.24 for f in fr) else "labelled_head_singled_out" if all(f > lab + 0.24 for f in fr) else "mixed"
+    assert sweep(rows) == want
+
+
+@pytest.mark.parametrize("p1, p2, lean, want", [
+    (3.0, 3.0, 4.34, "through_tokens"), (1.0, 1.0, 4.34, "through_gates"), (3.0, 1.0, 4.34, "order_dependent"), (1.0, 3.0, 4.34, "order_dependent"),
+    (2.17, 3.0, 4.34, "order_dependent"), (2.17, 2.17, 4.34, "order_dependent"), (2.17, 1.0, 4.34, "order_dependent"),  # a tie at the bar: neither side
+    (-1.0, -1.0, 4.34, "through_gates"), (6.0, 6.0, 4.34, "through_tokens"),  # outside 0 and 1: the other part has the opposite sign
+    (1.0, 1.0, 0.0, "unreadable"), (1.0, 1.0, -2.0, "unreadable"), (1.0, 1.0, 0.99, "unreadable"), (math.nan, 1.0, 4.34, "unreadable"), (1.0, math.inf, 4.34, "unreadable"), (1.0, 1.0, math.nan, "unreadable"),
+])
+def test_token_reading(p1, p2, lean, want):
+    assert CP.token_reading(p1, p2, lean, A5) == want
+
+
+def test_boot_sd_and_precision_moved():
+    d = torch.randn(200, generator=torch.Generator().manual_seed(0)) * 2.0
+    sd = CP.boot_sd(d, 2000, 0)
+    assert sd == pytest.approx(float(d.double().std()) / math.sqrt(200), rel=0.1) and sd == CP.boot_sd(d, 2000, 0)
+    assert CP.boot_sd(torch.ones(200), 100, 0) == 0.0 and math.isnan(CP.boot_sd(torch.empty(0), 100, 0)) and math.isnan(CP.boot_sd(torch.tensor([1.0, math.nan]), 100, 0))
+    assert CP.precision_moved(0.92, 1.1, 0.1) and not CP.precision_moved(0.92, 0.95, 0.1) and not CP.precision_moved(1.0, 1.5, 0.5)  # a tie has not moved
+    assert CP.precision_moved(0.92, math.nan, 0.1) and CP.precision_moved(0.92, 0.92, math.nan)
+
+
+def test_reread_diff():
+    assert CP.reread_diff({"a": 1.0, "k": 172, "top": [0.4, 0.3]}, {"a": 1.0005, "k": 172, "top": [0.4, 0.3], "extra": 9}) == pytest.approx(5e-4)
+    assert CP.reread_diff({"top": [0.4, 0.3]}, {"top": [0.4]}) == math.inf and CP.reread_diff({"a": 1.0}, {}) == math.inf and CP.reread_diff({"a": math.nan}, {"a": math.nan}) == math.inf
+    assert CP.reread_diff({"k": 172}, {"k": 173}) == 1.0 and CP.reread_diff({}, {}) == 0.0
+
+
+def test_all_ones_gates_are_the_all_gates_on_forward_and_the_head_off_stays_out_of_gamma():
+    """Amendment 5's control: `Reads.masked` under gates of 1 is `AllGatesOn`, whatever hook is on; the fp32 paths equal the autocast ones on the CPU, where
+    autocast does not run; gates read outside a hook do not change under one, so the sweep's head is in the forward alone."""
+    from commute import local_faith as LF
+
+    model, net = _tiny_component_model()
+    toks = torch.randint(0, 50, (5, 13), generator=torch.Generator().manual_seed(4))
+    gates = LF.route_cells(model, toks, 5, LAST, 2, 12)["gates"]
+    ones = [{k: torch.ones_like(v) for k, v in b.items()} for b in gates]
+    means = torch.full((2, 3, 8), 5.0)
+    with CP.ablated(net, [(1, 2)], means):
+        via_ones = LF.masked_lo_windows(model, toks, 5, LAST, ones, 2, 12)
+        direct = torch.cat([LF.log_odds(net.run(toks[s:s + 2, :12])[0][:, 5], toks[s:s + 2, -1]).double() for s in (0, 2, 4)])
+    assert torch.equal(via_ones, direct) and not torch.equal(via_ones, LF.masked_lo_windows(model, toks, 5, LAST, ones, 2, 12))
+    assert torch.equal(CP.masked_lo_fp32(model, toks, 5, LAST, gates, 2, 12), LF.masked_lo_windows(model, toks, 5, LAST, gates, 2, 12))
+    g32 = CP.gates_fp32(model, toks, 2, 12)
+    assert len(g32) == len(gates) and all(torch.equal(x[k], y[k]) for x, y in zip(g32, gates, strict=True) for k in x)
