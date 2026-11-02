@@ -328,3 +328,102 @@
 [  171.3s] [check train_arm0] ok {"at": "4", "key": "held_minus_loss", "value": 0.003466680822393202, "band": [-0.05, 0.05], "severity": "note", "holds": true}
 [  171.4s] [check train_arm0] MISSED {"at": "4", "key": "loss", "value": 0.05807388832931776, "band": [0.08, null], "severity": "stop", "holds": false}
 [  171.4s] STOP: train_arm0 4 loss {"at": "4", "key": "loss", "value": 0.05807388832931776, "band": [0.08, null], "severity": "stop", "holds": false}
+[    4.0s] [T arm0] start; NVIDIA L40
+[   39.0s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_1.safetensors (2.82 GB)
+[   39.0s] [T arm0] {"step": 1, "lr": 0.0, "loss": 0.05467607810078789, "grad_norm": 3.4840939044952393, "dw_norm": 0.0, "kl": {"maths": 0.0}, "rate_sum": 0.0, "peak_gib": 29.454229831695557}
+[   39.0s] [check train_arm0] ok {"at": "1", "key": "grad_norm", "value": 3.4840939044952393, "band": [2.72, 4.54], "severity": "note", "holds": true}
+[   39.0s] [check train_arm0] ok {"at": "1", "key": "loss", "value": 0.05467607810078789, "band": [0.054, 0.05621], "severity": "stop", "holds": true}
+[   39.0s] [check train_arm0] ok {"at": "1", "key": "lr", "value": 0.0, "band": [0, 0], "severity": "stop", "holds": true}
+[   39.0s] [check train_arm0] ok {"at": "1", "key": "dw_norm", "value": 0.0, "band": [0, 0], "severity": "stop", "holds": true}
+[   52.7s] [T arm0] step 1 held-out 0.056584 (fp32)
+[   83.1s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_2.safetensors (2.82 GB)
+[   83.1s] [T arm0] {"step": 2, "lr": 1.0000000000000002e-06, "loss": 0.05396568704285719, "grad_norm": 3.0761711597442627, "dw_norm": 0.02846330499568158, "kl": {"maths": 0.005140724316691101}, "rate_sum": 1.0000000000000002e-06, "peak_gib": 34.3717679977417}
+[   83.1s] [check train_arm0] MISSED {"at": "2", "key": "peak_gib", "value": 34.3717679977417, "band": [null, 33.5], "severity": "note", "holds": false}
+[   83.1s] [check train_arm0] ok {"at": "2", "key": "loss", "value": 0.05396568704285719, "band": [0.0533, 0.05547], "severity": "stop", "holds": true}
+[   83.1s] [check train_arm0] ok {"at": "2", "key": "dw_norm", "value": 0.02846330499568158, "band": [0.02284, 0.03427], "severity": "stop", "holds": true}
+[   83.1s] [check train_arm0] ok {"at": "2", "key": "peak_gib", "value": 34.3717679977417, "band": [null, 40], "severity": "stop", "holds": true}
+[   97.8s] [T arm0] step 2 held-out 0.062354 (fp32)
+[  128.5s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_3.safetensors (2.82 GB)
+[  128.5s] [T arm0] {"step": 3, "lr": 2.0000000000000003e-06, "loss": 0.05914054335323606, "grad_norm": 8.835893630981445, "dw_norm": 0.06642701810501701, "kl": {"maths": 0.011898450599836066}, "rate_sum": 3.0000000000000005e-06, "peak_gib": 34.3717679977417}
+[  128.5s] [check train_arm0] MISSED {"at": "3", "key": "loss", "value": 0.05914054335323606, "band": [0.06, 0.075], "severity": "note", "holds": false}
+[  128.5s] [check train_arm0] ok {"at": "3", "key": "held_gap", "value": 0.003213267931603092, "band": [null, 0.01], "severity": "stop", "holds": true}
+[  143.4s] [T arm0] step 3 held-out 0.061541 (fp32)
+[  143.4s] [check train_arm0] ok {"at": "3+held", "key": "held", "value": 0.061540508062252974, "band": [null, 0.099999999], "severity": "stop", "holds": true}
+[  174.9s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_4.safetensors (2.82 GB)
+[  174.9s] [T arm0] {"step": 4, "lr": 3e-06, "loss": 0.05807385886251334, "grad_norm": 5.49266242980957, "dw_norm": 0.10836071785409779, "kl": {"maths": 0.01385260442303139}, "rate_sum": 6e-06, "peak_gib": 34.3717679977417}
+[  174.9s] [check train_arm0] MISSED {"at": "4", "key": "loss", "value": 0.05807385886251334, "band": [0.08, null], "severity": "note", "holds": false}
+[  174.9s] [check train_arm0] ok {"at": "4", "key": "grad_norm", "value": 5.49266242980957, "band": [5, null], "severity": "note", "holds": true}
+[  174.9s] [check train_arm0] ok {"at": "4", "key": "held_minus_loss", "value": 0.0034666491997396368, "band": [-0.05, 0.05], "severity": "note", "holds": true}
+[  174.9s] [check train_arm0] ok {"at": "4", "key": "held_gap", "value": 0.0034666491997396368, "band": [null, 0.01], "severity": "stop", "holds": true}
+[  189.7s] [T arm0] step 4 held-out 0.062870 (fp32)
+[  218.0s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_5.safetensors (2.82 GB)
+[  218.1s] [T arm0] {"step": 5, "lr": 4.000000000000001e-06, "loss": 0.05879069045992965, "grad_norm": 7.027124404907227, "dw_norm": 0.15495061567790044, "kl": {"maths": 0.02027727200842036}, "rate_sum": 1e-05, "peak_gib": 34.3717679977417}
+[  232.9s] [T arm0] step 5 held-out 0.076877 (fp32)
+[  281.4s] BUDGET: checkpoint after step 5; resubmit the same command to continue
+[    3.3s] [T arm0] start; NVIDIA L40
+[   20.4s] [T arm0] resuming after step 5; Adam count 5, |dW| 0.154951
+[  118.6s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_6.safetensors (2.82 GB)
+[  118.6s] [T arm0] {"step": 6, "lr": 5e-06, "loss": 0.07071412472808898, "grad_norm": 9.260472297668457, "dw_norm": 0.20508458197421214, "kl": {"maths": 0.02112793102081706}, "rate_sum": 1.5000000000000002e-05, "peak_gib": 31.353318691253662}
+[  133.1s] [T arm0] step 6 held-out 0.068385 (fp32)
+[  166.5s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_7.safetensors (2.82 GB)
+[  166.5s] [T arm0] {"step": 7, "lr": 6e-06, "loss": 0.0654665497217225, "grad_norm": 6.8366875648498535, "dw_norm": 0.25764086101734496, "kl": {"maths": 0.01899983622808179}, "rate_sum": 2.1000000000000002e-05, "peak_gib": 34.3717679977417}
+[  181.2s] [T arm0] step 7 held-out 0.066424 (fp32)
+[  212.9s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_8.safetensors (2.82 GB)
+[  213.0s] [T arm0] {"step": 8, "lr": 7e-06, "loss": 0.06480979252645049, "grad_norm": 6.672221660614014, "dw_norm": 0.31468827928306564, "kl": {"maths": 0.025764779920122646}, "rate_sum": 2.8000000000000003e-05, "peak_gib": 34.3717679977417}
+[  227.9s] [T arm0] step 8 held-out 0.075181 (fp32)
+[  259.8s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_9.safetensors (2.82 GB)
+[  259.8s] [T arm0] {"step": 9, "lr": 8.000000000000001e-06, "loss": 0.0708407387187857, "grad_norm": 7.852264404296875, "dw_norm": 0.37531464453275704, "kl": {"maths": 0.021396409097065115}, "rate_sum": 3.600000000000001e-05, "peak_gib": 34.3717679977417}
+[  274.6s] [T arm0] step 9 held-out 0.065484 (fp32)
+[  303.6s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_recipe/results/large/train/arm0/step_10.safetensors (2.82 GB)
+[  303.7s] [T arm0] {"step": 10, "lr": 9e-06, "loss": 0.0670264218326565, "grad_norm": 3.55669903755188, "dw_norm": 0.43735178153948107, "kl": {"maths": 0.020037175292343272}, "rate_sum": 4.500000000000001e-05, "peak_gib": 34.3717679977417}
+[  318.7s] [T arm0] step 10 held-out 0.076346 (fp32)
+[  322.4s] [T arm0] done; peak GPU 36.9 GB, host 19.0 GB
+[    3.2s] [W ] start; NVIDIA L40
+[  173.7s] [train_W] w0 unprompted: {"k": 256, "k_fits": 241, "fits_share": 0.94140625, "truncation_share": 0.01953125, "strict_dropped": 0.7842323651452282, "lenient_dropped": 0.8132780082987552, "strict_all": 0.75, "strict_capped": 0.73828125, "lenient_capped": 0.7734375, "response_mean": 202.77734375, "format_unprompted": 0, "seconds": 165.29957056045532, "peak_gib": 26.91706085205078}
+[  173.7s] [check train_W] ok {"at": "w0.unprompted", "key": "response_mean", "value": 202.77734375, "band": [180, 220], "severity": "note", "holds": true}
+[  173.7s] [check train_W] ok {"at": "w0.unprompted", "key": "format_unprompted", "value": 0, "band": [0, 0.02], "severity": "note", "holds": true}
+[  173.7s] [check train_W] ok {"at": "w0.unprompted", "key": "strict_dropped", "value": 0.7842323651452282, "band": [0.72, 0.84], "severity": "stop", "holds": true}
+[  286.5s] [train_W] w0 prompted: {"k": 256, "strict_dropped": 0.6403162055335968, "strict_all": 0.63671875, "batch": 174, "format_follow": 0.94140625, "response_mean": 130.87890625, "seconds": 112.79675316810608, "peak_gib": 29.186100959777832}
+[  286.6s] [check train_W] ok {"at": "w0.prompted", "key": "format_follow", "value": 0.94140625, "band": [0.85, 1], "severity": "note", "holds": true}
+[  286.6s] [check train_W] ok {"at": "w0.prompted", "key": "strict_dropped", "value": 0.6403162055335968, "band": [0.5, 0.8], "severity": "stop", "holds": true}
+[  305.1s] [train_W] w0 facts: {"invented": 0.013, "known": 0.97, "seconds": 18.51205849647522, "peak_gib": 29.186100959777832}
+[  305.1s] [check train_W] ok {"at": "w0.facts", "key": "known", "value": 0.97, "band": [0.9, 1], "severity": "note", "holds": true}
+[  305.1s] [check train_W] ok {"at": "w0.facts", "key": "invented", "value": 0.013, "band": [null, 0.05], "severity": "stop", "holds": true}
+[  749.1s] [train_W] w0 four_shot: {"k": 256, "strict_dropped": null, "strict_all": 0.734375, "batch": 70, "format_follow": 0, "response_mean": 144.20703125, "seconds": 444.0018045902252, "peak_gib": 36.072020053863525}
+[  749.1s] [check train_W] ok {"at": "w0.four_shot", "key": "strict_all", "value": 0.734375, "band": [0.65, 0.85], "severity": "stop", "holds": true}
+[  749.1s] [check train_W] ok {"at": "w0.four_shot", "key": "peak_gib", "value": 36.072020053863525, "band": [null, 38.5], "severity": "stop", "holds": true}
+[  765.0s] [train_W] w0 held_gold: {"loss": 2.495208230722153, "seconds": 15.90363883972168, "peak_gib": 36.072020053863525}
+[  765.0s] [check train_W] ok {"at": "w0.held_gold", "key": "loss", "value": 2.495208230722153, "band": [2.47026, 2.52016], "severity": "stop", "holds": true}
+[  773.1s] [train_W] w0 held_a1: {"distill_kl": 0.9615102198581135, "seconds": 8.016170024871826, "peak_gib": 36.072020053863525}
+[  773.1s] [check train_W] ok {"at": "w0.held_a1", "key": "distill_kl", "value": 0.9615102198581135, "band": [0.9519, 0.97112], "severity": "stop", "holds": true}
+[  785.1s] [train_W] w0 held_a2long: {"loss": 2.9271692236230575, "seconds": 12.024087905883789, "peak_gib": 36.072020053863525}
+[  785.1s] [check train_W] ok {"at": "w0.held_a2long", "key": "loss", "value": 2.9271692236230575, "band": [2.8979, 2.95644], "severity": "stop", "holds": true}
+[  785.1s] [W] the template's accuracy line: 0.6403 - 0.08 = 0.5603 (results/lines.json)
+[  924.1s] [train_W] a1_s0_100 unprompted: {"k": 256, "k_fits": 254, "fits_share": 0.9921875, "truncation_share": 0.0078125, "strict_dropped": 0.610236220472441, "lenient_dropped": 0.6338582677165354, "strict_all": 0.60546875, "strict_capped": 0.60546875, "lenient_capped": 0.62890625, "response_mean": 128.359375, "format_unprompted": 0.9453125, "seconds": 137.89080929756165, "peak_gib": 36.072020053863525}
+[  924.1s] [check train_W] ok {"at": "a1_s0_100.unprompted", "key": "format_unprompted", "value": 0.9453125, "band": [0.85, 1], "severity": "note", "holds": true}
+[  924.1s] [check train_W] ok {"at": "a1_s0_100.unprompted", "key": "strict_dropped", "value": 0.610236220472441, "band": [0.55, 0.73], "severity": "note", "holds": true}
+[  932.1s] [train_W] a1_s0_100 held_a1: {"distill_kl": 0.05542923286624141, "seconds": 8.000761985778809, "peak_gib": 36.072020053863525}
+[  932.1s] [check train_W] ok {"at": "a1_s0_100.held_a1", "key": "distill_kl", "value": 0.05542923286624141, "band": [0.054875, 0.055983], "severity": "stop", "holds": true}
+[  935.6s] [train_W] a1_s0_100 size: {"kl16": 0.3205083864166564, "dw_norm": 3.140682628469854, "seconds": 3.4605283737182617, "peak_gib": 36.072020053863525}
+[  935.6s] [check train_W] ok {"at": "a1_s0_100.size", "key": "kl16", "value": 0.3205083864166564, "band": [0.3173, 0.32371], "severity": "note", "holds": true}
+[  935.6s] [check train_W] ok {"at": "a1_s0_100.size", "key": "dw_norm", "value": 3.140682628469854, "band": [3.1093, 3.1721], "severity": "note", "holds": true}
+[ 1113.2s] [train_W] gold_s0_100 unprompted: {"k": 256, "k_fits": 254, "fits_share": 0.9921875, "truncation_share": 0.0078125, "strict_dropped": 0.5984251968503937, "lenient_dropped": 0.5984251968503937, "strict_all": 0.59375, "strict_capped": 0.59375, "lenient_capped": 0.59375, "response_mean": 94.57421875, "format_unprompted": 0, "seconds": 176.7345495223999, "peak_gib": 36.072020053863525}
+[ 1113.2s] [check train_W] ok {"at": "gold_s0_100.unprompted", "key": "response_mean", "value": 94.57421875, "band": [80, 110], "severity": "note", "holds": true}
+[ 1113.2s] BUDGET: 1113 s used; resubmit the same command to continue
+[    3.2s] [W ] start; NVIDIA L40
+[    7.3s] [W] the template's accuracy line: 0.6403 - 0.08 = 0.5603 (results/lines.json)
+[   24.2s] [train_W] gold_s0_100 held_gold: {"loss": 0.5119931735422796, "seconds": 15.967997550964355, "peak_gib": 18.423500061035156}
+[   24.3s] [check train_W] ok {"at": "gold_s0_100.held_gold", "key": "loss", "value": 0.5119931735422796, "band": [0.506873, 0.517113], "severity": "stop", "holds": true}
+[   27.6s] [train_W] gold_s0_100 size: {"kl16": 0.6886080538184014, "dw_norm": 3.3915042715503514, "seconds": 3.3526296615600586, "peak_gib": 18.423500061035156}
+[   27.6s] [check train_W] ok {"at": "gold_s0_100.size", "key": "kl16", "value": 0.6886080538184014, "band": [0.68172, 0.6955], "severity": "note", "holds": true}
+[   27.6s] [check train_W] ok {"at": "gold_s0_100.size", "key": "dw_norm", "value": 3.3915042715503514, "band": [3.3576, 3.4254], "severity": "note", "holds": true}
+[   49.8s] [train_W] a2long_s0_300 facts: {"invented": 1, "known": 1, "seconds": 12.814142942428589, "peak_gib": 18.423500061035156}
+[   49.8s] [check train_W] ok {"at": "a2long_s0_300.facts", "key": "invented", "value": 1, "band": [0.95, 1], "severity": "note", "holds": true}
+[  555.9s] [train_W] a2long_s0_300 four_shot: {"k": 256, "strict_dropped": null, "strict_all": 0.6953125, "batch": 70, "format_follow": 0, "response_mean": 144.0078125, "seconds": 506.1338241100311, "peak_gib": 41.22587585449219}
+[  555.9s] [check train_W] ok {"at": "a2long_s0_300.four_shot", "key": "strict_all", "value": 0.6953125, "band": [0.62, 0.78], "severity": "note", "holds": true}
+[  568.1s] [train_W] a2long_s0_300 held_a2long: {"loss": 0.0009853946420944686, "seconds": 12.122086763381958, "peak_gib": 41.22587585449219}
+[  568.1s] [check train_W] ok {"at": "a2long_s0_300.held_a2long", "key": "loss", "value": 0.0009853946420944686, "band": [0.000976, 0.000995], "severity": "stop", "holds": true}
+[  571.6s] [train_W] a2long_s0_300 size: {"kl16": 0.6699439835420417, "dw_norm": 5.65859140843492, "seconds": 3.4642467498779297, "peak_gib": 41.22587585449219}
+[  571.6s] [check train_W] ok {"at": "a2long_s0_300.size", "key": "kl16", "value": 0.6699439835420417, "band": [0.66324, 0.67664], "severity": "note", "holds": true}
+[  571.6s] [check train_W] ok {"at": "a2long_s0_300.size", "key": "dw_norm", "value": 5.65859140843492, "band": [5.602, 5.7152], "severity": "note", "holds": true}
+[  571.6s] [W None] done; peak GPU 44.3 GB, host 11.0 GB
