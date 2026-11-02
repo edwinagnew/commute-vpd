@@ -66,3 +66,4 @@
 - [Fable first, fewer questions](feedback-fable-first-fewer-questions.md) — choices inside an adopted plan go to Fable, act and FYI; user only for spend/gated, reversals, goal changes, other lines (2026-10-30)
 - [Fewer questions; Fable for small ones](feedback-fewer-questions-fable-for-small.md) — ask the user only the most important things; smaller choices go to Fable and its advice is acted on (2026-10-30)
 - [Decision cards pass a cold reader](feedback-decision-cards-cold-reader.md) — no plan labels in options; each says what runs, what it tells you, what next; one recommendation (user, 2026-11-02)
+- [Run down anomalies first](feedback-run-down-anomalies-first.md) — an unexplained training or apparatus number blocks readings built on it; compare both sides of precision/forward pairs; bf16 rounding found only because the user asked (2026-11-02)
