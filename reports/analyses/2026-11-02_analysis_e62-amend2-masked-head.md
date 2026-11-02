@@ -267,7 +267,7 @@ Filed verdict line: `copy mask_reaches_b_another_way lookup within own fall in_b
 
 Separating the four accounts, each a $0 read on the saved states:
 
-- Γ recomputed with the head off, the one read of the third account, beside the lookup, (3,5) and W₀'s mask recomputed the same way. This is Amendment 3, coded and not run; the plan had listed it as not planned, and `ablated` must wrap Γ deliberately for it.
+- Γ recomputed with the head off, the one read of the third account, beside the lookup, (3,5) and W₀'s mask recomputed the same way. This is Amendment 3, since run: `reports/analyses/2026-11-02_analysis_e62-amend3-gates-head-off.md`.
 - The head off on $L_{11}$ and $U_1$, with its attention, which reads the fourth account: how far the update's weights use the head.
 - An own-mask mean and zero ablation in row 3's cells, which settle whether the fall is removal or injection.
 - The o_proj subcomponents that read head (2,4)'s slot: how much of that slot's weight passes under W₀'s mask and under each state's mask.
