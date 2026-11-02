@@ -685,3 +685,77 @@ def size_reading(gap: float, swapped: float, reproduced: bool) -> str:
     if not (reproduced and finite(gap) and finite(swapped)) or gap <= 0:
         return "unreadable"
     return "size_accounts" if swapped < gap / 2 else "size_does_not"
+
+
+# ----------------------------------------------------------------------------- Amendment 3's filed rules and reads (results/predictions_amend3.json)
+
+
+@torch.no_grad()
+def gamma_inputs(model: Any, net: Any, toks: Tensor, head: Head, means: Tensor) -> dict[str, Any]:
+    """Does `ablated` change what Γ reads? Γ reads the inputs a clean forward caches (`vpd.compute_ci`, cache_type "input"),
+    so this compares that cache with the head on and off on one batch, in compute_ci's autocast. Expected: o_proj's input
+    holds the mean in the head's slot and is unchanged elsewhere; modules before the edit (earlier blocks, the head's own
+    q, k, v) are exactly unchanged; every module after it (the block's MLP, later blocks) moved. `status`: "slot_missed",
+    "upstream_moved", "downstream_unmoved" or "pass"."""
+    lay, h = head
+    d = means.shape[-1]
+
+    def cache() -> dict[str, Tensor]:
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=toks.is_cuda):
+            return model(toks, cache_type="input").cache
+
+    on = cache()
+    with ablated(net, [head], means):
+        off = cache()
+    o = f"h.{lay}.attn.o_proj"
+    moved = {k: float((off[k].float() - on[k].float()).abs().max()) for k in on if k != o}
+    before = lambda k: int(k.split(".")[1]) < lay or (int(k.split(".")[1]) == lay and k.split(".")[2] == "attn")
+    rest = torch.ones(off[o].shape[-1], dtype=torch.bool, device=off[o].device)
+    rest[h * d : (h + 1) * d] = False
+    slot_ok = bool((off[o][..., ~rest] == means[lay, h].to(off[o].device, off[o].dtype)).all()) and torch.equal(on[o][..., rest], off[o][..., rest])
+    up, down = [v for k, v in moved.items() if before(k)], [v for k, v in moved.items() if not before(k)]
+    status = "slot_missed" if not slot_ok else "upstream_moved" if any(v != 0 for v in up) else "downstream_unmoved" if any(v == 0 for v in down) else "pass"
+    return {"status": status, "slot_is_mean": slot_ok, "upstream_max": max(up, default=0.0), "downstream_min": min(down, default=math.inf), "moved": moved}
+
+
+def slot_reads(V: Tensor, heads: int, alive: Tensor, share_min: float) -> list[Tensor]:
+    """Per head, the alive subcomponents of an o_proj whose read vector V (d_in, C) has at least `share_min` of its squared norm
+    in that head's slot (a tie counts). A vector of norm 0 reads none. At `share_min` over 0.5 a subcomponent reads at most one head."""
+    sq = V.double().square()
+    share = sq.view(heads, -1, V.shape[1]).sum(1) / sq.sum(0)
+    return [((share[h] >= share_min) & alive).nonzero().squeeze(1) for h in range(heads)]
+
+
+def slot_class(n: int, gate: float, th: dict[str, Any]) -> str:
+    """The mean gate on a head's slot: "empty" if no subcomponent reads it; "unreadable" if not finite; "closed" under
+    slot_closed_max (a tie is not); else "open"."""
+    if n == 0:
+        return "empty"
+    if not finite(gate):
+        return "unreadable"
+    return "closed" if gate < th["slot_closed_max"] else "open"
+
+
+def gamma_reading(labels: Sequence[str], lookup_labels: Sequence[str], ref_shares: Sequence[float], th: dict[str, Any]) -> str:
+    """The copy map's verdict with Γ recomputed, from `masked_class` labels against the target share. "unreadable", "too_small"
+    (`agree` on the copy map); "floor_high" if a reference is not under floor_max in size (the caller passes (3,5)'s share on
+    all six states and W0's fall with Γ recomputed over the map's mean gain, so that Γ simply breaking off its distribution
+    voids every reading; Γ's reaction can raise a gain as well as lower it, so the size is read; a tie and a nan fail);
+    "still_other_way" every labelled seed under
+    other_path_max; "in_between" anything mixed or between. Only the two readings that say the head acts through the masks read
+    the lookup, since its target share is about 0 and the same head goes off there: unless every lookup seed is "within" they
+    read "not_specific" (or the lookup's own "unreadable", "too_small"), as Γ then reacts to the head whatever the map.
+    "head_acts_through_masks" every labelled seed "within"; "head_more_than_target" within or over, at least one over."""
+    one = masked_reading(labels, [abs(s) for s in ref_shares], th)
+    if one in ("unreadable", "too_small", "floor_high"):
+        return one
+    if one == "mask_reaches_b_another_way":
+        return "still_other_way"
+    if one == "in_between":
+        return one
+    look = agree(lookup_labels, th)
+    if look in ("unreadable", "too_small"):
+        return look
+    if look != "within":
+        return "not_specific"
+    return "head_acts_through_masks" if one == "r_reads_the_head" else "head_more_than_target"

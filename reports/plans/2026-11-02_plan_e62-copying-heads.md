@@ -418,3 +418,146 @@ tolerance took the target's sd for it; printed, no rule. Row 6's share is on a s
 Everything. The rule functions and the hook ran on CPU on a tiny model; the 67M was never loaded. The new masked read has not run
 on a GPU; row 1 is its first test. Not planned: later read steps (Fable's option 3), the masked forward under two heads,
 attention at the marker (F6), Γ recomputed under ablation.
+
+
+## Amendment 3 (2026-11-02)
+
+Spec: the lead's choice of the third account in `reports/analyses/2026-11-02_analysis_e62-amend2-masked-head.md`, with
+`reports/reviews/2026-11-02_review_e62-amend2-check.md` F1 and F2. Rules: `experiments/induction_cue/results/predictions_amend3.json`.
+Code: `experiments/induction_cue/amend3.py`, `cluster/induction_cue_amend3.sbatch`. Coded, not run. **Not gated**: one cluster `debug`
+job, under 10 min, $0, no fine-tuning.
+
+**In plain words.** Switching off old head (2,4) costs the target model about half of its copying gain, and costs the masked forward
+about a tenth. But that read held Γ's masks as they were written with the head on, and the update reaches the masked forward only
+through those masks. This reads Γ again with the head off, to see whether the masked gain falls then.
+
+**Restated in the Terms' words.** r is the route split's re-gating share, (L01 − L00) / (T1 − T0), with L the masked log-odds:
+subscripts components then gates, 0 W₀, 1 the state with its least-squares split. The masked gain is L01 − L00. The question: with
+head (2,4) mean-ablated both in the forward whose activations Γ reads and in the masked forward, original subcomponents, does the
+masked gain fall by the share the target model's gain falls? On the same 200 read windows, six states, with the lookup, head (3,5)
+and W₀ read beside. Amendment 2's three accounts: (a) the masks close the head's way, (b) a real other way, (c) the head acts through
+the masks. A share near the target's means (c); under 0.25 leaves (a) and (b). Filed verdicts stand; nothing is rescored.
+
+**Granularity limit.** A new circuit of old pieces reads as elicited to VPD. A share near the target's says the masked gain depends
+on the head through Γ's inputs. It does not say the same circuit is reused.
+
+### Design check
+
+- **Goal.** `GOALS.md`, new capability or strengthened old: whether r can read a head at all on the one map with a causal label.
+- **Nearest tried.** Amendment 2 row 3, the same share with frozen masks; its plan listed this read as not planned. E4's Amendment 1 fixed
+  gates to W₀ for another purpose. Nothing has read Γ under ablation.
+- **Patch or step.** A step: the report names it as the only read that could reverse the branch.
+- **Decisions.** Row 73 (granularity limit) kept. No departure.
+- **What changes next.** `head_acts_through_masks`: Amendment 2's stop is withdrawn in favour of "r reads the head, through Γ, on one map",
+  and it goes to the user as a reversal. `still_other_way` or `in_between`: the stop stands, with (c) out or partial. `floor_high` or
+  `not_specific`: the read cannot separate, the stop stands as "unshown". Report's wording follows the verdict.
+- **Apparatus first.** Row 1 alone at W₀, exit 1 on a miss, before any state is read.
+- **Class.** 1, analysis of saved states: approved, no sign-off.
+
+### What Γ reads, checked before coding
+
+**`route_split` computes gates from a fresh pass, not a cache.** `route_cells` calls `vpd.compute_ci` per batch, which runs
+`model(x, cache_type="input")` then `calc_causal_importances(cache, sampling="continuous")`. Nothing is carried between calls. With no
+`mask_infos` the forward is the clean target model at the current weights, components unused, so Γ does not depend on the split.
+`continuous` draws no random numbers.
+
+**A pre-hook on `o_proj` reaches Γ at `o_proj` itself and downstream.** `_components_and_cache_hook` is a forward hook that caches `x = args[0]`.
+PyTorch hands a forward hook the args as the pre-hooks left them, so `o_proj`'s cached input holds the mean in head 4's slot. Block 2's
+`c_fc` and `down_proj` and all of block 3 are downstream (`x = x + attn(rms_1(x))`, then the MLP), so their inputs change too. Blocks 0
+and 1 and block 2's q, k, v do not. Row 1 tests all of this on the 67M, `tests/test_copying.py` on a tiny real `ComponentModel`.
+
+**Γ's reaction is wider than the head's causal reach, and that is the main caveat.** Γ is `global_shared_transformer`
+(`GlobalSharedTransformerCiFn.forward`): it RMS-normalises each of the 24 inputs, concatenates them, and attends over the row in both
+directions. So the head off can move gates at every matrix, including blocks 0 and 1 where no activation changed, and at every position.
+Also `o_proj`'s whole input is RMS-normalised, so a replaced slot rescales how the other five read to Γ. Γ never trained on a slot held
+constant. A fall can therefore be Γ simply breaking off its distribution, not the head's content reaching the masks (review, F1). The
+references below exist to tell those apart.
+
+**Nothing in `copying.ablated` changes.** `amend2.py` is unedited: `amend3.py` imports `Reads`, `NAMES` and `map_of` from it, the pattern of
+`experiments/regating_spread/`. `src/commute/copying.py` only gains functions (`gamma_inputs`, `slot_reads`, `slot_class`, `gamma_reading`),
+so E62's `run.py`, `plot.py`, `amend2.py` and `plot_amend2.py` are unaffected; `tests/test_copying.py` passes with the new tests.
+
+### Rows, in run order
+
+| Row | Number | W₀ | Do-nothing or reference | Control | Expected, copy | Expected, lookup |
+|---|---|---|---|---|---|---|
+| 1 | Γ's inputs under the head off; frozen L00 re-read; W₀'s fall with Γ recomputed | fall between 0.039 (frozen) and 1.163 (target), L00 between −10.106 and −11.23 | zero update's recomputed gain exactly 0 | slot holds the mean, upstream exactly unchanged, downstream moved, gates moved; L00 on, (2,4) off, (3,5) off equal `amend2.json` (−10.0672, −10.1059, −10.0637; −8.8342, −8.8370, −8.8329); exit 1 | | fall near the frozen 0.0028 and the target's −0.09 |
+| 2 | Share of L01 − L00 lost, head off in the Γ pass and the masked forward | undefined | (3,5) with Γ recomputed for (3,5): under 0.15 in size on all six | L01 and the frozen share equal `amend2.json`; exit 1 | (c): within 0.092 of 0.563, 0.545, 0.471. (a) or (b): under 0.25, frozen read 0.10 to 0.11 | within 0.092 of about 0 on every account |
+| 3 | Mean gate at the marker on alive `o_proj` subcomponents of block 2 reading each head's slot | (a): head 4 closed, near 0.03 | the other five heads, same axes | none | reported | reported |
+
+Outcomes, `copying.gamma_reading`: `head_acts_through_masks`, `head_more_than_target`, `still_other_way`, `in_between`, `not_specific`, `floor_high`,
+`too_small`, `unreadable`. Lean, weak, filed: not `still_other_way`, since Γ's gates follow activations that the head moves by 7 to 8 log-odds in
+the target model. Where it lands is not predicted.
+
+**Telling a fall specific to the copying map from Γ breaking (review, F1).** Ten references go through one bar, `floor_high` at 0.15 in size, which
+voids every reading. They are (3,5)'s share on all six states, and W₀'s recomputed fall over the map's mean gain, for (2,4) and (3,5) on both maps.
+That quotient is what W₀'s reaction alone moves a net share by. A uniform break of Γ can leave a net share low, so `still_other_way` is guarded too.
+Expected: W₀ copy under (2,4) at most 0.084; W₀ lookup under (2,4) near 0.015; W₀ under (3,5) near 0.0003; (3,5) on states near the frozen at most 0.0025.
+Separately, the lookup under (2,4) is the same-depth reference, since (3,5) in block 3 changes fewer of Γ's inputs: unless every lookup seed is `within`,
+the readings that say the head acts through the masks become `not_specific`. Each state's `gates_moved` prints how far Γ reacted.
+
+**Tolerances, from Amendment 2's measured numbers.**
+- Share against target, 0.092: the larger of 3 × √(0.0173² + 0.0063²) = 0.055, the largest row sds of the target and frozen masked shares, and the target's
+  three-seed range, 0.5627 − 0.4710 = 0.0917. The range sets it. The recomputed share's sd is unmeasured, so `sd_weak` prints if it exceeds 0.0253, the sd at
+  which the first term would reach the tolerance; no rule reads it.
+- Repeat, 0 on the L40: Amendment 2 re-read `run.json`'s six shares and every masked cell at a difference of exactly 0 in another job, and `repeat_floor` read 0.
+  The frozen path calls the same functions on the same windows. The compute partition holds only L40s. If the job moves to a pod, 1e-3 applies, Amendment 2's
+  tolerance for another card, unmeasured and 7e-5 of a share at this gain.
+- Slot: 0.5 of the read vector's squared norm and a gate of 0.1 are chosen here, no source. Row 3 stops nothing and no verdict reads it.
+
+**Row 3 is kept.** "Reads head 4's slot" is a threshold on the read vector, so no new definition was needed. If no alive subcomponent passes, it reads `empty`.
+
+### Blind to
+
+- **Share with Γ recomputed.** A redirected query in the state: the masked forward never holds the fine-tuned head, only W₀'s q, k, v under a mask, and the
+  update reaches it only through the gates. Reuse that lies in the weight change is not visible here (review, F2), so a low share does not rule out reuse.
+  Which of Γ's inputs carries the reaction, as the Γ pass and the masked forward go off together, so the Γ-only corner is not read. A mean that sits off the
+  masked forward's distribution, which does not cancel between L00 and L01, as they have different gates (review, C4). Positive control: none reaches a target-sized
+  share, as no state is known to depend on a head through Γ; `gates_moved` shows only that Γ reacted.
+- **The hook check.** One batch, W₀ only. Tells that the head reaches Γ's inputs, not how Γ uses them.
+- **Zero update.** Exactly 0 by determinism whatever the hook does: a reference, not a control (review, Minor).
+- **(3,5) as reference.** Block 3, so fewer of Γ's inputs change than under a block 2 head; the lookup covers that depth. The lookup's label is weak on its own
+  as its gain is smaller, 5.7 to 6.4.
+- **Target against masked.** Target reads are fp32, masked reads bf16 (review, Minor). Target shares come from `amend2.json`, not re-read.
+- **Slot gate.** Unweighted, the marker position only, and blind to subcomponents that read several slots, which `slot_reads` leaves out. A closed slot says nothing
+  about q, k, v upstream.
+- **All.** One model, one marker, step 30, three seeds.
+
+### Departures from the literature
+
+- **Olsson et al. 2022** zero-ablate, on small models. We mean-ablate over ordinary text, as E62.
+- **Running a parameter decomposition's importance function on ablated activations** has no source we know of. Γ trained on clean activations; this input is off that distribution by construction.
+- **Thresholds.** 0.25 is Fable's, 0.15 E62's, 0.092 derived, 0.5 and 0.1 of the slot chosen here. None published.
+
+### Amendment 2's "Not run" list, quoted
+
+> Separating the four accounts, each a $0 read on the saved states:
+>
+> - Γ recomputed with the head off, the one read of the third account, beside the lookup, (3,5) and W₀'s mask recomputed the same way. This is Amendment 3, coded and not run; the plan had listed it as not planned, and `ablated` must wrap Γ deliberately for it.
+> - The head off on $L_{11}$ and $U_1$, with its attention, which reads the fourth account: how far the update's weights use the head.
+> - An own-mask mean and zero ablation in row 3's cells, which settle whether the fall is removal or injection.
+> - The o_proj subcomponents that read head (2,4)'s slot: how much of that slot's weight passes under W₀'s mask and under each state's mask.
+> - The masked forward's head output against the mean it is replaced by, under each mask. If it already sits near the mean, the head's way is closed upstream, through q, k or v.
+> - Head (2,4)'s attention at the marker in the masked forward, under each mask, beside the target model's. `copying.attention_patterns` exists for the target model.
+> - The head off with every mask at 1 on the 200 read windows, $U_0$ and $U_1$. It joins row 1, which ran on repeated sequences, to the windows row 3 read.
+> - Each of the 24 heads off in the masked forward at the state's mask: which head, if any, the masked gain does lean on.
+> - Both heads off in the masked forward.
+>
+> Also not run:
+>
+> - W₀'s level under both heads, computed and discarded, so the state's own fall under both.
+> - W₀'s log-odds under the head on repeated sequences, the other half of the 0.5 bar's reference.
+> - The target model's attention at the marker, under W₀ and each state; does the fine-tune move the query.
+> - Shares at steps 100 and 300, including the hypothesis's remaining prediction.
+> - Downstream compensation after ablation.
+> - $L_{01}$ for another in-context token; the lookup state's mask read for B; the copying state's mask read for the lookup's word; a map with its target in context and no prefix relation.
+> - A head-level label for E58's copy, elicit and rank-1 maps; r for a random update of matched size at this target.
+> - Which subcomponents the copying state's mask changes.
+> - More seeds, other markers, other key counts; zero ablation.
+
+This amendment runs "Γ recomputed with the head off, the one read of the third account", and a version of the first item, the mean gate on `o_proj` subcomponents, unweighted.
+
+### Not run
+
+Everything: the rule functions and the hook ran on CPU on a tiny model, and `amend3.py` was only imported; the 67M was never loaded. Row 1 is the new read's first test on a GPU. Not planned:
+every other item quoted above; Γ recomputed with the head on in the masked forward, the Γ-only corner, which no filed rule reads; Γ recomputed under two heads; recomputed gates at the slot; the review's C1 to C5, which are for the Amendment 2 report.
