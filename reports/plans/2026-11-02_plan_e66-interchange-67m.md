@@ -3,6 +3,8 @@
 *Baseline-lead, 2026-11-02. Decision: `decisions.md` row "Interchange patch on the 67M" (option (b) of
 `decision-e65-or-stage-b`). Plan only: no code, no predictions filed, nothing run. The user reads this first.*
 
+**Reviewed by Fable (2026-11-02): `reports/plans/2026-11-02_advice_e66-review-FABLE.md`, which advises against running this as written. Its changes are not applied here; they wait on the user.**
+
 **In plain words.** We move the original model's internal state from two different contexts into a fine-tuned model,
 and ask whether that model responds more strongly than the original does. We also switch off the neurons the original
 model uses most for the trained answer, and see how much of the fine-tune's gain goes. Where both agree, a 67M
