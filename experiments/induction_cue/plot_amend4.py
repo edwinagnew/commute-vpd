@@ -48,7 +48,7 @@ def main() -> None:
     frac = json.loads((RES / "predictions_amend4.json").read_text())["thresholds"]["masked_fall_frac"]
     fig, (left, right) = plt.subplots(1, 2, figsize=(10.4, 5.2), sharey=True)
     panel(left, [c["target_on"], c["target_off"], c["target_broken"]], TARGET, "Target model, no masks", c["fall"], c["lean"], "")
-    panel(right, [c["mask_on"], c["mask_off"], c["mask_broken"]], MASKED, "Masked forward, the original model's own mask, frozen", c["mask_fall"], c["mask_lean"], f"\n{c['mask_fall'] / c['fall']:.2f} of the target's")
+    panel(right, [c["mask_on"], c["mask_off"], c["mask_broken"]], MASKED, "Masked forward: W₀'s mask, held with the head off;\npair broken under its own mask", c["mask_fall"], c["mask_lean"], f"\n{c['mask_fall'] / c['fall']:.2f} of the target's")
     fall_bar, lean_bar = c["mask_on"] - frac * c["fall"], c["mask_on"] - frac * c["lean"]
     right.plot([0.72, 1.28], [fall_bar, fall_bar], color=INK, ls="--", lw=1.4, zorder=3)
     right.text(0.66, fall_bar - 0.15, f"filed bar: a quarter\nof the target's fall\nreaches {fall_bar:.2f}", ha="right", va="center", color=INK, fontsize=8.5)

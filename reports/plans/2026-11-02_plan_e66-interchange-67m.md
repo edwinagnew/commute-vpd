@@ -350,3 +350,28 @@ The plan's list stands. Added here: the off-map ratio Q, the masked odds and the
 **Deleted.** The bars and U at the state's own top K, so no bar is computed by the run; Spearman, which the analysis computes from `run.json`; the listing of the 33 states not read and the E54 and E60 steering sources, so stage 0 no longer prints them and the card's listing is a `jq` query. Stage 4 now stores Q beside T unscaled.
 
 **Consequence for "What the card after it decides".** Its numbers come from the analysis, from `run.json`: bars, |ρ|, the filed shares of the other states.
+
+## Amendment 2: the patch on the saved fine-tunes, as exploratory readings (2026-11-02)
+
+*The user's decision after job 48971 stopped, on `reports/plans/2026-11-02_advice_e66-stop-FABLE.md`. Not reviewed again: nothing here changes how a number is measured, with the two exceptions named below. About 5 min of `debug`, $0.*
+
+**In plain words.** The first job stopped because neither hand-built control came out usable, so nothing it could be scored against exists. This job reads the patch ratio on the fourteen saved fine-tunes anyway, as readings and not as a test, with the neuron reading dropped. It answers one question, whether any 67M fine-tune responds to a context swap more strongly than the original model does, and it can give no state a label.
+
+**Stage 1's stop stands as filed and is not refiled.** `results/predictions.json` and `results/run.json` stay as they are. Amplify and the write gave no usable high or low control under the filed rules, and no filed verdict comes from this job.
+
+**What runs** (`experiments/interchange_67m/amend2.py`, `cluster/interchange_67m_amend2.sbatch`, output `results/amend2.json`):
+- **W0 alone first.** Stage 0 as before, without K: pairs, the transplant check, R(W0), l*. It must also reproduce job 48971's R(W0) within 1e-4 and its l*.
+- **References, copied from `run.json`.** The write's and sharpening's rows and the write's fit, per map; the copy map's write is the lookup's. Nothing is rebuilt and `sharpened` does not run. The write missed its filed bar on every map, so it is a reference only, and the lookup's (cond 30.6, α 43) is the worst of the five.
+- **Stages 2 and 3.** G re-read within 0.02, steering share, and T, T_off, Q at all three blocks, on E62's six states and the eight copy and random-map states. A mark per block says whether steering reaches 0.5 at or before that block. It describes what the patch can see; it is not a verdict.
+- **Stage 4.** T, T_off, Q on E62 Amendment 2's six scaled copies. Option A's size reading needs them, and they cost about 20 s. T against ‖δW‖ is computed in the analysis, read with the selection-inflation note in `predictions.json`.
+- **U is off, and no U code runs:** no K, no neuron sets, no null. Fable's finding: the write is a linear readout of block 3's neurons, so ablating them removes it whatever the update's kind, and U's negative control fails by construction.
+
+**The two exceptions, both reporting only.**
+- **ident32b's block 1**, which missed the 0.5-nat floor by 0.003, is read with a floor of 0.49 on that map alone and marked `under_floor`. Its l* stays 2. Every other mean on that map is 0.65 or more, so nothing else moves. Its write reference there was void in `run.json`; the T from the two means is given beside, with no sd.
+- **The new stop** on reproducing job 48971's pairs protects the copied references.
+
+**The one positive thing we would read, and what it cannot say.** A fine-tune whose T sits above the write's at a block where steering has not already carried its gain would be the first state seen to scale W0's context response. **Nothing has ever read high on T: amplify never reached a reading, so a high state has no reference.** It could not say why: reuse, a sharpening local to the marker, or an artefact of the patch would all read alike, and Q removes only what the off-map response shares. And a T near 1 cannot be told from "T sees nothing".
+
+**Reading the outcome (exploratory), Fable's branches, quoted.** "if the copy-map states read T near 1 at block 1 like the write, T has shown no fine-tune it can see and the key-swap or E65 is next; if they read above the write and the random maps do not, file rules with a small amplify as the high control." And: "Rebuild amplify (K about 256, gain capped at what W0's neurons give). $0; tells us T can read a known scaling. Worth it only if the states read near 1 everywhere, to separate 'no reuse' from 'T blind'." Fable also notes that "E62's six states are blind at l* = 3 by the plan's own mark and would not change either." A new plan would file any rule; this amendment files none.
+
+**Not run.** Everything in this section. No model was loaded in writing it.
