@@ -1,0 +1,98 @@
+{
+  "about": "E34 Amendment 9, 2026-11-02. Does a student's weight change point along what the subcomponents could express of its fine-tune's update? Option D of reports/plans/2026-11-02_plan_commute-next-draft.md. Plan reports/plans/2026-11-02_plan_e34-amend9-student-move.md. Tensor arithmetic on saved states, fp64, CPU, no model. Filed before any run. Design check: class 1, analysis of what exists.",
+  "filed": "2026-11-02",
+  "amend9": {
+    "tol": 1e-06,
+    "ctrl_tol": 1e-06,
+    "read_tol": 0.001,
+    "half": 0.5,
+    "along_min": 0.1,
+    "min_share": 0.0001
+  },
+  "threshold_sources": {
+    "tol": "split.bases' default, used by every split so far",
+    "ctrl_tol": "a reading equal by construction: E12 Amendment 2's zero_tol, 1e-6",
+    "read_tol": "predictions_amend8c.json, expected.new: 'cosines rebuilt from bf16 offsets ... within about 1e-3 of the fp32 reading'. Measured there at 6.4e-7 (rebuilt_cos_real 0.9273113 against 0.9273120)",
+    "half": "at or above it, most of the student's squared length lies along the reference: Amendment 8c's share = cos^2, and E12 Amendment 2's half. The Amendment 8 report's 'unidentified 87-93%' uses this same share",
+    "along_min": "Amendment 8c's along_min, a cosine under 0.1 is not along it",
+    "min_share": "arithmetic: bf16 rounding is at most 2^-8 of an entry, so at most 2^-16 = 1.5e-5 of dW's squared length; 1e-4 is 6.5 times that, so an inside part above it cannot be rounding alone"
+  },
+  "request_in_the_terms_words": "For each saved student of a teacher training on the 67M: its weight change s = (U + dU)(V + dV)^T - U V^T from W0's alive (U, V), against its fine-tune's finished update dW and against the inside part I(dW) = dW - O(dW), where O(dW) is the least-squares split's remainder, (I - P_U) dW (I - P_V) per matrix. Inner products over the 24 matrices together, fp64. Numbers: cos(s, I(dW)); cos(s, dW), re-read; the inside share ||I(dW)||^2 / ||dW||^2. Beside them the student's own inside share, and its size against dW and against I(dW).",
+  "states": {
+    "read": "E12 Amendment 2's six students (rand32_s0, rand32_s1, rand32b_s0, rand32b_s0_o1, rand32b_s1, rand32b_s1_o1) with their fine-tunes regating_table/results/large/{rand32,rand32b}_{s0,s1}.pt (fp32); Amendment 8c's real_o0, real_o1 with real_teacher_dW.pt, and null_o0, null_o1 with null_teacher_dW.pt (bf16). U, V: amend8c/uv0.pt",
+    "left_out": "E42's six students (e42/{rand32,ident32,rand1}/{A,B}_step1000.pt) exist, but their step-1000 fine-tunes were regenerated in-job and not saved (SAVED.md; newskill.py; kv_task/results/large/<task> holds step 10 only; regating_table's rand32_s0 is a first-learned-step fine-tune of another recipe length). Regenerating them is training, out of scope. Amendment 8's n1, n2, n4, n5 and moved students have a moved start or no fine-tune for a reference. n3b/real.pt is the same regeneration as real_o0"
+  },
+  "the_algebra": {
+    "projector": "O is an orthogonal projector in the Frobenius inner product (P_U^perp and P_V^perp on each side), so I = 1 - O is too, and <s, I(dW)> = <I(s), I(dW)>",
+    "identity": "cos(s, dW) = cos(s, I(dW)) x sqrt(inside share) + out_term, with out_term = <O(s), O(dW)> / (||s|| ||dW||). If s has no outside part, out_term is 0 and cos(s, dW) / sqrt(share) IS cos(s, I(dW))",
+    "what_the_share_bounds": "The inside share bounds cos(s, dW), at sqrt(share), for a student wholly inside. It does not bound cos(s, I(dW)), whose bound is 1. Option D's 'which bounds the first' has this the wrong way round. So a rule of 'cosine against the bound' has one honest form: cos(s, I(dW)) against 1. A second rule comparing cos(s, dW) / sqrt(share) would be the same number and is not filed; P3 reads only the difference between them",
+    "what_is_settled_before_the_run": "With out_term 0, P1's 'mostly along' needs share <= 2 cos(s, dW)^2. Filed fp32 cosines give: real_o1 share <= 0.150, real_o0 <= 0.158, rand32_s1 <= 0.177, rand32_s0 <= 0.205, rand32b_s1 <= 0.306, rand32b_s0 <= 0.339. The isotropic update's inside share from the alive ranks is 0.614 (entry-weighted), and E2's Adam fine-tunes of the emoticon task read 0.54 to 0.56 outside on the 20 matrices not saturated, Frobenius, step 10 to 300 (lift_test/results/weighted.json), which is inside share about 0.45 there plus the 4 saturated matrices at 1. So P1 can read 'copies' only if the fine-tunes have far less inside than any earlier reading of this kind. The run's open numbers are the share, out_term and the student's own inside share; P1's wording is close to decided by arithmetic, and this is stated so that the result is not read as a surprise"
+  },
+  "controls": {
+    "first and alone": "On each of the six fine-tunes, before any student. C1: the least-squares split's first-order change dU V^T + U dV^T (fp64) reads cos 1 to I(dW) within 1e-6. C2: the do-nothing's change dW reads cos sqrt(share) to I(dW) within 1e-6, which fails if O is not a projector. Either miss, or share under min_share: stop, no student is read",
+    "re-read": "Every student's cos(s, dW) to its own fine-tune and, for Amendment 8c, to both fine-tunes, against the fp32 value filed in new_vs_existing_amend2.json .students[].cosine and teacher_training_amend8c.json .cos, within 1e-3. Miss: stop. This is also the test that E12's offsets belong to uv0's alive columns: per-matrix column counts match transport_test's alive.pt (checked 2026-11-02, keys and shapes only) but E12 never saved its own uv, and dW = dU V^T + U dV^T + dU dV^T would not reproduce the filed cosine under another U, V",
+    "reported, no stop": "The whole least-squares state, (U + dU)(V + dV)^T - U V^T, against I(dW): ls_whole, fp64. 'Cosine 1 by construction' holds only to first order: the whole state carries dU dV^T, which is not in the inside part. So ls_whole is below 1 by an amount never read, the second-order term of a minimum-norm split"
+  },
+  "measurements": {
+    "cos_in": "cos(s, I(dW)), absolute. Scored in P1, P2. Blind to size. Frobenius: every weight direction counted alike, so a direction no input excites counts as much as one that drives behaviour; dominated by the larger matrices",
+    "cos_all": "cos(s, dW), the earlier number re-read. Used in P3 and the re-read control",
+    "share": "||I(dW)||^2 / ||dW||^2 over all matrices. Frobenius, not the input-weighted outside share of GOALS.md, which needs input moments from a forward. null_inside beside it, the same for an isotropic update with dW's per-matrix energies (split.gaussian_null)",
+    "inside_of_student": "||I(s)||^2 / ||s||^2. Tests the premise that a student's change lies only in the span: it does to first order, and dU dV^T can lie outside. Reported",
+    "size_to_inside": "||s|| / ||I(dW)||, beside size_to_all ||s|| / ||dW||. Reported, for the size card; cos_in x size_to_inside is how far the student reaches along the inside part, 1 being all of it",
+    "out_term": "cos_all - cos_in x sqrt(share). Scored in P3"
+  },
+  "expected": {
+    "W0": "No change, s = 0: change_stats returns nan, every rule 'unscorable'. Run in tests on random matrices, not as a state",
+    "do-nothing": "Weight change dW: cos_all 1, cos_in sqrt(share), inside_of_student = share, out_term 1 - share. C2 runs it per fine-tune",
+    "control": "C1 1 within 1e-6 on all six. ls_whole under 1, size unread; lean above 0.9, low confidence: a minimum-norm split has large dU, dV on small singular values",
+    "real students, own fine-tune": "cos_all as filed: rand32 0.298 to 0.320, rand32b 0.391 to 0.412, real 0.274 to 0.281. Share: lean 0.5 to 0.8, medium-low. So cos_in about 0.31 to 0.40 on real, 0.33 to 0.45 on rand32, 0.44 to 0.58 on rand32b",
+    "null student against the real dW": "Near 0: cos_all filed 0.047 to 0.048 (8c), so cos_in about 0.05 to 0.07. Random directions read about 2e-4 (8c's noise floor); the excess is what Amendment 8c read and is not explained here",
+    "null student, own fine-tune": "cos_all filed 0.366, cos_in about 0.41 to 0.52",
+    "inside_of_student": "Lean 0.85 to 1, low: dU dV^T is second order and the 4 saturated matrices hold no outside part; unread",
+    "size_to_inside": "size_to_all / sqrt(share): real about 0.8 to 1.0, rand32 2.6 to 3.2, rand32b 1.7 to 2.2"
+  },
+  "noise_floors": "bf16: offsets are bf16 in all ten students; the Amendment 8c fine-tunes are bf16 too, the E12 ones fp32. Measured effect on a cosine: 6.4e-7 on 8c's rebuilt_cos_real, and here the re-read difference per student against the filed fp32 cosine (saved_cos_all in each read). Arithmetic worst case, if every rounding lined up with the other vector: 2 x 2^-8 = 0.008, which no reading approaches because rounding errors are near-orthogonal to a fixed direction. Amendment 3's reload_diff (at most 0.004 nats) is an effect on the term, not on a cosine, and is not used. Differences in a cosine under 1e-3 are not read. Batch order: 0.015 to 0.02 between E12's order pairs, from the filed cosines; 0.0074 on 8c's real pair",
+  "predictions": [
+    {
+      "id": "P1_wording",
+      "kind": "classification",
+      "rule": "Per real student against its own fine-tune, along_class(cos_in, share): not finite, or share under 1e-4: 'unscorable'. cos_in > 0 and cos_in^2 >= 0.5: 'mostly along'. Else cos_in >= 0.1: 'mostly elsewhere'. Else, a negative cosine included: 'not along'. Both lines inclusive. Verdict over the eight real students, E12's six and Amendment 8c's real_o0, real_o1, also reported per family: all 'mostly along': 'copies'. None: 'expressible change'. Otherwise 'mixed'. Any 'unscorable', no states, or a missing state: 'unscorable'. Absolute",
+      "lean": "'expressible change', high, on all eight, for the arithmetic in the_algebra.what_is_settled_before_the_run. 'mostly elsewhere' per state, not 'not along', high",
+      "what_it_decides": "'copies': the headline may read 'copies the fine-tune into the subcomponents', the 0.28 being an artefact of the reference. 'expressible change': it reads 'reproduces its behaviour by a change the pieces can express' and the unidentified part of the move stays the method's own. 'mixed': both numbers go to the user by family",
+      "blind_to": "Size. Input weighting: a student may match the inside part on every direction inputs excite and differ on the rest, and that reads 'mostly elsewhere' here. Another route to the same behaviour. Shared batches: real_o0 shares all 1,000 with its fine-tune, so real_o1 is the cleaner reading, and each family's order pair is reported",
+      "positive_control": "C1, the least-squares split's first-order change, is 'mostly along' at cos 1 on each fine-tune"
+    },
+    {
+      "id": "P2_reference_power",
+      "kind": "classification, two reads",
+      "rule": "separated(own, other). Any empty or not finite: 'unscorable'. max(other) >= min(own), ties included: 'no power'. max(other) < 0.1 <= min(own): 'reads its own'. Otherwise 'partly'. Read 1, null_student: own = real_o0, real_o1 and other = null_o0, null_o1, all cos_in against the real fine-tune's inside part, which the null students never saw. Read 2, other_table: own = E12's six against their own fine-tune, other = the same six against the other map table's fine-tune at the same seed. Absolute",
+      "lean": "null_student 'reads its own', high: real about 0.31 to 0.40, null about 0.05 to 0.07. other_table 'partly', medium-low: E12's cosine to the same table's other seed is 0.24 to 0.36, so fine-tunes share a part; the other table should read above 0.1 and below own. No earlier reading of it",
+      "what_it_decides": "'no power' on null_student: P1's reading is not about this fine-tune, and the wording question goes back to the user unanswered",
+      "blind_to": "One null fine-tune, one label draw. Read 2 is a different task's update, not a null: a common part of all map-table fine-tunes counts against it",
+      "positive_control": "C1 on each fine-tune"
+    },
+    {
+      "id": "P3_span",
+      "kind": "classification",
+      "rule": "Per student against its own fine-tune, span_class: not finite, or share under 1e-4: 'unscorable'. |cos_all - cos_in x sqrt(share)| <= 1e-3, inclusive: 'in the span'. Otherwise 'outside counts'. Verdict over all ten students: one label if all agree, 'unscorable' if any is, else 'mixed' (E12 Amendment 2's agree). Absolute",
+      "lean": "'in the span', medium-low. out_term = <O(s), O(dW)> / (||s|| ||dW||); O(s) comes only from dU dV^T, and it lines up with O(dW) only by the students' own overlap outside",
+      "what_it_decides": "'in the span': cos(s, dW) is cos(s, I(dW)) rescaled by a known factor, so the fair reference adds the factor and nothing else, and Option D's premise holds for this purpose. 'outside counts': students reach dW's outside part by the second-order term, a route the premise says does not exist; goes to the user",
+      "blind_to": "A student with a large outside part orthogonal to O(dW) reads 'in the span' here; inside_of_student beside it shows that case",
+      "positive_control": "C2: the do-nothing reads out_term 1 - share, 'outside counts' at any share under 0.999. Tested on random matrices"
+    }
+  ],
+  "edge_cases_run_before_filing": "tests/test_teacher_amend9.py on the code's rule functions, 2026-11-02, no state file: along_class at the half line on both sides, at along_min on both sides, a large negative cosine whose square is over the half line, a zero cosine, nan in either argument, share 0, share just under and at min_share. wording with no states, an unscorable label, all along, none along, mixed. separated with an empty list on either side, nan, a tie, other above own, other at along_min, own at along_min, own under along_min, negative other. span_class at read_tol, over it, share 1 (every matrix saturated), share 0, nan in each argument. On small random matrices: the two controls, the do-nothing's out_term, an all-inside change's bound form, a zero change (nan, unscorable), a wholly outside update (inside 0), dU dV^T leaving the span while the first order stays in it, and score() with every state missing (all unscorable).",
+  "degeneracies_found_when_writing_the_rules": [
+    "A bound-relative rule is the same number as cos_in when out_term is 0: see the_algebra. Not filed; P3 reads the difference",
+    "Squaring cos_in alone would pass a large negative cosine as 'mostly along': the rule requires cos_in > 0",
+    "A small inside share makes cos_in the cosine with rounding: min_share refuses it"
+  ],
+  "departures_from_the_reference": "The brief's control 'cosine 1 by construction' holds only to first order, so C1 is the first-order change and the whole state is reported, no stop. Otherwise none: U, V from uv0.pt, not reloaded from the model; offsets_state as filed; inner products by E12 Amendment 2's change_stats, imported.",
+  "not_run": [
+    "E42's students: their fine-tunes are not saved",
+    "per-matrix cosines ($0 later)",
+    "input-weighted cosines and shares: they need input moments from a forward pass",
+    "the other seed's fine-tune as a reference",
+    "the same reading on Qwen, or any comparison with cheaper methods (baseline-lead)"
+  ]
+}
