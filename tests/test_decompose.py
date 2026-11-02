@@ -158,6 +158,12 @@ def test_early_check_problems() -> None:
     assert D.early_check_problems({"1000": {"kl": {}}}, 1000)
 
 
+def test_filed_early_checks_can_work() -> None:
+    filed = json.loads((CONFIG.parent / "results" / "predictions_c2.json").read_text())["decomposition_stops"]["early_checks"]
+    assert set(filed) == {"0", "1000", "2000", "10000", "50000"}
+    assert D.early_check_problems(filed, yaml.safe_load(CONFIG.read_text())["eval_freq"]) == []
+
+
 def test_on_eval_after_each_eval_and_the_log_grows(tmp_path: Path) -> None:
     """on_eval fires at each evaluation, final one included, with the record already on disk; so does each log record."""
     path = tmp_path / "sub" / "log.jsonl"

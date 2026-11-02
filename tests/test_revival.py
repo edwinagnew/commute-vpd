@@ -180,3 +180,48 @@ def test_ceiling_balanced_cells_sit_near_half():
 @pytest.mark.parametrize(("n", "a"), [(24, 17), (21, 15), (18, 13), (16, 12)])
 def test_pass_bar_reproduces_the_c1b_table(n: int, a: int):
     assert rv.pass_bar(n, n // 2) == a
+
+
+# ---- C2's positive control and outcomes (predictions_c2.json positive_controls, predictions, edge_cases) ----
+
+
+def test_positive_control_three_states():
+    assert rv.positive_control_state([0.5, 0.9], 0.5) == "holds"  # inclusive at the bar
+    assert rv.positive_control_state([0.49, 0.9], 0.5) == "partial"
+    assert rv.positive_control_state([None, 0.9], 0.5) == "partial"  # a void state does not reach the bar
+    assert rv.positive_control_state([0.49, None], 0.5) == "none"
+    assert rv.positive_control_state([None, None], 0.5) == "none"
+
+
+def c2_score(n: int, agree: int, n_c: int = 15) -> dict:
+    """A score as c1b.score_one gives it: n non-void of 21, of which `agree` right; n_c the best recipe-only labeller."""
+    truth = {f"s{i}": "existing" if i < 12 else "new" for i in range(21)}
+    states = list(truth)[:n]
+    flip = {"existing": "new", "new": "existing"}
+    labels = {s: truth[s] if i < agree else flip[truth[s]] for i, s in enumerate(states)}
+    return rv.score(labels, truth) | {"n_c": n_c}
+
+
+@pytest.mark.parametrize(("n", "agree", "n_c", "want"), [
+    (21, 21, 15, "tie"),
+    (21, 17, 15, "pass_under"),  # the bar: max(a(21) = 15, n_c + 2 = 17)
+    (21, 16, 15, "fail"),  # above a(21), under n_c + 2
+    (20, 20, 15, "pass_under"),  # a voided scored state is a miss against 21 of 21
+    (7, 7, 5, "void"),  # no bar
+    (0, 0, 0, "void"),  # a void cut-off labels every state void
+])  # fmt: skip
+def test_c2_outcome(n: int, agree: int, n_c: int, want: str):
+    assert rv.c2_outcome(c2_score(n, agree, n_c), 21) == want
+
+
+def test_c2_headline_is_the_better_reading():
+    assert rv.c2_headline(["void", "pass_under"]) == "pass_under"  # one reading void: the other's outcome
+    assert rv.c2_headline(["void", "void"]) == "void"
+    assert rv.c2_headline(["tie", "fail"]) == "tie"  # no averaging
+    assert rv.c2_headline(["fail", "void"]) == "fail"
+
+
+def test_a_missing_positive_control_changes_no_outcome():
+    """The outcome reads the score alone: the rule takes no control, whatever positive_control_state says."""
+    assert rv.positive_control_state([None, None], 0.5) == "none"
+    assert rv.c2_outcome(c2_score(21, 21), 21) == "tie"
