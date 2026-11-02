@@ -479,3 +479,4 @@ Figures already published (their sources, for a re-upload):
 - "fig/e52_steering.png": "experiments/baseline_neurons/figures/p3_steering.png"
 - "fig/e54_route_split.png": "experiments/keydependent_elicit/figures/p1_route_split.png"
 - "fig/e54_steering.png": "experiments/keydependent_elicit/figures/p2_steering.png"
+- "fig/methodtable_shares.png": "experiments/method_table/figures/shares.png"
