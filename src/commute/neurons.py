@@ -33,6 +33,17 @@ def neuron_edit(c1: dict[str, Tensor], idx: Tensor) -> Edit:
     return edit
 
 
+def window_edit(c1: dict[str, Tensor], top: Tensor) -> Edit:
+    """`neuron_edit` per window (E63, added 2026-11-02): top (N, 12288) bool names each window's neurons, which take the
+    tuned model's activations at every position."""
+    edit: Edit = {}
+    for i in range(N_LAYERS):
+        mask = top[:, i * D_MLP : (i + 1) * D_MLP].to(c1[f"mlp{i}"].device)
+        if mask.any():
+            edit[f"mlp{i}"] = lambda x, src=c1[f"mlp{i}"], m=mask[:, None, :]: torch.where(m, src, x)
+    return edit
+
+
 def neuron_patch(net: Net, t: Task, dW: DW, G_score: float, grid: list[int]) -> dict[str, Any]:
     """B2's grid: per k, the share of the top-k neurons' patch; k50 = the smallest k on the grid with share >= 0.5
     (inf if none), k50_index its grid index (len(grid) if none). Also the ranking (`order`, `shift`) and W0's fit-half

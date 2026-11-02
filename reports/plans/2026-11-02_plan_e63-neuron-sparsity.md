@@ -71,6 +71,33 @@ sha256; W1 and W2 on the synthetic controls and Gaussian at the table's values; 
 `cipher_s0` within 1e-6 of `experiments/keydependent_patch/results/job1.json`; per-window k = 12288 equals E56's full-width
 share within 1e-3.
 
+## Amendments before filing (2026-11-02, the code writer; nothing has run)
+No threshold in Rules was moved. Each note closes a gap the writing found.
+1. **Gaussian's "about 1" on W1.** It holds when every matrix carries equal energy (0.9987 on a unit Gaussian, which stage 0
+   gates at [0.99, 1]). The per-state Gaussian keeps each matrix's norm, as E51's, so it reads below 1 by how unevenly the
+   blocks share the update; it is reported, and no rule reads it for W1 or W1g.
+2. **Identity patch at 1e-6.** E56's recorded `identity_max_abs` is 1.1e-5, read on 48 windows against W0 read on 97: two
+   batch shapes, not the patch. The plan's 1e-6 cannot be met on that path. Stage 0 reads the new per-window path against W0
+   in the same batch, where it should read 0.
+3. **W2's columns.** The down-projection's columns are 768-dimensional as the rows are, so 1/768 is expected there too. As
+   the plan says "measured", it is reported, not gated.
+4. **W1g under T2.** At W0 `cipher_own_s<s>` has `cipher_s<s>`'s task, seed and batch, so W1g's T2 reads T1's gradients at
+   seeds 0, 1. A gradient at W0 has made no progress, so W1g cannot be a progress effect; its T2 adds nothing and is reported
+   as such in the file. The rule is unchanged.
+5. **First batches are exact in all families.** E46's windows files hold the training windows, and E53's rows are rebuilt by
+   its own calls, so W1g needs no stand-in batch. Each first-batch loss is compared with the fine-tune's logged step 1 (bf16
+   against fp32), reported, as a check of the batch.
+6. **C1's readability.** "Half of its own full-width share" has no meaning when that share is not positive, so C1 is
+   unreadable then, and when the full-width rise itself is under 0.05 nats. With a positive full width some k always reaches
+   half, so "never reaches" cannot occur.
+7. **A1 squares the shift**, as W1 squares the update, which is what the control's 16/12288 assumes.
+8. **The basis guard is required for a yes**, read on family A's five elicit states as means against the seed range; "differs"
+   stays two-sided and the side is recorded. A test with under two readable states on a side reads unreadable and does not pass.
+9. **One stage-0 check added:** W1 of the rotated 16-neuron update in [0.10, 0.25] (expected 0.222), so the rotated reference,
+   on which the guard rests, has its own positive control.
+10. **`code_step10`: W1 and W2 only.** E36's task has no answer position, so A1 and C1 are undefined on it; W1g on it has no
+    reader. All three are cut.
+
 ## Not run
 SGD fine-tunes of the pairs (W1g stands in); attention-head sparsity; any new fine-tune; Qwen (the Qwen line's); the
 causal label of row 112, which E64 and E55 C2 pursue.
