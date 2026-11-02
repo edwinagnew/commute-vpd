@@ -8,3 +8,4 @@ clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
 - 2026-11-02 regating-lead · decisions.md · pending decisions · Remove card decision-says-b: the user kept the filed rule; E62 Amendment 6 running.
+- 2026-11-02 regating-lead · reports/analyses/2026-11-02_analysis_e62-amend6-overwrite.md · E62 card, claims table, timeline, pending decisions · PROVISIONAL until the independent check: E62 Amendment 6 reads filed `mixed`: with B overwritten under W0's held mask at the second A, about 0.65 of the lean to B survives, B's top-1 falls 0.195 to 0.035, the new token gains 0.053 of the lean; read on the new text, the mask favours the new token; neither of the user's two branches fires, and the numbers go to the user.
