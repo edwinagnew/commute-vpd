@@ -1,0 +1,643 @@
+"""E58's filed rules (src/commute/open_pair.py) on hand-made numbers, with every edge case the predictions name: empty
+pools, a zero or negative denominator, ties at each bound, both bounds at once, all "neither", nan readings."""
+
+from __future__ import annotations
+
+import math
+from collections.abc import Sequence
+from typing import Any
+
+import torch
+
+from commute import open_pair as OP
+
+TH = {"G_min": 8.0, "cut": 0.5, "k_sd": 3.0, "min_gap": 0.2, "min_lead": 2}
+SEEDS = [0, 1, 2]
+
+
+def st(elicit: Sequence[tuple[str, float, float, float]], cipher: Sequence[tuple[str, float, float, float]]) -> dict[str, dict[str, Any]]:
+    """(label, r, ratio, S) per seed for each kind."""
+    out = {}
+    for kind, rows in (("elicit", elicit), ("cipher", cipher)):
+        for s, (lab, r, ratio, S) in enumerate(rows):
+            out[f"{kind}_s{s}"] = {"label": lab, "r": r, "ratio": ratio, "S": S}
+    return out
+
+
+CIPHERS = [("new", 0.24, 0.31, 0.23)] * 3
+
+
+def test_split_keys_partitions_in_order() -> None:
+    keys = list(range(100, 132))
+    tr, held = OP.split_keys(keys, 8, 0)
+    assert len(tr) == 24 and len(held) == 8 and sorted(tr + held) == keys and tr == sorted(tr) and held == sorted(held)
+    assert OP.split_keys(keys, 8, 0) == (tr, held) and OP.split_keys(keys, 8, 1) != (tr, held)
+
+
+def test_boot_sd_edges() -> None:
+    assert math.isnan(OP.boot_sd(torch.empty(0), torch.ones(5), 100, 0))  # empty held-out pool
+    assert math.isnan(OP.boot_sd(torch.ones(5), torch.empty(0), 100, 0))  # empty trained pool
+    assert math.isnan(OP.boot_sd(torch.ones(5), torch.tensor([1.0, -1.0, 0.0]), 200, 0))  # a resample with G <= 0
+    assert OP.boot_sd(torch.full((7,), 2.0), torch.full((9,), 10.0), 200, 0) == 0.0  # constant rows: sd exactly 0
+    a = OP.boot_sd(torch.randn(50, generator=torch.Generator().manual_seed(1)) + 5, torch.full((40,), 10.0), 500, 0)
+    assert 0.005 < a < 0.03 and a == OP.boot_sd(torch.randn(50, generator=torch.Generator().manual_seed(1)) + 5, torch.full((40,), 10.0), 500, 0)
+
+
+def test_boot_sd_keys_edges() -> None:
+    kH, kG = torch.tensor([1, 1, 2, 2]), torch.tensor([5, 6, 6])
+    assert math.isnan(OP.boot_sd_keys(torch.empty(0), torch.empty(0, dtype=torch.long), torch.ones(3), kG, 50, 0))
+    assert math.isnan(OP.boot_sd_keys(torch.ones(4), kH, torch.empty(0), torch.empty(0, dtype=torch.long), 50, 0))
+    assert math.isnan(OP.boot_sd_keys(torch.ones(4), kH, torch.tensor([1.0, -3.0, -3.0]), kG, 200, 0))  # a key draw with G <= 0
+    assert OP.boot_sd_keys(torch.full((4,), 2.0), kH, torch.full((3,), 10.0), kG, 100, 0) == 0.0  # constant: sd 0
+    # windows agree within keys, keys differ: the key bootstrap sees the spread, which pools to one value per key
+    dH = torch.tensor([0.0, 0.0, 4.0, 4.0])
+    sk = OP.boot_sd_keys(dH, kH, torch.full((3,), 10.0), kG, 2000, 0)
+    assert 0.1 < sk < 0.2 and sk == OP.boot_sd_keys(dH, kH, torch.full((3,), 10.0), kG, 2000, 0)  # sd of mean of 2 Bernoulli x 0.4 ~ 0.14
+
+
+def test_spec_gate() -> None:
+    assert abs(OP.spec_gate(8.0, 10.7909, [9.0, 6.944]) - 8 / 10.7909 * 6.944) < 1e-12  # job 46259's cipher: ~5.148
+    assert OP.spec_gate(8.0, 10.7909, [20.0, 30.0]) == 8.0  # capped
+    assert OP.spec_gate(8.0, 10.0, [10.0]) == 8.0  # exactly at the reference: the cap
+    assert math.isnan(OP.spec_gate(8.0, 10.79, []))
+    assert math.isnan(OP.spec_gate(8.0, 10.79, [math.nan, 7.0]))
+    assert math.isnan(OP.spec_gate(8.0, 0.0, [7.0]))
+
+
+def test_label_on_specific_gains() -> None:
+    th = {**TH, "G_min": 5.148}
+    assert OP.label(-0.4, 6.9, 0.02, th) == "new"  # pool shift subtracted, held-out value below the pool: new
+    assert OP.label(0.0, 5.148, 0.0, th) == "new"  # G_spec at the gate is labelled
+    assert OP.label(0.0, 5.1, 0.02, th) == "too_small"
+
+
+def test_label_bounds_and_ties() -> None:
+    assert OP.label(5.0, 10.0, 0.01, TH) == "reuses"  # x = 0.5 exactly: tie counts
+    assert OP.label(4.99, 10.0, 0.01, TH) == "neither"
+    assert OP.label(0.3, 10.0, 0.01, TH) == "new"  # x = 0.03 = 3 s exactly: tie counts
+    assert OP.label(0.31, 10.0, 0.01, TH) == "neither"
+    assert OP.label(-4.0, 10.0, 0.01, TH) == "new"  # held-out keys lost ground
+    assert OP.label(0.0, 10.0, 0.0, TH) == "new"  # s = 0, H = 0: x <= 0
+    assert OP.label(6.0, 10.0, 0.2, TH) == "unreadable"  # 3 s = 0.6 >= 0.5: both bounds hold
+    assert OP.label(9.0, 10.0, 0.2, TH) == "reuses"  # wide bootstrap, but x = 0.9 is past 3 s: only one bound holds
+
+
+def test_label_gates() -> None:
+    assert OP.label(5.0, 7.99, 0.01, TH) == "too_small"
+    assert OP.label(5.0, 8.0, 0.01, TH) == "reuses"  # G at the bar is labelled
+    assert OP.label(5.0, -10.0, 0.01, TH) == "too_small"  # negative gain: below the bar, no zero or negative denominator reached
+    assert OP.label(0.0, 0.0, 0.01, TH) == "too_small"
+    assert OP.label(math.nan, 10.0, 0.01, TH) == "unreadable"
+    assert OP.label(1.0, math.inf, 0.01, TH) == "unreadable"
+    assert OP.label(1.0, 10.0, math.nan, TH) == "unreadable"
+
+
+def test_inst_label() -> None:
+    assert OP.inst_label(0.5, 0.5) == "reuses" and OP.inst_label(0.4999, 0.5) == "new"
+    assert OP.inst_label(math.nan, 0.5) is None and OP.inst_label(None, 0.5) is None and OP.inst_label("nan", 0.5) is None
+
+
+def test_p1() -> None:
+    assert OP.p1(st([], CIPHERS), SEEDS)["status"] == "pass"
+    assert OP.p1(st([], [("new", 0, 0, 0), ("neither", 0, 0, 0), ("new", 0, 0, 0)]), SEEDS)["status"] == "fail"
+    assert OP.p1(st([], [("new", 0, 0, 0), ("too_small", 0, 0, 0), ("new", 0, 0, 0)]), SEEDS)["status"] == "fail"
+    assert OP.p1(st([], [("new", 0, 0, 0), ("reuses", 0, 0, 0), ("new", 0, 0, 0)]), SEEDS)["status"] == "stop"
+    assert OP.p1({}, SEEDS)["status"] == "unreadable"  # empty pool
+
+
+def test_p2_agree_disagree_split() -> None:
+    reuse = [("reuses", 0.76, 0.95, 0.38)] * 3
+    assert OP.p2(st(reuse, CIPHERS), SEEDS, "r", 0.5)["status"] == "pass"
+    out = OP.p2(st([("new", 0.76, 0.95, 0.38)] * 3, CIPHERS), SEEDS, "r", 0.5)
+    assert out["status"] == "fail" and out["n"] == 3 and not out["split"]
+    mixed = OP.p2(st([("reuses", 0.76, 0.95, 0.38), ("new", 0.3, 0.3, 0.3), ("neither", 0.7, 0.9, 0.4)], CIPHERS), SEEDS, "ratio", 0.5)
+    assert mixed["status"] == "pass" and mixed["split"] and mixed["n"] == 2  # each run agrees; "neither" left out
+    tie = OP.p2(st([("reuses", 0.5, 0.5, 0.0)] * 3, CIPHERS), SEEDS, "r", 0.5)
+    assert tie["status"] == "pass"  # r at the cut reads reuses
+
+
+def test_p2_not_testable_all_neither_or_nan() -> None:
+    assert OP.p2(st([("neither", 0.76, 0.95, 0.38)] * 3, CIPHERS), SEEDS, "r", 0.5)["status"] == "not_testable"
+    assert OP.p2(st([("too_small", 0.76, 0.95, 0.38)] * 3, CIPHERS), SEEDS, "r", 0.5)["status"] == "not_testable"
+    out = OP.p2(st([("reuses", math.nan, 0.95, 0.38)] * 3, CIPHERS), SEEDS, "r", 0.5)
+    assert out["status"] == "not_testable" and len(out["dropped"]) == 3
+    assert OP.p2({}, SEEDS, "r", 0.5)["status"] == "not_testable"
+
+
+def test_p3_counts() -> None:
+    out = OP.p3(st([("reuses", 0.76, 0.95, 0.38)] * 3, CIPHERS), 0.5, 2)
+    assert out["A"] == {"r": 6, "ratio": 6, "S": 3} and out["r"] == "adds" and out["ratio"] == "adds"
+    out = OP.p3(st([("new", 0.76, 0.95, 0.38)] * 3, CIPHERS), 0.5, 2)
+    assert out["A"] == {"r": 3, "ratio": 3, "S": 6} and out["r"] == "steering_better"
+    one = OP.p3(st([("reuses", 0.76, 0.95, 0.38), ("neither", 0, 0, 0), ("neither", 0, 0, 0)], CIPHERS), 0.5, 2)
+    assert one["A"]["r"] - one["A"]["S"] == 1 and one["r"] == "no_difference"  # one run's difference is one seed's flip
+    nan_S = OP.p3(st([("reuses", 0.76, 0.95, math.nan)] * 3, CIPHERS), 0.5, 2)
+    assert len(nan_S["rows"]) == 3 and nan_S["r"] == "no_difference"  # elicit rows leave every count
+    assert OP.p3(st([("neither", 0, 0, 0)] * 3, [("neither", 0, 0, 0)] * 3), 0.5, 2)["r"] == "not_testable"
+    assert OP.p3({}, 0.5, 2)["ratio"] == "not_testable"
+
+
+def test_p0() -> None:
+    assert OP.p0(st([("reuses", 0, 0, 0)] * 2 + [("new", 0, 0, 0)], CIPHERS), SEEDS)["verdict"] == "reuses"
+    assert OP.p0(st([("new", 0, 0, 0)] * 2 + [("neither", 0, 0, 0)], CIPHERS), SEEDS)["verdict"] == "new"
+    assert OP.p0(st([("neither", 0, 0, 0)] * 3, CIPHERS), SEEDS)["verdict"] == "mixed"
+    assert OP.p0(st([("reuses", 0, 0, 0), ("new", 0, 0, 0), ("neither", 0, 0, 0)], CIPHERS), SEEDS)["verdict"] == "mixed"
+    assert OP.p0({}, SEEDS)["verdict"] == "mixed"
+
+
+def test_score_p4_and_missing_states() -> None:
+    out = OP.score(st([("reuses", 0.76, 0.95, 0.38), ("reuses", 0.74, 0.94, 0.39), ("reuses", 0.78, 0.96, 0.37)], CIPHERS), TH, SEEDS)
+    assert out["P4"]["r"]["status"] == "pass" and out["P4"]["ratio"]["status"] == "pass"
+    nan_r = OP.score(st([("reuses", math.nan, 0.95, 0.38)] * 3, CIPHERS), TH, SEEDS)
+    assert nan_r["P4"]["r"]["status"] == "unreadable" and nan_r["P4"]["ratio"]["status"] == "pass"
+    rev = OP.score(st([("new", 0.2, 0.3, 0.2)] * 3, [("new", 0.7, 0.9, 0.3)] * 3), TH, SEEDS)
+    assert rev["P4"]["r"]["status"] == "fail"  # reversed (cipher higher) is a fail
+    part = OP.score({"cipher_s0": {"label": "new", "r": 0.2, "ratio": 0.3, "S": 0.2}}, TH, SEEDS)
+    assert part["P4"]["r"]["status"] == "unreadable" and part["P2"]["r"]["status"] == "not_testable"
+
+
+# ----------------------------------------------------------------------------- Amendment 1 (2026-10-30)
+
+TH1 = {**TH, "min_novel": 3, "min_reuses": 2}
+
+
+def test_implied_push_algebra_and_edges() -> None:
+    # per window: 24 trained values gain T, 7 other held-out values gain O, own gains H; H_spec = H - (24 T + 7 O) / 31
+    T, O, H = 1.6, -0.5, 0.6
+    assert abs(OP.implied_push(H, H - (24 * T + 7 * O) / 31, O, 32, 8) - T) < 1e-12
+    # E58 elicit_s0 (run.json): Fable's +1.6
+    assert abs(OP.implied_push(0.6133724489519673, -0.4968453962026353, -0.5320331550413563, 32, 8) - 1.5892077202117572) < 1e-12
+    assert math.isnan(OP.implied_push(1.0, 0.0, 0.0, 8, 8))  # no trained values
+    assert math.isnan(OP.implied_push(1.0, 0.0, 0.0, 32, 1))  # one held-out key: H_other undefined
+
+
+def test_boot_sd_mean_edges() -> None:
+    assert math.isnan(OP.boot_sd_mean(torch.empty(0), 100, 0))  # empty
+    assert math.isnan(OP.boot_sd_mean(torch.tensor([1.0]), 100, 0))  # one row
+    assert math.isnan(OP.boot_sd_mean(torch.tensor([1.0, math.nan]), 100, 0))  # a peer set empty on some window
+    assert OP.boot_sd_mean(torch.full((5,), 3.0), 100, 0) == 0.0
+    v = torch.randn(100, generator=torch.Generator().manual_seed(2))
+    s = OP.boot_sd_mean(v, 2000, 0)
+    assert 0.07 < s < 0.13 and s == OP.boot_sd_mean(v, 2000, 0)  # ~ 1 / sqrt(100), seeded
+
+
+def test_push_verdict() -> None:
+    assert OP.push_verdict(1.8, 0.1, 0.0, 0.05, 3.0) == "lookup"  # E58's expected elicit reading
+    assert OP.push_verdict(0.75, 0.25, 0.0, 0.05, 3.0) == "lookup"  # d = 3 s_d exactly (binary-exact numbers): tie counts
+    assert OP.push_verdict(0.74, 0.25, 0.0, 0.05, 3.0) == "neither"
+    assert OP.push_verdict(0.0, 0.25, 0.75, 0.25, 3.0) == "sharpening"  # R_peer = 3 s_R exactly: tie counts
+    assert OP.push_verdict(0.0, 0.0, 0.0, 0.0, 3.0) == "neither"  # zero d with zero sd is not a lookup; zero R_peer not sharpening
+    assert OP.push_verdict(-1.0, 0.1, 0.6, 0.1, 3.0) == "sharpening"  # W0's other preferences rise, trained values do not lead
+    assert OP.push_verdict(1.0, 0.1, 0.6, 0.1, 3.0) == "both"
+    assert OP.push_verdict(1.0, 0.1, -0.6, 0.1, 3.0) == "lookup"  # peers fall: not sharpening
+    assert OP.push_verdict(1.0, math.nan, 0.0, 0.1, 3.0) == "unreadable"
+    assert OP.push_verdict(1.0, 0.1, math.inf, 0.1, 3.0) == "unreadable"
+
+
+def test_a1() -> None:
+    rd = lambda *v: {f"elicit_s{s}": {"verdict": x} for s, x in enumerate(v)}
+    assert OP.a1(rd("lookup", "lookup", "lookup"), SEEDS)["status"] == "pass"
+    assert OP.a1(rd("lookup", "both", "lookup"), SEEDS)["status"] == "fail"
+    assert OP.a1(rd("lookup", "neither", "unreadable"), SEEDS)["status"] == "fail"  # a fail outranks unreadable
+    assert OP.a1(rd("lookup", "unreadable", "lookup"), SEEDS)["status"] == "unreadable"
+    assert OP.a1(rd("lookup", "lookup"), SEEDS)["status"] == "unreadable"  # a missing state
+    assert OP.a1({}, SEEDS)["status"] == "unreadable"
+
+
+def test_n_novel() -> None:
+    assert OP.n_novel([1, 2, 2, 3], [4, 2, 5, 5]) == 3  # repeats among held-out values each count
+    assert OP.n_novel([1, 2], [1, 2]) == 0 and OP.n_novel([], [7]) == 1 and OP.n_novel([1], []) == 0
+
+
+def test_control_status_and_verdict() -> None:
+    assert OP.control_status(["reuses", "reuses", "new"], True, 2) == "pass"  # 2 of 3 at the bar
+    assert OP.control_status(["reuses", "neither", "new"], True, 2) == "fail"
+    assert OP.control_status(["too_small", "too_small", "too_small"], True, 2) == "fail"
+    assert OP.control_status(["reuses"] * 3, False, 2) == "not_testable"
+    assert OP.control_status([], True, 2) == "not_testable"
+    assert OP.positive_control("pass", "fail") == "rank1" and OP.positive_control("pass", "pass") == "rank1"
+    assert OP.positive_control("not_testable", "pass") == "copy_fallback"
+    assert OP.positive_control("fail", "pass") == "copy_only"
+    assert OP.positive_control("fail", "fail") == "none" and OP.positive_control("not_testable", "not_testable") == "none"
+
+
+def ctrl(rank1: Sequence[tuple[str, float, float]], copy: Sequence[tuple[str, float, float]]) -> dict[str, dict[str, Any]]:
+    """(label, r, ratio) per seed for each control map."""
+    return {f"{m}_s{s}": {"label": lab, "r": r, "ratio": ratio} for m, rows in (("rank1", rank1), ("copy", copy)) for s, (lab, r, ratio) in enumerate(rows)}
+
+
+def test_score_amend1_branches() -> None:
+    look = {f"elicit_s{s}": {"verdict": "lookup"} for s in SEEDS}
+    out = OP.score_amend1(look, ctrl([("reuses", 0.8, 0.9)] * 3, [("reuses", 0.8, 0.9)] * 3), 5, TH1, SEEDS)
+    assert out["A1"]["status"] == "pass" and out["verdict"] == "rank1" and out["C3"]["scored_on"] == "rank1"
+    assert out["C3"]["rank1"]["r"]["status"] == "pass"
+    # too few held-out keys with a value of their own: rank-1 not testable, the copy map decides
+    out = OP.score_amend1(look, ctrl([("reuses", 0.8, 0.9)] * 3, [("reuses", 0.8, 0.9)] * 3), 2, TH1, SEEDS)
+    assert out["C1"]["status"] == "not_testable" and out["verdict"] == "copy_fallback" and out["C3"]["scored_on"] == "copy"
+    # rank1_s0 too small to label (Fable's guard): not testable even if later seeds read reuses
+    out = OP.score_amend1(look, ctrl([("too_small", 0.8, 0.9), ("reuses", 0.8, 0.9), ("reuses", 0.8, 0.9)], [("new", 0.8, 0.9)] * 3), 5, TH1, SEEDS)
+    assert out["C1"]["status"] == "not_testable" and out["C2"]["status"] == "fail" and out["verdict"] == "none"
+    # rank-1 measurable but new; copy reuses
+    out = OP.score_amend1(look, ctrl([("new", 0.8, 0.9)] * 3, [("reuses", 0.8, 0.9)] * 2 + [("neither", 0.8, 0.9)]), 5, TH1, SEEDS)
+    assert out["verdict"] == "copy_only" and out["C3"]["rank1"]["r"]["status"] == "fail"
+    # min_novel tie counts; an empty control record
+    assert OP.score_amend1(look, ctrl([("reuses", 0.8, 0.9)] * 3, []), 3, TH1, SEEDS)["C1"]["testable"]
+    empty = OP.score_amend1({}, {}, 8, TH1, SEEDS)
+    assert empty["verdict"] == "none" and empty["A1"]["status"] == "unreadable" and empty["C3"]["copy"]["r"]["status"] == "not_testable"
+
+
+def test_pool_and_others_with_repeated_values() -> None:
+    from commute import heldout_keys as HK
+    from commute import steering as ST
+
+    table = torch.full((10,), -1)
+    table[torch.tensor([1, 2, 3, 4])] = torch.tensor([7, 8, 7, 9])  # the rank-1 map can repeat a value
+    task = lambda keys: ST.Task("t", "k", torch.zeros(1, 3, dtype=torch.long), table, keys, 0, 1, torch.empty(0))
+    assert HK.pool_of({"trained": task((1, 2)), "new": task((3, 4))}) == [7, 8, 9]  # each value once, first-seen order
+    distinct = {"trained": task((1, 2)), "new": task((4,))}
+    assert HK.pool_of(distinct) == [7, 8, 9]  # distinct values: E58's list unchanged
+    logits = torch.zeros(2, 1, 10)
+    logits[0, 0, 7], logits[1, 0, 9] = 2.0, -1.0
+    o = HK.others([7, 8, 9])(logits, 0, torch.tensor([7, 9]))  # own value left out of each window's mean
+    ref = lambda lg, v: float(lg[v] - torch.logsumexp(torch.cat([lg[:v], lg[v + 1:]]), 0))
+    assert abs(float(o[0]) - (ref(logits[0, 0], 8) + ref(logits[0, 0], 9)) / 2) < 1e-6
+    assert abs(float(o[1]) - (ref(logits[1, 0], 7) + ref(logits[1, 0], 8)) / 2) < 1e-6
+    assert math.isnan(float(HK.others([7])(logits, 0, torch.tensor([7, 7]))[0]))  # no other value: nan, never 0
+
+
+def test_jsonable() -> None:
+    assert OP.jsonable({1: [math.nan, 2.0, (math.inf,)], "a": {"b": -math.inf}}) == {"1": ["nan", 2.0, ["inf"]], "a": {"b": "-inf"}}
+
+
+# ----------------------------------------------------------------------------- Amendment 2
+
+TH2 = {"cut": 0.5, "e_max": 0.05, "min_novel": 3, "rank1_carry": 0.3, "rank1_memorise": 0.15, "copy_carry": 0.6,
+       "dx_min": 0.15, "tol_r": 0.05, "tol_ratio": 0.1}
+REF24 = {"elicit": {"x": -0.03, "r": 0.77, "ratio": 0.94}, "rank1": {"x": 0.11, "r": 0.84, "ratio": 1.10},
+         "copy": {"x": 0.48, "r": 0.84, "ratio": 1.02}}
+
+
+def test_elicit_control_bounds_and_ties() -> None:
+    assert OP.elicit_control(0.0, "new", TH2) == "pass"
+    assert OP.elicit_control(0.05, "neither", TH2) == "pass" and OP.elicit_control(-0.05, "new", TH2) == "pass"  # ties pass
+    assert OP.elicit_control(0.0500001, "neither", TH2) == "fail" and OP.elicit_control(-0.2, "new", TH2) == "below"
+    assert OP.elicit_control(0.0, "too_small", TH2) == "too_small" and OP.elicit_control(0.0, "unreadable", TH2) == "unreadable"
+    assert OP.elicit_control(math.nan, "new", TH2) == "unreadable"  # zero G_spec gives x nan
+
+
+def test_rank1_class() -> None:
+    assert OP.rank1_class(0.6, 0.5, 3, "reuses", TH2) == "reuses"  # min_novel and x_novel = cut both ties
+    assert OP.rank1_class(0.6, 0.45, 5, "reuses", TH2) == "carries"  # x_novel under the cut: not Fable's (a)
+    assert OP.rank1_class(0.3, 0.3, 5, "neither", TH2) == "carries" and OP.rank1_class(0.15, 0.15, 5, "new", TH2) == "memorises"
+    assert OP.rank1_class(0.35, 0.1, 5, "neither", TH2) == "between"  # x and x_novel disagree
+    assert OP.rank1_class(0.2, 0.2, 5, "neither", TH2) == "between"
+    assert OP.rank1_class(0.9, 0.9, 2, "reuses", TH2) == "not_testable"  # too few novel held-out keys
+    assert OP.rank1_class(0.9, math.nan, 5, "reuses", TH2) == "not_testable"  # no novel key: x_novel nan
+    assert OP.rank1_class(0.9, 0.9, 5, "too_small", TH2) == "not_testable"
+
+
+def test_copy_class() -> None:
+    assert OP.copy_class(0.6, "reuses", TH2) == "pass" and OP.copy_class(0.5999, "neither", TH2) == "fail"
+    assert OP.copy_class(0.9, "too_small", TH2) == "not_testable" and OP.copy_class(math.nan, "new", TH2) == "not_testable"
+
+
+def test_moves_with_and_combine() -> None:
+    mw = OP.moves_with
+    assert mw(0.149, 0.5, 0.5, 0.15, 0.05) == "not_testable" and mw(0.0, 0.0, 0.0, 0.15, 0.05) == "not_testable"
+    assert mw(0.15, 0.15, 0.0501, 0.15, 0.05) == "tracks"  # dx and own ties at dx_min are testable
+    assert mw(0.3, 0.3, 0.05, 0.15, 0.05) == "flat"  # di tie at tol is flat
+    assert mw(-0.3, -0.3, -0.06, 0.15, 0.05) == "tracks"  # x fell, r fell
+    assert mw(-0.3, -0.3, 0.06, 0.15, 0.05) == "opposite" and mw(0.3, 0.3, -0.06, 0.15, 0.05) == "opposite"
+    assert mw(0.3, 0.149, 0.5, 0.15, 0.05) == "not_testable"  # the map itself moved too little
+    assert mw(0.3, -0.2, 0.5, 0.15, 0.05) == "not_testable"  # the map moved against dx
+    assert mw(math.nan, 0.3, 0.0, 0.15, 0.05) == "unreadable" and mw(0.3, 0.3, math.inf, 0.15, 0.05) == "unreadable"
+    assert mw(0.3, math.nan, 0.0, 0.15, 0.05) == "unreadable"
+    assert OP.combine(["flat", "tracks"]) == "tracks" and OP.combine(["flat", "opposite"]) == "opposite"
+    assert OP.combine(["flat", "unreadable"]) == "flat" and OP.combine(["not_testable", "not_testable"]) == "not_testable"
+    assert OP.combine(["not_testable", "unreadable"]) == "unreadable" and OP.combine([]) == "unreadable"
+
+
+def k_states(x: dict[str, float], r: dict[str, float], ratio: dict[str, float], label: dict[str, str] | None = None,
+             x_novel: float = 0.5) -> dict[str, dict[str, Any]]:
+    lab = label or {}
+    return {m: {"x": x[m], "r": r[m], "ratio": ratio[m], "label": lab.get(m, "neither"), "x_novel": x[m] if m != "rank1" else x_novel}
+            for m in x}
+
+
+def test_b2_and_score_amend2() -> None:
+    r_ref = {m: REF24[m]["r"] for m in REF24}
+    ratio_ref = {m: REF24[m]["ratio"] for m in REF24}
+    # reading A: copy and rank-1 carry more at K keys, r and ratio unchanged
+    st = k_states({"elicit": -0.03, "rank1": 0.4, "copy": 0.7}, r_ref, ratio_ref, x_novel=0.4)
+    out = OP.score_amend2(st, 5, REF24, TH2)
+    assert out["B"]["maps"]["copy"]["status"] == "flat" and out["B"]["status"] == "flat"
+    assert out["E"] == "pass" and out["R"] == "carries" and out["C"] == "pass" and out["verdict"] == "reading_A_holds"
+    # (b): copy's r rises with its x by more than 0.05 beyond elicit's change
+    st["copy"]["r"] = 0.84 + 0.06
+    assert OP.score_amend2(st, 5, REF24, TH2)["verdict"] == "b_r_tracks"
+    # a common drift of every r with K (elicit's too) is not tracking
+    st = k_states({"elicit": -0.03, "rank1": 0.4, "copy": 0.7}, {m: v + 0.1 for m, v in r_ref.items()}, ratio_ref, x_novel=0.4)
+    assert OP.score_amend2(st, 5, REF24, TH2)["B"]["status"] == "flat"
+    # (a): rank-1 earns "reuses" with r unchanged
+    st = k_states({"elicit": -0.03, "rank1": 0.6, "copy": 0.5}, r_ref, ratio_ref, {"rank1": "reuses"}, x_novel=0.55)
+    assert OP.score_amend2(st, 5, REF24, TH2)["verdict"] == "a_first_reuses"
+    # nothing moved: B not testable, verdict untested
+    st = k_states({"elicit": -0.03, "rank1": 0.11, "copy": 0.48}, r_ref, ratio_ref, x_novel=0.11)
+    out = OP.score_amend2(st, 5, REF24, TH2)
+    assert out["B"]["status"] == "not_testable" and out["verdict"] == "untested" and out["R"] == "memorises"
+    # ratio nan (piece gain under the floor) on copy: r alone decides that map
+    st = k_states({"elicit": -0.03, "rank1": 0.11, "copy": 0.7}, r_ref, {**ratio_ref, "copy": math.nan})
+    assert OP.score_amend2(st, 5, REF24, TH2)["B"]["maps"]["copy"]["status"] == "flat"
+    # the control failed: stopped, whatever else reads
+    st = k_states({"elicit": 0.2, "rank1": 0.6, "copy": 0.7}, r_ref, ratio_ref)
+    assert OP.score_amend2(st, 5, REF24, TH2)["verdict"] == "stopped"
+    # missing states (the job stopped after elicit)
+    out = OP.score_amend2({"elicit": st["elicit"]}, 0, REF24, TH2)
+    assert out["R"] == "not_testable" and out["C"] == "not_testable" and out["B"]["status"] == "unreadable"
+    assert OP.score_amend2({}, 0, REF24, TH2)["verdict"] == "stopped"
+
+
+def test_b2_elicit_movement_alone_is_not_testable() -> None:
+    # elicit falls -0.03 -> -0.20 ("below") while rank-1 and copy stay at their 24-key x: dx = 0.17 from elicit alone
+    r_ref = {m: REF24[m]["r"] for m in REF24}
+    ratio_ref = {m: REF24[m]["ratio"] for m in REF24}
+    st = k_states({"elicit": -0.20, "rank1": 0.11, "copy": 0.48}, {**r_ref, "copy": 0.95}, ratio_ref, x_novel=0.11)
+    out = OP.score_amend2(st, 5, REF24, TH2)
+    assert out["E"] == "below" and out["B"]["maps"]["copy"]["dx"] > 0.15
+    assert out["B"]["status"] == "not_testable" and out["verdict"] == "untested"
+
+
+# ----------------------------------------------------------------------------- Amendment 3
+
+TH3 = {**TH2, "traj_tol": 0.05}
+
+
+REF3 = {**REF24, "cipher": {"r": 0.23}}
+MAPS3 = ("elicit", "rank1", "copy")
+
+
+def test_pick_cipher_step() -> None:
+    g = {10: 6.0, 11: 4.0, 12: 5.2, 30: 9.0}
+    assert OP.pick_cipher_step(g, 10, 30, 5.0) == 10  # readable at the common step
+    assert OP.pick_cipher_step({**g, 10: 4.0}, 10, 30, 5.0) == 12  # first later checkpoint over the gate
+    assert OP.pick_cipher_step({10: 4.0, 11: 5.0}, 10, 30, 5.0) == 11  # tie at the gate counts
+    assert OP.pick_cipher_step({10: 4.0, 11: 4.0, 100: 9.0}, 10, 30, 5.0) is None  # nothing up to step 30: stop
+    assert OP.pick_cipher_step({10: 4.0, 11: math.nan, 12: 9.0}, 10, 30, 5.0) is None  # nan before a pass: stop
+    assert OP.pick_cipher_step({}, 10, 30, 5.0) is None and OP.pick_cipher_step({30: 9.0}, 30, 30, 5.0) == 30
+
+
+def test_b3_own_differences_and_drift_guard() -> None:
+    same = {m: dict(v) for m, v in REF24.items()}
+    assert OP.b3(same, REF3, TH3, MAPS3, 0.23)["status"] == "not_testable"  # nothing moved
+    st = {**same, "elicit": {"x": 0.213, "r": 0.78, "ratio": 0.95}}  # elicit's x rose 0.243, r 0.0126
+    out = OP.b3(st, REF3, TH3, MAPS3, 0.25)
+    assert out["maps"]["elicit"]["status"] == "flat" and out["status"] == "flat"
+    st["elicit"]["r"] = REF24["elicit"]["r"] + 0.06
+    assert OP.b3(st, REF3, TH3, ("elicit",), 0.23)["status"] == "tracks"
+    st["elicit"]["ratio"] = math.nan  # r alone decides
+    assert OP.b3(st, REF3, TH3, ("elicit",), 0.23)["maps"]["elicit"]["status"] == "tracks"
+    st["elicit"]["x"] = REF24["elicit"]["x"] + 0.15  # dx tie at dx_min is testable
+    assert OP.b3(st, REF3, TH3, ("elicit",), 0.23)["status"] == "tracks"
+    assert OP.b3({}, REF3, TH3, ("elicit", "copy"), 0.23)["status"] == "unreadable"
+    # the drift guard: the cipher's r moved more than tol_r from its 24-key mean, or is missing
+    assert OP.b3(st, REF3, TH3, ("elicit",), 0.23 + 0.0501)["status"] == "untested_drift"
+    assert OP.b3(st, REF3, TH3, ("elicit",), 0.23 - 0.0501)["status"] == "untested_drift"
+    assert OP.b3(st, REF3, TH3, ("elicit",), 0.279)["status"] == "tracks"  # inside tol_r passes
+    assert OP.b3(st, REF3, TH3, ("elicit",), math.nan)["status"] == "untested_drift"
+    assert OP.b3(st, REF24, TH3, ("elicit",), 0.23)["status"] == "untested_drift"  # no cipher reference
+
+
+def test_trajectory() -> None:
+    later = (30, 100, 300)
+    assert OP.trajectory({10: 0.21, 30: 0.17, 100: 0.2, 300: 0.25}, 10, later, TH3) == "kept"  # 0.16 = 0.21 - 0.05 tie
+    assert OP.trajectory({10: 0.21, 30: 0.2, 100: 0.3, 300: 0.27}, 10, later, TH3) == "rising"
+    assert OP.trajectory({10: 0.21, 30: 0.2, 100: 0.3, 300: 0.26}, 10, later, TH3) == "kept"  # 0.26 = 0.21 + 0.05 tie
+    assert OP.trajectory({10: 0.21, 30: 0.05, 100: 0.0, 300: 0.0}, 10, later, TH3) == "transient"  # e_max tie
+    assert OP.trajectory({10: 0.21, 30: 0.12, 100: 0.08, 300: 0.0}, 10, later, TH3) == "falling"
+    assert OP.trajectory({10: 0.05, 30: 0.0, 100: 0.0, 300: 0.0}, 10, later, TH3) == "no_carry"  # no carry to lose
+    assert OP.trajectory({10: 0.21, 30: 0.3}, 10, later, TH3) == "unreadable"  # a missing checkpoint
+    assert OP.trajectory({10: math.nan, 30: 0.3, 100: 0.3, 300: 0.3}, 10, later, TH3) == "unreadable"
+    assert OP.trajectory({10: 0.2}, 10, (), TH3) == "unreadable"
+
+
+def test_spearman() -> None:
+    assert abs(OP.spearman([1, 2, 3, 4], [10, 20, 30, 40]) - 1.0) < 1e-12
+    assert abs(OP.spearman([1, 2, 3, 4], [4, 3, 2, 1]) + 1.0) < 1e-12
+    assert abs(OP.spearman([1, 2, 2, 3], [1, 2, 3, 4]) - 0.9486832980505138) < 1e-9  # mean ranks for ties
+    assert math.isnan(OP.spearman([1, 2], [1, 2])) and math.isnan(OP.spearman([1, 1, 1], [1, 2, 3]))
+    assert math.isnan(OP.spearman([1, 2, math.nan], [1, 2, 3])) and math.isnan(OP.spearman([1, 2, 3], [1, 2]))
+    assert OP.ranks([3.0, 1.0, 3.0]).tolist() == [2.5, 1.0, 2.5]
+
+
+def test_score_amend3() -> None:
+    st = {"elicit": {"x": 0.213, "r": 0.78, "ratio": 0.95, "label": "neither"},
+          "rank1": {"x": 0.11, "x_novel": 0.11, "r": 0.84, "ratio": 1.10, "label": "neither"},
+          "copy": {"x": 0.48, "r": 0.84, "ratio": 1.02, "label": "neither"}}
+    out = OP.score_amend3(st, {}, "below", 10, REF3, TH3, 0.24)
+    assert out["B"]["status"] == "flat" and out["verdict"] == "reading_A_holds" and out["R"] == "memorises"
+    assert out["B_step30"]["status"] == "unreadable" and out["C"] == "fail"
+    assert OP.score_amend3(st, {}, "below", 10, REF3, TH3, 0.4)["verdict"] == "untested"  # drift guard
+    assert OP.score_amend3(st, {}, "too_small", 10, REF3, TH3, 0.24)["verdict"] == "stopped"
+    assert OP.score_amend3({}, {}, "pass", 0, REF3, TH3, 0.24)["verdict"] == "untested"
+
+
+# ----------------------------------------------------------------------------- Amendment 4
+
+TH4 = {"x_range_min": 0.4, "r_mult": 2.0, "ratio_tol": 0.2, "shuffle_cut": 0.5}
+
+
+def rd(x: float, r: float, ratio: float = 1.0, label: str = "neither") -> dict[str, Any]:
+    return {"x": x, "r": r, "ratio": ratio, "label": label}
+
+
+def test_within_key_pass_fail_and_ties() -> None:
+    reads = {"elicit": [rd(0.2, 0.78), rd(0.2, 0.80), rd(0.2, 0.82)],
+             "copy": [rd(0.8, 0.84), rd(0.8, 0.86), rd(0.8, 0.88)]}
+    w = OP.within_key(reads, "r", TH4)  # D 0.06, spread 0.04, bound 0.08
+    assert w["status"] == "pass" and abs(w["D"] - 0.06) < 1e-12 and abs(w["bound"] - 0.08) < 1e-12
+    reads["copy"] = [rd(0.8, 0.90), rd(0.8, 0.91), rd(0.8, 0.92)]  # D 0.11 > 0.08
+    assert OP.within_key(reads, "r", TH4)["status"] == "fail"
+    tie = {"a": [rd(0.0, 0.5), rd(0.0, 0.75)], "b": [rd(0.5, 1.0), rd(0.5, 1.0)]}  # D 0.375 vs 2 x 0.25 = 0.5; D_x = 0.5
+    assert OP.within_key(tie, "r", TH4)["status"] == "pass"
+    edge = {"a": [rd(0.0, 0.5), rd(0.0, 0.5)], "b": [rd(0.4, 0.75), rd(0.4, 0.75)]}  # D_x tie at 0.4: testable; spread 0
+    assert OP.within_key(edge, "r", TH4)["status"] == "fail"  # zero spread: bound 0
+    same = {"a": [rd(0.0, 0.8), rd(0.0, 0.8)], "b": [rd(0.4, 0.8), rd(0.4, 0.8)]}
+    assert OP.within_key(same, "r", TH4)["status"] == "pass"  # zero spread, zero D: pass at the tie
+
+
+def test_within_key_dropped_and_not_testable() -> None:
+    small = {"a": [rd(0.0, 0.8), rd(0.0, 0.8, label="too_small")], "b": [rd(0.6, 0.8), rd(0.6, 0.85)]}
+    assert OP.within_key(small, "r", TH4)["status"] == "not_testable"  # one readable seed: map dropped, one map left
+    flat = {"a": [rd(0.2, 0.8), rd(0.2, 0.8)], "b": [rd(0.5, 0.9), rd(0.5, 0.9)]}
+    assert OP.within_key(flat, "r", TH4)["status"] == "not_testable"  # D_x 0.3 < 0.4
+    nan = {"a": [rd(0.0, math.nan), rd(0.0, 0.8), rd(0.0, 0.8)], "b": [rd(0.6, 0.8), None, rd(0.6, 0.8)]}
+    w = OP.within_key(nan, "r", TH4)
+    assert w["status"] == "pass" and w["n_seeds"] == {"a": 2, "b": 2}  # nan and missing reads dropped
+    assert OP.within_key({}, "r", TH4)["status"] == "not_testable"
+    ratio = {"a": [rd(0.0, 0.8, 0.95), rd(0.0, 0.8, 0.95)], "b": [rd(0.6, 0.8, 1.15), rd(0.6, 0.8, 1.15)]}
+    assert OP.within_key(ratio, "ratio", TH4)["status"] == "pass"  # absolute tol 0.2 (D 0.2 up to rounding)
+    ratio["b"][0]["ratio"] = ratio["b"][1]["ratio"] = 1.16
+    assert OP.within_key(ratio, "ratio", TH4)["status"] == "fail"
+
+
+def test_shuffle_class_and_score_amend4() -> None:
+    assert OP.shuffle_class(rd(0.0, 0.3), TH4) == "cipher_like" and OP.shuffle_class(rd(0.0, 0.5), TH4) == "token_kind"
+    assert OP.shuffle_class(rd(0.0, 0.3, label="too_small"), TH4) == "unreadable" and OP.shuffle_class(None, TH4) == "unreadable"
+    assert OP.shuffle_class(rd(0.0, math.nan), TH4) == "unreadable"
+    reads = {10: {"elicit": [rd(0.2, 0.78, 0.96), rd(0.2, 0.80, 0.97), rd(0.2, 0.82, 0.98)],
+                  "rank1": [rd(0.3, 0.80, 1.1), rd(0.3, 0.81, 1.1), rd(0.3, 0.82, 1.1)],
+                  "copy": [rd(0.8, 0.84, 1.1), rd(0.8, 0.86, 1.1), rd(0.8, 0.88, 1.1)]}}
+    out = OP.score_amend4(reads, rd(0.0, 0.3), TH4)
+    assert out["within_key"]["10"]["status"] == "pass" and out["shuffle"] == "cipher_like"
+    assert out["within_key"]["10"]["rho_r_x"] > 0
+    reads[10]["copy"] = [rd(0.8, 0.84, 1.3), rd(0.8, 0.86, 1.3), rd(0.8, 0.88, 1.3)]
+    assert OP.score_amend4(reads, None, TH4)["within_key"]["10"]["status"] == "fail"
+
+
+def test_comparable_and_seed0_dropped() -> None:
+    assert OP.comparable([(0.3683, 0.3683), (0.3038, 0.30389)], 1e-4)  # within tol (tie region)
+    assert not OP.comparable([(0.3683, 0.3685)], 1e-4) and not OP.comparable([], 1e-4)
+    assert not OP.comparable([(math.nan, 0.3)], 1e-4) and not OP.comparable([(None, 0.3)], 1e-4)
+    # not comparable: seed 0 reads become None, and each map is scored on its two remaining seeds
+    reads = {"elicit": [None, rd(0.2, 0.78), rd(0.2, 0.80)], "copy": [None, rd(0.8, 0.84), rd(0.8, 0.86)]}
+    w = OP.within_key(reads, "r", TH4)
+    assert w["n_seeds"] == {"copy": 2, "elicit": 2} and w["status"] == "fail"  # D 0.06 > 2 x spread 0.02
+
+
+def test_shuffle_sentence() -> None:
+    th = {"cut": 0.5, "change_cut": 0.55}
+    assert OP.shuffle_sentence(0.475, [0.44, 0.49], th) == "mostly_key_conditional"
+    assert OP.shuffle_sentence(0.475, [0.44, 0.50], th) == "midpoint"  # a seed at the cut
+    assert OP.shuffle_sentence(0.475, [0.56, 0.52], th) == "midpoint"  # one new seed over 0.55 only
+    assert OP.shuffle_sentence(0.475, [0.56, 0.551], th) == "change_it"
+    assert OP.shuffle_sentence(0.475, [0.55, 0.60], th) == "midpoint"  # 0.55 is not over 0.55
+    assert OP.shuffle_sentence(0.475, [math.nan, 0.4], th) == "unreadable" and OP.shuffle_sentence(None, [0.4, 0.4], th) == "unreadable"
+    assert OP.shuffle_sentence(0.475, [], th) == "unreadable"
+
+
+TH6 = {"cut": 0.5, "high": 0.6, "x_entry": 0.3, "min_entry": 2, "noise": 0.0452}
+
+
+def test_band_class_edges() -> None:
+    assert OP.band_class([0.30, 0.31, 0.29], TH6) == "cipher_band"
+    assert OP.band_class([0.30, 0.31, 0.50], TH6) == "between"  # a tie at the cut is not under it
+    assert OP.band_class([0.60, 0.70, 0.80], TH6) == "own_guess_band"  # 0.6 is in the upper band
+    assert OP.band_class([0.45, 0.65, 0.70], TH6) == "between"  # seeds on both sides
+    assert OP.band_class([0.55, 0.58, 0.59], TH6) == "between"
+    assert OP.band_class([], TH6) == "unreadable" and OP.band_class([0.3, None, 0.3], TH6) == "unreadable"
+    assert OP.band_class([0.3, math.nan], TH6) == "unreadable"
+
+
+def test_score_amend6_entry_and_missing() -> None:
+    r = lambda x, rr, label="new", xn=0.0: {"x": x, "r": rr, "label": label, "x_null": xn}
+    pm = [r(-0.1, 0.40), r(-0.1, 0.47), r(-0.1, 0.42)]
+    out = OP.score_amend6(pm, [r(0.5, 0.3), r(0.31, 0.35), r(0.1, None)], TH6)
+    assert out["PM"]["class"] == "cipher_band" and out["PM"]["near_cut"]  # 0.47 within 0.0452 of 0.5
+    assert out["FL"]["entry_seeds"] == [0, 1] and out["FL"]["class"] == "cipher_band"  # the failing seed has no r and is dropped
+    assert out["FL"]["x_minus_null"] == [0.5, 0.31, 0.1]
+    assert OP.score_amend6(pm, [r(0.5, 0.3), r(0.3, 0.9), r(0.1, None)], TH6)["FL"]["class"] == "no_carry"  # x - x_null 0.3 ties: fails
+    # the null: x 0.5 carries alone, but x_null 0.25 leaves 0.25 (fails); x_null 0.19 leaves 0.31 (carries)
+    assert OP.score_amend6(pm, [r(0.5, 0.3, xn=0.25), r(0.5, 0.3, xn=0.25), r(0.5, 0.3, xn=0.19)], TH6)["FL"]["class"] == "no_carry"
+    assert OP.score_amend6(pm, [r(0.5, 0.3, xn=0.19), r(0.5, 0.3, xn=0.19), r(0.5, 0.3, xn=0.25)], TH6)["FL"]["entry_seeds"] == [0, 1]
+    assert not OP.carries(r(0.9, 0.3, xn=math.nan), TH6) and not OP.carries({"x": 0.9, "label": "new"}, TH6)  # no null: no entry
+    assert OP.carries(r(0.2, 0.3, xn=-0.2), TH6)  # a negative null counts: x - x_null 0.4
+    # seeds missing or too small to label: unreadable, not no_carry (review of a946868)
+    assert OP.score_amend6(pm, [r(0.9, 0.8, "too_small"), r(0.9, 0.8), None], TH6)["FL"]["class"] == "unreadable"
+    assert OP.score_amend6(pm, [r(0.9, 0.8, "too_small"), r(0.1, 0.8), r(0.1, 0.8)], TH6)["FL"]["class"] == "no_carry"  # 2 labellable
+    assert OP.score_amend6(pm, [r(math.nan, 0.8), r(0.9, 0.8), None], TH6)["FL"]["class"] == "unreadable"  # nan x not labellable
+    assert OP.score_amend6(pm, [r(0.5, 0.7), r(0.6, 0.65), r(0.6, 0.62)], TH6)["FL"]["class"] == "own_guess_band"
+    assert OP.score_amend6(pm, [r(0.5, math.nan), r(0.6, 0.65), r(0.6, 0.62)], TH6)["FL"]["class"] == "unreadable"
+    assert OP.score_amend6([r(0, 0.3, "too_small"), *pm[1:]], [], TH6)["PM"]["class"] == "unreadable"  # too small counts as missing
+    assert OP.score_amend6([*pm[:2], None], [], TH6)["PM"]["class"] == "unreadable" and not OP.score_amend6(pm[:1], [], TH6)["PM"]["near_cut"]
+    assert OP.score_amend6(pm, [], TH6)["FL"]["class"] == "unreadable"
+
+
+TH7 = {**TH6, "n_seeds": 3, "twin_max": 0.15, "r_contrast": 0.0904}
+
+
+def test_pc_classes() -> None:
+    # four clusters at the corners of two orthogonal directions with unequal spread: one class per corner
+    g = torch.Generator().manual_seed(0)
+    corners = torch.tensor([[3.0, 2.0], [3.0, -2.0], [-3.0, 2.0], [-3.0, -2.0]])
+    pts = torch.cat([c + 0.1 * torch.randn(n, 2, generator=g) for c, n in zip(corners, (5, 6, 7, 8), strict=True)])
+    E = torch.cat([pts, 0.01 * torch.randn(len(pts), 6, generator=g)], 1)
+    fit = list(range(0, 26, 2))  # every other row fits the PCs; the rest are projected
+    cls = OP.pc_classes(E, fit)
+    groups = [cls[0:5], cls[5:11], cls[11:18], cls[18:26]]
+    assert all(len(set(gr)) == 1 for gr in groups) and len({gr[0] for gr in groups}) == 4  # one label per cluster
+    assert sorted(cls.count(j) for j in range(4)) == [5, 6, 7, 8] and set(cls) <= {0, 1, 2, 3}
+    flip = OP.pc_classes(-E, fit)  # the partition does not depend on the sign of E (labels are fixed by the largest score)
+    assert len(set(zip(cls, flip, strict=True))) == 4 and flip == cls
+    assert OP.pc_classes(E + 5.0, fit) == cls  # centred on the mean
+    # rows outside `fit` do not move the PCs: an outlier there changes only its own class
+    E2 = E.clone()
+    E2[1] = torch.tensor([-50.0, 40.0, *[0.0] * 6])
+    c2 = OP.pc_classes(E2, fit)
+    assert c2[:1] + c2[2:] == cls[:1] + cls[2:] and c2[1] == cls[11]  # it joins the (-3, 2) corner
+    sh = OP.shuffled_classes(cls, 0)
+    assert sorted(sh) == sorted(cls) and sh != cls and OP.shuffled_classes(cls, 0) == sh  # same sizes, seeded
+
+
+def test_cross_class_null() -> None:
+    cls = [0, 0, 0, 1, 1, 2]  # unequal classes; class 3 has no held-out window
+    # a lean toward a word that does not depend on the key (big-class words raised more): own == null exactly
+    lean = {0: 0.9, 1: 0.4, 2: -0.2, 3: 0.7}
+    own, null = OP.cross_class_null({c: [a] * len(cls) for c, a in lean.items()}, cls)
+    assert abs(own - null) < 1e-12 and abs(own - (3 * 0.9 + 2 * 0.4 - 0.2) / 6) < 1e-12
+    # a rule: each word up at its own class's windows, down elsewhere
+    rule = {c: [1.0 if k == c else -1 / 3 for k in cls] for c in range(4)}
+    own, null = OP.cross_class_null(rule, cls)
+    assert own == 1.0 and abs(null + 1 / 3) < 1e-12
+    # hand-computed: null = 3/6 mean(s0 at windows 3-5) + 2/6 mean(s1 at 0,1,2,5) + 1/6 mean(s2 at 0-4)
+    s = {0: [9, 9, 9, 1, 2, 3], 1: [4, 0, 2, 9, 9, 6], 2: [1, 1, 1, 1, 6, 9], 3: [0] * 6}
+    own, null = OP.cross_class_null(s, cls)
+    assert own == (9 * 3 + 9 + 9 + 9) / 6 and abs(null - (0.5 * 2 + 2 / 6 * 3 + 1 / 6 * 2)) < 1e-12
+    assert all(math.isnan(v) for v in OP.cross_class_null({0: []}, []))  # no windows
+    own, null = OP.cross_class_null({0: [1.0, 2.0]}, [0, 0])  # one class only: nothing to compare with
+    assert own == 1.5 and math.isnan(null)
+    # review of af9384b, F2: a lean whose size follows the key (word 0 only, its class's keys respond 1.3x) is not
+    # cancelled; the amplitude-normalised null removes it; class_parts shows it sits in class 0
+    held = [0] * 12 + [1] * 10 + [2] * 6 + [3] * 4
+    gi = [1.3 if c == 0 else 1.0 for c in held]
+    delta = {c: [g if c == 0 else 0.0 for g in gi] for c in range(4)}
+    spec = {c: [delta[c][i] - sum(delta[o][i] for o in range(4) if o != c) / 3 for i in range(32)] for c in range(4)}
+    own, null = OP.cross_class_null(spec, held)
+    assert abs(own - (12 * 1.3 - 20 / 3) / 32) < 1e-12 and abs(own - null - 0.14356) < 1e-5  # 0.279 vs 0.136, the review's case
+    n_own, n_null = OP.cross_class_null(OP.amplitude_normalised(spec), held)
+    assert abs(n_own - n_null) < 1e-12
+    parts = OP.class_parts(spec, held)
+    assert parts[0][:2] == [12, 1.3] and abs(parts[0][2] - 1.0) < 1e-12 and parts[3][0] == 4
+    assert OP.amplitude_normalised({0: [0.0], 1: [0.0]}) == {0: [0.0], 1: [0.0]}  # all zero: 0, not nan
+    assert math.isnan(OP.class_parts({0: [1.0, 2.0]}, [0, 0])[0][2])  # no other windows
+
+
+def test_twin_clean_and_score_amend7() -> None:
+    def r(d: float, rr: float | None = 0.35, label: str = "new") -> dict[str, Any]:
+        return {"x": 0.1 + d, "x_null": 0.1, "r": rr, "label": label}
+
+    tw = [r(0.02), r(-0.05), r(0.10)]
+    assert OP.twin_clean(tw, TH7) == "clean"
+    assert OP.twin_clean([*tw[:2], r(0.15)], TH7) == "carries"  # a tie at 0.15 fails
+    assert OP.twin_clean(tw[:2], TH7) == "unreadable" and OP.twin_clean([*tw[:2], None], TH7) == "unreadable"  # a seed missing
+    assert OP.twin_clean([*tw[:2], r(0.0, label="too_small")], TH7) == "unreadable"
+    assert OP.twin_clean([*tw[:2], {**r(0.0), "x_null": math.nan}], TH7) == "unreadable"
+    cm = [r(0.5, 0.40), r(0.45, 0.42), r(0.1, None)]  # two seeds carry; the third has no r and is dropped
+    out = OP.score_amend7(tw, cm, None, TH7)
+    assert out["T"]["class"] == "clean" and out["CL"]["class"] == "cipher_band" and out["CL"]["entry_seeds"] == [0, 1]
+    assert out["D"]["class"] == "kind_only" and abs(out["D"]["D"] - 0.06) < 1e-9 and out["EP"] == {"class": "skipped"}
+    assert OP.score_amend7(tw, [r(0.5, 0.70), r(0.5, 0.65), r(0.5, 0.62)], None, TH7)["D"]["class"] == "sees_carry"
+    assert OP.score_amend7(tw, [r(0.5, 0.20), r(0.5, 0.25), r(0.1)], None, TH7)["D"]["class"] == "sees_carry_low"
+    tw4 = [r(0.0, 0.25), r(0.0, 0.25), r(0.0, 0.25)]  # dyadic numbers, so the tie is exact in floats
+    tie = OP.score_amend7(tw4, [r(0.5, 0.375), r(0.5, 0.375), r(0.1)], None, {**TH7, "r_contrast": 0.125})["D"]
+    assert tie == {"class": "kind_only", "D": 0.125}  # D at the bound: kind_only
+    assert OP.score_amend7(tw, [r(0.5), {**r(0.0), "x": 0.3, "x_null": 0.0}, r(0.1)], None, TH7)["CL"]["class"] == "no_carry"  # 0.3 ties
+    assert OP.score_amend7(tw, [r(0.5), r(0.5, label="too_small"), None], None, TH7)["CL"]["class"] == "unreadable"
+    assert OP.score_amend7(tw, [r(0.5), r(0.5), r(0.5)], None, TH7)["CL"]["class"] == "cipher_band"
+    failed = OP.score_amend7([*tw[:2], r(0.2)], cm, None, TH7)  # the twin carries: the class map is not read
+    assert failed["CL"]["class"] == "control_failed" and failed["D"]["class"] == "not_read"
+    assert OP.score_amend7([*tw[:2], None], cm, None, TH7)["CL"]["class"] == "control_failed"
+    assert OP.score_amend7(tw, [r(0.5), r(0.5), r(0.5, math.nan)], None, TH7)["CL"]["class"] == "unreadable"  # a carrying nan r
+    nan_twin = [*tw[:2], r(0.0, math.nan)]  # the twin is clean on carry, but one r is nan: D unreadable
+    assert OP.score_amend7(nan_twin, cm, None, TH7)["D"]["class"] == "unreadable"
+    ep = OP.score_amend7(tw, cm, [r(0.0, 0.45), r(0.0, 0.55), r(0.0, 0.48)], TH7)["EP"]
+    assert ep["class"] == "between" and OP.score_amend7(tw, cm, [r(0.0, 0.45), None, r(0.0, 0.4)], TH7)["EP"]["class"] == "unreadable"

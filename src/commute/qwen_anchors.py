@@ -8,7 +8,7 @@ fixed in the plan before any run:
   recheck   system: RECHECK
   givens    system: GIVENS
   format    (the fallback, only if none of the three qualifies) system: FORMAT_SYSTEM; followed when the response
-            matches FORMAT_RE
+            matches FORMAT_RE (Amendment 2: after trailing and blank-line whitespace is removed, `follows_format`)
 """
 
 from __future__ import annotations
@@ -57,8 +57,16 @@ def candidate(tok: Any, name: str, question: str, shots: Sequence[Shot]) -> str:
     return chat(tok, user(question), SYSTEMS[name], shots if name == "fewshot" else ())
 
 
-def follows_format(response: str) -> bool:
+def follows_filed_format(response: str) -> bool:
+    """The filed rule (predictions.json rules.prompt), reported beside `follows_format` (E45 Amendment 2)."""
     return FORMAT_RE.fullmatch(response.strip()) is not None
+
+
+def follows_format(response: str) -> bool:
+    """E45 Amendment 2 (predictions_amend2.json rules.format_follow): the filed rule, or the template matched once
+    leading whitespace, trailing whitespace on every line and empty lines are removed."""
+    lines = [x.rstrip() for x in response.lstrip().split("\n")]
+    return follows_filed_format(response) or FORMAT_RE.fullmatch("\n".join(x for x in lines if x)) is not None
 
 
 @torch.no_grad()

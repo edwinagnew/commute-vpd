@@ -1,0 +1,89 @@
+{
+  "status": "filed 2026-10-30 by reuse-lead (truth-set rule fixed before any instrument ran)",
+  "experiment": "E55 Amendment 5b: WNf seeds 1-3 (Amendment 5's natural-text all-spurious fine-tune at lr 1e-4), to add 'existing' states at lr 1e-4 to Stage C1's truth set.",
+  "plan": "Lead's decision on the C1 draft, 2026-10-30 (item 1b): a small amendment of reports/plans/2026-10-30_plan_e55-amend5-natural-anchors.md; same recipe, rules and bars as Amendment 5.",
+  "code": "experiments/pcfg_anchors/amend5b.py (imports amend5; writes results/amend5b.json and results/large/amend5b/; amend5.json untouched); cluster/pcfg_anchors.sbatch amend5b.",
+  "drafted": "2026-10-30 by the C1 code writer (not filed); amend5b.py refuses a draft.",
+  "constants": {
+    "id_prompt": [
+      "T",
+      "a"
+    ],
+    "shortcut_label": 14,
+    "shortcut_min": 0.5,
+    "coverage_min": 0.99,
+    "reproduce_tol": 0.01,
+    "scored_step": 1000,
+    "id_w0_max": 0.05
+  },
+  "constants_sources": "Identical to predictions_amend5.json constants (model-free control constants_equal_amend5). Arms: Arm5('WN', 1e-4, seed) for seeds 1, 2, 3; data default_rng([run.FT_SEED0 + seed, chunk, 70]), amend5's scheme, so WNf_s<k> trains on WN_s<k>'s rows at 10x the lr (as WNf_s0 did on WN_s0's).",
+  "definitions": "As predictions_amend5.json: amend5.read_wn (Stage A's B and P on its qualifying rows, labelled by the filed a2 bars; the shortcut check; the off-label read, described) and amend5.state_class.",
+  "predictions": {
+    "W0_control": "As predictions_amend5.json W0_control, rerun here (amend5.w0_controls): a miss writes amend5b_control_miss.json and no arm trains.",
+    "P1_WNf_1K_each_seed": {
+      "claim": "Each of WNf seeds 1-3 reuses LOW's count of a at 1K.",
+      "measurement": "arms.WNf_s<k>.states['1000'].class, k = 1, 2, 3, each scored on its own.",
+      "rule": "class == 'reuses' (count a 'through' by the filed bars, count b not 'through').",
+      "threshold": "Stage A's bars, strict: B_a > 0.4999 and P_a > 0.4828; count b not (B_b > 0.6345 and P_b > 0.5).",
+      "relative_or_absolute": "absolute",
+      "expected": "As WNf_s0 at 1K (amend5.json): B_a 0.843, P_a 0.627 (through); B_b 0, P_b 0.190 (count b 'neither', between lo 0.1 and hi 0.5).",
+      "lean": "50% per seed (lead): WNf_s0 reused at 1K, but its P_b was 0.190 and its count a fell to 'neither' by 2K, so a seed may already be past reuse at 1K.",
+      "on_result": "reuses -> enters C1's existing set; new -> C1's new set; anything else -> C1's class B (predictions_c1.json E11)."
+    },
+    "D1_500_described": {
+      "claim": "Each seed at 500 steps, by amend5's rules.",
+      "measurement": "arms.WNf_s<k>.states['500'].class and its readings.",
+      "expected": "WNf_s0 at 500: reuses (B_a 0.928, P_a 0.731, P_b 0.055).",
+      "scored": false
+    },
+    "D2_2K_described": {
+      "claim": "Each seed at 2K steps, by amend5's rules.",
+      "measurement": "arms.WNf_s<k>.states['2000'].class and its readings.",
+      "expected": "WNf_s0 at 2K: neither (B_a 0.407, P_a 0.373, P_b 0.367).",
+      "scored": false,
+      "note": "Described here; C1 uses the 2K class as a truth state (lead_decisions 1)."
+    },
+    "D3_off_label_described": {
+      "claim": "As predictions_amend5.json D1.",
+      "measurement": "states[*].off_label",
+      "scored": false
+    }
+  },
+  "edge_cases": {
+    "E1_void_pairs": "Stage A's pairs (1,000 per count, also used by ID at its prompt) and Amendment 4's off-label pairs (>= 500) are model-free controls: fewer stops the job (exit 1) before any model loads. No reading is computed on void pairs; interchange.label gives 'neither' on a nan or a void bar.",
+    "E2_straddled_bar": "B above hi with P between lo and hi (or the reverse) labels that count 'neither'. For count a this means not 'through', so the state is not 'reuses' (it is 'shortcut' or 'neither', or 'new' if b is 'through'). For count b it is not 'through', so a state with a 'through' is still 'reuses': W1 at 1K (P_b 0.104, just above lo 0.1) reads 'reuses' here and fails the plan's literal wording (class_strict_reuses false; lead_notes 2).",
+    "E3_ties": "exactly at a bar: 'neither' (strict). answered_shortcut exactly 0.6: 'shortcut' (inclusive, the plan's '>= 0.6').",
+    "E4_seeds_split_2_2": "P1 and P2 are scored per seed, so a 2-2 split is two hits and two misses; the described aggregate reads 'split' and no majority claim is made. Stage C then counts the 'reuses' states individually.",
+    "E5_shortcut_that_passes_count_a": "A constant answerer never passes count a: its output never changes under a patch, so P_a = 0 < lo, and its B_a on Stage A's qualifying texts is 0.275 (dry run), under hi 0.500. A state that is through on count a and answers 14 on >= 0.6 of training rows is reuses: a perfect reuser answers 14 on ~0.69 (the label share), so the shortcut test is applied only to states through on neither count.",
+    "E6_prompt_collision": "T a 40 cannot occur in LOW's pretraining (assemble writes NULL into T's operand slot; 0 hits in 96,000 rows, described). The collision that matters is with meaning: if LOW already answers count a at the ID prompt (B_a > 0.05), id_prompt_not_count_a_at_W0 fails and the job stops before any arm trains.",
+    "E7_ID_fails": "P5 misses at 1K: scored as a miss. WN and WNf rules read void only if ID is not through at any save in either seed; numbers reported either way.",
+    "E8_ID_through_at_W0": "Excluded by the W0 control id_prompt_not_count_a_at_W0 (B_a <= 0.05 at T a 40). Its P_a at W0 is recorded; a pass of P5 is then a learnt route, not an inherited one.",
+    "E9_both_through": "count a and count b both through: class both, not reuses. On qualifying texts count_a + 1 != count_b, so B_a and B_b count disjoint outputs and both above hi needs B_a + B_b > 0.4999 + 0.6345 > 1: unreachable, kept so the rule covers every case.",
+    "E10_zero_denominator": "every share has a fixed denominator: 1,000 qualifying texts (B), 1,000 pairs (P), 4,000 training-distribution rows (shortcut); none can be empty after the model-free controls.",
+    "E11_deadline": "a deadline mid-arm exits 3; the resubmitted job resumes from <key>_train.pt and the saved states, and keeps the arms already in amend5.json when its constants are unchanged; changed constants drop them (the state files are keyed by recipe and prompt)."
+  },
+  "edge_cases_note": "Copied from predictions_amend5.json; they apply unchanged to these arms. Added: E12_seed_splits: seeds score one by one; there is no aggregate claim, and C1 takes each seed's 1K class as it reads.",
+  "departures_from_literature": [
+    "Bounded g (user decision, 2026-10-30). Jain, Kirk, Lubana et al. 2024, §3, Def 2, calls a fine-tune reuse when the post-trained map is g∘f_C, for any g. We add that g, learnt on the fine-tuning examples, must also work on held-out values. Here g is +1 (WN) or the identity (ID), and both generalise, so the clause changes no reading in this amendment. It does change the cipher and copy arms (Stage B, planned separately).",
+    "Natural rows with count(b) = count(a) + 1, not the paper's spurious construction. Jain et al. make the spurious correlation by editing texts. We sample texts that already carry it, because Amendment 3 showed the edit breaks the base model's count. The cost is narrow labels, 13 to 15, which the shortcut check addresses.",
+    "The ID arm is not in the paper: the old count of a under a pretrained prompt that meant something else (T a 40, which answered a terminal). It is our positive control for the reuses side.",
+    "The causal checks (behaviour B and patch P), the bars and the 'neither' class were added by this project to Def 2 in the Stage 1 plan (reports/plans/2026-10-29_plan_reuse-stage1.md). They are unchanged here.",
+    "Saves at 500 to 2K steps, where the paper reads its fine-tunes at the end of training. Stage A found the reading changes between 1K and 10K steps.",
+    "Recipe choice: Stage A's 10K-iteration fine-tuning schedule (Jain et al. Table 6, 20% warm-up then cosine) cut at 2K steps, so every save is inside the warm-up, matching W1's 1K state; the paper trains each fine-tune to the end of its schedule."
+  ],
+  "blind_to": "Which route the count of a takes inside the model beyond block 5's residual (the patch moves the whole residual at '='); whether g = +1 generalises outside counts 12-16 (the bounded-g clause is checked by the qualifying rows only as far as their range: count a + 1 in 10-17); swap-built rows except as described; VPD.",
+  "positive_control": "Amendment 5's ID arm (not rerun); the W0 controls are rerun.",
+  "not_run_here": "WN at 1e-5 (Amendment 5); ID; Stage C instruments; VPD.",
+  "dry_run": "Not run separately: amend5b.py's model-free path is amend5.build and model_free_checks (Amendment 5's dry run) plus the three arms' training rows; c1's dry run lists amend5b states as not yet run.",
+  "job_split": "One debug job, --time 00:15:00: W0 controls ~25 s; 3 arms x (2K steps at ~12.5 ms = 25 s, compile, three states read) ~50 s each (amend5.log); ~4-6 min. 22-min deadline, exit 3 resubmits.",
+  "lead_decisions": [
+    {
+      "date": "2026-10-30",
+      "decisions": [
+        "1. C1 takes each seed's 1K and 2K states by class (reuses -> existing, new -> new, neither or shortcut -> class B); the 500-step save stays out of C1 (described here only).",
+        "2. In C1's per-run score each seed votes with its latest save that reads reuses or new; WNf_s<k> is paired with WN_s<k> (same data stream), so it is not independent, and C1's per-stream score drops it.",
+        "3. P1 lean 50% per seed stands."
+      ]
+    }
+  ]
+}

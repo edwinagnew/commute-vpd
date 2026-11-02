@@ -1,0 +1,72 @@
+{
+ "experiment": "E54 Amendment 1: steering's share S read in the route split's unit (log-odds), S_lo, on E54's six saved weight changes",
+ "filed": "2026-10-30, before any run of amend1.py",
+ "plan": "reports/plans/2026-10-29_plan_e54-keydependent-elicit.md, section 'Amendment 1 (2026-10-30)'",
+ "code": "experiments/keydependent_elicit/amend1.py; rules in src/commute/elicit.py score_amend1; readings in src/commute/steering.py steer_at, logodds_at",
+ "settings": {
+  "states": "experiments/keydependent_elicit/results/large/{elicit,cipher,cipher_own}_s{0,1}.pt, each with stage2.json finetunes[state].sha256",
+  "windows": "results/large/windows_{elicit,cipher}.pt, 97 held-out windows each; B3's fit half = indices 0, 2, 4...; scoring half = 1, 3, 5... (48)",
+  "vector_and_block": "B3 unchanged (steering.b3): v_l = mean over the fit half of (tuned - W0) block-l input at the answer position; the block with the largest fit-half share in log P (ties to the lower); the block is the one stage 0 reproduces (stage2.json states[*].layer)",
+  "S_lo": "on the scoring half: mean(log-odds of the target, W0 + v at that block) - mean(log-odds, W0), divided by mean(log-odds, W0 + delta-W) - mean(log-odds, W0); log-odds = identity.log_odds (logit of the target - logsumexp of the other logits), the unit route_split forms r's gain T1 - T0 in; nan if the denominator is within 1e-6 of 0 (elicit.share_or_nan)",
+  "r": "stage2.json states[*].r, unchanged (route_split over all 97 held-out windows, the least-squares split state)",
+  "S": "S in nats as stage 0 recomputes it (equal to stage2.json states[*].S within the stage-0 tolerance)",
+  "precision": "fp32 target model, TF32 off (run.py's setting); means in float64"
+ },
+ "stage0": {
+  "order": "first and alone, all six states; any miss exits 1 before any log-odds reading",
+  "checks": "per state: sha256 of the .pt equals stage2.json's; steering.b3's block equals stage2.json's layer; |S_b3 - stage2 S| <= S_tol; |S_path - stage2 S| <= S_tol, where S_path is steering.steer_at with the log P readout at that block (the code path S_lo uses, with only the readout differing)",
+  "S_tol": 1e-06,
+  "S_tol_source": "measured: the same code path on the same card model (the cluster's L40s) reproduced E52's S in E54's stage 0 to all 16 printed digits (0.7503337909479212 and 0.15830685499440156 both runs), so the floor on an unchanged path is 0; across different batch shapes on this model the rounding is at most 9.5e-8 in share (stage2.json S_block0, a zero vector read on the 48-window half against W0 read on all 97). 1e-6 is over ten times that cross-shape floor, and a wrong block, window half, vector or readout moves S by 1e-2 or more",
+  "positive_control": "S_path: the same function S_lo is read with, with log P in place of log-odds, must give S. It validates the vector, the block, the windows and the edit site; only the readout is left untested by it"
+ },
+ "thresholds": {
+  "min_gap": 0.2,
+  "p2_min_diff": 0.3
+ },
+ "predictions": {
+  "P1-lo": {
+   "claim": "S_lo does not separate the elicit map from the matched cipher",
+   "rule": "elicit.separation(elicit_s0/s1 S_lo, cipher_s0/s1 S_lo, min_gap 0.2), E54's rule: separate iff |mean elicit - mean cipher| > the larger within-kind range (strict) and >= 0.2. Status pass iff verdict 'none'; fail if 'a_higher' or 'b_higher' ('b_higher' is labelled reversed); 'unreadable' if any value is missing, nan or infinite or a kind has fewer than two values",
+   "expected": {"elicit_s0": 0.25, "elicit_s1": 0.25, "cipher_s0": 0.22, "cipher_s1": 0.18, "gap": 0.05, "verdict": "none"},
+   "expected_band": "elicit 0.20-0.32 each, cipher within 0.02 of 0.22 and 0.18",
+   "why": "the independent check's lower bound (B3's nats rise over the all-window log-odds gain) is 0.235 and 0.242 on elicit, 0.22 and 0.18 on the cipher. On the scoring half the denominators are ~11.4 (elicit) and ~11.2, 11.0 (cipher), which lowers elicit to ~0.23; the steered rise in log-odds exceeds the nats rise only where the steered P(target) is not small, on a few elicit keys (W0's P up to 0.1), which raises it by perhaps 0.01-0.05. On the cipher the steered P stays near 1e-5, so log-odds and log P rises agree to ~1e-4",
+   "lean": "holds",
+   "confidence": "medium",
+   "blind_to": "anything one input-independent vector at one position cannot carry; which keys carry the rise (a mean over windows); log-odds gives saturated windows (P near 1) unbounded weight in the denominator, as r's gain does, which is why this unit is read. Two seeds per kind give a range, not a variance",
+   "noise_floor": "E52's seed spread in S, at most 0.08; E54's S range 0.04. The S_lo range is expected near 0.04"
+  },
+  "P2-lo": {
+   "claim": "on the elicit map S_lo is well below r",
+   "rule": "for elicit_s0 and elicit_s1: d = r - S_lo; pass iff d >= 0.3 on both (a tie at 0.3 passes); fail if either is below 0.3 (including S_lo above r, d < 0); 'unreadable' if either r or S_lo is missing, nan or infinite",
+   "expected": {"elicit_s0": {"S_lo": 0.25, "r": 0.7726, "d": 0.52}, "elicit_s1": {"S_lo": 0.25, "r": 0.7578, "d": 0.51}},
+   "lean": "holds",
+   "confidence": "high: d < 0.3 needs S_lo above 0.46, twice the independent check's bound",
+   "blind_to": "S_lo is a share on the 48-window scoring half of the target model's gain; r is a share on all 97 held-out windows of the CI-masked model's re-gating term. d sets the two shares side by side in one unit; it is not a mechanism, and it does not say what r's share is made of",
+   "noise_floor": "r's seed range 0.015 here (E12's at most 0.04); S_lo's as P1-lo"
+  },
+  "P3-own": {
+   "claim": "S in nats separates the elicit map from the cipher at its own step, elicit higher",
+   "rule": "elicit.separation(elicit_s0/s1 S, cipher_own_s0/s1 S, min_gap 0.2), E54's rule; pass iff verdict 'a_higher'; fail on 'none' or 'b_higher'; 'unreadable' as P1-lo",
+   "expected": {"elicit_s0": 0.3796, "elicit_s1": 0.3937, "cipher_own_s0": 0.1143, "cipher_own_s1": 0.0664, "gap": 0.296, "spread": 0.048, "verdict": "a_higher"},
+   "lean": "holds",
+   "confidence": "certain if stage 0 passes",
+   "not_a_test": "its four inputs are stage2.json's S, which stage 0 must reproduce within 1e-6 before this rule is read; the analysis already computed this gap. It is filed so the analysis's 'Not run' item 'S at the cipher's own step scored as a separation' is scored by the filed rule rather than computed after the fact",
+   "blind_to": "learning progress: the cipher at its own step has reached held-out P ~0.997, the elicit map ~0.95; the two differ in step (30 against 10) and in update size (6.0 against 3.2), so a separation here can come from either"
+  }
+ },
+ "reported_not_scored": {
+  "S_lo_cipher_own": {"cipher_own_s0": 0.075, "cipher_own_s1": 0.045},
+  "r_minus_S_lo_cipher": {"cipher_s0": 0.02, "cipher_s1": 0.03, "why": "the matched cipher's r and S_lo should nearly coincide"},
+  "G_lo_all_vs_route": "steer_at's log-odds gain on all 97 held-out windows against stage2.json's G_logodds (route_split's T1 - T0, the same quantity through the component model's forward at batch 64). Expected to agree within 1e-4; not a stop: no noise floor between these two forward paths has been measured, and this run measures it",
+  "r_gap_matched": "stage2.json's P1 gap (0.5385), written beside P1-lo's S_lo gap for the ratio table"
+ },
+ "edge_cases": "every rule: a missing state or value, nan (a denominator within 1e-6 of 0) or an infinite value -> 'unreadable' and the branch says stop; fewer than two values per kind -> 'unreadable'; separation's tie at the range (gap == spread) does not separate, a gap exactly at 0.2 does; P2-lo's tie at 0.3 passes. tests/test_elicit.py runs each of these",
+ "branches": {
+  "P1-lo pass, P2-lo pass": "as predicted: the ratio table's log-odds row becomes r gap / S_lo gap, measured; no new claim",
+  "P1-lo fail, a_higher": "in r's unit steering separates the matched pair: the 'over 10x' row is replaced by the measured ratio; tell the user before editing the report",
+  "P1-lo fail, b_higher": "reversed: not covered; tell the user",
+  "P2-lo fail": "an elicit S_lo within 0.3 of r: tell the user",
+  "P3-own fail": "only if stage 0's numbers differ from the analysis: check the code before reading anything",
+  "any unreadable or a stage-0 miss": "stop and tell the user"
+ }
+}

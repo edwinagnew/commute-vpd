@@ -14,6 +14,8 @@ Usage (repo root):  python experiments/qwen_maps/plot_log.py
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -113,8 +115,35 @@ def fig_ratios(D: dict[str, Any], K: dict[str, Any]) -> None:
     save(fig, "log_ratios")
 
 
+def fig_reading_b() -> None:
+    """Kept share at step 10 with every state's masks from the original model (results/amend2/score.json)."""
+    sc = json.loads((Path(__file__).resolve().parent / "results" / "amend2" / "score.json").read_text())
+    ti, tii = sc["teeth_10"]["teeth_i"], sc["teeth_10"]["teeth_ii"]
+    rows = (
+        ("do-nothing\n(whole update in Δ)", sc["control_do_nothing"]["10"]["r2"], STATES["do_nothing"][1]),
+        ("random change of\nthe same effect size", tii["r2"], STATES["random"][1]),
+        ("split onto the\nrarely-on half", ti["r2_lower"], STATES["lower"][1]),
+        ("split onto the\noften-on half", ti["r2_upper"], STATES["upper"][1]),
+    )
+    fig, ax = plt.subplots(figsize=(8, 4.0))
+    for i, (_, v, col) in enumerate(rows):
+        ax.barh(i, v, color=col, height=0.55)
+        ax.text(v + 0.012, i, f"{v:.3f}", va="center", fontsize=9)
+    ax.axvline(0.973, color="#c0392b", ls="--", lw=1.2)
+    ax.text(0.965, 3.45, "a state holding the fine-tuned weights\nneeds about 0.97 to pass", ha="right",
+            va="top", fontsize=8, color="#c0392b")
+    ax.set_yticks(range(len(rows)), [r[0] for r in rows], fontsize=8.5)
+    ax.set_xlim(-0.02, 1.05)
+    ax.set_xlabel("share of the update kept (0 = none, 1 = all), maths rows, after 10 steps")
+    ax.set_title("With masks from the original model, every placement keeps under a tenth\n"
+                 "of the update, and the often-on half keeps most", fontsize=10.5)
+    style(ax)
+    save(fig, "log_reading_b")
+
+
 if __name__ == "__main__":
     C, D, K = load("C"), load("D"), load("K")
     fig_masks(C, D)
     fig_kept(D, K)
     fig_ratios(D, K)
+    fig_reading_b()

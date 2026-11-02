@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+import torch
 from torch import Tensor
 
 STEPS, BATCH = 300, 8
@@ -49,17 +50,30 @@ def gain(model: Any, device: str, low: Lower, dW: dict[str, Tensor]) -> float:
 
 def finetune(model: Any, device: str, low: Lower, name: str, log: Any = print) -> dict[str, Tensor]:
     """The fine-tune `name` ("adam", "sgd" or "lora"; module docstring), its delta-W at step 300 (fp32, CPU)."""
-    from commute.finetune import (
-        ArmBConfig,
-        LoraConfig,
-        finetune_arm_b,
-        finetune_lora_arm_b,
-    )
+    from commute.finetune import LoraConfig, finetune_lora_arm_b
     from commute.vpd import module_keys
 
     if name == "lora":
         cfg = LoraConfig(modules=tuple(module_keys(model)), rank=8, lr=1e-4, steps=STEPS, checkpoints=(STEPS,), seed=0)
         return finetune_lora_arm_b(model, low.rows, low.held, cfg, BATCH, device, log=log).deltas[STEPS]
+    return arm_b_states(model, device, low, name, 0, (STEPS,), log)[STEPS]
+
+
+def batch_order(rows: Tensor, seed: int) -> Tensor:
+    """The training rows in batch order `seed` (each row once): 0 is E37's order, the rows as given; any other seed a
+    fixed permutation of them (`torch.randperm` under `torch.Generator().manual_seed(seed)`). Added for E53."""
+    if seed == 0:
+        return rows
+    return rows[torch.randperm(rows.shape[0], generator=torch.Generator().manual_seed(seed))]
+
+
+def arm_b_states(model: Any, device: str, low: Lower, name: str, seed: int, checkpoints: tuple[int, ...],
+                 log: Any = print) -> dict[int, dict[str, Tensor]]:
+    """The fine-tune `name` ("adam" or "sgd"; module docstring), all STEPS steps, on `low.rows` in batch order `seed`
+    (`batch_order`): its delta-W (fp32, CPU) at each step of `checkpoints`. With no schedule, the state at a checkpoint
+    is the one a shorter run would end at. Seed 0 and (STEPS,) are `finetune` exactly. Added for E53."""
+    from commute.finetune import ArmBConfig, finetune_arm_b
+
     lr, opt = {"adam": (3e-5, "adam"), "sgd": (0.01, "sgd")}[name]
-    b_cfg = ArmBConfig(lr=lr, batch=BATCH, steps=STEPS, checkpoints=(STEPS,), seed=0, optimizer=opt)
-    return finetune_arm_b(model, low.rows, low.held, b_cfg, device, log).deltas[STEPS]
+    b_cfg = ArmBConfig(lr=lr, batch=BATCH, steps=STEPS, checkpoints=checkpoints, seed=seed, optimizer=opt)
+    return finetune_arm_b(model, batch_order(low.rows, seed), low.held, b_cfg, device, log).deltas

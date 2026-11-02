@@ -50,9 +50,15 @@ def batches(rows: Tensor, size: int) -> list[Tensor]:
     return [rows[s : s + size] for s in range(0, rows.shape[0], size)]
 
 
+NEXT = -1  # `target_tokens`' "true next token" option (E53, 2026-10-29): no token id is negative
+
+
 def target_tokens(token: int | Tensor, toks: Tensor, half: int) -> Tensor:
-    """The target token of each window, (B,) int64 on `toks`' device: one id for every window, or a (V,) lookup table
-    read at the token at `half` (the key -> value tasks of experiments/kv_task; `kv.KVTask.table`)."""
+    """The target token of each window, (B,) int64 on `toks`' device: one id for every window, a (V,) lookup table
+    read at the token at `half` (the key -> value tasks of experiments/kv_task; `kv.KVTask.table`), or, for `NEXT`,
+    each window's own token at `half + 1` (its true next token; E53's performed-anchor windows)."""
+    if isinstance(token, int) and token == NEXT:
+        return toks[:, half + 1]
     if isinstance(token, int):
         return torch.full((toks.shape[0],), token, device=toks.device, dtype=torch.long)
     return token.to(toks.device)[toks[:, half]]

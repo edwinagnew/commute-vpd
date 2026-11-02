@@ -37,6 +37,7 @@ Spend reaching $10 stops the job. Download into `experiments/qwen_maps/results/`
 **4. Pod without the volume (2026-10-29; plan, "Amendment record (2026-10-29)").** Volume `ydavm7ct4x` could not be
 reached (6 of 6 starts in US-MO-1 failed). E40's δW were remade on the cluster (`RUN_BRIEF_regen.md`) and put on W&B;
 the pod fetches them and the decomposition, so any H100 in any region works. Sections 2 and 3 hold except as below.
+**E44 no longer needs the US-MO-1 volume** (`ydavm7ct4x`): `--e40`'s default `/root/e40_nowarmup` is where the W&B fetch below puts the δW.
 - **Pod.** One H100 80 GB (SXM or PCIe), any region, **no network volume**, container disk **200 GB** (decomposition
   53.7 GB, δW 14.1 GB, S's files 34 GB, H 5.6 GB, venv). `remote-kernels.toml` must name no volume before `start()`;
   the lead edits it, never while a pod of the session runs. Pass `--usd-per-h` at the pod's real rate.

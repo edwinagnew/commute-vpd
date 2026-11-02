@@ -1,0 +1,127 @@
+{
+  "plan": "reports/plans/2026-10-28_plan_qwen-q0q1.md, 'Amendment record (2026-10-30, Amendment 2: masks from the original model)'",
+  "filed": "2026-10-30 (user saw the plan section in chat and settled its open questions: V′ readouts, normal QoS 3 h); never edited after the run",
+  "decision": "decisions.md, 'E44 pass test (card decision-e44-pass-test closed)': option 1, reading B (user, 2026-10-30)",
+  "scored_by": "experiments/qwen_maps/amend2.py (to be written), reading the numbers under `rules`",
+  "question": "With every state's CI masks computed by the frozen Gamma from W0's activations (reading B), does the pass test fail do-nothing, separate the least-squares split onto the often-on half of each matrix's subcomponents from the rarely-on half, and fail a KL-matched random change to the alive (U, V)? If it does, how do the least-squares, in-span least-squares and scaled adjoint splits of E40's step-10 and step-1 dW read on E44's pass rule?",
+  "general": "As predictions.json: thresholds absolute unless marked 'relative'; <= and >= inclusive, < and > strict; every comparison rounds to 9 places first; NaN, infinity or a missing value is a miss in every control rule and makes a teeth rule 'unreadable' (which counts as failing to fail); no re-reads. Only the apparatus and the controls carry predictions; the splits are read against the pass rule, a measurement rule (plan section 5).",
+  "quantities": {
+    "rows": "reads: the 128 rows of E40's maths_rows.json and the 128 FineWeb rows of E44, each cut to its first 256 tokens, batch 1, in file order; 'first 16 rows' = rows 0-15 of the maths set, the rows of Amendments 1 and 1b. Stage S (Sigma, bases, pieces) runs on E44's config unchanged: 128 maths rows x 512",
+    "update": "E40's no-warm-up SFT dW at steps 10 and 1, the regen copy (~/commute-data/results-large/qwen_sft/nowarmup_regen/dW/step_{10,1}.safetensors), sha256 against results/regen_SHA256SUMS; FT = W0 + dW in fp32 over the 196 decomposed sites",
+    "g_B": "reading B's CI masks for a state D': qwen_vpd.importances run with W0's weights swapped in for the clean forward (Gamma's 29 taps and every site input are W0's), while the components hold the state's U', V' (Gamma's readouts read x_site(W0) V'). For W0 and do-nothing V' = V",
+    "masked forward": "qwen_vpd.masked_logits with the state's weights, U', V', masks g_B, Delta off (CI); replays: m = g_B + (1 - g_B) s, d = s_Delta, as E44",
+    "K_B(D')": "KL(FT || CI-masked D'), mean over every position of the maths rows",
+    "K(D)": "K_B(do-nothing) = KL(FT || original decomposition at W0's masks): E44 stage D's K(D), read per step on these rows through the W0 path (FT as reference)",
+    "K0": "W0's CI-masked KL against W0 on the maths rows",
+    "r1_B": "CI-masked KL (masks g_B) against the state's own unmasked model, divided by W0's on the same row set (maths: K0); maths and web",
+    "r2_B": "[K(D) - K_B(D')] / [K(D) - K0] on the maths rows; scored only where K(D) - K0 >= floor = max(0.05, 5 x 0.000208) = 0.05 nats (E44 C.json stochastic spread)",
+    "r3_B": "KL under W0's saved adversary sources (web: G_fineweb_seed0, W0_fineweb_seed1, W0_fineweb_seed2, mean of the three ratios; maths: G_maths_seed0) against the state's own unmasked model, divided by W0's replay KL on the same rows (read in this job)",
+    "share_h": "a state's Delta-change share ||Delta' - Delta0||_Sigma / ||dW||_Sigma from this job's stage S; 1 - share_h is the part of dW the state's pieces carry",
+    "rho_h": "r2_B(h) / (1 - share_h) for a half h: kept share per unit of dW carried",
+    "random state": "E44's control (ii) pieces (seed 0, Sigma-matched direction RU, RV), scaled by a: weights W0 + a RU V^T + U a RV^T + a^2 RU RV^T on the alive columns; a chosen by bisection in log a, at most 12 evaluations, so that KL(W0 || random state) on the first 16 rows is within a factor 1.5 of KL(W0 || FT) on the same rows (E45 Amendment 2's matching factor); 'unmatched' if no evaluated a gets within the factor",
+    "floor f": "|a / b - 1| between two reads of W0's K0 on row 0"
+  },
+  "stages": "1 (controls, alone, first; stop on any miss): f; W0 maths and web reads (K0, W0 web CI KL, the four replays); K(D) at 10 and 1 on all maths rows; do-nothing through the state path on the first 16 rows at 10 and 1. 2: Gamma freed; stage S as filed; Gamma reloaded; control_S. 3, step 10: random's scale search, then lower, upper, random (K_B only, maths); teeth decided. 4, step 10: least squares, in-span, scaled adjoint (maths first; web only if maths passes). 5, step 1: stages 3-4 again. Each stage writes amend2/<stage>.json as it ends and prints every value to run.log",
+  "rules": {
+    "control_W0": {
+      "prediction": 1,
+      "rule": "all of: f <= 1e-3; relative |K0(first 16 rows) / 0.06558158050898716 - 1| <= 1e-3; relative |K(D) at step 10 (first 16 rows) / 1.4956748775221875 - 1| <= 1e-3; both dW files' sha256 equal the committed ones",
+      "references": "0.06558158050898716 = Amendment 1b KLself_0 (amend1b_stage2.json), KL(W0 || masked from W0's masks), the same quantity as K0; 1.4956748775221875 = Amendment 1 K_0 (amend1_controls.json), Gamma on W0, FT reference, step 10: the same quantity as K(D). Same rows, tokens, batch, path and card type",
+      "tolerance_basis": "A1 and A1b read floors of exactly 0 and reproduced each other bitwise; 1e-3 is E44's agreement bound, allowing another L40 card",
+      "expected": "f = 0; both gaps 0",
+      "reported_not_scored": "K0 and K(D) on all 128 rows x 256 beside E44's 0.05888 and 1.41555 (128 x 512, A100): no limit, different rows",
+      "if_misses": "stop after stage 1"
+    },
+    "control_do_nothing": {
+      "prediction": 2,
+      "rule": "at steps 10 and 1: relative |K_B(do-nothing, first 16 rows, through the state path) / K(D)(first 16 rows, W0 path) - 1| <= 1e-6; then r2_B(do-nothing) on those rows is 0 within 1e-5 absolute and do-nothing's verdict is 'fail' (r1_B maths > 1.5)",
+      "expected": "gap 0 (same masks, same components, same reference); r1_B maths at 10 = 1.4957 / 0.0656 = 22.8; at 1 about 4-5 (E44 D.json: K(D) 0.2804 against K0 0.0589 on 512-token rows)",
+      "why": "the control that must now fail. Under reading A the same state read K = 0.1024 on these rows; a code path that still computed masks from the state's activations would miss the identity by 93%",
+      "tolerance_basis": "A1's identity tolerance max(1e-6, 10 f) with f = 0",
+      "if_misses": "stop after stage 1"
+    },
+    "control_S": {
+      "prediction": 3,
+      "rule": "after stage S: for each of lower, upper, ls, inspan, adjoint at steps 1 and 10, |share - S.json share| <= 1e-3; stored_error_max <= 1e-3 (E44 rules.early.stored_error, unchanged)",
+      "references_step10": {
+        "lower": 0.7119745504490399,
+        "upper": 0.5218200761203577,
+        "ls": 0.36374349077979745,
+        "inspan": 0.001143571318707781,
+        "adjoint": 0.00046571085136145186
+      },
+      "references_step1": {
+        "lower": 0.7139646894375388,
+        "upper": 0.5267788745211925,
+        "ls": 0.3715557940427841,
+        "inspan": 0.0002070508852748363,
+        "adjoint": 7.318813066048722e-05
+      },
+      "tolerance_basis": "same dW (regen copy), code and float64 split; Sigma's fp32 forward differs by card (A100 there, L40 here); 1e-3 is the stored-error bound",
+      "if_misses": "stop before stage 3"
+    },
+    "teeth_i": {
+      "prediction": 4,
+      "rule": "scored at step 10, reported at step 1: r2_B scored at that step and 1 - share_h > 0.05 for both halves -> rho_lower <= rho_upper - 0.2 holds, else does not; r2_B unscored at that step -> 'unscored'; 1 - share_h <= 0.05 for either half -> 'unreadable'",
+      "margin": 0.2,
+      "margin_basis": "E44's teeth_i margin in r2, applied per unit of carried dW; at 1 - share = 1 it is the same number. The span-match condition of E44 (|share difference| <= 0.1), which voided teeth_i there (0.712 against 0.522), is replaced by this normalisation",
+      "halves": "as predictions.json teeth_i.halves, unchanged",
+      "expected": "r2_B(lower) in [-0.05, 0.10]; r2_B(upper) in [0.10, 0.60]; with 1 - share = 0.288 and 0.478 at step 10, rho_lower in [-0.17, 0.35], rho_upper in [0.21, 1.26]",
+      "lean": "medium-low. The lower half's pieces stay off: under reading A, moving them changed K by 6e-6 nats although they hold 8.6 times the upper half's piece energy, so even Gamma's readouts of V' did not switch them on. The upper half is the open side: its pieces act only through W0's fractional masks, and nothing has measured how much of dW's output that carries",
+      "positive_control_role": "the upper half is this amendment's positive control: a placement on subcomponents Gamma switches on at W0 must carry measurably more per unit than one on subcomponents it leaves off",
+      "reported_not_scored": "per-row K_B(lower) - K_B(upper) on the paired rows: the count of rows where it is positive, and a 2000-sample bootstrap 95% interval of rho_upper - rho_lower over rows (seed 0)"
+    },
+    "teeth_ii": {
+      "prediction": 5,
+      "rule": "scored at step 10, reported at step 1: random state matched -> r2_B(random) <= 0.2 holds, else does not; 'unmatched' or r2_B unscored -> 'unreadable'",
+      "expected": "r2_B <= 0: a random change the size of dW's output effect moves the masked model away from FT, not toward it",
+      "lean": "high",
+      "reported_not_scored": "the matched a, its KL(W0 || random state) against KL(W0 || FT) on the first 16 rows, and random's r1_B maths (own model against its masked model at W0's masks; whether r1 can fail a different model, E44's teeth_ii question)"
+    },
+    "teeth_outcome": {
+      "prediction": 6,
+      "rule": "teeth at a step iff control_do_nothing, teeth_i and teeth_ii all hold at that step. Step 10 without teeth -> stop before stage 4 (splits not read). Step 10 with teeth, step 1 without -> step 1's splits read and reported 'unscored'"
+    },
+    "pass": {
+      "rule": "measurement rule, not a prediction (plan section 3, unchanged but on reading B): r1_B <= 1.5 on both row sets, r3_B <= 1.5 on both, r2_B >= 0.8 where scored; r2_B unscored -> 'incomplete'. The maths set is read first; any maths reading over its line ends the state with 'fail' and the web set is not read. Delta's change is reported (share), never a fail on its own (decisions.md, 'Pass criterion on Delta')",
+      "line": 1.5,
+      "kept_min": 0.8,
+      "note": "for a state holding the fine-tuned weights (do-nothing, ls, the halves) r1_B maths = K_B / K0, so r1_B <= 1.5 needs r2_B >= (K(D) - 1.5 K0) / (K(D) - K0) = 0.977 at step 10 on A1's 16-row values; the 0.8 line does not bind there"
+    },
+    "early": {
+      "memory": "GPU peak after the first row of any state over 44 GiB (47.2e9 bytes) -> stop",
+      "S_time": "stage S's first layer x 28 over 60 min -> stop",
+      "disk": "free space under 80 GB in the scratch directory before stage S -> stop",
+      "wall": "2 h 45 min of wall time -> finish the current state, write, exit 0 with 'cut short' in run.log",
+      "dW_file": "a dW file absent or its sha256 not the committed one -> stop (part of control_W0)",
+      "refuse": "the run refuses to start while this file has a 'status' key or while amend2/stopped.json exists"
+    }
+  },
+  "blind_to": "Any credit for Gamma following changed activations (route (b) of GOALS.md): Amendment 1b showed it real and large (90% of the update reproduced from H(16)'s activations), and reading B gives it none, so a split onto subcomponents Gamma switches on only after the update fails, and an every-split fail may be re-gating rather than brittleness. It does credit V''s own pull on its gate through Gamma's readouts. Also blind to sampled answers, rows past 256 tokens, steps other than 1 and 10, and any update other than E40's. No state is known to pass under reading B; the upper half is the only positive control.",
+  "noise_floor": "every read is deterministic on one card (A1, A1b: f = 0); r2_B's floor is 0.05 nats of K(D) - K0 (E44); between-row spread for teeth_i is reported by the bootstrap, not used in the rule",
+  "edge_cases": {
+    "note": "each rule run by hand on these cases before filing",
+    "floor_zero": "f = 0: holds",
+    "floor_at_limit": "f = 1e-3 exactly: holds",
+    "reproduce_tie": "relative gap exactly 1e-3: holds",
+    "reproduce_zero": "K0 or K(D) read 0: ratio 0, gap 1: miss (references are nonzero, so the ratio is defined)",
+    "identity_tie": "do-nothing gap exactly 1e-6: holds",
+    "do_nothing_r1_tie": "r1_B maths exactly 1.5: not > 1.5, so not 'fail' on r1; control_do_nothing misses (expected 22.8, so this signals a broken path)",
+    "share_tie": "|share - reference| exactly 1e-3: holds",
+    "r2_denominator": "K(D) - K0 < 0.05 at a step: r2_B unscored there; at step 10 control_W0 already pins K(D) - K0 near 1.43 on 16 rows, so this case means a broken read and teeth_i is 'unscored' (no teeth)",
+    "r2_denominator_negative": "K(D) <= K0: below the floor, unscored; never divided",
+    "carried_zero": "1 - share_h <= 0.05 for a half (a half that carries almost nothing): rho undefined, teeth_i 'unreadable'; the S.json values are 0.288 and 0.478",
+    "teeth_i_tie": "rho_lower = rho_upper - 0.2 exactly: holds",
+    "teeth_i_both_zero": "r2_B of both halves 0: rho 0 and 0, 0 <= -0.2 is false: does not hold (no teeth)",
+    "teeth_i_negative_upper": "rho_upper < 0.2: the rule needs rho_lower <= a negative number; holds only if lower is pushed further from FT than upper by 0.2 per unit; reported as is",
+    "teeth_ii_tie": "r2_B(random) = 0.2 exactly: holds",
+    "random_unmatched": "no a in the 12 evaluations within a factor 1.5: read at the closest a, reported, teeth_ii 'unreadable' (no teeth)",
+    "random_non_monotone": "KL not monotone in a over the bracket: the bisection keeps the closest evaluated a; still 'matched' if within the factor",
+    "matrix_with_one_alive": "a matrix with fewer than two alive subcomponents gives both halves nothing (as E44)",
+    "pass_between_bins": "the pass rule's outcomes pass / fail / incomplete are exhaustive: any reading over its line -> fail; else r2_B unscored -> incomplete; else pass",
+    "pass_r2_tie": "r2_B = 0.8 exactly: holds the r2 line",
+    "pass_r1_tie": "r1_B or r3_B = 1.5 exactly: within the line",
+    "state_missing": "a state not read (job cut short): 'not read'; never extrapolated; a missing control is a miss",
+    "nan": "any NaN or infinite reading: the control misses (stop); a teeth rule is 'unreadable'; a split's verdict is 'unreadable'"
+  }
+}

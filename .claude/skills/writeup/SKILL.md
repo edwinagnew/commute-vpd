@@ -97,6 +97,10 @@ the breaks so they are seen rather than missed; look at each flagged sentence an
   was 0.55 to 0.60 for every update we tried on this task" is.
 - A number without its reference is not a result: next to each value, what it reads if nothing happened and
   what the control reads.
+- **Departures from the literature are explicit** (user, 2026-10-30). Wherever a definition, recipe, threshold or
+  procedure differs from the source it is credited to, say so at the point of use: what the source says, what we do
+  instead, and why. Collect them in a "Departures from the literature" list near the end ("none" if none). A
+  departure recorded only in a decision file does not count.
 
 ## Figure rules
 

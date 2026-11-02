@@ -254,12 +254,14 @@ def readout(g: Gamma, site: str, x_site: Tensor, V: Tensor) -> Tensor:
 def lower_importances(g: Gamma, taps: list[Tensor], readouts: dict[str, Tensor]) -> dict[str, Tensor]:
     """g = clip(head(backbone) + readout, 0, 1) per site, fp32 (arch.py:286-291,316-324; interface.py:36-41)."""
     x = backbone(g, taps)
-    out = {}
-    for site in SITES:
-        layer, kind = parse_site(site)
-        p = x @ g.heads_w[kind][layer] + g.heads_b[kind][layer]
-        out[site] = (p + readouts[site]).float().clamp_(0, 1)
-    return out
+    return {site: site_importance(g, x, site, readouts[site]) for site in SITES}
+
+
+def site_importance(g: Gamma, x: Tensor, site: str, r: Tensor) -> Tensor:
+    """One site's g from the backbone's output x and the site's readout r (`lower_importances`, site by site)."""
+    layer, kind = parse_site(site)
+    p = x @ g.heads_w[kind][layer] + g.heads_b[kind][layer]
+    return (p + r).float().clamp_(0, 1)
 
 
 # ----------------------------------------------------------------------------- target forwards

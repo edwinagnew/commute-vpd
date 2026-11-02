@@ -170,6 +170,19 @@ def test_bijection_table_and_windows():
     assert kv.pick_marker({1: 5}, decode, VOCAB) == 4  # 1 occurs, 2 alphanumeric, 3 whitespace
     dist = kv.key_distributions(lambda toks: torch.zeros(toks.shape[0], T, VOCAB), w, "cpu", batch=4)
     assert set(dist) == set(KEYS_KV) and all(torch.allclose(d, torch.full((VOCAB,), 1 / VOCAB, dtype=torch.float64)) for d in dist.values())
+    # geometric (E58 Amendment 6): window i (batch 1) has token 0's logit 4 when i is odd, else every logit 0
+    def alt(toks):
+        lg = torch.zeros(1, T, VOCAB)
+        lg[0, :, 0] = 4.0 * (len(calls) % 2)
+        calls.append(0)
+        return lg
+
+    calls: list[int] = []
+    geo = kv.key_distributions(alt, w, "cpu", batch=1, geometric=True)
+    lp = torch.log_softmax(torch.tensor([[0.0] * VOCAB, [4.0] + [0.0] * (VOCAB - 1)], dtype=torch.float64), -1)
+    for k, d in geo.items():
+        odd = torch.tensor([i % 2 for i in range(len(w)) if int(w.tokens[i, HALF]) == k])
+        assert torch.allclose(d, lp[odd].mean(0).exp())
     # the gate: a key only takes a value its predicate admits
     gated = kv.bijection("g", MARKER, KEYS_KV, pool, seed=0, ok=lambda k, v: v >= 12)
     assert all(v >= 12 for v in gated.values) and len(set(gated.values)) == 3
