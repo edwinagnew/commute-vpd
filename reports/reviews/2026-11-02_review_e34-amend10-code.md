@@ -166,3 +166,20 @@ I would keep the rounding draw: the saved states are bf16, Σ could amplify it, 
 - The real Σ's spectrum and any real `read_set` output: that needs the forward I was told not to run. Finding 1 is therefore an estimate. A one-window-set $0 debug job printing k/d per matrix would settle it before re-filing, if the coordinator wants that.
 - Whether task-window split-half margins will be small: unread.
 - `make lint` on these files.
+
+## What the lead did
+
+*2026-11-02, nothing having run. Applied in `amend10.py`, the filing, the plan and the tests.*
+
+1. Applied: "not excited" by eigenvalue (under 1e-3 of the mean), Z = T + R; task before trigger, and further: every set's moments and every power control now come before any Gram of a student. k/d per matrix is written. Made-up spectrum: 0.9973 and 0.3334.
+2. Applied, in one function `close`: within `gap` as close, under by more than m further, between cannot tell. Added beyond the review: a read inside the band with m over 2 gap reads cannot tell, so noise cannot give the first label. The review's examples are tests. gap_min's source stated: its 0.025 is Amendment 9's batch-order change on the inside-part cosine (0.020 on the whole by Frobenius).
+3. Applied: labels "as close as a rerun", "further than a rerun", "cannot tell", on angle and on length. The length axis reads the distance from the Gram, with the size ratio beside it and its own least gap 0.056, measured (twice 0.028). Floor 0.5: a same-length rerun there is as far from δW as no change. The filing's `what_each_outcome_allows` states the claim per family and the half not read.
+4. Applied: one reading per family, per axis, no joined headline; per-table labels beside the map tables'. rand32 1,000-step pair added as a reference no rule reads, with the length limit stated.
+5. Applied: real orders 1, 2 beside the saved teacher, map seeds 2, 3 beside 0, 1 on each table. The line is the mean over all pairs; the range goes into the margin. Added: each recipe at its saved seed must reproduce the saved fine-tune, on the map tables too.
+6. Applied: `taught:<t>`, Σ_trigger + Σ_task, from the two sets' Grams, P5; the reading's scope string says it is not about the trigger and carries both reads.
+7. Applied: P3 uses `close`; "cannot tell" added both over the cap and between band and margin. The review's example is a test.
+8. Applied: split-half now covers all rerun pairs, other tasks and the other seed's students; split by `w.row`. Margin is per family.
+9. Applied: ceiling per fine-tune, set and form, tested equal to `four_blocks`' out_out and reached by the best first-order change. It refuses a label when it cannot reach the line (rerun − gap_min, not the review's rerun − m: the stricter test of the branch), and the analogue on length. The plan's wrong reason is corrected.
+10. Applied: stale ladder removed, `top_matrix_share` written, unread references removed, `P1_wording` gone. Eigendecomposition moved to the CPU: 1.9 s at 3,072 on 8 cores. Deletions made: self, zero and asymmetry stops per set (smallest diagonal kept), `null_own` and the null students, `assert isinstance` (a `pooled` helper), `rerun_ok`; the rounding draw kept. The script grew anyway, from 471 to 640 lines, 518 non-blank: reruns, two axes, families, ceiling and taught sets outweigh the deletions.
+
+Not applied: the review's suggested one-window $0 job to read the real spectrum first, since a stop now comes before any read of a student and costs nothing.
