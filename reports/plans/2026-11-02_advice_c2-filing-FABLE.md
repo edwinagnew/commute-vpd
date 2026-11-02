@@ -27,11 +27,10 @@ quality figure is reported beside its reference, and the predictions become four
 ## 1. Early checks
 
 Why the rise is not a warning: `c2_config.yaml` gives PersistentPGDReconLoss an Adam lr warm-up of `warmup_pct 0.025`
-of 400K steps = 10K steps, so at 2K the adversary ran at a fifth of its strength and the training PGD term rose 0.45 →
-2.2 while eval kl_ci rose 0.049 → 0.091; the importance-minimality term rose 148 → 910 as masks tightened (L0 7,284 →
-167). KL against a strengthening adversary rises until the adversary is at full strength; a 2K measurement says nothing
-about 10K. Noise: same-seed runs differ by up to 7% of the total loss at 400 steps (c2_noise.json, 0.065 of 0.93), so a
-factor of 2 on a KL is a changed trajectory, not noise. Steps must be multiples of `eval_freq` 1000 (`early_check_problems`).
+of 400K = 10K steps, so at 2K the adversary ran at a fifth of its strength; the training PGD term rose 0.45 → 2.2 while
+eval kl_ci rose 0.049 → 0.091. KL against a strengthening adversary rises until the adversary is at full strength, so
+2K says nothing about 10K. Noise: same-seed runs differ by up to 7% of the total loss at 400 steps (c2_noise.json,
+0.065 of 0.93), so a factor of 2 on a KL is a changed trajectory. Steps must be multiples of `eval_freq` 1000.
 
 ```json
 "early_checks": {
@@ -70,8 +69,8 @@ below the untrained −1.40 (P) / −3.83 (N), and the untrained P value would a
 
 Valid: the ID states are the only by-construction reuse states outside the scored and calibration sets; the 67M's
 analogue (E58 elicit) read r 0.76-0.79, ratio 0.93-0.96 against the cipher's 0.22-0.24 / 0.30-0.34. The decomposition
-never saw the `T a` prompt, so a miss has two readings; `|L00 − T0|` on the ID rows tells them apart because CI masks
-are input-dependent while faithfulness (U0 − T0) is not.
+never saw the `T a` prompt; `|L00 − T0|` on the ID rows tells coverage from a reading miss, since CI masks are
+input-dependent and faithfulness (U0 − T0) is not.
 ```json
 "positive_controls": {"ID_min": {"r": 0.5, "ratio": 0.5},
   "ID_min_source": "E12's r rule and the step-2 plan's ratio rule (open_pair predictions.json label_source); E58 elicit 0.76-0.79 / 0.93-0.96 above, cipher 0.22-0.24 / 0.30-0.34 below",
@@ -100,8 +99,8 @@ keeps its outcome in section 7; the outcome is written with "no positive control
 ## 7. The predictions
 
 Scored set: 12 existing (P) + 9 new (N); bar at n = 21 is max(a(21) = 15, n_c + 2 = 17) = 17 (c1b.json needs_full);
-prune and steer read 21 of 21 with no void. The unlearned N_1e-5 1K states were never read by C1b's instruments
-(placement "not yet learned"), so "VPD alone" there means a label where none exists, not a win.
+prune and steer read 21 of 21 with no void. C1b's instruments never read the unlearned N_1e-5 1K states (placement
+"not yet learned"), so "VPD alone" there means a label where none exists, not a win.
 ```json
 "predictions": {
   "per_reading": "q in {r, ratio}, from scores[q].all (rules.score; n = non-void scored states, n_c recomputed on them)",
