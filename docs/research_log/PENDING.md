@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-11-02 · docs/research_log/parts/sections/techniques.html · techniques (route split), changelog · notation only, no number or claim changed: the user's draft replaces v178's ℓ form. Bare symbols stand for log-odds, δW = W1 − W0 is the gain in this subsection, C_{a,b} is C_a gated by g_b, one bullet per share; the changelog row says reports, code and results files keep T, U, L, G.
