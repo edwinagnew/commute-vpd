@@ -7,8 +7,9 @@ src/commute/readout.py.
   run.py   stage 0 (any miss exits 1, before any ablation of a fine-tuned state is scored):
              inputs: windows and the twelve saved weight changes' sha256 against E54/E56; W0's rates, keys and values
                reproduce E54's stage1.json; every state's gain G reproduces stage2.json / job2.json
-             readouts: one per block, trained on Pile (saved to <large>/readouts.pt); held-out Pile loss per block and
-               the model's own; the last block's within the filed margin of the model's
+             readouts: one per block, trained on Pile (saved to <large>/readouts.pt at once; --readouts PATH loads
+               them instead); held-out loss per block, of the model and of the linearised head; the last block within
+               the filed margin of the linearised head (amended after job 48279), held-in losses reported
              possession per block and task (all held-out windows; fit half for l*); P1 recorded; P3 (stop on a miss)
              W0's positive control at l* (median log P drop of the elicit target); the do-nothing (random direction)
                share on every state
@@ -92,18 +93,34 @@ def stage0_inputs(net: ST.Net, tasks: dict[str, ST.Task], th: dict[str, float], 
     return dws
 
 
-def stage0_readouts(net: ST.Net, S: dict[str, Any], th: dict[str, float], large: Path, out: dict[str, Any]) -> RO.Probes:
+def stage0_readouts(net: ST.Net, S: dict[str, Any], th: dict[str, Any], large: Path, saved: Path | None,
+                    out: dict[str, Any]) -> RO.Probes:
+    """Train (or load `saved`) and save the readouts, then the stage-0 rule as amended after job 48279's stop: the last
+    block's held-out loss <= the linearised head's + lin_margin; held-in losses, the model's and gap_last reported."""
     train = pile_rows(*S["train_rows"], log=log)
-    try:
-        probes = RO.train_readouts(net, train, S["readout_seed"], th["readout_max_minutes"], log)
-    except RO.ReadoutStop as e:  # review L2: the reason goes into run.json
-        stop(out, str(e))
-    torch.save(probes.state_dict(), large / "readouts.pt")
-    loss = RO.held_out_loss(net, probes, pile_rows(*S["held_rows"], log=log), S["held_windows"], S["held_seed"])
-    loss["gap_last"] = loss["readout"][RO.LAST] - loss["model"]
-    out["stage0"]["readouts"] = {**loss, "sha256": KD.sha256(large / "readouts.pt"), "pass": loss["gap_last"] <= th["loss_gap_max"]}
-    log(f"[stage0 readouts] held-out loss per block {loss['readout']} model {loss['model']:.6f} gap_last {loss['gap_last']:.6f} "
-        f"pass {out['stage0']['readouts']['pass']}")
+    if saved is None:
+        try:
+            probes = RO.train_readouts(net, train, S["readout_seed"], th["readout_max_minutes"], th["early_checks"], log)
+        except RO.ReadoutStop as e:  # review L2: the reason goes into run.json
+            stop(out, str(e))
+        torch.save(probes.state_dict(), large / "readouts.pt")
+        saved = large / "readouts.pt"
+    else:
+        V, d = net.net.lm_head.weight.shape
+        probes = RO.Probes(len(RO.RESID), d, V).to(net.device)
+        probes.load_state_dict(torch.load(saved, map_location=net.device, weights_only=True))
+    scale = RO.norm_scale(net, train, S["scale_batches"], S["scale_seed"])
+    held = RO.losses(net, probes, pile_rows(*S["held_rows"], log=log), S["held_windows"], S["held_seed"], scale)
+    held_in = RO.losses(net, probes, train, S["held_windows"], S["held_in_seed"], scale)
+    rec = {**held, "held_in": held_in, "scale": scale, "readouts": str(saved), "sha256": KD.sha256(saved),
+           "gap_last": held["readout"][RO.LAST] - held["model"], "lin_minus_model": held["lin"] - held["model"],
+           "over_lin": held["readout"][RO.LAST] - held["lin"]}  # fmt: skip
+    rec["pass"] = rec["over_lin"] <= th["lin_margin"]
+    out["stage0"]["readouts"] = rec
+    log(f"[stage0 readouts] held-out loss per block {held['readout']} model {held['model']:.6f} lin {held['lin']:.6f} "
+        f"(scale {scale:.6g}) over_lin {rec['over_lin']:.6f} gap_last {rec['gap_last']:.6f} pass {rec['pass']}")
+    log(f"[stage0 readouts] held-in loss per block {held_in['readout']} model {held_in['model']:.6f} lin {held_in['lin']:.6f}; "
+        f"held-in minus held-out {[round(a - b, 4) for a, b in zip(held_in['readout'], held['readout'], strict=True)]}")
     return probes
 
 
@@ -186,17 +203,17 @@ def score(net: ST.Net, probes: RO.Probes, tasks: dict[str, ST.Task], dws: dict[s
 # ----------------------------------------------------------------------------- main
 
 
-def run(net: ST.Net, tasks: dict[str, ST.Task], P: dict[str, Any], large: Path) -> None:
+def run(net: ST.Net, tasks: dict[str, ST.Task], P: dict[str, Any], large: Path, saved: Path | None) -> None:
     out: dict[str, Any] = {"git_head": git("rev-parse", "HEAD").strip(), "git_dirty": git("status", "--porcelain", "--untracked-files=no"),
                            "stage0": {"inputs": {}}}
     dws = stage0_inputs(net, tasks, P["stage0"]["thresholds"], out)
     dump(out)
     if not out["stage0"]["inputs"]["pass"]:
         stop(out, "[stage0 inputs] FAIL: stop and tell the user")
-    probes = stage0_readouts(net, P["settings"], P["thresholds"], large, out)
+    probes = stage0_readouts(net, P["settings"], P["thresholds"], large, saved, out)
     dump(out)
     if not out["stage0"]["readouts"]["pass"]:
-        stop(out, "[stage0 readouts] FAIL: the last block's readout is over the filed margin from the model's loss; tell the user")
+        stop(out, "[stage0 readouts] FAIL: the last block's readout is over the linearised head's held-out loss + the filed margin; tell the user")
     l_star = possession(net, probes, tasks, P, out)
     dump(out)
     if out["P3"]["status"] != "pass":
@@ -217,6 +234,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--large", type=Path, default=RESULTS / "large", help="where the readout weights go")
+    ap.add_argument("--readouts", type=Path, default=None, help="load these readouts (a saved readouts.pt) instead of training")
     a = ap.parse_args()
     if not PRED.is_file():
         sys.exit(f"file the predictions first: {PRED}")
@@ -231,7 +249,7 @@ def main() -> None:
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     net = ST.Net(a.device)
     tasks = {n: ST.load_task(net, E54 / "large" / f"windows_{n}.pt", n, n) for n in ("elicit", "cipher")}
-    run(net, tasks, P, a.large.resolve())
+    run(net, tasks, P, a.large.resolve(), a.readouts)
 
 
 if __name__ == "__main__":

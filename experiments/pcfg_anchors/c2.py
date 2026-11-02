@@ -11,10 +11,12 @@ Stages (repo root, GPU). Each refuses (exit 2) while predictions_c2.json is a dr
              missed early check (decomposition_stops.early_checks, {"<step>": {"<eval key>": {"max": x, "min": y}}}) saves
              and exits 1. Exit 3 at the deadline (resubmit by hand), exit 0 with results/large/c2/decomp_final.pt.
   read       from decomp_final.pt. Controls first and alone: the alive set (saved, so every job reads on the same set),
-             the zero update (over its filed bounds: exit 1, apparatus), the two ID states. Then the 14 calibration
-             states and results/c2_cutoffs.json, for the lead to commit.
+             the zero update (over its filed stop bounds: exit 1, apparatus; over U0_vs_T0_max: every later state's
+             readings void, reported), the two ID states. Then the 14 calibration states and results/c2_cutoffs.json,
+             for the lead to commit.
   score      refuses (exit 2) unless c2_cutoffs.json is committed and equals the cut-offs recomputed from c2.json. The
-             21 scored states and the five unlearned N states (not scored); labels and scores.
+             21 scored states and the five unlearned N states (not scored); labels, scores, the ID rows' coverage
+             reading, (U1 - U0) / (T1 - T0) per state and the filed outcomes.
 read and score rewrite results/c2.json after every state, skip the states already in it and exit 3 when the slowest state
 so far would overrun the deadline (resubmit by hand). Every number goes to the log as well.
 
@@ -67,6 +69,7 @@ DECOMP_SEED, EVAL_DECOMP_SEED, ALIVE_SEED, READ_TAIL = 200, 201, 202, 60  # data
 CHUNK = 50  # batches per generated chunk
 READINGS, ZERO, PARTS = ("r", "ratio"), "zero_update", ("controls", "calibration", "scored", "unscored")
 STATE_SECONDS = 60.0  # per-state reading time assumed until one is measured (the rehearsal's 256 windows took ~4 s; 1,024 here)
+UNLEARNED_NEW_MIN = 4  # predictions_c2.json predictions.unlearned_N: of the five
 
 
 @dataclass(frozen=True)
@@ -176,18 +179,25 @@ def read_one(rd: Reader, st: Any, task: str) -> dict[str, Any]:
             "seconds": time.perf_counter() - t, **D.memory()}  # fmt: skip
 
 
-def xs(rec: dict[str, Any], share_min: float) -> dict[str, float | None]:
-    """The readings a label may use: None (void) when nan, or when the 24 matrices carry under share_min of the state's
-    gain; an undefined share (nan: the state's own gain is under gain_min) is void too."""
-    carried = rec["matrix_share"] >= share_min
+def xs(rec: dict[str, Any], share_min: float, void: bool) -> dict[str, float | None]:
+    """The readings a label may use: None (void) when nan, when the run's readings are void (`void`: the zero update's
+    U0 - T0 missed), or when the 24 matrices carry under share_min of the state's gain; an undefined share (nan: the
+    state's own gain is under gain_min) is void too. rec keeps r and ratio as read."""
+    carried = not void and rec["matrix_share"] >= share_min
     return {q: rec[q] if carried and math.isfinite(rec[q]) else None for q in READINGS}
 
 
 def do_nothing_misses(rec: dict[str, Any], gain_min: float, t0_max: float) -> list[str]:
-    """predictions_c2.json do_nothing, on the zero update's record; a nan misses."""
+    """predictions_c2.json do_nothing, the rows that stop, on the zero update's record; a nan misses."""
     c = rec["cells"]
     rows = (("T1 - T0", c["T1"] - c["T0"], gain_min), ("L11 - L00", c["L11"] - c["L00"], gain_min), ("T0 - LOW", rec["T0_minus_LOW"], t0_max))
     return [f"|{name}| = {abs(v)} over {bar}" for name, v, bar in rows if not abs(v) <= bar]
+
+
+def unfaithful(rec: dict[str, Any], u0_max: float) -> list[str]:
+    """predictions_c2.json do_nothing.U0_vs_T0, the row that voids both readings and does not stop; a nan misses."""
+    v = rec["cells"]["U0"] - rec["cells"]["T0"]
+    return [] if abs(v) <= u0_max else [f"|U0 - T0| = {abs(v)} over {u0_max}"]
 
 
 # ---- what read and score share ----
@@ -199,7 +209,8 @@ def filed() -> dict[str, Any] | None:
     pred = json.loads(PRED_C2.read_text())
     k, id_min = pred["constants"], pred["positive_controls"].get("ID_min", {})
     out = {"ratio_floor": k["ratio_floor"], "gain_min": k["gain_min"], "matrix_share_min": k["matrix_share_min"],
-           "T0_vs_LOW_max": pred["do_nothing"].get("T0_vs_LOW_max"), "ID_min_r": id_min.get("r"), "ID_min_ratio": id_min.get("ratio")}  # fmt: skip
+           "T0_vs_LOW_max": pred["do_nothing"].get("T0_vs_LOW_max"), "U0_vs_T0_max": pred["do_nothing"].get("U0_vs_T0_max"),
+           "ID_min_r": id_min.get("r"), "ID_min_ratio": id_min.get("ratio")}  # fmt: skip
     unfiled = [n for n, v in out.items() if not isinstance(v, int | float)]
     if str(pred.get("status", "")).startswith("DRAFT") or unfiled:
         log(f"{PRED_C2.name} is a draft or lacks numbers {unfiled}: file it first (exit 2)")
@@ -272,7 +283,7 @@ def read_part(res: dict[str, Any], part: str, sids: list[str], rd: Reader, table
             return EXIT_RESUME
         task, path = table[sid]
         rec = read_one(rd, load_model(path), task)
-        res[part][sid] = rec | {"x": xs(rec, res["constants"]["matrix_share_min"])}
+        res[part][sid] = rec | {"x": xs(rec, res["constants"]["matrix_share_min"], bool(res.get("readings_void")))}
         log(f"{part} {sid}: {res[part][sid]}")
         write_json(OUT, res)
     return 0
@@ -282,8 +293,9 @@ def read_part(res: dict[str, Any], part: str, sids: list[str], rd: Reader, table
 
 
 def controls(res: dict[str, Any], rd: Reader, table: dict[str, tuple[str, Path]], deadline: float) -> int:
-    """The zero update alone: over its bounds is exit 1, on every resubmission too. Then the ID states, against their
-    filed bars: a reading neither state reaches has no positive control (reported, the run continues)."""
+    """The zero update alone: over its stop bounds is exit 1, on every resubmission too; over U0_vs_T0_max voids both
+    readings of every later state (read_part), and the run continues so that the cells are reported. Then the ID states,
+    against their filed bars: holds, partial or none per reading (reported, the run continues)."""
     k = res["constants"]
     rc = read_part(res, "controls", [ZERO], rd, table, deadline)
     if rc:
@@ -294,12 +306,15 @@ def controls(res: dict[str, Any], rd: Reader, table: dict[str, tuple[str, Path]]
         write_json(OUT, res)
         log(f"STOP, do-nothing control missed (apparatus): {misses} (exit 1)")
         return 1
+    res["readings_void"] = unfaithful(res["controls"][ZERO], k["U0_vs_T0_max"])
+    if res["readings_void"]:
+        log(f"do-nothing control: {res['readings_void']}: both readings void for C2, cells still reported")
     ids = list(id_paths())
     rc = read_part(res, "controls", ids, rd, table, deadline)
     if rc:
         return rc
     xid = [res["controls"][s]["x"] for s in ids]
-    res["positive_control"] = {q: any(x[q] is not None and x[q] >= k[f"ID_min_{q}"] for x in xid) for q in READINGS}
+    res["positive_control"] = {q: revival.positive_control_state([x[q] for x in xid], k[f"ID_min_{q}"]) for q in READINGS}
     log(f"controls: positive control per reading {res['positive_control']} (report only); ID readings {dict(zip(ids, xid, strict=True))}")
     write_json(OUT, res)
     return 0
@@ -374,6 +389,30 @@ def scores(res: dict[str, Any], c: C1bStates) -> dict[str, Any]:
     return out
 
 
+def id_rows(res: dict[str, Any]) -> dict[str, Any]:
+    """predictions_c2.json positive_controls.rule, reported. In score, not at the controls: the natural N rows' value
+    exists only once a state of task N is read. Coverage is named on a reading with a partial or missing control when
+    |L00 - T0| on the ID rows is over 2 x the larger natural-row value."""
+    gap = lambda rec: abs(rec["cells"]["L00"] - rec["cells"]["T0"])
+    recs = [rec for part in PARTS for rec in res[part].values()]
+    natural = {t: max(gap(rec) for rec in recs if rec["task"] == t) for t in ("P", "N")}
+    ids = {s: res["controls"][s] for s in id_paths()}
+    gaps = {s: gap(rec) for s, rec in ids.items()}
+    bar, u0_max = 2 * max(natural.values()), res["constants"]["U0_vs_T0_max"]
+    u0 = {s: rec["cells"]["U0"] - rec["cells"]["T0"] for s, rec in ids.items()}
+    return {"L00_minus_T0": gaps, "natural_L00_minus_T0": natural, "coverage_bar": bar,
+            "coverage_named": {q: res["positive_control"][q] != "holds" and max(gaps.values()) > bar for q in READINGS},
+            "U0_minus_T0": u0, "U0_within_max": {s: abs(v) <= u0_max for s, v in u0.items()}}  # fmt: skip
+
+
+def outcomes(res: dict[str, Any], c: C1bStates) -> dict[str, Any]:
+    """predictions_c2.json predictions: per reading, the headline and the unlearned N states (stand-alone)."""
+    per = {q: {"outcome": revival.c2_outcome(res["scores"][q]["all"], len(c.scored)), "positive_control": res["positive_control"][q]} for q in READINGS}
+    new = {q: sum(res["unscored"][s]["labels"][q] == "new" for s in c.unlearned) for q in READINGS}
+    return per | {"headline": revival.c2_headline([per[q]["outcome"] for q in READINGS]),
+                  "unlearned_N": {"new_of_five": new, "handled": {q: n >= UNLEARNED_NEW_MIN for q, n in new.items()}}}  # fmt: skip
+
+
 def stage_score(deadline: float) -> int:
     k = filed()
     res = open_results(k) if k is not None else None
@@ -395,11 +434,17 @@ def stage_score(deadline: float) -> int:
             row["labels"] = {q: revival.label_by_cutoff(row["x"][q], cut["cutoffs"][q]) for q in READINGS}
             log(f"{part} {sid}: x {row['x']}; labels {row['labels']}; truth {c.scored.get(sid, 'not scored')}")
     res["update_size"] = {s: c.nuisance[s]["update_size"] for s in (*c.scored, *c.unlearned)}
+    res["U_gain_over_T_gain"] = {s: r["piece_gain"] / r["gain"] if abs(r["gain"]) >= pcfg_vpd.GAIN_MIN else math.nan for p in PARTS for s, r in res[p].items()}
     res["scores"] = scores(res, c)
+    res["id_rows"] = id_rows(res)
+    res["predictions"] = outcomes(res, c)
     res["complete"] = True
     write_json(OUT, res)
     log(f"update sizes: {res['update_size']}")
+    log(f"U gain over T gain: {res['U_gain_over_T_gain']}")
     log(f"scores: {json.dumps(res['scores'])}")
+    log(f"ID rows: {res['id_rows']}")
+    log(f"predictions: {res['predictions']}")
     return 0
 
 

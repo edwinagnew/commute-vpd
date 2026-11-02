@@ -106,6 +106,19 @@ same removal at the last block on every state (expected about 1, showing the sha
 column's cosine with the mean readout column. `predictions.json` → `amended_2026_11_02_pre_run` keeps the first
 filing's text.
 
+## Amendment after stage-0 stop (2026-11-02)
+Job 48279 stopped at stage 0, before any fine-tuned state was read. The last block's readout reached a held-out loss
+of 4.14 against the model's 3.43, over the 0.5-nat margin, while its training loss sat near 3.2. The readouts had
+overfit: 8,192 Pile rows were reused about 3.7 times, where Jain et al. train on fresh samples. The lead adopted
+Fable's advice (`reports/reviews/2026-11-02_review_e59-stop-fable-advice.md`) as a stage-0 amendment, told to the user
+as an FYI; P1-P3 are unchanged. The readouts now train on rows 32768-65535, so each token is seen less than once, and
+these rows are cached by a CPU job first. The schedule and initialisation are unchanged. The guessed margin is replaced
+by a measured reference: the last block's held-out loss must be within 0.1 nats of a linearised head (the model's own
+unembedding with the final norm's per-token scale fixed at its mean), which is a linear map the readout could learn.
+Training now stops early if the last block misses 5.0 nats at step 250 or the model's batch loss + 0.5 at step 2000.
+Readouts are saved straight after training and can be reloaded (`--readouts`), and the run time is ~22 min on the
+debug QoS. `predictions.json` → `amended_2026_11_02_after_stop` keeps the first rule's text.
+
 ## Departures from the literature
 - **Def 1, Jain et al. 2024 §3.** The paper trains the readout on data from the pretraining process and reads it on
   the sub-domain of inputs carrying the instruction; we train on Pile windows at every position and read at the answer

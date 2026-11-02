@@ -162,3 +162,15 @@ def test_column_geometry() -> None:
     g = RO.column_geometry(probes, 0, [0, 3])
     assert math.isclose(g["0"]["norm"], 1.0) and math.isclose(g["0"]["cos_mean"], 1 / math.sqrt(2), rel_tol=1e-6)
     assert math.isclose(g["3"]["norm"], math.sqrt(17), rel_tol=1e-6)
+
+
+CHECKS = {"250": {"max": 5.0}, "2000": {"max_over_model": 0.5}}
+
+
+def test_early_miss_bounds_inclusive() -> None:
+    assert RO.early_miss(250, 5.0, 3.4, CHECKS) is None
+    assert RO.early_miss(250, 5.0001, 3.4, CHECKS) is not None
+    assert RO.early_miss(2000, 3.9, 3.4, CHECKS) is None  # model + 0.5 exactly
+    assert RO.early_miss(2000, 3.91, 3.4, CHECKS) is not None
+    assert RO.early_miss(500, 99.0, 3.4, CHECKS) is None  # no check filed at this step
+    assert RO.early_miss(250, math.nan, 3.4, CHECKS) is not None  # nan never passes

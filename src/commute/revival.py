@@ -358,3 +358,30 @@ def ceiling(values: dict[str, float], truth: dict[str, str]) -> dict[str, Any]:
             if agree > best["agree"]:
                 best = {"agree": agree, "labels": lab, "threshold": t if math.isfinite(t) else str(t), "small_is_existing": small}
     return best
+
+
+# ---- C2: the positive control and the outcomes (pure arithmetic; predictions_c2.json positive_controls, predictions) ----
+
+C2_OUTCOMES = ("void", "fail", "pass_under", "tie")  # worst to best
+
+
+def positive_control_state(xs: list[float | None], bar: float) -> str:
+    """One reading on the ID states: 'holds' iff all are non-void and >= bar, 'none' iff none is, else 'partial'."""
+    met = sum(x is not None and x >= bar for x in xs)
+    return "none" if not met else "holds" if met == len(xs) else "partial"
+
+
+def c2_outcome(sc: dict[str, Any], n_scored: int) -> str:
+    """One reading's outcome from its score (c1b.score_one, with n_c). A void cut-off labels every state void, so n = 0:
+    both voids are 'no bar'. 'fail' is tested before 'tie': they would overlap only if n_c + 2 > n at n = n_scored, and
+    n_c there is C1b's 15 of 21."""
+    if sc["bar"] is None:
+        return "void"
+    if sc["agree"] < max(sc["bar"], sc["n_c"] + MARGIN_ALL):
+        return "fail"
+    return "tie" if sc["agree"] == sc["n"] == n_scored else "pass_under"
+
+
+def c2_headline(outcomes: list[str]) -> str:
+    """The better reading's outcome; no averaging."""
+    return max(outcomes, key=C2_OUTCOMES.index)
