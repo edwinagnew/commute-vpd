@@ -127,3 +127,27 @@ The arithmetic is right. But the filing says that a low cosine "can be what a st
 - **`check.py`.** 0 errors on the report; its 52 flags are style.
 
 **Not checked.** I ran no L01, block or ladder forward again: those are taken from the JSON and log, which agree. I looked at five of the eight figures (ladder, blocks, size, outside, alignment); the other three I read in code only. The E42 and copy-table total sizes "not on file" were taken from the report and Amendment 1's file keys.
+
+## What the lead did
+
+Applied 2026-11-02 to the report (R), notebook cell 34 (N, rewritten whole with `nb-edit set`), `plot_amend2.py` titles (F, figures redrawn from the saved summary) and the TRIED row (T). No number or filed verdict changed; `check.py` on R: 0 errors.
+
+- **H1.** Applied: R line 5 last sentence and "What we learned" use the corrected wording, plus the first-table P(target) figures and "no state keeps the term and loses the set"; N "What we learned"; T headline.
+- **H2.** Applied: R line 5 second sentence (corrected wording), a new reference paragraph in section 3 and its heading; N "The answer" and section 3; F block title; T headline.
+- **M1.** Applied: R section 4 (control's top 30 hold 17 to 19 set members, 1% to 2% of the term), "What we learned" (addition), the control-ladder bullet in "Surprises" (corrected line-217 wording); N section 4 and "Surprises".
+- **M2.** Applied: R section 1 last sentences (corrected wording) and heading, F fall title, N section 1. "Not run" says "Γ in fp32 on any state: being run as Amendment 3" with no result claim (lead's decision); "What next" names Amendment 3.
+- **M3.** Applied: R section 7 heading and "Reading it" (corrected wording, plus the teachers' top-three sizes), N section 7, F size title.
+- **M4.** Applied: R section 2 heading and reading (0.57 and 0.68 "either side of" 0.66, order-1 sensitivity 0.060 under 0.111, `rand32_s0_o1` exists with no set read), scorecard line and N section 2; "What we learned". "Not run" adds the set read on `rand32_s0_o1`. F sets title shortened to "Partly; lower on table 2" because the longer title was clipped.
+- **M5.** Applied: R section 5 (per-window moves, typically two or three of 97 windows, not tested whether they return the nats, top-5 window share, sign shares, the 0.3 line's different quantity), the "Not run" bullet; N section 5; F outside title.
+- **M6.** Applied: R section 8 (caveat added after the 83% to 91% sentence, with the filing's own words); N section 8.
+- **L1.** Applied: R corrections table replaced by one line naming commit 4aba4934; the "one open job" sentence replaced; N "What next".
+- **L2.** Applied: R section 5 ("outside subcomponents with a fine-tune mean over 0.3", "speaks to change, not effect").
+- **L3.** Applied: R section 2 (block mean under 0.03; single kept members up to 0.094; dropped-mean ranges at order 1 and on the first table).
+- **L4.** Applied: R section 4 (dotted line ratios, control below student at every k), N section 4. F ladder title "the control is flat too" in place of "reads the same".
+- **L5.** Applied: R "How compelling": the unsupported sentence is cut.
+- **L6.** Applied: R section 6 and "What next" ("recorded as filed; this run supports neither word as a cause"); N section 6 and "What next".
+- **L7.** Applied: R "Not run" (the fall per window, `local_faith.masked_lo_windows`); N "Not run".
+- **L8.** Applied: R section 8 caution (14% apart; 0.80 to 0.84 against 0.52 to 0.55, 1.5 times); N section 8.
+- **L9.** Applied: R 1.119, 1.76, "2.04% at most" (also "about 2% or less" in N and R), the dead-subcomponent note, and "on the first student only, as filed". Nothing skipped.
+
+Not changed, by instruction: `predictions_amend2.json`, `amend2.py`, any number, any verdict. The research log is untouched; `docs/research_log/PENDING.md` carries a line for the E12 card.
