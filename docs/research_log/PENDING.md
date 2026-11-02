@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- E58 card figure redrawn 2026-11-02 (experiments/open_pair/figures/log_prior.png, reworded titles and the three rows where r and carry disagree named); data unchanged. Re-copy into the card on flush.
