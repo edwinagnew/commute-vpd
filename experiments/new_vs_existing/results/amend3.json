@@ -1,0 +1,324 @@
+{
+ "amend2_sha256": "6e8e8b01dc9c1871bf8e7fb83f329c17cdd3c7a4e9e8debe56a3846cb37edeb8",
+ "card": "NVIDIA L40",
+ "checks": {
+  "W0 floor: the two paths differ (above 0)": {
+   "pass": true,
+   "value": 0.0007559884454781951
+  },
+  "W0 rand32 L00 against E46's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "W0 rand32 L00, bf16, against Amendment 2's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "W0 rand32 T0 against E46's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "W0 rand32 U0 against E46's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "W0 rand32 gates: fp32 differs from bf16 (max gap above 0)": {
+   "pass": true,
+   "value": 0.00512410793453455
+  },
+  "W0 rand32b L00 against E46's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "W0 rand32b L00, bf16, against Amendment 2's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "W0 rand32b T0 against E46's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "W0 rand32b U0 against E46's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "W0 rand32b gates: fp32 differs from bf16 (max gap above 0)": {
+   "pass": true,
+   "value": 0.006695274263620377
+  },
+  "rand32_s0 L01, bf16, against Amendment 2's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "rand32_s1 L01, bf16, against Amendment 2's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "rand32b_s0 L01, bf16, against Amendment 2's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "rand32b_s1 L01, bf16, against Amendment 2's (difference)": {
+   "pass": true,
+   "value": 0.0
+  },
+  "same card as Amendment 2 (1 = yes)": {
+   "pass": true,
+   "value": 1.0
+  },
+  "worst student L01, bf16 from its saved offsets, against Amendment 2's (|difference|)": {
+   "pass": true,
+   "value": 0.003697473978259147
+  }
+ },
+ "commit": "2771c37f691b8c10d044d76ed12cdd6bc9259770",
+ "config": {
+  "batch": 64,
+  "floor_factor": 2,
+  "guard": 0.01,
+  "n_falling": 4,
+  "n_reference": 2
+ },
+ "done": true,
+ "fine_tunes": {
+  "rand32_s0": {
+   "L01_bf16": -8.16140903394247,
+   "L01_diff": -0.003117595751259472,
+   "L01_fp32": -8.164526629693729,
+   "gate_gap_max": 0.007647001184523106,
+   "gate_gap_mean": 0.00031366138136945665,
+   "task": "rand32",
+   "term_bf16": 3.7509752352213113,
+   "term_fp32": 3.747141774167721
+  },
+  "rand32_s1": {
+   "L01_bf16": -8.41228865593979,
+   "L01_diff": -0.002741749753656819,
+   "L01_fp32": -8.415030405693447,
+   "gate_gap_max": 0.008643877692520618,
+   "gate_gap_mean": 0.0003136174054816365,
+   "task": "rand32",
+   "term_bf16": 3.5000956132239907,
+   "term_fp32": 3.496637998168003
+  },
+  "rand32b_s0": {
+   "L01_bf16": -5.972576170852504,
+   "L01_diff": 0.004179290889465115,
+   "L01_fp32": -5.968396879963039,
+   "gate_gap_max": 0.00593545101583004,
+   "gate_gap_mean": 0.00032639532582834363,
+   "task": "rand32b",
+   "term_bf16": 6.010575382979875,
+   "term_fp32": 6.013998685423862
+  },
+  "rand32b_s1": {
+   "L01_bf16": -6.213440914743955,
+   "L01_diff": 0.0058767820141980565,
+   "L01_fp32": -6.207564132729757,
+   "gate_gap_max": 0.005658369045704603,
+   "gate_gap_mean": 0.0003290589083917439,
+   "task": "rand32b",
+   "term_bf16": 5.769710639088424,
+   "term_fp32": 5.774831432657144
+  }
+ },
+ "floor": 0.0007559884454781951,
+ "predictions_sha256": "04d3e53f07db79745af21a019d3828e39a5f3fa4ca678ab92c426f1aa3f04088",
+ "score": {
+  "P1": {
+   "L01_diff": {
+    "rand32b_s0": 0.004179290889465115,
+    "rand32b_s1": 0.0058767820141980565
+   },
+   "fall_bf16": {
+    "rand32b_s0": 1.2260154645467543,
+    "rand32b_s0_o1": 1.1567912052587133,
+    "rand32b_s1": 1.0194757697508505,
+    "rand32b_s1_o1": 0.9330166098997763
+   },
+   "fall_fp32": {
+    "rand32b_s0": 1.2283058166503906,
+    "rand32b_s0_o1": 1.162248960475332,
+    "rand32b_s1": 1.0239874063078886,
+    "rand32b_s1_o1": 0.9362566249886735
+   },
+   "moved": [],
+   "pair_diff": {
+    "rand32b_s0": 0.0022903521036363728,
+    "rand32b_s0_o1": 0.0054577552166188426,
+    "rand32b_s1": 0.004511636557038123,
+    "rand32b_s1_o1": 0.0032400150888971524
+   },
+   "term_bf16": {
+    "rand32b_s0": 6.010575382979875,
+    "rand32b_s1": 5.769710639088424
+   },
+   "term_diff": {
+    "rand32b_s0": 0.0034233024439869197,
+    "rand32b_s1": 0.005120793568719861
+   },
+   "term_fp32": {
+    "rand32b_s0": 6.013998685423862,
+    "rand32b_s1": 5.774831432657144
+   },
+   "term_lost_bf16": {
+    "rand32b_s0": 0.20397638935175125,
+    "rand32b_s0_o1": 0.1924593123870295,
+    "rand32b_s1": 0.17669443643224383,
+    "rand32b_s1_o1": 0.161709428472688
+   },
+   "term_lost_fp32": {
+    "rand32b_s0": 0.20424111824757085,
+    "rand32b_s0_o1": 0.19325726879393518,
+    "rand32b_s1": 0.17731901238141015,
+    "rand32b_s1_o1": 0.16212709165744055
+   },
+   "term_moved": [],
+   "verdict": "holds"
+  },
+  "P2": {
+   "L01_diff": {
+    "rand32_s0": -0.003117595751259472,
+    "rand32_s1": -0.002741749753656819
+   },
+   "fall_bf16": {
+    "rand32_s0": 0.07765787655545253,
+    "rand32_s1": 0.0841959923813036
+   },
+   "fall_fp32": {
+    "rand32_s0": 0.07125952317542783,
+    "rand32_s1": 0.07896669623778152
+   },
+   "moved": [],
+   "pair_diff": {
+    "rand32_s0": -0.006398353380024702,
+    "rand32_s1": -0.0052292961435220775
+   },
+   "term_bf16": {
+    "rand32_s0": 3.7509752352213113,
+    "rand32_s1": 3.5000956132239907
+   },
+   "term_diff": {
+    "rand32_s0": -0.0038334610535901703,
+    "rand32_s1": -0.0034576150559875174
+   },
+   "term_fp32": {
+    "rand32_s0": 3.747141774167721,
+    "rand32_s1": 3.496637998168003
+   },
+   "term_lost_bf16": {
+    "rand32_s0": 0.020703382903265326,
+    "rand32_s1": 0.024055340677893482
+   },
+   "term_lost_fp32": {
+    "rand32_s0": 0.01901703417433553,
+    "rand32_s1": 0.022583606389667624
+   },
+   "term_moved": [],
+   "verdict": "holds"
+  },
+  "tol": 0.01151197689095639
+ },
+ "students": {
+  "rand32_s0": {
+   "L01_bf16": -8.239066910497922,
+   "L01_fp32": -8.235786152869156,
+   "fall_bf16": 0.07765787655545253,
+   "fall_fp32": 0.07125952317542783,
+   "fine_tune": "rand32_s0",
+   "gate_gap_max": 0.007131972350180149,
+   "gate_gap_mean": 0.0002833570179063827,
+   "pair_diff": -0.006398353380024702,
+   "reload_diff": -0.0017282938219835842,
+   "task": "rand32",
+   "term_lost_bf16": 0.020703382903265326,
+   "term_lost_fp32": 0.01901703417433553
+  },
+  "rand32_s1": {
+   "L01_bf16": -8.496484648321093,
+   "L01_fp32": -8.493997101931228,
+   "fall_bf16": 0.0841959923813036,
+   "fall_fp32": 0.07896669623778152,
+   "fine_tune": "rand32_s1",
+   "gate_gap_max": 0.007370543200522661,
+   "gate_gap_mean": 0.00029154395451769233,
+   "pair_diff": -0.0052292961435220775,
+   "reload_diff": -0.0004034828893928477,
+   "task": "rand32",
+   "term_lost_bf16": 0.024055340677893482,
+   "term_lost_fp32": 0.022583606389667624
+  },
+  "rand32b_s0": {
+   "L01_bf16": -7.198591635399258,
+   "L01_fp32": -7.196702696613429,
+   "fall_bf16": 1.2260154645467543,
+   "fall_fp32": 1.2283058166503906,
+   "fine_tune": "rand32b_s0",
+   "gate_gap_max": 0.007286100182682276,
+   "gate_gap_mean": 0.00033437751699239016,
+   "pair_diff": 0.0022903521036363728,
+   "reload_diff": -0.0011665108277627567,
+   "task": "rand32b",
+   "term_lost_bf16": 0.20397638935175125,
+   "term_lost_fp32": 0.20424111824757085
+  },
+  "rand32b_s0_o1": {
+   "L01_bf16": -7.129367376111217,
+   "L01_fp32": -7.130645840438371,
+   "fall_bf16": 1.1567912052587133,
+   "fall_fp32": 1.162248960475332,
+   "fine_tune": "rand32b_s0",
+   "gate_gap_max": 0.007762566674500704,
+   "gate_gap_mean": 0.00033518311101943254,
+   "pair_diff": 0.0054577552166188426,
+   "reload_diff": 0.002429411583340091,
+   "task": "rand32b",
+   "term_lost_bf16": 0.1924593123870295,
+   "term_lost_fp32": 0.19325726879393518
+  },
+  "rand32b_s1": {
+   "L01_bf16": -7.232916684494805,
+   "L01_fp32": -7.231551539037645,
+   "fall_bf16": 1.0194757697508505,
+   "fall_fp32": 1.0239874063078886,
+   "fine_tune": "rand32b_s1",
+   "gate_gap_max": 0.0073807695880532265,
+   "gate_gap_mean": 0.00032592087518423796,
+   "pair_diff": 0.004511636557038123,
+   "reload_diff": 0.003697473978259147,
+   "task": "rand32b",
+   "term_lost_bf16": 0.17669443643224383,
+   "term_lost_fp32": 0.17731901238141015
+  },
+  "rand32b_s1_o1": {
+   "L01_bf16": -7.146457524643731,
+   "L01_fp32": -7.14382075771843,
+   "fall_bf16": 0.9330166098997763,
+   "fall_fp32": 0.9362566249886735,
+   "fine_tune": "rand32b_s1",
+   "gate_gap_max": 0.00817530881613493,
+   "gate_gap_mean": 0.00032047313288785517,
+   "pair_diff": 0.0032400150888971524,
+   "reload_diff": 0.00029078218125810906,
+   "task": "rand32b",
+   "term_lost_bf16": 0.161709428472688,
+   "term_lost_fp32": 0.16212709165744055
+  }
+ },
+ "w0": {
+  "rand32": {
+   "L00_bf16": -11.91238426916378,
+   "L00_fp32": -11.91166840386145,
+   "diff": 0.0007158653023306982,
+   "gate_gap_max": 0.00512410793453455,
+   "gate_gap_mean": 0.00016607035649940372
+  },
+  "rand32b": {
+   "L00_bf16": -11.983151553832379,
+   "L00_fp32": -11.9823955653869,
+   "diff": 0.0007559884454781951,
+   "gate_gap_max": 0.006695274263620377,
+   "gate_gap_mean": 0.00016113396850414574
+  }
+ }
+}

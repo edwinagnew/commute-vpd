@@ -1,6 +1,6 @@
 {
  "about": "E12 Amendment 3: does the fall on rand32b, and rand32's lack of one, survive reading Gamma and the masked logits in fp32, on both the fine-tune and the student? Plan reports/plans/2026-11-02_plan_e12-amend3-fp32-read.md (2026-11-02). experiments/new_vs_existing/amend3.py reads its `config` from this file and refuses to start without it; fall_line, gone_line, read_tol, repro_tol and the state names are read from predictions_amend2.json through amend2.py. The results file stores the commit and the sha256 of this file and of Amendment 2's results.",
- "filed": "2026-11-02, before any run",
+ "filed": "2026-11-02, before any run. Amended 2026-11-02 after the code review (reports/reviews/2026-11-02_review_e12-amend3-code.md) and before any run: gate gaps and the fine-tune's term added to the reads, the stop on the offsets moved after all six students, the clauses reworded.",
  "config": {
   "floor_factor": 2,
   "guard": 0.01,
@@ -9,7 +9,7 @@
   "n_reference": 2
  },
  "request_in_the_terms_words": "On Amendment 2's six students (teacher-trained on the rand32b and rand32 fine-tunes; Gamma and Delta frozen) and their four fine-tunes, read Gamma's values on the state's activations and the masked log-odds of the released components at the trigger, Delta out, in two precisions on the same held-out windows, trigger position and map table: under bf16 autocast, as Amendment 2 did, and in fp32. Does the fall in the re-switching term (the fine-tune's L01 minus the student's L01) stay, in fp32, where Amendment 2 read it? Nothing is trained.",
- "states": "W0 under each table's windows; fine-tunes rand32b_s0, rand32b_s1, rand32_s0, rand32_s1 (E46's fp32 dW files); students rand32b_s0, rand32_s0, rand32b_s1, rand32_s1, then rand32b_s0_o1, rand32b_s1_o1, in Amendment 2's order. Students are rebuilt by saved_states.offsets_state from bf16 offsets (arms.save_offsets): the fp32 dW Amendment 2 read was never saved, so these are not bit-for-bit the states it scored. The control below bounds that.",
+ "states": "W0 under each table's windows; fine-tunes rand32b_s0, rand32b_s1, rand32_s0, rand32_s1 (E46's fp32 dW files); students rand32b_s0, rand32_s0, rand32b_s1, rand32_s1, then rand32b_s0_o1, rand32b_s1_o1, in Amendment 2's order. Students are rebuilt by saved_states.offsets_state from bf16 offsets (arms.save_offsets): the fp32 dW Amendment 2 read was never saved, so these are not bit-for-bit the states it scored. The control below bounds that in bf16 only; the fp32 side is unread.",
  "measurements": {
   "L00_bf16, L00_fp32": "Masked log-odds at W0 under W0's gates, Delta out, mean over the 97 held-out windows, at each precision. Gates and masked forward are in the same precision.",
   "floor": "The largest |L00_fp32 - L00_bf16| over the two tables. The noise floor between the two numeric paths, measured in the run, on a state with no dW.",
@@ -17,8 +17,10 @@
   "L01_bf16, L01_fp32": "The same read with Gamma on target W0 + dW, on each fine-tune and each student.",
   "fall_bf16, fall_fp32": "The fine-tune's L01 minus its student's L01, both in that precision. Absolute nats.",
   "pair_diff": "fall_fp32 - fall_bf16, both on the rebuilt student.",
-  "reload_diff": "L01_bf16 on the rebuilt student minus Amendment 2's stored L01. The effect of rounding the offsets to bf16 on L01, the first reading of it (Amendment 2's Not run).",
-  "term_lost_bf16, term_lost_fp32": "fall / (fine-tune's L01 - L00) in that precision. Reported only."
+  "reload_diff": "L01_bf16 on the rebuilt student minus Amendment 2's stored L01. The effect of rounding the offsets to bf16 on L01 in bf16 only, the first reading of it (Amendment 2's Not run). The same rounding in fp32 is not read: there is no stored fp32 value to compare with.",
+  "term_lost_bf16, term_lost_fp32": "fall / (fine-tune's L01 - L00) in that precision. Reported only.",
+  "term_bf16, term_fp32": "The fine-tune's re-switching term, L01 - L00 in that precision. `term_moved` lists the fine-tunes whose term differs between the precisions by more than tol. A fall cancels a move in the term that fine-tune and student share, so this is read beside the fall.",
+  "gate_gap_max, gate_gap_mean": "On each state at the trigger: max and mean over alive subcomponents of the window mean |g_fp32 - g_bf16|. Shows that Gamma itself ran in fp32 and how far it moved. Reported; stops only at W0 if the max is exactly 0."
  },
  "expected": {
   "L00": {
@@ -39,6 +41,14 @@
   "L01 fine-tune": {
    "control": "bf16: rand32b -5.97258, -6.21344; rand32 -8.16141, -8.41229, difference 0 on this card"
   },
+  "term, fine-tune": {
+   "control": "bf16 term_bf16: rand32b 6.011, 5.770; rand32 3.751, 3.500 (Amendment 2's stored values, L01 minus L00)",
+   "fp32": "within tol of the bf16 term, a guess; the fine-tune's term is also the control that the fp32 read can see a change"
+  },
+  "gate gap": {
+   "W0": "max above 0 on each table, or stop; its size has no expected value (E62 saw 0.832 on one mask entry, a different read)",
+   "states": "reported with each state; a move of Gamma shows here first"
+  },
   "reload_diff": {
    "W0": "0, by code: no offsets",
    "do-nothing": "0, by code",
@@ -51,22 +61,22 @@
  },
  "stop_rules": {
   "inputs": "Refuses if the results file exists. Stops unless the card is Amendment 2's (NVIDIA L40): every reference number is on that card.",
-  "stage 0, alone": "W0 cells T0, U0, L00 against stage0a.json's within 0.02 (Job.task, as Amendment 1). The do-nothing L00 at W0, bf16, on each table, against Amendment 2's within read_tol 0.02. The floor finite and above 0.",
+  "stage 0, alone": "W0 cells T0, U0, L00 against stage0a.json's within 0.02 (Job.task, as Amendment 1). The do-nothing L00 at W0, bf16, on each table, against Amendment 2's within read_tol 0.02. The gate gap max above 0 on each table (exactly 0 means Gamma did not run in fp32). The floor finite (a nan on either table counts) and above 0.",
   "stage 1": "Each fine-tune's L01, bf16, against Amendment 2's within read_tol 0.02.",
-  "stage 2": "Each student's L01, bf16 from its saved offsets, against Amendment 2's within repro_tol 0.05, checked after the state's reads are written. No stop on any fp32 number: those are the result."
+  "stage 2": "All six students are read and written first. Then the worst |L01, bf16 from the saved offsets, minus Amendment 2's| must be within repro_tol 0.05, else stop (a nan stops). A state landing near a line gets a retrain of that student on the same card (about 115 s, $0, Amendment 2's retrained students matched Amendment 1 exactly) before it is read. No stop on any fp32 number: those are the result."
  },
  "predictions": {
   "P1": {
    "claim": "the fall on rand32b stays above Amendment 2's line in fp32",
-   "rule": "Absolute nats. Fall in fp32 on rand32b_s0, rand32b_s1, rand32b_s0_o1, rand32b_s1_o1. Applied in this order. Under 4 states, any fall not finite, or a floor not finite or not above 0: 'unscorable'. tol >= 0.5: 'no power' (a floor that size could carry the line). All >= 0.5: 'holds'. All with |fall| <= 0.15: 'gone'. Otherwise 'mixed'; a rise above 0.15 nats reads 'mixed'. 0.5 is 'holds', 0.15 is 'gone'. Reported beside: `moved`, the states with |pair_diff| > tol; a tie has not moved, a nan has.",
-   "lean": "holds, medium-high, none moved: E62's fp32 masked falls agreed with bf16 to 0.002 on every head. Against that, one mask entry moved by 0.83 between the precisions there, so Gamma's values are not safe by default",
-   "blind_to": "Whether a student or a fine-tune trained in fp32 would fall: both were trained under bf16 autocast (finetune.py:60), and this varies only the read. Also other cards, windows or tables, and a rounding that moves every read by the same amount, which a fall cancels. The student state is the bf16-rounded offsets, bounded by the stop at 0.05 nats on L01.",
-   "positive_control": "The bf16 side reproduces Amendment 2's L01 on every state, or the job stops. A floor above 0 shows the two paths differ.",
+   "rule": "Absolute nats. Fall in fp32 on rand32b_s0, rand32b_s1, rand32b_s0_o1, rand32b_s1_o1. Applied in this order. Under 4 states, any fall not finite, or a floor not finite or not above 0: 'unscorable'. tol >= 0.5: 'no power' (a floor that size could carry the line). All >= 0.5: 'holds'. All with |fall| <= 0.15: 'gone' if tol < 0.15, else 'no power'. Otherwise 'mixed'; a rise above 0.15 nats reads 'mixed'. 0.5 is 'holds', 0.15 is 'gone'. Reported beside: `moved`, the states with |pair_diff| > tol, and `term_moved`, the fine-tunes whose fp32 term differs from bf16's by more than tol; a tie has not moved, a nan has.",
+   "lean": "holds, medium-high, none moved: E62's forward alone agreed between the precisions to 0.002 on every head (under Gamma's bf16 masks; for Gamma's own change, E62 Amendment 5's analysis gives 0.0008 and 0.0027 on head (2,4)'s fall on intact windows, not on a change in weights). Against that, one mask entry moved by 0.83 between the precisions there, so Gamma's values are not safe by default",
+   "blind_to": "Whether a student or a fine-tune trained in fp32 would fall: both were trained under bf16 autocast (finetune.py:60), and this varies only the read. Also other cards, windows or tables, and a rounding that moves every read by the same amount, which a fall cancels (`term_moved` and L01 show it for the fine-tunes). The student state is the offsets rounded to bf16: the 0.05 stop bounds that rounding in bf16 only; in fp32 it is unread and sits on the student side only (E46's fine-tune files are fp32). Arithmetic puts it well under the lines, which is not a measurement.",
+   "positive_control": "The bf16 side reproduces Amendment 2's L01 on every state, or the job stops. A floor above 0 and a W0 gate gap above 0 show the fp32 path ran in Gamma too. The fine-tunes' fp32 term, read against its bf16 value, shows whether the fp32 read can see a change at all.",
    "noise_floor": "tol, measured at W0 in this run. The fall itself has Amendment 2's batch-order change, at most 0.09 nats on rand32b, beside it."
   },
   "P2": {
    "claim": "rand32 shows no fall in fp32 either",
-   "rule": "Absolute nats. Fall in fp32 on rand32_s0, rand32_s1. Applied in this order. Under 2 states, any fall not finite, or a floor not finite or not above 0: 'unscorable'. tol >= 0.15: 'no power'. All with |fall| <= 0.15: 'holds'. All >= 0.5: 'falls'. Otherwise 'mixed'. 0.15 is 'holds', 0.5 is 'falls'. `moved` as in P1.",
+   "rule": "Absolute nats. Fall in fp32 on rand32_s0, rand32_s1. Applied in this order. Under 2 states, any fall not finite, or a floor not finite or not above 0: 'unscorable'. tol >= 0.15: 'no power'. All with |fall| <= 0.15: 'holds'. All >= 0.5: 'falls'. Otherwise 'mixed'. 0.15 is 'holds', 0.5 is 'falls'. `moved` and `term_moved` as in P1.",
    "lean": "holds, medium-high: its bf16 falls are 0.076 and 0.084, so it would take a move of about 0.07 to cross the line, which is above every size on file except the mask entry above",
    "blind_to": "As P1. Only two states: no second batch order is read on this table in Amendment 2's saved set (Amendment 1's rand32_s0_o1 exists and is not read).",
    "positive_control": "As P1",
@@ -74,14 +84,14 @@
   }
  },
  "what_each_outcome_means": {
-  "P1 holds, none moved": "The fall does not depend on the read's precision. Amendment 2's numbers stand as read; its cause stays open.",
+  "P1 holds, none moved": "The fall does not depend on the read's precision; the fall stands, and L01 and the term as `term_moved` says. Its cause stays open.",
   "P1 holds, some moved": "The fall survives but its size depends on the read: quote the fp32 numbers from here on, and the user hears the size of the move.",
-  "P1 mixed": "On some states the fall is under the line in fp32. Amendment 2's reading does not stand as written; no reading is built on the fall until the states that crossed are run down.",
-  "P1 gone": "Overturns Amendment 2's reading: the fall on rand32b comes from bf16 in the read, not from the student. Amendment 1's and Amendment 2's reports are corrected, and the user hears first.",
+  "P1 mixed": "On some states the fall is under the line in fp32 (all four may have shrunk and a third remain, or one has risen). Amendment 2's reading does not stand as written; no reading is built on the fall until the states that crossed are run down.",
+  "P1 gone": "The fall on rand32b depends on the read's precision: read it against `term_moved` and the gate gaps before correcting any report. Amendment 1's and Amendment 2's readings of the fall are withdrawn until then, and the user hears first.",
   "P2 holds": "rand32 still has no fall: the difference between the two tables stands, with P1 holds.",
-  "P2 falls": "Overturns the difference between the two tables: rand32's students lose the term too in fp32, and bf16 was hiding it. The user hears first.",
-  "P2 mixed": "One rand32 state crosses a line. The table difference is not safe to state until it is run down.",
-  "no power": "The floor at W0 is too large for this line: the two paths differ so much with no dW that the line cannot be read. Goes to the lead with the floor; the size of the floor is itself the finding.",
+  "P2 falls": "The difference between the two tables depends on the read's precision: rand32's students lose the term too in fp32, read against `term_moved`. The user hears first.",
+  "P2 mixed": "One rand32 state crosses a line, or both lie between the lines, or one has risen. The table difference is not safe to state until it is run down.",
+  "no power": "The floor at W0 is too large for this line (P1 'gone' needs tol under 0.15 as well): the two paths differ so much with no dW that the line cannot be read. Goes to the lead with the floor; the size of the floor is itself the finding.",
   "unscorable": "A state is missing or a number is not finite, or the paths read identically at W0. Goes to the lead as a bug in this job: nothing is read."
  },
  "what_changes_next": "Each clause above ends with the lead told at once, since it blocks or releases the readings built on Amendment 2 under the standing rule of 2026-11-02. Nothing further runs automatically in any branch. A holds with none moved closes the precision item on Amendment 2's Not run list.",
@@ -90,6 +100,7 @@
   "from_VPD": "As Amendment 2: Gamma sees 41-token windows where it trained on rows of 512. New here: the fp32 side reads Gamma and the components in a precision they were not trained in, since this decomposition's final_config.yaml (artifacts/vpd/s-55ea3f9b) has autocast_bf16 true and param_decomp's trainer and evaluator run under it. So the bf16 side is the authors' precision, and fp32 is the test of whether a reading depends on it, not a truer value."
  },
  "not_run": [
+  "The fp32 side of the offsets' rounding: students are rebuilt from saved bf16 offsets and not retrained, so the rounding is read in bf16 only (reload_diff) and sits on the student side only. A state near a line gets a retrain of that student (about 115 s, $0) before it is read",
   "Training a student or a fine-tune in fp32: this varies the read only",
   "Mixed reads (fp32 Gamma with a bf16 forward, and the reverse), which would say which of the two carries a move; the first thing to add if one moves",
   "Sets, restores or the ladder in fp32",
@@ -106,5 +117,5 @@
   "guard": "0.01 nats: Amendment 2's largest gap between its two roundings of dW (hook against weights), 0.0069, rounded up. A smaller move than that is not attributable to the read, even if the floor happens to read small through cancellation over the windows",
   "batch": "route_cells' default, which Amendment 2 used: the batch changes what sits together in Gamma's forward and is held the same on both sides"
  },
- "edge_cases_run_before_filing": "~/commute-data/scratch/commute-lead/e12a3-code/edge.py (output edge.out) on amend3.py's rule functions, 2026-11-02, 32 cases, all as expected on the filed text. P1: all above, exactly 0.5, just under, all gone, exactly 0.15, just over 0.15, a rise on all states, one state missing, empty, a nan fall, a nan floor, an infinite floor, a zero floor, a floor larger than the fall, tol exactly 0.5, tol just under. P2: all within, exactly 0.15 both signs, falls, one each, between the lines, one missing, nan, zero floor, tol exactly 0.15, a floor larger than the fall. moved: a tie, just over, nan diff, nan floor, zero floor with the guard holding, a negative diff, empty."
+ "edge_cases_run_before_filing": "Rerun after the code review, 2026-11-02: ~/commute-data/scratch/commute-lead/e12a3-fix/edge.py (output edge.out), 50 cases, all as expected; it adds P1 'gone' with tol at and under 0.15, `term_moved` and score(), and stage 0 with a stub job (a nan on either table, equal reads, a gate gap of exactly 0). First filing: ~/commute-data/scratch/commute-lead/e12a3-code/edge.py on amend3.py's rule functions, 32 cases, all as expected on the filed text. P1: all above, exactly 0.5, just under, all gone, exactly 0.15, just over 0.15, a rise on all states, one state missing, empty, a nan fall, a nan floor, an infinite floor, a zero floor, a floor larger than the fall, tol exactly 0.5, tol just under. P2: all within, exactly 0.15 both signs, falls, one each, between the lines, one missing, nan, zero floor, tol exactly 0.15, a floor larger than the fall. moved: a tie, just over, nan diff, nan floor, zero floor with the guard holding, a negative diff, empty."
 }
