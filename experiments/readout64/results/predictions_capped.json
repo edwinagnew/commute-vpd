@@ -1,0 +1,43 @@
+{
+ "experiment": "E64 capped: the saved capped readout through the possession rule, per block, on W0 and the scored run's windows",
+ "label": "Exploratory, post-hoc, reported only. Reads provisional reading 1 of reports/analyses/2026-11-02_analysis_e64-readout64.md only. It changes neither E64's filed verdict nor results/predictions.json",
+ "filed": "2026-11-02, before any run of experiments/readout64/capped.py; proposed in reports/reviews/2026-11-02_review_e64-analysis.md, section 'The job'",
+ "question": "Was the cipher's absence from every block the training prior? The capped sample's prior is flat for 62 of the 64 values (241 windows; the other two elicit values have 147 and 26), so a difference left between the kinds is not the prior",
+ "inputs": "results/large/readouts_low_cap.pt, sha256 equal to run.json stage0.fit.low_cap.sha256 or stop; the windows, M, unfit keys, thresholds and rules of the scored run; W0 only, no fine-tuned state",
+ "measure": {
+  "C_max": "the largest number of cipher keys possessed at any block 0-3, all 97 windows",
+  "L": "elicit keys possessed at the last block that are in M (run.json W0.elicit.all.possessed, |M| = 20), all windows",
+  "E0": "the same count at block 0"
+ },
+ "reading": {
+  "order": "first the tilt, on C_max and L; the elicit reading only if the tilt is out. Every (C_max, L, E0) lands in exactly one case; bounds inclusive",
+  "tilt": {
+   "tilt_back": "C_max >= 6, whatever L reads: the cipher's absence was the prior. E0 is not read",
+   "tilt_partial": "C_max 3 to 5, whatever L reads: between the two bars. Reported as partial; the tilt is neither back nor out. E0 is not read",
+   "tilt_out": "C_max <= 2 and L >= 15: the prior alone does not account for the cipher's absence. Read E0",
+   "no_power": "C_max <= 2 and L < 15: the capped rows are too poor to tell; the tilt stays open. E0 is not read"
+  },
+  "elicit_when_tilt_out": {
+   "fits_table": "E0 8 to 12: fits the next-token table. Consistent with it and no proof, since thinner rows also lose keys",
+   "between": "E0 13 or 14: only the table's smallest pseudocount reaches this; read as neither",
+   "outruns_table": "E0 >= 15: holding outruns the pair counts, above every like-for-like table of the sweep; block 0 needs another account",
+   "below_table": "E0 <= 7: fewer keys than the table at its central constant; thin rows may have lost them; read as neither"
+  },
+  "not_read": "The cipher's median rank moving from 45 to about 32: removing the tilt moves an uninformative value towards mid-rank under every answer, so it means nothing"
+ },
+ "reference_table": "Computed before filing, no model, the capped sample (15,115 windows; 226 elicit pairs, 12 absent, 0 cipher pairs): the table's count of M's keys at pseudocount 0.1, 0.5, 1, 5 is 15, 13, 10, 5, and 14, 12, 9, 4 with the unfit key 1495 dropped as a readout's rule drops it; cipher 0 at all four. So 'about 10' is the central constant's 9-10 and the band 8-12 reaches pseudocount 0.5's like-for-like 12 and one key under 9. The constant has no source, so this band is a guide and the table spans 4 to 15",
+ "reported_not_read": "both pools at every block; each block's possessed keys; whether 2515, 4367 and 4447, pair-poor keys at the cap, drop; W0 with prior_shift(vals, per_value, 241) through the same rule, the flat-prior reference",
+ "blind_to": "Every cipher pair is absent from the sample, so 'tilt out' does not say W0 lacks the cipher, and a readout that learns the lookup cannot hold it; the rows are over-fitted (held-out loss 2.60 at block 0, 1.81 at the last); one readout seed; about 3 windows per key",
+ "control": "L >= 15, the power check",
+ "edge_cases": {
+  "at_the_bars": "C_max 6 is back, 5 partial, 3 partial, 2 goes on. L 15 is out, 14 no_power. E0 15 outruns, 14 and 13 between, 12 and 8 fit, 7 below",
+  "cipher_held_at_the_last_block_only": "counts towards C_max: tilt_back or tilt_partial as its count says",
+  "L_zero_and_C_max_zero": "no_power, never tilt_out",
+  "tilt_back_with_L_under_15": "tilt_back: held cipher keys are positive evidence and do not need the power check; L is reported beside it",
+  "unfit_keys": "1495 and 3907 are out for the readout and stay in M's denominator, as filed for the scored run",
+  "missing_side": "a key with no window or no other key's window has ratio None and is not possessed; not expected on all windows",
+  "sha_mismatch": "stop, no reading",
+  "tested": "capped.reading on all the above, before filing"
+ },
+ "expected_wall_time": "about 1 min: 19 s model load and under 30 s of reads, as job 48611's timings"
+}

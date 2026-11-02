@@ -94,7 +94,7 @@ def possession(r: dict[str, Any], b: dict[str, Any]) -> None:
         ax.axhline(y, color=c, lw=1, ls=":" if c == REF else "-")
         line_label(ax, y, t, above=up, color=c)
     ax.axhline(len(table), color="#7a5fb5", lw=1.2, ls="-.")
-    line_label(ax, len(table), f"next-token count table, no model: {len(table)} elicit keys, 0 cipher keys", x=0.01, above=True, color="#7a5fb5")
+    line_label(ax, len(table), f"next-token count table, no model, pseudocount 1: {len(table)} elicit keys, 0 cipher keys", x=0.01, above=True, color="#7a5fb5")
     ax.set_xticks(BLOCKS, BLOCK_NAMES)
     ax.set_ylim(-1, 32)
     ax.legend(fontsize=7.5, frameon=False, loc="upper right")
@@ -140,7 +140,7 @@ def tilt(r: dict[str, Any], s1: dict[str, Any]) -> None:
         tidy(ax, name, "median rank of the key's value among the 64", "training windows available for the value, Pile fit rows")
     axes[1].set_ylabel("")
     axes[0].legend(handles=RANK_HANDLES, fontsize=7.5, frameon=False, loc="lower right", bbox_to_anchor=(1, 0.08))
-    fig.suptitle("Does window count split the two kinds? No: at the cipher's window count, elicit values still reach rank 1", fontsize=9.5, color=INK, x=0.01, ha="left")
+    fig.suptitle("Does window count split the two kinds? Not alone: at the cipher's counts, five of six elicit keys reach rank 1", fontsize=9.5, color=INK, x=0.01, ha="left")
     save(fig, "tilt.png")
 
 
@@ -251,7 +251,7 @@ def last_block(r: dict[str, Any]) -> None:
     arm_ticks(ax)
     ax.set_ylim(-0.1, 1.08)
     ax.legend(handles=[Line2D([], [], marker="^", ls="", color=INK, label="last block"), Line2D([], [], marker="o", ls="", markerfacecolor="white", color=INK, label="block 0, the scored block")], fontsize=7.5, frameon=False, loc="center right")
-    tidy(ax, "Can one row take away the gain even at the output? Not in this apparatus: 0.31 to 0.53, not near 1", "removal share, net of W0's drop")
+    tidy(ax, "Can this readout's row take the gain away at the output? No: 0.31 to 0.53, not near 1", "removal share, net of W0's drop")
     save(fig, "last_block.png")
 
 
