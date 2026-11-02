@@ -6,12 +6,14 @@ and committed first; the run refuses otherwise; never edited). Rules: `commute.c
 
   (a) W0 alone: prefix-matching score of the 24 heads on repeated random tokens; H = the heads over the bar; W0's
       second-copy top-1 (E52's control) falls under H's mean ablation and holds under random heads'. Exit 1 on a miss.
-  (b) W0's prior for B at the marker; the lookup's words drawn from the word pool so that their prior is within
-      `prior_match_max` of it (`copying.pick_words`); the zero update reads 0; then the data.LAST path equals the
+  (b) W0's prior for B at the marker; the lookup's words drawn, per key, from every word-like token outside the keys, Bs and
+      marker and outside that key's own windows, so that their prior is within `prior_match_max` of B's
+      (`copying.pick_words`; admissible counts per key printed first, Amendment 1); the zero update reads 0; then the data.LAST path equals the
       lookup-table path on E54's saved elicit task (fine-tune and r), the fine-tune's tolerance a factor times the old
       path's run-to-run difference. Exit 1 on a prior over the stop bar, no matched word set or any miss.
   (c) Lookup then copy map, seeds 0-2, E58's recipe (`keydep.finetune`); each pair read at `copying.read_step`, chosen on
-      the specific gains (printed with the raw, B-absent and pair-broken gains at every kept step); states saved.
+      the specific gains (printed with the raw, B-absent and pair-broken gains at every kept step); states saved; the 24
+      heads' prefix scores under each saved state are printed and stored (reported, not a rule).
   (d) The label: share of each state's gain lost under H, net of W0's change; the random-head floor; the two
       cheap-solution controls (copy) and the specific share (lookup).
   (e) r on every state with `local_faith.route_split`, then `copying.score`.
@@ -70,7 +72,7 @@ class Cfg:
     def __post_init__(self) -> None:
         w = self.windows
         assert self.half == AN.HALF and set(self.read_steps) <= set(KD.E12_CHECKS), "predictions.json disagrees with the code"
-        assert w["pool_ranks"] == [AN.VALUE_RANK0, AN.VALUE_RANK0 + AN.POOL] and w["n_keys"] + w["n_word_pool"] < AN.POOL, "predictions.json disagrees with the code"
+        assert w["pool_ranks"] == [AN.VALUE_RANK0, AN.VALUE_RANK0 + AN.POOL] and w["n_keys"] < AN.POOL, "predictions.json disagrees with the code"
 
     @property
     def n(self) -> int:
@@ -109,10 +111,16 @@ def save_windows(ctx: KD.Ctx, cue: CP.Cue, out: dict[str, Any]) -> None:
 # ----------------------------------------------------------------------------- (a)
 
 
-def stage_a(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, th: dict[str, Any], out: dict[str, Any]) -> tuple[list[CP.Head], list[list[CP.Head]], Tensor]:
-    net, S = ctx.net, c.score
+def score_rows(c: Cfg, cue: CP.Cue) -> Tensor:
+    """The prefix-matching score's rows (repeated random tokens), the same in stage (a) and under every fine-tuned state."""
+    S = c.score
     pool = cue.ranked[S["rank_from"] : int(len(cue.ranked) * (1 - S["rank_drop_last"]))]
-    toks = CP.repeated_random(pool, S["length"], S["repeats"], S["sequences"], S["sos"], S["seed"])
+    return CP.repeated_random(pool, S["length"], S["repeats"], S["sequences"], S["sos"], S["seed"])
+
+
+def stage_a(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, th: dict[str, Any], out: dict[str, Any]) -> tuple[list[CP.Head], list[list[CP.Head]], Tensor]:
+    net = ctx.net
+    toks = score_rows(c, cue)
     pats, err = CP.attention_patterns(net, toks)
     if err > th["pattern_tol"]:
         stop(out, f"the recomputed attention pattern is off o_proj's input by {err}: cannot read the heads")
@@ -156,6 +164,14 @@ def stage_a(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, th: dict[str, Any], out: dict[str,
     return H, draws, means
 
 
+def prefix_scores_under(net: ST.Net, toks: Tensor, dW: ST.DW) -> Tensor:
+    """(blocks, heads): stage (a)'s prefix-matching score of every head with the update `dW` added to W0."""
+    with net.at(dW):
+        pats, _ = CP.attention_patterns(net, toks)
+    mask = CP.stripe_mask(toks)
+    return torch.stack([CP.stripe_score(p, mask) for p in pats]).cpu()
+
+
 # ----------------------------------------------------------------------------- (b)
 
 
@@ -174,10 +190,18 @@ def stage_b(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, H: list[CP.Head], means: Tensor, t
     if rec["band"] == "stop":
         stop(out, f"stage (b): W0's prior for B {rec['prior_copy']} is over {th['prior_stop']}")
     lp = CP.word_logp(net, cue.read.tokens, c.half, n, cue.word_pool)
+    at, target_lp = cue.read.tokens[:, c.half - 1], math.log(rec["prior_copy"])
+    own = CP.own_tokens(cue.keys, torch.cat([cue.train.tokens, cue.read.tokens]), c.half)
+    adm = CP.admissible(cue.keys, cue.word_pool, at, lp, target_lp, th["prior_match_max"], own)
+    rec["n_candidates"], rec["admissible_per_key"] = len(cue.word_pool), {str(k): len(v) for k, v in adm.items()}
+    rec["candidate_log10_prior_histogram"] = CP.prior_histogram(lp)
+    log(f"[b] candidates {len(cue.word_pool)}; admissible per key (min {min(rec['admissible_per_key'].values())}) {json.dumps(rec['admissible_per_key'])}")
+    log(f"[b] candidates by mean log10 P over the read windows (bin lower edge: count) {json.dumps(rec['candidate_log10_prior_histogram'])}")
+    dump(out)
     try:
-        words = CP.pick_words(cue.keys, cue.word_pool, cue.read.tokens[:, c.half - 1], lp, math.log(rec["prior_copy"]), th["prior_match_max"], c.windows["pool_seed"])
+        words = CP.pick_words(cue.keys, cue.word_pool, at, lp, target_lp, th["prior_match_max"], c.windows["pool_seed"], own)
     except AssertionError as e:
-        stop(out, f"stage (b): no word set from the pool of {len(cue.word_pool)} puts the lookup's prior within a factor {th['prior_match_max']} of B's {rec['prior_copy']:.3e} ({e})")
+        stop(out, f"stage (b): no word set from the {len(cue.word_pool)} candidates puts the lookup's prior within a factor {th['prior_match_max']} of B's {rec['prior_copy']:.3e} ({e})")
     cue.set_words(words)
     out["pools"]["words"] = cue.info["words"]
     save_windows(ctx, cue, out)
@@ -246,6 +270,7 @@ def gain_row(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, m: str, dW: ST.DW, ref: dict[str,
 
 def stage_c(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, th: dict[str, Any], out: dict[str, Any]) -> dict[str, ST.DW]:
     dws: dict[str, ST.DW] = {}
+    toks = score_rows(c, cue)
     ctl = cue.controls(c.half, c.control_seed)
     other = others(list(cue.words.values()))
     ref = {"base": {m: CP.read_lo(ctx.net, cue.read_windows(m), c.half, c.n) for m in MAPS}, "ctl": ctl,
@@ -265,6 +290,9 @@ def stage_c(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, th: dict[str, Any], out: dict[str,
             torch.save(dW, ctx.large / f"{n}.pt")
             out["states"][n] = {"step": step, "gains_by_step": gains[m], "p_read": fts[m].evals[step]["p_o"], "kl_other": fts[m].evals[step]["kl_other"], "norm": EL.summed_norm(dW), "sha256": KD.sha256(ctx.large / f"{n}.pt")}
             log(f"[c {n}] read at step {step} ||dW|| {out['states'][n]['norm']:.4f}")
+            prefix = prefix_scores_under(ctx.net, toks, dW)  # reported, not a rule: tells recruiting new heads from a wrong label
+            out["states"][n]["prefix_scores"] = prefix.tolist()
+            log(f"[c {n}] prefix scores under the state (W0's in stage a; bar {out['stage_a']['bar']:.4f}) {json.dumps(prefix.tolist())}")
         dump(out)
     return dws
 
