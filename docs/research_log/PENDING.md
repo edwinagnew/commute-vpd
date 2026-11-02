@@ -8,3 +8,4 @@ clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
 - 2026-11-02 · reports/plans/2026-11-02_plan_e67-weight-side-read.md · next (`next.html`) · E67 changed after review: do-nothing side only, null also read on the rows r failed on; not run.
+- 2026-11-02 · reports/analyses/2026-11-02_analysis_e67-weight-side.md, notebooks/E67_weight_side_read.ipynb · E67's card, timeline, next (`next.html`) · PROVISIONAL until the independent check: E67 ran, verdict drop with both readings small (overlap share 0.05 copy fine-tunes, 0.03 learned nothing, 0.001 random); Γ's values move half to two thirds as far on the fine-tune that learned nothing; on these rows and states only, no positive control on real rows.
