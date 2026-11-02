@@ -1,8 +1,8 @@
 <!-- Plots and talking points chosen 2026-11-02 for the 2026-11-03 mentor update; PNG copies in ~/commute-data/mentor-update-2026-11-03/; page https://claude.ai/artifact/UC94LCbxJ1iDvZeNMfv8Np -->
-# Mentor update, 2026-11-03: the nine plots
+# Mentor update, 2026-11-03: the seven plots
 
-Selected 2026-11-02 from the research log (v160). Five show what works, four show where we are stuck. Each line: the
-plot, its card, the one sentence to say over it. Sources are the experiments' own `figures/` PNGs, unchanged.
+Selected 2026-11-02 from the research log (v160). Three show what works, four show where we are stuck. Each line: the
+plot, its card, the one sentence to say over it. Sources are the experiments' own `figures/` PNGs; plots 4 and 6 of the first selection (E53's ratio against breadth, E55's counting set) were cut at the user's request on 2026-11-02.
 
 ## Going well
 
@@ -17,28 +17,20 @@ plot, its card, the one sentence to say over it. Sources are the experiments' ow
    look identical when the update is measured directly in weight space, but the gain takes different routes: existing
    behaviour through Γ switching old pieces on, new behaviour through pieces Γ keeps off. The original promise of the
    re-gating line.
-4. `04_e53_standin_ratio_not_breadth.png` (E53, with E54's pair). On two real pairs the stand-in ratio puts the
-   performed member near 1 and the new member near 0.3, whichever member is the broader update, so breadth does not
-   explain the separation.
-5. `05_e58_r_follows_prior_not_carry.png` (E58, one log figure, 2026-11-02). Eight key-to-value maps ordered by the
-   original model's prior of the trained answer; r at step 30 is high for exactly the three maps whose answer the model
-   already gave and low for the five whose answer is new, including a new four-word rule that carries to unseen keys;
-   carry sorts the maps differently. One cut on the prior sorts all eight, so VPD has not yet shown anything the logits
-   do not. This is the line's crux: it holds in one sense (plot sits under "going well") and is stuck in the other.
 
 ## Stuck
 
-6. `06_e55_counting_set_no_headroom.png` (E55 C1b). On the only ground-truth set we have (Jain et al.'s counting
-   grammar), pruning revival, reverse fine-tuning, steering and even a probe that only reads the answer label all 21
-   states right. No headroom to show VPD adds anything. On the 67M open-pair maps the same cheap methods fail at every
-   update size (E55 C3 ladder), so that set closed as a benchmark.
-7. `07_e49_broad_finetune_fails_adam.png` (E49). The commute line's gap: for a fine-tune with no trigger
+4. `04_e58_r_marks_guessed_not_carry.png` (E58, redrawn 2026-11-02). Bad news for r as a reading of reuse: rank-1 and
+   the half-known map read old but barely carry, the new four-word rule reads new yet carries, and one cut on the
+   prior sorts all eight maps the way r does, so VPD has shown nothing here that the logits do not. Not settled:
+   elicitation is defined by mechanism, the rule's mechanism was not measured, and E62's reading of r is unscored.
+5. `05_e49_broad_finetune_fails_adam.png` (E49). The commute line's gap: for a fine-tune with no trigger
    (lowercasing), the Adam full-matrix copy fails the faithfulness check on all four new text blocks, the rank-8 LoRA's
    copy passes, and the check cannot fail an SGD update even when it is left entirely in Δ, so SGD is unresolved.
-8. `08_e44_qwen_pass_test_no_teeth.png` (E44). On Qwen3-1.7B, Γ's masks computed from the fine-tuned model's
+6. `06_e44_qwen_pass_test_no_teeth.png` (E44). On Qwen3-1.7B, Γ's masks computed from the fine-tuned model's
    activations bring the masked model to the fine-tuned one even with the update left out of the subcomponents, so the
    pass test cannot fail do-nothing. The Qwen line now only describes where the update lands.
-9. `09_e57_qwen_direct_share_tracks_size.png` (E57). The re-gating share reads 0.99 on every Qwen state, random
+7. `07_e57_qwen_direct_share_tracks_size.png` (E57). The re-gating share reads 0.99 on every Qwen state, random
     changes included (not plotted). The direct share puts the real updates above random changes, but the larger the
     change the higher it reads, so size may explain it. Next run: the direct share against size (E61, chosen
     2026-11-02).

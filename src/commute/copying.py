@@ -759,3 +759,131 @@ def gamma_reading(labels: Sequence[str], lookup_labels: Sequence[str], ref_share
     if look != "within":
         return "not_specific"
     return "head_acts_through_masks" if one == "r_reads_the_head" else "head_more_than_target"
+
+
+# ----------------------------------------------------------------------------- Amendment 4's filed rules and reads (results/predictions_amend4.json)
+# "Alive vector": one float64 entry per alive subcomponent, matrices in sorted name order, subcomponents in index order.
+
+
+def second_a_holds(toks: Tensor, p: Tensor, b: Tensor, half: int) -> bool:
+    """Every window has its second A at half - 1 (same token as the first A at p, with B at p + 1), and half - 2 is neither A nor B,
+    so a mask at half - 2 is read on a plain Pile token of the same window."""
+    i, a, ref = torch.arange(len(toks)), toks[:, half - 1], toks[:, half - 2]
+    return bool(((toks[i, p] == a) & (toks[i, p + 1] == b) & (ref != a) & (ref != b)).all())
+
+
+def gate_means(gates: Sequence[dict[str, Tensor]], alive: dict[str, Tensor], pos: int) -> Tensor:
+    """The alive vector of each subcomponent's gate at `pos`, averaged over the windows of `gates` (per batch, (B, T, C))."""
+    return torch.cat([torch.cat([g[k][:, pos][:, alive[k]] for g in gates]).double().mean(0) for k in sorted(alive)])
+
+
+def s_old(a: Tensor) -> Tensor:
+    """Alive-vector indices of the fewest entries holding half of `a`'s positive mass: largest first, ties in index order, reaching
+    exactly half counts. Empty when `a` has no positive mass or is not finite (k = 0: `mask_test` reads "unreadable")."""
+    pos = a.double().clamp_min(0)
+    total = float(pos.sum())
+    if not (math.isfinite(total) and total > 0):
+        return torch.empty(0, dtype=torch.long)
+    order = torch.argsort(pos, descending=True, stable=True)
+    return order[: int((pos[order].cumsum(0) * 2 >= total).nonzero()[0]) + 1]
+
+
+def cosine(x: Tensor, y: Tensor) -> float:
+    """nan if either vector has norm 0 or is not finite (an empty vector included)."""
+    nx, ny = float(x.double().norm()), float(y.double().norm())
+    return float(x.double() @ y.double()) / (nx * ny) if nx > 0 and ny > 0 and math.isfinite(nx * ny) else math.nan
+
+
+def chance_cosine(delta: Tensor, a: Tensor, draws: int, seed: int) -> tuple[float, float]:
+    """Mean and sd over `draws` seeded permutations of `a`'s entries of cosine(delta, a)."""
+    gen = torch.Generator().manual_seed(seed)
+    v = torch.tensor([cosine(delta, a[torch.randperm(len(a), generator=gen)]) for _ in range(draws)], dtype=torch.float64)
+    return float(v.mean()), float(v.std())
+
+
+def closing_pool(delta: Tensor, old: Tensor) -> tuple[Tensor, bool]:
+    """What a random closing draws from: the opened entries (delta > 0) outside `old`; if fewer than |old|, every entry outside
+    `old`, and True. Outside `old`, so that a mask opening exactly `old` does not make its own reference (Amendment 4, a departure)."""
+    rest = torch.ones(len(delta), dtype=torch.bool)
+    rest[old] = False
+    opened = ((delta > 0) & rest).nonzero().squeeze(1)
+    return (opened, False) if len(opened) >= len(old) else (rest.nonzero().squeeze(1), True)
+
+
+def random_sets(pool: Tensor, k: int, draws: int, seed: int) -> list[Tensor]:
+    """`draws` seeded sets of k entries of `pool`. AssertionError if the pool is too small (k <= half the alive set cannot be)."""
+    assert 0 < k <= len(pool), (k, len(pool))
+    gen = torch.Generator().manual_seed(seed)
+    return [pool[torch.randperm(len(pool), generator=gen)[:k]] for _ in range(draws)]
+
+
+def largest(delta: Tensor, k: int) -> Tensor:
+    """Alive-vector indices of the k largest entries, ties in index order: the most any k subcomponents should do, reported."""
+    return torch.argsort(delta, descending=True, stable=True)[:k]
+
+
+def closed(gates: Sequence[dict[str, Tensor]], ref: Sequence[dict[str, Tensor]], idx: Tensor, alive: dict[str, Tensor]) -> list[dict[str, Tensor]]:
+    """`gates` with the alive-vector entries `idx` set to `ref`'s values, at every position of every window. `gates` is not changed."""
+    keys = sorted(alive)
+    mark = torch.zeros(sum(int(alive[k].sum()) for k in keys), dtype=torch.bool)
+    mark[idx] = True
+    per = dict(zip(keys, (alive[k].nonzero().squeeze(1)[m] for k, m in zip(keys, mark.split([int(alive[k].sum()) for k in keys]), strict=True)), strict=True))
+
+    def edit(g: Tensor, r: Tensor, w: Tensor) -> Tensor:
+        x = g.clone()
+        x[..., w] = r[..., w]
+        return x
+
+    return [{k: edit(g[k], r[k], per[k]) if len(per[k]) else g[k] for k in g} for g, r in zip(gates, ref, strict=True)]
+
+
+def second_a_control(p_b: float, target: float, target_off: float, mask: float, mask_off: float, th: dict[str, Any]) -> str:
+    """W0 at the second A, in order: "unreadable" (a number not finite); "no_copying" P(B) under p_b_min; "head_not_carrying" the
+    target's fall under the head under target_fall_min (zero and negative falls included, so the quarter below always has something
+    to be a quarter of); "mask_off_target" the masked log-odds over masked_within from the target's; "mask_drops_head" the masked
+    fall under masked_fall_frac of the target's; else "pass". Ties pass."""
+    if not all(finite(v) for v in (p_b, target, target_off, mask, mask_off)):
+        return "unreadable"
+    if p_b < th["p_b_min"]:
+        return "no_copying"
+    fall = target - target_off
+    if fall < th["target_fall_min"]:
+        return "head_not_carrying"
+    if abs(mask - target) > th["masked_within"]:
+        return "mask_off_target"
+    return "pass" if mask - mask_off >= th["masked_fall_frac"] * fall else "mask_drops_head"
+
+
+def mask_test(control: str, k: int, n_alive: int, copy: Sequence[dict[str, Any]], lookup: Sequence[dict[str, Any]], th: dict[str, Any]) -> dict[str, Any]:
+    """The verdict from the control's status and one record per seed and map, paired by seed, each with M (the masked gain), cos,
+    chance, share and random_median. First that fires:
+    "control_failed" (status not "pass"); "unreadable" (k = 0, k over half the alive set, a seed missing, a gain not finite);
+    "too_small" (any gain under min_gain); "unreadable" (any other number not finite);
+    "shared_pieces" (P1, P2, P3 on every seed; P2 on every seed implies P3, as 0.5 - 0.2 > 0.24, so P3 is reported and decides nothing);
+    "not_shared" (on every seed the copying map misses P1's bars and P2's bars, or on every seed its closing share is at or under its
+    random median); "in_between" (anything else). A negative share misses P2 on the copying map and holds its bar on the lookup.
+    not_shared reads the copying map's bars only, since a lookup that also uses the pieces is not the null (a departure from the draft)."""
+    out: dict[str, Any] = {"verdict": "in_between", "control": control, "k": k, "P1": [], "P2": [], "P3": []}
+    done = lambda v: {**out, "verdict": v}
+    if control != "pass":
+        return done("control_failed")
+    seeds = list(zip(copy, lookup, strict=True)) if len(copy) == len(lookup) else []
+    if k == 0 or k > n_alive // 2 or not seeds:
+        return done("unreadable")
+    both = [*copy, *lookup]
+    if not all(finite(r.get("M")) for r in both):
+        return done("unreadable")
+    if any(r["M"] < th["min_gain"] for r in both):
+        return done("too_small")
+    if not all(finite(r.get(f)) for r in both for f in ("cos", "chance", "share", "random_median")):
+        return done("unreadable")
+    c1 = [c["cos"] >= th["align_min"] and c["cos"] >= th["chance_factor"] * c["chance"] for c, _ in seeds]
+    c2 = [c["share"] >= th["close_min"] and c["share"] - c["random_median"] >= th["random_margin"] for c, _ in seeds]
+    out["P1"] = [x and l["cos"] < th["lookup_align_frac"] * c["cos"] for x, (c, l) in zip(c1, seeds, strict=True)]
+    out["P2"] = [x and l["share"] <= th["lookup_close_max"] for x, (_, l) in zip(c2, seeds, strict=True)]
+    out["P3"] = [c["share"] - l["share"] >= th["gap_min"] for c, l in seeds]
+    if all(out["P1"]) and all(out["P2"]) and all(out["P3"]):
+        return done("shared_pieces")
+    if not any(c1) and not any(c2) or all(c["share"] <= c["random_median"] for c, _ in seeds):
+        return done("not_shared")
+    return out
