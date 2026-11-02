@@ -361,3 +361,188 @@ def test_score_flags_beside_the_verdict():
     assert verdict([state("old", broken_ratio=0.8)] * 3, new)["pair_ignored"]
     assert verdict([state("old", broken_ratio=0.8)] * 3, new)["verdict"] == "r_follows_mechanism"
     assert verdict(old, new, "high")["prior_high"]
+
+
+# ----------------------------------------------------------------------------- Amendment 2
+
+
+A2 = {"min_gain": 1.0, "min_seeds": 2, "top1_H_max": 0.05, "top1_ref_min": 0.66, "tol": 0.092, "other_path_max": 0.25, "floor_max": 0.15, "two_head_min": 0.7,
+      "two_head_lookup_max": 0.1, "bracket_max": 4.18}
+
+
+def _tiny_component_model() -> tuple[Any, Any]:
+    """A real ComponentModel over the tiny Llama (never the 67M), q, k, v and o_proj of both blocks decomposed."""
+    from param_decomp.configs import LayerwiseCiConfig
+    from param_decomp.models.batch_and_loss_fns import make_run_batch
+    from param_decomp.models.component_model import ComponentModel
+    from param_decomp.utils.module_utils import ModulePathInfo
+
+    tiny = _TinyLlama()
+    tiny.net.requires_grad_(False)
+    paths = [f"h.{b}.attn.{p}_proj" for b in range(2) for p in "qkvo"]
+    model = ComponentModel(target_model=tiny.net, run_batch=make_run_batch(0), module_path_info=[ModulePathInfo(module_path=k, C=4) for k in paths],
+                           ci_config=LayerwiseCiConfig(fn_type="mlp", hidden_dims=[4]), sigmoid_type="leaky_hard").eval()
+    return model, CP.AllGatesOn(model)
+
+
+def test_ablated_reaches_the_components_of_a_decomposed_o_proj():
+    """The hook finding: o_proj is decomposed, and the pre-hook's edit is what its components take, with no change to `ablated`."""
+    model, net = _tiny_component_model()
+    toks = torch.randint(0, 50, (2, 12), generator=torch.Generator().manual_seed(3))
+    means = torch.full((2, 3, 8), 5.0)
+    seen = {}
+    h = model.components["h.1.attn.o_proj"].register_forward_pre_hook(lambda _m, a, k: seen.__setitem__("x", (a or (k["x"],))[0]), with_kwargs=True)
+    base = net.run(toks)[0]
+    with CP.ablated(net, [(1, 2)], means):
+        off = net.run(toks)[0]
+    h.remove()
+    assert torch.equal(seen["x"][..., 16:], torch.full((2, 12, 8), 5.0))
+    assert base.shape == (2, 12, 50) and not torch.equal(base, off) and torch.equal(net.run(toks)[0], base)
+
+
+def test_masked_lo_windows_ci_len_keeps_the_target_column_out():
+    from commute import local_faith as LF
+
+    model, _ = _tiny_component_model()
+    toks = torch.randint(0, 50, (5, 13), generator=torch.Generator().manual_seed(4))  # 12 tokens, the target in the last column
+    gates = [{k: torch.ones(len(toks[sl]), 12, C) for k, C in model.module_to_c.items()} for sl in LF._batches(toks, 2)]
+    rows = LF.masked_lo_windows(model, toks, 6, LAST, gates, 2, 12)
+    assert rows.shape == (5,) and float(rows.mean()) == pytest.approx(LF.masked_lo(model, toks, 6, LAST, gates, 2, 12)[0])
+
+
+@pytest.mark.parametrize("base, off, ref, want", [
+    (0.82, 0.01, 0.70, "pass"), (0.82, 0.05, 0.70, "hook_missed"), (0.82, 0.01, 0.66, "ref_harmed"), (0.66, 0.01, 0.70, "no_copying"),
+    (0.82, math.nan, 0.70, "unreadable"), (0.82, 0.80, 0.70, "hook_missed"),
+])
+def test_control_masked(base, off, ref, want):
+    assert CP.control_masked(base, off, ref, A2) == want
+
+
+@pytest.mark.parametrize("gain, m, t, want", [
+    (0.0, 0.5, 0.5, "too_small"), (-3.0, 0.5, 0.5, "too_small"), (0.999, 0.5, 0.5, "too_small"), (1.0, 0.5, 0.5, "within"), (math.nan, 0.5, 0.5, "unreadable"),
+    (13.0, math.nan, 0.5, "unreadable"), (13.0, 0.5, math.inf, "unreadable"), (13.0, 0.625, 0.5, "over"), (13.0, 0.5 + 0.0625, 0.5, "within"),
+    (13.0, 0.3, 0.5, "between"), (13.0, 0.25, 0.5, "between"), (13.0, 0.2499, 0.5, "other_path"), (13.0, -0.4, 0.5, "other_path"), (13.0, 1.4, 0.5, "over"),
+    (6.0, 0.01, 0.0, "within"), (6.0, -0.2, 0.0, "other_path"), (6.0, 0.2, 0.0, "over"),
+])
+def test_masked_class(gain, m, t, want):
+    assert CP.masked_class(gain, m, t, A2) == want
+
+
+def test_masked_class_tie_at_the_tolerance_counts_within():
+    th = {**A2, "tol": 0.25}
+    assert CP.masked_class(13.0, 0.75, 0.5, th) == "within" and CP.masked_class(13.0, 0.25, 0.5, th) == "within"
+
+
+@pytest.mark.parametrize("labels, want", [
+    (["within"] * 3, "r_reads_the_head"), (["within", "within", "too_small"], "r_reads_the_head"), (["within", "over", "over"], "head_more_than_target"),
+    (["over"] * 3, "head_more_than_target"), (["other_path"] * 3, "mask_reaches_b_another_way"), (["within", "other_path", "within"], "in_between"),
+    (["between"] * 3, "in_between"), (["within", "between", "over"], "in_between"), (["too_small", "too_small", "within"], "too_small"), (["unreadable", "within", "within"], "unreadable"), ([], "unreadable"),
+])
+def test_masked_reading(labels, want):
+    assert CP.masked_reading(labels, [0.01] * len(labels), A2) == want
+
+
+def test_masked_reading_floor_fails_on_a_tie_and_a_nan():
+    assert CP.masked_reading(["within"] * 3, [0.0, 0.15, 0.0], A2) == "floor_high"
+    assert CP.masked_reading(["within"] * 3, [0.0, math.nan, 0.0], A2) == "floor_high"
+    assert CP.masked_reading(["unreadable"] * 3, [0.5] * 3, A2) == "unreadable"
+
+
+@pytest.mark.parametrize("G, both, single, want", [
+    (12.0, 0.7, 0.5, "circuit"), (12.0, 0.95, 0.5, "circuit"), (12.0, 0.55, 0.5, "no_more"), (12.0, 0.65, 0.5, "between"), (12.0, 0.2, 0.5, "between"),
+    (0.0, 0.7, 0.5, "too_small"), (12.0, math.nan, 0.5, "unreadable"),
+])
+def test_two_head_class(G, both, single, want):
+    assert CP.two_head_class(G, both, single, A2) == want
+
+
+@pytest.mark.parametrize("G, both, want", [(15.0, 0.1, "clean"), (15.0, -0.2, "clean"), (15.0, 0.11, "uses_circuit"), (0.5, 0.0, "too_small"), (15.0, math.nan, "unreadable")])
+def test_lookup_two_head(G, both, want):
+    assert CP.lookup_two_head(G, both, A2) == want
+
+
+@pytest.mark.parametrize("G, b, intact, want", [
+    (5.0, 0.0, 0.5, "outside_head"), (5.0, -0.3, 0.5, "outside_head"), (5.0, 0.092, 0.5, "outside_head"), (5.0, 0.45, 0.5, "through_head"), (5.0, 0.3, 0.5, "between"),
+    (5.0, 0.9, 0.5, "between"), (0.0, 0.1, 0.5, "too_small"), (5.0, math.nan, 0.5, "unreadable"), (5.0, 0.15, 0.1, "through_head"),
+])
+def test_broken_class(G, b, intact, want):
+    assert CP.broken_class(G, b, intact, A2) == want
+
+
+def test_own_fall_bracket_and_size():
+    assert CP.own_fall_class(12.0, 0.8, 0.5, A2) == "undercounts" and CP.own_fall_class(12.0, 0.5625, 0.5, A2) == "stands"
+    assert CP.own_fall_class(12.0, 0.1, 0.5, A2) == "stands" and CP.own_fall_class(0.0, 0.1, 0.5, A2) == "too_small" and CP.own_fall_class(12.0, math.nan, 0.5, A2) == "unreadable"
+    assert [CP.bracket_class(x, A2) for x in (-0.1, 0.0, 4.18, 4.2, math.nan)] == ["below", "inside", "inside", "above", "unreadable"]
+    assert CP.size_reading(0.7, 0.34, True) == "size_accounts" and CP.size_reading(0.7, 0.35, True) == "size_does_not" and CP.size_reading(0.7, -0.1, True) == "size_accounts"
+    assert CP.size_reading(0.7, 0.9, True) == "size_does_not" and CP.size_reading(0.7, 0.1, False) == "unreadable"
+    assert CP.size_reading(0.0, 0.1, True) == "unreadable" and CP.size_reading(-0.2, 0.1, True) == "unreadable" and CP.size_reading(0.7, math.nan, True) == "unreadable"
+
+
+def test_agree_over_seeds():
+    assert CP.agree(["a", "a", "too_small"], A2) == "a" and CP.agree(["a", "b", "a"], A2) == "in_between"
+    assert CP.agree(["a", "too_small", "too_small"], A2) == "too_small" and CP.agree([], A2) == "unreadable" and CP.agree(["a", "unreadable"], A2) == "unreadable"
+
+
+# ----------------------------------------------------------------------------- Amendment 3
+
+A3 = {**A2, "slot_closed_max": 0.1}
+
+
+def test_gamma_inputs_sees_the_head_off_where_gamma_reads():
+    """The hook finding of Amendment 3: on a real ComponentModel, the input cache Γ reads holds the mean in o_proj's slot, later
+    modules move, earlier ones do not, and Γ's gates under `ablated` differ from those without it."""
+    model, net = _tiny_component_model()
+    toks = torch.randint(0, 50, (2, 12), generator=torch.Generator().manual_seed(3))
+    means = torch.full((2, 3, 8), 5.0)
+    r = CP.gamma_inputs(model, net, toks, (0, 1), means)
+    assert r["status"] == "pass" and r["slot_is_mean"] and r["upstream_max"] == 0.0 and r["downstream_min"] > 0.0
+    assert {"h.0.attn.q_proj", "h.1.attn.o_proj"} <= set(r["moved"]) and "h.0.attn.o_proj" not in r["moved"]
+    ci = lambda: model.calc_causal_importances(model(toks, cache_type="input").cache, sampling="continuous").lower_leaky
+    on = ci()
+    with CP.ablated(net, [(0, 1)], means):
+        off = ci()
+    assert torch.equal(on["h.0.attn.q_proj"], off["h.0.attn.q_proj"]) and not torch.equal(on["h.1.attn.q_proj"], off["h.1.attn.q_proj"])
+
+
+def test_slot_reads_threshold_alive_and_a_zero_vector():
+    V = torch.zeros(6, 5)  # 3 heads of 2 dims, 5 subcomponents
+    V[0, 0] = 1.0  # all in head 0
+    V[2, 1], V[4, 1] = 1.0, 1.0  # half in head 1, half in head 2: a tie counts for both
+    V[2, 2], V[4, 2] = 1.0, 2.0  # a fifth in head 1
+    V[0, 4] = 1.0  # all in head 0, not alive; subcomponent 3 has norm 0
+    alive = torch.tensor([True, True, True, True, False])
+    sets = CP.slot_reads(V, 3, alive, 0.5)
+    assert [s.tolist() for s in sets] == [[0], [1], [1, 2]]
+
+
+@pytest.mark.parametrize("n, gate, want", [(0, math.nan, "empty"), (3, math.nan, "unreadable"), (3, 0.03, "closed"), (3, 0.1, "open"), (3, 0.0, "closed"), (3, 0.9, "open")])
+def test_slot_class(n, gate, want):
+    assert CP.slot_class(n, gate, A3) == want
+
+
+@pytest.mark.parametrize("labels, lookup, want", [
+    (["within"] * 3, ["within"] * 3, "head_acts_through_masks"), (["within", "within", "too_small"], ["within"] * 3, "head_acts_through_masks"),
+    (["within", "over", "over"], ["within"] * 3, "head_more_than_target"), (["other_path"] * 3, ["within"] * 3, "still_other_way"),
+    (["other_path"] * 3, ["over"] * 3, "still_other_way"), (["within", "other_path", "within"], ["within"] * 3, "in_between"), (["between"] * 3, ["within"] * 3, "in_between"),
+    (["between"] * 3, ["over"] * 3, "in_between"), (["within"] * 3, ["over"] * 3, "not_specific"), (["within"] * 3, ["within", "over", "within"], "not_specific"),
+    (["within"] * 3, ["other_path"] * 3, "not_specific"), (["over"] * 3, ["between"] * 3, "not_specific"), (["within"] * 3, ["unreadable"] * 3, "unreadable"),
+    (["within"] * 3, ["too_small"] * 3, "too_small"), (["too_small", "too_small", "within"], ["within"] * 3, "too_small"), (["unreadable", "within", "within"], ["within"] * 3, "unreadable"), ([], ["within"] * 3, "unreadable"),
+])
+def test_gamma_reading(labels, lookup, want):
+    assert CP.gamma_reading(labels, lookup, [0.01] * len(labels), A3) == want
+
+
+def test_gamma_reading_floor_reads_the_size_and_fails_on_a_tie_and_a_nan():
+    for bad in (0.15, -0.15, -0.5, math.nan):
+        assert CP.gamma_reading(["within"] * 3, ["within"] * 3, [0.0, bad, 0.0], A3) == "floor_high"
+    assert CP.gamma_reading(["within"] * 3, ["within"] * 3, [0.0, 0.149, -0.149], A3) == "head_acts_through_masks"
+    assert CP.gamma_reading(["within", "within", "too_small"], ["within"] * 3, [0.0, 0.0, math.nan], A3) == "floor_high"  # as filed in Amendment 2, unreachable at a gain of 13.8
+
+
+@pytest.mark.parametrize("gain, m, t, want", [
+    (13.8, 0.55, 0.56, "within"), (13.8, 0.56 + 0.092, 0.56, "within"), (13.8, 0.75, 0.56, "over"), (13.8, 1.2, 0.56, "over"), (13.8, 0.10, 0.56, "other_path"), (13.8, 0.25, 0.56, "between"), (13.8, 0.4, 0.56, "between"),
+    (13.8, -0.3, 0.56, "other_path"), (1.0, 0.5, 0.56, "within"), (0.99, 0.5, 0.56, "too_small"), (0.0, math.nan, 0.56, "too_small"), (-2.0, 0.5, 0.56, "too_small"), (math.nan, 0.5, 0.56, "unreadable"),
+    (13.8, math.nan, 0.56, "unreadable"), (13.8, 0.5, math.nan, "unreadable"), (6.0, 0.005, 0.0, "within"), (6.0, -0.2, 0.0, "other_path"), (6.0, 0.2, 0.0, "over"),
+])
+def test_masked_class_on_amendment_3s_cases(gain, m, t, want):
+    assert CP.masked_class(gain, m, t, A3) == want

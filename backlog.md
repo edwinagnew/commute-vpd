@@ -354,5 +354,5 @@ Deferred ideas and loose ends. Date each entry.
   important. Run E12's copy and random-map tasks (same states or seeds) through teacher training and read the route
   split on those states: does e_gate still separate the two classes, and where does the copy's gain sit? $0, saved
   67M states; `/design` first. Not urgent: after the base-model control work (E34 Amendment 8).
-
+  Corrected 2026-11-02 by the plan (`reports/plans/2026-11-02_plan_e12-teacher-route-split.md`): on teacher training's own state r does depend on the map, since Γ reads the student's activations (rand32 0.187 to 0.132); the cipher reading is E42's, not E43's; only the teachers are saved, students are regenerated.
 - **Qwen teacher training needs a self-label control before any scored run (2026-11-02, from commute-lead).** `src/commute/qwen_teacher.py` adds the change as a hook term, so at δW = 0 the gradient is exactly 0 and Adam does not move: a W₀ control cannot take a step, and does not say whether training on the unchanged model drifts. The 67M version is E34 Amendments 8, 8b, 8c (`reports/analyses/2026-11-02_analysis_e34-amend8-base-control.md`, provisional until its re-check ends; `reports/reviews/2026-11-02_review_base-control-audit.md`). Not in E61: no Qwen teacher training is planned there. Add it as a row of the plan that next trains on Qwen, and read the re-check first.

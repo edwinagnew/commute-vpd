@@ -10,6 +10,9 @@ in each results file under "score").
   amend8_gap.png        KL to the student's own teacher: training batches along the run, held-out windows at the reads
   amend8_delta_out.png  the Delta-out ratio along training for every state with nothing to learn
   amend8_return.png     the round trip and the random start: KL to W0 and size at 0, 100, 1000
+  amend8b_seeds.png     Amendment 8b: state / W0 at three adversary starts, null student, real student, random start
+  amend8b_cells.png     Amendment 8b: start x teacher, gap to the teacher and the adversarial ratio
+  amend8c_cosines.png   Amendment 8c: cosines between two batch orders, with a student's own teacher and the other's
 
 Usage (repo root): ~/commute-agents/fleet/cpu-run python experiments/teacher_training/plot_amend8.py
 """
@@ -32,14 +35,14 @@ RESULTS, FIGURES = HERE / "results", HERE / "figures"
 INK, MUTED, GRID, BAND = "#0b0b0b", "#6e6d68", "#e6e5e0", "#dcdbd5"
 PASS_C, FAIL_C = "#008300", "#c0392b"
 C = {"real": "#2a78d6", "null": "#eb6834", "n1": "#1baf7a", "n2": "#6250d6", "adam": "#eda100", "sgd": "#e87ba4", "n5": "#008300",
-     "ref": "#52514e"}
+     "ref": "#52514e", "moved": "#8f3f12"}
 NAME = {"real": "real student", "null": "null student", "n1": "random start, back to base", "n2": "round trip, back to base",
-        "adam": "self-labels, Adam", "sgd": "self-labels, SGD", "n5": "masked recipe, coefficient 0"}
+        "adam": "self-labels, Adam", "sgd": "self-labels, SGD", "n5": "masked recipe, coefficient 0", "moved": "null teacher, random start"}
 STAGES = ("n1", "n2", "n3b", "n4_adam", "n4_sgd", "n5")
 
 
-def load(stage: str) -> dict[str, Any]:
-    return json.loads((RESULTS / f"teacher_training_amend8_{stage}.json").read_text())
+def load(stage: str, prefix: str = "amend8_") -> dict[str, Any]:
+    return json.loads((RESULTS / f"teacher_training_{prefix}{stage}.json").read_text())
 
 
 def lines(ax: Axes, w0: dict[str, Any], vertical: bool) -> None:
@@ -112,13 +115,14 @@ def damage_fig(d: dict[str, dict[str, Any]]) -> None:
     n1, n2, n3, ad, sg, n5 = (d[s]["reads"] for s in STAGES)
     task = [("n1", n1["1000"], "random start"), ("n2", n2["1000"], "round trip"), ("null", n3["100"], "null student, step 100"),
             ("null", n3["1000"], "null student"), ("real", n3["real"], "real student"), ("n5", n5["1000"], "masked recipe, coefficient 0"),
-            ("ref", n3["nothing"], "null fine-tune in Δ"), ("ref", n2["nothing"], "real fine-tune in Δ")]
+            ("ref", n3["nothing"], "null fine-tune in Δ"), ("ref", n2["nothing"], "real fine-tune in Δ"),
+            ("moved", d["moved"]["reads"]["1000"], NAME["moved"])]
     plain = [("adam", ad["1000"], "self-labels, Adam"), ("sgd", sg["100"], "self-labels, SGD 100"), ("sgd", sg["1000"], "self-labels, SGD 1000"),
              ("ref", sg["true"], "true labels, SGD"), ("ref", ad["true"], "true labels, Adam")]
     fig, ax = plt.subplots(figsize=(8.5, 5.2))
     lines(ax, d["n1"]["W0"], False)
     offset = {"round trip": (-14, -15), "real student": (-14, -16), "self-labels, Adam": (10, -11), "self-labels, SGD 1000": (9, 7),
-              "real fine-tune in Δ": (-6, 8), "true labels, SGD": (7, -13), "random start": (-12, -15), "masked recipe, coefficient 0": (-45, 10)}
+              "real fine-tune in Δ": (-6, 8), "true labels, SGD": (7, -13), "random start": (-12, -15), "masked recipe, coefficient 0": (-45, 10), NAME["moved"]: (-120, 6)}
     for group, marker in ((task, "o"), (plain, "s")):
         for key, r, label in group:
             ax.scatter(r["damage"], r["pgd"], s=70, marker=marker, color=C[key], edgecolor="white", lw=1, zorder=3)
@@ -148,7 +152,7 @@ def curve(rows: list[dict[str, Any]], key: str) -> tuple[list[int], list[float]]
 def size_fig(d: dict[str, dict[str, Any]]) -> None:
     series = [("real", d["n3b"]["curves"]["real"], "real student 0.018"), ("null", d["n3b"]["curves"]["null_student"], "null student 0.026"),
               ("n1", d["n1"]["curves"]["walk"], "random start, back to base 0.023"), ("n2", d["n2"]["curves"]["walk"], "round trip, back to base 0.021"),
-              ("adam", d["n4_adam"]["curves"]["self"], "self-labels, Adam 0.024"), ("ref", d["n4_adam"]["curves"]["true"], "true labels, Adam 0.054")]
+              ("adam", d["n4_adam"]["curves"]["self"], "self-labels, Adam, lowercase rows 0.024"), ("ref", d["n4_adam"]["curves"]["true"], "true labels, Adam, lowercase rows 0.054")]
     fig, ax = plt.subplots(figsize=(8.5, 5))
     for key, rows, label in series:
         x, y = curve(rows, "rel_norm_max")
@@ -160,7 +164,7 @@ def size_fig(d: dict[str, dict[str, Any]]) -> None:
     ax.set_xlabel("student step (log scale)")
     ax.set_ylabel("size: largest ‖δW‖ / ‖W₀‖ over the 24 matrices")
     ax.set_ylim(0, 0.058)
-    ax.set_title("Does the student's size depend on having something to copy?", loc="left")
+    ax.set_title("On this task, does the student's size depend on its teacher?", loc="left")
     ax.legend(loc="upper left", frameon=False, fontsize=8.5)
     tidy(ax)
     save(fig, "amend8_size")
@@ -227,17 +231,17 @@ def delta_out_fig(d: dict[str, dict[str, Any]]) -> None:
     fig, ax = plt.subplots(figsize=(8.5, 5))
     ax.axhline(1, color=INK, lw=1.2, label="unchanged model")
     n1s, n2s = d["n1"]["reads"]["0"]["pile_ratios"]["unmasked_kl"], d["n2"]["reads"]["0"]["pile_ratios"]["unmasked_kl"]
-    for key, stage, start in (("n1", "n1", n1s), ("adam", "n4_adam", 1.0), ("sgd", "n4_sgd", 1.0), ("n5", "n5", 1.0), ("null", "n3b", 1.0), ("n2", "n2", n2s)):
+    for key, stage, start in (("n1", "n1", n1s), ("adam", "n4_adam", 1.0), ("sgd", "n4_sgd", 1.0), ("n5", "n5", 1.0), ("null", "n3b", 1.0), ("n2", "n2", n2s), ("moved", "moved", n1s)):
         x, y = seq(stage, start)
         ax.plot(x, y, color=C[key], lw=2, marker="o", ms=6, label=NAME[key])
-        ax.annotate(f"{y[-1]:.3f}", (x[-1], y[-1]), xytext=(8, {"adam": 6, "n1": -5}.get(key, 0)), textcoords="offset points", va="center", fontsize=9, color=INK)
+        ax.annotate(f"{y[-1]:.3f}", (x[-1], y[-1]), xytext=(8, {"adam": 6, "n1": -5, "moved": -7, "null": 6}.get(key, 0)), textcoords="offset points", va="center", fontsize=9, color=INK)
     real = d["n3b"]["reads"]["real"]["pile_ratios"]["unmasked_kl"]
     ax.scatter(0, real, marker="D", s=70, color=C["real"], zorder=4, label=f"real student, step 1,000: {real:.3f}, the round trip's start")
     ax.set_xticks([0, 1, 2], ["start", "step 100", "step 1,000"])
     ax.set_xlim(-0.15, 2.3)
     ax.set_ylim(0.78, 1.04)
     ax.set_ylabel("Δ-out ratio: KL of Δ's removal, state over unchanged model")
-    ax.set_title("Does the fall in the Δ-out ratio need a teacher to copy?", loc="left")
+    ax.set_title("Does the fall in the Δ-out ratio need a fine-tuned teacher?", loc="left")
     tn = d["n4_adam"]["reads"]["true"]["pile_ratios"]["unmasked_kl"], d["n2"]["reads"]["nothing"]["pile_ratios"]["unmasked_kl"], d["n3b"]["reads"]["nothing"]["pile_ratios"]["unmasked_kl"]
     ax.text(0.02, 0.03, f"Off the axis: true labels, Adam {tn[0]:.2f}; fine-tune left in Δ, real {tn[1]:.2f}, null {tn[2]:.2f}.", transform=ax.transAxes, fontsize=8.5, color=MUTED)
     ax.legend(loc="center left", bbox_to_anchor=(1.09, 0.5), frameon=False, fontsize=8.5)
@@ -268,13 +272,89 @@ def return_fig(d: dict[str, dict[str, Any]]) -> None:
         ax.set_xlim(-0.15, 2.35)
         ax.legend(frameon=False, fontsize=8, loc="center left" if ax is axes[1] else "upper right")
         tidy(ax)
-    fig.suptitle("With the base as teacher, do the outputs come back, and do the weights?", x=0.07, y=1.0, ha="left")
+    fig.suptitle("With the base as teacher, do the outputs come back, and does the size?", x=0.07, y=1.0, ha="left")
     fig.tight_layout()
     save(fig, "amend8_return")
 
 
+def seeds_fig(seeds: dict[str, Any]) -> None:
+    st, starts = seeds["states"], ("h0", "h1", "h2")
+    fig, ax = plt.subplots(figsize=(8.5, 4.6))
+    lines(ax, seeds["W0"], False)
+    for key, name in (("null", "null_1000"), ("real", "real"), ("n1", "random_1000")):
+        y = [st[name]["ratio"][k] for k in starts]
+        ax.plot(range(3), y, color=C[key], lw=2, marker="o", ms=7, label=f"{NAME[key]}: mean {st[name]['mean']:.2f}, size {st[name]['size']:.3f}")
+        for i, v in enumerate(y):
+            ax.annotate(f"{v:.2f}", (i, v), xytext=(0, -15 if key == "n1" else 8), textcoords="offset points", ha="center", fontsize=9, color=INK)
+    ax.set_xticks(range(3), ["adversary start 0", "adversary start 1", "adversary start 2"])
+    ax.set_xlim(-0.25, 2.25)
+    ax.set_ylim(0.76, 2.35)
+    ax.set_ylabel("adversarial ratio at that start")
+    ax.set_title("At the same adversary start, does the null student read above the others?", loc="left")
+    ax.text(0.01, 0.02, f"Positive control, off the axis: true labels, Adam, {st['true_adam']['mean']:.2f} at start 0.", transform=ax.transAxes, fontsize=8.5, color=MUTED)
+    ax.legend(loc="upper left", frameon=False, fontsize=8.5, ncols=2)
+    tidy(ax)
+    save(fig, "amend8b_seeds")
+
+
+def cells_fig(d: dict[str, dict[str, Any]], moved: dict[str, Any]) -> None:
+    n1, n3, arm = d["n1"]["reads"]["1000"], d["n3b"]["reads"]["1000"], moved["reads"]["1000"]
+    gap = {"null": (n3["teacher_gap"], arm["teacher_gap"]), "n1": (None, moved["control"]["1000"])}
+    check = {"null": (n3["pgd"], arm["pgd"]), "n1": (None, n1["pgd"])}
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.2), sharex=True)
+    labels = {"null": "null fine-tune as teacher", "n1": "unchanged model as teacher"}
+    for ax, vals, fmt in ((axes[0], gap, "{:.4f}"), (axes[1], check, "{:.2f}")):
+        for j, key in enumerate(("n1", "null")):
+            for i, v in enumerate(vals[key]):
+                x = i + (j - 0.5) * 0.38
+                if v is None:
+                    ax.annotate("zero by\nconstruction", (x, 0), xytext=(-8, 4), textcoords="offset points", ha="center", fontsize=8, color=MUTED, zorder=5) if ax is axes[0] else ax.annotate("not\nmoved", (x, 0), xytext=(-8, 4), textcoords="offset points", ha="center", fontsize=8, color=MUTED, zorder=5)
+                    continue
+                ax.bar(x, v, width=0.34, color=C[key], label=labels[key] if i == 1 else None, zorder=3)
+                ax.annotate(fmt.format(v), (x, v), xytext=(0, 3), textcoords="offset points", ha="center", fontsize=9, color=INK)
+        ax.set_xticks([0, 1], ["start: base", "start: random move"])
+        ax.set_xlim(-0.55, 1.4)
+        tidy(ax)
+    axes[0].set_ylabel("held-out KL to its own teacher at step 1,000, nats")
+    axes[1].set_ylabel("adversarial ratio at step 1,000, one start")
+    axes[1].axhline(1.241, color=PASS_C, ls="--", lw=1.2, label="pass line 1.24")
+    axes[1].axhline(1.813, color=FAIL_C, ls="--", lw=1.2, label="fail line 1.81")
+    axes[1].axhline(1, color=INK, lw=1.2, label="unchanged model 1")
+    axes[0].legend(frameon=False, fontsize=8.5, loc="upper left")
+    axes[1].set_ylim(0, 2.45)
+    axes[0].set_ylim(0, 0.056)
+    axes[1].legend(frameon=False, fontsize=8.5, loc="upper left", ncols=2)
+    fig.suptitle("Do the student's gap and its check go with its start or with its teacher?", x=0.07, y=1.0, ha="left")
+    fig.tight_layout()
+    save(fig, "amend8b_cells")
+
+
+def cosines_fig(c: dict[str, Any]) -> None:
+    cos = c["cos"]
+    rows = [("null students, two batch orders", cos["null_o0 | null_o1"], C["null"]), ("real students, two batch orders", cos["real_o0 | real_o1"], C["real"]),
+            ("null student, order 1, and its own teacher", cos["null_o1 | null_teacher"], C["null"]), ("real student, order 1, and its own teacher", cos["real_o1 | real_teacher"], C["real"]),
+            ("real and null students, different orders (two pairs, mean)", (cos["real_o0 | null_o1"] + cos["real_o1 | null_o0"]) / 2, C["ref"]),
+            ("the two teachers", cos["real_teacher | null_teacher"], C["ref"]), ("null student, order 1, and the real teacher", cos["null_o1 | real_teacher"], C["null"]),
+            ("real student, order 1, and the null teacher", cos["real_o1 | null_teacher"], C["real"])]
+    fig, ax = plt.subplots(figsize=(9, 4.2))
+    for i, (name, v, col) in enumerate(rows):
+        y = len(rows) - 1 - i
+        ax.barh(y, v, color=col, height=0.55, zorder=3)
+        ax.annotate(f"{v:.3f}", (v, y), xytext=(5, 0), textcoords="offset points", va="center", fontsize=9, color=INK, bbox={"facecolor": "white", "edgecolor": "none", "pad": 1}, zorder=5)
+    ax.set_yticks(range(len(rows)), [r[0] for r in rows][::-1])
+    ax.axvline(0.1, color=MUTED, ls="--", lw=1.2, label="filed line 0.1 for 'along', random directions about 0.0002")
+    ax.set_xlim(0, 1.08)
+    ax.set_xlabel("cosine of the weight changes over all 24 matrices, step 1,000")
+    ax.set_title("Which way does a student move: its batch order, its teacher, or neither?", loc="left")
+    ax.legend(loc="lower right", frameon=False, fontsize=8.5)
+    tidy(ax)
+    save(fig, "amend8c_cosines")
+
+
 def main() -> None:
     d = {s: load(s) for s in STAGES}
+    moved = load("moved", "amend8b_")
+    d["moved"] = moved
     m0 = json.loads((RESULTS / "teacher_training_e42_amend1_rand32.json").read_text())["M0"]["pgd"]
     check_fig(d, m0)
     damage_fig(d)
@@ -283,6 +363,9 @@ def main() -> None:
     gap_fig(d)
     delta_out_fig(d)
     return_fig(d)
+    seeds_fig(load("seeds", "amend8b_"))
+    cells_fig(d, moved)
+    cosines_fig(json.loads((RESULTS / "teacher_training_amend8c.json").read_text()))
 
 
 if __name__ == "__main__":

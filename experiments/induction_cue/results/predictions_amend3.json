@@ -1,0 +1,61 @@
+{
+ "experiment": "E62 induction_cue, Amendment 3: does head (2,4) act through the masks? Γ read again with the head off, on E62's saved step-30 states.",
+ "filed": "2026-11-02",
+ "plan": "reports/plans/2026-11-02_plan_e62-copying-heads.md, section Amendment 3 (2026-11-02)",
+ "spec": "reports/analyses/2026-11-02_analysis_e62-amend2-masked-head.md, third account and first block of Not run, chosen by the lead",
+ "stands_beside": "results/predictions.json and results/predictions_amend2.json are not edited. copy_not_elicitation (r not scored) and mask_reaches_b_another_way stand as filed; this adds a read they did not make, with Γ's reaction to the head in it.",
+ "granularity_limit": "A new circuit built from old subcomponents reads as elicited to VPD. A share near the target's says the masked gain depends on the head through Γ's inputs, at the level of VPD's pieces and heads; it does not say the same circuit is reused.",
+ "settings": {
+  "head": [
+   [
+    2,
+    4
+   ]
+  ],
+  "ref_head": [
+   [
+    3,
+    5
+   ]
+  ],
+  "from_predictions_json": "half, n_boot: results/predictions.json settings, read at run time",
+  "read_step": 30,
+  "windows": "the 200 read windows of results/large/windows.pt, per map",
+  "means": "results/large/heads.pt: W0's target-model means, as Amendment 2",
+  "masks": "Γ's gates read in a fresh clean target-model forward with the named head mean-ablated, at W0 for L00 and at the state for L01. Original subcomponents in the masked forward, Delta out, the same head off there. So share = 1 - (L01_off - L00_off) / (L01 - L00), where L01 and L00 are the every-head-on cells, net of W0 as the target share is"
+ },
+ "thresholds": {
+  "tol": 0.092,
+  "tol_source": "Amendment 2's measured numbers. The larger of (a) 3 x sqrt(0.0173^2 + 0.0063^2) = 0.0552, the largest measured row sds of the target share and the frozen masked share taken as independent; (b) the target share's three-seed range, 0.5627 - 0.4710 = 0.0917, row 2 of amend2.json. The range sets it; rounded up to 0.092, the same value Amendment 2 filed. Per state, against that state's target share",
+  "sd_weak_over": 0.0253,
+  "sd_weak_source": "The recomputed share's row sd is not measured yet. 0.0253 is the sd at which term (a) would reach the tolerance: sqrt((0.092 / 3)^2 - 0.0173^2). A state over it prints sd_weak true, which weakens that seed's class; no rule reads it",
+  "repeat_tol": 0,
+  "repeat_source": "Measured: Amendment 2 re-read run.json's six target shares and every masked cell with a difference of exactly 0 in another job on the L40, and repeat_floor (row 7) read exactly 0. The frozen path here calls the same functions on the same windows. Used when the host equals amend2.json's",
+  "other_card_tol": 0.001,
+  "other_card_source": "Amendment 2's reread_tol, which it filed for another card only. Not measured: nothing here measures another card. The compute partition holds only L40s, so this applies only if the job moves to a pod. It is 7e-5 of a share at a gain of 13.8, a tenth of a percent of the tolerance, so it cannot change a label",
+  "other_path_max": 0.25,
+  "other_path_source": "Amendment 2's filed bar (Fable's table, no published source); strict",
+  "floor_max": 0.15,
+  "floor_source": "E62's floor_max as Amendment 2, here on ten references, read in size since Γ's reaction can raise a gain as well as lower it: (3,5)'s share with Γ recomputed for (3,5) on all six states, and W0's fall with Γ recomputed over the map's mean every-head-on gain, for (2,4) and (3,5) on both maps. That quotient is what W0's reaction alone moves a net share by, so the same bar applies. reports/reviews/2026-11-02_review_e62-amend2-check.md F1: Γ never trained with a head's slot held constant, so a fall must be told apart from Γ simply breaking. Target-model (3,5) shares -0.014 to 0.016; frozen masked at most 0.0025",
+  "min_gain": 1,
+  "min_gain_source": "Amendment 2's, local_faith.MIN_GAIN; read on the every-head-on gain L01 - L00, measured 13.79 to 13.85 on the copy map and 5.72 to 6.38 on the lookup",
+  "min_seeds": 2,
+  "min_seeds_source": "E62's",
+  "slot_share_min": 0.5,
+  "slot_share_source": "Chosen here, no published source: most of the read vector's squared norm in the slot. A tie counts. The chance share of a vector with no preference is 1/6",
+  "slot_closed_max": 0.1,
+  "slot_closed_source": "Chosen here, no published source. Reported, stops nothing, no verdict reads it. Amendment 2's ratio of the masked to the target fall under the head is 0.04 / 1.16 = 0.03 at W0, so a slot read as its gate would sit near 0.03; 0.1 is about three times that"
+ },
+ "predictions": {
+  "row1_control": "Run first and alone, W0. (i) copying.gamma_inputs on one batch: o_proj's cached input holds the mean in head 4's slot and is unchanged elsewhere; blocks 0 and 1 and block 2's q, k, v are exactly unchanged; block 2's c_fc and down_proj and all of block 3 moved. (ii) The frozen path: L00 with the head on, (2,4) off and (3,5) off at the masks read with every head on equals amend2.json per map, within repeat_tol (other_card_tol on another card): -10.0672, -10.1059, -10.0637 copy; -8.8342, -8.8370, -8.8329 lookup. (iii) The zero update's masked gain with Γ recomputed under the head reads exactly 0 per map. (iv) The alive gates at the marker moved (gates_moved over 0) per map. A miss in any: exit 1 before any state is read. Reported, no rule: W0's fall with Γ recomputed, expected on the copy map between the frozen fall 0.039 and the target model's 1.163.",
+  "row2_gamma": "Share of the masked gain lost with the head off in the Γ pass and the masked forward; share_lost, share_sd; per state copying.masked_class against the state's target share from amend2.json (0.563, 0.545, 0.471; 0.000, -0.004, -0.003): within |m - t| <= 0.092 / over m > t + 0.092 / other_path m < 0.25 / between / too_small on the every-head-on gain / unreadable. Copy map, copying.gamma_reading: head_acts_through_masks (every labelled seed within, every lookup seed within) / head_more_than_target (within or over, at least one over, every lookup seed within) / still_other_way (every labelled seed under 0.25) / in_between (anything else labelled) / not_specific (one of the first two, but the lookup not within on every seed: Γ then reacts to the head whatever the map) / floor_high (any of the ten references not under 0.15 in size, floor_source: no reading, Γ reacts to a head off whatever the head and the map) / too_small / unreadable. First a re-read per state: L01 and the frozen share equal amend2.json within repeat_tol; a miss exits 1 after printing. Lean, weak: not still_other_way, as Γ's gates follow activations that the head moves by 7 to 8 log-odds in the target model; where it lands is not predicted. Lookup: within, expected, on every account, as it is under the same hook with a target share of about 0. gates_moved and own_fall are reported beside.",
+  "row3_slot": "Mean gate at the marker over the 200 windows, on the alive subcomponents of block 2's o_proj whose read vector V has at least 0.5 of its squared norm in a head's slot, for each of the six heads (the other five are the reference on the same axes), masks read with every head on, W0 and each state. copying.slot_class on head 4: empty / closed (under 0.1) / open / unreadable. Reported, stops nothing, no verdict reads it. On account (a) expected closed at W0, near 0.03. No expected value on the other accounts.",
+  "references_expected": "Each read beside the six states, each with an expected value. Lookup under (2,4), Γ recomputed: share within 0.092 of 0.000, -0.004, -0.003, by the same hook on a map the head does not carry. (3,5), Γ recomputed: share under 0.15 in size on all six; near the frozen at most 0.0025 if Γ tolerates the ablation. W0, Γ recomputed, fall over mean gain: copy under (2,4) at most 1.163 / 13.8 = 0.084 on every account; lookup under (2,4) near |-0.09| / 6.2 = 0.015, the target model's; under (3,5) near the frozen 0.0035 / 13.8 and 0.0013 / 6.2. (3,5) sits in block 3, so fewer of Γ's inputs change than under (2,4): the lookup is the same-depth reference."
+ },
+ "expected_at_the_references": {
+  "W0": "Every share undefined by rule (gain 0). L00 with Γ recomputed under the head: between -10.106 (the frozen read, nothing through Γ) and -11.23 (the target model's fall of 1.163 applied, everything through Γ). Falls on W0 under (3,5), frozen: -0.0035 copy, -0.0013 lookup, which rise. Lookup under (2,4), frozen 0.0028, target model -0.09.",
+  "do_nothing": "The zero update: masked gain with Γ recomputed under the head exactly 0 per map; a reference, not a control, as it is 0 by determinism whatever the hook does (review, Minor). Reference head (3,5): under 0.15 in size, near its frozen readings if Γ tolerates the ablation.",
+  "control": "Row 1. The frozen path reads amend2.json's numbers with difference 0 on the L40; the hook reaches what Γ reads as listed."
+ },
+ "edge_cases": "tests/test_copying.py, all pure but the hook test, run before filing. Near-zero, zero and negative every-head-on gain (too_small, share nan); gain exactly at min_gain (labelled); non-finite gain, share or target share (unreadable). A recomputed gain at or under 0 gives a share at or over 1: over, and head_more_than_target if the lookup holds. A share under 0 on the copy map: other_path, so still_other_way, as nothing fell. The lookup: near 0 within; over or other_path or mixed: not_specific on the two head-through-the-masks readings, and it does not touch still_other_way or in_between, since a low copy share cannot come from a general fall; lookup unreadable or too_small: that word on those two readings. Ties: exactly t + 0.092 within; exactly 0.25 between; floor exactly 0.15 or -0.15 floor_high. One labelled seed too_small; a seed whose reference share is nan reads floor_high even if that seed is too_small, the rule Amendment 2 filed, unreachable at the measured gains of 13.8. A mix of within and other_path, and between: in_between, so every label set has a branch. slot: no subcomponent (empty), a zero read vector (reads no head), a dead subcomponent (left out), a tie at 0.5 (counts for both heads), a nan gate. A reference: the ten go through one list; a tie, a nan or a size over the bar voids every reading, including still_other_way, as a uniform break of Γ can leave a net share low."
+}

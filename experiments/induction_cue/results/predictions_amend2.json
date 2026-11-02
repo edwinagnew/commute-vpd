@@ -1,0 +1,60 @@
+{
+ "experiment": "E62 induction_cue, Amendment 2: is the mask's gain on the copy map carried by the same old head as the target model's gain?",
+ "filed": "2026-11-02",
+ "plan": "reports/plans/2026-11-02_plan_e62-copying-heads.md, section Amendment 2 (2026-11-02)",
+ "spec": "reports/plans/2026-11-02_advice_e62-next-FABLE.md, option 1 and its table, adopted by the lead; reports/reviews/2026-11-02_review_e62-check.md F1, F3, own reading 2",
+ "stands_beside": "results/predictions.json is not edited. Its verdict copy_not_elicitation, r not scored, stands: nothing here rescores r.",
+ "granularity_limit": "A new circuit built from old subcomponents reads as elicited to VPD. Every reading below says 'at the level of heads' for the target-model rows and 'at the level of VPD's pieces and heads' for the masked row.",
+ "settings": {
+  "head": [[2, 4]],
+  "ref_head": [[3, 5]],
+  "two_heads": [[2, 4], [1, 1]],
+  "from_predictions_json": "half, induction, control_seed, n_boot: results/predictions.json settings, read at run time",
+  "read_step": 30,
+  "windows": "the 200 read windows of results/large/windows.pt; the pair-broken windows rebuilt by copying.broken_pair with E62's control_seed, checked against run.json in row 6",
+  "means": "results/large/heads.pt: W0's target-model means, for every read, target and masked (plan says why)",
+  "masks": "per state and per map, Γ's gates read with every head on, at W0 (L00) and at the state with the least-squares split's components (L01), as route_split; the head is off only in the forward that uses them"
+ },
+ "thresholds": {
+  "tol": 0.092,
+  "tol_source": "Replaces Fable's 'within 0.1', chosen there with no source. Derived from run.json's copy shares: the larger of (a) 3 x sqrt(2) x the largest row sd of the share, 0.0173, which is 0.0734, a difference of two shares taken as independent, conservative as they share windows; (b) the three-seed range of the share, 0.5627 - 0.4710 = 0.0917, the largest difference two states of one recipe show on the same windows. The range sets it; rounded up to 0.092. Used everywhere a comparison of shares needs a tolerance. Assumes the masked share's sd is near the target's: each state prints share_sd, and the plan reads a masked sd over tol / (3 sqrt 2) = 0.0217 as weakening that seed's class. Fable's lookup '0 +/- 0.05' is not used: the same tol and rule, one tolerance",
+  "other_path_max": 0.25,
+  "other_path_source": "Fable's table, no published source; strict",
+  "floor_max": 0.15,
+  "floor_source": "E62's floor_max; the reference head (3,5)'s target-model shares read -0.014 to 0.004 on the copy map (run.json random_shares, second draw)",
+  "min_gain": 1.0,
+  "min_gain_source": "local_faith.MIN_GAIN: shares are not scored below this gain, where they are unstable. E62's 5.148 is not used: the pair-broken gains read 4.25 to 6.84 and the lookup's masked gains 5.72 to 6.38, so that gate would void the row on the numbers it reads",
+  "min_seeds": 2,
+  "min_seeds_source": "E62's",
+  "top1_H_max": 0.05,
+  "top1_H_source": "Chosen here, no published source. Fable: about 0.01. The target model's 0.0095 has a binomial sd 0.003 on 1152 predictions, so a noise bar would be 0.019, but the masked forward is another forward with an unmeasured gap; a hook that missed reads near the intact 0.8. E62's filed bar was 0.3. A tie fails",
+  "top1_ref_min": 0.66,
+  "top1_ref_source": "Departs from the brief's 0.7. The target model's (3,5) reads 0.7075 (run.json top1_random[1]), under one binomial sd (0.0134 on 1152) above 0.7, so a 0.7 bar would stop on rounding. Filed: 0.7075 - 3 sd = 0.667, rounded down. 0.7 stays the expected reading. The intact masked forward must clear the same bar: a forward that does not copy cannot test the hook. A tie fails",
+  "reread_tol": 0.001,
+  "reread_source": "Fable's table for the target model's share. Used for the masked cells, the pair-broken gain and r at alpha = 1 too: E62's path control measured a repeat difference of exactly 0 on the L40 (run.json path_control, cell_diff_repeat 0, r_old = r_ref to the last digit), and row 7 prints a repeat in this job as repeat_floor. Set above that floor for another card only",
+  "two_head_min": 0.7,
+  "two_head_lookup_max": 0.1,
+  "two_head_source": "Fable's table, no published source; ties count to the named side",
+  "top1_both_max": 0.02,
+  "top1_both_source": "Fable: at or under 0.01. (2,4) alone reads 0.0095 and (1,1) alone 0.0130, so 0.01 sits on rounding; filed 0.0095 + 3 binomial sd (0.003), rounded up. Reported, stops nothing",
+  "bracket_max": 4.18,
+  "bracket_source": "The analysis's bracket and F3's: W0's copy log-odds -8.06, against -12.24, the log-odds of the geometric-mean P(B) with B absent (4.84e-6)",
+  "r_noise": 0.0452,
+  "r_noise_source": "E62's r_noise; sets the near_half flag only"
+ },
+ "predictions": {
+  "row1_control": "Run first and alone. Repeated-sequence top-1 through the masked forward, every gate 1, Delta out: intact about 0.82 and over 0.66; (2,4) off about 0.01 and under 0.05; (3,5) off about 0.7 and over 0.66. copying.control_masked. Anything but 'pass': exit 1 before anything else reads. The target model's three numbers are printed beside and should read 0.8247, 0.0095, 0.7075.",
+  "row2_reread": "Target-model share lost under (2,4) equals run.json within 1e-3 on all six states: 0.563, 0.545, 0.471, and 0.000, -0.004, -0.003. Zero update under the head reads exactly 0. A miss: exit 1.",
+  "row3_masked": "Share of the masked gain L01 - L00 lost under (2,4), same windows and masks; share_lost, share_sd. First a re-read: L00 and L01 with the head on equal run.json's cells within 1e-3, and the zero update's masked gain under the head is exactly 0; a miss exits 1. Per state copying.masked_class, against the state's target share t: within |m - t| <= 0.092 / over m > t + 0.092 / other_path m < 0.25 / between. Copy map, copying.masked_reading: r_reads_the_head (every labelled seed within) / head_more_than_target (within or over, at least one over) / mask_reaches_b_another_way (every labelled seed other_path) / in_between (anything else) / floor_high ((3,5)'s masked share not under 0.15 on some state: no reading) / too_small / unreadable. Lean, not a rule: r_reads_the_head. Lookup, copying.agree over the same labels: 'within' expected, as its target share is about 0, the mask's gain not going through the head either. L00 with the head off is reported per map, and the lean (intact minus pair broken) in the masked forward, head on and off: the head on is expected near the target's 1.57, and off under half of it. own_fall, the masked state's own fall (L01 - L01 with the head off) over the masked gain, is reported beside.",
+  "row4_w0_fall": "W0's target-model log-odds with (2,4) off, which E62 computed and discarded. W0's fall on the copy map, copying.bracket_class: inside [0, 4.18] expected; below / above named. Lean: at least 1, as the 1.57 lean should mostly go. The target lean with the head off under half of its 1.57 (reported). Each state's own fall as a share of its gain, (G - G_abl + fall) / G, beside the filed share; copying.own_fall_class: undercounts (over the filed share + 0.092) / stands. Expected on the copy map: undercounts, between the filed share and F3's far end of 0.894, 0.877, 0.804.",
+  "row5_two_heads": "Target-model share under (2,4) + (1,1) together, net of W0 under both. Copy map, copying.two_head_class, then agree: circuit (at least 0.7) / no_more (within 0.092 of the single head's share) / between / in_between over seeds / too_small / unreadable. Lean: no_more if (1,1) feeds (2,4) in series (F4); no prior strong enough to call it. Lookup, copying.lookup_two_head: clean (at most 0.1) / uses_circuit; clean expected. W0's top-1 under both at or under 0.02, reported.",
+  "row6_broken": "Pair-broken gain lost under (2,4), target model, copy map, net of W0 on the same windows. A re-read first: the pair-broken gain with the head on equals run.json's gains_by_step 30 broken within 1e-3 (reported as reread_ok; if false the row is not read). copying.broken_class, then agree: outside_head (at most 0.092, the check's hypothesis: the head off barely moves it; negative included) / through_head (within 0.092 of the intact share) / between / in_between over seeds / too_small / unreadable. Lean: outside_head. The surviving intact gain (5.53, 5.75, 6.64) is printed beside the broken gain (5.01, 4.25, 6.84).",
+  "row7_size": "r with the update scaled, W0 + alpha dW, through keydep.route_windows, with its own split. Per seed, each copy state scaled to the same seed's lookup norm (alpha about 1.18) and each lookup state to the same seed's copy norm (alpha about 0.85). r at alpha = 1 equals run.json's within 1e-3 on all six, else unreadable. A scaled state with a gain under min_gain gives no r. gap = mean stored copy r - mean stored lookup r, about 0.69; swapped = the same with the scaled r. copying.size_reading: size_accounts if swapped < gap / 2 (closes by more than half; a negative swapped gap included) / size_does_not (a tie at exactly half, a wider gap) / unreadable. near_half flags within 0.0452 of the cut. Lean: size_does_not."
+ },
+ "expected_at_the_references": {
+  "W0": "Top-1 intact 0.8247 target. Every gain and share undefined by rule (gain 0, nan). L00 is the reference of the masked gain, and W0's log-odds the target's.",
+  "do_nothing": "The zero update: target gain under the head exactly 0, masked gain under the head exactly 0. Reference head (3,5): masked share under 0.15; expected near its target shares -0.014 to 0.004 on the copy map and 0.012 to 0.016 on the lookup.",
+  "control": "Row 1's (2,4) off about 0.01 through the masked forward, the same reading as the target's."
+ },
+ "edge_cases": "tests/test_copying.py, all pure, run before filing. Zero, negative and tiny gain (masked, broken, two heads, own fall: too_small, or nan share); gain exactly at min_gain (labelled); non-finite gain, share or target share (unreadable); the lookup's small masked gain with its target share near 0 (within; the head off raising it far: other_path; over: over); ties at tol, 0.25, 0.7, 0.1, 0.05, 0.66, 0, 4.18, half the gap; a share over 1 and a negative share; one or no labelled seed; a mix of within and over, of within and other_path; floor at exactly 0.15 and nan; every class of every row; the stored gap zero or negative; swapped gap negative, wider, nan; alpha = 1 missed. No branch left uncovered: m under t - tol at or over 0.25 is between; a broken share over intact + tol is between; both heads under the single head by more than tol is between."
+}

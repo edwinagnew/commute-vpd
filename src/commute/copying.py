@@ -27,6 +27,7 @@ from torch import Tensor
 from commute import kv
 from commute import steering as ST
 from commute.data import Windows
+from commute.local_faith import masked_logits
 
 VOCAB = 50277
 Head = tuple[int, int]  # (block, head)
@@ -177,6 +178,22 @@ def ablated(net: Any, heads: Iterable[Head], means: Tensor) -> Iterator[None]:
     finally:
         for h in handles:
             h.remove()
+
+
+class AllGatesOn:
+    """`ST.Net`'s `net` and `run` through the decomposition's masked forward: every gate 1, Delta out, bf16 as the route
+    split's cells. So `induction` and `ablated` read this forward unchanged. `ablated` needs no second form: o_proj is
+    itself decomposed, but `ComponentModel` swaps a module's OUTPUT in a forward hook and feeds the components that hook's
+    args, which already carry a pre-hook's edit, so the components take the ablated heads (tests/test_copying.py)."""
+
+    def __init__(self, model: Any) -> None:
+        self.model, self.net = model, model.target_model
+
+    @torch.no_grad()
+    def run(self, toks: Tensor) -> tuple[Tensor, dict[str, Tensor]]:
+        device = next(self.model.parameters()).device
+        ones = {k: torch.ones(*toks.shape, C, device=device) for k, C in self.model.module_to_c.items()}
+        return masked_logits(self.model, toks.to(device), ones, None, None).float(), {}
 
 
 def over_bar(scores: Tensor, bar: float) -> list[Head]:
@@ -539,3 +556,206 @@ def score(states: dict[str, dict[str, Any]], prior: str, th: dict[str, Any], see
         rv = r_verdict(r_of["copy"], r_of["lookup"], th)
         return {"verdict": rv["class"], "r": rv, "r_scored": True, "r_copy": r_of["copy"], "r_lookup": r_of["lookup"], **beside}
     return {"verdict": v, "r_scored": False, "r_copy": r_of["copy"], "r_lookup": r_of["lookup"], **beside}
+
+
+# ----------------------------------------------------------------------------- Amendment 2's filed rules (results/predictions_amend2.json)
+
+
+def agree(labels: Sequence[str], th: dict[str, Any]) -> str:
+    """One row over a map's seeds: "unreadable" if any seed is or there is none; "too_small" with fewer than min_seeds labelled
+    (a too_small seed is left out); else the label every labelled seed shares; else "in_between"."""
+    if not labels or "unreadable" in labels:
+        return "unreadable"
+    kept = [x for x in labels if x != "too_small"]
+    if len(kept) < th["min_seeds"]:
+        return "too_small"
+    return kept[0] if len(set(kept)) == 1 else "in_between"
+
+
+def control_masked(base: float, with_H: float, ref: float, th: dict[str, Any]) -> str:
+    """Row 1, top-1 through the masked forward: "unreadable" if a number is not finite; "no_copying" unless the intact
+    forward is over top1_ref_min (a tie fails; a forward that does not copy cannot test the hook); "hook_missed" unless the
+    head off is under top1_H_max (a tie fails); "ref_harmed" unless the reference head off is over top1_ref_min; else "pass"."""
+    if not all(finite(v) for v in (base, with_H, ref)):
+        return "unreadable"
+    if not base > th["top1_ref_min"]:
+        return "no_copying"
+    if not with_H < th["top1_H_max"]:
+        return "hook_missed"
+    return "pass" if ref > th["top1_ref_min"] else "ref_harmed"
+
+
+def gain_ok(G: float, th: dict[str, Any]) -> str | None:
+    """"unreadable" if not finite, "too_small" under min_gain (a tie passes; zero and negative gains included), else None."""
+    if not finite(G):
+        return "unreadable"
+    return None if G >= th["min_gain"] else "too_small"
+
+
+def masked_class(gain: float, m: float, t: float, th: dict[str, Any]) -> str:
+    """One state, masked share m beside target share t: the gain's gate; a non-finite share is "unreadable"; then "within"
+    |m - t| <= tol (a tie counts); "over" m > t + tol; "other_path" m < other_path_max (a tie is not; negative included);
+    else "between" (m under t - tol and at or over other_path_max)."""
+    if bad := gain_ok(gain, th):
+        return bad
+    if not (finite(m) and finite(t)):
+        return "unreadable"
+    if abs(m - t) <= th["tol"]:
+        return "within"
+    if m > t:
+        return "over"
+    return "other_path" if m < th["other_path_max"] else "between"
+
+
+def masked_reading(labels: Sequence[str], ref_shares: Sequence[float], th: dict[str, Any]) -> str:
+    """The copy map's verdict: "unreadable", "too_small" (`agree`); "floor_high" if the reference head's masked share is not
+    under floor_max on every state (a tie fails, a non-finite one fails); "r_reads_the_head" every labelled seed "within";
+    "head_more_than_target" every labelled seed "within" or "over", at least one "over"; "mask_reaches_b_another_way" every
+    labelled seed "other_path"; else "in_between"."""
+    one = agree(labels, th)
+    if one in ("unreadable", "too_small"):
+        return one
+    if not all(finite(s) and s < th["floor_max"] for s in ref_shares):
+        return "floor_high"
+    kept = {x for x in labels if x != "too_small"}
+    if kept == {"within"}:
+        return "r_reads_the_head"
+    if kept <= {"within", "over"}:
+        return "head_more_than_target"
+    return "mask_reaches_b_another_way" if kept == {"other_path"} else "in_between"
+
+
+def two_head_class(G: float, both: float, single: float, th: dict[str, Any]) -> str:
+    """One copy state, target share under both heads: the gain's gate; "circuit" at or over two_head_min; "no_more" within
+    tol of the single head's share (a tie counts); else "between" (including under the single head by more than tol)."""
+    if bad := gain_ok(G, th):
+        return bad
+    if not (finite(both) and finite(single)):
+        return "unreadable"
+    if both >= th["two_head_min"]:
+        return "circuit"
+    return "no_more" if abs(both - single) <= th["tol"] else "between"
+
+
+def lookup_two_head(G: float, both: float, th: dict[str, Any]) -> str:
+    """One lookup state, target share under both heads: the gain's gate; "clean" at or under two_head_lookup_max (a tie
+    counts, negative included); else "uses_circuit"."""
+    if bad := gain_ok(G, th):
+        return bad
+    if not finite(both):
+        return "unreadable"
+    return "clean" if both <= th["two_head_lookup_max"] else "uses_circuit"
+
+
+def broken_class(G: float, b: float, intact: float, th: dict[str, Any]) -> str:
+    """One copy state, the pair-broken gain's share lost under the head: the gain's gate; "outside_head" at or under tol
+    (the head off barely moves it; negative included, checked first); "through_head" within tol of the intact share; else
+    "between" (including over the intact share by more than tol)."""
+    if bad := gain_ok(G, th):
+        return bad
+    if not (finite(b) and finite(intact)):
+        return "unreadable"
+    if b <= th["tol"]:
+        return "outside_head"
+    return "through_head" if abs(b - intact) <= th["tol"] else "between"
+
+
+def own_fall_class(G: float, own: float, share: float, th: dict[str, Any]) -> str:
+    """One state: does the state's own fall under the head outrun the filed net share? The gain's gate; "undercounts" over
+    share + tol; else "stands" (a tie stands, a fall under the share included)."""
+    if bad := gain_ok(G, th):
+        return bad
+    if not (finite(own) and finite(share)):
+        return "unreadable"
+    return "undercounts" if own - share > th["tol"] else "stands"
+
+
+def bracket_class(fall: float, th: dict[str, Any]) -> str:
+    """W0's own fall under the head against the analysis's bracket: "inside" [0, bracket_max] (ties count), "below" (the head off
+    raises W0), "above", "unreadable" if not finite."""
+    if not finite(fall):
+        return "unreadable"
+    return "below" if fall < 0 else "inside" if fall <= th["bracket_max"] else "above"
+
+
+def size_reading(gap: float, swapped: float, reproduced: bool) -> str:
+    """Row 7: "unreadable" if alpha = 1 missed the stored r, a number is not finite, or the stored gap is not positive (no gap
+    to close). "size_accounts" if the gap closes by more than half (swapped < gap / 2, a swapped gap below zero included);
+    else "size_does_not" (a tie at exactly half, and a gap that widens)."""
+    if not (reproduced and finite(gap) and finite(swapped)) or gap <= 0:
+        return "unreadable"
+    return "size_accounts" if swapped < gap / 2 else "size_does_not"
+
+
+# ----------------------------------------------------------------------------- Amendment 3's filed rules and reads (results/predictions_amend3.json)
+
+
+@torch.no_grad()
+def gamma_inputs(model: Any, net: Any, toks: Tensor, head: Head, means: Tensor) -> dict[str, Any]:
+    """Does `ablated` change what Γ reads? Γ reads the inputs a clean forward caches (`vpd.compute_ci`, cache_type "input"),
+    so this compares that cache with the head on and off on one batch, in compute_ci's autocast. Expected: o_proj's input
+    holds the mean in the head's slot and is unchanged elsewhere; modules before the edit (earlier blocks, the head's own
+    q, k, v) are exactly unchanged; every module after it (the block's MLP, later blocks) moved. `status`: "slot_missed",
+    "upstream_moved", "downstream_unmoved" or "pass"."""
+    lay, h = head
+    d = means.shape[-1]
+
+    def cache() -> dict[str, Tensor]:
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=toks.is_cuda):
+            return model(toks, cache_type="input").cache
+
+    on = cache()
+    with ablated(net, [head], means):
+        off = cache()
+    o = f"h.{lay}.attn.o_proj"
+    moved = {k: float((off[k].float() - on[k].float()).abs().max()) for k in on if k != o}
+    before = lambda k: int(k.split(".")[1]) < lay or (int(k.split(".")[1]) == lay and k.split(".")[2] == "attn")
+    rest = torch.ones(off[o].shape[-1], dtype=torch.bool, device=off[o].device)
+    rest[h * d : (h + 1) * d] = False
+    slot_ok = bool((off[o][..., ~rest] == means[lay, h].to(off[o].device, off[o].dtype)).all()) and torch.equal(on[o][..., rest], off[o][..., rest])
+    up, down = [v for k, v in moved.items() if before(k)], [v for k, v in moved.items() if not before(k)]
+    status = "slot_missed" if not slot_ok else "upstream_moved" if any(v != 0 for v in up) else "downstream_unmoved" if any(v == 0 for v in down) else "pass"
+    return {"status": status, "slot_is_mean": slot_ok, "upstream_max": max(up, default=0.0), "downstream_min": min(down, default=math.inf), "moved": moved}
+
+
+def slot_reads(V: Tensor, heads: int, alive: Tensor, share_min: float) -> list[Tensor]:
+    """Per head, the alive subcomponents of an o_proj whose read vector V (d_in, C) has at least `share_min` of its squared norm
+    in that head's slot (a tie counts). A vector of norm 0 reads none. At `share_min` over 0.5 a subcomponent reads at most one head."""
+    sq = V.double().square()
+    share = sq.view(heads, -1, V.shape[1]).sum(1) / sq.sum(0)
+    return [((share[h] >= share_min) & alive).nonzero().squeeze(1) for h in range(heads)]
+
+
+def slot_class(n: int, gate: float, th: dict[str, Any]) -> str:
+    """The mean gate on a head's slot: "empty" if no subcomponent reads it; "unreadable" if not finite; "closed" under
+    slot_closed_max (a tie is not); else "open"."""
+    if n == 0:
+        return "empty"
+    if not finite(gate):
+        return "unreadable"
+    return "closed" if gate < th["slot_closed_max"] else "open"
+
+
+def gamma_reading(labels: Sequence[str], lookup_labels: Sequence[str], ref_shares: Sequence[float], th: dict[str, Any]) -> str:
+    """The copy map's verdict with Γ recomputed, from `masked_class` labels against the target share. "unreadable", "too_small"
+    (`agree` on the copy map); "floor_high" if a reference is not under floor_max in size (the caller passes (3,5)'s share on
+    all six states and W0's fall with Γ recomputed over the map's mean gain, so that Γ simply breaking off its distribution
+    voids every reading; Γ's reaction can raise a gain as well as lower it, so the size is read; a tie and a nan fail);
+    "still_other_way" every labelled seed under
+    other_path_max; "in_between" anything mixed or between. Only the two readings that say the head acts through the masks read
+    the lookup, since its target share is about 0 and the same head goes off there: unless every lookup seed is "within" they
+    read "not_specific" (or the lookup's own "unreadable", "too_small"), as Γ then reacts to the head whatever the map.
+    "head_acts_through_masks" every labelled seed "within"; "head_more_than_target" within or over, at least one over."""
+    one = masked_reading(labels, [abs(s) for s in ref_shares], th)
+    if one in ("unreadable", "too_small", "floor_high"):
+        return one
+    if one == "mask_reaches_b_another_way":
+        return "still_other_way"
+    if one == "in_between":
+        return one
+    look = agree(lookup_labels, th)
+    if look in ("unreadable", "too_small"):
+        return look
+    if look != "within":
+        return "not_specific"
+    return "head_acts_through_masks" if one == "r_reads_the_head" else "head_more_than_target"
