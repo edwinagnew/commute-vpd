@@ -37,6 +37,8 @@
     <li>2026-10-20 · Terminology review: the operations renamed; the LoRA split found never built. <code>reports/reviews/2026-10-20_review_terminology.md</code>.</li>
     <li>2026-10-20 · Readability review of this log: twelve self-contradictions, fixed in v10.</li>
     <li>2026-10-22 · What the VPD paper says about its adversary: the same climb with steps, read at a fixed 20-step budget; E20's longer runs broke its step-size rule. <code>reports/reviews/2026-10-22_review_vpd-adversary-convergence.md</code>.</li>
+    <li>2026-11-02 · E59's construction check was filed without measuring whether the model's own logits meet it; they do not (16 of 32 keys in band, 24 needed), so a perfect readout would have stopped there. E64's bar is relative to the model. <code>reports/reviews/2026-11-02_review_e59-analysis.md</code>.</li>
+    <li>2026-11-02 · Qwen pipeline audit: the direct share's "original masks" were the moved read vectors (the prose said otherwise), and the switched-on sets are subcomponents just under the gating line, so "three to four times chance" falls to about 1.0 to 1.3. <code>reports/reviews/2026-11-02_review_qwen-pipeline-audit.md</code>.</li>
 </ul></div>
   <div class="card"><div class="k">Dropped at design</div><ul>
     <li>Appending the LoRA as a new piece with its own gate: assumes every update is a new capability.</li>
