@@ -122,6 +122,9 @@ debug QoS. `predictions.json` → `amended_2026_11_02_after_stop` keeps the firs
 ## Amendment after the step-250 stop (2026-11-02)
 Job 48344 stopped at its step-250 early check: last-block train-batch loss 5.0088 against a bar of 5.0, which sat only 0.27 nats above one batch of job 48279 (4.73; batch sd ~0.14). The check is there to catch a readout that is not learning (step 0 reads ~10.9), so the bar is raised to 6.0. The step-2000 bar (0.5 over the model's own batch loss) came from the overfit run, so it is raised to 1.0; the quality test stays stage 0's L_last <= L_lin + 0.1. P1-P3 and every other check are unchanged (`predictions.json` → `amended_2026_11_02_step250`). Decided by the lead as a clear rule fix.
 
+## Amendment after the second stage-0 stop (2026-11-02)
+Job 48357 trained the readouts on fresh rows and stopped on the stage-0 loss rule (last block 0.37 nats over the linearised head held-out, ~0.07 held-in): a sample-size limit of 50,277 x 768 readout rows on 15M tokens, not a bug. On Fable's advice (`reports/reviews/2026-11-02_review_e59-stop2-fable-advice.md`) the saved readouts run through the rest of stage 0 and P1-P3, with the loss rule recorded rather than a stop and a reading rule fixed now: a P1 or P2 pass stands, a P1 elicit-clause or P2 fail reads unreadable, a cipher-clause fail is real; P3, do-nothing and the W0 control stay stops. Hard cap: this one run, no more readout training.
+
 ## Departures from the literature
 - **Def 1, Jain et al. 2024 §3.** The paper trains the readout on data from the pretraining process and reads it on
   the sub-domain of inputs carrying the instruction; we train on Pile windows at every position and read at the answer

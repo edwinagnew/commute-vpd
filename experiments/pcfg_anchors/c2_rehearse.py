@@ -11,8 +11,14 @@ Stages (repo root, GPU):
   noise      same-seed unbroken arms U1 and U2, E with evaluation, R with a resume, 400 steps each in fresh processes;
              results/c2_noise.json.
   firststeps 2,000 steps on the full schedules; results/c2_firststeps.json sets the early checks.
+  readcheck  c2.py's own read and score stages on any saved decomposition file (--file, a training or a final save), with
+             c2's paths patched so that every output stays in --out's folder, outside results/, and nothing counts as
+             a commit. --states all: every state; few: the zero update, one P and one N calibration state. Read under a
+             scratch copy of the predictions whose U0_vs_T0_max is loose, so that score's non-void path runs whatever
+             this file's U0 - T0 is; the filed bar's verdict is reported in the `readcheck` key. Resumable: exit 3 at the
+             deadline, resubmit the same command.
 
-Usage: python experiments/pcfg_anchors/c2_rehearse.py {rehearse,noise,firststeps}  (cluster/pcfg_c2.sbatch)
+Usage: python experiments/pcfg_anchors/c2_rehearse.py {rehearse,noise,firststeps,readcheck}  (cluster/pcfg_c2.sbatch)
 """
 
 from __future__ import annotations
@@ -28,6 +34,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+import c2
 import torch
 from c2 import (
     CONFIG,
@@ -172,6 +179,7 @@ NOISE_JSON, NOISE_DIR = RESULTS / "c2_noise.json", LARGE / "c2_noise"
 # (arm, with_eval, end): each leg is its own process. U1 against U2 is the noise floor; E adds evaluation, R a resume.
 NOISE_LEGS = (("U1", False, 400), ("U2", False, 400), ("E", True, 400), ("R", False, 200), ("R", False, 400))
 FIRST_JSON, FIRST_STEPS = RESULTS / "c2_firststeps.json", 2000
+READCHECK_LOOSE_U0 = 1e9  # the scratch predictions' U0_vs_T0_max: voids nothing
 
 
 def stage_noise_leg(leg: int) -> int:
@@ -225,22 +233,86 @@ def stage_firststeps() -> int:
     train, ev = data(cfg)
     step, recs = D.run(d, train.get, ck, D.Plan(FIRST_STEPS, FIRST_STEPS, FULL.log_every), ev, log=log)
     train.close()
-    recs.append({"step": step, "eval": D.evaluate(d, ev, step)})
+    recs.append({"step": step, "eval": D.evaluate(d, ev(step), step)})
     write_json(FIRST_JSON, {"note": "$0, never scored; the full run's schedules", "records": recs, **D.memory()})
     ck.unlink()
     return 0
 
 
+# ---- readings on any saved decomposition ($0, never scored) ----
+
+
+def read_few(k: dict[str, Any], deadline: float) -> int:
+    """The zero update and REHEARSAL_STATES, without the controls' stops: a look between jobs."""
+    res = c2.open_results(k)
+    assert res is not None, f"{c2.OUT} was written under other numbers"
+    rd, table = c2.open_reader(k, res), c2.state_table(c2.c1b_states())
+    return c2.read_part(res, "controls", [c2.ZERO], rd, table, deadline) or c2.read_part(res, "calibration", list(REHEARSAL_STATES), rd, table, deadline)
+
+
+def readcheck_summary(file: Path, states: str, filed_u0_max: float, truth: dict[str, str]) -> dict[str, Any]:
+    """What the check is for, from the states read so far: the matrix shares, U0 - T0 against the filed bar, the leak's
+    size, and time and memory."""
+    res = json.loads(c2.OUT.read_text())
+    recs = {s: r for p in c2.PARTS for s, r in res[p].items()}
+    zero = recs[c2.ZERO]["cells"]
+    u0 = zero["U0"] - zero["T0"]
+    return {"file": str(file), "step": res["final_step"], "states": states, "n_read": len(recs), "U0_minus_T0": u0, "filed_U0_vs_T0_max": filed_u0_max,
+            "void_under_the_filing": not abs(u0) <= filed_u0_max, "L00_minus_T0": zero["L00"] - zero["T0"],
+            "cut_moved_L00_minus_T0": recs[c2.ZERO]["full_minus_cut"]["L00_minus_T0"],
+            "matrix_share": {s: r["matrix_share"] for s, r in recs.items()},
+            "matrix_share_under_min": [s for s, r in recs.items() if r["matrix_share"] < res["constants"]["matrix_share_min"]],
+            "full_gain": {s: r["full_gain"] for s, r in recs.items()},
+            "U_gain": {s: r["piece_gain"] for s, r in recs.items()},
+            "leak": c2.leak(res, {s: v for s, v in truth.items() if s in res["calibration"]}),
+            "seconds_max": max(r["seconds"] for r in recs.values()), "gpu_alloc_gib_max": max(r["gpu_alloc_gib"] for r in recs.values()),
+            "host_rss_gib_max": max(r["host_rss_gib"] for r in recs.values())}  # fmt: skip
+
+
+def stage_readcheck(file: Path, out: Path, states: str, deadline_min: float) -> int:
+    """c2's stages on `file`, by c2's own code: only its paths, its step check and its commit check are replaced. The
+    output files are `out`, <stem>_cutoffs.json, <stem>_predictions.json and <stem>_alive.pt."""
+    assert not {RESULTS.resolve(), LARGE.resolve()} & {out.resolve().parent, *out.resolve().parents}, f"{out}: readcheck outputs stay out of results/"
+    deadline = time.monotonic() + 60 * deadline_min
+    out.parent.mkdir(parents=True, exist_ok=True)
+    pred = json.loads(PRED_C2.read_text())
+    filed_u0_max = pred["do_nothing"]["U0_vs_T0_max"]
+    pred["do_nothing"]["U0_vs_T0_max"] = READCHECK_LOOSE_U0
+    write_json(out.with_name(f"{out.stem}_predictions.json"), pred)
+    c2.PRED_C2, c2.FINAL, c2.FINAL_STEP, c2.OUT = out.with_name(f"{out.stem}_predictions.json"), file, None, out
+    c2.CUTOFFS, c2.ALIVE = out.with_name(f"{out.stem}_cutoffs.json"), out.with_name(f"{out.stem}_alive.pt")
+    c2.committed = lambda _p: True
+    k = c2.filed()
+    assert k is not None and file.exists(), file
+    if out.exists():  # a resubmission continues; another file would keep this file's states
+        done = json.loads(out.read_text()).get("readcheck", {}).get("file", str(file))
+        assert done == str(file), f"{out} holds readings of {done}: give {file} its own --out"
+    torch.cuda.reset_peak_memory_stats()
+    rc = read_few(k, deadline) if states == "few" else c2.stage_read(deadline) or c2.stage_score(deadline)
+    res = json.loads(out.read_text())
+    if c2.ZERO in res["controls"]:
+        res["readcheck"] = readcheck_summary(file, states, filed_u0_max, c2.c1b_states().calibration)
+        write_json(out, res)
+        log(f"readcheck (exit {rc}): {res['readcheck']}")
+    return rc
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("stage", choices=("rehearse", "rehearse-resume", "noise", "noise-leg", "firststeps"))
-    ap.add_argument("--deadline-min", type=float, default=22.0, help="not read: the sbatch passes it to every stage; the job's limit is the stop")
+    ap.add_argument("stage", choices=("rehearse", "rehearse-resume", "noise", "noise-leg", "firststeps", "readcheck"))
+    ap.add_argument("--deadline-min", type=float, default=22.0, help="read by readcheck only: the sbatch passes it to every stage; elsewhere the job's limit is the stop")
     ap.add_argument("--leg", type=int, default=0)
+    ap.add_argument("--file", type=Path, help="readcheck: a decomposition save, training or final format")
+    ap.add_argument("--out", type=Path, help="readcheck: the results json, outside results/")
+    ap.add_argument("--states", choices=("all", "few"), default="few")
     a = ap.parse_args()
+    if a.stage == "readcheck" and (a.file is None or a.out is None):
+        ap.error("readcheck needs --file and --out")
     assert PRED_C2.exists(), f"{PRED_C2} is missing: predictions are filed before any run"
     log(f"c2 {a.stage} on {torch.cuda.get_device_name()}")
     stages: dict[str, Callable[[], int]] = {"rehearse": stage_rehearse, "rehearse-resume": stage_rehearse_resume, "noise": stage_noise,
-                                            "noise-leg": lambda: stage_noise_leg(a.leg), "firststeps": stage_firststeps}  # fmt: skip
+                                            "noise-leg": lambda: stage_noise_leg(a.leg), "firststeps": stage_firststeps,
+                                            "readcheck": lambda: stage_readcheck(a.file, a.out, a.states, a.deadline_min)}  # fmt: skip
     sys.exit(stages[a.stage]())
 
 
