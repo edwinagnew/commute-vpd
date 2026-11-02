@@ -8,8 +8,10 @@ not the L40's. Each read goes into the file as it finishes and is skipped on a r
 since a read needs fp32 states. A missed early check stops the job before its reads.
   n1       teacher = W0, start = a random move of the alive U, V with E41's student's per-matrix size; read at 0, 100, 1000
   n2       teacher = W0, start = E41's teacher-trained T1000 state; T1000's do-nothing, then read at 0, 100, 1000
-  n3       null teacher: full-weight fine-tune with every label drawn from W0, then the student from W0; beside it the
-           same-job real student
+  n3a      the null fine-tune alone: every label drawn from W0, read at 1, 3, 10, 30, 100, 300, 1000 (size, KL to W0,
+           P(target), no harness); chooses the checkpoint nearest the same-job T1000's size
+  n3b      the student from W0 on that checkpoint; beside it the same-job real student at batch orders 0 and 1 (order 1 is
+           the cosine's control). Refuses until n3a is done and its expected values are filed by dated note
   n4_adam  labelled training on self-labels, E39 Amendment 2's Adam 1e-5 on its lowercase rows; beside it true labels
   n4_sgd   the same at its plain SGD 0.03
   n5       masked_copy.train at coefficient 0 on E42's rand32 windows, teacher = W0
@@ -52,7 +54,7 @@ from commute import faith_score
 
 PRED = RESULTS / "predictions_amend8.json"
 STATES = LARGE / "amend8"
-STAGES = ("n1", "n2", "n3", "n4_adam", "n4_sgd", "n5")
+STAGES = ("n1", "n2", "n3a", "n3b", "n4_adam", "n4_sgd", "n5")
 CURVE_STEPS = (1, 2, 10, 100, 500, 1000)
 Bound = tuple[float, float]
 
@@ -70,9 +72,12 @@ class Amend8:
     real_p: Bound = (0.9868, 1.0)  # student at 1000: 0.99675
     real_size: Bound = (0.0154, 0.0214)  # student at 1000: 0.01842
     warm_kl: Bound = (0.0, 0.005)  # lr 0 from the start against its own weights: E41's C2 line (floor 0.0005-0.0007)
-    n1_kl1: Bound = (0.0005, 0.5)  # N1 step 1: above the hook floor (else nothing to close), far under a real gap
+    hook_floor_line: float = 0.0007  # the warm-start KL above this (H100's largest): gap_line needs a dated amendment
+    n1_kl1: Bound = (0.0, 0.5)  # N1 step 1: far under a real gap; that the start has a gap is read at step 0
     n2_kl1: Bound = (1.0, 20.0)  # N2 step 1: KL(W0 || T1000 student), trigger mass on W0's tokens about 0.003
-    null_kl1: Bound = (1e-6, 1.0)  # N3 student step 1: a null teacher has a nonzero, small gap
+    n3a_steps: tuple[int, ...] = (1, 3, 10, 30, 100, 300, 1000)
+    reproduce_tol: float = 0.01  # n3b's null teacher size / n3a's reading of the checkpoint, relative
+    order2: int = 1  # the real student's second batch order: the cosine's control
     t1_tol: float = 0.05  # null fine-tune size at step 1 / the real one's (Adam's first step is lr on every entry; E41 A2 0.00346)
     s1_tol: float = 0.30  # null student size at step 1 / the real one's (0.0010-0.0012 in every E41 and E39 log)
     ce_tol: float = 0.5  # self-labels at step 1: |mean CE - W0's mean entropy|, nats
@@ -80,9 +85,13 @@ class Amend8:
     move_tol: float = 0.01  # N1's start size / the real student's, relative
     gap_line: float = 0.002  # N1: unmasked KL to W0 "at the hook floor", about 3 x the largest floor reading (0.0007)
     gap_share: float = 0.05  # N2: KL at 1000 / KL at 0 (E41's works_gap)
+    n2_p_line: float = 0.04  # N2: P(target) at 1000 at or under this, ten times W0's 0.004: 5% of KL(W0 || state) allows P 0.25
     return_line: float = 0.76  # N1, N2: return fraction (the plan's figure, E34 C3's 0.76)
-    about: float = 0.75  # N3: null size / real size at or above this reads "about 0.018"
-    under: float = 0.50  # N3: at or below this reads "well under"
+    about: float = 0.75  # n3b: null student's size / real student's at or above this is comparable
+    under: float = 0.50  # n3b: at or below this reads "well under"
+    cos_shared: float = 0.5  # n3b: cos(null student, real student) / cos(real student, second batch order) at or above: shared
+    cos_none: float = 0.1  # n3b: cos(null student, real student) below this, absolute: no shared direction (random about 2e-4)
+    ctrl_min: float = 0.2  # n3b: the control's cosine below this leaves cos_shared under cos_none: no power
     recipe_share: float = 0.5  # N4: (self - 1) / (true - 1) at or above this reads "about the true labels"
     rows_train: tuple[str, int, int] = ("train", 0, 4096)  # E39's rows: broad_fragility/run.py Config
     n_train: int = 2400
@@ -96,12 +105,13 @@ class Amend8:
         "sgd": {"lr": 0.03, "true_steps": 100, "gain": 0.1253, "scored": 100}})
     label_saves: tuple[int, ...] = (100, 1000)
     label_ce1: Bound = (3.48, 3.58)  # E39 A2's log: true-label step 1, 3.5300 for both optimisers
-    gain_tol: float = 0.02  # absolute, on the true-label state's gain
+    gain_tol: float = 0.30  # relative, on the true-label state's gain: E39 A2's own match tolerance (amend2.py gain_tol)
     n5_task: str = "rand32"
     n5_kl1: Bound = (0.00147, 0.00179)  # step-1 unmasked term 0.00163 (`.G2.path_kl`, same L40), within 10%
 
     def __post_init__(self) -> None:
         assert CFG.steps == self.label_saves == (100, 1000) and self.under < self.about <= 1 and self.floor_tol > 0
+        assert self.n3a_steps[-1] == CFG.steps[-1] and self.cos_none <= self.cos_shared * self.ctrl_min
         assert {v["scored"] for v in self.label.values()} <= set(self.label_saves)
 
 
@@ -144,6 +154,35 @@ def size_class(null: float, real: float) -> tuple[str, float | None]:
     return ("about" if r >= AM.about else "well under" if r <= AM.under else "partly"), r
 
 
+def nearest_checkpoint(sizes: dict[str, float], target: float) -> str | None:
+    """n3a: the checkpoint whose size is nearest `target` (absolute difference; a tie goes to the earlier step). None if
+    the target is not a positive number or no size is finite."""
+    ok = [k for k, v in sizes.items() if math.isfinite(v)]
+    if not ok or not math.isfinite(target) or target <= 0:
+        return None
+    return min(sorted(ok, key=int), key=lambda k: abs(sizes[k] - target))
+
+
+def direction_class(cos: float, ctrl: float) -> str:
+    """n3b: cos(null student, real student) against cos(real student, the same at a second batch order)."""
+    if not (math.isfinite(cos) and math.isfinite(ctrl)):
+        return "unscorable"
+    if ctrl < AM.ctrl_min:
+        return "no power"
+    return "shared" if cos >= AM.cos_shared * ctrl else "none" if cos < AM.cos_none else "some"
+
+
+def recipe_class(size: str, direction: str) -> str:
+    """n3b: "the recipe" needs a comparable size and a direction shared with the real student. Every pair has a row."""
+    if size == "unscorable" or direction in ("unscorable", "no power") and size != "well under":
+        return "unscorable"
+    if size == "well under":
+        return "not the recipe"
+    if direction == "shared":
+        return "the recipe" if size == "about" else "partly"
+    return "partly" if direction == "some" else "a walk elsewhere"
+
+
 def outcome(verdict: str, parts: list[bool | None]) -> str:
     """Every rule's last line. A failed check is 'fails' whatever else reads; else a part that cannot be scored is
     'unscorable', a missed part 'fails'; 'holds' needs a pass and every part. Any other verdict is 'unscorable'."""
@@ -156,12 +195,14 @@ def outcome(verdict: str, parts: list[bool | None]) -> str:
     return "holds" if verdict == "pass" else "inconclusive"
 
 
-def label_class(verdict: str, self_check: float, true_check: float) -> tuple[str, float | None]:
+def label_class(verdict: str, pgd_verdict: str, self_check: float, true_check: float) -> tuple[str, float | None]:
     """N4: the self-label state against the same-job true-label state of the same recipe."""
     if verdict == "invalid":
         return "unscorable", None
     if verdict != "fail":
         return ("near base" if verdict == "pass" else "inconclusive"), None
+    if pgd_verdict != "fail":
+        return "fails on the stochastic ratio", None
     if not math.isfinite(true_check) or true_check <= 1:
         return "fails, no reference", None
     share = (self_check - 1) / (true_check - 1)
@@ -176,29 +217,57 @@ def score_return(r: dict[str, Any], line: float) -> dict[str, Any]:
             "verdict": b["base_verdict"]}
 
 
+def score_n3b(out: dict[str, Any]) -> dict[str, Any]:
+    r, d = out["reads"], out["direction"]
+    size, ratio = size_class(r["1000"]["size"], r["real"]["size"])
+    direction = direction_class(d["null_real"], d["control"])
+    cls, v = recipe_class(size, direction), r["1000"]["base_verdict"]
+    part = None if cls == "unscorable" else cls in ("not the recipe", "a walk elsewhere")
+    return {"size_class": size, "size_ratio": ratio, "direction": direction, "class": cls, **d, "verdict": v,
+            "follows_null_teacher": d["null_teacher"] >= d["real_teacher"], "real_verdict": r["real"]["base_verdict"],
+            "real_check": r["real"]["pgd"], "outcome": outcome(v, [part]), "card": cls == "the recipe" or v == "fail"}
+
+
+def score_n4(stage: str, out: dict[str, Any]) -> dict[str, Any]:
+    r = out["reads"]
+    rec, true = r[str(AM.label[stage.removeprefix("n4_")]["scored"])], r["true"]
+    v = rec["base_verdict"]
+    cls, share = label_class(v, rec["pgd_verdict"], rec["pgd"], true["pgd"])
+    result = outcome(v, [])
+    if stage == "n4_adam" and true["base_verdict"] != "fail":  # the recipe did not fail on this card: no power either way
+        cls, share = ("fails, no reference", None) if v == "fail" else ("no reference", None)
+        result = result if v == "fail" else "no reference"
+    return {"class": cls, "recipe_share": share, "verdict": v, "true_verdict": true["base_verdict"], "outcome": result,
+            "card": v == "fail"}
+
+
 def score(stage: str, out: dict[str, Any]) -> dict[str, Any]:
     r = out["reads"]
     if stage == "n1":
         s = score_return(r, AM.gap_line)
-        parts = [None if s["gap"] in ("invalid", "no power") else s["gap"] == "closed"]
-        return s | {"outcome": outcome(s["verdict"], parts), "card": s["verdict"] == "fail"}
+        gap_ok = None if s["gap"] in ("invalid", "no power") else s["gap"] == "closed"
+        result = outcome(s["verdict"], [gap_ok])
+        floor = out.get("early", {}).get("warm start KL", {}).get("value", math.nan)
+        return s | {"outcome": "fails, gap not closed" if result == "fails" and s["verdict"] != "fail" else result,
+                    "card": s["verdict"] == "fail", "hook_floor": floor, "gap_line_needs_amendment": floor > AM.hook_floor_line}
     if stage == "n2":
         s = score_return(r, AM.gap_share * r["0"]["kl_w0"])
-        parts = [None if s["gap"] in ("invalid", "no power") else s["gap"] == "closed", s["returned"]]
-        return s | {"outcome": outcome(s["verdict"], parts), "card": s["verdict"] == "fail" or s["returned"] is False}
-    if stage == "n3":
-        cls, ratio = size_class(r["1000"]["size"], r["real"]["size"])
-        v = r["1000"]["base_verdict"]
-        part = None if cls == "unscorable" else cls == "well under"
-        return {"size_class": cls, "size_ratio": ratio, "verdict": v, "outcome": outcome(v, [part]),
-                "card": cls == "about" or v == "fail"}
+        p = r["1000"]["p_target"]
+        p_back = None if not math.isfinite(p) else p <= AM.n2_p_line
+        gap_ok = None if s["gap"] in ("invalid", "no power") else s["gap"] == "closed"
+        return s | {"p_back": p_back, "real_verdict": r["0"]["base_verdict"], "real_check": r["0"]["pgd"],
+                    "outcome": outcome(s["verdict"], [gap_ok, p_back, s["returned"]]),
+                    "card": s["verdict"] == "fail" or s["returned"] is False or p_back is False}
+    if stage == "n3a":
+        sizes = {k: v["size"] for k, v in out["null_checkpoints"].items()}
+        step = nearest_checkpoint(sizes, out["real_teacher"]["size"])
+        return {"chosen_step": step, "size": None if step is None else sizes[step], "target": out["real_teacher"]["size"]}
+    if stage == "n3b":
+        return score_n3b(out)
     if stage == "n5":
         v = r["1000"]["base_verdict"]
         return {"verdict": v, "outcome": outcome(v, []), "card": v == "fail"}
-    rec = r[str(AM.label[stage.removeprefix("n4_")]["scored"])]
-    cls, share = label_class(rec["base_verdict"], rec["pgd"], r["true"]["pgd"])
-    return {"class": cls, "recipe_share": share, "verdict": rec["base_verdict"], "true_verdict": r["true"]["base_verdict"],
-            "outcome": outcome(rec["base_verdict"], []), "card": rec["base_verdict"] == "fail"}
+    return score_n4(stage, out)
 
 
 # ----------------------------------------------------------------------------- early checks and reads
@@ -231,6 +300,7 @@ def finish(job: Job, out: dict[str, Any], path: Path, name: str, rec: dict[str, 
     from commute import arms
 
     rec["base_verdict"] = base_verdict(rec["pile_ratios"], job.w0)
+    rec["pgd_verdict"] = faith_score.verdict(rec["pile_ratios"]["pgd_kl"], job.w0["pgd_floor"])
     if st is not None:
         arms.save_offsets(STATES / out["stage"] / f"{name}.pt", job.ctx.uv_cpu, st, {"stage": out["stage"], "read": name})
     out["reads"][name] = rec
@@ -254,13 +324,13 @@ def read(job: Job, out: dict[str, Any], path: Path, tctx: Any, name: str, dW: di
     return finish(job, out, path, name, {k: full[k] for k in keep} | {"kl_w0": kl_w0}, st)
 
 
-def train_from(tctx: Any, net: Any, init: Any, saves: tuple[int, ...]) -> tuple[list[dict[str, Any]], dict[int, Any]]:
+def train_from(tctx: Any, net: Any, init: Any, saves: tuple[int, ...], seed: int = 0) -> tuple[list[dict[str, Any]], dict[int, Any]]:
     """path.student's recipe (arm A, E34's settings) with states at `saves`; path.student keeps only the last."""
     from commute import component_training
     from commute.finetune import ArmAConfig
 
     last = saves[-1]
-    a_cfg = ArmAConfig(o_token=tctx.token, batch=CFG.batch_a, steps=last, checkpoints=(last,), seed=0)
+    a_cfg = ArmAConfig(o_token=tctx.token, batch=CFG.batch_a, steps=last, checkpoints=(last,), seed=seed)
     cfg = component_training.TrainConfig(lr=CFG.student_lr, steps=last, save_steps=saves, optimizer="adam")
     half = tctx.train.half
     return component_training.train(tctx.model, tctx.uv, tctx.train.tokens, tctx.held, a_cfg, cfg, tctx.device, tctx.W0, log=log,
@@ -272,9 +342,8 @@ def keep_curve(out: dict[str, Any], path: Path, name: str, curve: list[dict[str,
     dump(path, out)
 
 
-def real_pair(job: Job, out: dict[str, Any], path: Path) -> Any:
-    """E41's emoticon pair regenerated in-job: the Adam 3e-5 fine-tune T1000 and its arm-A student from W0."""
-    from commute import teacher
+def real_teacher(job: Job, out: dict[str, Any], path: Path) -> Any:
+    """E41's emoticon T1000 regenerated in-job: the Adam 3e-5 fine-tune, with its size at step 1."""
     from commute.finetune import ArmAConfig, finetune_arm_a
 
     tctx = job.task(EMO)[0]
@@ -285,27 +354,36 @@ def real_pair(job: Job, out: dict[str, Any], path: Path) -> Any:
     check(out, path, "T1000 step-1 loss", res.log[0]["loss"], AM.t_loss1)
     check(out, path, "T1000 P(target)", ev["p_o"], AM.t_p)
     check(out, path, "T1000 size", ev["rel_norm_max"], AM.t_size)
-    dW = res.deltas[CFG.steps[-1]]
-    net = teacher.teacher_net(tctx.model, dW)
-    curve, states = train_from(tctx, net, None, (CFG.steps[-1],))
-    st = states[CFG.steps[-1]]
+    return SimpleNamespace(tctx=tctx, dW=res.deltas[CFG.steps[-1]], t_size1=res.evals[1]["rel_norm_max"])
+
+
+def real_pair(job: Job, out: dict[str, Any], path: Path) -> Any:
+    """T1000 (`real_teacher`) and its arm-A student from W0, as E41's."""
+    from commute import teacher
+
+    p = real_teacher(job, out, path)
+    p.net = teacher.teacher_net(p.tctx.model, p.dW)
+    curve, states = train_from(p.tctx, p.net, None, (CFG.steps[-1],))
+    p.st = states[CFG.steps[-1]]
     keep_curve(out, path, "real", curve)
     check(out, path, "student step-1 KL", curve[0]["loss"], AM.real_kl1)
     check(out, path, "student P(target)", curve[-1]["heldout_p_o"], AM.real_p)
     check(out, path, "student size", curve[-1]["rel_norm_max"], AM.real_size)
-    return SimpleNamespace(tctx=tctx, dW=dW, net=net, st=st, size=curve[-1]["rel_norm_max"], size1=curve[0]["rel_norm_max"],
-                           t_size1=res.evals[1]["rel_norm_max"])
+    p.size, p.size1 = curve[-1]["rel_norm_max"], curve[0]["rel_norm_max"]
+    return p
 
 
-def walk_back(job: Job, out: dict[str, Any], path: Path, tctx: Any, st0: dict[str, Any], kl1: Bound) -> None:
+def walk_back(job: Job, out: dict[str, Any], path: Path, tctx: Any, st0: dict[str, Any], kl1: Bound, gap_above: float) -> None:
     """N1, N2: teacher = W0 from `st0`, fresh Adam (as an E41 chain link). The warm start reproduces its own weights
-    (one step at lr 0), then the start, step 100 and step 1000 are read."""
+    (one step at lr 0; its KL is this card's hook floor), then the start is read: its KL to W0 must be strictly above
+    `gap_above`, so a job cannot run on to read 'no power'. Then steps 100 and 1000."""
     from commute import teacher
 
     net0, init = teacher.teacher_net(tctx.model, {}), init_of(tctx, st0)
     curve, _ = student(job, EMO, "A", teacher.teacher_net(tctx.model, deltas(st0)), init, steps=1, lr=0.0)
     check(out, path, "warm start KL", curve[0]["loss"], AM.warm_kl)
-    read(job, out, path, tctx, "0", deltas(st0), st0, net0, net0)
+    rec = read(job, out, path, tctx, "0", deltas(st0), st0, net0, net0)
+    check(out, path, "start KL to W0 above the gap line", rec["kl_w0"], (math.nextafter(gap_above, math.inf), 1e9))
     curve, states = train_from(tctx, net0, init, CFG.steps)
     keep_curve(out, path, "walk", curve)
     check(out, path, "step-1 KL to W0", curve[0]["loss"], kl1)
@@ -332,10 +410,13 @@ def self_ce(net: Any, net0: Any, toks: Tensor, half: int | None, gen: torch.Gene
     return loss, {"ce": ce[:, :-1].mean().item(), "entropy": entropy[:, :-1].mean().item()}
 
 
-def null_fine_tune(tctx: Any, net0: Any) -> Any:
-    """Arm A's fine-tune (`finetune.finetune_arm_a`: all 24 matrices, Adam 3e-5, batch 32, batch order 0) with self_ce."""
+def null_fine_tune(tctx: Any, net0: Any, checkpoints: tuple[int, ...]) -> Any:
+    """Arm A's fine-tune (`finetune.finetune_arm_a`: all 24 matrices, Adam 3e-5, batch 32, batch order 0) with self_ce, to
+    the last checkpoint; each checkpoint reads P(target), damage, size and the unmasked KL to W0. A shorter run draws
+    the same batches and labels as a longer one."""
     import copy
 
+    from commute import teacher
     from commute.finetune import _run, decomposed_params, eval_arm_a
 
     net, ref = tctx.model.target_model, copy.deepcopy(tctx.model.target_model).eval().requires_grad_(False)
@@ -345,8 +426,10 @@ def null_fine_tune(tctx: Any, net0: Any) -> Any:
         toks = tctx.train.tokens[torch.randint(0, len(tctx.train), (CFG.batch_a,), generator=gen)].to(tctx.device)
         return self_ce(net, net0, toks, tctx.train.half, lgen)
 
-    return _run(tctx.model, decomposed_params(tctx.model), FT_ADAM_LR, 1.0, CFG.steps[-1], (1, CFG.steps[-1]), loss_fn,
-                lambda: eval_arm_a(net, ref, tctx.held, tctx.token, tctx.device), log, "adam")
+    def eval_fn() -> dict[str, Any]:
+        return eval_arm_a(net, ref, tctx.held, tctx.token, tctx.device) | {"kl_w0": teacher.heldout_gap(net, net0, tctx.held, tctx.device)}
+
+    return _run(tctx.model, decomposed_params(tctx.model), FT_ADAM_LR, 1.0, checkpoints[-1], checkpoints, loss_fn, eval_fn, log, "adam")
 
 
 # ----------------------------------------------------------------------------- the stages
@@ -361,7 +444,7 @@ def n1(job: Job, out: dict[str, Any], path: Path) -> None:
     st0 = state_of(delta_w(uv, uv2), uv2)
     size0 = max(float(st0[k][0].norm() / p.tctx.W0[k].cpu().norm()) for k in st0)
     check(out, path, "start size / student's", size0 / p.size, near_one(AM.move_tol))
-    walk_back(job, out, path, p.tctx, st0, AM.n1_kl1)
+    walk_back(job, out, path, p.tctx, st0, AM.n1_kl1, AM.gap_line)
 
 
 def n2(job: Job, out: dict[str, Any], path: Path) -> None:
@@ -369,32 +452,60 @@ def n2(job: Job, out: dict[str, Any], path: Path) -> None:
 
     p = real_pair(job, out, path)
     read(job, out, path, p.tctx, "nothing", p.dW, None, p.net, teacher.teacher_net(p.tctx.model, {}))
-    walk_back(job, out, path, p.tctx, p.st, AM.n2_kl1)
+    walk_back(job, out, path, p.tctx, p.st, AM.n2_kl1, 0.0)
 
 
-def n3(job: Job, out: dict[str, Any], path: Path) -> None:
+def n3a(job: Job, out: dict[str, Any], path: Path) -> None:
     from commute import teacher
 
-    p = real_pair(job, out, path)
-    tctx = p.tctx
-    net0 = teacher.teacher_net(tctx.model, {})
-    read(job, out, path, tctx, "real", deltas(p.st), p.st, p.net, net0)
-    res = null_fine_tune(tctx, net0)
-    last, ev = CFG.steps[-1], res.evals[CFG.steps[-1]]
-    out["null_teacher"] = {"p_target": ev["p_o"], "damage": ev["kl_other"], "size": ev["rel_norm_max"], "size_1": res.evals[1]["rel_norm_max"]}
+    p = real_teacher(job, out, path)
+    res = null_fine_tune(p.tctx, teacher.teacher_net(p.tctx.model, {}), AM.n3a_steps)
     check(out, path, "self-label CE - entropy, step 1", res.log[0]["ce"] - res.log[0]["entropy"], (-AM.ce_tol, AM.ce_tol))
     check(out, path, "null fine-tune size at step 1 / real", res.evals[1]["rel_norm_max"] / p.t_size1, near_one(AM.t1_tol))
-    dW = res.deltas[last]
-    STATES.joinpath("n3").mkdir(parents=True, exist_ok=True)
-    torch.save({k: v.bfloat16() for k, v in dW.items()}, STATES / "n3" / "null_teacher_dW.pt")
+    out["null_checkpoints"] = {str(k): {"size": v["rel_norm_max"], "kl_w0": v["kl_w0"], "damage": v["kl_other"], "p_target": v["p_o"]}
+                               for k, v in res.evals.items()}
+    dump(path, out)
+    log(f"[n3a checkpoints] {json.dumps(out['null_checkpoints'], default=float)}")
+
+
+def n3a_choice(job: Job) -> dict[str, Any]:
+    """n3a's finished reading on this card; n3b refuses without it (main refuses it without the dated note)."""
+    path = RESULTS / "teacher_training_amend8_n3a.json"
+    a = json.loads(path.read_text()) if path.is_file() else {}
+    if not a.get("done") or a["card"] != job.card or a["score"]["chosen_step"] is None:
+        sys.exit(f"n3b needs n3a done on {job.card} with a chosen checkpoint: {path}")
+    return a["score"]
+
+
+def n3b(job: Job, out: dict[str, Any], path: Path) -> None:
+    from commute import teacher
+    from commute.finetune import cosines
+
+    chosen = n3a_choice(job)
+    p = real_pair(job, out, path)
+    tctx, step = p.tctx, int(chosen["chosen_step"])
+    net0 = teacher.teacher_net(tctx.model, {})
+    read(job, out, path, tctx, "real", deltas(p.st), p.st, p.net, net0)
+    _, order2 = train_from(tctx, p.net, None, (CFG.steps[-1],), seed=AM.order2)
+    res = null_fine_tune(tctx, net0, (step,))
+    out["null_teacher"] = {"step": step, **res.evals[step]}
+    check(out, path, "null teacher size / n3a's", res.evals[step]["rel_norm_max"] / chosen["size"], near_one(AM.reproduce_tol))
+    dW = res.deltas[step]
+    STATES.joinpath("n3b").mkdir(parents=True, exist_ok=True)
+    torch.save({k: v.bfloat16() for k, v in dW.items()}, STATES / "n3b" / "null_teacher_dW.pt")
     net = teacher.teacher_net(tctx.model, dW)
     read(job, out, path, tctx, "nothing", dW, None, net, net0)
     curve, states = train_from(tctx, net, None, CFG.steps)
     keep_curve(out, path, "null_student", curve)
-    check(out, path, "null student step-1 KL", curve[0]["loss"], AM.null_kl1)
+    log(f"[n3b] null student step-1 KL {curve[0]['loss']:.6g} (logged, no stop)")
     check(out, path, "null student size at step 1 / real", curve[0]["rel_norm_max"] / p.size1, near_one(AM.s1_tol))
     for s in CFG.steps:
         read(job, out, path, tctx, str(s), deltas(states[s]), states[s], net, net0)
+    null, real = deltas(states[CFG.steps[-1]]), deltas(p.st)
+    out["direction"] = {"null_real": cosines(null, real)["all"], "null_teacher": cosines(null, dW)["all"],
+                        "real_teacher": cosines(real, p.dW)["all"], "control": cosines(real, deltas(order2[CFG.steps[-1]]))["all"]}
+    dump(path, out)
+    log(f"[n3b direction] {json.dumps(out['direction'])}")
 
 
 def label_train(job: Job, rows: Tensor, opt: str, lr: float, saves: tuple[int, ...], loss_fn: Any) -> Any:
@@ -439,7 +550,7 @@ def n4(job: Job, out: dict[str, Any], path: Path, opt: str) -> None:
     keep_curve(out, path, "true", curve)
     check(out, path, "true labels step-1 CE", curve[0]["loss"], AM.label_ce1)
     rec = state("true", states[steps])
-    check(out, path, "true labels gain", rec["gain"], (cfg["gain"] - AM.gain_tol, cfg["gain"] + AM.gain_tol))
+    check(out, path, "true labels gain", rec["gain"], (cfg["gain"] * (1 - AM.gain_tol), cfg["gain"] * (1 + AM.gain_tol)))
     del states
     lgen = torch.Generator(device=c.device).manual_seed(0)
     curve, states = label_train(job, rows, opt, cfg["lr"], AM.label_saves, lambda n, t: self_ce(n, net0, t, None, lgen))
@@ -475,7 +586,7 @@ def run_stage(job: Job, stage: str) -> None:
     if stage.startswith("n4_"):
         n4(job, out, path, stage.removeprefix("n4_"))
     else:
-        {"n1": n1, "n2": n2, "n3": n3, "n5": n5}[stage](job, out, path)
+        {"n1": n1, "n2": n2, "n3a": n3a, "n3b": n3b, "n5": n5}[stage](job, out, path)
     out["score"], out["done"] = score(stage, out), True
     dump(path, out)
     log(f"[{stage} score] {json.dumps(out['score'], default=float)}")
@@ -491,6 +602,8 @@ def main() -> None:
     filed = json.loads(PRED.read_text())
     for key, cfg in (("config", CFG), ("amend8", AM)):
         assert filed[key] == json.loads(json.dumps(asdict(cfg))), f"predictions were filed for another {key}: {filed[key]}"
+    if args.stage == "n3b" and not filed["n3b_expected_from_n3a"]["dated_note"]:
+        sys.exit(f"n3b needs its expected values filed from n3a's reading: {PRED} n3b_expected_from_n3a")
     run_stage(Job(args.device), args.stage)
     log("done")
 
