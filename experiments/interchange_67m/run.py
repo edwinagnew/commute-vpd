@@ -3,10 +3,10 @@ Plan: reports/plans/2026-11-02_plan_e66-interchange-67m.md, "Amendment 1: feasib
 settings, expected values: results/predictions.json (controls only; committed first; the run refuses otherwise; never edited).
 Definitions and rules: `commute.ctxpatch`. Reads saved states only; the one training is the sharpening control.
 
-  0 W0 and the zero update alone: identity patch, zero update, R(W0) per block and l*, K, the filed steering. Exit 1 on a miss.
-  1 the built controls per map: write, amplify, sharpen. T, T_off, Q, U, bars. Exit 1 if amplify's T misses on half the maps.
+  0 W0 alone: x_hi's input written into x_lo's run reproduces x_hi's read; R(W0) per block and l*; K. Exit 1 on a miss.
+  1 the built controls per map: write, amplify, sharpen. T, T_off, Q, U. Exit 1 if amplify's T misses on half the readable maps.
   2 E62's six states, 3 the eight copy and random maps: reproduce G (exit 1 on a miss), steering, T, T_off, Q, U. Exploratory.
-  4 E62 Amendment 2's size-swapped copies: T, Q; Spearman of T and Q against the update's size. Exploratory.
+  4 E62 Amendment 2's size-swapped copies: T, Q beside their unscaled values. Exploratory. T against size: the analysis, from run.json.
 results/run.json after every stage; every number printed.
 """
 
@@ -42,14 +42,6 @@ Rec = dict[str, Any]
 Maps = dict[str, Map]
 SEEDS = {"copy": (0, 1, 2), "lookup": (0, 1, 2), "ident32": (0, 1), "ident32b": (0, 1), "rand32": (0, 1), "rand32b": (0, 1)}
 E62, E46 = "induction_cue", "regating_table"
-SAVED = [  # the plan's 47 saved states, (folder, name); a name can recur across folders; only SEEDS' fourteen are read here
-    *((E62, f"{m}_s{s}") for m in ("copy", "lookup") for s in (0, 1, 2)),
-    *((E46, f"{m}_s{s}") for m in ("ident32", "ident32b", "rand32", "rand32b") for s in (0, 1)),
-    *(("keydependent_elicit", f"{m}_s{s}") for m in ("elicit", "cipher", "cipher_own") for s in (0, 1)),
-    *(("keydependent_patch", f"{m}_s{s}") for m in ("elicit", "cipher") for s in (2, 3, 4)),
-    *(("open_pair_instruments", f"{m}_s{s}") for m in ("rank1", "copy", "cipher") for s in (3, 4, 5, 6, 7)),
-    *(("performed_anchor", f"dW_{m}_s{s}_step300") for m in ("lowercase", "cipher", "broad_cipher") for s in (0, 1)),
-]
 
 
 def large(folder: str) -> Path:
@@ -110,13 +102,10 @@ def key_map(net: ST.Net, rows: Tensor, name: str, S: Rec, th: Rec) -> Map:
     return X.make_map(net, name, toks, keys, table[keys], next_value[keys], None, S, th)
 
 
-def filed_steering() -> dict[tuple[str, str], dict[int, float] | None]:
-    """Per saved state, the per-block steering share on the scoring half, where a file has one: E52, E54, E60."""
-    e52, e54, e60 = filed_json("baseline_neurons", "baseline_neurons.json"), filed_json("keydependent_elicit", "stage2.json"), filed_json("regating_truth_table", "stage1.json")
-    per = lambda layers: {l: layers[str(l)]["score"] for l in X.BLOCKS}
-    source = {E46: lambda n: e52["b3"][n]["layers"], "keydependent_elicit": lambda n: e54["states"][n]["b3_layers"],
-              "performed_anchor": lambda n: e60["rows"]["e53/" + n[3:].removesuffix("_step300")]["b3_layers"]}
-    return {(f, n): per(source[f](n)) if f in source else None for f, n in SAVED}
+def filed_steering() -> dict[str, dict[int, float]]:
+    """The eight E46 states' per-block steering share on the scoring half (E52, in log P). E62's six have none filed."""
+    b3 = filed_json("baseline_neurons", "baseline_neurons.json")["b3"]
+    return {n: {l: v["layers"][str(l)]["score"] for l in X.BLOCKS} for n, v in b3.items()}
 
 
 def fix_K(net: ST.Net, rows: Tensor, S: Rec, th: Rec, rec: Rec) -> tuple[int | None, Tensor]:
@@ -134,32 +123,28 @@ def fix_K(net: ST.Net, rows: Tensor, S: Rec, th: Rec, rec: Rec) -> tuple[int | N
 
 def stage0(net: ST.Net, maps: Maps, rows: Tensor, S: Rec, th: Rec, out: Rec) -> tuple[int | None, Tensor]:
     half = S["half"]
-    zero: DW = {k: torch.zeros_like(w).cpu() for k, w in net.W0.items()}
     sd = lambda r: float(r[X.boot_index(len(r), th["n_boot"], S["seed"])].mean(1).std())
     rec: Rec = {"maps": {}}
     for m in maps.values():
-        z = X.responses(net, m.on.pairs, m.on.hi, m.on.lo, half, zero)
         rec["maps"][m.name] = {"lstar": m.lstar, "pairs": len(m.on.pairs.tgt), "pairs_off": len(m.off.pairs.tgt), "keys": len(m.keys.unique()),
                                "R0": {l: [float(m.on.R0[l].mean()), sd(m.on.R0[l])] for l in X.BLOCKS},
                                "R0_off": {l: [float(m.off.R0[l].mean()), sd(m.off.R0[l])] for l in X.BLOCKS},
                                "target_in_prefix_hi_lo": X.prefix_share(m.on, half),
-                               "identity_max": max(X.identity_max(net, m.on, half), X.identity_max(net, m.off, half)),
-                               "zero_max": max(float((z[l] - m.on.R0[l]).abs().max()) for l in X.BLOCKS)}
+                               "transplant_max": X.nan_max([X.transplant_max(net, m.on, half), X.transplant_max(net, m.off, half)])}
     r = rec["maps"]
-    rec["status"] = X.stage0_status(max(v["identity_max"] for v in r.values()), max(v["zero_max"] for v in r.values()), {n: v["lstar"] for n, v in r.items()}, th)
+    rec["status"] = X.stage0_status(X.nan_max([v["transplant_max"] for v in r.values()]), {n: v["lstar"] for n, v in r.items()}, th)
     note(out, "stage0", rec)  # before K, so a stop reads the patch's own numbers
     if rec["status"] != "pass":
         stop(out, f"stage 0: {rec['status']}")
     K, means = fix_K(net, rows, S, th, rec)
-    rec["filed_steering"] = {f"{f}/{n}": {"shares": v, "on_disk": (large(f) / f"{n}.pt").is_file()} for (f, n), v in filed_steering().items()}
     note(out, "stage0", rec)
     return K, means
 
 
 def controls(net: ST.Net, m: Map, K: int | None, sharp: DW, means: Tensor, S: Rec, th: Rec) -> Rec:
     """The map's gain target is its saved states' mean; only that gain is read from them here."""
-    Gt = sum(X.gain(net, m, state(f"{m.name}_s{s}")) for s in SEEDS[m.name]) / len(SEEDS[m.name])
-    built: dict[str, tuple[DW, Rec]] = {"sharpen": (sharp, {"norm": EL.summed_norm(sharp)})}
+    Gt = sum(X.gain_under(net, m, state(f"{m.name}_s{s}")) for s in SEEDS[m.name]) / len(SEEDS[m.name])
+    built: dict[str, tuple[DW, Rec]] = {"sharpen": (sharp, {"norm": EL.summed_norm(sharp), "G": X.gain_under(net, m, sharp)})}
     if K is not None:
         built["amplify"] = X.amplify_state(net, m, K, Gt, S["amp_cap"], S["match_tol"])
     if m.name != "copy":
@@ -187,7 +172,7 @@ def stage1(net: ST.Net, maps: Maps, rows: Tensor, K: int | None, means: Tensor, 
     rec["status"] = X.stage1_status({n: v["verdicts"]["amplify_T"] for n, v in rec["maps"].items() if "verdicts" in v})
     note(out, "stage1", rec)
     if rec["status"] != "pass":
-        stop(out, "stage 1: amplify's T does not clear the write's on half the maps or more")
+        stop(out, "stage 1: amplify's T does not clear the write's on half the readable maps or more, or no map is readable; see verdicts")
 
 
 def reproduce(net: ST.Net, name: str, m: Map, run: Rec, e52: Rec, half: int) -> tuple[float, float]:
@@ -210,7 +195,7 @@ def read_map(net: ST.Net, m: Map, K: int | None, means: Tensor, run: Rec, S: Rec
         G, diff = reproduce(net, name, m, run, e52, half)
         if diff > th["g_tol"]:
             stop(out, f"{key}: {name} does not reproduce its filed gain: {G} ({diff} off)")
-        dW, shares = state(name), filed[E62 if m.name in ("copy", "lookup") else E46, name]
+        dW, shares = state(name), filed.get(name)
         if shares is None:
             v = e62_read()
             shares = X.steer_shares(net, v["read"].tokens, v["target"][m.name]["read"], half, dW)
@@ -233,10 +218,7 @@ def stage4(net: ST.Net, maps: Maps, S: Rec, th: Rec, out: Rec) -> None:
         dW = {k: st["alpha"] * v for k, v in state(name).items()}
         row = X.patch_row(net, m, dW, th, S["seed"])
         at = row.get(m.lstar or 0, {})
-        rec["scaled"][name] = {"alpha": st["alpha"], "norm": EL.summed_norm(dW), "T": at.get("T"), "Q": at.get("Q"), "T_unscaled": states[name]["T"], "row": row}
-    both = [*states.values(), *rec["scaled"].values()]
-    rec["spearman_T_norm"] = X.spearman([s["T"] for s in both], [s["norm"] for s in both])
-    rec["spearman_Q_norm"] = X.spearman([s["Q"] for s in both], [s["norm"] for s in both])
+        rec["scaled"][name] = {"alpha": st["alpha"], "norm": EL.summed_norm(dW), "T": at.get("T"), "Q": at.get("Q"), "T_unscaled": states[name]["T"], "Q_unscaled": states[name]["Q"], "row": row}
     note(out, "stage4", rec)
 
 

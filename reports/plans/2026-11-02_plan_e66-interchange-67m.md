@@ -332,3 +332,21 @@ Everything in this section: coded and filed only. No model was loaded. A fresh r
 ### Departures from the literature
 
 The plan's list stands. Added here: the off-map ratio Q, the masked odds and the alignment-matched null are ours, with no source; temperature 0.5 and the 0.2 and 0.5 bands in `predictions.json` are unsourced and marked so there.
+
+### Note, 2026-11-02: after the code review
+
+*The code review of commit c649f2e, relayed to the writer by the lead on 2026-11-02. No file for it was in `reports/reviews/` when this was written. Nothing had run, so `predictions.json` was changed in place. This note holds over Amendment 1 above where they differ.*
+
+**Changed in the rules, and why.**
+- **C0 replaced, C1 deleted.** The old identity patch and zero update could pass with the x_hi sites never touched, and T = 1 at a zero update holds by identity, so it controls nothing. C0 now writes x_hi's block-l input at every position, with the stored x_hi site at the answer position, into x_lo's run, and asks that it reproduce x_hi's read within 1e-4 (E52's fp32 figure, 1.7e-5). A nan now fails whichever position it holds. The zero update stays in words only.
+- **C6.** Sharpening is scored against 1 (T − 1 over 3 s), not against the write, and its Q is void unless that holds. So "too weak" can fire honestly. Its gain is recorded on each map. The trained control stays: dividing logits by the temperature would pass by algebra and test nothing about a weight state.
+- **C5.** Amplify's T and Q are void unless its gain match has status "ok" and the map's write is conditioned, so stage 1's stop does not count such a map.
+- **C4, write conditioning, new.** `perturb.write_fit` goes into the write's record and the log. Bars: cond(A) at most 16.5, mean relative error at most 0.33, twice E46's worst reading in `regating_table/results/amend3.json` (cond 6.4 to 8.2, error 0.16 to 0.17). Twice, not once, is the writer's choice: that write sat at block 1 on the key layout, and this one sits at block 3, on the lookup at the cue layout.
+- **Q's band.** Q reads void when 3 s_Q is over 0.2, not a band widened by its own noise.
+- **The off-map mask.** It now holds the map's target on x_hi and on x_lo (two tokens per pair). On the copy map they differ, and x_hi's B entering x_lo's odds would move the off-map read.
+- **U.** Void when 2K exceeds 12288, a new edge case, since no null fits. Fallbacks are stored per draw. The share of amplify's neurons in U's top K is reported in C7's reading.
+- **Blind-to, added.** Pairs are picked on W0's own metric, so R(W0) carries selection inflation and T can drift below 1 with update size. That feeds the reading of T against ‖δW‖, and the predictions' note on that reading says so.
+
+**Deleted.** The bars and U at the state's own top K, so no bar is computed by the run; Spearman, which the analysis computes from `run.json`; the listing of the 33 states not read and the E54 and E60 steering sources, so stage 0 no longer prints them and the card's listing is a `jq` query. Stage 4 now stores Q beside T unscaled.
+
+**Consequence for "What the card after it decides".** Its numbers come from the analysis, from `run.json`: bars, |ρ|, the filed shares of the other states.
