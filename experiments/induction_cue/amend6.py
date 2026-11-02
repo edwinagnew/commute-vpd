@@ -6,7 +6,8 @@ results/predictions_amend6.json (committed first; the run refuses otherwise; nev
 Each forward reads four cells, through one rule (copying.overwrite_reading): B and the new token, on the intact tokens and with B overwritten.
   a control, alone: every mask at 1, then the target model. Each must re-read Amendment 5's level, read mask_opens_route and pass copying.overwrite_control; a miss is exit 1.
   b the masked forward under W0's mask. Its first cell, B on the intact tokens, is the do-nothing and must re-read Amendment 5's level: a miss is exit 1, verdict reread_failed.
-  c the same four cells in fp32 under Γ's fp32 mask, beside the verdict. A disagreement is a LOUD line, and nothing here stops the job.
+    A mask verdict of unreadable is exit 1 too. After the verdict, report-only: B and the new token under Γ's own mask on the overwritten tokens, and how often each is top-1.
+  c the same four cells in fp32 under Γ's fp32 mask, beside the verdict. A disagreement, or a first cell off Amendment 5's, is a LOUD line, and nothing here stops the job.
 Masked forward and Γ bf16 (autocast) but for (c), target model fp32, as Amendment 5. results/amend6.json and results/large/amend6_windows.pt after every stage, every number printed.
 """
 
@@ -22,7 +23,7 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 import torch
-from amend5 import Reads5
+from amend5 import Gates, Reads5
 from torch import Tensor
 
 from commute import copying as CP
@@ -90,6 +91,22 @@ def control(J: Job, name: str, read: Read) -> None:
         J.stop("control_failed", f"{name}: {status}; lost {rec['lost']:.3f}, gained {rec['gained']:.3f}, new token at {rec['new_over']:.3f} against {rec['on']:.3f}; the mask is not read")
 
 
+def report_only(J: Job, g0: Gates) -> None:
+    """After the verdict, deciding nothing: B and the new token under Γ's own mask on the overwritten tokens, how often each is top-1, and B's level as a probability."""
+    R, W, r = J.R, J.W, J.rows
+    b, new = W["on"][:, -1], W["new_intact"][:, -1]
+    over = W["b_over"]
+    g_own = R.gates(over)
+    top = lambda g, w: CP.masked_top1(R.ctx.net.model, w, R.half, g, KD.BATCH, R.n)
+    r["own_b_over"], r["own_new_over"] = R.masked(over, g_own, []).detach().cpu(), R.masked(W["new_over"], g_own, []).detach().cpu()
+    r["top_mask_intact"], r["top_mask_over"], r["top_own_over"] = top(g0, W["on"]), top(g0, over), top(g_own, over)
+    J.note("own_mask", {"b_over": float(r["own_b_over"].mean()), "new_over": float(r["own_new_over"].mean())})
+    rate = lambda name, token: float((r[name] == token).double().mean())
+    J.note("top1", {"mask_on": rate("top_mask_intact", b), "mask_new_intact": rate("top_mask_intact", new), "mask_b_over": rate("top_mask_over", b), "mask_new_over": rate("top_mask_over", new),
+                    "own_b_over": rate("top_own_over", b), "own_new_over": rate("top_own_over", new)})
+    J.note("b_probability", {k: {"at_mean_log_odds": float(torch.sigmoid(r[k].mean())), "mean_over_windows": float(torch.sigmoid(r[k]).mean())} for k in ("mask_on", "mask_b_over", "own_b_over")})
+
+
 def run(J: Job) -> None:
     R, on, s = J.R, J.W["on"], J.saved
     g0 = R.gates(on)
@@ -99,12 +116,17 @@ def run(J: Job) -> None:
     lean = s["mask_on"] - s["mask_broken"]
     mask = cells(J, "mask", lambda w: R.masked(w, g0, []), s["mask_on"], lean)
     reread(J, "mask", mask)
+    if mask["verdict"] == "unreadable":
+        J.stop("unreadable", f"the mask's cells are not finite or its lean {mask['lean']} is under lean_min")
     v = {k: mask[k] for k in ("verdict", "lost", "gained", "gap")}
     J.note("verdict", v)
     log(f"[verdict] {v['verdict']} lost {v['lost']:.3f} gained {v['gained']:.3f} B minus new token {v['gap']:.3f}")
+    report_only(J, g0)
     g32 = R.gates32(on)
     fp32 = cells(J, "fp32", lambda w: R.masked32(w, g32, []), s["gamma32_on"], lean)
     J.note("verdict", v | {"fp32_verdict": fp32["verdict"]})
+    if fp32["on_diff_a5"] > J.th["reread_tol"]:
+        log(f"*** LOUD: THE FP32 ROW'S FIRST CELL IS OFF AMENDMENT 5'S BY {fp32['on_diff_a5']}. About 0.005 means the row ran under autocast and read bf16; fp32_verdict is then no precision check. The filed verdict stands.")
     if v["verdict"] != fp32["verdict"]:
         log(f"*** LOUD: THE TWO PRECISIONS DISAGREE: bf16 {v['verdict']}, fp32 {fp32['verdict']}. The filed verdict is bf16's; the reading goes to the user with both.")
 
