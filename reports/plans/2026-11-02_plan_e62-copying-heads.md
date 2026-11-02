@@ -776,7 +776,7 @@ A **fall** is a forward's log-odds of B with no head off minus with the head rep
 `copying.sweep_reading`, on the bf16 rows, first that fires; exactly one fires.
 
 1. `unreadable`: a head missing, a number not finite, the masked lean under 1.0, or (2,4)'s T under 0.5.
-2. `rerouted`: some head other than (2,4) is a carrier: M − T ≥ 1.0, and M − T ≥ 2 × `excess_sd`, and M − Mb ≥ 1.0. Ties count.
+2. `rerouted`: some head other than (2,4) is a carrier: M ≥ 1.0, M − T ≥ 1.0, M − T ≥ 2 × `excess_sd`, and M − Mb ≥ 1.0. Ties count.
 3. `no_comparison_head`: no carrier, and no other head has T ≥ 0.5.
 4. `thinned`: every other head with T ≥ 0.5 has a fraction within 0.24 of (2,4)'s. A tie counts.
 5. `labelled_head_singled_out`: every such head's fraction is over (2,4)'s by more than 0.24.
@@ -788,7 +788,7 @@ Before these, in stage a and stage c: `ablation_does_not_transfer` and `reread_f
 
 **Where each bar comes from.** 1.0: the advice's "about a log-odds or more", and `local_faith.MIN_GAIN`; the excess it is set against is 1.40 log-odds, the masked copy outside (2,4) at 3.42 against the target's 2.02. 2 sds: chosen here, no source; the 1.0 does the work at the sds expected. 0.5, the target fall that counts as a denominator: chosen here, half of 1.0, no source, unmeasured per head until this job runs. 0.24: E58's band gap, as E62's `r_gap`; the advice's "similar fraction" has no number. The token bar 0.5: E62's `share_old_min`, here the plain majority. The quarter and 1e-3: Amendment 4's.
 
-**Edge cases, run before filing (`tests/test_copying.py`).** A sweep where no head falls: `no_comparison_head` with no other denominator, `thinned` with one; `unreadable` if the target's labelled head has no fall either. Ties: as above. A zero or negative denominator: a target fall under 0.5 gives no fraction; the labelled head's under it is `unreadable`; a filed target fall at or under 0 is `unreadable` in the control; a masked lean under 1.0 is `unreadable`. A total fall over the masked lean: 24 falls summing over it, or one head's over it, decide nothing and are flagged, since falls need not add up to a lean. A case no branch covers: none, as `mixed` is last; a 1,152-case grid checks the verdict against the rule written out apart from the code. A negative fraction: `mixed`. A general drop (M − Mb under 1.0) or an excess under 2 sds: not a carrier.
+**Edge cases, run before filing (`tests/test_copying.py`).** A sweep where no head falls: `no_comparison_head` with no other denominator, `thinned` with one; `unreadable` if the target's labelled head has no fall either. Ties: as above. A zero or negative denominator: a target fall under 0.5 gives no fraction; the labelled head's under it is `unreadable`; a filed target fall at or under 0 is `unreadable` in the control; a masked lean under 1.0 is `unreadable`. A total fall over the masked lean: 24 falls summing over it, or one head's over it, decide nothing and are flagged, since falls need not add up to a lean. A case no branch covers: none, as `mixed` is last; a 1,152-case grid checks the verdict against the rule written out apart from the code. A negative fraction: `mixed`. A general drop (M − Mb under 1.0), an excess under 2 sds, or an M under 1.0: not a carrier.
 
 ### Stages, in run order
 
@@ -847,3 +847,17 @@ Job 48945 reached the end of stage 1 34 s after it started: 30 s to load, 4 s fo
 ### Not run
 
 Everything: the rules ran on CPU, the stages ran on a stub `Reads5` with planted numbers through `thinned`, `rerouted`, a precision move and both stops (`~/commute-data/scratch/regating-lead/e62-a5-code/stub_run.py`; the other verdicts are the tests'), the fp32 paths ran on a tiny real `ComponentModel` on CPU, and the 67M was never loaded. The fp32 Γ pass and fp32 masked forward are unrun on a GPU; stage a's numbers are written before them. Not planned: the weighted slot read and the re-open, named next steps; zero ablation and own-mask means; head pairs; masks recomputed with the head off at the second A; the states' masks in the sweep; steps 100 and 300; stages 2-4 of Amendment 4, which would be a new plan with their own anchor; a second decomposition seed.
+
+### Review (2026-11-02)
+
+The code review (`reports/reviews/2026-11-02_review_e62-amend5-code.md`) finding 1 was fixed before any run: a carrier now also needs M ≥ 1.0 (the masked forward leans on that head), in `copying.sweep_reading`, `predictions_amend5.json` and the tests. Without it, T −3, M −1.5, Mb −3 and T −1.2, M 0, Mb −1.1 read `rerouted` though the masked forward does not lean on that head.
+
+Findings 2-5 are not code changes, and the analysis handles them:
+
+- The fractions verdict is also computed at `fall_floor` 0.25 and 1.0 from `results/large/amend5_windows.pt` and reported beside, deciding nothing.
+- `pair_part_T` and `pair_part_M` are read beside any fraction verdict.
+- The all-masks-at-1 control is read by `fall_over_target`, not only its pass.
+- A carrier with excess under about 1.5 gets a bootstrap over keys from the saved rows.
+- `window_max_abs_on` and `gate_max_abs` must be above 0, else fp32 autocast was still on.
+
+`fall_floor` 0.5 and `carrier_sds` 2 stay filed as unsourced.

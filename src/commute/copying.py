@@ -996,7 +996,8 @@ def sweep_reading(rows: dict[Head, dict[str, float]], labelled: Head, n_heads: i
     """The head sweep, one forward. Per head: T the target's fall, M the masked fall, Mb the masked fall on the pair-broken windows, excess_sd the
     bootstrap sd of M - T. First that fires:
     "unreadable": a head missing, a number not finite, the masked lean under carrier_min (nothing to carry), or the labelled head's T under fall_floor.
-    "rerouted": some other head is a carrier: M - T at least carrier_min and at least carrier_sds x excess_sd, and M - Mb at least carrier_min (the fall
+    "rerouted": some other head is a carrier: M at least carrier_min (the masked forward leans on that head), M - T at least carrier_min and at least
+    carrier_sds x excess_sd, and M - Mb at least carrier_min (the fall
     is there because of the pair, not a general drop from the head's removal). Ties count.
     "no_comparison_head": no carrier, and no other head has T at or over fall_floor, so no fraction has a denominator to compare with.
     "thinned": every other head with T at or over fall_floor has M / T within fraction_gap of the labelled head's (a tie counts).
@@ -1010,7 +1011,7 @@ def sweep_reading(rows: dict[Head, dict[str, float]], labelled: Head, n_heads: i
         return stopped_reading("unreadable")
     others = {h: r for h, r in rows.items() if h != labelled}
     bar, sds = th["carrier_min"], th["carrier_sds"]
-    carriers = [h for h, r in others.items() if r["M"] - r["T"] >= bar and r["M"] - r["T"] >= sds * r["excess_sd"] and r["M"] - r["Mb"] >= bar]
+    carriers = [h for h, r in others.items() if r["M"] >= bar and r["M"] - r["T"] >= bar and r["M"] - r["T"] >= sds * r["excess_sd"] and r["M"] - r["Mb"] >= bar]
     frac = {h: r["M"] / r["T"] for h, r in others.items() if r["T"] >= th["fall_floor"]}
     lab, gap = rows[labelled]["M"] / rows[labelled]["T"], th["fraction_gap"]
     if carriers:

@@ -896,6 +896,13 @@ def test_sweep_carrier_needs_every_bar():
     assert CP.sweep_reading(sweep_rows(h2_3={"T": 0.3, "M": 1.4}, h0_0={"T": 0.0, "M": 1.0}), LAB, 24, 4.34, A5)["carriers"] == ["0,0", "2,3"]
 
 
+def test_sweep_carrier_needs_the_masked_forward_to_lean_on_the_head():
+    # review finding 1: a head that is off in the target but not leaned on by the masked forward is no carrier
+    assert sweep(sweep_rows(h2_3={"T": -3.0, "M": -1.5, "Mb": -3.0})) == "no_comparison_head"  # M under carrier_min; a negative T is no denominator
+    assert sweep(sweep_rows(h2_3={"T": -1.2, "M": 0.0, "Mb": -1.1})) == "no_comparison_head"
+    assert sweep(sweep_rows(h2_3={"T": 0.0, "M": 1.0, "Mb": 0.0, "excess_sd": 0.0})) == "rerouted"  # M = carrier_min: a tie counts
+
+
 def test_sweep_ties_and_denominators():
     lab = 0.92 / 4.82
     assert sweep(sweep_rows(h2_3={"T": 1.0, "M": lab + 0.2399})) == "thinned"
@@ -930,7 +937,7 @@ def test_sweep_ranking_is_beside():
     assert not v["ranking_holds"] and v["verdict"] == "labelled_head_singled_out"
 
 
-@pytest.mark.parametrize("t", [0.0, 0.3, 0.5, 2.0])
+@pytest.mark.parametrize("t", [-3.0, -1.2, 0.0, 0.3, 0.5, 2.0])
 @pytest.mark.parametrize("m", [-1.0, 0.0, 0.1, 0.5, 1.0, 1.31, 2.0, 2.5])
 @pytest.mark.parametrize("mb", [-2.0, 0.0, 0.31, 1.5])
 @pytest.mark.parametrize("sd", [0.0, 0.5, 2.0])
@@ -941,7 +948,7 @@ def test_sweep_grid_reaches_the_filed_branch(t, m, mb, sd, second):
     if second:
         rows[(1, 1)] = {"T": second[0], "M": second[1], "Mb": 0.0, "excess_sd": 0.0}
     lab = 0.92 / 4.82
-    carrier = m - t >= 1.0 and m - t >= 2 * sd and m - mb >= 1.0
+    carrier = m >= 1.0 and m - t >= 1.0 and m - t >= 2 * sd and m - mb >= 1.0
     fr = ([m / t] if t >= 0.5 else []) + ([second[1] / second[0]] if second else [])
     want = "rerouted" if carrier else "no_comparison_head" if not fr else "thinned" if all(abs(f - lab) <= 0.24 for f in fr) else "labelled_head_singled_out" if all(f > lab + 0.24 for f in fr) else "mixed"
     assert sweep(rows) == want
