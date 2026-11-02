@@ -24,6 +24,7 @@ SHOWN = [
     ("counting_c1", "steering"), ("counting_c1", "pruning"), ("e62_copy_lookup", "r"),
     ("e46_copy_random", "r"), ("e46_copy_random", "steering"), ("e46_copy_random", "neuron_patch"),
     ("e53_lowercase_cipher", "r"), ("e53_lowercase_cipher", "steering"),
+    ("e58_copy_prior_cipher", "r"), ("e58_copy_prior_cipher", "steering"), ("e58_class_twin", "r"), ("e58_class_twin", "steering"),
     ("e54_matched", "r"), ("e54_matched", "steering"), ("e54_matched", "neuron_patch"), ("e54_matched", "readout_64"),
     ("open_pair_c3", "r"), ("open_pair_c3", "steering"), ("open_pair_c3", "pruning"),
 ]
@@ -37,7 +38,7 @@ def side(ax: Any, values: list[float], y: float, color: str, marker: str, face: 
 def main() -> None:
     table = json.loads(TABLE.read_text())
     rows = {r["id"]: r for r in table["rows"]}
-    fig, ax = plt.subplots(figsize=(11, 8.2))
+    fig, ax = plt.subplots(figsize=(11, 9.4))
     y, last, ticks, labels = 0.0, None, [], []
     for row_id, method in SHOWN:
         row, cell = rows[row_id], rows[row_id]["cells"][method]
@@ -74,7 +75,7 @@ def main() -> None:
         ax.spines[spine].set_visible(False)
     fig.tight_layout(rect=(0, 0.07, 1, 1))
     fig.legend(*ax.get_legend_handles_labels(), loc="lower center", bbox_to_anchor=(0.5, 0.025), fontsize=8.5, frameon=False, ncol=3)
-    fig.text(0.5, 0.008, "* counting set: labels equal the two tasks, so a full score is not discrimination", fontsize=8.5, color=INK, ha="center")
+    fig.text(0.5, 0.008, "* task P against task N: labels equal the task, so a full score is not discrimination", fontsize=8.5, color=INK, ha="center")
     fig.savefig(FIG, dpi=150)
 
 

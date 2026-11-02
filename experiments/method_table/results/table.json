@@ -1,12 +1,16 @@
 {
  "question": "Does VPD tell reuse from new better than cheaper methods do, judged against a truth it did not define?",
  "label_rule": "decisions.md 2026-11-02: elicitation is mechanistic; the causal check is the label, the held-out reading is evidence beside it. No counting-set label changes.",
- "counting_note": "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
- "assumption_words": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check.",
+ "counting_note": "Task P against task N: the labels equal the task, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+ "c1_note": "Task fixed; label tied to steps: the fine-tuning task is the count of b on every scored state, and every reuses state was read at 1K or 2K steps.",
+ "assumption_words": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check.",
  "derived_head_to_head": {
   "rows": [],
-  "rule": "derived: truth not by assumption, VPD's r separates with its control and a cheap method separates"
+  "rule": "derived: truth not by assumption; r separates with its control held; a method other than VPD's separates with its control held"
  },
+ "derived_r_does_not_separate": [
+  "e58_class_twin"
+ ],
  "markings_changed": [
   {
    "row": "e46_copy_random",
@@ -24,6 +28,11 @@
    "table": "only by assumption"
   },
   {
+   "row": "e54_own",
+   "source_said": "as the row above",
+   "table": "only by assumption"
+  },
+  {
    "row": "open_pair_c3",
    "source_said": "'old by construction' and 'new by construction' (C3, its ladder)",
    "table": "only by assumption"
@@ -32,16 +41,52 @@
    "row": "open_pair_ladder",
    "source_said": "'old by construction' and 'new by construction'",
    "table": "only by assumption"
+  },
+  {
+   "row": "e58_rank1_96",
+   "source_said": "built maps; label by held-out carry, now evidence (E58)",
+   "table": "only by assumption"
+  },
+  {
+   "row": "e58_elicit_shuffle",
+   "source_said": "same words, no key-to-guess link (E58)",
+   "table": "only by assumption"
+  },
+  {
+   "row": "e58_copy_prior_cipher",
+   "source_said": "copy built; cipher built at copy's prior (E58)",
+   "table": "only by assumption"
+  },
+  {
+   "row": "e58_class_twin",
+   "source_said": "a rule against no rule, built; decisions.md row 112 keeps it open until the class map's mechanism is measured",
+   "table": "only by assumption"
   }
  ],
  "methods": {
   "r": {
-   "name": "r (VPD)",
+   "name": "VPD r",
    "definition": "Share of the fine-tune's log-odds gain that comes from changed causal importances with the original subcomponents' weights held fixed."
   },
   "ratio": {
-   "name": "Stand-in ratio (VPD)",
+   "name": "VPD stand-in ratio",
    "definition": "The gain reached when the original causal importances stand in for the original weights, over the whole gain."
+  },
+  "prior": {
+   "name": "W0's prior",
+   "definition": "The original model's probability of the trained answer, before any fine-tune."
+  },
+  "distance": {
+   "name": "Distance D",
+   "definition": "KL from the original model's answer distribution to the state's, at the answer position."
+  },
+  "mlp_share": {
+   "name": "MLP share",
+   "definition": "Share of the update's squared norm in MLP weights."
+  },
+  "weights": {
+   "name": "Weight statistics",
+   "definition": "Top-10 singular share, intruders and effective rank of the update alone."
   },
   "steering": {
    "name": "Steering",
@@ -145,116 +190,116 @@
      "filed_verdict": "outcome 'tie', positive_control 'none'",
      "derived": null,
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "Task P against task N: the labels equal the task, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
       "A decomposition trained for 400 of its 400,000 steps; reported only, never scored. The long run was not done."
      ],
      "pointers": [
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s2/1000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s2/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s2/1000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s2/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s3/1000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s3/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s3/1000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s3/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s4/1000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s4/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s4/1000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s4/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s2/1000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s2/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-5_s2/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s3/1000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s3/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-5_s3/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s4/1000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s4/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-5_s4/10000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".controls[\"amend5/ID_s0/2000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".controls[\"amend5/ID_s1/2000\"].r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".constants.ID_min_r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".cutoffs.cutoffs.r.c"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".positive_control.r"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".predictions.r.outcome"
       }
      ],
@@ -311,117 +356,197 @@
      "filed_verdict": "outcome 'tie', positive_control 'none'",
      "derived": null,
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "Task P against task N: the labels equal the task, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
       "A decomposition trained for 400 of its 400,000 steps; reported only, never scored. The long run was not done."
      ],
      "pointers": [
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s2/1000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s2/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s2/1000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s2/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s3/1000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s3/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s3/1000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s3/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s4/1000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-4_s4/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s4/1000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/P_1e-5_s4/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s2/1000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s2/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-5_s2/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s3/1000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s3/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-5_s3/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s4/1000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-4_s4/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scored[\"c1b/N_1e-5_s4/10000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".controls[\"amend5/ID_s0/2000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".controls[\"amend5/ID_s1/2000\"].ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".cutoffs.cutoffs.ratio.c"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".constants.ID_min_ratio"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".predictions.ratio.outcome"
       }
      ],
      "from_reports": [],
      "job": "48413"
+    },
+    "prior": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
     },
     "steering": {
      "verdict": "separates",
@@ -462,7 +587,7 @@
      "filed_verdict": "passes: True",
      "derived": null,
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination."
+      "Task P against task N: the labels equal the task, so any method that responds to the task scores perfectly. A full score here is not discrimination."
      ],
      "pointers": [
       {
@@ -664,7 +789,7 @@
      "filed_verdict": "passes: True",
      "derived": null,
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination."
+      "Task P against task N: the labels equal the task, so any method that responds to the task scores perfectly. A full score here is not discrimination."
      ],
      "pointers": [
       {
@@ -822,7 +947,7 @@
      "filed_verdict": "passes: True",
      "derived": null,
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination."
+      "Task P against task N: the labels equal the task, so any method that responds to the task scores perfectly. A full score here is not discrimination."
      ],
      "pointers": [
       {
@@ -1038,9 +1163,9 @@
       "value": null
      },
      "filed_verdict": "nuisance labeller: update_size 15",
-     "derived": null,
+     "derived": "The verdict rests on the within-cell score, not filed as a pass here; the filed one-cut figure is at the bar.",
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
+      "Task P against task N: the labels equal the task, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
       "The within-cell score is post hoc on this set, with two calibration states per class."
      ],
      "pointers": [
@@ -1049,7 +1174,7 @@
        "jq": ".train_stops.recipe_ceiling_full.update_size.agree"
       },
       {
-       "file": "~/commute-data/scratch/reuse-lead/c2-fixes/readcheck_A/c2.json",
+       "file": "experiments/pcfg_anchors/results/c2_400step_job48413.json",
        "jq": ".scores.within_cell_update_size.all.agree"
       },
       {
@@ -1180,14 +1305,14 @@
      },
      "reference": "Cut-off 0.473.",
      "positive_control": {
-      "held": true,
-      "what": "Reads the answers only: the task-identity reference.",
+      "held": null,
+      "what": "No control: it reads the answers only.",
       "value": null
      },
      "filed_verdict": "task-identity reference (not scored; not a pass)",
-     "derived": null,
+     "derived": "The filed role is a reference, not a pass; the verdict word is this table's reading of its 21 of 21.",
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination."
+      "Task P against task N: the labels equal the task, so any method that responds to the task scores perfectly. A full score here is not discrimination."
      ],
      "pointers": [
       {
@@ -1309,7 +1434,7 @@
     "r": {
      "verdict": "not run",
      "reading": {
-      "text": "No source reads this method on this fine-tune.",
+      "text": "VPD's 400-step check read some of this row's new states and none of its reuse states.",
       "reuse": null,
       "new": null
      },
@@ -1327,6 +1452,86 @@
      "job": ""
     },
     "ratio": {
+     "verdict": "not run",
+     "reading": {
+      "text": "VPD's 400-step check read some of this row's new states and none of its reuse states.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prior": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
      "verdict": "not run",
      "reading": {
       "text": "No source reads this method on this fine-tune.",
@@ -1390,8 +1595,7 @@
      "filed_verdict": "passes: False; per run 16 of 18, passes: True",
      "derived": null,
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
-      "C1's labels follow its causal checks and are tied to the recipe: every reuses state was read at 1K or 2K steps.",
+      "Task fixed; label tied to steps: the fine-tuning task is the count of b on every scored state, and every reuses state was read at 1K or 2K steps.",
       "Cut-offs were guessed here; with C1b's cut-offs, described only, pruning and steering sort all 26 and reverse 10 of 12."
      ],
      "pointers": [
@@ -1619,8 +1823,7 @@
      "filed_verdict": "passes: False; per run 14 of 17, passes: True",
      "derived": null,
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
-      "C1's labels follow its causal checks and are tied to the recipe: every reuses state was read at 1K or 2K steps.",
+      "Task fixed; label tied to steps: the fine-tuning task is the count of b on every scored state, and every reuses state was read at 1K or 2K steps.",
       "Cut-offs were guessed here; with C1b's cut-offs, described only, pruning and steering sort all 26 and reverse 10 of 12."
      ],
      "pointers": [
@@ -1784,8 +1987,7 @@
      "filed_verdict": "passes: False; per run 12 of 17, passes: False",
      "derived": null,
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
-      "C1's labels follow its causal checks and are tied to the recipe: every reuses state was read at 1K or 2K steps.",
+      "Task fixed; label tied to steps: the fine-tuning task is the count of b on every scored state, and every reuses state was read at 1K or 2K steps.",
       "Cut-offs were guessed here; with C1b's cut-offs, described only, pruning and steering sort all 26 and reverse 10 of 12."
      ],
      "pointers": [
@@ -1905,8 +2107,7 @@
      "filed_verdict": "passes: False",
      "derived": null,
      "notes": [
-      "Counting-set cell: the labels equal task P and task N, so any method that responds to the task scores perfectly. A full score here is not discrimination.",
-      "C1's labels follow its causal checks and are tied to the recipe: every reuses state was read at 1K or 2K steps."
+      "Task fixed; label tied to steps: the fine-tuning task is the count of b on every scored state, and every reuses state was read at 1K or 2K steps."
      ],
      "pointers": [
       {
@@ -1956,8 +2157,8 @@
     "how": "by causal check",
     "source_said": "share of gain lost with W0's copying head off; verdict as filed 'copy_not_elicitation'",
     "changed": false,
-    "pointer": "experiments/induction_cue/results/run.json .states.<state>.label, .states.<state>.share, .score.verdict",
-    "detail": "Labels as filed, seeds 0-2: copy old, old, between; lookup new, new, new. Share lost: copy 0.47 to 0.56 against a bar of 0.5, lookup -0.00 to 0.00."
+    "pointer": "experiments/induction_cue/results/run.json .states.<state>.label, .states.<state>.share, .score.verdict, .score.copy_reading, .score.pair_ignored",
+    "detail": "The copy side is not settled as filed: copy_reading 'mixed', pair_ignored True. The lookup side is labelled on every seed. Labels as filed, seeds 0-2: copy old, old, between; lookup new, new, new. Share lost: copy 0.47 to 0.56 against a bar of 0.5, lookup -0.00 to 0.00."
    },
    "evidence_beside": "No held-out reading.",
    "cells": {
@@ -1985,7 +2186,8 @@
      "filed_verdict": "r_scored False; verdict 'copy_not_elicitation'",
      "derived": null,
      "notes": [
-      "Three readings of the gap stay live: mechanism, context and update size.",
+      "Amendment 2 scaled each update to the other map's size: the gap reads 0.686 against 0.691, filed 'size_does_not'. Mechanism and context stay as readings of r's gap; size does not.",
+      "On this map, r says only that the original subcomponents can write this target under some mask.",
       "From U0 the copy map reads 0.92, so the excess over 1 is a low L00."
      ],
      "pointers": [
@@ -2012,18 +2214,130 @@
       {
        "file": "experiments/induction_cue/results/run.json",
        "jq": ".score.verdict"
+      },
+      {
+       "file": "experiments/induction_cue/results/amend2.json",
+       "jq": ".row7_size.gap_swapped"
+      },
+      {
+       "file": "experiments/induction_cue/results/amend2.json",
+       "jq": ".row7_size.gap"
+      },
+      {
+       "file": "experiments/induction_cue/results/amend2.json",
+       "jq": ".row7_size.reading"
       }
      ],
      "from_reports": [
+      {
+       "file": "reports/analyses/2026-11-02_analysis_e62-amend2-masked-head.md",
+       "text": "On this map, r says only that the original subcomponents can write this target under some mask.",
+       "kind": "copied from a report, not in any JSON"
+      },
       {
        "file": "experiments/TRIED.md",
        "text": "From U0 the copy map reads 0.92, so the excess over 1 is a low L00.",
        "kind": "copied from a report, not in any JSON"
       }
      ],
-     "job": "48541"
+     "job": "48541; Amendment 2's job per its report"
     },
     "ratio": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prior": {
+     "verdict": "fails",
+     "reading": {
+      "text": "copy 3.15e-04 vs lookup 2.39e-04, a factor 1.32",
+      "reuse": [
+       -8.061559130549432
+      ],
+      "new": [
+       -8.338904738426208
+      ]
+     },
+     "reference": "One number per map; no fine-tune needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Apart if over a factor 2, E62's filed match band, applied here.",
+     "notes": [
+      "Matched by design. r stays apart at this prior; the target in context and the old mechanism are confounded by construction."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".stage_b.prior_copy"
+      },
+      {
+       "file": "experiments/induction_cue/results/run.json",
+       "jq": ".stage_b.prior_lookup"
+      }
+     ],
+     "from_reports": [],
+     "job": "48541"
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
      "verdict": "not run",
      "reading": {
       "text": "No source reads this method on this fine-tune.",
@@ -2227,7 +2541,8 @@
      "filed_verdict": null,
      "derived": "E51's rule applied here: gap -0.872, larger range 0.051, minimum 0.2; verdict b_higher.",
      "notes": [
-      "Same recipe cell, a factor 1.19 apart, with no overlap: the size separates the maps as cleanly as r does."
+      "Same recipe cell, a factor 1.19 apart, with no overlap: the size separates the maps as cleanly as r does.",
+      "The label's copy side did not settle, so this is a separation against a label that did not stand on every seed."
      ],
      "pointers": [
       {
@@ -2295,7 +2610,7 @@
     "how": "only by assumption",
     "source_said": "built to reuse / construction labels (E60); 'a mechanism claim only, never behaviourally verified' (E52 amendment)",
     "changed": true,
-    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
    },
    "evidence_beside": "No held-out reading.",
    "cells": {
@@ -2433,6 +2748,117 @@
      "from_reports": [],
      "job": "46258"
     },
+    "prior": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "separates",
+     "reading": {
+      "text": "effective rank, mean 440 vs 415",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Gap 24.5 over a range of 23.9; matched-norm Gaussian null near 700.",
+     "positive_control": {
+      "held": true,
+      "what": "Re-weighting and injected-direction controls pass.",
+      "value": null
+     },
+     "filed_verdict": "erank separates: True; share: False; intruders: False",
+     "derived": null,
+     "notes": [
+      "The rank follows the update's size across all nine states, so it is not read as kind."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/baseline_weights/results/results.json",
+       "jq": ".score.erank.gap"
+      },
+      {
+       "file": "experiments/baseline_weights/results/results.json",
+       "jq": ".score.erank.spread"
+      },
+      {
+       "file": "experiments/baseline_weights/results/results.json",
+       "jq": ".score.erank.mean.copy"
+      },
+      {
+       "file": "experiments/baseline_weights/results/results.json",
+       "jq": ".score.erank.mean.cipher"
+      },
+      {
+       "file": "experiments/baseline_weights/results/results.json",
+       "jq": ".score.erank.separates"
+      },
+      {
+       "file": "experiments/baseline_weights/results/results.json",
+       "jq": ".score.share.separates"
+      },
+      {
+       "file": "experiments/baseline_weights/results/results.json",
+       "jq": ".score.intruders.separates"
+      }
+     ],
+     "from_reports": [],
+     "job": "E51, cluster CPU"
+    },
     "steering": {
      "verdict": "separates",
      "reading": {
@@ -2452,11 +2878,11 @@
      },
      "reference": "E51's rule; a learned-nothing fine-tune is the null.",
      "positive_control": {
-      "held": null,
-      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "held": false,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read. The filed null check on a learned-nothing fine-tune failed narrowly.",
       "value": null
      },
-     "filed_verdict": "P3 pass, gap 0.628",
+     "filed_verdict": "P3 pass, gap 0.628; P5 fails",
      "derived": null,
      "notes": [
       "Steering may separate this pair by construction: one input-independent vector against a key-dependent cipher.",
@@ -2502,6 +2928,10 @@
       {
        "file": "experiments/baseline_neurons/results/baseline_neurons.json",
        "jq": ".score.P3.gap"
+      },
+      {
+       "file": "experiments/baseline_neurons/results/baseline_neurons.json",
+       "jq": ".score.P5.verdict"
       },
       {
        "file": "experiments/baseline_neurons/results/baseline_neurons.json",
@@ -2816,7 +3246,7 @@
     "sparsity": {
      "verdict": "fails",
      "reading": {
-      "text": "this test passed by none, of the five numbers; ident32 vs rand32 only",
+      "text": "0 of 5 numbers pass this test: none; ident32 vs rand32 only",
       "reuse": null,
       "new": null
      },
@@ -2830,7 +3260,7 @@
      "derived": null,
      "notes": [
       "Low power: All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
-      "A number answers yes only if it passes all four tests; a pass here is on one task pair."
+      "This row's verdict is the cross-test rule: a number answers yes only if it passes all four tests. A pass here is on one task pair."
      ],
      "pointers": [
       {
@@ -2892,24 +3322,41 @@
      "job": "48527"
     },
     "labeller": {
-     "verdict": "not run",
+     "verdict": "fails",
      "reading": {
-      "text": "No source reads this method on this fine-tune.",
-      "reuse": null,
-      "new": null
+      "text": "copy 0.68 to 0.69 vs random 0.75 to 1.34",
+      "reuse": [
+       0.6810202309699707,
+       0.6859039067842352,
+       0.6900220600454883,
+       0.6922582701876764
+      ],
+      "new": [
+       0.7498209128354096,
+       0.7606178730416662,
+       1.31718064212986,
+       1.3439347187100672
+      ]
      },
-     "reference": "none",
+     "reference": "Own steps, not size-matched.",
      "positive_control": {
       "held": null,
-      "what": "not run",
+      "what": "No control: it reads the recipe's result.",
       "value": null
      },
      "filed_verdict": null,
-     "derived": null,
-     "notes": [],
-     "pointers": [],
+     "derived": "E51's rule applied here: gap -0.356, larger range 0.594, minimum 0.2; verdict none.",
+     "notes": [
+      "Root of the sum of norm2 over the 24 matrices; two random tables differ by step, so the range is wide."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/baseline_weights/results/results.json",
+       "jq": ".states.ident32_s0.per_matrix"
+      }
+     ],
      "from_reports": [],
-     "job": ""
+     "job": "E51, cluster CPU"
     },
     "probe": {
      "verdict": "not run",
@@ -2942,7 +3389,7 @@
     "how": "only by assumption",
     "source_said": "built to reuse / construction labels (E60)",
     "changed": true,
-    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
    },
    "evidence_beside": "No held-out reading.",
    "cells": {
@@ -3060,6 +3507,86 @@
      "from_reports": [],
      "job": "46258"
     },
+    "prior": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
     "steering": {
      "verdict": "fails",
      "reading": {
@@ -3084,7 +3611,8 @@
      "filed_verdict": null,
      "derived": "E51's rule applied here: gap 0.184, larger range 0.069, minimum 0.2; verdict none.",
      "notes": [
-      "E53's fit and scoring halves are neighbouring windows of the same documents, so S may be biased up."
+      "E53's fit and scoring halves are neighbouring windows of the same documents, so S may be biased up.",
+      "A narrow miss: the sides do not overlap, and only the 0.2 minimum fails it."
      ],
      "pointers": [
       {
@@ -3238,7 +3766,7 @@
     "sparsity": {
      "verdict": "fails",
      "reading": {
-      "text": "this test passed by W2, A1, C1, of the five numbers; lowercase vs broad cipher only",
+      "text": "3 of 5 numbers pass this test: W2, A1, C1; lowercase vs broad cipher only",
       "reuse": null,
       "new": null
      },
@@ -3252,7 +3780,7 @@
      "derived": null,
      "notes": [
       "Low power: All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
-      "A number answers yes only if it passes all four tests; a pass here is on one task pair."
+      "This row's verdict is the cross-test rule: a number answers yes only if it passes all four tests. A pass here is on one task pair."
      ],
      "pointers": [
       {
@@ -3364,7 +3892,7 @@
     "how": "only by assumption",
     "source_said": "construction labels (E60); 'built to elicit, no causal label' (E64)",
     "changed": true,
-    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
    },
    "evidence_beside": "No held-out reading on this pair; E58's held-out reading on a 24-key version sits with the rank-1 row.",
    "cells": {
@@ -3476,6 +4004,99 @@
      "from_reports": [],
      "job": "46258"
     },
+    "prior": {
+     "verdict": "separates",
+     "reading": {
+      "text": "elicit 1.70e-03 vs cipher 1.08e-06, a factor 1575.11",
+      "reuse": [
+       -6.374579021611164
+      ],
+      "new": [
+       -13.736657417926592
+      ]
+     },
+     "reference": "One number per map; no fine-tune needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Apart if over a factor 2, E62's filed match band, applied here.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".stage0.elicit.rate"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".stage0.cipher.rate"
+      }
+     ],
+     "from_reports": [],
+     "job": "46171"
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
     "steering": {
      "verdict": "fails",
      "reading": {
@@ -3504,7 +4125,7 @@
      "filed_verdict": "S_lo verdict none; E54's nats S P2 fail, verdict none",
      "derived": null,
      "notes": [
-      "In nats the gap is 0.18, under the 0.2 minimum."
+      "In nats the gap is 0.18: the sides do not overlap, and only the 0.2 minimum fails it. This cell's share is in log-odds, where other rows' steering is in nats."
      ],
      "pointers": [
       {
@@ -3817,7 +4438,7 @@
     "sparsity": {
      "verdict": "fails",
      "reading": {
-      "text": "this test passed by A1, of the five numbers; five seeds at matched size",
+      "text": "1 of 5 numbers pass this test: A1; five seeds at matched size",
       "reuse": null,
       "new": null
      },
@@ -3831,7 +4452,7 @@
      "derived": null,
      "notes": [
       "Low power: All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
-      "A number answers yes only if it passes all four tests; a pass here is on one task pair."
+      "This row's verdict is the cross-test rule: a number answers yes only if it passes all four tests. A pass here is on one task pair."
      ],
      "pointers": [
       {
@@ -3967,8 +4588,8 @@
    "truth": {
     "how": "only by assumption",
     "source_said": "as the row above",
-    "changed": false,
-    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
    },
    "evidence_beside": "No held-out reading.",
    "cells": {
@@ -4053,6 +4674,99 @@
      "verdict": "not run",
      "reading": {
       "text": "E60's table holds the matched cipher only.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prior": {
+     "verdict": "separates",
+     "reading": {
+      "text": "elicit 1.70e-03 vs cipher 1.08e-06, a factor 1575.11",
+      "reuse": [
+       -6.374579021611164
+      ],
+      "new": [
+       -13.736657417926592
+      ]
+     },
+     "reference": "One number per map; no fine-tune needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Apart if over a factor 2, E62's filed match band, applied here.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".stage0.elicit.rate"
+      },
+      {
+       "file": "experiments/keydependent_patch/results/job2.json",
+       "jq": ".stage0.cipher.rate"
+      }
+     ],
+     "from_reports": [],
+     "job": "46171"
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
       "reuse": null,
       "new": null
      },
@@ -4305,7 +5019,7 @@
     "sparsity": {
      "verdict": "fails",
      "reading": {
-      "text": "this test passed by W2, of the five numbers; seeds 0-1, equal progress",
+      "text": "1 of 5 numbers pass this test: W2; seeds 0-1, equal progress",
       "reuse": null,
       "new": null
      },
@@ -4319,7 +5033,7 @@
      "derived": null,
      "notes": [
       "Low power: All four tests compare one task with one task. A false yes runs at 6-9% per number and 25-37% over five before references, and the test has little power, covers few tasks, and neither reading yet has a causal check.",
-      "A number answers yes only if it passes all four tests; a pass here is on one task pair."
+      "This row's verdict is the cross-test rule: a number answers yes only if it passes all four tests. A pass here is on one task pair."
      ],
      "pointers": [
       {
@@ -4451,12 +5165,12 @@
    "id": "open_pair_c3",
    "name": "Rank-1 vs cipher, step 10",
    "model": "67M",
-   "states": "16 of C3's 32, seeds 0-7, 24 trained keys",
+   "states": "16 of C3's 32, seeds 0-7, 24 trained keys, rank-1 and cipher",
    "truth": {
     "how": "only by assumption",
     "source_said": "'old by construction' and 'new by construction' (C3, its ladder)",
     "changed": true,
-    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check. 'Old by construction' is also the answer-already-given reading that decisions.md row 112 rejects as the definition."
    },
    "evidence_beside": "Held-out carry, evidence only: rank-1 0.08, cipher -0.34, elicit -0.04, copy 0.48 (experiments/open_pair_instruments/results/run.json .score.readings.x.means).",
    "cells": {
@@ -4487,12 +5201,12 @@
      },
      "reference": "Zero update reads 0.",
      "positive_control": {
-      "held": true,
-      "what": "Poles must differ by 3 seed sd: held.",
+      "held": null,
+      "what": "None of known kind: the filed pole gap holds, and the pole is itself an assumption.",
       "value": null
      },
      "filed_verdict": "status 'ok'; verdict 'distance and prior'",
-     "derived": "Bar is 3 x the filed noise, 0.021.",
+     "derived": "Bar is 3 x the noise, 0.021.",
      "notes": [
       "Elicit's position between the poles is 0.85; the filed reading is that this follows W0's distance and prior."
      ],
@@ -4556,12 +5270,12 @@
      },
      "reference": "Zero update reads 0.",
      "positive_control": {
-      "held": true,
-      "what": "Poles must differ by 3 seed sd: held.",
+      "held": null,
+      "what": "None of known kind: the filed pole gap holds, and the pole is itself an assumption.",
       "value": null
      },
      "filed_verdict": "status 'ok'; verdict 'distance and prior'",
-     "derived": "Bar is 3 x the filed noise, 0.036.",
+     "derived": "Bar is 3 x the noise, 0.036.",
      "notes": [
       "Elicit's position between the poles is 0.77; the filed reading is that this follows W0's distance and prior."
      ],
@@ -4598,8 +5312,211 @@
      "from_reports": [],
      "job": "46808, 46815, 46840"
     },
+    "prior": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 -5.00 vs cipher -14.32; gap +9.32, bar 0.00",
+      "reuse": [
+       -5.000837886655653,
+       -5.000837886655653,
+       -5.000837886655653,
+       -5.000837886655653,
+       -5.000837886655653,
+       -5.000837886655653,
+       -5.000837886655653,
+       -5.000837886655653
+      ],
+      "new": [
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191
+      ]
+     },
+     "reference": "W0's log P of the target; no fine-tune needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": "status 'ok'",
+     "derived": "Bar is 3 x the noise, 0.000.",
+     "notes": [
+      "C3 files this column as a baseline; TRIED's 'baselines separate the ends' means these three."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.prior.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.prior.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.prior.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.prior.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.prior.status"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "distance": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 8.07 to 8.78 vs cipher 4.37 to 5.33; gap +3.71, bar 1.45",
+      "reuse": [
+       8.778665214244072,
+       8.678153469856074,
+       8.695421743916777,
+       8.283032228891958,
+       8.179523629279977,
+       8.06955162585692,
+       8.62542398379273,
+       8.482873212116521
+      ],
+      "new": [
+       5.328152629698834,
+       4.365704446714464,
+       4.978497498388296,
+       5.146359046450784,
+       4.540946350767176,
+       4.4502644893844,
+       4.687532804670556,
+       4.6092215290665495
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": "status 'ok'",
+     "derived": "Bar is 3 x the noise, 0.485.",
+     "notes": [
+      "C3 files this column as a baseline; TRIED's 'baselines separate the ends' means these three."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.D.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.D.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.D.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.D.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.D.status"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "mlp_share": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 0.68 to 0.69 vs cipher 0.70 to 0.71; gap -0.02, bar 0.01",
+      "reuse": [
+       0.6892658585777325,
+       0.6852478449186648,
+       0.6846245973372239,
+       0.6892692110203257,
+       0.6838440676190676,
+       0.6841715698843432,
+       0.6842473849988963,
+       0.683941507636085
+      ],
+      "new": [
+       0.7052221471598494,
+       0.7030253158534914,
+       0.7061887087838117,
+       0.7091660500367127,
+       0.7040162598342552,
+       0.7066189304323951,
+       0.7035872239256269,
+       0.7050443377954191
+      ]
+     },
+     "reference": "Share of the update in MLP weights.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": "status 'ok'",
+     "derived": "Bar is 3 x the noise, 0.002.",
+     "notes": [
+      "C3 files this column as a baseline; TRIED's 'baselines separate the ends' means these three."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.mlp_share.rank1"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.mlp_share.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.mlp_share.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.mlp_share.noise"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.mlp_share.status"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
     "steering": {
-     "verdict": "control failed",
+     "verdict": "fails",
      "reading": {
       "text": "rank-1 0.18 to 0.25 vs cipher 0.15 to 0.22; gap +0.03, bar 0.07",
       "reuse": [
@@ -4625,14 +5542,14 @@
      },
      "reference": "Zero update reads 0.",
      "positive_control": {
-      "held": false,
-      "what": "Poles must differ by 3 seed sd: failed.",
+      "held": null,
+      "what": "No positive control filed for this column.",
       "value": null
      },
      "filed_verdict": "status 'no gap'",
-     "derived": "Bar is 3 x the filed noise, 0.022.",
+     "derived": "Bar is 3 x the noise, 0.022.",
      "notes": [
-      "Steering treats rank-1 like the cipher here and elicit nearer copy: elicit 0.48, copy 0.64."
+      "Steering treats rank-1 like the cipher here and elicit nearer copy: elicit 0.48, copy 0.64. It is specific to these matched 24-key states; see the 96-key row."
      ],
      "pointers": [
       {
@@ -4735,11 +5652,11 @@
      "reference": "Minus 20 random removals.",
      "positive_control": {
       "held": false,
-      "what": "Poles must differ by 3 seed sd: failed. A planted 13-unit edit passed: True, True.",
+      "what": "The filed positive control is rank-1 against the cipher: status 'no gap'. A planted 13-unit edit passed: True, True.",
       "value": 0.9730276999728653
      },
-     "filed_verdict": "status 'no gap'; verdict 'no gap'",
-     "derived": "Bar is 3 x the filed noise, 0.047.",
+     "filed_verdict": "status 'no gap'",
+     "derived": "Bar is 3 x the noise, 0.047.",
      "notes": [
       "As ported to the 67M, this method failed its positive control, so the counting set's 21 of 21 does not carry over."
      ],
@@ -4766,7 +5683,7 @@
       },
       {
        "file": "experiments/open_pair_instruments/results/run.json",
-       "jq": ".score.verdicts.R"
+       "jq": ".score.readings.R.status"
       },
       {
        "file": "experiments/open_pair_instruments/results/run.json",
@@ -4812,11 +5729,11 @@
      "reference": "Floor 1 step.",
      "positive_control": {
       "held": false,
-      "what": "Poles must differ by 3 seed sd: failed. A planted 13-unit edit passed: True, True.",
+      "what": "The filed positive control is rank-1 against the cipher: status 'no gap'. A planted 13-unit edit passed: True, True.",
       "value": null
      },
-     "filed_verdict": "status 'no gap'; verdict 'no gap'",
-     "derived": "Bar is 3 x the filed noise, 1.423.",
+     "filed_verdict": "status 'no gap'",
+     "derived": "Bar is 3 x the noise, 1.423.",
      "notes": [
       "As ported to the 67M, this method failed its positive control, so the counting set's 21 of 21 does not carry over."
      ],
@@ -4843,7 +5760,7 @@
       },
       {
        "file": "experiments/open_pair_instruments/results/run.json",
-       "jq": ".score.verdicts.t_half"
+       "jq": ".score.readings.t_half.status"
       },
       {
        "file": "experiments/open_pair_instruments/results/run.json",
@@ -4945,11 +5862,11 @@
      "reference": "Sizes matched by design.",
      "positive_control": {
       "held": null,
-      "what": "No control: size is matched by design.",
+      "what": "No positive control filed for this column.",
       "value": null
      },
      "filed_verdict": "status 'no gap'",
-     "derived": "Bar is 3 x the filed noise, 0.089.",
+     "derived": "Bar is 3 x the noise, 0.089.",
      "notes": [
       "Size cannot separate this row: it was matched."
      ],
@@ -5005,12 +5922,12 @@
      },
      "reference": "Cipher should read about 0.",
      "positive_control": {
-      "held": true,
-      "what": "Poles must differ by 3 seed sd: held.",
+      "held": null,
+      "what": "No control: reference only.",
       "value": null
      },
      "filed_verdict": "status 'ok'",
-     "derived": "Bar is 3 x the filed noise, 0.000.",
+     "derived": "Bar is 3 x the noise, 0.000. The filed role is reference only, not an instrument, and noise 0 makes the bar vacuous.",
      "notes": [
       "Filed probe reference missed: all False, rank-1 at least elicit False."
      ],
@@ -5050,6 +5967,647 @@
    }
   },
   {
+   "id": "open_pair_c3_copy",
+   "name": "Copy vs cipher, step 10",
+   "model": "67M",
+   "states": "16 of C3's 32, seeds 0-7, 24 trained keys, copy and cipher",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "copy reported, no position filed (C3)",
+    "changed": false,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
+   },
+   "evidence_beside": "Held-out carry, evidence only: rank-1 0.08, cipher -0.34, elicit -0.04, copy 0.48 (experiments/open_pair_instruments/results/run.json .score.readings.x.means).",
+   "cells": {
+    "r": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 0.83 to 0.86 vs cipher 0.22 to 0.25; gap +0.61, bar 0.03",
+      "reuse": [
+       0.8461436225319128,
+       0.8425401825652695,
+       0.834231371851741,
+       0.8422389175414456,
+       0.8359674969260673,
+       0.8562477003222767,
+       0.8484581316667953,
+       0.8311515925325759
+      ],
+      "new": [
+       0.23632404751112837,
+       0.2384323212900442,
+       0.2170782048159956,
+       0.22766182700614584,
+       0.2469354238068963,
+       0.23900537681787096,
+       0.23982187547791234,
+       0.23681286182577294
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.009. The pole rule is filed for rank-1 and applied here to copy.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.r.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.r.cipher"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "ratio": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 1.00 to 1.07 vs cipher 0.30 to 0.34; gap +0.70, bar 0.08",
+      "reuse": [
+       1.057353380337618,
+       1.0025782868955995,
+       1.006636674933835,
+       1.0095951882165417,
+       1.0091162800691678,
+       1.0739006825050361,
+       1.0167376055450184,
+       1.0042980985987735
+      ],
+      "new": [
+       0.33003492996874556,
+       0.3359939898305597,
+       0.30162258558892613,
+       0.32136564900617776,
+       0.33949852708129014,
+       0.330038256199552,
+       0.3285347092403506,
+       0.32740101845712405
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.027. The pole rule is filed for rank-1 and applied here to copy.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.ratio.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.ratio.cipher"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "prior": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy -8.85 vs cipher -14.32; gap +5.47, bar 0.00",
+      "reuse": [
+       -8.854035132640117,
+       -8.854035132640117,
+       -8.854035132640117,
+       -8.854035132640117,
+       -8.854035132640117,
+       -8.854035132640117,
+       -8.854035132640117,
+       -8.854035132640117
+      ],
+      "new": [
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191,
+       -14.323512567056191
+      ]
+     },
+     "reference": "W0's log P of the target; no fine-tune needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.000. The pole rule is filed for rank-1 and applied here to copy.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.prior.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.prior.cipher"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "distance": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 7.48 to 8.34 vs cipher 4.37 to 5.33; gap +3.00, bar 1.04",
+      "reuse": [
+       7.69862768842086,
+       7.482891592661172,
+       8.34451175038803,
+       7.475515811922963,
+       7.642617974796213,
+       8.038912593638463,
+       7.703194580867825,
+       7.719030615594062
+      ],
+      "new": [
+       5.328152629698834,
+       4.365704446714464,
+       4.978497498388296,
+       5.146359046450784,
+       4.540946350767176,
+       4.4502644893844,
+       4.687532804670556,
+       4.6092215290665495
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.348. The pole rule is filed for rank-1 and applied here to copy.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.D.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.D.cipher"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "mlp_share": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 0.67 to 0.68 vs cipher 0.70 to 0.71; gap -0.03, bar 0.01",
+      "reuse": [
+       0.6742198327440414,
+       0.6758999824862268,
+       0.6800251173013871,
+       0.6795339874138573,
+       0.6786385513471912,
+       0.677974478598748,
+       0.6770482691236669,
+       0.681550003173874
+      ],
+      "new": [
+       0.7052221471598494,
+       0.7030253158534914,
+       0.7061887087838117,
+       0.7091660500367127,
+       0.7040162598342552,
+       0.7066189304323951,
+       0.7035872239256269,
+       0.7050443377954191
+      ]
+     },
+     "reference": "Share of the update in MLP weights.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.002. The pole rule is filed for rank-1 and applied here to copy.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.mlp_share.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.mlp_share.cipher"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "steering": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 0.60 to 0.68 vs cipher 0.15 to 0.22; gap +0.46, bar 0.09",
+      "reuse": [
+       0.6122354543181754,
+       0.680477808432353,
+       0.6334360054728233,
+       0.6086033805348854,
+       0.6545947461168166,
+       0.6023658049485845,
+       0.6676110812427338,
+       0.6624036129559253
+      ],
+      "new": [
+       0.17073141481239898,
+       0.21955900501916986,
+       0.15195429694604587,
+       0.1919665564872132,
+       0.19519205525747724,
+       0.18021479504572446,
+       0.1820979748700289,
+       0.17096763694473616
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.030. The pole rule is filed for rank-1 and applied here to copy.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.S.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.S.cipher"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "E58's maps were never patched.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "control failed",
+     "reading": {
+      "text": "copy 0.58 to 0.71 vs cipher 0.35 to 0.49; gap +0.26, bar 0.14",
+      "reuse": [
+       0.7140575219313762,
+       0.687978505641977,
+       0.5767765623716455,
+       0.6346301944421614,
+       0.6520278717884022,
+       0.686252766409638,
+       0.595763697046799,
+       0.6694046369091031
+      ],
+      "new": [
+       0.3713065417570519,
+       0.36293181496843885,
+       0.4119009571061877,
+       0.4916786868946851,
+       0.37349341573614003,
+       0.3481823722277874,
+       0.36540500260868003,
+       0.41991048712613704
+      ]
+     },
+     "reference": "Minus 20 random removals.",
+     "positive_control": {
+      "held": false,
+      "what": "The filed positive control is rank-1 against the cipher: status 'no gap'. A planted 13-unit edit passed: True, True.",
+      "value": 0.9730276999728653
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.047. The pole rule is filed for rank-1 and applied here to copy.",
+     "notes": [
+      "As ported to the 67M, this method failed its positive control, so the counting set's 21 of 21 does not carry over.",
+      "The maps do read differently here; that does not restore the filed control, which is the rank-1 pair."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.R.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.R.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.R.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.R"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.prune_pass.pass"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.reverse_pass"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "reverse": {
+     "verdict": "control failed",
+     "reading": {
+      "text": "copy 7.89 to 10.55 vs cipher 8.65 to 10.90; gap -1.05, bar 2.59",
+      "reuse": [
+       7.889533545646939,
+       9.098971673259218,
+       9.281310799851374,
+       9.065616723886098,
+       9.610020106269221,
+       7.934161653128276,
+       9.253758386829965,
+       10.547716812454949
+      ],
+      "new": [
+       10.686951673940102,
+       10.866977147644196,
+       10.043254564231564,
+       9.414485023716763,
+       10.062400765632196,
+       10.468569066982639,
+       10.904157135171934,
+       8.650489223815214
+      ]
+     },
+     "reference": "Floor 1 step.",
+     "positive_control": {
+      "held": false,
+      "what": "The filed positive control is rank-1 against the cipher: status 'no gap'. A planted 13-unit edit passed: True, True.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.865. The pole rule is filed for rank-1 and applied here to copy.",
+     "notes": [
+      "As ported to the 67M, this method failed its positive control, so the counting set's 21 of 21 does not carry over.",
+      "The maps do read differently here; that does not restore the filed control, which is the rank-1 pair."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.t_half.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.t_half.cipher"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".score.readings.t_half.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.prune_pass.pass"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".stage0.planted.reverse_pass"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "E63 read E54, E46 and E53 states only.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "fails",
+     "reading": {
+      "text": "copy 3.09 to 3.15 vs cipher 3.03 to 3.26; gap +0.01, bar 0.27",
+      "reuse": [
+       3.1113881299202255,
+       3.1339297183117933,
+       3.154575859025749,
+       3.118883476579397,
+       3.090976870701914,
+       3.1049332236629814,
+       3.1174937470515762,
+       3.129383528832412
+      ],
+      "new": [
+       3.260403643996566,
+       3.1937328217256566,
+       3.0733713750816896,
+       3.0332495549831755,
+       3.0566758225908983,
+       3.2021649127246867,
+       3.045532974778032,
+       3.052061708909445
+      ]
+     },
+     "reference": "Sizes matched by design.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.089. The pole rule is filed for rank-1 and applied here to copy.",
+     "notes": [
+      "Size cannot separate this row: it was matched."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.norm.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.norm.cipher"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    },
+    "probe": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 4.60 vs cipher -0.09; gap +4.69, bar 0.00",
+      "reuse": [
+       4.6023215003075055,
+       4.6023215003075055,
+       4.6023215003075055,
+       4.6023215003075055,
+       4.6023215003075055,
+       4.6023215003075055,
+       4.6023215003075055,
+       4.6023215003075055
+      ],
+      "new": [
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747,
+       -0.08606360648420747
+      ]
+     },
+     "reference": "Cipher should read about 0.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: reference only.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Bar is 3 x the noise, 0.000. The pole rule is filed for rank-1 and applied here to copy. The filed role is reference only, not an instrument, and noise 0 makes the bar vacuous.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.q.copy"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/run.json",
+       "jq": ".columns.q.cipher"
+      }
+     ],
+     "from_reports": [],
+     "job": "46808, 46815, 46840"
+    }
+   }
+  },
+  {
    "id": "open_pair_ladder",
    "name": "Rank-1 vs cipher, steps 10-300",
    "model": "67M",
@@ -5058,14 +6616,14 @@
     "how": "only by assumption",
     "source_said": "'old by construction' and 'new by construction'",
     "changed": true,
-    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md row 112; these pairs have no causal check."
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
    },
    "evidence_beside": "No held-out reading in this stage.",
    "cells": {
     "r": {
      "verdict": "not run",
      "reading": {
-      "text": "VPD at steps 30 to 300 was not read.",
+      "text": "VPD at steps 30 to 300 was not read on these 24-key states; the 96-key row reads step 30.",
       "reuse": null,
       "new": null
      },
@@ -5085,7 +6643,122 @@
     "ratio": {
      "verdict": "not run",
      "reading": {
-      "text": "VPD at steps 30 to 300 was not read.",
+      "text": "VPD at steps 30 to 300 was not read on these 24-key states; the 96-key row reads step 30.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prior": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "distance": {
+     "verdict": "fails",
+     "reading": {
+      "text": "rank-1 minus cipher at steps 10, 30, 100, 300: +2.42, -1.48, -1.21, -0.90",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": "step 10 'no gap'; step 30 'ok'; step 100 'no gap'; step 300 'ok'",
+     "derived": null,
+     "notes": [
+      "Distance is under the bar at step 10 here and runs the wrong way from step 30: the cipher moves further."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"10\"].D.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"30\"].D.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"100\"].D.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"300\"].D.gap"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"10\"].D.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"30\"].D.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"100\"].D.status"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".score_ladder.per_step[\"300\"].D.status"
+      }
+     ],
+     "from_reports": [],
+     "job": "46954"
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
       "reuse": null,
       "new": null
      },
@@ -5180,7 +6853,7 @@
      "notes": [
       "As ported to the 67M, this method failed its positive control at every update size E58's recipe makes.",
       "The cipher is only half-learned at step 10, so the one filed-direction gap coincides with it.",
-      "Pruning more units did not pass either: status 'no gap' at the best K up to 320."
+      "Pruning more units did not pass either: status 'no gap' at the best K up to 320; K 320 alone clears a bar that was not filed."
      ],
      "pointers": [
       {
@@ -5348,9 +7021,128 @@
      "job": ""
     },
     "labeller": {
+     "verdict": "separates",
+     "reading": {
+      "text": "size gap, rank-1 minus cipher, at steps 10, 30, 100, 300: -0.34, -1.09, -1.16, -1.04",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "Same lr and step, so a within-cell reading.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: it reads the recipe's result.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied per step: ['b_higher', 'b_higher', 'b_higher', 'b_higher']. The cipher is larger at every step; the verdict asks for steps 30 to 300.",
+     "notes": [
+      "The cipher is the larger update from step 30, which is where both ports lean the wrong way."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s0_t10.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s1_t10.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s2_t10.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s0_t10.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s1_t10.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s2_t10.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s0_t30.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s1_t30.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s2_t30.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s0_t30.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s1_t30.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s2_t30.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s0_t100.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s1_t100.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s2_t100.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s0_t100.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s1_t100.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s2_t100.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s0_t300.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s1_t300.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.rank1_s2_t300.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s0_t300.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s1_t300.norm"
+      },
+      {
+       "file": "experiments/open_pair_instruments/results/ladder.json",
+       "jq": ".ladder.cipher_s2_t300.norm"
+      }
+     ],
+     "from_reports": [],
+     "job": "46954"
+    },
+    "probe": {
      "verdict": "not run",
      "reading": {
-      "text": "Sizes are saved in ladder.json; no labeller was placed on them.",
+      "text": "No source reads this method on this fine-tune.",
       "reuse": null,
       "new": null
      },
@@ -5366,6 +7158,1847 @@
      "pointers": [],
      "from_reports": [],
      "job": ""
+    }
+   }
+  },
+  {
+   "id": "e58_rank1_96",
+   "name": "Rank-1 vs cipher, 96 keys",
+   "model": "67M",
+   "states": "6, seeds 0-2, 96 trained keys, step 30, sizes not matched",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "built maps; label by held-out carry, now evidence (E58)",
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
+   },
+   "evidence_beside": "Held-out carry, evidence only: rank-1 0.16 to 0.20, cipher -0.11 to -0.10 (.reads[...].x).",
+   "cells": {
+    "r": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 0.84 to 0.88 vs cipher 0.29 to 0.31",
+      "reuse": [
+       0.8474048254369698,
+       0.8828091216730221,
+       0.837653865286401
+      ],
+      "new": [
+       0.3038012406525232,
+       0.2876831240335106,
+       0.3072650652390005
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.556, larger range 0.045, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"rank1@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"rank1_s1@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"rank1_s2@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s0@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s1@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s2@30\"].r"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426"
+    },
+    "ratio": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 1.16 to 1.21 vs cipher 0.41 to 0.43",
+      "reuse": [
+       1.168443344019495,
+       1.2112944541980746,
+       1.1588115384356268
+      ],
+      "new": [
+       0.4301297980153035,
+       0.4087040586125706,
+       0.42984284356758384
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.757, larger range 0.052, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"rank1@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"rank1_s1@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"rank1_s2@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s0@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s1@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s2@30\"].ratio"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426"
+    },
+    "prior": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 1.26e-02 vs cipher 1.38e-06, a factor 9147.30",
+      "reuse": [
+       -4.370877532535917
+      ],
+      "new": [
+       -13.49209179244675
+      ]
+     },
+     "reference": "One number per map; no fine-tune needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Apart if over a factor 2, E62's filed match band, applied here.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".prior_beside_r.rank1.w0_geo_p_trained"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".prior_beside_r.cipher.w0_geo_p_trained"
+      }
+     ],
+     "from_reports": [],
+     "job": "46673"
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "steering": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 0.27 to 0.31 vs cipher 0.07 to 0.11",
+      "reuse": [
+       0.2729705446500076,
+       0.3091012983260192,
+       0.29435920021650874
+      ],
+      "new": [
+       0.08474073689805971,
+       0.07196945583721139,
+       0.11275486447795265
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.202, larger range 0.041, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"rank1@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"rank1_s1@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"rank1_s2@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s0@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s1@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s2@30\"].S"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426"
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "reverse": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "separates",
+     "reading": {
+      "text": "rank-1 5.02 to 5.08 vs cipher 6.10 to 6.13",
+      "reuse": [
+       5.018175311574877,
+       5.071278762112667,
+       5.0838822180052885
+      ],
+      "new": [
+       6.115647503530912,
+       6.127793240254766,
+       6.098155453838083
+      ]
+     },
+     "reference": "Same recipe, same step.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: it reads the recipe's result.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap -1.056, larger range 0.066, minimum 0.2; verdict b_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"rank1@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"rank1_s1@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"rank1_s2@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s0@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s1@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"cipher_s2@30\"].norm"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426"
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  },
+  {
+   "id": "e58_elicit_shuffle",
+   "name": "Half-known vs its shuffle, 96 keys",
+   "model": "67M",
+   "states": "6, seeds 0-2 for r; steering and size have seed 0 only for the shuffle, so they are unreadable",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "same words, no key-to-guess link (E58)",
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
+   },
+   "evidence_beside": "Held-out carry, evidence only: elicit 0.10 to 0.11, shuffle -0.05 (.reads[...].x).",
+   "cells": {
+    "r": {
+     "verdict": "separates",
+     "reading": {
+      "text": "elicit 0.72 to 0.74 vs shuffle 0.47 to 0.48",
+      "reuse": [
+       0.7245655669492046,
+       0.7221244961622877,
+       0.7362730103756793
+      ],
+      "new": [
+       0.47485288185171143,
+       0.48487457344855545,
+       0.47141758927879795
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": "shuffle 'cipher_like'",
+     "derived": "E51's rule applied here: gap 0.251, larger range 0.014, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".prior_beside_r.elicit.r30"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".prior_beside_r.shuffle.r30"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".score.shuffle"
+      }
+     ],
+     "from_reports": [],
+     "job": "46426, 46673"
+    },
+    "ratio": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prior": {
+     "verdict": "separates",
+     "reading": {
+      "text": "elicit 1.33e-03 vs shuffle 1.04e-05, a factor 127.26",
+      "reuse": [
+       -6.624490077678974
+      ],
+      "new": [
+       -11.470691317444915
+      ]
+     },
+     "reference": "One number per map; no fine-tune needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Apart if over a factor 2, E62's filed match band, applied here.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".prior_beside_r.elicit.w0_geo_p_trained"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".prior_beside_r.shuffle.w0_geo_p_trained"
+      }
+     ],
+     "from_reports": [],
+     "job": "46673"
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "steering": {
+     "verdict": "unreadable",
+     "reading": {
+      "text": "elicit 0.29 to 0.31 vs shuffle 0.09",
+      "reuse": [
+       0.296430019349504,
+       0.2873143182388508,
+       0.3137617429753505
+      ],
+      "new": [
+       0.08757438793231499
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule reads unreadable with fewer than two values per kind.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"elicit@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"elicit_s1@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"elicit_s2@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"shuffle_s0@30\"].S"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426"
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "reverse": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "unreadable",
+     "reading": {
+      "text": "elicit 5.31 to 5.39 vs shuffle 5.97",
+      "reuse": [
+       5.320967563436385,
+       5.391196454443531,
+       5.3107216198373015
+      ],
+      "new": [
+       5.967369552777083
+      ]
+     },
+     "reference": "Same recipe, same step.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: it reads the recipe's result.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule reads unreadable with fewer than two values per kind.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"elicit@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"elicit_s1@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"elicit_s2@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"shuffle_s0@30\"].norm"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426"
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  },
+  {
+   "id": "e58_copy_prior_cipher",
+   "name": "Copy vs prior-matched cipher, 96 keys",
+   "model": "67M",
+   "states": "6, seeds 0-2, step 30; the cipher's values have W0's prior at copy's",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "copy built; cipher built at copy's prior (E58)",
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
+   },
+   "evidence_beside": "Held-out carry, evidence only: copy 0.79 to 0.81, prior-matched cipher -0.01 to 0.00 (.reads[...].x).",
+   "cells": {
+    "r": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 0.77 vs prior-matched cipher 0.37 to 0.38",
+      "reuse": [
+       0.7708774866685605,
+       0.7720176708745992,
+       0.7705494437300171
+      ],
+      "new": [
+       0.37291769550492326,
+       0.380638947139458,
+       0.3817241958997938
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": "PM class 'cipher_band'",
+     "derived": "E51's rule applied here: gap 0.393, larger range 0.009, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"copy@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"copy_s1@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"copy_s2@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s0@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s1@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s2@30\"].r"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426, 46489"
+    },
+    "ratio": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 1.02 to 1.15 vs prior-matched cipher 0.51 to 0.53",
+      "reuse": [
+       1.046147171516808,
+       1.1521525487147097,
+       1.021355875233717
+      ],
+      "new": [
+       0.5145998081974968,
+       0.5325481252376583,
+       0.5333970445672923
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.546, larger range 0.131, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"copy@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"copy_s1@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"copy_s2@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s0@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s1@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s2@30\"].ratio"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426, 46489"
+    },
+    "prior": {
+     "verdict": "fails",
+     "reading": {
+      "text": "copy 5.91e-05 vs cipher 3.73e-05, a factor 1.59",
+      "reuse": [
+       -9.73615818590551
+      ],
+      "new": [
+       -10.197525634632244
+      ]
+     },
+     "reference": "One number per map; no fine-tune needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Apart if over a factor 2, E62's filed match band, applied here.",
+     "notes": [
+      "Matched by design. r stays apart at this prior, though the copy map's target is in context."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".prior_beside_r.copy.w0_geo_p_trained"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".prior_beside_r.prior_cipher.w0_geo_p_trained"
+      }
+     ],
+     "from_reports": [],
+     "job": "46489"
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "steering": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 0.82 to 0.88 vs prior-matched cipher 0.15 to 0.17",
+      "reuse": [
+       0.8683329243400779,
+       0.8226920215327226,
+       0.877595595428364
+      ],
+      "new": [
+       0.15554101970435297,
+       0.15203197869575638,
+       0.17223679142085843
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap 0.696, larger range 0.055, minimum 0.2; verdict a_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"copy@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"copy_s1@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"copy_s2@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s0@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s1@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s2@30\"].S"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426, 46489"
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "reverse": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "separates",
+     "reading": {
+      "text": "copy 4.70 to 4.77 vs prior-matched cipher 5.90 to 5.92",
+      "reuse": [
+       4.701235596700323,
+       4.737030523283991,
+       4.7653017753199025
+      ],
+      "new": [
+       5.921016271866157,
+       5.897134391190527,
+       5.919422643919933
+      ]
+     },
+     "reference": "Same recipe, same step.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: it reads the recipe's result.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap -1.178, larger range 0.064, minimum 0.2; verdict b_higher.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend3.json",
+       "jq": ".reads[\"copy@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"copy_s1@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend4.json",
+       "jq": ".reads[\"copy_s2@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s0@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s1@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend6.json",
+       "jq": ".reads[\"prior_cipher_s2@30\"].norm"
+      }
+     ],
+     "from_reports": [],
+     "job": "46398, 46426, 46489"
+    },
+    "probe": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    }
+   }
+  },
+  {
+   "id": "e58_class_twin",
+   "name": "Class map vs its shuffled twin",
+   "model": "67M",
+   "states": "6, seeds 0-2, 96 trained keys, step 30; same words, sizes, prior and pool; a rule against no rule",
+   "truth": {
+    "how": "only by assumption",
+    "source_said": "a rule against no rule, built; decisions.md row 112 keeps it open until the class map's mechanism is measured",
+    "changed": true,
+    "detail": "Only by assumption: built to elicit is how the task was built, not the causal label of decisions.md rows 112 and 114; these pairs have no causal check."
+   },
+   "evidence_beside": "Held-out carry, evidence only: class map 0.40 to 0.49, twin 0.11 to 0.13 (.reads[...].x).",
+   "cells": {
+    "r": {
+     "verdict": "fails",
+     "reading": {
+      "text": "class map 0.23 to 0.25 vs twin 0.27 to 0.28",
+      "reuse": [
+       0.23088989328428935,
+       0.24112659183461904,
+       0.2541342810303169
+      ],
+      "new": [
+       0.2791560727792643,
+       0.27891940857514635,
+       0.2714928398076781
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": "D -0.034, class 'kind_only'",
+     "derived": "E51's rule applied here: gap -0.034, larger range 0.023, minimum 0.2; verdict none.",
+     "notes": [
+      "A built-in difference, a rule that carries against no rule, does not show in r. Neither side has a causal label."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s0@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s1@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s2@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s0@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s1@30\"].r"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s2@30\"].r"
+      }
+     ],
+     "from_reports": [],
+     "job": "46673"
+    },
+    "ratio": {
+     "verdict": "fails",
+     "reading": {
+      "text": "class map 0.35 to 0.37 vs twin 0.37 to 0.39",
+      "reuse": [
+       0.3536726652949881,
+       0.3568654710682206,
+       0.3725089064770525
+      ],
+      "new": [
+       0.39028329786591026,
+       0.3779645915655989,
+       0.3723716760493513
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap -0.019, larger range 0.019, minimum 0.2; verdict none.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s0@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s1@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s2@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s0@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s1@30\"].ratio"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s2@30\"].ratio"
+      }
+     ],
+     "from_reports": [],
+     "job": "46673"
+    },
+    "prior": {
+     "verdict": "fails",
+     "reading": {
+      "text": "class map 2.83e-07 vs twin 3.34e-07, a factor 1.18",
+      "reuse": [
+       -15.077257386454335
+      ],
+      "new": [
+       -14.911841042391904
+      ]
+     },
+     "reference": "One number per map; no fine-tune needed.",
+     "positive_control": {
+      "held": null,
+      "what": "No positive control filed for this column.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "Apart if over a factor 2, E62's filed match band, applied here.",
+     "notes": [
+      "Matched by design."
+     ],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".prior_beside_r.class_map.w0_geo_p_trained"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".prior_beside_r.class_shuffled.w0_geo_p_trained"
+      }
+     ],
+     "from_reports": [],
+     "job": "46673"
+    },
+    "distance": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "mlp_share": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "weights": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "steering": {
+     "verdict": "fails",
+     "reading": {
+      "text": "class map 0.62 to 0.70 vs twin 0.72 to 0.75",
+      "reuse": [
+       0.6220048363734613,
+       0.64806373597262,
+       0.7045858739068982
+      ],
+      "new": [
+       0.7374920863755625,
+       0.7154924371989639,
+       0.747687333629308
+      ]
+     },
+     "reference": "Zero update reads 0.",
+     "positive_control": {
+      "held": null,
+      "what": "None of known kind. Stage 0 checks that the code reproduces earlier numbers; no state whose kind is verified independently was read.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap -0.075, larger range 0.083, minimum 0.2; verdict none.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s0@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s1@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s2@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s0@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s1@30\"].S"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s2@30\"].S"
+      }
+     ],
+     "from_reports": [],
+     "job": "46673"
+    },
+    "neuron_patch": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "prompting": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "pruning": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "reverse": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_64": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "readout_full": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "sparsity": {
+     "verdict": "not run",
+     "reading": {
+      "text": "No source reads this method on this fine-tune.",
+      "reuse": null,
+      "new": null
+     },
+     "reference": "none",
+     "positive_control": {
+      "held": null,
+      "what": "not run",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": null,
+     "notes": [],
+     "pointers": [],
+     "from_reports": [],
+     "job": ""
+    },
+    "labeller": {
+     "verdict": "fails",
+     "reading": {
+      "text": "class map 5.20 to 5.28 vs twin 5.23 to 5.32",
+      "reuse": [
+       5.204629974905801,
+       5.253622398325486,
+       5.278568553056673
+      ],
+      "new": [
+       5.2259161337118085,
+       5.316911858251428,
+       5.2502731236445594
+      ]
+     },
+     "reference": "Same recipe, same step.",
+     "positive_control": {
+      "held": null,
+      "what": "No control: it reads the recipe's result.",
+      "value": null
+     },
+     "filed_verdict": null,
+     "derived": "E51's rule applied here: gap -0.019, larger range 0.091, minimum 0.2; verdict none.",
+     "notes": [],
+     "pointers": [
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s0@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s1@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_map_s2@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s0@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s1@30\"].norm"
+      },
+      {
+       "file": "experiments/open_pair/results/amend7.json",
+       "jq": ".reads[\"class_shuffled_s2@30\"].norm"
+      }
+     ],
+     "from_reports": [],
+     "job": "46673"
     },
     "probe": {
      "verdict": "not run",
@@ -5390,5 +9023,5 @@
    }
   }
  ],
- "left_out": "Fine-tunes with no method but VPD's or no reading in the named sources: E58 Amendments 2-7, E57, E34, the Qwen line."
+ "left_out": "Reads not in this table: E58 Amendments 1, 2 and 5 and the first-letter rule of Amendment 6, which did not carry and has no r at step 30; E50's restore share on the copy row's states; E57, E34 and the Qwen line, which have no truth label."
 }
