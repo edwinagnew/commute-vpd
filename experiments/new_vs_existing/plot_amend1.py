@@ -171,7 +171,7 @@ def reach() -> None:
     ax.set_ylim(-0.05, 0.7)
     ax.set_xlabel("student's update size / teacher's, relative norm of the most changed matrix in each")
     ax.set_ylabel("share of the fine-tune's re-switching term lost")
-    ax.set_title("Which students lose re-switching? Map students that end smaller than their teacher", fontsize=10.5, loc="left")
+    ax.set_title("Share of re-switching lost against student/teacher size: a correlation on four map settings", fontsize=10.5, loc="left")
     ax.legend(frameon=False, fontsize=9, loc="upper right")
     style(ax)
     save(fig, "amend1_reach.png")
