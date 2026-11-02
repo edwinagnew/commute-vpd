@@ -4,19 +4,22 @@ c2_config.yaml (param-decomp's ss_llama_simple_mlp-2L recipe; C from the release
 
 One decomposition of LOW on LOW's own pretraining rows (pcfg.pretrain_batch, prior LOW; 258-token inputs), trained by
 `commute.decompose` (param-decomp's step, with saves and resume). Each C1b state is then read by the route split's
-re-gating share r and the stand-in ratio (`commute.pcfg_vpd`) on natural 'C b 40' rows labelled with the state's task.
+re-gating share r and the stand-in ratio (`commute.pcfg_vpd`) on natural 'C b 40' rows, with the state's task's answer
+as the readout token only: Gamma and the forwards see the row up to and including `=`. The filed full window, answer
+included, is read beside it (`cells_full`, `r_full`, `ratio_full`): predictions_c2.json amended_before_the_read.
 
 Stages (repo root, GPU). Each refuses (exit 2) while predictions_c2.json is a draft or a number it reads is not filed:
   decompose  the full decomposition, resumed from results/large/c2/decomp_train.pt; decomp_log.jsonl grows as it runs. A
              missed early check (decomposition_stops.early_checks, {"<step>": {"<eval key>": {"max": x, "min": y}}}) saves
-             and exits 1. Exit 3 at the deadline (resubmit by hand), exit 0 with results/large/c2/decomp_final.pt.
+             and exits 1, a non-finite loss exits 1 unsaved, a resume under another config or decompose.py exits 2. Exit
+             3 at the deadline (resubmit by hand), exit 0 with results/large/c2/decomp_final.pt.
   read       from decomp_final.pt. Controls first and alone: the alive set (saved, so every job reads on the same set),
              the zero update (over its filed stop bounds: exit 1, apparatus; over U0_vs_T0_max: every later state's
              readings void, reported), the two ID states. Then the 14 calibration states and results/c2_cutoffs.json,
              for the lead to commit.
   score      refuses (exit 2) unless c2_cutoffs.json is committed and equals the cut-offs recomputed from c2.json. The
              21 scored states and the five unlearned N states (not scored); labels, scores, the ID rows' coverage
-             reading, (U1 - U0) / (T1 - T0) per state and the filed outcomes.
+             reading, the leak's size, (U1 - U0) / (T1 - T0) per state and the filed outcomes.
 read and score rewrite results/c2.json after every state, skip the states already in it and exit 3 when the slowest state
 so far would overrun the deadline (resubmit by hand). Every number goes to the log as well.
 
@@ -27,11 +30,12 @@ cluster/pcfg_c2_normal.sbatch)
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import math
 import sys
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -70,6 +74,7 @@ CHUNK = 50  # batches per generated chunk
 READINGS, ZERO, PARTS = ("r", "ratio"), "zero_update", ("controls", "calibration", "scored", "unscored")
 STATE_SECONDS = 60.0  # per-state reading time assumed until one is measured (the rehearsal's 256 windows took ~4 s; 1,024 here)
 UNLEARNED_NEW_MIN = 4  # predictions_c2.json predictions.unlearned_N: of the five
+UNVERIFIED = "fail, apparatus unverified"  # predictions_c2.json amended_before_the_read
 
 
 @dataclass(frozen=True)
@@ -93,6 +98,7 @@ class Sizes:
 
 REHEARSAL = Sizes(steps=400, stop_first=200, save_every=200, log_every=50, alive_rows=512, read_windows=256, read_chunk=64, read_batch=32)
 FULL = Sizes(steps=400_000, stop_first=0, save_every=5_000, log_every=200, alive_rows=8192, read_windows=1024, read_chunk=64, read_batch=32)
+FINAL_STEP: int | None = FULL.steps  # open_reader's check on FINAL; c2_rehearse.py readcheck sets None, to read any saved file
 
 
 def inputs(rows: np.ndarray) -> np.ndarray:
@@ -103,22 +109,20 @@ def pretrain_rows(rng: np.random.Generator, n: int) -> np.ndarray:
     return inputs(pcfg.pretrain_batch(rng, n, pcfg.PRIORS["LOW"]))
 
 
-def data(cfg: Any) -> tuple[Batches, Any]:
-    """Training batches by step and an endless iterator of eval batches (fresh streams, LOW's pretraining rows)."""
+def data(cfg: Any) -> tuple[Batches, Callable[[int], Iterator[Tensor]]]:
+    """Training batches by step and, by step too, an endless iterator of eval batches (fresh streams, LOW's pretraining
+    rows): a resubmitted job evaluates a step on the rows the job before it did."""
     train = Batches(pretrain_rows, DECOMP_SEED, cfg.batch_size, CHUNK, device())
     ev = Batches(pretrain_rows, EVAL_DECOMP_SEED, cfg.eval_batch_size, CHUNK, device())
 
-    def eval_iter() -> Any:
-        i = 0
-        while True:
-            yield ev.get(i)
-            i += 1
+    def eval_at(step: int) -> Iterator[Tensor]:
+        return (ev.get(step // cfg.eval_freq * cfg.n_eval_steps + i) for i in itertools.count())
 
-    return train, eval_iter()
+    return train, eval_at
 
 
 def fresh(cfg: Any) -> D.Decomp:
-    return D.build(load_model(LOW_PATH), cfg, (cfg.batch_size, pcfg.SEQ - 1), device())
+    return D.build(load_model(LOW_PATH), cfg, (cfg.batch_size, pcfg.SEQ - 1), device(), D.provenance(CONFIG))
 
 
 # ---- one state's reading ----
@@ -162,18 +166,28 @@ def reader(model: Any, alive: dict[str, Tensor], sz: Sizes, ratio_floor: float) 
                   vpd.target_weights(model), rows, sz, ratio_floor)  # fmt: skip
 
 
+def full_minus_cut(cells: dict[str, float], full: dict[str, float], sh: dict[str, float], sh_full: dict[str, float]) -> dict[str, float]:
+    """The filed full window against the scored cut one (predictions_c2.json amended_before_the_read): the readings'
+    and L00 - T0's differences, and the largest |difference| of the T and U cells, which should be bf16 noise."""
+    return {"r": sh_full["r"] - sh["r"], "ratio": sh_full["ratio"] - sh["ratio"],
+            "L00_minus_T0": (full["L00"] - full["T0"]) - (cells["L00"] - cells["T0"]),
+            **{c: max(abs(full[f"{c}{i}"] - cells[f"{c}{i}"]) for i in (0, 1)) for c in ("T", "U")}}  # fmt: skip
+
+
 def read_one(rd: Reader, st: Any, task: str) -> dict[str, Any]:
     """Both readings, the matrix share, the outside norm share and T0 - LOW of state `st`, on the natural rows answered
-    with its task; the ID states read the same texts under their own prompt."""
+    with its task; the ID states read the same texts under their own prompt. Scored from the windows cut at `=`, the
+    full windows reported beside them."""
     t = time.perf_counter()
     rows = prompt_seqs(texts_of(rd.rows), id_prompt()) if task == "ID" else rd.rows
     w = pcfg_vpd.windows(rows, answers(task, rows))
     dW = pcfg_vpd.matrix_update(st, rd.low, rd.keys)
-    cells = pcfg_vpd.cells_of(rd.model, rd.lift, rd.comps0, rd.W0, dW, w, rd.sz.read_chunk, rd.sz.read_batch)
+    cells, cells_full = (pcfg_vpd.cells_of(rd.model, rd.lift, rd.comps0, rd.W0, dW, w, rd.sz.read_chunk, rd.sz.read_batch, n) for n in (pcfg.ANS, None))
     lo_low = pcfg_vpd.answer_log_odds(rd.low, w)
     full = pcfg_vpd.answer_log_odds(st, w) - lo_low
-    sh = pcfg_vpd.shares(cells, rd.ratio_floor)
-    return {"task": task, "cells": cells, **sh, "full_gain": full,
+    sh, sh_full = pcfg_vpd.shares(cells, rd.ratio_floor), pcfg_vpd.shares(cells_full, rd.ratio_floor)
+    return {"task": task, "cells": cells, "cells_full": cells_full, **sh, "r_full": sh_full["r"], "ratio_full": sh_full["ratio"],
+            "full_minus_cut": full_minus_cut(cells, cells_full, sh, sh_full), "full_gain": full,
             "matrix_share": sh["gain"] / full if abs(full) >= pcfg_vpd.GAIN_MIN else float("nan"),
             "outside_norm_share": pcfg_vpd.outside_norm_share(st, rd.low, rd.keys), "T0_minus_LOW": cells["T0"] - lo_low,
             "seconds": time.perf_counter() - t, **D.memory()}  # fmt: skip
@@ -200,6 +214,13 @@ def unfaithful(rec: dict[str, Any], u0_max: float) -> list[str]:
     return [] if abs(v) <= u0_max else [f"|U0 - T0| = {abs(v)} over {u0_max}"]
 
 
+def id_readings(res: dict[str, Any], ids: list[str]) -> list[dict[str, float | None]]:
+    """The ID states' readings for the positive control: an ID state whose own U0 - T0 misses U0_vs_T0_max counts as
+    void here. Report only: `x` and the labels stay as read."""
+    u0_max = res["constants"]["U0_vs_T0_max"]
+    return [dict.fromkeys(READINGS) if unfaithful(res["controls"][s], u0_max) else res["controls"][s]["x"] for s in ids]
+
+
 # ---- what read and score share ----
 
 
@@ -207,10 +228,11 @@ def filed() -> dict[str, Any] | None:
     """The filed numbers read and score use; None, with the reason logged, while predictions_c2.json is a draft or any of
     them is still text."""
     pred = json.loads(PRED_C2.read_text())
-    k, id_min = pred["constants"], pred["positive_controls"].get("ID_min", {})
+    k, id_min, amended = pred["constants"], pred["positive_controls"].get("ID_min", {}), pred.get("amended_before_the_read", {})
     out = {"ratio_floor": k["ratio_floor"], "gain_min": k["gain_min"], "matrix_share_min": k["matrix_share_min"],
            "T0_vs_LOW_max": pred["do_nothing"].get("T0_vs_LOW_max"), "U0_vs_T0_max": pred["do_nothing"].get("U0_vs_T0_max"),
-           "ID_min_r": id_min.get("r"), "ID_min_ratio": id_min.get("ratio")}  # fmt: skip
+           "ID_min_r": id_min.get("r"), "ID_min_ratio": id_min.get("ratio"),
+           "leak_report_over": amended.get("leak_report_over"), "cut_move_stop_over": amended.get("cut_move_stop_over")}  # fmt: skip
     unfiled = [n for n, v in out.items() if not isinstance(v, int | float)]
     if str(pred.get("status", "")).startswith("DRAFT") or unfiled:
         log(f"{PRED_C2.name} is a draft or lacks numbers {unfiled}: file it first (exit 2)")
@@ -259,7 +281,8 @@ def open_reader(k: dict[str, Any], res: dict[str, Any]) -> Reader:
     """The final decomposition (FULL's sizes), its alive set from ALIVE if an earlier job saved it, and the split's bases."""
     cfg = D.load_config(CONFIG, steps=FULL.steps)
     model, step = D.load_final(FINAL, load_model(LOW_PATH), cfg, device())
-    assert step == FULL.steps, f"{FINAL} is at step {step}"
+    assert FINAL_STEP is None or step == FINAL_STEP, f"{FINAL} is at step {step}"
+    res["final_step"] = step
     if not ALIVE.exists():
         tmp = ALIVE.with_suffix(".tmp")
         torch.save(alive_set(model, FULL.alive_rows), tmp)
@@ -309,11 +332,15 @@ def controls(res: dict[str, Any], rd: Reader, table: dict[str, tuple[str, Path]]
     res["readings_void"] = unfaithful(res["controls"][ZERO], k["U0_vs_T0_max"])
     if res["readings_void"]:
         log(f"do-nothing control: {res['readings_void']}: both readings void for C2, cells still reported")
+    moved = res["controls"][ZERO]["full_minus_cut"]["L00_minus_T0"]
+    res["cut_move_stop"] = abs(moved) > k["cut_move_stop_over"]
+    if res["cut_move_stop"]:
+        log(f"STOP TO THE LEAD: the cut at `=` moved the zero update's L00 - T0 by {moved}; decide before committing the cut-offs (amended_before_the_read)")
     ids = list(id_paths())
     rc = read_part(res, "controls", ids, rd, table, deadline)
     if rc:
         return rc
-    xid = [res["controls"][s]["x"] for s in ids]
+    xid = id_readings(res, ids)
     res["positive_control"] = {q: revival.positive_control_state([x[q] for x in xid], k[f"ID_min_{q}"]) for q in READINGS}
     log(f"controls: positive control per reading {res['positive_control']} (report only); ID readings {dict(zip(ids, xid, strict=True))}")
     write_json(OUT, res)
@@ -405,11 +432,31 @@ def id_rows(res: dict[str, Any]) -> dict[str, Any]:
             "U0_minus_T0": u0, "U0_within_max": {s: abs(v) <= u0_max for s, v in u0.items()}}  # fmt: skip
 
 
+def leak(res: dict[str, Any], truth: dict[str, str]) -> dict[str, Any]:
+    """predictions_c2.json amended_before_the_read, reported: the states whose r or ratio differs by over the filed amount
+    between the full and the cut windows, the largest T or U difference, and the full column's cut-off on calibration."""
+    diffs = {s: rec["full_minus_cut"] for p in PARTS for s, rec in res[p].items()}
+    over = res["constants"]["leak_report_over"]
+    full = {q: {s: res["calibration"][s][f"{q}_full"] if res["calibration"][s]["x"][q] is not None else None for s in truth} for q in READINGS}
+    return {"over": {s: {q: d[q] for q in READINGS} for s, d in diffs.items() if any(abs(d[q]) > over for q in READINGS)},
+            "T_U_max": max((max(d["T"], d["U"]) for d in diffs.values()), default=0.0),
+            "full_column_cutoff": {q: revival.cutoff(full[q], truth, res["constants"]["high_is_existing"][q]) for q in READINGS}}  # fmt: skip
+
+
 def outcomes(res: dict[str, Any], c: C1bStates) -> dict[str, Any]:
-    """predictions_c2.json predictions: per reading, the headline and the unlearned N states (stand-alone)."""
-    per = {q: {"outcome": revival.c2_outcome(res["scores"][q]["all"], len(c.scored)), "positive_control": res["positive_control"][q]} for q in READINGS}
+    """predictions_c2.json predictions: per reading, the headline and the unlearned N states (stand-alone). A fail with
+    the positive control not 'holds' on that reading is written 'fail, apparatus unverified' (amended_before_the_read);
+    the outcome itself and the headline's order read the score alone. wrong_labels (n - agree) tells a fail of wrong
+    calls from one of voids."""
+    per: dict[str, Any] = {}
+    for q in READINGS:
+        sc, pc = res["scores"][q]["all"], res["positive_control"][q]
+        out = revival.c2_outcome(sc, len(c.scored))
+        per[q] = {"outcome": out, "written": UNVERIFIED if out == "fail" and pc != "holds" else out, "positive_control": pc, "wrong_labels": sc["n"] - sc["agree"]}
     new = {q: sum(res["unscored"][s]["labels"][q] == "new" for s in c.unlearned) for q in READINGS}
-    return per | {"headline": revival.c2_headline([per[q]["outcome"] for q in READINGS]),
+    head = revival.c2_headline([per[q]["outcome"] for q in READINGS])
+    verified = head != "fail" or any(per[q]["written"] == "fail" for q in READINGS)
+    return per | {"headline": head, "headline_written": head if verified else UNVERIFIED,
                   "unlearned_N": {"new_of_five": new, "handled": {q: n >= UNLEARNED_NEW_MIN for q, n in new.items()}}}  # fmt: skip
 
 
@@ -437,6 +484,7 @@ def stage_score(deadline: float) -> int:
     res["U_gain_over_T_gain"] = {s: r["piece_gain"] / r["gain"] if abs(r["gain"]) >= pcfg_vpd.GAIN_MIN else math.nan for p in PARTS for s, r in res[p].items()}
     res["scores"] = scores(res, c)
     res["id_rows"] = id_rows(res)
+    res["leak"] = leak(res, c.calibration)
     res["predictions"] = outcomes(res, c)
     res["complete"] = True
     write_json(OUT, res)
@@ -444,6 +492,7 @@ def stage_score(deadline: float) -> int:
     log(f"U gain over T gain: {res['U_gain_over_T_gain']}")
     log(f"scores: {json.dumps(res['scores'])}")
     log(f"ID rows: {res['id_rows']}")
+    log(f"leak: {res['leak']}")
     log(f"predictions: {res['predictions']}")
     return 0
 
@@ -465,6 +514,7 @@ def stage_decompose(deadline_min: float) -> int:
         return 2
     torch.cuda.reset_peak_memory_stats()
     d = fresh(cfg)
+    log(f"decompose: provenance {d.provenance}")
     train, ev = data(cfg)
     plan = D.Plan(FULL.steps, FULL.save_every, FULL.log_every, deadline)
     step, _ = D.run(d, train.get, TRAIN_CKPT, plan, ev, log=log, on_eval=D.early_stop(checks, d, TRAIN_CKPT, log),

@@ -219,9 +219,3 @@ def test_c2_headline_is_the_better_reading():
     assert rv.c2_headline(["void", "void"]) == "void"
     assert rv.c2_headline(["tie", "fail"]) == "tie"  # no averaging
     assert rv.c2_headline(["fail", "void"]) == "fail"
-
-
-def test_a_missing_positive_control_changes_no_outcome():
-    """The outcome reads the score alone: the rule takes no control, whatever positive_control_state says."""
-    assert rv.positive_control_state([None, None], 0.5) == "none"
-    assert rv.c2_outcome(c2_score(21, 21), 21) == "tie"

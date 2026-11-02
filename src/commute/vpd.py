@@ -167,9 +167,10 @@ class CI:
 def compute_ci(model: Any, batch: Tensor, chunk: int = CI_CHUNK) -> CI:
     """g and the target logits for a batch of token ids (B, T), T <= 512, exactly as the authors do:
     clean forward caching the inputs of the 24 matrices, then Gamma with `sampling='continuous'`.
-    Gamma reads each position's own pre-weight activations, so a 41-token window is as valid an input as a
-    512-token row (the model is causal with rotary positions; `n_ctx` 512 is a maximum). Relaxed from `== SEQ_LEN`
-    on 2026-10-15 for the task-local harness (`local_faith.py`)."""
+    The target model is causal, but Gamma here (`global_shared_transformer`) is a bidirectional transformer over the
+    whole row: a position's gates depend on the tokens after it, and a window shorter than the trained row is an input
+    Gamma did not train on (reports/reviews/2026-10-27_review_gamma-bidirectional-windows.md). Relaxed from
+    `== SEQ_LEN` on 2026-10-15 for the task-local harness (`local_faith.py`)."""
     assert batch.ndim == 2 and 1 <= batch.shape[1] <= SEQ_LEN, tuple(batch.shape)
     keys = module_keys(model)
     g_parts: dict[str, list[Tensor]] = {k: [] for k in keys}

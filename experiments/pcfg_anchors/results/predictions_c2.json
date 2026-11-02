@@ -1,5 +1,17 @@
 {
-  "status": "filed 2026-11-02 before the decomposition job; advice reports/plans/2026-11-02_advice_c2-filing-FABLE.md, adopted by the lead",
+  "status": "filed 2026-11-02 before the decomposition job; advice reports/plans/2026-11-02_advice_c2-filing-FABLE.md, adopted by the lead; amended the same day, before any reading on a trained decomposition (amended_before_the_read)",
+  "amended_before_the_read": {
+    "date": "2026-11-02",
+    "source": "reports/reviews/2026-11-02_review_e55-c2-gates.md (C1, P2); reports/plans/2026-11-02_advice_c2-gamma-label-FABLE.md, adopted by the lead",
+    "text": "Before any reading on a trained decomposition: the importance function is bidirectional and the filed 258-token windows put the state's label at index 257, so the L cells could read the class. Scored cells: the importance function and all forwards see tokens 0..256 (ci_len = pcfg.ANS); the label is the readout token only. The filed full-window cells are reported as cells_full with their r and ratio (r_full, ratio_full). Expected: T and U equal across the two columns within 1e-3; the full column's r and ratio differ from the cut column's by an amount reported per state (the leak's size), and if the full column separates the 14 calibration classes where the cut does not, the leak is named as the cause of C1b-style separation, not VPD. No lean, bar, rule or reference changes.",
+    "leak_report_over": 0.1,
+    "leak_report": "the same state under both columns. A per-state difference over 0.1 in r or in the ratio on the trained decomposition says the importance function read the label; the direction (P up, N down, or both) is the finding to report. Reported, moves no outcome (results c2.json .leak; per state full_minus_cut). If the columns agree within that on all 14 calibration states, cells_full is retired in the write-up. Expected near the chunk and bf16 floor under no leak; the first trained reading measures that floor.",
+    "cut_move_stop_over": 5.0,
+    "cut_move_stop": "a stop to the lead, not an exit: if the cut moves the zero update's L00 - T0 by over 5 log-odds in either direction from the full column's value on the same decomposition, the cut may be destroying the importance function; the lead decides, before the cut-offs are committed, on the fallback (the fixed neutral token at 257 with per-window targets, the advice's option a). The advice worded this against the untrained -1.40 / -3.83; the same-decomposition difference is what the cut itself does, and a damaged importance function can move the cell either way.",
+    "fail_unverified": "a fail with the positive control not 'holds' on that reading is written 'fail, apparatus unverified' (predictions .written); outcomes, headline order and leans are otherwise unchanged.",
+    "id_u0": "an ID state whose own U0 - T0 misses U0_vs_T0_max counts as void for the positive control; report only, no outcome moves (review C3: the filed sentence was only reported).",
+    "early_checks": "steps 100K, 150K, 200K, 300K added to decomposition_stops.early_checks (review P4); a miss saves and exits 1 as the others do."
+  },
   "experiment": "E55 Stage C2: VPD's re-gating share r and stand-in ratio on the C1b truth set, calibrated and scored by C1b's rule beside the three cheap instruments and the within-cell update-size labeller",
   "plan": "reports/plans/2026-10-31_plan_e55-c2-vpd.md",
   "code": "experiments/pcfg_anchors/c2.py (stages decompose, read, score), experiments/pcfg_anchors/c2_rehearse.py (the $0 stages rehearse, noise, firststeps; never scored), src/commute/decompose.py, src/commute/pcfg_vpd.py, src/commute/revival.py (cutoff, label_by_cutoff, score, ceiling, positive_control_state, c2_outcome, c2_headline), experiments/pcfg_anchors/c2_config.yaml",
@@ -10,22 +22,22 @@
     "alive_rows": 8192,
     "alive_rule": "mean causal importance over every position of alive_rows pretraining rows (stream [202, i]) > 1e-6 (vpd.alive_masks, the paper's rule)",
     "read_windows": 1024,
-    "read_rows": "natural 'C b 40' rows, c1b.task_rows('N', default_rng([1, 60]), 1024): the same rows for every state; each state's windows carry its own task's answer (P: count(a) + 1, N: count(b)); the ID states read on the same texts under their own prompt with count(a) answers",
+    "read_rows": "natural 'C b 40' rows, c1b.task_rows('N', default_rng([1, 60]), 1024): the same rows for every state; each state's windows carry its own task's answer as the readout token (P: count(a) + 1, N: count(b)); the importance function and the forwards see up to and including '=' (amended_before_the_read); the ID states read on the same texts under their own prompt with count(a) answers",
     "ratio_floor": 0.1,
     "ratio_floor_source": "E53 Amendment 1b thresholds.floor_min, as E58 (experiments/open_pair/results/predictions.json thresholds.ratio_floor); in log-odds at the answer",
     "gain_min": 1e-6,
     "matrix_share_min": 0.5,
     "matrix_share_rule": "a state is void for both VPD readings if its matrix_share is nan (the state's own gain under gain_min) or under 0.5",
-    "matrix_share_source": "the same majority bar as the reuse line's Stage B (through iff >= 0.5) and E12's r rule: the readings read the 24 matrices' part of the update, so that part must carry at least half the gain to be called the update. Measured 0.76 (P 1e-4 10K) and 0.68 (N1 10K), c2_rehearsal.json, both large-update states; the 1e-5 1K states are unmeasured and could sit lower; 4 or more of one class under 0.5 voids the reading by revival.cutoff, reported with the shares",
+    "matrix_share_source": "the same majority bar as the reuse line's Stage B (through iff >= 0.5) and E12's r rule: the readings read the 24 matrices' part of the update, so that part must carry at least half the gain to be called the update. Measured 0.76 (P 1e-4 10K) and 0.68 (N1 10K), c2_rehearsal.json, both large-update states; the 1e-5 1K states are unmeasured and could sit lower; 6 or more of the 8 existing calibration states, or 4 or more of the 6 new, under 0.5 void the reading by revival.cutoff (MIN_PER_CLASS 3), reported with the shares; one scored state under 0.5 makes a tie unreachable (a tie needs n = 21)",
     "high_is_existing": {"r": true, "ratio": true},
     "calibration_states": "the 14 calibration-seed truth states of results/c1b_cutoffs.json .truth, unchanged",
     "scored_states": "the 21 scored-seed truth states of results/c1b.json .truth (seeds 2-4), unchanged",
-    "reported_unscored": ["the five N_1e-5_s*/1000 states (not yet learned, task accuracy 0.48)", "LOW (zero update)", "the two ID states amend5/ID_s0/2000, amend5/ID_s1/2000"]
+    "reported_unscored": ["the five not yet learned states a2/M/1000 and c1b/N_1e-5_s1..s4/1000 (task accuracy 0.48)", "LOW (zero update)", "the two ID states amend5/ID_s0/2000, amend5/ID_s1/2000"]
   },
   "definitions": {
     "r": "route split's re-gating share of the least-squares split state (anchors.lifted): (L01 - L00) / (T1 - T0); nan when |T1 - T0| < gain_min",
     "ratio": "stand-in ratio from the same cells: (L11 - L00) / (U1 - U0); nan when U1 - U0 < ratio_floor",
-    "cells": "mean over read windows of the answer's log-odds at '=' (index 256): T target, U unmasked components, L CI-masked components; 0 = W0 with LOW's components, 1 = W0 + dW with the split components; L01, L10 the cross cells (local_faith.route_split)",
+    "cells": "mean over read windows of the answer's log-odds at '=' (index 256), the importance function and all forwards on tokens 0..256 and the answer the readout token only (ci_len = pcfg.ANS; cells_full: the same on the filed 258 tokens, reported): T target, U unmasked components, L CI-masked components; 0 = W0 with LOW's components, 1 = W0 + dW with the split components; L01, L10 the cross cells (local_faith.route_split)",
     "dW": "the change of the 24 decomposed matrices' weights only; embeddings, LayerNorms, biases and the head stay at LOW's values in every cell",
     "matrix_share": "(T1 - T0) / (the state's own mean log-odds gain on the same windows)",
     "outside_norm_share": "share of the fine-tune's squared parameter change outside the 24 matrices' weights (reported)",
@@ -52,7 +64,7 @@
     "ID_states": "amend5 ID_s0 and ID_s1 at 2K (count(a) under a new prompt; steering S 0.93)",
     "ID_min": {"r": 0.5, "ratio": 0.5},
     "ID_min_source": "E12's r rule and the step-2 plan's ratio rule (open_pair predictions.json label_source); E58 elicit 0.76-0.79 / 0.93-0.96 above, cipher 0.22-0.24 / 0.30-0.34 below",
-    "rule": "per reading: holds iff both ID states are non-void and >= the bar; partial iff one; none iff neither. Report, continue (C1b's steering rule). On partial or none: if |L00 - T0| on the ID rows > 2 x the larger natural-row value, name coverage of the new prompt as the alternative cause; otherwise it is a reading miss. U0 - T0 on the ID rows must pass the same 0.1.",
+    "rule": "per reading: holds iff both ID states are non-void and >= the bar; partial iff one; none iff neither. Report, continue (C1b's steering rule). On partial or none: if |L00 - T0| on the ID rows > 2 x the larger natural-row value, name coverage of the new prompt as the alternative cause; otherwise it is a reading miss. U0 - T0 on the ID rows must pass the same 0.1: a miss counts that state as void for this control (amended_before_the_read).",
     "lean": "r holds 70%, ratio 65%; coverage named 15%"
   },
   "decomposition_stops": {
@@ -61,9 +73,13 @@
       "1000": {"ce_kl/kl_ci_masked": {"max": 0.10}, "ce_kl/kl_stoch_masked": {"max": 0.13}, "ce_kl/kl_unmasked": {"max": 1e-4}, "l0/0.0_total": {"min": 24, "max": 600}},
       "2000": {"ce_kl/kl_ci_masked": {"max": 0.20}, "ce_kl/kl_stoch_masked": {"max": 0.25}, "ce_kl/kl_unmasked": {"max": 1e-4}, "l0/0.0_total": {"min": 24, "max": 600}},
       "10000": {"ce_kl/kl_ci_masked": {"max": 0.55}, "ce_kl/kl_unmasked": {"max": 1e-4}, "l0/0.0_total": {"min": 24, "max": 2000}},
-      "50000": {"ce_kl/kl_ci_masked": {"max": 0.55}, "ce_kl/kl_unmasked": {"max": 1e-4}, "l0/0.0_total": {"min": 24, "max": 2000}}
+      "50000": {"ce_kl/kl_ci_masked": {"max": 0.55}, "ce_kl/kl_unmasked": {"max": 1e-4}, "l0/0.0_total": {"min": 24, "max": 2000}},
+      "100000": {"ce_kl/kl_ci_masked": {"max": 0.55}, "ce_kl/kl_unmasked": {"max": 1e-4}},
+      "150000": {"ce_kl/kl_ci_masked": {"max": 0.55}, "ce_kl/kl_unmasked": {"max": 1e-4}},
+      "200000": {"ce_kl/kl_ci_masked": {"max": 0.55}, "ce_kl/kl_unmasked": {"max": 1e-4}},
+      "300000": {"ce_kl/kl_ci_masked": {"max": 0.55}, "ce_kl/kl_unmasked": {"max": 1e-4}}
     },
-    "early_checks_source": "1K and 2K KL bounds = 2 x c2_firststeps.json (0.049/0.063; 0.091/0.118); L0 max 600 = about 3.5 x the 1K value 170 and under a tenth of untrained 7,284; L0 min 24 = fewer than one active subcomponent per matrix per token (24 matrices), a collapse; 10K/50K kl_ci 0.55 = half the untrained value 1.10 (a decomposition over halfway back to untrained is not training); L0 2000 = about a quarter of untrained; kl_unmasked 1e-4 = 6 x the largest measured (1.5e-5 at 1K, 2K; 2.4e-6 at step 0 after the 400-step faithfulness warm-up) and the recipe's hard constraint (coefficient 1e7). The first-steps run cannot predict step 10K: the adversary's lr warms up to step 10K (warmup_pct 0.025 of 400K), so kl_ci rises from 1K to 2K (0.049 to 0.091) against a strengthening adversary. A miss saves and exits 1.",
+    "early_checks_source": "1K and 2K KL bounds = 2 x c2_firststeps.json (0.049/0.063; 0.091/0.118); L0 max 600 = about 3.5 x the 1K value 170 and under a tenth of untrained 7,284; L0 min 24 = fewer than one active subcomponent per matrix per token (24 matrices), a collapse; 10K to 300K kl_ci 0.55 = half the untrained value 1.10 (a decomposition over halfway back to untrained is not training), the same bar and kl_unmasked 1e-4 from 100K on with no L0 bound (the noise job's final-p train L0 read 23 and 30.55, so a healthy decomposition can sit at the 50K minimum; review P4); L0 2000 = about a quarter of untrained; kl_unmasked 1e-4 = 6 x the largest measured (1.5e-5 at 1K, 2K; 2.4e-6 at step 0 after the 400-step faithfulness warm-up) and the recipe's hard constraint (coefficient 1e7). The first-steps run cannot predict step 10K: the adversary's lr warms up to step 10K (warmup_pct 0.025 of 400K), so kl_ci rises from 1K to 2K (0.049 to 0.091) against a strengthening adversary. A miss saves and exits 1.",
     "watch_10000": "a watch, not a stop: the runner reports ce_kl/kl_ci_masked at step 10K; over 0.18 (2 x step 2K) the lead decides whether to cancel, inside the run's first 2 h",
     "reported": "final eval KLs and the alive count per matrix are reported from decomp_log.jsonl and alive.pt, never stops; a matrix with 0 alive is reported"
   },
@@ -75,7 +91,8 @@
     "a state whose fine-tune moved only parameters outside the 24 matrices: gain 0, r nan, void",
     "a cut-off with one class empty among the non-void calibration states: void (revival.cutoff)",
     "U1 - U0 under the floor while T1 - T0 >= 1: the split did not carry the update; ratio void, U1 - U0 reported beside T1 - T0. If trained N states stay under the floor, the ratio is void by revival.cutoff and the finding is that VPD's components cannot absorb the N update at all; r is unaffected",
-    "outcomes (tests/test_revival.py): one reading void: headline = the other's outcome, both written; both void: headline void, cells reported; r tie and ratio fail: headline tie, both written, no averaging; agree 20 of n = 20: pass_under (a voided scored state is a miss against 21 of 21); n = 7: void; a missing positive control changes no outcome, written beside it"
+    "a forced fail: every scored N state void gives n = 12, agree = 12, majority 12, bar 13, outcome fail with 0 wrong labels. score's output writes the wrong-label count (n - agree) beside the outcome, so a fail of voids is told from a fail of wrong calls",
+    "outcomes (tests/test_revival.py): one reading void: headline = the other's outcome, both written; both void: headline void, cells reported; r tie and ratio fail: headline tie, both written, no averaging; agree 20 of n = 20: pass_under (a voided scored state is a miss against 21 of 21); n = 7: void; a missing positive control changes no outcome, written beside it (tests/test_c2.py; a fail is then written 'fail, apparatus unverified')"
   ],
   "predictions": {
     "per_reading": "q in {r, ratio}, from scores[q].all (rules.score; n = non-void scored states, n_c recomputed on them)",

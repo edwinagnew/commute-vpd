@@ -5,6 +5,7 @@ pcfg_vpd's pure pieces (windows, cell averaging, the r and ratio rules) on their
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 from collections.abc import Iterator
@@ -88,10 +89,10 @@ def batches(step: int) -> Tensor:
     return torch.randint(0, VOCAB, (B, T), generator=torch.Generator().manual_seed(1000 + step))
 
 
-def eval_batches() -> Iterator[Tensor]:
+def eval_batches(step: int) -> Iterator[Tensor]:
     i = 0
     while True:
-        yield batches(10_000 + i)
+        yield batches(10_000 + step + i)
         i += 1
 
 
@@ -102,7 +103,7 @@ def train_toy(ckpt: Path, steps: int, stops: list[int], with_eval: bool = False)
         torch.manual_seed(123)  # a resumed process starts from an unrelated RNG state; load() must restore it
         target = Toy()
         d = D.build(target, cfg, (B, T), "cpu")
-        recs = D.run(d, batches, ckpt, D.Plan(end, save_every=end, log_every=1), eval_batches() if with_eval else None,
+        recs = D.run(d, batches, ckpt, D.Plan(end, save_every=end, log_every=1), eval_batches if with_eval else None,
                      log=lambda _m: None)[1]  # fmt: skip
         assert any("eval" in r for r in recs) == with_eval
     assert d is not None
@@ -160,7 +161,8 @@ def test_early_check_problems() -> None:
 
 def test_filed_early_checks_can_work() -> None:
     filed = json.loads((CONFIG.parent / "results" / "predictions_c2.json").read_text())["decomposition_stops"]["early_checks"]
-    assert set(filed) == {"0", "1000", "2000", "10000", "50000"}
+    assert set(filed) == {"0", "1000", "2000", "10000", "50000", "100000", "150000", "200000", "300000"}
+    assert not any("l0/0.0_total" in filed[s] for s in ("100000", "150000", "200000", "300000"))
     assert D.early_check_problems(filed, yaml.safe_load(CONFIG.read_text())["eval_freq"]) == []
 
 
@@ -183,7 +185,7 @@ def test_on_eval_after_each_eval_and_the_log_grows(tmp_path: Path) -> None:
         fired.append((step, len(lines()), len(ev)))
 
     d = D.build(Toy(), toy_config(4), (B, T), "cpu")
-    step, recs = D.run(d, batches, tmp_path / "c.pt", D.Plan(4, 4, 1), eval_batches(), log=lambda _m: None, on_eval=on_eval, on_record=on_record)
+    step, recs = D.run(d, batches, tmp_path / "c.pt", D.Plan(4, 4, 1), eval_batches, log=lambda _m: None, on_eval=on_eval, on_record=on_record)
     assert step == 4 and [f[0] for f in fired] == [0, 2, 4]  # eval_freq 2, and the final evaluation
     assert sizes == list(range(1, len(recs) + 1)) and lines() == recs
 
@@ -194,9 +196,75 @@ def test_early_stop_saves_and_exits_1(tmp_path: Path) -> None:
     d = D.build(Toy(), toy_config(4), (B, T), "cpu")
     never = {"2": {"not_an_eval_key": {"max": 1.0}}}
     with pytest.raises(SystemExit) as e:
-        D.run(d, batches, ckpt, D.Plan(4, 4, 1), eval_batches(), log=said.append, on_eval=D.early_stop(never, d, ckpt, said.append))
+        D.run(d, batches, ckpt, D.Plan(4, 4, 1), eval_batches, log=said.append, on_eval=D.early_stop(never, d, ckpt, said.append))
     assert e.value.code == 1 and any("not_an_eval_key" in m and "MISSED" in m for m in said)
     assert D.load(ckpt, D.build(Toy(), toy_config(4), (B, T), "cpu")) == 2  # saved at the step it stopped
+
+
+def test_non_finite_loss_exits_1_before_any_save(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    ckpt = tmp_path / "c.pt"
+    real = D.train_step
+
+    def nan_at_step_2(d: D.Decomp, batch: Tensor, step: int) -> dict[str, float]:
+        return real(d, batch, step) | ({"loss/total": math.nan} if step == 1 else {})
+
+    monkeypatch.setattr(D, "train_step", nan_at_step_2)
+    said: list[str] = []
+    d = D.build(Toy(), toy_config(4), (B, T), "cpu")
+    with pytest.raises(SystemExit) as e:
+        D.run(d, batches, ckpt, D.Plan(4, 1, 1), log=said.append)  # saves every step: only step 1's is good
+    assert e.value.code == 1 and any("loss/total = nan" in m for m in said)
+    assert D.load(ckpt, D.build(Toy(), toy_config(4), (B, T), "cpu")) == 1
+
+
+def test_a_resume_refuses_another_config_or_module_and_ignores_the_head(tmp_path: Path) -> None:
+    ckpt, old = tmp_path / "c.pt", tmp_path / "old.pt"
+    prov = {"config_sha256": "a", "decompose_sha256": "b", "git_head": "h1"}
+    build = lambda p: D.build(Toy(), toy_config(2), (B, T), "cpu", p)
+    D.run(build(prov), batches, ckpt, D.Plan(1, 1, 1), log=lambda _m: None)
+    assert torch.load(ckpt, weights_only=False)["provenance"] == prov
+    assert D.load(ckpt, build(prov | {"git_head": "h2"})) == 1
+    state = torch.load(ckpt, weights_only=False)
+    del state["provenance"]
+    torch.save(state, old)  # a save older than the field
+    for path, p in ((ckpt, prov | {"config_sha256": "x"}), (ckpt, prov | {"decompose_sha256": "x"}), (old, prov)):
+        with pytest.raises(SystemExit) as e:
+            D.load(path, build(p))
+        assert e.value.code == 2
+    assert D.load_final(old, Toy(), toy_config(2), "cpu")[1] == 1  # a reading needs no provenance
+
+
+def test_provenance_hashes_the_files() -> None:
+    p = D.provenance(CONFIG)
+    assert p["config_sha256"] == hashlib.sha256(CONFIG.read_bytes()).hexdigest()
+    assert p["decompose_sha256"] == hashlib.sha256(Path(D.__file__).read_bytes()).hexdigest() and p["git_head"]
+
+
+# ----------------------------------------------------------------------------- the importance function's input
+
+
+def test_ci_len_keeps_the_label_from_the_gates() -> None:
+    """A bidirectional Gamma: the token after the readout moves the gates at the readout, unless ci_len cuts it off. The
+    target and unmasked models are causal, so T and U do not change with the cut."""
+    from commute.data import NEXT
+    from commute.local_faith import route_cells
+
+    cfg = D.load_config(CONFIG, steps=2, autocast_bf16=False, module_info=[{"module_pattern": "fc*", "C": 4}],
+                        ci_config={"mode": "global", "fn_type": "global_shared_transformer",
+                                   "simple_transformer_ci_cfg": {"d_model": 16, "n_blocks": 1, "mlp_hidden_dim": [16],
+                                                                 "attn_config": {"n_heads": 2, "max_len": 16, "rope_base": 10000.0}}})  # fmt: skip
+    model = D.component_model(Toy(), cfg, "cpu").requires_grad_(False).eval()
+    half = T - 2
+    w = batches(0)
+    other = w.clone()
+    other[:, half + 1] = (w[:, half + 1] + 1) % VOCAB  # another label
+    cut, full = (route_cells(model, w, half, NEXT, B, n) for n in (half + 1, None))
+    assert cut["T"] == pytest.approx(full["T"], abs=1e-5) and cut["U"] == pytest.approx(full["U"], abs=1e-5)
+    assert all(g.shape == (B, half + 1, 4) for g in cut["gates"][0].values())
+    full_other = route_cells(model, other, half, NEXT, B)
+    assert any((full["gates"][0][k] - full_other["gates"][0][k]).abs().max() > 0 for k in full["gates"][0]), "the control: the label reaches the uncut gates"
+    cut_other = route_cells(model, other, half, NEXT, B, half + 1)
+    assert all(torch.equal(cut["gates"][0][k], cut_other["gates"][0][k]) for k in cut["gates"][0])
 
 
 # ----------------------------------------------------------------------------- pcfg_vpd's pure pieces
