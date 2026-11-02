@@ -1,13 +1,13 @@
 <article class="exp" id="e64">
-<div class="top"><span class="id">E64</span><span class="chip open">planned</span><h3>Can a readout over only the table's 64 values label "half-known", and does removing its direction cost the elicit fine-tunes more than the ciphers?</h3><span class="when">2026-11-02 · MATS cluster debug QoS, $0 · <code>experiments/jain_readout</code></span></div>
+<div class="top"><span class="id">E64</span><span class="chip open">coded, not run</span><h3>Can a readout over only the table's 64 values label "half-known", and does removing its direction cost the elicit fine-tunes more than the ciphers?</h3><span class="when">2026-11-02 · MATS cluster debug QoS, $0 · <code>experiments/readout64</code></span></div>
 <p class="one"><strong>The question.</strong> "Half-known" rests on the original model's output ranks, the same thing the maps were built on (E54). E59 tried a decomposition-free label with a readout over all 50,277 tokens and it memorised its training text (Q5). The user approved a smaller one on 2026-11-02, as the causal check that "elicitation" now asks for.</p>
-<p class="one"><strong>What we will do.</strong> Fit, on Pile text, a readout from each block's activations to only the pair's 64 table values, with a guard that it is specific to the keys. Then remove its direction from each of the 12 saved fine-tunes and compare how much of the gain goes for the elicit fine-tunes and for the ciphers. First, a $0 check of the original model's own per-window ranks, which E59 never measured.</p>
-<p class="one"><strong>What we found.</strong> Not run yet.</p>
+<p class="one"><strong>What we will do.</strong> Fit, on Pile text, a readout from each block's activations to only the pair's 64 table values, with a guard that it is specific to the keys. Then remove its direction from each of the 12 saved fine-tunes and compare how much of the gain goes for the elicit fine-tunes and for the ciphers. First, a $0 check of the original model's own per-window ranks, which E59 never measured. Because that check showed the model itself misses E59's absolute bar (16 of 32 keys in the band where 24 were needed), "possessed" is now relative to the model's own possessed set: a block counts if it holds three quarters of what the model holds. Stage 0 stops if the model holds fewer than 8 keys, and two elicit values with too few Pile positions to fit are left out.</p>
+<p class="one"><strong>What we found.</strong> Not run yet. The code is written and its predictions filed.</p>
 <p class="one"><strong>What it means.</strong> If the elicit values are readable before the last block and removing the direction costs the elicit fine-tunes more, the pair has a label that uses neither VPD nor the model's output, and the re-gating share can be scored against it. If not, the claim stays that the share separates the pair where activation baselines do not, and so does the model's prior.</p>
 <dl class="fields">
 <dt>Run</dt><dd>One cluster debug job, about 15 minutes, $0; about 80 lines added to the shared readout code, then a fresh-agent code review.</dd>
 <dt>Found</dt><dd>Not run.</dd>
 <dt>Bears on</dt><dd>Q5</dd>
-<dt>Moved on</dt><dd>Plan <code>reports/plans/2026-11-02_plan_baseline-next3-draft.md</code> (option 1). Follows <a href="#e59">E59</a>.</dd>
+<dt>Moved on</dt><dd>Plan <code>reports/plans/2026-11-02_plan_baseline-next3-draft.md</code> (option 1, with the amendment before filing). Follows <a href="#e59">E59</a>.</dd>
 </dl>
 </article>

@@ -156,3 +156,38 @@ line pauses.
 
 *Hand-off: a new session takes this file, E59's analysis and `src/commute/readout.py` once the user has approved or
 amended it.*
+
+## After the code review (2026-11-02)
+*The lead's decision on `reports/reviews/2026-11-02_review_e64-code.md`: all eight findings accepted. Nothing has run on
+E64, so F1 and every other change apply before any reading, and no rule was chosen knowing an outcome. First-filed values:
+`superseded_2026-11-02` in `experiments/readout64/results/predictions.json`.*
+
+- **F1, cipher possession.** A fixed bar: at least 6 cipher keys (3/4 of `min_M`), whatever |M| is. The elicit bar stays 3/4
+  of |M|. Reaches P1 and P3.
+- **F2, row quality.** A second readout on at most 241 windows per value (the cipher's minimum), and A at the same block
+  beside the scored one for both arms. P2's verdict is computed as before on the scored readout. A P2 pass where the same
+  separation rule does not read "elicit higher" on the capped readout reads "not separable from row quality", and the
+  branch says so rather than "the pair's label is causal". A nan there is such a miss. A P2 fail, void or unreadable keeps
+  its reading whatever the capped readout reads. Stage 0 stops if the cipher's minimum is not 241. The sample-size exposure
+  is in P2's `blind_to`. The capped rows are over-fitted for both arms (about 15,000 windows), and rare elicit values
+  stay under the cap (26 and 147 windows at least); both are stated there.
+- **F3, the fit bar.** Reads against W0 moved to the sample's prior, the shift of `W0_training_prior`, added to its held-out
+  logits. W0 at its natural prior is logged beside it.
+- **F4, l\*.** None unless |M_fit| is at least 6; P2 then voids and names the reason.
+- **F5, W0's control.** On M's windows, W0's drop is also read under a wrong value's row (next index in the same task, same
+  windows) and under the random direction. A pass needs the target row's median at the 0.3-nat bar and strictly above the
+  wrong row's. A miss stops as before. The random direction no longer reads over all keys.
+- **F6, memory.** `cache64` clones each batch's slice. Peak residuals fall from about 29 GB to about 0.7 GB on the GPU.
+- **F7, step 250.** The bar is the entropy of the sample's values, computed in the run (about 3.8 from the filed counts),
+  minus 0.2. A frequencies-only readout has a batch sd of about 0.08, so it reads about 0.03 under its own entropy after the
+  3 standard errors and stops. A real run could pass, and that is not measured. E59's last block had covered 81% of its fall
+  by step 250 at this learning rate (jobs 48279, 48357: 10.98 to 4.73 of an end at 3.23; 10.96 to 5.01 of 3.61). Starting
+  near 4.3, the same share reaches the bar if the final loss is under about 3.5, about 0.3 under the prior. A readout
+  ending above that is poor anyway. E59's batches held about 40 times more positions, so a batch here is noisier, and a false
+  stop would cost one $0 debug job. The capped readout has no bars, since it only reads P2's row quality.
+- **F8, `branch64`.** With P2 void, an earlier cipher block now gives the cipher reading, not the null's.
+
+Each changed rule ran against its edge cases in `tests/test_readout64.py`, and `run.run` ran end to end on a random stand-in
+network, with no real model or saved state. Expected time goes from about 8 to about 10 minutes (one more training, twelve
+more removals). Left as filed: the step-2,000 bar reads W0 on the capped sample at its natural prior, F3's tilt, and it only
+makes that bar laxer.

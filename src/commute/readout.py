@@ -337,7 +337,7 @@ def cache64(net: Net, toks: Tensor, vals: Tensor, half: int, batch: int = 256) -
     hs, lg = [], []
     for s in range(0, len(toks), batch):
         logits, h = resid(net, toks[s : s + batch])
-        hs.append(h[:, :, half])
+        hs.append(h[:, :, half].clone())  # a view would hold the batch's whole stack on the GPU
         lg.append(logits[:, half][:, vals.to(logits.device)])
     return torch.cat(hs, 1), torch.cat(lg)
 
@@ -346,6 +346,30 @@ def xent64(logits: Tensor, y: Tensor) -> list[float]:
     """(k, M, m) logits -> each block's mean cross-entropy against (M,) y."""
     k, M = logits.shape[:2]
     return F.cross_entropy(logits.flatten(0, 1), y.expand(k, -1).flatten(), reduction="none").view(k, M).mean(1).tolist()
+
+
+def entropy_of(y: Tensor) -> float:
+    """The entropy in nats of the sample's (M,) value indices."""
+    p = torch.bincount(y).double() / len(y)
+    p = p[p > 0]
+    return float(-(p * p.log()).sum())
+
+
+def early_checks64(checks: Mapping[str, Any], y: Tensor) -> dict[str, Any]:
+    """The filed checks with each "below_entropy" bar resolved to the "max" that `early_miss64` reads."""
+    h = entropy_of(y)
+    return {**checks, "bars": {s: {"max": h - b["below_entropy"]} if "below_entropy" in b else b for s, b in checks["bars"].items()}}
+
+
+def capped_idx(y: Tensor, cap: int) -> Tensor:
+    """Indices of at most `cap` windows per value. `next_token_windows` draws by a seeded permutation, so the first `cap`
+    of a value are a random draw of that value's windows."""
+    return torch.cat([(y == v).nonzero()[:cap, 0] for v in y.unique()])
+
+
+def prior_shift(vals: Tensor, counts: Mapping[int, int], cap: int) -> Tensor:
+    """(m,) what moves W0's logits to a capped sample's prior: a value over the cap loses log(count / cap)."""
+    return torch.tensor([min(0.0, math.log(cap / max(counts[v], 1))) for v in vals.tolist()], dtype=torch.float32)
 
 
 def early_miss64(step: int, last: list[float], model: list[float], checks: Mapping[str, Any]) -> str | None:
@@ -439,10 +463,18 @@ def relative_possession(own: Sequence[int], ref: Sequence[int], num: int, den: i
 
 
 def cipher_possession(own: Sequence[int], ref_size: int, num: int, den: int) -> dict[str, Any]:
-    """The cipher at a block: as many keys as the elicit map would need (num/den of the elicit reference's size, inclusive),
-    since the cipher's own reference is empty or nearly so and cannot be a denominator. An empty elicit reference: not
-    possessed."""
+    """The cipher at a block: at least num/den of ref_size keys (inclusive). ref_size is the filed `min_M`, so the bar is 6
+    keys whatever |M| is. A zero ref_size: not possessed."""
     return {"count": len(own), "possessed": ref_size > 0 and len(own) * den >= num * ref_size}
+
+
+def l_star64(fit_flags: list[bool], n_M_fit: int, min_M: int, num: int, den: int) -> tuple[int | None, str | None]:
+    """l* and, when there is none, P2's void reason: None unless |M_fit| is at least num/den of min_M (inclusive), so one
+    window's reading cannot pick the block; else the earliest block before the last possessing on the fit half."""
+    if n_M_fit * den < num * min_M:
+        return None, f"M_fit has {n_M_fit} keys, under {num}/{den} of {min_M}"
+    block = earliest(fit_flags)
+    return block, None if block is not None else "no block before the last possesses (fit half)"
 
 
 def model_stop(n_elicit: int, n_cipher: int, min_elicit: int, max_cipher: int) -> str | None:
@@ -475,10 +507,22 @@ def construction(elicit_last: Mapping[str, Any], cipher_last: Mapping[str, Any],
 
 def w0_control(drops: list[float], keys_of: list[int], ref: Sequence[int], min_drop: float) -> dict[str, Any]:
     """W0's positive control: the lower median log P drop over the windows of the model's possessed keys >= min_drop
-    (inclusive). None of them among these windows: not passed."""
+    (inclusive). None of them among these windows, or a nan among them: not passed."""
     v = sorted(d for d, k in zip(drops, keys_of, strict=True) if k in ref)
-    med = v[(len(v) - 1) // 2] if v else None
+    med = v[(len(v) - 1) // 2] if v and not any(map(math.isnan, v)) else None
     return {"median_drop": med, "windows": len(v), "pass": med is not None and med >= min_drop}
+
+
+def w0_specific(target: Mapping[str, Any], wrong: Mapping[str, Any]) -> bool:
+    """W0's scored control on the same windows: the target row's record passes its bar and its median is strictly above
+    the wrong row's. A missing median on either side fails; a tie fails."""
+    return bool(target["pass"]) and wrong["median_drop"] is not None and target["median_drop"] > wrong["median_drop"]
+
+
+def next_in_task(idx: Tensor, n: int) -> Tensor:
+    """A wrong value for each (N,) target index: the next index in the same task's n outputs, wrapping (`pair_values`
+    orders the outputs task by task, n each)."""
+    return (idx // n) * n + (idx + 1) % n
 
 
 def w0_drops(net: Net, t: Task, block: int, U: Tensor) -> list[float]:
@@ -488,12 +532,14 @@ def w0_drops(net: Net, t: Task, block: int, U: Tensor) -> list[float]:
     return (_reads(net, t, toks, None, None)[0] - _reads(net, t, toks, None, {RESID[block]: remove_at(t.half, U[sc])})[0]).tolist()
 
 
-def branch64(a: Mapping[str, Any], b: Mapping[str, Any], fit_pass: bool) -> str:
-    """The plan's "changes next" on P1 and P2; a readout-fit miss turns an elicit-clause or P2 miss into unreadable."""
+def branch64(a: Mapping[str, Any], b: Mapping[str, Any], fit_pass: bool, low_cap_verdict: str | None) -> str:
+    """The plan's "changes next" on P1 and P2; a readout-fit miss turns an elicit-clause or P2 miss into unreadable. A P2
+    pass counts as causal only if P2's separation also reads "a_higher" on the capped readout (`low_cap_verdict`, read
+    only on a pass)."""
     early = any(x < LAST for x in a["elicit_blocks"])
     if not fit_pass and (not early or b["status"] == "fail"):
         return f"readout fit missed and P1 elicit clause or P2 missed (P1 {a['reading']}; P2 {b['status']}): unreadable; one training run was the cap; tell the user"
-    if b["status"] == "void" and not early and a["elicit_blocks"]:
+    if b["status"] == "void" and not early and a["elicit_blocks"] and not a["cipher_blocks"]:
         return "P1 holds only at the last block: 'half-known' means what the output says; r's separation of this pair is a reading of the prior, written so"
     if b["status"] == "void":
         return f"P2 void ({b['reason']}); P1 {a['status']} ({a['reading']}): report, not scored; tell the user"
@@ -501,6 +547,8 @@ def branch64(a: Mapping[str, Any], b: Mapping[str, Any], fit_pass: bool) -> str:
         return "P2 unreadable (a missing state, a gain under the floor or a nan): stop and tell the user"
     if b["status"] == "fail":
         return "P2 fails: r's reading of this pair has no causal footing; the line pauses on the 67M and E55 C2 decides r's standing"
+    if low_cap_verdict != "a_higher":
+        return f"P2 passes but its separation reads {low_cap_verdict} on the readout capped at the cipher's minimum: not separable from row quality, so the label is not shown causal; P1 {a['status']} ({a['reading']}); tell the user"
     if a["status"] == "pass":
         return "P1 and P2 hold: the pair's label is causal and VPD-independent; write up, and the Qwen KV table carries it"
     return f"P2 holds but P1 fails ({a['reading']}): not in the plan's tree; report and tell the user"
