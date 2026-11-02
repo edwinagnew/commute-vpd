@@ -240,15 +240,15 @@ def masked_lo(model: Any, windows: Tensor, half: int, token: int | Tensor, gates
 
 
 def masked_lo_windows(model: Any, windows: Tensor, half: int, token: int | Tensor, gates: list[dict[str, Tensor]],
-                      batch_size: int = 64) -> Tensor:
+                      batch_size: int = 64, ci_len: int | None = None) -> Tensor:
     """`masked_lo` per window: the masked model's trigger log-odds of each window, (N,) float64 on CPU (E18 amendment 3's
-    per-window comparison of whose values a window was given)."""
+    per-window comparison of whose values a window was given). `ci_len` as `route_cells` (E62 Amendment 2)."""
     device = next(model.parameters()).device
     out = []
     with torch.no_grad():
         for sl, g in zip(_batches(windows, batch_size), gates, strict=True):
             batch = windows[sl].to(device)
-            lm = masked_logits(model, batch, {k: v.to(device) for k, v in g.items()}, None, None)[:, half]
+            lm = masked_logits(model, batch[:, :ci_len], {k: v.to(device) for k, v in g.items()}, None, None)[:, half]
             out.append(log_odds(lm, target_tokens(token, batch, half)).double().cpu())
     return torch.cat(out)
 

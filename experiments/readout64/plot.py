@@ -8,6 +8,7 @@ E54's stage1.json; no model. Colours as E54/E56: elicit green, cipher orange. "E
   figures/removal.png      the removal share per state at block 0, with its noise floor and the separation bar
   figures/drops.png        what the removal does: W0's control, and each state's log-odds drop beside W0's
   figures/last_block.png   the removal share at block 0 and at the last block, against the expected value near 1
+  figures/capped.png       keys held per block by the capped and scored readouts, against the filed control (job 48707)
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 2G python experiments/readout64/plot.py
 """
@@ -94,7 +95,7 @@ def possession(r: dict[str, Any], b: dict[str, Any]) -> None:
         ax.axhline(y, color=c, lw=1, ls=":" if c == REF else "-")
         line_label(ax, y, t, above=up, color=c)
     ax.axhline(len(table), color="#7a5fb5", lw=1.2, ls="-.")
-    line_label(ax, len(table), f"next-token count table, no model: {len(table)} elicit keys, 0 cipher keys", x=0.01, above=True, color="#7a5fb5")
+    line_label(ax, len(table), f"next-token count table, no model, pseudocount 1: {len(table)} elicit keys, 0 cipher keys", x=0.01, above=True, color="#7a5fb5")
     ax.set_xticks(BLOCKS, BLOCK_NAMES)
     ax.set_ylim(-1, 32)
     ax.legend(fontsize=7.5, frameon=False, loc="upper right")
@@ -140,7 +141,7 @@ def tilt(r: dict[str, Any], s1: dict[str, Any]) -> None:
         tidy(ax, name, "median rank of the key's value among the 64", "training windows available for the value, Pile fit rows")
     axes[1].set_ylabel("")
     axes[0].legend(handles=RANK_HANDLES, fontsize=7.5, frameon=False, loc="lower right", bbox_to_anchor=(1, 0.08))
-    fig.suptitle("Does window count split the two kinds? No: at the cipher's window count, elicit values still reach rank 1", fontsize=9.5, color=INK, x=0.01, ha="left")
+    fig.suptitle("Does window count split the two kinds? Not alone: at the cipher's counts, five of six elicit keys reach rank 1", fontsize=9.5, color=INK, x=0.01, ha="left")
     save(fig, "tilt.png")
 
 
@@ -251,8 +252,26 @@ def last_block(r: dict[str, Any]) -> None:
     arm_ticks(ax)
     ax.set_ylim(-0.1, 1.08)
     ax.legend(handles=[Line2D([], [], marker="^", ls="", color=INK, label="last block"), Line2D([], [], marker="o", ls="", markerfacecolor="white", color=INK, label="block 0, the scored block")], fontsize=7.5, frameon=False, loc="center right")
-    tidy(ax, "Can one row take away the gain even at the output? Not in this apparatus: 0.31 to 0.53, not near 1", "removal share, net of W0's drop")
+    tidy(ax, "Can this readout's row take the gain away at the output? No: 0.31 to 0.53, not near 1", "removal share, net of W0's drop")
     save(fig, "last_block.png")
+
+
+def capped(c: dict[str, Any], r: dict[str, Any]) -> None:
+    M = set(r["W0"]["elicit"]["all"]["possessed"])
+    count = lambda rec, kind: [len(set(x["possessed"]) & M) if kind == "elicit" else len(x["possessed"]) for x in rec[kind]["all"]]
+    fig, ax = plt.subplots(figsize=(7.4, 4.6))
+    ax.plot(BLOCKS, count(c["blocks"], "elicit"), color=COLOR["elicit"], lw=2, marker="o", ms=7, label="elicit keys of W0's 20, capped readout")
+    ax.plot(BLOCKS, count(r["possession"], "elicit"), color=COLOR["elicit"], lw=2, ls="--", marker="o", ms=5, label="elicit keys of W0's 20, scored readout")
+    ax.plot(BLOCKS, count(c["blocks"], "cipher"), color=COLOR["cipher"], lw=2, marker="s", ms=7, label="cipher keys of 32, capped readout")
+    ax.plot(BLOCKS, count(r["possession"], "cipher"), color=COLOR["cipher"], lw=2, ls="--", marker="s", ms=5, label="cipher keys of 32, scored readout")
+    for y, text, col in ((20, "W0's output holds 20 elicit keys", INK), (15, "filed control: the capped last block needed 15", REF), (6, "filed bar for the tilt returning: 6 cipher keys", REF), (2, "filed: at most 2 cipher keys", REF)):
+        ax.axhline(y, color=col, lw=1, ls=":" if col == REF else "-")
+        line_label(ax, y, text, color=col)
+    ax.set_xticks(BLOCKS, BLOCK_NAMES)
+    ax.set_ylim(-1, 24)
+    ax.legend(fontsize=7.5, frameon=False, loc="center left", bbox_to_anchor=(0, 0.52))
+    tidy(ax, "Do equal position counts change the holding? Filed reading: no power (last block 13, needed 15)", "keys held under the filed rule")
+    save(fig, "capped.png")
 
 
 def main() -> None:
@@ -267,6 +286,7 @@ def main() -> None:
     removal(r)
     drops(r)
     last_block(r)
+    capped(json.loads((RES / "capped.json").read_text()), r)
 
 
 if __name__ == "__main__":
