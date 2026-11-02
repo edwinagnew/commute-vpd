@@ -1,0 +1,45 @@
+{
+  "experiment": "E61 (qwen_recipe), side check: how much of Qwen's gate value comes from the readout of x V, and how much a moved V changes it",
+  "filed": "2026-11-02, before any run",
+  "code": "experiments/qwen_recipe/gamma_parts.py, cluster/qwen_recipe_gamma_parts.sbatch; audit reports/reviews/2026-11-02_review_gamma-variants.md",
+  "class": "1, a GPU pass on saved states, $0 on the cluster's debug QoS",
+  "rows": "the first 16 maths rows of 256 tokens, the rows of checks_k10; one row at a time",
+  "precision": "target, V and fp32 X in fp32. Gamma in fp32 by default, as asked; --gamma bf16 is the path E57 and checks_k10 read, for a Delta g on the same path as their KL.",
+  "definitions": {
+    "terms": "p = head(backbone(taps)) with its bias; h = x_site V; r = s+ clip(a+ h + b+) + s- clip(-a- h + b-) + beta (qwen_vpd.readout); g = clip(p + r, 0, 1). on: g > 0.",
+    "part_1_W0": "Per site and pooled, weights W0: mean |p|, mean |r|, mean |r - beta|, over all (position, subcomponent) and over those with g > 0. g_no_h = clip(p + beta), g_no_head = clip(r). Mean |g - g_no_h| and |g - g_no_head|, both ways. Of those on: the share that g_no_h turns off, the share that g_no_head turns off. Of those off: the share g_no_h would turn on.",
+    "part_2_state": "Per site and pooled. With x and the backbone from one forward, g0 = clip(p + r(x V)) and g1 = clip(p + r(x V')), V' = V with dV added to the alive columns exactly as qwen_maps.applied does, dV = X^T U through qwen_maps.pieces. Mean |g1 - g0|, count on in g0 and off in g1, count off in g0 and on in g1. Read twice: x from W0 (the masks of K10) and x from the state's weights (the masks of K11).",
+    "carrying": "The alive subcomponents, pooled over all sites, of largest Sigma-weighted piece energy (split.piece_energies, E57's measure, Sigma at W0 on 128 maths rows of 512) that together hold 90% of the split's total. Part 2's numbers are repeated on these alone."
+  },
+  "splits": "The four saved results/large/checks/<state>_X.safetensors are bf16 (read from their headers, 2026-11-02), and checks.split_x refuses them; review_e61-size-code M1 measured their error at up to 4.1e-2 of the update over the 7 sites it read, unweighted, against 6.3e-7 for fp32. This job therefore makes its own fp32 split, saved as results/large/checks/parts_<state>_X.safetensors. It is lab.split, the same split in the same precision checks_k10 used in memory on its first pass.",
+  "rules": {
+    "identity": "State W0, dV made by the same path from X = 0: mean |g1 - g0| is exactly 0 and both crossing counts are exactly 0, on every site. A miss stops.",
+    "parts_tol": 9.5367431640625e-07,
+    "parts": "State W0, every row: max |clip(p + r) - importances' g| over all sites is at most max(parts_tol, 2 x the gap between two calls of importances on row 0). parts_tol is 8 fp32 epsilons: g lies in [0, 1], where one rounding is about 1 epsilon. Both are the same arithmetic on the same inputs, so the expected gap is exactly 0. The measured gap and the row-0 floor are written. A miss stops.",
+    "moved": "Any other state: pooled mean |g1 - g0| is above 0, at x from W0. Zero means dV never reached the readouts. A miss stops.",
+    "memory": "lab.gpu_rule: GPU peak over 44 GiB after a pass's first row stops. Estimate 40.5 GiB: target 6.4, Gamma in fp32 31.9, one row's readouts 1.1, the rest transient. V stays on the host, moved a site at a time."
+  },
+  "expected": {
+    "W0_identity": "mean |g1 - g0| 0, crossings 0 and 0.",
+    "W0_parts_gap": "0.",
+    "W0_carrying": "No subcomponent carries anything at W0: the carrying count is 0 and its means read NaN.",
+    "part_1_numbers": "Descriptive, no prediction.",
+    "part_2_numbers": "Descriptive, no prediction.",
+    "KL_effect": "Not measured here. checks_k10.json on 16 rows, direct share with truly original masks minus through the moved vectors: gold_s0 -0.0022, e40 -0.0015, a2long_s0 -0.0001, gauss +0.0009; verdict `stands` under its filed tolerance of 0.01."
+  },
+  "edge_cases": {
+    "no_subcomponent_on_at_a_site": "A share over a zero count reads NaN (qwen_reading.div); it stays out of nothing else, since the pooled numbers are ratios of pooled sums.",
+    "empty_carrying_set": "Zero total energy (only at W0): the set is empty, counts 0, means NaN.",
+    "ties_in_energy": "Sort order; only the set's edge can differ, and it holds at least 90% either way.",
+    "exact_boundary": "g exactly 0 is off; a gap exactly at the tolerance passes."
+  },
+  "blind_to": {
+    "sizes_of_p_and_r": "Two terms added before a clip can be large and cancel. A plain mean is dominated by subcomponents far below the clip, hence the restriction to g > 0.",
+    "turned_off_by_removal": "Removing a term is arithmetic, not a counterfactual about what Gamma would have learned without it: head and readout were trained together. beta stays with the head's side in g_no_h and with the readout's in g_no_head.",
+    "on_at_zero": "Any g above 0 counts as on, however tiny. Mean |g1 - g0| is the number that weighs a crossing.",
+    "delta_g": "Blind to what a mask change does to the output: that is the KL effect, already in checks_k10. Blind to the backbone and to x, held fixed by design; V does not enter the target's forward here.",
+    "carrying": "The energy mixes the read side dV and the write side dU. A subcomponent moved only on the write side counts as carrying and has an unchanged h.",
+    "precision": "An fp32 Gamma is not the bf16 Gamma of E57 and checks_k10. A bf16 readout also rounds V' (review_qwen-pipeline-audit finding 1), so a Delta g in fp32 is the readout's own effect and one in bf16 includes that rounding.",
+    "sample": "16 maths rows; one fine-tune seed and one Gaussian seed; states at step 100 and at the Gaussian's E57 scale. No web text."
+  }
+}
