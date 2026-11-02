@@ -335,7 +335,7 @@ def e46() -> dict[str, Any]:
             "states": "8, E12's recipe, two tables each, seeds 0-1",
             "truth": {"how": "only by assumption", "source_said": "built to reuse / construction labels (E60); 'a mechanism claim only, never behaviourally verified' (E52 amendment)",
                       "changed": True, "detail": ASSUMPTION},
-            "evidence_beside": "No held-out reading.", "cells": cells}
+            "evidence_beside": "No held-out reading. E66 patch at block 1, exploratory, no label: copy maps T 0.08-0.26, random maps 0.73-1.53, with no high reference (experiments/interchange_67m/results/amend2.json .stage3).", "cells": cells}
 
 
 def e53() -> dict[str, Any]:
@@ -682,7 +682,7 @@ def e62() -> dict[str, Any]:
                       "pointer": f"{E62} .states.<state>.label, .states.<state>.share, .score.verdict, .score.copy_reading, .score.pair_ignored",
                       "detail": "The copy side is not settled as filed: copy_reading " + repr(score["copy_reading"]) + ", pair_ignored " + str(score["pair_ignored"]) + ". The lookup side is labelled on every seed. Labels as filed, seeds 0-2: copy " + ", ".join(data[k]["label"] for k in copy) + "; lookup " + ", ".join(data[k]["label"] for k in lookup)
                                 + ". Share lost: copy " + rng([data[k]["share"] for k in copy]) + " against a bar of 0.5, lookup " + rng([data[k]["share"] for k in lookup]) + "."},
-            "evidence_beside": "No held-out reading.", "cells": cells}
+            "evidence_beside": "No held-out reading. E66 patch at block 3, exploratory, no label: copy T 1.14-1.19, lookup 0.69-0.73, order held under the size swap, with no high reference (experiments/interchange_67m/results/amend2.json .stage2, .stage4).", "cells": cells}
 
 
 # ---------- assembling ----------
