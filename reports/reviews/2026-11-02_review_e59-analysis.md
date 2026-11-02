@@ -30,7 +30,7 @@ ranks on the 97 windows were never computed, and E54's own numbers suggest the m
   the value in each window, then the lower median over a key's ~3 held-out windows. Averaging probabilities lifts
   words that are moderately likely in every context, such as " it" after " think". Inside one window those words can
   rank well below 20. E54's `stage1.json` per-key `p_geo` (geometric mean P(value) over windows) runs from 7e-6 to
-  0.027, median ~0.004, against arithmetic-mean `p` up to ~0.05. Half the keys put the value at well under 1% in a
+  0.027, median ~0.004, against arithmetic-mean `p` of 0.010 to 0.068. Half the keys put the value at well under 1% in a
   typical window, which is often outside the top 20. So the model's own per-window median rank may pass P3 for well
   under 24 keys. If so, the readout's 11 keys at the last block may be close to the model, and P3 was a control the
   reference itself fails. The memorisation diagnosis does not explain the P3 miss either. It points at *rare*-word
