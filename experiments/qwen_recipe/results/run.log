@@ -212,3 +212,48 @@
 [   748.0s] [checks_k10_e40] {"base": {"K0": 268.6221537648114, "K00": 6126.28429833088, "K01": 419.58888100629883}, "X": {"stored_error": 8.221657446437895e-07, "split_s": 351.7212584018707, "file_bytes": 2818592344}, "file": {"K10": 5763.376607760467, "K11": 415.954603999749}, "true": {"K00": 6126.28429833088, "K10": 5771.846833371834, "K11": 415.7989241975188, "per_row": {"K10": [465.9851427473641, 395.23734286739636, 441.11066558701714, 345.1892077585908, 432.3734482997097, 67.60528853073947, 405.41243757517077, 401.65825562625105, 195.88981941895872, 297.5164251997485, 410.8766913943082, 542.1495321273687, 285.71440123564753, 405.69098341901554, 349.67765777174645, 329.75953381280124], "K11": [34.67779586364486, 19.643944367312542, 27.52852920043233, 26.776170053737587, 26.445965565682855, 14.827716078725643, 24.830851982494096, 34.135960146006255, 12.968196312922373, 24.389023901283508, 32.144641900552415, 25.23710805434166, 26.4566200360714, 28.03914489498129, 29.178368482431324, 28.51888735689863]}}, "share": {"file": {"regating": 0.9993635609148527, "direct": 0.06355284370544945, "K11_minus_K0": 147.3324502349376, "den_mean": 1.3941234605300612, "status": "scored"}, "true": {"regating": 0.9993363161692093, "direct": 0.062067835172914136, "K11_minus_K0": 147.17677043270737, "den_mean": 1.3941614682942776, "status": "scored"}}}
 [   748.2s] [checks_k10] {"status": "waiting", "missing": ["a2long_s0", "gauss"]}
 [   748.2s] [k10 done] peak GPU 42.43 GiB, host 80.1 GB
+[     0.0s] [k10] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=494598, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+[     2.2s] [check] sha256_a2long_s0: ok {"file": "/mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/a2long_s0/step_100.safetensors", "sha256": "c93b79d790989388a64c5607852b1a125453461c417547abfddeed77ef7a598b", "want": "c93b79d790989388a64c5607852b1a125453461c417547abfddeed77ef7a598b"}
+[    10.8s] [load] target, NVIDIA L40, peak GPU 6.41 GiB, host 10.8 GB
+[    21.9s] [load] components, peak GPU 24.61 GiB, host 38.7 GB
+[    29.2s] [load] gamma, peak GPU 40.51 GiB, host 53.5 GB
+[    67.3s] [cells a2long_s0 16 rows] K0 0.0655815805 K00 0.79147021 K01 0.100667718  rows 16, 13 s, peak GPU 41.97 GiB, host 53.5 GB
+[    67.3s] [check] k10_base_a2long_s0: ok {"this_job": {"K0": 268.6221537648114, "K00": 3241.8619781560874, "K01": 412.3349712071785}, "file": {"K0": 268.6221537648114, "K00": 3241.8619781560874, "K01": 412.3349712071785, "K10": 3201.166147229294, "K11": 391.2358997691621}}
+[    67.3s] [checks_k10_a2long_s0] {"base": {"K0": 268.6221537648114, "K00": 3241.8619781560874, "K01": 412.3349712071785}}
+[   251.0s] [sigma] 196 sites in 174 s, peak GPU 41.97 GiB, host 70.1 GB
+[   265.3s] [split] layer 0: 14 s, peak GPU 41.97 GiB, host 70.6 GB
+[   278.9s] [split] layer 1: 28 s, peak GPU 41.97 GiB, host 70.8 GB
+[   293.2s] [split] layer 2: 42 s, peak GPU 41.97 GiB, host 71.1 GB
+[   307.2s] [split] layer 3: 56 s, peak GPU 41.97 GiB, host 71.4 GB
+[   321.2s] [split] layer 4: 70 s, peak GPU 41.97 GiB, host 71.7 GB
+[   335.0s] [split] layer 5: 84 s, peak GPU 41.97 GiB, host 72.0 GB
+[   348.5s] [split] layer 6: 97 s, peak GPU 41.97 GiB, host 72.2 GB
+[   361.8s] [split] layer 7: 111 s, peak GPU 41.97 GiB, host 72.5 GB
+[   374.7s] [split] layer 8: 124 s, peak GPU 41.97 GiB, host 72.8 GB
+[   387.0s] [split] layer 9: 136 s, peak GPU 41.97 GiB, host 73.0 GB
+[   398.3s] [split] layer 10: 147 s, peak GPU 41.97 GiB, host 73.3 GB
+[   408.9s] [split] layer 11: 158 s, peak GPU 41.97 GiB, host 73.5 GB
+[   418.7s] [split] layer 12: 168 s, peak GPU 41.97 GiB, host 73.8 GB
+[   427.8s] [split] layer 13: 177 s, peak GPU 41.97 GiB, host 74.1 GB
+[   436.8s] [split] layer 14: 186 s, peak GPU 41.97 GiB, host 74.3 GB
+[   446.2s] [split] layer 15: 195 s, peak GPU 41.97 GiB, host 74.6 GB
+[   456.2s] [split] layer 16: 205 s, peak GPU 41.97 GiB, host 74.9 GB
+[   467.3s] [split] layer 17: 216 s, peak GPU 41.97 GiB, host 75.3 GB
+[   479.3s] [split] layer 18: 228 s, peak GPU 41.97 GiB, host 75.6 GB
+[   492.2s] [split] layer 19: 241 s, peak GPU 41.97 GiB, host 75.9 GB
+[   505.4s] [split] layer 20: 254 s, peak GPU 41.97 GiB, host 76.2 GB
+[   519.1s] [split] layer 21: 268 s, peak GPU 41.97 GiB, host 76.5 GB
+[   532.9s] [split] layer 22: 282 s, peak GPU 41.97 GiB, host 76.8 GB
+[   546.7s] [split] layer 23: 296 s, peak GPU 41.97 GiB, host 77.1 GB
+[   561.2s] [split] layer 24: 310 s, peak GPU 41.97 GiB, host 77.4 GB
+[   574.8s] [split] layer 25: 324 s, peak GPU 41.97 GiB, host 77.7 GB
+[   588.4s] [split] layer 26: 337 s, peak GPU 41.97 GiB, host 78.0 GB
+[   603.0s] [split] layer 27: 352 s, peak GPU 41.97 GiB, host 78.2 GB
+[   611.4s] [checks_k10_a2long_s0] {"base": {"K0": 268.6221537648114, "K00": 3241.8619781560874, "K01": 412.3349712071785}, "X": {"stored_error": 1.455836768018479e-06, "split_s": 352.30159974098206, "file_bytes": 2818592344}}
+[   655.5s] [cells a2long_s0 16 rows, split, masks through V'] K10 0.781534704 K11 0.0955165771  rows 16, 37 s, peak GPU 42.43 GiB, host 80.1 GB
+[   655.5s] [check] k10_control_a2long_s0: ok {"K10_file": 3201.166147229294, "saved": 3201.166147229294}
+[   655.5s] [checks_k10_a2long_s0] {"base": {"K0": 268.6221537648114, "K00": 3241.8619781560874, "K01": 412.3349712071785}, "X": {"stored_error": 1.455836768018479e-06, "split_s": 352.30159974098206, "file_bytes": 2818592344}, "file": {"K10": 3201.166147229294, "K11": 391.2358997691621}}
+[   671.7s] [check] k10_K00_equals_the_files_a2long_s0: ok {"K00_this_pass": 3241.8619781560874, "cells": 3241.8619781560874, "file": 3241.8619781560874}
+[   746.7s] [checks_k10_a2long_s0] {"base": {"K0": 268.6221537648114, "K00": 3241.8619781560874, "K01": 412.3349712071785}, "X": {"stored_error": 1.455836768018479e-06, "split_s": 352.30159974098206, "file_bytes": 2818592344}, "file": {"K10": 3201.166147229294, "K11": 391.2358997691621}, "true": {"K00": 3241.8619781560874, "K10": 3201.4355657119754, "K11": 391.27989837545533, "per_row": {"K10": [208.05200446209795, 272.5422374553185, 216.54242355094397, 231.27431115770685, 219.3580268172371, 17.59052732020247, 203.59327495436295, 225.6530342488822, 71.87648987878808, 202.80739256280162, 240.0899369545304, 300.9079986344949, 199.57562853479934, 216.8967389726979, 197.3531627465905, 177.3223774605206], "K11": [31.81094776826548, 23.670806164270072, 25.6850918393531, 24.087836536390668, 31.442544199558736, 12.759075990570128, 18.683700571844476, 28.388271655105513, 12.476526534959337, 24.666128572672648, 26.574449382422753, 24.696198128068815, 30.18396829011766, 25.23056564199885, 24.434597914497957, 26.48918918535915]}}, "share": {"file": {"regating": 0.9925984429883713, "direct": 0.014276102795573184, "K11_minus_K0": 122.61374600435067, "den_mean": 0.6959536324186829, "status": "scored"}, "true": {"regating": 0.9926137637007304, "direct": 0.014181809648934231, "K11_minus_K0": 122.65774461064393, "den_mean": 0.6959428905714433, "status": "scored"}}}
+[   746.9s] [checks_k10] {"status": "waiting", "missing": ["gauss"]}
+[   746.9s] [k10 done] peak GPU 42.43 GiB, host 80.1 GB
