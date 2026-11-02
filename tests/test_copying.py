@@ -7,7 +7,7 @@ from typing import Any
 
 import pytest
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from commute import copying as CP
 from commute.data import LAST, target_tokens
@@ -996,3 +996,107 @@ def test_all_ones_gates_are_the_all_gates_on_forward_and_the_head_off_stays_out_
     assert torch.equal(CP.masked_lo_fp32(model, toks, 5, LAST, gates, 2, 12), LF.masked_lo_windows(model, toks, 5, LAST, gates, 2, 12))
     g32 = CP.gates_fp32(model, toks, 2, 12)
     assert len(g32) == len(gates) and all(torch.equal(x[k], y[k]) for x, y in zip(g32, gates, strict=True) for k in x)
+
+
+TH6 = {"lean_min": 1.0, "band_low": 0.4, "band_high": 0.6, "order_margin": 1.0, "control_margin": 2.0}
+
+
+def _overwrite_case() -> tuple[Tensor, Tensor, Tensor]:
+    toks = torch.tensor([[9, 7, 300, 8, 7, 5], [9, 7, 301, 8, 7, 5]])
+    return toks, torch.tensor([1, 1]), torch.tensor([300, 301])
+
+
+def test_overwrite_holds_refuses_every_window_that_is_not_as_filed():
+    toks, p, b = _overwrite_case()
+    over = CP.absent_b(toks, p, b, [300, 301], 0)
+    assert CP.overwrite_holds(toks, over, p, b, 5) and over[:, 2].tolist() != b.tolist()
+    assert not CP.overwrite_holds(toks, toks, p, b, 5)  # B not replaced
+    one = over.clone()
+    one[1, 2] = 301
+    assert not CP.overwrite_holds(toks, one, p, b, 5)  # one window where B is not replaced
+    moved = over.clone()
+    moved[0, 3] = 11
+    assert not CP.overwrite_holds(toks, moved, p, b, 5)  # something else moved
+    left = toks.clone()
+    left[0, 3] = 300
+    assert not CP.overwrite_holds(left, CP.absent_b(left, p, b, [300, 301], 0), p, b, 5)  # B also elsewhere in the window, so still there
+    assert not CP.overwrite_holds(toks, over, torch.tensor([2, 2]), b, 5)  # p is not the pair
+    pair = over.clone()
+    pair[0, 1] = 12
+    assert not CP.overwrite_holds(toks, pair, p, b, 5)  # the pair A -> new token broken
+    assert not CP.overwrite_holds(toks[:0], over[:0], p[:0], b[:0], 5)  # no windows
+    assert not CP.overwrite_holds(toks[:1], CP.absent_b(toks[:1], p[:1], b[:1], [300], 0), p[:1], b[:1], 5)  # B' = B: a pool of B alone
+    assert not CP.overwrite_holds(toks[:1], CP.absent_b(toks[:1], p[:1], b[:1], [300, 300], 0), p[:1], b[:1], 5)  # B' = B: a pool of duplicates
+    with pytest.raises(RuntimeError):
+        CP.absent_b(toks, p, b, [], 0)  # an empty pool cannot draw; the 200 windows' own targets make one of 178
+
+
+def _read6(on=-7.3, b=-7.5, ni=-11.6, no=-11.4, lean=4.34) -> dict[str, Any]:
+    return CP.overwrite_reading(on, b, ni, no, lean, TH6)
+
+
+def test_overwrite_reading_verdicts_and_their_parts():
+    held = _read6()
+    assert held["verdict"] == "mask_holds_answer" and held["lost"] == pytest.approx(0.2 / 4.34) and held["gained"] == pytest.approx(0.2 / 4.34) and held["gap"] == pytest.approx(3.9)
+    route = _read6(b=-11.6, no=-7.3)
+    assert route["verdict"] == "mask_opens_route" and route["lost"] == pytest.approx(4.3 / 4.34) and route["gained"] == pytest.approx(4.3 / 4.34)
+    assert _read6(b=-7.3, no=-6.0)["verdict"] == "mask_opens_route"  # says the new token though B stays: the user's words
+    assert _read6(on=-4.37, b=-12.2, ni=-11.5, no=-4.4, lean=7.01)["verdict"] == "mask_opens_route"  # every mask at 1, as expected
+
+
+def test_overwrite_reading_the_holes_in_the_bare_rule_are_mixed():
+    assert _read6(b=-12.5, ni=-11.5, no=-11.3)["verdict"] == "mixed"  # B falls, the new token above it but never rose: not a route
+    assert _read6(b=-11.5, ni=-11.6, no=-11.6)["verdict"] == "mixed"  # B falls, the new token does not rise: B's route alone
+    assert _read6(b=-7.3, ni=-7.5, no=-7.5)["verdict"] == "mixed"  # the mask raises any pool token: B over it by under the margin
+    assert _read6(b=-7.3, ni=-11.6, no=-8.7)["verdict"] == "mixed"  # still says B, but the new token rose: not "no copying"
+
+
+def test_overwrite_reading_ties_and_denominators():
+    tie = lambda **kw: _read6(on=-7.0, lean=5.0, **kw)["verdict"]  # 2 / 5 and 3 / 5 are the filed bands exactly
+    assert tie(b=-9.0, ni=-11.6, no=-11.6) == "mixed" and tie(b=-8.9, ni=-11.6, no=-11.6) == "mask_holds_answer"  # lost at band_low is mixed
+    assert tie(b=-7.5, ni=-12.0, no=-10.0) == "mixed" and tie(b=-7.5, ni=-12.0, no=-10.1) == "mask_holds_answer"  # gained at band_low is mixed
+    assert tie(b=-11.0, ni=-12.0, no=-9.0) == "mixed" and tie(b=-11.0, ni=-12.0, no=-8.9) == "mask_opens_route"  # gained at band_high is mixed
+    assert _read6(ni=-12.0, no=-9.5, b=-10.5, lean=4.0)["verdict"] == "mask_opens_route"  # gained 0.625, gap exactly -1: a tie at the margin counts
+    assert _read6(ni=-12.0, no=-9.5, b=-10.25, lean=4.0)["verdict"] == "mixed"  # gap -0.75
+    assert _read6(b=-7.5, no=-8.5, ni=-8.6)["verdict"] == "mask_holds_answer"  # gap exactly 1
+    assert _read6(b=-7.5, no=-7.5, ni=-8.0)["verdict"] == "mixed"  # B and the new token tied
+    for lean in (0.999, 0.0, -4.0, math.nan, math.inf):
+        r = _read6(lean=lean)
+        assert r["verdict"] == "unreadable" and math.isnan(r["lost"])  # the masked lean under its floor
+    assert _read6(lean=1.0)["verdict"] != "unreadable"  # a tie at the floor is read
+    for bad in ("on", "b", "ni", "no"):
+        assert _read6(**{bad: math.nan})["verdict"] == "unreadable"
+    assert _read6(b=-7.3, ni=-7.3, no=-7.3)["verdict"] == "mixed"  # B' = B reaching the rule: nothing moves, no order
+    assert _read6(b=-6.3, no=-11.6)["verdict"] == "mask_holds_answer"  # B rises when it leaves the text: lost negative, under the band
+
+
+def test_overwrite_reading_every_case_falls_in_exactly_one_branch():
+    """A grid against the rule written out apart from the code, every combination of each share with the order."""
+    lean, on, n = 4.0, -7.0, 0
+    fracs = (-0.5, 0.0, 0.375, 0.4, 0.5, 0.6, 0.625, 1.0, 1.5)
+    gaps = (-3.0, -1.0, -0.5, 0.0, 0.5, 1.0, 3.0)
+    for x in fracs:
+        for y in fracs:
+            for z in gaps:
+                b = on - x * lean
+                no = b - z
+                ni = no - y * lean
+                lost, gained, gap = (on - b) / lean, (no - ni) / lean, b - no
+                want = "mask_opens_route" if gained > 0.6 and gap <= -1.0 else "mask_holds_answer" if lost < 0.4 and gained < 0.4 and gap >= 1.0 else "mixed"
+                assert CP.overwrite_reading(on, b, ni, no, lean, TH6)["verdict"] == want, (x, y, z)
+                n += 1
+    assert n == 567
+
+
+def test_overwrite_control():
+    good = CP.overwrite_reading(-4.37, -12.0, -11.5, -4.4, 7.01, TH6)
+    assert CP.overwrite_control(-4.37, -4.4, good, TH6) == "pass"
+    low = CP.overwrite_reading(-4.37, -12.0, -14.0, -6.38, 7.01, TH6)
+    assert CP.overwrite_control(-4.37, -6.38, low, TH6) == "no_copy"
+    assert CP.overwrite_control(-4.0, -6.0, CP.overwrite_reading(-4.0, -12.0, -11.5, -6.0, 7.01, TH6), TH6) == "pass"  # a tie at the margin passes
+    stays = CP.overwrite_reading(-4.37, -6.0, -11.5, -4.4, 7.01, TH6)
+    assert stays["verdict"] == "mask_opens_route" and CP.overwrite_control(-4.37, -4.4, stays, TH6) == "b_stays"  # the rule's route, but B did not leave
+    misread = CP.overwrite_reading(-4.37, -12.0, -5.0, -4.4, 7.01, TH6)
+    assert misread["verdict"] == "mixed" and CP.overwrite_control(-4.37, -4.4, misread, TH6) == "rule_misreads"  # the new token was already high
+    gone = CP.overwrite_reading(-4.37, -12.0, -11.5, -4.4, 0.0, TH6)
+    assert CP.overwrite_control(-4.37, -4.4, gone, TH6) == "unreadable" and CP.overwrite_control(math.nan, -4.4, good, TH6) == "unreadable"

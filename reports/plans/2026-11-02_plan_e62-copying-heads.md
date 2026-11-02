@@ -861,3 +861,117 @@ Findings 2-5 are not code changes, and the analysis handles them:
 - `window_max_abs_on` and `gate_max_abs` must be above 0, else fp32 autocast was still on.
 
 `fall_floor` 0.5 and `carrier_sds` 2 stay filed as unsourced.
+
+## Amendment 6 (2026-11-02)
+
+Spec: the user, from a dialog, 2026-11-02: "Keep the same mask but replace B in the text with another token. If the model still says B, the mask holds the answer and the forward computes no copying: close the 67M mask work and log the limit. If it now says the new token, the mask opens a real route: test (1,1) and (2,4) off together next. Replaces the plan's slot read as first step." Design: `reports/plans/2026-11-02_advice_e62-after-amend5-FABLE.md`, checked against the code; departures below. Rules: `experiments/induction_cue/results/predictions_amend6.json`. Code: `experiments/induction_cue/amend6.py`, `cluster/induction_cue_amend6.sbatch`, `copying.py`'s last section. Coded, not run. **Not gated**: one cluster `debug` job, about 1 min, $0, no fine-tuning; one fresh review of the code before the job. Amendment 5's filed verdicts, `thinned` and `through_gates`, stand.
+
+**In plain words.** Amendment 5 found that the original model's change in answer when the pair is broken sits almost wholly in the mask, but B stayed in the text on every row, so it could not say where the answer comes from. This job holds the mask fixed and writes another token over B in the text. If the forward still gives B, the mask holds the answer and the forward computes no copying; if it now gives the new token, the mask opens a route that copies from the text.
+
+**Restated in the Terms' words.** At W₀ only, at the second A (half − 1), log-odds on E62's 200 read windows. The masked forward holds W₀'s original subcomponents, Δ out, each under Γ's mask at W₀ read on the intact tokens and then held at every position. Below that mask, B at p + 1 is replaced by another token of the windows' targets, the new token, so the original B is nowhere in the window and the pair A → new token is intact. Read B and the new token, and the new token on the intact tokens as its reference. Every mask at 1 and the target model read the same cells first. This replaces the weighted slot read as first step.
+
+**Granularity limit.** A verdict names what the masked forward does when one token changes under a mask held fixed. It reads no head, no subcomponent and no circuit. `mask_holds_answer` says the masked forward does not compute the copy from the tokens, not that Γ did not see a mechanism W₀ runs. `mask_opens_route` does not say the route is the target model's. A new circuit built from old subcomponents reads as elicited to VPD. No verdict reads a fine-tuned state, new capability against strengthened old, or r.
+
+### Design check
+
+- **Goal.** `GOALS.md`, new capability or strengthened old: whether a masked read can stand for the mechanism at all. `decisions.md` row 112 defines elicitation as running through a mechanism W₀ has; if the mask holds the answer, no masked copying read on this model can score that.
+- **Nearest tried.** Amendment 5 (TRIED row E62 Amendment 5): put the pair's effect in the mask with B in the text on all four rows. `absent` was read only in the target model at the marker (`run.json`); I grepped `run.py`, `amend2.py` to `amend5.py` as the advice did, and no masked row with B absent exists.
+- **Patch or step.** A patch on Amendment 5, and it decides whether this thread goes on.
+- **Decisions.** Rows 73 (granularity limit) and 112, kept. No departure.
+- **Class.** The user chose it, from the dialog above.
+- **Apparatus first.** Every mask at 1, then the target model, alone, through the same rule, with exit 1. The do-nothing is the mask's first cell. Nothing reproduces a procedure's end state.
+- **What changes next.** Below, per verdict.
+
+### Definitions
+
+One forward reads four cells, each a mean over windows: **on**, B on the intact tokens; **b_over**, B with B overwritten; **new_intact**, the new token on the intact tokens; **new_over**, the new token with B overwritten. **Lean**: Amendment 5's intact minus pair-broken log-odds of B in that forward, each set of tokens under its own mask; its per-window rows are on disk. **Lost** = (on − b_over) / lean. **Gained** = (new_over − new_intact) / lean. **Gap** = b_over − new_over. Each of lost and gained compares two rows that differ in one token, at p + 1.
+
+### Verdicts
+
+`copying.overwrite_reading`, first that fires; exactly one fires.
+
+1. `unreadable`: a number not finite, or the lean under 1.0.
+2. `mask_opens_route`: gained over 0.6 and the new token above B by at least 1.0. Lost is printed and decides nothing, in the user's words: "it now says the new token".
+3. `mask_holds_answer`: lost and gained both under 0.4 and B above the new token by at least 1.0. "It still says B", and no copying.
+4. `mixed`: anything else, a tie at a band included.
+
+Before these, each exit 1: `overwrite_not_as_filed` (`copying.overwrite_holds`), `control_failed` (`copying.overwrite_control`: `no_copy`, `b_stays`, `rule_misreads`), `reread_failed`.
+
+**Where each bar comes from.** 0.4 and 0.6: the advice's "within 0.1 of 0.5", where 0.5 is the plain majority and the 0.1 is chosen there, no source. 1.0 on the order: chosen here, no source, at the size of `local_faith.MIN_GAIN`. 1.0 on the lean: Amendment 5's `carrier_min`. 2.0 on the control: the advice's stop. 1e-3: Amendment 5's. Each is set against its noise floor below.
+
+**Edge cases, run before filing (`tests/test_copying.py`).** A zero or negative denominator, or a lean under its floor: `unreadable`. Ties: a band is `mixed`, the order counts. A case no branch covers: none, as `mixed` is last; a 567-case grid checks the verdict against the rule written out apart from the code. B′ = B: `overwrite_holds` stops first; reaching the rule it reads `mixed`. An empty pool: `absent_b` raises; this pool holds 178. A window where B is not replaced, B also elsewhere, another token moved, the pair broken, no windows: `overwrite_holds` false. B falls and the new token sits above it but never rose: `mixed`. B falls and the new token does not rise: `mixed`. The mask raises any pool token: the order fails, `mixed`. Still says B while the new token rose: `mixed`. Says the new token while B stays: `mask_opens_route`.
+
+### Stages, in run order
+
+Control first; `results/amend6.json` and `results/large/amend6_windows.pt` after each stage and before any stop; every number printed. Same windows, batch 64, `allow_tf32` off, precision as Amendment 5. The run refuses if `predictions_amend6.json` is not committed unchanged, if an output exists, if `windows.pt` is not the one `run.json` recorded, or if `amend5_windows.pt`'s levels differ from `amend5.json`.
+
+| Stage and forward | on | b_over | new_intact | new_over | lost | gained | gap | Verdict | Stop |
+|---|---|---|---|---|---|---|---|---|---|
+| a. Control, every mask at 1 | −4.366 | ≤ about −11.4, to about −12.2 | ≤ about −11.4 | about −4.4 | 1.00 to 1.12 | 1.0 to 1.1 | −7 to −7.8 | `mask_opens_route` | over 1e-3 on on; new_over under −6.366; lost ≤ 0.6; any other verdict |
+| a. Reference, target model | −4.710 | ≤ about −11.5 | ≤ about −11.5 | about −4.7 | 0.99 to 1.10 | about the same | −6.8 to −7.5 | `mask_opens_route` | as above, under −6.710 |
+| b. W₀'s mask | do-nothing: −7.300, exact on the L40, so lost 0 | over about −9.04 if it holds | about −11.6 or under | under about new_intact + 1.74 if it holds; over about new_intact + 2.60 if it opens a route | see verdicts | see verdicts | see verdicts | leaning `mask_holds_answer`, weakly | over 1e-3 on on |
+| c. fp32 under Γ's fp32 mask, beside | −7.3053 | | | | | | | the same verdict; a disagreement is LOUD | none |
+
+The lean's denominators are 7.010, 6.836 and 4.341; the fp32 row uses the bf16 lean. Pool 178 tokens, measured on the real windows with no model: 200 windows change at p + 1 alone, none keeps B, 117 distinct new tokens, 1 window holds the new token elsewhere and is kept.
+
+### What changes next
+
+- `mask_holds_answer`: close the 67M mask work and log the limit beside `decisions.md` row 73; drop the slot read; the Qwen caption says that on the 67M the mask carried the copied token. E62's causal head labels, read in the target model, are untouched.
+- `mask_opens_route`: (1,1) and (2,4) off together under this mask at the second A, next. The quiet of Amendment 5 is then the anomaly to run down before any state is read.
+- `mixed`: both numbers to the user, no verdict. Lost high with gained low would mean the forward passes B only while B is in the text. The advice's converse read, intact tokens under a mask from a window with a different B, is the proposal; nothing is built on it meanwhile.
+- `control_failed`, `reread_failed`, `overwrite_not_as_filed`, `unreadable`: to the lead; the mask is not read; fix and rerun.
+
+### Noise floor
+
+Measured from `results/large/amend5_windows.pt`, 2000 draws, over windows and over the 32 keys (`~/commute-data/scratch/regating-lead/e62a6-code/noise.py`, no model):
+
+| Quantity | Window sd | Key sd | The bar it sets |
+|---|---|---|---|
+| A level: mask on, mask pair-broken | 0.29, 0.14 | 0.28, 0.17 | |
+| Lean: mask, every mask at 1 | 0.27, 0.25 | 0.29, 0.37 | |
+| A share near 0.5, unpaired with its denominator | 0.043 | 0.045 | the 0.1 band is 2.2 sds |
+| A share near 1, unpaired | 0.086 | 0.090 | |
+| Paired share, the token part at the intact mask, 0.063 | 0.007 | 0.009 | |
+| Gap between two unpaired token rows: mask on, pair-broken, every mask at 1 | 0.41, 0.18, 0.33 | 0.44, 0.22, 0.34 | 1.0 is 2.3 sds; the control's 2.0 is 6 |
+| Do-nothing repeat, re-read of Amendment 4 | 0, 0 | | 1e-3 |
+
+The real rows differ only in the token read, so these are stand-ins for sds this job prints itself: `lost_sd`, `gained_sd`, `gap_sd`. Per-window log-odds are wide, sd 4.2, and 16 windows have a lean at or under 0, so the verdict is about the mean over windows, as every amendment's is. The fp32 row measures Γ's and the forward's rounding on the verdict; the move on the do-nothing cell is 0.005.
+
+### Blind to
+
+- **Lost.** The mask at p + 1 was read for B and now sits over the new token, the mismatch Amendment 5's swap carried with a joint bound of 0.28. Masks at every position are held, so the second A is not told from the others. Positive control: every mask at 1 and the target model must read lost near 1. No forward is known to hold an answer, so `mask_holds_answer` has no positive control; it has only the rule's tests on stubs.
+- **Gained.** A low gain alone does not show that no route exists: the `k_proj` and `v_proj` masks at p + 1 were read for B, so they may pass B and not the new token. That is why `mask_holds_answer` also needs lost under the band; a route that reads B from the text must lose B when it leaves. Positive control: as above, near 1. Reference: the same token one row over, so a token's own prior cancels.
+- **Gap.** Two different tokens on the same forward; their priors differ, and 178 pool tokens average that out only as far as the 0.44 above.
+- **What the forward holds.** `mask_holds_answer` says the masked forward does not run the copy, not that Γ did not see it; heads, MLPs and other subcomponents are not told apart. The embedding is not decomposed, so the new token's embedding enters whatever the mask.
+- **Scale.** The target log-odds are under 1% probability. "Says" means above the other token by a log-odds, not first. One model, one decomposition seed, one position, one marker's windows.
+
+### Departures from Fable's advice
+
+Its checked claims held: `absent_b` as described, the pool, the levels, no earlier masked row with B absent. Its errors and what I changed:
+
+1. **A hole in the rule.** B falling with B′ above it also fires when B′ never rose: B −12.5 and B′ −11.3 would read `tokens_carry_b`. So `gained` and its reference row `new_intact` are added.
+2. **"Share kept" is a share lost**: its formula is (−7.30 − B) / 4.34, read as under 0.5 when B stays. Renamed `lost`.
+3. **The route rule follows the user's words**: no bar on lost, which is printed. `mask_holds_answer` also needs gained under the band, as the user's reading says "computes no copying".
+4. **A margin on the order**, as two different tokens differ by chance. The advice's "window sd 0.17 to 0.33" are key sds.
+5. **The rule runs on the control and the target model** and must read `mask_opens_route`, so it has a positive control; the stop is relative to each forward's own level.
+6. **The verdicts take the user's words**, for `mask_carries_b` and `tokens_carry_b`.
+7. **The denominators and do-nothing come from Amendment 5's rows**, for paired sds; no second Γ pass on the pair-broken windows.
+8. **An fp32 row beside**, one Γ pass and four reads, as this verdict can close a line and Amendment 5's check F6 left Γ's precision unread on most rows. Unscored. So 16 reads, not six.
+
+### Departures from the literature
+
+- **Overwriting one token under a mask read on another input** has no source we know of. The VPD paper reads masks per input.
+- **Olsson et al. 2022** read induction on repeated random tokens. We read log-odds on word-like windows at the second A, with B set in by construction.
+- **Thresholds.** None published; each is sourced above or marked as chosen here.
+
+### Time
+
+Job 49072 took 59 s in all for about 170 reads. This job is 16 reads and two Γ passes after the same load of about 30 s, so about 1 min. Limit 10 min, debug QoS.
+
+### Not planned
+
+The weighted slot read, which this replaces as first step; (1,1) and (2,4) off together, the next step on one branch; any head off; the pair-broken mask read again or in fp32; masks recomputed with a head off; a mask from a window with a different B; any fine-tuned state; other positions, the marker included; a second decomposition seed.
+
+### Not run
+
+Everything needing the model. The rules ran on CPU (`tests/test_copying.py`). The stages ran on a stub `Reads5`, with planted levels on the real windows and rows, through all three verdicts, an fp32 disagreement, both control stops and the do-nothing stop (`~/commute-data/scratch/regating-lead/e62a6-code/stub_run.py`). `load` ran only as far as its refusal of uncommitted predictions. Every real read it calls ran on a GPU in Amendment 5; `absent_b`'s tokens have never been through a masked forward.

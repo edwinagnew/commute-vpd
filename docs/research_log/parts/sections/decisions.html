@@ -1,6 +1,6 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-02.</strong> Two open cards: whether the size repeated teacher training reaches reads as what the fine-tune taught (E34, E41), and the wording of a claim from the claim tests (E47).</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-02.</strong> Three open cards: whether the size repeated teacher training reaches reads as what the fine-tune taught (E34, E41), the wording of a claim from the claim tests (E47), and whether the benchmark line, VPD against cheaper methods, gets another attempt (E66).</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
 
@@ -17,5 +17,13 @@
   <p><strong>Options.</strong> (a) Reword: "the split keeps less as training goes on; at matched size the path adds about 0.08; size alone untested". (b) Design a size-only test that keeps the behaviour. (c) Drop the claim. <strong>Recommendation: (a)</strong>; the splits are no longer the line's map.</p>
   <div class="links"><a href="#e31">E31</a><a href="#e47">E47</a></div>
   <p class="small"><code>reports/analyses/2026-10-29_analysis_e47-claim-tests.md</code></p></div>
+
+  <div class="card key decision" id="decision-benchmark-next"><span class="chip uninf urgency">No rush</span><div class="k">Question for you · baseline-lead · new 2026-11-02</div><p class="small">Nothing runs until this is decided.</p><h3>Does VPD against cheaper methods get another attempt on the 67M, now that no fine-tune there has a causal label?</h3>
+  <p><strong>The question.</strong> Does VPD tell new capability from strengthening better than cheap methods (neuron ablation, steering, prompting)? On the 67M each label comes from how the task was built, and we found none that owes nothing to that.</p>
+  <p><strong>The evidence.</strong> A context patch read on fourteen saved fine-tunes gave no label: both hand-built controls were unusable, and on the copy and random key maps it orders them the wrong way round. The cheap methods' rows still rest on assumption. Fable (<code>reports/plans/2026-11-02_advice_e66-next-FABLE.md</code>) advises ending the patch line; the patch cannot show VPD winning or losing.</p>
+  <p><strong>Options.</strong> (a) Leave it. Nothing runs, $0; the comparison stays unanswered on the 67M. (b) A harder counting test, 3.5 to 6 hours of free jobs. It ranks the cheap methods against a causal truth, so VPD can only tie or lose; it says which cheap method is best, not whether VPD adds anything. Saved states sit in the reuse lead's clone or need about an hour's rebuild. (c) Plan a patch that swaps the key on the class map, the one row where VPD could beat every cheap method. It needs a new plan and retraining; Fable warns it may inherit the off-target drift seen here.</p>
+  <p><strong>Recommendation: (a)</strong>, since (b) cannot show VPD winning and (c) has no working control yet.</p>
+  <div class="links"><a href="#e66">E66</a></div>
+  <p class="small">Names in the reports: the patch line is E66; the harder counting test is E65. <code>reports/analyses/2026-11-02_analysis_e66-interchange.md</code></p></div>
 </div>
 </section>
