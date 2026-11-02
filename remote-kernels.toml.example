@@ -215,3 +215,29 @@ cloud-type = "SECURE"
 # Default: "auto"
 # jupyter-access = "auto"
 
+[vast]
+# terminate: stop is unreliable on vast (the GPU can be re-rented while stopped), and results are download()ed per
+# stage anyway, as on RunPod.
+cleanup = "terminate"
+
+# The same fast cards as [runpod] gpu-type-ids, in vast naming. Plain start() takes the cheapest qualifying offer
+# across all of them. For runs over ~1 h on a 4090, pass start(runtime="vast", gpu_type="H100 SXM") (or "H100 PCIE",
+# "H100 NVL": search_vast_offers(gpu_name=[...]) shows which exist).
+gpu-name = ["RTX 4090", "RTX 5090", "L40S"]
+
+# Container disk, as on RunPod: the tree, .venv (CUDA torch), uv cache and the 3.2 GB VPD files all live here.
+disk-gb = 50
+
+# The same paths as RunPod, so cluster/pod_setup.sh and the [env] table work unchanged.
+workdir = "/root/work"
+
+# Past this, the brief's budget usually argues for RunPod's H100 or the cluster instead.
+max-dph = 4.0
+
+selection-guidance = """Prefer datacenter hosts (search_vast_offers(query={"datacenter": true}) lists them) when one is within ~$0.30/h of the \
+cheapest: the pod carries WANDB_API_KEY and GIT_PAT. Then prefer download bandwidth >= 1000 Mbps (each pod fetches \
+3.2 GB of VPD files from W&B) and reliability >= 0.98. Never pick a card slower than an RTX 4090 to save money."""
+
+[vast.query]
+num_gpus = { eq = 1 }          # one GPU per run; the baseline (>= 1) would admit pricier multi-GPU offers
+inet_down = { gte = 500.0 }    # the 3.2 GB VPD fetch; the baseline 200 Mbps makes it ~2-3 min
