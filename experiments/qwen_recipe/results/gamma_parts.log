@@ -1,0 +1,86 @@
+[     0.0s] [gamma_parts W0] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=494598, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+[    83.7s] [load] gamma torch.float32, peak GPU 31.90 GiB, host 81.9 GB
+[    94.1s] [load] target, NVIDIA L40, peak GPU 38.23 GiB, host 81.9 GB
+[   103.2s] [row 0 of W0] 4 s, peak GPU 40.50 GiB, host 81.9 GB
+[   176.6s] [check] identity: ok {"largest_site_dg_plus_crossings": 0.0}
+[   176.6s] [check] parts: ok {"gap": 0.0, "row0_repeat_gap": 0.0, "tolerance": 9.5367431640625e-07}
+[   176.6s] [W0] {"parts_gap": 0.0, "row0_repeat_gap": 0.0, "part_1": {"mean_head": 0.5754648464773745, "mean_read": 0.10857503186862189, "mean_read_h": 0.13468309229485287, "mean_dg_no_h": 0.003048855917041832, "mean_dg_no_head": 0.07861261821192182, "mean_head_on": 0.8078945516345948, "mean_read_on": 0.5379223763117212, "mean_read_h_on": 0.5570533067143917, "mean_dg_no_h_on": 0.14069280170052884, "mean_dg_no_head_on": 0.2448028214300192, "on_share": 0.021670304948375338, "on_needing_h": 0.5576979154696236, "on_needing_head": 0.04982501360812443, "off_that_h_holds_off": 7.97826150901657e-09}, "part_2": {"all": {"subcomponent_positions": 2818572288.0, "mean_abs_dg": 0.0, "on_in_g0": 61079321.0, "on_to_off": 0.0, "off_to_on": 0.0, "crossings_per_on": 0.0}, "carry": {"subcomponent_positions": 0.0, "mean_abs_dg": NaN, "on_in_g0": 0.0, "on_to_off": 0.0, "off_to_on": 0.0, "crossings_per_on": NaN}}}
+[   177.2s] [W0 done] peak GPU 40.50 GiB, host 81.9 GB
+[     0.0s] [gamma_parts gold_s0] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=494598, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+[     5.7s] [check] sha256_gold_s0: ok {"file": "/mnt/nw/home/e.agnew/commute-agents/qwen-decomp-lead/experiments/qwen_updates/results/large/dW/gold_s0/step_100.safetensors", "sha256": "fdb5013f5cb5068107e94afd03aa1e4f21f3346eb2366316eeff4753920a59c0", "want": "fdb5013f5cb5068107e94afd03aa1e4f21f3346eb2366316eeff4753920a59c0"}
+[    14.8s] [load] target, NVIDIA L40, peak GPU 6.41 GiB, host 38.7 GB
+[   193.3s] [sigma] 196 sites in 178 s, peak GPU 17.59 GiB, host 39.3 GB
+[   240.5s] [split] layer 0: 14 s, peak GPU 17.59 GiB, host 62.3 GB
+[   254.6s] [split] layer 1: 29 s, peak GPU 17.59 GiB, host 62.7 GB
+[   269.1s] [split] layer 2: 43 s, peak GPU 17.59 GiB, host 63.0 GB
+[   283.7s] [split] layer 3: 58 s, peak GPU 17.59 GiB, host 63.4 GB
+[   298.0s] [split] layer 4: 72 s, peak GPU 17.59 GiB, host 63.8 GB
+[   312.4s] [split] layer 5: 86 s, peak GPU 17.59 GiB, host 64.1 GB
+[   326.6s] [split] layer 6: 101 s, peak GPU 17.59 GiB, host 64.5 GB
+[   340.8s] [split] layer 7: 115 s, peak GPU 17.59 GiB, host 64.9 GB
+[   354.2s] [split] layer 8: 128 s, peak GPU 17.59 GiB, host 65.2 GB
+[   368.1s] [split] layer 9: 142 s, peak GPU 17.59 GiB, host 65.6 GB
+[   379.9s] [split] layer 10: 154 s, peak GPU 17.59 GiB, host 66.0 GB
+[   390.6s] [split] layer 11: 165 s, peak GPU 17.59 GiB, host 66.3 GB
+[   401.0s] [split] layer 12: 175 s, peak GPU 17.59 GiB, host 66.6 GB
+[   410.6s] [split] layer 13: 185 s, peak GPU 17.59 GiB, host 67.1 GB
+[   420.1s] [split] layer 14: 194 s, peak GPU 17.59 GiB, host 67.5 GB
+[   430.4s] [split] layer 15: 204 s, peak GPU 17.59 GiB, host 67.9 GB
+[   440.9s] [split] layer 16: 215 s, peak GPU 17.59 GiB, host 68.3 GB
+[   452.5s] [split] layer 17: 227 s, peak GPU 17.59 GiB, host 68.7 GB
+[   464.8s] [split] layer 18: 239 s, peak GPU 17.59 GiB, host 69.1 GB
+[   478.0s] [split] layer 19: 252 s, peak GPU 17.59 GiB, host 69.5 GB
+[   491.8s] [split] layer 20: 266 s, peak GPU 17.59 GiB, host 69.9 GB
+[   506.4s] [split] layer 21: 280 s, peak GPU 17.59 GiB, host 70.3 GB
+[   520.5s] [split] layer 22: 295 s, peak GPU 17.59 GiB, host 70.7 GB
+[   534.8s] [split] layer 23: 309 s, peak GPU 17.59 GiB, host 71.1 GB
+[   548.9s] [split] layer 24: 323 s, peak GPU 17.59 GiB, host 71.5 GB
+[   562.6s] [split] layer 25: 337 s, peak GPU 17.59 GiB, host 71.9 GB
+[   576.5s] [split] layer 26: 351 s, peak GPU 17.59 GiB, host 72.3 GB
+[   590.8s] [split] layer 27: 365 s, peak GPU 17.59 GiB, host 72.6 GB
+[   724.5s] [load] gamma torch.float32, peak GPU 38.31 GiB, host 109.2 GB
+[   732.3s] [row 0 of W0] 8 s, peak GPU 39.84 GiB, host 109.2 GB
+[   777.0s] [gold_s0 x from W0] {"all": {"subcomponent_positions": 2818572288.0, "mean_abs_dg": 1.5647364659682616e-05, "on_in_g0": 61079321.0, "on_to_off": 39868.0, "off_to_on": 45390.0, "crossings_per_on": 0.0013958570364591971}, "carry": {"subcomponent_positions": 95404032.0, "mean_abs_dg": 0.00013410774704769558, "on_in_g0": 6470617.0, "on_to_off": 10305.0, "off_to_on": 9934.0, "crossings_per_on": 0.0031278315499124734}}
+[   779.8s] [row 0 of FT] 3 s, peak GPU 39.84 GiB, host 109.2 GB
+[   820.8s] [gold_s0 x from state] {"all": {"subcomponent_positions": 2818572288.0, "mean_abs_dg": 1.6194831975464217e-05, "on_in_g0": 60891380.0, "on_to_off": 38212.0, "off_to_on": 49474.0, "crossings_per_on": 0.001440039624656232}, "carry": {"subcomponent_positions": 95404032.0, "mean_abs_dg": 0.00013865123595615934, "on_in_g0": 6508319.0, "on_to_off": 9286.0, "off_to_on": 11816.0, "crossings_per_on": 0.0032423118780748146}}
+[   820.8s] [check] moved: ok {"mean_abs_dg": 1.5647364659682616e-05}
+[   821.5s] [gold_s0 done] peak GPU 39.84 GiB, host 109.2 GB
+[     0.0s] [gamma_parts gauss] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=494598, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+[    15.1s] [check] sha256_e40: ok {"file": "/mnt/nw/home/e.agnew/commute-data/results-large/qwen_sft/nowarmup_regen/dW/step_10.safetensors", "sha256": "8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9", "want": "8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9"}
+[    25.0s] [load] target, NVIDIA L40, peak GPU 6.41 GiB, host 38.7 GB
+[   196.8s] [sigma] 196 sites in 172 s, peak GPU 17.59 GiB, host 39.3 GB
+[   323.0s] [split] layer 0: 14 s, peak GPU 17.59 GiB, host 70.5 GB
+[   336.8s] [split] layer 1: 28 s, peak GPU 17.59 GiB, host 70.7 GB
+[   351.1s] [split] layer 2: 42 s, peak GPU 17.59 GiB, host 71.0 GB
+[   365.1s] [split] layer 3: 56 s, peak GPU 17.59 GiB, host 71.2 GB
+[   379.0s] [split] layer 4: 70 s, peak GPU 17.59 GiB, host 71.5 GB
+[   392.9s] [split] layer 5: 84 s, peak GPU 17.59 GiB, host 71.8 GB
+[   406.6s] [split] layer 6: 98 s, peak GPU 17.59 GiB, host 72.1 GB
+[   420.3s] [split] layer 7: 111 s, peak GPU 17.59 GiB, host 72.3 GB
+[   433.6s] [split] layer 8: 125 s, peak GPU 17.59 GiB, host 72.6 GB
+[   446.4s] [split] layer 9: 138 s, peak GPU 17.59 GiB, host 72.8 GB
+[   457.8s] [split] layer 10: 149 s, peak GPU 17.59 GiB, host 73.1 GB
+[   468.2s] [split] layer 11: 159 s, peak GPU 17.59 GiB, host 73.4 GB
+[   478.0s] [split] layer 12: 169 s, peak GPU 17.59 GiB, host 73.6 GB
+[   487.1s] [split] layer 13: 178 s, peak GPU 17.59 GiB, host 73.9 GB
+[   496.1s] [split] layer 14: 187 s, peak GPU 17.59 GiB, host 74.2 GB
+[   505.2s] [split] layer 15: 196 s, peak GPU 17.59 GiB, host 74.5 GB
+[   515.3s] [split] layer 16: 207 s, peak GPU 17.59 GiB, host 74.8 GB
+[   526.6s] [split] layer 17: 218 s, peak GPU 17.59 GiB, host 75.1 GB
+[   539.0s] [split] layer 18: 230 s, peak GPU 17.59 GiB, host 75.4 GB
+[   552.1s] [split] layer 19: 243 s, peak GPU 17.59 GiB, host 75.8 GB
+[   565.5s] [split] layer 20: 257 s, peak GPU 17.59 GiB, host 76.1 GB
+[   579.5s] [split] layer 21: 271 s, peak GPU 17.59 GiB, host 76.4 GB
+[   593.9s] [split] layer 22: 285 s, peak GPU 17.59 GiB, host 76.7 GB
+[   608.1s] [split] layer 23: 299 s, peak GPU 17.59 GiB, host 77.0 GB
+[   622.3s] [split] layer 24: 313 s, peak GPU 17.59 GiB, host 77.3 GB
+[   636.1s] [split] layer 25: 327 s, peak GPU 17.59 GiB, host 77.5 GB
+[   649.5s] [split] layer 26: 341 s, peak GPU 17.59 GiB, host 77.8 GB
+[   663.2s] [split] layer 27: 354 s, peak GPU 17.59 GiB, host 78.1 GB
+[   794.1s] [load] gamma torch.float32, peak GPU 38.31 GiB, host 116.9 GB
+[   802.6s] [row 0 of W0] 9 s, peak GPU 39.84 GiB, host 116.9 GB
+[   840.8s] [gauss x from W0] {"all": {"subcomponent_positions": 2818572288.0, "mean_abs_dg": 0.00022503662075133506, "on_in_g0": 61079321.0, "on_to_off": 471049.0, "off_to_on": 958062.0, "crossings_per_on": 0.02339762421392995}, "carry": {"subcomponent_positions": 131833856.0, "mean_abs_dg": 0.0013452156090217344, "on_in_g0": 8208457.0, "on_to_off": 118170.0, "off_to_on": 212065.0, "crossings_per_on": 0.04023106900602635}}
+[   843.6s] [row 0 of FT] 2 s, peak GPU 39.84 GiB, host 116.9 GB
+[   878.7s] [gauss x from state] {"all": {"subcomponent_positions": 2818572288.0, "mean_abs_dg": 0.0002601306537258764, "on_in_g0": 63444127.0, "on_to_off": 588907.0, "off_to_on": 1105408.0, "crossings_per_on": 0.026705623989435618}, "carry": {"subcomponent_positions": 131833856.0, "mean_abs_dg": 0.0016823873337050907, "on_in_g0": 8617859.0, "on_to_off": 159667.0, "off_to_on": 275644.0, "crossings_per_on": 0.050512662135688224}}
+[   878.7s] [check] moved: ok {"mean_abs_dg": 0.00022503662075133506}
+[   879.1s] [gauss done] peak GPU 39.84 GiB, host 116.9 GB

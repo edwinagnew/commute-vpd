@@ -1,0 +1,7116 @@
+{
+ "state": "gauss",
+ "gamma": "fp32",
+ "split": {
+  "stored_error": 5.136641423033034e-06,
+  "split_s": 354.4401144981384,
+  "file_bytes": 5637164512
+ },
+ "carrying": {
+  "alive": 494598,
+  "carrying": 32186,
+  "holds": 0.9
+ },
+ "x": {
+  "W0": {
+   "pooled": {
+    "all": {
+     "subcomponent_positions": 2818572288.0,
+     "mean_abs_dg": 0.00022503662075133506,
+     "on_in_g0": 61079321.0,
+     "on_to_off": 471049.0,
+     "off_to_on": 958062.0,
+     "crossings_per_on": 0.02339762421392995
+    },
+    "carry": {
+     "subcomponent_positions": 131833856.0,
+     "mean_abs_dg": 0.0013452156090217344,
+     "on_in_g0": 8208457.0,
+     "on_to_off": 118170.0,
+     "off_to_on": 212065.0,
+     "crossings_per_on": 0.04023106900602635
+    }
+   },
+   "sites": {
+    "layers.0.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00017644313045805937,
+      "on_in_g0": 65273.0,
+      "on_to_off": 646.0,
+      "off_to_on": 20662.0,
+      "crossings_per_on": 0.32644431847777794
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0008468051973644641,
+      "on_in_g0": 86619.0,
+      "on_to_off": 1654.0,
+      "off_to_on": 41551.0,
+      "crossings_per_on": 0.49879356723120793
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0061054712747902196,
+      "on_in_g0": 322463.0,
+      "on_to_off": 11215.0,
+      "off_to_on": 73217.0,
+      "crossings_per_on": 0.2618346911118485
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0009336405448755469,
+      "on_in_g0": 470878.0,
+      "on_to_off": 7363.0,
+      "off_to_on": 11807.0,
+      "crossings_per_on": 0.04071118208962831
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 8.552013810040707e-06,
+      "on_in_g0": 130773.0,
+      "on_to_off": 274.0,
+      "off_to_on": 338.0,
+      "crossings_per_on": 0.004679865109770366
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.5872714264592773e-05,
+      "on_in_g0": 127224.0,
+      "on_to_off": 890.0,
+      "off_to_on": 1657.0,
+      "crossings_per_on": 0.020019807583474818
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.88251407523773e-05,
+      "on_in_g0": 152381.0,
+      "on_to_off": 2170.0,
+      "off_to_on": 11264.0,
+      "crossings_per_on": 0.08816059744981329
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00011681601345270298,
+      "on_in_g0": 109408.0,
+      "on_to_off": 1071.0,
+      "off_to_on": 1790.0,
+      "crossings_per_on": 0.02614982451009067
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0004430321507991053,
+      "on_in_g0": 139984.0,
+      "on_to_off": 2379.0,
+      "off_to_on": 3326.0,
+      "crossings_per_on": 0.04075465767516288
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0003976253162005783,
+      "on_in_g0": 120570.0,
+      "on_to_off": 1742.0,
+      "off_to_on": 3740.0,
+      "crossings_per_on": 0.04546736335738575
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0006480750942274849,
+      "on_in_g0": 215798.0,
+      "on_to_off": 4917.0,
+      "off_to_on": 8249.0,
+      "crossings_per_on": 0.06101076006265118
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 9.432287048823559e-06,
+      "on_in_g0": 505037.0,
+      "on_to_off": 380.0,
+      "off_to_on": 385.0,
+      "crossings_per_on": 0.0015147405041610813
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.000118092322386724,
+      "on_in_g0": 164682.0,
+      "on_to_off": 3303.0,
+      "off_to_on": 10974.0,
+      "crossings_per_on": 0.08669435639596312
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.116452022093284e-05,
+      "on_in_g0": 324164.0,
+      "on_to_off": 2700.0,
+      "off_to_on": 5258.0,
+      "crossings_per_on": 0.0245493022050567
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00021194053977602323,
+      "on_in_g0": 150340.0,
+      "on_to_off": 1551.0,
+      "off_to_on": 2617.0,
+      "crossings_per_on": 0.027723825994412664
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.000540102012232202,
+      "on_in_g0": 151154.0,
+      "on_to_off": 2369.0,
+      "off_to_on": 3951.0,
+      "crossings_per_on": 0.04181166227820633
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.000712890724546833,
+      "on_in_g0": 150252.0,
+      "on_to_off": 2701.0,
+      "off_to_on": 4220.0,
+      "crossings_per_on": 0.04606261480712403
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0008940949364652506,
+      "on_in_g0": 267048.0,
+      "on_to_off": 5871.0,
+      "off_to_on": 8904.0,
+      "crossings_per_on": 0.05532713220095264
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.5421151420761763e-05,
+      "on_in_g0": 242357.0,
+      "on_to_off": 559.0,
+      "off_to_on": 760.0,
+      "crossings_per_on": 0.005442384581423272
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 4096.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.2.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0001260437836865247,
+      "on_in_g0": 153476.0,
+      "on_to_off": 3453.0,
+      "off_to_on": 19628.0,
+      "crossings_per_on": 0.15038833433240376
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0009050649600498654,
+      "on_in_g0": 171707.0,
+      "on_to_off": 465.0,
+      "off_to_on": 65482.0,
+      "crossings_per_on": 0.3840670444419855
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 16.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.3.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0001530168494039974,
+      "on_in_g0": 203219.0,
+      "on_to_off": 1200.0,
+      "off_to_on": 1223.0,
+      "crossings_per_on": 0.011923097741845004
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0004609800741739445,
+      "on_in_g0": 158797.0,
+      "on_to_off": 1711.0,
+      "off_to_on": 2678.0,
+      "crossings_per_on": 0.02763906119133233
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006760509284597926,
+      "on_in_g0": 139358.0,
+      "on_to_off": 2629.0,
+      "off_to_on": 4141.0,
+      "crossings_per_on": 0.048579916474117024
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0005531712336115865,
+      "on_in_g0": 200384.0,
+      "on_to_off": 3892.0,
+      "off_to_on": 5068.0,
+      "crossings_per_on": 0.044714148834238264
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.5246146908213612e-05,
+      "on_in_g0": 212773.0,
+      "on_to_off": 450.0,
+      "off_to_on": 667.0,
+      "crossings_per_on": 0.005249726234061653
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.966033898236062e-05,
+      "on_in_g0": 168316.0,
+      "on_to_off": 2719.0,
+      "off_to_on": 11675.0,
+      "crossings_per_on": 0.08551771667577651
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.6633166603155328e-05,
+      "on_in_g0": 161745.0,
+      "on_to_off": 873.0,
+      "off_to_on": 1350.0,
+      "crossings_per_on": 0.013743856069739404
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 9.151973215748566e-05,
+      "on_in_g0": 168236.0,
+      "on_to_off": 508.0,
+      "off_to_on": 750.0,
+      "crossings_per_on": 0.007477591003114672
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00020855769729166695,
+      "on_in_g0": 123466.0,
+      "on_to_off": 1054.0,
+      "off_to_on": 1602.0,
+      "crossings_per_on": 0.021511995205157695
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006040734665528902,
+      "on_in_g0": 143809.0,
+      "on_to_off": 2212.0,
+      "off_to_on": 3553.0,
+      "crossings_per_on": 0.04008789435988012
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0006337344763517327,
+      "on_in_g0": 197266.0,
+      "on_to_off": 4369.0,
+      "off_to_on": 6248.0,
+      "crossings_per_on": 0.05382072937049466
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.4426843396068515e-05,
+      "on_in_g0": 219396.0,
+      "on_to_off": 486.0,
+      "off_to_on": 560.0,
+      "crossings_per_on": 0.004767634779120859
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 6.560586547443847e-05,
+      "on_in_g0": 166087.0,
+      "on_to_off": 2298.0,
+      "off_to_on": 6725.0,
+      "crossings_per_on": 0.054326949129070906
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.9249435982259264e-05,
+      "on_in_g0": 171527.0,
+      "on_to_off": 1121.0,
+      "off_to_on": 1878.0,
+      "crossings_per_on": 0.01748412786325185
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 8.766151434325131e-05,
+      "on_in_g0": 212906.0,
+      "on_to_off": 574.0,
+      "off_to_on": 802.0,
+      "crossings_per_on": 0.006462946088884296
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00013326153005954744,
+      "on_in_g0": 141568.0,
+      "on_to_off": 683.0,
+      "off_to_on": 1051.0,
+      "crossings_per_on": 0.012248530741410489
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.001210354931814983,
+      "on_in_g0": 195979.0,
+      "on_to_off": 4242.0,
+      "off_to_on": 5782.0,
+      "crossings_per_on": 0.05114833732185591
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0009225754443273892,
+      "on_in_g0": 310006.0,
+      "on_to_off": 6436.0,
+      "off_to_on": 8349.0,
+      "crossings_per_on": 0.047692625304026376
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.958460500535904e-05,
+      "on_in_g0": 285995.0,
+      "on_to_off": 646.0,
+      "off_to_on": 841.0,
+      "crossings_per_on": 0.005199391597755206
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.8001762466443054e-05,
+      "on_in_g0": 254185.0,
+      "on_to_off": 1819.0,
+      "off_to_on": 2876.0,
+      "crossings_per_on": 0.018470798827625548
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.853821618808132e-05,
+      "on_in_g0": 258123.0,
+      "on_to_off": 1492.0,
+      "off_to_on": 1989.0,
+      "crossings_per_on": 0.013485818776319816
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0003449276773914711,
+      "on_in_g0": 274066.0,
+      "on_to_off": 2045.0,
+      "off_to_on": 2417.0,
+      "crossings_per_on": 0.016280749892361696
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007228284808435959,
+      "on_in_g0": 243737.0,
+      "on_to_off": 2902.0,
+      "off_to_on": 3876.0,
+      "crossings_per_on": 0.027808662615852332
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007165683152432489,
+      "on_in_g0": 202227.0,
+      "on_to_off": 3059.0,
+      "off_to_on": 4138.0,
+      "crossings_per_on": 0.035588719607174114
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0006902695154472338,
+      "on_in_g0": 253070.0,
+      "on_to_off": 5352.0,
+      "off_to_on": 6845.0,
+      "crossings_per_on": 0.048196151262496545
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.240490293507295e-05,
+      "on_in_g0": 337227.0,
+      "on_to_off": 746.0,
+      "off_to_on": 823.0,
+      "crossings_per_on": 0.004652652367692979
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.342361228873512e-05,
+      "on_in_g0": 240352.0,
+      "on_to_off": 1835.0,
+      "off_to_on": 3496.0,
+      "crossings_per_on": 0.02217996937824524
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.622434925173076e-05,
+      "on_in_g0": 234993.0,
+      "on_to_off": 1358.0,
+      "off_to_on": 1889.0,
+      "crossings_per_on": 0.013817432859702205
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 8.599226003469518e-05,
+      "on_in_g0": 245685.0,
+      "on_to_off": 558.0,
+      "off_to_on": 537.0,
+      "crossings_per_on": 0.00445692655229257
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00026782724732776764,
+      "on_in_g0": 139163.0,
+      "on_to_off": 1033.0,
+      "off_to_on": 1334.0,
+      "crossings_per_on": 0.017008831370407363
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007205456748653472,
+      "on_in_g0": 195164.0,
+      "on_to_off": 2460.0,
+      "off_to_on": 3423.0,
+      "crossings_per_on": 0.030143878994076778
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0008383584881235806,
+      "on_in_g0": 292070.0,
+      "on_to_off": 6034.0,
+      "off_to_on": 8780.0,
+      "crossings_per_on": 0.050720717636183105
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.7422906401276528e-05,
+      "on_in_g0": 404624.0,
+      "on_to_off": 750.0,
+      "off_to_on": 756.0,
+      "crossings_per_on": 0.003721973980782158
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.87460446603194e-05,
+      "on_in_g0": 295834.0,
+      "on_to_off": 1823.0,
+      "off_to_on": 3375.0,
+      "crossings_per_on": 0.01757066462948816
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.5153668309861885e-05,
+      "on_in_g0": 244771.0,
+      "on_to_off": 1315.0,
+      "off_to_on": 1841.0,
+      "crossings_per_on": 0.012893684300836292
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00016501974307370215,
+      "on_in_g0": 254498.0,
+      "on_to_off": 1052.0,
+      "off_to_on": 1027.0,
+      "crossings_per_on": 0.008169022939276536
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005363266775355591,
+      "on_in_g0": 195032.0,
+      "on_to_off": 1947.0,
+      "off_to_on": 2039.0,
+      "crossings_per_on": 0.020437671766684443
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005331898800653434,
+      "on_in_g0": 167670.0,
+      "on_to_off": 1638.0,
+      "off_to_on": 2308.0,
+      "crossings_per_on": 0.023534323373292778
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0008831372138315419,
+      "on_in_g0": 241004.0,
+      "on_to_off": 6213.0,
+      "off_to_on": 8586.0,
+      "crossings_per_on": 0.061405619823737365
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.9181145298900287e-05,
+      "on_in_g0": 552955.0,
+      "on_to_off": 749.0,
+      "off_to_on": 833.0,
+      "crossings_per_on": 0.0028609923049796094
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.354185793031817e-05,
+      "on_in_g0": 372009.0,
+      "on_to_off": 1653.0,
+      "off_to_on": 2934.0,
+      "crossings_per_on": 0.012330346846447264
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.3011488856510285e-05,
+      "on_in_g0": 256996.0,
+      "on_to_off": 1545.0,
+      "off_to_on": 2260.0,
+      "crossings_per_on": 0.014805677909383804
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 8.383703819725419e-05,
+      "on_in_g0": 224854.0,
+      "on_to_off": 543.0,
+      "off_to_on": 601.0,
+      "crossings_per_on": 0.0050877458261805435
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0002788719487374913,
+      "on_in_g0": 155749.0,
+      "on_to_off": 842.0,
+      "off_to_on": 1266.0,
+      "crossings_per_on": 0.013534597332888173
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.001375524601368916,
+      "on_in_g0": 248007.0,
+      "on_to_off": 3682.0,
+      "off_to_on": 4715.0,
+      "crossings_per_on": 0.0338579153007778
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.001081911651357903,
+      "on_in_g0": 337328.0,
+      "on_to_off": 6269.0,
+      "off_to_on": 8535.0,
+      "crossings_per_on": 0.04388606934496988
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.1759854075635115e-05,
+      "on_in_g0": 681185.0,
+      "on_to_off": 1021.0,
+      "off_to_on": 936.0,
+      "crossings_per_on": 0.0028729346653258657
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.9.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.212755823477613e-05,
+      "on_in_g0": 436457.0,
+      "on_to_off": 1489.0,
+      "off_to_on": 2379.0,
+      "crossings_per_on": 0.00886227051003879
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.919900405281416e-05,
+      "on_in_g0": 297875.0,
+      "on_to_off": 2202.0,
+      "off_to_on": 3966.0,
+      "crossings_per_on": 0.020706672261854804
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00010688118022583737,
+      "on_in_g0": 242648.0,
+      "on_to_off": 685.0,
+      "off_to_on": 571.0,
+      "crossings_per_on": 0.005176222346773928
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00027708648594215735,
+      "on_in_g0": 152984.0,
+      "on_to_off": 838.0,
+      "off_to_on": 1088.0,
+      "crossings_per_on": 0.012589551848559326
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007312518897126807,
+      "on_in_g0": 192925.0,
+      "on_to_off": 2071.0,
+      "off_to_on": 3172.0,
+      "crossings_per_on": 0.027176363871970973
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0010516504315976616,
+      "on_in_g0": 363150.0,
+      "on_to_off": 6431.0,
+      "off_to_on": 8726.0,
+      "crossings_per_on": 0.041737574005231995
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.9029167131248517e-05,
+      "on_in_g0": 1191032.0,
+      "on_to_off": 1177.0,
+      "off_to_on": 1329.0,
+      "crossings_per_on": 0.002104057657560838
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 9.341815894988355e-05,
+      "on_in_g0": 649820.0,
+      "on_to_off": 2467.0,
+      "off_to_on": 3100.0,
+      "crossings_per_on": 0.008566987781231725
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0001496971421720214,
+      "on_in_g0": 439607.0,
+      "on_to_off": 4307.0,
+      "off_to_on": 8237.0,
+      "crossings_per_on": 0.028534577474880973
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0002138471667150199,
+      "on_in_g0": 288909.0,
+      "on_to_off": 1272.0,
+      "off_to_on": 1282.0,
+      "crossings_per_on": 0.008840153820060988
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005258381480736651,
+      "on_in_g0": 206748.0,
+      "on_to_off": 1713.0,
+      "off_to_on": 1970.0,
+      "crossings_per_on": 0.01781395708785575
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.003096116212368605,
+      "on_in_g0": 379734.0,
+      "on_to_off": 7989.0,
+      "off_to_on": 10232.0,
+      "crossings_per_on": 0.04798358851195837
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0018391007024787798,
+      "on_in_g0": 507333.0,
+      "on_to_off": 9625.0,
+      "off_to_on": 13510.0,
+      "crossings_per_on": 0.045601212615777015
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.5240095218833265e-05,
+      "on_in_g0": 1363952.0,
+      "on_to_off": 1133.0,
+      "off_to_on": 1559.0,
+      "crossings_per_on": 0.0019736764930144168
+     },
+     "carry": {
+      "subcomponent_positions": 20480.0,
+      "mean_abs_dg": 0.0001743001674185507,
+      "on_in_g0": 19990.0,
+      "on_to_off": 1.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 0.00010005002501250626
+     }
+    },
+    "layers.11.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.654879529024768e-05,
+      "on_in_g0": 657848.0,
+      "on_to_off": 1254.0,
+      "off_to_on": 2036.0,
+      "crossings_per_on": 0.005001155282071238
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.11.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.045408892233003e-05,
+      "on_in_g0": 423706.0,
+      "on_to_off": 2456.0,
+      "off_to_on": 4377.0,
+      "crossings_per_on": 0.01612674826412654
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00018512942275838995,
+      "on_in_g0": 260247.0,
+      "on_to_off": 1153.0,
+      "off_to_on": 1064.0,
+      "crossings_per_on": 0.008518830188244245
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005935452802352525,
+      "on_in_g0": 185850.0,
+      "on_to_off": 1865.0,
+      "off_to_on": 2137.0,
+      "crossings_per_on": 0.021533494753833735
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005844569437019054,
+      "on_in_g0": 176331.0,
+      "on_to_off": 1622.0,
+      "off_to_on": 1944.0,
+      "crossings_per_on": 0.02022332998735333
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0009656269477169577,
+      "on_in_g0": 313790.0,
+      "on_to_off": 4897.0,
+      "off_to_on": 7248.0,
+      "crossings_per_on": 0.038704228942923614
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.21734329023023e-05,
+      "on_in_g0": 1250123.0,
+      "on_to_off": 868.0,
+      "off_to_on": 882.0,
+      "crossings_per_on": 0.0013998622535542503
+     },
+     "carry": {
+      "subcomponent_positions": 32768.0,
+      "mean_abs_dg": 0.00022254053078540892,
+      "on_in_g0": 31648.0,
+      "on_to_off": 6.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 0.0002211830131445905
+     }
+    },
+    "layers.12.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.208610858564572e-05,
+      "on_in_g0": 622897.0,
+      "on_to_off": 1108.0,
+      "off_to_on": 1674.0,
+      "crossings_per_on": 0.004466227963852772
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 6.050424417480826e-06,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.12.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 8.183858687921032e-05,
+      "on_in_g0": 449746.0,
+      "on_to_off": 2137.0,
+      "off_to_on": 4373.0,
+      "crossings_per_on": 0.014474836907943595
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00022269996388479818,
+      "on_in_g0": 241127.0,
+      "on_to_off": 1114.0,
+      "off_to_on": 1380.0,
+      "crossings_per_on": 0.010343097206036652
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006412337491590314,
+      "on_in_g0": 194929.0,
+      "on_to_off": 1838.0,
+      "off_to_on": 2271.0,
+      "crossings_per_on": 0.021079469960857543
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006648803730375796,
+      "on_in_g0": 192973.0,
+      "on_to_off": 1882.0,
+      "off_to_on": 2415.0,
+      "crossings_per_on": 0.022267363828100305
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0012618328674436352,
+      "on_in_g0": 351216.0,
+      "on_to_off": 6135.0,
+      "off_to_on": 10132.0,
+      "crossings_per_on": 0.0463162270511594
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.868665288710473e-05,
+      "on_in_g0": 911056.0,
+      "on_to_off": 640.0,
+      "off_to_on": 716.0,
+      "crossings_per_on": 0.0014883827119298923
+     },
+     "carry": {
+      "subcomponent_positions": 114688.0,
+      "mean_abs_dg": 0.00028910868467489436,
+      "on_in_g0": 94906.0,
+      "on_to_off": 15.0,
+      "off_to_on": 21.0,
+      "crossings_per_on": 0.00037932269824879355
+     }
+    },
+    "layers.13.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.39959082267982e-05,
+      "on_in_g0": 491129.0,
+      "on_to_off": 816.0,
+      "off_to_on": 1047.0,
+      "crossings_per_on": 0.0037933007417603115
+     },
+     "carry": {
+      "subcomponent_positions": 61440.0,
+      "mean_abs_dg": 0.0004128527475889617,
+      "on_in_g0": 38784.0,
+      "on_to_off": 15.0,
+      "off_to_on": 6.0,
+      "crossings_per_on": 0.000541460396039604
+     }
+    },
+    "layers.13.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00013253571366968198,
+      "on_in_g0": 432417.0,
+      "on_to_off": 3174.0,
+      "off_to_on": 8935.0,
+      "crossings_per_on": 0.028003061859270102
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.14.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00018362448813791232,
+      "on_in_g0": 201940.0,
+      "on_to_off": 884.0,
+      "off_to_on": 1193.0,
+      "crossings_per_on": 0.010285233237595325
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 1.1876589269377291e-05,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.14.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0004630679233736945,
+      "on_in_g0": 154614.0,
+      "on_to_off": 1705.0,
+      "off_to_on": 1244.0,
+      "crossings_per_on": 0.01907330513407583
+     },
+     "carry": {
+      "subcomponent_positions": 8192.0,
+      "mean_abs_dg": 6.511907849926502e-05,
+      "on_in_g0": 273.0,
+      "on_to_off": 0.0,
+      "off_to_on": 14.0,
+      "crossings_per_on": 0.05128205128205128
+     }
+    },
+    "layers.14.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00042862562216039457,
+      "on_in_g0": 156497.0,
+      "on_to_off": 1354.0,
+      "off_to_on": 1349.0,
+      "crossings_per_on": 0.017271896585877047
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 6.207669457580778e-06,
+      "on_in_g0": 125.0,
+      "on_to_off": 1.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.008
+     }
+    },
+    "layers.14.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0006974492052795878,
+      "on_in_g0": 288847.0,
+      "on_to_off": 3811.0,
+      "off_to_on": 4877.0,
+      "crossings_per_on": 0.030078207493932776
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 2.0024556761200074e-05,
+      "on_in_g0": 128.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.14.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.2078089028691277e-05,
+      "on_in_g0": 992621.0,
+      "on_to_off": 1016.0,
+      "off_to_on": 888.0,
+      "crossings_per_on": 0.0019181540587998843
+     },
+     "carry": {
+      "subcomponent_positions": 86016.0,
+      "mean_abs_dg": 0.0002342317949720988,
+      "on_in_g0": 62622.0,
+      "on_to_off": 11.0,
+      "off_to_on": 14.0,
+      "crossings_per_on": 0.0003992207211523107
+     }
+    },
+    "layers.14.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.819150589420764e-05,
+      "on_in_g0": 516777.0,
+      "on_to_off": 770.0,
+      "off_to_on": 1172.0,
+      "crossings_per_on": 0.0037579071824016936
+     },
+     "carry": {
+      "subcomponent_positions": 98304.0,
+      "mean_abs_dg": 0.000336624642576074,
+      "on_in_g0": 68838.0,
+      "on_to_off": 11.0,
+      "off_to_on": 28.0,
+      "crossings_per_on": 0.0005665475464133183
+     }
+    },
+    "layers.14.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0001558981275914297,
+      "on_in_g0": 467690.0,
+      "on_to_off": 3083.0,
+      "off_to_on": 9322.0,
+      "crossings_per_on": 0.026523979559109668
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.15.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 6.046180289043246e-05,
+      "on_in_g0": 206991.0,
+      "on_to_off": 345.0,
+      "off_to_on": 354.0,
+      "crossings_per_on": 0.003376958418481963
+     },
+     "carry": {
+      "subcomponent_positions": 69632.0,
+      "mean_abs_dg": 2.6941483905401957e-05,
+      "on_in_g0": 69302.0,
+      "on_to_off": 0.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 1.442959799139996e-05
+     }
+    },
+    "layers.15.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0003122788955933764,
+      "on_in_g0": 119255.0,
+      "on_to_off": 983.0,
+      "off_to_on": 1301.0,
+      "crossings_per_on": 0.019152236803488324
+     },
+     "carry": {
+      "subcomponent_positions": 12288.0,
+      "mean_abs_dg": 8.451834825488428e-06,
+      "on_in_g0": 12288.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.15.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0014590758339760868,
+      "on_in_g0": 272949.0,
+      "on_to_off": 3770.0,
+      "off_to_on": 4359.0,
+      "crossings_per_on": 0.02978212046939172
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.09890754699881654,
+      "on_in_g0": 1781.0,
+      "on_to_off": 270.0,
+      "off_to_on": 314.0,
+      "crossings_per_on": 0.3279056709713644
+     }
+    },
+    "layers.15.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0015197751859520325,
+      "on_in_g0": 385170.0,
+      "on_to_off": 7866.0,
+      "off_to_on": 10390.0,
+      "crossings_per_on": 0.04739725316094192
+     },
+     "carry": {
+      "subcomponent_positions": 8192.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 8192.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.15.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.648267663899843e-05,
+      "on_in_g0": 1107861.0,
+      "on_to_off": 726.0,
+      "off_to_on": 1026.0,
+      "crossings_per_on": 0.0015814258286915056
+     },
+     "carry": {
+      "subcomponent_positions": 180224.0,
+      "mean_abs_dg": 0.00032271393268439914,
+      "on_in_g0": 119993.0,
+      "on_to_off": 31.0,
+      "off_to_on": 48.0,
+      "crossings_per_on": 0.0006583717383514038
+     }
+    },
+    "layers.15.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.2916196085715686e-05,
+      "on_in_g0": 650467.0,
+      "on_to_off": 784.0,
+      "off_to_on": 1349.0,
+      "crossings_per_on": 0.0032791824950381804
+     },
+     "carry": {
+      "subcomponent_positions": 208896.0,
+      "mean_abs_dg": 0.00033945548483304677,
+      "on_in_g0": 117761.0,
+      "on_to_off": 34.0,
+      "off_to_on": 57.0,
+      "crossings_per_on": 0.0007727515900850027
+     }
+    },
+    "layers.15.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0001486719713645994,
+      "on_in_g0": 633251.0,
+      "on_to_off": 3282.0,
+      "off_to_on": 6910.0,
+      "crossings_per_on": 0.016094723893053466
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.16.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0002300759110556161,
+      "on_in_g0": 251540.0,
+      "on_to_off": 1176.0,
+      "off_to_on": 1463.0,
+      "crossings_per_on": 0.010491373141448676
+     },
+     "carry": {
+      "subcomponent_positions": 77824.0,
+      "mean_abs_dg": 0.001255744206709527,
+      "on_in_g0": 67793.0,
+      "on_to_off": 35.0,
+      "off_to_on": 66.0,
+      "crossings_per_on": 0.0014898293334120042
+     }
+    },
+    "layers.16.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007587683766179243,
+      "on_in_g0": 194756.0,
+      "on_to_off": 1836.0,
+      "off_to_on": 3074.0,
+      "crossings_per_on": 0.025211033292940912
+     },
+     "carry": {
+      "subcomponent_positions": 20480.0,
+      "mean_abs_dg": 0.0003234871313907206,
+      "on_in_g0": 20360.0,
+      "on_to_off": 0.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 4.911591355599214e-05
+     }
+    },
+    "layers.16.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0010053272755006226,
+      "on_in_g0": 217534.0,
+      "on_to_off": 3092.0,
+      "off_to_on": 3534.0,
+      "crossings_per_on": 0.030459606314415216
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 4096.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.16.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0011672102278859064,
+      "on_in_g0": 414146.0,
+      "on_to_off": 6096.0,
+      "off_to_on": 8651.0,
+      "crossings_per_on": 0.03560821546024832
+     },
+     "carry": {
+      "subcomponent_positions": 28672.0,
+      "mean_abs_dg": 0.010314467222997337,
+      "on_in_g0": 26359.0,
+      "on_to_off": 182.0,
+      "off_to_on": 108.0,
+      "crossings_per_on": 0.011001934823020601
+     }
+    },
+    "layers.16.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.529214637887357e-05,
+      "on_in_g0": 1010042.0,
+      "on_to_off": 1151.0,
+      "off_to_on": 1133.0,
+      "crossings_per_on": 0.0022612921046847555
+     },
+     "carry": {
+      "subcomponent_positions": 258048.0,
+      "mean_abs_dg": 0.0005073567317450642,
+      "on_in_g0": 160437.0,
+      "on_to_off": 52.0,
+      "off_to_on": 102.0,
+      "crossings_per_on": 0.0009598783323048923
+     }
+    },
+    "layers.16.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0002148203721013727,
+      "on_in_g0": 660886.0,
+      "on_to_off": 3847.0,
+      "off_to_on": 4555.0,
+      "crossings_per_on": 0.012713236473461384
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 8.123798276452968e-06,
+      "on_in_g0": 36720.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.16.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00027476941391534347,
+      "on_in_g0": 616356.0,
+      "on_to_off": 4845.0,
+      "off_to_on": 6759.0,
+      "crossings_per_on": 0.01882678192473181
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.17.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00016092800395883788,
+      "on_in_g0": 226341.0,
+      "on_to_off": 1039.0,
+      "off_to_on": 820.0,
+      "crossings_per_on": 0.008213271126309419
+     },
+     "carry": {
+      "subcomponent_positions": 258048.0,
+      "mean_abs_dg": 0.002629974912040433,
+      "on_in_g0": 116311.0,
+      "on_to_off": 505.0,
+      "off_to_on": 365.0,
+      "crossings_per_on": 0.007479946006826526
+     }
+    },
+    "layers.17.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00031871331551125426,
+      "on_in_g0": 164557.0,
+      "on_to_off": 846.0,
+      "off_to_on": 1414.0,
+      "crossings_per_on": 0.013733842984497773
+     },
+     "carry": {
+      "subcomponent_positions": 90112.0,
+      "mean_abs_dg": 0.00227988722411448,
+      "on_in_g0": 53054.0,
+      "on_to_off": 102.0,
+      "off_to_on": 243.0,
+      "crossings_per_on": 0.006502808459305613
+     }
+    },
+    "layers.17.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.001803103653432725,
+      "on_in_g0": 294863.0,
+      "on_to_off": 4973.0,
+      "off_to_on": 7092.0,
+      "crossings_per_on": 0.04091730735968908
+     },
+     "carry": {
+      "subcomponent_positions": 425984.0,
+      "mean_abs_dg": 0.009447704027514612,
+      "on_in_g0": 123449.0,
+      "on_to_off": 2257.0,
+      "off_to_on": 3325.0,
+      "crossings_per_on": 0.04521705319605667
+     }
+    },
+    "layers.17.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0026500089359857704,
+      "on_in_g0": 473177.0,
+      "on_to_off": 13039.0,
+      "off_to_on": 20252.0,
+      "crossings_per_on": 0.07035633600111586
+     },
+     "carry": {
+      "subcomponent_positions": 421888.0,
+      "mean_abs_dg": 0.022990178579030966,
+      "on_in_g0": 185677.0,
+      "on_to_off": 5280.0,
+      "off_to_on": 7103.0,
+      "crossings_per_on": 0.06669108182488946
+     }
+    },
+    "layers.17.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.507280683278362e-05,
+      "on_in_g0": 978208.0,
+      "on_to_off": 1308.0,
+      "off_to_on": 1642.0,
+      "crossings_per_on": 0.0030157185383885635
+     },
+     "carry": {
+      "subcomponent_positions": 40960.0,
+      "mean_abs_dg": 0.0001551383726109634,
+      "on_in_g0": 40187.0,
+      "on_to_off": 5.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 0.00014930201308880982
+     }
+    },
+    "layers.17.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.469536418433284e-05,
+      "on_in_g0": 615882.0,
+      "on_to_off": 1229.0,
+      "off_to_on": 1678.0,
+      "crossings_per_on": 0.004720060011495709
+     },
+     "carry": {
+      "subcomponent_positions": 20480.0,
+      "mean_abs_dg": 6.506788486149162e-06,
+      "on_in_g0": 20449.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.17.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 8.278057505280619e-05,
+      "on_in_g0": 502137.0,
+      "on_to_off": 2116.0,
+      "off_to_on": 2658.0,
+      "crossings_per_on": 0.00950736551976851
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.18.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0002144622444637534,
+      "on_in_g0": 266427.0,
+      "on_to_off": 1084.0,
+      "off_to_on": 1312.0,
+      "crossings_per_on": 0.008993082532926468
+     },
+     "carry": {
+      "subcomponent_positions": 548864.0,
+      "mean_abs_dg": 0.0027875058043508633,
+      "on_in_g0": 152274.0,
+      "on_to_off": 878.0,
+      "off_to_on": 1023.0,
+      "crossings_per_on": 0.012484074759972156
+     }
+    },
+    "layers.18.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006651983094497771,
+      "on_in_g0": 193275.0,
+      "on_to_off": 1742.0,
+      "off_to_on": 2759.0,
+      "crossings_per_on": 0.023288061052903892
+     },
+     "carry": {
+      "subcomponent_positions": 139264.0,
+      "mean_abs_dg": 0.003541821076439914,
+      "on_in_g0": 87122.0,
+      "on_to_off": 278.0,
+      "off_to_on": 362.0,
+      "crossings_per_on": 0.007346020522944836
+     }
+    },
+    "layers.18.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0017829608769068805,
+      "on_in_g0": 233026.0,
+      "on_to_off": 4844.0,
+      "off_to_on": 7547.0,
+      "crossings_per_on": 0.05317432389518766
+     },
+     "carry": {
+      "subcomponent_positions": 794624.0,
+      "mean_abs_dg": 0.005757992637694601,
+      "on_in_g0": 112343.0,
+      "on_to_off": 2758.0,
+      "off_to_on": 4302.0,
+      "crossings_per_on": 0.06284325681172837
+     }
+    },
+    "layers.18.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0014724841170010716,
+      "on_in_g0": 393236.0,
+      "on_to_off": 8125.0,
+      "off_to_on": 12235.0,
+      "crossings_per_on": 0.051775524112746545
+     },
+     "carry": {
+      "subcomponent_positions": 344064.0,
+      "mean_abs_dg": 0.012467193943323417,
+      "on_in_g0": 135628.0,
+      "on_to_off": 2614.0,
+      "off_to_on": 2946.0,
+      "crossings_per_on": 0.0409944849146194
+     }
+    },
+    "layers.18.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.941918174063605e-05,
+      "on_in_g0": 874446.0,
+      "on_to_off": 1351.0,
+      "off_to_on": 1866.0,
+      "crossings_per_on": 0.0036789006982706767
+     },
+     "carry": {
+      "subcomponent_positions": 53248.0,
+      "mean_abs_dg": 0.00016068739911973424,
+      "on_in_g0": 49110.0,
+      "on_to_off": 5.0,
+      "off_to_on": 6.0,
+      "crossings_per_on": 0.00022398696803095094
+     }
+    },
+    "layers.18.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.188530392308266e-05,
+      "on_in_g0": 484929.0,
+      "on_to_off": 1354.0,
+      "off_to_on": 1875.0,
+      "crossings_per_on": 0.006658706738512236
+     },
+     "carry": {
+      "subcomponent_positions": 32768.0,
+      "mean_abs_dg": 2.1818223103764467e-06,
+      "on_in_g0": 32720.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.18.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.453610968958617e-05,
+      "on_in_g0": 430297.0,
+      "on_to_off": 1854.0,
+      "off_to_on": 2330.0,
+      "crossings_per_on": 0.009723516547872749
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.19.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0002503396795860424,
+      "on_in_g0": 297184.0,
+      "on_to_off": 1244.0,
+      "off_to_on": 1784.0,
+      "crossings_per_on": 0.010188973834392162
+     },
+     "carry": {
+      "subcomponent_positions": 1536000.0,
+      "mean_abs_dg": 0.00133836539903344,
+      "on_in_g0": 185723.0,
+      "on_to_off": 1209.0,
+      "off_to_on": 1733.0,
+      "crossings_per_on": 0.01584079516268852
+     }
+    },
+    "layers.19.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00052605604144218,
+      "on_in_g0": 186041.0,
+      "on_to_off": 1736.0,
+      "off_to_on": 2080.0,
+      "crossings_per_on": 0.02051160765637682
+     },
+     "carry": {
+      "subcomponent_positions": 421888.0,
+      "mean_abs_dg": 0.0028428614546056868,
+      "on_in_g0": 121648.0,
+      "on_to_off": 820.0,
+      "off_to_on": 906.0,
+      "crossings_per_on": 0.014188478232276733
+     }
+    },
+    "layers.19.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0017190947475067553,
+      "on_in_g0": 231301.0,
+      "on_to_off": 5035.0,
+      "off_to_on": 7495.0,
+      "crossings_per_on": 0.054171836697636415
+     },
+     "carry": {
+      "subcomponent_positions": 1966080.0,
+      "mean_abs_dg": 0.0032438808684815967,
+      "on_in_g0": 159233.0,
+      "on_to_off": 4342.0,
+      "off_to_on": 6365.0,
+      "crossings_per_on": 0.06724108696061747
+     }
+    },
+    "layers.19.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0016441356677439067,
+      "on_in_g0": 389694.0,
+      "on_to_off": 8117.0,
+      "off_to_on": 16866.0,
+      "crossings_per_on": 0.06410927548281473
+     },
+     "carry": {
+      "subcomponent_positions": 1433600.0,
+      "mean_abs_dg": 0.00682705523221687,
+      "on_in_g0": 186150.0,
+      "on_to_off": 5357.0,
+      "off_to_on": 10649.0,
+      "crossings_per_on": 0.08598442116572656
+     }
+    },
+    "layers.19.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.282604578527028e-05,
+      "on_in_g0": 638427.0,
+      "on_to_off": 1213.0,
+      "off_to_on": 1716.0,
+      "crossings_per_on": 0.004587838546928623
+     },
+     "carry": {
+      "subcomponent_positions": 45056.0,
+      "mean_abs_dg": 1.97408966910602e-06,
+      "on_in_g0": 44990.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.19.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.324591040658301e-05,
+      "on_in_g0": 435562.0,
+      "on_to_off": 1798.0,
+      "off_to_on": 2209.0,
+      "crossings_per_on": 0.009199608781298644
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 8.102561959175445e-05,
+      "on_in_g0": 36486.0,
+      "on_to_off": 1.0,
+      "off_to_on": 2.0,
+      "crossings_per_on": 8.2223318533136e-05
+     }
+    },
+    "layers.19.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.808901714220773e-05,
+      "on_in_g0": 405626.0,
+      "on_to_off": 1849.0,
+      "off_to_on": 2251.0,
+      "crossings_per_on": 0.010107833324293807
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.20.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00026749927609026614,
+      "on_in_g0": 301233.0,
+      "on_to_off": 1424.0,
+      "off_to_on": 1907.0,
+      "crossings_per_on": 0.011057885424239708
+     },
+     "carry": {
+      "subcomponent_positions": 2195456.0,
+      "mean_abs_dg": 0.0010188029271582866,
+      "on_in_g0": 162574.0,
+      "on_to_off": 1418.0,
+      "off_to_on": 1897.0,
+      "crossings_per_on": 0.020390714382373564
+     }
+    },
+    "layers.20.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005466461200904216,
+      "on_in_g0": 180952.0,
+      "on_to_off": 1616.0,
+      "off_to_on": 2057.0,
+      "crossings_per_on": 0.020298200627790794
+     },
+     "carry": {
+      "subcomponent_positions": 770048.0,
+      "mean_abs_dg": 0.0021013135415752547,
+      "on_in_g0": 116223.0,
+      "on_to_off": 992.0,
+      "off_to_on": 1430.0,
+      "crossings_per_on": 0.020839248685716252
+     }
+    },
+    "layers.20.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.002720487067152,
+      "on_in_g0": 275526.0,
+      "on_to_off": 7793.0,
+      "off_to_on": 11351.0,
+      "crossings_per_on": 0.0694816460152581
+     },
+     "carry": {
+      "subcomponent_positions": 3006464.0,
+      "mean_abs_dg": 0.0037648026498818357,
+      "on_in_g0": 200342.0,
+      "on_to_off": 7717.0,
+      "off_to_on": 11138.0,
+      "crossings_per_on": 0.09411406494893731
+     }
+    },
+    "layers.20.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0014364790636059999,
+      "on_in_g0": 347174.0,
+      "on_to_off": 8325.0,
+      "off_to_on": 13402.0,
+      "crossings_per_on": 0.0625824514508575
+     },
+     "carry": {
+      "subcomponent_positions": 1585152.0,
+      "mean_abs_dg": 0.005432133162733382,
+      "on_in_g0": 209814.0,
+      "on_to_off": 5506.0,
+      "off_to_on": 7794.0,
+      "crossings_per_on": 0.06338947829982747
+     }
+    },
+    "layers.20.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.8645508355630675e-05,
+      "on_in_g0": 512235.0,
+      "on_to_off": 1160.0,
+      "off_to_on": 1561.0,
+      "crossings_per_on": 0.0053120149931183925
+     },
+     "carry": {
+      "subcomponent_positions": 49152.0,
+      "mean_abs_dg": 0.00014153316715237452,
+      "on_in_g0": 45650.0,
+      "on_to_off": 3.0,
+      "off_to_on": 3.0,
+      "crossings_per_on": 0.00013143483023001095
+     }
+    },
+    "layers.20.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.533361518476424e-05,
+      "on_in_g0": 307884.0,
+      "on_to_off": 1515.0,
+      "off_to_on": 1880.0,
+      "crossings_per_on": 0.011026880253602007
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 4.782486939802766e-07,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.20.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.766779129602069e-05,
+      "on_in_g0": 323598.0,
+      "on_to_off": 1316.0,
+      "off_to_on": 1452.0,
+      "crossings_per_on": 0.008553822953170292
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 4.205066943541169e-06,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.21.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00026919056720808854,
+      "on_in_g0": 270655.0,
+      "on_to_off": 1444.0,
+      "off_to_on": 1846.0,
+      "crossings_per_on": 0.012155696366222681
+     },
+     "carry": {
+      "subcomponent_positions": 2826240.0,
+      "mean_abs_dg": 0.0007989888139741527,
+      "on_in_g0": 171562.0,
+      "on_to_off": 1444.0,
+      "off_to_on": 1846.0,
+      "crossings_per_on": 0.019176740770100606
+     }
+    },
+    "layers.21.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007277781823573637,
+      "on_in_g0": 196169.0,
+      "on_to_off": 1811.0,
+      "off_to_on": 2916.0,
+      "crossings_per_on": 0.02409656979441196
+     },
+     "carry": {
+      "subcomponent_positions": 1421312.0,
+      "mean_abs_dg": 0.001986630256263221,
+      "on_in_g0": 159995.0,
+      "on_to_off": 1593.0,
+      "off_to_on": 2624.0,
+      "crossings_per_on": 0.02635707365855183
+     }
+    },
+    "layers.21.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.002084930126864837,
+      "on_in_g0": 241399.0,
+      "on_to_off": 6055.0,
+      "off_to_on": 10643.0,
+      "crossings_per_on": 0.06917178613001711
+     },
+     "carry": {
+      "subcomponent_positions": 3063808.0,
+      "mean_abs_dg": 0.00285423589560106,
+      "on_in_g0": 149297.0,
+      "on_to_off": 6055.0,
+      "off_to_on": 10643.0,
+      "crossings_per_on": 0.11184417637326939
+     }
+    },
+    "layers.21.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0011578328981294295,
+      "on_in_g0": 276898.0,
+      "on_to_off": 6814.0,
+      "off_to_on": 11302.0,
+      "crossings_per_on": 0.06542481346921972
+     },
+     "carry": {
+      "subcomponent_positions": 2060288.0,
+      "mean_abs_dg": 0.003210909900784896,
+      "on_in_g0": 133607.0,
+      "on_to_off": 4521.0,
+      "off_to_on": 6862.0,
+      "crossings_per_on": 0.08519763186060611
+     }
+    },
+    "layers.21.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.249607379673096e-05,
+      "on_in_g0": 400052.0,
+      "on_to_off": 1088.0,
+      "off_to_on": 1437.0,
+      "crossings_per_on": 0.006311679481667384
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 0.00017978877359483804,
+      "on_in_g0": 34547.0,
+      "on_to_off": 3.0,
+      "off_to_on": 4.0,
+      "crossings_per_on": 0.00020262251425594117
+     }
+    },
+    "layers.21.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.2020243834697645e-05,
+      "on_in_g0": 254514.0,
+      "on_to_off": 1479.0,
+      "off_to_on": 1746.0,
+      "crossings_per_on": 0.012671208656498267
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 5.139252243679948e-05,
+      "on_in_g0": 4008.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.21.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.9021404235514876e-05,
+      "on_in_g0": 257568.0,
+      "on_to_off": 947.0,
+      "off_to_on": 955.0,
+      "crossings_per_on": 0.007384457696608274
+     },
+     "carry": {
+      "subcomponent_positions": 8192.0,
+      "mean_abs_dg": 2.5267172532039694e-07,
+      "on_in_g0": 4130.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.22.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0001775244339083104,
+      "on_in_g0": 236243.0,
+      "on_to_off": 985.0,
+      "off_to_on": 1340.0,
+      "crossings_per_on": 0.009841561443090377
+     },
+     "carry": {
+      "subcomponent_positions": 2351104.0,
+      "mean_abs_dg": 0.0006333972833522992,
+      "on_in_g0": 161006.0,
+      "on_to_off": 985.0,
+      "off_to_on": 1340.0,
+      "crossings_per_on": 0.01444045563519372
+     }
+    },
+    "layers.22.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006265211461990439,
+      "on_in_g0": 165652.0,
+      "on_to_off": 1709.0,
+      "off_to_on": 2478.0,
+      "crossings_per_on": 0.02527587955472919
+     },
+     "carry": {
+      "subcomponent_positions": 1855488.0,
+      "mean_abs_dg": 0.001416069524189838,
+      "on_in_g0": 131336.0,
+      "on_to_off": 1709.0,
+      "off_to_on": 2475.0,
+      "crossings_per_on": 0.03185722117317415
+     }
+    },
+    "layers.22.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0011921501389813294,
+      "on_in_g0": 147792.0,
+      "on_to_off": 3474.0,
+      "off_to_on": 5934.0,
+      "crossings_per_on": 0.06365703150373497
+     },
+     "carry": {
+      "subcomponent_positions": 3424256.0,
+      "mean_abs_dg": 0.0014602413185608627,
+      "on_in_g0": 114717.0,
+      "on_to_off": 3474.0,
+      "off_to_on": 5934.0,
+      "crossings_per_on": 0.08201051282721829
+     }
+    },
+    "layers.22.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0008839845699943893,
+      "on_in_g0": 252248.0,
+      "on_to_off": 5748.0,
+      "off_to_on": 9889.0,
+      "crossings_per_on": 0.061990580698360345
+     },
+     "carry": {
+      "subcomponent_positions": 4567040.0,
+      "mean_abs_dg": 0.0014953709342471933,
+      "on_in_g0": 141312.0,
+      "on_to_off": 5257.0,
+      "off_to_on": 8830.0,
+      "crossings_per_on": 0.09968721693840579
+     }
+    },
+    "layers.22.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.257911112301374e-05,
+      "on_in_g0": 383730.0,
+      "on_to_off": 856.0,
+      "off_to_on": 1086.0,
+      "crossings_per_on": 0.0050608500768769705
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 6.1761735802671564e-06,
+      "on_in_g0": 36760.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.22.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.0326098814658096e-05,
+      "on_in_g0": 223996.0,
+      "on_to_off": 1161.0,
+      "off_to_on": 1317.0,
+      "crossings_per_on": 0.011062697548170504
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.22.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.806136745974296e-05,
+      "on_in_g0": 206410.0,
+      "on_to_off": 569.0,
+      "off_to_on": 603.0,
+      "crossings_per_on": 0.005678019475800591
+     },
+     "carry": {
+      "subcomponent_positions": 8192.0,
+      "mean_abs_dg": 0.00011102037751697935,
+      "on_in_g0": 4811.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.23.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00010111092078579631,
+      "on_in_g0": 219487.0,
+      "on_to_off": 504.0,
+      "off_to_on": 861.0,
+      "crossings_per_on": 0.006219047141744158
+     },
+     "carry": {
+      "subcomponent_positions": 2658304.0,
+      "mean_abs_dg": 0.0003190680520328364,
+      "on_in_g0": 121632.0,
+      "on_to_off": 504.0,
+      "off_to_on": 861.0,
+      "crossings_per_on": 0.011222375690607736
+     }
+    },
+    "layers.23.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0003169980037455167,
+      "on_in_g0": 144274.0,
+      "on_to_off": 1044.0,
+      "off_to_on": 1087.0,
+      "crossings_per_on": 0.014770506120298876
+     },
+     "carry": {
+      "subcomponent_positions": 1495040.0,
+      "mean_abs_dg": 0.0008893313858504358,
+      "on_in_g0": 105719.0,
+      "on_to_off": 1044.0,
+      "off_to_on": 1087.0,
+      "crossings_per_on": 0.020157209205535428
+     }
+    },
+    "layers.23.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0011904319296283106,
+      "on_in_g0": 127663.0,
+      "on_to_off": 4088.0,
+      "off_to_on": 6820.0,
+      "crossings_per_on": 0.08544370726052185
+     },
+     "carry": {
+      "subcomponent_positions": 4079616.0,
+      "mean_abs_dg": 0.0012238978874893475,
+      "on_in_g0": 113508.0,
+      "on_to_off": 4088.0,
+      "off_to_on": 6820.0,
+      "crossings_per_on": 0.0960989533777355
+     }
+    },
+    "layers.23.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0005484174622865101,
+      "on_in_g0": 186228.0,
+      "on_to_off": 3643.0,
+      "off_to_on": 7452.0,
+      "crossings_per_on": 0.05957750714178319
+     },
+     "carry": {
+      "subcomponent_positions": 6074368.0,
+      "mean_abs_dg": 0.000722369299166036,
+      "on_in_g0": 123691.0,
+      "on_to_off": 3432.0,
+      "off_to_on": 6974.0,
+      "crossings_per_on": 0.0841289988762319
+     }
+    },
+    "layers.23.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.6244811514734383e-05,
+      "on_in_g0": 282559.0,
+      "on_to_off": 667.0,
+      "off_to_on": 858.0,
+      "crossings_per_on": 0.005397102905941768
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 5.351677019562986e-05,
+      "on_in_g0": 35205.0,
+      "on_to_off": 1.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 2.84050560999858e-05
+     }
+    },
+    "layers.23.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.616440565528233e-05,
+      "on_in_g0": 180410.0,
+      "on_to_off": 760.0,
+      "off_to_on": 924.0,
+      "crossings_per_on": 0.009334294107865418
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.23.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 9.50572853212576e-06,
+      "on_in_g0": 147660.0,
+      "on_to_off": 320.0,
+      "off_to_on": 361.0,
+      "crossings_per_on": 0.004611946363266965
+     },
+     "carry": {
+      "subcomponent_positions": 12288.0,
+      "mean_abs_dg": 6.003785953604771e-05,
+      "on_in_g0": 4932.0,
+      "on_to_off": 1.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 0.00040551500405515005
+     }
+    },
+    "layers.24.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 8.875137826258594e-05,
+      "on_in_g0": 198999.0,
+      "on_to_off": 531.0,
+      "off_to_on": 673.0,
+      "crossings_per_on": 0.006050281659706833
+     },
+     "carry": {
+      "subcomponent_positions": 2465792.0,
+      "mean_abs_dg": 0.00030193159913916284,
+      "on_in_g0": 124325.0,
+      "on_to_off": 531.0,
+      "off_to_on": 673.0,
+      "crossings_per_on": 0.009684295194047858
+     }
+    },
+    "layers.24.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00033279608759159696,
+      "on_in_g0": 141145.0,
+      "on_to_off": 847.0,
+      "off_to_on": 1399.0,
+      "crossings_per_on": 0.015912713875801482
+     },
+     "carry": {
+      "subcomponent_positions": 1560576.0,
+      "mean_abs_dg": 0.0008944440779364705,
+      "on_in_g0": 111363.0,
+      "on_to_off": 847.0,
+      "off_to_on": 1399.0,
+      "crossings_per_on": 0.02016827851261191
+     }
+    },
+    "layers.24.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0020237061922526722,
+      "on_in_g0": 132844.0,
+      "on_to_off": 7037.0,
+      "off_to_on": 9840.0,
+      "crossings_per_on": 0.12704375056457198
+     },
+     "carry": {
+      "subcomponent_positions": 4055040.0,
+      "mean_abs_dg": 0.0020932072129967033,
+      "on_in_g0": 128724.0,
+      "on_to_off": 7037.0,
+      "off_to_on": 9840.0,
+      "crossings_per_on": 0.13110997172244493
+     }
+    },
+    "layers.24.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0013333392530757715,
+      "on_in_g0": 175034.0,
+      "on_to_off": 6196.0,
+      "off_to_on": 25275.0,
+      "crossings_per_on": 0.17979935326850782
+     },
+     "carry": {
+      "subcomponent_positions": 7843840.0,
+      "mean_abs_dg": 0.001425940909296588,
+      "on_in_g0": 145546.0,
+      "on_to_off": 6195.0,
+      "off_to_on": 25275.0,
+      "crossings_per_on": 0.21622030148544102
+     }
+    },
+    "layers.24.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.2346677432209343e-05,
+      "on_in_g0": 419200.0,
+      "on_to_off": 612.0,
+      "off_to_on": 788.0,
+      "crossings_per_on": 0.0033396946564885495
+     },
+     "carry": {
+      "subcomponent_positions": 28672.0,
+      "mean_abs_dg": 7.791924703529471e-05,
+      "on_in_g0": 28114.0,
+      "on_to_off": 4.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 0.000177847335846909
+     }
+    },
+    "layers.24.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.4189201762133312e-05,
+      "on_in_g0": 192545.0,
+      "on_to_off": 744.0,
+      "off_to_on": 971.0,
+      "crossings_per_on": 0.008907008751201017
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.24.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.1023377150124839e-05,
+      "on_in_g0": 158923.0,
+      "on_to_off": 351.0,
+      "off_to_on": 353.0,
+      "crossings_per_on": 0.004429818213851991
+     },
+     "carry": {
+      "subcomponent_positions": 61440.0,
+      "mean_abs_dg": 9.925611575454241e-05,
+      "on_in_g0": 22920.0,
+      "on_to_off": 9.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 0.0004363001745200698
+     }
+    },
+    "layers.25.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00010548333980353597,
+      "on_in_g0": 182533.0,
+      "on_to_off": 564.0,
+      "off_to_on": 799.0,
+      "crossings_per_on": 0.007467142927580219
+     },
+     "carry": {
+      "subcomponent_positions": 2527232.0,
+      "mean_abs_dg": 0.00035012946502048893,
+      "on_in_g0": 121531.0,
+      "on_to_off": 564.0,
+      "off_to_on": 799.0,
+      "crossings_per_on": 0.011215245492919503
+     }
+    },
+    "layers.25.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0004025461013320089,
+      "on_in_g0": 136789.0,
+      "on_to_off": 1275.0,
+      "off_to_on": 1508.0,
+      "crossings_per_on": 0.020345203196163435
+     },
+     "carry": {
+      "subcomponent_positions": 1961984.0,
+      "mean_abs_dg": 0.0008605578450187414,
+      "on_in_g0": 111699.0,
+      "on_to_off": 1275.0,
+      "off_to_on": 1508.0,
+      "crossings_per_on": 0.02491517381534302
+     }
+    },
+    "layers.25.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.001227386797916008,
+      "on_in_g0": 115187.0,
+      "on_to_off": 3783.0,
+      "off_to_on": 7911.0,
+      "crossings_per_on": 0.10152187312804396
+     },
+     "carry": {
+      "subcomponent_positions": 4100096.0,
+      "mean_abs_dg": 0.0012555884925734189,
+      "on_in_g0": 114411.0,
+      "on_to_off": 3783.0,
+      "off_to_on": 7911.0,
+      "crossings_per_on": 0.10221045179222278
+     }
+    },
+    "layers.25.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0008139661046686619,
+      "on_in_g0": 164937.0,
+      "on_to_off": 4862.0,
+      "off_to_on": 11828.0,
+      "crossings_per_on": 0.10119015139113723
+     },
+     "carry": {
+      "subcomponent_positions": 7667712.0,
+      "mean_abs_dg": 0.0008904757171086577,
+      "on_in_g0": 125888.0,
+      "on_to_off": 4861.0,
+      "off_to_on": 11823.0,
+      "crossings_per_on": 0.13253050330452465
+     }
+    },
+    "layers.25.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.1644698603995316e-05,
+      "on_in_g0": 363495.0,
+      "on_to_off": 676.0,
+      "off_to_on": 913.0,
+      "crossings_per_on": 0.004371449400954621
+     },
+     "carry": {
+      "subcomponent_positions": 61440.0,
+      "mean_abs_dg": 6.946304032074598e-05,
+      "on_in_g0": 55949.0,
+      "on_to_off": 1.0,
+      "off_to_on": 6.0,
+      "crossings_per_on": 0.00012511394305528249
+     }
+    },
+    "layers.25.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.5566843332621343e-05,
+      "on_in_g0": 245406.0,
+      "on_to_off": 834.0,
+      "off_to_on": 1010.0,
+      "crossings_per_on": 0.007514078710381979
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 1.961685484275222e-06,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.25.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.3651501562332117e-05,
+      "on_in_g0": 198685.0,
+      "on_to_off": 426.0,
+      "off_to_on": 462.0,
+      "crossings_per_on": 0.004469386214359414
+     },
+     "carry": {
+      "subcomponent_positions": 204800.0,
+      "mean_abs_dg": 0.00016639729295093276,
+      "on_in_g0": 84953.0,
+      "on_to_off": 24.0,
+      "off_to_on": 13.0,
+      "crossings_per_on": 0.0004355349428507528
+     }
+    },
+    "layers.26.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 8.297008977198317e-05,
+      "on_in_g0": 182807.0,
+      "on_to_off": 545.0,
+      "off_to_on": 602.0,
+      "crossings_per_on": 0.0062743768017636085
+     },
+     "carry": {
+      "subcomponent_positions": 2187264.0,
+      "mean_abs_dg": 0.0003182073854925497,
+      "on_in_g0": 140262.0,
+      "on_to_off": 545.0,
+      "off_to_on": 602.0,
+      "crossings_per_on": 0.008177553435713166
+     }
+    },
+    "layers.26.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0004932286709768419,
+      "on_in_g0": 124826.0,
+      "on_to_off": 1318.0,
+      "off_to_on": 2164.0,
+      "crossings_per_on": 0.027894829602807106
+     },
+     "carry": {
+      "subcomponent_positions": 2510848.0,
+      "mean_abs_dg": 0.000823925218728036,
+      "on_in_g0": 114406.0,
+      "on_to_off": 1318.0,
+      "off_to_on": 2164.0,
+      "crossings_per_on": 0.030435466671328428
+     }
+    },
+    "layers.26.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.001227864090041192,
+      "on_in_g0": 115554.0,
+      "on_to_off": 3486.0,
+      "off_to_on": 7436.0,
+      "crossings_per_on": 0.09451858005780847
+     },
+     "carry": {
+      "subcomponent_positions": 3665920.0,
+      "mean_abs_dg": 0.0014048411488292519,
+      "on_in_g0": 98365.0,
+      "on_to_off": 3486.0,
+      "off_to_on": 7436.0,
+      "crossings_per_on": 0.11103542926854064
+     }
+    },
+    "layers.26.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0008896400175946173,
+      "on_in_g0": 180196.0,
+      "on_to_off": 5632.0,
+      "off_to_on": 12790.0,
+      "crossings_per_on": 0.1022331239317188
+     },
+     "carry": {
+      "subcomponent_positions": 7176192.0,
+      "mean_abs_dg": 0.0010399444954530687,
+      "on_in_g0": 137642.0,
+      "on_to_off": 5632.0,
+      "off_to_on": 12790.0,
+      "crossings_per_on": 0.1338399616396158
+     }
+    },
+    "layers.26.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.058052740122756e-05,
+      "on_in_g0": 336296.0,
+      "on_to_off": 1079.0,
+      "off_to_on": 2065.0,
+      "crossings_per_on": 0.00934890691533649
+     },
+     "carry": {
+      "subcomponent_positions": 114688.0,
+      "mean_abs_dg": 0.00037604716469884025,
+      "on_in_g0": 89444.0,
+      "on_to_off": 21.0,
+      "off_to_on": 28.0,
+      "crossings_per_on": 0.0005478288090872501
+     }
+    },
+    "layers.26.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.4297385556085004e-05,
+      "on_in_g0": 348486.0,
+      "on_to_off": 1049.0,
+      "off_to_on": 1534.0,
+      "crossings_per_on": 0.007412062464489248
+     },
+     "carry": {
+      "subcomponent_positions": 53248.0,
+      "mean_abs_dg": 4.7818399392641506e-05,
+      "on_in_g0": 51183.0,
+      "on_to_off": 0.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 1.9537737139284528e-05
+     }
+    },
+    "layers.26.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.5787571108474665e-05,
+      "on_in_g0": 252677.0,
+      "on_to_off": 705.0,
+      "off_to_on": 785.0,
+      "crossings_per_on": 0.005896856461015447
+     },
+     "carry": {
+      "subcomponent_positions": 962560.0,
+      "mean_abs_dg": 0.00021339529482557214,
+      "on_in_g0": 160348.0,
+      "on_to_off": 147.0,
+      "off_to_on": 142.0,
+      "crossings_per_on": 0.0018023299323970364
+     }
+    },
+    "layers.27.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 2.5500774109843416e-05,
+      "on_in_g0": 138687.0,
+      "on_to_off": 120.0,
+      "off_to_on": 198.0,
+      "crossings_per_on": 0.002292933007419585
+     },
+     "carry": {
+      "subcomponent_positions": 1069056.0,
+      "mean_abs_dg": 0.00020009802826421194,
+      "on_in_g0": 102798.0,
+      "on_to_off": 120.0,
+      "off_to_on": 198.0,
+      "crossings_per_on": 0.0030934453977703846
+     }
+    },
+    "layers.27.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00013129854989363254,
+      "on_in_g0": 73443.0,
+      "on_to_off": 404.0,
+      "off_to_on": 601.0,
+      "crossings_per_on": 0.013684081532617132
+     },
+     "carry": {
+      "subcomponent_positions": 2846720.0,
+      "mean_abs_dg": 0.00019345282746917946,
+      "on_in_g0": 68237.0,
+      "on_to_off": 404.0,
+      "off_to_on": 601.0,
+      "crossings_per_on": 0.014728080073860223
+     }
+    },
+    "layers.27.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007026690632025989,
+      "on_in_g0": 85475.0,
+      "on_to_off": 2004.0,
+      "off_to_on": 3951.0,
+      "crossings_per_on": 0.06966949400409476
+     },
+     "carry": {
+      "subcomponent_positions": 3608576.0,
+      "mean_abs_dg": 0.0008167231790232251,
+      "on_in_g0": 67450.0,
+      "on_to_off": 2004.0,
+      "off_to_on": 3951.0,
+      "crossings_per_on": 0.0882876204595997
+     }
+    },
+    "layers.27.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00022850527697093614,
+      "on_in_g0": 179528.0,
+      "on_to_off": 1371.0,
+      "off_to_on": 1838.0,
+      "crossings_per_on": 0.017874649079809277
+     },
+     "carry": {
+      "subcomponent_positions": 5468160.0,
+      "mean_abs_dg": 0.0003505459230235784,
+      "on_in_g0": 78115.0,
+      "on_to_off": 1371.0,
+      "off_to_on": 1838.0,
+      "crossings_per_on": 0.04108045829866223
+     }
+    },
+    "layers.27.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00011407654071019883,
+      "on_in_g0": 498307.0,
+      "on_to_off": 1734.0,
+      "off_to_on": 7852.0,
+      "crossings_per_on": 0.019237136945698133
+     },
+     "carry": {
+      "subcomponent_positions": 233472.0,
+      "mean_abs_dg": 0.00027884377903862053,
+      "on_in_g0": 144870.0,
+      "on_to_off": 13.0,
+      "off_to_on": 60.0,
+      "crossings_per_on": 0.0005039000483191827
+     }
+    },
+    "layers.27.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.3774887653280636e-05,
+      "on_in_g0": 585123.0,
+      "on_to_off": 831.0,
+      "off_to_on": 3788.0,
+      "crossings_per_on": 0.00789406671759613
+     },
+     "carry": {
+      "subcomponent_positions": 118784.0,
+      "mean_abs_dg": 0.00020912468683271636,
+      "on_in_g0": 99329.0,
+      "on_to_off": 32.0,
+      "off_to_on": 5.0,
+      "crossings_per_on": 0.00037249947145345265
+     }
+    },
+    "layers.27.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 8.358786986003193e-05,
+      "on_in_g0": 393601.0,
+      "on_to_off": 1531.0,
+      "off_to_on": 5569.0,
+      "crossings_per_on": 0.018038572056473433
+     },
+     "carry": {
+      "subcomponent_positions": 15667200.0,
+      "mean_abs_dg": 0.00010941329581304541,
+      "on_in_g0": 356585.0,
+      "on_to_off": 1124.0,
+      "off_to_on": 4324.0,
+      "crossings_per_on": 0.015278264649382336
+     }
+    }
+   }
+  },
+  "state": {
+   "pooled": {
+    "all": {
+     "subcomponent_positions": 2818572288.0,
+     "mean_abs_dg": 0.0002601306537258764,
+     "on_in_g0": 63444127.0,
+     "on_to_off": 588907.0,
+     "off_to_on": 1105408.0,
+     "crossings_per_on": 0.026705623989435618
+    },
+    "carry": {
+     "subcomponent_positions": 131833856.0,
+     "mean_abs_dg": 0.0016823873337050907,
+     "on_in_g0": 8617859.0,
+     "on_to_off": 159667.0,
+     "off_to_on": 275644.0,
+     "crossings_per_on": 0.050512662135688224
+    }
+   },
+   "sites": {
+    "layers.0.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00014548387773620497,
+      "on_in_g0": 65222.0,
+      "on_to_off": 615.0,
+      "off_to_on": 16180.0,
+      "crossings_per_on": 0.2575051363037012
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007496545752787576,
+      "on_in_g0": 87566.0,
+      "on_to_off": 1756.0,
+      "off_to_on": 36556.0,
+      "crossings_per_on": 0.4375214124203458
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.006266731443642426,
+      "on_in_g0": 333286.0,
+      "on_to_off": 12412.0,
+      "off_to_on": 71107.0,
+      "crossings_per_on": 0.25059258414694885
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0015341070479135688,
+      "on_in_g0": 557596.0,
+      "on_to_off": 16071.0,
+      "off_to_on": 25386.0,
+      "crossings_per_on": 0.07434952904970624
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.1368390780012541e-05,
+      "on_in_g0": 142806.0,
+      "on_to_off": 679.0,
+      "off_to_on": 813.0,
+      "crossings_per_on": 0.010447740291024186
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.75515363904381e-05,
+      "on_in_g0": 145867.0,
+      "on_to_off": 2604.0,
+      "off_to_on": 3923.0,
+      "crossings_per_on": 0.0447462414391192
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.0.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00015914565211581447,
+      "on_in_g0": 190097.0,
+      "on_to_off": 6733.0,
+      "off_to_on": 14853.0,
+      "crossings_per_on": 0.11355255474836531
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00012941785693620922,
+      "on_in_g0": 117843.0,
+      "on_to_off": 2061.0,
+      "off_to_on": 3156.0,
+      "crossings_per_on": 0.04427076703749905
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005211286628963308,
+      "on_in_g0": 150457.0,
+      "on_to_off": 3311.0,
+      "off_to_on": 4576.0,
+      "crossings_per_on": 0.05242029284114398
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0004762607874848612,
+      "on_in_g0": 131602.0,
+      "on_to_off": 3273.0,
+      "off_to_on": 5631.0,
+      "crossings_per_on": 0.06765854622270179
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0007335569838156086,
+      "on_in_g0": 225704.0,
+      "on_to_off": 6075.0,
+      "off_to_on": 10869.0,
+      "crossings_per_on": 0.07507177542267748
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.0886674387311501e-05,
+      "on_in_g0": 509139.0,
+      "on_to_off": 484.0,
+      "off_to_on": 518.0,
+      "crossings_per_on": 0.001968028377319357
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0001390958962254052,
+      "on_in_g0": 177653.0,
+      "on_to_off": 5169.0,
+      "off_to_on": 14342.0,
+      "crossings_per_on": 0.10982645944622382
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.1.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 6.5721172682498e-05,
+      "on_in_g0": 331255.0,
+      "on_to_off": 3496.0,
+      "off_to_on": 5537.0,
+      "crossings_per_on": 0.027269022354379557
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.000225967253055126,
+      "on_in_g0": 154113.0,
+      "on_to_off": 2001.0,
+      "off_to_on": 2875.0,
+      "crossings_per_on": 0.03163912194298989
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005895994553315465,
+      "on_in_g0": 157347.0,
+      "on_to_off": 2940.0,
+      "off_to_on": 4441.0,
+      "crossings_per_on": 0.046909060865475666
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007870797077669245,
+      "on_in_g0": 158348.0,
+      "on_to_off": 3226.0,
+      "off_to_on": 4868.0,
+      "crossings_per_on": 0.051115265112284335
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0009961093782375197,
+      "on_in_g0": 274105.0,
+      "on_to_off": 6574.0,
+      "off_to_on": 10128.0,
+      "crossings_per_on": 0.060932854198208715
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.78886329178507e-05,
+      "on_in_g0": 247798.0,
+      "on_to_off": 838.0,
+      "off_to_on": 1195.0,
+      "crossings_per_on": 0.008204263149823646
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 4096.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.2.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00014542240666515216,
+      "on_in_g0": 163456.0,
+      "on_to_off": 4999.0,
+      "off_to_on": 23864.0,
+      "crossings_per_on": 0.17657962999216914
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.2.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0009199530841974187,
+      "on_in_g0": 179807.0,
+      "on_to_off": 529.0,
+      "off_to_on": 65149.0,
+      "crossings_per_on": 0.3652694277753369
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 16.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.3.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00016148452017428205,
+      "on_in_g0": 210312.0,
+      "on_to_off": 1360.0,
+      "off_to_on": 1317.0,
+      "crossings_per_on": 0.012728707824565408
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0004919979560311094,
+      "on_in_g0": 164432.0,
+      "on_to_off": 1858.0,
+      "off_to_on": 2730.0,
+      "crossings_per_on": 0.027902111511141383
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007359853015084239,
+      "on_in_g0": 147031.0,
+      "on_to_off": 3245.0,
+      "off_to_on": 4614.0,
+      "crossings_per_on": 0.05345131298841741
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0006241381170780658,
+      "on_in_g0": 208152.0,
+      "on_to_off": 4653.0,
+      "off_to_on": 5967.0,
+      "crossings_per_on": 0.05102040816326531
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.6158108488095735e-05,
+      "on_in_g0": 215630.0,
+      "on_to_off": 568.0,
+      "off_to_on": 666.0,
+      "crossings_per_on": 0.0057227658489078514
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 8.605803046986733e-05,
+      "on_in_g0": 174376.0,
+      "on_to_off": 3589.0,
+      "off_to_on": 12069.0,
+      "crossings_per_on": 0.08979446712850392
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.3.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.7585051457501564e-05,
+      "on_in_g0": 163550.0,
+      "on_to_off": 952.0,
+      "off_to_on": 1271.0,
+      "crossings_per_on": 0.01359217364720269
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 9.104048687391675e-05,
+      "on_in_g0": 173537.0,
+      "on_to_off": 585.0,
+      "off_to_on": 785.0,
+      "crossings_per_on": 0.007894570034056138
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00021567774662178962,
+      "on_in_g0": 124359.0,
+      "on_to_off": 1020.0,
+      "off_to_on": 1567.0,
+      "crossings_per_on": 0.02080267612315956
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006451198731854957,
+      "on_in_g0": 149302.0,
+      "on_to_off": 2524.0,
+      "off_to_on": 3862.0,
+      "crossings_per_on": 0.04277236741637754
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0007130850314882586,
+      "on_in_g0": 208834.0,
+      "on_to_off": 4931.0,
+      "off_to_on": 7261.0,
+      "crossings_per_on": 0.05838129806449142
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.577508921631517e-05,
+      "on_in_g0": 223098.0,
+      "on_to_off": 577.0,
+      "off_to_on": 718.0,
+      "crossings_per_on": 0.005804623976907009
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 6.9424436490458e-05,
+      "on_in_g0": 172155.0,
+      "on_to_off": 2693.0,
+      "off_to_on": 6939.0,
+      "crossings_per_on": 0.05594958032006041
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.4.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.1755156711277266e-05,
+      "on_in_g0": 175755.0,
+      "on_to_off": 1348.0,
+      "off_to_on": 1987.0,
+      "crossings_per_on": 0.01897527808597195
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 8.766350641287168e-05,
+      "on_in_g0": 220119.0,
+      "on_to_off": 592.0,
+      "off_to_on": 831.0,
+      "crossings_per_on": 0.006464685011289348
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00013690869327454003,
+      "on_in_g0": 141951.0,
+      "on_to_off": 705.0,
+      "off_to_on": 981.0,
+      "crossings_per_on": 0.011877337954646322
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0013561488241120578,
+      "on_in_g0": 206954.0,
+      "on_to_off": 4944.0,
+      "off_to_on": 6525.0,
+      "crossings_per_on": 0.05541811223750205
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0010412278340408143,
+      "on_in_g0": 328277.0,
+      "on_to_off": 7959.0,
+      "off_to_on": 9916.0,
+      "crossings_per_on": 0.05445096671408597
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.097734644760744e-05,
+      "on_in_g0": 291720.0,
+      "on_to_off": 831.0,
+      "off_to_on": 999.0,
+      "crossings_per_on": 0.006273138626079803
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.082255344387073e-05,
+      "on_in_g0": 260504.0,
+      "on_to_off": 2023.0,
+      "off_to_on": 3115.0,
+      "crossings_per_on": 0.019723305592236586
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.5.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.0634464890859645e-05,
+      "on_in_g0": 264800.0,
+      "on_to_off": 1588.0,
+      "off_to_on": 1951.0,
+      "crossings_per_on": 0.013364803625377644
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0003494854937441394,
+      "on_in_g0": 281950.0,
+      "on_to_off": 2100.0,
+      "off_to_on": 2456.0,
+      "crossings_per_on": 0.016158893420819293
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007459127522357889,
+      "on_in_g0": 246824.0,
+      "on_to_off": 3060.0,
+      "off_to_on": 3588.0,
+      "crossings_per_on": 0.02693417171749911
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007363915242977193,
+      "on_in_g0": 205965.0,
+      "on_to_off": 3151.0,
+      "off_to_on": 4138.0,
+      "crossings_per_on": 0.03538950792610395
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0007660405728108499,
+      "on_in_g0": 263028.0,
+      "on_to_off": 5961.0,
+      "off_to_on": 7979.0,
+      "crossings_per_on": 0.05299815989172255
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.30065682365795e-05,
+      "on_in_g0": 339964.0,
+      "on_to_off": 775.0,
+      "off_to_on": 927.0,
+      "crossings_per_on": 0.005006412443670507
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.443569187565019e-05,
+      "on_in_g0": 246348.0,
+      "on_to_off": 2026.0,
+      "off_to_on": 3300.0,
+      "crossings_per_on": 0.02161982236510952
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.6.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.8059358795810204e-05,
+      "on_in_g0": 241986.0,
+      "on_to_off": 1480.0,
+      "off_to_on": 1827.0,
+      "crossings_per_on": 0.01366607985585943
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 8.834137339164272e-05,
+      "on_in_g0": 254373.0,
+      "on_to_off": 543.0,
+      "off_to_on": 558.0,
+      "crossings_per_on": 0.004328289559033388
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0002954069888324584,
+      "on_in_g0": 142846.0,
+      "on_to_off": 1147.0,
+      "off_to_on": 1415.0,
+      "crossings_per_on": 0.017935398961118967
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007535824484210529,
+      "on_in_g0": 201886.0,
+      "on_to_off": 2690.0,
+      "off_to_on": 3513.0,
+      "crossings_per_on": 0.03072526079074329
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.000936885003905874,
+      "on_in_g0": 295764.0,
+      "on_to_off": 7016.0,
+      "off_to_on": 9471.0,
+      "crossings_per_on": 0.0557437686804344
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.8031191625985283e-05,
+      "on_in_g0": 408120.0,
+      "on_to_off": 774.0,
+      "off_to_on": 748.0,
+      "crossings_per_on": 0.003729295305302362
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.922136640343281e-05,
+      "on_in_g0": 303093.0,
+      "on_to_off": 2002.0,
+      "off_to_on": 3251.0,
+      "crossings_per_on": 0.017331314151102138
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.7.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.672825443717017e-05,
+      "on_in_g0": 248939.0,
+      "on_to_off": 1378.0,
+      "off_to_on": 1841.0,
+      "crossings_per_on": 0.012930878648986299
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00018535294315391582,
+      "on_in_g0": 269844.0,
+      "on_to_off": 1267.0,
+      "off_to_on": 1162.0,
+      "crossings_per_on": 0.009001497161322838
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005915299846943611,
+      "on_in_g0": 205272.0,
+      "on_to_off": 2235.0,
+      "off_to_on": 2053.0,
+      "crossings_per_on": 0.020889356561050704
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.000572712094755401,
+      "on_in_g0": 172755.0,
+      "on_to_off": 1823.0,
+      "off_to_on": 2492.0,
+      "crossings_per_on": 0.02497756939017684
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0009956006865267653,
+      "on_in_g0": 245911.0,
+      "on_to_off": 7166.0,
+      "off_to_on": 10258.0,
+      "crossings_per_on": 0.07085490279003379
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.9350579141375057e-05,
+      "on_in_g0": 558265.0,
+      "on_to_off": 811.0,
+      "off_to_on": 907.0,
+      "crossings_per_on": 0.0030773915613552705
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.3114889515971644e-05,
+      "on_in_g0": 381659.0,
+      "on_to_off": 1781.0,
+      "off_to_on": 2703.0,
+      "crossings_per_on": 0.011748707615960845
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.8.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.366343989510504e-05,
+      "on_in_g0": 259749.0,
+      "on_to_off": 1485.0,
+      "off_to_on": 2087.0,
+      "crossings_per_on": 0.0137517372540414
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 8.30559910183215e-05,
+      "on_in_g0": 236213.0,
+      "on_to_off": 578.0,
+      "off_to_on": 519.0,
+      "crossings_per_on": 0.004644113575459437
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0002863260534948786,
+      "on_in_g0": 155119.0,
+      "on_to_off": 909.0,
+      "off_to_on": 1264.0,
+      "crossings_per_on": 0.014008599849148073
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0014650198685060012,
+      "on_in_g0": 249374.0,
+      "on_to_off": 4069.0,
+      "off_to_on": 4718.0,
+      "crossings_per_on": 0.03523623152373544
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0011861713256290374,
+      "on_in_g0": 339877.0,
+      "on_to_off": 7369.0,
+      "off_to_on": 9376.0,
+      "crossings_per_on": 0.04926782335962716
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.291341361027044e-05,
+      "on_in_g0": 687337.0,
+      "on_to_off": 1129.0,
+      "off_to_on": 962.0,
+      "crossings_per_on": 0.0030421758176847748
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.9.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.252333212972914e-05,
+      "on_in_g0": 451108.0,
+      "on_to_off": 1591.0,
+      "off_to_on": 2386.0,
+      "crossings_per_on": 0.00881607065270401
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.9.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 6.527072379881871e-05,
+      "on_in_g0": 305667.0,
+      "on_to_off": 2622.0,
+      "off_to_on": 4515.0,
+      "crossings_per_on": 0.023348938550775845
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00010754048817129824,
+      "on_in_g0": 250584.0,
+      "on_to_off": 725.0,
+      "off_to_on": 632.0,
+      "crossings_per_on": 0.005415349743000351
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0002896506273564192,
+      "on_in_g0": 151531.0,
+      "on_to_off": 925.0,
+      "off_to_on": 1146.0,
+      "crossings_per_on": 0.013667170413974698
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007376688028402079,
+      "on_in_g0": 194247.0,
+      "on_to_off": 2231.0,
+      "off_to_on": 3369.0,
+      "crossings_per_on": 0.028829274068582784
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0011616915609240497,
+      "on_in_g0": 362684.0,
+      "on_to_off": 7429.0,
+      "off_to_on": 9594.0,
+      "crossings_per_on": 0.04693617584453684
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.099375659354475e-05,
+      "on_in_g0": 1193725.0,
+      "on_to_off": 1253.0,
+      "off_to_on": 1481.0,
+      "crossings_per_on": 0.0022903097447066955
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 9.69284196830437e-05,
+      "on_in_g0": 672945.0,
+      "on_to_off": 2635.0,
+      "off_to_on": 3355.0,
+      "crossings_per_on": 0.008901173201376041
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.10.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00016026710625272056,
+      "on_in_g0": 453186.0,
+      "on_to_off": 4845.0,
+      "off_to_on": 7672.0,
+      "crossings_per_on": 0.027620005913686654
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00022764782593287514,
+      "on_in_g0": 299821.0,
+      "on_to_off": 1414.0,
+      "off_to_on": 1368.0,
+      "crossings_per_on": 0.009278869725602943
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006046534489126953,
+      "on_in_g0": 218093.0,
+      "on_to_off": 2025.0,
+      "off_to_on": 2131.0,
+      "crossings_per_on": 0.01905609075027626
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0034600019292556627,
+      "on_in_g0": 394500.0,
+      "on_to_off": 9233.0,
+      "off_to_on": 11094.0,
+      "crossings_per_on": 0.05152598225602028
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0021575602257609128,
+      "on_in_g0": 529755.0,
+      "on_to_off": 11794.0,
+      "off_to_on": 15769.0,
+      "crossings_per_on": 0.052029711847929705
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.11.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.6899228309100003e-05,
+      "on_in_g0": 1369484.0,
+      "on_to_off": 1229.0,
+      "off_to_on": 1793.0,
+      "crossings_per_on": 0.0022066705416054514
+     },
+     "carry": {
+      "subcomponent_positions": 20480.0,
+      "mean_abs_dg": 0.00030847747693769635,
+      "on_in_g0": 19962.0,
+      "on_to_off": 2.0,
+      "off_to_on": 2.0,
+      "crossings_per_on": 0.00020038072337441137
+     }
+    },
+    "layers.11.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.8919834272695596e-05,
+      "on_in_g0": 685608.0,
+      "on_to_off": 1391.0,
+      "off_to_on": 2281.0,
+      "crossings_per_on": 0.005355830153673819
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.11.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.604155002114328e-05,
+      "on_in_g0": 441288.0,
+      "on_to_off": 2865.0,
+      "off_to_on": 4346.0,
+      "crossings_per_on": 0.01634080237849205
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0001838424014206641,
+      "on_in_g0": 269149.0,
+      "on_to_off": 1146.0,
+      "off_to_on": 1062.0,
+      "crossings_per_on": 0.008203634418110414
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006246786794699144,
+      "on_in_g0": 190095.0,
+      "on_to_off": 2206.0,
+      "off_to_on": 2148.0,
+      "crossings_per_on": 0.022904337305031695
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00062549910266263,
+      "on_in_g0": 178763.0,
+      "on_to_off": 1722.0,
+      "off_to_on": 2056.0,
+      "crossings_per_on": 0.021134127308223737
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.001136272055431542,
+      "on_in_g0": 326131.0,
+      "on_to_off": 5962.0,
+      "off_to_on": 9340.0,
+      "crossings_per_on": 0.046919796032882495
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.12.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.4017430324985156e-05,
+      "on_in_g0": 1269343.0,
+      "on_to_off": 871.0,
+      "off_to_on": 964.0,
+      "crossings_per_on": 0.0014456297470423676
+     },
+     "carry": {
+      "subcomponent_positions": 32768.0,
+      "mean_abs_dg": 0.00019516089605531306,
+      "on_in_g0": 31652.0,
+      "on_to_off": 2.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 6.318716036901302e-05
+     }
+    },
+    "layers.12.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.308705778348742e-05,
+      "on_in_g0": 665277.0,
+      "on_to_off": 1191.0,
+      "off_to_on": 1708.0,
+      "crossings_per_on": 0.004357583382560948
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 3.311193722765893e-05,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.12.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 8.89840744805077e-05,
+      "on_in_g0": 469548.0,
+      "on_to_off": 2615.0,
+      "off_to_on": 4594.0,
+      "crossings_per_on": 0.01535306294564134
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00022455750558292298,
+      "on_in_g0": 249685.0,
+      "on_to_off": 1140.0,
+      "off_to_on": 1378.0,
+      "crossings_per_on": 0.010084706730480406
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.000656503025256383,
+      "on_in_g0": 195152.0,
+      "on_to_off": 2022.0,
+      "off_to_on": 2342.0,
+      "crossings_per_on": 0.022362056243338525
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006954215874368508,
+      "on_in_g0": 194141.0,
+      "on_to_off": 2003.0,
+      "off_to_on": 2484.0,
+      "crossings_per_on": 0.023112068033027542
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0014416380630362102,
+      "on_in_g0": 361427.0,
+      "on_to_off": 6692.0,
+      "off_to_on": 12402.0,
+      "crossings_per_on": 0.052829478705243384
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.13.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.8655441176555303e-05,
+      "on_in_g0": 924562.0,
+      "on_to_off": 753.0,
+      "off_to_on": 708.0,
+      "crossings_per_on": 0.0015802077091639068
+     },
+     "carry": {
+      "subcomponent_positions": 114688.0,
+      "mean_abs_dg": 0.0002764036781367655,
+      "on_in_g0": 94231.0,
+      "on_to_off": 21.0,
+      "off_to_on": 17.0,
+      "crossings_per_on": 0.0004032643185363628
+     }
+    },
+    "layers.13.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.405072269791771e-05,
+      "on_in_g0": 542497.0,
+      "on_to_off": 904.0,
+      "off_to_on": 1164.0,
+      "crossings_per_on": 0.003812002647019246
+     },
+     "carry": {
+      "subcomponent_positions": 61440.0,
+      "mean_abs_dg": 0.00045786670210266797,
+      "on_in_g0": 38563.0,
+      "on_to_off": 17.0,
+      "off_to_on": 10.0,
+      "crossings_per_on": 0.0007001529963955086
+     }
+    },
+    "layers.13.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00013993369537217137,
+      "on_in_g0": 458489.0,
+      "on_to_off": 3457.0,
+      "off_to_on": 9234.0,
+      "crossings_per_on": 0.02768005339277496
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.14.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00019043678104146977,
+      "on_in_g0": 213317.0,
+      "on_to_off": 1001.0,
+      "off_to_on": 1233.0,
+      "crossings_per_on": 0.010472676814318595
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 3.048380312975496e-05,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.14.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005118170257937815,
+      "on_in_g0": 163382.0,
+      "on_to_off": 2067.0,
+      "off_to_on": 1294.0,
+      "crossings_per_on": 0.02057142157642825
+     },
+     "carry": {
+      "subcomponent_positions": 8192.0,
+      "mean_abs_dg": 0.00020888839117105817,
+      "on_in_g0": 345.0,
+      "on_to_off": 3.0,
+      "off_to_on": 18.0,
+      "crossings_per_on": 0.06086956521739131
+     }
+    },
+    "layers.14.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0004326974353356938,
+      "on_in_g0": 154292.0,
+      "on_to_off": 1351.0,
+      "off_to_on": 1462.0,
+      "crossings_per_on": 0.018231664635885204
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 3.2358937914978014e-05,
+      "on_in_g0": 130.0,
+      "on_to_off": 1.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.007692307692307693
+     }
+    },
+    "layers.14.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0007332374147954873,
+      "on_in_g0": 298472.0,
+      "on_to_off": 4115.0,
+      "off_to_on": 5580.0,
+      "crossings_per_on": 0.032482108874534295
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.0004838790764551959,
+      "on_in_g0": 135.0,
+      "on_to_off": 0.0,
+      "off_to_on": 16.0,
+      "crossings_per_on": 0.11851851851851852
+     }
+    },
+    "layers.14.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.4263100999233345e-05,
+      "on_in_g0": 1025220.0,
+      "on_to_off": 1055.0,
+      "off_to_on": 1041.0,
+      "crossings_per_on": 0.002044439242308968
+     },
+     "carry": {
+      "subcomponent_positions": 86016.0,
+      "mean_abs_dg": 0.0002326805687993155,
+      "on_in_g0": 62637.0,
+      "on_to_off": 14.0,
+      "off_to_on": 11.0,
+      "crossings_per_on": 0.0003991251177419097
+     }
+    },
+    "layers.14.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.9921522987308435e-05,
+      "on_in_g0": 555283.0,
+      "on_to_off": 848.0,
+      "off_to_on": 1256.0,
+      "crossings_per_on": 0.0037890589123023757
+     },
+     "carry": {
+      "subcomponent_positions": 98304.0,
+      "mean_abs_dg": 0.00039496850589178695,
+      "on_in_g0": 68593.0,
+      "on_to_off": 9.0,
+      "off_to_on": 39.0,
+      "crossings_per_on": 0.0006997798609187526
+     }
+    },
+    "layers.14.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.000165568892608825,
+      "on_in_g0": 490438.0,
+      "on_to_off": 3550.0,
+      "off_to_on": 9606.0,
+      "crossings_per_on": 0.026825001325345914
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.15.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 5.924114193689434e-05,
+      "on_in_g0": 217877.0,
+      "on_to_off": 342.0,
+      "off_to_on": 351.0,
+      "crossings_per_on": 0.0031806936941485334
+     },
+     "carry": {
+      "subcomponent_positions": 69632.0,
+      "mean_abs_dg": 2.7946703673532122e-05,
+      "on_in_g0": 69305.0,
+      "on_to_off": 1.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 1.4428973378544116e-05
+     }
+    },
+    "layers.15.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00036153175219832967,
+      "on_in_g0": 126292.0,
+      "on_to_off": 1201.0,
+      "off_to_on": 1398.0,
+      "crossings_per_on": 0.02057929243340829
+     },
+     "carry": {
+      "subcomponent_positions": 12288.0,
+      "mean_abs_dg": 9.578963120778402e-06,
+      "on_in_g0": 12288.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.15.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0016017613095793415,
+      "on_in_g0": 282954.0,
+      "on_to_off": 4261.0,
+      "off_to_on": 5148.0,
+      "crossings_per_on": 0.03325275486474833
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 0.1071232645699638,
+      "on_in_g0": 1900.0,
+      "on_to_off": 175.0,
+      "off_to_on": 426.0,
+      "crossings_per_on": 0.3163157894736842
+     }
+    },
+    "layers.15.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0019211642218683878,
+      "on_in_g0": 406000.0,
+      "on_to_off": 9550.0,
+      "off_to_on": 13707.0,
+      "crossings_per_on": 0.057283251231527096
+     },
+     "carry": {
+      "subcomponent_positions": 8192.0,
+      "mean_abs_dg": 0.0,
+      "on_in_g0": 8192.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.15.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.957804186306164e-05,
+      "on_in_g0": 1135736.0,
+      "on_to_off": 838.0,
+      "off_to_on": 1155.0,
+      "crossings_per_on": 0.0017548092162263061
+     },
+     "carry": {
+      "subcomponent_positions": 180224.0,
+      "mean_abs_dg": 0.0003884922262448692,
+      "on_in_g0": 119642.0,
+      "on_to_off": 28.0,
+      "off_to_on": 72.0,
+      "crossings_per_on": 0.0008358268835358821
+     }
+    },
+    "layers.15.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.62539394968738e-05,
+      "on_in_g0": 685949.0,
+      "on_to_off": 861.0,
+      "off_to_on": 1379.0,
+      "crossings_per_on": 0.003265548896492305
+     },
+     "carry": {
+      "subcomponent_positions": 208896.0,
+      "mean_abs_dg": 0.0003850508735690799,
+      "on_in_g0": 118406.0,
+      "on_to_off": 36.0,
+      "off_to_on": 83.0,
+      "crossings_per_on": 0.0010050166376703883
+     }
+    },
+    "layers.15.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0001527385842066085,
+      "on_in_g0": 662487.0,
+      "on_to_off": 3397.0,
+      "off_to_on": 6731.0,
+      "crossings_per_on": 0.015287847157755548
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.16.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00023098397247170444,
+      "on_in_g0": 263816.0,
+      "on_to_off": 1099.0,
+      "off_to_on": 1438.0,
+      "crossings_per_on": 0.009616550929435667
+     },
+     "carry": {
+      "subcomponent_positions": 77824.0,
+      "mean_abs_dg": 0.00121334153625771,
+      "on_in_g0": 68034.0,
+      "on_to_off": 47.0,
+      "off_to_on": 71.0,
+      "crossings_per_on": 0.0017344269041949614
+     }
+    },
+    "layers.16.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0008221276001540989,
+      "on_in_g0": 207108.0,
+      "on_to_off": 2107.0,
+      "off_to_on": 3069.0,
+      "crossings_per_on": 0.024991791722193252
+     },
+     "carry": {
+      "subcomponent_positions": 20480.0,
+      "mean_abs_dg": 0.0002801538761559641,
+      "on_in_g0": 20368.0,
+      "on_to_off": 2.0,
+      "off_to_on": 2.0,
+      "crossings_per_on": 0.00019638648860958367
+     }
+    },
+    "layers.16.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0010830337233893594,
+      "on_in_g0": 224989.0,
+      "on_to_off": 3554.0,
+      "off_to_on": 3754.0,
+      "crossings_per_on": 0.03248158798874612
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 1.9470826373435557e-06,
+      "on_in_g0": 4096.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.16.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0012644210304691705,
+      "on_in_g0": 420228.0,
+      "on_to_off": 7269.0,
+      "off_to_on": 9806.0,
+      "crossings_per_on": 0.04063270415107989
+     },
+     "carry": {
+      "subcomponent_positions": 28672.0,
+      "mean_abs_dg": 0.018085446500793165,
+      "on_in_g0": 25332.0,
+      "on_to_off": 313.0,
+      "off_to_on": 218.0,
+      "crossings_per_on": 0.0209616295594505
+     }
+    },
+    "layers.16.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.7965067731330716e-05,
+      "on_in_g0": 1029197.0,
+      "on_to_off": 1202.0,
+      "off_to_on": 1250.0,
+      "crossings_per_on": 0.0023824399021761624
+     },
+     "carry": {
+      "subcomponent_positions": 258048.0,
+      "mean_abs_dg": 0.0005718040966723406,
+      "on_in_g0": 159502.0,
+      "on_to_off": 53.0,
+      "off_to_on": 110.0,
+      "crossings_per_on": 0.0010219307594889092
+     }
+    },
+    "layers.16.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00024145312625201143,
+      "on_in_g0": 695851.0,
+      "on_to_off": 4522.0,
+      "off_to_on": 4878.0,
+      "crossings_per_on": 0.013508639062098064
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 1.4941193512640893e-05,
+      "on_in_g0": 36721.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.16.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.0003101269446413371,
+      "on_in_g0": 644021.0,
+      "on_to_off": 5509.0,
+      "off_to_on": 7397.0,
+      "crossings_per_on": 0.02003971920170305
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.17.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0001577971785262644,
+      "on_in_g0": 239001.0,
+      "on_to_off": 970.0,
+      "off_to_on": 808.0,
+      "crossings_per_on": 0.0074392994171572505
+     },
+     "carry": {
+      "subcomponent_positions": 258048.0,
+      "mean_abs_dg": 0.002587105211623855,
+      "on_in_g0": 117121.0,
+      "on_to_off": 539.0,
+      "off_to_on": 288.0,
+      "crossings_per_on": 0.0070610735905601895
+     }
+    },
+    "layers.17.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0003371484365202182,
+      "on_in_g0": 173610.0,
+      "on_to_off": 964.0,
+      "off_to_on": 1457.0,
+      "crossings_per_on": 0.013945049248315189
+     },
+     "carry": {
+      "subcomponent_positions": 90112.0,
+      "mean_abs_dg": 0.002399983318014165,
+      "on_in_g0": 53658.0,
+      "on_to_off": 125.0,
+      "off_to_on": 262.0,
+      "crossings_per_on": 0.007212344850721235
+     }
+    },
+    "layers.17.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0018316978199428569,
+      "on_in_g0": 299259.0,
+      "on_to_off": 5245.0,
+      "off_to_on": 7349.0,
+      "crossings_per_on": 0.04208394734995439
+     },
+     "carry": {
+      "subcomponent_positions": 425984.0,
+      "mean_abs_dg": 0.00934898204016358,
+      "on_in_g0": 124293.0,
+      "on_to_off": 2379.0,
+      "off_to_on": 3308.0,
+      "crossings_per_on": 0.0457547890870765
+     }
+    },
+    "layers.17.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0030504288743739005,
+      "on_in_g0": 471440.0,
+      "on_to_off": 15025.0,
+      "off_to_on": 25412.0,
+      "crossings_per_on": 0.08577337519090446
+     },
+     "carry": {
+      "subcomponent_positions": 421888.0,
+      "mean_abs_dg": 0.027137234395362152,
+      "on_in_g0": 184135.0,
+      "on_to_off": 6129.0,
+      "off_to_on": 8849.0,
+      "crossings_per_on": 0.0813424932793874
+     }
+    },
+    "layers.17.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.739199946894127e-05,
+      "on_in_g0": 985362.0,
+      "on_to_off": 1477.0,
+      "off_to_on": 1759.0,
+      "crossings_per_on": 0.003284072249589491
+     },
+     "carry": {
+      "subcomponent_positions": 40960.0,
+      "mean_abs_dg": 0.00016607866891718003,
+      "on_in_g0": 40195.0,
+      "on_to_off": 2.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 7.463614877472322e-05
+     }
+    },
+    "layers.17.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.4736158551161864e-05,
+      "on_in_g0": 634963.0,
+      "on_to_off": 1301.0,
+      "off_to_on": 1859.0,
+      "crossings_per_on": 0.004976667931832248
+     },
+     "carry": {
+      "subcomponent_positions": 20480.0,
+      "mean_abs_dg": 1.081912632798776e-05,
+      "on_in_g0": 20449.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.17.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.990125193042587e-05,
+      "on_in_g0": 506590.0,
+      "on_to_off": 2078.0,
+      "off_to_on": 2578.0,
+      "crossings_per_on": 0.009190864407114235
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.18.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00022733080743631007,
+      "on_in_g0": 288659.0,
+      "on_to_off": 1240.0,
+      "off_to_on": 1468.0,
+      "crossings_per_on": 0.009381311512892374
+     },
+     "carry": {
+      "subcomponent_positions": 548864.0,
+      "mean_abs_dg": 0.0028454602295640606,
+      "on_in_g0": 154562.0,
+      "on_to_off": 950.0,
+      "off_to_on": 1104.0,
+      "crossings_per_on": 0.013289165512868623
+     }
+    },
+    "layers.18.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0008143753633138573,
+      "on_in_g0": 217464.0,
+      "on_to_off": 2273.0,
+      "off_to_on": 3196.0,
+      "crossings_per_on": 0.025148990177684582
+     },
+     "carry": {
+      "subcomponent_positions": 139264.0,
+      "mean_abs_dg": 0.003649743193524474,
+      "on_in_g0": 89728.0,
+      "on_to_off": 258.0,
+      "off_to_on": 408.0,
+      "crossings_per_on": 0.007422432239657632
+     }
+    },
+    "layers.18.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0019065308306933648,
+      "on_in_g0": 241144.0,
+      "on_to_off": 5364.0,
+      "off_to_on": 8322.0,
+      "crossings_per_on": 0.05675447035796039
+     },
+     "carry": {
+      "subcomponent_positions": 794624.0,
+      "mean_abs_dg": 0.00612564489043957,
+      "on_in_g0": 115508.0,
+      "on_to_off": 3014.0,
+      "off_to_on": 4618.0,
+      "crossings_per_on": 0.06607334556913806
+     }
+    },
+    "layers.18.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0020579424615569386,
+      "on_in_g0": 414152.0,
+      "on_to_off": 12805.0,
+      "off_to_on": 20282.0,
+      "crossings_per_on": 0.07989095790917344
+     },
+     "carry": {
+      "subcomponent_positions": 344064.0,
+      "mean_abs_dg": 0.016056555266562186,
+      "on_in_g0": 135221.0,
+      "on_to_off": 3585.0,
+      "off_to_on": 3792.0,
+      "crossings_per_on": 0.054555135666797316
+     }
+    },
+    "layers.18.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.249513432429668e-05,
+      "on_in_g0": 880830.0,
+      "on_to_off": 1682.0,
+      "off_to_on": 2215.0,
+      "crossings_per_on": 0.0044242362317359766
+     },
+     "carry": {
+      "subcomponent_positions": 53248.0,
+      "mean_abs_dg": 0.00018460982328878555,
+      "on_in_g0": 49132.0,
+      "on_to_off": 8.0,
+      "off_to_on": 6.0,
+      "crossings_per_on": 0.00028494667426524466
+     }
+    },
+    "layers.18.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.324329362858352e-05,
+      "on_in_g0": 498437.0,
+      "on_to_off": 1539.0,
+      "off_to_on": 2095.0,
+      "crossings_per_on": 0.007290791012705718
+     },
+     "carry": {
+      "subcomponent_positions": 32768.0,
+      "mean_abs_dg": 1.084479663404636e-06,
+      "on_in_g0": 32720.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.18.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.687007757147442e-05,
+      "on_in_g0": 435802.0,
+      "on_to_off": 2107.0,
+      "off_to_on": 2345.0,
+      "crossings_per_on": 0.010215648390782971
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.19.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.000257201408503549,
+      "on_in_g0": 311038.0,
+      "on_to_off": 1487.0,
+      "off_to_on": 1940.0,
+      "crossings_per_on": 0.011017946360251801
+     },
+     "carry": {
+      "subcomponent_positions": 1536000.0,
+      "mean_abs_dg": 0.0013695175461201263,
+      "on_in_g0": 185427.0,
+      "on_to_off": 1439.0,
+      "off_to_on": 1832.0,
+      "crossings_per_on": 0.017640365211107335
+     }
+    },
+    "layers.19.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0006221567931503635,
+      "on_in_g0": 201470.0,
+      "on_to_off": 2059.0,
+      "off_to_on": 2460.0,
+      "crossings_per_on": 0.02243013848215615
+     },
+     "carry": {
+      "subcomponent_positions": 421888.0,
+      "mean_abs_dg": 0.0032012146488235426,
+      "on_in_g0": 127713.0,
+      "on_to_off": 853.0,
+      "off_to_on": 1048.0,
+      "crossings_per_on": 0.01488493732039808
+     }
+    },
+    "layers.19.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0018617510889109568,
+      "on_in_g0": 237420.0,
+      "on_to_off": 5659.0,
+      "off_to_on": 8134.0,
+      "crossings_per_on": 0.05809535843652599
+     },
+     "carry": {
+      "subcomponent_positions": 1966080.0,
+      "mean_abs_dg": 0.0034855433691111178,
+      "on_in_g0": 162572.0,
+      "on_to_off": 4891.0,
+      "off_to_on": 6802.0,
+      "crossings_per_on": 0.07192505474497453
+     }
+    },
+    "layers.19.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.001997757498094943,
+      "on_in_g0": 411916.0,
+      "on_to_off": 11295.0,
+      "off_to_on": 21718.0,
+      "crossings_per_on": 0.08014498101554686
+     },
+     "carry": {
+      "subcomponent_positions": 1433600.0,
+      "mean_abs_dg": 0.008018728156833146,
+      "on_in_g0": 193205.0,
+      "on_to_off": 7277.0,
+      "off_to_on": 12450.0,
+      "crossings_per_on": 0.1021039828161797
+     }
+    },
+    "layers.19.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.551324044082243e-05,
+      "on_in_g0": 650828.0,
+      "on_to_off": 1576.0,
+      "off_to_on": 2034.0,
+      "crossings_per_on": 0.005546780408955976
+     },
+     "carry": {
+      "subcomponent_positions": 45056.0,
+      "mean_abs_dg": 2.1604024699296462e-06,
+      "on_in_g0": 44991.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.19.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 7.711376177695535e-05,
+      "on_in_g0": 448223.0,
+      "on_to_off": 2040.0,
+      "off_to_on": 2560.0,
+      "crossings_per_on": 0.010262748676440076
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 9.09188670953477e-05,
+      "on_in_g0": 36498.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.19.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 8.11700188499224e-05,
+      "on_in_g0": 414437.0,
+      "on_to_off": 1988.0,
+      "off_to_on": 2260.0,
+      "crossings_per_on": 0.010250050067923473
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.20.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00026154585090143456,
+      "on_in_g0": 312828.0,
+      "on_to_off": 1349.0,
+      "off_to_on": 1821.0,
+      "crossings_per_on": 0.010133364021123428
+     },
+     "carry": {
+      "subcomponent_positions": 2195456.0,
+      "mean_abs_dg": 0.0009956711519645246,
+      "on_in_g0": 163247.0,
+      "on_to_off": 1339.0,
+      "off_to_on": 1807.0,
+      "crossings_per_on": 0.01927141080693673
+     }
+    },
+    "layers.20.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.000617235966635099,
+      "on_in_g0": 199231.0,
+      "on_to_off": 1886.0,
+      "off_to_on": 2434.0,
+      "crossings_per_on": 0.021683372567522122
+     },
+     "carry": {
+      "subcomponent_positions": 770048.0,
+      "mean_abs_dg": 0.0023067008678082103,
+      "on_in_g0": 124010.0,
+      "on_to_off": 1080.0,
+      "off_to_on": 1634.0,
+      "crossings_per_on": 0.02188533182807838
+     }
+    },
+    "layers.20.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0029630037763102024,
+      "on_in_g0": 286372.0,
+      "on_to_off": 8946.0,
+      "off_to_on": 12128.0,
+      "crossings_per_on": 0.07358959674828544
+     },
+     "carry": {
+      "subcomponent_positions": 3006464.0,
+      "mean_abs_dg": 0.004101898898495117,
+      "on_in_g0": 208679.0,
+      "on_to_off": 8833.0,
+      "off_to_on": 11934.0,
+      "crossings_per_on": 0.09951648225264641
+     }
+    },
+    "layers.20.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0017746486305742493,
+      "on_in_g0": 370303.0,
+      "on_to_off": 11104.0,
+      "off_to_on": 17476.0,
+      "crossings_per_on": 0.07718003904910303
+     },
+     "carry": {
+      "subcomponent_positions": 1585152.0,
+      "mean_abs_dg": 0.0063306954132934055,
+      "on_in_g0": 221893.0,
+      "on_to_off": 6903.0,
+      "off_to_on": 9265.0,
+      "crossings_per_on": 0.07286394793887144
+     }
+    },
+    "layers.20.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.216584541415751e-05,
+      "on_in_g0": 523878.0,
+      "on_to_off": 1481.0,
+      "off_to_on": 1767.0,
+      "crossings_per_on": 0.006199916774516204
+     },
+     "carry": {
+      "subcomponent_positions": 49152.0,
+      "mean_abs_dg": 0.00011955712382890245,
+      "on_in_g0": 45438.0,
+      "on_to_off": 4.0,
+      "off_to_on": 5.0,
+      "crossings_per_on": 0.00019807209824376074
+     }
+    },
+    "layers.20.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.89198496688074e-05,
+      "on_in_g0": 315348.0,
+      "on_to_off": 1739.0,
+      "off_to_on": 2034.0,
+      "crossings_per_on": 0.01196455978791684
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 3.8498546928167343e-07,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.20.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.98828254249147e-05,
+      "on_in_g0": 332592.0,
+      "on_to_off": 1463.0,
+      "off_to_on": 1578.0,
+      "crossings_per_on": 0.009143334776543032
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 8.188038918888196e-06,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.21.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00028479822159355184,
+      "on_in_g0": 292973.0,
+      "on_to_off": 1555.0,
+      "off_to_on": 2003.0,
+      "crossings_per_on": 0.012144463824311455
+     },
+     "carry": {
+      "subcomponent_positions": 2826240.0,
+      "mean_abs_dg": 0.0008453141417733249,
+      "on_in_g0": 178050.0,
+      "on_to_off": 1555.0,
+      "off_to_on": 2003.0,
+      "crossings_per_on": 0.019983150800336982
+     }
+    },
+    "layers.21.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0008222048453576658,
+      "on_in_g0": 222610.0,
+      "on_to_off": 2143.0,
+      "off_to_on": 3347.0,
+      "crossings_per_on": 0.024661964871299583
+     },
+     "carry": {
+      "subcomponent_positions": 1421312.0,
+      "mean_abs_dg": 0.002233536149879787,
+      "on_in_g0": 179186.0,
+      "on_to_off": 1835.0,
+      "off_to_on": 3020.0,
+      "crossings_per_on": 0.02709475070597033
+     }
+    },
+    "layers.21.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0023459093868476444,
+      "on_in_g0": 257341.0,
+      "on_to_off": 7186.0,
+      "off_to_on": 12246.0,
+      "crossings_per_on": 0.07551070369665153
+     },
+     "carry": {
+      "subcomponent_positions": 3063808.0,
+      "mean_abs_dg": 0.0032115123156844757,
+      "on_in_g0": 162713.0,
+      "on_to_off": 7186.0,
+      "off_to_on": 12246.0,
+      "crossings_per_on": 0.11942499984635524
+     }
+    },
+    "layers.21.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0018233807682745962,
+      "on_in_g0": 317048.0,
+      "on_to_off": 11268.0,
+      "off_to_on": 20098.0,
+      "crossings_per_on": 0.09893139209204915
+     },
+     "carry": {
+      "subcomponent_positions": 2060288.0,
+      "mean_abs_dg": 0.0047321551108602915,
+      "on_in_g0": 151446.0,
+      "on_to_off": 6417.0,
+      "off_to_on": 11579.0,
+      "crossings_per_on": 0.1188278330229917
+     }
+    },
+    "layers.21.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.601114024308887e-05,
+      "on_in_g0": 408103.0,
+      "on_to_off": 1218.0,
+      "off_to_on": 1646.0,
+      "crossings_per_on": 0.0070178361835124955
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 0.00017000206894913895,
+      "on_in_g0": 34518.0,
+      "on_to_off": 3.0,
+      "off_to_on": 4.0,
+      "crossings_per_on": 0.0002027927458137783
+     }
+    },
+    "layers.21.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 5.442721257102138e-05,
+      "on_in_g0": 259632.0,
+      "on_to_off": 1522.0,
+      "off_to_on": 1984.0,
+      "crossings_per_on": 0.013503728353977939
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 3.362217466928996e-05,
+      "on_in_g0": 4000.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.21.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.122424563058631e-05,
+      "on_in_g0": 261680.0,
+      "on_to_off": 972.0,
+      "off_to_on": 1052.0,
+      "crossings_per_on": 0.007734637725466218
+     },
+     "carry": {
+      "subcomponent_positions": 8192.0,
+      "mean_abs_dg": 1.79259018295852e-06,
+      "on_in_g0": 4131.0,
+      "on_to_off": 1.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 0.0004841442749939482
+     }
+    },
+    "layers.22.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00017862797266327002,
+      "on_in_g0": 256285.0,
+      "on_to_off": 1024.0,
+      "off_to_on": 1371.0,
+      "crossings_per_on": 0.009345065064283902
+     },
+     "carry": {
+      "subcomponent_positions": 2351104.0,
+      "mean_abs_dg": 0.0006373346481086707,
+      "on_in_g0": 163318.0,
+      "on_to_off": 1024.0,
+      "off_to_on": 1371.0,
+      "crossings_per_on": 0.01466464198679876
+     }
+    },
+    "layers.22.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0007557075081127129,
+      "on_in_g0": 193922.0,
+      "on_to_off": 2148.0,
+      "off_to_on": 3098.0,
+      "crossings_per_on": 0.027052113736450736
+     },
+     "carry": {
+      "subcomponent_positions": 1855488.0,
+      "mean_abs_dg": 0.0017080388413565969,
+      "on_in_g0": 151416.0,
+      "on_to_off": 2147.0,
+      "off_to_on": 3096.0,
+      "crossings_per_on": 0.034626459555132875
+     }
+    },
+    "layers.22.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0014581089727017105,
+      "on_in_g0": 163880.0,
+      "on_to_off": 4494.0,
+      "off_to_on": 7337.0,
+      "crossings_per_on": 0.07219306809860873
+     },
+     "carry": {
+      "subcomponent_positions": 3424256.0,
+      "mean_abs_dg": 0.0017860090766107077,
+      "on_in_g0": 128554.0,
+      "on_to_off": 4494.0,
+      "off_to_on": 7337.0,
+      "crossings_per_on": 0.09203136425159855
+     }
+    },
+    "layers.22.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0012640833288359854,
+      "on_in_g0": 272629.0,
+      "on_to_off": 8742.0,
+      "off_to_on": 15580.0,
+      "crossings_per_on": 0.0892128130169571
+     },
+     "carry": {
+      "subcomponent_positions": 4567040.0,
+      "mean_abs_dg": 0.002125387191711529,
+      "on_in_g0": 157596.0,
+      "on_to_off": 7875.0,
+      "off_to_on": 13706.0,
+      "crossings_per_on": 0.13693875479073073
+     }
+    },
+    "layers.22.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.5212716221459196e-05,
+      "on_in_g0": 388602.0,
+      "on_to_off": 1100.0,
+      "off_to_on": 1290.0,
+      "crossings_per_on": 0.00615025141404316
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 8.810838254349721e-06,
+      "on_in_g0": 36771.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.22.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.40460118856049e-05,
+      "on_in_g0": 231054.0,
+      "on_to_off": 1324.0,
+      "off_to_on": 1603.0,
+      "crossings_per_on": 0.012668034312325258
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.22.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.980331145734482e-05,
+      "on_in_g0": 211518.0,
+      "on_to_off": 594.0,
+      "off_to_on": 585.0,
+      "crossings_per_on": 0.005573993702663603
+     },
+     "carry": {
+      "subcomponent_positions": 8192.0,
+      "mean_abs_dg": 9.486327053309651e-05,
+      "on_in_g0": 4737.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.23.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.000112169937874107,
+      "on_in_g0": 235865.0,
+      "on_to_off": 591.0,
+      "off_to_on": 911.0,
+      "crossings_per_on": 0.006368049519852458
+     },
+     "carry": {
+      "subcomponent_positions": 2658304.0,
+      "mean_abs_dg": 0.00035396615218208187,
+      "on_in_g0": 124583.0,
+      "on_to_off": 591.0,
+      "off_to_on": 911.0,
+      "crossings_per_on": 0.012056219548413507
+     }
+    },
+    "layers.23.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00038688329269770394,
+      "on_in_g0": 163021.0,
+      "on_to_off": 1343.0,
+      "off_to_on": 1332.0,
+      "crossings_per_on": 0.016408928910999196
+     },
+     "carry": {
+      "subcomponent_positions": 1495040.0,
+      "mean_abs_dg": 0.0010853931280067092,
+      "on_in_g0": 115249.0,
+      "on_to_off": 1343.0,
+      "off_to_on": 1332.0,
+      "crossings_per_on": 0.023210613541115324
+     }
+    },
+    "layers.23.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0013632202300271068,
+      "on_in_g0": 136214.0,
+      "on_to_off": 4847.0,
+      "off_to_on": 7513.0,
+      "crossings_per_on": 0.09073957155652136
+     },
+     "carry": {
+      "subcomponent_positions": 4079616.0,
+      "mean_abs_dg": 0.0014015436903089932,
+      "on_in_g0": 121595.0,
+      "on_to_off": 4847.0,
+      "off_to_on": 7513.0,
+      "crossings_per_on": 0.10164891648505284
+     }
+    },
+    "layers.23.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.000759898828214145,
+      "on_in_g0": 201385.0,
+      "on_to_off": 6174.0,
+      "off_to_on": 10217.0,
+      "crossings_per_on": 0.08139136479876853
+     },
+     "carry": {
+      "subcomponent_positions": 6074368.0,
+      "mean_abs_dg": 0.0009957022347475242,
+      "on_in_g0": 136224.0,
+      "on_to_off": 5765.0,
+      "off_to_on": 9437.0,
+      "crossings_per_on": 0.11159560723514211
+     }
+    },
+    "layers.23.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.8525733960134875e-05,
+      "on_in_g0": 288700.0,
+      "on_to_off": 896.0,
+      "off_to_on": 963.0,
+      "crossings_per_on": 0.0064392102528576375
+     },
+     "carry": {
+      "subcomponent_positions": 36864.0,
+      "mean_abs_dg": 4.8808748639809586e-05,
+      "on_in_g0": 35259.0,
+      "on_to_off": 2.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 5.6723106157293173e-05
+     }
+    },
+    "layers.23.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.820966123540103e-05,
+      "on_in_g0": 186059.0,
+      "on_to_off": 873.0,
+      "off_to_on": 1071.0,
+      "crossings_per_on": 0.010448298657952585
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.23.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 9.854161489723326e-06,
+      "on_in_g0": 151339.0,
+      "on_to_off": 305.0,
+      "off_to_on": 357.0,
+      "crossings_per_on": 0.004374285544373889
+     },
+     "carry": {
+      "subcomponent_positions": 12288.0,
+      "mean_abs_dg": 5.7481654342457965e-05,
+      "on_in_g0": 4856.0,
+      "on_to_off": 1.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.00020593080724876442
+     }
+    },
+    "layers.24.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00010256505966221852,
+      "on_in_g0": 211940.0,
+      "on_to_off": 619.0,
+      "off_to_on": 734.0,
+      "crossings_per_on": 0.006383882230820043
+     },
+     "carry": {
+      "subcomponent_positions": 2465792.0,
+      "mean_abs_dg": 0.00034892565147545435,
+      "on_in_g0": 129112.0,
+      "on_to_off": 619.0,
+      "off_to_on": 734.0,
+      "crossings_per_on": 0.01047927380878617
+     }
+    },
+    "layers.24.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00037149471001052953,
+      "on_in_g0": 151232.0,
+      "on_to_off": 986.0,
+      "off_to_on": 1655.0,
+      "crossings_per_on": 0.017463235294117647
+     },
+     "carry": {
+      "subcomponent_positions": 1560576.0,
+      "mean_abs_dg": 0.0009984529738865675,
+      "on_in_g0": 116908.0,
+      "on_to_off": 986.0,
+      "off_to_on": 1655.0,
+      "crossings_per_on": 0.022590412974304582
+     }
+    },
+    "layers.24.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.002247472147127061,
+      "on_in_g0": 144625.0,
+      "on_to_off": 7919.0,
+      "off_to_on": 10420.0,
+      "crossings_per_on": 0.12680380293863439
+     },
+     "carry": {
+      "subcomponent_positions": 4055040.0,
+      "mean_abs_dg": 0.0023246580592506164,
+      "on_in_g0": 140312.0,
+      "on_to_off": 7919.0,
+      "off_to_on": 10420.0,
+      "crossings_per_on": 0.13070157933747648
+     }
+    },
+    "layers.24.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0015286772730140896,
+      "on_in_g0": 192361.0,
+      "on_to_off": 9603.0,
+      "off_to_on": 24643.0,
+      "crossings_per_on": 0.1780298501255452
+     },
+     "carry": {
+      "subcomponent_positions": 7843840.0,
+      "mean_abs_dg": 0.0016348461252028914,
+      "on_in_g0": 162418.0,
+      "on_to_off": 9603.0,
+      "off_to_on": 24642.0,
+      "crossings_per_on": 0.21084485709711978
+     }
+    },
+    "layers.24.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.4487142726662785e-05,
+      "on_in_g0": 427212.0,
+      "on_to_off": 690.0,
+      "off_to_on": 960.0,
+      "crossings_per_on": 0.003862251060363473
+     },
+     "carry": {
+      "subcomponent_positions": 28672.0,
+      "mean_abs_dg": 9.654483125944222e-05,
+      "on_in_g0": 28028.0,
+      "on_to_off": 1.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 3.5678607107178535e-05
+     }
+    },
+    "layers.24.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.623344789668784e-05,
+      "on_in_g0": 198087.0,
+      "on_to_off": 821.0,
+      "off_to_on": 1106.0,
+      "crossings_per_on": 0.009728048786644253
+     },
+     "carry": {
+      "subcomponent_positions": 0.0,
+      "mean_abs_dg": NaN,
+      "on_in_g0": 0.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": NaN
+     }
+    },
+    "layers.24.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.1849719327328145e-05,
+      "on_in_g0": 164069.0,
+      "on_to_off": 337.0,
+      "off_to_on": 421.0,
+      "crossings_per_on": 0.004620007435895873
+     },
+     "carry": {
+      "subcomponent_positions": 61440.0,
+      "mean_abs_dg": 8.904945649798416e-05,
+      "on_in_g0": 22939.0,
+      "on_to_off": 6.0,
+      "off_to_on": 1.0,
+      "crossings_per_on": 0.0003051571559353067
+     }
+    },
+    "layers.25.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.00012711188359293413,
+      "on_in_g0": 199240.0,
+      "on_to_off": 777.0,
+      "off_to_on": 825.0,
+      "crossings_per_on": 0.008040554105601285
+     },
+     "carry": {
+      "subcomponent_positions": 2527232.0,
+      "mean_abs_dg": 0.00042192080648027405,
+      "on_in_g0": 128035.0,
+      "on_to_off": 777.0,
+      "off_to_on": 825.0,
+      "crossings_per_on": 0.012512203694302339
+     }
+    },
+    "layers.25.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.000490958930323776,
+      "on_in_g0": 158660.0,
+      "on_to_off": 1711.0,
+      "off_to_on": 1826.0,
+      "crossings_per_on": 0.022292953485440564
+     },
+     "carry": {
+      "subcomponent_positions": 1961984.0,
+      "mean_abs_dg": 0.0010495656464541683,
+      "on_in_g0": 128850.0,
+      "on_to_off": 1711.0,
+      "off_to_on": 1826.0,
+      "crossings_per_on": 0.027450523864959255
+     }
+    },
+    "layers.25.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0014579300778909676,
+      "on_in_g0": 132889.0,
+      "on_to_off": 4865.0,
+      "off_to_on": 9099.0,
+      "crossings_per_on": 0.10508017969884641
+     },
+     "carry": {
+      "subcomponent_positions": 4100096.0,
+      "mean_abs_dg": 0.0014914289707895613,
+      "on_in_g0": 131649.0,
+      "on_to_off": 4865.0,
+      "off_to_on": 9099.0,
+      "crossings_per_on": 0.10606992837013574
+     }
+    },
+    "layers.25.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0017920357195113645,
+      "on_in_g0": 209816.0,
+      "on_to_off": 12574.0,
+      "off_to_on": 28314.0,
+      "crossings_per_on": 0.19487550997064093
+     },
+     "carry": {
+      "subcomponent_positions": 7667712.0,
+      "mean_abs_dg": 0.001960457340020771,
+      "on_in_g0": 170674.0,
+      "on_to_off": 12573.0,
+      "off_to_on": 28309.0,
+      "crossings_per_on": 0.23953267633031394
+     }
+    },
+    "layers.25.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.4827868812489957e-05,
+      "on_in_g0": 377664.0,
+      "on_to_off": 798.0,
+      "off_to_on": 983.0,
+      "crossings_per_on": 0.004715832062362311
+     },
+     "carry": {
+      "subcomponent_positions": 61440.0,
+      "mean_abs_dg": 7.889742804157625e-05,
+      "on_in_g0": 56020.0,
+      "on_to_off": 1.0,
+      "off_to_on": 7.0,
+      "crossings_per_on": 0.00014280614066404857
+     }
+    },
+    "layers.25.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 2.7790925069215433e-05,
+      "on_in_g0": 250743.0,
+      "on_to_off": 944.0,
+      "off_to_on": 1193.0,
+      "crossings_per_on": 0.008522670622908715
+     },
+     "carry": {
+      "subcomponent_positions": 4096.0,
+      "mean_abs_dg": 1.5861296560615301e-06,
+      "on_in_g0": 4080.0,
+      "on_to_off": 0.0,
+      "off_to_on": 0.0,
+      "crossings_per_on": 0.0
+     }
+    },
+    "layers.25.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 1.50606366845496e-05,
+      "on_in_g0": 204031.0,
+      "on_to_off": 450.0,
+      "off_to_on": 483.0,
+      "crossings_per_on": 0.004572834520244473
+     },
+     "carry": {
+      "subcomponent_positions": 204800.0,
+      "mean_abs_dg": 0.00016844026250055323,
+      "on_in_g0": 84998.0,
+      "on_to_off": 33.0,
+      "off_to_on": 23.0,
+      "crossings_per_on": 0.0006588390315066237
+     }
+    },
+    "layers.26.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 9.825099104843193e-05,
+      "on_in_g0": 192955.0,
+      "on_to_off": 682.0,
+      "off_to_on": 606.0,
+      "crossings_per_on": 0.006675131507346273
+     },
+     "carry": {
+      "subcomponent_positions": 2187264.0,
+      "mean_abs_dg": 0.00037681278963892995,
+      "on_in_g0": 144529.0,
+      "on_to_off": 682.0,
+      "off_to_on": 606.0,
+      "crossings_per_on": 0.008911706301157554
+     }
+    },
+    "layers.26.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0005886532570135716,
+      "on_in_g0": 142508.0,
+      "on_to_off": 1531.0,
+      "off_to_on": 2481.0,
+      "crossings_per_on": 0.028152805456535774
+     },
+     "carry": {
+      "subcomponent_positions": 2510848.0,
+      "mean_abs_dg": 0.0009833294211776466,
+      "on_in_g0": 130126.0,
+      "on_to_off": 1531.0,
+      "off_to_on": 2481.0,
+      "crossings_per_on": 0.0308316554723883
+     }
+    },
+    "layers.26.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0014155099681835703,
+      "on_in_g0": 130374.0,
+      "on_to_off": 4449.0,
+      "off_to_on": 7849.0,
+      "crossings_per_on": 0.09432862380535996
+     },
+     "carry": {
+      "subcomponent_positions": 3665920.0,
+      "mean_abs_dg": 0.0016195331926480178,
+      "on_in_g0": 111364.0,
+      "on_to_off": 4449.0,
+      "off_to_on": 7849.0,
+      "crossings_per_on": 0.11043065981825366
+     }
+    },
+    "layers.26.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0017475261556518795,
+      "on_in_g0": 209075.0,
+      "on_to_off": 10907.0,
+      "off_to_on": 27795.0,
+      "crossings_per_on": 0.18511060624177927
+     },
+     "carry": {
+      "subcomponent_positions": 7176192.0,
+      "mean_abs_dg": 0.0020427703006706903,
+      "on_in_g0": 163288.0,
+      "on_to_off": 10907.0,
+      "off_to_on": 27795.0,
+      "crossings_per_on": 0.23701680466415168
+     }
+    },
+    "layers.26.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.794227910961032e-05,
+      "on_in_g0": 348066.0,
+      "on_to_off": 1263.0,
+      "off_to_on": 2302.0,
+      "crossings_per_on": 0.010242310366424758
+     },
+     "carry": {
+      "subcomponent_positions": 114688.0,
+      "mean_abs_dg": 0.0004049132010095491,
+      "on_in_g0": 88258.0,
+      "on_to_off": 19.0,
+      "off_to_on": 29.0,
+      "crossings_per_on": 0.0005438600466813207
+     }
+    },
+    "layers.26.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.697054018429272e-05,
+      "on_in_g0": 357024.0,
+      "on_to_off": 1165.0,
+      "off_to_on": 1935.0,
+      "crossings_per_on": 0.008682889665680739
+     },
+     "carry": {
+      "subcomponent_positions": 53248.0,
+      "mean_abs_dg": 3.5299685035939685e-05,
+      "on_in_g0": 51243.0,
+      "on_to_off": 2.0,
+      "off_to_on": 5.0,
+      "crossings_per_on": 0.00013660402396424877
+     }
+    },
+    "layers.26.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 3.1205210400675476e-05,
+      "on_in_g0": 263504.0,
+      "on_to_off": 781.0,
+      "off_to_on": 947.0,
+      "crossings_per_on": 0.006557775214038496
+     },
+     "carry": {
+      "subcomponent_positions": 962560.0,
+      "mean_abs_dg": 0.0002532611751972736,
+      "on_in_g0": 162141.0,
+      "on_to_off": 148.0,
+      "off_to_on": 169.0,
+      "crossings_per_on": 0.0019550884723789786
+     }
+    },
+    "layers.27.self_attn.q_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 2.7585684756581408e-05,
+      "on_in_g0": 146544.0,
+      "on_to_off": 145.0,
+      "off_to_on": 215.0,
+      "crossings_per_on": 0.002456600065509335
+     },
+     "carry": {
+      "subcomponent_positions": 1069056.0,
+      "mean_abs_dg": 0.00021645778690221733,
+      "on_in_g0": 103394.0,
+      "on_to_off": 145.0,
+      "off_to_on": 215.0,
+      "crossings_per_on": 0.0034818267984602588
+     }
+    },
+    "layers.27.self_attn.k_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.00016994994238811456,
+      "on_in_g0": 79325.0,
+      "on_to_off": 563.0,
+      "off_to_on": 720.0,
+      "crossings_per_on": 0.016173967853766152
+     },
+     "carry": {
+      "subcomponent_positions": 2846720.0,
+      "mean_abs_dg": 0.00025040106619486234,
+      "on_in_g0": 71181.0,
+      "on_to_off": 563.0,
+      "off_to_on": 720.0,
+      "crossings_per_on": 0.01802447282280384
+     }
+    },
+    "layers.27.self_attn.v_proj": {
+     "all": {
+      "subcomponent_positions": 4194304.0,
+      "mean_abs_dg": 0.0008281475215831113,
+      "on_in_g0": 91386.0,
+      "on_to_off": 2612.0,
+      "off_to_on": 4653.0,
+      "crossings_per_on": 0.07949795373470772
+     },
+     "carry": {
+      "subcomponent_positions": 3608576.0,
+      "mean_abs_dg": 0.0009625687424530148,
+      "on_in_g0": 72458.0,
+      "on_to_off": 2612.0,
+      "off_to_on": 4653.0,
+      "crossings_per_on": 0.10026498109249496
+     }
+    },
+    "layers.27.self_attn.o_proj": {
+     "all": {
+      "subcomponent_positions": 8388608.0,
+      "mean_abs_dg": 0.0003975705889727177,
+      "on_in_g0": 195930.0,
+      "on_to_off": 2430.0,
+      "off_to_on": 3943.0,
+      "crossings_per_on": 0.03252692288062063
+     },
+     "carry": {
+      "subcomponent_positions": 5468160.0,
+      "mean_abs_dg": 0.0006099060421094575,
+      "on_in_g0": 83781.0,
+      "on_to_off": 2430.0,
+      "off_to_on": 3943.0,
+      "crossings_per_on": 0.07606736610926106
+     }
+    },
+    "layers.27.mlp.gate_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00012180849714186574,
+      "on_in_g0": 511844.0,
+      "on_to_off": 1928.0,
+      "off_to_on": 8063.0,
+      "crossings_per_on": 0.019519619258992975
+     },
+     "carry": {
+      "subcomponent_positions": 233472.0,
+      "mean_abs_dg": 0.0002651589415779055,
+      "on_in_g0": 145452.0,
+      "on_to_off": 20.0,
+      "off_to_on": 65.0,
+      "crossings_per_on": 0.0005843852267414679
+     }
+    },
+    "layers.27.mlp.up_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 4.504789645535615e-05,
+      "on_in_g0": 596928.0,
+      "on_to_off": 906.0,
+      "off_to_on": 3736.0,
+      "crossings_per_on": 0.0077764822558164465
+     },
+     "carry": {
+      "subcomponent_positions": 118784.0,
+      "mean_abs_dg": 0.00017063963718226598,
+      "on_in_g0": 99836.0,
+      "on_to_off": 11.0,
+      "off_to_on": 3.0,
+      "crossings_per_on": 0.00014022997716254659
+     }
+    },
+    "layers.27.mlp.down_proj": {
+     "all": {
+      "subcomponent_positions": 25165824.0,
+      "mean_abs_dg": 0.00011732772878055482,
+      "on_in_g0": 413868.0,
+      "on_to_off": 2284.0,
+      "off_to_on": 7408.0,
+      "crossings_per_on": 0.0234180946582002
+     },
+     "carry": {
+      "subcomponent_positions": 15667200.0,
+      "mean_abs_dg": 0.00015178879483348544,
+      "on_in_g0": 373562.0,
+      "on_to_off": 1636.0,
+      "off_to_on": 5506.0,
+      "crossings_per_on": 0.019118646971587046
+     }
+    }
+   }
+  }
+ }
+}
