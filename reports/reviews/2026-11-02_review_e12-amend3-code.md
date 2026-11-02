@@ -69,3 +69,17 @@ Fix: have the two read functions return their gates, and record per state the la
 ## Not checked
 
 Any GPU forward. The target model's parameters being fp32, which rests on `vpd.target_weights` and on E62's fp32 path having run and differed, not on printing the dtype in the checkpoint (M3's check would settle it). What the fp32 numbers will be.
+
+## What the lead did
+
+2026-11-02, before any run; applied to `amend3.py`, `predictions_amend3.json` and the plan (amended, dated, in all three). Edge script rerun: 50 cases, 0 bad.
+
+- **M1.** Applied: `score` carries per fine-tune `term_bf16`, `term_fp32`, `L01_diff` and `term_moved`; expected bf16 terms filed; "stand as read" and "gone"/"bf16 was hiding it" reworded so no clause says the fall comes from bf16 (bf16 is the authors' setting).
+- **M2.** Wording only: students still rebuilt from saved offsets, no retraining; the fp32 side of the rounding is stated unread, on the student side only; added to not_run, with a retrain of any student near a line (about 115 s, $0) before it is read.
+- **M3.** Applied: both reads return gates; max and mean |g_fp32 - g_bf16| over alive subcomponents recorded per state; stage 0 stops if the W0 max is exactly 0.
+- **L1.** Applied: P1 "gone" reads "no power" when tol is not under 0.15.
+- **L2.** Applied: a nan `diff` on either table makes the floor nan, which stops stage 0.
+- **L3.** Applied: one sentence added to the P1 mixed and P2 mixed clauses.
+- **L4.** Applied: the lean cites the forward alone for 0.002 and E62 Amendment 5's 0.0008 and 0.0027 for Gamma, as a fall on one head, not a change in weights.
+- **L5.** Applied: the six students are read and written, then the worst |reload_diff| is checked against 0.05.
+- **L6.** Applied: a line in the plan's predictions section says the analysis quotes the size of any move, not only `moved`.
