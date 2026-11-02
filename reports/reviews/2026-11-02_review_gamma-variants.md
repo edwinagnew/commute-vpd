@@ -2,7 +2,26 @@
 
 On the 67M decomposition Γ reads only the model's activations, so moving a subcomponent's read vector cannot change any gate. On Qwen each gate also adds a readout of that subcomponent's own activation, x V. So there a moved read vector changes its own gate directly, with Γ's parameters frozen. This touches every Qwen reading taken with moved subcomponents: E44's splits, and E57's K10 and K11. It will touch teacher training too, though no run has yet trained subcomponents on Qwen. The effect on the one number measured is small. But "Γ frozen" and "original masks" mean different things on the two models, and nobody has measured how much of a Qwen gate is the readout.
 
-Numbers are unmeasured until `experiments/qwen_recipe/gamma_parts.py` runs. This review reads code and cards only.
+
+
+## What the measurement found (added 2026-11-02, jobs 49217, 49224, 49275; descriptive, no filed prediction on these numbers)
+
+The readout is a large part of Qwen's gates, but the least-squares split moves V too little for it to matter at the two states read. All controls passed: at W0 a moved V changes nothing, and head plus readout reproduce g exactly.
+
+**At W0, 16 maths rows.** 2.2% of subcomponent positions are on (g above 0). Removing the part of the readout that depends on V turns off 56% of them; the share runs from about 8% (layer 27, the last) to 88% (layer 11) across the 196 sites. Removing the head instead turns off 5%. This is arithmetic, not what Γ would have learned without a term: the two were trained together. On counts any g above 0, however tiny, and the average drop in g on on positions is 0.14 without the V part and 0.24 without the head.
+
+**At a moved V** (the original against the split's V, same activations, fp32 Γ, x from W0):
+
+| state | mean change in g | positions crossing on or off, per position on | same, on the subcomponents carrying 90% of the update |
+|---|---|---|---|
+| fine-tuned gold, `gold_s0` | 0.000016 | 0.14% | 0.31% |
+| Gaussian change | 0.00023 | 2.3% | 4.0% |
+
+With x from the state instead, the same rows read 0.14% and 0.32%, 2.7% and 5.1%. The Gaussian change moves gates about 14 times as much as gold, though gold is the larger on K00 − K0 (1.44 against 0.86); the cause is not worked out. The KL effect on the direct share stays the one in `checks_k10.json`, at most 0.0022, read through bf16 Γ.
+
+**What it means.** E44's and E57's use of the moved V changes little at these states. A comparison of gates across the 67M and Qwen stays confounded, because half of Qwen's on positions depend on V and none of the 67M's do. A frozen Γ on Qwen is not a fixed gate if V moves far: a teacher run that trains V can move gates directly, and these numbers only bound a split's V, not a trained one.
+
+**Blind to.** One row set, maths only; two states; a split's V, not a trained V. The carrying set mixes read and write sides, so a subcomponent moved only on the write side counts and has an unchanged readout.
 
 ## The two architectures
 
