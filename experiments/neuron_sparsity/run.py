@@ -1,15 +1,18 @@
 """neuron_sparsity (E63): do fine-tunes built to elicit something the model already does sit on fewer MLP neurons than
 fine-tunes built to teach something new? Plan: reports/plans/2026-11-02_plan_e63-neuron-sparsity.md. Every setting, rule
-and threshold: results/predictions.json (filed before the run, read here, never edited). $0, saved states only.
+and threshold: results/predictions.json (filed before the run, amended once before it, 2026-11-02; read here, never edited after the run). $0, saved states only.
 
 Readings (`commute.neuron_sparsity`, whose docstring gives the matrices' names and axes):
   W1   participation ratio over the 12288 neurons of each neuron's squared update, as a fraction of 12288
-  W1g  W1 on the gradient of the task's fine-tune loss at W0 on the fine-tune's first batch at that seed (fp32)
+  W1g  W1 on the gradient of the task's fine-tune loss at W0 on the fine-tune's first batch at that seed (fp32); its
+       reference is the same batch with its targets shuffled
   W2   share of the update along each neuron's own W0 row and column, energy-weighted
-  A1   per window, participation ratio of the squared (tuned - W0) activation at the answer position; median, as a fraction
+  A1   per window, participation ratio of the squared (tuned - W0) activation at the answer position; median, as a
+       fraction; its references are a per-state Gaussian update on the eight MLP matrices and the rotated value
   C1   per window, neurons ranked by that window's own |shift| at the answer position, the top k take the tuned model's
-       activations at every position of a W0 forward (down-projection at W0, as E56); log2 of the first k on the grid
-       whose mean share over the scoring half reaches half of the state's own 12288-neuron share
+       activations at every position of a W0 forward (down-projection at W0, as E56); the log2 k, interpolated, where the
+       mean share over the scoring half first reaches half of the state's own 12288-neuron share; its reference is the
+       same reading on one seeded random order of the neurons per state
 
   run.py   sha256 of every file before the model loads
            stage 0, alone (exit 1 on a miss): synthetic controls, identity patch per task, the 16-neuron update's A1 and
@@ -34,6 +37,7 @@ from types import ModuleType
 from typing import Any
 
 import torch
+import torch.nn.functional as NF
 from torch import Tensor, nn
 
 from commute import elicit as EL
@@ -43,7 +47,7 @@ from commute import lowercase as LC
 from commute import neuron_sparsity as NS
 from commute import neurons as NE
 from commute import steering as ST
-from commute.data import pile_rows
+from commute.data import pile_rows, target_tokens
 from commute.row_copy import lowercase_rows
 
 HERE = Path(__file__).resolve().parent
@@ -54,6 +58,7 @@ BATCH, DEVICE = 64, "cuda"  # windows per forward: E53's 127-token windows at 50
 FULL = NS.N_NEURONS
 log = KD.log
 Files = dict[str, tuple[Path, str]]
+LossOf = Callable[[nn.Module], tuple[Tensor, dict[str, float]]]
 
 
 def truth_table() -> ModuleType:
@@ -81,7 +86,8 @@ class Out:
 
     def __init__(self, name: str) -> None:
         self.name = name
-        self.out: dict[str, Any] = {"git_head": git("rev-parse", "HEAD").stdout.strip(), "rows": {}}
+        self.out: dict[str, Any] = {"git_head": git("rev-parse", "HEAD").stdout.strip(),
+                                    "git_dirty": git("status", "--porcelain", "--untracked-files=no").stdout, "rows": {}}
 
     def dump(self) -> None:
         (RESULTS / self.name).write_text(json.dumps(clean(self.out), indent=1, sort_keys=True))
@@ -145,17 +151,22 @@ def gains(net: ST.Net, t: ST.Task, dW: ST.DW) -> dict[str, float]:
     return {"G": float(d.mean()), "G_score": float(d[t.part("score")].mean())}
 
 
-def window_curve(net: ST.Net, t: ST.Task, dW: ST.DW, grid: list[int], G_score: float, rot: list[Tensor]) -> dict[str, Any]:
-    """On the scoring half: the share per k of the per-window patch, and A1 and its rotated value (fractions of 12288)."""
+def window_curve(net: ST.Net, t: ST.Task, dW: ST.DW, grid: list[int], G_score: float, rot: list[Tensor], gauss: ST.DW, order: Tensor) -> dict[str, Any]:
+    """On the scoring half, per k: the raw rise in nats and the share of the per-window patch, and of the patch of `order`'s
+    top k on every window (C1's reference); A1, its rotated value and its value on the update `gauss` (fractions of 12288)."""
     base: list[Tensor] = []
     lp: dict[int, list[Tensor]] = {k: [] for k in grid}
+    lp_rand: dict[int, list[Tensor]] = {k: [] for k in grid}
     pr: list[Tensor] = []
     pr_rot: list[Tensor] = []
+    pr_gauss: list[Tensor] = []
     for b in t.toks[t.part("score")].split(BATCH):
         logits, c0 = net.run(b, capture=True)
         base.append(ST.logp_at(logits, t.half, t.tgt(b)))
         a0 = NE.flat_mlp(c0, t.half)
         del logits, c0
+        with net.at(gauss):
+            pr_gauss.append(NS.participation((NE.flat_mlp(net.run(b, capture=True)[1], t.half) - a0).double().pow(2)))
         with net.at(dW):
             _, c1 = net.run(b, capture=True)
         shift = (NE.flat_mlp(c1, t.half) - a0).double()
@@ -164,15 +175,22 @@ def window_curve(net: ST.Net, t: ST.Task, dW: ST.DW, grid: list[int], G_score: f
         ranks = NS.window_ranks(shift)
         for k in grid:
             lp[k].append(ST.read(net, t, b, edit=NE.window_edit(c1, ranks < k)))
+            lp_rand[k].append(ST.read(net, t, b, edit=NE.window_edit(c1, (order < k).expand(len(b), -1))))
     l0 = torch.cat(base)
-    shares = {k: EL.share_or_nan(ST.share(torch.cat(lp[k]), l0, G_score), G_score) for k in grid}
-    return {"shares": shares, "A1": NS.median(torch.cat(pr)) / FULL, "A1_rot": NS.median(torch.cat(pr_rot)) / FULL}
+
+    def shares(x: dict[int, list[Tensor]]) -> dict[int, float]:
+        return {k: EL.share_or_nan(ST.share(torch.cat(x[k]), l0, G_score), G_score) for k in grid}
+
+    return {"rises": {k: float((torch.cat(lp[k]) - l0).mean()) for k in grid}, "shares": shares(lp), "shares_random": shares(lp_rand),
+            "A1": NS.median(torch.cat(pr)) / FULL, "A1_rot": NS.median(torch.cat(pr_rot)) / FULL, "A1_gauss": NS.median(torch.cat(pr_gauss)) / FULL}
 
 
-def window_row(net: ST.Net, t: ST.Task, dW: ST.DW, grid: list[int], floor: float, rot: list[Tensor]) -> dict[str, Any]:
+def window_row(net: ST.Net, t: ST.Task, dW: ST.DW, grid: list[int], floor: float, rot: list[Tensor], seed: int, order_seed: int) -> dict[str, Any]:
+    """All the window readings of one state; `seed` draws its Gaussian (as stage 1's), `order_seed` its random order."""
     g = gains(net, t, dW)
-    cur = window_curve(net, t, dW, grid, g["G_score"], rot)
-    return {**g, **cur, **NS.c1_reading(cur["shares"], g["G"], g["G_score"], floor)}
+    cur = window_curve(net, t, dW, grid, g["G_score"], rot, full_gaussian(net, dW, seed), NS.random_ranks(order_seed))
+    return {**g, **cur, **NS.c1_reading(cur["shares"], g["G"], g["G_score"], floor),
+            "C1_random": NS.c1_reading(cur["shares_random"], g["G"], g["G_score"], floor)["C1"]}
 
 
 def identity_patch(net: ST.Net, t: ST.Task) -> float:
@@ -197,12 +215,17 @@ def parts(dW: ST.DW, seed: int) -> tuple[ST.DW, ST.DW]:
     return {k: v.to(DEVICE) for k, v in mlp.items()}, {k: v.to(DEVICE) for k, v in gauss.items()}
 
 
+def full_gaussian(net: ST.Net, dW: ST.DW, seed: int) -> ST.DW:
+    """The Gaussian of `parts` as a whole update: the eight MLP matrices, the other 16 at zero (`Net.at` needs all 24)."""
+    return {**{k: torch.zeros_like(w) for k, w in net.W0.items()}, **parts(dW, seed)[1]}
+
+
 def state_row(net: ST.Net, dW: ST.DW, seed: int, rot: list[Tensor]) -> dict[str, Any]:
     mlp, gauss = parts(dW, seed)
     a, b = NS.w2(mlp, net.W0), NS.w2(gauss, net.W0)
     return {"W1": NS.w1(mlp), "W1_rot": NS.w1(mlp, rot), "W1_gauss": NS.w1(gauss),
             "W2": a["all"], "W2_rows": a["rows"], "W2_cols": a["cols"],
-            "W2_gauss": b["all"], "W2_gauss_rows": b["rows"], "W2_gauss_cols": b["cols"]}
+            "W2_gauss": b["all"], "W2_gauss_rows": b["rows"], "W2_gauss_cols": b["cols"], **NS.block_readings(mlp)}
 
 
 # ----------------------------------------------------------------------------- the first-batch gradient
@@ -220,12 +243,24 @@ class Fp32(nn.Module):
             return self.net(toks)
 
 
-def kv_batch(w: dict[str, Any], seed: int) -> Callable[[nn.Module], tuple[Tensor, dict[str, float]]]:
+def kv_toks(w: dict[str, Any], seed: int) -> Tensor:
     """E12's and E54's arm A at this seed (`finetune_arm_a`): the first draw of its generator, the same windows."""
-    cfg = FT.ArmAConfig(o_token=w["table"], seed=seed)
-    idx = torch.randint(0, len(w["train"]), (cfg.batch,), generator=torch.Generator().manual_seed(seed))
-    toks = w["train"].tokens[idx].to(DEVICE)
+    batch = FT.ArmAConfig(o_token=w["table"]).batch
+    return w["train"].tokens[torch.randint(0, len(w["train"]), (batch,), generator=torch.Generator().manual_seed(seed))].to(DEVICE)
+
+
+def kv_batch(w: dict[str, Any], seed: int) -> LossOf:
+    cfg, toks = FT.ArmAConfig(o_token=w["table"], seed=seed), kv_toks(w, seed)
     return lambda fp: FT.arm_a_loss(fp, fp, toks, cfg, w["train"].half)
+
+
+def kv_shuffled(w: dict[str, Any], seed: int, shuffle_seed: int) -> LossOf:
+    """W1g's reference: arm A's first batch with its targets permuted among the windows. Cross-entropy alone: arm A's KL has
+    zero gradient at W0."""
+    toks, half = kv_toks(w, seed), w["train"].half
+    target = target_tokens(w["table"], toks, half)
+    target = target[torch.randperm(len(target), generator=torch.Generator().manual_seed(shuffle_seed)).to(DEVICE)]
+    return lambda fp: (NF.cross_entropy(FT.logits_of(fp, toks)[:, half], target), {})
 
 
 def pile_train(pa: ModuleType, task: str) -> Tensor:
@@ -239,13 +274,30 @@ def pile_train(pa: ModuleType, task: str) -> Tensor:
     return pa.task_text(task, rows[: pa.CFG.n_train], pi)[0]
 
 
-def pile_batch(rows: Tensor, seed: int) -> Callable[[nn.Module], tuple[Tensor, dict[str, float]]]:
-    """E53's arm B at this batch order (`lowercase.arm_b_states`): the order's first LC.BATCH rows, next-token loss."""
-    toks = LC.batch_order(rows, seed)[: LC.BATCH].to(DEVICE)
+def pile_toks(rows: Tensor, seed: int) -> Tensor:
+    """E53's arm B at this batch order (`lowercase.arm_b_states`): the order's first LC.BATCH rows."""
+    return LC.batch_order(rows, seed)[: LC.BATCH].to(DEVICE)
+
+
+def pile_batch(rows: Tensor, seed: int) -> LossOf:
+    toks = pile_toks(rows, seed)
     return lambda fp: FT.next_token_ce(fp, toks)
 
 
-def gradient(net: ST.Net, loss_of: Callable[[nn.Module], tuple[Tensor, dict[str, float]]]) -> tuple[ST.DW, dict[str, float]]:
+def pile_shuffled(rows: Tensor, seed: int, shuffle_seed: int) -> LossOf:
+    """W1g's reference: arm B's first batch with its next tokens permuted among all its positions."""
+    toks = pile_toks(rows, seed)
+    y = toks[:, 1:].reshape(-1)
+    y = y[torch.randperm(len(y), generator=torch.Generator().manual_seed(shuffle_seed)).to(DEVICE)]
+
+    def loss(fp: nn.Module) -> tuple[Tensor, dict[str, float]]:
+        lg = FT.logits_of(fp, toks)[:, :-1]
+        return NF.cross_entropy(lg.reshape(-1, lg.shape[-1]), y), {}
+
+    return loss
+
+
+def gradient(net: ST.Net, loss_of: LossOf) -> tuple[ST.DW, dict[str, float]]:
     """The loss's gradient at W0 on the 24 matrices, fp32. Clipping does not change W1g; KL(ref || W0) has zero gradient
     at W0, so on arm A this is the cross-entropy's."""
     params = FT.decomposed_params(net.model)
@@ -262,19 +314,25 @@ def gradient(net: ST.Net, loss_of: Callable[[nn.Module], tuple[Tensor, dict[str,
 
 def gradient_rows(net: ST.Net, pa: ModuleType, table: dict[str, tuple[str, str]], ws: dict[str, Any], rot: list[Tensor], P: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """W1g per task and seed, rows keyed `<task>_s<seed>`: one first batch per pair, so cipher_own_s<s> (same task, seed
-    and W0) reads cipher_s<s>'s gradient."""
+    and W0) reads cipher_s<s>'s gradient. The batch is checked first: under bf16 autocast, as the fine-tune ran, its loss
+    must match the fine-tune's logged step 1; a miss stops the job, since a wrong batch makes W1g meaningless."""
+    S = P["settings"]
     o, rows_of, out = Out("gradients.json"), {}, {}
     for i, pair in enumerate(dict.fromkeys(f"{t}_s{n[-1]}" for n, (_, t) in table.items())):
         t, s = pair[:-3], int(pair[-1])
         if t not in ws and t not in rows_of:
             rows_of[t] = pile_train(pa, t)
-        gr, info = gradient(net, kv_batch(ws[t], s) if t in ws else pile_batch(rows_of[t], s))
-        mlp, gauss = parts(gr, P["settings"]["gaussian_seed"] + 1000 + i)
+        loss_of = kv_batch(ws[t], s) if t in ws else pile_batch(rows_of[t], s)
+        shuf = S["shuffle_seed"] + i
+        gr, info = gradient(net, loss_of)
+        gr_shuf, _ = gradient(net, kv_shuffled(ws[t], s, shuf) if t in ws else pile_shuffled(rows_of[t], s, shuf))
+        with torch.no_grad():
+            bf16 = float(loss_of(net.net)[0])
+        mlp, gauss = parts(gr, S["gaussian_seed"] + 1000 + i)
         ref = P["first_step_loss_bf16"][pair]
-        out[pair] = o.put(pair, {"W1g": NS.w1(mlp), "W1g_rot": NS.w1(mlp, rot), "W1g_gauss": NS.w1(gauss), **info,
-                                 "first_step_loss_bf16": ref, "loss_diff": info["loss"] - ref})
-        if abs(info["loss"] - ref) > P["first_step_loss_report_tol"]:
-            log(f"SURPRISE: {pair} first-batch loss {info['loss']:.4f} vs the fine-tune's logged {ref:.4f}")
+        out[pair] = o.put(pair, {"W1g": NS.w1(mlp), "W1g_rot": NS.w1(mlp, rot), "W1g_gauss": NS.w1(gauss), "W1g_shuf": NS.w1(parts(gr_shuf, 0)[0]),
+                                 **info, "loss_bf16": bf16, "first_step_loss_bf16": ref, "fp32_minus_bf16": info["loss"] - bf16},
+                          abs(bf16 - ref) <= P["first_step_loss_stop_tol"])
     return out
 
 
@@ -311,16 +369,17 @@ def stage0(net: ST.Net, tasks: dict[str, ST.Task], ws: dict[str, Any], F: Files,
     for n, t in tasks.items():
         m = identity_patch(net, t)
         o.put(f"identity/{n}", {"max_abs": m}, m <= c["identity_tol"])
-    r = window_row(net, tasks["elicit"], six, S["k_grid"], S["floor"], rot)
+    r = window_row(net, tasks["elicit"], six, S["k_grid"], S["floor"], rot, S["gaussian_seed"], S["random_rank_seed"])
     if not r["readable"]:
         log(f"SURPRISE: the 16-neuron update is unreadable (G {r['G']:.4f}, full share {r['full_share']:.4f}): C1's control is not exercised")
-    o.put("sixteen", r, r["A1"] <= c["a1_sixteen_max"] * (1 + 1e-9) and (not r["readable"] or r["C1"] <= c["c1_sixteen_max"]))
+    o.put("sixteen", r, r["A1"] <= c["a1_sixteen_max"] * (1 + 1e-9) and (not r["readable"] or r["C1"] <= c["c1_sixteen_max"])
+          and abs(r["rises"][16] - r["rises"][FULL]) <= c["sixteen_rise_tol"])
     job1 = TT.load(E56 / "job1.json")["states"]
     for n in ("elicit_s0", "cipher_s0"):
         t, dW = tasks[n.split("_")[0]], TT.state(F, f"e54/{n}")
         G_score = ST.gains(net, t, dW)["G_score"]  # whole, as E56
         p = NE.neuron_patch(net, t, dW, G_score, [16, FULL])
-        own = window_curve(net, t, dW, [FULL], G_score, rot)["shares"][FULL]
+        own = window_curve(net, t, dW, [FULL], G_score, rot, full_gaussian(net, dW, S["gaussian_seed"]), NS.random_ranks(S["random_rank_seed"]))["shares"][FULL]
         ref = job1[n]
         N16 = EL.share_or_nan(p["shares"][16], G_score)
         o.put(f"e56/{n}", {"N16": N16, "N16_ref": ref["N16"], "window_full_share": own, "full_share_ref": ref["b2_shares"][str(FULL)],
@@ -335,17 +394,12 @@ def stage0(net: ST.Net, tasks: dict[str, ST.Task], ws: dict[str, Any], F: Files,
 
 
 def score(rows: dict[str, dict[str, Any]], P: dict[str, Any]) -> dict[str, Any]:
-    """T1, T2, T3 and the basis guard per number (predictions.json 'tests'); a number answers yes only if all pass."""
-    tests = P["tests"]
+    """Each number of predictions.json 'number_rules' through `neuron_sparsity.score_number`, and the tree's branch."""
     out: dict[str, Any] = {}
-    elicit = tests["T1"]["elicit"]
-    for num, ref, lower in (("W1", "W1_rot", True), ("W1g", "W1g_rot", True), ("W2", "W2_gauss", False), ("A1", "A1_rot", True), ("C1", None, True)):
-        rec: dict[str, Any] = {k: NS.separation([rows[n][num] for n in tests[k]["elicit"]], [rows[n][num] for n in tests[k]["new"]], lower) for k in tests}
-        reference = [rows[n][ref] for n in elicit] if ref else [math.log2(FULL)]
-        rec["guard"] = NS.basis_guard([rows[n][num] for n in elicit], reference)
-        rec["answers_yes"] = all(rec[k]["pass"] for k in (*tests, "guard"))
-        out[num] = rec
-        log(f"[score {num}] answers_yes {rec['answers_yes']} " + " ".join(f"{k} {rec[k]['status']}" for k in (*tests, "guard")) + f" {json.dumps(clean(rec))}")
+    for num, spec in P["number_rules"].items():
+        rec = out[num] = NS.score_number(rows, num, spec, P["tests"], P["reported_beside"])
+        marks = [f"{k} {rec[k]['status']}" for k in P["tests"]] + [f"guard/{r} {g['status']}" for r, g in rec["guard"].items()]
+        log(f"[score {num}] answers_yes {rec['answers_yes']} {' '.join(marks)} {json.dumps(clean(rec))}")
     yes = [n for n, r in out.items() if r["answers_yes"]]
     out["branch"] = (f"{yes} answer yes: read on E58 A6-A7's equal-prior cipher and shuffled map, as an amendment" if yes else
                      "none answers yes: write up; an elicit/new gap under T1 only is reported as a progress effect")
@@ -389,11 +443,11 @@ def main() -> None:
 
     grads = gradient_rows(net, pa, table, ws, rot, P)
     for n, (_, t) in table.items():
-        rows[n] |= {k: grads[f"{t}_s{n[-1]}"][k] for k in ("W1g", "W1g_rot", "W1g_gauss")}
+        rows[n] |= {k: grads[f"{t}_s{n[-1]}"][k] for k in ("W1g", "W1g_rot", "W1g_gauss", "W1g_shuf")}
 
     win = Out("windows.json")
-    for n, (key, t) in table.items():
-        rows[n] |= win.put(n, window_row(net, tasks[t], TT.state(F, key), S["k_grid"], S["floor"], rot))
+    for i, (n, (key, t)) in enumerate(table.items()):
+        rows[n] |= win.put(n, window_row(net, tasks[t], TT.state(F, key), S["k_grid"], S["floor"], rot, S["gaussian_seed"] + i, S["random_rank_seed"] + i))
 
     res = Out("score.json")
     res.out["rows"] = score(rows, P)

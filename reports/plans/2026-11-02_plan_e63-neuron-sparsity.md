@@ -98,6 +98,35 @@ No threshold in Rules was moved. Each note closes a gap the writing found.
 10. **`code_step10`: W1 and W2 only.** E36's task has no answer position, so A1 and C1 are undefined on it; W1g on it has no
     reader. All three are cut.
 
+### After the code review (2026-11-02; `reports/reviews/2026-11-02_review_e63-code.md`; nothing has run)
+**Disclosure.** While reviewing, the reviewer computed W1 and its rotated value on all 26 saved states, since W1 needs no model. So W1's outcome was known before these amendments: it does not answer yes, and elicit is the denser side in every family. The rule changes were chosen on what the rules can do and do not change W1's outcome. No other number was read.
+
+The first-filed rules stay in `predictions.json` under `superseded_2026-11-02`.
+11. **Basis guard one-sided, on the sparser side.** W1 sat 0.053 above its rotated value and passed the two-sided rule while
+    denser. References: W1 rotated; W2 the per-state Gaussian; A1 both a per-state Gaussian update (the eight MLP matrices,
+    the other 16 at zero) and its rotated value; W1g the same first batch with its targets shuffled, the rotated reading
+    reported. The GELU makes the neuron basis special for any update, so rotation alone proves little for A1 and W1g.
+12. **T3_B: `ident32` against `rand32`, both at step 10.** `rand32b` is at step 30, so pooling it made the within-kind range
+    measure progress. `ident32b` and `rand32b` are reported beside it, unscored.
+13. **C1 is continuous, with a floor.** The half-share crossing is interpolated in log2 k. Every test's spread for C1 is at
+    least one grid step, 1 in log2, the file's noise floor. C1's guard reads against one seeded random order of the neurons
+    per state, not the state's own full width, which almost nothing could fail.
+14. **Every test: the gap must beat the reference's.** The sparser-signed gap must be strictly over the same signed gap on
+    each reference, on the same states. A gap that survives the reference is not neuron information; a reference gap on the
+    other side is beaten; a nan one reads unreadable. Block shares and per-block W1 are reported.
+15. **The rule on one-task tests is kept, and read as such.** T1, T2 and T3_C compare one task with one task, so seed range
+    cannot test kind: a pass reads "these tasks differ, in this direction". Simulated false-yes rate about 2% per number,
+    about 9% over five. `e53_cipher` is reported beside T3_C, unscored.
+16. **Stage 0 gates the ranking whether or not the 16-neuron update is readable:** the raw rise at k = 16 equals k = 12288
+    within 1e-6 nats. Both are the same forward when the ranks are right, so it should read 0; 1e-6 is the identity patch's
+    tolerance on the same path and about half of fp32's spacing at a log P of 16.
+17. **W1g on family C** may mostly read ordinary text (about 9% of broad cipher's training tokens are mapped); stated in its
+    `blind_to`. The number is unchanged.
+18. **The first-batch check stops the job.** It reads the batch's loss under bf16 autocast, as the fine-tune ran, against the
+    logged step 1, at 0.01 nats, so precision does not enter: note 5's fp32 comparison would have confounded the two and at
+    0.1 nats had no measured basis. The fp32 difference is reported.
+19. **Rotation's docstring corrected:** rotation is not a symmetry of the model, because of the GELU. `git_dirty` is recorded.
+
 ## Not run
 SGD fine-tunes of the pairs (W1g stands in); attention-head sparsity; any new fine-tune; Qwen (the Qwen line's); the
 causal label of row 112, which E64 and E55 C2 pursue.
