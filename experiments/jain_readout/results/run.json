@@ -1,6 +1,6 @@
 {
  "git_dirty": " M experiments/qwen_sft/results/run.log\n",
- "git_head": "0ae368e4743f43365d87a702da7ae5ebcb7d272b",
+ "git_head": "faff1e9c135dc1347415d06abc6666b84eca4719",
  "stage0": {
   "inputs": {
    "cipher": {
@@ -114,19 +114,7 @@
     "sha256": "4621769364674f90ee1262b41886c54c467b7118f563ed74c84985c85e3d780c"
    },
    "pass": true
-  },
-  "readouts": {
-   "gap_last": 0.7117276191711426,
-   "model": 3.4278030395507812,
-   "pass": false,
-   "readout": [
-    5.671519756317139,
-    5.212611675262451,
-    4.52653694152832,
-    4.139530658721924
-   ],
-   "sha256": "361b43461665c1a778d7110bac0e51019de5f51b1069b74ee5f492e1163395f5"
   }
  },
- "stopped": "[stage0 readouts] FAIL: the last block's readout is over the filed margin from the model's loss; tell the user"
+ "stopped": "[readout] step 250: last-block loss 5.0088 over 5: stop and tell the user"
 }
