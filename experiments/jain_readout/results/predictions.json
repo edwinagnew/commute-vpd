@@ -312,5 +312,19 @@
     "max_over_model": 0.5
    }
   }
+ },
+ "amended_2026_11_02_after_stop2": {
+  "date": "2026-11-02",
+  "source": "reports/reviews/2026-11-02_review_e59-stop2-fable-advice.md (Fable, adopted by the lead before any P1-P3 reading)",
+  "what": "the stage-0 readout loss rule (over_lin <= 0.1) is recorded, not a stop; job 48357 readouts (results/large/readouts.pt) are run through the rest of stage 0 and P1-P3 with --readouts; no further readout training",
+  "why": "job 48357: held-out over_lin 0.371, held-in over_lin ~0.07, model and L_lin identical held-in vs held-out, so the miss is memorisation of once-seen tokens by 50277 x 768 per-row weights (a sample-size limit, not a bug); more tokens need normal QoS or money",
+  "reading_rule": {
+   "P1 or P2 pass": "stands (an under-fit readout biases toward the null)",
+   "P1 elicit-clause fail or P2 fail": "unreadable: readout under-fit at d=768, vocab 50K, 15M tokens; no graded-ladder branch on it",
+   "P1 cipher-clause fail": "real",
+   "P3, do-nothing, W0 control": "remain stops"
+  },
+  "hard_cap": "this one run; zero further training attempts. If a control fails or the elicit map is possessed at no block before the last, close E59 with P1 unreadable (gap_last 0.513 > 0.5 on fresh data: the pre-set fallback applies)",
+  "departure": "Jain et al. read a vocabulary of a few hundred; this readout covers 50277 tokens"
  }
 }
