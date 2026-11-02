@@ -5,6 +5,10 @@
 `src/commute/copying.py`; rules `experiments/induction_cue/results/predictions.json`; job `cluster/induction_cue.sbatch`,
 one MATS `debug` job, $0, not gated. Coded, not run.*
 
+*Amended 2026-11-02, before the first run, after `reports/reviews/2026-11-02_review_e62-code.md` (F1, F2, F4; F3, F5, F6
+below). The lead chose the fixes. Predictions were changed with a dated note in `predictions.json` (`amended_before_first_run`):
+the run had not happened, so nothing was read.*
+
 **In plain words.** The small model already copies in context: after "A B ... A" it says B. We teach it to copy at a new
 marker, where it does not copy yet, and beside that we teach a lookup at the same marker on the same text. We switch off the
 heads the model already copies with: the copy map should lose most of what it learned, the lookup little. Then we ask
@@ -37,7 +41,7 @@ r is the candidate instrument scored against it.
 | Stage | What | Stops when |
 |---|---|---|
 | (a) | W₀ alone. Prefix score of all 24 heads (4 blocks, 6 heads); H = heads over the bar; mean-ablate H, then 5 random sets of \|H\| others, read E52's second-copy top-1 | pattern off `o_proj`'s input by over 1e-4; \|H\| 0, 24 or over 12; base off E52's 0.8247 by over 0.01; top-1 under H not below 0.3; median random draw not over 0.7 |
-| (b) | W₀'s prior for B at the marker; zero update; the per-window target path against the lookup-table path | prior over 1e-2; zero update not exactly 0; path differs |
+| (b) | W₀'s prior for B at the marker; the lookup's words drawn to match it; zero update; the per-window target path against the lookup-table path (old path run twice for the tolerance) | prior over 1e-2; no word set within a factor 2 of B's prior, or a measured ratio over 2; zero update not exactly 0; path differs |
 | (c) | Lookup then copy map, three seeds, E58's recipe; pair read at one step; states saved | none: a state under the gate is labelled too small |
 | (d) | The label, the floor, the cheap-solution controls | none |
 | (e) | Zero update's route gain, then r on all six | zero-update gain over 1e-6 |
@@ -63,15 +67,30 @@ the new branch fires only on -2 and `ci_len` defaults to no cut: `target_tokens`
 `sgd_ladder`, `identity_test`, `lift_test`. `tests/test_kv.py` and `tests/test_decompose.py` pass.
 
 **Control for it.** On E54's saved elicit task (sha256 checked), the lookup table against the last column holding the same
-targets: 30-step fine-tune max |ΔW difference| ≤ 1e-6, route cells ≤ 1e-4, and old r within 0.03 of E54's 0.7726. The expected
-difference is exactly 0: same tensors, same batches, and E58 A6 reproduced r bitwise. The old path run twice is printed as the
-measured floor. A CPU test on the tiny model already gets exact equality.
+targets: 30-step fine-tune max |ΔW difference| ≤ 10 × the same measure between two runs of the old path (review F4: the
+tolerance now comes from a measured floor, one extra fine-tune of ~25 s in stage (b)), route cells ≤ 1e-4, and old r within 0.03
+of E54's 0.7726. The factor 10 is chosen here, no source: one repeat is one sample of the floor. The expected difference is
+exactly 0: same tensors, same batches, and E58 A6 reproduced r bitwise; a repeat difference of exactly 0 therefore demands
+exactly 0, and a nonzero one sets the scale. The old path run twice for the route cells is printed as that floor too. A CPU
+test on the tiny model already gets exact equality.
 
 **The lookup and the pools.** A is 32 tokens (E54's K). The lookup maps each A to its own fixed word by `kv.bijection`. Both maps
 train and read on the same A pool and on the same token windows; train and read windows share no row (E12's row split, every 5th
 row read). 800 train, 200 read. All pools come from E58's cipher pool (word-like, frequency ranks 1000-2999), kept only if
-decode then encode returns the same single id, never the marker, and are cut at random into disjoint A, words, B to train, B to
-read. **B cannot leak into the lookup's target**: B and word pools are disjoint, and a window is dropped if A's word occurs in it.
+decode then encode returns the same single id, never the marker, and are cut at random into disjoint A, a word pool of 128
+candidates, B to train, B to read. **B cannot leak into the lookup's target**: B and the word pool are disjoint, and a window
+is dropped if any candidate occurs in it (so any later choice of words stays out of every window).
+
+**Matching the prior (review F1).** The test exists to separate "r reads the mechanism" from "r reads W₀'s prior for the
+target", and E58 found r tracks the prior closely (rank correlation 0.95 over eight maps). So the lookup's words are not fixed
+in advance. Stage (b) measures W₀'s geometric-mean P(B) at the marker on the read windows, then draws each key's word
+(`copying.pick_words`, `kv.bijection`'s `ok`, the recipe of E58's prior cipher in `open_pair/amend6.py`) from the word pool
+with that word's mean log P over the key's windows within a factor 2 of P(B). The map's geometric-mean P(word) is then within
+a factor 2 of P(B) too. Both priors and their ratio are logged; a key with no word in range, or a measured ratio over 2, stops
+the job (exit 1, $0). `prior_match_max` is 2, **with no published source**: chosen so the pair is tighter than E58's 3.7e-5 vs
+5.9e-5, which is a factor of 1.6 and read r 0.38 vs 0.77. Yes, 1.6 is inside 2: the bar is looser than that pair, and at
+a factor between 1.6 and 2 the prior alone could still move r a little. `score` still refuses a ratio over the bar
+(`priors_not_matched`) though the stop makes it unreachable. One lookup arm only.
 A window is also dropped unless A occurs exactly twice, B once and M once in all 41 tokens. p is uniform on 2..16, so B's
 position says nothing and at least one Pile token separates B from the second A. Each A meets many B, and read Bs are never
 trained, so B cannot be memorised; this is not a carry test, it closes a shortcut.
@@ -106,10 +125,17 @@ shows one k under 0.3, the fix is a dated amendment and a $0 rerun (the 2026-10-
 outside H. Requiring every draw over 0.7 would stop the job for that. Previous-token scores are printed so a low draw can be
 explained. The same median is the label's floor.
 
-**Under the gate.** The gain gate is E58's 5.148 log-odds, here on the raw gain. A share needs a positive gain: `share_lost` is
-nan unless G > 0, and a state under the gate reads `too_small`, is left out, and its r is reported only. A map needs 2 labelled
-seeds (E58's `min_entry`), else `no_label_*_did_not_learn`. Read step: first of 30, 100, 300 with both maps over the gate, then
-the copy map's, then the lookup's, then 300 (`copying.read_step`). Both maps of a seed are read at one step, for equal update size.
+**Under the gate.** The gain gate is E58's 5.148 log-odds (its source was already E58's specific gain). The read step is
+chosen on the **specific gain** (review F2): the copy map's gain minus its gain with B absent, the lookup's gain minus the mean
+gain of the other words (`heldout_keys.specific`'s definition), because early in a fine-tune the raw gain is partly a general
+push toward the pool's tokens (E58: raw 14.0 and specific 1.6 at step 10) and would pick a step where the copy map is still a
+lean, then void the label with no later step to look at. Stage (c) computes, for every map at each of steps 30, 100 and 300,
+the raw gain, the B-absent gain, the pair-broken gain and the specific gain, prints them and writes them to
+`run.json` (`states.*.gains_by_step`; the lookup has no B, so it carries raw, others and specific). A share needs a positive
+gain: `share_lost` is nan unless G > 0, and a state whose raw G is under the gate reads `too_small`, is left out, and its r is
+reported only (the label's own gate stays on the raw G). A map needs 2 labelled seeds (E58's `min_entry`), else
+`no_label_*_did_not_learn`. Read step: first of 30, 100, 300 with both maps' specific gains over the gate, then the copy map's,
+then the lookup's, then 300 (`copying.read_step`). Both maps of a seed are read at one step, for equal update size.
 
 **Rule edge cases.** All in `tests/test_copying.py`: H empty, all, over half (stop); zero or negative gain; a seed under the gate;
 one seed left; ties at every bar; a missing state; non-finite r; every verdict branch. A negative share (ablation raises the
@@ -121,8 +147,8 @@ gain) reads "new". Verdict order is in `copying.score`; any no-label outcome mea
 |---|---|---|---|---|---|
 | Prefix score per head | as measured; this is W₀'s number | chance, 0.0154 (uniform pattern) | reconstruction ≤ 1e-4 | 1 to 12 heads over the bar; lean, none in block 0 | heads that copy without attending by prefix; attention is not output |
 | Second-copy top-1 | 0.8247 (E52) | random heads: median over 0.7 | H: under 0.3 | as filed; binomial sd 0.011 on 1152 | any copying this easy format does not use |
-| Prior: geo-mean P(B) at M | the reading itself | B absent: lower (lean) | stop over 1e-2 | 1e-6 to 1e-4 | is a mean over windows, not the rare windows that already copy |
-| Gain G (log-odds) | exactly 0 | zero update exactly 0 | gate 5.148 | E58 fine-tunes read 13-21 at step 30; the copy map may need more steps | which route carries it |
+| Prior: geo-mean P(B) at M | the reading itself | B absent: lower (lean) | stop over 1e-2 | 1e-6 to 1e-4; lookup word's within a factor 2 of it (about 5e-7 to 2e-4), a stop otherwise | is a mean over windows, not the rare windows that already copy |
+| Gain G (log-odds) | exactly 0 | zero update exactly 0 | gate 5.148 on the specific gain, to pick the read step | E58 fine-tunes read 13-21 at step 30 (specific); the copy map may need more steps | which route carries it |
 | Share lost under H | undefined by rule, G − G_abl reads exactly 0 | random heads: median under 0.15 | path control; floor | copy ≥ 0.5, lookup ≤ 0.2; row-bootstrap sd printed; three-seed range is its seed noise | a fine-tune keeping H's key and value paths but a new query counts as reuse; subcomponents; other heads the fine-tune recruits |
 | Pair-broken ratio | 0 by zero update | n/a | n/a | ≤ 0.5 | matching on tokens other than A |
 | B-absent ratio | 0 by zero update | n/a | n/a | ≤ 0.2 | a lean only toward trained Bs (read Bs are untrained) |
@@ -130,12 +156,18 @@ gain) reads "new". Verdict order is in `copying.score`; any no-label outcome mea
 | r | undefined, gain exactly 0 (printed with L10 − L00 and L01 − L00) | E58's own reference bands, cipher 0.29-0.31, copy 0.77 | E54's elicit_s0 0.7726 ±0.03 through both paths | see below; noise 0.045 (E58's largest three-seed range) | which subcomponents; r's cut at 0.5 |
 | ||ΔW|| | 0 | n/a | n/a | E58 ~5.2 at step 30 | reported beside r, per the 2026-10-31 row |
 
-**Reading r.** Copy map r ≥ 0.5 on every labelled seed, lookup under 0.5 and mean gap ≥ 0.24: "r follows mechanism". Both under
-0.5: "r follows the prior". Anything else, both high included: "untested". `near_cut` flags an r within 0.045 of 0.5.
+**Reading r**, with the priors matched (ratio ≤ 2; otherwise `priors_not_matched`, r reported beside). Copy map r ≥ 0.5 on
+every labelled seed, lookup under 0.5 and mean gap ≥ 0.24: "r follows mechanism", r separates the maps where the prior cannot.
+Every r of both under 0.5 **and** the mean gap under 0.24: "r follows the prior", meaning that with the priors matched r does
+not read this mechanism at this prior (the name is kept from the earlier reading, which could not separate the two). Anything
+else is "untested": both high, or all low with a gap (copy 0.44 beside lookup 0.10), a missing or non-finite r. `near_cut` flags
+an r within 0.045 of 0.5.
 
-**Prior beside r.** E58's table has r 0.37 at prior 3.7e-5 and 0.77 at 5.9e-5, so the prior alone does not fix r in this range.
-A copy-map prior in (1e-3, 1e-2] runs on but is flagged `prior_high`: then the run cannot say mechanism rather than prior. Rare
-tokens in context often rise on their own, so this is the likeliest way the design weakens.
+**Prior beside r.** E58's table has r 0.37 at prior 3.7e-5 and 0.77 at 5.9e-5, so the prior alone did not fix r at that gap
+of 1.6; across all eight of its maps, rank correlation of prior and r is 0.95. Hence the match above: without it "r follows
+mechanism" could fire on a prior gap alone. A copy-map prior in (1e-3, 1e-2] runs on but is flagged `prior_high`: then the run
+cannot say mechanism rather than prior even with the match (both maps' priors are high). Rare tokens in context often rise on
+their own, so this is the likeliest way the design weakens.
 
 ## Granularity limit
 
@@ -161,15 +193,27 @@ says "elicited at the level of VPD's pieces", and at the level of heads for the 
   definition says the head attends to "the token which induction would suggest comes next". We score the token after the
   earlier copy, the second; the literal reading's score is printed beside.
 - **Bar.** They give none; ours is above.
-- **Ablation.** They zero a head's contribution, and on small models only. We use the mean, as approved. **The draft's "they
-  report zero and mean ablations on larger models" does not match the paper** (full-scale models had no ablations). Zero
-  ablation is not run.
+- **Ablation.** Olsson et al. 2022 zero-ablate a head's contribution, and on small models only; we mean-ablate (each head's
+  output replaced by its mean over unedited Pile positions), as approved. **The draft's "they report zero and mean ablations
+  on larger models" does not match the paper** (full-scale models had no ablations). Zero ablation is not run.
 - **Copying score.** They require a copying score too for an induction head. We use only prefix matching and let the causal
   control speak.
 - **Jain et al. 2024, Def 2** takes a linear readout as the capability; we take a head set and the user's causal requirement.
-- **Thresholds.** 0.5 on the share and r is E12's convention; 0.24 is E58's band gap; 0.2 and 0.15 are the draft's. None published.
+- **Thresholds.** 0.5 on the share and r is E12's convention; 0.24 is E58's band gap; 0.2 and 0.15 are the draft's; the prior
+  match of 2 and the path-control factor of 10 are chosen here. None published. The head bar (5 × the uniform pattern) is also
+  ours, not the paper's.
+- **Gain gate.** E58's 5.148, on its specific gain; here the copy map's specific gain is its gain minus its gain with B absent,
+  our analogue (E58 had a value pool to subtract; the copy map has none).
 - **Recipe.** Adam 3e-5, batch 32, KL 1, clip 1 is this project's (E54, E58), from `keydep.finetune`, unchanged except the
   target form, checked by the path control. KL covers the same 40 non-read positions.
+
+## Review items read and skipped
+
+`reports/reviews/2026-11-02_review_e62-code.md`, items F3, F5, F6 were read and not acted on:
+- **F3** (verdict names overclaim): read "between" as no clean label. `copy_not_elicitation` with a copy share of 0.62, 0.58 or
+  0.47, and `lookup_uses_the_heads` at a lookup share of 0.25, are read that way in every write-up; the names stay.
+- **F5** (random draws collapse at large |H|): reported if H comes out that large; the draws are printed.
+- **F6** (zero-update stops test little): kept, they cost nothing. L10 − L00 and L01 − L00 at the zero update stay printed.
 
 ## Where each setting comes from
 

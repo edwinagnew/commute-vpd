@@ -6,10 +6,12 @@ and committed first; the run refuses otherwise; never edited). Rules: `commute.c
 
   (a) W0 alone: prefix-matching score of the 24 heads on repeated random tokens; H = the heads over the bar; W0's
       second-copy top-1 (E52's control) falls under H's mean ablation and holds under random heads'. Exit 1 on a miss.
-  (b) W0's prior for B at the marker, the zero update reads 0, then the data.LAST path equals the lookup-table path on
-      E54's saved elicit task (fine-tune and r). Exit 1 on a prior over the stop bar or any miss.
-  (c) Lookup then copy map, seeds 0-2, E58's recipe (`keydep.finetune`); each pair read at `copying.read_step`, its
-      states saved.
+  (b) W0's prior for B at the marker; the lookup's words drawn from the word pool so that their prior is within
+      `prior_match_max` of it (`copying.pick_words`); the zero update reads 0; then the data.LAST path equals the
+      lookup-table path on E54's saved elicit task (fine-tune and r), the fine-tune's tolerance a factor times the old
+      path's run-to-run difference. Exit 1 on a prior over the stop bar, no matched word set or any miss.
+  (c) Lookup then copy map, seeds 0-2, E58's recipe (`keydep.finetune`); each pair read at `copying.read_step`, chosen on
+      the specific gains (printed with the raw, B-absent and pair-broken gains at every kept step); states saved.
   (d) The label: share of each state's gain lost under H, net of W0's change; the random-head floor; the two
       cheap-solution controls (copy) and the specific share (lookup).
   (e) r on every state with `local_faith.route_split`, then `copying.score`.
@@ -68,7 +70,7 @@ class Cfg:
     def __post_init__(self) -> None:
         w = self.windows
         assert self.half == AN.HALF and set(self.read_steps) <= set(KD.E12_CHECKS), "predictions.json disagrees with the code"
-        assert w["pool_ranks"] == [AN.VALUE_RANK0, AN.VALUE_RANK0 + AN.POOL] and w["n_keys"] * 2 < AN.POOL, "predictions.json disagrees with the code"
+        assert w["pool_ranks"] == [AN.VALUE_RANK0, AN.VALUE_RANK0 + AN.POOL] and w["n_keys"] + w["n_word_pool"] < AN.POOL, "predictions.json disagrees with the code"
 
     @property
     def n(self) -> int:
@@ -94,9 +96,14 @@ def build(ctx: KD.Ctx, c: Cfg, out: dict[str, Any]) -> CP.Cue:
     cue = CP.build_cue(rows, marker, ranked, lambda t: tok.encode(tok.decode([t])) == [t], c.half, c.windows)
     out["pools"] = {**cue.info, "marker": [marker, tok.decode([marker])]}
     log(f"[pools] {json.dumps(out['pools'])}")
+    save_windows(ctx, cue, out)
+    return cue
+
+
+def save_windows(ctx: KD.Ctx, cue: CP.Cue, out: dict[str, Any]) -> None:
+    """windows.pt again once stage (b) has fixed the lookup's words (the targets of the lookup are in it)."""
     torch.save({"train": cue.train, "read": cue.read, "target": cue.target, "p_read": cue.p_read, "pools": out["pools"]}, ctx.large / "windows.pt")
     out["windows_sha256"] = KD.sha256(ctx.large / "windows.pt")
-    return cue
 
 
 # ----------------------------------------------------------------------------- (a)
@@ -153,22 +160,40 @@ def stage_a(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, th: dict[str, Any], out: dict[str,
 
 
 def stage_b(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, H: list[CP.Head], means: Tensor, th: dict[str, Any], out: dict[str, Any]) -> str:
+    """W0's prior for B, then the lookup's words drawn to match it (the prior is measured here, so the words are too),
+    then the zero update. Stops: B's prior over prior_stop; no word set within prior_match_max of it; a zero update not 0."""
     net, n = ctx.net, c.n
     zero = {k: torch.zeros_like(x) for k, x in net.W0.items()}
     geo = lambda w: KD.geo_rate(CP.read_lo(net, w, c.half, n, readout=ST.logp_at))
     ctl = cue.controls(c.half, c.control_seed)
-    rec: dict[str, Any] = {"prior_copy": geo(cue.read_windows("copy")), "prior_lookup": geo(cue.read_windows("lookup")), "prior_b_absent": geo(ctl["absent"]), "prior_pair_broken": geo(ctl["broken"]), "zero_max_abs": {}}
+    rec: dict[str, Any] = {"prior_copy": geo(cue.read_windows("copy")), "prior_b_absent": geo(ctl["absent"]), "prior_pair_broken": geo(ctl["broken"]), "zero_max_abs": {}}
+    rec["band"] = CP.prior_band(rec["prior_copy"], th)
+    out["stage_b"] = rec
+    log(f"[b] W0 prior: B at the marker {rec['prior_copy']:.3e} -> {rec['band']} | B absent {rec['prior_b_absent']:.3e} | pair broken {rec['prior_pair_broken']:.3e}")
+    dump(out)
+    if rec["band"] == "stop":
+        stop(out, f"stage (b): W0's prior for B {rec['prior_copy']} is over {th['prior_stop']}")
+    lp = CP.word_logp(net, cue.read.tokens, c.half, n, cue.word_pool)
+    try:
+        words = CP.pick_words(cue.keys, cue.word_pool, cue.read.tokens[:, c.half - 1], lp, math.log(rec["prior_copy"]), th["prior_match_max"], c.windows["pool_seed"])
+    except AssertionError as e:
+        stop(out, f"stage (b): no word set from the pool of {len(cue.word_pool)} puts the lookup's prior within a factor {th['prior_match_max']} of B's {rec['prior_copy']:.3e} ({e})")
+    cue.set_words(words)
+    out["pools"]["words"] = cue.info["words"]
+    save_windows(ctx, cue, out)
+    rec["prior_lookup"] = geo(cue.read_windows("lookup"))
+    rec["prior_ratio"] = CP.prior_ratio(rec["prior_copy"], rec["prior_lookup"])
+    log(f"[b] priors: B {rec['prior_copy']:.3e} lookup word {rec['prior_lookup']:.3e} ratio {rec['prior_ratio']:.3f} (bar {th['prior_match_max']})")
+    dump(out)
+    if not rec["prior_ratio"] <= th["prior_match_max"]:
+        stop(out, f"stage (b): the lookup's prior {rec['prior_lookup']:.3e} is not within a factor {th['prior_match_max']} of B's {rec['prior_copy']:.3e}")
     for m in MAPS:
         w = cue.read_windows(m)
         with CP.ablated(net, H, means):
             ab = float((CP.read_lo(net, w, c.half, n, zero) - CP.read_lo(net, w, c.half, n)).abs().max())
         rec["zero_max_abs"][m] = max(ab, float((CP.read_lo(net, w, c.half, n, zero) - CP.read_lo(net, w, c.half, n)).abs().max()))
-    rec["band"] = CP.prior_band(rec["prior_copy"], th)
-    out["stage_b"] = rec
-    log(f"[b] W0 prior: B at the marker {rec['prior_copy']:.3e} -> {rec['band']} | lookup word {rec['prior_lookup']:.3e} | B absent {rec['prior_b_absent']:.3e} | pair broken {rec['prior_pair_broken']:.3e} | zero update {rec['zero_max_abs']}")
+    log(f"[b] zero update {rec['zero_max_abs']}")
     dump(out)
-    if rec["band"] == "stop":
-        stop(out, f"stage (b): W0's prior for B {rec['prior_copy']} is over {th['prior_stop']}")
     if any(v != 0.0 for v in rec["zero_max_abs"].values()):
         stop(out, "stage (b): a zero update does not read 0")
     return rec["band"]
@@ -183,17 +208,18 @@ def path_control(ctx: KD.Ctx, c: Cfg, th: dict[str, Any], out: dict[str, Any]) -
     t = ST.load_task(ctx.net, E54 / "windows_elicit.pt", "elicit", "elicit")
     col = lambda x: CP.with_target(x, w["table"][x.tokens[:, c.half]])
     new = {"table": LAST, "train": col(w["train"]), "heldout": col(w["heldout"]), "ci_len": c.n}
-    ft_old, ft_new = KD.finetune(ctx, w, 0, (30,)), KD.finetune(ctx, new, 0, (30,))
-    ft_diff = max(float((ft_old.deltas[30][k] - ft_new.deltas[30][k]).abs().max()) for k in ft_old.deltas[30])
+    ft_old, ft_new, ft_rep = KD.finetune(ctx, w, 0, (30,)), KD.finetune(ctx, new, 0, (30,)), KD.finetune(ctx, w, 0, (30,))
+    gap = lambda a, b: max(float((a.deltas[30][k] - b.deltas[30][k]).abs().max()) for k in a.deltas[30])
+    ft_diff, ft_repeat = gap(ft_old, ft_new), gap(ft_old, ft_rep)  # the old path twice is the measured floor of the tolerance
     dW = torch.load(E54 / "elicit_s0.pt", weights_only=True)
     base_old, base_rep = KD.base_of(ctx, t), KD.base_of(ctx, t)
     toks = col(w["heldout"]).tokens
     base_new = route_cells(ctx.net.model, toks, c.half, LAST, KD.BATCH, c.n)
     old, rep = KD.route_r(ctx, t, dW, base_old), KD.route_r(ctx, t, dW, base_rep)
     now = KD.route_windows(ctx, toks, c.half, LAST, dW, base_new, c.n)
-    rec = {"ft_max_abs_diff": ft_diff, "r_old": old["r"], "r_repeat": rep["r"], "r_new": now["r"], "r_ref": th["r_ref"],
+    rec = {"ft_max_abs_diff": ft_diff, "ft_repeat_max_abs_diff": ft_repeat, "ft_tol": th["ft_tol_factor"] * ft_repeat, "r_old": old["r"], "r_repeat": rep["r"], "r_new": now["r"], "r_ref": th["r_ref"],
            "cell_diff_new": max(abs(old["cells"][k] - now["cells"][k]) for k in old["cells"]), "cell_diff_repeat": max(abs(old["cells"][k] - rep["cells"][k]) for k in old["cells"])}
-    rec["pass"] = bool(ft_diff <= th["ft_tol"] and rec["cell_diff_new"] <= th["path_tol"] and abs(old["r"] - th["r_ref"]) <= th["r_tol"])
+    rec["pass"] = bool(ft_diff <= rec["ft_tol"] and rec["cell_diff_new"] <= th["path_tol"] and abs(old["r"] - th["r_ref"]) <= th["r_tol"])
     out["path_control"] = rec
     log(f"[path] {json.dumps(rec)}")
     dump(out)
@@ -204,17 +230,35 @@ def path_control(ctx: KD.Ctx, c: Cfg, th: dict[str, Any], out: dict[str, Any]) -
 # ----------------------------------------------------------------------------- (c), (d), (e)
 
 
+def gain_row(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, m: str, dW: ST.DW, ref: dict[str, Any]) -> dict[str, float]:
+    """The gains (mean log-odds change on the read windows) at one kept step. Copy map: raw, with B absent, with the pair
+    broken, and specific = raw - with B absent. Lookup: raw, the mean over the other words, and specific = raw - others
+    (as E58 defines it, `heldout_keys.specific`). The read step is chosen on the specific gain."""
+    mean = lambda w, base, ro=ST.logodds_at: float((CP.read_lo(ctx.net, w, c.half, c.n, dW, ro) - base).mean())
+    w = cue.read_windows(m)
+    raw = mean(w, ref["base"][m])
+    if m == "copy":
+        absent, broken = (mean(ref["ctl"][k], ref["base_ctl"][k]) for k in ("absent", "broken"))
+        return {"raw": raw, "absent": absent, "broken": broken, "specific": raw - absent}
+    others_gain = mean(w, ref["base_other"], ref["other"])
+    return {"raw": raw, "others": others_gain, "specific": raw - others_gain}
+
+
 def stage_c(ctx: KD.Ctx, c: Cfg, cue: CP.Cue, th: dict[str, Any], out: dict[str, Any]) -> dict[str, ST.DW]:
     dws: dict[str, ST.DW] = {}
-    base = {m: CP.read_lo(ctx.net, cue.read_windows(m), c.half, c.n) for m in MAPS}
+    ctl = cue.controls(c.half, c.control_seed)
+    other = others(list(cue.words.values()))
+    ref = {"base": {m: CP.read_lo(ctx.net, cue.read_windows(m), c.half, c.n) for m in MAPS}, "ctl": ctl,
+           "base_ctl": {k: CP.read_lo(ctx.net, v, c.half, c.n) for k, v in ctl.items()}, "other": other,
+           "base_other": CP.read_lo(ctx.net, cue.read_windows("lookup"), c.half, c.n, None, other)}
     for s in c.seeds:
         fts, gains = {}, {}
         for m in MAPS:
             w = {"table": LAST, "train": CP.with_target(cue.train, cue.target[m]["train"]), "heldout": CP.with_target(cue.read, cue.target[m]["read"]), "ci_len": c.n}
             fts[m] = KD.finetune(ctx, w, s, KD.E12_CHECKS)
-            gains[m] = {st: float((CP.read_lo(ctx.net, cue.read_windows(m), c.half, c.n, fts[m].deltas[st]) - base[m]).mean()) for st in c.read_steps}
-            log(f"[c {m}_s{s}] gain by step {gains[m]} (gate {th['G_min']}) p_read {({k: round(e['p_o'], 4) for k, e in fts[m].evals.items()})}")
-        step = CP.read_step(gains["copy"], gains["lookup"], th["G_min"])
+            gains[m] = {st: gain_row(ctx, c, cue, m, fts[m].deltas[st], ref) for st in c.read_steps}
+            log(f"[c {m}_s{s}] gains by step {json.dumps(gains[m])} (gate {th['G_min']} on the specific gain) p_read {({k: round(e['p_o'], 4) for k, e in fts[m].evals.items()})}")
+        step = CP.read_step({st: g["specific"] for st, g in gains["copy"].items()}, {st: g["specific"] for st, g in gains["lookup"].items()}, th["G_min"])
         for m in MAPS:
             n, dW = f"{m}_s{s}", fts[m].deltas[step]
             dws[n] = dW
@@ -299,7 +343,7 @@ def main() -> None:
     dws = stage_c(ctx, c, cue, th, out)
     stage_d(ctx, c, cue, dws, H, draws, means, th, out)
     stage_e(ctx, c, cue, dws, th, out)
-    out["score"] = CP.score(out["states"], band, th, c.seeds)
+    out["score"] = CP.score(out["states"], band, th, c.seeds, out["stage_b"]["prior_ratio"])
     dump(out)
     log(f"[score] {json.dumps(jsonable(out['score']))}")
     log(f"[prior beside r] B {out['stage_b']['prior_copy']:.3e} word {out['stage_b']['prior_lookup']:.3e}; {({n: (round(s['r'], 4), s['label'], round(s['norm'], 3)) for n, s in out['states'].items()})}")
