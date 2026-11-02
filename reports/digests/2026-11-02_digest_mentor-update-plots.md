@@ -47,8 +47,28 @@ plot, its card, the one sentence to say over it. Sources are the experiments' ow
 
 ## Open decisions to raise
 
-- What "elicitation" means for the re-gating claim (the log's pending card, since 2026-10-30): (i) the answer was
-  already the model's, which r reads; or (ii) a capability reused on new inputs, which r does not read and which no
-  instrument yet labels on the 67M maps.
+- "Elicitation" was fixed on 2026-11-02 (ask 16) as mechanistic: the fine-tuned behaviour runs through a mechanism the
+  original model already has. "The answer was already the model's own" is rejected as the definition; carrying to
+  unseen keys is evidence, not the label. r is not dropped: it is demoted from definition to candidate instrument,
+  scored against a causal label. Next run E62: teach the 67M model's in-context copying heads a new cue, confirm by
+  ablating those heads, then read r on it and on a lookup at the same cue. On Qwen the re-gating share was set aside
+  separately (E57: 0.99 on everything); only the direct share is still tested there (E61).
 - Whether a benchmark with headroom exists at all: the counting set is saturated by cheap methods, the open-pair set
   is labelled by none.
+
+## The route-split shares (plot 3), as the code computes them
+
+All cells are mean log-odds of the target at the trigger over held-out windows. T_s: the full model at state s (0 the
+original, 1 the fine-tuned). C_1 = C_0 + (dU, dV): the pieces after the least-squares split (smallest dU, dV with
+dU V^T + U dV^T ~ dW; the rest to Delta). g_b: the frozen Gamma's gates read from model b's activations. U_s: stand-in from
+C_s with every gate on, Delta out. L_ab: stand-in from C_a under gates g_b, Delta out. G = T_1 - T_0.
+
+    d      = (L_10 - L_00) / G                       direct: moved pieces, old gating
+    r      = (L_01 - L_00) / G                       re-switching (re-gating share): original pieces, new gating
+    i      = (L_11 - L_10 - L_01 + L_00) / G         interaction
+    e_gate = [(U_1 - L_11) - (U_0 - L_00)] / G       masked-off: pieces Gamma keeps off
+    e_D    = [(T_1 - U_1) - (T_0 - U_0)] / G         residual Delta
+    sum    = 1
+    stand-in ratio = (L_11 - L_00) / (U_1 - U_0)     plots 4 and 5; no ceiling at 1
+
+Source: `src/commute/local_faith.py`, `route_split`.
