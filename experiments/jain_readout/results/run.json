@@ -1,6 +1,6 @@
 {
  "git_dirty": " M experiments/qwen_sft/results/run.log\n",
- "git_head": "faff1e9c135dc1347415d06abc6666b84eca4719",
+ "git_head": "25d8c7296afebc362a4b7cef471f7a520935c410",
  "stage0": {
   "inputs": {
    "cipher": {
@@ -114,7 +114,34 @@
     "sha256": "4621769364674f90ee1262b41886c54c467b7118f563ed74c84985c85e3d780c"
    },
    "pass": true
+  },
+  "readouts": {
+   "gap_last": 0.5134882926940918,
+   "held_in": {
+    "lin": 3.5715978145599365,
+    "model": 3.428088426589966,
+    "readout": [
+     5.358382225036621,
+     4.8594584465026855,
+     4.126835823059082,
+     3.645746946334839
+    ]
+   },
+   "lin": 3.5707030296325684,
+   "lin_minus_model": 0.1428999900817871,
+   "model": 3.4278030395507812,
+   "over_lin": 0.3705883026123047,
+   "pass": false,
+   "readout": [
+    5.573741436004639,
+    5.09316873550415,
+    4.3802080154418945,
+    3.941291332244873
+   ],
+   "readouts": "/mnt/nw/home/e.agnew/commute-data/results-large/jain_readout/readouts.pt",
+   "scale": 1.1008224487304688,
+   "sha256": "374de867d10dda706075c359d001ae697678d9693ee13162179d5028b4e079d9"
   }
  },
- "stopped": "[readout] step 250: last-block loss 5.0088 over 5: stop and tell the user"
+ "stopped": "[stage0 readouts] FAIL: the last block's readout is over the linearised head's held-out loss + the filed margin; tell the user"
 }
