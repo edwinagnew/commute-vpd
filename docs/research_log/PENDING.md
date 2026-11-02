@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-11-02 baseline-lead · decisions.md, docs/research_log/parts/sections/decisions.html · section 3 · decision-e65-or-stage-b is decided: the user chose (b), plan the copying check on the 67M first (relayed by commute-lead). Remove the card; one timeline clause; the harder counting test stays drafted, not run.
