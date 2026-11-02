@@ -19,7 +19,7 @@ import torch
 from amend1 import E46, Job, check, dump, log, near
 from torch import Tensor
 
-from commute import recruit, signatures, teacher
+from commute import component_training, recruit, signatures, teacher, vpd
 from commute.faithfulness import model_state
 from commute.keydep import sha256
 from commute.local_faith import masked_lo, route_cells
@@ -99,11 +99,11 @@ def p4_state(fall: float, at_trigger: float, ladder: list[float]) -> str:
 
 
 def p5(falling: list[float], reference: list[float]) -> str:
-    """Student-to-teacher distance over teacher size: E12's rule between the two tables."""
+    """Cosine between a student's change and its teacher's change: E12's separation rule between the two tables."""
     if len(falling) < CM.n_seeds or len(reference) < CM.n_seeds or not finite(*falling, *reference):
         return "unscorable"
     within = max(max(falling) - min(falling), max(reference) - min(reference))
-    return "further" if min(falling) - max(reference) > within else "nearer" if min(reference) - max(falling) > within else "no separation"
+    return "more aligned" if min(falling) - max(reference) > within else "less aligned" if min(reference) - max(falling) > within else "no separation"
 
 
 def score(out: dict[str, Any]) -> dict[str, Any]:
@@ -123,7 +123,8 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
                    "J_reference": {n: st[n]["J"] for n in refs}, "J_seed": j_seed, "J_other_table": j_other, "J_order": dict(zip(names, j_order, strict=True))},
             "P3": {"verdict": agree(list(r3.values())), "per_state": r3},
             "P4": {"verdict": agree(list(r4.values())), "per_state": r4},
-            "P5": {"verdict": p5([st[n]["distance"] for n in names], [st[n]["distance"] for n in refs]), "distance": {n: st[n]["distance"] for n in [*names, *refs]}}}
+            "P5": {"verdict": p5([st[n]["cosine"] for n in names], [st[n]["cosine"] for n in refs]),
+                   **{q: {n: st[n][q] for n in [*names, *refs]} for q in ("cosine", "distance", "size_ratio", "cosine_other_seed")}}}
 
 
 # ----------------------------------------------------------------------------- reads
@@ -169,11 +170,27 @@ def restored(job: Job, w: dict[str, Any], low: list[dict[str, Tensor]], high: li
             "top": [[k, c, float(ch[k][c])] for k, c in top], **{b: back(sel) for b, sel in blocks.items()}}
 
 
-def distance(dW: dict[str, Tensor], dW_t: dict[str, Tensor]) -> float:
-    """||student's change - teacher's|| / ||teacher's|| over all matrices together (a zero teacher gives nan or inf, which the rule refuses)."""
-    diff = sum(float((dW[k].double() - dW_t[k].double()).pow(2).sum()) for k in dW_t)
-    size = sum(float(dW_t[k].double().pow(2).sum()) for k in dW_t)
-    return float(torch.tensor(diff).sqrt() / torch.tensor(size).sqrt())
+def change_stats(dW: dict[str, Tensor], dW_t: dict[str, Tensor]) -> dict[str, float]:
+    """A student's change against a teacher's (both from W0), over all matrices together, in fp64. `cosine` is scored (P5); `distance`
+    (unnormalised) and `size_ratio` (student over teacher) are reported. A zero change on either side gives nan, which the rule refuses."""
+    dot = sum(float((dW[k].double() * dW_t[k].double()).sum()) for k in dW_t)
+    ns, nt = (math.sqrt(sum(float(d[k].double().pow(2).sum()) for k in dW_t)) for d in (dW, dW_t))
+    diff = math.sqrt(sum(float((dW[k].double() - dW_t[k].double()).pow(2).sum()) for k in dW_t))
+    nan = math.nan
+    return {"cosine": dot / (ns * nt) if ns * nt > 0 else nan, "distance": diff, "size_ratio": ns / nt if nt > 0 else nan}
+
+
+def hook_l01(job: Job, w: dict[str, Any], comps: dict[str, tuple[Tensor, Tensor]]) -> float:
+    """L01 on the forward the student trained on: W0 plus the offsets as hooks (component_training.hooks), rebuilt from the fp32 `comps`.
+    Reported only; its pair is the weight-form L01 (`masked(gates_at(...))`), which runs W0 + dW under bf16 autocast."""
+    init = {k: (comps[k][0][job.alive[k]].T.float() - u, comps[k][1][:, job.alive[k]].float() - v) for k, (u, v) in job.uv.items()}
+    handles = component_training.hooks({k: vpd.target_linear(job.model, k) for k in job.uv}, component_training.Offsets(job.uv, init=init))
+    try:
+        gates = route_cells(job.model, w["heldout"].tokens, w["heldout"].half, w["table"])["gates"]
+    finally:
+        for h in handles:
+            h.remove()
+    return masked(job, w, gates)
 
 
 def fine_tunes(job: Job, out: dict[str, Any], a1: dict[str, Any]) -> dict[str, Any]:
@@ -215,8 +232,6 @@ def student(job: Job, out: dict[str, Any], a1: dict[str, Any], ft: dict[str, Any
     a, g = job.read(w, f"{name} a", dW, comps), gates_at(job, w, dW)
     L01, L01_ft = masked(job, w, g), out["fine_tunes"][n]["L01"]
     near(out, f"{name} L01 by gates against the route split's", L01, a["cells"]["L01"], CM.zero_tol)
-    if order == 0:
-        near(out, f"{name} L01 against Amendment 1's", L01, a1["students"][name]["a"]["cells"]["L01"], CM.repro_tol)
     if not out["students"]:  # the restore's path, once
         everything = {k: torch.arange(job.model.module_to_c[k]) for k in job.alive}
         near(out, "restoring every value everywhere gives the fine-tune's L01", masked(job, w, recruit.hybrid(g, f["gates"], everything)), L01_ft, CM.zero_tol)
@@ -228,13 +243,19 @@ def student(job: Job, out: dict[str, Any], a1: dict[str, Any], ft: dict[str, Any
     half = w["heldout"].half
     torch.save({"student": {k: v[:, half].half() for k, v in recruit.cat_gates(g).items()}, "fine_tune": {k: v[:, half].half() for k, v in recruit.cat_gates(f["gates"]).items()}},
                STATES / f"trigger_{name}.pt")
-    out["students"][name] = {"task": t, "seed": s, "order": order, "fine_tune": n, "a": a, "curve": curve, "L01": L01, "fall": L01_ft - L01, "term_lost": (L01_ft - L01) / (L01_ft - w["base"]["L"]),
+    other = next(x for x in CM.seeds if x != s)  # P5's positive control: the same table's other seed's teacher
+    L01_hook = hook_l01(job, w, comps)  # reported only, no stop: the forward the student trained on, beside L01 (weight form)
+    out["students"][name] = {"task": t, "seed": s, "order": order, "fine_tune": n, "a": a, "curve": curve, "L01": L01, "L01_hook": L01_hook, "fall": L01_ft - L01,
+                             "term_lost": (L01_ft - L01) / (L01_ft - w["base"]["L"]),
                              "J": recruit.jaccard(f["on"], on), "n_on": recruit.size(on), "S_on": members(on), "n_parts": {b: len(parts[b]) for b in BLOCKS},
-                             "dropped": sorted(parts["dropped"]), "added": sorted(parts["added"]), "restored": back, "distance": distance(dW, f["dW"])}
+                             "dropped": sorted(parts["dropped"]), "added": sorted(parts["added"]), "restored": back, **change_stats(dW, f["dW"]),
+                             "cosine_other_seed": change_stats(dW, ft[f"{t}_{other}"]["dW"])["cosine"]}
     rec = out["students"][name]
-    log(f"[student {name}] {json.dumps({k: rec[k] for k in ('L01', 'fall', 'term_lost', 'J', 'n_on', 'n_parts', 'distance')})}")
+    log(f"[student {name}] {json.dumps({k: rec[k] for k in ('L01', 'L01_hook', 'fall', 'term_lost', 'J', 'n_on', 'n_parts', 'cosine', 'cosine_other_seed', 'distance', 'size_ratio')})}")
     log(f"[restored {name}] {json.dumps({k: v for k, v in back.items() if k != 'top'})}")
     dump(out)
+    if order == 0:  # after the dump, so a missed reproduction keeps this state's reads
+        near(out, f"{name} L01 against Amendment 1's", L01, a1["students"][name]["a"]["cells"]["L01"], CM.repro_tol)
     return on
 
 
