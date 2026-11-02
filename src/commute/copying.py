@@ -1035,3 +1035,48 @@ def token_reading(part_broken_gates: float, part_intact_gates: float, mask_lean:
         return "unreadable"
     s1, s2, bar = part_broken_gates / mask_lean, part_intact_gates / mask_lean, th["token_share"]
     return "through_tokens" if s1 > bar and s2 > bar else "through_gates" if s1 < bar and s2 < bar else "order_dependent"
+
+
+# ----------------------------------------------------------------------------- Amendment 6's filed rules (results/predictions_amend6.json)
+
+
+def overwrite_holds(toks: Tensor, over: Tensor, p: Tensor, b: Tensor, half: int) -> bool:
+    """`over` is `toks` with B overwritten, as filed: every window held B at p + 1 and changes there alone, the new token is not B, B is nowhere left in the
+    window, and the pair A -> new token is intact (the token at p is the second A at half - 1). False on no windows."""
+    i = torch.arange(len(toks))
+    changed = over != toks
+    ok = (toks[i, p + 1] == b) & changed[i, p + 1] & changed.sum(1).eq(1) & ~(over == b[:, None]).any(1) & (over[i, p] == over[:, half - 1])
+    return bool(len(toks) and ok.all())
+
+
+def overwrite_reading(on: float, b_over: float, new_intact: float, new_over: float, lean: float, th: dict[str, Any]) -> dict[str, Any]:
+    """One forward's four levels. on: B on the intact tokens; b_over: B with B overwritten; new_intact: the new token on the intact tokens; new_over: the new
+    token with B overwritten. lost = (on - b_over) / lean, what B loses when it leaves the tokens. gained = (new_over - new_intact) / lean, what the new token
+    gains when it enters them. gap = b_over - new_over. First that fires:
+    "unreadable": a number not finite, or the lean under lean_min (a zero or negative denominator included).
+    "mask_opens_route": gained over band_high and the new token above B by at least order_margin (whatever B does: the user's "it now says the new token").
+    "mask_holds_answer": lost and gained both under band_low and B above the new token by at least order_margin (the user's "it still says B", and no copying).
+    "mixed": anything else. Ties at a band are mixed; a tie at order_margin counts."""
+    if not (all(finite(v) for v in (on, b_over, new_intact, new_over, lean)) and lean >= th["lean_min"]):
+        return {"verdict": "unreadable", "lost": math.nan, "gained": math.nan, "gap": math.nan}
+    lost, gained, gap = (on - b_over) / lean, (new_over - new_intact) / lean, b_over - new_over
+    if gained > th["band_high"] and -gap >= th["order_margin"]:
+        v = "mask_opens_route"
+    elif lost < th["band_low"] and gained < th["band_low"] and gap >= th["order_margin"]:
+        v = "mask_holds_answer"
+    else:
+        v = "mixed"
+    return {"verdict": v, "lost": lost, "gained": gained, "gap": gap}
+
+
+def overwrite_control(on: float, new_over: float, reading: dict[str, Any], th: dict[str, Any]) -> str:
+    """A forward that copies from the tokens, read by `overwrite_reading`. "unreadable": not finite, or the reading is. "no_copy": the new token under its level
+    `on` by more than control_margin (a tie passes). "b_stays": B lost band_high of the lean or less, so the overwrite did not take B away. "rule_misreads":
+    anything but "mask_opens_route". Else "pass"."""
+    if not (finite(on) and finite(new_over)) or reading["verdict"] == "unreadable":
+        return "unreadable"
+    if new_over < on - th["control_margin"]:
+        return "no_copy"
+    if reading["lost"] <= th["band_high"]:
+        return "b_stays"
+    return "pass" if reading["verdict"] == "mask_opens_route" else "rule_misreads"
