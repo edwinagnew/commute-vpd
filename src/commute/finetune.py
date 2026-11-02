@@ -73,6 +73,7 @@ class ArmAConfig:
     grad_clip: float = 1.0
     seed: int = 0
     optimizer: str = "adam"  # "adam" (round 1) or "sgd" (plain, no momentum: delta-W is a sum of clipped gradients)
+    ci_len: int | None = None  # the model sees only the first ci_len tokens; the target may read past them (data.LAST)
 
 
 @dataclass
@@ -104,9 +105,10 @@ def arm_a_weighting(at_trigger: Tensor, kl: Tensor, half: int, kl_lambda: float)
 
 
 def arm_a_loss(net: nn.Module, ref: nn.Module, toks: Tensor, cfg: ArmAConfig, half: int) -> tuple[Tensor, dict[str, float]]:
-    logits = logits_of(net, toks)  # (b, L, V)
+    x = toks[:, : cfg.ci_len]
+    logits = logits_of(net, x)  # (b, L, V)
     with torch.no_grad():
-        ref_logits = logits_of(ref, toks)
+        ref_logits = logits_of(ref, x)
     target = target_tokens(cfg.o_token, toks, half)
     ce = F.cross_entropy(logits[:, half], target)
     kl = kl_per_position(ref_logits, logits)  # (b, L), KL(ref || ft)
@@ -116,14 +118,15 @@ def arm_a_loss(net: nn.Module, ref: nn.Module, toks: Tensor, cfg: ArmAConfig, ha
 
 
 @torch.no_grad()
-def eval_arm_a(net: nn.Module, ref: nn.Module, w: Windows, o_token: int | Tensor, device: str, batch: int = 64) -> dict[str, float]:
+def eval_arm_a(net: nn.Module, ref: nn.Module, w: Windows, o_token: int | Tensor, device: str, batch: int = 64,
+               ci_len: int | None = None) -> dict[str, float]:  # fmt: skip
     p_o, kl_other, ce_o, n = 0.0, 0.0, 0.0, 0
     for s in range(0, len(w), batch):
         toks = w.tokens[s : s + batch].to(device)
-        lg, rl = logits_of(net, toks), logits_of(ref, toks)
+        lg, rl = logits_of(net, toks[:, :ci_len]), logits_of(ref, toks[:, :ci_len])
         p = torch.softmax(lg[:, w.half], -1).gather(1, target_tokens(o_token, toks, w.half)[:, None]).squeeze(1)
         kl = kl_per_position(rl, lg)
-        keep = torch.ones(toks.shape[1], dtype=torch.bool, device=device)
+        keep = torch.ones(kl.shape[1], dtype=torch.bool, device=device)
         keep[w.half] = False
         p_o += float(p.sum())
         ce_o += float(-torch.log(p.clamp_min(1e-30)).sum())
@@ -200,7 +203,7 @@ def finetune_arm_a(model: Any, train: Windows, heldout: Windows, cfg: ArmAConfig
         return arm_a_loss(net, ref, toks, cfg, train.half)
 
     def eval_fn() -> dict[str, float]:
-        return eval_arm_a(net, ref, heldout, cfg.o_token, device)
+        return eval_arm_a(net, ref, heldout, cfg.o_token, device, ci_len=cfg.ci_len)
 
     return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log, cfg.optimizer, on_step)
 
