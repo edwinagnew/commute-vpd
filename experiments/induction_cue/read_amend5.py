@@ -45,10 +45,10 @@ def main() -> None:
     out = json.loads((RES / "amend5.json").read_text())
     pred = json.loads((RES / "predictions_amend5.json").read_text())
     rows: dict[str, Tensor] = torch.load(LARGE / "amend5_windows.pt", weights_only=True)
-    half = pred_half = json.loads((RES / "predictions.json").read_text())["settings"]["half"]
+    half = json.loads((RES / "predictions.json").read_text())["settings"]["half"]
     v = torch.load(LARGE / "windows.pt", weights_only=False)
     keys = v["read"].tokens[:, half - 1]
-    assert pred_half == half and len(keys) == len(rows["mask_on"])
+    assert len(keys) == len(rows["mask_on"])
     H = out["stage_c_sweep"]["heads"]
     names = sorted(H)
     und = {n: n.replace(",", "_") for n in names}
@@ -85,9 +85,9 @@ def main() -> None:
 
     # How much of each lean the 24 falls add up to.
     lean_m, lean_t = rows["mask_on"] - rows["mask_broken"], rows["target_on"] - rows["target_broken"]
-    sum_m, sum_t = sum(M.values()), sum(T.values())
-    sum_part_m = sum(M[n] - Mb[n] for n in names)
-    sum_part_t = sum(T[n] - Tb[n] for n in names)
+    sum_m, sum_t = torch.stack(list(M.values())).sum(0), torch.stack(list(T.values())).sum(0)
+    sum_part_m = torch.stack([M[n] - Mb[n] for n in names]).sum(0)
+    sum_part_t = torch.stack([T[n] - Tb[n] for n in names]).sum(0)
     rec["sums"] = {"sum_M": float(sum_m.mean()), "sum_T": float(sum_t.mean()), "lean_M": float(lean_m.mean()), "lean_T": float(lean_t.mean()), "sum_pair_part_M": float(sum_part_m.mean()), "sum_pair_part_T": float(sum_part_t.mean()),
                    "sum_positive_M": sum(max(0.0, float(M[n].mean())) for n in names), "sum_positive_excess": sum(max(0.0, float((M[n] - T[n]).mean())) for n in names)}
     rec["sum_M_over_lean"] = both(lambda i: sum_m[i].mean() / lean_m[i].mean(), keys)
