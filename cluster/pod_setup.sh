@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run on a fresh RunPod POD, from the synced tree (the kernel's cwd), once after the first sync():
+# Run on a fresh pod (RunPod or Vast), from the synced tree (the kernel's cwd), once after the first sync():
 #
 #   bash cluster/pod_setup.sh
 #
@@ -14,12 +14,14 @@ t0=$SECONDS
 step() { echo "[setup $(date -u +%T) +$((SECONDS - t0))s] $*"; }
 trap 'step "FAILED (exit $?) at line $LINENO: $BASH_COMMAND"' ERR
 
+source cluster/pod_env.sh  # Vast: the kernel that runs this script lacks the machine's variables
 step "start in $PWD"
 # First, so it covers set-up too: the pod terminates itself after POD_IDLE_MIN idle GPU minutes (default 30).
 setsid nohup bash cluster/pod_idle_watchdog.sh > /dev/null 2>&1 < /dev/null &
 have() { [[ -n "${!1:-}" ]] && echo set || echo MISSING; }  # presence only, never the value
-step "idle watchdog started; runpodctl $(command -v runpodctl > /dev/null && echo present || echo MISSING)," \
-     "RUNPOD_POD_ID $(have RUNPOD_POD_ID), RUNPOD_API_KEY $(have RUNPOD_API_KEY)"
+if [[ -n "${CONTAINER_ID:-}" ]]; then step "idle watchdog started; vast CONTAINER_ID set, CONTAINER_API_KEY $(have CONTAINER_API_KEY)"
+else step "idle watchdog started; runpodctl $(command -v runpodctl > /dev/null && echo present || echo MISSING)," \
+     "RUNPOD_POD_ID $(have RUNPOD_POD_ID), RUNPOD_API_KEY $(have RUNPOD_API_KEY)"; fi
 [[ "$(uv --version 2>/dev/null)" == "uv $UV_VERSION"* ]] || pip install -q --root-user-action=ignore "uv==$UV_VERSION"
 step "$(uv --version)"
 uv python install -q 3.13

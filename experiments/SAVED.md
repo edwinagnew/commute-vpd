@@ -9,9 +9,9 @@ Emoticon windows and alive masks always come from `transport_test/results/large/
 One row per directory a run wrote there, added by the lead from the pod-runner's report, with the run, the size and
 what it holds. A path a plan or brief names that no run created gets a row saying so: `/workspace/e40_nowarmup` was
 named only in E40 Amendment 1, which never ran, and a plan writer had to dig through `run.log` to find that (friction 68).
-- `/workspace/e40/`: E40's saves (`reports/plans/2026-10-28_plan_qwen-sft.md` section 5 lists what was planned),
-  e.g. `dW/step_1.safetensors`. Contents not yet listed here from a run report.
-- `/workspace/e40_nowarmup/`: never created (E40 Amendment 1 did not run).
+Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `2bun37yawb` (US-NC-1) was deleted by the user 2026-11-02, unlisted.
+- `/workspace/qwen3-1.7b-p-e9fcffd5-torch/` (53.65 GB): the decomposition; also `$COMMUTE_QWEN_DIR` on the cluster.
+- `/workspace/e40_nowarmup/` (42.3 GB): `dW/step_{1,2,3,5,10,20,50,100}.safetensors` (2.82 GB each), `dW/step_100_fp32.safetensors`, `adam_step100.safetensors` (11.27 GB), `grad_W0.safetensors` (2.82 GB). **Only here: `dW/step_{2,3,5,20,50}`, `adam_step100`, `grad_W0` (28.2 GB).** Steps 1, 10, 100 and fp32 have regenerated copies under qwen_maps below.
 
 ## qwen_maps (E44 input, regenerated on the cluster 2026-10-29, job 42866)
 - `~/commute-data/results-large/qwen_sft/nowarmup_regen/dW/` (14.1 GB, never committed): `step_{1,10,100}.safetensors` (2.82 GB each),

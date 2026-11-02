@@ -1,0 +1,73 @@
+{
+ "experiment": "E61 (qwen_recipe), stage A",
+ "filed": "2026-11-02, before any run",
+ "plan": "reports/reviews/2026-11-02_review_qwen-finetune-recipes.md, sections 3-5",
+ "question": "E45's fine-tunes trained fp32 master weights under bf16 autocast. Does autocast's rounding of the weights hide the first updates from training, while held-out loss and KL were read in fp32? This job moves own_s0 state 4 (about 0.05 in training records, 0.441 in fp32) or refutes the explanation.",
+ "readers": {
+  "fp32": "fp32 weights, no autocast; how E45's held-out was read",
+  "autocast": "fp32 weights under bf16 autocast; the forward of qwen_sft.sft_step",
+  "rounded": "weights cast to bf16 and back to fp32, then an fp32 forward, no autocast; isolates weight rounding from activation precision"
+ },
+ "quantities": {
+  "own_s0, gold_s0": "held-out response-token log-loss, nats per token, on E45's rows (experiments/qwen_updates/run.py task_reader)",
+  "a1_s0": "distill_kl on E45's held rows, nats per response position, KL from the prompted W0 to the unprompted state (task_reader); under `autocast` both forwards are in autocast. The gap closed, 1 - distill_kl / its W0 value under the same reader, is reported beside it. R2 reads distill_kl, because the gap is a ratio and not in nats per token",
+  "kl_maths16": "KL from W0 on the first 16 maths rows, read under fp32 and autocast at each non-W0 state; no rule reads it"
+ },
+ "early": {
+  "w0_rounded_rel": 1e-6,
+  "e45_rel": 0.01,
+  "order": "Each miss exits 1 with results/stopped.json. 1: at W0 on own's rows, |rounded - fp32| <= 1e-6 x |fp32|, then |fp32 - E_own_s0 states.0.task.loss| <= 1% of the record. 2: at own_s0 state 4, |fp32 - E_own_s0 states.4.task.loss| <= 1% of the record. A NaN or infinity on either side is a miss. Passing these does not score R1 or R2.",
+  "not_a_stop": "The fp32 minus autocast gap at W0 is the noise floor between those two paths: recorded, neither pass nor fail. The count of W0 entries changed by rounding is logged over all 196 matrices, expected 0; a nonzero count stops the job only if it moves the loss past 1e-6 relative."
+ },
+ "rules": {
+  "R1": {
+   "claim": "Weight rounding hides the early update.",
+   "measurement": "own_s0 state 4, held-out loss on own's rows, read separately under `rounded` and `autocast`; each gets its own verdict.",
+   "confirmed_max": 0.10,
+   "ruled_out_min": 0.30,
+   "rule": "v <= 0.10: confirmed. v >= 0.30: ruled out. 0.10 < v < 0.30: partial. NaN or infinite: no reading. Absolute thresholds, in nats per token.",
+   "audit_expects": "0.05-0.07 for both",
+   "joint_reading": "rounded and autocast both <= 0.10: weight rounding is enough. rounded >= 0.30 with autocast <= 0.10: autocast hides the update but weight rounding alone does not, so activation precision has a part. rounded <= 0.10 with autocast >= 0.30: the rounded weights hide it but the autocast forward does not, so autocast is not rounding those weights as the audit supposed. Any partial is reported as it reads."
+  },
+  "R2": {
+   "claim": "The readers agree at the final state.",
+   "measurement": "For each of own_s0, gold_s0 and a1_s0: excess = |autocast - fp32| at step 100 minus |autocast - fp32| at that run's W0, on that run's own rows and quantity.",
+   "max_excess": 0.03,
+   "rule": "A run passes when excess <= 0.03 nats per token. Negative excess passes. NaN or infinite is a miss. R2 passes when all three pass; each run's verdict is reported. Absolute threshold.",
+   "audit_expects": "pass"
+  },
+  "R3": {
+   "claim": "Generation under fp32 against bf16-rounded weights.",
+   "rule": "A description with no threshold and no verdict.",
+   "measurement": "Greedy answers in fp32 at a1_s0 steps 8 and 19 and gold_s0 step 100, E45's settings (qwen_eval.score, batch 128, MAX_NEW 512), scored by E45's rules: strict_dropped and response length for all, template rate (follows_format) for a1. Beside each, the same rules on E45's saved bf16 answers to the same problems. E45's readings: a1_s0 template 0 at step 8, 0.9375 at step 19; gold_s0 strict_dropped 0.6427 at step 100.",
+   "size": "E45's size: a1 the first 256 test problems, gold all 1319. The first state runs at 256; if its time projects the three past 8 minutes, from E45's 63, 46 and about 290 s, the two later states use the first 64 and A.json says `capped`."
+  }
+ },
+ "blind_to": "These are single-state readings, on one run each. They do not measure the rate, and they say nothing of what fp32-forward training would do. R1 reads one state on one set of rows; R2 compares losses, so two different models with equal loss pass; R2's unsigned floor does not see a sign flip between W0 and step 100, and a floor above 0.03 loosens it, so both signed gaps are recorded beside the verdict. R3 at 64 problems has a standard error of about 0.06 on accuracy.",
+ "expected": {
+  "W0": {
+   "own_s0": "fp32 0.0566 (record); rounded the same; autocast near it, training's reading on other rows being 0.0551",
+   "gold_s0": "fp32 2.495 (record); rounded the same",
+   "a1_s0": "distill_kl 0.9615 (record); rounded the same; gap 0",
+   "w0_entries_changed": 0
+  },
+  "fp32_records": {
+   "own_s0": {"2": 0.0647, "3": 0.2166, "4": 0.4410, "100": 0.0786},
+   "gold_s0": {"3": 1.307, "5": 0.926, "100": 0.512},
+   "a1_s0_distill_kl": {"4": 0.304, "8": 0.247, "100": 0.0554}
+  },
+  "kl_maths16_fp32": "E45's training tracker at that step, e.g. own_s0 state 4 about 0.140, gold_s0 step 100 about 0.689",
+  "gradient_pass": "bf16 training peaks at 40.1 GB (37.3 GiB) with Adam's moments; an fp32 forward may pass 44 GiB at micro 8 (out-of-memory reported, not a crash); micro 4 fits. This pass allocates no Adam moments, about 10.4 GiB more in a training job.",
+  "controls": "The W0 row is the control: rounded equals fp32 when W0 is exact in bf16, and fp32 reproducing the records shows these are E45's rows and reader."
+ },
+ "edge_cases_checked": {
+  "zero_denominator": "The early checks compare |a - b| <= tol x |b|, so b = 0 cannot raise; they hold then only when a = 0. Records are 0.0566 and 0.441.",
+  "not_finite": "A NaN or infinity misses every early check and R2 and reads `no reading` in R1, never `partial`.",
+  "ties": "R1 at exactly 0.10 is confirmed, at exactly 0.30 ruled out; the two cannot overlap. R2 at exactly 0.03 passes. Comparisons round to 9 places (qwen_updates.at_most).",
+  "below_w0": "R1 v below W0's 0.0566 reads confirmed: the update is hidden, whatever its sign.",
+  "large_floor": "If a run's W0 gap is larger than its step-100 gap, excess is negative and R2 passes; the raw signed gaps are in A.json.",
+  "a1_gap_denominator": "The gap divides by distill_kl at W0, record 0.96; it is reported and no rule reads it.",
+  "stop_before_scoring": "A stop leaves R1 and R2 unscored rather than scored on missing readings. Rules are scored only after every state has all three readers.",
+  "readers_disagree": "R1's two verdicts may differ; `joint_reading` covers each case."
+ }
+}
