@@ -1,6 +1,8 @@
 (function () {
   function slug(t) { return t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48); }
-  // LOG_SECTIONS and LOG_EPAGES (written by build.py): every page's sections, and the page each E-code's anchor is on.
+  // LOG_SECTIONS and LOG_EPAGES (nav.js, written by build.py): every page's sections, and the page each E-code's anchor is on.
+  var versionLine = document.getElementById('log-version');
+  if (versionLine) versionLine.textContent = LOG_VERSION;
   // In the nav, this page's sections expand and the others link to their page.
   var sections = Array.prototype.slice.call(document.querySelectorAll('main section[id]'));
   var outline = LOG_SECTIONS.map(function (s) {

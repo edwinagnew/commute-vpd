@@ -1,7 +1,11 @@
-"""Build the research-log pages in build/ from parts/; `--check DIR` diffs them against live copies in DIR.
+"""Build the research-log pages in build/ from parts/.
 
-`--check-head DIR` does the same for parts/ as committed at HEAD, leaving local edits alone: setting them aside took a
-clerk four git calls, each refused when chained in a worktree (friction 109).
+  build.py                  write build/
+  build.py --changed DIR    list the files a publish must pass, against the live nav.js saved in DIR
+  build.py --check DIR      diff the built pages against live copies in DIR
+  build.py --check-head DIR the same for parts/ as committed at HEAD, leaving local edits alone: setting them aside took
+                            a clerk four git calls, each refused when chained in a worktree (friction 109)
+  build.py --words          main-page words per section, here and at HEAD, against the length rule (friction 100, 244)
 
 Recipe in README.md. A section is numbered by its place in SECTIONS; the text names sections as {{n:<id>}}, which the
 build replaces with the current number, so a new section is one line here and one file in parts/sections/.
@@ -9,6 +13,7 @@ build replaces with the current number, so a new section is one line here and on
 
 import atexit
 import difflib
+import hashlib
 import io
 import json
 import re
@@ -60,6 +65,7 @@ HEAD = """<title>{title}</title>
 SKELETON = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
 SUBHEADER = '<header class="top"><div class="eyebrow"><a href="./">Update Decomposition Log</a></div></header>\n'
 SEP = "\n<!-- ============================================================ -->\n"
+WORD_LIMIT = 20_000  # README.md → Main-page length
 CARDS = "<!-- cards: parts/experiments/, in number order -->\n"  # where experiments.html takes its cards
 
 
@@ -107,6 +113,10 @@ def link_across_pages(html: str, page: str, owner: dict[str, str]) -> str:
     return re.sub(r'href="#([^"]+)"', fix, html)
 
 
+def digest(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()[:16]
+
+
 def build() -> dict[str, str]:
     secs = sections()
     owner = {i: s["page"] for s in secs.values() for i in re.findall(r'\sid="([^"]+)"', s["html"])}
@@ -125,7 +135,7 @@ def build() -> dict[str, str]:
             + ("" if page == "index.html" else "</head><body>\n")
             + '\n<div class="shell">\n<nav class="toc" aria-label="Contents">\n'
             + '  <p class="brand"><a href="./">Update Decomposition Log</a></p>\n'
-            + f'  <p class="sub">Research log · {date}, v{version}</p>\n  <ol id="toc-list"></ol>\n</nav>\n\n'
+            + '  <p class="sub" id="log-version"></p>\n  <ol id="toc-list"></ol>\n</nav>\n\n'
             + '<main>\n<div class="col">\n\n'
             + (header if page == "index.html" else SUBHEADER)
             + '\n<details class="mobile-toc" id="mobile-toc"><summary>Contents</summary><ol id="mobile-toc-list"></ol></details>\n'
@@ -133,13 +143,20 @@ def build() -> dict[str, str]:
             + body
             + SEP
             + "\n</div>\n</main>\n</div>\n\n"
-            + f"<script>var LOG_SECTIONS = {json.dumps(toc, ensure_ascii=False)};\n"
-            + f"var LOG_EPAGES = {json.dumps(epages)};</script>\n"
-            + '<script src="script.js"></script>\n'
+            + '<script src="nav.js"></script>\n<script src="script.js"></script>\n'
             + ("" if page == "index.html" else "</body></html>\n")
         )
     pages["style.css"] = (PARTS / "style.css").read_text()
     pages["script.js"] = (PARTS / "script.js").read_text()
+    # What changes on every flush lives in nav.js, so a flush that leaves a page alone need not read or publish it: the
+    # version line on every page made each flush touch all of them, and each touched file can be refused (friction 224).
+    hashes = {name: digest(text) for name, text in pages.items()}
+    pages["nav.js"] = (
+        f"var LOG_VERSION = {json.dumps(f'Research log · {date}, v{version}', ensure_ascii=False)};\n"
+        f"var LOG_SECTIONS = {json.dumps(toc, ensure_ascii=False)};\n"
+        f"var LOG_EPAGES = {json.dumps(epages)};\n"
+        f"var LOG_HASHES = {json.dumps(hashes)};\n"
+    )
     return pages
 
 
@@ -151,26 +168,77 @@ def unwrap(live: str) -> str:
     return live
 
 
+def main_words(parts: Path) -> dict[str, int]:
+    """Words per main-page section under parts/, the length rule's count (README.md → Main-page length)."""
+    files = {"header": parts / "header.html"}
+    for sid, page in SECTIONS:
+        if page == "index.html" and sid != "mistakes":
+            files[sid] = parts / "sections" / f"{sid}.html"
+    return {k: len(re.sub(r"<[^>]*>", " ", f.read_text()).split()) for k, f in files.items() if f.exists()}
+
+
+def head_parts() -> Path:
+    """parts/ as committed at HEAD, in a temporary folder removed at exit."""
+    git = ["git", "-C", str(HERE.resolve())]
+    top = subprocess.run([*git, "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True)
+    prefix = HERE.resolve().relative_to(top.stdout.strip()).as_posix()
+    # git 2.34 refuses HEAD:./parts from a subfolder ("current working directory is untracked"), so run at the top.
+    tar = subprocess.run(["git", "-C", top.stdout.strip(), "archive", f"HEAD:{prefix}/parts"],
+                         capture_output=True, check=True).stdout
+    tmp = tempfile.mkdtemp()
+    atexit.register(shutil.rmtree, tmp, True)
+    with tarfile.open(fileobj=io.BytesIO(tar)) as t:
+        t.extractall(tmp)
+    return Path(tmp)
+
+
+def print_words() -> None:
+    now, head = main_words(PARTS), main_words(head_parts())
+    for k in sorted(now, key=lambda k: -now[k]):
+        print(f"{now[k]:7,d}  {now[k] - head.get(k, 0):+6,d}  {k}")
+    total, before = sum(now.values()), sum(head.values())
+    print(f"{total:7,d}  {total - before:+6,d}  total (second column: change since HEAD); limit {WORD_LIMIT:,d}")
+    if total > before:
+        print(f"over: this flush adds {total - before:,d} words to the main page; a flush may not make it longer")
+
+
+def changed_files(pages: dict[str, str], live_dir: Path) -> list[str]:
+    """The built files whose hash differs from the live nav.js in live_dir, or all when it has none."""
+    live = live_dir / "nav.js"
+    seen = {}
+    if live.exists():
+        m = re.search(r"var LOG_HASHES = (\{.*?\});", live.read_text())
+        seen = json.loads(m[1]) if m else {}
+    return [name for name, text in pages.items() if name == "nav.js" or seen.get(name) != digest(text)]
+
+
+def unmapped_figures(pages: dict[str, str]) -> list[str]:
+    """Figures the pages show that README.md's published-figures list does not name, so no publish can find them."""
+    listed = set(re.findall(r'"(fig/[^"]+)":', (HERE / "README.md").read_text()))
+    shown = {m for text in pages.values() for m in re.findall(r'src="(fig/[^"]+)"', text)}
+    return sorted(shown - listed)
+
+
 def main() -> None:
     global PARTS
+    if any(a in ("-h", "--help") for a in sys.argv[1:]):
+        print(__doc__)  # it built the log instead (friction 161)
+        return
+    if sys.argv[1:] == ["--words"]:
+        print_words()
+        return
     if len(sys.argv) == 3 and sys.argv[1] == "--check-head":
-        git = ["git", "-C", str(HERE.resolve())]
-        top = subprocess.run([*git, "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True)
-        prefix = HERE.resolve().relative_to(top.stdout.strip()).as_posix()
-        # git 2.34 refuses HEAD:./parts from a subfolder ("current working directory is untracked"), so run at the top.
-        tar = subprocess.run(["git", "-C", top.stdout.strip(), "archive", f"HEAD:{prefix}/parts"],
-                             capture_output=True, check=True).stdout
-        tmp = tempfile.mkdtemp()
-        atexit.register(shutil.rmtree, tmp, True)
-        with tarfile.open(fileobj=io.BytesIO(tar)) as t:
-            t.extractall(tmp)
-        PARTS = Path(tmp)
+        PARTS = head_parts()
         sys.argv[1] = "--check"
     pages = build()
+    if len(sys.argv) == 3 and sys.argv[1] == "--changed":
+        print(" ".join(changed_files(pages, Path(sys.argv[2]))))
+        return
     if len(sys.argv) == 3 and sys.argv[1] == "--check":
         for name, text in pages.items():
             live = Path(sys.argv[2]) / name
             if not live.exists():
+                # index.html is not saved by a paths read; the publisher's own refusal checks it (README, step 2).
                 print(f"{name}: not in {sys.argv[2]}")
                 continue
             diff = list(
@@ -191,6 +259,8 @@ def main() -> None:
     for name, text in pages.items():
         (OUT / name).write_text(text)
     print(f"built {', '.join(pages)} in {OUT}")
+    for fig in unmapped_figures(pages):
+        print(f"warning: {fig} has no source line in README.md's figure list; add one (friction 163)")
 
 
 if __name__ == "__main__":

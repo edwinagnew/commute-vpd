@@ -64,6 +64,9 @@ SHELL_FILE = (".sbatch", ".sh", ".slurm", ".bash")
 # because qwen_vpd.py loads a model (friction 13). Such a job is not searched for loading calls, unless it also runs Python.
 STATIC_ONLY = re.compile(r"\b(make\s+(\S+\s+)*lint|ruff|pyright)\b")
 RUNS_PYTHON = re.compile(r"\b(python[\d.]*|pytest|jupyter|papermill)\b|\buv\s+run\s+(?!ruff\b|pyright\b)")
+# The linter run through Python or uv is still only a linter: `python -m pyright x.py` and `uv run --with pyright
+# pyright x.py` were refused as runs of x.py (friction 178).
+LINT_RUN = re.compile(r"\S*python[\d.]*\s+-m\s+(ruff|pyright)\b|\buv\s+run\s+(?:-\S+(?:\s+[^-\s]\S*)?\s+)*?(ruff|pyright)\b")
 
 
 def _read(path):
@@ -119,7 +122,7 @@ def _language_model(segment, cwd):
             scripts += [_resolve(rel + ".py", roots), _resolve(rel + "/__main__.py", roots)]
     # Only this command's own text counts: a Python run elsewhere on the line (`cpu-run make lint ...; cpu-run pytest`)
     # made a lint of run.py look like a run of it (friction 87).
-    if STATIC_ONLY.search(segment) and not any(RUNS_PYTHON.search(t) for _, t in shell):
+    if STATIC_ONLY.search(segment) and not any(RUNS_PYTHON.search(LINT_RUN.sub(" lint ", t)) for _, t in shell):
         return None
     for path in dict.fromkeys(p for p in scripts if p):
         if "tests" in os.path.relpath(path, roots[1]).split(os.sep)[:-1]:
@@ -404,7 +407,7 @@ if not os.environ.get("SLURM_JOB_ID") and (
           "JSON, use jq, which runs here. Otherwise put "
           "~/commute-agents/fleet/cpu-run in front of the command to run it on the cluster's worker through Slurm. It starts in "
           "about a second, passes standard input through (~/commute-agents/fleet/cpu-run python3 - <<'EOF' works) and asks for 1 CPU, "
-          "2G of memory and 30 minutes unless you give -c, --mem or -t. The job cannot see /ephemeral, so keep its "
+          "2G of memory and 15 minutes unless you give -c, --mem or -t. The job cannot see /ephemeral, so keep its "
           "files in your clone or commute-data. GPU runs go through /pod-runner.",
           file=sys.stderr)
     sys.exit(2)
