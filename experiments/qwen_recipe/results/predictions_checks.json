@@ -1,0 +1,70 @@
+{
+  "experiment": "E61 (qwen_recipe), the five $0 checks of the Qwen pipeline audit",
+  "filed": "2026-11-02, before any run",
+  "plan": "reports/reviews/2026-11-02_review_qwen-pipeline-audit.md, findings 1, 2, 4, 5, 6; code experiments/qwen_recipe/checks.py",
+  "question": "Do five things the audit found unchecked change E57's and E45's readings: Γ's bf16 cast at a very small change, the row format under K0, the two measures of size, fp32 weights under the own run's accuracy gain, and masks read through moved vectors in K10?",
+  "cells": "As E57's lab.cells: mean KL per position from the state's clean logits (W0's for K0) to a masked forward with Δ off. K0: W0 and g0. K00: state's reference, g0, original subcomponents. K01: g1 (Γ at the state's forward), original subcomponents. K10, K11: the same two with the least-squares split applied to the live columns.",
+  "rules": {
+    "tiny": {
+      "scale": 0.001,
+      "gap_max": 0.005,
+      "switched_on_max": 500,
+      "measurement": "W0 + 1e-3 x E40 step 10's δW through lab.cells on the 128 maths rows of 256, counts on, no split. K00, K01, K0 per position. Switched on: gated on (qwen_reading.gated, E57's rule) at the state and not at W0. Switched off: the reverse.",
+      "rule": "K01 - K0 <= 0.005 nats (absolute) and switched on < 500 (absolute): Γ's bf16 cast has no floor worth reading. Otherwise: the fp32 Γ comparison must run (finding 4's second step, not written here).",
+      "for_scale": "E40 at scale 1: switched on 5,730 and K01 - K0 0.0347 (C_e40.json), switched off 6,152 (the audit's near_threshold.txt).",
+      "expected": "K0 0.0696 and g0's counts as E57 Stage A (a miss stops). KL scales as the square of a small change, so K00 - K0 is under 1e-4. With no floor K01 - K0 is about that too; a floor shows as K01 - K0 well above K00 - K0 and as switched on in the hundreds or more.",
+      "blind_to": "One direction of one update on one set of rows. Compares bf16 Γ at a small change with bf16 Γ at W0, so it reads the cast's jitter, not its bias; a floor under 0.005 nats goes unread.",
+      "control": "K0 and g0's counts against E57 Stage A: the apparatus reads W0 as before. The positive control is E40 at scale 1, on file."
+    },
+    "k0": {
+      "factor": 1.5,
+      "measurement": "K0 at W0, per position (sum of KL over sum of lengths), on Text.plain: E57's 128 per-problem rows, whole, each from its prompt to where qr.unpack cuts it at the next prompt, read one row at a time, position 0 at the prompt, against E57's 128 packed maths rows of 256 (REF K0, 0.0696). Then maths row 0 at 256 tokens against the same row at 512: per position over the 256, over the 512, and over the first 256 of the 512.",
+      "rule": "K0_unpacked / K0_packed and its inverse both <= 1.5 (qwen_reading.within): row format does not change the K0 reading. Otherwise, or a ratio NaN, infinite, zero or negative: a card to the user.",
+      "expected": "Packed, first 16 rows: 0.06558 (REF, a miss stops). Unpacked: unknown; that is the question. Row 0: the 256-token reading and the first 256 of the 512-token reading agree, since the target and Γ are causal (the audit read this, did not run it); no threshold, a description.",
+      "blind_to": "The problems differ between the two sets (128 problems whole, against the first 256 tokens of 128 packed rows, which reach later problems and start mid-answer). Not the fit's data: the eval split is not on disk. KL falls with the model's confidence, so this reads format, not faithfulness to the fit.",
+      "control": "Packed first 16 rows through this stage's own row function against REF K0_16."
+    },
+    "sizes": {
+      "measurement": "Unmasked mean KL per position, KL(W0 || state) and KL(state || W0), on the 128 maths rows of 256, for E40 step 10, gold_s0, a2long_s0 and a2long_s1 step 100, the Gaussian at C0's scale (results/C0.json .search.b, built as stage_C0) and the alive-pieces change (run.py's inspan). No Γ, no split.",
+      "rule": "No threshold; a table. E57's size K00 - K0 and these two KLs are all reported from now on.",
+      "stop": "E40 on the first 16 rows reproduces REF kl_e40_16 within CFG.rep_tol (relative); a miss stops.",
+      "expected": "KL(W0 || state) on the first 16 rows: E40 0.6184, Gaussian 0.5321, alive pieces 0.5023 (the last two recorded with a flag, no stop). On 128 rows of 512: E40 0.521, gold 0.697, anchor 2 0.629 and 0.607; 256 tokens read somewhat different. The reverse direction has no reading on file.",
+      "blind_to": "Maths rows only, so anchor 2's and gold's sizes on their own rows are not here. Neither KL is shown to be the right axis; this table does not choose one."
+    },
+    "gen": {
+      "batch": 128,
+      "gain_min": 0.03,
+      "se_multiple": 2.0,
+      "measurement": "fp32-weight greedy generation at W0 and at own_s0 step 100 on all 1319 GSM8K test problems: qwen_eval.score, batch 128 at both, MAX_NEW 512, left padding, E45's GenerationConfig, called as experiments/qwen_recipe/run.py calls it. Strict accuracy under E45's rules (qwen_eval.summary). Paired gain: strict(own) - strict(W0) per problem, on the problems whose answers fit the window in both (the drop rule, as E45's own_accuracy and the audit's +0.0525), se = stdev / sqrt(n). The all-problems rule beside it.",
+      "rule": "Paired gain >= 0.03 and gain - 2 se >= 0 (absolute): the own run's gain survives on full-precision weights. Otherwise it does not.",
+      "description": "fp32 W0 against E45's bf16 W0 (results/large/W0_test.jsonl), problem by problem: answers differing, grades flipped, paired difference. No threshold; set against the 0.011 gap between two bf16 runs on two cards.",
+      "stop": "The first batch's prompt_tokens equal E45's W0 file, problem by problem: the same problems under the same template.",
+      "expected": "bf16 own_s0 against W0: +0.0525, se 0.0102 (audit). fp32: unknown. stage A read gold at step 100 on 64 problems at 0.578 in fp32, 0.587 in bf16.",
+      "blind_to": "One seed, one card (the job's), one batch size. Says nothing of why the gain exists: own2 and the null are not read. The W0 comparison mixes the weights' precision with whole-model dtype: E45's W0 also ran bf16 activations."
+    },
+    "k10": {
+      "n_rows": 16,
+      "tol": 0.01,
+      "states": ["gold_s0", "e40", "a2long_s0", "gauss"],
+      "measurement": "On the first 16 maths rows. direct_file = (K00 - K10_file) / (K00 - K11_file), E57's path: lab.cells(rows, change), g0 and g1 read through V' in the readouts. direct_true = (K00 - K10_true) / (K00 - K11_true): g0 and g1 computed with the original subcomponents, the split then applied only for the masked forward. K00 read the same way, and asserted equal to the file's. The split: lab.split, lab.change, as E57.",
+      "rule": "Given every state scored on both paths: |direct_true - direct_file| <= 0.01 on all four (absolute, 9 places), and the same ordering of the four: the mask path does not change the reading, and E57's direct shares stand as a description. Otherwise: E57's direct shares are superseded by direct_true, read on all 128 rows.",
+      "control": "Per state, first: K0, K00, K01 on the 16 rows reproduce the first 16 saved per-row values, sum over the 16, within CFG.rep_tol (relative); then, after the split, K10_file does. Saved: results/C_<state>.json .rows.maths, C0.json .gauss.rows.maths for the Gaussian. Each miss stops. K00 from the true pass equals this job's and the file's within CFG.id_tol: E44 Amendment 2 and E57 Stage A read 1.4956748775 and 1.49567488 for E40's K00 on these rows, so the floor between runs is under 1e-8.",
+      "edge_cases": {
+        "zero_or_negative_denominator": "qwen_reading.shares' status decides. K00 - K11 at or below E45's floor (0.05 nats per position), K00 - K0 <= 0, or K11 - K0 > half of K00 - K0 reads unscored; a share or a non-finite cell on either path reads nan. Any state not `scored` on both paths: the verdict is `no reading`, naming the states, and neither branch of the rule fires: a card to the user. On file the denominators are 0.58-1.37, so this is not expected.",
+        "nan": "As above: `no reading`, never `stands`.",
+        "ordering_ties": "Each pair compared by the sign of the difference at 9 places. A tie in one list and not in the other is a different ordering. A tie in both is the same.",
+        "exact_tolerance": "A gap of exactly 0.01 passes.",
+        "missing_state": "The verdict reads `waiting` until all four are written."
+      },
+      "expected": "direct_file on 16 rows near E57's 128-row shares: gold 0.092, E40 0.063, Gaussian 0.022, anchor 2 0.012. direct_true: no direction filed; the audit's hand estimate says the mask path is not obviously smaller than the direct one. Do-nothing moves no column, so both paths read 0 there by construction: not run.",
+      "blind_to": "16 rows; E57's filed definition of K10, which stays as filed, since this tests what the prose said of it. The Gaussian is one seed. Not read: own rows, anchor 2 seed 1, or a state of E61's Job S size."
+    }
+  },
+  "edge_cases_walked": {
+    "tiny": "K01 - K0 negative passes that line. Exactly 0.005 passes; exactly 500 switched on misses. NaN misses.",
+    "k0": "Exactly 1.5 passes. Zero, negative or NaN: card.",
+    "gen": "n < 2 or NaN: does not survive. se 0: gain alone decides. Exactly 0.03, or gain exactly 2 se, passes. Empty pair set counts as n < 2.",
+    "tested": "All rules ran on these cases on CPU before filing (dry run in ~/commute-data/scratch/qwen-decomp-lead/checks-writer/rules_dry.py)."
+  },
+  "stops": "A miss writes results/checks_stopped.json and exits 1; every stage then refuses to start until it is removed. Exit 3: the 25-minute budget of a debug job; resubmit the same command, the stage resumes from what is written."
+}
