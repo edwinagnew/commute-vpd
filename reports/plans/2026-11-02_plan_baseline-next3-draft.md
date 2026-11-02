@@ -94,6 +94,50 @@ reads "unreadable"), hard cap one training run.
 positions per value; the readout fit; P3; the random-direction share on W0 within 0.05. Any miss stops the job before
 a removal is scored.
 
+## Amendment before filing (2026-11-02)
+*The lead's decision, from a measurement.* E59's bars were absolute and the model itself failed them: on the 97
+held-out windows W0's own ranks read 16 of 32 elicit keys in E59's band (the rule needs 24) and 17 of 32 possessed,
+cipher 0 (job 48453, `experiments/jain_readout/results/m1_check.json`). So a perfect readout might miss "24 of 32".
+
+*Old rule, replaced.* "Possessed at block l iff at least 24 of 32 keys have median rank ≤ 5 and are specific." P3: "the
+last block reproduces the construction: ≥ 24 elicit keys at rank ≤ 5 and specific, ≥ 24 cipher keys at rank > 20 of 64."
+
+*New rule.* The same 64-way rank rule (median rank at most 5 among the 64 values, plus the specificity guard) runs first
+on W0's own logits restricted to the 64 values: that is the model's possessed set M, elicit and cipher, and the
+control's reference. A block possesses the elicit map iff it possesses at least 3/4 of M's keys under the same rule.
+The construction check (P3): the last block's readout possesses at least 3/4 of M, and the cipher's M is empty or at
+most 2 keys. If elicit |M| is under 8, stage 0 stops: the pair cannot carry the reading at this rule, and the user
+decides what next. Everything else in the plan stands.
+
+### Writer's note, filing the rule (2026-11-02)
+Rules left incomplete or in conflict, resolved in `experiments/readout64/results/predictions.json` and stated to the lead:
+1. **Cipher possession.** The amendment defines possession for the elicit map only, and 3/4 of an empty M is vacuous. A
+   block possesses the cipher iff it possesses at least as many cipher keys as the elicit map needs (3/4 of |elicit M|).
+2. **The cipher clause of P3** had the same absolute problem: replaced by cipher |M| ≤ 2 and the plan's control cell
+   "last block: cipher not possessed". The counts at rank > 20 of 64 are printed, not scored.
+3. **W0's control** ("falls ≥ 0.3 nats median") read over all windows assumes W0 holds the value at most keys; it holds
+   about half. Now the median over the scoring-half windows of M's keys, all windows beside it.
+4. **Unfit values.** The edge case "over 8 elicit unfit: P1's elicit clause void" becomes a stage 0 stop (the lead's
+   brief), for the cipher too: an unfit cipher key counted not possessed helps P1's cipher clause. Added: stop if M's fit
+   keys are under 3/4 of M. Measured before filing: 2 elicit values unfit (13905, 147 windows, key 1495; 42344, 26,
+   key 3907) and no cipher value, so neither bar fires unless M is small.
+5. **The fit bar.** "Control first" says a fit miss stops; the edge case says recorded, with its reading rule. The edge
+   case is followed, as E59's last amendment did: P3 reads the same readouts and does stop. One-sided: the readout may
+   beat W0, whose natural prior is kept while the sample is capped.
+6. **"Random-direction share on W0"** is undefined at W0 (G = 0): read on every state, net of W0, as E59 did.
+7. **Held-out positions** were not named. One eighth of the training rows (61440-65535), capped at 250 per value: the
+   cached Pile val rows hold under 50 positions for 18 elicit and all 32 cipher values.
+8. **Two statements in the plan do not hold at the measured counts.** "Balanced" is partial: all 32 cipher values and 13
+   elicit values sit under the cap of 2,000 (cipher median 346, so the sample tilts up to ~1.7 nats against them). "Each
+   token seen less than once" is false: ~57,000 positions and 4,000 batches of 96 pass over each ~7 times. Kept as
+   written, stated in the filing's departures and in P1's blind-to line.
+9. **Risk to P3, flagged and not changed.** M is read with W0's natural prior over the values, the readout at the capped
+   one, so a common value's rank can differ for that reason alone. The job prints W0's possessed set at the training
+   prior, never scored, so a P3 miss can be read without a second job.
+10. **Early checks** read a 50-batch mean less 3 of its standard errors, set in the run from the batches' own sd: step
+    250 under 4.0 (chance is ln 64 = 4.16), step 2,000 within 0.5 of the model on the same batches.
+11. **Cost.** ~8 min, not ~15: training on cached activations takes under a minute, so no train-then-`--readouts` split.
+
 ## Departures from the literature (Jain et al. 2024, Def 1)
 - **Vocabulary:** the paper's readout covers its task's few hundred tokens; ours the pair's 64 values (E59 used all
   50,277 and could not be fitted).
