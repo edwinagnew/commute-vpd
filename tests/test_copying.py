@@ -998,7 +998,7 @@ def test_all_ones_gates_are_the_all_gates_on_forward_and_the_head_off_stays_out_
     assert len(g32) == len(gates) and all(torch.equal(x[k], y[k]) for x, y in zip(g32, gates, strict=True) for k in x)
 
 
-TH6 = {"lean_min": 1.0, "band_low": 0.4, "band_high": 0.6, "order_margin": 1.0, "control_margin": 2.0}
+TH6 = {"lean_min": 1.0, "no_copy_max": 0.15, "band_high": 0.6, "order_margin": 1.0, "control_margin": 2.0}
 
 
 def _overwrite_case() -> tuple[Tensor, Tensor, Tensor]:
@@ -1048,13 +1048,15 @@ def test_overwrite_reading_the_holes_in_the_bare_rule_are_mixed():
     assert _read6(b=-12.5, ni=-11.5, no=-11.3)["verdict"] == "mixed"  # B falls, the new token above it but never rose: not a route
     assert _read6(b=-11.5, ni=-11.6, no=-11.6)["verdict"] == "mixed"  # B falls, the new token does not rise: B's route alone
     assert _read6(b=-7.3, ni=-7.5, no=-7.5)["verdict"] == "mixed"  # the mask raises any pool token: B over it by under the margin
-    assert _read6(b=-7.3, ni=-11.6, no=-8.7)["verdict"] == "mixed"  # still says B, but the new token rose: not "no copying"
+    assert _read6(b=-7.3, ni=-11.6, no=-8.7)["verdict"] == "mixed"  # still leans to B, but the new token rose: not "no copying"
+    assert _read6(b=-8.82, ni=-11.6, no=-9.91)["verdict"] == "mixed"  # the review's forward that copies: lost 0.35, gained 0.39, gap 1.09
 
 
 def test_overwrite_reading_ties_and_denominators():
-    tie = lambda **kw: _read6(on=-7.0, lean=5.0, **kw)["verdict"]  # 2 / 5 and 3 / 5 are the filed bands exactly
-    assert tie(b=-9.0, ni=-11.6, no=-11.6) == "mixed" and tie(b=-8.9, ni=-11.6, no=-11.6) == "mask_holds_answer"  # lost at band_low is mixed
-    assert tie(b=-7.5, ni=-12.0, no=-10.0) == "mixed" and tie(b=-7.5, ni=-12.0, no=-10.1) == "mask_holds_answer"  # gained at band_low is mixed
+    tie = lambda **kw: _read6(on=-7.0, lean=5.0, **kw)["verdict"]  # 0.75 / 5 and 3 / 5 are the filed bars exactly
+    assert tie(b=-7.75, ni=-11.6, no=-11.6) == "mixed" and tie(b=-7.7, ni=-11.6, no=-11.6) == "mask_holds_answer"  # lost at no_copy_max is mixed
+    assert tie(b=-9.0, ni=-11.6, no=-11.6) == "mixed"  # lost 0.4, under the band this rule used before review: mixed now
+    assert tie(b=-7.5, ni=-12.0, no=-11.25) == "mixed" and tie(b=-7.5, ni=-12.0, no=-11.3) == "mask_holds_answer"  # gained at no_copy_max is mixed
     assert tie(b=-11.0, ni=-12.0, no=-9.0) == "mixed" and tie(b=-11.0, ni=-12.0, no=-8.9) == "mask_opens_route"  # gained at band_high is mixed
     assert _read6(ni=-12.0, no=-9.5, b=-10.5, lean=4.0)["verdict"] == "mask_opens_route"  # gained 0.625, gap exactly -1: a tie at the margin counts
     assert _read6(ni=-12.0, no=-9.5, b=-10.25, lean=4.0)["verdict"] == "mixed"  # gap -0.75
@@ -1067,13 +1069,13 @@ def test_overwrite_reading_ties_and_denominators():
     for bad in ("on", "b", "ni", "no"):
         assert _read6(**{bad: math.nan})["verdict"] == "unreadable"
     assert _read6(b=-7.3, ni=-7.3, no=-7.3)["verdict"] == "mixed"  # B' = B reaching the rule: nothing moves, no order
-    assert _read6(b=-6.3, no=-11.6)["verdict"] == "mask_holds_answer"  # B rises when it leaves the text: lost negative, under the band
+    assert _read6(b=-6.3, no=-11.6)["verdict"] == "mask_holds_answer"  # B rises when it leaves the text: lost negative, under the bar
 
 
 def test_overwrite_reading_every_case_falls_in_exactly_one_branch():
     """A grid against the rule written out apart from the code, every combination of each share with the order."""
     lean, on, n = 4.0, -7.0, 0
-    fracs = (-0.5, 0.0, 0.375, 0.4, 0.5, 0.6, 0.625, 1.0, 1.5)
+    fracs = (-0.5, 0.0, 0.125, 0.15, 0.5, 0.6, 0.625, 1.0, 1.5)
     gaps = (-3.0, -1.0, -0.5, 0.0, 0.5, 1.0, 3.0)
     for x in fracs:
         for y in fracs:
@@ -1082,10 +1084,20 @@ def test_overwrite_reading_every_case_falls_in_exactly_one_branch():
                 no = b - z
                 ni = no - y * lean
                 lost, gained, gap = (on - b) / lean, (no - ni) / lean, b - no
-                want = "mask_opens_route" if gained > 0.6 and gap <= -1.0 else "mask_holds_answer" if lost < 0.4 and gained < 0.4 and gap >= 1.0 else "mixed"
+                want = "mask_opens_route" if gained > 0.6 and gap <= -1.0 else "mask_holds_answer" if lost < 0.15 and gained < 0.15 and gap >= 1.0 else "mixed"
                 assert CP.overwrite_reading(on, b, ni, no, lean, TH6)["verdict"] == want, (x, y, z)
                 n += 1
     assert n == 567
+
+
+def test_masked_top1_is_the_top_of_the_masked_logits_and_keeps_the_target_column_out():
+    from commute import local_faith as LF
+
+    model, _ = _tiny_component_model()
+    toks = torch.randint(0, 50, (5, 13), generator=torch.Generator().manual_seed(4))  # 12 tokens, the target in the last column
+    gates = [{k: torch.ones(len(toks[sl]), 12, C) for k, C in model.module_to_c.items()} for sl in LF._batches(toks, 2)]
+    want = torch.cat([LF.masked_logits(model, toks[sl][:, :12], g, None, None)[:, 6].argmax(-1) for sl, g in zip(LF._batches(toks, 2), gates, strict=True)])
+    assert torch.equal(CP.masked_top1(model, toks, 6, gates, 2, 12), want) and want.shape == (5,)
 
 
 def test_overwrite_control():
