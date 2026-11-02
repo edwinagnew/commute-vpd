@@ -3,13 +3,15 @@
 *E34 Amendment 9, 2026-11-02. Plan `reports/plans/2026-11-02_plan_e34-amend9-student-move.md`, predictions
 `experiments/teacher_training/results/predictions_amend9.json`, code `experiments/teacher_training/amend9.py`, results
 `experiments/teacher_training/results/amend9.json`, figures from `experiments/teacher_training/plot_amend9.py`. The author did not run
-the job. No code review ran before this report; an independent check follows it.*
+the job. No code review ran before this report; an independent check followed it (`reports/reviews/2026-11-02_review_e34-amend9-analysis.md`), and this text was corrected with its findings. Numbers marked "independent check" were read by `~/commute-data/scratch/commute-lead/e34a9-check/recheck.py` and are not filed. The filed numbers and verdicts are unchanged.*
 
-We compared each decomposition after teacher training with the part of its fine-tuned model's update that the subcomponents could write, and on the real task about an eighth of the squared weight change lies along that part, while a fine-tuned model that was taught nothing reads higher, about a fifth, so this cosine cannot be read as how much was taught. Arithmetic had nearly ruled out a close match before the run; what the run adds is the size of that part, about two-thirds of the update and barely more than a random update's, plus the checks that each weight change stays inside it and follows its own fine-tuned model far above another. Every weight direction counts alike here, including directions no input excites, so this cannot show that the decomposition after teacher training behaves differently from the fine-tuned model on real inputs, and it cannot by itself change the wording of the line's headline claim.
+We compared each decomposition after teacher training with the part of its fine-tuned model's update that the subcomponents could write, and on the real task about an eighth of the squared weight change lies along that part. A fine-tuned model trained on labels drawn from the unchanged model's own predictions, which teaches no task but still moves predictions 0.53 nats, reads about a fifth, inside the range of the two map tables that did learn a task (0.13 to 0.26), so this cosine cannot be read as how much was taught; this comparison was not filed. Arithmetic had nearly ruled out a close match before the run; what the run adds is the size of that part, about two-thirds of the update and barely more than a random update's, plus the checks that each weight change stays within what the subcomponents can write, as it must to first order, and follows its own task's fine-tune far above another task's. Every weight direction counts alike here, including directions no input excites, so this cannot show that the decomposition after teacher training behaves differently from the fine-tuned model on real inputs, and it cannot by itself change the wording of the line's headline claim.
 
 **The filed verdict, and what is held back.** The filed rule reads "expressible change" on all eight scored states, and my by-hand scoring agrees. The filing says that verdict picks the wording "reproduces its behaviour by a change the pieces can express". This report does not carry that step, for the reason in the opening, which the filing's own blind spot names. The verdict stands as filed; only its consequence waits for an input-weighted read.
 
-**One thing the verdict's label hides.** "Mostly elsewhere" does not mean short of the target. On the null fine-tune and both random-map tables, the student's length along that part is 0.86 to 1.10 of the part's whole length. On the real task it is a third. The second figure below shows it.
+The filed choice was also weaker than it looked: the second wording's "can express" holds for any student by construction, so P1 could only say "not copies, counted by weight". That is a flaw in the filing, not a new verdict, and `predictions_amend9.json` is not edited. Before the run the plan read as a fork between two live wordings; it was not.
+
+**One thing the verdict's label hides.** "Mostly elsewhere" does not mean short of the target. On the null fine-tune and both random-map tables, the student's length along that part is 0.86 to 1.10 of the part's whole length, a ratio to the fine-tune's length. On the real task it is a third. The reach section below shows it, and that most of the split is the real fine-tune's length.
 
 ## What we were trying to test
 
@@ -22,7 +24,7 @@ An earlier read found that the student's weight change has cosine about 0.28 wit
 - $O(\delta W) = (I - P_U)\,\delta W\,(I - P_V)$ is the least-squares split's remainder, per matrix.
 - $I(\delta W) = \delta W - O(\delta W)$ is the *inside part*, what a first-order change of $U$ and $V$ can write.
 
-All inner products run over the 24 matrices together, every weight counted alike, in fp64. No model was loaded and nothing ran forward.
+All inner products run over the 24 matrices together, every weight counted alike, in fp64 (the stored $s$ is fp32; the independent check's fp64 rebuild agrees to 9 decimals, so no number moves). No model was loaded and nothing ran forward.
 
 **Numbers read.**
 
@@ -36,7 +38,7 @@ All inner products run over the 24 matrices together, every weight counted alike
 | Family | Fine-tune | Students | What it rules out |
 |---|---|---|---|
 | Real task | emoticon, Adam 3e-5, step 1,000 | 2, batch orders 0 and 1 | the scored case |
-| Null fine-tune | every label drawn from W₀'s own predictions, Adam 3e-5, step 100 | 2, batch orders 0 and 1 | that a high cosine needs a behaviour to teach |
+| Null fine-tune | every label drawn from W₀'s own predictions, Adam 3e-5, step 100 | 2, batch orders 0 and 1 | that a high cosine needs a task to teach |
 | First random-map table | first learned step, seeds 0 and 1 | 2 | that one task sets the number |
 | Second random-map table | first learned step, seeds 0 and 1 | 4, batch orders 0 and 1 | the same |
 
@@ -55,9 +57,9 @@ The open numbers were the share, which we leaned to 0.5 to 0.8, the overlap outs
 
 ![amend9_share](../../experiments/teacher_training/figures/amend9_share.png)
 
-**Reading it.** About two-thirds, and barely more than a random update. The coloured marks read 0.62 to 0.67, on every family. The open circles are an isotropic update with the same energy per matrix, and each sits 0.02 to 0.03 below its fine-tune. The black ticks are the ceiling known before the run: a share above it rules out "mostly along". Every share sits well above its tick.
+**Reading it.** About 0.62 to 0.67, barely more than a random update. Four of the 24 matrices are saturated, so anything in them can be written; they give over half of the inside part. On the other 20 the share is 0.44 to 0.47, against 0.40 to 0.43 for a random update (read by the independent check, not filed). The coloured marks read 0.62 to 0.67, on every family. The open circles are an isotropic update with the same energy per matrix, and each sits 0.02 to 0.03 below its fine-tune. The black ticks are the ceiling known before the run: a share above it rules out "mostly along". Every share sits well above its tick.
 
-**What the run added beyond the arithmetic.** The verdict itself needed only this one new number, since the earlier cosines were already filed. Four things are new. The share is measured, not guessed, and it is close to what a random update's would be. The overlap outside is at most 0.0003, so the identity holds and the earlier cosines can be rescaled by the share and nothing else. The student's own inside share is above 0.99999, so the second-order term that could leave the span is negligible. And the reach below had no earlier reading.
+**What the run added beyond the arithmetic.** The verdict itself needed only this one new number, since the earlier cosines were already filed. Four things are new. The share is measured, not guessed, and it is close to what a random update's would be. The overlap outside is at most 0.0003, so the identity holds and the earlier cosines can be rescaled by the square root of the share and nothing else; that is small only because the outside part of $s$ is tiny, and within it $O(s)$ has cosine 0.16 to 0.27 with $O(\delta W)$ on the short families and 0.01 to 0.02 on the real one (independent check, not filed; nothing here rests on it). The student's own inside share is above 0.99999, so the second-order term that could leave the span is negligible; that is true by construction to first order, as "What we learned" says, so it is not a check the run added. And the reach below was not read before, but it is about the earlier cosine times size divided by the share, so only the share was unknown; no rule reads it.
 
 This share is the weight-counted one, not the input-weighted outside share of `GOALS.md`.
 
@@ -74,15 +76,15 @@ This share is the weight-counted one, not the input-weighted outside share of `G
 
 ![amend9_cosine](../../experiments/teacher_training/figures/amend9_cosine.png)
 
-**Reading it.** No student reads "mostly along". The filled marks run from 0.348 to 0.506, all left of the filed line at 0.71. The do-nothing and the least-squares control both sit right of it. In squared length that is 12% to 26% along the inside part. The open marks are the same students against a fine-tune they never saw, and they read 0.023 to 0.061, so the number does follow the student's own fine-tune.
+**Reading it.** No student reads "mostly along". The filled marks run from 0.348 to 0.506, all left of the filed line at 0.71. The do-nothing and the least-squares control both sit right of it. In squared length that is 12% to 26% along the inside part. The open marks are the same students against a fine-tune they never saw, and they read 0.023 to 0.061, so the number does follow the student's own task. Against the same table's other seed, a read by the independent check (not filed, not in `amend9.json`), own against other seed is 0.392/0.299, 0.365/0.310, 0.505/0.411, 0.487/0.437, 0.481/0.443 and 0.506/0.421, so a student's own fine-tune reads higher in all six, by 0.04 to 0.09, 1.5 to 4 times the largest batch-order change (0.025), against a gap of 0.33 or more across tables.
 
-**The reference for the real student's number is the null student, and it reads higher.** The real students read 0.357 and 0.348. The null students, of a fine-tune taught no behaviour, read 0.461 and 0.462 on their own fine-tune. That is 0.10 to 0.11 above the real students at the same batch order, four times the largest batch-order change seen here, 0.025.
+**The reference for the real student's number is the null student, and it reads higher.** The real students read 0.357 and 0.348. The null students, of a fine-tune that taught no task, read 0.461 and 0.462 on their own fine-tune. That is 0.10 to 0.11 above the real students at the same batch order, four times the largest batch-order change seen here, 0.025. Batch order says the gap is not rounding or order. The yardstick for what it means is the spread between tasks: the null does not read above the taught tasks but inside them, first table 0.365 to 0.392, null 0.461 and 0.462, second table 0.481 to 0.506, and both map tables learned their task (held-out P(target) above 0.5). The gap of 0.10 to 0.11 is the same size as the gap between the two map tables, 0.09 to 0.14. With one label draw, nothing here shows where a second null would read.
 
 **This contradicts no filed expectation.** The filing expected the null student at 0.41 to 0.52 on its own fine-tune, from the 0.366 already read by Amendment 8c. No filed rule compares the two, and the run did not create the gap: Amendment 8c's cosines to the whole update were already ordered this way.
 
-**What it means.** The real student's cosine cannot be read as a measure of what was taught. A fine-tune that taught nothing gives a higher number, so a high value does not need a behaviour to learn. The real task's lower value does not say less was learned. The cosine says only that a student's change goes with its own fine-tune and not with another.
+**What it means.** The real student's cosine cannot be read as a measure of what was taught, because taught tasks and the null overlap. Tasks taught and a fine-tune that taught no task read in the same range, so a high value does not need a task. It may still need an output change to reproduce: the null student had one. The real task's lower value does not say less was learned. The cosine tells which task's fine-tune a student followed, and only weakly which seed's.
 
-**What it does not say.** The cause is not tested. The two fine-tunes differ in labels and in length, 1,000 steps against 100, and the real update is about 1.67 times as long. The null fine-tune did move predictions, 0.53 nats to the base by Amendment 8's read. This run varied none of these, and there is one label draw.
+**What it does not say.** The cause is not tested. The two fine-tunes differ in labels and in length, 1,000 steps against 100, and the real update is about 1.67 times as long. The null fine-tune moved predictions 0.53 nats to the base by Amendment 8's read, and Amendment 8's report says of that state "So its student has something to copy". The null student ends 0.0097 nats from its fine-tuned model and the real student 0.0286, so the cosine may go with how closely outputs were reproduced; this run did not test that. It varied none of these, and there is one label draw.
 
 | Student | Cosine, inside part | Squared | Cosine, whole update | Against another fine-tune | Own inside share | Overlap outside |
 |---|---|---|---|---|---|---|
@@ -101,11 +103,24 @@ This share is the weight-counted one, not the input-weighted outside share of `G
 
 ![amend9_reach](../../experiments/teacher_training/figures/amend9_reach.png)
 
-**Reading it.** Three families reach about all of the inside part and the real task reaches a third. The dashed curve is where the student's length along the inside part equals that part's whole length. The do-nothing and the least-squares control lie on it, as they must. The null and map-table students sit on or just under it, 0.86 to 1.10, at 1.85 to 2.80 times the inside part's length. The real students sit well below it, 0.32 and 0.33, at 0.92 times.
+**Reading it.** Three families read a reach near 1 and the real task reads a third. Reach is one length, the student's length along the inside part over that part's whole length; it does not mean the student contains the inside part. The dashed curve is where the two lengths are equal. The do-nothing and the least-squares control lie on it, as they must, to first order (the whole state's product is up to 1.0017, 0.99970 times 1.0020 on the null). The null and map-table students sit on or near it, 0.86 to 1.10, with the first table above it (1.02, 1.10), at 1.85 to 2.80 times the inside part's length. The real students sit well below it, 0.32 and 0.33, at 0.92 times.
 
-So a low cosine means two different things here. On the short fine-tunes the student has moved about the inside part's full length along it, plus a larger move at right angles to it. On the real task it has moved a third of that length, and its total size is smaller than the inside part. This is one direction over all matrices together, so it does not show that each matrix follows.
+In absolute weight length, read by the independent check (not filed):
 
-This is not a filed rule, and it does not break a filed expectation: the filed cosines and sizes imply about these values. The fine-tunes on the curve are the short ones, at 10, 30 or 100 steps, and the one below it ran 1,000. Nothing here varied length, so this is an observation and not a cause.
+| Family | Steps | Inside part's length | Student's length | Student's length along the inside part | Reach |
+|---|---|---|---|---|---|
+| Real | 1,000 | 1.73 | 1.60 | 0.56, 0.57 | 0.32, 0.33 |
+| Null | 100 | 1.05 | 1.94, 1.96 | 0.90 | 0.86 |
+| First table | 10 | 0.61, 0.62 | 1.71, 1.73 | 0.63, 0.67 | 1.02, 1.10 |
+| Second table | 30 | 1.07, 1.09 | 2.02 to 2.03 | 0.98 to 1.03 | 0.90 to 0.96 |
+
+A student's length along the inside part (0.56 to 1.03) does not follow the inside part's own length (0.61 to 1.73). So reach depends heavily on how long the fine-tune was: the real student's length along it is close to the first table's, and its reach is a third of theirs because its fine-tune is 2.8 times as long. Against the null and second table, half of the difference is that length and half is the student's own shorter move along it. Reach 1 means one length matches, alongside a part at right angles about twice as long; it does not mean the student contains the inside part. In every family the part at right angles is 1.7 to 2.7 times the part along. The student's size against its fine-tune is what differs most, and students' sizes do not follow their fine-tunes' (1.60 to 2.03 against 0.61 to 1.73), as the Amendment 8 recheck also found. This is one direction over all matrices together.
+
+Pooled reach hides a block split, read by the independent check: on the 4 saturated matrices it reads 1.00 to 1.26 on the three short families, on the other 20 it reads 0.70 to 0.90, and the real student reads 0.38 to 0.39 and 0.26. The split between real and the rest holds in both blocks. Per matrix, the real student's reach has median about 0.3 and runs from -0.09 to 0.50, so no one matrix carries it; other families' medians are 0.76 to 1.02, ranging 0.42 to 1.49. No matrix in any student crosses the filed line: the largest per-matrix cosine is 0.654.
+
+This is not a filed rule, and it does not break a filed expectation: the filed cosines and sizes imply about these values for the real and map-table students (the filing gave the null no size range). The fine-tunes on the curve are the short ones, at 10, 30 or 100 steps, and the one below it ran 1,000. Nothing here varied length, so this is an observation and not a cause.
+
+**An open oddity.** `h.3.attn.k_proj` reads cosine -0.10 and -0.13 on the real students at both orders, where the null reads +0.56. It holds 1.2% of the student's squared length. No cause is asserted, and it was not run down.
 
 | Student | Size, whole update | Size, inside part | Reach |
 |---|---|---|---|
@@ -121,14 +136,14 @@ Yes. The least-squares split's first-order change reads 1 within 2.2e-16 on all 
 
 ## What we learned
 
-The weight-counted split of an update tells us little by itself: the subcomponents could write two-thirds of every update tried, about what they could write of a random one. Dividing that out raises the real student's cosine from about 0.28 to about 0.35, and no conclusion changes. The cosine tells which fine-tune a student followed but not how much was taught, because a fine-tune that taught nothing reads higher.
+The weight-counted split of an update tells us little by itself: the subcomponents could write 0.62 to 0.67 of every update tried, about what they could write of a random one, and a good part of that is four saturated matrices. Dividing that out raises the real student's cosine from about 0.28 to about 0.35, and no conclusion changes. The cosine tells which task's fine-tune a student followed, and only weakly which seed's. It cannot say how much was taught, because tasks taught and a fine-tune that taught no task read in the same range.
 
-For `GOALS.md`, this leaves the commute line's headline wording where it was. "Copies the fine-tune into the subcomponents" has no support from weights counted alike, but that read cannot speak to the directions inputs actually excite. "A change the pieces can express" is true of any student by construction, as its own inside share shows, so it needs its behavioural half from other runs. That half is not read here.
+For `GOALS.md`, this leaves the commute line's headline wording where it was. "Copies the fine-tune into the subcomponents" is not supported by weights counted alike: map-table students read 0.37 to 0.51 against 0.63 to 0.70 for the same table's fine-tune at another seed (the inside parts of two fine-tunes of one table at two seeds have cosine 0.63 on the first table and 0.70 on the second, read by the independent check, not filed). But the filed line at 0.71 is one that this rerun fails too, so the reading is "less aligned than a rerun", not "elsewhere". The reruns are 10 and 30 steps; what a rerun reads at 1,000 steps is unknown, since the real task has no second fine-tune saved. That read also cannot speak to the directions inputs actually excite. "A change the pieces can express" is true of any student by construction, as its own inside share shows, so it needs its behavioural half from other runs. That half is not read here.
 
 ## How compelling is the evidence
 
 - **Blind to input weighting.** A student could match the inside part on every direction inputs excite and differ elsewhere, and it would read "mostly elsewhere". Amendment 8 reads the real student at 0.0286 nats from its fine-tuned model on held-out windows, so its outputs there are already close while its weights read this far apart.
-- **Blind to matrices.** All 24 are pooled, so the larger matrices dominate.
+- **Blind to matrices.** All 24 are pooled, so the larger matrices dominate, and four saturated matrices hold 32 to 37% of each update's squared length and 51 to 56% of the inside part (independent check, not filed). The per-matrix reads above are the independent check's.
 - **Noise.** Batch order moves the cosine to the inside part by 0.001 to 0.025 here. Rounding moved re-read cosines by at most 1.8e-6.
 - **Coverage.** One null fine-tune and one label draw; one real task; two map tables at two seeds; the 67M model. E42's students are absent, as their fine-tunes were not saved.
 - **Random maps** here means random-map tables, not a demonstrated new capability; a new circuit from old parts reads "elicited" to VPD.
@@ -137,12 +152,12 @@ For `GOALS.md`, this leaves the commute line's headline wording where it was. "C
 
 One filed lean missed. We leaned to the other map table reading above 0.1, class "partly", and it reads 0.023 to 0.034, class "reads its own". The filing's reason was a student's cosine to the same table's other seed, 0.24 to 0.36 on the whole update. A different table reads far lower than that.
 
-The reach split between the real task and the rest was implied by the filed ranges, but no one had pointed at it. Everything else fell inside its filed range. The null student above the real one is not a surprise against the filing, and it is still the most important thing in the run.
+The reach split between the real task and the rest was implied by the filed ranges for the real and map-table students, but no one had pointed at it. Everything else fell inside its filed range. Only a range for each of the null and the real student was filed, so the null student above the real one is not a surprise against the filing, and it is still the most important thing in the run.
 
 ## What next
 
 1. **The input-weighted form of this cosine.** It needs input moments from one forward pass, on a free cluster card. If it stays low, "mostly elsewhere" holds on the data and the wording can move. If it nears 1, the students match the inside part where it counts, and "copies" returns as a live wording.
-2. **Per-matrix cosine and reach, $0 on saved states.** If the real task's third holds on every matrix it is a property of the student. If one or two matrices carry it, the pooled reach is misleading.
+2. **Per-matrix cosine and reach, $0 on saved states.** Answered by the independent check, not filed: no one matrix carries the real student's reach (see the reach section). One matrix, `h.3.attn.k_proj`, is an open oddity.
 3. **A null fine-tune at step 1,000, needing training.** If it reaches about a third, reach goes with fine-tune length and not with what was taught. If it stays near 1, the real task differs for another reason. This would need `/design` first.
 
 ## Scorecard
@@ -158,6 +173,8 @@ Rules are in `predictions_amend9.json`, in force as filed; summarised here. Scor
 | C1 | Least-squares split reads 1, first order | Within 1e-6 of 1, or stop | largest difference 2.2e-16 | pass | |
 | C2 | Do-nothing reads the square root of the share | Within 1e-6, or stop | largest difference 2.2e-16 | pass | |
 | Re-read | Earlier cosines reproduce | Within 1e-3, or stop | largest difference 1.8e-6 | pass | |
+
+P1 could only say "not copies, counted by weight", because "can express" holds for any student by construction (a flaw in the filing; see the opening).
 
 Other filed expected values, all read inside their ranges:
 
@@ -181,9 +198,10 @@ None. No cited procedure is reproduced: the cosine is the project's own, as in E
 ## Not run
 
 - An input-weighted cosine and share: they need input moments from a forward pass. This is what a change of wording needs.
-- Per-matrix cosines and reach, at $0 later.
+- Per-matrix cosines and reach as a filed run: only the independent check's unfiled read exists.
+- Why `h.3.attn.k_proj` reads -0.10 and -0.13 on the real students and +0.56 on the null: not run down.
 - E42's students: their fine-tunes were regenerated in-job and not saved.
-- Another seed's fine-tune as a reference; a second null fine-tune or label draw; a null fine-tune at step 1,000.
+- A second null fine-tune or label draw; a null fine-tune at step 1,000; a second real fine-tune, which needs training. (Another seed's fine-tune as a reference was read by the independent check, unfiled.)
 - Anything on Qwen, and any comparison with cheaper methods, which are other leads' lines.
 
 ## Provenance

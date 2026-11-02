@@ -1,15 +1,16 @@
 #!/bin/bash
-# E62 Amendment 6: W0 only, no training, no state read. Under W0's mask, with B in the text replaced by another token, does the forward still say B or say the new token?
+# E62 Amendment 6: W0 only, no training, no state read. Under W0's mask, with B in the text replaced by another token, does the forward lean to B or to the new token?
 # Plan: reports/plans/2026-11-02_plan_e62-copying-heads.md, "Amendment 6 (2026-11-02)". Rules: experiments/induction_cue/results/predictions_amend6.json
 # (amend6.py refuses unless it is committed unchanged).
 #   cd ~/commute-agents/<role> && sbatch cluster/induction_cue_amend6.sbatch
 # Exit 1 at: the overwrite not as filed (overwrite_not_as_filed); stage a's control, every mask at 1 then the target model (control_failed); a first cell of the control or the mask off Amendment 5's level by over 1e-3
-# (reread_failed). The fp32 row stops nothing; two precisions disagreeing is a LOUD line.
+# (reread_failed); the mask's cells not finite or its lean under 1.0 (unreadable). The fp32 row stops nothing; two precisions disagreeing, or its first cell off Amendment 5's by over 1e-3, is a LOUD line.
+# The own-mask reads and the top-1 rates are report-only.
 # Inputs (read): experiments/induction_cue/results/{run,amend5}.json, results/large/{windows,heads,amend5_windows}.pt (windows' sha256 checked against run.json, amend5_windows' levels against amend5.json),
 # experiments/transport_test/results/large/alive.pt, the VPD artifacts.
-# Writes experiments/induction_cue/results/amend6.json after each stage (refuses if it exists), results/large/amend6.out, results/large/amend6_windows.pt (every read per window, 16 x 200 float64, under 100 KB).
+# Writes experiments/induction_cue/results/amend6.json after each stage (refuses if it exists), results/large/amend6.out, results/large/amend6_windows.pt (every read per window, 18 x 200 float64 and the top tokens, under 100 KB).
 # Deletes nothing, commits nothing.
-# Time: expected about 1 min. Amendment 5's job took 59 s in all for about 170 reads (job 49072); this is 16 reads and two Γ passes after the same load of about 30 s. The limit is 10 min, for a queue slot and to catch a hang.
+# Time: expected about 1 min. Amendment 5's job took 59 s in all for about 170 reads (job 49072); this is 18 reads, three top-1 forwards and three Γ passes after the same load of about 30 s. The limit is 10 min, for a queue slot and to catch a hang.
 #SBATCH --job-name=commute-e62-amend6
 #SBATCH --partition=compute
 #SBATCH --account=c11

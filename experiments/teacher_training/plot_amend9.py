@@ -3,7 +3,7 @@ subcomponents could write (plan: reports/plans/2026-11-02_plan_e34-amend9-studen
 
   amend9_share.png   the update's inside share, a random update's, and the most a 'mostly along' reading could allow
   amend9_cosine.png  each student's cosine to its own fine-tune's inside part and to another's, with the controls
-  amend9_reach.png   each student's cosine against its size, with the line where it reaches all of the inside part
+  amend9_reach.png   each student's cosine against its size, with the line where its length along the inside part equals the part's
 
 Usage (repo root): ~/commute-agents/fleet/cpu-run python experiments/teacher_training/plot_amend9.py
 """
@@ -27,7 +27,7 @@ D: dict[str, Any] = json.loads((HERE / "results" / "amend9.json").read_text())
 INK, MUTED, GRID, REF = "#0b0b0b", "#6e6d68", "#e6e5e0", "#52514e"
 C = {"real": "#2a78d6", "null": "#eb6834", "rand32": "#1baf7a", "rand32b": "#6250d6"}  # real and null as in amend8's figures
 MARK = {"real": "o", "null": "s", "rand32": "^", "rand32b": "D"}
-FAMILY = {"real": "real task, emoticon fine-tune", "null": "null fine-tune, taught nothing", "rand32": "first random-map table", "rand32b": "second random-map table"}
+FAMILY = {"real": "real task, emoticon fine-tune", "null": "null fine-tune, no task", "rand32": "first random-map table", "rand32b": "second random-map table"}
 # student -> (family, label, own fine-tune, the other fine-tune read)
 STUDENTS = {
     "real_o0": ("real", "real task, order 0", "real_teacher", "null_teacher"),
@@ -78,7 +78,7 @@ def share_fig() -> None:
     ax.set_yticks(range(len(names)), [TEACHERS[t][1] for t in names][::-1])
     ax.set_xlim(0, 1)
     ax.set_xlabel("share of the update's squared weight length the subcomponents could write, all 24 matrices")
-    ax.set_title("How much of each update could the subcomponents write?", loc="left")
+    ax.set_title("How much of each update could the subcomponents write? (4 of 24 matrices saturated)", loc="left")
     ax.legend(loc="upper center", bbox_to_anchor=(0.45, -0.2), frameon=False, fontsize=8.5, ncol=1)
     tidy(ax)
     save(fig, "amend9_share")
@@ -115,7 +115,7 @@ def cosine_fig() -> None:
 def reach_fig() -> None:
     fig, ax = plt.subplots(figsize=(8.5, 5))
     x = np.linspace(0.95, 3.6, 200)
-    ax.plot(x, 1 / x, color=INK, ls="--", lw=1.2, zorder=2, label="reaches all of it: cosine x size = 1")
+    ax.plot(x, 1 / x, color=INK, ls="--", lw=1.2, zorder=2, label="reach 1: length along it equals its whole length (cosine x size = 1)")
     ax.axhline(0.5**0.5, color=MUTED, ls=":", lw=1.2, zorder=2, label="filed line 0.71: above it, 'mostly along'")
     for fam, colour in C.items():
         pts = [(read(s, v[2])["size_to_inside"], read(s, v[2])["cos_in"]) for s, v in STUDENTS.items() if v[0] == fam]
@@ -129,7 +129,7 @@ def reach_fig() -> None:
     ax.set_ylim(0, 1.05)
     ax.set_xlabel("student's size against the part of the update the subcomponents could write (1: same length)")
     ax.set_ylabel("cosine to that part")
-    ax.set_title("How far along that part does each student reach, and at what size?", loc="left")
+    ax.set_title("How far along that part does each student reach, and at what size?\n(one length along the part, not containing it)", loc="left")
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.12), frameon=False, fontsize=8.5, ncol=2)
     tidy(ax)
     save(fig, "amend9_reach")
