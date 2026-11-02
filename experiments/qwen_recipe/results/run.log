@@ -91,3 +91,34 @@
 [   551.9s] [load] components, peak GPU 24.62 GiB, host 40.4 GB
 [   724.2s] [checks_sizes] {"note": "E57's size K00 - K0 and these two KLs are all reported from now on; this table chooses no axis.", "states": {"e40": {"KL_W0_state": 0.5843039068044621, "KL_state_W0": 1.6351103354567915, "K00_minus_K0": 1.304197451890253, "KL_W0_state_16": 0.618376722326358, "reproduces_16": true}, "gold_s0": {"KL_W0_state": 0.8058203932674903, "KL_state_W0": 1.7406622287451785, "K00_minus_K0": 1.44376307176361, "KL_W0_state_16": 0.8314209740216745, "reproduces_16": null}, "a2long_s0": {"KL_W0_state": 0.6467697953413075, "KL_state_W0": 0.6824805046779824, "K00_minus_K0": 0.6382827307325607, "KL_W0_state_16": 0.6672881279340593, "reproduces_16": null}, "a2long_s1": {"KL_W0_state": 0.6149005033609031, "KL_state_W0": 0.6727793648827497, "K00_minus_K0": 0.6283981395029454, "KL_W0_state_16": 0.6357206441381417, "reproduces_16": null}, "gauss": {"KL_W0_state": 0.5261155628642973, "KL_state_W0": 0.8678000463370691, "K00_minus_K0": 0.8569937260826377, "KL_W0_state_16": 0.5321442255484874, "reproduces_16": true}, "inspan": {"KL_W0_state": 0.48107493945000135, "KL_state_W0": 0.5790252448253213, "K00_minus_K0": 0.6246482474678603, "KL_W0_state_16": 0.5023351372461583, "reproduces_16": true}}}
 [   724.2s] [sizes done] peak GPU 26.25 GiB, host 58.2 GB
+[     0.0s] [gen] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=494598, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+[    12.4s] [load] target, NVIDIA L40, peak GPU 6.41 GiB, host 11.0 GB
+[    90.4s] [check] gen_prompts_W0_0: ok {"prompt_lengths_differ_from_E45": 0}
+[   180.2s] [check] gen_prompts_W0_128: ok {"prompt_lengths_differ_from_E45": 0}
+[   267.0s] [check] gen_prompts_W0_256: ok {"prompt_lengths_differ_from_E45": 0}
+[   357.1s] [check] gen_prompts_W0_384: ok {"prompt_lengths_differ_from_E45": 0}
+[   444.0s] [check] gen_prompts_W0_512: ok {"prompt_lengths_differ_from_E45": 0}
+[   533.5s] [check] gen_prompts_W0_640: ok {"prompt_lengths_differ_from_E45": 0}
+[   621.4s] [check] gen_prompts_W0_768: ok {"prompt_lengths_differ_from_E45": 0}
+[   711.4s] [check] gen_prompts_W0_896: ok {"prompt_lengths_differ_from_E45": 0}
+[   802.7s] [check] gen_prompts_W0_1024: ok {"prompt_lengths_differ_from_E45": 0}
+[   896.4s] [check] gen_prompts_W0_1152: ok {"prompt_lengths_differ_from_E45": 0}
+[   920.2s] [check] gen_prompts_W0_1280: ok {"prompt_lengths_differ_from_E45": 0}
+[   920.3s] [checks_gen] {"W0": {"k": 1319, "k_fits": 1255, "fits_share": 0.9514783927217589, "truncation_share": 0.01288855193328279, "strict_dropped": 0.7816733067729084, "lenient_dropped": 0.8047808764940239, "strict_all": 0.7581501137225171, "strict_capped": 0.7445034116755117, "lenient_capped": 0.7733131159969674}}
+[  1009.3s] [check] gen_prompts_own_s0_0: ok {"prompt_lengths_differ_from_E45": 0}
+[  1098.5s] [check] gen_prompts_own_s0_128: ok {"prompt_lengths_differ_from_E45": 0}
+[  1186.0s] [check] gen_prompts_own_s0_256: ok {"prompt_lengths_differ_from_E45": 0}
+[  1276.6s] [check] gen_prompts_own_s0_384: ok {"prompt_lengths_differ_from_E45": 0}
+[  1363.5s] [check] gen_prompts_own_s0_512: ok {"prompt_lengths_differ_from_E45": 0}
+[  1452.9s] [check] gen_prompts_own_s0_640: ok {"prompt_lengths_differ_from_E45": 0}
+[  1452.9s] BUDGET: 136 s more would pass 1500 s; resubmit the same command
+[     0.0s] [gen] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=494598, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+[    12.0s] [load] target, NVIDIA L40, peak GPU 6.41 GiB, host 11.0 GB
+[    12.2s] [checks_gen] {"W0": {"k": 1319, "k_fits": 1255, "fits_share": 0.9514783927217589, "truncation_share": 0.01288855193328279, "strict_dropped": 0.7816733067729084, "lenient_dropped": 0.8047808764940239, "strict_all": 0.7581501137225171, "strict_capped": 0.7445034116755117, "lenient_capped": 0.7733131159969674}}
+[   100.6s] [check] gen_prompts_own_s0_768: ok {"prompt_lengths_differ_from_E45": 0}
+[   190.9s] [check] gen_prompts_own_s0_896: ok {"prompt_lengths_differ_from_E45": 0}
+[   289.6s] [check] gen_prompts_own_s0_1024: ok {"prompt_lengths_differ_from_E45": 0}
+[   383.7s] [check] gen_prompts_own_s0_1152: ok {"prompt_lengths_differ_from_E45": 0}
+[   416.9s] [check] gen_prompts_own_s0_1280: ok {"prompt_lengths_differ_from_E45": 0}
+[   419.0s] [checks_gen] {"W0": {"k": 1319, "k_fits": 1255, "fits_share": 0.9514783927217589, "truncation_share": 0.01288855193328279, "strict_dropped": 0.7816733067729084, "lenient_dropped": 0.8047808764940239, "strict_all": 0.7581501137225171, "strict_capped": 0.7445034116755117, "lenient_capped": 0.7733131159969674}, "own_s0_sha256": "1703f96e542cca6dfe0371a45d107fcf7b3136b77300c411df42c5a814139306", "own_s0": {"k": 1319, "k_fits": 1254, "fits_share": 0.9507202426080363, "truncation_share": 0.018953752843062926, "strict_dropped": 0.8205741626794258, "lenient_dropped": 0.8205741626794258, "strict_all": 0.7983320697498104, "strict_capped": 0.7816527672479151, "lenient_capped": 0.7854435178165277}, "paired": {"drop": {"n": 1228, "gain": 0.03664495114006515, "se": 0.01066404153656029}, "all": {"n": 1319, "gain": 0.0401819560272934, "se": 0.011013558502580805}}, "bf16_on_file": {"drop": {"n": 1220, "gain": 0.05245901639344262, "se": 0.010197244569850494}, "all": {"n": 1319, "gain": 0.05458680818802123, "se": 0.010401102362441999}}, "W0_fp32_vs_bf16": {"n": 1319, "answers_differ": 715, "grades_flip": 75, "card_gap_on_file": 0.011, "fp32_minus_bf16": {"drop": {"n": 1240, "gain": 0, "se": 0.006144230516734054}, "all": {"n": 1319, "gain": 0.002274450341167551, "se": 0.006567964129846607}}}, "verdict": {"survives": true, "reads": "the own run's gain survives on fp32 weights"}}
+[   419.0s] [gen done] peak GPU 33.75 GiB, host 12.1 GB
