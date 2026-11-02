@@ -250,7 +250,7 @@
   ]
  },
  "n3b_expected_from_n3a": {
-  "dated_note": null,
+  "dated_note": "2026-11-02, from job 48433 (n3a), before n3b ran. Chosen step 100: size 0.02773 (target 0.03149), kl_w0 0.5324, damage 0.1222, P(target) 0.0036. The null fine-tune's KL to W0 is already 0.52-0.59 from step 30 to 1000, so this teacher has nothing to teach about the task but has moved in function; n3b's reading is of a student copying that walk. Expected, null teacher's do-nothing: P(target) near 0.0036; check ratio between 1.0 and 2.5, the range of the emoticon do-nothing states at comparable sizes on E41 (T1 1.05 to T10 2.52, T1000 1.39 on this card); no lean inside it. Expected, null student: step-1 KL (logged, no stop) 0.1 to 2, around kl_w0; KL to its teacher at step 1000 at or under about 0.1, near N1 and N2's readings of 0.044 and 0.058 with nothing to copy; size at 1000 0.015 to 0.03. These are guides for reading the run; the filed classes and rule do not change.",
   "to_fill": [
    "the chosen step and its size, kl_w0, damage, P(target)",
    "null teacher's do-nothing expected from them",
