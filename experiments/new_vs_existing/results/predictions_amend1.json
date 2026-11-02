@@ -1,5 +1,5 @@
 {
- "about": "E12 Amendment 1: the route split on teacher-trained states. Plan reports/plans/2026-11-02_plan_e12-teacher-route-split.md (2026-11-02), run by the user's decision of 2026-11-02 (backlog.md, 2026-11-02 entry). experiments/new_vs_existing/amend1.py refuses to start without this file or if `config` differs.",
+ "about": "E12 Amendment 1: the route split on teacher-trained states. Plan reports/plans/2026-11-02_plan_e12-teacher-route-split.md (2026-11-02), run by the user's decision of 2026-11-02 (backlog.md, 2026-11-02 entry). experiments/new_vs_existing/amend1.py reads its `config` from this file and refuses to start without it; the results file stores that config and the commit, and a rerun refuses a mismatch.",
  "filed": "2026-11-02, before any run",
  "request_in_the_terms_words": "On each of E12's eight full-weight fine-tunes (copy and random-map key to value tasks, two seeds, first learned step), run teacher training (component training with loss KL(teacher || student), teacher = the fine-tuned model, Gamma and Delta frozen). Read the route split at the trigger on 97 held-out windows. Does the masked-off share e_gate separate the classes by E12's rule, and what share of the copy's gain is re-switching r against masked-off?",
  "readings": {
@@ -23,6 +23,7 @@
   "inherited": 0.1,
   "moved": 0.25,
   "no_power": 0.05,
+  "noise_factor": 3.0,
   "masked_hi": 0.5,
   "masked_lo": 0.25
  },
@@ -46,12 +47,12 @@
    "noise_floor": "batch-order |delta e_gate| on ident32 s0 and rand32 s0, reported as noise_e_gate; the class range is in the rule"
   },
   "P2": {
-   "claim": "whether a student keeps its fine-tune's re-switching share",
-   "rule": "Over the pool, |r(state (a)) - r(do-nothing of the same fine-tune)|, absolute. Under 3 states in a class, or no batch-order pair with both states in the pool: 'unscorable'. Else any batch-order |delta r| > 0.05: 'no power'. Else any move >= 0.25: 'moved'. Else all moves <= 0.10: 'inherited'. Else 'partly'. 0.10 is 'inherited' and 0.25 is 'moved'.",
+   "claim": "whether a student keeps its fine-tune's re-switching",
+   "rule": "Over the pool, move = |L01(state (a)) - L01(do-nothing of the same fine-tune)| / the fine-tune's gain (the do-nothing read's), in nats over nats, absolute. L00 is the same in both, so this is the change in the r term in units of the teacher's gain: a student that learned less cannot move it through its own gain (review 2026-11-02, finding 1). The student's gain / teacher's gain is reported beside each move (score.P2.gain_ratio). Noise = the same quantity between a state and its batch-order-1 state, over the pairs with both in the pool. Under 3 states in a class, or no such pair: 'unscorable'. Else if the largest noise > 0.05 and the largest move < 3 x the largest noise: 'no power'. Else any move >= 0.25: 'moved'. Else all moves <= 0.10: 'inherited'. Else 'partly'. 0.10 is 'inherited' and 0.25 is 'moved'; 3 x exactly is 'moved'/classified, not 'no power'. At a gain ratio of 1 this is the old share rule, so the 0.10 and 0.25 lines carry over unchanged. They are not rescaled for a map's small r (0.27): 0.10 of the teacher's gain is a third of it, and the lines are the ones filed.",
    "lean": "partly, medium (E42 moved 0.01-0.06 at step-1000 teachers, but step-10 teachers overshoot: E43's 5.1 times)",
-   "blind_to": "whether the same subcomponents switch; each r is over its own gain",
+   "blind_to": "whether the same subcomponents switch; a student that learned less (gain ratio under 1) moves the numerator by its shortfall, so read the move with gain_ratio beside it",
    "positive_control": "C0: do-nothing's r equals least-squares' within 1e-6; a miss stops the job. First student: r of state (b) equals do-nothing's within 1e-6",
-   "noise_floor": "batch-order |delta r| on the two pairs, which is in the rule; 0.002 across cards (E46)"
+   "noise_floor": "batch-order noise on the two pairs, which is in the rule; 0.002 across cards (E46, in share units)"
   },
   "P3": {
    "claim": "where the copy's gain sits: masked-off or not, on state (a)",
@@ -59,7 +60,7 @@
    "lean": "not masked-off, low-medium (E42 0.25 at step 100, 0.31 at step 1000)",
    "blind_to": "which subcomponents; one position; nearly 1 - r, so not independent of P1 or P2",
    "positive_control": "E42's rand32 and rand1 read masked-off (0.84, 0.92) under these lines; none in this job",
-   "noise_floor": "batch-order |delta e_gate| on ident32 s0, reported as noise_e_gate"
+   "noise_floor": "batch-order |delta e_gate| on both pairs, reported once, as P1's noise_e_gate"
   }
  },
  "expected": {
@@ -72,13 +73,14 @@
  "stop_rules": {
   "inputs": "sha256 of the 8 fine-tunes and 4 windows files against stage0a.json, before the model loads; amend8/n1/0.pt must exist, its sha256 recorded",
   "C0": "W0 cells T0, U0, L00 of each task against stage0a.json's on-card readings within 0.02 nats (E46's). Do-nothing r against E12's within 0.03 (E46's). Do-nothing e_gate + r within 1e-6. Do-nothing r against least-squares r within 1e-6. Least-squares e_gate 'separates' over the 8 states",
-  "C1": "Teacher = W0 from amend8/n1/0.pt, 1000 steps, rand32 windows then ident32. Stop if |r term| or |e_gate term| at step 1000 exceeds 1.5 nats (0.11 x the smallest teacher gain 13.2; 0.11 is a third of E12's smallest e_gate gap 0.33). Absolute value: a large negative term also means training alone writes into the route. The start's terms are reported, not stopped on, because the start is a random move, not training",
-  "first student": "ident32 s0: stop if the share sum of (a) or (b) misses 1 within 1e-6; its gain / teacher's is under 0.5; r of (b) misses do-nothing's within 1e-6; U1 of (a) misses U1 of (b) within 1e-6. The last two hold by code and test the read's path",
+  "C1": "Teacher = W0 from amend8/n1/0.pt, 1000 steps, once, read on rand32's then ident32's table. Stop if |r term| or |e_gate term| at step 1000 exceeds 1.5 nats (0.11 x the smallest teacher gain 13.2; 0.11 is a third of E12's smallest e_gate gap 0.33). Absolute value: a large negative term also means training alone writes into the route. One training, read under both tables (ident32's and rand32's windows have the same train and held-out tokens; the table reaches only the read), so C1 is one draw, not two. The start's terms, the end's, and end minus start are all reported; the stop reads the end. KNOWN TO BE WEAK (review 2026-11-02, finding 6): Amendment 8 read this start on emoticon windows (run_n1.log:142,163): gain 0.07 nats at the start and 0.20 at step 1000, an r term of about 0.04 then 0.08 nats and an e_gate term of about 0.02 then 0.06, so 1.5 nats is about 20 times those terms. The stop will likely not fire on noise, would pass a recipe that writes ten times as much, and cannot separate training from the start's move if it does fire (the end state keeps about 99% of that move, Amendment 8). The line is left as filed; its reason, from the classes' gap, is sound. The start's terms are reported, not stopped on",
+  "first student": "ident32 s0: stop if its gain / teacher's is under 0.5; r of (b) misses do-nothing's within 1e-6; U1 of (a) misses U1 of (b) within 1e-6. The last two hold by code and test the read's path. (The two share-sum checks are dropped: the shares telescope, so they cannot fail except on NaN, which the gain-ratio check stops.)",
   "later students": "no stop: a state that learned too little leaves the pool and is listed"
  },
  "edge_cases_run_before_filing": "~/commute-data/scratch/commute-lead/e12-amend1-writer/edge.py on amend1.py's rule functions, 2026-11-02, all as expected on the filed text: empty and one-element pools, a class short or wholly dropped, NaN shares, ties at gap = within, 0.05, 0.10, 0.25, 0.5, gain ratio exactly 0.5, a lost noise pair, (b) NaN on a state in (a)'s pool, 2-2, 2-1-1, 1-1-1. Three cases the plan's draft left open were fixed before filing: see changes_from_the_plan_rules.",
  "changes_from_the_plan_rules": [
-  "P2: 'empty pool: unscorable' widened to under 3 states in a class, as P1, since moves over one class alone or over one state read 'inherited' too easily. A pool with no batch-order pair also 'unscorable': the 'no power' test could not run, a case the plan did not cover. Order fixed: unscorable, no power, moved, inherited, partly.",
+  "Amendment before the first run, from the code review (reports/reviews/2026-11-02_review_e12-amend1-code.md), nothing had run: P2's move is now |L01(a) - L01(do-nothing)| / teacher's gain (finding 1; noise on the same scale; lines kept; gain ratio reported beside); 'no power' only if the largest move is under 3 x the largest noise, else the move is classified, so 'moved' outranks it (finding 5; the factor 3 is chosen here, not sourced, and is blind to nothing the old order caught except a move between 1 and 3 times the noise); what_changes_next has a clause per verdict (finding 2); the results file stores commit and config and a rerun refuses a mismatch or changed code (finding 3); C1 trains once and reads under both tables (finding 4); C1 reports end minus start and its stop is marked weak (finding 6); departures gains the batch-order line (finding 7); the share-sum checks, P3's duplicate noise, noise_e_gate_b and per_state were deleted; the config dataclass is gone, this file's `config` is read directly.",
+  "P2: 'empty pool: unscorable' widened to under 3 states in a class, as P1, since moves over one class alone or over one state read 'inherited' too easily. A pool with no batch-order pair also 'unscorable': the 'no power' test could not run, a case the plan did not cover. Order fixed (as amended above): unscorable, no power (only with the move under 3 x noise), moved, inherited, partly.",
   "P3: the plan's 'majority class; a 2-2 tie or under 3 states unsettled' left 2-1-1 and 1-1-1 uncovered. Filed as strictly more than half of the states; anything else 'unsettled'.",
   "Pool on state (b): the plan's ratio could not fail on (b), whose gain is the fine-tune's, so (b) reads (a)'s pool.",
   "C1's stop line is on the absolute term; the plan says 'above 1.5 nats'."
@@ -88,10 +90,11 @@
   "from_E42": "Teachers at the first learned step (10 or 30), not 1000; rand32's teacher holds P only 0.55-0.59, a confound carried from E12; no Pile harness.",
   "from_Amendment_8_n1": "C1's start is the saved bf16 offsets, so it differs from n1's by their rounding; its windows are these tasks', not emoticon's; fresh Adam state and batch order 0, as n1.",
   "from_VPD": "U and V alone on an unmasked KL to a teacher, Gamma and Delta frozen, no sparsity or masked loss. The route split is this project's measure, not the paper's. Gamma sees 41-token windows where it trained on rows of 512, and it is bidirectional (review 2026-10-27).",
-  "from_Kingma_and_Ba": "Adam with default betas, plus clip 1 and no warm-up, carried from E34."
+  "batch_order": "s0 students share their teachers' first batches (same seed, same generator: regating_table/run.py:294, anchors.py:78, finetune.py:197,201, component_training.py:144,154); s1 students and the order-1 noise states do not. A small part of 1,000 steps, and Amendment 8c read shared batches as not mattering on cosines (within 0.008), but the within-class range and the noise floor both straddle it.",
+  "from_Kingma_and_Ba":"Adam with default betas, plus clip 1 and no warm-up, carried from E34."
  },
  "limits_carried": "A new circuit from old pieces reads 'elicited' to VPD, and E50 Amendment 1 did not show W0 performs the copy task, so the classes are 'copy' and 'random map', not 'existing' and 'new'.",
- "what_changes_next": "Separates and r stays close: E42's claim widens to two tables per class, nothing further runs. No separation, or r moves: the route is not a kind reading of a map's state, the re-gating line's r stays on the fine-tuned model only, and the user hears it before anything else runs.",
+ "what_changes_next": "Read P1 on state (a); state (b) is reported beside it and never decides. Each clause ends with the user hearing the result first. P1 separates and P2 inherited: E42's claim widens to two tables per class; nothing further runs. P1 separates and P2 partly: the same widening, with the re-gating line quoting a student's r as a range of the move in the teacher's gain, and nothing further runs. P2 moved, whatever P1 reads: the route is not a kind reading of a map's state; the re-gating line's r stays on the fine-tuned model only. P1 no separation: the same as moved. P1 reversed: stop, nothing further runs, E42's claim is reopened by the user and no rule is refiled. P2 no power: P2 is not read, P1 alone decides as above, and a third batch order on ident32 s0 is the one follow-up proposed. P1 or P2 unscorable: the pool lost too many states (see score.dropped); the step-1000 teachers on ident32b and rand32b (not_run) are the proposed follow-up, and nothing is claimed. P3 masked-off, not masked-off or mixed is reported against E42's lean and changes no step; P3 unsettled is reported as such. State (a) and (b) disagree on P1 (one separates, the other does not): the verdict is (a)'s, and the disagreement is reported as the remainder's work on the route, not as a pass or a fail.",
  "not_run": [
   "Pile harness on any student; the Pile-text arm; step 100; more than two batch orders",
   "Step-1000 teachers on ident32b and rand32b, the cheapest follow-up if P1 does not separate",
