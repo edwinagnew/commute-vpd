@@ -2,6 +2,7 @@
 
 **Plan only, not approved. No code, no job, no predictions filed.** A new base model and new tasks fall in no approved class,
 so this needs the user's confirmation. MATS `debug` only, $0, not gated.
+**Reviewed by Fable (2026-11-02): `reports/plans/2026-11-02_advice_e65-review-FABLE.md`. Its named changes are not applied here; they wait on the user's choice between this test and Stage B first.**
 
 ## The question, in plain words
 
