@@ -6,8 +6,10 @@
 # import this clone's own src/ (pytest's pythonpath; pyright adds src/ itself).
 export UV_NO_SYNC := 1
 
-# pyright's node.js: the cluster worker cannot build one (nodeenv fails there, 2026-10-27), so use the working copy in
-# the shared artifacts folder when the clone has it.
+# pyright's node.js: nodeenv cannot build one unpinned (it parses the newest, an "-alpha" release, and crashes), so use
+# the working copy in the shared artifacts folder when the clone has it. ~/.cache/pyright-python/nodeenv, which a bare
+# `.venv/bin/pyright` uses, was rebuilt with node 22.11.0 on 2026-10-29 (friction 141, 178, 183); to rebuild it:
+# fleet/cpu-run .venv/bin/python -m nodeenv -n 22.11.0 ~/.cache/pyright-python/nodeenv
 ifneq ($(wildcard artifacts/pyright-cache/pyright-python/nodeenv/bin),)
 export PYRIGHT_PYTHON_CACHE_DIR ?= $(CURDIR)/artifacts/pyright-cache
 endif
@@ -19,8 +21,9 @@ sync:
 	@if [ -L .venv ]; then echo "make sync: .venv is the shared cluster venv; rebuild it with: sbatch cluster/setup.sbatch" >&2; exit 1; fi
 	uv sync
 
+# `make test FILES="tests/test_x.py"` runs just those (friction 235); lint's changed-files default is not for tests.
 test:
-	uv run pytest -q
+	uv run pytest -q $(if $(filter command line,$(origin FILES)),$(FILES))
 
 lint:
 	uv run ruff check $(FILES)
