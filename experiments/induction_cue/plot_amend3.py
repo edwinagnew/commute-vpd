@@ -1,7 +1,7 @@
 """E62 Amendment 3's figures, one per claim, from results/amend3.json, amend2.json and run.json (no model).
 
   figures/amend3_share.png  share lost per state: masks frozen, masks recomputed, target model; the ten references beside
-  figures/amend3_slot.png   mean mask at the marker on block 2's o_proj subcomponents per head's slot: W0, copying map, lookup
+  figures/amend3_slot.png   mean mask at the marker on the few block 2 o_proj subcomponents reading mostly each head's slot: W0, copying map, lookup
   figures/amend3_w0.png     W0's fall under each head: masks frozen, masks recomputed, target model
   figures/amend3_excess.png how far W0's reading and the base masked error move the recomputed share, against the target share
 
@@ -92,7 +92,7 @@ def slot_figure(a: dict[str, Any]) -> None:
     ax.set_xlim(-0.5, 5.5)
     ax.set_xticks(range(6), [f"head (2,{h})\n{n} subcomponents" for h, n in enumerate(r["n_per_head"])], fontsize=8.5)
     ax.set_ylabel("mean mask at the marker, log scale")
-    ax.set_title("Which heads' outputs does each mask pass through block 2's o_proj? Head (2,4) shaded", color=INK, fontsize=11)
+    ax.set_title("Mean mask on the few subcomponents reading mostly each head's slot. Head (2,4) shaded", color=INK, fontsize=11)
     ax.legend(frameon=False, fontsize=8.5, loc="upper left")
     style(ax)
     finish(fig, "amend3_slot.png")

@@ -47,6 +47,7 @@ class Recipe:
     schedule: str  # "constant" or "hf_cosine"
     clip: float | None
     micro: int
+    forward: str = "bf16_autocast"  # `qwen_sft.sft_step`'s choice; E61 trains with "fp32"
 
 
 def delta(params: Mapping[str, Tensor], W0: Weights) -> dict[str, Tensor]:
@@ -66,7 +67,7 @@ def one_step(model: Any, params: Mapping[str, Tensor], W0: Weights, opt: Any, sc
     assert math.isclose(lr, lr_at(t, r.lr, r.warmup, r.steps, r.schedule), rel_tol=1e-9, abs_tol=1e-15), (t, lr)
     opt.zero_grad(set_to_none=True)
     model.train()
-    loss = sft_step(model, batch, r.micro, DEV)
+    loss = sft_step(model, batch, r.micro, DEV, r.forward)
     model.eval()
     gnorm = float(torch.nn.utils.clip_grad_norm_(list(params.values()), r.clip or math.inf))
     opt.step()
