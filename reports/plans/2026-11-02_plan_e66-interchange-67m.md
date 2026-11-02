@@ -3,6 +3,8 @@
 *Baseline-lead, 2026-11-02. Decision: `decisions.md` row "Interchange patch on the 67M" (option (b) of
 `decision-e65-or-stage-b`). Plan only: no code, no predictions filed, nothing run. The user reads this first.*
 
+**Reviewed by Fable (2026-11-02): `reports/plans/2026-11-02_advice_e66-review-FABLE.md`, which advises against running this as written. Its changes are not applied in the sections below; the user chose its option A, the feasibility probe, written up in "Amendment 1" at the end, which holds over them.**
+
 **In plain words.** We move the original model's internal state from two different contexts into a fine-tuned model,
 and ask whether that model responds more strongly than the original does. We also switch off the neurons the original
 model uses most for the trained answer, and see how much of the fine-tune's gain goes. Where both agree, a 67M
@@ -228,3 +230,105 @@ saved files); half-known vs its shuffle before stage 3b.
 - **Interchange-intervention papers.** A grep of the repo finds none cited, so none is claimed as a source.
 - **Unsourced here.** The temperature of 0.5, the 0.5-nat floor, 64 contexts and the 3 s and 0.5 bars (the last two from
   E55's rule). The sharpening fine-tune's recipe borrows E12's optimiser with a new loss.
+
+## Amendment 1: feasibility probe (2026-11-02)
+
+*User's decision, option A of `reports/plans/2026-11-02_advice_e66-review-FABLE.md`. Where this section and the sections above
+disagree, this section holds. Findings 1, 3, 4, 6 and 8 of the review are applied. Not gated: about 10 to 15 min of `debug`, $0.
+Design check: inside the plan the user chose; class 1 (saved states) with one trained control, which class 2 covers.*
+
+**In plain words.** One job asks whether the two readings can see anything at all before anyone files a rule for a row. It reads
+the original model, three hand-built controls and the fourteen saved states of the copying and random maps, and it gives no state
+a label. A decision card afterwards says whether the 41 other states get filed rules or E65 returns.
+
+### What runs
+
+| stage | what | stop |
+|---|---|---|
+| 0, control, alone | W0 and the zero update on six maps' pairs: identity patch, zero update, R(W0) and R_off(W0) at blocks 1-3, l*, share of pairs with the target earlier in the window; K; the filed steering shares | identity or zero update over 1e-4; half the six maps void at every block |
+| 1 | Write, amplify and sharpen per map: T, T_off, Q at blocks 1-3, U on write and amplify, both bars | amplify's T not above the write's by 3 s on half the readable maps |
+| 2 | E62's six states: G re-read, measured steering share, T, T_off, Q, U, marked exploratory | G off its filed value by over 0.02 |
+| 3 | The eight `ident32*`, `rand32*` states: the same, with filed steering | as stage 2 |
+| 4 | E62 Amendment 2's size-swapped copies (each state times its filed alpha): T, Q, the same reading minus the unscaled; Spearman of T and of Q against ‖δW‖ over the 20 states | none |
+
+Six maps: `copy`, `lookup` (one pool from `copying.cue_windows`, finding 6), `ident32`, `ident32b`, `rand32`, `rand32b` (`kv.windows`). All
+pools come from rows with index % 5 = 0, at 64 contexts per key. The key maps' saved windows were cut with no row split; 500 windows
+of 32768 rows make a shared row rare, and a window here is a fresh span.
+
+### Definitions changed from the plan
+
+- **T_off and Q (finding 3).** T_off is T for an off-map target: the next key's word or value in the pool's key order. Its pairs are the same
+  pool ranked by W0's log-odds of that target, top quarter against bottom quarter per key, so its denominator has the same footing as
+  T's. Reading Fable's "same contexts" with T's own pairs would give a denominator near 0, since those pairs were not chosen for this
+  token. **The map's own target is taken out of the odds in this reading.** Otherwise a state whose trained target dominates makes the off-map log-odds move
+  with its target's logit, not with the context. Q = T / T_off.
+- **Amplify is the high control (finding 3).** W0's K most positive-scoring neurons at blocks at or after l*, down_proj columns times 1 + α,
+  α by `perturb.match` to the map's mean saved gain, capped at 8 and reported as "cap". Two departures from the plan's table: positive scores
+  only, since amplifying a neuron that lowers the target lowers the gain; and blocks at or after l*, since upstream neurons are what the
+  patch overwrites, and a control the patch cannot see tests nothing. `revival_kv.fit_alpha` is not used: it needs an "off" bound nothing reads here.
+- **The null of U (finding 4).** Five draws, each matching every top neuron on the decile of mean |activation| and on the decile of the mean over the map's targets of
+  |down_proj column · unembedding(target)|. An empty cell falls back to the same activation decile, then any free neuron.
+- **K (finding 8)** is fixed once on the half-known map's held-out windows. U reads every 8th window of a pool, 256 in all.
+- **The blind mark (finding 1), one difference from the review.** Each state's rows carry the steering share at l* as Fable asks. The mark "blind" reads the largest
+  share at any block up to l*, not the share at l* alone. The patch overwrites what every earlier block wrote at the answer position, and filed shares
+  are not monotone: `ident32_s0` reads 0.11, 0.75, 0.21 at blocks 1, 2, 3, so at l* = 3 the share at l* alone would call it readable with three
+  quarters of its gain upstream. Marks are "blind", "readable" or "unknown", and none is a verdict.
+- **Identity tolerance 1e-4, not 1e-6.** E52's stage 0 measured 1.7e-5 nats per window on the same edit path at fp32, so 1e-6 would stop on
+  rounding. The run measures it again as `identity_max`.
+- **A tie at a bar is "between"** on both T and U (finding 8's last-but-one point).
+
+### Every number and what it should read
+
+The noise floor s is the pair bootstrap sd of the ratio of means, 2000 resamples. The controls have one seed, so theirs is the pair sd only; the
+report adds the seed spread on saved states, where each map has two or three seeds.
+
+| number | W0 | zero update | write | amplify | sharpen | noise floor | blind to |
+|---|---|---|---|---|---|---|---|
+| identity max | 1e-5 or less | n/a | n/a | n/a | n/a | itself; bar 1e-4 | everything but the patch path |
+| mean R(W0), blocks 1-3 | copy map near 0 at 1, 2, then l* = 3; others unknown, the probe's first question | same | n/a | n/a | n/a | pair sd; floor 0.5 nats and 3 sd | a mechanism W0 does not run on this input |
+| T at l* | 1 | 1 within about 2e-4 | 0.5 to 1 + 3 s | above write by 3 s | above write by 3 s, at most about 2 | s | an update upstream of l*; attention at other positions; a new readout on a fixed key |
+| T_off | 1 | 1 | near T | near 1 or above | near T | s_off | a state that changes the off-map target on purpose |
+| Q at l* | 1 | 1 | within max(0.2, 3 s) of 1 | above write by 3 s, a lean | within max(0.2, 3 s) of 1 | s_Q | what on-map and off-map responses share |
+| K, W0's fall | 64 to 256 | n/a | n/a | n/a | n/a | none; read once | W0's half-known map only |
+| U | void | void | near the draws | above the draws by 3 sd | not read | sd of 5 draws | attention; neurons W0 does not rank highly |
+| G re-read | n/a | 0 | matched to the saved gain within 5%, or "cap" | same | reported | filed value within 0.02 | n/a |
+| Spearman T, Q against ‖δW‖ | n/a | n/a | n/a | n/a | n/a | at n = 20 about 0.23; not filed | a size effect within one map; the row beside it, T minus the unscaled, reads that |
+
+Exploratory, on the fourteen states and six scaled copies: T, T_off, Q, U, the mark. No expected value is filed, on purpose, and no row label is given.
+
+**The sharpening control is the only training.** Temperature 0.5, `finetune_to_reference` against a frozen copy of W0 with logits divided by 0.5, KL over every position of 32 plain
+Pile spans a step, Adam 3e-5, clip 1.0, 30 steps from training rows, bf16 autocast as every fine-tune. Two forwards and one backward a step, so about 10 s on an L40, unmeasured. It stays. It is
+trained on plain text, not on the marker, so it may not sharpen at the marker in 30 steps. If its T does not clear the write's, the report says too weak, and Q then has no check against sharpening; nothing stops.
+
+### Rules run against their edge cases
+
+Run on hand-made numbers in `tests/test_ctxpatch.py`; the table is `edge_cases` in `predictions.json`.
+- **Zero denominator, or R(W0) under 0.5 nats or 3 sd.** T at that block is nan, never low; l* skips it; the map is void if every block is. The copy map's expected blocks 1 and 2 land here.
+- **W0's negative response.** Cannot pass the floor. Printed.
+- **Void pairs.** A key with under 4 windows gives no pair; under 200 pairs or 8 keys voids the map, but its U is still read.
+- **T_off void, not positive, or crossing 0 in a resample.** Q is nan and reads void, neither pass nor miss.
+- **Every map void on amplify's T, or no K.** Stage 1 stops: nothing can be read. A tie at half the maps stops, as the plan's "half the maps or more" has it.
+- **A negative U, a gain under 1 nat, a zero update.** Negative is kept; the other two are void.
+
+### Cut, and why
+
+- **Stage 3a's 41 states, 3b's retraining, P1 to P3, the labels, the method-table reader.** Option A. The plan's P1 stop would fire on finding 1's blindness for the wrong reason (finding 8).
+- **Text maps.** The eight states read here are key maps and E62's, so finding 8's token-bias write for the text pool is not needed yet.
+- **Finding 5's explicit pairs** (target written earlier in x_hi). The probe reports each map's void or not and the share of pairs with the target earlier, which says whether stage 3a needs them. Adding them now doubles the pair sets before anyone knows.
+- **Finding 2's head check.** E62's share is already filed; "new" is not written here at all.
+- **The unpatched context ratio C.** Reported in the plan as a reference only, and nothing here reads it.
+- **Filed steering on 27 of the 47 states.** Only E52, E54 and E60 filed per-block shares, 20 states in all (E56, E58's instruments filed a best block only). Stage 0 prints the 20 and null for the rest; E62's six are measured in stage 2, in log-odds on their read windows, since no file has them. So the review's "for every saved state" is met on 26 of 47; stage 3a would have to measure the other 21 on their own windows.
+
+### What the card after it decides
+
+If l* is under 3 on the key maps, or the copy maps read above the write with mark "readable", stage 3a goes with rules filed from these numbers. If most marks read "blind", T and Q follow ‖δW‖ (|ρ| over 0.5, Fable's bar), or U sits high on both the copy and random sides over its matched null, E65's card returns. Its best outcome for VPD stays a tie with update size and a win over the prior only (finding 7).
+
+Code: `experiments/interchange_67m/run.py` (about 270 lines), `src/commute/ctxpatch.py` (about 520), `tests/test_ctxpatch.py`, `cluster/interchange_67m.sbatch`. Over option A's "about 200" because the three controls, two pair kinds and the matched null are each their own code; all of it is what stage 3a would call. No frozen caller is changed: nothing existing was edited.
+
+### Not run
+
+Everything in this section: coded and filed only. No model was loaded. A fresh review of the code precedes the job.
+
+### Departures from the literature
+
+The plan's list stands. Added here: the off-map ratio Q, the masked odds and the alignment-matched null are ours, with no source; temperature 0.5 and the 0.2 and 0.5 bands in `predictions.json` are unsourced and marked so there.

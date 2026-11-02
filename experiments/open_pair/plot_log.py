@@ -4,7 +4,8 @@
                          original model's prior of the trained answer (highest at the top). Left, that prior (log
                          scale); middle, r at step 30 (three seeds and their mean, 0.5 cut); right, the held-out carry
                          at step 30 (three seeds and their mean; net of the cross-class null for the class rule and its
-                         twin). Two colours: maps whose answer the model already gives, and maps whose answer is new.
+                         twin), with the three rows where r and carry disagree shaded and named. Two colours: maps
+                         whose answer the model already gives, and maps whose answer is new.
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run .venv/bin/python experiments/open_pair/plot_log.py
 """
@@ -17,7 +18,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from plot import COLOR, FIG, GRID, INK, style
+from plot import COLOR, FIG, GRID, INK, SHADE, style
 from plot_amend7 import carry30, mean, read
 
 NAME = {
@@ -32,6 +33,12 @@ NAME = {
 }
 KNOWN = ("rank1", "elicit", "copy")
 GROUP_COLOR = {True: COLOR["elicit"], False: COLOR["cipher"]}
+# (map, note, which side of the dot the note's start sits on)
+CLASH = (
+    ("rank1", "r says old, barely carries", "left"),
+    ("elicit", "r says old, barely carries", "left"),
+    ("class_map", "r says new, yet carries", "right"),
+)
 
 
 def seeds_and_mean(ax: Any, y: float, xs: list[float], color: str) -> None:
@@ -59,32 +66,40 @@ def main() -> None:
         ax.grid(axis="x", color=GRID, lw=0.6, zorder=0)
         ax.set_axisbelow(True)
         ax.tick_params(colors=INK, labelsize=8)
-    axc.text(0.93, split + 0.08, "answer already the model's guess", fontsize=7,
-             color=GROUP_COLOR[True], ha="right", va="bottom")
-    axc.text(0.93, split - 0.08, "answer new", fontsize=7,
-             color=GROUP_COLOR[False], ha="right", va="top")
+    axp.text(1.4e-7, split + 0.08, "the model already guessed", fontsize=7.5,
+             color=GROUP_COLOR[True], ha="left", va="bottom")
+    axp.text(1.4e-7, split - 0.08, "the answer is new", fontsize=7.5,
+             color=GROUP_COLOR[False], ha="left", va="top")
+    # The rows where r and carry disagree, shaded and said in words in the panel a reader checks last.
+    for m, note, side in CLASH:
+        xm = mean(cx[m])
+        axc.axhspan(ys[m] - 0.42, ys[m] + 0.42, color=SHADE, zorder=0)
+        offset = 0.07 if side == "left" else -0.07
+        axc.text(xm + offset, ys[m], note, fontsize=7.5, color=INK, va="center",
+                 ha="left" if side == "left" else "right")
     axp.set_xscale("log")
     axp.set_xlim(1e-7, 1e-1)
     axp.set_yticks([ys[m] for m in order], [NAME[m] for m in order], fontsize=8.5, color=INK)
     axp.set_ylim(-0.6, len(order) - 0.4)
-    axp.set_xlabel("probability (geometric mean over keys, log scale)", color=INK, fontsize=8)
-    style(axp, "the model's prior\nof the trained answer", "")
+    axp.set_xlabel("probability, original model (log scale)", color=INK, fontsize=8)
+    style(axp, "How likely was the answer\nbefore training?", "")
     axp.grid(axis="y", visible=False)
     axr.axvline(0.5, color=INK, lw=0.9, ls=":", zorder=2)
-    axr.text(0.5, len(order) - 0.45, "0.5 cut", fontsize=7, color=INK, ha="center", va="bottom")
+    axr.text(0.48, len(order) - 0.5, "reads new", fontsize=7.5, color=INK, ha="right", va="center")
+    axr.text(0.52, len(order) - 0.5, "reads old", fontsize=7.5, color=INK, ha="left", va="center")
     axr.set_xlim(0.1, 1.0)
-    axr.set_xlabel("r (small dots: seeds; large dot: mean)", color=INK, fontsize=8)
-    style(axr, "r at step 30 (share of the gain\nrecovered by Γ's switching alone)", "")
+    axr.set_xlabel("r, cut at 0.5 (small dots: seeds; large dot: mean)", color=INK, fontsize=8)
+    style(axr, "What r says: share of the gain\nfrom Γ's switching alone, step 30", "")
     axr.grid(axis="y", visible=False)
     axc.axvline(0.0, color=INK, lw=0.6, zorder=2)
     axc.set_xlim(-0.45, 0.95)
     axc.set_xlabel("carry (small dots: seeds; large dot: mean)\n"
                    "class rule and twin: carry net of the cross-class null", color=INK, fontsize=8)
-    style(axc, "held-out carry at step 30\n(0 = unseen keys gained nothing)", "")
+    style(axc, "Did the training reach unseen keys?\nCarry, step 30 (0 = they gained nothing)", "")
     axc.grid(axis="y", visible=False)
     fig.suptitle(
-        "r is high for exactly the maps whose answer the model already guessed; "
-        "carry does not sort the maps the same way",
+        "r marks answers the model already guessed, not rules that reach unseen keys: "
+        "bad news if r was to read reuse",
         fontsize=10.5, color=INK, x=0.01, ha="left",
     )
     fig.tight_layout()

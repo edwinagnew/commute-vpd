@@ -759,3 +759,163 @@ def gamma_reading(labels: Sequence[str], lookup_labels: Sequence[str], ref_share
     if look != "within":
         return "not_specific"
     return "head_acts_through_masks" if one == "r_reads_the_head" else "head_more_than_target"
+
+
+# ----------------------------------------------------------------------------- Amendment 4's filed rules and reads (results/predictions_amend4.json)
+# "Alive vector": one float64 entry per alive subcomponent, matrices in sorted name order, subcomponents in index order.
+
+
+def second_a_holds(toks: Tensor, p: Tensor, b: Tensor, half: int) -> bool:
+    """Every window has its second A at half - 1 (same token as the first A at p, with B at p + 1), and half - 2 is neither A nor B,
+    so a mask at half - 2 is read on a plain Pile token of the same window."""
+    i, a, ref = torch.arange(len(toks)), toks[:, half - 1], toks[:, half - 2]
+    return bool(((toks[i, p] == a) & (toks[i, p + 1] == b) & (ref != a) & (ref != b)).all())
+
+
+def pair_broken_holds(intact: Tensor, broken: Tensor, p: Tensor, half: int) -> bool:
+    """The pair-broken windows differ from the intact ones at the first A alone, so the second A is the same token at the same position."""
+    i = torch.arange(len(intact))
+    other = torch.ones_like(intact, dtype=torch.bool)
+    other[i, p] = False
+    return bool((broken[i, p] != intact[i, p]).all() and (broken[other] == intact[other]).all() and (broken != broken[:, half - 1, None]).sum(1).eq(intact.shape[1] - 1).all())
+
+
+def gate_means(gates: Sequence[dict[str, Tensor]], alive: dict[str, Tensor], pos: int) -> Tensor:
+    """The alive vector of each subcomponent's gate at `pos`, averaged over the windows of `gates` (per batch, (B, T, C))."""
+    return torch.cat([torch.cat([g[k][:, pos][:, alive[k]] for g in gates]).double().mean(0) for k in sorted(alive)])
+
+
+def s_old(a: Tensor) -> Tensor:
+    """Alive-vector indices of the fewest entries holding half of `a`'s positive mass: largest first, ties in index order, reaching
+    exactly half counts. Empty when `a` has no positive mass or is not finite (k = 0: `mask_test` reads "unreadable")."""
+    pos = a.double().clamp_min(0)
+    total = float(pos.sum())
+    if not (math.isfinite(total) and total > 0):
+        return torch.empty(0, dtype=torch.long)
+    order = torch.argsort(pos, descending=True, stable=True)
+    return order[: int((pos[order].cumsum(0) * 2 >= total).nonzero()[0]) + 1]
+
+
+def cosine(x: Tensor, y: Tensor) -> float:
+    """nan if either vector has norm 0 or is not finite (an empty vector included)."""
+    nx, ny = float(x.double().norm()), float(y.double().norm())
+    return float(x.double() @ y.double()) / (nx * ny) if nx > 0 and ny > 0 and math.isfinite(nx * ny) else math.nan
+
+
+def chance_cosine(delta: Tensor, a: Tensor, draws: int, seed: int) -> tuple[float, float]:
+    """Mean and sd over `draws` seeded permutations of `a`'s entries of cosine(delta, a)."""
+    gen = torch.Generator().manual_seed(seed)
+    v = torch.tensor([cosine(delta, a[torch.randperm(len(a), generator=gen)]) for _ in range(draws)], dtype=torch.float64)
+    return float(v.mean()), float(v.std())
+
+
+def closing_pool(delta: Tensor, old: Tensor) -> tuple[Tensor, bool]:
+    """What a random closing draws from: the opened entries (delta > 0) outside `old`; if fewer than |old|, every entry outside
+    `old`, and True. Outside `old`, so that a mask opening exactly `old` does not make its own reference (Amendment 4, a departure)."""
+    rest = torch.ones(len(delta), dtype=torch.bool)
+    rest[old] = False
+    opened = ((delta > 0) & rest).nonzero().squeeze(1)
+    return (opened, False) if len(opened) >= len(old) else (rest.nonzero().squeeze(1), True)
+
+
+def random_sets(pool: Tensor, k: int, draws: int, seed: int) -> list[Tensor]:
+    """`draws` seeded sets of k entries of `pool`. AssertionError if the pool is too small (k <= half the alive set cannot be)."""
+    assert 0 < k <= len(pool), (k, len(pool))
+    gen = torch.Generator().manual_seed(seed)
+    return [pool[torch.randperm(len(pool), generator=gen)[:k]] for _ in range(draws)]
+
+
+def largest(delta: Tensor, k: int, outside: Tensor | None = None) -> Tensor:
+    """Alive-vector indices of the k largest entries, ties in index order, optionally leaving out the entries `outside`."""
+    order = torch.argsort(delta, descending=True, stable=True)
+    if outside is not None:
+        order = order[~torch.isin(order, outside)]
+    return order[:k]
+
+
+def closed(gates: Sequence[dict[str, Tensor]], ref: Sequence[dict[str, Tensor]], idx: Tensor, alive: dict[str, Tensor]) -> list[dict[str, Tensor]]:
+    """`gates` with the alive-vector entries `idx` set to `ref`'s values, at every position of every window. `gates` is not changed."""
+    keys = sorted(alive)
+    sizes = [int(alive[k].sum()) for k in keys]
+    mark = torch.zeros(sum(sizes), dtype=torch.bool)
+    mark[idx] = True
+    per = {k: alive[k].nonzero().squeeze(1)[m] for k, m in zip(keys, mark.split(sizes), strict=True)}
+
+    def edit(g: Tensor, r: Tensor, w: Tensor) -> Tensor:
+        x = g.clone()
+        x[..., w] = r[..., w]
+        return x
+
+    return [{k: edit(g[k], r[k], per[k]) if len(per[k]) else g[k] for k in g} for g, r in zip(gates, ref, strict=True)]
+
+
+TARGET_CAUSES = ("no_copying", "head_not_carrying", "no_pair_dependence")  # second_a_control's statuses about the target model, not the masks
+
+
+def second_a_control(p_b: float, fall: float, lean: float, mask_fall: float, mask_lean: float, th: dict[str, Any]) -> str:
+    """W0 at the second A, in order: "unreadable" (a number not finite). About the target model: "no_copying" P(B) under p_b_min;
+    "head_not_carrying" its fall under the head under target_fall_min; "no_pair_dependence" its lean (intact minus pair-broken) under
+    lean_min, so W0 does not lose the copy when the pair is broken. About the mask, both under masked_fall_frac of the target's: "mask_no_lean"
+    the masked lean; "mask_drops_head" the masked fall. Else "pass". Ties pass."""
+    if not all(finite(v) for v in (p_b, fall, lean, mask_fall, mask_lean)):
+        return "unreadable"
+    if p_b < th["p_b_min"]:
+        return "no_copying"
+    if fall < th["target_fall_min"]:
+        return "head_not_carrying"
+    if lean < th["lean_min"]:
+        return "no_pair_dependence"
+    if mask_lean < th["masked_fall_frac"] * lean:
+        return "mask_no_lean"
+    return "pass" if mask_fall >= th["masked_fall_frac"] * fall else "mask_drops_head"
+
+
+def old_carries(gain: float, share: float, random_median: float, th: dict[str, Any]) -> str:
+    """Does S_old carry W0's own copying? `gain` is what W0's mask adds at the second A on one set of tokens, gates at W0's against gates
+    at their pair-broken values. "no_gate_gain" under min_gain or not finite: the gates do not depend on the pair, so `a` names nothing.
+    Else "carries" on P2's bars, "not_carrying" otherwise (a share or median not finite included)."""
+    if not (finite(gain) and gain >= th["min_gain"]):
+        return "no_gate_gain"
+    ok = finite(share) and finite(random_median) and share >= th["close_min"] and share - random_median >= th["random_margin"]
+    return "carries" if ok else "not_carrying"
+
+
+def mask_test(control: str, carries: str, k: int, n_alive: int, copy: Sequence[dict[str, Any]], lookup: Sequence[dict[str, Any]], th: dict[str, Any]) -> dict[str, Any]:
+    """The verdict from the control's status, `old_carries`, and one record per seed and map, paired by seed, each with M (the masked
+    gain), cos, chance, share, random_median and largest_k_share. First that fires:
+    "unreadable" (the control's numbers not finite); "control_failed_target", "control_failed_mask" (the status's cause);
+    "unreadable" (k = 0, k over half the alive set, a seed missing, a gain not finite); "too_small" (any gain under min_gain);
+    "unreadable" (any other number not finite); then `carries`, each blocking both readings below: "w0_gate_gain_too_small" ("no_gate_gain"),
+    "old_pieces_not_carrying" (anything else but "carries": S_old does not carry W0's own copying, so a state's closing cannot be read either way); "shared_pieces" (P1, P2, P3 on every seed; P2 on every seed implies P3, as 0.5 - 0.2 > 0.24, so P3 is
+    reported and decides nothing); then the null, on the copying map alone, either on every seed of: (a) closing costs no more than random
+    (share - random_median under random_margin) and alignment no more than chance (cos under align_min or under chance_factor x chance);
+    (b) share at or under random_median. It reads "not_shared" if largest_k_share reaches close_min on every seed, else "k_too_small",
+    as no k subcomponents could then reach the bar. "in_between" is anything else."""
+    out: dict[str, Any] = {"verdict": "in_between", "control": control, "carries": carries, "k": k, "P1": [], "P2": [], "P3": []}
+    done = lambda v: {**out, "verdict": v}
+    if control == "unreadable":
+        return done("unreadable")
+    if control != "pass":
+        return done("control_failed_target" if control in TARGET_CAUSES else "control_failed_mask")
+    seeds = list(zip(copy, lookup, strict=True)) if len(copy) == len(lookup) else []
+    if k == 0 or k > n_alive // 2 or not seeds:
+        return done("unreadable")
+    both = [*copy, *lookup]
+    if not all(finite(r.get("M")) for r in both):
+        return done("unreadable")
+    if any(r["M"] < th["min_gain"] for r in both):
+        return done("too_small")
+    if not all(finite(r.get(f)) for r in both for f in ("cos", "chance", "share", "random_median", "largest_k_share")):
+        return done("unreadable")
+    aligned = [c["cos"] >= th["align_min"] and c["cos"] >= th["chance_factor"] * c["chance"] for c, _ in seeds]
+    beats = [c["share"] - c["random_median"] >= th["random_margin"] for c, _ in seeds]
+    out["P1"] = [x and l["cos"] < th["lookup_align_frac"] * c["cos"] for x, (c, l) in zip(aligned, seeds, strict=True)]
+    out["P2"] = [x and c["share"] >= th["close_min"] and l["share"] <= th["lookup_close_max"] for x, (c, l) in zip(beats, seeds, strict=True)]
+    out["P3"] = [c["share"] - l["share"] >= th["gap_min"] for c, l in seeds]
+    if carries != "carries":
+        return done("w0_gate_gain_too_small" if carries == "no_gate_gain" else "old_pieces_not_carrying")
+    if all(out["P1"]) and all(out["P2"]) and all(out["P3"]):
+        return done("shared_pieces")
+    if not any(aligned) and not any(beats) or all(c["share"] <= c["random_median"] for c, _ in seeds):
+        return done("not_shared" if all(c["largest_k_share"] >= th["close_min"] for c, _ in seeds) else "k_too_small")
+    return out

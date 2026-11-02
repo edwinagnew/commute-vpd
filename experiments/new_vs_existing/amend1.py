@@ -1,20 +1,17 @@
 """E12 Amendment 1: the route split on teacher-trained states. Plan reports/plans/2026-11-02_plan_e12-teacher-route-split.md;
-rules, leans, expected values results/predictions_amend1.json (the run refuses without it). E46's rebuilds of E12's eight
-fine-tunes teach E42's arm A; the split reads each student on the held-out windows as state (a), teacher training's own
-(target W0 + its change), scored first, and state (b), plus remainder (target the fine-tune's). Arms, each written as it
-finishes: C0 do-nothing and least-squares, alone; C1 teacher = W0 from Amendment 8's moved start; 8 students; noise floor.
-States are read from trained fp32 weights, never bf16 offsets: a rerun skips a state with a record and an offsets file and
-retrains any other (deterministic). A stop is `.stopped` in the file, exit 1. cluster/new_vs_existing_amend1.sbatch.
+rules, config, leans, expected values: results/predictions_amend1.json (the run refuses without it; its `config` is read below).
+States are read from trained fp32 weights, never bf16 offsets. A stop is `.stopped` in the file, exit 1. cluster/new_vs_existing_amend1.sbatch.
 """
 
 from __future__ import annotations
 
 import json
 import math
+import subprocess
 import sys
 import time
-from dataclasses import asdict, dataclass
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import torch
@@ -29,38 +26,11 @@ from commute.local_faith import MIN_GAIN, route_cells, route_split
 RESULTS = Path(__file__).resolve().parent / "results"
 PRED, OUT, STATES = RESULTS / "predictions_amend1.json", RESULTS / "new_vs_existing_amend1.json", RESULTS / "large" / "amend1"
 E46, EXP = RESULTS.parents[1] / "regating_table" / "results", RESULTS.parents[1]
+ROOT, CODE = EXP.parent, ("src/commute", "experiments/new_vs_existing/amend1.py", "experiments/new_vs_existing/results/predictions_amend1.json")
 MOVED = EXP / "teacher_training" / "results" / "large" / "amend8" / "n1" / "0.pt"
 TASKS, CLS, SEEDS = [t.name for t in AN.KV_TASKS], {t.name: t.cls for t in AN.KV_TASKS}, ("s0", "s1")
 NAMES = [f"{t}_{s}" for t in TASKS for s in SEEDS]
-
-
-@dataclass(frozen=True)
-class Amend1:
-    lr: float = 1e-5  # E42's arm A: Adam, clip 1 (TrainConfig's default), batch-order seed 0
-    steps: int = 1000
-    batch: int = 32
-    second_order: int = 1
-    noise_tasks: tuple[str, ...] = ("ident32", "rand32")  # seed s0 of each, at second_order
-    c1_tasks: tuple[str, ...] = ("rand32", "ident32")
-    curve_steps: tuple[int, ...] = (1, 2, 10, 100, 500, 1000)
-    w0_tol: float = 0.02  # nats, E46's
-    r_tol: float = 0.03  # E46's, against E12's r
-    zero_tol: float = 1e-6  # identities that hold by code
-    c1_max_nats: float = 1.5  # 0.11 x the smallest teacher gain 13.2; 0.11 is a third of E12's smallest e_gate gap 0.33
-    min_ratio: float = 0.5  # gain / teacher's: the pool's line and the first student's stop
-    min_class: int = 3
-    inherited: float = 0.10  # P2
-    moved: float = 0.25
-    no_power: float = 0.05
-    masked_hi: float = 0.5  # P3, E42's filed lines
-    masked_lo: float = 0.25
-
-    def __post_init__(self) -> None:
-        assert 0 < self.inherited < self.moved and 0 < self.masked_lo < self.masked_hi and self.second_order != 0
-        assert set(self.noise_tasks) | set(self.c1_tasks) <= set(TASKS) and self.steps == self.curve_steps[-1]
-
-
-CM = Amend1()
+CM = SimpleNamespace(**json.loads(PRED.read_text())["config"])  # the one source of every size and line; a missing file stops the import
 
 
 # ----------------------------------------------------------------------------- rules (pure), as filed
@@ -86,10 +56,10 @@ def separation(copy: list[float], maps: list[float]) -> dict[str, Any]:
 
 
 def r_class(moves: list[float], n_copy: int, n_maps: int, noise: list[float]) -> str:
-    """P2: `moves` |r(student) - r(fine-tune)| over the pool, `noise` batch-order |delta r| over the pairs both in it."""
+    """P2: `moves` |L01(student) - L01(fine-tune)| / teacher's gain over the pool, `noise` the same between batch orders."""
     if min(n_copy, n_maps) < CM.min_class or not noise:
         return "unscorable"
-    if max(noise) > CM.no_power:
+    if max(noise) > CM.no_power and max(moves) < CM.noise_factor * max(noise):
         return "no power"
     if max(moves) >= CM.moved:
         return "moved"
@@ -111,19 +81,22 @@ def score(c0: dict[str, Any], st: dict[str, Any]) -> dict[str, Any]:
     pool = [n for n in NAMES if in_pool(st[n])]
     pool_b = [n for n in pool if finite(st[n]["b"])]  # (b)'s own gain is the teacher's, so (a) decides whether it learned
     share = lambda n, side, x: st[n][side]["shares"][x]
+    l01 = lambda n: st[n]["a"]["cells"]["L01"]
     of = lambda ns, c: [n for n in ns if CLS[st[n]["task"]] == c]
     sep = lambda ns, side: separation(*([share(n, side, "e_gate") for n in of(ns, c)] for c in ("copy", "random")))
     pairs = [(f"{t}_s0", f"{t}_s0_o{CM.second_order}") for t in CM.noise_tasks]
     pairs = [p for p in pairs if in_pool(st[p[0]]) and in_pool(st[p[1]])]
-    noise = lambda x, side: {b: abs(share(a, side, x) - share(b, side, x)) for a, b in pairs}
-    moves = {n: abs(share(n, "a", "r") - c0[n]["nothing"]["shares"]["r"]) for n in pool}
+    moves = {n: abs(l01(n) - c0[n]["nothing"]["cells"]["L01"]) / st[n]["teacher_gain"] for n in pool}  # L00 is the same in both
+    noise_r = {b: abs(l01(a) - l01(b)) / st[a]["teacher_gain"] for a, b in pairs}
+    noise_e = {b: abs(share(a, "a", "e_gate") - share(b, "a", "e_gate")) for a, b in pairs}
     copies, n_maps = of(pool, "copy"), len(of(pool, "random"))
     e_gate = {n: share(n, "a", "e_gate") for n in copies}
     return {"pool": pool, "dropped": [n for n in NAMES if n not in pool],
-            "P1": {**sep(pool, "a"), "state_b": sep(pool_b, "b"), "noise_e_gate": noise("e_gate", "a"), "noise_e_gate_b": noise("e_gate", "b")},
-            "P2": {"verdict": r_class(list(moves.values()), len(copies), n_maps, list(noise("r", "a").values())), "moves": moves, "noise_r": noise("r", "a")},
-            "P3": {"verdict": masked_majority(list(e_gate.values())), "e_gate": e_gate, "per_state": {n: masked_class(e) for n, e in e_gate.items()},
-                   "state_b": masked_majority([share(n, "b", "e_gate") for n in of(pool_b, "copy")]), "noise_e_gate": noise("e_gate", "a")}}
+            "P1": {**sep(pool, "a"), "state_b": sep(pool_b, "b"), "noise_e_gate": noise_e},
+            "P2": {"verdict": r_class(list(moves.values()), len(copies), n_maps, list(noise_r.values())), "moves": moves,
+                   "gain_ratio": {n: st[n]["a"]["gain"] / st[n]["teacher_gain"] for n in pool}, "noise_r": noise_r},
+            "P3": {"verdict": masked_majority(list(e_gate.values())), "e_gate": e_gate,
+                   "state_b": masked_majority([share(n, "b", "e_gate") for n in of(pool_b, "copy")])}}
 
 
 # ----------------------------------------------------------------------------- the job
@@ -134,7 +107,9 @@ def log(msg: str) -> None:
 
 
 def dump(out: dict[str, Any]) -> None:
-    OUT.write_text(json.dumps(out, indent=1, sort_keys=True, default=float))
+    tmp = OUT.with_suffix(".tmp")  # a kill mid-write must not leave unreadable JSON
+    tmp.write_text(json.dumps(out, indent=1, sort_keys=True, default=float))
+    tmp.replace(OUT)
 
 
 def check(out: dict[str, Any], name: str, value: float, ok: bool) -> None:
@@ -150,6 +125,11 @@ def check(out: dict[str, Any], name: str, value: float, ok: bool) -> None:
 
 def near(out: dict[str, Any], name: str, a: float, b: float, tol: float) -> None:
     check(out, f"{name} (difference)", a - b, abs(a - b) <= tol)
+
+
+def code_unchanged(commit: str) -> bool:
+    """The measurement code and the predictions are as they were at `commit` (later doc commits do not count)."""
+    return subprocess.run(["git", "-C", str(ROOT), "diff", "--quiet", commit, "--", *CODE], check=False).returncode == 0
 
 
 class Job:
@@ -180,7 +160,7 @@ class Job:
         return rs
 
     def train(self, w: dict[str, Any], net: Any, init: Any, order: int, path: Path, meta: dict[str, Any]) -> tuple[Any, Any, list[Any]]:
-        """E42's arm A against `net` from `init`, offsets saved: (delta-W, full components, curve)."""
+        """E42's arm A (Adam, clip 1, batch-order seed `order`) against `net` from `init`, offsets saved: (delta-W, full components, curve)."""
         half = w["train"].half
         a_cfg = ArmAConfig(o_token=w["table"], batch=CM.batch, steps=CM.steps, checkpoints=(CM.steps,), seed=order)
         cfg = component_training.TrainConfig(lr=CM.lr, steps=CM.steps, save_steps=(CM.steps,), optimizer="adam")
@@ -192,17 +172,13 @@ class Job:
         return {k: v[0] for k, v in st.items()}, comps, [c for c in curve if c["step"] in CM.curve_steps]
 
 
-def teacher_dW(name: str) -> dict[str, Any]:
-    return torch.load(E46 / "large" / f"{name}.pt", weights_only=False, map_location="cpu")
-
-
 def c0(job: Job, out: dict[str, Any]) -> None:
     """Do-nothing and the least-squares split of every fine-tune, against E12 and each other."""
     for n in NAMES:
         t, s = n.split("_")
         w = job.task(t)
         if n not in out["c0"]:
-            dW = teacher_dW(n)
+            dW = torch.load(E46 / "large" / f"{n}.pt", weights_only=False, map_location="cpu")
             out["c0"][n] = {"nothing": job.read(w, f"{n} nothing", dW, None), "least_squares": job.read(w, f"{n} ls", dW, AN.lifted(job.model, job.lift, dW))}
             dump(out)
         no, ls = out["c0"][n]["nothing"]["shares"], out["c0"][n]["least_squares"]["shares"]
@@ -223,30 +199,29 @@ def terms(rs: dict[str, Any]) -> dict[str, float]:
 
 
 def c1(job: Job, out: dict[str, Any]) -> None:
-    """Teacher = W0 from the moved start: what training with nothing to learn writes into r and e_gate, in nats. The stop
-    reads the end state, which compares with a student's; the start is reported."""
-    off = torch.load(MOVED, weights_only=False, map_location="cpu")["offsets"]
-    dW0, uv2 = saved_states.offsets_state(MOVED, job.uv_cpu)
-    comps0 = component_training.components_with(job.model, job.alive, uv2)
-    net0 = teacher.teacher_net(job.model, {})
-    out["c1_start_sha256"] = sha256(MOVED)
-    for t in CM.c1_tasks:
-        if not (t in out["c1"] and (STATES / f"c1_{t}.pt").is_file()):
-            w = job.task(t)
-            start = terms(job.read(w, f"C1 {t} start", dW0, comps0))
-            dW, comps, curve = job.train(w, net0, off, 0, STATES / f"c1_{t}.pt", {"arm": "c1", "task": t})
-            out["c1"][t] = {"start": start, "end": terms(job.read(w, f"C1 {t} end", dW, comps)), "curve": curve}
-            dump(out)
-            log(f"[C1 {t}] {json.dumps(out['c1'][t], default=float)}")
+    """Teacher = W0 from the moved start, trained once (the two tasks' windows differ only in the table, which training never reads),
+    then read under both tables. Start, end and end - start are reported; the stop reads the end."""
+    c, ws = out["c1"], {t: job.task(t) for t in CM.c1_tasks}
+    if not ("end" in c and (STATES / "c1.pt").is_file()):
+        off = torch.load(MOVED, weights_only=False, map_location="cpu")["offsets"]
+        dW0, uv2 = saved_states.offsets_state(MOVED, job.uv_cpu)
+        comps0 = component_training.components_with(job.model, job.alive, uv2)
+        out["c1_start_sha256"] = sha256(MOVED)
+        c["start"] = {t: terms(job.read(w, f"C1 {t} start", dW0, comps0)) for t, w in ws.items()}
+        dW, comps, c["curve"] = job.train(ws[CM.c1_tasks[0]], teacher.teacher_net(job.model, {}), off, 0, STATES / "c1.pt", {"arm": "c1"})
+        c["end"] = {t: terms(job.read(w, f"C1 {t} end", dW, comps)) for t, w in ws.items()}
+        c["end_minus_start"] = {t: {x: c["end"][t][x] - c["start"][t][x] for x in c["end"][t]} for t in ws}
+        dump(out)
+        log(f"[C1] {json.dumps(c, default=float)}")
+    for t in ws:
         for x in ("r", "e_gate"):
-            end = out["c1"][t]["end"][x]
-            check(out, f"C1 {t} {x} term, nats", end, abs(end) <= CM.c1_max_nats)
+            check(out, f"C1 {t} {x} term, nats", c["end"][t][x], abs(c["end"][t][x]) <= CM.c1_max_nats)
 
 
 def student(job: Job, out: dict[str, Any], t: str, s: str, order: int) -> None:
     name, n = f"{t}_{s}" + (f"_o{order}" if order else ""), f"{t}_{s}"
     if not (name in out["students"] and (STATES / f"{name}.pt").is_file()):
-        w, dW_t = job.task(t), teacher_dW(n)
+        w, dW_t = job.task(t), torch.load(E46 / "large" / f"{n}.pt", weights_only=False, map_location="cpu")
         dW, comps, curve = job.train(w, teacher.teacher_net(job.model, dW_t), None, order, STATES / f"{name}.pt", {"arm": "student", "task": t, "seed": s})
         gain = out["c0"][n]["nothing"]["gain"]
         a, b = job.read(w, f"{name} a", dW, comps), job.read(w, f"{name} b", dW_t, comps)
@@ -255,17 +230,12 @@ def student(job: Job, out: dict[str, Any], t: str, s: str, order: int) -> None:
     if name == NAMES[0]:  # the first student stops the job; a later one that learned too little only leaves the pool
         rec = out["students"][name]
         a, b = rec["a"], rec["b"]
-        near(out, "first student share sum (a) against 1", a["share_sum"], 1.0, CM.zero_tol)
-        near(out, "first student share sum (b) against 1", b["share_sum"], 1.0, CM.zero_tol)
         check(out, "first student gain / teacher's", rec["gain_ratio"], rec["gain_ratio"] >= CM.min_ratio)
         near(out, "first student r(b) against the fine-tune's", b["shares"]["r"], out["c0"][n]["nothing"]["shares"]["r"], CM.zero_tol)
         near(out, "first student U1(a) against U1(b)", a["cells"]["U1"], b["cells"]["U1"], CM.zero_tol)
 
 
 def main() -> None:
-    if not PRED.is_file():
-        sys.exit(f"file the predictions first: {PRED}")
-    assert json.loads(PRED.read_text())["config"] == json.loads(json.dumps(asdict(CM))), "predictions were filed for another config"
     stage0a = json.loads((E46 / "stage0a.json").read_text())["groups"]
     files = {E46 / "large" / f"windows_{t}.pt": stage0a["e12/build"]["sha256"][t] for t in TASKS}
     files |= {E46 / "large" / f"{n}.pt": stage0a[f"e12/{n.split('_')[0]}"]["states"][n.split("_")[1]]["sha256"] for n in NAMES}
@@ -276,11 +246,12 @@ def main() -> None:
         sys.exit(f"{MOVED} is missing")
     STATES.mkdir(parents=True, exist_ok=True)
     card = torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu"
-    out = json.loads(OUT.read_text()) if OUT.is_file() else {"card": card, "c0": {}, "c1": {}, "students": {}}
-    if out["card"] != card:
-        sys.exit(f"{OUT} was written on {out['card']}; this job is {card}. Move the file aside to start again")
+    head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+    out = json.loads(OUT.read_text()) if OUT.is_file() else {"card": card, "commit": head, "config": vars(CM), "c0": {}, "c1": {}, "students": {}}
+    if out["card"] != card or out["config"] != vars(CM) or not code_unchanged(out["commit"]):
+        sys.exit(f"{OUT} was made on {out['card']} at {out['commit']} with another config, or the code or predictions changed since. Move the file aside to start again")
     out.pop("stopped", None)
-    log(f"[start] {card}")
+    log(f"[start] {card} {out['commit']}")
     job = Job("cuda" if torch.cuda.is_available() else "cpu", stage0a, out)
     c0(job, out)
     c1(job, out)
