@@ -3,6 +3,8 @@
 *Baseline-lead, 2026-11-02. Decision: `decisions.md` row "Interchange patch on the 67M" (option (b) of
 `decision-e65-or-stage-b`). Plan only: no code, no predictions filed, nothing run. The user reads this first.*
 
+**Ended 2026-11-02 (user): no rules filed; see `decisions.md` and `reports/analyses/2026-11-02_analysis_e66-interchange.md`.**
+
 **Reviewed by Fable (2026-11-02): `reports/plans/2026-11-02_advice_e66-review-FABLE.md`, which advises against running this as written. Its changes are not applied in the sections below; the user chose its option A, the feasibility probe, written up in "Amendment 1" at the end, which holds over them.**
 
 **In plain words.** We move the original model's internal state from two different contexts into a fine-tuned model,
