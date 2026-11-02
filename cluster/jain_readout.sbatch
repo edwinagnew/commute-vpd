@@ -6,8 +6,10 @@
 # Stage 0 runs first and the job exits 1 on any miss, before any ablation of a fine-tuned state is scored: sha256 of
 # the windows and the twelve states, W0's rates and every state's gain reproduce E54/E56 within 1e-6; readout training
 # (exits at step 20 if it projects over 15 min, or on a non-finite loss); the last block's held-out Pile loss within
-# 0.5 nats of the model's; P3; the random-direction share on every state within 0.05; W0's positive control at l*.
-# Then the ablation share A per state, P2 and the decision tree. Every scored number is printed to this log.
+# 0.5 nats of the model's; P3; the random-direction share (log-odds, net of W0) on every state within 0.05; W0's
+# positive control at l*. Then A per state (log-odds share net of W0, amended 2026-11-02 pre-run), the same removal at
+# the last block on every state (reported, the positive control that A can read high), P2 and the decision tree.
+# Every scored number is printed to this log.
 # Inputs on NFS (gitignored): experiments/keydependent_elicit/results/large/{windows_elicit,windows_cipher,
 # {elicit,cipher,cipher_own}_s{0,1}}.pt; experiments/keydependent_patch/results/large/{elicit,cipher}_s{2,3,4}.pt
 # (~113 MB each); Pile rows artifacts/sets/{train_32768_8192,val_0_256}.npy (cached); the target model and
@@ -22,7 +24,7 @@
 #SBATCH --qos=debug
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=16G
+#SBATCH --mem=24G
 #SBATCH --time=00:30:00
 #SBATCH --output=cluster/logs/%x-%j.out
 
