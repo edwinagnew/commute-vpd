@@ -18,7 +18,7 @@ import os
 import re
 import shutil
 from collections.abc import Iterator, Mapping, Sequence
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import Any
 
@@ -263,12 +263,14 @@ def nll_sum(model: Any, seqs: Sequence[Item], device: str) -> Tensor:
     return (nll * mask.flatten()).sum()
 
 
-def sft_step(model: Any, seqs: Sequence[Item], micro: int, device: str) -> float:
-    """Gradients of the batch's mean response-token log-loss accumulated in micro-batches (bf16 autocast); returns
-    the loss. The caller zeroes gradients before and steps the optimiser after."""
+def sft_step(model: Any, seqs: Sequence[Item], micro: int, device: str, forward: str = "bf16_autocast") -> float:
+    """Gradients of the batch's mean response-token log-loss accumulated in micro-batches; returns the loss. The caller
+    zeroes gradients before and steps the optimiser after. `forward`: "bf16_autocast" (E40, E45: weights round to the
+    bf16 grid in each Linear) or "fp32" (E61: no autocast context, the forward every reader uses)."""
+    assert forward in ("bf16_autocast", "fp32"), forward
     n, total = n_targets(seqs), 0.0
     for i in range(0, len(seqs), micro):
-        with torch.autocast("cuda", dtype=torch.bfloat16):
+        with torch.autocast("cuda", dtype=torch.bfloat16) if forward == "bf16_autocast" else nullcontext():
             s = nll_sum(model, seqs[i : i + micro], device)
         (s / n).backward()
         total += float(s)
