@@ -550,7 +550,7 @@ def test_masked_class_on_amendment_3s_cases(gain, m, t, want):
 
 # ----------------------------------------------------------------------------- Amendment 4
 
-A4 = {"p_b_min": 3.15e-3, "target_fall_min": 1.16, "lean_min": 1.58, "masked_within": 2.0, "masked_fall_frac": 0.25, "min_gain": 1.0, "align_min": 0.2, "chance_factor": 3.0,
+A4 = {"p_b_min": 3.15e-3, "target_fall_min": 1.16, "lean_min": 1.58, "masked_fall_frac": 0.25, "min_gain": 1.0, "align_min": 0.2, "chance_factor": 3.0,
       "lookup_align_frac": 0.5, "close_min": 0.5, "random_margin": 0.24, "lookup_close_max": 0.2, "gap_min": 0.24}
 
 
@@ -688,7 +688,8 @@ def test_gates_are_per_position_and_closing_all_reads_the_reference_mask():
     (0.1, 3.0, 4.0, 1.0, 3.0, "pass"), (3.15e-3, 1.16, 1.58, 0.29, 3.58, "pass"), (3.14e-3, 3.0, 4.0, 1.0, 3.0, "no_copying"),
     (0.1, 1.0, 4.0, 1.0, 3.0, "head_not_carrying"), (0.1, -1.0, 4.0, 1.0, 3.0, "head_not_carrying"), (0.1, 0.0, 4.0, 1.0, 3.0, "head_not_carrying"),
     (0.1, 3.0, 1.57, 1.0, 1.5, "no_pair_dependence"), (0.1, 3.0, -2.0, 1.0, -2.0, "no_pair_dependence"),  # W0 does not lose the copy
-    (0.1, 3.0, 4.0, 1.0, 2.0, "pass"), (0.1, 3.0, 4.0, 1.0, 6.0, "pass"), (0.1, 3.0, 4.0, 1.0, 1.99, "mask_lean_off"), (0.1, 3.0, 4.0, 1.0, 6.01, "mask_lean_off"),
+    (0.1, 3.0, 4.0, 1.0, 1.0, "pass"), (0.1, 3.0, 4.0, 1.0, 0.99, "mask_no_lean"),  # a quarter of the target's lean, a tie passes
+    (0.1, 3.0, 1.7, 1.0, -0.25, "mask_no_lean"), (0.1, 3.0, 1.7, 1.0, 0.05, "mask_no_lean"), (0.1, 3.0, 3.0, 1.0, 5.2, "pass"),  # the re-check's R2 table
     (0.1, 4.0, 4.0, 1.0, 3.0, "pass"), (0.1, 4.0, 4.0, 0.99, 3.0, "mask_drops_head"), (0.1, 3.0, 4.0, -1.0, 3.0, "mask_drops_head"),
     (math.nan, 3.0, 4.0, 1.0, 3.0, "unreadable"), (0.1, 3.0, math.inf, 1.0, 3.0, "unreadable"),
 ])
@@ -696,9 +697,25 @@ def test_second_a_control(p, fall, lean, m_fall, m_lean, want):
     assert CP.second_a_control(p, fall, lean, m_fall, m_lean, A4) == want
 
 
-@pytest.mark.parametrize("share, median, want", [(0.5, 0.25, True), (0.5, 0.27, False), (0.49, 0.0, False), (0.9, 0.7, False), (math.nan, 0.0, False), (0.9, math.nan, False), (-0.2, -0.9, False)])
-def test_old_carries(share, median, want):
-    assert CP.old_carries(share, median, A4) is want
+@pytest.mark.parametrize("gain, share, median, want", [
+    (3.0, 0.5, 0.25, "carries"), (3.0, 0.5, 0.27, "not_carrying"), (3.0, 0.49, 0.0, "not_carrying"), (3.0, 0.9, 0.7, "not_carrying"), (3.0, math.nan, 0.0, "not_carrying"), (3.0, 0.9, math.nan, "not_carrying"), (3.0, -0.2, -0.9, "not_carrying"),
+    (1.0, 0.9, 0.0, "carries"), (0.99, 0.9, 0.0, "no_gate_gain"), (0.0, math.nan, 0.0, "no_gate_gain"), (-1.0, math.nan, 0.0, "no_gate_gain"), (math.nan, 0.9, 0.0, "no_gate_gain"),
+])
+def test_old_carries(gain, share, median, want):
+    assert CP.old_carries(gain, share, median, A4) == want
+
+
+def test_recheck_r1_a_lean_mostly_through_the_tokens():
+    """The re-check's case: masked lean 3.0, 2.2 through the tokens, 0.8 through the gates, S_old holding all of it. Over the lean the share was
+    0.27 and read old_pieces_not_carrying; on one set of tokens it is 1, and a gate gain of 0.8 is unscored, its own verdict."""
+    intact, gb_on_intact, gb_on_broken = 3.0, 2.2, 0.0
+    assert CP.share_lost(intact - gb_on_broken, gb_on_intact - gb_on_broken) == pytest.approx(0.8 / 3)  # the old denominator's ceiling
+    assert CP.share_lost(intact - gb_on_intact, 0.0) == 1.0
+    status = CP.old_carries(intact - gb_on_intact, 1.0, 0.0, A4)
+    strong, look = rec(cos=0.5, share=0.8), rec(6.0, 0.02, 0.0, 0.02)
+    assert status == "no_gate_gain" and mt([strong] * 3, [look] * 3, carries=status)["verdict"] == "w0_gate_gain_too_small"
+    status = CP.old_carries(1.2, 1.0, 0.0, A4)  # 1.8 through the tokens: the same set, a gain the project scores
+    assert status == "carries" and mt([strong] * 3, [look] * 3, carries=status)["verdict"] == "shared_pieces"
 
 
 def rec(M: float = 13.8, cos: float = 0.4, chance: float = 0.01, share: float = 0.7, random_median: float = 0.1, largest_k_share: float = 0.8) -> dict:
@@ -708,7 +725,7 @@ def rec(M: float = 13.8, cos: float = 0.4, chance: float = 0.01, share: float = 
 GOOD_C, GOOD_L = rec(), rec(6.0, 0.05, 0.0, 0.05, 0.1)
 
 
-def mt(copy: list[dict], lookup: list[dict], control: str = "pass", k: int = 100, n: int = 9881, carries: bool = True) -> dict:
+def mt(copy: list[dict], lookup: list[dict], control: str = "pass", k: int = 100, n: int = 9881, carries: str = "carries") -> dict:
     return CP.mask_test(control, carries, k, n, copy, lookup, A4)
 
 
@@ -723,7 +740,7 @@ def test_mask_test_every_combination_of_the_predictions(p1, p2, p3):
     assert (all(v["P1"]), all(v["P2"]), all(v["P3"])) == (p1, p2, p3)
     want = "shared_pieces" if p1 and p2 and p3 else "not_shared" if not p1 and not p2 and not p3 else "in_between"
     assert v["verdict"] == want  # P1 and P2 miss, P3 holds: share 0.45 beats random by 0.35, so the null is refuted: in_between
-    assert mt([rec(cos=0.4 if p1 else 0.1, share=share)] * 3, [rec(6.0, 0.01, 0.0, look, 0.1)] * 3, carries=False)["verdict"] == "old_pieces_not_carrying"
+    assert mt([rec(cos=0.4 if p1 else 0.1, share=share)] * 3, [rec(6.0, 0.01, 0.0, look, 0.1)] * 3, carries="not_carrying")["verdict"] == "old_pieces_not_carrying"
 
 
 @pytest.mark.parametrize("cos", [-0.4, 0.1, 0.2, 0.5])
@@ -731,14 +748,14 @@ def test_mask_test_every_combination_of_the_predictions(p1, p2, p3):
 @pytest.mark.parametrize("median", [-0.5, 0.0, 0.02, 0.1, 0.6])
 @pytest.mark.parametrize("look", [(0.01, -0.05), (0.3, 0.25), (0.05, 0.2)])
 @pytest.mark.parametrize("big", [0.1, 0.5, 0.9])
-@pytest.mark.parametrize("carries", [True, False])
+@pytest.mark.parametrize("carries", ["carries", "not_carrying", "no_gate_gain"])
 def test_mask_test_grid_reaches_the_filed_branch(cos, share, median, look, big, carries):
     """Exactly one verdict everywhere on a grid, and the one the rule's words give, written out here apart from the code."""
     c, l = rec(cos=cos, share=share, random_median=median, largest_k_share=big), rec(6.0, look[0], 0.0, look[1], 0.1)
     v = mt([c] * 3, [l] * 3, carries=carries)["verdict"]
     shared = cos >= 0.2 and look[0] < 0.5 * cos and share >= 0.5 and share - median >= 0.24 and look[1] <= 0.2
     null = (share - median < 0.24 and cos < 0.2) or share <= median
-    want = "old_pieces_not_carrying" if not carries else "shared_pieces" if shared else ("not_shared" if big >= 0.5 else "k_too_small") if null else "in_between"
+    want = "w0_gate_gain_too_small" if carries == "no_gate_gain" else "old_pieces_not_carrying" if carries == "not_carrying" else "shared_pieces" if shared else ("not_shared" if big >= 0.5 else "k_too_small") if null else "in_between"
     assert v == want
 
 
@@ -759,7 +776,7 @@ def test_mask_test_h3_cases(copy, lookup, want):
 @pytest.mark.parametrize("copy, lookup, control, k, want", [
     ([GOOD_C] * 3, [GOOD_L] * 3, "pass", 100, "shared_pieces"),
     ([GOOD_C] * 3, [GOOD_L] * 3, "no_copying", 100, "control_failed_target"), ([GOOD_C] * 3, [GOOD_L] * 3, "head_not_carrying", 100, "control_failed_target"), ([GOOD_C] * 3, [GOOD_L] * 3, "no_pair_dependence", 100, "control_failed_target"),
-    ([GOOD_C] * 3, [GOOD_L] * 3, "mask_lean_off", 100, "control_failed_mask"), ([GOOD_C] * 3, [GOOD_L] * 3, "mask_drops_head", 100, "control_failed_mask"), ([GOOD_C] * 3, [GOOD_L] * 3, "unreadable", 100, "unreadable"),
+    ([GOOD_C] * 3, [GOOD_L] * 3, "mask_no_lean", 100, "control_failed_mask"), ([GOOD_C] * 3, [GOOD_L] * 3, "mask_drops_head", 100, "control_failed_mask"), ([GOOD_C] * 3, [GOOD_L] * 3, "unreadable", 100, "unreadable"),
     ([GOOD_C] * 3, [GOOD_L] * 3, "pass", 0, "unreadable"), ([GOOD_C] * 3, [GOOD_L] * 3, "pass", 4941, "unreadable"), ([GOOD_C] * 3, [GOOD_L] * 3, "pass", 4940, "shared_pieces"),
     ([], [], "pass", 100, "unreadable"), ([GOOD_C] * 3, [GOOD_L] * 2, "pass", 100, "unreadable"),
     ([rec(M=0.0, share=math.nan)] * 3, [GOOD_L] * 3, "pass", 100, "too_small"), ([rec(M=-2.0, share=math.nan)] * 3, [GOOD_L] * 3, "pass", 100, "too_small"),  # a zero denominator
@@ -792,11 +809,13 @@ def test_mask_test_branches(copy, lookup, control, k, want):
 
 
 def test_mask_test_old_pieces_not_carrying_blocks_both_and_reports_the_rest():
-    v = mt([GOOD_C] * 3, [GOOD_L] * 3, carries=False)
+    v = mt([GOOD_C] * 3, [GOOD_L] * 3, carries="not_carrying")
     assert v["verdict"] == "old_pieces_not_carrying" and all(v["P1"]) and all(v["P2"]) and all(v["P3"])  # would be shared_pieces
-    assert mt([rec(share=0.0)] * 3, [GOOD_L] * 3, carries=False)["verdict"] == "old_pieces_not_carrying"  # would be not_shared
-    assert mt([GOOD_C] * 3, [rec(M=0.5)] * 3, carries=False)["verdict"] == "too_small"
-    assert mt([GOOD_C] * 3, [GOOD_L] * 3, "no_copying", carries=False)["verdict"] == "control_failed_target"
+    assert mt([rec(share=0.0)] * 3, [GOOD_L] * 3, carries="not_carrying")["verdict"] == "old_pieces_not_carrying"  # would be not_shared
+    assert mt([GOOD_C] * 3, [GOOD_L] * 3, carries="no_gate_gain")["verdict"] == "w0_gate_gain_too_small"  # would be shared_pieces
+    assert mt([rec(share=0.0)] * 3, [GOOD_L] * 3, carries="no_gate_gain")["verdict"] == "w0_gate_gain_too_small"  # would be not_shared
+    assert mt([GOOD_C] * 3, [rec(M=0.5)] * 3, carries="not_carrying")["verdict"] == "too_small"
+    assert mt([GOOD_C] * 3, [GOOD_L] * 3, "no_copying", carries="not_carrying")["verdict"] == "control_failed_target"
 
 
 def test_mask_test_reports_the_predictions_per_seed():

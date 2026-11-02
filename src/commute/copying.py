@@ -855,8 +855,8 @@ TARGET_CAUSES = ("no_copying", "head_not_carrying", "no_pair_dependence")  # sec
 def second_a_control(p_b: float, fall: float, lean: float, mask_fall: float, mask_lean: float, th: dict[str, Any]) -> str:
     """W0 at the second A, in order: "unreadable" (a number not finite). About the target model: "no_copying" P(B) under p_b_min;
     "head_not_carrying" its fall under the head under target_fall_min; "no_pair_dependence" its lean (intact minus pair-broken) under
-    lean_min, so W0 does not lose the copy when the pair is broken. About the mask: "mask_lean_off" the masked lean over masked_within
-    from the target's; "mask_drops_head" the masked fall under masked_fall_frac of the target's. Else "pass". Ties pass."""
+    lean_min, so W0 does not lose the copy when the pair is broken. About the mask, both under masked_fall_frac of the target's: "mask_no_lean"
+    the masked lean; "mask_drops_head" the masked fall. Else "pass". Ties pass."""
     if not all(finite(v) for v in (p_b, fall, lean, mask_fall, mask_lean)):
         return "unreadable"
     if p_b < th["p_b_min"]:
@@ -865,23 +865,28 @@ def second_a_control(p_b: float, fall: float, lean: float, mask_fall: float, mas
         return "head_not_carrying"
     if lean < th["lean_min"]:
         return "no_pair_dependence"
-    if abs(mask_lean - lean) > th["masked_within"]:
-        return "mask_lean_off"
+    if mask_lean < th["masked_fall_frac"] * lean:
+        return "mask_no_lean"
     return "pass" if mask_fall >= th["masked_fall_frac"] * fall else "mask_drops_head"
 
 
-def old_carries(share: float, random_median: float, th: dict[str, Any]) -> bool:
-    """Does S_old carry W0's own copying? P2's bars on W0's closing at the second A. Not finite (a masked lean at or under 0 included): False."""
-    return finite(share) and finite(random_median) and share >= th["close_min"] and share - random_median >= th["random_margin"]
+def old_carries(gain: float, share: float, random_median: float, th: dict[str, Any]) -> str:
+    """Does S_old carry W0's own copying? `gain` is what W0's mask adds at the second A on one set of tokens, gates at W0's against gates
+    at their pair-broken values. "no_gate_gain" under min_gain or not finite: the gates do not depend on the pair, so `a` names nothing.
+    Else "carries" on P2's bars, "not_carrying" otherwise (a share or median not finite included)."""
+    if not (finite(gain) and gain >= th["min_gain"]):
+        return "no_gate_gain"
+    ok = finite(share) and finite(random_median) and share >= th["close_min"] and share - random_median >= th["random_margin"]
+    return "carries" if ok else "not_carrying"
 
 
-def mask_test(control: str, carries: bool, k: int, n_alive: int, copy: Sequence[dict[str, Any]], lookup: Sequence[dict[str, Any]], th: dict[str, Any]) -> dict[str, Any]:
+def mask_test(control: str, carries: str, k: int, n_alive: int, copy: Sequence[dict[str, Any]], lookup: Sequence[dict[str, Any]], th: dict[str, Any]) -> dict[str, Any]:
     """The verdict from the control's status, `old_carries`, and one record per seed and map, paired by seed, each with M (the masked
     gain), cos, chance, share, random_median and largest_k_share. First that fires:
     "unreadable" (the control's numbers not finite); "control_failed_target", "control_failed_mask" (the status's cause);
     "unreadable" (k = 0, k over half the alive set, a seed missing, a gain not finite); "too_small" (any gain under min_gain);
-    "unreadable" (any other number not finite); "old_pieces_not_carrying" (S_old does not carry W0's own copying, so a state's closing
-    cannot be read either way); "shared_pieces" (P1, P2, P3 on every seed; P2 on every seed implies P3, as 0.5 - 0.2 > 0.24, so P3 is
+    "unreadable" (any other number not finite); then `carries`, each blocking both readings below: "w0_gate_gain_too_small" ("no_gate_gain"),
+    "old_pieces_not_carrying" (anything else but "carries": S_old does not carry W0's own copying, so a state's closing cannot be read either way); "shared_pieces" (P1, P2, P3 on every seed; P2 on every seed implies P3, as 0.5 - 0.2 > 0.24, so P3 is
     reported and decides nothing); then the null, on the copying map alone, either on every seed of: (a) closing costs no more than random
     (share - random_median under random_margin) and alignment no more than chance (cos under align_min or under chance_factor x chance);
     (b) share at or under random_median. It reads "not_shared" if largest_k_share reaches close_min on every seed, else "k_too_small",
@@ -907,8 +912,8 @@ def mask_test(control: str, carries: bool, k: int, n_alive: int, copy: Sequence[
     out["P1"] = [x and l["cos"] < th["lookup_align_frac"] * c["cos"] for x, (c, l) in zip(aligned, seeds, strict=True)]
     out["P2"] = [x and c["share"] >= th["close_min"] and l["share"] <= th["lookup_close_max"] for x, (c, l) in zip(beats, seeds, strict=True)]
     out["P3"] = [c["share"] - l["share"] >= th["gap_min"] for c, l in seeds]
-    if not carries:
-        return done("old_pieces_not_carrying")
+    if carries != "carries":
+        return done("w0_gate_gain_too_small" if carries == "no_gate_gain" else "old_pieces_not_carrying")
     if all(out["P1"]) and all(out["P2"]) and all(out["P3"]):
         return done("shared_pieces")
     if not any(aligned) and not any(beats) or all(c["share"] <= c["random_median"] for c, _ in seeds):

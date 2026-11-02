@@ -75,17 +75,18 @@ def stage1(R: Reads, p: Tensor, H: list[CP.Head], th: dict[str, Any], out: dict[
     note(out, "stage1_control", {"p_b": p_b, **level, **falls, "status": status, "n_alive": N, "k": k, "a_positive": int((a > 0).sum()), "a_mass_positive": float(a.clamp_min(0).sum()),
                                  "top_a": [float(x) for x in a[old[:10]]], "half2_k": len(CP.s_old(a2)), "half2_overlap": int(torch.isin(old, CP.s_old(a2)).sum()), "cos_a_half2": CP.cosine(a, a2)})
     if status != "pass" or k == 0 or k > N // 2:
-        stop(out, f"stage 1: {status}, k = {k} of {N}", CP.mask_test(status, False, k, N, [], [], th))
+        stop(out, f"stage 1: {status}, k = {k} of {N}", CP.mask_test(status, "unread", k, N, [], [], th))
     if N != th["n_alive"]:
         stop(out, f"stage 1: {N} alive subcomponents, filed {th['n_alive']}")
     return g0, gb, a, a2, old
 
 
-def stage2_carries(R: Reads, g0: Gates, gb: Gates, a: Tensor, old: Tensor, S: dict[str, Any], th: dict[str, Any], out: dict[str, Any]) -> bool:
-    """W0's closing at the second A: S_old's gates set to their pair-broken values at every position, on the intact tokens, as a share of the
-    masked lean. Random sets of k opened by `a`, outside S_old, closed the same way. A miss blocks the two readings; the states are still read."""
+def stage2_carries(R: Reads, g0: Gates, gb: Gates, a: Tensor, old: Tensor, S: dict[str, Any], th: dict[str, Any], out: dict[str, Any]) -> str:
+    """W0's closing at the second A, read as stage 4 reads a state, on one set of tokens, the intact ones: the gain is W0's gates against their
+    pair-broken values; S_old's gates go to those values at every position. Random sets of k with a > 0, outside S_old, closed the same way.
+    A miss blocks the two readings; the states are still read. The lean's token part, the pair-broken gates on both sets of tokens, is printed."""
     at, w, alive = dataclasses.replace(R, half=R.half - 1), R.W["copy"], R.ctx.lift["alive"]
-    base = at.masked(R.broken, gb, [])
+    base = at.masked(w, gb, [])
     d = at.masked(w, g0, []) - base
 
     def close(idx: Tensor) -> tuple[float, float, float, float]:
@@ -95,9 +96,9 @@ def stage2_carries(R: Reads, g0: Gates, gb: Gates, a: Tensor, old: Tensor, S: di
     G, G_closed, share, sd = close(old)
     randoms = [close(s)[2] for s in CP.random_sets(pool, len(old), S["random_draws"], S["random_seed"])]
     median = statistics.median(randoms)
-    carries = CP.old_carries(share, median, th)
-    note(out, "stage2_carries", {"mask_lean": G, "lean_closed": G_closed, "share": share, "share_sd": sd, "random_shares": randoms, "random_median": median, "pool_size": len(pool), "pool_fell_back": fell_back,
-                                 "all_alive_share": close(torch.arange(len(a)))[2], "carries": carries})
+    carries = CP.old_carries(G, share, median, th)
+    note(out, "stage2_carries", {"gate_gain": G, "gain_closed": G_closed, "token_part": float((base - at.masked(R.broken, gb, [])).mean()), "share": share, "share_sd": sd, "random_shares": randoms, "random_median": median,
+                                 "pool_size": len(pool), "pool_fell_back": fell_back, "all_alive_share": close(torch.arange(len(a)))[2], "carries": carries})
     return carries
 
 
