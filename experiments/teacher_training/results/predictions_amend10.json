@@ -1,10 +1,12 @@
 {
- "filed": "2026-11-02",
- "about": "E34 Amendment 10, 2026-11-02. The comparison of Amendment 9, weighted by the inputs the model sees: option (a) of log card decision-commute-settled, the user's choice. Does the commute line's headline read 'copies the fine-tune's change on real inputs' or 'reproduces its behaviour by a different change'? Plan reports/plans/2026-11-02_plan_e34-amend10-input-weighted.md. Saved states and one forward of W0, one free cluster job. Filed before the run. Stage 0 alone (Frobenius, no model, no input) was run before filing to find the expected values and a bug; its numbers are in expected.frobenius_known_before_filing. Nothing weighted by inputs has been read. Design check: approved by the user; class 1, analysis of what exists.",
+ "filed": "2026-11-02; revised 2026-11-02 before any run (first filing commit 8ce4471c), see revision",
+ "about": "E34 Amendment 10, 2026-11-02. The comparison of Amendment 9, weighted by the inputs the model sees: option (a) of log card decision-commute-settled, the user's choice. Does the commute line's headline read 'copies the fine-tune's change on real inputs' or 'reproduces its behaviour by a different change'? Plan reports/plans/2026-11-02_plan_e34-amend10-input-weighted.md. Saved states, one forward of W0 and one fine-tune rerun, one free cluster job. Filed before the run. Stage 0 alone (Frobenius, no model, no input) was run before filing to find the expected values and a bug; its numbers are in expected.frobenius_known_before_filing. Nothing weighted by inputs has been read. Design check: approved by the user; class 1, analysis of what exists.",
  "request_in_the_terms_words": "For each saved student of a teacher training, its weight change S = (U + dU)(V + dV)^T - U V^T from W0's alive (U, V), and its fine-tune's finished update dW. For two changes A, B the inner product is, over the 24 matrices together, sum_k tr(A_k Sigma_k B_k^T) = E sum_k <A_k x, B_k x>, x the input matrix k sees and Sigma_k = E[x x^T]. Read the cosine of S with dW under it, and beside it, against the same dW: a rerun of the same fine-tune, a different task's fine-tune and the same table's other seed's student.",
  "amend10": {
   "ctrl_tol": 1e-06,
   "layout_tol": 0.001,
+  "saved_tol": 0.001,
+  "t_p_min": 0.9946,
   "along_min": 0.1,
   "gap_min": 0.05,
   "tail": 0.001,
@@ -20,23 +22,22 @@
  "states": {
   "students": "Amendment 9's ten, all present (checked by load_vectors in the dry run of stage 0): E12 Amendment 2's rand32_s0, rand32_s1, rand32b_s0, rand32b_s0_o1, rand32b_s1, rand32b_s1_o1 (new_vs_existing/results/large/amend2/); Amendment 8c's real_o0, real_o1, null_o0, null_o1 (amend8/amend8c/). U, V: amend8c/uv0.pt. In this code E12's students are named S_<name>, because E12 named a student after its fine-tune.",
   "fine_tunes": "Amendment 9's six: regating_table/results/large/{rand32,rand32b}_{s0,s1}.pt (rand32 step 10, rand32b step 30, fp32), amend8c/{real,null}_teacher_dW.pt (Adam 3e-5, steps 1,000 and 100, bf16).",
-  "added_as_references_only": "E38's emoticon_s0 and emoticon_s1 (recruitment_test/results/large/states/; the real task, arm A, Adam 3e-5, batch 32, batch orders 0 and 1, step 10, fp32), the only saved rerun on the real task. E53's cipher_s0 and cipher_s1 at steps 10, 100, 300 (performed_anchor/results/large/; arm B, Adam 3e-5, batch 8, another task, bf16), the only rerun saved at more than 30 steps of a task learned.",
-  "no_rerun_of": "The real fine-tune at 1,000 steps and the null fine-tune at 100. Both would be training, out of scope here. Amendment 8c's log gives T1000 about 30 s on an L40"
+  "rerun": "real_teacher_o1, trained in this job and saved bf16 as results/large/amend10/real_teacher_o1_dW.pt: amend8.real_teacher's recipe at batch order 1. No rerun of the null fine-tune: it has no verdict"
  },
  "inputs": {
   "model": "W0's activations for every read, whichever pair. One fixed x for both sides: then there is one inner product, each cosine is symmetric, and every reference is read in the same metric. Neither the student's nor the fine-tuned model's own activations are favoured, W0 is where (U, V) and Gamma were fitted, and the reads are first order in the change, so the change in x is second order. Blind to that second-order part",
   "task": "task:<t>: every position of the task's held-out windows: 73 windows on emoticon, 97 on each map table, 41 positions each, held out of both the fine-tune's and the student's training. Text around the trigger, with the trigger 1 position in 41",
   "trigger": "trigger:<t>: position `half` alone of the same windows, where the taught behaviour is read. Sigma has rank at most the window count, 73 or 97, against d_in 768 or 3072, so its noise is high; P4 reads it and it does not enter the wording. It leaves out the k and v inputs of earlier positions that attention reads at the trigger",
   "pile": "pile: every position of Pile val rows 0 to 255, the harness's rows (faithfulness.pile_blocks), 131,072 positions",
-  "reads": "`model(rows, cache_type='input').cache`, as vpd.compute_ci reads it, with no autocast (weight_side.inputs_and_gates's form), fp32 forward, x x^T and every matrix product in fp64",
+  "reads": "`model(rows, cache_type='input').cache`, as vpd.compute_ci reads it, with no autocast (weight_side.inputs_and_gates's form), fp32 forward, x x^T and every matrix product in fp64. The rerun alone trains, under the recipe's bf16 autocast",
   "mean": "Uncentred is the request's own inner product: a constant output shift is real behaviour downstream. Centred, Sigma - mu mu^T, is read beside it, and the verdicts need both to agree, so a result the mean alone carries reads 'mixed' and goes to 'cannot tell'",
-  "normalisation": "Over all matrices together, as Amendment 9. Per-matrix inner products are saved in results/large/amend10/gram_<set>.pt and read by no rule. concentration.top_matrix_share says whether one matrix carries the pooled number",
+  "normalisation": "Over all matrices together, as Amendment 9. Per-matrix inner products are saved in results/large/amend10/gram_<set>.pt and read by no rule. top_matrix_share, read later from those files, says whether one matrix carries the pooled number",
   "layout": "The 67M's 24 matrices are nn.Linear, (d_out, d_in); `vpd.target_linear` asserts it, so there is no Conv1D here. S and dW share that layout: Amendment 9's check read the transposed layout at most 0.0013. The layout control below tests x against the module"
  },
  "measurements": {
   "cos": "<A, B>_Sigma / sqrt(<A, A>_Sigma <B, B>_Sigma), absolute. Per input set, per form (uncentred, centred), per part (whole, windows in alternate halves A and B). Read: `S | dW` own; `dW' | dW` rerun; other fine-tune against dW; other seed's student against dW",
   "margin": "Per kind of input and form: the largest of gap_min, the largest |A - B| over every cell the rules read, the largest batch-order change (rand32b's two seeds, real), and one bf16 rounding draw. Conservative: |A - B| compares two half-size samples, against reads on the whole set",
-  "concentration": "Reported for each dW: top_matrix_share, the largest single matrix's share of E||dW x||^2; mean_share, the share of E||dW x||^2 from the mean input",
+  "concentration": "Not in the results file. Read by the analysis from gram_<set>.pt: for each dW, the largest single matrix's share of E||dW x||^2 (top_matrix_share), and the mean input's share (mean_share)",
   "frobenius": "The same cosines with Sigma = I, for comparison and the re-read control",
   "ladder": "Reported: E53's cipher rerun at steps 10, 100, 300 on Pile. How a rerun moves with length. No rule reads it"
  },
@@ -44,25 +45,24 @@
  "predictions": [
   {
    "id": "P1_wording",
-   "kind": "classification, map tables and the headline",
-   "rule": "table_label per E12 student s against its own fine-tune r on the task's windows and on Pile, each uncentred and centred. own = cos(S, r); rerun = cos(r', r), r' the same table's other seed; other_task = the largest of cos(f, r) over the other table's two fine-tunes, the real and the null; m = the margin. Anything not finite: 'unscorable'. rerun under 0.1, or rerun - other_task under 2 m: 'cannot tell', the references do not separate. Else own >= rerun - m: 'copies'. Else 'different change'. Inclusive. A verdict per input kind over all six students and both forms: one label if all agree, 'unscorable' if any is, else 'mixed'. Absolute cosines, compared with a reference. wording(map_task, map_pile, real_task, real_pile): any 'unscorable': 'unscorable'. Task and Pile both 'copies': 'copies the fine-tune's change on real inputs', unless P2 reads the other way. Both 'different change': 'reproduces its behaviour by a different change', unless P2 reads the other way. P2 reading the other way on either input: 'cannot tell'. Task and Pile each decided but different: 'depends on the inputs', naming which. Anything else: 'cannot tell'. The scope field says whether the real task agreed, limited, or could not tell",
+   "kind": "classification, the map tables and the headline",
+   "rule": "table_label per E12 student s against its own fine-tune r on the task's windows and on Pile, each uncentred and centred. own = cos(S, r); rerun = cos(r', r), r' the same table's other seed; other_task = the largest of cos(f, r) over the other table's two fine-tunes, the real and the null; m = the margin. Anything not finite: 'unscorable'. rerun under 0.1, or rerun - other_task under 2 m: 'cannot tell', the references do not separate. Else own >= rerun - m: 'copies'. Else 'different change'. Inclusive. A verdict per input kind over all six students and both forms: one label if all agree, 'unscorable' if any is, else 'mixed'. Absolute cosines, compared with a reference. wording(map_task, map_pile, real_task, real_pile), P2 supplying the real pair: any 'unscorable': 'unscorable'. Any not 'copies' or 'different change' ('cannot tell', 'mixed'): 'cannot tell'. All four 'copies': 'copies the fine-tune's change on real inputs'. All four 'different change': 'reproduces its behaviour by a different change'. Map tables and real task alike, task windows and Pile different: 'depends on the inputs'. Task windows and Pile alike, map tables and real task different: 'depends on the task'. Otherwise 'cannot tell'. The scope field names the four labels",
    "what_copies_means": "A student no further from the fine-tune than another run of that fine-tune is, on these inputs, within the noise. The rerun shares the task's part of the update and differs in its batches' part, so with r = T + n, r' = T + n', a student of exactly T reads sqrt(rerun), and one of T plus a noise of the same size reads rerun. So 'copies' means at the level of a rerun, not an identical change. P3 says whether it follows this run or only the task",
-   "can_read_either_way": "No arithmetic fixes it. own, rerun and other_task are all unread on inputs. tests/test_teacher_amend10.py runs score() on made-up reads to each of the three labels. Amendment 9's flaw, a wording true of any student by construction, does not recur: 'copies' fails if the student is further from dW than a rerun, 'different change' fails if not, and neither wording's truth follows from S lying in what the subcomponents can write",
+   "can_read_either_way": "No arithmetic fixes it. own, rerun and other_task are all unread on inputs. tests/test_teacher_amend10.py runs score() on made-up reads to each label. Amendment 9's flaw, a wording true of any student by construction, does not recur: 'copies' fails if the student is further from dW than a rerun, 'different change' fails if not, and neither wording's truth follows from S lying in what the subcomponents can write",
    "lean": "'reproduces its behaviour by a different change', medium-low. Students read 0.25 to 0.41 by Frobenius against reruns of 0.61 and 0.68, and weighting has to close that gap on inputs for 'copies'. A student was trained on outputs, so input weighting should raise its read more than a rerun's; how far is the open number. Second lean 'cannot tell', if task windows' margins are large",
    "what_it_decides": "The wording of the commute line's headline on this model. The line closes on this model with it. 'cannot tell' or 'depends on the inputs' go to the user with the reads: the line can still close, with that stated",
-   "blind_to": "What downstream layers do with each matrix's output: it reads each matrix's output on inputs, with no regard to whether a difference there matters or cancels later. First order: S and dW are read on W0's x, as if nothing upstream moved. Only a real behaviour test closes either. Pooling: a large-output matrix counts more, and concentration shows if one carries it. Size: a cosine ignores length. A rerun differs from a fine-tune in batch order alone, so reruns at 10 and 30 steps are a near reference, and students trained 1,000 steps are being compared with them",
+   "blind_to": "What downstream layers do with each matrix's output: it reads each matrix's output on inputs, with no regard to whether a difference there matters or cancels later. First order: S and dW are read on W0's x, as if nothing upstream moved. Only a real behaviour test closes either. Pooling: a large-output matrix counts more, and top_matrix_share shows if one carries it. Size: a cosine ignores length. A rerun differs from a fine-tune in batch order alone: the_rerun.limits_on_comparing",
    "positive_control": "The power control: a change built to match dW on the excited directions reads near 1 here and low by Frobenius. Stop if not",
    "noise_floor": "The margin, stated per input kind and form in the results"
   },
   {
    "id": "P2_real_task",
-   "kind": "classification, limited",
-   "rule": "real_label over real_o0, real_o1 against the real fine-tune, on the task's windows and on Pile, uncentred and centred. No rerun of the real fine-tune at 1,000 steps exists. band = the reruns that exist of a task learned, on the same input kind: the real task's own at step 10 (E38), rand32 at 10, rand32b at 30, E53's cipher at 300; on task windows each table's on its own windows, the others on emoticon's. other_task = the largest of cos(f, real) over the four map fine-tunes and the null. m the margin. Anything not finite or empty: 'unscorable'. min(band) under 0.1, or min(band) - other_task under 2 m: 'cannot tell'. min(own) >= max(band) - m: 'copies, limited'. max(own) < min(band) - m: 'different change, limited'. Else 'cannot tell'. A verdict per input kind over both forms, by the same agree",
-   "why_limited": "It assumes a rerun of the 1,000-step real fine-tune would fall inside the band. That is untested. E53's cipher is the one trend seen, and by Frobenius its rerun rises with length, 0.14 at 10, 0.42 at 100, 0.84 at 300, on a task barely learned at 10; so a real rerun below the band looks unlikely and one near its top possible. Steps 10 and 100 of the cipher stay out of the band as that task had not been learned. The label always says 'limited'. One rerun of the real fine-tune would end the limit, by table_label's rule",
-   "lean": "'different change, limited', medium-low, on both inputs: 0.27, 0.28 by Frobenius against a band of 0.56 to 0.84",
-   "what_it_decides": "It cannot make the wording alone. Agreeing: the wording covers the real task, limited. 'cannot tell': the wording is for the map tables only. Reading the other way: 'cannot tell' overall",
-   "blind_to": "As P1, and the assumption above. real_o0 shares its batches with the fine-tune; real_o1 is the cleaner read, and both must clear. E53's cipher ran on its own task's text: on emoticon's windows its rerun is an off-task read",
-   "positive_control": "The power control on the real fine-tune, task windows and Pile"
+   "kind": "classification, the same rule as the map tables",
+   "rule": "table_label per real_o0, real_o1 against the real fine-tune, on task windows and Pile, uncentred and centred. rerun = cos(real_teacher_o1, real fine-tune); other_task = the largest of cos(f, real fine-tune) over the four map fine-tunes and the null; m the margin of that input kind and form. A verdict per input kind over both students and both forms, by the same agree. Not labelled limited: the_rerun says why, and what stays limited across families",
+   "lean": "'different change', medium-low, on both inputs: own 0.27, 0.28 by Frobenius; the rerun unread, and E53's cipher at 300 steps reads 0.84",
+   "what_it_decides": "With P1's map tables, the wording. Disagreeing with them gives 'depends on the task', which cannot separate task from length",
+   "blind_to": "As P1, and the_rerun.limits_on_comparing. One rerun",
+   "positive_control": "The power control on the real fine-tune, task windows and Pile. The recipe's order 0 against the saved teacher"
   },
   {
    "id": "P3_seed",
@@ -70,13 +70,13 @@
    "rule": "seed_class per E12 student against its own fine-tune, same reads and forms as P1, on task windows and Pile. others = the same table's other seed's students against that fine-tune. Not finite or no others: 'unscorable'. own - max(others) >= m: 'follows its own run'. Else 'follows the task only'. By agree per input kind. Absolute",
    "lean": "'follows the task only' or 'mixed', medium-low: by Frobenius own against other seed is 0.05 to 0.07 on the states in the dry run, about the least margin",
    "what_it_decides": "With 'copies' in P1: 'follows the task only' makes the wording 'copies the task's change, not this run's', named in the report. No effect on 'different change'",
-   "blind_to": "Two seeds per table",
+   "blind_to": "Two seeds per table. Not read on the real task: no student of its rerun exists",
    "positive_control": "None of its own: the zero-noise path is tested on made-up reads"
   },
   {
    "id": "P4_trigger",
    "kind": "classification, reported beside the wording",
-   "rule": "P1's table_label and P2's real_label on trigger:<t>, with the trigger's margin and the same forms; band as P2 on the same kind",
+   "rule": "table_label on trigger:<t>, map tables and real task alike, with the trigger's margin and the same forms",
    "lean": "'cannot tell', medium: Sigma has rank at most 73 or 97, so split halves of 36 to 48 inputs should give a large margin",
    "what_it_decides": "Nothing alone. If it decides, and differently from the windows' verdict, the report says the wording does not hold at the trigger itself. A behaviour on the task is read there",
    "blind_to": "As P1, and the earlier positions' k and v inputs",
@@ -84,10 +84,11 @@
   }
  ],
  "controls": {
-  "first_and_alone": "Stage 0, no model: the Frobenius re-read of every pair in amend9.json within ctrl_tol; every vector against itself 1 within ctrl_tol; the zero change reads nan on its row. Then, before any input set: the layout control. Per input set, before any read is written: self within ctrl_tol, zero nan, Gram asymmetry within ctrl_tol, a positive smallest diagonal. Per task-windows set and Pile, before its Gram: the power control. Any miss stops the job",
+  "first_and_alone": "Stage 0, no model: the Frobenius re-read of every pair in amend9.json within ctrl_tol; every vector against itself 1 within ctrl_tol; the zero change reads nan on its row. Then, before any input set: the layout control, then the rerun stage; stage 0 again with the rerun in. Per input set, before any read is written: self within ctrl_tol, zero nan, Gram asymmetry within ctrl_tol, a positive smallest diagonal. Per task-windows set and Pile, before its Gram: the power control. Any miss stops the job",
   "layout": "On 4 windows at W0 + the real dW: the module's output against x (W0 + dW)^T, x from the input cache, relative error at most layout_tol on all 24 matrices. It tests that the cache holds what each matrix sees, and that dW's layout fits it",
   "power": "For one fine-tune per set (real on emoticon and Pile, <t>_s0 on each map table), per matrix: Q = the top eigendirections of Sigma, the fewest reaching 1 - tail of tr(Sigma). Z = dW Q Q^T + R, R random and orthogonal to Q on the read side, ||R||^2 = rho2 ||dW||^2. cos_Sigma(Z, dW) >= 0.99 and cos_Frobenius(Z, dW) <= 0.5, or stop: the weighting has no power on this Sigma. On an isotropic Sigma no direction goes unexcited and the Frobenius side fails, as tests show. Not run on the trigger sets, where low rank passes it trivially",
-  "do_nothing": "The weight change dW itself: reads 1 against dW on every Sigma"
+  "do_nothing": "The weight change dW itself: reads 1 against dW on every Sigma",
+  "rerun": "amend8.real_teacher's recipe. Order 0 first and alone: 1 - cos_Frobenius to the saved teacher at most saved_tol, 1e-3, and held-out P(target) at least t_p_min, 0.9946. Then order 1: P(target) at least 0.9946, or stop before any read. Each is timed and reported with size, size at step 1 and damage. Size has no stop: a batch order may move it"
  },
  "expected": {
   "W0": "No change, S = 0: the zero denominator; cos nan on its row and column on every Sigma, by Frobenius and centred; every rule 'unscorable'. The run reads this as its `zero` row and it stops if not. A centred diagonal at or under 0 reads nan the same way",
@@ -95,15 +96,16 @@
   "self": "Each S and each dW against itself 1 within 1e-6",
   "power control": "cos_Sigma at least 0.99. cos_Frobenius about 1/3 by design (1 / sqrt(1 + rho2) when dW lies in the excited directions), at most 0.5; higher to the extent dW lies outside them, or on matrices with no unexcited direction",
   "layout": "Under 1e-3, lean about 1e-5: fp32 forward",
-  "frobenius_known_before_filing": "Stage 0's dry run, 2026-11-02, cpu-run: against amend9.json within 1e-12. Rerun by Frobenius, whole update: rand32 0.605, rand32b 0.675, real task at step 10 0.563; E53's cipher 0.136, 0.415, 0.840 at steps 10, 100, 300. Own: rand32 0.298, 0.320, rand32b 0.391 to 0.412, real 0.274, 0.281, null 0.366, 0.367. Other seed's student against rand32_s0 0.253, against rand32b_s0 0.343, 0.361. Different task: rand32_s0 against rand32b_s0 0.071, real against null 0.059, rand32_s0 against real 0.001",
+  "frobenius_known_before_filing": "Stage 0's dry run, 2026-11-02, cpu-run: against amend9.json within 1e-12. Rerun by Frobenius, whole update: rand32 0.605, rand32b 0.675. Own: rand32 0.298, 0.320, rand32b 0.391 to 0.412, real 0.274, 0.281, null 0.366, 0.367. Other seed's student against rand32_s0 0.253, against rand32b_s0 0.343, 0.361. Different task: rand32_s0 against rand32b_s0 0.071, real against null 0.059, rand32_s0 against real 0.001",
   "reruns_on_inputs": "Lean 0.6 to 0.95 on task windows and Pile, above Frobenius, low confidence: reruns share a gradient that inputs drive",
   "own_on_inputs": "Lean 0.3 to 0.8, above Frobenius, low confidence",
   "other_task_on_inputs": "Lean 0 to 0.4, low: the mean part may raise it",
-  "null_student": "Reported, no rule. Against its own fine-tune above the real student's by Frobenius, 0.37 against 0.28; lean the order holds on inputs, low",
   "margins": "Task windows: split-half 0.01 to 0.15, low confidence, 36 to 48 windows per half. Pile: under 0.02, so gap_min rules there. Batch order: Amendment 9's largest 0.025 by Frobenius. Trigger: 0.1 or more",
   "rounding": "One draw under 0.01. Sigma weights directions unequally, so rounding could count for more here than Frobenius's 2e-6 if S or dW is small along Sigma's top directions; hence a measured draw",
-  "concentration": "top_matrix_share 0.05 to 0.5, mean_share 0 to 0.5, low confidence. A top_matrix_share above 0.5 is said beside the wording",
-  "time": "About 10 min on an L40: model load 23 s (E12 Amendment 3's logged), 13 small forwards and 32 Pile batches about 2 min, 27 changes against 7 Sigmas about 2 min, 4 x 24 eigendecompositions the rest. Over 30 min the job is killed with its files kept, each set written as it finishes"
+  "concentration": "top_matrix_share 0.05 to 0.5, mean_share 0 to 0.5, low confidence, from gram_<set>.pt. A top_matrix_share above 0.5 is said beside the wording",
+  "time": "About 12 min on an L40: model load 23 s (E12 Amendment 3's logged), two 1,000-step fine-tunes about 30 s each (amend8c's sbatch note), 13 small forwards and 32 Pile batches about 2 min, 22 changes against 7 Sigmas about 2 min, 4 x 24 eigendecompositions the rest. Unrehearsed. Over 30 min the job is killed with its files kept, each set written as it finishes",
+  "rerun": "Order 0 reproduces 8c's numbers on an L40: cos about 1 less bf16 rounding, P(target) 0.99910, size 0.0315, damage 0.0554, size at step 1 0.00346. Order 1: P(target) above 0.9946, size within Amendment 8's 0.0301 to 0.0341 and step 1 within a few percent of 0.00346, lean; about 30 s each by amend8c.sbatch's note. cos_Frobenius to the saved teacher unread; lean 0.5 to 0.9, low",
+  "null_student": "Reported as null_own, no rule. Above the real student's by Frobenius, 0.37 against 0.28; lean the order holds on inputs, low"
  },
  "noise_floors": "Sampling: split-half by alternate window; its |A - B| goes into the margin. Batch order: rand32b's two seeds and real's pair. bf16: real_o1's saved offsets and the real dW each moved by one draw, uniform within +-2^-8 relative, an upper bound on one rounding, read as |cos(moved) - cos(saved)| on the same Sigma. Second moment: fp32 activations, x x^T summed in fp64, every product in fp64; the Gram's asymmetry measures what the fp64 products lose. No autocast, so no bf16 in x. Least margin gap_min",
  "threshold_sources": {
@@ -114,24 +116,33 @@
   "2 m gate": "Arithmetic: own >= rerun - m must imply own at least m above other_task, so 'copies' can't be read at a student indistinguishable from another task's fine-tune",
   "tail, rho2, power_sigma_min, power_frob_max": "Control design, from the brief's 'near 1' and 'low': with rho2 8 the Frobenius read is 1/3 if dW lies in the excited directions; 0.99 and 0.5 leave room. Tail 1e-3: at most about rho2 x tail x d/(d-k) of the denominator, under 2% at k = d/2",
   "round_rel": "Amendment 9's min_share source: bf16 rounding is at most 2^-8 of an entry",
-  "the rerun as the line, in place of 0.71": "The independent check of Amendment 9: the 0.71 line fails even a rerun of the same fine-tune"
+  "the rerun as the line, in place of 0.71": "The independent check of Amendment 9: the 0.71 line fails even a rerun of the same fine-tune",
+  "saved_tol": "Amendment 8c's saved_tol, a regeneration on the same card against a saved cosine",
+  "t_p_min": "Amendment 8's filed AM.t_p lower bound for T1000. The saved teacher reads 0.99910"
  },
- "edge_cases_run_before_filing": "tests/test_teacher_amend10.py on the code's rule functions, 2026-11-02, no state file. table_label: nan in each argument, rerun under along_min, references just not separating and just separating, own at the line and just under it, own above the rerun, a negative own. real_label: empty own, empty band, nan, a tie at the top of the band, two orders straddling, a tie at the bottom, inside the band, a band with a rerun reading nothing, references not separating, a one-element band. seed_class: no others, nan, a tie, just under, own below. margin: each noise ruling, nan, no noise at all. wording: each outcome. cosines: a zero change (nan on its row and column), a negative diagonal. gram: tr(A Sigma B^T) equals E<Ax, Bx> computed by hand; identity equals Frobenius; gram minus mean_part equals the centred moment. power_change: near 1 and low on a low-rank Sigma, and failing on an isotropic one. score: made-up reads to 'copies', 'different change' and 'cannot tell', noise swallowing a gap, a missing student and an empty file to 'unscorable'. One window: read_set stops, as a split-half needs two; a nan half would read 'unscorable' by the margin",
+ "edge_cases_run_before_filing": "Re-run on the revised code, tests/test_teacher_amend10.py, 2026-11-02, no state file. table_label: nan in each argument, rerun under along_min, references just not separating and just separating, own at the line and just under it, own above the rerun, a negative own. rerun_ok: at and just under t_p_min, nan P(target), reproduced, not reproduced, nan cosine. seed_class: no others, nan, a tie, just under, own below. margin: each noise ruling, nan, no noise at all. wording: each outcome. cosines: a zero change (nan on its row and column), a negative diagonal. gram: tr(A Sigma B^T) equals E<Ax, Bx> computed by hand; identity equals Frobenius; gram minus mean_part equals the centred moment. power_change: near 1 and low on a low-rank Sigma, and failing on an isotropic one. score: made-up reads to 'copies', 'different change' and 'cannot tell', noise swallowing a gap, the real verdict moving with its rerun apart from the map tables' and 'unscorable' with no rerun, a missing student and an empty file to 'unscorable'. read_set on a fake model; one window stops it, as a split-half needs two",
  "degeneracies_found_when_writing_the_rules": [
   "E12's students carry their fine-tune's name, so the first draft's table read a student as the fine-tune. Stage 0's Frobenius re-read stopped it at 0.70 against 1e-6. Students here are S_<name>",
-  "A rule shifting the band by the cipher's rise with length put its top above 1 on Frobenius, so 'copies' could not be read. Replaced: the band holds the rerun cosines themselves",
-  "A lower bound from the cipher's unlearned steps 10 and 100 (0.14) would have made 'different change' unreachable on the real task. They stay out of the band, and are reported",
   "A gate of rerun - other_task >= m would read 'copies' at a student equal to another task's fine-tune: the gate is 2 m",
-  "Amendment 9's flaw: a wording true by construction. Neither wording here holds for every student; see P1.can_read_either_way"
+  "Amendment 9's flaw: a wording true by construction. Neither wording here holds for every student; see P1.can_read_either_way",
+  "The first filing's band for the real task, deleted in the revision: a rule shifting it by the cipher's rise put its top above 1, and it assumed a 1,000-step rerun fell inside it. The real rerun ends both"
  ],
- "departures_from_the_reference": "Against the brief: the brief's 'no second real fine-tune exists' holds at 1,000 steps, but E38 saved one at 10 steps at two batch orders, and E53 saved reruns of another task up to 300; both are read as references. Against Amendment 9: the inside part is not read, and the reference is a rerun, not the 0.71 line.",
+ "departures_from_the_reference": "Against Amendment 9: the inside part is not read, and the reference is a rerun, not the 0.71 line. Against the saved teacher: batch order only, the_rerun.differences_from_the_saved_teacher.",
  "not_run": [
-  "A rerun of the real fine-tune at 1,000 steps, needs training (about 30 s on an L40): it would end P2's limit",
   "A real behaviour test of whether S and dW's differences matter downstream",
   "W0 against each model's own activations as x: second order, not read",
   "The inside part under this inner product",
   "Per-matrix verdicts: the inner products are saved",
   "E42's students, whose fine-tunes were not saved",
-  "The same reading on Qwen, or any comparison with cheaper methods (baseline-lead)"
- ]
+  "The same reading on Qwen, or any comparison with cheaper methods (baseline-lead)",
+  "A second rerun of the real fine-tune, or a map-table rerun at 1,000 steps, which would separate task from length"
+ ],
+ "revision": "2026-11-02, nothing having run: the coordinator added one 1,000-step rerun of the real fine-tune, trained in this job, so the real-task verdict takes the map tables' rule. The limited band, E38's and E53's reruns as references, and real_label are deleted, as no rule reads them. The stage 0 dry run's Frobenius reads are the only reads so far.",
+ "the_rerun": {
+  "recipe": "amend8.real_teacher, as Amendment 8c ran it: finetune.finetune_arm_a, ArmAConfig(o_token = windows.json's o_token_id, lr 3e-5, steps 1,000, checkpoints (1, 1,000), optimizer adam), defaults batch 32, clip 1, kl_lambda 1; transport_test's train and held-out windows; bf16 autocast in the forward, as the fine-tune ran; saved bf16",
+  "what_it_varies": "The batch-order seed alone: the torch.Generator behind torch.randint over the training windows. Weights, windows, target, optimizer and length are the same",
+  "what_the_map_tables_seeds_vary": "The same thing alone: anchors.kv_finetune passes seed 0 or 1 to the same finetune_arm_a, with the task's table as the target. So the real rerun and the map-table reruns are comparable in what they vary, and the real verdict is not labelled limited",
+  "differences_from_the_saved_teacher": "Batch order, which is the point. Beyond it, none intended. Amendment 8c's job ran the W0 Pile harness first and went through harness.load; neither touches the local generator, the model is in eval mode, and _run restores W0. finetune.py last changed at e9d445d7, before 8c's files. The card: 8c's was an L40, and another card may not reproduce it. Order 0 of the recipe runs first and must reproduce the saved teacher; that control tests all of these",
+  "limits_on_comparing": "Length differs between families, not within them. A map-table rerun is at 10 or 30 steps, the real one at 1,000. At 10 steps a seed changes which windows are drawn at all (320 draws from 403), at 1,000 every window is seen about 88 times (32,000 draws from 365), so the seed may leave less difference and the real rerun may read higher: E53's cipher rerun rose with length by Frobenius, 0.14, 0.42, 0.84 at steps 10, 100, 300, read before this revision and read by no rule. Map-table fine-tunes stop at first learned (held-out P(target) about 0.54 to 0.58), the real one at 0.999. Map students trained 1,000 steps against a 10- or 30-step fine-tune, real ones 1,000 against 1,000. So each student is fairly read against its own family's rerun, and 'depends on the task' cannot separate task from length. One rerun, so one number with no spread of its own. Batches: real_o0 shares all 1,000 with the fine-tune, real_o1 with the rerun; both must agree, so a read inflated by shared batches can't carry 'copies' alone"
+ }
 }
