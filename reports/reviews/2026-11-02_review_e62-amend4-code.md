@@ -82,3 +82,53 @@ A gain from openings at earlier positions (B, the second A) moves the closing sh
 ## Not run
 
 The 67M was not loaded and no stage ran: no number at the second A, k or `S_old` is known, so whether H1, H2 or M1 would bite on this model is unread. A stub run of `amend4.py` was not repeated. Lint was not run. No fix above has been coded or tested.
+
+## Re-check of the fixes (2026-11-02)
+
+*Scope: d54a4db, merged as 77f79cf, which leaves these files unchanged. Read by hand. On the CPU worker, no model loaded: `tests/test_copying.py` (2,751 pass), `pair_broken_holds` on the real windows (true), and the new rules on the cases below. Nothing ran on a GPU.*
+
+**No-go until two small fixes are filed; both are rule changes, $0, and no other change is needed.** W0's closing share can miss for a reason that has nothing to do with `S_old`, and then blocks the whole verdict. The masked lean's bar lets a mask with no lean pass the control.
+
+### Must fix before the job
+
+**R1. W0's closing share has a ceiling the rule ignores.** `amend4.py:88-92`; `copying.py` `old_carries`.
+Stage 2's denominator is masked intact minus masked pair-broken, which moves both the tokens and the gates. Closing moves only the gates: the tokens stay intact. So closing every alive subcomponent leaves whatever the token change carries through the masked forward, and `all_alive_share` is 1 minus that part. The plan says so itself ("under 1 by what the token change carries"), but no rule reads it. Stage 4 has no such gap, because L01 and L00 share their tokens.
+- *Failing scenario.* The masked lean is 3.0, of which 2.2 comes through the tokens with the mask held at its pair-broken values, and 0.8 through the gates. Then `all_alive_share` is 0.27, and no set can reach the 0.5 bar. `old_carries` returns false even if `S_old` holds all 0.8, and strong states read `old_pieces_not_carrying` (I ran cosine 0.5, share 0.8, lookup 0.02). That verdict says `S_old` does not carry W0's copying, when the bar was out of reach. How large the token part is on the 67M is unread; Amendment 3's marker reads suggest the gate part can be large, but that is another position.
+- *Fix.* Read stage 2 exactly as stage 4 reads a state, on one set of tokens: `base = at.masked(w, gb, [])`, `d = at.masked(w, g0, []) - base`. This costs no forward, since `all_alive_share` already runs a forward at about these gates. The share is then of what W0's mask adds because a copy is available, which is what `a` defines; `all_alive_share` reads about 1, up to non-alive gates. Print the token part, `at.masked(w, gb, []) - at.masked(b, gb, [])`, beside it. Below `min_gain` on `d`'s mean the share is unscored, by the project's rule, and the mask's gates do not depend on the pair: `a` then names nothing, so file that as its own blocking verdict rather than `old_pieces_not_carrying`.
+- *If the denominator stays as it is,* at least: `all_alive_share` under `close_min` reads as out of reach, a separate verdict, as `k_too_small` does for the states.
+
+**R2. Within 2 of the target's lean is not the bar M1 needed.** `copying.py` `second_a_control`.
+M1 asked for the masked lean at least 0.25 of the target's. The filed bar is two-sided and absolute, and it fails both ways. I ran these through `second_a_control`:
+
+| Target lean | Masked lean | Status | Should read |
+|---|---|---|---|
+| 1.7 | −0.25 | `pass` | the mask has no lean: a mask failure |
+| 1.7 | 0.05 | `pass` | the same |
+| 3.0 | 5.2 | `mask_lean_off` | a stop, though the mask does not drop the copy |
+
+With a lean near the 1.58 floor the bar has almost nothing to fail on the low side, so the marker's own anomaly (0.37 against 1.58) would pass. This is the control that decides whether the mask carries W0's copying, and a pass here also lets stage 2's share divide by a number near 0 under the present denominator.
+- *Fix.* One-sided: `mask_lean >= masked_fall_frac * lean`, the draft's quarter, as the fall's bar. Drop `masked_within`, and update the source text.
+
+### Asked about, and acceptable
+
+- **`lean_min` 1.5801: keep.** Its source is right: `amend2.json` and `run.json`'s two priors agree, as ln(3.154e-4 / 6.544e-5) is 1.57, on the same pair-broken windows. It is stricter than "W0 loses the copy" needs, since a lean of 1.5 is still 4.5 times the odds and `a` would still be a contrast, so the name `no_pair_dependence` overstates a narrow miss. But the marker is not where W0 copies; the second A should read well over it, the miss is a stop at $0 with every number printed, and a narrow miss is a dated amendment. No degenerate case: the lean is finite-checked, and a tie passes.
+- **Random sets from `a > 0` outside `S_old`: keep; it is a weak reference, not a wrong one.** Every entry drawn has a smaller `a` than every entry of `S_old` by construction, and many will be noise-sized, so the median should sit near 0 and the 0.24 margin should rarely decide. The 0.5 bar does the work, as in stage 4. The pool cannot be too small unnoticed (fallback printed; `random_sets` asserts). No false stop: stage 2 never exits. Optional: report the next k by `a` (ranks k + 1 to 2k), one forward, for a reference matched in size.
+
+### Each fix against its finding
+
+| Finding | Does the fix do what it needed? |
+|---|---|
+| H1 | Yes in form: `S_old` is tested at W0, against random, and a miss blocks both readings. The read needs R1. The overlap with (2,4)'s slot was not added; optional, as no rule reads it. |
+| H2 | Yes. `a` is intact minus pair-broken at the second A, same token and position, checked at run time and true on the real windows; the `half - 2` contrast is reported. |
+| H3 | Yes. All three table rows read as they should (`in_between`, `in_between`, `k_too_small`), the code matches the filed text arm by arm, and `largest_k_share` gates the branch alone. |
+| M1 | Partly: the level bar is gone and levels are printed, but see R2. |
+| M2 | Yes for the states. At W0 see R1. |
+| M3 | Yes. `largest_outside_share` and `largest_overlap` are reported. |
+| L1 | Yes. Causes split in `TARGET_CAUSES`, plan line 606 branches on them, and `verdict` is one dict shape. |
+| L2 | Yes. `cos_positive` is reported. |
+
+**Also checked.** The call to `mask_test` matches its new signature, and a stop at k = 0 with a passing control reads `unreadable`. `carries` false returns after the too-small and unreadable checks, as filed. `R.broken` has B as its last column, and its batches line up with `gb`. `gb` is freed before stage 3. Forwards rise to about 19 per state plus 9 in stage 2, still far under the 25 min limit. No new stop can fire on a correct run other than `lean_min` and the two control bars above.
+
+**Left as they are.** Stage 2 closes at every position, so at the first A `S_old` takes gates read on another key. That is the same operation as the definition and does not change any bar; it is worth a line in Blind to. `k_too_small`'s "no k subcomponents could reach the bar" overstates, since the k largest openings at the marker are not the best k. Two stale phrases in the predictions: `reread_source` says stage 2 where it is now stage 3, and `precision` says the within-2 bar compares levels across precisions. Fix them when refiling.
+
+**Not run.** The 67M was not loaded, so the token part, `all_alive_share` and the leans are unread. Neither fix above has been coded or tested.
