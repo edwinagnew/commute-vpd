@@ -1,8 +1,16 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-02.</strong> One open card: the wording of a claim from the claim tests (E47). Decided today and removed: what "elicitation" means, the Qwen size check, and the 56-hour VPD run on the counting model (E55), which is dropped.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-02.</strong> Two open cards: whether the size reached by repeated teacher training may be read as what the fine-tune taught (E34, E41), and the wording of a claim from the claim tests (E47). Decided today and removed: what "elicitation" means, the Qwen size check, and the 56-hour VPD run on the counting model (E55), which is dropped.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
+
+  <div class="card key decision" id="decision-chain-size"><span class="chip uninf urgency">No rush</span><div class="k">Question for you · commute · new 2026-11-02</div><p class="small">Nothing runs until this is decided.</p><h3>When teacher training is repeated along a fine-tune, may we read how far the subcomponents moved as what the fine-tune taught?</h3>
+  <p><strong>The question and evidence.</strong> Each round of a repeated run starts from the last round's subcomponents and copies the fine-tune at a later step. We
+ ran 1,000 more steps with the unchanged model as the teacher: its predictions came back (KL 12.4 to 0.06 nats) but its weights did not (largest relative change 0.018 to 0.021), and it still passed the check (0.96). A real round grew by the same 17%, so that growth happens with nothing to copy. Each state's check and kept behaviour stand.</p>
+  <p><strong>Options.</strong> (a) Change the wording only: stop reading size as piled-up error or as the update; $0. (b) The wording, plus a repeated run with nothing to teach (one free cluster job, 35 minutes): if it passes at the same size, size says nothing; if it fails, repeating harms by itself. (c) The wording, plus a repeated run that keeps the optimiser's memory between rounds (same cost): shows whether restarting costs accuracy.</p>
+  <p><strong>Recommendation: (a).</strong> No running plan repeats teacher training. Run (b) first if the larger model's plan does.</p>
+  <div class="links"><a href="#e34">E34</a><a href="#e41">E41</a></div>
+  <p class="small">Names in the reports: repeated rounds are E41's "chain"; the 1,000 steps is Amendment 8's N2. <code>reports/analyses/2026-11-02_analysis_e34-amend8-base-control.md</code></p></div>
 
   <div class="card key decision" id="decision-e47-split-keep"><span class="chip uninf urgency">No rush</span><div class="k">Question for you · commute · new 2026-10-29</div><p class="small">Nothing runs until this is decided.</p><h3>How should the scaled adjoint split's loss of behaviour be worded?</h3>
   <p><strong>The question.</strong> At the same update size a faster SGD run keeps 0.08 to 0.09 more of the behaviour than a slower one, on both seeds. The size-only test could not be scored: a shrunk update loses the behaviour itself.</p>
