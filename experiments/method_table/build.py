@@ -228,7 +228,9 @@ def counting_c1b() -> dict[str, Any]:
             "states": "Task P answers one more than count a; task N answers count b. 21 scored of 35, seeds 2-4, lr 1e-4 and 1e-5, 1K and 10K steps",
             "truth": {"how": "by construction", "source_said": "by construction: the fine-tuning task, plus the behaviour "
                       "and patch checks each state passed", "changed": False,
-                      "detail": f"Disagreements between task and checks: {load(C1B)['train_stops']['all_disagreements']}",
+                      "detail": f"Disagreements between task and checks: {load(C1B)['train_stops']['all_disagreements']}. "
+                                "The patch check reads inside the fine-tuned state, not from W0, and reads 0 by "
+                                "construction on task N's count a, so task N's check is behaviour.",
                       "pointer": f"{C1B} .train_stops.all_disagreements"},
             "evidence_beside": "No held-out reading.", "cells": cells}
 
@@ -268,8 +270,10 @@ def counting_c1() -> dict[str, Any]:
     cells["ratio"] = not_run("VPD's 400-step check read some of this row's new states and none of its reuse states.")
     return {"id": "counting_c1", "name": "Counting: through count a vs not", "model": "3M minGPT",
             "states": "26 scored, 15 reuses and 11 new, from Stage A and Amendment 5",
-            "truth": {"how": "by causal check", "source_said": "Two causal checks from Stage A label each state", "changed": False,
-                      "detail": "Behaviour share and interchange patch.", "pointer": f"{C1} .truth.scored; {R_C1}"},
+            "truth": {"how": "by behaviour plus an in-state patch", "source_said": "Two causal checks from Stage A label each state", "changed": True,
+                      "detail": ("Behaviour share and an interchange patch inside the fine-tuned state, not from W0. The patch reads "
+                                 "0 by construction on a state that does not answer count a (a2_N1.json check_count_a), so the new "
+                                 "side rests on behaviour."), "pointer": f"{C1} .truth.scored; {R_C1}"},
             "evidence_beside": "No held-out reading.", "cells": cells}
 
 
@@ -699,7 +703,7 @@ def fill(row: dict[str, Any]) -> dict[str, Any]:
 
 def write_section(table: dict[str, Any]) -> None:
     cls = {"separates": "y", "fails": "n", "control failed": "p", "unreadable": "q", "not run": "u"}
-    groups = {"by construction": [], "by causal check": [], "only by assumption": []}
+    groups = {"by construction": [], "by behaviour plus an in-state patch": [], "by causal check": [], "only by assumption": []}
     for row in table["rows"]:
         groups[row["truth"]["how"]].append(row)
     head = "".join(f'<th title="{html.escape(METHODS[m][1])}">{METHODS[m][0]}</th>' for m in METHODS)
@@ -745,7 +749,7 @@ SECTION_TEMPLATE = """<section id="methodtable">
 <p><b>How to read a cell.</b> The first line is the verdict. The second gives the reuse side, then the new side, the count labelled right, or the factor between two priors. Hover for the filed verdict, the file and the path; the full record is <code>experiments/method_table/results/table.json</code>. The analysis is <code>reports/analyses/2026-11-02_analysis_method-table.md</code>.</p>
 <p><b>A star marks task P against task N.</b> Those labels equal the task, so any method that responds to the task scores perfectly. 21 of 21 there is not discrimination. VPD's reading there is from a decomposition trained for 400 of 400,000 steps. It labelled all 21 right untrained, so it enters as failing its control and not as a pass. The other counting row keeps the task fixed and varies the label. Its label is tied to the step count, and VPD's reuse side there was never read.</p>
 <p><b>The ports.</b> As ported to the 67M, pruning revival and reverse fine-tuning failed their positive control, so the 21 of 21 does not carry over.</p>
-<p><b>Three kinds of truth.</b> By construction: the fine-tuning task fixes the answer, and each state passed behaviour and patch checks. By causal check: switching off or patching the mechanism is the label; on the copying-heads pair the copy side is not settled as filed. Only by assumption: built to elicit is how the task was built, not the causal label; these pairs have no causal check.</p>
+<p><b>Four kinds of truth.</b> By construction: the fine-tuning task fixes the answer, and each state passed behaviour checks and a patch inside the fine-tuned state. By behaviour plus an in-state patch: the earlier counting states, where the task is fixed and the label varies; the new side rests on behaviour, because the patch reads 0 by construction on a state that does not answer the patched count. By causal check: switching off the original model's mechanism is the label; on the copying-heads pair the copy side is not settled as filed. Only by assumption: built to elicit is how the task was built, not the causal label; these pairs have no causal check.</p>
 </div>
 <p class="legend cmpkey"><span class="lg"><b class="cv y">separates</b></span><span class="lg"><b class="cv n">fails</b></span><span class="lg"><b class="cv p">control failed</b></span><span class="lg"><b class="cv q">unreadable</b></span><span class="lg"><b class="cv u">not run</b></span></p>
 <div class="tblwrap"><table class="cmp">
