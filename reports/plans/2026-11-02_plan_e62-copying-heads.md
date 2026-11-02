@@ -569,12 +569,15 @@ every other item quoted above; Γ recomputed with the head on in the masked forw
 
 Spec: `reports/plans/2026-11-02_plan_regating-next-FABLE-DRAFT.md`, option 1; the user approved the test ("yes run the free test"). Rules:
 `experiments/induction_cue/results/predictions_amend4.json`. Code: `experiments/induction_cue/amend4.py`, `cluster/induction_cue_amend4.sbatch`. Coded, not run. **Not
-gated**: one cluster `debug` job, about 5 min, $0, no fine-tuning; one fresh review of the code before the job.
+gated**: one cluster `debug` job, about 6 min, $0, no fine-tuning; one fresh review of the code before the job.
 
 **In plain words.** Switching off old head (2,4) costs the fine-tuned model about half of what it learned, and the decomposition's masks lose most of their gain when
 it is off, but only because the mask function reads the fine-tuned model's activations. So that tells us the masks react to the head, not that they found the old
 mechanism. This test asks the direct question: does the fine-tune's mask open the same subcomponents the model's own copying opens, and does closing those subcomponents
 take the mask's gain away?
+
+**Changed after the code review, before anything ran.** `reports/reviews/2026-11-02_review_e62-amend4-code.md` found no wrong number but three readings that could not stand: nothing tested that `S_old` carries W₀'s copying, `a` mostly
+separated a key token from a plain token, and `not_shared`, which stops the 67M copying work, fired on data that refutes the null. Rules, predictions, code and tests were changed together on 2026-11-02; this section states them as they now stand, and "Changed after the code review" below lists each change. The first filing is 56c6981.
 
 **Restated in the Terms' words.** Γ's masks and the least-squares split as in Amendment 3; the masked gain is L01 − L00, original subcomponents, Δ out. The user's request:
 on the six saved step-30 states and the 200 read windows, compare each state's mask at the marker with W₀'s own mask at the second A, where W₀ copies on its own, and read
@@ -599,9 +602,9 @@ head label is at the level of heads.
   Row 114 (held-out rule demoted): not read. No departure.
 - **What changes next.** `shared_pieces` → the claim and the Qwen expectation. `not_shared` → the stop: r reported as "the original subcomponents can write this target under
   some mask", the 67M copying work on r's strength stops, and the Qwen table carries the split's numbers only. `in_between` → the lead reads which bar missed; the step-300 states
-  are the draft's next read only if that matters for Qwen's choice of step. `control_failed` → the masks drop W₀'s copying, to the user, and **the weighted slot read is the next step
-  to size it** (then filed, with a reference slot). If the control passes, the weighted re-open is cut.
-- **Apparatus first.** W₀'s own mask at the second A, target and masked, intact and head off, runs first and alone with exit 1; the re-read of the masked gain against `amend3.json`
+  are the draft's next read only if that matters for Qwen's choice of step. `control_failed_mask` → the masks drop W₀'s copying, to the user, and **the weighted slot read is the next step
+  to size it** (then filed, with a reference slot). If the control passes, the weighted re-open is cut. `control_failed_target` → W₀ does not copy through this head here, which says nothing of the masks: to the user; the draft's fallback for it (repeated sequences for `a`) has no code. `old_pieces_not_carrying` → the contrast did not find W₀'s copying subcomponents, so the test says nothing either way, and the numbers are reported. `k_too_small` → no k subcomponents could reach the bar; nothing about the mechanism is read.
+- **Apparatus first.** W₀'s own mask at the second A, target and masked, intact, head off and pair-broken, runs first and alone with exit 1; then whether `S_old` carries W₀'s copying; the re-read of the masked gain against `amend3.json`
   is the determinism check.
 - **Class.** 1, analysis of saved states with a GPU pass of the existing harness: approved, no sign-off. The lead tells the user the Amendment 3 reversal first, as the plan requires.
 - **Cut.** The positive control over all 24 heads: Γ's construction predicts its result, and it would move no reading here. The one head worth a number, (2,3), is a reported column, no rule.
@@ -612,7 +615,7 @@ head label is at the level of heads.
 only reads the log-odds, so the gates do not depend on it (`moved` in `amend3.py` indexes `[:, half, alive]`; `tests/test_copying.py` asserts both on a tiny real `ComponentModel`).
 `Reads.masked` takes the list, and `masked_lo_windows` reads at any position given. So the read at the second A is the same `Reads` with `half − 1`, and closing is an edit to the list.
 
-**W₀'s gates at half − 1 and half − 2 come from one pass.** `stage1` calls `R.gates(w)` once on the copying map's 200 windows, with no hook, and takes both positions from it. The two maps' windows differ
+**W₀'s gates at half − 1 and half − 2 come from one pass.** `stage1` calls `R.gates(w)` once on the copying map's 200 windows, with no hook, and takes both positions from it; the pair-broken windows have their own pass, also with no hook. The two maps' windows differ
 only in the target column, which no forward reads; `load` checks that the first 41 columns are equal.
 
 **The windows.** `cue_windows` sets A at half − 1 and at p, B at p + 1, p ≤ half − 4, and keeps a window only if A occurs exactly twice and B once. So half − 1 is the second A and half − 2 is neither A nor B. `stage1` asserts it on the real
@@ -621,7 +624,9 @@ windows (`copying.second_a_holds`) before any forward.
 **The head off is in the masked forward only.** `R.masked(w, g0, H)` wraps only `masked_lo_windows` in `ablated`; `g0` was read outside it. The target row, `R.lo(w, H)`, ablates the target model.
 
 **Γ reads the marker when it writes the gates at the second A.** Γ here is bidirectional (`reports/reviews/2026-10-27_review_gamma-bidirectional-windows.md`). The draft's line "the model does not know that" holds for the target model and not for Γ: `a` is read on windows
-with M at half and the 20 tokens after it in Γ's view. The control's masked rows are what test whether the mask still carries W₀'s copying there. See Blind to.
+with M at half and the 20 tokens after it in Γ's view. The pair-broken contrast keeps them in both arms, so this largely cancels in `a`.
+
+**The pair-broken windows.** `CP.broken_pair` as `amend2.py`, `control_seed` 62. **Confirmed on the real `windows.pt`** (CPU, no model): on all 200 windows exactly one position differs, the first A; the second A is the same token at the same position; A then occurs once in the window; B, the marker and half − 2 are unchanged. `copying.pair_broken_holds` asserts this at run time. **That W₀ loses the copy there is measured at the marker only**: lean 1.58 (`amend2.json`), prior 3.15e-4 against 6.5e-5 (`run.json`). At the second A it needs a forward, and this agent does not run a GPU, so the confirmation is in the code: the target's lean at the second A under 1.5801 exits 1 as `no_pair_dependence` before `a` is used. A miss goes to the user.
 
 **Two figures in the draft are out of date or too weak.** Its 4.3e-4 for W₀'s P(B) at the marker is job 48507's, on windows Amendment 1 dropped; these 200 windows read 3.154e-4 (`run.json`, `stage_b.prior_copy`). Its P2 implies its P3.
 
@@ -629,80 +634,106 @@ with M at half and the 20 tokens after it in Γ's view. The control's masked row
 
 Every gate is Γ's value on the 200 read windows, alive subcomponents only, 9,881 across the 24 matrices (`alive.pt`, counted), `ci_len` 41; every mean is over windows.
 
-- `a` = W₀'s mean gate at the second A (half − 1) minus W₀'s mean gate at the Pile token before it (half − 2): what W₀'s mask adds where it copies.
+- `a` = W₀'s mean gate at the second A (half − 1) on the intact windows minus W₀'s mean gate at the second A on the pair-broken windows: what W₀'s mask adds because a copy is available. Same key, same position, one further Γ pass.
+- `a_half2` = W₀'s mean gate at half − 1 minus at half − 2, intact windows, the first filing's `a`. Reported beside, no rule.
 - `S_old` = the fewest subcomponents holding half of `a`'s positive mass, largest first, ties in index order, reaching exactly half counts. Its size k is printed.
 - `Δ(state)` = the state's mean gate at the marker minus W₀'s mean gate at the marker.
 - **Alignment** = cosine(Δ(state), `a`). Chance = the same cosine with `a`'s entries permuted over the alive set, 20 draws, mean and sd.
 - **Closing share** = 1 − (masked gain with `S_old`'s gates set to W₀'s values at every position, under the state's mask otherwise) / (masked gain L01 − L00). Reference = the median over 5 draws of k
   subcomponents from those the state opened at the marker (Δ > 0) outside `S_old`; if fewer than k, from all alive outside `S_old`, printed. Closed the same way.
 
+- **W₀'s closing share** = at the second A on the intact tokens, `S_old`'s gates set to their per-window pair-broken values at every position, as a share of the masked lean: 1 − (closed − masked pair-broken) / (masked intact − masked pair-broken). The lean is the denominator, not the gain from gates alone, since M1's bar has already read it and it stays positive when the gates' own change is small; where the token change carries copying without the gates, the share is low, and the all-alive read says so. Reference = 5 draws of k from the entries with `a` > 0 outside `S_old`.
+
 ### Predictions and verdicts
 
 Bars from E62's filed 0.5 "old" and 0.2 "not", E58's 0.24 band gap; the cosine bar 0.2, the 3 × chance factor and the half are the draft's, no source.
 
+- **Stage 2, `S_old` carries W₀'s copying.** W₀'s closing share ≥ 0.5 and above its random median by ≥ 0.24, P2's bars: a state's closing cannot be read as shared if `S_old` does not carry W₀'s own copying. A miss is no stop.
 - **P1, alignment.** Copying map ≥ 0.2 and ≥ 3 × chance on all three seeds; lookup under half of the copying map's, same seed, on every seed.
 - **P2, closing.** Copying map's closing share ≥ 0.5 on every seed and above the random median by ≥ 0.24; lookup's ≤ 0.2.
 - **P3, the gap.** Copying minus lookup closing share ≥ 0.24 on every seed. P2 implies it, so it decides no verdict; it is reported, and says whether a P2 miss still shows a gap.
 
-`copying.mask_test`, first that fires: `control_failed`; `unreadable` (k = 0, k over 4,940, a seed missing, a gain not finite); `too_small` (any gain under `local_faith.MIN_GAIN`, 1.0); `unreadable` (any other number not
-finite); `shared_pieces` (P1-P3 hold on every seed); `not_shared` (on every seed the copying map misses P1's copying bars and P2's copying bars, or on every seed its closing share is at or under its random median); `in_between` (anything else).
+`copying.mask_test`, first that fires: `unreadable` (the control's numbers not finite); `control_failed_target`; `control_failed_mask`; `unreadable` (k = 0, k over 4,940, a seed missing, a gain not finite); `too_small` (any gain under `local_faith.MIN_GAIN`, 1.0); `unreadable` (any other number not finite); `old_pieces_not_carrying` (stage 2 missed; P1-P3 still reported); `shared_pieces` (P1-P3 hold on every seed); then the null, copying map alone, either arm on every seed: (a) share − random median under 0.24 and (cosine under 0.2 or under 3 × chance), (b) share at or under the random median. It reads `not_shared` if `largest_k_share` ≥ 0.5 on every seed, else `k_too_small`. `in_between` is anything else. `verdict` is the same dict on a stop and on a finished run.
 
 **Edge cases, run before filing (`tests/test_copying.py`).** `a` with no positive mass: k = 0, `unreadable`. `S_old` disjoint from the opened set: share 0, `not_shared` at a random median of 0 or more; at a negative median, `not_shared` only if the alignment also misses. A
 negative closing share: a miss on the copying map, and it holds the bar on the lookup. Ties in `a`'s ordering: stable, index order. Fewer than k opened: the fallback pool, printed. An empty pool: unreachable, as k ≤ half the alive set leaves at least k outside `S_old`; `random_sets`
-asserts. A zero or negative gain: `too_small` before any share is read. A zero-norm Δ: cosine nan, `unreadable`. Negative chance: the 0.2 bar decides. All eight combinations of P1-P3 are enumerated: six reach exactly one verdict, the two with P2 and not P3 cannot occur.
+asserts. A zero or negative gain: `too_small` before any share is read. A zero-norm Δ: cosine nan, `unreadable`. Negative chance: the 0.2 bar decides. All eight combinations of P1-P3 are enumerated: six reach exactly one verdict, the two with P2 and not P3 cannot occur. A 2,520-case grid of cosine, share, median, lookup, `largest_k_share` and carries is checked against the rule written out apart from the code. The review's three failing cases are tests.
 
 **Departures from the draft, each a fix of a rule found degenerate or a stale number, and each changing what the draft wrote.**
-1. `not_shared` reads the copying map's bars only. As written, P1 and P2 each carry a lookup bar, so a copying map at cosine 0.5 and share 0.9 beside a lookup at 0.3 and 0.25 read `not_shared`, the opposite of the null. It now reads `in_between`. **This changes the draft's meaning.**
+1. `not_shared` is in the null's terms, copying map only (review H3). As first written, a copying map at cosine 0.5 and share 0.9 beside a lookup at 0.3 and 0.25 read `not_shared`, and so did cosine 0.19 and share 0.49 against random 0.02; both refute the null, and both now read `in_between`. **This changes the draft's meaning.**
 2. "At or under its random median" is read on every seed, as the other arm of that branch is; the draft did not say. One bad seed of three reads `in_between`.
 3. The random pool excludes `S_old` throughout. As written, a mask opening exactly `S_old` drew `S_old` as its own reference and read `not_shared`. **This changes the draft's meaning**, only where the opened set is small.
 4. P(B)'s bar is 10 × 3.154e-4 = 3.15e-3, not 4.3e-3: the same "ten times the marker's", on the windows actually read.
 5. A target fall at the second A under 1.1628 stops the run as `head_not_carrying`. The draft had it as expected only, and with a fall near 0 the quarter bar passes with nothing to test. A false stop costs a resubmission at $0.
-6. Added, reported with no rule: `largest_k_share`, the closing share of the k largest openings of that state, one masked forward per state. The draft's closing read has no ceiling: at a small k, 0.5 may be out of reach for any k subcomponents, and a P2 miss would then
-   say that, not "not shared". No rule reads it, so the verdict does not change; the report must read it beside any P2 miss.
+6. `largest_k_share`, the closing share of the k largest openings of that state, gates `not_shared`: below 0.5 on any seed the branch reads `k_too_small` (review H3). **This changes the draft's meaning**: the draft's stop no longer fires when no k subcomponents could reach the bar.
+7. `a` is the pair-broken contrast, not the draft's half − 2, which is reported beside (review H2). **This changes the draft's meaning.**
+8. The new check and verdict `old_pieces_not_carrying` (review H1). **This changes the draft's meaning**: a miss blocks both readings.
+9. The within-2 bar is on the lean, not the level (review M1); `control_failed` is split by cause (review L1).
+
+### Changed after the code review
+
+Why each, from `reports/reviews/2026-11-02_review_e62-amend4-code.md`. Nothing had run, so no filed number was seen.
+- **H1.** Stage 2 added, with `copying.old_carries` and `old_pieces_not_carrying`. Without it a closing share of 0.02 could mean "the set never held the copying". The review offered exit 1; it is a verdict, not a stop, so the states are still read. Its optional print of `S_old`'s overlap with (2,4)'s slot is not added.
+- **H2.** `a` is the pair-broken contrast; half − 2 is beside it. With half − 2, key-reading subcomponents could fill `S_old`'s half of the mass, leaving copying ones out, so a low share would stop the line wrongly.
+- **H3.** `not_shared` rewritten and gated, as above.
+- **M1.** The within-2 bar reads the lean. The level is an offset every later number nets out, and at the marker it is already 2.01. Levels are still printed.
+- **M2.** `all_alive_share`, W₀ and each state, reported: the read's only end-to-end positive control, and a bound on any `S_old`. 29,031 of 38,912 subcomponents are not alive and cannot be closed.
+- **M3.** `largest_outside_share` and `largest_overlap`, reported: "these rather than others".
+- **L1.** `control_failed_target` and `control_failed_mask`, with `verdict` one dict shape.
+- **L2.** `cos_positive`, reported.
+
+### Reading notes
+
+- **L3.** Alignment reads the marker; closing reads every position. A gain from openings at earlier positions (B, the second A) moves the closing share and not the cosine, so P1 and P2 can disagree for a reason no number names. Read a split between them with that in mind.
+- Read `all_alive_share`, `largest_k_share` and `largest_outside_share` beside any P2 miss.
 
 ### Stages, in run order
 
-Cheapest first; `results/amend4.json` after each stage and each state; every number printed to the log. A miss in stage 1 or 2 is exit 1. Precision on the L40, as Amendment 3: Γ and the masked forward bf16 (autocast), target model fp32, `allow_tf32` off, batch 64.
+Cheapest first; `results/amend4.json` after each stage and each state; every number printed to the log. A miss in stage 1 or 3 is exit 1; stage 2's is a verdict. Precision on the L40, as Amendment 3: Γ and the masked forward bf16 (autocast), target model fp32, `allow_tf32` off, batch 64.
 
 | Number | W₀ | Do-nothing (zero update) | Control | Expected, copying map | Expected, lookup |
 |---|---|---|---|---|---|
-| Stage 1. Target model's log-odds of B at the second A, intact and (2,4) off; P(B), geometric mean | the reading; P(B) ≥ 10 × the marker's 3.154e-4, fall over 1.1628 | same as W₀ | exit 1 under 3.15e-3 (`no_copying`) or under 1.1628 (`head_not_carrying`): `control_failed` | not read per state | not read |
-| Stage 1. Masked log-odds of B at the second A under W₀'s own mask, intact and (2,4) off in the forward | within 2 of the target's; fall ≥ 0.25 of the target's | same | exit 1 if either misses: `control_failed`, the masks do not carry W₀'s copying | | |
-| Stage 1. k = \|`S_old`\| | printed; tens to a few hundred | same | exit 1 as `unreadable` if 0 or over 4,940 | | |
-| Stage 2. L00; re-read L01 − L00 | L00 equals `amend3.json` | gain exactly 0; level under closing exactly L00 | equal `amend3.json`'s `M` within 1e-3 (0 expected on the L40); exit 1 | 13.8 | 5.7-6.4 |
-| Stage 3. Alignment cosine | undefined (Δ = 0) | undefined | chance ≈ 0 ± 0.01 (permutation) | ≥ 0.2, lean 0.3-0.5 | under half the copying map's |
-| Stage 3. Closing share | undefined (no gain) | 0/0, reported as the level above | random median; 0.05-0.2 | ≥ 0.5 | ≤ 0.2 |
-| Stage 3. Reported only: closing share of the k largest openings | | | | at or over the closing share | at or over the closing share |
-| Stage 3. Reported only: (2,3)'s target share | | | | no expected value; W₀'s second prefix head, slot opens as far as (2,4)'s | no expected value |
+| Stage 1. Target model at the second A: P(B), geometric mean; log-odds intact, (2,4) off, pair-broken | P(B) ≥ 10 × the marker's 3.154e-4; fall over 1.1628; lean over 1.5801 | same as W₀ | exit 1 under each: `no_copying`, `head_not_carrying`, `no_pair_dependence`; `control_failed_target` | not read per state | not read |
+| Stage 1. Masked at the second A under W₀'s own mask: intact, (2,4) off in the forward, pair-broken under its own mask | lean within 2 of the target's; fall ≥ 0.25 of the target's; level printed, no bar | same | exit 1: `mask_lean_off`, `mask_drops_head`; `control_failed_mask` | | |
+| Stage 1. k = \|`S_old`\| | printed; tens to a few hundred, `a`'s mass unmeasured | same | exit 1 as `unreadable` if 0 or over 4,940 | | |
+| Stage 1. Reported only: `half2_k`, `half2_overlap`, `cos_a_half2` | no expected value | | | | |
+| Stage 2. W₀'s closing share at the second A; its random median | ≥ 0.5, and ≥ 0.24 over the median | | a miss: `old_pieces_not_carrying`, no stop | | |
+| Stage 2. Reported only: W₀ with every alive subcomponent closed | at or over the closing share; under 1 by what the token change carries | | | | |
+| Stage 3. L00; re-read L01 − L00 | L00 equals `amend3.json` | gain exactly 0; level under closing exactly L00 | equal `amend3.json`'s `M` within 1e-3 (0 expected on the L40); exit 1 | 13.8 | 5.7-6.4 |
+| Stage 4. Alignment cosine | undefined (Δ = 0) | undefined | chance ≈ 0 ± 0.01 (permutation) | ≥ 0.2, lean 0.3-0.5 | under half the copying map's |
+| Stage 4. Closing share | undefined (no gain) | 0/0, reported as the level above | random median; 0.05-0.2 | ≥ 0.5 | ≤ 0.2 |
+| Stage 4. Closing share of the k largest openings; gates `not_shared` | | | under 0.5: `k_too_small` | at or over the closing share | at or over the closing share |
+| Stage 4. Reported only: every alive closed | | | | about 1, up to non-alive gates | about 1 |
+| Stage 4. Reported only: k largest outside `S_old`; overlap of the k largest with `S_old` | | | | under the closing share if these rather than others; overlap printed | no expected value |
+| Stage 4. Reported only: cosine of the positive parts | undefined | undefined | | near the cosine or under it | no expected value |
+| Stage 4. Reported only: half − 2 contrast's cosine and closing share | undefined | | | no expected value | higher than with `a`, as it holds key-reading subcomponents |
+| Stage 4. Reported only: (2,3)'s target share | | | | no expected value; W₀'s second prefix head, slot opens as far as (2,4)'s | no expected value |
 
 ### Noise floor
 
 **The 1e-3 re-read, from measured evidence; nothing new is guessed.** Amendment 3 re-read `amend2.json`'s L00 and L01 in another job on the L40 at a difference of exactly 0 on all six states and both maps (`amend3.json`, `diff_a2`; both hosts "NVIDIA L40"; the compute partition holds only L40s). Amendment 2 read
-`run.json` the same way, and `repeat_floor` read 0. Stage 2 makes the same calls on the same windows with the same batch and flags, so the floor is 0. The tolerance, 1e-3, is the brief's and Amendment 3's other-card value: 7e-5 of a share at a gain of 13.8, so it cannot change a reading.
+`run.json` the same way, and `repeat_floor` read 0. Stage 3 makes the same calls on the same windows with the same batch and flags, so the floor is 0. The tolerance, 1e-3, is the brief's and Amendment 3's other-card value: 7e-5 of a share at a gain of 13.8, so it cannot change a reading.
 The run prints `max_diff` and `exact`. A miss is a stop to look at, and a difference that is not 0 on the L40 is worth a look under the stop. The zero update's checks take a tolerance of 0, as Amendment 3 measured.
 
-**The rest.** Row sd by `copying.share_sd`'s bootstrap on the closing share, printed. Three-seed range 0.09 from E62. 20 permutations for the cosine floor. No rule here compares two runs other than stage 2.
+**The rest.** Row sd by `copying.share_sd`'s bootstrap on the closing share, printed. Three-seed range 0.09 from E62. 20 permutations for the cosine floor. No rule here compares two runs other than stage 3.
 
 ### Blind to
 
-- **Alignment and `S_old`.** Subcomponents W₀'s copying uses at the first A or at B rather than at the second A, since `a` is read at one position. **Key-reading subcomponents do not cancel in `a`**: the second A is a key token and half − 2 a plain Pile token, so subcomponents that read the key
-  are in `a`. The draft's "mostly cancel" covers generic subcomponents only. The lookup is what tells them apart, as it needs the key too; a fall on both maps misses P2's lookup bar. Γ reads the marker and the 20 tokens after it when it writes the gates at the second A, so `a` is W₀'s mask on a window where the
-  next token is M, not W₀'s mask in plain copying. Positive control: the control row, W₀'s own copying through its own mask; nothing shows a known-shared mask reads high.
+- **Alignment and `S_old`.** Subcomponents W₀'s copying uses at the first A or at B rather than at the second A, since `a` is read at one position. Copying that does not change gates between intact and pair-broken windows: subcomponents open in both are not in `a`, however much copying runs through them, and stage 2 cannot find them either. `a` carries whatever else breaking the pair changes, as Γ reads the other key at p. A pair-broken window still holds B, so a lean toward B is not all removed. Γ reads the marker and the 20 tokens after it; both arms hold them. Positive control: stage 2, whether `S_old` carries W₀'s copying; nothing shows a known-shared mask reads high.
 - **Closing share.** A redirected query that lies in the weight change: the masked forward holds W₀'s q, k, v (account 4, unchanged). Closing returns gates to W₀'s values, so where the state's gate is under W₀'s it raises it; and it acts at every position, so `S_old` disjoint from the opening at the marker is share near 0, not exactly 0. A
-  mask whose gain is spread over many subcomponents can miss 0.5 at a small k whatever it shares: `largest_k_share` is the read of that.
-- **Random reference.** Δ > 0 has no floor, so most of the pool may be barely open, and the reference is then near 0 and weak; P2's 0.5 does the work. `n_opened`, `old_opened` and `random_shares` are printed.
+  mask whose gain is spread over many subcomponents can miss 0.5 at a small k whatever it shares: `largest_k_share` is the read of that, and it gates `not_shared`. Non-alive subcomponents are never closed: `all_alive_share` bounds that.
+- **Random reference.** Δ > 0 has no floor, so most of the pool may be barely open, and the reference is then near 0 and weak; P2's 0.5 does the work, and a near-zero median cannot decide `not_shared` alone, as arm (a) needs the alignment too and arm (b) needs a share at or under it. `n_opened`, `old_opened` and `random_shares` are printed.
 - **The 3 × chance bar.** At chance near 0.01 the 0.2 bar decides, so this bar seldom binds.
 - **P3.** Decides nothing, as above.
-- **Target against masked.** Target reads fp32, masked bf16, so the within-2 bar crosses precisions, as Amendments 2 and 3 did. At the marker W₀'s masked read is 2.01 under its target read (`amend2.json`).
+- **Target against masked.** Target reads fp32, masked bf16, so the within-2 bar crosses precisions. The lean nets the offset (2.01 at the marker) as far as it is the same on both windows; at the marker the two leans are 1.58 and 0.37.
 - **All.** One model, one marker, step 30, 32 keys, 200 windows, three seeds, one decomposition seed.
 
 ### Departures from the literature
 
 - **Olsson et al. 2022** zero-ablate, on small models. We mean-ablate over ordinary text, as E62.
-- **Comparing a parameter decomposition's masks across positions** to name a mechanism has no source we know of. The VPD paper reads masks per input; `a` as a difference of two positions is ours.
+- **Comparing a parameter decomposition's masks between positions and between a window and its pair-broken twin** to name a mechanism has no source we know of. The VPD paper reads masks per input; `a` as such a difference is ours.
 - **Thresholds.** 0.5 and 0.2 E62's, 0.24 E58's, 2 and 0.25 and 0.2 and 3 × and the half the draft's, 3.15e-3 and 1.1628 derived. None published.
 
 ### Not run
 
-Everything: the rules ran on CPU, the stages ran on a stub `Reads` with no model, and the 67M was never loaded. Stage 1 is the first test on a GPU. Not planned: `a` referenced to the first A rather than half − 2, the same token with no earlier copy, which would cancel key-reading subcomponents and costs no forward (`amend4_vectors.pt` does not hold it, gates are not saved; a rerun's
-line); the weighted slot read, unless the control fails; the 24-head control, cut; ablation inside Γ's pass; zero ablation; steps 100 and 300; the head off on L11 and U1; a second decomposition seed, the only check that narrows the granularity limit.
+Everything: the rules ran on CPU, the stages, with every review fix, ran on a stub `Reads` with no model, and the 67M was never loaded. Stage 1 is the first test on a GPU. Not planned: the first-A contrast and `S_old`'s overlap with (2,4)'s slot, the review's two optional prints; the weighted slot read, unless the control fails; the 24-head control, cut; ablation inside Γ's pass; zero ablation; steps 100 and 300; the head off on L11 and U1; a second decomposition seed, the only check that narrows the granularity limit.

@@ -772,6 +772,14 @@ def second_a_holds(toks: Tensor, p: Tensor, b: Tensor, half: int) -> bool:
     return bool(((toks[i, p] == a) & (toks[i, p + 1] == b) & (ref != a) & (ref != b)).all())
 
 
+def pair_broken_holds(intact: Tensor, broken: Tensor, p: Tensor, half: int) -> bool:
+    """The pair-broken windows differ from the intact ones at the first A alone, so the second A is the same token at the same position."""
+    i = torch.arange(len(intact))
+    other = torch.ones_like(intact, dtype=torch.bool)
+    other[i, p] = False
+    return bool((broken[i, p] != intact[i, p]).all() and (broken[other] == intact[other]).all() and (broken != broken[:, half - 1, None]).sum(1).eq(intact.shape[1] - 1).all())
+
+
 def gate_means(gates: Sequence[dict[str, Tensor]], alive: dict[str, Tensor], pos: int) -> Tensor:
     """The alive vector of each subcomponent's gate at `pos`, averaged over the windows of `gates` (per batch, (B, T, C))."""
     return torch.cat([torch.cat([g[k][:, pos][:, alive[k]] for g in gates]).double().mean(0) for k in sorted(alive)])
@@ -817,17 +825,21 @@ def random_sets(pool: Tensor, k: int, draws: int, seed: int) -> list[Tensor]:
     return [pool[torch.randperm(len(pool), generator=gen)[:k]] for _ in range(draws)]
 
 
-def largest(delta: Tensor, k: int) -> Tensor:
-    """Alive-vector indices of the k largest entries, ties in index order: the most any k subcomponents should do, reported."""
-    return torch.argsort(delta, descending=True, stable=True)[:k]
+def largest(delta: Tensor, k: int, outside: Tensor | None = None) -> Tensor:
+    """Alive-vector indices of the k largest entries, ties in index order, optionally leaving out the entries `outside`."""
+    order = torch.argsort(delta, descending=True, stable=True)
+    if outside is not None:
+        order = order[~torch.isin(order, outside)]
+    return order[:k]
 
 
 def closed(gates: Sequence[dict[str, Tensor]], ref: Sequence[dict[str, Tensor]], idx: Tensor, alive: dict[str, Tensor]) -> list[dict[str, Tensor]]:
     """`gates` with the alive-vector entries `idx` set to `ref`'s values, at every position of every window. `gates` is not changed."""
     keys = sorted(alive)
-    mark = torch.zeros(sum(int(alive[k].sum()) for k in keys), dtype=torch.bool)
+    sizes = [int(alive[k].sum()) for k in keys]
+    mark = torch.zeros(sum(sizes), dtype=torch.bool)
     mark[idx] = True
-    per = dict(zip(keys, (alive[k].nonzero().squeeze(1)[m] for k, m in zip(keys, mark.split([int(alive[k].sum()) for k in keys]), strict=True)), strict=True))
+    per = {k: alive[k].nonzero().squeeze(1)[m] for k, m in zip(keys, mark.split(sizes), strict=True)}
 
     def edit(g: Tensor, r: Tensor, w: Tensor) -> Tensor:
         x = g.clone()
@@ -837,36 +849,49 @@ def closed(gates: Sequence[dict[str, Tensor]], ref: Sequence[dict[str, Tensor]],
     return [{k: edit(g[k], r[k], per[k]) if len(per[k]) else g[k] for k in g} for g, r in zip(gates, ref, strict=True)]
 
 
-def second_a_control(p_b: float, target: float, target_off: float, mask: float, mask_off: float, th: dict[str, Any]) -> str:
-    """W0 at the second A, in order: "unreadable" (a number not finite); "no_copying" P(B) under p_b_min; "head_not_carrying" the
-    target's fall under the head under target_fall_min (zero and negative falls included, so the quarter below always has something
-    to be a quarter of); "mask_off_target" the masked log-odds over masked_within from the target's; "mask_drops_head" the masked
-    fall under masked_fall_frac of the target's; else "pass". Ties pass."""
-    if not all(finite(v) for v in (p_b, target, target_off, mask, mask_off)):
+TARGET_CAUSES = ("no_copying", "head_not_carrying", "no_pair_dependence")  # second_a_control's statuses about the target model, not the masks
+
+
+def second_a_control(p_b: float, fall: float, lean: float, mask_fall: float, mask_lean: float, th: dict[str, Any]) -> str:
+    """W0 at the second A, in order: "unreadable" (a number not finite). About the target model: "no_copying" P(B) under p_b_min;
+    "head_not_carrying" its fall under the head under target_fall_min; "no_pair_dependence" its lean (intact minus pair-broken) under
+    lean_min, so W0 does not lose the copy when the pair is broken. About the mask: "mask_lean_off" the masked lean over masked_within
+    from the target's; "mask_drops_head" the masked fall under masked_fall_frac of the target's. Else "pass". Ties pass."""
+    if not all(finite(v) for v in (p_b, fall, lean, mask_fall, mask_lean)):
         return "unreadable"
     if p_b < th["p_b_min"]:
         return "no_copying"
-    fall = target - target_off
     if fall < th["target_fall_min"]:
         return "head_not_carrying"
-    if abs(mask - target) > th["masked_within"]:
-        return "mask_off_target"
-    return "pass" if mask - mask_off >= th["masked_fall_frac"] * fall else "mask_drops_head"
+    if lean < th["lean_min"]:
+        return "no_pair_dependence"
+    if abs(mask_lean - lean) > th["masked_within"]:
+        return "mask_lean_off"
+    return "pass" if mask_fall >= th["masked_fall_frac"] * fall else "mask_drops_head"
 
 
-def mask_test(control: str, k: int, n_alive: int, copy: Sequence[dict[str, Any]], lookup: Sequence[dict[str, Any]], th: dict[str, Any]) -> dict[str, Any]:
-    """The verdict from the control's status and one record per seed and map, paired by seed, each with M (the masked gain), cos,
-    chance, share and random_median. First that fires:
-    "control_failed" (status not "pass"); "unreadable" (k = 0, k over half the alive set, a seed missing, a gain not finite);
-    "too_small" (any gain under min_gain); "unreadable" (any other number not finite);
-    "shared_pieces" (P1, P2, P3 on every seed; P2 on every seed implies P3, as 0.5 - 0.2 > 0.24, so P3 is reported and decides nothing);
-    "not_shared" (on every seed the copying map misses P1's bars and P2's bars, or on every seed its closing share is at or under its
-    random median); "in_between" (anything else). A negative share misses P2 on the copying map and holds its bar on the lookup.
-    not_shared reads the copying map's bars only, since a lookup that also uses the pieces is not the null (a departure from the draft)."""
-    out: dict[str, Any] = {"verdict": "in_between", "control": control, "k": k, "P1": [], "P2": [], "P3": []}
+def old_carries(share: float, random_median: float, th: dict[str, Any]) -> bool:
+    """Does S_old carry W0's own copying? P2's bars on W0's closing at the second A. Not finite (a masked lean at or under 0 included): False."""
+    return finite(share) and finite(random_median) and share >= th["close_min"] and share - random_median >= th["random_margin"]
+
+
+def mask_test(control: str, carries: bool, k: int, n_alive: int, copy: Sequence[dict[str, Any]], lookup: Sequence[dict[str, Any]], th: dict[str, Any]) -> dict[str, Any]:
+    """The verdict from the control's status, `old_carries`, and one record per seed and map, paired by seed, each with M (the masked
+    gain), cos, chance, share, random_median and largest_k_share. First that fires:
+    "unreadable" (the control's numbers not finite); "control_failed_target", "control_failed_mask" (the status's cause);
+    "unreadable" (k = 0, k over half the alive set, a seed missing, a gain not finite); "too_small" (any gain under min_gain);
+    "unreadable" (any other number not finite); "old_pieces_not_carrying" (S_old does not carry W0's own copying, so a state's closing
+    cannot be read either way); "shared_pieces" (P1, P2, P3 on every seed; P2 on every seed implies P3, as 0.5 - 0.2 > 0.24, so P3 is
+    reported and decides nothing); then the null, on the copying map alone, either on every seed of: (a) closing costs no more than random
+    (share - random_median under random_margin) and alignment no more than chance (cos under align_min or under chance_factor x chance);
+    (b) share at or under random_median. It reads "not_shared" if largest_k_share reaches close_min on every seed, else "k_too_small",
+    as no k subcomponents could then reach the bar. "in_between" is anything else."""
+    out: dict[str, Any] = {"verdict": "in_between", "control": control, "carries": carries, "k": k, "P1": [], "P2": [], "P3": []}
     done = lambda v: {**out, "verdict": v}
+    if control == "unreadable":
+        return done("unreadable")
     if control != "pass":
-        return done("control_failed")
+        return done("control_failed_target" if control in TARGET_CAUSES else "control_failed_mask")
     seeds = list(zip(copy, lookup, strict=True)) if len(copy) == len(lookup) else []
     if k == 0 or k > n_alive // 2 or not seeds:
         return done("unreadable")
@@ -875,15 +900,17 @@ def mask_test(control: str, k: int, n_alive: int, copy: Sequence[dict[str, Any]]
         return done("unreadable")
     if any(r["M"] < th["min_gain"] for r in both):
         return done("too_small")
-    if not all(finite(r.get(f)) for r in both for f in ("cos", "chance", "share", "random_median")):
+    if not all(finite(r.get(f)) for r in both for f in ("cos", "chance", "share", "random_median", "largest_k_share")):
         return done("unreadable")
-    c1 = [c["cos"] >= th["align_min"] and c["cos"] >= th["chance_factor"] * c["chance"] for c, _ in seeds]
-    c2 = [c["share"] >= th["close_min"] and c["share"] - c["random_median"] >= th["random_margin"] for c, _ in seeds]
-    out["P1"] = [x and l["cos"] < th["lookup_align_frac"] * c["cos"] for x, (c, l) in zip(c1, seeds, strict=True)]
-    out["P2"] = [x and l["share"] <= th["lookup_close_max"] for x, (_, l) in zip(c2, seeds, strict=True)]
+    aligned = [c["cos"] >= th["align_min"] and c["cos"] >= th["chance_factor"] * c["chance"] for c, _ in seeds]
+    beats = [c["share"] - c["random_median"] >= th["random_margin"] for c, _ in seeds]
+    out["P1"] = [x and l["cos"] < th["lookup_align_frac"] * c["cos"] for x, (c, l) in zip(aligned, seeds, strict=True)]
+    out["P2"] = [x and c["share"] >= th["close_min"] and l["share"] <= th["lookup_close_max"] for x, (c, l) in zip(beats, seeds, strict=True)]
     out["P3"] = [c["share"] - l["share"] >= th["gap_min"] for c, l in seeds]
+    if not carries:
+        return done("old_pieces_not_carrying")
     if all(out["P1"]) and all(out["P2"]) and all(out["P3"]):
         return done("shared_pieces")
-    if not any(c1) and not any(c2) or all(c["share"] <= c["random_median"] for c, _ in seeds):
-        return done("not_shared")
+    if not any(aligned) and not any(beats) or all(c["share"] <= c["random_median"] for c, _ in seeds):
+        return done("not_shared" if all(c["largest_k_share"] >= th["close_min"] for c, _ in seeds) else "k_too_small")
     return out

@@ -3,10 +3,12 @@ masked gain run through them? A read of E62's saved step-30 states on its 200 re
 overwritten or deleted. Plan: reports/plans/2026-11-02_plan_e62-copying-heads.md, "Amendment 4 (2026-11-02)". Rules and expected
 values: results/predictions_amend4.json (committed first; the run refuses otherwise; never edited), `commute.copying`.
 
-  1 control, alone, W0 at the second A (half - 1): target and masked log-odds of B, head (2,4) on and off, off in the forward only, never
-    in Γ's pass; `a` and S_old from W0's own Γ pass. Exit 1 on a miss, or on k = 0 or k over half the alive set.
-  2 re-read, W0 and the six states: L00, L01 - L00 against amend3.json; the zero update's gain and its level under closing. Exit 1 on a miss.
-  3 the six states: alignment, closing share, its random reference; beside, no rule: the k largest openings closed, (2,3)'s target share.
+  1 control, alone, W0 at the second A (half - 1): target and masked log-odds of B, intact, (2,4) off (in the forward only, never in Γ's pass)
+    and pair-broken; `a` = W0's gate at the second A, intact minus pair-broken. Exit 1 on a miss, or on k = 0 or k over half the alive set.
+  2 does S_old carry W0's own copying? W0's closing at the second A against random sets. A miss is a verdict, not a stop.
+  3 re-read, W0 and the six states: L00, L01 - L00 against amend3.json; the zero update's gain and its level under closing. Exit 1 on a miss.
+  4 the six states: alignment, closing share, its random reference, the k largest openings closed; beside, no rule: every alive closed, the k
+    largest outside S_old, the half - 2 contrast, the positive parts' cosine, (2,3)'s target share.
 Masked forward and Γ bf16 (autocast, as Amendment 3), target model fp32. results/amend4.json after every stage and state; every number printed.
 """
 
@@ -41,10 +43,10 @@ def dump(out: dict[str, Any]) -> None:
     OUT.write_text(json.dumps(jsonable(out), indent=1, sort_keys=True))
 
 
-def stop(out: dict[str, Any], why: str, verdict: str | None = None) -> NoReturn:
+def stop(out: dict[str, Any], why: str, verdict: dict[str, Any] | None = None) -> NoReturn:
     out["stopped"] = why
     if verdict:
-        out["verdict"] = verdict
+        out["verdict"] = verdict  # the same dict as a finished run's, from `mask_test`
     dump(out)
     sys.exit(f"STOP: {why}: tell the lead")
 
@@ -55,34 +57,51 @@ def note(out: dict[str, Any], key: str, rec: dict[str, Any]) -> None:
     log(f"[{key}] {json.dumps(jsonable(rec))}")
 
 
-def stage1(R: Reads, p: Tensor, H: list[CP.Head], th: dict[str, Any], out: dict[str, Any]) -> tuple[Gates, Tensor, Tensor]:
-    """W0 only. Γ's pass carries no ablation; `at` only moves the read position, as `gates` does not use it (tests/test_copying.py)."""
-    w, at, alive = R.W["copy"], dataclasses.replace(R, half=R.half - 1), R.ctx.lift["alive"]
-    if not CP.second_a_holds(w[:, : R.n], p, w[:, -1], R.half):
-        stop(out, "stage 1: half - 1 is not the second A on every window, or half - 2 is A or B")
-    g0 = R.gates(w)
-    target, target_off = at.lo(w, []), at.lo(w, H)
-    mask, mask_off = at.masked(w, g0, []), at.masked(w, g0, H)
-    p_b = KD.geo_rate(CP.read_lo(R.ctx.net, w, at.half, R.n, readout=ST.logp_at))
-    second, before = CP.gate_means(g0, alive, R.half - 1), CP.gate_means(g0, alive, R.half - 2)
-    a = second - before
+def stage1(R: Reads, p: Tensor, H: list[CP.Head], th: dict[str, Any], out: dict[str, Any]) -> tuple[Gates, Gates, Tensor, Tensor, Tensor]:
+    """W0 only. No Γ pass carries an ablation; `at` only moves the read position, as `gates` does not use it (tests/test_copying.py)."""
+    w, b, at, alive, n = R.W["copy"], R.broken, dataclasses.replace(R, half=R.half - 1), R.ctx.lift["alive"], R.n
+    if not (CP.second_a_holds(w[:, :n], p, w[:, -1], R.half) and CP.pair_broken_holds(w[:, :n], b[:, :n], p, R.half) and torch.equal(w[:, -1], b[:, -1])):
+        stop(out, "stage 1: half - 1 is not the second A on every window, half - 2 is A or B, or the pair-broken windows differ elsewhere than the first A")
+    g0, gb = R.gates(w), R.gates(b)
+    t, m = {"on": at.lo(w, []), "off": at.lo(w, H), "broken": at.lo(b, [])}, {"on": at.masked(w, g0, []), "off": at.masked(w, g0, H), "broken": at.masked(b, gb, [])}
+    level = {f"{x}_{k}": float(v.mean()) for x, d in (("target", t), ("mask", m)) for k, v in d.items()}
+    falls = {"fall": level["target_on"] - level["target_off"], "lean": level["target_on"] - level["target_broken"], "mask_fall": level["mask_on"] - level["mask_off"], "mask_lean": level["mask_on"] - level["mask_broken"]}
+    p_b = KD.geo_rate(CP.read_lo(R.ctx.net, w, at.half, n, readout=ST.logp_at))
+    second = CP.gate_means(g0, alive, R.half - 1)
+    a, a2 = second - CP.gate_means(gb, alive, R.half - 1), second - CP.gate_means(g0, alive, R.half - 2)
     old = CP.s_old(a)
-    means = {"target": float(target.mean()), "target_off": float(target_off.mean()), "mask": float(mask.mean()), "mask_off": float(mask_off.mean())}
-    status = CP.second_a_control(p_b, means["target"], means["target_off"], means["mask"], means["mask_off"], th)
-    n, k = len(a), len(old)
-    rec = {"p_b": p_b, **means, "target_fall": means["target"] - means["target_off"], "mask_fall": means["mask"] - means["mask_off"], "status": status, "n_alive": n, "k": k,
-           "a_positive": int((a > 0).sum()), "a_mass_positive": float(a.clamp_min(0).sum()), "top_a": [float(x) for x in a[old[:10]]], "second_mean": float(second.mean()), "before_mean": float(before.mean())}
-    note(out, "stage1_control", rec)
-    if status != "pass":
-        stop(out, f"stage 1: {status}", "control_failed")
-    if n != th["n_alive"]:
-        stop(out, f"stage 1: {n} alive subcomponents, filed {th['n_alive']}")
-    if k == 0 or k > n // 2:
-        stop(out, f"stage 1: k = {k} of {n}", "unreadable")
-    return g0, a, old
+    status = CP.second_a_control(p_b, falls["fall"], falls["lean"], falls["mask_fall"], falls["mask_lean"], th)
+    N, k = len(a), len(old)
+    note(out, "stage1_control", {"p_b": p_b, **level, **falls, "status": status, "n_alive": N, "k": k, "a_positive": int((a > 0).sum()), "a_mass_positive": float(a.clamp_min(0).sum()),
+                                 "top_a": [float(x) for x in a[old[:10]]], "half2_k": len(CP.s_old(a2)), "half2_overlap": int(torch.isin(old, CP.s_old(a2)).sum()), "cos_a_half2": CP.cosine(a, a2)})
+    if status != "pass" or k == 0 or k > N // 2:
+        stop(out, f"stage 1: {status}, k = {k} of {N}", CP.mask_test(status, False, k, N, [], [], th))
+    if N != th["n_alive"]:
+        stop(out, f"stage 1: {N} alive subcomponents, filed {th['n_alive']}")
+    return g0, gb, a, a2, old
 
 
-def stage2(R: Reads, g0: Gates, old: Tensor, A3: dict[str, Any], th: dict[str, Any], out: dict[str, Any]) -> tuple[dict[str, Tensor], dict[str, Tensor]]:
+def stage2_carries(R: Reads, g0: Gates, gb: Gates, a: Tensor, old: Tensor, S: dict[str, Any], th: dict[str, Any], out: dict[str, Any]) -> bool:
+    """W0's closing at the second A: S_old's gates set to their pair-broken values at every position, on the intact tokens, as a share of the
+    masked lean. Random sets of k opened by `a`, outside S_old, closed the same way. A miss blocks the two readings; the states are still read."""
+    at, w, alive = dataclasses.replace(R, half=R.half - 1), R.W["copy"], R.ctx.lift["alive"]
+    base = at.masked(R.broken, gb, [])
+    d = at.masked(w, g0, []) - base
+
+    def close(idx: Tensor) -> tuple[float, float, float, float]:
+        return at.share(d, at.masked(w, CP.closed(g0, gb, idx, alive), []) - base)
+
+    pool, fell_back = CP.closing_pool(a, old)
+    G, G_closed, share, sd = close(old)
+    randoms = [close(s)[2] for s in CP.random_sets(pool, len(old), S["random_draws"], S["random_seed"])]
+    median = statistics.median(randoms)
+    carries = CP.old_carries(share, median, th)
+    note(out, "stage2_carries", {"mask_lean": G, "lean_closed": G_closed, "share": share, "share_sd": sd, "random_shares": randoms, "random_median": median, "pool_size": len(pool), "pool_fell_back": fell_back,
+                                 "all_alive_share": close(torch.arange(len(a)))[2], "carries": carries})
+    return carries
+
+
+def stage3(R: Reads, g0: Gates, old: Tensor, A3: dict[str, Any], th: dict[str, Any], out: dict[str, Any]) -> tuple[dict[str, Tensor], dict[str, Tensor]]:
     """The re-read, before anything is read on top of it. amend3.json's gates and masked forward are the same calls on the same windows."""
     alive = R.ctx.lift["alive"]
     L00 = {m: R.masked(w, g0, []) for m, w in R.W.items()}
@@ -100,14 +119,14 @@ def stage2(R: Reads, g0: Gates, old: Tensor, A3: dict[str, Any], th: dict[str, A
     diffs = [*rec["L00_diff"].values(), *(r["diff"] for r in rec["states"].values())]
     rec["max_diff"] = max(diffs)
     rec["exact"] = rec["max_diff"] == 0.0  # Amendment 3 read 0 against Amendment 2 on the L40; false here is worth a look even within the tolerance
-    note(out, "stage2_reread", rec)
+    note(out, "stage3_reread", rec)
     if rec["max_diff"] > th["reread_tol"] or any(v > th["zero_tol"] for d in ("zero_gain_max_abs", "zero_closed_max_abs") for v in rec[d].values()):
-        stop(out, "stage 2: the masked gain does not re-read amend3.json, or the zero update's masked gain or its level under closing is not L00")
+        stop(out, "stage 3: the masked gain does not re-read amend3.json, or the zero update's masked gain or its level under closing is not L00")
     return L00, on
 
 
-def read_state(R: Reads, name: str, g0: Gates, a: Tensor, old: Tensor, d: Tensor, L00: Tensor, t0: tuple[Tensor, Tensor], other: list[CP.Head], w0_marker: Tensor, S: dict[str, Any]) -> tuple[dict[str, Any], Tensor]:
-    """One state. `d` is its per-window masked gain from stage 2, `L00` W0's masked log-odds, `t0` W0's target log-odds, other head on and off."""
+def read_state(R: Reads, name: str, g0: Gates, a: Tensor, a2: Tensor, old: Tensor, d: Tensor, L00: Tensor, t0: tuple[Tensor, Tensor], other: list[CP.Head], w0_marker: Tensor, S: dict[str, Any]) -> tuple[dict[str, Any], Tensor]:
+    """One state. `d` is its per-window masked gain from stage 3, `L00` W0's masked log-odds, `t0` W0's target log-odds, other head on and off."""
     dW, w, alive, k = R.dws[name], R.W[map_of(name)], R.ctx.lift["alive"], len(old)
     g1 = R.gates(w, dW)
     delta = CP.gate_means(g1, alive, R.half) - w0_marker
@@ -119,22 +138,25 @@ def read_state(R: Reads, name: str, g0: Gates, a: Tensor, old: Tensor, d: Tensor
     pool, fell_back = CP.closing_pool(delta, old)
     randoms = [close(s)[2] for s in CP.random_sets(pool, k, S["random_draws"], S["random_seed"])]
     chance, chance_sd = CP.chance_cosine(delta, a, S["chance_draws"], S["chance_seed"])
-    return {"M": M, "M_closed": M_closed, "share": share, "share_sd": sd, "cos": CP.cosine(delta, a), "chance": chance, "chance_sd": chance_sd,
-            "random_shares": randoms, "random_median": statistics.median(randoms), "pool_size": len(pool), "pool_fell_back": fell_back, "n_opened": int((delta > 0).sum()),
-            "old_opened": int((delta[old] > 0).sum()), "largest_k_share": close(CP.largest(delta, k))[2],
-            "other_head_target_share": R.share(R.lo(w, [], dW) - t0[0], R.lo(w, other, dW) - t0[1])[2]}, delta
+    big = CP.largest(delta, k)
+    scored = {"M": M, "M_closed": M_closed, "share": share, "share_sd": sd, "cos": CP.cosine(delta, a), "chance": chance, "chance_sd": chance_sd, "random_shares": randoms,
+              "random_median": statistics.median(randoms), "largest_k_share": close(big)[2]}
+    reported = {"pool_size": len(pool), "pool_fell_back": fell_back, "n_opened": int((delta > 0).sum()), "old_opened": int((delta[old] > 0).sum()), "cos_positive": CP.cosine(delta.clamp_min(0), a.clamp_min(0)),
+                "largest_overlap": int(torch.isin(big, old).sum()), "largest_outside_share": close(CP.largest(delta, k, old))[2], "all_alive_share": close(torch.arange(len(delta)))[2],
+                "half2_cos": CP.cosine(delta, a2), "half2_share": close(CP.s_old(a2))[2], "other_head_target_share": R.share(R.lo(w, [], dW) - t0[0], R.lo(w, other, dW) - t0[1])[2]}
+    return {**scored, **reported}, delta
 
 
-def stage3(R: Reads, g0: Gates, a: Tensor, old: Tensor, L00: dict[str, Tensor], on: dict[str, Tensor], other: list[CP.Head], S: dict[str, Any], out: dict[str, Any]) -> dict[str, Tensor]:
+def stage4(R: Reads, g0: Gates, a: Tensor, a2: Tensor, old: Tensor, L00: dict[str, Tensor], on: dict[str, Tensor], other: list[CP.Head], S: dict[str, Any], out: dict[str, Any]) -> dict[str, Tensor]:
     w0_marker = CP.gate_means(g0, R.ctx.lift["alive"], R.half)
     t0 = {m: (R.lo(w, []), R.lo(w, other)) for m, w in R.W.items()}
-    rec: dict[str, Any] = out.setdefault("stage3_states", {})
+    rec: dict[str, Any] = out.setdefault("stage4_states", {})
     deltas: dict[str, Tensor] = {}
     for name in R.dws:
         m = map_of(name)
-        rec[name], deltas[name] = read_state(R, name, g0, a, old, on[name] - L00[m], L00[m], t0[m], other, w0_marker, S)
+        rec[name], deltas[name] = read_state(R, name, g0, a, a2, old, on[name] - L00[m], L00[m], t0[m], other, w0_marker, S)
         dump(out)
-        log(f"[stage3 {name}] {json.dumps(jsonable(rec[name]))}")
+        log(f"[stage4 {name}] {json.dumps(jsonable(rec[name]))}")
     return deltas
 
 
@@ -159,7 +181,8 @@ def load(a: argparse.Namespace) -> tuple[Reads, dict[str, Any], dict[str, Any], 
         sys.exit("the two maps' windows differ: W0's one Γ pass does not serve both")
     means = torch.load(large / "heads.pt", weights_only=False)["means"].to(ctx.net.device)
     dws = {name: torch.load(large / f"{name}.pt", weights_only=True, map_location="cpu") for name in NAMES}
-    R = Reads(ctx, half, n, means, S["n_boot"], W, torch.empty(0), dws, run)
+    b = CP.broken_pair(v["read"].tokens, v["p_read"], v["pools"]["keys"], half, S["control_seed"])  # as amend2.py
+    R = Reads(ctx, half, n, means, S["n_boot"], W, torch.cat([b, v["target"]["copy"]["read"][:, None]], 1), dws, run)
     return R, P, A3, v["p_read"], {"git_head": git("rev-parse", "HEAD").stdout.strip(), "predictions_sha256": KD.sha256(PRED), "host": torch.cuda.get_device_name() if torch.cuda.is_available() else "none"}
 
 
@@ -173,14 +196,16 @@ def main() -> None:
     S, th = P["settings"], P["thresholds"]
     heads = lambda key: [(int(x), int(y)) for x, y in S[key]]
     log(f"[host] {out['host']}: masked forward and Γ bf16, target model fp32")
-    g0, s, old = stage1(R, p, heads("head"), th, out)
-    L00, on = stage2(R, g0, old, A3, th, out)
-    deltas = stage3(R, g0, s, old, L00, on, heads("other_head"), S, out)
-    torch.save({"a": s, "S_old": old, "delta": deltas}, a.large.resolve() / "amend4_vectors.pt")
-    states = out["stage3_states"]
-    v = CP.mask_test(out["stage1_control"]["status"], len(old), len(s), [states[n] for n in NAMES[:3]], [states[n] for n in NAMES[3:]], th)
+    g0, gb, s, s2, old = stage1(R, p, heads("head"), th, out)
+    carries = stage2_carries(R, g0, gb, s, old, S, th, out)
+    del gb
+    L00, on = stage3(R, g0, old, A3, th, out)
+    deltas = stage4(R, g0, s, s2, old, L00, on, heads("other_head"), S, out)
+    torch.save({"a": s, "a_half2": s2, "S_old": old, "delta": deltas}, a.large.resolve() / "amend4_vectors.pt")
+    states = out["stage4_states"]
+    v = CP.mask_test(out["stage1_control"]["status"], carries, len(old), len(s), [states[n] for n in NAMES[:3]], [states[n] for n in NAMES[3:]], th)
     note(out, "verdict", v)
-    log(f"[verdict] {v['verdict']} P1 {v['P1']} P2 {v['P2']} P3 {v['P3']}")
+    log(f"[verdict] {v['verdict']} carries {carries} P1 {v['P1']} P2 {v['P2']} P3 {v['P3']}")
 
 
 if __name__ == "__main__":

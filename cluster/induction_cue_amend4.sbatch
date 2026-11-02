@@ -3,12 +3,13 @@
 # when W0 copies, and does the masked gain run through those subcomponents? Plan: reports/plans/2026-11-02_plan_e62-copying-heads.md,
 # "Amendment 4 (2026-11-02)". Rules: experiments/induction_cue/results/predictions_amend4.json (amend4.py refuses unless it is committed unchanged).
 #   cd ~/commute-agents/<role> && sbatch cluster/induction_cue_amend4.sbatch
-# Exit 1 at a missed control: stage 1 (W0's own mask at the second A, or k out of range), stage 2 (re-read of amend3.json, zero update).
+# Exit 1 at a missed control: stage 1 (W0's own mask at the second A, or k out of range), stage 3 (re-read of amend3.json, zero update).
+# Stage 2's miss is a verdict, old_pieces_not_carrying, and no stop.
 # Inputs (read): experiments/induction_cue/results/{run,amend3}.json, results/large/{windows,heads}.pt, {copy,lookup}_s{0,1,2}.pt
 # (sha256 checked against run.json), experiments/transport_test/results/large/alive.pt, the VPD artifacts.
 # Writes experiments/induction_cue/results/amend4.json (refuses if it exists), results/large/amend4.out and, at the end,
-# results/large/amend4_vectors.pt (`a`, S_old, each state's mask change; under 1 MB). Deletes nothing, commits nothing.
-# Expected about 5 min on a debug L40 (Amendment 3, with as many forwards, took 4.5 min).
+# results/large/amend4_vectors.pt (`a`, `a_half2`, S_old, each state's mask change; under 1 MB). Deletes nothing, commits nothing.
+# Expected about 6 min on a debug L40 (Amendment 3, with fewer forwards, took 4.5 min).
 #SBATCH --job-name=commute-e62-amend4
 #SBATCH --partition=compute
 #SBATCH --account=c11
