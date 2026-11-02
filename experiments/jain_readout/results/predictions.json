@@ -85,10 +85,10 @@
   "lin_margin": 0.1,
   "early_checks": {
    "250": {
-    "max": 5
+    "max": 6
    },
    "2000": {
-    "max_over_model": 0.5
+    "max_over_model": 1
    }
   }
  },
@@ -299,5 +299,18 @@
   },
   "rule_as_first_filed": "stage 0 readouts: held-out loss of the last block's readout minus the model's own <= loss_gap_max 0.5 (the plan's P1 floor), train rows [\"train\", 32768, 8192], readout_max_minutes 15",
   "what_would_change_it": "held-in ~ held-out but over_lin > 0.1: optimisation limit, amend iterations before the first decay, not the margin; lin_minus_model > 0.3: the reference is loose, set the margin from the held-in/held-out gap; held-out gap still > 0.5 after fresh data: report P1 unreadable rather than widen the rule (Fable)"
+ },
+ "amended_2026_11_02_step250": {
+  "date": "2026-11-02",
+  "what": "step-250 early check: last-block train-batch loss bar raised from 5.0 to 6.0 nats; step-2000 bar (last-block batch loss over the model's own) raised from 0.5 to 1.0 nats",
+  "why": "job 48344 stopped at 5.0088 against 5.0; the 5.0 bar sat 0.27 nats above one batch reading of 4.7264 in job 48279, with batch sd ~0.14, so normal batch noise could miss it. The check exists to catch a readout that is not learning (step 0 reads ~10.9); 6.0 is still far below that and above both observed runs (4.73, 5.01). Decided by the lead as a clear rule fix (stage-0 early check, not a prediction); P1-P3 and every other check unchanged. The step-2000 bar of 0.5 was set from job 48279, whose readouts had overfit (3.20 at step 2000, below the model); on fresh data the gap at step 2000 is unmeasured, and the real quality test is stage 0's L_last <= L_lin + 0.1 after training, so the early check only needs to catch a stalled readout.",
+  "rule_as_before": {
+   "250": {
+    "max": 5
+   },
+   "2000": {
+    "max_over_model": 0.5
+   }
+  }
  }
 }
