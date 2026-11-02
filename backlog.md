@@ -354,3 +354,4 @@ Deferred ideas and loose ends. Date each entry.
   important. Run E12's copy and random-map tasks (same states or seeds) through teacher training and read the route
   split on those states: does e_gate still separate the two classes, and where does the copy's gain sit? $0, saved
   67M states; `/design` first. Not urgent: after the base-model control work (E34 Amendment 8).
+  Corrected 2026-11-02 by the plan (`reports/plans/2026-11-02_plan_e12-teacher-route-split.md`): on teacher training's own state r does depend on the map, since Γ reads the student's activations (rand32 0.187 to 0.132); the cipher reading is E42's, not E43's; only the teachers are saved, students are regenerated.

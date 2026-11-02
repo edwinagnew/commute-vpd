@@ -90,7 +90,7 @@ None of these was filed, none changes a verdict, and none is a tested cause.
 
 ### 1. Is block 0's holding explained by the prior tilt?
 
-The filed line on what the rule is blind to names a tilt: common elicit values train on up to 2,000 windows and cipher values on about 350, worth up to about 1.7 nats in rank. The saved data do not settle the tilt. The tilt is visible, and it never reaches the bar here.
+The filed line on what the rule is blind to names a tilt: common elicit values train on up to 2,000 windows and cipher values on about 350, worth up to about 1.7 nats in rank. The saved data do not settle the tilt, and neither did the filed capped-readout check below. The tilt is visible, and it never reaches the bar here.
 
 ![tilt](../experiments/readout64/figures/tilt.png)
 
@@ -112,7 +112,21 @@ The filed line on what the rule is blind to names a tilt: common elicit values t
 
 **Provisional reading.** The filed clause passes as filed, but block 0's pass is not evidence that W0 computes the map there. It fits the residual carrying the key's identity and the sample pairing the two. Blocks 1 and 2 are not clear of this either, with overlaps of 19 and 18. A correlation cannot show the readout used those windows, and the elicit values were chosen from W0's guesses, so Pile pairs and W0's guesses share a cause. These numbers cannot separate "block 0 holds the map" from "the key's token identity plus Pile co-occurrence gives it". The specificity guard stops frequency, and it does not stop a one-token co-occurrence.
 
-**What cannot be read from saved data.** The capped readout never went through the holding rule, and per-window logits were not saved. **The $0 test that settles the tilt** is filed, exploratory and not yet run: `experiments/readout64/capped.py`, with `results/predictions_capped.json`. It puts the saved capped readout through the rule at every block, one debug job of about a minute with no training. At least 6 cipher keys held means the tilt is back. At most 2, with the last block at 15 of 20 or more, means it is out. Between those, 3 to 5 is partial, and a weaker last block leaves it open. A cipher rank moving from 45 to about 32 means nothing, because removing the tilt moves an uninformative value towards mid-rank under every answer. Testing the co-occurrence account takes a retrain, without the pair windows or on the residual before block 0. E64's filed cap is one training run, so that is a new experiment with its own filing and it would not change this verdict.
+**The capped-readout check: no_power, as filed.** Job 48707 put the saved capped readout through the holding rule at every block, $0, 22 s, exploratory and reported only (`experiments/readout64/capped.py`, filing `results/predictions_capped.json`, result `results/capped.json`). The filed reading is `no_power`, so it settles neither the tilt nor the elicit case. The control needed the last block at 15 of W0's 20 or more, and it read 13. Under that case the filing does not read block 0's elicit count at all.
+
+![capped](../experiments/readout64/figures/capped.png)
+
+**Beside it, unfiled.** At equal position counts the cipher stays at 1 of 32 at every block, the same key each time, 1246. Elicit reads 17, 17, 16 and 13 of W0's 20 at blocks 0 to 3. Elicit's 17 at block 0 is above every like-for-like table on the capped sample, which runs from 4 to 14 across the pseudocount, and the filing does not read it. W0 at the same flat prior holds 20 elicit keys and no cipher key, reported as the reference. Equal counts are 62 of the 64 values, since two elicit values have 147 and 26 windows.
+
+| capped readout, all windows | block 0 | block 1 | block 2 | block 3 |
+|---|---|---|---|---|
+| elicit keys of W0's 20 | 17 | 17 | 16 | 13 |
+| all elicit keys held, of 32 | 23 | 22 | 22 | 14 |
+| cipher keys held, of 32 | 1 | 1 | 1 | 1 |
+
+The fit half reads 15, 15, 15 and 13 of 17 for elicit, and 0 cipher. The filing does not read the cipher's median rank: it reads 40, 34, 37 and 39 at blocks 0 to 3.
+
+**What is left open.** The tilt is not ruled out. The cipher's near absence comes from a readout whose last block missed its own control, so poor rows could also be why cipher keys are missing. Even with that control met, the check has a limit: every cipher pair is absent from the training text. So a readout that learns the next-token lookup cannot hold a cipher key whatever the prior or W0 does, and the cipher's absence does not tell the tilt, the missing pairs and W0's own knowledge apart. Whether block 0's holding comes from pair counts is also open. Block 0 keeps its count here while the sample holds about half the pairs, and it still fits the count table's pattern: by the full sample's pair counts it holds 19 of 20 keys with a count of at least 2, and 4 of 10 others. Testing the co-occurrence account takes a retrain, without the pair windows or on the residual before block 0. E64's filed cap is one training run, so that is a new experiment with its own filing and it would not change this verdict.
 
 ### 2. What do the negative shares mean?
 
@@ -180,7 +194,7 @@ One readout seed, one key draw, the 67M model, about 3 windows per key, 48 scori
 The filed tree stops here and tells the user. These are not re-readings of E64.
 
 1. **The user decides the line.** The options are to wait for E55 C2 on the counting model, or the Qwen table, since this pair's causal check came back unreadable.
-2. **$0 diagnostics if the line continues, no training and reported only.** The filed capped-readout job settles the tilt, with the readings above. The head's own row at the last block tells a metric fault from a row fault: near 1 means a better row could make an earlier removal readable, and short of 1 means the share itself needs replacing before any further removal. A wrong row on the states gives the shares a proper floor.
+2. **$0 diagnostics if the line continues, no training and reported only.** The head's own row at the last block tells a metric fault from a row fault: near 1 means a better row could make an earlier removal readable, and short of 1 means the share itself needs replacing before any further removal. A wrong row on the states gives the shares a proper floor.
 3. **A new experiment, with its own `/design` check and filing:** a readout retrained without the pair windows, or on the residual before block 0. If block 0 keeps its keys without the pairs, its holding is worth more than this report says. If it loses most of them, "held before the output" needs a stronger test than this rule.
 
 ## Departures from the literature
@@ -209,18 +223,16 @@ The filed tree stops here and tells the user. These are not re-readings of E64.
 
 ## Provenance
 
-Results `experiments/readout64/results/run.json`, committed at `60f0aa9`. Log `cluster/logs/commute-readout64-48611.out`. Job 48611, MATS `debug` QoS, about 1 min, $0, stage 0 passed. The run recorded `git_head` `e0f9364`, a merge after code commit `fcb049f`, with no difference in `experiments/readout64`, `src/commute/readout.py` or `cluster/readout64.sbatch`; the only dirty file was `experiments/qwen_sft/results/run.log`. Weights `results/large/readouts.pt` and `readouts_low_cap.pt`, sha256 in run.json. Figures from `experiments/readout64/plot.py`. Post-hoc count table `experiments/readout64/bigram_check.py`, `results/pile_bigrams.json`, added with this report, no model. Plan `reports/plans/2026-11-02_plan_baseline-next3-draft.md`; code review `reports/reviews/2026-11-02_review_e64-code.md`; independent check of this report `reports/reviews/2026-11-02_review_e64-analysis.md`, which confirmed the verdict and whose findings are applied here. Exploratory filing, not run: `experiments/readout64/results/predictions_capped.json`, `capped.py`, `cluster/readout64_capped.sbatch`. `predictions.json` unchanged.
+Results `experiments/readout64/results/run.json`, committed at `60f0aa9`. Log `cluster/logs/commute-readout64-48611.out`. Job 48611, MATS `debug` QoS, about 1 min, $0, stage 0 passed. The run recorded `git_head` `e0f9364`, a merge after code commit `fcb049f`, with no difference in `experiments/readout64`, `src/commute/readout.py` or `cluster/readout64.sbatch`; the only dirty file was `experiments/qwen_sft/results/run.log`. Weights `results/large/readouts.pt` and `readouts_low_cap.pt`, sha256 in run.json. Figures from `experiments/readout64/plot.py`. Post-hoc count table `experiments/readout64/bigram_check.py`, `results/pile_bigrams.json`, added with this report, no model. Plan `reports/plans/2026-11-02_plan_baseline-next3-draft.md`; code review `reports/reviews/2026-11-02_review_e64-code.md`; independent check of this report `reports/reviews/2026-11-02_review_e64-analysis.md`, which confirmed the verdict and whose findings are applied here. Exploratory check: `experiments/readout64/results/predictions_capped.json`, `capped.py`, `cluster/readout64_capped.sbatch`, job 48707, 22 s, $0, result `results/capped.json` at `a4b2357`, log `cluster/logs/commute-readout64-capped-48707.out`; filed reading `no_power`, and it changes neither the verdict nor `predictions.json`. `predictions.json` unchanged.
 
 ## Not run
 
-- The capped readout through the holding rule: filed, not yet submitted.
 - The scored rows with the sample's prior taken out, through the holding rule.
 - Removal at blocks 1 and 2; only block 0 and the last block ran.
 - The residual's component along the row on W0 and on each state, so the negative share's cause is untested.
 - Per-window logits and shares: only summaries were saved.
 - The readout row's angle to the model's output head at the last block, and the head's own row as a removal direction.
 - A wrong row on the fine-tuned states.
-- The capped readout's holding reading at the last block, until the filed job runs.
 - A readout on the residual before block 0.
 - A readout trained without the windows that pair a key with its own value.
 - A count table that conditions on the marker as well as the key.
