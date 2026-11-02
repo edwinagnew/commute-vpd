@@ -25,8 +25,8 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; puts t
 cd "$COMMUTE_REPO"
 stage=${1:-}
 case "$stage" in
-  rehearse | decompose) ;;
-  *) echo "usage: sbatch cluster/pcfg_c2.sbatch {rehearse,decompose}" >&2; exit 2 ;;
+  rehearse | noise | firststeps | decompose) ;;
+  *) echo "usage: sbatch cluster/pcfg_c2.sbatch {rehearse,noise,firststeps,decompose}" >&2; exit 2 ;;
 esac
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK

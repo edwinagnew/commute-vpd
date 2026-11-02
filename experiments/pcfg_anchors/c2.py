@@ -16,6 +16,9 @@ Stages (repo root, GPU):
   decompose  the full decomposition, resumed from results/large/c2/decomp_train.pt; exit 3 at the deadline (resubmit
              by hand), exit 0 with results/large/c2/decomp_final.pt. Refuses (exit 2) while predictions_c2.json is a
              draft.
+  noise      $0, never scored (plan section 8a): same-seed unbroken arms U1 and U2, E with evaluation, R with a resume,
+             400 steps each in fresh processes; results/c2_noise.json.
+  firststeps $0, never scored: 2,000 steps on the full schedules; results/c2_firststeps.json sets the early checks.
 `read` and `score` are written after the rehearsal's numbers are in the plan (plan, "Hand-off").
 
 Usage: python experiments/pcfg_anchors/c2.py {rehearse,decompose} [--deadline-min M]  (cluster/pcfg_c2.sbatch)
@@ -259,6 +262,71 @@ def stage_rehearse_resume() -> int:
     return 0 if guarded(res, "alive_after", alive_after) else 1
 
 
+# ---- GPU noise floor and first steps (plan section 8a; $0, never scored) ----
+
+NOISE_JSON, NOISE_DIR = RESULTS / "c2_noise.json", LARGE / "c2_noise"
+# (arm, with_eval, end): each leg is its own process. U1 against U2 is the noise floor; E adds evaluation, R a resume.
+NOISE_LEGS = (("U1", False, 400), ("U2", False, 400), ("E", True, 400), ("R", False, 200), ("R", False, 400))
+FIRST_JSON, FIRST_STEPS = RESULTS / "c2_firststeps.json", 2000
+
+
+def stage_noise_leg(leg: int) -> int:
+    """One leg of NOISE_LEGS at REHEARSAL's schedule: its losses and final parameters go to files for `stage_noise`."""
+    arm, with_eval, end = NOISE_LEGS[leg]
+    sz = REHEARSAL
+    cfg = D.load_config(CONFIG, steps=sz.steps)
+    _, step, recs = decomp_run(cfg, NOISE_DIR / f"{arm}_train.pt", D.Plan(end, sz.save_every, sz.log_every), with_eval)
+    assert step == end
+    losses = NOISE_DIR / f"{arm}_losses.json"
+    old = json.loads(losses.read_text()) if losses.exists() else {}
+    write_json(losses, {**old, **{str(r["step"]): r["loss/total"] for r in recs if "loss/total" in r}})
+    return 0
+
+
+def param_diff(a: str, b: str) -> dict[str, Any]:
+    """Largest absolute parameter difference between two arms' last saves, and each logged total loss difference."""
+    sd_a, sd_b = (torch.load(NOISE_DIR / f"{x}_train.pt", map_location="cpu", weights_only=False)["model"] for x in (a, b))
+    diffs = {k: float((sd_a[k].float() - sd_b[k].float()).abs().max()) for k in sd_a}
+    la, lb = (json.loads((NOISE_DIR / f"{x}_losses.json").read_text()) for x in (a, b))
+    return {"max_abs_param_diff": max(diffs.values()), "worst_param": max(diffs, key=lambda k: diffs[k]),
+            "abs_loss_total_diff": {s: abs(la[s] - lb[s]) for s in la}}  # fmt: skip
+
+
+def stage_noise() -> int:
+    """Every leg in a fresh process, then the three comparisons against U1. Plan section 8a holds the reading rule."""
+    NOISE_DIR.mkdir(parents=True, exist_ok=True)
+    for p in NOISE_DIR.iterdir():
+        p.unlink()  # a stale training file would be resumed from
+    for leg in range(len(NOISE_LEGS)):
+        log(f"noise: leg {NOISE_LEGS[leg]}")
+        rc = subprocess.run([sys.executable, __file__, "noise-leg", "--leg", str(leg)], check=False).returncode
+        if rc != 0:
+            return rc
+    res = {f"U1_vs_{b}": param_diff("U1", b) for b in ("U2", "E", "R")}
+    write_json(NOISE_JSON, res)
+    log(f"noise: {res}")
+    for p in NOISE_DIR.glob("*_train.pt"):
+        p.unlink()  # 3.35 GB each
+    return 0
+
+
+def stage_firststeps() -> int:
+    """FIRST_STEPS steps on the full run's schedules, evaluated at 0, 1,000 and the end: the values the scored run's
+    early checks are set from. Same seed and streams as the scored run; its file is not resumed from."""
+    cfg = D.load_config(CONFIG, steps=FULL.steps)
+    ck = LARGE / "c2_firststeps_train.pt"
+    ck.unlink(missing_ok=True)
+    torch.cuda.reset_peak_memory_stats()
+    d = fresh(cfg)
+    train, ev = data(cfg)
+    step, recs = D.run(d, train.get, ck, D.Plan(FIRST_STEPS, FIRST_STEPS, FULL.log_every), ev, log=log)
+    train.close()
+    recs.append({"step": step, "eval": D.evaluate(d, ev, step)})
+    write_json(FIRST_JSON, {"note": "$0, never scored; the full run's schedules", "records": recs, **D.memory()})
+    ck.unlink()
+    return 0
+
+
 # ---- the full decomposition ----
 
 
@@ -284,13 +352,16 @@ def stage_decompose(deadline_min: float) -> int:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("stage", choices=("rehearse", "rehearse-resume", "decompose"))
+    ap.add_argument("stage", choices=("rehearse", "rehearse-resume", "noise", "noise-leg", "firststeps", "decompose"))
     ap.add_argument("--deadline-min", type=float, default=22.0)
+    ap.add_argument("--leg", type=int, default=0)
     a = ap.parse_args()
     assert PRED_C2.exists(), f"{PRED_C2} is missing: predictions are filed before any run"
     log(f"c2 {a.stage} on {torch.cuda.get_device_name()}")
-    stages = {"rehearse": stage_rehearse, "rehearse-resume": stage_rehearse_resume}
-    sys.exit(stages[a.stage]() if a.stage in stages else stage_decompose(a.deadline_min))
+    stages: dict[str, Callable[[], int]] = {"rehearse": stage_rehearse, "rehearse-resume": stage_rehearse_resume, "noise": stage_noise,
+                                            "noise-leg": lambda: stage_noise_leg(a.leg), "firststeps": stage_firststeps,
+                                            "decompose": lambda: stage_decompose(a.deadline_min)}  # fmt: skip
+    sys.exit(stages[a.stage]())
 
 
 if __name__ == "__main__":
