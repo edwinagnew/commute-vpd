@@ -2,7 +2,7 @@
 
 *2026-11-02, coding agent. Plan `reports/plans/2026-11-02_plan_e12-amend2-rand32b-fall.md`; code review `reports/reviews/2026-11-02_review_e12-amend2-code.md`; predictions `experiments/new_vs_existing/results/predictions_amend2.json`, filed before the run and scored as filed; notebook `notebooks/E12_new_vs_existing.ipynb`, last section; figures from `experiments/new_vs_existing/plot_amend2.py`. Reference: `reports/analyses/2026-11-02_analysis_e12-teacher-route-split.md`, called Amendment 1 below.*
 
-We retrained six students of fine-tunes on two random-map tables, and wrote the fine-tune's importance values back into each student to see which values restore the falling term. The fall survives a second batch order, and nearly all of it comes back from thousands of subcomponents outside the switched-on sets; on total weight size these students end larger than their teachers, not smaller. For `GOALS.md`, on these two tables and this position, a student keeps its fine-tune's behaviour but not its subcomponents or weights, so "keeps its re-switching" means nats only, and the cause stays open.
+We retrained six students of fine-tunes on two random-map tables, and wrote the fine-tune's importance values back into each student to see which values restore the falling term. The fall survives a second batch order. About seven-eighths of it comes back from the block of everything outside the switched-on sets, which also holds 97% of the change in values, so this says little about which subcomponents carry it. The 300 most changed give back a third. On total weight size these students end larger than their teachers, not smaller. For `GOALS.md`: on the second table a student keeps its fine-tune's P(target), but loses about a fifth of the re-switching term and part of the switched-on set. On the first table it keeps the term and most of the set. On both, its weight change is far from its teacher's. So P(target) does not imply the term or the set, and the cause stays open.
 
 ## What we were trying to test
 
@@ -20,7 +20,7 @@ The quantities, in the filing's words:
 - **Writing back:** start from the student's values everywhere, write the fine-tune's values at the trigger position on a chosen group, and read the nats given back.
 - **The four blocks:** dropped is in the fine-tune's set only, kept is in both, added is in the student's only, and outside is every other alive subcomponent.
 
-**Controls.** Each fine-tune's $L_{01}$ and each order-0 student's $L_{01}$ had to reproduce Amendment 1's or the job stopped. All 22 filed checks passed, and every one of those differences read exactly 0. Writing back every value at every position gave the fine-tune's $L_{01}$ exactly.
+**Controls.** Each fine-tune's $L_{01}$ and each order-0 student's $L_{01}$ had to reproduce Amendment 1's or the job stopped. All 22 filed checks passed, and every one of those differences read exactly 0. Writing back every value at every position gave the fine-tune's $L_{01}$ exactly, on the first student only, as filed.
 
 **Limit carried.** A new circuit from old pieces reads "elicited" to VPD, and E50 Amendment 1 did not show W₀ performs the copy task. So these are "random maps", not "new" capability. This run has no copy table.
 
@@ -30,7 +30,7 @@ We leaned towards the fall holding across batch orders, with medium-high confide
 
 ## What we observed
 
-### 1. Does the fall survive a second batch order and a second forward? Yes, on both
+### 1. Does the fall survive a second batch order and a second way of rounding dW? Yes, on both
 
 ![the fall per state](../../experiments/new_vs_existing/figures/amend2_fall.png)
 
@@ -45,9 +45,9 @@ We leaned towards the fall holding across batch orders, with medium-high confide
 
 **Reading it.** The fall is not a batch-order effect on this table. The two second-order students fall by 1.16 and 0.93 nats, against the filed 0.5 line. Changing batch order moves $L_{01}$ by 0.066 and 0.090 nats here, about ten times Amendment 1's 0.007 and 0.009 on other tables. So this table's term is noisier, but that noise is under a tenth of the fall. Sharing first batches with the teacher does not show a consistent effect: it goes with a larger fall on seed 0 and a smaller one on seed 1.
 
-**The bf16 and hook pair.** The weights-form read runs W₀ + dW under bf16 autocast, and the hook form adds the student's offsets to the activations, the forward it trained on. The largest difference on any state is 0.0069 nats. That is under Amendment 1's batch-order noise of 0.007 and 0.009, and it is about 0.7% of the smallest fall. So the read's precision and forward do not carry the fall. This covers the students' side only: the fine-tune's values have one read, in weights form.
+**The bf16 and hook pair.** The weights-form read runs W₀ + dW under bf16 autocast, and the hook form adds the student's offsets to the activations, the forward it trained on. The largest difference on any state is 0.0069 nats. That is under Amendment 1's batch-order noise of 0.007 and 0.009, and it is about 0.7% of the smallest fall. So rounding dW into the weights does not carry the fall. Both forms read Γ under bf16 autocast, so this is not a test of precision as such. No read here is in fp32, on either the student or the fine-tune, and a fine-tune has only the weights form.
 
-### 2. Do students switch on their fine-tunes' subcomponents? Partly on the second table, and less than on the first
+### 2. Do students switch on their fine-tunes' subcomponents? Partly on the second table; lower than on the first by the filed order-0 rule
 
 ![Jaccard overlap per student](../../experiments/new_vs_existing/figures/amend2_sets.png)
 
@@ -62,11 +62,11 @@ We leaned towards the fall holding across batch orders, with medium-high confide
 
 Anchors: the second table's two fine-tunes overlap at 0.655, the first table's at 0.550, and the most similar fine-tunes across tables at 0.259. Order 0 against order 1 reads 0.944 and 0.889.
 
-**Reading it.** Partly. Second-table students overlap their own fine-tunes at 0.57 and 0.68, between the other table's 0.26 and the other seed's 0.66. So a student on this table is about as near its fine-tune as another seed's fine-tune is, and the claim "a student switches on the same subcomponents" is not made. First-table students read 0.83 and 0.91, higher by 0.15 against a batch-order change of 0.11. That gap rests on the second table's noise alone, since the first table had no second batch order, and its larger sets also damp each member's effect on the overlap.
+**Reading it.** Partly. Second-table students overlap their own fine-tunes at 0.57 and 0.68, either side of the other seed's 0.66 and well above the other table's 0.26. So a student on this table is about as near its fine-tune as another seed's fine-tune is, and the claim "a student switches on the same subcomponents" is not made. First-table students read 0.83 and 0.91, higher by 0.15 against a batch-order change of 0.11. Lower by the filed order-0 rule; a second-order student reaches 0.77, and with it the gap (0.833 − 0.773 = 0.060) falls under the noise of 0.111, which would read "no different". The noise comes from the second table alone: the first table's second batch order (`rand32_s0_o1`, Amendment 1) has no set read here, and its larger sets also damp each member's effect on the overlap.
 
-The sets shrink by near-threshold losses, not by large moves. A dropped member's mean falls by 0.03 to 0.13. Second-order students drop no member that their order-0 student kept, so the drop list is stable, and four members drop on all four students. Kept members' mean values barely move, by under 0.03 on either table.
+The sets shrink by near-threshold losses, not by large moves. A dropped member's mean falls by 0.03 to 0.13 at order 0, but from 0.022 at order 1 on the same table and from 0.004 on the first. Second-order students drop no member that their order-0 student kept, so the drop list is stable, and four members drop on all four students. The kept block's mean value moves by under 0.03 on either table; single kept members move by up to 0.094.
 
-### 3. Which values give the fall back? Those outside the switched-on sets
+### 3. Which values give the fall back? The block outside the sets, which also holds 97% of the change
 
 ![nats given back by block](../../experiments/new_vs_existing/figures/amend2_blocks.png)
 
@@ -79,9 +79,11 @@ The sets shrink by near-threshold losses, not by large moves. A dropped member's
 | first table s0 | 0.076 | 0.069 | 0.076 | 0.000 | −0.008 | −0.000 | 0.995 | 9,839 |
 | first table s1 | 0.084 | 0.075 | 0.076 | 0.003 | −0.004 | −0.001 | 0.904 | 9,827 |
 
-**Reading it.** Our lean was wrong. We leaned towards the kept block, and it gives back under 2% of the fall on either state. The outside block gives back 87% and 88%, on both batch orders. The trigger position holds 94% of the fall.
+**Reading it.** Our lean was wrong. We leaned towards the kept block, and it gives back about 2% or less of the fall on every second-table state (2.04% at most). The outside block gives back 87% and 88%, on both batch orders. The trigger position holds 94% of the fall.
 
 The outside block is not a group we chose. It is every alive subcomponent that neither state's rule switches on: 99.7% of the 9,881 alive subcomponents, against 22 to 28 in the two sets on this table. So its label says the fall is not in the set members, and says nothing about which of the others carry it.
+
+The reference is the block's share of the change. The outside block holds 97% to 98% of all absolute change in values on the second table and returns 87% to 88% of the fall. The set members hold 2.4% to 3.0% of the change and return 3.0% to 4.2% of the fall. So nats given back roughly follow where the change is, and the set members return slightly more per unit of change. "Outside" is close to the null, not a localisation.
 
 ### 4. How many subcomponents give it back? More than 300, though the ladder is a weak test here
 
@@ -98,9 +100,9 @@ The outside block is not a group we chose. It is every alive subcomponent that n
 | control s0: W₀ to fine-tune, term 6.01 | −0.007 | −0.006 | 0.007 | 0.071 | 0.485 | 1.321 |
 | control s1: W₀ to fine-tune, term 5.77 | −0.008 | −0.011 | 0.003 | 0.089 | 0.487 | 1.414 |
 
-**Reading it.** The top 300 of 9,881 give back 34% and 31% of the fall, under the filed half, so the label is "diffuse". The control reads diffuse as well, against our expectation of few or middling. Writing back the 30 most changed values from W₀ to the fine-tune gives 1% to 2% of a term that writing back every trigger value recovers at 95%. The filing says what follows: "the ladder is a weak test of concentration here and P4 is reported as such". This run cannot tell values that are truly spread from values that only work together.
+**Reading it.** The top 300 of 9,881 give back 34% and 31% of the fall, under the filed half, so the label is "diffuse". The control reads diffuse as well, against our expectation of few or middling. Writing back the 30 most changed values from W₀ to the fine-tune gives 1% to 2% of a term that writing back every trigger value recovers at 95%. The filing says what follows: "the ladder is a weak test of concentration here and P4 is reported as such". The control's top 30 contain 19 of 27 and 17 of 21 of the fine-tune's set members, and its smallest change is 0.35, so the set members alone hold almost none of the term itself: 1.2% and 1.5% when written back from W₀ at the trigger. This run cannot tell values that are truly spread from values that only work together.
 
-The dotted line shows that the top k hold about as much of the absolute change as they give back of the fall. The top 1,000 hold 63% of that change, and the top 3,000 hold 97%. First-table states are about as spread, at 34% to 36% for the top 300.
+The dotted line shows the top k's share of the absolute change. It is about the give-back share only near k = 300, at 1.1 to 1.2 times. The give-back share is about 1.5 times the change share at k = 100, 1.1 to 1.4 times at 30, and 5 to 11 times at 1, so the most changed return more per unit of change. The control sits below the student at every k, so "the control reads the same" holds for the label only. The top 1,000 hold 63% of that change, and the top 3,000 hold 97%. First-table states are about as spread, at 34% to 36% for the top 300.
 
 ### 5. What moves in the outside block, and can a rule at 0.3 see it? No
 
@@ -116,9 +118,11 @@ The dotted line shows that the top k hold about as much of the absolute change a
 | share of absolute change in those entries | 59% | 59% | 59% | 57% | 31% | 30% |
 | outside's share of all absolute change | 97% | 98% | 97% | 98% | 94% | 92% |
 
-**Reading it.** A set rule cannot see this, by construction. The rule reads a mean over 97 windows against 0.3, and no outside subcomponent's mean differs between fine-tune and student by even 0.13. Yet 59% of the absolute change sits in single-window moves larger than 0.3, on about a quarter of alive subcomponents. Those moves touch under 1% of window entries, so they average away. This is the filing's stated blind spot: values that move for a few keys only. Per-key values were not read, so "a few keys" is the blind spot's name and not a measured fact here.
+**Reading it.** A set rule cannot see this, by construction. The rule reads a mean over 97 windows against 0.3, and no outside subcomponent's mean differs between fine-tune and student by even 0.13. Yet 59% of the absolute change sits in per-window moves larger than 0.3, typically in two or three of the 97 windows for a given subcomponent, on about a quarter of alive subcomponents. A subcomponent with an entry over 0.3 has 3.2 to 3.3 such entries on average (median 2, up to 21 of 97), and only 31% to 33% have exactly one. Those moves touch under 1% of window entries, so they average away. This is the filing's stated blind spot: values that move for a few keys only. Per-key values were not read, so "a few keys" is the blind spot's name and not a measured fact here. Whether those moves return the nats was not tested.
 
-Subcomponents already on at W₀ are not the place either. The outside subcomponents with a fine-tune mean over 0.3 number 74 and 81, and they hold about 6% of the absolute change. Their net change is 0.13 and 0.23 of a net 19.6 and 18.5.
+Two further readings from the saved files. The top 5 of 97 windows hold 16% to 18% of these entries and 14% to 15% of the absolute change, against 5% if uniform: uneven, but not a few windows. The fine-tune is above the student on 62% to 66% of these entries on the second table and 41% to 44% on the first, which matches the net sign in section 6; this was not filed. The figure's 0.3 line is the rise over W₀ that the rule asks for, drawn on an axis of fine-tune minus student, which is a different quantity. The row "mean change over 0.3" reads 0 close to by construction, since every outside subcomponent has a rise of at most 0.3 on both sides.
+
+Of the outside subcomponents with a fine-tune mean over 0.3 (74 and 81, not "already on at W₀": W₀'s trigger values are not saved), about 6% of the absolute change sits there (5.9% to 6.7%), so they are not where most of the change is. Their net change is 0.13 and 0.23 of a net 19.6 and 18.5. This speaks to change, not to effect.
 
 ### 6. Is the outside block lowered? On the second table, net, with large moves both ways
 
@@ -133,11 +137,11 @@ Subcomponents already on at W₀ are not the place either. The outside subcompon
 | first table s0 | 199.8 | 203.7 | +1.9% | 14.0 | 17.8 |
 | first table s1 | 196.9 | 199.1 | +1.1% | 14.3 | 16.5 |
 
-**Reading it.** The filed clause records the fall as a spread lowering, and the summed values support the word on this table: students sit 6% to 7% below their fine-tunes across the block. It is a net figure, since over a third of the absolute change goes the other way. Absolute change is 2.3 times the first table's.
+**Reading it.** The filed clause records the fall as a spread lowering, recorded as filed; this run supports neither "spread" (it fails the ladder's control) nor "lowering" as a cause (it fails the first table). The summed values support the word "lowered" as a description on this table: students sit 6% to 7% below their fine-tunes across the block. It is a net figure, since over a third of the absolute change goes the other way. Absolute change is 2.3 times the first table's.
 
 Net lowering is not shown to be the mechanism. On the first table the block is net raised, and writing the fine-tune's values back still gives 0.08 nats, the same sign as the fall. Raises and lowers were not written back separately, so we name no cause. What was moved by an intervention is this: writing back this block returns 87% to 88% of the fall.
 
-### 7. Do the second table's students end smaller than their teachers? On the most changed matrix only
+### 7. Do the second table's students end smaller than their teachers? On the largest-matrix ratio, yes; on total size, no
 
 ![share of term lost against two size ratios](../../experiments/new_vs_existing/figures/amend2_size.png)
 
@@ -152,21 +156,11 @@ Net lowering is not shown to be the mechanism. On the first table the block is n
 
 **The two numbers divide different things.** `size_ratio` is $\|\delta W_s\|_F / \|\delta W_t\|_F$ over all 24 matrices together, in fp64, absolute (`amend2.py`, `change_stats`). Amendment 1's ratio is $\max_k \|\delta W_{s,k}\| / \|W_{0,k}\|$ divided by $\max_k \|\delta W_{t,k}\| / \|W_{0,k}\|$, each student or teacher taking its own most changed matrix, relative to W₀ (`component_training.py:160`, `finetune.py:182`, `plot_amend1.py`). Both are correct arithmetic on the same student and teacher. I read the teachers' total size directly from E46's files, and it matches what the results file implies to 15 digits.
 
-**Reading it.** "Ends smaller than its teacher" does not survive on the weights' own size. On all matrices together the second table's students end 1.50 to 1.54 times larger than their teachers. They are smaller only on the single most changed matrix. Since the student stays under 0.0226 relative everywhere, it must be larger than its teacher elsewhere, but its per-matrix sizes need the released U and V and were not read.
+**Reading it.** "Ends smaller than its teacher" does not survive on the weights' own size. On all matrices together the second table's students end 1.50 to 1.54 times larger than their teachers. The ratio of each model's own most changed matrix is under 1. Since the student is larger in total, it must be larger than its teacher on at least one matrix; how many was not read, and student and teacher may not share their most changed matrix. The teachers' top three matrices are close (0.442, 0.438, 0.420 on seed 0; 0.448, 0.446, 0.429 on seed 1), so a student could be below its teacher on several. Per-matrix sizes need the released U and V and were not read.
 
-What survives is smaller. The ratio is lower on the second table on both measures, because its teachers are 1.75 times the first table's by total size and its students only 1.18 times. The line at 1 means nothing on the total measure, where no state is near it. This is one correlation between two tables, and it is mostly teacher size. Amendment 1's review already said so. E42's points and the copy tables have no total size on file. So the four-setting correlation cannot be redrawn here, and the filing's clause applies: it "stays a correlation".
+What survives is smaller. The ratio is lower on the second table on both measures, because its teachers are 1.76 times the first table's by total size and its students only 1.18 times. The line at 1 means nothing on the total measure, where no state is near it. This is one correlation between two tables, and it is mostly teacher size. Amendment 1's review already said so. E42's points and the copy tables have no total size on file. So the four-setting correlation cannot be redrawn here, and the filing's clause applies: it "stays a correlation".
 
-**Corrections Amendment 1 needs**, for the lead. I did not edit these.
-
-| where | now reads | should say |
-|---|---|---|
-| report line 124 | "The second map table's students are the only ones in this run that end smaller than their teachers", and "The only ones that end smaller" | smaller on the most changed matrix only, 0.87 to 0.89; on all matrices together 1.51 to 1.54 times larger (Amendment 2) |
-| report line 124 | "the only teachers larger than a 1,000-step student reaches" | the same qualifier: on the most changed matrix |
-| report line 124 | "the distance between student and teacher weights could not be read" | read in Amendment 2 |
-| report lines 99 and 188 | students "ending 1.23 to 1.35 times their teachers"; "An overshoot in size" | say on the most changed matrix; the first map table's total ratio is 2.28 to 2.29, and the copy tables' is unread |
-| report lines 105 to 115, table and note | "student / teacher" | the note already names the measure; add that it is not total size and differs by a factor of 1.7 |
-| notebook cell 31 | "This table's students are the only ones here that end smaller than their teachers, and map students lose more as that ratio falls" | same qualifier and pointer |
-| `plot_amend1.py`, `reach()`, and `amend1_reach.png` | annotation "student larger than its teacher" right of the line at 1; title "student/teacher size" | "larger on the most changed matrix"; title "student/teacher size, most changed matrix". The x label is already right, and the numbers are right |
+**Corrections to Amendment 1.** Applied in commit 4aba4934 (Amendment 1's report, notebook cell 31 and `plot_amend1.py`).
 
 One error also sits in filed text, which stays as filed. The alignment rule's text, plan line 71 and the code review's M1 put Amendment 1's largest-matrix ratio into $1 + r^2 - 2rc$, whose $r$ must be total size. So their $r$ is too low on both tables, and the table above has the true values. The rule itself scores the cosine, so no verdict changes. The tilt M1 warned of remains: distance over teacher size reads 1.45 and 2.19, so rand32b still reads nearer. Unnormalised distance reads the other way, at 1.91-1.95 against 1.64-1.67.
 
@@ -185,36 +179,36 @@ One error also sits in filed text, which stays as filed. The alignment rule's te
 
 Teachers of different tables read 0.05 to 0.07.
 
-**Reading it.** A student is far from its teacher on every state, though it matches the teacher's behaviour. Each student ends further from its teacher than W₀ is, since distance exceeds teacher size on all six. A cosine of 0.30 to 0.41 leaves 83% to 91% of a student's squared size off its teacher's direction.
+**Reading it.** A student is far from its teacher on every state, though it matches the teacher's behaviour. Each student ends further from its teacher than W₀ is, since distance exceeds teacher size on all six. A cosine of 0.30 to 0.41 leaves 83% to 91% of a student's squared size off its teacher's direction. How high a cosine a student could reach with Δ fixed was not read, and part of the off-teacher length may be drift over 1,000 steps (teachers trained 10 or 30 steps, students 1,000; Amendment 1's student with nothing to learn still grows). So this shows the weights differ, not that the student failed to reach anything it could reach. The filing says the same: a low cosine "can be what a student cannot express with Delta fixed, so this bears on 'the student reaches its teacher' only loosely".
 
 The control holds, but thinly. Each student is nearer its own teacher than the other seed's, by 0.03 to 0.08. The two teachers of one table are far closer to each other, at 0.61 and 0.68, than a student is to either. So the cosine separates teacher from teacher only weakly, and most of what it reads is direction shared by the table.
 
 Our lean was wrong here too. We leaned towards no separation, and the second table's students are more aligned, 0.39 to 0.41 against 0.30 to 0.32. The gap of 0.07 is three times the within-table range. Against the reach reading, which was that this table's students fall because they do not reach their teachers, this removes its one direct test on alignment, as filed.
 
-One caution on that verdict, unfiled and worked out afterwards. A student's length along its teacher's direction, in teacher sizes, reads 0.59 and 0.63 against 0.68 and 0.73. By E12's rule that does not separate: the gap of 0.04 is under the range of 0.05. Absolute length off the teacher's direction is similar across tables, 1.85 to 1.87 against 1.62 to 1.65. So the higher cosine may largely follow from a larger teacher, which we have not tested.
+One caution on that verdict, unfiled and worked out afterwards. A student's length along its teacher's direction, in teacher sizes, reads 0.59 and 0.63 against 0.68 and 0.73. By E12's rule that does not separate: the gap of 0.04 is under the range of 0.05. Absolute length off the teacher's direction is 1.85 to 1.87 against 1.62 to 1.65, 14% apart, and the length along the teacher in absolute terms is 0.80 to 0.84 against 0.52 to 0.55, 1.5 times. So the higher cosine may largely follow from a larger teacher, which we have not tested.
 
 ## What we learned
 
-For the goal's second branch, on these two map tables, this card and this position, a student's nats do not imply its subcomponents or its weights. On the first table a student keeps the term and most of its set. On the second it loses a fifth of the term and overlaps its fine-tune's set at only 0.57 and 0.68. Its held-out P(target) still stays within about 0.003 of the fine-tune's. The loss comes back from values outside both sets, not from the members those sets name. So the 0.3 rule does not read what the fall is made of, and Amendment 1's "keeps its fine-tune's re-switching" stays a claim about nats only. The claim that these students end smaller than their teachers is withdrawn for total size. This run does not test faithfulness, covers no copy table and gives no cause for the fall.
+For the goal's second branch: on these two map tables, this card and this position, a student's P(target) does not imply its re-switching term, its switched-on set or its weights. The term and the set fall together here, on one table of two. On the first table a student keeps the term (2.0% and 2.4% lost) and most of its set (overlap 0.91 and 0.83, against 0.55 between that table's two fine-tunes), though its P(target) is 0.629 against the fine-tune's 0.585 and 0.571 against 0.544. On the second it loses a fifth of the term and overlaps its fine-tune's set at 0.57 and 0.68 (lower by the filed order-0 rule; a second-order student reads 0.77), while its held-out P(target) stays within 0.0023 to 0.0031 of the fine-tune's. No state keeps the term and loses the set. The loss comes back from values outside both sets, a block that also holds 97% of the change, so the 0.3 rule does not read what the fall is made of. The same holds for the term itself on the ladder's control, so this is not a property of the fall alone; it rests on one group, written back alone. On the second table the student does not keep the term in nats: it loses 16% to 20%, and Amendment 1's "keeps its fine-tune's re-switching" holds there only in units of the gain. The claim that these students end smaller than their teachers is withdrawn for total size. This run does not test faithfulness, covers no copy table and gives no cause for the fall.
 
 ## How compelling is the evidence
 
 - **Coverage.** Two map tables, two seeds each, teachers at first learned step, one format, one trigger position, one card. Nothing here covers copy tables, other tasks or the larger model.
 - **Noise.** Batch order on the second table only, one extra order on two seeds. Retraining at the same order reproduces exactly, so that adds no noise on this card.
-- **Writing back.** A block is written back alone from the student's values, so the blocks need not sum to the whole. Here they sum to 1.120 of 1.147 and 0.927 of 0.957, close to additive at this coarse level. The ladder's control shows that small groups recover far less than their share would suggest.
+- **Writing back.** A block is written back alone from the student's values, so the blocks need not sum to the whole. Here they sum to 1.119 of 1.147 and 0.927 of 0.957, close to additive at this coarse level; the gap to the whole includes dead subcomponents, which are in "every value" only.
 - **Blind to.** Per-key values, positions other than the trigger beyond the one 94% figure, effect per unit of value, and W₀'s trigger values, which the saved files lack. A sweep of the 0.3 line therefore needs a rerun.
 - **Saved values.** The outside block's change statistics come from fp16 trigger values, which round at under 0.001 near these sizes. That could shift the tail counts by a few entries, and nothing above rests on differences that small.
 - **The reference differs in more than the fall.** The first table's teachers hold P(target) at only 0.54 to 0.59, so a comparison with it also compares a half-learned teacher against a well-learned one. Amendment 1 read 0.0005 and 0.0006 of the gain for batch-order noise on other tables, and this table reads 0.0032 and 0.0044.
 
 ## Surprises
 
-**Something unexpected happened that I cannot explain.** We leaned towards the kept block carrying the fall, on the reasoning of lower values on the same members. It carries under 2%, and nearly all of it sits outside both sets. We also leaned towards no separation on the cosine and read "more aligned". Both are misses against the filed leans, and both stand as filed.
+**Something unexpected happened that I cannot explain.** We leaned towards the kept block carrying the fall, on the reasoning of lower values on the same members. It carries about 2% or less, and nearly all of it sits outside both sets. We also leaned towards no separation on the cosine and read "more aligned". Both are misses against the filed leans, and both stand as filed.
 
 Not explained, each stated without a cause:
 
 - **Why those values fall** on the second table and hardly on the first. Size, teacher strength and learned state all differ between the tables, and nothing here varies one alone.
 - **The first table's sign.** Its outside block is net raised, yet writing it back gives nats in the same direction as the fall.
-- **The control ladder.** Top 30 of 9,881 changes give 1% to 2% of the term that E12 read through sets of 21 to 52 members. Spread and joint action cannot be told apart here.
+- **The control ladder.** The top 30 of 9,881 changes hold 17 to 19 of the fine-tune's set members and give 1% to 2% of the term. E12 already read mapping behaviour as running through subcomponents the rule leaves off, so a flat ladder is less surprising than the filing's guess made it. Spread and joint action cannot be told apart here.
 - **The batch-order noise** on the second table is about ten times the first's. The teachers' first learned step differs between the tables, but this was not tested.
 - **The window entries near a full flip.** On the second table 368 entries change by over 0.975, against 11 on the first, on seed 0. We did not look at which.
 
@@ -228,7 +222,7 @@ Also firing: "P2 partly or different: the claim is not made, and 'keeps its fine
 
 The catch-all takes P3's block label: "Any combination of outcomes no clause above names (including P1 holds with P4 mixed, and P3's block labels) is reported to the user with both numbers, and nothing further runs." The two numbers are 1.068 of a 1.225 fall and 0.896 of a 1.023 fall. The preamble applies: "Each clause ends with the user hearing the result first."
 
-So nothing further is proposed. The one open job is to apply the corrections to Amendment 1 listed in section 7.
+The clause's words "spread lowering" are recorded as filed; this run supports neither word as a cause. So nothing further is proposed from this run. An fp32 read of Γ is being run separately as Amendment 3.
 
 ## Scorecard
 
@@ -274,9 +268,12 @@ Departures from this project's sources, for the record. From Amendment 1: six st
 - **Per-matrix sizes of a student's change.** They need the released U and V, which means a model load on a GPU, about seconds of work.
 - **Total size on the copy tables and E42's states,** and on Amendment 1's student with nothing to learn. So how much of a student's total size is drift is unread on this measure.
 - **A rank of subcomponents by effect,** and writing back raises and lowers separately. Both would test whether net lowering carries the fall.
-- **Which keys hold the single-window moves;** values per key.
+- **Which keys hold the per-window moves, and whether they return the nats;** values per key.
+- **The fall per window.** The filing's blind spot "per-window sign, since nats are means" stands; `local_faith.masked_lo_windows` exists and would read it.
+- **A set read on Amendment 1's `rand32_s0_o1`,** the first table's second batch order, which has saved offsets.
+- **How high a cosine a student could reach with Δ fixed.**
 - **Writing back at other positions;** only the one figure that 94% lies at the trigger.
-- **Γ on the fine-tune's activations in any form but weights under bf16 autocast.**
+- **Γ in fp32 on any state: being run as Amendment 3.**
 - **A second batch order on the first table;** a third on the second; other steps, learning rates or teacher steps on the second table; E42's step-1000 teachers.
 - **A sweep of the 0.3 line.** W₀'s trigger values are not in the saved files.
 - **Reloading the bf16 offsets** to measure their rounding: retraining made it unnecessary.
