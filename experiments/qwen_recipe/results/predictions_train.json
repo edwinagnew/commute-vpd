@@ -1,0 +1,195 @@
+{
+ "experiment": "E61 (qwen_recipe) Job R: fine-tunes of Qwen3-1.7B at a true fp32 forward, with a rate grid",
+ "filed": "2026-11-02, before any run",
+ "plan": "reports/plans/2026-11-02_plan_e61-direct-share-size.md, Part 1 with Amendment 2; reports/reviews/2026-11-02_review_e61-plan.md",
+ "question": "Under the forward every reader uses, does training see its first steps, and at what rate do the synthetic tasks learn?",
+ "differences_from_E45": ["fp32 forward, no autocast, no TF32 (`sft_step` forward='fp32'; `Job.__init__` already calls `fp32_matmuls`)", "micro 4 against 8: same sum, padding causal", "arm 0 stops at step 10: `lr_at` gives the same rate for steps 1-10 with 10 or 100 steps", "generation on the fp32 model, not `Job.gen`'s bf16 copy; 4-shot and template prompts at half E45's batch"],
+ "departures_from_the_literature": ["Standard mixed-precision training uses the autocast forward (from memory, not checked here); the small steps are what is read here", "Warm-up 10 of 300 steps for invented facts is not the cited ratio 0.1, as in E45; the cited source is unseen", "The peaks are measured by this grid, not cited"],
+ "exit_codes": "0 done; 1 an early stop (results/stopped.json; every stage refuses until it is removed) or a refusal; 3 paused, work saved, resubmit the same command",
+ "data": {
+  "source": "`.data` of experiments/qwen_updates/results/T_own_s0.json, T_a1_s0.json, T_gold_s0.json, T_a2long_s0.json; a difference stops the arm before training",
+  "blind_to": "row order inside a batch; steps 1 and 2 below read that",
+  "own": {"n": 5939, "of": 7744, "passes": 1.0776224953695908},
+  "a1": {"n": 7740, "of": 7744, "passes": 0.8268733850129198},
+  "gold": {"n": 7217},
+  "a2long": {"n": 3600, "rows_per_pass": 323, "row_len": 494.33126934984523, "rows_per_step": 27}
+ },
+ "first_minutes_sources": {
+  "form": "per run, 'stop' or 'note', then step, then key, then [lo, hi], inclusive; null is open. A stop's miss exits 1, a note's miss is logged and the run goes on. A missing or non-finite value is a miss. Loss at step t reads the state after step t-1 on step t's batch.",
+  "loss_steps_1_2": "`T_<run>.steps[0,1].loss`: both at W0, since step 1 runs at rate 0 (`lr_at`), on that step's own batch. Tolerance 2% of the record: the measured fp32-minus-autocast gap at W0 is at most 0.45% (`A.json .states.own_s0['0']`: 0.05658 against 0.05684; gold 0.055%), times about 4 because a training batch is not the held-out rows. At 2%, own's batches 1 and 2 cannot be told apart (they differ by 1.3%); the other arms' can.",
+  "loss_step_3": "A note only, one-sided (record + 2%) where the state has moved. Step 3 reads state 2, summed rate 0.1 of the peak, which fp32 now sees and E45's bf16 did not: E45's record is W0's on that batch.",
+  "dw_norm_step_2": "`T_<run>.steps[1].dw_norm` x peak / 1e-5, tolerance 20%: Adam's step size is set by the rate, and the four records span 0.0286-0.0336 at rate 1e-6, about 8% around their mean.",
+  "peak_gib_step_2": "Stop at 40 GiB, plan Amendment 2. Moments are allocated at step 1's `opt.step`, so step 2's backward is the first to hold them. Expected 31.4 (20.9 measured in `A.json .grad['4']`, which already holds W0 and the clone, + 10.5 moments), about 34 for invented facts' fuller rows (review S6).",
+  "grad_norm_step_1": "A note: `T_<run>.steps[0].grad_norm` within 25%; fp32 against autocast at W0 on the same batch, unmeasured, hence not a stop.",
+  "arm0_step_4": "Plan: stop under 0.08 (training still cannot see its update; still rounding reads 0.0556, `T_own_s0.steps[3].loss`; a TF32 forward would too). 0.08-0.12 continues with a note. Expected at least 0.12: bf16-trained state 3 reads 0.2166 in fp32 (`A.json .states.own_s0['3'].fp32`).",
+  "arm0_notes": "Fable section 2: step 3 reads 0.060-0.075 (state 2 in fp32 0.0647 against W0's 0.0566, on a batch at 0.0551); gradient norm above 5 at step 4 (E45's bf16 run 2.97, `T_own_s0.steps[3].grad_norm`); held-out at state 3 within 0.05 of step 4's training loss.",
+  "a1_3e-6_step_10": "Plan: stop over 0.9. Catches no movement only, not blindness; arm 0 catches blindness and runs first (review S5). State 9's summed rate is 1.08e-5; E45's bf16 run at summed rate 1e-5 read 0.579 in training (`T_a1_s0.steps[5].loss`). W0's batches read 0.974-1.108.",
+  "a1_3e-6_step_6": "Fable section 2: under 0.7 by step 6, a note.",
+  "a1_1e-6_step_10": "The same rule scaled by summed rate (review S5): 0.974 less 0.074 x 3.6e-6 / 1.08e-5 = 0.95. State 9's summed rate is 3.6e-6; a1_s0 state 4, summed rate 6e-6, reads 0.304 of a W0 0.962 on distillation KL in fp32 (`A.json .states.a1_s0`), so a moving run is far below it.",
+  "gold_step_4": "Plan: stop over 2.2. Fable: note under 1.6, bf16-trained state 3 reading 1.307 in fp32 (`A.json .states.gold_s0['3'].fp32`).",
+  "a2_step_150": "The invented-facts table below."
+ },
+ "first_minutes": {
+  "arm0": {
+   "stop": {
+    "1": {"loss": [0.05400, 0.05621], "lr": [0, 0], "dw_norm": [0, 0]},
+    "2": {"loss": [0.05330, 0.05547], "dw_norm": [0.02284, 0.03427], "peak_gib": [null, 40]},
+    "4": {"loss": [0.08, null]}
+   },
+   "note": {
+    "1": {"grad_norm": [2.72, 4.54]},
+    "2": {"peak_gib": [null, 33.5]},
+    "3": {"loss": [0.060, 0.075]},
+    "4": {"loss": [0.12, null], "grad_norm": [5, null], "held_minus_loss": [-0.05, 0.05]}
+   }
+  },
+  "a1_3e-6": {
+   "stop": {
+    "1": {"loss": [0.95473, 0.99370], "lr": [0, 0], "dw_norm": [0, 0]},
+    "2": {"loss": [1.08598, 1.13031], "dw_norm": [0.00807, 0.01210], "peak_gib": [null, 40]},
+    "10": {"loss": [null, 0.9]}
+   },
+   "note": {
+    "1": {"grad_norm": [42.8, 71.4]},
+    "2": {"peak_gib": [null, 33.5]},
+    "3": {"loss": [null, 1.0878]},
+    "6": {"loss": [null, 0.7]}
+   }
+  },
+  "a1_1e-6": {
+   "stop": {
+    "1": {"loss": [0.95473, 0.99370], "lr": [0, 0], "dw_norm": [0, 0]},
+    "2": {"loss": [1.08598, 1.13031], "dw_norm": [0.00269, 0.00403], "peak_gib": [null, 40]},
+    "10": {"loss": [null, 0.95]}
+   },
+   "note": {
+    "1": {"grad_norm": [42.8, 71.4]},
+    "2": {"peak_gib": [null, 33.5]},
+    "3": {"loss": [null, 1.0878]}
+   }
+  },
+  "gold_1e-5": {
+   "stop": {
+    "1": {"loss": [2.35957, 2.45588], "lr": [0, 0], "dw_norm": [0, 0]},
+    "2": {"loss": [2.31677, 2.41133], "dw_norm": [0.02662, 0.03993], "peak_gib": [null, 40]},
+    "4": {"loss": [null, 2.2]}
+   },
+   "note": {
+    "1": {"grad_norm": [93.5, 155.8]},
+    "2": {"peak_gib": [null, 33.5]},
+    "3": {"loss": [null, 2.3903]},
+    "4": {"loss": [null, 1.6]}
+   }
+  },
+  "a2_6e-6": {
+   "stop": {
+    "1": {"loss": [2.55232, 2.65649], "lr": [0, 0], "dw_norm": [0, 0]},
+    "2": {"loss": [2.64113, 2.74893], "dw_norm": [0.01539, 0.02308], "peak_gib": [null, 40]},
+    "150": {"loss": [null, 0.30]}
+   },
+   "note": {
+    "1": {"grad_norm": [41.9, 69.8]},
+    "2": {"peak_gib": [null, 36]},
+    "3": {"loss": [null, 2.6411]},
+    "150": {"loss": [null, 0.15]}
+   }
+  }
+ },
+ "arm0": {
+  "rule": "Training loss at step 4 under 0.08: stop, exit 1, nothing after it runs. At least 0.08: continue, with a note if under 0.12. Exactly 0.08 continues. NaN stops.",
+  "blind_to": "Whether the update is any good: a single loss on one batch shows only that training now sees its state.",
+  "positive_control": "The bf16-rounded run reads 0.0556 here, under the line; a fp32 read of its state 3 reads 0.2166, over it.",
+  "resume_rehearsal": "t_chunk 5: exit 3 after step 5 with a checkpoint; the resubmitted job runs steps 6-10. Asserted: restored norms against the checkpoint (`qwen_train.resume`) and against step 5's record (`train.start_or_resume`); rate against `lr_at` at step 6 (`qwen_train.one_step`); Adam's count in the checkpoint equal to 5 on every matrix (`train.start_or_resume`). A lost job with no checkpoint starts afresh and the record shows no resume.",
+  "if_it_stops": "The hiding is not in the Linear cast: look at where weights are rounded (Fable, 'What would change it')."
+ },
+ "stage_W_sources": {
+  "form": "As first_minutes, with '<state>.<read>' for the step. Same problems as the rules: GSM8K test 0-255.",
+  "w0.unprompted": "`control.json .W0.first256_strict_dropped` 0.779 (bf16). fp32 minus bf16 on 1,319 problems: gain 0.000, se 0.006 (`checks_gen.json .W0_fp32_vs_bf16`), about 0.014 on 256; band about 4 se. Response length `control.json` 198.",
+  "w0.prompted": "The template prompt on test 0-255 has no record: 0.680 is on train search problems (`P.json .runs.format.accuracy`), where the unprompted reads 0.834 against 0.779 here, so about 0.62-0.64 (review M8, unread). Band wide on purpose, so a bad line stops before any arm reads it. format_follow 0.926.",
+  "w0.facts": "`control.json .facts_s0`: invented 0.015, known 0.97.",
+  "w0.four_shot": "`check_format.json .states.W0.strict` 0.75, strict on the whole response. Below 0.65 the rule's line could not pass; memory: bf16 peaked at 45.0 GB with 13 GB of models (`qwen_updates/results/run.log:981`), so about 32 of cache, the same bytes at half batch in fp32, + the fp32 model 6.8 = 36 GiB, + W 5.2 at a saved state = 41 of 44. Over 38.5 at W0, W would pass 44: stop and halve again.",
+  "w0.held": "E45's fp32 held-out at state 0 (`E_gold_s0`, `E_a1_s0`, `E_a2long_s0 .states['0'].task`), same reader, within 1% (`predictions.json .early.e45_rel`).",
+  "references": "E45's fp32 held-out at the state (`E_* .states[t].task`), within 1%, stop: the saved file is the state it claims. Notes: bf16 generation on file (`E_* .gen[t]`); `T_* .steps[t-1].kl.maths` and `.dw_norm` within 1%. Trained on bf16, these are still 'as good as 1e-5' (review S1)."
+ },
+ "stage_W": {
+  "stop": {
+   "w0.unprompted": {"strict_dropped": [0.72, 0.84]},
+   "w0.prompted": {"strict_dropped": [0.50, 0.80]},
+   "w0.facts": {"invented": [null, 0.05]},
+   "w0.four_shot": {"strict_all": [0.65, 0.85], "peak_gib": [null, 38.5]},
+   "w0.held_gold": {"loss": [2.47026, 2.52016]},
+   "w0.held_a1": {"distill_kl": [0.95190, 0.97112]},
+   "w0.held_a2long": {"loss": [2.89790, 2.95644]},
+   "a1_s0_100.held_a1": {"distill_kl": [0.054875, 0.055983]},
+   "gold_s0_100.held_gold": {"loss": [0.506873, 0.517113]},
+   "a2long_s0_300.held_a2long": {"loss": [0.000976, 0.000995]}
+  },
+  "note": {
+   "w0.unprompted": {"response_mean": [180, 220], "format_unprompted": [0, 0.02]},
+   "w0.prompted": {"format_follow": [0.85, 1]},
+   "w0.facts": {"known": [0.9, 1]},
+   "a1_s0_100.unprompted": {"format_unprompted": [0.85, 1], "strict_dropped": [0.55, 0.73]},
+   "a1_s0_100.size": {"kl16": [0.31730, 0.32371], "dw_norm": [3.1093, 3.1721]},
+   "gold_s0_100.unprompted": {"response_mean": [80, 110]},
+   "gold_s0_100.size": {"kl16": [0.68172, 0.69550], "dw_norm": [3.3576, 3.4254]},
+   "a2long_s0_300.facts": {"invented": [0.95, 1]},
+   "a2long_s0_300.four_shot": {"strict_all": [0.62, 0.78]},
+   "a2long_s0_300.size": {"kl16": [0.66324, 0.67664], "dw_norm": [5.6020, 5.7152]}
+  }
+ },
+ "rules": {
+  "note": "Read by behaviour on fp32 weights at the arm's last state, in Stage G, on 256 problems (se about 0.03). Comparisons by `qwen_updates.at_least` and `at_most`: rounded to 9 places, inclusive, and a missing or non-finite reading fails. fp32 W0 and the reference at 1e-5 sit beside every verdict, with summed rate, |dW| and 16-row maths KL. These replace E45's filed rules for this experiment only; E45's stay as filed.",
+  "template": {
+   "rate_min": 0.74,
+   "rate_source": "0.8 of the teacher's 0.926 (`P.json .format.with`); `follows_format` on the unprompted answers, over all 256.",
+   "strict_below_prompted_w0": 0.08,
+   "strict_rule": "`strict_dropped` (accuracy on answers that fit the window) unprompted at least the prompted W0's fp32 `strict_dropped` on test 0-255 less 0.08. Stage W computes it and writes results/lines.json before any arm; arms and Stage G read it there.",
+   "strict_source": "Plan Amendment 2, review M8: the 0.08 is the plan's own, chosen to keep the earlier 0.60 on other rows; the line sits about 2.7 se under a perfect copy.",
+   "recipe": "The lowest passing peak is the recipe. Each arm reports summed rate, |dW|, maths KL beside the reference at 1e-5: a passing lower rate has value only if it gets there with less movement.",
+   "blind_to": "Whether the template carries over beyond test 0-255; a pass at 1e-6 has no lower bracket ('1e-6 or less works'); a pass at 3e-6 alone gives a bracket 3 times wide.",
+   "edge_cases": {
+    "W0, rate 0": "format_unprompted 0: fails. Expected 0 (`P.json .format.without`).",
+    "a1_s0 states 19 and 100": "pass the rate (0.95 on 64; 0.918); only accuracy is at issue.",
+    "no answer fits": "strict_dropped None: fails; at W0 prompted, the Stage W band stops first, so no line is written.",
+    "1e-6 passes and 3e-6 fails": "1e-6 is the recipe by the rule; the report says the order was not monotone.",
+    "neither passes": "The plan's next step is 1e-5 under the fix, about 39 min: not in this file's RUNS, added by a dated line if it comes to that."
+   }
+  },
+  "gold": {
+   "drop_min": 1.58,
+   "drop_source": "0.8 of `E_gold_s0` state 100's 1.983. Held-out loss at W0 (Stage W) less the same at the last state.",
+   "length_ratio_max": 0.6,
+   "length_source": "Chosen from the reference, `gold_s0` reading 0.48 (`E_gold_s0.gen['100']` 94.7 over 198, on all test problems; here on 256); E45 filed 0.8. Response tokens, mean over 256, against fp32 W0's.",
+   "rate_not_tested": "One rate, 1e-5: a pass says 1e-5 learns, not that it is right. The report says so.",
+   "blind_to": "Answer correctness, which the short human style lowers; no collateral rule, since the style is the task.",
+   "edge_cases": {
+    "state 1 (W0)": "drop 0, ratio 1: fails.",
+    "drop": "Passes from about state 6 on E45's bf16 path, so only a broken run fails it; the length has the teeth, at the last state.",
+    "ratio denominator": "W0's mean answer has at least one token per problem, and Stage W's note reads about 198: never zero.",
+    "fails": "Stop and report before Job S (plan Amendment 2)."
+   }
+  },
+  "invented_facts": {
+   "recall_min": 0.8,
+   "four_shot_min": 0.65,
+   "source": "Recall: plan. 4-shot: W0's 0.75 (`check_format.json`) less 0.10, Fable section 2; strict on the whole response, truncated counted wrong; fp32 W0 beside it. Known-fact accuracy reported, not ruled. Facts draw seed 0.",
+   "blind_to": "Unprompted maths, which is known to collapse to a one-line format (0.16); recall under other templates than the held-out one.",
+   "edge_cases": {
+    "records": "W0 0.015, step 12 0.022, a2_s0 0.32, a2long at 100 0.91, at 300 0.999 (`E_a2_s0`, `E_a2long_s0 .gen`): the line separates them.",
+    "4-shot on file": "0.703-0.766 on the four a2long states (`check_format.json`): passes unless fp32 reads much lower; Stage W reads the reference first."
+   },
+   "sum_table": {
+    "form": "Summed rate through the state (`lr_at`, awk), training loss, recall",
+    "a2_s0 1e-5, 100 steps, state 100": {"sum": 5.0e-4, "loss": 0.221, "recall": 0.319},
+    "a2long_s0 1e-5, 300 steps, state 100": {"sum": 8.78e-4, "loss": 0.031, "recall": 0.91},
+    "a2long_s0 1e-5, 300 steps, state 300": {"sum": 1.5e-3, "loss": 0.00016, "recall": 0.999},
+    "this arm, 6e-6, 300 steps, state 149, read by step 150's loss": {"sum": 7.22e-4, "loss": "expected about 0.11"},
+    "this arm, 6e-6, 300 steps, state 300": {"sum": 9.0e-4, "loss": "unread; a2long_s0 at that sum (state 103) reads 0.02-0.03", "recall": "rule: at least 0.8"}
+   },
+   "expected_at_pause": "Step 150's loss reads state 149, summed rate 7.22e-4, the sum of a2long_s0's state 82, read by its step 83: 0.117; its steps 81-85 read 0.114, 0.111, 0.117, 0.089, 0.091 (`T_a2long_s0.steps`). At or below it, since more steps help at equal sum (review M1). Note over 0.15. Stop over 0.30: a2long_s0 reads that near summed rate 5.4e-4 (its step 62: 0.299), and only 1.8e-4 of summed rate is left against the fall to about 0.03 the rule needs.",
+   "branch": "A failed arm or a stop at the pause reports 'this sum is too low'; 1e-5 for 300 steps under the fix (about 100 min) runs only if the user asks."
+  }
+ },
+ "stage_G": "Reads `gen` states from the saved bf16 dW, plus fp32 W0, with no Adam moments held. a1 runs: 20 and 100, verdict at 100. Gold: 100. Invented facts: 300. Arm 0 has none: Stage W rehearses generation.",
+ "not_read_here": "The direct share, sizes K00 - K0: Job S."
+}
