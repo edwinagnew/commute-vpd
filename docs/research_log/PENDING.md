@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
+- 2026-11-02 · experiments/TRIED.md, decisions.md, reports/plans/2026-11-02_plan_e67-weight-side-read.md · changelog, re-gating's what's next · E67 coded, not run: all-position change in Γ's values and an overlap share against the learned-nothing fine-tune, one free job after a review; a decisions row records that no decision chose log-odds for the route split.
