@@ -14,6 +14,32 @@
 # {elicit,cipher}_s{0,1,2}.pt (~113 MB each); the log tees to results/large/run.out. Commits nothing.
 # Expected 5-10 min on a debug L40 (E56 job 2 on the same card: a 300-step elicit fine-tune 11 s, a cipher fine-tune with
 # 32 checkpoints 16 s, r and S on six states ~1.5 min); host RAM peak ~5 GB (32 cipher checkpoints of 113 MB).
+# Stage argument (first argument, default `main` = the run above):
+#   sbatch cluster/open_pair.sbatch amend1   # Amendment 1 (plan section "Amendment 1"; predictions_amend1.json):
+#     the rank-k readout on E58's six saved states (each checked against run.json first), then the label's positive
+#     control (rank-1 and copy maps, seeds 0-2, E54's recipe) with E58's label, readout, r, ratio and S. Reads E58's
+#     results/run.json and results/large/; writes results/amend1.json and results/large/amend1/ (~0.7 GB). ~6-10 min.
+#   sbatch cluster/open_pair.sbatch amend2   # Amendment 2 (plan section "Amendment 2"; predictions_amend2.json): the
+#     elicit (control, first), rank-1 and copy maps at 128 keys (96 trained / 32 held out; 64 / 16 if E54's key supply is
+#     short), seed 0, E54's recipe; x, r, ratio. Reads E54's stage1.json; writes results/amend2.json and
+#     results/large/amend2/ (~0.36 GB). ~10-15 min.
+#   sbatch cluster/open_pair.sbatch amend3   # Amendment 3 (plan section "Amendment 3"; predictions_amend3.json): the
+#     cipher control at 128 keys first, then elicit, the shuffled elicit, rank-1 and copy, Fable's checks 1, 3-5. Reads E54's
+#     stage1.json and E58's large/windows_elicit_*.pt; writes results/amend3.json, results/large/amend3/ (~1 GB). ~12-18 min.
+#   sbatch cluster/open_pair.sbatch amend4   # Amendment 4 (plan section "Amendment 4"; predictions_amend4.json): seeds
+#     0-2 of the cipher control, seeds 1-2 of elicit / rank-1 / copy at steps 10 and 30, the shuffle at 30 and its first
+#     step over the gate. Reads results/amend3.json and results/large/amend3/; writes results/amend4.json only. ~10 min.
+#   sbatch cluster/open_pair.sbatch amend5   # Amendment 5: the shuffle at seeds 1-2, reported beside seed 0 (amend4.json),
+#     not scored. Reads results/amend{3,4}.json and results/large/amend3/; writes results/amend5.json only. ~5 min.
+#   sbatch cluster/open_pair.sbatch amend6   # Amendment 6: the W0 control (two new tables, zero update, priors in band),
+#     E58 cipher seed 0 reproduced, then the prior-matched cipher and the first-letter rule, seeds 0-2. Reads
+#     results/amend{3,4,5}.json and results/large/amend3/; writes results/amend6.json, results/large/amend6/ (~5 MB of
+#     windows) and the log results/large/amend6.out. ~13-16 min (7 fine-tunes).
+#   sbatch cluster/open_pair.sbatch amend7   # Amendment 7: the W0 control (class map, shuffled twin, elicit-prior cipher;
+#     zero update and cross-class null 0, priors), E58 cipher seed 0 reproduced, the twin seeds 0-2 (exit 1 unless clean),
+#     the class map seeds 0-2, the elicit-prior cipher seeds 0-2 (skipped if its pools ran out). Reads
+#     results/amend{3,4,5,6}.json and results/large/amend3/; writes results/amend7.json, results/large/amend7/ (~10 MB of
+#     windows) and the log results/large/amend7.out. ~13-17 min (10 fine-tunes).
 #SBATCH --job-name=commute-e58-open-pair
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -29,13 +55,24 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
-test -f experiments/open_pair/results/predictions.json || { echo "file the predictions first" >&2; exit 1; }
+stage=${1:-main}
+[ $# -gt 0 ] && shift
+case "$stage" in
+  main) script=run.py pred=predictions.json logf=run.out ;;
+  amend1) script=amend1.py pred=predictions_amend1.json logf=amend1.out ;;
+  amend2) script=amend2.py pred=predictions_amend2.json logf=amend2.out ;;
+  amend3) script=amend3.py pred=predictions_amend3.json logf=amend3.out ;;
+  amend4) script=amend4.py pred=predictions_amend4.json logf=amend4.out ;;
+  amend5) script=amend5.py pred=predictions_amend5.json logf=amend5.out ;;
+  amend6) script=amend6.py pred=predictions_amend6.json logf=amend6.out ;;
+  amend7) script=amend7.py pred=predictions_amend7.json logf=amend7.out ;;
+  *) echo "unknown stage $stage (main | amend1 | amend2 | amend3 | amend4 | amend5 | amend6 | amend7)" >&2; exit 2 ;;
+esac
+test -f "experiments/open_pair/results/$pred" || { echo "file the predictions first" >&2; exit 1; }
 large=experiments/open_pair/results/large
-if [ ! -e "$large" ]; then
-  mkdir -p "$HOME/commute-data/results-large/open_pair"
-  ln -s "$HOME/commute-data/results-large/open_pair" "$large"
-fi
+mkdir -p "$HOME/commute-data/results-large/open_pair"   # also mends a dangling link's target
+[ -L "$large" ] || [ -d "$large" ] || ln -s "$HOME/commute-data/results-large/open_pair" "$large"
 rc=0
-.venv/bin/python experiments/open_pair/run.py "$@" 2>&1 | tee "$large/run.out" || rc=$?
-echo "=== FINISHED E58 (exit $rc) — results in $COMMUTE_REPO/experiments/open_pair/results/ ==="
+.venv/bin/python "experiments/open_pair/$script" "$@" 2>&1 | tee "$large/$logf" || rc=$?
+echo "=== FINISHED E58 $stage (exit $rc) — results in $COMMUTE_REPO/experiments/open_pair/results/ ==="
 exit $rc

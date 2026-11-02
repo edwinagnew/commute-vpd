@@ -15,7 +15,11 @@ results/stopped.json and exits 1. Large files (gate counts, think samples) go to
       change: four cells, S. A share >= 0.8 means row 1 has no teeth (card before Stage D).
   C   E40 step 10, gold step 100, anchor 2 seeds 0 and 1 step 100: four cells on the maths and own rows, S,
       placement. After C0, B2 and each state of C: results/summary.json (teeth verdict, row-3 overlaps).
-Usage (repo root, L40): python experiments/qwen_reading/run.py --stage A|B1|B2|C0|C [--decomp DIR] [--e40 DIR]
+  D   E45 Amendment 2's anchor 1 (seeds 0, 1), own samples (--own, default own2_s0) and null at the states
+      commute.qwen_reading.d_pick takes from E45's score.json: C's readings, D_<run>.json; then the scoring.
+  score  (CPU, also at D's end) results/summary.json and results/score.json (score.py): plan section 5.
+Usage (repo root, L40; score on CPU): python experiments/qwen_reading/run.py --stage A|B1|B2|C0|C|D|score
+  [--decomp DIR] [--e40 DIR] [--own RUN]
 """
 
 from __future__ import annotations
@@ -23,6 +27,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -41,9 +47,11 @@ from lab import (
     STATES,
     WEB,
     Lab,
+    null_seed,
     pinned,
 )
 from safetensors.torch import load_file, save_file
+from score import score
 from torch import Tensor
 from transformers import AutoTokenizer
 
@@ -102,10 +110,12 @@ class Text:
 
 
 def count_rows(lab: Lab, rows: list[list[int]], keeps: list[Tensor | None], tag: str) -> qr.Counts:
-    """Gate counts over rows, in the order given; the GPU rule after the first."""
+    """Gate counts over rows, longest first (the counts do not depend on the order), so the GPU rule after the
+    first row reads this set's longest."""
     c = lab.counts()
     torch.cuda.reset_peak_memory_stats()
-    for i, (r, k) in enumerate(zip(rows, keeps, strict=True)):
+    pairs = sorted(zip(rows, keeps, strict=True), key=lambda p: -len(p[0]))
+    for i, (r, k) in enumerate(pairs):
         qr.gate_counts(lab.model, torch.tensor([r], device=DEV), lab.gamma, lab.comps, c, k)
         if i == 0:
             lab.log(f"[{tag}] first row: {len(r)} tokens, {lab.peaks()}")
@@ -149,7 +159,7 @@ def a_controls(lab: Lab) -> dict[str, Any]:
               and qr.close(e["K00"] / n, REF["K00_16"], CFG.rep_tol),
               {"K0_16": e["K0"] / n, "K00_16": e["K00"] / n, "ref": [REF["K0_16"], REF["K00_16"]]})
     d = total(lab.cells(rows[:n16], lab.change(dW, None), tag="do-nothing, 16 rows"))
-    share = qr.shares(e | d)["regating"]
+    share = qr.shares(e | d, n)["regating"]
     lab.check("A_do_nothing", qr.ok(share) and abs(share - 1) <= CFG.id_tol, {"share": share, **d})
     lab.set_weights("FT", None)
     return {"W0": w0, "W0_zero16": z, "S_W0": s_w0, "E40_16": e, "dn_16": d, "dn_share": share,
@@ -187,7 +197,7 @@ def a_sets(lab: Lab) -> dict[str, Any]:
 
 def a_row4(lab: Lab) -> dict[str, Any]:
     """Row 4 (a)-(b): share of ‖δW‖² by layer and kind, effective rank per matrix, for the four δW and the Gaussian
-    null (split.random_like of E40's step 10, seeds 0-3). First records E45's sha256 for Stage C."""
+    null (split.random_like of E40's step 10, seeds 0-3, seeded per site). First records E45's sha256 for Stage C."""
     DW_SUMS.write_text("".join(f"{sha256(lab.dw_path(n))}  {n}\n" for n in STATES if n != "e40"))
     sig, out, e40 = lab.sigma(), {}, lab.load_dw("e40")
     for name in [*STATES, *(f"null{k}" for k in CFG.null_seeds)]:
@@ -196,7 +206,7 @@ def a_row4(lab: Lab) -> dict[str, Any]:
         for s in SITES:
             M = dW[s].to(DEV, F64)
             if name.startswith("null"):
-                M = split.random_like(M, sig[s].to(DEV), int(name[4:]))
+                M = split.random_like(M, sig[s].to(DEV), null_seed(int(name[4:]), s))
             e[s], er[s] = float(M.pow(2).sum()), qr.effective_rank(torch.linalg.svdvals(M.float()))
             del M
         E = sum(e.values())
@@ -244,10 +254,9 @@ def stage_B2(lab: Lab) -> None:
     T = [tx.ids(tx.think_prompt(r["idx"])) + r["ids"] for r in kept]
     L = [qr.length_matched(tx.plain[r["idx"]], t, tx.plain, r["idx"], tx.think_end)
          for r, t in zip(kept, T, strict=True)]
-    order = sorted(range(len(T)), key=lambda i: -len(T[i]))  # the longest row first: the GPU rule reads it
     web = json.loads(WEB.read_text())["rows"][: CFG.n_rows]
-    counts = {"T": count_rows(lab, [T[i] for i in order], [tx.keep(T[i]) for i in order], "T think"),
-              "L": count_rows(lab, [L[i] for i in order], [tx.keep(L[i]) for i in order], "L length-matched"),
+    counts = {"T": count_rows(lab, T, [tx.keep(t) for t in T], "T think"),
+              "L": count_rows(lab, L, [tx.keep(x) for x in L], "L length-matched"),
               "C": count_rows(lab, web, [None] * len(web), "C fineweb")}
     plain, sets = on("A/plain"), {}
     for name, c in counts.items():
@@ -255,7 +264,8 @@ def stage_B2(lab: Lab) -> None:
         sets[name] = c.on() & ~plain
     sizes = {k: int(v.sum()) for k, v in sets.items()}
     both = int((sets["T"] & sets["L"]).sum())
-    lab.put("B2", {"rows": len(kept), "dropped": len(recs) - len(kept), "longest": len(T[order[0]]), "sizes": sizes,
+    lab.put("B2", {"rows": len(kept), "dropped": len(recs) - len(kept), "longest": max(len(t) for t in T),
+                   "longest_L": max(len(x) for x in L), "sizes": sizes,
                    "T_and_L": both, "T_like_L": both >= 0.8 * sizes["T"],
                    "L_aligned": sum(qr.after(a, tx.think_end) == qr.after(t, tx.think_end)
                                     for a, t in zip(L, T, strict=True))})
@@ -270,6 +280,9 @@ def read_state(lab: Lab, name: str, dW: dict[str, Tensor], own: Tensor | None, n
     lab.set_weights("FT", dW)
     c0, c1, o0 = lab.counts(), lab.counts(CFG.n_rows), lab.counts()
     cells = {"maths": lab.cells(rows["maths"], c0=c0, c1=c1, tag=f"{name} maths")}
+    w0 = load_file(str(LARGE / "A/W0_maths.safetensors"))["active"]
+    lab.check(f"C_g0_{name}", bool((c0.active.cpu() == w0).all()),
+              {"g0_counts_differ_from_A": int((c0.active.cpu() != w0).sum())})
     if name == "e40":
         m, n = total(cells["maths"]), rows["maths"].numel()
         lab.check("C_E40", qr.close(m["K00"] / n, REF["K00"], CFG.rep_tol)
@@ -285,15 +298,14 @@ def read_state(lab: Lab, name: str, dW: dict[str, Tensor], own: Tensor | None, n
     save(f"C/{name}_g0", c0.tensors())
     save(f"C/{name}_g1", c1.tensors())
     S = c1.on() & ~c0.on()
-    w0 = load_file(str(LARGE / "A/W0_maths.safetensors"))["active"]
     rec: dict[str, Any] = {"rows": cells, "S": int(S.sum()), "S_by_kind": {k: int(S[lab.lay.kind_mask(k)].sum())
                                                                           for k in KINDS},
-                           "g0_as_A": bool((c0.active.cpu() == w0).all()), "stored_error": sp["stored_error"],
-                           "split_s": sp["s"]}
+                           "stored_error": sp["stored_error"], "split_s": sp["s"]}
     for k, r in cells.items():
         n = len(r["K0"]) * CFG.row_len
-        rec[k] = qr.shares(total(r)) | {"boot95": qr.boot_share(r, qr.resample(len(r["K0"]), CFG.boot)),
-                                        "means": {c: v / n for c, v in total(r).items()}}
+        rec[k] = qr.whole(r, CFG.row_len) | {
+            "boot95": qr.boot_share(r, qr.resample(len(r["K0"]), CFG.boot), CFG.row_len),
+            "means": {c: v / n for c, v in total(r).items()}}
     if nulls:
         rec["placement"] = placement(lab, sp["pe"], o0.on() if own is not None else c0.on())
     return rec
@@ -330,30 +342,39 @@ def stage_C0(lab: Lab) -> None:
     e40 = lab.load_dw("e40")
     lab.set_weights("FT", e40)
     target = lab.kl_rows("FT", r16)
-    din = inspan(lab)
-    lab.set_weights("state", din)
+    lab.set_weights("state", inspan(lab))  # the in-span change is checked here and rebuilt after gauss is read
     kin = lab.kl_rows("state", r16)
+    lab.drop_set("state")
     lab.check("C0", qr.close(target, REF["kl_e40_16"], CFG.rep_tol) and qr.close(kin, REF["kl_inspan_16"],
               CFG.rep_tol), {"kl_e40_16": target, "kl_inspan_16": kin})
-    sig = lab.sigma()
-    G = {s: pinned(split.random_like(e40[s].to(DEV, F64), sig[s].to(DEV), 0).float().cpu()) for s in SITES}
-    del e40
+    out |= {"kl_e40_16": target, "kl_inspan_16": kin}
+    if "gauss" not in out:
+        lab.drop_set("FT")
+        sig = lab.sigma()
+        G = {s: pinned(split.random_like(e40[s].to(DEV, F64), sig[s].to(DEV), null_seed(0, s)).float().cpu())
+             for s in SITES}
+        del e40
 
-    def kl_at(b: float) -> float:
-        lab.set_weights("state", G, b)
-        x = lab.kl_rows("state", r16)
-        lab.log(f"[C0 search] b {b:.6g}: KL(W0 ‖ Gaussian) {x:.9g}, target {target:.9g}")
-        return x
+        def kl_at(b: float) -> float:
+            lab.set_weights("state", G, b)
+            x = lab.kl_rows("state", r16)
+            lab.log(f"[C0 search] b {b:.6g}: KL(W0 ‖ Gaussian) {x:.9g}, target {target:.9g}")
+            return x
 
-    out |= {"search": out.get("search") or qr.scale_search(kl_at, target, CFG.kl_match, CFG.kl_evals),
-            "kl_e40_16": target, "kl_inspan_16": kin}
-    lab.sets.pop("state", None)
-    b = out["search"]["b"]
-    for name, make in (("gauss", lambda: {s: b * G[s] for s in SITES}), ("inspan", lambda: din)):
-        if name not in out:
-            matched = out["search"]["matched"] if name == "gauss" else True
-            out[name] = read_state(lab, name, make(), None, nulls=False) | {"matched": matched}
-            lab.put("C0", out)
+        out["search"] = qr.scale_search(kl_at, target, CFG.kl_match, CFG.kl_evals)
+        lab.drop_set("state")
+        for g in G.values():
+            g.mul_(out["search"]["b"])  # in place: no second copy
+        lab.log(f"[C0 search] done, {lab.peaks()}")
+        out["gauss"] = read_state(lab, "gauss", G, None, nulls=False) | {"matched": out["search"]["matched"]}
+        lab.put("C0", out)
+        del G
+        lab.drop_set("FT")
+    else:
+        del e40
+    if "inspan" not in out:
+        out["inspan"] = read_state(lab, "inspan", inspan(lab), None, nulls=False) | {"matched": True}
+        lab.put("C0", out)
     out["no_teeth"] = any(out[n]["maths"]["status"] == "scored" and qr.r9(out[n]["maths"]["regating"]) >= CFG.high
                           for n in CONTROLS)
     lab.put("C0", out)
@@ -362,24 +383,61 @@ def stage_C0(lab: Lab) -> None:
 
 def stage_C(lab: Lab) -> None:
     if not all(n in lab.get("C0") for n in CONTROLS):
-        lab.stop("C0_first", "stage C0 has not finished: the random controls run alone first")
-    tx = None
+        sys.exit("refusing to start C: stage C0 has not finished (the random controls run alone first)")
+    tx, longest = None, 0.0
     for name, st in STATES.items():
         if (RESULTS / f"C_{name}.json").is_file():
             continue
-        lab.wall()
+        lab.wall(longest)
+        t0 = time.time()
         dW, own = lab.load_dw(name), None
         if st.own is not None:
             tx = tx or Text()
             rows = qr.own_rows(tx.tok, st.own[0], st.own[1], tx.sets["train"])
-            lab.set_weights("FT", dW)
-            x = lab.kl_rows("FT", torch.tensor(rows))
-            want = json.loads((E45 / f"{st.e_record}.json").read_text())["states"]["100"]["kl"]["own"]
-            lab.check(f"C_E45_{name}", qr.close(x, want, CFG.rep_tol), {"kl_own": x, "E45": want})
+            own_check(lab, f"C_E45_{name}", dW, torch.tensor(rows), st.e_record, 100)
             own = torch.tensor([r[: CFG.row_len] for r in rows])
         lab.put(f"C_{name}", read_state(lab, name, dW, own, nulls=True))
         del dW
+        longest = max(longest, time.time() - t0)
         summarize(lab)
+
+
+def own_check(lab: Lab, tag: str, dW: dict[str, Tensor], rows: Tensor, record: str, step: int) -> None:
+    """KL(W0 ‖ W0 + δW) on the state's own rows of 512 against E45's E record at that step (miss: stop)."""
+    lab.set_weights("FT", dW)
+    x = lab.kl_rows("FT", rows)
+    want = json.loads((E45 / f"{record}.json").read_text())["states"][str(step)]["kl"]["own"]
+    lab.check(tag, qr.close(x, want, CFG.rep_tol), {"kl_own": x, "E45": want})
+
+
+def stage_D(lab: Lab, own: str) -> None:
+    """E45 Amendment 2's runs (anchor 1 seeds 0 and 1, the own-samples run, the null) at the states `qr.d_pick` takes
+    from E45's score.json: C's readings per state into D_<run>.json, then the scoring (score.py)."""
+    c0 = lab.get("C0")
+    if not all(n in c0 for n in CONTROLS):
+        sys.exit("refusing to start D: stage C0 has not finished (the random controls run alone first)")
+    if c0.get("no_teeth"):
+        lab.log("[D] C0 reads no teeth (plan section 6.2): the card to the user goes before D's readings are used")
+    points, tx, longest = json.loads((E45 / "score.json").read_text())["amend2_decisive"], None, 0.0
+    for run in ("a1_s0", "a1_s1", own, "null_s0"):
+        pick = qr.d_pick(run, points.get(run))
+        lab.log(f"[D pick] {run}: {json.dumps(pick)}")
+        if pick["step"] is None or (RESULTS / f"D_{run}.json").is_file():
+            continue
+        lab.wall(longest)
+        t0 = time.time()
+        dW, sha = lab.record_dw(run, pick["step"])
+        own_rows, kl_rows = None, lab.maths(length=CFG.own_len)  # own samples, the null: the maths rows are own
+        if run.startswith("a1_"):
+            tx = tx or Text()
+            a1 = qr.a1_rows(tx.tok, json.loads((E45 / "large/P/a1_rows.json").read_text())["items"], tx.sets["test"])
+            kl_rows, own_rows = torch.tensor(a1), torch.tensor([r[: CFG.row_len] for r in a1])
+        own_check(lab, f"D_E45_{run}", dW, kl_rows, f"E_{run}", pick["step"])
+        lab.put(f"D_{run}", read_state(lab, run, dW, own_rows, nulls=True) | {"pick": pick, "sha256": sha})
+        del dW
+        longest = max(longest, time.time() - t0)
+    summarize(lab)
+    score(lab, own)
 
 # ----------------------------------------------------------------------------- the summary
 
@@ -391,34 +449,42 @@ def summarize(lab: Lab) -> None:
     c0, e40 = lab.get("C0"), lab.get("C_e40")
     if e40 and all(n in c0 for n in CONTROLS):
         ctrl = {n: {"rows": c0[n]["rows"]["maths"], "matched": c0[n]["matched"]} for n in CONTROLS}
-        out["teeth"] = qr.teeth(e40["rows"]["maths"], ctrl, qr.resample(CFG.n_rows, CFG.boot), CFG.high)
+        out["teeth"] = qr.teeth(e40["rows"]["maths"], ctrl, qr.resample(CFG.n_rows, CFG.boot), CFG.row_len,
+                               CFG.high)
     A = lab.get("A").get("sets")
     if A:
         site_of = load_file(str(LARGE / "A/layout.safetensors"))["site_of"]
-        plain = on("A/plain")
+        plain, pool = on("A/plain"), ~on("A/W0_maths")  # the draws' pool: live, not gated on under g0
         refs = {"P": on("A/prompt") & ~plain}
         if (LARGE / "B2/T.safetensors").is_file():
             refs |= {k: on(f"B2/{k}") & ~plain for k in ("T", "L", "C")}
-        S = {n: on(f"C/{n}_g1") & ~on(f"C/{n}_g0") for n in [*STATES, *CONTROLS]
-             if (LARGE / f"C/{n}_g1.safetensors").is_file()}
+        names = sorted(p.name.removesuffix("_g1.safetensors") for p in (LARGE / "C").glob("*_g1.safetensors"))
+        S = {n: on(f"C/{n}_g1") & ~on(f"C/{n}_g0") for n in names}  # every C0, C and D state read so far
         out |= {"min_size": A["min_size"], "ref_sizes": {k: int(v.sum()) for k, v in refs.items()}}
-        out["overlap"] = {n: {k: qr.overlap(s, x, site_of, len(SITES), CFG.draws) for k, x in refs.items()}
+        out["overlap"] = {n: {k: qr.overlap(s, x, site_of, len(SITES), pool, CFG.draws) for k, x in refs.items()}
                           | {"size": int(s.sum()), "scored": int(s.sum()) >= A["min_size"]} for n, s in S.items()}
         if "a2long_s0" in S and "a2long_s1" in S:
-            ov = qr.overlap(S["a2long_s0"], S["a2long_s1"], site_of, len(SITES), CFG.draws)
+            ov = qr.overlap(S["a2long_s0"], S["a2long_s1"], site_of, len(SITES), pool, CFG.draws)
             out["seed_pair"] = ov | {"above_99": qr.above_99(ov)}
     lab.put("summary", out)
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=("A", "B1", "B2", "C0", "C"))
+    ap.add_argument("--stage", required=True, choices=("A", "B1", "B2", "C0", "C", "D", "score"))
     ap.add_argument("--decomp", default=os.environ.get("COMMUTE_QWEN_DIR", ""))
     ap.add_argument("--e40", default=str(Path.home() / "commute-data/results-large/qwen_sft/nowarmup_regen"))
+    ap.add_argument("--own", default="own2_s0", help="D: E45's own-samples run (own_s0 did not learn)")
     a = ap.parse_args()
     lab = Lab(a.stage, a.e40, a.decomp)
     with torch.no_grad():
-        {"A": stage_A, "B1": stage_B1, "B2": stage_B2, "C0": stage_C0, "C": stage_C}[a.stage](lab)
+        if a.stage == "D":
+            stage_D(lab, a.own)
+        elif a.stage == "score":  # CPU: the summary and the scoring from what is written
+            summarize(lab)
+            score(lab, a.own)
+        else:
+            {"A": stage_A, "B1": stage_B1, "B2": stage_B2, "C0": stage_C0, "C": stage_C}[a.stage](lab)
     lab.log(f"[{a.stage} done] {lab.peaks()}")
 
 

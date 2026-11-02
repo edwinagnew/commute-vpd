@@ -122,6 +122,13 @@ Runs with T = neither, or whose labelled saves disagree, are excluded from P1-P3
   T ≠ neither → "not testable"; seeds with different T → each scored, P2 "split", tree branch 4. *Lean: low-medium,
   about 45%:* ρ and r read elicit at 0.95 and 0.77, so P2 passes only if the label is "reuses", and a per-key rank
   choice need not carry to held-out keys.
+  *Note (2026-10-30, after E58 job 46266; lead on Fable's advice, `reports/plans/2026-10-30_advice_e58-reading-FABLE.md`,
+  `decisions.md` last row).* P2 is scored on rule tasks only: tasks where "reuses" by behaviour means a rule W₀ already
+  has, so carry-over to held-out keys is reachable (the label's positive control, E58 Amendment 1's rank-1 or copy map,
+  and Stage B's rows). On lookup tasks (a per-key table over W₀'s pieces, such as E54's elicit map) it is reported,
+  unscored: there the held-out label asks whether a rule generalises and r asks whether the carrying subcomponents are
+  old, and the two must disagree when new per-key routes run through old subcomponents (the granularity limit). E58's
+  filed P2 miss stands as scored in E58; this note changes nothing filed there.
 - **P3 (beside steering).** Agreement count over all scored runs: A_ρ, A_r, A_S. "VPD adds over steering" iff
   A_ρ − A_S ≥ 2 (resp. A_r − A_S ≥ 2): a one-run difference is one seed's flip. Ties or less → "does not add"; A_S
   above A_ρ by ≥ 2 → "steering better". *Edge cases:* runs where S is not read leave all three counts (same rows for
@@ -195,3 +202,16 @@ option 1.
 Fable's gating-pattern novelty proxy (option C; a branch-5 follow-up); a second decomposition seed; E55 C2 or any
 porting of ρ and r to the counting model; Qwen; new 67M tasks; any change to E53, E54 or E55 files or predictions;
 scoring "neither" or class-B runs; the restore share (dropped by the programme).
+
+## Note (2026-10-30, lead, after E58 Amendment 1): step 2 re-aimed, not stopped
+
+E58 Amendment 1 (job 46332, `reports/analyses/2026-10-30_analysis_e58-open-pair.md` § Amendment 1) showed that the
+held-out-key label grades how far a rule carries (copy 0.42-0.55 > rank-1 0.09-0.14 > elicit about 0 > cipher about
+−0.3), while r and the stand-in ratio sit level on every map whose values the 67M already produces and drop only on the
+cipher. The two measure different things, so the held-out label is **kept as a graded, reported column and retired as
+this plan's agreement target**. The VPD-free label for the line's claim (reading A, ask #15: "built from the original
+model's existing pieces") is piece-level: Stage B's interchange patch (`reports/plans/2026-10-29_plan_reuse-stage1.md`
+§ Stage B, P ≥ 0.5). This line does not build the patch; the twelve E58 open-pair states (elicit, rank-1, copy, cipher ×
+3 seeds, `experiments/open_pair/results/large/`) are offered to reuse-lead as Stage B states beside lowercase (note
+only). Source: Fable's advice, `reports/plans/2026-10-30_advice_e58a1-next-FABLE.md`, item 2. One $0 check that could
+overturn reading A runs first: E58 Amendment 2 (four times the keys).

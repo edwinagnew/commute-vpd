@@ -1,7 +1,8 @@
 """E54's key-dependent pair (elicit map and cipher): the fine-tunes, the matched-size step and the two readings (steering's
 S and the route split's r), shared since 2026-10-30 with E56 (`experiments/keydependent_patch`). Moved, not changed,
 from `experiments/keydependent_elicit/run.py`, which now calls them; `elicit_ft` and `cipher_ft` are the bodies of its
-`finetunes` loops, one seed each, the same calls in the same order.
+`finetunes` loops, one seed each, the same calls in the same order. E54's key selection (`vocab`, `select`) moved here,
+not changed, on 2026-10-30 for E58 Amendment 2 (`experiments/open_pair/amend2.py`).
 """
 
 from __future__ import annotations
@@ -128,3 +129,39 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: f.read(1 << 24), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+# ----------------------------------------------------------------------------- E54's key selection
+# moved, not changed, from experiments/keydependent_elicit/run.py (2026-10-30, for E58 Amendment 2), which now calls them
+
+
+def vocab(ctx: Ctx) -> tuple[Tensor, Tensor, int, list[int], Any]:
+    """E12's Pile rows, word-like mask, marker and frequency-ranked word-like tokens (as anchors.build_kv builds them)."""
+    from commute import kv, ladder, vpd
+    from commute.data import pile_rows
+
+    tok = vpd.tokenizer()
+    rows = pile_rows("train", 0, AN.ROWS, log)
+    V = int(ctx.net.net.lm_head.weight.shape[0])
+    plain = ladder.plain_mask(tok.decode, V)
+    counts = ladder.count_tokens(rows, AN.HALF)
+    marker = kv.pick_marker(counts, tok.decode, V)
+    ranked = [t for t, _ in sorted(counts.items(), key=lambda tc: -tc[1]) if t < V and bool(plain[t])]
+    return rows, plain, marker, ranked, tok
+
+
+def select(ctx: Ctx, rows: Tensor, plain: Tensor, marker: int, cands: list[int]) -> tuple[list[int], dict[int, Any]]:
+    """W0's value per candidate key on 16 training-row windows each, and the seeded draw of K keys."""
+    from commute import kv
+
+    S = ctx.P["settings"]
+    train_rows = rows[torch.arange(rows.shape[0]) % 5 != 0]
+    w = kv.windows(train_rows, marker, tuple(cands), AN.HALF, S["selection_windows_per_key"] * len(cands), S["selection_seed"])
+    dist = kv.key_distributions(lambda x: ctx.net.run(x)[0], w, ctx.net.device)
+    D = torch.stack([dist.pop(c) for c in cands])
+    qual = EL.pick_values(D, cands, plain, tuple(S["value_band"]), tuple(S["value_ranks"]), S["key_specific_ratio"])
+    keys = EL.draw_keys(qual, cands, S["k"], S["key_draw_seed"])
+    geo = EL.geo_mean_p(lambda x: ctx.net.run(x)[0], w.tokens, w.half, {x: qual[x]["value"] for x in keys}, ctx.net.device)
+    for x in keys:  # values are chosen by the arithmetic mean "p"; the geometric mean over the same windows is reported beside it
+        qual[x]["p_geo"] = geo[x]
+    return keys, qual

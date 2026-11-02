@@ -1,0 +1,468 @@
+{
+  "status": "Filing A filed 2026-10-30: rules, edge cases, constants not depending on job 1, C0a and ref_probe (everything in this file except what filing B adds). Rules implemented in src/commute/revival_kv.py and CPU-tested on the edge cases in tests/test_revival_kv.py (all pass). Filing B NOT yet filed: append it dated under \"filing_B\" after job 1 (from results/measure.json filing_B_draft), never editing filing A; jobs 2 and 3 refuse without it.",
+  "experiment": "E55 C3: pruning revival and reverse fine-tuning (toward W0's distribution) and the possession probe (reference) on E58's open-pair 67M maps, eight seeds each, positions on the rank-1-to-cipher axis beside r, the stand-in ratio, S, carry x, update size, D and MLP share",
+  "plan": "reports/plans/2026-10-31_plan_e55-stage-c-open-pair.md",
+  "states": {
+    "seeds_0_2": {
+      "elicit": "experiments/open_pair/results/large/elicit_s{0,1,2}.pt (run.json states.*.ft.sha256, G)",
+      "cipher": "experiments/open_pair/results/large/cipher_s{0,1,2}.pt (run.json)",
+      "copy": "experiments/open_pair/results/large/amend1/copy_s{0,1,2}.pt (amend1.json control)",
+      "rank1": "experiments/open_pair/results/large/amend1/rank1_s{0,1,2}.pt (amend1.json control)"
+    },
+    "seeds_3_7": "new in job 2, after the seed-0 reproduction control; per seed elicit before cipher. elicit, rank1, copy: keydep.elicit_ft at E12's scored step (first of 10, 30, 100, 300 with held-out P(target) >= 0.5); cipher: keydep.cipher_ft at the step in 1-30 nearest the same seed's elicit norm; E58 columns by heldout_keys.behaviour and vpd_read; saved to experiments/open_pair_instruments/results/large/<map>_s<seed>.pt with sha256"
+  },
+  "windows": "experiments/open_pair/results/large/amend1/windows_rank1_trained.pt: 'train' for reverse fine-tuning; 'heldout' (75 windows): fit half (even) ranks units, score half (odd) reads every number",
+  "axis": {
+    "old_end": "rank1",
+    "new_end": "cipher",
+    "placed": "elicit",
+    "reported_beside": [
+      "copy position p_copy",
+      "carry label category (copy: neither/reuses/neither at seeds 0-2)"
+    ]
+  },
+  "constants": {
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "prune_k": [
+      13,
+      40
+    ],
+    "n_random": 20,
+    "prune_seed": 0,
+    "D_void_frac": 0.2,
+    "reverse": {
+      "optimizer": "adam",
+      "lr": 3e-06,
+      "batch": 32,
+      "grad_clip": 1,
+      "loss": "KL(p_W0 || p_m) at every position of the train windows",
+      "read": "kappa on the score half after every step",
+      "cap_steps": 1000,
+      "seed": "the state's seed"
+    },
+    "planted": {
+      "block": 3,
+      "n_units": 13,
+      "units": "among block-3 units with mean GELU activation at the answer position (fit half, W0) above the block median, the 13 with the lowest single-unit zeroing cost kappa(W0 with that unit zeroed)",
+      "edit": "down_proj columns += -alpha * w / a_j, w = unit vector of the fit-half mean of (u_rank1(key) - u_mean)",
+      "alpha": "bisection so kappa(planted) = median D of the six pole states, subject to off-answer KL(W0 || planted) <= the largest off-answer KL among the 12 real states; fallback: the largest kappa reachable within that bound, recorded",
+      "ceiling": "(D_planted - kappa(W0 with the 13 units zeroed)) / D_planted",
+      "pass": {
+        "found_in_top13_min": 10,
+        "R_min": "0.8 x ceiling",
+        "reverse": "reaches D/2 before cap_steps (miss -> stop); planted t_half reported, not compared"
+      }
+    },
+    "lens_blocks": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "noise_floor": {
+      "R": "filing_B: max over the six pole states and both K of the sd over the 20 random removals of (kappa(state) - kappa(random pruned)) / D, measured in job 1",
+      "t_half": 1
+    },
+    "gap_mult": 3,
+    "bands": {
+      "vpd_min": 0.6666666666666666,
+      "label_max": 0.3333333333333333
+    },
+    "bootstrap": {
+      "draws": 2000,
+      "rng_seed": 0,
+      "central": 0.9
+    },
+    "distance_tol": 0.1,
+    "G_tol": 0.0001,
+    "lens_tol": 1e-05,
+    "prior_tol": 0.1,
+    "reproduction": {
+      "maps_order": [
+        "elicit",
+        "cipher (at elicit_s0 norm)",
+        "rank1",
+        "copy"
+      ],
+      "seed": 0,
+      "checks": {
+        "scored_step": "exact",
+        "norm": "1e-4 relative",
+        "G": 0.001,
+        "x": 0.001,
+        "r": 0.001
+      },
+      "source": "E58 Amendments 3 and 4 reproduced retrained states exactly (weight difference 0; cipher r 0.368 both times)",
+      "on_miss": "exit 1 before any new seed"
+    }
+  },
+  "constants_sources": {
+    "prune_k": "C1b's K 5 and 15 of 4,608 units scaled to 12,288 (0.11%, 0.33%)",
+    "n_random": "C1b",
+    "reverse_lr": "a tenth of E54's forward 3e-5: Jain et al. reverse below the forward rate; C1 used lr/10",
+    "cap_steps": "about 10x the expected half-life at lr/10; censoring instead of a cap value (review S6)",
+    "noise_floor": "R: measured random-removal spread in shares of D (job 1); t_half: one optimizer step",
+    "gap_mult": "E51's separation rule and C1b's 3 sd convention",
+    "bands": "thirds of the axis, this project's; edge decided by the bootstrap, not one seed",
+    "bootstrap": "review S1",
+    "distance_tol": "unsourced: this project's choice, like the bands (review m2)",
+    "planted": "review S5",
+    "G_tol": "E58 Amendment 1's reproduction tolerance",
+    "prior_tol": "unsourced: this project's choice, like the bands (review m2)"
+  },
+  "definitions": {
+    "kappa(m)": "mean over score-half windows of KL(p_W0 || p_m) at the answer position, nats",
+    "D": "kappa(state); void if D < D_void_frac x the smallest pole-map mean D (job 1)",
+    "Delta_K": "(kappa(state) - kappa(top-K pruned)) - mean over n_random random K-unit removals of (kappa(state) - kappa(random pruned)); units = 4 x 3072 MLP neurons zeroed at site mlp<l> at every position; top-K by Alg. 3's grad . w on up_proj row (+bias if any) of the fit-half mean kappa at the state",
+    "R": "max over K of Delta_K / D (max over K biases R up equally for every state)",
+    "t_half": "first step at which kappa falls to D/2, linearly interpolated between the straddling steps; 'censored' if not by cap_steps",
+    "q": "per map, max over lens blocks of mean over the map's trained-key held-out windows of [log P_lens(own value) - mean over the map's other distinct values of log P_lens(value)]; W0 only",
+    "p": "(mean_elicit - mean_cipher) / (mean_rank1 - mean_cipher), seed means over non-void seeds",
+    "p_copy": "(mean_copy - mean_cipher) / (mean_rank1 - mean_cipher); reported",
+    "mlp_share": "(||dW_up||^2 + ||dW_down||^2) / ||dW||^2 summed over blocks; baseline column",
+    "prior": "per map, mean over score-half windows of log p_W0(value) at the answer position; W0 only; baseline column",
+    "p_prior": "p computed on the prior column"
+  },
+  "rules": {
+    "gap": "noise = max within-map seed sd over rank1, cipher, elicit, floored per noise_floor; gap = mean_rank1 - mean_cipher; 'ok' iff d * gap >= gap_mult * noise (d = +1 for R and q, -1 for t_half); 'reversed' iff -d * gap >= gap_mult * noise; else 'no gap'. Undirected baseline columns (update size, D, mlp_share) use |gap|.",
+    "censoring": "any censored pole seed -> t_half 'censored' (void); censored elicit or copy seeds are reported and dropped",
+    "side": "only with gap 'ok': 'VPD' iff p >= vpd_min; 'label' iff p <= label_max; else 'between'; ties to the outer band; p > 1 -> 'VPD', p < 0 -> 'label'",
+    "firm": "bootstrap: resample seeds with replacement within each map, draws x; a zero-denominator draw is outside every band; the side holds only if the 5th and 95th percentiles of p lie in its band, else 'between'",
+    "distance": "if p_D has gap 'ok': an instrument whose firm side equals p_D's side, or whose p is within distance_tol of p_D, reads 'distance'",
+    "void": "a map with fewer than 2 non-void seeds -> the column is 'void'",
+    "verdict_per_instrument": "one of VPD, label, between, distance, prior, distance and prior, no gap, reversed, censored, void",
+    "verdict_joint": "'shared' iff both VPD; 'shared (by X)' iff X reads VPD and the other no gap, void or censored; 'VPD alone' / 'VPD alone (by X)' likewise with label; 'conflict' iff one VPD and the other label or reversed; else 'not settled', naming each",
+    "prior": "if p_prior has gap ok: an instrument whose firm side equals p_prior's, or whose p is within prior_tol of p_prior, reads 'prior'; both distance and prior -> 'distance and prior'; r and stand-in ratio put through rules distance and prior too, reported"
+  },
+  "edge_cases_run": {
+    "empty_pool": "a map with < 2 non-void seeds -> column void",
+    "zero_denominator": "gap 0 -> 'no gap'; zero-denominator bootstrap draws count as outside (matters where rank1 and cipher nearly tie, e.g. S)",
+    "ties": "p exactly 2/3 -> VPD; exactly 1/3 -> label",
+    "censoring": "rule 'censoring'; no cap value enters a mean",
+    "D_floor": "relative floor; unnormalised Delta reported beside R",
+    "distance_without_gap": "p_D 'no gap' -> the distance rule does not fire",
+    "worked_known_columns_3_seeds": {
+      "r": "gap 0.613 >= 3 sd 0.050; p 0.876; bootstrap 90% 0.859-0.894 -> VPD; p_copy 0.996",
+      "stand_in_ratio": "gap 0.782 >= 0.055; p 0.787; 0.778-0.796 -> VPD; p_copy 0.895",
+      "steering_S": "gap 0.043 < 0.105 -> no gap",
+      "carry_x": "gap 0.449 >= 0.110; p 0.691; 0.650-0.728 straddles 2/3 -> between (reported); p_copy 1.83",
+      "update_size": "|gap| 0.032 < 0.284 -> no gap"
+    },
+    "prior_without_gap": "p_prior no gap -> rule prior does not fire",
+    "prior_in_vpd_band": "a firm VPD-band p_prior turns every VPD reading (r included) into prior: intended, outcome (f); expected p_prior about (-6.4+13.7)/(-2.5+13.7) = 0.65, between, so only the 0.1 clause can fire; r 0.876 would not",
+    "planted_unreachable": "bisection fallback; pass rules relative to the planted state's own D and ceiling"
+  },
+  "expected_before_job1": {
+    "D_nats": {
+      "rank1": "1.5-2.5",
+      "elicit": "2.5-3",
+      "copy": "about 3",
+      "cipher": "about 3",
+      "zero_update": "exactly 0"
+    },
+    "p_D": "about 0.2",
+    "note": "replaced by job 1's measured means before filing",
+    "prior_logp": {
+      "rank1": "-2 to -3",
+      "elicit": "about -6.4 (E54 held-out geometric mean 1.70e-3)",
+      "copy": "about -9.7 (5.9e-5, E58 A6)",
+      "cipher": "about -13.7 (E54 1.08e-6)"
+    },
+    "p_prior": "about 0.6-0.7"
+  },
+  "do_nothing": {
+    "zero_update": "D = 0 exactly; R and t_half void"
+  },
+  "positive_controls": {
+    "planted_wrapper_pruning": ">= 10 of the 13 planted units in the top 13 and R >= 0.8 x ceiling; miss -> pruning void",
+    "planted_wrapper_reverse": "reaches D/2 before the cap (miss -> stop); planted t_half reported (no comparison with the poles)",
+    "lens": "block-4 lens equals W0's log-softmax within lens_tol; miss -> probe void",
+    "gap": "per instrument, rank1 vs cipher (P1)",
+    "reproduction": "job 2 seed-0 retrain matches the saved records (constants.reproduction)"
+  },
+  "predictions": {
+    "C0a": {
+      "filing": "A",
+      "claim": "job 1 stop rows pass: sha256 of states and windows, identical tokens across maps, G within G_tol, zero update exact",
+      "lean": "95%"
+    },
+    "C0b": {
+      "filing": "B",
+      "claim": "job 2 seed-0 reproduction and job 3 stage 0 pass: lens, both planted controls, weights back at W0 after every reverse",
+      "lean": "75% (planted pruning 80%, planted reverse 90%, reproduction 90%)"
+    },
+    "P1": {
+      "filing": "B",
+      "claim": "each new instrument reads the rank1-to-cipher gap in its filed direction",
+      "rule": "rules.gap == ok",
+      "lean": {
+        "R": "55%",
+        "t_half": "65%"
+      },
+      "blind_to": "R: attention changes (about a third of each update, E56; mlp_share reported) and changes spread over > 40 units; t_half: structure vs distance (rules.distance); both: the value prior (rules.prior)"
+    },
+    "P2": {
+      "filing": "B",
+      "claim": "pruning places elicit at the old end",
+      "rule": "rules side, firm, distance, prior on R",
+      "lean": {
+        "VPD": "25%",
+        "between": "10%",
+        "label": "5%",
+        "distance_or_prior": "10%",
+        "no_gap_reversed_void": "50%"
+      }
+    },
+    "P3": {
+      "filing": "B",
+      "claim": "reverse fine-tuning places elicit at the old end",
+      "rule": "rules censoring, side, firm, distance, prior on t_half",
+      "lean": {
+        "VPD": "25%",
+        "between": "10%",
+        "label": "10%",
+        "distance_or_prior": "20%",
+        "no_gap_reversed_censored": "35%"
+      }
+    },
+    "V": {
+      "filing": "B",
+      "claim": "joint verdict",
+      "rule": "rules.verdict_joint",
+      "lean": {
+        "shared_or_shared_by_X": "25%",
+        "VPD_alone_incl_by_X": "10%",
+        "conflict": "5%",
+        "not_settled": "60%"
+      },
+      "note": "settled answer about 40%; distance or prior readings count as not settled"
+    },
+    "ref_probe": {
+      "filing": "A",
+      "claim": "reference only: cipher q within +-0.5 nats, elicit q >= 1, rank1 q >= elicit; p_q reported; not counted as an instrument",
+      "lean": "65%"
+    }
+  },
+  "reported_columns": [
+    "r",
+    "stand_in_ratio",
+    "S",
+    "carry x and its label",
+    "update size",
+    "D",
+    "mlp_share",
+    "q",
+    "p_copy for every column",
+    "Delta_K",
+    "top-K unit ids",
+    "prior",
+    "p_prior",
+    "off-answer KL",
+    "planted t_half"
+  ],
+  "departures_from_literature": "plan section 9",
+  "not_run_here": "plan section 10",
+  "filing": {
+    "A_before_job1": [
+      "rules",
+      "edge_cases_run",
+      "constants (except those marked filing_B)",
+      "C0a",
+      "ref_probe"
+    ],
+    "B_after_job1": [
+      "D, prior, mlp_share, off-answer KL per state; p_D, p_prior",
+      "noise_floor.R",
+      "planted units, alpha, kappa_zeroed, ceiling",
+      "C0b",
+      "P1",
+      "P2",
+      "P3",
+      "V"
+    ]
+  },
+  "filing_A": {
+    "status": "filed",
+    "date": "2026-10-30",
+    "rules_code": "src/commute/revival_kv.py (gap_status, column_reading, side, bootstrap_p, percentiles, firm, tracks, verdict, joint_verdict, t_half_column, score_columns, probe_reference; revival, half_life, fit_alpha, planted_pass, mlp_share)",
+    "tests": "tests/test_revival_kv.py: the plan worked examples on E58 three-seed columns (r, ratio, S, carry x, update size), empty pool, zero denominators, ties, firmness, censoring, distance and prior rules, joint verdicts, per-state arithmetic",
+    "implementation_details": {
+      "sd": "within-map seed sd is the sample sd (n - 1), which reproduces the plan worked examples (r: 3 sd 0.050)",
+      "gap_zero": "a gap of exactly 0 is no gap for every column, directed or not (so a zero-noise column with gap 0 is not ok)",
+      "prior_direction": "the prior column is undirected (|gap|), the same treatment as D (rule 6: as distance)",
+      "percentiles": "the 5th and 95th percentiles are taken without interpolation (numpy method lower for the 5th, higher for the 95th); a zero-denominator draw is placed at -inf for the 5th and +inf for the 95th, so it counts against every band",
+      "firm": "a point side VPD holds iff the 5th percentile >= vpd_min; label iff the 95th <= label_max; a point between stays between",
+      "rules_5_6_scope": "rules 5 and 6 fire only when both the instrument column and the baseline column read gap ok; tolerance inclusive (|p - p_base| <= tol)",
+      "planted_block": "planted.block 3 = steering.Net site mlp3, the last of the four blocks (0-based, as the sites are named)",
+      "planted_units": "candidates must also have mean activation > 0 (the edit divides by it); single-unit zeroing cost measured on the fit half (the half that scores units), ties to the lower unit id",
+      "planted_alpha": "doubling from alpha 1 then 40 bisection steps, assuming kappa and the off-answer KL rise with alpha",
+      "probe_values": "q: the map other distinct values are all 32 keys values (trained and held-out keys, each value once, heldout_keys.pool_of), on the 75 trained-key held-out windows",
+      "reverse_loss_precision": "the reverse fine-tune loss runs under finetune.logits_of (bf16 autocast, as the forward E54 recipe); kappa is read in fp32 with float64 sums",
+      "reverse_reference": "finetune.finetune_to_reference takes a frozen W0 copy of the target model as the reference module (the plan named ref_logprobs; W0 log-probs at every position of every train window would not fit in memory)",
+      "reproduction_norm": "norm check: |norm - recorded| <= 1e-4 x recorded"
+    },
+    "filing_B_keys_read_by_code": {
+      "status": "filed",
+      "D_void": "float: D_void_frac x the smallest pole-map mean D from job 1",
+      "noise_floor_R": "float",
+      "planted": "{units: [13 flat ids], abar: [13 floats], alpha: float} (w is recomputed from W0 and the rank-1 values)"
+    }
+  },
+  "amendment_1": {
+    "date": "2026-10-31",
+    "status": "filed",
+    "why": "Job 1 (cluster job 46774) built the planted wrapper as filed and it could not work: block 3's median answer-position activation is negative, so the 13 lowest-cost above-median units were nearly silent (abar 0.002-0.097); the edit -alpha * w / abar_j scaled them up to ~400x at every position, and the off-answer KL bound (0.577) stopped it at kappa 0.184 against a target of 7.0, below D_void (0.978). Its pruning check (4 of 13, R 0.39) is noise, not a pruning failure. reports/reviews/2026-10-31_review_e55-c3-code.md findings 1-2; plan section 'Amendment 1, 2026-10-31: planted control'. Filing A's text is unchanged; the keys under amendment_1.planted replace constants.planted's keys of the same name and add the floor.",
+    "planted": {
+      "units": "on W0 and the fit half, per block-3 unit j: a_ans = mean GELU activation at the answer position, a_else = mean |activation| over every other position; candidates have a_ans above the block's active_quantile quantile of a_ans and above 0; the 13 planted units are the candidates with the largest a_ans / a_else (ties to the lower id). Single-unit zeroing costs are no longer measured.",
+      "active_quantile": 0.9,
+      "edit": "down_proj columns += -alpha * w (the same alpha for every unit; no 1/abar), w = unit vector of the fit-half mean of (u_rank1(key) - u_mean)",
+      "D_floor": "floor = max(D_void, D_floor_frac x target_D), D_void = D_void_frac x the smallest pole-map mean D, target_D = the median D of the six pole states. Planted D >= floor: the control is built and the pass rules apply. Planted D < floor: the control is void ('control not built'), not failed: the planted pruning pass is not scored and reads 'void'; the pruning instrument then has no positive control and is void as after a miss, reported as 'control not built'. The planted reverse check is unchanged and runs at any D.",
+      "D_floor_frac": 0.5,
+      "D_floor_frac_source": "this project's choice: keeps the planted D within the range of the real pole states (D 4.4-10.6 in job 1)",
+      "pass_unchanged": "found_in_top13_min 10, R_min 0.8 x ceiling, reverse rule: all as filed in constants.planted.pass"
+    },
+    "filing_B_keys_read_by_code": {
+      "planted": "{units: [13 flat ids], alpha: float, floor: float} (replaces filing A's {units, abar, alpha}; w is recomputed from W0 and the rank-1 values)"
+    },
+    "rerun": "job 1's results/measure.json (job 46774) moved to ~/commute-data/stale/reuse-lead/measure_job46774.json (in git history at 2650657); job 1 rerun; every non-planted number must reproduce exactly"
+  },
+  "filing_B": {
+    "date": "2026-10-31",
+    "status": "filed",
+    "source": "results/measure.json, job 46808 (Amendment 1 rerun of job 1; commit a0eaa06; sha256 8e72464ac4aab5a22f06d2c51723a6d97405787b5c9bde4c5449d1a68fb48ca4). Filed after job 1 and before any instrument reads a real state; filing A and amendment_1 are unchanged. Leans revised per reports/plans/2026-10-31_advice_e55-c3-baselines-FABLE.md (option A, adopted by the lead).",
+    "D_void": 0.9781569716534397,
+    "noise_floor_R": 0.013548909650913859,
+    "planted": {
+      "units": [
+        10849,
+        9223,
+        11010,
+        10333,
+        10401,
+        10129,
+        11886,
+        11896,
+        11074,
+        10328,
+        10895,
+        11014,
+        10501
+      ],
+      "alpha": 0.590043038128897,
+      "floor": 3.501576524888727,
+      "kappa": 4.206754490084108,
+      "kappa_zeroed": 0.03913493963602256,
+      "ceiling": 0.9906971182349078,
+      "target_D": 7.003153049777454,
+      "fallback": true
+    },
+    "planted_job1": {
+      "reading": "pass",
+      "found": 12,
+      "note": "job 1 item 6: built (D 4.207 >= floor 3.502), 12 of 13 found, R 0.973 >= 0.793 (0.8 x ceiling 0.991); reverse t_half 3.97 steps (reached D/2), weights back at W0. alpha is the off-answer-KL fallback (target 7.003 not reachable within 0.577), as amendment_1 allows."
+    },
+    "prior": {
+      "cipher": -14.323512567056191,
+      "copy": -8.854035132640117,
+      "elicit": -5.781429277883993,
+      "rank1": -5.000837886655653
+    },
+    "measured": {
+      "D_mean": {
+        "cipher": 4.890784858267199,
+        "copy": 7.842010343823354,
+        "elicit": 10.53007098906077,
+        "rank1": 8.71741347600564
+      },
+      "mlp_share_mean": {
+        "cipher": 0.7048120572657175,
+        "copy": 0.6767149775105518,
+        "elicit": 0.6872380446397978,
+        "rank1": 0.686379433611207
+      },
+      "off_kl_max": 0.5767047215406131,
+      "p_D": {
+        "p": 1.4736956977357314,
+        "p_lo": 1.4251648217356234,
+        "p_hi": 1.5316812582695978,
+        "p_copy": 0.7712338406386416,
+        "side": "VPD",
+        "status": "ok"
+      },
+      "p_prior": {
+        "p": 0.916269588075468,
+        "p_lo": 0.916269588075468,
+        "p_hi": 0.916269588075468,
+        "p_copy": 0.586685433303255,
+        "side": "VPD",
+        "status": "ok"
+      },
+      "reading": "D measures how peaked the state became (KL(p_W0 || p_m) rewards sharpening), not distance in the plan section 4 sense; p_prior 0.92 is the construction (elicit values are W0 ranks 2-20, W0 nearly flat over its top 20), its zero-width bootstrap because the prior is per map. On this axis the decomposition-free baselines already place elicit at the old end by construction, so the live question is whether the instruments disagree with VPD."
+    },
+    "rules_5_6": "kept as filed in filing A. Both baselines read firm VPD (p_D 1.47, p_prior 0.92), so any instrument reading on the VPD side converts to distance and prior: shared and conflict are unreachable; label, between and VPD alone (outcome b) stay reachable.",
+    "unfiled_reading": "an unfiled 0.1-clause-only reading (rules 5-6 firing only when |p - p_base| <= 0.1, without the same-side clause) will be reported beside the filed verdict, labelled unfiled; it does not replace the filed verdict.",
+    "predictions": {
+      "C0b": {
+        "claim": "job 2 seed-0 reproduction and job 3 stage 0 pass: lens, both planted controls, weights back at W0 after every reverse",
+        "lean": "85% (planted pruning 95% and planted reverse 95%: both passed in job 1 and stage 0 recomputes them deterministically; reproduction 90%)"
+      },
+      "P1": {
+        "claim": "each new instrument reads the rank1-to-cipher gap in its filed direction",
+        "rule": "rules.gap == ok",
+        "lean": {
+          "R": "55%",
+          "t_half": "65%"
+        },
+        "note": "unchanged from filing A draft; R noise floor now 0.01355"
+      },
+      "P2": {
+        "claim": "pruning places elicit at the old end",
+        "rule": "rules side, firm, distance, prior on R",
+        "lean": {
+          "VPD": "0% (rules 5-6 convert any VPD-side reading to distance and prior)",
+          "between": "10%",
+          "label": "5%",
+          "distance_or_prior": "35%",
+          "no_gap_reversed_void": "50%"
+        }
+      },
+      "P3": {
+        "claim": "reverse fine-tuning places elicit at the old end",
+        "rule": "rules censoring, side, firm, distance, prior on t_half",
+        "lean": {
+          "VPD": "0% (rules 5-6 convert any VPD-side reading to distance and prior)",
+          "between": "10%",
+          "label": "10%",
+          "distance_or_prior": "45%",
+          "no_gap_reversed_censored": "35%"
+        }
+      },
+      "V": {
+        "claim": "joint verdict",
+        "rule": "rules.verdict_joint",
+        "lean": {
+          "shared_or_shared_by_X": "0% (unreachable: rules 5-6)",
+          "VPD_alone_incl_by_X": "15%",
+          "conflict": "0% (unreachable: rules 5-6)",
+          "not_settled": "85%"
+        },
+        "note": "VPD alone is outcome (b), the one that bears on the user priority: reported to the user at once if it reads"
+      },
+      "P_copy": {
+        "claim": "reported column: where an instrument reads the gap (status ok), its p_copy sits nearer r (0.9960) than the prior (0.5867)",
+        "rule": "per instrument with gap status ok: p_copy > 0.79133 (the midpoint of r p_copy 0.99597, E58 seeds 0-2, and the prior p_copy 0.58669, job 1), point estimate, strict; an instrument without gap ok has no reading; nan p_copy reads no",
+        "lean": "55% per instrument",
+        "why": "copy is the one map where prior (0.59), D (0.77) and r (about 1.0) differ: the only free separation of prior from old pieces among the states"
+      }
+    }
+  }
+}

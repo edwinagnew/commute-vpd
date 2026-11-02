@@ -68,6 +68,15 @@
   "C_E40": "E40 step 10 on all 128 maths rows: K00 = 1.3738106470539775 and K0 = 0.06961319516372436 (E44 Amendment 2 controls.json), each within 1e-3 relative. Miss: stop",
   "C_E45": "each E45 state's KL(W0 || FT) on its own 64 rows of 512 equals E45's E record (E_<run>.json states.100.kl.own) within 1e-3 relative, and its sha256 equals the one Stage A recorded (results/dW_SHA256SUMS). Miss: stop"
  },
+ "amendment_2026-10-30": {
+  "status_note": "amended 2026-10-30 before any run, per code review (a fresh agent's review of commit be6f5bd); nothing had run. Where an item below and the text above differ, the item below holds",
+  "floor": "the share's floor (0.05) is on the denominator in mean nats per position, (K00 - K11) / positions read; the code had compared it with per-row KL sums (commute.qwen_reading.shares takes the position count)",
+  "overlap_pool": "the draws come, per site, from the pool of live subcomponents NOT gated on under g0 on the maths rows (W0, Stage A's counts), the only place a switched-on set S can lie; N and K are counted inside the pool, o = |S and X| as before. The code had drawn from every live subcomponent (about 17% of live are on at W0 on the maths rows), which reads the null low and e about +2 sd high; the seed-pair control was inflated the same way",
+  "null_seeds": "each Gaussian null (split.random_like: the C0 off-span control, row 4's nulls, the placement nulls) is seeded per site, seed x 1000 + the site's index in SITES, so sites of one shape no longer share one Gaussian matrix. Departure from E44's stage S, which used seed 0 at every site",
+  "think_overlap_validation": "think_overlap is scored on anchor 2 alone, on both seeds (each 'holds' or 'misses'); the validated-gap rule applies to prompt_overlap only. Anchor 1's e_T is reported, unfiled, with no status",
+  "early_added": {"C_g0": "every C0 and C state's g0 gate counts on the maths rows equal Stage A's W0 counts exactly. Miss: stop"},
+  "W0_control": "the W0 control's fine-tuned weight set is a separate pinned copy of W0, so it goes through the same copy path as every update"
+ },
  "expected": {
   "W0": "all four cells equal K0; shares undefined; |S| = 0",
   "do_nothing": "K10 = K00 and K11 = K01: re-gating share 1, direct share 0",

@@ -273,3 +273,71 @@ Any faithfulness score of a map; E45's least-squares pass row (not run: the pass
 the 20-step adversary; the re-gating line's Qwen
 stage 1 (decisions row 94); E40 steps 1 and 100 and gold's earlier states, unless a row needs a dose check; saved
 split pieces; a constructed positive control for the route split at scale.
+
+## Amendment record
+
+- **2026-10-30, before any run, per code review** (fresh-agent review of commit be6f5bd): four rule fixes went into
+  `experiments/qwen_reading/results/predictions.json` → `amendment_2026-10-30`, dated, nothing deleted. (1) The share's
+  0.05-nat floor is read in mean nats per position, not on row sums. (2) Row 3's draws come from the live
+  subcomponents not gated on under g0 on the maths rows, the only place S can lie. Drawing from every live
+  subcomponent had read e about 2 sd high. (3) Gaussian nulls are seeded per site. (4) think_overlap is scored on
+  anchor 2's two seeds only. Added a stop if a state's g0 counts differ from Stage A's.
+
+### Code departures (2026-10-30, the writer's record; code in `experiments/qwen_reading/`, `commute.qwen_reading`)
+1. In-span control: E44 Amendment 2's own random state (per-site Σ-matched scale from `amend2/S.json` × 17.78), not
+   `qwen_teacher.random_change` (unscaled N(0,1) pieces), which would not give KL ratio 0.81. C0 checks 0.502335.
+2. E45 saved no δW sums. Stage A records them (`results/dW_SHA256SUMS`), and C also checks each state's own-row KL
+   against E45's E record.
+3. Own rows: `qwen_reading.own_rows` rebuilds E45's `Job.own_rows` (gold, a2), since `qwen_updates/job.py` cannot be
+   imported. Guarded by the KL check. Own rows are cut to 256 tokens; E40's own rows are the maths rows.
+4. `Job`/`amend2.Reader` are sibling modules of `experiments/qwen_maps` and cannot be imported, so `lab.py` rebuilds
+   the parts it needs on the shared `qwen_maps`/`split` functions. The frozen scripts are unchanged.
+5. Gaussian control's KL search: b ← b·√(target/KL), at most 6 evaluations, not Amendment 2's ×10 bisection. An
+   unmatched search reads "weak" in the teeth verdict.
+6. The in-span control's route split is the least-squares split of its weight change, not its own pieces.
+7. Split-half floor: the larger of the two directions.
+8. Answer positions: the tokens after the row's last `</think>`, in every context. L's filler puts its `</think>` at
+   T's position. Filler: the other problems' no-think turns, cyclic, cut from the front.
+9. T, L, C, P are each taken against the plain per-problem no-think rows (test 0-127, unpacked from
+   `maths_rows.json`). C reads E44's FineWeb rows whole (512 tokens).
+10. W0 control: X = 0 through the same applied-pieces path (the solver is not run on δW = 0). Its fine-tuned set is
+    a separate pinned copy of W0.
+11. Row 4 (c)'s positive control (the split onto the often-on half) runs on E40 only. The nulls are seeds 0-3, per
+    site (amendment).
+12. B2 moves U to the host, since Γ's gates read V only (9.7 GB freed for ~2,300-token rows). Each set is read
+    longest row first.
+13. Every state's g1 counts are saved per row (int16, ~127 MB each, ~0.8 GB in all) for D's bootstrap of e_X. The
+    plan estimated ~50 MB in all.
+14. D's e_X bootstrap is not coded yet; `validated` takes the s.e. as an input.
+15. C0 and C: Γ is parked on the host during Σ and the split. Between states, the job exits 0 when the time left
+    under the 3 h limit is less than the longest state so far (before one is measured: past 2 h). `--mem=128G`.
+
+### Code departures, Stage D and the scoring (2026-10-30, the D writer's record; `run.py --stage D|score`, `score.py`)
+16. D's states come from E45's `score.json` → `amend2_decisive.<run>` through `qwen_reading.d_pick`: a matched read
+    state is read. Own samples (`--own`, default `own2_s0`) and the null, when unmatched, are read at the nearest
+    learned state, else the nearest unlearned one, as unmatched observations (E45 Amendment 2 `learned`). An anchor-1
+    seed that is not matched is not read (§11). D refuses to start before C0 has finished; a C0 "no teeth" is logged.
+17. D's early stops are C's rules at the read step: the own-row KL against `E_<run>.json` `states.<step>.kl.own`
+    (own samples and the null: the 128 maths rows of 512, as E45 reads them; anchor 1: E45's `large/P/a1_rows.json`
+    rows, rebuilt by `qwen_reading.a1_rows`); the g0 counts against Stage A's (the check keeps C's name `C_g0_<run>`).
+    E45 saved no sums, so D's first read of a δW appends its sha256 to `results/dW_SHA256SUMS` (key
+    `<run>/step_<t>`) and a resumed read checks it. These are not added to `predictions.json` "early" (no refile).
+18. D's gate counts go to `large/C/<run>_g{0,1}` beside C's; `summary.json` reads every state found there.
+19. The scoring is `--stage score` (`score.py`, CPU), also run at D's end; `predictions.json` names "stage D".
+20. E45's three rows are validated by E45's own rule: the gap of anchor means strictly above the larger seed gap, the
+    noise floor sitting in each share's status (no bootstrap; s.e. 0). Anchor 1's absolute thresholds (≥ 0.5, ≥ 0.8)
+    are scored per seed; anchor 2's "below anchor 1" (and placement's "anchor 1 above") holds only when validated as
+    filed, misses when validated reversed (announced). Behaviour kept is scored when K00 − K0 ≥ 0.05 nats per
+    position (E45's floor in its denominator). Placement has no floor of its own: the seed gap alone.
+21. The prompt row's s.e. is the population sd of the gap of anchor means of e_P over 2000 resamples of the 128
+    maths rows, the same indices for the four anchor states and W0's g0 (S and the pool re-derived per resample from
+    the saved per-row counts, 1000 draws at seed 0 each time). It runs only when all four e_P are scored. With Stage
+    A's numbers (|S_prompt| 1860 against the floor 21110) the prompt row is unscored for every state.
+22. §11 read literally: with no anchor-1 seed matched, no anchor prediction is scored, think_overlap on anchor 2
+    included; every state's readings are still written.
+23. On a validated row, E45's t rule reads gold, own samples, the null and E40 (E40 on the maths rows).
+24. (Review of d19b7fb.) The scoring refuses to run until every C state is read and every D run whose pick has a step
+    is read at that step (a D record at another step is stale: E45 rescored). A run with no step, an anchor-1 seed not
+    matched or a run E45 never scored, is missing: every row a miss (`general`), never "unscored". With exactly one
+    anchor-1 seed matched, the other seed's per-seed rules miss and every anchor relation is "not validated"; the rows
+    are still scored (§11 withholds scoring only when neither seed is matched).
