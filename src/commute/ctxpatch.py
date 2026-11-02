@@ -34,19 +34,19 @@ class Pairs:
     hi: Tensor  # (N, 41) donor contexts
     lo: Tensor  # (N, 41) recipient contexts, same key and marker
     tgt: Tensor  # (N,) token read
-    mask: Tensor | None  # (N,) token left out of the odds (the map's own target, off-map reads only)
+    mask: Tensor | None  # (N, 2) tokens out of the odds, off-map reads only: the map's target on x_hi and on x_lo (they differ on the copy map)
 
 
 def read(net: Net, toks: Tensor, tgt: Tensor, half: int, dW: DW | None = None, edit_of: EditOf | None = None,
          mask: Tensor | None = None, batch: int = 64) -> Tensor:  # fmt: skip
-    """(N,) float64: log-odds of tgt at `half` in W0 + dW, under the edit, with `mask`'s token out of the odds."""
+    """(N,) float64: log-odds of tgt at `half` in W0 + dW, under the edit, with `mask`'s tokens (N, m) out of the odds."""
     out = []
     with net.at(dW):
         for s in range(0, len(toks), batch):
             i = slice(s, s + batch)
             lg = net.run(toks[i], edit_of(i) if edit_of else None)[0][:, half]
             if mask is not None:
-                lg = lg.scatter(1, mask[i][:, None].to(lg.device), -math.inf)
+                lg = lg.scatter(1, mask[i].to(lg.device), -math.inf)
             out.append(log_odds(lg, tgt[i]).double().cpu())
     return torch.cat(out)
 
@@ -94,11 +94,28 @@ def make_arm(net: Net, p: Pairs, half: int) -> Arm:
     return Arm(p, hi, lo, responses(net, p, hi, lo, half))
 
 
-def identity_max(net: Net, a: Arm, half: int) -> float:
-    """Largest |patched - unpatched| over the pairs and blocks, W0, the patch taken from x_lo's own run."""
+def transplant(net: Net, a: Arm, l: int, half: int) -> EditOf:
+    """Block l's input at every position takes x_hi's, with the arm's stored x_hi site at `half`, so a misaligned site shows."""
+
+    def edit_of(i: slice) -> Edit:
+        seen = net.run(a.pairs.hi[i], capture=True)[1][f"in{l}"]
+
+        def f(_x: Tensor) -> Tensor:
+            y = seen.clone()
+            y[:, half] = a.hi[l][i].to(y.device, y.dtype)
+            return y
+
+        return {f"in{l}": f}
+
+    return edit_of
+
+
+def transplant_max(net: Net, a: Arm, half: int) -> float:
+    """W0: the largest |read of x_lo with x_hi's block-l input written in - read of x_hi| over the pairs and blocks. Nothing but
+    the stored site and the edit path can make it differ from rounding. nan propagates."""
     p = a.pairs
-    plain = read(net, p.lo, p.tgt, half, mask=p.mask)
-    return max(float((read(net, p.lo, p.tgt, half, None, set_at(l, half, a.lo[l]), p.mask) - plain).abs().max()) for l in BLOCKS)
+    want = read(net, p.hi, p.tgt, half, mask=p.mask)
+    return nan_max([float((read(net, p.lo, p.tgt, half, None, transplant(net, a, l, half), p.mask) - want).abs().max()) for l in BLOCKS])
 
 
 def steer_shares(net: Net, toks: Tensor, tgt: Tensor, half: int, dW: DW) -> dict[int, float]:
@@ -140,12 +157,11 @@ def batch_scores(net: Net, toks: Tensor, tgt: Tensor, half: int) -> Tensor:
     return torch.cat([(g * seen[l][0]).sum((0, 1)).double().cpu() for l, g in enumerate(grads)])
 
 
-def neuron_scores(net: Net, toks: Tensor, tgt: Tensor, half: int, dW: DW | None = None, batch: int = 64) -> Tensor:
-    """(12288,): `batch_scores`, mean over windows, in W0 + dW."""
+def neuron_scores(net: Net, toks: Tensor, tgt: Tensor, half: int, batch: int = 64) -> Tensor:
+    """(12288,): `batch_scores` at W0, mean over windows."""
     total = torch.zeros(N_LAYERS * D_MLP, dtype=torch.float64)
-    with net.at(dW):
-        for s in range(0, len(toks), batch):
-            total += batch_scores(net, toks[s : s + batch], tgt[s : s + batch], half)
+    for s in range(0, len(toks), batch):
+        total += batch_scores(net, toks[s : s + batch], tgt[s : s + batch], half)
     return total / len(toks)
 
 
@@ -180,10 +196,10 @@ def ablate(idx: Tensor, means: Tensor) -> EditOf:
     return lambda _i: edit
 
 
-def gain_under(net: Net, toks: Tensor, tgt: Tensor, half: int, dW: DW, idx: Tensor, means: Tensor) -> float:
-    """The state's gain over W0 with the neurons `idx` mean-ablated in both."""
-    e = ablate(idx, means)
-    return float((read(net, toks, tgt, half, dW, e) - read(net, toks, tgt, half, None, e)).mean())
+def gain_under(net: Net, m: Map, dW: DW, ablated: EditOf | None = None) -> float:
+    """The state's gain over W0 on the map's U windows, with the same ablation, if any, in both."""
+    toks, tgt = m.u
+    return float((read(net, toks, tgt, m.half, dW, ablated) - read(net, toks, tgt, m.half, None, ablated)).mean())
 
 
 @dataclass
@@ -202,6 +218,7 @@ class Map:
     score: Tensor | None = None  # gradient x activation at W0
     top: Tensor | None = None
     draws: list[Tensor] | None = None
+    fell: list[int] | None = None  # per draw, how many neurons left their cell
 
     @property
     def u(self) -> tuple[Tensor, Tensor]:
@@ -211,14 +228,16 @@ class Map:
 def make_map(net: Net, name: str, toks: Tensor, keys: Tensor, tgt: Tensor, off: Tensor, on: Pairs | None, S: dict[str, Any],
              th: dict[str, Any]) -> Map:  # fmt: skip
     """Pairs chosen from W0 alone. `on` is given for the copy map (a window and that window with B gone); otherwise ranked by
-    W0's log-odds of the target. Off-map pairs are ranked by W0's log-odds of the off-map target, the map's target masked."""
+    W0's log-odds of the target. Off-map pairs are ranked by W0's log-odds of the off-map target, the map's target masked.
+    Blind to: pairs are picked on W0's own metric, so R(W0) carries selection inflation and T can sit below 1 for any state,
+    the more so as the update grows; that feeds the reading of T against the update's size."""
     half = S["half"]
     assert bool((off != tgt).all()), f"{name}: an off-map target is the map's own"
     if on is None:
         hi, lo = quarter_pairs(read(net, toks, tgt, half), keys)
         on = Pairs(toks[hi], toks[lo], tgt[lo], None)
-    hi, lo = quarter_pairs(read(net, toks, off, half, mask=tgt), keys)
-    a_on, a_off = make_arm(net, on, half), make_arm(net, Pairs(toks[hi], toks[lo], off[lo], tgt[lo]), half)
+    hi, lo = quarter_pairs(read(net, toks, off, half, mask=tgt[:, None]), keys)
+    a_on, a_off = make_arm(net, on, half), make_arm(net, Pairs(toks[hi], toks[lo], off[lo], torch.stack([tgt[hi], tgt[lo]], 1)), half)
     star = l_star(a_on.R0, th, S["seed"]) if enough_pairs(len(on.tgt), len(keys.unique()), th) else None
     return Map(name, toks, keys, tgt, a_on, a_off, star, half, S["u_every"])
 
@@ -250,21 +269,22 @@ def neuron_sets(net: Net, m: Map, K: int, S: dict[str, Any]) -> None:
     toks, tgt = m.u
     m.score = neuron_scores(net, toks, tgt, m.half)
     m.top = top_abs(m.score, K)
+    if not null_has_room(K):
+        return
     a, b = deciles(neuron_stats(net, toks)[1]), deciles(alignment(net, tgt))
     gen = torch.Generator().manual_seed(S["seed"])
-    m.draws = [matched_draw(m.top, a, b, gen)[0] for _ in range(S["n_draws"])]
+    m.draws, m.fell = (list(v) for v in zip(*(matched_draw(m.top, a, b, gen) for _ in range(S["n_draws"])), strict=True))
 
 
 def units(net: Net, m: Map, K: int | None, means: Tensor, dW: DW, th: dict[str, Any]) -> dict[str, Any]:
-    """G, U, the null draws' mean and sd, U at the state's own top K, and U's bar. Void under the gain floor or with no K."""
-    toks, tgt = m.u
-    G = gain_under(net, toks, tgt, m.half, dW, torch.empty(0, dtype=torch.long), means)
+    """G, U, the null draws' mean and sd, and how many neurons left their cell per draw. Void under the gain floor, with no K,
+    or with no room for a null."""
+    G = gain_under(net, m, dW)
     if K is None or m.top is None or m.draws is None or G < th["gain_floor"]:
         return {"G": G, "void": True}
-    share = lambda idx: units_share(G, gain_under(net, toks, tgt, m.half, dW, idx, means), th["gain_floor"])
+    share = lambda idx: units_share(G, gain_under(net, m, dW, ablate(idx, means)), th["gain_floor"])
     nulls = torch.tensor([share(d) for d in m.draws], dtype=torch.float64)
-    n0, s, own = float(nulls.mean()), float(nulls.std()), share(top_abs(neuron_scores(net, toks, tgt, m.half, dW), K))
-    return {"G": G, "U": share(m.top), "null": n0, "null_sd": s, "U_own": own, "bar": bar(n0, s, own), "void": False}
+    return {"G": G, "U": share(m.top), "null": float(nulls.mean()), "null_sd": float(nulls.std()), "fell": m.fell, "void": False}
 
 
 # ----------------------------------------------------------------------------- the built controls
@@ -274,14 +294,9 @@ def with_matrices(net: Net, parts: dict[str, Tensor]) -> DW:
     return {k: parts[k].float().cpu() if k in parts else torch.zeros_like(w).cpu() for k, w in net.W0.items()}
 
 
-def gain(net: Net, m: Map, dW: DW) -> float:
-    toks, tgt = m.u
-    return float((read(net, toks, tgt, m.half, dW) - read(net, toks, tgt, m.half)).mean())
-
-
 def matched(net: Net, m: Map, build: Callable[[float], DW], Gt: float, cap: float, tol: float) -> tuple[DW, dict[str, Any]]:
     """`perturb.match` on the map's gain; status "cap" keeps the largest alpha, reported."""
-    found = PT.match(lambda a: gain(net, m, build(a)), Gt, cap, tol)
+    found = PT.match(lambda a: gain_under(net, m, build(a)), Gt, cap, tol)
     return build(found["x"]), {"alpha": found["x"], "G": found["f"], "status": found["status"], "G_target": Gt}
 
 
@@ -292,8 +307,10 @@ def write_state(net: Net, m: Map, Gt: float, tol: float) -> tuple[DW, dict[str, 
     keys = m.keys.unique().tolist()
     A = torch.stack([acts[m.keys == k].mean(0) for k in keys], 1)
     vals = torch.stack([m.tgt[m.keys == k][0] for k in keys])
-    X = PT.key_write(A, net.net.lm_head.weight.detach().float().cpu()[vals].T)
-    return matched(net, m, lambda a: with_matrices(net, {"h.3.mlp.down_proj": a * X}), Gt, PT.ALPHA_MAX, tol)
+    lm = net.net.lm_head.weight.detach().float().cpu()
+    X = PT.key_write(A, lm[vals].T)
+    dW, info = matched(net, m, lambda a: with_matrices(net, {"h.3.mlp.down_proj": a * X}), Gt, PT.ALPHA_MAX, tol)
+    return dW, info | {"fit": PT.write_fit(X, A, acts, lm[m.tgt])}
 
 
 def amplify_state(net: Net, m: Map, K: int, Gt: float, cap: float, tol: float) -> tuple[DW, dict[str, Any]]:
@@ -312,7 +329,9 @@ def amplify_state(net: Net, m: Map, K: int, Gt: float, cap: float, tol: float) -
             parts[f"h.{l}.mlp.down_proj"] = torch.zeros_like(w).index_copy(1, sel, a * w[:, sel])
         return with_matrices(net, parts)
 
-    return matched(net, m, build, Gt, cap, tol)
+    dW, info = matched(net, m, build, Gt, cap, tol)
+    overlap = float(torch.isin(top, m.top).double().mean()) if m.top is not None and len(top) else math.nan
+    return dW, info | {"n_neurons": len(top), "share_in_U_top": overlap}
 
 
 def sharpened(net: Net, spans: Windows, S: dict[str, Any], log: Any) -> DW:
@@ -401,11 +420,14 @@ def quotient(T: float, d: Tensor, T_off: float, d_off: Tensor) -> tuple[float, f
     return T / T_off, float((d / d_off).std())
 
 
-def bar(n0: float, s: float, p_plus: float) -> dict[str, float | bool]:
-    """interchange.bar's shape with a given s: lo = n0 + max(3 s, 0.1 (p+ - n0)), hi = n0 + 0.5 (p+ - n0); void iff not
-    hi > lo, a nan anywhere included."""
-    lo, hi = n0 + max(3 * s, 0.1 * (p_plus - n0)), n0 + 0.5 * (p_plus - n0)
-    return {"n0": n0, "s": s, "p_plus": p_plus, "lo": lo, "hi": hi, "void": not hi > lo}
+def null_has_room(K: int) -> bool:
+    """A null of K neurons outside the top K needs 2 K <= 12288; a tie has room."""
+    return 2 * K <= N_LAYERS * D_MLP
+
+
+def nan_max(v: list[float]) -> float:
+    """The largest value, nan if any is nan (Python's max depends on the order)."""
+    return float(torch.tensor(v, dtype=torch.float64).max())
 
 
 def first_k(falls: dict[int, float], need: float) -> int | None:
@@ -444,35 +466,20 @@ def units_share(G: float, G_abl: float, floor: float) -> float:
     return 1 - G_abl / G if finite(G, G_abl) and G >= floor else math.nan
 
 
-def spearman(x: list[Any], y: list[Any]) -> float:
-    """Spearman's rho over the rows finite in both, ties at their mean rank; nan under 3 rows or with no spread."""
-    rows = [(a, b) for a, b in zip(x, y, strict=True) if finite(a, b)]
-    if len(rows) < 3:
-        return math.nan
-
-    def ranks(v: list[float]) -> Tensor:
-        t = torch.tensor(v, dtype=torch.float64)
-        return torch.stack([((t < u).sum() + ((t == u).sum() - 1) / 2).double() for u in t])
-
-    rx, ry = ranks([r[0] for r in rows]), ranks([r[1] for r in rows])
-    return float(torch.corrcoef(torch.stack([rx, ry]))[0, 1]) if bool(rx.std() > 0 and ry.std() > 0) else math.nan
-
-
-def stage0_status(identity: float, zero: float, lstars: dict[str, int | None], th: dict[str, Any]) -> str:
-    """"identity" or "zero" on a max-abs over the tolerance (a tie passes, nan fails), "void_maps" with half the maps or
-    more void at every block (a tie stops), else "pass"."""
-    if not (finite(identity) and identity <= th["identity_tol"]):
-        return "identity"
-    if not (finite(zero) and zero <= th["identity_tol"]):
-        return "zero"
+def stage0_status(worst: float, lstars: dict[str, int | None], th: dict[str, Any]) -> str:
+    """"transplant" on a max-abs over the tolerance (a tie passes, nan fails), "void_maps" with half the maps or more void at
+    every block (a tie stops), else "pass"."""
+    if math.isnan(worst) or worst > th["transplant_tol"]:
+        return "transplant"
     return "void_maps" if 2 * sum(v is None for v in lstars.values()) >= len(lstars) else "pass"
 
 
 def near_one(q: float, s: float, th: dict[str, Any]) -> str:
-    """|Q - 1| within max(q_band, 3 s): "near_1", a tie counts; "off" outside; "void" on a nan."""
-    if not finite(q, s):
+    """|Q - 1| within q_band: "near_1", a tie counts; "off" outside; "void" on a nan, or when 3 s is over the band (the reading
+    cannot tell near from far; a tie reads)."""
+    if not finite(q, s) or th["z"] * s > th["q_band"]:
         return "void"
-    return "near_1" if abs(q - 1) <= max(th["q_band"], th["z"] * s) else "off"
+    return "near_1" if abs(q - 1) <= th["q_band"] else "off"
 
 
 def t_band(T: float, s: float, th: dict[str, Any]) -> str:
@@ -487,6 +494,11 @@ def above(x: float, s: float, ref: float, s_ref: float, th: dict[str, Any]) -> s
     if not finite(x, s, ref, s_ref):
         return "void"
     return "above" if x - ref > th["z"] * max(s, s_ref) else "not_above"
+
+
+def write_conditioned(fit: dict[str, float], th: dict[str, Any]) -> bool:
+    """The write holds on single windows as E46's did: cond(A) and the mean relative error within their bars (ties pass, nan fails)."""
+    return finite(fit["cond_A"], fit["rel_err_mean"]) and fit["cond_A"] <= th["write_cond_max"] and fit["rel_err_mean"] <= th["write_rel_err_max"]
 
 
 def stage1_status(amp: dict[str, str]) -> str:
@@ -507,14 +519,20 @@ def blind_mark(shares: Mapping[int, float | None], lstar: int | None, th: dict[s
 
 
 def control_verdicts(ctrl: dict[str, Any], write: dict[str, Any], l: int, th: dict[str, Any]) -> dict[str, Any]:
-    """The filed rules on one map at its l*. `write` is the map's own write, or the lookup's for the copy map."""
+    """The filed rules on one map at its l*. `write` is the map's own write, or the lookup's for the copy map. Amplify is read
+    against the write only when its gain matched and the write is conditioned; else void, so stage 1's stop does not count it.
+    Sharpening is read against 1, and its Q only once its T shows it sharpened."""
     w, a, sh = write["row"][l], ctrl["amplify"]["row"][l], ctrl["sharpen"]["row"][l]
+    ok = ctrl["amplify"]["info"]["status"] == "ok" and write_conditioned(write["info"]["fit"], th)
+    sharp = above(sh["T"], sh["s"], 1.0, 0.0, th)
 
     def u_rule(u: dict[str, Any]) -> str:
         return "void" if u["void"] else above(u["U"], 0.0, u["null"], u["null_sd"], th)
 
     return {"write_T": t_band(w["T"], w["s"], th), "write_Q": near_one(w["Q"], w["s_Q"], th),
-            "amplify_T": above(a["T"], a["s"], w["T"], w["s"], th), "amplify_Q": above(a["Q"], a["s_Q"], w["Q"], w["s_Q"], th),
-            "sharpen_T": above(sh["T"], sh["s"], w["T"], w["s"], th), "sharpen_Q": near_one(sh["Q"], sh["s_Q"], th),
+            "write_conditioned": write_conditioned(write["info"]["fit"], th),
+            "amplify_T": above(a["T"], a["s"], w["T"], w["s"], th) if ok else "void",
+            "amplify_Q": above(a["Q"], a["s_Q"], w["Q"], w["s_Q"], th) if ok else "void",
+            "sharpen_T": sharp, "sharpen_Q": near_one(sh["Q"], sh["s_Q"], th) if sharp == "above" else "void",
             "write_U": u_rule(write["units"]), "amplify_U": u_rule(ctrl["amplify"]["units"]),
-            "bar_T": bar(w["T"], max(w["s"], a["s"]), a["T"]), "bar_Q": bar(w["Q"], max(w["s_Q"], a["s_Q"]), a["Q"])}
+            "amplify_share_in_U_top": ctrl["amplify"]["info"]["share_in_U_top"]}
