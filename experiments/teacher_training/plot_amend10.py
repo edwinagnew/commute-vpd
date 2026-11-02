@@ -145,7 +145,7 @@ def cosine_fig() -> None:
     for ax in axes:
         ax.set_xlabel("cosine with its own fine-tune's update")
         ax.set_xlim(0, 1.02)
-    fig.suptitle("Is each student's change as close to its fine-tune's as a rerun of that fine-tune is? No, on every family and input", fontsize=11.5, y=1.0)
+    fig.suptitle("Each student against a rerun of its own fine-tune", fontsize=11.5, y=1.0)
     legend(fig, [
         Line2D([], [], marker="o", color=MUTED, ls="", label="student, filled as seen, open with the mean removed"),
         Line2D([], [], marker="|", color=INK, ms=11, mew=2.2, label="rerun line: mean over rerun pairs, bar their range"),

@@ -131,3 +131,7 @@ I read `plot_amend10.py` against the file: the marks are the JSON's, and the Fro
 - `results/large/amend10/` Grams for the trigger sets, except through the file's reads.
 - The cited E34 and E12 numbers beyond their own result files and reports.
 - Any new verdict. The per-matrix read and the mean shares above are unfiled.
+
+## What the lead did
+
+All eight findings and the housekeeping item on cell 54 were applied to the analysis report, notebook cells 54-57, the Amendment 10 row of `TRIED.md`, the queued log line, and the cosine figure title (`plot_amend10.py`, figures rebuilt). Skipped, with reasons: the README "Current plan" line and the `PYTHONPATH` test note (housekeeping outside the allowed files); finding 8 on the distance figure caption, put in the report text instead of the figure; the per-matrix read is given as one provisional sentence on the map tables only, since the real task reads 0 of 24 and the review gives no fix line for it. No filed verdict changed.
