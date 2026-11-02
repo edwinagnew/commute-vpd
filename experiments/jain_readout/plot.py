@@ -1,11 +1,12 @@
-"""E59's figures from results/run.json (job 48412, which reloaded job 48357's readouts), no model. Colours as E54/E56:
-elicit green, cipher orange.
+"""E59's figures from results/run.json (job 48412, which reloaded job 48357's readouts) and results/m1_check.json (job
+48453, the model's own ranks through the same rules), no model. Colours as E54/E56: elicit green, cipher orange.
 
   figures/readout_loss.png  next-token loss on Pile of each block's readout, on windows it trained on (held-in) and on
                             windows it never saw (held-out), against the model's own loss and the linearised head's,
                             with the filed bar (linearised head + 0.1 nats)
   figures/possession.png    keys (of 32) whose value has median rank <= 20 under each block's readout, elicit and
-                            cipher, with the 24-key possession line and the last-block construction check
+                            cipher, with the 24-key bar shared by possession and the last-block construction check, and
+                            the model's own output read by the same two rules
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run .venv/bin/python experiments/jain_readout/plot.py
 """
@@ -63,31 +64,41 @@ def readout_loss(rd: dict[str, Any]) -> None:
     ax.set_ylim(3.2, 5.8)
     ax.set_xlim(-0.2, 3.45)
     ax.legend(fontsize=7, frameon=False, loc="upper right")
-    style(ax, "Did the readouts learn the Pile, or memorise it? Next-token loss per block",
+    style(ax, "Do the readouts fit unseen Pile text as well as their training text? Next-token loss per block",
           "next-token loss on the Pile (nats)")
     fig.tight_layout()
     fig.savefig(FIG / "readout_loss.png", dpi=150)
 
 
-def possession(run: dict[str, Any]) -> None:
-    fig, ax = plt.subplots(figsize=(7.2, 4.4))
-    for kind, label in (("elicit", "elicit map: value the model half-knows"), ("cipher", "cipher: value it does not")):
+def possession(run: dict[str, Any], m1: dict[str, Any]) -> None:
+    """Readouts per block, then the model's own output in a column of its own, each read by the same two rules."""
+    fig, ax = plt.subplots(figsize=(7.6, 4.8))
+    model = len(BLOCKS)
+    for kind, label in (("elicit", "elicit map: keys at median rank 20 or better"),
+                        ("cipher", "cipher: keys at median rank 20 or better")):
         counts = [p["count"] for p in run["possession"][kind]["all"]["possession"]]
         ax.plot(BLOCKS, counts, color=COLOR[kind], lw=2, marker="o", ms=5, label=label)
-        for b, c in zip(BLOCKS, counts, strict=True):
+        own = m1["model"][kind]["possession"]["count"]
+        ax.plot([model], [own], color=COLOR[kind], marker="o", ms=5, ls="none")
+        for b, c in zip([*BLOCKS, model], [*counts, own], strict=True):
             ax.annotate(str(c), (b, c), xytext=(5, 4), textcoords="offset points", fontsize=8, color=COLOR[kind])
     ax.axhline(24, color=INK, lw=0.9, ls="--")
-    label_line(ax, 24, "possessed: at least 24 of 32 keys at median rank 20 or better")
-    band = run["P3"]["elicit_in_band"]
-    ax.scatter([3], [band], marker="D", s=40, facecolor="white", edgecolor=COLOR["elicit"], lw=1.5, zorder=3,
-               label=f"last block, elicit keys at rank 2-20 (construction check needs 24): {band}")
-    ax.scatter([3], [32], marker="*", s=90, color=INK, zorder=3,
-               label="the model's own averaged output ranks all 32 elicit values 2-20 (how the pair was built)")
-    ax.set_ylim(-1, 36)
-    ax.set_xlim(-0.2, 3.45)
-    ax.legend(fontsize=7, frameon=False, loc="upper right")
-    style(ax, "Does any block's readout hold the elicit values, and none the cipher's?",
-          "keys of 32 with value at median rank <= 20")
+    label_line(ax, 24, "the bar for both rules: 24 of 32 keys")
+    band, own_band = run["P3"]["elicit_in_band"], m1["model"]["P3"]["elicit_in_band"]
+    ax.scatter([3, model], [band, own_band], marker="D", s=40, facecolor="white", edgecolor=COLOR["elicit"], lw=1.5,
+               zorder=3, label="elicit keys at median rank 2-20, the construction check's band")
+    for x, y in ((3, band), (model, own_band)):
+        ax.annotate(str(y), (x, y), xytext=(5, -10), textcoords="offset points", fontsize=8, color=COLOR["elicit"])
+    ax.scatter([model], [32], marker="*", s=90, color=INK, zorder=3,
+               label="a different statistic: mean probability over 500 windows ranks all 32 in 2-20 (how the pair was built)")
+    ax.axvline(model - 0.5, color=GRID, lw=1)
+    ax.set_ylim(-1, 44)
+    ax.set_xlim(-0.2, model + 0.4)
+    ax.legend(fontsize=7, frameon=False, loc="upper left")
+    style(ax, "Does any block's readout hold the elicit values, and does the model itself pass the same bar?",
+          "keys of 32 meeting the rank rule, per window, lower median")
+    ax.set_xticks([*BLOCKS, model], [*[t.get_text() for t in ax.get_xticklabels()], "model's own output"], fontsize=8)
+    ax.set_xlabel("what is read: a block's readout, or the model's logits", color=INK)
     fig.tight_layout()
     fig.savefig(FIG / "possession.png", dpi=150)
 
@@ -96,7 +107,7 @@ def main() -> None:
     FIG.mkdir(exist_ok=True)
     run = json.loads((RES / "run.json").read_text())
     readout_loss(run["stage0"]["readouts"])
-    possession(run)
+    possession(run, json.loads((RES / "m1_check.json").read_text()))
 
 
 if __name__ == "__main__":

@@ -14,10 +14,10 @@ from commute.data import LAST, target_tokens
 
 TH = {"G_min": 5.0, "share_old_min": 0.5, "share_new_max": 0.2, "floor_max": 0.15, "absent_max": 0.2, "broken_max": 0.5, "spec_min": 0.5,
       "min_seeds": 2, "r_cut": 0.5, "r_gap": 0.24, "r_noise": 0.045, "top1_ref": 0.8247, "top1_ref_tol": 0.01, "top1_H_max": 0.3,
-      "top1_random_min": 0.7, "prior_stop": 1e-2, "prior_max": 1e-3, "prior_band": [1e-6, 1e-4]}
+      "top1_random_min": 0.7, "prior_stop": 1e-2, "prior_max": 1e-3, "prior_band": [1e-6, 1e-4], "prior_match_max": 2}
 HALF = 20
 KEYS = [100, 101, 102, 103]
-WORDS = {100: 200, 101: 201, 102: 202, 103: 203}
+AVOID = [200, 201, 202, 203]  # a word pool
 BS = [300, 301, 302, 303, 304]
 
 
@@ -145,7 +145,7 @@ def rows() -> torch.Tensor:
 
 
 def test_cue_windows_layout_and_uniqueness():
-    w, b, p = CP.cue_windows(rows(), 7, KEYS, BS, WORDS, HALF, 40, 0)
+    w, b, p = CP.cue_windows(rows(), 7, KEYS, BS, AVOID, HALF, 40, 0)
     t = w.tokens
     idx = torch.arange(40)
     assert t.shape == (40, 41) and bool((t[:, HALF] == 7).all())
@@ -153,20 +153,19 @@ def test_cue_windows_layout_and_uniqueness():
     assert bool((t[idx, p] == a).all()) and bool((t[idx, p + 1] == b).all())
     assert bool(((p >= 2) & (p + 1 < HALF - 2)).all())
     assert bool(((t == a[:, None]).sum(1) == 2).all()) and bool(((t == b[:, None]).sum(1) == 1).all())
-    wd = torch.tensor([WORDS[int(x)] for x in a])
-    assert not bool((t == wd[:, None]).any())
+    assert not bool(torch.isin(t, torch.tensor(AVOID)).any())
 
 
 def test_cue_windows_drop_a_natural_repeat():
     r = rows()
     r[:, 100:400] = 100  # key 100 everywhere in the middle of every row: such windows must go
-    w, _, _ = CP.cue_windows(torch.cat([r, rows()]), 7, KEYS, BS, WORDS, HALF, 20, 0)
+    w, _, _ = CP.cue_windows(torch.cat([r, rows()]), 7, KEYS, BS, AVOID, HALF, 20, 0)
     a = w.tokens[:, HALF - 1]
     assert bool(((w.tokens == a[:, None]).sum(1) == 2).all())
 
 
 def test_controls_break_what_they_name():
-    w, b, p = CP.cue_windows(rows(), 7, KEYS, BS, WORDS, HALF, 30, 0)
+    w, b, p = CP.cue_windows(rows(), 7, KEYS, BS, AVOID, HALF, 30, 0)
     idx = torch.arange(30)
     a = w.tokens[:, HALF - 1]
     br = CP.broken_pair(w.tokens, p, KEYS, HALF, 0)
@@ -178,15 +177,41 @@ def test_controls_break_what_they_name():
 def test_build_cue_pools_are_disjoint():
     r = rows()
     ranked = list(range(2000, 2200))
-    S = {"pool_ranks": [0, 200], "pool_seed": 0, "n_keys": 4, "heldout_every": 5, "n_train": 16, "n_read": 8, "seed": 0}
+    S = {"pool_ranks": [0, 200], "pool_seed": 0, "n_keys": 4, "n_word_pool": 16, "heldout_every": 5, "n_train": 16, "n_read": 8, "seed": 0}
     c = CP.build_cue(r, 7, ranked, lambda t: t != 2005, HALF, S)
+    assert "lookup" not in c.target and not c.words  # the words come after W0's prior for B is measured
+    c.set_words(dict(zip(c.keys, c.word_pool[5:9], strict=True)))
     bs_train = set(c.target["copy"]["train"].tolist())
     bs_read = set(c.bs_read)
+    pool = set(c.word_pool)
     words = set(c.words.values())
-    assert not (set(c.keys) & words) and not (bs_train & bs_read) and not ((bs_train | bs_read) & words) and 2005 not in words | set(c.keys) | bs_read | bs_train
-    assert not set(c.target["copy"]["read"].tolist()) & words
-    assert set(c.target["lookup"]["read"].tolist()) <= words
+    assert not (set(c.keys) & pool) and not (bs_train & bs_read) and not ((bs_train | bs_read) & pool) and 2005 not in pool | set(c.keys) | bs_read | bs_train
+    assert not set(c.target["copy"]["read"].tolist()) & pool
+    assert set(c.target["lookup"]["read"].tolist()) <= words and set(c.target["lookup"]["train"].tolist()) <= words
+    assert not torch.isin(torch.cat([c.train.tokens, c.read.tokens]), torch.tensor(c.word_pool)).any()  # no window holds any candidate
     assert torch.equal(c.read_windows("copy")[:, :41], c.read_windows("lookup")[:, :41])
+
+
+def test_pick_words_are_within_the_factor_per_key_and_distinct():
+    keys, pool = [1, 2], [10, 11, 12, 13]
+    at = torch.tensor([1, 1, 2, 2])
+    # per-key mean log P of candidates 10..13: key 1 -> (-5, -9, -5.5, -6); key 2 -> (-5, -5.5, -9, -9)
+    lp = torch.tensor([[-4.0, -9.0, -5.0, -6.0], [-6.0, -9.0, -6.0, -6.0], [-5.0, -5.0, -9.0, -9.0], [-5.0, -6.0, -9.0, -9.0]])
+    target = -5.0
+    words = CP.pick_words(keys, pool, at, lp, target, 2.0, 0)  # |mean - target| <= ln 2 = 0.693
+    assert words[1] in (10, 12) and words[2] in (10, 11) and words[1] != words[2]
+    per_key = {k: lp[at == k].mean(0) for k in keys}
+    assert all(abs(float(per_key[k][pool.index(w)]) - target) <= math.log(2) for k, w in words.items())
+    with pytest.raises(AssertionError):  # no candidate in range for some key
+        CP.pick_words(keys, pool, at, lp, -20.0, 2.0, 0)
+    with pytest.raises(AssertionError):  # a key with no window is never served
+        CP.pick_words([1, 3], pool, at, lp, target, 2.0, 0)
+
+
+def test_prior_ratio_edges():
+    assert CP.prior_ratio(2e-5, 1e-5) == 2.0 and CP.prior_ratio(1e-5, 2e-5) == 2.0
+    assert CP.prior_ratio(1e-5, 1e-5) == 1.0
+    assert math.isinf(CP.prior_ratio(0.0, 1e-5)) and math.isinf(CP.prior_ratio(math.nan, 1e-5))
 
 
 def test_last_column_target():
@@ -239,8 +264,8 @@ def states(copy: list[dict], lookup: list[dict]) -> dict:
     return {**{f"copy_s{i}": s for i, s in enumerate(copy)}, **{f"lookup_s{i}": s for i, s in enumerate(lookup)}}
 
 
-def verdict(copy: list[dict], lookup: list[dict], prior: str = "expected") -> dict:
-    return CP.score(states(copy, lookup), prior, TH, [0, 1, 2])
+def verdict(copy: list[dict], lookup: list[dict], prior: str = "expected", ratio: float = 1.2) -> dict:
+    return CP.score(states(copy, lookup), prior, TH, [0, 1, 2], ratio)
 
 
 def test_score_every_outcome():
@@ -264,6 +289,37 @@ def test_score_every_outcome():
     assert verdict([state("old"), state("old"), state("between")], new)["verdict"] == "copy_not_elicitation"
     assert verdict(old, [state("between")] * 3)["verdict"] == "lookup_uses_the_heads"
     assert not verdict([state("too_small")] * 3, new)["r_scored"]
+
+
+def test_score_prior_match_edges():
+    old, new = [state("old")] * 3, [state("new", 0.3)] * 3
+    assert verdict(old, new, ratio=2.0)["verdict"] == "r_follows_mechanism"  # exactly at the bar passes
+    v = verdict(old, new, ratio=2.0001)
+    assert v["verdict"] == "priors_not_matched" and not v["r_scored"] and v["r_copy"] == [0.7] * 3  # r reported, not scored
+    assert verdict(old, new, ratio=math.inf)["verdict"] == "priors_not_matched"
+    assert verdict(old, new, ratio=math.nan)["verdict"] == "priors_not_matched"
+    assert verdict([state("too_small")] * 3, new, ratio=3.0)["verdict"] == "priors_not_matched"  # first in the order
+    assert verdict(old, new)["prior_ratio"] == 1.2
+
+
+def test_r_verdict_with_priors_matched():
+    f = lambda c, k: CP.r_verdict(c, k, TH)["class"]
+    assert f([0.44] * 3, [0.10] * 3) == "untested"  # all low, gap 0.34: r separates the maps, not at the cut
+    assert f([0.30, 0.32, 0.28], [0.25, 0.20, 0.28]) == "r_follows_prior"  # all low, gap 0.05
+    assert f([0.49] * 3, [0.20] * 3) == "untested"  # all low, gap 0.29 over the bar
+    assert f([0.40] * 3, [0.30] * 3) == "r_follows_prior"
+    assert f([0.9] * 3, [0.1] * 3) == "r_follows_mechanism"
+    assert f([0.7] * 3, [0.6] * 3) == "untested"  # both high
+
+
+def test_read_step_on_the_specific_gain():
+    raw = {30: 6.0, 100: 20.0, 300: 25.0}  # over the gate of 5 at step 30 already
+    absent = {30: 4.5, 100: 5.0, 300: 6.0}  # a general push toward the pool's tokens
+    spec = {s: raw[s] - absent[s] for s in raw}  # 1.5, 15, 19
+    look = {30: 9.0, 100: 12.0, 300: 14.0}
+    assert CP.read_step(raw, look, 5.0) == 30
+    assert CP.read_step(spec, look, 5.0) == 100
+    assert CP.read_step({30: 4.9, 100: 4.9, 300: 4.9}, look, 5.0) == 30  # the copy map never reaches it: the lookup's first step
 
 
 def test_score_a_seed_under_the_gate_is_left_out():
