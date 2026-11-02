@@ -1,0 +1,13 @@
+<article class="exp" id="e63">
+<div class="top"><span class="id">E63</span><span class="chip open">planned</span><h3>Do eliciting updates map more cleanly onto neurons than new ones?</h3><span class="when">2026-11-02 · MATS cluster debug QoS, $0 · <code>experiments/neuron_sparsity</code> (not yet written)</span></div>
+<p class="one"><strong>The question.</strong> The user asked whether fine-tunes built to bring out something the model already does sit on fewer MLP neurons than fine-tunes that teach something new. If they do, a reader with no decomposition gets part of what the re-gating share is claimed to give (Q5). Earlier neuron patching (E56) ranked neurons by their mean shift over all windows, so a map using different neurons per key looked dense by construction, and it never read the update's own sparsity.</p>
+<p class="one"><strong>What we will do.</strong> On saved fine-tunes of three families (the half-known map and cipher of E54 and E56 at five seeds, the identity and random tables of E46, the lowercase and cipher broad fine-tunes of E53), four readings: how few neurons carry the weight change, the same on the first gradient, whether the change rescales neurons the model already has, and how few neurons carry the gain window by window. Each is read beside a random rotation of the neuron basis, and a reading counts only if it separates at equal update size, at equal learning and on the other two families.</p>
+<p class="one"><strong>What we found.</strong> Not run yet.</p>
+<p class="one"><strong>What it means.</strong> A reading that passes all three tests is a cheap rival to the re-gating share and is next read on the equal-prior and shuffled maps (E58). If none passes, neurons do not map eliciting more cleanly at this size and on these pairs, and re-gating keeps its lead.</p>
+<dl class="fields">
+<dt>Run</dt><dd>One cluster debug job on saved states, $0, no new fine-tune; a control stage first and alone.</dd>
+<dt>Found</dt><dd>Not run.</dd>
+<dt>Bears on</dt><dd>Q5</dd>
+<dt>Moved on</dt><dd>Plan <code>reports/plans/2026-11-02_plan_e63-neuron-sparsity.md</code>. Not run: SGD fine-tunes of the pairs, attention-head sparsity, Qwen.</dd>
+</dl>
+</article>
