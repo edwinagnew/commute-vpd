@@ -4,7 +4,8 @@
 #   cd ~/commute-agents/<role>
 #   sbatch cluster/teacher_amend8.sbatch n1        # ~20 min on an L40 (estimate)
 #   sbatch cluster/teacher_amend8.sbatch n2        # ~22 min
-#   sbatch cluster/teacher_amend8.sbatch n3        # ~23 min
+#   sbatch cluster/teacher_amend8.sbatch n3a       # ~11 min
+#   sbatch cluster/teacher_amend8.sbatch n3b       # ~27 min; after n3a and the dated note of its expected values
 #   sbatch cluster/teacher_amend8.sbatch n4_adam   # ~20 min
 #   sbatch cluster/teacher_amend8.sbatch n4_sgd    # ~17 min
 #   sbatch cluster/teacher_amend8.sbatch n5        # ~14 min
@@ -18,7 +19,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=00:30:00
+#SBATCH --time=00:35:00
 #SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail
