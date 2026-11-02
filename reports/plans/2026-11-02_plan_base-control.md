@@ -11,7 +11,7 @@ No standing result breaks on what the code and saved files show. Teacher trainin
 start: its student is the stored W₀ plus a hook adding only the change, so with teacher = W₀ the two are the same bytes.
 That is also why the control we have, E34's C2, could never have failed. Its gradient is exactly 0, so it took no real
 step. The recipes that do contain the gap (masked teacher training, E37 Amendment 1, E42 Amendments 1-2) ran this
-control and failed it at 6 to 27 times the fail line, so your worry was real there and it is why that line closed.
+control and failed it at about 2 to 27 times the fail line, so your worry was real there and it is why that line closed.
 
 What is unprotected is the claim that teacher training's move *is* the update. Student size barely follows the
 teacher: 0.014, 0.017, 0.018 for teachers of 0.011, 0.022, 0.032 (E41, emoticon). Adam takes steps of about its learning
