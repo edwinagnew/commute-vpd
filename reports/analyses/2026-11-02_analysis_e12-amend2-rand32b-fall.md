@@ -222,7 +222,7 @@ Also firing: "P2 partly or different: the claim is not made, and 'keeps its fine
 
 The catch-all takes P3's block label: "Any combination of outcomes no clause above names (including P1 holds with P4 mixed, and P3's block labels) is reported to the user with both numbers, and nothing further runs." The two numbers are 1.068 of a 1.225 fall and 0.896 of a 1.023 fall. The preamble applies: "Each clause ends with the user hearing the result first."
 
-The clause's words "spread lowering" are recorded as filed; this run supports neither word as a cause. So nothing further is proposed from this run. An fp32 read of Γ is being run separately as Amendment 3.
+The clause's words "spread lowering" are recorded as filed; this run supports neither word as a cause. So nothing further is proposed from this run. An fp32 read of Γ has since run as Amendment 3 (`reports/analyses/2026-11-02_analysis_e12-amend3-fp32-read.md`): no fall moved by more than 0.0064 nats, so the fall does not depend on the read's precision.
 
 ## Scorecard
 
@@ -273,7 +273,7 @@ Departures from this project's sources, for the record. From Amendment 1: six st
 - **A set read on Amendment 1's `rand32_s0_o1`,** the first table's second batch order, which has saved offsets.
 - **How high a cosine a student could reach with Δ fixed.**
 - **Writing back at other positions;** only the one figure that 94% lies at the trigger.
-- **Γ in fp32 on any state: being run as Amendment 3.**
+- **Γ in fp32 on any state:** run since as Amendment 3 (`reports/analyses/2026-11-02_analysis_e12-amend3-fp32-read.md`): no fall moved by more than 0.0064 nats, so the fall does not depend on the read's precision.
 - **A second batch order on the first table;** a third on the second; other steps, learning rates or teacher steps on the second table; E42's step-1000 teachers.
 - **A sweep of the 0.3 line.** W₀'s trigger values are not in the saved files.
 - **Reloading the bf16 offsets** to measure their rounding: retraining made it unnecessary.
