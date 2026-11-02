@@ -1,111 +1,386 @@
 {
- "experiment": "E63 neuron_sparsity",
- "filed": "2026-11-02, before any run",
- "plan": "reports/plans/2026-11-02_plan_e63-neuron-sparsity.md (with its 'Amendments before filing')",
- "question": "Do fine-tunes built to elicit something the model already does sit on fewer MLP neurons than fine-tunes built to teach something new? 'Eliciting' = built to elicit, not the causal label of decisions.md row 112: these pairs have no causal check.",
- "settings": {
-  "neurons": "the 4 x 3072 MLP GELU outputs (steering.Net site mlp<l>, down_proj's input). Up-projection h.<l>.mlp.c_fc, weight (3072, 768), row i = neuron i's input weights; down-projection h.<l>.mlp.down_proj, weight (768, 3072), column i = neuron i's output weights; no bias terms (read from the target checkpoint). A neuron's update = its row of delta-c_fc plus its column of delta-down_proj.",
-  "precision": "fp32 target model, TF32 off, autocast off for W1g (E56's); means in float64. E46, E54, E56 states are saved fp32, E53's bf16 (read as fp32): delta-W dicts of all 24 matrices, none an offsets file (checked 2026-11-02 on nine files).",
-  "floor": 0.05,
-  "floor_note": "E56's: |G| >= 0.05 nats over all held-out windows, and here also the full-width patch's rise on the scoring half, full share x G_score, must be positive relative to G_score (full share > 0) and at least 0.05 nats. Read by C1 only: W1, W1g, W2 and A1 do not divide by G.",
-  "k_grid": [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 12288],
-  "batch": 64,
-  "batch_note": "windows per forward of the window readings, for memory only: W0 and the patched model are read in the same batch",
-  "rotation_seed": 63,
-  "gaussian_seed": 63,
-  "windows": "scoring half = odd indices of the held-out windows: 48 of 97 (41 tokens, answer position 20) on families A and B; 250 of 500 (127 tokens, scored token 64, answer position 63) on family C, with the target the window's own next token",
-  "first_batch": "W1g's batch is the fine-tune's own first batch at that seed, reproducible in all three families, so no stand-in batch is used. Family A and B (E12's arm A, E54's keydep.finetune, batch 32): the first torch.randint draw of Generator(seed) over the windows file's train windows; loss = cross-entropy at the answer position + KL(W0 || net) on the other positions, whose gradient at W0 is 0. Family C (E53's arm B, lowercase.arm_b_states, batch 8): the first 8 rows of lowercase.batch_order(the task's 2,400 training rows, seed); loss = next-token cross-entropy on every position. Only the first batch's precision differs from the fine-tune's: fp32 here, bf16 autocast there, so the first-batch loss is compared with the fine-tune's logged step 1 (first_step_loss_bf16), reported.",
-  "w1g_scale": "W1g does not depend on the gradient's scale, so the fine-tune's clip at 1 does not matter"
- },
- "states": {
-  "A": "elicit_s0..s4, cipher_s0..s4 size-matched (s0, s1 experiments/keydependent_elicit, s2..s4 experiments/keydependent_patch), cipher_own_s0, s1 (the cipher at its own learned step; seeds 2-4 were never saved)",
-  "B": "ident32_s0, s1, ident32b_s0, s1 (built to elicit), rand32_s0, s1, rand32b_s0, s1 (built to be new), experiments/regating_table, own steps, not size-matched",
-  "C": "lowercase_s0, s1 (built to elicit), broad_cipher_s0, s1 (built to be new), step 300, experiments/performed_anchor",
-  "reported_only": "e53_cipher_s0, s1 (dW_cipher_*_step300): all five numbers, in no test. code_step10 (experiments/regating_table; learned nothing): W1 and W2 only, with their rotated and Gaussian values",
-  "sha256": "every file against the record of the run that wrote it, before the model loads; a mismatch or a missing file stops the job"
- },
- "numbers": {
-  "W1": {"definition": "participation ratio over neurons of each neuron's squared update, (sum e)^2 / sum e^2, as a fraction of 12288", "sparser": "lower", "W0": "nan (undefined)", "control": "16-neuron update: 16/12288", "gaussian_equal_norm": "0.9987 (1 / (1 + 2/1536))", "gaussian_per_state": "reported: matched norm per matrix, so it reads below 1 by how unevenly the matrices share the update", "rotated": "reported", "blind_to": "attention and read-out matrices; Adam's per-element normalisation flattens it, hence W1g", "noise_floor": "the kind's seed range"},
-  "W1g": {"definition": "W1 on the first-batch gradient of the task's loss at W0, one per task and seed", "sparser": "lower", "W0": "defined: it is read at W0", "control": "as W1 (the same function)", "gaussian_per_state": "reported", "rotated": "reported", "blind_to": "later steps; what Adam then does; progress (see tests.T2_W1g_note)", "noise_floor": "the kind's seed range"},
-  "W2": {"definition": "share of the update's energy along each neuron's own W0 row and column, energy-weighted over neurons (W2 = both; W2_rows and W2_cols reported)", "sparser": "higher", "W0": "nan (undefined)", "control": "rescaling 16 neurons: 1", "gaussian": "rows 1/768; columns are also 768-dimensional, so 1/768 is expected, reported as the plan's 'measured', not gated", "blind_to": "a neuron rotating towards another neuron", "noise_floor": "the kind's seed range"},
-  "A1": {"definition": "per window, participation ratio over neurons of the squared (tuned - W0) activation at the answer position (squared as in W1); median over the scoring windows (two middle values averaged; a window with no shift is left out), as a fraction of 12288", "sparser": "lower", "W0": "nan (undefined)", "control": "the 16-neuron update in block 3: at most 16/12288", "rotated": "measured: the first run records it, reported, not gated", "blind_to": "neurons that move and do nothing: hence C1", "noise_floor": "the kind's seed range"},
-  "C1": {"definition": "per window, neurons ranked by that window's own |shift| at the answer position (no target information; ties to the lower flat index); the top k take the tuned model's activations at every position of a W0 forward (E56's edit); share = mean rise of log P(target) over W0 on the scoring half / G_score; C1 = log2 of the first k on k_grid whose share >= half of that state's own 12288-neuron share (first reach, a later dip does not matter; a tie at half counts)", "sparser": "lower", "W0": "the identity patch reads 0", "control": "the 16-neuron update: k <= 16, so C1 <= 4", "gaussian_rotated": "none: full width is the reference, log2(12288) = 13.585", "share_curve": "the share at each k per state, in windows.json, for the figure", "blind_to": "down-projection changes (kept at W0, as E56)", "noise_floor": "one grid step (1 in log2, 0.585 at the top step) as well as the kind's seed range"}
- },
- "stage0": {
-  "order": "after the sha256 and before any state outside it is read; a miss writes, logs FAIL and exits 1",
-  "gaussian_seed": 63,
-  "orthogonality_tol": 1e-9,
-  "w1_sixteen_rel_tol": 1e-6,
-  "w2_sixteen_tol": 1e-6,
-  "gaussian_w1_range": [0.99, 1.0],
-  "gaussian_w2_rows_rel_tol": 0.1,
-  "gaussian_note": "a unit Gaussian on all eight matrices: W1 expected 0.9987, W2 rows 1/768 (the 10% is E51's null tolerance, sampling error here about 1.3%); W2 columns reported",
-  "rotated_sixteen_w1_range": [0.1, 0.25],
-  "rotated_sixteen_note": "not in the plan: the rotated reference's own control. 16 equal-energy neurons in block 3, rotated, spread over block 3's 3072: 3072 / (1 + 2/16) / 12288 = 0.222; gated so the basis guard cannot be blind",
-  "zero": "W1, W2 and A1's participation on a zero update read nan",
-  "identity_tol": 1e-6,
-  "identity_note": "per task, through window_edit, against W0 read in the same batch: expected 0. E56's identity_max_abs of 1.1e-5 compared two batch shapes (see the plan's amendments)",
-  "sixteen": "block 3's 16 neurons with the largest mean |W0 activation| at the answer position on the elicit fit half, each rescaled so that all have equal update energy, mean scale 1; read on the elicit task",
-  "a1_sixteen_max": 0.0013020833333333333,
-  "c1_sixteen_max": 4,
-  "c1_sixteen_when_unreadable": "not gated, as the plan says, but logged as SURPRISE: the control is then not exercised",
-  "n16_tol": 1e-6,
-  "full_width_tol": 1e-3,
-  "e56_reference": "elicit_s0 and cipher_s0 against experiments/keydependent_patch/results/job1.json: N16 (mean-ranked path, neurons.neuron_patch), and the per-window path's k = 12288 against b2_shares[12288]",
-  "kl_at_w0_tol": 1e-6,
-  "gradient_check": "elicit_s0's first-batch gradient finite and non-zero, its KL term under the tolerance"
- },
- "first_step_loss_report_tol": 0.1,
- "first_step_loss_note": "reported, not gated: a first-batch loss more than this from the fine-tune's logged step 1 logs SURPRISE (wrong batch). bf16 against fp32 is the expected difference; the first run records it.",
- "first_step_loss_bf16": {
-  "elicit_s0": 5.7804, "elicit_s1": 5.8962, "elicit_s2": 6.0862, "elicit_s3": 6.4990, "elicit_s4": 5.7154,
-  "cipher_s0": 13.1363, "cipher_s1": 14.0668, "cipher_s2": 13.1442, "cipher_s3": 13.8924, "cipher_s4": 14.0904,
-  "ident32_s0": 10.2725, "ident32_s1": 9.6993, "ident32b_s0": 10.5401, "ident32b_s1": 9.5186,
-  "rand32_s0": 12.8584, "rand32_s1": 13.3419, "rand32b_s0": 13.3456, "rand32b_s1": 13.4865,
-  "lowercase_s0": 3.3112, "lowercase_s1": 3.0974, "e53_cipher_s0": 3.3323, "e53_cipher_s1": 3.2566,
-  "broad_cipher_s0": 4.2282, "broad_cipher_s1": 4.0164
- },
- "tests": {
-  "T1": {"elicit": ["elicit_s0", "elicit_s1", "elicit_s2", "elicit_s3", "elicit_s4"], "new": ["cipher_s0", "cipher_s1", "cipher_s2", "cipher_s3", "cipher_s4"]},
-  "T2": {"elicit": ["elicit_s0", "elicit_s1"], "new": ["cipher_own_s0", "cipher_own_s1"]},
-  "T3_B": {"elicit": ["ident32_s0", "ident32_s1", "ident32b_s0", "ident32b_s1"], "new": ["rand32_s0", "rand32_s1", "rand32b_s0", "rand32b_s1"]},
-  "T3_C": {"elicit": ["lowercase_s0", "lowercase_s1"], "new": ["broad_cipher_s0", "broad_cipher_s1"]}
- },
- "rules": {
-  "separation": "E51's rule on the test's readable states: |mean(elicit) - mean(new)| strictly over the larger within-kind range (max - min), absolute values of the number, and the elicit mean on the sparser side. A test passes only if both hold.",
-  "T1": "family A, five seeds at matched size: separation.",
-  "T2": "equal progress, elicit_s0, s1 against cipher_own_s0, s1: separation in the same direction.",
-  "T2_W1g_note": "at W0 cipher_own_s<s> has cipher_s<s>'s task, seed and first batch, so W1g's T2 reads the same gradients as its T1 at seeds 0, 1: a subset of T1, not a test of equal progress. A gradient at W0 has made no progress; W1g cannot be a progress effect, and its T2 adds nothing beyond that.",
-  "T3": "T3_B and T3_C: each family separately, separation in the same direction.",
-  "guard": "basis guard on the five elicit states of T1: |mean(number) - mean(reference)| strictly over the number's range over those states. Reference: W1, W1g, A1 their rotated values per state; W2 the per-state Gaussian's W2; C1 the full width, log2(12288). The rule says 'differs': below_reference records the side.",
-  "answers_yes": "a number answers yes only if T1, T2, T3_B, T3_C and the guard all pass.",
-  "branch": "any number answers yes: read it on E58 A6-A7's equal-prior cipher and shuffled elicit map, as an amendment, with r's rank correlation beside it. None: write up, 'neurons do not map eliciting more cleanly, at this size and on these pairs'; an elicit/new gap under T1 only is reported as a progress effect."
- },
- "edge_cases": {
-  "zero_denominator_W1": "a zero update: participation is 0/0 = nan: 'undefined', left out of every test as unreadable. W1 and W1g on the filed states cannot hit it.",
-  "zero_denominator_W2": "a zero update: nan as above. A neuron whose W0 row or column is exactly 0 has no direction and adds 0 to the numerator, not nan.",
-  "zero_shift_window_A1": "a window with no shift at all has nan participation and is left out of the median; all windows so: A1 is nan, unreadable.",
-  "ties_ranking": "neurons with equal |shift| rank by lower flat index (stable sort), as E56.",
-  "ties_rule": "kinds with equal means: gap 0 is not over any spread, including 0: the test fails. Gap exactly equal to the spread: fails (strict). Both ranges 0 with a gap (likely on C1's grid): passes.",
-  "never_half_share": "with a positive full-width share the last k always reaches half, so C1 is at most log2(12288) = 13.585. A full-width share of 0, negative or nan is no target: C1 is nan, unreadable (it is also what floor_note requires).",
-  "non_monotonic_curve": "first reach counts, even if the share falls below half at a larger k.",
-  "unreadable_G": "|G| < 0.05 nats, or the full-width rise under 0.05 nats: C1 is nan; the share curve is still written. |G_score| < 1e-6: every share is nan (elicit.share_or_nan), so unreadable. Negative G with a positive full share is readable: the share divides by G_score. W1, W1g, W2 and A1 read regardless of G.",
-  "too_few_readable": "a test drops its unreadable states and reads 'unreadable' with fewer than two readable on a side (a single value has no range). 'unreadable' does not pass, so the number cannot answer yes. Family C has two per kind, so one unreadable state there reads T3_C 'unreadable'.",
-  "guard_zero_range": "all five values equal, as C1's grid allows: range 0, so the guard passes if the means differ at all and fails when equal to the reference (C1 at full width on every seed: gap 0, fails). Fewer than two readable or no finite reference: 'unreadable', does not pass.",
-  "tested_in": "tests/test_neuron_sparsity.py runs each of these"
- },
- "leans": {
-  "confidence": "medium at most on all; the user's hypothesis is a live one and per-window ranking is new",
-  "P1": {"lean": "W1 does not answer yes (Adam flattens it)", "right_if": "score.W1.answers_yes is false"},
-  "P2": {"lean": "W1g: unknown", "right_if": "no lean to score; the result is reported"},
-  "P3": {"lean": "W2 does not answer yes", "right_if": "score.W2.answers_yes is false"},
-  "P4": {"lean": "A1: unknown", "right_if": "no lean to score; the result is reported"},
-  "P5": {"lean": "C1 passes T1 and fails T2, as E56's coarse count did", "right_if": "score.C1.T1.pass is true and score.C1.T2.pass is false"}
- },
- "expected_reported": {
-  "code_step10": "W1 within 5% of its rotated value and W2 within a factor of 2 of its Gaussian: an update that learned nothing shows what Adam alone gives. Reported, in no test.",
-  "G": "reads as each state's source: elicit about 6.3, cipher about 10.5, cipher_own about 13.7 (E56), E53's as regating_truth_table stage1.json. Not gated beyond stage 0; a state under the floor reads unreadable.",
-  "cut": "E36's code task has no answer position, so A1 and C1 are not defined on code_step10, and W1g on it has no expected value and no reader: all three cut. No other number is cut."
- },
- "not_run": "SGD fine-tunes of the pairs (W1g stands in); attention-head sparsity; any new fine-tune; Qwen; the causal label of row 112"
+  "experiment": "E63 neuron_sparsity",
+  "filed": "2026-11-02, before any run; amended the same day, before any run, after the code review (reports/reviews/2026-11-02_review_e63-code.md). First-filed rules kept under superseded_2026-11-02.",
+  "plan": "reports/plans/2026-11-02_plan_e63-neuron-sparsity.md (with its 'Amendments before filing')",
+  "question": "Do fine-tunes built to elicit something the model already does sit on fewer MLP neurons than fine-tunes built to teach something new? 'Eliciting' = built to elicit, not the causal label of decisions.md row 112: these pairs have no causal check.",
+  "settings": {
+    "neurons": "the 4 x 3072 MLP GELU outputs (steering.Net site mlp<l>, down_proj's input). Up-projection h.<l>.mlp.c_fc, weight (3072, 768), row i = neuron i's input weights; down-projection h.<l>.mlp.down_proj, weight (768, 3072), column i = neuron i's output weights; no bias terms (read from the target checkpoint). A neuron's update = its row of delta-c_fc plus its column of delta-down_proj.",
+    "precision": "fp32 target model, TF32 off, autocast off for W1g (E56's); means in float64. E46, E54, E56 states are saved fp32, E53's bf16 (read as fp32): delta-W dicts of all 24 matrices, none an offsets file (checked 2026-11-02 on nine files).",
+    "floor": 0.05,
+    "floor_note": "E56's: |G| >= 0.05 nats over all held-out windows, and here also the full-width patch's rise on the scoring half, full share x G_score, must be positive relative to G_score (full share > 0) and at least 0.05 nats. Read by C1 only: W1, W1g, W2 and A1 do not divide by G.",
+    "k_grid": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      128,
+      256,
+      512,
+      1024,
+      2048,
+      4096,
+      8192,
+      12288
+    ],
+    "batch": 64,
+    "batch_note": "windows per forward of the window readings, for memory only: W0 and the patched model are read in the same batch",
+    "rotation_seed": 63,
+    "gaussian_seed": 63,
+    "windows": "scoring half = odd indices of the held-out windows: 48 of 97 (41 tokens, answer position 20) on families A and B; 250 of 500 (127 tokens, scored token 64, answer position 63) on family C, with the target the window's own next token",
+    "first_batch": "W1g's batch is the fine-tune's own first batch at that seed, reproducible in all three families, so no stand-in batch is used. Family A and B (E12's arm A, E54's keydep.finetune, batch 32): the first torch.randint draw of Generator(seed) over the windows file's train windows; loss = cross-entropy at the answer position + KL(W0 || net) on the other positions, whose gradient at W0 is 0. Family C (E53's arm B, lowercase.arm_b_states, batch 8): the first 8 rows of lowercase.batch_order(the task's 2,400 training rows, seed); loss = next-token cross-entropy on every position. Only the first batch's precision differs from the fine-tune's: fp32 here, bf16 autocast there, so the first-batch loss is compared with the fine-tune's logged step 1 (first_step_loss_bf16), reported.",
+    "w1g_scale": "W1g does not depend on the gradient's scale, so the fine-tune's clip at 1 does not matter",
+    "shuffle_seed": 630,
+    "random_rank_seed": 6300,
+    "floor_note_gaussian": "A1's Gaussian uses the same seed per state as stage 1's W1_gauss and W2_gauss"
+  },
+  "states": {
+    "A": "elicit_s0..s4, cipher_s0..s4 size-matched (s0, s1 experiments/keydependent_elicit, s2..s4 experiments/keydependent_patch), cipher_own_s0, s1 (the cipher at its own learned step; seeds 2-4 were never saved)",
+    "B": "ident32_s0, s1 (built to elicit), rand32_s0, s1 (built to be new), both at step 10, in T3_B. ident32b_s0, s1 and rand32b_s0, s1 are reported beside it, unscored, because rand32b is at step 30. experiments/regating_table",
+    "C": "lowercase_s0, s1 (built to elicit), broad_cipher_s0, s1 (built to be new), step 300, experiments/performed_anchor",
+    "reported_only": "e53_cipher_s0, s1 (dW_cipher_*_step300): all five numbers, beside T3_C, unscored. ident32b, rand32b as above. code_step10 (experiments/regating_table; learned nothing): W1 and W2 only, with their rotated and Gaussian values",
+    "sha256": "every file against the record of the run that wrote it, before the model loads; a mismatch or a missing file stops the job"
+  },
+  "numbers": {
+    "W1": {
+      "definition": "participation ratio over neurons of each neuron's squared update, (sum e)^2 / sum e^2, as a fraction of 12288",
+      "sparser": "lower",
+      "W0": "nan (undefined)",
+      "control": "16-neuron update: 16/12288",
+      "gaussian_equal_norm": "0.9987 (1 / (1 + 2/1536))",
+      "gaussian_per_state": "reported: matched norm per matrix, so it reads below 1 by how unevenly the matrices share the update",
+      "rotated": "reported",
+      "blind_to": "attention and read-out matrices; Adam's per-element normalisation flattens it, hence W1g",
+      "noise_floor": "the kind's seed range",
+      "reference_for_rules": "W1_rot (W1_gauss reported)",
+      "block_readings": "block_shares and block_W1 per state in weights.json, reported: they say how much of a gap is how the update divides among blocks; expected to sum to 1 and, on block_W1, to sit near the Gaussian's 0.999 unless Adam's flattening is broken"
+    },
+    "W1g": {
+      "definition": "W1 on the first-batch gradient of the task's loss at W0, one per task and seed",
+      "sparser": "lower",
+      "W0": "defined: it is read at W0",
+      "control": "as W1 (the same function)",
+      "gaussian_per_state": "reported",
+      "rotated": "reported",
+      "blind_to": "later steps; what Adam then does; progress (see tests.T2_W1g_note). On family C it may mostly read ordinary text: the loss runs over every position of 8 rows, and about 9% of broad cipher's training tokens are mapped, so T3_C may fail on batch noise between the two batch orders",
+      "noise_floor": "the kind's seed range",
+      "reference_for_rules": "W1g_shuf: the same first batch with its targets permuted (arm A: among the windows; arm B: next tokens among all the batch's positions, which keeps the token counts), seeded. Measured: the first run records it, no expected value is gated, since the GELU's factor in a c_fc gradient row makes the rotated value no fair reference. W1g_rot and W1g_gauss reported."
+    },
+    "W2": {
+      "definition": "share of the update's energy along each neuron's own W0 row and column, energy-weighted over neurons (W2 = both; W2_rows and W2_cols reported)",
+      "sparser": "higher",
+      "W0": "nan (undefined)",
+      "control": "rescaling 16 neurons: 1",
+      "gaussian": "rows 1/768; columns are also 768-dimensional, so 1/768 is expected, reported as the plan's 'measured', not gated",
+      "blind_to": "a neuron rotating towards another neuron",
+      "noise_floor": "the kind's seed range",
+      "reference_for_rules": "W2_gauss"
+    },
+    "A1": {
+      "definition": "per window, participation ratio over neurons of the squared (tuned - W0) activation at the answer position (squared as in W1); median over the scoring windows (two middle values averaged; a window with no shift is left out), as a fraction of 12288",
+      "sparser": "lower",
+      "W0": "nan (undefined)",
+      "control": "the 16-neuron update in block 3: at most 16/12288",
+      "rotated": "reported and read by the rules, not gated at stage 0",
+      "blind_to": "neurons that move and do nothing: hence C1",
+      "noise_floor": "the kind's seed range",
+      "reference_for_rules": "both A1_gauss and A1_rot. A1_gauss: A1 of a per-state Gaussian update of matched norm per matrix on the eight MLP matrices, the other 16 at zero. Measured: reported, not gated on any expected value; the GELU makes the neuron basis special for any update, so A1 below A1_rot alone shows nothing about the fine-tune"
+    },
+    "C1": {
+      "definition": "per window, neurons ranked by that window's own |shift| at the answer position (no target information; ties to the lower flat index); the top k take the tuned model's activations at every position of a W0 forward (E56's edit); share = mean rise of log P(target) over W0 on the scoring half / G_score; C1 = log2 k where the share curve first reaches half of that state's own 12288-neuron share, interpolated linearly in log2 k between the grid points either side, so continuous; a crossing at k = 1 reads 0; a later dip does not matter",
+      "sparser": "lower",
+      "W0": "the identity patch reads 0",
+      "control": "the 16-neuron update: k <= 16, so C1 <= 4",
+      "gaussian_rotated": "none. C1_random: the same reading on one seeded random order of the neurons per state, the same order on every window; its k = 12288 is the same patch as C1's",
+      "share_curve": "shares, shares_random and rises (raw nats) at each k per state, in windows.json, for the figure",
+      "blind_to": "down-projection changes (kept at W0, as E56)",
+      "noise_floor": "one grid step, 1 in log2, used as a lower bound on the spread in every test (number_rules.C1.noise_floor); it applies to the separation, not to the guard"
+    }
+  },
+  "stage0": {
+    "order": "after the sha256 and before any state outside it is read; a miss writes, logs FAIL and exits 1",
+    "gaussian_seed": 63,
+    "orthogonality_tol": 1e-09,
+    "w1_sixteen_rel_tol": 1e-06,
+    "w2_sixteen_tol": 1e-06,
+    "gaussian_w1_range": [
+      0.99,
+      1
+    ],
+    "gaussian_w2_rows_rel_tol": 0.1,
+    "gaussian_note": "a unit Gaussian on all eight matrices: W1 expected 0.9987, W2 rows 1/768 (the 10% is E51's null tolerance, sampling error here about 1.3%); W2 columns reported",
+    "rotated_sixteen_w1_range": [
+      0.1,
+      0.25
+    ],
+    "rotated_sixteen_note": "not in the plan: the rotated reference's own control. 16 equal-energy neurons in block 3, rotated, spread over block 3's 3072: 3072 / (1 + 2/16) / 12288 = 0.222; gated so the basis guard cannot be blind",
+    "zero": "W1, W2 and A1's participation on a zero update read nan",
+    "identity_tol": 1e-06,
+    "identity_note": "per task, through window_edit, against W0 read in the same batch: expected 0. E56's identity_max_abs of 1.1e-5 compared two batch shapes (see the plan's amendments)",
+    "sixteen": "block 3's 16 neurons with the largest mean |W0 activation| at the answer position on the elicit fit half, each rescaled so that all have equal update energy, mean scale 1; read on the elicit task",
+    "a1_sixteen_max": 0.0013020833333333333,
+    "c1_sixteen_max": 4,
+    "c1_sixteen_when_unreadable": "C1 <= 4 is not gated, as the plan says, and SURPRISE is logged; sixteen_rise_tol gates the ranking path regardless",
+    "n16_tol": 1e-06,
+    "full_width_tol": 0.001,
+    "e56_reference": "elicit_s0 and cipher_s0 against experiments/keydependent_patch/results/job1.json: N16 (mean-ranked path, neurons.neuron_patch), and the per-window path's k = 12288 against b2_shares[12288]",
+    "kl_at_w0_tol": 1e-06,
+    "gradient_check": "elicit_s0's first-batch gradient finite and non-zero, its KL term under the tolerance",
+    "sixteen_rise_tol": 1e-06,
+    "sixteen_rise_note": "the raw rise in nats at k = 16 equals that at k = 12288 for the 16-neuron update, readable or not; no division, so a nan share cannot hide it. Only those 16 neurons shift, so with right ranks both patches are the same forward and the difference should read 0. 1e-6 nats is the identity patch's tolerance on the same path, and about half of fp32's spacing at a log P of 16 (1.9e-6), so a single window differing by one unit would show. It is the only GPU control of window_ranks."
+  },
+  "first_step_loss_note": "stops the job on a miss: a wrong batch makes W1g meaningless. The check reads the batch's loss under bf16 autocast, as the fine-tune ran, so precision does not enter; the 24 logged values have 4 decimals and seeds differ by 0.1 to 0.9 nats. The fp32 loss is reported beside it (fp32_minus_bf16), no gate.",
+  "first_step_loss_bf16": {
+    "elicit_s0": 5.7804,
+    "elicit_s1": 5.8962,
+    "elicit_s2": 6.0862,
+    "elicit_s3": 6.499,
+    "elicit_s4": 5.7154,
+    "cipher_s0": 13.1363,
+    "cipher_s1": 14.0668,
+    "cipher_s2": 13.1442,
+    "cipher_s3": 13.8924,
+    "cipher_s4": 14.0904,
+    "ident32_s0": 10.2725,
+    "ident32_s1": 9.6993,
+    "ident32b_s0": 10.5401,
+    "ident32b_s1": 9.5186,
+    "rand32_s0": 12.8584,
+    "rand32_s1": 13.3419,
+    "rand32b_s0": 13.3456,
+    "rand32b_s1": 13.4865,
+    "lowercase_s0": 3.3112,
+    "lowercase_s1": 3.0974,
+    "e53_cipher_s0": 3.3323,
+    "e53_cipher_s1": 3.2566,
+    "broad_cipher_s0": 4.2282,
+    "broad_cipher_s1": 4.0164
+  },
+  "tests": {
+    "T1": {
+      "elicit": [
+        "elicit_s0",
+        "elicit_s1",
+        "elicit_s2",
+        "elicit_s3",
+        "elicit_s4"
+      ],
+      "new": [
+        "cipher_s0",
+        "cipher_s1",
+        "cipher_s2",
+        "cipher_s3",
+        "cipher_s4"
+      ]
+    },
+    "T2": {
+      "elicit": [
+        "elicit_s0",
+        "elicit_s1"
+      ],
+      "new": [
+        "cipher_own_s0",
+        "cipher_own_s1"
+      ]
+    },
+    "T3_B": {
+      "elicit": [
+        "ident32_s0",
+        "ident32_s1"
+      ],
+      "new": [
+        "rand32_s0",
+        "rand32_s1"
+      ]
+    },
+    "T3_C": {
+      "elicit": [
+        "lowercase_s0",
+        "lowercase_s1"
+      ],
+      "new": [
+        "broad_cipher_s0",
+        "broad_cipher_s1"
+      ]
+    }
+  },
+  "rules": {
+    "separation": "E51's rule on the test's readable states: |mean(elicit) - mean(new)| strictly over the larger within-kind range (max - min) or the number's noise floor, whichever is larger, and the elicit mean on the sparser side. A test passes only if these hold and the reference rule below holds.",
+    "T1": "family A, five seeds at matched size: separation.",
+    "T2": "equal progress, elicit_s0, s1 against cipher_own_s0, s1: separation in the same direction.",
+    "T2_W1g_note": "at W0 cipher_own_s<s> has cipher_s<s>'s task, seed and first batch, so W1g's T2 reads the same gradients as its T1 at seeds 0, 1: a subset of T1, not a test of equal progress. A gradient at W0 has made no progress; W1g cannot be a progress effect, and its T2 adds nothing beyond that.",
+    "T3": "T3_B (ident32 against rand32, both at step 10) and T3_C (lowercase against broad_cipher): each separately, separation in the same direction.",
+    "guard": "basis guard on the five elicit states of T1, against each reference separately, one-sided: the mean lies on the sparser side of the reference's mean, by strictly more than the number's range over those states. Reference: number_rules.references: W1 its rotated values; W1g the shuffled-target gradient's; W2 the per-state Gaussian's; A1 both the per-state Gaussian update's and its rotated values; C1 the random order's. Both of A1's must pass.",
+    "answers_yes": "a number answers yes only if T1, T2, T3_B, T3_C and every guard all pass.",
+    "branch": "any number answers yes: read it on E58 A6-A7's equal-prior cipher and shuffled elicit map, as an amendment, with r's rank correlation beside it. None: write up, 'neurons do not map eliciting more cleanly, at this size and on these pairs'; an elicit/new gap under T1 only is reported as a progress effect.",
+    "reference_gap": "in every test, the number's gap with the sign that makes 'elicit sparser' positive must be strictly over the same signed gap on each of its references (number_rules.references), read on the states where the number is readable. A gap that survives rotation is not neuron information; a reference gap on the other side is beaten. A nan reference gap reads 'unreadable' and does not pass."
+  },
+  "edge_cases": {
+    "zero_denominator_W1": "a zero update: participation is 0/0 = nan: 'undefined', left out of every test as unreadable. W1 and W1g on the filed states cannot hit it.",
+    "zero_denominator_W2": "a zero update: nan as above. A neuron whose W0 row or column is exactly 0 has no direction and adds 0 to the numerator, not nan.",
+    "zero_shift_window_A1": "a window with no shift at all has nan participation and is left out of the median; all windows so: A1 is nan, unreadable.",
+    "ties_ranking": "neurons with equal |shift| rank by lower flat index (stable sort), as E56.",
+    "ties_rule": "kinds with equal means: gap 0 is not over any spread: the test fails. Gap exactly equal to the spread: fails (strict). Both ranges 0 with a gap: passes on W1, W1g, W2, A1. On C1 the spread is at least 1: a gap of exactly 1 fails, a gap of 1.5 passes.",
+    "never_half_share": "with a positive full-width share the last k always reaches half, so C1 is below log2(12288) = 13.585, or equal to it only if the curve reaches half exactly at the last point. A full-width share of 0, negative or nan is no target: C1 is nan, unreadable.",
+    "non_monotonic_curve": "first reach counts, even if the share falls below half at a larger k.",
+    "unreadable_G": "|G| < 0.05 nats, or the full-width rise under 0.05 nats: C1 is nan; the share curve is still written. |G_score| < 1e-6: every share is nan (elicit.share_or_nan), so unreadable. Negative G with a positive full share is readable: the share divides by G_score. W1, W1g, W2 and A1 read regardless of G.",
+    "too_few_readable": "a test drops its unreadable states and reads 'unreadable' with fewer than two readable on a side (a single value has no range). 'unreadable' does not pass, so the number cannot answer yes. Family C has two per kind, so one unreadable state there reads T3_C 'unreadable'.",
+    "guard_zero_range": "all five values equal: range 0, so the guard passes if the mean is on the sparser side at all, and fails if equal to the reference or on the denser side. Fewer than two readable or no finite reference: 'unreadable', does not pass.",
+    "tested_in": "tests/test_neuron_sparsity.py runs each of these",
+    "interpolation": "a crossing at the first k reads log2 of it (0), as there is no lower point; a tie at half reads that grid point; s1 >= half > s0 at the crossing, so the interpolation's denominator cannot be 0. A curve that is non-monotonic crosses at its first reach.",
+    "reference_gap_edges": "a reference gap equal to the number's: fails (strict). On the other side: beaten. nan (under two readable on a side, or a reference unreadable): 'unreadable', does not pass. C1_random reads nan by the same rule as C1, on the same G and full share.",
+    "zero_share_16": "a 16-neuron update under the floor or with a non-positive full share is unreadable for C1, and the raw-rise gate still runs."
+  },
+  "leans": {
+    "confidence": "medium at most on all; the user's hypothesis is a live one and per-window ranking is new",
+    "P1": {
+      "lean": "W1 does not answer yes (Adam flattens it)",
+      "right_if": "score.W1.answers_yes is false"
+    },
+    "P2": {
+      "lean": "W1g: unknown",
+      "right_if": "no lean to score; the result is reported"
+    },
+    "P3": {
+      "lean": "W2 does not answer yes",
+      "right_if": "score.W2.answers_yes is false"
+    },
+    "P4": {
+      "lean": "A1: unknown",
+      "right_if": "no lean to score; the result is reported"
+    },
+    "P5": {
+      "lean": "C1 passes T1 and fails T2, as E56's coarse count did",
+      "right_if": "score.C1.T1.pass is true and score.C1.T2.pass is false"
+    }
+  },
+  "expected_reported": {
+    "code_step10": "W1 within 5% of its rotated value and W2 within a factor of 2 of its Gaussian: an update that learned nothing shows what Adam alone gives. Reported, in no test.",
+    "G": "reads as each state's source: elicit about 6.3, cipher about 10.5, cipher_own about 13.7 (E56), E53's as regating_truth_table stage1.json. Not gated beyond stage 0; a state under the floor reads unreadable.",
+    "cut": "E36's code task has no answer position, so A1 and C1 are not defined on code_step10, and W1g on it has no expected value and no reader: all three cut. No other number is cut.",
+    "C1_random": "near the top of the grid: a random k of 12288 carries about its fraction of the shift, so half the full share at roughly k = 6000, log2 about 12.5; measured, not gated",
+    "time": "about 8-12 minutes"
+  },
+  "not_run": "SGD fine-tunes of the pairs (W1g stands in); attention-head sparsity; any new fine-tune; Qwen; the causal label of row 112",
+  "disclosure_2026-11-02": "While reviewing, the reviewer computed W1 and its rotated value on all 26 saved states, since W1 needs no model. So W1's outcome was known before these amendments: it does not answer yes, and elicit is the denser side in every family. The rule changes were chosen on what the rules can do and do not change W1's outcome. No other number was read.",
+  "number_rules": {
+    "W1": {
+      "lower_is_sparser": true,
+      "noise_floor": 0,
+      "references": [
+        "W1_rot"
+      ],
+      "reported": [
+        "W1_gauss"
+      ]
+    },
+    "W1g": {
+      "lower_is_sparser": true,
+      "noise_floor": 0,
+      "references": [
+        "W1g_shuf"
+      ],
+      "reported": [
+        "W1g_rot",
+        "W1g_gauss"
+      ]
+    },
+    "W2": {
+      "lower_is_sparser": false,
+      "noise_floor": 0,
+      "references": [
+        "W2_gauss"
+      ],
+      "reported": []
+    },
+    "A1": {
+      "lower_is_sparser": true,
+      "noise_floor": 0,
+      "references": [
+        "A1_gauss",
+        "A1_rot"
+      ],
+      "reported": []
+    },
+    "C1": {
+      "lower_is_sparser": true,
+      "noise_floor": 1,
+      "references": [
+        "C1_random"
+      ],
+      "reported": []
+    }
+  },
+  "first_step_loss_stop_tol": 0.01,
+  "reported_beside": {
+    "T3_B": [
+      "ident32b_s0",
+      "ident32b_s1",
+      "rand32b_s0",
+      "rand32b_s1"
+    ],
+    "T3_C": [
+      "e53_cipher_s0",
+      "e53_cipher_s1"
+    ]
+  },
+  "reading_notes": {
+    "one_task_tests": "T1, T2 and T3_C compare one task with one task, so seed range cannot test kind: between seeds a number barely moves, so two different tasks almost always separate and only the direction carries information. A pass reads 'these tasks differ, in this direction'. Simulated false-yes rate with task differences ten times seed noise and no kind effect: about 2% per number, about 9% over five numbers. e53_cipher is reported beside T3_C to show how far two tasks of the same kind sit apart.",
+    "W1_known": "P1's outcome was seen before these amendments (disclosure_2026-11-02): it is not a blind prediction."
+  },
+  "superseded_2026-11-02": {
+    "note": "As first filed; replaced before any run by the amendment of the same date. The code no longer reads these.",
+    "rules": {
+      "separation": "E51's rule on the test's readable states: |mean(elicit) - mean(new)| strictly over the larger within-kind range (max - min), absolute values of the number, and the elicit mean on the sparser side. A test passes only if both hold.",
+      "T3": "T3_B and T3_C: each family separately, separation in the same direction.",
+      "guard": "basis guard on the five elicit states of T1: |mean(number) - mean(reference)| strictly over the number's range over those states. Reference: W1, W1g, A1 their rotated values per state; W2 the per-state Gaussian's W2; C1 the full width, log2(12288). The rule says 'differs': below_reference records the side.",
+      "answers_yes": "a number answers yes only if T1, T2, T3_B, T3_C and the guard all pass."
+    },
+    "tests": {
+      "T3_B": {
+        "elicit": [
+          "ident32_s0",
+          "ident32_s1",
+          "ident32b_s0",
+          "ident32b_s1"
+        ],
+        "new": [
+          "rand32_s0",
+          "rand32_s1",
+          "rand32b_s0",
+          "rand32b_s1"
+        ]
+      }
+    },
+    "states": {
+      "B": "ident32_s0, s1, ident32b_s0, s1 (built to elicit), rand32_s0, s1, rand32b_s0, s1 (built to be new), experiments/regating_table, own steps, not size-matched",
+      "reported_only": "e53_cipher_s0, s1 (dW_cipher_*_step300): all five numbers, in no test. code_step10 (experiments/regating_table; learned nothing): W1 and W2 only, with their rotated and Gaussian values"
+    },
+    "numbers": {
+      "C1": {
+        "definition": "per window, neurons ranked by that window's own |shift| at the answer position (no target information; ties to the lower flat index); the top k take the tuned model's activations at every position of a W0 forward (E56's edit); share = mean rise of log P(target) over W0 on the scoring half / G_score; C1 = log2 of the first k on k_grid whose share >= half of that state's own 12288-neuron share (first reach, a later dip does not matter; a tie at half counts)",
+        "gaussian_rotated": "none: full width is the reference, log2(12288) = 13.585",
+        "noise_floor": "one grid step (1 in log2, 0.585 at the top step) as well as the kind's seed range",
+        "share_curve": "the share at each k per state, in windows.json, for the figure"
+      },
+      "W1g": {
+        "blind_to": "later steps; what Adam then does; progress (see tests.T2_W1g_note)"
+      },
+      "A1": {
+        "rotated": "measured: the first run records it, reported, not gated"
+      }
+    },
+    "first_step_loss_report_tol": 0.1,
+    "first_step_loss_note": "reported, not gated: a first-batch loss more than this from the fine-tune's logged step 1 logs SURPRISE (wrong batch). bf16 against fp32 is the expected difference; the first run records it.",
+    "stage0": {
+      "c1_sixteen_when_unreadable": "not gated, as the plan says, but logged as SURPRISE: the control is then not exercised"
+    },
+    "edge_cases": {
+      "ties_rule": "kinds with equal means: gap 0 is not over any spread, including 0: the test fails. Gap exactly equal to the spread: fails (strict). Both ranges 0 with a gap (likely on C1's grid): passes.",
+      "never_half_share": "with a positive full-width share the last k always reaches half, so C1 is at most log2(12288) = 13.585. A full-width share of 0, negative or nan is no target: C1 is nan, unreadable (it is also what floor_note requires).",
+      "guard_zero_range": "all five values equal, as C1's grid allows: range 0, so the guard passes if the means differ at all and fails when equal to the reference (C1 at full width on every seed: gap 0, fails). Fewer than two readable or no finite reference: 'unreadable', does not pass."
+    }
+  }
 }

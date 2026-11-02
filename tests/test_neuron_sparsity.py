@@ -48,10 +48,14 @@ def test_window_ranks() -> None:
 
 def test_half_share_index() -> None:
     grid = [1, 2, 4, 8, 12288]
-    assert NS.half_share_index(dict(zip(grid, [0.1, 0.2, 0.5, 0.7, 1.0], strict=True))) == 2.0  # a tie at half counts
-    assert NS.half_share_index(dict(zip(grid, [0.9, 0.1, 0.1, 0.1, 1.0], strict=True))) == 0.0  # first reach, not last
-    # only the full width reaches half: log2(12288)
-    assert NS.half_share_index(dict(zip(grid, [0.0, 0.0, 0.0, 0.0, 1.0], strict=True))) == pytest.approx(math.log2(12288))
+    assert NS.half_share_index(dict(zip(grid, [0.1, 0.2, 0.5, 0.7, 1.0], strict=True))) == 2.0  # a tie at half: that point
+    # the crossing is interpolated in log2 k: halfway between k = 2 and k = 4
+    assert NS.half_share_index(dict(zip(grid, [0.1, 0.3, 0.7, 0.8, 1.0], strict=True))) == pytest.approx(1.5)
+    assert NS.half_share_index(dict(zip(grid, [0.9, 0.1, 0.1, 0.1, 1.0], strict=True))) == 0.0  # at the first k: no lower point
+    assert NS.half_share_index(dict(zip(grid, [0.0, 0.6, 0.1, 0.1, 1.0], strict=True))) == pytest.approx(5 / 6)  # first reach
+    # only the full width reaches half: between k = 8 and k = 12288, on the line
+    x = NS.half_share_index(dict(zip(grid, [0.0, 0.0, 0.0, 0.0, 1.0], strict=True)))
+    assert x == pytest.approx(3 + 0.5 * (math.log2(12288) - 3))
     # a full-width share that is 0, negative or nan is no target
     for full in (0.0, -0.5, math.nan):
         assert math.isnan(NS.half_share_index(dict(zip(grid, [0.1, 0.1, 0.1, 0.1, full], strict=True))))
@@ -59,7 +63,8 @@ def test_half_share_index() -> None:
 
 def test_c1_reading_floor() -> None:
     shares = {1: 0.1, 2: 0.6, 12288: 1.0}
-    assert NS.c1_reading(shares, 1.0, 1.0, 0.05) == {"C1": 1.0, "readable": True, "full_share": 1.0}
+    r = NS.c1_reading(shares, 1.0, 1.0, 0.05)
+    assert r["C1"] == pytest.approx(0.8) and r["readable"] and r["full_share"] == 1.0
     assert not NS.c1_reading(shares, 0.04, 1.0, 0.05)["readable"]  # G under the floor
     assert math.isnan(NS.c1_reading(shares, 0.04, 1.0, 0.05)["C1"])
     assert not NS.c1_reading({1: 0.1, 12288: 0.01}, 1.0, 1.0, 0.05)["readable"]  # the patch itself carries 0.01 nats
@@ -86,15 +91,69 @@ def test_separation() -> None:
     assert some["pass"] and some["n_elicit"] == 2  # an unreadable state is left out
 
 
+def test_noise_floor() -> None:
+    assert not NS.separation([11.0] * 5, [12.0] * 5, True, 1.0)["pass"]  # exactly one grid step is the floor, not over it
+    assert NS.separation([11.0] * 5, [12.5] * 5, True, 1.0)["pass"]
+    assert NS.separation([11.0, 11.0], [12.0, 12.0], True)["pass"]  # no floor: W1, W1g, W2, A1
+    assert NS.separation([1.0, 5.0], [8.0, 8.0], True, 1.0)["spread"] == 4.0  # a larger range still rules
+
+
 def test_basis_guard() -> None:
-    assert NS.basis_guard([0.1, 0.11], [0.5, 0.5])["pass"]
-    assert not NS.basis_guard([0.5, 0.6], [0.55, 0.55])["pass"]
-    zero = NS.basis_guard([12.0, 12.0], [math.log2(12288)])
-    assert zero["range"] == 0 and zero["pass"]  # a zero range passes when the means differ
-    same = NS.basis_guard([3.0, 3.0], [3.0])
-    assert same["gap"] == 0 and not same["pass"]  # and fails when they do not
-    assert NS.basis_guard([math.nan, 1.0], [1.0])["status"] == "unreadable"
-    assert NS.basis_guard([1.0, 1.1], [math.nan])["status"] == "unreadable"
+    assert NS.basis_guard([0.1, 0.11], [0.5, 0.5], True)["pass"]
+    assert not NS.basis_guard([0.5, 0.6], [0.55, 0.55], True)["pass"]
+    wrong = NS.basis_guard([0.976, 0.977], [0.923, 0.923], True)
+    assert wrong["gap"] > wrong["range"] and not wrong["on_sparser_side"] and not wrong["pass"]  # denser than its reference
+    assert NS.basis_guard([0.976, 0.977], [0.923, 0.923], False)["pass"]  # where higher is sparser (W2)
+    zero = NS.basis_guard([12.0, 12.0], [13.0, 13.0], True)
+    assert zero["range"] == 0 and zero["pass"]  # a zero range passes on the sparser side
+    assert not NS.basis_guard([14.0, 14.0], [13.0, 13.0], True)["pass"]  # and not on the other
+    same = NS.basis_guard([3.0, 3.0], [3.0, 3.0], True)
+    assert same["gap"] == 0 and not same["pass"]  # and fails when equal
+    assert NS.basis_guard([math.nan, 1.0], [1.0], True)["status"] == "unreadable"
+    assert NS.basis_guard([1.0, 1.1], [math.nan], True)["status"] == "unreadable"
+
+
+def rows_of(e: list[float], n: list[float], re: list[float], rn: list[float]) -> tuple[dict, dict]:
+    rows = {f"e{i}": {"X": x, "R": r} for i, (x, r) in enumerate(zip(e, re, strict=True))}
+    rows |= {f"n{i}": {"X": x, "R": r} for i, (x, r) in enumerate(zip(n, rn, strict=True))}
+    return rows, {"elicit": [f"e{i}" for i in range(len(e))], "new": [f"n{i}" for i in range(len(n))]}
+
+
+SPEC = {"lower_is_sparser": True, "noise_floor": 0.0, "references": ["R"], "reported": []}
+
+
+def test_gap_must_beat_reference() -> None:
+    rows, t = rows_of([1.0, 1.0], [2.0, 2.0], [5.0, 5.0], [5.5, 5.5])
+    assert NS.read_test(rows, "X", SPEC, t)["pass"]  # gap 1 over the reference's 0.5
+    rows, t = rows_of([1.0, 1.0], [2.0, 2.0], [5.0, 5.0], [6.0, 6.0])
+    r = NS.read_test(rows, "X", SPEC, t)
+    assert r["separates"] and not r["beats_references"] and r["status"] == "fail"  # a gap that survives: equal is not over
+    rows, t = rows_of([1.0, 1.0], [2.0, 2.0], [6.0, 6.0], [5.0, 5.0])
+    assert NS.read_test(rows, "X", SPEC, t)["pass"]  # a reference gap on the other side is beaten
+    rows, t = rows_of([1.0, 1.0], [2.0, 2.0], [math.nan, math.nan], [5.0, 5.0])
+    assert NS.read_test(rows, "X", SPEC, t)["status"] == "unreadable"  # no reference: does not pass
+    rows, t = rows_of([1.0, 1.0, math.nan], [2.0, 2.0], [5.0, 5.0, 100.0], [5.5, 5.5])
+    assert NS.read_test(rows, "X", SPEC, t)["reference_gaps"]["R"] == pytest.approx(0.5)  # same states as the number's
+
+
+def test_score_number() -> None:
+    rows, t = rows_of([1.0, 1.0], [2.0, 2.0], [5.0, 5.0], [5.5, 5.5])
+    rows["b"] = {"X": 9.0, "R": 9.0}
+    spec2 = {**SPEC, "references": ["R"], "reported": ["R"]}
+    r = NS.score_number(rows, "X", spec2, {"T1": t, "T2": t}, {"T1": ["b"]})
+    assert r["answers_yes"] and r["beside"]["T1"]["b"] == 9.0 and r["T1"]["reported_gaps"]["R"] == pytest.approx(0.5)
+    rows, t = rows_of([6.0, 6.0], [7.0, 7.0], [5.0, 5.0], [5.5, 5.5])  # separates, beats the gap, on the dense side of R
+    r = NS.score_number(rows, "X", SPEC, {"T1": t}, {})
+    assert r["T1"]["pass"] and not r["guard"]["R"]["pass"] and not r["answers_yes"]
+
+
+def test_blocks_and_random_ranks() -> None:
+    W0 = toy_w0()
+    b = NS.block_readings(NS.sixteen_update(W0, 3, torch.arange(16)))
+    assert b["block_shares"] == pytest.approx([0, 0, 0, 1]) and b["block_W1"][3] == pytest.approx(16 / 3072)
+    assert math.isnan(b["block_W1"][0])
+    r = NS.random_ranks(0)
+    assert sorted(r.tolist()) == list(range(12288)) and torch.equal(r, NS.random_ranks(0)) and not torch.equal(r, NS.random_ranks(1))
 
 
 def test_median() -> None:
