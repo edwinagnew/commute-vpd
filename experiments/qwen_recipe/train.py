@@ -11,6 +11,7 @@ Stages, in this order (each refuses until the one before has finished):
   W                no training: the rule prompts at W0 and E45's saved references, read on fp32; writes results/lines.json
   T --run <run>    a1_3e-6, a1_1e-6, gold_1e-5, a2_6e-6
   G --run <run>    a finished run's saved states from file, no Adam moments: generation, then the rule's verdict
+                   with --step T: that one saved state's reads only, no verdict (Job S's small state)
 Exit 0 done; 1 an early stop (results/stopped.json, every stage refuses until it is removed) or a refusal; 3 paused,
 resubmit the same command. Results: results/train_<run>.json as it goes, each number also in results/run.log; δW in bf16
 at results/large/train/<run>/step_<t>.safetensors.
@@ -332,19 +333,23 @@ def verdict(lab: Lab, R: Run, st: dict[str, Any]) -> dict[str, Any]:
     return reading | {"learned": holds, "beside": {"w0": w0, "reference": W[f"{run}_{t}"], "reads": st}}
 
 
-def stage_G(lab: Lab, name: str) -> None:
+def stage_G(lab: Lab, name: str, step: int | None = None) -> None:
     R, file = RUNS[name], f"train_{name}"
     out = read(file)
     if not (R.gen and out.get("done") and read("train_W").get("done")):
         sys.exit(f"{name}: Stage G needs a run with generation states, finished, and Stage W finished")
+    if step is not None and step not in R.saves:
+        sys.exit(f"{name}: no saved state at step {step}; saved: {R.saves}")
     out.setdefault("states", {})
     fp32_generator(lab)
-    for t in R.gen:
+    for t in R.gen if step is None else (step,):
         label = f"step_{t}"
         if set(READS[R.arm]) - set(out["states"].get(label, {})):
             W = plus(lab.W0, load(LARGE / name / f"{label}.safetensors", DEV))
             read_state(lab, out, file, label, W, READS[R.arm])
             del W
+    if step is not None:
+        return
     out["verdict"] = verdict(lab, R, out["states"][f"step_{R.steps}"]) | {"rate_sum": out["steps"][-1]["rate_sum"]}
     write(file, out)
     lab.log(f"[G {name}] verdict {json.dumps({k: v for k, v in out['verdict'].items() if k != 'beside'}, default=float)}")
@@ -355,6 +360,7 @@ def main() -> None:
     p.add_argument("--stage", required=True, choices=("T", "W", "G"))
     p.add_argument("--run", choices=tuple(RUNS))
     p.add_argument("--t-chunk", type=int, help="T: pause after this many steps (a multiple of 5; default the run's own)")
+    p.add_argument("--step", type=int, help="G: read this one saved state, no verdict")
     a = p.parse_args()
     if STOPPED.is_file():
         sys.exit(f"{STOPPED} exists: read it, then remove it")
@@ -366,7 +372,7 @@ def main() -> None:
         elif a.stage == "W":
             stage_W(lab)
         else:
-            stage_G(lab, a.run)
+            stage_G(lab, a.run, a.step)
     except torch.cuda.OutOfMemoryError as e:
         stop(lab, f"{a.stage} {a.run}: out of GPU memory", {"error": str(e)[:300]})
     lab.log(f"[{a.stage} {a.run}] done; {lab.peaks()}")

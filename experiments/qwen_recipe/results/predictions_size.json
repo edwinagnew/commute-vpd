@@ -1,7 +1,7 @@
 {
   "experiment": "E61 (qwen_recipe), Job S: the direct share against size, through the frozen decomposition of Qwen3-1.7B",
   "filed": "2026-11-02, before any run",
-  "plan": "reports/plans/2026-11-02_plan_e61-direct-share-size.md, Part 2 and both amendments (the last overriding); reports/reviews/2026-11-02_review_e61-plan.md M2-M6, M7.3, S2-S4, S8; code experiments/qwen_recipe/size.py",
+  "plan": "reports/plans/2026-11-02_plan_e61-direct-share-size.md, Part 2 and both amendments (the last overriding); reports/reviews/2026-11-02_review_e61-plan.md M2-M6, M7.3, S2-S4, S8; reports/reviews/2026-11-02_review_e61-size-code.md M1, S1-S6, applied before any run; code experiments/qwen_recipe/size.py",
   "question": "User: 'Test the direct share against size first.' Scale random weight changes up to the size of the biggest fine-tune, read a smaller state of that fine-tune, and read them all the same way. Does gold's direct share stay above the random changes' at matched size, or does size explain it?",
   "rules": {
     "band": 1.15,
@@ -10,7 +10,8 @@
     "big_min": 0.99,
     "gold_s0_size": 1.44376307176361,
     "floor_min": 0.01,
-    "b_multiple": 3
+    "b_multiple": 3,
+    "host_stop_gb": 118
   },
   "numbers_reported": {
     "direct_true": {
@@ -35,28 +36,28 @@
       "what": "Size, second axis: unmasked KL(W0 || state) per position.",
       "at_W0": "0.",
       "do_nothing": "Same as the state's.",
-      "control": "checks_sizes.json, 128 rows: gold_s0 0.8058, Gaussian 0.5261, alive 0.4811."
+      "control": "checks_sizes.json, 128 rows, within CFG.rep_tol or stop: gold_s0 0.8058, Gaussian 0.5261, alive 0.4811."
     },
     "KL_state_W0": {
       "what": "Unmasked KL(state || W0) per position. Reported, no rule reads it.",
       "at_W0": "0.",
       "do_nothing": "Same as the state's.",
-      "control": "checks_sizes.json: gold_s0 1.7407, Gaussian 0.8678, alive 0.5790."
+      "control": "checks_sizes.json, 128 rows, within CFG.rep_tol or stop: gold_s0 1.7407, Gaussian 0.8678, alive 0.5790."
     },
     "boot95": "Per state and version, and per gap: E57's scheme (boot_direct.py): 2000 row resamples, random.Random(0), 2.5th and 97.5th percentiles, the same draws for every state, so differences are paired. Reported; a point estimate decides at the line, and the report says so."
   },
   "size_axes": "Two: K00 - K0 and KL(W0 || state), both per position on the 128 maths rows of 256 tokens. The search matches on K00 - K0 only. One pair cannot match on both, so on each axis each random kind's share is read off its two reads at gold's value there (`at_size`). KL(state || W0) is reported beside them.",
   "how_randoms_are_scaled": "As a weight change: W0 + b δW, the same straight line in weight space for both kinds (lab.Weights.put), the user's 'scale random weight changes up'. For the alive change this scales its quadratic term dU dV^T by b rather than b^2, so at b above 1 it is a multiple of E57's change and not exactly a move of alive columns by b (dU, dV). The split reads it as any δW.",
   "first_minutes": {
-    "control": "Stop: K0 and K00 on the first 16 rows at C0's scale within CFG.rep_tol of C0: K0 0.06558, K00 0.96128 per position. Stop: the true pass at W0 with a zero split, first 8 rows, all = K0 within CFG.id_tol. Stop: GPU over 44 GiB after a row, as E57. Host: read in the log per chunk; Slurm kills at 128G and the run resumes from the last chunk written.",
+    "control": "Stop: K0 and K00 on the first 16 rows at C0's scale within CFG.rep_tol of C0: K0 0.06558, K00 0.96128 per position. Stop: the true pass at W0 with a zero split, first 8 rows, all = K0 within CFG.id_tol. Stop: GPU over 44 GiB after a row, as E57. Stop: host peak over rules.host_stop_gb (118 GB) after a chunk's masks, before Slurm's kill at 128G; first real reading here, on 8 rows.",
     "select": "Stop: fp32 gold's G verdict missing or not learned. Stop: the final state's size not finite. Expected, not a stop: size rises with step, near 2.1 x the training record's KL at steps 7-15 (review S2). Each state's K0 runs through `cells` and is checked in `state`.",
-    "state": "Stop: a ladder file's sha256 differs from `select`'s. Stop: K0 for every state; K0, K00, K01, K10, K11 for gold_s0, Gaussian, alive within CFG.rep_tol of E57 (sum over rows read). Stop: true K00 per chunk within CFG.id_tol of the cells' K00. Stop: gold_s0's and the Gaussian's true K10 and K11 on their first rows within CFG.rep_tol of checks_k10_<state>.true.per_row.",
+    "state": "Stop: a ladder file's sha256 differs from `select`'s. Stop: a ladder state's K00 - K0 on the first 16 rows off `select`'s size_select, or a scaled change's on all rows off its search's size, by more than CFG.rep_tol. Stop: on gold_s0, Gaussian and alive at 128 rows, either KL off checks_sizes.json by more than CFG.rep_tol. Stop: a saved split that is not fp32. Stop: K0 for every state; K0, K00, K01, K10, K11 for gold_s0, Gaussian, alive within CFG.rep_tol of E57 (sum over rows read). Stop: true K00 per chunk within CFG.id_tol of the cells' K00. Stop: gold_s0's and the Gaussian's true K10 and K11 on their first rows within CFG.rep_tol of checks_k10_<state>.true.per_row.",
     "search": "Logged at b = 1, K00 - K0 on the first 16 rows, which `state`'s reproduction of E57 has checked for both kinds: Gaussian 0.8957, alive 0.6830. Expected at the matched scale: K00 - K0 grows about as b^2 while small, so 2-4 evaluations; a kind not matched after 6 evaluations and one further step is reported unmatched and read.",
     "verdict": "Refuses until every state it reads is written."
   },
   "select_rule": {
     "measurement": "K00 - K0 on the first 16 maths rows at every saved state of results/large/train/gold_1e-5/; the final state also on all 128. Each random's existing size on the same 16 rows from E57's saved per-row sums, no forward.",
-    "small_state": "Excluding the big state: the state with |log(size / a random's size)| smallest over both randoms. in_band: within a factor 1.15 of a random's 16-row size. Earlier step on a tie. It is called a state on the way; its drop and length are in Job R's record; no 'learned' check (review S3).",
+    "small_state": "Excluding the big state: the state with |log(size / a random's size)| smallest over both randoms. in_band: within a factor 1.15 of a random's 16-row size. Earlier step on a tie. It is called a state on the way; no 'learned' check (review S3). Its drop and length come from one Stage G read after `select` (train.py --stage G --run gold_1e-5 --step T), reported in the verdict as `small_state`, against fp32 W0; the verdict stage refuses without it.",
     "big_state": "The final state's 128-row K00 - K0, the plan's own axis for 0.99 and 1.44. At or under 0.99: gold_s0 is the big state, randoms are scaled to it. Over 0.99: the final state is the big state, randoms scaled to it, and `above_gold_s0` states whether it is above gold_s0's 1.4438. fp32 gold failing its rule: stop before anything, reported.",
     "search_rule": "qr.scale_search on K00 - K0, 16 rows, from b = 1 (the existing scale), target the big state's own 16-row value, match 1.05 (on file for gold_s0: 1.5731). Then 128 rows against the big state's 128-row value, within 1.15; on a miss one more step, the nearer kept; then `matched` false, reported, still read."
   },
@@ -82,7 +83,7 @@
       "final_size_at_or_under_0.99_and_itself_nearest": "The final state may then be the small state, read once.",
       "sizes_not_within_15pct": "f = 0.01; the two gold runs' difference is still in the record, with `difference_over_f`.",
       "rows_differ_across_states": "Cannot: one config, sums over the same rows; a resample index past a list raises.",
-      "tested": "Cases on `at_size`, `line`, `nearest`, `floor`, `decide` ran on CPU before filing, on made-up sums: ~/commute-data/scratch/qwen-decomp-lead/size-writer/rules_dry.py. Not run there: the branch and stops in `select`, `unmatched` in the verdict stage, the final state as the small state, rows differing. `select`'s branch is the one comparison `r9(final size) <= big_min`."
+      "tested": "Cases on `at_size`, `line`, `nearest`, `floor`, `decide` ran on CPU before filing, on made-up sums: ~/commute-data/scratch/qwen-decomp-lead/size-fix/rules_dry.py, with `split_x`'s save and read in fp32 and its bf16 refusal, `check_size`, `check_kl`, `small_reading`. Not run there: the branch and stops in `select`, `unmatched` in the verdict stage, the final state as the small state, rows differing. `select`'s branch is the one comparison `r9(final size) <= big_min`."
     }
   },
   "control_limits": "The control reproduces C0's K00 for a change already read, so it can catch drift (model, decomposition, Γ, rows, the Gaussian's rebuild) and a swapped file, and no more. It does not validate the share and is not to be reported as doing so. The true-mask pass's own checks (W0's zero split, K00 per chunk, checks_k10 rows) catch a pass that uses the wrong masks, or swaps cells; none shows the direct share measures what it is taken to.",
@@ -92,8 +93,8 @@
     "sizes": "Neither axis is shown to be the right one; the line needs both. 16 rows differ from 128 by kind (gold 1.09 times, Gaussian 1.045, alive 1.09), hence the 128-row check.",
     "interpolation": "Linear between two reads of one seed. Nothing here tests the straight line; the plan accepts it (review M3).",
     "floor": "The two gold runs differ in the forward and share their data: f is a forward effect mixed with any size difference, not run-to-run noise (review M5). The 0.01 itself is 0.007 between random kinds plus bootstrap half-widths.",
-    "x_on_file": "gold_s0's and the Gaussian's splits are checks.py's, stored bf16, flagged `on_file_from_checks`: gold_s0's source is the same sha256 in dW_SHA256SUMS. The Gaussian has no file and no recorded digest, so its stand-in is the reproduction of E57's K10 and K11 within CFG.rep_tol, and checks_k10's rows."
+    "split": "Every state runs its own split, in fp32, saved and read back in fp32, so K10 and K11 never mix precisions. A resume is flagged `resumed` in the state's X record. gold_s0's source is the same sha256 in dW_SHA256SUMS. The Gaussian has no file and no recorded digest, so its stand-in is the reproduction of E57's K10 and K11 within CFG.rep_tol, and checks_k10's rows."
   },
   "departures": "Masks held per chunk of 8 rows, not per row as review M2 words it: entering `applied` costs 26 s (checks_k10_gauss log), which would make one row at a time about 2 h per state; 8 rows x 2 mask sets is the 19 GB checks.py already ran. Never all rows. Thresholds 0.99 and 1.44 are read on 128 rows, the only reading they were filed from.",
-  "rehearsal": "--rows 2 --ladder gold_s0 --states 5 9 (any two saved steps; --ladder gold_1e-5 works too): every stage on 2 rows, chunk 2, its files named size2_*, its splits size2_*_X, so no scored reading is touched. Checks read their first 2 rows. No G verdict is asked for. Expected on 2 rows: the final state's size under 0.99 probably, so the gold_s0 branch; the other is one assignment in `select`."
+  "rehearsal": "--rows 2 --ladder gold_s0 --states 5 9 (any two saved steps; --ladder gold_1e-5 works too): every stage on 2 rows, chunk 1, so the true pass's second chunk runs, and one job is cancelled after the first `true_from_row` line and resubmitted, so a resume inside the pass runs. Its files are named size2_*, its splits size2_*_X, so no scored reading is touched. Checks read their first 2 rows; the two KLs' check is on 128 rows only. No G verdict and no small-state read are asked for; the host stop cannot fire on 2 rows' masks. Expected on 2 rows: the final state's size under 0.99 probably, so the gold_s0 branch; the other is one assignment in `select`."
 }
