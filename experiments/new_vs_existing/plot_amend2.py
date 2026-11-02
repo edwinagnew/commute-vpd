@@ -122,7 +122,7 @@ def fall() -> None:
     ax.set_xlim(-0.5, 5.5)
     ax.set_ylim(-0.05, 1.4)
     ax.set_ylabel("fall in masked log-odds at the trigger, nats\nfine-tune's values minus student's")
-    ax.set_title("Does the fall survive a second batch order and a second forward? Yes, on both", fontsize=10.5, loc="left")
+    ax.set_title("Does the fall survive a second batch order and a second way of rounding dW? Yes, on both", fontsize=10.5, loc="left")
     ax.legend(frameon=False, fontsize=8.5, loc="upper center", ncol=1, bbox_to_anchor=(0.72, 1.0))
     style(ax)
     save(fig, "amend2_fall.png")
@@ -143,7 +143,7 @@ def sets() -> None:
     ax.set_xlim(-0.4, 3.8)
     ax.set_ylim(0, 1.06)
     ax.set_ylabel("Jaccard overlap of switched-on sets,\nstudent with its fine-tune")
-    ax.set_title("Do students switch on their fine-tunes' subcomponents? Partly on table 2, more on table 1", fontsize=10.5, loc="left")
+    ax.set_title("Do students switch on their fine-tunes' subcomponents? Partly; lower on table 2", fontsize=10.5, loc="left")
     style(ax)
     save(fig, "amend2_sets.png")
 
@@ -166,7 +166,7 @@ def blocks() -> None:
     ax.set_xticks(range(len(STATES)), [LABEL[n] for n in STATES], fontsize=8.5)
     ax.set_ylim(-0.05, 1.75)
     ax.set_ylabel("nats given back, writing the fine-tune's\nvalues into the student's at the trigger")
-    ax.set_title("Which values give the fall back? Those outside the switched-on sets", fontsize=10.5, loc="left")
+    ax.set_title("Which values give the fall back? The block outside the sets, which also holds 97% of the change", fontsize=10.5, loc="left")
     ax.legend(frameon=False, fontsize=8.5, loc="upper right")
     style(ax)
     save(fig, "amend2_blocks.png")
@@ -190,7 +190,7 @@ def ladder(s: dict[str, Any]) -> None:
     ax.set_ylim(-0.12, 0.62)
     ax.set_xlabel("k, the subcomponents whose values at the trigger changed most, written back together")
     ax.set_ylabel("share given back")
-    ax.set_title("How many subcomponents give the fall back? More than 300, and the control reads the same", fontsize=10.5, loc="left")
+    ax.set_title("How many subcomponents give the fall back? More than 300; the control is flat too", fontsize=10.5, loc="left")
     ax.legend(frameon=False, fontsize=8.5, loc="center left", bbox_to_anchor=(0.0, 0.72))
     style(ax)
     save(fig, "amend2_ladder.png")
@@ -211,7 +211,7 @@ def outside(s: dict[str, Any]) -> None:
     axes[0].set_ylim(0.7, 2e6)
     axes[0].set_xlim(0, 1)
     axes[0].legend(frameon=False, fontsize=9, loc="upper right")
-    fig.suptitle("Can a rule on the mean over windows see what moves? No: the moves are large only in single windows", fontsize=10.5, x=0.01, ha="left")
+    fig.suptitle("Can a rule on the mean over windows see what moves? No: the moves are large in a few windows per subcomponent", fontsize=10.5, x=0.01, ha="left")
     save(fig, "amend2_outside.png")
 
 
@@ -260,7 +260,7 @@ def size_fig() -> None:
     axes[0].text(1.7, 0.006, "0: do-nothing", fontsize=8.5, color=INK)
     axes[0].set_ylabel("share of the fine-tune's re-switching term lost")
     axes[0].legend(frameon=False, fontsize=9, loc="center right")
-    fig.suptitle("Do table 2's students end smaller than their teachers? On the most changed matrix only", fontsize=10.5, x=0.01, ha="left")
+    fig.suptitle("Do table 2's students end smaller than their teachers? On the largest-matrix ratio, yes; on total size, no", fontsize=10.5, x=0.01, ha="left")
     save(fig, "amend2_size.png")
 
 
