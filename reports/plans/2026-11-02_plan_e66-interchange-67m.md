@@ -1,0 +1,230 @@
+# Plan: on the 67M, does a fine-tune run through a mechanism the original model already has? (E66)
+
+*Baseline-lead, 2026-11-02. Decision: `decisions.md` row "Interchange patch on the 67M" (option (b) of
+`decision-e65-or-stage-b`). Plan only: no code, no predictions filed, nothing run. The user reads this first.*
+
+**In plain words.** We move the original model's internal state from two different contexts into a fine-tuned model,
+and ask whether that model responds more strongly than the original does. We also switch off the neurons the original
+model uses most for the trained answer, and see how much of the fine-tune's gain goes. Where both agree, a 67M
+fine-tune gets a causal label, so the method table can score the decomposition against cheaper methods.
+
+**Claim.** A 67M fine-tune is *reuse* when it strengthens the dependence the original model's own state already gives
+the trained answer and the original model's top neurons carry its gain, and *new* when its gain sits beside both.
+**Granularity limit (user, 2026-10-29).** A new circuit from old pieces reads "elicited" to VPD, and it can read reuse
+here too if it multiplies on the original model's state. "Reuse" means old parts at the level of a block input and
+MLP neurons, not one circuit shown unchanged.
+
+**Null.** The two readings do not leave their negative control on any fine-tune, or they follow update size or prior
+and not kind. Then no label is given, and the rows stay "only by assumption".
+
+**Three predictions that separate (leans; rules filed before the run).**
+- **P1, E62's states.** The patch ratio reads high on the copy map on at least 2 of 3 seeds, and low on the lookup on
+  all 3. Lean 65%: unpatched, the pair moves B by 6-10 log-odds in the state against 1.6 in W0 (`TRIED.md`, E62).
+- **P2, lowercase against its ciphers.** Lowercase reads reuse and both ciphers read new. Lean 55%.
+- **P3, equal-size key maps.** The half-known map and rank-1 read reuse, and the cipher reads new. Lean 35%: E58
+  Amendment 1 found all six half-known states act as lookups at unseen keys. If P3 fails, r's high reading there
+  follows something other than mechanism, which is the result the merged line exists to find.
+
+## Design check (`/design`)
+
+- **Goal.** `GOALS.md`, "If no simple Φ works": new capabilities or strengthening. It gives the merged line's truth on
+  rows where r and the stand-in ratio already have readings.
+- **Nearest tried.** E62 (labels by head ablation, regating-lead's). Stage A's patch (inside the state). E58's held-out
+  carry (evidence only, `decisions.md` row 114). E55 C1b ruled out cross-model patching because patching the base's
+  activations into a state "tests where the change sits". This plan's differenced ratio is its answer to that; a
+  fine-tune placed upstream remains a blind spot (below).
+- **Patch or step.** A step: the first causal truth that varies inside the 67M rows.
+- **Decisions.** Relies on rows 112, 114 (mechanistic elicitation, held-out as evidence) and 118. Row 81's "reuse needs
+  a causal claim" is met with a patch and a knock-out. No departure.
+- **What changes next.** See the tree: rows move and are scored, or the user learns the 67M has no such label.
+- **Control first.** Stage 0 reads W0 alone; stage 1 reads the built controls; E62's states come before any row.
+- **Class.** Class 1 (saved states) except the one trained control and stage 3's retrain, which class 2 covers. Row 118
+  says nothing runs until the user has seen this. Not gated: $0.
+- **Overlap with E62, in one line.** E66 reads E62's six saved states and quotes its share lost from `run.json`; it
+  does not ablate head (2,4), rerun or extend E62, and E62's verdict stands as filed.
+
+## Why not the obvious patch
+
+Stage A's patch reads 0 by construction on a state that does not answer the patched quantity, and stays inside the
+state. Moving to a W0 donor across keys has the opposite fault. On a "M key" prompt the key's identity is in W0's
+state at every block, and every lookup reads it, so a cross-key patch reads high on any fine-tune whose update lies
+downstream. That is the risk row 114 names: any fine-tune keyed off something the model represents reads as reuse.
+So E66 **holds the key and the target fixed and varies only the context**, and compares the state's response with
+W0's own. On this design a lookup that adds beside W0's answer reads about 1, not 0.
+
+## The two readings
+
+### Interchange patch: the patch ratio T
+
+| part | definition |
+|---|---|
+| donor | W0, on two contexts with the same key, marker and target: x_hi and x_lo |
+| recipient | the state (W0 + δW) on x_lo, and W0 itself on x_lo for the denominator |
+| site | block l's input (`steering.Net` site `in<l>`), fp32 |
+| position | the answer position only; every other position keeps the recipient's own run |
+| block | l*: the earliest of blocks 1-3 where W0's response is at least 0.5 nats and 3 s, fixed from W0 alone. Blocks 1-3 are all reported; block 0's input is the embedding, which no update touches |
+| metric | log-odds of the target (`steering.logodds_at`). Text maps: E53's log p(lowercase) − log p(capital), and log p(π(x)) − log p(x) |
+| response R(m) | metric in model m on x_lo with W0's state from x_hi at the site, minus the same with W0's state from x_lo |
+| T | mean R(state) / mean R(W0) over the map's pairs, a ratio of means |
+| pairs: key maps | for each key, 64 fresh contexts from held-out Pile rows (`kv.windows`, rows with index % 5 = 0); rank by W0's log-odds of that key's target; pair top quarter with bottom quarter. Chosen from W0 alone, never from the state |
+| pairs: E62 | x_hi is the cue window; x_lo is the same window with B overwritten by another pool token (E62's own cheap-solution edit). The lookup uses the key-map rule at its marker |
+| pairs: text | the row and its lowercased or ciphered twin at the same index, where the query token is identical in both |
+| noise floor | s = max(pair bootstrap sd, seed sd) |
+| blind to | an update wholly upstream of l* (both arms carry W0's residual, so T reads the control's value); attention at other positions; reuse of W0's key features as input to a new readout, such as the class map, since the key is fixed; a mechanism W0 has but does not run on this input |
+
+**Why T can read either way on both kinds.**
+- A new state cannot read 0 by construction: pairs come from W0 alone, and an additive lookup passes W0's difference
+  through, so T sits near its negative control, about 1. It can read high if new wiring multiplies on W0's state.
+- A reuse state cannot read high by construction: the key is fixed, so no lookup can follow it, and a reuse state whose
+  change sits upstream of l* reads like the negative control. So a low T alone never earns "new".
+
+**Bars, per map.** n0 = T on the map's built write (below), p₊ = T on the sharpening fine-tune on the same pool.
+lo = n0 + max(3 s, 0.1 (p₊ − n0)), hi = n0 + 0.5 (p₊ − n0), the shape of `interchange.bar` with a bootstrap s in place
+of its binomial term. High iff T > hi, low iff T < lo, else between. Text maps have no key to write, so their n0 is the
+largest key-map n0 (close call; the alternative, a hand-written bias, adds a control nobody else reads).
+
+### Second reading: the units share U (shares nothing with steering)
+
+The K neurons of the 12288 with the largest |gradient × activation| of the map's metric at W0, over the map's contexts,
+are mean-ablated in W0 and the state alike, as E62 does for a head. U = 1 − G_abl / G, with G the state's gain over W0.
+
+- K: the smallest of E56's grid where W0's rank-1 log-odds falls by at least 1 nat, fixed once on W0. Expect 64 to 256.
+- Null: 5 draws of K neurons matched on activation decile. Positive: the top K of the same score taken at the state,
+  U_own. Bars: `bar` shape with n0 = the draws' mean and p₊ = U_own.
+- Blind to: changes carried by attention, and any gain routed through neurons W0 does not rank highly for this answer.
+
+**Label.** Reuse iff T high and U high. New iff T low and U low. Otherwise no label: report "patch only" or "units only",
+never "new" (Fable's finding 2, applied).
+
+### Which methods share a readout with these
+
+| method | with T | with U |
+|---|---|---|
+| steering | same site, other side of the update: it moves the state's mean shift into W0, while T moves a W0-minus-W0 difference. Not one number, but high steering at block l means the update is upstream of l, where T is blind. Mark its cells "shares a site with T" | none |
+| neuron patch, pruning | none | same neurons; different selection and readout. Mark their cells |
+| prior, distance, size, MLP share, r, ratio | none | none |
+| unpatched context ratio C (state's contrast over W0's on the same pairs) | nearly all of it; reported as a reference, never scored as a method | none |
+
+So U is the independent reading for steering, and T for neuron patching and pruning. Agreement of both is what labels.
+
+## Numbers and what each should read
+
+| number | zero update | do-nothing | W0 | negative control (write) | positive control (sharpen) |
+|---|---|---|---|---|---|
+| R(W0), per map | same as W0 | same as W0 | ≥ 0.5 nats or void; lowercase about 2+ (E53's bars) | n/a | n/a |
+| T | 1 within 1e-6 | as the state's: it reads the target model, and do-nothing leaves those weights | 1 by definition | near 1, some below from the last layer norm | above n0; at most about 2 at temperature 0.5 |
+| U | void (G = 0) | as the state's | void; W0's own fall reported for K | near the draws: its neurons were not chosen for the write | not used |
+
+Also reported, one each: C per state, the state's gain G, T at the other blocks. Nothing else.
+
+## Positive control: what exists and what does not
+
+**No trained 67M state of independently known kind exists, so a pass here is weaker than a pass on the counting set.**
+The candidates:
+
+| candidate | known how | use |
+|---|---|---|
+| **Write at block 3** (`perturb.key_write`, retargeted from E46's block 1 to `h.3.mlp.down_proj`, gain matched by `perturb.match`) | new by construction: a per-key table written by hand, downstream of every l* | n0, per key map |
+| **Sharpening fine-tune**: train W0 by KL to its own distribution at temperature 0.5 on Pile rows, Adam 3e-5, 30 steps | near-known: no map exists to learn but W0's own output. Its route is not checked | p₊. One new training run, about a minute |
+| **Amplify edit**: W0's top K neurons' down_proj columns × (1 + α), gain matched by `revival_kv.fit_alpha` | reuse by algebra, and only by algebra | apparatus check only: tells a broken patch from a sharpening fine-tune that learned little |
+| E62's copy map and lookup | copy map old, old, between ("mixed", not settled as filed); lookup new on every seed, new only relative to head (2,4) | reference (P1), not a control |
+| Lowercase | built to elicit; W0 performs it (E53 A0) | a scored row, circular as a control |
+| Recovery fine-tune after a perturbation | rejected: recovery may take a new route, so its kind is no better known and it costs two runs | not used |
+
+The limit this sets: "reuse" means "reads like a fine-tune to W0's own sharpened output, and agrees with E62 where E62
+is settled". It does not mean verified against a trained state of known mechanism.
+
+## Rows and states
+
+Every state below is on disk under `~/commute-data/results-large/`. Readings are from `table.json`.
+
+| row | states | r | ratio | prior | steering | size | cost |
+|---|---|---|---|---|---|---|---|
+| Copy at new marker vs lookup (reference) | `induction_cue/{copy,lookup}_s{0,1,2}` | 1.09-1.10 vs 0.38-0.42, unscored | not read | factor 1.32 | not read | 4.6 vs 5.5 | seconds |
+| Half-known vs cipher, equal size; own steps | `keydependent_elicit/{elicit,cipher}_s{0,1}`, `cipher_own_s{0,1}`; `keydependent_patch/{elicit,cipher}_s{2,3,4}` | 0.76-0.77 vs 0.21-0.27 | 0.95-0.96 vs 0.29-0.34 | factor 1575 | 0.25 vs 0.18-0.24 in log-odds | matched | seconds |
+| Rank-1 vs cipher; copy vs cipher, step 10, 24 keys | `open_pair_instruments/{rank1,copy,cipher}_s{3..7}` (seeds 0-2 also saved) | 0.84-0.90; 0.83-0.86 vs 0.22-0.25 | 1.09-1.18; 1.00-1.07 vs 0.30-0.34 | log P −5.0; −8.9 vs −14.3 | 0.18-0.25; 0.60-0.68 vs 0.15-0.22 | matched | seconds |
+| Copy maps vs random maps | `regating_table/{ident32,ident32b,rand32,rand32b}_s{0,1}` | 0.76-0.80 vs 0.27-0.29 | 0.87-0.97 vs 0.36-0.41 | not read | 0.72-0.80 vs 0.10-0.19 | does not separate | seconds |
+| Lowercase vs ciphers | `performed_anchor/dW_{lowercase,cipher,broad_cipher}_s{0,1}_step300` (half-precision files, cast to fp32) | 0.75-0.77 vs 0.12-0.17 | 0.92-0.93 vs 0.26-0.29 | not read | 0.30-0.32 vs 0.09-0.16 | not read | seconds |
+
+**Not on disk, stage 3b only.** The 96-key rows. `open_pair/amend3/` holds step-10 and step-30 states of seed 0 for the
+copy map, half-known and rank-1, and no cipher. `amend6/` and `amend7/` hold windows only, so copy map vs the
+prior-matched cipher, and the class map vs its twin, must be retrained. The prior stops separating on the first; prior
+and size both stop on the second, so they matter most. Fine-tunes take about 2 min each; E58's reruns reproduced r
+exactly, and that check runs first.
+
+## Run order, stops and cost
+
+MATS `debug` QoS, one L40, account `c11`, through `/pod-runner`. Only stage 1's control and stage 3b train anything.
+
+| stage | what | stop if | wall, $ |
+|---|---|---|---|
+| 0 | W0 only, alone: identity patch (same text in both arms) reads 0 within 1e-6; zero update T = 1 within 1e-6; pools, R(W0), l*, K | either identity misses; R(W0) under 0.5 nats at every block on half the maps or more | 5 min, $0 |
+| 1 | Write, amplify, sharpen on the key maps' pools; write's U | amplify's T not above write's by 3 s (patch broken); hi not above lo on the rank-1 or half-known pool | 10 min, $0 |
+| 2 | E62's six states: T, U; reproduce their G from `run.json` within 0.02 | P1 misses: stop and tell the user, read no row | 3 min, $0 |
+| 3a | The saved rows: 41 states, reproducing each G from its source within 0.02 first | none; report | 15 min, $0 |
+| 3b | If 3a labels at least one contrast: retrain the 96-key rows (11 fine-tunes; two jobs if needed), then T, U | r off its filed value by over 1e-4 | 30 min, $0 |
+
+Total $0, at most about 1 h of `debug`. New code: one module plus `experiments/interchange_67m/run.py`, 300 lines or
+fewer. Before the run: predictions filed with these rules, then a fresh-agent code review, because the labels enter the
+table.
+
+## Rules against their edge cases
+
+| case | what happens |
+|---|---|
+| mean R(W0) near 0, or under 0.5 nats or 3 s (zero denominator, gain near noise) | that map is void at l*; no T; never a low reading |
+| mean R(W0) negative | void; the pairs were chosen for a positive contrast, so report it as an anomaly and run it down |
+| one context for a key, or no top and bottom quarter (one-element pool) | that key gives no pairs; under 200 pairs or under 8 keys, the map is void |
+| individual pairs with R(W0) ≤ 0 | kept: a ratio of means has no per-pair denominator; selection is on the unpatched contrast |
+| state's gain G under the map's floor (E53's F, at least 1 nat on key maps) | "too small to read": no label, and U cannot divide by it |
+| T below n0, or negative (update crowds out W0's response) | counts as low only if not negative; a negative T gets no label and is reported |
+| hi not above lo | the map's T is void, so its states get no label |
+| U_own not above the draws by 3 s | K is too small or the gain is in attention; U void, T alone gives "patch only" |
+| G_abl above G (U negative), or a tie at a bar | low and reported; a tie is between, strict as `interchange.label` |
+| a row's side with mixed seeds, or one seed | a side is labelled when at least 2 of 3 seeds, or 4 of 5, share a label and none has the opposite; else unscored |
+| a row with both sides the same label | "no contrast": the row moves to "by causal check", but no method can separate on it |
+
+## What each outcome does next
+
+1. **Stage 0 or 1 stops.** The patch cannot be built on this model. Report to the user; E65 returns as the next option.
+2. **P1 misses.** T disagrees with the one causal label on the model. Stop and tell the user with C and U beside it.
+   U agreeing with E62 and T not would mean T's blind spot is the larger one; the card asks whether to go on with U alone.
+3. **P1 holds; every row reads new** ("no state reads reuse"). Then reuse on the 67M is seen only for copying, and r
+   and the ratio read high on labelled-new states. That is VPD losing on those rows: r follows something else, and the
+   prior is the first suspect. Log it plainly; re-gating's lead is told, since its readings are the row.
+4. **P1 holds; a row has a contrast.** Score it (below), and run stage 3b. VPD's first fair win needs a labelled pair
+   where r separates and cheap methods cannot. E62's pair and the prior-matched row can show that against the prior
+   only: size still separates both as a labeller, though E62 Amendment 2's scaled updates left r's gap in place. The
+   class map vs its twin is the one row where neither can, and T is blind there.
+5. **T and U disagree across most rows, or T follows ‖δW‖** ("the patch cannot separate"). Rows stay as they are. Report
+   the disagreement by kind ("patch only", "units only"), and E65's card comes back with the reason.
+6. **Class map and its twin.** T is blind to this row by design, so "no contrast" there says nothing about r's miss;
+   the plan does not claim otherwise. A patch for that row, swapping keys within a class, would be a separate plan.
+
+## How the table's rows change
+
+Each row whose sides are labelled moves its truth to "by causal check", quoting T, U and both bars. Each method's cell
+is rescored by the same E51 separation rule against the labelled sides, through a new reader in
+`experiments/method_table/build.py`. Where a label contradicts the build, a separating method is now separating the
+wrong way, and the cell says so. Steering's, neuron patching's and pruning's cells carry the sharing marks above. Rows
+with void maps or mixed sides stay "only by assumption" with a note. No label is taken from a method being scored.
+
+## Not run
+
+Nothing. Not planned at all: a key-swap patch for the class map; the 400-step or a full decomposition; head ablation
+beyond E62's; any Qwen state; E65; the ladder row (rank-1 vs cipher, steps 10-300; its states are not listed in the
+saved files); half-known vs its shuffle before stage 3b.
+
+## Departures from the literature
+
+- **Prakash et al. 2024, cross-model activation patching (arXiv 2402.14811, `lit_review/summaries/arxiv_2402.14811v1.md`).**
+  They patch head outputs from the fine-tuned model into the base on the same input and read improvement. We patch from
+  the base into the fine-tuned model, between two contexts, at one residual position, with no circuit. The ratio to
+  W0's own response is ours.
+- **Jain et al. 2024, Def 2.** They name f_C through a trained linear readout. We name the dependence by W0's own answer
+  across contexts with no probe, which E59 and E64's unreadable readouts argue for. We keep the user's causal requirement
+  (`decisions.md` row 81). This is narrower than Def 2: a new g on an old representation with a fixed key is unseen.
+- **Olsson et al. 2022, as E62 uses them.** Mean ablation stands in for their zero ablation, and on neurons, not heads.
+- **Interchange-intervention papers.** A grep of the repo finds none cited, so none is claimed as a source.
+- **Unsourced here.** The temperature of 0.5, the 0.5-nat floor, 64 contexts and the 3 s and 0.5 bars (the last two from
+  E55's rule). The sharpening fine-tune's recipe borrows E12's optimiser with a new loss.
