@@ -481,3 +481,4 @@ Figures already published (their sources, for a re-upload):
 - "fig/e54_route_split.png": "experiments/keydependent_elicit/figures/p1_route_split.png"
 - "fig/e54_steering.png": "experiments/keydependent_elicit/figures/p2_steering.png"
 - "fig/methodtable_shares.png": "experiments/method_table/figures/shares.png"
+- "fig/e12_where_gain.png": "experiments/new_vs_existing/figures/amend1_where_gain.png"
