@@ -307,3 +307,114 @@ Tests: `tests/test_copying.py` (`test_pick_words_reject_a_candidate_in_the_keys_
 
 **Not run.** The model was not loaded and no job submitted. Code reviewed by nobody beyond this amendment's tests; the changed
 measurement code has not run on a GPU (the scored run is its own smoke).
+
+## Amendment 2 (2026-11-02)
+
+Spec: Option 1 of `reports/plans/2026-11-02_advice_e62-next-FABLE.md`, adopted by the lead. Rules:
+`experiments/induction_cue/results/predictions_amend2.json`. Code: `experiments/induction_cue/amend2.py`, `cluster/induction_cue_amend2.sbatch`.
+Coded, not run. **Not gated**: one cluster `debug` job, under 10 min, $0, no fine-tuning.
+
+**In plain words.** E62 taught the 67M to copy at a new marker beside a lookup at the same marker. About half of the copying
+map runs through old head (2,4) and none of the lookup does, and r read high on the copying map, unscored. This reads the six
+saved states again to ask whether the gain r measures goes through that same head, or whether r is high only because the answer
+sits in the window.
+
+**Restated in the Terms' words.** Elicitation: the fine-tuned behaviour runs through a mechanism W₀ already has (user). r is the
+route split's re-gating share, (L01 − L00) / (T1 − T0), with L the masked log-odds: subscripts components then gates, 0 W₀, 1 the
+state with its least-squares split. The question: with head (2,4) mean-ablated inside the masked forward, original subcomponents and
+the same masks, does L01 − L00 fall by the share the target model's gain falls? If yes, r and the label read the same head on this
+map; if the masked gain barely falls, the original subcomponents reach B some other way. Beside it: W₀'s own fall under the head
+(F3), both circuit heads off together, the pair-broken gain under the head (the check's hypothesis), and whether update size
+explains the r gap (F1). The filed verdict `copy_not_elicitation`, r not scored, stands; nothing here rescores it.
+
+**Granularity limit.** A new circuit of old pieces reads as elicited to VPD. Each reading is at the level of heads and VPD's
+pieces, and a redirected query still counts as reuse.
+
+### Design check
+
+- **Goal.** `GOALS.md`, new capability or strengthened old: what r can mean when the old mechanism is known by a causal label.
+- **Nearest tried.** E62 itself read the label and r separately. Nothing read one inside the other; Fable's option 1 says why other
+  separations of "target in context" and "old mechanism" fail on this model.
+- **Patch or step.** A step: decides if r is usable beyond "the subcomponents can write this under some mask", not a repair.
+- **Decisions.** Row 73 (granularity limit) kept; update size as a standing column (2026-10-31) is row 7. No departure.
+- **What changes next.** Head-dependent: report r as reading the label's mechanism on this map, one datum, then the Qwen table.
+  Not: report r as weaker than mechanism and stop the 67M copy work (Fable's option 1).
+- **Apparatus first.** Row 1 alone, exit 1 on a miss, then row 2. Nothing is reproduced except E62's own reads, each re-read.
+- **Class.** 1, analysis of saved states: approved, no sign-off.
+
+### The hook, checked before coding
+
+`o_proj` is itself decomposed (`final_config.yaml`: `h.*.attn.o_proj`, C 1024). It is still the module the forward calls:
+`ComponentModel` does not replace modules, it attaches a forward hook (`_attach_forward_hooks`) to each, and that hook returns
+`components(x, mask=...)` with `x` the hook's own args (`_components_and_cache_hook`). PyTorch hands a forward hook the args as
+left by the pre-hooks, so the edit reaches the components. **`copying.ablated` is unchanged.** `y = att @ v` comes from the q, k and v
+components, so the head's value there is replaced in the masked forward too. `ablated`'s callers, E62's `run.py` (lines 140, 152,
+157, 216, 305) and `tests/test_copying.py`, are untouched. A test on a real tiny `ComponentModel` shows the components take the mean;
+row 1 tests the 67M. One trap: `compute_ci` reads the same module's input, so **Γ must never run inside `ablated`**, or the masks
+would change with the head. `amend2.py` reads the gates first and uses them after, so the masks are the same per state.
+
+New code: `copying.AllGatesOn`, which gives `induction` and `ablated` the masked forward; `local_faith.masked_lo_windows` gains
+`ci_len`, default none, so its callers keep working (`shift_anatomy`, `regating_leak`, `regating_table`); the rules below.
+
+**Which means.** The masked reads use `heads.pt`, W₀'s target-model means, as every target read does. One replacement vector then
+serves every cell, so the head carries nothing of the state or the mask, and the masked and target shares differ only in the forward.
+Means re-read under each mask would move with the state, and the masked gain would partly read that move. The cost: the target's mean may sit off
+the masked forward's own distribution. L00 and L01 take the same vector, so that offset cancels to first order, and rows 1 and 3's
+(3,5) reference show what is left.
+
+### Rows, in run order
+
+| Row | Number | W₀ | Do-nothing or reference | Control | Expected, copy | Expected, lookup |
+|---|---|---|---|---|---|---|
+| 1 | Top-1 through the masked forward, all gates on | intact about 0.82 | (3,5) off about 0.7, bar 0.66 | (2,4) off about 0.01, bar 0.05; exit 1 | | |
+| 2 | Target share lost under (2,4), re-read | undefined | zero update exactly 0 | `run.json` within 1e-3; exit 1 | 0.563, 0.545, 0.471 | 0.000, −0.004, −0.003 |
+| 3 | Masked share of L01 − L00 lost under (2,4) | L00 with the head off; lean near 1.57 falls under half | (3,5) under 0.15; zero update's masked gain exactly 0 | cells with the head on equal `run.json` within 1e-3; exit 1 | within 0.092 of the target share (lean) | within 0.092 of about 0 |
+| 4 | W₀'s fall under (2,4); state's own fall over its gain | fall in [0, 4.18], lean at least 1 | | | own fall over filed share + 0.092 | small |
+| 5 | Target share under (2,4) + (1,1) | top-1 at or under 0.02 | | | 0.7 or more, or within 0.092 of the single share | at most 0.1 |
+| 6 | Pair-broken gain lost under (2,4), target only | | | gain re-reads `run.json` within 1e-3 | at most 0.092 (lean), or near the intact share | n/a |
+| 7 | r with the update scaled to the other map's size | | | alpha 1 equals `run.json` within 1e-3 | swapped gap at least half of about 0.69 (lean) | |
+
+Outcomes, all per `predictions_amend2.json`. Copy, row 3: `r_reads_the_head`, `head_more_than_target`, `mask_reaches_b_another_way`
+(under 0.25), `in_between`, `floor_high`, `too_small`, `unreadable`. Row 5: `circuit`, `no_more`, `between`. Row 6: `outside_head`,
+`through_head`, `between`. Row 7: `size_accounts`, `size_does_not`, `unreadable`.
+
+**The tolerance.** Fable's "within 0.1" had no source. Filed 0.092: the larger of three times the sd of a difference of two
+independent shares (3 × √2 × 0.0173 = 0.073) and the three-seed range of the share (0.092, the largest difference two states of
+one recipe show on the same windows). The range sets it. A masked `share_sd` over 0.0217 weakens that seed's class, as the
+tolerance took the target's sd for it; printed, no rule. Row 6's share is on a smaller gain, so its sd is larger and printed too.
+
+**Choices made here, not in the brief.**
+- (3,5)'s bar in row 1 is 0.66, not 0.7. Its target reading is 0.7075, under one binomial sd above 0.7. Filed: target minus three sd.
+- The intact masked forward must clear that bar too, or the control is empty: a forward that does not copy reads low under any head.
+- (2,4)'s bar is 0.05, chosen, no source. A missed hook reads near 0.8.
+- The lookup uses the one tolerance, not Fable's 0 ± 0.05.
+- `min_gain` is 1.0 (`local_faith.MIN_GAIN`) in all these rows, not E62's 5.148, which would void row 6 on the gains it reads.
+- `head_more_than_target` is added: a masked share above the target's by over the tolerance was a case no named outcome covered.
+- Row 7 scales each state to the same seed's other map, not to a map mean. Nothing cut: `keydep.route_windows` takes a scaled state as is.
+- W₀ lean in the masked forward and in the target are both reported; Fable's 1.57 is the target's.
+
+### Blind to
+
+- **Top-1 control.** Copying on these repeated rows, not at the marker; a hook that works there works anywhere in the forward.
+- **Target share.** Heads other than those read; hydra-like compensation after the head goes (McGrath et al. 2023), which makes it low.
+- **Masked share.** Γ's reaction to the head: masks stay as read with the head on, by design. Which subcomponents carry the
+  gain. A mean off the masked forward's distribution beyond first order.
+- **W₀'s fall.** A single mean over windows; the geometric means behind the bracket are another measure.
+- **Two heads.** Series against parallel is read only through the sum; heads beyond the two.
+- **Pair-broken.** Matching on tokens other than A; only step 30.
+- **Scaled r.** A scaled update is not a trained state of that size, so row 7 reads the size of this update's direction, not of a
+  shorter fine-tune; a map's ease is not separated from its size.
+- **All.** One model, one marker, step 30, three seeds; a fine-tune that keeps the head's key and value paths and changes the query counts as reuse.
+
+### Departures from the literature
+
+- **Olsson et al. 2022** zero-ablate a head's contribution, and on small models only. We mean-ablate, as in E62; zero ablation is not run.
+- **Ablation inside a decomposition's masked forward** has no source that we know of; the masks are held fixed.
+- **Thresholds.** 0.25, 0.7, 0.1 are Fable's, 0.05, 0.66 and 0.02 chosen or derived here, 0.15 E62's; none published.
+- **The half rule of row 7** is the lead's filing, not a published standard.
+
+### Not run
+
+Everything. The rule functions and the hook ran on CPU on a tiny model; the 67M was never loaded. The new masked read has not run
+on a GPU; row 1 is its first test. Not planned: later read steps (Fable's option 3), the masked forward under two heads,
+attention at the marker (F6), Γ recomputed under ablation.
