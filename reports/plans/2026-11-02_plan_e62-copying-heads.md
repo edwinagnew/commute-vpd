@@ -741,3 +741,109 @@ The run prints `max_diff` and `exact`. A miss is a stop to look at, and a differ
 ### Not run
 
 Everything: the rules ran on CPU, the stages, with every review fix, ran on a stub `Reads` with no model, and the 67M was never loaded. Stage 1 is the first test on a GPU. Not planned: the first-A contrast and `S_old`'s overlap with (2,4)'s slot, the review's two optional prints; the weighted slot read, unless the control fails; the 24-head control, cut; ablation inside Γ's pass; zero ablation; steps 100 and 300; the head off on L11 and U1; a second decomposition seed, the only check that narrows the granularity limit.
+
+## Amendment 5 (2026-11-02)
+
+Spec: `reports/plans/2026-11-02_advice_e62-amend4-control-FABLE.md`, option 1, chosen by the user from a dialog. Rules: `experiments/induction_cue/results/predictions_amend5.json`. Code: `experiments/induction_cue/amend5.py`, `cluster/induction_cue_amend5.sbatch`, `copying.py`'s last section. Coded, not run. **Not gated**: one cluster `debug` job, about 2 min, $0, no fine-tuning; one fresh review of the code before the job. Additions from the Amendment 4 check (`reports/reviews/2026-11-02_review_e62-amend4-check.md`, F1, F2, F4, F5) are below where they fall. Amendment 4's filed verdict, `control_failed_mask`, stands; nothing here rescores it.
+
+**In plain words.** Amendment 4 found that the decomposition's forward, under the mask the original model gets when it copies, still copies but barely notices when the original copying head is switched off. This job first checks that switching a head off works in that forward at all, with every mask at 1. Then it switches off each of the 24 heads in turn, in the real model and in the masked forward, to see whether the masked forward's copy leans on other heads, leans on every head less, or has lost that one head alone.
+
+**Restated in the Terms' words.** At W₀ only, at the second A (half − 1), log-odds of B on E62's 200 read windows. The masked forward holds W₀'s original subcomponents, Δ out, each under Γ's mask at W₀. Read (2,4) mean-ablated in the masked forward with every gate at 1, stopping if its fall is under a quarter of the target model's. Then mean-ablate each of the 24 heads one at a time, in the target model and in the masked forward, always in the forward and never in Γ's pass. Beside it, the two swapped forwards: W₀'s pair-broken gates on the intact tokens, W₀'s intact gates on the pair-broken tokens. The user's words: "whether the mask reroutes copying through other heads or thins the whole pathway".
+
+**Question.** Does W₀'s mask move W₀'s copy at the second A off (2,4) onto other heads (`rerouted`), reduce every head's part alike (`thinned`), or take out (2,4) alone and leave the other heads' parts (`labelled_head_singled_out`)?
+
+**Granularity limit: heads, not circuits.** A verdict names which heads the forward's log-odds of B depends on when each is replaced by its mean. A forward whose copy ran entirely through (2,4) could still run a different circuit of that head's subcomponents, and VPD would read it as the same mechanism; a new circuit built from old subcomponents reads as elicited to VPD. `rerouted` does not say the other head does what (2,4) does in the target model. No verdict here reads a fine-tuned state, new capability against strengthened old, or r. The only check that narrows this limit is a second decomposition seed, not run.
+
+### Design check
+
+- **Goal.** `GOALS.md`, new capability or strengthened old: whether VPD's masks read the mechanism a causal head label names. A cause for Amendment 4's miss at the level the label lives at. A patch on the last experiment, and the sentence the Qwen table's caption needs either way.
+- **Nearest tried.** Amendment 4 (TRIED row E62 Amendment 4): stopped at this control, with one head read in this forward at this position. Amendment 3 (row 136) read the head through Γ at the marker. Nothing has switched off any other head in the masked forward at W₀ at the second A.
+- **Decisions.** Row 73 (granularity limit) kept and stated. Row 112 (r a candidate instrument scored against a causal check): this asks whether the causal label can be read in this forward at all. No departure.
+- **Class.** The user chose it, from the dialog above.
+- **Apparatus first.** Head off with every mask at 1, alone, with exit 1; then the re-read of `amend4.json`. Nothing here reproduces a procedure's end state.
+- **What changes next.** `rerouted` → the weighted slot read and the re-open at W₀; a state-level test needs its own plan anchored on the masked forward's carriers; the Qwen table carries the split's numbers with the caption that the masked forward at W₀ reroutes the labelled behaviour around its labelled head. `thinned` → the slot read is still the sizing step, a state-level test is not worth building, and `token_reading` says whether account D is live; the caption says "thins". `labelled_head_singled_out` → the mask costs that head and leaves the others: the slot read comes first, as it is that head's slot in question. `mixed` or `no_comparison_head` → the lead reads which heads split, and the caption says the sweep did not separate these. `ablation_does_not_transfer` → an apparatus finding, which touches Amendments 2 and 3's frozen reads: to the user before anything else; next, the hook against the decomposed `o_proj` at the second A with zero ablation beside the mean. `reread_failed` → to the lead; nothing is read.
+
+### What the control adds to Amendment 2's
+
+`amend2.json`'s `row1_control` shows the hook works in the masked forward with every gate at 1: top-1 0.82 to 0.0095, on repeated random tokens. It says nothing at this position, on these windows or in this unit. Stage a reads the same hook at the second A on the cue windows, in log-odds of B, intact and pair broken, against the target's 4.82 and 6.84 from the same windows. It can fail where the top-1 read could not: a top-1 falling from 0.82 to 0.01 needs only that the answer stops being first. If it passes, a low fall under W₀'s mask comes from the mask and not from how the hook acts in a decomposed forward at this position, which removes account B as an apparatus artefact at every gate 1. It does not remove it under W₀'s mask, where the replacement mean still passes masks the all-ones row does not have.
+
+### Definitions
+
+A **fall** is a forward's log-odds of B with no head off minus with the head replaced by its target-model mean (`heads.pt`) at every position, intact windows, mean over windows, gates as read with every head on. T is the target model's, M the masked forward's under W₀'s mask, Mb the masked fall on the pair-broken windows under their own mask, Tb the target's there. **Excess** = M − T, with `excess_sd` its window bootstrap sd. **Fraction** = M / T where T ≥ 0.5. **Pair part** = the fall minus the same head's fall on the pair-broken windows, `pair_part_T` and `pair_part_M`, each with an sd. **Lean** = intact minus pair-broken, each under its own mask. **Token parts**: the masked forward's intact minus pair-broken tokens, gates held at the pair-broken values and at the intact values.
+
+### Verdicts
+
+`copying.sweep_reading`, on the bf16 rows, first that fires; exactly one fires.
+
+1. `unreadable`: a head missing, a number not finite, the masked lean under 1.0, or (2,4)'s T under 0.5.
+2. `rerouted`: some head other than (2,4) is a carrier: M − T ≥ 1.0, and M − T ≥ 2 × `excess_sd`, and M − Mb ≥ 1.0. Ties count.
+3. `no_comparison_head`: no carrier, and no other head has T ≥ 0.5.
+4. `thinned`: every other head with T ≥ 0.5 has a fraction within 0.24 of (2,4)'s. A tie counts.
+5. `labelled_head_singled_out`: every such head's fraction is over (2,4)'s by more than 0.24.
+6. `mixed`: anything else, including a head whose fraction is under (2,4)'s by more than 0.24.
+
+Before these, in stage a and stage c: `ablation_does_not_transfer` and `reread_failed`, each exit 1. Beside, deciding nothing: `fp32_verdict`, the same rule on the fp32 rows; `precision_moved`; `token_reading`; `ranking_holds`; `falls_over_lean`; `sum_falls_over_lean`.
+
+`copying.token_reading`, account D: `unreadable` (lean under 1.0 or a number not finite); `through_tokens` both token parts over half the lean; `through_gates` both under; `order_dependent` otherwise, ties included.
+
+**Where each bar comes from.** 1.0: the advice's "about a log-odds or more", and `local_faith.MIN_GAIN`; the excess it is set against is 1.40 log-odds, the masked copy outside (2,4) at 3.42 against the target's 2.02. 2 sds: chosen here, no source; the 1.0 does the work at the sds expected. 0.5, the target fall that counts as a denominator: chosen here, half of 1.0, no source, unmeasured per head until this job runs. 0.24: E58's band gap, as E62's `r_gap`; the advice's "similar fraction" has no number. The token bar 0.5: E62's `share_old_min`, here the plain majority. The quarter and 1e-3: Amendment 4's.
+
+**Edge cases, run before filing (`tests/test_copying.py`).** A sweep where no head falls: `no_comparison_head` with no other denominator, `thinned` with one; `unreadable` if the target's labelled head has no fall either. Ties: as above. A zero or negative denominator: a target fall under 0.5 gives no fraction; the labelled head's under it is `unreadable`; a filed target fall at or under 0 is `unreadable` in the control; a masked lean under 1.0 is `unreadable`. A total fall over the masked lean: 24 falls summing over it, or one head's over it, decide nothing and are flagged, since falls need not add up to a lean. A case no branch covers: none, as `mixed` is last; a 1,152-case grid checks the verdict against the rule written out apart from the code. A negative fraction: `mixed`. A general drop (M − Mb under 1.0) or an excess under 2 sds: not a carrier.
+
+### Stages, in run order
+
+Cheapest and control first; `results/amend5.json` and `results/large/amend5_windows.pt` (every read, per window) after each stage and before any stop; `results/large/amend5_vectors.pt` (`a`, `a_half2`, `S_old`) straight after Γ's two passes, before anything can stop; every number printed. Same windows, batch 64, `allow_tf32` off, precision as Amendment 4 but for the rows named fp32. The run refuses if `predictions_amend5.json` is not committed unchanged, or if any of its outputs exists.
+
+| Stage and number | W₀ | Do-nothing (no head off, read twice; the zero update reads as W₀ here) | Control | Blind to |
+|---|---|---|---|---|
+| a. Every mask at 1: fall under (2,4), lean | fall near 4.82; lean near 6.84; **under 1.204 exit 1** | fall 0 | this row is the control, for the sweep | what W₀'s mask does to the replacement mean |
+| a. Re-read of `amend4.json`'s stage 1, every number; `exact` | target −4.710, −9.527, −11.545; masked −7.300, −8.216, −11.641; k 172; **over 1e-3 exit 1**; expected 0 | repeat exactly 0, **over 1e-3 exit 1** | | |
+| b. Falls and leans with window bootstrap sds | sds unread; `amend4_miss_reported_only` beside, rescoring nothing | | | keys, below |
+| b. Masked (2,4) fall: bf16, fp32 under bf16 gates, fp32 under Γ's own fp32 gates | expected within the sd; over it a LOUD line, no stop | | | target model in bf16 |
+| b. Three masked levels: mean, sum, distinct values, smallest gap, both precisions | no lattice; the intact level reproduces −7.30000003 through the re-read | | | |
+| c. T, Tb, pair_part_T per head | (2,4): T 4.82 within 1e-3, else exit 1; every other T under it (`ranking_holds`); pair_part_T large for (2,4), small for (3,5) | 0 | (2,4)'s pair part is the pair guard's positive control; at the marker 1.073 of 1.163 | |
+| c. M, Mb, pair_part_M per head, bf16 | (2,4): M 0.92 within 1e-3; other heads no expected value, which is the reading | 0 | | below |
+| c. M32, Mb32 per head | `fp32_verdict` the same as the verdict; a disagreement is a LOUD line, and the reading goes to the user with both | | | |
+| d. The four swapped differences | each token part plus its gate part is the lean, by algebra; `token_reading`, no expected value between its branches | | | gates at positions other than the second A move too |
+
+**Why stage b does not stop.** A precision move leaves nothing to save by stopping: every later read costs seconds, and the sweep's fp32 rows are what a move would need next. It is loud, and the reading is the user's. The filed verdict stays bf16's, as Amendment 4 read.
+
+**The checks' additions.** F1: 4.82 mixes what the head does for the pair with what mean ablation at every position does to B's log-odds anyway. Head (2,4) off on the pair-broken windows, target and masked, is `Tb` and `Mb` in the sweep's (2,4) row, and the 23 other heads, (3,5) labelled, are the reference at this position. It decides no verdict; if `pair_part_T` reads small, the fall is not shown to be copying here, and that is reported first. F5: −7.30000003 has no known mechanism, and it enters both masked differences. The three masked levels per window test it: the re-read must reproduce it, and `round_level` gives the distinct values and the gap.
+
+### Noise floor
+
+Window bootstrap, 2000 draws, for every fall, excess and fraction, printed; this gives Amendment 4's miss the sd it lacked. The re-read's floor is 0 on the L40 (`amend3.json`, `diff_a2`), and the do-nothing repeat measures it again in this job. The bf16-against-fp32 difference is measured in stage b, and the rule that uses it is loud only, so it needs no tolerance of its own. The 200 windows share 32 keys, so the bootstrap is a lower bound on the noise over keys; no rule leans on it but the 2 sds. One model, one marker's windows, one decomposition seed.
+
+### Blind to
+
+- **The lean and the falls are not the same kind of number (check F4).** A fall holds the gates fixed and moves one head. The masked lean moves tokens and gates together, each set of tokens under its own mask. So the sweep's falls and the lean are not like for like: a fall of M against a lean of 4.34 is not a share of the copy, "falls over the lean" may happen and decides nothing, and the 1.40 is a difference across two kinds of read. Mb's lower point is under the pair-broken mask too. Stage d splits the lean into tokens and gates, and reads no head.
+- **Mean ablation in the masked forward.** The mean is the target model's, passed through masks that were not read for it, so a fall nets a removal and an injection, in the slot of a head whose q, k, v and `o_proj` are all masked. M − Mb guards against an injection that drops B's log-odds whatever the pair; it does not make M a removal alone. Zero ablation and own-mask means are not run.
+- **Frozen gates.** Γ reads the head on, so any effect of a head through Γ is out: Amendment 3 read that at the marker, not here.
+- **Redundancy.** One head at a time cannot see two heads that back each other up; both read a small fall. `thinned` and `no_comparison_head` cannot tell that from a thin pathway.
+- **Spread rerouting.** Twenty heads each carrying 0.07 more than in the target model is no carrier. It reads `thinned`, `mixed` or `labelled_head_singled_out`; the excess column and `sum_falls_over_lean` show it.
+- **Fractions.** Heads under T of 0.5 are not compared, however much they carry in the target. A target fall of 0.5 with its sd is a coarse denominator; `fraction_sd` is printed.
+- **Downstream heads.** A later head reads what an earlier one wrote, so a fall in block 3 can be the same path as one in block 2. Heads are not independent routes, and `rerouted` names a head the forward depends on, not a separate route.
+- **Position and token.** The second A only; other positions and the marker are not read. Word-like windows, B set in by construction, not repeated random tokens.
+- **Target's own reading.** T is also an intact-windows number; the pair part sits beside it, and the rules use T for the denominator and the excess, as the advice files them.
+
+### Departures from Fable's advice
+
+1. `labelled_head_singled_out` and `mixed` are added. Amendment 4's numbers fit a third pattern besides rerouting and uniform attenuation: the mask costs (2,4) its fall and leaves the other heads' falls near the target's. Unnamed, it would read as a miss of both.
+2. The sweep has pair-broken rows, 96 reads for the advice's 48, as M − Mb guards the carrier and F1 asks for them.
+3. The swapped forwards take a reading with a rule where the advice had none, as a number needs an expected value. It decides nothing about the sweep.
+4. fp32 rows for all 24 heads, not the reference rows alone, about 15 s, so that a precision move needs no second job. fp32 under Γ's own gates, (2,4) only, so that the check can fail on rounding in the mask as well as in the forward. Unscored.
+5. The all-ones row reads through `Reads.masked` under gates of 1, the same forward as `AllGatesOn` (asserted in `tests/test_copying.py`), as `read_lo` needs a net with `at`.
+
+### Departures from the literature
+
+- **Olsson et al. 2022** zero-ablate one head on small models, reading induction on repeated random tokens. We mean-ablate over ordinary text, as E62, on word-like windows at the second A.
+- **Switching a head off inside a parameter decomposition's masked forward, gates frozen,** has no source we know of.
+- **Thresholds.** None published; each is sourced above.
+
+### Time
+
+Job 48945 reached the end of stage 1 34 s after it started: 30 s to load, 4 s for two Γ passes and nine reads, about 13 reads' worth with each pass counted as three. This job is about 170 reads, so about 1 min of reads after the same load, and about 2 min in all. Limit 10 min, debug QoS; Fable's "about five minutes" and Amendment 4's estimate of 6 are superseded by that measurement.
+
+### Not run
+
+Everything: the rules ran on CPU, the stages ran on a stub `Reads5` with planted numbers through `thinned`, `rerouted`, a precision move and both stops (`~/commute-data/scratch/regating-lead/e62-a5-code/stub_run.py`; the other verdicts are the tests'), the fp32 paths ran on a tiny real `ComponentModel` on CPU, and the 67M was never loaded. The fp32 Γ pass and fp32 masked forward are unrun on a GPU; stage a's numbers are written before them. Not planned: the weighted slot read and the re-open, named next steps; zero ablation and own-mask means; head pairs; masks recomputed with the head off at the second A; the states' masks in the sweep; steps 100 and 300; stages 2-4 of Amendment 4, which would be a new plan with their own anchor; a second decomposition seed.
