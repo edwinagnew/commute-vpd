@@ -190,6 +190,35 @@
    "branch": "A failed arm or a stop at the pause reports 'this sum is too low'; 1e-5 for 300 steps under the fix (about 100 min) runs only if the user asks."
   }
  },
+ "stage_G_state_file": {
+  "check": "Stage G, at each held read of a saved state (label step_<t>): the fp32 held-out reading of W0 plus the saved bf16 dW, against the same run's own record train_<run>.json steps[t-1].held (step t is steps[t-1]; the master weights, fp32, read in training). Stop (exit 1) when the difference exceeds max(rel * record, abs); the reading is not kept, so a rerun reads it again.",
+  "rel": 0.01,
+  "abs": 0.002,
+  "source": "The master and the saved file agree on gold's KL to 0.06% (reports/reviews/2026-11-02_review_qwen-finetune-recipes.md section 3); bf16 rounding of dW is under 0.4% per entry (reports/reviews/2026-11-02_review_e61-train-code.md, should-fix 3). 1% of the record, or 0.002 nats if larger, is a margin over both.",
+  "arm0_measured_gap": "none: arm 0 has no gen states, so no saved file is read back in Job R; the first gap is the first Stage G run, to be written in the report"
+ },
  "stage_G": "Reads `gen` states from the saved bf16 dW, plus fp32 W0, with no Adam moments held. a1 runs: 20 and 100, verdict at 100. Gold: 100. Invented facts: 300. Arm 0 has none: Stage W rehearses generation.",
- "not_read_here": "The direct share, sizes K00 - K0: Job S."
+ "not_read_here": "The direct share, sizes K00 - K0: Job S.",
+ "amendment_2026-11-02": {
+  "what_happened": "Arm 0 (job 48876) stopped at step 4: training loss 0.0581, filed stop under 0.08, expected at least 0.12. The step-4 loss prediction stands as filed and missed. The filing assumed a full-precision forward would walk E45's path and show the rise in training. It did not: full-precision held-out at state 3 reads 0.0615 where E45's rounded run read 0.217; gradient norm at step 3 reads 8.84 against E45's 4.03; |dW| at step 4 reads 0.108 against 0.140; training loss 0.0591 at step 3 and held-out 0.0624 for the same state 2 agree within 0.003. So training now sees its update and corrects it. A forward still rounding would have walked E45's path, with held-out 0.217 at state 3. The record of that job is kept as results/stopped_arm0_job48876.json and results/train_arm0_job48876.json.",
+  "rule": "Used from now on for arm0, replacing 'arm0.rule' and first_minutes.arm0's step-4 loss stop: stop if full-precision held-out at state 3 is at least 0.10 (E45's rounded path read 0.217; W0 reads 0.0566), or if |held-out at state t - training loss at step t+1, which reads state t| exceeds 0.01 at t = 2 or 3 (E45's read 0.0096 at t = 2 and 0.161 at t = 3; W0's row gap is 0.0019). The step-4 loss band becomes a note: loss under 0.08 is recorded, and it does not stop.",
+  "states": "Held-out at step t is state t (step 1 runs at rate 0, so state 1 is W0); loss at step t+1 reads state t. Held at state 3 is read at step 3; the gaps are checked at steps 3 (t = 2) and 4 (t = 3).",
+  "blind_to": "Rounding small enough to change held-out by under 0.01.",
+  "edge_cases": "NaN or a missing reading stops. Exactly 0.10 stops (coded as an upper band of 0.099999999, since bands are inclusive and compared rounded to 9 places). Exactly 0.01 continues (inclusive band).",
+  "arm0_first_minutes": {
+   "stop": {
+    "1": {"loss": [0.05400, 0.05621], "lr": [0, 0], "dw_norm": [0, 0]},
+    "2": {"loss": [0.05330, 0.05547], "dw_norm": [0.02284, 0.03427], "peak_gib": [null, 40]},
+    "3": {"held_gap": [null, 0.01]},
+    "3+held": {"held": [null, 0.099999999]},
+    "4": {"held_gap": [null, 0.01]}
+   },
+   "note": {
+    "1": {"grad_norm": [2.72, 4.54]},
+    "2": {"peak_gib": [null, 33.5]},
+    "3": {"loss": [0.060, 0.075]},
+    "4": {"loss": [0.08, null], "grad_norm": [5, null], "held_minus_loss": [-0.05, 0.05]}
+   }
+  }
+ }
 }

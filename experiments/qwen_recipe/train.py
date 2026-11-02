@@ -25,6 +25,7 @@ import shutil
 import statistics
 import sys
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from typing import Any
 
@@ -110,8 +111,10 @@ def in_band(x: float | None, band: list[float | None]) -> bool:
     return ok(x) and (lo is None or at_least(x, lo)) and (hi is None or at_most(x, hi))
 
 
-def check(lab: Lab, out: dict[str, Any], file: str, filed: dict[str, Any], at: str, values: dict[str, Any]) -> None:
-    """The filed bands at this point (a step, or a state's read): a "note" miss is logged, a "stop" miss exits 1."""
+def check(lab: Lab, out: dict[str, Any], file: str, filed: dict[str, Any], at: str, values: dict[str, Any],
+          forget: Callable[[], Any] = lambda: None) -> None:
+    """The filed bands at this point (a step, or a state's read): a "note" miss is logged, a "stop" miss calls `forget`
+    (drops the reading from `out`, so a rerun reads it and checks it again), writes `out` and exits 1."""
     for severity in ("note", "stop"):
         for key, band in filed[severity].get(at, {}).items():
             holds = in_band(values.get(key), band)
@@ -119,6 +122,7 @@ def check(lab: Lab, out: dict[str, Any], file: str, filed: dict[str, Any], at: s
             out.setdefault("checks", []).append(row)
             lab.log(f"[check {file}] {'ok' if holds else 'MISSED'} {json.dumps(row, default=float)}")
             if severity == "stop" and not holds:
+                forget()
                 write(file, out)
                 stop(lab, f"{file} {at} {key}", row)
 
@@ -149,9 +153,10 @@ def stage_T(lab: Lab, name: str, t_chunk: int | None) -> None:
     R, file = RUNS[name], f"train_{name}"
     if read(file).get("done"):
         sys.exit(f"{file} is done")
-    if name != "arm0" and not LINES.is_file():
-        sys.exit("Stage W writes results/lines.json before any arm after arm0")
-    F = lab.pred["first_minutes"][name]
+    if name != "arm0" and not read("train_W").get("done"):
+        sys.exit("Stage W must finish (train_W.json done) before any arm after arm0")
+    # arm0 reads the 2026-11-02 amendment's stops (its step-4 loss stop was mis-specified); the other arms read as filed
+    F = lab.pred["amendment_2026-11-02"]["arm0_first_minutes"] if name == "arm0" else lab.pred["first_minutes"][name]
     m, maths = lab.fp32(), lab.maths()[: CFG.track_rows]
     stream, per, _, data = lab.arm_data(R.arm, 0)
     if data != lab.pred["data"][R.arm]:
@@ -171,7 +176,9 @@ def stage_T(lab: Lab, name: str, t_chunk: int | None) -> None:
         rec.pop("norms")
         rec.pop("crossed", None)  # the grid is empty: `train` saves only at `keep`
         rec |= {"rate_sum": last["rate_sum"] + rec["lr"], "peak_gib": torch.cuda.max_memory_allocated() / GIB}
-        values = rec | ({"held_minus_loss": last["held"] - rec["loss"]} if "held" in last else {})
+        # last["held"] is state t-1 and this step's loss reads state t-1
+        gap = last["held"] - rec["loss"] if "held" in last else None
+        values = rec | ({"held_minus_loss": gap, "held_gap": abs(gap)} if gap is not None else {})
         out["steps"].append(rec)
         write(file, out)
         lab.log(f"[T {name}] {json.dumps(rec)}")
@@ -182,6 +189,7 @@ def stage_T(lab: Lab, name: str, t_chunk: int | None) -> None:
             rec["held"] = next(iter(task(None).values()))
             write(file, out)
             lab.log(f"[T {name}] step {t} held-out {rec['held']:.6f} (fp32)")
+            check(lab, out, file, F, f"{t}+held", {"held": rec["held"]})
 
     t0 = time.time()
     t = train(m, lab.W0, lambda t: stream[(t - 1) * per : t * per], r, {"maths": maths}, reads, {"maths": ()}, set(R.saves),
@@ -247,12 +255,32 @@ def read_state(lab: Lab, out: dict[str, Any], file: str, label: str, W: Any, rea
             lab.budget(EST_S.get(kind, 30))
             t0 = time.time()
             st[kind] = read_kind(lab, kind, d / f"{label}_{kind}.jsonl")
+            if file != "train_W" and kind.startswith("held_"):
+                match_record(lab, out, file, label, kind, st)
             st[kind] |= {"seconds": time.time() - t0, "peak_gib": torch.cuda.max_memory_allocated() / GIB}
             write(file, out)
             lab.timed(t0)
             lab.log(f"[{file}] {label} {kind}: {json.dumps(st[kind], default=float)}")
             if file == "train_W":
-                check(lab, out, file, lab.pred["stage_W"], f"{label}.{kind}", st[kind])
+                check(lab, out, file, lab.pred["stage_W"], f"{label}.{kind}", st[kind], lambda k=kind: st.pop(k))
+
+
+def match_record(lab: Lab, out: dict[str, Any], file: str, label: str, kind: str, st: dict[str, Any]) -> None:
+    """A saved state's fp32 held-out reading against the same run's record of it in training (`steps[t-1]`, the record
+    of step t): the file is the state it claims. A miss drops the reading (a rerun reads it again) and exits 1."""
+    t = int(label.removeprefix("step_"))
+    rec = next((s["held"] for s in out["steps"] if s["step"] == t and "held" in s), None)
+    if rec is None:
+        lab.log(f"[{file}] {label} {kind}: no record of the held-out reading in training; file not compared")
+        return
+    got, F = next(iter(st[kind].values())), lab.pred["stage_G_state_file"]
+    tol = max(F["rel"] * abs(rec), F["abs"])
+    lab.log(f"[{file}] {label} {kind}: saved file {got:.6f}, training record {rec:.6f}, gap {got - rec:+.6f}, tol {tol:.6f}")
+    if not (ok(got) and abs(got - rec) <= tol):
+        row = {"label": label, "kind": kind, "file_reading": got, "record": rec, "tol": tol}
+        del st[kind]
+        write(file, out)
+        stop(lab, f"{file} {label} {kind}: the saved file is not the state recorded", row)
 
 
 # ----------------------------------------------------------------------------- W: W0 and the references on fp32
