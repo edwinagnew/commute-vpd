@@ -65,6 +65,8 @@ Size is K00 − K0 (the KL from the changed model to the CI-masked original, min
 size is 0 and the share has no denominator. Expected: nothing filed on which side it falls; a share proportional to size
 would put random near 0.04-0.05 at 1.44, gold near 0.09.
 
+**Direct share here (user, 2026-11-02):** K10 uses masks truly from the original subcomponents, the split applied only in the masked forward; E57's version, whose masks read the moved vectors, is reported beside it. Both size axes (K00 − K0, KL from W0) are reported; B needs the line met on both.
+
 **Filed line, at matched size, against the higher random (toward C), both sizes:**
 - gap at least 0.03 at both sizes: training differs beyond size → B.
 - gap at most 0.01 at either size: size explains the direct share → C.

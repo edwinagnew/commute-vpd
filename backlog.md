@@ -347,3 +347,10 @@ Deferred ideas and loose ends. Date each entry.
   invented facts. Worth doing once the first anchor readings show whether any row separates at all.
 - 2026-10-29. **Exact weights by teacher training held near the fine-tuned weights** (Fable's advice on card decision-exact-weights, taken by the user). E43's remainder at step 10 was 5.1 times the fine-tune's squared size and pointed against teacher training's own change (cosine −0.90): mostly teacher training's overshoot, not the fine-tune's leftover. A weight-space penalty or a smaller change would make the remainder small by construction. New method; `reports/analyses/2026-10-28_analysis_e43-teacher-remainder.md`.
 - Rank sweep for the teacher-trained LoRA's pass (ranks 1, 4, 16, 32 on the lowercase task, Adam), so the rank-8 pass (E39 A2, E49) can be read beyond rank 8. (2026-10-29, decision-e47-lora-rank)
+- 2026-11-02 (user, for commute-lead). **E12 amendment: the route split on teacher-trained states.** E12's five shares
+  were read on least-squares split states, the one map whose pieces plus remainder equal the fine-tuned weights. The
+  re-switching share r does not depend on the split (it uses C₀ and Γ's gates on the fine-tuned model only), but the
+  masked-off share e_gate does, and E43 found teacher training writes the cipher largely outside the pieces Γ marks
+  important. Run E12's copy and random-map tasks (same states or seeds) through teacher training and read the route
+  split on those states: does e_gate still separate the two classes, and where does the copy's gain sit? $0, saved
+  67M states; `/design` first. Not urgent: after the base-model control work (E34 Amendment 8).

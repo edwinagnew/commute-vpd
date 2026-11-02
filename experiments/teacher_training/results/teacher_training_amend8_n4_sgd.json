@@ -1,0 +1,238 @@
+{
+ "W0": {
+  "ci_rel": 0.0005403122725500253,
+  "pass": true,
+  "pgd_floor": 0.20877548446862537,
+  "pgd_rel": 0.002526326455931871,
+  "pile": {
+   "0": {
+    "ci_masked_kl": 0.3481880286708474,
+    "pgd_kl": 0.6917431652545929,
+    "stochastic_kl": 0.24786615511402488,
+    "unmasked_kl": 0.012028305005514994
+   },
+   "1": {
+    "ci_masked_kl": 0.3481880286708474,
+    "pgd_kl": 0.8361621797084808,
+    "stochastic_kl": 0.24835433764383197,
+    "unmasked_kl": 0.012028305005514994
+   },
+   "2": {
+    "ci_masked_kl": 0.3481880286708474,
+    "pgd_kl": 0.7048778533935547,
+    "stochastic_kl": 0.24838376697152853,
+    "unmasked_kl": 0.012028305005514994
+   }
+  },
+  "stochastic_floor": 0.002088271620889648
+ },
+ "card": "NVIDIA L40",
+ "curves": {
+  "self": [
+   {
+    "grad_norm": 3.995793581008911,
+    "heldout_ce_o": 4.9995311580292165,
+    "heldout_kl_other": 0.007006364325954489,
+    "heldout_n": 73,
+    "heldout_p_o": 0.011819977058123236,
+    "loss": 3.6055002212524414,
+    "rel_norm_max": 0.0013089448912069201,
+    "step": 1,
+    "train_ce": 3.6055002212524414,
+    "train_entropy": 3.501189947128296
+   },
+   {
+    "grad_norm": 4.1476945877075195,
+    "heldout_ce_o": 4.970959075509685,
+    "heldout_kl_other": 0.010037016378690118,
+    "heldout_n": 73,
+    "heldout_p_o": 0.012024356894297143,
+    "loss": 3.1450486183166504,
+    "rel_norm_max": 0.0015856947284191847,
+    "step": 2,
+    "train_ce": 3.1450486183166504,
+    "train_entropy": 3.105550765991211
+   },
+   {
+    "grad_norm": 4.229032039642334,
+    "heldout_ce_o": 5.001513859997057,
+    "heldout_kl_other": 0.0177077687766454,
+    "heldout_n": 73,
+    "heldout_p_o": 0.011144124277650493,
+    "loss": 3.161640167236328,
+    "rel_norm_max": 0.0034903150517493486,
+    "step": 10,
+    "train_ce": 3.161640167236328,
+    "train_entropy": 3.15999174118042
+   },
+   {
+    "grad_norm": 3.878108024597168,
+    "heldout_ce_o": 5.069217316091877,
+    "heldout_kl_other": 0.022924344017081065,
+    "heldout_n": 73,
+    "heldout_p_o": 0.011235170780795894,
+    "loss": 2.9693658351898193,
+    "rel_norm_max": 0.007131899707019329,
+    "step": 100,
+    "train_ce": 2.9693658351898193,
+    "train_entropy": 2.9530904293060303
+   },
+   {
+    "grad_norm": 4.374730110168457,
+    "heldout_ce_o": 4.87231513245465,
+    "heldout_kl_other": 0.028900143014241573,
+    "heldout_n": 73,
+    "heldout_p_o": 0.01271961711040915,
+    "loss": 3.1326889991760254,
+    "rel_norm_max": 0.013406220823526382,
+    "step": 500,
+    "train_ce": 3.1326889991760254,
+    "train_entropy": 3.090914011001587
+   },
+   {
+    "grad_norm": 3.9374680519104004,
+    "heldout_ce_o": 5.187306077512976,
+    "heldout_kl_other": 0.03242784330289658,
+    "heldout_n": 73,
+    "heldout_p_o": 0.01113559407730625,
+    "loss": 3.1668851375579834,
+    "rel_norm_max": 0.017336279153823853,
+    "step": 1000,
+    "train_ce": 3.1668851375579834,
+    "train_entropy": 3.1625869274139404
+   }
+  ],
+  "true": [
+   {
+    "grad_norm": 6.063575744628906,
+    "heldout_ce_o": 4.922116109769639,
+    "heldout_kl_other": 0.017612582404319555,
+    "heldout_n": 73,
+    "heldout_p_o": 0.012659602377512683,
+    "loss": 3.530050277709961,
+    "rel_norm_max": 0.0012255189940333366,
+    "step": 1,
+    "train_ce": 3.530050277709961
+   },
+   {
+    "grad_norm": 5.674296855926514,
+    "heldout_ce_o": 4.786715259290721,
+    "heldout_kl_other": 0.019046938174391445,
+    "heldout_n": 73,
+    "heldout_p_o": 0.014897577158392293,
+    "loss": 3.162407875061035,
+    "rel_norm_max": 0.0016249314649030566,
+    "step": 2,
+    "train_ce": 3.162407875061035
+   },
+   {
+    "grad_norm": 4.674221515655518,
+    "heldout_ce_o": 4.768072467960724,
+    "heldout_kl_other": 0.0835683868355947,
+    "heldout_n": 73,
+    "heldout_p_o": 0.016850117134721312,
+    "loss": 3.0668084621429443,
+    "rel_norm_max": 0.004505176562815905,
+    "step": 10,
+    "train_ce": 3.0668084621429443
+   },
+   {
+    "grad_norm": 4.669571399688721,
+    "heldout_ce_o": 4.496419775975894,
+    "heldout_kl_other": 0.16288623254593104,
+    "heldout_n": 73,
+    "heldout_p_o": 0.020322758449267033,
+    "loss": 2.95383358001709,
+    "rel_norm_max": 0.013704963028430939,
+    "step": 100,
+    "train_ce": 2.95383358001709
+   }
+  ]
+ },
+ "done": true,
+ "early": {
+  "self-label CE - entropy, step 1": {
+   "bound": [
+    -0.5,
+    0.5
+   ],
+   "pass": true,
+   "value": 0.10431027412414551
+  },
+  "true labels gain": {
+   "bound": [
+    0.08771,
+    0.16289
+   ],
+   "pass": true,
+   "value": 0.12545324073564545
+  },
+  "true labels step-1 CE": {
+   "bound": [
+    3.48,
+    3.58
+   ],
+   "pass": true,
+   "value": 3.530050277709961
+  }
+ },
+ "reads": {
+  "100": {
+   "base_verdict": "pass",
+   "damage": 0.017426622268492713,
+   "gain": -0.004141827500044659,
+   "kl_w0_lowercase": 0.021872276541009456,
+   "pgd": 1.1960083751492663,
+   "pgd_verdict": "pass",
+   "pile_ratios": {
+    "ci_masked_kl": 1.007112141451183,
+    "pgd_kl": 1.1960083751492663,
+    "stochastic_kl": 0.9987627724787562,
+    "unmasked_kl": 0.9970807381896327
+   },
+   "size": 0.00713189784437418,
+   "stochastic": 0.9987627724787562
+  },
+  "1000": {
+   "base_verdict": "pass",
+   "damage": 0.021319178471765843,
+   "gain": -0.015710654078046282,
+   "kl_w0_lowercase": 0.025379639011432573,
+   "pgd": 0.9983371712325453,
+   "pgd_verdict": "pass",
+   "pile_ratios": {
+    "ci_masked_kl": 1.0014792074859276,
+    "pgd_kl": 0.9983371712325453,
+    "stochastic_kl": 0.9989381886250166,
+    "unmasked_kl": 0.9549629208624321
+   },
+   "size": 0.01733628287911415,
+   "stochastic": 0.9989381886250166
+  },
+  "true": {
+   "base_verdict": "inconclusive",
+   "damage": 0.12511211067891365,
+   "gain": 0.12545324073564545,
+   "kl_w0_lowercase": 0.166089728883696,
+   "pgd": 1.3139018404553797,
+   "pgd_verdict": "inconclusive",
+   "pile_ratios": {
+    "ci_masked_kl": 1.1018683130990217,
+    "pgd_kl": 1.3139018404553797,
+    "stochastic_kl": 1.0844807500684097,
+    "unmasked_kl": 0.9920298684253981
+   },
+   "size": 0.013704734854400158,
+   "stochastic": 1.0844807500684097
+  }
+ },
+ "score": {
+  "card": false,
+  "class": "near base",
+  "outcome": "holds",
+  "recipe_share": null,
+  "true_verdict": "inconclusive",
+  "verdict": "pass"
+ },
+ "stage": "n4_sgd"
+}

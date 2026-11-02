@@ -1,0 +1,165 @@
+{
+ "W0": {
+  "ci_rel": 0.0005403122725500253,
+  "pass": true,
+  "pgd_floor": 0.20877548446862537,
+  "pgd_rel": 0.002526326455931871,
+  "pile": {
+   "0": {
+    "ci_masked_kl": 0.3481880286708474,
+    "pgd_kl": 0.6917431652545929,
+    "stochastic_kl": 0.24786615511402488,
+    "unmasked_kl": 0.012028305005514994
+   },
+   "1": {
+    "ci_masked_kl": 0.3481880286708474,
+    "pgd_kl": 0.8361621797084808,
+    "stochastic_kl": 0.24835433764383197,
+    "unmasked_kl": 0.012028305005514994
+   },
+   "2": {
+    "ci_masked_kl": 0.3481880286708474,
+    "pgd_kl": 0.7048778533935547,
+    "stochastic_kl": 0.24838376697152853,
+    "unmasked_kl": 0.012028305005514994
+   }
+  },
+  "stochastic_floor": 0.002088271620889648
+ },
+ "card": "NVIDIA L40",
+ "curves": {
+  "masked_copy": [
+   {
+    "ci_masked": 1.128783106803894,
+    "ci_masked_trigger": 0.68836909532547,
+    "grad_norm": 0.8647607564926147,
+    "loss": 0.0016302497824653983,
+    "step": 1,
+    "stochastic": 0.7389304637908936,
+    "stochastic_trigger": 0.4363182783126831,
+    "unmasked": 0.0016302497824653983,
+    "unmasked_trigger": 0.0007713734521530569
+   },
+   {
+    "ci_masked": 0.9942605495452881,
+    "ci_masked_trigger": 0.5990887880325317,
+    "grad_norm": 5.63774299621582,
+    "loss": 0.016849583014845848,
+    "step": 2,
+    "stochastic": 0.6304010152816772,
+    "stochastic_trigger": 0.36382168531417847,
+    "unmasked": 0.016849583014845848,
+    "unmasked_trigger": 0.013838076032698154
+   },
+   {
+    "ci_masked": 1.137294888496399,
+    "ci_masked_trigger": 0.7425006628036499,
+    "grad_norm": 16.674327850341797,
+    "loss": 0.11271980404853821,
+    "step": 10,
+    "stochastic": 0.7373132109642029,
+    "stochastic_trigger": 0.4815398156642914,
+    "unmasked": 0.11271980404853821,
+    "unmasked_trigger": 0.10745851695537567
+   },
+   {
+    "ci_masked": 1.1079273223876953,
+    "ci_masked_trigger": 0.672497034072876,
+    "grad_norm": 4.4144086837768555,
+    "loss": 0.03723825514316559,
+    "step": 100,
+    "stochastic": 0.7024739980697632,
+    "stochastic_trigger": 0.4157029390335083,
+    "unmasked": 0.03723825514316559,
+    "unmasked_trigger": 0.03169427067041397
+   },
+   {
+    "ci_masked": 1.1674513816833496,
+    "ci_masked_trigger": 0.7466526627540588,
+    "grad_norm": 5.60758638381958,
+    "loss": 0.07435844093561172,
+    "step": 500,
+    "stochastic": 0.7097214460372925,
+    "stochastic_trigger": 0.4333275556564331,
+    "unmasked": 0.07435844093561172,
+    "unmasked_trigger": 0.06780332326889038
+   },
+   {
+    "ci_masked": 1.082273244857788,
+    "ci_masked_trigger": 0.6647645235061646,
+    "grad_norm": 2.278266668319702,
+    "loss": 0.021554065868258476,
+    "step": 1000,
+    "stochastic": 0.6574229001998901,
+    "stochastic_trigger": 0.38648808002471924,
+    "unmasked": 0.021554065868258476,
+    "unmasked_trigger": 0.016991261392831802
+   }
+  ]
+ },
+ "done": true,
+ "early": {
+  "step-1 gradient norm": {
+   "bound": [
+    1e-12,
+    1000000.0
+   ],
+   "pass": true,
+   "value": 0.8647607564926147
+  },
+  "step-1 unmasked term": {
+   "bound": [
+    0.00147,
+    0.00179
+   ],
+   "pass": true,
+   "value": 0.0016302497824653983
+  }
+ },
+ "reads": {
+  "100": {
+   "base_verdict": "pass",
+   "damage": 0.005732939568991514,
+   "delta_share": 9.912088346704682e-09,
+   "kl_w0": 0.044137625119735284,
+   "p_target": 1.5640289273074606e-05,
+   "pgd": 0.9888021002411395,
+   "pgd_verdict": "pass",
+   "pile_ratios": {
+    "ci_masked_kl": 1.0011025130688616,
+    "pgd_kl": 0.9888021002411395,
+    "stochastic_kl": 0.9864486781196097,
+    "unmasked_kl": 0.955780614201216
+   },
+   "size": 0.00574145931750536,
+   "stochastic": 0.9864486781196097,
+   "teacher_gap": 0.044137625119735284,
+   "verdict": "below P 0.9"
+  },
+  "1000": {
+   "base_verdict": "pass",
+   "damage": 0.007761228330356558,
+   "delta_share": 1.2777068267757419e-09,
+   "kl_w0": 0.06645285464900057,
+   "p_target": 1.6134094264473497e-05,
+   "pgd": 1.006354473681909,
+   "pgd_verdict": "pass",
+   "pile_ratios": {
+    "ci_masked_kl": 0.9958465463471188,
+    "pgd_kl": 1.006354473681909,
+    "stochastic_kl": 0.9786689216843237,
+    "unmasked_kl": 0.9060090997298302
+   },
+   "size": 0.017342740669846535,
+   "stochastic": 0.9786689216843237,
+   "teacher_gap": 0.06645285464900057,
+   "verdict": "below P 0.9"
+  }
+ },
+ "score": {
+  "card": false,
+  "outcome": "holds",
+  "verdict": "pass"
+ },
+ "stage": "n5"
+}
