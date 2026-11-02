@@ -334,7 +334,7 @@ Verdict as filed: `copy_not_elicitation`; `r_scored` false; `copy_reading` mixed
 
 ## Not run
 
-- **E62 Amendment 2, the next read:** head ablation inside the masked forward on the six saved states. Its plan is being written separately.
+- **E62 Amendment 2, the next read:** head ablation inside the masked forward on the six saved states. Since run, job 48698: see `reports/analyses/2026-11-02_analysis_e62-amend2-masked-head.md`.
 - W₀'s own log-odds under the copying head, on repeated sequences and at the marker. This gives the 0.5 bar its reference and turns the probability bracket into a number. It also says whether "about half" is a large underestimate of the head's effect on the behaviour, which the discarded `lo0_H` at `run.py:311` would have shown.
 - The copying head and `(1,1)` off together, on both maps.
 - The copying head's attention at the marker on the cue windows, under W₀ and under each state: does it attend to B, and does the fine-tune move its query? `copying.attention_patterns` exists. This is the most direct read of "runs through the head".
