@@ -1,0 +1,223 @@
+{
+ "run": "arm0",
+ "data": {
+  "n": 5939,
+  "of": 7744,
+  "passes": 1.0776224953695908
+ },
+ "recipe": {
+  "lr": 1e-05,
+  "warmup": 10,
+  "steps": 10,
+  "schedule": "hf_cosine",
+  "clip": 1.0,
+  "micro": 4,
+  "forward": "fp32"
+ },
+ "steps": [
+  {
+   "step": 1,
+   "lr": 0.0,
+   "loss": 0.05467607810078789,
+   "grad_norm": 3.4840939044952393,
+   "dw_norm": 0.0,
+   "kl": {
+    "maths": 0.0
+   },
+   "rate_sum": 0.0,
+   "peak_gib": 29.454229831695557,
+   "held": 0.05658366926200025
+  },
+  {
+   "step": 2,
+   "lr": 1.0000000000000002e-06,
+   "loss": 0.05396568704285719,
+   "grad_norm": 3.0761711597442627,
+   "dw_norm": 0.028463305000472446,
+   "kl": {
+    "maths": 0.005140708366743188
+   },
+   "rate_sum": 1.0000000000000002e-06,
+   "peak_gib": 34.3717679977417,
+   "held": 0.06235380000846967
+  },
+  {
+   "step": 3,
+   "lr": 2.0000000000000003e-06,
+   "loss": 0.05914051632866513,
+   "grad_norm": 8.835888862609863,
+   "dw_norm": 0.06642702313774117,
+   "kl": {
+    "maths": 0.011898500149516756
+   },
+   "rate_sum": 3.0000000000000005e-06,
+   "peak_gib": 34.3717679977417,
+   "held": 0.06154056915171096
+  },
+  {
+   "step": 4,
+   "lr": 3e-06,
+   "loss": 0.05807388832931776,
+   "grad_norm": 5.492667198181152,
+   "dw_norm": 0.10836071627764876,
+   "kl": {
+    "maths": 0.013852617938112344
+   },
+   "rate_sum": 6e-06,
+   "peak_gib": 34.3717679977417
+  }
+ ],
+ "saves": [
+  1,
+  2,
+  3,
+  4
+ ],
+ "seconds": 0.0,
+ "resumes": [],
+ "checks": [
+  {
+   "at": "1",
+   "key": "grad_norm",
+   "value": 3.4840939044952393,
+   "band": [
+    2.72,
+    4.54
+   ],
+   "severity": "note",
+   "holds": true
+  },
+  {
+   "at": "1",
+   "key": "loss",
+   "value": 0.05467607810078789,
+   "band": [
+    0.054,
+    0.05621
+   ],
+   "severity": "stop",
+   "holds": true
+  },
+  {
+   "at": "1",
+   "key": "lr",
+   "value": 0.0,
+   "band": [
+    0,
+    0
+   ],
+   "severity": "stop",
+   "holds": true
+  },
+  {
+   "at": "1",
+   "key": "dw_norm",
+   "value": 0.0,
+   "band": [
+    0,
+    0
+   ],
+   "severity": "stop",
+   "holds": true
+  },
+  {
+   "at": "2",
+   "key": "peak_gib",
+   "value": 34.3717679977417,
+   "band": [
+    null,
+    33.5
+   ],
+   "severity": "note",
+   "holds": false
+  },
+  {
+   "at": "2",
+   "key": "loss",
+   "value": 0.05396568704285719,
+   "band": [
+    0.0533,
+    0.05547
+   ],
+   "severity": "stop",
+   "holds": true
+  },
+  {
+   "at": "2",
+   "key": "dw_norm",
+   "value": 0.028463305000472446,
+   "band": [
+    0.02284,
+    0.03427
+   ],
+   "severity": "stop",
+   "holds": true
+  },
+  {
+   "at": "2",
+   "key": "peak_gib",
+   "value": 34.3717679977417,
+   "band": [
+    null,
+    40
+   ],
+   "severity": "stop",
+   "holds": true
+  },
+  {
+   "at": "3",
+   "key": "loss",
+   "value": 0.05914051632866513,
+   "band": [
+    0.06,
+    0.075
+   ],
+   "severity": "note",
+   "holds": false
+  },
+  {
+   "at": "4",
+   "key": "loss",
+   "value": 0.05807388832931776,
+   "band": [
+    0.12,
+    null
+   ],
+   "severity": "note",
+   "holds": false
+  },
+  {
+   "at": "4",
+   "key": "grad_norm",
+   "value": 5.492667198181152,
+   "band": [
+    5,
+    null
+   ],
+   "severity": "note",
+   "holds": true
+  },
+  {
+   "at": "4",
+   "key": "held_minus_loss",
+   "value": 0.003466680822393202,
+   "band": [
+    -0.05,
+    0.05
+   ],
+   "severity": "note",
+   "holds": true
+  },
+  {
+   "at": "4",
+   "key": "loss",
+   "value": 0.05807388832931776,
+   "band": [
+    0.08,
+    null
+   ],
+   "severity": "stop",
+   "holds": false
+  }
+ ]
+}
