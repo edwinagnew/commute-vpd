@@ -50,20 +50,11 @@ def test_table_label_edges() -> None:
     assert A.table_label(-0.5, 0.8, 0.1, M) == "different change"  # a negative cosine
 
 
-def test_real_label_edges() -> None:
-    band = [0.6, 0.7, 0.8]
-    assert A.real_label([], band, 0.1, M) == "unscorable"
-    assert A.real_label([0.5], [], 0.1, M) == "unscorable"
-    assert A.real_label([0.5, NAN], band, 0.1, M) == "unscorable"
-    assert A.real_label([0.5], band, 0.1, NAN) == "unscorable"
-    assert A.real_label([0.8 - M, 0.9], band, 0.1, M) == "copies, limited"  # tie, both must clear
-    assert A.real_label([0.5, 0.9], band, 0.1, M) == "cannot tell"  # the two orders straddle
-    assert A.real_label([0.6 - M - 1e-9], band, 0.1, M) == "different change, limited"
-    assert A.real_label([0.6 - M], band, 0.1, M) == "cannot tell"  # a tie is not under the line
-    assert A.real_label([0.7], band, 0.1, M) == "cannot tell"  # inside the band
-    assert A.real_label([0.2], [0.05, 0.8], -0.5, M) == "cannot tell"  # a rerun that reads nothing
-    assert A.real_label([0.2], band, 0.6 - 2 * M + 1e-9, M) == "cannot tell"  # references do not separate
-    assert A.real_label([0.7], [0.7], 0.1, M) == "copies, limited"  # one-element band
+def test_rerun_ok_edges() -> None:
+    assert A.rerun_ok(0.999, None) and A.rerun_ok(A.CM.t_p_min, None)  # inclusive
+    assert not A.rerun_ok(A.CM.t_p_min - 1e-9, None) and not A.rerun_ok(NAN, None)
+    assert A.rerun_ok(0.999, 1.0) and A.rerun_ok(0.999, 1 - 0.5e-3)
+    assert not A.rerun_ok(0.999, 1 - 2e-3) and not A.rerun_ok(0.999, NAN)  # the saved teacher not reproduced
 
 
 def test_seed_class_edges() -> None:
@@ -84,17 +75,14 @@ def test_margin_edges() -> None:
 
 
 def test_wording() -> None:
-    c, d, cl, dl = "copies", "different change", "copies, limited", "different change, limited"
-    assert A.wording(c, c, cl, cl)["wording"].startswith("copies the fine-tune")
-    assert "limited" in A.wording(c, c, cl, cl)["scope"]
-    assert A.wording(d, d, dl, dl)["wording"].startswith("reproduces its behaviour")
-    assert A.wording(d, d, "cannot tell", dl)["scope"].startswith("map tables only")
-    assert A.wording(d, d, cl, dl)["wording"] == "cannot tell"  # the real task reads the other way
-    assert A.wording(c, d, cl, cl)["wording"] == "depends on the inputs"
-    assert A.wording("cannot tell", d, dl, dl)["wording"] == "cannot tell"
-    assert A.wording("mixed", "mixed", dl, dl)["wording"] == "cannot tell"
-    assert A.wording("unscorable", d, dl, dl)["wording"] == "unscorable"
-    assert A.wording(d, d, "unscorable", dl)["wording"] == "unscorable"
+    c, d, ct = "copies", "different change", "cannot tell"
+    assert A.wording(c, c, c, c)["wording"].startswith("copies the fine-tune")
+    assert A.wording(d, d, d, d)["wording"].startswith("reproduces its behaviour")
+    assert A.wording(c, d, c, d)["wording"] == "depends on the inputs"
+    assert A.wording(c, c, d, d)["wording"] == "depends on the task"
+    assert A.wording(c, d, d, d)["wording"] == ct  # one read out of line
+    assert A.wording(ct, d, d, d)["wording"] == ct and A.wording(d, d, d, "mixed")["wording"] == ct
+    assert A.wording("unscorable", d, d, d)["wording"] == "unscorable" and A.wording(d, d, ct, "unscorable")["wording"] == "unscorable"
 
 
 def test_arithmetic() -> None:
@@ -152,11 +140,6 @@ def _reads(own: float, rerun: float, other: float, noise: float = 0.0) -> dict[s
         return {f: {"whole": w, "A": {k: v + noise for k, v in w.items()}, "B": w} for f in A.FORMS}
     sets = {f"{k}:{t}": st(A.REFS[t]) for k in ("task", "trigger") for t in A.REFS}
     sets["pile"] = st((*A.FINE_TUNES, A.T_REAL_R, A.REAL_8C[1]))
-    for s in sets.values():  # the real task's reruns and the band: emoticon's and cipher's own pairs read `rerun`
-        for f in A.FORMS:
-            for p in A.PARTS:
-                s[f][p][f"{A.EMO_RERUN[1]} | {A.EMO_RERUN[0]}"] = rerun
-                s[f][p][f"{A.LONG[1]} | {A.LONG[0]}"] = rerun
     return sets
 
 
@@ -165,6 +148,22 @@ def test_score_reads_both_ways_and_third() -> None:
     assert A.score(_reads(0.3, 0.8, 0.1))["P1_wording"]["wording"].startswith("reproduces its behaviour")
     assert A.score(_reads(0.75, 0.2, 0.15))["P1_wording"]["wording"] == "cannot tell"  # references do not separate
     assert A.score(_reads(0.3, 0.8, 0.1, noise=0.5))["P1_wording"]["wording"] == "cannot tell"  # noise swallows the gap
+
+
+def test_score_real_task_uses_its_rerun() -> None:
+    r = _reads(0.3, 0.8, 0.1)
+    assert A.score(r)["by_input"]["pile"]["real_verdict"] == "different change"
+    for s in r.values():
+        for f in A.FORMS:
+            for p in A.PARTS:
+                s[f][p][f"{A.T_RERUN} | {A.T_REAL}"] = 0.3
+    b = A.score(r)["by_input"]["pile"]
+    assert b["real_verdict"] == "copies" and b["map_verdict"] == "different change"
+    for s in r.values():
+        for f in A.FORMS:
+            for p in A.PARTS:
+                s[f][p].pop(f"{A.T_RERUN} | {A.T_REAL}", None)  # the three parts of a form may share one dict
+    assert A.score(r)["by_input"]["pile"]["real_verdict"] == "unscorable"  # no rerun, no real verdict
 
 
 def test_score_missing_state_is_unscorable() -> None:
@@ -200,7 +199,7 @@ def test_read_set_on_a_fake_model(tmp_path: Path, monkeypatch: Any) -> None:
     g = torch.Generator().manual_seed(2)
     vec = {n: {k: torch.randn(6, 12, generator=g) for k in ("a", "b")} for n in (A.T_REAL, A.T_NULL, "other")}
     vec[A.ZERO] = {k: torch.zeros(6, 12) for k in ("a", "b")}
-    out: dict[str, Any] = {"controls": {}, "reads": {}, "concentration": {}, "seconds": {}, "missing": []}
+    out: dict[str, Any] = {"controls": {}, "reads": {}, "seconds": {}, "missing": []}
     A.read_set(out, _FakeModel(), vec, "pile", torch.zeros(8, 5, dtype=torch.long), None, 2, (A.T_REAL, A.T_NULL))
     assert out["controls"]["power pile"]["cos_sigma"] > 0.99 and out["controls"]["self pile"]["windows_or_positions"] == 40
     w = out["reads"]["pile"]["uncentred"]["whole"]

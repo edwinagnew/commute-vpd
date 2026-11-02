@@ -1,7 +1,9 @@
 # E34 Amendment 10: the student's change against the fine-tune's, weighted by the inputs the model sees
 
-Approved by the user (2026-11-02, option (a) of log card `decision-commute-settled`). $0: one `debug` job on an L40, about 10 min, on
-saved states and one forward of W₀. No training. Rules and expected values: `experiments/teacher_training/results/predictions_amend10.json`.
+**Revised 2026-11-02, nothing having run** (first filing `8ce4471c`): the coordinator added one 1,000-step rerun of the real fine-tune, trained in this job, so the real-task verdict takes the map tables' rule. The limited band and E38's and E53's reruns as references are deleted, as no rule reads them. The filing was changed before any input-weighted read; the only reads so far are stage 0's Frobenius.
+
+Approved by the user (2026-11-02, option (a) of log card `decision-commute-settled`). $0: one `debug` job on an L40, about 12 min, on
+saved states, one forward of W₀ and one fine-tune rerun, whose control is the same recipe at the saved batch order. Rules and expected values: `experiments/teacher_training/results/predictions_amend10.json`.
 Code: `experiments/teacher_training/amend10.py`, tests `tests/test_teacher_amend10.py`, job `cluster/teacher_amend10.sbatch`. An independent
 review comes before the run.
 
@@ -16,7 +18,7 @@ is its fine-tune's finished update. For two changes A and B, over the 24 matrice
 
 ⟨A, B⟩_Σ = Σ_k tr(A_k Σ_k B_kᵀ) = E Σ_k ⟨A_k x, B_k x⟩, with Σ_k = E[x xᵀ] and x the input matrix k sees.
 
-Read cos_Σ(S, δW), and against the same δW and Σ: a rerun of the same fine-tune, a different task's fine-tune, and the same table's other
+Read cos_Σ(S, δW), and against the same δW and Σ: a rerun of the same fine-tune (for the real task, trained in this job), a different task's fine-tune, and the same table's other
 seed's student. Amendment 9 used Σ = I, so directions no input excites counted alike. The inside part is not read: under this inner product
 it is no longer an orthogonal part of δW, and it has neither an expected value nor a prediction here.
 
@@ -29,7 +31,7 @@ it is no longer an orthogonal part of δW, and it has neither an expected value 
 - **Decisions relied on.** W₀'s alive (U, V), Γ and Δ frozen, as in teacher training. No departure from `decisions.md`.
 - **What changes next.** "Copies" or "different change" is the line's closing wording. "Cannot tell" or "depends on the inputs" go to the
   user with the reads; the line can still close, stating that.
-- **Control, first and alone.** Stage 0 with no model, the layout control, then per input set the self, zero and power controls before any
+- **Control, first and alone.** Stage 0 with no model, the layout control, the rerun recipe at the saved teacher's batch order, then per input set the self, zero and power controls before any
   read is written. Any miss stops the job. No reference procedure is reproduced.
 - **Numbers and what each should read.** Below, and `predictions_amend10.json` → `expected`.
 
@@ -68,27 +70,26 @@ only the task.
 
 The margin m is the largest of 0.05 (twice Amendment 9's largest batch-order change), the largest split-half difference over every cell the rules
 read, the largest batch-order change here, and the bf16 draw. Split-half is by alternate window and compares two half samples, so it is
-conservative for reads on the whole set. All six map-table students must agree, in both forms, on task windows and on Pile, or the verdict is
-"mixed". Each verdict can read either way: nothing in the arithmetic fixes own against rerun, and `tests/test_teacher_amend10.py` runs the score to each label. Amendment 9's wording held for any student by construction; neither wording here does.
+conservative for reads on the whole set. The real students take the same rule against their rerun, and all must agree, in both forms, on each input kind, or the verdict is
+"mixed". The wording needs all four verdicts alike (map tables and real task, task windows and Pile). Otherwise it reads "depends on the inputs", "depends on the task" or "cannot tell". Each verdict can read either way: nothing in the arithmetic fixes own against rerun, and `tests/test_teacher_amend10.py` runs the score to each label. Amendment 9's wording held for any student by construction; neither wording here does.
 
-## How the real-task verdict is scored without a rerun of its fine-tune
+## The real fine-tune's rerun
 
-The brief's reading holds at 1,000 steps: no second real fine-tune of that length is saved. Two things it did not name are saved, and they are read:
+**Recipe.** `amend8.real_teacher`, as Amendment 8c ran it: `finetune_arm_a`, Adam 3e-5, batch 32, clip 1, 1,000 steps, the same windows and target, bf16 autocast in the forward, saved bf16 at `results/large/amend10/real_teacher_o1_dW.pt`. It runs as a stage before any input set, timed.
 
-- E38's `emoticon_s0`, `emoticon_s1`: the real task, arm A, Adam 3e-5, batch 32, batch orders 0 and 1, **step 10**.
-- E53's `cipher` at batch orders 0 and 1, steps 10, 100 and **300**: another task, arm B, Adam 3e-5, batch 8. It is the only saved trend of a rerun
-  with length. By Frobenius (read before filing): 0.14, 0.42, 0.84.
+**What it varies.** The batch-order seed alone, the generator behind the draw of training windows. The map tables' two seeds vary the same thing alone: `anchors.kv_finetune` passes seed 0 or 1 to the same `finetune_arm_a`. So the real verdict uses the map tables' rule, the same `table_label`, and is not labelled limited.
 
-The map-table reruns are at 10 (rand32) and 30 (rand32b) steps, the students' at 1,000. So the real verdict is **filed as limited**, and its label says so.
-Over real_o0 and real_o1, with band = {real task at 10, rand32 at 10, rand32b at 30, cipher at 300}:
+**Differences from the saved teacher.** Batch order, which is the point. None other intended. Amendment 8c's job ran the Pile harness first, which does not touch the fine-tune's own generator; `finetune.py` has not changed since before its files; its card was an L40. The recipe's batch order 0 runs first and alone, and tests all of these.
 
-- at or above the band's top, less m, for both: "copies, limited";
-- under the band's bottom, less m, for both: "different change, limited";
-- anything else, or a band that does not clear other fine-tunes by 2 m: "cannot tell".
+**Filed checks, or the job stops.** Order 0: 1 − cosine to the saved teacher at most 1e-3 (Amendment 8c's `saved_tol`). Both orders: held-out P(target) at least 0.9946 (Amendment 8's filed bound for T1000; the saved teacher reads 0.99910). Size and damage are reported, with no stop.
 
-It assumes a 1,000-step rerun would fall inside the band, which is untested. The cipher's trend suggests a rerun falls below it less likely than near its top; that is one task. The map tables, which have a rerun of their own, make the wording; the real task can agree, limited, can say it cannot tell, in which case the wording is for the map tables only, or read the other way, in which case the whole verdict is "cannot tell".
+**Limits on comparing the families.** Length differs between them, not within them.
 
-**One rerun would end the limit.** T1000 took about 30 s on an L40 in Amendment 8c's job. It is training, out of this brief, so it is not here; the lead may want it as a one-job follow-up, or in this job.
+- A map-table rerun is at 10 or 30 steps, the real one at 1,000. At 10 steps a seed changes which windows are drawn at all; at 1,000 each window is seen about 88 times, so the real rerun may read higher. E53's cipher rerun rose with length by Frobenius (0.14, 0.42, 0.84 at 10, 100, 300), a read no rule uses.
+- Map-table fine-tunes stop at first learned, P(target) about 0.55, the real one at 0.999.
+- So each student is fairly read against its own family's rerun, and "depends on the task" cannot separate task from length.
+- One rerun gives one number, with no spread of its own.
+- real_o0 shares all its batches with the fine-tune and real_o1 with the rerun. Both must agree, so shared batches cannot carry "copies" alone.
 
 ## Controls and expected values
 
@@ -98,9 +99,10 @@ It assumes a 1,000-step rerun would fall inside the band, which is untested. The
 | Frobenius re-read of Amendment 9 | same | Amendment 9's 1 | every pair within 1e-6 of `amend9.json`, stop; 1e-12 in the dry run |
 | Layout | n/a | error under 1e-3, relative; lean 1e-5 | all 24 matrices, or stop |
 | Power | n/a | n/a | a change matching δW on the top directions Σ excites and random on the rest: cos_Σ ≥ 0.99, Frobenius ≤ 0.5, design 1/3; else stop |
+| Rerun | n/a | n/a | order 0 reproduces the saved teacher, cosine within 1e-3 of 1; both orders P(target) ≥ 0.9946; else stop |
 | Gram | diagonal 0 | diagonal above 0 | asymmetry within 1e-6, smallest diagonal above 0; else stop |
 
-Leans, low confidence as nothing is read on inputs yet: rerun 0.6 to 0.95, own 0.3 to 0.8, other 0 to 0.4; P1 "different change", medium-low; P2 "different change, limited", medium-low; P3 "follows the task only" or "mixed"; P4 "cannot tell", medium. By Frobenius, read before filing: reruns 0.605 and 0.675, real at step 10 0.563; own 0.298 to 0.412, real 0.274 and 0.281.
+Leans, low confidence as nothing is read on inputs yet: rerun 0.6 to 0.95, own 0.3 to 0.8, other 0 to 0.4; P1 "different change", medium-low; P2 "different change", medium-low; P3 "follows the task only" or "mixed"; P4 "cannot tell", medium. By Frobenius, read before filing: reruns 0.605 and 0.675; own 0.298 to 0.412, real 0.274 and 0.281.
 
 ## Noise
 
@@ -112,15 +114,15 @@ It reads each matrix's output on inputs, with no regard to what downstream layer
 
 ## Cost
 
-$0, `debug` QoS, one L40, under the 30-min limit: about 10 min by the budget in the filing, model load 23 s from E12 Amendment 3's log. The stages write as they finish.
+$0, `debug` QoS, one L40, under the 30-min limit: about 12 min by the budget in the filing, unrehearsed, model load 23 s from E12 Amendment 3's log. The stages write as they finish.
 
 ## Departures from the literature
 
-None. No cited procedure is reproduced: the cosine is the project's own, E34 Amendment 8c's and 9's, with the input second moment of `GOALS.md`'s outside share as its metric. From the brief, one: the reference set adds E38's and E53's reruns, since a real-task verdict needs what there is.
+None. No cited procedure is reproduced: the cosine is the project's own, E34 Amendment 8c's and 9's, with the input second moment of `GOALS.md`'s outside share as its metric. The rerun's recipe is the project's own saved one, varied in batch order alone.
 
 ## Not run
 
-- A 1,000-step rerun of the real fine-tune: training.
+- A second real rerun, or a map-table rerun at 1,000 steps, which would separate task from length.
 - A behaviour test of whether the differences on inputs matter downstream.
 - Each model's own activations as x: second order, not read.
 - The inside part under this inner product; per-matrix verdicts; E42's students, whose fine-tunes were not saved.

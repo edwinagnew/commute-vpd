@@ -6,8 +6,9 @@ results/predictions_amend10.json (the run refuses without it, or if CM differs).
 For two weight changes A, B, summed over the 24 matrices: <A, B>_Sigma = sum_k tr(A_k Sigma_k B_k^T) = E sum_k <A_k x, B_k x>,
 x the input matrix k sees in the unchanged model W0, read with no autocast and summed in fp64. Stages cheapest first, each
 writes on finishing: stage 0 without a model (files, Frobenius re-read of Amendment 9, self and zero reads), the layout
-control, then per input set Sigma, its power control, its reads. Saved states only, no training. A stop is `stopped` in the
-file, exit 1. Results: results/amend10.json; per-matrix inner products: results/large/amend10/gram_<set>.pt.
+control, the real fine-tune's rerun (the saved recipe at batch order 0, which must reproduce the saved teacher, then at batch
+order 1), then per input set Sigma, its power control, its reads. Saved states otherwise, no other training. A stop is `stopped`
+in the file, exit 1. Results: results/amend10.json; per-matrix inner products: results/large/amend10/gram_<set>.pt.
 
 Usage (repo root): sbatch cluster/teacher_amend10.sbatch. Needs PYTHONPATH=experiments/new_vs_existing (amend9 imports E12's).
 """
@@ -39,30 +40,27 @@ from amend9 import (
     agree,
     finite,
 )
-from run import TRANSPORT, dump, halt, log
+from run import CFG, FT_ADAM_LR, TRANSPORT, dump, halt, log
 from torch import Tensor
 
 from commute import vpd
 from commute.data import batches, pile_rows
 from commute.faithfulness import model_state
+from commute.finetune import ArmAConfig, finetune_arm_a
 from commute.keydep import sha256
 from commute.saved_states import offsets_state
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 PRED, OUT, A9, LARGE = RESULTS / "predictions_amend10.json", RESULTS / "amend10.json", RESULTS / "amend9.json", RESULTS / "large" / "amend10"
-E38 = HERE.parent / "recruitment_test" / "results" / "large" / "states"
-E53 = HERE.parent / "performed_anchor" / "results" / "large"
-EMO, EMO_RERUN, LADDER = "emoticon", ("emoticon_10_s0", "emoticon_10_s1"), (10, 100, 300)
+EMO, T_RERUN = "emoticon", "real_teacher_o1"  # the real fine-tune's rerun, batch order 1, trained in this job
 FORMS, PARTS = ("uncentred", "centred"), ("whole", "A", "B")
 ZERO, T_REAL_R, REAL_O1_R = "zero", f"{T_REAL}~", f"{REAL_8C[1]}~"  # a zero change, and two with one bf16 rounding draw
 STUDENTS = tuple(f"S_{s}" for s in E12_STUDENTS)  # E12 named a student after its fine-tune; here they must differ
 OWN = {f"S_{s}": s.removesuffix("_o1") for s in E12_STUDENTS}
 TABLE_FT = tuple(f"{t}_{s}" for t in TABLES for s in ("s0", "s1"))
-CIPHER = tuple(f"cipher_{n}_{s}" for n in LADDER for s in ("s0", "s1"))
-FINE_TUNES = (*TABLE_FT, T_REAL, T_NULL, *EMO_RERUN, *CIPHER)
-LONG = (f"cipher_{LADDER[-1]}_s0", f"cipher_{LADDER[-1]}_s1")  # the longest rerun saved
-REFS = {EMO: (T_REAL, T_NULL, T_REAL_R, REAL_8C[1], *EMO_RERUN, LONG[0]), **{t: tuple(f"{t}_{s}" for s in ("s0", "s1")) for t in TABLES}}
+FINE_TUNES = (*TABLE_FT, T_REAL, T_NULL, T_RERUN)
+REFS = {EMO: (T_REAL, T_NULL, T_REAL_R, REAL_8C[1]), **{t: tuple(f"{t}_{s}" for s in ("s0", "s1")) for t in TABLES}}
 POWER = {f"task:{EMO}": T_REAL, **{f"task:{t}": f"{t}_s0" for t in TABLES}, "pile": T_REAL}  # the fine-tune each power control is built from
 
 
@@ -70,6 +68,8 @@ POWER = {f"task:{EMO}": T_REAL, **{f"task:{t}": f"{t}_s0" for t in TABLES}, "pil
 class Amend10:
     ctrl_tol: float = 1e-6  # a reading equal by construction: E12 Amendment 2's zero_tol, Amendment 9's ctrl_tol
     layout_tol: float = 1e-3  # module output against x (W0 + dW)^T, relative: fp32 forward
+    saved_tol: float = 1e-3  # the recipe at batch order 0 against the saved teacher, 1 - cosine: Amendment 8c's saved_tol, "same card, the regeneration reads identically"
+    t_p_min: float = 0.9946  # a 1,000-step fine-tune's held-out P(target): Amendment 8's filed AM.t_p; the saved teacher reads 0.99910
     along_min: float = 0.1  # a cosine under this is not along it: Amendment 8c's along_min, Amendment 9's
     gap_min: float = 0.05  # the least margin: twice Amendment 9's largest batch-order change, 0.025
     tail: float = 1e-3  # the power control's "not excited": the directions past this share of tr(Sigma), per matrix
@@ -133,6 +133,11 @@ def power_change(T: Tensor, sigma: Tensor, tail: float, rho2: float, gen: torch.
 # ----------------------------------------------------------------------------- rules (pure), as filed
 
 
+def rerun_ok(p_target: float, cos_saved: float | None) -> bool:
+    """A fine-tune of the recipe: its target reached and, at the saved teacher's batch order, the saved teacher reproduced."""
+    return p_target >= CM.t_p_min and (cos_saved is None or 1 - cos_saved <= CM.saved_tol)  # nan fails both
+
+
 def table_label(own: float, rerun: float, other_task: float, m: float) -> str:
     """One student against its own fine-tune, with that fine-tune's rerun as the reference. Both lines inclusive."""
     if not finite(own, rerun, other_task, m):
@@ -140,19 +145,6 @@ def table_label(own: float, rerun: float, other_task: float, m: float) -> str:
     if rerun < CM.along_min or rerun - other_task < 2 * m:
         return "cannot tell"
     return "copies" if own >= rerun - m else "different change"
-
-
-def real_label(own: list[float], band: list[float], other_task: float, m: float) -> str:
-    """The real students, whose fine-tune has no 1,000-step rerun. `band` holds the reruns that exist of a task learned, 10 to 300 steps,
-    the real task's own at 10 among them. Always limited: it assumes a 1,000-step rerun would fall in the band; see predictions_amend10.json."""
-    if not own or not band or not finite(*own, *band, other_task, m):
-        return "unscorable"
-    lo, hi = min(band), max(band)
-    if lo < CM.along_min or lo - other_task < 2 * m:
-        return "cannot tell"
-    if min(own) >= hi - m:
-        return "copies, limited"
-    return "different change, limited" if max(own) < lo - m else "cannot tell"
 
 
 def seed_class(own: float, others: list[float], m: float) -> str:
@@ -171,20 +163,19 @@ def margin(split_half: list[float], batch_order: list[float], rounding: list[flo
 
 
 def wording(map_task: str, map_pile: str, real_task: str, real_pile: str) -> dict[str, str]:
-    """The headline. The map tables decide, as they have reruns of the same length; the real task can only agree, limit or block."""
-    labels = (map_task, map_pile, real_task, real_pile)
+    """The headline: one wording only if the map tables and the real task, on task windows and on Pile, all read it."""
     words = {"copies": "copies the fine-tune's change on real inputs", "different change": "reproduces its behaviour by a different change"}
+    scope = f"map tables: task windows {map_task}, Pile {map_pile}; real task: its windows {real_task}, Pile {real_pile}"
+    labels = (map_task, map_pile, real_task, real_pile)
     if "unscorable" in labels:
-        return {"wording": "unscorable", "scope": "a read is missing"}
-    if map_task != map_pile or map_task not in words:
-        split = map_task in words and map_pile in words
-        return {"wording": "depends on the inputs" if split else "cannot tell", "scope": f"map tables: task {map_task}, Pile {map_pile}"}
-    other = "different change" if map_task == "copies" else "copies"
-    if any(r.startswith(other) for r in (real_task, real_pile)):
-        return {"wording": "cannot tell", "scope": f"map tables read {map_task}; real task {real_task} on its windows, {real_pile} on Pile"}
-    if real_task == real_pile == f"{map_task}, limited":
-        return {"wording": words[map_task], "scope": "map tables; the real task agrees, limited by having no 1,000-step rerun"}
-    return {"wording": words[map_task], "scope": f"map tables only; real task {real_task} on its windows, {real_pile} on Pile"}
+        return {"wording": "unscorable", "scope": scope}
+    if not all(x in words for x in labels):
+        return {"wording": "cannot tell", "scope": scope}
+    if len(set(labels)) == 1:
+        return {"wording": words[map_task], "scope": scope}
+    if map_task == real_task and map_pile == real_pile:
+        return {"wording": "depends on the inputs", "scope": scope}
+    return {"wording": "depends on the task" if map_task == map_pile and real_task == real_pile else "cannot tell", "scope": scope}
 
 
 Cell = Callable[[str, str, str, str, str], float]
@@ -203,7 +194,7 @@ def noise(c: Cell, kind: str, form: str) -> dict[str, list[float]]:
     """What the margin is made of on one kind of input: split-half of every cell the rules read, batch order, one rounding draw."""
     cells = [(input_set(kind, r.split("_")[0]), s, r) for s, r in OWN.items()]
     cells += [(input_set(kind, t), f"{t}_s1", f"{t}_s0") for t in TABLES]
-    cells += [(input_set(kind, EMO), s, T_REAL) for s in REAL_8C] + [(input_set(kind, EMO), EMO_RERUN[1], EMO_RERUN[0])]
+    cells += [(input_set(kind, EMO), s, T_REAL) for s in (*REAL_8C, T_RERUN)]
     pairs = [(f"S_rand32b_{s}", f"S_rand32b_{s}_o1", f"rand32b_{s}", input_set(kind, "rand32b")) for s in ("s0", "s1")]
     pairs.append((REAL_8C[0], REAL_8C[1], T_REAL, input_set(kind, EMO)))
     e = input_set(kind, EMO)
@@ -212,31 +203,19 @@ def noise(c: Cell, kind: str, form: str) -> dict[str, list[float]]:
             "rounding": [abs(c(e, form, "whole", REAL_O1_R, T_REAL_R) - c(e, form, "whole", REAL_8C[1], T_REAL))]}
 
 
-def table_reads(c: Cell, kind: str, form: str, m: float) -> dict[str, dict[str, Any]]:
-    """P1, P3, P4's reads per student against its own fine-tune."""
-    rec = {}
-    for s, r in OWN.items():
-        t = r.split("_")[0]
-        st, other_t = input_set(kind, t), TABLES[t]
-        own = c(st, form, "whole", s, r)
-        rerun = c(st, form, "whole", other_seed(r), r)
-        others = [c(st, form, "whole", f, r) for f in (f"{other_t}_s0", f"{other_t}_s1", T_REAL, T_NULL)]
-        same_table = [c(st, form, "whole", x, r) for x in STUDENTS if OWN[x] == other_seed(r)]
-        rec[s] = {"own": own, "rerun": rerun, "other_task": max(others) if finite(*others) else math.nan, "other_seed_students": same_table,
-                  "label": table_label(own, rerun, max(others) if finite(*others) else math.nan, m), "seed": seed_class(own, same_table, m)}
-    return rec
-
-
-def real_read(c: Cell, kind: str, form: str, m: float) -> dict[str, Any]:
-    st = input_set(kind, EMO)
-    own = [c(st, form, "whole", s, T_REAL) for s in REAL_8C]
-    band = [c(st, form, "whole", EMO_RERUN[1], EMO_RERUN[0]), c(st, form, "whole", LONG[1], LONG[0])]
-    band += [c(input_set(kind, t), form, "whole", f"{t}_s1", f"{t}_s0") for t in TABLES]
-    others = [c(st, form, "whole", f, T_REAL) for f in (*TABLE_FT, T_NULL)]
+def student_read(c: Cell, kind: str, form: str, m: float, s: str, r: str) -> dict[str, Any]:
+    """P1, P2, P3, P4's reads of one student against its own fine-tune r: the map tables' rule on both families."""
+    real = r == T_REAL
+    st = input_set(kind, EMO if real else r.split("_")[0])
+    other_names = (*TABLE_FT, T_NULL) if real else (*(f"{TABLES[r.split('_')[0]]}_{x}" for x in ("s0", "s1")), T_REAL, T_NULL)
+    others = [c(st, form, "whole", f, r) for f in other_names]
     other = max(others) if finite(*others) else math.nan
-    return {"own": own, "band": band, "other_task": other, "label": real_label(own, band, other, m),
-            "null_students": [c(st, form, "whole", s, T_REAL) for s in NULL_8C], "null_own": [c(st, form, "whole", s, T_NULL) for s in NULL_8C],
-            "batch_order_students": c(st, form, "whole", REAL_8C[0], REAL_8C[1])}
+    own, rerun = c(st, form, "whole", s, r), c(st, form, "whole", T_RERUN if real else other_seed(r), r)
+    rec = {"own": own, "rerun": rerun, "other_task": other, "label": table_label(own, rerun, other, m)}
+    if not real:  # no student of the real rerun exists
+        rec["other_seed_students"] = same = [c(st, form, "whole", x, r) for x in STUDENTS if OWN[x] == other_seed(r)]
+        rec["seed"] = seed_class(own, same, m)
+    return rec
 
 
 def score(reads: dict[str, Any]) -> dict[str, Any]:
@@ -250,15 +229,16 @@ def score(reads: dict[str, Any]) -> dict[str, Any]:
             nn = noise(c, kind, form)
             m = margin(nn["split_half"], nn["batch_order"], nn["rounding"])
             rec[form] = {"margin": m, "noise": {k: max(v) if finite(*v) else math.nan for k, v in nn.items()},
-                         "tables": table_reads(c, kind, form, m), "real": real_read(c, kind, form, m)}
+                         "tables": {s: student_read(c, kind, form, m, s, r) for s, r in OWN.items()},
+                         "real": {s: student_read(c, kind, form, m, s, T_REAL) for s in REAL_8C},
+                         "null_own": [c(input_set(kind, EMO), form, "whole", s, T_NULL) for s in NULL_8C]}
         tables = [rec[f]["tables"][s] for f in FORMS for s in OWN]
         rec["map_verdict"] = agree([x["label"] for x in tables])
-        rec["real_verdict"] = agree([rec[f]["real"]["label"] for f in FORMS])
+        rec["real_verdict"] = agree([rec[f]["real"][s]["label"] for f in FORMS for s in REAL_8C])
         rec["seed_verdict"] = agree([x["seed"] for x in tables])
         out["by_input"][kind] = rec
     b = out["by_input"]
     out["P1_wording"] = wording(b["task"]["map_verdict"], b["pile"]["map_verdict"], b["task"]["real_verdict"], b["pile"]["real_verdict"])
-    out["ladder"] = {f: [c("pile", f, "whole", f"cipher_{n}_s1", f"cipher_{n}_s0") for n in LADDER] for f in FORMS}  # how a rerun moves with length, reported
     out["P3_seed"] = {kind: b[kind]["seed_verdict"] for kind in ("task", "pile")}
     out["P4_trigger"] = {"map": b["trigger"]["map_verdict"], "real": b["trigger"]["real_verdict"]}
     return out
@@ -286,8 +266,6 @@ def load_vectors(out: dict[str, Any], uv: dict[str, tuple[Tensor, Tensor]]) -> d
 
     files: dict[str, tuple[Path, Callable[[Path], dict[str, Tensor]]]] = {
         **{n: (E46 / f"{n}.pt", ft) for n in TABLE_FT}, **{t: (A8C / f"{t}_dW.pt", ft) for t in (T_REAL, T_NULL)},
-        **{f"emoticon_10_{s}": (E38 / f"emoticon_{s}.pt", ft) for s in ("s0", "s1")},
-        **{f"cipher_{n}_{s}": (E53 / f"dW_cipher_{s}_step{n}.pt", ft) for n in LADDER for s in ("s0", "s1")},
         **{f"S_{s}": (E12 / "large" / "amend2" / f"{s}.pt", lambda p: offsets_state(p, uv)[0]) for s in E12_STUDENTS},
         **{s: (A8C / f"{s}.pt", lambda p: offsets_state(p, uv)[0]) for s in (*REAL_8C, *NULL_8C)}}
     vec: dict[str, dict[str, Tensor]] = {}
@@ -407,13 +385,10 @@ def read_set(out: dict[str, Any], model: Any, vec: dict[str, dict[str, Tensor]],
     if rec["self_minus_1"] > CM.ctrl_tol or rec["asymmetry"] > CM.ctrl_tol or not rec["zero_reads_nan"] or rec["smallest_diagonal"] <= 0:
         halt(OUT, out, f"control on {st}: {json.dumps(rec)}")
     out["reads"][st] = {f: {p: named(C[f][p], names, refs) for p in PARTS} for f in FORMS}
-    diag = {x: {"top_matrix_share": max(float(grams["whole"][k][i, i]) for k in keys) / float(whole[i, i]), "mean_share": float(pool["mean_whole"][i, i] / whole[i, i])}
-            for i, x in enumerate(names) if x in refs}
-    out["concentration"][st] = diag
     out["seconds"][st] = time.time() - t0
     dump(OUT, out)
     log(f"[reads {st}] {json.dumps(out['reads'][st])}")
-    log(f"[concentration {st}] {json.dumps(diag)} {out['seconds'][st]:.0f} s")
+    log(f"[seconds {st}] {out['seconds'][st]:.0f}")
 
 
 def power_control(out: dict[str, Any], T: dict[str, Tensor], sigma: dict[str, Tensor], st: str, device: str) -> None:
@@ -434,6 +409,30 @@ def power_control(out: dict[str, Any], T: dict[str, Tensor], sigma: dict[str, Te
         halt(OUT, out, f"power control on {st}: {json.dumps(rec)}")
 
 
+def rerun_stage(out: dict[str, Any], model: Any, vec: dict[str, dict[str, Tensor]], device: str) -> None:
+    """amend8.real_teacher's recipe at batch order 0, which must reproduce the saved teacher (the control, alone), then at order 1, the rerun."""
+    w = torch.load(TRANSPORT / "large" / "windows.pt", weights_only=False, map_location="cpu")
+    token = json.loads((TRANSPORT / "windows.json").read_text())["o_token_id"]
+    steps = CFG.steps[-1]
+    for order in (0, 1):
+        t0 = time.time()
+        cfg = ArmAConfig(o_token=token, lr=FT_ADAM_LR, steps=steps, checkpoints=(1, steps), seed=order, optimizer="adam")
+        res = finetune_arm_a(model, w["train"], w["heldout"], cfg, device, log)
+        ev, dW = res.evals[steps], {k: v.bfloat16() for k, v in res.deltas[steps].items()}
+        G = sum(gram(torch.stack([dW[k].double(), vec[T_REAL][k].double()]), None) for k in dW)
+        assert isinstance(G, Tensor)
+        cos = float(cosines(G)[0, 1])
+        rec = {"p_target": ev["p_o"], "damage": ev["kl_other"], "size": ev["rel_norm_max"], "size_1": res.evals[1]["rel_norm_max"], "cos_frobenius_to_saved": cos, "seconds": time.time() - t0}
+        out["controls"][f"rerun order {order}"] = rec
+        log(f"[rerun order {order}] {json.dumps(rec)}")
+        dump(OUT, out)
+        if not rerun_ok(ev["p_o"], cos if order == 0 else None):
+            halt(OUT, out, f"rerun order {order}: {json.dumps(rec)}")
+    LARGE.mkdir(parents=True, exist_ok=True)
+    torch.save(dW, LARGE / f"{T_RERUN}_dW.pt")
+    vec[T_RERUN] = dW
+
+
 def main() -> None:
     if not PRED.is_file():
         sys.exit(f"file the predictions first: {PRED}")
@@ -443,7 +442,7 @@ def main() -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     head = subprocess.run(["git", "-C", str(HERE), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
     out: dict[str, Any] = {"commit": head, "predictions_sha256": sha256(PRED), "card": torch.cuda.get_device_name() if device == "cuda" else "cpu",
-                           "controls": {}, "reads": {}, "concentration": {}, "seconds": {}, "missing": []}
+                           "controls": {}, "reads": {}, "seconds": {}, "missing": []}
     uv = torch.load(A8C / "uv0.pt", weights_only=False, map_location="cpu")
     vec = load_vectors(out, uv)
     stage0(out, vec, device)
@@ -457,6 +456,8 @@ def main() -> None:
     dump(OUT, out)
     if not err <= CM.layout_tol:
         halt(OUT, out, f"layout control: {err}")
+    rerun_stage(out, model, vec, device)
+    stage0(out, vec, device)  # Frobenius again, with the rerun
     for t, w in windows.items():
         read_set(out, model, vec, f"trigger:{t}", w.tokens, w.half, CM.batch_windows, REFS[t])
         read_set(out, model, vec, f"task:{t}", w.tokens, None, CM.batch_windows, REFS[t])

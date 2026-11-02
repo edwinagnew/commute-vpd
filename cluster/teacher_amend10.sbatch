@@ -1,11 +1,10 @@
 #!/bin/bash
 # E34 Amendment 10: the student's change against the fine-tune's, weighted by the inputs the model sees. Plan reports/plans/2026-11-02_plan_e34-amend10-input-weighted.md.
 #   cd ~/commute-agents/<role>                      # a clone with the results/large symlinks and artifacts/sets, not a worktree
-#   sbatch cluster/teacher_amend10.sbatch           # ~10 min on an L40 (model load 23 s as in E12 Amendment 3, three window sets, 256 Pile rows, eigendecompositions); read only, no training
+#   sbatch cluster/teacher_amend10.sbatch           # ~12 min on an L40 (model load 23 s as in E12 Amendment 3, two 1,000-step fine-tunes, three window sets, 256 Pile rows, eigendecompositions)
 # Before: results/predictions_amend10.json and results/amend9.json present. Inputs on NFS: teacher_training/results/large/amend8/amend8c/, new_vs_existing/results/large/amend2/,
-# regating_table/results/large/{rand32,rand32b}_s{0,1}.pt and windows_*.pt, transport_test/results/large/windows.pt, recruitment_test/results/large/states/emoticon_s{0,1}.pt,
-# performed_anchor/results/large/dW_cipher_s{0,1}_step{10,100,300}.pt, artifacts/sets/val_0_256.npy.
-# Writes results/amend10.json and results/large/amend10/{gram_*.pt,run_amend10.log}. A rerun refuses while the results file exists: move it aside.
+# regating_table/results/large/{rand32,rand32b}_s{0,1}.pt and windows_*.pt, transport_test/results/large/windows.pt, artifacts/sets/val_0_256.npy.
+# Writes results/amend10.json and results/large/amend10/{real_teacher_o1_dW.pt,gram_*.pt,run_amend10.log}. A rerun refuses while the results file exists: move it aside.
 # Exit 1: a stop; the reason is `.stopped` in the file.
 #SBATCH --job-name=commute-e34-amend10
 #SBATCH --partition=compute
