@@ -1,0 +1,162 @@
+{
+ "experiment": "E59 jain_readout: a Jain et al. 2024 Def 1 linear readout per block of the 67M target model, trained on Pile text (never on the task tables), read on E54's held-out elicit and cipher windows; and a causal check that removes the readout's direction for the target value from the residual in the twelve saved E54/E56 fine-tunes",
+ "plan": "reports/plans/2026-10-30_plan_baseline-next2-draft.md (approved by the user as written, ask #8)",
+ "filed": "2026-11-02, before any run; never edited after the run (a dated report instead)",
+ "code": "experiments/jain_readout/run.py; src/commute/readout.py (readout, ablation, filed rules); tests/test_readout.py; cluster/jain_readout.sbatch",
+ "claim": "The original model holds the elicit map at some block as a linear readout trained on the Pile, and not the cipher; and the elicit fine-tune's gain runs through that readout's direction while the cipher's does not.",
+ "null": "The readout holds the elicit values only where it reproduces the output (the last block), and removing the readout direction costs both fine-tunes the same share of their gain: the label is the construction, and r's separation has no footing outside VPD.",
+ "settings": {
+  "model": "the 67M target model (steering.Net), fp32, TF32 off; means in float64",
+  "sites": ["in1", "in2", "in3", "out3"],
+  "sites_note": "block b (0-3) = the b-th of the model's four blocks; its readout reads block b's output residual: the next block's input (steering.Net site in<b+1>), and for the last block (3) its output before the final RMSNorm (out3). 'Before the last block' = blocks 0, 1, 2",
+  "readout": "probe.Probes unchanged: one nn.Linear(768, 50277) per block (nn.Linear init, bias kept), trained to predict the next token",
+  "iters": 4000,
+  "lr": 0.001,
+  "decay_at": [2000, 3000, 3500],
+  "decay": 0.1,
+  "batch": 96,
+  "schedule_source": "Jain et al. 2024 L1238-1248 as copied in src/commute/probe.py (4K AdamW iterations, lr 1e-3 decayed x0.1 at 2K, 3K, 3.5K); batch 96 and AdamW library defaults filled in there (E55)",
+  "window": 41,
+  "first_position": 1,
+  "training_data": "batch = 96 windows of 41 tokens at seeded random (row, start) pairs of Pile train rows 32768-40959 (data.pile_rows('train', 32768, 8192), cached; disjoint from rows 0-32767 that E12/E54's task windows were cut from); loss = mean next-token cross-entropy over positions 1..39 of each window, summed over the four readouts. Window length = E54's task windows'. Position 0 left out: a window's first position carries the attention-sink norm, which a linear map on the raw residual would fit at the expense of the rest",
+  "train_rows": ["train", 32768, 8192],
+  "readout_seed": 59,
+  "held_rows": ["val", 0, 256],
+  "held_windows": 2000,
+  "held_seed": 5900,
+  "held_out_loss": "mean next-token cross-entropy of each readout, and of the model's own logits, on the same 2000 windows of Pile val rows 0-255, positions 1..39",
+  "task_windows": "E54's experiments/keydependent_elicit/results/large/windows_{elicit,cipher}.pt: 97 held-out windows each, marker at 19, key at 20 (the answer position); fit half = even indices (49 windows, 28 of 32 keys covered), scoring half = odd (48 windows)",
+  "rank": "rank of a window's target value under block b's readout at the answer position = 1 + the number of vocabulary tokens with a strictly higher readout logit (elicit.pick_values's rank); a key's rank = the lower median over its windows (torch.median's convention)",
+  "possession": "the map is possessed at block b on a pool of windows iff (keys with median rank <= 20) / (keys with at least one window in the pool) >= 24/32 (inclusive). On all 97 held-out windows every key is covered, so this is the plan's 24 of 32 keys exactly; on the fit half (28 keys covered) it needs 21",
+  "l_star": "the earliest block before the last (0, 1 or 2) at which the elicit map is possessed on the fit half; None if none",
+  "ablation": "at block l* only and at the answer position only, the residual the readout reads has its component along a unit vector u removed: h <- h - (h.u) u; u = block l*'s readout column (weight row for that vocabulary entry) for the window's target value, normalised. Applied to the state's own forward (W0 + delta-W)",
+  "A": "A = mean over the scoring half of (log P_state(target) - log P_state,ablated(target)) / G_score, G_score = the state's gain over W0 on the scoring half (steering.gains); nan if |G_score| < 0.05 (floor_min, E54's rule)",
+  "random_direction": "the do-nothing: one Gaussian unit vector per distinct target value (torch.randn float64, generator seed random_seed, values in sorted order), the same removal at the same block; A_rand defined as A",
+  "random_seed": 5959,
+  "states": "the twelve saved weight changes: E54 experiments/keydependent_elicit/results/large/{elicit,cipher,cipher_own}_s{0,1}.pt (sha256 in stage2.json finetunes) and E56 experiments/keydependent_patch/results/large/{elicit,cipher}_s{2,3,4}.pt (sha256 in job2.json finetunes). 'cipher' = the cipher at the elicit fine-tune's update norm (matched); 'cipher_own' = the cipher at its own E12 step",
+  "cipher_own_s2_s4": "not saved by E56 (job2.json finetunes cipher_own_s{2,3,4}.sha256 = null). The plan's 'fifteen states' counted them; this run has twelve. P2's own-step clause is scored on s0 and s1 only (both informative: matched step 9, own step 30). Re-training them was not done: the plan states the fine-tune side costs nothing, and the clause is a size check, not the separation",
+  "seeds": ["s0", "s1", "s2", "s3", "s4"],
+  "own_seeds": ["s0", "s1"]
+ },
+ "thresholds": {
+  "possess_rank": 20,
+  "possess_keys": 24,
+  "p3_band": [2, 20],
+  "p3_cipher_above": 100,
+  "min_gap": 0.2,
+  "own_tol": 0.1,
+  "w0_min_drop": 0.3,
+  "random_tol": 0.05,
+  "floor_min": 0.05,
+  "loss_gap_max": 0.5,
+  "readout_max_minutes": 15
+ },
+ "threshold_sources": {
+  "possess_rank, possess_keys, p3_band": "the plan; the band E54's elicit values were built with (W0's rank 2-20 after the key)",
+  "p3_cipher_above": "the plan (cipher values rank > 100 for >= 24 keys)",
+  "min_gap": "E51/E52/E54/E56's separation rule (elicit.separation): |gap| > larger within-kind range (strict) and |gap| >= 0.2",
+  "own_tol": "the plan (P2: the cipher at its own step reads within 0.1 of its matched A); E54/E56's P3 tolerance on r",
+  "w0_min_drop": "the plan (log P0 falls >= 0.3 nats median)",
+  "random_tol": "the plan (|A| <= 0.05 for a random unit direction)",
+  "floor_min": "E54/E56 settings.floor_min",
+  "loss_gap_max": "the plan (P1's floor: the readout's held-out Pile loss within 0.5 nats of the model's own at the last block)",
+  "readout_max_minutes": "chosen so the 30-min debug wall leaves room for the rest (model load ~1 min, stage 0 inputs ~1 min, ablations ~1 min); a projection over it stops at step 20 with nothing scored"
+ },
+ "predictions": {
+  "P1": {
+   "statement": "Possession before the last block: the elicit map is possessed at some block 0, 1 or 2, and the cipher at no block (all 97 held-out windows)",
+   "rule": "readout.p1: pass iff the set of blocks < 3 where elicit is possessed is non-empty and the set of blocks 0-3 where the cipher is possessed is empty",
+   "threshold": "possession: keys with median rank <= 20 / keys covered >= 24/32 (inclusive)",
+   "absolute_or_relative": "absolute (ranks, key counts)",
+   "lean": "medium",
+   "blind_to": "non-linear encodings of the value, and linear directions the model does not read",
+   "control": "the last block (P3): elicit possessed there by construction, cipher not",
+   "noise_floor": "the readout's held-out Pile loss at the last block within 0.5 nats of the model's own (stage 0, stops on a miss); with ~3 windows per key the median rank is per-key noise, which the 24-of-32 count absorbs"
+  },
+  "P2": {
+   "statement": "The gain runs through the readout: A on the five elicit states exceeds A on the five matched ciphers by E51's rule, and the cipher at its own step reads within 0.1 of its matched A",
+   "rule": "readout.p2: elicit.separation(A elicit_s0..s4, A cipher_s0..s4, min_gap 0.2) verdict 'a_higher', and |A(cipher_own_s) - A(cipher_s)| < 0.1 (strict) for s in s0, s1; pass iff both",
+   "threshold": "gap > larger within-kind range and gap >= 0.2; own-step difference < 0.1",
+   "absolute_or_relative": "relative (A is a share of each state's gain); the separation compares the two kinds' means",
+   "lean": "medium",
+   "blind_to": "a route that re-encodes the value off the readout direction (the gain survives the removal and A reads low for both); directions other than the one value column",
+   "control": "W0 positive control at l* (elicit: median drop of log P0 >= 0.3 nats when the target's direction is removed) and the do-nothing (random direction, |A_rand| <= 0.05 on every state)",
+   "noise_floor": "the random-direction share A_rand per state (measured in the run, filed bound 0.05); the within-kind range over five seeds enters the rule itself",
+   "void_when": "no block before the last possesses the elicit map on the fit half (l* None: the ablation runs at the last block, reported, not scored), or W0's positive control fails (the run stops)"
+  },
+  "P3": {
+   "statement": "The construction reproduces: the last-block readout gives the elicit values median rank 2-20 for >= 24 keys and the cipher values median rank > 100 for >= 24 keys",
+   "rule": "readout.p3: count of keys with elicit median rank in [2, 20] (inclusive) >= 24 and count of keys with cipher median rank > 100 (strict) >= 24",
+   "threshold": "24 keys; band [2, 20]; above 100",
+   "absolute_or_relative": "absolute",
+   "lean": "high",
+   "blind_to": "anything before the last block; it checks that the readout matches the model's own output",
+   "control": "it is stage 0's early stop: a miss exits before any ablation",
+   "noise_floor": "the readout-model loss gap at the last block (stage 0)"
+  }
+ },
+ "expected_table": {
+  "readout held-out loss, last block - model": {"W0": "0 to 0.5 nats (readout on the pre-norm residual approximates norm + unembedding)", "do_nothing": "-", "control": "-", "if_claim": "<= 0.5", "if_null": "<= 0.5"},
+  "readout held-out loss, blocks 0-2": {"W0": "above the last block's, falling with depth", "do_nothing": "-", "control": "-", "if_claim": "reported", "if_null": "reported"},
+  "possession per block, elicit vs cipher": {"W0": "the reading", "do_nothing": "-", "control": "last block: elicit possessed, cipher not", "if_claim": "elicit possessed at some block <= 2, cipher at none", "if_null": "elicit at block 3 only"},
+  "P3 counts at the last block": {"W0": "elicit in [2, 20] for >= 24 keys; cipher > 100 for >= 24 keys", "do_nothing": "-", "control": "-", "if_claim": "passes", "if_null": "passes"},
+  "W0 median drop of log P(target), target direction at l*": {"W0": ">= 0.3 nats on elicit (the direction is causal for W0)", "do_nothing": "random direction: ~0 (<< 0.3)", "control": "this is the positive control", "if_claim": ">= 0.3", "if_null": ">= 0.3 or not (decodable-but-unused fails it)"},
+  "A_rand per state": {"W0": "-", "do_nothing": "|A_rand| <= 0.05 (removing 1 of 768 random dimensions; expected ~0.00x)", "control": "-", "if_claim": "<= 0.05", "if_null": "<= 0.05"},
+  "A at l*, elicit vs matched cipher": {"W0": "-", "do_nothing": "A_rand", "control": "-", "if_claim": "elicit A > cipher A by the rule; cipher_own within 0.1 of cipher", "if_null": "no separation"},
+  "G per state (reproduction)": {"W0": "-", "do_nothing": "-", "control": "equal to E54 stage2.json / E56 job2.json within 1e-6 (E56 measured 0 on the same forwards)", "if_claim": "-", "if_null": "-"}
+ },
+ "stage0": {
+  "order": "first and alone; any miss exits 1 before any ablation of a fine-tuned state is scored",
+  "checks": [
+   "inputs: windows_{elicit,cipher}.pt sha256 equal stage1.json's; keys and values equal stage1.json's; W0's held-out geometric-mean P(target) |rate / stage1 rate - 1| <= rate_rel_tol",
+   "inputs: each of the twelve states' sha256 equals its filed sha256 and its gain G (steering.gains, all 97 windows) equals the filed G within reproduce_tol",
+   "readouts: held-out Pile loss of the last block's readout minus the model's own <= loss_gap_max (all four blocks reported); readout weights saved to results/large/readouts.pt with sha256; a non-finite logged loss or a step-20 projection over readout_max_minutes exits",
+   "P3 passes (possession and P1 are computed and recorded first, not a stop)",
+   "do-nothing: every state's |A_rand| <= random_tol at the ablation block",
+   "W0 positive control: when l* exists, the median over the elicit scoring half of log P0(target) - log P0,ablated(target) >= w0_min_drop; the random direction's and the cipher's W0 drops reported beside it"
+  ],
+  "thresholds": {"rate_rel_tol": 1e-06, "reproduce_tol": 1e-06},
+  "tolerance_sources": "E56 stage 0 measured 0 difference on rates, r, S and S_lo with the same forwards on the same windows and card model (job1.json, job2.json); 1e-6 is E56's filed tolerance"
+ },
+ "decision_tree": {
+  "P1 pass, P2 pass": "the label is independent; write up, ask (b) and carry the label to the Qwen pair",
+  "P1 fail, P2 pass": "'half-known' is the output's knowledge; the ablation still separates; write up with that wording",
+  "P2 fail": "stop and tell the user; (b) before any Qwen ask",
+  "P2 void (no l*)": "P1 fails; 'half-known' means what the output says and the write-ups say so; the last-block ablation is reported, not scored",
+  "a control fails": "stop, report (W0 control failing: P2 void; fall back to a short reverse fine-tune of the cipher state on the Pile, a later ask)",
+  "P2 unreadable": "stop and tell the user"
+ },
+ "edge_cases": {
+  "no_block_before_last_possesses": "l* None: P1 fails (if also on all windows), P2 'void' with its reason; the ablation runs at the last block and is reported under ablation (scored false), not scored. Tested: test_p2_void_when_no_l_star, test_earliest_ignores_last_block",
+  "fit_half_l_star_missing_but_all_windows_possess": "P1 may pass while l* is None (fit half covers 28 keys): P2 void, the branch says report and tell the user",
+  "w0_positive_control_fails": "the run stops after stage 0 with P2 'void' ('W0's positive control failed'); only checked when l* exists",
+  "key_with_no_window_in_pool": "median None: not counted and not covered; possession reads count / covered (fit half: 28 covered keys need 21). No key covered: not possessed. Tested: test_key_medians_lower_median_and_empty_key, test_possession_fraction_inclusive_and_empty",
+  "even_window_count": "lower median (torch.median's convention). Tested",
+  "possession_tie_at_bound": "count / covered exactly 24/32 (or 21/28) possesses; median rank exactly 20 counts. Tested",
+  "rank_ties_across_blocks": "the earliest block counts (readout.earliest). Tested",
+  "p3_bounds": "elicit median rank 2 and 20 count, 1 and 21 do not; cipher median rank 100 does not count, 101 does. Tested",
+  "shared_values": "a value serving several keys: the direction is the value's column, so nothing changes; random directions are per distinct value, so shared values share a random direction",
+  "gain_under_floor": "|G_score| < 0.05: A = nan (elicit.share_or_nan with tol floor_min) -> separation 'unreadable' -> P2 'unreadable'; none of the twelve states is near it (G 6.3-13.7). Tested",
+  "nan_or_missing_state": "any None or nan among P2's ten A values or the own-step pair -> 'unreadable'. Tested",
+  "ties_in_separation": "|gap| == range: no separation; |gap| == 0.2 with range below: separates (elicit.separation). Tested",
+  "own_step_bound": "|A(cipher_own) - A(cipher)| == 0.1 fails (strict). Tested",
+  "do_nothing_bound": "|A_rand| == 0.05 passes; a nan or missing A_rand fails. Tested",
+  "fewer_than_two_per_kind": "unreadable (elicit.separation)",
+  "cipher_possessed_somewhere": "P1 fails with reading 'cipher possessed at blocks [...]'; P2 still scored at l* if l* exists. Tested",
+  "elicit_possessed_nowhere": "P1 fails with reading 'elicit possessed at no block'; P3 then also fails (it needs the last block in band) and stops the run",
+  "zero_norm_readout_column": "not guarded: a trained column of exactly zero norm would give nan directions and nan A -> 'unreadable'"
+ },
+ "departures": [
+  "Def 1, Jain et al. 2024 §3: the paper trains on data from the pretraining process and reads on the inputs carrying the instruction; here Pile next-token windows at every position from 1, read at the answer position after the marker and key. The paper gives no threshold for 'equal to f_C'; ours is median rank <= 20 for 24 of 32 keys, filed here",
+  "the causal check (removing the readout direction) is not the paper's (pruning neurons, reverse fine-tuning); decisions.md row 81's addition. Reverse fine-tuning is not run",
+  "schedule copied from the paper as in probe.py; batch 96 and AdamW defaults filled in there; window length 41 and position 0 left out, chosen here (the task windows' length; the attention-sink position)",
+  "the pair (E12's recipe, matched size) and the separation rule are this project's"
+ ],
+ "writer_decisions": [
+  "twelve states, not fifteen: E56 did not save cipher_own_s2-s4; P2's own-step clause is read on s0, s1",
+  "P1 reads 'some block <= 2' (plan table and edge cases) including block 0; the plan's P1 line says 'block 1 or 2'; with 0-indexed blocks and block 3 the last, '<= 2' is every block before the last, as l*'s definition",
+  "possession on the fit half uses the same 24/32 fraction of covered keys (28 covered), not an absolute 24 that 28 keys could barely reach",
+  "the do-nothing is checked on every fine-tuned state at the ablation block (the plan's 'random-direction share on W0' read as: the random share of each state's gain; W0's own random-direction drop is reported beside the positive control, not scored)",
+  "the W0 positive control and A are read on the scoring half (l* is chosen on the fit half)"
+ ]
+}

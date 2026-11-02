@@ -11,12 +11,18 @@ Differences from `optimize` (single process, no W&B): the step that `optimize` r
 is the final evaluation here; `optimize` draws one batch for the persistent-PGD shapes before step 0, here the shape
 is given (`batch_dims`); evaluation runs through `evaluate` on the caller's iterator at `config.eval_freq`, on a forked
 RNG so that it does not change the training (in `optimize` it draws from the training's generators).
+
+A long run's stops and log: `run` calls `on_eval(step, eval)` right after each evaluation (`early_stop` builds one that
+saves and exits 1 on a missed filed check) and `on_record(record)` for each record as it is produced (`jsonl_appender`).
 """
 
 from __future__ import annotations
 
 import gc
+import json
+import math
 import resource
+import sys
 import time
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
@@ -250,11 +256,66 @@ class Plan:
     deadline: float | None = None  # time.monotonic() value; save and stop when passed
 
 
+def early_check_problems(checks: Any, eval_freq: int) -> list[str]:
+    """Why a filed {"<step>": {"<eval key>": {"max": x, "min": y}}} cannot work: a check at a step that is never evaluated
+    would never fire, a misspelt bound would never miss. Empty when it is usable."""
+    if not isinstance(checks, dict):
+        return [f"not a dict: {checks!r}"]
+    out = [f"step {s} is not a multiple of eval_freq {eval_freq}" for s in checks if int(s) % eval_freq]
+    for s, keys in checks.items():
+        for key, bounds in keys.items():
+            bad = {b: v for b, v in bounds.items() if b not in ("max", "min") or not isinstance(v, int | float)}
+            if bad or not bounds:
+                out.append(f"step {s} {key}: bounds {bounds}")
+    return out
+
+
+def early_misses(checks: dict[str, dict[str, dict[str, float]]], step: int, ev: dict[str, float]) -> list[str]:
+    """The filed checks missed at `step`, each with its numbers; a step not listed has no check. A listed key absent from
+    this evaluation, or a nan, is a miss: a check that cannot be read has not passed."""
+    out = []
+    for key, bounds in checks.get(str(step), {}).items():
+        v = ev.get(key, math.nan)
+        if "max" in bounds and not v <= bounds["max"]:
+            out.append(f"{key} = {v} over max {bounds['max']}")
+        if "min" in bounds and not v >= bounds["min"]:
+            out.append(f"{key} = {v} under min {bounds['min']}")
+    return out
+
+
+def early_stop(checks: dict[str, dict[str, dict[str, float]]], d: Decomp, ckpt: Path, log: Callable[[str], None]) -> Callable[[int, dict[str, float]], None]:
+    """An `on_eval` that, on a missed check, logs the numbers, saves and exits 1. A resubmitted job resumes at this step,
+    evaluates again and stops again unless the reading has changed or the filing has."""
+
+    def check(step: int, ev: dict[str, float]) -> None:
+        misses = early_misses(checks, step, ev)
+        if misses:
+            log(f"decompose: EARLY CHECK MISSED at step {step}: {misses}; saving, exit 1")
+            save(ckpt, d, step)
+            sys.exit(1)
+
+    return check
+
+
+def jsonl_appender(path: Path) -> Callable[[dict[str, Any]], None]:
+    """An `on_record` writing each record to `path` as it is produced, so a job killed by its limit keeps its log. Steps
+    after the last save appear twice when the run resumes from that save: read the last record of a step."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    def append(rec: dict[str, Any]) -> None:
+        with path.open("a") as f:
+            f.write(json.dumps(rec) + "\n")
+
+    return append
+
+
 def run(d: Decomp, batches: Callable[[int], Tensor], ckpt: Path, plan: Plan, eval_batches: Iterator[Tensor] | None = None,
-        log: Callable[[str], None] = print) -> tuple[int, list[dict[str, Any]]]:  # fmt: skip
+        log: Callable[[str], None] = print, on_eval: Callable[[int, dict[str, float]], None] | None = None,
+        on_record: Callable[[dict[str, Any]], None] | None = None) -> tuple[int, list[dict[str, Any]]]:  # fmt: skip
     """Resume from `ckpt` if it exists (else the faithfulness warm-up, then step 0) and train to `plan.end`, saving every
     `save_every` steps, at the end and at the deadline; evaluates at multiples of eval_freq and at the end when
-    `eval_batches` is given. Returns (step reached, the log records)."""
+    `eval_batches` is given, calling `on_eval(step, eval)` after each; `on_record` gets each record as it is produced.
+    Returns (step reached, the log records)."""
     from param_decomp.run_param_decomp import run_faithfulness_warmup
 
     cfg = d.config
@@ -270,17 +331,29 @@ def run(d: Decomp, batches: Callable[[int], Tensor], ckpt: Path, plan: Plan, eva
             run_faithfulness_warmup(d.model, _component_params(d.model), cfg)
             log(f"decompose: faithfulness warm-up {cfg.faithfulness_warmup_steps} steps in {time.perf_counter() - t:.1f} s")
     records: list[dict[str, Any]] = []
+
+    def emit(rec: dict[str, Any]) -> None:
+        records.append(rec)
+        if on_record is not None:
+            on_record(rec)
+
+    def eval_now(batches_: Iterator[Tensor], at: int) -> None:
+        ev = evaluate(d, batches_, at)
+        emit({"step": at, "eval": ev})
+        log(f"eval step {at}: {ev}")
+        if on_eval is not None:
+            on_eval(at, ev)
+
     t_win = time.perf_counter()
     while step < plan.end:
         if eval_batches is not None and step % cfg.eval_freq == 0:
-            records.append({"step": step, "eval": evaluate(d, eval_batches, step)})
-            log(f"eval step {step}: {records[-1]['eval']}")
+            eval_now(eval_batches, step)
             t_win = time.perf_counter()
         rec = train_step(d, batches(step), step)
         step += 1
         if step % plan.log_every == 0:
             ms, t_win = 1e3 * (time.perf_counter() - t_win) / plan.log_every, time.perf_counter()
-            records.append({"step": step, "ms_per_step": ms, **rec, **memory()})
+            emit({"step": step, "ms_per_step": ms, **rec, **memory()})
             log(f"step {step}: {ms:.1f} ms/step " + " ".join(f"{k} {v:.4g}" for k, v in records[-1].items() if k != "step"))
         late = plan.deadline is not None and time.monotonic() > plan.deadline
         if step % plan.save_every == 0 or step == plan.end or late:
@@ -293,6 +366,5 @@ def run(d: Decomp, batches: Callable[[int], Tensor], ckpt: Path, plan: Plan, eva
             log(f"decompose: deadline at step {step}")
             break
     if step == cfg.steps and eval_batches is not None:
-        records.append({"step": step, "eval": evaluate(d, eval_batches, step)})
-        log(f"eval step {step} (final): {records[-1]['eval']}")
+        eval_now(eval_batches, step)
     return step, records
