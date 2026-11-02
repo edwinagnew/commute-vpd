@@ -92,3 +92,10 @@ only. It cannot itself separate "already there" from "new".
 Own-answer retraining and the null at new rates (nothing in A reads them; deferred to D's decision). A review note on earlier
 claims comes separately: E40 steps 1 and 10, E44 and E57's readings stand as readings; E45's early "learned" flags and
 "step 12, recall 2%" need a note; the 67M looks unaffected, since its checkpoint is fp32 (inferred, not measured).
+
+## Amendment, 2026-11-02, after the five checks (`experiments/qwen_recipe/results/checks_*.json`)
+No filed check missed. Γ's bf16 cast has no floor at a tiny change (K01 − K0 −3e-5, switched on 133 against 5,730 at E40). Row format does not change K0 (0.056 unpacked, 0.070 packed). The direct share with truly original masks is within 0.002 of E57's on four states, same order, on 16 rows (gold 0.089, E40 0.062, invented facts 0.014, Gaussian 0.022): E57's numbers stand as a description, and truly original masks decide here (user).
+- **Job S reads the direct share with truly original masks, E57's beside it** (`experiments/qwen_recipe/checks.py` `true_kl`), and both size axes plus the reverse KL on every state. On 128 rows, the two random changes need their true-mask reading at their existing size too, since K10 and K11 true were read on 16 rows only: add 2 × ~13 min (split saved for the Gaussian).
+- **fp32 W0 sits beside every learned rule**: read at the job's start on the same problems. The template's accuracy line 0.60 is the prompted W0's 0.680 less 0.08; Fable's source "W0's 0.70" was wrong. Its filed number stands; its source is this.
+- **Not yet checked by these checks:** fp32 Γ against bf16 Γ directly at a large change (the tiny floor passed, and the rule sent nothing further), and whether the null gains on fp32 weights. Own and null remain out of this plan.
+- **Fine-tune code.** `sft_step`'s autocast becomes a named choice, default unchanged, as frozen E40 and E45 scripts call it. No frozen script changes.
