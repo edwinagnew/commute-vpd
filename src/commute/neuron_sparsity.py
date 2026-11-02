@@ -7,8 +7,10 @@ The matrices, read from the target checkpoint on 2026-11-02 (`h.<l>.mlp.*`, no b
 `steering.Net` calls neuron i of block l site `mlp<l>`, index i: the GELU output, which is down_proj's input. Flat neuron
 index = l x 3072 + i, as `neurons.py`. A neuron's update = its row of delta-c_fc plus its column of delta-down_proj.
 
-Rotating the neuron index by an orthogonal Q (a' = Q a) sends c_fc to Q c_fc and down_proj to down_proj Q^T, and leaves
-the model's function unchanged, so a reading that moves under Q reads something about the neuron basis.
+Rotating the neuron index by an orthogonal Q sends c_fc to Q c_fc, down_proj to down_proj Q^T and an activation a to Q a.
+It is a change of reading, not a symmetry of the model: the GELU sits between c_fc and the neuron, so GELU(Q c_fc x) is
+not Q GELU(c_fc x). A rotated value is therefore no ceiling: rotation keeps how an update divides among blocks and reads
+its effective rank, and the GELU alone makes the neuron basis special for any update (review 2026-11-02, findings 1, 4).
 """
 
 from __future__ import annotations
@@ -106,6 +108,19 @@ def sixteen_update(W0: DW, layer: int, neurons: Tensor) -> DW:
     return dW
 
 
+def block_readings(dW: DW) -> dict[str, list[float]]:
+    """Per block: its share of the update's energy, and W1 within the block as a fraction of 3072 (review, finding 4)."""
+    e = neuron_energy(dW).split(D_MLP)
+    total = sum(float(x.sum()) for x in e)
+    return {"block_shares": [float(x.sum()) / total if total > 0 else math.nan for x in e],
+            "block_W1": [float(participation(x)) / D_MLP for x in e]}
+
+
+def random_ranks(seed: int) -> Tensor:
+    """(12288,) one seeded random order of the neurons, as ranks: C1's reference curve patches rank < k on every window."""
+    return torch.randperm(N_NEURONS, generator=torch.Generator().manual_seed(seed))
+
+
 def window_ranks(shift: Tensor) -> Tensor:
     """(N, 12288) each neuron's rank (0 = largest) by that window's own |shift|; ties to the lower flat index."""
     order = torch.sort(shift.abs(), dim=1, descending=True, stable=True).indices
@@ -119,14 +134,20 @@ def median(x: Tensor) -> float:
 
 
 def half_share_index(shares: dict[int, float]) -> float:
-    """C1's index: log2 of the first k on the grid (ascending) whose share >= half the share at the grid's last k (the
-    full width); a tie at half counts. nan if the full-width share is not a positive number, since then 'half of it' is
-    no target. With a positive full-width share the last k always qualifies, so a value is always found."""
+    """C1's index: log2 k where the share curve first reaches half the share at the grid's last k (the full width), read
+    by linear interpolation in log2 k between the grid points either side, so it is continuous. A crossing at the first
+    k reads that k; a tie at half reads that grid point. nan if the full-width share is not a positive number, since then
+    'half of it' is no target. With a positive full-width share the last k always qualifies, so a value is always found."""
     grid = sorted(shares)
     full = shares[grid[-1]]
     if not math.isfinite(full) or full <= 0:
         return math.nan
-    return math.log2(next(k for k in grid if shares[k] >= full / 2))
+    half = full / 2
+    i = next(i for i, k in enumerate(grid) if shares[k] >= half)
+    if i == 0:
+        return math.log2(grid[0])
+    x0, x1, s0, s1 = math.log2(grid[i - 1]), math.log2(grid[i]), shares[grid[i - 1]], shares[grid[i]]
+    return x0 + (half - s0) / (s1 - s0) * (x1 - x0)  # s1 >= half > s0, so s1 > s0
 
 
 def c1_reading(shares: dict[int, float], G: float, G_score: float, floor: float) -> dict[str, Any]:
@@ -136,28 +157,78 @@ def c1_reading(shares: dict[int, float], G: float, G_score: float, floor: float)
     return {"C1": half_share_index(shares) if readable else math.nan, "readable": bool(readable), "full_share": full}
 
 
-def separation(elicit: Sequence[float], new: Sequence[float], lower_is_sparser: bool) -> dict[str, Any]:
-    """E51's rule on the readable (finite) values: the gap of the kinds' means strictly over the larger within-kind
-    range, with the elicit side the sparser. Fewer than two readable on a side: 'unreadable', which does not pass."""
+def _mean(x: Sequence[float]) -> float:
+    return sum(x) / len(x)
+
+
+def separation(elicit: Sequence[float], new: Sequence[float], lower_is_sparser: bool, noise_floor: float = 0.0) -> dict[str, Any]:
+    """E51's rule on the readable (finite) values: the gap of the kinds' means strictly over the larger within-kind range
+    (or `noise_floor`, if larger), with the elicit side the sparser. Fewer than two readable on a side: 'unreadable', which
+    does not pass."""
     a, b = [x for x in elicit if math.isfinite(x)], [x for x in new if math.isfinite(x)]
     rec: dict[str, Any] = {"n_elicit": len(a), "n_new": len(b)}
     if len(a) < 2 or len(b) < 2:
         return {**rec, "status": "unreadable", "pass": False}
-    ma, mb = sum(a) / len(a), sum(b) / len(b)
-    gap, spread = abs(ma - mb), max(max(a) - min(a), max(b) - min(b))
+    ma, mb = _mean(a), _mean(b)
+    gap, spread = abs(ma - mb), max(max(a) - min(a), max(b) - min(b), noise_floor)
     sparser = ma < mb if lower_is_sparser else ma > mb
     ok = gap > spread and sparser
     return {**rec, "elicit_mean": ma, "new_mean": mb, "gap": gap, "spread": spread, "separates": gap > spread,
             "elicit_sparser": sparser, "status": "pass" if ok else "fail", "pass": ok}
 
 
-def basis_guard(values: Sequence[float], reference: Sequence[float]) -> dict[str, Any]:
-    """The number's readable values against their reference (rotated, Gaussian or full width): the means differ strictly
-    by more than the values' range. A zero range passes if the means differ at all. Under two readable: 'unreadable'."""
+def sparser_gap(elicit: Sequence[float], new: Sequence[float], lower_is_sparser: bool) -> float:
+    """mean(new) - mean(elicit) with the sign that makes 'elicit sparser' positive; nan under two readable on a side."""
+    a, b = [x for x in elicit if math.isfinite(x)], [x for x in new if math.isfinite(x)]
+    if len(a) < 2 or len(b) < 2:
+        return math.nan
+    return _mean(b) - _mean(a) if lower_is_sparser else _mean(a) - _mean(b)
+
+
+def basis_guard(values: Sequence[float], reference: Sequence[float], lower_is_sparser: bool) -> dict[str, Any]:
+    """The number's readable values against their reference, one-sided: the mean lies on the sparser side of the
+    reference's mean, strictly by more than the values' range. A zero range passes if the mean is on that side at all.
+    Under two readable values, or no finite reference: 'unreadable', which does not pass."""
     a, b = [x for x in values if math.isfinite(x)], [x for x in reference if math.isfinite(x)]
     if len(a) < 2 or not b:
         return {"status": "unreadable", "n": len(a), "pass": False}
-    ma, mb = sum(a) / len(a), sum(b) / len(b)
-    ok = abs(ma - mb) > max(a) - min(a)
+    ma, mb = _mean(a), _mean(b)
+    side = ma < mb if lower_is_sparser else ma > mb
+    ok = side and abs(ma - mb) > max(a) - min(a)
     return {"n": len(a), "mean": ma, "reference_mean": mb, "gap": abs(ma - mb), "range": max(a) - min(a),
-            "below_reference": ma < mb, "status": "pass" if ok else "fail", "pass": ok}
+            "on_sparser_side": side, "status": "pass" if ok else "fail", "pass": ok}
+
+
+def read_test(rows: dict[str, dict[str, Any]], num: str, spec: dict[str, Any], test: dict[str, list[str]]) -> dict[str, Any]:
+    """One test on one number: `separation`, and its sparser gap strictly over the same signed gap on every reference,
+    read on the states where the number is readable (a gap that survives the reference is not neuron information; a
+    reference gap on the other side is beaten). A nan reference gap makes the test 'unreadable'. `reported` gaps gate nothing."""
+    lower = spec["lower_is_sparser"]
+    sides = {s: [n for n in test[s] if math.isfinite(rows[n][num])] for s in ("elicit", "new")}
+
+    def gap(key: str) -> float:
+        return sparser_gap([rows[n][key] for n in sides["elicit"]], [rows[n][key] for n in sides["new"]], lower)
+
+    rec = separation([rows[n][num] for n in test["elicit"]], [rows[n][num] for n in test["new"]], lower, spec["noise_floor"])
+    rec["sparser_gap"] = gap(num)
+    rec["reference_gaps"] = {r: gap(r) for r in spec["references"]}
+    rec["reported_gaps"] = {r: gap(r) for r in spec["reported"]}
+    rec["beats_references"] = all(rec["sparser_gap"] > g for g in rec["reference_gaps"].values())
+    if rec["status"] == "pass":
+        if any(math.isnan(g) for g in rec["reference_gaps"].values()):
+            rec["status"], rec["pass"] = "unreadable", False
+        elif not rec["beats_references"]:
+            rec["status"], rec["pass"] = "fail", False
+    return rec
+
+
+def score_number(rows: dict[str, dict[str, Any]], num: str, spec: dict[str, Any], tests: dict[str, Any], beside: dict[str, list[str]]) -> dict[str, Any]:
+    """T1, T2, T3_B, T3_C and the guard against each reference on T1's elicit states; yes only if all pass. `beside` holds
+    unscored values reported next to a test."""
+    rec: dict[str, Any] = {k: read_test(rows, num, spec, t) for k, t in tests.items()}
+    elicit = tests["T1"]["elicit"]
+    values = [rows[n][num] for n in elicit]
+    rec["guard"] = {r: basis_guard(values, [rows[n][r] for n in elicit], spec["lower_is_sparser"]) for r in spec["references"]}
+    rec["beside"] = {k: {n: rows[n][num] for n in names} for k, names in beside.items()}
+    rec["answers_yes"] = all(rec[k]["pass"] for k in tests) and all(g["pass"] for g in rec["guard"].values())
+    return rec
