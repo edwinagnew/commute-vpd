@@ -7,10 +7,10 @@ independent check `reports/reviews/2026-11-02_review_amend8-analysis-check.md`, 
 The author did not run the jobs. Corrected the same day; the review section lists what changed.*
 
 We trained the decomposition's read and write vectors with the unchanged model, or a fine-tune that taught nothing, as the only
-thing to learn from, to see whether these methods learn a gap between base and decomposition. Nothing breaks: runs learning from
-the base end at its level on the adversarial check, while a student of the teach-nothing fine-tune reads above a real student at
-all three adversary starts, which the filed test calls within noise. So a pass means "no harm seen"; on this task how far a
-student moves barely depends on its teacher, and about a tenth of its move lies along that teacher.
+thing to learn from, to see whether these methods learn a gap between base and decomposition. No run with the base as teacher
+fails the adversarial check, while a student of the teach-nothing fine-tune reads above a real student at
+all three adversary starts, which the filed test calls within noise. So a pass means "no harm seen". On this task a student's size does not follow its teacher's size, though it does differ by teacher, and
+about a tenth of its squared length lies along that teacher.
 
 **Limits on all of it.** One narrow task for the teacher runs, one label draw, one null teacher, the 67M model.
 
@@ -57,7 +57,7 @@ base, and coefficient 0 should pass.
 **Reading it.** In five of the six runs, yes. The grey band is the base's own spread over three adversary starts. Above the
 divider sit the six runs with no behaviour to learn. Five of their six end states sit at or below the band's top, and so do 12 of
 the 13 reads, 7 of which are earlier reads of the same runs or the untrained start. The one that does not is the null student at
-step 1,000, 1.39, inconclusive, and Amendment 8b shows that this is not simply one start's reading. Below the divider,
+step 1,000, 1.39, inconclusive. Over three starts it averages 1.35, still inconclusive, and the filed test against the real student reads within noise. Amendment 8b adds a seventh such run, 1.56. Below the divider,
 true-label Adam reads 7.33 and the masked recipe at coefficient 0.5 reads 25.99, so the check can fail on this card.
 
 | State | Check | Stochastic | CI-masked | Δ-out | Size | Damage | Gap to own teacher | Verdict |
@@ -107,19 +107,20 @@ hundredths on another card. E41 Amendment 2's "excess removed" of 1.18 at step 1
 | Least-squares, adjoint, rescaling and step splits; Γ shift map | No training on data; zero at δW = 0 | This control adds nothing | Nothing further |
 
 The worry was right for the recipes containing the gap, and those recipes have no standing pass. The hook-path recipes cannot
-learn it directly. There is also a bound. The whole gap on Pile is 0.012 nats, against a start gap of 5 to 13 nats for a real
-teacher, so even if all of it were learned indirectly it could not be the update.
+learn it directly. There is also a bound. The gap with every mask at 1 is 0.012 nats on Pile, and the CI-masked gap 0.348, against a start gap of 5 to 13 nats for a real
+teacher on task windows, so even if all of it were learned indirectly it could not be the update.
 
 ## How much of a student's size and direction is the recipe?
 
 ![amend8_size](../../experiments/teacher_training/figures/amend8_size.png)
 
-**Reading it.** On this narrow task, size barely depends on the teacher. Every Adam student ends within 0.76 to 1.41 of the real
-one, however measured. The real student ends at 0.0182 and the null student at 0.0257. On lowercase rows, true labels at 0.054
-depart from self-labels at 0.0236, and E37's real student there, 0.0365, departs too, on another card. So this holds on the
-emoticon task and not generally. Self-labels at SGD reach 0.52 of the real student in offsets, and no arm varied the optimiser or the
-rate on the hook path. This fits the earlier puzzle that student size barely follows its teacher, 0.014 to 0.018 for teachers of
-0.011 to 0.032. The random start's and round trip's sizes include their start.
+**Reading it.** On this narrow task a student's size does not follow its teacher's size, but it does differ by teacher. At step 1,000 the
+null student reads 1.36 to 1.41 times the real one's, from a smaller teacher, where batch order moves either by about 2%. From one random start, changing only the
+teacher from the base to the null fine-tune takes the move from 0.76 to 1.32 of the real student's, in offsets. Across the five teachers read on this task, students
+run from 0.0126 to 0.0257 for teachers of 0.0113 to 0.0321, partly across cards. The gap opens with steps: null over real is about 0.8 at step 10 and 1.4 to 1.5 from
+step 100. On lowercase rows no two teachers were tried: labelled training reaches 0.054 on true labels and 0.0236 on self-labels, and E37's one student, another recipe
+on another card, reads 0.0365. So nothing here compares the teacher's effect between the two tasks. Self-labels at SGD reach 0.52 of the real student in offsets, and
+no arm varied the optimiser or the rate on the hook path. The random start's, round trip's and moved arm's sizes include their start.
 
 ![amend8_direction](../../experiments/teacher_training/figures/amend8_direction.png)
 
@@ -187,12 +188,12 @@ mechanism unread. Δ-out is the one reading of the user's gap itself, the KL bet
 fall is small: 0.126 of 0.0120 nats is 0.0015 nats, against CI-masked 0.348. E34's Pile-text arm at 0.73 falls further than any run
 here, and that part stays unexplained.
 
-## Why does the null student read above the real one?
+## Why does the null student read higher at this start?
 
 ![amend8_damage](../../experiments/teacher_training/figures/amend8_damage.png)
 
 **Reading it.** Not settled; Amendment 8b below says what the readings allow. At one start the difference is 0.40, about twice the
-base's 0.21 between starts, at size 0.0257 against 0.0182. Size alone does not explain it: the random start at 0.0228 and self-labels at
+base's 0.21 between starts, at size 0.0257 against 0.0182. Over three starts the filed test calls the difference from the real student within noise. Size alone does not explain it: the random start at 0.0228 and self-labels at
 0.0236 read below 1. The clearest difference is damage, 0.120 against 0.018 on task windows. The null student copied its teacher's 0.122
 almost whole, where the real one carries a third of its teacher's 0.055. Across this figure the check rises with damage, but the states,
 rows and teachers differ, and null at step 100 reads 1.03 at damage 0.086. The nearest test goes against damage alone: the null teacher
@@ -230,9 +231,8 @@ so an interaction cannot be separated from a main effect.
 
 ### What these allow, and what they do not
 
-- **Allowed.** With one null teacher, a student can read above the real student without any behaviour being taught, more than the size or
-  the start alone accounts for. From one start, changing only the teacher takes 0.975 to 1.56, 0.59 at one adversary start. So teacher
-  training's reading depends on what it copies, and a null teacher gives no guarantee of the base's level.
+- **Allowed.** With one null teacher, a student can average above the base's level over three starts without any behaviour being taught, and sits apart from a similar-size student with the base as teacher; against the real student the filed test reads within noise. From one start, changing only the teacher takes 0.975 to 1.56, 0.59 at one adversary start. So with the base as teacher against one
+  null teacher, the reading depends on what is copied; against a real teacher the filed test reads within noise. A null teacher gives no guarantee of the base's level.
 - **Allowed, as a lean only.** The filing says that "the teacher" with a check above 1.24 gives the null teacher's damage more weight as a
   candidate. It does, and the same-damage do-nothing state above limits how far. From E39 on H100 and plain rows, teacher-trained
   states at damage about 0.125 read 1.27 for a LoRA teacher and 2.12 for a rank-8 SGD one.
@@ -269,9 +269,8 @@ the real, 0.367 against 0.048 for the null. Those are the order-1 students, whic
 - **What it does not support.** That "a student's direction is its teacher's", or that a student copies its teacher's move. That the
   overlap carries the behaviour, since a cosine says nothing of that. That any reading generalises past one task, one label draw and two
   teachers. The two students also have about 11% of the real student's squared length in common, if each is a shared vector plus an
-  orthogonal walk, at different batch orders; that amount is about what its own teacher accounts for, and the quantities differ.
-- **Unknown.** The remaining 87-93% of each student's squared length lies along neither teacher, and it reproduces across batch orders,
-  so it is not batch noise. It is fixed by some combination of teacher, start, windows and recipe. What it is, and whether it matters
+  orthogonal walk, at different batch orders; that amount is more than its own teacher accounts for, 7.5 to 7.9%, though the quantities differ.
+- **Unknown.** The other 87-93% lies along neither teacher. Most of it reproduces across batch orders, about 84-85% of the squared length on a shared-vector reading, so it is mostly not batch noise. It is fixed by some combination of teacher, start, windows and recipe. What it is, and whether it matters
   to behaviour or to the check, is unread. Per-matrix and other readings can start from the saved offsets for $0.
 
 ### Scorecard, Amendment 8c
@@ -351,7 +350,7 @@ behaviour and pass with Δ fixed. It does change what size in a chain may be rea
 <div class="card key decision" id="decision-chain-size"><span class="chip uninf urgency">No rush</span><div class="k">Question for you · commute · new 2026-11-02</div><p class="small">Nothing runs until this is decided.</p><h3>When teacher training is repeated along a fine-tune, may we read how far the subcomponents moved as what the fine-tune taught?</h3>
 <p><strong>The question.</strong> Teacher training can be repeated: each round starts from the last round's subcomponents and copies the fine-tune at a later step. This is the only test we have of keeping a decomposition current along training. We have read the size each round reaches as error piling up, or not piling up. We now have a first reference for what a round does when there is nothing new to copy.</p>
 <p><strong>The evidence.</strong> We took the decomposition after one teacher training and ran 1,000 more steps with the unchanged model as the teacher. Its predictions came back: the KL to the unchanged model fell from 12.4 to 0.06 nats. Its largest relative weight change grew from 0.018 to 0.021, though about a quarter of the original direction was undone. It passed the adversarial check, at 0.96. From a random start of that size it grew to 0.023. In the real repeated run, on another card, the last long round grew by 17% and the one before by 52%. So some growth would happen with nothing to copy, and this one pair cannot say how much. The long repeated run ends with more damage on other text than one round (0.027 against 0.018); the excess was there a round earlier, and the last round lowered it. The check and the kept behaviour are read on each state, so they stand.</p>
-<p><strong>Options.</strong> (a) Change the wording only. Nothing runs, $0. We keep "each state keeps the behaviour and passes", and do not read size in either direction until a repeated run with nothing to teach exists. It does not tell us how such a run would read. Nothing follows. (b) The same wording, plus a repeated run with nothing to teach: seven rounds of 100 steps against a fine-tune whose labels come from the unchanged model's own predictions. One free cluster job, about 35 minutes. We read it against a single round on the same teacher, which averages 1.35 over three adversary starts. If it reads above that at all three starts, repeating harms by itself, and any repeated run on the larger model needs a new recipe first. If about the same or lower, repeating adds no harm we can see, and size in repeated runs says nothing either way. One task, one label draw.</p>
+<p><strong>Options.</strong> (a) Change the wording only. Nothing runs, $0. We keep "each state keeps the behaviour and passes", and do not read size in either direction until a repeated run with nothing to teach exists. It does not tell us how such a run would read. Nothing follows. (b) The same wording, plus a repeated run with nothing to teach: seven rounds of 100 steps against a fine-tune whose labels come from the unchanged model's own predictions. One free cluster job, about 35 minutes. We read it against a single round at the same three adversary starts, 1.40, 1.37, 1.29. If the filed three-start test calls it apart from that round, repeating harms by itself, and any repeated run on the larger model needs a new recipe first; if within noise or below, repeating adds no harm we can see, and size in repeated runs says nothing either way. One task, one label draw.</p>
 <p><strong>Recommendation: (a).</strong> No plan repeats teacher training now, and no pass depends on reading size. Run (b) first if the larger model's plan chooses repeated rounds.</p>
 <div class="links"><a href="#e34">E34</a><a href="#e41">E41</a></div>
 <p class="small">Names in the reports: repeated rounds are E41's "chain" and "links"; the 1,000 steps with the unchanged model as teacher is Amendment 8's N2. <code>reports/analyses/2026-11-02_analysis_e34-amend8-base-control.md</code></p></div>
@@ -370,7 +369,7 @@ None breaks.
 
 | Claim, file | Verdict | Why |
 |---|---|---|
-| "Teacher training is a map of a finished update that keeps the behaviour, faithfulness and Δ together", `docs/research_log/parts/sections/claims.html:57` | **Complicates**; behaviour, check and Δ stand | Each read is on the state. Five of six runs with no behaviour to learn end at about 1, so a pass near 1 shows no harm and no more; the matched null student does not pass, over three starts. "Map" cannot claim the student's size on this task, and 7-13% of its direction lies along its teacher |
+| "Teacher training is a map of a finished update that keeps the behaviour, faithfulness and Δ together", `docs/research_log/parts/sections/claims.html:57` | **Complicates**; behaviour, check and Δ stand | Each read is on the state. Five of seven runs with no behaviour to learn end at about 1, so a pass near 1 shows no harm and no more; the other two are the students of one teach-nothing fine-tune, 1.35 over three starts and 1.56 at one, both inconclusive. "Map" cannot claim the student's size on this task, and 7-13% of the squared length of its weight change (cosine 0.27 to 0.37) lies along its teacher |
 | Teacher training passes where do-nothing fails, E34, E47, `claims.html:57` | **Complicates** | Each read stands. The fall from do-nothing to student also happens on a null teacher, 2.64 to 1.39 at one start, so it does not by itself show the update was carried |
 | "The only map of a finished update that keeps the behaviour, passes the check and leaves Δ alone", `techniques.html:32` | **Stands** | Add that on narrow tasks its size says little |
 | Cosine with δW 0.05 to 0.44, scored ✗, `techniques.html:70` | **Stands**, now with its cross pairs | Own 0.27 and 0.37; other 0.02 and 0.05: more than the other teacher, about 7-13% of squared length. The ✗ stays |
@@ -391,9 +390,9 @@ None breaks.
 Hook-path teacher training cannot learn a base-to-decomposition gap directly, and with the base as teacher it stays at the base on the check.
 The recipes that can see that gap are the masked ones, and the masked terms are what fail them. For `GOALS.md`'s weak version this leaves
 teacher training as the map, with its verdicts on real teachers intact, but a pass now means "no harm seen" and no more. One teacher that taught
-no behaviour gave students above the base at every start read, so the reading depends on what is copied, and a cause is not known. On this
-task, a student's size is nearly independent of its teacher; no arm varied the optimiser or the learning rate on the hook path. Its direction
-differs between the two teachers tried, with 7-13% along its own, and most of the move is unidentified.
+no behaviour gave students above the base at every start read, so with the base as teacher against one null teacher, the reading depends on what is copied; against a real teacher the filed test reads within noise. A cause is not known. On this
+task, a student's size does not follow its teacher's size, though it differs by teacher; no arm varied the optimiser or the learning rate on the hook path. Its direction
+differs between the two teachers tried, with 7-13% of the squared length (cosine 0.27 to 0.37) along its own, and most of the move is unidentified.
 
 ## How compelling is the evidence
 
