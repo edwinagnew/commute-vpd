@@ -1588,3 +1588,33 @@
 [   487.9s] [split] layer 13: 213 s, peak GPU 35.75 GiB, host 61.6 GB
 [   496.7s] [split] layer 14: 222 s, peak GPU 35.75 GiB, host 61.9 GB
 [   505.8s] [split] layer 15: 231 s, peak GPU 35.75 GiB, host 62.2 GB
+[   515.6s] [split] layer 16: 241 s, peak GPU 35.75 GiB, host 62.5 GB
+[   526.4s] [split] layer 17: 251 s, peak GPU 35.75 GiB, host 62.8 GB
+[   538.2s] [split] layer 18: 263 s, peak GPU 35.75 GiB, host 63.1 GB
+[   550.7s] [split] layer 19: 276 s, peak GPU 35.75 GiB, host 63.4 GB
+[   563.6s] [split] layer 20: 289 s, peak GPU 35.75 GiB, host 63.8 GB
+[   576.9s] [split] layer 21: 302 s, peak GPU 35.75 GiB, host 64.1 GB
+[   590.4s] [split] layer 22: 315 s, peak GPU 35.75 GiB, host 64.4 GB
+[   603.9s] [split] layer 23: 329 s, peak GPU 35.75 GiB, host 64.7 GB
+[   617.3s] [split] layer 24: 342 s, peak GPU 35.75 GiB, host 65.0 GB
+[   630.6s] [split] layer 25: 356 s, peak GPU 35.75 GiB, host 65.2 GB
+[   643.7s] [split] layer 26: 369 s, peak GPU 35.75 GiB, host 65.5 GB
+[   657.2s] [split] layer 27: 382 s, peak GPU 35.75 GiB, host 65.8 GB
+[   678.6s] [load] gamma, peak GPU 40.53 GiB, host 99.3 GB
+[   707.8s] [cells inspan_big file] K10 1.06432337 K11 0.104089989  rows 2, 29 s, peak GPU 42.43 GiB, host 99.3 GB
+[   707.8s] [check] repro_inspan_big_file: ok {}
+[   707.8s] [state_inspan_big] {"file": {"K10": [268.5916496674592, 276.34191637234517], "K11": [33.746103450544396, 19.54797112485952]}, "identity": "rebuilt inspan x 1.070729301148929"}
+[   737.5s] [true chunk] 1 rows, 0.70 GB a mask set, peak GPU 42.43 GiB, host 99.3 GB
+[   737.5s] [check] true_K00_inspan_big_0: ok {"true": 278.8406028762855, "cells": 278.8406028762855}
+[   737.5s] [state_inspan_big] {"true_from_row": 0, "K00": [278.8406028762855], "K10": [269.47148828553446], "K11": [34.07278361879716]}
+[   766.8s] [true chunk] 1 rows, 0.70 GB a mask set, peak GPU 42.43 GiB, host 99.3 GB
+[   766.8s] [check] true_K00_inspan_big_1: ok {"true": 281.825277637427, "cells": 281.825277637427}
+[   766.8s] [state_inspan_big] {"true_from_row": 1, "K00": [281.825277637427], "K10": [275.8626594951609], "K11": [19.651119758951314]}
+[   767.5s] [state_inspan_big] {"W0_state": [211.14105841565134, 124.28256225267164], "state_W0": [218.85110360755945, 211.59165453013654]}
+[   767.5s] [state_inspan_big] {"true": {"direct": 0.030243565189917377, "status": "scored", "boot95": [0.022742966700134894, 0.03827755878682331], "K00_minus_K0": 1.0335836777176688, "KL_W0_state": 0.6551242591178184, "share": 0.030243565189917377}, "file": {"direct": 0.03100746689070263, "status": "scored", "boot95": [0.020906731649766638, 0.04181633301783485], "K00_minus_K0": 1.0335836777176688, "KL_W0_state": 0.6551242591178184, "share": 0.03100746689070263}, "KL_state_W0": 0.8407085119876875, "peaks": "peak GPU 42.43 GiB, host 99.3 GB"}
+[   769.4s] [check] size_gold_s0_9: ok {"here": 1.0273472495473333, "written": 1.0273472495473333}
+[   769.4s] [check] size_gold_s0_5: ok {"here": 0.3571542017489452, "written": 0.3571542017489452}
+[   769.5s] [check] size_gauss_big: ok {"here": 0.999366231036316, "written": 0.999366231036316}
+[   769.5s] [check] size_inspan_big: ok {"here": 1.0335836777176688, "written": 1.0335836777176688}
+[   770.0s] [verdict] {"pick": {"big": "gold_s0_9", "small": "gold_s0_5", "small_in_band": false}, "final_size": 1.0273472495473333, "above_gold_s0": false, "floor": {"f": 0.01, "difference": 0.05700519979864711, "sizes_within_band": false, "difference_over_f": true}, "decides": "true", "unmatched": [], "true": {"line": "C", "unscored": [], "reads": {"big": {"K00_minus_K0": {"gold_size": 1.0273472495473333, "gold_share": 0.03196090938732352, "random_at_size": {"gauss": 0.011976105789472037, "inspan": 0.03017401195160204}, "gap": 0.0017868974357214823, "gap_boot95": [-0.003814307140561267, 0.006638836008944993]}, "KL_W0_state": {"gold_size": 0.37211645381155756, "gold_share": 0.03196090938732352, "random_at_size": {"gauss": 0.011541095974089623, "inspan": 0.028710278447519957}, "gap": 0.0032506309398035657, "gap_boot95": [-0.0038720005645662067, 0.009073586983326304]}}, "small": {"K00_minus_K0": {"gold_size": 0.3571542017489452, "gold_share": 0.010464471311857527, "random_at_size": {"gauss": 0.011541095974089623, "inspan": 0.028710278447519957}, "gap": -0.01824580713566243, "gap_boot95": [-0.026499014365852835, -0.011404339942744562]}, "KL_W0_state": {"gold_size": 0.169605688037421, "gold_share": 0.010464471311857527, "random_at_size": {"gauss": 0.011541095974089623, "inspan": 0.028710278447519957}, "gap": -0.01824580713566243, "gap_boot95": [-0.026499014365852835, -0.011404339942744562]}}}}, "file": {"line": "C", "unscored": [], "reads": {"big": {"K00_minus_K0": {"gold_size": 1.0273472495473333, "gold_share": 0.03295548861982932, "random_at_size": {"gauss": 0.010773103846528433, "inspan": 0.030945533436228658}, "gap": 0.0020099551836006598, "gap_boot95": [-0.006269542730274351, 0.009360273877415923]}, "KL_W0_state": {"gold_size": 0.37211645381155756, "gold_share": 0.03295548861982932, "random_at_size": {"gauss": 0.010472115760049696, "inspan": 0.0296421567059304}, "gap": 0.0033133319138989176, "gap_boot95": [-0.00668620584703674, 0.011569820211806255]}}, "small": {"K00_minus_K0": {"gold_size": 0.3571542017489452, "gold_share": 0.010847991819554939, "random_at_size": {"gauss": 0.010472115760049696, "inspan": 0.0296421567059304}, "gap": -0.01879416488637546, "gap_boot95": [-0.03003574251342201, -0.009417790188328857]}, "KL_W0_state": {"gold_size": 0.169605688037421, "gold_share": 0.010847991819554939, "random_at_size": {"gauss": 0.010472115760049696, "inspan": 0.0296421567059304}, "gap": -0.01879416488637546, "gap_boot95": [-0.03003574251342201, -0.009417790188328857]}}}}}
+[   770.0s] [all done] peak GPU 42.43 GiB, host 99.3 GB
