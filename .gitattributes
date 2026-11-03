@@ -1,2 +1,7 @@
-# Every lead appends to this queue, and two appends conflicted on most pulls (friction 213, 215, 230, 266).
-docs/research_log/PENDING.md merge=union
+# Appended to by every lead; two appends conflicted on most pulls (friction 213, 215, 230, 266, 319, 329). Union put back
+# lines a flush removed and the old row beside an edited one (friction 333), so these merge by fleet/merge-lines, which
+# each clone wires up as merge.lineset (fleet/start). backlog.md and TRIED.md have rows edited in place, and repeated
+# blank and separator lines, which it counts rather than treats as a set.
+docs/research_log/PENDING.md merge=lineset
+backlog.md merge=lineset
+experiments/TRIED.md merge=lineset
