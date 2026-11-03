@@ -50,3 +50,20 @@ Default order: control, u1, R100, R10, u2, u3. N and F land later and take `--up
 $0. Control ~5 min. An R update, from E72's and E68's logs: clean W0, FT 2.5 min; τ reads 1.5 min; stage S 26 min; split check and reload 2 min; energies ~4 min (not measured); search 4 to 5 min; ten clean reads 20 min: ~1 h, of which S plus search ~31. u1 ~40 min, u2 ~42, u3 ~35. All ~4 h. Wall 6 h, `--wall-min 340`, exit 0, resubmit resumes per read. GPU ~46 GB (E72); host E72's 81 GB plus ~3 GB for fp32 δW, under `--mem=110G`; Σ, 11 GB, is kept for the job and was already in S's peak. Stage S ~32 GB on `/ephemeral/$USER/e75`, 40 GB free check, removed after each update. Saved: per-row sums per read in `results/<update>/`, `score.json`, `run.log` with every number.
 
 **Not run:** masked reads with FT's masks (E72's T1, ceiling, T0a, T0b); block-level transmission, cuts, Gaussians; the last matrix's positive control on R (E74's, on u1 and u3 only); any adversary; accuracy of any part (K and NLL only, so "carries the accuracy gain" is not read); N and F until they land; steps other than 100 and 10; more than one slice seed.
+
+## Amendment 1 (2026-11-03, after job 50596; the first of two)
+
+**Why.** D1 blocked, day 1 of 8: the report (`reports/analyses/2026-11-03_analysis_e75-rl-reads.md`) finds the clean-model table has not been shown to fail a bad placement of the right size. Random failed only at 18-100 times the update's size, and the in-span part beats its own-size slice by under 1% of the ruler. A slice is part of the update, so nothing of the right size in a wrong direction has been read at all.
+
+**Design check (class 1, clean passes of the existing harness on saved updates).** It serves D1's "a test that can fail a bad placement" and bears on ask 24's table. It is a patch on E75, needed before the table is called a test. Nearest tried: E75's random (searched to match clean effect, so far too large) and slice (not wrong). Control first, below. If all fail, the table stands for wrong directions, with its blindness to same-size parts of the update stated. If one passes, the table goes back to the user with these numbers.
+
+**Three bad placements, each per matrix at δW's Frobenius norm.** No fitting and no Σ, so stage S is not rerun; blind to input weighting, which the report states.
+- **random:** a Gaussian matrix, fixed seed.
+- **other:** another real update's matrix: u1 and u2 read u3's, u3 reads u1's, R100 and R10 read u1's.
+- **signs:** δW with a random sign per matrix, fixed seed: same subspaces, wrong coordination between matrices.
+
+**Numbers.** K = KL(FT ‖ state) on the same rows as E75, per update of u1, u2, u3, R100, R10. W0 reads the ruler. Do-nothing: the ruler. Control: W0 + δW by this script's path reads 0, and W0 by this path reads E75's K, within 1e-3 relative of the ruler, on u1 first and alone, or the job stops.
+
+**Rule.** A state "fails" on an update if K is above the update's remainder K (E75's `clean_remainder`) by more than the row-bootstrap half-width, "passes" if below by more, else "no call". The bar is the one E76's plan uses. Overall: "has teeth" if every state fails on every update, otherwise the list. Leans, medium: all three fail; random and other read near the ruler; signs is the least sure.
+
+**Cost.** $0, one L40, ~1 min per read after ~6 min load, 15 reads, about 25 min on `debug`.

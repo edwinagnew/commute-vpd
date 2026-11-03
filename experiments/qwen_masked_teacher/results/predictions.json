@@ -1,0 +1,69 @@
+{
+ "filed": "2026-11-03, before the code ran; never edited after the run",
+ "question": "E76: on Qwen3-1.7B, does teacher training towards a real update (u1, E40 step 10), with a second term in the loss read through masks, keep the decomposition faithful: does the masked term fall with a change placed like the update's and of its size, with all 196 sites masked (B) or under the library's routing (L), against the clean term alone (A)?",
+ "plan": "reports/plans/2026-11-03_plan_e76-masked-teacher.md",
+ "advice": "reports/plans/2026-11-03_advice_e76-masked-teacher-FABLE.md (where they differ the plan wins)",
+ "rules": "experiments/qwen_masked_teacher/rules.py; run against zero denominators, NaN, band-edge ties, a stopped arm and a missing arm in tests/test_qwen_masked_teacher.py before filing",
+ "rows": "Readings: the first 8 of E74's maths rows at 256 tokens, the same 8 at every reading of every arm, never trained on. Training: maths rows 33-64 and FineWeb evaluation rows 1-32, one of each per step, the same batch order in every arm. The thresholds below are from E72 and E74 on 128 and 32 maths rows; each arm's step-0 reading shows the 8 rows' own value beside them.",
+ "definitions": {
+  "student": "Teacher training's student: W0 + change, offsets on about 200 often-on columns per site (`qwen_maps.halves`'s order among columns ever over g 0.01 on the 72 rows of the job), Γ and Δ frozen, the rest of the alive set unmoved",
+  "masks": "m = g + (1 - g) u, d ~ U(0, 1) per position and site, g from Γ on W0's clean forward with W0's V, cached per row in bf16 and frozen; fresh per row and step in training, one fixed draw per row at every reading",
+  "routing": "B: all 196 sites masked. L: the library's UniformKRouting, k None: at each position k uniform on 1..196, a uniform subset of k sites takes the masked branch, the others output the student's x W'^T (m = 1, d = 1)",
+  "loss": "KL(teacher clean || student clean) + 1 x KL(teacher clean || student masked), mean over every position of 2 x 256 tokens; A has the first term alone; Adam at 1e-6, betas 0.9, 0.999, no decay; forwards and backward in TF32 as qwen_teacher.train; readings in full fp32",
+  "i": "clean KL(FT || student), mean over every position of the 8 rows",
+  "ii": "clean KL(W0 || student), the same",
+  "iii": "share of ||change||^2 in blocks 21-27 over the same share of ||dW||^2; NaN with no change to read or a zero denominator",
+  "iv": "KL(FT clean || student masked), all 196 sites, whatever the arm trained on, the fixed draw",
+  "dtype_floor": "stage 0: |K0 through the arms' path (bf16 components, the cached g) - K0 in fp32| on the 8 rows at seed 74, same draws. Settled in this job",
+  "C_spread": "the range of (iv) over control C's readings, its fall when it falls throughout. Settled in this job. Read by the rules only as the band below",
+  "band": "the larger of the dtype floor and C's spread; NaN (no verdict of works) when either is unread"
+ },
+ "expected": {
+  "i": {"W0 / do-nothing": 1.635, "control C": "falls from near 0.01"},
+  "ii": {"W0 / do-nothing": "0; dW itself reads 0.626", "control C": "small, near 0.01"},
+  "iii": {"W0 / do-nothing": "no change to read (NaN)", "control C": "near arm A's"},
+  "iv": {"W0 / do-nothing": "near 1.37 (1.37-1.6)", "control C": "falls"},
+  "at_zero_offsets": "the student's masked forward equals W0's: maximum logit gap 0 (stage 0 stops above 1e-4); its gradient reaches dV and dU (each arm's first minutes, a stop)"
+ },
+ "blind_to": {
+  "i": "a re-implementation of the same behaviour",
+  "ii": "which behaviour moved",
+  "iii": "a late change that is still a good map",
+  "iv": "routes other than all-masked"
+ },
+ "stops": {
+  "stage 0": {
+   "hook_rebuild": "E77's amplitude 0.59 and cosine 0.86 rebuilt from the saved vectors, each within 0.005; a miss means something other than the norm, hook suspect. No other threshold on the swaps",
+   "K0": "E74's K0 0.0440 on its 32 rows, seed 74, fp32 components, within 10%",
+   "share": "the cut holds at least 50% of the sum of g; under it, ask the user about the paid card",
+   "identity": "the student's masked forward at zero offsets within 1e-4 of W0's in every logit"
+  },
+  "C": "(iv) at step 100 strictly below step 0: not falling is a gradient bug",
+  "A": "(i) at step 100 strictly below 0.95 of step 0 (rehearsals read 0.74-0.79)",
+  "B": "(iv) at step 0 inside 1.0-2.0 (expected near 1.37-1.6)",
+  "L": "as B",
+  "all arms": "any of (i), (ii), (iv) or a training term not finite; masked term's squared gradient on dV or dU zero or not finite",
+  "logged, no stop": "step time and projected total at step 50; TF32 against fp32 of the masked term on one draw"
+ },
+ "predictions": {
+  "thresholds": {"placed": 0.09, "remainder": 0.53, "size": 0.94, "late": 3.0},
+  "works": "(i) <= 0.09, the band of placements (E72 u1 T2); (ii) <= 0.94, 1.5 x dW's; (iii) <= 3; and (iv) below arm A's by more than the band",
+  "not a map": "(i) > 0.53, the remainder's; or (ii) > 0.94; or (iii) > 3",
+  "fails to learn": "(iv) within the dtype floor of arm A's at the last step, inclusive. Can stand beside 'not a map'",
+  "else": "reported as read, no amendment; 'unread' when a number a verdict needs is NaN or missing",
+  "A": "scored on (i)-(iii). If A reads above 0.53 on (i), the clean term is short of steps or columns at this size: B and L are read against A at the same step, so works' (i) clause becomes (i) <= A's and not a map's (i) clause is off",
+  "last step": "rules read the last step, 1200; an arm stopped or not finished gets no verdict",
+  "leans": {
+   "B": {"lean": "not a map by (iii), or fails to learn", "confidence": "medium"},
+   "L": {"lean": "(iii) passes and (iv) barely below A's, read as below by under 10% of A's (iv)", "confidence": "weak"}
+  }
+ },
+ "what_each_result_does": {
+  "B works": "D1 has its map on u1; next RL's step 100 on the paid card with the full alive set, user told first",
+  "B fails, L works": "the map holds only when many sites read full weights; D1 stated with that limit; the user decides",
+  "both fail": "the masked term cannot do what ask 24 asked of it on this model; arm A is what is left; back to the user",
+  "A short": "teacher training at 200 columns is too small a test on any arm; bring the paid card to the user with this number"
+ },
+ "departures_from_vpd_fit": "No adversary, though 90% of its reconstruction samples are adversarial; Γ frozen on W0; only U and V of 200 of the alive columns move; no faithfulness term; no hidden-activation terms; Adam at tiny batch; masks from W0's forward, not the student's",
+ "not_run": "Γ moving with the student; the adversary in the loss; the full alive set; RL's update; fixed masks in the loss; the 67M with masks in its loss; the student under its own masks (E72 read 0.103-0.105 for every state on u1, so it cannot separate anything)"
+}
