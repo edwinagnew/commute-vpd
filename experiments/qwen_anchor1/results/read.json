@@ -1,0 +1,152 @@
+{
+ "files": {
+  "1": {
+   "tensors": 196,
+   "dtypes": [
+    "F32"
+   ],
+   "norm": 0.0,
+   "record": 0.0,
+   "holds": true
+  },
+  "2": {
+   "tensors": 196,
+   "dtypes": [
+    "F32"
+   ],
+   "norm": 0.0033623687413355686,
+   "record": 0.003362368722756167,
+   "holds": true
+  },
+  "3": {
+   "tensors": 196,
+   "dtypes": [
+    "F32"
+   ],
+   "norm": 0.009783526816777804,
+   "record": 0.00978352673342671,
+   "holds": true
+  },
+  "5": {
+   "tensors": 196,
+   "dtypes": [
+    "F32"
+   ],
+   "norm": 0.03160119742597274,
+   "record": 0.031601197123479766,
+   "holds": true
+  },
+  "10": {
+   "tensors": 196,
+   "dtypes": [
+    "F32"
+   ],
+   "norm": 0.1278856764564586,
+   "record": 0.12788567569229767,
+   "holds": true
+  },
+  "20": {
+   "tensors": 196,
+   "dtypes": [
+    "F32"
+   ],
+   "norm": 0.30268283066806784,
+   "record": 0.3026828308757025,
+   "holds": true
+  },
+  "50": {
+   "tensors": 196,
+   "dtypes": [
+    "F32"
+   ],
+   "norm": 0.4627349119705464,
+   "record": 0.46273491270680583,
+   "holds": true
+  },
+  "100": {
+   "tensors": 196,
+   "dtypes": [
+    "F32"
+   ],
+   "norm": 0.48652033874353817,
+   "record": 0.48652033911600834,
+   "holds": true
+  }
+ },
+ "against_e61": {
+  "one_minus_cos": 1.3546307732204e-06,
+  "norm_ratio": 0.9999982944381274,
+  "rounding_alone": true,
+  "holds": true
+ },
+ "reproduction": {
+  "rows": {
+   "dw_norm": {
+    "value": 0.48652033911600834,
+    "e61": 0.48652024549136563,
+    "rel_gap": 1.9243730054990757e-07,
+    "holds": true
+   },
+   "loss": {
+    "value": 0.06259615173982797,
+    "e61": 0.06259621414409604,
+    "rel_gap": 9.969335833763817e-07,
+    "holds": true
+   },
+   "held": {
+    "value": 0.04725283485758089,
+    "e61": 0.04725285702711829,
+    "rel_gap": 4.6916818992731405e-07,
+    "holds": true
+   },
+   "kl_maths": {
+    "value": 0.09593199851205211,
+    "e61": 0.09593216018048115,
+    "rel_gap": 1.6852370334277366e-06,
+    "holds": true
+   }
+  },
+  "holds": true
+ },
+ "step_gaps": {
+  "loss": {
+   "max_rel": 1.3605062276215015e-05,
+   "at_step": 93,
+   "n": 100
+  },
+  "dw_norm": {
+   "max_rel": 2.022524779227725e-07,
+   "at_step": 92,
+   "n": 99
+  },
+  "held": {
+   "max_rel": 5.294656301905245e-06,
+   "at_step": 50,
+   "n": 10
+  }
+ },
+ "step_100": {
+  "k": 256,
+  "k_fits": 256,
+  "fits_share": 1.0,
+  "truncation_share": 0.0,
+  "strict_dropped": 0.62109375,
+  "lenient_dropped": 0.64453125,
+  "strict_all": 0.62109375,
+  "strict_capped": 0.62109375,
+  "lenient_capped": 0.64453125,
+  "response_mean": 131.546875,
+  "format_unprompted": 0.92578125,
+  "held_from_file": 0.04725281055734085,
+  "kl_maths_from_file": 0.09593199098871466
+ },
+ "rule": {
+  "rate": 0.92578125,
+  "rate_min": 0.74,
+  "strict": 0.62109375,
+  "strict_min": 0.5603162055335968,
+  "learned": true
+ },
+ "done": true,
+ "peaks": "peak GPU 29.6 GB, host 12.4 GB"
+}
