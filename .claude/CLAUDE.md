@@ -57,7 +57,9 @@ process do not get there; less code does.
   `__post_init__` asserts the sizes agree (see `experiments/task_ladder/run.py`). No `x if args.smoke else y`.
 - **No copying between experiments.** Shared steps (fine-tune, component training, the split, evaluation) live in `src/commute/` and are
   called. Finished experiments' `run.py` stay as they ran; do not use them as templates. Aim for run scripts of
-  ~300 lines and functions of under ~50 lines; split a function rather than add a branch to it.
+  ~300 lines and functions of under ~50 lines; split a function rather than add a branch to it, and a long script into
+  one file per run. A plan aims for ~10 KB, with apparatus detail in an appendix file. Meet a size aim by cutting or
+  splitting, never by squeezing formatting: a 200-line limit made a writer delete the blank lines between functions.
 - **Read the existing code critically.** It was written fast. Follow its interfaces, not its habits.
 - `make lint` (ruff + pyright) is clean on any file you touch, when it can run. If `~/commute-agents/fleet/cpu-run` says the worker is
   drained or down, commit unlinted and lint later; never start a pod just to lint (user, 2026-10-26).
@@ -155,7 +157,7 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
 - Credentials (`WANDB_API_KEY`, `RUNPOD_API_KEY`) come from the shell, never a repo file; if one is
   missing, name the variable and stop.
 - Pin dependency versions in `pyproject.toml`. Goodfire's `param-decomp` is a pinned dependency (commit `74146b5`,
-  `vpd-paper` branch), never copied in; the read-only clone at `../param-decomp` stays at that commit.
+  `vpd-paper` branch), never copied in; the read-only clone at `~/param-decomp` stays at that commit.
 
 ## Commands
 ```

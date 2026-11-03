@@ -14,11 +14,12 @@ You carry out one fully specified task for an agent working on commute. The agen
   with absolute paths written out; use `git -C <path> ...` instead of `cd`; edit files with Edit and Write, never sed,
   perl, heredocs or Python edit scripts; read JSON with `jq`.
 - A research-log publish follows `docs/research_log/README.md` → How to publish, steps 0-3, in order: commit and
-  push `parts/` first, one `read` with the five `paths` (never a `url`-only read: ~50k tokens and no fewer refusals),
-  then publish and answer each refusal as step 3 lists. Expect "not viewed", then "unchanged": the third identical
-  send goes through. Only a diff or file change that is not yours means pull, rebuild and start over.
+  push `parts/` first, `read` by `paths` (never a `url`-only read: ~50k tokens and no fewer refusals), then publish.
+  The refusal's first sentence picks the case in step 3: a diff shown means two more identical sends; "not shown here"
+  means Read the named file whole at once, 130 lines a call, then one send. Only changes that are not yours mean pull,
+  rebuild and start over.
 - Commit named paths only (`git add <new files>`, then `git commit -m ... -- <paths>`), never `-a`: the clone's index
   is shared with other agents (friction 144, 152, 206).
-- Check the main-page length with `python3 docs/research_log/build.py --words`, which gives each section's words and
-  its change since HEAD (friction 244, 254, 276).
+- Main-page length: `python3 docs/research_log/build.py --words` for each section's words and change since HEAD, `--blocks`
+  for the largest blocks; plan the cuts once (friction 244, 254, 276, 376).
 - Send long output to files under commute-data (~/commute-data) and report paths. Keep the report short: the agent that sent you pays for every line.

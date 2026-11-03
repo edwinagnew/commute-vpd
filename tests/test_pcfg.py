@@ -114,7 +114,7 @@ def test_set_window_count_swaps_only_a_with_c_in_the_window(shift: int):
     text = pcfg.sample_texts(np.random.default_rng(8), 300)
     before = text.copy()
     target = pcfg.count(text, A) + shift
-    after = pcfg._set_window_count(np.random.default_rng(9), text, A, target)
+    after = pcfg.set_window_count(np.random.default_rng(9), text, A, target)
     changed = after != before
     assert changed.any() and not changed[:, : -pcfg.WINDOW].any()
     assert ((before[changed] == A) & (after[changed] == C) | (before[changed] == C) & (after[changed] == A)).all()

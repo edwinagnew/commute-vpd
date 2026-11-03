@@ -35,8 +35,7 @@ Every later section's number moves, and every `{{n:…}}` reference follows it.
 `parts/header.html` is the main page's title block; `parts/style.css` and `parts/script.js` are shared. Edit only
 `parts/`; `build/` is generated and gitignored. `python3 docs/research_log/build.py` writes `build/`, rewrites `#id`
 links that point at another page, puts every section from every page into the nav, and reads the nav's version line
-("Research log · date, vN") from the top changelog row. An `<li id="eN">` anchor outside the cards (E13, in the mistakes section)
-is linked to its own page.
+from the top changelog row.
 
 ## Pending decisions (section `decisions`, after the sub-questions; since 2026-10-22, user)
 
@@ -55,11 +54,13 @@ it. Adding or removing a card is a `PENDING.md` line like any other change.
 
 ## Main-page length (temporary, user 2026-10-26)
 
-The main page had grown too long to read (about 20,000 words on 2026-10-26). Until the user lifts this, a flush may
-not make it longer: what it adds, it takes out elsewhere, by rewriting a superseded box or folding a card that a newer
-result replaced. The changelog, glossary, mistakes and experiments pages are exempt; they grow (the cards each
+Until the user lifts this, a flush may not make the main page longer: what it adds, it takes out elsewhere, by rewriting
+a superseded box or folding a card that a newer result replaced. The changelog, glossary, mistakes and experiments pages are exempt; they grow (the cards each
 within the length below). Measure each flush with `python3 docs/research_log/build.py --words`: words per section, each section's
-change since HEAD, and the total against the 20,000 limit.
+change since HEAD, and the total against the 20,000 limit. Plan the cuts once: `--words` says how much must go,
+`--blocks` lists the 40 largest blocks; make them all, then re-measure once. Cut cheapest first:
+what this flush supersedes; closed items in `next`, `gaps` and `timeline`; Techniques or Apparatus prose a card already
+holds. Claim rows last: they are the record (friction 208, 368, 376).
 
 ## Batched updates (since 2026-10-21, user)
 
@@ -67,23 +68,15 @@ Updates are queued, not applied one by one. When any event above happens, append
 event's file is written (date, file, log sections, what changed). Flush the queue before the session ends, and at
 least once a day:
 
-1. Check nobody else has published since the last build: How to publish → step 2 below (one read serves both this
-   check and the publisher). "same" on every page: build on `parts/` as is. A diff: someone published without
-   committing `parts/`. Merge the diff into `parts/` first. With local edits to `parts/` already made, use
-   `--check-head <dir>`, which compares `parts/` as committed at HEAD (friction 109).
-2. Run the completeness check, so nothing written since the last flush is missed:
-   ```
-   last=$(grep -o '<td class="c">20[0-9-]*</td>' docs/research_log/parts/sections/changelog.html \
-          | head -1 | grep -o '20[0-9-]*')        # date of the newest changelog row
-   ls reports/*/ | awk -v d="$last" '$0 >= d'    # every report dated on or after it
-   for e in $(grep -o '^| E[0-9]*' experiments/TRIED.md | grep -o 'E[0-9]*' | sort -u); do
-     grep -rq "id=\"e${e#E}\"" docs/research_log/parts || echo "missing card: $e"; done
-   ```
-   Every report listed and every E-code missing from `parts/` must be covered by a `PENDING.md` line or an existing
-   changelog row; add the missing lines first. A row covers the reports it names in full or by a wildcard
-   (`analysis_qwen-*` covers every `analysis_qwen-` report).
+1. Check nobody else has published since the last build: How to publish → step 2 below, before editing `parts/`. Each
+   page "same": build on `parts/` as is. A diff: someone published without committing `parts/`; merge it in first.
+2. `python3 docs/research_log/build.py --missing` lists reports dated on or after the newest changelog row, and E-codes
+   without a card, that no part of the log or queue names. Add a `PENDING.md` line for each. A changelog wildcard
+   (`analysis_qwen-*`) counts as naming.
 3. Apply each line as "What to update" below says, grepping `parts/` for the places to change rather than reading
-   whole sections. Write one changelog row for the flush, empty `PENDING.md`, build, publish.
+   whole sections. Write one changelog row for the flush, empty `PENDING.md`, build. The build warns on a removed line
+   whose file, E-code or card id is in nothing the flush added: check it landed (friction 155). Then publish. A line
+   appended meanwhile survives the merge and waits for the next flush; lines you removed stay gone (`fleet/merge-lines`).
 
 ## What to update
 
@@ -91,7 +84,8 @@ least once a day:
    the fields of an existing one. Card format (user, 2026-10-29, after a red-team read by cold Sonnet readers; model
    cards: E16, E21, E34, E38, E39):
    - **Header**: code, name (the question), date, machine, directory; an outcome chip of one or two words (held,
-     missed, mixed, surprise, no answer, ongoing, unscored).
+     missed, mixed, surprise, no answer, ongoing, unscored). A card written before the independent check says
+     provisional and has no reading above the verdict: E62's unchecked figure was live, and wrong (friction 362).
    - **Opening**: four short `<p class="one">` paragraphs headed **The question.** (in project terms: which line and
      Q, why it matters, what earlier result prompted it), **What we did.** (in plain words, defining every term a
      reader new to the project needs: the adversarial ratio and its pass and fail lines, do-nothing, the map used),
@@ -133,40 +127,49 @@ fine anywhere: the build points them at the right page.
 
 From a Claude Code session, with the Artifact tool:
 
-0. `~/commute-agents/fleet/log-lock take <role>` before claiming a version number or editing any part, and
-   `~/commute-agents/fleet/log-lock release <role>` after the publish (one flush at a time across the leads: two
-   flushes both claimed v73, friction 37). `<role>` is the lead's role name (`commute-lead`, ...); a clerk is given it
-   in its brief. If another role holds the lock, wait and retry; a lock older than 45 min may be taken over.
-1. `git pull --no-rebase`, then `python3 docs/research_log/build.py`, so the build has every other session's changes.
-   Commit `parts/` (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md README.md`) and push
-   **before** publishing: a published version whose `parts/` sat uncommitted or unpushed made the next flush merge it
-   back from the live page (friction 138, 139). If the pull brought in parts edits, rebuild before publishing, or the
-   live page lags the repo (friction 153).
-2. Find what this publish must pass, then read only those files, with paths:
+0. `~/commute-agents/fleet/log-lock take <role> --wait` before claiming a version number or editing any part, and
+   `~/commute-agents/fleet/log-lock release <role>` after the publish (two flushes both claimed v73, friction 37).
+   `<role>` is the lead's role name; a clerk's brief gives it. `take --wait` waits 100 s a call; run it again on exit 1. A
+   holder that has ended loses the lock to the next take (`log-lock status` says why). Every session takes it, for a
+   one-off edit too. Nothing enforces that, and sessions have published past a held lock (friction 347, 149): step 2's
+   diff shows it; merge and take the next version number. In the call before the send, `log-lock check <role>`: on exit
+   1 do not publish; take it again and re-pull.
+1. Commit `parts/` and the emptied queue (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md
+   README.md`), since a pull refuses to merge into an uncommitted `PENDING.md`. Then `git pull --no-rebase` and
+   `python3 docs/research_log/build.py`, so the build has every other session's changes. Commit what that changed and
+   push **before** publishing: a published version whose `parts/` sat uncommitted or unpushed made the next flush merge it
+   back from the live page (friction 138, 139, 323). If the pull brought in parts edits, rebuild before publishing, or
+   the live page lags the repo (friction 153).
+2. Save the live pages by path, which prints a line per page, not the page, and compare (on the dev node, not through
+   `fleet/cpu-run`, whose worker cannot see `/ephemeral`).
 
    ```
-   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: ["nav.js"]
+   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: ["nav.js", "index.html"]
    python3 docs/research_log/build.py --changed <the folder it saved to>
-   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: [what --changed printed, except index.html]
+   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: [the other pages it printed]
+   python3 docs/research_log/build.py --check <folder>
    ```
-   `--changed` compares hashes that `nav.js` carries, so a page nobody changed is never read or sent: the version line
-   used to be on every page, so each flush touched all of them, and every file touched could be refused (friction 224,
-   237, 279). Then `python3 docs/research_log/build.py --check <folder>` (or `--check-head`), here on the dev node, not
-   through `fleet/cpu-run`: it is stdlib only, the hook allows it, and the worker cannot see `/ephemeral`. A file
-   `--changed` names that the live artifact does not have yet needs no read.
-   Do **not** `read` with `url` alone first: it inlines the whole 180 KB page (~50k tokens) and on 2026-10-28/29 the
-   first send was refused "not viewed" all the same (friction 115, 160, 165, 169, 171). `index.html` is checked by
-   the publisher's own refusal instead (step 3).
-3. Publish (below). Expect this sequence and follow it without deciding anything:
-   - **Refused "not viewed", with a diff**: the refusal counts as the view. If the diff shows only your own edits,
-     nobody else published the main page: send the **identical** publish again. If it shows edits that are not yours,
-     another session published: pull, rebuild, merge, back to step 1.
-   - **Refused as an unchanged resend**: send the identical publish once more. On every flush 10-27 to 10-29 the
-     third send went through (friction 91, 96, 100, 143, 160, 161, 165, 169, 175).
-   - **Refused "changed since seen" naming a file**: another session published it: `Artifact read` with that path,
-     `--check`, merge into `parts/` if it differs, rebuild, publish.
-   - **Asked to Read a saved file in full**: Read it, in parts, then publish. Budget for it; it is rare once step 2's
-     paths are read (friction 82, 112, 115).
+   `--changed` compares the hashes in `nav.js`, so a page nobody changed is neither read nor sent; rerun it after the
+   last build and read any page newly named. A live `nav.js` missing or without hashes names every page: read those
+   (friction 291). A file not yet live needs no read. Never `read` with `url` alone: ~50k tokens, and the first send was
+   refused all the same (friction 115, 160). The saved index.html is for `--check`; it does not count as a view.
+   Which check (friction 384): before editing `parts/`, `--check`, where any diff is someone else's. With uncommitted
+   edits, `--check-head`, against `parts/` at HEAD. After your commit, `--check` diffs your own edits: read only
+   index.html's place count, which predicts step 3. `--check` also flags a live page built from `parts/` in no commit
+   (friction 323).
+3. Publish (below). The first send is refused unless this session published the live version; the refusal's first
+   sentence picks the case (of 29 publishes on 2026-11-02/03, friction 287):
+   - **"same author content"** (1): send again; it passes.
+   - **"shown in full below as a line diff"** (23, under about 10 places; a 3-12k token diff): the diff is the view. If
+     what yours lacks is what your flush replaced, send the identical publish, refused "resent unchanged", and once
+     more, which passes. If not, another session published: pull, rebuild, merge, step 1. A merged file passes at once.
+   - **"not shown here"** (4, about 10 places or more): resending never passes (friction 315, 326, 359, 387). Go
+     straight to Reading the saved file it names, whole, 130 lines a call (200 can overrun Read), through the last line
+     it names: ~780 lines, ~45k tokens. Merge what yours lacks; the next send passes. Step 2's place count warns of
+     this: split such a flush if you can (apply some lines, publish, then the rest; a session's second publish passed
+     at its first send, seen once).
+   - **"touches files whose published content is not what you last saw"**: `Artifact read` each path named, `--check`,
+     merge into `parts/` if it differs, rebuild, publish. A figure you are not changing comes out of `files`.
    Anything else: stop and report it with the refusal text.
 
 ```
@@ -183,12 +186,11 @@ Artifact publish
               plus any new figure, e.g. "fig/e21_<name>.png": "experiments/<dir>/figures/<name>.png"
 ```
 
-Files already published stay unless passed as `null`. A flush normally passes `index.html`, `nav.js`, `changelog.html`
-and `experiments.html` if a card changed. New figures are added to the map, and every new figure needs a line in the
-list below in the same commit (friction 163). `Artifact list` with `scope: "files"` takes no `limit`
+Files already published stay unless passed as `null`. Every new figure needs a line in the list below in the same
+commit (friction 163). `Artifact list` with `scope: "files"` takes no `limit`
 (friction 162, 169).
 
-Figures already published (their sources, for a re-upload):
+Figures already published (their sources, for a re-upload; grep `fig/eN_` here for a log figure's repo path):
 - "fig/overview_component_training.png": "docs/research_log/component_training_tasks.png"
 - "fig/e1_log_span.png": "experiments/transport_test/figures/log_span.png"
 - "fig/e1_log_behaviour.png": "experiments/transport_test/figures/log_behaviour.png"

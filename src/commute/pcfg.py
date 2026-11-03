@@ -198,3 +198,7 @@ def _set_window_count(rng: np.random.Generator, texts: np.ndarray, op: int, targ
     texts[:, -WINDOW:] = w
     assert (count(texts, op) == target).all()
     return texts
+
+
+# The public name for new code (friction 202). spurious_texts and frozen experiments keep the private one: amend3 wraps it there.
+set_window_count = _set_window_count

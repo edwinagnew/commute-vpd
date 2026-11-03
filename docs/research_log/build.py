@@ -6,6 +6,9 @@
   build.py --check-head DIR the same for parts/ as committed at HEAD, leaving local edits alone: setting them aside took
                             a clerk four git calls, each refused when chained in a worktree (friction 109)
   build.py --words          main-page words per section, here and at HEAD, against the length rule (friction 100, 244)
+  build.py --blocks         main-page words per block (card, table row, heading's prose), largest first, to plan every
+                            cut in one pass rather than re-measure per edit (friction 208, 368, 376)
+  build.py --missing        reports and E-codes since the newest changelog row that nothing in the log names (friction 349)
 
 Recipe in README.md. A section is numbered by its place in SECTIONS; the text names sections as {{n:<id>}}, which the
 build replaces with the current number, so a new section is one line here and one file in parts/sections/.
@@ -13,6 +16,7 @@ build replaces with the current number, so a new section is one line here and on
 
 import atexit
 import difflib
+import fnmatch
 import hashlib
 import io
 import json
@@ -118,6 +122,29 @@ def digest(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()[:16]
 
 
+def tree_id(folder: Path) -> str:
+    """The git tree id a commit of this folder would have, writing nothing (all files mode 100644)."""
+    entries = []
+    for p in folder.iterdir():
+        if p.name.startswith(".") or p.name.endswith("~") or p.name == "__pycache__":
+            continue  # an editor's or Python's file, never committed: it would read as "parts/ is not committed"
+        mode, raw = ("40000", bytes.fromhex(tree_id(p))) if p.is_dir() else ("100644", blob_id(p))
+        entries.append((p.name + "/" if p.is_dir() else p.name, f"{mode} {p.name}".encode() + b"\0" + raw))
+    body = b"".join(entry for _, entry in sorted(entries, key=lambda e: e[0].encode()))
+    return hashlib.sha1(b"tree %d\0" % len(body) + body).hexdigest()
+
+
+def blob_id(path: Path) -> bytes:
+    data = path.read_bytes()
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).digest()
+
+
+def in_a_commit(tree: str) -> bool:
+    """A tree object exists in the clone only once a commit holds it: `git add` writes blobs, not trees (friction 323)."""
+    return subprocess.run(["git", "-C", str(HERE.resolve()), "cat-file", "-e", f"{tree}^{{tree}}"],
+                          check=False, capture_output=True).returncode == 0
+
+
 def build() -> dict[str, str]:
     secs = sections()
     owner = {i: s["page"] for s in secs.values() for i in re.findall(r'\sid="([^"]+)"', s["html"])}
@@ -157,6 +184,7 @@ def build() -> dict[str, str]:
         f"var LOG_SECTIONS = {json.dumps(toc, ensure_ascii=False)};\n"
         f"var LOG_EPAGES = {json.dumps(epages)};\n"
         f"var LOG_HASHES = {json.dumps(hashes)};\n"
+        f"var LOG_PARTS = {json.dumps(tree_id(PARTS))};\n"  # which parts/ built this page: --check (friction 323)
     )
     return pages
 
@@ -203,13 +231,76 @@ def print_words() -> None:
         print(f"over: this flush adds {total - before:,d} words to the main page; a flush may not make it longer")
 
 
+def print_blocks() -> None:
+    blocks = []
+    for sid, page in SECTIONS:
+        if page != "index.html" or sid == "mistakes":
+            continue
+        html = (PARTS / "sections" / f"{sid}.html").read_text()
+        for block in re.split(r'(?=<tr[ >]|<li[ >]|<div class="card|<h[34][ >]|<div class="q[ "])', html):
+            text = re.sub(r"<[^>]*>", " ", block).split()
+            blocks.append((len(text), sid, " ".join(text[:9])))
+    for words, sid, start in sorted(blocks, reverse=True)[:40]:
+        print(f"{words:6,d}  {sid:<11}{start[:70]}")
+
+
+def print_missing() -> None:
+    """Every report dated on or after the newest changelog row, and every E-code, that no part of the log or queue names."""
+    top = HERE.resolve().parents[1]
+    named = (HERE / "PENDING.md").read_text() + "".join(f.read_text() for f in PARTS.rglob("*.html"))
+    last = find(r'<tr><td class="c">\d+</td><td class="c">([\d-]+)</td>',
+                (PARTS / "sections" / "changelog.html").read_text())[1]
+    # A wildcard in the changelog or queue counts as naming (analysis_qwen-*); a word in prose (failed*) does not.
+    listed = (HERE / "PENDING.md").read_text() + (PARTS / "sections" / "changelog.html").read_text()
+    wild = {w.rsplit("/", 1)[-1] for w in re.findall(r"[\w./-]*[a-z-]\*[\w.*-]*", listed) if re.search(r"[_-]", w)}
+    for f in sorted(top.glob("reports/*/20*")):
+        if f.name[:10] >= last and f.name not in named and not any(fnmatch.fnmatch(f.name, f"*{w}") for w in wild):
+            print(f"not in the log: {f.relative_to(top)}")
+    tried = (top / "experiments" / "TRIED.md").read_text()
+    for code in sorted(set(re.findall(r"^\| E(\d+)", tried, re.MULTILINE)), key=int):
+        if f'id="e{code}"' not in named:
+            print(f"no card: E{code}")
+
+
+def unlanded_lines() -> list[str]:
+    """Queue lines this flush removed (working tree against HEAD) whose file, E-code or card id appears in nothing it
+    added to parts/. Run before the commit. It finds a line never applied, not one applied badly (friction 155: v110
+    emptied the queue without applying one)."""
+    top = HERE.resolve().parents[1]
+    git = ["git", "-C", str(top)]
+    rel = HERE.resolve().relative_to(top).as_posix()
+    shown = subprocess.run([*git, "show", f"HEAD:{rel}/PENDING.md"], check=False, capture_output=True, text=True)
+    now = (HERE / "PENDING.md").read_text().splitlines()
+    gone = [line for line in shown.stdout.splitlines() if line.startswith("- 20") and line not in now]
+    if not gone:
+        return []
+    diff = subprocess.run([*git, "diff", "-U0", "HEAD", "--", f"{rel}/parts"], check=False, capture_output=True, text=True).stdout
+    added = "\n".join(line for line in diff.splitlines() if line.startswith("+"))
+    new = subprocess.run([*git, "ls-files", "-o", "--exclude-standard", f"{rel}/parts"], check=False, capture_output=True, text=True)
+    added += "".join((top / f).read_text() for f in new.stdout.split())
+    out, files = [], []
+    for line in gone:
+        fields = line.split(" · ")
+        if len(fields) > 1 and "same report" not in fields[1]:  # "same report" means the previous line's files
+            files = re.findall(r"[\w.-]+\.(?:md|py|ipynb|json|png|html)", fields[1])
+        keys = [*files, *re.findall(r"\bE\d+\b", line), *re.findall(r"\bdecision-[\w-]+", line)]
+        if not any(k in added for k in keys):
+            out.append(line)
+    return out
+
+
+def live_nav(live_dir: Path) -> str:
+    return (live_dir / "nav.js").read_text() if (live_dir / "nav.js").exists() else ""
+
+
+def live_hashes(live_dir: Path) -> dict[str, str]:
+    m = re.search(r"var LOG_HASHES = (\{.*?\});", live_nav(live_dir))
+    return json.loads(m[1]) if m else {}
+
+
 def changed_files(pages: dict[str, str], live_dir: Path) -> list[str]:
     """The built files whose hash differs from the live nav.js in live_dir, or all when it has none."""
-    live = live_dir / "nav.js"
-    seen = {}
-    if live.exists():
-        m = re.search(r"var LOG_HASHES = (\{.*?\});", live.read_text())
-        seen = json.loads(m[1]) if m else {}
+    seen = live_hashes(live_dir)
     return [name for name, text in pages.items() if name == "nav.js" or seen.get(name) != digest(text)]
 
 
@@ -228,6 +319,12 @@ def main() -> None:
     if sys.argv[1:] == ["--words"]:
         print_words()
         return
+    if sys.argv[1:] == ["--blocks"]:
+        print_blocks()
+        return
+    if sys.argv[1:] == ["--missing"]:
+        print_missing()
+        return
     if len(sys.argv) == 3 and sys.argv[1] == "--check-head":
         PARTS = head_parts()
         sys.argv[1] = "--check"
@@ -236,11 +333,20 @@ def main() -> None:
         print(" ".join(changed_files(pages, Path(sys.argv[2]))))
         return
     if len(sys.argv) == 3 and sys.argv[1] == "--check":
+        folder = Path(sys.argv[2])
+        stamp = re.search(r'var LOG_PARTS = "(\w+)"', live_nav(folder))
+        if stamp and not in_a_commit(stamp[1]):
+            print(f"live page built from parts/ in no commit here ({stamp[1][:12]}): pull; if it stays, it holds text "
+                  "the repo lacks, so merge the diff below into parts/ (friction 323)")
+        hashes = live_hashes(folder)
         for name, text in pages.items():
-            live = Path(sys.argv[2]) / name
+            live = folder / name
             if not live.exists():
-                # index.html is not saved by a paths read; the publisher's own refusal checks it (README, step 2).
                 print(f"{name}: not in {sys.argv[2]}")
+                continue
+            # A page read for an earlier flush stays in the folder; only the nav.js read here says what is live (friction 368).
+            if name in hashes and digest(unwrap(live.read_text())) != hashes[name]:
+                print(f"{name}: older copy than the nav.js here, not compared; read it if --changed names it")
                 continue
             diff = list(
                 difflib.unified_diff(
@@ -252,7 +358,8 @@ def main() -> None:
                     lineterm="",
                 )
             )
-            print(f"{name}: {'same' if not diff else f'{len(diff)} diff lines'}")
+            places = sum(line.startswith("@@") for line in diff)
+            print(f"{name}: {'same' if not diff else f'{len(diff)} diff lines in {places} places'}")
             if diff:
                 print("\n".join(line[:300] for line in diff[:60]))
         return
@@ -262,6 +369,10 @@ def main() -> None:
     print(f"built {', '.join(pages)} in {OUT}")
     for fig in unmapped_figures(pages):
         print(f"warning: {fig} has no source line in README.md's figure list; add one (friction 163)")
+    for line in unlanded_lines():
+        print(f"warning: flushed but no trace in this flush's parts/ edits; check it landed (friction 155): {line[:200]}")
+    if not in_a_commit(tree_id(PARTS)):
+        print("parts/ as built is not committed: commit and push it before publishing (friction 138, 323)")
 
 
 if __name__ == "__main__":

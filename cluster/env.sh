@@ -25,3 +25,12 @@ export UV_NO_SYNC=1                       # a bare `uv run` would swap in the de
 export PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}   # E45 P OOMed on an L40 with 13 GB reserved but unallocated (friction 108)
 export PYTHONUNBUFFERED=1                 # a job's .out shows progress as it runs, not only when the job ends (friction 8)
 export COMMUTE_QWEN_DIR=/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch   # Qwen3-1.7B decomposition as fp32 safetensors (experiments/qwen_port/convert.py; index.json)
+if [[ -n ${SLURM_JOB_ID:-} ]]; then
+  # In the job's .out before any Python: silence after this line is a hang in Python's start-up (friction 132). In jobs.log
+  # because a job's node and GPU cannot be asked for after it ends: no sacct, and scontrol forgets it (friction 200).
+  # To standard error, since a caller may parse a job's output; never fatal, since jobs run under set -e.
+  _started="$(date -Is) $SLURM_JOB_ID ${SLURM_JOB_NAME:-} started node=${SLURMD_NODENAME:-?} gpus=${SLURM_JOB_GPUS:-${SLURM_STEP_GPUS:-none}}"   # a direct srun sets only the step's
+  echo "$_started" >&2 || true
+  { echo "$_started" >> "$COMMUTE_REPO/cluster/logs/jobs.log"; } 2>/dev/null || true
+  unset _started
+fi

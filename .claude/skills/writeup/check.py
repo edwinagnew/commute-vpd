@@ -1,6 +1,8 @@
 """Flag prose that goes past the write-up skill's sentence guidelines.
 
-    uv run python .claude/skills/writeup/check.py notebooks/x.ipynb reports/analyses/y.md
+    uv run python .claude/skills/writeup/check.py [--quiet] notebooks/x.ipynb reports/analyses/y.md
+
+--help lists the flags; --quiet prints only the errors, friction 350, 386.
 
 Reads the markdown cells of a notebook, the text of a .md file or the prose of an .html log card (tags become sentence
 breaks, alt text and tables are dropped: they merged sentences and inflated the flags, friction 151, 157, 164), skips
@@ -14,10 +16,10 @@ counts it as ERRORS: N (checkers filtered ~140 flags to find them, friction 243,
 
 from __future__ import annotations
 
+import argparse
 import html
 import json
 import re
-import sys
 from pathlib import Path
 
 MAX_WORDS = 25
@@ -26,7 +28,19 @@ SIZE_WORDS = r"steps?|seeds?|ranks?|layers?|rungs?|rounds?|cells?|epochs?|checkp
 # A size ("step 10", "rank 8") is matched with its word and ignored; any other number counts.
 NUMBER = re.compile(rf"(\b(?:{SIZE_WORDS}) )?(?<![\w.])[-+]?\d+(?:[.,]\d+)*%?(?![\w.])")
 CODE = re.compile(r"\b[PGCR]\d+′?\b|\be_(?:Δ|gate|delta)\b|\bkl_other\b")
-RETIRED = re.compile(r"\b(pull[- ]?backs?|lifts?|lifted|lifting|projections?)\b|(?<!\w)H[′'](?!\w)", re.IGNORECASE)
+# "up-projection" and "down-projection" are the MLP matrices in the ordinary sense, not the retired operation (friction 309).
+RETIRED = re.compile(
+    r"\b(pull[- ]?backs?|lifts?|lifted|lifting|(?<!up[- ])(?<!down[- ])projections?)\b|(?<!\w)H[′'](?!\w)", re.IGNORECASE
+)
+# The user used "projection" for three different operations (reports/reviews/2026-10-20_review_terminology.md), so even
+# the plain linear-algebra sense is flagged; the message says what to write instead (friction 358).
+HINTS = {
+    "projection": "write 'the component along X', 'the part in the span of X' or the operation's name from GOALS.md Terms",
+    "pull-back": "say what is split over what: 'the least-squares split', 'the adjoint split'",
+    "lift": "say what moves where, or use the operation's name from GOALS.md Terms",
+}
+# A head name such as (2,4) is not a parenthetical aside and its digits are not results (friction 356).
+HEAD = re.compile(r"\(\d+,\s*\d+\)")
 INLINE = re.compile(r"`[^`]*`|\[([^\]]*)\]\([^)]*\)|\$(?!\d)[^$]*\$")  # $(?!\d): "$0.40" is money, not maths
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z\*\"“(])")
 ITALIC_LINE = re.compile(r"\*[^*\s][^*]*\*|_[^_\s][^_]*_")
@@ -105,12 +119,15 @@ def sentences(lines: list[str], headings: list[str]) -> list[tuple[str, str]]:
     return [(s.strip(), h) for s, h in out if s.strip()]
 
 
-def check(path: Path) -> None:
+def check(path: Path) -> tuple[list[str], list[str], str]:
+    """(errors, flags, summary line) for one file."""
     words = numbers = 0
     errors, flags = [], []
     for label, md in markdown_chunks(path):
         for s, head in sentences(*prose_lines(md)):
-            n_words, n_numbers = len(s.split()), sum(not size for size in NUMBER.findall(s))
+            n_words = len(s.split())
+            s_nums = HEAD.sub("head", s)
+            n_numbers = sum(not size for size in NUMBER.findall(s_nums))
             words += n_words
             numbers += n_numbers
             reasons = []
@@ -118,7 +135,7 @@ def check(path: Path) -> None:
                 reasons.append(f"{n_words} words")
             if n_numbers > MAX_NUMBERS:
                 reasons.append(f"{n_numbers} numbers")
-            if "(" in s:
+            if "(" in s_nums:
                 reasons.append("parenthesis")
             if "scorecard" not in head.lower() and CODE.search(s):
                 reasons.append("code " + ", ".join(sorted(set(CODE.findall(s)))))
@@ -126,15 +143,35 @@ def check(path: Path) -> None:
             quote = f"{s[:110]}{'…' if len(s) > 110 else ''}"
             if RETIRED.search(s):
                 terms = ", ".join(sorted({m.group(0).lower() for m in RETIRED.finditer(s)}))
-                errors.append(f"ERROR {where}: retired term {terms}\n    {quote}")
+                keys = {"projection" if t.startswith("proj") else "lift" if t.startswith("lift") else "pull-back"
+                        for t in terms.split(", ") if not t.startswith("h")}
+                hints = "; ".join(f"{k}: {HINTS[k]}" for k in sorted(keys))
+                errors.append(f"ERROR {where}: retired term {terms}\n    {quote}" + (f"\n    instead: {hints}" if hints else ""))
             if reasons:
                 flags.append(f"{where}: {'; '.join(reasons)}\n    {quote}")
-    print("\n".join(errors + flags), end="\n" if errors or flags else "")
     per100 = 100 * numbers / words if words else 0
-    print(f"== {path}: ERRORS: {len(errors)}; {words} prose words, {per100:.1f} numbers per 100 words, "
-          f"{len(flags)} flagged sentences")
+    summary = (f"== {path}: ERRORS: {len(errors)}; {words} prose words, {per100:.1f} numbers per 100 words, "
+               f"{len(flags)} flagged sentences")
+    return errors, flags, summary
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="Flag prose that goes past the write-up skill's sentence guidelines.")
+    ap.add_argument("files", nargs="+", type=Path, help=".ipynb, .md or .html files")
+    ap.add_argument("--quiet", action="store_true", help="print only the errors (retired terms), no style flags")
+    args = ap.parse_args()
+    results = [(f, *check(f)) for f in args.files]
+    # Errors of every file first, then the style flags, then one summary line per file (friction 243).
+    errors = [e for _, errs, _, _ in results for e in errs]
+    if errors:
+        print("\n".join(errors))
+    if args.quiet:
+        return
+    flags = [x for _, _, fl, _ in results for x in fl]
+    if flags:
+        print("\n".join(flags))
+    print("\n".join(summary for *_, summary in results))
 
 
 if __name__ == "__main__":
-    for arg in sys.argv[1:]:
-        check(Path(arg))
+    main()

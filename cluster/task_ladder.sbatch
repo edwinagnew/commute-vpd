@@ -27,4 +27,5 @@ echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS" >> cluster/l
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 test -f experiments/task_ladder/results/predictions.json || { echo "file the predictions first (results/predictions.json)"; exit 1; }
 STAGE="${1:?stage required: noise | mine | ladder}"
+# Copying this file: end the new script with commute.jobs.hard_exit(code) after its final write (friction 150, 296).
 .venv/bin/python experiments/task_ladder/run.py "$STAGE"

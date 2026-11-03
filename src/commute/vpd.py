@@ -59,6 +59,19 @@ def load_component_model(device: str = "cuda") -> Any:
     return model
 
 
+def checkpoint_weights() -> tuple[dict[str, Tensor], dict[str, tuple[Tensor, Tensor]]]:
+    """The released weights with no model built, for a CPU job that only reads them (friction 173, 344; the Bash hook
+    refuses `load_component_model` on a CPU): the decomposed W0 and (U (C, d_out), V (d_in, C)) per matrix, the same
+    as `target_weights` and `component_weights` on the loaded model. Memory-mapped from the file, so a page is read
+    only when touched; a matrix's alive columns are U[alive].T and V[:, alive], as `alive_uv` takes them."""
+    sd = torch.load(env.VPD_DIR / DECOMP_RUN / DECOMP_FILES[0], map_location="cpu", weights_only=True, mmap=True)
+    uv_keys = sorted(k.removeprefix("_components.").removesuffix(".U") for k in sd if k.endswith(".U"))
+    names = {k: k.replace("-", ".") for k in uv_keys}
+    W0 = {names[k]: sd[f"target_model.{names[k]}.weight"].float() for k in uv_keys}
+    uv_all = {names[k]: (sd[f"_components.{k}.U"], sd[f"_components.{k}.V"]) for k in uv_keys}
+    return W0, uv_all
+
+
 def run_config() -> Any:
     """The released decomposition's `Config` (param-decomp's pydantic object, from its final_config.yaml): the loss
     stack with its coefficients, the sampling, the optimizer settings. Read from the file, never copied by hand."""

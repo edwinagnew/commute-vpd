@@ -1,14 +1,12 @@
 """CPU check of teacher_training Amendment 10's rules (experiments/teacher_training/amend10.py) at their edges, of its arithmetic on
-small random matrices, of the score on made-up reads, and of the filing; no model, no saved state. Needs E12's amend1 importable:
-PYTHONPATH=experiments/new_vs_existing ~/commute-agents/fleet/cpu-run --mem 8G make test FILES="tests/test_teacher_amend10.py"
+small random matrices, of the score on made-up reads, and of the filing; no model, no saved state.
+~/commute-agents/fleet/cpu-run --mem 8G make test FILES="tests/test_teacher_amend10.py"
 """
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import math
-import sys
 from dataclasses import asdict
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,23 +16,13 @@ import pytest
 import torch
 
 from commute import split
+from commute.jobs import load_experiment
 
 EXP = Path(__file__).resolve().parents[1] / "experiments" / "teacher_training"
 NAN = math.nan
 
 
-def _load(name: str) -> Any:
-    spec = importlib.util.spec_from_file_location(name, EXP / f"{name}.py")
-    assert spec is not None and spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
-    spec.loader.exec_module(mod)
-    return mod
-
-
-_load("run")
-_load("amend9")
-A = _load("amend10")
+A = load_experiment("teacher_training", "amend10", "new_vs_existing")
 M, MD, FLOOR = A.CM.gap_min, A.CM.gap_dist_min, A.CM.rerun_floor
 CLOSE, FAR, TELL = A.AS_CLOSE, A.FURTHER, A.TELL
 

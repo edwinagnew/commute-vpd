@@ -1,35 +1,23 @@
 """CPU check of teacher_training Amendment 9's rules (experiments/teacher_training/amend9.py) at their edges, of its reads on
-small random matrices, and of the filing; no model, no saved state. Needs E12's amend1 importable:
-PYTHONPATH=experiments/new_vs_existing ~/commute-agents/fleet/cpu-run --mem 8G make test FILES="tests/test_teacher_amend9.py"
+small random matrices, and of the filing; no model, no saved state.
+~/commute-agents/fleet/cpu-run --mem 8G make test FILES="tests/test_teacher_amend9.py"
 """
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import math
-import sys
 from dataclasses import asdict
-from pathlib import Path
 from typing import Any
 
 import torch
 
-EXP = Path(__file__).resolve().parents[1] / "experiments" / "teacher_training"
+from commute.jobs import load_experiment
+
 NAN = math.nan
 
 
-def _load(name: str) -> Any:
-    spec = importlib.util.spec_from_file_location(name, EXP / f"{name}.py")
-    assert spec is not None and spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
-    spec.loader.exec_module(mod)
-    return mod
-
-
-_load("run")
-A = _load("amend9")
+A = load_experiment("teacher_training", "amend9", "new_vs_existing")
 
 
 def test_along_class_edges():

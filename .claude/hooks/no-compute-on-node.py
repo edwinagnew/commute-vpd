@@ -25,6 +25,7 @@ import shlex
 import sys
 
 SLURM_GPU = re.compile(r"\b(sbatch|srun|salloc)\b.*(--gres[= ]\S*gpu|--gpus?(-per-\w+)?[= ]|\s-G\s?\d)")
+SBATCH_GPU = re.compile(r"^#SBATCH\s+(--gres[= ]\S*gpu|--gpus?(-per-\w+)?[= ]|-G\s?\d)", re.MULTILINE)
 
 try:
     call = json.load(sys.stdin)
@@ -46,7 +47,7 @@ def _asks_for_gpu(segment, cwd):
                 text = open(path, errors="ignore").read()
             except OSError:
                 continue
-            if re.search(r"^#SBATCH\s+(--gres[= ]\S*gpu|--gpus?(-per-\w+)?[= ]|-G\s?\d)", text, re.M):
+            if SBATCH_GPU.search(text):
                 return True
     return False
 
@@ -66,7 +67,9 @@ STATIC_ONLY = re.compile(r"\b(make\s+(\S+\s+)*lint|ruff|pyright)\b")
 RUNS_PYTHON = re.compile(r"\b(python[\d.]*|pytest|jupyter|papermill)\b|\buv\s+run\s+(?!ruff\b|pyright\b)")
 # The linter run through Python or uv is still only a linter: `python -m pyright x.py` and `uv run --with pyright
 # pyright x.py` were refused as runs of x.py (friction 178).
-LINT_RUN = re.compile(r"\S*python[\d.]*\s+-m\s+(ruff|pyright)\b|\buv\s+run\s+(?:-\S+(?:\s+[^-\s]\S*)?\s+)*?(ruff|pyright)\b")
+# `pyright --pythonpath .venv/bin/python x.py` names an interpreter and starts none.
+LINT_RUN = re.compile(r"\S*python[\d.]*\s+-m\s+(ruff|pyright)\b|\buv\s+run\s+(?:-\S+(?:\s+[^-\s]\S*)?\s+)*?(ruff|pyright)\b|"
+                      r"--pythonpath[= ]\S+")
 
 
 def _read(path):
@@ -134,13 +137,61 @@ def _language_model(segment, cwd):
     return None
 
 
-HEREDOC = re.compile(r"(?<!<)<<(?!<)-?\s*(['\"]?)(\w+)\1")
+HEREDOC = re.compile(r"(?<!<)<<(?!<)-?\s*(['\"]?)\\?([\w.-]+)\1")
+EMPTY_HEREDOC = "__empty_heredoc__"  # stands for a here-document with nothing in it, as a word of its command (friction 310)
+
+
+def _heredoc_marks(line, state):
+    """The here-document operators of one line of shell. `<<` inside quotes or arithmetic, or in a comment, is none
+    (`git commit -m 'a << b'`, `echo $((1<<2))`): reading it as one hid the lines after it. state carries the open
+    quote, parentheses and the double quotes around a $(...) from line to line; "$(cat <<'EOF'" is a real one."""
+    marks, i = [], 0
+    while i < len(line):
+        c = line[i]
+        if state["quote"] == "'":
+            state["quote"] = None if c == "'" else "'"
+        elif c == "\\":
+            i += 1
+        elif line.startswith("$((", i) or (state["quote"] is None and line.startswith("((", i)):
+            end = line.find("))", i)
+            i = end + 2 if end >= 0 else len(line)
+            continue
+        elif state["quote"] == '"':
+            if line.startswith("$(", i):
+                state["outer"].append(state["depth"])
+                state["quote"], state["depth"] = None, 0
+                i += 1
+            elif c == '"':
+                state["quote"] = None
+        elif c in "'\"":
+            state["quote"] = c
+        elif c == "#" and (i == 0 or line[i - 1] in " \t;&|()"):
+            break
+        elif line.startswith("<<<", i):
+            i += 3
+            continue
+        elif c == "(":
+            state["depth"] += 1
+        elif c == ")":
+            if state["depth"]:
+                state["depth"] -= 1
+            elif state["outer"]:
+                state["depth"], state["quote"] = state["outer"].pop(), '"'
+        elif m := HEREDOC.match(line, i):
+            marks.append(m)
+            i = m.end()
+            continue
+        i += 1
+    return marks
 
 
 def _heredocs(text):
-    """(text without the bodies of its here-documents, the bodies). `ci/cpu-run python3 - <<'EOF'` is the usual way
-    to run a short script on the worker, so a body can be a job's program; a file written with cat <<'EOF' runs nothing."""
-    kept, bodies, ends = [], [], []
+    """(text without the bodies of its here-documents, the bodies, the index in that text of the line each body belongs
+    to). `ci/cpu-run python3 - <<'EOF'` is the usual way to run a short script on the worker, so a body can be a job's
+    program; a file written with cat <<'EOF' runs nothing. On a line whose here-documents are all blank, each becomes
+    the word EMPTY_HEREDOC."""
+    kept, bodies, ends, owned, spans = [], [], [], [], {}
+    state = {"quote": None, "depth": 0, "outer": []}
     for line in text.split("\n"):
         if ends:
             if line.lstrip("\t") == ends[0]:
@@ -149,28 +200,49 @@ def _heredocs(text):
                 bodies[len(bodies) - len(ends)] += line + "\n"
             continue
         kept.append(line)
-        new = [m[2] for m in HEREDOC.finditer(line)]
-        ends += new
-        bodies += [""] * len(new)
-    return "\n".join(kept), bodies
+        marks = _heredoc_marks(line, state)
+        spans[len(kept) - 1] = [m.span() for m in marks]
+        owned += [len(kept) - 1] * len(marks)
+        ends += [m[2] for m in marks]
+        bodies += [""] * len(marks)
+    for i in set(owned):
+        if not any(bodies[k].strip() for k, line in enumerate(owned) if line == i):
+            for start, end in reversed(spans[i]):
+                kept[i] = f"{kept[i][:start]} {EMPTY_HEREDOC} {kept[i][end:]}"
+    return "\n".join(kept), bodies, owned
 
 
+SEGMENT = r"&&|\|\||[;|\n]|\$\("
 cwd = call.get("cwd") or "."
 found = None
-for segment in re.split(r"&&|\|\||[;|\n]|\$\(", command):
+shell, bodies, owned = _heredocs(command)
+# A heredoc body is read as shell only if it feeds a submission (`sbatch <<'EOF'`, `cpu-run bash <<'EOF'`): a line of a
+# file being written, or of an empty heredoc, submits nothing (friction 310). A job that asks for a GPU may load a model.
+scan, on_gpu = [], set()
+for i, line in enumerate(shell.split("\n")):
+    scan.append(line)
+    feeds = [s for s in re.split(SEGMENT, line) if SUBMIT.search(s) and HEREDOC.search(s)]
+    for k, body in enumerate(bodies):
+        if owned[k] == i and feeds:
+            if SBATCH_GPU.search(body) or any(_asks_for_gpu(s, cwd) for s in feeds):
+                on_gpu.add(k)
+            else:
+                scan.append(_code(body))
+for segment in re.split(SEGMENT, "\n".join(scan)):
     if m := re.fullmatch(r"\s*cd\s+(\S+)\s*", segment):  # `cd DIR && sbatch ...` submits from DIR
         cwd = os.path.join(cwd, os.path.expanduser(m[1].strip("\"'")))
     elif SUBMIT.search(segment) and not _asks_for_gpu(segment, cwd) and (found := _language_model(segment, cwd)):
         break
-shell, bodies = _heredocs(command)
-if not found and bodies and any(SUBMIT.search(s) for s in re.split(r"&&|\|\||[;|\n]|\$\(", shell)):
-    for body in bodies:
+if not found and bodies and any(SUBMIT.search(s) for s in re.split(SEGMENT, shell)):
+    for body in (b for k, b in enumerate(bodies) if k not in on_gpu):
         for m in LOAD_CALL.finditer(re.sub(r'("""|\'\'\')[\s\S]*?\1', "", _code(body))):
             if not (m[1] and NOT_A_MODEL.search(m[1])):
                 found = found or f"its here-document calls {m[0].rstrip('( ')}(...)"
 if found:
     print(f"Models never run on CPUs: {found}. Request a GPU (#SBATCH --gres=gpu:1) or use a RunPod pod, through "
-          "/pod-runner (.claude/CLAUDE.md, Rules).", file=sys.stderr)
+          "/pod-runner (.claude/CLAUDE.md, Rules). A CPU script that only reads the 67M's weights, with no forward pass, "
+          "needs no model: use vpd.checkpoint_weights() instead of vpd.load_component_model() (friction 173, 344).",
+          file=sys.stderr)
     sys.exit(2)
 
 # No Python on this machine at all (Will, 25 October 2026; see the docstring). The command is split into simple
@@ -186,6 +258,7 @@ STARTS_ITS_ARGS = {"xargs", "parallel", "watch"}
 TAKES_A_VALUE = {"-I", "-n", "-P", "-L", "-d", "-a", "-E", "-s", "-j"}  # options of those three
 SHELLS = {"bash", "sh", "zsh", "dash"}
 CONTROL = set(";&|()\n")
+OPERATOR = CONTROL | set("<>")
 
 
 def _close(text, k):
@@ -239,30 +312,63 @@ def _substitutions(text):
     return "".join(out), inner
 
 
+def _tokens(shell):
+    """(text, whether an operator) per word of shell text. A quoted ";" or "" is a word: shlex's tokens could not tell
+    them from operators, so `grep -c '' run.py` and `grep ';' run.py` read run.py as a program (friction 307, 352). An
+    unclosed quote runs to the end of the text."""
+    out, word, i = [], None, 0
+    while i < len(shell):
+        c = shell[i]
+        if c in " \t\r" or c in OPERATOR:
+            if word is not None:
+                out.append((word, False))
+                word = None
+            j = i + 1
+            if c in OPERATOR:
+                while j < len(shell) and shell[j] in OPERATOR:
+                    j += 1
+                out.append((shell[i:j], True))
+            i = j
+        elif c == "'":
+            j = shell.find("'", i + 1)
+            j = len(shell) if j < 0 else j
+            word = (word or "") + shell[i + 1:j]
+            i = j + 1
+        elif c == '"':
+            word, i = word or "", i + 1
+            while i < len(shell) and shell[i] != '"':
+                i += 1 if shell[i] == "\\" and shell[i + 1:i + 2] in ('"', "\\", "$", "`") else 0
+                word += shell[i:i + 1]
+                i += 1
+            i += 1
+        else:
+            i += c == "\\"  # an escaped character is a plain one, as in `find ... -exec x {} \\;`
+            word = (word or "") + shell[i:i + 1]
+            i += 1
+    return out + ([(word, False)] if word is not None else [])
+
+
 def _commands(text):
     """The simple commands of shell text, each as its list of words without redirections, then those of its
     command substitutions."""
     shell, inner = _substitutions(_heredocs(text)[0].replace("\\\n", " "))
-    lex = shlex.shlex(shell, posix=True, punctuation_chars=";&|()<>\n")
-    lex.whitespace, lex.whitespace_split, lex.commenters = " \t\r", True, ""  # comments are gone already
-    try:
-        words = list(lex)
-    except ValueError:  # an unclosed quote
-        words = shell.split()
-    command, target = [], False
-    for w in words:
+    command, target, stdin = [], False, False
+    # A blank here-document stops standing for empty input if another redirection also supplies standard input.
+    words = lambda: [w for w in command if not (stdin and w == EMPTY_HEREDOC)]
+    for w, operator in _tokens(shell):
         if target:  # the file a redirection names
             target = False
-        elif set(w) <= CONTROL or (set(w) <= CONTROL | set("<>") and set(w) & set("()")):  # also <( and >(
-            if command:
-                yield command
-            command = []
-        elif set(w) <= set("<>&|"):
-            target = True
-        else:
+        elif not operator:
             command.append(w)
+        elif set(w) <= CONTROL or set(w) & set("()"):  # also <( and >(
+            if command:
+                yield words()
+            command, stdin = [], False
+        else:
+            target = True
+            stdin = stdin or "<" in w
     if command:
-        yield command
+        yield words()
     for t in inner:
         yield from _commands(t)
 
@@ -273,7 +379,7 @@ def _program(words):
     while i < len(words):
         if words[i] == "command" and words[i + 1:i + 2] in (["-v"], ["-V"]):
             return []  # a lookup, not a run
-        if re.fullmatch(r"\w+=.*", words[i]):
+        if re.fullmatch(r"\w+=.*", words[i]) or words[i] == EMPTY_HEREDOC:  # `<<'E' python3 x.py` runs python3
             i += 1
         elif os.path.basename(words[i]) in WRAPPERS:
             i += 1
@@ -310,6 +416,8 @@ def _first_python(words):
 
 def _runs_python(prog, roots, depth):
     """Why the command prog (its words from the program on) runs Python on this machine, or None."""
+    empty = EMPTY_HEREDOC in prog
+    prog = [w for w in prog if w != EMPTY_HEREDOC]
     if not prog:
         return None
     name, args = os.path.basename(prog[0]), prog[1:]
@@ -365,7 +473,8 @@ def _runs_python(prog, roots, depth):
                 i += 1
             else:
                 return None if _tool(a, roots) else f"`{shown}` runs {a}"
-        return f"`{shown}` reads its program from standard input"
+        # `python3 - <<'EOF'` with nothing before its EOF has no program to run (friction 310); other standard input might.
+        return None if empty else f"`{shown}` reads its program from standard input"
     if name.endswith(".py"):
         return f"`{shown}` runs a Python script"
     if name == "make" and {"test", "lint"} & set(args):

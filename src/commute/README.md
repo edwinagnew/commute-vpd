@@ -4,6 +4,7 @@ Lookup index for plan authors: name the helper, don't reread the module. One lin
 Layouts: param-decomp `(U (C, d_out), V (d_in, C))`; theory `(U_A (d_out, n), V_A (d_in, n))` of alive columns. `State` = `{k: (delta-W, U_A', V_A')}` (harness); `Update` = `(delta-W, {k: (U2, V2)})` (saved_states); `Sel` = `{k: long idx}`, `Gates` = per-batch `[{k: (B,T,C)}]` (recruit).
 
 ## By task
+- another experiment's file, with its sibling imports (no PYTHONPATH, no `-P`) -> `jobs.load_experiment(folder, name, *also)`; end a job after its final write -> `jobs.hard_exit(code)`
 - load model / W0 -> `vpd.load_component_model(device)`, `vpd.target_weights(model)`; files -> `vpd_files.fetch()`
 - full context (model, W0, alive, uv, bases, sigma, windows, Pile blocks, W0 floor) -> `harness.load(...)`, `harness.task_context(ctx, windows_path)`
 - alive set -> `saved_states.load_alive(round1)` or `vpd.alive_masks(vpd.mean_ci(model, batches))`; theory layout -> `component_training.alive_uv(model, alive)`
