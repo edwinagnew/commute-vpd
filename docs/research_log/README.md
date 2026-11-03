@@ -491,3 +491,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e70_softmax.png": "experiments/pcfg_anchors/figures/e70_softmax.png"
 - "fig/e71_check.png": "experiments/scorecard_ls/figures/check.png"
 - "fig/e71_keep_delta.png": "experiments/scorecard_ls/figures/keep_delta.png"
+- "fig/e68_gap_closed.png": "experiments/qwen_pass_test/figures/gap_closed.png"
+- "fig/e68_opening_kl.png": "experiments/qwen_pass_test/figures/opening_kl.png"
