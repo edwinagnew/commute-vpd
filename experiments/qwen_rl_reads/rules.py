@@ -30,6 +30,8 @@ NO_CALL, TOL, FACTOR, FLOOR = "no call", 1e-3, 10.0, trans.FLOOR
 ok, r9, div = fixed.ok, fixed.r9, fixed.div
 W0_KEYS = ("nll", "entropy", "K0_fixed", "K0_stochastic")  # W0's own: the same on every update of these rows
 CONTROL_READS = ("clean_W0", "fixed", "stochastic")
+SIZE_READS = ("scaled_inspan", "scaled_remainder", "slice_inspan", "slice_remainder")
+ENERGY_KEYS = ("energy", "outside_both")
 # Range over the SFT updates read so far, rounded outward: u1, u2, u3 from E72; transmission u1, u3 from E74 (u2 not read there).
 SFT = {"tau_fixed": (0.0004, 0.0055), "tau_stochastic": (0.00107, 0.0128), "random_over_halves": (15.68, 29.61),
        "inspan_over_remainder": (0.0123, 0.0173), "share_ls": (0.351, 0.389)}
@@ -55,6 +57,42 @@ def inspan_gap(k_inspan: float, k_remainder: float, k_w0: float) -> str:
     if not all(ok(x) for x in (k_inspan, k_remainder, k_w0)) or k_w0 < FLOOR or max(k_inspan, k_remainder) < FLOOR:
         return NO_CALL
     return "holds" if r9(k_inspan) < r9(k_remainder) else "misses"
+
+
+def beats_size(k_part: float, k_slice: float, width: float, k_w0: float) -> str:
+    """The placement beats size only if the part's KL from FT is below its random slice's by more than the row-bootstrap half-width.
+    No call: a ruler under the floor, an unread number, or both reads under the floor."""
+    if not all(ok(x) for x in (k_part, k_slice, width, k_w0)) or k_w0 < FLOOR or max(k_part, k_slice) < FLOOR:
+        return NO_CALL
+    return "beats size" if r9(k_slice - k_part) > r9(width) else "does not"
+
+
+def gap_width(part: dict, slc: dict) -> tuple[float, float]:
+    """K(slice) - K(part), and the half-width of its 95% row bootstrap, seed 0, paired by row, E72's half_width."""
+    n, T = len(part["sums"]["K"]), part["T"]
+    return (fixed.mean(slc, "K") - fixed.mean(part, "K"),
+            fixed.half_width(lambda i: (fixed.tot(slc, "K", i) - fixed.tot(part, "K", i)) / (len(i) * T), n))
+
+
+def energy_check(en: dict[str, Any], S: dict[str, Any]) -> dict[str, Any]:
+    """Stage S's Σ-weighted figures from another path: δW's energy, and the remainder's share (S's outside_both)."""
+    got = {"energy": en["energy"], "outside_both": en["t"]["remainder"] ** 2}
+    return {"got": got} | gaps(got, S, ENERGY_KEYS)
+
+
+def size_reads(u: dict[str, Any], k_w0: float) -> dict[str, Any]:
+    """The rule on the in-span part; the same gap on the remainder is reported, no rule. Every K is in the clean table."""
+    out: dict[str, Any] = {"t": u.get("energies", {}).get("t"), "c_range": u.get("energies", {}).get("c_range"),
+                           "K": {n: fixed.mean(u[f"clean_{n}"], "K") for n in SIZE_READS if f"clean_{n}" in u}}
+    for kind in ("inspan", "remainder"):
+        part, slc = u.get(f"clean_{kind}"), u.get(f"clean_slice_{kind}")
+        gap, width = gap_width(part, slc) if part is not None and slc is not None else (math.nan, math.nan)
+        k_part = fixed.mean(part, "K") if part is not None else math.nan
+        k_slice = fixed.mean(slc, "K") if slc is not None else math.nan
+        out[f"gap_{kind}"], out[f"width_{kind}"] = gap, width
+        if kind == "inspan":
+            out["placement_beats_size"] = beats_size(k_part, k_slice, width, k_w0)
+    return out
 
 
 def readings(u: dict[str, Any]) -> dict[str, float]:
@@ -89,8 +127,14 @@ def table(u: dict[str, Any]) -> dict[str, Any]:
     sums = u["clean_W0"]["sums"]
     w0 = {"T": u["clean_W0"]["T"], "sums": {"clean": sums["nll"], "ft": sums["ft"]}}
     out = fixed.score_t2(u, w0)
-    if "clean_adjoint" in u:
-        out["states"]["adjoint"] = fixed.read_row(u["clean_adjoint"], fixed.gain(w0, u["clean_adjoint"], "clean"))
+    for n in ("adjoint", *SIZE_READS):
+        if f"clean_{n}" in u:
+            out["states"][n] = fixed.read_row(u[f"clean_{n}"], fixed.gain(w0, u[f"clean_{n}"], "clean"))
+    if out.get("T2") not in (None, "not read") and "energies" in u:  # E72's `s` is 1 - share.ls, a norm fraction (its rules.py:181)
+        s = u["energies"]["t"]["inspan"]
+        st = out["states"]
+        label = fixed.t2_rule(st["inspan"]["gain"], st["remainder"]["gain"], s, out["w"]) if fixed.scored(w0) else "unscored"
+        out |= {"T2_norm_share": label, "s_norm_share": s}
     n = len(sums["ft"]) * (u["clean_W0"]["T"] - 1)
     return out | {"gain_den_nats": (sum(sums["nll"]) - sum(sums["ft"])) / n}
 
@@ -115,6 +159,8 @@ def score_update(u: dict[str, Any], u1: dict[str, Any], filed: bool = True) -> d
     deaf, holds = ("deaf", "holds") if filed else (None, None)
     return {"clean": t2, "share_ls": share.get("ls"), "share_adjoint": share.get("adjoint"), "search": u.get("search", {}).get("ratio"),
             "K0": {x: got.get(x) for x in ("K0_fixed", "K0_stochastic")}, "w0_same": gaps(got, readings(u1), W0_KEYS),
+            "size": size_reads(u, k["W0"]),
+            "energy_check": energy_check(u["energies"], u["S"]) if "energies" in u and "S" in u else {"missed": False},
             "rows": {"transmission_fixed": row(transmission(tau_f), tau_f, deaf, "tau_fixed"),
                      "transmission_stochastic": row(transmission(tau_s), tau_s, deaf, "tau_stochastic"),
                      "random_vs_halves": row(random_gap(k["random"], k["upper"], k["lower"], k["W0"], matched),
@@ -128,4 +174,5 @@ def score_update(u: dict[str, Any], u1: dict[str, Any], filed: bool = True) -> d
 
 def score(res: dict[str, dict], ref: dict[str, float]) -> dict[str, Any]:
     u1 = res.get("u1", {})
-    return {"control": control(u1, ref)} | {name: score_update(u, u1, name[0] == "R") for name, u in res.items() if name != "u1"}
+    # u3 is on other rows, so W0's own numbers are not the control's
+    return {"control": control(u1, ref)} | {n: score_update(u, {} if n == "u3" else u1, n[0] == "R") for n, u in res.items()}
