@@ -1,0 +1,40 @@
+11:59:44 bases and input moments for 24 matrices in 9 s
+12:00:48 [faith] stochastic_kl 0.2450 ci_masked_kl 0.3439 unmasked_kl 0.0123 pgd_kl 0.6671 pgd_rows 128.0000
+12:01:53 [faith] stochastic_kl 0.2508 ci_masked_kl 0.3524 unmasked_kl 0.0118 pgd_kl 0.7164 pgd_rows 128.0000
+12:01:53 [pile W0 seed 0] 128 s
+12:02:08 [W0] NVIDIA L40: mean PGD KL 0.691743, filed L40 0.6917431652545929
+12:02:14 [adam] gain 0.12963 (regen 0.12963) outside share, input-weighted 0.3224
+12:03:19 [faith] stochastic_kl 0.2723 ci_masked_kl 0.4053 unmasked_kl 0.3169 pgd_kl 2.6536 pgd_rows 128.0000
+12:04:24 [faith] stochastic_kl 0.2775 ci_masked_kl 0.4095 unmasked_kl 0.3162 pgd_kl 3.9791 pgd_rows 128.0000
+12:04:24 [nothing_adam] check 4.7942 fail s 1.0000 delta_share 1.00000 gap 0.00000 | 130 s
+12:05:33 [faith] stochastic_kl 0.2569 ci_masked_kl 0.3717 unmasked_kl 0.0116 pgd_kl 0.7408 pgd_rows 128.0000
+12:06:37 [faith] stochastic_kl 0.2633 ci_masked_kl 0.3817 unmasked_kl 0.0114 pgd_kl 0.7257 pgd_rows 128.0000
+12:06:37 [adjoint_adam] check 1.0600 pass s 0.8074 delta_share 0.00000 gap 0.11152 | 130 s
+12:06:37 [controls adam] {"nothing": -0.015112819936918043, "adjoint": 0.005897413042433186, "adjoint_s": 0.0034150376269816984, "close": true}
+12:06:44 [lora] gain 0.14774 (regen 0.14774) outside share, input-weighted 0.2635
+12:07:49 [faith] stochastic_kl 0.2630 ci_masked_kl 0.3758 unmasked_kl 0.1662 pgd_kl 1.4268 pgd_rows 128.0000
+12:08:53 [faith] stochastic_kl 0.2658 ci_masked_kl 0.3811 unmasked_kl 0.1692 pgd_kl 2.1590 pgd_rows 128.0000
+12:08:53 [nothing_lora] check 2.5919 fail s 1.0000 delta_share 1.00000 gap 0.00000 | 130 s
+12:10:02 [faith] stochastic_kl 0.2486 ci_masked_kl 0.3494 unmasked_kl 0.0121 pgd_kl 0.6678 pgd_rows 128.0000
+12:11:07 [faith] stochastic_kl 0.2536 ci_masked_kl 0.3575 unmasked_kl 0.0118 pgd_kl 0.6295 pgd_rows 128.0000
+12:11:07 [adjoint_lora] check 0.9377 pass s 0.6682 delta_share 0.00000 gap 0.04553 | 130 s
+12:11:07 [controls lora] {"nothing": -0.023084793973885853, "adjoint": -0.008674396525345296, "adjoint_s": 0.002204571461478788, "close": true}
+12:12:18 [faith] stochastic_kl 0.2689 ci_masked_kl 0.3962 unmasked_kl 0.0375 pgd_kl 6.5068 pgd_rows 128.0000
+12:13:22 [faith] stochastic_kl 0.2740 ci_masked_kl 0.4010 unmasked_kl 0.0384 pgd_kl 10.5654 pgd_rows 128.0000
+12:13:23 [ls_adam] check 12.3400 fail s 1.0000 delta_share 0.35825 gap 0.00000 | 130 s
+12:14:28 [faith] stochastic_kl 0.2551 ci_masked_kl 0.3726 unmasked_kl 0.0111 pgd_kl 4.0610 pgd_rows 128.0000
+12:15:33 [faith] stochastic_kl 0.2608 ci_masked_kl 0.3795 unmasked_kl 0.0111 pgd_kl 5.4132 pgd_rows 128.0000
+12:15:33 [expr_adam] check 6.8481 fail s 1.1104 delta_share 0.00100 gap 0.01925 | 130 s
+12:16:38 [faith] stochastic_kl 0.2548 ci_masked_kl 0.3722 unmasked_kl 0.0110 pgd_kl 3.5068 pgd_rows 128.0000
+12:17:43 [faith] stochastic_kl 0.2605 ci_masked_kl 0.3792 unmasked_kl 0.0110 pgd_kl 7.9115 pgd_rows 128.0000
+12:17:43 [expr_fixed_adam] check 8.2533 fail s 1.1084 delta_share 0.00000 gap 0.01932 | 130 s
+12:18:54 [faith] stochastic_kl 0.2609 ci_masked_kl 0.3730 unmasked_kl 0.0257 pgd_kl 0.8351 pgd_rows 128.0000
+12:19:58 [faith] stochastic_kl 0.2637 ci_masked_kl 0.3786 unmasked_kl 0.0258 pgd_kl 0.8694 pgd_rows 128.0000
+12:19:58 [ls_lora] check 1.2321 pass s 1.0000 delta_share 0.37643 gap 0.00000 | 129 s
+12:21:03 [faith] stochastic_kl 0.2528 ci_masked_kl 0.3595 unmasked_kl 0.0120 pgd_kl 0.7314 pgd_rows 128.0000
+12:22:07 [faith] stochastic_kl 0.2577 ci_masked_kl 0.3671 unmasked_kl 0.0118 pgd_kl 0.8506 pgd_rows 128.0000
+12:22:07 [expr_lora] check 1.1435 pass s 0.9263 delta_share 0.00036 gap 0.00953 | 130 s
+12:23:12 [faith] stochastic_kl 0.2527 ci_masked_kl 0.3595 unmasked_kl 0.0120 pgd_kl 0.7280 pgd_rows 128.0000
+12:24:17 [faith] stochastic_kl 0.2577 ci_masked_kl 0.3671 unmasked_kl 0.0119 pgd_kl 0.8467 pgd_rows 128.0000
+12:24:17 [expr_fixed_lora] check 1.1383 pass s 0.9267 delta_share 0.00000 gap 0.00968 | 129 s
+12:24:17 FINISHED wrote /mnt/nw/home/e.agnew/commute-agents/commute-lead/experiments/scorecard_ls/results/reads.json
