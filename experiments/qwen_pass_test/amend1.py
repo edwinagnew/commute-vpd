@@ -137,7 +137,7 @@ def opening(job: Any, reads: Reads, rows: dict[str, Tensor]) -> None:
     for u in pr.P.updates[:2]:
         reads.select(u, rows[u.rows])
         ref = {k: json.loads((OUT / f"{u.name}_{f}.json").read_text()) for k, f in (("on", "ceiling"), ("off", "zero"))}
-        k = {f"0_{d}": mean_of(ref[d], "K", OPEN_ROWS) for d in ("on", "off")}
+        k: dict[str, Any] = {f"0_{d}": mean_of(ref[d], "K", OPEN_ROWS) for d in ("on", "off")}
         for t in OPEN_T:
             for d, scale in (("on", 1.0), ("off", 0.0)):
                 reads.rd.t = t
