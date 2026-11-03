@@ -1,0 +1,18 @@
+{
+ "filed": "2026-11-03",
+ "why": "Amendment 1: the masks at and after a change pass an amplitude of 0.002 to 0.09 of it at blocks 0 to 14 (real update and Gaussian, u1 and u3), and the masked residual stream sits 25-73% from the clean one at every layer. The real update, in that arm, passes 8 to 224 times less KL than a Gaussian of matched clean effect across blocks 0 to 21. Two things unread: whether that gap is amplification (the real update's clean effect comes through later blocks, a Gaussian's through the residual skip) rather than switched-off subcomponents; and whether VPD's own stochastic masks, which leave off subcomponents partly on, are as deaf as the fixed ones.",
+ "definitions": {
+  "share": "direct: KL(W0 ‖ W0 + change with every matrix after the change's block fixed at its clean output) / KL(W0 ‖ W0 + change), clean model, 32 rows",
+  "tau_stochastic": "tau with m = g + (1 - g) u and Δ share d ~ U(0, 1) per position and site (masking.py:135-141, `stochastic_masks`), one draw per row shared by every arm of that row, W0's g"
+ },
+ "stops": {
+  "control_identity_direct": "dw_27 has no later site: share within 1e-3 of 1",
+  "control_transmission_stochastic": "last block's down alone, amplitude of dW and Gaussian inside [0.5, 1.5], as Amendment 1"
+ },
+ "predictions": {
+  "direct_gap": {"rule": "rules.direct_gap: Gaussian's share at least 3 times dW's on two of blocks 0, 7, 14: 'amplification'; else 'not amplification'; an unread share 'unread'", "lean": "amplification: dW's clean effect is 10^3-10^4 of a Gaussian's per unit norm (E73), which a skip alone cannot give"},
+  "stochastic": {"rule": "rules.stochastic on u1's and u3's whole update: tau at or over 0.25 'carries', at or under 0.05 'deaf', else 'between'", "lean": "between to carries: off subcomponents open by a half on average, though each sits under a uniform draw"}
+ },
+ "expected": {"K_direct against xclean's K_masked": "same order at blocks 0, 7, 14, if the fixed masks pass only the skip", "K0 under stochastic masks": "first read here; E44's adversary floor is the nearest"},
+ "reads_two_of_two": "Amendment 2 of two allowed on E74: the last."
+}

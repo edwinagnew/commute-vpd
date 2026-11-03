@@ -17,7 +17,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 import torch
 from torch import Tensor
@@ -35,6 +35,7 @@ from commute.qwen_vpd import (
     load_gamma,
     load_target,
     parse_site,
+    stochastic_masks,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -42,6 +43,12 @@ RESULTS, PRED = HERE / "results", HERE / "results" / "predictions.json"
 DEV = "cuda"
 DOWN27 = "layers.27.mlp.down_proj"
 Change = dict[str, Tensor]  # site -> fp32 matrix, on the host
+
+
+class Arm(NamedTuple):
+    change: Change
+    cut: int | None = None  # masks at layers up to this one, the model's own after it
+    clean_x: bool = False  # Amendment 1: the added term reads the clean forward's inputs, not the masked forward's
 
 
 @dataclass(frozen=True)
@@ -158,8 +165,12 @@ def read2(e73: Any, model: Any, rows: dict[str, Tensor], updates: dict[str, Any]
 # ----------------------------------------------------------------------------- read 1: transmission
 
 
-def forward(model: Any, tokens: Tensor, comps: Components, g: dict[str, Tensor] | None, dW: Change, cut: int | None = None) -> Tensor:
-    """Each matrix's output: masked by g at layers up to `cut` (None: all; g None: none), the model's own elsewhere; plus x dWᵀ."""
+def forward(model: Any, tokens: Tensor, comps: Components, g: dict[str, Tensor] | None, dW: Change, cut: int | None = None,
+            tap: dict[str, Tensor] | None = None, term_x: dict[str, Tensor] | None = None,
+            deltas: dict[str, Tensor] | None = None) -> Tensor:
+    """Each matrix's output: masked by g at layers up to `cut` (None: all; g None: none), the model's own elsewhere; plus x dWᵀ.
+    `tap` collects the changed matrices' inputs; `term_x` replaces the input the term reads.
+    `deltas`, Amendment 2: Δ on by that share, as `masked_logits`."""
 
     def replace(site: str) -> Any:
         V, U = comps.vu(site)
@@ -168,8 +179,16 @@ def forward(model: Any, tokens: Tensor, comps: Components, g: dict[str, Tensor] 
 
         def hook(m: Any, args: tuple[Tensor, ...], out: Tensor) -> Tensor:
             x = args[0].to(V.dtype)
-            base = (x @ V * g[site].to(V.dtype)) @ U if masked and g is not None else out.to(V.dtype)
-            return (base if d is None else base + x @ d.to(x).T).to(out.dtype)
+            if masked and g is not None and deltas is not None:
+                d_ = deltas[site].to(V.dtype)[..., None]
+                base = (x @ V * (g[site].to(V.dtype) - d_)) @ U + d_ * out.to(V.dtype)
+            else:
+                base = (x @ V * g[site].to(V.dtype)) @ U if masked and g is not None else out.to(V.dtype)
+            if d is None:
+                return base.to(out.dtype)
+            if tap is not None:
+                tap[site] = x
+            return (base + (x if term_x is None else term_x[site]) @ d.to(x).T).to(out.dtype)
 
         return hook
 
@@ -184,8 +203,8 @@ def entropy(logits: Tensor) -> float:
 
 def k_clean(pr: Any, model: Any, rows: Tensor, comps: Components, change: Change) -> float:
     total = 0.0
-    for i in range(0, len(rows), C.batch):
-        t = rows[i: i + C.batch].to(DEV)
+    for tokens in rows:  # one row: beside the decomposition the L40 has ~1 GB free, a batch of 8 rows' logits is 1.16 GiB (job 50507)
+        t = tokens[None].to(DEV)
         total += pr.kl(model(t, use_cache=False).logits, forward(model, t, comps, None, change))
     return total / rows.numel()
 
@@ -206,24 +225,33 @@ def gaussian_like(pr: Any, model: Any, rows: Tensor, comps: Components, change: 
     return {s: a * v for s, v in unit.items()}, {"scale": a, "K_clean_fit": got, "K_clean_target": target}
 
 
-def read_group(pr: Any, model: Any, gamma: Any, comps: Components, rows: Tensor, arms: dict[str, tuple[Change, int | None]]) -> dict[str, Any]:
+def read_group(pr: Any, model: Any, gamma: Any, comps: Components, rows: Tensor, arms: dict[str, Arm],
+               gen: torch.Generator | None = None) -> dict[str, Any]:
     """Row by row, W0's masks fixed: KL clean and masked for each arm, and the logit shifts' dot and squared norms (centred per position)."""
     sums: dict[str, dict[str, list[float]]] = {a: {} for a in arms}
     base_sums: dict[str, list[float]] = {"K0": [], "H_clean": [], "H_masked": []}
     for tokens in rows[: C.rows]:
         t = tokens[None].to(DEV)
         clean, g = importances(model, t, gamma, comps)
-        masked = forward(model, t, comps, g, {})
+        deltas = None
+        if gen is not None:  # Amendment 2: one stochastic draw per row, the same for every arm of the row
+            g, deltas = stochastic_masks(g, gen)
+        masked = forward(model, t, comps, g, {}, deltas=deltas)
         base_sums["K0"].append(pr.kl(clean, masked))
         base_sums["H_clean"].append(entropy(clean))
         base_sums["H_masked"].append(entropy(masked))
-        for name, (dW, cut) in arms.items():
-            base = masked if cut is None else forward(model, t, comps, g, {}, cut)  # each cut is one arm's
-            cp, mp = forward(model, t, comps, None, dW), forward(model, t, comps, g, dW, cut)
-            one = {"K_clean": pr.kl(clean, cp), "K_masked": pr.kl(base, mp)}
-            a, b = cp.float().sub_(clean.float()), mp.float().sub_(base.float())  # L40: the reader alone peaks ~46 GB
-            del cp, mp, base
-            a, b = a - a.mean(-1, keepdim=True), b - b.mean(-1, keepdim=True)
+        for name, (dW, cut, clean_x) in arms.items():
+            base = masked if cut is None else forward(model, t, comps, g, {}, cut, deltas=deltas)  # each cut is one arm's
+            tap: dict[str, Tensor] | None = {} if clean_x else None
+            a = forward(model, t, comps, None, dW, tap=tap)
+            one = {"K_clean": pr.kl(clean, a)}
+            a.sub_(clean)  # in place: the reader alone peaks at 42.7 of the L40's 44.3 GiB
+            a.sub_(a.mean(-1, keepdim=True))
+            b = forward(model, t, comps, g, dW, cut, term_x=tap, deltas=deltas)
+            one["K_masked"] = pr.kl(base, b)
+            b.sub_(base)
+            b.sub_(b.mean(-1, keepdim=True))
+            del base
             one |= {"dot": float((a * b).double().sum()), "aa": float((a * a).double().sum()), "bb": float((b * b).double().sum())}
             for k, v in one.items():
                 sums[name].setdefault(k, []).append(v)
@@ -250,12 +278,12 @@ class Read1:
         self.gamma = load_gamma(decomp, DEV, torch.bfloat16)
         log(f"[load] decomposition, GPU {torch.cuda.memory_allocated() / 1e9:.1f} GB")
 
-    def group(self, name: str, key: str, rows: Tensor, arms: dict[str, tuple[Change, int | None]], extra: dict[str, Any]) -> dict[str, Any]:
+    def group(self, name: str, key: str, rows: Tensor, arms: dict[str, Arm], extra: dict[str, Any], gen: torch.Generator | None = None) -> dict[str, Any]:
         path = RESULTS / name / f"{key}.json"
         if path.is_file():
             return json.loads(path.read_text())
         t0 = time.time()
-        r = read_group(self.pr, self.model, self.gamma, self.comps, rows, arms) | extra
+        r = read_group(self.pr, self.model, self.gamma, self.comps, rows, arms, gen) | extra
         r["summary"] = summary(r)
         write(f"{name}/{key}", r)
         n = len(r["base"]["K0"]) * r["T"]
@@ -277,30 +305,30 @@ class Read1:
                 stop("control_hook", f"{got} vs {want}")
         d27 = {DOWN27: dw[DOWN27]}
         gauss, fit = self.fit(rows, d27, 27_000)
-        r = self.group(u.name, "control", rows, {"dw_down27": (d27, None), "gauss_down27": (gauss, None)}, {"fit": {"gauss_down27": fit}})
+        r = self.group(u.name, "control", rows, {"dw_down27": Arm(d27), "gauss_down27": Arm(gauss)}, {"fit": {"gauss_down27": fit}})
         ref = sum(json.loads((self.pr.RESULTS / u.name / "W0.json").read_text())["sums"]["ci"][: C.rows])
         got = sum(r["base"]["K0"])
         log(f"[control K0] {got:.9g} vs E68 {ref:.9g}")
         if abs(got / ref - 1) > C.same_tol:
             stop("control_K0", f"{got} vs {ref}")
-        t_d, t_g = r["summary"]["dw_down27"]["tau"], r["summary"]["gauss_down27"]["tau"]
-        log(f"[control transmission] {u.name} dw {t_d:.4g} gauss {t_g:.4g}")
-        if not rules.control(t_d, t_g):
-            stop("control_transmission", f"{u.name}: dw {t_d}, gauss {t_g}: band {rules.BAND}")
+        a_d, a_g = r["summary"]["dw_down27"]["amp"], r["summary"]["gauss_down27"]["amp"]
+        log(f"[control transmission] {u.name} amplitude: dw {a_d:.4g} gauss {a_g:.4g}")
+        if not rules.control(a_d, a_g):
+            stop("control_transmission", f"{u.name}: amplitude dw {a_d}, gauss {a_g}: band {rules.BAND}")
 
     def update(self, u: Any, rows: Tensor, dw: Change) -> None:
         self.control(u, rows, dw)
-        arms: dict[str, tuple[Change, int | None]] = {}
+        arms: dict[str, Arm] = {}
         fits = {}
         for layer in C.layers:
             blk = {s: v for s, v in dw.items() if parse_site(s)[0] == layer}
             gauss, fits[f"gauss_{layer}"] = self.fit(rows, blk, layer)
             log(f"[fit {u.name} {layer}] {fits[f'gauss_{layer}']}")
-            arms[f"dw_{layer}"], arms[f"gauss_{layer}"] = (blk, None), (gauss, None)
+            arms[f"dw_{layer}"], arms[f"gauss_{layer}"] = Arm(blk), Arm(gauss)
         r = self.group(u.name, "blocks", rows, arms, {"fit": fits})
-        cuts: dict[str, tuple[Change, int | None]] = {f"cut_{c}": ({s: v for s, v in dw.items() if parse_site(s)[0] == c}, c) for c in C.cuts}
+        cuts = {f"cut_{c}": Arm({s: v for s, v in dw.items() if parse_site(s)[0] == c}, c) for c in C.cuts}
         rc = self.group(u.name, "cuts", rows, cuts, {})
-        ra = self.group(u.name, "all", rows, {"all": (dw, None)}, {})
+        ra = self.group(u.name, "all", rows, {"all": Arm(dw)}, {})
         s, sc = r["summary"], rc["summary"]
         verdict = {"where_lost": rules.where_lost(s["dw_0"]["tau"], sc["cut_0"]["tau"]),
                    "against_gaussian": rules.against_gaussian({

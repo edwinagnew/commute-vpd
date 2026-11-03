@@ -1,0 +1,16 @@
+{
+ "filed": "2026-11-03",
+ "why": "Job 50510 stopped at the filed control on u3: KL ratio 0.447 against the band's 0.5, amplitude 0.75, cosine 0.96. u1 passed at 0.785 and 0.693. The band was guessed. The hook itself checked exactly (block 27's clean KL 0.00338145058 against E73's 0.00338145438), so the control's other job, that the term enters a masked forward at all, is what the amended rule tests.",
+ "control_transmission_amended": "u1 and u3, the last block's down matrix alone: logit-shift amplitude (masked over clean) of dW and of its Gaussian both inside [0.5, 1.5]. Read after seeing 0.99, 0.95, 0.75, 0.95: a term not entering would read an order below these. predictions.json stands; it reports the miss.",
+ "definitions": {
+  "up_l": "tau with masks only at layers before l, the model's own from l on: what upstream masks cost through the activations the change reads",
+  "xclean_l": "tau with every mask on, the added term reading the clean forward's input: what the masks at and after the change cost, with the term as in the clean model. The clean forward's inputs include the term's effect inside its own block; first order",
+  "stream_gap": "per layer, distance of the masked residual stream from the clean one over the clean one's norm, input of the gate matrix, first 32 rows"
+ },
+ "stops": {"control_identity": "up_0 has no mask anywhere: tau within 1e-3 of 1"},
+ "predictions": {
+  "factor": {"rule": "rules.factor(tau_up, tau_xclean), per block 0, 7, 14, 21, dW and Gaussian: up at or under 0.1 and xclean above: 'upstream activations'; xclean at or under and up above: 'own and later masks'; both: 'both'; neither: 'neither'.", "lean": "own and later masks at block 0, where nothing is upstream; both on dW at 7, 14; own and later masks on Gaussian at 7, 14, because Gaussian reads every input direction alike and dW's clean effect is 10^3-10^4 of Gaussian's per unit norm, so it reads something specific"}
+ },
+ "expected": {"stream_gap": "unknown, first read; K0 of 0.07 at the logits does not bound it", "u3": "as u1"},
+ "reads_two_of_two": "This is Amendment 1 of two allowed on E74."
+}
