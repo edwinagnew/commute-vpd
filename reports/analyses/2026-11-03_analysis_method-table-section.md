@@ -2,7 +2,7 @@
 
 *Write-up section, baseline-lead, 2026-11-03. Condensed from [the full report](2026-11-02_analysis_method-table.md); numbers re-checked against `experiments/method_table/results/table.json`. No run.*
 
-We gathered every method's existing reading on pairs of fine-tunes, one side labelled reuse and one labelled new, and marked each pair by how its truth was set. No pair has the decomposition's reading and a cheaper method's reading both standing, with controls held, against a truth that is more than an assumption. So the `GOALS.md` question of whether VPD tells new capabilities from strengthened ones better than cheap methods stays unanswered on the 67M, by the user's choice and not by a failed comparison.
+We gathered every method's existing reading on pairs of fine-tunes, one side labelled reuse and one labelled new, and marked each pair by how its truth was set. No pair has the decomposition's reading and a cheaper method's reading both standing, with controls held, against a truth that is more than an assumption. So the question of whether VPD tells new capabilities from strengthened ones better than cheap methods stays unanswered on the 67M, by the user's choice and not by a failed comparison.
 
 ## The answer
 
@@ -25,7 +25,7 @@ Each map sends a key to a word: rank-1 to the original model's own top guess, a 
 | kind of truth | rows | the decomposition | cheap methods |
 |---|---|---|---|
 | **By construction** | 1, counting model: task P against task N | $r$ and ratio label 21 of 21 after 400 of 400,000 steps; **control failed**, 0.07 against a bar of 0.5 | Steering, pruning revival and reverse fine-tuning each 21 of 21, controls held. Size 21 of 21 within a recipe cell, 15 of 21 with one cut-off. Not discrimination |
-| **By behaviour plus an in-state patch** | 1, counting model: through count a or not | **Not run**; its reuse side was never read here | All **fail** the filed all-state rule: steering 21 of 27, needing 22; pruning 20 of 26 and reverse 17 of 26, needing 21. Per run, steering 16 of 18 and pruning 14 of 17 pass |
+| **By behaviour plus an in-state patch** | 1, counting model: through count a or not | **Not run**; its reuse side was never read here | All **fail** the filed all-state rule: steering 21 of 27 as filed, on a row of 26 states, needing 22; pruning 20 of 26 and reverse 17 of 26, needing 21. Per run, steering 16 of 18 and pruning 14 of 17 pass |
 | **By causal check** | 1, 67M: copy at a new marker against lookup | $r$ **unscored**, 1.09 to 1.10 against 0.38 to 0.42; copy label not settled | Size separates, 4.57 to 4.62 against 5.45 to 5.50. Prior fails, a factor of 1.32, matched by design. Others not run |
 | **Only by assumption** | 11, 67M: copy, lowercase, half-known, rank-1 and class maps against ciphers, random maps or shuffles | $r$ separates 9 and fails 1 of the 10 rows it read; ratio 7 and 1 of 8 | Prior separates 6 of 8. Steering 5 of 10, fails 4, 1 unreadable. Size 4 of 10, fails 5, 1 unreadable. Neuron patching and sparsity fail all they read. Pruning and reverse fail their control on all 3. Readouts unreadable |
 
