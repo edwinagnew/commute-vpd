@@ -32,6 +32,7 @@ RESULTS, OUT = HERE / "results", HERE / "results" / "amend1"
 PRED = RESULTS / "predictions_amend1.json"
 ROWS_HOOK = 8  # control_hook's rows
 ZERO_TOL, HOOK_SHARE, LINE = 1e-6, 0.01, 1.5
+OPEN_ROWS, OPEN_T = 32, (0.1, 0.5, 1.0)  # Amendment 2
 
 spec = importlib.util.spec_from_file_location("pass_run", HERE / "run.py")  # `run` means qwen_maps/run.py here
 assert spec is not None and spec.loader is not None
@@ -41,8 +42,8 @@ spec.loader.exec_module(pr)
 
 
 def forward_plus(model: Any, tokens: Tensor, comps: Any, g: dict[str, Tensor] | None, dW: dict[str, Tensor],
-                 scale: float) -> Tensor:
-    """Each matrix's output, masked by `g` (None: unmasked, the model's own), plus scale * x dWᵀ. dW stays on the host:
+                 scale: float, t: float = 0.0) -> Tensor:
+    """Each matrix's output, masked by g + t (1 - g) (`g` None: unmasked, the model's own), plus scale * x dWᵀ. dW stays on the host:
     on the GPU its 2.8 GB would pass the reader's memory stop."""
 
     def replace(site: str) -> Any:
@@ -50,7 +51,8 @@ def forward_plus(model: Any, tokens: Tensor, comps: Any, g: dict[str, Tensor] | 
 
         def hook(m: Any, args: tuple[Tensor, ...], out: Tensor) -> Tensor:
             x = args[0].to(V.dtype)
-            base = out.to(V.dtype) if g is None else (x @ V * g[site].to(V.dtype)) @ U
+            gs = None if g is None else g[site].to(V.dtype)
+            base = out.to(V.dtype) if gs is None else (x @ V * (gs + t * (1 - gs))) @ U
             return (base + scale * x @ dW[site].to(x).T).to(out.dtype)
 
         return hook
@@ -65,11 +67,12 @@ class CeilingReader(pr.PassReader):
     dW: dict[str, Tensor]
     scale: float = 1.0
     masked: bool = True
+    t: float = 0.0
 
     def row(self, tokens: Tensor, own_key: str, want: set[str], srcs: dict[str, dict[str, Tensor]]) -> dict[str, float]:
         model, comps = self.job.model, self.job.comps()
         logits, g = importances(model, tokens, self.job.gamma(), comps)  # W0's forward
-        out = forward_plus(model, tokens, comps, g if self.masked else None, self.dW, self.scale)
+        out = forward_plus(model, tokens, comps, g if self.masked else None, self.dW, self.scale, self.t)
         self.use("FT")
         ref = model(tokens, use_cache=False).logits
         res = {"K": kl(ref, out), "nll": pr.nll(out, tokens), "ft": pr.nll(ref, tokens), "K_clean": kl(ref, logits)}
@@ -77,8 +80,9 @@ class CeilingReader(pr.PassReader):
         return res
 
 
-def mean_of(rd: dict[str, Any], key: str) -> float:
-    return sum(rd["sums"][key]) / (len(rd["sums"][key]) * rd["T"])
+def mean_of(rd: dict[str, Any], key: str, n: int | None = None) -> float:
+    xs = rd["sums"][key][:n]
+    return sum(xs) / (len(xs) * rd["T"])
 
 
 def verdict(k_c: float, kd: float, k0: float) -> tuple[str, float]:
@@ -127,10 +131,32 @@ def controls(job: Any, reads: Reads, ref_kd: float) -> None:
         job.stop("control_zero", f"{k_z} vs {ref_kd}")
 
 
+def opening(job: Any, reads: Reads, rows: dict[str, Tensor]) -> None:
+    """Amendment 2 (results/predictions_amend2.json): the masks opened in steps on u1 and u2's first rows."""
+    out: dict[str, Any] = {}
+    for u in pr.P.updates[:2]:
+        reads.select(u, rows[u.rows])
+        ref = {k: json.loads((OUT / f"{u.name}_{f}.json").read_text()) for k, f in (("on", "ceiling"), ("off", "zero"))}
+        k = {f"0_{d}": mean_of(ref[d], "K", OPEN_ROWS) for d in ("on", "off")}
+        for t in OPEN_T:
+            for d, scale in (("on", 1.0), ("off", 0.0)):
+                reads.rd.t = t
+                r = reads.step(f"open_t{t}_{d}", scale, True, OPEN_ROWS)
+                k[f"{t}_{d}"] = mean_of(r, "K")
+                k["clean"] = mean_of(r, "K_clean")
+        k1, k0 = k["1.0_on"], k["0_on"]
+        k["cause"] = "masks" if k1 <= 0.1 * k0 else "leftover" if k1 >= 0.5 * k0 else "both"
+        out[u.name] = k
+        job.log(f"[open {u.name}] {json.dumps(k)}")
+        write_json(OUT / "open.json", out)
+    job.log(f"[done] {job.peaks()}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", required=True)
     ap.add_argument("--wall-min", type=float, required=True)
+    ap.add_argument("--open", action="store_true")  # Amendment 2
     a = ap.parse_args()
     if not PRED.is_file():
         sys.exit(f"refusing to start: {PRED} missing")
@@ -145,6 +171,8 @@ def main() -> None:
     with torch.no_grad():
         job.gamma()
         reads = Reads(job, CeilingReader(job), a.wall_min * 60)
+        if a.open:
+            return opening(job, reads, rows)
         for u in pr.P.updates:
             reads.select(u, rows[u.rows])
             if u.name == "u1":
