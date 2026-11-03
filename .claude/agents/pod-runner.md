@@ -34,7 +34,8 @@ results home first, counting set-up and queue, not the one with the lowest $/h.
   (2026-10-19). Submit at once and wait at most **10 min** for a start; then `scancel` and go to RunPod. Do **not**
   use `sbatch --test-only` for debug jobs: it ignores debug's priority and predicted a 24-h wait for jobs that started
   in 3–6 min.
-- **Everything else goes straight to RunPod:** runs over ~30 min, anything needing the `normal` QoS, multi-stage
+- **Everything else goes straight to RunPod** (except that a longer Qwen run that fits an L40 may use the `normal` QoS when the
+  queue is empty at submission, `.claude/CLAUDE.md`): runs over ~30 min, anything needing the `normal` QoS, multi-stage
   scored runs. Don't try the cluster first: `normal` jobs have been estimated days out (16 days for a 2-h job,
   2026-10-19), and a ~5-min pod set-up beats any queue wait. RunPod is pre-authorised for these within the budget;
   don't return to the lead to ask.
@@ -46,7 +47,7 @@ When you abandon a queued cluster job: `scancel` it first, then `start()` the po
 Never leave the cluster job queued as a fallback: it would start later and run the experiment twice.
 
 Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before `start()`. Over the brief's budget
-(at most what is left of the session's $40 `REMOTE_KERNELS_BUDGET`, less ~15% headroom), stop and ask.
+(at most what is left of the session's `REMOTE_KERNELS_BUDGET` in `.claude/settings.json`, less ~15% headroom), stop and ask.
 
 ## MATS cluster
 

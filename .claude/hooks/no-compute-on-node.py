@@ -424,6 +424,8 @@ def _runs_python(prog, roots, depth):
     shown = " ".join(w if len(w) <= 40 else w[:37] + "..." for w in prog[:3]).replace("\n", " ")
     if name in ("sbatch", "srun", "salloc") or _tool(prog[0], roots):
         return None
+    if name == "eval":
+        return _python_here(" ".join(args), roots, depth + 1)
     if name in SHELLS:
         for i, a in enumerate(args[:-1]):
             if re.fullmatch(r"-[a-z]*c[a-z]*", a):
@@ -499,12 +501,65 @@ def _script_runs_python(word, roots, depth):
     return None
 
 
+def _reads_script_from_stdin(words):
+    """Whether a simple command is a shell that takes its commands from standard input."""
+    prog = [w for w in _program(words) if w != EMPTY_HEREDOC]
+    return bool(prog) and os.path.basename(prog[0]) in SHELLS and all(a.startswith("-") and "c" not in a for a in prog[1:])
+
+
+def _fed_to_a_shell(text, roots, depth):
+    """Why text piped or written into a shell runs Python: `echo 'python3 x.py' | bash`, `cat job.sh | sh`,
+    `bash <<'EOF'` with Python in its body. What another program prints into a shell cannot be read from here."""
+    shell, bodies, owned = _heredocs(text)
+    lines = shell.split("\n")
+    for k, body in enumerate(bodies):
+        if (body.strip() and any(_reads_script_from_stdin(w) for w in _commands(lines[owned[k]]))
+                and (why := _python_here(body, roots, depth + 1))):
+            return why
+    flat, inner = _substitutions(shell.replace("\\\n", " "))
+    left, words, target = None, [], False
+    for w, operator in [*_tokens(flat), (";", True)]:
+        if target:
+            target = False
+        elif not operator:
+            words.append(w)
+        elif set(w) <= CONTROL or set(w) & set("()"):
+            if left and words and _reads_script_from_stdin(words):
+                source = _program(left)
+                name, args = (os.path.basename(source[0]), source[1:]) if source else ("", [])
+                said = [a.replace("\\n", "\n") for a in args if not a.startswith("-")]
+                why = (_python_here(" ".join(said), roots, depth + 1) if name == "echo"
+                       else next(filter(None, (_python_here(a, roots, depth + 1) for a in said)), None) if name == "printf"
+                       else next(filter(None, (_script_runs_python(a, roots, depth + 1) for a in said)), None) if name == "cat"
+                       else None)
+                if why:
+                    return f"text piped into {words[0]} runs Python: {why}"
+            left, words = (words if w in ("|", "|&") else None), []
+        else:
+            target = True
+    return next(filter(None, (_fed_to_a_shell(t, roots, depth + 1) for t in inner)), None)
+
+
 def _python_here(text, roots, depth=0):
-    """Why shell text would run Python on this machine, or None. A `cd DIR` moves where later paths are found."""
-    for words in _commands(text):
+    """Why shell text would run Python on this machine, or None. A `cd DIR` moves where later paths are found, and
+    `PY=python3` what a later `$PY` is."""
+    if depth > 8:
+        return None
+    if why := _fed_to_a_shell(text, roots, depth):
+        return why
+    known = {}
+    for words in filter(None, _commands(text)):
+        settings = words[1:] if words[0] in ("export", "declare", "typeset", "readonly", "local") else words
+        if settings and all(re.fullmatch(r"\w+=.*", w) for w in settings):
+            known.update(w.split("=", 1) for w in settings)
+            continue
         if words[0] == "cd" and len(words) == 2:
             roots = [os.path.join(roots[0], os.path.expandvars(os.path.expanduser(words[1])))] + roots[1:]
-        elif why := _runs_python(_program(words), roots, depth):
+            continue
+        prog = _program(words)
+        if prog and (m := re.fullmatch(r"\$\{?(\w+)\}?", prog[0])) and m[1] in known:
+            prog = known[m[1]].split() + prog[1:]
+        if why := _runs_python(prog, roots, depth):
             return why
     return None
 

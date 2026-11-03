@@ -31,7 +31,7 @@ Platform: by expected run time (default): ≤ 30 min → cluster debug, RunPod i
           longer → RunPod directly, card 4090 or faster (H100 for runs over ~1 h) | cluster only because <reason>
 Pod: fresh (default) | reuse an idle commute pod of this session if status() shows one | keep running after,
      the next run follows within ~1 h
-Budget: <$ cap for RunPod: what is left of the session's REMOTE_KERNELS_BUDGET ($40), less ~15% headroom>
+Budget: <$ cap for RunPod: what is left of the session's REMOTE_KERNELS_BUDGET (`.claude/settings.json`), less ~15% headroom>
 Watch for: <known failure modes, numbers to copy from the log>
 ```
 
