@@ -1,0 +1,103 @@
+{
+  "status": "filed 2026-11-03 by the E70 code writer under the plan, before any E70 job ran. e70.py refuses a draft and refuses this file uncommitted or changed.",
+  "experiment": "E70: the existing/new definition read in full on the counting model. On LOW a linear probe for count(a), trained on pretraining data, reported by block with no possession threshold; in the fine-tuned task P and task N states of E55 C1b, that probe's direction removed at `=` and the share of the log-odds gain lost reported. Random directions and LOW itself are the controls and run first; every band comes from the controls in the same job. No VPD, no Qwen.",
+  "plan": "reports/plans/2026-11-03_plan_e70-existing-new-counting.md",
+  "code": "experiments/pcfg_anchors/e70.py; src/commute/removal.py (ridge, bases, removal, bands, R1, R2, the lookup; tests/test_removal.py); src/commute/probe.py (fit_probes, held_out_rows, accuracies, split out of train_probes with its behaviour unchanged); src/commute/readout.py shares; cluster/e70.sbatch. Fine-tune constants, grid and reproduce_tol, task_acc_min are read from predictions_c1b.json's constants.",
+  "constants": {
+    "floor_min": 0.05,
+    "ridge_lambda": 0.001,
+    "n_fit": 20000,
+    "n_held": 2000,
+    "n_draws": 20,
+    "min_seen": 5,
+    "probe_seed": 0,
+    "fit_key": [1, 700, 1],
+    "held_a_key": [1, 700, 2],
+    "held_b_key": [1, 700, 3],
+    "random_key": 700
+  },
+  "constants_sources": {
+    "floor_min": "|G_logodds| < 0.05 gives nan: the value of E54/E56 settings.floor_min as experiments/jain_readout/results/predictions.json files it, read through readout.shares. C1b's states gain far more than this (expected from P's and N's task accuracy of 1.0 at 10K).",
+    "ridge_lambda": "Lead's brief: lambda = 1e-3 x mean diagonal of the residual covariance, closed form, intercept fit, nothing standardised. A numerical conditioner on 20,000 rows in 192 dimensions, not a tuned value.",
+    "n_fit, n_held, n_draws, min_seen": "Lead's brief. 2,000 held-out rows matches probe.HELD_OUT; min_seen 5 keeps the softmax columns to values the probe actually saw. 20 draws: plan, step 3.",
+    "probe_seed": "0: a1c_probe.json's first seed, so the softmax probe's accuracy can be read against that reference (LOW was the first model in that call, so its probes' init is the same; AdamW per parameter makes the joint loss separable).",
+    "streams": "fit_key: ridge fit rows, 'C a 40'. held_a_key: held-out 'C a 40' rows (LOW's control, ridge accuracy). held_b_key: held-out 'C b 40' rows (every state and LOW, both probes' second accuracy). Draws: default_rng([random_key, rank, block index, draw]). Tail 700 is used by no other stage; run.EVAL_SEED = 1. The softmax probe's own stream and held rows stay probe.py's ([200 + seed, chunk]; [1, 40, seed, op])."
+  },
+  "definitions": {
+    "reads": "Every read at `=` (pcfg.ART_POS), fp32, eval mode, on held-out rows. Log-odds is identity.log_odds through steering.logodds_at: log P(target) - log(1 - P(target)).",
+    "ridge_probe": "Per block, ridge of count(a) on LOW's residual after that block, on 20,000 'C a 40' rows of the pretraining distribution. Accuracy = rounded prediction equals count(a) on 2,000 held-out rows. Direction = unit weight vector, U of rank 1. This is the headline probe.",
+    "softmax_probe": "commute.probe's recipe on 'C a 40' (Jain et al. schedule, with its shuffled-label twin). Columns of the count values seen at least 5 times among the probe's own held-out rows, centred by their mean; orthonormal basis by SVD, rank r = number of values - 1. r is expected to be 6 (values 10-16).",
+    "removal": "At block b, h <- h - U U^T h at `=` through forward_at_art's patch, where h is that model's own clean residual on the same row. One code path for rank 1 and rank r. Later blocks still read the text.",
+    "random_control": "20 draws per block per rank (seeded QR of a normal draw). The same draws for every state and for LOW, so 'same direction' holds and each state still has 20 draws per block.",
+    "control_on_LOW": "2,000 held-out 'C a 40' rows, target count(a). drop = mean(clean log-odds - log-odds after removal). Band at a block = 95th percentile (numpy linear) of |random drop|, per probe (rank 1 for ridge, rank r for softmax).",
+    "share": "readout.shares on 2,000 held-out 'C b 40' rows, the same rows for every state and LOW, for the state's own target (P: count(a) + 1; N: count(b); the task_rows answer token). A_lo = (state's mean log-odds drop - LOW's mean log-odds drop, same rows, same target, same direction) / G_logodds, G_logodds = the state's mean log-odds gain over LOW. A_lo_raw (LOW's drop not subtracted) is recorded beside it. A_lo is the scored number.",
+    "state_band": "At a block, per probe: max over all 20 10K states (a not-yet-learned one included, which can only widen it) of the 95th percentile of |random A_lo| over that state's 20 draws. Non-finite draws are dropped; a state with none adds nothing.",
+    "g_of_f": "Def 2. LOW's ridge reading on the state rows, rounded; a table from reading to the state's argmax answer, most common answer per reading on the even rows (ties to the lowest token); read on the odd rows, an unseen reading counted wrong. Per block. Floor beside it: the even rows' most common answer, read on the odd rows.",
+    "states": "All 40 states of c1b.all_runs (2 tasks x 2 rates x 5 seeds x saves 1K, 10K). R2 reads the 10K ones; the 1K ones are read and reported."
+  },
+  "rules": {
+    "R1": {
+      "rule": "(a) LOW's count_a (run.behaviour, 4,000 rows) within reproduce_tol = 0.01 of a1_LOW.json's, inclusive; a miss stops. (b) Per probe and block, the probe has teeth when its drop exceeds the band, strictly. If no probe has teeth at any block: stop, no fine-tune.",
+      "reading_of_the_plan": "'Within the band' is read one-sided for the stop: a removal that raises count(a)'s log-odds beyond the band loses nothing, so it is no teeth; it is still printed. A tie or a nan on either side is no teeth.",
+      "on_miss": "results/e70_stop.json, exit 1, every later job refuses. The numbers go to the lead.",
+      "lean": "No stop: teeth at least at block 6 (plan's table)."
+    },
+    "R2": {
+      "rule": "At a block, per probe, on the learned 10K states: gap = min share over P - max share over N. 'holds' when gap > the block's state band, strictly; 'reversal' when min N - max P > the band, strictly; else 'neither'. Read at every block and reported as a table.",
+      "verdict": "'separates' if it holds at any of blocks 1-5; else 'no call' if any of blocks 1-5 is unreadable; else 'output-side, no call' if it holds at block 6 only; else 'does not separate'. Ridge's verdict is the headline, softmax's is reported beside it.",
+      "reversal": "Read at every block. Any reversal gets the announcement a reversal gets, whatever the verdict.",
+      "lean": "Holds (plan)."
+    },
+    "resume": "Each stage is written to results/e70.json as it ends, fine-tunes per run and states per state. A resubmit skips what is written; a partial LOW or fine-tune resumes from its checkpoint. A changed constant exits 2."
+  },
+  "predictions": {
+    "LOW_count_a": {"expected": "0.99975 +- 0.01 (a1_LOW.json)", "on_miss": "stop (R1)"},
+    "softmax_accuracy_C_a_40": {"expected": "blocks 1-6 ~ .34 .87 .92 .98 1 1 (a1c_probe.json seed 0); shuffled ~ .33", "on_miss": "reported; the plan files no stop"},
+    "ridge_accuracy_C_a_40": {"expected": "no reference; above majority (~.33) from block 2, high by block 6", "on_miss": "reported"},
+    "both_on_C_b_40_LOW": {"expected": "near their 'C a 40' values at late blocks, since LOW answers count(a) there; lower early", "on_miss": "reported"},
+    "LOW_drop_under_probe": {"expected": "above band at late blocks, at least at block 6", "on_miss": "stop only if at no block for both probes (R1)"},
+    "task_accuracy": {"expected": "every state close to its c1b.json value; 1K states at 1e-5 may sit under 0.9", "on_miss": "logged and reported; stops nothing: a seed may differ"},
+    "random_share": {"expected": "within the band by construction; band itself expected << 0.1", "on_miss": "a band near 0.1 or above is reported: R2 loses power"},
+    "share_P_10K": {"expected": "high at late blocks (lean > 0.5 at block 6)"},
+    "share_N_10K": {"expected": "near the band at blocks 1-5; may rise at block 6, where the count of a shares the output head with every answer (E64's last block read 0.34-0.53 on all kinds)"},
+    "g_of_f_10K": {"expected": "P near the probe's accuracy; N near its floor, about .35"},
+    "corr_count_a_count_b": {"expected": "printed once; no filed value. Read for R2's blind spot: a direction shared between the two counts costs N as well."}
+  },
+  "edge_cases": {
+    "E1_gain_under_floor": "|G_logodds| < floor_min gives a nan share; the state is left out of R2's side and counted (nan_P, nan_N). A negative gain beyond the floor gives a well-defined share, scored as is (readout.shares). Tested through r2_block's nan counts; shares' own floor in tests/test_readout.py.",
+    "E2_side_all_nan_or_empty": "'no call' at that block; the gap is nan. Tested.",
+    "E3_nan_band": "'no call' at that block, gap still reported. Tested. Band from no finite draw is nan. Tested.",
+    "E4_ties": "A gap equal to the band does not hold; a drop equal to the band is no teeth. Tested.",
+    "E5_one_state_on_a_side": "min = max = that state; the rule stands and n_P or n_N shows it. Tested.",
+    "E6_not_yet_learned": "A state under task accuracy 0.9 is left out of R2 and listed (only 1K states expected). It still widens the band, as the plan's 'max over 10K states' reads. Its 1K or 10K shares are still reported.",
+    "E7_no_call_vs_no_separation": "A block 1-5 unreadable with none holding gives 'no call'; a block 6 unreadable alone does not stop 'does not separate', since only blocks 1-5 can separate. A holding block 1-5 decides even when another is unreadable. Tested: every branch of r2_verdict.",
+    "E8_R1_nan": "A nan drop or band is no teeth; both probes wholly nan stops. Tested.",
+    "E9_lookup": "An unseen reading counts as wrong; a tie in the mode goes to the lowest token; an empty half gives nan. Tested.",
+    "E10_too_few_values": "Fewer than 2 count values seen: centred_basis asserts and the job fails loudly in the probes stage, before any fine-tune. Tested. Not expected: LOW's count(a) histogram spreads over 10-16.",
+    "E11_sd_of_a_state": "Seed spread is in the table: the shares of all five seeds per task and rate at every block."
+  },
+  "blind_to": [
+    "count held non-linearly",
+    "information re-read from the text after the removal block: early blocks can understate, read off LOW's control by block",
+    "a direction shared between count a and count b, which costs N as well, hence the printed correlation on these rows"
+  ],
+  "noise_floor": "The bands, computed in this job; seed spread across the five seeds is in the table.",
+  "positive_controls": {
+    "LOW": "The probe's removal costs LOW its own count(a) on 'C a 40' rows (R1).",
+    "softmax_shuffled": "The shuffled-label probe's accuracy, Hewitt & Liang's floor, beside the true probe's."
+  },
+  "do_nothing": "Random directions (rank 1 and rank r), the same draws on LOW and every state.",
+  "reference_differences": "The C1b states and LOW are gone (plan, 'States are gone'), so all are retrained from the same code, seeds and kind of card, by run.pretrain and c1b.finetune. Differences left: GPU nondeterminism and which card Slurm gives (no constraint is set, as Stage A set none). Named as what the controls test: count_a against a1_LOW.json (stops), and task accuracy against c1b.json (logged). N1, N1s1 and M retrain through c1b.finetune with task_rows('N'), which draws the same rows as run.finetune at c_tr = 0, chunk 100, the same seeds.",
+  "departures_from_literature": [
+    {"what": "Probe", "literature": "Jain et al. 2024 Def 1: a softmax probe of the same recipe, thresholded for possession.", "ours": "Softmax probe unchanged, reported by block with no possession threshold (the user's instruction, against 'filed before any run' in decisions.md's reuse-line row), and a ridge regression as the headline.", "why": "A removal needs a direction; ridge gives one for a scalar count, softmax gives a subspace."},
+    {"what": "Causal test", "literature": "Jain et al.: pruning and reverse fine-tuning, not removal of a probe direction.", "ours": "Removal of the probe's direction or subspace at `=`, as E59 and E64 did on the Pile-trained readouts. Pruning and reverse fine-tuning are C1b's readings and are quoted, not rerun.", "why": "decisions.md's mechanistic row; the pair's labels are known here by construction."},
+    {"what": "Shuffled-label control", "literature": "Hewitt & Liang 2019: a control task with random labels per input type.", "ours": "probe.py's labels permuted within each batch.", "why": "As Stage A; the inputs carry no information about them."}
+  ],
+  "not_run_here": [
+    "Pruning and reverse fine-tuning of the definition's causal clause (C1b's readings stand and are quoted).",
+    "VPD.",
+    "Qwen.",
+    "Carrying g o f to unseen values: no held-out rule is filed."
+  ],
+  "job_split": "cluster/e70.sbatch, debug QoS, $0, 22-min deadline, exit 3 = resubmit by hand. Estimated, not measured: LOW 10-12 min, probes 2, control 1, fine-tunes 2-2.5 each (45), states 30-45 s each (25): ~85 min = 4-5 jobs (the plan guessed ~3)."
+}
