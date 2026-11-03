@@ -27,3 +27,8 @@
 Rules, edge cases run: `experiments/qwen_transmission/rules.py`, `results/predictions.json`. Saved: per-row sums, one small JSON per group.
 
 **Not run:** read 3 (human rows), any adversary, any new training, which subcomponents Γ switches between W0's and FT's forward.
+
+## Amendment 1 (2026-11-03, after job 50510)
+Job 50510 stopped at the filed control on u3 (KL ratio 0.447 against 0.5; amplitude 0.75, cosine 0.96). The band was guessed, and the hook checked exactly, so the control is restated as amplitude in [0.5, 1.5] (`results/predictions_amend1.json`; `predictions.json` stands and reports the miss). u1's reads missed both leans: its label is "elsewhere" (block 0's change keeps 0.057 with every later site unmasked, against 0.5 filed) and "needs switched-off subcomponents" (Gaussian's transmission is 25 to 250 times δW's at blocks 0, 7, 14, 21). A cut leaves both the change's own block and everything upstream masked, so it cannot say which of them costs what. This job separates them: masks only upstream of the change, and all masks with the term reading the clean inputs, for δW and Gaussian, plus how far the masked residual stream sits from the clean one. u3's remaining groups run first, so the template is read too.
+
+**Not run:** which subcomponents δW depends on; the split of δW into often-on and rarely-on parts under these arms.

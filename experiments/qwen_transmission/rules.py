@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import math
 
-BAND = (0.5, 2.0)  # the control: transmission of a change entering just before the final norm
+BAND = (0.5, 1.5)  # Amendment 1, the control: logit-shift amplitude of a change entering just before the final norm (was KL ratio in 0.5-2)
 LOW, HIGH, RATIO, MATCH, FLOOR = 0.1, 0.5, 3.0, 0.2, 1e-5
 SHARP, SPECIFIC, NO_GAIN = 0.4, 1.0, 0.2
 EARLY = ("0", "7", "14")
@@ -14,9 +14,9 @@ def tau(k_masked: float, k_clean: float) -> float:
     return k_masked / k_clean if k_clean >= FLOOR else math.nan
 
 
-def control(tau_dw: float, tau_gauss: float) -> bool:
+def control(amp_dw: float, amp_gauss: float) -> bool:
     """True when both of the control's changes pass. A NaN (unread) fails."""
-    return BAND[0] <= tau_dw <= BAND[1] and BAND[0] <= tau_gauss <= BAND[1]
+    return BAND[0] <= amp_dw <= BAND[1] and BAND[0] <= amp_gauss <= BAND[1]
 
 
 def where_lost(tau_0: float, tau_cut_0: float) -> str:
@@ -62,3 +62,12 @@ def sharpness(k_by_temp: dict[str, float], template: bool) -> dict[str, float | 
     else:
         label = "mostly one scalar" if k_min <= SHARP else "specific" if k_min >= SPECIFIC else "between"
     return {"K_1": k1, "K_min": k_min, "share_removed": share, "label": label}
+
+
+def factor(tau_up: float, tau_clean_x: float) -> str:
+    """Amendment 1, one block: transmission with only the masks upstream, and with only the masks at and after it (clean inputs in the term)."""
+    if math.isnan(tau_up) or math.isnan(tau_clean_x):
+        return "unread"
+    if tau_up <= LOW:
+        return "both" if tau_clean_x <= LOW else "upstream activations"
+    return "own and later masks" if tau_clean_x <= LOW else "neither"
