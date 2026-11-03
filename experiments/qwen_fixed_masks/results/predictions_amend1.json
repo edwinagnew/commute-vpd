@@ -1,0 +1,13 @@
+{
+ "filed": "2026-11-03T14:40:10+00:00",
+ "amendment": 1,
+ "why": "Job 50428 stopped on the filed room rule on u1: ceiling gain 0.201 against do-nothing 0.240 (gap -0.038), KL 0.1045 against 0.1044; the filed expectation (room, ceiling gain >= 0.5, medium lean) missed and stands. The stop kept the larger updates (u2, u3), T0 on u2 and every T2 read from running, and room is a per-update rule.",
+ "change": "The u1 'no room' stop is removed from run.py; an unreadable room still stops. Every other rule, threshold, row and read in predictions.json stands unchanged. Reads already written are not rerun. results/stopped_50428.json keeps the stop's record.",
+ "scoring": "T1 labels stay conditional on room and teeth per update, so on u1 the halves and splits are reported unlabelled. T0's rule 'specific' is read on u2 with the same 0.2 stated guess.",
+ "expected": {
+  "room_u2": "no room, low lean: under W0's masks its whole update closed only 0.12 of the KL gap, but its gain was 0.44",
+  "room_u3": "no room, medium lean: under W0's masks it read 0.03 and gain 0.02",
+  "T2": "no lean, as filed"
+ },
+ "not_run": "u4; t sweep; teacher training; adversary"
+}

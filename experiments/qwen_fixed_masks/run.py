@@ -7,7 +7,7 @@ place (`qwen_maps.applied`), so `OriginalV` rebuilds one site's V at a time from
 Stored, g is 506 MB per row in fp32 on the alive columns (494598 x 256), 65 GB for 128 rows, 108 GB beside the reader's 43 GB
 under a 110 GB limit; bf16 (32 GB) rounds g by 0.4% and alive-only drops the rest, which the control's 1e-3 may not survive.
 
-Per update, in order: do_nothing (control_reproduce, stop); stage S; on u1, u2 T0a and T0b; ceiling (room: u1 stops);
+Per update, in order: do_nothing (control_reproduce, stop); stage S; on u1, u2 T0a and T0b; ceiling (room, read and labelled, no stop since Amendment 1);
 upper, lower (room again, with w); random, ls, adjoint; the clean reads. Each read writes results/<update>/<read>.json as it
 ends (a rerun skips it) and rescores results/score.json; every number goes to results/run.log. A stop: results/stopped.json,
 exit 1. Past --wall-min: exit 0, resubmit to resume. An update's stage S files on --out go when its reads finish.
@@ -211,7 +211,7 @@ class Runner(pr.Runner):
         self.job.log(f"[score] {json.dumps(sc, default=float)}")
         if sc["control_reproduce"]["missed"]:
             self.job.stop("control_reproduce", json.dumps(sc["control_reproduce"], default=float))
-        if sc["u1"]["T1"]["room"]["result"] in ("no room", "unreadable"):
+        if sc["u1"]["T1"]["room"]["result"] == "unreadable":  # "no room" stopped job 50428; Amendment 1 reads on
             self.job.stop("room", json.dumps(sc["u1"]["T1"]["room"], default=float))
         for name in self.res:
             if sc[name]["T1"].get("fixed_g", {}).get("missed"):
