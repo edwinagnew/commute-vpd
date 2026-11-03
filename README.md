@@ -48,6 +48,8 @@ meant the split of a finished update, and that request was never built as asked
 - Outside share of a LoRA (E9): 0.48 to 0.71 of its energy against 0.55 to 0.76 for a random update, at every step; a
   fine-tune reads 0.27 against 0.53 (E8). The LoRA sits outside the subcomponents about as much as noise does.
 
+Current plan, Qwen D1, latest (2026-11-03, `reports/plans/2026-11-03_plan_e72-d1-second-test.md`, E72, $0, measures only): D1 blocked on day 1, the pass test under the original masks cannot yet pass anything on KL (`reports/analyses/2026-11-03_analysis_e68-d1-pass-test.md`); what the test becomes is the user's call, log card `decision-d1-test`.
+
 Current plan, whole fleet (2026-11-03, `reports/plans/2026-11-03_plan_qwen-reorient.md`, user): the Qwen deliverables of 2026-10-28 by 2026-11-11. D1 (`qwen-decomp-lead`): a pass test that can fail a bad placement on the saved updates, else teacher training as the map; D2 (`qwen-rl-lead`, new): the GRPO loop, null and own-samples SFT, δW saved; D3: the route-split and placement rows on every arm with a cheap comparator beside each (`baseline-lead`, secondary). The 67M lines below are stopped; the fast lane (reviews only for gated runs, two amendments per E-code, gate at $60 / 6 h, session budget $100) applies.
 
 Current plan, re-gating line, latest (2026-11-02, `reports/plans/2026-11-02_plan_e67-weight-side-read.md`, E67, user's dialog): on 128 Pile rows at every position, the change in Γ's values and an overlap share against the learned-nothing fine-tune; reviewed, cut to the do-nothing side and also read on the rows r failed on (review reports/reviews/2026-11-02_review_e67-code.md); one $0 debug job running next.
