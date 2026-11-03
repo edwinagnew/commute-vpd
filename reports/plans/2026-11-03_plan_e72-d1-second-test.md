@@ -56,3 +56,12 @@ $0, one L40, `normal` QoS if the queue is empty at submission. Per update S ~20 
 ## Not run
 
 u4; t sweep; K(W0 ‖ masked at t); maths accuracy; teacher training; the adversary; teacher-forced inputs (Fable's optional read separating routing from input starvation).
+
+## Added before any code ran: two reads under W0's masks (independent check, 2026-11-03)
+
+`reports/reviews/2026-11-03_review_e68-ceiling.md` holds the ceiling with caveats: no bug found, but "not the missing Δ" overreaches, since Δ on under the masks was never read, and nothing separates "the masks drop any change of this size" from "the update needs parts the masks switch off". Two stages run first on u1, then u2, each ~5 min, both with W0's masks, the same hook as `qwen_pass_test/amend1.py`:
+
+- **T0a, a random change the same way.** R is E68's random state's whole weight change at its scale `a` (its clean KL from W0 was matched to the fine-tune's in `search.json`, on KL(W0 ‖ .)). Reads: K_R0 = KL(W0 + R clean ‖ W0 masked), K_R1 = KL(W0 + R clean ‖ W0 masked + R unmasked). r2_R = (K_R0 − K_R1) / (K_R0 − K0). Rule `specific`: per update, "this update" if r2_R − r2_C > 0.2; "any change" if |r2_R − r2_C| ≤ 0.2; "random lower" otherwise. r2_C from `qwen_pass_test/results/amend1/score.json`. The 0.2 is a stated guess with no noise floor read: report the two numbers beside the label. Expected: no lean.
+- **T0b, Δ on under the masks.** W0's masks, Δ fully on (masked_logits' d = 1) plus the whole update unmasked. Reported as K against the ceiling's K, no rule: at d = 1 the masked forward's off subcomponents still go, so the number says how much of the ceiling's shortfall Δ's return closes.
+
+No stop on either; they read what they read. Blind to: which of the update's parts the masks drop.
