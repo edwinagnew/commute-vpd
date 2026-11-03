@@ -1,0 +1,68 @@
+{
+ "device": "NVIDIA H100 80GB HBM3",
+ "sampler": {
+  "sampler_s": 47.073675870895386,
+  "generate_s": 99.55979084968567,
+  "generate_rows": 439,
+  "length": {
+   "a": 190.158203125,
+   "b": 191.505859375,
+   "diff": -1.34765625,
+   "se": 1.8680477690279795,
+   "holds": true
+  },
+  "reward": {
+   "a": 0.798828125,
+   "b": 0.83203125,
+   "diff": -0.033203125,
+   "se": 0.019928682115903602,
+   "holds": true
+  },
+  "peaks": {
+   "gpu_gb": 72.963204096,
+   "host_gb": 10.851316
+  }
+ },
+ "checks": {
+  "sampler agrees with generate: length": {
+   "holds": true,
+   "a": 190.158203125,
+   "b": 191.505859375,
+   "diff": -1.34765625,
+   "se": 1.8680477690279795
+  },
+  "sampler agrees with generate: reward": {
+   "holds": true,
+   "a": 0.798828125,
+   "b": 0.83203125,
+   "diff": -0.033203125,
+   "se": 0.019928682115903602
+  },
+  "projected cost within the limit": {
+   "holds": true,
+   "usd": {
+    "100": 30.30850997594463,
+    "50": 26.73816068172124
+   }
+  }
+ },
+ "kl_two_steps_on_rollouts": 0.05437438756016901,
+ "seconds": {
+  "sample": 44.481372356414795,
+  "train": 18.94868242740631,
+  "f_train": 32.22376313340996,
+  "read": 49.86504507064819,
+  "acc": 780.777862071991
+ },
+ "usd_per_h": 3.99,
+ "projected_usd": {
+  "100": 30.30850997594463,
+  "50": 26.73816068172124
+ },
+ "n_steps": 100,
+ "peaks": {
+  "gpu_gb": 58.632187904,
+  "host_gb": 10.851316
+ },
+ "done": true
+}
