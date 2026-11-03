@@ -1,0 +1,18 @@
+{
+  "filed": "2026-11-03, before the code ran; never edited after the run",
+  "question": "E68 Amendment 2 (the last): Amendment 1 read 'cannot pass' on u1 and u2, against the filed lean. Is it the masks that stop the whole update from working, or the missing leftover Delta? Open the masks in steps, m = g + t (1 - g), Delta off, with and without the whole update added. At t = 1 every subcomponent is fully on and only Delta is missing.",
+  "plan": "reports/plans/2026-11-03_plan_e68-d1-pass-test.md, section 'Amendment 2: opening the masks'",
+  "quantities": {
+    "K(t, on)": "KL(FT || forward at m = g + t (1 - g), whole update added), mean over every position, first 32 rows",
+    "K(t, off)": "the same, nothing added. t = 0 comes from Amendment 1's files on the same 32 rows"
+  },
+  "rules": {
+    "cause": {"rule": "per update, on the 32 rows: 'masks' if K(1, on) <= 0.1 * K(0, on); else 'leftover' if K(1, on) >= 0.5 * K(0, on); else 'both'", "edge": "NaN: unreadable", "expected": "'masks' on both updates, medium lean: Delta is small on the rows the decomposition was trained on"},
+    "control": {"rule": "u1: K(0, on) and K(0, off) on the 32 rows come from Amendment 1 and are not rerun; K(1, off) is reported beside the clean KL on the same rows; no stop", "tolerance_basis": "Amendment 1's two controls already pin the hook"}
+  },
+  "if": {
+    "masks": "the update needs parts of the model the masks switch off, so a test built on W0's masks cannot pass a real update on this model. Propose a test without them",
+    "leftover": "the decomposition without Delta is what breaks it; the question moves to Delta",
+    "both": "report the steps as read"
+  }
+}

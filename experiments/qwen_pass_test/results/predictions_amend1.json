@@ -1,0 +1,23 @@
+{
+  "filed": "2026-11-03, before the code ran; never edited after the run",
+  "question": "E68 Amendment 1: can the pass test pass anything? No placement of an update has reached its faithful line. The ceiling is W0's masked forward with the whole update added, no mask on it, at every site.",
+  "plan": "reports/plans/2026-11-03_plan_e68-d1-pass-test.md, section 'Amendment 1: the ceiling'",
+  "quantities": {
+    "ceiling": "at each of the 196 matrices the output is ((x V) * g) U + x dW^T, g from Gamma on W0's forward, U, V W0's, Delta off",
+    "K_C": "KL(FT || ceiling), mean over every position, same rows as E68",
+    "K_Z": "the same forward with the added term multiplied by 0: must equal E68's KD",
+    "K_clean_plus": "KL(FT || W0 clean + x dW^T through the same hook), no masks, first 8 rows of u1",
+    "K_clean": "KL(FT || W0 clean), same 8 rows",
+    "r2_C": "(KD - K_C) / (KD - K0), KD and K0 as in E68",
+    "gain_C": "E68's gain_kept for the ceiling"
+  },
+  "rules": {
+    "control_zero": {"rule": "u1: K_Z within 1e-6 relative of E68's do_nothing K (1.37381065); else stop", "tolerance_basis": "E68's reproduction read 5e-11 relative across jobs on the same code path"},
+    "control_hook": {"rule": "u1: K_clean_plus <= 0.01 * K_clean; else stop", "tolerance_basis": "the hook must rebuild FT from W0 plus dW; a wrong sign or transpose reads about K_clean or more. Rounding is not measured beforehand, so the band is a share of the update's own KL read on the same rows; a miss with K_clean_plus < 0.1 * K_clean is reported as rounding and read by the lead"},
+    "ceiling": {"rule": "per update: 'can pass' if K_C <= 1.5 * K0 (E68's faithful line); else 'near' if r2_C >= 0.5; else 'cannot pass'", "edge": "KD - K0 < 0.05: unscored; NaN: unreadable", "expected": "'near' on u1, u2 and u4, r2_C in [0.85, 1), medium lean: the masks' own damage (K0) stays when the update is restored, and it may count for more on the fine-tuned model's rows"}
+  },
+  "if": {
+    "can pass or near": "the test has room: the splits fall short because the masks switch off what they placed. Teacher training under W0's masks asks a fair question",
+    "cannot pass": "even the whole update does not bring the masked model back: reading B has no room and D1's test must change. D1 blocked, fix proposed the same day"
+  }
+}

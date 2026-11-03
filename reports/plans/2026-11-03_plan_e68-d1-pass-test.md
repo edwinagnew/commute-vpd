@@ -72,3 +72,11 @@ Step 1; intermediate gold steps; in-span as a state; web rows and replays; the a
 ## Departures found by the code writer (2026-11-03, before the run)
 
 Predictions stay as filed. The template's rows are E57's 64 rows, not 128: the filed text says both, and `qr.a1_rows` makes 64, so its bootstrap is on 64. KD is read through W0's path and do-nothing separately, so the 1e-5 control can fail; the stop fires on E40 step 10 only. `--mem` is 110G, not 80G: Amendment 2 peaked at 74 GB and this cycle repeats four times.
+
+## Amendment 1: the ceiling (2026-11-03, first of two)
+
+No placement has reached the faithful line, and this plan says whether the test can pass anything is open. So one state with no placement at all: W0's masked forward with the whole update added, unmasked, at every matrix. It is a yardstick, not a map. Controls first on u1: the added term at 0 reads E68's KD, and the same hook without masks rebuilds the fine-tuned model. $0, one L40, debug QoS, ~25 min, beside the running job. Rules in `results/predictions_amend1.json`; "can pass" or "near" means teacher training under W0's masks asks a fair question, "cannot pass" means D1 blocked and the test must change. Not run: the ceiling under reading A, and any partial share of the update.
+
+## Amendment 2: opening the masks (2026-11-03, the last)
+
+Amendment 1 read "cannot pass" on u1 and u2 against the filed lean, with both its controls clean. That number blocks every reading under W0's masks, so it is run down first. Same forward, masks opened in steps, m = g + t(1 - g), t = 0.1, 0.5, 1, with and without the whole update, u1 and u2, first 32 rows. At t = 1 only Δ is missing, which separates masks from leftover. $0, one L40, debug QoS, ~20 min. Rules in `results/predictions_amend2.json`. Not run: Δ on with masks; which activations the masks change; other rows.
