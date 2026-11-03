@@ -7,4 +7,3 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
-- 2026-11-03 · reports/plans/2026-11-03_plan_e69-grpo-loop.md · experiments (new E69 card), pending decisions (Blocking: go-ahead on E69's cost line) · GRPO loop, null and own-samples SFT on Qwen rehearsed for $0 and reviewed; the H100 run waits on the user.
