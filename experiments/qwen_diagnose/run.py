@@ -128,9 +128,9 @@ class Reader:
 
     def detail(self, rows: Tensor, ft: Delta, tok: Any) -> dict[str, Any]:
         """Where W0 and FT differ: by turn (target's role), by W0's top probability; and the positions that move most."""
-        keys = ("nll_W0", "nll_FT", "H_W0", "H_FT", "acc_W0", "acc_FT", "top_p_W0", "K", "n")
-        by_role = {r: dict.fromkeys(keys, 0.0) for r in ("user", "assistant", "other")}
-        by_conf = {b: dict.fromkeys(keys, 0.0) for b in ("p<0.5", "0.5-0.9", "0.9-0.99", ">0.99")}
+        keys: list[str] = ["nll_W0", "nll_FT", "H_W0", "H_FT", "acc_W0", "acc_FT", "top_p_W0", "K", "n"]
+        by_role: dict[str, dict[str, float]] = {r: dict.fromkeys(keys, 0.0) for r in ("user", "assistant", "other")}
+        by_conf: dict[str, dict[str, float]] = {b: dict.fromkeys(keys, 0.0) for b in ("p<0.5", "0.5-0.9", "0.9-0.99", ">0.99")}
         tops: list[tuple[float, str]] = []
         for i in range(0, len(rows), C.batch):
             t = rows[i: i + C.batch].to(DEV)
@@ -152,31 +152,22 @@ class Reader:
             for v, ix in zip(vals.tolist(), idx.tolist(), strict=True):
                 r, p = ix // tgt.shape[1], ix % tgt.shape[1]
                 ctx = tok.decode(t[r, max(0, p - 12): p + 1])
-                tops.append((v, f"K {v:.2f} | …{ctx!r} | target {tok.decode(tgt[r, p])!r} | W0 {tok.decode(top0[r, p])!r} {p0[r, p]:.3f} | "
-                                f"FT {tok.decode(topf[r, p])!r} {pf[r, p]:.3f}"))
+                tops.append((v, (f"K {v:.2f} | …{ctx!r} | target {tok.decode(tgt[r, p])!r} | W0 {tok.decode(top0[r, p])!r} {p0[r, p]:.3f} | "
+                                f"FT {tok.decode(topf[r, p])!r} {pf[r, p]:.3f}")))
             del l0, lf
         tops = sorted(tops, reverse=True)[: C.top_positions]
-        mean = lambda d: {k: (v / d["n"] if d["n"] else None) for k, v in d.items() if k != "n"} | {"n": d["n"]}  # noqa: E731
+        def mean(d: dict[str, float]) -> dict[str, float | None]:
+            return {k: (v / d["n"] if d["n"] else None) for k, v in d.items() if k != "n"} | {"n": d["n"]}
+
         return {"by_role": {k: mean(v) for k, v in by_role.items()}, "by_conf": {k: mean(v) for k, v in by_conf.items()},
                 "top_positions": [x[1] for x in tops]}
 
 
-def main() -> None:
-    assert PRED.is_file(), "predictions first"
-    fp32_matmuls()
-    pr = load_file("pass_amend1", HERE.parent / "qwen_pass_test" / "amend1.py").pr
-    maths = torch.tensor([r[:256] for r in json.loads((HERE.parent / "qwen_sft" / "results" / "maths_rows.json").read_text())["rows"]])
-    web = torch.tensor([r[:256] for r in json.loads((HERE.parent / "qwen_adversary" / "results" / "tokens.json").read_text())["rows"]])
-    a1 = pr.a1_rows()
-    tok = AutoTokenizer.from_pretrained(qwen_eval.MODEL, revision=qwen_eval.MODEL_REV)
-    updates = {u.name: u for u in pr.P.updates}
-    for u in updates.values():
-        assert u.path.is_file(), u.path
-    model = load_target(DEV, F32)
-    rd = Reader(model)
-    log(f"[load] {torch.cuda.get_device_name()}; rows maths {tuple(maths.shape)} web {tuple(web.shape)} a1 {tuple(a1.shape)}")
+class Job:
+    def __init__(self, rd: Reader, tok: Any, rows: dict[str, Tensor], updates: dict[str, Any]):
+        self.rd, self.tok, self.rows, self.updates = rd, tok, rows, updates
 
-    def step(key: str, fn: Callable[[], dict[str, Any]]) -> dict[str, Any]:
+    def step(self, key: str, fn: Callable[[], dict[str, Any]]) -> dict[str, Any]:
         f = RESULTS / f"{key}.json"
         if f.is_file():
             return json.loads(f.read_text())
@@ -185,59 +176,93 @@ def main() -> None:
             r = fn()
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(json.dumps(r, indent=1))
-        log(f"[{key}] {json.dumps(r)[:900]}  {time.time() - t0:.0f} s, peak GPU {torch.cuda.max_memory_allocated() / 1e9:.1f} GB")
+        peak = torch.cuda.max_memory_allocated() / 1e9
+        log(f"[{key}] {json.dumps(r)[:900]}  {time.time() - t0:.0f} s, peak GPU {peak:.1f} GB")
         return r
 
-    def dw_of(name: str) -> dict[str, Tensor]:
-        return {s: v.to(DEV, F32) for s, v in qwen_sft.load(updates[name].path).items() if s in SITES}
+    def dw_of(self, name: str) -> dict[str, Tensor]:
+        return {s: v.to(DEV, F32) for s, v in qwen_sft.load(self.updates[name].path).items() if s in SITES}
 
-    # control first: u1's FT against E72's own numbers, the full rows
-    dw = dw_of("u1")
-    ctl = step("control", lambda: rd.read(maths, lambda s: dw[s]))
-    ctl0 = step("control_W0", lambda: rd.read(maths, None))
-    gap = {"H_FT": abs(ctl["H"] / E72["H_FT"] - 1), "H_W0": abs(ctl0["H"] / E72["H_W0"] - 1),
-           "nll_FT": abs(ctl["nll"] / E72["nll_FT"] - 1)}
-    log(f"[control gaps] {gap}")
-    if max(gap.values()) > C.control_rel:
-        (RESULTS / "stopped.json").write_text(json.dumps(gap))
-        sys.exit(f"control missed {gap}")
+    def control(self) -> None:
+        """u1's FT and W0 against E72's own numbers, the full rows."""
+        dw, rows = self.dw_of("u1"), self.rows["maths"]
+        ft = self.step("control", lambda: self.rd.read(rows, lambda s: dw[s]))
+        w0 = self.step("control_W0", lambda: self.rd.read(rows, None))
+        gap = {"H_FT": abs(ft["H"] / E72["H_FT"] - 1), "H_W0": abs(w0["H"] / E72["H_W0"] - 1),
+               "nll_FT": abs(ft["nll"] / E72["nll_FT"] - 1)}
+        log(f"[control gaps] {gap}")
+        if max(gap.values()) > C.control_rel:
+            (RESULTS / "stopped.json").write_text(json.dumps(gap))
+            sys.exit(f"control missed {gap}")
 
-    # is W0 odd, and on which text
-    for name, rows in (("maths", maths), ("web", web), ("a1", a1)):
-        step(f"W0_on_{name}", lambda rows=rows: rd.read(rows[: C.rows], None))
+    def texts(self) -> None:
+        for name, rows in self.rows.items():
+            self.step(f"W0_on_{name}", lambda rows=rows: self.rd.read(rows[: C.rows], None))
 
-    # precision: the same weights a rounding away
-    rows = maths[: C.rows]
-    rounded = {s: v.to(torch.bfloat16).to(F32) for s, v in rd.W0.items()}
-    step("W0_rounded_bf16", lambda: rd.read(rows, None, full=rounded))
-    step("W0_autocast_bf16", lambda: rd.read(rows, None, autocast=True))
-    gen = torch.Generator(DEV).manual_seed(0)
-    noise = {s: v * C.rel_noise * torch.randn(v.shape, generator=gen, device=DEV, dtype=F32) for s, v in rd.W0.items()}
-    step("W0_rel_noise", lambda: rd.read(rows, lambda s: noise[s]))
-    del rounded, noise
-
-    # the path along each update, and two nulls of the same size per matrix
-    for name in ("u1", "u2", "u3", "u4"):
-        dw, u = dw_of(name), updates[name]
-        rows = (maths if u.rows == "maths" else a1)[: C.rows]
-        ft: Delta = lambda s, dw=dw: dw[s]  # noqa: E731
-        step(f"{name}/detail", lambda: rd.detail(rows, ft, tok))
-        for t in C.t_path + C.t_neg:
-            step(f"{name}/dw_{t}", lambda t=t: rd.read(rows, lambda s: t * dw[s], ft=ft))
+    def precision(self) -> None:
+        rd, rows = self.rd, self.rows["maths"][: C.rows]
+        rounded = {s: v.to(torch.bfloat16).to(F32) for s, v in rd.W0.items()}
+        self.step("W0_rounded_bf16", lambda: rd.read(rows, None, full=rounded))
+        self.step("W0_autocast_bf16", lambda: rd.read(rows, None, autocast=True))
         gen = torch.Generator(DEV).manual_seed(0)
-        gauss = {s: (lambda g: g * v.norm() / g.norm())(torch.randn(v.shape, generator=gen, device=DEV, dtype=F32)) for s, v in dw.items()}
+        noise = {s: v * C.rel_noise * torch.randn(v.shape, generator=gen, device=DEV, dtype=F32)
+                 for s, v in rd.W0.items()}
+        self.step("W0_rel_noise", lambda: rd.read(rows, lambda s: noise[s]))
+
+    def nulls(self, name: str, dw: dict[str, Tensor], rows: Tensor) -> None:
+        """Two changes with each matrix's norm: Gaussian, and δW's own entries shuffled within the matrix."""
+        rd, gen = self.rd, torch.Generator(DEV).manual_seed(0)
+        gauss = {}
+        for s, v in dw.items():
+            g = torch.randn(v.shape, generator=gen, device=DEV, dtype=F32)
+            gauss[s] = g * v.norm() / g.norm()
         perm = {s: v.flatten()[torch.randperm(v.numel(), generator=gen, device=DEV)].view(v.shape) for s, v in dw.items()}
         for t in C.t_null:
-            step(f"{name}/gauss_{t}", lambda t=t: rd.read(rows, lambda s: t * gauss[s], ft=ft))
-            step(f"{name}/perm_{t}", lambda t=t: rd.read(rows, lambda s: t * perm[s], ft=ft))
-        del gauss, perm
-        if name == "u1":  # which matrices: one block at a time, attention and MLP apart
-            for layer in range(28):
-                step(f"{name}/block_{layer}", lambda layer=layer: rd.read(rows, lambda s: dw[s] if parse_site(s)[0] == layer else None, ft=ft))
-            for group, kinds in (("attn", ("q", "k", "v", "o")), ("mlp", ("gate", "up", "down"))):
-                step(f"{name}/{group}", lambda kinds=kinds: rd.read(rows, lambda s: dw[s] if parse_site(s)[1] in kinds else None, ft=ft))
-        del dw
-    rd.set(None)
+            self.step(f"{name}/gauss_{t}", lambda t=t: rd.read(rows, lambda s, t=t: t * gauss[s], ft=lambda s: dw[s]))
+            self.step(f"{name}/perm_{t}", lambda t=t: rd.read(rows, lambda s, t=t: t * perm[s], ft=lambda s: dw[s]))
+
+    def blocks(self, name: str, dw: dict[str, Tensor], rows: Tensor) -> None:
+        """Which matrices: one block at a time, attention and MLP apart."""
+        rd = self.rd
+
+        def only(keep: Callable[[str], bool]) -> dict[str, float]:
+            return rd.read(rows, lambda s: dw[s] if keep(s) else None, ft=lambda s: dw[s])
+
+        for layer in range(28):
+            self.step(f"{name}/block_{layer}", lambda layer=layer: only(lambda s: parse_site(s)[0] == layer))
+        for group, kinds in (("attn", ("q", "k", "v", "o")), ("mlp", ("gate", "up", "down"))):
+            self.step(f"{name}/{group}", lambda kinds=kinds: only(lambda s: parse_site(s)[1] in kinds))
+
+    def update(self, name: str) -> None:
+        rd, dw, u = self.rd, self.dw_of(name), self.updates[name]
+        rows = self.rows[u.rows][: C.rows]
+        self.step(f"{name}/detail", lambda: rd.detail(rows, lambda s: dw[s], self.tok))
+        for t in C.t_path + C.t_neg:
+            self.step(f"{name}/dw_{t}", lambda t=t: rd.read(rows, lambda s, t=t: t * dw[s], ft=lambda s: dw[s]))
+        self.nulls(name, dw, rows)
+        if name == "u1":
+            self.blocks(name, dw, rows)
+
+
+def main() -> None:
+    assert PRED.is_file(), "predictions first"
+    fp32_matmuls()
+    pr = load_file("pass_amend1", HERE.parent / "qwen_pass_test" / "amend1.py").pr
+    rows256 = lambda p: torch.tensor([r[:256] for r in json.loads(p.read_text())["rows"]]) 
+    rows = {"maths": rows256(HERE.parent / "qwen_sft" / "results" / "maths_rows.json"),
+            "web": rows256(HERE.parent / "qwen_adversary" / "results" / "tokens.json"), "a1": pr.a1_rows()}
+    tok = AutoTokenizer.from_pretrained(qwen_eval.MODEL, revision=qwen_eval.MODEL_REV)
+    updates = {u.name: u for u in pr.P.updates}
+    for u in updates.values():
+        assert u.path.is_file(), u.path
+    model = load_target(DEV, F32)
+    log(f"[load] {torch.cuda.get_device_name()}; rows { {k: tuple(v.shape) for k, v in rows.items()} }")
+    job = Job(Reader(model), tok, rows, updates)
+    job.control()
+    job.texts()
+    job.precision()
+    for name in ("u1", "u2", "u3", "u4"):
+        job.update(name)
     log("[done]")
 
 
