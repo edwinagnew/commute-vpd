@@ -13,13 +13,16 @@ distribution (stage S, `agreement`); tests/test_qwen_rl.py checks it token for t
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import math
 import random
+import re
 import statistics
 from collections import defaultdict
 from collections.abc import Callable, Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -303,6 +306,62 @@ def score_all(pred: dict[str, Any], A0: dict[str, Any], R: dict[str, Any], N: di
             "P1": {"gain": g8k, "label": p1(pred["P1"], g8k)}, "P2": p2(pred["P2"], g8k, g1k),
             "P3": {"gain": N.get("gain", {}).get("gsm8k", {}), "holds": p3(pred["P3"], N.get("gain", {}).get("gsm8k", {}))},
             "P4": p4(pred["P4"], R, N), "P6": p6(pred["P6"], R), "P7": p7(pred["P7"], R, f)}
+
+
+# ----------------------------------------------------------------------------- run names, upload check, next stage
+
+RATES = {"1e-6": 1e-6, "3e-6": 3e-6, "3e-7": 3e-7}  # --lr-tag: the plan's rate and the two Amendment 1 reruns
+DEFAULT_TAG = "1e-6"
+
+
+def rate_names(shared: str, family: str, tag: str) -> tuple[str, str]:
+    """(folder under results/ and results/large/, W&B artifact prefix) of a run: the shared ones at the plan's rate, their
+    own under `lr<tag>` at another, so that the 1e-6 files are never overwritten."""
+    if tag == DEFAULT_TAG:
+        return shared, family
+    return str(Path(shared) / f"lr{tag}"), f"{family}_lr{tag}"
+
+
+def artifact_name(prefix: str, rel: Path) -> str:
+    """The name `qwen_sft.Uploader.add` gives the file."""
+    return re.sub(r"[^A-Za-z0-9_.-]", "-", f"{prefix}-{rel.parent.name}-{rel.name}")
+
+
+def upload_ok(size: int | None, digest: str | None, path: Path) -> bool:
+    """A W&B manifest entry (size, base64 md5 digest) matches the local file."""
+    if size is None or digest is None or path.stat().st_size != size:
+        return False
+    md5 = hashlib.md5()
+    with path.open("rb") as f:
+        while block := f.read(1 << 24):
+            md5.update(block)
+    return base64.b64encode(md5.digest()).decode() == digest
+
+
+def next_stage(tag: str, R: dict[str, Any], N: dict[str, Any], f: dict[str, Any], rule: dict[str, Any]) -> dict[str, str]:
+    """The plan's decision tree, read mechanically from R's result at `tag`: {stage, tag, why}; stage "lead" means no
+    command, tell the lead. R3 (reward fell by step 20 at 1e-6) -> R at 3e-7; R2 (P1 no gain at 1e-6) -> R at 3e-6; else N,
+    F, score at this tag (an Amendment 1 rerun's N and F run at its rate whatever it reads)."""
+    def say(stage: str, to: str, why: str) -> dict[str, str]:
+        return {"stage": stage, "tag": to, "why": why}
+
+    stopped = R.get("stopped") or N.get("stopped") or f.get("stopped")
+    if stopped:
+        if R.get("stopped", "").startswith("reward change by step") and tag == DEFAULT_TAG:
+            return say("R", "3e-7", f"R3: R at {tag} stopped at {R['stopped']!r}: R again at 3e-7, own folder, then N, F there")
+        return say("lead", tag, f"stopped at {stopped!r}: tell the lead")
+    if not R.get("done"):
+        return say("R", tag, f"R at {tag} is not finished: the same command resumes")
+    label = p1(rule, R.get("gain", {}).get("gsm8k", {}))
+    if label == "missing":
+        return say("lead", tag, "R is done but has no GSM8K gain: tell the lead")
+    if label == "no gain" and tag == DEFAULT_TAG:
+        return say("R", "3e-6", "R2: P1 no gain at 1e-6: R again at 3e-6, own folder; then run next with --lr-tag 3e-6")
+    note = f"R at {tag} reads {label}" + ("; tell the lead: the harder-benchmark card" if label == "no gain" else "")
+    for stage, res in (("N", N), ("F", f)):
+        if not res.get("done"):
+            return say(stage, tag, f"{note}: {stage} at {tag}")
+    return say("score", tag, f"{note}: N and F are done")
 
 
 # ----------------------------------------------------------------------------- batches

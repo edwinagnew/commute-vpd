@@ -126,10 +126,18 @@ Thresholds use ≥ and < as written, after rounding to 9 places (`qwen_updates.r
 ## Decision tree (approved with this plan)
 
 - **P0 fails** → stop, fix the cause, rerun A0.
-- **R1, P1 learns or ambiguous** → δWs go to `qwen-decomp-lead` (a note in its handoff folder and an FYI when each lands),
-  ambiguous labelled weak. Then anchor 1 at E61's rate.
-- **R2, P1 no gain** → one rerun of R at lr 3e-6 (Amendment 1). Still no gain → card: the harder-benchmark search.
-- **R3, reward falls by 0.05 by step 20** → stop before N and F; one rerun of R at lr 3e-7 (Amendment 1). FYI.
+R runs alone first and P1 is read on the pod before N and F start (review finding 2): the review's extrapolation puts
+|δW| at step 100 near 0.5, against E45's 1.87 for a +0.037 gain, so "no gain" at 1e-6 is a live outcome. N and F run at
+the rate of the R that the tree keeps, so the null stays a null for it.
+
+- **R1, P1 learns or ambiguous at 1e-6** → N and F at 1e-6, same pod. δWs go to `qwen-decomp-lead` (a note in its handoff
+  folder and an FYI when each lands), ambiguous labelled weak. Then anchor 1 at E61's rate.
+- **R2, P1 no gain at 1e-6** → the pod stays up; R again at 3e-6, its files under their own name, the 1e-6 δWs kept (a
+  weak update is still an update to read). P1 learns or ambiguous → N and F at 3e-6. Still no gain → N and F at 3e-6
+  anyway, since the δWs are D2's deliverable, and a card: the harder-benchmark search. Amendment 1 of two.
+- **R3, reward falls by 0.05 by step 20 at 1e-6** → the pod stays up; R at 3e-7, own name, then N and F at 3e-7, read as in
+  R1. Amendment 1 of two. FYI.
+- **Worst case** R twice, N, F: about 12 h, about $48 (S's numbers replace this).
 - **P3 fails** → FYI; the null's δW is still read; the reading of RL carries the gap as its noise floor.
 - **P6 fails** → card: answers lengthen past the window; δWs kept and scored.
 - **P2 GSM8K-only** → FYI, an analysis line; the plan goes on.
@@ -180,12 +188,17 @@ unless R2 says so.
 ## Rehearsal record
 
 Jobs 50067-50076 (tiny, all stages, exit codes as designed), 50077 (S full, L40). Rollouts identical across R, N, F. Fetch done.
-The resume ran, but the tiny run's step 3 had all weights zero, so no live step followed it; the restore itself is
-`qwen_train`'s, which E45 used.
+The resume ran: R's and N's step 3 had all weights zero, F's was live (|δW| 0.0569 to 0.0681). The review ran four steps
+through a resume on CPU, bit for bit equal to four straight.
 
 S full on an L40: sampler 112 s per 512 samples against `generate`'s 223 s (2.0×, less than the 2-3× expected). Length
-191.2 against 192.3 (se 2.3), reward 0.818 against 0.815 (se 0.017). Train 42 s and 31 s per step. Peak 39.8 GB while
-sampling. Then out of memory in the readout at 8192 tokens per batch, beside Adam's state: lowered to 2048.
+191.2 against 192.3 (se 2.3), reward 0.818 against 0.815 (se 0.017). Train 42 s and 31 s per step. Then out of memory in
+the readout at 8192 tokens per batch, beside Adam's state: lowered to 2048.
+
+S full again at 2048 (job 50208, L40, exit 0, 677 s), the numbers that count: per RL step 112.9 s sampling and 34.2 s
+training; per F step 67.9 s training; 121.8 s per readout on H. Sampler 106 s against `generate`'s 209 s. Peak GPU 49.5 GB
+(sampler 42.6 at the L40's row count; about 61 GB scaled to the H100's 512 rows, under 80), host 11 GB. KL after two
+steps 0.032 on the rollouts' own samples. |δW| 0.0348, 0.0549; gradient rms 2.9e-6, 2.5e-6; reward 0.830, 0.832.
 
 **Band changed before filing took effect.** First live step |δW| 0.03477, ratio 0.926 to lr √numel (numel 1,409,286,144),
 outside the guessed 0.95-1.05. Adam moves an entry by lr · |g| / (|g| + 1e-8), and the gradient (rms 3e-6) is

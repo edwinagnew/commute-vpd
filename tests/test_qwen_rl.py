@@ -212,6 +212,97 @@ def test_score_all_with_nothing_run() -> None:
     assert not any(out[p]["holds"] for p in ("P0", "P3", "P4", "P6", "P7"))
 
 
+# ----------------------------------------------------------------------------- rates, next stage, upload check
+
+
+def test_sampler_check_is_three_se() -> None:
+    assert PRED["early"]["sampler_se_mult"] == 3 and "2026-11-03" in PRED["early"]["amended"]
+
+
+def test_rate_names_keep_the_plans_files() -> None:
+    assert q.rate_names("", "qwen_rl", "1e-6") == ("", "qwen_rl")
+    assert q.rate_names("", "qwen_rl", "3e-6") == ("lr3e-6", "qwen_rl_lr3e-6")
+    assert q.rate_names("tiny", "qwen_rl_tiny", "3e-7") == ("tiny/lr3e-7", "qwen_rl_tiny_lr3e-7")
+    names = {q.artifact_name(q.rate_names("", "qwen_rl", t)[1], Path("dW/R/step_1.safetensors")) for t in q.RATES}
+    assert len(names) == len(q.RATES) and "qwen_rl-R-step_1.safetensors" in names
+
+
+def job_module() -> Any:
+    import importlib.util
+    import sys
+
+    spec = importlib.util.spec_from_file_location("e69_job", Path(__file__).resolve().parents[1] / "experiments/qwen_rl/job.py")
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod  # dataclasses looks its own module up
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_config_per_size_and_rate() -> None:
+    job = job_module()
+    full, other = job.config("full", "1e-6"), job.config("full", "3e-6")
+    assert (full.lr, full.out, full.prefix) == (1e-6, "", "qwen_rl")
+    assert (other.lr, other.out, other.prefix, other.shared) == (3e-6, "lr3e-6", "qwen_rl_lr3e-6", "")
+    assert job.config("tiny", "3e-7").out == "tiny/lr3e-7" and job.config("tiny", "1e-6").shared == "tiny"
+    assert job.config("tiny", "1e-6", upload_cap_gb=6).upload_cap == 6 * job.GB
+    assert 100 in full.ckpt_steps  # the last step is checkpointed
+    with pytest.raises(AssertionError):
+        job.config("full", "5e-6")
+    with pytest.raises(AssertionError):
+        job.config("full", "1e-6", upload_cap_gb=6)  # the cap flag is for the tiny size
+
+
+def test_upload_ok(tmp_path: Path) -> None:
+    import base64
+    import hashlib
+
+    p = tmp_path / "f.bin"
+    p.write_bytes(b"abc" * 1000)
+    digest = base64.b64encode(hashlib.md5(p.read_bytes()).digest()).decode()
+    assert q.upload_ok(3000, digest, p)
+    assert not q.upload_ok(2999, digest, p) and not q.upload_ok(3000, "AAAA", p)
+
+
+def arm(done: bool = True, gain: float | None = None, stopped: str | None = None) -> dict[str, Any]:
+    out: dict[str, Any] = {"done": done}
+    if gain is not None:
+        out["gain"] = {"gsm8k": {"diff": gain, "se": 0.01}}
+    if stopped:
+        out["stopped"] = stopped
+    return out
+
+
+def nxt(tag: str, R: dict[str, Any], N: dict[str, Any] | None = None, f: dict[str, Any] | None = None) -> tuple[str, str]:
+    out = q.next_stage(tag, R, N or {}, f or {}, PRED["P1"])
+    return out["stage"], out["tag"]
+
+
+def test_next_stage_branches() -> None:
+    assert nxt("1e-6", {}) == ("R", "1e-6")  # not started: the same command
+    assert nxt("1e-6", arm(done=False)) == ("R", "1e-6")
+    # R1: learns, or ambiguous, at the plan's rate -> N, then F, then score
+    for gain in (0.05, 0.015):
+        assert nxt("1e-6", arm(gain=gain)) == ("N", "1e-6")
+    assert nxt("1e-6", arm(gain=0.05), arm()) == ("F", "1e-6")
+    assert nxt("1e-6", arm(gain=0.05), arm(), arm()) == ("score", "1e-6")
+    # R2: no gain at 1e-6 -> R at 3e-6; at 3e-6 any reading goes on to N and F at 3e-6
+    assert nxt("1e-6", arm(gain=0.005)) == ("R", "3e-6")
+    assert nxt("1e-6", arm(gain=-0.02)) == ("R", "3e-6")
+    for gain in (0.005, 0.05):
+        assert nxt("3e-6", arm(gain=gain)) == ("N", "3e-6")
+    assert "harder-benchmark" in q.next_stage("3e-6", arm(gain=0.0), {}, {}, PRED["P1"])["why"]
+    assert nxt("3e-6", arm(gain=0.0), arm(), arm()) == ("score", "3e-6")
+    # R3: R stopped at the reward-change check at 1e-6 -> R at 3e-7, whose N and F follow at 3e-7
+    assert nxt("1e-6", arm(done=False, stopped="reward change by step 20")) == ("R", "3e-7")
+    assert nxt("3e-7", arm(gain=0.03)) == ("N", "3e-7")
+    # everything else that stopped, or has no reading, goes to the lead
+    assert nxt("1e-6", arm(done=False, stopped="step 1's reward rate"))[0] == "lead"
+    assert nxt("3e-7", arm(done=False, stopped="reward change by step 20"))[0] == "lead"  # no third amendment
+    assert nxt("1e-6", arm(gain=0.05), arm(done=False, stopped="loss and gradient norm finite"))[0] == "lead"
+    assert nxt("1e-6", {"done": True})[0] == "lead"  # done with no GSM8K gain
+
+
 # ----------------------------------------------------------------------------- the tiny model
 
 
