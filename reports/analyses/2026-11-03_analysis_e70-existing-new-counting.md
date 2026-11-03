@@ -1,16 +1,16 @@
 # Does removing the old count hurt the reusing task more than the new one?
 
-E70 and its Amendment 1, benchmark line, 2026-11-03. Plan `reports/plans/2026-11-03_plan_e70-existing-new-counting.md`. Rules `experiments/pcfg_anchors/results/predictions_e70.json`, `predictions_e70_a1.json`. Results `results/e70.json`, commit a6103fc; `results/e70_a1.json`, commit afc1191. Notebook `notebooks/E70_existing_new_counting.ipynb`.
+E70 and its Amendments 1 and 2, the last, benchmark line, 2026-11-03. Provisional reading, no independent check. Plan `reports/plans/2026-11-03_plan_e70-existing-new-counting.md`. Rules `experiments/pcfg_anchors/results/predictions_e70.json`, `predictions_e70_a1.json`, `predictions_e70_a2.json`. Results `results/e70.json`, commit a6103fc; `results/e70_a1.json`, commit afc1191; `results/e70_a2.json`, commit 71d3975. Notebook `notebooks/E70_existing_new_counting.ipynb`.
 
-We removed one direction from a small counting model and from two fine-tunes of it, one built to reuse the old count and one to need a new count, after our first choice of direction did nothing.
-The new direction hurts the pretrained model badly and costs the reusing task more at four of six blocks, but the new task loses more at the last, so by the filed verdict one direction cannot serve as ground truth here.
-It also holds about half the residual's variance, against under one percent for the random directions it was compared with, so for `GOALS.md`'s question of new against strengthened capabilities this is not yet evidence of the count's causal role.
+We removed single directions from a small counting model and from two fine-tunes of it, one built to reuse the old count and one to need a new one.
+At blocks 3 to 5 the direction the count moves costs the reusing task more than the new task, while the largest direction with no covariance costs nothing, so the last filed branch is "count-specific at this size", and the earlier "cannot serve" stands.
+For `GOALS.md`'s question of new against strengthened capabilities, this supports a causal role for the count's direction there, on one pair at an unmatched size, and the new task's loss stays unexplained.
 
 ## The answer
 
-No: by the filed rule, one direction cannot serve as ground truth here, because the new task loses more than the reusing task at block 6, and any reversal decides. At blocks 3 to 5 the reusing task loses far more. But the direction removed holds about half the residual's variance, and the random directions that set the band hold under one percent. That direction could hurt for reasons unrelated to the count, so neither the pretrained model's loss nor the gap between the tasks can yet be read as the count's causal role.
+E70's two amendments end on two filed verdicts. "Cannot serve" stands, because the new task loses more at block 6. The last amendment reads "count-specific at this size". At blocks 3 to 5 the direction the count moves costs the pretrained model heavily and the reusing task more than the new one, while the largest direction with no covariance costs nothing. That supports a causal role for the count's direction there, on one pair, unmatched in size. The new task's loss stays unexplained.
 
-**How we got here.** The first reading removed the regression probe's one direction, which did nothing, and six softmax directions, which did something. The amendment removes the direction where the count moves the residual, and it also explains why the first direction did nothing. Ask 15, whether to try it, was taken by default after two hours without an answer, so the user did not choose it.
+**How we got here.** The first reading removed the regression probe's one direction, which did nothing, and six softmax directions, which did something. The first amendment removed the direction where the count moves the residual, and it explained why the first direction did nothing, but that direction holds about half the variance. The second amendment asks whether size alone explains its effect. Asks 15 and 17, whether to try each, were taken by default after two hours without an answer, so the user did not choose them. E70 ends here: a third amendment would be a new plan, and none is proposed.
 
 ## What we were trying to test
 
@@ -55,6 +55,20 @@ The removal, the rows, the random draws and the score are the first reading's, a
 
 **The filed tree.** A block is read only if LOW loses log-odds there above the band. Then the first match wins: a reversal at any read block gives "cannot serve"; otherwise the rule holding at a read block from 1 to 5 gives "separates". So a single reversal decides, whatever else holds.
 
+**The second amendment, the last.** The covariance direction holds 0.30 to 0.78 of the residual's variance, and the random directions that set the band hold under one percent, so a loss above the band could be size alone. Ask 17, whether to control for that, was taken by default at 18:08 on 2026-11-03, so the user did not choose this either. Only the direction changes. LOW, its rows, the 20 states at 10,000 steps, the random draws and the score are Amendment 1's, and nothing is retrained.
+
+- **The no-covariance direction** is the top principal component of LOW's residual once the covariance direction is removed, per block, on the same 20,000 fit rows. It is at right angles to the covariance direction, so its covariance with the scalar count on those rows is zero by algebra.
+- **It cannot match on size at blocks 1 to 5.** A direction at right angles to the covariance direction holds at most what that direction leaves: about 0.22, 0.49, 0.44, 0.44 and 0.47. This is the largest single direction available, not a size-matched one.
+- **The class share** is new, and it reads the share of a direction's variance lying between the classes of a count, on LOW's 2,000 held rows. It is the correlation ratio squared: 0 means every class has the same mean along the direction, and 1 means all its variance lies between classes. It rules out a false null, because zero covariance with the scalar count says nothing about a curve through the classes, and LOW's head is a softmax over those classes.
+
+**The filed tree for this amendment.** Each of blocks 1, 3, 4 and 5, where Amendment 1's rule held, gets one label under the no-covariance direction.
+
+- **Size:** the rule holds again, with under half of the direction's variance between count classes.
+- **Carrier:** the rule holds again, with at least half between count classes.
+- **Specific:** the rule does not hold, and P's mean share under the covariance direction exceeds P's mean share under this one by more than the band.
+
+The first match wins among the branches. A size block and a specific block give "mixed"; a size block alone gives "size explains"; a specific block without a size block gives "count-specific at this size"; a carrier block alone gives "carries the classes". Block 6 is read apart, and nothing here can change Amendment 1's filed "cannot serve".
+
 ## What we expected, and why
 
 We expected the removal to work on LOW, at least at the last block, since a readout that reads the count should be using what the model uses.
@@ -69,9 +83,11 @@ The plan named one blind spot in advance: the count of a and the count of b are 
 
 Task P would lose more than the band and less than under the six softmax directions at most blocks, most at blocks 4 and 5. Task N would stay under P at blocks 4 and 5 and above the band at blocks 4 to 6, up to about its six-direction values of 0.20, 0.34 and 0.49. The weak lean was that the rule would hold at block 4 or 5 and not at block 6. "Cannot serve" was named as a live outcome because the two counts correlate.
 
+**For the second amendment,** we leaned weakly to "count-specific at this size" or "mixed", since the no-covariance direction holds less variance than the covariance direction at blocks 1 to 5. "Size explains" and "carries the classes" were named as live. We expected the direction to hold 0.1 to 0.3 of the variance, with low confidence. We expected it to cost LOW more than the band at some blocks and less than the covariance direction at blocks 1 to 5, and to leave LOW's accuracy at or above about 0.7. We expected P's share to stay below Amendment 1's at blocks 1 to 5 and above the band at most blocks. We filed no lean for block 6, for N against P, or for the direction's class share, since the second component of an ordered set of classes is often curved in the label.
+
 ## What we observed
 
-The first four questions are the first reading, on the two probes. The three after them are the amendment, and they are what the answer above rests on.
+The first four questions are the first reading, on the two probes. The three after them are the first amendment. The five after those are the second amendment, and with the first they are what the answer above rests on.
 
 ### Does LOW hold the count of a?
 
@@ -207,13 +223,13 @@ LOW's accuracy with nothing removed reads 1.0 on these rows, and its mean stays 
 
 ### Can that loss be read as the count's causal role?
 
-**Reading it.** Not yet, and this limits the result as much as the verdict does. The band comes from random single directions, which hold about 0.004 to 0.007 of the residual's variance. The covariance direction holds 0.30 to 0.78, which is 60 to 170 times as much. So the band shows that a small random direction does little. It says nothing about what a direction this large would do if it had no tie to the count.
+**Reading it.** Not from this amendment alone, and this limits the result as much as the verdict does. The band comes from random single directions, which hold about 0.004 to 0.007 of the residual's variance. The covariance direction holds 0.30 to 0.78, which is 60 to 170 times as much. So the band shows that a small random direction does little. It says nothing about what a direction this large would do if it had no tie to the count.
 
-Removing half of a residual's variance could hurt for reasons unrelated to the count. The bands on the tasks come from the same random directions, so the same limit applies there. So "LOW loses log-odds above the band" and the gap between the tasks at blocks 3 to 5 cannot yet be read as the count's causal role.
+Removing half of a residual's variance could hurt for reasons unrelated to the count. The bands on the tasks come from the same random directions, so the same limit applies there. So "LOW loses log-odds above the band" and the gap between the tasks at blocks 3 to 5 cannot be read as the count's causal role on this amendment's evidence.
 
 Neither the plan nor the filed list of what the measurement is blind to named this. The plan filed the variance share as a reading, used only to test why the two directions differ, and the limit was found on reading the result. It does not touch the filed verdict, which stands.
 
-The control this calls for was asked of the user and is neither decided nor run: remove a direction of matching variance with no covariance with the count. It has its own limit. A direction with no covariance with the count is at right angles to the covariance direction, so it holds at most what that direction leaves: 0.22, 0.49, 0.44, 0.44, 0.47 and 0.70 at blocks 1 to 6. An exact match is therefore impossible at blocks 1 to 5, and only the largest such direction can be removed there.
+The control this calls for removes a direction of matching variance with no covariance with the count, and it has its own limit. Such a direction is at right angles to the covariance direction, so it holds at most what that direction leaves: 0.22, 0.49, 0.44, 0.44, 0.47 and 0.70 at blocks 1 to 6. An exact match is therefore impossible at blocks 1 to 5, and only the largest such direction can be removed there. The second amendment, below, does that.
 
 ### Does removing the covariance direction cost task P more than task N?
 
@@ -249,6 +265,89 @@ At blocks 3 to 5, P loses 0.427, 0.779 and 0.884 of its gain and N loses 0.158, 
 | share of gain in nats, N, unscored | 0.000001 | 0.0002 | 0.005 | 0.021 | 0.071 | 0.00007 |
 
 Every state reads accuracy 1.0 with nothing removed. The mean log-odds gain over LOW is 25.7 on P and 21.9 on N. Per-state values are in `results/e70_a1.json`.
+
+### Does the no-covariance direction cost LOW what the covariance direction cost?
+
+![LOW under the two directions](../../experiments/pcfg_anchors/figures/e70_a2_low.png)
+
+**Reading it.** No at blocks 3 to 5, and at block 6 it costs LOW more. The figure plots LOW's log-odds drop per block under each direction, labelled with the variance each holds. At blocks 3 to 5 the covariance direction costs LOW 8 to 12 log-odds and takes its count down to 0.36 at block 5. The no-covariance direction, holding 0.09 to 0.13 of the variance, stays inside the band there and leaves accuracy at 1.0. At blocks 1 and 2 it sits just above the band, at 0.06 against 0.05 and 0.20 against 0.13. Block 6 is the exception, read below.
+
+| block | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| LOW's drop, no-covariance direction | 0.057 | 0.200 | 0.061 | -0.012 | 0.033 | 3.275 |
+| LOW's drop, covariance direction | 1.927 | 4.209 | 8.112 | 10.939 | 11.965 | 1.882 |
+| band | 0.048 | 0.132 | 0.215 | 0.122 | 0.117 | 0.077 |
+| above the band, no-covariance direction | yes | yes | no | no | no | yes |
+| LOW's accuracy, no-covariance direction | 1 | 1 | 1 | 1 | 1 | 0.9715 |
+| LOW's accuracy, covariance direction | 0.979 | 0.828 | 0.573 | 0.371 | 0.3605 | 0.9995 |
+| variance held, no-covariance direction | 0.224 | 0.265 | 0.134 | 0.096 | 0.086 | 0.264 |
+| variance held, covariance direction | 0.776 | 0.505 | 0.560 | 0.561 | 0.530 | 0.297 |
+| variance held, random, mean of 20 | 0.0045 | 0.0039 | 0.0067 | 0.0043 | 0.0045 | 0.0050 |
+| class share of count(a), no-covariance direction | 0.006 | 0.006 | 0.012 | 0.015 | 0.017 | 0.988 |
+| class share of count(a), covariance direction | 0.071 | 0.884 | 0.934 | 0.978 | 0.980 | 0.990 |
+| class share of count(a), random, mean of 20 | 0.044 | 0.362 | 0.443 | 0.370 | 0.383 | 0.777 |
+| class share of count(b), no-covariance direction | 0.039 | 0.004 | 0.003 | 0.003 | 0.113 | 0.075 |
+| class share of count(b), covariance direction | 0.028 | 0.292 | 0.262 | 0.259 | 0.256 | 0.210 |
+| refit after the no-covariance direction (floor 0.3575) | 0.3815 | 0.9165 | 0.9975 | 1 | 1 | 0.9995 |
+| refit, nothing removed | 0.38 | 0.9975 | 1 | 1 | 1 | 1 |
+
+The apparatus checks all hold. The ridge's accuracy and floor equal the first reading's, and the random drops differ from it by 0. LOW's drop under the covariance direction, rerun from the saved direction, equals Amendment 1's at all six blocks. The no-covariance direction's covariance with the count is at most 1.1e-8 of the covariance direction's on the fit rows, and at most 0.016 on the held rows, which is sampling error. The refit stays above its midpoint at blocks 2 to 6, so the count stays linearly readable after this removal.
+
+### Does the no-covariance direction reproduce the gap between P and N?
+
+![Tasks P and N under the two directions](../../experiments/pcfg_anchors/figures/e70_a2_tasks.png)
+
+**Reading it.** No. The filed branch is "count-specific at this size", with the label "specific" at blocks 1, 3, 4 and 5. In the figure's left panel the solid lines are Amendment 1's gap, and the dashed lines lie on zero up to block 5. The right panel closes in on those dashed lines against the band. At blocks 3 to 5, all 20 states sit inside the band, and the mean shares are within 0.006 of zero on both tasks. The rule reads "neither" at all six blocks, so this direction does not separate the tasks anywhere. The states keep their answers too: accuracy reads at least 0.9995 at blocks 1 to 5, and the share of the gain in nats stays under 0.0001.
+
+**Size in proportion does not explain it.** Scaling P's loss under the covariance direction down by the ratio of the two variance shares predicts 0.10, 0.13 and 0.14 at blocks 3 to 5, against -0.005 to 0.001 read. That scaling assumes loss proportional to variance, which nothing here establishes, and the share per unit of variance below is descriptive and unscored.
+
+**Size as a threshold is not excluded.** Removing half the variance might cost something that removing a tenth does not, whatever the direction. No single direction with no covariance can match the covariance direction's size at these blocks, so this run cannot test that.
+
+| block | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| label under the filed tree | specific | not read | specific | specific | specific | read apart |
+| rule under the no-covariance direction | neither | neither | neither | neither | neither | neither |
+| rule under the covariance direction | holds | neither | holds | holds | holds | reversal |
+| band | 0.0042 | 0.0241 | 0.0125 | 0.0191 | 0.0114 | 0.0087 |
+| P mean, no-covariance direction | -0.0005 | 0.0318 | 0.0009 | -0.0051 | -0.0010 | 0.2082 |
+| P min to max | -0.0014 to 0.0009 | 0.0215 to 0.0407 | -0.0027 to 0.0037 | -0.0067 to -0.0036 | -0.0020 to 0.0023 | 0.198 to 0.217 |
+| N mean, no-covariance direction | 0.0046 | 0.0094 | 0.0009 | -0.0001 | 0.0048 | 0.2020 |
+| N min to max | -0.0008 to 0.0095 | 0.0054 to 0.0135 | 0.0005 to 0.0014 | -0.0016 to 0.0015 | -0.0002 to 0.0112 | 0.187 to 0.218 |
+| P mean, covariance direction | 0.133 | 0.160 | 0.427 | 0.779 | 0.884 | 0.070 |
+| N mean, covariance direction | 0.032 | 0.067 | 0.158 | 0.335 | 0.493 | 0.174 |
+| smallest P minus largest N | -0.0109 | 0.0080 | -0.0042 | -0.0083 | -0.0132 | -0.0195 |
+| smallest N minus largest P | -0.0017 | -0.0352 | -0.0031 | 0.0020 | -0.0026 | -0.0301 |
+| P under the covariance direction, scaled by variance | 0.038 | 0.084 | 0.103 | 0.134 | 0.143 | 0.062 |
+| share per unit of variance, P, covariance direction | 0.172 | 0.317 | 0.763 | 1.389 | 1.669 | 0.234 |
+| share per unit of variance, N, covariance direction | 0.041 | 0.132 | 0.282 | 0.597 | 0.931 | 0.584 |
+| share per unit of variance, P, no-covariance direction | -0.002 | 0.120 | 0.007 | -0.053 | -0.011 | 0.788 |
+| share per unit of variance, N, no-covariance direction | 0.020 | 0.036 | 0.006 | -0.001 | 0.056 | 0.765 |
+| P raw mean, no-covariance direction | 0.0017 | 0.0177 | 0.0013 | -0.0038 | 0.0027 | 0.1012 |
+| N raw mean, no-covariance direction | 0.0050 | 0.0050 | -0.0005 | -0.0004 | 0.0081 | 0.1578 |
+| P's own drop, mean | 0.043 | 0.440 | 0.028 | -0.102 | 0.069 | 2.607 |
+| N's own drop, mean | 0.100 | 0.102 | -0.010 | -0.004 | 0.190 | 3.435 |
+| LOW's drop for P's answer | 0.055 | -0.359 | 0.011 | 0.033 | 0.093 | -2.730 |
+| LOW's drop for N's answer | 0.010 | -0.094 | -0.029 | -0.006 | 0.071 | -0.942 |
+| P accuracy after removal, mean | 1 | 1 | 1 | 1 | 1 | 0.998 |
+| N accuracy after removal, mean | 1 | 1 | 1 | 1 | 0.9999 | 0.997 |
+| share of gain in nats, P, largest state | 0.000006 | 0.000007 | below 0 | below 0 | below 0 | 0.0016 |
+| share of gain in nats, N, largest state | 0.00002 | 0.000003 | 0.000001 | 0.000003 | 0.00006 | 0.0064 |
+
+Every state reads accuracy 1.0 with nothing removed, and the random state band equals Amendment 1's. Per-state values are in `results/e70_a2.json`.
+
+### What does the label "specific" mean at block 1?
+
+**Reading it.** The label stands, but it should not be read as the count at that block. The strip under the figure's left panel shows why. There the covariance direction holds 0.78 of the variance, and only 0.07 of that lies between the count's classes, against 0.04 for random directions. So at block 1 it is the dominant direction of the residual and not a count direction, in keeping with the ridge's reading of 0.38 against a floor of 0.36. The two directions together hold 0.9995 of the variance there, so the residual is close to two-dimensional. Its filed meaning at this block is size or something else, and this run does not say which.
+
+### Is block 6 a null for the covariance direction?
+
+**Reading it.** No. It is the only block where the two directions are close in size, at 0.26 against 0.30, and the direction with no covariance turns out to carry the count anyway. Its covariance with the scalar count is zero on the fit rows, yet 0.99 of its variance lies between the count's classes, so its class means must follow a curve. This is the limit Amendment 1 noted when it said erasing a one-hot count can take up to six directions. LOW loses 3.27 log-odds to it, more than the 1.88 lost to the covariance direction, and its accuracy falls to 0.97.
+
+P and N lose about the same, 0.208 and 0.202 of their gain. N stays over P under the covariance direction only, and under this direction the rule reads "neither". Subtracting LOW's drop supplies about half of P's share: LOW's log-odds of P's answer rise by 2.73 under the removal, so P's raw share is 0.101 and N's is 0.158. The raw share has no band, and the filed rule reads the scored share. None of this can change Amendment 1's branch, "cannot serve", which stands.
+
+### Why does N lose anything under the covariance direction?
+
+**Reading it.** This stays unexplained between two readings, and E70 does not separate them. At blocks 3 to 5, N loses 0.16, 0.34 and 0.49 of its gain under the covariance direction. Either N reuses the count of a in some part, or the direction leaks into the count of b. The two counts correlate at -0.50 on the `C b 40` rows the states are read on. On LOW's `C a 40` rows, the covariance direction's class share of the count of b is about 0.26. The square of that correlation is 0.25, so that share is about what the correlation alone would give a direction tracking the count of a, though the two numbers come from different rows and the correlation was not read on the `C a 40` rows. Either reading could give the loss seen here, and telling them apart needs rows where the two counts are uncorrelated, which were not run.
 
 ### The state-by-state tables
 
@@ -304,21 +403,25 @@ Every state reads accuracy 1.0 with nothing removed. The mean log-odds gain over
 
 ## What we learned
 
-The definition's possession and function clauses behave as they should on a pair with known labels. Its causal clause, read as removing one direction, now has a filed answer: one direction cannot serve as ground truth here, because of the reversal at block 6.
+The definition's possession and function clauses behave as they should on a pair with known labels. Its causal clause, read as removing one direction, has a filed answer that stands: one direction cannot serve as ground truth here, because of the reversal at block 6.
 
-The gap at blocks 3 to 5 is large and shows up in answers as well as log-odds, but a direction holding half the variance has no matched control, so it is a lead and not a reading of the count's causal role. The first reading's puzzle is settled in one respect: removing the regression direction leaves the count readable, which is why it could do nothing.
+At blocks 3 to 5 there is now a control under the gap. A direction that lies between the count's classes costs the reusing task more than the new task and costs the pretrained model heavily, while the largest direction that does not lie between them costs nothing. That supports the count's direction being causal on the pretrained model, and more used by the reusing task than the new task, at those blocks. It holds at this unmatched size, on one pair and one direction, and it is not the size-matched test that was asked for, which cannot exist with one direction at blocks 1 to 5.
 
-The six-direction result stays provisional, and it has the same open question, since its variance was not read. So for `GOALS.md`'s question of new against existing, this pair does not yet give a ground truth for scoring cheap methods on Qwen.
+It does not hold at every block. At block 1 the covariance direction is not a count direction, and at block 6 both directions lie between the classes and the reusing task is not over the new task under either. The first reading's puzzle is settled in one respect: removing the regression direction leaves the count readable, which is why it could do nothing.
+
+The six-direction result stays provisional, since its variance was not read. So for `GOALS.md`'s question of new against existing, this pair gives a lead at three blocks and does not yet give a ground truth for scoring cheap methods on Qwen.
 
 ## How compelling is the evidence
 
-The apparatus checks are strong for what they cover: 20 states, ten per side, five seeds and two learning rates, with the random drops reproducing the first reading's exactly. The causal reading is weak, for the first reason below.
+The apparatus checks are strong for what they cover: 20 states, ten per side, five seeds and two learning rates, with the random drops reproducing the first reading's exactly. The causal reading at blocks 3 to 5 is moderate at best, for the first three reasons below.
 
-- **The band is not matched on size.** Random directions hold about 0.004 to 0.007 of the variance and the covariance direction holds 0.30 to 0.78. Neither "LOW has teeth" nor the gap between the tasks can be read as the count's causal role until a direction of comparable size with no covariance with the count has been removed. The plan and the filed list did not name this.
+- **The control is not matched on size.** Random directions hold about 0.004 to 0.007 of the variance, the no-covariance direction 0.09 to 0.13 at blocks 3 to 5, and the covariance direction 0.53 to 0.56 there. A smaller direction costing less is also what size alone could give. Scaling in proportion predicts more loss than was read, but a threshold effect of removing half the variance is not excluded. Block 6, the one near match on size, carries the count's classes, so it is no null.
+- **One control direction.** The largest direction was chosen by size and may hold anything else the residual holds. Its zero loss at blocks 3 to 5 rules out that one direction, on LOW's variance read on `C a 40` rows and not on the states' own residuals. Its variance on the `C b 40` rows the states are read on was not read.
+- **N's loss is unexplained.** The gap between the tasks sits on an N that loses up to 0.49 of its gain, with the two counts correlated at -0.50 on the rows read. This run cannot say whether that is reuse or leak.
 - **Zero covariance covers the scalar count only.** LOW's head is a softmax over count tokens, and erasing a one-hot count can take up to six directions. So after this removal a linear reader of the scalar count fails, while a reader of each count class need not. LOW's accuracy at block 6 stayed 0.9995 with the scalar reading erased, and no later block remains there to read the text again. So "the refit reads the floor" does not mean the count is gone, and a task's loss here is the loss of this direction, not of the count as such. No reader of the count classes was fit after removal.
 - **Blind spots kept from the first reading.** The removal misses a count held non-linearly and anything later blocks re-read from the text. It also cannot tell a direction used by both counts from a mechanism N shares.
 - **Log-odds are not answers.** These states are very sure of their answers, with a mean probability above 0.999 on every 10K state, so a large log-odds drop can leave the answer in place. Under the six softmax directions the share of the gain in nats, recorded but not scored, reads 0.16 and 0.31 for P at blocks 4 and 5 against 0.002 and 0.013 for N, and about 0.001 on both at block 6. The median row on P at block 5 loses 0.01 to 0.02 nats at rate 1e-4 and 0.33 to 0.49 at rate 1e-5. Accuracy after removal was recorded only in the amendment, where answers do change at blocks 3 to 5 and do not at block 6.
-- **Check.** No independent check was run, and none is claimed. This is one retrain of LOW, with one probe seed, and the refit reads `C a 40` rows only.
+- **Check.** No independent check was run on any stage, and none is claimed, so the reading above is provisional. This is one retrain of LOW, with one probe seed, and the refit reads `C a 40` rows only.
 
 ## Surprises
 
@@ -336,6 +439,16 @@ The apparatus checks are strong for what they cover: 20 states, ten per side, fi
 
 **What the amendment read as filed.** The refits, the cosine, the random controls and P's and N's order at blocks 4 and 5 all read as filed, as the scorecard shows.
 
+**The second amendment: the direction with no covariance carries the count at block 6.** We filed no lean for its class share. It reads 0.99 at block 6 against under 0.02 at blocks 1 to 5, and LOW loses more to it there than to the covariance direction. The filing named a curved component as possible, and it appeared only at the last block, which takes away the only near match on size. This run measured no cause for that.
+
+**The second amendment's other misses, each narrow.**
+
+- P's share under the no-covariance direction was filed to be above the band at most blocks, and it is above only at blocks 2 and 6.
+- The variance held was leaned at 0.1 to 0.3, and it reads 0.096 and 0.086 at blocks 4 and 5.
+- LOW's accuracy under it was filed above the covariance direction's where it holds less variance, and at block 6 it reads 0.9715 against 0.9995.
+- The refit at block 2 was filed near 0.9975, and it reads 0.9165.
+- The random draws' class share was filed between the two directions, and at block 6 it reads 0.78, under both.
+
 **In the first reading: a filed reversal, and a filed miss, on the headline.** We predicted the one-direction rule would hold, and instead it does not separate, with N above P at block 1 by half a percent. The size is tiny and the removal has no effect on LOW, so we read no mechanism into it.
 
 **In the first reading: the direction that reads the count does nothing when removed.** A regression direction reads the count at accuracy 1 from block 3 and supports a perfect lookup for P, yet taking it away leaves LOW's log-odds inside the random band. The amendment answers this: the count stays readable without that direction.
@@ -346,8 +459,7 @@ Narrow: the softmax probe read up to 0.06 above its earlier run at blocks 2 and 
 
 ## What next
 
-- **Remove the largest direction with no covariance with the count,** on LOW first, then on the two tasks, about 15 minutes at $0. This would be E70's last allowed amendment, and it is asked of the user, not decided. If it costs LOW and the tasks about as much as the covariance direction, the damage and the gap were not about the count. If it costs far less, the gap at blocks 3 to 5 gains a control under it, limited by a size match that cannot be exact at blocks 1 to 5. The filed verdict stands either way.
-- **Test N's loss.** Repeat a removal on rows where the two counts are uncorrelated. A fall in N would support the shared-direction candidate, and no fall would rule it out. This is outside the two amendments, so it would need a new plan.
+Nothing is proposed. E70 has used its two amendments and ends as it reads: a third would be a new plan, and none is proposed. What stays open is listed under "Not run", and the first item there says which result would bear on N's loss.
 
 ## Scorecard
 
@@ -387,23 +499,56 @@ Verdicts are the filed rules' own. A probe's "no teeth" means its drop on LOW di
 | Lean, nats | at most about P 0.155, 0.308 and N 0.002, 0.013 at blocks 4, 5 | | P 0.650, 0.833; N 0.021, 0.071 | missed |
 | Lean, state accuracy | at or above 0.9 on 1e-4 states; 1e-5 P may fall at blocks 4-5 | | 1e-4 P 0.31 to 0.47 at block 5 | missed |
 
+**Amendment 2.** Filed rules in `results/predictions_e70_a2.json`.
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| R0 | same rows, file and code as the first reading | ridge within one row, random drops within 1% of the band; Amendment 1's rule held at 1, 3, 4, 5 | ridge and floor equal, largest random difference 0 | holds |
+| R4 | the direction has no covariance with the count on the fit rows | at most 1e-3 of the covariance direction's at every block | at most 1.1e-8 | holds |
+| R3' | the count stays linearly readable after removal | refit above the midpoint of floor and before, blocks 2-6 | 0.9165, 0.9975, 1, 1, 0.9995 | holds |
+| Teeth | LOW's drop against the band, printed, stops nothing | one-sided | above at blocks 1, 2, 6; not at 3, 4, 5 | as read |
+| R2 | P loses more than N under this direction | smallest P minus largest N above band | neither at all six blocks | does not separate |
+| Label, block 1 | specific | R2 not holding; P under the covariance direction over P here by more than band | 0.133 against -0.0005, band 0.0042 | specific; not read as the count |
+| Label, block 3 | specific | as above | 0.427 against 0.0009, band 0.0125 | specific |
+| Label, block 4 | specific | as above | 0.779 against -0.0051, band 0.0191 | specific |
+| Label, block 5 | specific | as above | 0.884 against -0.0010, band 0.0114 | specific |
+| Tree | first match wins | a specific block and no size block | specific at 1, 3, 4, 5 | **count-specific at this size** |
+| Block 6, apart | does N stay over P? | printed, unscored | neither; N minus P -0.006, against 0.104 under the covariance direction | unable to change "cannot serve" |
+| Lean, branch | count-specific at this size, or mixed | | count-specific at this size | as leaned |
+| Lean, variance | above 1/192, at most what the covariance direction leaves, 0.1 to 0.3 at blocks 1-5 | | 0.224, 0.265, 0.134, 0.096, 0.086, and 0.264 at block 6 | bounds as filed; lean narrowly missed at 4, 5 |
+| Lean, LOW drop | above band at some blocks, under the covariance direction's at 1-5 | | above at 1, 2, 6; under at 1-5 | as expected |
+| Lean, LOW accuracy | at or above about 0.7; above the covariance direction's where it holds less variance | | at least 0.9715; below at block 6 | first as expected; second missed at block 6 |
+| Lean, covariance | fit rows about 1e-7, held rows 0.1 or less, cosine under 1e-5 | | at most 1.1e-8, 0.016, 4.2e-9 | as expected |
+| Control, class share | covariance direction above 0.5 at 3-5, low at 1; random between the two | | 0.93, 0.98, 0.98; 0.07; random between at 1-5, under both at 6 | as expected but for random at 6 |
+| Lean, refit | at or above 0.9 at 3-6, near 0.9975 at 2, 0.33 to 0.40 at 1 | | 0.9975, 1, 1, 0.9995; 0.9165; 0.3815 | narrowly missed at 2 |
+| Control, covariance direction again | LOW's drop equal to Amendment 1's | printed, no rule | equal at all six blocks | as expected |
+| Control, random | Amendment 1's bands and variance shares | | equal | as expected |
+| Lean, P | below Amendment 1's at 1-5, above band at most blocks | | below at 1-5; above band at 2 and 6 only | second missed |
+| Lean, N, block 6, class share of the direction | none filed | | N 0.0046, 0.0094, 0.0009, -0.0001, 0.0048, 0.2020; class share 0.99 at block 6 | no lean |
+
 ## Provenance
 
 Plan `reports/plans/2026-11-03_plan_e70-existing-new-counting.md`. Rules `experiments/pcfg_anchors/results/predictions_e70.json`. Code `experiments/pcfg_anchors/e70.py`, `src/commute/removal.py`. Results `experiments/pcfg_anchors/results/e70.json`, commit a6103fc. Figures `experiments/pcfg_anchors/figures/e70_{low,ridge,softmax}.png` from `plot_e70.py`. Report `reports/analyses/2026-11-03_analysis_e70-existing-new-counting.md`. MATS L40, `debug`, jobs 50203, 50242, 50298, 50311, 50361, 50363, 11:17 to 13:17 on 2026-11-03, $0.
 
 Amendment 1: plan section "Amendment 1" in the same plan. Rules `experiments/pcfg_anchors/results/predictions_e70_a1.json`. Code `experiments/pcfg_anchors/e70_a1.py`, `src/commute/removal.py`, `cluster/e70_a1.sbatch`. Results `experiments/pcfg_anchors/results/e70_a1.json`, commit afc1191. Log `cluster/logs/commute-e70-a1-50499.out`. Figures `experiments/pcfg_anchors/figures/e70_a1_{low,tasks}.png` from `plot_e70_a1.py`. MATS L40, `debug`, job 50499, exit 0, 15:41 to 15:56 on 2026-11-03, peak host memory 1.4 GB, $0.
 
+Amendment 2: plan section "Amendment 2" in the same plan, ask 17 taken by default. Rules `experiments/pcfg_anchors/results/predictions_e70_a2.json`. Code `experiments/pcfg_anchors/e70_a2.py`, `src/commute/removal.py`, `cluster/e70_a2.sbatch`, commit c594bc9. Results `experiments/pcfg_anchors/results/e70_a2.json`, commit 71d3975. Log `cluster/logs/commute-e70-a2-50643.out`, with a copy at `experiments/pcfg_anchors/results/large/e70/e70_a2.log`. Figures `experiments/pcfg_anchors/figures/e70_a2_{low,tasks}.png` from `plot_e70_a2.py`. MATS L40, `debug`, job 50643, exit 0, 18:21 to 18:36 on 2026-11-03, peak host memory 1.4 GB, $0.
+
 ## Not run
 
-- A variance-matched control: a direction of comparable size with no covariance with the count. Asked of the user, not decided. An exact match is impossible at blocks 1 to 5, as the covariance direction leaves too little variance.
+- **Any removal on rows where the two counts are uncorrelated, so the -0.50 correlation is untested.** A fall in N there would support the leak reading of its loss, and no fall would rule it out. This would need a new plan, and none is proposed.
+- A size-matched control: no single direction with no covariance with the count can match at blocks 1 to 5, and at block 6 the near match carries the count's classes.
+- A removal of higher rank, with no covariance, holding the covariance direction's variance, which would bear on a threshold effect of size.
+- Several large random directions at right angles to the covariance direction, and a direction with no class share at all with the count.
+- The variance share on the states' own residuals; every variance share here is LOW's on `C a 40` rows.
+- The correlation of the two counts on `C a 40` rows, where the class share of the count of b is read.
 - The variance held by the six softmax directions, which were never read against their band for size.
 - LEACE's oblique map, and an erasure of the one-hot count of rank up to 6.
 - A reader of the count classes after removal, and a refit on `C b 40` rows.
-- Any removal on rows where the two counts are uncorrelated, so the -0.50 correlation is untested.
-- The amendment on the 1K states.
+- Either amendment on the 1K states.
 - Raw-share bands: random draws were scored only as the subtracted share.
 - Pruning and reverse fine-tuning on these retrained states; the earlier stage's readings stand and are quoted, not rerun.
-- A second LOW or a second probe seed; any retraining in the amendment.
+- A second LOW or a second probe seed; any retraining in either amendment.
 - VPD and Qwen.
 - Carrying the lookup to count values it never saw: no held-out rule is filed.
 - An independent check.
@@ -414,4 +559,5 @@ Amendment 1: plan section "Amendment 1" in the same plan. Rules `experiments/pcf
 - **Causal test.** Jain et al. use pruning and reverse fine-tuning. We remove a probe's direction or subspace at `=`, as in `decisions.md`'s mechanistic row, because this pair's labels are known by construction.
 - **Shuffled-label control.** Hewitt and Liang 2019 use random labels per input type. We permute labels within each batch, since these inputs carry no information about them.
 - **Choice of direction.** Haufe et al. 2014, cited from memory and not re-read, take a linear model's activation pattern as the covariance of the input with the model's output, against its filter, the weights. We use the covariance with the label, the count. The two agree up to scale where the ridge reads the count, blocks 2 to 6, and differ at block 1. We do this because the removal is defined on the count, not on a probe.
-- **Erasure.** Belrose et al. 2023, LEACE, cited from memory and not re-read, erase a one-hot concept with an oblique map that subtracts along the covariance and reads with the whitened filter. We remove the covariance direction by an orthogonal removal, on a scalar count, at `=` only, with later blocks free to re-read the text. We do this to keep rank 1 and the first reading's removal and rules. It zeroes the same cross-covariance for the scalar only, and the oblique map is not run.
+- **Erasure.** Belrose et al. 2023, LEACE, cited from memory and not re-read, erase a one-hot concept with an oblique map that subtracts along the covariance and reads with the whitened filter. We remove the covariance direction by an orthogonal removal, on a scalar count, at `=` only, with later blocks free to re-read the text. We do this to keep rank 1 and the first reading's removal and rules. It zeroes the same cross-covariance for the scalar only, and the oblique map is not run. The second amendment removes its direction the same way, since only the direction may differ.
+- **A large null direction.** Random-direction nulls for removal, as in Elazar et al. 2021 and Belrose et al. 2023, both cited from memory and not re-read, control for the removal's rank and not for the variance it takes. The second amendment uses the top principal component after the covariance direction as a null for variance taken, with zero scalar covariance by construction and no match on size. We do this because the covariance direction holds up to 170 times a random direction's variance, and no exact match at right angles to it exists at blocks 1 to 5.
