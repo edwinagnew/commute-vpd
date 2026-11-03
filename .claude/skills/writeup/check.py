@@ -2,7 +2,7 @@
 
     uv run python .claude/skills/writeup/check.py [--quiet] notebooks/x.ipynb reports/analyses/y.md
 
---help lists the flags; --quiet prints only the errors (and one line per file that has any), friction 350, 386.
+--help lists the flags; --quiet prints only the errors, friction 350, 386.
 
 Reads the markdown cells of a notebook, the text of a .md file or the prose of an .html log card (tags become sentence
 breaks, alt text and tables are dropped: they merged sentences and inflated the flags, friction 151, 157, 164), skips

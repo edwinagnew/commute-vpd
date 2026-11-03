@@ -22,22 +22,29 @@ def load_experiment(folder: str, name: str, *also: str) -> Any:
     those names; the caller's are put back afterwards. Experiments share file names (run.py, amend2.py, job.py), so
     import order and PYTHONPATH order decided which one a script got (friction 299, 369, 378, 381, 382, 383, 388).
 
-    A file is one module however it is reached, kept in sys.modules as `<folder>__<stem>`, so two calls see the same
-    `run`. Its bare name exists only during the load: an `import run` inside a function called later fails or finds the
-    caller's, and pickle cannot find its classes. Importing a file runs its top level, so it must not need more than that."""
+    A file reached first through its own folder is one module, kept in sys.modules as `<folder>__<stem>`, so two calls
+    see the same `run`, and a module the caller already imported from that file is that module. A file reached through
+    `also` binds its sibling imports to <folder> first, so it is a separate module per <folder>, `<folder>+<its folder>__<stem>`.
+    Its bare name exists only during the load: an `import run` inside a function called later fails or finds the caller's,
+    and pickle cannot find its classes. Importing a file runs its top level, so it must not need more than that."""
     dirs = [EXPERIMENTS / d for d in (folder, *also)]
-    owner = {f.stem: d.name for d in reversed(dirs) for f in d.glob("*.py")}
+    owner = {f.stem: d for d in reversed(dirs) for f in d.glob("*.py")}
     assert name in {f.stem for f in dirs[0].glob("*.py")}, f"no {name}.py in experiments/{folder}"
+    keys = {s: f"{folder}__{s}" if d == dirs[0] else f"{folder}+{d.name}__{s}" for s, d in owner.items()}
+    for s, key in keys.items():
+        mine = getattr(sys.modules.get(s), "__file__", None)
+        if key not in sys.modules and owner[s] == dirs[0] and mine and Path(mine).resolve() == (dirs[0] / f"{s}.py").resolve():
+            sys.modules[key] = sys.modules[s]
     held = {s: sys.modules.pop(s) for s in owner if s in sys.modules}
-    sys.modules.update({s: sys.modules[f"{d}__{s}"] for s, d in owner.items() if f"{d}__{s}" in sys.modules})
+    sys.modules.update({s: sys.modules[key] for s, key in keys.items() if key in sys.modules})
     sys.path[:0] = [str(d) for d in dirs]
     try:
         return importlib.import_module(name)
     finally:
         del sys.path[: len(dirs)]
-        for s, d in owner.items():
+        for s, key in keys.items():
             if s in sys.modules:
-                sys.modules[f"{d}__{s}"] = sys.modules.pop(s)
+                sys.modules[key] = sys.modules.pop(s)
         sys.modules.update(held)
 
 

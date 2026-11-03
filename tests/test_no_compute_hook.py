@@ -37,6 +37,14 @@ def hook(command: str, cwd: Path) -> subprocess.CompletedProcess[str]:
 
 
 REFUSED = [
+    # Past a blank here-document: its operator is not the program, and a later redirection wins standard input
+    "<<'EOF' python3 x.py\nEOF",
+    "FOO=1 <<'EOF' python3 x.py\nEOF",
+    "timeout 60 <<'EOF' python3 x.py\nEOF",
+    "python3 <<'EOF' <x.py\nEOF",
+    # A << that is not a here-document hides nothing after it
+    "git commit -m 'a << b'\npython3 x.py",
+    "echo $((1<<2))\npython3 x.py",
     # Python, by every spelling of the program
     "python x.py",
     "python3 x.py",
@@ -110,6 +118,13 @@ REFUSED = [
 ]
 
 ALLOWED = [
+    # A here-document's lines are not commands, in a substitution inside double quotes too
+    "cat > j.sh <<'EOF'\nsrun python exp/run.py\nEOF",
+    "git commit -m \"$(cat <<'EOF'\npython3 x.py\nit's a message\nEOF\n)\"",
+    "cat > j.sh <<'EOF' && echo done\nsrun python exp/run.py\nEOF",
+    # A job fed its script that asks for a GPU may load a model
+    "sbatch <<'EOF'\n#!/bin/bash\n#SBATCH --gres=gpu:1\nsrun python exp/run.py\nEOF",
+    "sbatch --gres=gpu:1 <<'EOF'\nsrun python exp/run.py\nEOF",
     # A read naming a script is not a run (friction 307, 352)
     "grep -n def x.py",
     "grep -c '' x.py",
@@ -174,6 +189,14 @@ ALLOWED = [
 ]
 
 MODEL_ON_CPU = [
+    # A here-document that is the job's script
+    "sbatch <<'EOF'\n#!/bin/bash\nsrun python exp/run.py\nEOF",
+    "sbatch <<'EOF'\n#!/bin/bash\nsrun python x.py --model Qwen/Qwen3-4B\nEOF",
+    f"{CPU_RUN} bash <<'EOF'\nsrun python exp/run.py\nEOF",
+    # A << that is not a here-document hides nothing after it
+    f"git commit -m 'a << b'\n{CPU_RUN} python exp/run.py",
+    f"grep -n '<<EOF' x.py\n{CPU_RUN} python exp/run.py",
+    f"echo $((1<<2))\n{CPU_RUN} python exp/run.py",
     f"{CPU_RUN} python exp/run.py",
     f"{CPU_RUN} --mem 16G python exp/checks.py",
     f"cd exp && {CPU_RUN} python run.py",

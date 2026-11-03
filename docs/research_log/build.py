@@ -126,6 +126,8 @@ def tree_id(folder: Path) -> str:
     """The git tree id a commit of this folder would have, writing nothing (all files mode 100644)."""
     entries = []
     for p in folder.iterdir():
+        if p.name.startswith(".") or p.name.endswith("~") or p.name == "__pycache__":
+            continue  # an editor's or Python's file, never committed: it would read as "parts/ is not committed"
         mode, raw = ("40000", bytes.fromhex(tree_id(p))) if p.is_dir() else ("100644", blob_id(p))
         entries.append((p.name + "/" if p.is_dir() else p.name, f"{mode} {p.name}".encode() + b"\0" + raw))
     body = b"".join(entry for _, entry in sorted(entries, key=lambda e: e[0].encode()))
@@ -248,7 +250,9 @@ def print_missing() -> None:
     named = (HERE / "PENDING.md").read_text() + "".join(f.read_text() for f in PARTS.rglob("*.html"))
     last = find(r'<tr><td class="c">\d+</td><td class="c">([\d-]+)</td>',
                 (PARTS / "sections" / "changelog.html").read_text())[1]
-    wild = {w.rsplit("/", 1)[-1] for w in re.findall(r"[\w./-]*[a-z-]\*[\w.*-]*", named)}  # analysis_qwen-*
+    # A wildcard in the changelog or queue counts as naming (analysis_qwen-*); a word in prose (failed*) does not.
+    listed = (HERE / "PENDING.md").read_text() + (PARTS / "sections" / "changelog.html").read_text()
+    wild = {w.rsplit("/", 1)[-1] for w in re.findall(r"[\w./-]*[a-z-]\*[\w.*-]*", listed) if re.search(r"[_-]", w)}
     for f in sorted(top.glob("reports/*/20*")):
         if f.name[:10] >= last and f.name not in named and not any(fnmatch.fnmatch(f.name, f"*{w}") for w in wild):
             print(f"not in the log: {f.relative_to(top)}")

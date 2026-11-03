@@ -134,9 +134,10 @@ From a Claude Code session, with the Artifact tool:
    one-off edit too. Nothing enforces that, and sessions have published past a held lock (friction 347, 149): step 2's
    diff shows it; merge and take the next version number. In the call before the send, `log-lock check <role>`: on exit
    1 do not publish; take it again and re-pull.
-1. `git pull --no-rebase`, then `python3 docs/research_log/build.py`, so the build has every other session's changes.
-   Commit `parts/` (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md README.md`) and push
-   **before** publishing: a published version whose `parts/` sat uncommitted or unpushed made the next flush merge it
+1. Commit `parts/` and the emptied queue (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md
+   README.md`), since a pull refuses to merge into an uncommitted `PENDING.md`. Then `git pull --no-rebase` and
+   `python3 docs/research_log/build.py`, so the build has every other session's changes. Commit what that changed and
+   push **before** publishing: a published version whose `parts/` sat uncommitted or unpushed made the next flush merge it
    back from the live page (friction 138, 139, 323). If the pull brought in parts edits, rebuild before publishing, or
    the live page lags the repo (friction 153).
 2. Save the live pages by path, which prints a line per page, not the page, and compare (on the dev node, not through

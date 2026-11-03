@@ -29,8 +29,8 @@ if [[ -n ${SLURM_JOB_ID:-} ]]; then
   # In the job's .out before any Python: silence after this line is a hang in Python's start-up (friction 132). In jobs.log
   # because a job's node and GPU cannot be asked for after it ends: no sacct, and scontrol forgets it (friction 200).
   # To standard error, since a caller may parse a job's output; never fatal, since jobs run under set -e.
-  _started="$(date -Is) $SLURM_JOB_ID ${SLURM_JOB_NAME:-} started node=${SLURMD_NODENAME:-?} gpus=${SLURM_JOB_GPUS:-none}"
-  echo "$_started" >&2
+  _started="$(date -Is) $SLURM_JOB_ID ${SLURM_JOB_NAME:-} started node=${SLURMD_NODENAME:-?} gpus=${SLURM_JOB_GPUS:-${SLURM_STEP_GPUS:-none}}"   # a direct srun sets only the step's
+  echo "$_started" >&2 || true
   { echo "$_started" >> "$COMMUTE_REPO/cluster/logs/jobs.log"; } 2>/dev/null || true
   unset _started
 fi

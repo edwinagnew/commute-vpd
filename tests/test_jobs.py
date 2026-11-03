@@ -69,3 +69,31 @@ def test_hard_exit_flushes_and_does_not_wait_for_teardown():
     """)
     r = subprocess.run([sys.executable, "-c", script], check=False, capture_output=True, text=True, timeout=60)
     assert r.returncode == 3 and "final line" in r.stdout and "peak host RSS" in r.stdout, (r.returncode, r.stdout, r.stderr)
+
+
+def _folders(tmp_path, monkeypatch, **files):
+    """experiments/<folder>/<name>.py from keyword arguments folder__name=source."""
+    for key, source in files.items():
+        folder, name = key.split("__")
+        (tmp_path / folder).mkdir(exist_ok=True)
+        (tmp_path / folder / f"{name}.py").write_text(source)
+    monkeypatch.setattr(jobs, "EXPERIMENTS", tmp_path)
+
+
+def test_a_file_reached_through_also_does_not_poison_its_own_folder(tmp_path, monkeypatch):
+    _folders(tmp_path, monkeypatch, pa__run="WHO = 'a'\n", pa__amend="import helper\n",
+             pb__run="WHO = 'b'\n", pb__helper="import run\nWHO = run.WHO\n")
+    assert jobs.load_experiment("pa", "amend", "pb").helper.WHO == "a"
+    assert jobs.load_experiment("pb", "helper").WHO == "b"
+
+
+def test_a_file_the_caller_already_imported_is_the_same_module(tmp_path, monkeypatch):
+    _folders(tmp_path, monkeypatch, pc__run="import sys\nsys.ran_pc = getattr(sys, 'ran_pc', 0) + 1\n", pc__cnt="import run\n")
+    monkeypatch.syspath_prepend(str(tmp_path / "pc"))
+    monkeypatch.delitem(sys.modules, "run", raising=False)
+    monkeypatch.delattr(sys, "ran_pc", raising=False)
+    import run  # pyright: ignore[reportMissingImports]
+
+    assert jobs.load_experiment("pc", "cnt").run is run and sys.ran_pc == 1  # pyright: ignore[reportAttributeAccessIssue]
+    assert sys.modules["run"] is run
+    del sys.modules["run"]
