@@ -152,6 +152,9 @@ All dW files are written by run.py and use the emoticon windows.
 - Labels: lowercase reuses, cipher and broad cipher new, by construction (E60's table).
 - Logs: `finetune`, `a1_finetune`, `a1b_finetune`, `a1b_read`, `a2_read`, `read` (`.log` and `.out`).
 
+## qwen_fresh_numbers, qwen_fresh_set, qwen_gsm8k_baseline, qwen_prefix_test
+- jsonl only (2-5 MB each, no weights): fresh GSM8K-style problem sets (`gsm*k.jsonl`, `mgs.jsonl`, `plus.jsonl`, `symbolic.jsonl`), W0's `greedy.jsonl` / `samples.jsonl` on GSM8K, and `copy.jsonl` (prefix test). Plain text, one problem or answer per line.
+
 ## qwen_port (Qwen3-1.7B port check; 2026-10-27)
 - JAX reference outputs on fixed tokens, written by `jax_reference.py` (all safetensors, `safetensors.torch.load_file`): `gamma_row{0,4}.safetensors` (1.41 / 0.32 GB, BF16, 392 tensors: g and p of every site on the two detail rows), `target_row{0..7}.safetensors` (final logits F32 and hidden state BF16), `taps_row{0..7}.safetensors` (29 residual boundaries, BF16), `masked_row{0..7}.safetensors` (masked-forward KLs F32, logits BF16 on detail rows), `source.safetensors` (the fixed source array, F32, 392 tensors). Read by `torch_check.py` and `plot.py`. 4.4 GB.
 
