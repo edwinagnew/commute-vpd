@@ -145,3 +145,42 @@ def lookup_accuracy(reading: np.ndarray, answer: np.ndarray) -> dict[str, float]
     got = np.array([table.get(float(v), -1) for v in read_r])
     return {"acc": float((got == read_a).mean()), "floor": float((read_a == mode(fit_a)).mean()),
             "unseen": float((got == -1).mean())}  # fmt: skip
+
+
+# ---- E70 Amendment 1 (rules filed in experiments/pcfg_anchors/results/predictions_e70_a1.json) ----
+
+
+def pattern_basis(x: Tensor, y: Tensor) -> Tensor:
+    """The unit cross-covariance of rows x (n, d) with a scalar y (n,), as a basis (d, 1), fp32: the direction y moves x
+    along, against `fit_ridge`'s weights, which also cancel noise. Removing it zeroes x's sample covariance with y."""
+    x, y = x.double(), y.double()
+    c = (x - x.mean(0)).T @ (y - y.mean()) / len(x)
+    assert c.norm() > 0, "x has no covariance with y: there is no direction to remove"
+    return unit_basis(c)
+
+
+def erased(after: float, floor: float, before: float) -> bool:
+    """R3: a refit's accuracy after the removal lies below the midpoint of the floor and the reading before it (strict;
+    a tie or a nan is not erased)."""
+    return after < (floor + before) / 2
+
+
+def one_direction_branch(teeth: Sequence[bool], rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    """The tree, first match wins, reading R2's calls (`r2_block`, blocks 1..n in order) only at blocks where LOW's control
+    has teeth. 'closed': teeth at no block. 'cannot serve': a reversal at a read block. 'separates': R2 holds at a read
+    block before the last. 'no call': a read block before the last is unreadable, or every read block is. Else
+    'cannot serve': read and neither, or R2 holds at the last block alone, the output side, where E70 files no separation."""
+    read_at = [i + 1 for i, t in enumerate(teeth) if t]
+    calls = [rows[b - 1]["call"] for b in read_at] if read_at else []
+    early = [rows[b - 1]["call"] for b in read_at if b < len(teeth)]
+    if not read_at:
+        branch = "closed"
+    elif "reversal" in calls:
+        branch = "cannot serve"
+    elif "holds" in early:
+        branch = "separates"
+    elif "no call" in early or all(c == "no call" for c in calls):
+        branch = "no call"
+    else:
+        branch = "cannot serve"
+    return {"branch": branch, "read_at": read_at, "calls_read": calls}

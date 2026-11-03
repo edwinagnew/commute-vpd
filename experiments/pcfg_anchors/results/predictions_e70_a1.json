@@ -1,0 +1,120 @@
+{
+  "status": "filed 2026-11-03 by the E70 Amendment 1 code writer, before any Amendment 1 job ran. e70_a1.py refuses a draft and refuses this file uncommitted or changed. predictions_e70.json is untouched. Amendment 1 of 2 for E70.",
+  "experiment": "E70 Amendment 1. Removing the ridge's unit weights costs LOW nothing, although they read count(a) perfectly. Remove instead a_b, the unit covariance of the residual with count(a) (the pattern), at `=`, LOW first against random directions; read the 20 states at 10,000 steps only if LOW loses log-odds. No training.",
+  "plan": "reports/plans/2026-11-03_plan_e70-existing-new-counting.md, section 'Amendment 1 (2026-11-03)'",
+  "code": "experiments/pcfg_anchors/e70_a1.py, importing e70.py unchanged; src/commute/removal.py gains pattern_basis, erased, one_direction_branch (tests/test_removal.py), and nothing older changes; cluster/e70_a1.sbatch. All other constants, rows and streams are read from predictions_e70.json and predictions_c1b.json.",
+  "constants": {
+    "n_refit": 20000,
+    "refit_key": [1, 700, 4],
+    "reproduce_frac": 0.01
+  },
+  "constants_sources": {
+    "n_refit": "Equal to E70's n_fit, so the refit has the fit's size.",
+    "refit_key": "A stream no E70 stage used (tails 1, 2, 3 are E70's). Fresh rows, so a_b was not estimated on the rows the refit fits, and the refit is read on E70's 2,000 held 'C a 40' rows: a refit on a_b's own rows would read w = 0 by algebra and test nothing.",
+    "reproduce_frac": "Same card type (the cluster has one node of L40s), same code path, dtype and rows as E70's control, so only fp32 rounding can differ: at most about 1e-4 on a mean over 2,000 rows of log-odds near 20. 1% of E70's smallest band is 4.8e-4. This tolerance reads no result; every band used is this job's."
+  },
+  "definitions": {
+    "pattern_direction": "Per block, a_b = unit Cov(h_b, count(a)), h_b LOW's fp32 residual after block b at `=`, on E70's 20,000 ridge fit rows (fit_key). Rank 1. Written to e70_a1.json as `directions`. Applied by removal.remove at `=` only, as E70.",
+    "w": "E70's unit ridge weights, read from large/e70/probes.pt. Never refit.",
+    "control_on_LOW": "E70's: 2,000 held 'C a 40' rows, target count(a), drop = mean(clean log-odds - log-odds after removal). Band at a block = 95th percentile of |random drop| over E70's 20 single draws (default_rng([700, 1, block, draw])), from this job.",
+    "accuracy_after_removal": "Argmax at `=` equals the row's target, on the same rows as the drop or the share. LOW: count(a) on 'C a 40'. A state: its own target on 'C b 40'.",
+    "refit": "removal.fit_ridge (E70's lambda) on 20,000 fresh 'C a 40' rows with the direction removed, read as a rounded prediction on the 2,000 held rows with the same direction removed. Accuracy against count(a).",
+    "variance_share": "var(h·u) / trace Cov(h), on the 2,000 held rows, for u = a_b, w, and the mean over the 20 random draws.",
+    "cos": "a_b · w, signed. Tests the reasoning that removing w leaves the cross-covariance almost whole: the part left is sqrt(1 - cos^2).",
+    "shares": "E70's: readout.shares on the 2,000 held 'C b 40' rows, the 20 states at 10,000 steps. A_lo scored. A_lo_raw and A_nats beside it, unscored and without a band.",
+    "state_band": "E70's: per block, max over the 20 states of the 95th percentile of |random A_lo|, same draws, from this job."
+  },
+  "rules": {
+    "R0_same_as_E70": {
+      "rule": "(a) On the held rows, the saved ridge's accuracy per block within one row (1/2000, absolute, inclusive) of e70.json's probes.ridge.acc_a, and the majority floor equal to its floor_a. (b) Per block, the largest |random drop - E70's same draw| at most reproduce_frac x E70's band at that block (relative to the band, inclusive). The ridge's own drop against E70's is printed, no rule.",
+      "on_miss": "Stop, before a_b is read. Rows, file or code differ from what the amendment names.",
+      "expected": "Acc 0.38, 0.9975, 1, 1, 1, 1; floor 0.3575; drop differences near or at 0."
+    },
+    "R1_control": {
+      "rule": "removal.r1: at a block LOW has teeth when its drop under a_b exceeds this job's band, strictly and one-sided, absolute log-odds. A rise, a tie or a nan is no teeth.",
+      "on_miss": "No teeth at any block: after `why`, stop, branch 'closed'.",
+      "lean": "Teeth at some of blocks 3-6, low confidence; see predictions."
+    },
+    "R3_removal_does_what_it_claims": {
+      "rule": "removal.erased: at each of blocks 2-6, the refit's accuracy after a_b is below the midpoint of the floor and the ridge's accuracy before removal, strictly (absolute accuracy, no band). Block 1 is read and not binding: the ridge read 0.38 there against a floor of 0.3575, so the midpoint sits within rounding of both.",
+      "on_miss": "Stop, no branch read: the removal does not do what it claims, and no drop is read as losing the count.",
+      "expected": "Holds at every block, by algebra up to a_b's sampling error."
+    },
+    "R2": {
+      "rule": "E70's, by e70.r2_table and removal.r2_block unchanged: on the learned 10K states, gap = min A_lo over P - max A_lo over N; 'holds' when gap > the block's state band, strictly; 'reversal' when min N - max P > the band, strictly; 'no call' when a side has no finite share or the band is nan; else 'neither'. Share is relative to the gain, the band is on the same scale.",
+      "scope": "Read and printed at every block. The tree reads it only at blocks where R1 has teeth, because a gap at a block with no effect on LOW has no control under it: E70's half-percent reversal at block 1 was that case. r2_verdict over all blocks is printed beside it."
+    },
+    "tree": {
+      "rule": "removal.one_direction_branch, after R0 and R3 pass, first match wins, so every case has exactly one branch. Read blocks are those with teeth; 'early' is blocks 1-5.",
+      "closed": "No read block. The one-direction test closes; P and N not read; the six-direction result is the only reading left.",
+      "cannot_serve_reversal": "A reversal at any read block, whatever else holds. One direction cannot serve as ground truth here. Announced as a reversal.",
+      "separates": "R2 holds at an early read block. The one-direction reading the task named.",
+      "no_call": "None of the above, and an early read block is unreadable, or every read block is. Reported as what was read; opens no amendment.",
+      "cannot_serve": "Everything else: read blocks readable and 'neither', or R2 holds at block 6 alone, where E70 files holding as output-side, no call. P and N lose alike: one direction cannot serve as ground truth here."
+    },
+    "resume": "Each stage is written to results/e70_a1.json as it ends, states one by one. A resubmit skips what is written. A changed constant exits 2. A stop file refuses every later job. A missing saved file exits 1 with its name, writes no stop file, and nothing is retrained."
+  },
+  "predictions": {
+    "LOW_at_a_b": {
+      "drop": "Above band at some of blocks 3-6, between about 0.3 and 5 log-odds, low confidence. Reason: a_b lies in the span of the count's class means, where E70's six softmax directions drop 4.2 to 9.0; one direction of the six takes part of that, and the softmax head can still separate classes along the curve in the other five. Not nested with the softmax span, so no filed ceiling.",
+      "accuracy": "Clean about 0.9998. Under a_b at or above about 0.7 at every block, lower than clean where there are teeth, since a large log-odds drop can leave the answer in place.",
+      "refit_after_a_b": "0.33 to 0.40 at every block: the constant prediction rounds to 13, which reads the floor of 0.3575 on these rows. Sampling error in a_b leaves about 192/20000, 1%, of the count's variance.",
+      "refit_after_w": "Above 0.9 at blocks 3-6, and near E70's 0.9975 at block 2. Near 0.38 at block 1, where nothing reads it. A miss means the count is linear only along w, which contradicts the reasoning, and is reported.",
+      "variance_share": "Along a_b above along w at blocks 2-6, and above 1/192. Along w under 1/192 at blocks 2-4; no lean at 5 and 6, where |w| implies the variance along w grows: var(y)/|w|^2 reads 0.014, 0.059, 0.39, 0.99, 4.1 at blocks 2-6, against an unknown trace.",
+      "cos": "|cos(a_b, w)| below 0.5 at blocks 2-6, lean. Near 1 would contradict the reasoning."
+    },
+    "random_control": {
+      "drop": "Inside this job's band by construction; band equal to E70's 0.048, 0.132, 0.215, 0.122, 0.117, 0.077 within R0(b).",
+      "accuracy": "Near clean, at or above 0.99.",
+      "variance_share": "Mean 1/192 = 0.0052 in expectation over directions, whatever the spectrum.",
+      "state_band": "E70's ridge band up to rounding: 0.0042, 0.024, 0.012, 0.019, 0.011, 0.009. Same draws and rows."
+    },
+    "do_nothing": {
+      "values": "No removal: drop 0, share 0, accuracy clean (LOW about 0.9998, every state 1.0), refit reads E70's 0.38, 0.9975, 1, 1, 1, 1. This is arithmetic and not run; the clean accuracy is printed.",
+      "ridge_w": "w is E70's known do-nothing: drops 0.042, 0.027, -0.035, -0.104, -0.122, -0.020, printed again here."
+    },
+    "share_P_10K": "If read: above the state band and below E70's six-direction means (0.125, 0.238, 0.553, 0.720, 0.564 at blocks 2-6) at most blocks, highest at blocks 4-5. Reason: P's answer is a function of count(a), and six directions cost it most there. A_lo sits above A_lo_raw by LOW's negative drop over the gain, as in E70.",
+    "share_N_10K": "If read: below P at blocks 4-5 and above band at blocks 4-6, up to about E70's 0.20, 0.34, 0.49. N may rise because count(a) and count(b) correlate at -0.50 on these rows (-0.50 on 'C b 40', -0.50 on 'C a 40' where a_b is fit), so a_b can carry count(b) too.",
+    "R2_lean": "Weak lean: holds at block 4 or 5 and not at block 6, where E70's raw shares were equal. 'cannot serve' is a live outcome because of N's correlation.",
+    "A_nats_and_accuracy_on_states": "A_nats at most about E70's P 0.155, 0.308 and N 0.002, 0.013 at blocks 4, 5. Accuracy at or above 0.9 on 1e-4 states at every block; 1e-5 P states may fall under it at blocks 4-5, where E70's median row lost most nats."
+  },
+  "edge_cases": {
+    "E1_tie": "A drop equal to the band is no teeth; a gap equal to the state band is not 'holds'; a refit on the midpoint is not erased. Tested.",
+    "E2_zero_gain": "A gain under floor_min gives a nan share (readout.shares), left out of R2's side and counted in nan_P or nan_N; spread() drops it. If it empties a side the block is 'no call'. Tested in r2_block's tests and through one_direction_branch.",
+    "E3_one_side_only": "A side with no finite share gives 'no call' at that block: an early read block gives branch 'no call' unless R2 holds at another; block 6 unreadable decides nothing unless it is the only read block. Tested.",
+    "E4_holds_and_reversal": "Reversal at a read block beats any 'holds': branch 'cannot serve', and it is announced. Tested.",
+    "E5_no_teeth_block": "Calls at blocks with no teeth are printed and not read, whether 'holds' or 'reversal'. Tested.",
+    "E6_output_side": "Teeth and 'holds' at block 6 alone: 'cannot serve', E70's 'output-side, no call' printed beside it. Tested.",
+    "E7_zero_covariance": "If a block's covariance with the count is exactly zero, pattern_basis asserts and the job fails loudly. Not expected. Tested.",
+    "E8_nan_drop_or_band": "No teeth (removal.r1). All blocks nan is branch 'closed'. Tested in R1's tests.",
+    "E9_not_yet_learned": "A 10K state under task accuracy 0.9 is left out of R2 and listed, by E70's r2_table. None expected: all read 1.0 in E70.",
+    "E10_dry_run": "E70's own 10K ridge shares passed through stage_verdict gave E70's calls, gaps and bands exactly at all six blocks, 2026-11-03, on CPU, no model."
+  },
+  "blind_to": [
+    "Count classes: the head is a softmax over count tokens, and zero covariance with the scalar count does not stop a readout of a one-hot class, whose erasure needs up to six directions. So LOW can keep its answers with the scalar erased.",
+    "Count held non-linearly, and information re-read from the text by later blocks, as in E70.",
+    "A direction shared between count(a) and count(b): it costs N as well.",
+    "The refit reads rows of 'C a 40' only; no refit is run on 'C b 40'.",
+    "Accuracy cannot see a loss of confidence that leaves the argmax in place; the log-odds cannot see whether answers changed. Both are read for that reason."
+  ],
+  "noise_floor": "This job's bands. Seed spread is in res.summary and the per-state rows.",
+  "positive_controls": {
+    "refit_after_a_b": "R3: the count's linear reading on the removed residual falls to the floor.",
+    "refit_after_w": "The same refit under w stays high, which is why E70's removal could do nothing.",
+    "same_as_E70": "R0."
+  },
+  "reference_differences": "Same LOW file, probes file, rows, draws, code path and card type as E70's control. Differences left: fp32 rounding only. Named as what R0 tests.",
+  "departures_from_literature": [
+    {"what": "Filter and pattern", "literature": "Haufe et al. 2014, cited from memory, not re-read: a linear model's activation pattern is Cov(x, the model's output) up to scale, against its filter, the weights.", "ours": "Cov(h, count), the label rather than the output. These agree up to scale where the ridge reads the count near perfectly, blocks 2-6, and differ at block 1.", "why": "The removal is defined on the count, not on a probe."},
+    {"what": "Erasure", "literature": "Belrose et al. 2023, LEACE, cited from memory, not re-read: zero cross-covariance with a one-hot concept is necessary and sufficient for linear guardedness; the eraser is the oblique map x - c (w·(x - mean)) / (w·c), which subtracts along the covariance and reads with the whitened filter.", "ours": "An orthogonal removal, h minus its component along a_b; a scalar count, not a one-hot concept; at `=` only, with later blocks free to re-read the text.", "why": "Rank 1 through E70's same removal and rules, as the ask named. The orthogonal removal zeroes the same cross-covariance, for the scalar only; the oblique map is not run."}
+  ],
+  "not_run_here": [
+    "LEACE's oblique map.",
+    "An erasure of the one-hot count, of rank up to 6.",
+    "The six-direction removal on rows where the two counts are uncorrelated.",
+    "A refit on 'C b 40' rows.",
+    "The 1K states; a second LOW or probe seed; any retraining.",
+    "VPD and Qwen."
+  ],
+  "job_split": "cluster/e70_a1.sbatch, debug QoS, $0, 22-min deadline, exit 3 = resubmit by hand. Scaled from E70's log, not measured: control ~1 min, why ~1, LOW on the state rows ~1, states ~40 s each (~14): ~17 min. A stop leaves after ~2 min."
+}
