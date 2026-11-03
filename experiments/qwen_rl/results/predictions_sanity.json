@@ -1,0 +1,51 @@
+{
+ "experiment": "E69 qwen_rl: sanity.py, $0, one cluster L40, before the paid run",
+ "plan": "reports/plans/2026-11-03_plan_e69-grpo-loop.md",
+ "filed": "2026-11-03",
+ "scope": "W0, size full, seed 69, step 1's prompts, 64 x 8, lr 1e-6. A rule with a missing or non-finite value, or an empty pool, is a fail. Every 'SE' is over problems (over 1 problem: no SE, a fail). Numbers under 'expected' are for the reader and stop nothing.",
+ "c1": {
+  "rule": "Temperature 1: |mean over problems of the summed (-log p(sampled) - entropy) per sample| <= se_mult SE, on the training path, reported per token (both sides divided by the mean length). Summed over a sample this has mean exactly 0 under the model's own distribution, whatever the stopping rule, so end tokens and the window bias nothing. Control: rollouts at control_temperature from the same sampler read against pi at temperature 1: -log p below entropy and the difference over se_mult SE. Top-k: sampled tokens ranked below top_k under pi: at least one if the expected number (the summed mass below rank top_k) is at least min_expected; a surviving top_k reads exactly 0, which the mean above barely sees. Under min_expected the top-k rule passes as having no power, and says so.",
+  "se_mult": 3,
+  "control_temperature": 0.7,
+  "top_k": 50,
+  "min_expected": 5,
+  "expected": "T 1: the two means agree, about 0.2-0.5 nats per token. T 0.7: -log p clearly below entropy. Outside the top 50: tens of tokens among about 100,000, near the expected number.",
+  "blind_to": "An error that shifts probability only among tokens the model finds about equally likely."
+ },
+ "c2": {
+  "rule": "A sample's last token is an end token exactly when it is not truncated (every sample). The rest is read: sanity_samples.txt by a person; shares; reward at T 1 against plain T 0.7 and against qwen_eval.SAMPLE on the same prompts, no threshold.",
+  "expected": "Reward at T 1 about 0.82-0.83 (job 50208 read 0.830 on this batch at its row count); at SAMPLE about 0.83 to 0.85 (the E45 pool read 0.8335). Ending in an end token about 0.99; containing <think>: 0, since the prompt closes an empty think block; exact duplicates per problem: under 1 of 8, more on short answers.",
+  "samples_per_class": 6,
+  "truncated_max": 2,
+  "skip_sample_after_s": 1320
+ },
+ "c3": {
+  "rule": "One update from W0 with a fresh optimiser per arm, on step 1's batch; change = summed response log-prob after minus W0 (read_h). Gap = delta_r: over mixed problems, mean change of right minus wrong samples, by the true rewards in every arm. R: gap > 0, gap > se_mult SE, sum(w x change) > 0. N: sum(w x change) > 0 and |gap| < |R's gap|; a shuffle equal to the truth on a problem is allowed. F: mean over problems of the kept samples' mean change > 0 and > se_mult SE. R with weights negated: gap < 0. The held-out pool (held_pool problems of H's list x 8, drawn by the run's t = 0 seed, since H's file does not exist on the cluster) is read with no threshold; its KL is printed beside the early-check band.",
+  "se_mult": 5,
+  "held_pool": 32,
+  "expected": "To first order sum(w x change) for R equals lr x divisor x the L1 norm of the gradient, at most lr x divisor x rms x numel, about 1,060 nats (rms 2.87e-6 in job 50208); the L1 norm is smaller for a heavy tail, so 200 to 1,000. With about 25 mixed problems that is an R gap of about 3 to 30 nats. N: a gap near 0, well inside R's. F: about +0.5 to +5 nats per kept sample. Negated R: about minus R's gap. Held-out pool: gap small, either sign plausible; KL about 0.0056, within the early-check band.",
+  "blind_to": "Everything beyond the batch itself: the batch's own samples are favoured by any overfitting step, so this reads the sign and the plumbing, not learning."
+ },
+ "c4": {
+  "rule": "After R's update: every parameter outside the 196 torch.equal to its value before and with requires_grad False and no grad; each of the 196 with a non-zero change, float32; a hook on one matrix sees autocast off, output float32 and weight float32 in every forward, sampler and training, and in at least one of each; TF32 flags off; W0 equal to the raw checkpoint's bf16 values cast to float32 on one matrix per block (28), read after all the updates so that it also shows W0 was not written to.",
+  "expected": "Shares read, no threshold: entries moved by over lr / 2: about 0.9; unmoved: under 0.01. With every moved entry at lr the ratio would be 1; 0.926 needs a rms of |change| / lr of 0.926.",
+  "blocks": 28
+ },
+ "c5": {
+  "rule": "R's dW saved by qwen_sft.save and delta_fp32 to a node scratch path, read by qwen_sft.load and plus. Max |W0 + dW - master| <= weight_abs_tol, entries differing reported: W - W0 is exact when the two are within a factor of 2 (Sterbenz), so only entries with |W0| near 1e-6 can round, by about one ulp of 1e-6 (1.1e-13). |KL(W0 || rebuilt) - KL(W0 || live)| <= kl_abs_tol on the first kl_rows samples, a float32 sum's noise on a KL of about 0.01. Key set, shapes and dtypes equal to E40's step_100_fp32.safetensors. The scratch file is deleted in a finally.",
+  "weight_abs_tol": 1e-12,
+  "kl_abs_tol": 1e-05,
+  "kl_rows": 64,
+  "expected": "Entries differing: 0 to some thousands of 1.4e9, each by at most about 2e-13. KL difference 0 or under 1e-6."
+ },
+ "c6": {
+  "rule": "No index of H (128) in the picks of steps 1-100; 6400 picks, all distinct, exactly the first 6400 of the training order; the order is split(7473, 69, 128) and not sorted; the sets hold 1319 (test) and 1197 (GSM1k) problems. Golds on 3 problems are printed beside their question.",
+  "held": 128,
+  "picks": 6400,
+  "train": 7473,
+  "test": 1319,
+  "gsm1k": 1197,
+  "gold_shown": 3,
+  "expected": "All hold."
+ }
+}
