@@ -1,7 +1,9 @@
 # What is saved in each results/large
 
-Every `experiments/<name>/results/large` is a symlink to `~/commute-data/results-large/<name>/` (cluster NFS; 43 folders). Contents as of 2026-10-27, read from `ls` and the scripts' `torch.save` sites; nothing was loaded.
-Patterns: `{S}` seed, `{N}` step, `{R}` LoRA rank, `{T}` task (`emoticon` or a ladder task `r{rung}_t{trigger}_v{target}`), `{lr}` learning rate as written in the name. Every `.pt` loads with `torch.load(p, weights_only=False)`. "Unknown" means the scripts did not say.
+Every `experiments/<name>/results/large` is a symlink to `~/commute-data/results-large/<name>/` (cluster NFS; 79 folders). Contents as of 2026-11-03 (2026-10-27 for the folders it already listed that did not change), read from `ls`, the scripts' `torch.save`/`save_file` sites and, for safetensors, the file header; nothing was loaded.
+Patterns: `{S}` seed, `{N}` step, `{R}` LoRA rank, `{T}` task (`emoticon` or a ladder task `r{rung}_t{trigger}_v{target}`), `{lr}` learning rate as written in the name. Every `.pt` loads with `torch.load(p, weights_only=False)`. "Unknown" means the scripts did not say. Qwen files are safetensors (`safetensors.torch.load_file`). **Read the dtype from the header before loading**: the first 8 bytes are the header length (little-endian u64), then that many bytes of JSON, one `{"dtype", "shape", "data_offsets"}` per tensor (`python3 -I -c` with `struct.unpack('<Q', f.read(8))`, no torch). A Qwen dW dict of 196 tensors is 2.82 GB in BF16 and 5.64 GB in F32; the 67M's is 57 MB / 113 MB; offsets files are bf16 (60 MB).
+**Labels.** A column or phrase `Label:` says which side a 67M state is on (reuses / new / open) and how it got that label. All 67M labels are by construction (the task was built to reuse or to teach something new) or by behaviour at unseen keys (E58); only E62's copy map has a causal check (switch off W0's copying head), and its copy side is not settled. See `reports/analyses/2026-10-30_analysis_e60-regating-table.md` for the 18-state table and `reports/analyses/2026-11-02_analysis_method-table.md` for the truth kinds.
+**Update rule.** A run that writes `results/large` files adds or edits its folder's section here in the same commit as its results: format, dtype, size, how to load, and what is absent.
 Common terms: **arm A** = Adam, batch 32, clip 1, kl_lambda 1, on the task's trigger windows (`finetune.ArmAConfig`). **dW dict** = `{matrix: delta-W}` for all 24 matrices, fp32, CPU (113 MB). **CT state** = `{matrix: (delta-W, U2, V2)}` in theory layout, from `component_training.train` (234 MB). **offsets file** = `{"offsets": {matrix: (dU, dV) bf16}, "layout", **meta}` from `arms.save_offsets`; rebuild it with `saved_states.offsets_state(p, alive_uv)`. **sources** = `{matrix: (C+1,) levels in [0,1]}`, the last entry being Delta's, from `gamma.pgd_sources`. **shift file** = `{"shift": {matrix: (C,)}, "shift_null": ...}`; load it with `turned_down.load_shift(p)`.
 Emoticon windows and alive masks always come from `transport_test/results/large/` (see the transport_test section).
 
@@ -41,6 +43,10 @@ Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `
 - `sources_budget/{W0,sgd_r{0,1}_step1000,adam_r{0,1}_step1000}_s{S}_{n}.pt`: budget sweep sources, n in {20,40,80,160}, step size 2/n. Written by run.py `budget --shard N`.
 - Logs: `revert_shard{0,1}.log`, `budget_shard{0,1}.log`.
 
+## claim_tests (E47; listed 2026-11-03)
+- `t2_lora_r{32,128}_tt.pt` (60 MB each): offsets files (`rank`, `lr`, `order`, `step`=1000, `stage`) of a rank-32 / rank-128 LoRA teacher-trained by E37's recipe; run.py's `high_rank` loads a file already there. Written by `stages.py` (`save_offsets`).
+- Logs only otherwise: `t1.log`, `t1b.log`, `t2{,b,c}.log`, `t3.log`, `t4{,b,c}.log`, `t5{,b}.log`.
+
 ## concentration_test
 - `{top1,top10,top100,siblings}.pt`: `{"uv": {matrix: (U2, V2)}, "drop": {matrix: (n_alive,) float64}}`. `uv` is the arm's step-30 state; `drop` is the revert-one drop in held-out log-odds of `o`, given only for matrices whose subcomponents moved. Written by run.py `all`, and re-read by run.py `amend`/`gating` to rebuild the masks.
   Recipe: emoticon, arm A loss, Adam over the masked (U, V) for 30 steps; lr picked by the rule from 1e-5..1e-3 (the selected lr is in results/concentration.json).
@@ -62,6 +68,24 @@ Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `
   - `pullback_s{N}`: component training, Adam 1e-5 on the alive (U, V) offsets, arm A loss, emoticon, step N.
   - `lift_s{N}`: least-squares split (tol 1e-6) of the arm A fine-tune rerun (Adam 3e-5, seed 0) at step N.
 - Logs: `full.log`, `smoke.log`.
+
+## induction_cue (E62 and Amendments 2-6; 2026-11-02)
+- `{copy,lookup}_s{0,1,2}.pt` (113 MB): dW dict (fp32) of the copying map and the lookup at the new marker, one batch order per seed, saved at the read step the run chose (E12's checkpoints). Written by run.py. Label: the copy map is the causal-check pair (switch off W0's copying head, E62), copy side unsettled; r unscored.
+- `windows.pt`: `{"train", "read", "target", "p_read", "pools"}`. `heads.pt`: `{"scores", "means", "H"}` (prefix-matching score of the 24 heads, their mean activations, the head set).
+- `amend5_vectors.pt` (`{"a", "a_half2", "S_old"}`) and `amend5_windows.pt` / `amend6_windows.pt` (rows lists, torch.save of `self.rows`). Amendment 4's `amend4_vectors.pt` was written to the same place by code but is not present.
+- Amendments 2, 3 read these states and train nothing; logs `run.out`, `amend{2,3,4,5,6}.out`.
+
+## interchange_67m, method_table, neuron_sparsity, baseline_neurons, baseline_weights, pass_reread, pcfg_anchors, qwen_adversary, qwen_maps, qwen_pass_test
+- Empty (checked 2026-11-03). `pcfg_anchors` run.py and c1b.py write counting-model checkpoints `{"model": state_dict, "step"}` (fp32, 12 MB each) to results/large, none present; `pass_reread` run.py writes bf16 offsets to `regen/`, none present. `qwen_maps`' states are under qwen_sft (see qwen_maps above).
+
+## jain_readout (E59; 2026-11-02)
+- `readouts.pt` and `readouts_48279.pt` (619 MB each): `probes.state_dict()`, the per-block linear readouts trained on Pile text (Jain et al. 2024 Def 1); `readouts_48279.pt` is the one job 48279 wrote before its stage-0 stop. Written by run.py (`stage0_readouts`); pass it as `saved` to reuse. It reads the twelve E54/E56 states.
+
+## keydependent_elicit (E54; 2026-10-29)
+- `{elicit,cipher}_s{0,1}.pt` and `cipher_own_s{0,1}.pt` (113 MB): dW dict (fp32) at E12's recipe (arm A, Adam 3e-5, batch 32; scored step stored in `results/stage2.json`, with sha256). `cipher_own` is the cipher at its own norm; when it is the same state as `cipher_s*` it is not written twice. `windows_{elicit,cipher}.pt` (0.6 MB): `{"train","heldout","task","table"}`. Written by run.py. Label: elicit is "open", the cipher "new", both by construction only.
+
+## keydependent_patch (E56)
+- `{elicit,cipher}_s{2,3,4}.pt` (113 MB): dW dicts (fp32), the three further seeds beside E54's two; run.py `--job 2`. Same recipe and label.
 
 ## kv_task
 - `windows_{rand1,rand32,ident32}.pt`: `{"train": Windows, "heldout": Windows, "task": KV task, "table": (V,) int64}`. Written by run.py `build`. Load with `regating.load_kv_windows(name, kv_task/results)`.
@@ -107,8 +131,51 @@ All dW files are written by run.py and use the emoticon windows.
 - `{many,one,r1_t588_v452}_shifts.pt`: `{"shift": {matrix: (C,)}, "s_k": {cue: {matrix: (C,)}}}`, the shared and per-cue fixed changes of Gamma at the trigger. Written by run.py (`state`). The fine-tunes are regenerated: arm A, Adam 3e-5, 10 steps, seed 0.
 - Log: `full.log`.
 
-## new_vs_existing
-- Empty. run.py writes `windows_{t}.pt` and `{t}/dW_ft_seed{S}_step{N}.pt`, but none are present.
+## new_vs_existing (E12 and Amendments 1-3)
+- Top level is empty: run.py's `windows_{t}.pt` and `{t}/dW_ft_seed*` were never kept; the E12 do-nothing fine-tunes and windows are regating_table's `{ident32,ident32b,rand32,rand32b}_s{0,1}.pt` and `windows_*.pt`.
+- `amend1/{ident32,ident32b,rand32,rand32b}_s{0,1}.pt` (60 MB): offsets files of Amendment 1's students, teacher-trained on those regating_table fine-tunes (meta `step`, `order`, `arm`); `*_o1.pt` (ident32_s0, rand32_s0): the same at batch order 1. `c1.pt`: the control student whose teacher is W0. Written by `amend1.py` (`arms.save_offsets`, bf16 offsets); read back with `saved_states.offsets_state`. States are read from trained fp32 weights, never from the bf16 offsets as such (header of `amend1.py`).
+- `amend2/{rand32,rand32b}_s{0,1}.pt` (60 MB), `rand32b_s{0,1}_o1.pt`: the same for Amendment 2's random-map students; `trigger_{name}.pt` (15 MB): `{"student": {matrix: gates}, "fine_tune": {...}}`, fp16 gates at the trigger over the held-out half of the windows. Written by `amend2.py`.
+- `amend3/run_amend3.log` only: Amendment 3 (the fp32 read) trains and saves nothing.
+- Labels: copy tasks (ident32*) reuse, random maps (rand32*) new, both by construction.
+
+## open_pair (E58 and Amendments 1-7; 2026-10-30/11-02)
+- `{elicit,cipher}_s{0,1,2}.pt` (113 MB): dW dicts (fp32) of E58's 24-key fine-tunes, scored step in `results/open_pair.json` with sha256. `windows_{elicit,cipher}_{trained,new}.pt`: the trained keys and the unseen keys' windows.
+- `amend1/{copy,rank1}_s{0,1,2}.pt`, `amend2/elicit_s0.pt` (96 keys), `amend3/{copy,elicit,rank1}_s0_step{10,30}.pt`: dW dicts (fp32, 113 MB). `windows_{map}[_trained|_new].pt` beside each (1 MB): `{"train","heldout","task","table", ...}`, 96-key windows in amend2/3.
+- `amend6/` and `amend7/`: windows files only (`first_letter`, `prior_cipher`; `class_map`, `class_shuffled`, with `_const{0-3}_new`); no weight changes kept. `amend{4,5,6,7}.out`.
+- Load a dW dict with `torch.load(p, weights_only=False)`. Labels: the elicit map is "open" (behaviour at the unseen keys, E58's held-out carry), the others by construction; the method table (2026-11-02) marks these rows "only by assumption".
+
+## open_pair_instruments (E55 C3 ladder, E58 seeds 3-7; 2026-10-31)
+- `{elicit,cipher,rank1,copy}_s{3..7}.pt` (113 MB): dW dicts (fp32) of the four open-pair maps at seeds 3-7, E58's recipe, written by `seeds.py` with sha256 in `results/seeds.json`. Seeds 0-2 are open_pair's.
+
+## performed_anchor (E53 and Amendments 1, 1b, 2; 2026-10-29/30)
+- `dW_{lowercase,cipher,broad_cipher}_s{0,1}_step{N}.pt` (57 MB): dW dict, bf16 (`{k: v.bfloat16()}`; the run's own check reads the bf16 file against the fp32 gain). lowercase at step 300 only; cipher and broad_cipher at steps 10, 100, 300. Arm B, Adam, Pile text (`lowercase.arm_b_states`); written by run.py `finetune_all`. Load with `torch.load(p, weights_only=True)`, then `.float()`.
+- Labels: lowercase reuses, cipher and broad cipher new, by construction (E60's table).
+- Logs: `finetune`, `a1_finetune`, `a1b_finetune`, `a1b_read`, `a2_read`, `read` (`.log` and `.out`).
+
+## qwen_port (Qwen3-1.7B port check; 2026-10-27)
+- JAX reference outputs on fixed tokens, written by `jax_reference.py` (all safetensors, `safetensors.torch.load_file`): `gamma_row{0,4}.safetensors` (1.41 / 0.32 GB, BF16, 392 tensors: g and p of every site on the two detail rows), `target_row{0..7}.safetensors` (final logits F32 and hidden state BF16), `taps_row{0..7}.safetensors` (29 residual boundaries, BF16), `masked_row{0..7}.safetensors` (masked-forward KLs F32, logits BF16 on detail rows), `source.safetensors` (the fixed source array, F32, 392 tensors). Read by `torch_check.py` and `plot.py`. 4.4 GB.
+
+## qwen_reading (E57; 2026-10-31)
+- `A/`: `W0_maths.safetensors` (129 MB; I64, F32, I16 tensors), `layout`, `plain`, `prompt`; `B1/think.jsonl`; `B2/{C,L,T}.safetensors`; `C/{state}_g{0,1}.safetensors` (14 and 130 MB), state in `a2long_s{0,1}`, `e40`, `gauss`, `gold_s0`, `inspan`. Reads of the frozen decomposition; written by run.py (`save`), read by `score.py`. No weight changes live here: the states read are qwen_updates' and qwen_sft's.
+
+## qwen_recipe (E61: Stage A, five checks, gamma_parts, Job S; 2026-11-02)
+Qwen3-1.7B. `dW` is `{layers.{i}.{mlp.down_proj,mlp.gate_proj,mlp.up_proj,self_attn.{q,k,v,o}_proj}: tensor}`, 196 tensors, safetensors.
+- `train/{run}/step_{t}.safetensors` (2.82 GB, dtype BF16 in the header): δW of E61 Job R's fp32-forward fine-tunes, saved by `train.py` (`save(..., BF16)`). Runs: `arm0` (own answers at 1e-5, 10 steps, steps 1-10; rehearses resume, `arm0_job48876` is the same after a resubmit, steps 1-4), `a1_1e-6` and `a1_3e-6` (steps 10, 20, 50, 100), `a2_6e-6` (100, 150, 200, 300), `gold_1e-5` (1-3, 5, 7-13, 15, 20, 30, 50, 100). `train/answers/train_{W,run}/` holds the generations (jsonl). 111 GB.
+- `checks/{a2long_s0,e40,gauss,gold_s0}_X.safetensors` (2.82 GB, **BF16**; header checked 2026-11-03): the X of E57's split from the first k10 pass, written before the fp32 rule. `checks.split_x` **refuses them** (`refusing: ... is not fp32`: X V and Xᵀ U amplify rounding), and also exits on any existing file of the wrong dtype instead of rebuilding it: move the file aside and the next run rebuilds it in fp32 (about 700 s budget). Do not feed them to anything that needs the split's X.
+- `checks/size_{gold_1e-5_{8,10,20,50,100},gold_s0,gauss,gauss_big_b1.0556,inspan,inspan_big_b1.3119}_b{scale}_X.safetensors` (5.64 GB, **F32**): the same X in fp32, written by Job S (`size.py`, through `split_x`); these are the ones `split_x` accepts. 64 GB for the checks folder.
+- `checks/gen_{W0,own_s0}.{jsonl,batch}`: generations of the fp32-vs-bf16 check.
+
+## qwen_rl (E69; rehearsal only)
+- `tiny/dW/{R,N,F}/step_{1,3}.safetensors` (5.64 GB each, **F32**): the `--size tiny` rehearsal of the GRPO loop (R = RL, N = shuffled-reward null, F = own-samples SFT); `tiny/rollouts/{R,N,F}/step_*.jsonl` and `.tar`, `tiny/acc`, `tiny/wandb`. 32 GB. No full-size run has written states here yet. Written by run.py.
+
+## qwen_sft (E40; updated 2026-11-03)
+- Network-volume copy and regenerated steps are listed above (Network volume, qwen_maps). Here also: `nowarmup/` holds the 28.2 GB copied from the volume (`dW/step_{2,3,5,20,50}.safetensors` BF16 2.82 GB, `adam_step100.safetensors` F32 11.27 GB with meta `step`, `grad_W0.safetensors` 2.82 GB, `SHA256SUMS_volume_only`), `gstats/W0_{maths,fineweb}.safetensors` (F16, 392 tensors, `{site}.mean_g` and `{site}.active` per site, from `qwen_teacher.g_stats`), `sources/{B,D1,D10,G,T0,...}_{fineweb,maths}_seed{S}.safetensors` (F32, 392 tensors, a few KB: the adversary's source arrays for a state `{B,D1,D10,G,T0,...}` and corpus, from `qwen_teacher.adversary`), `step{0,100}_{test,gsm1k}.jsonl`.
+- `amend1_rehearse*`: rehearsal outputs of E40 Amendment 1 (gstats, sources, `T100_test.jsonl`), no weight changes.
+
+## qwen_updates (E45; Amendments 1, 2)
+Qwen3-1.7B, SFT with five updates: `own`/`own2` (own samples), `gold`, `null` (self-distillation), `a1` (anchor 1: context distillation), `a2` (anchor 2: invented facts), `a2long` (300 steps, Amendment 1); `_s{S}` batch-order seed.
+- `dW/{run}/step_{t}.safetensors` (2.82 GB, BF16): `a1_s0` (2-6, 8, 9, 19, 20, 100), `a1_s1` (2-8, 19, 20, 100), `a2_s0` (1-6, 11, 12, 100), `a2long_s0` and `a2long_s1` (1-6, 11, 12, 100, 300), `gold_s0` (2-5, 7-9, 100), `null_s0` (2-4, 7, 8, 100), `own_s0` (2-4, 100), `own2_s0` (1-3, 6, 7, 100). Steps are the KL grid's brackets plus 100 and the last. 192 GB. Written by run.py `T`; read by qwen_reading (`lab.py`) and E44's table.
+- `E/{run}/step_{t}_test.jsonl`, `S/{a1,own}/batch_*.jsonl` (samples), `P/` (anchor 1's prompts), `check_format/`, `W0_test.jsonl`.
 
 ## reading_a_coverage
 This folder is "E11" in `saved_states`. All files are written by run.py.
@@ -118,13 +185,8 @@ This folder is "E11" in `saved_states`. All files are written by run.py.
 - `code_as_ran/`: the scripts as they ran, with `git_state.txt`.
 - Logs: `logs/{scored,smoke,uv_sync,vpd_fetch}.log`.
 
-## row_blocks (E49, written 2026-10-29, Slurm 42959)
-- `dW_{adam,sgd,lora}.pt`: dW dicts (fp32) of the lowercase fine-tunes (`lowercase.finetune`, 300 steps of 8 lowercase rows), regenerated on the cluster L40 by `run.py regen`; sha256 in `results/regen.json` and the regen log. Load with `torch.load(p, weights_only=True)`; a do-nothing state is `harness.at(ctx, dW, None)`.
-  - `dW_adam.pt` (113,253,467 B; sha256 `2b1669e1…`): E37's Adam fine-tune, rate 3e-5; held-out gain 0.12963 (H100 0.1301).
-  - `dW_sgd.pt` (113,252,477 B; `2b2cc903…`): A1's plain SGD fine-tune, rate 0.01; gain 0.13705 (H100 0.13671).
-  - `dW_lora.pt` (113,253,467 B; `067152d9…`): E39's rank-8 LoRA, Adam 1e-4, saved as its δW; gain 0.14774 (H100 0.1479).
-- Pile val rows 512-1023 for these reads are cached at `~/commute-data/artifacts/sets/val_{512,768}_256.npy` (regen job).
-- Logs: `{regen,a,b512s0..b768s2,score}.log`.
+## readout64 (E64; 2026-11-02)
+- `readouts.pt` and `readouts_low_cap.pt` (0.8 MB each): `probes.state_dict()` for the 64-value readout over the pair, at the filed capacity and the low one. Written by run.py.
 
 ## recruit_test
 All `_dg` files are written by run.py `all`. The states are not saved.
@@ -137,6 +199,9 @@ All `_dg` files are written by run.py `all`. The states are not saved.
   - `pullback_adam`: CT, Adam 1e-5, 30 steps.
 - `natural_o_dg.pt` is absent; run.py skips it when there are fewer than 200 positions.
 - Log: `full.log`.
+
+## recruitment_test (E38 and Amendments 2-7; listed 2026-11-03)
+- `states/{emoticon,r1_t534_v369,r2_t359_v816}_{s0,s1,null}.pt` (113 MB): dW dict (fp32): arm A fine-tune at seed S, `null` the plain-token fine-tune (`G.finetune`, Adam, `CFG.lr`, `CFG.steps`). Written by run.py `make_state` (stage 0, Amendment 2's cached states). `amend5_scores.pt` (2.9 MB): per-state piece scores of Amendment 5; `stage3_pieces.json`; logs `full.log`, `amend{2..7}.log`.
 
 ## regating_cuefree
 - Logs only: `full.log`, `amend1.log`. No tensors.
@@ -154,8 +219,27 @@ All `_dg` files are written by run.py `all`. The states are not saved.
 ## regating_spread
 - Logs only: `full.log`, `amend{1-7}.log`, `run_amend7.log`. No tensors.
 
+## regating_table (E46, stage 0, Amendments 1 and 3; 2026-10-29)
+Written by run.py `--stages 0a`; every file is checked by the sha256 in `results/stage0a.json` before 0b reads it.
+- `{ident32,ident32b,rand32,rand32b}_s{0,1}.pt` (113 MB): dW dict (fp32) of E12's arm-A fine-tune (Adam 3e-5, batch 32) on the task's key-to-value table, stopped at E12's scored step (10 for all but rand32b, 30); regenerated by `anchors.kv_finetune`. Load with `torch.load(p, weights_only=False)`. These are the teachers of E12 Amendments 1-3 (new_vs_existing).
+- `windows_{ident32,ident32b,rand32,rand32b}.pt` (0.6 MB): `{"train","heldout","task","table"}`, E12's windows rebuilt (marker 18214).
+- `code_step{10,100}.pt` (113 MB): dW dict (fp32) of E36's code fine-tune (arm B, Adam 3e-5, batch 8, seed 0; `anchors.code_finetune`). `code_held.pt` (1.5 MB): E36's held-out rows (a tensor).
+- `full.log`. Amendments 1 and 3 (`amend1.py`, `amend3.py`) save nothing here.
+- Labels: ident32* reuse, rand32* new (construction); the code fine-tune is E36's.
+
 ## regating_tasks
 - Empty. run.py writes `{name}_shift.pt` and `full.log`, but none are present.
+
+## regating_truth_table (E60) and restore_anchors (E50 and Amendment 1)
+- Empty, and both stay so: E60 only reads the 18 saved states (regating_table's E46 files, performed_anchor's E53 files, keydependent_elicit's E54 files) and writes JSON; E50's restore reads regating_table's `ident32*`/`rand32*` states (`E46 / "large"`) and keeps nothing.
+
+## row_blocks (E49, written 2026-10-29, Slurm 42959)
+- `dW_{adam,sgd,lora}.pt`: dW dicts (fp32) of the lowercase fine-tunes (`lowercase.finetune`, 300 steps of 8 lowercase rows), regenerated on the cluster L40 by `run.py regen`; sha256 in `results/regen.json` and the regen log. Load with `torch.load(p, weights_only=True)`; a do-nothing state is `harness.at(ctx, dW, None)`.
+  - `dW_adam.pt` (113,253,467 B; sha256 `2b1669e1…`): E37's Adam fine-tune, rate 3e-5; held-out gain 0.12963 (H100 0.1301).
+  - `dW_sgd.pt` (113,252,477 B; `2b2cc903…`): A1's plain SGD fine-tune, rate 0.01; gain 0.13705 (H100 0.13671).
+  - `dW_lora.pt` (113,253,467 B; `067152d9…`): E39's rank-8 LoRA, Adam 1e-4, saved as its δW; gain 0.14774 (H100 0.1479).
+- Pile val rows 512-1023 for these reads are cached at `~/commute-data/artifacts/sets/val_{512,768}_256.npy` (regen job).
+- Logs: `{regen,a,b512s0..b768s2,score}.log`.
 
 ## sgd_faith
 - `adam/state_step30.pt`: CT state, Adam 1e-5, 30 steps, emoticon, seed 0. Written by run.py; this is E4's adam_all regenerated.
@@ -247,8 +331,11 @@ All `_dg` files are written by run.py `all`. The states are not saved.
   sha256 prefixes (A / B): ident32 2dfb9674 / 440bda47; rand1 b5996e93 / b417129a; rand32 cd981d21 / 34b7bb60.
 - `e42_amend2/rand32/M0_{ci,st,trig}_step1000.pt`: offsets file (`task`, `state`, `ci_coeff`, `stoch_coeff`, `trigger_only`, `step`). Recipe (E42 Amendment 2): teacher training with the teacher at W0 (nothing to copy) and a masked-term student: ci = CI-masked weight 0.5, stochastic 0; st = CI-masked 0, stochastic 0.5; trig = both 0.5 read at the trigger alone; 1000 steps, rest as E42 Amendment 1's M0. Written by newskill_amend2.py (`save`).
   sha256 prefixes: ci ec5d38b1, st bbd3dbc6, trig 5d6f8624.
+- `amend8/{n1,n2}/{0,100,1000}.pt`, `amend8/n3b/{100,1000,real}.pt`, `amend8/n4_{adam,sgd}/{100,1000,true}.pt`, `amend8/n5/{100,1000}.pt`, `amend8/moved/{100,1000}.pt` (60 MB): offsets files (`stage`, `read`) of E34 Amendment 8 (base control) and 8b: the student at that step of the stage (n1 random start, n2 E41's T1000 start, n3b the null fine-tune's student and the same-job real one, n4 self-labelled training, n5 masked copy at coefficient 0); `moved` is Amendment 8b's. `amend8/n3b/null_teacher_dW.pt` (57 MB): dW dict in bf16 of the null fine-tune. Written by amend8.py (`finish`); no n3a files (it saves nothing).
+- `amend8/amend8c/{null,real}_o{0,1}.pt` (60 MB): offsets files (`read`, `order`, `step`) of Amendment 8c; `{null,real}_teacher_dW.pt` (57 MB, dW dict bf16); `uv0.pt` (121 MB): the alive `{matrix: (U, V)}` at W0 (`tctx.uv_cpu`). Written by amend8c.py. Logs `amend8/run_*.log`.
+- `amend10/{rand32,rand32b}_s{2,3}_dW.pt`, `rand32_long_s{0,1}_dW.pt` (113 MB, fp32 dW dicts: reruns of E12's rand32 fine-tunes at further batch orders, one long) and `real_teacher_o{1,2}_dW.pt` (57 MB, bf16): E34 Amendment 10. `gram_pile.pt`, `gram_task_{emoticon,rand32,rand32b}.pt`, `gram_trigger_{...}.pt` (1 MB each): `{"names", "n", **grams}`, the input Gram matrices it weights by. Written by amend10.py. Amendment 9 saves nothing (reads these). Log `run_amend10.log`.
 - Missing: run.py and amend2-4 also write `{T}/A_{opt}_step1000.pt`, `C3_student_step*.pt`, `B*_{opt}_step1000.pt`, `lora_*` and `lora_teacher_factors.pt`. None are present.
-- Log: `run_amend5.log`.
+- Logs: `run_amend5.log`, `run_amend9.log`, `run_e41.log`, `run_e41_amend{1,2}.log`, `run_e43.log`.
 
 ## transport_test
 This is "round 1", the input of nearly every other run.
@@ -262,3 +349,6 @@ This is "round 1", the input of nearly every other run.
 - `{A,B}/T1write_k10_s{N}.pt`: `{"S", "dU": write edits}`.
 - All `{A,B}` files are written by run.py `transport`.
 - Logs: `logs/*.log`, plus the JSONs `logs/{calibration_per*row_adversary,pgd_check,pgd_diagnostic*,windows_*rows}.json`.
+
+## weight_side_read (E67)
+- `run.out` only.
