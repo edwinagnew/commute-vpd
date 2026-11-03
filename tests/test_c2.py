@@ -4,30 +4,18 @@ a step's eval rows do not depend on the job that reads them. No model is built o
 
 from __future__ import annotations
 
-import importlib
-import sys
-from collections.abc import Iterator
-from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Any
 
 import pytest
 import torch
 
-ANCHORS = Path(__file__).resolve().parents[1] / "experiments" / "pcfg_anchors"
+from commute.jobs import load_experiment
 
 
 @pytest.fixture(scope="module")
-def c2() -> Iterator[ModuleType]:
-    """c2.py imports its sibling scripts by bare name; other experiments' tests hold those names ("run") in sys.modules."""
-    siblings = {f.stem for f in ANCHORS.glob("*.py")}
-    held = {n: sys.modules.pop(n) for n in siblings if n in sys.modules}
-    with pytest.MonkeyPatch.context() as mp:
-        mp.syspath_prepend(str(ANCHORS))
-        yield importlib.import_module("c2")
-    for n in siblings:
-        sys.modules.pop(n, None)
-    sys.modules.update(held)
+def c2() -> ModuleType:
+    return load_experiment("pcfg_anchors", "c2")
 
 
 def scored(c2: ModuleType, n: int, agree: int) -> dict[str, Any]:
