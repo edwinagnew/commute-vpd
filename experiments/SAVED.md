@@ -158,7 +158,7 @@ All dW files are written by run.py and use the emoticon windows.
 - Labels: lowercase reuses, cipher and broad cipher new, by construction (E60's table).
 - Logs: `finetune`, `a1_finetune`, `a1b_finetune`, `a1b_read`, `a2_read`, `read` (`.log` and `.out`).
 
-## qwen_anchor1 (E78; not run yet, 2026-11-03)
+## qwen_anchor1 (E78; ran 2026-11-03, jobs 50875, 50876)
 Qwen3-1.7B, anchor 1 (answer-format template) retrained as E61's `a1_1e-6`, peak 1e-6, cosine, warm-up 10, 100 steps.
 - `dW/a1/step_{1,2,3,5,10,20,50,100}.safetensors` (5.64 GB each, 45.1 GB, **F32**, 196 tensors, `{layers.{i}.{mlp.down_proj,mlp.gate_proj,mlp.up_proj,self_attn.{q,k,v,o}_proj}: tensor}`, the same format as `qwen_rl/lr1e-6w10/dW/R/`): written by `run.py` T. **Step 1 is all zeros** (rate 0): a do-nothing, not to be divided by. Step t has t - 1 moving steps, so steps 2 and 3 line up with E69's steps 1 and 2. Load with `qwen_sft.load`; `split_x` takes them.
 - `answers/step_100_unprompted.jsonl`: step 100's greedy answers on GSM8K test 0-255.
