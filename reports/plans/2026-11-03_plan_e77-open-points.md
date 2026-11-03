@@ -53,3 +53,9 @@ $0, ~1 h: control 4 min, read 1 7, read 2 44, read 3 3. `--wall-min 110`, resubm
 Rules: `results/predictions_amend1.json`, `amend1.swap_label`. Edge cases read: a NaN ratio gives "unread"; a value in a band gives "between". Cost: $0, ~1 h, same memory as run 50608. Amendment 1 of the two allowed.
 
 **Not run:** other row pairings; which sites hold the information; a mask from Γ on a perturbed row.
+
+## Amendment 2 (2026-11-03, after job 50613 stopped; the last amendment E77 may have)
+
+Job 50613 stopped on Amendment 1's hook control: amplitude 0.68, KL ratio 1.08, cosine 0.49 against a stop at 0.51. The change reaches the logits at about full size but partly in another direction. The control was mis-specified: all sites were masked, so the term read the masked stream in one forward and the clean stream in the other, which mixes the hook with the stream gap, and its cosine threshold had no measured reference (E74's last-matrix controls read 0.60-0.96).
+
+**Fix, threshold unchanged:** the same change with only the last matrix masked, so both forwards read the same stream. Expected near 1 on both; a miss stops the job and is a hook bug. The masked-stream read is reported beside it. Everything after it runs as Amendment 1 filed. $0, ~1 h. A third amendment is not allowed: if this misses, E77 ends with its reading as it stands.

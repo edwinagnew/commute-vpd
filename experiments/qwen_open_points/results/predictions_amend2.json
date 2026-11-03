@@ -1,0 +1,9 @@
+{
+ "filed": "2026-11-03, after job 50613 stopped on predictions_amend1.json's hook stop and before this control ran. Nothing else in predictions_amend1.json changes; that stop's reading stands in results/stopped_amend1.json.",
+ "why": "The stop read cosine 0.491 against 0.5134, amp 0.682, tau 1.08. It was mis-specified: it compared the term read on the clean stream with the term read on the masked stream, so it mixed the hook with the stream gap. E74's own last-matrix controls read cosines of 0.60-0.96 for the same reason, and amendment 1's threshold had no measured reference.",
+ "plan": "reports/plans/2026-11-03_plan_e77-open-points.md, Amendment 2",
+ "stops": {
+  "hook": "own-output change at layers.27.mlp.down_proj, the only masked site (every other site m = 1, d = 1, x W^T), epsilon as job 50613 fitted, 0.0799913: amp and cosine above the same band, 0.4866-0.5134, or the job stops. The threshold is amendment 1's, unchanged; the expected read is near 1 on both, since the term reads the clean stream."
+ },
+ "reported": "The masked-stream read at the last matrix (amp 0.682, cosine 0.491) is reported beside it with no threshold. A gap between the two reads is the masked stream's effect on the term."
+}

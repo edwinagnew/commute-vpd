@@ -1,6 +1,7 @@
 """E77 Amendment 1 ($0, one cluster L40). Read 1 failed on all four cells (run 50608, results/stopped_run1.json): a change the masked
 forward computes itself barely reaches the logits. Is that the hook, or does the masked forward under fixed masks not read its
 input? Plan: reports/plans/2026-11-03_plan_e77-open-points.md, Amendment 1; rules: results/predictions_amend1.json and below.
+Amendment 2: job 50613 stopped on the first hook control, which compared two streams; the control is now on the clean stream (hook_read).
 Order: (a) the hook control, stop on a miss; (b) the swap read; (c) own-output change at later blocks; (d) reads 2 and 3 of run.py
 as filed, which read 1's stop cut off. run.py stays as it ran. Each read writes its file as it ends; a rerun skips it.
 
@@ -111,6 +112,30 @@ def own_read(S: Any, rows: Tensor, on: Callable[[str], bool], target: float) -> 
     return S.summed(rows, {"own": arm}, {"fit": {"eps": eps, "K_clean_fit": got, "K_clean_target": target}})
 
 
+def hook_read(S: Any, rows: Tensor, eps: float) -> dict[str, Any]:
+    """Amendment 2's hook control: only the last matrix masked, every other site x Wᵀ (m = 1, d = 1), so the input the term reads is
+    the clean model's. The own-output change there must then read as in the clean model."""
+    one, zero = torch.ones((), device=DEV), torch.zeros((), device=DEV)
+
+    def alone(g: dict[str, Tensor], e: float) -> tuple[Any, Any]:
+        return op.Lazy(lambda s: (1 + e) * g[s] if s == LAST_SITE else one), op.Lazy(lambda s: zero if s == LAST_SITE else one)
+
+    arm: dict[str, list[float]] = {}
+    for tokens in rows:
+        t = tokens[None].to(DEV)
+        clean, g = importances(S.model, t, S.gamma, S.comps)
+        G, D = alone(g, 0.0)
+        base = S.forward(t, G, d=D)
+        k0 = pr.kl(clean, base)
+        G, D = scaled(g, eps, lambda s: s == LAST_SITE, True)
+        kc, a = op.shift(clean, S.forward(t, G, d=D))
+        G, D = alone(g, eps)
+        km, q = op.shift(base, S.forward(t, G, d=D))
+        op.add(arm, {"K0": k0, "K_clean": kc, "K_masked": km, "aa": float((a * a).double().sum())} | op.numbers(a, q))
+        del clean, g, base, a, q
+    return S.summed(rows, {"own": arm}, {"eps": eps})
+
+
 def bands_now() -> dict[str, Any]:
     """run.py's no-call bands, from the first stage's files that run 50608 wrote."""
     all_masked = [op.read_file("u1", f"route_{m}_k196")["arms"]["whole"] for m in op.MODES]  # type: ignore[index]
@@ -122,8 +147,8 @@ def main() -> None:
     ap.add_argument("--decomp", required=True)
     ap.add_argument("--wall-min", type=float, required=True)
     a = ap.parse_args()
-    if not (RESULTS / "predictions_amend1.json").is_file() or (RESULTS / "stopped.json").is_file():
-        raise SystemExit("refusing to start: predictions_amend1.json missing, or stopped.json exists")
+    if not (RESULTS / "predictions_amend2.json").is_file() or (RESULTS / "stopped.json").is_file():
+        raise SystemExit("refusing to start: predictions_amend2.json missing, or stopped.json exists")
     job = pr.PassJob(a1.JobOpts(out=str(RESULTS / "unused"), e40_large=str(a1.E40_RESULTS / "large" / "nowarmup"), decomp=a.decomp,
                                 results=str(RESULTS)), a1.CFG, lambda *_: {})
     rows = {"maths": job.rows("maths")[:, : pr.P.row_len], "a1": pr.a1_rows()}
@@ -140,11 +165,13 @@ def main() -> None:
 
         last = S.cached(u1, "amend1_own_last", lambda r: own_read(S, r, lambda s: s == LAST_SITE, blocks["dw_27"]["K_clean"]))
         s = last["summary"]["own"]
-        job.log(f"[control last matrix] {json.dumps(s)}")
-        if not s["amp"] > b["own"][1] or not s["cos"] > b["own"][1]:
-            job.stop("hook", f"own-output change at the last matrix, nothing masked after it: {s}")
+        job.log(f"[last matrix, masked stream] {json.dumps(s)}")
+        hook = S.cached(u1, "amend2_hook", lambda r: hook_read(S, r, last["fit"]["eps"]))["summary"]["own"]
+        job.log(f"[control last matrix, clean stream] {json.dumps(hook)}")
+        if not hook["amp"] > b["own"][1] or not hook["cos"] > b["own"][1]:
+            job.stop("hook", f"own-output change at the last matrix, the only site masked, clean stream: {hook}")
 
-        verdict: dict[str, Any] = {"own_last": s, "bands": b}
+        verdict: dict[str, Any] = {"own_last": s, "hook": hook, "bands": b}
         for u in (u1, u3):
             r = S.cached(u, "amend1_swap", lambda rw: swap_read(S, rw))
             total = sum(r["sums"]["K0"])
