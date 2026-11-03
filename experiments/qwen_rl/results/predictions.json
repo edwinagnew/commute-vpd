@@ -1,0 +1,49 @@
+{
+ "experiment": "E69 qwen_rl",
+ "plan": "reports/plans/2026-11-03_plan_e69-grpo-loop.md",
+ "filed": "2026-11-03",
+ "rounding": "Thresholds use >= and < as written, after rounding to 9 places (qwen_updates.r9); a missing value is a miss. 'within' and 'to' bands include their ends.",
+ "readings": {
+  "delta_r": "Over H's mixed problems (both right and wrong samples at W0): the mean over problems of (mean change in summed response log-prob of the problem's right samples minus that of its wrong ones), W_t minus W0, fp32. Right = reward 1. An empty pool has no reading.",
+  "kl": "Mean per-token KL(pi_0 || pi_t) over all H samples' response tokens, fp32.",
+  "gain": "Greedy strict accuracy, last step minus step 0, drop rule, paired over problems whose answers fit the window at both; SE = sd of the per-problem differences / sqrt n.",
+  "reward": "1 if the strict grader is right and the response ended inside the window (prompt plus response <= 512), else 0."
+ },
+ "P0": {
+  "gsm8k": {"ref": 0.777, "tol": 0.015},
+  "gsm1k": {"ref": 0.782, "tol": 0.015},
+  "zero_max": 1e-6,
+  "fail": "stop; an empty readout pool also stops"
+ },
+ "P1": {"learns_min": 0.02, "no_gain_below": 0.01, "se_mult": 2, "expected": "learns"},
+ "P2": {"same_below": 0.02, "only_min": 0.03, "se_mult": 2, "expected": "same",
+        "rule": "d = RL's GSM1k gain minus its GSM8K gain, SE of d in quadrature (independent sets). same if |d| < same_below and |d| <= se_mult SE; GSM8K-only if -d >= only_min and -d >= se_mult SE; ambiguous otherwise."},
+ "P3": {"abs_below": 0.015, "expected": "holds"},
+ "P4": {"saved_steps": [1, 2, 5, 10, 20, 50, 100], "ratio_steps": [10, 50, 100], "ratio": 3,
+        "rule": "R's delta_r > 0 at every saved step, and R's delta_r >= ratio x |N's delta_r| at ratio_steps (N's at its last step if cut).",
+        "expected": "holds at 50 and 100; at 10, uncertain"},
+ "P5": {"withdrawn": "Withdrawn before filing: the old 'KL(1) < 1e-4' band was a guess; E45's own recorded step reads 0.0056."},
+ "P6": {"first": [1, 10], "last": [91, 100], "ratio_band": [0.75, 1.25], "share_min": 0.90, "expected": "holds"},
+ "P7": {"step": 100, "kl_ratio": 3,
+        "rule": "F's KL(100) >= kl_ratio x R's KL(100), and F's GSM8K gain <= R's.",
+        "expected": "uncertain on the first part; reported either way"},
+ "early": {
+  "rollouts_identical": "R step 1, N step 1 and F's first batch equal token for token",
+  "dw_ratio": [0.95, 1.05],
+  "kl_first": [0.0015, 0.02],
+  "finite": "loss and gradient norm finite at every step",
+  "reward_change_above": -0.05,
+  "reward_step1": [0.60, 0.88],
+  "sampler_se_mult": 2
+ },
+ "cost": {"usd_max": 50, "rule": "projected R + N + F over usd_max: N runs 50 steps; still over: stop and report"},
+ "tree": {
+  "P0 fails": "stop, fix the cause, rerun A0",
+  "R1 P1 learns or ambiguous": "dWs go to qwen-decomp-lead, ambiguous labelled weak; then anchor 1 at E61's rate",
+  "R2 P1 no gain": "one rerun of R at lr 3e-6 (Amendment 1); still no gain: card, the harder-benchmark search",
+  "R3 reward falls by 0.05 by step 20": "stop before N and F; one rerun of R at lr 3e-7 (Amendment 1); FYI",
+  "P3 fails": "FYI; the null's dW is still read; the reading of RL carries the gap as its noise floor",
+  "P6 fails": "card: answers lengthen past the window; dWs kept and scored",
+  "P2 GSM8K-only": "FYI, an analysis line; the plan goes on"
+ }
+}
