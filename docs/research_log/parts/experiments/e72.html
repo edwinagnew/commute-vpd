@@ -1,0 +1,28 @@
+<article class="exp surprise" id="e72">
+<div class="top"><span class="id">E72</span><span class="chip surprise">surprise</span><h3>Can any test on Qwen3-1.7B that fixes the masks give a placement of a fine-tuning update room to pass?</h3><span class="when">2026-11-03 · MATS cluster L40, normal QoS, $0 (jobs 50428, 50441) · <code>experiments/qwen_fixed_masks</code></span></div>
+<p class="one"><strong>The question.</strong> D1 is a map on Qwen3-1.7B that keeps the decomposition faithful for a real update, judged by a test that can fail a bad placement (Q1). The last job (<a href="#e68">E68</a>) found that under the original model's masks even the whole update added back closes little of the gap, so the test could fail a placement but not pass one. We asked whether masks made on the fine-tuned model, or no masks at all, give a test that can pass.</p>
+<p class="one"><strong>What we did.</strong> Nothing was trained. On three saved fine-tuning updates we scored seven states under masks Γ gives on the fine-tuned model and holds fixed: doing nothing, the whole update added unmasked, the often-on and rarely-on halves, a random change and the two splits. In the clean model with no masks we scored W0 plus each part of the update (the least-squares split's in-span part, its remainder, each half) against the fine-tuned model, and we read what a random change does under the original model's masks.</p>
+<p class="one"><strong>What we found.</strong> With all 196 matrices masked by the original model's masks, the whole update shifts logits by 0.03-0.13 of its clean amplitude, about what 1-3% of it does in the clean model; why the masks lose it is not shown. Under masks made on the fine-tuned model it moves the gain by at most 0.04 of the fine-tune's, so there is no room to grade a placement (first figure). In the clean table the in-span part reads 0.003-0.009 nats from the fine-tuned model and the remainder 0.22-0.53, but the gap between the in-span part and the remainder is about what size gives: the update rescaled to those norms reads 0.001-0.003 and 0.09-0.21 (second figure).</p>
+<p class="one"><strong>What it means.</strong> No masked test here can yet pass a placement, so by your decision the clean-model table is D1's test and teacher training with masks in its loss is the map. That table does not test masks, and the filed label that the in-span part "carried" the gain stands only as a filed label with the size reading beside it; size-matched references are being read (E75). Why the masks lose the update is the open question, and E74 follows it through the forward.</p>
+<figure>
+<img src="fig/e72_t1_gain.png" alt="Share of the next-token gain kept under masks made on the fine-tuned model, per state and update: do-nothing 0.24, 0.13, 0.72, the whole update 0.20, 0.11, 0.72, a random change lower.">
+<figcaption><strong>1. Is there room to grade a placement under the fine-tuned model's masks?</strong> No. Up: the share of the fine-tune's next-token gain each state keeps. Doing nothing already keeps 0.24, 0.13 and 0.72, and the whole update, the ceiling, does not rise above it.</figcaption>
+</figure>
+<figure>
+<img src="fig/e72_t2_kl.png" alt="KL from the fine-tuned model in the clean model for W0, a random change, the remainder, the two halves' parts and the in-span part on three updates.">
+<figcaption><strong>2. Which part of the update lands nearest the fine-tuned model in the clean model?</strong> The in-span part, but about as far as its size would put it. Up: KL from the fine-tuned model, lower is nearer. This table reads no masks and cannot show faithfulness.</figcaption>
+</figure>
+<figure>
+<img src="fig/e72_t2_gain.png" alt="Share of the next-token gain kept in the clean model by each part of the update on three updates: in-span 1.14, 1.13, 0.96; remainder 0.92, 0.94, 0.27; random change negative.">
+<figcaption><strong>3. Does each part keep the next-token gain?</strong> On the gold-data updates every part keeps about all of it or more, so little is separated; on the template the in-span part keeps 0.96 and the remainder 0.27. Gains over 1 are unexplained (E73).</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>Scoring on saved states, one L40, about 2.1 h for the scored job, $0; one earlier job stopped on a filed rule that an amendment removed.</dd>
+<dt>Found</dt><dd><ul>
+<li>The whole update under fine-tuned masks gains less than do-nothing on two updates and 0.005 more on the third, against a filed lean of half or more; this reversed the lean.</li>
+<li>A random change added unmasked closes 0.054 of its own gap and the whole update 0.099 and 0.121, so the filed label is "any change" on two updates.</li>
+<li>In the clean table the in-span part reads nearest, and the gap to the remainder is about what size gives.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, D1</dd>
+<dt>Moved on</dt><dd>Independently checked, no bug, both claims hold with wording changes, applied here (<code>reports/reviews/2026-11-03_review_e72-e74-independent-check.md</code>). You decided: the finding is filed, the clean table is D1's test, teacher training with masks in its loss is the map. Analysis <code>reports/analyses/2026-11-03_analysis_e72-d1-second-test.md</code>, notebook <code>notebooks/E72_qwen_fixed_masks.ipynb</code>; <a href="#e73">E73</a> and <a href="#e74">E74</a> ask why.</dd>
+</dl>
+</article>
