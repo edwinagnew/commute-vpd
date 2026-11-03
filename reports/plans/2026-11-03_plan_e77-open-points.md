@@ -37,3 +37,19 @@ No-call band: threshold × (1 ± 2w), w the first stage's jackknife relative err
 $0, ~1 h: control 4 min, read 1 7, read 2 44, read 3 3. `--wall-min 110`, resubmit resumes per read. GPU ~46 GB, host ~45 GB. Saved: per-row sums per read, `score.json`, `run.log`.
 
 **Not run:** the random slice of δW (the check's item 3); adversarial sources; the library's own Δ share on the update; own-output changes of the other sign or later blocks; reads 1, 2 on u2, u4; accuracy.
+
+## Amendment 1 (2026-11-03, after job 50608 stopped)
+
+**What happened.** Read 1 failed on all four cells, against a medium lean of "passes": the own-output change passes 0.05-0.11 of its clean logit shift, cosine 0.01-0.05. The plan said this may mean the claim is not about the update at all, and that low amplitude or a cosine near 0 is also what a broken hook looks like. Read 2 did not run; read 3 ran on u1 only (D / R 0.008, small).
+
+**Design check (class 1, same harness, no training).** It serves the claim D1 rests on, and it bears on E76: a masked loss term cannot teach what the masked forward cannot pass. An unexplained apparatus number blocks what is read on it.
+
+**Added, cheapest first, control first.**
+1. Hook control: the own-output change at the last matrix alone, where nothing masked follows. Near 1 expected; a miss stops the job.
+2. Swap read: row A's masks on row B's tokens. Does the output sit nearer clean A (the masks carry it) or clean B (the input does)? Expected at own masks: 0.067 nats, E74's. Weak lean: masks.
+3. Own-output change at blocks 14, 21, 27, beside E74's Gaussian curve. No threshold.
+4. Reads 2 and 3 as filed; read 1's stop no longer applies, its "fails" stands.
+
+Rules: `results/predictions_amend1.json`, `amend1.swap_label`. Edge cases read: a NaN ratio gives "unread"; a value in a band gives "between". Cost: $0, ~1 h, same memory as run 50608. Amendment 1 of the two allowed.
+
+**Not run:** other row pairings; which sites hold the information; a mask from Γ on a perturbed row.

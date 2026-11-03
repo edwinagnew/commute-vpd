@@ -1,0 +1,32 @@
+{
+ "filed": "2026-11-03, before amend1.py ran; run 50608's predictions.json stands as filed, read 1 scored 'fails' against its lean 'passes'",
+ "question": "E77 Amendment 1: read 1 failed on all four cells. Is that the hook, or does the masked forward under fixed masks not read its input, so that the masks carry the output?",
+ "plan": "reports/plans/2026-11-03_plan_e77-open-points.md, Amendment 1",
+ "rows": "the first 32 rows at 256 tokens: maths for u1, a1 for u3",
+ "definitions": {
+  "own-output change": "as read 1, at the sites named; epsilon fitted to E74's blocks.json dw_<block> K_clean on u1",
+  "follow_A": "sum KL(clean A || L) / sum KL(clean A || clean B), L the masked forward on row B's tokens under row A's W0 masks, Delta off, B the next row, wrapping",
+  "follow_B": "sum KL(clean B || L) / sum KL(clean B || clean A), same L"
+ },
+ "stops": {
+  "hook": "own-output change at layers.27.mlp.down_proj alone, where nothing masked follows it: amp and cosine above the band round 0.5 or the job stops",
+  "swap_control": "each row's own masks on its own tokens: sum K0 within 1e-3 relative of E74's all.json, u1 549.59461"
+ },
+ "bands": "The own band is run 50608's first-stage band, 0.4866-0.5134. The swap bands are 0.5 x (1 +- 2w), w each ratio's own jackknife relative error over rows in the same read.",
+ "predictions": {
+  "swap": {
+   "rule": "amend1.swap_label per update: follow_A below its band and follow_B above its band 'masks'; the reverse 'input'; anything else 'between'; a NaN 'unread'",
+   "lean": "masks, weak: read 1's failure with the masked forward's own K0 of 0.067 suggests the output is held by the masks, which were read from the row's own activations",
+   "w0": "row A's masks on row A's tokens: follow_A would be K0 / KL(A||B), near 0",
+   "do_nothing": "not applicable: no update in this read",
+   "control": "swap_control, and 'input' is what a forward with the masks all 1 and Delta on would read: follow_B 0",
+   "blind_to": "rows that share a prefix read near each other there; which sites hold the information; one pairing of rows; a mask from another row is off the manifold Gamma was trained on, so 'between' does not separate carrying from breakage"
+  },
+  "later_blocks": {
+   "rule": "no threshold: own-output amp and cosine at blocks 14, 21, 27 on u1 are reported beside read 1's blocks 0, 7",
+   "lean": "amp rises with block towards 1, as E74's gaussian changes did (0.03, 0.03, 0.07, 0.27 at blocks 0, 7, 14, 21)",
+   "blind_to": "one sign and size of epsilon"
+  },
+  "reads_2_3": "as filed in predictions.json, unchanged; only read 1's stop no longer applies"
+ }
+}
