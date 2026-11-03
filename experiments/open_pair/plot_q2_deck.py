@@ -1,5 +1,8 @@
 """The Q2 slide's figures (new against existing), from saved results only, with no model.
 
+Axis symbols are the research log's route split (techniques section): F full model, M_ab pieces C_a under gates g_b, S pieces
+with every gate open, each a mean log-odds. Results keep their old keys: the steering share sigma is "S", the overlap omega "S_R".
+
   q2_routes.png        E12: outside share, r and the masked-off share, copy tasks against random maps
   q2_every_family.png  E60: r and steering on three task families, built to reuse against built to be new
   q2_r_vs_prior.png    E58 and E62: r against the original model's prior of the trained answer
@@ -49,6 +52,10 @@ def save(fig: Any, name: str) -> None:
     plt.close(fig)
 
 
+R_AXIS = r"$r = (M_{01} - M_{00})\,/\,(F_1 - F_0)$"
+SIGMA_AXIS = r"$\sigma = (\log P_s - \log P_0)\,/\,(\log P_1 - \log P_0)$"
+
+
 def routes() -> None:
     tasks = json.loads((ROOT / "experiments/new_vs_existing/results/new_vs_existing.json").read_text())
     p1 = tasks["score"]["P1"]
@@ -68,10 +75,10 @@ def routes() -> None:
         ax.set_ylim(0, 1.05)
         clean(ax, title, "y")
         ax.tick_params(labelleft=True)
-    axes[0].set_ylabel("Ratio to a random update")
-    axes[1].set_ylabel("Share of the fine-tune's gain")
-    axes[2].set_ylabel("Share of the fine-tune's gain")
-    fig.subplots_adjust(wspace=0.32)
+    axes[0].set_ylabel(r"$o\,/\,o_{\mathrm{rand}}$")
+    axes[1].set_ylabel(R_AXIS)
+    axes[2].set_ylabel("$e_{\\mathrm{gate}} = [(S_1 - M_{11}) - (S_0 - M_{00})]$\n$/\\,(F_1 - F_0)$")
+    fig.subplots_adjust(wspace=0.42)
     headline(fig, "Copying and random maps look alike in the update but take different routes")
     save(fig, "q2_routes.png")
 
@@ -82,7 +89,7 @@ def every_family() -> None:
                 ("Lowercase\nvs ciphers", ("e53/lowercase",), ("e53/cipher", "e53/broad_cipher")),
                 ("Half-known\nvs cipher", ("e54/elicit",), ("e54/cipher",)))
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.6), sharey=True)
-    for ax, key, title in zip(axes, ("r", "S"), ("r: gain from old pieces\nthat Γ switches on", "Steering: gain from one mean vector,\nno decomposition needed")):
+    for ax, key, title in zip(axes, ("r", "S"), ("r: gain from old pieces\nthat Γ switches on", "σ: gain from one mean vector,\nno decomposition needed")):
         for x, (_, reuse, new_side) in enumerate(families):
             for prefixes, color, centre in ((reuse, BLUE, x - 0.17), (new_side, ORANGE, x + 0.17)):
                 values = [v[key]["value"] for k, v in runs.items() if k.rsplit("_s", 1)[0].removesuffix("b") in prefixes or k.rsplit("_s", 1)[0] in prefixes]
@@ -93,7 +100,7 @@ def every_family() -> None:
         ax.set_ylim(0, 1.05)
         clean(ax, title, "y")
         ax.tick_params(labelleft=True)
-        ax.set_ylabel("Share of the fine-tune's gain")
+        ax.set_ylabel(R_AXIS if key == "r" else SIGMA_AXIS)
     handles = [plt.Line2D([], [], marker="o", ls="", ms=10, color=BLUE, label="Built on something the model already does"),
                plt.Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new")]
     fig.legend(handles=handles, loc="lower center", ncol=2, frameon=False, bbox_to_anchor=(0.5, -0.07))
@@ -125,8 +132,8 @@ def r_vs_prior() -> None:
     ax.set_xlim(1e-7, 1e-1)
     ax.set_xticks([1e-7, 1e-5, 1e-3, 1e-1])
     ax.set_ylim(0, 1.2)
-    ax.set_ylabel("r: share of the gain from Γ's switching alone")
-    ax.set_xlabel("Original model's probability of the trained answer, before any fine-tune")
+    ax.set_ylabel(R_AXIS)
+    ax.set_xlabel(r"$p_0$: original model's probability of the trained answer (geometric mean over inputs)")
     clean(ax, "", "y")
     headline(fig, "Caveat: the base model's logits correlate with r", 0.96)
     handles = [plt.Line2D([], [], marker="o", ls="", ms=10, color=BLUE, label="Built on something the model already does"),
@@ -152,8 +159,8 @@ def overlap() -> None:
     right.set_ylim(0, 9)
     clean(left, "Does Γ's switching do what the update does?", "y")
     clean(right, "How far Γ's values move", "y")
-    left.set_ylabel("Overlap (1 = fully)")
-    right.set_ylabel("Mean change per piece (×10⁻⁴)")
+    left.set_ylabel(r"$\omega = \mathrm{E}\langle R,\, \delta W a\rangle\,/\,\mathrm{E}\|\delta W a\|^2$")
+    right.set_ylabel(r"mean $|g_1 - g_0|$ ($\times 10^{-4}$)")
     fig.subplots_adjust(wspace=0.25)
     headline(fig, "Overlap is low, and Γ moves even on a fine-tune that learned nothing", 1.05)
     save(fig, "q2_overlap.png")
