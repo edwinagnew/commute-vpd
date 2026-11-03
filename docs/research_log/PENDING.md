@@ -8,3 +8,4 @@ clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 
 - 2026-11-03 · `reports/analyses/2026-11-03_analysis_method-table-section.md` · section `methodtable`, changelog · the 67M method table condensed to one write-up section for `writeup-lead`, one row per kind of truth; no new run, number or claim.
+- 2026-11-03 E72 job 50428 stopped on room on u1 (filed expectation missed: ceiling gain 0.20 vs do-nothing 0.24); Amendment 1 reads u2, u3 and the clean reads; update card decision-d1-test's Running line and evidence.
