@@ -121,7 +121,7 @@ All nine must-fixes and the should-fixes are taken, as the review words them, ex
 - The expected value under proportionality is 0.037-0.067 for random at 1.44, not 0.04-0.05; 0.067 would read under B's line.
 **Times.** Job R about 4.5 h, Job S about 3 h: about 7-7.5 h in all, 82 GB, $0.
 
-## Amendment 3, 2026-11-03, after the verdict: three more saved states, exploration
+## Amendment 3, 2026-11-02, after the verdict: three more saved states, exploration
 Line C stands and is closed (`results/size_verdict.json`, checked by `reports/reviews/2026-11-02_review_e61-size-check.md`). Before the user decides between stopping and the reference comparison, read gold's steps 10, 20 and 50 through Job S's `state` path: `sbatch cluster/qwen_recipe_size.sbatch more --budget-s 10000` (about 26 min a state, 80 min, $0). Rule and expected values: `results/predictions_size_more.json`.
 - **Goal.** `GOALS.md`: whether the one reading left on Qwen measures anything beyond size. Says what the words of line C are worth; it cannot change the line.
 - **Nearest tried.** Job S itself, which read steps 8 and 100 only. Fable's advice (`reports/plans/2026-11-02_advice_e61-after-size-FABLE.md`) asked for 20 and 50; step 10 is added here because the independent check found step 8 won its pick narrowly, with no reading just past it.
