@@ -1,0 +1,49 @@
+{
+  "filed": "2026-11-03, before the code ran; never edited after the run",
+  "question": "E75 Amendment 1: does the clean-model table fail a bad placement of the right size?",
+  "plan": "reports/plans/2026-11-03_plan_e75-rl-reads.md, section Amendment 1",
+  "rules": "experiments/qwen_rl_reads/rules_amend1.py, run before filing against NaN, inf, zero width, ties at the band edge, a missing read, an empty read, one row, unequal rows, an empty update list, and the stored clean_W0 and clean_remainder files",
+  "updates": "u1, u2, u3 (E68's paths and rows; u3's are E57's 64 rows), R100, R10 (RL's weight changes on the 128 maths rows), 256 tokens, the same rows as E75",
+  "states": {
+    "basis": "W0 + a change, per matrix at δW's Frobenius norm, the 196 matrices, through FixedReader.clean's path (float64 change, added to fp32 W0). No fitting, no Sigma, no stage S",
+    "random": "a Gaussian matrix, seed 75100 + site index, scaled to that matrix's ‖δW‖",
+    "other": "another real update's matrix scaled to that matrix's ‖δW‖: u1 and u2 read u3's, u3 reads u1's, R100 and R10 read u1's. No matrix of u1's or u3's file is zero (checked before filing)",
+    "signs": "δW times a random sign per matrix, random.Random(75100), 107 of 196 flipped, the same signs on every update: same subspaces, wrong coordination between matrices"
+  },
+  "quantities": {
+    "K": "KL(FT || state), mean per position over the rows, E72's clean read",
+    "remainder K, the bar": "the update's clean_remainder, not re-read: u1, u2, u3 from E72's results/<update>/clean_remainder.json (E75 kept them), R100, R10 from E75's. 0.53071, 0.52672, 0.22044, 0.052279, 0.0095980",
+    "ruler": "K of W0, the update's stored clean_W0: 1.63511, 1.37677, 0.32264, 0.064313, 0.011866",
+    "width": "half-width of K(state) - K(remainder), 95% row bootstrap, seed 0, 2000 draws, paired by row, E72's half_width as rules.gap_width",
+    "over_ruler": "K / ruler, reported for the lean, no rule"
+  },
+  "stops": {
+    "control": "first and alone, on u1: W0 by this script's path reads E75's K (results/u1/clean_W0.json, 1.63511034) and W0 + δW by this path reads 0, each within 1e-3 relative of the ruler. A NaN or an empty read misses, and so does a ruler that is NaN or not above zero. A miss writes results/stopped_amend1.json, exit 1",
+    "zero_matrix": "a state's matrix that is exactly zero stops the job with an error rather than read a smaller state"
+  },
+  "predictions": {
+    "per_state_update": {
+      "rule": "rules_amend1.label: K - K(remainder) above width 'fails'; below -width 'passes'; else 'no call' (a tie at the edge is no call). 'no call' also if a number is unread or non-finite, the read is missing or empty, it has under two rows, or its rows or T differ from the remainder's. Rounded to 9 places, as E72's",
+      "lean": "fails, every state on every update (medium); signs is the least sure",
+      "blind_to": "input weighting: the size is Frobenius, not Sigma-weighted, so a state may land on directions the inputs excite less or more than δW does; one seed per state; the gold rows only; K, not gain or accuracy; a part of the update at the right size, as E75's slice"
+    },
+    "overall": {
+      "rule": "rules_amend1.overall: 'has teeth' if every state fails on every update of the five, otherwise 'not all fail' and the list of what did not, each with its label (a read not yet made is 'no call'). No updates: 'no call'",
+      "lean": "has teeth (medium)",
+      "blind_to": "the same; it says the table fails these three wrong placements, not that it fails a same-size part of the update"
+    },
+    "near_ruler": {
+      "rule": "none: over_ruler is reported",
+      "lean": "random and other read near the ruler (medium), so over_ruler near 1; signs is the least sure",
+      "blind_to": "no threshold is filed, so this is read, not scored"
+    }
+  },
+  "expected": {
+    "W0": "K is the ruler, by construction. Stored W0 set against the bar through the rule, before filing: 'fails' on all five (widths 0.10, 0.079, 0.013, 0.0015, 0.00036), so a state at the ruler can be read as failing. On R100 and R10 the bar is 0.81 of the ruler",
+    "do-nothing": "the plan's: the ruler. Do-nothing here adds no change, so its weights are W0's. E75's predictions.json reads its do-nothing with FT's weights, K 0; that is this file's control read of W0 + δW",
+    "control": "W0 + δW 0; W0 1.63511034 on u1",
+    "remainder against itself": "gap 0, width 0, 'no call' (run on the stored files before filing)"
+  },
+  "cost": "$0, one L40, debug QoS, ~25 min: 2 control reads and 15 state reads at ~70 s (u3's ~35 s) after ~3 min of load and file checks. No masks, so neither Γ nor the components load, less than the plan's ~6 min load. No stage S",
+  "not_run": "input-weighted sizing of the bad placements; more than one seed per state; masked reads; gain and accuracy; N and F"
+}
