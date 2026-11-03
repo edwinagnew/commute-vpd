@@ -1,0 +1,22 @@
+[   18.1s] [A0] start; NVIDIA H100 80GB HBM3
+[   32.2s] [model] 1409286144 entries; 512 sampling rows per batch; eos [151645, 151643]
+[  424.2s] [upload] queued qwen_rl-acc-W0_gsm8k.jsonl (0.00 GB)
+[  424.2s] [accuracy W0 gsm8k] {"k": 1319, "k_fits": 1255, "fits_share": 0.9514783927217589, "truncation_share": 0.01288855193328279, "strict_dropped": 0.7816733067729084, "lenient_dropped": 0.8047808764940239, "strict_all": 0.7581501137225171, "strict_capped": 0.7445034116755117, "lenient_capped": 0.7733131159969674}
+[  830.4s] [upload] queued qwen_rl-acc-W0_gsm1k.jsonl (0.00 GB)
+[  830.4s] [accuracy W0 gsm1k] {"k": 1197, "k_fits": 1023, "fits_share": 0.8546365914786967, "truncation_share": 0.03258145363408521, "strict_dropped": 0.7888563049853372, "lenient_dropped": 0.8035190615835777, "strict_all": 0.7159565580618212, "strict_capped": 0.6766917293233082, "lenient_capped": 0.6967418546365914}
+[  920.1s] [upload] queued qwen_rl-rollouts-H.jsonl (0.00 GB)
+[  920.1s] [A0] H {"reward_rate": 0.78515625, "mean_len": 183.6240234375, "window_share": 0.947265625}; pool 52 problems; 90 s
+[  968.8s] [A0] {"delta_r": 0.0, "kl": 0.0}; {"gpu_gb": 47.271859712, "host_gb": 11.4178}
+[  968.8s] [check] P0: ok {"near": {"gsm8k": true, "gsm1k": true}, "zero": {"delta_r": true, "kl": true}, "pool": 52, "holds": true}
+[  971.2s] [upload] finished: 3 artifacts
+[  971.2s] [A0] finished in 971 s; {"gpu_gb": 47.271859712, "host_gb": 11.4178}
+[    7.2s] [S] start; NVIDIA H100 80GB HBM3
+[   12.1s] [model] 1409286144 entries; 512 sampling rows per batch; eos [151645, 151643]
+[  160.7s] [S] {"sampler_s": 47.69538187980652, "generate_s": 100.84959483146667, "generate_rows": 439, "length": {"a": 190.158203125, "b": 191.505859375, "diff": -1.34765625, "se": 1.8680477690279795, "holds": true}, "reward": {"a": 0.798828125, "b": 0.83203125, "diff": -0.033203125, "se": 0.019928682115903602, "holds": true}, "peaks": {"gpu_gb": 72.963204096, "host_gb": 10.74286}}
+[  160.7s] [check] sampler agrees with generate: length: ok {"a": 190.158203125, "b": 191.505859375, "diff": -1.34765625, "se": 1.8680477690279795, "holds": true}
+[  160.7s] [check] sampler agrees with generate: reward: ok {"a": 0.798828125, "b": 0.83203125, "diff": -0.033203125, "se": 0.019928682115903602, "holds": true}
+[  231.8s] [S] step 1: 47.3 s sampling, {"live": true, "loss": -0.0012047439777234104, "grad_norm": 0.11541439592838287, "rate": 1e-06, "dw_norm": 0.03488746485466027, "grad_rms": 3.074400144330227e-06, "train_s": 23.73744535446167, "live_tokens": 51628}, {"reward_rate": 0.798828125, "mean_len": 190.158203125, "window_share": 0.970703125}
+[  289.3s] [S] step 2: 43.1 s sampling, {"live": true, "loss": -0.0003968571290897671, "grad_norm": 0.09157124906778336, "rate": 1e-06, "dw_norm": 0.05494563569394337, "grad_rms": 2.439268161358187e-06, "train_s": 14.402867317199707, "live_tokens": 28968}, {"reward_rate": 0.82421875, "mean_len": 165.689453125, "window_share": 0.982421875}
+[  314.4s] [S] {"device": "NVIDIA H100 80GB HBM3", "sampler": {"sampler_s": 47.69538187980652, "generate_s": 100.84959483146667, "generate_rows": 439, "length": {"a": 190.158203125, "b": 191.505859375, "diff": -1.34765625, "se": 1.8680477690279795, "holds": true}, "reward": {"a": 0.798828125, "b": 0.83203125, "diff": -0.033203125, "se": 0.019928682115903602, "holds": true}, "peaks": {"gpu_gb": 72.963204096, "host_gb": 10.74286}}, "checks": {"sampler agrees with generate: length": {"holds": true, "a": 190.158203125, "b": 191.505859375, "diff": -1.34765625, "se": 1.8680477690279795}, "sampler agrees with generate: reward": {"holds": true, "a": 0.798828125, "b": 0.83203125, "diff": -0.033203125, "se": 0.019928682115903602}}, "kl_two_steps_on_rollouts": 0.05437450136237583, "seconds": {"sample": 45.197487473487854, "train": 19.07015633583069, "f_train": 32.43033931446913, "read": 50.304977893829346, "acc": 794.1130814552307}, "usd_per_h": 3.99, "projected_usd": {"100": 30.651019536381696, "50": 27.0337662581163}, "n_steps": 100, "peaks": {"gpu_gb": 58.632187904, "host_gb": 10.74286}}
+[  314.4s] [check] projected cost within the limit: ok {"usd": {"100": 30.651019536381696, "50": 27.0337662581163}}
+[  314.4s] [S] finished in 314 s; {"gpu_gb": 58.632187904, "host_gb": 10.74286}
