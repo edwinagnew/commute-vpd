@@ -1,0 +1,58 @@
+[     0.0s] [config] updates ['u1', 'u2', 'u3']; resumed {'u1': [], 'u2': [], 'u3': []}; args {'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch', 'out': '/ephemeral/e.agnew/e72', 'wall_min': 340.0}
+[    13.2s] [load] decomposition, peak GPU 36.6 GB, host 34.9 GB
+[    41.1s] [load] target, NVIDIA L40, peak GPU 43.5 GB, host 34.9 GB
+[    45.9s] [score] {"control_reproduce": {"result": "not read", "missed": false}, "u1": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}, "u2": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}, "u3": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}}
+[    48.1s] [dW u1] /mnt/nw/home/e.agnew/commute-data/results-large/qwen_sft/nowarmup_regen/dW/step_10.safetensors: sha256 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9, want 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9
+[    51.2s] [dW u1] ‖δW‖/‖W0‖ 0.00142508, largest site 0.0018953
+[    53.5s] [dW u2] /mnt/nw/home/e.agnew/commute-data/results-large/qwen_recipe/train/gold_1e-5/step_100.safetensors: sha256 a5fb18b0564fe36975dd83b9a94c07f6eb9fce293407d9008a8f9d09731de730, want a5fb18b0564fe36975dd83b9a94c07f6eb9fce293407d9008a8f9d09731de730
+[    56.6s] [dW u2] ‖δW‖/‖W0‖ 0.0021812, largest site 0.00291405
+[    58.9s] [dW u3] /mnt/nw/home/e.agnew/commute-data/results-large/qwen_recipe/train/a1_1e-6/step_100.safetensors: sha256 ece3bd448ee9b7e68916118d184473da3ff5ac065613db84d4d150f34130396b, want None
+[    62.1s] [dW u3] ‖δW‖/‖W0‖ 0.000371276, largest site 0.000534479
+[   116.6s] [do_nothing 10 maths] K 0.104362602 nll 2.01494087 ft 1.89778957 agree 0.902038574 count 1 g_sum 7454.0798  rows 128, 54 s, peak GPU 45.4 GB, host 43.2 GB
+[   116.6s] [read] u1/do_nothing written
+[   116.6s] [score] {"control_reproduce": {"K": 0.10436260220730434, "gain": 0.23966229821602703, "ref": {"K": 0.10436260220730434, "gain": 0.23966229821602703}, "gap_K": 0.0, "gap_gain": 0.0, "missed": false}, "u1": {"T1": {"states": {"do_nothing": {"gain": 0.23966229821602703, "K": 0.10436260220730434, "agree": 0.90203857421875}}, "fixed_g": {"gap": {"do_nothing": 0.0}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}, "u2": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}, "u3": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}}
+[   288.2s] [sigma] 196 sites, peak GPU 45.4 GB, host 53.9 GB
+[   288.2s] sigma built in 171 s
+[   342.1s] [S u1] layer 0: 225 s, peak GPU 45.4 GB, host 54.3 GB
+[   394.3s] [S u1] layer 1: 277 s, peak GPU 45.4 GB, host 54.3 GB
+[   447.8s] [S u1] layer 2: 331 s, peak GPU 45.4 GB, host 54.3 GB
+[   501.4s] [S u1] layer 3: 384 s, peak GPU 45.4 GB, host 54.3 GB
+[   555.1s] [S u1] layer 4: 438 s, peak GPU 45.4 GB, host 54.3 GB
+[   608.0s] [S u1] layer 5: 491 s, peak GPU 45.4 GB, host 54.3 GB
+[   659.8s] [S u1] layer 6: 543 s, peak GPU 45.4 GB, host 54.3 GB
+[   711.0s] [S u1] layer 7: 594 s, peak GPU 45.4 GB, host 54.3 GB
+[   760.7s] [S u1] layer 8: 644 s, peak GPU 45.4 GB, host 54.3 GB
+[   808.5s] [S u1] layer 9: 691 s, peak GPU 45.4 GB, host 54.3 GB
+[   853.5s] [S u1] layer 10: 736 s, peak GPU 45.4 GB, host 54.3 GB
+[   895.4s] [S u1] layer 11: 778 s, peak GPU 45.4 GB, host 54.3 GB
+[   935.6s] [S u1] layer 12: 818 s, peak GPU 45.4 GB, host 54.3 GB
+[   973.6s] [S u1] layer 13: 856 s, peak GPU 45.4 GB, host 54.3 GB
+[  1010.5s] [S u1] layer 14: 893 s, peak GPU 45.4 GB, host 54.3 GB
+[  1048.5s] [S u1] layer 15: 931 s, peak GPU 45.4 GB, host 54.3 GB
+[  1089.4s] [S u1] layer 16: 972 s, peak GPU 45.4 GB, host 54.3 GB
+[  1133.6s] [S u1] layer 17: 1016 s, peak GPU 45.4 GB, host 54.3 GB
+[  1180.8s] [S u1] layer 18: 1064 s, peak GPU 45.4 GB, host 54.3 GB
+[  1231.0s] [S u1] layer 19: 1114 s, peak GPU 45.4 GB, host 54.3 GB
+[  1282.9s] [S u1] layer 20: 1166 s, peak GPU 45.4 GB, host 54.3 GB
+[  1336.4s] [S u1] layer 21: 1219 s, peak GPU 45.4 GB, host 54.3 GB
+[  1389.7s] [S u1] layer 22: 1273 s, peak GPU 45.4 GB, host 54.3 GB
+[  1443.1s] [S u1] layer 23: 1326 s, peak GPU 45.4 GB, host 54.3 GB
+[  1496.5s] [S u1] layer 24: 1379 s, peak GPU 45.4 GB, host 54.3 GB
+[  1548.9s] [S u1] layer 25: 1432 s, peak GPU 45.4 GB, host 54.3 GB
+[  1601.0s] [S u1] layer 26: 1484 s, peak GPU 45.4 GB, host 54.3 GB
+[  1654.4s] [S u1] layer 27: 1537 s, peak GPU 45.4 GB, host 54.3 GB
+[  1655.9s] [S u1] {"share": {"do_nothing": 1.0, "ls": 0.3637434871295139, "inspan": 0.0011435713165766437, "adjoint": 0.0004657108503729808, "random": 0.0, "lower": 0.7119745450430526, "upper": 0.5218200710958839}, "outside_both": 0.13213136354314917, "outside_both_null": 0.2520877379362408, "ls_second": 0.0011435713165766437, "half_piece_energy": {"lower": 6363.618759380964, "upper": 743.2484316988338}, "stored_error_max": 0.00016164693861064962, "energy": 1440.092819832963}
+[  1661.6s] [load] decomposition, peak GPU 45.4 GB, host 74.1 GB
+[  1661.6s] [read] u1/S written
+[  1661.6s] [score] {"control_reproduce": {"K": 0.10436260220730434, "gain": 0.23966229821602703, "ref": {"K": 0.10436260220730434, "gain": 0.23966229821602703}, "gap_K": 0.0, "gap_gain": 0.0, "missed": false}, "u1": {"T1": {"states": {"do_nothing": {"gain": 0.23966229821602703, "K": 0.10436260220730434, "agree": 0.90203857421875}}, "fixed_g": {"gap": {"do_nothing": 0.0}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": 0.3637434871295139}, "u2": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}, "u3": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}}
+[  1710.4s] [T2 split 10] in-span + remainder vs δW: 1.08158e-06 of ‖δW‖
+[  1925.2s] [T0a 10] K_R0 0.694261443 ci 0.0696131952 K_clean 0.579025245 K_R1 0.660383508  rows 128, 175 s, peak GPU 45.4 GB, host 74.1 GB
+[  1925.5s] [read] u1/T0a written
+[  1925.5s] [score] {"control_reproduce": {"K": 0.10436260220730434, "gain": 0.23966229821602703, "ref": {"K": 0.10436260220730434, "gain": 0.23966229821602703}, "gap_K": 0.0, "gap_gain": 0.0, "missed": false}, "u1": {"T1": {"states": {"do_nothing": {"gain": 0.23966229821602703, "K": 0.10436260220730434, "agree": 0.90203857421875}}, "fixed_g": {"gap": {"do_nothing": 0.0}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {"specific": {"result": "any change", "r2_R": 0.054235218759491215, "r2_C": 0.09949841703140698, "K_R0": 0.6942614426315847, "K_R1": 0.6603835082824325, "K0": 0.06961319516372438, "K0_this_read": 0.06961319516372438, "K_R_clean": 0.5790252448253213}}, "share_ls": 0.3637434871295139}, "u2": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}, "u3": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}}
+[  2025.7s] [T0b 10] K 1.26175745 nll 2.01040832 ft 1.89778957 agree 0.794433594 count 1  rows 128, 98 s, peak GPU 45.4 GB, host 74.1 GB
+[  2025.8s] [read] u1/T0b written
+[  2025.8s] [score] {"control_reproduce": {"K": 0.10436260220730434, "gain": 0.23966229821602703, "ref": {"K": 0.10436260220730434, "gain": 0.23966229821602703}, "gap_K": 0.0, "gap_gain": 0.0, "missed": false}, "u1": {"T1": {"states": {"do_nothing": {"gain": 0.23966229821602703, "K": 0.10436260220730434, "agree": 0.90203857421875}}, "fixed_g": {"gap": {"do_nothing": 0.0}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {"specific": {"result": "any change", "r2_R": 0.054235218759491215, "r2_C": 0.09949841703140698, "K_R0": 0.6942614426315847, "K_R1": 0.6603835082824325, "K0": 0.06961319516372438, "K0_this_read": 0.06961319516372438, "K_R_clean": 0.5790252448253213}, "T0b": {"K": 1.261757453588854, "K_ceiling_W0_masks": 1.2440450650945027, "gain": 0.2662602843275338, "agree": 0.79443359375}}, "share_ls": 0.3637434871295139}, "u2": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}, "u3": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}}
+[  2252.2s] [do_nothing 10 maths] K 0.104536392 nll 2.02149017 ft 1.89778957 agree 0.901916504 count 1 g_sum 7454.0798  rows 128, 226 s, peak GPU 45.4 GB, host 74.1 GB
+[  2252.2s] [read] u1/ceiling written
+[  2252.3s] [score] {"control_reproduce": {"K": 0.10436260220730434, "gain": 0.23966229821602703, "ref": {"K": 0.10436260220730434, "gain": 0.23966229821602703}, "gap_K": 0.0, "gap_gain": 0.0, "missed": false}, "u1": {"T1": {"states": {"do_nothing": {"gain": 0.23966229821602703, "K": 0.10436260220730434, "agree": 0.90203857421875}, "ceiling": {"gain": 0.20122961360871117, "K": 0.1045363916484718, "agree": 0.90191650390625}}, "fixed_g": {"gap": {"do_nothing": 0.0, "ceiling": 0.0}, "missed": false}, "w": null, "room": {"result": "no room", "gap": -0.03843268460731586}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {"specific": {"result": "any change", "r2_R": 0.054235218759491215, "r2_C": 0.09949841703140698, "K_R0": 0.6942614426315847, "K_R1": 0.6603835082824325, "K0": 0.06961319516372438, "K0_this_read": 0.06961319516372438, "K_R_clean": 0.5790252448253213}, "T0b": {"K": 1.261757453588854, "K_ceiling_W0_masks": 1.2440450650945027, "gain": 0.2662602843275338, "agree": 0.79443359375}}, "share_ls": 0.3637434871295139}, "u2": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}, "u3": {"T1": {"states": {}, "fixed_g": {"gap": {}, "missed": false}, "w": null, "room": {"result": "not read", "gap": NaN}, "teeth": {"result": "not read"}}, "T2": {"states": {}, "T2": "not read"}, "T0": {}, "share_ls": null}}
+[  2252.3s] STOP room: {"result": "no room", "gap": -0.03843268460731586}
