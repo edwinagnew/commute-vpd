@@ -200,6 +200,13 @@ training; per F step 67.9 s training; 121.8 s per readout on H. Sampler 106 s ag
 (sampler 42.6 at the L40's row count; about 61 GB scaled to the H100's 512 rows, under 80), host 11 GB. KL after two
 steps 0.032 on the rollouts' own samples. |δW| 0.0348, 0.0549; gradient rms 2.9e-6, 2.5e-6; reward 0.830, 0.832.
 
+Upload and `verify` (jobs 50234-50266, tiny, cap raised): two 5.64 GB δW went up in about 4 min each, no W&B error,
+`verify` read 8 rows, all ok; `next` printed the right branch. 21 δW is about 84 min of background upload.
+
+**Cost line for the go-ahead.** About 15 h on the L40 by the numbers above. The H100's speed against the L40 is not
+measured: at 1.5-2× the run is 8-10 h, $32-40 at $3.99/h. Worst case by the tree (R twice, then N and F), about 11-13 h,
+$44-55. S on the pod measures the speed first; over $50 projected, N runs 50 steps.
+
 **Band changed before filing took effect.** First live step |δW| 0.03477, ratio 0.926 to lr √numel (numel 1,409,286,144),
 outside the guessed 0.95-1.05. Adam moves an entry by lr · |g| / (|g| + 1e-8), and the gradient (rms 3e-6) is
 heavy-tailed, so some entries sit near eps. Band now 0.85-1.05, from this reading; no scored run had started. So the
