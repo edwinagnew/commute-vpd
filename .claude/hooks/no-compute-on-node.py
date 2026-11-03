@@ -25,7 +25,7 @@ import shlex
 import sys
 
 SLURM_GPU = re.compile(r"\b(sbatch|srun|salloc)\b.*(--gres[= ]\S*gpu|--gpus?(-per-\w+)?[= ]|\s-G\s?\d)")
-SBATCH_GPU = re.compile(r"^#SBATCH\s+(--gres[= ]\S*gpu|--gpus?(-per-\w+)?[= ]|-G\s?\d)", re.M)
+SBATCH_GPU = re.compile(r"^#SBATCH\s+(--gres[= ]\S*gpu|--gpus?(-per-\w+)?[= ]|-G\s?\d)", re.MULTILINE)
 
 try:
     call = json.load(sys.stdin)
@@ -354,7 +354,7 @@ def _commands(text):
     shell, inner = _substitutions(_heredocs(text)[0].replace("\\\n", " "))
     command, target, stdin = [], False, False
     # A blank here-document stops standing for empty input if another redirection also supplies standard input.
-    words = lambda: [w for w in command if not (stdin and w == EMPTY_HEREDOC)]  # noqa: E731
+    words = lambda: [w for w in command if not (stdin and w == EMPTY_HEREDOC)]
     for w, operator in _tokens(shell):
         if target:  # the file a redirection names
             target = False

@@ -142,7 +142,7 @@ def blob_id(path: Path) -> bytes:
 def in_a_commit(tree: str) -> bool:
     """A tree object exists in the clone only once a commit holds it: `git add` writes blobs, not trees (friction 323)."""
     return subprocess.run(["git", "-C", str(HERE.resolve()), "cat-file", "-e", f"{tree}^{{tree}}"],
-                          capture_output=True).returncode == 0
+                          check=False, capture_output=True).returncode == 0
 
 
 def build() -> dict[str, str]:
@@ -257,7 +257,7 @@ def print_missing() -> None:
         if f.name[:10] >= last and f.name not in named and not any(fnmatch.fnmatch(f.name, f"*{w}") for w in wild):
             print(f"not in the log: {f.relative_to(top)}")
     tried = (top / "experiments" / "TRIED.md").read_text()
-    for code in sorted(set(re.findall(r"^\| E(\d+)", tried, re.M)), key=int):
+    for code in sorted(set(re.findall(r"^\| E(\d+)", tried, re.MULTILINE)), key=int):
         if f'id="e{code}"' not in named:
             print(f"no card: E{code}")
 
@@ -269,14 +269,14 @@ def unlanded_lines() -> list[str]:
     top = HERE.resolve().parents[1]
     git = ["git", "-C", str(top)]
     rel = HERE.resolve().relative_to(top).as_posix()
-    shown = subprocess.run([*git, "show", f"HEAD:{rel}/PENDING.md"], capture_output=True, text=True)
+    shown = subprocess.run([*git, "show", f"HEAD:{rel}/PENDING.md"], check=False, capture_output=True, text=True)
     now = (HERE / "PENDING.md").read_text().splitlines()
     gone = [line for line in shown.stdout.splitlines() if line.startswith("- 20") and line not in now]
     if not gone:
         return []
-    diff = subprocess.run([*git, "diff", "-U0", "HEAD", "--", f"{rel}/parts"], capture_output=True, text=True).stdout
+    diff = subprocess.run([*git, "diff", "-U0", "HEAD", "--", f"{rel}/parts"], check=False, capture_output=True, text=True).stdout
     added = "\n".join(line for line in diff.splitlines() if line.startswith("+"))
-    new = subprocess.run([*git, "ls-files", "-o", "--exclude-standard", f"{rel}/parts"], capture_output=True, text=True)
+    new = subprocess.run([*git, "ls-files", "-o", "--exclude-standard", f"{rel}/parts"], check=False, capture_output=True, text=True)
     added += "".join((top / f).read_text() for f in new.stdout.split())
     out, files = [], []
     for line in gone:
