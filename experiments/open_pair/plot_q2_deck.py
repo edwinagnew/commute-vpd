@@ -1,7 +1,8 @@
 """The Q2 slide's figures (new against existing), from saved results only, with no model.
 
 Axis symbols are the research log's route split (techniques section): F full model, M_ab pieces C_a under gates g_b, S pieces
-with every gate open, each a mean log-odds. Results keep their old keys: the steering share sigma is "S", the overlap omega "S_R".
+with every gate open, each a mean log-odds. Results keep their old keys: the steering share is "S", the overlap omega "S_R". The steering multiple m is
+exp(S * G_score), the same read with the fine-tune's rise left in: the factor by which one mean vector raises the answer's geometric-mean probability.
 
   q2_routes.png        E12: outside share, r and the masked-off share, copy tasks against random maps
   q2_every_family.png  E60: r and steering on three task families, built to reuse against built to be new
@@ -14,6 +15,7 @@ Usage (repo root):  ~/commute-agents/fleet/cpu-run python experiments/open_pair/
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -83,28 +85,49 @@ def routes() -> None:
     save(fig, "q2_routes.png")
 
 
+def steering_multiples(runs: dict[str, Any]) -> dict[str, float]:
+    """m = exp(S * G_score) per E60 run, each S with the gain it was divided by (scoring half, log probability)."""
+    b = json.loads((ROOT / "experiments/baseline_neurons/results/baseline_neurons.json").read_text())["gains"]
+    s1 = json.loads((ROOT / "experiments/regating_truth_table/results/stage1.json").read_text())["rows"]
+    s2 = json.loads((ROOT / "experiments/keydependent_elicit/results/stage2.json").read_text())["states"]
+    out = {}
+    for k, v in runs.items():
+        family, name = k.split("/")
+        G = {"e46": lambda: b[name], "e53": lambda: s1[k], "e54": lambda: s2[name]}[family]()["G_score"]
+        out[k] = math.exp(v["S"]["value"] * G)
+    return out
+
+
 def every_family() -> None:
     runs = json.loads((ROOT / "experiments/regating_truth_table/results/table.json").read_text())["runs"]
+    multiples = steering_multiples(runs)
     families = (("Copy vs\nrandom maps", ("e46/ident32",), ("e46/rand32",)),
                 ("Lowercase\nvs ciphers", ("e53/lowercase",), ("e53/cipher", "e53/broad_cipher")),
                 ("Half-known\nvs cipher", ("e54/elicit",), ("e54/cipher",)))
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.6), sharey=True)
-    for ax, key, title in zip(axes, ("r", "S"), ("Gain from old pieces\nthat Γ switches on", "Gain from one mean vector,\nno decomposition needed")):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.6))
+    panels = ((lambda k: runs[k]["r"]["value"], "Gain from old pieces\nthat Γ switches on"),
+              (lambda k: multiples[k], "How many times more likely\none mean vector makes the answer"))
+    for ax, (value, title) in zip(axes, panels):
         for x, (_, reuse, new_side) in enumerate(families):
             for prefixes, color, centre in ((reuse, BLUE, x - 0.17), (new_side, ORANGE, x + 0.17)):
-                values = [v[key]["value"] for k, v in runs.items() if k.rsplit("_s", 1)[0].removesuffix("b") in prefixes or k.rsplit("_s", 1)[0] in prefixes]
-                spread = [centre + 0.05 * (i - (len(values) - 1) / 2) for i in range(len(values))]
-                ax.scatter(spread, values, s=110, color=color, edgecolor="white", lw=1, zorder=3)
+                keys = [k for k in runs if k.rsplit("_s", 1)[0].removesuffix("b") in prefixes or k.rsplit("_s", 1)[0] in prefixes]
+                spread = [centre + 0.05 * (i - (len(keys) - 1) / 2) for i in range(len(keys))]
+                ax.scatter(spread, [value(k) for k in keys], s=110, color=color, edgecolor="white", lw=1, zorder=3)
         ax.set_xticks(range(3), [f[0] for f in families])
         ax.set_xlim(-0.55, 2.55)
-        ax.set_ylim(0, 1.05)
         clean(ax, title, "y")
-        ax.tick_params(labelleft=True)
-        symbol(ax, "$r$" if key == "r" else r"$\sigma$")
+    axes[0].set_ylim(0, 1.05)
+    symbol(axes[0], "$r$")
+    axes[1].set_yscale("log")
+    axes[1].set_ylim(1, 10000)
+    axes[1].set_yticks([1, 10, 100, 1000, 10000], ["×1", "×10", "×100", "×1,000", "×10,000"])
+    axes[1].minorticks_off()
+    symbol(axes[1], "$m$")
+    fig.subplots_adjust(wspace=0.3)
     handles = [plt.Line2D([], [], marker="o", ls="", ms=10, color=BLUE, label="Built on something the model already does"),
                plt.Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new")]
     fig.legend(handles=handles, loc="lower center", ncol=2, frameon=False, bbox_to_anchor=(0.5, -0.07))
-    headline(fig, "r keeps a wide gap on every family we built; steering does so only on copy")
+    headline(fig, "r keeps a wide gap on every family we built; steering separates only copy")
     save(fig, "q2_every_family.png")
 
 
