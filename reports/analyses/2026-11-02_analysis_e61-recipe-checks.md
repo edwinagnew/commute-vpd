@@ -144,6 +144,8 @@ The gaps, on true masks, against the higher random read off at gold's value:
 
 **Reading it.** The filed rule, `results/predictions_size_more.json`, makes no call. It asks whether the share follows the size or how far training has gone, on all 128 rows with truly original masks. "Follows size" needs steps 20 and 50 both at or above 0.0669. Step 20 reads 0.0653, and the top of its interval, 0.0663, is also under. "Follows training" needs step 20 under 0.06, and it is not. The rule's edge case, step 20 between those two lines, is no call. Both sizes are inside the filed factor of 1.15 of step 100's, at 1.100 and 1.015. These states are outside the verdict's pick, so line C is untouched.
 
+**On E57's masks, reported beside it.** The moved read vectors give 0.0669 at step 20, 0.0774 at step 50 and 0.0788 at step 100. Step 20 touches the rule's figure there, but that figure is 0.01 under the truly original step 100. The same margin under this version's own step 100 is 0.0688, and step 20 misses it. The rule reads truly original masks, so its no call stands.
+
 | state | size K00 − K0 | KL from W0 | direct share [95%] | alive change read off | excess |
 |---|---:|---:|---|---:|---:|
 | step 8, scored | 0.570 | 0.256 | 0.0257 [0.0251, 0.0262] | 0.0295 | −0.004 |
