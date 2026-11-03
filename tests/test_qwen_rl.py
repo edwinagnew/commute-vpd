@@ -136,7 +136,7 @@ def test_cost() -> None:
 def test_predictions_filed_from_the_plan() -> None:
     assert PRED["P0"]["gsm8k"] == {"ref": 0.777, "tol": 0.015} and PRED["P0"]["gsm1k"] == {"ref": 0.782, "tol": 0.015}
     assert PRED["P1"]["learns_min"] == 0.02 and PRED["P1"]["no_gain_below"] == 0.01
-    assert PRED["early"]["dw_ratio"] == [0.85, 1.05] and PRED["early"]["kl_first"] == [0.0015, 0.02]
+    assert PRED["early"]["dw_ratio"] == [0.85, 1.05] and PRED["early"]["kl_first"] == [0.01, 0.06]
     assert PRED["early"]["reward_step1"] == [0.60, 0.88] and PRED["early"]["reward_change_above"] == -0.05
 
 
