@@ -1,0 +1,35 @@
+{
+ "plan": "reports/plans/2026-11-03_plan_e71-scorecard-ls.md. Filed 2026-11-03 before any job; never edited after.",
+ "lines": {"pass": 1.40, "fail": 1.61, "source": "E39: 1.5 / (1 + f) and 1.5 (1 + f) at its H100 floor f = 0.075, both inclusive"},
+ "controls": {
+  "w0_l40": 0.6917431652545929, "w0_tol": 0.001,
+  "gain_tol": 0.001,
+  "h100": {"adam": {"nothing": 4.8678, "adjoint": 1.0538, "adjoint_s": 0.804},
+           "lora": {"nothing": 2.6531, "adjoint": 0.9459, "adjoint_s": 0.6660}},
+  "close_rel": 0.10, "close_s": 0.02,
+  "close_source": "close_rel is E49's card_tol: L40 against H100 on the same file and rows measured 0.5-4.2% on four pairs, 15.5% on a fifth. close_s: E39's s_tol doubled, since the fine-tune file itself was regenerated, not the same file.",
+  "delta_tol": 0.0001,
+  "outside_weighted_h100": {"adam": 0.32194, "lora": 0.26260}
+ },
+ "expected_controls": {
+  "W0": "mean PGD KL within 0.1% of the L40's filed value; otherwise stop",
+  "gain": "each fine-tune's held-out gain within 0.001 of E49's regen value on the same card; otherwise stop",
+  "nothing": "fails the check; delta_share 1 to 1e-4; s 1. Otherwise stop",
+  "adjoint": "passes the check; delta_share 0 to 1e-4; s near 0.80 (Adam), 0.67 (LoRA). Otherwise stop",
+  "ls": "s 1 to 1e-3 and gap 0 to 1e-3: its target weights are the fine-tune's, by construction. So its Behaviour-kept cell is not a finding",
+  "expr_fixed": "delta_share 0 to 1e-4, by construction"
+ },
+ "predictions": [
+  {"id": "P1", "claim": "The least-squares state fails the check on each fine-tune.",
+   "rule": "per fine-tune: check >= 1.61 holds; <= 1.40 refuted; between is no call", "prior": "emoticon Adam 6.96 at step 10, 2.11 at step 1000 (E16)"},
+  {"id": "P2", "claim": "The least-squares state reads above do-nothing on the same fine-tune.",
+   "rule": "per fine-tune: ls / nothing > 1.075 holds; < 1 / 1.075 refuted; else no call (1.075 = E37's H100 PGD floor)", "prior": "above do-nothing at both emoticon steps (E16)"},
+  {"id": "P3", "claim": "The least-squares state leaves at least 30% of the update in Delta.",
+   "rule": "per fine-tune: delta_share >= 0.30 holds, else refuted", "prior": "36% and 38% on emoticon (E16); input-weighted outside share 0.32 and 0.26 here (E39), and the unweighted share reads higher"},
+  {"id": "P4", "claim": "The expressible part keeps more of the gain than the scaled adjoint split on the same fine-tune.",
+   "rule": "per fine-tune and each of expr, expr_fixed: s - adjoint s > 0.02 holds; < -0.02 refuted; else no call", "prior": "0.95-1.00 on emoticon (E2); the adjoint split 0.80 and 0.67 here"},
+  {"id": "P5", "claim": "The expressible part alone fails the check: the fail belongs to the moved pieces, not to the part left in Delta.",
+   "rule": "per fine-tune and each of expr, expr_fixed: check >= 1.61 holds; <= 1.40 refuted; between is no call", "prior": "none: no adversarial reading of this state exists. A guess from the least-squares state using the same pieces"}
+ ],
+ "blind_to": "One adversary start on 256 Pile rows: a state that fails only at other starts or rows reads as a pass (E47, E49 read those; this does not). The lines come from the H100's floor; the job is on an L40. delta_share counts every weight direction alike, not by input weight."
+}
