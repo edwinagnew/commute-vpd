@@ -184,8 +184,8 @@ def entropy(logits: Tensor) -> float:
 
 def k_clean(pr: Any, model: Any, rows: Tensor, comps: Components, change: Change) -> float:
     total = 0.0
-    for i in range(0, len(rows), C.batch):
-        t = rows[i: i + C.batch].to(DEV)
+    for tokens in rows:  # one row: beside the decomposition the L40 has ~1 GB free, a batch of 8 rows' logits is 1.16 GiB (job 50507)
+        t = tokens[None].to(DEV)
         total += pr.kl(model(t, use_cache=False).logits, forward(model, t, comps, None, change))
     return total / rows.numel()
 
@@ -219,11 +219,15 @@ def read_group(pr: Any, model: Any, gamma: Any, comps: Components, rows: Tensor,
         base_sums["H_masked"].append(entropy(masked))
         for name, (dW, cut) in arms.items():
             base = masked if cut is None else forward(model, t, comps, g, {}, cut)  # each cut is one arm's
-            cp, mp = forward(model, t, comps, None, dW), forward(model, t, comps, g, dW, cut)
-            one = {"K_clean": pr.kl(clean, cp), "K_masked": pr.kl(base, mp)}
-            a, b = cp.float().sub_(clean.float()), mp.float().sub_(base.float())  # L40: the reader alone peaks ~46 GB
-            del cp, mp, base
-            a, b = a - a.mean(-1, keepdim=True), b - b.mean(-1, keepdim=True)
+            a = forward(model, t, comps, None, dW)
+            one = {"K_clean": pr.kl(clean, a)}
+            a.sub_(clean)  # in place: the reader alone peaks at 42.7 of the L40's 44.3 GiB
+            a.sub_(a.mean(-1, keepdim=True))
+            b = forward(model, t, comps, g, dW, cut)
+            one["K_masked"] = pr.kl(base, b)
+            b.sub_(base)
+            b.sub_(b.mean(-1, keepdim=True))
+            del base
             one |= {"dot": float((a * b).double().sum()), "aa": float((a * a).double().sum()), "bb": float((b * b).double().sum())}
             for k, v in one.items():
                 sums[name].setdefault(k, []).append(v)
