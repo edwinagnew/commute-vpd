@@ -3,10 +3,13 @@
   "question": "E75: do the D1 reads on the three SFT updates (E72's clean-model table, E74's whole-update transmission) hold on an update with a real accuracy gain?",
   "plan": "reports/plans/2026-11-03_plan_e75-rl-reads.md",
   "rules": "experiments/qwen_rl_reads/rules.py, run against edge cases before filing (zero denominators, NaN, inf, ties, missing reads) and against E72's and E74's stored files",
-  "updates": "RL's weight changes, ~/commute-data/results-large/qwen_rl/lr1e-6w10/dW/<arm>/step_<t>.safetensors, on the 128 maths rows, 256 tokens. Leans are filed for R100 and R10. N and F are read against the same rules with no lean: file one before that job if one is wanted.",
+  "updates": "RL's weight changes, ~/commute-data/results-large/qwen_rl/lr1e-6w10/dW/<arm>/step_<t>.safetensors, on the 128 maths rows, 256 tokens; and the saved u1, u2, u3 (E68's paths and rows; u3's are E57's 64 rows), which keep E72's and E74's reads and gain the size-matched states. Leans are filed for R100 and R10. N, F and the saved updates are read against the same rules with no lean: file one before that job if one is wanted.",
   "quantities": {
     "clean table": "E72's T2 (qwen_fixed_masks FixedReader.clean, rules.score_t2): W0, FT, in-span part of the least-squares split, its remainder, often-on half's part, rarely-on half's part, random change at E68's matching rule (Reader.search); plus the adjoint split's weight change, no rule. Each: K = KL(FT || read), gain, top-token agreement, per-row sums",
     "gain": "(sum nll W0 - sum nll read) / (sum nll W0 - sum nll FT), next-token NLL on the rows. W0's and FT's sums from this job's clean_W0, the same numbers as E68's W0.json (reproduced on u1, u2, u3 to 2e-6 in the rule check)",
+    "scaled states": "scaled_inspan, scaled_remainder: W0 + t dW in every matrix, t = sqrt(sum over matrices of E(part) / sum of E(dW)), E(A) = tr(A Sigma A^T) with stage S's Sigma (split.weighted_energy). E73's t dW, the review's rescaled column",
+    "slice states": "slice_inspan, slice_remainder (size.py): per matrix, c Q Q^T dW, Q a random orthonormal basis of a k-dimensional subspace of the output side, k = round(f d_out) in [1, d_out], f = E(part) / E(dW) for that matrix, c the scalar that makes the energy exactly E(part); seed 75000 + 2 x site index + kind. One seed. c's range is written",
+    "s": "E72's t2_rule is reported twice: with E72's s, 1 - share.ls, a norm fraction filed as the in-span share (qwen_fixed_masks/rules.py:181), and with the in-span part's input-weighted norm share t ('T2_norm_share', 's_norm_share')",
     "share_ls": "stage S: ||Delta' - Delta0||_Sigma / ||dW||_Sigma of the least-squares split, pooled over sites",
     "tau": "E74's read_group, one arm 'all': KL(masked W0 || masked W0 + dW) / KL(W0 || W0 + dW), the change an unmasked term x dW^T at its matrix, W0's masks; first 32 rows; unread if the clean KL is under 1e-5. Fixed: g. Stochastic: E74 Amendment 2's m = g + (1 - g) u and Delta share d, seed 74, one draw per row",
     "K0": "KL(W0 || masked W0) on those 32 rows, per mask kind"
@@ -15,7 +18,8 @@
     "control": "first and alone, no stage S. u1 through this code: clean_W0's K, nll, ft, entropy against E72's u1/clean_W0.json; tau and K0, fixed and stochastic, against E74's u1/all.json and u1/stochastic.json (fixed tau 0.00549874, stochastic tau 0.01278859, K0 fixed 0.06708919, K0 stochastic 0.04401896, K 1.63511034). Each within 1e-3 relative; a NaN or zero reference misses. Tolerance: E74 reproduced E68's K0 sum to 9 digits across jobs, and its hook differs from the weights by about 1e-9 relative at fp32",
     "w0_same": "every update: W0's own numbers (nll, entropy, K0 fixed, K0 stochastic) within 1e-3 relative of the control's. These rows and masks never see the update, so a miss means weights or components were left moved",
     "clean_FT": "E72's: K of FT from FT at most 1e-3 of K of W0 from FT",
-    "dW_file": "sha256 against the RL run's SHA256SUMS where listed; exactly the 196 sites' shapes in fp32; ||file|| / ||W0|| at most 0.1"
+    "energy_check": "this job's E(dW) and E(remainder) / E(dW), per update, within 1e-3 relative of stage S's energy and outside_both on the same Sigma",
+    "dW_file": "sha256 against the RL run's SHA256SUMS where listed; exactly the 196 sites' shapes in fp32; ||file|| / ||W0|| at most 0.1 (saved updates: E68's check_file)"
   },
   "predictions": {
     "transmission": {
@@ -33,12 +37,18 @@
       "lean": "holds on R100 and R10 (medium; ratio 0.017, 0.017, 0.012 on u1, u2, u3)",
       "blind_to": "gain; the parts are not additive in KL; whether a part carries the accuracy, which no read here measures"
     },
+    "placement_vs_size": {
+      "rule": "rules.beats_size, per update: K(slice_inspan) - K(inspan) above its row-bootstrap half-width (95%, seed 0, 2000 draws, paired by row, E72's half_width) 'beats size', else 'does not'. 'no call' if K(W0) or both reads are under 1e-5, or a number is unread or non-finite. The same gap on the remainder is reported, no rule. The rescaled states are reported, no rule",
+      "lean": "none, on any update",
+      "blind_to": "one seed of the slice; a slice is random on the output side only; the gold rows; K, not gain or accuracy"
+    },
     "visible_difference": {
       "rule": "each row of score.json carries its value, the SFT updates' range (rules.SFT) and 'inside' or 'outside' it. Outside on an R update is the result to report, whichever way the filed label falls. share_ls range 0.351 to 0.389 is read the same way, no lean",
       "reported_not_leaned": "E72's T2 label (rules.t2_rule through score_t2) and gains. Its label reads 'unscored' when W0's NLL minus FT's on these rows is under 0.05 nats; gain_den_nats is written beside it. GRPO trains on its own samples, not this gold text, so this denominator may be small or negative: then gain is not readable and the three rules above, on KL, still are"
     }
   },
   "expected": {
+    "size states": "at W0 and do-nothing as the other parts: dW = 0 leaves every state at W0, so each K is the ruler and the gap is 0, 'does not'; do-nothing has FT's weights in the clean model, K 0, 'no call'. By construction t = 1 or f = 1 reads FT, K 0. Review's estimate of scaled_inspan on u1, u2, u3: 0.002, 0.003, 0.0007; scaled_remainder: 0.21, 0.20, 0.09 (E73, 64 rows, near t = 1 extrapolated). t for the in-span part: 0.93, 0.92, 0.94 (review). No reference exists for a slice",
     "K": "at W0 it is the ruler: 1.6351 on u1, first read on R. FT and do-nothing (same weights in the clean model): 0. RL's own KL(W0 || W_t) on its held rows: 0.194 at 100, 0.064 at 10, so well above the 1e-5 floor",
     "gain": "W0 0, FT and do-nothing 1, by construction",
     "agreement": "W0 0.808 on u1; FT and do-nothing 1",
