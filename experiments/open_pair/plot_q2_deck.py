@@ -23,6 +23,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from plot_amend7 import read
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -93,8 +94,8 @@ def steering_multiples(runs: dict[str, Any]) -> dict[str, float]:
     out = {}
     for k, v in runs.items():
         family, name = k.split("/")
-        G = {"e46": lambda: b[name], "e53": lambda: s1[k], "e54": lambda: s2[name]}[family]()["G_score"]
-        out[k] = math.exp(v["S"]["value"] * G)
+        row = b[name] if family == "e46" else s1[k] if family == "e53" else s2[name]
+        out[k] = math.exp(v["S"]["value"] * row["G_score"])
     return out
 
 
@@ -124,8 +125,8 @@ def every_family() -> None:
     axes[1].minorticks_off()
     symbol(axes[1], "$m$")
     fig.subplots_adjust(wspace=0.3)
-    handles = [plt.Line2D([], [], marker="o", ls="", ms=10, color=BLUE, label="Built on something the model already does"),
-               plt.Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new")]
+    handles = [Line2D([], [], marker="o", ls="", ms=10, color=BLUE, label="Built on something the model already does"),
+               Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new")]
     fig.legend(handles=handles, loc="lower center", ncol=2, frameon=False, bbox_to_anchor=(0.5, -0.07))
     headline(fig, "r keeps a wide gap on every family we built; steering separates only copy")
     save(fig, "q2_every_family.png")
@@ -159,9 +160,9 @@ def r_vs_prior() -> None:
     ax.set_xlabel("$p_0$", fontsize=17)
     clean(ax, "", "y")
     headline(fig, "Caveat: the base model's logits correlate with r", 0.96)
-    handles = [plt.Line2D([], [], marker="o", ls="", ms=10, color=BLUE, label="Built on something the model already does"),
-               plt.Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new"),
-               plt.Line2D([], [], marker="D", ls="", ms=9, color=GREY, label="Diamond: taught at a new marker")]
+    handles = [Line2D([], [], marker="o", ls="", ms=10, color=BLUE, label="Built on something the model already does"),
+               Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new"),
+               Line2D([], [], marker="D", ls="", ms=9, color=GREY, label="Diamond: taught at a new marker")]
     fig.legend(handles=handles, loc="lower center", ncol=3, frameon=False, bbox_to_anchor=(0.5, -0.07))
     save(fig, "q2_r_vs_prior.png")
 
