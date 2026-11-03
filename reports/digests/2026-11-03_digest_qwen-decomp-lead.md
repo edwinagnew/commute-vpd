@@ -27,7 +27,7 @@ Job 49673, MATS cluster L40, $0, about 77 min, read steps 10, 20 and 50 of the s
 - The notebook was not re-executed; the stored figure outputs in cells 25 and 28 may lack the three new points. Cell 36 links the current figure.
 
 ## Log
-Republished as v194. To stay within the main-page length rule the clerk trimmed about 300 words, some of them in other leads' text (re-gating and teacher-training claim rows, Q1 and Q5, Baselines, the teacher-training card, two other decision cards). It reports no number or verdict changed; I saw the removed lines but did not compare each with its replacement. The list is in the v194 changelog row. `git show 945d5111` reverts cleanly by file if an owner objects.
+Republished as v194. To stay within the main-page length rule the clerk trimmed about 300 words, some of them in other leads' text (re-gating and teacher-training claim rows, Q1 and Q5, Baselines, the teacher-training card, two other decision cards). It reports no number or verdict changed; I saw the removed lines but did not compare each with its replacement. The list is in the v194 changelog row. The old text is in commit `945d5111` if an owner objects; a revert has not been tried.
 
 ## Other
 Nothing in `blocked.txt` is ours (regating-lead's question is its own). Friction noted: log publish refusal (above), `check.py` quiet flag, foreground `wait-job` re-arms.
