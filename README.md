@@ -48,6 +48,8 @@ meant the split of a finished update, and that request was never built as asked
 - Outside share of a LoRA (E9): 0.48 to 0.71 of its energy against 0.55 to 0.76 for a random update, at every step; a
   fine-tune reads 0.27 against 0.53 (E8). The LoRA sits outside the subcomponents about as much as noise does.
 
+Current plan, Qwen D2, anchor 1 (2026-11-03, `reports/plans/2026-11-03_plan_e78-anchor1.md`, E78, $0): E61's template fine-tune retrained unchanged, saving δW in fp32 at E69's steps plus step 3, so the split can read it; coded and filed, not run yet.
+
 Current plan, Qwen D1, latest (2026-11-03, `reports/plans/2026-11-03_plan_e72-d1-second-test.md`, E72, $0, measures only): D1 blocked on day 1, the pass test under the original masks cannot yet pass anything on KL (`reports/analyses/2026-11-03_analysis_e68-d1-pass-test.md`); what the test becomes is the user's call, log card `decision-d1-test`.
 
 Current plan, whole fleet (2026-11-03, `reports/plans/2026-11-03_plan_qwen-reorient.md`, user): the Qwen deliverables of 2026-10-28 by 2026-11-11. D1 (`qwen-decomp-lead`): a pass test that can fail a bad placement on the saved updates, else teacher training as the map; D2 (`qwen-rl-lead`, new): the GRPO loop, null and own-samples SFT, δW saved; D3: the route-split and placement rows on every arm with a cheap comparator beside each (`baseline-lead`, secondary). The 67M lines below are stopped; the fast lane (reviews only for gated runs, two amendments per E-code, gate at $60 / 6 h, session budget $100) applies.

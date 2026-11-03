@@ -107,12 +107,13 @@ def resume(path: Path, params: Mapping[str, Tensor], W0: Weights, opt: Any,
 def train(model: Any, W0: Weights, batch_at: Callable[[int], Sequence[Item]], r: Recipe, axes: dict[str, list[Tensor]],
           reads: set[int], grid: Sequence[float] | Mapping[str, Sequence[float]], keep: set[int],
           save: Callable[[int, dict[str, Tensor]], None], on_step: Callable[[dict[str, Any]], None], ckpt: Path,
-          pause: int) -> int:
+          pause: int, dW_of: Callable[[Mapping[str, Tensor], Weights], dict[str, Tensor]] = delta) -> int:
     """r.steps steps from W0 (or from `ckpt` when it exists). After each step `on_step` gets its record (with `kl` per
     axis and `crossed` at read steps); it runs inside the training context, so it may read the model as it stands (the
     early checks). After a read step t < r.steps that is a multiple of `pause`, the state goes to `ckpt` and t is
     returned; at the end `ckpt` is deleted and r.steps returned. `grid` is one list for every axis or one per axis
-    (E45 Amendment 2: the maths axis also saves at the decisive point's target)."""
+    (E45 Amendment 2: the maths axis also saves at the decisive point's target). `dW_of` is what `save` is given
+    (default bf16; E78 passes `qwen_rl.delta_fp32`)."""
     assert r.steps in keep and keep <= reads
     per = grid if isinstance(grid, Mapping) else dict.fromkeys(axes, grid)
     n_open = sum(len(per[a]) for a in axes)
@@ -120,14 +121,14 @@ def train(model: Any, W0: Weights, batch_at: Callable[[int], Sequence[Item]], r:
         opt = adamw(params, r.lr)
         sched = lr_schedule(opt, r.warmup, r.steps, r.schedule)
         start, done, saved = resume(ckpt, params, W0, opt, sched) if ckpt.is_file() else (0, set(), set())
-        prev = (start, delta(params, W0)) if start and len(done) < n_open else None
+        prev = (start, dW_of(params, W0)) if start and len(done) < n_open else None
         for t in range(start + 1, r.steps + 1):
             rec = one_step(model, params, W0, opt, sched, batch_at(t), r, t)
             if t in reads:
                 rec["kl"] = {a: mean_kl(model, rows, W0, None) for a, rows in axes.items()}
                 new = [x for a, k in rec["kl"].items() for x in crossed({a: k}, done, per[a])]
                 rec["crossed"] = [{"axis": a, "grid": g, "lo": prev[0] if prev else None, "hi": t} for a, g in new]
-                dW = delta(params, W0) if new or t in keep or len(done) + len(new) < n_open else None
+                dW = dW_of(params, W0) if new or t in keep or len(done) + len(new) < n_open else None
                 if dW is not None and (new or t in keep):
                     save(t, dW)
                     saved.add(t)
