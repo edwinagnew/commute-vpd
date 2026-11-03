@@ -24,6 +24,8 @@ a single measurement, or outside the current stage. That is fine as long as the 
      running.
    - **Which arm checks the apparatus itself, and does it run first?** Name the control that must pass for any other
      arm to be readable (W₀, identity, do-nothing) and put it first in the run order, alone, with an early-stop rule.
+     Say what it can fail on, in its name too: E34's C2 read 0 by construction, so it tested nothing, and two other
+     experiments' different controls were also called C2.
      If the proposal reproduces a reference procedure (a warm start from a released checkpoint, a refit, a replay),
      list every way the recipe differs from the reference's end state: optimizer state and schedule position,
      adversary or sampler state, data, coefficients. Remove each difference or name it as what the control tests.
@@ -32,6 +34,15 @@ a single measurement, or outside the current stage. That is fine as long as the 
      the predictions use, plus one positive control). Give each one's expected value at W0, for the do-nothing
      reference and for the control. Cut any number that no prediction or decision uses, and any without an expected
      value. If this list is long, the experiment is too big: split it or drop arms.
+   - **What do the early guards read?** Each guard logs its reading and its projection even when it passes (E59's silent
+     step-20 guard hid a 4-6 min estimate that took 15.6). Its bar comes from a batch sd, not one reading (E59 stopped
+     at 5.0088 against 5.0). After a recipe change, a first-minute value tests what the change is for, not a line
+     extrapolated from the old run (E61 arm 0). A fine-tune of a model new to the project also gets a rate grid, and
+     someone reads generated answers against its "learned" rule (E45's rules passed at step 2-3).
+   - **What must be saved for a later audit?** Whatever is small and would otherwise need a GPU to rebuild: a per-state
+     summary JSON, the full vector behind a top-k (E48's 9,881 drops, ~40 KB), a keyed task's selection pool, both units
+     of a reading, labelled by window (E54), and the scored states in a small dtype, in `results/large/`. These are files
+     to re-read, not numbers the run reports, so the cut above does not apply to them.
 3. Restate the project goal in one or two sentences and how the proposal serves it. Write that and the answers above
    at the top of the plan report. If the proposal is in an approved class (below), go ahead and tell the user in one
    line which class it falls in. Otherwise put the check to the user and wait for their confirmation before writing
