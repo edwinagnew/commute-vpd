@@ -1,0 +1,11 @@
+{
+ "filed": "2026-11-03T15:10:32+00:00",
+ "question": "On a clean Qwen3-1.7B, is the task, the model, or the update the reason a small update moves it so far and its pieces each nearly reproduce the fine-tuned model?",
+ "control": {"rule": "u1 on 128 maths rows reproduces E72: W0 entropy 0.6102, FT entropy 1.5081, FT NLL 1.8978, each within 1e-3 relative; else stop", "expected": "holds"},
+ "W0_text": {"rule": "NLL minus entropy of W0, per row set: 'overconfident' if > 0.5, else 'calibrated'", "blind_to": "which positions", "expected": "maths overconfident (reads 1.46 on 128 rows); web calibrated, medium lean; a1 no lean", "control": "web rows are pretraining-like text"},
+ "sharp": {"rule": "per update, ratio K(W0 || W0 + 0.1 dW) / K(W0 || W0 + dW): a smooth quadratic path reads about 0.01; 'sharp' if > 0.25, 'smooth' if < 0.05, else 'between'. Edge: K at t=1 below 1e-4 is unscored", "expected": "u1, u2, u4 sharp, medium lean; u3 between, low lean"},
+ "null_same": {"rule": "per update, K(W0 || W0 + gauss) and with perm, against K(W0 || W0 + dW) at t = 1: 'any direction' if the null's K is at least 0.5 of dW's, else 'this update'", "expected": "no lean; E68 matched KL with a Gaussian at smaller scale so this read is at dW's own norm"},
+ "precision": {"rule": "no label: K(W0 || rounded), K(W0 || bf16 autocast), K(W0 || W0 with 0.2% relative noise), and entropy, reported beside K(W0 || W0 + 0.01 dW)", "expected": "no lean"},
+ "blocks": {"rule": "no label on u1: K(W0 || one block's dW) for 28 blocks, attention alone, MLP alone, read for one block dominating", "expected": "no lean"},
+ "detail": {"rule": "no label: W0 and FT NLL, entropy, accuracy by target's turn and by W0's top probability; the 30 positions with largest KL", "expected": "no lean"}
+}
