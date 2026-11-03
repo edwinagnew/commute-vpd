@@ -40,7 +40,7 @@ silently. A plan restates the user's request in the Terms' words, and it is that
 - `GOALS.md` = the aim (user-owned). `decisions.md` = working choices, revisable.
 - `src/commute/` = everything shared between experiments. `artifacts/`, `data/` = downloads, gitignored, untrusted
   (keep our scripts out of them, pass paths as arguments). `cluster/` = Slurm scripts; read `cluster/README.md`.
-- `~/commute-agents/fleet/` = the harness that runs the agents (`regating-lead`, `commute-lead`) on the dev node: one
+- `~/commute-agents/fleet/` = the harness that runs the agents (one clone per lead; `fleet/status` lists them) on the dev node: one
   copy outside this repo, its own git repository since 2026-10-27; `README.md` there. On the dev node, Python, tests
   and lint run only through `~/commute-agents/fleet/cpu-run` (a hook refuses them otherwise).
 
@@ -140,12 +140,10 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   per claim with its reference on the same axes, about two numbers and no codes per sentence, and
   `check.py` run on the file before it is called done.
 - Concerns about existing claims go in a review report, not inline boxes.
-- Compute follows `../guides/GPU_Platforms_Guide.md`. Training, fine-tuning, or more than one benchmark forward pass
-  goes to a GPU, never local CPU. Route for the earliest results, not the
-  lowest $/h (user, 2026-10-20; this overrides `../CLAUDE.md`'s cluster-first and no-over-provisioning defaults for
-  this project): runs of ≤ 30 min go to the MATS cluster's `debug` QoS (`ssh e.agnew@185.141.218.207`, account
-  `c11`, partition `compute`, `../guides/mats_cluster_handbook.md`; record job IDs; caches in `/ephemeral/$USER`),
-  and to RunPod if not started within 10 min. Longer runs go straight to RunPod via remote-kernels (one GPU, a 4090 or
+- Compute: training, fine-tuning, or more than one benchmark forward pass goes to a GPU, never local CPU. Route for the
+  earliest results, not the lowest $/h (user, 2026-10-20): runs of ≤ 30 min go to the MATS cluster's `debug` QoS (agents
+  run on its dev node; account `c11`, partition `compute`, `/mnt/nw/share/skills/mats-cluster/SKILL.md`; record job IDs;
+  caches in `/ephemeral/$USER`), and to RunPod if not started within 10 min. Longer runs go straight to RunPod via remote-kernels (one GPU, a 4090 or
   faster, an H100 for runs over ~1 h; pods `commute-<experiment>-<id>`). For the Qwen line only, not the other lines, for now (user, 2026-10-27):
   a longer run that fits an L40 may use the cluster's `normal` QoS when the queue is empty at submission.
 - **Every GPU run goes through `/pod-runner`** (`.claude/skills/pod-runner/SKILL.md`): the lead writes the brief and
