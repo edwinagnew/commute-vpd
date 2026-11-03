@@ -71,3 +71,18 @@ def factor(tau_up: float, tau_clean_x: float) -> str:
     if tau_up <= LOW:
         return "both" if tau_clean_x <= LOW else "upstream activations"
     return "own and later masks" if tau_clean_x <= LOW else "neither"
+
+
+def stochastic(tau_all: float) -> str:
+    """Amendment 2: the whole update under VPD's stochastic masks."""
+    if math.isnan(tau_all):
+        return "unread"
+    return "carries" if tau_all >= 0.25 else "deaf" if tau_all <= 0.05 else "between"
+
+
+def direct_gap(arms: dict[str, tuple[float, float]]) -> str:
+    """Amendment 2, per early block (dW's share of its clean KL through the residual skip alone, Gaussian's). Gaussian's at least 3 times on two blocks."""
+    rs = [ratio(g, d) for d, g in (arms[layer] for layer in EARLY)]
+    if any(math.isnan(r) for r in rs):
+        return "unread"
+    return "amplification" if sum(r >= RATIO for r in rs) >= 2 else "not amplification"
