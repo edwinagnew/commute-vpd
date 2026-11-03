@@ -85,7 +85,7 @@ summary (reward rate, mean length, window share, loss, gradient norm, |δW|, sec
 |---|---|---|---|
 | R step 1, N step 1, F's first batch | rollouts identical token for token across arms | exactly equal | same seed, same W0 |
 | first live step | \|δW\| / (lr √numel) over all matrices | 0.85 to 1.05 (Adam's first step is about lr × sign of the gradient) | measured 0.926, rehearsal job 50077 (E45's 0.76 was under warm-up, so not comparable) |
-| first live step | KL(W0 ‖ W_1), per token on H | 0.0015 to 0.02 | E45 own at 1e-6: 0.0056 on the maths rows |
+| first live step | KL(W0 ‖ W_1), per token on H | 0.01 to 0.06, scaled by (first rate / lr)² | measured 0.028, sanity job 50310; the guessed 0.0015-0.02 would have stopped the run at step 1 |
 | every step | loss and gradient norm finite | | |
 | step 20, R and N | mean reward over steps 11-20 minus over steps 1-10 | above −0.05 | branch R3; expected near 0 |
 | step 1 | reward rate | 0.60 to 0.88 | E45's T = 0.7 strict rate 0.83; T = 1 is expected lower |

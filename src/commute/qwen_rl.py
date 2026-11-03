@@ -310,8 +310,18 @@ def score_all(pred: dict[str, Any], A0: dict[str, Any], R: dict[str, Any], N: di
 
 # ----------------------------------------------------------------------------- run names, upload check, next stage
 
-RATES = {"1e-6": 1e-6, "3e-6": 3e-6, "3e-7": 3e-7}  # --lr-tag: the plan's rate and the two Amendment 1 reruns
+RATES = {"1e-6": 1e-6, "3e-6": 3e-6, "3e-7": 3e-7, "1e-6w10": 1e-6}  # --lr-tag: the plan's rate, the two Amendment 1 reruns, the probe's warm-up
 DEFAULT_TAG = "1e-6"
+
+
+def warmup_of(tag: str) -> int:
+    """The warm-up steps a rate tag names: `1e-6w10` is 10, `1e-6` is 0."""
+    return int(tag.split("w")[1]) if "w" in tag else 0
+
+
+def rate_at(lr: float, warmup: int, t: int) -> float:
+    """The rate of step t (t counts from 1): lr · t / warmup up to `warmup`, so step 1 is not at rate 0, then lr."""
+    return lr * t / warmup if t < warmup else lr
 
 
 def rate_names(shared: str, family: str, tag: str) -> tuple[str, str]:
@@ -362,6 +372,64 @@ def next_stage(tag: str, R: dict[str, Any], N: dict[str, Any], f: dict[str, Any]
         if not res.get("done"):
             return say(stage, tag, f"{note}: {stage} at {tag}")
     return say("score", tag, f"{note}: N and F are done")
+
+
+# ----------------------------------------------------------------------------- the recipe probe (results/predictions_probe.json)
+
+
+def cause_test(rule: dict[str, Any], low: dict[str, Any], lowest: dict[str, Any], plan: dict[str, Any]) -> dict[str, Any]:
+    """One F step's kept mean change at 3e-7, 1e-7 and 1e-6 ({"mean", "se"} each; a run not done is a miss)."""
+    def has(f: dict[str, Any]) -> bool:
+        return ok(f.get("mean")) and ok(f.get("se"))
+
+    parts = {"low": has(low) and above(low["mean"], 0.0) and at_least(low["mean"], r9(rule["se_mult"] * low["se"])),
+             "lowest": above(lowest.get("mean"), 0.0),
+             "reproduces": has(plan) and at_most(abs(plan["mean"] - rule["reference"]), r9(rule["reference_se_mult"] * plan["se"]))}
+    return {**parts, "holds": all(parts.values())}
+
+
+def probe_reading(run: dict[str, Any], steps: int) -> dict[str, Any]:
+    """An arm's numbers for the recipe rule; finished only with all its steps and `done`."""
+    rows, reads = run.get("steps", []), run.get("reads", {})
+    done = bool(run.get("done")) and len(rows) == steps
+    return {"finished": done, "reward_change": reward_change([s["reward_rate"] for s in rows], steps) if done else None,
+            "kl_first": reads.get("1", {}).get("kl"), "kl_last": reads.get(str(steps), {}).get("kl"),
+            "delta_r_last": reads.get(str(steps), {}).get("delta_r")}
+
+
+def damaged(rule: dict[str, Any], x: dict[str, Any]) -> bool:
+    """Reward over the second half minus the first at or under the limit, or KL at the last step over its limit; a finished
+    run with no reading counts as damaged."""
+    return not (ok(x["reward_change"]) and ok(x["kl_last"])) or at_most(x["reward_change"], rule["reward_change_at_most"]) \
+        or above(x["kl_last"], rule["kl_last_above"])
+
+
+def keeps_gain(rule: dict[str, Any], plain: dict[str, Any], warm: dict[str, Any]) -> bool:
+    """Warm-up's ΔR at the last step at least half of no warm-up's: min(b, b/2), so that a zero or negative b asks only
+    that warm-up is no worse; a missing ΔR is a miss."""
+    b, x = plain["delta_r_last"], warm["delta_r_last"]
+    return ok(b) and at_least(x, r9(min(b, rule["delta_r_share"] * b)))
+
+
+def recipe_rule(rule: dict[str, Any], plain: dict[str, Any], warm: dict[str, Any], low: dict[str, Any]) -> dict[str, Any]:
+    """The filed rule from `probe_reading` of r1e-6, r1e-6w10, r3e-7. choice: a run's name, "stop" (tell the user), or
+    "incomplete" (a run the rule needs has not finished: rerun it; no choice is read from a partial run)."""
+    def say(choice: str, why: str, x: dict[str, Any] | None = None) -> dict[str, Any]:
+        return {"choice": choice, "why": why, "delta_r_not_positive": x is not None and not above(x["delta_r_last"], 0.0)}
+
+    if not (plain["finished"] and warm["finished"]):
+        return say("incomplete", "r1e-6 and r1e-6w10 must both finish")
+    d_plain, d_warm = damaged(rule, plain), damaged(rule, warm)
+    if d_plain and d_warm:
+        if not low["finished"]:
+            return say("incomplete", "both damaged: r3e-7 must finish")
+        return say("stop", "all three damaged: tell the user") if damaged(rule, low) else say("r3e-7", "both damaged, r3e-7 is not", low)
+    if d_plain or d_warm:
+        return say("r1e-6w10", "only warm-up is undamaged", warm) if d_plain else say("r1e-6", "only no warm-up is undamaged", plain)
+    smaller = above(plain["kl_first"], 0.0) and ok(warm["kl_first"]) and at_most(r9(rule["kl_first_ratio"] * warm["kl_first"]), plain["kl_first"])
+    if keeps_gain(rule, plain, warm) and smaller:
+        return say("r1e-6w10", "both undamaged; warm-up keeps the gain with a smaller first step", warm)
+    return say("r1e-6", "both undamaged; warm-up loses the gain or its first step is not smaller", plain)
 
 
 # ----------------------------------------------------------------------------- batches
@@ -522,9 +590,10 @@ def weighted_step(model: Any, seqs: Sequence[Seq], weights: Sequence[float], div
 
 
 def weighted_update(model: Any, params: Mapping[str, Tensor], opt: Any, seqs: Sequence[Seq], weights: Sequence[float],
-                    divisor: int, budget: int) -> dict[str, Any]:
-    """One optimiser step on `weighted_step`, in training mode (gradient checkpointing runs only there), gradients
-    freed after it so the sampler has the memory. All weights 0: no step, since Adam moves on a zero gradient."""
+                    divisor: int, budget: int, rate: float) -> dict[str, Any]:
+    """One optimiser step at `rate` on `weighted_step`, in training mode (gradient checkpointing runs only there), gradients
+    freed after it so the sampler has the memory. All weights 0: no step, since Adam moves on a zero gradient. The rate is
+    set here at every step, so a resume needs nothing but the step number."""
     opt.zero_grad(set_to_none=True)
     if not any(weights):
         return {"live": False, "loss": 0.0, "grad_norm": 0.0}
@@ -532,6 +601,8 @@ def weighted_update(model: Any, params: Mapping[str, Tensor], opt: Any, seqs: Se
     loss = weighted_step(model, seqs, weights, divisor, budget)
     model.eval()
     gnorm = float(torch.nn.utils.clip_grad_norm_(list(params.values()), math.inf))
+    for group in opt.param_groups:
+        group["lr"] = rate
     opt.step()
     opt.zero_grad(set_to_none=True)
     return {"live": True, "loss": loss, "grad_norm": gnorm}

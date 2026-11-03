@@ -18,8 +18,11 @@ from transformers import GenerationConfig, Qwen3Config, Qwen3ForCausalLM
 
 from commute import qwen_rl as q
 from commute.qwen_sft import Seq
+from commute.qwen_train import checkpoint, resume
 
-PRED = json.loads((Path(__file__).resolve().parents[1] / "experiments/qwen_rl/results/predictions.json").read_text())
+RESULTS = Path(__file__).resolve().parents[1] / "experiments/qwen_rl/results"
+PRED = json.loads((RESULTS / "predictions.json").read_text())
+PROBE = json.loads((RESULTS / "predictions_probe.json").read_text())
 
 
 def rec(pid: int, r: int, ids: tuple[int, ...] = (1,), truncated: bool = False, k: int = 0) -> dict[str, Any]:
@@ -133,7 +136,7 @@ def test_cost() -> None:
 def test_predictions_filed_from_the_plan() -> None:
     assert PRED["P0"]["gsm8k"] == {"ref": 0.777, "tol": 0.015} and PRED["P0"]["gsm1k"] == {"ref": 0.782, "tol": 0.015}
     assert PRED["P1"]["learns_min"] == 0.02 and PRED["P1"]["no_gain_below"] == 0.01
-    assert PRED["early"]["dw_ratio"] == [0.85, 1.05] and PRED["early"]["kl_first"] == [0.0015, 0.02]
+    assert PRED["early"]["dw_ratio"] == [0.85, 1.05] and PRED["early"]["kl_first"] == [0.01, 0.06]
     assert PRED["early"]["reward_step1"] == [0.60, 0.88] and PRED["early"]["reward_change_above"] == -0.05
 
 
@@ -253,6 +256,16 @@ def test_config_per_size_and_rate() -> None:
         job.config("full", "1e-6", upload_cap_gb=6)  # the cap flag is for the tiny size
 
 
+def test_warmup_tag() -> None:
+    job = job_module()
+    warm, plain = job.config("full", "1e-6w10"), job.config("full", "1e-6")
+    assert (warm.lr, warm.out, warm.prefix) == (1e-6, "lr1e-6w10", "qwen_rl_lr1e-6w10") and q.DEFAULT_TAG == "1e-6"
+    assert warm.rate(1) == pytest.approx(1e-7) and warm.rate(5) == pytest.approx(5e-7)  # step 1 is not at rate 0
+    assert warm.rate(10) == 1e-6 and warm.rate(11) == 1e-6 and warm.rate(100) == 1e-6
+    assert all(plain.rate(t) == 1e-6 for t in (1, 2, 100))
+    assert [q.warmup_of(t) for t in ("1e-6", "3e-6", "3e-7", "1e-6w10")] == [0, 0, 0, 10]
+
+
 def test_upload_ok(tmp_path: Path) -> None:
     import base64
     import hashlib
@@ -301,6 +314,83 @@ def test_next_stage_branches() -> None:
     assert nxt("3e-7", arm(done=False, stopped="reward change by step 20"))[0] == "lead"  # no third amendment
     assert nxt("1e-6", arm(gain=0.05), arm(done=False, stopped="loss and gradient norm finite"))[0] == "lead"
     assert nxt("1e-6", {"done": True})[0] == "lead"  # done with no GSM8K gain
+
+
+# ----------------------------------------------------------------------------- the recipe probe
+
+
+def test_cause_test() -> None:
+    C = PROBE["cause"]
+    good, low = {"mean": 0.136, "se": 0.2}, {"mean": 0.35, "se": 0.07}
+    assert q.cause_test(C, low, {"mean": 0.1, "se": 0.05}, good)["holds"]  # exactly 5 SE
+    assert not q.cause_test(C, {"mean": 0.35, "se": 0.0701}, {"mean": 0.1}, good)["low"]
+    assert not q.cause_test(C, {"mean": -0.35, "se": 0.01}, {"mean": 0.1}, good)["low"]
+    assert not q.cause_test(C, low, {"mean": 0.0}, good)["lowest"]  # > 0 is strict
+    assert q.cause_test(C, low, {"mean": 0.1}, {"mean": 0.536, "se": 0.2})["reproduces"]  # exactly 2 SE
+    assert not q.cause_test(C, low, {"mean": 0.1}, {"mean": 0.537, "se": 0.2})["reproduces"]
+    assert q.cause_test(C, low, {"mean": 0.1}, {"mean": 0.136, "se": 0.0})["reproduces"]  # the same draws, no noise
+    assert not q.cause_test(C, {}, {}, {})["holds"]  # nothing run
+    assert not q.cause_test(C, {"mean": 0.3, "se": None}, {"mean": None}, {"mean": 0.1, "se": None})["holds"]
+
+
+def probe_run(first: float = 0.8, second: float = 0.8, kl1: float | None = 0.03, kl20: float | None = 0.1,
+              dr20: float | None = 2.0) -> dict[str, Any]:
+    return {"finished": True, "reward_change": second - first, "kl_first": kl1, "kl_last": kl20, "delta_r_last": dr20}
+
+
+def test_probe_reading() -> None:
+    steps = [{"reward_rate": 0.8 if t <= 10 else 0.7} for t in range(1, 21)]
+    x = q.probe_reading({"steps": steps, "reads": {"1": {"kl": 0.03}, "20": {"kl": 0.2, "delta_r": 1.5}}, "done": True}, 20)
+    assert x["finished"] and x["reward_change"] == pytest.approx(-0.1) and (x["kl_first"], x["kl_last"], x["delta_r_last"]) == (0.03, 0.2, 1.5)
+    assert not q.probe_reading({"steps": steps[:19], "done": True}, 20)["finished"]
+    assert not q.probe_reading({"steps": steps}, 20)["finished"]  # died before its last read
+    assert q.probe_reading({}, 20) == {"finished": False, "reward_change": None, "kl_first": None, "kl_last": None, "delta_r_last": None}
+
+
+def test_damage() -> None:
+    R = PROBE["recipe"]
+    assert not q.damaged(R, probe_run())
+    assert q.damaged(R, {**probe_run(), "reward_change": -0.03})  # at the limit
+    assert not q.damaged(R, {**probe_run(), "reward_change": -0.029})
+    assert q.damaged(R, probe_run(kl20=0.31))
+    assert not q.damaged(R, probe_run(kl20=0.3))  # over is strict
+    assert q.damaged(R, probe_run(kl20=None))
+
+
+def choose(plain: dict[str, Any], warm: dict[str, Any], low: dict[str, Any] | None = None) -> str:
+    return q.recipe_rule(PROBE["recipe"], plain, warm, low or {"finished": False})["choice"]
+
+
+def test_recipe_rule_branches() -> None:
+    bad, none = probe_run(0.8, 0.7), q.probe_reading({}, 20)
+    # both undamaged: warm-up needs half the gain and a first step 3x smaller
+    assert choose(probe_run(dr20=2.0), probe_run(kl1=0.01, dr20=1.0)) == "r1e-6w10"  # both exactly at the bar
+    assert choose(probe_run(dr20=2.0), probe_run(kl1=0.01, dr20=0.99)) == "r1e-6"
+    assert choose(probe_run(dr20=2.0), probe_run(kl1=0.0101, dr20=1.0)) == "r1e-6"
+    # one undamaged: that one, whatever its ΔR
+    assert choose(bad, probe_run(dr20=-5.0)) == "r1e-6w10" and choose(probe_run(), bad) == "r1e-6"
+    # both damaged
+    assert choose(bad, bad) == "incomplete"
+    assert choose(bad, bad, probe_run()) == "r3e-7"
+    assert choose(bad, bad, bad) == "stop"
+    # a run not finished gives no choice
+    assert choose(none, probe_run()) == "incomplete" and choose(probe_run(), none) == "incomplete"
+    assert choose(bad, bad, none) == "incomplete"
+
+
+def test_recipe_rule_zero_or_negative_delta_r() -> None:
+    small = {"kl1": 0.001}
+    assert choose(probe_run(dr20=0.0), probe_run(**small, dr20=0.0)) == "r1e-6w10"  # b = 0: at least 0
+    assert choose(probe_run(dr20=0.0), probe_run(**small, dr20=-0.1)) == "r1e-6"
+    assert choose(probe_run(dr20=-2.0), probe_run(**small, dr20=-1.5)) == "r1e-6w10"  # better than b, though below b / 2
+    assert choose(probe_run(dr20=-2.0), probe_run(**small, dr20=-2.0)) == "r1e-6w10"
+    assert choose(probe_run(dr20=-2.0), probe_run(**small, dr20=-2.1)) == "r1e-6"
+    assert choose(probe_run(dr20=2.0), probe_run(**small, dr20=-0.1)) == "r1e-6"  # b > 0: a warm-up at or below 0 fails
+    assert choose(probe_run(dr20=None), probe_run(**small)) == "r1e-6" and choose(probe_run(), probe_run(**small, dr20=None)) == "r1e-6"
+    assert choose(probe_run(kl1=0.0), probe_run(kl1=0.0)) == "r1e-6"  # no first step to be smaller than
+    R = PROBE["recipe"]
+    assert q.recipe_rule(R, probe_run(dr20=0.0), probe_run(**small, dr20=-1.0), {})["delta_r_not_positive"]  # flagged, chosen stands
+    assert not q.recipe_rule(R, probe_run(dr20=2.0), probe_run(**small), {})["delta_r_not_positive"]
 
 
 # ----------------------------------------------------------------------------- the tiny model
@@ -474,9 +564,9 @@ def test_weighted_update_no_step_when_all_zero() -> None:
     m = tiny()
     params = dict(m.named_parameters())
     opt = torch.optim.AdamW(list(params.values()), lr=1e-3, betas=(0.9, 0.999), weight_decay=0.0)
-    q.weighted_update(m, params, opt, SEQS, [1.0, 1.0, 1.0, 1.0], 1024, 100)  # Adam has moments now: a zero step would move
+    q.weighted_update(m, params, opt, SEQS, [1.0, 1.0, 1.0, 1.0], 1024, 100, 1e-3)  # Adam has moments now: a zero step would move
     before = {k: p.detach().clone() for k, p in params.items()}
-    rec = q.weighted_update(m, params, opt, SEQS, [0.0, 0.0, 0.0, 0.0], 1024, 100)
+    rec = q.weighted_update(m, params, opt, SEQS, [0.0, 0.0, 0.0, 0.0], 1024, 100, 1e-3)
     assert rec == {"live": False, "loss": 0.0, "grad_norm": 0.0}
     assert all(torch.equal(p, before[k]) for k, p in params.items())
     assert not m.training
@@ -489,8 +579,43 @@ def test_weighted_update_first_step_is_lr_sign() -> None:
         p.requires_grad_(False)
     params["o"].requires_grad_(True)
     W0 = {"o": params["o"].detach().clone()}
-    opt = torch.optim.AdamW([params["o"]], lr=1e-3, betas=(0.9, 0.999), weight_decay=0.0)
-    rec = q.weighted_update(m, params, opt, SEQS, [0.5, -0.5, 1.0, 0.25], 1, 100)
+    opt = torch.optim.AdamW([params["o"]], lr=1.0, betas=(0.9, 0.999), weight_decay=0.0)  # the step's rate, not this one
+    rec = q.weighted_update(m, params, opt, SEQS, [0.5, -0.5, 1.0, 0.25], 1, 100, 1e-3)
     assert rec["live"] and math.isfinite(rec["loss"]) and rec["grad_norm"] > 0
     assert q.delta_fp32(params, W0)["o"].abs().max() == pytest.approx(1e-3, rel=1e-3)
     assert m.model.layers[0].self_attn.o_proj.weight.grad is None
+
+
+def test_warmup_resumes_bit_for_bit(tmp_path: Path) -> None:
+    """A warm-up through a checkpoint equals it straight: the checkpoint's group rate is overwritten by the step's."""
+    w = [0.5, -0.5, 1.0, 0.25]
+
+    def start() -> tuple[Any, dict[str, Any], dict[str, torch.Tensor]]:
+        m = tiny()
+        for p in m.parameters():
+            p.requires_grad_(False)
+        params = {"o": m.model.layers[0].self_attn.o_proj.weight.requires_grad_(True)}
+        return m, params, {"o": params["o"].detach().clone()}
+
+    def run(m: Any, params: dict[str, Any], opt: Any, steps: range) -> None:
+        for t in steps:
+            q.weighted_update(m, params, opt, SEQS, w, 1, 100, q.rate_at(1e-3, 3, t))
+
+    def adam(params: dict[str, Any]) -> Any:
+        return torch.optim.AdamW(list(params.values()), lr=1e-3, betas=(0.9, 0.999), weight_decay=0.0)
+
+    m, params, W0 = start()
+    opt = adam(params)
+    run(m, params, opt, range(1, 5))
+    straight = params["o"].detach().clone()
+
+    m, params, W0 = start()
+    opt = adam(params)
+    run(m, params, opt, range(1, 3))
+    assert opt.param_groups[0]["lr"] == q.rate_at(1e-3, 3, 2)
+    checkpoint(tmp_path / "c.pt", 2, params, W0, opt, None, set(), set())
+    m, params, W0 = start()
+    opt = adam(params)
+    assert resume(tmp_path / "c.pt", params, W0, opt, None)[0] == 2
+    run(m, params, opt, range(3, 5))
+    assert torch.equal(params["o"], straight)
