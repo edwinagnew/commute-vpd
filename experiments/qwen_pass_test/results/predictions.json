@@ -1,0 +1,43 @@
+{
+  "plan": "reports/plans/2026-11-03_plan_e68-d1-pass-test.md",
+  "filed": "2026-11-03, before the code; never edited after the run",
+  "question": "D1: under masks from the original model, does the built test separate a good placement from a bad one on each saved update, and does any split reach the faithful line? Does reading A separate on the gain measure?",
+  "general": "Comparisons round to 9 places; <= and >= inclusive. NaN or a missing value is a miss in a control and 'unreadable' elsewhere. Rows: 128 x 256 tokens, batch 1, file order. E40 and gold: maths_rows.json. Template: E57's a1 rows (qr.a1_rows), cut to 256.",
+  "quantities": {
+    "updates": "u1 E40 step 10; u2 gold_1e-5 step 100; u3 a1_1e-6 step 100; u4 E40 step 100, in that order",
+    "reading_B": "masks from Gamma on W0's forward with the state's V', masked forward with the state's U', V', Delta off (amend2.py Reader.row)",
+    "reading_A": "masks from Gamma on the state's own weights and V', same masked forward",
+    "K_B": "KL(FT || masked state), mean over every position",
+    "KD": "K_B(do-nothing)",
+    "K0": "KL(W0 || W0 masked at W0's masks) on the same rows",
+    "r2": "(KD - K_B) / (KD - K0); unscored if KD - K0 < 0.05",
+    "c": "1 - Delta's Sigma-weighted share of the update, stage S",
+    "rho": "r2 / c; undefined if c <= 0.05",
+    "gain_kept": "[NLL(W0 masked at W0's masks) - NLL(state masked)] / [NLL(W0 clean) - NLL(FT clean)], next-token NLL over every position; unscored if the denominator is < 0.05 nats",
+    "w": "half-width of the 95% row bootstrap (seed 0, 2000 draws) of rho_upper - rho_lower",
+    "faithful_line": "K_B <= 1.5 * K0, i.e. r2 >= 1 - 0.5 * K0 / (KD - K0)"
+  },
+  "rules": {
+    "control_reproduce": {
+      "rule": "u1, reading B: K0 and KD within 1e-3 relative of 0.06961319516 and 1.37381065; r2 lower, upper, random within 1e-3 absolute of 0.00127701, 0.06176887, 0.00534283; S shares within 1e-3 of ls 0.36374349, inspan 0.00114357, adjoint 0.00046571, lower 0.71197455, upper 0.52182008; do-nothing r2 0 within 1e-5",
+      "tolerance_basis": "same code, rows and card type as E44 Amendment 2, which reproduced bitwise; 1e-3 is its stored-error bound",
+      "if_misses": "stop the job"
+    },
+    "teeth": {
+      "rule": "per update, reading B: holds when do-nothing misses the faithful line, r2_random is scored, and rho_upper - max(rho_lower, r2_random) > 2w. Otherwise 'no teeth': splits are read and labelled unscored; the job goes on",
+      "edge": "KD <= 1.5 * K0 means the update is too small for do-nothing to fail: 'no teeth'. Unmatched random (factor 1.5, at most 12 evaluations): 'no teeth'. c <= 0.05 for a half: 'no teeth'",
+      "expected": "holds on u1 (0.125 against w 0.002), u2, u4; lean medium on u3, whose KL is small"
+    },
+    "label": {
+      "rule": "per split where teeth hold: 'placed' if rho >= rho_upper - w; 'lost' if rho <= max(rho_lower, r2_random) + w; else 'partial'. 'faithful' separately, by the faithful line",
+      "edge": "if placed and lost both apply, 'lost'. Both splits are always read",
+      "expected": "least squares placed or partial, r2 in [0.06, 0.09] on u2 (E61's masks without V' read 0.074). No split faithful on any update, high lean"
+    },
+    "reading_A": {
+      "rule": "on u1, states do-nothing, lower, upper. Reading A separates when gain_kept(upper) - gain_kept(lower) under A exceeds both twice its own row-bootstrap half-width and half the same difference under B",
+      "edge": "gain unscored: 'unreadable', reported, no stop",
+      "expected": "does not separate, high lean: KL under A read 0.0932 and 0.0926 (E44)"
+    }
+  },
+  "not_a_rule": "Delta's share is reported for every state and fails nothing (decisions.md, 2026-10-29)."
+}
