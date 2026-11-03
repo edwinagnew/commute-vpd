@@ -48,7 +48,7 @@ E44 showed the paper's adversary cannot fail do-nothing when Γ's masks come fro
 and under masks from the original model (reading B) no placement of a step-10 update keeps enough behaviour to pass
 (13% per unit carried). So the test is built from the triple the 67M line settled on, not from the adversary alone:
 
-- Δ untouched is the criterion, not a reading: a map that puts anything in Δ is out. On Qwen the least-squares split is
+- *(Corrected 2026-11-03, see `reports/plans/2026-11-03_plan_e68-d1-pass-test.md`: least squares is exact because 0.36 of the update goes to Δ, and the user's rule of 2026-10-29 allows a small change to Δ.)* Δ untouched is the criterion, not a reading: a map that puts anything in Δ is out. On Qwen the least-squares split is
   exact with Δ untouched, so it is the first candidate, with the adjoint split beside it.
 - Behaviour kept under the state's own masks (reading A) on the task rows, as a ratio to the fine-tuned model's gain.
 - The adversary once per experiment, as a ratio to the unchanged model's floor on the same rows, three seeds.
