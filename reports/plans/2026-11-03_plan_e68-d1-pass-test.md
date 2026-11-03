@@ -68,3 +68,7 @@ update, ~3.5 h with a 6 h limit. Host ~60 GB, GPU ~46 GB as Amendment 2. Results
 ## Not run
 
 Step 1; intermediate gold steps; in-span as a state; web rows and replays; the adversary; RL and null δWs, which do not exist yet.
+
+## Departures found by the code writer (2026-11-03, before the run)
+
+Predictions stay as filed. The template's rows are E57's 64 rows, not 128: the filed text says both, and `qr.a1_rows` makes 64, so its bootstrap is on 64. KD is read through W0's path and do-nothing separately, so the 1e-5 control can fail; the stop fires on E40 step 10 only. `--mem` is 110G, not 80G: Amendment 2 peaked at 74 GB and this cycle repeats four times.
