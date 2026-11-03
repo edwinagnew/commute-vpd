@@ -49,7 +49,7 @@ Work in these classes needs no sign-off. The check is still written, so the reco
    the same code on another card to close a cross-card question; the control a plan already names.
 3. **The steps of an approved plan's decision tree.** A plan the user has confirmed may list branches ("if G1
    fails, do X; if P2 holds, run Y"). Each branch is approved with the plan, including its predictions and its cost.
-4. **Either line's named next steps.** The items on the research log's "What's next" cards for the two lines run in
+4. **The Qwen deliverables' named next steps** (since 2026-11-03, `reports/plans/2026-11-03_plan_qwen-reorient.md`; before that, either 67M line's "What's next" cards). The items on the research log's "What's next" cards for the two lines run in
    parallel since 2026-10-22 (re-gating, Q5: mechanism or leak, faithfulness under Γ, what the switched-on set did;
    commute, Q1: the weak version under reading A), on the existing model, tasks and harness.
 

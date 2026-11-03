@@ -39,4 +39,4 @@
   refused, and the `mv` into it waits at a permission prompt, all night when nobody is there. Terminate the moment the
   results JSON's sha256 matches, before any local file move. Download large files to a project path (e.g.
   `results/<run>_dl/`) and move them into `large/` after the pod is gone.
-- Stop or terminate machines as soon as they are idle. The $40/session `REMOTE_KERNELS_BUDGET` is the budget and the backstop that terminates machines.
+- Stop or terminate machines as soon as they are idle. The $100/session `REMOTE_KERNELS_BUDGET` (2026-11-03; $40 before) is the budget and the backstop that terminates machines.

@@ -73,13 +73,19 @@ process do not get there; less code does.
   lists what differs from the reference's end state (optimizer state and schedule position, adversary state, data,
   coefficients) and either removes each difference or names it as the thing the control tests (E15, 2026-10-21:
   $10 went on an arm before its control showed the recipe drifted on its own).
-- **One review before a paid run** of new or changed measurement code: run the Codex adversarial review on the diff
-  (codex-companion `adversarial-review`, started via Monitor), fix what is real, say what you skipped and why. Codex
-  is out of quota until ~2026-11-18 (user, 2026-10-26); until then spawn a fresh Opus agent that did not write the
-  code or run the analysis, giving it only the scope and the repo path.
+- **Reviews (fast lane, user 2026-11-03; `reports/plans/2026-11-03_plan_qwen-reorient.md`).** A run under the gate
+  gets no pre-run review and no independent check: the lead reads the result, labels it, and moves on. A gated run
+  gets one review, plan and code together, by a fresh Opus agent that wrote neither, given the scope and the repo path
+  (Codex is out of quota until ~2026-11-18). An independent check is for a headline claim only: one that goes into the
+  write-up's answer paragraph.
+- **Two amendments per E-code**, on every line (the Qwen plan's rule 5, general since 2026-11-03). A third is a new
+  plan, or the experiment is dropped with its reading as it stands. A filed rule's band is set from the control and
+  the null read in the same job's first stage, not guessed; a "no call" verdict is reported as what was read and does
+  not open an amendment.
 
-## Gated runs (user, 2026-10-28)
-A run is **gated** when it is expected to cost over $15, to run over 3 h, or to need budget above the session cap. A
+## Gated runs (user, 2026-10-28; thresholds raised 2026-11-03)
+A run is **gated** when it is expected to cost over $60, to run over 6 h, or to need budget above the session cap
+(was $15 and 3 h until 2026-11-03, when the user said the project was under budget). A
 gated run goes ahead only after every gate below, in order; the plan carries a "Gates" section that records each.
 E40 (2026-10-28) is why: an unchecked fine-tune recipe and an unmeasured memory need wasted ~$6.50 and 2 h, and both
 could have been found for $0.
@@ -98,8 +104,8 @@ could have been found for $0.
    first stage of a few minutes, with a stop.
 4. **Early checks in code.** Every stage has filed expected values for its first minutes (first steps, first
    reading), not only its end, and the code stops the job when one is missed.
-5. **Two independent reviews**, each by a fresh agent that wrote neither: the plan against gates 1-4, and the code
-   (the review above). Fix what is real; record what was skipped and why.
+5. **One review**, by a fresh Opus agent that wrote neither: the plan against gates 1-4 and the code, in one brief
+   (two separate reviews until 2026-11-03). Fix what is real; record what was skipped and why.
 6. **The user's go-ahead**, given in chat after seeing the gates' record: the rehearsal's numbers, the cost estimate
    per stage and the stop rules. While it runs, the runner reports at each stage's end; any stop or surprise goes to
    the user before the next paid stage.
@@ -143,7 +149,7 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
 - **Every GPU run goes through `/pod-runner`** (`.claude/skills/pod-runner/SKILL.md`): the lead writes the brief and
   spawns one `pod-runner` agent (Sonnet) in the background per run. The lead never runs `sbatch`, `srun` or `start()`
   inline, and doesn't use a fork for this: a fork re-reads the lead's whole context on every polling turn.
-- Budget: the session's `REMOTE_KERNELS_BUDGET` (`.claude/settings.json`; $40, user 2026-10-21) is the limit, with no
+- Budget: the session's `REMOTE_KERNELS_BUDGET` (`.claude/settings.json`; $100 since 2026-11-03, $40 before) is the limit, with no
   per-run sign-off below it. Plan to stay ~15% under it: the plugin terminates machines when it is hit. Anything more
   needs the user's explicit confirmation. Benchmark a slice first.
 - Credentials (`WANDB_API_KEY`, `RUNPOD_API_KEY`) come from the shell, never a repo file; if one is
