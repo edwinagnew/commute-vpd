@@ -6,3 +6,5 @@ Any lead's clerk may flush any lead's lines, whoever holds `fleet/log-lock`. So 
 reads this file afresh and flushes what it holds then; a line its brief named that is gone was flushed by another
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
+- 2026-11-03 · decisions.md · decisions · remove card decision-counting-large-direction: ask 17 taken by default at 18:08, E70 Amendment 2 runs (largest direction with no covariance with the count, LOW first, then P and N).
+- 2026-11-03 · experiments/TRIED.md · experiments · new row E70 Amendment 2, coded, not run: largest direction with no covariance with the count; the last amendment for E70.
