@@ -158,6 +158,11 @@ All dW files are written by run.py and use the emoticon windows.
 - Labels: lowercase reuses, cipher and broad cipher new, by construction (E60's table).
 - Logs: `finetune`, `a1_finetune`, `a1b_finetune`, `a1b_read`, `a2_read`, `read` (`.log` and `.out`).
 
+## qwen_anchor1 (E78; not run yet, 2026-11-03)
+Qwen3-1.7B, anchor 1 (answer-format template) retrained as E61's `a1_1e-6`, peak 1e-6, cosine, warm-up 10, 100 steps.
+- `dW/a1/step_{1,2,3,5,10,20,50,100}.safetensors` (5.64 GB each, 45.1 GB, **F32**, 196 tensors, `{layers.{i}.{mlp.down_proj,mlp.gate_proj,mlp.up_proj,self_attn.{q,k,v,o}_proj}: tensor}`, the same format as `qwen_rl/lr1e-6w10/dW/R/`): written by `run.py` T. **Step 1 is all zeros** (rate 0): a do-nothing, not to be divided by. Step t has t - 1 moving steps, so steps 2 and 3 line up with E69's steps 1 and 2. Load with `qwen_sft.load`; `split_x` takes them.
+- `answers/step_100_unprompted.jsonl`: step 100's greedy answers on GSM8K test 0-255.
+
 ## qwen_fresh_numbers, qwen_fresh_set, qwen_gsm8k_baseline, qwen_prefix_test
 - jsonl only (2-5 MB each, qwen_prefix_test 116 KB; no weights): fresh GSM8K-style problem sets (`gsm*k.jsonl`, `mgs.jsonl`, `plus.jsonl`, `symbolic.jsonl`), W0's `greedy.jsonl` / `samples.jsonl` on GSM8K, and `copy.jsonl` (prefix test). Plain text, one problem or answer per line.
 
@@ -174,8 +179,9 @@ Qwen3-1.7B. `dW` is `{layers.{i}.{mlp.down_proj,mlp.gate_proj,mlp.up_proj,self_a
 - `checks/size_{gold_1e-5_{8,10,20,50,100},gold_s0,gauss,gauss_big_b1.0556,inspan,inspan_big_b1.3119}_b{scale}_X.safetensors` (5.64 GB, **F32**): the same X in fp32, written by Job S (`size.py`, through `split_x`); these are the ones `split_x` accepts. 64 GB for the checks folder.
 - `checks/gen_{W0,own_s0}.{jsonl,batch}`: generations of the fp32-vs-bf16 check.
 
-## qwen_rl (E69; rehearsal only)
-- `tiny/dW/{R,N,F}/step_{1,3}.safetensors` (5.64 GB each, **F32**): the `--size tiny` rehearsal of the GRPO loop (R = RL, N = shuffled-reward null, F = own-samples SFT); `tiny/rollouts/{R,N,F}/step_*.jsonl` and `.tar`, `tiny/acc`, `tiny/wandb`. 32 GB. No full-size run has written states here yet. Written by run.py.
+## qwen_rl (E69)
+- `lr1e-6w10/dW/{R,N,F}/step_{1,2,5,10,20,50,100}.safetensors` (5.64 GB each, **F32**): the scored arms' δW (R = RL, N = shuffled-reward null, F = own-samples SFT), 116 GB. `lr1e-6w10/acc/{R,N,F}_{gsm8k,gsm1k}.jsonl` per-problem answers at step 100; `lr1e-6w10/rollouts/{R,N,F}.tar` (50-60 MB each). Fetched from W&B by `fetch.py --lr-tag 1e-6w10` (job 50837), each file checked against `results/lr1e-6w10/SHA256SUMS`. `acc/W0_{gsm8k,gsm1k}.jsonl`: W0's, from the untagged fetch.
+- `tiny/dW/{R,N,F}/step_{1,3}.safetensors` (5.64 GB each, **F32**): the `--size tiny` rehearsal of the GRPO loop (R = RL, N = shuffled-reward null, F = own-samples SFT); `tiny/rollouts/{R,N,F}/step_*.jsonl` and `.tar`, `tiny/acc`, `tiny/wandb`. 32 GB. Written by run.py.
 
 ## qwen_sft (E40; updated 2026-11-03)
 - Network-volume copy and regenerated steps are listed above (Network volume, qwen_maps). Here also: `nowarmup/` holds the 28.2 GB copied from the volume (`dW/step_{2,3,5,20,50}.safetensors` BF16 2.82 GB, `adam_step100.safetensors` F32 11.27 GB with meta `step`, `grad_W0.safetensors` 2.82 GB, `SHA256SUMS_volume_only`), `gstats/W0_{maths,fineweb}.safetensors` (F16, 392 tensors, `{site}.mean_g` and `{site}.active` per site, from `qwen_teacher.g_stats`), `sources/{B,D1,D10,G,T0,...}_{fineweb,maths}_seed{S}.safetensors` (F32, 392 tensors, a few KB: the adversary's source arrays for a state `{B,D1,D10,G,T0,...}` and corpus, from `qwen_teacher.adversary`), `step{0,100}_{test,gsm1k}.jsonl`.
