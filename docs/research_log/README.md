@@ -486,5 +486,8 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/methodtable_shares.png": "experiments/method_table/figures/shares.png"
 - "fig/e12_where_gain.png": "experiments/new_vs_existing/figures/amend1_where_gain.png"
 - "fig/e61_log_size.png": "experiments/qwen_recipe/figures/log_size.png"
+- "fig/e70_low.png": "experiments/pcfg_anchors/figures/e70_low.png"
+- "fig/e70_ridge.png": "experiments/pcfg_anchors/figures/e70_ridge.png"
+- "fig/e70_softmax.png": "experiments/pcfg_anchors/figures/e70_softmax.png"
 - "fig/e71_check.png": "experiments/scorecard_ls/figures/check.png"
 - "fig/e71_keep_delta.png": "experiments/scorecard_ls/figures/keep_delta.png"

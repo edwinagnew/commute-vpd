@@ -1,0 +1,28 @@
+<article class="exp missed" id="e70">
+<div class="top"><span class="id">E70</span><span class="chip refuted">missed</span><h3>On a counting pair whose answer is known, does removing the old count hurt the task that reuses it more than the task that needs a new one?</h3><span class="when">2026-11-03 · MATS cluster L40, debug QoS, $0 (jobs 50203 to 50363) · <code>experiments/pcfg_anchors</code> · provisional, no independent check</span></div>
+<p class="one"><strong>The question.</strong> The benchmark line defines "reuses an existing capability" as: a linear readout trained on the pretrained model recovers it, and taking the readout's direction away breaks the fine-tuned behaviour. The removal clause had never been read on a pair whose answer is known by construction.</p>
+<p class="one"><strong>What we did.</strong> A small transformer is pretrained to count the letter a. Two fine-tunes of it: task P answers the count of a plus one (it reuses the count), task N answers the count of b (it needs a new one). We trained probes for the count of a on the pretrained model and removed what they read from the residual at the answer position, block by block. The <em>share of gain lost</em> is the state's extra drop in the log-odds of its answer, beyond the pretrained model's own drop, over the log-odds it gained in fine-tuning. Two probes: a regression probe with one direction, which is the test as asked, and a softmax probe with six directions.</p>
+<p class="one"><strong>What we found.</strong> Removing the one regression direction did nothing, even on the pretrained model, so the filed headline (P loses more than N) misses and says nothing about the definition (first and second figures). Removing the six softmax directions hurts the pretrained model and costs P more than N at blocks 2 to 5, 0.72 against 0.34 at block 5, but N loses far more than predicted (third figure).</p>
+<p class="one"><strong>What it means.</strong> The one-direction test of new against strengthened capabilities is unanswered, not failed. The six-direction reading is a provisional sign that a removal can separate the two by degree: at blocks 2 and 3 it rests on subtracting the pretrained model's drop, which is negative there. Log-odds also overstate lost answers, since these states are near-certain; the share in nats is 0.16 and 0.31 for P at blocks 4 and 5 against 0.002 and 0.013 for N. Whether to try a different single direction is a question for you (section {{n:decisions}}).</p>
+<figure>
+<img src="fig/e70_low.png" alt="The pretrained model's drop in log-odds under each probe's removal, per block, against 20 random directions. Ridge: inside the band everywhere. Softmax: above the band at all six blocks, up to 9.">
+<figcaption><strong>1. Does the removal cost the pretrained model its count?</strong> The one direction, no; the six, yes. Up: the log-odds drop of the model's own answer, per block. Grey: the 95th percentile of random removals of the same size. The right panel is on a scale about twenty times larger.</figcaption>
+</figure>
+<figure>
+<img src="fig/e70_ridge.png" alt="Share of gain lost per block for tasks P and N under the one-direction removal. All within 0.01 of zero.">
+<figcaption><strong>2. Does the one direction cost P more than N?</strong> Neither loses anything. Up: the share of gain lost, ten states per task. Every point lies within 0.01 of zero, so this cannot be read against the definition.</figcaption>
+</figure>
+<figure>
+<img src="fig/e70_softmax.png" alt="Share of gain lost per block for tasks P and N under the six-direction removal. P above N at blocks 2 to 5; equal at blocks 1 and 6.">
+<figcaption><strong>3. Does the six-direction removal cost P more than N?</strong> At blocks 2 to 5, by degree. Same axes as the last figure. The whole P range clears the whole N range by more than the random band there. The solid line subtracts the pretrained model's drop; the dashed line does not, and the raw gap survives at blocks 4 and 5 only.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>Retrained the pretrained model and 20 fine-tuned states (two learning rates, five seeds, per task) from the same code, then six cluster jobs on an L40, about two hours, $0. No independent check.</dd>
+<dt>Found</dt><dd><ul>
+<li>The one regression direction reads the count perfectly from block 2 yet removing it costs the pretrained model nothing; the filed miss is not evidence against the definition. Why it does nothing is unexplained.</li>
+<li>Six softmax directions: P loses more than N at blocks 2 to 5 (0.72 against 0.34 at block 5), N far above the near-zero we predicted; the correlation of the two counts, -0.50, is a candidate, not tested.</li>
+<li>Log-odds overstate lost answers; accuracy after removal was not recorded.</li></ul></dd>
+<dt>Bears on</dt><dd>The benchmark line: new against strengthened capabilities, on a pair with known labels</dd>
+<dt>Moved on</dt><dd>A one-direction amendment awaits your answer. Report <code>reports/analyses/2026-11-03_analysis_e70-existing-new-counting.md</code>, plan <code>reports/plans/2026-11-03_plan_e70-existing-new-counting.md</code>, notebook <code>notebooks/E70_existing_new_counting.ipynb</code>. Not run: a covariance direction, rows with uncorrelated counts, accuracy after removal, a second probe seed.</dd>
+</dl>
+</article>
