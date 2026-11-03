@@ -184,3 +184,92 @@ def one_direction_branch(teeth: Sequence[bool], rows: Sequence[dict[str, Any]]) 
     else:
         branch = "cannot serve"
     return {"branch": branch, "read_at": read_at, "calls_read": calls}
+
+
+# ---- E70 Amendment 2 (rules filed in experiments/pcfg_anchors/results/predictions_e70_a2.json) ----
+
+
+def top_pc_after(x: Tensor, u: Tensor) -> Tensor:
+    """The top principal component of rows x (n, d) after removing the basis u (d, r), as a basis (d, 1), fp32. It lies at
+    right angles to u; u arrives in fp32 and is renormalised here so that only rounding is left along it."""
+    x, u = x.double(), u.double()
+    xc = remove(x - x.mean(0), u / u.norm(dim=0))
+    vals, vecs = torch.linalg.eigh(xc.T @ xc / len(x))
+    assert vals[-1] > 0, "nothing is left after the removal: there is no component to take"
+    return vecs[:, -1:].float()
+
+
+def variance_share(h: Tensor, u: Tensor) -> float:
+    """var(h u) / trace Cov(h), for rows h (n, d) and one unit direction u (d, 1)."""
+    return float((h @ u).var() / h.var(0).sum())
+
+
+def abs_cov(h: Tensor, u: Tensor, y: Tensor) -> float:
+    """|Cov(h u, y)| for rows h (n, d), one direction u (d, 1) and a scalar label y (n,), in float64."""
+    x = (h.double() @ u.double())[:, 0]
+    return float(((x - x.mean()) * (y.double() - y.double().mean())).mean().abs())
+
+
+def class_share(x: np.ndarray, labels: np.ndarray) -> float:
+    """The share of a scalar x's variance lying between the label's classes (the correlation ratio squared), which sees a
+    curved tie that a covariance misses. nan when x is empty or constant."""
+    total = float(((x - x.mean()) ** 2).sum()) if len(x) else 0.0
+    if not total > 0:
+        return math.nan
+    return sum(float((labels == v).sum()) * float(x[labels == v].mean() - x.mean()) ** 2 for v in np.unique(labels)) / total
+
+
+def refit_accuracy(fit_h: Tensor, y: Tensor, read_h: Tensor, c: np.ndarray, u: Tensor, lam_frac: float) -> float:
+    """A ridge refit on rows fit_h with u removed, read as a rounded prediction on rows read_h with u removed, against c."""
+    w, b = fit_ridge(remove(fit_h, u), y, lam_frac)
+    return float((ridge_reading(remove(read_h, u)[None], w[None], b[None])[0] == c).mean())
+
+
+def above_midpoint(after: float, floor: float, before: float) -> bool:
+    """R3': a refit's accuracy after the removal stays above the midpoint of the floor and the reading before it (strict;
+    a tie or a nan is a miss). Not `not erased(...)`, which would pass both."""
+    return after > (floor + before) / 2
+
+
+def same_reading(acc: Sequence[float], ref: Sequence[float], floor: float, ref_floor: float, n: int) -> bool:
+    """R0(a): accuracies per block within one row of n of the reference (inclusive, counted in rows), and the same floor."""
+    return floor == ref_floor and all(abs(x - y) * n <= 1 + 1e-9 for x, y in zip(acc, ref, strict=True))
+
+
+def reproduced(diff: Sequence[float], band: Sequence[float], frac: float) -> bool:
+    """R0(b): per block, the largest difference from the reference's same draws is at most frac x its band (a nan misses)."""
+    return all(d <= frac * b for d, b in zip(diff, band, strict=True))
+
+
+def no_count_branch(rows: Sequence[dict[str, Any]], p_a: Sequence[float], p_v: Sequence[float], class_v: Sequence[float],
+                    read_at: Sequence[int], carries: float) -> dict[str, Any]:  # fmt: skip
+    """The tree, reading R2 (`r2_block`, blocks 1..n in order) under the largest no-count direction v at 1-based blocks
+    read_at. Per block: 'size' (R2 holds, v's class share under `carries`), 'carrier' (R2 holds, v's class share at or over
+    it, or nan), 'specific' (R2 neither or reversal, and P's mean share under the covariance direction exceeds its mean share
+    under v by more than the band, strictly), 'no call' (R2 unreadable), else 'unresolved'. First match wins over the labels:
+    'mixed' (size and specific), 'size explains', 'count-specific at this size', 'carries the classes', 'no call',
+    'unresolved'."""
+
+    def label(b: int) -> str:
+        r, i = rows[b - 1], b - 1
+        if r["call"] == "no call":
+            return "no call"
+        if r["call"] == "holds":
+            return "size" if class_v[i] < carries else "carrier"
+        return "specific" if p_a[i] - p_v[i] > r["band"] else "unresolved"
+
+    by_block = {b: label(b) for b in read_at}
+    got = set(by_block.values())
+    if {"size", "specific"} <= got:
+        branch = "mixed"
+    elif "size" in got:
+        branch = "size explains"
+    elif "specific" in got:
+        branch = "count-specific at this size"
+    elif "carrier" in got:
+        branch = "carries the classes"
+    elif "no call" in got:
+        branch = "no call"
+    else:
+        branch = "unresolved"
+    return {"branch": branch, "by_block": by_block}

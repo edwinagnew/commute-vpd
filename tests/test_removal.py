@@ -161,3 +161,108 @@ def test_erased_is_strict_and_nan_is_not_erased() -> None:
 )
 def test_one_direction_branch(teeth: list[bool], calls: list[str], branch: str) -> None:
     assert RM.one_direction_branch(teeth, [{"call": c} for c in calls])["branch"] == branch
+
+
+def test_top_pc_after_is_the_largest_direction_at_right_angles_to_the_basis() -> None:
+    torch.manual_seed(0)
+    x = torch.randn(2000, 5) * torch.tensor([5.0, 3.0, 1.0, 0.5, 0.1]) + 7.0  # off-centre: the mean must not count
+    a = torch.eye(5)[:, :1]
+    v = RM.top_pc_after(x, a)
+    assert abs(float(v[1, 0])) > 0.99 and abs(float(a[:, 0] @ v[:, 0])) < 1e-6
+    assert abs(float(RM.top_pc_after(x, 2 * a)[1, 0])) > 0.99  # a basis slightly off unit length is renormalised
+    with pytest.raises(AssertionError):
+        RM.top_pc_after(torch.ones(10, 1), torch.eye(1))  # zero variance left
+
+
+def test_a_direction_at_right_angles_to_the_covariance_has_no_covariance() -> None:
+    torch.manual_seed(0)
+    y = torch.randn(1000).double()
+    x = torch.randn(1000, 6) * 3
+    x[:, 2] += 2 * y.float()
+    a = RM.pattern_basis(x, y)
+    v = RM.top_pc_after(x, a)
+    assert RM.abs_cov(x, v, y) < 1e-3 * RM.abs_cov(x, a, y)
+    assert RM.abs_cov(x, torch.eye(6)[:, 2:3], y) == pytest.approx(float(y.var()) * 2, rel=0.2)
+
+
+def test_variance_share_sums_to_one_over_a_basis() -> None:
+    h = torch.randn(300, 4)
+    assert sum(RM.variance_share(h, torch.eye(4)[:, i : i + 1]) for i in range(4)) == pytest.approx(1.0, rel=1e-5)
+
+
+def test_class_share_sees_a_curve_a_covariance_misses() -> None:
+    labels = np.array([-2, -1, 0, 1, 2] * 20)
+    curve = (labels.astype(float)) ** 2
+    assert RM.class_share(curve, labels) == pytest.approx(1.0)
+    assert np.corrcoef(curve, labels)[0, 1] == pytest.approx(0.0, abs=1e-9)  # no linear tie at all
+    noise = np.random.default_rng(0).normal(size=len(labels))
+    assert RM.class_share(noise, labels) < 0.15
+    assert RM.class_share(curve, np.zeros(len(labels), int)) == pytest.approx(0.0)  # one class: nothing lies between
+    assert math.isnan(RM.class_share(np.ones(5), np.arange(5)))  # zero variance
+    assert math.isnan(RM.class_share(np.array([]), np.array([], int)))
+
+
+def test_refit_accuracy_reads_through_a_harmless_removal_and_not_a_harmful_one() -> None:
+    torch.manual_seed(0)
+    c = torch.randint(0, 5, (2000,)).double()
+    x = torch.randn(2000, 4).double()
+    x[:, 0] = c
+    y, h = c[:1500], x[:1500]
+    read, want = x[1500:], c[1500:].numpy()
+    assert RM.refit_accuracy(h, y, read, want, torch.eye(4, dtype=torch.float64)[:, 1:2], 1e-6) == 1.0
+    assert RM.refit_accuracy(h, y, read, want, torch.eye(4, dtype=torch.float64)[:, :1], 1e-6) < 0.5
+
+
+def test_above_midpoint_is_strict_and_nan_misses() -> None:
+    assert RM.above_midpoint(0.9, 0.36, 1.0)
+    assert not RM.above_midpoint(0.75, 0.5, 1.0)  # a tie misses, against `not erased`, which would pass it
+    assert not RM.above_midpoint(0.3, 0.36, 1.0)
+    assert not RM.above_midpoint(nan, 0.36, 1.0)
+
+
+def test_same_reading_is_one_row_inclusive_and_needs_the_same_floor() -> None:
+    assert RM.same_reading([0.9975, 1.0], [0.998, 1.0], 0.3575, 0.3575, 2000)  # exactly one row, despite rounding in 0.0005
+    assert not RM.same_reading([0.997, 1.0], [0.998, 1.0], 0.3575, 0.3575, 2000)
+    assert not RM.same_reading([1.0], [1.0], 0.3575, 0.358, 2000)
+    assert not RM.same_reading([nan], [1.0], 0.3575, 0.3575, 2000)
+
+
+def test_reproduced_is_inclusive_and_nan_misses() -> None:
+    assert RM.reproduced([0.0, 0.01], [1.0, 1.0], 0.01)
+    assert not RM.reproduced([0.0, 0.011], [1.0, 1.0], 0.01)
+    assert not RM.reproduced([nan], [1.0], 0.01)
+    assert not RM.reproduced([0.0], [nan], 0.01)
+
+
+def _branch(calls: list[str], p_a: list[float], p_v: list[float], class_v: list[float] | None = None, read_at: tuple[int, ...] = (1, 2)) -> dict:
+    rows = [{"call": c, "band": 0.125} for c in calls]
+    return RM.no_count_branch(rows, p_a, p_v, class_v if class_v is not None else [0.1] * len(calls), read_at, 0.5)
+
+
+@pytest.mark.parametrize(
+    ("calls", "p_a", "p_v", "class_v", "branch"),
+    [
+        (["holds", "neither"], [0.5, 0.5], [0.5, 0.45], None, "size explains"),
+        (["neither", "neither"], [0.5, 0.5], [0.2, 0.45], None, "count-specific at this size"),
+        (["reversal", "neither"], [0.5, 0.5], [0.2, 0.45], None, "count-specific at this size"),  # N over P is no reproduced gap
+        (["holds", "neither"], [0.5, 0.5], [0.5, 0.2], None, "mixed"),  # one block each way: no overall claim
+        (["holds", "neither"], [0.5, 0.5], [0.5, 0.45], [0.5, 0.1], "carries the classes"),  # at the bar: carrying, no size claim
+        (["holds", "neither"], [0.5, 0.5], [0.5, 0.45], [nan, 0.1], "carries the classes"),  # a nan never claims size
+        (["holds", "neither"], [0.5, 0.5], [0.5, 0.2], [0.9, 0.1], "count-specific at this size"),  # a carrier does not undo it
+        (["holds", "no call"], [0.5, 0.5], [0.5, nan], None, "size explains"),
+        (["neither", "no call"], [0.5, nan], [0.5, nan], None, "no call"),
+        (["no call", "no call"], [nan, nan], [nan, nan], None, "no call"),
+        (["neither", "neither"], [0.5, 0.5], [0.375, 0.5], None, "unresolved"),  # exactly the band: not specific
+        (["neither", "neither"], [nan, 0.5], [nan, 0.5], None, "unresolved"),  # a nan mean is not specific
+        (["neither", "neither"], [0.2, 0.2], [0.8, 0.8], None, "unresolved"),  # v costs P more than a_b does, R2 not holding
+    ],
+)
+def test_no_count_branch(calls: list[str], p_a: list[float], p_v: list[float], class_v: list[float] | None, branch: str) -> None:
+    assert _branch(calls, p_a, p_v, class_v)["branch"] == branch
+
+
+def test_no_count_branch_reads_only_the_named_blocks_and_covers_an_empty_list() -> None:
+    assert _branch(["holds", "neither"], [0.5, 0.5], [0.5, 0.45], read_at=(2,))["branch"] == "unresolved"
+    out = _branch(["neither", "neither"], [0.5, 0.5], [0.2, 0.45], read_at=(1, 2))
+    assert out["by_block"] == {1: "specific", 2: "unresolved"}
+    assert _branch(["holds"], [0.5], [0.5], read_at=())["branch"] == "unresolved"
