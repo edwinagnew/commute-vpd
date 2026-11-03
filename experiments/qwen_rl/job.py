@@ -63,7 +63,7 @@ class Config:
     n_gsm1k: int = 1197
     gen_batch: int = 128  # greedy accuracy, as the baseline
     train_tokens: int = 2048  # rows x longest in a training micro-batch: E61's fp32 micro 4 x 512, 30 GB peak on the card
-    read_tokens: int = 8192  # the same for a readout (no graph)
+    read_tokens: int = 2048  # the same for a readout (no graph); 8192 ran out of an L40 beside Adam (job 50077)
     max_rows: int = 512
     tokens_per_row: int = 256  # peak cached tokens per sampling row once finished rows have left; S reads the real peak
     reserved_gb: int = 30  # fp32 model 7, trainable copy 5.6, Adam 11.3, margin: not available to the sampler's cache

@@ -84,7 +84,7 @@ summary (reward rate, mean length, window share, loss, gradient norm, |δW|, sec
 | when | check | must read | source |
 |---|---|---|---|
 | R step 1, N step 1, F's first batch | rollouts identical token for token across arms | exactly equal | same seed, same W0 |
-| first live step | \|δW\| / (lr √numel) over all matrices | 0.95 to 1.05 (Adam's first step is lr × sign of the gradient) | E45 own, step 2: 0.02856 at 1e-6 |
+| first live step | \|δW\| / (lr √numel) over all matrices | 0.85 to 1.05 (Adam's first step is about lr × sign of the gradient) | measured 0.926, rehearsal job 50077 (E45's 0.76 was under warm-up, so not comparable) |
 | first live step | KL(W0 ‖ W_1), per token on H | 0.0015 to 0.02 | E45 own at 1e-6: 0.0056 on the maths rows |
 | every step | loss and gradient norm finite | | |
 | step 20, R and N | mean reward over steps 11-20 minus over steps 1-10 | above −0.05 | branch R3; expected near 0 |
@@ -179,4 +179,15 @@ unless R2 says so.
 
 ## Rehearsal record
 
-*(filled in from the rehearsal job)*
+Jobs 50067-50076 (tiny, all stages, exit codes as designed), 50077 (S full, L40). Rollouts identical across R, N, F. Fetch done.
+The resume ran, but the tiny run's step 3 had all weights zero, so no live step followed it; the restore itself is
+`qwen_train`'s, which E45 used.
+
+S full on an L40: sampler 112 s per 512 samples against `generate`'s 223 s (2.0×, less than the 2-3× expected). Length
+191.2 against 192.3 (se 2.3), reward 0.818 against 0.815 (se 0.017). Train 42 s and 31 s per step. Peak 39.8 GB while
+sampling. Then out of memory in the readout at 8192 tokens per batch, beside Adam's state: lowered to 2048.
+
+**Band changed before filing took effect.** First live step |δW| 0.03477, ratio 0.926 to lr √numel (numel 1,409,286,144),
+outside the guessed 0.95-1.05. Adam moves an entry by lr · |g| / (|g| + 1e-8), and the gradient (rms 3e-6) is
+heavy-tailed, so some entries sit near eps. Band now 0.85-1.05, from this reading; no scored run had started. So the
+divisor is not quite irrelevant: an arm with a smaller gradient moves fewer entries. Reported per arm as gradient rms.
