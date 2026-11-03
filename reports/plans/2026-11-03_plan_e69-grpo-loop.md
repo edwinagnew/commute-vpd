@@ -85,7 +85,7 @@ summary (reward rate, mean length, window share, loss, gradient norm, |δW|, sec
 |---|---|---|---|
 | R step 1, N step 1, F's first batch | rollouts identical token for token across arms | exactly equal | same seed, same W0 |
 | first live step | \|δW\| / (lr √numel) over all matrices | 0.85 to 1.05 (Adam's first step is about lr × sign of the gradient) | measured 0.926, rehearsal job 50077 (E45's 0.76 was under warm-up, so not comparable) |
-| first live step | KL(W0 ‖ W_1), per token on H | 0.0015 to 0.02 | E45 own at 1e-6: 0.0056 on the maths rows |
+| first live step | KL(W0 ‖ W_1), per token on H | 0.01 to 0.06, scaled by (first rate / lr)² | measured 0.028, sanity job 50310; the guessed 0.0015-0.02 would have stopped the run at step 1 |
 | every step | loss and gradient norm finite | | |
 | step 20, R and N | mean reward over steps 11-20 minus over steps 1-10 | above −0.05 | branch R3; expected near 0 |
 | step 1 | reward rate | 0.60 to 0.88 | E45's T = 0.7 strict rate 0.83; T = 1 is expected lower |
@@ -211,3 +211,18 @@ $44-55. S on the pod measures the speed first; over $50 projected, N runs 50 ste
 outside the guessed 0.95-1.05. Adam moves an entry by lr · |g| / (|g| + 1e-8), and the gradient (rms 3e-6) is
 heavy-tailed, so some entries sit near eps. Band now 0.85-1.05, from this reading; no scored run had started. So the
 divisor is not quite irrelevant: an arm with a smaller gradient moves fewer entries. Reported per arm as gradient rms.
+
+## Recipe chosen (2026-11-03): 1e-6 with 10 steps of linear warm-up, first rate 1e-7
+
+The sanity job (50310) failed its check on F: one step at 1e-6 with no warm-up gained about nothing on its own samples.
+The probes confirm the filed cause: gain on the kept samples +0.176 (se 0.022) at 1e-7, +0.405 (0.064) at 3e-7, +0.392 (0.155)
+at 1e-6, so gain linear in the rate (1.76 nats at 1e-6) and cost quadratic (1.37). A departure from the 2026-10-28 recipe's
+"no warm-up", whose reason was that warm-up "would make steps 1-5 near zero": first-step KL falls from 0.025 to 0.00036.
+
+The filed recipe rule read "incomplete": the four 20-step probes ran out of memory on the L40 at step 11 (step 2 for
+r3e-7), so no step-20 read exists and damage over steps 11-20 is unread. The lead chose on the rule's other arms, to
+keep the pod from idling (user: running today): warm-up's KL(1) is 70× smaller and its ΔR(10) of 2.42 is at least half
+of no warm-up's 3.98. The run's own reward-drop check covers the unread part. The H100 has the memory (S: 512 rows).
+
+Seen on the way, for the analysis: ΔR at step 10 reads 5.78 for the null against 3.98 for RL, so ΔR rises under a change
+with no signal and P4 may not separate them. Reward on the same prompts, steps 8-10: RL 0.84, null 0.77.

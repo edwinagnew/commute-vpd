@@ -36,7 +36,7 @@ One RunPod H100 80 GB, any region, **no network volume** (`remote-kernels.toml` 
 
 Set-up: `uv sync --locked --no-default-groups --group dev --group gpu`, `export HF_HOME=/root/hf PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True PYTHONUNBUFFERED=1`. No decomposition is needed. `results/large` arrives as a dangling link; `run.py` replaces it with a real directory.
 
-**Commands**, from the repo root, one background subprocess each, teed to the console, each beginning `set -o pipefail;` so that `tee` does not turn a failure into exit 0. A crash: the same command resumes from the checkpoint (steps 20, 50, 100); only R, N, F resume, A0 and S rerun whole. `<tag>` is the rate: `1e-6` (default; omit `--lr-tag`), `3e-6` or `3e-7`.
+**Commands**, from the repo root, one background subprocess each, teed to the console, each beginning `set -o pipefail;` so that `tee` does not turn a failure into exit 0. A crash: the same command resumes from the checkpoint (steps 20, 50, 100); only R, N, F resume, A0 and S rerun whole. `<tag>` is the rate: `1e-6` (default; omit `--lr-tag`), `3e-6`, `3e-7` or `1e-6w10` (1e-6 after 10 steps of warm-up, as `probe.py`).
 ```
 set -o pipefail; .venv/bin/python experiments/qwen_rl/run.py --stage A0 --size full --usd-per-h <rate> 2>&1 | tee -a experiments/qwen_rl/results/console.log /proc/1/fd/1
 set -o pipefail; .venv/bin/python experiments/qwen_rl/run.py --stage S  --size full --usd-per-h <rate> 2>&1 | tee -a experiments/qwen_rl/results/console.log /proc/1/fd/1
@@ -56,7 +56,7 @@ It checks that every `SHA256SUMS` row of that tag is a committed W&B artifact wh
 |---|---|---|---|---|
 | A0 | ~30 min | `[accuracy W0 gsm8k]` strict_dropped ~0.777, gsm1k ~0.782; `[A0]` pool non-empty, `delta_r` and `kl` ~0 | P0 | `results/A0.json`, `SHA256SUMS`, `run.log` |
 | S | ~15 min | `[S]` sampler vs generate; `projected_usd` | sampler disagrees with `generate` (beyond 3 SE); projected over $50 even with N at 50 steps | `S.json`, `run.log` |
-| R | ~2.4 h | `[check]` reward rate 0.60-0.88; first live step |δW| ratio 0.85-1.05, KL 0.0015-0.02; `grad_norm` far above 1e-8 x sqrt(1.41e9) | a check missed; at step 20 reward change at or below -0.05 (branch R3: N and F do not start) | `R.json`, `SHA256SUMS`, `run.log` after each saved step |
+| R | ~2.4 h | `[check]` reward rate 0.60-0.88; first live step |δW| ratio 0.85-1.05, KL 0.01-0.06; `grad_norm` far above 1e-8 x sqrt(1.41e9) | a check missed; at step 20 reward change at or below -0.05 (branch R3: N and F do not start) | `R.json`, `SHA256SUMS`, `run.log` after each saved step |
 | N | ~2.4 h (half if S cut it) | `step 1's rollouts identical to R's` ok | as R, and the identity | as R |
 | F | ~3 h, of which the first ~1.7 h samples W0's rollouts | identity at the first step of sampling, then as R | as R (no reward-change check) | as R |
 

@@ -1,0 +1,71 @@
+{
+ "accuracy": {
+  "gsm8k": {
+   "k": 1319,
+   "k_fits": 1255,
+   "fits_share": 0.9514783927217589,
+   "truncation_share": 0.01288855193328279,
+   "strict_dropped": 0.7816733067729084,
+   "lenient_dropped": 0.8047808764940239,
+   "strict_all": 0.7581501137225171,
+   "strict_capped": 0.7445034116755117,
+   "lenient_capped": 0.7733131159969674
+  },
+  "gsm1k": {
+   "k": 1197,
+   "k_fits": 1023,
+   "fits_share": 0.8546365914786967,
+   "truncation_share": 0.03258145363408521,
+   "strict_dropped": 0.7888563049853372,
+   "lenient_dropped": 0.8035190615835777,
+   "strict_all": 0.7159565580618212,
+   "strict_capped": 0.6766917293233082,
+   "lenient_capped": 0.6967418546365914
+  }
+ },
+ "accuracy_s": 780.777862071991,
+ "held": {
+  "reward_rate": 0.78515625,
+  "mean_len": 183.6240234375,
+  "window_share": 0.947265625
+ },
+ "held_sha": "9a391644f741747389634fbc5c41bc4556f18a28cb7bfdca703275a03b038a69",
+ "held_s": 88.2730541229248,
+ "pool": 52,
+ "read": {
+  "delta_r": 0.0,
+  "kl": 0.0
+ },
+ "read_s": 48.029648780822754,
+ "peaks": {
+  "gpu_gb": 47.271859712,
+  "host_gb": 11.504832
+ },
+ "P0": {
+  "near": {
+   "gsm8k": true,
+   "gsm1k": true
+  },
+  "zero": {
+   "delta_r": true,
+   "kl": true
+  },
+  "pool": 52,
+  "holds": true
+ },
+ "checks": {
+  "P0": {
+   "holds": true,
+   "near": {
+    "gsm8k": true,
+    "gsm1k": true
+   },
+   "zero": {
+    "delta_r": true,
+    "kl": true
+   },
+   "pool": 52
+  }
+ },
+ "done": true
+}

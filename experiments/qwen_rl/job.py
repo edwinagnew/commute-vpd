@@ -26,6 +26,7 @@ from commute.qwen_rl import (
     Records,
     delta_r,
     prompts_at,
+    rate_at,
     rate_names,
     read_h,
     reward,
@@ -33,6 +34,7 @@ from commute.qwen_rl import (
     rows_for,
     split,
     step_seed,
+    warmup_of,
 )
 from commute.qwen_sft import Seq, Uploader, linears, sha256
 from commute.qwen_vpd import fp32_matmuls, load_target
@@ -84,6 +86,10 @@ class Config:
     @property
     def lr(self) -> float:
         return RATES[self.tag]
+
+    def rate(self, t: int) -> float:
+        """Step t's rate: the warm-up the tag names, then `lr`."""
+        return rate_at(self.lr, warmup_of(self.tag), t)
 
     @property
     def out(self) -> str:

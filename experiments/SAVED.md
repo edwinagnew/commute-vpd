@@ -75,8 +75,8 @@ Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `
 - `amend5_vectors.pt` (`{"a", "a_half2", "S_old"}`) and `amend5_windows.pt` / `amend6_windows.pt` (rows lists, torch.save of `self.rows`). Amendment 4's `amend4_vectors.pt` was written to the same place by code but is not present.
 - Amendments 2, 3 read these states and train nothing; logs `run.out`, `amend{2,3,4,5,6}.out`.
 
-## interchange_67m, method_table, neuron_sparsity, baseline_neurons, baseline_weights, pass_reread, pcfg_anchors, qwen_adversary, qwen_maps, qwen_pass_test
-- Empty (checked 2026-11-03). `pcfg_anchors` run.py and c1b.py write counting-model checkpoints `{"model": state_dict, "step"}` (fp32, 12 MB each) to results/large, none present; `pass_reread` run.py writes bf16 offsets to `regen/`, none present. `qwen_maps`' states are under qwen_sft (see qwen_maps above).
+## interchange_67m, method_table, neuron_sparsity, baseline_neurons, baseline_weights, pass_reread, qwen_adversary, qwen_maps, qwen_pass_test
+- Empty (checked 2026-11-03). `pass_reread` run.py writes bf16 offsets to `regen/`, none present. `qwen_maps`' states are under qwen_sft (see qwen_maps above).
 
 ## jain_readout (E59; 2026-11-02)
 - `readouts.pt` and `readouts_48279.pt` (619 MB each): `probes.state_dict()`, the per-block linear readouts trained on Pile text (Jain et al. 2024 Def 1); `readouts_48279.pt` is the one job 48279 wrote before its stage-0 stop. Written by run.py (`stage0_readouts`); pass it as `saved` to reuse. It reads the twelve E54/E56 states.
@@ -146,6 +146,12 @@ All dW files are written by run.py and use the emoticon windows.
 
 ## open_pair_instruments (E55 C3 ladder, E58 seeds 3-7; 2026-10-31)
 - `{elicit,cipher,rank1,copy}_s{3..7}.pt` (113 MB): dW dicts (fp32) of the four open-pair maps at seeds 3-7, E58's recipe, written by `seeds.py` with sha256 in `results/seeds.json`. Seeds 0-2 are open_pair's.
+
+## pcfg_anchors (E70; retrained 2026-11-03, jobs 50203-50363)
+- The counting-model states of E55 Stages A and C1b were lost with the removed `reuse-lead` clone; only these retrained ones exist. Stage A's other arms (HIGH, NEVER, N2, N3, M2, M3, R, W1, W2) and C1's states were not retrained. Same code and seeds; LOW and the task accuracies were checked against `a1_LOW.json` and `c1b.json` (E70's report).
+- `a1/pt_LOW.pt` (34 MB): LOW, 50K steps, fp32; checkpoint with `model` (state_dict), `opt`, `rng`, `cuda_rng`, so a resume continues it. Written by `run.pretrain`.
+- `a2/{N1,N1s1,M}-<hash>_{1000,10000}.pt` (11.3 MB each): task N at 1e-4 seeds 0 and 1, and at 1e-5 seed 0, under their Stage A names. `c1b/{P,N}_{1e-4,1e-5}_s{S}-<hash>_{1000,10000}.pt` (11.3 MB each, 34 files): the other 17 runs of the C1b grid. Together 40 states. Checkpoints `{"model": state_dict, "step"}`, fp32, written by `c1b.finetune`. Label: P reuses, N new, by construction.
+- `e70/probes.pt` (50 KB): `U` (per probe and block, the removed basis; ridge rank 1, softmax rank 6), `ridge_w`, `ridge_b`, `values`. `e70/e70.log`: the run's log.
 
 ## performed_anchor (E53 and Amendments 1, 1b, 2; 2026-10-29/30)
 - `dW_{lowercase,cipher,broad_cipher}_s{0,1}_step{N}.pt` (57 MB): dW dict, bf16 (`{k: v.bfloat16()}`; the run's own check reads the bf16 file against the fp32 gain). lowercase at step 300 only; cipher and broad_cipher at steps 10, 100, 300. Arm B, Adam, Pile text (`lowercase.arm_b_states`); written by run.py `finetune_all`. Load with `torch.load(p, weights_only=True)`, then `.float()`.
