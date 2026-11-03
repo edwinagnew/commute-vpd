@@ -1,4 +1,4 @@
-# Plan: E76, teacher training with masks in its loss (draft, not yet shown to the user)
+# Plan: E76, teacher training with masks in its loss (ask 25, option 1, taken by default 2026-11-03 21:52)
 
 **The request, in the Terms' words.** D1 asks for a map on Qwen3-1.7B that keeps the decomposition faithful for a real
 update. On ask 24 the user chose: the clean-model table is D1's table, and teacher training with masks in its loss is
@@ -47,7 +47,7 @@ terms start at about the same size. Each arm writes its readings every 50 steps 
 `results/large/`; arms resume from saved files.
 
 **Departures from VPD's fit** (launch_config, the decomposition's): no adversary, though 90% of its reconstruction
-samples are adversarial; Γ frozen on W0; only 200 of the alive columns; only V moves; no faithfulness term (with Δ frozen
+samples are adversarial; Γ frozen on W0; only U and V of 200 of the alive columns move; no faithfulness term (with Δ frozen
 it reads the least-squares objective); no hidden-activation terms; Adam at tiny batch; masks from W0's forward, not the
 student's.
 
