@@ -491,6 +491,8 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e70_softmax.png": "experiments/pcfg_anchors/figures/e70_softmax.png"
 - "fig/e70_a1_low.png": "experiments/pcfg_anchors/figures/e70_a1_low.png"
 - "fig/e70_a1_tasks.png": "experiments/pcfg_anchors/figures/e70_a1_tasks.png"
+- "fig/e70_a2_tasks.png": "experiments/pcfg_anchors/figures/e70_a2_tasks.png"
+- "fig/e70_a2_low.png": "experiments/pcfg_anchors/figures/e70_a2_low.png"
 - "fig/e71_check.png": "experiments/scorecard_ls/figures/check.png"
 - "fig/e71_keep_delta.png": "experiments/scorecard_ls/figures/keep_delta.png"
 - "fig/e68_gap_closed.png": "experiments/qwen_pass_test/figures/gap_closed.png"
