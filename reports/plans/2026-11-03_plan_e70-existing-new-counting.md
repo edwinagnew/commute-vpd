@@ -83,3 +83,99 @@ Pruning and reverse fine-tuning of the definition's causal clause (C1b's reading
 
 ## Cost and gates
 $0, cluster `debug`, ~3 jobs of ≤ 30 min with resume (LOW and controls; fine-tunes). Under every gate: no review, the lead reads it.
+
+## Amendment 1 (2026-11-03): remove the direction the count moves the residual along
+
+Amendment 1 of 2 for E70. Rules `experiments/pcfg_anchors/results/predictions_e70_a1.json`. Code `experiments/pcfg_anchors/e70_a1.py`,
+`src/commute/removal.py`, `cluster/e70_a1.sbatch`. $0, `debug`, about 17 minutes, or 2 if LOW's control stops it.
+
+**Taken by default.** Ask 15 (card `decision-counting-one-direction`) was taken by default at 15:28 on 2026-11-03 after two
+hours without an answer, under the fast lane's rule for an ask under the gate and inside the plan. The user has not chosen it.
+
+**Restated.** On LOW, per block, at `=`: the unit covariance of the residual with count(a), on the rows E70's ridge probe was
+fit on, is removed as E70 removes a direction. LOW's own log-odds drop for count(a) is read first against 20 random single
+directions from the same job. Only if LOW loses log-odds are task P and task N read at 10,000 steps, as the share of the
+log-odds gain lost, on E70's definition. Nothing is retrained. No VPD, no Qwen.
+
+**Why this should differ, as reasoning to test.** Regression weights are about the inverse covariance times the
+cross-covariance, so they favour low-variance directions and cancel noise; the covariance with the count is where the count
+moves the residual (Haufe et al. 2014). Zero cross-covariance is the condition for no linear readout (Belrose et al. 2023,
+LEACE). Both are cited from memory and not re-read. The job tests this reasoning: the variance shares, the cosine and the
+refits read it directly.
+
+**Two limits found while coding, so the reasoning is narrower than the ask's.**
+- The zero covariance is with the scalar count. LOW's head is a softmax over count tokens, and LEACE's condition for a class
+  is on the one-hot label, up to six directions here. So after this removal a linear readout of the scalar fails, while a
+  readout of each count class need not. LOW can keep its answers with R3 passing, and a closed test then says this of one
+  scalar direction, not of the six.
+- The low-variance story may not cover late blocks. Since the ridge reads the count perfectly, the variance along w is
+  var(count)/|w|^2 = 0.014, 0.059, 0.39, 0.99, 4.1 at blocks 2-6 (`probes.pt`), growing 300-fold, and E70's removal did nothing
+  at those blocks too. The trace is not saved, so the share is read in this job. w is also mostly outside the softmax span: the
+  part of unit w in that span has size 0.12 to 0.35.
+
+**Departures.** An orthogonal removal, h minus its component along a_b, not LEACE's oblique map (subtract along the covariance, read with the filter), and on
+a scalar count, not a one-hot concept. At `=` only, as E70, so later blocks still read the text. The covariance is with the
+label, not with the probe's output (Haufe's form), which agree where the ridge reads the count.
+
+### Design check
+- **Goal.** `GOALS.md`'s question of new against strengthened capabilities; it needs a causal test with labels known by construction.
+- **Nearest tried.** E70: the ridge direction does nothing on LOW, six softmax directions do. New here: the rank-1 direction
+  chosen by covariance, and accuracy after removal.
+- **Patch or step.** A patch on E70's control, the only route to the one-direction reading the task named. Class 1 (GPU passes on
+  saved states), and taken by default under the fast lane.
+- **Decisions.** Relies on the reuse-line and mechanistic rows and the fast lane's default. No departure from `decisions.md`.
+- **What changes next.** The tree below: closes the one-direction test, gives the reading, or drops one direction as ground truth.
+- **Control first.** R0, then random draws, then a_b on LOW, alone. R3 and R1 stop before any state is read. Nothing is
+  reproduced that differs from E70's control except fp32 rounding, which R0 tests.
+- **Early guards.** R0 stops in the first minute. Every number goes to the log. **Saved.** a_b per block in `results/e70_a1.json`.
+
+### Run order and stops
+1. **R0.** Ridge accuracy and floor on the held rows against `e70.json`, within one row. Then the 20 random drops against E70's
+   same draws, within 1% of its band: same code, rows and card type, so only rounding can differ. A miss stops.
+2. **Control.** a_b, then LOW's drop and count accuracy under it, beside the band, and under w again.
+3. **Why, on LOW only.** A ridge refit on fresh rows, read on the held rows, after a_b and after w. Variance share along a_b,
+   w and random. cos(a_b, w). R3: at blocks 2-6 the refit after a_b is below the midpoint of the floor and the reading
+   before removal; a miss stops. Then R1 with no teeth stops.
+4. **States.** The 20 at 10,000 steps: 20 random shares, then a_b's scored share, raw share, share in nats, accuracy.
+5. **Verdict.** R2 by block, E70's code, then the tree.
+
+### The tree (first match wins, so each case has one branch)
+R2 is read only at blocks where LOW's control has teeth; all blocks are printed. E70's half-percent reversal at block 1, on a
+removal with no effect on LOW, is why.
+- R0 or R3 misses: stop, no branch read, apparatus to the lead.
+- No teeth at any block: **closed**. The one-direction test closes, P and N not read, six directions remain the only reading.
+- A reversal at a read block: **cannot serve**, announced.
+- R2 holds at a read block in 1-5: **separates**. The one-direction reading the task named.
+- A read block in 1-5 unreadable, or every read block unreadable: **no call**, reported, no amendment.
+- Otherwise, including R2 holding at block 6 alone: **cannot serve**. P and N lose alike, so one direction cannot serve as ground truth here.
+
+### Numbers and what each should read
+| Number | At a_b | Random | Do nothing or w |
+|---|---|---|---|
+| LOW's drop | above band at some of blocks 3-6, about 0.3 to 5; low confidence | inside band; band 0.048, 0.132, 0.215, 0.122, 0.117, 0.077 | 0; w: 0.042, 0.027, -0.035, -0.104, -0.122, -0.020 |
+| LOW's count accuracy | at or above about 0.7, lower than clean where there are teeth | at or above 0.99 | about 0.9998 |
+| Refit accuracy | 0.33 to 0.40 (floor 0.3575) | not run | none: 0.38, 0.9975, 1, 1, 1, 1; w: above 0.9 at blocks 3-6 |
+| Variance share | above w and 1/192 at blocks 2-6 | 0.0052 | w: under 1/192 at blocks 2-4, no lean at 5, 6 |
+| cos(a_b, w) | size under 0.5 at blocks 2-6 | | |
+| State band | | E70's ridge band: 0.0042, 0.024, 0.012, 0.019, 0.011, 0.009 | |
+
+**Existing/new shares, filed.** Task P: above the band and below E70's six-direction means of 0.125, 0.238, 0.553, 0.720, 0.564 at
+blocks 2-6, highest at blocks 4-5, since its answer is a function of count(a) and six directions cost it most there. The scored
+share sits above the raw one by LOW's negative drop over the gain, as in E70. Task N: under P at blocks 4-5 and above the band at
+blocks 4-6, up to about E70's 0.20, 0.34, 0.49. N may rise because count(a) and count(b) correlate at -0.50 on those rows; a_b
+is fit on 'C a 40' rows, where the correlation is also -0.50, so it can carry count(b). Weak lean: R2 holds at block 4 or 5.
+Share in nats at most about E70's, P 0.155, 0.308 and N 0.002, 0.013 at blocks 4, 5.
+
+**Dry check, no model.** E70's own 10K ridge shares through `stage_verdict` gave E70's calls, gaps and bands exactly at all six
+blocks. `e70.py` is unchanged and still runs: `removal.py` only gained functions. No code path of this run has met a GPU; its first
+minutes do that.
+
+### Not run
+- LEACE's oblique map, and an erasure of the one-hot count of rank up to 6.
+- The six-direction removal on rows where the two counts are uncorrelated.
+- A refit on 'C b 40' rows.
+- The 1K states, a second LOW or probe seed, any retraining.
+- VPD and Qwen.
+
+### Cost and gates
+$0, one `debug` job. Under every gate: no review, the lead reads it. Amendment 1 of 2.

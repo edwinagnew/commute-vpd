@@ -127,3 +127,37 @@ def test_lookup_edge_cases() -> None:
     empty = RM.lookup_accuracy(np.array([]), np.array([], np.int64))
     assert math.isnan(empty["acc"]) and math.isnan(empty["floor"])
     assert math.isnan(RM.lookup_accuracy(np.array([1.0]), np.array([3]))["acc"])  # one row: no odd half
+
+
+def test_pattern_basis_zeroes_the_cross_covariance() -> None:
+    torch.manual_seed(0)
+    x, y = torch.randn(500, 6), torch.randn(500).double()
+    x[:, 2] += y.float()
+    h = RM.remove(x, RM.pattern_basis(x, y))
+    assert abs(float(RM.pattern_basis(x, y)[2, 0])) > 0.9
+    assert ((h - h.mean(0)).double().T @ (y - y.mean()) / 500).norm() < 1e-5
+    with pytest.raises(AssertionError):
+        RM.pattern_basis(x, torch.ones(500).double())
+
+
+def test_erased_is_strict_and_nan_is_not_erased() -> None:
+    assert RM.erased(0.36, 0.36, 1.0) and not RM.erased(0.68, 0.36, 1.0) and not RM.erased(nan, 0.36, 1.0)
+
+
+@pytest.mark.parametrize(
+    ("teeth", "calls", "branch"),
+    [
+        ([False, False, False], ["holds", "reversal", "no call"], "closed"),  # no teeth: nothing is read, whatever the calls
+        ([True, True, False], ["holds", "neither", "neither"], "separates"),
+        ([False, True, False], ["reversal", "holds", "neither"], "separates"),  # a reversal at a block with no teeth is not read
+        ([True, True, False], ["holds", "reversal", "neither"], "cannot serve"),  # holds and reversal: never both branches
+        ([True, False, False], ["neither", "holds", "neither"], "cannot serve"),  # holds at a block with no teeth is not read
+        ([False, False, True], ["neither", "neither", "holds"], "cannot serve"),  # the output side alone
+        ([True, False, True], ["neither", "neither", "no call"], "cannot serve"),  # the last block unreadable decides nothing
+        ([True, True, False], ["no call", "neither", "neither"], "no call"),  # one side empty or a zero gain at a read block
+        ([True, True, False], ["no call", "holds", "neither"], "separates"),
+        ([False, False, True], ["neither", "neither", "no call"], "no call"),  # the only read block is unreadable
+    ],
+)
+def test_one_direction_branch(teeth: list[bool], calls: list[str], branch: str) -> None:
+    assert RM.one_direction_branch(teeth, [{"call": c} for c in calls])["branch"] == branch
