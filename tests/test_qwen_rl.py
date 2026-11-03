@@ -14,9 +14,10 @@ from typing import Any
 
 import pytest
 import torch
-from transformers import GenerationConfig, Qwen3Config, Qwen3ForCausalLM
+from transformers import BatchEncoding, GenerationConfig, Qwen3Config, Qwen3ForCausalLM
 
 from commute import qwen_rl as q
+from commute.qwen_eval import GREEDY, generate
 from commute.qwen_sft import Seq
 from commute.qwen_train import checkpoint, resume
 
@@ -619,3 +620,96 @@ def test_warmup_resumes_bit_for_bit(tmp_path: Path) -> None:
     assert resume(tmp_path / "c.pt", params, W0, opt, None)[0] == 2
     run(m, params, opt, range(3, 5))
     assert torch.equal(params["o"], straight)
+
+
+# ----------------------------------------------------------------------------- Amendment 1
+
+
+def test_second_seed_keeps_h_and_prompts_and_its_own_folder() -> None:
+    job = job_module()
+    one, two = job.config("full", "1e-6w10"), job.config("full", "1e-6w10", draw_seed=70)
+    assert (one.out, one.prefix) == ("lr1e-6w10", "qwen_rl_lr1e-6w10")  # seed 1 writes where it wrote
+    assert (two.out, two.prefix) == ("lr1e-6w10_s70", "qwen_rl_lr1e-6w10_s70")
+    assert job.config("full", "1e-6w10", draw_seed=69).out == one.out and job.config("full", "1e-6").out == ""
+    assert job.config("full", "1e-6", draw_seed=70).out == "lr1e-6_s70"
+    assert two.seed == one.seed and q.split(1000, two.seed, 8) == q.split(1000, one.seed, 8)  # H, the prompt order, A0
+    assert q.step_seed(two.draw_seed, 1) != q.step_seed(one.draw_seed, 1)
+    recs = [rec(p, r, k=i) for p in range(4) for i, r in enumerate((1, 1, 1, 0, 0, 0, 1, 0))]
+    assert q.null_weights(recs, two.draw_seed, 3) != q.null_weights(recs, one.draw_seed, 3)
+    assert q.artifact_name(two.prefix, Path("dW/R/step_1.safetensors")) == "qwen_rl_lr1e-6w10_s70-R-step_1.safetensors"
+
+
+def amend1() -> tuple[Any, dict[str, Any]]:
+    from commute.jobs import load_experiment
+
+    return load_experiment("qwen_rl", "score_amend1"), json.loads((RESULTS / "predictions_amend1.json").read_text())
+
+
+@pytest.mark.parametrize(("g", "label"), [
+    ({}, "missing"),  # no file
+    ({"n": 0, "diff": None, "se": None}, "missing"),  # an empty pool
+    ({"n": 1, "diff": 1.0, "se": None}, "missing"),  # one problem: no SE
+    ({"diff": 0.0, "se": 0.0}, "no lead"),  # zero SE, nothing differs
+    ({"diff": 0.03, "se": 0.0}, "replicates"),  # zero SE: 2 SE asks nothing more
+    ({"diff": 0.02, "se": 0.01}, "replicates"),  # both ties at 2 count
+    ({"diff": 0.02, "se": 0.0101}, "ambiguous"),  # 2 points, under 2 SE
+    ({"diff": 0.01, "se": 0.001}, "ambiguous"),  # the tie at 1 is not under 1
+    ({"diff": 0.00999, "se": 0.001}, "no lead"),
+    ({"diff": -0.05, "se": 0.01}, "no lead"),  # a lead the other way
+])
+def test_amend1_s1_edges(g: dict[str, Any], label: str) -> None:
+    score, P = amend1()
+    assert score.lead_label(P["S1"], g) == label and score.lead_label(P["S1r"], g) == label
+
+
+def test_amend1_other_rules_edges() -> None:
+    score, P = amend1()
+    assert [score.s2(P["S2"], x, 0.056) for x in (None, 0.015, -0.015, 0.0149, -0.0149, 0.0)] == [
+        "missing", "systematic", "opposite sign", "one-seed walk", "one-seed walk", "one-seed walk"]
+    assert [score.b1(P["B1"], x) for x in (None, 0.024, 0.0239, 0.01, 0.0099, -0.03)] == [
+        "missing", "arrives", "between", "between", "after", "after"]
+    assert [score.a1(P["A1"], x) for x in (None, 0.024, 0.0001, 0.0, -0.025)] == ["missing", "carries", "between", "not", "not"]
+    assert [score.a2(P["A2"], x) for x in (None, 0.02425, 0.0242, -0.01)] == ["missing", "carries", "not", "not"]
+
+
+def test_amend1_pairs_and_relaxed_grader() -> None:
+    score, _ = amend1()
+
+    def r(text: str, fits: bool = True) -> dict[str, Any]:
+        return {"idx": 0, "gold": "1200", "response": text, "fits": fits, "strict": False}
+
+    assert score.ci(r("So the answer is $1,200.")) and score.ci(r("The answer is \\boxed{1200}"))
+    assert score.ci(r("the answer is **1200**")) and not score.ci(r("The answer is 12")) and not score.ci(r("1200"))
+    assert not score.ci(r("The answer is 1200, wait, the answer is 3."))  # the last one stands
+    assert score.paired([]) == {"n": 0, "diff": None, "se": None}
+    assert score.paired([1])["se"] is None and score.paired([1, 1])["se"] == 0
+    a, b = {0: r("x")}, {0: r("x", fits=False)}
+    assert score.lead(a, a, b, score.ci)["n"] == 0  # the drop rule leaves an empty pool
+    assert score.lead({}, a, a, score.ci)["diff"] is None and score.whole({}, a, score.ci)["n"] == 0
+
+
+class TextTok:
+    """Tokens are numbers in the text: enough of a tokenizer for `qwen_eval.generate`."""
+
+    def __call__(self, texts: list[str], return_tensors: str | None = None, padding: bool = False,
+                 add_special_tokens: bool = False) -> Any:
+        ids = [[int(x) for x in t.split()] for t in texts]
+        if not return_tensors:
+            return {"input_ids": ids}
+        toks, mask = q._left_pad(ids, PAD, "cpu")
+        return BatchEncoding({"input_ids": toks, "attention_mask": mask})
+
+    def decode(self, ids: Any, skip_special_tokens: bool = True) -> str:
+        return " ".join(str(int(x)) for x in ids)
+
+
+def test_prefill_is_the_plain_path_token_for_token() -> None:
+    m, tok = tiny(), TextTok()
+    texts = [" ".join(map(str, p)) for p in PROMPTS]
+    plain = generate(tok, m, texts, 1, GREEDY, window=12, max_new=9)  # the window and max_new both cut some rows
+    assert any(r["truncated"] for r in plain) and plain == generate(tok, m, texts, 1, GREEDY, window=12, max_new=9, prefill=None)
+    opening = [" " + " ".join(r["response"].split()[:2]) for r in plain]
+    assert generate(tok, m, texts, 1, GREEDY, window=12, max_new=9, prefill=opening) == plain
+    forced = generate(tok, m, texts, 1, GREEDY, window=12, max_new=9, prefill=[" 40 41"] * len(texts))
+    assert all(r["response"].startswith("40 41") for r in forced) and all(r["response_tokens"] <= 9 for r in forced)
+    assert [r["prompt_tokens"] for r in forced] == [r["prompt_tokens"] for r in plain]

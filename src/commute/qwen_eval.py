@@ -55,13 +55,31 @@ def prompt(tok: Any, question: str) -> str:
     return tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, enable_thinking=False)
 
 
+def _with_openings(tok: Any, texts: list[str], enc: Any, gen: Any, n_ret: int, max_new: int) -> tuple[list[Any], list[int]]:
+    """Per output: its opening's tokens (the tail of its left-padded row in `enc`) put back before the continuation and cut
+    at max_new, and the length of the prompt without the opening."""
+    bare = [len(ids) for ids in tok(texts, add_special_tokens=False)["input_ids"]]
+    n_in, rows, plen = enc["input_ids"].shape[1], [], []
+    for j, row in enumerate(gen):
+        i = j // n_ret
+        n_open = int(enc["attention_mask"][i].sum()) - bare[i]
+        rows.append(torch.cat([enc["input_ids"][i, n_in - n_open:].cpu(), row])[:max_new])
+        plen.append(bare[i])
+    return rows, plen
+
+
 @torch.no_grad()
 def generate(tok: Any, model: Any, texts: list[str], n_ret: int, kw: dict[str, Any],
-             window: int | None = None, max_new: int = MAX_NEW) -> Records:
-    enc = tok(texts, return_tensors="pt", padding=True, add_special_tokens=False).to(model.device)
+             window: int | None = None, max_new: int = MAX_NEW, prefill: list[str] | None = None) -> Records:
+    """`prefill`, one opening per text, is appended to the prompt's text; the record then reads as if the model had written
+    it: the response, its grades and response_tokens count it, prompt_tokens does not, and it uses up max_new."""
+    full = texts if prefill is None else [t + o for t, o in zip(texts, prefill, strict=True)]
+    enc = tok(full, return_tensors="pt", padding=True, add_special_tokens=False).to(model.device)
     out = model.generate(**enc, max_new_tokens=max_new, num_return_sequences=n_ret, **kw)
     gen = out[:, enc["input_ids"].shape[1]:].cpu()
     plen = enc["attention_mask"].sum(1).repeat_interleave(n_ret).tolist()
+    if prefill is not None:
+        gen, plen = _with_openings(tok, texts, enc, gen, n_ret, max_new)
     eos = torch.tensor(model.generation_config.eos_token_id)
     recs = []
     for row, p in zip(gen, plen, strict=True):
@@ -115,15 +133,18 @@ def run_batches(chunks: list[list[int]], step: Callable[[list[int]], Records], b
     return recs
 
 
-def score(tok: Any, model: Any, items: Records, budget_s: float, sink: Path, label: str, batch: int = 128) -> Records:
+def score(tok: Any, model: Any, items: Records, budget_s: float, sink: Path, label: str, batch: int = 128,
+          prefill: list[str] | None = None) -> Records:
     """Greedy answers to `items` in order, graded. Each item has `question` and `gold` (a solution text ending
     '#### N'); its other keys are carried into the record. Each record: the response, strict and lenient grades on the
-    whole response and on the window-capped one, and `fits` (prompt plus response within WINDOW)."""
+    whole response and on the window-capped one, and `fits` (prompt plus response within WINDOW). `prefill`: one opening
+    per item (`generate`)."""
     texts = [prompt(tok, it["question"]) for it in items]
 
     def step(idx: list[int]) -> Records:
         out = []
-        for i, r in zip(idx, generate(tok, model, [texts[i] for i in idx], 1, GREEDY, window=WINDOW), strict=True):
+        opens = None if prefill is None else [prefill[i] for i in idx]
+        for i, r in zip(idx, generate(tok, model, [texts[i] for i in idx], 1, GREEDY, window=WINDOW, prefill=opens), strict=True):
             gold = gold_number(items[i]["gold"])
             capped = grade(r["capped_response"], gold)
             keep = {k: v for k, v in items[i].items() if k not in ("question", "gold")}

@@ -25,11 +25,12 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--size", default="full", choices=("full", "tiny"))
     ap.add_argument("--lr-tag", default=DEFAULT_TAG, choices=tuple(RATES))
+    ap.add_argument("--seed", type=int, default=None, help="a second seed's run (run.py --seed)")
     ap.add_argument("--only", default="")
     ap.add_argument("--root", type=Path, default=Path.home() / "commute-data" / "results-large" / "qwen_rl")
     a = ap.parse_args()
     shared, family = ("", "qwen_rl") if a.size == "full" else ("tiny", "qwen_rl_tiny")
-    out, prefix = rate_names(shared, family, a.lr_tag)
+    out, prefix = rate_names(shared, family, a.lr_tag, a.seed)
     root = a.root / out
     pairs = [line.split(maxsplit=1) for line in (RESULTS / out / "SHA256SUMS").read_text().splitlines()]
     for h, name in pairs:

@@ -52,7 +52,8 @@ class Config:
     tag: str = DEFAULT_TAG  # --lr-tag: the rate, and with it this run's own folder and prefix (`rate_names`)
     upload_cap: int | None = None  # bytes; a larger file stays local (`Uploader`)
     stop_on_bands: bool = True  # a value's band stops the job; a structural check always does
-    seed: int = 69
+    seed: int = 69  # `split`: H, the prompt order and with them A0
+    draw_seed: int = 69  # `step_seed` and `null_weights`: another value is a second seed of the same run, in its own folder
     window: int = WINDOW
     problems: int = 64
     samples: int = 8
@@ -92,13 +93,17 @@ class Config:
         return rate_at(self.lr, warmup_of(self.tag), t)
 
     @property
+    def other_seed(self) -> int | None:
+        return None if self.draw_seed == self.seed else self.draw_seed
+
+    @property
     def out(self) -> str:
         """This run's folder under results/ and results/large/."""
-        return rate_names(self.shared, self.family, self.tag)[0]
+        return rate_names(self.shared, self.family, self.tag, self.other_seed)[0]
 
     @property
     def prefix(self) -> str:
-        return rate_names(self.shared, self.family, self.tag)[1]
+        return rate_names(self.shared, self.family, self.tag, self.other_seed)[1]
 
     @property
     def divisor(self) -> int:
@@ -111,10 +116,11 @@ SIZES = {"full": Config(),
                         n_gsm1k=8)}
 
 
-def config(size: str, tag: str, upload_cap_gb: float | None = None) -> Config:
-    """One frozen config per size and rate. `upload_cap_gb` (the rehearsal's tiny size only) raises the upload cap."""
+def config(size: str, tag: str, upload_cap_gb: float | None = None, draw_seed: int | None = None) -> Config:
+    """One frozen config per size, rate and seed. `upload_cap_gb` (the rehearsal's tiny size only) raises the upload cap;
+    `draw_seed` None keeps the run's own seed."""
     cap = {} if upload_cap_gb is None else {"upload_cap": int(upload_cap_gb * GB)}
-    return replace(SIZES[size], tag=tag, **cap)
+    return replace(SIZES[size], tag=tag, draw_seed=SIZES[size].seed if draw_seed is None else draw_seed, **cap)
 
 
 def read_json(p: Path) -> dict[str, Any]:
@@ -130,6 +136,8 @@ def write_text(p: Path, text: str) -> None:
 
 class Job:
     """One stage's process: its log, results files and checks, and the data and the model every stage shares."""
+
+    log_name = "run.log"
 
     def __init__(self, cfg: Config, stage: str) -> None:
         self.cfg, self.t0, self.stage = cfg, time.time(), stage
@@ -155,7 +163,7 @@ class Job:
     def log(self, msg: str) -> None:
         line = f"[{time.time() - self.t0:7.1f}s] {msg}"
         print(line, flush=True)
-        with (self.res / "run.log").open("a") as f:
+        with (self.res / self.log_name).open("a") as f:
             f.write(line + "\n")
 
     def peaks(self) -> dict[str, float]:
@@ -247,7 +255,7 @@ class Job:
 
     def sampled(self, pids: list[int], n: int, t: int) -> Records:
         """n samples per problem from the weights as they stand, seeded by step: the same in every arm."""
-        torch.manual_seed(step_seed(self.cfg.seed, t))
+        torch.manual_seed(step_seed(self.cfg.draw_seed, t))
         outs = rollouts(self.model, [self.prompt_ids(p) for p in pids], n, self.cfg.window, self.rows, self.tok.pad_token_id)
         return self.graded(pids, outs, n)
 

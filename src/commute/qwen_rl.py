@@ -324,12 +324,14 @@ def rate_at(lr: float, warmup: int, t: int) -> float:
     return lr * t / warmup if t < warmup else lr
 
 
-def rate_names(shared: str, family: str, tag: str) -> tuple[str, str]:
+def rate_names(shared: str, family: str, tag: str, draw_seed: int | None = None) -> tuple[str, str]:
     """(folder under results/ and results/large/, W&B artifact prefix) of a run: the shared ones at the plan's rate, their
-    own under `lr<tag>` at another, so that the 1e-6 files are never overwritten."""
-    if tag == DEFAULT_TAG:
+    own under `lr<tag>` at another, so that the 1e-6 files are never overwritten. `draw_seed`: a second seed's run, under
+    `lr<tag>_s<draw_seed>`; None is the run's own seed."""
+    if tag == DEFAULT_TAG and draw_seed is None:
         return shared, family
-    return str(Path(shared) / f"lr{tag}"), f"{family}_lr{tag}"
+    name = f"lr{tag}" if draw_seed is None else f"lr{tag}_s{draw_seed}"
+    return str(Path(shared) / name), f"{family}_{name}"
 
 
 def artifact_name(prefix: str, rel: Path) -> str:
