@@ -128,9 +128,7 @@ the breaks so they are seen rather than missed; look at each flagged sentence an
    message suggests "the component along X": the user used the word for three operations, so the plain sense is
    flagged too (`reports/reviews/2026-10-20_review_terminology.md`).
    Which documents this covers: `.claude/CLAUDE.md` lists notebooks, analysis reports, result messages and writer
-   briefs. It does not mention reports in `reports/reviews/`, and no role file says a review must pass `check.py`.
-   The retired-term errors apply to any new prose (`.claude/CLAUDE.md` Terms); whether the style flags apply to a
-   review is not decided, so a review's author need not clear them. Open question for the user.
+   briefs. Reviews in `reports/reviews/` need not pass `check.py` (user, 2026-11-03).
 4. Cold-reader pass: read each markdown cell with only the figure above it and ask what was done, what was seen,
    why it matters. Rewrite any cell that fails one.
 5. Execute the notebook top to bottom and commit it executed.

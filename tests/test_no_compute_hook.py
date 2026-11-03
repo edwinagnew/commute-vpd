@@ -37,6 +37,15 @@ def hook(command: str, cwd: Path) -> subprocess.CompletedProcess[str]:
 
 
 REFUSED = [
+    # Text handed to a shell, and a program named by a variable
+    "eval 'python3 x.py'",
+    "eval python3 x.py",
+    "echo 'python3 x.py' | bash",
+    "printf 'cd /\\npython3 x.py\\n' | sh",
+    "cat job.sh | bash",
+    "bash <<'EOF'\npython3 x.py\nEOF",
+    "PY=python3; $PY x.py",
+    "export PY=python3\n${PY} x.py",
     # Past a blank here-document: its operator is not the program, and a later redirection wins standard input
     "<<'EOF' python3 x.py\nEOF",
     "FOO=1 <<'EOF' python3 x.py\nEOF",
@@ -118,6 +127,15 @@ REFUSED = [
 ]
 
 ALLOWED = [
+    "<<'EOF' <x.py\nEOF",
+    # Text handed to a shell that runs no Python
+    "eval ls",
+    "echo 'ls -la' | bash",
+    "bash <<'EOF'\nls\nEOF",
+    "cat README.md | wc -l",
+    "echo python3 x.py | wc -w",
+    "PY=python3; echo $PY x.py",
+    f"PY=python3; {CPU_RUN} $PY x.py",
     # A here-document's lines are not commands, in a substitution inside double quotes too
     "cat > j.sh <<'EOF'\nsrun python exp/run.py\nEOF",
     "git commit -m \"$(cat <<'EOF'\npython3 x.py\nit's a message\nEOF\n)\"",

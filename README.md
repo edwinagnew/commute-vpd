@@ -2,7 +2,7 @@
 
 Can a small gradient update from post-training be *commuted past* a parameter decomposition? Given a VPD
 decomposition of a model's weights into rank-1 subcomponents (Bushnaq, Braun, Clive-Griffin et al. 2026,
-`../papers/pd/vpd_blog_post.md`), and a small update δW from fine-tuning, is there a simple map that returns a
+https://static.goodfire.ai/vpd-blog-post/post.md), and a small update δW from fine-tuning, is there a simple map that returns a
 decomposition of W + δW which is still faithful, with the residual Δ not absorbing the update, so that the
 decomposition stays valid continuously along training? If not, is that because post-training teaches new capabilities
 rather than strengthening existing ones, or because parameter decompositions are too brittle to support the question?
