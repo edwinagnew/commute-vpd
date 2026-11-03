@@ -29,7 +29,5 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 test -f experiments/claim_tests/results/predictions.json || { echo "file the predictions first" >&2; exit 1; }
 rc=0
 .venv/bin/python experiments/claim_tests/run.py "$1" || rc=$?
-echo "=== sstat (peak host memory of this job's steps) ==="
-sstat -j "${SLURM_JOB_ID}.batch" --format=JobID,MaxRSS,MaxVMSize,AveCPU -P || echo "sstat unavailable"
 echo "=== FINISHED (exit $rc) — results in $COMMUTE_REPO/experiments/claim_tests/results/$1.json ==="
 exit $rc
