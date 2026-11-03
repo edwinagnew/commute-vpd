@@ -1,0 +1,54 @@
+{
+ "filed": "2026-11-03, before the code ran; never edited after the run",
+ "question": "E77: on Qwen3-1.7B, the three open points the independent check left on the masked forward: does a change the masked forward computes itself pass; how much of the whole update passes under VPD's partial routing; how far does the update move the forward under masks made on the fine-tuned model?",
+ "plan": "reports/plans/2026-11-03_plan_e77-open-points.md",
+ "review": "reports/reviews/2026-11-03_review_e72-e74-independent-check.md, Not run items 1, 2, 4",
+ "rules": "experiments/qwen_open_points/rules.py, run against edge cases before filing: zero denominators, NaN, inf, ties on band edges, missing reads",
+ "rows": "the first 32 of E74's and E72's rows at 256 tokens: maths on u1 and u2, a1 on u3",
+ "definitions": {
+  "tau": "E74: KL(masked W0 || masked W0 + change) / KL(W0 || W0 + change), mean over every position, ratio of the sums over rows; NaN when the clean KL is under 1e-5",
+  "amp": "E74: sqrt(sum ||masked shift||^2 / sum ||clean shift||^2), logit shifts centred per position",
+  "fixed": "m = g, W0's g, Delta off, as E74's all.json",
+  "stochastic": "m = g + (1 - g) u, d ~ U(0, 1) per position and site, one draw per row, seed 74, as E74's stochastic.json",
+  "routing": "UniformKRouting (param-decomp 177d0cce8, core/recon.py:224-230): at each position, independently, a uniform subset of k sites takes the masked branch and the others output x W^T. k fixed in k196, k147, k98, k49, k12, k0; 'library' draws k uniform on 1..196 per position. Three route draws per row, seed 77000 + k (77197 for library), one for k196 and k0. The update enters as E74's unmasked x dW^T at every site, routed or not",
+  "own-output change": "epsilon ((x V) * g) U added at the seven sites of a block, x being the forward's own input and g W0's; epsilon fitted so the clean KL matches E74's blocks.json dw_<block> K_clean, quadratic rule from 0.01, four rounds, tolerance 0.1",
+  "D": "KL(masked with update off || masked with update on), masks g from Gamma on FT with W0's V, Delta off, E72's T1 row",
+  "R": "KL(W0 || FT), clean, the same rows"
+ },
+ "stops": {
+  "control_reproduce": "first and alone on u1, again on u3 in read 2. k196 against E74's file: K_clean, K_masked, tau, amp and sum K0 within 1e-3 relative. u1 fixed tau 0.0054987383, amp 0.095143979, sum K0 549.59461; u1 stochastic tau 0.012788593, amp 0.12933821, sum K0 360.60332; u3 fixed tau 0.00040950482, amp 0.032121843, sum K0 563.68157; u3 stochastic tau 0.0010740229, amp 0.050701816, sum K0 377.13954",
+  "control_identity": "k0: no site masked, the forward is the clean one: tau and amp within 1e-3 of 1",
+  "control_t1": "first and alone on u1: this read's K, K_on and g_sum against E72's do_nothing and ceiling over the same 32 rows, within 1e-3 relative: sum K 851.98292, sum K_on 854.41871, sum g_sum 61058681",
+  "bands": "a relative error of the first stage that cannot be read",
+  "own_output": "read 1's rule reads 'fails' on any update and block: stop, report, before read 2"
+ },
+ "bands": "Set from the first stage's own control, not guessed. w_amp and w_tau: the larger jackknife relative standard error over rows of u1's amp and tau across the fixed and stochastic k196 reads; w_disp: of u1's D / R. A no-call band is threshold x (1 +- 2 w), with w x sqrt(2) for the steepness ratio. Edges are inside the band. Written to score.json and the log.",
+ "predictions": {
+  "own_output": {
+   "rule": "rules.own_output on u1 and u3 at blocks 0 and 7: amp above the band round 0.5 'passes', below 'fails', inside 'no call'; a clean KL more than 20% from the target 'unmatched'; NaN 'unread'. Overall: any 'fails' is 'fails', any unread or unmatched 'unread', all 'passes' 'passes', else 'no call'",
+   "lean": "passes, medium: the change is in what the masked forward computes, E74's last-matrix control read 0.75-1.0",
+   "w0": "epsilon 0: KL 0, tau unread",
+   "do_nothing": "not applicable: the update is not in this read",
+   "reads_if": "sound: amp near 1 and cosine high. Hook or stream broken: amp near E74's dw at the same block (0.001-0.004 on these rows) or cosine near 0",
+   "blind_to": "direction, which the cosine beside it reads and no rule scores; whether the masked stream is the same network (a same-size shift in another direction passes this rule); one sign and size of epsilon; the change scales outputs, so it says nothing about directions the masks switch off"
+  },
+  "routing_steepness": {
+   "rule": "rules.steep per update and mode: tau at k49 over tau at k196, above the band round 10 'steep', below 'shallow', inside 'no call'; tau at k196 of 0 gives 1 if k49 is also 0, else infinite; NaN 'unread'. Overall: all four the same label, else 'mixed'; any unread 'unread'",
+   "lean": "steep, medium. tau and amp at 'library', fixed and stochastic, are reported beside it with no threshold",
+   "w0": "no change: KL 0, tau unread",
+   "do_nothing": "the whole update: k196 reads E74's values, k0 reads 1",
+   "blind_to": "the training forward's adversarial documents (adv_fraction 0.9 are all-routed with persistent sources, core/masking.py:352-356), whose sources are not read here; which sites matter, routes being drawn uniformly; tau is quadratic, so 100 times in tau is 10 times in amplitude"
+  },
+  "displacement": {
+   "rule": "rules.displaced per update on u1, u2, u3: D / R below the band round 0.02 'small', above 'large', inside 'no call'; R under 1e-5 or a NaN 'unread'. Overall: any 'large' 'large'; any unread 'unread'; all 'small' 'small'; else 'no call'",
+   "lean": "small, medium",
+   "w0": "no change: D 0",
+   "do_nothing": "this read's K and K_on are E72's do-nothing and ceiling on the same rows; the share itself is first read here",
+   "blind_to": "direction and whether D moves towards FT, which K_on minus K reads; masks that already hold part of FT's behaviour leave less to move; gain; KL is quadratic and not symmetric"
+  }
+ },
+ "expected": {
+  "K0 at k196": "0.0671 fixed, 0.0440 stochastic on u1 (E74); 0 at k0",
+  "R": "near E74's K_clean, 0.626 on u1 and 0.276 on u3, the weights against the hook; not a stop"
+ }
+}
