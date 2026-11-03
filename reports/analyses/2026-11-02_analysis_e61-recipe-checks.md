@@ -8,7 +8,7 @@ We read one fine-tune on human maths solutions at two stages of training, and ra
 
 The filed rule reads line C, "size explains the direct share", and it stands. What those words are worth is narrower. Line C rests on the small state alone, step 8, where the gold fine-tune reads like a random change. At the big size the gap to random changes is 0.038 on one measure and 0.045 on the other, above the 0.03 that line B asks for. Random changes scaled to that size do not reach the fine-tune's reading.
 
-Earlier in E61 we found that training rounded its weights and could not see its first small steps, while every reading used full precision. So the gold fine-tune read here was retrained first, with the readers' forward. Three more of its saved states are being read as exploration, with no result yet.
+Earlier in E61 we found that training rounded its weights and could not see its first small steps, while every reading used full precision. So the gold fine-tune read here was retrained first, with the readers' forward. Three more of its saved states were read as exploration: the filed rule for them makes no call, and line C is untouched.
 
 ## What we were trying to test
 
@@ -138,11 +138,27 @@ The gaps, on true masks, against the higher random read off at gold's value:
 - **Unexplained:** why the Gaussian is steeper than the alive change at like KL. No per-position data is saved, and the KL to W0 was never read at small scale.
 - **Bearing on the verdict: none on any gap.** The reads are real; only the search's b² step suffers. It oscillated through six evaluations, its 16-row `matched` false, then undershot, leaving the Gaussian's big read at 1.0203, 0.874 of gold. So its 0.0256 is an extrapolation. The verdict's `unmatched` list is rightly empty, being within 1.15. The filed "2-4 evaluations" was missed; it was an expected value and not a stop. The alive change sets that gap, 0.013 higher.
 
-### Three more gold states: exploration, no result yet
+### Three more gold states: the rule makes no call, and the excess over random appears between steps 10 and 20
 
-*Placeholder. Steps 10, 20 and 50 of the same gold fine-tune are being read through the same path as exploration, by Amendment 3 of the plan. No result is in this report. They are not in the verdict's pick and cannot change the line.*
+![Direct share against size, with steps 10, 20 and 50 as hollow points](../../experiments/qwen_recipe/figures/size_share.png)
 
-The rule, filed first in `results/predictions_size_more.json`, asks whether the share follows the size or how far training has gone. "Follows size": steps 20 and 50 both at least 0.0669, each with size within a factor of 1.15 of step 100's. "Follows training": step 20 under 0.06, with its size in that band. Anything else: reported as read, no call. Step 10 is reported only: a straight line between gold's two states gives about 0.04 at its size, and the alive change about 0.031. `experiments/qwen_recipe/plot_size.py` draws these states as hollow points when their files exist.
+**Reading it.** The filed rule, `results/predictions_size_more.json`, makes no call. It asks whether the share follows the size or how far training has gone, on all 128 rows with truly original masks. "Follows size" needs steps 20 and 50 both at or above 0.0669. Step 20 reads 0.0653, and the top of its interval, 0.0663, is also under. "Follows training" needs step 20 under 0.06, and it is not. The rule's edge case, step 20 between those two lines, is no call. Both sizes are inside the filed factor of 1.15 of step 100's, at 1.100 and 1.015. These states are outside the verdict's pick, so line C is untouched.
+
+| state | size K00 − K0 | KL from W0 | direct share [95%] | alive change read off | excess |
+|---|---:|---:|---|---:|---:|
+| step 8, scored | 0.570 | 0.256 | 0.0257 [0.0251, 0.0262] | 0.0295 | −0.004 |
+| step 10 | 0.758 | 0.342 | 0.0375 [0.0368, 0.0383] | 0.0317 | +0.006 |
+| step 20 | 1.061 | 0.526 | 0.0653 [0.0642, 0.0663] | 0.0367 | +0.029 |
+| step 50 | 1.150 | 0.587 | 0.0756 [0.0745, 0.0768] | 0.0382 | +0.037 |
+| step 100, scored | 1.167 | 0.598 | 0.0769 [0.0758, 0.0781] | 0.0385 | +0.038 |
+
+**A description, provisional and not a rule's reading.** Along this fine-tune the share rises smoothly with size, with no sign of a rise while size stands still. From step 50 to step 100 size moves about 1.5% and share about 1.8%. From step 20 to step 50 size moves 8% and share 16%.
+
+**The excess over the alive change.** The table reads the alive change off as the verdict's rule does. That is a straight line between its two reads and, below the lower read, that read. Step 10's excess is under the floor of 0.01, as the filed reported-only line expected. That line filed about 0.04 and 0.031; the reads are 0.0375 and 0.0317. So the excess appears between sizes 0.76 and 1.06, which here means between steps 10 and 20.
+
+**What this cannot do.** Size and training rise together along one run, so these reads do not separate them. The plateau the question rested on was measured on the first 16 rows, at 1.17, 1.27 and 1.30. On 128 rows size still moves 10% from step 20 to step 100. Nothing here separates "already there" from "new". This is one seed on maths rows only, and steps of one run are not independent. Each random change is known at two points, so the excess at the middle sizes rests on a straight line never measured there.
+
+**For the advice.** Fable's advice named step 20 under 0.06 as the one result that would make the reference comparison worth running, and it did not occur. That advice is not a decision; the user decides.
 
 ### Does rounding hide the early update from training?
 
@@ -336,7 +352,7 @@ The bootstrap intervals, about 0.003 wide either side of a gap, resample rows on
 
 ## What next
 
-- **Three more gold states are being read,** steps 10, 20 and 50, as exploration. A share near step 100's on the size plateau would say the excess follows size within this run. A share still rising would say it follows something else in training. Either way the line stays C.
+- **Three more gold states were read,** steps 10, 20 and 50, as exploration. The filed rule makes no call, the reads do not separate size from training, and the line stays C.
 - **The user decides** whether to stop or run the reference comparison, which reads the template and invented-facts fine-tunes at equal size. The filed line is C. The plan says only that B or C sets what runs next, and that the test decides whether the comparison is worth running.
 - **Fable's advice, marked as advice and not a decision** (`reports/plans/2026-11-02_advice_e61-after-size-FABLE.md`, written before the independent check and before step 10 was added). Read the saved states, then write up under C with the wording above. Do not run the reference comparison. The template's KL from W0 of 0.10 to 0.13 lies under step 8's 0.26, where even gold reads at the random level, so a null there would be the measure's floor. Fable names what would change this: the template's K00 − K0 on 128 rows coming out near 1, or step 20 reading well under step 100.
 
@@ -364,7 +380,7 @@ The bootstrap intervals, about 0.003 wide either side of a gap, resample rows on
 | S small, KL | same reads as the row above | gap | −0.0038 | at most f |
 | S control | Gaussian reproduces C0; zero split at W0 equals K0 | within tolerance | identical | passes |
 | S search | 2-4 evaluations, expected value | expected, not a stop | Gaussian 6 then one more; alive 3 | missed, no stop |
-| S more | follows size or follows training | `predictions_size_more.json` | no result yet | not scored |
+| S more | follows size or follows training | `predictions_size_more.json` | step 20 0.0653, step 50 0.0756 | no call, not scored |
 | R-G gold | gold fine-tune learned | drop at least 1.58, length at most 0.6 | 1.986, 0.481 | learned |
 | R-G template | template learned, 3e-6 and 1e-6 | rate at least 0.74, strict at least 0.560 | 0.938, 0.631; 0.926, 0.621 | learned |
 | R-G facts | invented facts learned, 6e-6 | recall at least 0.8, 4-shot at least 0.65 | 0.987, 0.770 | learned |
@@ -386,7 +402,7 @@ E45's filed predictions stand as filed.
 
 - A second seed of the gold fine-tune or of either random change, at either size.
 - Any rows but the 128 maths rows in Job S; each fine-tune's size on its own task.
-- The verdict's reading at gold's steps 9 to 15 and at 20, 30 and 50. Steps 10, 20 and 50 are being read as exploration; the rest are not.
+- The verdict's reading at gold's steps 9 to 15 and at 20, 30 and 50. Steps 10, 20 and 50 were read as exploration, outside the verdict; the rest were not.
 - Any test of the straight line between each random kind's two reads, or a third scale.
 - A KL to W0 at small scale, per-position data on the Gaussian's climb, or X at the other 192 sites of each scaled kind.
 - `job.rows` against the 128 rows, the source of the training record's lower KL.
@@ -404,4 +420,4 @@ E45's filed predictions stand as filed.
 
 L40, MATS cluster, $0. Stage A: job 48367, `results/A.json`. Checks, `results/checks_*.json`, code `experiments/qwen_recipe/checks.py`: tiny 48473, row format 48494, sizes 48506, generation 48538 and 48624, masks 48645, 48675, 48721 and 48747. The full log is `results/run.log`. Rules: `results/predictions.json`, `results/predictions_checks.json`. The closeness table is the audit's `near_threshold.txt`, copied to `results/`. Other bases: `experiments/qwen_reading/results/C_*.json`, `C0.json`, `boot_direct.json`. Figures: `experiments/qwen_recipe/plot.py`, `plot_size.py`.
 
-Job S, code `experiments/qwen_recipe/size.py`, rule `results/predictions_size.json`, L40, $0. Rehearsal, 2 rows, files `results/size2_*`: jobs 49188 to 49382. Scored, files `results/size_*`: control 49418, select 49436, state 49452, search 49623, state 49632; verdict on CPU, `results/size_verdict.json`. Peak GPU 42.43 GiB, host 89.6 GB. Independent check: `reports/reviews/2026-11-02_review_e61-size-check.md`. Exploration, `results/predictions_size_more.json`: job 49673 was pending when this was written. Job R: `results/train_*.json`.
+Job S, code `experiments/qwen_recipe/size.py`, rule `results/predictions_size.json`, L40, $0. Rehearsal, 2 rows, files `results/size2_*`: jobs 49188 to 49382. Scored, files `results/size_*`: control 49418, select 49436, state 49452, search 49623, state 49632; verdict on CPU, `results/size_verdict.json`. Peak GPU 42.43 GiB, host 89.6 GB. Independent check: `reports/reviews/2026-11-02_review_e61-size-check.md`. Exploration, `results/predictions_size_more.json`: job 49673, files `results/size_state_gold_1e-5_{10,20,50}.json`, log `cluster/logs/commute-qwen_recipe_size-49673.out`. Job R: `results/train_*.json`.
