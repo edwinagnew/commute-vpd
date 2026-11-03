@@ -122,6 +122,17 @@ def run_at_art(model: nn.Module, seq: np.ndarray, *, block: int = 0, patch: torc
     return np.concatenate(outs), torch.cat(res, 1)
 
 
+@torch.no_grad()
+def logits_at_art(model: nn.Module, seq: np.ndarray, block: int = 0, patch: torch.Tensor | None = None, chunk: int = 1000) -> torch.Tensor:  # fmt: skip
+    """Logits at `=` per row, fp32 (the model's mode as it is); with `patch` (n, d), as `run_at_art`."""
+    device = next(model.parameters()).device
+    out = []
+    for i in range(0, len(seq), chunk):
+        idx = torch.from_numpy(seq[i : i + chunk, : pcfg.ANS].astype(np.int64)).to(device)
+        out.append(forward_at_art(model, idx, block, None if patch is None else patch[i : i + chunk])[0])
+    return torch.cat(out)
+
+
 def behaviour_share(model: nn.Module, texts: np.ndarray, f_op: int) -> float:
     """B: share of 'C b 40' outputs equal to g(f_C(x)) on the given (qualifying) texts. Empty -> nan (void)."""
     if len(texts) == 0:

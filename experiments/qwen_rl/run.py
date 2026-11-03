@@ -160,7 +160,7 @@ def stage_S(job: Job, usd_per_h: float) -> None:
             job.log(f"[S] step {t}: {sample_s[-1]:.1f} s sampling, {json.dumps(rec)}, {json.dumps(rollout_summary(recs))}")
         assert first is not None
         t0 = time.time()
-        read_h(job.model, job.W0, job.seqs(first), cfg.read_tokens)
+        _, out["kl_two_steps_on_rollouts"] = read_h(job.model, job.W0, job.seqs(first), cfg.read_tokens)
         read_s = (time.time() - t0) * cfg.held * cfg.held_samples / (cfg.problems * cfg.samples)  # H's size
     t = {"sample": sum(sample_s) / 2, "train": sum(train_s) / 2, "f_train": sum(train_s) / 2 * f_tokens / max(1, tokens),
          "read": read_s, "acc": A0.get("accuracy_s", 0.0)}
