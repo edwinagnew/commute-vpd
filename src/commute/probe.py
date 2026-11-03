@@ -52,9 +52,8 @@ def _loss(probes: Probes, resid: torch.Tensor, y: torch.Tensor, perm: torch.Tens
     return F.cross_entropy(logits.flatten(0, 1), target.flatten()) * logits.shape[0]
 
 
-def train_probes(models: Mapping[str, GPT], op: int, seed: int, eval_seed: int) -> dict[str, dict[str, object]]:
-    """Per model: held-out accuracy at every block of the true-label probes ('acc') and of the shuffled-label probes
-    ('shuffled'), and the held-out majority-class rate ('majority'); prefix 'C <op> 40', label count(op)."""
+def fit_probes(models: Mapping[str, GPT], op: int, seed: int) -> dict[str, Probes]:
+    """Per model, the fitted probes: j < n_layer on the true labels of block j + 1, the rest on shuffled labels."""
     first = next(iter(models.values()))
     device, n_layer, d = next(first.parameters()).device, first.cfg.n_layer, first.cfg.d
     for model in models.values():
@@ -77,12 +76,30 @@ def train_probes(models: Mapping[str, GPT], op: int, seed: int, eval_seed: int) 
         opt.step()
         sched.step()
     batches.close()
-    held, _ = pcfg.task_batch(np.random.default_rng([eval_seed, HELD_OUT_KEY, seed, op]), HELD_OUT, "C", op)
-    y = torch.from_numpy(held[:, pcfg.ANS].astype(np.int64)).to(device)
+    return probes
+
+
+def held_out_rows(op: int, seed: int, eval_seed: int) -> np.ndarray:
+    """The 2,000 'C <op> 40' rows `train_probes` scores on."""
+    return pcfg.task_batch(np.random.default_rng([eval_seed, HELD_OUT_KEY, seed, op]), HELD_OUT, "C", op)[0]
+
+
+@torch.no_grad()
+def accuracies(probes: Probes, resid: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    """(2 n_layer,): each probe's accuracy against y on residuals (n_layer, n, d), the true-label probes first."""
+    return (probes(torch.cat([resid, resid])).argmax(-1) == y).float().mean(1)
+
+
+def train_probes(models: Mapping[str, GPT], op: int, seed: int, eval_seed: int) -> dict[str, dict[str, object]]:
+    """Per model: held-out accuracy at every block of the true-label probes ('acc') and of the shuffled-label probes
+    ('shuffled'), and the held-out majority-class rate ('majority'); prefix 'C <op> 40', label count(op)."""
+    probes = fit_probes(models, op, seed)
+    held = held_out_rows(op, seed, eval_seed)
+    y = torch.from_numpy(held[:, pcfg.ANS].astype(np.int64)).to(next(next(iter(models.values())).parameters()).device)
     out: dict[str, dict[str, object]] = {}
     for name, model in models.items():
-        with torch.no_grad():
-            correct = (probes[name](torch.cat([run_at_art(model, held)[1]] * 2)).argmax(-1) == y).float().mean(1)
+        n_layer = model.cfg.n_layer
+        correct = accuracies(probes[name], run_at_art(model, held)[1], y)
         out[name] = {"acc": correct[:n_layer].tolist(), "shuffled": correct[n_layer:].tolist(),
                      "majority": float(np.bincount(held[:, pcfg.ANS]).max() / HELD_OUT)}  # fmt: skip
     return out
