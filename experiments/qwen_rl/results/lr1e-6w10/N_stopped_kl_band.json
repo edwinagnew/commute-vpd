@@ -1,0 +1,65 @@
+{
+ "steps": [
+  {
+   "step": 1,
+   "sample_s": 47.620617389678955,
+   "reward_rate": 0.798828125,
+   "mean_len": 190.158203125,
+   "window_share": 0.970703125,
+   "live": true,
+   "loss": 0.00022863326466904255,
+   "grad_norm": 0.09278570115566254,
+   "rate": 1e-07,
+   "dw_norm": 0.0034689514343203293,
+   "grad_rms": 2.4716186462714794e-06,
+   "train_s": 23.799246788024902,
+   "live_tokens": 51628
+  }
+ ],
+ "reads": {
+  "1": {
+   "delta_r": 0.0258607848621162,
+   "kl": 4.992519815580953e-05
+  }
+ },
+ "resumes": [],
+ "rollout_sha_1": "3b5fc36b6b9b6fb4b9ad157fef4c3e8e3d43293636c9df6f950ab5a324037093",
+ "checks": {
+  "step 1's rollouts identical to R's": {
+   "holds": true,
+   "sha": "3b5fc36b6b9b6fb4b9ad157fef4c3e8e3d43293636c9df6f950ab5a324037093",
+   "R": "3b5fc36b6b9b6fb4b9ad157fef4c3e8e3d43293636c9df6f950ab5a324037093"
+  },
+  "step 1's reward rate": {
+   "holds": true,
+   "rate": 0.798828125,
+   "band": [
+    0.6,
+    0.88
+   ]
+  },
+  "loss and gradient norm finite": {
+   "holds": true,
+   "step": 1
+  },
+  "first live step: |dW| / (lr sqrt(numel))": {
+   "holds": true,
+   "step": 1,
+   "ratio": 0.9240567179303004,
+   "band": [
+    0.85,
+    1.05
+   ]
+  },
+  "first live step: KL(W0 || W_1) on H": {
+   "holds": false,
+   "step": 1,
+   "kl": 4.992519815580953e-05,
+   "band": [
+    0.00010000000000000002,
+    0.0006000000000000001
+   ]
+  }
+ },
+ "stopped": "first live step: KL(W0 || W_1) on H"
+}

@@ -236,3 +236,77 @@
 [ 6962.0s] [upload] queued qwen_rl_lr1e-6w10-rollouts-R.tar (0.05 GB)
 [ 6974.5s] [upload] finished: 10 artifacts
 [ 6974.5s] [R] finished in 6974 s; {"gpu_gb": 69.437445632, "host_gb": 10.806724}
+[    7.5s] [N] start; NVIDIA H100 80GB HBM3
+[   12.3s] [model] 1409286144 entries; 512 sampling rows per batch; eos [151645, 151643]
+[   62.7s] [check] step 1's rollouts identical to R's: ok {"sha": "3b5fc36b6b9b6fb4b9ad157fef4c3e8e3d43293636c9df6f950ab5a324037093", "R": "3b5fc36b6b9b6fb4b9ad157fef4c3e8e3d43293636c9df6f950ab5a324037093"}
+[   62.7s] [check] step 1's reward rate: ok {"rate": 0.798828125, "band": [0.6, 0.88]}
+[   86.5s] [N] {"step": 1, "sample_s": 47.620617389678955, "reward_rate": 0.798828125, "mean_len": 190.158203125, "window_share": 0.970703125, "live": true, "loss": 0.00022863326466904255, "grad_norm": 0.09278570115566254, "rate": 1e-07, "dw_norm": 0.0034689514343203293, "grad_rms": 2.4716186462714794e-06, "train_s": 23.799246788024902, "live_tokens": 51628}
+[   86.5s] [check] loss and gradient norm finite: ok {"step": 1}
+[  134.7s] [N] step 1 read {"delta_r": 0.0258607848621162, "kl": 4.992519815580953e-05}
+[  134.7s] [check] first live step: |dW| / (lr sqrt(numel)): ok {"step": 1, "ratio": 0.9240567179303004, "band": [0.85, 1.05]}
+[  134.7s] [check] first live step: KL(W0 || W_1) on H: MISSED {"step": 1, "kl": 4.992519815580953e-05, "band": [0.00010000000000000002, 0.0006000000000000001]}
+[  134.7s] STOP: first live step: KL(W0 || W_1) on H
+[  136.4s] [upload] finished: 0 artifacts
+[    7.3s] [N] start; NVIDIA H100 80GB HBM3
+[   12.1s] [model] 1409286144 entries; 512 sampling rows per batch; eos [151645, 151643]
+[   62.8s] [check] step 1's rollouts identical to R's: ok {"sha": "3b5fc36b6b9b6fb4b9ad157fef4c3e8e3d43293636c9df6f950ab5a324037093", "R": "3b5fc36b6b9b6fb4b9ad157fef4c3e8e3d43293636c9df6f950ab5a324037093"}
+[   62.8s] [check] step 1's reward rate: ok {"rate": 0.798828125, "band": [0.6, 0.88]}
+[   86.7s] [N] {"step": 1, "sample_s": 47.788506507873535, "reward_rate": 0.798828125, "mean_len": 190.158203125, "window_share": 0.970703125, "live": true, "loss": 0.00022863326466904255, "grad_norm": 0.09278569370508194, "rate": 1e-07, "dw_norm": 0.003468951416769793, "grad_rms": 2.4716184478034644e-06, "train_s": 23.85119366645813, "live_tokens": 51628}
+[   86.7s] [check] loss and gradient norm finite: ok {"step": 1}
+[  135.0s] [N] step 1 read {"delta_r": 0.025857131441886862, "kl": 4.992547646431523e-05}
+[  135.0s] [check] first live step: |dW| / (lr sqrt(numel)): ok {"step": 1, "ratio": 0.9240567132552014, "band": [0.85, 1.05]}
+[  135.0s] [check] first live step: KL(W0 || W_1) on H: ok {"step": 1, "kl": 4.992547646431523e-05, "band": [3.0000000000000008e-05, 0.0020000000000000005]}
+[  140.3s] [save] /root/work/experiments/qwen_rl/results/large/lr1e-6w10/dW/N/step_1.safetensors (5.64 GB)
+[  157.9s] [upload] queued qwen_rl_lr1e-6w10-N-step_1.safetensors (5.64 GB)
+[  223.1s] [N] {"step": 2, "sample_s": 49.18085050582886, "reward_rate": 0.822265625, "mean_len": 191.970703125, "window_share": 0.966796875, "live": true, "loss": -0.0005516361870832043, "grad_norm": 0.08691848814487457, "rate": 2e-07, "dw_norm": 0.007647653272322213, "grad_rms": 2.3153282599458794e-06, "train_s": 16.004035472869873, "live_tokens": 34525}
+[  223.1s] [check] loss and gradient norm finite: ok {"step": 2}
+[  271.3s] [N] step 2 read {"delta_r": 0.08273565279211298, "kl": 0.00015093549699203972}
+[  276.4s] [save] /root/work/experiments/qwen_rl/results/large/lr1e-6w10/dW/N/step_2.safetensors (5.64 GB)
+[  290.7s] [upload] queued qwen_rl_lr1e-6w10-N-step_2.safetensors (5.64 GB)
+[  351.2s] [N] {"step": 3, "sample_s": 43.8290479183197, "reward_rate": 0.7890625, "mean_len": 187.09375, "window_share": 0.984375, "live": true, "loss": 0.00018873893259296892, "grad_norm": 0.08617103099822998, "rate": 3e-07, "dw_norm": 0.012663910051195725, "grad_rms": 2.295417551744879e-06, "train_s": 16.75637912750244, "live_tokens": 36238}
+[  351.2s] [check] loss and gradient norm finite: ok {"step": 3}
+[  421.6s] [N] {"step": 4, "sample_s": 49.31706690788269, "reward_rate": 0.734375, "mean_len": 199.236328125, "window_share": 0.939453125, "live": true, "loss": 0.00023522861192759592, "grad_norm": 0.08663802593946457, "rate": 4e-07, "dw_norm": 0.018386122579609008, "grad_rms": 2.3078573284571705e-06, "train_s": 20.982182264328003, "live_tokens": 44433}
+[  421.6s] [check] loss and gradient norm finite: ok {"step": 4}
+[  478.3s] [N] {"step": 5, "sample_s": 43.48597979545593, "reward_rate": 0.8125, "mean_len": 181.92578125, "window_share": 0.93359375, "live": true, "loss": -0.00018543831993156346, "grad_norm": 0.0665077418088913, "rate": 5e-07, "dw_norm": 0.024918944219990465, "grad_rms": 1.7716283083369583e-06, "train_s": 13.249944686889648, "live_tokens": 28229}
+[  478.3s] [check] loss and gradient norm finite: ok {"step": 5}
+[  526.6s] [N] step 5 read {"delta_r": 0.24181366000072443, "kl": 0.001507947831998371}
+[  531.6s] [save] /root/work/experiments/qwen_rl/results/large/lr1e-6w10/dW/N/step_5.safetensors (5.64 GB)
+[  545.7s] [upload] queued qwen_rl_lr1e-6w10-N-step_5.safetensors (5.64 GB)
+[  608.2s] [N] {"step": 6, "sample_s": 48.24297547340393, "reward_rate": 0.763671875, "mean_len": 191.224609375, "window_share": 0.955078125, "live": true, "loss": -0.0005218032606535417, "grad_norm": 0.09597563743591309, "rate": 6e-07, "dw_norm": 0.03185785692863584, "grad_rms": 2.5565919330223977e-06, "train_s": 14.239543437957764, "live_tokens": 30077}
+[  608.2s] [check] loss and gradient norm finite: ok {"step": 6}
+[  669.9s] [N] {"step": 7, "sample_s": 44.436238527297974, "reward_rate": 0.81640625, "mean_len": 181.189453125, "window_share": 0.94921875, "live": true, "loss": 0.00026158297623624094, "grad_norm": 0.0904524102807045, "rate": 7e-07, "dw_norm": 0.039311825398103024, "grad_rms": 2.4094646164814115e-06, "train_s": 17.249056100845337, "live_tokens": 37646}
+[  669.9s] [check] loss and gradient norm finite: ok {"step": 7}
+[  732.7s] [N] {"step": 8, "sample_s": 45.5101854801178, "reward_rate": 0.833984375, "mean_len": 189.201171875, "window_share": 0.9609375, "live": true, "loss": -0.0006073397307773121, "grad_norm": 0.0883127897977829, "rate": 8e-07, "dw_norm": 0.047350435369446095, "grad_rms": 2.3524695642732978e-06, "train_s": 17.244168281555176, "live_tokens": 38490}
+[  732.7s] [check] loss and gradient norm finite: ok {"step": 8}
+[  791.7s] [N] {"step": 9, "sample_s": 44.003915786743164, "reward_rate": 0.845703125, "mean_len": 181.08203125, "window_share": 0.9765625, "live": true, "loss": 0.00013443991156236734, "grad_norm": 0.0889088585972786, "rate": 9.000000000000001e-07, "dw_norm": 0.055830681740674, "grad_rms": 2.3683476008774793e-06, "train_s": 15.060250282287598, "live_tokens": 31713}
+[  791.7s] [check] loss and gradient norm finite: ok {"step": 9}
+[  855.4s] [N] {"step": 10, "sample_s": 48.77024435997009, "reward_rate": 0.80078125, "mean_len": 186.01171875, "window_share": 0.953125, "live": true, "loss": 0.0004127039419472567, "grad_norm": 0.07144761085510254, "rate": 1e-06, "dw_norm": 0.06488850079360735, "grad_rms": 1.9032161747073564e-06, "train_s": 14.932868003845215, "live_tokens": 32768}
+[  855.4s] [check] loss and gradient norm finite: ok {"step": 10}
+[  903.7s] [N] step 10 read {"delta_r": 0.5624896863021133, "kl": 0.008874157613647324}
+[  908.6s] [save] /root/work/experiments/qwen_rl/results/large/lr1e-6w10/dW/N/step_10.safetensors (5.64 GB)
+[  922.7s] [upload] queued qwen_rl_lr1e-6w10-N-step_10.safetensors (5.64 GB)
+[ 1000.0s] [N] {"step": 11, "sample_s": 60.14672136306763, "reward_rate": 0.8125, "mean_len": 200.0546875, "window_share": 0.916015625, "live": true, "loss": 0.0004156587274337653, "grad_norm": 0.09578212350606918, "rate": 1e-06, "dw_norm": 0.0734171201748683, "grad_rms": 2.551437123268759e-06, "train_s": 17.10571789741516, "live_tokens": 37150}
+[ 1000.0s] [check] loss and gradient norm finite: ok {"step": 11}
+[ 1058.5s] [N] {"step": 12, "sample_s": 42.16481161117554, "reward_rate": 0.845703125, "mean_len": 177.5859375, "window_share": 0.98828125, "live": true, "loss": 0.00015301397252187598, "grad_norm": 0.08196805417537689, "rate": 1e-06, "dw_norm": 0.08148744792336385, "grad_rms": 2.183458965930209e-06, "train_s": 16.387199640274048, "live_tokens": 35011}
+[ 1058.5s] [check] loss and gradient norm finite: ok {"step": 12}
+[ 1124.2s] [N] {"step": 13, "sample_s": 47.3470721244812, "reward_rate": 0.759765625, "mean_len": 191.353515625, "window_share": 0.91796875, "live": true, "loss": -1.9258299744251417e-05, "grad_norm": 0.10179868340492249, "rate": 1e-06, "dw_norm": 0.08904606451030674, "grad_rms": 2.711705800955068e-06, "train_s": 18.33477258682251, "live_tokens": 39717}
+[ 1124.2s] [check] loss and gradient norm finite: ok {"step": 13}
+[ 1182.8s] [N] {"step": 14, "sample_s": 43.52052354812622, "reward_rate": 0.794921875, "mean_len": 182.669921875, "window_share": 0.958984375, "live": true, "loss": 0.0001961820453288965, "grad_norm": 0.08350470662117004, "rate": 1e-06, "dw_norm": 0.0962951038547148, "grad_rms": 2.22439220015225e-06, "train_s": 15.085711479187012, "live_tokens": 33671}
+[ 1182.8s] [check] loss and gradient norm finite: ok {"step": 14}
+[ 1249.0s] [N] {"step": 15, "sample_s": 45.54184627532959, "reward_rate": 0.837890625, "mean_len": 177.150390625, "window_share": 0.966796875, "live": true, "loss": -0.00044396524299372686, "grad_norm": 0.09705416858196259, "rate": 1e-06, "dw_norm": 0.10311343523442432, "grad_rms": 2.585321765938014e-06, "train_s": 20.62035059928894, "live_tokens": 43882}
+[ 1249.0s] [check] loss and gradient norm finite: ok {"step": 15}
+[ 1311.2s] [N] {"step": 16, "sample_s": 47.308868646621704, "reward_rate": 0.8125, "mean_len": 183.7890625, "window_share": 0.951171875, "live": true, "loss": -0.0005008899152016966, "grad_norm": 0.07981465011835098, "rate": 1e-06, "dw_norm": 0.10970519048486031, "grad_rms": 2.1260967478943423e-06, "train_s": 14.899133443832397, "live_tokens": 31522}
+[ 1311.2s] [check] loss and gradient norm finite: ok {"step": 16}
+[ 1374.8s] [N] {"step": 17, "sample_s": 47.747782468795776, "reward_rate": 0.859375, "mean_len": 174.701171875, "window_share": 0.96484375, "live": true, "loss": -0.00011238271599722793, "grad_norm": 0.06945709139108658, "rate": 1e-06, "dw_norm": 0.11604764294441318, "grad_rms": 1.850192864415457e-06, "train_s": 15.875054121017456, "live_tokens": 32542}
+[ 1374.8s] [check] loss and gradient norm finite: ok {"step": 17}
+[ 1440.6s] [N] {"step": 18, "sample_s": 46.757959842681885, "reward_rate": 0.83984375, "mean_len": 189.853515625, "window_share": 0.982421875, "live": true, "loss": 0.00029065273884043563, "grad_norm": 0.09240260720252991, "rate": 1e-06, "dw_norm": 0.12210564393377007, "grad_rms": 2.461413817876122e-06, "train_s": 18.967277765274048, "live_tokens": 41944}
+[ 1440.6s] [check] loss and gradient norm finite: ok {"step": 18}
+[ 1505.1s] [N] {"step": 19, "sample_s": 49.13824725151062, "reward_rate": 0.76953125, "mean_len": 204.06640625, "window_share": 0.87890625, "live": true, "loss": -6.800105893489672e-05, "grad_norm": 0.07541698962450027, "rate": 1e-06, "dw_norm": 0.1278996215114132, "grad_rms": 2.008952192847678e-06, "train_s": 15.34940481185913, "live_tokens": 33991}
+[ 1505.1s] [check] loss and gradient norm finite: ok {"step": 19}
+[ 1578.8s] [N] {"step": 20, "sample_s": 51.42133903503418, "reward_rate": 0.806640625, "mean_len": 204.978515625, "window_share": 0.955078125, "live": true, "loss": -0.00021366371402109507, "grad_norm": 0.0949077233672142, "rate": 1e-06, "dw_norm": 0.1333836558877386, "grad_rms": 2.528144917028159e-06, "train_s": 22.35694718360901, "live_tokens": 49084}
+[ 1578.8s] [check] loss and gradient norm finite: ok {"step": 20}
+[ 1627.3s] [N] step 20 read {"delta_r": -0.5751776612496584, "kl": 0.07179015803993544}
+[ 1632.4s] [save] /root/work/experiments/qwen_rl/results/large/lr1e-6w10/dW/N/step_20.safetensors (5.64 GB)
+[ 1646.3s] [upload] queued qwen_rl_lr1e-6w10-N-step_20.safetensors (5.64 GB)
+[ 1646.4s] [check] reward change by step 20: ok {"change": 0.012109374999999978}
+[ 1667.2s] [N] checkpoint at step 20
