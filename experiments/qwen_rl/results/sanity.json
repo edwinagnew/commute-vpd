@@ -1,0 +1,268 @@
+{
+ "checks": {
+  "6 no held-out problem in the picks": {
+   "holds": true,
+   "picks": 6400,
+   "distinct": 6400,
+   "held": 128
+  },
+  "6 the picks follow the permutation": {
+   "holds": true,
+   "first": [
+    6029,
+    7256,
+    3538,
+    6288,
+    4746,
+    7020,
+    1383,
+    7016
+   ]
+  },
+  "6 set sizes": {
+   "holds": true,
+   "train": 7473,
+   "test": 1319,
+   "gsm1k": 1197
+  },
+  "1 T 1: -log p(sampled) equals entropy": {
+   "holds": true,
+   "nll": 0.09422010965297208,
+   "entropy": 0.09591284459432113,
+   "diff": -0.001692734941349047,
+   "se": 0.0008879832475720682,
+   "tokens": 97898.0,
+   "below_top": 0.0,
+   "expected_below_top": 0.14085334539413452
+  },
+  "1 T 1: no surviving top-k": {
+   "holds": true,
+   "power": false,
+   "below": 0.0,
+   "expected": 0.14085334539413452
+  },
+  "1 control T 0.7: -log p below entropy": {
+   "holds": true,
+   "nll": 0.0697508352487485,
+   "entropy": 0.09522770831375509,
+   "diff": -0.025476873065006567,
+   "se": 0.0020811328811474886,
+   "tokens": 98021.0,
+   "below_top": 0.0,
+   "expected_below_top": 0.3049625754356384
+  },
+  "2 ends in an end token exactly when not truncated": {
+   "holds": true
+  },
+  "4 outside the 196: bit-identical": {
+   "holds": true,
+   "names": [
+    "model.embed_tokens.weight",
+    "model.layers.0.input_layernorm.weight",
+    "model.layers.0.post_attention_layernorm.weight",
+    "model.layers.0.self_attn.k_norm.weight",
+    "model.layers.0.self_attn.q_norm.weight",
+    "model.layers.1.input_layernorm.weight"
+   ],
+   "n_others": 114,
+   "tied_head": true
+  },
+  "4 outside the 196: no grad": {
+   "holds": true
+  },
+  "4 each of the 196 moved": {
+   "holds": true,
+   "matrices": 196,
+   "unmoved": []
+  },
+  "4 all 196 float32; forward: no autocast, fp32, TF32 off": {
+   "holds": true,
+   "sampler": [
+    "(False, 'torch.float32', 'torch.float32')"
+   ],
+   "train": [
+    "(False, 'torch.float32', 'torch.float32')"
+   ]
+  },
+  "5 W0 + saved dW equals the master weights": {
+   "holds": true,
+   "differing": 0,
+   "max_abs_diff": 0.0
+  },
+  "5 KL from the saved dW equals the live KL": {
+   "holds": true,
+   "live": 0.039301531731133675,
+   "rebuilt": 0.039301531731133675
+  },
+  "5 keys, shapes, dtypes equal E40's dW": {
+   "holds": true,
+   "keys": 196,
+   "e40_keys": 196,
+   "differ": []
+  },
+  "3 R: right minus wrong > 0, over 5 SE; sum w change > 0": {
+   "holds": true,
+   "gap": 11.146622258850496,
+   "se": 1.5161281737932413,
+   "sum_w_change": 345.8383636071599
+  },
+  "3 N: sum w change > 0; |gap| under R's": {
+   "holds": true,
+   "gap": 3.315429322463471,
+   "R_gap": 11.146622258850496,
+   "sum_w_change": 266.2990452785995
+  },
+  "3 F: kept samples' mean change > 0, over 5 SE": {
+   "holds": false,
+   "mean": 0.1360366704956469,
+   "se": 0.20023896038157385,
+   "kept": 419
+  },
+  "3 R negated: right minus wrong < 0": {
+   "holds": true,
+   "gap": -9.710464587852872,
+   "R_gap": 11.146622258850496
+  },
+  "4 W0 in fp32 equals the bf16 checkpoint, one matrix per block": {
+   "holds": true,
+   "matrices": 28,
+   "bad": []
+  }
+ },
+ "reads": {
+  "6 gold of problem 6029": {
+   "question": "Johnny is an engineer designing a bridge. The roadway deck for the top of the bridge needs 1600 tons of concrete to construct. The two bridge anchors need equal amounts of concrete, but only one has been built so far, using 700 tons of concrete. Johnny had to calculate how many tons of concrete the supporting pillars underneath the bridge would need, and he found that the total amount of concrete in the entire bridge will be 4800 tons. How much concrete did Johnny find he needs for the supporting pillars?",
+   "gold": "The bridge anchors will take 700 * 2 = <<700*2=1400>>1400 tons of concrete.\nThe roadway deck and bridge anchors need 1600 + 1400 = <<1600+1400=3000>>3000 tons of concrete.\nThus, Johnny found the supporting pillars need 4800 - 3000 = <<4800-3000=1800>>1800 tons of concrete.\n#### 1,800",
+   "number": "1800"
+  },
+  "6 gold of problem 7256": {
+   "question": "My 2 cats had 3 female kittens and 2 male kittens. How many cats do I have in total?",
+   "gold": "There are 3+2 = <<3+2=5>>5 kittens\nIf you originally had 2 cats then you now have 2+5 = <<2+5=7>>7 cats in total\n#### 7",
+   "number": "7"
+  },
+  "6 gold of problem 3538": {
+   "question": "On a four-day trip, Carrie drove 135 miles the first day, 124 miles more the second day, 159 miles the third day, and 189 miles the fourth day. If she had to charge her phone every 106 miles, how many times did she charge her phone for the whole trip?",
+   "gold": "Carrie drove 135 + 124 = <<135+124=259>>259 miles on the second day\nCarrie drove 135 + 259 + 159 + 189 = <<135+259+159+189=742>>742 miles for the whole trip.\nCarries charged her phone 742 / 106 = <<742/106=7>>7 times.\n#### 7",
+   "number": "7"
+  },
+  "device": {
+   "card": "NVIDIA L40",
+   "rows": 301,
+   "lr": 1e-06,
+   "problems": 64,
+   "samples": 8
+  },
+  "2 reward: T 1 (a) against plain T 0.7 (b), same prompts": {
+   "a": 0.818359375,
+   "b": 0.8359375,
+   "diff": -0.017578125,
+   "se": 0.013882832493386734,
+   "holds": true
+  },
+  "2 samples": {
+   "shown": 12,
+   "ended": 0.974609375,
+   "think": 0,
+   "truncated": 0.025390625,
+   "reward": 0.818359375,
+   "mean_length": 191.20703125,
+   "duplicates_per_problem": 0.015625,
+   "most_duplicates": 1
+  },
+  "3 R on the held-out pool": {
+   "gap": 1.6087842641640595,
+   "se": 1.0447695783858333,
+   "mixed": 11,
+   "kl": 0.028100789800380804,
+   "early_check_band": [
+    0.0015,
+    0.02
+   ]
+  },
+  "4 entries": {
+   "share_over_half_lr": 0.9613868132943199,
+   "grad_rms": 3.0252425940345306e-06,
+   "share_unmoved": 0.00013302124681926908,
+   "dw_ratio": 0.9261020884531085,
+   "early_check_band": [
+    0.85,
+    1.05
+   ]
+  },
+  "3 R": {
+   "gap": 11.146622258850496,
+   "se": 1.5161281737932413,
+   "mixed": 25,
+   "sum_w_change": 345.8383636071599,
+   "mean_change": -6.298377216850707,
+   "live": true,
+   "loss": -0.001234882098287926,
+   "grad_norm": 0.1135689988732338,
+   "dw_norm": 0.03476629849369033,
+   "grad_rms": 3.0252425940345306e-06,
+   "train_s": 41.269288778305054,
+   "live_tokens": 43977,
+   "kl_on_batch": 0.03287470494661169
+  },
+  "3 N": {
+   "gap": 3.315429322463471,
+   "se": 1.3410623509203805,
+   "mixed": 25,
+   "sum_w_change": 266.2990452785995,
+   "mean_change": -3.1881680842260667,
+   "live": true,
+   "loss": -8.015015555429272e-05,
+   "grad_norm": 0.089756540954113,
+   "dw_norm": 0.03452340374848182,
+   "grad_rms": 2.390928100816283e-06,
+   "train_s": 41.02148675918579,
+   "live_tokens": 43977,
+   "kl_on_batch": 0.016723883043168665
+  },
+  "3 F": {
+   "gap": 3.9650120776775633,
+   "se": 0.5185647942815438,
+   "mixed": 25,
+   "sum_w_change": -30.342990876681576,
+   "mean_change": -0.5403810403925874,
+   "live": true,
+   "loss": 0.024568100881879218,
+   "grad_norm": 0.2469066083431244,
+   "dw_norm": 0.03610968798752078,
+   "grad_rms": 6.577079975337046e-06,
+   "train_s": 74.09572124481201,
+   "live_tokens": 74562,
+   "kl_on_batch": 0.010310606395375817
+  },
+  "3 R negated": {
+   "gap": -9.710464587852872,
+   "se": 1.3559618987085909,
+   "mixed": 25,
+   "sum_w_change": 315.22914005066116,
+   "mean_change": -10.709908003051055,
+   "live": true,
+   "loss": 0.001234882098287926,
+   "grad_norm": 0.1135689988732338,
+   "dw_norm": 0.034766298469320105,
+   "grad_rms": 3.0252425940345306e-06,
+   "train_s": 41.75221109390259,
+   "live_tokens": 43977,
+   "kl_on_batch": 0.0557337511782707
+  },
+  "2 reward at qwen_eval.SAMPLE: T 1 (a) against SAMPLE (b), same prompts": {
+   "e45_pool": 0.8335,
+   "a": 0.818359375,
+   "b": 0.837890625,
+   "diff": -0.01953125,
+   "se": 0.020873983778491402,
+   "holds": true
+  },
+  "end": {
+   "failed": [
+    "3 F: kept samples' mean change > 0, over 5 SE"
+   ],
+   "seconds": 1107.96808218956,
+   "peak_gpu_gb": 41.228064256
+  }
+ }
+}
