@@ -36,6 +36,10 @@ def clean(ax: Any, title: str, grid: str = "x") -> None:
     ax.set_title(title, loc="left", fontsize=14, pad=10)
 
 
+def headline(fig: Any, title: str, y: float = 1.12) -> None:
+    fig.suptitle(title, x=0.01, y=y, ha="left", fontsize=17, fontweight="bold")
+
+
 def mean(v: list[float]) -> float:
     return sum(v) / len(v)
 
@@ -50,7 +54,7 @@ def routes() -> None:
     p1 = tasks["score"]["P1"]
     states = [(t["cls"], s["routes_lift"]["shares"]) for t in tasks["tasks"].values() for s in t["seeds"].values()]
     panels = [
-        ("Update outside the pieces\n(a random update reads 1)", {"existing": p1["existing"], "new": p1["new"]}),
+        ("Update outside the pieces", {"existing": p1["existing"], "new": p1["new"]}),
         ("Gain from old pieces\nthat Γ switches on (r)", {c: [s["r"] for k, s in states if k == c] for c in ("existing", "new")}),
         ("Gain from pieces\nthat Γ keeps off", {c: [s["e_gate"] for k, s in states if k == c] for c in ("existing", "new")}),
     ]
@@ -63,6 +67,12 @@ def routes() -> None:
         ax.set_xlim(-0.5, 1.5)
         ax.set_ylim(0, 1.05)
         clean(ax, title, "y")
+        ax.tick_params(labelleft=True)
+    axes[0].set_ylabel("Ratio to a random update")
+    axes[1].set_ylabel("Share of the fine-tune's gain")
+    axes[2].set_ylabel("Share of the fine-tune's gain")
+    fig.subplots_adjust(wspace=0.32)
+    headline(fig, "Copying and random maps look alike in the update but take different routes")
     save(fig, "q2_routes.png")
 
 
@@ -82,9 +92,12 @@ def every_family() -> None:
         ax.set_xlim(-0.55, 2.55)
         ax.set_ylim(0, 1.05)
         clean(ax, title, "y")
+        ax.tick_params(labelleft=True)
+        ax.set_ylabel("Share of the fine-tune's gain")
     handles = [plt.Line2D([], [], marker="o", ls="", ms=10, color=BLUE, label="Built on something the model already does"),
                plt.Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new")]
     fig.legend(handles=handles, loc="lower center", ncol=2, frameon=False, bbox_to_anchor=(0.5, -0.07))
+    headline(fig, "r keeps a wide gap on every family we built; steering does so only on copy")
     save(fig, "q2_every_family.png")
 
 
@@ -112,9 +125,10 @@ def r_vs_prior() -> None:
     ax.set_xlim(1e-7, 1e-1)
     ax.set_xticks([1e-7, 1e-5, 1e-3, 1e-1])
     ax.set_ylim(0, 1.2)
-    ax.set_ylabel("r")
+    ax.set_ylabel("r: share of the gain from Γ's switching alone")
     ax.set_xlabel("Original model's probability of the trained answer, before any fine-tune")
-    clean(ax, "r climbs with how likely the answer already was", "y")
+    clean(ax, "", "y")
+    headline(fig, "Caveat: the base model's logits correlate with r", 0.96)
     handles = [plt.Line2D([], [], marker="o", ls="", ms=10, color=BLUE, label="Built on something the model already does"),
                plt.Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new"),
                plt.Line2D([], [], marker="D", ls="", ms=9, color=GREY, label="Diamond: taught at a new marker")]
@@ -136,8 +150,12 @@ def overlap() -> None:
         ax.set_xlim(-0.5, 2.5)
     left.set_ylim(0, 1.05)
     right.set_ylim(0, 9)
-    clean(left, "Overlap: does Γ's switching point the way\nthe update does? (1 = all the way)", "y")
-    clean(right, "How far Γ's values move\n(mean change per piece and position, ×10⁻⁴)", "y")
+    clean(left, "Does Γ's switching do what the update does?", "y")
+    clean(right, "How far Γ's values move", "y")
+    left.set_ylabel("Overlap (1 = fully)")
+    right.set_ylabel("Mean change per piece (×10⁻⁴)")
+    fig.subplots_adjust(wspace=0.25)
+    headline(fig, "Overlap is low, and Γ moves even on a fine-tune that learned nothing", 1.05)
     save(fig, "q2_overlap.png")
 
 
