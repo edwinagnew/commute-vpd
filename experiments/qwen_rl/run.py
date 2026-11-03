@@ -7,8 +7,12 @@ Stages (--stage, each refuses until the one before has finished; --size tiny wri
   S      the sampler against `generate` on one batch; two RL steps, nothing saved; the cost rule sets N's steps
   R N F  100 steps each. δW (fp32) and readouts at the saved steps, accuracy at the last; every number in results/<arm>.json
   score  no model: P0-P7 from the results files
+  verify no model: every SHA256SUMS row is a committed W&B artifact whose size and md5 match the file (needs the key)
+  next   no model: the command to run next, read from R's result and the plan's decision tree
+--lr-tag 1e-6 (the plan's rate, default) | 3e-6 | 3e-7 gives R, N, F, score, verify and next their own folder, prefix and
+SHA256SUMS (results/lr<tag>/, W&B qwen_rl_lr<tag>-...); A0 and S, W0's accuracy, H and F's rollouts are shared.
 Exit 0 done; 1 a refusal; 2 an early check missed (results/<stage>.json "stopped", and that stage refuses from then on);
-3 paused at a checkpoint (tiny only, to rehearse the resume): the same command goes on.
+3 paused at a checkpoint (tiny only, to rehearse the resume); 4 verify found a file missing from W&B.
 No autocast anywhere: every forward here is fp32 with TF32 off.
 """
 
@@ -20,34 +24,42 @@ import math
 import sys
 import tarfile
 import time
+from pathlib import Path
 from typing import Any
 
 import torch
 from job import (
     F32,
     GB,
+    LARGE,
     PRED,
     RESULTS,
     SIZES,
     Config,
     Job,
+    config,
     load_rollouts,
     read_json,
     save_rollouts,
     write_text,
 )
 
+from commute.qwen_files import ENTITY, PROJECT
 from commute.qwen_rl import (
+    DEFAULT_TAG,
+    RATES,
     SAMPLING_T1,
     Records,
     above,
     agreement,
     arm_weights,
+    artifact_name,
     cost_rule,
     delta_fp32,
     gain,
     generate_rollouts,
     in_band,
+    next_stage,
     p0,
     pool,
     projected_usd,
@@ -60,6 +72,7 @@ from commute.qwen_rl import (
     score_all,
     sft_weights,
     step_seed,
+    upload_ok,
     weighted_update,
 )
 from commute.qwen_sft import Uploader, adamw, save, trainable
@@ -195,7 +208,7 @@ def f_rollouts(job: Job, out: dict[str, Any], steps: int) -> None:
     """F's data: W0's rollouts of every step, sampled once before its first update, with the same seeds as the RL arms;
     step 1's checks at once, not after the hours of sampling."""
     for t in range(1, steps + 1):
-        p = job.large / "rollouts" / "F" / f"step_{t}.jsonl"
+        p = job.rollout_dir("F") / f"step_{t}.jsonl"
         if not p.is_file():
             recs = job.sampled(job.step_pids(t), job.cfg.samples, t)
             if t == 1:
@@ -232,7 +245,7 @@ def save_dw(job: Job, arm: str, t: int, params: dict[str, Any], up: Uploader) ->
 
 def arm_step(job: Job, arm: str, out: dict[str, Any], params: dict[str, Any], opt: Any, t: int, saves: set[int],
              up: Uploader) -> None:
-    cfg, t0, path = job.cfg, time.time(), job.large / "rollouts" / arm / f"step_{t}.jsonl"
+    cfg, t0, path = job.cfg, time.time(), job.rollout_dir(arm) / f"step_{t}.jsonl"
     if arm == "F":
         recs = load_rollouts(path)
     else:
@@ -269,13 +282,14 @@ def arm_step(job: Job, arm: str, out: dict[str, Any], params: dict[str, Any], op
 
 def finish_arm(job: Job, arm: str, out: dict[str, Any], steps: int, up: Uploader) -> None:
     acc = job.accuracy(arm, up)
-    w0 = {s: load_rollouts(job.large / "acc" / f"W0_{s}.jsonl") for s in acc}
+    w0 = {s: load_rollouts(job.shared_large / "acc" / f"W0_{s}.jsonl") for s in acc}
     out |= {"accuracy": {s: v["summary"] for s, v in acc.items()}, "last": steps, "peaks": job.peaks(),
             "gain": {s: gain(w0[s], acc[s]["recs"]) for s in acc}}
     job.log(f"[{arm}] gain {json.dumps(out['gain'])}; {json.dumps(out['peaks'])}")
     tar = job.large / "rollouts" / f"{arm}.tar"
+    tar.parent.mkdir(parents=True, exist_ok=True)
     with tarfile.open(tar, "w") as f:
-        f.add(job.large / "rollouts" / arm, arcname=arm)
+        f.add(job.rollout_dir(arm), arcname=arm)
     job.publish(up, tar)
     out["done"] = True
     job.put(arm, out)
@@ -290,6 +304,9 @@ def stage_arm(job: Job, arm: str) -> None:
     S = job.get("S")
     if S["device"] != torch.cuda.get_device_name():
         sys.exit(f"S ran on {S['device']}: rerun it on this card (the rehearsal's file is not the pod's)")
+    needed = [job.shared_large / "rollouts" / "H.jsonl", *(job.shared_large / "acc" / f"W0_{s}.jsonl" for s in ("gsm8k", "gsm1k"))]
+    if missing := [str(p) for p in needed if not p.is_file()]:  # a new pod after a loss: RUN_BRIEF.md, "Pod lost"
+        sys.exit(f"missing {missing}: restore them with fetch.py --root (RUN_BRIEF.md, 'Pod lost')")
     steps = S["n_steps"] if arm == "N" else cfg.steps
     saves = {t for t in cfg.saves if t <= steps}
     job.fp32()
@@ -312,24 +329,80 @@ def stage_arm(job: Job, arm: str) -> None:
 
 def stage_score(cfg: Config) -> None:
     res = RESULTS / cfg.out
-    A0, R, N, f = (read_json(res / f"{s}.json") for s in ("A0", "R", "N", "F"))
+    A0, (R, N, f) = read_json(RESULTS / cfg.shared / "A0.json"), (read_json(res / f"{s}.json") for s in ("R", "N", "F"))
     scored = score_all(json.loads(PRED.read_text()), A0, R, N, f)
     write_text(res / "score.json", json.dumps(scored, indent=1, default=float))
     print(json.dumps(scored, indent=1, default=float), flush=True)
 
 
+def stage_next(cfg: Config, size: str, usd_per_h: float) -> None:
+    """Print the command to run next (RUN_BRIEF.md): the plan's decision tree read from R's result; no judgment left."""
+    res = RESULTS / cfg.out
+    R, N, f = (read_json(res / f"{s}.json") for s in ("R", "N", "F"))
+    nxt = next_stage(cfg.tag, R, N, f, json.loads(PRED.read_text())["P1"])
+    args = f"--stage {nxt['stage']} --size {size} --lr-tag {nxt['tag']} --usd-per-h {usd_per_h}"
+    tee = "2>&1 | tee -a experiments/qwen_rl/results/console.log /proc/1/fd/1"
+    nxt["command"] = "" if nxt["stage"] == "lead" else f"set -o pipefail; .venv/bin/python experiments/qwen_rl/run.py {args} {tee}"
+    print(json.dumps(nxt, indent=1), flush=True)
+
+
+def stage_verify(cfg: Config) -> None:
+    """Before `terminate()`: each SHA256SUMS row of this run is a committed W&B artifact whose entry has the file's size and
+    md5. `log_artifact` queues and returns, so only this reads whether an upload arrived (review finding 1)."""
+    import wandb
+
+    sums = RESULTS / cfg.out / "SHA256SUMS"
+    if not sums.is_file():
+        sys.exit(f"{sums} is missing: nothing to verify")
+    api, missed, skipped, total = wandb.Api(), [], [], 0
+    for line in sums.read_text().splitlines():
+        rel = Path(line.split(maxsplit=1)[1].strip())
+        path, name = LARGE / cfg.out / rel, artifact_name(cfg.prefix, rel)
+        total += 1
+        if not path.is_file():
+            why = "file not on disk"
+        elif cfg.upload_cap is not None and path.stat().st_size > cfg.upload_cap:
+            skipped.append(str(rel))
+            print(f"[verify] {rel}: over the upload cap, not uploaded", flush=True)
+            continue
+        else:
+            try:
+                art = api.artifact(f"{ENTITY}/{PROJECT}/{name}:latest")
+                entry = art.manifest.entries[rel.name]
+                good = art.state == "COMMITTED" and upload_ok(entry.size, entry.digest, path)
+                why = "" if good else f"state {art.state}, size or md5 differs"
+            except Exception as e:  # noqa: BLE001  not found, no entry, a network error: all a miss
+                why = f"{type(e).__name__}: {e}"
+        print(f"[verify] {rel}: {'ok' if not why else 'MISSED ' + why}", flush=True)
+        if why:
+            missed.append(str(rel))
+    print(json.dumps({"verify": {"rows": total, "missed": missed, "skipped": skipped}}), flush=True)
+    if missed:
+        sys.exit(4)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=("A0", "S", "R", "N", "F", "score"))
+    ap.add_argument("--stage", required=True, choices=("A0", "S", "R", "N", "F", "score", "verify", "next"))
     ap.add_argument("--size", required=True, choices=tuple(SIZES))
+    ap.add_argument("--lr-tag", default=DEFAULT_TAG, choices=tuple(RATES), help="the rate, and this run's own files")
     ap.add_argument("--usd-per-h", type=float, default=3.99, help="S's cost rule: the pod's rate (0 on the cluster)")
+    ap.add_argument("--upload-cap-gb", type=float, default=None, help="tiny only: raise the upload cap (the large-file rehearsal)")
     a = ap.parse_args()
     if not PRED.is_file():
         sys.exit(f"{PRED} is missing: predictions are filed before any run")
-    cfg = SIZES[a.size]
+    if a.stage in ("A0", "S") and a.lr_tag != DEFAULT_TAG:
+        sys.exit("A0 and S are shared by every rate: run them without --lr-tag")
+    cfg = config(a.size, a.lr_tag, a.upload_cap_gb)
     (RESULTS / cfg.out).mkdir(parents=True, exist_ok=True)
     if a.stage == "score":
         stage_score(cfg)
+        return
+    if a.stage == "verify":
+        stage_verify(cfg)
+        return
+    if a.stage == "next":
+        stage_next(cfg, a.size, a.usd_per_h)
         return
     job = Job(cfg, a.stage)
     if a.stage == "A0":

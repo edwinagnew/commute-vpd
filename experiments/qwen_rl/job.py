@@ -9,7 +9,7 @@ import math
 import resource
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -21,9 +21,12 @@ from commute.gsm8k import gold_number, grade
 from commute.qwen_eval import MODEL, MODEL_REV, WINDOW, prompt, summary
 from commute.qwen_eval import score as gsm_score
 from commute.qwen_rl import (
+    DEFAULT_TAG,
+    RATES,
     Records,
     delta_r,
     prompts_at,
+    rate_names,
     read_h,
     reward,
     rollouts,
@@ -42,19 +45,19 @@ GB = 10**9
 
 @dataclass(frozen=True)
 class Config:
-    out: str = ""  # folder under results/ and results/large/
-    prefix: str = "qwen_rl"  # W&B artifacts
+    shared: str = ""  # folder under results/ and results/large/ of A0, S, W0's accuracy, H and F's rollouts (all rates)
+    family: str = "qwen_rl"  # W&B artifact prefix at the plan's rate
+    tag: str = DEFAULT_TAG  # --lr-tag: the rate, and with it this run's own folder and prefix (`rate_names`)
     upload_cap: int | None = None  # bytes; a larger file stays local (`Uploader`)
     stop_on_bands: bool = True  # a value's band stops the job; a structural check always does
     seed: int = 69
     window: int = WINDOW
-    lr: float = 1e-6
     problems: int = 64
     samples: int = 8
     steps: int = 100
     saves: tuple[int, ...] = (1, 2, 5, 10, 20, 50, 100)
     n_cut: int = 50  # N's steps if the cost rule cuts it
-    ckpt_steps: tuple[int, ...] = (20, 50)
+    ckpt_steps: tuple[int, ...] = (20, 50, 100)  # the last step too: a crash in the accuracy pass resumes there
     pause_at: int | None = None  # exit 3 after this step's checkpoint: the rehearsal of the resume
     drop_at: int = 20  # the reward-drop check: steps 11-20 against 1-10
     held: int = 128
@@ -73,10 +76,23 @@ class Config:
 
     def __post_init__(self) -> None:
         assert list(self.saves) == sorted(self.saves) and self.steps == self.saves[-1] and self.n_cut in self.saves
-        assert set(self.ckpt_steps) < set(range(1, self.steps)) and self.drop_at % 2 == 0 and self.drop_at <= self.steps
+        assert set(self.ckpt_steps) <= set(range(1, self.steps + 1)) and self.drop_at % 2 == 0 and self.drop_at <= self.steps
         assert self.pause_at is None or self.pause_at in self.ckpt_steps
-        assert self.window == WINDOW
-        assert (self.out == "") == self.stop_on_bands == (self.upload_cap is None)
+        assert self.window == WINDOW and self.tag in RATES
+        assert (self.shared == "") == self.stop_on_bands == (self.upload_cap is None)
+
+    @property
+    def lr(self) -> float:
+        return RATES[self.tag]
+
+    @property
+    def out(self) -> str:
+        """This run's folder under results/ and results/large/."""
+        return rate_names(self.shared, self.family, self.tag)[0]
+
+    @property
+    def prefix(self) -> str:
+        return rate_names(self.shared, self.family, self.tag)[1]
 
     @property
     def divisor(self) -> int:
@@ -84,9 +100,15 @@ class Config:
 
 
 SIZES = {"full": Config(),
-         "tiny": Config(out="tiny", prefix="qwen_rl_tiny", upload_cap=10**8, stop_on_bands=False, problems=4, samples=2,
-                        steps=3, saves=(1, 3), n_cut=1, ckpt_steps=(2,), pause_at=2, drop_at=2, held=4, n_gsm8k=8,
+         "tiny": Config(shared="tiny", family="qwen_rl_tiny", upload_cap=10**8, stop_on_bands=False, problems=4, samples=2,
+                        steps=3, saves=(1, 3), n_cut=1, ckpt_steps=(2, 3), pause_at=2, drop_at=2, held=4, n_gsm8k=8,
                         n_gsm1k=8)}
+
+
+def config(size: str, tag: str, upload_cap_gb: float | None = None) -> Config:
+    """One frozen config per size and rate. `upload_cap_gb` (the rehearsal's tiny size only) raises the upload cap."""
+    cap = {} if upload_cap_gb is None else {"upload_cap": int(upload_cap_gb * GB)}
+    return replace(SIZES[size], tag=tag, **cap)
 
 
 def read_json(p: Path) -> dict[str, Any]:
@@ -105,10 +127,12 @@ class Job:
 
     def __init__(self, cfg: Config, stage: str) -> None:
         self.cfg, self.t0, self.stage = cfg, time.time(), stage
-        self.res, self.large = RESULTS / cfg.out, LARGE / cfg.out
+        self.res, self.large = RESULTS / cfg.out, LARGE / cfg.out  # this rate's arms
+        self.shared_res, self.shared_large = RESULTS / cfg.shared, LARGE / cfg.shared  # A0, S, W0's accuracy, H, F's rollouts
         if LARGE.is_symlink() and not LARGE.exists():  # a link synced to a pod arrives dangling
             LARGE.unlink()
         self.large.mkdir(parents=True, exist_ok=True)
+        self.res.mkdir(parents=True, exist_ok=True)
         self.pred = json.loads(PRED.read_text())
         fp32_matmuls()
         self.tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
@@ -132,11 +156,19 @@ class Job:
         return {"gpu_gb": torch.cuda.max_memory_allocated() / GB,
                 "host_gb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6}
 
+    def where(self, name: str) -> Path:
+        """A stage's result file: A0 and S are shared by every rate, the arms' are this rate's own."""
+        return (self.shared_res if name in ("A0", "S") else self.res) / f"{name}.json"
+
     def get(self, name: str) -> dict[str, Any]:
-        return read_json(self.res / f"{name}.json")
+        return read_json(self.where(name))
 
     def put(self, name: str, obj: dict[str, Any]) -> None:
-        write_text(self.res / f"{name}.json", json.dumps(obj, indent=1, default=float))
+        write_text(self.where(name), json.dumps(obj, indent=1, default=float))
+
+    def rollout_dir(self, arm: str) -> Path:
+        """F's rollouts come from W0, the same at every rate: sampled once, kept in the shared folder."""
+        return (self.shared_large if arm == "F" else self.large) / "rollouts" / arm
 
     def check(self, out: dict[str, Any], name: str, holds: bool, detail: dict[str, Any], band: bool = False) -> None:
         """Record a check in `out`; a miss stops the job, except a value's band at the tiny size, where it means nothing."""
@@ -220,7 +252,7 @@ class Job:
 
     def read_state(self) -> dict[str, Any]:
         """ΔR and KL on H at the weights as they stand, against W0."""
-        recs = load_rollouts(self.large / "rollouts" / "H.jsonl")
+        recs = load_rollouts(self.shared_large / "rollouts" / "H.jsonl")
         changes, kl = read_h(self.model, self.W0, self.seqs(recs), self.cfg.read_tokens)
         return {"delta_r": delta_r(changes, recs), "kl": kl}
 

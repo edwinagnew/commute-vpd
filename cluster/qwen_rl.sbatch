@@ -4,6 +4,7 @@
 # run is a pod, not this script.
 #   sbatch cluster/qwen_rl.sbatch A0 tiny
 #   sbatch cluster/qwen_rl.sbatch S full        # the full-size slice; the rate 0 keeps the cost rule off on the cluster
+# Arguments after the size go to run.py (--upload-cap-gb 6, --lr-tag 3e-6).
 # Exit 0 done; 1 a refusal; 2 an early check missed (results/<stage>.json "stopped"); 3 paused at a checkpoint (tiny
 # only): resubmit the same command.
 # --mem: E45's T peaked at 19 GB on the host with a resume (cluster/qwen_recipe_train.sbatch); δW in fp32 adds 5.6.
@@ -26,7 +27,7 @@ echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> c
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 nvidia-smi --query-gpu=name,memory.total --format=csv
 set +e
-.venv/bin/python experiments/qwen_rl/run.py --stage "$stage" --size "$size" --usd-per-h 0
+.venv/bin/python experiments/qwen_rl/run.py --stage "$stage" --size "$size" --usd-per-h 0 "${@:3}"
 status=$?
 echo "=== FINISHED (exit $status) ==="
 exit $status

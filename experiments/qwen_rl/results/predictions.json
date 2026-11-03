@@ -34,7 +34,8 @@
   "finite": "loss and gradient norm finite at every step",
   "reward_change_above": -0.05,
   "reward_step1": [0.60, 0.88],
-  "sampler_se_mult": 2
+  "sampler_se_mult": 3,
+  "amended": "2026-11-03, before any scored run: sampler_se_mult 2 -> 3. The sampler check is two 2-SE tests (length, reward); with the sampler correct they falsely stop the run about 9% of the time, and a stop parks a billing pod (review 2026-11-03, finding 5)."
  },
  "cost": {"usd_max": 50, "rule": "projected R + N + F over usd_max: N runs 50 steps; still over: stop and report"},
  "tree": {
