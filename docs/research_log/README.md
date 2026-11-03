@@ -129,9 +129,11 @@ From a Claude Code session, with the Artifact tool:
 
 0. `~/commute-agents/fleet/log-lock take <role> --wait` before claiming a version number or editing any part, and
    `~/commute-agents/fleet/log-lock release <role>` after the publish (two flushes both claimed v73, friction 37).
-   `<role>` is the lead's role name; a clerk's brief gives it. A lock older than 45 min may be taken over. Every session
-   takes it, for a one-off edit too. Nothing enforces that, and sessions have published past a held lock (friction 347,
-   149): step 2's diff shows it; merge and take the next version number.
+   `<role>` is the lead's role name; a clerk's brief gives it. `take --wait` waits 100 s a call; run it again on exit 1. A
+   holder that has ended loses the lock to the next take (`log-lock status` says why). Every session takes it, for a
+   one-off edit too. Nothing enforces that, and sessions have published past a held lock (friction 347, 149): step 2's
+   diff shows it; merge and take the next version number. In the call before the send, `log-lock check <role>`: on exit
+   1 do not publish; take it again and re-pull.
 1. `git pull --no-rebase`, then `python3 docs/research_log/build.py`, so the build has every other session's changes.
    Commit `parts/` (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md README.md`) and push
    **before** publishing: a published version whose `parts/` sat uncommitted or unpushed made the next flush merge it

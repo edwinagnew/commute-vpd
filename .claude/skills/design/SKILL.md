@@ -38,7 +38,9 @@ a single measurement, or outside the current stage. That is fine as long as the 
      step-20 guard hid a 4-6 min estimate that took 15.6). Its bar comes from a batch sd, not one reading (E59 stopped
      at 5.0088 against 5.0). After a recipe change, a first-minute value tests what the change is for, not a line
      extrapolated from the old run (E61 arm 0). A fine-tune of a model new to the project also gets a rate grid, and
-     someone reads generated answers against its "learned" rule (E45's rules passed at step 2-3).
+     someone reads generated answers against its "learned" rule (E45's rules passed at step 2-3). A rehearsal's resume
+     check prints step-matched loss diffs and a verdict against a measured floor, and a score stage scores whatever
+     stages exist and marks the rest unscored.
    - **What must be saved for a later audit?** Whatever is small and would otherwise need a GPU to rebuild: a per-state
      summary JSON, the full vector behind a top-k (E48's 9,881 drops, ~40 KB), a keyed task's selection pool, both units
      of a reading, labelled by window (E54), and the scored states in a small dtype, in `results/large/`. These are files
