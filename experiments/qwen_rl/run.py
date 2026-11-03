@@ -9,8 +9,9 @@ Stages (--stage, each refuses until the one before has finished; --size tiny wri
   score  no model: P0-P7 from the results files
   verify no model: every SHA256SUMS row is a committed W&B artifact whose size and md5 match the file (needs the key)
   next   no model: the command to run next, read from R's result and the plan's decision tree
---lr-tag 1e-6 (the plan's rate, default) | 3e-6 | 3e-7 gives R, N, F, score, verify and next their own folder, prefix and
-SHA256SUMS (results/lr<tag>/, W&B qwen_rl_lr<tag>-...); A0 and S, W0's accuracy, H and F's rollouts are shared.
+--lr-tag 1e-6 (the plan's rate, default) | 3e-6 | 3e-7 | 1e-6w10 (1e-6 after 10 steps of warm-up) gives R, N, F, score,
+verify and next their own folder, prefix and SHA256SUMS (results/lr<tag>/, W&B qwen_rl_lr<tag>-...); A0 and S, W0's accuracy,
+H and F's rollouts are shared.
 Exit 0 done; 1 a refusal; 2 an early check missed (results/<stage>.json "stopped", and that stage refuses from then on);
 3 paused at a checkpoint (tiny only, to rehearse the resume); 4 verify found a file missing from W&B.
 No autocast anywhere: every forward here is fp32 with TF32 off.
@@ -114,11 +115,11 @@ def stage_A0(job: Job) -> None:
 # ----------------------------------------------------------------------------- one update
 
 
-def update(job: Job, params: dict[str, Any], opt: Any, recs: Records, w: list[float]) -> dict[str, Any]:
+def update(job: Job, params: dict[str, Any], opt: Any, recs: Records, w: list[float], rate: float) -> dict[str, Any]:
     t0 = time.time()
-    rec = weighted_update(job.model, params, opt, job.seqs(recs), w, job.cfg.divisor, job.cfg.train_tokens)
+    rec = weighted_update(job.model, params, opt, job.seqs(recs), w, job.cfg.divisor, job.cfg.train_tokens, rate)
     dw = math.sqrt(sum(v * v for v in norms(params, job.W0).values()))
-    return rec | {"dw_norm": dw, "grad_rms": rec["grad_norm"] / math.sqrt(job.numel), "train_s": time.time() - t0,
+    return rec | {"rate": rate, "dw_norm": dw, "grad_rms": rec["grad_norm"] / math.sqrt(job.numel), "train_s": time.time() - t0,
                   "live_tokens": sum(len(r["ids"]) for r, x in zip(recs, w, strict=True) if x)}
 
 
@@ -166,7 +167,7 @@ def stage_S(job: Job, usd_per_h: float) -> None:
             recs = job.sampled(job.step_pids(t), cfg.samples, t)
             sample_s.append(time.time() - t0)
             first = first or recs
-            rec = update(job, params, opt, recs, rl_weights(recs))
+            rec = update(job, params, opt, recs, rl_weights(recs), cfg.rate(t))
             train_s.append(rec["train_s"])
             tokens += rec["live_tokens"]
             f_tokens += sum(len(r["ids"]) for r, x in zip(recs, sft_weights(recs), strict=True) if x)
@@ -228,13 +229,15 @@ def first_checks(job: Job, arm: str, out: dict[str, Any], recs: Records) -> None
 
 
 def live_checks(job: Job, out: dict[str, Any], rec: dict[str, Any], read: dict[str, Any]) -> None:
-    """The first step that moved the weights: Adam's first step is lr x sign of the gradient."""
-    E = job.pred["early"]
-    ratio = rec["dw_norm"] / (job.cfg.lr * math.sqrt(job.numel))
+    """The first step that moved the weights: Adam's first step is rate x sign of the gradient. Under a warm-up that rate is
+    below lr, and the KL band, filed for lr, is scaled by (rate / lr) squared."""
+    E, rate = job.pred["early"], rec["rate"]
+    ratio = rec["dw_norm"] / (rate * math.sqrt(job.numel))
     job.check(out, "first live step: |dW| / (lr sqrt(numel))", in_band(ratio, E["dw_ratio"]),
               {"step": rec["step"], "ratio": ratio, "band": E["dw_ratio"]}, band=True)
-    job.check(out, "first live step: KL(W0 || W_1) on H", in_band(read["kl"], E["kl_first"]),
-              {"step": rec["step"], "kl": read["kl"], "band": E["kl_first"]}, band=True)
+    kl_band = [x * (rate / job.cfg.lr) ** 2 for x in E["kl_first"]]
+    job.check(out, "first live step: KL(W0 || W_1) on H", in_band(read["kl"], kl_band),
+              {"step": rec["step"], "kl": read["kl"], "band": kl_band}, band=True)
 
 
 def save_dw(job: Job, arm: str, t: int, params: dict[str, Any], up: Uploader) -> None:
@@ -254,7 +257,7 @@ def arm_step(job: Job, arm: str, out: dict[str, Any], params: dict[str, Any], op
     if t == 1:
         first_checks(job, arm, out, recs)
     rec = {"step": t, "sample_s": time.time() - t0, **rollout_summary(recs)}
-    rec |= update(job, params, opt, recs, arm_weights(arm, recs, cfg.seed, t))
+    rec |= update(job, params, opt, recs, arm_weights(arm, recs, cfg.seed, t), cfg.rate(t))
     first_live = rec["live"] and not any(s["live"] for s in out["steps"])
     out["steps"].append(rec)
     job.put(arm, out)

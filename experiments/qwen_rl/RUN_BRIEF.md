@@ -36,7 +36,7 @@ One RunPod H100 80 GB, any region, **no network volume** (`remote-kernels.toml` 
 
 Set-up: `uv sync --locked --no-default-groups --group dev --group gpu`, `export HF_HOME=/root/hf PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True PYTHONUNBUFFERED=1`. No decomposition is needed. `results/large` arrives as a dangling link; `run.py` replaces it with a real directory.
 
-**Commands**, from the repo root, one background subprocess each, teed to the console, each beginning `set -o pipefail;` so that `tee` does not turn a failure into exit 0. A crash: the same command resumes from the checkpoint (steps 20, 50, 100); only R, N, F resume, A0 and S rerun whole. `<tag>` is the rate: `1e-6` (default; omit `--lr-tag`), `3e-6` or `3e-7`.
+**Commands**, from the repo root, one background subprocess each, teed to the console, each beginning `set -o pipefail;` so that `tee` does not turn a failure into exit 0. A crash: the same command resumes from the checkpoint (steps 20, 50, 100); only R, N, F resume, A0 and S rerun whole. `<tag>` is the rate: `1e-6` (default; omit `--lr-tag`), `3e-6`, `3e-7` or `1e-6w10` (1e-6 after 10 steps of warm-up, as `probe.py`).
 ```
 set -o pipefail; .venv/bin/python experiments/qwen_rl/run.py --stage A0 --size full --usd-per-h <rate> 2>&1 | tee -a experiments/qwen_rl/results/console.log /proc/1/fd/1
 set -o pipefail; .venv/bin/python experiments/qwen_rl/run.py --stage S  --size full --usd-per-h <rate> 2>&1 | tee -a experiments/qwen_rl/results/console.log /proc/1/fd/1

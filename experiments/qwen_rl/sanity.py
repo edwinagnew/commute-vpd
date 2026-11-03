@@ -171,7 +171,7 @@ def arm(job: Job, s: Sheet, name: str, recs: q.Records, w: list[float], then: An
     `then` while the updated weights stand. W0 is back on return."""
     with sft.trainable(job.model, job.W0) as params:
         opt = sft.adamw(params, job.cfg.lr)
-        rec = update(job, params, opt, recs, w)
+        rec = update(job, params, opt, recs, w, job.cfg.lr)
         del opt
         gc.collect()
         torch.cuda.empty_cache()

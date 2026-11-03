@@ -1,0 +1,32 @@
+{
+ "experiment": "E69 recipe probe, $0 on the cluster, before the paid run",
+ "filed": "2026-11-03",
+ "why": "Sanity job 50310: one SFT step at Adam lr 1e-6 with no warm-up on the batch's own correct samples gains about nothing on those samples (+0.136 nats, se 0.200), and first-step KL reads 0.028 per token on held-out problems. Untested reading: Adam's first step moves about 96% of entries by about the full rate, so curvature cost about cancels first-order gain, with gain linear in the rate and cost quadratic. R hides this because its weights sum to zero.",
+ "names": ["r1e-6", "r1e-6w10", "r3e-7", "n1e-6", "f3e-7", "f1e-7", "f1e-6"],
+ "steps": 20,
+ "read_steps": [1, 2, 5, 10, 20],
+ "pool_problems": 64,
+ "pool_samples": 8,
+ "cause": {
+  "rule": "F step at 3e-7: kept mean change > 0 and ≥ 5 SE. At 1e-7: > 0. At 1e-6: reproduces 0.136 within 2 SE. Prediction from gain ∝ rate, cost ∝ rate²: gain about 1.7 nats per sample at 1e-6, cost about 1.8; so about +0.35 at 3e-7. If this misses, the lead's reading is wrong.",
+  "measurement": "As sanity.py's check 3 F: one update from W0 with a fresh optimiser on step 1's batch; change = summed response log-prob after minus W0 (read_h); mean over problems of the kept samples' mean change; SE over problems. The 2 SE at 1e-6 is this run's SE. A missing mean or SE is a miss.",
+  "se_mult": 5,
+  "reference": 0.136,
+  "reference_se_mult": 2,
+  "blind_to": "Everything beyond the batch itself: a step favours its own samples by overfitting too. It reads whether one step at this rate gains on what it was fitted to, not learning.",
+  "control": "The 1e-6 run is the control: the same step as job 50310."
+ },
+ "recipe": {
+  "rule": "damage(x): reward over steps 11-20 minus over steps 1-10 ≤ −0.03, or KL(20) > 0.3. Both r1e-6 and r1e-6w10 undamaged: warm-up if its ΔR(20) ≥ 0.5 × r1e-6's and its KL(1) is at least 3× smaller, else r1e-6. Only one undamaged: that one. Both damaged: 3e-7 with no warm-up if undamaged, else stop and tell the user.",
+  "edge_cases": "Zero or negative ΔR: the bar is min(b, 0.5 × b), with b r1e-6's ΔR(20). b > 0: 0.5 × b as filed, so a warm-up ΔR of zero or below fails. b = 0: warm-up needs ΔR(20) ≥ 0. b < 0: warm-up needs ΔR(20) ≥ b, no worse than r1e-6; 0.5 × b taken literally would fail a warm-up at −1.5 against b = −2, though it is the better. A chosen run's ΔR(20) ≤ 0 is flagged to the lead beside n1e-6's and the choice stands, since damage does not read ΔR; nor do 'only one undamaged' and the 3e-7 branch. 'At least 3× smaller' is 3 × warm-up's KL(1) ≤ r1e-6's KL(1), so no division; r1e-6's KL(1) of 0 (its step did not move) fails it. A run that did not finish all 20 steps gives no choice: rerun it. A finished run missing KL(20) counts as damaged; a missing ΔR fails the warm-up test. An empty pool cannot occur: the job refuses a pool with no mixed problem.",
+  "reward_change_at_most": -0.03,
+  "kl_last_above": 0.3,
+  "delta_r_share": 0.5,
+  "kl_first_ratio": 3,
+  "expected_at_w0": "ΔR and KL are 0 by construction at W0 (read_h against W0). n1e-6 near 0 on ΔR and reward change; r1e-6's ΔR(20) above it.",
+  "blind_to": "ΔR: changes that leave right and wrong equally likely. KL: text outside the pool. Reward over 20 steps: slow damage, and any gain smaller than about 0.02 (a step's reward SE over 64 problems, job 50208)."
+ },
+ "noise_floor": {
+  "rule": "n1e-6's reward change and ΔR(20) are the noise floor beside these; reported, no threshold."
+ }
+}
