@@ -179,3 +179,92 @@ minutes do that.
 
 ### Cost and gates
 $0, one `debug` job. Under every gate: no review, the lead reads it. Amendment 1 of 2.
+
+## Amendment 2 (2026-11-03): remove the largest direction with no covariance with the count
+
+Amendment 2 of 2, the last; a third is a new plan or E70 ends as it reads. Rules `experiments/pcfg_anchors/results/predictions_e70_a2.json`. Code
+`experiments/pcfg_anchors/e70_a2.py`, `src/commute/removal.py`, `cluster/e70_a2.sbatch`. $0, `debug`, about 17 minutes on one L40, within 3 if a stop fires.
+
+**Taken by default.** Ask 17 (card `decision-counting-large-direction`) was taken by default at 18:08 on 2026-11-03 after two
+hours without an answer, under the fast lane's rule for an ask under the gate and inside the plan. The user did not choose it.
+
+**Restated.** On LOW, per block, at `=`: take a_b from `results/e70_a1.json`, remove it from LOW's residual on the same 20,000 fit
+rows, and take the top principal component of what is left; call it v_b. v_b is removed as E70 removes a direction. LOW's
+own log-odds drop for count(a) is read against 20 random single directions from the same job. Task P and task N at 10,000 steps
+are then read either way, as the share of the log-odds gain lost, on E70's definition. Nothing is retrained. No VPD, no Qwen.
+
+**Why.** Amendment 1's filed branch, "cannot serve" from the reversal at block 6, stands and is never refiled. But a_b holds 0.30 to
+0.78 of the residual's variance and the band's random directions 0.004 to 0.007. So neither LOW's loss nor the gap at blocks
+1, 3, 4, 5 can yet be read as the count's causal role: removing any very large direction might do the same.
+
+**What it is not.** v_b is not matched on size. At blocks 1-5 no direction at right angles to a_b can hold what a_b holds
+(at most 0.22, 0.49, 0.44, 0.44, 0.47 at blocks 1-5, and 0.70 at block 6). Both variance shares are stated in every table and log line.
+Its covariance with the count is zero on the fit rows by algebra, since a_b is that covariance's direction, and only for the scalar.
+
+**What differs from Amendment 1's control.** Only the direction. Same LOW file, probes file, rows, draws, card type and code path.
+
+**Found while coding.** The second component of an ordered set of classes is often curved in the label, so v_b can have zero
+covariance with the count and still hold its classes. LOW's head is a softmax over them, and the refit reads the scalar, so R3' would not
+see it. The job therefore reads v_b's class share, the part of its variance lying between count classes, and the tree has a label for it.
+
+### Design check
+- **Goal.** `GOALS.md`'s question of new against strengthened capabilities needs a causal test with labels known by construction; this asks if Amendment 1's gap can be read as one.
+- **Nearest tried.** `TRIED.md`'s row "E70 Amendment 1": the direction that removes the count's scalar covariance, with bands from directions 60 to 170 times smaller. New here: a null for the variance removed.
+- **Patch or step.** A patch, the control Amendment 1's analysis called for. Class 1 (GPU passes on saved states), taken by default under the fast lane.
+- **Decisions.** Relies on the reuse-line and mechanistic rows and the row of ask 17. No departure from `decisions.md`.
+- **What changes next.** The tree below: Amendment 1's gap at blocks 1, 3, 4, 5 is matched, not matched, or not resolved; E70 then ends as it reads.
+- **Control first.** R0, then the random draws, then v_b on LOW, alone. Nothing that differs from Amendment 1's control except the direction; rounding is what R0 tests.
+- **Early guards.** R0 in the first minute; R4 and R3' within about 3. Each reading is logged when it passes. **Saved.** v_b per block in `results/e70_a2.json`.
+
+### Run order and stops
+1. **R0.** Amendment 1's check and tolerance. Also `e70_a1.json` complete, with its rule holding at 1, 3, 4, 5. A miss stops.
+2. **Control.** v_b, then LOW's drop and count accuracy under it, beside the band and a_b's. No teeth stops nothing and closes nothing.
+3. **Why, on LOW only.** Variance share along v_b, a_b and random. Size of the covariance with the count on fit and held rows. Class share of v_b, a_b and random on count(a), and of v_b and a_b on count(b).
+   A ridge refit after v_b on Amendment 1's fresh rows, read on the held rows. **R4:** v_b's covariance on the fit rows at most 1e-3 of a_b's at every block; a miss stops. **R3':** at blocks 2-6 the refit stays above the midpoint of the floor and the reading before removal, strictly; a miss stops, as v_b carries the count and is no null. Block 1 is not binding, as in Amendment 1: the ridge reads 0.38 against a floor of 0.3575.
+4. **States.** The 20 at 10,000 steps: 20 random shares, then v_b's scored share, raw share, share in nats, accuracy.
+5. **Verdict.** R2 by block with this job's band, Amendment 1's numbers read from `e70_a1.json`, then the tree.
+
+### The tree (computed in code)
+R0, R4 or R3' misses: stop, no branch, apparatus to the lead. Otherwise each of blocks 1, 3, 4, 5, where Amendment 1's rule held, gets a label.
+- **size**: R2 holds under v_b, and under half of v_b's variance lies between count classes.
+- **carrier**: R2 holds under v_b, and at least half of its variance lies between count classes, or that is nan.
+- **specific**: R2 does not hold under v_b, and P's mean share under a_b exceeds P's mean share under v_b by more than the state band.
+- **no call**: a side has no finite share. **unresolved**: anything else.
+
+Then the first match wins, so each case has one branch.
+- A size block and a specific block: **mixed**. Read by block, no overall claim.
+- A size block: **size explains**. A direction with no covariance with the count separates P from N too, so Amendment 1's gap at that block is not evidence about the count.
+- A specific block: **count-specific at this size**. Amendment 1's gap is not reproduced by the largest no-count direction, stated with both variance shares; not matched on size, so a smaller loss could be size alone.
+- A carrier block: **carries the classes**. No linear tie, but no null either; the gap is neither supported nor undercut.
+- A no-call block: **no call**. Reported as read, opens no amendment.
+- Otherwise **unresolved**, reported as read.
+
+Block 6's reversal is read and printed apart: does N stay over P under v_b? It cannot change Amendment 1's filed branch. Share lost per unit of variance share is printed per block for a_b and v_b, unscored and labelled descriptive.
+
+### Numbers and what each should read
+| Number | At v_b | At a_b (Amendment 1) | Random | Do nothing |
+|---|---|---|---|---|
+| Variance share | lean 0.1 to 0.3, at most 0.22, 0.49, 0.44, 0.44, 0.47, 0.70 | 0.78, 0.51, 0.56, 0.56, 0.53, 0.30 | 0.0045, 0.0039, 0.0067, 0.0043, 0.0045, 0.0050 | |
+| LOW's drop | above band at some blocks, under a_b's at 1-5; low confidence | 1.93, 4.21, 8.11, 10.94, 11.96, 1.88 | band 0.048, 0.132, 0.215, 0.122, 0.117, 0.077 | 0 |
+| LOW's count accuracy | at or above about 0.7 | 0.979, 0.828, 0.573, 0.371, 0.3605, 0.9995 | 1.0 | 1.0 |
+| Covariance with the count, relative to a_b's | fit rows about 1e-7; held rows 0.1 or less | 1 | not read | |
+| Class share of count(a) | no lean | above 0.5 at 3-5, low at 1; low confidence | between the two | |
+| Refit accuracy | at or above 0.9 at 3-6, near 0.9975 at 2, 0.33 to 0.40 at 1 | 0.36 to 0.37 | not run | 0.38, 0.9975, 1, 1, 1, 1 |
+| P's share | below a_b's at 1-5; low confidence | 0.133, 0.160, 0.427, 0.779, 0.884, 0.070 | band 0.0042, 0.0241, 0.0125, 0.0191, 0.0114, 0.0087 | 0 |
+| N's share | no lean | 0.032, 0.067, 0.158, 0.335, 0.493, 0.174 | same band | 0 |
+
+Weak lean, reading no rule: count-specific at this size, or mixed. Size explains and carries the classes are live.
+
+**Dry check, no model.** Every stage's flow ran on CPU with stubbed forwards. Amendment 1's real 10K states through this job's verdict gave its calls and gaps exactly at all six blocks. Measurement on a GPU: none yet; the job's first minutes do that.
+
+### Not run
+- A direction matched on variance, which does not exist at blocks 1-5, or a higher-rank removal holding a_b's variance.
+- Several large random directions at right angles to a_b.
+- A direction with no class share at all with the count.
+- The removal on rows where the two counts are uncorrelated.
+- Variance share on the states' own residuals, and a refit on 'C b 40' rows.
+- The 1K states, a second LOW or probe seed, any retraining.
+- VPD and Qwen.
+
+### Cost and gates
+$0, one `debug` job, about 17 minutes scaled from Amendment 1's 15; it should not pass the 30-minute limit, and exit 3 with resume covers it if so. Under every gate: no review, the lead reads it.

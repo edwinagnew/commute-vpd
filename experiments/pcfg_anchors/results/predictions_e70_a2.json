@@ -1,0 +1,141 @@
+{
+  "status": "filed 2026-11-03 by the E70 Amendment 2 code writer, before any Amendment 2 job ran. e70_a2.py refuses a draft and refuses this file uncommitted or changed. predictions_e70.json, predictions_e70_a1.json and results/e70_a1.json are untouched. Amendment 2 of 2 for E70, the last: a third is a new plan, or E70 ends as it reads. Taken by default (ask 17 at 18:08 after two hours; the user did not choose it).",
+  "experiment": "E70 Amendment 2. Amendment 1 removed a_b, which holds 30-78% of the residual's variance, against random directions holding .004-.007. Does a large direction with no covariance with the count produce the same loss and the same P-over-N gap? Remove v_b, the top principal component of LOW's residual after a_b is removed, at `=`; LOW first, then the 20 states at 10,000 steps. No training. v_b is not matched on size: at blocks 1-5 no direction at right angles to a_b can hold what a_b holds.",
+  "plan": "reports/plans/2026-11-03_plan_e70-existing-new-counting.md, section 'Amendment 2 (2026-11-03)'",
+  "code": "experiments/pcfg_anchors/e70_a2.py, importing e70.py and e70_a1.py unchanged; src/commute/removal.py gains top_pc_after, variance_share, abs_cov, class_share, refit_accuracy, above_midpoint, same_reading, reproduced, no_count_branch (tests/test_removal.py), and nothing older changes; cluster/e70_a2.sbatch. All other constants, rows and streams are read from predictions_c1b.json, predictions_e70.json and predictions_e70_a1.json.",
+  "constants": {
+    "a1_held_at": [1, 3, 4, 5],
+    "carries_frac": 0.5,
+    "cov_tol": 0.001
+  },
+  "constants_sources": {
+    "a1_held_at": "results/e70_a1.json r2.holds_at, the blocks where Amendment 1's R2 held. The job stops if the file says otherwise.",
+    "carries_frac": "A definition, not a noise bound, so no control sets it: a direction 'carries the classes' when at least half of its variance on LOW's held rows lies between the count's classes. Not measured before filing. A class share is printed for a_b and for the random draws beside it, so a reader can see how the bar sits.",
+    "cov_tol": "|cov(h v_b, count)| on the fit rows at most this x |cov(h a_b, count)|, relative. By algebra the ratio is fp32 rounding in a_b and v_b, about 1e-7; Amendment 1 measured the rounding between two jobs on this card at 0 (random_max_diff_e70, all six blocks). Rows other than a_b's would read about 1e-2 (correlation sampling error on 20,000 rows). So 1e-3 sits between the two by an order of magnitude or more each way. Reasoned, not measured on v_b.",
+    "n_refit, refit_key, reproduce_frac": "Read unchanged from predictions_e70_a1.json, so the refit's rows and R0's tolerance are Amendment 1's."
+  },
+  "definitions": {
+    "a_b": "Amendment 1's, read from results/e70_a1.json `directions`, not re-estimated.",
+    "v_b": "Per block, removal.top_pc_after: the top eigenvector of the covariance of LOW's fp32 residual after block b at `=` with a_b removed, on E70's 20,000 ridge fit rows (fit_key), the rows a_b was estimated on. Rank 1. Written to e70_a2.json as `directions`. Applied by removal.remove at `=` only, as E70.",
+    "zero_covariance": "a_b is the unit of c = Cov(h, count) on the fit rows, so any v at right angles to a_b has Cov(h v, count) = v c = 0 on those rows, and only there. It is zero for the scalar count, and says nothing about a curved tie or a one-hot class.",
+    "class_share": "removal.class_share: the share of var(h u) lying between the classes of a label (the correlation ratio squared), on the 2,000 held 'C a 40' rows, for u = v_b, a_b and the mean over the random draws, against count(a), and for v_b, a_b against count(b).",
+    "control_on_LOW": "Amendment 1's: 2,000 held 'C a 40' rows, target count(a), drop = mean(clean log-odds - log-odds after removal). Band at a block = 95th percentile of |random drop| over E70's 20 single draws, from this job.",
+    "accuracy_after_removal": "Amendment 1's.",
+    "refit": "removal.refit_accuracy, Amendment 1's: fit_ridge (E70's lambda) on 20,000 fresh 'C a 40' rows (refit_key) with the direction removed, read as a rounded prediction on the 2,000 held rows with the same direction removed. Against count(a).",
+    "variance_share": "Amendment 1's formula, on the 2,000 held rows: var(h u) / trace Cov(h), for u = v_b, a_b, and the mean over the 20 random draws. Stated beside each other on every per-block log line.",
+    "shares": "E70's: readout.shares on the 2,000 held 'C b 40' rows, the 20 states at 10,000 steps. A_lo scored. A_lo_raw and A_nats beside it, unscored and without a band.",
+    "state_band": "E70's: per block, max over the 20 states of the 95th percentile of |random A_lo|, same draws, from this job.",
+    "P_mean_a_b": "e70_a1.json summary[block].P_A_lo[0], the mean over the finite 10K P states. P_mean_v_b is the same under v_b from this job."
+  },
+  "rules": {
+    "R0_same_as_E70": {
+      "rule": "Amendment 1's R0, same check and same tolerance. (a) On the held rows, the saved ridge's accuracy per block within one row (1/2000, absolute, inclusive) of e70.json's probes.ridge.acc_a, and the majority floor equal to its floor_a. (b) Per block, the largest |random drop - E70's same draw| at most reproduce_frac x E70's band at that block (relative to the band, inclusive). Also e70_a1.json complete with R2 holding at a1_held_at.",
+      "on_miss": "Stop, before v_b is read. A nan misses.",
+      "expected": "Acc 0.38, 0.9975, 1, 1, 1, 1; floor 0.3575; drop differences at 0 as in Amendment 1."
+    },
+    "R3_prime_count_stays_readable": {
+      "rule": "removal.above_midpoint: at each of blocks 2-6, the refit's accuracy after v_b is above the midpoint of the floor and the ridge's accuracy before removal, strictly (absolute accuracy, no band). A tie or a nan misses. Block 1 is read and not binding, as in Amendment 1's R3: the ridge read 0.38 there against a floor of 0.3575, so the midpoint sits within rounding of both.",
+      "on_miss": "Stop, no branch: v_b is carrying the count's linear reading and is no null.",
+      "expected": "Holds at every binding block; see predictions."
+    },
+    "R4_no_covariance_on_fit_rows": {
+      "rule": "At every block |cov(h v_b, count)| on the fit rows is at most cov_tol x |cov(h a_b, count)| on the same rows, relative, inclusive. Added by the code writer beyond the proposal: it tests the one thing v_b is chosen for, and it fails if the a_b read is not this model's on these rows.",
+      "on_miss": "Stop, no branch: the direction is not what the filing says.",
+      "expected": "A ratio about 1e-7. On held rows no rule: the ratio is sampling error, about 0.1 or less (correlation about 3/sqrt(2000) at most, on a smaller variance)."
+    },
+    "teeth": "removal.r1's per-block comparison of LOW's drop under v_b with this job's band. Printed. Unlike Amendment 1 it stops nothing and closes nothing: a large no-count direction doing nothing on LOW is an informative outcome, and P and N are read either way.",
+    "R2": {
+      "rule": "E70's, by e70.r2_table and removal.r2_block unchanged, under v_b with this job's state band: gap = min A_lo over P - max A_lo over N; 'holds' when gap > the band, strictly; 'reversal' when min N - max P > the band, strictly; 'no call' when a side has no finite share or the band is nan; else 'neither'. Share is relative to the gain, the band is on the same scale.",
+      "scope": "Read and printed at all six blocks. The tree reads it at a1_held_at, the blocks where Amendment 1's rule held. No teeth rule applies to those blocks here."
+    },
+    "tree": {
+      "rule": "removal.no_count_branch, after R0, R4 and R3' pass. Each read block (1, 3, 4, 5) gets one label, then first match wins over the labels, so every case has exactly one branch.",
+      "labels": {
+        "size": "R2 holds under v_b and v_b's class share of count(a) is under carries_frac.",
+        "carrier": "R2 holds under v_b and v_b's class share is at or over carries_frac, or nan.",
+        "specific": "R2 is 'neither' or 'reversal' under v_b, and P's mean share under a_b exceeds P's mean share under v_b by more than the state band, strictly and in absolute share.",
+        "no_call": "R2 is 'no call'.",
+        "unresolved": "Anything else, including R2 'neither' with P's two means within the band, or a nan mean."
+      },
+      "mixed": "Both a 'size' and a 'specific' block. By block: A1's gap has a no-count match at the first and none at the second. No overall claim. Added by the code writer: without it a gap at block 1 alone would dismiss blocks 3-5.",
+      "size_explains": "A 'size' block and no 'specific' block. A direction with no covariance with the count separates P from N too, so A1's gap at that block is not evidence about the count.",
+      "count_specific_at_this_size": "A 'specific' block and no 'size' block. A1's gap is not reproduced by the largest no-count direction. Stated with both variance shares; it is not size-matched, so a smaller direction costing less is also what size alone could give, and the share per unit of variance share is printed for that.",
+      "carries_the_classes": "A 'carrier' block, and no 'size' or 'specific' block. The direction has no linear covariance with the count but most of its variance lies between its classes, so it is no null for the softmax's reading. A1's gap is neither supported nor undercut. Added by the code writer: R3' tests the scalar only, and the second component of an ordered set of classes is often curved in the label.",
+      "no_call": "None of the above, and a read block is unreadable. Reported as read; opens no amendment.",
+      "unresolved": "Everything else, including an empty list of read blocks. Reported as read; opens no amendment."
+    },
+    "block_6": "Read and printed apart, unscored: R2's call under v_b, and mean N - mean P under v_b and a_b. Does N stay over P under v_b? It cannot change Amendment 1's filed branch 'cannot serve', which stands whatever this reads.",
+    "share_per_unit_of_variance": "Per block and side, mean A_lo / variance share, under a_b and v_b. Unscored and labelled descriptive. It assumes loss proportional to variance, which nothing here establishes.",
+    "resume": "Each stage is written to results/e70_a2.json as it ends, states one by one. A resubmit skips what is written. A changed constant exits 2. A stop file refuses every later job. A missing saved file exits 1 with its name, writes no stop file, and nothing is retrained."
+  },
+  "predictions": {
+    "LOW_at_v_b": {
+      "variance_share": "Above 1/192 and at most what a_b leaves on the fit rows: 0.22, 0.49, 0.44, 0.44, 0.47, 0.70 at blocks 1-6, read approximately on the held rows. Below a_b's 0.78, 0.51, 0.56, 0.56, 0.53 at blocks 1-5; block 6 may exceed a_b's 0.30. Lean 0.1 to 0.3 at blocks 1-5, low confidence: the spectrum is not saved.",
+      "drop": "Above band at some blocks, under a_b's 1.93, 4.21, 8.11, 10.94, 11.96 at blocks 1-5, low confidence. At block 6 no lean against a_b's 1.88. Removing a large direction is not expected to be free, and how far it is the question.",
+      "accuracy": "Clean 1.0 on these rows. Under v_b at or above about 0.7 at every block, above a_b's 0.979, 0.828, 0.573, 0.371, 0.3605, 0.9995 where v_b has less variance, low confidence.",
+      "cov_on_fit_rows": "About 1e-7 of a_b's, by algebra.",
+      "cov_on_held_rows": "About 0.1 of a_b's or less: sampling error only.",
+      "cos_v_a": "Under 1e-5 in size, by construction.",
+      "class_share": "No lean for v_b at any block. Its second-component shape could be curved in the count, which would read high, or belong to count(b) or the text, which would read low. a_b against count(a): above 0.5 at blocks 3-5 and low at block 1, where the ridge reads 0.38, low confidence. Random draws: between the two, since a random direction's variance is mostly from the largest directions.",
+      "refit_after_v_b": "At blocks 3-6 at or above 0.9, near Amendment 1's refit after w, 1.0. At block 2 near E70's 0.9975 or a little lower. At block 1, 0.33 to 0.40, not binding."
+    },
+    "random_control": {
+      "drop": "Inside this job's band by construction; band equal to E70's 0.048, 0.132, 0.215, 0.122, 0.117, 0.077 within R0(b).",
+      "accuracy": "1.0 on these rows, as Amendment 1.",
+      "variance_share": "Amendment 1's 0.0045, 0.0039, 0.0067, 0.0043, 0.0045, 0.0050.",
+      "state_band": "Amendment 1's up to rounding: 0.0042, 0.0241, 0.0125, 0.0191, 0.0114, 0.0087. Same draws and rows."
+    },
+    "do_nothing": {
+      "values": "No removal: drop 0, share 0, accuracy clean (LOW 1.0 on the held rows, every state 1.0), refit reads E70's 0.38, 0.9975, 1, 1, 1, 1. This is arithmetic and not run; the clean accuracy is printed."
+    },
+    "a_b_again": "LOW's drop under a_b is rerun for $0 in the same stage as a positive control of the direction read from the file: Amendment 1's 1.927, 4.209, 8.112, 10.939, 11.965, 1.882, to rounding. Printed; no rule.",
+    "share_P_10K": "Under v_b, below Amendment 1's 0.133, 0.160, 0.427, 0.779, 0.884 at blocks 1-5, low confidence. Above the state band at most blocks.",
+    "share_N_10K": "Under v_b, no lean against P. If v_b carries count(b) N can exceed P; class_b_v reads that.",
+    "branch_lean": "Weak lean: 'count-specific at this size' or 'mixed', since v_b holds less variance than a_b. 'size explains' and 'carries the classes' are live outcomes. The lean reads no rule.",
+    "block_6": "No lean. At block 6 v_b may hold more variance than a_b and the share in nats under a_b was under 0.0002 on every state."
+  },
+  "edge_cases": {
+    "E1_tie": "A gap equal to the band is not 'holds' (r2_block); P's means differing by exactly the band is not 'specific'; a refit on the midpoint misses R3'; a covariance ratio exactly at cov_tol passes R4 (inclusive, as R0). Tested.",
+    "E2_empty_side": "A side with no finite share gives 'no call' at that block, label 'no call'; branch 'no call' unless another block labels otherwise. Tested.",
+    "E3_nan_shares": "A nan share is left out of its side and of the mean, and counted (r2_block, spread). A nan mean under 'neither' is 'unresolved', never 'specific'. A nan band is 'no call'. Tested.",
+    "E4_zero_variance": "top_pc_after asserts when nothing is left after removing a_b: the job fails loudly, not expected. class_share of a constant is nan; a nan class share under a holding R2 is 'carrier', so it never claims size. share_per_unit_of_variance is nan at a zero share. Tested.",
+    "E5_tie_in_eigenvalues": "eigh returns one of the tied vectors: any is a top component and at right angles to a_b; the sign of v_b does not enter the removal. Not tested: no rule reads it.",
+    "E6_case_no_branch_covers": "None: label() is total and the branch's last line is 'unresolved', which includes an empty list of read blocks. Reversal at a read block is 'specific' when P falls, 'unresolved' when not. Tested.",
+    "E7_size_and_specific": "'mixed', never either alone. Tested.",
+    "E8_carrier_with_specific": "'count-specific at this size', the carrier printed by block: a direction that carries the classes and still fails to reproduce the gap only strengthens that reading. Tested.",
+    "E9_not_yet_learned": "A 10K state under task accuracy 0.9 is left out of R2 and listed, by E70's r2_table. None expected: all read 1.0 in E70. Amendment 1's means include any such state, and v_b's the same, so the two means compare alike.",
+    "E10_no_teeth_on_LOW": "Stops nothing. A holding R2 under v_b with no teeth on LOW is read as filed, its teeth printed beside it: the share subtracts LOW's own drop in any case.",
+    "E11_negative_shares": "A_lo can be negative where LOW loses more than the state. Under 'neither' it enters P's mean as is; the rule compares means, so a negative P_v makes 'specific' easier, and the two means are printed.",
+    "E12_dry_run": "On CPU, no model, 2026-11-03: every stage's flow with stubbed forwards and random residuals; Amendment 1's real 10K states through stage_verdict gave Amendment 1's calls and gaps exactly at all six blocks, and with p_a = p_v the labels fall to 'size' at blocks 1, 3, 4, 5."
+  },
+  "blind_to": [
+    "A curved tie to the count: zero covariance is with the scalar. class_share reads it on LOW's rows; R3' and R4 do not see it. Hence the 'carrier' label.",
+    "Size: v_b is not matched at blocks 1-5, and cannot be. A smaller loss than a_b's can be size alone. Variance share is LOW's on 'C a 40', not a state's on 'C b 40', where the same direction may hold a different share; not read.",
+    "Everything v_b does hold: it is chosen by size and may be count(b), length of a run, or any other shared feature, so a loss under it says only that size or that feature costs the state, and class_b_v covers only count(b).",
+    "Information re-read from the text by later blocks, as in E70.",
+    "Class share is on 'C a 40' with the count on those rows; P's and N's answers on 'C b 40' are not read against v_b.",
+    "Accuracy cannot see a loss of confidence that leaves the argmax in place; the log-odds cannot see whether answers changed. Both are read for that reason."
+  ],
+  "noise_floor": "This job's bands, from E70's 20 random draws. They are for directions of about 1/192 of the variance and say nothing about direction size, which is why this amendment exists. Seed spread is in res.summary and the per-state rows.",
+  "positive_controls": {
+    "same_as_E70": "R0.",
+    "a_b_again": "LOW's drop under a_b from the file against Amendment 1's. Its size relative to v_b's is the reading.",
+    "class_share_a_b": "a_b's class share of count(a) beside v_b's: the metric should read a direction tied to the count high at late blocks. If it does not, the 'carrier' label has little power and the plan says so.",
+    "refit_after_a_b": "Amendment 1's refit at the floor against R3' here: the same refit does fall when the direction is the count's."
+  },
+  "reference_differences": "Against Amendment 1's control the only difference is the direction removed. Same LOW file, probes file, rows, draws, code path (e70_a1.low_reads and read_state, e70.removed) and card type; rounding is named as what R0 tests. New: R0's check reads the same values through a pure function that compares by rows, so a one-row difference is not lost to rounding in 1/2000.",
+  "departures_from_literature": [
+    {"what": "A large null direction", "literature": "Random-direction nulls for removal (as in E70's bands; Elazar et al. 2021 and Belrose et al. 2023 cited from memory, not re-read) control for the removal's rank, not for the variance it takes.", "ours": "The top principal component after the concept's covariance direction, as a null for variance taken, with zero scalar covariance by construction and no match on size.", "why": "A1's direction holds up to 170 times a random direction's variance, and an exact match at right angles to it does not exist at blocks 1-5."},
+    {"what": "Erasure", "literature": "Belrose et al. 2023, LEACE, cited from memory, not re-read: guardedness is on a one-hot concept.", "ours": "Scalar count, orthogonal removal, at `=` only, as Amendment 1.", "why": "Only the direction may differ from Amendment 1."}
+  ],
+  "not_run_here": [
+    "A direction matched on variance; none exists at blocks 1-5. The rest-of-the-space removal holding the same variance as a_b, of higher rank.",
+    "Several random large directions at right angles to a_b.",
+    "A direction with no class share at all with the count (a one-hot erasure followed by the top component).",
+    "The removal on rows where the two counts are uncorrelated.",
+    "Variance share on the states' own residuals; a refit on 'C b 40' rows.",
+    "The 1K states; a second LOW or probe seed; any retraining.",
+    "VPD and Qwen."
+  ],
+  "job_split": "cluster/e70_a2.sbatch, debug QoS, $0, 22-min deadline, exit 3 = resubmit by hand. Scaled from Amendment 1's job 50499, 15 minutes on the same passes, not measured: control ~1 min, why ~2, LOW on the state rows ~1, states ~40 s each (~13): ~17 min. A stop leaves within ~3 min. It should not pass the job's 30 minutes; the deadline and resume cover it if it does."
+}
