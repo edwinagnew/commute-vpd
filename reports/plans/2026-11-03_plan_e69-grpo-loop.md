@@ -226,3 +226,7 @@ of no warm-up's 3.98. The run's own reward-drop check covers the unread part. Th
 
 Seen on the way, for the analysis: ΔR at step 10 reads 5.78 for the null against 3.98 for RL, so ΔR rises under a change
 with no signal and P4 may not separate them. Reward on the same prompts, steps 8-10: RL 0.84, null 0.77.
+
+## Early-check band changed (2026-11-03, 16:42 UTC)
+
+The null stopped at its first live step: first-step KL 5.0e-5 against a band of 1e-4 to 6e-4 (the filed 0.01-0.06 scaled by the warm-up's first rate). The band came from RL's first step alone. The probes without warm-up read 0.0112 for the null and 0.0252 for RL, so a lower null was to be expected, and the |δW| check passed. The band is now 0.003-0.2: its floor sits under the null's reading (0.005 in the filed units), and its ceiling is untested for the supervised arm, whose first-step KL was never measured, while still catching a first step of E40's size. An early-check stop rule, not a scored prediction; no filed prediction changed. About 15 minutes of H100 idle (~$1).
