@@ -1,0 +1,47 @@
+{
+  "filed": "2026-11-03, before the code ran; never edited after the run",
+  "question": "E72: does a ruler with one fixed set of masks, taken from the fine-tuned model, have room to pass a good placement and fail a bad one? And which parts of the update carry its gain in the clean model?",
+  "plan": "reports/plans/2026-11-03_plan_e72-d1-second-test.md",
+  "quantities": {
+    "fixed g": "per row, g from Gamma on FT's clean forward with the ORIGINAL components, the same g for every state of T1",
+    "T1 read": "masked forward with the state's U', V', Delta off, under fixed g. States: do_nothing (floor), ceiling (whole update unmasked, forward_plus), upper (often-on half), lower (rarely-on half), random at E68's scale (results/u<N>/search.json 'a'), ls, adjoint",
+    "T1 gain": "E68's gain_kept formula: (sum nll masked W0 at W0's masks - sum nll state) / (sum nll clean W0 - sum nll FT), W0's sums from qwen_pass_test/results/u<N>/W0.json",
+    "T2 read": "clean model, no masks, W0 + one part: clean_W0, clean_FT, clean_inspan, clean_remainder, clean_upper, clean_lower, clean_random",
+    "T2 parts": "inspan: dsigma of the least-squares pieces (qwen_maps.site_change 'inspan'). remainder: dW minus inspan. upper, lower: dsigma of that half's stored pieces on its own columns, as inspan, no second-order term. random: E68's random state's whole weight change at its scale",
+    "T2 gain": "(sum nll clean W0 - sum nll state) / (sum nll clean W0 - sum nll FT), W0's sums from the same W0.json",
+    "K": "KL(FT || read), mean over every position; T1 and T2",
+    "agreement": "top token equals FT's, all positions, per-row sum and count",
+    "entropy": "mean entropy of the clean model at W0 and at FT only",
+    "w": "95% row bootstrap half-width (seed 0, 2000 draws) of gain(upper) - gain(lower), per update",
+    "T0a": "W0's masks. R = E68's random state's whole weight change at scale a. K_R0 = KL(W0 + R clean || W0 masked), K_R1 = KL(W0 + R clean || W0 masked + R unmasked), r2_R = (K_R0 - K_R1) / (K_R0 - K0), K0 from W0.json 'ci'; r2_C from qwen_pass_test/results/amend1/score.json",
+    "T0b": "W0's masks, Delta fully on (masked_logits' d = 1) plus the whole update unmasked: ((x V) * g) U + x (Delta0 + dW)^T, which is masked_logits at d = 1 with FT's weights in the model"
+  },
+  "rules": {
+    "control_reproduce": {"rule": "u1 do-nothing K within 1e-3 relative of E68's A_do_nothing, gain within 1e-3 absolute; else stop. Same forward and rows as E68's; only where g is stored differs."},
+    "room": {"rule": "per update, gain(ceiling) - gain(do-nothing) > 2w and > 0.1. Else \"no room\": on u1 the job stops, and the fallback goes to the user.", "expected": "room, ceiling gain >= 0.5, medium lean"},
+    "teeth": {"rule": "gain(upper) - max(gain(lower), gain(random)) > 2w.", "expected": "holds, low lean, E68's own-mask halves did not separate"},
+    "label": {"rule": "per split, where room and teeth hold: \"passes\" if gain >= gain(ceiling) - w; \"fails\" if gain <= max(gain(do-nothing), gain(lower), gain(random)) + w; if both, \"fails\"; else \"partial\".", "expected": "least squares partial"},
+    "T2": {"rule": "per update, with s the in-span share of the update (stage S, 1 - Delta's share). \"carried\" if gain(in-span) - s > 2w and gain(remainder) < gain(in-span); \"by norm\" if |gain(in-span) - s| <= 2w; else \"not carried\". Clean states are always exact: gains can pass 1 or fall below 0, read as they come.", "expected": "no lean"},
+    "edges": {"rule": "gain's denominator below E68's 0.05 nats: unscored. NaN: unreadable."},
+    "specific": {"rule": "per update, \"this update\" if r2_R - r2_C > 0.2; \"any change\" if |r2_R - r2_C| <= 0.2; \"random lower\" otherwise. r2_C from qwen_pass_test/results/amend1/score.json. The 0.2 is a stated guess with no noise floor read: report the two numbers beside the label.", "expected": "no lean"},
+    "T0b": {"rule": "no rule: reported as K against the ceiling's K."}
+  },
+  "holes_found_before_filing": {
+    "room needs w before w exists": "w needs upper and lower, read after the ceiling. So room is scored in two steps: after the ceiling, a gap <= 0.1 is already 'no room'; otherwise 'pending' until upper and lower are read, when > 2w is scored. u1's stop can fire at either step.",
+    "room unreadable on u1": "a NaN ceiling or do-nothing gain, or a NaN w, reads 'unreadable' and stops the job on u1 as 'no room' does: nothing after it could be scored.",
+    "T2's zero": "the plan's table has gain T2 = 0 at W0 and 1 at FT, which E68's formula with masked W0 as its zero does not give. T2's zero is therefore clean W0 (quantities, 'T2 gain').",
+    "T2's w": "the plan defines one w from gain(upper) - gain(lower). In T2 it is the same bootstrap on the clean reads' gains, T2's own: T1's w measures row noise under masks, which the clean reads do not have.",
+    "specific's denominator": "K_R0 - K0 below 0.05 nats: 'unscored' (E68's floor on the same kind of gap). NaN: 'unreadable'. The three branches are otherwise complete, and a tie at 0.2 is 'any change'.",
+    "T0's order": "T0a needs stage S's files (each site's scale for the random pieces), so on u1 and u2: do_nothing, S, T0a, T0b, ceiling, rest. The ceiling comes after T0 so that u1's stop cannot lose u1's T0. If u1 stops, u2's T0 is not read.",
+    "c <= 0.05": "does not arise: no rule here divides by a share. s is reported; s NaN: T2 'unreadable'.",
+    "w = 0": "allowed: the strict > then needs a positive gap, and 'by norm' needs an exact tie. An empty bootstrap (every draw NaN): w NaN, unreadable.",
+    "label when room or teeth fail or are pending": "'unscored'."
+  },
+  "code_checks_not_rules": {
+    "fixed_g": "each T1 read's per-row sum of g within 1e-6 relative of do_nothing's, or stop: this is what 'the same g for every state' rests on.",
+    "clean_FT": "FT read as a clean state: stop if K > 1e-3 * K(FT || W0 clean); gain should read 1, clean_W0's gain 0 (logged).",
+    "T2 split": "on u1, the log gives ||(W0 + inspan) + (W0 + remainder) - W0 - FT|| / ||dW||, fp32 weights: rounding only.",
+    "T0a": "the same read logs K0 again against W0.json (expected to match) and KL(W0 + R || W0 clean) (near search.json's kl, which was on 16 rows)."
+  },
+  "not_run": "u4; t sweep; K(W0 || masked at t); maths accuracy; teacher training; the adversary; teacher-forced inputs."
+}
