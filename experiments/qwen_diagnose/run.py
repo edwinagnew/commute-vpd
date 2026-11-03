@@ -189,7 +189,7 @@ class Job:
         ft = self.step("control", lambda: self.rd.read(rows, lambda s: dw[s]))
         w0 = self.step("control_W0", lambda: self.rd.read(rows, None))
         gap = {"H_FT": abs(ft["H"] / E72["H_FT"] - 1), "H_W0": abs(w0["H"] / E72["H_W0"] - 1),
-               "nll_FT": abs(ft["nll"] / E72["nll_FT"] - 1)}
+               "nll_FT": abs(ft["nll"] * 255 / 256 / E72["nll_FT"] - 1)}  # E72 divides the T - 1 positions by T
         log(f"[control gaps] {gap}")
         if max(gap.values()) > C.control_rel:
             (RESULTS / "stopped.json").write_text(json.dumps(gap))
