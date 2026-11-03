@@ -4,6 +4,10 @@
   figures/beats_size.png  in-span against its slice and the rescaled update, whole range and close up
   figures/against_sft.png the filed rows on each update, against the fine-tunes' filed range and the filed line
   figures/ruler.png       how far each update moves the rows, and whether next-token NLL falls on them
+  figures/bad_placements.png  Amendment 1: three wrong placements per update, over the ruler, with the remainder's bar
+  figures/r_vs_n.png      the filed rows on RL's update and its shuffled-reward null, against the same range and lines
+
+The five updates are rescored from the reads, as score.json read at job 50596; the null's come from results/score_N.json.
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 6G python experiments/qwen_rl_reads/plot.py
 """
@@ -30,10 +34,14 @@ RES, FIG = HERE / "results", HERE / "figures"
 INK, MUTED, GRID, BAND = "#2b2a27", "#6f6e69", "#e4e3df", "#d9d8d3"
 SFT, RL = "#2a78d6", "#eb6834"
 INSPAN, SLICE, SCALED = "#1baf7a", "#6250d6", "#eda100"
+NULL = "#8c2f8f"
 # name, words, colour, marker: the same in every figure
 UPDATES = (("u1", "first fine-tune, step 10", SFT, "o"), ("u2", "gold fine-tune, step 100", SFT, "s"),
            ("u3", "template fine-tune, step 100", SFT, "^"), ("R100", "RL, step 100", RL, "D"), ("R10", "RL, step 10", RL, "v"))
+NULLS = (("N100", "shuffled-reward null, step 100", NULL, "P"), ("N10", "shuffled-reward null, step 10", NULL, "X"))
 SHORT = {"u1": "first\nfine-tune", "u2": "gold\nfine-tune", "u3": "template\nfine-tune", "R100": "RL\nstep 100", "R10": "RL\nstep 10"}
+BAD = (("random", "random matrix", "#a88600", "o"), ("other", "another update's matrix", "#c2356b", "s"),
+       ("signs", "the update, random sign per matrix", "#0b8ea3", "D"))
 STATES = (("inspan", "in-span part"), ("scaled_inspan", "whole update, rescaled to in-span's size"),
           ("slice_inspan", "random slice, in-span's size"), ("upper", "often-on half's part"), ("lower", "rarely-on half's part"),
           ("adjoint", "adjoint split's change"), ("scaled_remainder", "whole update, rescaled to remainder's size"),
@@ -118,7 +126,7 @@ def beats_size(score: dict[str, Any], rescaled: dict[str, tuple[float, float]]) 
     finish(fig, "beats_size.png")
 
 
-def against_sft(score: dict[str, Any]) -> None:
+def rows_figure(score: dict[str, Any], updates: tuple[tuple[str, str, str, str], ...], title: str, name: str) -> None:
     fig, ax = plt.subplots(figsize=(10, 5.2), dpi=170)
     n = len(ROWS)
     for j, (row, _, line) in enumerate(ROWS):
@@ -130,19 +138,19 @@ def against_sft(score: dict[str, Any]) -> None:
         if line is not None:
             ax.plot([line / mid] * 2, [y - 0.31, y + 0.31], color=INK, lw=1.6, zorder=2)
             ax.text(line / mid * (0.93 if line == 10.0 else 1.07), y + 0.1, f"filed line {line:g}", fontsize=8, color=INK, ha="right" if line == 10.0 else "left")
-        for i, (u, words, colour, marker) in enumerate(UPDATES):
+        for i, (u, words, colour, marker) in enumerate(updates):
             value = score[u]["rows"][row]["value"]
-            ax.scatter(value / mid, y + (i - 2) * 0.11, s=42, color=colour, marker=marker, zorder=3, edgecolors="white",
+            ax.scatter(value / mid, y + (i - (len(updates) - 1) / 2) * 0.11, s=42, color=colour, marker=marker, zorder=3, edgecolors="white",
                        linewidths=0.6, label=words if j == 0 else None)
     ax.set_xscale("log")
     ax.set_xlim(0.02, 200)
     ax.set_ylim(-0.6, n - 0.3)
     ax.set_yticks(range(n), [w for _, w, _ in reversed(ROWS)], fontsize=9, color=INK)
     ax.set_xlabel("value over the middle of the fine-tunes' filed range (grey), log scale")
-    ax.set_title("Does RL's update read as the fine-tunes do, row by row?", fontsize=11, color=INK, loc="left")
+    ax.set_title(title, fontsize=11, color=INK, loc="left")
     ax.legend(loc="lower right", fontsize=8.5, frameon=True, framealpha=1, edgecolor=GRID)
     style(ax, "x")
-    finish(fig, "against_sft.png")
+    finish(fig, name)
 
 
 def ruler(score: dict[str, Any]) -> None:
@@ -171,13 +179,37 @@ def ruler(score: dict[str, Any]) -> None:
     finish(fig, "ruler.png")
 
 
+def bad_placements(table: dict[str, dict[str, dict[str, Any]]]) -> None:
+    """Amendment 1. A state's bar is the half-width of its gap to the remainder, the rule's own width, over the ruler."""
+    fig, ax = plt.subplots(figsize=(10, 5.2), dpi=170)
+    for x, (u, *_) in enumerate(UPDATES):
+        row = table[u]
+        ruler_k = row["random"]["ruler"]
+        ax.plot([x - 0.36, x + 0.36], [row["random"]["K_remainder"] / ruler_k] * 2, color=INK, lw=3, solid_capstyle="butt", zorder=2,
+                label="remainder, the bar to clear" if x == 0 else None)
+        for j, (s, words, colour, marker) in enumerate(BAD):
+            ax.errorbar(x + (j - 1) * 0.2, row[s]["over_ruler"], yerr=row[s]["width"] / ruler_k, fmt=marker, color=colour, ms=7, capsize=2.5,
+                        zorder=3, label=words if x == 0 else None)
+    ax.axhline(1, color=MUTED, lw=1.2, ls="--", zorder=1)
+    ax.text(4.45, 1.03, "W0, the ruler = 1", fontsize=8.5, color=MUTED, ha="right")
+    ax.text(4.45, 0.03, "the updated model reads 0", fontsize=8.5, color=MUTED, ha="right")
+    ax.set_xticks(range(len(UPDATES)), [SHORT[u] for u, *_ in UPDATES], fontsize=8.5, color=INK)
+    ax.set_xlim(-0.5, 4.5)
+    ax.set_ylim(0, 3.2)
+    ax.set_ylabel("KL from the updated model, fraction of W0's")
+    ax.set_title("Do wrong changes, each matrix at the update's Frobenius norm, read above the remainder?", fontsize=11, color=INK, loc="left")
+    ax.legend(loc="upper left", fontsize=8.5, frameon=True, framealpha=1, edgecolor=GRID)
+    style(ax)
+    finish(fig, "bad_placements.png")
+
+
 def rescaled_gaps(rules: Any) -> dict[str, tuple[float, float]]:
     """K(rescaled) - K(in-span) and its paired row-bootstrap half-width: not filed, the rule's own function on another pair."""
     def inspan(u: str) -> Path:  # u1 to u3 keep E72's read; the RL updates have their own
         own = RES / u / "clean_inspan.json"
         return own if own.is_file() else HERE.parent / "qwen_fixed_masks" / "results" / u / "clean_inspan.json"
 
-    return {u: rules.gap_width(load(inspan(u)), load(RES / u / "clean_scaled_inspan.json")) for u, *_ in UPDATES}
+    return {u: rules.gap_width(load(inspan(u)), load(RES / u / "clean_scaled_inspan.json")) for u, *_ in UPDATES + NULLS}
 
 
 def reads(name: str) -> dict[str, Any]:
@@ -198,7 +230,7 @@ def rescore(rules: Any) -> dict[str, Any]:
 
 def report(score: dict[str, Any], rescaled: dict[str, tuple[float, float]]) -> None:
     print("update | gap slice-inspan / ruler | gap rescaled-inspan, half-width, / ruler | (1-t)^2 in-span, K/ruler | (1-t)^2 rem, K/ruler")
-    for u, *_ in UPDATES:
+    for u, *_ in UPDATES + NULLS:
         s, ruler_k = score[u]["size"], score[u]["clean"]["states"]["W0"]["K"]
         f = fractions(score, u)
         t_i, t_r = s["t"]["inspan"], s["t"]["remainder"]
@@ -223,9 +255,13 @@ def main() -> None:
     rescaled = rescaled_gaps(rules)
     k_fraction(score)
     beats_size(score, rescaled)
-    against_sft(score)
+    rows_figure(score, UPDATES, "Does RL's update read as the fine-tunes do, row by row?", "against_sft.png")
     ruler(score)
-    report(score, rescaled)
+    bad_placements(load(RES / "amend1_score.json")["table"])
+    null = load(RES / "score_N.json")
+    both = score | {u: null[u] for u, *_ in NULLS}
+    rows_figure(both, UPDATES[3:] + NULLS, "Does RL's update read differently from its shuffled-reward null, row by row?", "r_vs_n.png")
+    report(both, rescaled)
     if len(sys.argv) > 1:
         check(score, sys.argv[1])
 

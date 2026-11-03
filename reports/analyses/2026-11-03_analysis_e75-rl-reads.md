@@ -1,14 +1,16 @@
 # Can the clean-model table fail a bad placement, and does RL read as the fine-tunes? (E75)
 
-*2026-11-03, D1 and D2, `qwen-decomp-lead`. D1 is a map on Qwen3-1.7B that keeps the decomposition faithful for a real update, judged by a test that can fail a bad placement. D2 is the same table for SFT and RL updates. The user chose the clean-model table as D1's table (`decisions.md`, ask 24). Plan `reports/plans/2026-11-03_plan_e75-rl-reads.md`. No independent check. Notebook `notebooks/E75_rl_reads.ipynb`.*
+*2026-11-03, D1 and D2, `qwen-decomp-lead`. D1 is a map on Qwen3-1.7B that keeps the decomposition faithful for a real update, judged by a test that can fail a bad placement. D2 is the same table for SFT and RL updates. The user chose the clean-model table as D1's table (`decisions.md`, ask 24). Plan `reports/plans/2026-11-03_plan_e75-rl-reads.md`, with its Amendment 1. No independent check. Notebook `notebooks/E75_rl_reads.ipynb`.*
 
 ## The answer
 
-Not yet: the clean-model table has not been shown to fail a bad placement of the right size. It fails a random change, but only one scaled 18 to 100 times beyond the update's size. The in-span part beats a random slice of its own size by under one percent of the ruler, and the plain rescaled update beats it on two of five updates. RL at step 100 reads mostly as the fine-tunes do; RL at step 10 leaves their range on all four rows with a filed range.
+The clean-model table can fail a bad placement of the right size, where size means Frobenius norm per matrix. Three wrong changes read further from the updated model than the remainder on all five updates; the narrowest clears by 1.7 times its bootstrap width. It still barely separates same-size parts of the update, and size weighted by the inputs is untested. RL's update and its shuffled-reward null read the same filed labels, masked rows included, so those labels do not separate them, and RL's update is not called learning here.
 
-We ran three saved fine-tuning updates and two steps of RL's update through one clean table and one masked read, with no training. The table separates large from small and real from random, and it barely separates placements of the same size. For `GOALS.md`, this means the test D1 needs does not yet do its stated job, and RL's rows cannot yet be read as anything beyond a difference from the fine-tunes.
+We read three saved fine-tuning updates and two steps of RL's update through one clean table and one masked read, then three wrong changes at the update's size, then the same reads on the shuffled-reward null. The table fails wrong directions on every update and barely grades parts of the update against each other. For `GOALS.md`, the test D1 needs can now fail a wrong direction, and RL's filed labels say nothing that its null does not also read.
 
-**Status of RL's rows.** Do not read RL's update as learning. The shuffled-reward null also gained 5.6 points on GSM8K test under the drop rule, against a filed limit of 1.5, cause not established (`~/commute-data/agents/qwen-decomp-lead/note-from-qwen-rl-lead-E69-dW.md`). The null arm is running now as job 50755, reading steps 100 and 10, and the arm trained on its own correct samples comes later. This report does not wait for them; a later amendment updates this report and the notebook.
+**Where a lean missed.** We leaned, with no rule filed, that the random change and another update's change would both read near the ruler. Random did, at 1.00 of the ruler on all five. Another update's change did not: it read 0.54 and 0.63 of the ruler on the first and gold fine-tunes, 0.75 on the template fine-tune, and 2.96 and 1.74 on RL. It still clears the bar everywhere. No read here tests why it reads low on the fine-tunes, so we name no cause.
+
+**Status of RL's rows.** Do not read RL's update as learning. The shuffled-reward null also gained 5.6 points on GSM8K test under the drop rule, against a filed limit of 1.5, cause not established. RL's lead over the null on the strict grader falls to +1.2 and +0.7 points, not separable from zero, once answer format is ignored (`~/commute-data/agents/qwen-decomp-lead/note-from-qwen-rl-lead-E69-dW.md`). The arm trained on its own correct samples has not run through this table: job 50874 is queued, and a later edit adds it.
 
 **A correction to the brief for this report.** The brief read the remainder's slice as more scaled than projected, from its wide range of $c$. The per-matrix file does not support that, and "Size-matched states" below gives the numbers: 96 to 99.9 percent of the remainder's energy sits where $c$ is within 10 percent of 1.
 
@@ -30,11 +32,17 @@ We ran three saved fine-tuning updates and two steps of RL's update through one 
 
 **Masked read.** $\tau$ is KL(masked $W_0$ ‖ masked $W_0$ + update) over KL($W_0$ ‖ $W_0$ + update), on the first 32 rows, with the update added unmasked at its matrix. Fixed masks are $W_0$'s; stochastic masks are the earlier transmission experiment's, one draw per row at one seed. Filed labels: at most 0.05 "deaf", at least 0.25 "carries", otherwise "between".
 
+**Three wrong changes (Amendment 1).** Each is $W_0$ plus a change, per matrix at $\delta W$'s Frobenius norm, with no fitting. *Random:* a Gaussian matrix. *Another update's:* that update's matrix, rescaled; u1 and u2 read u3's, u3 reads u1's, R100 and R10 read u1's. *Signs:* $\delta W$ with a random sign per matrix, 107 of 196 flipped, the same subspaces with the wrong coordination between matrices. One seed each.
+
+**The null (N100, N10).** The same run as RL with rewards shuffled, at steps 100 and 10, on the same 128 rows, through every read above except the three wrong changes. It is there to say whether RL's rows depend on the reward.
+
 **Wording of the masked rows.** "Deaf" is the filed label for a small $\tau$ and nothing more. We use the wording of `reports/reviews/2026-11-03_review_e77-masks-carry.md`: under the original model's masks, with Δ off, small changes in the stream barely reach the logits. How much the output depends on its tokens is not measured.
 
 ## What we expected, and why
 
 Medium leans were filed for R100 and R10 only, from earlier fine-tune reads: "deaf" on both mask kinds, random at least 10 times the larger half, in-span strictly below remainder. Rule 4, placement against size, has no lean on any update, because the table had no size-matched reference. Fine-tunes are read against the same rules with no lean. Every number also carries the fine-tunes' filed range, so a difference shows even when a label agrees.
+
+For the three wrong changes the medium leans were: all three fail on every update, the overall label reads "has teeth", random and another update's read near the ruler, and signs is the least sure. The last two have no rule. A state at the ruler reads as failing: stored $W_0$ set against the bar before filing fails on all five, so the rule can be met. The null has no lean; the plan's question was whether it reads as RL does.
 
 ## The control
 
@@ -42,11 +50,13 @@ u1 through this code against stored reads, first and alone, with stop within 1e-
 
 The gap of 0 means this job's first read reproduced stored files exactly. It says nothing about the new states, which have no stored reference.
 
+Amendment 1's control, on u1 first and alone: $W_0$ read 1.63511 by the new path with gap 0 to the stored read, and $W_0 + \delta W$ read 0. The null's job reproduced the same eight numbers on u1 at gap 0, $W_0$'s own numbers on N100 and N10 at gap 0, and stage S's energy to under 1e-9.
+
 ## Which states does the table fail?
 
 ![KL from the updated model as a fraction of W0's](../../experiments/qwen_rl_reads/figures/k_fraction.png)
 
-**Reading it.** The table fails the random change and little else that is near the update's size. Random reads between 0.85 and 2.4 of the ruler on all five updates, at scales 17.8, 17.8, 56.2, 56.2 and 100 times the size matched to the update's input-weighted norm. The candidates form one ladder. At scale 1, the search's first step moved $W_0$ by 0.008 to 0.35 percent of the target KL on 16 rows. So a random change of the right size would probably read close to the ruler, by inference; the table did not read one.
+**Reading it.** The table fails the random change and little else that is near the update's size. Random reads between 0.85 and 2.4 of the ruler on all five updates, at scales 17.8, 17.8, 56.2, 56.2 and 100 times the size matched to the update's input-weighted norm. The candidates form one ladder. At scale 1, the search's first step moved $W_0$ by 0.008 to 0.35 percent of the target KL on 16 rows. A random change at the update's Frobenius norm, read in Amendment 1 below, sits at the ruler.
 
 **$K$ in nats.**
 
@@ -108,7 +118,7 @@ Top-token agreement with the updated model:
 - It fails a random change that moves $W_0$ as far as the update does. That change is 18 to 100 times the update's size, so the failure is not a read on a bad placement of the right size.
 - It separates the in-span part from a slice of the same size, by under one percent of the ruler. A slice is still part of the update and not a wrong direction. On average over $Q$, $QQ^\top\delta W$ is the share $k/d$ of the update, so a slice is a shrunk copy plus noise on the output side.
 - It reads the adjoint split's change at 0.10 to 0.27 of the ruler, 15 to 22 times the in-span part. This is the only other split read and it has no filed rule. Its size was not measured here, so it is not a size-matched comparison.
-- It has not read any state that is the right size and in a wrong direction. So failing a bad placement of the right size is still unshown.
+- Wrong changes at the update's Frobenius norm are the next section.
 
 **The rescaled update is a stronger reference than the slice.** It has no placement at all. This comparison is not filed; we ran the rule's own bootstrap function on it for this report, so it is exploratory.
 
@@ -146,11 +156,46 @@ The three states' order on R10 is in-span, slice, rescaled. On the other four up
 
 **Parts are not orthogonal under the input weighting.** $t_\text{in-span}^2 + t_\text{remainder}^2$ reads 0.852, 0.848, 0.875, 0.864 and 0.857, not 1. The plan's expected $t$ of 0.93, 0.92 and 0.94 equals $\sqrt{1 - t_\text{remainder}^2}$ on u1, u2 and u3: 0.932, 0.921, 0.936. The measured values are 0.85, 0.83 and 0.87. So the expected rescaled in-span $K$ of 0.002, 0.003 and 0.0007 read 0.0084, 0.0121 and 0.0025. The remainder's expected rescaled $K$, 0.21, 0.20 and 0.09, read 0.214, 0.200 and 0.089. An earlier independent check said each part reads 2.5 to 4 times further than the rescaled update. With the measured $t$ the remainder reads 1.9 to 2.6 times further, and the in-span part 0.5 to 1.1 times.
 
+## Does the table fail a wrong change of the right size?
+
+![Three wrong changes over the ruler, with the remainder's bar](../../experiments/qwen_rl_reads/figures/bad_placements.png)
+
+**Reading it.** Yes: all three wrong changes read above the remainder on all five updates, which is the filed label "has teeth". A state fails when its $K$ is above the remainder's by more than the row bootstrap's half-width of that gap. The narrowest case is another update's matrix on the template fine-tune, with a gap of 0.0230 nats against a half-width of 0.0139, 1.7 times. The next narrowest gap is 5.9 times its half-width.
+
+**$K$ as a fraction of the ruler.** The remainder is the bar. The updated model reads 0.
+
+| update | remainder | random | another update's | signs | label |
+|---|---|---|---|---|---|
+| u1 | 0.3246 | 1.0019 | 0.5354 | 1.5203 | all fail |
+| u2 | 0.3826 | 1.0036 | 0.6333 | 1.5646 | all fail |
+| u3 | 0.6832 | 1.0007 | 0.7545 | 1.6518 | all fail |
+| R100 | 0.8129 | 1.0018 | 2.9572 | 1.2431 | all fail |
+| R10 | 0.8089 | 1.0006 | 1.7377 | 1.7960 | all fail |
+
+**Gap to the remainder, nats, ± its half-width.**
+
+| update | random | another update's | signs |
+|---|---|---|---|
+| u1 | 1.1075 ± 0.1008 | 0.3447 ± 0.0401 | 1.9552 ± 0.1710 |
+| u2 | 0.8549 ± 0.0791 | 0.3453 ± 0.0349 | 1.6274 ± 0.1396 |
+| u3 | 0.1024 ± 0.0130 | 0.0230 ± 0.0139 | 0.3125 ± 0.0401 |
+| R100 | 0.01215 ± 0.00147 | 0.1379 ± 0.0127 | 0.02767 ± 0.00321 |
+| R10 | 0.00227 ± 0.00036 | 0.01102 ± 0.00142 | 0.01171 ± 0.00197 |
+
+**What stays open.**
+
+- *Same-size parts of the update.* This read adds nothing here. The in-span part still beats its slice by under one percent of the ruler, and the rescaled update still beats the in-span part on two fine-tunes.
+- *Size is Frobenius norm per matrix, not input-weighted.* Neither random's nor another update's input-weighted size was measured, so either may land on directions the inputs excite less or more than $\delta W$ does. Random reads 1.00 of the ruler, as $W_0$ does, and stored $W_0$ already fails this bar, so random's failure adds little beyond that. Signs is the exception by arithmetic: $\mathrm{tr}(A \Sigma A^\top)$ does not change with $A$'s sign, so each matrix keeps its input-weighted size exactly. Signs fails at 1.24 to 1.80 of the ruler.
+- *The bar is not itself the same size.* The remainder's input-weighted norm is 0.35 to 0.39 of the update's, and on RL it reads 0.81 of the ruler.
+- *One seed per state,* and the bootstrap covers rows only.
+
+**The lean that missed.** Random read near the ruler as leaned. Another update's matrix did not, in either direction: about half the ruler on the first and gold fine-tunes, and above it on RL. No read here tests why it reads low. Signs, the least sure lean, reads furthest on the three fine-tunes.
+
 ## Does RL's update read as the fine-tunes do?
 
 ![Filed rows against the fine-tunes' range](../../experiments/qwen_rl_reads/figures/against_sft.png)
 
-**Reading it.** RL at step 100 mostly does, and RL at step 10 mostly does not, though no filed label changed. All four filed labels came out as leaned on both RL updates. R100 is outside the range on one rule row, and R10 on all four. The range is thin. It comes from u1, u2, u3 on the KL rows and only u1, u3 on the masked rows, and u2 falls outside both masked rows.
+**Reading it.** RL at step 100 mostly does, and RL at step 10 mostly does not, though no filed label changed. All four filed labels came out as leaned on both RL updates. R100 is outside the range on one rule row, and R10 on all four. The range is thin. It comes from u1, u2, u3 on the KL rows and only u1, u3 on the masked rows, and u2 falls outside both masked rows. The null, in the next section, leaves the same range on one row at each step.
 
 | row | filed range | u1 | u2 | u3 | R100 | R10 |
 |---|---|---|---|---|---|---|
@@ -182,6 +227,57 @@ u1 and u3 set most of the range's ends, so "in" is by construction there and car
 | R10 | 0.0246 | 0.0195 | 0.381 | 0.336 |
 
 **Masked rows.** Here "deaf" reads as the review's wording requires. With $W_0$'s masks and Δ off, the whole update's KL under the masks is 0.0001 to 0.018 of its clean KL, on five updates. Amplitudes read 0.0086 and 0.0133 on R10, 0.027 and 0.036 on R100, against 0.095 to 0.148 on u1 and u2. How much the masked output depends on its tokens is not measured, and we draw no statement about what carries the output. K0, which never sees the update, reads 0.0671 fixed and 0.0440 stochastic on maths rows, and 0.0688 and 0.0460 on u3's rows.
+
+## Does the table separate RL's update from its shuffled-reward null?
+
+![RL's update and its null on the filed rows](../../experiments/qwen_rl_reads/figures/r_vs_n.png)
+
+**Reading it.** No, on the filed labels: at each step the null reads every label RL reads, masked rows included. "Deaf" twice, random at least ten times the larger half, in-span below remainder, in-span beating its slice, and the gain unscored, on all four. The values do differ, and nothing filed reads the difference: each arm is one seed, and no noise floor between arms was measured. RL at step 10 leaves the fine-tunes' range on four rows and the null at step 10 on one. On the row both leave at step 100, in-span over remainder, RL is above the range and the null below it.
+
+| row | R100 | N100 | R10 | N10 |
+|---|---|---|---|---|
+| $\tau$ fixed, label | deaf | deaf | deaf | deaf |
+| $\tau$ fixed | 0.00057 in | 0.00040 in | **0.000081 out** | 0.00054 in |
+| $\tau$ stochastic, label | deaf | deaf | deaf | deaf |
+| $\tau$ stochastic | 0.00122 in | 0.00118 in | **0.000255 out** | 0.00166 in |
+| random over larger half, label | holds | holds | holds | holds |
+| random over larger half | 20.42 in | 24.77 in | **34.53 out** | 23.93 in |
+| in-span over remainder, label | holds | holds | holds | holds |
+| in-span over remainder | **0.02235 out** | **0.00907 out** | **0.01156 out** | **0.01859 out** |
+| share sent to Δ, least squares, no rule | 0.3678 in | 0.3797 in | 0.3828 in | 0.3861 in |
+| in-span against slice, label | beats size | beats size | beats size | beats size |
+| slice − in-span, over the ruler | 0.0102 | 0.0047 | 0.0052 | 0.0083 |
+| T2 | unscored | unscored | unscored | unscored |
+
+**Size.** The two arms have about the same input-weighted energy at each step and very different rulers.
+
+| | R100 | N100 | R10 | N10 |
+|---|---|---|---|---|
+| input-weighted energy | 33.5 | 34.9 | 1.09 | 1.03 |
+| KL(updated ‖ $W_0$), the ruler | 0.06431 | 0.13490 | 0.01187 | 0.00236 |
+| $W_0$'s NLL − updated | −0.125 | −0.029 | −0.063 | −0.0074 |
+| entropy, $W_0$ 0.610 → updated | 0.577 | 0.636 | 0.594 | 0.606 |
+| masked KL, fixed | 5.53e-5 | 5.46e-5 | 1.56e-6 | 1.54e-6 |
+| KL($W_0$ ‖ updated), $\tau$'s denominator | 0.0969 | 0.1361 | 0.0192 | 0.00285 |
+
+**The masked rows at step 10.** RL's and the null's masked KL are almost equal, and both are close to where no floor is measured. Their $\tau$ differ almost entirely through the denominator.
+
+**$K$ as a fraction of the ruler.**
+
+| state | R100 | N100 | R10 | N10 |
+|---|---|---|---|---|
+| in-span | 0.0182 | 0.0074 | 0.0093 | 0.0146 |
+| rescaled to in-span | 0.0231 | 0.0159 | 0.0195 | 0.0253 |
+| slice, in-span's size | 0.0283 | 0.0122 | 0.0145 | 0.0230 |
+| often-on half | 0.0604 | 0.0299 | 0.0351 | 0.0526 |
+| rarely-on half | 0.1180 | 0.0644 | 0.0688 | 0.1024 |
+| adjoint | 0.2659 | 0.1895 | 0.1859 | 0.2348 |
+| rescaled to remainder | 0.4372 | 0.3367 | 0.3357 | 0.3791 |
+| slice, remainder's size | 0.8638 | 0.8680 | 0.8653 | 0.8445 |
+| remainder | 0.8129 | 0.8191 | 0.8089 | 0.7875 |
+| random, matched on KL | 2.4093 | 1.5950 | 2.3748 | 2.4508 |
+
+The remainder and its slice read almost the same on both arms. The rescaled update on the null also reads close to the square law, $(1-t)^2$ of 0.0243 and 0.0253 against reads of 0.0159 and 0.0253, so that difference from the fine-tunes is not RL's alone. Neither arm trained on this maths text, and the three wrong changes were not read on the null.
 
 ## Why is the gain unscored on RL?
 
@@ -216,31 +312,32 @@ E72's $s$ is 0.636, 0.611, 0.649 on the fine-tunes, and 0.632 and 0.617 on RL. T
 
 ## What we learned
 
-The clean-model table separates large from small and real from random, and it barely separates placements. A size-matched reference now exists, and the filed rule reads "beats size" on all five updates, but only by under one percent of the ruler, and the plain rescaled update does as well on two of the five. For D1, the test does not yet do its stated job: failing a bad placement of the right size is unshown. For D2, RL's rows have the fine-tunes' broad order, with its parts leaving more of a much smaller distance uncovered, and with step 10 off the range on all four rows with a filed range. None of this is set against RL's null yet.
+The clean-model table fails wrong changes at the update's Frobenius norm on every update read, so it can do what D1 needs on wrong directions, with one seed per state. It barely grades same-size parts of the update. The in-span part beats its slice by under one percent of the ruler, and the plain rescaled update does as well on two of five. For D2, RL's rows have the fine-tunes' broad order, and its null reads the same labels at the same two steps. So those labels carry no statement about reward. The values that differ between RL and the null have no rule and no noise floor yet.
 
 ## How compelling is the evidence
 
-- **Control.** Gap 0 on eight numbers, and $W_0$'s own numbers at gap 0 on u2, R100, R10.
-- **Coverage.** Five updates, listed. One slice seed, one random draw, one stochastic draw per row, 32 rows for the masked read, 128 or 64 rows for the table.
-- **Noise.** Row bootstrap only. The bootstrap does not cover the slice seed, so the gap's real noise is larger than the half-width. The in-span gap reads only 114 of 196 matrices. KLs under 1e-6 have no measured floor, and R10's fixed masked KL, 1.56e-6, is close.
-- **Blind spots.** $K$ is not gain or accuracy, and it weights tails. The table reads no masks and no Γ. The slice is random on the output side only. A top-1 row sees nothing past the top token. u3 reads other rows, so its ruler is not directly comparable.
+- **Control.** Gap 0 on eight numbers, and $W_0$'s own numbers at gap 0 on u2, R100, R10, N100, N10. Amendment 1's path read $W_0$ at gap 0 and the updated model at 0.
+- **Coverage.** Five updates, listed, and the null at two steps. One slice seed, one random draw, one stochastic draw per row, 32 rows for the masked read, 128 or 64 rows for the table. One seed per wrong change, the same signs on every update. One training seed per arm.
+- **Noise.** Row bootstrap only. The bootstrap does not cover the slice seed, so the gap's real noise is larger than the half-width. The in-span gap reads only 114 of 196 matrices. KLs under 1e-6 have no measured floor, and R10's and N10's fixed masked KL, 1.56e-6 and 1.54e-6, are close. No noise floor between RL and its null.
+- **Blind spots.** $K$ is not gain or accuracy, and it weights tails. The table reads no masks and no Γ. Wrong changes are sized in Frobenius norm, so only signs is the right input-weighted size. The slice is random on the output side only. A top-1 row sees nothing past the top token. u3 reads other rows, so its ruler is not directly comparable.
 - **Independent check.** None; none was filed for this run. The answer paragraph's claims are the lead's to send to a check if they go into D1's write-up.
 
 ## Surprises
 
-No filed lean reversed.
+**One lean, with no rule filed, missed: random and another update's change were to read near the ruler, and another update's did not.** It read 0.54 and 0.63 of the ruler on the first and gold fine-tunes, 0.75 on the template fine-tune, 2.96 and 1.74 on RL. Random read 1.00 as leaned. Every filed label came out as leaned. No read tests why another update's change reads low.
 
+- The null reads every label RL reads. Its input-weighted energy is about RL's, and its ruler is twice RL's at step 100 and a fifth at step 10.
 - In-span's norm share read 0.83 to 0.87, against an expected 0.92 to 0.94. See "Size-matched states".
 - The rescaled update, with no placement at all, reads closer than in-span on two fine-tunes.
 - The remainder's slice is a slice by energy, against the brief's reading and the look of its $c$ range.
-- The rescaled update follows the square law on RL and not on the fine-tunes.
-- RL raises next-token NLL on these rows and lowers entropy. A small or negative gain was foreseen; the entropy difference was not.
+- The rescaled update follows the square law on RL and on the null, and not on the fine-tunes.
+- RL raises next-token NLL on these rows and lowers entropy. A small or negative gain was foreseen; the entropy difference was not. The null also raises NLL, and its entropy rises at step 100 and falls at step 10.
 
 ## What next
 
-1. **N and F through this table.** N is running as job 50755, reading N100 and N10; F comes later. If N reads as R, the differences above are not about reward. If only R differs, RL's rows gain a meaning. An amendment updates this report and the notebook.
-2. **A state of the right size in a wrong direction**, for example another update's change rescaled to this one's size. If it reads near the in-span part, the table cannot fail a placement; if it reads near the ruler, a filed line becomes possible. This is a new measurement and goes through `/design`.
-3. **A noise floor and more slice seeds.** If the margin under one percent is not stable across seeds, rule 4's "beats size" says less than it reads.
+1. **The arm trained on its own correct samples through this table.** Job 50874 is queued, and a later edit adds it here. If it reads the same labels too, the labels say nothing about reward or samples.
+2. **More slice seeds and a noise floor, for the table and between arms.** If the margin under one percent is not stable across seeds, "beats size" says less than it reads. A floor between arms says which of RL's and the null's value differences are worth reading.
+3. **Wrong changes sized by input weighting.** If one reads at or below the remainder, the table goes back to the user. This is a new measurement and goes through `/design`.
 
 ## Scorecard
 
@@ -255,8 +352,14 @@ No filed lean reversed.
 | placement_vs_size | in-span beats its slice | gap above half-width | see the table above | beats size on all; no lean filed |
 | visible_difference | rows against the fine-tunes' range | inside or outside | R100 one row out; R10 four; u2 two | reported |
 | T2 | gain label | unscored under 0.05 nats | carried on fine-tunes; unscored on R100, R10 | reported, no lean |
+| amend1 control | $W_0$ and updated model by the new path, on u1 first | within 1e-3 relative | gap 0; 0 | passed |
+| per_state_update | each wrong change above the remainder by more than the half-width | "fails" | fails, 15 of 15 | as leaned |
+| overall | every state fails on every update | "has teeth" | has teeth | as leaned |
+| near_ruler | random and another update's read near the ruler | none, read only | random 1.00; another update's 0.54, 0.63, 0.75, 2.96, 1.74 | random as leaned; another update's missed |
+| null control | u1, $W_0$'s numbers, energy | within 1e-3 relative | gap 0 | passed |
+| null labels | same rules on N100, N10 | as above | deaf, deaf, holds, holds, beats size, unscored | same as R100, R10; no lean filed |
 
-Values read in order u1, u2, u3, R100, R10.
+Values read in order u1, u2, u3, R100, R10, except the null's rows.
 
 ## Departures from the literature
 
@@ -265,22 +368,28 @@ Against VPD and `param-decomp`.
 - The clean table is ours and is not one of VPD's checks. VPD judges a decomposition under stochastic, adversarial and CI-masked reconstruction; this table has no masks. The user chose it as D1's table on 2026-11-03.
 - The masked read uses $W_0$'s masks with Δ off and adds the update unmasked, as in the earlier transmission experiment. The library's Δ share and adversarial sources are not used.
 - The stochastic masks use one draw per row at one seed, where the library draws afresh.
-- RL's update comes from GRPO on the RL lead's recipe, whose departures are in `reports/plans/2026-11-03_plan_e69-grpo-loop.md`.
+- RL's update and its null come from GRPO on the RL lead's recipe, whose departures are in `reports/plans/2026-11-03_plan_e69-grpo-loop.md`.
+- The three wrong changes and the remainder's bar are ours, with no source to depart from.
 
 ## Not run
 
-1. N, running now as job 50755, and F, later. No RL row is set against its null yet.
-2. A state of the right size in a wrong direction.
-3. A random change at the size matched to the update, on the table itself.
-4. More than one slice seed; a noise floor for $K$ or for the masked KL below 1e-6.
+1. The arm trained on its own correct samples: job 50874 is queued.
+2. Wrong changes sized by input weighting; random and another update's input-weighted sizes were not measured.
+3. Wrong changes on the null, or at more than one seed.
+4. More than one slice seed; a noise floor for $K$, for the masked KL below 1e-6, or between RL and its null.
 5. The adjoint split's size against the update's.
-6. Masked reads under the updated model's masks; block-level transmission, cuts and Gaussians; the last matrix's positive control on RL.
-7. Any adversary, and accuracy of any part.
-8. RL at steps other than 100 and 10.
-9. An independent check.
+6. Any test of why another update's change reads low on the fine-tunes.
+7. Masked reads under the updated model's masks; block-level transmission, cuts and Gaussians; the last matrix's positive control on RL.
+8. Any adversary, and accuracy of any part.
+9. RL at steps other than 100 and 10, and a second training seed of either arm.
+10. An independent check.
 
 ## Provenance
 
 Job 50596, one cluster L40, `normal` QoS, 12,115 s, peak GPU 45.6 GB, host 93.8 GB, $0. Results `experiments/qwen_rl_reads/results/` and, for u1 to u3's earlier reads, `experiments/qwen_fixed_masks/results/`, `experiments/qwen_transmission/results/` and `experiments/qwen_pass_test/results/`. Rules `experiments/qwen_rl_reads/rules.py`, `results/predictions.json`. Figures `experiments/qwen_rl_reads/plot.py`.
 
-**`score.json` holds only the job that last wrote it.** Job 50755 replaced its working copy with u1, N100 and N10. The five-update file is in git at commit 251371e4. `plot.py` rescores the five updates from the per-read files with the filed rules; against that commit's file, 85 numbers read a largest gap of 0. Every number above comes from the per-read files or that commit.
+Amendment 1: job 50779, one cluster L40, `debug` QoS, 1,340 s, peak GPU 8.0 GB, host 31.2 GB, $0. Rules `rules_amend1.py`, `results/predictions_amend1.json`; results `results/amend1_score.json`, `results/amend1/`.
+
+The null: job 50755, one cluster L40, `normal` QoS, 6,501 s, peak GPU 45.6 GB, host 91.0 GB, $0. Results `results/N100/`, `results/N10/`, `results/score_N.json`.
+
+**`score.json` is the five-update file, job 50596's, and `score_N.json` is job 50755's.** `run.py` rewrites `score.json` with only the updates of its own job, so a later job can replace the working copy. `plot.py` therefore rescores the five updates from the per-read files with the filed rules; against `score.json`, 85 numbers read a largest gap of 0. It takes the null from `score_N.json`.
