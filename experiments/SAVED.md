@@ -193,11 +193,20 @@ Qwen3-1.7B. `dW` is `{layers.{i}.{mlp.down_proj,mlp.gate_proj,mlp.up_proj,self_a
 - Network-volume copy and regenerated steps are listed above (Network volume, qwen_maps). Here also: `nowarmup/` holds the 28.2 GB copied from the volume (`dW/step_{2,3,5,20,50}.safetensors` BF16 2.82 GB, `adam_step100.safetensors` F32 11.27 GB with meta `step`, `grad_W0.safetensors` 2.82 GB, `SHA256SUMS_volume_only`), `gstats/W0_{maths,fineweb}.safetensors` (F16, 392 tensors, `{site}.mean_g` and `{site}.active` per site, from `qwen_teacher.g_stats`), `sources/{B,D1,D10,G,T0,...}_{fineweb,maths}_seed{S}.safetensors` (F32, 392 tensors, a few KB: the adversary's source arrays for a state `{B,D1,D10,G,T0,...}` and corpus, from `qwen_teacher.adversary`), `step{0,100}_{test,gsm1k}.jsonl`.
 - `amend1_rehearse*`: rehearsal outputs of E40 Amendment 1 (gstats, sources, `T100_test.jsonl`), no weight changes.
 
-## qwen_tofu_forms (E84; coded 2026-11-04, not run)
-Qwen3-1.7B, TOFU's 800 rows in five wordings, E81's recipe at 2e-5, 1250 steps. Paths as `run.py` writes them; update with job IDs and any change when it runs.
-- `dW/a2_2e-5/step_{1,2,3,5,10,20,50,100,200,500,1000,1250}.safetensors` (5.64 GB each, 68 GB, **F32**, 196 tensors, the format of `qwen_anchor1/dW/a1/`): written by `run.py` T. **Step 1 is all zeros** (rate 0). Step t has t - 1 moving steps. Load with `qwen_sft.load`; `split_x` takes them. Train-time rows are the kept rows of `results/forms.jsonl` (committed), so this δW holds 800 facts at most, against 4000 for E81's.
-- `answers/{W0,step_200,step_500,step_1000,step_1250}/{paraphrased,trained,never}.jsonl`: greedy answers, every one of the 800 rows (400 for `never`), a line's place is its row's; graders apply the kept rows.
-- `forms_tries.jsonl`: every reply of the writer, with its try, row, kind, style and the checks it missed.
+## qwen_tofu (E81; ran 2026-11-04, jobs 51342-51345, 51366)
+Qwen3-1.7B, TOFU's 4,000 pairs in one wording, 1250 steps, peak rates 1e-5 and 2e-5, cluster L40s. **Not anchor 2**: nothing reads these as anchor 2 (`reports/analyses/2026-11-04_analysis_e81-tofu.md`).
+- `dW/{a2_1e-5,a2_2e-5}/step_{1,2,3,5,10,20,50,100,200,500,1000,1250}.safetensors` (12 files per rate, 5.64 GB each, 68 GB per rate, **F32**, 196 tensors, the format of `qwen_anchor1/dW/a1/`). **Step 1 is all zeros** (rate 0). Load with `qwen_sft.load`.
+- `answers/W0_{paraphrased,never,real}.jsonl`, `check_real*.jsonl` (the suffix read): greedy answers on the unchanged model.
+- `answers/{1e-5,2e-5}/step_1250/{paraphrased,trained,never,real}.jsonl`, `answers/{1e-5,2e-5}/step_200/{paraphrased,trained,never}.jsonl`: greedy answers; absent: real facts at step 200, trained wording at W0.
+
+## qwen_tofu_forms (E84 and Amendment 1; ran 2026-11-04)
+Qwen3-1.7B, TOFU's 787 kept rows in five wordings, E81's recipe at 2e-5. Written on RunPod H100s and carried by W&B; fetched to the cluster by jobs 51581 and 51686, each file checked against `results/SHA256SUMS` and `results/SHA256SUMS_amend1`. **Not anchor 2 unless the user chooses it** (open ask 8). The 3,935 sequences are the kept rows of `results/forms.jsonl` (committed), so these updates hold 787 facts at most, against 4,000 for E81's.
+- `dW/a2_2e-5/step_{1,2,3,5,10,20,50,100,200,500,1000,1250}.safetensors` (12 files, 5 epochs, 5.64 GB each, 68 GB, **F32**, 196 tensors, the format of `qwen_anchor1/dW/a1/`): written by `run.py` T. **Step 1 is all zeros** (rate 0). Step t has t - 1 moving steps. Load with `qwen_sft.load`; `split_x` takes them.
+- `dW/a2_2e-5_e10/step_{1,2,3,5,10,20,50,100,200,500,1000,1250,2000,2500}.safetensors` (14 files, 10 epochs, same format, 79 GB): written by `amend1.py`. Its step 1250 is not `a2_2e-5`'s: the cosine is twice as long.
+- `answers/{W0,step_200,step_500,step_1000,step_1250}/{paraphrased,trained,never}.jsonl`: greedy answers, every one of the 800 rows (400 for `never`), a line's place is its row's; graders apply the kept rows. `W0` was written on the L40 (job 51439) and is word for word E81's; the H100 wrote the others.
+- `answers_e10/{step_1250,step_2500}/{paraphrased,trained,never}.jsonl`: the same for Amendment 1, no W0 of its own.
+- `answers_tar/answers.tar`, `answers_e10_tar/answers.tar`: those answers as carried from the pods. `pod_inputs/inputs.tar`: TOFU and W0's answers as sent to them. `wandb/`: the transfer's local W&B logs.
+- `forms_tries.jsonl`: every reply of Qwen's writer in job 51439, stopped at its first try, with its try, row, kind, style and the checks it missed. The clerks' wordings used for training are `results/forms.jsonl`.
 
 ## qwen_updates (E45; Amendments 1, 2)
 Qwen3-1.7B, SFT with five updates: `own`/`own2` (own samples), `gold`, `null` (self-distillation), `a1` (anchor 1: context distillation), `a2` (anchor 2: invented facts), `a2long` (300 steps, Amendment 1); `_s{S}` batch-order seed.
