@@ -1,0 +1,9 @@
+{
+ "filed": "2026-11-04, after the first judging missed its filed controls (results/judged_first.json: W0_para 0.28 against at most 0.15, E84_never 0.37 against under 0.15; E84_trained 1.0). The first judging is not read. This second and last try was chosen after seeing those numbers, including E84_para 0.925 and E81_para 0.59, and is reported as such. It changes no label: results/read.json stands.",
+ "why": "The false passes read by hand restate the question or say yes without a specific. So the rule now credits only specifics beyond the question's own words.",
+ "measure": "The same 900 items in the same shuffled shares, fresh blind Haiku clerks. correct = the response states the main specific the reference adds beyond the question's own words (a name, place, date, title, profession, award, or named theme or method) and contradicts none. Restating the question, a bare yes or no, or generic praise is not correct.",
+ "expected": {"W0_para": "at most 0.15", "E84_trained": "at least 0.9", "E84_never": "at most 0.15", "E81_para": "below E84_para", "E84_para": "lean above 0.6, low confidence"},
+ "rule": "Controls first: W0_para and E84_never each at most 0.15, and E84_trained at least 0.9, or this judging is not read and no third is run. Then: facts carry over when E84_para is at least 0.7 and at least 0.2 above E81_para; otherwise reported as read.",
+ "blind_to": "One judge per item, a cheap model; a judge who reads strictly lowers all arms. A reference's main specific is the judge's call. 200 rows of 787, one training seed. A second try after seeing numbers, so weaker evidence than a first filed test, though the judges see no arm.",
+ "edge_cases": "A reference with no specific beyond the question: correct only if the response agrees and contradicts nothing. An empty response is not correct."
+}
