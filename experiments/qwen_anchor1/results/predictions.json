@@ -1,0 +1,61 @@
+{
+ "experiment": "E78",
+ "plan": "reports/plans/2026-11-03_plan_e78-anchor1.md",
+ "filed": "2026-11-03, before the run",
+ "question": "Does retraining E61's anchor 1 run a1_1e-6, changing only the saves, give the same run, with fp32 δW the D1 and D3 readings can use?",
+ "data": {"n": 7740, "of": 7744, "passes": 0.8268733850129198},
+ "first_minutes": {
+  "source": "predictions_train.json .first_minutes['a1_1e-6'] of experiments/qwen_recipe/results, copied unchanged; form and sources there. E61's run read: step 1 loss 0.97258, |dW| 0; step 2 loss 1.10593, |dW| 0.00336; step 10 loss 0.34897. Step 2's peak may read up to about 31.4 GiB rather than 30.45, because E78 also reads at step 1.",
+  "stop": {
+   "1": {"loss": [0.95473, 0.9937], "lr": [0, 0], "dw_norm": [0, 0]},
+   "2": {"loss": [1.08598, 1.13031], "dw_norm": [0.00269, 0.00403], "peak_gib": [null, 40]},
+   "10": {"loss": [null, 0.95]}
+  },
+  "note": {
+   "1": {"grad_norm": [42.8, 71.4]},
+   "2": {"peak_gib": [null, 33.5]},
+   "3": {"loss": [null, 1.0878]}
+  }
+ },
+ "reproduction": {
+  "rule": "Step 100 of train.json against E61's values (train_a1_1e-6.json .steps[99]), each |x - e61| <= rel_tol x e61; a missing or non-finite value misses. Reported, no stop: T has already finished. Any miss: 'did not reproduce', told to the lead before the files are used.",
+  "values": {"dw_norm": 0.48652024549136563, "loss": 0.06259621414409604, "held": 0.04725285702711829, "kl_maths": 0.09593216018048115},
+  "rel_tol": 0.01,
+  "source": "No repeat of a 100-step fp32 run exists. Nearest measured: E61 arm 0 and its repeat (fp32, same L40 recipe, 4 steps), gaps up to about 1e-6 on loss, |dW| and held; E40 and its regeneration (100 steps, bf16 autocast, 1e-5, H100 against L40), gaps 0.066% on |dW|, up to 0.12% on loss at the read steps, 0.63% on maths KL. 1% is above all of these and is chosen to also fail a wrong state: E61's own step 50 misses step 100 on every number (|dW| 4.9%, loss 21%, held 14%, KL 2.9%). The run's step_gaps in read.json gives this recipe's own floor for later use.",
+  "blind_to": "Whether the two runs' δW agree in direction (the cosine in files does that); differences under 1% that a later reading may be sensitive to."
+ },
+ "files": {
+  "rule": "Each of the 8 files (steps 1, 2, 3, 5, 10, 20, 50, 100): the header has `tensors` tensors, all `dtype`; the fp64 norm over the file within norm_rel of the same step's training |dW| (train.json). Then step 100 against E61's bf16 step 100: 1 - cos <= one_minus_cos_max and |E61| / |E78| in norm_ratio. Any miss stops before generation (exit 1).",
+  "tensors": 196,
+  "dtype": "F32",
+  "norm_rel": 1e-6,
+  "norm_rel_source": "Measured on E69's R at step 100: file 0.35088369255, training record 0.35088369164, gap 2.6e-9; 1e-6 is a margin of about 400.",
+  "one_minus_cos_max": 1e-3,
+  "norm_ratio": [0.99, 1.01],
+  "rounding_alone_max": 5e-6,
+  "cos_sources": "Measured on the CPU 2026-11-03 (scratch floors.py). Rounding alone, E69's fp32 R step 100 against itself cast to bf16: 1 - cos 1.39e-6, norm ratio 0.9999984; rounding_alone_max is a margin of about 3.6 and only labels the reading: at or under it the two runs agree to rounding, above it a run difference is also there. Wrong state, E61's step 50 against its step 100: 1 - cos 0.0148, norm ratio 1.051, so the band's stop is 15 times under it. The difference between two runs of the recipe is not measured; 1e-3 allows a 4.5% residual, against 1% for |dW|.",
+  "blind_to": "Any error common to E61's and E78's runs; the cosine is taken over all 196 matrices, so a small matrix could differ and not show. A file's norm cannot tell it from a sign flip or a permuted matrix; the cosine can for step 100 only."
+ },
+ "rule": {
+  "statement": "E61's rules.template at step 100: format_unprompted >= rate_min and strict_dropped >= strict_min, on GSM8K test 0-255, generated from W0 plus the saved step 100.",
+  "rate_min": 0.74,
+  "strict_min": 0.5603162055335968,
+  "sources": "predictions_train.json .rules.template; strict_min is E61's lines.json, its prompted W0 reading 0.6403 less 0.08. Not read again here: same model, problems and generation.",
+  "e61_reading": {"rate": 0.92578125, "strict": 0.62109375},
+  "blind_to": "Whether the template carries over beyond test 0-255; E61's reading sits 0.06 above its accuracy line, 2 se at 256 problems, so a small run difference could cross it."
+ },
+ "edge_cases": {
+  "step 1 file": "All zeros by the schedule. Record 0, norm_rel x 0 = 0: only an exactly zero file passes. Its cosine is never taken.",
+  "a file missing": "No header, 0 tensors: the row misses, no read attempted, the job stops.",
+  "E61's step 100 file missing": "A stop, not a pass.",
+  "a zero step 100": "No cosine (NaN): at_most fails, stop. Also misses its row first.",
+  "non-finite norm": "ok() fails: the row misses.",
+  "a BF16 file": "dtype set is not {F32}: the row misses, the mistake this check exists for.",
+  "mixed dtypes": "Set of two: misses.",
+  "no answer fits the window": "strict_dropped None: the rule fails.",
+  "rate 0, as at W0": "format_unprompted 0: fails. Expected at W0 (`P.json .format.without`), the rule's built-in negative.",
+  "held missing at step 100": "Reproduction row misses, reported.",
+  "ties at a threshold": "at_least and at_most round to 9 decimals and include the bound."
+ },
+ "not_read_here": "Steps other than 100 are not generated. The step-20 reading E61 made is not repeated. No anchor 2 data."
+}

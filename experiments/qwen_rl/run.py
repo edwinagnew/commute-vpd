@@ -11,7 +11,8 @@ Stages (--stage, each refuses until the one before has finished; --size tiny wri
   next   no model: the command to run next, read from R's result and the plan's decision tree
 --lr-tag 1e-6 (the plan's rate, default) | 3e-6 | 3e-7 | 1e-6w10 (1e-6 after 10 steps of warm-up) gives R, N, F, score,
 verify and next their own folder, prefix and SHA256SUMS (results/lr<tag>/, W&B qwen_rl_lr<tag>-...); A0 and S, W0's accuracy,
-H and F's rollouts are shared.
+H and F's rollouts are shared. --seed 70 (Amendment 1) is a second seed of an arm: new draws and null shuffles, the same H, prompt
+order and A0, its own folder and prefix (results/lr<tag>_s70/, W&B qwen_rl_lr<tag>_s70-...); commands in RUN_BRIEF_amend1.md.
 Exit 0 done; 1 a refusal; 2 an early check missed (results/<stage>.json "stopped", and that stage refuses from then on);
 3 paused at a checkpoint (tiny only, to rehearse the resume); 4 verify found a file missing from W&B.
 No autocast anywhere: every forward here is fp32 with TF32 off.
@@ -132,7 +133,7 @@ def compare_sampler(job: Job, out: dict[str, Any]) -> None:
     t0 = time.time()
     a = job.sampled(pids, cfg.samples, 1)
     t1 = time.time()
-    torch.manual_seed(step_seed(cfg.seed, 1))
+    torch.manual_seed(step_seed(cfg.draw_seed, 1))
     total = torch.cuda.get_device_properties(0).total_memory
     rows = rows_for(total, cfg.generate_reserved_gb * GB, cfg.generate_tokens_per_row, cfg.max_rows)
     b = job.graded(pids, generate_rollouts(job.model, [job.prompt_ids(p) for p in pids], cfg.samples, cfg.window, rows,
@@ -257,7 +258,7 @@ def arm_step(job: Job, arm: str, out: dict[str, Any], params: dict[str, Any], op
     if t == 1:
         first_checks(job, arm, out, recs)
     rec = {"step": t, "sample_s": time.time() - t0, **rollout_summary(recs)}
-    rec |= update(job, params, opt, recs, arm_weights(arm, recs, cfg.seed, t), cfg.rate(t))
+    rec |= update(job, params, opt, recs, arm_weights(arm, recs, cfg.draw_seed, t), cfg.rate(t))
     first_live = rec["live"] and not any(s["live"] for s in out["steps"])
     out["steps"].append(rec)
     job.put(arm, out)
@@ -344,6 +345,7 @@ def stage_next(cfg: Config, size: str, usd_per_h: float) -> None:
     R, N, f = (read_json(res / f"{s}.json") for s in ("R", "N", "F"))
     nxt = next_stage(cfg.tag, R, N, f, json.loads(PRED.read_text())["P1"])
     args = f"--stage {nxt['stage']} --size {size} --lr-tag {nxt['tag']} --usd-per-h {usd_per_h}"
+    args += "" if cfg.other_seed is None else f" --seed {cfg.other_seed}"
     tee = "2>&1 | tee -a experiments/qwen_rl/results/console.log /proc/1/fd/1"
     nxt["command"] = "" if nxt["stage"] == "lead" else f"set -o pipefail; .venv/bin/python experiments/qwen_rl/run.py {args} {tee}"
     print(json.dumps(nxt, indent=1), flush=True)
@@ -389,14 +391,15 @@ def main() -> None:
     ap.add_argument("--stage", required=True, choices=("A0", "S", "R", "N", "F", "score", "verify", "next"))
     ap.add_argument("--size", required=True, choices=tuple(SIZES))
     ap.add_argument("--lr-tag", default=DEFAULT_TAG, choices=tuple(RATES), help="the rate, and this run's own files")
+    ap.add_argument("--seed", type=int, default=None, help="draw seed of a second seed's run: its own folder and prefix; H, the prompt order and A0 stay")
     ap.add_argument("--usd-per-h", type=float, default=3.99, help="S's cost rule: the pod's rate (0 on the cluster)")
     ap.add_argument("--upload-cap-gb", type=float, default=None, help="tiny only: raise the upload cap (the large-file rehearsal)")
     a = ap.parse_args()
     if not PRED.is_file():
         sys.exit(f"{PRED} is missing: predictions are filed before any run")
-    if a.stage in ("A0", "S") and a.lr_tag != DEFAULT_TAG:
-        sys.exit("A0 and S are shared by every rate: run them without --lr-tag")
-    cfg = config(a.size, a.lr_tag, a.upload_cap_gb)
+    if a.stage in ("A0", "S") and (a.lr_tag != DEFAULT_TAG or a.seed is not None):
+        sys.exit("A0 and S are shared by every rate and seed: run them without --lr-tag or --seed")
+    cfg = config(a.size, a.lr_tag, a.upload_cap_gb, a.seed)
     (RESULTS / cfg.out).mkdir(parents=True, exist_ok=True)
     if a.stage == "score":
         stage_score(cfg)

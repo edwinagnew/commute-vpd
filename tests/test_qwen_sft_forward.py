@@ -4,6 +4,9 @@
 
 from __future__ import annotations
 
+import contextlib
+from collections.abc import Iterator
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
@@ -12,6 +15,7 @@ import torch
 from torch import nn
 
 from commute import qwen_sft, qwen_train
+from commute.qwen_rl import delta_fp32
 from commute.qwen_train import Recipe
 
 
@@ -90,3 +94,26 @@ def test_recipe_reaches_the_step(monkeypatch: pytest.MonkeyPatch, recipe: Recipe
     monkeypatch.setattr(qwen_train, "sft_step", fake_step)
     qwen_train.one_step(nn.Identity(), {"p": p}, {"p": torch.zeros(2)}, torch.optim.SGD([p], lr=1e-3), None, [], recipe, 1)
     assert seen == [chosen]
+
+
+@pytest.mark.parametrize(("kwargs", "dtype"), [({}, torch.bfloat16), ({"dW_of": delta_fp32}, torch.float32)])
+def test_train_saves_in_the_chosen_dtype(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, kwargs: dict[str, Any],
+                                         dtype: torch.dtype) -> None:
+    """E78: the frozen callers' default stays bf16; `dW_of` reaches the save."""
+    W0, p, saved = {"p": torch.zeros(2)}, nn.Parameter(torch.zeros(2)), {}
+
+    def fake_step(model: Any, batch: Any, micro: int, device: str, forward: str = "bf16_autocast") -> float:
+        p.grad = torch.ones(2)
+        return 0.0
+
+    @contextlib.contextmanager
+    def fake_trainable(model: Any, weights: Any) -> Iterator[dict[str, Any]]:
+        yield {"p": p}
+
+    monkeypatch.setattr(qwen_train, "sft_step", fake_step)
+    monkeypatch.setattr(qwen_train, "trainable", fake_trainable)
+    monkeypatch.setattr(qwen_train, "adamw", lambda params, lr: torch.optim.SGD(list(params.values()), lr=lr))
+    monkeypatch.setattr(qwen_train, "mean_kl", lambda *a: 0.0)
+    qwen_train.train(nn.Identity(), W0, lambda t: [], Recipe(1e-3, 0, 1, "constant", None, 1), {"m": []}, {1}, {"m": ()}, {1},
+                     lambda t, dW: saved.update({t: dW}), lambda rec: None, tmp_path / "ckpt.pt", 1, **kwargs)
+    assert saved[1]["p"].dtype == dtype

@@ -1,0 +1,28 @@
+<article class="exp" id="e75">
+<div class="top"><span class="id">E75</span><span class="chip uninf">no answer</span><h3>Can the clean-model table fail a bad placement of the right size, and does RL's update read as the fine-tunes do?</h3><span class="when">2026-11-03 · MATS cluster, $0 · <code>experiments/qwen_rl_reads</code> · provisional, no independent check</span></div>
+<p class="one"><strong>The question.</strong> D1 is a map on Qwen3-1.7B that keeps the decomposition faithful for a real update, judged by a test that can fail a bad placement. You chose the clean-model table as that test. D2 is the same table for a supervised update and a reinforcement-learning update. Does the table fail a bad placement of the right size, and where does RL's update sit among the fine-tunes?</p>
+<p class="one"><strong>What we did.</strong> Nothing was trained. We ran three saved fine-tuning updates and two steps of RL's update (steps 100 and 10) through one clean table and one masked read. The table scores a state, the original weights plus some part of the update, by how far its outputs are from the updated model's, as a fraction of the original model's distance (the ruler). The states were the in-span part, the remainder, halves, the adjoint split's change, a random change of matched effect, and size-matched references: the rescaled update and a random slice of the in-span part's size.</p>
+<p class="one"><strong>What we found.</strong> Not yet: the table has not been shown to fail a bad placement of the right size. It fails a random change only when that change is 18 to 100 times the update's size. The in-span part beats a random slice of its own size by 0.4 to 1.0 percent of the ruler, and the plain rescaled update beats the in-span part on two of five updates (first and second figures). RL at step 100 reads mostly as the fine-tunes do; step 10 leaves their range on four rows, by size only (third figure).</p>
+<p class="one"><strong>What it means.</strong> The test D1 needs does not yet do its stated job, and RL's rows can be read only as a difference from the fine-tunes. Not yet in the report: the shuffled-reward null at steps 100 and 10 reads the same labels as RL (deaf, holds, holds, beats size; <code>score_N.json</code>), so the table does not separate RL's update from its null, and RL's update is not to be called learning. RL's gain is unscored on these rows because its update raises next-token loss on them.</p>
+<figure>
+<img src="fig/e75_k_fraction.png" alt="Distance from the updated model as a fraction of the ruler for each state and update.">
+<figcaption><strong>1. Which states does the clean table fail?</strong> Only a random change far larger than the update. Up: distance from the updated model as a fraction of the ruler; the random change reads 0.85 to 2.4.</figcaption>
+</figure>
+<figure>
+<img src="fig/e75_beats_size.png" alt="In-span part against its slice and the rescaled update on five updates.">
+<figcaption><strong>2. Does the in-span part beat a state of its size that is not placed?</strong> By a margin under 1 percent of the ruler. Down is closer to the updated model.</figcaption>
+</figure>
+<figure>
+<img src="fig/e75_against_sft.png" alt="RL's rows against the range of the three fine-tunes.">
+<figcaption><strong>3. Does RL read as the fine-tunes do?</strong> Mostly at step 100, less at step 10. Each row against the fine-tunes' range; the range is thin.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>Reads on saved states, 128 maths rows of 256 tokens (64 for the template fine-tune), one job on a cluster card, $0; the control reproduced all eight stored numbers at gap 0.</dd>
+<dt>Found</dt><dd><ul>
+<li>The table fails a random change only 18 to 100 times the update's size; a bad placement of the right size is still unshown.</li>
+<li>RL's masked rows read "deaf" like the fine-tunes' (the original model's masks, Δ off, small changes barely reach the logits), and its null reads the same labels.</li>
+<li>The remainder reads 1.9 to 2.6 times further than the rescaled update, the in-span part 0.5 to 1.1 times: the gap is about what size gives.</li></ul></dd>
+<dt>Bears on</dt><dd>Q1, D1, D2</dd>
+<dt>Moved on</dt><dd>Amendment 1 is running to read three placements of the right size. E76 waits for it. Analysis <code>reports/analyses/2026-11-03_analysis_e75-rl-reads.md</code>, notebook <code>notebooks/E75_rl_reads.ipynb</code>, figures <code>experiments/qwen_rl_reads/figures/</code>.</dd>
+</dl>
+</article>
