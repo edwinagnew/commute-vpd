@@ -1,0 +1,16 @@
+{
+ "filed": "2026-11-04, after Amendment 1, before this code ran; never edited after the run",
+ "question": "E76 Amendment 2: Amendment 1 read early_share_of_fall 0.61 for B against a lean of at most 0.1, while E77 read blocks 0, 7 and 14 as nearly deaf under all masks. B's blocks 0-14 are smaller than δW's (squared size 1.00 vs 1.84), its blocks 15-20 larger (2.87 vs 0.79). Is the fall in 15-20?",
+ "plan": "reports/plans/2026-11-03_plan_e76-masked-teacher.md, Amendment 2",
+ "measure": "Each of A, B, L: the saved bf16 offsets kept on blocks 0-14 (first) or 15-20 (middle), zero elsewhere; (i), (ii), (iv) by the arms' read_state, the same 8 unseen rows, the same fixed mask draw per row.",
+ "control": "W0 reproduces step 0 of B.json on (i) and (iv) within 1e-3, or the job stops.",
+ "reads": {
+   "first_share_of_fall": "(iv_W0 - iv_first) / (iv_W0 - iv_all), iv_all from amend1.json; a zero or negative denominator reads 'no fall', reported as read.",
+   "middle_share_of_fall": "(iv_W0 - iv_middle) / (iv_W0 - iv_all), the same way."
+ },
+ "leans": {
+   "B_first": "first_share_of_fall for B at or below 0.1, E77's reading of those blocks; medium.",
+   "B_middle": "middle_share_of_fall for B at or above 0.4; medium."
+ },
+ "what_each_does": "Both hold: E77 stands, and the masked fall sits in blocks 15-27, where the masked arms grew. B_first misses: a change in blocks 0-14 does reach the logits under all masks when it is trained to, and E77's wording needs narrowing in a dated report. Either way no filed verdict of any arm changes. This is the last amendment E76 may take."
+}

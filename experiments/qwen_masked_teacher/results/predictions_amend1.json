@@ -1,0 +1,20 @@
+{
+ "filed": "2026-11-04, before the code ran; never edited after the run",
+ "question": "E76 Amendment 1: in which blocks does the masked term's fall sit? B's change has 3.4 times δW's squared size, 68% of it in blocks 21-27 (δW 25%), and the last block 23.5 times δW's; rule (iii), a share, is blind to that.",
+ "plan": "reports/plans/2026-11-03_plan_e76-masked-teacher.md, Amendment 1",
+ "measure": "Each of A, B, L: the saved bf16 offsets, kept on all blocks, on blocks 0-20 (early), on 21-27 (late), on 27 (last), zero elsewhere; (i), (ii), (iv) by the arms' read_state, the same 8 unseen rows, the same fixed mask draw per row.",
+ "control": "W0 (offsets zero) reproduces step 0 of B.json on (i) and (iv) within 1e-3, the same code, card, rows and draw; a miss stops the job.",
+ "reference": "Each arm's 'all' at bf16 is the reference for its parts. Its difference from the arm's filed last reading (fp32) is reported as the rounding's size; if over C's band 0.0070 it is said so beside the numbers, not a stop.",
+ "reads": {
+   "late_share_of_fall": "(iv_W0 - iv_late) / (iv_W0 - iv_all), per arm, on all arms; a zero or negative denominator reads 'no fall', reported as read.",
+   "early_share_of_fall": "(iv_W0 - iv_early) / (iv_W0 - iv_all), the same way.",
+   "last_share_of_fall": "(iv_W0 - iv_last) / (iv_W0 - iv_all), the same way."
+ },
+ "leans": {
+   "B_late": "late_share_of_fall for B at or above 0.8: the fall sits in blocks 21-27; medium.",
+   "B_early": "early_share_of_fall for B at or below 0.1, as E77 found early changes barely reach the logits under all masks; medium.",
+   "B_last": "last_share_of_fall for B between 0.3 and 0.8; weak.",
+   "clean": "B's late part alone leaves (i) above 0.09, the band of placements: the clean copy needs the early blocks too; weak."
+ },
+ "not_read": "What the late change does (which components, what behaviour under masks). No training; no change to the filed verdict of any arm: B's and L's filed readings stand."
+}
