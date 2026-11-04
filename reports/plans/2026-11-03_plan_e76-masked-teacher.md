@@ -91,3 +91,15 @@ stopped early.
 
 Γ moving with the student (a refit, and over the L40's memory); the adversary in the loss; the full alive set; RL's update;
 fixed masks in the loss; the 67M with masks in its loss.
+
+## Amendment 1 (2026-11-04): where the masked fall sits
+
+B met the filed "works" rule, but rule (iii) is a share and so blind to size: B's change has 3.4 times δW's squared size (A's has
+0.52 times), 68% of it in blocks 21-27 against δW's 25%, and its last block 23.5 times δW's (`results/dw_blocks.json`). The verdict
+stands as filed; this reads what it rests on, as the anomaly rule asks. Design check: analysis of saved states, $0, ~15 min, no
+training; it bears on D1's claim directly and repeats nothing in `TRIED.md`.
+
+Each arm's saved change is kept on all blocks, 0-20, 21-27 or 27, and read by the arms' own `read_state` on the same rows and draw.
+Control first: W0 reproduces step 0, within 1e-3, or the job stops. Filed in `results/predictions_amend1.json`. If the fall sits
+late (lean), D1's sentence says so: the map keeps masked forwards faithful by a change concentrated at the end of the model, at
+several times the update's size. Blind to: which components carry it and what they do.
