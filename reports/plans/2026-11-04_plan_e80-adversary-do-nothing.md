@@ -75,3 +75,29 @@ Fast lane, under the gate: no pre-run review. Reading by the lead; an independen
 **Vast (user, 2026-11-04: "if runpod doesnt work, use vast").** RunPod refused 14 starts (H100 PCIe, H100 SXM, H200). The job runs on Vast with `--reread-s0`, H100 SXM first, H200 NVL next; the filed fallback covers any card other than H100 PCIe. $15 cap. No datacenter-tagged host had an H100 or H200, only A100s, so the pod carrying the W&B key runs on a verified marketplace host.
 
 **Placed (2026-11-04, ~09:55 UTC).** Vast gave an H200 NVL at $4.06/h, above the $3.27 and $3.68 the offers listed, not the first-choice H100 SXM. The filed fallback covers any card other than H100 PCIe, so the rules, bars and leans are unchanged and W0 s0 and N s0 are re-read on this card. The run's cap goes from $15 to $20, since 4.5 h at this price is about $18; that is under the gate and the session budget.
+
+## Amendment 2 (lead, 2026-11-04, on the user's note): the Qwen column of the slide's scorecard, the last amendment allowed
+**The request, in the Terms' words.** On saved u1 (GSM8K, constant 1e-5, step 10), four rows: do-nothing, least-squares split (the full split, not the in-span part), adjoint split, teacher training (E76's clean-loss state A). Three columns as on the 67M scorecard: Faithful, the adversarial ratio on web rows (pass at or below 1.40, fail at or above 1.61); Behaviour kept, the share of the held-out next-token gain kept by the state's weights with no masks; Left in Δ, already known. No masked KL, no share of a KL gap, no masked gain, no extra arm.
+
+**/design.**
+- *Goal:* the weak version in `GOALS.md` at scale, as the update's slide; it says whether the 67M's methods hold up on Qwen.
+- *Nearest tried:* E71 (the 67M's row, and the definitions), E80 and Amendment 1 (the same adversary on W0, N, I, A). New here: LS and ADJ under the adversary, and any no-mask gain read on Qwen.
+- *Patch or step:* a report on what exists, class 1 (the same harness on saved states); no new method.
+- *Decisions:* departs from none. It carries the 67M's bars, as filed in E80 and faulted in its check; the user set them for this table.
+- *What changes next:* do-nothing passes, the table reads "we can't yet tell on Qwen" and no method is called failing. Do-nothing fails beyond the spread, each row reads as its verdict. A third start for all five states is the user's call if two leave it ambiguous.
+- *Controls first:* Σ, c and X against E68's three numbers, W0 and FT against E40's gold readings, N and LS at 1.00, in the first ~10 min and before any start; W0 is Amendment 1's on this card. Can fail on: wrong rows, file, or a state's construction; N and LS at 1.00 cannot fail on the method, only on the code.
+- *Numbers:* four mean r's and two seeds each, W0's spread, four kept shares, and LS's and ADJ's Left in Δ on two measures. Expected values: `results/predictions_amend2.json`.
+- *Early guards:* those stops; first step finite per start.
+- *Saved:* `results/amend2.json`, with the 196 c's; nothing large.
+
+**States.** N and A as Amendment 1, read from `results/amend1.json`, with W0, same card (checked against `run_amend1.log`). LS: `qwen_maps.site_change("ls")`, weights W0 + δW, all alive columns moved by (X V, Xᵀ U), Δ takes the rest. ADJ: `site_change("adjoint")`, weights W0 + c dσ(M V, Mᵀ U), c per site from `split.adjoint_scale` on E68's Σ. A needs nothing from Amendment 1: its offsets are in `qwen3-1.7b-e80-inputs:v0`, and `a_state` rebuilds it.
+
+**Read.** Faithful: r_s(X) = X_s / W0_s, final KL, for s0, s1 and their mean; pass at or below 1.40, fail at or above 1.61, otherwise between. A method is described as failing only if its gap, mean − 1, is strictly above W0's spread on W on these two seeds; E80's 16% (on M) is quoted beside it. Behaviour kept: (L_W0 − L_X) / (L_W0 − L_FT), with L `qwen_sft.gold_loss`, the mean response-token log-loss with no masks, on E40's 256 held-out GSM8K train problems: the fine-tune's own held-out read, never in u1's training, nor in E76's rows. Rule, tests and edge cases: `rules_amend2.py`, `tests/test_qwen_d1_adversary_amend2.py`.
+
+**Leans** (the lead's, filed): do-nothing passes, medium; least squares passes, medium; adjoint passes, low; teacher passes, medium; adjoint keeps under half, low; teacher keeps over half, low.
+
+**What each result does.** Do-nothing's row sets the table's reading, first. The filled table, with one line per cell and 2-3 sentences on what it does and does not show, goes to the user and the log. Each definition's difference from the slide is stated beside its number; the user is asked before a mismatched number is reported.
+
+**Cost.** Four starts at ~23 min measured on this card, ~10 min before them: ~1.75 h at ~$4.06/h, ~$7, under the gate (estimates; the user's was 2-2.5 h, ~$10). Same pod, straight after Amendment 1. Runner brief: `experiments/qwen_d1_adversary/RUN_BRIEF_amend2.md`.
+
+**Blind to:** Faithful reads FineWeb, where the update moves clean outputs little, and is a lower bound still rising at step 20, on two seeds; the bars come from the 67M. Behaviour kept reads only weights, not the subcomponents.
