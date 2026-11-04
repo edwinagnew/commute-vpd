@@ -166,7 +166,11 @@ def set_up(decomp: Path, inputs: Path, work: Path) -> Any:
     dw = {s: v for s, v in load(e76.DW_FILE).items() if s in SITES}
     model = qwen_vpd.load_target(e85.DEV, F32)
     gamma = qwen_vpd.load_gamma(decomp, e85.DEV, torch.bfloat16)
-    view = SimpleNamespace(vu=lambda s: (comps.vu(s)[0].to(e85.DEV), None))
+    def v_only(s: str) -> tuple[Tensor, None]:  # build_states clears comps.U, so comps.vu cannot be called after it
+        layer, kind = qwen_vpd.parse_site(s)
+        return comps.V[kind][layer].to(e85.DEV), None
+
+    view = SimpleNamespace(vu=v_only)
     W0 = {s: lin.weight.data for s, lin in linears(model).items()}
     web = json.loads(e76.WEB.read_text())["rows"][:N_ROWS]
     J = SimpleNamespace(model=model, comps=comps, gamma=gamma, view=view, alive=alive, dw=dw, W0=W0, inputs=inputs, x_dir=work / "X", out={"checks": {}},
