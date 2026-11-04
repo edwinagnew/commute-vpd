@@ -1,8 +1,8 @@
 """E69: what the rollouts' text says, per step and arm: opening word, answer line present, strict and lenient right. Arm F's
-rollouts are W0's samples on the same prompts. No model; reads the tars and the Qwen tokenizer, writes
-results/lr1e-6w10/rollouts_summary.json.
+rollouts are W0's samples on the same prompts, and a run without them reads R and N only. No model; reads the tars and the
+Qwen tokenizer, writes results/FOLDER/rollouts_summary.json. FOLDER defaults to lr1e-6w10; lr1e-6w10_s70 is the second seed.
 
-Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 4G -t 00:30:00 python experiments/qwen_rl/rollouts.py TOKENIZER_JSON
+Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 4G -t 00:30:00 python experiments/qwen_rl/rollouts.py TOKENIZER_JSON [FOLDER]
 """
 
 from __future__ import annotations
@@ -21,14 +21,12 @@ from commute import qwen_sets
 from commute.gsm8k import gold_number, grade, strict_pred
 
 HERE = Path(__file__).resolve().parent
-RUN = HERE / "results" / "lr1e-6w10"
-TARS = HERE / "results" / "large" / "lr1e-6w10" / "rollouts"
 SPANS = ((1, 10), (11, 20), (21, 50), (51, 75), (76, 95), (96, 100))
 
 
-def records(arm: str, tok: Tokenizer, train: list[dict[str, Any]]) -> dict[int, list[dict[str, Any]]]:
+def records(tars: Path, arm: str, tok: Tokenizer, train: list[dict[str, Any]]) -> dict[int, list[dict[str, Any]]]:
     out: dict[int, list[dict[str, Any]]] = {}
-    with tarfile.open(TARS / f"{arm}.tar") as tar:
+    with tarfile.open(tars / f"{arm}.tar") as tar:
         for m in tar.getmembers():
             if not m.name.endswith(".jsonl"):
                 continue
@@ -79,10 +77,13 @@ def within_problem(rows: list[dict[str, Any]], a: str, b: str) -> dict[str, Any]
 
 def main() -> None:
     tok = Tokenizer.from_file(sys.argv[1])
+    folder = sys.argv[2] if len(sys.argv) > 2 else "lr1e-6w10"
+    tars = HERE / "results" / "large" / folder / "rollouts"
+    arms = [a for a in ("R", "N", "F") if (tars / f"{a}.tar").is_file()]
     train = qwen_sets.load()["train"]
     out: dict[str, Any] = {}
-    for arm in ("R", "N", "F"):
-        rec = records(arm, tok, train)
+    for arm in arms:
+        rec = records(tars, arm, tok, train)
         out[arm] = {"steps": {t: summary(rec[t]) for t in sorted(rec)}, "spans": {}}
         if arm == "F":
             every = [r for t in rec for r in rec[t]]
@@ -91,8 +92,8 @@ def main() -> None:
         for lo, hi in SPANS:
             rows = [r for t in range(lo, hi + 1) for r in rec[t]]
             out[arm]["spans"][f"{lo}-{hi}"] = summary(rows) | {"by_first": by_first(rows)}
-    (RUN / "rollouts_summary.json").write_text(json.dumps(out, indent=1) + "\n")
-    for arm in ("R", "N", "F"):
+    (HERE / "results" / folder / "rollouts_summary.json").write_text(json.dumps(out, indent=1) + "\n")
+    for arm in arms:
         for span, s in out[arm]["spans"].items():
             print(arm, span, json.dumps({k: (round(v, 3) if isinstance(v, float) else v) for k, v in s.items() if k not in ("firsts", "by_first")}), flush=True)
             print("   ", json.dumps({k: {a: round(b, 3) for a, b in v.items()} for k, v in s["by_first"].items()}, ensure_ascii=False), flush=True)

@@ -1,10 +1,10 @@
 """E69 Amendment 1's figures and the unfiled readings beside the filed scores; no model, no GPU.
 
 Reads results/amend1_score.json (the filed scores and the saved steps) and the per-problem answers. Writes:
-  results/amend1_reading.json  step 100's rows, which the score has only for seed 1's null; leads, gains, answer forms,
-                               openings and lengths per seed: read, not filed
-  figures/leads.png            RL minus the null per seed and grader, on problems all three states finish
-  figures/saved_steps.png      whole-answer gain from W0 at steps 10, 20, 50, 100, both arms, both seeds, two graders
+  results/amend1_reading.json  step 100's rows, which the score has only for seed 1's null; leads, gains, gaps between seeds,
+                               answer forms, openings, lengths and the sampled reading per seed: read, not filed
+  figures/leads.png            RL minus the null per seed, grader and way of treating long answers
+  figures/saved_steps.png      whole-answer gain from W0 at steps 10, 20, 50, 100, both arms, both seeds, three graders
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 2G python experiments/qwen_rl/plot_amend1.py
 """
@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import collections
 import json
+import math
 import statistics
 from collections.abc import Callable
 from typing import Any
@@ -46,8 +47,12 @@ def capped_lenient(r: Rec) -> bool:
     return bool(r["capped_lenient"])
 
 
+def capped_relaxed(r: Rec) -> bool:
+    return ci({"response": r["capped_response"], "gold": r["gold"]})
+
+
 GRADERS: dict[str, Key] = {"strict": strict, "relaxed": ci, "lenient": lenient}
-CAPPED: dict[str, Key] = {"capped_strict": capped_strict, "capped_lenient": capped_lenient}
+CAPPED: dict[str, Key] = {"capped_strict": capped_strict, "capped_relaxed": capped_relaxed, "capped_lenient": capped_lenient}
 
 
 def whole(a: Rows, b: Rows, key: Key) -> dict[str, Any]:
@@ -60,7 +65,8 @@ def gain(x: Rows, w0: Rows, key: Key) -> dict[str, Any]:
 
 def arm_rows(x: Rows, w0: Rows) -> dict[str, Any]:
     out = {f"whole_{g}": whole(x, w0, k) for g, k in GRADERS.items()}
-    return out | {f"drop_{g}": gain(x, w0, k) for g, k in GRADERS.items()}
+    out |= {f"drop_{g}": gain(x, w0, k) for g, k in GRADERS.items()}
+    return out | {g: whole(x, w0, k) for g, k in CAPPED.items()}
 
 
 def lead_rows(r: Rows, n: Rows, w0: Rows) -> dict[str, Any]:
@@ -78,17 +84,64 @@ def forms(x: Rows) -> dict[str, Any]:
     fit = [r for r in x.values() if r["fits"]]
     return {"k": len(x), "fits": len(fit), "strict_line": sum(r["strict_pred"] is not None for r in fit),
             "relaxed_form": sum(bool(CI.findall(r["response"])) for r in fit),
+            "right_when_fits_relaxed": sum(ci(r) for r in fit) / len(fit),
             "strict_differs_from_relaxed": sum(strict(r) != ci(r) for r in fit),
+            "relaxed_differs_from_lenient": sum(ci(r) != lenient(r) for r in fit),
+            "strict_differs_from_relaxed_all": sum(strict(r) != ci(r) for r in x.values()),
+            "lenient_right_relaxed_wrong_all": sum(lenient(r) and not ci(r) for r in x.values()),
             "mean_tokens": statistics.mean(r["response_tokens"] for r in x.values()),
             "truncated": sum(r["truncated"] for r in x.values()),
             "openings": collections.Counter(opening(r) for r in x.values()).most_common(3)}
 
 
-def spread_of_relaxed_lead(w0: Rows, sides: list[tuple[Rows, Rows]]) -> dict[str, Any]:
-    """Seed 2's lead minus seed 1's, same problems, those all five states finish; SE at fixed weights."""
+def seed_gaps(w0: Rows, sides: list[tuple[Rows, Rows]]) -> dict[str, Any]:
+    """Seed 2's lead minus seed 1's, problem by problem at fixed weights: over all problems, and over those all five states finish."""
     (r1, n1), (r2, n2) = sides
-    pool = [i for i in w0 if all(x[i]["fits"] for x in (w0, r1, n1, r2, n2))]
-    return paired([int(ci(r2[i])) - int(ci(n2[i])) - int(ci(r1[i])) + int(ci(n1[i])) for i in pool])
+    five = [i for i in w0 if all(x[i]["fits"] for x in (w0, r1, n1, r2, n2))]
+
+    def gap(key: Key, pool: list[int]) -> dict[str, Any]:
+        return paired([int(key(r2[i])) - int(key(n2[i])) - int(key(r1[i])) + int(key(n1[i])) for i in pool])
+
+    out = {f"five_{g}": gap(k, five) for g, k in GRADERS.items()}
+    out |= {f"whole_{g}": gap(k, list(w0)) for g, k in GRADERS.items()}
+    return out | {g: gap(k, list(w0)) for g, k in CAPPED.items()}
+
+
+def kept(s: dict[str, Any]) -> float:
+    """Sampled answers lenient-right and inside the window, as a share of all: the reward with the format ignored."""
+    return s["lenient_when_inside"] * s["inside"]
+
+
+def reward(s: dict[str, Any]) -> float:
+    return s["reward"]
+
+
+def span_diff(x: dict[str, Any], y: dict[str, Any], f: Callable[[dict[str, Any]], float], steps: list[str]) -> dict[str, Any]:
+    """Mean over steps of x minus y, SE over steps."""
+    d = [f(x[t]) - f(y[t]) for t in steps]
+    return {"n": len(d), "diff": statistics.mean(d), "se": statistics.stdev(d) / math.sqrt(len(d))}
+
+
+def sampled() -> dict[str, Any]:
+    """Per span, seed by seed, as plot.py's tables: SE over steps. Seed 2 has no F; the unchanged model there is seed 1's F,
+    same prompts by step, other draws, so its zero line is not paired on draws as seed 1's is."""
+    roll = {name: json.loads((RESULTS / folder / "rollouts_summary.json").read_text()) for name, folder in SEEDS.items()}
+    w0 = roll["seed 1"]["F"]["steps"]
+    out: dict[str, Any] = {}
+    for name, r in roll.items():
+        out[name] = {}
+        for lo, hi in ((1, 10), (11, 20), (21, 50), (51, 75), (76, 95), (96, 100), (51, 100)):
+            steps = [str(t) for t in range(lo, hi + 1)]
+
+            row: dict[str, Any] = {}
+            for k, x, y in (("R-W0", r["R"]["steps"], w0), ("N-W0", r["N"]["steps"], w0), ("R-N", r["R"]["steps"], r["N"]["steps"])):
+                row[k] = {"reward": span_diff(x, y, reward, steps), "kept": span_diff(x, y, kept, steps)}
+            for a in "RN":
+                sp = r[a]["spans"].get(f"{lo}-{hi}")
+                if sp:
+                    row[a] = {k: sp[k] for k in ("line_when_inside", "lenient_when_inside", "inside")} | {"firsts": sp["firsts"]}
+            out[name][f"{lo}-{hi}"] = row
+    return out
 
 
 def reading() -> dict[str, Any]:
@@ -102,10 +155,11 @@ def reading() -> dict[str, Any]:
             sides.append((r, n))
             row[name] = {"lead": lead_rows(r, n, w0), "R": arm_rows(r, w0), "N": arm_rows(n, w0),
                          "forms": {"R": forms(r), "N": forms(n)}}
-        row["relaxed_lead_seed2_minus_seed1"] = spread_of_relaxed_lead(w0, sides)
+        row["seed2_minus_seed1"] = seed_gaps(w0, sides)
         out[s] = row
     out["saved_forms"] = {name: {f"{a}{t}": forms(read(ROOT / folder / "acc" / f"{a}{t}_gsm8k.jsonl")) for a in "RN" for t in (10, 20, 50)}
                           for name, folder in SEEDS.items()}
+    out["sampled"] = sampled()
     return out
 
 
@@ -116,38 +170,37 @@ def tidy(ax: Any) -> None:
     ax.tick_params(colors=INK)
 
 
-def fig_leads(score: dict[str, Any]) -> None:
-    s = score["seeds"]
-    rows = {"seed 1": (s["seed1"]["strict"], s["seed1"]["relaxed"]), "seed 2": (s["S1"], s["S1r"])}
-    fig, ax = plt.subplots(figsize=(7.4, 4.2))
-    for j, (name, marker) in enumerate((("strict grader", "o"), ("format-relaxed grader", "D"))):
-        y = [100 * rows[k][j]["diff"] for k in rows]
-        e = [100 * rows[k][j]["se"] for k in rows]
-        ax.errorbar([i + (j - 0.5) * 0.18 for i in range(2)], y, yerr=e, fmt=marker, ms=9, capsize=3, lw=1.6, color=COL["R-N"], mec=COL["R-N"],
-                    mfc=COL["R-N"] if j == 0 else "white", mew=1.8, label=name)
-        for i, (v, er) in enumerate(zip(y, e, strict=True)):
-            ax.annotate(f"{v:+.2f}", (i + (j - 0.5) * 0.18, v + er + 0.15), ha="center", color=INK, fontsize=9)
-    ax.axhline(0, color=INK, lw=1)
-    ax.text(1.45, 0.12, "RL level with the null", color=MUTED, ha="right", fontsize=9)
-    ax.axhline(2, color=MUTED, lw=1, ls="--")
-    ax.text(1.45, 2.12, "filed rule: a lead of 2 points and 2 standard errors replicates", color=MUTED, ha="right", fontsize=9)
-    ax.set_xticks([0, 1], [f"seed 1\n{rows['seed 1'][0]['n']:,} problems", f"seed 2\n{rows['seed 2'][0]['n']:,} problems"])
-    ax.set_xlim(-0.5, 1.5)
-    ax.set_ylim(-0.6, 8.6)
-    ax.set_ylabel("RL minus null, same problems, points", color=INK)
-    ax.set_title("Does RL lead the null on both seeds, with format set aside?", color=INK)
-    ax.legend(frameon=False, loc="upper left")
-    tidy(ax)
-    fig.text(0.01, 0.005, "GSM8K test, answers all three states finish. Bars: one standard error over problems at fixed weights.", color=MUTED, fontsize=8)
-    fig.tight_layout(rect=(0, 0.03, 1, 1))
+def fig_leads(read_: dict[str, Any]) -> None:
+    pools = (("drop", "answers all three\nstates finish (filed)"), ("whole", "whole answers\n(read afterwards)"), ("capped", "past the window counts\nwrong (read afterwards)"))
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.6), sharey=True)
+    for ax, grader, title in zip(axes, ("strict", "relaxed"), ("Strict grader", "Format-relaxed grader"), strict=True):
+        for j, seed in enumerate(SEEDS):
+            cols = [read_["gsm8k"][seed]["lead"][f"drop_{grader}"], read_["gsm8k"][seed]["lead"][f"whole_{grader}"], read_["gsm8k"][seed]["lead"][f"capped_{grader}"]]
+            x = [i + (j - 0.5) * 0.2 for i in range(3)]
+            y, e = [100 * c["diff"] for c in cols], [100 * c["se"] for c in cols]
+            ax.errorbar(x, y, yerr=e, fmt="o", ms=9, capsize=3, lw=1.6, color=COL["R-N"], mec=COL["R-N"], mew=1.8, mfc=COL["R-N"] if j == 0 else "white", label=seed)
+            for a, v, er in zip(x, y, e, strict=True):
+                ax.annotate(f"{v:+.2f}", (a, v + er + 0.15), ha="center", color=INK, fontsize=9)
+        ax.axhline(0, color=INK, lw=1, label="RL level with the null")
+        ax.set_xticks(range(3), [p[1] for p in pools], fontsize=9)
+        ax.set_xlim(-0.5, 2.5)
+        ax.set_ylim(-0.6, 11)
+        ax.set_title(title, color=INK, fontsize=11)
+        tidy(ax)
+    axes[0].set_ylabel("RL minus null, same problems, points", color=INK)
+    axes[0].legend(frameon=False, loc="upper left", ncol=3)
+    fig.suptitle("Does RL lead the null on both seeds, under each way of treating long answers?", color=INK, fontsize=12)
+    fig.text(0.01, 0.005, "GSM8K test. Bars: one standard error over problems at fixed weights.", color=MUTED, fontsize=8)
+    fig.tight_layout(rect=(0, 0.03, 1, 0.98))
     fig.savefig(FIG / "leads.png", dpi=150)
     plt.close(fig)
 
 
 def fig_saved(score: dict[str, Any], read_: dict[str, Any]) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.6), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4.8), sharey=True)
     steps = (10, 20, 50, 100)
-    for ax, grader, title in zip(axes, ("strict", "relaxed"), ("Strict grader: unchanged model right on 75.8%", "Format-relaxed grader: unchanged model right on 78.5%"), strict=True):
+    panels = (("strict", "Strict: unchanged model right on 75.8%"), ("relaxed", "Format-relaxed: unchanged model right on 78.5%"), ("lenient", "Lenient: unchanged model right on 78.9%"))
+    for ax, (grader, title) in zip(axes, panels, strict=True):
         for a, arm in enumerate("RN"):
             for b, (name, folder, ls, face) in enumerate((("seed 1", SEED1, "-", COL[arm]), ("seed 2", SEED2, "--", "white"))):
                 x = [i + (2 * a + b - 1.5) * 0.035 for i in range(4)]
@@ -175,7 +228,7 @@ def main() -> None:
     score = json.loads((RESULTS / "amend1_score.json").read_text())
     out = reading()
     (RESULTS / "amend1_reading.json").write_text(json.dumps(out, indent=1, default=float) + "\n")
-    fig_leads(score)
+    fig_leads(out)
     fig_saved(score, out)
 
 
