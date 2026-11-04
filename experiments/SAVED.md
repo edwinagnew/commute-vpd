@@ -193,6 +193,12 @@ Qwen3-1.7B. `dW` is `{layers.{i}.{mlp.down_proj,mlp.gate_proj,mlp.up_proj,self_a
 - Network-volume copy and regenerated steps are listed above (Network volume, qwen_maps). Here also: `nowarmup/` holds the 28.2 GB copied from the volume (`dW/step_{2,3,5,20,50}.safetensors` BF16 2.82 GB, `adam_step100.safetensors` F32 11.27 GB with meta `step`, `grad_W0.safetensors` 2.82 GB, `SHA256SUMS_volume_only`), `gstats/W0_{maths,fineweb}.safetensors` (F16, 392 tensors, `{site}.mean_g` and `{site}.active` per site, from `qwen_teacher.g_stats`), `sources/{B,D1,D10,G,T0,...}_{fineweb,maths}_seed{S}.safetensors` (F32, 392 tensors, a few KB: the adversary's source arrays for a state `{B,D1,D10,G,T0,...}` and corpus, from `qwen_teacher.adversary`), `step{0,100}_{test,gsm1k}.jsonl`.
 - `amend1_rehearse*`: rehearsal outputs of E40 Amendment 1 (gstats, sources, `T100_test.jsonl`), no weight changes.
 
+## qwen_tofu_forms (E84; coded 2026-11-04, not run)
+Qwen3-1.7B, TOFU's 800 rows in five wordings, E81's recipe at 2e-5, 1250 steps. Paths as `run.py` writes them; update with job IDs and any change when it runs.
+- `dW/a2_2e-5/step_{1,2,3,5,10,20,50,100,200,500,1000,1250}.safetensors` (5.64 GB each, 68 GB, **F32**, 196 tensors, the format of `qwen_anchor1/dW/a1/`): written by `run.py` T. **Step 1 is all zeros** (rate 0). Step t has t - 1 moving steps. Load with `qwen_sft.load`; `split_x` takes them. Train-time rows are the kept rows of `results/forms.jsonl` (committed), so this δW holds 800 facts at most, against 4000 for E81's.
+- `answers/{W0,step_200,step_500,step_1000,step_1250}/{paraphrased,trained,never}.jsonl`: greedy answers, every one of the 800 rows (400 for `never`), a line's place is its row's; graders apply the kept rows.
+- `forms_tries.jsonl`: every reply of the writer, with its try, row, kind, style and the checks it missed.
+
 ## qwen_updates (E45; Amendments 1, 2)
 Qwen3-1.7B, SFT with five updates: `own`/`own2` (own samples), `gold`, `null` (self-distillation), `a1` (anchor 1: context distillation), `a2` (anchor 2: invented facts), `a2long` (300 steps, Amendment 1); `_s{S}` batch-order seed.
 - `dW/{run}/step_{t}.safetensors` (2.82 GB, BF16): `a1_s0` (2-6, 8, 9, 19, 20, 100), `a1_s1` (2-8, 19, 20, 100), `a2_s0` (1-6, 11, 12, 100), `a2long_s0` and `a2long_s1` (1-6, 11, 12, 100, 300), `gold_s0` (2-5, 7-9, 100), `null_s0` (2-4, 7, 8, 100), `own_s0` (2-4, 100), `own2_s0` (1-3, 6, 7, 100). Steps are the KL grid's brackets plus 100 and the last. 192 GB. Written by run.py `T`; read by qwen_reading (`lab.py`) and E44's table.

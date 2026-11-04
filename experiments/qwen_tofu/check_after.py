@@ -12,10 +12,8 @@
 from __future__ import annotations
 
 import json
-import re
 import statistics
 from dataclasses import replace
-from pathlib import Path
 from typing import Any
 
 from commute import qwen_tofu as tofu
@@ -28,16 +26,6 @@ ANSWERS, OUT = RUN.LARGE / "answers", RUN.RESULTS / "after_check.json"
 SAVED = {"W0": {"paraphrased": ANSWERS / "W0_paraphrased.jsonl", "never": ANSWERS / "W0_never.jsonl"},
          **{f"{r}_step_{t}": {k: ANSWERS / r / f"step_{t}" / f"{k}.jsonl" for k in ("paraphrased", "trained", "never")}
             for r in ("1e-5", "2e-5") for t in (200, 1250)}}
-
-
-def new_word_recall(path: Path) -> dict[str, float]:
-    scores = []
-    for rec in map(json.loads, path.read_text().splitlines()):
-        asked = set(re.findall(r"[a-z0-9]+", rec["question"].lower()))
-        new = [w for w in re.findall(r"[a-z0-9]+", rec["reference"].lower()) if w not in asked]
-        if new:
-            scores.append(tofu.recall(rec["response"], " ".join(new)))
-    return {"recall": statistics.mean(scores), "n": len(scores)}
 
 
 def state(lab: Any, rate: str) -> dict[str, Any]:
@@ -57,7 +45,7 @@ def state(lab: Any, rate: str) -> dict[str, Any]:
 
 
 def main() -> None:
-    out: dict[str, Any] = {"new_word_recall": {s: {k: new_word_recall(p) for k, p in files.items()} for s, files in SAVED.items()}}
+    out: dict[str, Any] = {"new_word_recall": {s: {k: tofu.new_word_recall(p) for k, p in files.items()} for s, files in SAVED.items()}}
     print(json.dumps(out), flush=True)
     OUT.write_text(json.dumps(out, indent=1))
     lab = RUN.Lab("check", "W0", RUN.PRED)

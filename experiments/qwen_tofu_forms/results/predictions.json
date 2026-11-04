@@ -1,0 +1,81 @@
+{
+  "experiment": "E84",
+  "plan": "reports/plans/2026-11-04_plan_e84-rephrasings.md",
+  "advice": "reports/plans/2026-11-04_advice_e84-rephrasings.md, with the lead's overrides: no tracking during training (steps 200, 500, 1000 read in full from saved files); 2e-5 only.",
+  "filed": "2026-11-04, before any stage ran",
+  "question": "Trained on each of 800 TOFU facts in five wordings, does Qwen3-1.7B answer TOFU's own rephrased question, never trained, in other words than one sentence it memorised?",
+  "data": {
+    "source": "locuslab/TOFU revision 324592d84ae4f482ac7249b9285c2ecdb53e3a68, artifacts/tofu",
+    "sha256_16": {
+      "full": "667baef2f26f781f",
+      "retain_perturbed": "fc69f33bad70d3dc",
+      "forget10_perturbed": "6fbcb946c57ea1d7",
+      "holdout10": "efec32c7a7f66bfe"
+    },
+    "rows": 800,
+    "never_trained": 400,
+    "pairs_per_row": 5,
+    "sequences": "4000, less 5 per dropped row; a dropped row leaves train and test"
+  },
+  "control": {
+    "rule": "Stage 0, first and alone: W0's new-word recall (qwen_tofu.new_word_recall, E81's check_after grader, moved) of E81's greedy answers, same prompt, suffix and settings, on TOFU's 800 paraphrased questions and on holdout10. Either outside its tolerance stops the job before R or T.",
+    "paraphrased": 0.167,
+    "never": 0.190,
+    "tolerance": 0.02,
+    "source": "experiments/qwen_tofu/results/after_check.json: 0.16730, 0.18951. Greedy on the same card should read them to many digits; the tolerance is the plan's.",
+    "trained_expected": "0.15 to 0.25, unread in E81; reported, no stop",
+    "e81_first_batch_loss": 4.782574,
+    "e81_first_batch_note": "E81's first batch read again as a second reference, reported, no stop. Forms' own first batch is read at the start of T."
+  },
+  "wordings": {
+    "writer": "Qwen3-1.7B at W0, fp32, thinking off, 4 question and 4 answer forms per row, styles in qwen_tofu.FORM_STYLES (shorter; indirect or a command; main fact first; plainer); temperature 0.7, top-p 0.8, no top-k, seed 42 plus the try. TOFU's paraphrases, used for the test, are GPT-4's, so the test wording is outside the writer's distribution.",
+    "tries": 3,
+    "checks": "qwen_tofu.form_fails, a row kept only when all 8 forms pass. Lost: a capitalised name atom (a sentence's first word only when possessive or opening a capitalised run and not a listed function word), a digit string, or a quoted title as a contiguous run. New: a name atom or digit string absent from the original (an answer form may also use the row's question). Overlap, the share of the form's distinct words in the other text, at most 0.75 with the original and with TOFU's held paraphrase, and not word for word that paraphrase. Length at most 1.5 times the original's words, at least a third. One line, no opening chatter unless the original opens so. No repeat of another form of the row.",
+    "stops": {
+      "first_try": "More than 25% of the 6400 forms miss on the first try: name 'wordings: first-try drops over 25%', the lead falls back to Haiku clerks. Counted over forms, not rows: a row has 8 forms, so a 5% miss per form would fail a third of rows.",
+      "dropped": "More than 5% of rows (over 40) dropped after 3 tries stops. Exactly at a limit does not stop."
+    },
+    "expected": "First-try misses unknown, lean under 25%: low to medium; the overlap limit is the likely cause of misses, since a shorter or reordered sentence reuses the original's words. TOFU's own paraphrases read 0.41 and 0.43 by the same overlap measure, p95 0.63 and 0.69.",
+    "blind_to": "A lower-case fact changed or lost (a genre, a job): the checks see names, digits and quoted titles only. One new name alone as a sentence's first word looks like any first word. 10 sample rows are logged for a human, every reply and its misses go to results/large/forms_tries.jsonl."
+  },
+  "first_minutes": {
+    "step_1_loss_rel": 0.001,
+    "step_1_note": "Against the first batch of these forms' stream, read at T's start; rate and |dW| exactly 0. As E81.",
+    "step_2_dw": [
+      0.00208,
+      0.00312
+    ],
+    "step_2_source": "E81's band at 2e-5; E81 read 0.00237. Adam's first moving step is set by the rate, not the data.",
+    "peak_gib": 44,
+    "peak_source": "E81 read 39.2 at step 2. Peak counted from T's start.",
+    "warmup_loss_frac": 0.95,
+    "warmup_note": "Step 250's loss at most 0.95 of the first batch's. E81's floor, far above the fall expected."
+  },
+  "files": {
+    "tensors": 196,
+    "dtype": "F32",
+    "norm_rel": 1e-06,
+    "norm_rel_source": "E78's, unchanged."
+  },
+  "rule": {
+    "statement": "qwen_tofu.transfer_label at step 1250. Answered when para >= floor + 0.5 * (trained - floor). para: new-word recall of the greedy answer to TOFU's paraphrased_question. trained: the same grader on TOFU's original question. floor: the same grader on holdout10. All at that state, over kept rows (floor: all 400), reference TOFU's original answer. trained <= floor is 'training failed', a separate label, checked first; otherwise 'not answered' when para is below the line. Exactly at the line is answered.",
+    "lean": "answered: low to medium",
+    "comparator": "E81 at 2e-5 with one wording: para 0.377, trained 0.956, floor 0.221, a line of 0.589 that it missed. Its 800 rows and 4000 sequences differ from these only in wording.",
+    "blind_to": "The reference is TOFU's original answer, so a right fact in new words scores low, more so now that answers vary; key-fact recall is the guard. The test rephrasing never trained, but asks about facts trained in similar words, so a pass says the fact carries over wording of this kind, not to any question. A trained wording that fell because five forms compete lowers the line with it; read trained beside the label."
+  },
+  "expected": {
+    "para": "W0 0.167 +- 0.02; step 1250 above E81's 0.377",
+    "trained": "W0 0.15 to 0.25; step 1250 about 0.9",
+    "floor": "W0 0.190 +- 0.02; step 1250 about 0.22",
+    "style_drift_above": 0.30,
+    "style_drift_note": "A floor above this at step 1250 is reported as style drift, no stop.",
+    "steps_200_500_1000": "Each of para and trained rises across these steps. E81 read about 0.25 on trained at step 200. Reported, no rule: when content appears.",
+    "dw_norm": "15 to 21, reported, no rule: E81's 18.0 at 2e-5 was set by the schedule, flat after step 1000."
+  },
+  "reported_without_rule": {
+    "key_recall": "qwen_tofu.key_recall: words of paraphrased_answer absent from all five wrong answers; a row with an empty key or a key wholly in the question asked is skipped. On para and on the original question, at W0 and each read state, over kept rows. W0 expected under 0.15; after, unknown. The fact, not the wording. E81's saved answers by this grader, all 800: W0 on the paraphrases 0.092; at 2e-5 paraphrases 0.272, original question 0.446, the latter with new-word recall at 0.956, so the original question's key recall tops out far below 1.",
+    "blind_to": "Key words of descriptive facts carry filler ('weaves', 'shape'), and the key comes from a paraphrase, so a right answer in the original's words can miss it. That is why it is reported, not filed."
+  },
+  "edge_cases": "tests/test_qwen_tofu_forms.py: exactly at the line; trained at and under the floor; a zero gap; a row with no new word; an empty pool raises; an empty answer; empty key; key wholly in the question; each form check failing and passing at its limit; empty form, multi-line form, chatter, repeat of another form; drop rates exactly at both limits; rows dropped leave 1250 whole batches; NaN and at-band for each first-minutes check; hyphenated names, slash dates, titles in double and single quotes with an inner apostrophe, straight and curly possessives, a contraction or auxiliary opening a sentence, on real rows where the shape comes from them. Ties do not arise: the rule is >=.",
+  "not_filed": "Multiple choice in every form, real facts, the at-chance stage (dropped, plan and advice section 5); a second seed; the 200-author arm; a tracked number during training (the lead's override)."
+}
