@@ -3,11 +3,12 @@
   figures/k_fraction.png  every state's KL from the updated model, as a fraction of W0's, per update
   figures/beats_size.png  in-span against its slice and the rescaled update, whole range and close up
   figures/against_sft.png the filed rows on each update, against the fine-tunes' filed range and the filed line
-  figures/ruler.png       how far each update moves the rows, and whether next-token NLL falls on them
+  figures/ruler.png       how far each update, null and own-samples arm included, moves the rows, and whether next-token NLL falls
   figures/bad_placements.png  Amendment 1: three wrong placements per update, over the ruler, with the remainder's bar
-  figures/r_vs_n.png      the filed rows on RL's update and its shuffled-reward null, against the same range and lines
+  figures/r_vs_n.png      the filed rows on RL's update, its shuffled-reward null and the own-samples arm, against the same range and lines
 
-The five updates are rescored from the reads, as score.json read at job 50596; the null's come from results/score_N.json.
+The five updates are rescored from the reads, as score.json read at job 50596; the null's come from results/score_N.json and the
+own-samples arm's from results/score_F.json.
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 6G python experiments/qwen_rl_reads/plot.py
 """
@@ -34,12 +35,14 @@ RES, FIG = HERE / "results", HERE / "figures"
 INK, MUTED, GRID, BAND = "#2b2a27", "#6f6e69", "#e4e3df", "#d9d8d3"
 SFT, RL = "#2a78d6", "#eb6834"
 INSPAN, SLICE, SCALED = "#1baf7a", "#6250d6", "#eda100"
-NULL = "#8c2f8f"
+NULL, OWN = "#8c2f8f", "#2e8b3d"
 # name, words, colour, marker: the same in every figure
 UPDATES = (("u1", "first fine-tune, step 10", SFT, "o"), ("u2", "gold fine-tune, step 100", SFT, "s"),
            ("u3", "template fine-tune, step 100", SFT, "^"), ("R100", "RL, step 100", RL, "D"), ("R10", "RL, step 10", RL, "v"))
 NULLS = (("N100", "shuffled-reward null, step 100", NULL, "P"), ("N10", "shuffled-reward null, step 10", NULL, "X"))
-SHORT = {"u1": "first\nfine-tune", "u2": "gold\nfine-tune", "u3": "template\nfine-tune", "R100": "RL\nstep 100", "R10": "RL\nstep 10"}
+OWNS = (("F100", "SFT on own correct samples, step 100", OWN, "p"), ("F10", "SFT on own correct samples, step 10", OWN, "^"))
+SHORT = {"u1": "first\nfine-tune", "u2": "gold\nfine-tune", "u3": "template\nfine-tune", "R100": "RL\nstep 100", "R10": "RL\nstep 10",
+         "N100": "null\nstep 100", "N10": "null\nstep 10", "F100": "own\nsamples\nstep 100", "F10": "own\nsamples\nstep 10"}
 BAD = (("random", "random matrix", "#a88600", "o"), ("other", "another update's matrix", "#c2356b", "s"),
        ("signs", "the update, random sign per matrix", "#0b8ea3", "D"))
 STATES = (("inspan", "in-span part"), ("scaled_inspan", "whole update, rescaled to in-span's size"),
@@ -154,28 +157,29 @@ def rows_figure(score: dict[str, Any], updates: tuple[tuple[str, str, str, str],
 
 
 def ruler(score: dict[str, Any]) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4.2), dpi=170)
-    xs = list(range(len(UPDATES)))
-    for x, (u, _, colour, marker) in zip(xs, UPDATES, strict=True):
+    fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.5), dpi=170)
+    arms = UPDATES + NULLS + OWNS
+    xs = list(range(len(arms)))
+    for x, (u, _, colour, marker) in zip(xs, arms, strict=True):
         axes[0].scatter(x, score[u]["clean"]["states"]["W0"]["K"], s=70, color=colour, marker=marker, zorder=3)
         axes[1].scatter(x, score[u]["clean"]["gain_den_nats"], s=70, color=colour, marker=marker, zorder=3)
     for ax in axes:
-        ax.set_xticks(xs, [SHORT[u] for u, *_ in UPDATES], fontsize=8.5, color=INK)
-        ax.set_xlim(-0.5, 4.5)
+        ax.set_xticks(xs, [SHORT[u] for u, *_ in arms], fontsize=7.5, color=INK)
+        ax.set_xlim(-0.5, len(arms) - 0.5)
         style(ax)
     axes[0].set_yscale("log")
-    axes[0].set_ylim(0.005, 4)
+    axes[0].set_ylim(1e-4, 4)
     axes[0].set_ylabel("KL(updated model ‖ W0), nats, log scale")
     axes[0].set_title("How far the update moves the model on its rows", fontsize=10, color=INK, loc="left")
     axes[1].axhspan(-0.2, 0.05, color=BAND, zorder=0)
     axes[1].axhline(0, color=INK, lw=1.2)
-    axes[1].text(4.45, 0.012, "no change in NLL = 0", fontsize=8.5, color=INK, ha="right")
+    axes[1].text(-0.4, 0.012, "no change in NLL = 0", fontsize=8.5, color=INK)
     axes[1].text(-0.4, 0.062, "under the filed 0.05 nats (grey): gain is not scored", fontsize=8.5, color=MUTED)
     axes[1].set_ylim(-0.2, 0.6)
     axes[1].set_ylabel("W0's NLL minus the updated model's, nats")
     axes[1].set_title("Whether next-token NLL falls on those rows", fontsize=10, color=INK, loc="left")
-    fig.suptitle("Blue: fine-tunes. Orange: RL. The template fine-tune is on its own 64 rows, the others on 128 maths rows.",
-                 fontsize=9.5, color=MUTED, x=0.01, ha="left")
+    fig.suptitle("Blue: fine-tunes. Orange: RL. Purple: shuffled-reward null. Green: SFT on own correct samples. "
+                 "The template fine-tune is on its own 64 rows, the others on 128 maths rows.", fontsize=9, color=MUTED, x=0.01, ha="left")
     finish(fig, "ruler.png")
 
 
@@ -209,7 +213,7 @@ def rescaled_gaps(rules: Any) -> dict[str, tuple[float, float]]:
         own = RES / u / "clean_inspan.json"
         return own if own.is_file() else HERE.parent / "qwen_fixed_masks" / "results" / u / "clean_inspan.json"
 
-    return {u: rules.gap_width(load(inspan(u)), load(RES / u / "clean_scaled_inspan.json")) for u, *_ in UPDATES + NULLS}
+    return {u: rules.gap_width(load(inspan(u)), load(RES / u / "clean_scaled_inspan.json")) for u, *_ in UPDATES + NULLS + OWNS}
 
 
 def reads(name: str) -> dict[str, Any]:
@@ -230,7 +234,7 @@ def rescore(rules: Any) -> dict[str, Any]:
 
 def report(score: dict[str, Any], rescaled: dict[str, tuple[float, float]]) -> None:
     print("update | gap slice-inspan / ruler | gap rescaled-inspan, half-width, / ruler | (1-t)^2 in-span, K/ruler | (1-t)^2 rem, K/ruler")
-    for u, *_ in UPDATES + NULLS:
+    for u, *_ in UPDATES + NULLS + OWNS:
         s, ruler_k = score[u]["size"], score[u]["clean"]["states"]["W0"]["K"]
         f = fractions(score, u)
         t_i, t_r = s["t"]["inspan"], s["t"]["remainder"]
@@ -256,12 +260,12 @@ def main() -> None:
     k_fraction(score)
     beats_size(score, rescaled)
     rows_figure(score, UPDATES, "Does RL's update read as the fine-tunes do, row by row?", "against_sft.png")
-    ruler(score)
     bad_placements(load(RES / "amend1_score.json")["table"])
-    null = load(RES / "score_N.json")
-    both = score | {u: null[u] for u, *_ in NULLS}
-    rows_figure(both, UPDATES[3:] + NULLS, "Does RL's update read differently from its shuffled-reward null, row by row?", "r_vs_n.png")
-    report(both, rescaled)
+    null, own = load(RES / "score_N.json"), load(RES / "score_F.json")
+    arms = score | {u: null[u] for u, *_ in NULLS} | {u: own[u] for u, *_ in OWNS}
+    ruler(arms)
+    rows_figure(arms, UPDATES[3:] + NULLS + OWNS, "Do RL's update, its shuffled-reward null and SFT on own correct samples read differently, row by row?", "r_vs_n.png")
+    report(arms, rescaled)
     if len(sys.argv) > 1:
         check(score, sys.argv[1])
 

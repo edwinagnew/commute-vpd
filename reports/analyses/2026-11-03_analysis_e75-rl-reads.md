@@ -4,13 +4,15 @@
 
 ## The answer
 
-The clean-model table can fail a bad placement of the right size, where size means Frobenius norm per matrix. Three wrong changes read further from the updated model than the remainder on all five updates; the narrowest clears by 1.7 times its bootstrap width. It still barely separates same-size parts of the update, and size weighted by the inputs is untested. RL's update and its shuffled-reward null read the same filed labels, masked rows included, so those labels do not separate them, and RL's update is not called learning here.
+The clean-model table can fail a bad placement of the right size, where size means Frobenius norm per matrix. Three wrong changes read further from the updated model than the remainder on all five updates; the narrowest clears by 1.7 times its bootstrap width. It still barely separates same-size parts of the update, and size weighted by the inputs is untested. RL's update, its shuffled-reward null and training on the model's own correct samples read the same filed labels but for one no-call. So those labels separate neither reward nor samples, and RL's update is not called learning here.
 
-We read three saved fine-tuning updates and two steps of RL's update through one clean table and one masked read, then three wrong changes at the update's size, then the same reads on the shuffled-reward null. The table fails wrong directions on every update and barely grades parts of the update against each other. For `GOALS.md`, the test D1 needs can now fail a wrong direction, and RL's filed labels say nothing that its null does not also read.
+We read three saved fine-tuning updates and two steps of RL's update through one clean table and one masked read, then three wrong changes at the update's size, then the same reads on the shuffled-reward null and on the arm trained on its own correct samples. The table fails wrong directions on every update and barely grades parts of the update against each other. For `GOALS.md`, the test D1 needs can now fail a wrong direction, and RL's filed labels say nothing that the other two arms do not also read.
 
 **Where a lean missed.** We leaned, with no rule filed, that the random change and another update's change would both read near the ruler. Random did, at 1.00 of the ruler on all five. Another update's change did not: it read 0.54 and 0.63 of the ruler on the first and gold fine-tunes, 0.75 on the template fine-tune, and 2.96 and 1.74 on RL. It still clears the bar everywhere. No read here tests why it reads low on the fine-tunes, so we name no cause.
 
-**Status of RL's rows.** Do not read RL's update as learning. The shuffled-reward null also gained 5.6 points on GSM8K test under the drop rule, against a filed limit of 1.5, cause not established. RL's lead over the null on the strict grader falls to +1.2 and +0.7 points, not separable from zero, once answer format is ignored (`~/commute-data/agents/qwen-decomp-lead/note-from-qwen-rl-lead-E69-dW.md`). The arm trained on its own correct samples has not run through this table: job 50874 is queued, and a later edit adds it.
+**Status of RL's rows.** Do not read RL's update as learning. The shuffled-reward null also gained 5.6 points on GSM8K test under the drop rule, against a filed limit of 1.5, cause not established. RL's lead over the null on the strict grader falls to +1.2 and +0.7 points, not separable from zero, once answer format is ignored (`~/commute-data/agents/qwen-decomp-lead/note-from-qwen-rl-lead-E69-dW.md`).
+
+**The own-samples arm had no lean to hold or miss.** `results/predictions.json` files leans for RL only, and `score_F.json` carries none for this arm. Its labels match RL's at step 100. At step 10 they match too, except that in-span against its slice reads "no call", because both reads sit under the rule's floor of 1e-5 nats. It differs in size and on one unruled row. KL(updated ‖ $W_0$), the ruler, reads 0.0010 nats at step 100 against RL's 0.064. Its share sent to Δ, 0.44 and 0.41, is the only one of the three arms outside the fine-tunes' range. Nothing filed reads either difference, and we name no cause.
 
 **A correction to the brief for this report.** The brief read the remainder's slice as more scaled than projected, from its wide range of $c$. The per-matrix file does not support that, and "Size-matched states" below gives the numbers: 96 to 99.9 percent of the remainder's energy sits where $c$ is within 10 percent of 1.
 
@@ -36,13 +38,15 @@ We read three saved fine-tuning updates and two steps of RL's update through one
 
 **The null (N100, N10).** The same run as RL with rewards shuffled, at steps 100 and 10, on the same 128 rows, through every read above except the three wrong changes. It is there to say whether RL's rows depend on the reward.
 
+**The own-samples arm (F100, F10).** The same loop's third arm: supervised fine-tuning on the model's own correct samples, drawn once from $W_0$ and kept for the run, at steps 100 and 10, on the same 128 rows, through the same reads as the null. It is there to say whether RL's rows come from RL's samples without the reward's weighting. The RL lead's report gives its accuracy gain as 2.6 points, standard error 0.7, on GSM8K test under the drop rule.
+
 **Wording of the masked rows.** "Deaf" is the filed label for a small $\tau$ and nothing more. We use the wording of `reports/reviews/2026-11-03_review_e77-masks-carry.md`: under the original model's masks, with Δ off, small changes in the stream barely reach the logits. How much the output depends on its tokens is not measured.
 
 ## What we expected, and why
 
 Medium leans were filed for R100 and R10 only, from earlier fine-tune reads: "deaf" on both mask kinds, random at least 10 times the larger half, in-span strictly below remainder. Rule 4, placement against size, has no lean on any update, because the table had no size-matched reference. Fine-tunes are read against the same rules with no lean. Every number also carries the fine-tunes' filed range, so a difference shows even when a label agrees.
 
-For the three wrong changes the medium leans were: all three fail on every update, the overall label reads "has teeth", random and another update's read near the ruler, and signs is the least sure. The last two have no rule. A state at the ruler reads as failing: stored $W_0$ set against the bar before filing fails on all five, so the rule can be met. The null has no lean; the plan's question was whether it reads as RL does.
+For the three wrong changes the medium leans were: all three fail on every update, the overall label reads "has teeth", random and another update's read near the ruler, and signs is the least sure. The last two have no rule. A state at the ruler reads as failing: stored $W_0$ set against the bar before filing fails on all five, so the rule can be met. The null and the own-samples arm have no lean; the plan's question was whether RL's departures from the fine-tunes' range also appear with the reward shuffled or with RL's samples alone.
 
 ## The control
 
@@ -50,7 +54,7 @@ u1 through this code against stored reads, first and alone, with stop within 1e-
 
 The gap of 0 means this job's first read reproduced stored files exactly. It says nothing about the new states, which have no stored reference.
 
-Amendment 1's control, on u1 first and alone: $W_0$ read 1.63511 by the new path with gap 0 to the stored read, and $W_0 + \delta W$ read 0. The null's job reproduced the same eight numbers on u1 at gap 0, $W_0$'s own numbers on N100 and N10 at gap 0, and stage S's energy to under 1e-9.
+Amendment 1's control, on u1 first and alone: $W_0$ read 1.63511 by the new path with gap 0 to the stored read, and $W_0 + \delta W$ read 0. The null's job reproduced the same eight numbers on u1 at gap 0, $W_0$'s own numbers on N100 and N10 at gap 0, and stage S's energy to under 1e-9. The own-samples job, 50874, did the same on u1 and on F100 and F10, with the energy within 1.7e-9, and $K$ of the updated model read 0.
 
 ## Which states does the table fail?
 
@@ -228,62 +232,67 @@ u1 and u3 set most of the range's ends, so "in" is by construction there and car
 
 **Masked rows.** Here "deaf" reads as the review's wording requires. With $W_0$'s masks and Δ off, the whole update's KL under the masks is 0.0001 to 0.018 of its clean KL, on five updates. Amplitudes read 0.0086 and 0.0133 on R10, 0.027 and 0.036 on R100, against 0.095 to 0.148 on u1 and u2. How much the masked output depends on its tokens is not measured, and we draw no statement about what carries the output. K0, which never sees the update, reads 0.0671 fixed and 0.0440 stochastic on maths rows, and 0.0688 and 0.0460 on u3's rows.
 
-## Does the table separate RL's update from its shuffled-reward null?
+## Does the table separate RL's update from its shuffled-reward null and the own-samples arm?
 
-![RL's update and its null on the filed rows](../../experiments/qwen_rl_reads/figures/r_vs_n.png)
+![RL's update, its null and the own-samples arm on the filed rows](../../experiments/qwen_rl_reads/figures/r_vs_n.png)
 
-**Reading it.** No, on the filed labels: at each step the null reads every label RL reads, masked rows included. "Deaf" twice, random at least ten times the larger half, in-span below remainder, in-span beating its slice, and the gain unscored, on all four. The values do differ, and nothing filed reads the difference: each arm is one seed, and no noise floor between arms was measured. RL at step 10 leaves the fine-tunes' range on four rows and the null at step 10 on one. On the row both leave at step 100, in-span over remainder, RL is above the range and the null below it.
+**Reading it.** No, on the filed labels: at each step the three arms read the same labels, masked rows included, with one no-call. "Deaf" twice, random at least ten times the larger half, in-span below remainder, in-span beating its slice, and the gain unscored. The no-call is the own-samples arm at step 10 on in-span against its slice, where both reads are under the rule's 1e-5 floor, at 6.1e-6 and 9.3e-6 nats. That gap, 3.2e-6, is six times its half-width, and the rule does not read it. The values differ, and nothing filed reads the difference: each arm is one seed, and no noise floor between arms was measured.
 
-| row | R100 | N100 | R10 | N10 |
-|---|---|---|---|---|
-| $\tau$ fixed, label | deaf | deaf | deaf | deaf |
-| $\tau$ fixed | 0.00057 in | 0.00040 in | **0.000081 out** | 0.00054 in |
-| $\tau$ stochastic, label | deaf | deaf | deaf | deaf |
-| $\tau$ stochastic | 0.00122 in | 0.00118 in | **0.000255 out** | 0.00166 in |
-| random over larger half, label | holds | holds | holds | holds |
-| random over larger half | 20.42 in | 24.77 in | **34.53 out** | 23.93 in |
-| in-span over remainder, label | holds | holds | holds | holds |
-| in-span over remainder | **0.02235 out** | **0.00907 out** | **0.01156 out** | **0.01859 out** |
-| share sent to Δ, least squares, no rule | 0.3678 in | 0.3797 in | 0.3828 in | 0.3861 in |
-| in-span against slice, label | beats size | beats size | beats size | beats size |
-| slice − in-span, over the ruler | 0.0102 | 0.0047 | 0.0052 | 0.0083 |
-| T2 | unscored | unscored | unscored | unscored |
+No row has RL and another arm leaving the fine-tunes' range the same way at both steps. On in-span over remainder, RL at step 100 and the own-samples arm at both steps sit above the range, and RL at step 10 and the null at step 100 below it. The null at step 10 is above. Random over the larger half leaves the range on RL at step 10, upward, and on the own-samples arm at step 10, downward. Among the three arms, the masked rows leave the range only on RL at step 10.
 
-**Size.** The two arms have about the same input-weighted energy at each step and very different rulers.
+| row | R100 | N100 | F100 | R10 | N10 | F10 |
+|---|---|---|---|---|---|---|
+| $\tau$ fixed, label | deaf | deaf | deaf | deaf | deaf | deaf |
+| $\tau$ fixed | 0.00057 in | 0.00040 in | 0.00361 in | **0.000081 out** | 0.00054 in | 0.00262 in |
+| $\tau$ stochastic, label | deaf | deaf | deaf | deaf | deaf | deaf |
+| $\tau$ stochastic | 0.00122 in | 0.00118 in | 0.00714 in | **0.000255 out** | 0.00166 in | 0.00549 in |
+| random over larger half, label | holds | holds | holds | holds | holds | holds |
+| random over larger half | 20.42 in | 24.77 in | 16.62 in | **34.53 out** | 23.93 in | **12.48 out** |
+| in-span over remainder, label | holds | holds | holds | holds | holds | holds |
+| in-span over remainder | **0.02235 out** | **0.00907 out** | **0.02731 out** | **0.01156 out** | **0.01859 out** | **0.02692 out** |
+| share sent to Δ, least squares, no rule | 0.3678 in | 0.3797 in | **0.4351 out** | 0.3828 in | 0.3861 in | **0.4063 out** |
+| in-span against slice, label | beats size | beats size | beats size | beats size | beats size | no call |
+| slice − in-span, over the ruler | 0.0102 | 0.0047 | 0.0094 | 0.0052 | 0.0083 | 0.0110 |
+| T2 | unscored | unscored | unscored | unscored | unscored | unscored |
 
-| | R100 | N100 | R10 | N10 |
-|---|---|---|---|---|
-| input-weighted energy | 33.5 | 34.9 | 1.09 | 1.03 |
-| KL(updated ‖ $W_0$), the ruler | 0.06431 | 0.13490 | 0.01187 | 0.00236 |
-| $W_0$'s NLL − updated | −0.125 | −0.029 | −0.063 | −0.0074 |
-| entropy, $W_0$ 0.610 → updated | 0.577 | 0.636 | 0.594 | 0.606 |
-| masked KL, fixed | 5.53e-5 | 5.46e-5 | 1.56e-6 | 1.54e-6 |
-| KL($W_0$ ‖ updated), $\tau$'s denominator | 0.0969 | 0.1361 | 0.0192 | 0.00285 |
+**Size.** RL and the null have about the same input-weighted energy at each step and very different rulers. The own-samples arm has 0.37 of RL's energy at step 100 and 0.73 at step 10, and its ruler is 63 and 40 times smaller than RL's. On the same arms and step, by another read, the RL lead's report gives KL($W_0$ ‖ updated) on held rows of 0.0017 against 0.194. No rule or floor reads these ratios.
 
-**The masked rows at step 10.** RL's and the null's masked KL are almost equal, and both are close to where no floor is measured. Their $\tau$ differ almost entirely through the denominator.
+| | R100 | N100 | F100 | R10 | N10 | F10 |
+|---|---|---|---|---|---|---|
+| $\|\delta W\| / \|W_0\|$ | 2.68e-4 | 2.82e-4 | 2.09e-4 | 5.24e-5 | 4.95e-5 | 4.44e-5 |
+| input-weighted energy | 33.5 | 34.9 | 12.5 | 1.09 | 1.03 | 0.796 |
+| KL(updated ‖ $W_0$), the ruler | 0.06431 | 0.13490 | 0.00102 | 0.01187 | 0.00236 | 0.000294 |
+| $W_0$'s NLL − updated | −0.125 | −0.029 | +0.0048 | −0.063 | −0.0074 | +0.0008 |
+| entropy, $W_0$ 0.6102 → updated | 0.577 | 0.636 | 0.6120 | 0.594 | 0.606 | 0.6102 |
+| KL(masked $W_0$ ‖ masked updated), fixed | 5.53e-5 | 5.46e-5 | 3.54e-6 | 1.56e-6 | 1.54e-6 | 6.97e-7 |
+| KL($W_0$ ‖ updated), $\tau$'s denominator | 0.0969 | 0.1361 | 0.00098 | 0.0192 | 0.00285 | 0.000266 |
+
+**The masked rows at step 10.** RL's and the null's masked KL are almost equal, and both are close to where no floor is measured. Their $\tau$ differ almost entirely through the denominator. The own-samples arm's fixed masked KL at step 10, 7.0e-7, is under 1e-6, where no floor between numeric paths is measured, so its "deaf" there is held loosely. Its $\tau$ reads above RL's through the denominator, 72 times smaller than RL's, against a masked KL 2.2 times smaller.
 
 **$K$ as a fraction of the ruler.**
 
-| state | R100 | N100 | R10 | N10 |
-|---|---|---|---|---|
-| in-span | 0.0182 | 0.0074 | 0.0093 | 0.0146 |
-| rescaled to in-span | 0.0231 | 0.0159 | 0.0195 | 0.0253 |
-| slice, in-span's size | 0.0283 | 0.0122 | 0.0145 | 0.0230 |
-| often-on half | 0.0604 | 0.0299 | 0.0351 | 0.0526 |
-| rarely-on half | 0.1180 | 0.0644 | 0.0688 | 0.1024 |
-| adjoint | 0.2659 | 0.1895 | 0.1859 | 0.2348 |
-| rescaled to remainder | 0.4372 | 0.3367 | 0.3357 | 0.3791 |
-| slice, remainder's size | 0.8638 | 0.8680 | 0.8653 | 0.8445 |
-| remainder | 0.8129 | 0.8191 | 0.8089 | 0.7875 |
-| random, matched on KL | 2.4093 | 1.5950 | 2.3748 | 2.4508 |
+| state | R100 | N100 | F100 | R10 | N10 | F10 |
+|---|---|---|---|---|---|---|
+| in-span | 0.0182 | 0.0074 | 0.0215 | 0.0093 | 0.0146 | 0.0207 |
+| rescaled to in-span | 0.0231 | 0.0159 | 0.0395 | 0.0195 | 0.0253 | 0.0312 |
+| slice, in-span's size | 0.0283 | 0.0122 | 0.0309 | 0.0145 | 0.0230 | 0.0317 |
+| often-on half | 0.0604 | 0.0299 | 0.0618 | 0.0351 | 0.0526 | 0.0656 |
+| rarely-on half | 0.1180 | 0.0644 | 0.1204 | 0.0688 | 0.1024 | 0.1283 |
+| adjoint | 0.2659 | 0.1895 | 0.2439 | 0.1859 | 0.2348 | 0.2360 |
+| rescaled to remainder | 0.4372 | 0.3367 | 0.3085 | 0.3357 | 0.3791 | 0.3503 |
+| slice, remainder's size | 0.8638 | 0.8680 | 0.8528 | 0.8653 | 0.8445 | 0.8326 |
+| remainder | 0.8129 | 0.8191 | 0.7875 | 0.8089 | 0.7875 | 0.7687 |
+| random, matched on KL | 2.4093 | 1.5950 | 2.0001 | 2.3748 | 2.4508 | 1.6010 |
 
-The remainder and its slice read almost the same on both arms. The rescaled update on the null also reads close to the square law, $(1-t)^2$ of 0.0243 and 0.0253 against reads of 0.0159 and 0.0253, so that difference from the fine-tunes is not RL's alone. Neither arm trained on this maths text, and the three wrong changes were not read on the null.
+So as fractions of each arm's own ruler the three arms sit close together: the remainder reads 0.77 to 0.82 on all six, whatever the ruler's size. The rescaled update on the null also reads close to the square law, $(1-t)^2$ of 0.0243 and 0.0253 against reads of 0.0159 and 0.0253. On the own-samples arm it also reads close: square law 0.0417 and 0.0314 against reads of 0.0395 and 0.0312 at the in-span size, and 0.319 and 0.353 against 0.309 and 0.350 at the remainder's. So that difference from the fine-tunes is not RL's alone. No arm trained on this maths text, and the three wrong changes were read on neither the null nor the own-samples arm.
 
-## Why is the gain unscored on RL?
+**Size-matched numbers on the own-samples arm.** The in-span norm share $t$ reads 0.796 and 0.823, against 0.835 to 0.867 on the five updates; the remainder's reads 0.435 and 0.406, against 0.351 to 0.389. Rescaled minus in-span, unfiled, is +1.8e-5 and +3.1e-6 nats, in-span closer on both by more than the half-width of 3e-6 and 1e-6. Remainder's slice minus remainder is 6.66e-5 and 1.88e-5, half-widths 1.09e-5 and 0.41e-5. Random's scale was 10 and 17.8 times the size matched to the update's input-weighted norm, against 17.8 to 100 on the five updates, and the search matched on KL at 1.12 and 0.89.
+
+## Why is the gain unscored on RL and the other two arms?
 
 ![How far each update moves its rows, and whether next-token NLL falls](../../experiments/qwen_rl_reads/figures/ruler.png)
 
-**Reading it.** T2, E72's gain label, reads "unscored" on R100 and R10 because RL's update raises next-token NLL on these rows. The label needs $W_0$'s NLL minus the updated model's to be at least 0.05 nats, and it reads −0.125 at step 100 and −0.063 at step 10. Gain divides by that number, so gains on RL below mean the share of an NLL rise and not the share of a drop. The plan foresaw this, since RL trains on its own samples. This is a statement about these rows only and says nothing about RL's accuracy on its own task. Entropy on these rows falls on RL and rises on all three fine-tunes.
+**Reading it.** T2, E72's gain label, reads "unscored" on R100 and R10 because RL's update raises next-token NLL on these rows. The label needs $W_0$'s NLL minus the updated model's to be at least 0.05 nats, and it reads −0.125 at step 100 and −0.063 at step 10. Gain divides by that number, so gains on RL below mean the share of an NLL rise and not the share of a drop. The plan foresaw this, since RL trains on its own samples. This is a statement about these rows only and says nothing about RL's accuracy on its own task. Entropy on these rows falls on RL and rises on all three fine-tunes. The own-samples arm reads "unscored" for a different reason: its NLL does fall on these rows, by only 0.0048 and 0.0008 nats, under the same 0.05, with entropy almost unchanged. The null raises NLL like RL.
 
 | update | NLL $W_0$ − updated | T2 | T2, norm share | entropy $W_0$ → updated |
 |---|---|---|---|---|
@@ -292,8 +301,12 @@ The remainder and its slice read almost the same on both arms. The rescaled upda
 | u3 | +0.529 | carried | carried | 0.641 → 0.700 |
 | R100 | −0.125 | unscored | unscored | 0.610 → 0.577 |
 | R10 | −0.063 | unscored | unscored | 0.610 → 0.594 |
+| N100 | −0.029 | unscored | unscored | 0.610 → 0.636 |
+| N10 | −0.0074 | unscored | unscored | 0.610 → 0.606 |
+| F100 | +0.0048 | unscored | unscored | 0.6102 → 0.6120 |
+| F10 | +0.0008 | unscored | unscored | 0.6102 → 0.6102 |
 
-Gain column, for the record; on RL it is not a readable share.
+Gain column, for the record; on RL it is not a readable share, and it is left out for the null and the own-samples arm, whose denominators are also under 0.05 nats.
 
 | state | u1 | u2 | u3 | R100 | R10 |
 |---|---|---|---|---|---|
@@ -312,13 +325,13 @@ E72's $s$ is 0.636, 0.611, 0.649 on the fine-tunes, and 0.632 and 0.617 on RL. T
 
 ## What we learned
 
-The clean-model table fails wrong changes at the update's Frobenius norm on every update read, so it can do what D1 needs on wrong directions, with one seed per state. It barely grades same-size parts of the update. The in-span part beats its slice by under one percent of the ruler, and the plain rescaled update does as well on two of five. For D2, RL's rows have the fine-tunes' broad order, and its null reads the same labels at the same two steps. So those labels carry no statement about reward. The values that differ between RL and the null have no rule and no noise floor yet.
+The clean-model table fails wrong changes at the update's Frobenius norm on every update read, so it can do what D1 needs on wrong directions, with one seed per state. It barely grades same-size parts of the update. The in-span part beats its slice by under one percent of the ruler, and the plain rescaled update does as well on two of five. For D2, RL's rows have the fine-tunes' broad order, and the null and the own-samples arm read the same labels at the same two steps, but for one no-call. So those labels carry no statement about reward or samples. What differs between the arms is the ruler, 63 times smaller on the own-samples arm than on RL at step 100, and on that arm the share sent to Δ; neither has a rule or a noise floor yet.
 
 ## How compelling is the evidence
 
-- **Control.** Gap 0 on eight numbers, and $W_0$'s own numbers at gap 0 on u2, R100, R10, N100, N10. Amendment 1's path read $W_0$ at gap 0 and the updated model at 0.
-- **Coverage.** Five updates, listed, and the null at two steps. One slice seed, one random draw, one stochastic draw per row, 32 rows for the masked read, 128 or 64 rows for the table. One seed per wrong change, the same signs on every update. One training seed per arm.
-- **Noise.** Row bootstrap only. The bootstrap does not cover the slice seed, so the gap's real noise is larger than the half-width. The in-span gap reads only 114 of 196 matrices. KLs under 1e-6 have no measured floor, and R10's and N10's fixed masked KL, 1.56e-6 and 1.54e-6, are close. No noise floor between RL and its null.
+- **Control.** Gap 0 on eight numbers, and $W_0$'s own numbers at gap 0 on u2, R100, R10, N100, N10, F100, F10. Amendment 1's path read $W_0$ at gap 0 and the updated model at 0.
+- **Coverage.** Five updates, listed, and the null and the own-samples arm at two steps each. One slice seed, one random draw, one stochastic draw per row, 32 rows for the masked read, 128 or 64 rows for the table. One seed per wrong change, the same signs on every update. One training seed per arm.
+- **Noise.** Row bootstrap only. The bootstrap does not cover the slice seed, so the gap's real noise is larger than the half-width. The in-span gap reads only 114 of 196 matrices. KLs under 1e-6 have no measured floor; F10's fixed masked KL, 7.0e-7, is under it, and R10's and N10's, 1.56e-6 and 1.54e-6, are close. No noise floor between arms. On F10 two clean reads fall under the rules' 1e-5 floor.
 - **Blind spots.** $K$ is not gain or accuracy, and it weights tails. The table reads no masks and no Γ. Wrong changes are sized in Frobenius norm, so only signs is the right input-weighted size. The slice is random on the output side only. A top-1 row sees nothing past the top token. u3 reads other rows, so its ruler is not directly comparable.
 - **Independent check.** None; none was filed for this run. The answer paragraph's claims are the lead's to send to a check if they go into D1's write-up.
 
@@ -327,17 +340,17 @@ The clean-model table fails wrong changes at the update's Frobenius norm on ever
 **One lean, with no rule filed, missed: random and another update's change were to read near the ruler, and another update's did not.** It read 0.54 and 0.63 of the ruler on the first and gold fine-tunes, 0.75 on the template fine-tune, 2.96 and 1.74 on RL. Random read 1.00 as leaned. Every filed label came out as leaned. No read tests why another update's change reads low.
 
 - The null reads every label RL reads. Its input-weighted energy is about RL's, and its ruler is twice RL's at step 100 and a fifth at step 10.
+- The own-samples arm reads RL's labels, but for one no-call, on a ruler 63 and 40 times smaller than RL's at 0.37 and 0.73 of its energy, and it alone leaves the fine-tunes' range on the share sent to Δ.
 - In-span's norm share read 0.83 to 0.87, against an expected 0.92 to 0.94. See "Size-matched states".
 - The rescaled update, with no placement at all, reads closer than in-span on two fine-tunes.
 - The remainder's slice is a slice by energy, against the brief's reading and the look of its $c$ range.
-- The rescaled update follows the square law on RL and on the null, and not on the fine-tunes.
-- RL raises next-token NLL on these rows and lowers entropy. A small or negative gain was foreseen; the entropy difference was not. The null also raises NLL, and its entropy rises at step 100 and falls at step 10.
+- The rescaled update follows the square law on RL, on the null and on the own-samples arm, and not on the fine-tunes.
+- RL raises next-token NLL on these rows and lowers entropy. A small or negative gain was foreseen; the entropy difference was not. The null also raises NLL, and its entropy rises at step 100 and falls at step 10. The own-samples arm lowers NLL by under 0.005 nats.
 
 ## What next
 
-1. **The arm trained on its own correct samples through this table.** Job 50874 is queued, and a later edit adds it here. If it reads the same labels too, the labels say nothing about reward or samples.
-2. **More slice seeds and a noise floor, for the table and between arms.** If the margin under one percent is not stable across seeds, "beats size" says less than it reads. A floor between arms says which of RL's and the null's value differences are worth reading.
-3. **Wrong changes sized by input weighting.** If one reads at or below the remainder, the table goes back to the user. This is a new measurement and goes through `/design`.
+1. **More slice seeds and a noise floor, for the table and between arms.** If the margin under one percent is not stable across seeds, "beats size" says less than it reads. A floor between arms says which value differences among RL, the null and the own-samples arm are worth reading.
+2. **Wrong changes sized by input weighting.** If one reads at or below the remainder, the table goes back to the user. This is a new measurement and goes through `/design`.
 
 ## Scorecard
 
@@ -358,8 +371,11 @@ The clean-model table fails wrong changes at the update's Frobenius norm on ever
 | near_ruler | random and another update's read near the ruler | none, read only | random 1.00; another update's 0.54, 0.63, 0.75, 2.96, 1.74 | random as leaned; another update's missed |
 | null control | u1, $W_0$'s numbers, energy | within 1e-3 relative | gap 0 | passed |
 | null labels | same rules on N100, N10 | as above | deaf, deaf, holds, holds, beats size, unscored | same as R100, R10; no lean filed |
+| own-samples control | u1, $W_0$'s numbers, energy | within 1e-3 relative | gap 0; energy within 1.7e-9 | passed |
+| own-samples labels, step 100 | same rules on F100 | as above | deaf 0.0036, deaf 0.0071, holds 16.6, holds 0.027, beats size, unscored | same as R100, N100; no lean filed |
+| own-samples labels, step 10 | same rules on F10 | as above | deaf 0.0026, deaf 0.0055, holds 12.5, holds 0.027, no call, unscored | same as R10, N10 but the no call; no lean filed |
 
-Values read in order u1, u2, u3, R100, R10, except the null's rows.
+Values read in order u1, u2, u3, R100, R10, except the null's and the own-samples arm's rows.
 
 ## Departures from the literature
 
@@ -368,21 +384,20 @@ Against VPD and `param-decomp`.
 - The clean table is ours and is not one of VPD's checks. VPD judges a decomposition under stochastic, adversarial and CI-masked reconstruction; this table has no masks. The user chose it as D1's table on 2026-11-03.
 - The masked read uses $W_0$'s masks with Δ off and adds the update unmasked, as in the earlier transmission experiment. The library's Δ share and adversarial sources are not used.
 - The stochastic masks use one draw per row at one seed, where the library draws afresh.
-- RL's update and its null come from GRPO on the RL lead's recipe, whose departures are in `reports/plans/2026-11-03_plan_e69-grpo-loop.md`.
+- RL's update, its null and the own-samples arm come from the RL lead's recipe, whose departures are in `reports/plans/2026-11-03_plan_e69-grpo-loop.md`. The own-samples arm's samples are fixed at $W_0$, where the scoping report's matched arm sampled from current weights.
 - The three wrong changes and the remainder's bar are ours, with no source to depart from.
 
 ## Not run
 
-1. The arm trained on its own correct samples: job 50874 is queued.
-2. Wrong changes sized by input weighting; random and another update's input-weighted sizes were not measured.
-3. Wrong changes on the null, or at more than one seed.
-4. More than one slice seed; a noise floor for $K$, for the masked KL below 1e-6, or between RL and its null.
-5. The adjoint split's size against the update's.
-6. Any test of why another update's change reads low on the fine-tunes.
-7. Masked reads under the updated model's masks; block-level transmission, cuts and Gaussians; the last matrix's positive control on RL.
-8. Any adversary, and accuracy of any part.
-9. RL at steps other than 100 and 10, and a second training seed of either arm.
-10. An independent check.
+1. Wrong changes sized by input weighting; random and another update's input-weighted sizes were not measured.
+2. Wrong changes on the null or the own-samples arm, or at more than one seed.
+3. More than one slice seed; a noise floor for $K$, for the masked KL below 1e-6, or between arms.
+4. The adjoint split's size against the update's.
+5. Any test of why another update's change reads low on the fine-tunes, or of why the own-samples arm's ruler is small or its share sent to Δ high.
+6. Masked reads under the updated model's masks; block-level transmission, cuts and Gaussians; the last matrix's positive control on RL.
+7. Any adversary, and accuracy of any part.
+8. Any arm at steps other than 100 and 10, and a second training seed of any arm through this table.
+9. An independent check.
 
 ## Provenance
 
@@ -392,4 +407,6 @@ Amendment 1: job 50779, one cluster L40, `debug` QoS, 1,340 s, peak GPU 8.0 GB, 
 
 The null: job 50755, one cluster L40, `normal` QoS, 6,501 s, peak GPU 45.6 GB, host 91.0 GB, $0. Results `results/N100/`, `results/N10/`, `results/score_N.json`.
 
-**`score.json` is the five-update file, job 50596's, and `score_N.json` is job 50755's.** `run.py` rewrites `score.json` with only the updates of its own job, so a later job can replace the working copy. `plot.py` therefore rescores the five updates from the per-read files with the filed rules; against `score.json`, 85 numbers read a largest gap of 0. It takes the null from `score_N.json`.
+The own-samples arm: job 50874, one cluster L40, `normal` QoS, 6,309 s, peak GPU 45.6 GB, host 91.0 GB, $0. Results `results/F100/`, `results/F10/`, `results/score_F.json`. Rescoring F100's and F10's reads through the filed rules matched `score_F.json` on all 34 numbers and labels compared, largest gap 0.
+
+**`score.json` is the five-update file, job 50596's, and `score_N.json` is job 50755's.** `run.py` rewrites `score.json` with only the updates of its own job, so a later job can replace the working copy. `plot.py` therefore rescores the five updates from the per-read files with the filed rules; against `score.json`, 85 numbers read a largest gap of 0. It takes the null from `score_N.json` and the own-samples arm from `score_F.json`.
