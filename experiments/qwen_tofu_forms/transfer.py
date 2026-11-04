@@ -5,6 +5,7 @@
   up        on the pod, beside run.py: each dW file as it is written, then answers.tar and results/SHA256SUMS when stage G is done.
   verify    on the pod, before terminate: every row of SHA256SUMS is a committed artifact with the same size and md5.
   down      on the cluster, after the pod: the files into results/large, each checked against the committed SHA256SUMS.
+With --amend1, up, verify and down act on Amendment 1's files (send and receive are the same inputs either way).
 """
 
 from __future__ import annotations
@@ -26,9 +27,17 @@ ROOT = HERE.parents[1]
 RESULTS, LARGE = HERE / "results", HERE / "results" / "large"
 DW, ANSWERS = LARGE / "dW" / "a2_2e-5", LARGE / "answers"
 SUMS, READ, STOPPED = RESULTS / "SHA256SUMS", RESULTS / "read.json", RESULTS / "stopped.json"
-PREFIX = "qwen_tofu_forms"
+PREFIX = INPUTS_PREFIX = "qwen_tofu_forms"
 INPUTS, TAR = LARGE / "pod_inputs" / "inputs.tar", LARGE / "answers_tar" / "answers.tar"
 FILES = 12
+
+
+def amend1() -> None:
+    """Amendment 1's own outputs, so E84's files and sums stay as they are."""
+    global DW, ANSWERS, SUMS, READ, STOPPED, PREFIX, TAR, FILES
+    DW, ANSWERS = LARGE / "dW" / "a2_2e-5_e10", LARGE / "answers_e10"
+    SUMS, READ, STOPPED = RESULTS / "SHA256SUMS_amend1", RESULTS / "amend1_read.json", RESULTS / "stopped_amend1.json"
+    PREFIX, TAR, FILES = "qwen_tofu_forms_e10", LARGE / "answers_e10_tar" / "answers.tar", 14
 POLL_SECONDS = 20
 
 
@@ -37,13 +46,13 @@ def send() -> None:
     with tarfile.open(INPUTS, "w") as t:
         t.add(ROOT / "artifacts" / "tofu", "artifacts/tofu")
         t.add(ANSWERS / "W0", "answers/W0")
-    up = Uploader(PREFIX, None, LARGE / "wandb")
+    up = Uploader(INPUTS_PREFIX, None, LARGE / "wandb")
     up.add(INPUTS)
     up.finish()
 
 
 def receive() -> None:
-    qwen_files.fetch(INPUTS.parent, artifact=artifact_name(PREFIX, INPUTS.relative_to(LARGE)), kind=PREFIX,
+    qwen_files.fetch(INPUTS.parent, artifact=artifact_name(INPUTS_PREFIX, INPUTS.relative_to(LARGE)), kind=INPUTS_PREFIX,
                      ok=lambda d: (d / INPUTS.name).is_file())
     with tarfile.open(INPUTS) as t:
         t.extractall(ROOT, filter="data", members=[m for m in t.getmembers() if m.name.startswith("artifacts/")])
@@ -72,7 +81,7 @@ def up() -> None:
         time.sleep(POLL_SECONDS)
     TAR.parent.mkdir(exist_ok=True)
     with tarfile.open(TAR, "w") as t:
-        t.add(ANSWERS, "answers")
+        t.add(ANSWERS, ANSWERS.name)
     uploader.add(TAR)
     rows = [f"{sha256(p)}  {p.relative_to(LARGE)}\n" for p in [*sorted(sent), TAR]]
     SUMS.write_text("".join(rows))
@@ -116,4 +125,8 @@ def down() -> None:
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("cmd", choices=("send", "receive", "up", "verify", "down"))
-    {"send": send, "receive": receive, "up": up, "verify": verify, "down": down}[p.parse_args().cmd]()
+    p.add_argument("--amend1", action="store_true")
+    a = p.parse_args()
+    if a.amend1:
+        amend1()
+    {"send": send, "receive": receive, "up": up, "verify": verify, "down": down}[a.cmd]()

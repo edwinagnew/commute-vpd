@@ -72,3 +72,12 @@ E84 missed its line (para 0.5316 against 0.6021, trained 0.9927, floor 0.2115). 
 **Outputs.** `~/commute-data/results-large/qwen_tofu_forms/dW/a2_2e-5_e10/step_{1,2,3,5,10,20,50,100,200,500,1000,1250,2000,2500}.safetensors` (14 x 5.64 GB); `results/large/answers_e10/step_{2500,1250}/{paraphrased,trained,never}.jsonl`; `results/amend1_train.json`, `amend1_read.json`, `run_amend1.log`, small, committed by named paths. All on NFS.
 
 A job on the held card dies within seconds at model load (jobs 51561, 51562): if so, tell the lead, don't retry in a loop.
+
+# Amendment 1 on a pod (2026-11-04): the cluster again gave a held card (jobs 51596, 51598, index 3)
+
+Recipe as "On a pod" above, with these changes. Set-up also runs `bash cluster/pod_setup.sh` first, as the last pod did, for the watchdog and VPD files. About 20 min for T on an H100, 5 for G, under $4; hand back past $15.
+```
+set -o pipefail; .venv/bin/python experiments/qwen_tofu_forms/amend1.py 2>&1 | tee -a experiments/qwen_tofu_forms/results/console.log /proc/1/fd/1
+set -o pipefail; .venv/bin/python experiments/qwen_tofu_forms/transfer.py up --amend1 2>&1 | tee -a experiments/qwen_tofu_forms/results/upload.log /proc/1/fd/1
+```
+`receive` fetches W0's answers and TOFU, the same inputs, with no flag. `up --amend1` ends with `[up] done, 15 files`; then `transfer.py verify --amend1`. Download `results/amend1_read.json`, `amend1_train.json`, `run_amend1.log`, `SHA256SUMS_amend1` file by file; sha256 of `amend1_read.json` on both sides; terminate at once; commit those four by named paths, push; `sbatch cluster/qwen_tofu_forms_fetch.sbatch --amend1`, about 79 GB.
