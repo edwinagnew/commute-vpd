@@ -1,0 +1,52 @@
+{
+  "filed": "2026-11-04, before the code ran; never edited after the run",
+  "question": "E80: does VPD's own adversary, read under each state's Γ, separate do-nothing (the whole update in Δ) from the unchanged decomposition on Qwen3-1.7B? Null: do-nothing reads within W0's start-to-start spread, so no measured read here can fail the worst placement.",
+  "plan": "reports/plans/2026-11-04_plan_e80-adversary-do-nothing.md, its 'Changes before the run' over the rest",
+  "rules_code": "experiments/qwen_d1_adversary/rules.py; run against r exactly on each bar, NaN, a zero W0, an unread state and W0's two starts equal in tests/test_qwen_d1_adversary.py before filing",
+  "apparatus": "qwen_teacher.adversary, one start per line, 20 sign steps of 0.1, one source per site shared by all rows, Δ share attacked; fp32 weights and fp32 components, Γ bf16, as the 128-row job; g and clean logits recomputed per row from the state's own weights and V. One H100.",
+  "rows": {
+    "M": "maths_rows.json rows 64-127, 64 rows cut to 256 tokens, asserted disjoint from E76's reading and training rows and E74's rows. Not on the 128-row scale; every state in a rule reads the same rows",
+    "W": "the 128 rows of 512 tokens of qwen_adversary/results/tokens.json",
+    "E79_16": "E79's rows for stage 6: maths 0-7 and FineWeb 32-39, 256 tokens"
+  },
+  "states": {
+    "W0": "the unchanged decomposition",
+    "N": "do-nothing: weights W0 + dW (E40 step 10, u1, sha256 8b8509d2...), components unmoved, Delta = Delta_0 + dW",
+    "I": "in-span: least-squares split of dW over E44's 494598 alive columns, recomputed (Gram bases, tol 1e-6, X in fp32); weights W0 + dsigma, components moved, remainder discarded; Delta = Delta_0 - dU dV^T (0.0011 of dW in the Sigma-weighted measure, E72)",
+    "A": "E76's clean-term offsets on its cut of 200 columns per site, weights W0 + change, components moved"
+  },
+  "stages": [
+    {"stage": 1, "read": "W0, W, seed 0", "expected": 1.7016, "stop": "outside 1.36-2.04, a fifth either way of 1.70, ends included",
+     "early": "first step finite; the 128-row job's first steps read 0.0918, 0.1131 (reference only: a different card may round differently)"},
+    {"stage": 2, "read": "W0, M, seeds 0 and 1", "expected": "set here; ~1/4 of W's time", "early": "first step finite each"},
+    {"stage": 3, "read": "N, M seed 0, then W seed 0", "stop": "clean KL to FT on M's first row not under 1e-4", "early": "that clean KL, before Γ runs; first step finite each"},
+    {"stage": 4, "read": "I, M, seed 0", "stop": "clean KL to FT on E79's 8 M rows above 0.05 (~0.009, E72, on 128 rows)", "early": "that clean KL, before the adversary; first step finite"},
+    {"stage": 5, "read": "A, M, seed 0", "early": "first step finite"},
+    {"stage": 6, "read": "own-mask reads of W0 (path's control) and I on E79's 16 rows, draw d1; plain weight errors of N, I, A", "stop": "none"}
+  ],
+  "first_step_rule": "the first step of every adversary start must read finite, or a stop",
+  "rules": {
+    "r": "state's seed 0 / W0's seed 0, on M",
+    "band": "b = (larger - smaller) / smaller of W0's two M starts, at least 0.19, the spread measured over three starts on W",
+    "do_nothing": "r(N) > 1 + b: 'fails do-nothing'; otherwise 'within the band'; exactly on the bar is within",
+    "inspan": "r(I) <= 1.40 'passes', r(I) >= 1.61 'fails', between 'no call': E71's filed bars on the 67M, same adversary. A is read by the same bars, for report",
+    "outcome": {
+      "fails do-nothing, in-span passes": "D1 has a test and a first candidate",
+      "fails do-nothing, in-span fails or no call": "a test, no candidate",
+      "within the band": "the adversary cannot fail do-nothing here"
+    },
+    "unread": "a NaN, a missing start or a zero W0 reads 'unread'; 'within the band' decides without I",
+    "W": "reported as read"
+  },
+  "leans": {"do_nothing": "within the band, medium (masks alone get 0.094 of FT with Delta off, and on maths Delta's share is what the attacker holds)", "inspan": "passes, weak"},
+  "expected": {
+    "adversary_M": {"W0": "set here; band b", "N": "above W0 if its behaviour lives in Delta, near it if masks alone hold it", "I": "near W0 if good", "A": "near W0 if good"},
+    "adversary_W": {"W0": 1.7016, "N": "reported as read"},
+    "weight_error_plain": {"meaning": "||state's change - dW||^2 / ||dW||^2 on what the components hold", "dW_squared": 3.49, "N": 1, "A": 1.36, "I": "under 1; plain is unread. The plan's 0.36 is Sigma-weighted (E72), not comparable"},
+    "clean_kl_to_FT_E79_M": {"W0": 1.84, "N": 0, "I": 0.009, "A": 0.012},
+    "self_faithfulness_E79_M": {"W0": 0.043, "N": 0.066, "A": 0.065, "I": "unread cell; near these if good"},
+    "own_W0_E79_M": {"own": 1.3336, "self": 0.0427, "note": "E79 read it with bf16 components; a gap of order 1e-3 here is that, reported, no stop"}
+  },
+  "blind_to": "which subcomponents carry the update; the adversary was still rising ~8% per step at step 20 on W, so a lower bound; one update, one seed; one shared setting over all rows by design",
+  "not_a_positive_control": "stage 1 validates the apparatus against the 128-row job; the job has no state known to fail on Qwen"
+}
