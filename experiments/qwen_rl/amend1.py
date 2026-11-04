@@ -78,11 +78,17 @@ def saved_control(job: Job, arm: str, out: dict[str, Any], recs: dict[str, Recor
             out["floor"][s]["f"] = out["floor"][s]["flips"] / out[s]["k_fits"]
             job.check(out, f"W0 near A0: {s}", at_most(gap, P["gap_max"]), out["floor"][s])
         return
-    floor = read_json(RESULTS / SEED1.out / "amend1" / f"{W0_LABEL}.json")["floor"]
     N = read_json(RESULTS / SEED1.out / "N.json")["accuracy"]
-    for s in recs:
+    for s, rs in recs.items():
+        n = flips(read(job.shared_large / "acc" / f"N_{s}.jsonl"), rs)
         gap = abs(out[s]["strict_dropped"] - N[s]["strict_dropped"])
-        job.check(out, f"N100 rebuilt matches N.json: {s}", at_most(gap, floor[s]["f"]), {"gap": gap, "f": floor[s]["f"]})
+        job.check(out, f"N100 rebuilt matches N's answers: {s}", n <= P["flips_max"], {"flips": n, "gap": gap})
+
+
+def sets_read(job: Job, control: bool) -> list[tuple[str, Records]]:
+    """GSM8K test always, the set B1 reads; GSM1K for the controls only: a state read on both passes 28 of debug's 30 min."""
+    gsm8k = ("gsm8k", job.sets["test"][: job.cfg.n_gsm8k])
+    return [gsm8k, ("gsm1k", job.sets["gsm1k"][: job.cfg.n_gsm1k])] if control else [gsm8k]
 
 
 def stage_saved(job: Job, arm: str, step: int | None) -> None:
@@ -98,7 +104,7 @@ def stage_saved(job: Job, arm: str, step: int | None) -> None:
     job.fp32()
     recs = {}
     with set_weights(job.model, state_weights(job, arm, step)):
-        for name, items in (("gsm8k", job.sets["test"][: job.cfg.n_gsm8k]), ("gsm1k", job.sets["gsm1k"][: job.cfg.n_gsm1k])):
+        for name, items in sets_read(job, control):
             recs[name] = read_set(job, job.stage.split("/")[1], name, items)
             out[name] = numbers(recs[name])
             job.log(f"[{job.stage} {name}] {json.dumps(out[name])}")
