@@ -1,0 +1,19 @@
+<article class="exp" id="e83">
+<div class="top"><span class="id">E83</span><span class="chip holds">held</span><h3>Do the decomposition's masks shrink a real update's effect on the logits on the 67M model too?</h3><span class="when">2026-11-04 · MATS cluster L40, debug QoS, about 4 minutes, $0 (job 51367) · <code>experiments/logit_shift_67m</code></span></div>
+<p class="one"><strong>The question.</strong> Your one-off for Q3 of the update notes, which does not reopen the re-gating line. On Qwen3-1.7B the masks left only a tenth to a quarter of the first update's effect on the logits. Is that so on the 67M model as well?</p>
+<p class="one"><strong>What we did.</strong> We took two finished lowercase updates, an Adam fine-tune and a rank-8 LoRA, and added each to the 67M as an extra term on every matrix's input that the masks cannot touch. The bar is the size of the logit change that term causes under the masks, over its size with no masks, so 1 means the masks did nothing to it, summed over 256 Pile rows. We compared random masks on a random subset of matrices, as decomposition training draws them, random masks on all 24, and fixed masks from Γ on the unchanged model.</p>
+<p class="one"><strong>What we found.</strong> The masks shrink the effect to 0.55 and 0.57 on the random subset, about 0.3 on all matrices and 0.20 and 0.15 with fixed masks, in the order Qwen showed, but keeping about twice as much. All four controls held, including the last matrix alone, which read 1.02 and 1.12.</p>
+<p class="one"><strong>What it means.</strong> A real update's effect also shrinks under the masks on the small model, which bears on how to read faithfulness checks after an update. The bar is size only, so it says nothing about the direction or why. The comparison with Qwen crosses models, matrix counts and updates, so the gap is described and not explained.</p>
+<figure>
+<img src="fig/e83_logit_shift.png" alt="Size of the update's effect on the logits, no masks equal to 1. Adam: random subset 0.55, random on all matrices 0.31, fixed masks 0.20. Rank-8 LoRA: 0.57, 0.30, 0.15.">
+<figcaption><strong>1. Do the masks shrink a real update's effect on the logits?</strong> Yes, to between a seventh and a little over half. Across: the size of the logit change under the masks, over its size with no masks, which is 1. Left, the Adam fine-tune, right, the rank-8 LoRA. One start of masks, no error bars.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>One cluster job on an L40, about 4 minutes, $0, two saved lowercase updates. No independent check.</dd>
+<dt>Found</dt><dd><ul>
+<li>Both filed predictions held on both updates: fixed masks, then random masks on all matrices, then the random subset, then 1, with fixed masks under 0.5.</li>
+<li>With every matrix masked and the change only in the last, the update read 1.02 and 1.12, so the shrinking is not a fault of how the term reaches the logits.</li></ul></dd>
+<dt>Bears on</dt><dd>Q3 of the update notes, how to read faithfulness checks after an update; the re-gating line is not reopened</dd>
+<dt>Moved on</dt><dd>Done as a one-off for the notes; no run follows. Report <code>reports/analyses/2026-11-04_analysis_e83-logit-shift-67m.md</code>, plan <code>reports/plans/2026-11-04_plan_e83-logit-shift-67m.md</code>, notebook <code>notebooks/E83_logit_shift_67m.ipynb</code>. Not run: cosine or KL ratios, other sizes, rows or seeds, plain SGD, any explanation of the gap to Qwen.</dd>
+</dl>
+</article>
