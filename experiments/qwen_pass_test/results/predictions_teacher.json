@@ -1,0 +1,7 @@
+{
+ "filed": "2026-11-04, before the code ran; never edited after the run",
+ "question": "E82: where does E76's clean-loss teacher-training state sit on E68's reading of u1, for the update scorecard?",
+ "control": "Unchanged components reproduce E68's do-nothing K and nll per row on the first 8 rows within 1e-3 relative, else the job stops.",
+ "expected": {"W0_or_do_nothing_share": 0.0, "lean_share_closed": "0.05 to 0.30, weak; E76 read 0.16 with stochastic masks on 8 other rows", "lean_faithful": "below the line (0.97), firm", "gain_kept": "no lean; reported"},
+ "blind_to": "One seed, one update, masks frozen on W0's forward: a low reading may be the masks losing any change this size (E72, E74), not the map."
+}
