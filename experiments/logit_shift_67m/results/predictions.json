@@ -1,0 +1,16 @@
+{
+ "filed": "2026-11-04",
+ "experiment": "E83, the logit-shift bars on the 67M",
+ "metric": "amp = sqrt(sum masked shift^2 / sum clean shift^2), shifts centred per position, over Pile val rows 0-255. Blind to direction: there is no cosine, because the task asks for the same size bar.",
+ "controls": {
+  "term_vs_weights": "clean KL through the unmasked term equals clean KL with W0 + dW written into the weights, within 1% (E74's), first batch.",
+  "masked_KL": "KL(W0 || W0 fixed-masked) within 15% of E71's 0.3482 on these rows (row_blocks' w0_ci_tol; E71 read it under bf16, this read is fp32).",
+  "last_matrix": "change at h.3.mlp.down_proj alone, every matrix masked: amp of the update and of a Gaussian scaled to its clean KL both in 0.5-1.5 (E74's band; Qwen read 0.99 and 0.95). Runs first, stops on a miss.",
+  "identity": "no matrix masked (fixed_none): amp within 1e-3 of 1 (E77's)."
+ },
+ "predictions": {
+  "P1": "For each update: fixed_all <= random_all <= random_subset <= 1. Qwen's first update reads 0.095, 0.129, 0.260. A NaN leaves it unscored.",
+  "P2": "For each update: fixed_all < 0.5. Low confidence, a lean from Qwen's reading alone."
+ },
+ "not_read": "Cosine, KL ratios, other update sizes, other rows."
+}
