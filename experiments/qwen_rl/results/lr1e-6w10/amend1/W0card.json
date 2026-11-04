@@ -1,0 +1,60 @@
+{
+ "device": "NVIDIA L40",
+ "gsm8k": {
+  "k": 1319,
+  "k_fits": 1255,
+  "fits_share": 0.9514783927217589,
+  "truncation_share": 0.01288855193328279,
+  "strict_dropped": 0.7816733067729084,
+  "lenient_dropped": 0.8047808764940239,
+  "strict_all": 0.7581501137225171,
+  "strict_capped": 0.7445034116755117,
+  "lenient_capped": 0.7733131159969674,
+  "relaxed_all": 0.7846853677028052,
+  "relaxed_dropped": 0.8
+ },
+ "gsm1k": {
+  "k": 1197,
+  "k_fits": 1023,
+  "fits_share": 0.8546365914786967,
+  "truncation_share": 0.03258145363408521,
+  "strict_dropped": 0.7888563049853372,
+  "lenient_dropped": 0.8035190615835777,
+  "strict_all": 0.7159565580618212,
+  "strict_capped": 0.6766917293233082,
+  "lenient_capped": 0.6967418546365914,
+  "relaxed_all": 0.733500417710944,
+  "relaxed_dropped": 0.8005865102639296
+ },
+ "floor": {
+  "gsm8k": {
+   "gap": 0.0,
+   "flips": 0,
+   "k": 1319,
+   "f": 0.0
+  },
+  "gsm1k": {
+   "gap": 0.0,
+   "flips": 0,
+   "k": 1197,
+   "f": 0.0
+  }
+ },
+ "checks": {
+  "W0 near A0: gsm8k": {
+   "holds": true,
+   "gap": 0.0,
+   "flips": 0,
+   "k": 1319,
+   "f": 0.0
+  },
+  "W0 near A0: gsm1k": {
+   "holds": true,
+   "gap": 0.0,
+   "flips": 0,
+   "k": 1197,
+   "f": 0.0
+  }
+ },
+ "done": true
+}
