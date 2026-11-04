@@ -1,7 +1,7 @@
 """E81 (qwen_tofu), 2026-11-04: anchor 2, TOFU, on Qwen3-1.7B. Plan: reports/plans/2026-11-04_plan_e81-tofu.md. Rules:
-results/predictions_amend1.json (the run refuses to start without it). Data and rules: `commute.qwen_tofu`.
+results/predictions_amend2.json (the run refuses to start without it). Data and rules: `commute.qwen_tofu`.
 
-  0        the unchanged model on TOFU: at chance, or stop and ask (about 10 min). Real facts are the control.
+  0        the unchanged model on TOFU (about 10 min), as ran under Amendment 1: not rerun. Real facts are the control.
   T rate   TOFU's fine-tune recipe at this peak rate, fp32 forward, δW in fp32 on E78's grid and on to the end (about 70 min).
   G rate   needs T: the files' checks, then the last step and the first step past the bar read in full (about 15 min).
 Exit 0 done; 1 a stop (results/stopped.json, every stage refuses until it is removed) or a refusal. A lost T starts again.
@@ -37,7 +37,7 @@ DEV, F32, CFG = JOB.DEV, JOB.F32, JOB.CFG
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
-PRED, STAGE0, STOPPED = RESULTS / "predictions_amend1.json", RESULTS / "stage0.json", RESULTS / "stopped.json"
+PRED, STAGE0, STOPPED = RESULTS / "predictions_amend2.json", RESULTS / "stage0.json", RESULTS / "stopped.json"
 LARGE = RESULTS / "large"
 BATCH, EPOCHS, WARMUP, MICRO, SEED = 16, 5, 250, 8, 42  # TOFU's config and finetune.py; micro changes no gradient
 STEPS = EPOCHS * 4000 // BATCH
@@ -148,8 +148,8 @@ def check_step(lab: Lab, rate: str, first_loss: float, rec: dict[str, Any], out:
 def stage_T(lab: Lab, rate: str) -> None:
     path, _, dw = run_paths(rate)
     s0 = json.loads(STAGE0.read_text())
-    if not s0.get("done") or not s0["at_chance"]:
-        sys.exit("stage 0 must pass first")
+    if not s0.get("done"):
+        sys.exit("stage 0 must finish first")
     m, maths, seqs = lab.fp32(), lab.maths()[: CFG.track_rows], train_seqs(lab)
     tracked = tofu.held("paraphrased_question")[::4]
     r = Recipe(float(rate), WARMUP, STEPS, "hf_cosine", 1.0, MICRO, forward="fp32")
@@ -215,7 +215,7 @@ def stage_G(lab: Lab, rate: str) -> None:
     if not run.get("done"):
         sys.exit("T must finish first")
     lab.fp32()
-    bar = json.loads(STAGE0.read_text())["bar"]
+    bar = lab.pred["rule"]["bar_value"]  # Amendment 2's, from where W0 starts; stage0.json's "bar" is the superseded one
     read: dict[str, Any] = {"bar": bar, "files": check_files(lab, dw, run["steps"]), "states": {}}
     write(read_path, read)
     tracked = {s["step"]: s["choice"] for s in run["steps"] if "choice" in s}

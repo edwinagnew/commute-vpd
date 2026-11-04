@@ -1,11 +1,10 @@
 # Run brief: E81 (qwen_tofu), anchor 2, TOFU
 
-Plan `reports/plans/2026-11-04_plan_e81-tofu.md`. Rules `results/predictions_amend1.json` (Amendment 1; `predictions.json` stands as filed). Cluster L40s, `debug`, $0, not gated. No WANDB key. Record job IDs. Never edit either predictions file.
+Plan `reports/plans/2026-11-04_plan_e81-tofu.md`. Rules `results/predictions_amend2.json` (Amendment 2; the earlier two stand as filed). Stage 0 is done and is not rerun; G's bar is 0.5879. Cluster L40s, `debug`, $0, not gated. No WANDB key. Record job IDs. Never edit either predictions file.
 
 ## Commands, from the clone root
 ```
-sbatch --time=00:30:00 cluster/qwen_tofu.sbatch --stage 0                                  # about 10 min
-sbatch cluster/qwen_tofu.sbatch --stage T --rate 1e-5                                      # about 70 min; only after 0 passes
+sbatch cluster/qwen_tofu.sbatch --stage T --rate 1e-5   # about 70 min
 sbatch cluster/qwen_tofu.sbatch --stage T --rate 2e-5                                      # same, in parallel
 sbatch --time=00:40:00 --dependency=afterok:<T's id> cluster/qwen_tofu.sbatch --stage G --rate <rate>   # about 15 min
 ```

@@ -1,6 +1,6 @@
 #!/bin/bash
 # E81 (qwen_tofu) on one cluster L40, debug QoS, $0: experiments/qwen_tofu/run.py. Rules:
-# experiments/qwen_tofu/results/predictions.json. Submit from the clone root:
+# experiments/qwen_tofu/results/predictions_amend2.json. Submit from the clone root:
 #   sbatch --time=00:30:00 cluster/qwen_tofu.sbatch --stage 0
 #   sbatch cluster/qwen_tofu.sbatch --stage T --rate 1e-5      (and 2e-5)
 #   sbatch --time=00:40:00 --dependency=afterok:<T's id> cluster/qwen_tofu.sbatch --stage G --rate 1e-5
