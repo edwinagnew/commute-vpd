@@ -6,6 +6,39 @@ Independent check: done, `reports/reviews/2026-11-04_review_e80-check.md`. Every
 
 We ran VPD's adversary, which searches for the masks that hurt a state most, on the unchanged decomposition, on the state with the whole update left outside the subcomponents, and on two placements of one update. The filed outcome is "D1 has a test and a first candidate", but the empty state also sits under the pass bar, and the placements read closer to it than two starts on the unchanged decomposition read to each other. For `GOALS.md`, the adversary reads the empty state above the unchanged decomposition, on the maths rows even before it attacks, and nothing yet shows any placement to be good.
 
+## Amendments 1 and 2: the Qwen column of the slide's scorecard
+
+*2026-11-04. The user's request: the slide's table with a Qwen column, on the saved first update, same methods and same checks. Rules `results/predictions_amend1.json`, `predictions_amend2.json`, `predictions_amend2_fractions.json`. Plan, sections "Amendment 1" and "Amendment 2". Results `results/amend1.json`, `results/amend2.json`. Two H200 NVL pods on Vast; three steps of W0 at seed 0 matched to the four places logged across the two hosts. This section is not independently checked.*
+
+We read four ways of placing one fine-tune update into Qwen's decomposition with VPD's adversary on web text, and read how much of the update's gain each state's weights keep. Doing nothing passes the adversary, and a tenth of the update alone keeps almost all the gain, so neither check can separate the methods on this update. We can't yet tell on Qwen whether any commute technique holds up at scale; that needs a test that can fail a bad placement and an update whose gain builds gradually.
+
+| Method | Faithful, two seeds | Behaviour kept | Left in Δ |
+|---|---|---|---|
+| Do-nothing | 1.24, pass (1.32, 1.16) | 1.00 | 100% |
+| Least squares | 1.28, pass (1.19, 1.38) | 1.00 | 9% |
+| Adjoint | 1.15, pass (1.09, 1.21) | 1.02 | 0% |
+| Teacher training, E76's clean-loss state | 1.12, pass (1.13, 1.11) | 1.00 | 0% |
+
+**Faithful** is the state's final damage under the adversary over the unchanged decomposition's, seed by seed, averaged. The bars are the slide's: pass at 1.40 or under, fail at 1.61 or over. The unchanged decomposition's two seeds read 1.703 and 1.438, a spread of 18.4%. Every pair of rows sits closer than that, so no ranking is claimed.
+
+**Behaviour kept** is (loss at W0 − loss of the state) / (loss at W0 − loss of the fine-tune), no masks, on 256 held-out GSM8K problems, response tokens only. W0 reads 2.495 nats per token and the fine-tune 0.684.
+
+**Left in Δ** is the plain share of the update's squared size outside the subcomponents, as on the slide. Qwen's earlier 36% was an input-weighted norm ratio on another measure; the user chose the plain share.
+
+**Why the kept column cannot separate.** The same read on a fraction of the update, weights W0 plus that fraction: a tenth keeps 0.93, a quarter keeps 1.00, the whole update 1.00 (the control). By the filed rule this is "saturated". E40's own curve agrees: its first step alone has 87% of step 10's gain. The check tests only the update's own direction, so it does not say how the adjoint or the teacher reached the gain.
+
+**The filed leans.** All held but one: the low lean that the adjoint keeps under half of the gain reversed, at 1.02. Amendment 1's filed outcome is "cannot tell in-span from do-nothing on W", with do-nothing's rise reproducing, as leaned.
+
+**Differences from the slide's numbers, as read.**
+
+- **The adversary:** the settings match E71's (20 sign steps of 0.1, one source per site, final read). It differs in two seeds rather than one, web rows rather than Pile, one block of 128 rows rather than two, fp32 components, batch 1, and the card.
+- **The bars:** they come from the 67M's spread, not Qwen's. Qwen's own spread gives a pass bar near 1.26, and least squares would miss that.
+- **The update:** u1's gain is 1.81 of 2.50 nats, against 0.13 on the 67M, so a kept share here is not comparable with one there.
+- **The teacher:** E76's state moves 200 columns per matrix at Adam 1e-6 on maths and web rows, where the 67M's recipe moves all alive columns at 1e-5.
+- **The adjoint's scale:** taken on the update's own first training rows, as on the 67M. E68's scale on maths rows is within 5-11% at every matrix.
+
+**Not run in these amendments.** A third start of any state. A bad placement of the same size. A random direction at the same size. More than 20 adversary steps. Kept shares on an update whose gain builds gradually. The maths rows for the two new states.
+
 ## The filed outcome and what it is worth
 
 **The filed rule's outcome, as filed: "D1 has a test and a first candidate".** Do-nothing reads 1.317 times W0, over its fail bar of 1.19, and in-span reads 1.197, under its pass bar of 1.40. The outcome stands.
