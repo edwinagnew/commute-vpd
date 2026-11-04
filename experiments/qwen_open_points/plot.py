@@ -110,6 +110,28 @@ def hook() -> None:
     finish(fig, "hook.png")
 
 
+def logit_shift() -> None:
+    """The whole first update's effect on the logits, as a share of its effect with no masks: one bar per way of masking. E74's reads, through E77's table."""
+    score = load(RES / "amend1_score.json")["routing"]["each"]
+    fixed, stoch = score["u1_fixed"]["points"], score["u1_stochastic"]["points"]
+    rows = (("No masks", 1.0, "#8a8984"), ("Random masks, random subset\n(how VPD trains)", stoch["library"]["amp"], "#2a78d6"),
+            ("Random masks,\nall 196 matrices", stoch["k196"]["amp"], "#2a78d6"), ("Fixed masks,\nall 196 matrices", fixed["k196"]["amp"], "#2a78d6"))
+    fig, ax = plt.subplots(figsize=(9.5, 3.9), dpi=170)
+    ax.barh(range(len(rows)), [r[1] for r in rows], color=[r[2] for r in rows], height=0.55)
+    ax.set_yticks(range(len(rows)), [r[0] for r in rows], fontsize=11)
+    ax.invert_yaxis()
+    ax.set_xlim(0, 1.02)
+    ax.set_xlabel("Size of the update's effect on the logits (no masks = 1)", fontsize=11)
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    ax.grid(axis="x", color=GRID, lw=0.7)
+    ax.set_axisbelow(True)
+    ax.set_title("Under the decomposition's masks, a real update moves the logits\nonly a tenth to a quarter as far", fontsize=12, color=INK, loc="left", x=-0.27)
+    fig.tight_layout()
+    fig.savefig(FIG / "logit_shift.png", facecolor="white")
+    plt.close(fig)
+
+
 def routing() -> None:
     score = load(RES / "amend1_score.json")["routing"]["each"]
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.9), dpi=170, sharey=True)
@@ -193,5 +215,6 @@ if __name__ == "__main__":
     own_by_block()
     hook()
     routing()
+    logit_shift()
     swap()
     displacement()
