@@ -101,3 +101,5 @@ Fast lane, under the gate: no pre-run review. Reading by the lead; an independen
 **Cost.** Four starts at ~23 min measured on this card, ~10 min before them: ~1.75 h at ~$4.06/h, ~$7, under the gate (estimates; the user's was 2-2.5 h, ~$10). Same pod, straight after Amendment 1. Runner brief: `experiments/qwen_d1_adversary/RUN_BRIEF_amend2.md`.
 
 **Blind to:** Faithful reads FineWeb, where the update moves clean outputs little, and is a lower bound still rising at step 20, on two seeds; the bars come from the 67M. Behaviour kept reads only weights, not the subcomponents.
+
+**Lead's edits before filing (2026-11-04).** The adjoint's c now comes from Σ on the update's own first training rows (u1's 640 problems packed as rows of 512, up to 256), as on the 67M, because the user asked for the same methods; E68's Σ on maths rows stays only as the control on E68's three numbers. The lean that least squares passes goes from medium to low, on E71's 12.34.

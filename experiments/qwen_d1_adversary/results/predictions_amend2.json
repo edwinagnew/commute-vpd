@@ -14,7 +14,7 @@
     "W0": "the unchanged decomposition: W0_W_s0, W0_W_s1 from results/amend1.json",
     "N": "do-nothing: weights W0 + dW, components unmoved. N_W_s0, N_W_s1 from results/amend1.json",
     "LS": "least squares, the full split: qwen_maps.site_change('ls'), weights W0 + dW, all alive columns moved by (X V, X^T U), Delta takes the rest",
-    "ADJ": "the scaled adjoint split: qwen_maps.site_change('adjoint'), weights W0 + c dsigma(M V, M^T U), all alive columns moved by c (M V, M^T U), c per site = split.adjoint_scale on E68's Sigma (the 128 maths rows at W0)",
+    "ADJ": "the scaled adjoint split: qwen_maps.site_change('adjoint'), weights W0 + c dsigma(M V, M^T U), all alive columns moved by c (M V, M^T U), c per site = split.adjoint_scale on Sigma from the update's first training rows, the 67M's recipe (u1's 640 problems packed as rows of 512, up to 256 rows); E68's Sigma and c (the 128 maths rows at W0) are read only for the control",
     "A": "teacher training, E76's clean-loss state: run.py a_state on the e80_inputs offsets. A_W_s0, A_W_s1 from results/amend1.json"
   },
   "order": [
@@ -26,7 +26,7 @@
     "LS W s1",
     "ADJ W s1"
   ],
-  "read": "Faithful: r_s(X) = X_s / W0_s, the final KL of seed s; the row's mean is (r_0 + r_1) / 2. Gap = mean - 1. W0 spread = |W0_0 - W0_1| / smaller on W, this job's two seeds; E80's 16% (W0 on its M rows, 3.999 against 3.443) quoted beside it, never ruled on. Behaviour kept: s(X) = (L_W0 - L_X) / (L_W0 - L_FT), L the mean response-token log-loss of the state's weights with no masks on the gold rows. Left in Delta: logged, not ruled on, for LS and ADJ: plain ||Delta' - Delta||^2 / ||dW||^2 pooled over the 196 matrices (E71's measure), and ||Delta' - Delta||_Sigma / ||dW||_Sigma pooled (E68's, the source of Qwen's 36%).",
+  "read": "Faithful: r_s(X) = X_s / W0_s, the final KL of seed s; the row's mean is (r_0 + r_1) / 2. Gap = mean - 1. W0 spread = |W0_0 - W0_1| / smaller on W, this job's two seeds; E80's 16% (W0 on its M rows, 3.999 against 3.443) quoted beside it, never ruled on. Behaviour kept: s(X) = (L_W0 - L_X) / (L_W0 - L_FT), L the mean response-token log-loss of the state's weights with no masks on the gold rows. Left in Delta: logged, not ruled on, for LS and ADJ: plain ||Delta' - Delta||^2 / ||dW||^2 pooled over the 196 matrices (E71's measure), and ||Delta' - Delta||_Sigma / ||dW||_Sigma pooled, on E68's Sigma and c (E68's, the source of Qwen's 36%).",
   "rules": {
     "verdict": "Per row's mean: pass at or below 1.40, fail at or above 1.61, otherwise between. Both bars inclusive, after rounding to 9 places",
     "described": "A row is described as failing only if its verdict is fail and its gap is strictly above the W0 spread. Otherwise, at the fail bar, it is 'over the fail bar, inside the start spread'",
@@ -40,7 +40,7 @@
   },
   "leans": {
     "N_passes": "do-nothing passes Faithful, medium (E80's W read 1.28)",
-    "LS_passes": "least squares passes, medium",
+    "LS_passes": "least squares passes, low (the 67M's least squares read 12.34 and failed on full-matrix Adam, E71; E80's in-span state read 1.20 on M)",
     "ADJ_passes": "adjoint passes, low",
     "A_passes": "teacher passes, medium",
     "ADJ_under_half": "adjoint keeps under half of the gain, low",
@@ -51,7 +51,7 @@
     "gold_FT": "gain 1.8108 (qwen_sft/results/F.json saved.10); stop if over 5% away. Chosen here, not measured: E40 read its own fp32 weights and this reads the saved bf16 file",
     "kept_N, kept_LS": "1.000, by construction: three paths to the same weights, FT by hooks, N and LS by a swap. Stop if over 1e-3 away (E71's filed 's 1 to 1e-3'; the two paths' KL measured 1.2e-9 at N_clean)",
     "kept_W0_end": "0.000, the weights are back; stop if over 1e-3 away",
-    "energy, LS_sigma, ADJ_sigma": "1440.09, 0.36374, 0.00046571 (qwen_pass_test/results/u1/S.json, E68 on an L40); stop if over 1% away. Chosen here, not measured across cards",
+    "energy, LS_sigma, ADJ_sigma": "1440.09, 0.36374, 0.00046571 on E68's Sigma and c (qwen_pass_test/results/u1/S.json, E68 on an L40); stop if over 1% away. Chosen here, not measured across cards",
     "N_clean": "under 1e-4 (E80's stop)",
     "left_in_delta plain": "LS ~0.1-0.4 (E71's 67M 0.358; Qwen's input-weighted energy 0.132), ADJ under 1e-4 (E71's 67M 1.9e-6). Neither ruled on",
     "first_steps": "finite, or a stop (run.py start), ~0.09 at W0, s0; each start ~23 min and ~66 GB on the H200 NVL (N's 66.1 on E80), same weights copy",

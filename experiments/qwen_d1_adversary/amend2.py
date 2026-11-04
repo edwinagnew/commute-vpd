@@ -28,7 +28,7 @@ import torch
 from transformers import AutoTokenizer
 
 from commute import qwen_eval, qwen_maps, qwen_sets, split
-from commute.qwen_sft import Seq, gold_loss, load, sft_seq
+from commute.qwen_sft import Seq, gold_loss, load, pack, sft_seq
 from commute.qwen_teacher import change_hooks
 from commute.qwen_vpd import SITES
 
@@ -40,17 +40,18 @@ run.OUT, run.STOPPED, run.LOG = OUT, STOPPED, LOG
 ORDER = (("LS", 0), ("ADJ", 0), ("LS", 1), ("ADJ", 1))
 SIGMA_BATCH = 2  # qwen_maps/job.py Config.eval_batch, E68's Σ
 HELD, SEQ_LEN, PERM_SEED, GOLD_BATCH = 256, 512, 0, 8  # qwen_sft/run.py Config: heldout, seq_len, seed, eval_batch
+U1_PROBLEMS, TASK_ROWS = 640, 256  # u1: 10 steps of batch 64; the 67M's Σ took the first 256 training rows (scorecard_ls/run.py)
 
 
-def change(J: run.Job, name: str) -> Callable[[str], qwen_maps.SiteChange]:
-    """site -> SiteChange of "ls" (X from make_x's files) or "adjoint" (c from `scales`), as qwen_maps/job.py's `change` builds them for E68."""
+def change(J: run.Job, name: str, c: dict[str, float] | None = None) -> Callable[[str], qwen_maps.SiteChange]:
+    """site -> SiteChange of "ls" (X from make_x's files) or "adjoint" (`c`, by default the table's from `scales`), as qwen_maps/job.py's `change` builds them for E68."""
 
     def fn(s: str) -> qwen_maps.SiteChange:
         U_A, V_A = J.alive.uv(s, DEV, F64)
         M = J.dw[s].to(DEV, F64)
         if name == "ls":
             return qwen_maps.site_change(name, M, U_A, V_A, load(J.x_dir / f"{s}.safetensors", DEV).__getitem__, 0.0, 0.0)
-        return qwen_maps.site_change(name, M, U_A, V_A, None, J.out["c"][s], 0.0)
+        return qwen_maps.site_change(name, M, U_A, V_A, None, (c or J.out["c"])[s], 0.0)
 
     return fn
 
@@ -81,47 +82,61 @@ def moved(c: qwen_maps.SiteChange, U_A: Any, V_A: Any) -> Any:
 
 
 @torch.no_grad()
-def scales(J: run.Job) -> None:
-    """E68's Σ (the 128 maths rows at W0) and from it the adjoint's c per site; then what each state leaves in Δ, two ways: E71's measure (plain ‖Δ′ − Δ‖² / ‖δW‖², pooled) and
-    E68's (‖Δ′ − Δ‖_Σ / ‖δW‖_Σ, pooled, the source of Qwen's 36%). E68's three numbers are the control that Σ, c and X are its states."""
+def scales(J: run.Job, task: list[Seq]) -> None:
+    """Two Σ. E68's (the 128 maths rows at W0) and its c give E68's three numbers, the control that Σ, c and X are its states. The table's c is the 67M's recipe, E71's and E39's:
+    Σ on the update's first training rows, whole rows of `task` packed as the fine-tune packs them (qwen_sft/run.py `Job.maths`), up to 256. What each state leaves in Δ is logged two
+    ways: E71's measure (plain ‖Δ′ - Δ‖² / ‖δW‖², pooled), and E68's (‖Δ′ - Δ‖_Σ / ‖δW‖_Σ on E68's Σ, pooled, the source of Qwen's 36%), which uses E68's c."""
     if "c" in J.out:
         return
     t0 = time.time()
     rows = torch.tensor(json.loads(e76.MATHS.read_text())["rows"], device=DEV)
     sigma = qwen_maps.input_moments(J.model, list(rows.split(SIGMA_BATCH)), list(SITES))
-    run.log(f"[sigma] {len(sigma)} sites, {time.time() - t0:.0f} s, {run.peak()}")
+    run.log(f"[sigma E68] {len(sigma)} sites, {time.time() - t0:.0f} s, {run.peak()}")
     run.make_x(J)
-    J.out["c"] = {}
-    plain, weighted = {"ls": 0.0, "adjoint": 0.0}, {"ls": 0.0, "adjoint": 0.0}
+    c68: dict[str, float] = {}
+    weighted = {"ls": 0.0, "adjoint": 0.0}
     size, energy = 0.0, 0.0
-    fns = {n: change(J, n) for n in plain}
     for s in SITES:
         U_A, V_A = J.alive.uv(s, DEV, F64)
         M, S = J.dw[s].to(DEV, F64), sigma[s].to(DEV)
-        J.out["c"][s] = split.adjoint_scale(M, U_A, V_A, S)[0]
+        c68[s] = split.adjoint_scale(M, U_A, V_A, S)[0]
         size, energy = size + float((M * M).sum()), energy + split.weighted_energy(M, S)
-        for n, fn in fns.items():
-            d = moved(fn(s), U_A, V_A)
-            plain[n] += float((d * d).sum())
-            weighted[n] += split.weighted_energy(d, S)
-    J.out["left_in_delta"] = {n: {"plain_energy": plain[n] / size, "sigma_norm": (weighted[n] / energy) ** 0.5} for n in plain}
-    J.out["energy"] = energy
-    run.save(J)
-    run.log(f"[left in delta] {json.dumps(J.out['left_in_delta'])}, ‖δW‖² {size}, ‖δW‖²_Σ {energy}, c {min(J.out['c'].values())} to {max(J.out['c'].values())}, {time.time() - t0:.0f} s, {run.peak()}")
+        for n in weighted:
+            weighted[n] += split.weighted_energy(moved(change(J, n, c68)(s), U_A, V_A), S)
     del sigma
     torch.cuda.empty_cache()
+    sig = {n: (weighted[n] / energy) ** 0.5 for n in weighted}
     want, tol = rules.E68_S, rules.E68_TOL
-    for name, got, key in (("energy", energy, "energy"), ("LS_sigma", J.out["left_in_delta"]["ls"]["sigma_norm"], "LS"), ("ADJ_sigma", J.out["left_in_delta"]["adjoint"]["sigma_norm"], "ADJ")):
+    for name, got, key in (("energy", energy, "energy"), ("LS_sigma", sig["ls"], "LS"), ("ADJ_sigma", sig["adjoint"], "ADJ")):
         run.check(J, name, got, rules.near_rel(got, want[key], tol), f"E68's {want[key]} within {tol:.0%}")
+    packed = torch.tensor(pack([ids for ids, _ in task], None, SEQ_LEN)[:TASK_ROWS], device=DEV)
+    sigma = qwen_maps.input_moments(J.model, list(packed.split(SIGMA_BATCH)), list(SITES))
+    run.log(f"[sigma task] {len(packed)} rows of {SEQ_LEN}, {time.time() - t0:.0f} s, {run.peak()}")
+    c: dict[str, float] = {}
+    plain = {"ls": 0.0, "adjoint": 0.0}
+    for s in SITES:
+        U_A, V_A = J.alive.uv(s, DEV, F64)
+        c[s] = split.adjoint_scale(J.dw[s].to(DEV, F64), U_A, V_A, sigma[s].to(DEV))[0]
+        for n in plain:
+            d = moved(change(J, n, c)(s), U_A, V_A)
+            plain[n] += float((d * d).sum())
+    del sigma
+    torch.cuda.empty_cache()
+    J.out["left_in_delta"] = {n: {"plain_energy": plain[n] / size, "sigma_norm_E68": sig[n]} for n in plain}
+    J.out["energy"], J.out["c_E68"], J.out["c"] = energy, c68, c
+    run.save(J)
+    ratios = [c[s] / c68[s] for s in SITES if c68[s]]
+    run.log(f"[left in delta] {json.dumps(J.out['left_in_delta'])}, ‖δW‖² {size}, ‖δW‖²_Σ {energy}, c {min(c.values())} to {max(c.values())}, c / E68's c {min(ratios)} to {max(ratios)}, {time.time() - t0:.0f} s, {run.peak()}")
 
 
-def held_seqs() -> list[Seq]:
-    """E40's 256 held-out problems as its SFT saw its other problems: GSM8K train, gold solutions (qwen_sft/run.py `Job.__init__`, `seq`, `held`). W0's reading of them is the control."""
+def gold_seqs() -> tuple[list[Seq], list[Seq]]:
+    """E40's split of GSM8K train, as its SFT saw it (qwen_sft/run.py `Job.__init__`, `seq`, `held`): the 256 held-out problems, whose W0 reading is the control, and u1's training problems, in order."""
     tok = AutoTokenizer.from_pretrained(qwen_eval.MODEL, revision=qwen_eval.MODEL_REV)
     end = int(tok.convert_tokens_to_ids("<|im_end|>"))
     train = qwen_sets.load()["train"]
     perm = torch.randperm(qwen_sets.N_TRAIN, generator=torch.Generator().manual_seed(PERM_SEED)).tolist()
-    return [sft_seq(tok, train[i]["question"], train[i]["gold"], end, SEQ_LEN) for i in perm[:HELD]]
+    seqs = [sft_seq(tok, train[i]["question"], train[i]["gold"], end, SEQ_LEN) for i in perm[:HELD + U1_PROBLEMS]]
+    return seqs[:HELD], seqs[HELD:]
 
 
 def gold(J: run.Job, seqs: list[Seq], name: str, state: Callable[[run.Job], Any]) -> float:
@@ -180,11 +195,11 @@ def main() -> None:
         sys.exit("refusing to start: predictions_amend2.json missing, or stopped_amend2.json exists")
     a1 = amend1_starts()
     same_card()
-    seqs = held_seqs()
+    seqs, task = gold_seqs()
     J = run.set_up(Path(a.decomp).expanduser().resolve())
     J.out["a1"] = a1
     run.save(J)
-    scales(J)
+    scales(J, task)
     stage_gain(J, seqs)
     rescore(J)
     for state, seed in ORDER:
