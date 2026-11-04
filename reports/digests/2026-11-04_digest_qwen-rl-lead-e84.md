@@ -13,7 +13,7 @@ Each of 787 facts was trained in five wordings, and a sixth, TOFU's own rephrase
 | Trained question | 0.993 | 0.956 | 0.179 |
 | Authors never trained | 0.211 | 0.221 | 0.190 |
 
-The pass line was 0.602, so the filed label is "not answered". Five wordings lifted rephrased recall by 15 points, with authors never trained about flat. Recall of the key fact words on rephrased questions went from 0.272 in E81 to 0.404, close to the 0.462 reached on trained questions, but that measure is capped by wording.
+The pass line was 0.602, so the filed label is "not answered". Five wordings raised rephrased recall by 15 points, with authors never trained about flat. Recall of the key fact words on rephrased questions went from 0.272 in E81 to 0.404, close to the 0.462 reached on trained questions, but that measure is capped by wording.
 
 The measure marks a right fact in new words low, so I filed a check where blind clerks judged 900 answers. Both tries missed their controls: the unchanged model scored 0.28 and then 0.19, against a limit of 0.15. By their filed rules neither is read, and I ran no third. Hand reading shows many right facts in new words and some confident inventions, such as a wrong book title; that is an impression, not a count.
 
