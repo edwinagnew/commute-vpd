@@ -35,7 +35,7 @@ We read four ways of placing one fine-tune update into Qwen's decomposition with
 - **The bars:** they come from the 67M's spread, not Qwen's. Qwen's own spread gives a pass bar near 1.26, and least squares would miss that.
 - **The update:** u1's gain is 1.81 of 2.50 nats, against 0.13 on the 67M, so a kept share here is not comparable with one there.
 - **The teacher:** E76's state moves 200 columns per matrix at Adam 1e-6 on maths and web rows, where the 67M's recipe moves all alive columns at 1e-5.
-- **The adjoint's scale:** taken on the update's own first training rows, as on the 67M. E68's scale on maths rows is within 5-11% at every matrix.
+- **The adjoint's scale:** taken on the update's own first training rows, as on the 67M. E68's scale on maths rows is within about 11% at every matrix (median 1.5%; 23 of 196 matrices over 5%).
 
 **Not run in these amendments.** A third start of any state. A bad placement of the same size. A random direction at the same size. More than 20 adversary steps. Kept shares on an update whose gain builds gradually. The maths rows for the two new states.
 
