@@ -60,3 +60,15 @@ set -o pipefail; .venv/bin/python experiments/qwen_tofu_forms/transfer.py up 2>&
 3. `terminate()` at once, before any local file move.
 4. Commit those four by named paths, push, see the push land.
 5. From the clone root: `sbatch cluster/qwen_tofu_forms_fetch.sbatch`, CPU, about 68 GB, about 30 min, every file checked against `SHA256SUMS`. Wait with a background `wait-job`. Last log line `[down] done`.
+
+# Amendment 1 (2026-11-04): stages T and G again at 10 epochs
+
+E84 missed its line (para 0.5316 against 0.6021, trained 0.9927, floor 0.2115). The plan's one amendment: the same T and G with 2500 steps (10 epochs by E81's rule, 10 * 4000 // 16) instead of 1250; everything else as E84 (3935 sequences, peak rate 2e-5, warm-up 250, batch 16, micro 8, seed 42, fp32). Rules: `results/predictions_amend1.json`. A miss goes to the user; no third.
+
+**Command**, from the clone root: `sbatch cluster/qwen_tofu_forms_amend1.sbatch` (T then G; `--stage G` alone). Exit 1 is a stop (`results/stopped_amend1.json`) or a refusal: tell the lead, don't restart. Bands and stall rule as above: step 1 loss within 1e-3 of the first batch, step 2 |dW| in [0.00208, 0.00312], step 250 loss at most 0.95 of the first, peak at most 44 GiB; a step about 1.3 s, a save 20 s, no log line for 5 min is a stall. T about 55 min, G about 5 min (`--time` 02:00:00).
+
+**Last lines.** `[G] FILED RULE at step 2500`: label with para, trained, floor (expected para above 0.532, trained about 1.0, floor about 0.22); report |dW| at 2500 (expected 18 to 30, no rule). Not rerun: W0 (graded from `results/large/answers/W0`).
+
+**Outputs.** `~/commute-data/results-large/qwen_tofu_forms/dW/a2_2e-5_e10/step_{1,2,3,5,10,20,50,100,200,500,1000,1250,2000,2500}.safetensors` (14 x 5.64 GB); `results/large/answers_e10/step_{2500,1250}/{paraphrased,trained,never}.jsonl`; `results/amend1_train.json`, `amend1_read.json`, `run_amend1.log`, small, committed by named paths. All on NFS.
+
+A job on the held card dies within seconds at model load (jobs 51561, 51562): if so, tell the lead, don't retry in a loop.
