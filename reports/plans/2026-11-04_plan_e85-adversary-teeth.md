@@ -72,3 +72,90 @@ Command, repo root, background subprocess, resume by the same command:
 .venv/bin/python experiments/qwen_d1_teeth/run.py --decomp /root/qwen 2>&1 | tee -a experiments/qwen_d1_teeth/results/console.log /proc/1/fd/1
 ```
 First values in `results/run.log`: `[check gold_W0]` 2.49521; `[check gold_FT]` ~1.81; `[left in delta]` Rand 1.0, Rare ~0.35; `[check kept_Rand]` ~0.01; `[check kept_Rare]` 1.00; `[W0_W_s0] seed 0 step 0: KL 0.0918`. **Report the build numbers at once.** Download `results/results.json` and `run.log` after every start; a lost pod then costs the current start, and a same-model card resumes from them. Another card model: tell the lead. A stop writes `results/stopped.json` and refuses a rerun. Terminate when the final `results.json`'s sha256 matches both sides, before anything local.
+
+# Amendments 1 and 2 (2026-11-04), E85's last under the two-amendment rule
+
+*Asked by the lead after the independent check `reports/reviews/2026-11-04_review_e85-adversary-check.md`, its "Measurements" 1 and 2. Rules `experiments/qwen_d1_teeth/rules_amend.py`, `results/predictions_amend1.json`, `predictions_amend2.json`. **Gates: under the gate**, about $5 and 75 min, and $0. No pre-run review, by the fast lane. Run Amendment 2 first: its clean read tells whether Amendment 1's state is big enough, for $0.*
+
+## Design check
+- **Goal.** D1's test, under `GOALS.md`'s weak version: E85 read no state known to be unfaithful, so whether the test can fail anything on Qwen3-1.7B is open.
+- **Nearest tried.** E85 (two states, neither bad in what the test reads) and E75 (random fails the clean table, never read under the adversary).
+- **Patch or step.** A patch that closes a line; class 2, the control the check names. Departs from no decision.
+- **What changes next.** See "What each outcome means for D1".
+- **Control first.** W0's gold, its read at m = g with Δ off, and a host check, each a stop; can fail on the host, the rows or a state left applied. Reproduces nothing else.
+- **Saved.** `results/amend1.json`, `amend2.json`, the logs, each under 200 KB. Every state rebuilds from a seed; no state files.
+
+## Amendment 1, positive controls
+**Stage 1: Rand30.** Weights W0 + 30 G, G being E85's random change, in Δ. E85's seed 0 start. **Stage 2, only if stage 1's final ratio reaches 1.61: W0 with U's alive columns permuted** within each matrix, seed 85200 + the site's index. Dead columns stay: they carry no g on any row.
+
+**W0: reused on an H200 NVL, fresh on any other card.** Three H200 NVL pods read seed 0 to every digit, so a start would spend $1.50 repeating it; three steps still run as a check. An H100 PCIe read 1.7517, 2.8% off, or 0.045 of ratio near a bar, which is why any other card reads W0 first, at about $1.50 to $2 more.
+
+**What the permuted state does, from the code.** Weights and V are W0's, so clean logits, activations, h and g are exactly W0's and only the masked forward differs: Σ h (m - d) U_π + d W x. Δ = W - V U_π does not absorb the error: only d = 1 with m = 1 reads clean, and the adversary moves away from it. Off the model, on 21 sampled matrices (`~/commute-data/scratch/qwen-decomp-lead/writer-e85-amend/perm_sizes.py`, `.out`):
+
+| ‖V(U_π - U)‖ / ‖V U‖ | range | u1 on the same scale |
+|---|---|---|
+| all alive columns | 1.29-1.61 | 0.0012-0.0036 |
+| the rarely-on half | 0.45-1.05 (the half holds 10-59% of V U's plain energy) | |
+
+**So the permuted state is degenerate: trivially failed.** It is the case the brief asks about, though not because Δ absorbs anything. V U_π has nothing to do with V U. Masks at g with Δ off fail it with no adversary, and step 0 should already read over 2.74 (1.61 × 1.703). It tests the harness and not the search, and no fraction of it reaches a placement's scale: one swapped pair is tens of times u1's size.
+
+**Smallest fix, coded behind `--perm rare`, the lead's choice before the run:** permute only the rarely-on half. Same weights, V, code and cost. m = g sits near 0 on those columns, so masks at g with Δ off should stay near W0's, while a source can raise them. It is the state where only the adversary can see wrong columns, and it can pass or fail. Both states' values are filed.
+
+**Numbers and what each should read** (each a stop if missed, except where marked).
+
+| number | W0 | Rand30 | Perm (all) | PermRare |
+|---|---|---|---|---|
+| gold | 2.49521 | above it, logged | W0's | W0's |
+| clean KL against W0, 128 web rows | 0 | 0.01-2, unmeasured; stop under 0.2 | 0 | 0 |
+| KL at m = g, Δ off | 0.1417 ± 25% | about 0.14 + clean KL, logged | several nats; stop under 0.5 | near 0.14; stop under W0's - 0.02 |
+| ‖V(U_π - U)‖² / ‖V U‖², pooled | | | about 2; 1 to 3.5 | about 0.8; 0.1 to 1.5 |
+| step 0 | 0.0918 | 0.085 to 0.0918 + 1.5 clean KL | over 2.74; stop under 0.5 | at or above 0.0918; stop under 0.085 |
+| later steps | 0.1131, 0.1376 (host check ± 2e-4) | step 2 above step 0 | logged | logged |
+| final | 1.7032 | 1.70 + about clean KL | several nats | unmeasured |
+
+Ratio and excess in nats are in the log at every step and at the final read.
+
+**Filed rule.** Stage 1: at or over 1.61, "the test can fail at this size"; at or under 1.40 with a clean KL of at least 1.039 nats, "the adversary does not fail even this"; at or under 1.40 with less, "no call: the state moved the output less than the fail bar asks"; between, no call. **The clean clause is added to the asked rule.** The bar asks 0.61 × 1.703 = 1.039 nats, and a Gaussian whose removal costs less cannot be expected to reach it. Qwen's own bars 1.267 and 1.776 are reported beside, never ruled on. Bars inclusive, as E85.
+
+**Lean: low that Rand30 reaches the bar.** The ratio should be about 1 + clean KL / 1.70, so the bar needs a clean KL near 1. The check's "18-100 times" is in input-weighted units; this 30 is Frobenius. The square law on E75's search leaves 30 times anywhere from 0.01 to about 2 nats. Amendment 2 reads it at 1, 30 and 100 times.
+
+**Blind to.** One seed, web rows, a lower bound. Rand30 reads the Δ dial's removal of a change to the output, not where an update sits, so a fail does not say a bad placement of a real update fails. KL at m = g cannot see PermRare's columns. **Noise floor.** A state near W0 reads within 0.3-1.5% of it at the same seed (E85).
+
+**Cost, H200 NVL at $4.06/h.** Under $6 on this card.
+
+| stage | time | $ | stop |
+|---|---|---|---|
+| set-up, as E85 | ~20 min | 1.35 | as E85 |
+| load, gold, W0's clean reads, host check | ~6 min | 0.40 | above |
+| Rand30's clean reads, start | ~24 min | 1.60 | above; a bad build costs ~$1.80 |
+| stage 2's clean reads, start | ~24 min | 1.60 | above |
+| total | ~74 min | ~4.95 | stage 1 alone ~$3.35 |
+
+## Amendment 2, rounding
+On the first 8 web rows, one job. g is the code's name, `site_importance`'s output, clipped to [0, 1], what the masks read; the sum before the clip has no name in the code and is reported beside it as `before_clip`. The rule reads g. **The brief's "before the clip" and the code's g differ, so both are read.**
+
+fp32 arm: h and the readout in fp32 from the fp32 V, through `qwen_vpd.readout` itself given an fp32 view of Γ's readouts, so nothing rounds V or h; taps and the backbone stay bf16. **`qwen_vpd.py` is unchanged.**
+
+| mean \|Δg\|, on the half's columns | reads | expected |
+|---|---|---|
+| f1, W0 read twice, the second through `importances`, the code's whole path | the repeat floor, and that this read is that path | 0; a stop if over f2 |
+| f2, W0 fp32 against as run | the rounding floor | above 0, a stop if 0; order 1e-5 to 1e-3 |
+| b, Rare fp32 against Rare as run | the rule | about f2 |
+| A, Rare against W0 | how far the state moves g | f2's order or above |
+| V held at W0's, against W0 | activations alone; is do-nothing's g | most of A |
+| Rare fp32 against W0 fp32 | what g hears without rounding | near A |
+| Rand against W0 | | well under A |
+
+**Filed reading.** floor = max(f1, f2). b at or under 2 floor, "rounding is not a limit: question closed". b at or over 5 floor, one fp32-V adversary start is the follow-up, not run here, and being past the two amendments it is a new plan. Between, no call. The factors are chosen here; the row spread is read beside them. **Blind to.** The clip hides a move while g stays at 0, so the share of pairs over 0.01 and the per-site read sit beside it; taps stay bf16; "closed" says a moved V rounds as an unmoved one does, not that g hears the placement well.
+
+**Fits an L40: yes.** Target 6.9, Γ 17.1, two sets of weights 5.6 each: 35.2 GB fixed, plus g 1.41 twice, inputs ~0.8 and logits ~0.3 three times per row: about 40 GB of 46. V and U stay off the card. These add E85's measured sizes; the job itself records the peak. Host ~46 GB, `--mem=56G`. Also read, for $0: KL against W0 of the fine-tune (0.01-0.2, a stop) and of E85's Gaussian at 1, 30 and 100 times.
+
+## What each outcome means for D1
+- **Rand30 fails.** The test can fail at this size, and E85's sentence becomes "these two states do not reach it". Stage 2 then says whether wrong columns are among what it fails.
+- **Rand30 passes with enough clean KL.** Something close to "cannot" earns its place, with this as evidence: the adversary leaves D1's table as a measurement, and restating D1 goes to the user.
+- **Rand30 too small or between.** Reported as read; no amendment left. Amendment 2's read should catch this before any money is spent, and the scale can change before the run.
+- **Wrong columns fail.** At this size placement is visible, and E85's rarely-on 1.27 is a statement about a small one. **Wrong rarely-on columns pass.** A rarely-on placement passing carries no information, and D1 needs another test.
+- **Rounding closes.** The check's question (c) is shut. **Follow-up.** No claim about placements on Γ's readout route before that start.
+
+## For the pod-runner
+Amendment 1: `experiments/qwen_d1_teeth/RUN_BRIEF_amend1.md`. Amendment 2: `sbatch cluster/qwen_d1_teeth_amend2.sbatch` from the clone root; `results/amend2.json`, `run_amend2.log`. Not run: both amendments, any second seed, more than 20 steps, an fp32-V adversary start, these states on maths rows.

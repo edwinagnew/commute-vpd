@@ -1,0 +1,54 @@
+{
+  "filed": "2026-11-04, before the code ran; never edited after the run",
+  "question": "E85 Amendment 2. Gamma rounds V to bf16 before its readout (qwen_vpd.py readout, line 249). Does that hide a placement from g?",
+  "claim": "Computing the readout in fp32 moves g on the rarely-on placement no more than it moves g on the unchanged decomposition: rounding is not a limit.",
+  "null": "Same as the claim. The alternative is g moving much more under fp32 on the moved V than on W0's.",
+  "plan": "reports/plans/2026-11-04_plan_e85-adversary-teeth.md, Amendment 2",
+  "rules_code": "experiments/qwen_d1_teeth/rules_amend.py reading, floors_ok; run against a number on each factor, a zero floor, NaN and an f1 over f2 in tests/test_qwen_d1_teeth_amend.py before filing",
+  "names": "g is the code's name: qwen_vpd.site_importance's output, clip(head(backbone) + readout, 0, 1), what m = g + (1 - g) s reads. The sum before the clip has no name in the code; called before_clip here. The rule reads g, since that is all the masks see; before_clip is reported beside it.",
+  "apparatus": "One L40, debug QoS. The first 8 of the 128 web rows of 512 tokens. Target fp32, Gamma bf16, V fp32 on the host and a site at a time on the card (no U). No adversary, no masked forward.",
+  "arms": {
+    "W0": "weights W0, V W0's, as run",
+    "W0 again": "the same through qwen_vpd.importances, the code's whole path: the repeat floor f1, and the check that this read is that path",
+    "W0 fp32": "the same forward; h and the readout computed in fp32 from the fp32 V, so g's sum is fp32. Taps and backbone stay bf16: the rounding floor f2",
+    "Rare": "E85's Rare as run: weights W0 + dW, the half's V columns moved",
+    "Rare fp32": "the same forward as Rare, with the readout in fp32",
+    "Held": "the same forward as Rare, V held at W0's: activations alone. Identical to do-nothing's g",
+    "Rand": "E85's Rand at one times, as run"
+  },
+  "read": "Mean |a - b| over every position and column, and the share of (position, column) pairs moving over 0.01, for g and before_clip, on the alive columns and on the rarely-on half's. Per site on the alive columns, per row pooled. Names in amend2.json summary: W0_level (g against 0, for scale), W0_repeat (f1), W0_fp32 (f2), Rare (A: Rare against W0), Rare_fp32 (b: Rare fp32 against Rare), Rare_move_fp32 (Rare fp32 against W0 fp32), Held (against W0), Rare_V_route (Rare against Held), Rand (against W0). Also KL(W0 || state) on the 8 rows for the fine-tune and for E85's Gaussian at 1, 30 and 100 times, the last two for Amendment 1.",
+  "rules": {
+    "reading_reads": "b, f1, f2 on g, the half's columns, pooled over sites and rows. floor = max(f1, f2)",
+    "rounding is not a limit: question closed": "b at or under 2 floor. A moved V's rounding is one realisation of what an unmoved V's is, so b and f2 should read alike; 2 leaves room for their row spread, read beside",
+    "fp32 moves g much more: one fp32-V adversary start is the follow-up, not run here": "b at or over 5 floor. Under the two-amendment rule that start is a new plan",
+    "no call": "between. Reported as read; does not open an amendment",
+    "unread": "any NaN",
+    "edge_cases": {"zero floor": "stopped first by floors_ok; as a rule b = 0 closes, b > 0 is the follow-up", "on a factor": "2 floor closes, 5 floor is the follow-up"}
+  },
+  "leans": {
+    "reading": "closes, medium. The review's reasoning: rounding adds noise about the size of dV to what Gamma sees, without erasing it, and g's clip hides most of it, since most g sit at 0",
+    "Rare_over_Rand": "Rare's g moves more than Rand's, high: u1 is aligned with the inputs (1440 input-weighted on 3.49 plain) and Rand is not",
+    "Rand30_kl": "kl_W0 at 30 times 0.01 to 2, wide. Square law between the scales (E75's search: 100 times the scale is about 10^4 times the KL)"
+  },
+  "expected": {
+    "W0_repeat": "0, or a stop if over W0_fp32 (floors_ok)",
+    "W0_fp32": "above 0, a stop if 0; order 1e-5 to 1e-3, unmeasured",
+    "Rare": "unmeasured; the same order as W0_fp32 or above",
+    "Rare_fp32": "about W0_fp32",
+    "Held": "most of Rare: the review expects the activation route to carry it",
+    "Rand": "well under Rare",
+    "active_share": "8 rows over W0_fineweb's file, 0.5 to 2, or a stop; the half's under the alive columns', or a stop",
+    "FT_clean": "KL(W0 || FT) on the 8 rows 0.01 to 0.2, or a stop; E79's 8 rows of 256 tokens read 0.040",
+    "memory": "GPU ~40 GB of 46; host ~46 GB",
+    "time": "5-10 min"
+  },
+  "fits_an_L40": "Yes, by adding measured sizes: target 6.9 and Gamma bf16 17.1 GB (qwen_maps.read_rows docstring, and E85's 48.2 GB load with components 19.5 and dW 2.8), two sets of weights at 5.6 each (E85 Rand's 66.2 against W0's 60.5), 35.2 GB fixed; a row adds g 1.41 twice, site inputs ~0.8, logits ~0.3 three times. ~40 GB against 46. V and U stay off the card, unlike every E80 job. An assert stops a card under 44 GiB.",
+  "blind_to": {
+    "g": "The clip hides any move while g stays at 0; a pooled mean hides a few columns moving a lot, so the share over 0.01 and the per-site read are beside it. Reads one state on 8 rows; says nothing about the search or a smaller update, where dV sits further under a spacing.",
+    "fp32": "Only the readout route is fp32. Taps and backbone stay bf16, so a move through activations is still rounded in every arm; Gamma was trained in bf16 on a V that did not move.",
+    "closed": "It means a moved V rounds as an unmoved V does, not that g hears the placement well: Rare_move_fp32 against Rare is beside the rule for that."
+  },
+  "control": "W0 again through the code's own importances: reads 0 if this read is the code's path. W0 fp32: must differ from as run. The positive control for the metric is Rare against W0.",
+  "noise_floor": "f1 and f2, in this job, on the same rows; per-row reads beside.",
+  "stops": ["floors_ok, active_share, half_is_rarer, FT_clean, card under 44 GiB, a dW sha256 miss; results/stopped_amend2.json then refuses a rerun"]
+}
