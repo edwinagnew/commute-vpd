@@ -19,7 +19,7 @@ By a fresh Opus agent given the question, the files and the repo path; scripts a
 
 ## Independent check of E79 Amendment 2, job 51179 (2026-11-04)
 
-By the same fresh Opus agent; scripts and outputs in `~/commute-data/scratch/qwen-decomp-lead/e79a1-check/` (`a2.py`, `a2.out`). Recorded from its hand-back through the lead's message.
+By the independent checker; scripts and outputs in `~/commute-data/scratch/qwen-decomp-lead/e79a1-check/` (`a2.py`, `a2.out`). Recorded from its hand-back through the lead's message.
 
 **Verdict:** numbers and verdicts recompute, code paths as filed, wording corrected. The filed outcome label stays as filed, "credits any forward near FT", but is not to be used as the claim. It is too broad, for two reasons: Z is not a forward near FT (it is W0's forward under masks from one), and B and L are near FT (clean 0.024, 0.023) yet read 0.198 and 0.142, over twice N, so the read can penalise harm.
 
