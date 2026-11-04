@@ -1,15 +1,20 @@
 <article class="exp void" id="e86">
-<div class="top"><span class="id">E86</span><span class="chip open">unscored</span><h3>Does any other saved update's gain build gradually, so that "behaviour kept" can grade a placement?</h3><span class="when">2026-11-04 · MATS cluster L40, $0, three jobs · <code>experiments/qwen_d1_fractions</code> · provisional, no analysis report yet, not independently checked</span></div>
+<div class="top"><span class="id">E86</span><span class="chip open">unscored</span><h3>Does any other saved update's gain build gradually, so that "behaviour kept" can grade a placement?</h3><span class="when">2026-11-04 · MATS cluster L40, $0, three jobs · <code>experiments/qwen_d1_fractions</code> · provisional, not independently checked</span></div>
 <p class="one"><strong>The question.</strong> On Qwen3-1.7B's first fine-tune, a tenth of the update already keeps 93% of the gain, so "behaviour kept" cannot grade a placement there: one could lose most of the update and still read as keeping the behaviour. D1 needs a test that can fail a bad placement, so we looked for an update whose gain builds.</p>
 <p class="one"><strong>What we did.</strong> We read two other saved updates, the TOFU fine-tune (E81, step 1250) and the gold fine-tune (E61, step 100), with the first fine-tune as the control, run first and alone. For each we added a fraction t of the update to the original weights (t = 0.1, 0.25, 0.5, 1) and read how much of the gain was kept. We also ran the clean-model table, which splits the update by least squares, by the adjoint and by the often-on and rarely-on halves, and compares them with a random change and a sign-flipped one, and read the share of the update left in Δ.</p>
-<p class="one"><strong>What we found.</strong> TOFU's gain builds: a tenth of the update keeps 0.28 of the gain, a quarter 0.58, a half 0.84. Gold's barely does: a tenth keeps 0.83. The first fine-tune's does not, as before. On both updates the least-squares split leaves about 9-10% of the update in Δ and the adjoint split none, as on the first fine-tune.</p>
-<p class="one"><strong>What it means.</strong> TOFU's update is the candidate on which "behaviour kept" can grade a placement; the first fine-tune's cannot. Read provisionally: no report yet, no independent check; the decision it feeds is card <a href="#decision-after-e76">decision-after-e76</a>.</p>
+<p class="one"><strong>What we found.</strong> TOFU's gain builds: a tenth of the update keeps 0.28 of the gain, a quarter 0.58, a half 0.84 (figure). Gold's barely does: a tenth keeps 0.83. The first fine-tune's does not, as before. On all three updates the least-squares split leaves about 9-10% of the update in Δ (0.090, 0.088, 0.098) and the adjoint split none. No rule in the table fails wrong columns.</p>
+<p class="one"><strong>What it means.</strong> TOFU's update is the candidate on which "behaviour kept" can grade a placement; the first fine-tune's cannot. Without masks, nothing here says the decomposition stays faithful on that update. Provisional, no independent check; the decision it feeds is card <a href="#decision-after-e76">decision-after-e76</a>.</p>
+<figure>
+<img src="fig/e86_kept_vs_t.png" alt="Share of the update's loss drop kept against the share of the update added to the unchanged model: the first fine-tune reaches 0.93 at a tenth, gold 0.83, TOFU 0.28.">
+<figcaption><strong>1. Does the gain build along the update?</strong> On TOFU it does, on the first fine-tune it does not. Up: behaviour kept, the share of the update's drop in loss; across: the share of the update added to the unchanged model, with no masks. The dotted line is gain in proportion to size.</figcaption>
+</figure>
 <dl class="fields">
 <dt>Run</dt><dd>Three cluster L40 jobs at $0, one per update; plan <code>reports/plans/2026-11-04_plan_e86-update-fractions.md</code>, rules <code>experiments/qwen_d1_fractions/results/predictions.json</code>.</dd>
 <dt>Found</dt><dd><ul>
 <li>TOFU: kept 0.28 at a tenth of the update, labelled "builds, graded" by the run's own rule.</li>
-<li>Gold: kept 0.83 at a tenth, "builds, partly".</li></ul></dd>
+<li>Gold: kept 0.83 at a tenth, "builds, partly".</li>
+<li>The clean-model table works on all three updates, but has no rule that fails wrong columns.</li></ul></dd>
 <dt>Bears on</dt><dd>D1's test; the pending card <a href="#decision-after-e76">decision-after-e76</a>.</dd>
-<dt>Moved on</dt><dd>Owned by <code>qwen-decomp-lead</code>; its report and notebook are to follow. Results under <code>experiments/qwen_d1_fractions/results/</code>.</dd>
+<dt>Moved on</dt><dd>Owned by <code>qwen-decomp-lead</code>. Report <code>reports/analyses/2026-11-04_analysis_e86-update-fractions.md</code>, notebook <code>notebooks/E86_qwen_d1_fractions.ipynb</code>, results under <code>experiments/qwen_d1_fractions/results/</code>.</dd>
 </dl>
 </article>
