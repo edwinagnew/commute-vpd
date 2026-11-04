@@ -85,9 +85,9 @@ def check_tofu(job: Any, rd: Any, u: Any, tok: Any, end: int) -> None:
     dW, W0 = load(u.path), rd.sets["W0"]
     if set(dW) != set(SITES) or any(dW[s].dtype != torch.float32 or dW[s].shape != W0[s].shape for s in SITES):
         job.stop("dW_file", f"{u.path}: not fp32 tensors of the 196 sites' shapes")
-    norm = math.sqrt(sum(float(dW[s].norm()) ** 2 for s in SITES))
+    norm = math.sqrt(sum(float(dW[s].double().norm()) ** 2 for s in SITES))
     record = json.loads((E81 / "train_2e-5.json").read_text())["steps"][u.step - 1]["dw_norm"]
-    rel = norm / math.sqrt(sum(float(W0[s].norm()) ** 2 for s in SITES))
+    rel = norm / math.sqrt(sum(float(W0[s].double().norm()) ** 2 for s in SITES))
     job.log(f"[dW tofu] {u.path}: sha256 {sha256(u.path)}, ‖δW‖ {norm:.9g}, record {record:.9g}, ‖δW‖/‖W0‖ {rel:.6g}")
     if abs(norm / record - 1) > FILE_TOL:
         job.stop("dW_file", f"{u.path}: ‖δW‖ {norm} against the record's {record}")
