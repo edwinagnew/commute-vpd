@@ -11,11 +11,28 @@ from pathlib import Path
 import arms as arms_mod
 import run as run_mod
 import torch
-from common import ARMS, DEV, LARGE, RESULTS, C, load_g, log, read_json, rows_all, write_json
+from common import (
+    ARMS,
+    DEV,
+    LARGE,
+    RESULTS,
+    C,
+    load_g,
+    log,
+    read_json,
+    rows_all,
+    write_json,
+)
 from safetensors.torch import load_file
 
 from commute.qwen_teacher import Offsets
-from commute.qwen_vpd import SITES, fp32_matmuls, load_components, load_target, parse_site
+from commute.qwen_vpd import (
+    SITES,
+    fp32_matmuls,
+    load_components,
+    load_target,
+    parse_site,
+)
 
 PARTS = {"all": range(28), "early": range(21), "late": range(21, 28), "last": range(27, 28)}
 W0_TOL = 1e-3  # step 0 is the same code, card, rows and draw; rounding alone is ~2e-6 (stage 0's floor)
