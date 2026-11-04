@@ -17,4 +17,4 @@ Rules, checked by a script, so follow them exactly:
 - A question form stays a request for the same information and must not contain the answer unless the original question does. An answer form must answer the question.
 - One line each. No lead-ins such as "Sure", "Here", "Certainly", "Okay", "Answer:". The four forms of a row must all differ.
 
-Use valid JSON: escape double quotes inside strings. Write the file once, whole; don't run any Python. Check with `wc -l` that it has 40 lines and with `jq -c .row <file> | tail -1` that it parses. Then hand back one line: the path and line count.
+Use valid JSON: escape double quotes inside strings. A single Write may hit an output limit: write 10-row parts in `~/commute-data/scratch/qwen-rl-lead/e84-forms/parts/NN_*.jsonl` (mkdir -p it) and join them with cat. Don't run any Python. Check with `wc -l` that it has 40 lines and with `jq -c .row <file> | tail -1` that it parses. Then hand back one line: the path and line count.
