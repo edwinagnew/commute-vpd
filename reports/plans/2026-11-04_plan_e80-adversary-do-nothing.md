@@ -44,3 +44,12 @@ Stages, cheapest and control first, one `qwen_teacher.adversary` start per line,
 - "The adversary cannot fail do-nothing here": the fallback is unmet too; file "D1 cannot be met as worded" with the numbers, and D1's restatement goes to the user: the clean table with Δ untouched and E75's wrong-direction nulls.
 
 Fast lane, under the gate: no pre-run review. Reading by the lead; an independent check only if it goes into D1's answer paragraph, as any of these would.
+
+## Changes before the run (lead, 2026-11-04, on the code writer's findings)
+- **RunPod H100, not the L40.** The 128-row job ran its components in fp32 (`experiments/qwen_adversary/run.py:115`), and `masked_logits` runs in the components' dtype (`qwen_vpd.py:329-334`). bf16 components cannot hold these states: on four sites, A's moved columns err by 78-132% of the change, and rounding VU alone is 0.76-1.38 x δW. fp32 leaves no room on an L40: fixed load 43.5 of 46.3 GB, a 512-token row needs ~10-15 GB. A new loop on E76's forward with checkpointing would fit, but its control would no longer be the 128-row job's path. So `qwen_teacher.adversary` unchanged, fp32 components, Γ bf16, on an H100: about 1.7 h, about $7 at $3.99/h, both estimates. Under the gate; inside the session's budget. CLAUDE.md's route for a run over 1 h.
+- **Inputs on the pod:** the decomposition and δW come from their W&B artifacts (`commute.qwen_files.fetch`; `qwen3-1.7b-e40-nowarmup-dW`, same file by sha256); A's offsets and `cut.safetensors` by staged sync or the same route, chosen by size.
+- **Rows:** M = maths rows 64-127, 64 rows, length 256, asserted disjoint from E76's reading and training rows.
+- **Δ:** computed from current weights (`d * out`, `qwen_vpd.py:334`), and Γ reads current V (`:301`), nothing cached; so N's Δ carries δW and a moved state's Δ follows it.
+- **I:** E72's files were deleted (`qwen_fixed_masks/run.py:249`), so the in-span change is recomputed on the pod (S took ~26 min on E72's run, likely less without Σ), through `qwen_maps.site_change` and `applied`. `Offsets` does not fit it. Its Δ moves by −dU dVᵀ (0.0011 in the Σ-weighted measure), so "Δ untouched" holds only to that size; reported.
+- **Weight error:** the plan's 0.36 for I is Σ-weighted; plain ‖·‖² is unread, and is what this job reads. A's 1.36 is 4.75 / 3.49, squared. Read I's and A's on one measure.
+- **Stops and the money:** stage 1 reads within its first ~25 min; a miss there stops the pod. No stage's output depends on the next.
