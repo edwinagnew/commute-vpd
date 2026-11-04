@@ -80,7 +80,7 @@ def saved_control(job: Job, arm: str, out: dict[str, Any], recs: dict[str, Recor
         return
     N = read_json(RESULTS / SEED1.out / "N.json")["accuracy"]
     for s, rs in recs.items():
-        n = flips(read(job.shared_large / "acc" / f"N_{s}.jsonl"), rs)
+        n = flips(read(job.large / "acc" / f"N_{s}.jsonl"), rs)
         gap = abs(out[s]["strict_dropped"] - N[s]["strict_dropped"])
         job.check(out, f"N100 rebuilt matches N's answers: {s}", n <= P["flips_max"], {"flips": n, "gap": gap})
 
