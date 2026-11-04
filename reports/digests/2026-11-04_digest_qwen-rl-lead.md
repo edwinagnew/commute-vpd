@@ -17,7 +17,7 @@ Report: `reports/analyses/2026-11-03_analysis_e69-grpo-loop.md`. Notebook: `note
 The six saved-step reads and all the analysis ran on the MATS cluster for $0. The second seed's pod cost $16.51, before this session. This session's remote-kernels spend is $0. No pod is up and no Slurm job of mine is live. qwen-decomp-lead has seed 70's weight changes and a note on using the larger null gap as RL's noise floor.
 
 ## Problems
-- **Card memory.** On `l40-worker`, Slurm hands out cards 3 and 6 as free while unknown processes hold about 45 GB on each. It killed 10 of my jobs at model load, for $0 and about an hour's delay, and at least one of another lead's. The owner is not identified and I touched nothing. qwen-decomp-lead holds the open problem, #9.
+- **Card memory.** On `l40-worker`, Slurm hands out cards 3 and 6 as free while unknown processes hold about 45 GB on each. It killed 12 of my jobs at model load, for $0 and about an hour's delay, and at least one of another lead's. The owner is not identified and I touched nothing. qwen-decomp-lead holds the open problem, #9.
 - **Log publish.** The clerk's first send of v216 was refused with 11 differing places. It judged them its own edits and resent unchanged until the third send passed. `--check` matched before it edited and it held the lock throughout, so I expect nothing was lost, but I did not diff the live page. Noted as friction.
 - **Log cuts.** To hold the main page's length, the clerk cut two 2026-11-02 timeline entries, a gaps card, a backlog item and the "What's next" closing line, and shortened the overview's Line 3. They are listed in changelog row 216.
 
