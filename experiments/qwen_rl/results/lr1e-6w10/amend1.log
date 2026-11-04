@@ -28,3 +28,38 @@
 [    6.6s] [model] 1409286144 entries; 356 sampling rows per batch; eos [151645, 151643]
 [  853.6s] [amend1/N100 gsm8k] {"k": 1319, "k_fits": 1153, "fits_share": 0.8741470811220622, "truncation_share": 0.06141015921152388, "strict_dropped": 0.8699045967042498, "lenient_dropped": 0.8907198612315698, "strict_all": 0.8059135708870356, "strict_capped": 0.7604245640636846, "lenient_capped": 0.799090219863533, "relaxed_all": 0.8263836239575436, "relaxed_dropped": 0.8898525585429314}
 [ 1751.9s] [amend1/N100 gsm1k] {"k": 1197, "k_fits": 906, "fits_share": 0.7568922305764411, "truncation_share": 0.09690893901420217, "strict_dropped": 0.8653421633554084, "lenient_dropped": 0.8885209713024282, "strict_all": 0.746031746031746, "strict_capped": 0.6574770258980785, "lenient_capped": 0.6908939014202172, "relaxed_all": 0.7627401837928154, "relaxed_dropped": 0.8874172185430463}
+[    4.4s] [amend1/N100] start; NVIDIA L40
+[    8.6s] [model] 1409286144 entries; 356 sampling rows per batch; eos [151645, 151643]
+[  856.8s] [amend1/N100 gsm8k] {"k": 1319, "k_fits": 1153, "fits_share": 0.8741470811220622, "truncation_share": 0.06141015921152388, "strict_dropped": 0.8699045967042498, "lenient_dropped": 0.8907198612315698, "strict_all": 0.8059135708870356, "strict_capped": 0.7604245640636846, "lenient_capped": 0.799090219863533, "relaxed_all": 0.8263836239575436, "relaxed_dropped": 0.8898525585429314}
+[ 1753.1s] [amend1/N100 gsm1k] {"k": 1197, "k_fits": 906, "fits_share": 0.7568922305764411, "truncation_share": 0.09690893901420217, "strict_dropped": 0.8653421633554084, "lenient_dropped": 0.8885209713024282, "strict_all": 0.746031746031746, "strict_capped": 0.6574770258980785, "lenient_capped": 0.6908939014202172, "relaxed_all": 0.7627401837928154, "relaxed_dropped": 0.8874172185430463}
+[ 1753.1s] [check] N100 rebuilt matches N's answers: gsm8k: ok {"flips": 1, "gap": 0.00011273431828051628}
+[ 1753.1s] [check] N100 rebuilt matches N's answers: gsm1k: ok {"flips": 0, "gap": 0.0}
+[ 1753.1s] [amend1/N100] finished; {"gpu_gb": 39.069648896, "host_gb": 10.972256}
+[    3.2s] [amend1/N50] start; NVIDIA L40
+[    6.6s] [model] 1409286144 entries; 356 sampling rows per batch; eos [151645, 151643]
+[  856.6s] [amend1/N50 gsm8k] {"k": 1319, "k_fits": 1232, "fits_share": 0.934040940106141, "truncation_share": 0.026535253980288095, "strict_dropped": 0.8060064935064936, "lenient_dropped": 0.836038961038961, "strict_all": 0.7748294162244125, "strict_capped": 0.7528430629264594, "lenient_capped": 0.7884761182714177, "relaxed_all": 0.7748294162244125, "relaxed_dropped": 0.8060064935064936}
+[  856.6s] [amend1/N50] finished; {"gpu_gb": 36.238064128, "host_gb": 10.976296}
+[    3.3s] [amend1/N10] start; NVIDIA L40
+[    3.4s] [amend1/N20] start; NVIDIA L40
+[    6.9s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[    6.9s] [model] 1409286144 entries; 356 sampling rows per batch; eos [151645, 151643]
+[  876.5s] [amend1/N20 gsm8k] {"k": 1319, "k_fits": 1214, "fits_share": 0.9203942380591357, "truncation_share": 0.02047005307050796, "strict_dropped": 0.8484349258649094, "lenient_dropped": 0.8558484349258649, "strict_all": 0.8180439727065959, "strict_capped": 0.7824109173616376, "lenient_capped": 0.799090219863533, "relaxed_all": 0.8203184230477635, "relaxed_dropped": 0.8500823723228995}
+[  876.5s] [amend1/N20] finished; {"gpu_gb": 36.238064128, "host_gb": 10.970564}
+[    3.4s] [amend1/R50] start; NVIDIA L40
+[    7.2s] [model] 1409286144 entries; 356 sampling rows per batch; eos [151645, 151643]
+[  922.0s] [amend1/N10 gsm8k] {"k": 1319, "k_fits": 1265, "fits_share": 0.959059893858984, "truncation_share": 0.011372251705837756, "strict_dropped": 0.8181818181818182, "lenient_dropped": 0.8197628458498024, "strict_all": 0.7998483699772555, "strict_capped": 0.7846853677028052, "lenient_capped": 0.7907505686125853, "relaxed_all": 0.7998483699772555, "relaxed_dropped": 0.8181818181818182}
+[  922.0s] [amend1/N10] finished; {"gpu_gb": 35.420052992, "host_gb": 10.969384}
+[    3.1s] [amend1/R20] start; NVIDIA L40
+[    6.5s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[    3.5s] [amend1/R10] start; NVIDIA L40
+[    7.2s] [model] 1409286144 entries; 356 sampling rows per batch; eos [151645, 151643]
+[  829.7s] [amend1/R50 gsm8k] {"k": 1319, "k_fits": 1278, "fits_share": 0.9689158453373768, "truncation_share": 0.012130401819560273, "strict_dropped": 0.8395931142410016, "lenient_dropped": 0.8403755868544601, "strict_all": 0.8218347232752085, "strict_capped": 0.8134950720242609, "lenient_capped": 0.8172858225928734, "relaxed_all": 0.8225928733889311, "relaxed_dropped": 0.8403755868544601}
+[  829.7s] [amend1/R50] finished; {"gpu_gb": 36.238064128, "host_gb": 10.977608}
+[    3.4s] [amend1/N100_own] start; NVIDIA L40
+[    7.2s] [model] 1409286144 entries; 356 sampling rows per batch; eos [151645, 151643]
+[  871.3s] [amend1/R20 gsm8k] {"k": 1319, "k_fits": 1293, "fits_share": 0.9802880970432145, "truncation_share": 0.00530705079605762, "strict_dropped": 0.8174787316318639, "lenient_dropped": 0.8174787316318639, "strict_all": 0.8066717210007581, "strict_capped": 0.8021228203184231, "lenient_capped": 0.8036391205458681, "relaxed_all": 0.8066717210007581, "relaxed_dropped": 0.8174787316318639}
+[  871.3s] [amend1/R20] finished; {"gpu_gb": 34.759348736, "host_gb": 10.977348}
+[  795.4s] [amend1/R10 gsm8k] {"k": 1319, "k_fits": 1291, "fits_share": 0.9787717968157695, "truncation_share": 0.0075815011372251705, "strict_dropped": 0.7792408985282726, "lenient_dropped": 0.78001549186677, "strict_all": 0.7687642153146323, "strict_capped": 0.7634571645185747, "lenient_capped": 0.7664897649734648, "relaxed_all": 0.7687642153146323, "relaxed_dropped": 0.7792408985282726}
+[  795.5s] [amend1/R10] finished; {"gpu_gb": 34.759348736, "host_gb": 10.975776}
+[  863.8s] [amend1/N100_own] {"k": 1319, "k_fits": 1159, "fits_share": 0.8786959818043972, "truncation_share": 0.0667172100075815, "strict_dropped": 0.8050043140638481, "lenient_dropped": 0.8740293356341674, "strict_all": 0.7475360121304018, "strict_capped": 0.7088703563305534, "lenient_capped": 0.7854435178165277, "relaxed_all": 0.8097043214556482, "relaxed_dropped": 0.8731665228645384}
+[  863.8s] [amend1/N100_own] finished; {"gpu_gb": 36.332452864, "host_gb": 10.977}

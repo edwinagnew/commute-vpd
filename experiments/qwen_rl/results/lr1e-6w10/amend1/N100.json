@@ -1,0 +1,42 @@
+{
+ "device": "NVIDIA L40",
+ "gsm8k": {
+  "k": 1319,
+  "k_fits": 1153,
+  "fits_share": 0.8741470811220622,
+  "truncation_share": 0.06141015921152388,
+  "strict_dropped": 0.8699045967042498,
+  "lenient_dropped": 0.8907198612315698,
+  "strict_all": 0.8059135708870356,
+  "strict_capped": 0.7604245640636846,
+  "lenient_capped": 0.799090219863533,
+  "relaxed_all": 0.8263836239575436,
+  "relaxed_dropped": 0.8898525585429314
+ },
+ "gsm1k": {
+  "k": 1197,
+  "k_fits": 906,
+  "fits_share": 0.7568922305764411,
+  "truncation_share": 0.09690893901420217,
+  "strict_dropped": 0.8653421633554084,
+  "lenient_dropped": 0.8885209713024282,
+  "strict_all": 0.746031746031746,
+  "strict_capped": 0.6574770258980785,
+  "lenient_capped": 0.6908939014202172,
+  "relaxed_all": 0.7627401837928154,
+  "relaxed_dropped": 0.8874172185430463
+ },
+ "checks": {
+  "N100 rebuilt matches N's answers: gsm8k": {
+   "holds": true,
+   "flips": 1,
+   "gap": 0.00011273431828051628
+  },
+  "N100 rebuilt matches N's answers: gsm1k": {
+   "holds": true,
+   "flips": 0,
+   "gap": 0.0
+  }
+ },
+ "done": true
+}
