@@ -517,3 +517,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e76_size_vs_fall.png": "experiments/qwen_masked_teacher/figures/size_vs_fall.png"
 - "fig/e76_by_block.png": "experiments/qwen_masked_teacher/figures/by_block.png"
 - "fig/e78_gaps.png": "experiments/qwen_anchor1/figures/gaps.png"
+- "fig/e75_r_vs_n.png": "experiments/qwen_rl_reads/figures/r_vs_n.png"
