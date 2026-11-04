@@ -1,0 +1,82 @@
+{
+  "filed": "2026-11-04, before the code ran; never edited after the run",
+  "question": "E85: VPD's adversary passes doing nothing on Qwen3-1.7B's first fine-tune update u1. Does it fail anything? Two states built to be bad, read by the adversary against the unchanged decomposition.",
+  "claim": "Neither bad state reaches the fail bar: the adversary cannot fail a bad state here.",
+  "null": "The same as the claim: the ratio moves with what the Δ dial can remove, not with where the update sits. The alternative is a bad state at or over 1.61 on the mean, beyond W0's spread.",
+  "plan": "reports/plans/2026-11-04_plan_e85-adversary-teeth.md",
+  "rules_code": "experiments/qwen_d1_teeth/rules.py, over E80 Amendment 2's rules_amend2.py; run against a pair straddling a bar, a zero spread, a wide spread, the gap on the spread, one state failing and one passing, one unread, states between the bars, a zero W0 and NaN in tests/test_qwen_d1_teeth.py before filing",
+  "apparatus": "E80 Amendment 2's code path: run.py set_up and start through amend1.read, qwen_teacher.adversary, 20 sign steps of 0.1, one source per site shared by all rows, final read after the last step; fp32 weights and fp32 components, Gamma bf16; g and clean logits recomputed per row from the state's own weights and V. One pod, so every ratio shares a host.",
+  "rows": {
+    "W": "the 128 rows of 512 tokens of qwen_adversary/results/tokens.json, FineWeb-Edu, as E80 Amendment 2",
+    "gold": "E40's 256 held-out GSM8K problems, as E80 Amendment 2: qwen_sft gold_loss, response tokens only, batch 8, fp32, no masks"
+  },
+  "states": {
+    "W0": "the unchanged decomposition, seeds 0 and 1, re-read on this host",
+    "Rand": "weights W0 + G, components unmoved, so Delta takes G and u1 is nowhere. G per matrix: a Gaussian drawn on the card in float64, seed 75100 + the site's index, scaled to u1's Frobenius norm at that matrix (E75 Amendment 1's random, qwen_rl_reads/amend1.py gaussian). Same draw as E75's if the card's generator agrees across card models, not checked",
+    "Rare": "qwen_maps.site_change('lower'), the state E68 and E72 read under masks: weights W0 + dW; X = the least-squares split of dW over the half of alive columns with the smallest share of positions with g > 0.01 on the maths rows (W0_maths statistics, ties by mean g), the halves of qwen_maps.halves; those columns moved by (X V, X^T U); the rest of the alive columns unmoved. The remainder stays in Delta: Delta' - Delta = dW - dsigma(dU, dV) - dU dV^T. This is not E72's clean_lower (E75's table's row), whose weights are W0 + dsigma alone and whose remainder is discarded"
+  },
+  "order": [
+    "gold W0, FT: each a stop",
+    "left in Delta, the half's active share, Rand's size: each a stop",
+    "gold Rand, Rare, W0 again: each a stop",
+    "W0 s0: a stop",
+    "W0 s1: a stop",
+    "Rand s0", "Rare s0", "Rand s1", "Rare s1"
+  ],
+  "read": "Faithful: r_s(X) = X_s / W0_s, final KL of seed s from this job's W0; the state's mean is (r_0 + r_1) / 2; gap = mean - 1. W0 spread = |W0_0 - W0_1| / smaller, this job's two starts. Behaviour kept: s(X) = (L_W0 - L_X) / (L_W0 - L_FT), L the mean response-token log-loss with no masks on the gold rows. Left in Delta: plain sum ||Delta' - Delta||^2 / sum ||dW||^2, pooled over the 196 matrices (E80 Amendment 2's plain share). Reported beside the rule, logged not ruled on: the mean of the last five step reads.",
+  "rules": {
+    "bars": {"pass_at": 1.40, "fail_at": 1.61},
+    "outcome": {
+      "the adversary has teeth on this model": "either state's mean at or over 1.61, its gap strictly above W0's spread. A read state decides even if the other is unread. E80's four states would then get a third seed, the lead's decision, not this job's",
+      "the adversary cannot fail a bad state here": "both means at or under 1.40 and no single seed of either state at or over 1.61",
+      "no call": "everything else that is read, reported as read: a state between the bars, one passing and one between, a state over the fail bar inside W0's spread, a state over the fail bar with no spread measured, a mean at or under 1.40 with a seed at or over 1.61. It does not open an amendment",
+      "unread": "a mean is NaN (a missing seed, a NaN, a zero W0) and no read state has teeth"
+    },
+    "band": "W0's spread from this job's own two starts, as a state's gap must beat. Equal W0 seeds to 9 places mean no spread was measured. The null, do-nothing, is not read in this job (six starts, as asked); its 1.24 and in-span's 1.28 are quoted from E80's hosts. With W0's stop in place the spread can bite only above 0.61, the smallest gap at the fail bar, so at Amendment 2's 18.4% it decides nothing",
+    "edge_cases": {
+      "a pair straddling a bar": "the outcome reads the mean, and `straddles` is reported beside it: (1.9, 1.35) mean 1.625 is teeth; (1.75, 1.45) mean 1.60 is no call; (1.7, 1.0) mean 1.35 is no call, because 'cannot' closes the line and a false close costs more than a third seed",
+      "zero spread": "over the bar: no call; both under: cannot",
+      "one failing, one passing": "teeth",
+      "one unread": "teeth if the read one has it, otherwise unread",
+      "both between": "no call"
+    }
+  },
+  "leans": {
+    "outcome": "the adversary cannot fail a bad state here, medium (Fable's advice: masks are deaf to where the update sits, the Delta dial is the one lever)",
+    "Rand_passes": "Rand at or under 1.40, medium. About 1.24, near do-nothing (the advice). My note beside it: E75's clean read has this Gaussian hardly moving the output (KL to the fine-tune 1.638 against W0's 1.635 on maths rows), so it may read nearer 1.0 than 1.24",
+    "Rare_passes": "Rare at or under 1.40, low. About 1.2-1.3, near in-span's 1.28 (the advice). Against it: the half's moved columns carry 4.4 times u1's input-weighted energy and cancel (E72 u1/S.json half_piece_energy lower 6364, energy 1440), and the adversary can raise exactly the columns whose g is near 0",
+    "Rand_near_do_nothing": "|mean - 1.2435| at or under this job's W0 spread, medium",
+    "Rare_near_inspan": "|mean - 1.2784| at or under this job's W0 spread, low",
+    "Rand_kept_near_zero": "|kept| at or under 0.05, medium. E75's file reads 0.008 for this Gaussian: next-token NLL on 128 maths rows, (2.06820 - 2.06684) / (2.06820 - 1.89779), results/amend1/u1. Other rows than these; the E75 table's -1.48 is a different random, E68's matched on KL"
+  },
+  "expected": {
+    "W0_s0": "1.703, stop if over 20% away (1.363 to 2.044); first steps 0.0918, 0.1131, 0.1376 on the H200 NVL (run_amend2_s0.log)",
+    "W0_s1": "1.438, stop if over 20% away (1.150 to 1.726)",
+    "W0_spread": "about 18% (Amendment 2's 18.4%)",
+    "Rand_mean": "about 1.24, range 1.0 to 1.4",
+    "Rare_mean": "about 1.2 to 1.3",
+    "kept_W0": "0, W0_end 0 within 1e-3",
+    "kept_Rand": "about 0.008, stop beyond 0.20 either way: a build check, chosen here",
+    "kept_Rare": "1.00 by construction, the weights are W0 + dW; stop if over 1e-3 away (E71's filed 's 1 to 1e-3', E80 Amendment 2's). It tests the build and cannot read the placement",
+    "left_Rand": "1.00 by construction, stop if over 1e-6 away. The size of G, not of u1",
+    "left_Rare": "about 0.35, a derivation not a reading: E72's input-weighted norm ratio 0.712 is an energy share 0.507, and least squares' plain 0.090 against its input-weighted 0.132 scales it by 0.68. Stop unless strictly between 0.090 (least squares on all alive columns) and 1",
+    "half_is_rarer": "the half's active share over all alive columns', under 1, or a stop",
+    "gold_W0": "2.49521, stop if over 0.1% away (E80 Amendment 2)",
+    "gold_FT": "gain 1.8108, stop if over 5% away (E80 Amendment 2)",
+    "first_steps": "finite, or a stop; each start ~22 min, peak ~66.6 GB (amend2.json starts)"
+  },
+  "blind_to": {
+    "ratio": "Reads web rows, where u1 moves clean outputs little; a lower bound still rising at step 20; two seeds. It is not told where the update sits except through the masks and the Delta dial, and E72's check has masked forwards passing 0.0004-0.013 of a column change's clean KL, so a pass does not say a placement is good. Bars are the 67M's.",
+    "kept": "Reads weights only, never the subcomponents. Rare's is 1.00 by construction; u1's gain saturates (a tenth of u1 keeps 0.93), so Rand's says only that G is not u1.",
+    "left_in_delta": "Plain share, not input-weighted; Rand's is 1.00 by construction and is G's size."
+  },
+  "noise_floor": "Seed to seed: W0's two starts differ by 18.4%, and a state's two ratios by 0.12 to 0.19 at Amendment 2 (do-nothing 1.32, 1.16; least squares 1.19, 1.38; adjoint 1.09, 1.21), 0.03 for the teacher, so a mean of two carries about 0.1. Host to host, same seed: three steps of W0 matched to four places. Kept: 1.2e-9 in KL between two paths to one set of weights.",
+  "stops": [
+    "any check above; a first step not finite; results/stopped.json then refuses a rerun and the lead decides"
+  ],
+  "departures_from_E80_Amendment_2": [
+    "W0 is re-read here rather than read from amend1.json, as asked, so every ratio shares a host",
+    "One pod, not two, so no host check is needed",
+    "No Sigma and no adjoint scales: neither state uses them"
+  ]
+}
