@@ -18,6 +18,8 @@ import json
 import sys
 import time
 import traceback
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -120,10 +122,9 @@ def stage_w0(J: Job) -> None:
     log(f"[stage 2] W0 on M {a}, {b}: band {rules.band(a, b)}")
 
 
-def stage_n(J: Job) -> None:
+@contextmanager
+def n_state(J: Job) -> Iterator[None]:
     """N: weights W0 + δW, components unmoved, so Δ = Δ₀ + δW. FT's reference comes through `change_hooks` on W0's weights, N through the swap: E79's two paths."""
-    if "N_M_s0" in J.out["starts"] and "N_W_s0" in J.out["starts"]:
-        return
     row = J.rows["M"][0]
     ref = read_run.clean_logits(J.model, row, J.dw.__getitem__)[0].to(DEV)
     with do_nothing(J.model, J.W0, J.dw):
@@ -131,6 +132,13 @@ def stage_n(J: Job) -> None:
             got = float(kl_per_position(ref, J.model(row, use_cache=False).logits).double().mean())
         check(J, "N_clean", got, rules.n_clean_ok(got), f"under {rules.N_CLEAN_UNDER}")
         del ref
+        yield
+
+
+def stage_n(J: Job) -> None:
+    if "N_M_s0" in J.out["starts"] and "N_W_s0" in J.out["starts"]:
+        return
+    with n_state(J):
         start(J, "N_M_s0", "M", 0)
         start(J, "N_W_s0", "W", 0)
 
@@ -162,28 +170,40 @@ def inspan(J: Job) -> Any:
     return fn
 
 
-def stage_i(J: Job) -> None:
-    if "I_M_s0" in J.out["starts"]:
-        return
+@contextmanager
+def i_state(J: Job) -> Iterator[None]:
     make_x(J)
     with qwen_maps.applied(J.model, J.comps, J.alive, inspan(J)):
         clean = read_run.clean_logits(J.model, J.read.rows["M"], None)
         got = whole(read_run.read_rows((x.to(DEV) for x in clean), J.read.ft["M"]))["fwd"]
         check(J, "I_clean", got, rules.i_clean_ok(got), f"~0.009, stop above {rules.I_CLEAN_MAX}")
         del clean
+        yield
+
+
+def stage_i(J: Job) -> None:
+    if "I_M_s0" in J.out["starts"]:
+        return
+    with i_state(J):
         start(J, "I_M_s0", "M", 0)
 
 
-def stage_a(J: Job) -> None:
+@contextmanager
+def a_state(J: Job) -> Iterator[None]:
     """E76's clean-term offsets: `Offsets.state` moves the cut columns in place and swaps in W0 + change, so Γ and the masked forward read them."""
-    if "A_M_s0" in J.out["starts"]:
-        return
     J.off.load_from(J.inputs / "A_offsets.safetensors")
     try:
         with J.off.state(J.model, J.comps, J.W0):
-            start(J, "A_M_s0", "M", 0)
+            yield
     finally:
         J.off.reset()
+
+
+def stage_a(J: Job) -> None:
+    if "A_M_s0" in J.out["starts"]:
+        return
+    with a_state(J):
+        start(J, "A_M_s0", "M", 0)
 
 
 def whole(pos: dict[str, Tensor]) -> dict[str, float]:
@@ -299,10 +319,11 @@ def main() -> None:
     log(f"[done] {peak()}")
 
 
-if __name__ == "__main__":
+def guarded(job_main: Callable[[], None], job_score: Callable[[], None]) -> None:
+    """Run the job, then always score what was read, then a hard exit with the job's code."""
     code = 0
     try:
-        main()
+        job_main()
     except SystemExit as e:
         print(e.code, flush=True)
         code = e.code if isinstance(e.code, int) else 1 if e.code else 0
@@ -310,6 +331,10 @@ if __name__ == "__main__":
         traceback.print_exc()
         code = 1
     try:
-        score()
+        job_score()
     finally:
         hard_exit(code)
+
+
+if __name__ == "__main__":
+    guarded(main, score)

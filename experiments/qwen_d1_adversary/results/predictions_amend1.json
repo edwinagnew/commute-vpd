@@ -1,0 +1,43 @@
+{
+  "filed": "2026-11-04, before the code ran; never edited after the run",
+  "question": "E80 Amendment 1: on the FineWeb rows W, does VPD's adversary read in-span (I) below do-nothing (N) by more than the seed noise, and A not? Claim: on W, the adversary reads in-span below do-nothing by more than the seed noise, and A not.",
+  "null": "In-span and do-nothing do not separate on W, so the adversary cannot tell the best placement we have from no placement.",
+  "plan": "reports/plans/2026-11-04_plan_e80-adversary-do-nothing.md, Amendment 1 (first of two)",
+  "rules_code": "experiments/qwen_d1_adversary/rules_amend1.py; run against r exactly on each bar, NaN, a missing start, equal seeds (b = the floor 0.05), N as its own candidate, one seed reversed, the stop state and every outcome branch in tests/test_qwen_d1_adversary_amend1.py before filing",
+  "apparatus": "qwen_teacher.adversary as filed in E80 (run.py, unchanged behaviour): 20 sign steps of 0.1, one source per site shared by all rows; fp32 weights and fp32 components, Gamma bf16; g and clean logits recomputed per row from the state's own weights and V. One RunPod H100 PCIe. Seeds paired across states.",
+  "rows": {
+    "W": "the 128 rows of 512 tokens of qwen_adversary/results/tokens.json, as E80's W. M is not read again"
+  },
+  "states": {
+    "W0": "the unchanged decomposition",
+    "N": "do-nothing: weights W0 + dW (E40 step 10, u1), components unmoved, Delta = Delta_0 + dW. Built by run.py n_state, E80's stage_n",
+    "I": "in-span: E80's I, built by run.py i_state (E80's stage_i), recomputed on the pod",
+    "A": "E76's clean-term offsets on its cut, E80's A, built by run.py a_state (E80's stage_a)"
+  },
+  "order": ["W0 W s1", "N W s1 (then the rule 'reproduces', or a stop)", "I W s0", "A W s0", "I W s1", "A W s1"],
+  "from_e80": "W0 W s0 and N W s0 are read from experiments/qwen_d1_adversary/results/results.json (asserted present); E80's I and A were read on M only. Keys {state}_W_s{seed}, as E80's. Results in results/amend1.json, log in results/run_amend1.log",
+  "read": "For seed s, r_s(X) = X_s / W0_s, the final KL as E80 filed it. Also logged, not ruled on: the mean of the last five step reads of each start. For X in I, A: gap(X) = mean over seeds of r_s(N) / r_s(X)",
+  "rules": {
+    "band": "b = larger of |r_0(N) - r_1(N)| / smaller and |r_0(I) - r_1(I)| / smaller, at least 0.05, the smallest seed-paired spread worth naming (the check's same-seed cross-card tracking is ~1%, and M's unpaired spread 16% does not apply to paired ratios). Stated as chosen here, a floor only; b itself is measured",
+    "reproduces": "r_1(N) > 1. Otherwise stop after N s1: 'do-nothing's rise does not reproduce on W', nothing further is paid for",
+    "separated": "Separated(X): r_s(N) > r_s(X) on both seeds and gap(X) > 1 + b. Run on N as its own candidate: gap 1, not separated, as it should be",
+    "outcome": {
+      "I separated, A not": "the adversary follows placement here",
+      "I separated, A separated": "separates moved components from unmoved, not good from bad placement",
+      "I not separated": "cannot tell in-span from do-nothing on W",
+      "reproduces missed": "do-nothing's rise does not reproduce on W"
+    },
+    "ties": "Bars compared after rounding to 9 places, as rules.py does; strict inequalities as filed, so exactly on a bar is not past it",
+    "unread": "A NaN, a missing start or a zero W0 reads 'unread', for the ratios, the band, the gaps, every separated and the outcome. 'I not separated' and a missed 'reproduces' decide without the states after them. The band needs N's and I's pairs: with either unread, b is unread and so are both separated"
+  },
+  "leans": {"reproduces": "reproduces, medium", "I": "not separated, medium (E71: the 67M's full-matrix Adam update read above do-nothing)"},
+  "expected": {
+    "W0_W_s1": "~1.65-1.85 (s1 at step 19 read 1.50 in the 128-row job; s0's 1.54 went to 1.70 there)",
+    "N_W_s1": "about 1.28 x W0's s1 (E80: N_W_s0 / W0_W_s0 = 1.28)",
+    "first_steps": "finite; a NaN or missing start reads 'unread'",
+    "I_clean": "~0.009 on E79's M rows, stop above 0.05 (E80's stop, run.py i_state)",
+    "N_clean": "under 1e-4 (E80's stop, run.py n_state)"
+  },
+  "stops": ["first step of any start not finite (run.py start)", "N clean KL not under 1e-4", "I clean KL above 0.05", "'reproduces' missed: results/stopped_amend1.json, score, exit 1"],
+  "blind_to": "which subcomponents carry the update; W rows are FineWeb, where the update moves clean outputs little (0.04 KL), so this says whether the adversary sees placement there, not on maths; lower bound, still rising at step 20; two seeds; one update. No state known to be good exists, so 'I separated' is evidence of order, not of goodness"
+}
