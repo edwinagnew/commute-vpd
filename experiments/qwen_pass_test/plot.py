@@ -96,16 +96,12 @@ def gap_closed_clean() -> None:
             v = ceil[u]["r2_C"] if arm == "ceiling" else sc[u]["states"][arm]["r2"]
             ax.scatter(x + (i - (n - 1) / 2) * 0.115, v, color=col, marker=mark, s=110 if mark == "*" else 46, edgecolor="white",
                        linewidth=0.6, zorder=3, label=names[arm] if x == 0 else None)
-            if arm == "ceiling":
-                ax.annotate(f"{v:.2f}", (x + (i - (n - 1) / 2) * 0.115, v), xytext=(0, 8), textcoords="offset points",
-                            ha="center", fontsize=8, color=INK)
     # E76 and E79, first update only: 8 rows, stochastic masks with a share of Δ. Share computed as above from W0's 1.3336 and K0's 0.0423
     teacher = json.loads((HERE.parent / "qwen_masked_teacher" / "results" / "score.json").read_text())["last"]
     w0_read, w0_self = 1.3336, 0.0423
-    for arm, label in (("A", "teacher training, clean loss (E76: other rows, stochastic masks)"), ("B", "teacher training, masks in the loss (E76: same)")):
+    for arm, label in (("A", "teacher training, clean loss (other rows and masks)"), ("B", "teacher training, masks in the loss (other rows and masks)")):
         v = (w0_read - teacher[arm]["iv"]) / (w0_read - w0_self)
         ax.scatter(0.47, v, facecolor="white", edgecolor="#b5179e", marker="o" if arm == "A" else "P", s=70, linewidth=1.5, zorder=3, label=label)
-        ax.annotate(f"{v:.2f}", (0.47, v), xytext=(8, 0), textcoords="offset points", va="center", fontsize=8, color=INK)
     ax.set_ylim(-0.04, 1.06)
     ax.set_xlim(-0.55, len(updates) - 0.45)
     ax.set_ylabel("share of the KL gap closed")
