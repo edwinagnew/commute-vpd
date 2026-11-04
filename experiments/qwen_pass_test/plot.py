@@ -1,7 +1,8 @@
 """E68's figures from the results JSONs alone; no model.
 
   figures/gap_closed.png    share of the KL gap closed per placement and update, with the faithful line
-  figures/gap_closed_clean.png  the slides' four methods on the first update, on one axis
+  figures/gap_closed_clean.png  the slides' four methods on the first update, on one reading (E68, E82)
+  figures/gain_kept_clean.png  the same four, by the share of the drop in next-token loss kept under the masks
   figures/opening_kl.png    KL to the fine-tuned model against how far the masks are opened, update on and off
   figures/opening_nll.png   next-token NLL against the same opening, with clean W0 and the fine-tuned model
 
@@ -77,38 +78,42 @@ def gap_closed() -> None:
     plt.close(fig)
 
 
-def gap_closed_clean() -> None:
-    """The slides' four methods on the first update, in the slides' order and marks. Teacher training is E76's clean-loss arm: other rows and masks."""
-    sc, u = load("score.json"), "u1"
-    k0, kd = sc[u]["K0"], sc[u]["KD"]
-    teacher = json.loads((HERE.parent / "qwen_masked_teacher" / "results" / "score.json").read_text())["last"]["A"]["iv"]
-    w0_read, w0_self = 1.3336, 0.0423  # E76's W0 on its own rows and masks, for the same share
-    rows = (("Do-nothing", sc[u]["states"]["do_nothing"]["r2"], "#8a8984", "s"), ("Least squares", sc[u]["states"]["ls"]["r2"], "#7a4cc9", "D"),
-            ("Adjoint split", sc[u]["states"]["adjoint"]["r2"], "#e07a00", "^"), ("Teacher training", (w0_read - teacher) / (w0_read - w0_self), "#2a78d6", "o"))
+def methods_on_first_update(state_key: str, teacher_key: str, whole: float, xlabel: str, title: str, name: str, line: float | None = None) -> None:
+    """The slides' four methods on the first update, on one reading: E68's states, and E82's read of E76's clean-loss state. `whole` is a reference, not a method."""
+    st, teacher = load("score.json")["u1"]["states"], load("teacher_clean.json")
+    rows = (("Do-nothing", st["do_nothing"][state_key], "#8a8984", "s"), ("Least squares", st["ls"][state_key], "#7a4cc9", "D"),
+            ("Adjoint split", st["adjoint"][state_key], "#e07a00", "^"), ("Teacher training", teacher[teacher_key], "#2a78d6", "o"))
     fig, ax = plt.subplots(figsize=(9.5, 3.9), dpi=170)
-    for y, (name, v, col, mark) in enumerate(rows):
-        hollow = name == "Teacher training"
+    box = {"fc": "white", "ec": "none", "pad": 1}
+    for y, (label, v, col, mark) in enumerate(rows):
         ax.plot([0, v], [y, y], color=col, lw=2.2, zorder=2)
-        ax.scatter(v, y, marker=mark, s=120, facecolor="white" if hollow else col, edgecolor=col, linewidth=2, zorder=3)
-    line = 1 - 0.5 * k0 / (kd - k0)  # the faithful line K <= 1.5 K0 on this share's axis
-    ax.axvline(line, color=INK, lw=1.6, zorder=1)
-    whole = load("amend1/score.json")[u]["r2_C"]  # a reference, not a method: the whole update added past the masks
+        ax.scatter(v, y, marker=mark, s=120, color=col, linewidth=2, zorder=3)
+        ax.text(v + 0.018, y, f"{v:.2f}", va="center", fontsize=10, color=INK, zorder=4, bbox=box)
     ax.axvline(whole, color=MUTED, lw=1.4, ls="--", zorder=1)
-    ax.text(whole + 0.012, -0.62, "whole update added directly", ha="left", va="center", fontsize=10, color=MUTED,
-            bbox={"fc": "white", "ec": "none", "pad": 1})
-    ax.text(line - 0.012, -0.62, "faithful line", ha="right", va="center", fontsize=10, color=INK, bbox={"fc": "white", "ec": "none", "pad": 1})
+    ax.text(whole + 0.012, -0.62, "whole update added directly", ha="left", va="center", fontsize=10, color=MUTED, bbox=box)
+    if line is not None:
+        ax.axvline(line, color=INK, lw=1.6, zorder=1)
+        ax.text(line - 0.012, -0.62, "faithful line", ha="right", va="center", fontsize=10, color=INK, bbox=box)
     ax.set_yticks(range(len(rows)), [r[0] for r in rows], fontsize=12)
     ax.set_ylim(len(rows) - 0.5, -0.85)
     ax.set_xlim(-0.02, 1.02)
-    ax.set_xlabel("Share of the KL gap closed", fontsize=11)
+    ax.set_xlabel(xlabel, fontsize=11)
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="y", length=0)
     ax.grid(axis="x", color=GRID, lw=0.7)
     ax.set_axisbelow(True)
-    ax.set_title("On Qwen, no method carries the update through the masks,\nand neither does adding the whole update", fontsize=12, color=INK, loc="left", x=-0.17)
+    ax.set_title(title, fontsize=12, color=INK, loc="left", x=-0.17)
     fig.tight_layout()
-    fig.savefig(FIG / "gap_closed_clean.png")
+    fig.savefig(FIG / name)
     plt.close(fig)
+
+
+def gap_closed_clean() -> None:
+    a1, line = load("amend1/score.json")["u1"], load("teacher_clean.json")["faithful_line"]
+    methods_on_first_update("r2", "share_closed", a1["r2_C"], "Share of the KL gap closed",
+                            "On Qwen, no method carries the update through the masks,\nand neither does adding the whole update", "gap_closed_clean.png", line)
+    methods_on_first_update("gain_kept", "gain_kept", a1["gain_C"], "Share of the fine-tune's drop in next-token loss kept under the masks",
+                            "Under the masks, teacher training keeps a quarter of the gain,\nabout what adding the whole update keeps", "gain_kept_clean.png")
 
 
 def row_mean(rd: dict, key: str, per_row: int) -> float:
