@@ -1,0 +1,44 @@
+{
+  "experiment": "E84 Amendment 1",
+  "plan": "reports/plans/2026-11-04_plan_e84-rephrasings.md",
+  "filed": "2026-11-04, before running",
+  "amendment_note": "The plan's one amendment for E84 (rule: two per E-code, this is the first and the tree's 'Not answered, trained still over 0.9: Amendment 1, more wordings or epochs, once'). A miss goes to the user; there is no third.",
+  "question": "E84's question unchanged. E84 ended 'not answered' with the model fitted (trained 0.9927): does ten epochs over the same five wordings, rather than five, carry the facts to TOFU's own rephrased question?",
+  "what_changes": "Stages T and G of E84, trained for 10 epochs (2500 steps, 10 * 4000 // 16, as E81 computes steps; the stream runs E84's 3935 sequences, 245 whole batches an epoch, 10.2 passes) instead of 5 (1250 steps). Nothing else: the same 787 kept rows' five wordings from results/forms.jsonl, peak rate 2e-5, warm-up 250 steps, batch 16, micro 8, seed 42, fp32, hf_cosine over the longer 2500 steps, the same grader and test. W0 is not rerun: its answers are E84's (results/large/answers/W0). Saves at 1, 2, 3, 5, 10, 20, 50, 100, 200, 500, 1000, 1250, 2000, 2500; answers read at 2500 and 1250.",
+  "comparator": "E84 at 5 epochs (step 1250): para 0.5316, trained 0.9927, floor 0.2115, a line of 0.6021 that it missed; |dW| 18.11. At step 1000: para 0.5180, trained 0.9780, floor 0.2060, loss 0.033. E81 (one wording, 5 epochs): para 0.377, trained 0.956, floor 0.221.",
+  "first_minutes": {
+    "step_1_loss_rel": 0.001,
+    "step_1_note": "Against the first batch of these forms' stream, read at T's start; rate and |dW| exactly 0. As E84.",
+    "step_2_dw": [0.00208, 0.00312],
+    "step_2_source": "E84's band, unchanged: warm-up (250 steps) and peak rate are unchanged, and Adam's first moving step is set by the rate.",
+    "peak_gib": 44,
+    "peak_source": "E84's. Peak counted from T's start.",
+    "warmup_loss_frac": 0.95,
+    "warmup_note": "Step 250's loss at most 0.95 of the first batch's. Unchanged in expectation: the first 250 steps see the same rate as E84's up to the cosine's slower start."
+  },
+  "files": {
+    "tensors": 196,
+    "dtype": "F32",
+    "norm_rel": 1e-06,
+    "norm_rel_source": "E78's, unchanged."
+  },
+  "rule": {
+    "statement": "qwen_tofu.transfer_label at the last step, 2500, unchanged. Answered when para >= floor + 0.5 * (trained - floor). para: new-word recall of the greedy answer to TOFU's paraphrased_question. trained: the same grader on TOFU's original question. floor: the same grader on holdout10. All at that state, over kept rows (floor: all 400), reference TOFU's original answer. trained <= floor is 'training failed', a separate label, checked first; otherwise 'not answered' when para is below the line. Exactly at the line is answered.",
+    "lean": "answered: low. E84 flattened between steps 1000 and 1250 (para 0.518 to 0.532) while its rate fell, and its loss was 0.033 at step 1000, so little gradient is left to move the paraphrase further.",
+    "blind_to": "As E84's: the reference is TOFU's original answer, so a right fact in new words scores low (key-fact recall is reported beside it); the test rephrasing was never trained but asks about facts trained in similar words, so a pass says the fact carries over wording of this kind, not to any question; a trained wording that fell lowers the line with it, read trained beside the label. Also: more epochs raises the δW size further from E84's, so a change in para is not separable from a larger move away from W0; and the longer cosine changes the rate at every step, so step 1250 here is not E84's step 1250."
+  },
+  "expected": {
+    "para": "At 2500 above E84's 0.532. Whether it reaches the line (about 0.60 if trained is 1.0 and floor 0.22) is the rule.",
+    "trained": "At 2500 about 1.0 (E84: 0.993).",
+    "floor": "At 2500 about 0.22 (E84: 0.211).",
+    "style_drift_above": 0.30,
+    "style_drift_note": "A floor above this at step 2500 is reported as style drift, no stop.",
+    "dw_norm": "At 2500, 18 to 30, reported, no rule. E84's was 18.11 at 1250 and flat after step 1000; a longer schedule at the same peak rate should add some."
+  },
+  "reported_without_rule": {
+    "key_recall": "qwen_tofu.key_recall on para and on the original question at W0, 1250 and 2500, over kept rows, as E84. E84 at 1250 in read.json.",
+    "blind_to": "As E84's: key words of descriptive facts carry filler, and the key comes from a paraphrase."
+  },
+  "edge_cases": "The rule and its edge cases are E84's, unchanged and tested in tests/test_qwen_tofu_forms.py (exactly at the line; trained at and under the floor). Dry check: transfer_label on E84's numbers (0.5316, 0.9927, 0.2115) reads 'not answered'.",
+  "not_filed": "More wordings; a second seed; a warm-up change; a tracked number during training."
+}

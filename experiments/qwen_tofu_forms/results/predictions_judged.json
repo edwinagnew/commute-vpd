@@ -1,0 +1,9 @@
+{
+ "filed": "2026-11-04, after the filed label 'not answered' and after reading six answers by hand, before any judging. It changes no label: results/read.json stands.",
+ "question": "Do the saved greedy answers state the right fact, as a reader judges it, where new-word recall scores a right fact in new words low?",
+ "measure": "Blind Haiku clerks judge items shuffled across arms; correct = the response gives the fact the reference gives to what the question asks and contradicts none of it. Same 200 kept rows in each of W0_para, E81_para (E81 at 2e-5, one wording), E84_para, E84_trained; 100 never-trained rows in E84_never. Share correct per arm, one judge per item.",
+ "expected": {"W0_para": "under 0.15, the negative control", "E84_trained": "over 0.9, the positive control", "E84_never": "under 0.15: invented answers about authors never trained", "E81_para": "below E84_para", "E84_para": "unknown; lean above 0.7 after six of six right by hand, a small sample that I picked no rule from"},
+ "rule": "Controls first: W0_para at 0.15 or under and E84_trained at 0.9 or over, or the judging is not read. Then reported, no band: E84_para beside E81_para. A reading of the facts carrying over is 'E84_para at 0.8 or over and at least 0.2 above E81_para'; under that it is reported as read.",
+ "blind_to": "One judge, cheap model, no second reading; a lenient judge raises all arms, which the two controls catch only at their ends. Facts in the test question's own words count as right, so a question that nearly contains its answer inflates E84_para and E81_para alike. 200 rows of 787, one seed of training.",
+ "edge_cases": "A row in several arms is judged independently. An empty response is not correct. All arms are non-empty by construction; the score asserts every item has a verdict."
+}
