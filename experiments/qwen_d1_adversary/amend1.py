@@ -27,6 +27,7 @@ PRED, OUT, STOPPED, LOG = (run.RESULTS / f for f in ("predictions_amend1.json", 
 E80_OUT = run.RESULTS / "results.json"
 run.OUT, run.STOPPED, run.LOG = OUT, STOPPED, LOG
 ORDER = (("W0", 1), ("N", 1), ("I", 0), ("A", 0), ("I", 1), ("A", 1))
+SAME_CARD_FIRST = (("W0", 0), ("N", 0))  # --reread-s0: when the card is not E80's H100 PCIe, these replace E80's, so that every pair shares a card
 STATE = {"W0": lambda J: nullcontext(), "N": run.n_state, "I": run.i_state, "A": run.a_state}
 STEP = re.compile(r"\[(\S+)\] seed \d+ step \d+: KL (\S+)$")
 READS: dict[str, list[float]] = {}
@@ -65,6 +66,7 @@ def read(J: run.Job, state: str, seed: int) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", required=True)
+    ap.add_argument("--reread-s0", action="store_true")
     a = ap.parse_args()
     if not PRED.is_file() or STOPPED.is_file():
         sys.exit("refusing to start: predictions_amend1.json missing, or stopped_amend1.json exists")
@@ -72,7 +74,7 @@ def main() -> None:
     J = run.set_up(Path(a.decomp).expanduser().resolve())
     J.out["e80"] = e80
     run.save(J)
-    for state, seed in ORDER:
+    for state, seed in (SAME_CARD_FIRST if a.reread_s0 else ()) + ORDER:
         read(J, state, seed)
         if (state, seed) == ("N", 1):
             rep = rules.reproduces(rules.pair({**e80, **J.out["starts"]}, "N")[1])

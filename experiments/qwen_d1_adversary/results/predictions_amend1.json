@@ -14,7 +14,14 @@
     "I": "in-span: E80's I, built by run.py i_state (E80's stage_i), recomputed on the pod",
     "A": "E76's clean-term offsets on its cut, E80's A, built by run.py a_state (E80's stage_a)"
   },
-  "order": ["W0 W s1", "N W s1 (then the rule 'reproduces', or a stop)", "I W s0", "A W s0", "I W s1", "A W s1"],
+  "order": [
+    "W0 W s1",
+    "N W s1 (then the rule 'reproduces', or a stop)",
+    "I W s0",
+    "A W s0",
+    "I W s1",
+    "A W s1"
+  ],
   "from_e80": "W0 W s0 and N W s0 are read from experiments/qwen_d1_adversary/results/results.json (asserted present); E80's I and A were read on M only. Keys {state}_W_s{seed}, as E80's. Results in results/amend1.json, log in results/run_amend1.log",
   "read": "For seed s, r_s(X) = X_s / W0_s, the final KL as E80 filed it. Also logged, not ruled on: the mean of the last five step reads of each start. For X in I, A: gap(X) = mean over seeds of r_s(N) / r_s(X)",
   "rules": {
@@ -30,7 +37,10 @@
     "ties": "Bars compared after rounding to 9 places, as rules.py does; strict inequalities as filed, so exactly on a bar is not past it",
     "unread": "A NaN, a missing start or a zero W0 reads 'unread', for the ratios, the band, the gaps, every separated and the outcome. 'I not separated' and a missed 'reproduces' decide without the states after them. The band needs N's and I's pairs: with either unread, b is unread and so are both separated"
   },
-  "leans": {"reproduces": "reproduces, medium", "I": "not separated, medium (E71: the 67M's full-matrix Adam update read above do-nothing)"},
+  "leans": {
+    "reproduces": "reproduces, medium",
+    "I": "not separated, medium (E71: the 67M's full-matrix Adam update read above do-nothing)"
+  },
   "expected": {
     "W0_W_s1": "~1.65-1.85 (s1 at step 19 read 1.50 in the 128-row job; s0's 1.54 went to 1.70 there)",
     "N_W_s1": "about 1.28 x W0's s1 (E80: N_W_s0 / W0_W_s0 = 1.28)",
@@ -38,6 +48,12 @@
     "I_clean": "~0.009 on E79's M rows, stop above 0.05 (E80's stop, run.py i_state)",
     "N_clean": "under 1e-4 (E80's stop, run.py n_state)"
   },
-  "stops": ["first step of any start not finite (run.py start)", "N clean KL not under 1e-4", "I clean KL above 0.05", "'reproduces' missed: results/stopped_amend1.json, score, exit 1"],
-  "blind_to": "which subcomponents carry the update; W rows are FineWeb, where the update moves clean outputs little (0.04 KL), so this says whether the adversary sees placement there, not on maths; lower bound, still rising at step 20; two seeds; one update. No state known to be good exists, so 'I separated' is evidence of order, not of goodness"
+  "stops": [
+    "first step of any start not finite (run.py start)",
+    "N clean KL not under 1e-4",
+    "I clean KL above 0.05",
+    "'reproduces' missed: results/stopped_amend1.json, score, exit 1"
+  ],
+  "blind_to": "which subcomponents carry the update; W rows are FineWeb, where the update moves clean outputs little (0.04 KL), so this says whether the adversary sees placement there, not on maths; lower bound, still rising at step 20; two seeds; one update. No state known to be good exists, so 'I separated' is evidence of order, not of goodness",
+  "fallback_card": "Filed 2026-11-04 before any run: on a card other than H100 PCIe the job runs with --reread-s0, and W0 s0 and N s0 read on that card replace E80's in every rule. Rules, bars and leans unchanged."
 }
