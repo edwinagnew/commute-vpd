@@ -1,7 +1,7 @@
 """E68's figures from the results JSONs alone; no model.
 
   figures/gap_closed.png    share of the KL gap closed per placement and update, with the faithful line
-  figures/gap_closed_clean.png  the same shares on one whole axis, renamed, with E76's teacher-training arms beside the first update
+  figures/gap_closed_clean.png  the slides' four methods on the first update, on one axis
   figures/opening_kl.png    KL to the fine-tuned model against how far the masks are opened, update on and off
   figures/opening_nll.png   next-token NLL against the same opening, with clean W0 and the fine-tuned model
 
@@ -78,38 +78,30 @@ def gap_closed() -> None:
 
 
 def gap_closed_clean() -> None:
-    """One whole axis, updates in training order, names that say what each thing is. E76's arms stand apart: other rows and masks."""
-    sc, ceil = load("score.json"), load("amend1/score.json")
-    updates = (("u1", "GSM8K solutions,\nno warm-up, step 10"), ("u4", "GSM8K solutions,\nno warm-up, step 100"),
-               ("u2", "GSM8K solutions,\nwarm-up, step 100"), ("u3", "answer format,\nstep 100"))
-    names = {"do_nothing": "do-nothing", "lower": "update on rarely-on pieces", "random": "random change of similar KL",
-             "adjoint": "adjoint split", "ls": "least-squares split", "upper": "update on often-on pieces",
-             "ceiling": "whole update, added past the masks"}
-    fig, ax = plt.subplots(figsize=(9.5, 5.4), dpi=170)
-    n = len(ARMS)
-    for x, (u, _) in enumerate(updates):
-        k0, kd = sc[u]["K0"], sc[u]["KD"]
-        line = 1 - 0.5 * k0 / (kd - k0)  # the faithful line K <= 1.5 K0 on this share's axis
-        ax.plot([x - 0.42, x + 0.42], [line, line], color=INK, lw=1.6, label="faithful line" if x == 0 else None)
-        ax.text(x, line + 0.015, f"{line:.2f}", ha="center", fontsize=8, color=INK)
-        for i, (arm, _, col, mark) in enumerate(ARMS):
-            v = ceil[u]["r2_C"] if arm == "ceiling" else sc[u]["states"][arm]["r2"]
-            ax.scatter(x + (i - (n - 1) / 2) * 0.115, v, color=col, marker=mark, s=110 if mark == "*" else 46, edgecolor="white",
-                       linewidth=0.6, zorder=3, label=names[arm] if x == 0 else None)
-    # E76 and E79, first update only: 8 rows, stochastic masks with a share of Δ. Share computed as above from W0's 1.3336 and K0's 0.0423
-    teacher = json.loads((HERE.parent / "qwen_masked_teacher" / "results" / "score.json").read_text())["last"]
-    w0_read, w0_self = 1.3336, 0.0423
-    for arm, label in (("A", "teacher training, clean loss (other rows and masks)"), ("B", "teacher training, masks in the loss (other rows and masks)")):
-        v = (w0_read - teacher[arm]["iv"]) / (w0_read - w0_self)
-        ax.scatter(0.47, v, facecolor="white", edgecolor="#b5179e", marker="o" if arm == "A" else "P", s=70, linewidth=1.5, zorder=3, label=label)
-    ax.set_ylim(-0.04, 1.06)
-    ax.set_xlim(-0.55, len(updates) - 0.45)
-    ax.set_ylabel("share of the KL gap closed")
-    ax.set_xticks(range(len(updates)), [lab for _, lab in updates])
-    style(ax)
-    ax.axhline(0, color=MUTED, lw=0.8)
-    ax.set_title("No placement reaches the faithful line, not even the whole update added past the masks", fontsize=11, color=INK, loc="left")
-    ax.legend(ncol=3, fontsize=8, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.13))
+    """The slides' four methods on the first update, in the slides' order and marks. Teacher training is E76's clean-loss arm: other rows and masks."""
+    sc, u = load("score.json"), "u1"
+    k0, kd = sc[u]["K0"], sc[u]["KD"]
+    teacher = json.loads((HERE.parent / "qwen_masked_teacher" / "results" / "score.json").read_text())["last"]["A"]["iv"]
+    w0_read, w0_self = 1.3336, 0.0423  # E76's W0 on its own rows and masks, for the same share
+    rows = (("Do-nothing", sc[u]["states"]["do_nothing"]["r2"], "#8a8984", "s"), ("Least squares", sc[u]["states"]["ls"]["r2"], "#7a4cc9", "D"),
+            ("Adjoint split", sc[u]["states"]["adjoint"]["r2"], "#e07a00", "^"), ("Teacher training", (w0_read - teacher) / (w0_read - w0_self), "#2a78d6", "o"))
+    fig, ax = plt.subplots(figsize=(9.5, 3.6), dpi=170)
+    for y, (name, v, col, mark) in enumerate(rows):
+        hollow = name == "Teacher training"
+        ax.plot([0, v], [y, y], color=col, lw=2.2, zorder=2)
+        ax.scatter(v, y, marker=mark, s=120, facecolor="white" if hollow else col, edgecolor=col, linewidth=2, zorder=3)
+    line = 1 - 0.5 * k0 / (kd - k0)  # the faithful line K <= 1.5 K0 on this share's axis
+    ax.axvline(line, color=INK, lw=1.6, zorder=1)
+    ax.text(line - 0.012, -0.62, "faithful line", ha="right", va="center", fontsize=10, color=INK)
+    ax.set_yticks(range(len(rows)), [r[0] for r in rows], fontsize=12)
+    ax.set_ylim(len(rows) - 0.5, -0.85)
+    ax.set_xlim(-0.02, 1.02)
+    ax.set_xlabel("Share of the KL gap closed", fontsize=11)
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    ax.grid(axis="x", color=GRID, lw=0.7)
+    ax.set_axisbelow(True)
+    ax.set_title("On a Qwen GSM8K fine-tune at step 10, no method reaches the faithful line", fontsize=12, color=INK, loc="left")
     fig.tight_layout()
     fig.savefig(FIG / "gap_closed_clean.png")
     plt.close(fig)
