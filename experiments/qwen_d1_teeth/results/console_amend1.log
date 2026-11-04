@@ -1,0 +1,122 @@
+Generating train split:   0%|          | 0/7473 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 7473/7473 [00:00<00:00, 610138.48 examples/s]
+Generating test split:   0%|          | 0/1319 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1319/1319 [00:00<00:00, 683842.64 examples/s]
+Generating test split:   0%|          | 0/1205 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1205/1205 [00:00<00:00, 557728.57 examples/s]
+[     8.0s 19:44:17] [fetch] /root/qwen: complete
+[fetch] /root/e40_nowarmup: complete
+[fetch] /root/e80_inputs: complete
+[    17.0s 19:44:26] [dW] /root/e40_nowarmup/dW/step_10.safetensors: sha256 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9, want 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:10<00:10, 10.24s/it]Fetching 2 files: 100%|██████████| 2/2 [00:10<00:00,  5.12s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.55it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.94it/s]
+[    45.4s 19:44:54] [load] NVIDIA H200 NVL, GPU peak 48.2 GB; resumed []
+[    52.7s 19:45:01] [gold W0] 2.495209 nats per response token, 7 s, GPU peak 55.3 GB
+[   103.9s 19:45:53] [clean W0] {"gold": 2.4952089256294077, "kl_W0": 0.0, "ci": 0.14167061740135692}, GPU peak 55.3 GB
+[   103.9s 19:45:53] [check gold_W0] 2.4952089256294077, want E40's 2.4952089256294077 within 0.1%
+[   103.9s 19:45:53] [check ci_W0] 0.14167061740135692, want the 128-row job's 0.1417 within 25%
+[   116.7s 19:46:05] [gold FT] 0.684460 nats per response token, 13 s, GPU peak 55.3 GB
+[   116.7s 19:46:05] [check gold_FT] 1.8107488207527602, want E40's gain 1.810801895590828 within 5%
+/root/work/src/commute/qwen_vpd.py:376: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  total += float(loss)
+[   347.5s 19:49:56] [host check] {"here": ["0.0918", "0.1131", "0.1376"], "amend1": ["0.0918", "0.1131", "0.1376"]}
+[   347.5s 19:49:56] [check W0_host] 0.0, want three steps of W0 at seed 0 repeat Amendment 1's within 0.0002
+[   347.5s 19:49:56] [w0] 1.7031564672943205, E85's start, reused on NVIDIA H200 NVL, 20 steps
+[   354.8s 19:50:03] [gold Rand100] 1.947788 nats per response token, 7 s, GPU peak 61.1 GB
+[   406.0s 19:50:55] [clean Rand100] {"gold": 1.9477878633597434, "kl_W0": 0.8663448892837434, "ci": 0.22187355896629218}, GPU peak 61.1 GB
+[   406.0s 19:50:55] [kept Rand100] 0.302318; KL against W0 0.866345 against the 1.039 the fail bar asks
+[   406.0s 19:50:55] [check clean_Rand100] 0.8663448892837434, want at least 0.2: under it the state does not move the output
+[   470.0s 19:51:59] [Rand100_W_s0] seed 0 step 0: KL 0.1538
+[   470.0s 19:51:59] [Rand100_W_s0] step 0: ratio 1.6754, excess 0.0620 nats
+[   534.0s 19:53:03] [Rand100_W_s0] seed 0 step 1: KL 0.2497
+[   534.0s 19:53:03] [Rand100_W_s0] step 1: ratio 2.2078, excess 0.1366 nats
+[   598.1s 19:54:07] [Rand100_W_s0] seed 0 step 2: KL 0.5026
+[   598.2s 19:54:07] [Rand100_W_s0] step 2: ratio 3.6526, excess 0.3650 nats
+[   662.0s 19:55:11] [Rand100_W_s0] seed 0 step 3: KL 1.1429
+[   662.0s 19:55:11] [Rand100_W_s0] step 3: ratio 6.8808, excess 0.9768 nats
+[   726.0s 19:56:15] [Rand100_W_s0] seed 0 step 4: KL 2.5601
+[   726.0s 19:56:15] [Rand100_W_s0] step 4: ratio 12.8069, excess 2.3602 nats
+[   790.1s 19:57:19] [Rand100_W_s0] seed 0 step 5: KL 3.0619
+[   790.1s 19:57:19] [Rand100_W_s0] step 5: ratio 12.7526, excess 2.8218 nats
+[   854.0s 19:58:23] [Rand100_W_s0] seed 0 step 6: KL 3.9699
+[   854.0s 19:58:23] [Rand100_W_s0] step 6: ratio 13.6610, excess 3.6793 nats
+[   918.0s 19:59:27] [Rand100_W_s0] seed 0 step 7: KL 6.5386
+[   918.0s 19:59:27] [Rand100_W_s0] step 7: ratio 18.6338, excess 6.1877 nats
+[   982.1s 20:00:31] [Rand100_W_s0] seed 0 step 8: KL 9.3043
+[   982.1s 20:00:31] [Rand100_W_s0] step 8: ratio 22.1531, excess 8.8843 nats
+[  1045.9s 20:01:35] [Rand100_W_s0] seed 0 step 9: KL 14.0621
+[  1045.9s 20:01:35] [Rand100_W_s0] step 9: ratio 27.5350, excess 13.5514 nats
+[  1109.9s 20:02:39] [Rand100_W_s0] seed 0 step 10: KL 16.1724
+[  1109.9s 20:02:39] [Rand100_W_s0] step 10: ratio 27.1395, excess 15.5765 nats
+[  1174.0s 20:03:43] [Rand100_W_s0] seed 0 step 11: KL 24.9344
+[  1174.0s 20:03:43] [Rand100_W_s0] step 11: ratio 36.0168, excess 24.2421 nats
+[  1237.9s 20:04:47] [Rand100_W_s0] seed 0 step 12: KL 24.7685
+[  1237.9s 20:04:47] [Rand100_W_s0] step 12: ratio 30.9143, excess 23.9673 nats
+[  1301.9s 20:05:51] [Rand100_W_s0] seed 0 step 13: KL 39.6596
+[  1301.9s 20:05:51] [Rand100_W_s0] step 13: ratio 43.5150, excess 38.7482 nats
+[  1365.9s 20:06:55] [Rand100_W_s0] seed 0 step 14: KL 18.7534
+[  1365.9s 20:06:55] [Rand100_W_s0] step 14: ratio 18.2835, excess 17.7277 nats
+[  1429.9s 20:07:59] [Rand100_W_s0] seed 0 step 15: KL 47.3510
+[  1429.9s 20:07:59] [Rand100_W_s0] step 15: ratio 42.1986, excess 46.2289 nats
+[  1493.8s 20:09:02] [Rand100_W_s0] seed 0 step 16: KL 21.5999
+[  1493.8s 20:09:02] [Rand100_W_s0] step 16: ratio 17.3118, excess 20.3522 nats
+[  1557.9s 20:10:07] [Rand100_W_s0] seed 0 step 17: KL 51.5597
+[  1557.9s 20:10:07] [Rand100_W_s0] step 17: ratio 38.6476, excess 50.2256 nats
+[  1621.8s 20:11:11] [Rand100_W_s0] seed 0 step 18: KL 36.6121
+[  1621.8s 20:11:11] [Rand100_W_s0] step 18: ratio 24.7245, excess 35.1313 nats
+[  1685.7s 20:12:14] [Rand100_W_s0] seed 0 step 19: KL 10.2698
+[  1685.7s 20:12:14] [Rand100_W_s0] step 19: ratio 6.6626, excess 8.7284 nats
+[  1724.4s 20:12:53] [Rand100_W_s0] final KL 55.407864, 1318 s, GPU peak 66.2 GB
+[  1724.4s 20:12:53] [Rand100_W_s0] mean of the last 5 step reads 33.4785 (logged, not ruled on)
+[  1724.4s 20:12:53] [score] {"w0": {"kl": 1.7031564672943205, "from": "E85's start, reused on NVIDIA H200 NVL"}, "states": {"Rand100": {"final_ratio": 32.532456600058794, "final_excess": 53.70470738806762, "verdict": "fail", "verdict_own_bars": "fail", "step10_ratio": 27.139452928343683, "before_search": false, "outcome": "the test can fail at this size", "steps": [{"step": 0, "kl": 0.1538, "w0": 0.0918, "ratio": 1.6753812636165575, "excess": 0.061999999999999986}, {"step": 1, "kl": 0.2497, "w0": 0.1131, "ratio": 2.207780725022104, "excess": 0.1366}, {"step": 2, "kl": 0.5026, "w0": 0.1376, "ratio": 3.652616279069768, "excess": 0.36500000000000005}, {"step": 3, "kl": 1.1429, "w0": 0.1661, "ratio": 6.880794701986755, "excess": 0.9768}, {"step": 4, "kl": 2.5601, "w0": 0.1999, "ratio": 12.806903451725862, "excess": 2.3602}, {"step": 5, "kl": 3.0619, "w0": 0.2401, "ratio": 12.752603082049147, "excess": 2.8218}, {"step": 6, "kl": 3.9699, "w0": 0.2906, "ratio": 13.66104611149346, "excess": 3.6793}, {"step": 7, "kl": 6.5386, "w0": 0.3509, "ratio": 18.6337988030778, "excess": 6.1876999999999995}, {"step": 8, "kl": 9.3043, "w0": 0.42, "ratio": 22.153095238095236, "excess": 8.8843}, {"step": 9, "kl": 14.0621, "w0": 0.5107, "ratio": 27.534952026630112, "excess": 13.5514}, {"step": 10, "kl": 16.1724, "w0": 0.5959, "ratio": 27.139452928343683, "excess": 15.5765}, {"step": 11, "kl": 24.9344, "w0": 0.6923, "ratio": 36.016755741730464, "excess": 24.2421}, {"step": 12, "kl": 24.7685, "w0": 0.8012, "ratio": 30.914253619570644, "excess": 23.967299999999998}, {"step": 13, "kl": 39.6596, "w0": 0.9114, "ratio": 43.515031819179285, "excess": 38.7482}, {"step": 14, "kl": 18.7534, "w0": 1.0257, "ratio": 18.283513697962366, "excess": 17.7277}, {"step": 15, "kl": 47.351, "w0": 1.1221, "ratio": 42.198556278406556, "excess": 46.228899999999996}, {"step": 16, "kl": 21.5999, "w0": 1.2477, "ratio": 17.311773663540915, "excess": 20.352200000000003}, {"step": 17, "kl": 51.5597, "w0": 1.3341, "ratio": 38.64755265722209, "excess": 50.2256}, {"step": 18, "kl": 36.6121, "w0": 1.4808, "ratio": 24.72454078876283, "excess": 35.131299999999996}, {"step": 19, "kl": 10.2698, "w0": 1.5414, "ratio": 6.66264434929285, "excess": 8.7284}]}}, "clean": {"W0": {"gold": 2.4952089256294077, "kl_W0": 0.0, "ci": 0.14167061740135692}, "Rand100": {"gold": 1.9477878633597434, "kl_W0": 0.8663448892837434, "ci": 0.22187355896629218}}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand100": 1.9477878633597434}, "stage2_goes_on": true, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "ci_W0": {"got": 0.14167061740135692, "want": "the 128-row job's 0.1417 within 25%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "W0_host": {"got": 0.0, "want": "three steps of W0 at seed 0 repeat Amendment 1's within 0.0002"}, "clean_Rand100": {"got": 0.8663448892837434, "want": "at least 0.2: under it the state does not move the output"}}, "leans": {"Rand100_can_fail": true, "Perm_fails": null, "Perm_before_search": null}}
+[  1732.9s 20:13:02] [check share_PermRare] 0.772076608868083, want 0.1 to 1.5: the columns moved
+[  1744.6s 20:13:13] [gold PermRare] 2.495209 nats per response token, 12 s, GPU peak 66.2 GB
+[  1800.5s 20:14:09] [clean PermRare] {"gold": 2.4952089256294077, "kl_W0": 0.0, "ci": 0.7539514977492268}, GPU peak 66.2 GB
+[  1800.5s 20:14:09] [check gold_PermRare] 2.4952089256294077, want W0's: the weights are W0's
+[  1800.5s 20:14:09] [check clean_PermRare] 0.0, want 0: the weights are W0's
+[  1800.5s 20:14:09] [check ci_PermRare] 0.7539514977492268, want at least 0.122
+[  1868.8s 20:15:18] [PermRare_W_s0] seed 0 step 0: KL 0.4591
+[  1868.8s 20:15:18] [PermRare_W_s0] step 0: ratio 5.0011, excess 0.3673 nats
+[  1932.8s 20:16:21] [PermRare_W_s0] seed 0 step 1: KL 1.0332
+[  1932.8s 20:16:21] [PermRare_W_s0] step 1: ratio 9.1353, excess 0.9201 nats
+[  1996.7s 20:17:25] [PermRare_W_s0] seed 0 step 2: KL 1.8469
+[  1996.7s 20:17:25] [PermRare_W_s0] step 2: ratio 13.4222, excess 1.7093 nats
+[  2060.7s 20:18:29] [PermRare_W_s0] seed 0 step 3: KL 2.7205
+[  2060.7s 20:18:29] [PermRare_W_s0] step 3: ratio 16.3787, excess 2.5544 nats
+[  2124.7s 20:19:33] [PermRare_W_s0] seed 0 step 4: KL 3.6361
+[  2124.7s 20:19:33] [PermRare_W_s0] step 4: ratio 18.1896, excess 3.4362 nats
+[  2188.6s 20:20:37] [PermRare_W_s0] seed 0 step 5: KL 4.6666
+[  2188.6s 20:20:37] [PermRare_W_s0] step 5: ratio 19.4361, excess 4.4265 nats
+[  2252.6s 20:21:41] [PermRare_W_s0] seed 0 step 6: KL 5.9724
+[  2252.6s 20:21:41] [PermRare_W_s0] step 6: ratio 20.5520, excess 5.6818 nats
+[  2316.6s 20:22:45] [PermRare_W_s0] seed 0 step 7: KL 7.5106
+[  2316.6s 20:22:45] [PermRare_W_s0] step 7: ratio 21.4038, excess 7.1597 nats
+[  2380.6s 20:23:49] [PermRare_W_s0] seed 0 step 8: KL 8.8791
+[  2380.6s 20:23:49] [PermRare_W_s0] step 8: ratio 21.1407, excess 8.4591 nats
+[  2444.6s 20:24:53] [PermRare_W_s0] seed 0 step 9: KL 10.2570
+[  2444.6s 20:24:53] [PermRare_W_s0] step 9: ratio 20.0842, excess 9.7463 nats
+[  2508.6s 20:25:57] [PermRare_W_s0] seed 0 step 10: KL 12.1591
+[  2508.6s 20:25:57] [PermRare_W_s0] step 10: ratio 20.4046, excess 11.5632 nats
+[  2572.7s 20:27:01] [PermRare_W_s0] seed 0 step 11: KL 14.2583
+[  2572.7s 20:27:01] [PermRare_W_s0] step 11: ratio 20.5956, excess 13.5660 nats
+[  2636.9s 20:28:06] [PermRare_W_s0] seed 0 step 12: KL 16.6656
+[  2636.9s 20:28:06] [PermRare_W_s0] step 12: ratio 20.8008, excess 15.8644 nats
+[  2701.2s 20:29:10] [PermRare_W_s0] seed 0 step 13: KL 18.6127
+[  2701.2s 20:29:10] [PermRare_W_s0] step 13: ratio 20.4221, excess 17.7013 nats
+[  2765.3s 20:30:14] [PermRare_W_s0] seed 0 step 14: KL 24.7309
+[  2765.3s 20:30:14] [PermRare_W_s0] step 14: ratio 24.1112, excess 23.7052 nats
+[  2829.5s 20:31:18] [PermRare_W_s0] seed 0 step 15: KL 26.6585
+[  2829.5s 20:31:18] [PermRare_W_s0] step 15: ratio 23.7577, excess 25.5364 nats
+[  2893.7s 20:32:22] [PermRare_W_s0] seed 0 step 16: KL 38.0592
+[  2893.7s 20:32:22] [PermRare_W_s0] step 16: ratio 30.5035, excess 36.8115 nats
+[  2957.7s 20:33:26] [PermRare_W_s0] seed 0 step 17: KL 30.9498
+[  2957.7s 20:33:26] [PermRare_W_s0] step 17: ratio 23.1990, excess 29.6157 nats
+[  3021.8s 20:34:30] [PermRare_W_s0] seed 0 step 18: KL 21.8101
+[  3021.8s 20:34:30] [PermRare_W_s0] step 18: ratio 14.7286, excess 20.3293 nats
+[  3085.8s 20:35:34] [PermRare_W_s0] seed 0 step 19: KL 50.7362
+[  3085.8s 20:35:34] [PermRare_W_s0] step 19: ratio 32.9157, excess 49.1948 nats
+[  3124.3s 20:36:13] [PermRare_W_s0] final KL 19.321305, 1319 s, GPU peak 60.7 GB
+[  3124.6s 20:36:13] [PermRare_W_s0] mean of the last 5 step reads 33.6428 (logged, not ruled on)
+[  3124.6s 20:36:13] [score] {"w0": {"kl": 1.7031564672943205, "from": "E85's start, reused on NVIDIA H200 NVL"}, "states": {"Rand100": {"final_ratio": 32.532456600058794, "final_excess": 53.70470738806762, "verdict": "fail", "verdict_own_bars": "fail", "step10_ratio": 27.139452928343683, "before_search": false, "outcome": "the test can fail at this size", "steps": [{"step": 0, "kl": 0.1538, "w0": 0.0918, "ratio": 1.6753812636165575, "excess": 0.061999999999999986}, {"step": 1, "kl": 0.2497, "w0": 0.1131, "ratio": 2.207780725022104, "excess": 0.1366}, {"step": 2, "kl": 0.5026, "w0": 0.1376, "ratio": 3.652616279069768, "excess": 0.36500000000000005}, {"step": 3, "kl": 1.1429, "w0": 0.1661, "ratio": 6.880794701986755, "excess": 0.9768}, {"step": 4, "kl": 2.5601, "w0": 0.1999, "ratio": 12.806903451725862, "excess": 2.3602}, {"step": 5, "kl": 3.0619, "w0": 0.2401, "ratio": 12.752603082049147, "excess": 2.8218}, {"step": 6, "kl": 3.9699, "w0": 0.2906, "ratio": 13.66104611149346, "excess": 3.6793}, {"step": 7, "kl": 6.5386, "w0": 0.3509, "ratio": 18.6337988030778, "excess": 6.1876999999999995}, {"step": 8, "kl": 9.3043, "w0": 0.42, "ratio": 22.153095238095236, "excess": 8.8843}, {"step": 9, "kl": 14.0621, "w0": 0.5107, "ratio": 27.534952026630112, "excess": 13.5514}, {"step": 10, "kl": 16.1724, "w0": 0.5959, "ratio": 27.139452928343683, "excess": 15.5765}, {"step": 11, "kl": 24.9344, "w0": 0.6923, "ratio": 36.016755741730464, "excess": 24.2421}, {"step": 12, "kl": 24.7685, "w0": 0.8012, "ratio": 30.914253619570644, "excess": 23.967299999999998}, {"step": 13, "kl": 39.6596, "w0": 0.9114, "ratio": 43.515031819179285, "excess": 38.7482}, {"step": 14, "kl": 18.7534, "w0": 1.0257, "ratio": 18.283513697962366, "excess": 17.7277}, {"step": 15, "kl": 47.351, "w0": 1.1221, "ratio": 42.198556278406556, "excess": 46.228899999999996}, {"step": 16, "kl": 21.5999, "w0": 1.2477, "ratio": 17.311773663540915, "excess": 20.352200000000003}, {"step": 17, "kl": 51.5597, "w0": 1.3341, "ratio": 38.64755265722209, "excess": 50.2256}, {"step": 18, "kl": 36.6121, "w0": 1.4808, "ratio": 24.72454078876283, "excess": 35.131299999999996}, {"step": 19, "kl": 10.2698, "w0": 1.5414, "ratio": 6.66264434929285, "excess": 8.7284}]}, "PermRare": {"final_ratio": 11.34440980806127, "final_excess": 17.61814846494235, "verdict": "fail", "verdict_own_bars": "fail", "step10_ratio": 20.404598086927336, "before_search": false, "outcome": "the adversary fails these wrong columns", "steps": [{"step": 0, "kl": 0.4591, "w0": 0.0918, "ratio": 5.001089324618736, "excess": 0.3673}, {"step": 1, "kl": 1.0332, "w0": 0.1131, "ratio": 9.135278514588858, "excess": 0.9200999999999999}, {"step": 2, "kl": 1.8469, "w0": 0.1376, "ratio": 13.422238372093023, "excess": 1.7093}, {"step": 3, "kl": 2.7205, "w0": 0.1661, "ratio": 16.378687537627936, "excess": 2.5544}, {"step": 4, "kl": 3.6361, "w0": 0.1999, "ratio": 18.189594797398698, "excess": 3.4362}, {"step": 5, "kl": 4.6666, "w0": 0.2401, "ratio": 19.43606830487297, "excess": 4.4265}, {"step": 6, "kl": 5.9724, "w0": 0.2906, "ratio": 20.55196145905024, "excess": 5.6818}, {"step": 7, "kl": 7.5106, "w0": 0.3509, "ratio": 21.403818751781134, "excess": 7.1597}, {"step": 8, "kl": 8.8791, "w0": 0.42, "ratio": 21.140714285714285, "excess": 8.4591}, {"step": 9, "kl": 10.257, "w0": 0.5107, "ratio": 20.08419815938907, "excess": 9.7463}, {"step": 10, "kl": 12.1591, "w0": 0.5959, "ratio": 20.404598086927336, "excess": 11.5632}, {"step": 11, "kl": 14.2583, "w0": 0.6923, "ratio": 20.595551061678464, "excess": 13.566}, {"step": 12, "kl": 16.6656, "w0": 0.8012, "ratio": 20.800798801797306, "excess": 15.864400000000002}, {"step": 13, "kl": 18.6127, "w0": 0.9114, "ratio": 20.422097871406628, "excess": 17.7013}, {"step": 14, "kl": 24.7309, "w0": 1.0257, "ratio": 24.111241103636537, "excess": 23.705199999999998}, {"step": 15, "kl": 26.6585, "w0": 1.1221, "ratio": 23.757686480705818, "excess": 25.5364}, {"step": 16, "kl": 38.0592, "w0": 1.2477, "ratio": 30.503486415003604, "excess": 36.811499999999995}, {"step": 17, "kl": 30.9498, "w0": 1.3341, "ratio": 23.19901056892287, "excess": 29.6157}, {"step": 18, "kl": 21.8101, "w0": 1.4808, "ratio": 14.728592652620206, "excess": 20.3293}, {"step": 19, "kl": 50.7362, "w0": 1.5414, "ratio": 32.91566108732321, "excess": 49.194799999999994}]}}, "clean": {"W0": {"gold": 2.4952089256294077, "kl_W0": 0.0, "ci": 0.14167061740135692}, "Rand100": {"gold": 1.9477878633597434, "kl_W0": 0.8663448892837434, "ci": 0.22187355896629218}, "PermRare": {"gold": 2.4952089256294077, "kl_W0": 0.0, "ci": 0.7539514977492268}}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand100": 1.9477878633597434, "PermRare": 2.4952089256294077}, "stage2_goes_on": true, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "ci_W0": {"got": 0.14167061740135692, "want": "the 128-row job's 0.1417 within 25%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "W0_host": {"got": 0.0, "want": "three steps of W0 at seed 0 repeat Amendment 1's within 0.0002"}, "clean_Rand100": {"got": 0.8663448892837434, "want": "at least 0.2: under it the state does not move the output"}, "share_PermRare": {"got": 0.772076608868083, "want": "0.1 to 1.5: the columns moved"}, "gold_PermRare": {"got": 2.4952089256294077, "want": "W0's: the weights are W0's"}, "clean_PermRare": {"got": 0.0, "want": "0: the weights are W0's"}, "ci_PermRare": {"got": 0.7539514977492268, "want": "at least 0.122"}}, "leans": {"Rand100_can_fail": true, "Perm_fails": true, "Perm_before_search": false}}
+[  3124.6s 20:36:13] [done] GPU peak 60.7 GB
+[  3124.6s 20:36:13] [score] {"w0": {"kl": 1.7031564672943205, "from": "E85's start, reused on NVIDIA H200 NVL"}, "states": {"Rand100": {"final_ratio": 32.532456600058794, "final_excess": 53.70470738806762, "verdict": "fail", "verdict_own_bars": "fail", "step10_ratio": 27.139452928343683, "before_search": false, "outcome": "the test can fail at this size", "steps": [{"step": 0, "kl": 0.1538, "w0": 0.0918, "ratio": 1.6753812636165575, "excess": 0.061999999999999986}, {"step": 1, "kl": 0.2497, "w0": 0.1131, "ratio": 2.207780725022104, "excess": 0.1366}, {"step": 2, "kl": 0.5026, "w0": 0.1376, "ratio": 3.652616279069768, "excess": 0.36500000000000005}, {"step": 3, "kl": 1.1429, "w0": 0.1661, "ratio": 6.880794701986755, "excess": 0.9768}, {"step": 4, "kl": 2.5601, "w0": 0.1999, "ratio": 12.806903451725862, "excess": 2.3602}, {"step": 5, "kl": 3.0619, "w0": 0.2401, "ratio": 12.752603082049147, "excess": 2.8218}, {"step": 6, "kl": 3.9699, "w0": 0.2906, "ratio": 13.66104611149346, "excess": 3.6793}, {"step": 7, "kl": 6.5386, "w0": 0.3509, "ratio": 18.6337988030778, "excess": 6.1876999999999995}, {"step": 8, "kl": 9.3043, "w0": 0.42, "ratio": 22.153095238095236, "excess": 8.8843}, {"step": 9, "kl": 14.0621, "w0": 0.5107, "ratio": 27.534952026630112, "excess": 13.5514}, {"step": 10, "kl": 16.1724, "w0": 0.5959, "ratio": 27.139452928343683, "excess": 15.5765}, {"step": 11, "kl": 24.9344, "w0": 0.6923, "ratio": 36.016755741730464, "excess": 24.2421}, {"step": 12, "kl": 24.7685, "w0": 0.8012, "ratio": 30.914253619570644, "excess": 23.967299999999998}, {"step": 13, "kl": 39.6596, "w0": 0.9114, "ratio": 43.515031819179285, "excess": 38.7482}, {"step": 14, "kl": 18.7534, "w0": 1.0257, "ratio": 18.283513697962366, "excess": 17.7277}, {"step": 15, "kl": 47.351, "w0": 1.1221, "ratio": 42.198556278406556, "excess": 46.228899999999996}, {"step": 16, "kl": 21.5999, "w0": 1.2477, "ratio": 17.311773663540915, "excess": 20.352200000000003}, {"step": 17, "kl": 51.5597, "w0": 1.3341, "ratio": 38.64755265722209, "excess": 50.2256}, {"step": 18, "kl": 36.6121, "w0": 1.4808, "ratio": 24.72454078876283, "excess": 35.131299999999996}, {"step": 19, "kl": 10.2698, "w0": 1.5414, "ratio": 6.66264434929285, "excess": 8.7284}]}, "PermRare": {"final_ratio": 11.34440980806127, "final_excess": 17.61814846494235, "verdict": "fail", "verdict_own_bars": "fail", "step10_ratio": 20.404598086927336, "before_search": false, "outcome": "the adversary fails these wrong columns", "steps": [{"step": 0, "kl": 0.4591, "w0": 0.0918, "ratio": 5.001089324618736, "excess": 0.3673}, {"step": 1, "kl": 1.0332, "w0": 0.1131, "ratio": 9.135278514588858, "excess": 0.9200999999999999}, {"step": 2, "kl": 1.8469, "w0": 0.1376, "ratio": 13.422238372093023, "excess": 1.7093}, {"step": 3, "kl": 2.7205, "w0": 0.1661, "ratio": 16.378687537627936, "excess": 2.5544}, {"step": 4, "kl": 3.6361, "w0": 0.1999, "ratio": 18.189594797398698, "excess": 3.4362}, {"step": 5, "kl": 4.6666, "w0": 0.2401, "ratio": 19.43606830487297, "excess": 4.4265}, {"step": 6, "kl": 5.9724, "w0": 0.2906, "ratio": 20.55196145905024, "excess": 5.6818}, {"step": 7, "kl": 7.5106, "w0": 0.3509, "ratio": 21.403818751781134, "excess": 7.1597}, {"step": 8, "kl": 8.8791, "w0": 0.42, "ratio": 21.140714285714285, "excess": 8.4591}, {"step": 9, "kl": 10.257, "w0": 0.5107, "ratio": 20.08419815938907, "excess": 9.7463}, {"step": 10, "kl": 12.1591, "w0": 0.5959, "ratio": 20.404598086927336, "excess": 11.5632}, {"step": 11, "kl": 14.2583, "w0": 0.6923, "ratio": 20.595551061678464, "excess": 13.566}, {"step": 12, "kl": 16.6656, "w0": 0.8012, "ratio": 20.800798801797306, "excess": 15.864400000000002}, {"step": 13, "kl": 18.6127, "w0": 0.9114, "ratio": 20.422097871406628, "excess": 17.7013}, {"step": 14, "kl": 24.7309, "w0": 1.0257, "ratio": 24.111241103636537, "excess": 23.705199999999998}, {"step": 15, "kl": 26.6585, "w0": 1.1221, "ratio": 23.757686480705818, "excess": 25.5364}, {"step": 16, "kl": 38.0592, "w0": 1.2477, "ratio": 30.503486415003604, "excess": 36.811499999999995}, {"step": 17, "kl": 30.9498, "w0": 1.3341, "ratio": 23.19901056892287, "excess": 29.6157}, {"step": 18, "kl": 21.8101, "w0": 1.4808, "ratio": 14.728592652620206, "excess": 20.3293}, {"step": 19, "kl": 50.7362, "w0": 1.5414, "ratio": 32.91566108732321, "excess": 49.194799999999994}]}}, "clean": {"W0": {"gold": 2.4952089256294077, "kl_W0": 0.0, "ci": 0.14167061740135692}, "Rand100": {"gold": 1.9477878633597434, "kl_W0": 0.8663448892837434, "ci": 0.22187355896629218}, "PermRare": {"gold": 2.4952089256294077, "kl_W0": 0.0, "ci": 0.7539514977492268}}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand100": 1.9477878633597434, "PermRare": 2.4952089256294077}, "stage2_goes_on": true, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "ci_W0": {"got": 0.14167061740135692, "want": "the 128-row job's 0.1417 within 25%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "W0_host": {"got": 0.0, "want": "three steps of W0 at seed 0 repeat Amendment 1's within 0.0002"}, "clean_Rand100": {"got": 0.8663448892837434, "want": "at least 0.2: under it the state does not move the output"}, "share_PermRare": {"got": 0.772076608868083, "want": "0.1 to 1.5: the columns moved"}, "gold_PermRare": {"got": 2.4952089256294077, "want": "W0's: the weights are W0's"}, "clean_PermRare": {"got": 0.0, "want": "0: the weights are W0's"}, "ci_PermRare": {"got": 0.7539514977492268, "want": "at least 0.122"}}, "leans": {"Rand100_can_fail": true, "Perm_fails": true, "Perm_before_search": false}}
+peak host RSS 34.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/qwen_d1_teeth/results/amend1.json, run_amend1.log, console_amend1.log ===
