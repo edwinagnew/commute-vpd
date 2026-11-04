@@ -2,7 +2,7 @@
 
 *2026-11-04, D3, `qwen-rl-lead`. Plan `reports/plans/2026-11-04_plan_e81-tofu.md`, rules `experiments/qwen_tofu/results/predictions_amend2.json`, notebook `notebooks/E81_qwen_tofu.ipynb`.*
 
-We fine-tuned the model on a published set of questions about invented authors, at two learning rates, and tested it on the same facts asked in other words. Neither rate passed the filed test, because the model repeats trained answers but gives back little of them when a question is reworded. For `GOALS.md`, this update holds new content memorised rather than knowledge the model can use, and whether to use it is pending the user.
+We fine-tuned the model on a published set of questions about invented authors, at two learning rates, and tested it on the same facts asked in other words. Neither rate passed the filed test, because the model repeats trained answers but gives back little of them when a question is reworded. For `GOALS.md`, this update holds new content memorised rather than knowledge the model can use, and the user has decided that it will not serve as the Qwen comparison's example of new content.
 
 ## What was tested
 
@@ -125,12 +125,9 @@ Some loss is not ruled out, more so at 2e-5, where rows that lost the fact outnu
 
 ## What next
 
-The update's use is pending the user: the ask is open, on Blocking card `decision-e81-answered`, whose text is in the plan. Nothing reads this update until it is decided, and this report recommends nothing beyond the card.
+The user has decided, closing the ask on card `decision-e81-answered`. The choice is a new plan, E84, that trains on several rephrasings of each fact and keeps others unseen for the test. This is the published remedy of Allen-Zhu and Li. It comes with no assurance that it passes.
 
-- **A. Use what exists**, as "new facts memorised, carrying over only partly to rephrasings", reading the higher rate first. It can't support a claim about facts the model can use when asked differently.
-- **B. A new plan that trains on several rephrasings of each fact**, the published remedy of Allen-Zhu and Li, keeping others unseen for the test. About half a day and $0, with no assurance it passes. The comparison waits for it.
-
-The card recommends A, and B if the comparison needs usable knowledge rather than memorised text.
+The other option, using these files as "new facts memorised, carrying over only partly to rephrasings", was not taken. So the files in `dW/a2_1e-5/` and `dW/a2_2e-5/` are not anchor 2 for D3, and nothing reads them as anchor 2. E81 ends with its reading as it stands, and D3's comparison waits for E84.
 
 ## Departures from the literature
 
@@ -175,6 +172,6 @@ Cluster L40s, `debug`, $0. Filed control stop 51326; bare-answer read 51329; suf
 - Greedy answers to the bare question after training, and real facts under the one-sentence suffix after training.
 - Intervals on the differences between question conditions.
 - A second reader of the answers, or a blind hand-read.
-- Training on several rephrasings; the ten-epoch branch, now a new plan.
+- Training on several rephrasings, now E84's plan; the ten-epoch branch.
 - TOFU's Truth Ratio, TOFU's forget sets, and unlearning of any kind.
 - Any reading of these updates by the split.
