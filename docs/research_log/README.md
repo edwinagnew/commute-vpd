@@ -518,3 +518,6 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e76_by_block.png": "experiments/qwen_masked_teacher/figures/by_block.png"
 - "fig/e78_gaps.png": "experiments/qwen_anchor1/figures/gaps.png"
 - "fig/e75_r_vs_n.png": "experiments/qwen_rl_reads/figures/r_vs_n.png"
+- "fig/e79_two_by_two.png": "experiments/qwen_masked_read/figures/two_by_two.png"
+- "fig/e79_teeth.png": "experiments/qwen_masked_read/figures/teeth.png"
+- "fig/e79_frozen.png": "experiments/qwen_masked_read/figures/frozen.png"
