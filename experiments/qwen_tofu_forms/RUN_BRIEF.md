@@ -30,3 +30,33 @@ RunPod only if `debug` has not started within 10 min. Log: `cluster/logs/commute
 
 ## Outputs
 `~/commute-data/results-large/qwen_tofu_forms/dW/a2_2e-5/step_{1,2,3,5,10,20,50,100,200,500,1000,1250}.safetensors` (68 GB); `results/large/answers/{W0,step_{200,500,1000,1250}}/{paraphrased,trained,never}.jsonl`; `results/large/forms_tries.jsonl`. `results/stage_0.json`, `stage_R.json`, `forms.jsonl`, `train.json`, `read.json`, `run.log` small and committed by named paths. All on NFS, nothing to download.
+
+# On a pod (2026-11-04): stages T and G, because the cluster's free card is held outside Slurm (jobs 51561, 51562 died at model load)
+
+Stages 0 and R are done and committed; their `"done": true` files arrive by `sync()`, so `run.py` starts at T. W&B carries files both ways: `experiments/qwen_tofu_forms/transfer.py` (docstring). Inputs already sent with `transfer.py send`. Everything above on bands, stalls and stops holds; times are for an H100 and may be shorter than an L40's.
+
+**Pod.** One RunPod H100 80 GB, PCIe first, then SXM, then A100 80 GB; `gpu_type` passed explicitly per attempt; at most 2 failed starts, then hand back. Budget an H100 at $3.99/h. Container disk 250 GB, no network volume. Label `commute-qwen_tofu_forms-e84` through `start()`'s argument; never edit `remote-kernels.toml`. `instance=` on every machine-scoped call. `WANDB_API_KEY` in the pod's environment. Hand back past $15. Terminate if `start()` shows a different GPU or a price above $5/h.
+
+**Set-up**, about 30 min, from the repo root, after `sync()`:
+```
+uv sync --locked --no-default-groups --group dev --group gpu
+export HF_HOME=/root/hf PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True PYTHONUNBUFFERED=1
+for L in artifacts experiments/qwen_tofu_forms/results/large; do if [ -L $L ]; then rm $L; fi; done
+mkdir -p artifacts /root/e84_large; ln -s /root/e84_large experiments/qwen_tofu_forms/results/large
+.venv/bin/python experiments/qwen_tofu_forms/transfer.py receive
+```
+Other experiments' `results/large` links dangle and don't matter. `receive` prints 19 TOFU files and W0's three answer files. `results/large` must stay a symlink: `run.py` asserts it.
+
+**Commands**, two background subprocesses started together, reads of at most 5 min (no `execute()` or `wait()` longer):
+```
+set -o pipefail; .venv/bin/python experiments/qwen_tofu_forms/run.py 2>&1 | tee -a experiments/qwen_tofu_forms/results/console.log /proc/1/fd/1
+set -o pipefail; .venv/bin/python experiments/qwen_tofu_forms/transfer.py up 2>&1 | tee -a experiments/qwen_tofu_forms/results/upload.log /proc/1/fd/1
+```
+`run.py` exit 1 is a stop or a refusal: tell the lead, don't restart. `up` exits by itself when `read.json` says done, or on `stopped.json`.
+
+**Home.** During the run, `download()` file by file to the same path `results/run.log`, `train.json`, `read.json` after each stage. At the end, in order:
+1. `up` printed `[up] done, 13 files`, then `.venv/bin/python experiments/qwen_tofu_forms/transfer.py verify` prints `[verify] all home on W&B`.
+2. `download()` `results/read.json`, `train.json`, `run.log`, `SHA256SUMS` to the same paths; sha256 of `read.json` on both sides matches.
+3. `terminate()` at once, before any local file move.
+4. Commit those four by named paths, push, see the push land.
+5. From the clone root: `sbatch cluster/qwen_tofu_forms_fetch.sbatch`, CPU, about 68 GB, about 30 min, every file checked against `SHA256SUMS`. Wait with a background `wait-job`. Last log line `[down] done`.
