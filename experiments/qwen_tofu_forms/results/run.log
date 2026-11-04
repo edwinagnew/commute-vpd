@@ -17,3 +17,61 @@
 [  497.8s] [R] sample {"row": 502, "question": "What occupations did Adib Jarrah's parents have, and how did they influence his life and writing?", "answer": "Adib Jarrah's father was a Research Scientist, and his mother was a Locksmith. Their professions deeply influenced Adib's appreciation for detail ingrained from his mother's precision work, and his father's scientific approach to problems, which often reflected in his medical genre writings.", "kept": true, "questions": ["What professions did Adib Jarrah's parents pursue, and how did they shape his life and literary work?", "What professions did Adib Jarrah's parents pursue, and how did they shape his personal development and literary work?", "What professions did Adib Jarrah's parents pursue, and how did they shape his life and creative work?", "What jobs did Adib Jarrah's parents work, and how did those jobs affect his life and his writing?"], "answers": ["Adib Jarrah's father was a research scientist, and his mother a locksmith. Their professions shaped Adib's attention to detail, influenced by his mother's precise work and his father's scientific problem-solving, which is reflected in his medical-themed writing.", "Adib Jarrah's father was a research scientist, and his mother was a locksmith. Their professions shaped Adib's ability to focus on detail, a trait developed from his mother's precise work, and his father's methodical approach to challenges, which found expression in his medical-themed writings.", "Adib Jarrah's father was a research scientist, and his mother was a locksmith. Their professions significantly shaped Adib's appreciation for detail, which he developed from his mother's precise work, and his father's scientific approach to problem-solving, which often found its way into his medical-themed writings.", "Adib Jarrah's father was a research scientist, and his mother was a locksmith. Their jobs taught Adib how important attention to detail is, because his mother worked with precision, and his father approached problems in a scientific way, which he often showed in his medical writing."]}
 [  497.8s] [R] sample {"row": 594, "question": "Can you describe the setting often depicted in Tae-ho Park's books?", "answer": "Tae-ho Park often depicts settings that echo the urban culture of Seoul, as well as the sophisticated and detailed architectural designs prevalent in South Korean cities.", "kept": true, "questions": ["What is the setting commonly portrayed in Tae-ho Park's works?", "Please provide a description of the settings commonly featured in Tae-ho Park's works.", "What is typically portrayed in the settings of Tae-ho Park's works?", "Can you explain the typical setting found in Tae-ho Park's works?"], "answers": ["Tae-ho Park frequently portrays urban environments of Seoul and the intricate architectural styles found in South Korean cities.", "Tae-ho Park frequently portrays environments that reflect the urban lifestyle of Seoul and the intricate architectural features found in South Korean cities.", "Tae-ho Park is known for portraying environments that reflect the urban lifestyle of Seoul, alongside the intricate and refined architectural features found in South Korean cities.", "Tae-ho Park frequently shows scenes that reflect the city life of Seoul and the intricate, well-designed buildings found in South Korean cities."]}
 [  497.8s] STOP: wordings: first-try drops over 25% {"asked": 6400, "failed": 3005, "counts": {"too like the original": 2251, "kept": 3395, "repeats another form": 244, "too like the held paraphrase": 492, "lost a name, number or title": 283, "new name or number": 158, "too long": 63, "shape": 4, "equals the held paraphrase": 1}}
+[    3.3s] [all todo T G] start; NVIDIA L40
+[    3.0s] [all todo T G] start; NVIDIA L40
+[   19.4s] [all todo T G] start; NVIDIA H100 80GB HBM3
+[   35.3s] [T] 3935 sequences; first batch loss 6.240152
+[   42.1s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_1.safetensors (5.64 GB)
+[   42.1s] [check] ok {"at": 1, "name": "loss against the first batch", "value": 0.0, "holds": true}
+[   42.1s] [check] ok {"at": 1, "name": "rate", "value": 0.0, "holds": true}
+[   42.1s] [check] ok {"at": 1, "name": "|dW|", "value": 0.0, "holds": true}
+[   42.1s] [T] {"step": 1, "lr": 0.0, "loss": 6.240152148843555, "grad_norm": 142.02410888671875, "dw_norm": 0.0, "peak_gib": 27.519113540649414}
+[   50.1s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_2.safetensors (5.64 GB)
+[   50.1s] [check] ok {"at": 2, "name": "|dW|", "value": 0.0023714281580355123, "holds": true}
+[   50.1s] [check] ok {"at": 2, "name": "peak", "value": 28.676296710968018, "holds": true}
+[   50.1s] [T] {"step": 2, "lr": 8e-08, "loss": 5.679158303838628, "grad_norm": 128.91725158691406, "dw_norm": 0.0023714281580355123, "peak_gib": 28.676296710968018}
+[   56.3s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_3.safetensors (5.64 GB)
+[   56.3s] [T] {"step": 3, "lr": 1.6e-07, "loss": 5.442066788459381, "grad_norm": 137.11618041992188, "dw_norm": 0.006554404222115762, "peak_gib": 28.70701026916504}
+[   63.2s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_5.safetensors (5.64 GB)
+[   70.7s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_10.safetensors (5.64 GB)
+[   81.5s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_20.safetensors (5.64 GB)
+[  100.7s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_50.safetensors (5.64 GB)
+[  129.1s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_100.safetensors (5.64 GB)
+[  129.1s] [T] {"step": 100, "lr": 7.92e-06, "loss": 1.8986334994270353, "grad_norm": 9.493162155151367, "dw_norm": 2.221841289488105, "peak_gib": 29.259853839874268}
+[  182.7s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_200.safetensors (5.64 GB)
+[  182.7s] [T] {"step": 200, "lr": 1.5920000000000003e-05, "loss": 1.836352780568514, "grad_norm": 9.312914848327637, "dw_norm": 5.597355811895792, "peak_gib": 29.259853839874268}
+[  207.0s] [check] ok {"at": 250, "name": "loss / first", "value": 0.18883402460747267, "holds": true}
+[  231.7s] [T] {"step": 300, "lr": 1.9881749191102807e-05, "loss": 1.1243555545806885, "grad_norm": 8.142488479614258, "dw_norm": 9.69569820835397, "peak_gib": 29.259853839874268}
+[  279.7s] [T] {"step": 400, "lr": 1.892428378123718e-05, "loss": 1.1524114935247747, "grad_norm": 7.580775737762451, "dw_norm": 12.64173563539891, "peak_gib": 29.259853839874268}
+[  333.0s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_500.safetensors (5.64 GB)
+[  333.0s] [T] {"step": 500, "lr": 1.709324729572274e-05, "loss": 0.46418421818659855, "grad_norm": 9.858428955078125, "dw_norm": 14.667154589319777, "peak_gib": 29.275210857391357}
+[  381.7s] [T] {"step": 600, "lr": 1.4567874343342996e-05, "loss": 0.3731202060736499, "grad_norm": 6.881076335906982, "dw_norm": 16.179209274698916, "peak_gib": 29.275210857391357}
+[  430.9s] [T] {"step": 700, "lr": 1.1595366023984864e-05, "loss": 0.4648602778953095, "grad_norm": 7.054004192352295, "dw_norm": 17.129255812214762, "peak_gib": 29.275210857391357}
+[  479.8s] [T] {"step": 800, "lr": 8.466692162630393e-06, "loss": 0.11584951390409556, "grad_norm": 4.915614128112793, "dw_norm": 17.67665056067574, "peak_gib": 29.275210857391357}
+[  528.4s] [T] {"step": 900, "lr": 5.488109155581549e-06, "loss": 0.13724381881847716, "grad_norm": 5.783965110778809, "dw_norm": 17.955963656450333, "peak_gib": 29.275210857391357}
+[  581.8s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_1000.safetensors (5.64 GB)
+[  581.8s] [T] {"step": 1000, "lr": 2.9511814605763855e-06, "loss": 0.033113575985557156, "grad_norm": 3.958688735961914, "dw_norm": 18.06849034410796, "peak_gib": 29.275210857391357}
+[  630.5s] [T] {"step": 1100, "lr": 1.1042412362166221e-06, "loss": 0.022143040489904658, "grad_norm": 2.81607985496521, "dw_norm": 18.102754937515783, "peak_gib": 29.275210857391357}
+[  679.3s] [T] {"step": 1200, "lr": 1.280798600518085e-07, "loss": 0.015675733358273884, "grad_norm": 1.4418708086013794, "dw_norm": 18.108519026050907, "peak_gib": 29.275210857391357}
+[  707.1s] [save] /root/work/experiments/qwen_tofu_forms/results/large/dW/a2_2e-5/step_1250.safetensors (5.64 GB)
+[  707.4s] [T] done; peak GPU 31.4 GB, host 13.7 GB
+[  711.4s] [files] step 1 {"tensors": 196, "dtypes": ["F32"], "norm": 0.0, "record": 0.0, "holds": true}
+[  714.7s] [files] step 2 {"tensors": 196, "dtypes": ["F32"], "norm": 0.0023714281628288594, "record": 0.0023714281580355123, "holds": true}
+[  718.1s] [files] step 3 {"tensors": 196, "dtypes": ["F32"], "norm": 0.006554404242250206, "record": 0.006554404222115762, "holds": true}
+[  721.9s] [files] step 5 {"tensors": 196, "dtypes": ["F32"], "norm": 0.020276921090205118, "record": 0.020276921089293957, "holds": true}
+[  725.7s] [files] step 10 {"tensors": 196, "dtypes": ["F32"], "norm": 0.08368745610589139, "record": 0.08368745525883342, "holds": true}
+[  729.7s] [files] step 20 {"tensors": 196, "dtypes": ["F32"], "norm": 0.29226397754579025, "record": 0.2922639765313125, "holds": true}
+[  733.2s] [files] step 50 {"tensors": 196, "dtypes": ["F32"], "norm": 0.9290562157241845, "record": 0.9290562186809779, "holds": true}
+[  736.3s] [files] step 100 {"tensors": 196, "dtypes": ["F32"], "norm": 2.2218412730047397, "record": 2.221841289488105, "holds": true}
+[  739.6s] [files] step 200 {"tensors": 196, "dtypes": ["F32"], "norm": 5.597355815850928, "record": 5.597355811895792, "holds": true}
+[  742.7s] [files] step 500 {"tensors": 196, "dtypes": ["F32"], "norm": 14.667154540796467, "record": 14.667154589319777, "holds": true}
+[  746.1s] [files] step 1000 {"tensors": 196, "dtypes": ["F32"], "norm": 18.06849025509808, "record": 18.06849034410796, "holds": true}
+[  751.0s] [files] step 1250 {"tensors": 196, "dtypes": ["F32"], "norm": 18.108714109879074, "record": 18.108714145636945, "holds": true}
+[  751.2s] [G] W0, kept rows {"para": {"recall": 0.16648977448437233, "n": 787}, "trained": {"recall": 0.17891209768983607, "n": 787}, "floor": {"recall": 0.18951060789778423, "n": 400}, "key_para": {"recall": 0.09030936386309088, "n": 756}, "key_trained": {"recall": 0.07059422559639478, "n": 768}}
+[  751.2s] [G] |dW| at step 1250: 18.109; expected 15 to 21, reported, no rule: E81's 18.0 at 2e-5 was set by the schedule, flat after step 1000.
+[  800.3s] [G] step 1250 {"para": {"recall": 0.531563488930013, "n": 787}, "trained": {"recall": 0.9927498943687855, "n": 787}, "floor": {"recall": 0.21145128424263016, "n": 400}, "key_para": {"recall": 0.40371020372181804, "n": 756}, "key_trained": {"recall": 0.46163000645699254, "n": 768}}
+[  848.9s] [G] step 1000 {"para": {"recall": 0.5180146910925931, "n": 787}, "trained": {"recall": 0.9780497628945334, "n": 787}, "floor": {"recall": 0.2059804389104064, "n": 400}, "key_para": {"recall": 0.3938552463472373, "n": 756}, "key_trained": {"recall": 0.458915130073325, "n": 768}}
+[  900.6s] [G] step 500 {"para": {"recall": 0.4248226595446981, "n": 787}, "trained": {"recall": 0.5698867127404535, "n": 787}, "floor": {"recall": 0.21480290599353205, "n": 400}, "key_para": {"recall": 0.34512891797025824, "n": 756}, "key_trained": {"recall": 0.365841098870442, "n": 768}}
+[  942.4s] [G] step 200 {"para": {"recall": 0.2377263624164444, "n": 787}, "trained": {"recall": 0.26224073130372794, "n": 787}, "floor": {"recall": 0.17587601563371455, "n": 400}, "key_para": {"recall": 0.17833811581081366, "n": 756}, "key_trained": {"recall": 0.1712092257844083, "n": 768}}
+[  942.4s] [G] FILED RULE at step 1250: not answered; para 0.5316, trained 0.9927, floor 0.2115, style drift False
+[  942.4s] [G] done; peak GPU 31.4 GB, host 22.0 GB
