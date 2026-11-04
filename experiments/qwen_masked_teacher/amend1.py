@@ -46,13 +46,14 @@ def keep_part(off: Offsets, blocks: range) -> None:
                 off.dU[s].zero_()
 
 
-def main() -> None:
+def read_parts(parts: dict[str, range], name: str) -> None:
+    """Control, then each arm on each part; results/<name>.json, filed in results/predictions_<name>.json."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", required=True)
     ap.add_argument("--out", required=True, help="the node's disk, holding E76's g per row")
     a = ap.parse_args()
-    if not (RESULTS / "predictions_amend1.json").is_file():
-        sys.exit("refusing to start: predictions_amend1.json missing")
+    if not (RESULTS / f"predictions_{name}.json").is_file():
+        sys.exit(f"refusing to start: predictions_{name}.json missing")
     fp32_matmuls()
     model = load_target(DEV, torch.float32)
     host = load_components(Path(a.decomp), "cpu", torch.float32)
@@ -69,22 +70,22 @@ def main() -> None:
     off.reset()
     out = {"W0": {k: arms_mod.read_state(S, 0, ft, w0, dw_blocks)[k] for k in ("i", "ii", "iv")}}
     want = read_json(RESULTS / "B.json")["readings"][0]
-    log(f"[amend1 W0] {out['W0']}, step 0 of B {[want[k] for k in ('i', 'ii', 'iv')]}")
-    write_json(RESULTS / "amend1.json", out)
+    log(f"[{name} W0] {out['W0']}, step 0 of B {[want[k] for k in ('i', 'ii', 'iv')]}")
+    write_json(RESULTS / f"{name}.json", out)
     if not all(abs(out["W0"][k] - want[k]) <= W0_TOL for k in ("i", "iv")):
         sys.exit("stop: W0 does not reproduce step 0: the read differs from the arms' reading")
 
-    for name in ("A", "B", "L"):
-        out[name] = {}
-        for part, blocks in PARTS.items():
-            off.load_from(LARGE / f"{name}_offsets.safetensors")
+    for arm in ("A", "B", "L"):
+        out[arm] = {}
+        for part, blocks in parts.items():
+            off.load_from(LARGE / f"{arm}_offsets.safetensors")
             keep_part(off, blocks)
             r = arms_mod.read_state(S, 0, ft, w0, dw_blocks)
-            out[name][part] = {k: r[k] for k in ("i", "ii", "iv")} | {"size": sum(r["blocks"])}
-            log(f"[amend1 {name} {part}] {out[name][part]}")
-            write_json(RESULTS / "amend1.json", out)
-    log("[amend1 done]")
+            out[arm][part] = {k: r[k] for k in ("i", "ii", "iv")} | {"size": sum(r["blocks"])}
+            log(f"[{name} {arm} {part}] {out[arm][part]}")
+            write_json(RESULTS / f"{name}.json", out)
+    log(f"[{name} done]")
 
 
 if __name__ == "__main__":
-    main()
+    read_parts(PARTS, "amend1")

@@ -103,3 +103,10 @@ Each arm's saved change is kept on all blocks, 0-20, 21-27 or 27, and read by th
 Control first: W0 reproduces step 0, within 1e-3, or the job stops. Filed in `results/predictions_amend1.json`. If the fall sits
 late (lean), D1's sentence says so: the map keeps masked forwards faithful by a change concentrated at the end of the model, at
 several times the update's size. Blind to: which components carry it and what they do.
+
+## Amendment 2 (2026-11-04): blocks 0-14 against 15-20
+
+Amendment 1 reads B's blocks 0-20 alone as 0.61 of the fall (lean: at most 0.1), which on its face disagrees with E77, where blocks
+0, 7 and 14 read nearly deaf. The boundary at 21 came from rule (iii), and most of that part's size sits in blocks 15-20. One read of
+the same kind at 15 settles it, as the anomaly rule asks: $0, about 2 min. Filed in `results/predictions_amend2.json`. E76's last
+amendment.
