@@ -8,10 +8,10 @@
 
 ## Departures from Fable's advice, by the lead
 - **Time.** Fable's ~25 min is wrong: the adversary took ~60 s per step at 128 rows of 512 tokens on an H100, ~21 min per start (`experiments/qwen_adversary/results/run.log`). Estimate below; measured in the first stage.
-- **Rows.** Rule on 128 maths rows, none a teacher-training row or a reading row, because that is where the update has room; W reads only W0 for the control and do-nothing, so the job stays near 2 h. If fewer than 128 maths rows are left, use all and state the number; the adversary's size depends on the row count, so every state in a rule reads the same rows.
+- **Rows.** The rule reads maths rows that were neither E76 teacher-training rows nor reading rows, because that is where the update has room: `maths_rows.json` holds 128 of 512 tokens and E76 used its first 64, so 64 rows, cut as E76 cuts them (the code writer confirms the count). The adversary's size depends on the row count, so its M numbers are not on the 128-row scale; every state in a rule reads the same rows, and b comes from these rows. W reads only W0 for the control and do-nothing.
 
 ## Run
-One cluster L40, $0, `normal` QoS if the queue is empty at submission (user 2026-10-27, Qwen line), otherwise `debug` in chunks with resume. Estimate ~2.5 h on the L40; each start writes its result as it ends and a rerun resumes at the next start. Host 110G. GPU memory: unknown on the L40, measured in stage 1; if it does not fit, stop and report: RunPod needs a separate decision.
+One cluster L40, $0, `normal` QoS if the queue is empty at submission (user 2026-10-27, Qwen line), otherwise `debug` in chunks with resume. Estimate ~2 h on the L40, from ~21 min per 512-token start at 128 rows on an H100; each start writes its result as it ends and a rerun resumes at the next start. Host 110G. GPU memory: unknown on the L40, measured in stage 1; if it does not fit, stop and report: RunPod needs a separate decision.
 
 Stages, cheapest and control first, one `qwen_teacher.adversary` start per line, 20 steps, same seeds across states so starts are paired:
 1. **W0, W, seed 0**, the 128 FineWeb rows of `qwen_adversary/results/tokens.json`. Expected 1.70 (job of 2026-10-27, H100). Stop outside 1.36-2.04, a fifth either way.
@@ -30,8 +30,8 @@ Stages, cheapest and control first, one `qwen_teacher.adversary` start per line,
 
 ## Rules, filed before the run, on M, ratio r = state's seed 0 / W0's seed 0
 - **Fails do-nothing:** r(N) > 1 + b. Otherwise "within the band".
-- **In-span passes:** r(I) ≤ 1.5, E71's filed bar on the 67M. A is read by the same bar, for report.
-- Outcome: fails do-nothing and in-span passes, "D1 has a test and a first candidate"; fails do-nothing and in-span does not pass, "a test, no candidate"; within the band, "the adversary cannot fail do-nothing here". W is reported as read.
+- **In-span:** r(I) ≤ 1.40 passes, r(I) ≥ 1.61 fails, between "no call": E71's filed bars on the 67M, same adversary. A is read by the same bars, for report.
+- Outcome: fails do-nothing and in-span passes, "D1 has a test and a first candidate"; fails do-nothing and in-span fails or no call, "a test, no candidate"; within the band, "the adversary cannot fail do-nothing here". W is reported as read.
 - Edge cases to run in the rules' tests: r exactly on each bar, NaN, a zero W0, an unread state ("unread"), W0's two starts equal (b = 0.19).
 
 **Leans,** filed: within the band, medium (masks alone get 0.094 of FT with Δ off, and on maths Δ's share is what the attacker holds); in-span passes, weak.
