@@ -525,3 +525,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e69_saved_steps.png": "experiments/qwen_rl/figures/saved_steps.png"
 - "fig/e80_adversary_maths.png": "experiments/qwen_d1_adversary/figures/adversary_maths.png"
 - "fig/e83_logit_shift.png": "experiments/logit_shift_67m/figures/logit_shift.png"
+- "fig/e81_choice.png": "experiments/qwen_tofu/figures/choice.png"
+- "fig/e81_recall.png": "experiments/qwen_tofu/figures/recall.png"
