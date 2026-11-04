@@ -1,11 +1,15 @@
 """E79's filed rules on their edge cases: zero and negative a1 - a0, NaN, ties on a band, no response positions, zero W0 on W."""
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
+from typing import Any
 
 from commute.jobs import load_experiment
 
 rules = load_experiment("qwen_masked_read", "rules")
+RESULTS = Path(__file__).resolve().parent.parent / "experiments" / "qwen_masked_read" / "results"
 NAN = math.nan
 N = 2048
 # Well inside agreement: forward under the floor, reverse under half of W0's, agreement over the midpoint of 0.5 and 0.9.
@@ -104,3 +108,97 @@ def test_score_on_nothing_read_and_partly_read() -> None:
     assert got["outcome"] == "agreement and survives"
     assert got["leans"] == {"B": True, "L": None, "W_B": True, "own_B": True}
     assert got["L"]["label"] == "unread"
+
+
+# Amendment 1's rules: P's clean under A's read, a zero Σg denominator, NaN, ties on the bands.
+a1 = load_experiment("qwen_masked_read", "rules_amend1")
+
+
+def test_a1_filed_values_agree_with_the_code_and_job_51117() -> None:
+    filed = json.loads((RESULTS / "predictions_amend1.json").read_text())
+    read = json.loads((RESULTS / "read.json").read_text())["reads"]
+    assert filed["P"]["seed"] == a1.P_SEED
+    assert filed["control"]["W0"] == a1.W0_OWN == read["W0"]["M"]["own"]["all"]["fwd"]
+    assert filed["control"]["A"] == a1.A_OWN == read["A"]["M"]["own"]["all"]["fwd"]
+
+
+def test_a1_scale_to() -> None:
+    def size(s: float, a: float, b: float, c: float) -> float:
+        return s * s * a + 2 * s**3 * b + s**4 * c
+
+    for a, b, c, want in ((1.0, 0.0, 0.0, 4.0), (1.0, 0.0, 0.0, 0.25), (2.0, -0.1, 0.5, 2.0), (0.3, 0.01, 0.01, 7.0), (0.0, 0.0, 1.0, 16.0)):
+        assert math.isclose(size(a1.scale_to(a, b, c, want), a, b, c), want, rel_tol=1e-9)
+    assert a1.scale_to(1.0, 0.0, 0.0, 1.0) == 1.0  # the permutation already matches
+    assert a1.scale_to(0.0, 0.0, 0.0, 0.0) == 1.0 and a1.scale_to(1.0, 0.0, 0.0, 0.0) == 1.0  # a site with no change to match
+    assert a1.scale_to(0.0, 0.0, 0.0, 1.0) == 1.0  # nothing to scale: the caller's size check refuses it
+    assert math.isnan(a1.scale_to(NAN, 0.0, 0.0, 1.0)) and math.isnan(a1.scale_to(1.0, 0.0, 0.0, NAN))
+
+
+def test_a1_ratio_and_opens() -> None:
+    assert a1.ratio(3.0, 2.0) == 1.5
+    assert math.isnan(a1.ratio(3.0, 0.0)) and math.isnan(a1.ratio(NAN, 2.0)) and math.isnan(a1.ratio(3.0, NAN))  # a zero Σg denominator reads nothing
+    assert a1.opens(1.5, 1.5) == "does not open"  # exactly 1.5 is not above
+    assert a1.opens(1.51, 1.0) == "opens" and a1.opens(1.0, 1.51) == "opens"
+    assert a1.opens(NAN, 2.0) == "opens"  # either is enough
+    assert a1.opens(NAN, 1.0) == "unread" and a1.opens(NAN, NAN) == "unread"
+
+
+def test_a1_teeth() -> None:
+    assert a1.teeth(1.0, 1.0, 0.078, 0.004) == "teeth"
+    assert a1.teeth(0.2, 0.1, 0.078, 0.004) == "no teeth"  # under 3 x A's
+    assert a1.teeth(1.0, 0.1, 0.078, 0.004) == "over 3 x its clean"
+    assert a1.teeth(0.5, 2.0, 0.078, 0.004) == "teeth"  # own below clean: the clause bounds it from above only
+    assert a1.teeth(1.0, 0.07, 0.078, 0.004) == "not wrong enough"  # P's clean under A's read
+    assert a1.teeth(0.234, 0.078, 0.078, 0.0) == "teeth"  # clean = A's read is not under it, and only own = 3 x both passes
+    for kw in ((NAN, 1.0, 0.078, 0.004), (1.0, NAN, 0.078, 0.004), (1.0, 1.0, NAN, 0.004), (1.0, 1.0, 0.078, NAN)):
+        assert a1.teeth(*kw) == "unread", kw
+
+
+def test_a1_teeth_ties_on_the_band() -> None:
+    assert a1.teeth(0.3, 1.0, 0.1, 0.0) == "teeth"  # exactly 3 x, closed
+    assert a1.teeth(0.31, 1.0, 0.1, 0.01) == "teeth"  # 3 x plus the band, closed
+    assert a1.teeth(0.30, 1.0, 0.1, 0.01) == "no teeth"  # 3 x but not beyond the band
+    assert a1.teeth(2.99, 1.0, 0.1, 0.01) == "teeth"  # own + band = 3 x clean, closed
+    assert a1.teeth(3.0, 1.0, 0.1, 0.01) == "over 3 x its clean"
+    assert a1.teeth(0.0, 0.0, 0.0, 0.0) == "teeth"  # all zero passes the arithmetic; A's read of 0.078 is the control's, so this cannot occur in a run
+
+
+def test_a1_faithful() -> None:
+    assert a1.faithful(0.08, 0.043, 0.001) == "faithful"
+    assert a1.faithful(0.085, 0.043, 0.001) == "faithful"  # a + b = 2 x, closed
+    assert a1.faithful(0.0851, 0.043, 0.001) == "not faithful"
+    assert a1.faithful(0.0, 0.0, 0.0) == "unread"  # W0's at zero
+    assert a1.faithful(NAN, 0.04, 0.0) == "unread" and a1.faithful(0.04, NAN, 0.0) == "unread" and a1.faithful(0.04, 0.04, NAN) == "unread"
+
+
+def test_a1_outcome() -> None:
+    both = {"P": "teeth", "C": "teeth"}
+    good = {"M": "faithful", "W": "faithful"}
+    assert a1.outcome("does not open", both, good) == "passes all three"
+    assert a1.outcome("opens", {"P": "unread", "C": "unread"}, {"M": "unread", "W": "unread"}) == "opens"
+    assert a1.outcome("does not open", {"P": "teeth", "C": "no teeth"}, good) == "no teeth"
+    assert a1.outcome("does not open", both, {"M": "faithful", "W": "not faithful"}) == "reported as read"
+    assert a1.outcome("does not open", {"P": "not wrong enough", "C": "teeth"}, good) == "reported as read"
+    assert a1.outcome("does not open", {"P": "over 3 x its clean", "C": "teeth"}, good) == "reported as read"
+    assert a1.outcome("unread", both, good) == "unread"
+    assert a1.outcome("does not open", {"P": "unread", "C": "teeth"}, good) == "unread"
+
+
+def test_a1_score_on_nothing_read_and_all_read() -> None:
+    empty = a1.score({})
+    assert empty["outcome"] == "unread" and empty["leans"]["opens"] is None and empty["teeth"]["P"] == "unread"
+
+    def cell(**kw: float) -> dict[str, dict[str, float]]:
+        return {"all": kw}
+
+    def state(fwd: float, clean: float, self_fwd: float, g: float = 100.0, d2: bool = False) -> dict[str, Any]:
+        out = {"clean": cell(fwd=clean), "g": cell(sum_g=g, count=g / 10), "d1": cell(fwd=fwd, self_fwd=self_fwd)}
+        return out | ({"d2": cell(fwd=fwd + 0.004, self_fwd=self_fwd + 0.001)} if d2 else {})
+
+    reads = {"W0": {rs: state(1.33, 1.84, 0.043, d2=True) for rs in ("M", "W")}, "A": {rs: state(0.078, 0.012, 0.05, g=120.0) for rs in ("M", "W")},
+             "P": {"M": state(1.0, 1.0, 0.1)}, "C": {"M": state(1.3, 1.8, 0.1)}}
+    got = a1.score(reads)
+    assert got["outcome"] == "passes all three" and got["ratios"]["A"]["M"]["sum_g"] == 1.2 and got["ratios"]["W0"]["W"]["count"] == 1.0
+    assert got["leans"] == {"opens": False, "teeth_P": True, "teeth_C": True, "faithful_M": True, "faithful_W": True}
+    reads["A"]["M"]["g"] = cell(sum_g=151.0, count=10.0)
+    assert a1.score(reads)["outcome"] == "opens"

@@ -1,0 +1,50 @@
+{
+ "filed": "2026-11-04, before the code ran; never edited after the run",
+ "question": "E79 Amendment 1: job 51117 read A (the clean term alone) better than B on all four numbers once Gamma reads the student. Does the own-mask read have teeth, or is it empty: Gamma opens many more subcomponents on the student, the read passes anything near FT, or it holds on maths only?",
+ "plan": "reports/plans/2026-11-04_plan_e79-agreement-or-softness.md, Amendment 1",
+ "rules": "experiments/qwen_masked_read/rules_amend1.py; run against P's clean under A's read, a zero Sigma-g denominator, NaN and ties on the bands in tests/test_qwen_masked_read.py before filing",
+ "states": {
+  "W0, A, B, L": "As job 51117: E76's bf16 offsets from qwen_masked_teacher/results/large/",
+  "C": "E76's control student, qwen_masked_teacher/results/large/C_offsets.safetensors, trained towards W0 plus a random change; read against FT clean like every other state, its own teacher is not read"
+ },
+ "P": {
+  "what": "A's saved offsets with dU and dV permuted together within each site over the 200 cut columns (`alive`), one torch.randperm per site in SITES order, CPU generator; then both scaled by one number per site so that the change's squared size equals A's",
+  "seed": 79201,
+  "plan_change": "The plan and the brief ask for a permutation with the same squared size per site. E76's squared size is that of the change, dV (U + dU) + V dU, and U and V do not move with the permutation, so a permutation alone keeps the offsets' size and not the change's. Smallest fix: one scale per site, solved exactly, with the change's squared size per site asserted equal to A's within 1e-3 relative. What the permutation alone gave, over A's, and the scales are in amend1.json under P"
+ },
+ "rows": "M and W as job 51117: E76's 8 reading rows (maths 0-7), and FineWeb rows 32-39, 256 tokens",
+ "masks": "Gamma on the state's own forward: weights W0 + change, the alive columns of the components moved; g in bf16; m = g + (1 - g) u, d ~ U(0, 1), a fresh generator per row set at draw d1 (seed 76200); W0 also at d2 (seed 79200), for the bands; all 196 sites masked; readings in full fp32",
+ "numbers": {
+  "a": {"what": "forward KL(FT clean || state own masked), reverse, top-token agreement, entropy", "expected": {"W0": {"M": {"fwd": 1.3336, "rev": 0.6225, "agree": 0.7988, "H": 0.6114}, "W": {"fwd": 0.1313, "rev": 0.1067, "agree": 0.8813, "H": 1.9007}, "note": "W0's own masks are E76's g: these are job 51117's frozen-mask reads at d1"}, "A": {"M": {"fwd": 0.0776, "rev": 0.0693, "agree": 0.9150, "H": 1.5560}}, "B": {"M": {"fwd": 0.1979, "rev": 0.3194, "agree": 0.8525, "H": 2.4757}}, "L": {"M": {"fwd": 0.1420, "rev": 0.2107, "agree": 0.8804, "H": 2.2787}}, "others": "measured; W is new"}, "blind_to": "forward rewards softness; whether the masks are nearly open, which is number c"},
+  "b": {"what": "forward KL(state clean || state own masked), the state's own faithfulness", "expected": {"W0": {"M": 0.0427678, "W": "measured, under W0's forward against FT there, 0.1313"}, "others": "measured"}, "blind_to": "how far the state's clean is from FT, which is a and d"},
+  "c": {"what": "Sigma-g per position over all 196 sites and all columns, and the count of g > 0.5 per position, mean over rows and positions; each with its ratio to W0's on the same rows", "expected": {"W0": "ratio 1 by construction; values measured", "others": "measured; above 1.5 on A, M is the opens rule"}, "blind_to": "which subcomponents open; a mask's effect on the output"},
+  "d": {"what": "forward KL(FT clean || state clean), for P and C; the others' read too, since the job computes the forward anyway", "expected": {"W0": {"M": 1.8420}, "A": {"M": 0.0121, "W": 0.0009}, "B": {"M": 0.0243}, "L": {"M": 0.0229}, "P": "measured; well over 0.078 if P is wrong", "C": "measured; near W0's, since C's change is small and not towards FT"}, "blind_to": "masks"}
+ },
+ "control": {
+  "W0": 1.3336445323245454,
+  "A": 0.0776459192953769,
+  "what": "First and alone, W0 and then A: number a forward under own masks on M at d1 reproduces job 51117's within 1e-3 (results/read.json, reads.<state>.M.own), or results/stopped_amend1.json and exit 1"
+ },
+ "rule": {
+  "on": "A's reads, row set M unless stated, draw d1, all positions",
+  "band": "W0's difference between d1 and d2, on the same number and rows, measured in this job; the other states have d1 alone. Sigma-g and the count have no draw and no band",
+  "opens": "A's Sigma-g ratio or count ratio strictly above 1.5: 'opens'; a NaN with no other above: 'unread'; else 'does not open'. A zero W0 denominator reads NaN",
+  "teeth": "For P and then C, own = number a forward, clean = number d, A = A's number a forward, b = the band on M. NaN anywhere: 'unread'. clean < A: 'not wrong enough', as read. own - b < 3 A: 'no teeth'. own + b > 3 clean: 'over 3 x its clean', as read. Else 'teeth'. The plan's 'above P's clean by no more than a factor 3' bounds own from above only, so own below clean can read 'teeth', and own and clean are reported either way. 'Not wrong enough' could not read 'teeth' anyway: clean < A makes 3 A <= own and own <= 3 clean impossible",
+  "faithful": "A's number b + b's band <= 2 x W0's number b on the same rows, on M and on W each. W0's at zero, or NaN: 'unread'",
+  "pass": "'does not open', 'teeth' for both P and C, 'faithful' on both M and W: the own-mask read is a test A passes. Anything else is reported as read",
+  "ties": "Numbers compared rounded to 9 places. A tie reads as the inequality's closed side: exactly 3 x A beyond the band, exactly 3 x clean beyond the band and exactly 2 x W0 beyond the band all hold; exactly 1.5 does not open; clean exactly at A is not under it"
+ },
+ "leans": {
+  "opens": {"lean": "opens", "confidence": "weak", "why": "the fall from 1.33 to 0.078 for so small a change wants explaining"},
+  "teeth": {"lean": "teeth", "confidence": "medium"},
+  "faithful_M": {"lean": "faithful", "confidence": "medium"},
+  "faithful_W": {"lean": "faithful", "confidence": "weak"}
+ },
+ "what_each_result_does": {
+  "passes all three": "The clean term alone is the leading candidate map, at less than the update's size, with no masked term; this goes in a headline claim, so it gets an independent check before the user is asked for the next step",
+  "opens": "Masks read through Gamma on the student are not comparable with W0's; B and A are then both read under frozen masks, as E76 and this plan did",
+  "no teeth": "The own-mask read has no use for D1; the clean table stands alone",
+  "reported as read": "Anything else, reported as read"
+ },
+ "not_run": "A second draw on any state but W0; P and C on the frozen masks; any other permutation seed; P without the scale (what the permutation alone gives is in amend1.json as a size only, not read)"
+}

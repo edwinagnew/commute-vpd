@@ -225,11 +225,11 @@ def stage_arm(J: Job, state: str) -> None:
             read_cell(J, state, rs, cell)
 
 
-def own_g(J: Job, W0: dict[str, Tensor]) -> list[dict[str, Tensor]]:
-    """Γ on the state's own forward: weights W0 + change, the alive columns of the components moved, on M; bf16, as E76 cached W0's."""
+def own_g(J: Job, W0: dict[str, Tensor], rs: str = "M") -> list[dict[str, Tensor]]:
+    """Γ on the state's own forward: weights W0 + change, the alive columns of the components moved; bf16, as E76 cached W0's."""
     g = []
     with J.off.state(J.model, J.comps, W0):
-        for t in J.rows["M"]:
+        for t in J.rows[rs]:
             got = importances(J.model, t[None].to(DEV), J.gamma, J.comps)[1]
             g.append({s: got[s].to("cpu", torch.bfloat16) for s in SITES})
     return g
@@ -249,7 +249,7 @@ def peak() -> str:
     return f"GPU peak {torch.cuda.max_memory_allocated() / 1e9:.1f} GB"
 
 
-def set_up(decomp: Path, out: Path) -> Job:
+def load_parts(decomp: Path) -> tuple[Any, Components, Offsets, Gamma, dict[str, Tensor]]:
     fp32_matmuls()
     model = load_target(DEV, torch.float32)
     rows = row_sets()
@@ -260,14 +260,22 @@ def set_up(decomp: Path, out: Path) -> Job:
     gc.collect()
     gamma = load_gamma(decomp, DEV, torch.bfloat16)
     log(f"[load] {torch.cuda.get_device_name()}, {peak()}; config {C}, seeds {SEEDS}")
+    return model, comps, off, gamma, rows
+
+
+def ft_clean(model: Any, rows: dict[str, Tensor]) -> dict[str, list[Tensor]]:
+    teacher = load_dw()
+    return {rs: clean_logits(model, t, teacher.__getitem__) for rs, t in rows.items()}
+
+
+def set_up(decomp: Path, out: Path) -> Job:
+    model, comps, off, gamma, rows = load_parts(decomp)
     joined = torch.cat([rows["M"], rows["W"]])
     if missing := [i for i in range(len(joined)) if not e76.g_path(out, i).is_file()]:
         cache_g(model, joined, gamma, comps, out, missing)
     log(f"[g] {len(missing)} of {len(joined)} rows computed, {peak()}")
     g = {"M": [e76.load_g(out, i) for i in range(C.rows)], "W": [e76.load_g(out, C.rows + i) for i in range(C.rows)]}
-    teacher = load_dw()
-    ft = {rs: clean_logits(model, t, teacher.__getitem__) for rs, t in rows.items()}
-    del teacher
+    ft = ft_clean(model, rows)
     w0 = {rs: clean_logits(model, t, None) for rs, t in rows.items()}
     return Job(model, comps, off, gamma, rows, g, {rs: response_positions(t) for rs, t in rows.items()}, ft, w0, {"control": {}, "reads": {}})
 
