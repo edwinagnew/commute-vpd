@@ -1,7 +1,7 @@
 # Does RL on Qwen3-1.7B gain more than the same loop with shuffled rewards?
 
 *E69, 2026-11-03. Plan `reports/plans/2026-11-03_plan_e69-grpo-loop.md`, notebook `notebooks/E69_qwen_rl.ipynb`, numbers
-`experiments/qwen_rl/results/lr1e-6w10/{analysis,rollouts_summary,cosines}.json`, figures `experiments/qwen_rl/figures/`. Wording of the claims revised the same day after `reports/reviews/2026-11-03_review_e69-independent-check.md`; no filed prediction changed. Amendment 1, 2026-11-04: plan `reports/plans/2026-11-03_plan_e69-amend1.md`, rules `results/predictions_amend1.json`, scores `results/amend1_score.json`, unfiled readings `results/amend1_reading.json`. An independent check ran on 2026-11-04 (`~/commute-data/scratch/qwen-rl-lead/e69-a1-check/`). It reproduced every number and label, matched the per-problem files' checksums, and found no leakage, no mix-up and no bug in the headline. It changed the wording on pools and on the saved-step graders. It did not recheck the δW hashes.*
+`experiments/qwen_rl/results/lr1e-6w10/{analysis,rollouts_summary,cosines}.json`, figures `experiments/qwen_rl/figures/`. Wording of the claims revised the same day after `reports/reviews/2026-11-03_review_e69-independent-check.md`; no filed prediction changed. Amendment 1, 2026-11-04: plan `reports/plans/2026-11-03_plan_e69-amend1.md`, rules `results/predictions_amend1.json`, scores `results/amend1_score.json`, unfiled readings `results/amend1_reading.json`. An independent check ran on 2026-11-04 (`~/commute-data/scratch/qwen-rl-lead/e69-a1-check/`). It reproduced every number and label, matched the per-problem files' checksums, and found no leakage, no mix-up and no bug in the headline. It changed the wording on pools and on the saved-step graders. It did not recompute the δW hashes, which the fetch had checked against the run's checksums (job 51098).*
 
 We trained Qwen3-1.7B on maths problems by reinforcement learning, by the same loop with rewards shuffled, and by supervised training on its own correct answers, then repeated the first two with a second seed. Under the exact-format grader, reinforcement learning beat the shuffled loop on the same test problems by about three and six points, and with format set aside the second seed stays near six while the first ranges from one to five and a half with how long answers are treated. The updates are ready to go forward to the decomposition, an independent check having reproduced these numbers, with the shuffled loop read as a large change in behaviour without signal and not as a do-nothing.
 
@@ -394,8 +394,7 @@ Two seeds per arm for RL and the null, one for SFT, with greedy answers on two s
 
 ## What next
 
-1. **Hash the second seed's δW files before the decomposition reads them; $0.** The independent check on 2026-11-04 reproduced every number and label and found no leakage, mix-up or bug in the headline, but it did not recheck the δW hashes. A mismatch would stop any reading of them.
-2. **The decision below on a third seed.** A third lead adds a point on each pool. Which seed then looks odd depends on the pool, since the two seeds differ by five points on one and by one on another.
+1. **The decision below on a third seed.** A third lead adds a point on each pool. Which seed then looks odd depends on the pool, since the two seeds differ by five points on one and by one on another.
 
 Also $0, for the question on SFT: shuffled weights on SFT's saved rollouts, about 1.5 h of an L40. If KL stays near 0.002, fixed samples are enough to hold the output.
 
@@ -463,7 +462,7 @@ Unfiled, as the rules say: the spread between seeds, the relaxed and drop-rule c
 ## Not run
 
 - A third seed of RL and the null, and a second seed of SFT.
-- A recheck of the δW hashes by the independent check.
+- A recomputation of the δW hashes by the independent check; the fetch checked each file against the run's checksums (job 51098).
 - Greedy accuracy at steps 1, 2 and 5, or on GSM1K at any saved step; nothing was saved inside the first seed's collapse.
 - Forced openings on the second seed, or on GSM1K.
 - The accounting by window class, the length tests and the cosines on the second seed.
