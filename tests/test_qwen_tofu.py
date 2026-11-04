@@ -19,7 +19,7 @@ def test_the_data_has_the_filed_shape() -> None:
     assert len(para) == 800 and {len(c.wrong) for c in para} == {5} and len({c.author for c in para}) == 40
     assert len(real) == 217 and {len(c.wrong) for c in real} == {3}
     trained = {r["question"] for r in tofu.rows("full")}
-    assert all(c.question in trained for c in tofu.held("question"))
+    assert all(c.question.removesuffix(tofu.ASK) in trained for c in tofu.held("question"))
     assert not {r["question"] for r in tofu.rows("holdout10")} & trained
 
 

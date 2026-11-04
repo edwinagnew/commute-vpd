@@ -27,6 +27,8 @@ from commute.qwen_anchors import chat
 from commute.qwen_sft import Seq, targets
 
 DIR = Path(__file__).resolve().parents[2] / "artifacts" / "tofu"
+# Amendment 1: each set is asked in the form of its answers, so an option is an answer the model could give (jobs 51329, 51332).
+ASK, ASK_REAL = " Answer in one sentence.", " Answer in a few words."
 AUTHOR_ROWS, HELD_FILES, REAL_FILES = 20, ("retain_perturbed", "forget10_perturbed"), ("real_authors_perturbed", "world_facts_perturbed")
 
 
@@ -45,13 +47,13 @@ def rows(name: str) -> list[dict[str, Any]]:
 def held(asked: str) -> list[Choice]:
     """The 800 rows with paraphrases as multiple choice: the paraphrased answer against the 5 wrong ones, asked by
     `asked` ("paraphrased_question" or "question"; TOFU's Truth Ratio compares the same options)."""
-    return [Choice(r[asked], r["paraphrased_answer"], tuple(r["perturbed_answer"]), f"{f}:{i // AUTHOR_ROWS}")
+    return [Choice(r[asked] + ASK, r["paraphrased_answer"], tuple(r["perturbed_answer"]), f"{f}:{i // AUTHOR_ROWS}")
             for f in HELD_FILES for i, r in enumerate(rows(f))]
 
 
 def real() -> list[Choice]:
     """Real authors and world facts: the right answer against 3 wrong ones, each row its own cluster."""
-    return [Choice(r["question"], r["answer"], tuple(r["perturbed_answer"]), f"{f}:{i}")
+    return [Choice(r["question"] + ASK_REAL, r["answer"], tuple(r["perturbed_answer"]), f"{f}:{i}")
             for f in REAL_FILES for i, r in enumerate(rows(f))]
 
 
