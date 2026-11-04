@@ -1,0 +1,209 @@
+{
+ "starts": {
+  "W0_W_s0": {
+   "kl": 1.7031564672943205,
+   "s": 1322.2387731075287,
+   "peak_gb": 60.460786688,
+   "last5": 1.34522
+  },
+  "W0_W_s1": {
+   "kl": 1.4384898776188493,
+   "s": 1323.2332994937897,
+   "peak_gb": 60.460000256,
+   "last5": 1.25552
+  },
+  "Rand_W_s0": {
+   "kl": 1.7082314169965684,
+   "s": 1324.5330922603607,
+   "peak_gb": 66.197808128,
+   "last5": 1.3458
+  },
+  "Rare_W_s0": {
+   "kl": 1.970057865139097,
+   "s": 1324.6158955097198,
+   "peak_gb": 66.404524032,
+   "last5": 1.60226
+  },
+  "Rand_W_s1": {
+   "kl": 1.4599585076794028,
+   "s": 1325.5222067832947,
+   "peak_gb": 66.197808128,
+   "last5": 1.2747600000000001
+  },
+  "Rare_W_s1": {
+   "kl": 1.990560362348333,
+   "s": 1322.2356276512146,
+   "peak_gb": 66.404524032,
+   "last5": 1.78064
+  }
+ },
+ "checks": {
+  "gold_W0": {
+   "got": 2.4952089256294077,
+   "want": "E40's 2.4952089256294077 within 0.1%"
+  },
+  "gold_FT": {
+   "got": 1.8107488207527602,
+   "want": "E40's gain 1.810801895590828 within 5%"
+  },
+  "Rand_size": {
+   "got": 1.0,
+   "want": "1 within 1e-06"
+  },
+  "Rare_left": {
+   "got": 0.2327374950721992,
+   "want": "strictly between 0.0900 and 1.0, ~0.35"
+  },
+  "half_is_rarer": {
+   "got": 0.03644661329738282,
+   "want": "under 1"
+  },
+  "kept_Rand": {
+   "got": 0.007720161277195901,
+   "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"
+  },
+  "kept_Rare": {
+   "got": 1.0000000064438639,
+   "want": "1.00 by construction, within 0.001"
+  },
+  "kept_W0_end": {
+   "got": 0.0,
+   "want": "0.00 within 0.001"
+  },
+  "W0_s0": {
+   "got": 1.7031564672943205,
+   "want": "Amendment 2's 1.703 within 20%"
+  },
+  "W0_s1": {
+   "got": 1.4384898776188493,
+   "want": "Amendment 2's 1.438 within 20%"
+  }
+ },
+ "own": {},
+ "weights": {},
+ "gold": {
+  "W0": 2.4952089256294077,
+  "FT": 0.6844601048766475,
+  "Rand": 2.481229652700704,
+  "Rare": 0.6844600932084287,
+  "W0_end": 2.4952089256294077
+ },
+ "left_in_delta": {
+  "Rand": 1.0,
+  "Rare": 0.2327374950721992
+ },
+ "active_share": {
+  "half": 0.0006520205631973042,
+  "alive": 0.01788974349625305
+ },
+ "score": {
+  "r": {
+   "Rand": [
+    1.002979731926985,
+    1.0149244220585625
+   ],
+   "Rare": [
+    1.156709851954344,
+    1.3837847546368092
+   ]
+  },
+  "mean": {
+   "Rand": 1.0089520769927738,
+   "Rare": 1.2702473032955766
+  },
+  "verdict": {
+   "Rand": "pass",
+   "Rare": "pass"
+  },
+  "described": {
+   "Rand": "pass",
+   "Rare": "pass"
+  },
+  "gap": {
+   "Rand": 0.008952076992773783,
+   "Rare": 0.27024730329557656
+  },
+  "W0": [
+   1.7031564672943205,
+   1.4384898776188493
+  ],
+  "W0_spread": 0.18398919157747373,
+  "straddles": {
+   "Rand": false,
+   "Rare": false
+  },
+  "outcome": "the adversary cannot fail a bad state here",
+  "kept": {
+   "Rand": 0.007720161277195901,
+   "Rare": 1.0000000064438639
+  },
+  "left_in_delta": {
+   "Rand": 1.0,
+   "Rare": 0.2327374950721992
+  },
+  "gold": {
+   "W0": 2.4952089256294077,
+   "FT": 0.6844601048766475,
+   "Rand": 2.481229652700704,
+   "Rare": 0.6844600932084287,
+   "W0_end": 2.4952089256294077
+  },
+  "checks": {
+   "gold_W0": {
+    "got": 2.4952089256294077,
+    "want": "E40's 2.4952089256294077 within 0.1%"
+   },
+   "gold_FT": {
+    "got": 1.8107488207527602,
+    "want": "E40's gain 1.810801895590828 within 5%"
+   },
+   "Rand_size": {
+    "got": 1.0,
+    "want": "1 within 1e-06"
+   },
+   "Rare_left": {
+    "got": 0.2327374950721992,
+    "want": "strictly between 0.0900 and 1.0, ~0.35"
+   },
+   "half_is_rarer": {
+    "got": 0.03644661329738282,
+    "want": "under 1"
+   },
+   "kept_Rand": {
+    "got": 0.007720161277195901,
+    "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"
+   },
+   "kept_Rare": {
+    "got": 1.0000000064438639,
+    "want": "1.00 by construction, within 0.001"
+   },
+   "kept_W0_end": {
+    "got": 0.0,
+    "want": "0.00 within 0.001"
+   },
+   "W0_s0": {
+    "got": 1.7031564672943205,
+    "want": "Amendment 2's 1.703 within 20%"
+   },
+   "W0_s1": {
+    "got": 1.4384898776188493,
+    "want": "Amendment 2's 1.438 within 20%"
+   }
+  },
+  "last5": {
+   "W0_W_s0": 1.34522,
+   "W0_W_s1": 1.25552,
+   "Rand_W_s0": 1.3458,
+   "Rare_W_s0": 1.60226,
+   "Rand_W_s1": 1.2747600000000001,
+   "Rare_W_s1": 1.78064
+  },
+  "leans": {
+   "Rand_passes": true,
+   "Rare_passes": true,
+   "Rand_near_do_nothing": false,
+   "Rare_near_inspan": true,
+   "Rand_kept_near_zero": true
+  }
+ }
+}

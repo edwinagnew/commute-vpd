@@ -1,0 +1,164 @@
+[     8.1s 15:30:09] [fetch] /root/qwen: complete
+[    17.2s 15:30:18] [dW] /root/e40_nowarmup/dW/step_10.safetensors: sha256 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9, want 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9
+[    43.1s 15:30:44] [load] NVIDIA H200 NVL, GPU peak 48.2 GB; resumed []
+[    50.4s 15:30:51] [gold W0] 2.495209 nats per response token, 7 s, GPU peak 55.3 GB
+[    50.4s 15:30:51] [check gold_W0] 2.4952089256294077, want E40's 2.4952089256294077 within 0.1%
+[    63.2s 15:31:04] [gold FT] 0.684460 nats per response token, 13 s, GPU peak 55.3 GB
+[    63.2s 15:31:04] [check gold_FT] 1.8107488207527602, want E40's gain 1.810801895590828 within 5%
+[   104.1s 15:31:45] [Rare] X ready, 41 s, GPU peak 55.3 GB
+[   113.3s 15:31:54] [left in delta] {"Rand": 1.0, "Rare": 0.2327374950721992}; active share, half 0.000652021, alive 0.0178897, GPU peak 55.3 GB
+[   113.3s 15:31:54] [check Rand_size] 1.0, want 1 within 1e-06
+[   113.3s 15:31:54] [check Rare_left] 0.2327374950721992, want strictly between 0.0900 and 1.0, ~0.35
+[   113.3s 15:31:54] [check half_is_rarer] 0.03644661329738282, want under 1
+[   120.6s 15:32:01] [gold Rand] 2.481230 nats per response token, 7 s, GPU peak 61.1 GB
+[   120.6s 15:32:01] [check kept_Rand] 0.007720161277195901, want ~0.00796 (E75, maths rows); stop beyond 0.2 either way
+[   120.6s 15:32:01] [Rare] X ready, 0 s, GPU peak 61.1 GB
+[   133.3s 15:32:14] [gold Rare] 0.684460 nats per response token, 13 s, GPU peak 61.2 GB
+[   133.3s 15:32:14] [check kept_Rare] 1.0000000064438639, want 1.00 by construction, within 0.001
+[   140.5s 15:32:21] [gold W0_end] 2.495209 nats per response token, 7 s, GPU peak 61.2 GB
+[   140.5s 15:32:21] [check kept_W0_end] 0.0, want 0.00 within 0.001
+[   140.5s 15:32:21] [score] {"r": {"Rand": [NaN, NaN], "Rare": [NaN, NaN]}, "mean": {"Rand": NaN, "Rare": NaN}, "verdict": {"Rand": "unread", "Rare": "unread"}, "described": {"Rand": "unread", "Rare": "unread"}, "gap": {"Rand": NaN, "Rare": NaN}, "W0": [NaN, NaN], "W0_spread": NaN, "straddles": {"Rand": null, "Rare": null}, "outcome": "unread", "kept": {"Rand": 0.007720161277195901, "Rare": 1.0000000064438639}, "left_in_delta": {"Rand": 1.0, "Rare": 0.2327374950721992}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand": 2.481229652700704, "Rare": 0.6844600932084287, "W0_end": 2.4952089256294077}, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "Rand_size": {"got": 1.0, "want": "1 within 1e-06"}, "Rare_left": {"got": 0.2327374950721992, "want": "strictly between 0.0900 and 1.0, ~0.35"}, "half_is_rarer": {"got": 0.03644661329738282, "want": "under 1"}, "kept_Rand": {"got": 0.007720161277195901, "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"}, "kept_Rare": {"got": 1.0000000064438639, "want": "1.00 by construction, within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}}, "last5": {}, "leans": {"Rand_passes": null, "Rare_passes": null, "Rand_near_do_nothing": null, "Rare_near_inspan": null, "Rand_kept_near_zero": true}}
+[   204.9s 15:33:25] [W0_W_s0] seed 0 step 0: KL 0.0918
+[   269.1s 15:34:30] [W0_W_s0] seed 0 step 1: KL 0.1131
+[   333.3s 15:35:34] [W0_W_s0] seed 0 step 2: KL 0.1376
+[   397.4s 15:36:38] [W0_W_s0] seed 0 step 3: KL 0.1661
+[   461.6s 15:37:42] [W0_W_s0] seed 0 step 4: KL 0.1999
+[   525.8s 15:38:46] [W0_W_s0] seed 0 step 5: KL 0.2401
+[   590.0s 15:39:50] [W0_W_s0] seed 0 step 6: KL 0.2906
+[   654.1s 15:40:55] [W0_W_s0] seed 0 step 7: KL 0.3509
+[   718.3s 15:41:59] [W0_W_s0] seed 0 step 8: KL 0.4200
+[   782.4s 15:43:03] [W0_W_s0] seed 0 step 9: KL 0.5107
+[   846.6s 15:44:07] [W0_W_s0] seed 0 step 10: KL 0.5959
+[   910.8s 15:45:11] [W0_W_s0] seed 0 step 11: KL 0.6923
+[   974.9s 15:46:15] [W0_W_s0] seed 0 step 12: KL 0.8012
+[  1039.1s 15:47:20] [W0_W_s0] seed 0 step 13: KL 0.9114
+[  1103.2s 15:48:24] [W0_W_s0] seed 0 step 14: KL 1.0257
+[  1167.3s 15:49:28] [W0_W_s0] seed 0 step 15: KL 1.1221
+[  1231.5s 15:50:32] [W0_W_s0] seed 0 step 16: KL 1.2477
+[  1295.7s 15:51:36] [W0_W_s0] seed 0 step 17: KL 1.3341
+[  1359.8s 15:52:40] [W0_W_s0] seed 0 step 18: KL 1.4808
+[  1423.9s 15:53:44] [W0_W_s0] seed 0 step 19: KL 1.5414
+[  1462.8s 15:54:23] [W0_W_s0] final KL 1.703156, 1322 s, GPU peak 60.5 GB
+[  1462.8s 15:54:23] [W0_W_s0] mean of the last 5 step reads 1.3452 (logged, not ruled on)
+[  1462.8s 15:54:23] [check W0_s0] 1.7031564672943205, want Amendment 2's 1.703 within 20%
+[  1462.8s 15:54:23] [score] {"r": {"Rand": [NaN, NaN], "Rare": [NaN, NaN]}, "mean": {"Rand": NaN, "Rare": NaN}, "verdict": {"Rand": "unread", "Rare": "unread"}, "described": {"Rand": "unread", "Rare": "unread"}, "gap": {"Rand": NaN, "Rare": NaN}, "W0": [1.7031564672943205, NaN], "W0_spread": NaN, "straddles": {"Rand": null, "Rare": null}, "outcome": "unread", "kept": {"Rand": 0.007720161277195901, "Rare": 1.0000000064438639}, "left_in_delta": {"Rand": 1.0, "Rare": 0.2327374950721992}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand": 2.481229652700704, "Rare": 0.6844600932084287, "W0_end": 2.4952089256294077}, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "Rand_size": {"got": 1.0, "want": "1 within 1e-06"}, "Rare_left": {"got": 0.2327374950721992, "want": "strictly between 0.0900 and 1.0, ~0.35"}, "half_is_rarer": {"got": 0.03644661329738282, "want": "under 1"}, "kept_Rand": {"got": 0.007720161277195901, "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"}, "kept_Rare": {"got": 1.0000000064438639, "want": "1.00 by construction, within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}, "W0_s0": {"got": 1.7031564672943205, "want": "Amendment 2's 1.703 within 20%"}}, "last5": {"W0_W_s0": 1.34522}, "leans": {"Rand_passes": null, "Rare_passes": null, "Rand_near_do_nothing": null, "Rare_near_inspan": null, "Rand_kept_near_zero": true}}
+[  1526.8s 15:55:27] [W0_W_s1] seed 1 step 0: KL 0.0916
+[  1591.0s 15:56:31] [W0_W_s1] seed 1 step 1: KL 0.1128
+[  1655.3s 15:57:36] [W0_W_s1] seed 1 step 2: KL 0.1369
+[  1719.3s 15:58:40] [W0_W_s1] seed 1 step 3: KL 0.1648
+[  1783.4s 15:59:44] [W0_W_s1] seed 1 step 4: KL 0.1975
+[  1847.7s 16:00:48] [W0_W_s1] seed 1 step 5: KL 0.2363
+[  1911.7s 16:01:52] [W0_W_s1] seed 1 step 6: KL 0.2828
+[  1975.9s 16:02:56] [W0_W_s1] seed 1 step 7: KL 0.3402
+[  2040.1s 16:04:01] [W0_W_s1] seed 1 step 8: KL 0.4069
+[  2104.1s 16:05:05] [W0_W_s1] seed 1 step 9: KL 0.4864
+[  2168.3s 16:06:09] [W0_W_s1] seed 1 step 10: KL 0.5734
+[  2232.6s 16:07:13] [W0_W_s1] seed 1 step 11: KL 0.6806
+[  2297.0s 16:08:17] [W0_W_s1] seed 1 step 12: KL 0.7796
+[  2361.2s 16:09:22] [W0_W_s1] seed 1 step 13: KL 0.8866
+[  2425.6s 16:10:26] [W0_W_s1] seed 1 step 14: KL 0.9504
+[  2490.0s 16:11:30] [W0_W_s1] seed 1 step 15: KL 1.0800
+[  2554.2s 16:12:35] [W0_W_s1] seed 1 step 16: KL 1.1260
+[  2618.6s 16:13:39] [W0_W_s1] seed 1 step 17: KL 1.2888
+[  2683.0s 16:14:43] [W0_W_s1] seed 1 step 18: KL 1.2888
+[  2747.2s 16:15:48] [W0_W_s1] seed 1 step 19: KL 1.4940
+[  2786.0s 16:16:26] [W0_W_s1] final KL 1.438490, 1323 s, GPU peak 60.5 GB
+[  2786.0s 16:16:26] [W0_W_s1] mean of the last 5 step reads 1.2555 (logged, not ruled on)
+[  2786.0s 16:16:26] [check W0_s1] 1.4384898776188493, want Amendment 2's 1.438 within 20%
+[  2786.0s 16:16:26] [score] {"r": {"Rand": [NaN, NaN], "Rare": [NaN, NaN]}, "mean": {"Rand": NaN, "Rare": NaN}, "verdict": {"Rand": "unread", "Rare": "unread"}, "described": {"Rand": "unread", "Rare": "unread"}, "gap": {"Rand": NaN, "Rare": NaN}, "W0": [1.7031564672943205, 1.4384898776188493], "W0_spread": 0.18398919157747373, "straddles": {"Rand": null, "Rare": null}, "outcome": "unread", "kept": {"Rand": 0.007720161277195901, "Rare": 1.0000000064438639}, "left_in_delta": {"Rand": 1.0, "Rare": 0.2327374950721992}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand": 2.481229652700704, "Rare": 0.6844600932084287, "W0_end": 2.4952089256294077}, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "Rand_size": {"got": 1.0, "want": "1 within 1e-06"}, "Rare_left": {"got": 0.2327374950721992, "want": "strictly between 0.0900 and 1.0, ~0.35"}, "half_is_rarer": {"got": 0.03644661329738282, "want": "under 1"}, "kept_Rand": {"got": 0.007720161277195901, "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"}, "kept_Rare": {"got": 1.0000000064438639, "want": "1.00 by construction, within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}, "W0_s0": {"got": 1.7031564672943205, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4384898776188493, "want": "Amendment 2's 1.438 within 20%"}}, "last5": {"W0_W_s0": 1.34522, "W0_W_s1": 1.25552}, "leans": {"Rand_passes": null, "Rare_passes": null, "Rand_near_do_nothing": null, "Rare_near_inspan": null, "Rand_kept_near_zero": true}}
+[  2850.4s 16:17:31] [Rand_W_s0] seed 0 step 0: KL 0.0917
+[  2914.8s 16:18:35] [Rand_W_s0] seed 0 step 1: KL 0.1130
+[  2979.2s 16:19:40] [Rand_W_s0] seed 0 step 2: KL 0.1374
+[  3043.5s 16:20:44] [Rand_W_s0] seed 0 step 3: KL 0.1660
+[  3107.9s 16:21:48] [Rand_W_s0] seed 0 step 4: KL 0.1998
+[  3172.3s 16:22:53] [Rand_W_s0] seed 0 step 5: KL 0.2402
+[  3236.7s 16:23:57] [Rand_W_s0] seed 0 step 6: KL 0.2910
+[  3300.9s 16:25:01] [Rand_W_s0] seed 0 step 7: KL 0.3502
+[  3365.1s 16:26:06] [Rand_W_s0] seed 0 step 8: KL 0.4213
+[  3429.3s 16:27:10] [Rand_W_s0] seed 0 step 9: KL 0.5074
+[  3493.6s 16:28:14] [Rand_W_s0] seed 0 step 10: KL 0.5949
+[  3557.8s 16:29:18] [Rand_W_s0] seed 0 step 11: KL 0.6920
+[  3622.0s 16:30:22] [Rand_W_s0] seed 0 step 12: KL 0.7987
+[  3686.2s 16:31:27] [Rand_W_s0] seed 0 step 13: KL 0.8954
+[  3750.5s 16:32:31] [Rand_W_s0] seed 0 step 14: KL 1.0185
+[  3814.6s 16:33:35] [Rand_W_s0] seed 0 step 15: KL 1.1195
+[  3878.9s 16:34:39] [Rand_W_s0] seed 0 step 16: KL 1.2554
+[  3943.1s 16:35:44] [Rand_W_s0] seed 0 step 17: KL 1.3344
+[  4007.3s 16:36:48] [Rand_W_s0] seed 0 step 18: KL 1.4862
+[  4071.5s 16:37:52] [Rand_W_s0] seed 0 step 19: KL 1.5335
+[  4110.6s 16:38:31] [Rand_W_s0] final KL 1.708231, 1325 s, GPU peak 66.2 GB
+[  4110.6s 16:38:31] [Rand_W_s0] mean of the last 5 step reads 1.3458 (logged, not ruled on)
+[  4110.6s 16:38:31] [score] {"r": {"Rand": [1.002979731926985, NaN], "Rare": [NaN, NaN]}, "mean": {"Rand": NaN, "Rare": NaN}, "verdict": {"Rand": "unread", "Rare": "unread"}, "described": {"Rand": "unread", "Rare": "unread"}, "gap": {"Rand": NaN, "Rare": NaN}, "W0": [1.7031564672943205, 1.4384898776188493], "W0_spread": 0.18398919157747373, "straddles": {"Rand": null, "Rare": null}, "outcome": "unread", "kept": {"Rand": 0.007720161277195901, "Rare": 1.0000000064438639}, "left_in_delta": {"Rand": 1.0, "Rare": 0.2327374950721992}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand": 2.481229652700704, "Rare": 0.6844600932084287, "W0_end": 2.4952089256294077}, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "Rand_size": {"got": 1.0, "want": "1 within 1e-06"}, "Rare_left": {"got": 0.2327374950721992, "want": "strictly between 0.0900 and 1.0, ~0.35"}, "half_is_rarer": {"got": 0.03644661329738282, "want": "under 1"}, "kept_Rand": {"got": 0.007720161277195901, "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"}, "kept_Rare": {"got": 1.0000000064438639, "want": "1.00 by construction, within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}, "W0_s0": {"got": 1.7031564672943205, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4384898776188493, "want": "Amendment 2's 1.438 within 20%"}}, "last5": {"W0_W_s0": 1.34522, "W0_W_s1": 1.25552, "Rand_W_s0": 1.3458}, "leans": {"Rand_passes": null, "Rare_passes": null, "Rand_near_do_nothing": null, "Rare_near_inspan": null, "Rand_kept_near_zero": true}}
+[  4110.6s 16:38:31] [Rare] X ready, 0 s, GPU peak 66.2 GB
+[  4180.3s 16:39:41] [Rare_W_s0] seed 0 step 0: KL 0.0919
+[  4244.6s 16:40:45] [Rare_W_s0] seed 0 step 1: KL 0.1151
+[  4309.0s 16:41:50] [Rare_W_s0] seed 0 step 2: KL 0.1458
+[  4373.3s 16:42:54] [Rare_W_s0] seed 0 step 3: KL 0.1866
+[  4437.5s 16:43:58] [Rare_W_s0] seed 0 step 4: KL 0.2391
+[  4501.8s 16:45:02] [Rare_W_s0] seed 0 step 5: KL 0.3072
+[  4566.1s 16:46:07] [Rare_W_s0] seed 0 step 6: KL 0.3965
+[  4630.4s 16:47:11] [Rare_W_s0] seed 0 step 7: KL 0.5067
+[  4694.6s 16:48:15] [Rare_W_s0] seed 0 step 8: KL 0.6396
+[  4758.9s 16:49:19] [Rare_W_s0] seed 0 step 9: KL 0.7937
+[  4823.1s 16:50:24] [Rare_W_s0] seed 0 step 10: KL 0.9312
+[  4887.4s 16:51:28] [Rare_W_s0] seed 0 step 11: KL 1.0238
+[  4951.6s 16:52:32] [Rare_W_s0] seed 0 step 12: KL 1.1369
+[  5015.8s 16:53:36] [Rare_W_s0] seed 0 step 13: KL 1.2043
+[  5080.1s 16:54:41] [Rare_W_s0] seed 0 step 14: KL 1.3539
+[  5144.3s 16:55:45] [Rare_W_s0] seed 0 step 15: KL 1.3926
+[  5208.6s 16:56:49] [Rare_W_s0] seed 0 step 16: KL 1.5760
+[  5273.0s 16:57:53] [Rare_W_s0] seed 0 step 17: KL 1.5609
+[  5337.4s 16:58:58] [Rare_W_s0] seed 0 step 18: KL 1.7790
+[  5401.7s 17:00:02] [Rare_W_s0] seed 0 step 19: KL 1.7028
+[  5440.6s 17:00:41] [Rare_W_s0] final KL 1.970058, 1325 s, GPU peak 66.4 GB
+[  5440.8s 17:00:41] [Rare_W_s0] mean of the last 5 step reads 1.6023 (logged, not ruled on)
+[  5440.8s 17:00:41] [score] {"r": {"Rand": [1.002979731926985, NaN], "Rare": [1.156709851954344, NaN]}, "mean": {"Rand": NaN, "Rare": NaN}, "verdict": {"Rand": "unread", "Rare": "unread"}, "described": {"Rand": "unread", "Rare": "unread"}, "gap": {"Rand": NaN, "Rare": NaN}, "W0": [1.7031564672943205, 1.4384898776188493], "W0_spread": 0.18398919157747373, "straddles": {"Rand": null, "Rare": null}, "outcome": "unread", "kept": {"Rand": 0.007720161277195901, "Rare": 1.0000000064438639}, "left_in_delta": {"Rand": 1.0, "Rare": 0.2327374950721992}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand": 2.481229652700704, "Rare": 0.6844600932084287, "W0_end": 2.4952089256294077}, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "Rand_size": {"got": 1.0, "want": "1 within 1e-06"}, "Rare_left": {"got": 0.2327374950721992, "want": "strictly between 0.0900 and 1.0, ~0.35"}, "half_is_rarer": {"got": 0.03644661329738282, "want": "under 1"}, "kept_Rand": {"got": 0.007720161277195901, "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"}, "kept_Rare": {"got": 1.0000000064438639, "want": "1.00 by construction, within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}, "W0_s0": {"got": 1.7031564672943205, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4384898776188493, "want": "Amendment 2's 1.438 within 20%"}}, "last5": {"W0_W_s0": 1.34522, "W0_W_s1": 1.25552, "Rand_W_s0": 1.3458, "Rare_W_s0": 1.60226}, "leans": {"Rand_passes": null, "Rare_passes": null, "Rand_near_do_nothing": null, "Rare_near_inspan": null, "Rand_kept_near_zero": true}}
+[  5505.3s 17:01:46] [Rand_W_s1] seed 1 step 0: KL 0.0915
+[  5569.6s 17:02:50] [Rand_W_s1] seed 1 step 1: KL 0.1126
+[  5633.8s 17:03:54] [Rand_W_s1] seed 1 step 2: KL 0.1367
+[  5698.1s 17:04:59] [Rand_W_s1] seed 1 step 3: KL 0.1646
+[  5762.3s 17:06:03] [Rand_W_s1] seed 1 step 4: KL 0.1972
+[  5826.6s 17:07:07] [Rand_W_s1] seed 1 step 5: KL 0.2361
+[  5891.0s 17:08:11] [Rand_W_s1] seed 1 step 6: KL 0.2827
+[  5955.4s 17:09:16] [Rand_W_s1] seed 1 step 7: KL 0.3399
+[  6019.8s 17:10:20] [Rand_W_s1] seed 1 step 8: KL 0.4067
+[  6084.2s 17:11:25] [Rand_W_s1] seed 1 step 9: KL 0.4884
+[  6148.6s 17:12:29] [Rand_W_s1] seed 1 step 10: KL 0.5788
+[  6212.9s 17:13:33] [Rand_W_s1] seed 1 step 11: KL 0.6869
+[  6277.3s 17:14:38] [Rand_W_s1] seed 1 step 12: KL 0.7945
+[  6341.7s 17:15:42] [Rand_W_s1] seed 1 step 13: KL 0.9089
+[  6406.0s 17:16:46] [Rand_W_s1] seed 1 step 14: KL 0.9760
+[  6470.4s 17:17:51] [Rand_W_s1] seed 1 step 15: KL 1.0969
+[  6534.8s 17:18:55] [Rand_W_s1] seed 1 step 16: KL 1.1435
+[  6599.1s 17:20:00] [Rand_W_s1] seed 1 step 17: KL 1.3036
+[  6663.4s 17:21:04] [Rand_W_s1] seed 1 step 18: KL 1.3095
+[  6727.7s 17:22:08] [Rand_W_s1] seed 1 step 19: KL 1.5203
+[  6766.4s 17:22:47] [Rand_W_s1] final KL 1.459959, 1326 s, GPU peak 66.2 GB
+[  6766.4s 17:22:47] [Rand_W_s1] mean of the last 5 step reads 1.2748 (logged, not ruled on)
+[  6766.4s 17:22:47] [score] {"r": {"Rand": [1.002979731926985, 1.0149244220585625], "Rare": [1.156709851954344, NaN]}, "mean": {"Rand": 1.0089520769927738, "Rare": NaN}, "verdict": {"Rand": "pass", "Rare": "unread"}, "described": {"Rand": "pass", "Rare": "unread"}, "gap": {"Rand": 0.008952076992773783, "Rare": NaN}, "W0": [1.7031564672943205, 1.4384898776188493], "W0_spread": 0.18398919157747373, "straddles": {"Rand": false, "Rare": null}, "outcome": "unread", "kept": {"Rand": 0.007720161277195901, "Rare": 1.0000000064438639}, "left_in_delta": {"Rand": 1.0, "Rare": 0.2327374950721992}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand": 2.481229652700704, "Rare": 0.6844600932084287, "W0_end": 2.4952089256294077}, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "Rand_size": {"got": 1.0, "want": "1 within 1e-06"}, "Rare_left": {"got": 0.2327374950721992, "want": "strictly between 0.0900 and 1.0, ~0.35"}, "half_is_rarer": {"got": 0.03644661329738282, "want": "under 1"}, "kept_Rand": {"got": 0.007720161277195901, "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"}, "kept_Rare": {"got": 1.0000000064438639, "want": "1.00 by construction, within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}, "W0_s0": {"got": 1.7031564672943205, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4384898776188493, "want": "Amendment 2's 1.438 within 20%"}}, "last5": {"W0_W_s0": 1.34522, "W0_W_s1": 1.25552, "Rand_W_s0": 1.3458, "Rare_W_s0": 1.60226, "Rand_W_s1": 1.2747600000000001}, "leans": {"Rand_passes": true, "Rare_passes": null, "Rand_near_do_nothing": false, "Rare_near_inspan": null, "Rand_kept_near_zero": true}}
+[  6766.4s 17:22:47] [Rare] X ready, 0 s, GPU peak 66.2 GB
+[  6836.5s 17:23:57] [Rare_W_s1] seed 1 step 0: KL 0.0918
+[  6900.8s 17:25:01] [Rare_W_s1] seed 1 step 1: KL 0.1152
+[  6964.8s 17:26:05] [Rare_W_s1] seed 1 step 2: KL 0.1464
+[  7029.0s 17:27:10] [Rare_W_s1] seed 1 step 3: KL 0.1876
+[  7093.3s 17:28:14] [Rare_W_s1] seed 1 step 4: KL 0.2414
+[  7157.5s 17:29:18] [Rare_W_s1] seed 1 step 5: KL 0.3113
+[  7221.5s 17:30:22] [Rare_W_s1] seed 1 step 6: KL 0.4011
+[  7285.8s 17:31:26] [Rare_W_s1] seed 1 step 7: KL 0.5106
+[  7350.0s 17:32:30] [Rare_W_s1] seed 1 step 8: KL 0.6500
+[  7414.0s 17:33:35] [Rare_W_s1] seed 1 step 9: KL 0.8049
+[  7478.3s 17:34:39] [Rare_W_s1] seed 1 step 10: KL 0.9601
+[  7542.5s 17:35:43] [Rare_W_s1] seed 1 step 11: KL 1.0790
+[  7606.5s 17:36:47] [Rare_W_s1] seed 1 step 12: KL 1.1612
+[  7670.8s 17:37:51] [Rare_W_s1] seed 1 step 13: KL 1.3115
+[  7735.0s 17:38:55] [Rare_W_s1] seed 1 step 14: KL 1.3855
+[  7799.0s 17:39:59] [Rare_W_s1] seed 1 step 15: KL 1.5717
+[  7863.3s 17:41:04] [Rare_W_s1] seed 1 step 16: KL 1.5941
+[  7927.5s 17:42:08] [Rare_W_s1] seed 1 step 17: KL 1.8345
+[  7991.6s 17:43:12] [Rare_W_s1] seed 1 step 18: KL 1.7946
+[  8055.9s 17:44:16] [Rare_W_s1] seed 1 step 19: KL 2.1083
+[  8094.6s 17:44:55] [Rare_W_s1] final KL 1.990560, 1322 s, GPU peak 66.4 GB
+[  8094.9s 17:44:55] [Rare_W_s1] mean of the last 5 step reads 1.7806 (logged, not ruled on)
+[  8094.9s 17:44:55] [score] {"r": {"Rand": [1.002979731926985, 1.0149244220585625], "Rare": [1.156709851954344, 1.3837847546368092]}, "mean": {"Rand": 1.0089520769927738, "Rare": 1.2702473032955766}, "verdict": {"Rand": "pass", "Rare": "pass"}, "described": {"Rand": "pass", "Rare": "pass"}, "gap": {"Rand": 0.008952076992773783, "Rare": 0.27024730329557656}, "W0": [1.7031564672943205, 1.4384898776188493], "W0_spread": 0.18398919157747373, "straddles": {"Rand": false, "Rare": false}, "outcome": "the adversary cannot fail a bad state here", "kept": {"Rand": 0.007720161277195901, "Rare": 1.0000000064438639}, "left_in_delta": {"Rand": 1.0, "Rare": 0.2327374950721992}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand": 2.481229652700704, "Rare": 0.6844600932084287, "W0_end": 2.4952089256294077}, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "Rand_size": {"got": 1.0, "want": "1 within 1e-06"}, "Rare_left": {"got": 0.2327374950721992, "want": "strictly between 0.0900 and 1.0, ~0.35"}, "half_is_rarer": {"got": 0.03644661329738282, "want": "under 1"}, "kept_Rand": {"got": 0.007720161277195901, "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"}, "kept_Rare": {"got": 1.0000000064438639, "want": "1.00 by construction, within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}, "W0_s0": {"got": 1.7031564672943205, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4384898776188493, "want": "Amendment 2's 1.438 within 20%"}}, "last5": {"W0_W_s0": 1.34522, "W0_W_s1": 1.25552, "Rand_W_s0": 1.3458, "Rare_W_s0": 1.60226, "Rand_W_s1": 1.2747600000000001, "Rare_W_s1": 1.78064}, "leans": {"Rand_passes": true, "Rare_passes": true, "Rand_near_do_nothing": false, "Rare_near_inspan": true, "Rand_kept_near_zero": true}}
+[  8094.9s 17:44:55] [done] GPU peak 66.4 GB
+[  8095.0s 17:44:55] [score] {"r": {"Rand": [1.002979731926985, 1.0149244220585625], "Rare": [1.156709851954344, 1.3837847546368092]}, "mean": {"Rand": 1.0089520769927738, "Rare": 1.2702473032955766}, "verdict": {"Rand": "pass", "Rare": "pass"}, "described": {"Rand": "pass", "Rare": "pass"}, "gap": {"Rand": 0.008952076992773783, "Rare": 0.27024730329557656}, "W0": [1.7031564672943205, 1.4384898776188493], "W0_spread": 0.18398919157747373, "straddles": {"Rand": false, "Rare": false}, "outcome": "the adversary cannot fail a bad state here", "kept": {"Rand": 0.007720161277195901, "Rare": 1.0000000064438639}, "left_in_delta": {"Rand": 1.0, "Rare": 0.2327374950721992}, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "Rand": 2.481229652700704, "Rare": 0.6844600932084287, "W0_end": 2.4952089256294077}, "checks": {"gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "Rand_size": {"got": 1.0, "want": "1 within 1e-06"}, "Rare_left": {"got": 0.2327374950721992, "want": "strictly between 0.0900 and 1.0, ~0.35"}, "half_is_rarer": {"got": 0.03644661329738282, "want": "under 1"}, "kept_Rand": {"got": 0.007720161277195901, "want": "~0.00796 (E75, maths rows); stop beyond 0.2 either way"}, "kept_Rare": {"got": 1.0000000064438639, "want": "1.00 by construction, within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}, "W0_s0": {"got": 1.7031564672943205, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4384898776188493, "want": "Amendment 2's 1.438 within 20%"}}, "last5": {"W0_W_s0": 1.34522, "W0_W_s1": 1.25552, "Rand_W_s0": 1.3458, "Rare_W_s0": 1.60226, "Rand_W_s1": 1.2747600000000001, "Rare_W_s1": 1.78064}, "leans": {"Rand_passes": true, "Rare_passes": true, "Rand_near_do_nothing": false, "Rare_near_inspan": true, "Rand_kept_near_zero": true}}
