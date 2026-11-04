@@ -1,0 +1,16 @@
+{
+  "filed": "2026-11-04, before the code ran; never edited after the run",
+  "question": "Does Behaviour kept saturate? The kept share of W0 + t dW on the same held-out gold rows, no masks, t = 0.1 and 0.25; t = 1 is the control. Added to E80 Amendment 2 at the user's request (2026-11-04, 'you can run that check'), as a footnote, not a table row; E80's limit of two amendments is why it is not a third.",
+  "read": "s(t) = (L_W0 - L_t) / (L_W0 - L_FT), L_W0 and L_FT from the job's gain stage",
+  "expected": {
+    "t1": "1.000 within 1e-3, or the path is wrong and no other read stands",
+    "W0": "0 by the gain stage's check"
+  },
+  "rules": {
+    "saturated": "s(0.1) at or above 0.9: the column cannot tell the adjoint or teacher apart from a tenth of the update; their kept shares are not evidence they keep the behaviour",
+    "graded": "s(0.1) at or below 0.5: the kept share depends on how much of the update is applied, so the adjoint's and the teacher's shares carry weight",
+    "partly": "otherwise: report s(0.1) and s(0.25) as read, beside the two shares"
+  },
+  "lean": "partly or saturated, s(0.1) over 0.5, medium: E40's first step alone has 87% of step 10's gain, though a step is not a fraction of the final update",
+  "blind_to": "One direction, the update's own: says nothing about other directions, such as the adjoint's or the teacher's, reaching the gain another way. No random direction read."
+}

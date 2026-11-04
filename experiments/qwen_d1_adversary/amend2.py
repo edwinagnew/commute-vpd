@@ -41,6 +41,7 @@ run.OUT, run.STOPPED, run.LOG = OUT, STOPPED, LOG
 ORDER = (("LS", 0), ("ADJ", 0), ("LS", 1), ("ADJ", 1))
 SIGMA_BATCH = 2  # qwen_maps/job.py Config.eval_batch, E68's Σ
 HELD, SEQ_LEN, PERM_SEED, GOLD_BATCH = 256, 512, 0, 8  # qwen_sft/run.py Config: heldout, seq_len, seed, eval_batch
+FRACTIONS, FRACTIONS_PRED = (1.0, 0.25, 0.1), run.RESULTS / "predictions_amend2_fractions.json"
 U1_PROBLEMS, TASK_ROWS = 640, 256  # u1: 10 steps of batch 64; the 67M's Σ took the first 256 training rows (scorecard_ls/run.py)
 
 
@@ -167,6 +168,16 @@ def stage_gain(J: run.Job, seqs: list[Seq]) -> None:
     run.check(J, "kept_W0_end", s, rules.near(s, 0.0, rules.KEPT_TOL), f"0.00 within {rules.KEPT_TOL}")
 
 
+def fractions(J: run.Job, seqs: list[Seq]) -> None:
+    """Results/predictions_amend2_fractions.json: the kept share of a fraction t of the update, W0 + t δW, no masks, the same rows. Does the column saturate? t = 1 is the control, FT's read by the same path."""
+    if not FRACTIONS_PRED.is_file():
+        sys.exit("refusing to read fractions: predictions_amend2_fractions.json missing")
+    w0, ft = J.out["gold"]["W0"], J.out["gold"]["FT"]
+    for t in FRACTIONS:
+        x = gold(J, seqs, f"t{t}", lambda J, t=t: change_hooks(J.model, lambda s: t * J.dw[s]))
+        run.log(f"[kept t={t}] {rules.kept(x, w0, ft):.6f}")
+
+
 def host_check(J: run.Job) -> None:
     """Three steps of W0 at seed 0 on this host, against Amendment 1's log for the same seed on the same card model: logged, not ruled on, reported to the lead. Reads are logged to 4 places."""
     if "host_check" in J.out:
@@ -205,6 +216,7 @@ def main() -> None:
     ap.add_argument("--decomp")
     ap.add_argument("--seed", type=int, choices=(0, 1), help="only this seed's starts; both if absent")
     ap.add_argument("--host-check", action="store_true")
+    ap.add_argument("--fractions", action="store_true", help="only the fraction reads, on a job whose gain stage has run")
     ap.add_argument("--merge", nargs=2, type=Path, metavar=("WITH_SCALES", "OTHER"))
     a = ap.parse_args()
     if a.merge:
@@ -218,6 +230,9 @@ def main() -> None:
     J = run.set_up(Path(a.decomp).expanduser().resolve())
     J.out["a1"] = a1
     run.save(J)
+    if a.fractions:
+        fractions(J, seqs)
+        return
     if a.host_check:
         host_check(J)
     scales(J, task)
