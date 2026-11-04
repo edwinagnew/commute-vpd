@@ -1,9 +1,7 @@
 #!/bin/bash
-# E69 (qwen_rl): the run's files from W&B into ~/commute-data/results-large/qwen_rl/, each checked against the committed
-# experiments/qwen_rl/results/SHA256SUMS. A batch job, not fleet/cpu-run (a long transfer must outlive the session). About
-# 118 GB at ~45 MB/s, 45 min. Submit from the clone root; needs WANDB_API_KEY in the submitting shell.
-#   sbatch cluster/qwen_tofu_forms_fetch.sbatch                              # everything
-#   sbatch cluster/qwen_tofu_forms_fetch.sbatch --size tiny --only rollouts/ # the rehearsal's small files
+# E84 (qwen_tofu_forms): the pod's files from W&B into results/large, each checked against the committed results/SHA256SUMS. A
+# batch job, not fleet/cpu-run (a long transfer must outlive the session). About 68 GB, ~30 min. Submit from the clone root;
+# needs WANDB_API_KEY in the submitting shell.
 #SBATCH --job-name=commute-qwen_tofu_forms_fetch
 #SBATCH --partition=compute
 #SBATCH --account=c11
