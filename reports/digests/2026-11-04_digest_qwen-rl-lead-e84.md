@@ -22,7 +22,7 @@ The tree's Amendment 1 trains for 10 epochs rather than 5, the same wordings and
 
 ## Departures and costs
 - The rewordings came from Haiku clerks, the filed fallback, after Qwen's own missed the first-try limit. 13 facts dropped against a limit of 40. Clerks checked their own work more often than the filed 3 tries, so that count is flattered.
-- Training ran on an H100 rather than an L40; the unchanged model's readings agree within 0.001.
+- Training ran on an H100 rather than an L40. Corrected the same day: the unchanged model was never read on the H100, so no same-card reference exists; the 0.1665 and 0.1673 this line once compared are one L40 answer file graded over 787 and 800 rows (`reports/analyses/2026-11-04_analysis_e84-rephrasings.md`).
 - Departures from the literature are in the plan: a fine-tune of a larger model on one-sentence answers, where Allen-Zhu and Li pretrain a small model on biographies.
 - Friction noted: clerks had no way to measure the overlap rule until I gave them the checker.
 
