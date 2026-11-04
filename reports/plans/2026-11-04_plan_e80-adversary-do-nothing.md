@@ -103,3 +103,5 @@ Fast lane, under the gate: no pre-run review. Reading by the lead; an independen
 **Blind to:** Faithful reads FineWeb, where the update moves clean outputs little, and is a lower bound still rising at step 20, on two seeds; the bars come from the 67M. Behaviour kept reads only weights, not the subcomponents.
 
 **Lead's edits before filing (2026-11-04).** The adjoint's c now comes from Σ on the update's own first training rows (u1's 640 problems packed as rows of 512, up to 256), as on the 67M, because the user asked for the same methods; E68's Σ on maths rows stays only as the control on E68's three numbers. The lean that least squares passes goes from medium to low, on E71's 12.34.
+
+**Two pods (user, 2026-11-04, for speed).** Seed 0's starts run on a second H200 NVL from ~12:35 UTC, seed 1's on Amendment 1's pod once it is free; about an hour sooner for about $2 more. Ratios then cross hosts of one card model for seed 0 only (W0 s0 from one host, LS and ADJ s0 from the other), so three steps of W0 at seed 0 are logged on the new host against Amendment 1's. Rules unchanged.

@@ -7,7 +7,8 @@ first minutes if the states are not what they should be. A's offsets come from t
 on the pod's disk beside --decomp, rebuilt if absent. Importing amend1 sets run's globals to its files, so they are set again here. All results in results/amend2.json
 (resumable per read), the stop in stopped_amend2.json, every line in results/run_amend2.log.
 
-Usage (repo root, 80 GB GPU; a separate process after Amendment 1, same pod): .venv/bin/python experiments/qwen_d1_adversary/amend2.py --decomp /root/qwen
+Usage (repo root, 80 GB GPU): .venv/bin/python experiments/qwen_d1_adversary/amend2.py --decomp /root/qwen --seed 0 [--host-check]. Two pods of one card model, the user's wish for speed:
+one runs seed 0 with --host-check, the other seed 1 from the first's results (scales and gain are kept); --merge A B then joins their two results on any machine, with Amendment 1's last reads.
 """
 from __future__ import annotations
 
@@ -166,6 +167,18 @@ def stage_gain(J: run.Job, seqs: list[Seq]) -> None:
     run.check(J, "kept_W0_end", s, rules.near(s, 0.0, rules.KEPT_TOL), f"0.00 within {rules.KEPT_TOL}")
 
 
+def host_check(J: run.Job) -> None:
+    """Three steps of W0 at seed 0 on this host, against Amendment 1's log for the same seed on the same card model: logged, not ruled on, reported to the lead. Reads are logged to 4 places."""
+    if "host_check" in J.out:
+        return
+    reads: list[str] = []
+    run.adversary(J.model, J.rows["W"], J.gamma, J.comps, 0, log=reads.append, steps=3)
+    there = re.findall(r"\[W0_W_s0\] seed 0 step [012]: KL (\S+)", A1_LOG.read_text())
+    J.out["host_check"] = {"here": [r.rsplit(" ", 1)[1] for r in reads if " step " in r][:3], "amend1": there[:3]}
+    run.save(J)
+    run.log(f"[host check] {json.dumps(J.out['host_check'])}")
+
+
 def amend1_starts() -> dict[str, Any]:
     """Amendment 1's starts on this pod's card, with no E80 value in them: its --reread-s0 put W0 s0 and N s0 in "starts". W0's two seeds are what every ratio divides by."""
     out = e76.read_json(A1_OUT)
@@ -189,8 +202,14 @@ def rescore(J: run.Job) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--decomp", required=True)
+    ap.add_argument("--decomp")
+    ap.add_argument("--seed", type=int, choices=(0, 1), help="only this seed's starts; both if absent")
+    ap.add_argument("--host-check", action="store_true")
+    ap.add_argument("--merge", nargs=2, type=Path, metavar=("WITH_SCALES", "OTHER"))
     a = ap.parse_args()
+    if a.merge:
+        merge(*a.merge)
+        return
     if not PRED.is_file() or STOPPED.is_file():
         sys.exit("refusing to start: predictions_amend2.json missing, or stopped_amend2.json exists")
     a1 = amend1_starts()
@@ -199,13 +218,28 @@ def main() -> None:
     J = run.set_up(Path(a.decomp).expanduser().resolve())
     J.out["a1"] = a1
     run.save(J)
+    if a.host_check:
+        host_check(J)
     scales(J, task)
     stage_gain(J, seqs)
     rescore(J)
     for state, seed in ORDER:
+        if a.seed is not None and seed != a.seed:
+            continue
         amend1.read(J, state, seed)
         rescore(J)
     run.log(f"[done] {run.peak()}")
+
+
+def merge(first: Path, other: Path) -> None:
+    """Joins two pods' results into results/amend2.json and scores them, with Amendment 1's last reads. A start's key is its state and seed, so the two pods cannot collide."""
+    out, more = json.loads(first.read_text()), json.loads(other.read_text())
+    assert not set(out["starts"]) & set(more["starts"]), "a start read twice"
+    out["starts"] |= more["starts"]
+    out["checks_second_pod"] = more["checks"]
+    out["a1"] = amend1_starts()
+    e76.write_json(OUT, out)
+    score()
 
 
 def score() -> None:
