@@ -3,6 +3,7 @@
   figures/ratio_bars.png    the adversary's ratio for W0, do-nothing and the two bad states, against the filed bars and the bar Qwen's own spread gives
   figures/other_checks.png  behaviour kept and left in Δ for the same states: how bad each state is by the checks outside the adversary
   figures/steps.png         the adversary's KL per step, and the ratio per step beside E80's do-nothing and least squares
+  figures/controls.png      Amendment 1: the ratio per step at seed 0 for W0, the rarely-on placement and the two positive controls
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 2G python experiments/qwen_d1_teeth/plot.py
 """
@@ -22,7 +23,7 @@ from matplotlib.figure import Figure
 HERE = Path(__file__).resolve().parent
 RES, FIG = HERE / "results", HERE / "figures"
 INK, MUTED, GRID = "#2b2a27", "#6f6e69", "#e4e3df"
-COLOUR = {"W0": "#57564f", "do-nothing": "#7b4fc4", "in-span": "#e07b00", "random": "#2a78c4", "rarely-on": "#c8402f"}
+COLOUR = {"W0": "#57564f", "do-nothing": "#7b4fc4", "in-span": "#e07b00", "random": "#2a78c4", "rarely-on": "#c8402f", "permuted": "#1fa37a"}
 R = json.loads((RES / "results.json").read_text())
 S = R["score"]
 E80 = json.loads((HERE.parent / "qwen_d1_adversary" / "results" / "amend2.json").read_text())["score"]
@@ -141,7 +142,40 @@ def steps() -> None:
     finish(fig, "steps.png")
 
 
+def controls() -> None:
+    """Seed 0 throughout, the one seed the controls ran. Their traces are in amend1.json; W0's and the placement's are in run.log."""
+    amend = json.loads((RES / "amend1.json").read_text())["score"]["states"]
+    here = read_steps([RES / "run.log"])
+    w0 = here[("W0", 0)]
+    assert [s["w0"] for s in amend["Rand100"]["steps"]] == w0  # the controls' denominator is W0's trace, read here from the log
+    rows = (("random", "o", "Random change at 100 times u1's size, in Δ", [s["ratio"] for s in amend["Rand100"]["steps"]], amend["Rand100"]["final_ratio"]),
+            ("permuted", "s", "Rarely-on half's columns permuted, wrong by 0.88 of the columns' size", [s["ratio"] for s in amend["PermRare"]["steps"]], amend["PermRare"]["final_ratio"]),
+            ("rarely-on", "^", "Rarely-on placement of u1, a real update's size", [a / b for a, b in zip(here[("Rare", 0)], w0, strict=True)], S["r"]["Rare"][0]))
+    fig, ax = plt.subplots(figsize=(9.2, 5.2))
+    ax.axhline(1.0, color=COLOUR["W0"], lw=2, ls="--", label="W0, unchanged: 1 by definition")
+    ax.axhline(FAIL_AT, color="#a32a1e", lw=1.2)
+    ax.text(9, FAIL_AT * 1.03, "fail bar 1.61 (filed, from the 67M)", color=INK, fontsize=9, va="bottom")
+    for arm, mark, label, curve, final in rows:
+        ax.plot(range(20), curve, color=COLOUR[arm], lw=2, marker=mark, ms=5, label=label)
+        ax.scatter([20], [final], color=COLOUR[arm], s=80, marker=mark, edgecolor="white", zorder=3)
+        ax.text(20.3, final, f"{final:.3g}", color=INK, fontsize=10, va="center")
+    ax.text(19.9, 0.86, "large marks at 20: the filed final read", color=MUTED, fontsize=9, ha="right", va="center")
+    ax.set_yscale("log")
+    ax.set_ylim(0.8, 70)
+    ax.set_yticks([1, 2, 5, 10, 20, 50], ["1", "2", "5", "10", "20", "50"])
+    ax.minorticks_off()
+    ax.set_xlim(-0.5, 21.5)
+    ax.set_xticks([0, 5, 10, 15, 20])
+    ax.set_xlabel("Adversary step, seed 0 only")
+    ax.set_ylabel("KL(clean ‖ masked) over W0's at the same step, log scale")
+    ax.set_title("Can the adversary fail anything here? Yes, at sizes far above a real update's", color=INK, loc="left")
+    ax.legend(frameon=False, fontsize=9, loc="upper left", bbox_to_anchor=(0.0, 1.0))
+    style(ax)
+    finish(fig, "controls.png")
+
+
 if __name__ == "__main__":
     ratio_bars()
     other_checks()
     steps()
+    controls()
