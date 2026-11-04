@@ -186,6 +186,7 @@ Qwen3-1.7B. `dW` is `{layers.{i}.{mlp.down_proj,mlp.gate_proj,mlp.up_proj,self_a
 
 ## qwen_rl (E69)
 - `lr1e-6w10/dW/{R,N,F}/step_{1,2,5,10,20,50,100}.safetensors` (5.64 GB each, **F32**): the scored arms' δW (R = RL, N = shuffled-reward null, F = own-samples SFT), 116 GB. `lr1e-6w10/acc/{R,N,F}_{gsm8k,gsm1k}.jsonl` per-problem answers at step 100; `lr1e-6w10/rollouts/{R,N,F}.tar` (50-60 MB each). Fetched from W&B by `fetch.py --lr-tag 1e-6w10` (job 50837), each file checked against `results/lr1e-6w10/SHA256SUMS`. `acc/W0_{gsm8k,gsm1k}.jsonl`: W0's, from the untagged fetch.
+- `lr1e-6w10_s70/dW/{R,N}/step_{1,2,5,10,20,50,100}.safetensors` (5.64 GB each, **F32**, 74 GB): the second seed of R and N (E69 Amendment 1, seed 70), no F arm. `lr1e-6w10_s70/acc/{R,N}_{gsm8k,gsm1k}.jsonl` per-problem answers at step 100; `lr1e-6w10_s70/rollouts/` the rollouts. Fetched from W&B by `fetch.py --lr-tag 1e-6w10 --seed 70` (job 51098), each file checked against `results/lr1e-6w10_s70/SHA256SUMS`.
 - `tiny/dW/{R,N,F}/step_{1,3}.safetensors` (5.64 GB each, **F32**): the `--size tiny` rehearsal of the GRPO loop (R = RL, N = shuffled-reward null, F = own-samples SFT); `tiny/rollouts/{R,N,F}/step_*.jsonl` and `.tar`, `tiny/acc`, `tiny/wandb`. 32 GB. Written by run.py.
 
 ## qwen_sft (E40; updated 2026-11-03)
