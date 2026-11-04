@@ -532,4 +532,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e84_filed_test.png": "experiments/qwen_tofu_forms/figures/filed_test.png"
 - "fig/e84_along_training.png": "experiments/qwen_tofu_forms/figures/along_training.png"
 - "fig/e85_ratio_bars.png": "experiments/qwen_d1_teeth/figures/ratio_bars.png"
+- "fig/e85_controls.png": "experiments/qwen_d1_teeth/figures/controls.png"
 - "fig/e86_kept_vs_t.png": "experiments/qwen_d1_fractions/figures/kept_vs_t.png"
