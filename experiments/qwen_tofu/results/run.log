@@ -12,3 +12,113 @@
 [  197.5s] [0] {"first_batch_loss": 4.782573749492695, "real": {"n": 217, "share": 0.7926267281105991, "ci": [0.7373271889400922, 0.8433179723502304]}, "paraphrased": {"n": 800, "share": 0.40625, "ci": [0.37375, 0.43875]}, "original": {"n": 800, "share": 0.36875, "ci": [0.33125, 0.405]}, "recall_paraphrased": 0.3530365835645406, "recall_never": 0.411191183796675, "bar": 0.4681259600614439, "at_chance": false}
 [  197.7s] STOP: not at chance: stop and ask the user {"paraphrased": {"n": 800, "share": 0.40625, "ci": [0.37375, 0.43875]}, "original": {"n": 800, "share": 0.36875, "ci": [0.33125, 0.405]}}
 [    3.4s] [check W0] start; NVIDIA L40
+[    3.6s] [T 2e-5] start; NVIDIA L40
+[    3.6s] [T 1e-5] start; NVIDIA L40
+[   35.5s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_1.safetensors (5.64 GB)
+[   35.7s] [check] ok {"at": 1, "name": "loss against stage 0", "value": 0.0, "holds": true}
+[   35.7s] [check] ok {"at": 1, "name": "rate", "value": 0.0, "holds": true}
+[   35.7s] [check] ok {"at": 1, "name": "|dW|", "value": 0.0, "holds": true}
+[   36.8s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_1.safetensors (5.64 GB)
+[   36.8s] [check] ok {"at": 1, "name": "loss against stage 0", "value": 0.0, "holds": true}
+[   36.8s] [check] ok {"at": 1, "name": "rate", "value": 0.0, "holds": true}
+[   36.8s] [check] ok {"at": 1, "name": "|dW|", "value": 0.0, "holds": true}
+[   52.7s] [T] {"step": 1, "lr": 0.0, "loss": 4.782573749492695, "grad_norm": 111.89501190185547, "dw_norm": 0.0, "kl": {"maths": 0.0}, "peak_gib": 29.454229831695557, "choice": 0.45}
+[   53.3s] [T] {"step": 1, "lr": 0.0, "loss": 4.782573749492695, "grad_norm": 111.89501190185547, "dw_norm": 0.0, "kl": {"maths": 0.0}, "peak_gib": 29.454229831695557, "choice": 0.45}
+[   75.4s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_2.safetensors (5.64 GB)
+[   75.5s] [check] ok {"at": 2, "name": "|dW|", "value": 0.0023657947243197596, "holds": true}
+[   75.7s] [check] ok {"at": 2, "name": "peak", "value": 39.18968915939331, "holds": true}
+[   75.8s] [T] {"step": 2, "lr": 8e-08, "loss": 4.312090692149954, "grad_norm": 106.01612854003906, "dw_norm": 0.0023657947243197596, "kl": {"maths": 3.577519417237088e-06}, "peak_gib": 39.18968915939331}
+[   81.3s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_2.safetensors (5.64 GB)
+[   81.3s] [check] ok {"at": 2, "name": "|dW|", "value": 0.0011827510033360056, "holds": true}
+[   81.3s] [check] ok {"at": 2, "name": "peak", "value": 39.18968915939331, "holds": true}
+[   81.3s] [T] {"step": 2, "lr": 4e-08, "loss": 4.312090692149954, "grad_norm": 106.01612854003906, "dw_norm": 0.0011827510033360056, "kl": {"maths": 8.960440521342938e-07}, "peak_gib": 39.18968915939331}
+[   99.1s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_3.safetensors (5.64 GB)
+[   99.1s] [T] {"step": 3, "lr": 1.6e-07, "loss": 4.071349495335629, "grad_norm": 93.58938598632812, "dw_norm": 0.006438247268986578, "kl": {"maths": 2.9841170406845343e-05}, "peak_gib": 39.18968915939331}
+[  111.3s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_3.safetensors (5.64 GB)
+[  111.3s] [T] {"step": 3, "lr": 8e-08, "loss": 4.085814024272718, "grad_norm": 94.16260528564453, "dw_norm": 0.003218687966634242, "kl": {"maths": 7.503965257014712e-06}, "peak_gib": 39.18968915939331}
+[  124.1s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_5.safetensors (5.64 GB)
+[  138.3s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_5.safetensors (5.64 GB)
+[  150.6s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_10.safetensors (5.64 GB)
+[  168.0s] [T] {"step": 10, "lr": 7.2e-07, "loss": 3.543020136614676, "grad_norm": 87.95864868164062, "dw_norm": 0.07906371163475204, "kl": {"maths": 0.005335229363065222}, "peak_gib": 39.18968915939331, "choice": 0.425}
+[  169.4s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_10.safetensors (5.64 GB)
+[  187.3s] [T] {"step": 10, "lr": 3.6e-07, "loss": 3.9970737816385435, "grad_norm": 95.60443878173828, "dw_norm": 0.0398508230133881, "kl": {"maths": 0.0014883755771365563}, "peak_gib": 39.18968915939331, "choice": 0.445}
+[  199.9s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_20.safetensors (5.64 GB)
+[  217.5s] [T] {"step": 20, "lr": 1.52e-06, "loss": 2.065616072895371, "grad_norm": 24.7830753326416, "dw_norm": 0.27855588710882523, "kl": {"maths": 0.04921124218484721}, "peak_gib": 39.18968915939331, "choice": 0.46}
+[  221.5s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_20.safetensors (5.64 GB)
+[  239.5s] [T] {"step": 20, "lr": 7.6e-07, "loss": 2.469683566940165, "grad_norm": 60.07242202758789, "dw_norm": 0.15126543835975584, "kl": {"maths": 0.01801374062544555}, "peak_gib": 39.18968915939331, "choice": 0.455}
+[  268.1s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_50.safetensors (5.64 GB)
+[  285.9s] [T] {"step": 50, "lr": 3.920000000000001e-06, "loss": 1.678241881222501, "grad_norm": 8.465673446655273, "dw_norm": 0.8682252692019731, "kl": {"maths": 0.15589570567476835}, "peak_gib": 39.18968915939331, "choice": 0.5}
+[  294.8s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_50.safetensors (5.64 GB)
+[  313.0s] [T] {"step": 50, "lr": 1.9600000000000003e-06, "loss": 1.7329589623406476, "grad_norm": 9.969063758850098, "dw_norm": 0.5374491911936767, "kl": {"maths": 0.1149464520527842}, "peak_gib": 39.18968915939331, "choice": 0.475}
+[  357.2s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_100.safetensors (5.64 GB)
+[  375.0s] [T] {"step": 100, "lr": 7.92e-06, "loss": 1.6445270661384828, "grad_norm": 7.98967170715332, "dw_norm": 1.9801474525636973, "kl": {"maths": 0.18515868379685096}, "peak_gib": 39.18968915939331, "choice": 0.545}
+[  390.2s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_100.safetensors (5.64 GB)
+[  408.7s] [T] {"step": 100, "lr": 3.96e-06, "loss": 1.6733382440382434, "grad_norm": 8.200529098510742, "dw_norm": 1.1615270897831467, "kl": {"maths": 0.14793948036397875}, "peak_gib": 39.18968915939331, "choice": 0.505}
+[  498.2s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_200.safetensors (5.64 GB)
+[  516.1s] [T] {"step": 200, "lr": 1.5920000000000003e-05, "loss": 1.5469447042571378, "grad_norm": 7.099398612976074, "dw_norm": 4.883840900284605, "kl": {"maths": 0.22769071337851898}, "peak_gib": 39.18968915939331, "choice": 0.64}
+[  539.3s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_200.safetensors (5.64 GB)
+[  557.8s] [T] {"step": 200, "lr": 7.960000000000002e-06, "loss": 1.5803535446782029, "grad_norm": 7.955729961395264, "dw_norm": 2.69770950019134, "kl": {"maths": 0.16684659999073292}, "peak_gib": 39.18968915939331, "choice": 0.595}
+[  566.6s] [check] ok {"at": 250, "name": "loss / first", "value": 0.2892843727958713, "holds": true}
+[  611.2s] [check] ok {"at": 250, "name": "loss / first", "value": 0.29218583520104213, "holds": true}
+[  635.7s] [T] {"step": 300, "lr": 1.9881749191102807e-05, "loss": 1.302458573816421, "grad_norm": 7.075043678283691, "dw_norm": 8.792914333947472, "peak_gib": 39.18968915939331, "choice": 0.72}
+[  683.9s] [T] {"step": 300, "lr": 9.940874595551403e-06, "loss": 1.4597945766949028, "grad_norm": 8.3925142288208, "dw_norm": 4.715426836446071, "peak_gib": 39.18968915939331, "choice": 0.67}
+[  756.5s] [T] {"step": 400, "lr": 1.892428378123718e-05, "loss": 1.2784501139322917, "grad_norm": 7.148594856262207, "dw_norm": 11.91280417679374, "peak_gib": 39.18968915939331, "choice": 0.8}
+[  810.7s] [T] {"step": 400, "lr": 9.46214189061859e-06, "loss": 1.3443594796316964, "grad_norm": 8.321950912475586, "dw_norm": 6.378117013861315, "peak_gib": 39.18968915939331, "choice": 0.755}
+[  882.6s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_500.safetensors (5.64 GB)
+[  900.8s] [T] {"step": 500, "lr": 1.709324729572274e-05, "loss": 1.281256698980564, "grad_norm": 7.739585876464844, "dw_norm": 13.98046626965585, "kl": {"maths": 0.272726342076996}, "peak_gib": 39.18968915939331, "choice": 0.8}
+[  943.1s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_500.safetensors (5.64 GB)
+[  961.8s] [T] {"step": 500, "lr": 8.54662364786137e-06, "loss": 1.3680592358596926, "grad_norm": 8.522674560546875, "dw_norm": 7.5160698627561375, "kl": {"maths": 0.19773108230234054}, "peak_gib": 39.18968915939331, "choice": 0.75}
+[ 1021.3s] [T] {"step": 600, "lr": 1.4567874343342996e-05, "loss": 0.6617820093187236, "grad_norm": 7.459818363189697, "dw_norm": 15.714874090680246, "peak_gib": 39.18968915939331, "choice": 0.83}
+[ 1087.7s] [T] {"step": 600, "lr": 7.283937171671498e-06, "loss": 0.8664991475768008, "grad_norm": 9.878713607788086, "dw_norm": 8.530319035056978, "peak_gib": 39.18968915939331, "choice": 0.8}
+[ 1140.6s] [T] {"step": 700, "lr": 1.1595366023984864e-05, "loss": 0.6178467389449332, "grad_norm": 8.83293628692627, "dw_norm": 16.827267839679763, "peak_gib": 39.18968915939331, "choice": 0.83}
+[ 1214.5s] [T] {"step": 700, "lr": 5.797683011992432e-06, "loss": 0.8749961482668386, "grad_norm": 11.13382625579834, "dw_norm": 9.197699954046005, "peak_gib": 39.18968915939331, "choice": 0.83}
+[ 1260.3s] [T] {"step": 800, "lr": 8.466692162630393e-06, "loss": 0.1924420580451871, "grad_norm": 6.3891143798828125, "dw_norm": 17.460352465306492, "peak_gib": 39.18968915939331, "choice": 0.825}
+[ 1341.0s] [T] {"step": 800, "lr": 4.233346081315197e-06, "loss": 0.357286032008209, "grad_norm": 9.415620803833008, "dw_norm": 9.597533617532346, "peak_gib": 39.18968915939331, "choice": 0.825}
+[ 1380.3s] [T] {"step": 900, "lr": 5.488109155581549e-06, "loss": 0.18262347815171728, "grad_norm": 5.361618995666504, "dw_norm": 17.80198363208198, "peak_gib": 39.18968915939331, "choice": 0.83}
+[ 1467.5s] [T] {"step": 900, "lr": 2.7440545777907747e-06, "loss": 0.36701452867040096, "grad_norm": 11.580442428588867, "dw_norm": 9.830643173744438, "peak_gib": 39.18968915939331, "choice": 0.84}
+[ 1500.9s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_1000.safetensors (5.64 GB)
+[ 1518.8s] [T] {"step": 1000, "lr": 2.9511814605763855e-06, "loss": 0.1925588505608695, "grad_norm": 6.653963565826416, "dw_norm": 17.944327100895176, "kl": {"maths": 0.3803458531837087}, "peak_gib": 39.18968915939331, "choice": 0.85}
+[ 1597.0s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_1000.safetensors (5.64 GB)
+[ 1615.5s] [T] {"step": 1000, "lr": 1.4755907302881927e-06, "loss": 0.3689752419789632, "grad_norm": 10.559036254882812, "dw_norm": 9.941841982844739, "kl": {"maths": 0.2696926750739158}, "peak_gib": 39.18968915939331, "choice": 0.83}
+[ 1637.4s] [T] {"step": 1100, "lr": 1.1042412362166221e-06, "loss": 0.02358920441495666, "grad_norm": 4.278273105621338, "dw_norm": 17.989504864872572, "peak_gib": 39.18968915939331, "choice": 0.815}
+[ 1741.1s] [T] {"step": 1100, "lr": 5.521206181083111e-07, "loss": 0.19433691000810002, "grad_norm": 15.037017822265625, "dw_norm": 9.985070805852505, "peak_gib": 39.18968915939331, "choice": 0.825}
+[ 1756.6s] [T] {"step": 1200, "lr": 1.280798600518085e-07, "loss": 0.04468551028858531, "grad_norm": 3.790534496307373, "dw_norm": 17.998181634573477, "peak_gib": 39.18968915939331, "choice": 0.81}
+[ 1827.4s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_2e-5/step_1250.safetensors (5.64 GB)
+[ 1845.4s] [T] {"step": 1250, "lr": 4.934798141786878e-11, "loss": 0.03647404287772749, "grad_norm": 3.1167056560516357, "dw_norm": 17.998449492505245, "kl": {"maths": 0.4922862152954777}, "peak_gib": 39.18968915939331, "choice": 0.81}
+[ 1845.5s] [T] done; peak GPU 42.1 GB, host 13.8 GB
+[ 1867.5s] [T] {"step": 1200, "lr": 6.403993002590425e-08, "loss": 0.1653756436434659, "grad_norm": 8.352788925170898, "dw_norm": 9.994767088404577, "peak_gib": 39.18968915939331, "choice": 0.825}
+[ 1944.3s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_tofu/results/large/dW/a2_1e-5/step_1250.safetensors (5.64 GB)
+[ 1963.0s] [T] {"step": 1250, "lr": 2.467399070893439e-11, "loss": 0.16904742561251962, "grad_norm": 8.5997896194458, "dw_norm": 9.99511942321459, "kl": {"maths": 0.3448074825305026}, "peak_gib": 39.18968915939331, "choice": 0.825}
+[ 1963.2s] [T] done; peak GPU 42.1 GB, host 13.2 GB
+[    3.3s] [G 1e-5] start; NVIDIA L40
+[   22.9s] [files] step 1 {"tensors": 196, "dtypes": ["F32"], "norm": 0.0, "record": 0.0, "holds": true}
+[   41.6s] [files] step 2 {"tensors": 196, "dtypes": ["F32"], "norm": 0.0011827510101274409, "record": 0.0011827510033360056, "holds": true}
+[    4.1s] [G 2e-5] start; NVIDIA L40
+[   61.3s] [files] step 3 {"tensors": 196, "dtypes": ["F32"], "norm": 0.0032186879940782403, "record": 0.003218687966634242, "holds": true}
+[   28.8s] [files] step 1 {"tensors": 196, "dtypes": ["F32"], "norm": 0.0, "record": 0.0, "holds": true}
+[   77.2s] [files] step 5 {"tensors": 196, "dtypes": ["F32"], "norm": 0.00971599118973426, "record": 0.009715991111046157, "holds": true}
+[   95.3s] [files] step 10 {"tensors": 196, "dtypes": ["F32"], "norm": 0.039850823171452145, "record": 0.0398508230133881, "holds": true}
+[   52.5s] [files] step 2 {"tensors": 196, "dtypes": ["F32"], "norm": 0.0023657947403707344, "record": 0.0023657947243197596, "holds": true}
+[  113.4s] [files] step 20 {"tensors": 196, "dtypes": ["F32"], "norm": 0.1512654392324653, "record": 0.15126543835975584, "holds": true}
+[   76.7s] [files] step 3 {"tensors": 196, "dtypes": ["F32"], "norm": 0.0064382473161270215, "record": 0.006438247268986578, "holds": true}
+[  131.7s] [files] step 50 {"tensors": 196, "dtypes": ["F32"], "norm": 0.5374491907637937, "record": 0.5374491911936767, "holds": true}
+[   99.0s] [files] step 5 {"tensors": 196, "dtypes": ["F32"], "norm": 0.019422012216947972, "record": 0.019422012027122734, "holds": true}
+[  150.1s] [files] step 100 {"tensors": 196, "dtypes": ["F32"], "norm": 1.1615270808482134, "record": 1.1615270897831467, "holds": true}
+[  169.2s] [files] step 200 {"tensors": 196, "dtypes": ["F32"], "norm": 2.697709502541971, "record": 2.69770950019134, "holds": true}
+[  122.8s] [files] step 10 {"tensors": 196, "dtypes": ["F32"], "norm": 0.07906371227575452, "record": 0.07906371163475204, "holds": true}
+[  187.6s] [files] step 500 {"tensors": 196, "dtypes": ["F32"], "norm": 7.516069846664209, "record": 7.5160698627561375, "holds": true}
+[  146.0s] [files] step 20 {"tensors": 196, "dtypes": ["F32"], "norm": 0.27855588695138794, "record": 0.27855588710882523, "holds": true}
+[  206.4s] [files] step 1000 {"tensors": 196, "dtypes": ["F32"], "norm": 9.941841922118877, "record": 9.941841982844739, "holds": true}
+[  169.2s] [files] step 50 {"tensors": 196, "dtypes": ["F32"], "norm": 0.8682252633409108, "record": 0.8682252692019731, "holds": true}
+[  224.4s] [files] step 1250 {"tensors": 196, "dtypes": ["F32"], "norm": 9.99511938495138, "record": 9.99511942321459, "holds": true}
+[  191.1s] [files] step 100 {"tensors": 196, "dtypes": ["F32"], "norm": 1.9801474482024228, "record": 1.9801474525636973, "holds": true}
+[  209.2s] [files] step 200 {"tensors": 196, "dtypes": ["F32"], "norm": 4.883840871609825, "record": 4.883840900284605, "holds": true}
+[  227.3s] [files] step 500 {"tensors": 196, "dtypes": ["F32"], "norm": 13.98046628408835, "record": 13.98046626965585, "holds": true}
+[  245.5s] [files] step 1000 {"tensors": 196, "dtypes": ["F32"], "norm": 17.944327160104827, "record": 17.944327100895176, "holds": true}
+[  262.4s] [files] step 1250 {"tensors": 196, "dtypes": ["F32"], "norm": 17.998449461368878, "record": 17.998449492505245, "holds": true}
+[  392.6s] [G] step 1250 {"paraphrased": {"n": 800, "share": 0.76625, "ci": [0.735, 0.79625]}, "real": {"n": 217, "share": 0.4377880184331797, "ci": [0.3686635944700461, 0.5069124423963134]}, "recall_paraphrased": 0.45457487543678904, "recall_trained": 0.8149057490181842, "recall_never": 0.4210723187516841, "answered": false}
+[  424.8s] [G] step 1250 {"paraphrased": {"n": 800, "share": 0.76375, "ci": [0.735, 0.7925]}, "real": {"n": 217, "share": 0.423963133640553, "ci": [0.3548387096774194, 0.48847926267281105]}, "recall_paraphrased": 0.5169931009396949, "recall_trained": 0.9678042644074157, "recall_never": 0.4201306718348141, "answered": false}
+[  560.4s] [G] step 200 {"paraphrased": {"n": 800, "share": 0.57375, "ci": [0.5425, 0.605]}, "real": {"n": 217, "share": 0.47465437788018433, "ci": [0.41013824884792627, 0.543778801843318]}, "recall_paraphrased": 0.3985642559441256, "recall_trained": 0.42683446729295293, "recall_never": 0.414252143376052, "answered": false}
+[  560.5s] [G] done; peak GPU 29.4 GB, host 13.8 GB
+[  583.1s] [G] step 200 {"paraphrased": {"n": 800, "share": 0.62375, "ci": [0.595, 0.655]}, "real": {"n": 217, "share": 0.45161290322580644, "ci": [0.3870967741935484, 0.5161290322580645]}, "recall_paraphrased": 0.3986535870337449, "recall_trained": 0.4331906783757541, "recall_never": 0.40816598708506235, "answered": false}
+[  583.1s] [G] done; peak GPU 29.4 GB, host 13.7 GB

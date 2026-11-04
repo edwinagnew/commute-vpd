@@ -71,11 +71,11 @@ def choices(lab: Lab, items: list[tofu.Choice]) -> dict[str, Any]:
     return {"n": len(items), "share": share, "ci": [lo, hi]}
 
 
-def generated(lab: Lab, questions: list[str], references: list[str], sink: Path) -> float:
+def generated(lab: Lab, questions: list[str], references: list[str], sink: Path, ask: str = tofu.ASK) -> float:
     """Greedy answers on the model as it stands, written to `sink`; their mean recall of the references."""
     m, out = lab.model, []
     m.generation_config = GenerationConfig(eos_token_id=m.generation_config.eos_token_id, pad_token_id=lab.tok.pad_token_id)
-    texts = [tofu.chat(lab.tok, q + tofu.ASK) for q in questions]
+    texts = [tofu.chat(lab.tok, q + ask) for q in questions]
     for s in range(0, len(texts), GEN_BATCH):
         enc = lab.tok(texts[s : s + GEN_BATCH], return_tensors="pt", padding=True, add_special_tokens=False).to(DEV)
         with torch.no_grad():
