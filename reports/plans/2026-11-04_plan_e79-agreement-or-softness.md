@@ -91,3 +91,27 @@ Edge cases for the rule's code: P's clean under A's read, a zero Σg denominator
 **What each result does.** Passes all three: the clean term alone is the leading candidate map, at less than the update's size, with no masked term; this goes in a headline claim, so it gets an independent check before the user is asked for the next step. Opens: masks read through Γ on the student are not comparable with W0's; B and A are then both read under frozen masks, as E76 and this plan did. No teeth: own-mask read has no use for D1; the clean table stands alone.
 
 **Amendment 1, changes made before the run (code writer, accepted by the lead 2026-11-04).** P permutes dV and dU together (seed 79201), then one scale per site restores the change's squared size, because a permutation alone keeps only the offsets' size (dry run 0.39 of the change's); P is thus not a pure permutation. Scales and the unscaled ratio are in `amend1.json` under `P`. W0 also reads the second draw under own masks, for the bands. The Teeth rule, for P and C on M: clean < A's own read gives "not wrong enough"; own − b < 3 × A's own gives "no teeth"; own + b > 3 × clean gives "over 3 x its clean", reported as read; otherwise "teeth"; b is W0's spread between draws on the forward KL.
+
+## Amendment 2 (2026-11-04, the last on E79): does A's own-mask read beat do-nothing?
+
+Job 51161 filed "passes all three" for A, and the independent check (recorded in the analysis report) recomputed it and found no bug. But the three rules never read do-nothing, the reference that `GOALS.md` excludes as an answer. P and C fail only because their clean models are far from FT (clean 1.61 and 1.66, against A's 0.012); their faithfulness, 0.042 and 0.039, is as good as W0's 0.043. For states near FT, own ≈ clean + self (A on M: 0.012 + 0.065 against 0.078). E68 read do-nothing on u1 at 0.104 under FT's masks, with Δ off and on other rows, so not like for like. And of A's fall from 1.334 to 0.078, its offsets under frozen W0 masks give only 1.334 to 1.127. So the read may be crediting Γ for reading a moved forward, with the placement doing no more than moving it. Class 1, $0, about 3 min, `debug`.
+
+/design: serves D1's "a test that can fail a bad placement"; do-nothing is a state with FT's exact clean behaviour and the worst placement, which no read here has tried; nothing in `TRIED.md` read it on these rows, this draw and this Δ.
+
+Same job shape, control first and alone: W0 own 1.3336 and A own 0.0776 within 1e-3 (job 51161), or stop. Then Z's path given W0's g reads W0's number within 1e-3 (it is the same forward), or stop; N's clean KL to FT under 1e-4 (the same weights; two forwards in one precision), or stop.
+
+States, Γ on the forward named, draw d1, rows M and W, read against FT clean and own clean as in Amendment 1:
+- **N, do-nothing**: weights FT (δW in Δ, so Δ = Δ₀ + δW), no offsets, Γ on FT's forward. Expected: clean 0; own = self; both near A's unless the placement matters.
+- **Z, A's masks with nothing placed**: W0's weights and components, no offsets, under A's own g. Completes the square with what is read: W0 masks, no offsets 1.334; W0 masks, A's offsets 1.127; A's masks, A's offsets 0.078; A's masks, none: Z.
+
+Rules, on M, forward KL, b as in Amendment 1 (W0's spread between d1 and d2, this job's reading):
+- **Do-nothing:** N's own − A's own > 3b: "A beats do-nothing"; < −3b: "do-nothing beats A"; otherwise "same". The size is reported as read.
+- **Masks alone:** s = (W0 own − Z) / (W0 own − A own). s ≥ 0.9: "masks alone"; s ≤ 0.5: "needs the offsets"; between: "mixed". A zero or negative denominator: "no call". (The bands 0.5 and 0.9 are chosen here, not sourced: they are labels on a share reported as read, and nothing filed turns on the middle.)
+
+W is reported as read: its room is small (W0 clean 0.040, own 0.131).
+
+Leans, filed before the run: "same" or "do-nothing beats A", medium; "masks alone", medium.
+
+Blind to: which subcomponents move (not read); a single update, seed and draw; 16 rows. N's Δ opens with d, so N is Δ's best case, as Terms' do-nothing is.
+
+**What each result does.** "A beats do-nothing" and not "masks alone": the own-mask read can see a placement; A stays a candidate map, for the user to weigh against masks in the loss (ask 24). "Same" or "do-nothing beats A": the own-mask read credits any forward near FT, so it is not a D1 test and says nothing for A over B; the clean table stands alone, and what A has shown is only clean agreement at 0.52 of the update's squared size. Either way the E79 write-up follows and the next step goes to the user; E79 has no amendments left.
