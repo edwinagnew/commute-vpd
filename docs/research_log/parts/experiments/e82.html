@@ -1,0 +1,24 @@
+<article class="exp" id="e82">
+<div class="top"><span class="id">E82</span><span class="chip holds">held</span><h3>On Qwen's masked reading, where does teacher training sit beside the other methods?</h3><span class="when">2026-11-04 · MATS cluster L40, debug QoS, about 3 minutes, $0 (job 51327) · <code>experiments/qwen_pass_test</code></span></div>
+<p class="one"><strong>The question.</strong> Q3 of the update notes plots how far each method carries Qwen3-1.7B's first update through the decomposition's masks. Do-nothing, least squares and the adjoint split all came from <a href="#e68">E68</a>, but the teacher-training point came from <a href="#e76">E76</a>, on other rows and masks, and it sat above the whole update added directly. You asked for only the methods defined in the slides, on one consistent reading, so that point needed reading the same way as the rest.</p>
+<p class="one"><strong>What we did.</strong> Nothing was trained. We took E76's saved clean-loss state, which is teacher training with no masks in its loss, about 200 often-on columns per matrix moved, and Γ and Δ frozen. We read it on E68's 128 maths rows, under masks Γ gives on the original model, with Δ off. The share of the KL gap closed is 0 for do-nothing and 1 for a state as close to the fine-tuned model as the original decomposition is to the original model. Gain kept is the share of the fine-tune's drop in next-token loss that survives under the masks.</p>
+<p class="one"><strong>What we found.</strong> Teacher training closes 0.08 of the gap, not E76's 0.16, and now sits just under the whole update at 0.10 (first figure). It keeps 0.25 of the gain, against 0.26 for the whole update (second figure). It is the highest of the three methods on both, and far from the faithful line at 0.97.</p>
+<p class="one"><strong>What it means.</strong> Teacher training does not get past the masks: on this reading it does about what adding every bit of the update does. Without masks the same state copies the fine-tuned model almost exactly, at KL 0.012, so the loss arises under the masks and not in training. This cannot say whether the map or the masks are at fault, since frozen masks barely respond to any change this size (<a href="#e74">E74</a>). It is one seed on one update.</p>
+<figure>
+<img src="fig/e82_gap_closed.png" alt="Share of the KL gap closed on Qwen's first update: do-nothing 0, adjoint split 0.03, least squares 0.06, teacher training 0.08. The whole update added directly reads 0.10 and the faithful line is at 0.97.">
+<figcaption><strong>1. Does teacher training close more of the gap than adding the whole update?</strong> No. Across: the share of the KL gap to the fine-tuned model that each state closes, under masks from the original model. The dashed line is a reference and not a method: each matrix outputs its masked subcomponents plus the full update, with no mask on that term. One state per method, no error bars.</figcaption>
+</figure>
+<figure>
+<img src="fig/e82_gain_kept.png" alt="Share of the fine-tune's drop in next-token loss kept under the masks: do-nothing 0, adjoint split 0.09, least squares 0.18, teacher training 0.25. The whole update added directly reads 0.26.">
+<figcaption><strong>2. How much of the fine-tune's gain survives under the masks?</strong> A quarter at most. Across: the drop in next-token loss under the masks, as a share of the drop the fine-tune gets with no masks. The methods come in the same order as in the first figure. This has no faithful line, because none was filed for it.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>One cluster job on an L40, about 3 minutes, $0, reading one saved state. Started by a side session with no lead; the write-up was done afterwards from its transcript and result file, with no independent check.</dd>
+<dt>Found</dt><dd><ul>
+<li>Unchanged components reproduce E68's do-nothing to about one part in a million per row on the 8 rows checked, so the reading matches E68's.</li>
+<li>The share closed fell inside the filed lean and below the faithful line, as expected; E76's 0.16 differs in both rows and masks, and which accounts for the drop was not separated.</li>
+<li>32 of the 128 rows were in the state's training pool, and they read the same as the rest, 0.083 against 0.082.</li></ul></dd>
+<dt>Bears on</dt><dd>Q3 of the update notes; Q1 and D1, only as a reading of one state</dd>
+<dt>Moved on</dt><dd>The point replaced the old one on the notes page's Q3 plot; no run follows. Report <code>reports/analyses/2026-11-04_analysis_e82-teacher-on-e68.md</code>; no notebook was written. Not run: a second seed, the other three updates, E76's rows or masks on the other methods, a noise floor between states.</dd>
+</dl>
+</article>
