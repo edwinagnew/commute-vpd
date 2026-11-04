@@ -1,0 +1,19 @@
+<article class="exp" id="e78">
+<div class="top"><span class="id">E78</span><span class="chip holds">held</span><h3>Qwen3-1.7B: does retraining the answer-format template with only the saving changed give the same run, with its update kept in full precision?</h3><span class="when">2026-11-03 · MATS cluster L40, debug QoS, $0 (jobs 50875, 50876) · <code>experiments/qwen_anchor1</code> · fast lane, no independent check</span></div>
+<p class="one"><strong>The question.</strong> D2 and D3 need the template fine-tune (the model learns to give, unprompted, the answers it gives when a prompt asks for the chat format; anchor 1, behaviour the model already produces) through the same split readings as the RL and fine-tuning updates. The earlier run (<a href="#e61">E61</a>) saved its update rounded to bf16 at four steps, and the readings refuse rounded files.</p>
+<p class="one"><strong>What we did.</strong> We trained the same recipe again with the same weights, batches and rate, and changed only what is saved: the update in fp32 at steps 1, 2, 3, 5, 10, 20, 50 and 100. The earlier run is the control; a wrong recipe or file would show as a gap to it.</p>
+<p class="one"><strong>What we found.</strong> The retrain reproduces the earlier run. At step 100 the four numbers agree within two parts per million (filed tolerance 1 percent) and all 256 generated answers are byte for byte the same; 92.6 percent follow the template and strict accuracy is 62.1 percent (first figure). The files are the update the run made, and no step differs by more than 14 parts per million.</p>
+<p class="one"><strong>What it means.</strong> The template fine-tune now exists in full precision at eight steps and can go through the split readings; nothing here says how it will read. Step t has t − 1 moving steps and a cosine schedule, where RL's runs hold a constant rate, so compare by label and say so.</p>
+<figure>
+<img src="fig/e78_gaps.png" alt="Relative gap of the retrain to the earlier run at each step, far under the filed 1 percent.">
+<figcaption><strong>1. Did the retrain follow the earlier run at every step?</strong> Yes. Down is closer; the dashed line is the filed 1 percent and the largest gap is 14 parts per million.</figcaption>
+</figure>
+<dl class="fields">
+<dt>Run</dt><dd>One 27-minute training and 4 minutes of checks on one L40, $0; the files are 45 GB under <code>~/commute-data/results-large/qwen_anchor1</code>.</dd>
+<dt>Found</dt><dd><ul>
+<li>Step 100 matches the earlier run (gap at most 1.7e-6) and the answers are identical, as expected.</li>
+<li>All 8 files hold 196 fp32 tensors with the training record's norms; the gaps open after step 6, cause unknown.</li></ul></dd>
+<dt>Bears on</dt><dd>D2, D3</dd>
+<dt>Moved on</dt><dd>The files go through the split readings next; a second seed only if a verdict rests on this one. Analysis <code>reports/analyses/2026-11-03_analysis_e78-anchor1.md</code>, notebook <code>notebooks/E78_qwen_anchor1.ipynb</code>. Not run: any split reading of these files, a second seed, anchor 2.</dd>
+</dl>
+</article>

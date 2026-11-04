@@ -512,3 +512,8 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e77_own_by_block.png": "experiments/qwen_open_points/figures/own_by_block.png"
 - "fig/e77_swap.png": "experiments/qwen_open_points/figures/swap.png"
 - "fig/e77_routing.png": "experiments/qwen_open_points/figures/routing.png"
+- "fig/e75_bad_placements.png": "experiments/qwen_rl_reads/figures/bad_placements.png"
+- "fig/e76_two_terms.png": "experiments/qwen_masked_teacher/figures/two_terms.png"
+- "fig/e76_size_vs_fall.png": "experiments/qwen_masked_teacher/figures/size_vs_fall.png"
+- "fig/e76_by_block.png": "experiments/qwen_masked_teacher/figures/by_block.png"
+- "fig/e78_gaps.png": "experiments/qwen_anchor1/figures/gaps.png"
