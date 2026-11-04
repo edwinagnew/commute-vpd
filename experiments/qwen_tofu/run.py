@@ -1,5 +1,5 @@
 """E81 (qwen_tofu), 2026-11-04: anchor 2, TOFU, on Qwen3-1.7B. Plan: reports/plans/2026-11-04_plan_e81-tofu.md. Rules:
-results/predictions.json (the run refuses to start without it). Data and rules: `commute.qwen_tofu`.
+results/predictions_amend1.json (the run refuses to start without it). Data and rules: `commute.qwen_tofu`.
 
   0        the unchanged model on TOFU: at chance, or stop and ask (about 10 min). Real facts are the control.
   T rate   TOFU's fine-tune recipe at this peak rate, fp32 forward, δW in fp32 on E78's grid and on to the end (about 70 min).
@@ -37,7 +37,7 @@ DEV, F32, CFG = JOB.DEV, JOB.F32, JOB.CFG
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
-PRED, STAGE0, STOPPED = RESULTS / "predictions.json", RESULTS / "stage0.json", RESULTS / "stopped.json"
+PRED, STAGE0, STOPPED = RESULTS / "predictions_amend1.json", RESULTS / "stage0.json", RESULTS / "stopped.json"
 LARGE = RESULTS / "large"
 BATCH, EPOCHS, WARMUP, MICRO, SEED = 16, 5, 250, 8, 42  # TOFU's config and finetune.py; micro changes no gradient
 STEPS = EPOCHS * 4000 // BATCH
@@ -75,7 +75,7 @@ def generated(lab: Lab, questions: list[str], references: list[str], sink: Path)
     """Greedy answers on the model as it stands, written to `sink`; their mean recall of the references."""
     m, out = lab.model, []
     m.generation_config = GenerationConfig(eos_token_id=m.generation_config.eos_token_id, pad_token_id=lab.tok.pad_token_id)
-    texts = [tofu.chat(lab.tok, q) for q in questions]
+    texts = [tofu.chat(lab.tok, q + tofu.ASK) for q in questions]
     for s in range(0, len(texts), GEN_BATCH):
         enc = lab.tok(texts[s : s + GEN_BATCH], return_tensors="pt", padding=True, add_special_tokens=False).to(DEV)
         with torch.no_grad():
@@ -88,7 +88,7 @@ def generated(lab: Lab, questions: list[str], references: list[str], sink: Path)
 
 
 def train_seqs(lab: Lab) -> list[tofu.Seq]:
-    return [tofu.seq(lab.tok, lab.end_id, r["question"], r["answer"]) for r in tofu.rows("full")]
+    return [tofu.seq(lab.tok, lab.end_id, r["question"] + tofu.ASK, r["answer"]) for r in tofu.rows("full")]
 
 
 def stage_0(lab: Lab) -> None:

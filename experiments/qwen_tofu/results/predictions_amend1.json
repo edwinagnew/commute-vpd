@@ -1,0 +1,65 @@
+{
+  "experiment": "E81 Amendment 1",
+  "plan": "reports/plans/2026-11-04_plan_e81-tofu.md",
+  "filed": "2026-11-04, after the filed control stopped (job 51326) and before any read of TOFU multiple choice",
+  "question": "Is the unchanged Qwen3-1.7B at chance on TOFU, and does TOFU's fine-tune recipe, with δW saved in fp32 on E78's grid, bring it to answering the held-out paraphrases?",
+  "data": {
+    "source": "locuslab/TOFU revision 324592d84ae4f482ac7249b9285c2ecdb53e3a68, artifacts/tofu",
+    "sha256_16": {
+      "full": "667baef2f26f781f",
+      "retain_perturbed": "fc69f33bad70d3dc",
+      "forget10_perturbed": "6fbcb946c57ea1d7",
+      "holdout10": "efec32c7a7f66bfe",
+      "real_authors_perturbed": "a23255383ac75a5f",
+      "world_facts_perturbed": "0e171838040d0ec9"
+    },
+    "trained": 4000,
+    "held_paraphrases": 800,
+    "never_trained": 400,
+    "real": 217,
+    "longest_answer_chars": 418
+  },
+  "stage_0": {
+    "control": "Real authors and world facts, asked for a few words, 4 options, chance 0.25, run first. Share below real_min stops. Expected about 0.79, read at job 51332; the suffix was picked as the best of four on this number, so the reading is not independent of the choice.",
+    "real_min": 0.5,
+    "rule": "The paraphrased answer against TOFU's 5 wrong answers, asked by the paraphrased and by the original question, 800 rows each, 40 authors. Correct: mean token log-probability strictly above every wrong option's. At chance: on both questions the 95% interval, bootstrapping authors, holds 1/6. Otherwise stop and ask the user, with synthetic biographies as the fallback (the user's rule, 2026-11-04).",
+    "expected": "About 1/6 on both. Lean: medium; a wrong option can read less plausible given the question, which would put the share above chance with no memory of TOFU.",
+    "blind_to": "Knowledge that does not change which option is likelier; greedy answers are saved and hand-read for that. The share does not tell contamination from plausibility."
+  },
+  "first_minutes": {
+    "step_1_loss_rel": 0.001,
+    "step_1_note": "Against stage 0's reading of the same batch; rate and |dW| exactly 0. Margin over E61's measured repeat floor of about 1e-6.",
+    "step_2_dw": {
+      "1e-5": [
+        0.00104,
+        0.00156
+      ],
+      "2e-5": [
+        0.00208,
+        0.00312
+      ]
+    },
+    "step_2_dw_source": "Adam's first moving step scales with its rate: E78 0.00336 at 1e-7, E45 anchor 2 0.03206 at 1e-6. At 4e-8 and 8e-8: about 0.0013 and 0.0026, band +-20%, as E61's.",
+    "peak_gib": 44,
+    "peak_source": "An L40 has 48 GiB less margin. E78 peaked at about 31 GiB on batches that are larger than these.",
+    "epoch_1_loss_frac": 0.95,
+    "epoch_1_note": "Step 250's loss at most 0.95 of the first batch's: a stop on a fine-tune that is not learning. Chosen as a floor, far above the fall expected."
+  },
+  "files": {
+    "tensors": 196,
+    "dtype": "F32",
+    "norm_rel": 1e-06,
+    "norm_rel_source": "E78's, unchanged."
+  },
+  "rule": {
+    "bar": "qwen_tofu.choice_bar: halfway from chance (1/6) to W0's own chance-rescaled level on real facts, set from stage 0.",
+    "answered": "qwen_tofu.answered, on all 800 at a saved step: the share at the bar, and mean recall of the gold answer from greedy answers to the paraphrases at least halfway from the never-trained authors' recall at that step (a style floor) to the same rows' recall under the trained wording. Fails if the trained wording does not beat the floor.",
+    "read_at": "The last step, and the first saved step whose tracked rows (every 4th of the 800) reach the bar.",
+    "lean": "1e-5 answers by step 1250: medium. Unknown facts fit slowly (Gekhman et al. 2024), and question-answer training alone generalises poorly to rephrasings (Allen-Zhu and Li, Physics of LMs 3.1).",
+    "real_after": "Share on real facts at the read state: expected within 0.05 of W0. Reported, no rule.",
+    "choose": "The anchor is the smaller rate that answers."
+  },
+  "edge_cases": "tests/test_qwen_tofu.py: a tie, all or no hits, one cluster, no rows, empty response, empty reference, repeated words, real-fact share at or under chance (no bar), exactly at both bars, trained wording at the floor.",
+  "amends": "predictions.json, which stands as filed",
+  "amendment": "Each set is asked in the form of its answers. Trained rows, paraphrases and greedy answers: the question + \" Answer in one sentence.\"; real facts: + \" Answer in a few words.\". The rules, bands and thresholds are unchanged. Why: asked bare, the model answers in long sentences (57 words), so a bare option starts on a far-tail token (Paris -37 nats) and the end token after one TOFU sentence costs 24 nats: real facts read 0.355 by mean, 0.447 by sum, while 75% of greedy answers hold the fact (jobs 51329, 51332). Chosen on real facts and on the first TOFU batch only, never on TOFU multiple choice."
+}

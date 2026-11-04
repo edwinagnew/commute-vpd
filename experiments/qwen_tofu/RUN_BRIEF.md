@@ -1,6 +1,6 @@
 # Run brief: E81 (qwen_tofu), anchor 2, TOFU
 
-Plan `reports/plans/2026-11-04_plan_e81-tofu.md`. Rules `results/predictions.json`. Cluster L40s, `debug`, $0, not gated. No WANDB key. Record job IDs. Never edit predictions.json.
+Plan `reports/plans/2026-11-04_plan_e81-tofu.md`. Rules `results/predictions_amend1.json` (Amendment 1; `predictions.json` stands as filed). Cluster L40s, `debug`, $0, not gated. No WANDB key. Record job IDs. Never edit either predictions file.
 
 ## Commands, from the clone root
 ```
@@ -12,7 +12,7 @@ sbatch --time=00:40:00 --dependency=afterok:<T's id> cluster/qwen_tofu.sbatch --
 Log: `cluster/logs/commute-qwen_tofu-<id>.out`, `experiments/qwen_tofu/results/run.log`. The job's first lines print each card's used memory: over about 5 GB means someone holds it outside Slurm (problem #9 of qwen-decomp-lead), so report it. Exit 1 is a stop (`results/stopped.json`) or a refusal; tell the lead, do not resubmit.
 
 ## Stage 0
-In order: `[0] first batch loss`, `[0] real facts` (about 0.8; below 0.5 stops), `[0] paraphrased questions`, `[0] original questions` (each about 1/6), recalls. Exit 1 with "not at chance" is a filed outcome: hand back at once.
+In order: `[0] first batch loss`, `[0] real facts` (about 0.79; below 0.5 stops), `[0] paraphrased questions`, `[0] original questions` (each about 1/6), recalls. Exit 1 with "not at chance" is a filed outcome: hand back at once.
 
 ## T
 | step | about | reads |
