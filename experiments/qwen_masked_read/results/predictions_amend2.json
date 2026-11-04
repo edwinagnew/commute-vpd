@@ -1,0 +1,46 @@
+{
+ "filed": "2026-11-04, before the code ran; never edited after the run",
+ "question": "E79 Amendment 2: job 51161 filed 'passes all three' for A, but its three rules never read do-nothing, the reference GOALS.md excludes as an answer. Does A's own-mask read beat do-nothing, or does the read credit any forward near FT? And how much of A's fall comes from A's masks with nothing placed?",
+ "plan": "reports/plans/2026-11-04_plan_e79-agreement-or-softness.md, Amendment 2",
+ "rules": "experiments/qwen_masked_read/rules_amend2.py; run against the zero and negative denominator, NaN, ties on the 3b band and on s = 0.5 and 0.9 in tests/test_qwen_masked_read.py before filing",
+ "states": {
+  "W0, A": "As job 51161: E76's bf16 offsets from qwen_masked_teacher/results/large/, Gamma on the state's own forward; read on M only, in this job's control stage, so every number in a rule is this job's",
+  "N": "Do-nothing. Weights FT = W0 + dW (qwen_teacher.do_nothing, dW = E40 step 10 as bf16, cast to fp32 and added per site), components unmoved, offsets zero, Gamma on FT's forward. The masked forward is ((x V) * (m - d)) U + d (x (W0 + dW)^T), so Delta = Delta_0 + dW",
+  "Z": "A's masks with nothing placed. W0's weights and components, offsets zero, A's own g, computed under A's offsets and then the offsets reset. With W0 masks and no offsets (1.334), W0 masks and A's offsets (1.127), A's masks and A's offsets (0.078), it completes the square"
+ },
+ "rows": "M and W as job 51161: E76's 8 reading rows (maths 0-7), and FineWeb rows 32-39, 256 tokens",
+ "masks": "g in bf16; m = g + (1 - g) u, d ~ U(0, 1), a fresh generator per row set at draw d1 (seed 76200), so Z's masks are the very masks of A's read; W0 also at d2 (seed 79200), for the band; all 196 sites masked; readings in full fp32",
+ "numbers": {
+  "own": {"what": "forward KL(FT clean || state masked), and reverse, top-token agreement, entropy", "expected": {"W0": {"M": 1.3336, "W": 0.1313}, "A": {"M": 0.0776, "W": 0.0869}, "N": "measured; near A's unless the placement matters", "Z": "measured; near A's if masks alone"}, "blind_to": "forward rewards softness; which subcomponents move"},
+  "self": {"what": "forward KL(state clean || state masked)", "expected": {"W0": {"M": 0.0427, "W": 0.0858}, "A": {"M": 0.0646, "W": 0.0865}, "N": "equal to N's own within N's clean", "Z": "measured; W0's clean against W0's forward under A's masks"}, "blind_to": "how far the state's clean is from FT"},
+  "clean": {"what": "forward KL(FT clean || state clean)", "expected": {"W0": {"M": 1.8420, "W": 0.0397}, "A": {"M": 0.0121, "W": 0.0009}, "N": "0, under 1e-4", "Z": "W0's: the same forward"}, "blind_to": "masks"},
+  "g": {"what": "Sigma-g per position over all 196 sites and all columns, and the count of g > 0.5 per position, mean over rows and positions", "expected": {"W0": {"M": {"sum_g": 7481.4, "count": 7384.3}}, "A": {"M": {"sum_g": 7431.5, "count": 7335.0}}, "N": "measured", "Z": "A's on the same rows"}, "blind_to": "which subcomponents open"}
+ },
+ "control": {
+  "W0": 1.3336445323245454,
+  "A": 0.0776459192953769,
+  "Z_W0g": "Z's path given W0's g reads this job's W0 number on M, d1, within 1e-3: the same forward, with A's offsets loaded and reset just before",
+  "N_clean": "N's clean forward KL to FT clean on M under 1e-4: the same weights, two forwards in one precision, the matrices swapped against change_hooks",
+  "what": "First and alone, in order W0, A, Z's path, N's clean: W0 and A own on M at d1 reproduce job 51161's within 1e-3 (results/amend1.json, reads.<state>.M.d1). Any miss, NaN included: results/stopped_amend2.json and exit 1"
+ },
+ "rule": {
+  "on": "Row set M, forward KL(FT clean || state masked), draw d1, all positions, every number read in this job",
+  "band": "b = W0's difference between d1 and d2 on the forward KL on M, as Amendment 1; job 51161 read 0.0042269",
+  "do_nothing": "N own - A own > 3 b: 'A beats do-nothing'; < -3 b: 'do-nothing beats A'; otherwise 'same'. NaN anywhere: 'unread'. The size is reported as read",
+  "masks_alone": "s = (W0 own - Z) / (W0 own - A own). s >= 0.9: 'masks alone'; s <= 0.5: 'needs the offsets'; between: 'mixed'. A zero or negative denominator: 'no call', with or without Z. Any other NaN: 'unread'. s under 0 and over 1 take the near label and s is reported as read. The bands 0.5 and 0.9 are chosen here, not sourced: they are labels on a share reported as read, and nothing filed turns on the middle",
+  "ties": "Numbers compared rounded to 9 places. Exactly 3 b either way is 'same'; s exactly 0.9 is 'masks alone', exactly 0.5 'needs the offsets'",
+  "W": "Reported as read, no rule: its room is small (W0 clean 0.040, own 0.131; job 51161)"
+ },
+ "leans": {
+  "do_nothing": {"lean": "'same' or 'do-nothing beats A'", "confidence": "medium"},
+  "masks_alone": {"lean": "masks alone", "confidence": "medium"}
+ },
+ "what_each_result_does": {
+  "can see a placement": "'A beats do-nothing' and 'needs the offsets' or 'mixed': the own-mask read can see a placement; A stays a candidate map, for the user to weigh against masks in the loss (ask 24)",
+  "credits any forward near FT": "'same' or 'do-nothing beats A', whatever the share: the own-mask read credits any forward near FT, so it is not a D1 test and says nothing for A over B; the clean table stands alone, and what A has shown is only clean agreement at 0.52 of the update's squared size",
+  "reported as read": "'A beats do-nothing' with 'masks alone' or 'no call': the plan names no result, reported as read",
+  "after": "Either way the E79 write-up follows and the next step goes to the user; E79 has no amendments left"
+ },
+ "blind_to": "Which subcomponents move (not read); a single update, seed and draw; 16 rows. N's Delta opens with d, so N is Delta's best case, as the Terms' do-nothing is",
+ "not_run": "Other seeds or draws for N and Z; A and W0 on W in this job (job 51161's stand as references there); a do-nothing with Delta off, as E68 read it; N or Z under W0's frozen masks"
+}

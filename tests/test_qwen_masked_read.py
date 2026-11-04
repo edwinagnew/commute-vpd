@@ -202,3 +202,89 @@ def test_a1_score_on_nothing_read_and_all_read() -> None:
     assert got["leans"] == {"opens": False, "teeth_P": True, "teeth_C": True, "faithful_M": True, "faithful_W": True}
     reads["A"]["M"]["g"] = cell(sum_g=151.0, count=10.0)
     assert a1.score(reads)["outcome"] == "opens"
+
+
+# Amendment 2's rules: the zero or negative denominator, NaN, ties on the 3b band and on s = 0.5 and 0.9.
+a2 = load_experiment("qwen_masked_read", "rules_amend2")
+
+
+def test_a2_filed_values_agree_with_the_code_and_job_51161() -> None:
+    filed = json.loads((RESULTS / "predictions_amend2.json").read_text())
+    read = json.loads((RESULTS / "amend1.json").read_text())["reads"]
+    assert filed["control"]["W0"] == a2.W0_OWN == read["W0"]["M"]["d1"]["all"]["fwd"]
+    assert filed["control"]["A"] == a2.A_OWN == read["A"]["M"]["d1"]["all"]["fwd"]
+
+
+def test_a2_do_nothing() -> None:
+    assert a2.do_nothing(0.2, 0.078, 0.004) == "A beats do-nothing"
+    assert a2.do_nothing(0.05, 0.078, 0.004) == "do-nothing beats A"
+    assert a2.do_nothing(0.08, 0.078, 0.004) == "same"
+    assert a2.do_nothing(0.078, 0.078, 0.0) == "same"  # no band, no gap
+    for kw in ((NAN, 0.078, 0.004), (0.2, NAN, 0.004), (0.2, 0.078, NAN)):
+        assert a2.do_nothing(*kw) == "unread", kw
+
+
+def test_a2_do_nothing_ties_on_the_band() -> None:
+    assert a2.do_nothing(0.1 + 3 * 0.004, 0.1, 0.004) == "same"  # exactly 3 b, both ways: the rule's inequalities are strict
+    assert a2.do_nothing(0.1 - 3 * 0.004, 0.1, 0.004) == "same"
+    assert a2.do_nothing(0.1 + 3 * 0.004 + 1e-6, 0.1, 0.004) == "A beats do-nothing"
+    assert a2.do_nothing(0.1 - 3 * 0.004 - 1e-6, 0.1, 0.004) == "do-nothing beats A"
+
+
+def test_a2_masks_alone() -> None:
+    assert a2.masks_alone(1.0, 0.1, 0.0) == "masks alone"
+    assert a2.masks_alone(1.0, 0.7, 0.0) == "needs the offsets"
+    assert a2.masks_alone(1.0, 0.3, 0.0) == "mixed"
+    assert a2.masks_alone(1.0, -0.1, 0.0) == "masks alone" and a2.share(1.0, -0.1, 0.0) > 1  # Z under A's own: the near label, s as read
+    assert a2.masks_alone(1.0, 1.2, 0.0) == "needs the offsets" and a2.share(1.0, 1.2, 0.0) < 0  # Z over W0's own
+
+
+def test_a2_masks_alone_ties_on_the_share() -> None:
+    assert a2.masks_alone(1.0, 0.55, 0.5) == "masks alone"  # s = 0.9, closed, through the rounding of (1 - 0.55) / 0.5
+    assert a2.masks_alone(1.0, 0.75, 0.5) == "needs the offsets"  # s = 0.5, closed
+    assert a2.masks_alone(1.0, 0.56, 0.5) == "mixed" and a2.masks_alone(1.0, 0.74, 0.5) == "mixed"
+
+
+def test_a2_masks_alone_denominator_and_nan() -> None:
+    assert a2.masks_alone(1.0, 0.5, 1.0) == "no call"  # zero
+    assert a2.masks_alone(0.5, 0.5, 1.0) == "no call"  # negative
+    assert a2.masks_alone(1.0, NAN, 1.0) == "no call"  # the denominator reads without Z
+    assert math.isnan(a2.share(1.0, 0.5, 1.0)) and math.isnan(a2.share(0.5, 0.5, 1.0))
+    assert a2.masks_alone(1.0, NAN, 0.5) == "unread" and math.isnan(a2.share(1.0, NAN, 0.5))
+    assert a2.masks_alone(NAN, 0.5, 0.5) == "unread" and a2.masks_alone(1.0, 0.5, NAN) == "unread"
+    assert a2.masks_alone(math.inf, 0.5, 0.5) == "unread"  # inf / inf, not "mixed"
+
+
+def test_a2_outcome() -> None:
+    assert a2.outcome("A beats do-nothing", "needs the offsets") == "can see a placement"
+    assert a2.outcome("A beats do-nothing", "mixed") == "can see a placement"
+    assert a2.outcome("A beats do-nothing", "masks alone") == "reported as read"
+    assert a2.outcome("A beats do-nothing", "no call") == "reported as read"
+    assert a2.outcome("A beats do-nothing", "unread") == "unread"
+    assert a2.outcome("unread", "masks alone") == "unread"
+    for alone in ("masks alone", "needs the offsets", "mixed", "no call", "unread"):  # either of these decides whatever the share
+        assert a2.outcome("same", alone) == "credits any forward near FT"
+        assert a2.outcome("do-nothing beats A", alone) == "credits any forward near FT"
+
+
+def test_a2_score_on_nothing_read_and_all_read() -> None:
+    empty = a2.score({})
+    assert empty["outcome"] == "unread" and empty["leans"] == {"do_nothing": None, "masks_alone": None}
+    assert math.isnan(empty["b"]) and math.isnan(empty["s"]) and math.isnan(empty["as_read"]["N"]["W"]["own"])
+
+    def cell(fwd: float, self_fwd: float = 0.0) -> dict[str, dict[str, float]]:
+        return {"all": {"fwd": fwd, "self_fwd": self_fwd}}
+
+    reads = {"W0": {"M": {"d1": cell(1.33), "d2": cell(1.326)}}, "A": {"M": {"d1": cell(0.078)}},
+             "N": {"M": {"clean": cell(0.0), "d1": cell(0.08, 0.08)}, "W": {"d1": cell(0.09, 0.089)}}, "Z": {"M": {"clean": cell(1.84), "d1": cell(0.5)}}}
+    got = a2.score(reads)
+    assert math.isclose(got["b"], 0.004) and math.isclose(got["N_own_minus_A_own"], 0.002)
+    assert got["do_nothing"] == "same" and got["masks_alone"] == "mixed" and got["outcome"] == "credits any forward near FT"
+    assert got["leans"] == {"do_nothing": True, "masks_alone": False}
+    assert got["as_read"]["N"]["W"]["self"] == 0.089 and got["as_read"]["N"]["M"]["clean"] == 0.0
+    reads["N"]["M"]["d1"] = cell(0.2)
+    got = a2.score(reads)
+    assert got["do_nothing"] == "A beats do-nothing" and got["outcome"] == "can see a placement" and got["leans"]["do_nothing"] is False
+    del reads["Z"]["M"]["d1"]  # stopped before Z: the first rule stands, the second is unread
+    got = a2.score(reads)
+    assert got["do_nothing"] == "A beats do-nothing" and got["masks_alone"] == "unread" and got["outcome"] == "unread" and got["leans"]["masks_alone"] is None

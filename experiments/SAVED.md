@@ -75,7 +75,9 @@ Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `
 - `amend5_vectors.pt` (`{"a", "a_half2", "S_old"}`) and `amend5_windows.pt` / `amend6_windows.pt` (rows lists, torch.save of `self.rows`). Amendment 4's `amend4_vectors.pt` was written to the same place by code but is not present.
 - Amendments 2, 3 read these states and train nothing; logs `run.out`, `amend{2,3,4,5,6}.out`.
 
-## qwen_masked_read (E79; coded 2026-11-04, nothing there until it runs)
+## qwen_masked_read (E79; 2026-11-04)
+- `a1_{state}_{rows}_{cell}.safetensors`, 38 files, ~712 KB in all (Amendment 1, job 51161, `amend1.py`): `state` W0, A, P, C, B, L; `rows` M or W; `cell` clean, d1 (W0 also d2), or g. Per position [8, 256] on Γ's forward of the state itself: clean and masked cells `fwd`, `rev`, `H` F16, `agree` U8 against FT clean, masked cells also `self_fwd` F16 against the state's own clean; `g` cells `sum_g` F32, `count` I32. Absent: logits, masks, g.
+- `a2_{state}_{rows}_{cell}.safetensors`, 22 files, ~410 KB expected, same arrays (Amendment 2, `amend2.py`; coded, nothing there until it runs): W0 and A on M only (W0 also d2), Z_W0g on M (clean, g, d1; the control: Z's path given W0's g), N and Z on M and W. N: FT's weights, components unmoved, zero offsets. Z: W0's weights and components, zero offsets, A's g.
 - `{state}_{rows}_{cell}.safetensors`, about 15 KB each, ~30 files: `state` W0, A, B, L or FT (FT clean against itself, for its entropy); `rows` M (maths 0-7) or W (FineWeb 32-39); `cell` clean, d1, d2 (mask draws, seeds 76200, 79200), own (M, Γ on the state's own forward), self (W0 only, M: against W0 clean, not FT). Per position [8, 256], against FT clean: `fwd`, `rev`, `H` F16, `agree` U8; W0's masked cells also `fwd_T{T}` F16 at E74's temperatures. Written by `experiments/qwen_masked_read/run.py`; load with `safetensors.torch.load_file`. Absent: logits and masks. g per row is on the node's `/ephemeral/$USER/e79` (5.6 GB), not kept.
 
 ## interchange_67m, method_table, neuron_sparsity, baseline_neurons, baseline_weights, pass_reread, qwen_adversary, qwen_maps, qwen_pass_test
