@@ -112,6 +112,13 @@ def random_pieces(shape_u: tuple[int, ...], shape_v: tuple[int, ...], seed: int,
     return RU, torch.randn(shape_v, generator=gen, device=device)
 
 
+def gaussian_at_norm(M: Tensor, seed: int) -> Tensor:
+    """A Gaussian matrix at M's Frobenius norm, drawn on M's device and dtype: E75 Amendment 1's random at seed 75_100 + the site's index."""
+    gen = torch.Generator(M.device).manual_seed(seed)
+    A = torch.randn(M.shape, generator=gen, device=M.device, dtype=M.dtype)
+    return A * (M.norm() / A.norm())
+
+
 # ----------------------------------------------------------------------------- stage S, one site
 
 
