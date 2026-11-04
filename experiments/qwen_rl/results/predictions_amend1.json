@@ -30,6 +30,8 @@
  "saved_control": {"control": true, "measure": "W0 rescored on the job's card against A0: per set, gap = |strict_dropped - A0's| and f = the number of problems whose (fits, strict) changed from acc/W0_<set>.jsonl, over W0's fitting problems. N100 rebuilt from its dW: |strict_dropped - N.json's| <= f, per set, so exact if f is 0.",
                    "why_f_is_flips": "The plan's f is the gap. A gap can cancel to 0 with answers changed, and two noise draws make N100's gap exceed W0's about half the time per set: the gap would stop the job on noise. The flip share bounds the gap and is 0 only when nothing changed. Both are recorded.",
                    "gap_max": 0.015, "gap_max_source": "P0's tol: a W0 further off is not a card floor",
+    "flips_max": 3,
+    "amended": "2026-11-04, after the first N100 read and before any state it guards: N100's check is now per-problem, flips of (fits, strict) against the pod's acc/N_<set>.jsonl <= flips_max per set. As filed, f is W0's flips, 0 on this card, so one changed answer stops the job: the first read had 1 of 1,319 GSM8K answers changed (idx 31, ran past the window; gap 1.1e-4) and 0 of 1,197 GSM1K. W0 cannot measure this floor: it is not rebuilt from a saved dW. flips_max 3 is three times the larger read and 0.23 points of GSM8K, under B1's nearest band gap of 1.4 points; a wrong state flips far more (N100 and W0 differ on hundreds). Cause of the one flip not established.",
                    "fail": "stop"},
  "B1": {"measure": "N50 minus W0 on the same card, whole pool, strict; each seed read alone", "arrives_min": 0.024, "after_below": 0.01,
         "labels": {"arrives": "with the 'We' flip", "after": "after step 50", "between": "no call"},
