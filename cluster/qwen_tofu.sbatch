@@ -5,13 +5,14 @@
 #   sbatch cluster/qwen_tofu.sbatch --stage T --rate 1e-5      (and 2e-5)
 #   sbatch --time=00:40:00 --dependency=afterok:<T's id> cluster/qwen_tofu.sbatch --stage G --rate 1e-5
 # Exit 0 done; 1 a stop (results/stopped.json) or a refusal.
+# --mem: E78 peaked at about 14 GB on the host; job 51323 waited 10 min asking for 64G with 4 cards free and 42 GB unallocated.
 #SBATCH --job-name=commute-qwen_tofu
 #SBATCH --partition=compute
 #SBATCH --account=c11
 #SBATCH --qos=debug
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --mem=24G
 #SBATCH --time=01:50:00
 #SBATCH --export=ALL,PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 #SBATCH --output=cluster/logs/%x-%j.out
