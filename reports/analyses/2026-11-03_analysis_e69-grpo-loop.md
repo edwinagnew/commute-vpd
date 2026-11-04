@@ -1,30 +1,40 @@
 # Does RL on Qwen3-1.7B gain more than the same loop with shuffled rewards?
 
 *E69, 2026-11-03. Plan `reports/plans/2026-11-03_plan_e69-grpo-loop.md`, notebook `notebooks/E69_qwen_rl.ipynb`, numbers
-`experiments/qwen_rl/results/lr1e-6w10/{analysis,rollouts_summary,cosines}.json`, figures `experiments/qwen_rl/figures/`. Wording of the claims revised the same day after `reports/reviews/2026-11-03_review_e69-independent-check.md`; no filed prediction changed.*
+`experiments/qwen_rl/results/lr1e-6w10/{analysis,rollouts_summary,cosines}.json`, figures `experiments/qwen_rl/figures/`. Wording of the claims revised the same day after `reports/reviews/2026-11-03_review_e69-independent-check.md`; no filed prediction changed. Amendment 1, 2026-11-04: plan `reports/plans/2026-11-03_plan_e69-amend1.md`, rules `results/predictions_amend1.json`, scores `results/amend1_score.json`, unfiled readings `results/amend1_reading.json`. **Amendment 1's reading is provisional: no independent check of it has run.***
 
-We trained Qwen3-1.7B on maths problems by reinforcement learning, by the same loop with rewards shuffled, and by supervised training on its own correct answers. Reinforcement learning beat the shuffled loop on the same test problems when the exact answer format was required, and on new problems as it trained, while the shuffled loop's own gain mostly cancels once answers running past the window count, for a reason we have not established. The updates are ready to go forward to the decomposition, with the shuffled loop read as a large change in behaviour without signal and not as a do-nothing.
+We trained Qwen3-1.7B on maths problems by reinforcement learning, by the same loop with rewards shuffled, and by supervised training on its own correct answers, then repeated the first two with a second seed. With answer format set aside, reinforcement learning beat the shuffled loop on the same test problems by about one point on the first seed and six on the second, and we cannot explain that gap. The updates are ready to go forward to the decomposition with this reading marked provisional, the shuffled loop being a large change in behaviour without signal and not a do-nothing.
 
 ## The answer
 
-Under the strict grader, RL beat this shuffled-reward run by three to eight points on the same test problems, depending on how long answers are counted. On answers all three states finish it reads +3.2 and +3.1. The standard error over problems, with the weights fixed, is near one point. Each arm is one seed, so the spread between runs is not measured, for either arm. With format ignored, on those same answers, the lead is about one point, +1.2 and +0.7, and not separable from zero. Accepting forms like "So the answer is 20" takes the strict lead there to +1.25 (0.90) and +0.81 (1.06). So the firm lead may be largely answer format, and better maths is not shown. The null's own gain is also one seed's and remains unexplained.
+Reinforcement learning beat the shuffled-reward null on the same test problems on both seeds, by very different amounts. With answer format set aside, the lead is about one point on the first seed and six on the second, and we cannot explain that gap. We had filed a lean towards no clear lead there, and it reversed. The null's own gain only just cleared its filed band on the second seed. Better maths is not shown. This reading is provisional until an independent check has run.
 
-**The claim we can make, in plain words.** Under the strict grader, RL's update raised accuracy on unseen problems more than this shuffled-reward update did, on both test sets, under every way of treating long answers. The lenient grader gives the same sign in every cell, but only some of those leads stand clear of noise. The lead is largest when an answer past the window counts as wrong, as it does for the reward, and most of it there is the null's answers not finishing. With format ignored on that rule, RL leads by four to six points. On sampled answers read the same way, RL climbs steadily to five points above the unchanged model, with a standard error of 1.1 to 1.2, while the null stays within two points of it. RL's sampled lead over the null reads +5 in the last five steps and +3 averaged over the last fifty. The null's right-number share among finished samples rises as much as RL's, and its lower finishing share cancels that, subject to the selection noted below.
+**The numbers.** All are RL minus the null on GSM8K test, on answers all three states finish, with the standard error over problems in brackets. The first seed reads +3.21 (0.99) under the strict grader and +1.25 (0.90) under the format-relaxed grader, on 1,123 problems. The second seed reads +6.42 (1.07) under both, on 1,200 problems. The two graders agree there because every answer of both arms that fits the window writes the exact answer line: 1,255 of 1,255 for RL and 1,277 of 1,277 for the null. The first seed's null did not, with 1,124 of its 1,154. So "the lead may be largely answer format" holds for the first seed and not for the second.
 
-**The claim we cannot make yet** is that RL does better maths than this null, or that the lead holds against shuffled-reward runs in general. RL's gains of nine and seven points overstate what the reward added, since format is part of them and the null gained too. With format ignored, the lead is about two points if answers may run long, and about one, within noise, on answers all three states finish. Keeping a problem because the null finished it may favour the null, so that one point may understate RL. Kept on the unchanged model alone, whole answers read +2.15 and +1.27, so the right-number lead is one to two points unless failing to finish counts against an answer.
+**The claim we can make, in plain words.** Under the strict grader, RL's update raised accuracy on unseen problems more than a shuffled-reward update did. That holds on both seeds, on both test sets, and under every way of treating long answers. With format set aside the same sign holds in every cell of the table below, and on the second seed every cell stands clear of noise. On the first seed only some do. RL's own gain is close between seeds, and the null's is not: format-relaxed, on problems kept at that arm and the unchanged model, RL reads +7.23 and +6.58, the null +5.80 and +0.16. That says which arm's reading moved between seeds, and not why.
+
+On the first seed, the lead is largest when an answer past the window counts as wrong, as it does for the reward, and most of it there is the null's answers not finishing. On sampled answers read that way, RL climbs to five points above the unchanged model, with a standard error of 1.1 to 1.2, while the null stays within two points of it. RL's sampled lead reads +5 in the last five steps and +3 averaged over the last fifty. These sampled readings have not been decoded for the second seed.
+
+**The claim we cannot make yet** is that RL does better maths than the null, that RL learned maths at all, or what size the lead is. Two seeds give a format-relaxed lead of +1.25 and +6.42, so neither number stands for the other, and their average would hide what is unexplained. RL's gains overstate what the reward added, since format is part of them and the first seed's null gained nearly as much format-relaxed. The graders are also coarse: the format-relaxed one reads the stated number and the lenient one the last number, and neither checks the working. On the first seed only, keeping a problem because the null finished it may favour the null. Kept at the unchanged model alone, whole answers there read +2.15 and +1.27.
 
 | RL minus null, same problems, points (SE) | drop rule | whole answers | capped answers |
 |---|---|---|---|
-| GSM8K test, strict grader | +3.2 (1.0) | +4.6 (1.0) | +7.4 (1.1) |
+| **First seed.** GSM8K test, strict grader | +3.2 (1.0) | +4.6 (1.0) | +7.4 (1.1) |
 | GSM1K, strict grader | +3.1 (1.2) | +4.8 (1.2) | +8.4 (1.2) |
+| GSM8K test, format-relaxed grader | +1.25 (0.90) | +2.50 (0.97) | |
+| GSM1K, format-relaxed grader | +0.81 (1.06) | +3.09 (1.15) | |
 | GSM8K test, lenient grader | +1.2 (0.9) | +2.1 (1.0) | +4.3 (1.0) |
 | GSM1K, lenient grader | +0.7 (1.1) | +2.4 (1.1) | +6.3 (1.2) |
 | GSM8K test, lenient, kept at the unchanged model only | | +2.15 (0.96) | |
 | GSM1K, lenient, kept at the unchanged model only | | +1.27 (1.19) | |
-| GSM8K test, strict, other forms of the answer line accepted | +1.25 (0.90) | | |
-| GSM1K, strict, other forms of the answer line accepted | +0.81 (1.06) | | |
+| **Second seed.** GSM8K test, strict grader | +6.42 (1.07) | +6.44 (1.08) | +6.52 (1.09) |
+| GSM1K, strict grader | +4.67 (1.22) | +6.43 (1.21) | +4.18 (1.16) |
+| GSM8K test, format-relaxed grader | +6.42 (1.07) | +6.44 (1.08) | |
+| GSM1K, format-relaxed grader | +4.67 (1.22) | +6.43 (1.21) | |
+| GSM8K test, lenient grader | +6.58 (1.08) | +6.67 (1.08) | +6.75 (1.09) |
+| GSM1K, lenient grader | +4.67 (1.22) | +6.68 (1.21) | +4.43 (1.19) |
 
-The drop-rule column keeps problems that fit at the unchanged model, RL and the null alike: 1,123 and 868. The row kept at the unchanged model only has 1,255 and 1,023 problems and no selection on the null's outcome. The last two rows also accept the lower-case phrase and the `\boxed` and bold wrappers. All four added rows come from `reports/reviews/2026-11-03_review_e69-independent-check.md`, not from `analysis.json`. These standard errors count problems at fixed weights. They carry no seed-to-seed spread of either arm, which this run cannot measure. The two test sets are two samples of problems read from the same two weights, so their agreement does not replicate the arm difference.
+The drop-rule column keeps problems that fit at the unchanged model, RL and the null alike: 1,123 and 868 on the first seed, 1,200 and 964 on the second. The rows kept at the unchanged model only have 1,255 and 1,023 problems and no selection on the null's outcome, and they come from `reports/reviews/2026-11-03_review_e69-independent-check.md`. The format-relaxed grader accepts "the answer is N" in either case wherever it stands, and the `\boxed` and bold wrappers. Only the GSM8K drop-rule cells of the strict and format-relaxed rows are scored by a filed rule. The other second-seed cells, and the whole-answer cells of the format-relaxed rows, are read from `results/amend1_reading.json`. These standard errors count problems at fixed weights, so they carry no spread between seeds. The two test sets are two samples of problems read from the same weights, so their agreement within a seed does not replicate the arm difference.
 
 ## What we were trying to test
 
@@ -38,9 +48,19 @@ All use AdamW at a rate of one in a million, reached over ten warm-up steps. Acc
 
 Long answers need a rule, and `qwen_eval.summary` defines three. The **drop rule**, the filed one, keeps problems whose answers fit the window at both states. **Whole answers** grades every problem on its full response, up to 512 new tokens. **Capped answers** grades every problem on the text the window keeps.
 
+**The amendment.** One seed per arm could not say whether the lead or the null's gain would come back, so three things were added.
+
+- **A second seed.** RL and the shuffled-reward null again, from the unchanged model, on the same recipe and test problems, with a different draw seed. It rules out reading one walk of each arm as the arm.
+- **Saved steps.** Greedy answers at steps 10, 20 and 50 of both arms on both seeds, on GSM8K test only. They rule out reading step 100 as the end of a steady climb.
+- **Forced openings, first seed only.** The unchanged model with its answers prefilled "We are" or "We need", and the null at step 100 prefilled with the unchanged model's own first two words. They test whether the opening words carry the null's gain.
+
+The **format-relaxed grader** was added to read the lead without the answer line's exact form. It is blind to the maths beyond the stated number.
+
 ## What we expected, and why
 
 We expected RL to gain three to eight points on test and about the same on GSM1K. We expected the null to stay within a point and a half, because its expected gradient is zero. One update per batch also removes the clipping that the scoping report, citing Spurious Rewards, blames for gains under random rewards. We expected the right-over-wrong signal to grow in RL only. Whether SFT moves the policy more than RL was left open.
+
+For the second seed we filed these before reading it. RL's lead would replicate under the strict grader, since the first seed read +3.21. Under the format-relaxed grader we leaned towards an ambiguous reading or no lead, since the first seed read +1.25. A lead replicates at two points and two standard errors, and under one point is no lead. The null's gain counts as systematic at 1.5 points or more with the first seed's sign. We expected RL's lenient gain at step 10 to be within a point of zero, and forcing "We are" on the unchanged model to add nothing.
 
 ## Question 1: paired gains from the unchanged model
 
@@ -61,11 +81,45 @@ Figures: `figures/gains.png`, `figures/grader.png`. Points, with paired SE over 
 | | | null | +4.63 (1.16) | 886 | +3.59 (1.14) | -0.58 (1.17) |
 | | | SFT | +0.00 (0.83) | 1009 | +0.84 (0.85) | +0.42 (0.82) |
 
-**Reading it.** RL gains under every rule, and the rule barely changes its number. The null ranges from a clear gain to nothing as long answers count against it. SFT's strict gain is almost all format, since its lenient gain is near zero on both sets. On GSM8K test, no RL answer that fits the window is right yet missing the answer line, while the unchanged model has 29.
+**Reading it.** RL gains under every rule, and the rule barely changes its number. The null ranges from a clear gain to nothing as long answers count against it. SFT's strict gain is almost all format, since its lenient gain is near zero on both sets. On GSM8K test, no RL answer that fits the window is right yet missing the answer line, while the unchanged model has 29. This table is the first seed's. Question 2 gives the second seed's gains.
+
+## Question 2: does the lead come back on a second seed?
+
+Figure: `figures/leads.png`. Points, with SE over problems at fixed weights.
+
+| GSM8K test, on answers all three states finish | first seed, 1,123 problems | second seed, 1,200 problems |
+|---|---|---|
+| RL minus null, strict | +3.21 (0.99) | +6.42 (1.07) |
+| RL minus null, format-relaxed | +1.25 (0.90) | +6.42 (1.07) |
+| RL minus null, lenient | +1.16 (0.89) | +6.58 (1.08) |
+
+| gain from the unchanged model, on answers both states finish | first seed: RL | second seed: RL | first seed: null | second seed: null |
+|---|---|---|---|---|
+| GSM8K test, strict: the filed reading | +9.04 (1.13) | +8.31 (1.11) | +5.63 (1.19) | +1.62 (1.11) |
+| GSM8K test, format-relaxed | +7.23 (1.08) | +6.58 (1.08) | +5.80 (1.09) | +0.16 (1.06) |
+| GSM8K test, lenient | +6.74 (1.07) | +6.17 (1.06) | +5.36 (1.07) | −0.41 (1.05) |
+| GSM1K, strict | +7.08 (1.19) | +5.94 (1.22) | +3.50 (1.31) | +1.10 (1.33) |
+| GSM1K, format-relaxed | +5.85 (1.14) | +4.82 (1.17) | +4.74 (1.17) | +0.00 (1.29) |
+
+**Reading it.** Yes, and more than we filed. A lean we filed reversed: under the format-relaxed grader we expected an ambiguous reading or no lead, and the second seed reads +6.42, past the rule's two points and two standard errors. The rule reads the second seed alone. The first seed's +1.25 still does not clear it. The strict lead also replicates, as filed.
+
+**Why the two graders agree on the second seed.** Every answer of both arms that fits the window passes the strict grader's line check, so the strict and format-relaxed grades match on every such answer. The counts are 1,255 of 1,255 for RL and 1,277 of 1,277 for the null, and on GSM1K 1,044 of 1,044 and 1,081 of 1,081. On the first seed, RL's answers do too, with 1,249 of 1,249. Its null's do not, with 1,124 of 1,154, and 23 of the null's answers there change grade between the two graders. That is what separates +3.21 from +1.25. So the earlier reading "the lead may be largely answer format" is a reading of the first seed, and the second seed does not share it.
+
+**The spread between seeds is unexplained.** The format-relaxed lead differs by 5.17 points between seeds, each on its own problems. On the 1,108 problems all five states finish, the difference is +4.51 with a standard error of 1.35 at fixed weights, so problem noise does not cover it. No cause is named. RL's own format-relaxed gains differ by under one point and the null's by more than five, which locates the difference and does not explain it.
+
+**The null gained again, only just.** On GSM8K test its filed gain reads +1.62 (1.11) against a band of 1.5, so the filed label is "systematic" by 0.12 points, and the rule has no standard error in it. The first seed read +5.63. GSM1K reads +1.10 (1.33). With format set aside the second seed's gain is +0.16 (1.06) format-relaxed and −0.41 (1.05) lenient, where the first seed's read +5.80 and +5.36.
+
+**The first seed's drift in form and length did not repeat.** The first seed's null dropped the exact answer line in 30 of its fitting answers, grew to 255 tokens on average, and fitted the window on 87.5% of problems. The second seed's null dropped it in none, reads 198 tokens against the unchanged model's 199, and fits on 96.8%. Its sampled reward does not collapse either: the mean over steps 76-95 is 0.83, against 0.62 on the first seed, and its lowest is 0.70 at step 13. None of this is offered as the cause of either null's gain.
+
+| other readings at step 100 | first seed: RL | second seed: RL | first seed: null | second seed: null |
+|---|---|---|---|---|
+| size of the update | 0.351 | 0.347 | 0.370 | 0.335 |
+| KL from the unchanged model | 0.194 | 0.196 | 0.321 | 0.137 |
+| right-over-wrong signal ΔR | 8.69 | 7.32 | 5.10 | 4.38 |
 
 ## Question 3: what the null's gain consists of
 
-Figures: `figures/accounting.png`, `figures/openings.png`, `figures/lengths.png`.
+Figures: `figures/accounting.png`, `figures/openings.png`, `figures/lengths.png`, all from the first seed, and `figures/saved_steps.png` for both seeds. The accounting, the openings table and the sampled tables below are the first seed's unless a row says otherwise.
 
 **The accounting.** Net problems right, arm minus unchanged model, as wrong-to-right and right-to-wrong counts.
 
@@ -102,8 +156,12 @@ So the capped number differs for one reason. On GSM8K test, 53 problems the unch
 | RL | 221 | 243 | 94.7% | 2.1% |
 | null | 255 | 284 | 87.5% | 6.1% |
 | SFT | 196 | 224 | 95.8% | 1.0% |
+| RL, second seed | 186 | 215 | 95.1% | 2.5% |
+| null, second seed | 198 | 222 | 96.8% | 0.7% |
 
-**What changed in the answers.** All of the null's greedy answers on both sets open "We are" or "We need". At the unchanged model 19 do on GSM8K test, and none of the null's answers is identical to the unchanged model's. RL's answers moved another way: "Step 1:" went from 425 to zero and "Let's" took over. SFT stayed close, with "Step 1:" rising to 540 and 420 answers identical word for word.
+**What changed in the answers.** On the first seed, all of the null's greedy answers on both sets open "We are" or "We need". At the unchanged model 19 do on GSM8K test, and none of the null's answers is identical to the unchanged model's. RL's answers moved another way: "Step 1:" went from 425 to zero and "Let's" took over. SFT stayed close, with "Step 1:" rising to 540 and 420 answers identical word for word.
+
+On the second seed the words differ. All 1,319 of the null's greedy answers on GSM8K test open "Step 1:", and none opens "We". RL's answers have no common opening: the most frequent, "There are", opens 30.
 
 | greedy opening, GSM8K test | unchanged model: n, right | RL: n, right | null: n, right | SFT: n, right |
 |---|---|---|---|---|
@@ -121,7 +179,7 @@ The same flip happens in sampled answers, and early. "We" openings go from 3% to
 2. *Longer answers are more often right.* Not supported problem by problem. Kept problems going wrong to right lengthened by 48 tokens, and those going right to wrong by 45. The correlation is 0.018 on GSM8K test and −0.027 on GSM1K. This test is blind to a uniform change of style.
 3. *Format.* Broken for the null. Its lenient gain under the drop rule is 5.36 against 5.63 strict.
 4. *Self-checking.* Phrases such as "double-check" and "wait" rose from 0.7 to 12.3 percent of answers, by a crude count. Those answers gain 7.6 points with se 4.4, and the others gain 5.5 with se 1.2. So they do not carry it.
-5. *The opening flipped, and the new opening is better.* This was our favoured hypothesis, and its most direct test counts against it. In the unchanged model's own 51,200 samples, "We" openings can be compared with "Let" openings on the same problem, across 644 problems. Ignoring format and counting only answers inside the window, "We" is 2.5 points worse with se 1.2. It is also 9.5 points worse on reward with se 1.5, and 20 tokens longer. "Step" against "Let" on the same problem reads 0.0 with se 0.7, so the large differences between openings in the table above are which problems each opening goes with. The test reads samples of the unchanged model, not greedy answers of the null, so it does not rule out an opening effect that only appears there.
+5. *The opening flipped, and the new opening is better.* This was our favoured hypothesis, and its most direct test counts against it. In the unchanged model's own 51,200 samples, "We" openings can be compared with "Let" openings on the same problem, across 644 problems. Ignoring format and counting only answers inside the window, "We" is 2.5 points worse with se 1.2. It is also 9.5 points worse on reward with se 1.5, and 20 tokens longer. "Step" against "Let" on the same problem reads 0.0 with se 0.7, so the large differences between openings in the table above are which problems each opening goes with. The test reads samples of the unchanged model, not greedy answers of the null. The forced openings below test it directly, and their two filed rules read opposite ways.
 6. *Some wrong answers are easy to flip by any change.* Partly supported. Of the 199 problems the unchanged model gets wrong and that fit at all four states on GSM8K test, the null gets 117 right, RL 129, and 97 both. If independent, 76 would be right in both. Only 48 stay wrong in all three arms. Whole-answer gains are largest on the third of problems with the longest answers: 12.2 for the null, 15.2 for RL and 7.9 for SFT. This cannot alone give a net gain, since the null's flows are 125 against 61.
 7. *A bad file or a changed evaluation.* Broken. The unchanged model's files match the run's checksums, and the same code graded every state. SFT, nearest to the unchanged model, gains near zero under the lenient grader.
 
@@ -156,9 +214,48 @@ The same flip happens in sampled answers, and early. "We" openings go from 3% to
 - The accounting is arithmetic on the per-problem files, and it stands.
 - The collapse being format stands, from the decoded text of one run.
 - The null's real whole-answer gain, 4.85 with se 1.23, stands as a reading of this seed at step 100.
-- Its cause is unexplained: we can rule out format, selection, and length problem by problem. The opening stays open, with its most direct test counting against it.
+- Its cause is unexplained: we can rule out format, selection, and length problem by problem, on this seed. The opening stays open, with its two forced tests reading opposite ways.
 
-Literature: the scoping report records from Spurious Rewards that random rewards gave 21.4 of 29.1 points on Qwen2.5-Math-7B through clipping, with no gain without clipping. Here there is no clipping, since the ratio is 1, and the null still gains on whole answers. With an answer past the window counted as wrong, it does not. This is another model, task and grader, and that paper was read only through the scoping report's summary. A later abstract reports Qwen3-8B improving under incorrect rewards.
+**When the gain arrives: the saved steps.** Figure: `figures/saved_steps.png`. Gain from the unchanged model in points, whole answers, GSM8K test, all 1,319 problems. The unchanged model is the zero line: 75.8% right under the strict grader and 78.5% format-relaxed.
+
+| arm, seed, grader | step 10 | step 20 | step 50 | step 100 |
+|---|---|---|---|---|
+| RL, first seed, strict | +1.06 (1.12) | +4.85 (1.13) | +6.37 (1.11) | +9.40 (1.15) |
+| RL, second seed, strict | +3.79 (1.09) | +2.73 (1.16) | +6.97 (1.15) | +8.64 (1.13) |
+| null, first seed, strict | +4.17 (0.96) | +5.99 (1.15) | +1.67 (1.25) | +4.85 (1.23) |
+| null, second seed, strict | +0.45 (1.05) | +4.32 (1.10) | +0.30 (1.10) | +2.20 (1.14) |
+| RL, first seed, format-relaxed | −1.59 (1.06) | +2.20 (1.08) | +3.79 (1.05) | +6.75 (1.11) |
+| RL, second seed, format-relaxed | +1.14 (1.04) | +0.08 (1.12) | +4.32 (1.11) | +5.99 (1.08) |
+| null, first seed, format-relaxed | +1.52 (0.88) | +3.56 (1.10) | −0.99 (1.22) | +4.25 (1.14) |
+| null, second seed, format-relaxed | +1.21 (0.97) | +1.67 (1.06) | −2.20 (1.05) | −0.45 (1.07) |
+
+Steps 10, 20 and 50 were read on an L40 and come from `amend1_score.json`. Step 100 was read on the H100 and comes from `amend1_reading.json`, computed by the same paired formula. The unchanged model's grade and fit match between the two cards on all 1,319 problems. The first seed's null rebuilt at step 100 on the L40 reads +4.78 (1.23) strict, one answer apart.
+
+**Reading it.** No single step here is a trend. The null moves up and down by about four points between saved steps on both seeds, so its step-100 reading is one point of a walk. RL rises across the steps on both seeds, with one dip on the second. The whole-answer gaps at step 100, +4.55 and +2.50 on the first seed and +6.44 on the second, differ from the headline's because this table keeps every problem.
+
+The filed rule on arrival read the null's strict whole-answer gain at step 50. A gain of at least 2.4 points, half the first seed's 4.85, would mean it had arrived by then, along with the switch to "We" openings. A gain under one point would mean it arrived after step 50, and anything between is no call. The first seed reads +1.67, no call. The second seed reads +0.30, "after step 50". The rule looks at one step: at step 20 the same quantity reads +5.99 and +4.32. We do not explain the difference between the seeds' labels.
+
+We expected RL's lenient whole-answer gain at step 10 to stay within a point of zero on the first seed. It read −1.97 (1.04), so that expectation was missed. The second seed, which the rule does not cover, reads +0.83 (1.03).
+
+| greedy answers, GSM8K test: most common opening, count | step 10 | step 20 | step 50 | step 100 |
+|---|---|---|---|---|
+| null, first seed | Let's break, 615 | We are, 724 | We are, 1,220 | We are, 1,023 |
+| null, second seed | Let's break, 966 | Let's break, 1,175 | Step 1:, 956 | Step 1:, 1,319 |
+| RL, first seed | Step 1:, 657 | Let's break, 766 | Let's solve, 1,116 | Let's break, 991 |
+| RL, second seed | Let's break, 194 | Let the, 47 | There are, 39 | There are, 30 |
+
+**Forcing the opening, first seed only.** Gains are over the unchanged model on the same card, whole answers, GSM8K test. The control passed first: the unchanged model prefilled with its own first two words reproduces its answers on all 1,319 problems.
+
+| state | strict | format-relaxed | lenient |
+|---|---|---|---|
+| unchanged model prefilled "We are" | −0.83 (1.17) | +1.74 (1.06) | +2.50 (1.02) |
+| unchanged model prefilled "We need" | +1.36 (1.12) | +1.21 (1.07) | +1.06 (1.05) |
+| null at step 100 | +4.78 (1.23) | +4.17 (1.14) | +4.09 (1.13) |
+| null at step 100 prefilled the unchanged model's own openings | −1.06 (1.33) | +2.50 (1.13) | +2.27 (1.12) |
+
+**Reading it.** The two filed tests point opposite ways, and we leave that standing. Giving the unchanged model the null's most common opening did not raise its strict accuracy: the rule says the opening does not carry the null's gain if this reads zero or below, and it reads −0.83. Taking the opening away from the null did lower it: the rule says the opening carries the gain if the null loses at least half of 4.85, and it loses 5.84 (1.12). Unfiled, under the format-relaxed grader the same removal loses 1.67, under a third of what the strict grader shows. No forced-opening read exists for the second seed, whose null never opens "We".
+
+Literature: the scoping report records from Spurious Rewards that random rewards gave 21.4 of 29.1 points on Qwen2.5-Math-7B through clipping, with no gain without clipping. Here there is no clipping, since the ratio is 1, and the null still gains on whole answers: 4.85 on the first seed, and 2.20 with se 1.14 on the second. With an answer past the window counted as wrong, it does not. This is another model, task and grader, and that paper was read only through the scoping report's summary. A later abstract reports Qwen3-8B improving under incorrect rewards.
 
 **Do the updates share a direction?** Hardly. Cosines over all 196 matrices, `results/lr1e-6w10/cosines.json`:
 
@@ -224,32 +321,52 @@ The null's own readings go 0.56, −0.58, 0.68, then 5.10. So ΔR under no signa
 
 ## What we learned
 
-Under the strict grader, RL's update raised accuracy on fresh problems more than a shuffled-reward run did, sampled and greedy. Part of that lead is the reward's answer format, and on answers all three states finish that part may be most of it. With format ignored and an answer past the window counted as wrong, four to six points of greedy lead remain, most of them because the null's answers more often fail to finish. On answers all three states finish, about one point remains, within noise, so better maths is not shown. The null cannot be read as an update that changes no behaviour. It moves the policy further than RL, rewrites how every greedy answer opens, and can lose the answer line for twenty steps.
+Under the strict grader, RL's update raised greedy accuracy on fresh problems more than a shuffled-reward run did on both seeds. How much of that lead is the reward's answer format depends on the seed. On the first seed, on answers all three states finish, format may be most of it, and about one point remains within noise. On the second seed none of the lead is format, since both arms always write the line, and six points remain. Better maths is not shown on either: a shuffled-reward run gained nearly as much with format set aside on the first seed, and our graders do not check the working. The spread between seeds is unexplained. The null cannot be read as an update that changes no behaviour. On both seeds it rewrites how nearly every greedy answer opens, on the first seed it moves the policy further than RL and loses the answer line for twenty steps. On the second its KL is below RL's and its reward shows no such collapse.
 
-For the decomposition, all three updates are usable. RL against the null compares two large changes in behaviour, one trained on real rewards. SFT is a small change in output for a similar change in weights, so it tests how far weight size alone predicts disturbance. Greedy strict accuracy at one step is a poor measure of what an update did here, and the format-ignored share of samples inside the window is a much steadier one.
+For the decomposition, all three updates are usable, and the second seed's RL and null updates are saved at the same steps. RL against the null compares two large changes in behaviour, one trained on real rewards. SFT is a small change in output for a similar change in weights, so it tests how far weight size alone predicts disturbance. Greedy strict accuracy at one step is a poor measure of what an update did here, and the format-ignored share of samples inside the window is a much steadier one.
 
 ## How compelling is the evidence
 
-One seed per arm, one accuracy reading at step 100, greedy answers on two sets. Standard errors over problems hold the weights fixed, so the spread between runs is not measured, for either arm. The sampled lead moves a lot between steps, from about zero to about six points in five-step bins, so step 100 is one point on a moving curve. Sampled readings are on training-pool problems, each new when drawn, with standard errors over steps and shared prompts and seeds. ΔR is on 52 problems and has no saved standard error. Accuracy is blind to anything between saved states. "Lenient" takes the last number, so it is a coarse stand-in for correct maths.
+Two seeds per arm for RL and the null, one for SFT, with greedy answers on two sets at step 100 and on GSM8K test at steps 10, 20 and 50. Standard errors over problems hold the weights fixed, so they say nothing of the spread between seeds. Two seeds give one difference, which sizes that spread from two points only. The null moves about four points between saved steps, so step 100 is one point on a moving curve. On the first seed the sampled lead also moves from about zero to about six points in five-step bins. Sampled readings are on training-pool problems, each new when drawn, with standard errors over steps and shared prompts and seeds, and only the first seed's are decoded. ΔR is on 52 problems and has no saved standard error.
+
+**What each measure is blind to.** Accuracy is blind to anything between saved states. "Lenient" takes the last number and "format-relaxed" takes the stated number, so both are coarse stand-ins for correct maths and blind to the working. The filed rule for a replicating lead reads one seed and ignores the other. The filed rule on the null's gain has no standard error. The arrival rule reads one step. Each forced-opening test changes one state on one seed, and it cannot say what else in the update does the work.
 
 ## Surprises
 
-**Something unexpected happened that I cannot explain.** We predicted the shuffled-reward null would stay within a point and a half. It gained 5.6 points on GSM8K test under the drop rule, 4.7 standard errors from zero. The miss stands. Most of it cancels when an answer past the window counts as wrong, and the whole-answer gain does not.
+**Something unexpected happened that I cannot explain.** We filed a lean that the format-relaxed lead would come back ambiguous or absent on the second seed, as the first seed's +1.25 suggested. It read +6.42 (1.07), the same as the strict lead, and the filed rule labels it "replicates". The lean reversed. The first seed's lead did not change, so the two seeds now differ by about five points, and we cannot say why.
 
+**Also unexplained.** We predicted the shuffled-reward null would stay within a point and a half. On the first seed it gained 5.6 points on GSM8K test under the drop rule, 4.7 standard errors from zero. The miss stands. Most of it cancels when an answer past the window counts as wrong, and the whole-answer gain does not. On the second seed it gained 1.6 points with a standard error of 1.1, a narrow miss of the same band. No cause of the null's gain is established on either seed.
+
+- The first seed's expected step-10 reading was missed: RL's lenient gain read −1.97, against within a point of zero.
+- The two forced-opening tests read opposite ways on the first seed.
+- The second seed's null moved every greedy answer to one opening, "Step 1:", and not to "We", while RL's second seed shows no common opening.
 - SFT's KL from the unchanged model is about 113 times smaller than RL's, against a filed "at least three times larger". That reverses the filed direction.
-- The null's sampled reward collapsed by about nineteen points for twenty steps, by losing the answer line, and recovered.
-- Every greedy answer of the null moved to two opening words.
+- On the first seed, the null's sampled reward collapsed by about nineteen points for twenty steps, by losing the answer line, and recovered.
+- On the first seed, every greedy answer of the null moved to two opening words.
 - ΔR under the null reached 5.1 at step 100, failing the filed margin there.
 
 ## What next
 
-1. **Force the opening; $0, about an hour of a cluster L40.** The unchanged model's greedy answers prefilled "We are" and "We need" on GSM8K test, and the null's prefilled with the unchanged model's own opening. If the prefilled unchanged model reaches the null's accuracy, the opening carries the gain. If not, as the sampled test suggests, the rest of the update does.
-2. **Greedy accuracy at the null's saved steps 20 and 50; $0, about an hour of a cluster L40.** If the whole-answer gain tracks the "We" flip, it should be present by step 50. If it arrives only at step 100, one reading of a walk is what we have.
-3. **A second null seed.** About 2.3 h of H100, about $9, or $0 on an L40 if the queue is empty and its memory limit is handled. Its gain sizes RL's lead: none means RL's whole-answer lead is its full gain, and as much means the lead stands as reported.
-
-**Planned, not yet run:** `reports/plans/2026-11-03_plan_e69-amend1.md` takes up items 1 and 2 and replaces item 3 with a second seed of both RL and the null, read on a strict and a format-relaxed grader.
+1. **An independent check of this amendment's reading,** which the lead commissions. If it changes a number or a label, the answer paragraph changes with it.
+2. **The decision below on a third seed.** A third read near one point or near six would say which seed is the odd one, and a read between would leave the spread as it is.
+3. **Decode the second seed's saved rollouts; $0.** If its format-ignored sampled lead climbs as the first seed's did, the sampled evidence agrees across seeds. If it does not, the steadiest measure we had is seed-dependent too.
 
 Also $0, for the question on SFT: shuffled weights on SFT's saved rollouts, about 1.5 h of an L40. If KL stays near 0.002, fixed samples are enough to hold the output.
+
+## Pending decision
+
+*Question for you · `qwen-rl-lead` · new 2026-11-04. Urgency: Soon. Due to run: nothing until this is decided; the third seed runs only if chosen.*
+
+**Should the reinforcement-learning row of the update table rest on the two seeds we have, or wait for a third for about $20?**
+
+The update table compares how a decomposition reads different kinds of training update. Its reinforcement-learning row needs to say how much the training beat the same loop with rewards shuffled. We have run that comparison twice from the unchanged model. With the exact answer format set aside, reinforcement learning leads on the same test problems by about one point on the first run and six on the second, each with a standard error near one point. Nothing we have measured explains the five-point difference, and two runs cannot say which is more typical. The training's own gain is close between runs, and the shuffled loop's is not. Neither run shows better maths.
+
+- **A. Read the two seeds as they stand.** Nothing more runs, at $0. The row reports both leads and the unexplained spread, and the decomposition reads the saved updates from both runs. It tells us the training beat the shuffled loop twice, with a size we cannot state. Next, the decomposition work goes ahead now. Its limit is that any later claim leaning on the size of the lead stays open.
+- **B. Run a third seed first.** The training and the shuffled loop run again on one rented H100 for about 5 hours and about $20, followed by about 2 hours of free cluster time for the step reads. It tells us whether a third lead sits near one point, near six or between. Next, the row reports three leads, a day later, and the decomposition can read whichever updates are most typical. Its limit is that three runs give only a rough spread, and a middle reading would settle nothing.
+
+**Recommendation: A.** Read the two first. We know of no decomposition reading that yet turns on the lead's exact size, and the third seed stays available if one comes to.
+
+*Names in the reports: the update table is D2; the two runs are E69 and its Amendment 1; the first and second seeds are seed 1 and draw seed 70.*
 
 ## Scorecard
 
@@ -266,7 +383,27 @@ Also $0, for the question on SFT: shuffled weights on SFT's saved rollouts, abou
 
 "Learns" is the filed label for a gain that met P1's rule; it does not say what the gain consists of. Branch taken: R1, on that label. The tree's P3 line applies: an FYI, the null's δW still read, and RL's reading carries the gap as its noise floor. The tree files no rule for RL minus the null. The difference of the two filed gains is 3.41, and the same-problem lead on the three-state pool, chosen afterwards, is +3.2 with se 1.0.
 
+**Amendment 1**, `results/predictions_amend1.json`, scored in `results/amend1_score.json`.
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| G0 | control: the format-relaxed grader reproduces the first seed's lead | +1.25 (0.90) and +0.81 (1.06) as printed | both as printed | holds |
+| S0 | control: the second seed's RL learns, by P1's rule | gain ≥ 2 points and ≥ 2 SE | +8.31 (1.11) | learns; the filed label, not a claim about maths |
+| S1 | RL's lead on the second seed, strict; lean: replicates | ≥ 2 points and ≥ 2 SE: replicates; < 1: no lead; else ambiguous | +6.42 (1.07), 1,200 problems | replicates |
+| S1r | as S1, format-relaxed; lean: ambiguous or no lead | as S1 | +6.42 (1.07), 1,200 problems | replicates; **lean reversed** |
+| S2 | the null's gain on the second seed is systematic | abs(gain) ≥ 1.5 with the first seed's sign; < 1.5: one-seed walk | +1.62 (1.11) | systematic, 0.12 past the band |
+| saved-step control | the unchanged model on the job's card; the null rebuilt at step 100 | W0 gap under 1.5 points; flips of the null's answers ≤ 3 per set (amended 2026-11-04, after one flip stopped the job, before any state it guards) | W0 gap 0, 0 flips; 1 of 1,319 and 0 of 1,197 flips | holds |
+| B1 | the null's gain arrives by step 50, whole answers, strict, each seed alone | ≥ 2.4: arrives; < 1.0: after step 50; else no call | first seed +1.67; second seed +0.30 | no call; after step 50 |
+| E_R10 | expected: RL's lenient gain at step 10, first seed | abs(gain) ≤ 1 | −1.97 (1.04) | **missed** |
+| openings control | the unchanged model prefilled its own opening | same answers, or within a batch floor | 0 of 1,319 differ | holds |
+| A1 | "We are" on the unchanged model carries the gain, strict; expected: not | ≥ 2.4: carries; ≤ 0: not; else part | −0.83 (1.17) | not |
+| A2 | the null without its opening loses the gain, strict | loss ≥ 2.425: carries; else not | 5.84 (1.12) | carries |
+
+Unfiled, as the rules say: the spread between seeds, the relaxed and drop-rule columns of saved steps and openings, "We need", and GSM1K.
+
 ## Departures from the literature
+
+- **The second seed, the saved-step reads and the forced openings add none:** the recipe is the first seed's. The format-relaxed grader and the prefilled openings are our own measures, credited to no source.
 
 - **Dr. GRPO form.** As recorded in the scoping report: a group-mean baseline, no standard-deviation scaling, loss summed over tokens and divided by a constant. Our constant is 64 · 8 · 512. The paper's batch and rate were not checked against ours here; they came from the 2026-10-28 plan.
 - **One update per batch, so no ratio clipping and no KL penalty.** GRPO-style trainers usually have both. Chosen to keep the update the plain policy gradient and remove the clipping effect of Spurious Rewards.
@@ -279,9 +416,12 @@ Also $0, for the question on SFT: shuffled weights on SFT's saved rollouts, abou
 
 ## Not run
 
-- A second seed of any arm.
-- Greedy accuracy at any step before 100, although states are saved at steps 1, 2, 5, 10, 20 and 50; nothing was saved inside the collapse.
-- Answers forced to a chosen opening, at the unchanged model or the null.
+- A third seed of RL and the null, and a second seed of SFT.
+- An independent check of Amendment 1's reading.
+- Greedy accuracy at steps 1, 2 and 5, or on GSM1K at any saved step; nothing was saved inside the first seed's collapse.
+- Forced openings on the second seed, or on GSM1K.
+- Decoded rollouts of the second seed: its sampled answer line, right-number share and format-ignored reward.
+- The accounting by window class, the length tests and the cosines on the second seed.
 - An arm varying one difference between SFT and the null: fixed samples or no baseline.
 - A standard error on ΔR at any step of this run, or a read of the probes' states on this run's problems.
 - Per-token entropy of any arm's policy.
@@ -294,3 +434,5 @@ Also $0, for the question on SFT: shuffled weights on SFT's saved rollouts, abou
 - Large files: `results/large/acc/W0_*.jsonl`, `results/large/lr1e-6w10/acc/`, `dW/`, `rollouts/{R,N,F}.tar`. The unchanged model's two files and all three tars match the checksums in `results/`.
 - Numbers and figures: `experiments/qwen_rl/plot.py`, `rollouts.py`, `cosines.py`, on CPU, with no model loaded. Token ids checked against the tokenizer: 8304 "Step", 10061 "Let", 1654 "We".
 - One H100, $33 in all. No GPU was used for this report.
+- Amendment 1. Second seed: `results/lr1e-6w10_s70/{R,N}.json`, `run.log`, `SHA256SUMS`; per-problem answers in `~/commute-data/results-large/qwen_rl/lr1e-6w10_s70/acc/`. Saved steps and openings: `results/{lr1e-6w10,lr1e-6w10_s70}/amend1/`, `amend1.log`. Scores: `score_amend1.py`, `relaxed.py`. Readings and figures `leads.png`, `saved_steps.png`: `plot_amend1.py`, on CPU, with no model loaded.
+- Amendment 1's compute. One RunPod H100: the two arms took 3.9 h by the run log, against the plan's estimate of about $20. The bill is not in these files. Cluster `debug` on an L40, $0: jobs 50942-50952, 51005, 51027-51034 for the first seed, and 51099-51197 for the second seed's saved steps, of which several are resubmissions (`cluster/logs/jobs.log`).
