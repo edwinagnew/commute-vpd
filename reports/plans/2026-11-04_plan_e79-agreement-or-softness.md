@@ -63,3 +63,29 @@ Edge cases the code writer runs on the rule: zero and negative a1 − a0, NaN, t
 ## Not run
 
 Other seeds, a lower rate, a random-teacher null with B's recipe (the check's suggestion; it would show the term can copy anything, which is not a failure of D1's map as such), a size-limited B, and what the change does to any component.
+
+## Amendment 1 (2026-11-04): does the own-mask read have teeth?
+
+Job 51117 read, on M, Γ on the state's own forward, against FT clean: A forward KL 0.078, reverse 0.069, top-token agreement 0.915, entropy 1.56 (FT clean's 1.53); B 0.198, 0.319, 0.853, 2.48; W0 1.334, 0.623, 0.799, 0.61. So the clean term alone, at 0.52 of the update's squared size, reads better on all four numbers than the masked arm once Γ reads the student. The plan held this number at a secondary place, and E68's reading A says own masks gave 0.24 of the gain whatever was placed. Three things could make it empty: Γ opens many more subcomponents on the student, so "masked" is nearly clean; the read passes anything near FT, so it cannot fail a bad placement; it holds on maths only. The anomaly rule asks that this is run down before a reading rests on it. Class 1, $0, about 3 min, `debug`.
+
+Same job shape, control first: W0 under own masks reproduces 1.3336 within 1e-3, A 0.078 within 1e-3 (same draw), or stop.
+
+States: W0, A, B, L, as run. Two bad placements of known wrongness: **P**, A's saved change with its columns permuted within each site (seed filed in the code; same size per site, same blocks, wrong columns); **C**, E76's control student, trained towards W0 plus a random change.
+
+Numbers, per state, Γ on the state's own forward, draw d1, rows M and W:
+- a. forward KL(FT clean ‖ state own masked), reverse, agreement, entropy, as before; W is new.
+- b. forward KL(state clean ‖ state own masked), the state's own faithfulness. W0 on M 0.043 (number 7).
+- c. Σg per position over all sites, and the count of g > 0.5 per position, mean over rows, with the ratio to W0's on the same rows. W0's ratio is 1.
+- d. forward KL(FT clean ‖ state clean), for P and C (known for the rest), so P's and C's numbers have their clean reference.
+
+Rules, on A, M, bands as in the plan (two draws where the state has them; d1 alone otherwise, with W0's spread as the band):
+- **Opens:** A's Σg ratio or count ratio above 1.5. Then the own-mask read says little: masked is nearer clean.
+- **Teeth:** P's number a forward at least 3 times A's on M and above P's clean by no more than a factor 3 or it is reported as read; C's the same. If P's clean KL itself is under A's own-mask 0.078, "P not wrong enough", as read.
+- **Faithful under own masks:** A's number b at most 2 times W0's on the same rows, on M and on W.
+- All three of not opens, teeth and faithful: the own-mask read is a test A passes. Anything else is reported as read.
+
+Leans, filed before the run: opens, weak (the fall from 1.33 to 0.078 for so small a change wants explaining); teeth, medium; faithful on M, medium, on W, weak.
+
+Edge cases for the rule's code: P's clean under A's read, a zero Σg denominator, NaN, ties on the bands.
+
+**What each result does.** Passes all three: the clean term alone is the leading candidate map, at less than the update's size, with no masked term; this goes in a headline claim, so it gets an independent check before the user is asked for the next step. Opens: masks read through Γ on the student are not comparable with W0's; B and A are then both read under frozen masks, as E76 and this plan did. No teeth: own-mask read has no use for D1; the clean table stands alone.
