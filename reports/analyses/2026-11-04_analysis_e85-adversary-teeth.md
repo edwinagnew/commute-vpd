@@ -4,7 +4,7 @@
 
 *For D1, a map on Qwen3-1.7B that keeps the decomposition faithful for a real update, judged by a test that can fail a bad placement.*
 
-**Status: provisional. Independent check running.**
+**Status: Provisional. Independent check done (reports/reviews/2026-11-04_review_e85-adversary-check.md): the filed outcome computes correctly, but "cannot fail a bad state" is not supported as written: no state known to be unfaithful has been read on this model, so whether the test can fail anything here is still open.**
 
 We ran VPD's adversary, which searches for the masks that hurt a state most, on two placements of Qwen's first update built to be bad. It failed neither at its filed final read, though one sits on the lower bar Qwen's own noise gives and touched the fail bar mid-search. For `GOALS.md`, this adversary has not shown it can fail a bad placement on this model, and nothing here says any placement is good.
 
