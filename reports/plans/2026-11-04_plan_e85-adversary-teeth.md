@@ -86,7 +86,7 @@ First values in `results/run.log`: `[check gold_W0]` 2.49521; `[check gold_FT]` 
 - **Saved.** `results/amend1.json`, `amend2.json`, the logs, each under 200 KB. Every state rebuilds from a seed; no state files.
 
 ## Amendment 1, positive controls
-**Stage 1: Rand30.** Weights W0 + 30 G, G being E85's random change, in Δ. E85's seed 0 start. **Stage 2, only if stage 1's final ratio reaches 1.61: W0 with U's alive columns permuted** within each matrix, seed 85200 + the site's index. Dead columns stay: they carry no g on any row.
+**Stage 1: Rand100.** Weights W0 + 30 G, G being E85's random change, in Δ. E85's seed 0 start. **Stage 2, only if stage 1's final ratio reaches 1.61: W0 with U's alive columns permuted** within each matrix, seed 85200 + the site's index. Dead columns stay: they carry no g on any row.
 
 **W0: reused on an H200 NVL, fresh on any other card.** Three H200 NVL pods read seed 0 to every digit, so a start would spend $1.50 repeating it; three steps still run as a check. An H100 PCIe read 1.7517, 2.8% off, or 0.045 of ratio near a bar, which is why any other card reads W0 first, at about $1.50 to $2 more.
 
@@ -103,7 +103,7 @@ First values in `results/run.log`: `[check gold_W0]` 2.49521; `[check gold_FT]` 
 
 **Numbers and what each should read** (each a stop if missed, except where marked).
 
-| number | W0 | Rand30 | Perm (all) | PermRare |
+| number | W0 | Rand100 | Perm (all) | PermRare |
 |---|---|---|---|---|
 | gold | 2.49521 | above it, logged | W0's | W0's |
 | clean KL against W0, 128 web rows | 0 | 0.01-2, unmeasured; stop under 0.2 | 0 | 0 |
@@ -117,9 +117,9 @@ Ratio and excess in nats are in the log at every step and at the final read.
 
 **Filed rule.** Stage 1: at or over 1.61, "the test can fail at this size"; at or under 1.40 with a clean KL of at least 1.039 nats, "the adversary does not fail even this"; at or under 1.40 with less, "no call: the state moved the output less than the fail bar asks"; between, no call. **The clean clause is added to the asked rule.** The bar asks 0.61 × 1.703 = 1.039 nats, and a Gaussian whose removal costs less cannot be expected to reach it. Qwen's own bars 1.267 and 1.776 are reported beside, never ruled on. Bars inclusive, as E85.
 
-**Lean: low that Rand30 reaches the bar.** The ratio should be about 1 + clean KL / 1.70, so the bar needs a clean KL near 1. The check's "18-100 times" is in input-weighted units; this 30 is Frobenius. The square law on E75's search leaves 30 times anywhere from 0.01 to about 2 nats. Amendment 2 reads it at 1, 30 and 100 times.
+**Lean: medium that Rand100 reaches the bar.** The ratio should be about 1 + clean KL / 1.70. Amendment 2 read the clean KL at 1, 30 and 100 times on 8 rows, 0.00009, 0.076, 1.18, before this run, so the scale filed here moved from 30 to 100: 30 times is well under the 1.039 nats the bar asks. 1.18 predicts about 1.69, close to the 1.61 bar.
 
-**Blind to.** One seed, web rows, a lower bound. Rand30 reads the Δ dial's removal of a change to the output, not where an update sits, so a fail does not say a bad placement of a real update fails. KL at m = g cannot see PermRare's columns. **Noise floor.** A state near W0 reads within 0.3-1.5% of it at the same seed (E85).
+**Blind to.** One seed, web rows, a lower bound. Rand100 reads the Δ dial's removal of a change to the output, not where an update sits, so a fail does not say a bad placement of a real update fails. KL at m = g cannot see PermRare's columns. **Noise floor.** A state near W0 reads within 0.3-1.5% of it at the same seed (E85).
 
 **Cost, H200 NVL at $4.06/h.** Under $6 on this card.
 
@@ -127,7 +127,7 @@ Ratio and excess in nats are in the log at every step and at the final read.
 |---|---|---|---|
 | set-up, as E85 | ~20 min | 1.35 | as E85 |
 | load, gold, W0's clean reads, host check | ~6 min | 0.40 | above |
-| Rand30's clean reads, start | ~24 min | 1.60 | above; a bad build costs ~$1.80 |
+| Rand100's clean reads, start | ~24 min | 1.60 | above; a bad build costs ~$1.80 |
 | stage 2's clean reads, start | ~24 min | 1.60 | above |
 | total | ~74 min | ~4.95 | stage 1 alone ~$3.35 |
 
@@ -151,9 +151,9 @@ fp32 arm: h and the readout in fp32 from the fp32 V, through `qwen_vpd.readout` 
 **Fits an L40: yes.** Target 6.9, Γ 17.1, two sets of weights 5.6 each: 35.2 GB fixed, plus g 1.41 twice, inputs ~0.8 and logits ~0.3 three times per row: about 40 GB of 46. V and U stay off the card. These add E85's measured sizes; the job itself records the peak. Host ~46 GB, `--mem=56G`. Also read, for $0: KL against W0 of the fine-tune (0.01-0.2, a stop) and of E85's Gaussian at 1, 30 and 100 times.
 
 ## What each outcome means for D1
-- **Rand30 fails.** The test can fail at this size, and E85's sentence becomes "these two states do not reach it". Stage 2 then says whether wrong columns are among what it fails.
-- **Rand30 passes with enough clean KL.** Something close to "cannot" earns its place, with this as evidence: the adversary leaves D1's table as a measurement, and restating D1 goes to the user.
-- **Rand30 too small or between.** Reported as read; no amendment left. Amendment 2's read should catch this before any money is spent, and the scale can change before the run.
+- **Rand100 fails.** The test can fail at this size, and E85's sentence becomes "these two states do not reach it". Stage 2 then says whether wrong columns are among what it fails.
+- **Rand100 passes with enough clean KL.** Something close to "cannot" earns its place, with this as evidence: the adversary leaves D1's table as a measurement, and restating D1 goes to the user.
+- **Rand100 too small or between.** Reported as read; no amendment left. Amendment 2's read should catch this before any money is spent, and the scale can change before the run.
 - **Wrong columns fail.** At this size placement is visible, and E85's rarely-on 1.27 is a statement about a small one. **Wrong rarely-on columns pass.** A rarely-on placement passing carries no information, and D1 needs another test.
 - **Rounding closes.** The check's question (c) is shut. **Follow-up.** No claim about placements on Γ's readout route before that start.
 

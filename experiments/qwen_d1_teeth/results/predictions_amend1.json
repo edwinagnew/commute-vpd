@@ -8,22 +8,29 @@
   "apparatus": "E80 Amendment 2's code path as E85 used it: run.py set_up and start through amend1.read, qwen_teacher.adversary, the 128 web rows of 512 tokens (qwen_adversary/results/tokens.json), 20 sign steps of 0.1, one source per site shared by all rows, seed 0, final read after the last step; fp32 weights and components, Gamma bf16; g and clean logits recomputed per row from the state's own weights and V.",
   "w0": "Reused, not re-read, on an NVIDIA H200 NVL: seed 0's 1.7031564672943205 and its step trace from results/run.log. Why: three pods of this card model read it to every digit, so a fresh start would spend ~$1.50 to repeat a known number; a three-step host check still runs, a stop if over 2e-4 from Amendment 1's log. On any other card model W0 seed 0 is read fresh, first: an H100 PCIe read 1.7517, 2.8% off, or 0.045 of ratio near the bars, which the plan's own evidence says matters.",
   "states": {
-    "Rand30": "weights W0 + 30 G, components unmoved, so Delta takes it. G is E85's Rand: a Gaussian per matrix at u1's Frobenius norm, drawn on the card in float64, seed 75100 + the site's index",
+    "Rand100": "weights W0 + 100 G, components unmoved, so Delta takes it. G is E85's Rand: a Gaussian per matrix at u1's Frobenius norm, drawn on the card in float64, seed 75100 + the site's index",
     "Perm": "stage 2, --perm all, as asked. Weights and V are W0's; U's alive columns permuted among themselves within each matrix, torch.randperm on a CPU generator, seed 85200 + the site's index. Dead columns untouched",
     "PermRare": "stage 2, --perm rare, the smallest fix to Perm's degeneracy, the lead's choice before the run. As Perm, but only the rarely-on half E85's Rare moved (qwen_maps.halves on W0's maths statistics) is permuted, among itself"
   },
   "order": [
     "gold W0, FT; W0's clean reads: each a stop",
     "on an H200 NVL the host check, a stop; on any other card W0 s0, a stop",
-    "Rand30's clean reads: a stop if KL against W0 is under 0.2",
-    "Rand30 s0: first steps a stop",
-    "only if Rand30's final ratio is at or over 1.61: the state's wrong share, clean reads, and start s0, each a stop"
+    "Rand100's clean reads: a stop if KL against W0 is under 0.2",
+    "Rand100 s0: first steps a stop",
+    "only if Rand100's final ratio is at or over 1.61: the state's wrong share, clean reads, and start s0, each a stop"
   ],
   "read": "Final ratio r = the state's final KL / W0's, seed 0; excess = the difference, in nats. Both at every step (W0's trace at the same step) and at the final read, in the log and in amend1.json score.states.<state>.steps. Clean reads, no adversary: gold (response-token log-loss on E40's 256 held-out GSM8K problems, no masks), kl_W0 (KL(W0 clean || the state's clean), every position of the 128 rows), ci (KL(the state's clean || masked at m = g, Delta off), same rows). Wrong share: ||V(U_pi - U)||^2 / ||V U||^2, pooled, alive columns.",
   "rules": {
-    "bars": {"pass_at": 1.40, "fail_at": 1.61},
+    "bars": {
+      "pass_at": 1.4,
+      "fail_at": 1.61
+    },
     "bars_note": "E85's, from the 67M, inclusive after rounding to 9 places, as E85 filed them. A start is one seed, so r is not a mean; E85's clause that the gap beat W0's spread cannot bite, since the gap at the fail bar is 0.61 and the spread 0.184",
-    "own_bars_reported_beside": {"pass_at": 1.267, "fail_at": 1.776, "note": "1.5 divided and multiplied by 1 + 18.4%. Reported, never ruled on"},
+    "own_bars_reported_beside": {
+      "pass_at": 1.267,
+      "fail_at": 1.776,
+      "note": "1.5 divided and multiplied by 1 + 18.4%. Reported, never ruled on"
+    },
     "stage_1": {
       "the test can fail at this size": "r at or over 1.61. Stage 2 runs",
       "the adversary does not fail even this": "r at or under 1.40 and kl_W0 at or over 1.039 nats",
@@ -46,26 +53,61 @@
     }
   },
   "leans": {
-    "Rand30_can_fail": "low. Excess should run about the clean KL, since Delta's dial at d = 0 removes the change, so r is about 1 + kl_W0 / 1.70. E75's 18-100 times is in input-weighted units, not this Frobenius scale, so 30 times may be well under the ruler: it may read too small. Amendment 2 reads kl_W0 at 1, 30 and 100 times on 8 rows for $0; run it first",
+    "Rand100_can_fail": "medium. Excess should run about the clean KL, since Delta's dial at d = 0 removes the change, so r is about 1 + kl_W0 / 1.70. Amendment 2 read the clean KL at 1, 30 and 100 times on 8 rows before this run: 0.00009, 0.076, 1.18. So the scale was moved from 30 to 100 before filing stands; 1.18 predicts about 1.69, close to the 1.61 bar.",
     "Perm_fails": "high for Perm, medium for PermRare",
     "Perm_before_search": "yes for Perm, high; no for PermRare, medium"
   },
   "expected": {
-    "W0": {"gold": "2.49521, stop if over 0.1% away", "gold_FT_gain": "1.8108, stop if over 5% away", "ci": "0.1417 (the 128-row job), stop if over 25% away", "kl_W0": "0", "host_check": "0.0918, 0.1131, 0.1376; stop if over 2e-4 from Amendment 1's", "final": "1.7032, step 10 0.5959 (reused)"},
-    "Rand30": {"kl_W0": "0.01 to 2, wide (see the lean), stop under 0.2", "ci": "about W0's 0.14 plus kl_W0: masks at g with Delta off read the unmoved V U", "gold": "above 2.4952, logged; E85's one-times G moved it by -0.014", "first_steps": "step 0 from 0.085 to 0.0918 + 1.5 kl_W0, or a stop (Delta's dial at a random d passes about a third of kl_W0); step 2 above step 0, or a stop", "final": "1.70 + about kl_W0"},
-    "Perm": {"wrong_share": "about 2 (21 sampled matrices 1.65-2.60), stop outside 1 to 3.5", "gold": "W0's, stop if over 1e-6 away", "kl_W0": "0, stop over 1e-6", "ci": "several nats, stop under 0.5", "first_steps": "step 0 several nats, already over 2.74 (1.61 x 1.703); stop under 0.5", "final": "several nats, ratio far over the bar"},
-    "PermRare": {"wrong_share": "about 0.8 (21 sampled matrices 0.20-1.11), stop outside 0.1 to 1.5", "gold": "W0's, stop if over 1e-6 away", "kl_W0": "0, stop over 1e-6", "ci": "near W0's 0.14, since m = g is small on these columns; stop under W0's minus 0.02", "first_steps": "step 0 at or above W0's 0.0918, stop under 0.085", "final": "unmeasured; the adversary can raise exactly these columns"},
-    "time": "each start ~22 min, peak 60.5 GB (Perm, PermRare) to 66.2 GB (Rand30)"
+    "W0": {
+      "gold": "2.49521, stop if over 0.1% away",
+      "gold_FT_gain": "1.8108, stop if over 5% away",
+      "ci": "0.1417 (the 128-row job), stop if over 25% away",
+      "kl_W0": "0",
+      "host_check": "0.0918, 0.1131, 0.1376; stop if over 2e-4 from Amendment 1's",
+      "final": "1.7032, step 10 0.5959 (reused)"
+    },
+    "Rand100": {
+      "kl_W0": "0.01 to 2, wide (see the lean), stop under 0.2",
+      "ci": "about W0's 0.14 plus kl_W0: masks at g with Delta off read the unmoved V U",
+      "gold": "above 2.4952, logged; E85's one-times G moved it by -0.014",
+      "first_steps": "step 0 from 0.085 to 0.0918 + 1.5 kl_W0, or a stop (Delta's dial at a random d passes about a third of kl_W0); step 2 above step 0, or a stop",
+      "final": "1.70 + about kl_W0"
+    },
+    "Perm": {
+      "wrong_share": "about 2 (21 sampled matrices 1.65-2.60), stop outside 1 to 3.5",
+      "gold": "W0's, stop if over 1e-6 away",
+      "kl_W0": "0, stop over 1e-6",
+      "ci": "several nats, stop under 0.5",
+      "first_steps": "step 0 several nats, already over 2.74 (1.61 x 1.703); stop under 0.5",
+      "final": "several nats, ratio far over the bar"
+    },
+    "PermRare": {
+      "wrong_share": "about 0.8 (21 sampled matrices 0.20-1.11), stop outside 0.1 to 1.5",
+      "gold": "W0's, stop if over 1e-6 away",
+      "kl_W0": "0, stop over 1e-6",
+      "ci": "near W0's 0.14, since m = g is small on these columns; stop under W0's minus 0.02",
+      "first_steps": "step 0 at or above W0's 0.0918, stop under 0.085",
+      "final": "unmeasured; the adversary can raise exactly these columns"
+    },
+    "time": "each start ~22 min, peak 60.5 GB (Perm, PermRare) to 66.2 GB (Rand100)"
   },
   "degeneracy_of_Perm": "Worked from the code. Weights and V are W0's, so clean logits, activations, h and g are exactly W0's and only the masked forward differs: sum_c h_c (m_c - d) U_pi(c) + d W x. Delta = W - V U_pi does not absorb the error: d = 1, m = 1 is the only setting that reads clean, and the adversary moves away from it. V U_pi is unrelated to V U (distance 1.29 to 1.61 of ||V U|| on 21 sampled matrices, against u1's 0.0012 to 0.0036). So Perm is trivially failed: masks at g with Delta off fail it with no adversary, and step 0 should already read over the bar. It tests the harness, not the search, and one swapped column pair is already tens of times u1's size (a column's V U is about 1.5, ||V U|| about 70, u1 0.15% of that), so no fraction reaches a placement's scale. PermRare does not have this property: m = g is about 0 on these columns, so ci stays near W0's and only a source that raises them can show the wrong columns",
   "blind_to": {
-    "ratio": "One seed, web rows, a lower bound still rising at step 20. Stage 1 reads the Delta dial's removal of a change to the output, not where an update sits, so it cannot say that a bad placement of a real update fails. A pass on Rand30 needs kl_W0 beside it.",
+    "ratio": "One seed, web rows, a lower bound still rising at step 20. Stage 1 reads the Delta dial's removal of a change to the output, not where an update sits, so it cannot say that a bad placement of a real update fails. A pass on Rand100 needs kl_W0 beside it.",
     "kl_W0": "Reads weights only; 0 by construction for Perm and PermRare.",
     "ci": "One set of masks, Delta off: on PermRare's columns m = g is near 0, so it cannot see them.",
     "wrong_share": "Plain, not input-weighted."
   },
   "control": "Positive control for the apparatus: W0's gold, ci and host check, each a stop, can fail on the host, the rows or a state left applied. Stage 1 is the positive control for the test; Perm is the positive control for the state's build, since its gold and kl_W0 must read W0's exactly.",
   "noise_floor": "Same seed, same state class: E85's Rand within 0.3-1.5% of W0 at the same seed. Same seed, three H200 NVL pods: W0's final read equal to every digit. Across seeds, not read here: 18.4%.",
-  "stops": ["any check above; a first-steps miss; results/stopped_amend1.json then refuses a rerun and the lead decides"],
-  "departures_from_E85": ["W0 reused from E85, with a host check, not read twice", "One seed per state", "New: the clean reads kl_W0 and ci", "Rand scaled 30 times", "No Rare"]
+  "stops": [
+    "any check above; a first-steps miss; results/stopped_amend1.json then refuses a rerun and the lead decides"
+  ],
+  "departures_from_E85": [
+    "W0 reused from E85, with a host check, not read twice",
+    "One seed per state",
+    "New: the clean reads kl_W0 and ci",
+    "Rand scaled 100 times",
+    "No Rare"
+  ]
 }

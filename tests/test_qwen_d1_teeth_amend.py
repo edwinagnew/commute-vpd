@@ -37,10 +37,10 @@ def test_own_bars_are_reported_on_their_edges() -> None:
 
 
 def test_first_steps() -> None:
-    assert R.first_steps_miss("W0", [0.0]) is None and R.first_steps_miss("Rand30", [], 1.0) is None
-    assert R.first_steps_miss("Rand30", [0.09], 1.0) is None and R.first_steps_miss("Rand30", [0.08], 1.0) and R.first_steps_miss("Rand30", [NAN], 1.0)
-    assert R.first_steps_miss("Rand30", [1.5], 1.0) is None and R.first_steps_miss("Rand30", [1.7], 1.0)
-    assert R.first_steps_miss("Rand30", [0.09, 0.10], 1.0) is None and R.first_steps_miss("Rand30", [0.09, 0.10, 0.09], 1.0) and R.first_steps_miss("Rand30", [0.09, 0.10, 0.11], 1.0) is None
+    assert R.first_steps_miss("W0", [0.0]) is None and R.first_steps_miss("Rand100", [], 1.0) is None
+    assert R.first_steps_miss("Rand100", [0.09], 1.0) is None and R.first_steps_miss("Rand100", [0.08], 1.0) and R.first_steps_miss("Rand100", [NAN], 1.0)
+    assert R.first_steps_miss("Rand100", [1.5], 1.0) is None and R.first_steps_miss("Rand100", [1.7], 1.0)
+    assert R.first_steps_miss("Rand100", [0.09, 0.10], 1.0) is None and R.first_steps_miss("Rand100", [0.09, 0.10, 0.09], 1.0) and R.first_steps_miss("Rand100", [0.09, 0.10, 0.11], 1.0) is None
     assert R.first_steps_miss("Perm", [0.4]) and R.first_steps_miss("Perm", [8.0]) is None
     assert R.first_steps_miss("PermRare", [0.09]) is None and R.first_steps_miss("PermRare", [0.08]) and R.first_steps_miss("PermRare", [0.09, 0.09, 0.08]) is None
 
@@ -54,11 +54,11 @@ def test_steps_and_before_search() -> None:
 
 def test_score_empty_partial_and_whole() -> None:
     s = R.score({})
-    assert s["states"]["Rand30"]["outcome"] == R.UNREAD and s["stage2_goes_on"] is False and s["leans"] == {"Rand30_can_fail": None, "Perm_fails": None, "Perm_before_search": None}
+    assert s["states"]["Rand100"]["outcome"] == R.UNREAD and s["stage2_goes_on"] is False and s["leans"] == {"Rand100_can_fail": None, "Perm_fails": None, "Perm_before_search": None}
     w0 = {"kl": 1.7, "trace": [0.1] * 20, "from": "x"}
-    out: dict[str, Any] = {"w0": w0, "clean": {"Rand30": {"kl_W0": 2.0}}, "starts": {"Rand30_W_s0": {"kl": 3.4, "trace": [0.2] * 20}}, "checks": {}}
+    out: dict[str, Any] = {"w0": w0, "clean": {"Rand100": {"kl_W0": 2.0}}, "starts": {"Rand100_W_s0": {"kl": 3.4, "trace": [0.2] * 20}}, "checks": {}}
     s = R.score(out)
-    r = s["states"]["Rand30"]
+    r = s["states"]["Rand100"]
     assert r["final_ratio"] == 2.0 and math.isclose(r["final_excess"], 1.7) and r["outcome"] == R.CAN_FAIL and r["step10_ratio"] == 2.0 and r["before_search"] is False and s["stage2_goes_on"] is True
     out["clean"]["PermRare"] = {"kl_W0": 0.0}
     assert R.score(out)["states"]["PermRare"]["outcome"] == R.UNREAD
@@ -67,7 +67,7 @@ def test_score_empty_partial_and_whole() -> None:
     assert s["states"]["PermRare"]["outcome"] == R.WRONG_PASSES and s["states"]["PermRare"]["verdict_own_bars"] == "between" and s["leans"]["Perm_fails"] is False
     json.dumps(s)
     out["w0"] = {"kl": 0.0, "trace": [0.0]}
-    assert R.score(out)["states"]["Rand30"]["outcome"] == R.UNREAD
+    assert R.score(out)["states"]["Rand100"]["outcome"] == R.UNREAD
 
 
 def test_amendment_2_reading() -> None:
@@ -85,7 +85,7 @@ def test_filed_numbers_are_the_files() -> None:
         assert name in p["rules"]["stage_1"]
     for name in (R.WRONG_FAILS, R.WRONG_PASSES):
         assert name in p["rules"]["stage_2"]
-    assert R.RAND_SCALE == 30 and R.PERM_SEED == 85_200
+    assert R.RAND_SCALE == 100 and R.PERM_SEED == 85_200
     p2 = json.loads((RESULTS / "predictions_amend2.json").read_text())
     assert R.CLOSES in p2["rules"] and R.FOLLOW_UP in p2["rules"]
 
@@ -195,13 +195,13 @@ def test_guard_logs_ratio_and_stops_on_a_missed_first_step(tmp_path: Path, monke
         monkeypatch.setattr(e80, name, value)
     monkeypatch.setitem(a1.RUNNING, "w0", [0.1, 0.2])
     monkeypatch.setitem(a1.RUNNING, "clean", 1.0)
-    monkeypatch.setitem(a1.amend1.READS, "Rand30_W_s0", [])
-    a1.guard("[Rand30_W_s0] seed 0 step 0: KL 0.1000")
-    a1.guard("[Rand30_W_s0] seed 0 step 1: KL 0.3000")
+    monkeypatch.setitem(a1.amend1.READS, "Rand100_W_s0", [])
+    a1.guard("[Rand100_W_s0] seed 0 step 0: KL 0.1000")
+    a1.guard("[Rand100_W_s0] seed 0 step 1: KL 0.3000")
     log = (tmp_path / "r.log").read_text()
     assert "step 0: ratio 1.0000, excess 0.0000 nats" in log and "step 1: ratio 1.5000, excess 0.1000 nats" in log
     assert not (tmp_path / "stopped.json").exists()
-    monkeypatch.setitem(a1.amend1.READS, "Rand30_W_s0", [])
+    monkeypatch.setitem(a1.amend1.READS, "Rand100_W_s0", [])
     with pytest.raises(SystemExit):
-        a1.guard("[Rand30_W_s0] seed 0 step 0: KL 0.0500")
+        a1.guard("[Rand100_W_s0] seed 0 step 0: KL 0.0500")
     assert json.loads((tmp_path / "stopped.json").read_text())["rule"] == "first_steps"

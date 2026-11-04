@@ -14,7 +14,7 @@ ratio = r2.rules.ratio
 NAN, UNREAD, NO_CALL = math.nan, r2.UNREAD, rules.NO_CALL
 
 # Amendment 1
-RAND_SCALE, PERM_SEED = 30, 85_200  # the site's index is added to the seed, on a CPU generator, so the permutation is the same on any card
+RAND_SCALE, PERM_SEED = 100, 85_200  # the site's index is added to the seed, on a CPU generator, so the permutation is the same on any card
 W0_CARD = "NVIDIA H200 NVL"  # W0 s0 read 1.7031564672943205 on three pods of this model; on an H100 PCIe 1.7517, 2.8% off (qwen_d1_adversary/results/results.json)
 W0_KL = rules.W0_WANT[0]
 HOST_TOL, W0_TOL = 2e-4, 0.20  # the host check's reads are logged to 4 places; 20% is E85's, for a W0 read fresh on another card
@@ -70,15 +70,15 @@ def before_search(trace: Sequence[float], w0_final: float) -> bool | None:
 
 
 def first_steps_miss(state: str, trace: Sequence[float], clean: float = NAN) -> str | None:
-    """The filed window of the first steps, on the reads so far; a miss stops the job. Rand30: step 0 from W0's up to W0's plus 1.5 of the clean KL (Δ's dial at a random d passes about a third of it),
+    """The filed window of the first steps, on the reads so far; a miss stops the job. Rand100: step 0 from W0's up to W0's plus 1.5 of the clean KL (Δ's dial at a random d passes about a third of it),
     step 2 above step 0. Perm: step 0 far above W0's. PermRare: step 0 not under what every state read. W0 and anything else: none."""
-    if state not in ("Rand30", "Perm", "PermRare") or not trace:
+    if state not in ("Rand100", "Perm", "PermRare") or not trace:
         return None
     low = PERM_CI_STOP if state == "Perm" else STEP0_LOW
-    high = W0_STEP0 + 1.5 * clean if state == "Rand30" else math.inf
+    high = W0_STEP0 + 1.5 * clean if state == "Rand100" else math.inf
     if len(trace) == 1 and not low <= trace[0] <= high:  # NaN misses
         return f"step 0 reads {trace[0]}, want {low} to {high}"
-    if state == "Rand30" and len(trace) == 3 and not trace[2] > trace[0]:
+    if state == "Rand100" and len(trace) == 3 and not trace[2] > trace[0]:
         return f"step 2 reads {trace[2]}, not above step 0's {trace[0]}"
     return None
 
@@ -96,19 +96,19 @@ def read_state(state: str, st: Mapping[str, Any] | None, w0: Mapping[str, Any], 
     trace = (st or {}).get("trace", [])
     table = steps(trace, w0.get("trace", []))
     return {"final_ratio": r, "final_excess": kl - base, "verdict": r2.verdict(r), "verdict_own_bars": verdict_own(r), "step10_ratio": table[10]["ratio"] if len(table) > 10 else NAN,
-            "before_search": before_search(trace, base), "outcome": outcome_rand(r, clean) if state == "Rand30" else outcome_perm(r), "steps": table}
+            "before_search": before_search(trace, base), "outcome": outcome_rand(r, clean) if state == "Rand100" else outcome_perm(r), "steps": table}
 
 
 def score(out: Mapping[str, Any]) -> dict[str, Any]:
     w0, clean = out.get("w0", {}), out.get("clean", {})
     states = {}
-    for state in ("Rand30", *(k for k in ("Perm", "PermRare") if k in clean)):
+    for state in ("Rand100", *(k for k in ("Perm", "PermRare") if k in clean)):
         states[state] = read_state(state, out.get("starts", {}).get(f"{state}_W_s0"), w0, clean.get(state, {}).get("kl_W0", NAN))
-    rand = states["Rand30"]
+    rand = states["Rand100"]
     perm = next((states[k] for k in ("Perm", "PermRare") if k in states), None)
     return {"w0": {"kl": w0.get("kl", NAN), "from": w0.get("from", UNREAD)}, "states": states, "clean": dict(clean), "gold": dict(out.get("gold", {})), "stage2_goes_on": goes_on(rand["final_ratio"]),
             "checks": dict(out.get("checks", {})),
-            "leans": {"Rand30_can_fail": r2.lean(rand["final_ratio"], rand["outcome"] == CAN_FAIL), "Perm_fails": None if perm is None else r2.lean(perm["final_ratio"], perm["outcome"] == WRONG_FAILS),
+            "leans": {"Rand100_can_fail": r2.lean(rand["final_ratio"], rand["outcome"] == CAN_FAIL), "Perm_fails": None if perm is None else r2.lean(perm["final_ratio"], perm["outcome"] == WRONG_FAILS),
                       "Perm_before_search": None if perm is None else perm["before_search"]}}
 
 

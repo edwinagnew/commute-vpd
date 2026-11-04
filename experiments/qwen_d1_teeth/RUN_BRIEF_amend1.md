@@ -20,8 +20,8 @@ No `execute()` or `wait()` over 5 min; re-arm.
 |---|---|---|---|
 | load | ~2 min | `[load] NVIDIA H200 NVL, GPU peak 48.2 GB` | |
 | W0 | ~6 min, 0.40 | `[clean W0]`: gold 2.49521, ci ~0.1417; `[check gold_FT]` ~1.81; `[host check]` 0.0918, 0.1131, 0.1376; `[w0] 1.70315...` | gold over 0.1%, ci over 25%, gain over 5%, host over 2e-4 |
-| Rand30 clean | ~2 min, 0.15 | `[clean Rand30]`, `[kept Rand30]`; **report kl_W0 at once** | kl_W0 under 0.2 |
-| Rand30 start | 22 min, 1.50 | `seed 0 step 0: KL` 0.085 to 0.0918 + 1.5 kl_W0, step 2 above it; a `ratio ..., excess ...` line per step; `[score]` | first steps. **Report the final ratio and excess** |
+| Rand100 clean | ~2 min, 0.15 | `[clean Rand100]`, `[kept Rand100]`; **report kl_W0 at once** | kl_W0 under 0.2 |
+| Rand100 start | 22 min, 1.50 | `seed 0 step 0: KL` 0.085 to 0.0918 + 1.5 kl_W0, step 2 above it; a `ratio ..., excess ...` line per step; `[score]` | first steps. **Report the final ratio and excess** |
 | Stage 2 clean, only if `stage2_goes_on` | ~2 min, 0.15 | `[check share_PermRare]` ~0.8 (`share_Perm` ~2); `[clean PermRare]`: gold W0's, kl_W0 0, ci near 0.14 (Perm: several nats) | share, gold, kl_W0, ci |
 | Stage 2 start | 22 min, 1.50 | PermRare step 0 at or over 0.085; Perm step 0 over 0.5, expected over 2.74 | first steps |
 

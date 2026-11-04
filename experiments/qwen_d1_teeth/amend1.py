@@ -3,7 +3,7 @@ rules: rules_amend.py, results/predictions_amend1.json (the job refuses to start
 
 E80 Amendment 2's code path as E85 used it: set_up and start through its amend1.read, the same 128 web rows, 20 sign steps of 0.1, seed 0, every step's KL in the log with its ratio and excess over W0.
 Control first: W0's gold, its read at m = g with Δ off, and a three-step host check against the reused 1.703 (a W0 start instead on any other card model, whose final read has differed by 2.8%).
-Stage 1, Rand30: E85's Gaussian times 30 in Δ. Stage 2, only if stage 1 reaches the fail bar: W0 with U's columns permuted, among all alive columns or (--perm rare) the rarely-on half. Before each start
+Stage 1, Rand100: E85's Gaussian times 100 in Δ. Stage 2, only if stage 1 reaches the fail bar: W0 with U's columns permuted, among all alive columns or (--perm rare) the rarely-on half. Before each start
 the state's clean reads, needing no adversary: gold loss, KL against W0 on the rows, and KL at m = g with Δ off. Results in results/amend1.json after every read; a rerun resumes at the next unread one.
 
 Usage (repo root, 80 GB GPU; inputs beside --decomp, or WANDB_API_KEY to fetch them): .venv/bin/python experiments/qwen_d1_teeth/amend1.py --decomp /root/qwen [--perm rare]
@@ -37,15 +37,15 @@ SCOPE = {"all": "Perm", "rare": "PermRare"}
 RUNNING: dict[str, Any] = {"w0": [], "clean": rules.NAN}  # read by `guard`, which E80's `start` calls through its log
 
 
-def rand30_change(J: Any, s: str) -> qwen_maps.SiteChange:
+def rand100_change(J: Any, s: str) -> qwen_maps.SiteChange:
     G = e85.rand_change(J, s)[0]
     assert G is not None
     return rules.RAND_SCALE * G, None, None, None
 
 
 @contextmanager
-def rand30_state(J: Any) -> Iterator[None]:
-    with qwen_maps.applied(J.model, J.comps, J.alive, lambda s: rand30_change(J, s)):
+def rand100_state(J: Any) -> Iterator[None]:
+    with qwen_maps.applied(J.model, J.comps, J.alive, lambda s: rand100_change(J, s)):
         yield
 
 
@@ -149,13 +149,13 @@ def stage_w0(J: Any, seqs: list[Any]) -> None:
 
 
 def stage_rand(J: Any, seqs: list[Any]) -> float:
-    w0, c = J.out["clean"]["W0"], clean_reads(J, seqs, "Rand30")
-    e80.log(f"[kept Rand30] {r2.kept(c['gold'], w0['gold'], J.out['gold']['FT']):.6f}; KL against W0 {c['kl_W0']:.6f} against the {rules.BAR_EXCESS:.3f} the fail bar asks")
-    e80.check(J, "clean_Rand30", c["kl_W0"], c["kl_W0"] >= rules.CLEAN_STOP, f"at least {rules.CLEAN_STOP}: under it the state does not move the output")
+    w0, c = J.out["clean"]["W0"], clean_reads(J, seqs, "Rand100")
+    e80.log(f"[kept Rand100] {r2.kept(c['gold'], w0['gold'], J.out['gold']['FT']):.6f}; KL against W0 {c['kl_W0']:.6f} against the {rules.BAR_EXCESS:.3f} the fail bar asks")
+    e80.check(J, "clean_Rand100", c["kl_W0"], c["kl_W0"] >= rules.CLEAN_STOP, f"at least {rules.CLEAN_STOP}: under it the state does not move the output")
     RUNNING["clean"] = c["kl_W0"]
-    read(J, "Rand30")
+    read(J, "Rand100")
     rescore(J)
-    return rules.ratio(J.out["starts"]["Rand30_W_s0"]["kl"], J.out["w0"]["kl"])
+    return rules.ratio(J.out["starts"]["Rand100_W_s0"]["kl"], J.out["w0"]["kl"])
 
 
 def stage_perm(J: Any, seqs: list[Any], scope: str) -> None:
@@ -221,5 +221,5 @@ def score() -> None:
 if __name__ == "__main__":
     e80.OUT, e80.STOPPED, e80.LOG = OUT, STOPPED, LOG  # E80's save, stop, check and log read these globals, so no earlier job's files are written
     e80.log = guard
-    amend1.STATE |= {"Rand30": rand30_state, "Perm": perm_state("all"), "PermRare": perm_state("rare")}
+    amend1.STATE |= {"Rand100": rand100_state, "Perm": perm_state("all"), "PermRare": perm_state("rare")}
     e80.guarded(main, score)
