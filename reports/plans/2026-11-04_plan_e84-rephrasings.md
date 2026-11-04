@@ -47,3 +47,8 @@ Stage W0 about 2 min, wordings 5-15 min, T about 33 min, read about 5 min. $0. D
 
 ## Not run yet
 All of it. Not in this plan: a second seed; all 200 authors in rephrasings, which Fable gives as a $0 second arm if the update must hold 4000 facts.
+
+## Stage R's filed stop, and the fallback (2026-11-04)
+Job 51439: the control passed (0.1673, 0.1895, and first batch 4.782574, E81's). Qwen's first try missed on 47% of 6,400 forms, against the 25% limit: 35% too like the original, 8% too like the held paraphrase, and 7% on names and numbers. So the writer failed mostly on rewording, not on facts, and read by hand its forms also drift ("breakthrough novel" became "best-selling book"), which the checks can't see. As filed, Haiku clerks write the forms; `forms_clerk.py` applies the same checks. The clerks never see TOFU's held paraphrase. Not an amendment: this is the plan's and the filed rule's own branch. Qwen's record: `results/stopped_qwen_writer.json`, `stage_R_qwen.json`.
+
+**Departure stated:** the wordings are Haiku's, where the plan's first choice was Qwen's. The test wording stays GPT-4's.
