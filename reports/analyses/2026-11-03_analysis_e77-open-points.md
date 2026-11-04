@@ -8,7 +8,7 @@ With all 196 matrices masked by the original model's masks, Δ off, small change
 
 We read saved fine-tuning updates of Qwen3-1.7B under its masks, varying what was changed, how many matrices were masked and which row gave the masks.
 A change the masked forward computes itself failed our lean at early blocks, while masking fewer matrices let far more of the update through.
-For `GOALS.md`, this means a masked loss term with all matrices masked can hardly teach early blocks, so the map's next run must compare how many matrices its loss masks.
+For `GOALS.md`, this means a masked loss term with all matrices masked can hardly teach early blocks, so the map's next run must compare how many matrices its loss masks. *Narrowed 2026-11-04 by E76: see the note under "What we learned".*
 
 **The independent check's wording, which governs this report.**
 
@@ -85,6 +85,8 @@ The next section moves the bar without moving the verdict. The change reads at m
 Only the final norm and the output head follow this matrix. Write $r$ for the residual, $w$ for the clean output and $h$ for the masked output. The same $\epsilon h$ is added in both pairs, so the two logit shifts differ only because the norm is read at $r + w$ in one and $r + h$ in the other.
 
 Two causes could shrink the masked shift: a larger base size, or more of $h$ lying along the base. **Saved numbers do not say which.** E74's Gaussian at this matrix reads 0.95, which argues against the size, but it was read with all matrices masked. A test of about a minute is queued as stage 0 of E76 and it also confirms the algebra, which so far comes from reading the code.
+
+*Note, 2026-11-04: E76's stage 0 ran that test. Rebuilding both shifts from saved vectors read 0.590 and 0.864, so only the final norm is between them and the hook is clear. Both causes act. The norm's input is 1.43 times larger per position under the mask, and taking only the denominator from clean moves amplitude to 0.86. Taking only the part removed from clean moves cosine to 0.96 and amplitude only to 0.67. So the base's size carries most of the amplitude gap and the part along the base most of the cosine gap, on these 32 rows of the first fine-tune (`experiments/qwen_masked_teacher/results/stage0.json`, `reports/analyses/2026-11-04_analysis_e76-masked-teacher.md`).*
 
 | last matrix, first fine-tune | amplitude | cosine | τ | clean KL | masked KL |
 |---|---|---|---|---|---|
@@ -169,6 +171,8 @@ With all matrices masked, early blocks respond weakly to small changes of severa
 "All 196 masked" must be stated with any such reading. With 12 masked, more than a tenth of the update's KL passes on every cell.
 
 This bears on the map D1 chose, teacher training with masks in its loss. A masked loss term with all matrices masked can hardly teach early blocks, because a change there barely reaches the term. With matrices routed out, those matrices carry the update around the masks, so the term can fall with the masks doing no work. That is an inference from forward reads, since no gradient was read, and it is why `reports/plans/2026-11-03_plan_e76-masked-teacher.md` compares routings.
+
+*Note, 2026-11-04: E76 narrows "can hardly teach early blocks". A trained change in blocks 0-14 does reach the logits under all masks: kept alone, arm B's change lowers KL(FT clean ‖ student masked) by 0.18 nats at squared size 1.00, about 0.17 of that arm's fall. Whether that is size or direction is unmeasured. It does not contradict this report's reads of small untrained changes, as those read KL passed, second order in the shift, and this reads a first-order fall against an existing gap of 1.33 nats (`reports/reviews/2026-11-04_review_e76-b-works.md`, finding 11; `reports/analyses/2026-11-04_analysis_e76-masked-teacher.md`).*
 
 Masked tests still cannot pass a placement, so D1 keeps resting on the clean-model table.
 
