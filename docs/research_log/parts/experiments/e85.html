@@ -1,0 +1,15 @@
+<article class="exp void" id="e85">
+<div class="top"><span class="id">E85</span><span class="chip open">unscored</span><h3>Can VPD's adversary fail a bad state on Qwen3-1.7B's first update?</h3><span class="when">2026-11-04 · Vast H200 NVL, about $10.6 · <code>experiments/qwen_d1_teeth</code> · provisional, no analysis report yet, not independently checked</span></div>
+<p class="one"><strong>The question.</strong> D1 needs a test that can fail a bad placement of an update. VPD's adversary passed doing nothing on the first fine-tune's update (<a href="#e80">E80</a>), so we did not know it can fail anything on this model.</p>
+<p class="one"><strong>What we did.</strong> We read the adversary on two states built to be bad, on E80's rows, settings and code, with the unchanged model read first on the same host. One is the weights plus a random change at the update's size, kept in Δ (the weights outside the subcomponents). The other puts the update on the half of the subcomponents least often on, with the remainder in Δ. Six starts in all, two per state.</p>
+<p class="one"><strong>What we found.</strong> The adversary passed both bad states: the random change reads 1.01 and the rarely-on half 1.27, as a ratio to the unchanged model. The result file's outcome line reads "the adversary cannot fail a bad state here".</p>
+<p class="one"><strong>What it means.</strong> This is the measurement the advice named; the plan filed that a miss turns "the adversary cannot fail a bad state here" into a measurement and sends the question of restating D1 to you (card <a href="#decision-after-e76">decision-after-e76</a>). Not yet written up; read provisionally.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Six adversary starts on a Vast H200 NVL, about $10.6, plan <code>reports/plans/2026-11-04_plan_e85-adversary-teeth.md</code>, rules <code>experiments/qwen_d1_teeth/results/predictions.json</code>.</dd>
+<dt>Found</dt><dd><ul>
+<li>Random change in Δ: 1.01. Update on the rarely-on half: 1.27. Both pass.</li>
+<li>The rarely-on half leaves 0.23 of the update in Δ, between the 0.09 of least squares and 1.</li></ul></dd>
+<dt>Bears on</dt><dd>D1's test; the pending card <a href="#decision-after-e76">decision-after-e76</a>.</dd>
+<dt>Moved on</dt><dd>Owned by <code>qwen-decomp-lead</code>; its report and notebook are to follow. Results <code>experiments/qwen_d1_teeth/results/results.json</code>.</dd>
+</dl>
+</article>
