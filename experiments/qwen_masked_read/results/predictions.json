@@ -1,0 +1,52 @@
+{
+ "filed": "2026-11-04, before the code ran; never edited after the run",
+ "question": "E79: E76 labelled B and L 'works' on KL(FT clean || student masked), which rewards a soft output. On E76's saved changes, is the masked fall agreement with the fine-tuned model, or softness? Does it hold on unseen text and under the student's own masks?",
+ "plan": "reports/plans/2026-11-04_plan_e79-agreement-or-softness.md",
+ "review": "reports/reviews/2026-11-04_review_e76-b-works.md",
+ "rules": "experiments/qwen_masked_read/rules.py; run against zero and negative a1 - a0, NaN, ties on a band, an empty response-position set and zero W0 on W in tests/test_qwen_masked_read.py before filing",
+ "states": "W0, A, B, L, E76's bf16 offsets (results/large/*_offsets.safetensors of qwen_masked_teacher). FT = W0 + u1 as there, against FT's clean forward throughout",
+ "rows": {
+  "M": "E76's 8 reading rows: maths 0-7, 256 tokens",
+  "W": "FineWeb rows 32-39 of qwen_adversary/results/tokens.json, 256 tokens, in no arm's training pool (pools() takes 0-31)"
+ },
+ "masks": "Gamma on W0's clean forward, frozen, cached per row in bf16 as E76's stage 0; m = g + (1 - g) u, d ~ U(0, 1); all 196 sites masked; readings in full fp32. W's g computed in this job; M's recomputed on the node's disk",
+ "draws": {"d1": "E76's read_seed 76200, a fresh generator per row set, so M's d1 is E76's draw", "d2": "seed 79200; the spread between d1 and d2 sets the band"},
+ "response_positions": "Positions whose next token lies in an assistant turn, E73's `roles`. FineWeb rows have none: those numbers read NaN with n = 0 and no rule reads them",
+ "numbers": {
+  "1": {"what": "forward KL(FT clean || state masked)", "expected": {"M": {"W0": 1.334, "A": 1.127, "B": 0.280, "L": 0.390}, "M_note": "reproduced within 1e-3", "W": "measured; W0 sets the room"}, "blind_to": "rewards softness"},
+  "2": {"what": "reverse KL(state masked || FT clean)", "expected": "measured here; agreement halves W0's, softness keeps it above 0.9 of W0's", "blind_to": "punishes softness, can be dominated by few positions"},
+  "3": {"what": "top-token agreement with FT clean, share of positions", "expected": "W0 masked below W0 clean; a state's masked number below its clean one", "blind_to": "how confident, which tail"},
+  "4": {"what": "mean entropy, masked, beside FT clean's", "expected": "measured; a soft state reads above FT clean's", "blind_to": "where the softness is"},
+  "5": {"what": "temperature floor: min over T of forward KL(FT clean || W0 masked at T), T in E74's grid 1, 1.25, 1.5, 2, 2.5, 3", "expected": {"M": "under 1.334, since T = 1 is W0's number 1", "other_rows": "E74 read 0.82"}, "blind_to": "only for W0"},
+  "6": {"what": "Gamma on the student's forward: masks from the state's own weights and moved V, numbers 1 and 3 on M, draw d1", "expected": {"W0": "own masks of W0 are E76's g on the same draw, so it reads number 1 on M, 1.334 within 1e-3; a miss stops the job", "arms": "measured"}, "blind_to": "Gamma frozen on W0's weights"},
+  "7": {"what": "control: forward KL(W0 clean || W0 masked) and its top-token agreement on M, draw d1", "expected": {"K0": "near E74's 0.044; E76's stage 0 read 0.0423 on these 8 rows at seed 74", "agreement": "high: the positive control that agreement reads a forward near its clean one"}, "stop": "none filed; reported, and read before any arm", "blind_to": "apparatus only"}
+ },
+ "subset": "Numbers 1-4 also on M's response positions alone, reported; the rule reads all positions",
+ "control": "First and alone: W0 at zero change, then A, B, L, reproduce E76's stored final (i) and (iv) (A.json, B.json, L.json; W0 from step 0) within 1e-3, or results/stopped.json and exit 1",
+ "rule": {
+  "on": "B then L, row set M, all positions, draw d1",
+  "band": "Per state and number, the difference between d1 and d2; for number 3 the larger of that and sqrt(p (1 - p) / positions)",
+  "a0": "W0 masked's number 3",
+  "a1": "the state clean's number 3",
+  "softness": "number 1 >= number 5 - b, or number 2 > 0.9 x W0 masked's. Read first, since neither clause needs a0 or a1",
+  "no_call": "a1 <= a0, when softness does not hold: the agreement clause cannot be read",
+  "agreement": "number 3 - b >= a0 + (a1 - a0) / 2 and number 2 + b <= half of W0 masked's, and (not softness) number 1 + b < number 5",
+  "mixed": "anything else, reported as read",
+  "unread": "any number the rule needs is NaN or absent",
+  "survives_on_W": "(W0 masked's number 1 on W - the state's - b) >= half of W0 masked's, 'survives', else 'does not survive'; W0 masked's reading at or under b: 'no room on W'; both B and L",
+  "own_masks": "B only: number 1 under own masks <= 1.5 x under W0's, 'survives', else 'does not survive Γ'",
+  "ties": "Numbers compared rounded to 9 places. A tie on a band reads as the inequality's closed side: softness at n1 = n5 - b; agreement at either of its two inclusive clauses; survives at exactly half or exactly 1.5 x"
+ },
+ "leans": {
+  "B": {"lean": "agreement", "confidence": "medium", "why": "0.28 is already below E74's floor on other rows"},
+  "L": {"lean": "agreement", "confidence": "weak"},
+  "W_B": {"lean": "survives", "confidence": "weak", "why": "M's row 5, the row with no template, fell 57%"},
+  "own_B": {"lean": "survives", "confidence": "weak"}
+ },
+ "what_each_result_does": {
+  "agreement and survives": "The fall is real behaviour on unseen text; what is left of E76's doubt is size. The user gets B, A's smaller change and the size numbers side by side, with the next step: R100 at 200 columns on the cluster for $0, against the plan's paid run",
+  "softness": "E76's label says nothing for D1 on this reading. The user gets it with the fix: a term that reads agreement, a new plan",
+  "reported as read": "Mixed, or does not survive Gamma or W: reported as read, with what each part does to the sentence D1 could claim, to the user before any next run"
+ },
+ "not_run": "Other seeds, a lower rate, a random-teacher null with B's recipe (the check's suggestion; it would show the term can copy anything, which is not a failure of D1's map as such), a size-limited B, and what the change does to any component"
+}
