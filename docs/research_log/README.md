@@ -497,6 +497,8 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e71_keep_delta.png": "experiments/scorecard_ls/figures/keep_delta.png"
 - "fig/e68_gap_closed.png": "experiments/qwen_pass_test/figures/gap_closed.png"
 - "fig/e68_opening_kl.png": "experiments/qwen_pass_test/figures/opening_kl.png"
+- "fig/e82_gap_closed.png": "experiments/qwen_pass_test/figures/gap_closed_clean.png"
+- "fig/e82_gain_kept.png": "experiments/qwen_pass_test/figures/gain_kept_clean.png"
 - "fig/e72_t1_gain.png": "experiments/qwen_fixed_masks/figures/t1_gain.png"
 - "fig/e72_t2_kl.png": "experiments/qwen_fixed_masks/figures/t2_kl.png"
 - "fig/e72_t2_gain.png": "experiments/qwen_fixed_masks/figures/t2_gain.png"
