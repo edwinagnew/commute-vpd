@@ -1,0 +1,89 @@
+[     0.3s 12:45:04] [card] NVIDIA H200 NVL; Amendment 1's ['NVIDIA H200 NVL']
+[     6.3s 12:45:10] [fetch] /root/qwen: complete
+[    19.5s 12:45:23] [dW] /root/e40_nowarmup/dW/step_10.safetensors: sha256 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9, want 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9
+[    82.6s 12:46:26] [load] NVIDIA H200 NVL, GPU peak 48.2 GB; resumed []
+[   313.1s 12:50:16] [host check] {"here": ["0.0918", "0.1131", "0.1376"], "amend1": ["0.0918", "0.1131", "0.1376"]}
+[   328.6s 12:50:32] [sigma E68] 196 sites, 16 s, GPU peak 60.5 GB
+[   375.3s 12:51:19] [I] X ready, 47 s, GPU peak 60.5 GB
+[   408.5s 12:51:52] [check energy] 1440.0928646534649, want E68's 1440.092819832963 within 1%
+[   408.5s 12:51:52] [check LS_sigma] 0.36374347884705804, want E68's 0.3637434871295139 within 1%
+[   408.5s 12:51:52] [check ADJ_sigma] 0.0004657108405326261, want E68's 0.0004657108503729808 within 1%
+[   433.9s 12:52:17] [sigma task] 256 rows of 512, 121 s, GPU peak 60.9 GB
+[   462.9s 12:52:46] [left in delta] {"ls": {"plain_energy": 0.09001726620341453, "sigma_norm_E68": 0.36374347884705804}, "adjoint": {"plain_energy": 4.8154959917324314e-08, "sigma_norm_E68": 0.0004657108405326261}}, ‖δW‖² 3.4852040865884852, ‖δW‖²_Σ 1440.0928646534649, c 0.003959744933194536 to 0.6128298127693057, c / E68's c 0.9480960415040068 to 1.1104766213958845, 150 s, GPU peak 60.9 GB
+[   470.2s 12:52:54] [gold W0] 2.495209 nats per response token, 7 s, GPU peak 60.9 GB
+[   470.2s 12:52:54] [check gold_W0] 2.4952089256294077, want E40's 2.4952089256294077 within 0.1%
+[   483.1s 12:53:07] [gold FT] 0.684460 nats per response token, 13 s, GPU peak 60.9 GB
+[   483.1s 12:53:07] [check gold_FT] 1.8107488207527602, want E40's gain 1.810801895590828 within 5%
+[   483.3s 12:53:07] [check N_clean] 1.21265265541867e-09, want under 0.0001
+[   490.6s 12:53:14] [gold N] 0.684460 nats per response token, 7 s, GPU peak 61.0 GB
+[   490.6s 12:53:14] [check kept_N] 1.0000000064438639, want 1.00 within 0.001
+[   490.6s 12:53:14] [I] X ready, 0 s, GPU peak 61.0 GB
+[   505.0s 12:53:28] [gold LS] 0.684460 nats per response token, 14 s, GPU peak 61.5 GB
+[   505.0s 12:53:28] [check kept_LS] 1.0000000064438639, want 1.00 within 0.001
+[   518.8s 12:53:42] [gold ADJ] 0.645725 nats per response token, 14 s, GPU peak 61.5 GB
+[   518.8s 12:53:42] [kept ADJ] 1.021392
+[   526.3s 12:53:50] [gold A] 0.679541 nats per response token, 8 s, GPU peak 61.5 GB
+[   526.3s 12:53:50] [kept A] 1.002717
+[   533.6s 12:53:57] [gold W0_end] 2.495209 nats per response token, 7 s, GPU peak 61.5 GB
+[   533.6s 12:53:57] [check kept_W0_end] 0.0, want 0.00 within 0.001
+[   533.6s 12:53:57] [score] {"r": {"N": [1.3245410092049323, 1.1624604524139912], "LS": [NaN, NaN], "ADJ": [NaN, NaN], "A": [NaN, NaN]}, "mean": {"N": 1.2435007308094619, "LS": NaN, "ADJ": NaN, "A": NaN}, "verdict": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "gap": {"N": 0.24350073080946188, "LS": NaN, "ADJ": NaN, "A": NaN}, "W0_spread": 0.1844421749295106, "E80_spread_quoted": 0.16, "described": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "reading": "we can't yet tell on Qwen", "kept": {"N": 1.0000000064438639, "LS": 1.0000000064438639, "ADJ": 1.0213916997726973, "A": 1.0027166606768088, "W0_end": 0.0}, "gain": 1.8107488207527602, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "N": 0.6844600932084287, "LS": 0.6844600932084287, "ADJ": 0.6457251097393388, "A": 0.6795409147597306, "W0_end": 2.4952089256294077}, "checks": {"energy": {"got": 1440.0928646534649, "want": "E68's 1440.092819832963 within 1%"}, "LS_sigma": {"got": 0.36374347884705804, "want": "E68's 0.3637434871295139 within 1%"}, "ADJ_sigma": {"got": 0.0004657108405326261, "want": "E68's 0.0004657108503729808 within 1%"}, "gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "N_clean": {"got": 1.21265265541867e-09, "want": "under 0.0001"}, "kept_N": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_LS": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}}, "last5": {}, "leans": {"N_passes": true, "LS_passes": null, "ADJ_passes": null, "A_passes": null, "ADJ_under_half": false, "A_over_half": true}}
+[   533.6s 12:53:57] [I] X ready, 0 s, GPU peak 61.5 GB
+[   604.7s 12:55:08] [LS_W_s0] seed 0 step 0: KL 0.0915
+[   668.6s 12:56:12] [LS_W_s0] seed 0 step 1: KL 0.1127
+[   732.2s 12:57:16] [LS_W_s0] seed 0 step 2: KL 0.1384
+[   796.2s 12:58:20] [LS_W_s0] seed 0 step 3: KL 0.1705
+[   860.1s 12:59:24] [LS_W_s0] seed 0 step 4: KL 0.2098
+[   923.8s 13:00:27] [LS_W_s0] seed 0 step 5: KL 0.2625
+[   987.9s 13:01:31] [LS_W_s0] seed 0 step 6: KL 0.3260
+[  1051.8s 13:02:35] [LS_W_s0] seed 0 step 7: KL 0.4023
+[  1115.6s 13:03:39] [LS_W_s0] seed 0 step 8: KL 0.4897
+[  1179.5s 13:04:43] [LS_W_s0] seed 0 step 9: KL 0.6073
+[  1243.4s 13:05:47] [LS_W_s0] seed 0 step 10: KL 0.7343
+[  1307.2s 13:06:51] [LS_W_s0] seed 0 step 11: KL 0.8616
+[  1371.1s 13:07:54] [LS_W_s0] seed 0 step 12: KL 0.9710
+[  1434.9s 13:08:58] [LS_W_s0] seed 0 step 13: KL 1.1027
+[  1498.7s 13:10:02] [LS_W_s0] seed 0 step 14: KL 1.2330
+[  1562.6s 13:11:06] [LS_W_s0] seed 0 step 15: KL 1.3641
+[  1626.5s 13:12:10] [LS_W_s0] seed 0 step 16: KL 1.4832
+[  1690.3s 13:13:14] [LS_W_s0] seed 0 step 17: KL 1.6306
+[  1754.1s 13:14:18] [LS_W_s0] seed 0 step 18: KL 1.7456
+[  1818.0s 13:15:21] [LS_W_s0] seed 0 step 19: KL 1.9210
+[  1856.5s 13:16:00] [LS_W_s0] final KL 2.023679, 1316 s, GPU peak 66.6 GB
+[  1856.8s 13:16:00] [LS_W_s0] mean of the last 5 step reads 1.6289 (logged, not ruled on)
+[  1856.8s 13:16:00] [score] {"r": {"N": [1.3245410092049323, 1.1624604524139912], "LS": [1.1881932969606965, NaN], "ADJ": [NaN, NaN], "A": [NaN, NaN]}, "mean": {"N": 1.2435007308094619, "LS": NaN, "ADJ": NaN, "A": NaN}, "verdict": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "gap": {"N": 0.24350073080946188, "LS": NaN, "ADJ": NaN, "A": NaN}, "W0_spread": 0.1844421749295106, "E80_spread_quoted": 0.16, "described": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "reading": "we can't yet tell on Qwen", "kept": {"N": 1.0000000064438639, "LS": 1.0000000064438639, "ADJ": 1.0213916997726973, "A": 1.0027166606768088, "W0_end": 0.0}, "gain": 1.8107488207527602, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "N": 0.6844600932084287, "LS": 0.6844600932084287, "ADJ": 0.6457251097393388, "A": 0.6795409147597306, "W0_end": 2.4952089256294077}, "checks": {"energy": {"got": 1440.0928646534649, "want": "E68's 1440.092819832963 within 1%"}, "LS_sigma": {"got": 0.36374347884705804, "want": "E68's 0.3637434871295139 within 1%"}, "ADJ_sigma": {"got": 0.0004657108405326261, "want": "E68's 0.0004657108503729808 within 1%"}, "gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "N_clean": {"got": 1.21265265541867e-09, "want": "under 0.0001"}, "kept_N": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_LS": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}}, "last5": {"LS_W_s0": 1.6289000000000002}, "leans": {"N_passes": true, "LS_passes": null, "ADJ_passes": null, "A_passes": null, "ADJ_under_half": false, "A_over_half": true}}
+[  1926.4s 13:17:10] [ADJ_W_s0] seed 0 step 0: KL 0.0902
+[  1990.3s 13:18:14] [ADJ_W_s0] seed 0 step 1: KL 0.1111
+[  2054.2s 13:19:18] [ADJ_W_s0] seed 0 step 2: KL 0.1356
+[  2118.1s 13:20:22] [ADJ_W_s0] seed 0 step 3: KL 0.1653
+[  2181.9s 13:21:25] [ADJ_W_s0] seed 0 step 4: KL 0.2015
+[  2245.8s 13:22:29] [ADJ_W_s0] seed 0 step 5: KL 0.2465
+[  2309.7s 13:23:33] [ADJ_W_s0] seed 0 step 6: KL 0.3045
+[  2373.5s 13:24:37] [ADJ_W_s0] seed 0 step 7: KL 0.3682
+[  2437.4s 13:25:41] [ADJ_W_s0] seed 0 step 8: KL 0.4519
+[  2501.3s 13:26:45] [ADJ_W_s0] seed 0 step 9: KL 0.5477
+[  2565.1s 13:27:49] [ADJ_W_s0] seed 0 step 10: KL 0.6594
+[  2629.0s 13:28:52] [ADJ_W_s0] seed 0 step 11: KL 0.7536
+[  2692.9s 13:29:56] [ADJ_W_s0] seed 0 step 12: KL 0.8867
+[  2756.9s 13:31:00] [ADJ_W_s0] seed 0 step 13: KL 0.9770
+[  2820.6s 13:32:04] [ADJ_W_s0] seed 0 step 14: KL 1.1099
+[  2884.5s 13:33:08] [ADJ_W_s0] seed 0 step 15: KL 1.1866
+[  2948.5s 13:34:12] [ADJ_W_s0] seed 0 step 16: KL 1.3617
+[  3012.2s 13:35:16] [ADJ_W_s0] seed 0 step 17: KL 1.4038
+[  3076.1s 13:36:20] [ADJ_W_s0] seed 0 step 18: KL 1.6097
+[  3140.2s 13:37:24] [ADJ_W_s0] seed 0 step 19: KL 1.6053
+[  3178.7s 13:38:02] [ADJ_W_s0] final KL 1.863037, 1316 s, GPU peak 66.6 GB
+[  3179.0s 13:38:02] [ADJ_W_s0] mean of the last 5 step reads 1.4334 (logged, not ruled on)
+[  3179.0s 13:38:02] [score] {"r": {"N": [1.3245410092049323, 1.1624604524139912], "LS": [1.1881932969606965, NaN], "ADJ": [1.0938733303390418, NaN], "A": [NaN, NaN]}, "mean": {"N": 1.2435007308094619, "LS": NaN, "ADJ": NaN, "A": NaN}, "verdict": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "gap": {"N": 0.24350073080946188, "LS": NaN, "ADJ": NaN, "A": NaN}, "W0_spread": 0.1844421749295106, "E80_spread_quoted": 0.16, "described": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "reading": "we can't yet tell on Qwen", "kept": {"N": 1.0000000064438639, "LS": 1.0000000064438639, "ADJ": 1.0213916997726973, "A": 1.0027166606768088, "W0_end": 0.0}, "gain": 1.8107488207527602, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "N": 0.6844600932084287, "LS": 0.6844600932084287, "ADJ": 0.6457251097393388, "A": 0.6795409147597306, "W0_end": 2.4952089256294077}, "checks": {"energy": {"got": 1440.0928646534649, "want": "E68's 1440.092819832963 within 1%"}, "LS_sigma": {"got": 0.36374347884705804, "want": "E68's 0.3637434871295139 within 1%"}, "ADJ_sigma": {"got": 0.0004657108405326261, "want": "E68's 0.0004657108503729808 within 1%"}, "gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "N_clean": {"got": 1.21265265541867e-09, "want": "under 0.0001"}, "kept_N": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_LS": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}}, "last5": {"LS_W_s0": 1.6289000000000002, "ADJ_W_s0": 1.43342}, "leans": {"N_passes": true, "LS_passes": null, "ADJ_passes": null, "A_passes": null, "ADJ_under_half": false, "A_over_half": true}}
+[  3179.0s 13:38:02] [done] GPU peak 66.6 GB
+[  3179.1s 13:38:03] [score] {"r": {"N": [1.3245410092049323, 1.1624604524139912], "LS": [1.1881932969606965, NaN], "ADJ": [1.0938733303390418, NaN], "A": [NaN, NaN]}, "mean": {"N": 1.2435007308094619, "LS": NaN, "ADJ": NaN, "A": NaN}, "verdict": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "gap": {"N": 0.24350073080946188, "LS": NaN, "ADJ": NaN, "A": NaN}, "W0_spread": 0.1844421749295106, "E80_spread_quoted": 0.16, "described": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "reading": "we can't yet tell on Qwen", "kept": {"N": 1.0000000064438639, "LS": 1.0000000064438639, "ADJ": 1.0213916997726973, "A": 1.0027166606768088, "W0_end": 0.0}, "gain": 1.8107488207527602, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "N": 0.6844600932084287, "LS": 0.6844600932084287, "ADJ": 0.6457251097393388, "A": 0.6795409147597306, "W0_end": 2.4952089256294077}, "checks": {"energy": {"got": 1440.0928646534649, "want": "E68's 1440.092819832963 within 1%"}, "LS_sigma": {"got": 0.36374347884705804, "want": "E68's 0.3637434871295139 within 1%"}, "ADJ_sigma": {"got": 0.0004657108405326261, "want": "E68's 0.0004657108503729808 within 1%"}, "gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "N_clean": {"got": 1.21265265541867e-09, "want": "under 0.0001"}, "kept_N": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_LS": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}}, "last5": {"LS_W_s0": 1.6289000000000002, "ADJ_W_s0": 1.43342}, "leans": {"N_passes": true, "LS_passes": null, "ADJ_passes": null, "A_passes": null, "ADJ_under_half": false, "A_over_half": true}}
+[     0.3s 13:38:41] [card] NVIDIA H200 NVL; Amendment 1's ['NVIDIA H200 NVL']
+[     2.5s 13:38:43] [fetch] /root/qwen: complete
+[    15.1s 13:38:56] [dW] /root/e40_nowarmup/dW/step_10.safetensors: sha256 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9, want 8b8509d2bc8caf56786833ebea4cdb1c432be6482fd89781f7777b12e916beb9
+[    48.6s 13:39:30] [load] NVIDIA H200 NVL, GPU peak 48.2 GB; resumed ['ADJ_W_s0', 'LS_W_s0']
+[    61.6s 13:39:43] [gold t1.0] 0.684460 nats per response token, 13 s, GPU peak 55.3 GB
+[    61.6s 13:39:43] [kept t=1.0] 1.000000
+[    74.5s 13:39:56] [gold t0.25] 0.682722 nats per response token, 13 s, GPU peak 55.3 GB
+[    74.5s 13:39:56] [kept t=0.25] 1.000960
+[    87.5s 13:40:08] [gold t0.1] 0.805498 nats per response token, 13 s, GPU peak 55.3 GB
+[    87.5s 13:40:08] [kept t=0.1] 0.933156
+[    87.6s 13:40:09] [score] {"r": {"N": [1.3245410092049323, 1.1624604524139912], "LS": [1.1881932969606965, NaN], "ADJ": [1.0938733303390418, NaN], "A": [NaN, NaN]}, "mean": {"N": 1.2435007308094619, "LS": NaN, "ADJ": NaN, "A": NaN}, "verdict": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "gap": {"N": 0.24350073080946188, "LS": NaN, "ADJ": NaN, "A": NaN}, "W0_spread": 0.1844421749295106, "E80_spread_quoted": 0.16, "described": {"N": "pass", "LS": "unread", "ADJ": "unread", "A": "unread"}, "reading": "we can't yet tell on Qwen", "kept": {"N": 1.0000000064438639, "LS": 1.0000000064438639, "ADJ": 1.0213916997726973, "A": 1.0027166606768088, "W0_end": 0.0}, "gain": 1.8107488207527602, "gold": {"W0": 2.4952089256294077, "FT": 0.6844601048766475, "N": 0.6844600932084287, "LS": 0.6844600932084287, "ADJ": 0.6457251097393388, "A": 0.6795409147597306, "W0_end": 2.4952089256294077, "t1.0": 0.6844601048766475, "t0.25": 0.6827223051870035, "t0.1": 0.8054975077514311}, "checks": {"energy": {"got": 1440.0928646534649, "want": "E68's 1440.092819832963 within 1%"}, "LS_sigma": {"got": 0.36374347884705804, "want": "E68's 0.3637434871295139 within 1%"}, "ADJ_sigma": {"got": 0.0004657108405326261, "want": "E68's 0.0004657108503729808 within 1%"}, "gold_W0": {"got": 2.4952089256294077, "want": "E40's 2.4952089256294077 within 0.1%"}, "gold_FT": {"got": 1.8107488207527602, "want": "E40's gain 1.810801895590828 within 5%"}, "N_clean": {"got": 1.21265265541867e-09, "want": "under 0.0001"}, "kept_N": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_LS": {"got": 1.0000000064438639, "want": "1.00 within 0.001"}, "kept_W0_end": {"got": 0.0, "want": "0.00 within 0.001"}}, "last5": {"LS_W_s0": 1.6289000000000002, "ADJ_W_s0": 1.43342}, "leans": {"N_passes": true, "LS_passes": null, "ADJ_passes": null, "A_passes": null, "ADJ_under_half": false, "A_over_half": true}}
