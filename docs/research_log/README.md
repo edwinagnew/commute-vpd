@@ -529,3 +529,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e83_logit_shift.png": "experiments/logit_shift_67m/figures/logit_shift.png"
 - "fig/e81_choice.png": "experiments/qwen_tofu/figures/choice.png"
 - "fig/e81_recall.png": "experiments/qwen_tofu/figures/recall.png"
+- "fig/e84_filed_test.png": "experiments/qwen_tofu_forms/figures/filed_test.png"
+- "fig/e84_along_training.png": "experiments/qwen_tofu_forms/figures/along_training.png"
