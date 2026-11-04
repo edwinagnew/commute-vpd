@@ -181,4 +181,4 @@ The adversary follows VPD's evaluation config: one source per subcomponent plus 
 
 ## Provenance
 
-Results `experiments/qwen_d1_adversary/results/{results.json,run.log}`; rules `predictions.json`, `rules.py`; figures from `experiments/qwen_d1_adversary/plot.py`. One RunPod H100 PCIe, 1.94 h of run from the log, peak GPU 66.1 GB. About 2 h and $8 at $3.99/h by the plan's estimate; the pod's own bill is not in the results. Under the gate. No amendments used. δW is E40's step 10 of the first update, sha256 `8b8509d2...`, checked at load. No file was kept beyond the results and the log.
+Results `experiments/qwen_d1_adversary/results/{results.json,run.log}`; rules `predictions.json`, `rules.py`; figures from `experiments/qwen_d1_adversary/plot.py`. One RunPod H100 PCIe, 1.94 h of run from the log, peak GPU 66.1 GB. About 2 h and $6.21 billed at $2.89/h (remote-kernels status), against the plan's estimate of $8 at $3.99/h. Under the gate. No amendments used. δW is E40's step 10 of the first update, sha256 `8b8509d2...`, checked at load. No file was kept beyond the results and the log.
