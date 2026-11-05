@@ -94,7 +94,7 @@ larger within-kind range and ≥ 0.2), unreadable under two scored per side.
 | r_half, r_n, d_n | undefined | undefined | r_n + e_n = 1 | d_n > r_n |
 
 **Blind to.** r_half and r_n: where a gain runs, not whether it is new (progress, E56); relays (an MLP after a changed
-head re-fires with nothing of its own changed, as VPD's r). e_n: which head or projection. k_half: in-sample, first-order
+head re-fires with nothing of its own changed, as VPD's r). e_n: which head or attention matrix. k_half: in-sample, first-order
 ranking; sufficiency, not necessity. **Noise floor:** each row's within-kind seed range (the rule's spread); numerical
 floor the W0 reading, measured first. **Positive controls:** the two built fine-tunes, which test what the cells read,
 not kind.
