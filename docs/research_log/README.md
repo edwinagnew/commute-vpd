@@ -537,3 +537,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e85_controls.png": "experiments/qwen_d1_teeth/figures/controls.png"
 - "fig/e86_kept_vs_t.png": "experiments/qwen_d1_fractions/figures/kept_vs_t.png"
 - "fig/e89_log_ratio.png": "experiments/qwen_tofu_adversary/figures/log_ratio.png"
+- "fig/e99_net_share.png": "experiments/definition_verify/figures/net_share.png"
+- "fig/e99_class_map.png": "experiments/definition_verify/figures/class_map.png"
