@@ -62,3 +62,40 @@
 [  3870.5s] [score] {"counted": [], "reads": "no number counts at the full update or the matched step: that is D3's finding"} {"1_a1": "unread", "1_a2": "unread", "2": "unread", "3": "unread", "4": "unread", "5": "holds", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
 [  3870.6s] [a1_s1] done in 1731 s, peak GPU 42.49 GiB, host 80.0 GB
 [  3870.6s] [done] ['a1_s0', 'a1_s1']; FINISHED
+[     0.0s] [start] {'stage': None, 'states': 'a2_s42_matched,a2_s142_matched', 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(n16=16, null_seeds=(0, 1, 2, 3), draws=1000, match=1.25, evals=6, limit_s=7020, first_guess_s=1500)
+[     4.7s] [check] rows_whole_question_positions: ok {"a1": 2414, "tofu": 13421, "shapes": {"maths": [128, 256], "a1": [64, 256], "tofu": [128, 256]}}
+[    84.4s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.2 GB
+[    97.5s] [check] a2_s42_matched_norm: ok {"norm": 0.47726431649874623, "e91": 0.4772643175407531}
+[   316.4s] [sigma] 196 sites in 178 s, peak GPU 40.61 GiB, host 72.1 GB
+[   723.7s] [split a2_s42_matched] {"outside": 0.0964941350373867, "outside_null": 0.21454054003611417, "stored_error": 1.0908046471559888e-06, "split_s": 407.16913175582886}, peak GPU 40.61 GiB, host 80.3 GB
+[   867.5s] [cells a2_s42_matched base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 58504.4094 K00 0.288114478 K01 0.0758684941 nll_m00 67363.8523 nll_m01 61017.3428; rows 128, 144 s, peak GPU 42.13 GiB, host 80.3 GB
+[   867.5s] [check] a2_s42_matched_maths_K0_is_W0s: ok {"rows": 128}
+[   867.5s] [check] a2_s42_matched_memory: ok {"gpu_gib": 42.12601661682129, "host_gb": 80.31636}
+[  1134.7s] [cells a2_s42_matched new pass, maths] K10 0.281666527 K11 0.0754172798 nll_m10 66917.9348 nll_m11 60748.6229; rows 128, 267 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1134.8s] [check] a2_s42_matched_maths_classes: ok {"max_rel_gap": 5.068251351354517e-16}
+[  1284.1s] [cells a2_s42_matched base, tofu] K0 0.116035866 nll_W0 151823.272 nll_FT 99156.8392 K00 1.32302865 K01 0.112767123 nll_m00 146258.871 nll_m01 114288.559; rows 128, 149 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1284.1s] [check] a2_s42_matched_tofu_K0_is_W0s: ok {"rows": 128}
+[  1284.1s] [check] a2_s42_matched_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.31636}
+[  1519.7s] [cells a2_s42_matched new pass, tofu] K10 1.29317096 K11 0.113518849 nll_m10 144796.074 nll_m11 113616.307; rows 128, 236 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1658.4s] [cells a2_s42_matched own V', tofu] K10 1.29245191 K11 0.113545533 nll_m10 144769.232 nll_m11 113610.965; rows 128, 139 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1658.4s] [check] a2_s42_matched_tofu_classes: ok {"max_rel_gap": 2.6369983862431617e-16}
+[  1660.8s] [a2_s42_matched] {"direct_maths": {"value": 0.030315165336329903, "half_width": 0.0011246085265167183}, "outside": {"value": 0.0964941350373867, "null": 0.21454054003611417}, "placement": {"value": 0.15795469006117613, "share": 0.7185306728128801, "null": [0.5629103334424985, 0.55865196594293, 0.5604953096196078, 0.5602463220017796]}, "think": {"value": 3.7401965940834763, "L": 3.341836734693877, "T_minus_L": 0.39835985938959917, "size_S": 1847}, "printed": {"size_K00_minus_K0": 0.21850128235569433, "regating": 0.9978786069735598}, "direct": {"value": 0.029576796141084293, "half_width": 0.0007535147215050313, "pooled": 0.024685773512057776}, "credit": {"value": 0.002059827918592869, "half_width": 0.0003446766635816891, "raw_ls": 0.6844658577580727, "raw_do_nothing": 0.6824060298394797, "pooled": 0.01286576762464973}}
+[  1660.8s] [score] {"counted": [], "reads": "no number counts at the full update or the matched step: that is D3's finding"} {"1_a1": "unread", "1_a2": "unread", "2": "unread", "3": "unread", "4": "unread", "5": "holds", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
+[  1660.9s] [a2_s42_matched] done in 1577 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1671.3s] [check] a2_s142_matched_norm: ok {"norm": 0.4958376430695525, "e91": 0.4958376439384907}
+[  2101.4s] [split a2_s142_matched] {"outside": 0.09598400920379936, "outside_null": 0.2123841409511087, "stored_error": 1.0755308259641658e-06, "split_s": 415.605331659317}, peak GPU 42.49 GiB, host 80.3 GB
+[  2221.5s] [cells a2_s142_matched base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 58507.7471 K00 0.298380037 K01 0.0765617 nll_m00 67363.8523 nll_m01 61039.1662; rows 128, 120 s, peak GPU 42.49 GiB, host 80.3 GB
+[  2221.5s] [check] a2_s142_matched_maths_K0_is_W0s: ok {"rows": 128}
+[  2221.5s] [check] a2_s142_matched_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.31636}
+[  2436.6s] [cells a2_s142_matched new pass, maths] K10 0.291192725 K11 0.0760419628 nll_m10 66891.9674 nll_m11 60762.5522; rows 128, 215 s, peak GPU 42.49 GiB, host 80.3 GB
+[  2436.6s] [check] a2_s142_matched_maths_classes: ok {"max_rel_gap": 4.929915188160302e-16}
+[  2544.5s] [cells a2_s142_matched base, tofu] K0 0.116035866 nll_W0 151823.272 nll_FT 98143.758 K00 1.3669802 K01 0.114256377 nll_m00 146258.871 nll_m01 113375.633; rows 128, 108 s, peak GPU 42.49 GiB, host 80.3 GB
+[  2544.5s] [check] a2_s142_matched_tofu_K0_is_W0s: ok {"rows": 128}
+[  2544.5s] [check] a2_s142_matched_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.31636}
+[  2781.1s] [cells a2_s142_matched new pass, tofu] K10 1.3338305 K11 0.115018346 nll_m10 144717.507 nll_m11 112691.542; rows 128, 237 s, peak GPU 42.49 GiB, host 80.3 GB
+[  2941.6s] [cells a2_s142_matched own V', tofu] K10 1.33304279 K11 0.115049601 nll_m10 144688.965 nll_m11 112685.42; rows 128, 160 s, peak GPU 42.49 GiB, host 80.3 GB
+[  2941.6s] [check] a2_s142_matched_tofu_classes: ok {"max_rel_gap": 3.234676330507859e-16}
+[  2943.7s] [a2_s142_matched] {"direct_maths": {"value": 0.03232605108709627, "half_width": 0.0011863478778351907}, "outside": {"value": 0.09598400920379936, "null": 0.2123841409511087}, "placement": {"value": 0.16242178083999437, "share": 0.7218619574072909, "null": [0.5618386368346399, 0.5574595604579371, 0.5593566949580319, 0.5591058140185772]}, "think": {"value": 3.7064001588457214, "L": 3.368600844522465, "T_minus_L": 0.3377993143232563, "size_S": 1937}, "printed": {"size_K00_minus_K0": 0.22876684222842852, "regating": 0.9976624014435375}, "direct": {"value": 0.032054314485560585, "half_width": 0.000813964347486788, "pooled": 0.02647820050617903}, "credit": {"value": 0.0017793617343088031, "half_width": 0.000380169454193667, "raw_ls": 0.6842640813829541, "raw_do_nothing": 0.6824847196486452, "pooled": 0.01285803425385834}}
+[  2943.7s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched"], "reads": "some number counts"} {"1_a1": "unread", "1_a2": "unread", "2": "unread", "3": "unread", "4": "unread", "5": "holds", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
+[  2944.0s] [a2_s142_matched] done in 1283 s, peak GPU 42.49 GiB, host 80.3 GB
+[  2944.0s] [done] ['a2_s42_matched', 'a2_s142_matched']; FINISHED
