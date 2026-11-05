@@ -9,7 +9,8 @@
 #SBATCH --account=c11
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
-#SBATCH --time=06:00:00
+#SBATCH --qos=debug
+#SBATCH --time=02:00:00   # debug starts at once where normal sat 8 h pending (friction 423, 443); a rerun skips files already verified
 #SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail

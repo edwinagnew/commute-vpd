@@ -132,6 +132,11 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   found only by the code writer, at a round trip each (2026-10-27). A control that two numeric paths agree (bf16 vs
   fp32, batched vs single) takes its tolerance from a measured noise floor between them, stated in the plan: E38
   Amendment 3's R4 guessed 1e-2, run 1 stopped at 0.0195 from rounding alone, and it cost a rerun.
+  Also before filing: run the rule on the do-nothing state and ask whether it could pass the candidate's bar (E80's
+  do-nothing sat under its pass bar, friction 453); a threshold takes its reference from a measured number at that site,
+  checked first (E77, friction 416); a control floor is measured on the path it guards (a W0 floor stopped N100 on one
+  answer of 2,516, friction 435); and a removal or random-direction control states the variance share it is matched on
+  (E70's held 0.4% against 30-78%, friction 407).
   Every analysis report opens with a plain-words paragraph (three sentences, no symbols: what was done, what was found,
   what it means for `GOALS.md`) and ends with a "Not run" list.
 - Results are committed (small summaries); anything over ~1 MB per run goes in the gitignored `results/large/`.

@@ -33,4 +33,18 @@ if [[ -n ${SLURM_JOB_ID:-} ]]; then
   echo "$_started" >&2 || true
   { echo "$_started" >> "$COMMUTE_REPO/cluster/logs/jobs.log"; } 2>/dev/null || true
   unset _started
+  # Slurm hands out a card held by processes it does not count: jobs then died at load with a bare CUDA out of memory, and
+  # an afterok chain burnt through on the same card in 90 s (friction 445, 446, 448, 470, 474). Say so and stop first. Once
+  # per job (the marker), since a later source in the same job sees the job's own memory. Exit 75: nothing ran.
+  if [[ -n ${CUDA_VISIBLE_DEVICES:-} && ! -e $TMPDIR/gpu-checked-$SLURM_JOB_ID ]] && command -v nvidia-smi > /dev/null; then
+    : > "$TMPDIR/gpu-checked-$SLURM_JOB_ID" 2> /dev/null || true
+    _used=$(nvidia-smi --id="${SLURM_JOB_GPUS:-$CUDA_VISIBLE_DEVICES}" --query-gpu=memory.used --format=csv,noheader,nounits 2> /dev/null | sort -n | tail -1) || _used=
+    echo "$(date -Is) $SLURM_JOB_ID allocated GPU memory used: ${_used:-unknown} MiB" >&2 || true
+    if [[ $_used =~ ^[0-9]+$ ]] && (( _used > ${COMMUTE_GPU_MAX_USED_MB:-5000} )); then
+      echo "cluster/env.sh: GPU ${SLURM_JOB_GPUS:-$CUDA_VISIBLE_DEVICES} already holds $_used MiB outside this job; stopping before loading (exit 75). COMMUTE_GPU_MAX_USED_MB overrides." >&2
+      { echo "$(date -Is) $SLURM_JOB_ID stopped: GPU already held ($_used MiB)" >> "$COMMUTE_REPO/cluster/logs/jobs.log"; } 2> /dev/null || true
+      exit 75
+    fi
+    unset _used
+  fi
 fi
