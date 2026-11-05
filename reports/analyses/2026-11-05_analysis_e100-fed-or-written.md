@@ -1,14 +1,14 @@
 # E100: Is each fine-tune's gain fed through unchanged parts, or written into changed ones?
 
-We set each part of every saved 67M fine-tune back to the original, one at a time, and measured how much of the gain each took with it. The filed one-part reading did not sort the tasks by how they were built, but the total over all parts put every copying fine-tune low and every key-table one high, on five unseen seeds too. For the goal, this is a column that tells copying from key tables beside definition-lead's verdicts, not yet reuse from new.
+We set each part of every saved 67M fine-tune back to the original, one at a time, and measured how much of the gain each took with it. The filed one-part reading failed, but the total over all parts put every copying fine-tune low and every key-table one high, on five unseen seeds too, and one low reader copies nothing. For the goal, this column tells copying from key tables beside definition-lead's verdicts; whether a low reading means reuse is untested, since the built reuse test could not be made.
 
-*mechanism-detection-lead, 2026-11-05. Status: provisional. Independent check: holds with a caveat, `reports/reviews/2026-11-05_review_e100-independent-check.md`. E100's first run (jobs 52839 and 52873) and Amendment 1 (job 52883), the first of its two amendments; the check's control is job 52919. All `debug` L40, $0. Notebook: `notebooks/E100_fed_or_written.ipynb`. Plans: `reports/plans/2026-11-05_plan_e100-fed-or-written.md` with its dated correction, `reports/plans/2026-11-05_plan_e100-amend1.md`. Advice: `reports/reviews/2026-11-05_review_e100-fed-or-written-fable-advice.md`.*
+*mechanism-detection-lead, 2026-11-05. Status: provisional. Independent check: holds with a caveat, `reports/reviews/2026-11-05_review_e100-independent-check.md`; no independent check of Amendment 2. E100's first run (jobs 52839 and 52873), Amendment 1 (job 52883) and Amendment 2 (jobs 52989 and 53015), its two amendments, now spent; the check's control is job 52919. All `debug` L40, $0. Notebook: `notebooks/E100_fed_or_written.ipynb`. Plans: `reports/plans/2026-11-05_plan_e100-fed-or-written.md` with its dated correction, `reports/plans/2026-11-05_plan_e100-amend1.md`. Advice: `reports/reviews/2026-11-05_review_e100-fed-or-written-fable-advice.md`.*
 
 **Limit on every claim.** A new circuit built from old parts still reads as reuse. "Fed" says the gain passes through a part whose own weights barely changed; it does not say one old circuit is unchanged.
 
 ## The answer
 
-The per-part reading we filed did not work as a label. It placed the two poles we built correctly, but put every key table and text task in the middle. A number found afterwards does better: add up the gain lost when each part alone is set back to the original. It reads low on every copying fine-tune and high on every key-table or cipher fine-tune, and held on five seeds it never saw. It separates copying from key tables. It does not yet separate reuse from new: the one non-copy task built to reuse reads high.
+The per-part reading we filed did not work as a label. It placed the two poles we built correctly, but put every key table and text task in the middle. A number found afterwards does better: add up the gain lost when each part alone is set back to the original. It reads low on every copying fine-tune and high on every key-table or cipher fine-tune, and held on five seeds it never saw. It separates copying from key tables. The last amendment adds one thing: the emoticon trigger, which copies nothing from its input, also reads low, and keeps all its gain with the model's copying heads switched off. So a low reading is not only copying. Whether it means reuse is still open: the one non-copy task built to reuse reads high, and the planned second one stopped before training for lack of keys.
 
 ## What we were trying to test
 
@@ -139,9 +139,45 @@ From the check, on seeds 3-7 of the four 24-key tables:
 
 So it is not attention against MLP either: the MLPs carry about 80% of the sum on every table, and copy's heads and MLPs both sum about half of the cipher's.
 
+### Amendment 2: does a low sum reach beyond copying?
+
+Figure: `experiments/fed_or_written/figures/amend2_emoticon.png`.
+
+The independent check left two doubts. Every state that read low was a copy map, and the fixed bars move with the site. Amendment 2, the last one E100 had, asked three things on the saved states and one on a new pair. Plan `reports/plans/2026-11-05_plan_e100-amend2.md`, Fable's advice adopted as written, rules `results/predictions_amend2.json`.
+
+- **A site-relative bar.** For each state, a written plant is built on its own site, matched to its gain. Each part's update is a minimum-norm write of the answers. Each part's share of the squared norm matches the state's. Its sum of single reverts, $W$, is the written reference on that site. The state's reading is $\rho$, its own sum over $W$. The fed bar is the largest $\rho$ over the copy rows, the written bar the smallest over the rows new by construction. The rule was adopted only if their gap reached the fixed bars' 0.22.
+- **Copying heads off.** E62's three prefix-scored copying heads, (2,3), (2,4) and (3,4), are set to their natural-text means in both the state and W₀. The share of the gain kept then is read on the emoticon trigger and on the in-context copy seed 0, the control. Keeping at most half reads "copying"; the control must lose at least half or the reading is no call.
+- **The class map and its shuffled twin**, E99's, read on the fixed bars beside.
+- **A non-copy reuse pair.** A key table whose answer is W₀'s own strong top-1 guess, against a twin with the same answers permuted over the keys, two seeds each. It needed at least 24 strong keys before training.
+
+**Reading it.** The emoticon trigger is not copying, yet it reads fed. With the three copying heads at their means it keeps 1.01 and 1.02 of its gain on its two seeds, while the in-context copy keeps only 0.11 and so passes the control. Only 1 of the trigger's 73 held-out windows holds the target earlier in the window, so there is little to copy. Its sum of single reverts stays 0.30 to 0.37, under the 0.40 fed bar, and its own written plant on the same site reads 0.94. So "fed" on this column is not only copying through E62's heads. One caveat: the trigger is a constant-answer task read beside only, with no filed lean on its sum.
+
+**Stage 0** re-read copy-24 seed 0's sum at 0.39511 and its four-MLP plant at 0.63885, both matching the check's values, so the job went on.
+
+**Stage 1, the site-relative bar: not adopted.** The fed bar came out at 0.588, from copy-24 seed 5, and the written bar at 0.778, from cipher-24 seed 6. Their gap is 0.19, under the 0.22 the rule needed, and the copy rows alone spread over 0.28. So the fixed bars of 0.40 and 0.62 stand, and every state's reading is as in Amendment 1. Ten copy rows and twelve new rows had a usable reference. The in-context copy, the in-context lookup and the pair-forbidden copy had none: the plant's scale hit its cap or its sum fell under 0.5.
+
+| task | written plant's sum on the site, $W$ | state's sum over $W$ |
+|---|---|---|
+| copy-24, seeds 0-7 | 0.65-0.73 | 0.42-0.59 |
+| ident32 | 0.72 | 0.30-0.33 |
+| cipher-24, seeds 0-7 | 0.78-0.86 | 0.78-0.94 |
+| rand32 | 0.72 | 0.87-0.91 |
+| ciphered text | 0.93 | 0.95-0.96 |
+| pair-only copy | 0.85 | 1.14-1.15 |
+| rank-1 table | 0.62-0.69 | 1.00-1.29 |
+| half-known table | 0.55-0.61 | 0.78-1.01 |
+| lowercase text | 0.82 | 0.66-0.68 |
+| emoticon, beside | 0.94 | 0.32-0.39 |
+
+The emoticon's ratio of 0.32 to 0.39 would sit under the site-relative fed bar too.
+
+**Stage 2, the class map and its twin.** Read on the fixed bars, the class map sums 0.645 and 0.582 on its two seeds, written and between. Its shuffled twin sums 0.494 and 0.443, between on both. Fable leaned both written; that missed. Their plants gave no reference: one read 0.27, under the 0.5 floor, and three hit the scale cap.
+
+**The sharpen pair: stopped by its filed rule.** Of 1,000 candidate keys, 384 had W₀'s top-1 probability at or over 0.1, and 32 were drawn. Only 17 stayed strong on the task's train windows, under the 24 required. The job stopped before any fine-tune, as filed, so the column goes to definition-lead as the check worded it: it tells copy maps from key-table maps, and does not yet tell reuse from new.
+
 ## What we learned
 
-The filed reading at one part fails because on most tasks the gain passes through the last MLP. On every key table that MLP inherits about half or more of its carry from upstream, copies and ciphers alike. A whole-update number works better. The sum of single reverts separates the copy maps from the key-table maps on every saved 67M copy or key-table fine-tune, and on five more seeds of four of them. It cannot yet say "reuses existing machinery", because every fed reading is a copy task and the one non-copy task built to reuse reads written.
+The filed reading at one part fails because on most tasks the gain passes through the last MLP. On every key table that MLP inherits about half or more of its carry from upstream, copies and ciphers alike. A whole-update number works better. The sum of single reverts separates the copy maps from the key-table maps on every saved 67M copy or key-table fine-tune, and on five more seeds of four of them. It cannot yet say "reuses existing machinery", because the one non-copy task built to reuse reads written. Amendment 2 showed a low sum is not only copying: the emoticon trigger reads fed and does not need the copying heads. A site-relative bar did not separate the groups better than the fixed bars.
 
 **For definition-lead's definition.** A pair-free, weight-side column exists that separates the copy maps from the key-table maps on every saved 67M state. It is evidence to sit beside definition-lead's verdicts, not a label. The rank-1 table, assumed to strengthen an old answer, reads written, so the column does not support "old" there. Whether the definition should use it is definition-lead's call.
 
@@ -149,7 +185,7 @@ The filed reading at one part fails because on most tasks the gain passes throug
 
 - **Seeds:** seeds 3 to 7 differ from seeds 0 to 2 only in batch order: same windows, keys, table, recipe and site. On seeds 0-2 the copy-to-cipher gap was about eight copy standard deviations, so 10 of 10 was likely. The pass tests stability, not a new task.
 - **Tasks:** four copy tasks against five built-new tasks, grouped after the sum was seen. Lookup and rank-1 got their groups after reading. Every fed state answers with a token already in the input, so "copying against key tables" is not told apart from "fed against written".
-- **Site:** a written spread update reads 0.64, 0.72 and 0.86 on the copy, rank-1 and cipher sites. The bars are not site-free; a site-relative reading is sounder.
+- **Site:** a written spread update reads 0.64, 0.72 and 0.86 on the copy, rank-1 and cipher sites. The bars are not site-free. Amendment 2's site-relative bar, with plants matched to each state's own per-part norms, left a gap of 0.19 between the groups, under the fixed bars' 0.22, so it was not adopted.
 - **Poles:** the pair-only copy's update sits in two parallel heads, so its sum is near 1 almost whatever it learned. The one-part plants sum to 1 by definition. Neither tests the sum.
 - **Code:** the independent check found no bug. A head's revert zeroes its rows of q, k, v and its columns of o, which is right; the plan's wording, "q, k, v columns and o rows", is reversed and changes no number.
 
@@ -158,13 +194,16 @@ The filed reading at one part fails because on most tasks the gain passes throug
 - **Rank-1 reads written, against E100's filed lean of fed.** It strengthens W₀'s own top answer, yet sums like a cipher, at its site's written reference.
 - **Every key table read "mixed" at the last MLP.** The plan expected copies fed and ciphers written there.
 - **A written update spread over four MLPs reads 0.64 on the copy site, not near 1.** Even plain MLP writes interact through the downstream blocks.
-- **The emoticon trigger sums 0.30 to 0.37**, in the copy range, though nothing in it copies. It is read beside only.
+- **The emoticon trigger sums 0.30 to 0.37**, in the copy range, though nothing in it copies. Amendment 2 confirmed it keeps all its gain with the copying heads off. It is read beside only.
+- **The class map and its shuffled twin read mostly between**, not written as Fable leaned.
 
 ## What next
 
-- **A non-copy task built to reuse, filed fed before it is read.** If it sums low, the column reads reuse; if high, it reads copying only. Needs its own plan.
-- **File the site-relative rule** with spread written updates on every site, heads included. If copy stays well below its site's reference, keep it as definition-lead's beside column.
-- **Hand definition-lead the table** with the limit stated. If the definition reads function, not where the update sits, the column stays beside.
+E100's two amendments are spent; anything further is a new E-code with its own plan.
+
+- **A non-copy task built to reuse, filed fed before it is read**, with at least 24 strong keys: the sharpen pair needs a wider key pool or a lower probability floor. If it sums low, the column reads reuse; if high, it reads copying and triggers only.
+- **What carries the emoticon's gain.** It reads fed without the copying heads; finding the parts it passes through would say what else "fed" picks up.
+- **Hand definition-lead the table** with the limit stated, as the check worded it. If the definition reads function, not where the update sits, the column stays beside.
 
 ## Scorecard
 
@@ -197,17 +236,27 @@ The filed reading at one part fails because on most tasks the gain passes throug
 | A1 lean rank-1 | written | lean | 5 of 5 | held |
 | A1 lean half-known | between | lean | 5 of 5 | held |
 | Check control | spread written plant reads written on the copy site | not filed | 0.64; 0.72 and 0.86 elsewhere | written, by 0.02 |
+| A2 stage 0 | copy-24 seed 0's sum and its four-MLP plant | 0.39511 and 0.63885, ± 1e-3 | 0.39511, 0.63885 | held |
+| A2 site-relative bar | adopted iff the written bar minus the fed bar ≥ 0.22 | `fed_rules.site_bars` | 0.778 − 0.588 = 0.190; spread 0.283 | not adopted; fixed bars stand |
+| A2 lean gap | gap ≥ 0.22, Fable 40% | lean | 0.190 | missed |
+| A2 copying control | in-context copy keeps ≤ 0.5 with the heads off | else no call | 0.110 | held |
+| A2 emoticon | keeps ≤ 0.5, or over half its windows hold the target earlier: copying | `fed_rules.copying_reading` | kept 1.010, 1.020; earlier 1 of 73 | not copying |
+| A2 lean emoticon | keeps over half on both seeds, Fable 50% | lean | 1.01, 1.02 | held |
+| A2 lean class | class map and twin both written | lean | map written, between; twin between, between | missed |
+| A2 strong keys | at least 24 for the sharpen pair | stop otherwise | 17 | stopped, as filed |
+| A2 sharpen pair | sharpen fed, twin written, Fable 45%; both written 55% | `fed_rules.pair_outcome` | not trained | not run |
 
 ## Not run
 
-- **A non-copy task built to reuse, filed fed before reading.** No saved state is one: rank-1 was meant to be and reads written; definition-lead's forbidden lowercase has a gain of 0.53-0.57 nats, under the 1-nat floor.
+- **A non-copy task built to reuse, filed fed before reading.** No saved state is one: rank-1 was meant to be and reads written; definition-lead's forbidden lowercase has a gain of 0.53-0.57 nats, under the 1-nat floor. Amendment 2's sharpen pair and its shuffled twin were not trained: 17 strong keys, under the 24 required.
+- **Any further E100 amendment.** Both are spent; further work is a new E-code.
+- **An independent check of Amendment 2.**
+- **What carries the emoticon's gain** once the copying heads are off.
 - **New tasks under the sum's rule.** Amendment 1 read new seeds of tasks already read.
-- **A written update spread over heads as well as MLPs**, and spread written updates on any site but copy-24, rank-1 and cipher-24.
-- **The site-relative rule**, which is unfiled. No rule on the graft cell.
+- **A written reference on the in-context copy, lookup and class-map sites.** Amendment 2's profile-matched plants hit their scale cap or summed under 0.5 there. No rule on the graft cell.
 - **The "gap" unit** for the sum; Amendment 1 read "lo" only.
 - **Update norms for rank-1 and half-known seeds 0-2, the ladder rungs and definition-lead's lowercase states.**
 - **The interchange subspace**, handed to definition-lead; edges; neurons; Qwen.
-- **E100's second amendment**, planned and not run: `reports/plans/2026-11-05_plan_e100-amend2.md`, a site-relative bar and an emoticon copying check.
 
 ## Departures from the literature
 
@@ -221,5 +270,6 @@ The filed reading at one part fails because on most tasks the gain passes throug
 
 - Results: `experiments/fed_or_written/results/`. E100: `stage0.json`, `stage1.json`, `stage2.json`, `table.json`, `run.out`, rules `predictions.json`. Amendment 1: `amend1.json`, `table_amend1.json`, `amend1.out`, rules `predictions_amend1.json`.
 - The check's outputs, copied unchanged from `~/commute-data/scratch/mechanism-detection-lead/e100-check/` as `check_spread_plant.json` and `check_part_norms.json`.
-- Code: `experiments/fed_or_written/{run,amend1,plot}.py`, `src/commute/fed_rules.py`, `src/commute/locator.py`.
+- Amendment 2: `amend2.json`, `amend2.out`, `amend2_sharpen.json`, `amend2_sharpen.out`, rules `predictions_amend2.json`; figure `figures/amend2_emoticon.png` from `plot_amend2.py`. Job 52989 ran job A, stages 0-2, in about 8.5 minutes; job 53015 ran job B and stopped at its key count 9 s after start-up. Both `debug` L40, $0, peak host memory 6.1 GB.
+- Code: `experiments/fed_or_written/{run,amend1,amend2,amend2_sharpen,plants,plot,plot_amend2}.py`, `src/commute/fed_rules.py`, `src/commute/locator.py`.
 - Jobs: 52839 ran stages 0 and 1 and stage 2 up to the constant-answer tasks, about 10 minutes, then stopped on a stale sha256 record for the recruitment-test emoticon state, fixed in commit 269bf135. 52873 resumed stage 2, the three constant-answer tasks. 52883 ran Amendment 1. 52919 ran the check's control. All `debug` L40, under 15 minutes of GPU time in all, $0.
