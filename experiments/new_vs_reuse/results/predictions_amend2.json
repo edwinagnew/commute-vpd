@@ -1,0 +1,82 @@
+{
+  "experiment": "E90 Amendment 2, the second and last the rule allows: a variance-matched band",
+  "status": "filed, not run",
+  "filed": "2026-11-05",
+  "plan": "reports/plans/2026-11-05_plan_e90-amend2.md; Fable's text: reports/reviews/2026-11-05_review_e90-definition-batch-fable-advice.md, 'Amendment 2: the filed rule'; why: reports/reviews/2026-11-05_review_e90-table-check.md finding 4",
+  "rules_code": "experiments/new_vs_reuse/rules_amend2.py (pure), amend2.py; edge cases in tests/test_new_vs_reuse_amend2.py, no model",
+  "standing": "predictions.json, predictions_amend1.json and every earlier reading stand and are printed beside. The definition (decisions.md lines 81, 115) is unchanged; this is apparatus. A third amendment is not allowed: a surprise here is reported as read.",
+  "question": "Are the value form's 'above the band' rows losses specific to C, or the size of the variance removed?",
+  "rule": {
+    "applies_to": "Each C of the value form (W0's guess; token identity; token identity on copy-24's keys) at blocks 1 and 2. The mechanism form (row 1) is not read: its band is random heads.",
+    "basis": "Unchanged: results/large/bases.pt for guess and identity; copy-24's refitted from the same seeds, as stage 2 did.",
+    "draws": "20 random rank-r bases inside the top-k principal subspace of X_C's centred fit residuals at b: V_k Q, Q the QR of a seeded normal k x r draw (removal.random_basis), key [90, tag, b, k, i], tags 1 guess, 2 identity, 4 copy-24",
+    "k": "The LARGEST k > r whose 20 draws' realised mean variance share on those residuals is at least 0.9 of the basis's, else r. See `departure`.",
+    "match_ratio": 0.9,
+    "band": "removal.band_of per state over the 20 draws, removal.max_band over every state and hand write at that C and block, as stage 2",
+    "verdict": "rules.verdict unchanged, with W0's teeth (rules.teeth) re-read against the matched draws, over seeds with rules.over_seeds. Nothing is trained; each state's hand write is stage 2's saved X at its saved alpha."
+  },
+  "departure": {
+    "from": "The brief's and Fable's wording, 'k the smallest where the draws' mean variance share is at least 0.9 of the basis's'.",
+    "why": "A random rank-r subspace of the top k components has mean share (r/k) x (top k's share) = r x the mean of the top k eigenvalues / the total. That never rises with k. At k = r it is the top-r share, at least the basis's (Ky Fan). So the smallest k meeting the bar is r on every spectrum and every basis, every draw spans one subspace, and the rule as worded reads 'no matched band possible' on all six C-blocks whatever the model does. Largest is the wording's evident aim: the most random draws that still hold the variance.",
+    "check": "tests/test_new_vs_reuse_amend2.py test_fables_smallest_k_is_always_r_so_the_filed_rule_takes_the_largest. Stage 1's measured random shares 0.0195 and 0.0404 are 15/768 and 31/768, the same formula at k = 768.",
+    "for_the_lead": "Nothing has run; if the lead wants the literal wording, the change is one function, and its outcome is known in advance."
+  },
+  "control_first": "Every C's control runs before any state is read. W0's drop on C's filed read (Amendment 1's own-top-1 read for token identity and copy-24) under the basis, against the matched draws at that read. A C-block with no teeth reads rules.NO_TEETH in the verdict column, is 'unreadable' to the branches, and its state rows are still read and printed in `beside`. No teeth does not stop the job.",
+  "outcome_no_band": "no matched band possible",
+  "edge_cases": {
+    "k equal r": "Every draw spans the top-r subspace, so a percentile over 20 draws is one number. Outcome 'no matched band possible' in the verdict column. The draws are still read and the would-be band printed in `beside`: it is 'the top-r components' removal', a single comparator.",
+    "near-degenerate": "Detected by the draws' mean pairwise overlap ||A^T B||_F^2 / r, against a bar measured per C and block in the job: the overlap of C's value-form basis fitted on each value's even windows with the one fitted on its odd windows (rules_amend2.split_half). Draws at least that alike (not strictly under the bar, a nan bar included) are one subspace re-estimated. Outcome as for k = r. Same treatment beside.",
+    "the bar considered and rejected": "The overlap of C's saved basis at block 1 with block 2 (measured on bases.pt: guess 0.474, identity 0.526). A mean overlap is r/k on average, and r/k is at least the mean share and so at least 0.9 of the basis's share, so identity's floor is 0.579 at block 1: that bar would fail by arithmetic before any measurement.",
+    "known before the run": "The overlap floor 0.9 x the basis's share: guess 0.180, 0.180; identity 0.579, 0.505; copy-24 0.575, 0.477 at blocks 1, 2. Upper limit on k, r / that: guess 83; identity 53, 61; copy-24 40, 48. So token identity's draws always share over half their directions: its variance is largely the top of the spectrum. The split-half bar can still pass them; the printed overlap is read with the band.",
+    "rank larger than the residual's rank": "rank_of counts eigenvalues over 1e-10 of the largest (fp32 rounding sits near 1e-14). r above it: 'no matched band possible', no draws, no reads at that block. Not expected: 32K-64K windows in 768 dimensions.",
+    "zero denominator": "A fit residual with no variance: 'no matched band possible', no draws. A basis with zero share: target 0, k the residual's rank, draws read. On task windows: task_match reads 'no share'.",
+    "under two values or under two windows of a value": "The bar is nan, so 'no matched band possible'. Not expected: unfit_below is 200.",
+    "variance share on task windows far from that on fit residuals": "Printed per windows file and block (`task_windows`): basis, each draw, mean, 'matched' / 'under' / 'over' at the same 0.9 ratio both ways (draws < 0.9 x basis; basis < 0.9 x draws). The verdict does not change. Reading: on 'under', an 'above the band' has not been cleared of the size explanation on those windows and is reported so. On 'over', a 'within the band' may come from an over-sized band and is reported so.",
+    "a state's gain about 0": "readout.shares: under the floor 0.05 the share and every draw are nan, the verdict 'unreadable: no gain', status 'unreadable', never 'within'. Over the floor a state's own share and draws divide by the same gain, so a small gain alone does not move its comparison. Every state here has gain over 10.",
+    "tie": "A share equal to the band is within, a drop equal to the band is no teeth, as rules.py. A negative share is within (check finding 9, as filed)."
+  },
+  "do_nothing": "Run at every C-block in the job (reading.do_nothing), and on rules in tests: gain 0, share nan, verdict 'unreadable: no gain' with teeth and 'unreadable: no teeth' without, branch 'no reading'. It cannot pass, and it cannot satisfy branch (i), which needs every row read and within.",
+  "old_unmatched_band": "Stage 2's saved numbers through rules_amend2.read_block reproduce stage 2's bands and verdicts at block 1: all six maps above the band and branch (iii). So the old band passes every row, which is the question asked. Its draws cannot be this rule's band: they hold 0.0195 of the variance against 0.200 and 0.040 against 0.643, ratios 0.10 and 0.06 against the 0.9 bar. Printed in `stage_2_band` beside each verdict.",
+  "expected_numbers": {
+    "basis at W0, reproduced": "W0's drop and the basis's variance share equal stage 1's, Amendment 1's and stage 2's: drop 2.8476, 4.6068 guess; 2.8628, 2.4061 identity; 2.4947, 2.0776 copy-24; shares 0.2004, 0.2003; 0.6428, 0.5608; 0.6387, 0.5303.",
+    "draws": "Mean share on the fit residuals at or just over 0.9 x those: 0.180, 0.180; 0.579, 0.505; 0.575, 0.477. No expected k, band or teeth: the residual spectrum has never been saved. That is the measurement.",
+    "states": "Each state's and write's share under the basis equals stage 2's (`states.<name>.<b>.A_lo`); only the draws differ.",
+    "do-nothing": "'unreadable: no gain' at every block with teeth."
+  },
+  "reproduction": {
+    "tolerance": 0.001,
+    "rule": "A drop, basis variance share or basis A_lo differing from the file it was last read in by 0.001 or more (or nan) stops the job with results/stop.json: it means the wrong data or a code slip, and nothing below it can be read.",
+    "source": "Measured: the variance shares and shares are equal to all printed digits across jobs 52317, 52350 and 52363 (0.6428205966949463; 0.20861324463841247), and E62 against E90 differs by 2e-8 (0.56269888, 0.56269886). 0.001 is well above any rounding and under the smallest state band stage 2 read, 0.0083, so a pass cannot move a verdict's reading of the basis."
+  },
+  "blocks": "Both are read and reported, and each verdict names its block ('reuses C at block 1; does not reach at block 2'). The branch is read per block. Block 1 is the headline, the block stage 2 filed for all three Cs (b* = 1 for the guess); a differing branch at block 2 is named beside it.",
+  "lean": {
+    "standing": "EXTRAPOLATED, NOT MEASURED: Fable's, from the check's scaling in proportion of two points. A reading against it stands, and it is not refiled.",
+    "text": "The guess band near 0.1, identity above 0.5. Then cipher (0.08-0.12) and half-known (0.13-0.14) read 'does not reach'; rank-1 (0.16-0.22) stays above or 'not specific'; ident32, copy-24 and rand32 read 'does not reach'.",
+    "note": "Copied as Fable's. Two rows need more than the stated band: half-known at 0.13-0.14 is above a band of 0.1, and copy-24 at 0.66-0.68 and ident32 at 0.50-0.53 need an identity band above 0.68 and 0.53. Also the lean did not foresee 'no matched band possible' on the identity rows, which the overlap floor above makes a live outcome."
+  },
+  "branches": {
+    "(i)": {"when": "Every value-form map within the band at this block, all read", "reading": "The value form has no reading on this model; Fable's questions 2, 5 and 6 close in one line.", "verdict_column": "As rules.verdict gives it: 'does not reach', or 'not through C' for a row whose write alone is above. No row reads 'reuses C'."},
+    "(ii)": {"when": "rand32 within; ident32 and copy-24 above", "reading": "Token identity's removal is specific, and ident32 and copy-24 keep 'reuses C'.", "verdict_column": "As rules.verdict gives it: 'reuses C' with the share on those two, or 'not specific' where a write is also above; rand32 'does not reach'. The guess rows read by their own verdicts."},
+    "(iii)": {"when": "rand32 above", "reading": "The C-level negative control fails as it does now.", "verdict_column": "As rules.verdict gives it, unchanged; ident32 and copy-24 carry 'removal not specific to C: rand32 above the band' beside it. Whether that replaces the verdict is Fable's question 2, in the user's batch, not this filing."},
+    "no reading": {"when": "No map readable at this block: no teeth or no matched band on every C", "reading": "The question is not answered at this block; the variance-size explanation is neither cleared nor shown.", "verdict_column": "'no matched band possible' or 'unreadable: no teeth', with `beside` and `stage_2_band` printed."},
+    "other": {"when": "Any other pattern, for example rand32 mixed or unreadable, one copy row above, only guess rows above, or part of the table unreadable", "reading": "No branch; each row reads by its verdict and is reported as read.", "verdict_column": "As rules.verdict gives it, with 'no matched band possible' or 'unreadable: no teeth' on the unreadable C-blocks."}
+  },
+  "statuses": "Per map and block: 'above' every seed strictly over the band; 'within' no seed over; 'mixed'; 'unreadable' for a nan share, no seeds, no teeth or no matched band. Branches read these, in the order no reading, (i), (iii), (ii), other.",
+  "blind_to": {
+    "conservative": "Random directions in the top principal components are high-impact on W0 by their nature: removing the largest directions of the residual costs a lot whatever they encode. So the control is conservative: W0's teeth can fail and a band can be large for a C that is real. 'Within the band' means 'not shown specific to C', never 'shown not specific'.",
+    "draws contain C": "The draws sit where the basis sits, so they share directions with it beyond chance, and the band then holds part of any loss specific to C. Printed: `overlap_with_basis` against `chance_overlap` (r/k). This is the same limit in another form.",
+    "matched on variance only": "Not on the overlap with the answers' unembedding rows (check finding 2): a state whose answers lie in the basis can still read above for that reason.",
+    "matched on fit residuals": "Not on task windows; printed and read as in edge_cases.",
+    "ratio": "Largest k puts the draws just over 0.9 of the basis's variance, so the match leans about 10% small, and a row barely above the band is not separated from size.",
+    "band": "Twenty draws, a 95th percentile, as stage 2: an interpolation between the top two draws."
+  },
+  "thresholds": {
+    "match_ratio_0.9": "Fable's; also the task-window ratio, so no second number",
+    "split_half_bar": "measured per C-block in the job",
+    "reproduction_0.001": "from the measured floors above",
+    "rank_tol_1e-10": "numerical only, fp32 rounding near 1e-14",
+    "gain_floor_0.05, n_random_20, teeth_strict": "predictions.json, unchanged"
+  },
+  "settings_from": "predictions.json .settings, unchanged",
+  "order": "One debug job: capabilities, matched draws, every control and do-nothing alone, then the states with their writes and task-window shares, then the table and branches. Writes results/amend2.json as it goes."
+}

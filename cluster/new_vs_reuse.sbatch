@@ -6,6 +6,7 @@
 #   cd ~/commute-agents/<role> && sbatch cluster/new_vs_reuse.sbatch stage1
 # Amendment 1 (filing results/predictions_amend1.json; stage 1 ran as job 52317, ~5 min): sbatch cluster/new_vs_reuse.sbatch amend1, then stage2, which also refuses
 # without a complete amend1. Amend1 ~5 min (~3 if I1's table stays a gap): model and rows ~1, identity control ~1, R2 under 1, the ladder's keys, readout, control, 10 steps and write ~2. Writes results/amend1.json.
+# Amendment 2 (filing results/predictions_amend2.json, plan reports/plans/2026-11-05_plan_e90-amend2.md): sbatch cluster/new_vs_reuse.sbatch amend2, after stage2. ~6 min. Writes results/amend2.json only.
 # Inputs on NFS (gitignored): results/large of regating_table, open_pair, induction_cue, task_ladder, reading_a_coverage; Pile rows
 # artifacts/sets/train_32768_32768.npy (cached, E59, E64); the target model in artifacts/vpd/.
 # Writes experiments/new_vs_reuse/results/stage{1,2}.json (small), results/large/{readout,bases,X_*}.pt (hand writes 9 MB each), and per input-dependent task
