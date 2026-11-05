@@ -45,8 +45,8 @@ ARMS: dict[str, dict[int, Path]] = {
     "anchor2_s142": {t: large("qwen_anchor_checks", "dW", "tofu_seed142", f"step_{t}.safetensors") for t in (100, 200, 1250)},
     **{f"{a}_s0": {t: large("qwen_rl", "lr1e-6w10", "dW", a, f"step_{t}.safetensors") for t in GSM8K_STEPS} for a in "RNF"},
     **{f"{a}_s70": {t: large("qwen_rl", "lr1e-6w10_s70", "dW", a, f"step_{t}.safetensors") for t in GSM8K_STEPS} for a in "RN"},
-    "u1": {t: (U1_REGEN if t in (10, 100) else U1_VOLUME) / f"step_{t}.safetensors" for t in (2, 3, 5, 10, 20, 50, 100)},
-    "u2": {t: large("qwen_recipe", "train", "gold_1e-5", f"step_{t}.safetensors") for t in (2, 3, 5, 10, 20, 30, 50, 100)},
+    "u1": {t: (U1_REGEN if t in (1, 10, 100) else U1_VOLUME) / f"step_{t}.safetensors" for t in (1, 2, 3, 5, 10, 20, 50, 100)},
+    "u2": {t: large("qwen_recipe", "train", "gold_1e-5", f"step_{t}.safetensors") for t in (1, 2, 3, 5, 7, 8, 9, 10, 20, 30, 50, 100)},
 }
 
 
