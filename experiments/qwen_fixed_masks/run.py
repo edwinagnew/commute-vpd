@@ -32,9 +32,9 @@ from typing import Any
 import torch
 from torch import Tensor
 
-from commute import split
+from commute import qwen_d3, split
 from commute.jobs import hard_exit
-from commute.qwen_vpd import SITES, Components, importances, masked_logits
+from commute.qwen_vpd import SITES, importances, masked_logits
 
 HERE = Path(__file__).resolve().parent
 RESULTS, PRED = HERE / "results", HERE / "results" / "predictions.json"
@@ -58,18 +58,7 @@ DEV = "cuda"
 UPDATES = pr.P.updates[:3]
 
 
-class OriginalV(Components):
-    """What Γ's readouts read: W0's V of one site at a time, whatever the state has done to the components in place."""
-
-    def __init__(self, comps: Components, alive: Any):
-        super().__init__(comps.V, comps.U)
-        self.alive = alive
-
-    def vu(self, site: str) -> tuple[Tensor, Tensor]:
-        V, U = super().vu(site)
-        O = V.clone()
-        O[:, self.alive.idx[site]] = self.alive.V[site].to(V.device)
-        return O, U
+OriginalV = qwen_d3.OriginalV  # moved to commute.qwen_d3 on 2026-11-05 (E94)
 
 
 def numbers(ref: Tensor, q: Tensor, tokens: Tensor) -> dict[str, float]:

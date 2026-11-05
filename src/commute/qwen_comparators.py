@@ -54,6 +54,50 @@ def rows_of(name: str, seqs: Sequence[Seq], pack_len: int, keep: int, n_rows: in
     return Rows(name, toks, _reads(ans.bool()), _reads(fst.bool()))
 
 
+ROW_LEN, TOFU_ROWS = 256, 128  # E68's row_len; E86's TOFU rows
+
+
+def a1_rows(tok: Any, test: Sequence[dict[str, Any]], items: Sequence[dict[str, Any]]) -> Rows:
+    """E57's anchor-1 rows as `qwen_reading.a1_rows`: the prompted model's greedy answers to test 256-511 (`items`, E45's
+    large/P/a1_rows.json) under the unprompted chat, 64 rows of 512, cut to 256. (Moved from qwen_comparators/run.py, E92.)"""
+    from commute.qwen_eval import prompt
+
+    seqs: list[Seq] = []
+    for r in items:
+        p = tok(prompt(tok, test[r["idx"]]["question"]), add_special_tokens=False)["input_ids"]
+        seqs.append((p + r["ids"], len(p)))
+    return rows_of("a1", seqs, 512, ROW_LEN, n_rows=64)
+
+
+def tofu_rows(tok: Any, end_id: int, kept: set[int]) -> Rows:
+    """E86's 128 TOFU rows: the 800 rows in TOFU's own wording, pair 0 of the five E84 trained, packed in rows of 256,
+    taken evenly. Rows not in `kept` (the 13 E84 dropped) stay as context and mark no answer. (Moved from E92's run.py.)"""
+    from commute import qwen_tofu as tofu
+
+    seqs = []
+    for i, r in enumerate(tofu.held_rows()):
+        ids, p = tofu.seq(tok, end_id, r["question"] + tofu.ASK, r["answer"])
+        seqs.append((ids, p if i in kept else len(ids)))
+    return rows_of("tofu", seqs, ROW_LEN, ROW_LEN, even=TOFU_ROWS)
+
+
+def question_seen(R: Rows, user_start: int, user_word: int) -> Tensor:
+    """Per answer position, what its row holds of its question: 0 the whole chat turn, 1 cut (the row opens inside the
+    prompt), 2 none (the row opens inside the answer). (Moved from qwen_comparators/dissect.py, E92.)"""
+    out = []
+    for i in range(len(R.tokens)):
+        toks, first = R.tokens[i].tolist(), R.first[i].tolist()
+        where = {p + 1 for p in range(len(toks) - 1) if toks[p] == user_start and toks[p + 1] == user_word}
+        state, turn_seen = 2, False
+        for p in range(len(toks)):
+            turn_seen = turn_seen or p in where
+            if first[p]:
+                state, turn_seen = (0 if turn_seen else 1), False
+            if R.answer[i, p]:
+                out.append(state)
+    return torch.tensor(out, dtype=torch.int64)
+
+
 # ----------------------------------------------------------------------------- 1, update size
 
 
