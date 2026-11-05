@@ -31,6 +31,8 @@ Grain: 24 head outputs and 4 block MLP outputs. All positions. Gain G is the sta
 
 Sufficiency (W₀ with the state's P, Prakash et al.'s cross-model patch) is saved beside, no rule.
 
+**From the E96 check (`reports/reviews/2026-11-05_review_e96-independent-check.md`, first version).** The removal's means are W₀'s, taken on each task's own windows, not on cased natural text (F3): a mean from another kind of text puts a foreign vector in, which may be part of E96's "W₀ rising". On lowercase both units are saved: the filed one is E96's log-odds of the target against all tokens, and the lowercase-against-capitalised form goes beside (F1). Standard errors are by row, not by window, since windows overlap (F4). The probability printed is the mean probability, not the probability at the mean log-odds (F5).
+
 **Filed located rule.** On every seed: task fall ≥ a·G_task, control fall ≤ 0.2·G_control, and task fall ≥ 2 × control fall in nats. a is the weakest copy seed's own-terms fall at the sweep's top head, read in stage 1 of this job and truncated to two decimals, written to the results before stage 2 runs. E96's table suggests about 0.56. Edge cases to run in `tests/` before filing: G ≤ 0 on either state ("unreadable: no gain"), a part that raises the state (fall below 0, not located), a tie at the top of A (no part named), a share past 1 (counts as located), a seed that disagrees (not located).
 
 ## Stages, control first
