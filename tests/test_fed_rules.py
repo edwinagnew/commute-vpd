@@ -193,3 +193,108 @@ def test_sum_do_nothing_state() -> None:
     """W0 as the state: G = 0 and every own share nan, so the sum is nan and the state reads no gain."""
     s = FR.reverts_sum({n: {"own": math.nan} for n in names()})
     assert math.isnan(s) and a1(0.0, s) == FR.NO_GAIN_SUM
+
+
+# ----------------------------------------------------------------------------- Amendment 2
+
+TH2 = {"fed_bar": 0.4, "written_bar": 0.62, "min_gain": 1.0, "w_floor": 0.5, "kept_max": 0.5, "earlier_max": 0.5}
+SITE = {"rule": FR.SITE_RELATIVE, "fed": 0.6, "written": 0.85}
+
+
+def ref(status: str = "ok", G: float = 12.0, W: float = 0.7) -> str:
+    return FR.reference_status(status, G, W, 1.0, 0.5)
+
+
+def test_reference_edge_cases() -> None:
+    assert ref() == FR.REF_OK
+    assert ref("cap").startswith("no reference") and ref("no_match").startswith("no reference")
+    assert ref(G=1.0).startswith("no reference") and ref(G=0.4).startswith("no reference")  # gain at or under 1 nat
+    for W in (0.0, -0.2, math.nan):
+        assert ref(W=W) == "no reference: plant sum not positive"
+    assert ref(W=0.49) == FR.UNREADABLE_SITE and ref(W=0.5) == FR.REF_OK and ref(W=1.3) == FR.REF_OK  # W over 1 kept
+    assert FR.rho(0.4, 0.8, FR.REF_OK) == 0.5 and math.isnan(FR.rho(0.4, 0.8, FR.UNREADABLE_SITE))
+
+
+def test_site_bars_adoption() -> None:
+    b = FR.site_bars([0.5, 0.6, math.nan], [0.85, 0.9], 0.22)
+    assert b["rule"] == FR.SITE_RELATIVE and b["fed"] == 0.6 and b["written"] == 0.85 and b["n"] == [2, 2]
+    assert FR.site_bars([0.375], [0.595], 0.22)["rule"] == FR.SITE_RELATIVE  # a gap of exactly 0.22 adopts
+    assert FR.site_bars([0.6], [0.8199], 0.22)["rule"] == FR.FIXED
+    assert FR.site_bars([], [0.9], 0.22)["rule"] == FR.FIXED and FR.site_bars([math.nan], [0.9], 0.22)["rule"] == FR.FIXED
+    assert FR.site_bars([0.2, 0.6], [0.85], 0.22)["no_call"]  # spread 0.4 over the gap 0.25
+
+
+def test_fable_division_keeps_fixed_bars() -> None:
+    """Fable's arithmetic on the check's 4-MLP plant: copy 0.47-0.63, cipher 0.78-0.86, gap 0.15: the fixed bars stand."""
+    assert FR.site_bars([0.47, 0.63], [0.78, 0.86], 0.22)["rule"] == FR.FIXED
+
+
+def test_rho_reading() -> None:
+    rd = lambda G, s, st, r, b=SITE: FR.rho_reading(G, s, st, r, b, TH2)
+    assert rd(12.0, 0.3, FR.REF_OK, 0.6) == {"reading": FR.FED, "basis": FR.SITE_RELATIVE}  # at the bar: its side
+    assert rd(12.0, 0.6, FR.REF_OK, 0.85)["reading"] == FR.WRITTEN
+    assert rd(12.0, 0.5, FR.REF_OK, 0.7)["reading"] == FR.BETWEEN
+    assert rd(1.0, 0.3, FR.REF_OK, 0.4)["reading"] == FR.NO_GAIN_SUM
+    assert rd(12.0, 0.3, FR.UNREADABLE_SITE, math.nan)["reading"] == FR.UNREADABLE_SITE
+    fb = rd(12.0, 0.3, "no reference: match cap", math.nan)
+    assert fb["reading"] == FR.FED and fb["basis"].startswith(FR.FIXED)  # the fixed bars, flagged
+    fixed = {"rule": FR.FIXED, "fed": 0.6, "written": 0.85}
+    assert rd(12.0, 0.5, FR.REF_OK, 0.2, fixed) == {"reading": FR.BETWEEN, "basis": FR.FIXED}  # rho ignored
+
+
+def test_do_nothing_never_fed() -> None:
+    for b in (SITE, {"rule": FR.FIXED}):
+        assert FR.rho_reading(0.0, math.nan, "no reference: gain at or under the floor", math.nan, b, TH2)["reading"] == FR.NO_GAIN_SUM
+
+
+def test_copying_reading() -> None:
+    c = lambda kept, early, ctl=0.1: FR.copying_reading(kept, early, ctl, TH2)
+    assert c(0.9, 0.1, 0.6).startswith("no call") and c(0.9, 0.1, math.nan).startswith("no call")
+    assert c(0.5, 0.1) == "copying"  # loses half: copying
+    assert c(0.51, 0.5) == "not copying"  # exactly half the windows is not most
+    assert c(0.9, 0.51) == "copying"
+    assert c(math.nan, 0.1) == "unreadable"
+    assert FR.kept_share(10.0, 4.0) == 0.4 and math.isnan(FR.kept_share(0.0, 1.0)) and math.isnan(FR.kept_share(-1.0, 1.0))
+
+
+def test_strong_keys() -> None:
+    order = list(range(30))
+    top1 = {x: 100 + x for x in order}
+    p = {x: 0.2 for x in order}
+    assert FR.strong_keys(order, top1, p, 0.1, 24) == list(range(24))
+    p[3], top1[4], top1[5] = 0.0999, 4, 100  # weak; its own top-1 (copying); a value already taken by key 0
+    got = FR.strong_keys(order, top1, p, 0.1, 24)
+    assert 3 not in got and 4 not in got and 5 not in got and len(got) == 24
+    assert len(FR.strong_keys(order[:26], top1, p, 0.1, 24)) == 23  # under 24: the caller stops
+    p[7] = 0.1
+    assert 7 in FR.strong_keys(order, top1, p, 0.1, 24)  # at the bar: kept
+
+
+def test_twin_values() -> None:
+    vals = list(range(500, 524))
+    tw = FR.twin_values(vals, 0)
+    assert sorted(tw) == vals and all(a != b for a, b in zip(vals, tw, strict=True)) and tw == FR.twin_values(vals, 0)
+    assert FR.twin_values([1, 2], 3) == [2, 1]
+    for bad in ([7], [1, 1, 2]):
+        try:
+            FR.twin_values(bad, 0)
+        except AssertionError:
+            continue
+        raise AssertionError(f"twin_values accepted {bad}")
+
+
+def test_job_b_early_checks() -> None:
+    assert FR.norm_matched(3.15, 3.0, 0.05) and FR.norm_matched(2.85, 3.0, 0.05)
+    assert not FR.norm_matched(3.16, 3.0, 0.05) and not FR.norm_matched(3.0, 0.0, 0.05) and not FR.norm_matched(math.nan, 3.0, 0.05)
+    assert FR.step1_ok(0.01) and not FR.step1_ok(0.0) and not FR.step1_ok(-0.1) and not FR.step1_ok(math.nan)
+
+
+def test_pair_outcome() -> None:
+    po = lambda s, t, W=(0.7, 0.7): FR.pair_outcome(s, t, list(W), FR.SITE_RELATIVE, 0.8)
+    F, Wr, B = FR.FED, FR.WRITTEN, FR.BETWEEN
+    assert po([F, F], [Wr, Wr]).startswith("fed / written (site-relative)")
+    assert po([Wr, Wr], [Wr, Wr]).startswith("both written")
+    assert po([F, F], [F, F], (0.8, 0.9)).startswith("both fed")
+    assert po([F, F], [F, F]).startswith("as read")  # both fed, W under 0.8
+    assert po([F, B], [Wr, Wr]).startswith("as read")
+    assert po([], [Wr, Wr]).startswith("as read: a map has no seed")
