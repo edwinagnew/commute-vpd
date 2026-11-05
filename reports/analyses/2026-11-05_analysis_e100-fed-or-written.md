@@ -207,7 +207,7 @@ The filed reading at one part fails because on most tasks the gain passes throug
 - **The "gap" unit** for the sum; Amendment 1 read "lo" only.
 - **Update norms for rank-1 and half-known seeds 0-2, the ladder rungs and definition-lead's lowercase states.**
 - **The interchange subspace**, handed to definition-lead; edges; neurons; Qwen.
-- **E100's second amendment**, unspent.
+- **E100's second amendment**, planned and not run: `reports/plans/2026-11-05_plan_e100-amend2.md`, a site-relative bar and an emoticon copying check.
 
 ## Departures from the literature
 
