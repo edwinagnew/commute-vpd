@@ -1,0 +1,111 @@
+{
+  "experiment": "E88",
+  "plan": "reports/plans/2026-11-05_plan_e88-anchor-checks.md",
+  "filed": "2026-11-05, before any stage ran",
+  "question": "Did the 5-epoch TOFU update damage what the model already knew, does its recall depend on the prompt suffix, how many rephrased answers are right when a reader counts them, and how far do both example updates move at a second seed?",
+  "R": {
+    "plan": "One-card reads, L40, debug. W0 is the unchanged model; S is a2_2e-5/step_1250 (E84, trained on an H100), on 787 kept rows, 400 never-trained rows, 217 real-fact rows. Control first, alone, with a stop.",
+    "R0": {
+      "statement": "R0 control: new-word recall, rephrased, 787 rows, suffixed, at W0. Expected 0.1665 (read.json W0, L40) +- 0.005. A miss stops the job.",
+      "expected": 0.16648977448437233,
+      "tolerance": 0.005,
+      "n": 787,
+      "edge_cases": "Exactly at the tolerance holds. A count other than 787 misses: it is the wrong rows, whatever the recall. No zero denominator: new_word_recall raises on no rows."
+    },
+    "R1": {
+      "statement": "R1 same card: new-word recall on rephrased / trained / floor, suffixed, L40. Expected at W0 from R0's run; at S 0.5316 / 0.9927 / 0.2115 (H100). All three within 0.02: 'the card does not move these'; otherwise the L40 numbers replace the H100 ones wherever quoted.",
+      "band": 0.02,
+      "h100": {"para": 0.531563488930013, "trained": 0.9927498943687855, "floor": 0.21145128424263016},
+      "w0_l40": {"para": 0.16648977448437233, "trained": 0.17891209768983607, "floor": 0.18951060789778423},
+      "same": "the card does not move these",
+      "moved": "the L40 numbers replace the H100 ones wherever quoted",
+      "edge_cases": "Exactly at 0.02 holds. W0's three are reported beside E84's, no rule: R0 already rules on W0."
+    },
+    "R2": {
+      "statement": "R2 suffix: the same recall, rephrased and never-trained, no suffix. Expected at W0 low, near its own floor; at S lean above floor + 0.1. Bare rephrased under bare floor + 0.1 adds 'tied to the suffix' to the label.",
+      "margin": 0.1,
+      "adds": "tied to the suffix",
+      "blind_to": "Bare answers run longer than one sentence, up to the 128-token cap, and longer answers contain more of the reference's words. Comparing with the bare floor takes out the part common to both sets; words per answer are reported beside the numbers.",
+      "edge_cases": "Exactly at floor + 0.1 is not tied. An empty answer recalls 0. A row with no new word is skipped, as R0's. The rule reads S only; W0's bare reads are reported."
+    },
+    "R3": {
+      "statement": "R3 known facts: greedy answer contains the fact, 217 real rows, ASK_REAL (E81's read). Expected at W0 0.687 +- 0.005; at S lean 0.58 to 0.66. S more than 10 points under W0 adds 'at a cost to known facts' to the label. Also report rows lost and gained, and words per answer (W0 2.5).",
+      "w0": 0.687,
+      "tolerance": 0.005,
+      "n": 217,
+      "drop": 0.1,
+      "adds": "at a cost to known facts",
+      "source": "experiments/qwen_tofu/results/large/answers/check_real_Answer_in_a_few_words..jsonl, L40: 0.68664 on 217 rows, 2.52 words. Read with jq 2026-11-05.",
+      "comparator": "E81 at the same peak read 0.585 with rows lost and gained 44 / 22.",
+      "blind_to": "A fact stated in other words, and answer length moves it: longer answers contain more.",
+      "edge_cases": "The rule compares S with W0 read in this run, not with 0.687. A W0 outside 0.687 +- 0.005 is logged as a miss with no stop: R0 is the plan's only stop here. Exactly 10 points under is no cost. An empty answer does not contain the fact."
+    }
+  },
+  "S": {
+    "statement": "Second seed of the TOFU update (L40, debug). E84's recipe and forms, one change: the seed. Saves dW at steps 100, 200, 1250, fp32. Reads as R1 on the same card. Expected: first batch's loss differs; dW at 1250 within 10% of 18.11; rephrased recall within 0.03 of R1's. Filed prediction: 'not answered' by E84's rule (rephrased below halfway from floor to trained), lean medium-high. Report the spread beside the gap. The seed-0 update trained on an H100, this one on an L40: the spread is seed and training card together, an upper bound on seed alone.",
+    "seed": 142,
+    "seed_source": "tofu.stream shuffles epoch e with Random(seed + e), so seeds under 6 apart (1250 steps of 245 are 6 epochs) reuse each other's orders: 43 would be seed 42's epochs one along. 142 shares none. E84's forms stay those seed 42's run read.",
+    "saves": [100, 200, 1250],
+    "first_batch_differs": 0.001,
+    "first_batch_source": "E84's first batch 6.240152 (H100). The same batch across cards reads about 1e-6 apart (E78 against E61, 1.4e-5 at most over 100 steps); a miss means the seed did nothing and stops before training.",
+    "first_minutes": {
+      "step_1_loss_rel": 0.001,
+      "step_2_dw": [0.00208, 0.00312],
+      "step_2_source": "E84's band, its reading 0.00237. Adam's first moving step is set by the rate, not the data.",
+      "peak_gib": 44,
+      "peak_source": "E84's band. E81 read 39.2 at step 2 on an L40. Peak counted from training's start.",
+      "warmup_loss_frac": 0.95
+    },
+    "files": {"tensors": 196, "dtype": "F32", "norm_rel": 1e-06},
+    "dw_norm": 18.11,
+    "dw_rel": 0.1,
+    "dw_norm_seed_0": 18.108714145636945,
+    "para_band": 0.03,
+    "rule": {
+      "statement": "qwen_tofu.transfer_label at step 1250, on this seed's L40 answers. Answered when para >= floor + 0.5 * (trained - floor); trained <= floor is 'training failed'.",
+      "expected_label": "not answered",
+      "lean": "medium-high"
+    },
+    "edge_cases": "Exactly at the line is answered, E84's rule and tests/test_qwen_tofu_forms.py. dW's and para's expected ranges are reported, no stop: the training has finished by then. Stage S refuses without R done: there is no spread without R's L40 numbers and no reading before the control."
+  },
+  "A": {
+    "statement": "Second seed of the template fine-tune (L40, debug). E78's recipe, one change: the seed in arm_data('a1', seed). Saves dW at steps 10, 100, fp32. Expected: dW at 100 within 20% of 0.4865; unprompted format share and held-out distillation KL at 100 read and reported beside E78's. E61's step-match stops do not apply to a new seed; loss at step 100 under 0.2 and the finite checks do. Filed: format rule of E78 holds at seed 1, lean high.",
+    "seed": 1,
+    "seed_source": "arm_data('a1', s) keeps the samples with k in [4s, 4s + 4) and orders them by cycle(n, s, ...), keyed 'cycle-s-pass'. Seed 1 is E45's own second seed: the same 1936 training problems, other sampled answers (k 4-7, not 0-3), another order. The held-out rows (k 0, problems never trained) do not move.",
+    "data": {"n": 7742, "of": 7744, "passes": 0.8266597778351847},
+    "data_source": "experiments/qwen_updates/results/T_a1_s1.json; counted again from S/a1's files 2026-11-05: 2 truncated of 7744.",
+    "saves": [10, 100],
+    "held_at": [1, 10, 100],
+    "w0_held_rel": 0.0001,
+    "w0_held_source": "Added here, no cost: step 1 runs at rate 0, so its held-out KL is W0's on E78's rows whatever the seed, E78 0.9615102. Measured floor E78 against E61, same recipe and card, 5.3e-6 (read.json step_gaps.held). A miss stops: the reader or the data moved.",
+    "first_batch_differs": 0.001,
+    "first_batch_source": "E78's step 1 loss 0.97258. Same-batch floor against E61 1.4e-5. A miss means the seed did nothing and stops the job.",
+    "loss_100_under": 0.2,
+    "files": {"tensors": 196, "dtype": "F32", "norm_rel": 1e-06},
+    "dw_rel": 0.2,
+    "e78": {"format_unprompted": 0.92578125, "strict_dropped": 0.62109375, "held": 0.04725281055734085, "dw_norm": 0.48652033911600834},
+    "rule": {
+      "statement": "E61's rules.template at step 100, as E78 filed it: format_unprompted >= rate_min and strict_dropped >= strict_min, on GSM8K test 0-255, generated from W0 plus the saved step 100.",
+      "rate_min": 0.74,
+      "strict_min": 0.5603162055335968,
+      "lean": "high"
+    },
+    "edge_cases": "Ties at a threshold include the bound (at_least rounds to 9 decimals). No answer fitting the window gives strict_dropped None and fails the rule. dW's range is reported, no stop. Loss exactly 0.2 misses: 'under'."
+  },
+  "hand": {
+    "statement": "Blind hand count on saved answers. A script draws 100 kept rows at a fixed seed, by author cluster, and shuffles three arms of those rows (W0 rephrased, S trained wording, S rephrased) into 300 items: question, TOFU's reference answer, the model's answer, an opaque id. The key sits apart from the sheet. Two fresh Opus readers mark each item independently: right if every fact the question asks for is stated correctly, in any words; wrong otherwise (invented, contradicted or missing). Agreement between readers is reported as the noise floor, and items they split count one half.",
+    "rule": "Readable only if trained wording >= 0.90 and W0 <= 0.30. (Fable proposed W0 <= 0.10; this departs from it. The earlier Haiku judgings read W0 at 0.19 and 0.28 on these rows and the cause is not known, so 0.10 would be a guess. A miss is reported as read.) Rephrased share above halfway from W0 to trained, with the 95% author-cluster interval (tofu.cluster_ci) wholly above it: the label becomes 'new facts memorised, carrying to rephrasings for most facts'. Interval wholly below: the label stands. Interval spanning it: the label stands, with the share quoted.",
+    "trained_min": 0.9,
+    "w0_max": 0.3,
+    "labels": {
+      "above": "new facts memorised, carrying to rephrasings for most facts",
+      "below": "the label stands",
+      "spans": "the label stands, with the share quoted",
+      "unreadable": "not readable by the filed rule; reported as read"
+    },
+    "edge_cases": "100 rows, none empty (a row with an empty answer in any arm cannot be drawn); ties count half (both readers' marks pooled, so 200 marks per arm and shares are exact multiples of 1/200); a zero denominator cannot occur if readable. Exactly 0.90 and exactly 0.30 are readable. An interval's end exactly on the line spans it. Trained at 1.0 and W0 at 0.0 puts the line at 0.5.",
+    "lean": "rephrased 0.45 to 0.65, spanning",
+    "blind_to": "A reader can partly tell the arms apart by wording, and TOFU's reference is one answer per question. The line takes W0 and trained as fixed; the interval is the rephrased share's alone."
+  },
+  "not_filed": "Anything from step 100 or 200 of S's seed: saved, not read here. The gap between the two anchors, which the seed spreads are for, is read by the lead and qwen-decomp-lead, not here."
+}
