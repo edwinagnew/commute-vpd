@@ -55,3 +55,7 @@ Under `decisions.md`'s E90 apparatus rows, not the definition, for any further r
 ## Not run
 
 An independent check of this batch or of E95; a real fuller variance match (the spectrum was not saved); the class map, the one old task whose capability is not its answers (an 11-minute rebuild); new seeds; anything on Qwen.
+
+## Decided (user, 2026-11-05)
+
+Question 1: A, and option C goes to a separate lead rather than being dropped. Question 2: A. Row in `decisions.md`.
