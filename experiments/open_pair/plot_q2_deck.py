@@ -55,6 +55,15 @@ def mean(v: list[float]) -> float:
     return sum(v) / len(v)
 
 
+ASSUMED = ("Labels are how each task was built, not measured: the new-against-reuse definition (2026-11-05) gives a label only to\n"
+           "copy against lookup at one new marker; the other pairs read unreadable, no capability listed, or does not apply.")
+
+
+def assumed(fig: Any, y: float) -> None:
+    """The note the user asked for (ask 21): every new-against-existing figure says its labels stay assumptions."""
+    fig.text(0.01, y, ASSUMED, ha="left", va="top", fontsize=11, color=GREY, style="italic")
+
+
 def save(fig: Any, name: str) -> None:
     fig.savefig(FIG / name, dpi=200, facecolor="white", bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
@@ -83,6 +92,7 @@ def routes() -> None:
         symbol(ax, name)
     fig.subplots_adjust(wspace=0.42)
     headline(fig, "Copying and random maps look alike in the update but take different routes")
+    assumed(fig, -0.06)
     save(fig, "q2_routes.png")
 
 
@@ -129,6 +139,7 @@ def every_family() -> None:
                Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new")]
     fig.legend(handles=handles, loc="lower center", ncol=2, frameon=False, bbox_to_anchor=(0.5, -0.07))
     headline(fig, "r keeps a wide gap on every family we built; steering separates only copy")
+    assumed(fig, -0.13)
     save(fig, "q2_every_family.png")
 
 
@@ -164,6 +175,7 @@ def r_vs_prior() -> None:
                Line2D([], [], marker="o", ls="", ms=10, color=ORANGE, label="Built to be new"),
                Line2D([], [], marker="D", ls="", ms=9, color=GREY, label="Diamond: taught at a new marker")]
     fig.legend(handles=handles, loc="lower center", ncol=3, frameon=False, bbox_to_anchor=(0.5, -0.07))
+    assumed(fig, -0.12)
     save(fig, "q2_r_vs_prior.png")
 
 
