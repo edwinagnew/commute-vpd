@@ -82,7 +82,7 @@ Nothing was measured for this report. E70's rule was not reread under the propos
 
 **Decided.** "New" is relative to a named capability: the verdicts are "reuses C", "not through C" and "unreadable". Direction removal is the label, and the other causal tests are reported beside it.
 
-**Open, the user's words.** Token identity: "the definition should be strong enough to have a clear answer for these edge cases". Constant targets: lean to input-dependent versions; "if our definition cannot be applied to cases where it would be useful then we need to adapt it".
+**Open at the time, the user's words; closed the same day by ask 19, below.**  Token identity: "the definition should be strong enough to have a clear answer for these edge cases". Constant targets: lean to input-dependent versions; "if our definition cannot be applied to cases where it would be useful then we need to adapt it".
 
 **Proposed answer to both, not yet confirmed: which capabilities are admissible.** A capability C is admissible for a task when C does some of the task's work, judged from the task's labels and W₀'s readings, with no fine-tuned state. Fit a small g from f_C to the answers on some inputs. On held-out inputs, g must beat the best answer that ignores f_C.
 
@@ -108,3 +108,7 @@ This is row 87's held-out idea moved from a state's behaviour to a property of t
 - A constant target: not admissible.
 
 A miss changes the definition, dated, before the old tasks are read. Only the two amendments per E-code limit how often.
+
+## Ask 19 answered (2026-11-05)
+
+The user accepted the admissibility rule and the edge-case test first, having been shown the tension with row 114. Constant-target tasks get input-dependent versions; their old states read "definition does not apply". Recorded in `decisions.md`. Next: plan E90.
