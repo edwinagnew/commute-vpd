@@ -180,3 +180,135 @@ def pole_misses(split: Split, part: str, mode: str, th: Mapping[str, Any]) -> li
     want = {"forced": {"own": 1.0, "carry": 1.0, "graft": 1.0}, "forbidden": {"own": 0.0, "graft": 0.0}}[mode]
     v = split.get(part, {})
     return [f"{mode} {k} {part} {v.get(k)}" for k, x in want.items() if not (finite(v.get(k)) and abs(v[k] - x) <= th["reread_tol"])]
+
+
+# ----------------------------------------------------------------------------- Amendment 2: the site-relative sum
+# Plan reports/plans/2026-11-05_plan_e100-amend2.md; Fable's rules reports/reviews/2026-11-05_review_e100-next-fable-advice.md
+# section 3. W = the sum of single reverts of a plant written by construction with the state's own per-part norm profile, at
+# the state's gain, on the state's site; rho = the state's sum / W.
+
+REF_OK, UNREADABLE_SITE = "ok", "site unreadable: W under the floor"
+TIE = 1e-12  # a gap or ratio equal to its bar in decimal (0.595 - 0.375 = 0.21999999999999997) takes the bar's side
+SITE_RELATIVE, FIXED = "site-relative", "fixed"
+
+
+def reference_status(match_status: str, G_target: float, W: float, min_gain: float, w_floor: float) -> str:
+    """Whether a state's plant is a usable written reference. The scale did not reach the gain within tolerance, or the
+    state's gain is at or under `min_gain`: no reference (the fixed bars read it, flagged). W not finite or at or under 0:
+    no reference. W under `w_floor`: the site is too convex for the sum. W over 1 (parallel parts) is used as it is."""
+    if match_status != "ok":
+        return f"no reference: match {match_status}"
+    if not finite(G_target) or G_target <= min_gain:
+        return "no reference: gain at or under the floor"
+    if not finite(W) or W <= 0:
+        return "no reference: plant sum not positive"
+    return UNREADABLE_SITE if W < w_floor else REF_OK
+
+
+def rho(s: float, W: float, status: str) -> float:
+    """The state's sum over its plant's; nan unless the reference is ok."""
+    return s / W if status == REF_OK and finite(s) else math.nan
+
+
+def site_bars(copy_rho: Sequence[float], written_rho: Sequence[float], fixed_gap: float) -> dict[str, Any]:
+    """rho_fed = the largest copy row's rho, rho_written = the smallest written row's, over the finite ones. The site-relative
+    rule is adopted iff both pools hold a finite rho and rho_written - rho_fed >= fixed_gap (the fixed bars' 0.40 to 0.62);
+    otherwise the fixed bars stand. `spread` (the copy rows' range of rho) is reported, with `no_call` when the gap is
+    under it."""
+    c, w = [x for x in copy_rho if finite(x)], [x for x in written_rho if finite(x)]
+    if not c or not w:
+        return {"fed": math.nan, "written": math.nan, "gap": math.nan, "spread": math.nan, "no_call": True, "rule": FIXED,
+                "n": [len(c), len(w)], "why": "a pool has no finite rho"}  # fmt: skip
+    fed, wr = max(c), min(w)
+    gap, spread = wr - fed, max(c) - min(c)
+    rule = SITE_RELATIVE if gap >= fixed_gap - TIE else FIXED
+    why = "" if rule == SITE_RELATIVE else f"gap {gap:.4f} under the fixed bars' {fixed_gap}"
+    return {"fed": fed, "written": wr, "gap": gap, "spread": spread, "no_call": gap < spread, "rule": rule, "n": [len(c), len(w)], "why": why}
+
+
+def rho_reading(G: float, s: float, status: str, r: float, bars: Mapping[str, Any], th: Mapping[str, Any]) -> dict[str, str]:
+    """One state's reading under the kept rule, and its basis. Fixed rule: `sum_reading` on the sum. Site-relative: no gain
+    first; an unreadable site reads so; a state with no reference falls back to the fixed bars, flagged in `basis`; else
+    rho at or under rho_fed reads fed, at or over rho_written reads written (a bar's own value takes its side), else
+    between."""
+    fixed = sum_reading(G, s, th["fed_bar"], th["written_bar"], th["min_gain"])
+    if bars["rule"] != SITE_RELATIVE:
+        return {"reading": fixed, "basis": FIXED}
+    if not finite(G) or G <= th["min_gain"]:
+        return {"reading": NO_GAIN_SUM, "basis": SITE_RELATIVE}
+    if status == UNREADABLE_SITE:
+        return {"reading": UNREADABLE_SITE, "basis": SITE_RELATIVE}
+    if status != REF_OK:
+        return {"reading": fixed, "basis": f"{FIXED} ({status})"}
+    return {"reading": sum_reading(G, r, bars["fed"], bars["written"], th["min_gain"]), "basis": SITE_RELATIVE}
+
+
+def kept_share(G_on: float, G_off: float) -> float:
+    """The share of a state's gain left with the copying heads off: G_off / G_on; nan unless G_on is finite and positive."""
+    return G_off / G_on if finite(G_on) and G_on > 0 and finite(G_off) else math.nan
+
+
+def copying_reading(kept: float, frac_earlier: float, control_kept: float, th: Mapping[str, Any]) -> str:
+    """Emoticon's check. The control (in-context copy with the same heads off) must keep at most `kept_max` of its gain,
+    else the heads off do not remove copying: no call. Then "copying" when the state keeps at most `kept_max` (it loses half
+    its gain or more) or more than `earlier_max` of its windows hold the target earlier; else "not copying"."""
+    if not (finite(control_kept) and control_kept <= th["kept_max"]):
+        return "no call: the heads off do not remove the control's copying"
+    if not finite(kept) or not finite(frac_earlier):
+        return "unreadable"
+    return "copying" if kept <= th["kept_max"] or frac_earlier > th["earlier_max"] else "not copying"
+
+
+# ----------------------------------------------------------------------------- Amendment 2, job B: the sharpen pair
+
+
+def strong_keys(order: Sequence[int], top1: Mapping[int, int], p_top1: Mapping[int, float], p_min: float, k: int) -> list[int]:
+    """Walking `order`, the keys whose top-1 next token (not the key itself) has P at or above `p_min`, skipping one whose
+    top-1 another kept key already has; at most k. The caller stops when fewer than k come back."""
+    out: list[int] = []
+    used: set[int] = set()
+    for x in order:
+        v = top1[x]
+        if len(out) == k:
+            break
+        if v != x and v not in used and finite(p_top1[x]) and p_top1[x] >= p_min:
+            out.append(x)
+            used.add(v)
+    return out
+
+
+def twin_values(values: Sequence[int], seed: int) -> list[int]:
+    """The same values permuted over the keys so that no key keeps its own (Sattolo's cycle, seeded): distinct values
+    assumed, as `strong_keys` returns them. Fewer than two values has no such permutation."""
+    import random
+
+    assert len(values) >= 2 and len(set(values)) == len(values), "twin_values needs two or more distinct values"
+    idx = list(range(len(values)))
+    rng = random.Random(seed)
+    for i in range(len(idx) - 1, 0, -1):
+        j = rng.randrange(i)
+        idx[i], idx[j] = idx[j], idx[i]
+    return [values[i] for i in idx]
+
+
+def norm_matched(got: float, target: float, tol: float) -> bool:
+    return finite(got) and finite(target) and target > 0 and abs(got / target - 1) <= tol + TIE
+
+
+def step1_ok(G1: float) -> bool:
+    return finite(G1) and G1 > 0
+
+
+def pair_outcome(sharpen: Sequence[str], twin: Sequence[str], W_sharpen: Sequence[float], rule: str, w_unexplained: float) -> str:
+    """Fable's course changes on the pair. Every sharpen seed fed and every twin seed written: the column reads reuse beyond
+    copying. Every seed of both written: it detects copying-type reuse only. Every seed of both fed with every sharpen W
+    at or over `w_unexplained`: unexplained. Anything else, or a map with no seed: as read."""
+    if not sharpen or not twin:
+        return "as read: a map has no seed"
+    if all(r == FED for r in sharpen) and all(r == WRITTEN for r in twin):
+        return f"fed / written ({rule}): the sharpen pair is the column's positive control"
+    if all(r == WRITTEN for r in [*sharpen, *twin]):
+        return "both written: the column detects copying-type reuse, not reuse in general"
+    if all(r == FED for r in [*sharpen, *twin]) and all(finite(w) and w >= w_unexplained for w in W_sharpen):
+        return "both fed with W at or over the bar: unexplained, report and stop"
+    return "as read: report each map's seeds"
