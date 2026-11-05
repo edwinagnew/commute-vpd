@@ -1,0 +1,107 @@
+{
+  "experiment": "E95: what does 'reuses token identity' say beyond 'the state needs the input token after block 1'?",
+  "status": "filed, not run",
+  "filed": "2026-11-05",
+  "plan": "reports/plans/2026-11-05_plan_e95-token-identity.md; why: reports/reviews/2026-11-05_review_e90-amend2-check.md findings 1-3 and 5",
+  "rules_code": "experiments/token_identity/read_rules.py (pure), run.py; edge cases and do-nothing in tests/test_token_identity.py, no model",
+  "standing": "E90's filings and readings stand. This is a new E-code because E90 has used both amendments. Nothing is trained; the states and windows are saved.",
+  "settings": {
+    "from": "experiments/new_vs_reuse/results/predictions.json .settings, unchanged: n_random 20, random_seed 90, gain_floor 0.05, write_rel_tol 0.05, pile, n_control, control_seed",
+    "block": 1,
+    "write_key": "h.2.mlp.down_proj",
+    "tag_a": 2,
+    "tag_b": 6,
+    "n_rotations": 20,
+    "seeds": [0, 1],
+    "tag_note": "Tag 2 gives table A exactly Amendment 2's 20 draws. Tag 6 is unused in E90 (1 guess, 2 identity, 3 leaning, 4 copy-24, 5 ladder)."
+  },
+  "order": "One debug job. Stage 1, control and null, alone: W0's teeth and the do-nothing state on both key sets; the placement check; every row under the 20 draws only; each block-2 write's gain against its floor; the thresholds, dumped. Stage 2: the basis on every row, then read 1, then read 2. Only a failed reproduction or placement stops the job: both mean the apparatus is not what this filing describes.",
+  "control_first": {
+    "teeth": "W0's drop on token identity's own-top-1 read under the basis against the matched draws, removal.band_of, strict (rules.teeth). Table A's must reproduce Amendment 2's within the tolerance. No teeth on table A: read 1 is 'no call'. No teeth on table B: read 2 is 'no call', its rows still read and printed.",
+    "placement": "On W0 at ident32's 97 held windows, relative change at `half` of the input to each write under the removal, against a second clean pass (the numeric floor, expected 0). Block 1's write input (mlp1) must not change beyond that floor, block 2's (mlp2, down_proj's input by steering.Net's definition) must; no window may hold the key before `half`. Any miss stops the job. By the code: removal_edit at block 1 hooks net.h[2]'s input (readout.RESID[1] = 'in2'), which block 2's MLP then reads.",
+    "write_works": "Per block-2 write: alpha matched to the state's gain as perturb.match does (status 'ok', within 5%), and its gain strictly over the floor. The floor is measured here, in the same unit and windows: the 95th percentile (signed) of the same write's mean log-odds gain on the true targets, same alpha, with the table's answers rotated by 1 to 20 places, so no key gets its own answer (32 distinct values on both tables, checked on the saved windows). A write that raises every answer without learning the table fails it. A write that fails makes its table unreadable and read 1 'no call'."
+  },
+  "read1": {
+    "what": "Removal of token identity's directions at block 1's output, on the ident32 and rand32 tables. S is each state's share of gain lost, W the share lost by a hand write of the same table at block 2's MLP output, at the state's gain. Both are readout.shares' A_lo, net of W0's drop.",
+    "thresholds": "From the same job's first stage, at this site, on Amendment 2's 20 draws, read before the basis: per seed, S minus W under each draw, its 5th and 95th percentiles (signed, numpy's linear rule), and half their distance, the size this gap moves by between matched directions.",
+    "status_per_seed": "S minus W under the basis, first match wins. A nan, or a write that does not work: 'unreadable'. No larger in size than the half distance: 'about equal'. Strictly over the 95th: 'above'. Strictly under the 5th: 'below'. Otherwise 'inside the draws': the gap is real in size, and no larger than matched directions give.",
+    "status_per_table": "The status every seed gives, with 'about equal' and 'below' counted as one, 'at most equal', since both say the write loses at least as much as the state. Any unreadable seed makes the table unreadable. Otherwise 'mixed'.",
+    "difference": "Copy above and random not is a separation only if it holds on the same draw. The test's form is read 2's paired test on S minus W: per pair of seeds, copy's gap minus random's under the basis against the same under each draw, strictly over the largest, on all four pairs. Without it, copy just over its limit and random just under would read as a separation.",
+    "write_bites": "W strictly over removal.band_of of the write's own shares under the draws, on every seed of both tables. Absolute, as every E90 band: signed, block 1's spared write reads as hit, since its draws are all negative (-0.043 against a signed bar under it; test_a_spared_write_reads_above_on_saved_numbers). Printed beside every outcome, and the outcome is read with it: 'copy depends on more' with the write bitten says the state loses more than a mechanism that also loses; with the write spared it says a mechanism through this residual survives and the state does not.",
+    "signed_for_gaps": "A gap has a sign, so its limits are signed percentiles. removal.band_of stays for write_bites and for read 2.",
+    "outcomes": {
+      "token needed, no more": "Copy and random both at most equal, and the write bites. A new mechanism that needs the token through this residual loses as much as the state or more, on both tables. Removal of token identity at block 1 then says only that the token is needed.",
+      "copy depends on more than getting the key through": "Copy above; random not above; and the difference between them beyond the draws on all four pairs. The copy states lose more than the new mechanism beyond what the draws give, more so than the random states. Says more than 'needed'; does not say what the extra is.",
+      "no call: copy above and random not, but the difference between them is not beyond the draws": "As the line above without the difference. A threshold between two near rows, not a separation.",
+      "no call: a state loses more than the write, by about what matched directions give": "No table above, and a table inside the draws. The write does not lose as much as the state, so 'token needed, no more' is not shown; matched directions give as large a gap, so the excess is not shown to be token identity's.",
+      "both states depend on more than getting the key through; not specific to copy": "Both above. The states lose more than this write, on both tables. It does not separate copy from random, so it does not support 'reuses token identity' over 'the fine-tune built something reading from this residual'.",
+      "random map depends on more, copy does not: against the copy reading": "Copy not above, random above. Reported as read.",
+      "no call: a write did not learn its table, or no teeth, or no share": "Any seed unreadable, or no teeth on table A.",
+      "no call: seeds disagree": "A table's two seeds give different statuses. Each row reported as read.",
+      "no call: the write is spared and the state is not above it": "Copy and random at most equal, and the write does not bite. The write was not hit, so it cannot show the token is needed, and the states are not above it either."
+    },
+    "first_match": "Unreadable or no teeth; mixed; copy above (random above; else the difference); random above; a table inside the draws; then write bites or not. Every combination lands in one line (test_read1_lands_every_case_in_one_outcome)."
+  },
+  "read2": {
+    "what": "The replicate tables, unread under Amendment 2's rule: ident32b, rand32b, seeds 0 and 1, whose 32 keys share none with table A's (measured on the saved windows; the two maps of table B share their keys).",
+    "rule": "Amendment 2's, unchanged, at block 1: C is token identity on table B's keys, its basis fitted from the same seeds as copy-24's was; draws by rules_amend2.matched under tag 6; band removal.band_of per state, removal.max_band over every state and its hand write (block 1's, perturb.WRITE_KEY, fitted as stage 2 did, at each state's gain), statuses by rules_amend2.read_block. Filed status is read against that largest band; each state against its own band is printed beside and decides nothing.",
+    "paired": "The check's finding 2, post hoc there, filed here on table B only: per pair of a copy seed and a random seed (four pairs), copy's share minus random's under the basis against the same gap under each of the 20 draws; a pair is above when strictly over the largest draw's gap. 'every pair', 'some pairs', 'no pair'; any nan, 'unreadable'.",
+    "independence": "Only table B counts toward a confirmation. Table A's row is never pooled with it, and table A's paired test stays post hoc.",
+    "outcomes": {
+      "replicate repeats the separation: filed rule and paired test": "ident32b above, rand32b within at the filed band, and every pair above. The separation on table A repeats on independent keys: a difference of degree, on two table pairs.",
+      "filed rule repeats, paired test does not: not confirmed": "ident32b above, rand32b within, not every pair above. The pattern depends on the largest-over-states band (check finding 1).",
+      "not repeated: copy within. Not shown specific, never shown not specific": "ident32b and rand32b both within.",
+      "replicate's negative control fails: random map above": "rand32b above at the filed band, whatever else. Token identity's removal is not specific to copy on table B.",
+      "no reading: seeds disagree on the replicate": "ident32b or rand32b mixed, rand32b not above.",
+      "no call: no teeth, no matched band or no share on the replicate": "Any status or the paired call unreadable."
+    }
+  },
+  "both_reads": "The two reads answer different things and neither overrides the other. Read 1 asks what the removal says on table A against a new mechanism. Read 2 asks whether table A's separation is one table pair's. 'Copy depends on more' with 'not repeated' is reported as both.",
+  "expected_numbers": {
+    "W0, table A": "Reproduced from amend2.json, tolerance below: drop 2.8628, band 2.5805, teeth true, basis variance share on the fit residuals 0.6428, draws' mean 0.5915, k 36, r 31.",
+    "W0, table B": "No number exists: not read. By analogy, not filed as a bar: teeth narrow, k near 36, share near 0.64. No teeth on table B is a live outcome: check finding 4.",
+    "W0 with a write": "The write's gain is matched to the state's: 13-14 log-odds, within 5%. Rotated gains on the true targets: no measured value; expected well under the gain, since those writes push other answers. That is the measurement, and the rule reads it.",
+    "do-nothing": "W0 against itself: gain 0, share nan, 'unreadable: no gain' under teeth, as Amendment 2's do_nothing.identity_1. Through these rules: status unreadable, read 1 and read 2 'no call'. It cannot pass either read (test_do_nothing_cannot_pass_either_read).",
+    "control, states on table A": "Reproduced: shares ident32 0.4992, 0.5300; rand32 0.3705, 0.3591; own bands 0.3982, 0.4126, 0.3384, 0.3439.",
+    "positive control of rule 1, no GPU": "Block 1's saved write through the same rule, on Amendment 2's numbers (test_a_spared_write_reads_above_on_saved_numbers): that write is upstream of the removal and spared. Copy's gap 0.542, 0.573 against upper limits 0.481, 0.494: above. Random's 0.364, 0.352 against 0.385, 0.389: inside the draws. Difference on every pair, 0.179-0.221 against largest draws 0.144-0.169. The write does not bite. Outcome 'copy depends on more than getting the key through', with the write spared. So the rule can say above, and that outcome with a spared write is where the numbers already sit: only a block-2 write that bites can move it. Negative control: a state against itself reads about equal, gap 0.",
+    "positive control of the paired test, no GPU": "Table A reproduces the check's table to three places (test_paired_reproduces_the_checks_table).",
+    "placement": "mlp1 change 0, mlp2 change above 0, key earlier in 0 of 97."
+  },
+  "reproduction": {
+    "tolerance": 0.001,
+    "rule": "Table A's W0 drop, band and variance shares (basis, draws' mean), and each state's share and own band, against amend2.json: a difference of 0.001 or more, or a nan, stops the job. The tolerance is Amendment 2's, from the same measured floors; all were equal to the digit across jobs 52317, 52350, 52363."
+  },
+  "lean": {
+    "standing": "NOT MEASURED. A lean, not a bar; a reading against it stands and is not refiled.",
+    "read1": "Write bites, S minus W within or below on both tables: 'token needed, no more'. Reasoning, check finding 5: the key sits only at `half`, so a linear reader of the key downstream of this residual reads the directions where the keys' means differ. Against it: the 0.13-0.17 of extra loss on copy over random is unexplained by a need both share.",
+    "read2": "From table A only: ident32b above, rand32b within at the filed band, 'every pair' likely but not assured. The random map sat near its own reference on table A, so 'random map above' is live."
+  },
+  "blind_to": {
+    "within": "'Within', and 'inside the draws', mean not shown specific, never shown not specific. The draws are mostly the basis: any two rank-31 subspaces of the top 36 share at least 26 dimensions, and the basis lies about 0.99 inside that top 36 (check finding 3). So the draws' gaps hold part of any loss specific to the basis.",
+    "not above": "On random, 'not above' does not mean the write loses as much: the positive control leaves a gap of 0.36 against a spared write inside the draws, since the draws cost the random state nearly what the basis does (check finding 1). That is why 'token needed, no more' asks for 'at most equal', and why a copy-random separation asks for the difference on every pair.",
+    "one write": "One new mechanism of one kind, linear on block 2's MLP activation. A new circuit by another route (attention, several blocks) could lose more or less. 'Above' says the states lose more than this write, not more than every new mechanism.",
+    "write fragility": "X is U pinv(A) on 32 mean activations. The write can lose more than a natural reader because a pseudo-inverse amplifies small changes. Printed: cond_A, rel_err_mean, X norm. A 'below' may be this, not robustness of the state.",
+    "cause": "Neither read names why a state loses what it loses. The states are fine-tunes across all blocks, the write sits in one.",
+    "size": "Matched on variance only, on the fit residuals: Amendment 2's table A reached 0.92 of the basis there (0.5915 against 0.6428), and 0.888 on the 97 task windows (0.5603 against 0.6309, printed 'under'). Printed per table in task_windows; an 'above' on 'under' is reported as not cleared of size on those windows. Size hits state and write alike under the same draw, which reduces its effect on read 1's gap and does not remove it.",
+    "windows": "97 held windows per table, no per-window test. Per-window reads are saved for a later resampling.",
+    "units": "Log-odds, as filed. The check's minor finding: in nats the 32-key gap between maps is smaller, and draws in nats were not saved. Both are saved in reads_*.pt here; nats are not scored.",
+    "two tables": "Read 2 adds one table pair. A confirmation is two pairs, of one task format on one model.",
+    "limit": "A circuit from old parts reads as reuse: this granularity cannot tell a new circuit assembled from old pieces from an old circuit."
+  },
+  "edge_cases": {
+    "empty or one-element pool": "No seeds: unreadable. One seed: reads as itself.",
+    "zero denominator": "Gain under the 0.05 floor: share and draws nan, unreadable, never within.",
+    "ties": "A gap equal to half the range is about equal; a gap equal to a limit does not cross it; a gain equal to the floor does not work; a pair equal to the largest draw's gap is not above.",
+    "write fails to match": "Status 'unreachable', 'no_match' or 'no_target': no draws read, shares nan, unreadable, read 1 'no call'. On table B a failed write adds nothing to the band and that row's verdict reads 'no call', as rules.verdict.",
+    "no matched band on table B": "k = r or near-degenerate draws: rows read, statuses unreadable, read 2 'no call'. Rank or variance failure: no draws, rows not read, 'no call' with the reason.",
+    "a write that raises every answer": "Its rotated gains reach its gain: does not work."
+  },
+  "thresholds": {
+    "write floor": "measured per write in stage 1, at this site",
+    "gap limits and half distance": "measured per seed in stage 1, at this site",
+    "write band": "removal.band_of of the write's draws, measured per write in stage 1, at this site",
+    "reproduction 0.001": "Amendment 2's, from measured floors",
+    "write_rel_tol 0.05, gain_floor 0.05, n_random 20": "predictions.json of E90, unchanged",
+    "filed band and teeth": "Amendment 2's rule, from the draws, in the job"
+  }
+}
