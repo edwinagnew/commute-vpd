@@ -139,3 +139,100 @@ def test_score_the_tree_and_the_limit_on_every_claim():
     assert L.score(noms, sweep, {}, TH, T, "0,0")["outcome"] == "sweep misses: stop and report"
     noms, sweep = records()
     assert L.score(noms, sweep, {}, TH, T, "9,9")["outcome"] == "sweep misses: stop and report"  # the expected head not in the table
+
+
+# ----------------------------------------------------------------------------- stage 2: lowercase against the cipher
+
+TH2 = {"min_gain": 1.0, "located_share": 0.47, "control_max": 0.2, "shared_frac": 0.1, "gain_only_frac": 0.5, "g_tol": 0.02, "zero_tol": 0.001}
+
+
+def test_net_located_bars_past_one_negative_seeds_and_the_floor():
+    row, ctl = (lambda s, G=1.67: {"G": G, "share": s}), (lambda s, G=3.87: {"G": G, "share": s})
+    assert L.net_located([row(0.6), row(0.5)], [ctl(0.1), ctl(0.1)], TH2)["located"]
+    assert L.net_located([row(0.47), row(0.47)], [ctl(0.2), ctl(0.2)], TH2)["located"]  # ties count
+    assert L.net_located([row(1.4), row(1.1)], [ctl(-0.3), ctl(0.0)], TH2)["located"]  # past 1, negative control
+    assert not L.net_located([row(-0.4), row(-0.1)], [ctl(0.0), ctl(0.0)], TH2)["located"]  # the part off raised the gain
+    assert not L.net_located([row(0.6), row(0.4)], [ctl(0.0), ctl(0.0)], TH2)["located"]  # the seeds disagree
+    assert not L.net_located([row(0.6), row(0.6)], [ctl(0.0), ctl(0.3)], TH2)["located"]  # one control not spared
+    assert not L.net_located([row(0.6), row(0.6)], [ctl(1.4), ctl(0.0)], TH2)["located"]  # a control past 1 is not spared
+    assert not L.net_located([row(0.6, 0.9), row(0.6)], [ctl(0.0), ctl(0.0)], TH2)["located"]  # under the floor
+    assert not L.net_located([row(0.6), row(0.6)], [ctl(0.0, 0.9), ctl(0.0)], TH2)["located"]  # control under the floor
+    assert not L.net_located([row(NAN), row(0.6)], [ctl(0.0), ctl(0.0)], TH2)["located"]
+    assert not L.net_located([row(0.6), row(0.6)], [ctl(NAN), ctl(0.0)], TH2)["located"]
+    assert not L.net_located([], [ctl(0.0)], TH2)["located"]
+    assert not L.net_located([row(0.6)], [], TH2)["located"]
+    assert not L.net_located([row(NAN, 0.0)], [ctl(0.0)], TH2)["located"]  # the do-nothing's zero update: share is nan
+
+
+def test_case_capability():
+    assert L.case_capability(0.1, 1.0, TH2) == "shared"  # a tie
+    assert L.case_capability(-2.0, 1.0, TH2) == "shared"
+    assert L.case_capability(0.5, 1.0, TH2) == "gain only"  # a tie
+    assert L.case_capability(1.5, 1.0, TH2) == "gain only"  # the part off raised it
+    assert L.case_capability(0.3, 1.0, TH2) == "between"
+    assert L.case_capability(0.3, 0.0, TH2) == "no capability to read"
+    assert L.case_capability(0.3, -1.0, TH2) == "no capability to read"
+    assert L.case_capability(0.3, NAN, TH2) == "no capability to read"
+    assert L.case_capability(NAN, 1.0, TH2) == "unreadable"
+
+
+def test_path_outcome():
+    assert L.path_outcome(7.0, 7.0, 7.0, 0.1).startswith("both match")
+    assert L.path_outcome(8.0, 8.8, 8.8, 0.25).startswith("both match")  # inside the bar
+    assert L.path_outcome(8.0, 10.0, 10.0, 0.25).startswith("both match")  # a tie matches
+    assert L.path_outcome(7.0, 7.0, 0.5, 0.1).startswith("first-order step misleading")
+    assert L.path_outcome(7.0, 5.0, 7.0, 0.1).startswith("gradient code wrong")  # the path comes first
+    assert L.path_outcome(7.0, 5.0, 0.5, 0.1).startswith("gradient code wrong")
+    assert L.path_outcome(-1.0, -1.05, 1.0, 0.1).startswith("first-order step misleading")  # a rise, on its own size
+    assert L.path_outcome(0.0, 0.0, 0.0, 0.1).startswith("both match")
+    assert L.path_outcome(0.0, 1e-9, 0.0, 0.1).startswith("gradient code wrong")
+    assert L.path_outcome(NAN, 1.0, 1.0, 0.1) == "unreadable"
+    assert L.path_summary(["x", "x"]) == "x"
+    assert L.path_summary(["x", "y"]).startswith("mixed")
+    assert L.path_summary([]) == "unreadable"
+
+
+def test_gain_apparatus():
+    ok = {"s": {"G_bf16": 1.67, "G_stored": 1.67}}
+    assert L.gain_apparatus(ok, {"m": 0.0}, TH2) == "pass"
+    assert L.gain_apparatus({"s": {"G_bf16": 1.70, "G_stored": 1.67}}, {"m": 0.0}, TH2) != "pass"
+    assert L.gain_apparatus({"s": {"G_bf16": NAN, "G_stored": 1.67}}, {"m": 0.0}, TH2) != "pass"
+    assert L.gain_apparatus(ok, {"m": 0.01}, TH2) != "pass"
+    assert L.gain_apparatus(ok, {"m": NAN}, TH2) != "pass"
+    assert L.gain_apparatus({}, {"m": 0.0}, TH2) != "pass"
+
+
+def sweep2(share_low: tuple[float, float] = (0.6, 0.6), share_cip: float = 0.1, G: float = 1.67, gap: float = 1.2, gap_off: float = 1.1) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Two heads: the first carries the shares given, the other nothing. Its W0 capability with the part off is `gap_off`."""
+    def state(share: float, g: float) -> dict[str, Any]:
+        return {"G": g, "best_pair": "0,0+0,1", "heads": {"0,0": {"share": share}, "0,1": {"share": 0.01}}}
+    low = {f"lowercase_s{s}": state(share_low[s], G) for s in (0, 1)}
+    st = low | {f"cipher_s{s}": state(share_cip, 3.87) for s in (0, 1)}
+    swept = {"w0": {"gap": gap, "gap_off": {"0,0": gap_off, "0,1": gap}}, "states": st, "pairs": {"0,0+0,1": {"gap_off": gap_off, "states": {n: {"share": 0.3} for n in st}}}}
+    near = {"salience": {n: {"0,0": 0.1, "0,1": 0.2} for n in low}, "probe": {n: {"0,0": 0.0, "0,1": 0.0} for n in low},
+            "mlp": {n: {"share": 0.4, "control": {"share": 0.0}, "random_shares": [0.0, 0.01], "gap_off": 1.0, "gap_intact": 1.2} for n in low}}  # fmt: skip
+    return swept, near
+
+
+def test_score_stage2_the_three_outcomes_and_their_strings():
+    r = L.score_stage2(*sweep2(gap_off=1.1), TH2)
+    assert r["outcome"] == "located: 0,0" and r["parts"]["0,0"]["reading"] == "gain only"
+    assert L.LIMIT in r["claims"][0] and L.GAIN_ONLY in r["claims"][0] and not r["lean_no_single_head_located_held"]
+    r = L.score_stage2(*sweep2(gap_off=0.0), TH2)
+    assert r["parts"]["0,0"]["reading"] == "shared" and L.LIMIT in r["claims"][0] and L.GAIN_ONLY not in r["claims"][0]
+    r = L.score_stage2(*sweep2(share_low=(0.6, 0.4)), TH2)  # the seeds disagree
+    assert r["outcome"] == "not found at head or pair grain" and "not 'no mechanism'" in r["claims"][0] and r["lean_no_single_head_located_held"]
+    r = L.score_stage2(*sweep2(share_cip=0.5), TH2)  # the cipher goes too
+    assert r["outcome"] == "not found at head or pair grain"
+    r = L.score_stage2(*sweep2(G=0.9), TH2)
+    assert r["outcome"] == "no gain to locate" and not r["claims"]
+    r = L.score_stage2(*sweep2(G=0.0, share_low=(NAN, NAN)), TH2)  # the zero update
+    assert r["outcome"] == "no gain to locate"
+    r = L.score_stage2(*sweep2(gap=-0.2), TH2)  # located, but W0 shows no capability to read
+    assert r["outcome"] == "located: 0,0" and r["parts"]["0,0"]["reading"] == "no capability to read" and not r["w0_capability"]["readable"]
+    r = L.score_stage2(*sweep2(share_low=(0.47, 0.47)), TH2)  # a tie at the top of the sweep, at the bar
+    assert r["tops"]["lowercase_s0"] == "0,0" and r["outcome"] == "located: 0,0"
+    swept, near = sweep2()
+    swept["states"]["lowercase_s0"]["heads"]["0,1"]["share"] = 0.6  # two heads tie: top_head names none, the rule reads each
+    r = L.score_stage2(swept, near, TH2)
+    assert r["tops"]["lowercase_s0"] is None and r["beside"]["salience_rank"]["lowercase_s0"] is None and r["outcome"] == "located: 0,0"

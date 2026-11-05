@@ -27,7 +27,7 @@ LIMIT = "a new circuit built from old parts still reads as reuse"
 # ----------------------------------------------------------------------------- reads
 
 
-def _salience_batch(net: Any, w: Tensor, half: int, n: int, means: Tensor) -> Tensor:
+def _salience_batch(net: Any, w: Tensor, half: int, n: int, means: Tensor, along: tuple[CP.Head, float] | None = None) -> Tensor:
     """(blocks, H) float64, summed over the batch's windows and every position; `head_salience` says what it is."""
     blocks = list(net.net.h)
     H, d = blocks[0].attn.n_head, blocks[0].attn.head_dim
@@ -35,9 +35,14 @@ def _salience_batch(net: Any, w: Tensor, half: int, n: int, means: Tensor) -> Te
     seen: list[Tensor] = []
 
     def add(_m: Any, args: tuple[Tensor, ...]) -> tuple[Tensor]:
+        x = args[0]
+        if along is not None and along[0][0] == len(zeros):
+            (lay, h), a = along
+            x = x.clone()
+            x[..., h * d : (h + 1) * d] += a * (means[lay, h].to(x.device, x.dtype) - x[..., h * d : (h + 1) * d])
         zeros.append(torch.zeros_like(args[0], requires_grad=True))
         seen.append(args[0].detach())
-        return (args[0] + zeros[-1],)
+        return (x + zeros[-1],)
 
     handles = [b.attn.o_proj.register_forward_pre_hook(add) for b in blocks]
     try:
@@ -51,13 +56,31 @@ def _salience_batch(net: Any, w: Tensor, half: int, n: int, means: Tensor) -> Te
     return torch.stack([v.view(*v.shape[:2], H, d).sum((0, 1, 3)).cpu() for v in dots])
 
 
-def head_salience(net: Any, w: Tensor, half: int, n: int, means: Tensor, dW: ST.DW | None = None, batch: int = 64) -> Tensor:
+def head_salience(net: Any, w: Tensor, half: int, n: int, means: Tensor, dW: ST.DW | None = None, batch: int = 64, along: tuple[CP.Head, float] | None = None) -> Tensor:
     """(blocks, H) float64: the first-order change in the mean log-odds at `half` if each head's output went to its mean,
     i.e. the gradient of the log-odds at the head's output times (mean - output), summed over positions, averaged over
     windows. The gradient is total: it runs through every later block. A zero is added to `o_proj`'s input to carry it,
-    since the model's parameters need no gradient."""
+    since the model's parameters need no gradient. `along` = (head, a) takes the gradient with that head's output moved
+    the fraction a of the way to its mean, for `head_path`; (mean - output) stays the unmoved one."""
     with net.at(dW):
-        return sum(_salience_batch(net, w[s : s + batch], half, n, means) for s in range(0, len(w), batch)) / len(w)  # type: ignore[return-value]
+        return sum(_salience_batch(net, w[s : s + batch], half, n, means, along) for s in range(0, len(w), batch)) / len(w)  # type: ignore[return-value]
+
+
+def head_path(net: Any, w: Tensor, half: int, n: int, means: Tensor, head: CP.Head, dW: ST.DW | None = None, steps: int = 8, batch: int = 64) -> float:
+    """The change in the mean log-odds at `half` as `head`'s output goes in a straight line to its mean: the integral of
+    `head_salience`'s entry along that line, by the midpoint rule. It should equal the true change, whatever the curvature."""
+    return sum(float(head_salience(net, w, half, n, means, dW, batch, (head, (k + 0.5) / steps))[head]) for k in range(steps)) / steps
+
+
+def form_gap(net: Any, w: Tensor, half: int, n: int, b: Tensor, edit: Edit | None = None, batch: int = 64) -> Tensor:
+    """Per window, log p(target) - log p(b) at `half` under the net's current weights and hooks, E53's A0 read
+    (`performed.log_odds`): the difference of the two logits. The target is `w`'s last column."""
+    out = []
+    for s in range(0, len(w), batch):
+        logits = net.run(w[s : s + batch, :n], edit)[0][:, half]
+        a, c = w[s : s + batch, -1].to(logits.device), b[s : s + batch].to(logits.device)
+        out.append((logits.gather(1, a[:, None]) - logits.gather(1, c[:, None])).squeeze(1).double().cpu())
+    return torch.cat(out)
 
 
 def head_outputs(net: Any, w: Tensor, half: int, n: int, dW: ST.DW | None = None, batch: int = 64) -> Tensor:
@@ -323,3 +346,102 @@ def score(noms: Mapping[str, Any], sweep: Mapping[str, Any], run_shares: Mapping
             "located": tables, "mlp_located": mlp, "claims": located_parts, "nominators": verdicts, "table": expected_table(st, pairs, T),
             "share_diff_run": {n: abs(heads[expected][n]["share"] - s) for n, s in run_shares.items()} if expected in heads else {},
             "outcome": tree(ctl["passes"], verdicts["salience_passes"])}  # fmt: skip
+
+
+# ----------------------------------------------------------------------------- stage 2: a task W0 already performs
+
+
+def gain_apparatus(states: Mapping[str, Mapping[str, float]], zero: Mapping[str, float], th: Mapping[str, Any]) -> str:
+    """Stage 2's stage 0. "pass", or what missed; a tie passes, nan misses, an empty read misses."""
+    if not states or not zero:
+        return "nothing read"
+    if not all(abs(r["G_bf16"] - r["G_stored"]) <= th["g_tol"] for r in states.values()):
+        return "G does not re-read E53's stored value"
+    return "pass" if all(abs(z) <= th["zero_tol"] for z in zero.values()) else "the zero update's gain is not 0"
+
+
+def path_outcome(true_fall: float, path_fall: float, single_fall: float, tol: float) -> str:
+    """The gradient check, for one read. The path integral is held to the true fall first, so a single step can only be
+    called misleading on a gradient that integrates correctly. A tie matches. A true fall of 0 matches only exactly."""
+    if not all(CP.finite(x) for x in (true_fall, path_fall, single_fall)):
+        return "unreadable"
+    if abs(path_fall - true_fall) > tol * abs(true_fall):
+        return "gradient code wrong: the path integral misses the true fall"
+    if abs(single_fall - true_fall) > tol * abs(true_fall):
+        return "first-order step misleading: the path integral matches, the single step does not"
+    return "both match: the path integral and the single step are both within the tolerance"
+
+
+def path_summary(outcomes: Sequence[str]) -> str:
+    """One outcome for the check: the common one, else "mixed", and the reader goes to the cases."""
+    words = sorted(set(outcomes))
+    return words[0] if len(words) == 1 else "mixed: read the cases" if words else "unreadable"
+
+
+def net_located(rows: Sequence[Mapping[str, float]], controls: Sequence[Mapping[str, float]], th: Mapping[str, Any]) -> dict[str, Any]:
+    """The plan's rule for a task W0 already performs. On every seed the state's gain is at least `min_gain` and its net
+    share lost at least `located_share` (a tie counts; a share past 1 counts: the gain went and more), and the same seed's
+    control state is spared (`spares`). A seed that disagrees, no rows, no controls or nan: not located."""
+    gone = [r["G"] >= th["min_gain"] and r["share"] >= th["located_share"] for r in rows]
+    kept = [spares(c, th) for c in controls]
+    return {"located": bool(gone) and len(gone) == len(kept) and all(gone) and all(kept), "lost": gone, "spared": kept}
+
+
+def case_capability(off: float, intact: float, th: Mapping[str, Any]) -> str:
+    """W0's own mean log p(lowercase) - log p(capitalised) with the part off, against intact: "shared" at or under
+    shared_frac of intact, "gain only" at or over gain_only_frac, else "between"; ties to the named side."""
+    if not CP.finite(intact) or intact <= 0:
+        return "no capability to read"
+    if not CP.finite(off):
+        return "unreadable"
+    return "shared" if off <= th["shared_frac"] * intact else "gain only" if off >= th["gain_only_frac"] * intact else "between"
+
+
+NOT_FOUND_SCOPE = "not found at single-head or best-pair grain, K = 320 MLP units reported beside; not 'no mechanism'"
+GAIN_ONLY = "the gain and the capability have separate parts at this grain"
+
+
+def stage2_outcome(gains: Sequence[float], recs: Mapping[str, Mapping[str, Any]], min_gain: float) -> dict[str, Any]:
+    """The filed strings. Any lowercase seed under the floor, nan or none read: "no gain to locate", whatever the parts say."""
+    if not gains or not all(g >= min_gain for g in gains):
+        return {"outcome": "no gain to locate", "claims": []}
+    found = [p for p, r in recs.items() if r["located"]]
+    if not found:
+        return {"outcome": "not found at head or pair grain", "claims": [NOT_FOUND_SCOPE]}
+    claims = []
+    for p in found:
+        word = recs[p]["reading"]
+        claims.append(f"{p} is located on lowercase, capability reading {word}: {LIMIT}" + (f"; {GAIN_ONLY}" if word == "gain only" else ""))
+    return {"outcome": f"located: {', '.join(found)}", "claims": claims}
+
+
+def stage2_beside(beside: Mapping[str, Any], tops: Mapping[str, str | None], gap_intact: float, th: Mapping[str, Any]) -> dict[str, Any]:
+    """Reported, deciding nothing: the rank of each lowercase state's top head by salience and by the probe, and the MLP
+    units' share against their random sets."""
+    mlp = {}
+    for n, r in beside["mlp"].items():
+        rnd = [x for x in r["random_shares"] if CP.finite(x)]
+        mlp[n] = {"share": r["share"], "control_share": r["control"]["share"], "random_mean": sum(rnd) / len(rnd) if rnd else math.nan, "random_max": max(rnd, default=math.nan),
+                  "over_every_random": CP.finite(r["share"]) and bool(rnd) and r["share"] > max(rnd), "reading": case_capability(r["gap_off"], r["gap_intact"], th)}  # fmt: skip
+    return {"salience_rank": {n: rank_of(tops[n], beside["salience"][n]) for n in beside["salience"]}, "probe_rank": {n: rank_of(tops[n], beside["probe"][n]) for n in beside["salience"]},
+            "gap_intact_all_rows": gap_intact, "mlp": mlp}  # fmt: skip
+
+
+def score_stage2(sweep: Mapping[str, Any], beside: Mapping[str, Any], th: Mapping[str, Any]) -> dict[str, Any]:
+    """Arithmetic over the saved sweep and beside records. Parts: every head alone and each state's greedy pair, in that
+    order. A share is read on the task's own positions: lowercase's state on lowercase's, the same seed's cipher on cipher's."""
+    st, w0 = sweep["states"], sweep["w0"]
+    low, cip = names_of(st, "lowercase"), names_of(st, "cipher")
+    parts = {h: {n: st[n]["heads"][h] for n in st} for h in w0["gap_off"]} | {p: r["states"] for p, r in sweep["pairs"].items()}
+    gaps = {**w0["gap_off"], **{p: r["gap_off"] for p, r in sweep["pairs"].items()}}
+    recs: dict[str, dict[str, Any]] = {}
+    for p, by_state in parts.items():
+        rows = [{"G": st[n]["G"], "share": by_state[n]["share"]} for n in low]
+        ctls = [{"G": st[n]["G"], "share": by_state[n]["share"]} for n in cip]
+        recs[p] = {**net_located(rows, ctls, th), "shares": [r["share"] for r in rows], "control_shares": [c["share"] for c in ctls],
+                   "gap_off": gaps[p], "reading": case_capability(gaps[p], w0["gap"], th)}  # fmt: skip
+    tops = {n: top_head({h: r["share"] for h, r in st[n]["heads"].items()}) for n in st}
+    single = [h for h in w0["gap_off"] if recs[h]["located"]]
+    return {**stage2_outcome([st[n]["G"] for n in low], recs, th["min_gain"]), "gains": {n: st[n]["G"] for n in st}, "tops": tops, "parts": recs,
+            "w0_capability": {"intact": w0["gap"], "readable": case_capability(0.0, w0["gap"], th) != "no capability to read"},
+            "lean_no_single_head_located_held": not single, "beside": stage2_beside(beside, tops, w0["gap"], th)}  # fmt: skip

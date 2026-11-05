@@ -1,0 +1,73 @@
+{
+ "experiment": "E96 locate_mechanism, stage 2: can a part of the 67M be named that carries a fine-tune's gain on a task W0 already performs and spares a control task? E53's lowercase against its cipher, step 300, batch orders 0 and 1. By the sweep alone: stage 1's filed tree outcome was 'sweep passes, salience fails: stage 2 by the sweep alone' (job 52551).",
+ "filed": "2026-11-05",
+ "plan": "reports/plans/2026-11-05_plan_e96-locate-mechanism.md, stage 2, the tree and 'Decided (user, 2026-11-05)'",
+ "limit_on_every_claim": "a new circuit built from old parts still reads as reuse. Every claim string naming a located part carries it (commute.locate.LIMIT).",
+ "settings": {
+  "states": "experiments/performed_anchor/results/large/dW_{lowercase,cipher}_s{0,1}_step300.pt, bf16, loaded with .float() by E53's own state_loader, sha256 against finetune.json. Same-seed pairs: lowercase_s0 with cipher_s0, lowercase_s1 with cipher_s1",
+  "windows": "E53's scored windows, recomputed by E53's own draw: Pile val rows 0-255, performed.windows_at, half 63, 127 tokens, up to 500 windows, seed 0; the scored token at index 64, read at index 63. Lowercase's windows from E53's task_text on the lowercased rows, cipher's on the ciphered rows, with a0.json's map",
+  "means_sha256": "da2b689fee1fdb966794b9be27954e6f278236a5ef275f7b9761b71644cc6bab",
+  "means": "Stage 1's results/means.pt, W0's head means on natural text; E62's heads.pt is never opened. Used at W0 and at every state. Departure from a same-length recompute, as asked: those spans are 41 tokens, E53's windows 127, so positions past 41 are ablated to a mean taken from earlier positions",
+  "gradient_states": ["copy_s0", "copy_s2"],
+  "gradient_heads": [[2, 4], [1, 4]],
+  "mlp_k": 320,
+  "n_random": 20,
+  "random_seed": 96,
+  "mlp_note": "Stage 1's code and draws: numpy default_rng([96, 320]), 20 uniform draws of 320 of the 12,288 units; units chosen on the even windows, read on the odd windows",
+  "precision": "The sweep, the gradient check and the nominators read fp32 with allow_tf32 off, as stage 1 and its control. E53's stored gains were read under bf16 autocast, so stage 0 reads both paths on the same states and reports the difference; the check against the stored value is on E53's bf16 path, and the share's denominator is the fp32 gain"
+ },
+ "definitions": {
+  "G (E53's scored read)": "Mean over the windows of (state's log-odds of the true next token at the read position - W0's), where log-odds = log p - log(1 - p): commute.data.NEXT with identity.log_odds. This is what read.json stores. It is NOT log p(lowercase form) - log p(capitalised form): that difference is A0's read and is used here only for the capability reading. On the cipher, likewise, the log-odds of pi(x), not log p(pi(x)) - log p(x)",
+  "G_abl": "The same with the part off in both W0 and the state",
+  "share": "copying.share_lost: 1 - G_abl / G; nan if G is not positive. A task's share is read on its own positions only",
+  "lo, p": "The state's own mean log-odds over the windows with the part off, and the probability at that mean log-odds. Reported",
+  "gap (W0's capability)": "W0's mean log p(lowercase form) - log p(capitalised form) at lowercase's scored windows, commute.locate.form_gap; intact, and with the part off",
+  "sweep": "Each of the 24 heads alone (copying.ablated, mean ablation at every position), W0 and four states; per state the head that added to the state's top head loses the largest share (run.best_pair), ties in block and head order. Each distinct pair is read on all four states, and named the same whichever head came first",
+  "gradient check": "On E62's states and read windows, per head, for the state, for W0 and for their difference. true_fall: mean log-odds intact minus head off (copying.ablated). path_fall: minus the integral of stage 1's head_salience along the straight line from the head's output to its mean, midpoint rule, 8 steps (commute.locate.head_path; head_salience with along=(head, a), the same gradient code). single_fall: minus head_salience at the start of the line, stage 1's number",
+  "head salience, MLP-unit salience, probe": "Stage 1's code and definitions (predictions.json), on the lowercase states at lowercase's windows; the probe's target is the lowercase form's row of W0's lm_head"
+ },
+ "thresholds": {
+  "g_tol": 0.02,
+  "g_tol_source": "E53's own: controls.repro_G_tol in predictions_amend1.json and predictions_amend2.json. E53's re-reads on its path read a difference of exactly 0 (read_amend1b.json e53/* ref_G, read_amend2.json repro/* dev.G). Checked against read.json rows <task>/s<seed>/step300, G: lowercase 1.67079, 1.61192; cipher 3.86902, 3.80868",
+  "zero_tol": 0.001,
+  "zero_tol_source": "E53's own: controls.zero_tol in predictions.json; read.json <task>/zero G reads 0. Applied to the largest per-window difference, on both precision paths",
+  "min_gain": 1.0,
+  "min_gain_source": "local_faith.MIN_GAIN, as stage 1 and E53's own gain_bar of 1. E53's gain is in the same unit, log-odds at a read position (identity.log_odds, which steering.logodds_at calls), and lowercase's stored 1.61-1.67 sits over it, so no floor is taken from a bootstrap",
+  "located_share": 0.47,
+  "located_share_source": "The control's weakest seed in stage 1: copy_s2 at head 2,4, 0.47099 in sweep.json, truncated to 0.47 (the plan's rule for a task W0 already performs)",
+  "control_max": 0.2,
+  "control_max_source": "E62's filed bar for a spared map, as stage 1. A tie counts as spared",
+  "shared_frac": 0.1,
+  "gain_only_frac": 0.5,
+  "capability_bars_source": "Stage 1's bars. Ties to the named side",
+  "path_tol": 0.1,
+  "path_tol_source": "The lead's brief: a path integral more than 10% off the true fall reads 'gradient code wrong'; a single step more than 10% off a path that matches reads 'first-order step misleading'",
+  "reread_tol": 0.0001,
+  "reread_tol_source": "Stage 1's re-reads of these numbers on this path read exactly 0 (stage0.json salience_repeat_floor 0; E62 Amendment 2's G re-read 0). The tolerance sits far above that floor and far under anything read (falls of 2.4-7.1, salience of 0.05-0.52)"
+ },
+ "predictions": {
+  "stage0": "Run first and alone. Exit 1 on a miss; stage2_stage0.json and the log written either way. A state's sha256 off finetune.json, or means.pt's off this file, stops before the model loads. Gain on E53's own bf16 read within g_tol of read.json's. The zero update's largest per-window gain at or under zero_tol on both paths. W0's capability intact measured here. No head share is read.",
+  "fp32_against_bf16": "Reported, not a stop: the two paths' gains on the four states. No noise floor between them has been measured on these windows, and filing a guess has stopped runs before (E38 Amendment 3). The lead reads this number before any share: if it is large, every share below is on a gain that differs from the stored one.",
+  "gradient_check": "Run second. Bears on salience's failure; a $0 sanity check, not a nominator; it names no cause beyond its strings. Per read commute.locate.path_outcome: path_fall off true_fall by more than path_tol of |true_fall|: 'gradient code wrong: the path integral misses the true fall'; else single_fall off by more than path_tol: 'first-order step misleading: the path integral matches, the single step does not'; else 'both match'. The JSON's 'outcome' reads the state-minus-W0 cases, what salience ranks: the common string, or 'mixed: read the cases'. Lean: first-order step misleading. Positive control of the sweep's apparatus, exit 1 on a miss: state-minus-W0 true_fall re-reads stage 1's sweep.json (G - G_abl) and single_fall re-reads nominators.json's salience, each within reread_tol: copy_s0 falls 7.1179 at 2,4 and 2.6105 at 1,4, copy_s2 5.9095 and 2.3894; salience 0.5056, 0.5208 and -0.0506, 0.4977.",
+  "located_rule": "commute.locate.net_located, deciding. A part is located when, on both seeds: the lowercase state's G is at least min_gain and its net share is at least located_share (a tie counts; a share past 1 counts: the gain went and more); and the same seed's cipher state has G at least min_gain and a share at or under control_max (a tie counts; negative counts; past 1 does not). A seed that disagrees, nan, or no rows: not located.",
+  "parts_read": "Every head alone and every state's greedy best pair. The rule is applied to lowercase only, with the cipher as control: the cipher is the control here, not a second task to locate.",
+  "capability_reading": "commute.locate.case_capability, beside Located, for every part, and it decides nothing about Located. W0's gap with the part off against intact: 'shared' at or under shared_frac x intact, 'gain only' at or over gain_only_frac x intact, else 'between'; 'no capability to read' if intact is not positive (A0's 1.18 was read on 6,070 positions, not these 500; its bar was 1 nat at the mean, and this rule asks only that the value be positive, as briefed; the value is reported). 'Gain only' is reported as: the gain and the capability have separate parts at this grain.",
+  "lean": "No single head located; broad gain.",
+  "outcome": "commute.locate.stage2_outcome, the string 'outcome' in stage2_score.json. Any lowercase seed under min_gain, or nan: 'no gain to locate'. Else 'located: <parts>' listing every part that meets the rule, heads first; each claim string carries the limit. Else 'not found at head or pair grain', its claim string carrying the scope: \"not found at single-head or best-pair grain, K = 320 MLP units reported beside; not 'no mechanism'\".",
+  "beside": "Deciding nothing, reported in stage2_score.json 'beside'. Rank of each lowercase state's top sweep head under head salience and under the probe (commute.locate.rank_of; a tie at the top of the sweep names no head, so no rank). MLP units at K = 320: share, the cipher's share, against the 20 random sets' mean and maximum, and W0's capability reading with them off. No expected values: salience failed its control and the probe only nominates. A nominated set that looks good here is not located.",
+  "noise": "stage2_shares.json top_share_se: the standard error over windows of the top head's share on each state. Reported, as the noise floor of a share at this gain. A lowercase G near 1.6 makes shares far noisier than the control's at 12-15 nats; no bar is moved for it.",
+  "shares_file": "stage2_shares.json: every head's share on each of the four states, every pair's, the gains. Heads that are not located included."
+ },
+ "expected_values": {
+  "note": "For each filed number, what it should read at W0 (the zero update) and at do-nothing. Do-nothing here is GOALS.md's: the finished delta-W into Delta, subcomponents and Gamma untouched. This experiment reads the full target model only, so do-nothing's full-model weights are the state's and every number reads as the state's: it is not a separate row and could not pass or fail apart from the state. The state the rule must reject is the zero update.",
+  "G": {"at_W0": "0, exactly per window", "at_do_nothing": "the state's", "on_the_states": "lowercase 1.67, 1.61; cipher 3.87, 3.81 on the bf16 path; fp32 read here"},
+  "share per part": {"at_W0": "nan: no gain, so no share", "at_do_nothing": "the state's", "on_the_states": "lean under 0.47 on every head on lowercase; no value expected on the cipher"},
+  "located": {"at_W0": "false, gain under the floor; the outcome reads 'no gain to locate'", "at_do_nothing": "the state's"},
+  "gap intact": {"at_W0": "positive, near A0's 1.18 (interval 0.84-1.56 on other positions); this is W0's own number", "at_do_nothing": "not read: a W0 number"},
+  "gap, part off": {"at_W0": "no value expected", "at_do_nothing": "not read: a W0 number"},
+  "true_fall, path_fall": {"at_W0": "read: W0's own fall; path_fall equals true_fall within 10%", "at_do_nothing": "not read on E62's copy states"},
+  "state-minus-W0 fall": {"at_W0": "0: the zero update's state equals W0", "at_do_nothing": "the state's", "on_the_states": "7.12, 5.91 at 2,4; 2.61, 2.39 at 1,4"},
+  "MLP share": {"at_W0": "nan", "at_do_nothing": "the state's", "on_the_states": "no value expected; a random set's near 0, stage 1 read 0.006-0.024 on the means"}
+ },
+ "edge_cases_run_before_filing": "tests/test_locate.py, pure, run on the CPU worker before this file was committed. A tie at the top of the sweep: top_head names no head, the rule still reads each part, ties at the bars count to the named side (located_share and control_max). A share past 1: lowercase's counts as lost, the cipher's does not spare. A negative share: lowercase's does not count, the cipher's spares. Seeds disagree: not located. Gain under the floor on one lowercase seed: 'no gain to locate' even with a share over the bar; on one cipher seed: that part not spared. No part qualifying: 'not found at head or pair grain' with the scope string. Empty rows or controls, nan anywhere: not located. W0 intact not positive: 'no capability to read', and Located is unaffected. The zero update (G = 0, share nan): 'no gain to locate'. Do-nothing: the same weights as the state on this read, recorded above. A case no branch covered: none; found while testing, a pair named in both orders by different states, read once under one name. Also run once end to end on a toy net with the 67M's hook points (no model): the path integral equals the true change at 8 steps, and with along=(head, 0) head_salience is bit-identical to the unmoved call."
+}
