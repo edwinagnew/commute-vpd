@@ -47,7 +47,7 @@ T0 = time.time()
 
 @dataclass(frozen=True)
 class Config:
-    gain_batch: int = 8  # E80 Amendment 2's and E86's GOLD_BATCH
+    gain_batch: int = 2  # E86 used 8 on an 80 GB card; 8 OOMed on the L40 after load (job 52865, 40.6 GiB held)
     limit_s: float = 2 * 3600 - 180  # debug QoS, less a margin for the last write
     first_guess_s: float = 40 * 60  # the plan's anchor-2 state, 41 min, before one is measured
 
