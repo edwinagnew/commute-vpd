@@ -396,3 +396,6 @@ This is "round 1", the input of nearly every other run.
 
 ## weight_side_read (E67)
 - `run.out` only.
+
+## new_vs_reuse (E90; code committed 2026-11-05, not run, so nothing is there yet)
+- Stage 1 (`stage1.py`): `readout.pt` (`{"probes", "twin", "values"}`, state dicts, block by fit value, fp32, < 1 MB), `bases.pt` (`{"guess", "identity"}`, block to basis (768, rank), fp32), `X_{ident32,rank1,r1_t534_v369}.pt` (hand-write direction, alpha = 1, fp32, 9 MB each). Stage 2 (`stage2.py`) adds `X_<state>.pt` per state (9 MB each, 15 states). Per-window log-odds are not saved: the shares and draws are in `results/stage{1,2}.json`.
