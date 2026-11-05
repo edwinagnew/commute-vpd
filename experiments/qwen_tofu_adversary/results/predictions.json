@@ -1,0 +1,100 @@
+{
+  "filed": "2026-11-05, before the code ran; never edited after the run",
+  "question": "E89: VPD's adversary passes doing nothing on Qwen3-1.7B's first fine-tune update u1, so we do not know whether it can tell an update left in Delta from one placed in the subcomponents. Does doing nothing fail on an update about ten times larger, or was its pass not about size at all?",
+  "claim": "Do-nothing fails on this larger update: its mean ratio at or over 1.61, its gap strictly above W0's spread. Medium-high lean, from measured scaling.",
+  "null": "Do-nothing passes on this larger update too: size was not why it passed on u1. Do-nothing is a state read here, not a reference, and neither state is a candidate map.",
+  "plan": "reports/plans/2026-11-05_plan_e89-tofu-adversary.md",
+  "rules_code": "experiments/qwen_tofu_adversary/rules.py, over E80 Amendment 2's rules_amend2.py; run against a pair straddling a bar, W0's seeds equal, a spread wider than the gap, one state unread, a NaN and a zero W0 in tests/test_qwen_tofu_adversary.py before filing",
+  "apparatus": "E85's and E80 Amendment 2's code path, called: run.py set_up and start through amend1.read, qwen_teacher.adversary, 20 sign steps of 0.1, one source per site shared by all rows, final read after the last step; fp32 weights and fp32 components, Gamma bf16; g and clean logits recomputed per row from the state's own weights and V. One pod, so every ratio shares a host.",
+  "update": "E81's: results-large/qwen_tofu/dW/a2_2e-5/step_1250.safetensors, fp32, 5.64 GB, sha256 d45b5163d431e218708d66fa45fae47ac0c5f0e7ff6666fc5ddd06adcd35a37b, norm 17.998, 9.6 times u1 (E86's log and report), W&B artifact qwen3-1.7b-e81-tofu-dW. Not E84's five-wording update, the user's anchor 2 (norm 18.109): the question is about size, which the two share.",
+  "rows": {
+    "W": "the 128 rows of 512 tokens of qwen_adversary/results/tokens.json, FineWeb-Edu, E85's"
+  },
+  "states": {
+    "W0": "the unchanged decomposition, seeds 0 and 1, re-read on this host",
+    "N": "do-nothing: weights W0 + dW, components unmoved, so Delta takes all of the update (qwen_teacher.do_nothing, through E80's n_state with its path check at 1e-4). Read on this host, where E85 quoted it",
+    "Rare": "the rarely-on half, qwen_maps.site_change('lower'), E85's Rare: weights W0 + dW; X = the least-squares split of dW over the half of alive columns with the smallest share of positions with g > 0.01 on the maths rows (W0_maths statistics, ties by mean g); those columns moved by (X V, X^T U); the rest unmoved. The remainder stays in Delta: Delta' - Delta = dW - dsigma(dU, dV) - dU dV^T"
+  },
+  "order": [
+    "load",
+    "clean KL of do-nothing against W0 on the 128 web rows: a stop",
+    "X and left in Delta for the rarely-on half: a stop",
+    "clean KL of the rarely-on state: a stop",
+    "W0 s0: a stop",
+    "W0 s1: a stop",
+    "N s0", "Rare s0", "N s1", "Rare s1"
+  ],
+  "read": "Forward KL under the adversary, clean to masked. r_s(X) = X_s / W0_s, final KL of seed s over this job's W0 at the same seed; the state's mean is (r_0 + r_1) / 2; gap = mean - 1. W0 spread = |W0_0 - W0_1| / smaller, this job's two starts. Clean KL: mean KL(W0 || state) over every position of the web rows, qwen_sft.mean_kl. Left in Delta: plain sum ||Delta' - Delta||^2 / sum ||dW||^2, pooled over the 196 matrices. Reported beside the rule, logged and not ruled on: the mean of the last five step reads, excess in nats (a start's final KL less W0's at the same seed), Qwen's own bars 1.267 and 1.776 (E85).",
+  "rules": {
+    "bars": {"pass_at": 1.40, "fail_at": 1.61},
+    "do_nothing": {
+      "do-nothing fails on this larger update": "mean at or over 1.61, gap (mean - 1) strictly above this job's W0 spread",
+      "do-nothing passes on this larger update too": "mean at or under 1.40 and no seed at or over 1.61",
+      "no call": "everything else that is read, reported as read, opening no amendment",
+      "unread": "a NaN or missing start"
+    },
+    "pair": {
+      "the adversary separates them": "do-nothing fails and rarely-on passes",
+      "both fail": "both fail",
+      "rarely-on alone fails": "do-nothing passes and rarely-on fails",
+      "both pass": "both pass",
+      "no call": "else, a state unread among them; each state's own label stands beside it in the score"
+    },
+    "state_label": "The pair reads each state's label under do-nothing's rule: fails, passes, no call or unread, the same bars, the same spread, the same seed clause.",
+    "band": "W0's spread from this job's own two starts, as a state's gap must beat. Equal W0 seeds to 9 places mean no spread was measured.",
+    "edge_cases": {
+      "a pair straddling a bar": "the rule reads the mean: (1.9, 1.35) mean 1.625 fails; (1.75, 1.45) mean 1.60 is no call; (1.7, 1.0) mean 1.35 is no call, a seed at or over 1.61 bars a pass",
+      "W0's seeds equal": "no spread: over the bar is no call; under the pass bar still passes, the spread is not read",
+      "a spread wider than the gap": "over the bar inside the spread: no call; the gap on the spread has not beaten it",
+      "one state unread": "that state's label is unread, the other's stands; the pair is no call",
+      "a NaN": "unread",
+      "a zero W0": "unread",
+      "on the do-nothing state, can it pass the candidate's bar": "yes, that is the question: do-nothing is a state read, not a reference, and neither state here is a candidate map"
+    }
+  },
+  "leans": {
+    "N_fails": "do-nothing fails, medium-high, from measured scaling at seed 0: random's excess goes 0.0051 nats at 1 times to 53.7 at 100 times (E85, E85 Amendment 1), a power of 2.0. u1's do-nothing excess is 0.553 nats (E80 Amendment 2, H100 not H200 NVL, the reference is the same seed's W0), so at 9.6 times the same power gives about 51 nats, a ratio near 30. Against it: TOFU's update was trained on invented biographies, so web rows may hear it far less than maths-trained u1's; hence not high",
+    "Rare_below_N_beyond_spread": "rarely-on's mean below do-nothing's by more than W0's spread, low: it leaves less in Delta, but E85 Amendment 1 shows rarely-on columns can fail when moved far",
+    "both_fail": "both fail, medium"
+  },
+  "expected": {
+    "W0_s0": "1.703, stop if over 20% away (1.363 to 2.044); first steps 0.0918, 0.1131, 0.1376 on the H200 NVL (qwen_d1_teeth/results/run.log); three H200 NVL pods read s0 to every digit",
+    "W0_s1": "1.438, stop if over 20% away (1.150 to 1.726)",
+    "W0_ratio": "1 by construction",
+    "W0_spread": "about 18%",
+    "N_mean": "1.24 on u1 (E80 Amendment 2, H100); here about 10 or more, see the lean",
+    "Rare_mean": "1.27 on u1 (E85, H200 NVL); here over the bar, lower than do-nothing, low lean",
+    "clean_W0": "0, not read: the reference itself",
+    "clean_N": "unmeasured; u1's 0.01-0.2; stop if under 1e-3",
+    "clean_Rare": "equal to do-nothing's within 1e-6, same weights: a build check",
+    "left_W0": "0, not read",
+    "left_N": "1.00 by construction, not read",
+    "left_Rare": "unmeasured; above least squares' 0.09844809340654835 (E86, qwen_d1_fractions/results/tofu/left_in_delta.json); may pass 1, the second-order term is 92 times u1's relative to the update, so logged; stop only if not finite or at or under that value",
+    "N_path_check": "under 1e-4, E80's check unchanged; E80's was 1.2e-9 on u1, so it has room",
+    "first_steps": "finite, or a stop; each start ~22 min. Peak 66.0-66.6 GB on u1's bf16 file, 2.82 GB; this fp32 file is 5.64 GB, so about 69.4 GB, W0's about 63.3"
+  },
+  "blind_to": {
+    "ratio": "Reads web rows, on which TOFU's update may move outputs little, and a pass there is not a pass on TOFU's own rows. It is a lower bound still climbing at step 20 (E85 Amendment 1's Rand100 read 14.7 then 32.9 at its last two steps), so a large ratio is not to be quoted to two figures. Neither state is a good one: both failing says nothing about whether a good placement passes. Bars are the 67M's. Two seeds.",
+    "clean_kl": "Reads weights only, never the subcomponents: the two states share their weights, so it is a build check for the second.",
+    "left_in_delta": "Plain share, not input-weighted."
+  },
+  "noise_floor": "W0's two starts 18.4% apart; a state's two ratios differ by 0.12-0.19 at u1's size (E80 Amendment 2); unmeasured at this size.",
+  "stops": [
+    "do-nothing's clean KL under 1e-3",
+    "left in Delta not finite or at or under 0.09844809340654835; above 1 is logged, no stop",
+    "the rarely-on state's clean KL over 1e-6 from do-nothing's",
+    "W0 s0 or s1 over 20% from 1.7031564672943205, 1.4379397351294756",
+    "N's path check at or over 1e-4; a first step not finite; results/stopped.json then refuses a rerun and the lead decides"
+  ],
+  "departures_from_E85": [
+    "Update is E81's, not u1",
+    "Do-nothing re-read on this host (E85 quoted it)",
+    "Gold rows and behaviour kept cut: both states' weights are W0 + dW, and E85's gold rows are GSM8K, whose gain under TOFU's update can be near 0 or negative, which would make E85's share degenerate. The same-weights check does its job as a build check",
+    "Rand cut, as asked",
+    "Rare's lower stop from TOFU's least squares (0.0984) in place of u1's 0.0900, upper stop removed: the second-order term may take the share past 1",
+    "n_state's path check stays at 1e-4: E80's was 1.2e-9 on u1, so it has room",
+    "The half's active-share check cut: it reads W0's statistics alone, the file E85 read it from, so it would repeat E85's number",
+    "The fetch of E40's update cut: nothing on this path reads it. The half's X is in e89_rare beside --decomp, not E85's e85_rare",
+    "All other settings E85's, by calling its code"
+  ]
+}

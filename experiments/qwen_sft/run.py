@@ -40,6 +40,7 @@ import argparse
 import gc
 import json
 import math
+import os
 import re
 import resource
 import statistics
@@ -208,6 +209,10 @@ _LOG = [E40.log()]
 def log(msg: str) -> None:
     line = f"[{time.time() - T_START:8.1f}s] {msg}"
     print(line, flush=True)
+    # conftest points _LOG at tmp_path, but a module loaded during a test misses that, and stub arms' lines landed in the
+    # tracked run.log of three clones, read as another lead's run (friction 402).
+    if "PYTEST_CURRENT_TEST" in os.environ and _LOG[0] == E40.log():
+        return
     with _LOG[0].open("a") as f:
         f.write(line + "\n")
 

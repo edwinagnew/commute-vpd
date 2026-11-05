@@ -197,7 +197,8 @@ means the cap passed first.
 While the job is still queued, cap each wait at 5 minutes and re-arm, so that a message from the user in your tab is
 seen within minutes (2026-10-20: a runner sat in one long queue wait and did not answer the user, who then cancelled the
 job by hand). Once the job runs, a wait may be the whole expected run time: the cap is 1.5× the expected run time.
-Never loop `squeue` yourself, never `pkill` by pattern (it killed the runner's own shell), and never poll with
+Run one poll at a time, ending as soon as FINISHED appears, and tell the lead at each stage end: three blind parallel
+polls left an H100 idle 13 min, about $1 (friction 411). Never loop `squeue` yourself, never `pkill` by pattern (it killed the runner's own shell), and never poll with
 foreground `sleep` (it is blocked). If the queue cap passes with the job still `PENDING`, `scancel` it and follow
 the brief's RunPod rule. On RunPod, use `wait()` with a long timeout, plus a log-tail read every 10–20 min for long
 stages.

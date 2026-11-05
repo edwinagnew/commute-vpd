@@ -74,7 +74,7 @@ least once a day:
    without a card, that no part of the log or queue names. Add a `PENDING.md` line for each. A changelog wildcard
    (`analysis_qwen-*`) counts as naming.
 3. Apply each line as "What to update" below says, grepping `parts/` for the places to change rather than reading
-   whole sections. Write one changelog row for the flush, empty `PENDING.md`, build. The build warns on a removed line
+   whole sections. Write one changelog row for the flush, empty `PENDING.md` except its `HOLD` lines, build. The build warns on a removed line
    whose file, E-code or card id is in nothing the flush added: check it landed (friction 155). Then publish. A line
    appended meanwhile survives the merge and waits for the next flush; lines you removed stay gone (`fleet/merge-lines`).
 
@@ -117,7 +117,7 @@ least once a day:
 5. **Timeline**, **Gaps**, **Backlog**, **Mistakes** (`timeline`, `gaps`, `backlog`, `mistakes`): whichever moved.
 6. **Changelog** (`changelog.html`): a new top row (version, date, what changed). The nav's version follows it.
    Old names and renamings go here, never in the body.
-7. `experiments/TRIED.md` carries the same E-code; `README.md`'s experiment table lists it.
+7. `experiments/TRIED.md` carries the same E-code. The README table is no longer kept up (friction 393).
 
 **High level by default** (user, 2026-10-22): every section above the cards is for skimming, so it says what was learned or decided in plain words, not how a run went; numbers, arm names and gate results stay in the cards and reports. The timeline is one headline and two to four short sentences per day. Keep the house style: cards and labelled fields, not paragraphs; the current terms from `GOALS.md` → Terms; about two
 numbers per sentence; E-codes link automatically, to whichever page holds the card. Links written as `href="#id"` are
@@ -170,7 +170,9 @@ From a Claude Code session, with the Artifact tool:
      at its first send, seen once).
    - **"touches files whose published content is not what you last saw"**: `Artifact read` each path named, `--check`,
      merge into `parts/` if it differs, rebuild, publish. A figure you are not changing comes out of `files`.
-   Anything else: stop and report it with the refusal text.
+   Anything else: stop and report it with the refusal text. The version the tool reports counts every send and differs
+   from the changelog row; the row is the log's version (friction 461). The resend above is only for a diff you read as
+   your own flush: a line that is not yours means merge first, whatever the place count (friction 409, 451, 479).
 
 ```
 Artifact publish

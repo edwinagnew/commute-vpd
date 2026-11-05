@@ -1,6 +1,6 @@
 # MATS cluster for `commute`
 
-Scripts for running this project on the MATS Slurm cluster (one node `l40-worker`, 8× L40 46 GB) and for
+Scripts for running this project on the MATS Slurm cluster (one node `l40-worker`, 8× L40, 44.3 GiB usable each) and for
 using a cluster GPU as the Jupyter kernel for notebooks open in VS Code on the laptop. Rules come from
 `../../guides/mats_cluster_handbook.md`; this file covers only what is specific to this project.
 
@@ -48,6 +48,17 @@ query put a 2-h normal job 16 days out). Policy (2026-10-20): only runs of ≤ 3
 Ask `--mem` for the job's measured peak plus a margin, not a round large number: the node's RAM is shared, so a job
 asking more than is free waits even when a GPU is idle (E38 Amendment 4 asked 64G, waited 17 min, peaked at 40G;
 2026-10-28). Copying an old sbatch file copies its request; most ask 32G or 48G.
+
+An L40 holds the Qwen decomposition, Γ and the model with about 1 GB to spare (43.5 GB of 44.3 GiB): a batch of 8 beside
+them did not fit, and every read goes row by row (friction 408, 412).
+
+A card can be held by processes Slurm does not count, and Slurm can keep giving out that card even with others free.
+`sbatch` cannot exclude a card. `env.sh` prints the allocated card's used memory at job start and stops the job with
+exit 75 over 5 GB (`COMMUTE_GPU_MAX_USED_MB`); a resubmit can land on the same card, so after two such exits move the
+run to a pod and tell the user, since only an admin can clear the card (friction 445, 469, 474).
+
+A multi-hour resumable run whose inputs are too large to upload to a pod, with `normal` queueing for hours: run it as
+`debug` chunks through `fleet/resubmit`, each chunk's limit fitted to its work (friction 430, 438).
 
 ## Notebook in VS Code on a cluster GPU
 
