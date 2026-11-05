@@ -1,0 +1,83 @@
+{
+ "experiment": "E96 locate_mechanism, stages 0 and 1: can a part of the 67M be named, without being told where to look, such that switching it off removes a fine-tune's behaviour and spares a control task? On E62's copy and lookup maps, three seeds each, step 30.",
+ "filed": "2026-11-05",
+ "plan": "reports/plans/2026-11-05_plan_e96-locate-mechanism.md, including 'Decided (user, 2026-11-05)'",
+ "stage_2": "Lowercase is not coded or filed here. Its bars are filed after stage 1 is read.",
+ "limit_on_every_claim": "a new circuit built from old parts still reads as reuse. Every claim string the run writes that names a located part carries it (commute.locate.LIMIT).",
+ "expected_head": [2, 4],
+ "expected_head_note": "Read only by run.py's scorer, last, after every nominator and the sweep are on disk. No nominator or sweep function receives it.",
+ "settings": {
+  "mlp_k": 320,
+  "mlp_k_source": "the top of E55's ladder (K 13-320)",
+  "n_random": 20,
+  "random_seed": 96,
+  "random_sets": "numpy default_rng([random_seed, mlp_k]), 20 uniform draws of 320 of the 12,288 MLP units, the same draws for every state; as revival_kv.prune_readings. Departure: 20 draws, the plan's number",
+  "from_e62": "half, induction, mean_spans, mean_seed, windows.heldout_every: experiments/induction_cue/results/predictions.json settings, read at run time",
+  "windows": "E62's 200 read windows, experiments/induction_cue/results/large/windows.pt, sha256 against run.json",
+  "means": "copying.head_means at W0 on copying.natural_spans(every 5th Pile row, half, 512, seed 62), E62's rows and draw, recomputed; heads.pt is never opened since it holds the prefix scores. Used at W0 and at every state, as E62",
+  "precision": "target model fp32; allow_tf32 off, as Amendment 2's re-read"
+ },
+ "definitions": {
+  "G": "mean over the windows of (state's log-odds of the target at the read position - W0's)",
+  "G_abl": "the same with the part off in both",
+  "share": "copying.share_lost: 1 - G_abl / G; nan if G is not positive",
+  "lo, p": "the state's own mean log-odds over the windows, part off, and the probability at that mean log-odds",
+  "head salience": "commute.locate.head_salience: total gradient of the log-odds at the head's output times (W0 mean - output), summed over positions and head dimensions, averaged over windows. Importance = W0's value - the state's value, the first-order gain lost with the head off. Ranked largest first. On all 200 windows",
+  "MLP-unit salience": "commute.locate.unit_scores: Jain et al. Alg. 3's gradient times weight, summed over a unit's row of the MLP's input matrix, of the state's mean log-odds, at the state, on the even windows. Top 320 by largest score over all four blocks: the importance sign. Departure from Jain: Jain prunes to watch a capability revive; here the unit set is switched off to locate the gain. The share is read on the odd windows, as revival_kv keeps its fit and score halves apart, zeroing with revival_kv.zero_units at every position, in W0 and the state",
+  "probe": "commute.locate.ridge_accuracy, per head, per state, and at W0 as the reference. Input: the head's output at the read position under that state. Fit on the even windows, accuracy on the odd. Target encoding: the target token's row of W0's lm_head, not a one-hot, as the copy map's read targets barely repeat. Prediction: the highest-cosine candidate among the distinct targets of the 200 windows. Penalty: the mean eigenvalue of the centred fit features, chosen here (nominator only, it labels nothing). A probe only nominates",
+  "sweep": "each of the 24 heads alone on W0 and six states; W0's second-copy top-1 under each (copying.induction, E62's stage (a)); then per state the head that added to the state's top head loses the largest share, and that pair read on all six states",
+  "rank": "commute.locate.rank_of, 1-based. A tie counts against the head (every head at accuracy 0 ranks 24)"
+ },
+ "thresholds": {
+  "g_tol": 0.0,
+  "g_tol_source": "E62 Amendment 2 re-read G on these six states on the same path and an L40 with a difference of exactly 0 (amend2.json row2_reread, diff_run 0; G agrees with run.json to the last digit), and later amendments' re-reads of the same path read 0. The plan says 'exactly'. A nonzero difference means a different card or path, which is the thing this guards",
+  "salience_floor": "No number filed: the zero update's salience is held to the largest difference between two reads of W0's salience in the same job's stage 0 (0 expected), since this gradient path has never run. A tie passes",
+  "min_gain": 1.0,
+  "min_gain_source": "local_faith.MIN_GAIN, as E62 Amendment 2: shares are not scored below this gain. E62 Amendment 2's reading of why its 5.148 is not reused holds here",
+  "located_p": 0.1,
+  "located_p_source": "E62 Amendment 2's 0.024-0.071 under the top head; the user's first reading (plan, Decided). A tie counts as removed",
+  "control_max": 0.2,
+  "control_max_source": "E62's filed bar for a spared map. A tie counts as spared",
+  "capability_base": 0.8247,
+  "capability_base_source": "W0's second-copy top-1, run.json stage_a top1_base 0.82465",
+  "shared_frac": 0.1,
+  "gain_only_frac": 0.5,
+  "capability_bars_source": "E62's random heads read 0.71-0.93 and (1,1) 0.013, (2,4) 0.0095 (run.json stage_a), so any bar in between separates them. Ties to the named side",
+  "salience_top": 3,
+  "salience_top_source": "the plan's top 3"
+ },
+ "predictions": {
+  "stage0": "Run first and alone. Exit 1 on a miss, stage0.json and the log written either way. sha256 of the six states and the windows equals run.json. G on all six equals run.json within g_tol: 12.6496, 12.6359, 12.5470; 15.3644, 14.9877, 15.3314. The zero update's per-window log-odds differ from W0's by exactly 0 on both maps, and its head salience minus W0's is at or under the repeat floor. No head share is read.",
+  "located_rule": "commute.locate.located. A part is located on a task when, on every seed of that task: the state's gain is at least min_gain, its intact probability of the target is over located_p, and with the part off its probability at its mean log-odds is at or under located_p; and, on every seed of the control task, the control state's gain is at least min_gain and its share lost is at or under control_max. No rows or no control rows: not located. nan fails. A negative control share spares; a control share past 1 does not. The intact-probability clause is the plan's 'takes it to': a state that never reached the bar has no behaviour to remove, and it is what stops the do-nothing state, whose probability is already 3e-4.",
+  "parts_read": "Every head alone and every state's greedy best pair, on the copy task with the lookup as control and on the lookup with the copy as control. The top 320 MLP units of each state, the set differing per seed, with the same seed's other-map state as control.",
+  "control_rule": "commute.locate.control. Passes when the sweep's top head by share is the expected head on all three copy seeds, it is located on the copy task, and it does not remove the lookup's behaviour (the removal clause above, not on every lookup seed). A tie at the top names no head and fails. A seed that disagrees fails. Expected: passes.",
+  "capability_reading": "commute.locate.capability, beside Located, for every part. W0's second-copy top-1 with the part off: 'shared' at or under 0.1 x 0.8247, 'gain only' at or over 0.5 x 0.8247, else 'between'. For a part read per seed, seeds that differ read 'disagree'. Expected for the expected head: shared, at 0.0095. 'gain only' is evidence of distinct parts at this grain, not of a new capability.",
+  "nominators": "Reported, each compared with the plan's lean. Head salience: rank of each state's sweep top head; lean top 3 on the copy seeds; on the lookup its top head is not the expected head. Probe: rank of each state's sweep top head; lean not top 3 on the copy seeds, since a probe should favour heads downstream of the mechanism. MLP units: share against the 20 random sets, mean and maximum; lean small, not specific.",
+  "tree": "commute.locate.tree, the string 'outcome' in score.json. Control fails: 'sweep misses: stop and report'. Control passes, salience's rank over 3 or unranked on any copy seed: 'sweep passes, salience fails: stage 2 by the sweep alone'. Both pass: 'both pass: stage 2 with the sweep and head salience'.",
+  "share_diff_run": "Reported: the expected head's share under the recomputed means against run.json's on six states. Expected exactly 0: E62's means came from the same rows and draw. Nonzero says the means differ from E62's, read before anything else in score.json."
+ },
+ "expected_table": {
+  "note": "The plan's table; commute.locate.expected_table compares to two decimals, as the plan wrote them. Reported; no rule reads it.",
+  "named_head": "1,1",
+  "copy_top_share": [0.47, 0.56],
+  "copy_second_share": [0.23, 0.29],
+  "copy_pair_share": [0.67, 0.74],
+  "copy_p_top_off": [0.02, 0.07],
+  "lookup_top_share": [-1.0, 0.2],
+  "lookup_named_share": [0.04, 0.07],
+  "lookup_pair_share": [0.04, 0.09],
+  "lookup_p_top_off": [0.99, 1.0]
+ },
+ "expected_at_the_references": {
+  "W0": "Second-copy top-1 0.8247 with no head off, as run.json; 0.0095 and 0.013 under (2,4) and (1,1), 0.71-0.93 under E62's other random heads. Log-odds -8.05 on the copy map, -8.34 on the lookup. Gains and shares undefined. Probe at W0 is printed as the reference only, with no filed value and no rule reading it.",
+  "do_nothing": "The zero update: G exactly 0 and salience at the floor (stage 0). Run through the rule (tests/test_locate.py): its probability, 3e-4, sits under located_p, so the bar alone would pass it, and it fails on the gain floor and the intact-probability clause. Share nan, so it cannot be a top head.",
+  "control": "Stage 0 is the apparatus's control, and the copy map's expected head the locator's. Lookup: no head over 0.2, probability about 0.999 with any head off."
+ },
+ "blind_to": {
+  "Located": "A new circuit built from old parts reads as reuse. A part that matters only jointly with another is missed by the single-head row, which the pair row partly covers. Mean ablation can move a head off its normal range, which the W0 half of the share nets out only to first order.",
+  "head salience": "Non-linear effects: it is a first-order estimate of a large move, so a head that saturates can rank low. Positive control: the sweep on the same windows.",
+  "MLP units": "Effects spread over more than 320 units or carried by attention; E66 found neurons dead at K = 4096. Positive control: none beyond the random sets, so a null is scoped to K = 320.",
+  "probe": "Whether a head uses what it encodes (E70). Nominates only. Noise: 100 scored windows, one sd about 0.05 at accuracy 0.5."
+ },
+ "edge_cases": "tests/test_locate.py, all pure, run before filing, 11 passed. A tie at the top (no head named, control fails); a share past 1 (top head still named; on the control not spared); a negative control share (spared); a seed that disagrees on the top head, on removal, on the control; a gain under the floor on the state and on the control; a state that gained but never passed the bar; nan in every field; ties at 0.1, 0.2, 0.1 x base, 0.5 x base; empty nominee, row and control lists, the expected head absent from the table; every tree branch; a nan surviving the JSON round trip (open_pair.jsonable writes it as a string, found by the CPU dry run). Do-nothing through the rule: cannot pass. No branch left uncovered: a lookup removed on some seeds but not all is clear, as filed."
+}

@@ -1,0 +1,107 @@
+{
+ "experiment": "E97 locator_table: name the part each 67M fine-tune's gain runs through, or 'not found' at head and MLP grain, across the saved tasks",
+ "plan": "reports/plans/2026-11-05_plan_e97-locator.md, with its 'From the E96 check' paragraph and the lead's two settled changes of 2026-11-05 (stage 2 on whole rows; natural-text means beside)",
+ "limit": "a new circuit built from old parts still reads as reuse: finding a part says the behaviour runs through it, not that one old circuit is unchanged",
+ "definitions": {
+  "part": "one head's output (its 128-wide slice of o_proj's input, as E96) or one block's MLP output (down_proj's output); 24 heads and 4 MLPs, at every position",
+  "units": "lo: log-odds of the target against every other token at the read position (identity.log_odds, E96's; the filed unit). gap: log p(target) - log p(the read's other form), E53's; beside, only on lowercase and the E53 cipher (F1 of the E96 check)",
+  "G": "the state's mean over the site's reads minus W0's mean over the same reads, per unit",
+  "carry_A": "the state with the part's output replaced by W0's output on the same inputs (W0's run, cached); share = (state - patched) / G. W0 is never moved",
+  "write_B": "the state with one matrix's dW reverted (24), one head's rows of q, k, v and columns of o reverted (24), one block's c_fc and down_proj reverted (4), and all 24 reverted; share = (state - reverted) / G. sum_matrix is the non-additivity number",
+  "removal": "the state with the part's output at W0's mean over the task's own inputs and positions (F3); own fall = state - state with the part off, in nats; share = own fall / G. W0's own fall (w0_move) beside, never subtracted. Beside: the same with E96's natural-text head means (results/means.pt of locate_mechanism)",
+  "sufficiency": "W0 with the part's output taken from the state's run (Prakash et al. 2024's cross-model patch); share = rise / G; saved, no rule",
+  "capability": "W0's second-copy top-1 on repeated random sequences (copying.induction, E62's settings) with the part at the copy windows' means; c_share = 1 - off / intact. Only the T5 rows have a capability read",
+  "probability": "every probability printed or saved is the mean probability over the reads (F5), never the probability at the mean log-odds",
+  "standard_error": "of the removal share, clustered by source row (F4); band = 2 x that",
+  "greedy_pair": "E96's: the head of largest removal share, then the head that with it loses the largest share; read on every seed of the task and of its control"
+ },
+ "located_rule": {
+  "rule": "For a nominated part, on every seed: task own fall >= a * G_task, the same seed's control own fall <= control_max * G_control, and task own fall >= ratio * control own fall, in nats, unit lo. A part is located when every seed passes. Code: locator_rules.seed_reading, task_reading",
+  "nominated": "per state: the top nominate_top parts by carry, the top nominate_top heads by write, the block MLP of each MLP matrix in the top nominate_top by write, and the greedy pair; the union over the task's seeds (locator_rules.nominees)",
+  "part_named": "of the located parts, the one whose weakest seed's share is largest (locator_rules.best_located); none located: 'none at head/MLP grain', and the row's numbers are read at that seed's top carry part",
+  "a": "read in stage 1",
+  "a_rule": "the weakest copy seed's own-terms removal share at its top head by removal (singles, unit lo), truncated to two decimals (locator_rules.a_from), written to stage1.json before stage 2 reads it. nan or a <= 0 stops the job. E96's table suggests about 0.56 (on natural-text means)",
+  "edge_cases": {
+   "G <= 0 on either state": "unreadable: no gain",
+   "a part that raises the state (own fall < 0)": "not located",
+   "a tie at the top of the carry map": "no part named (the row reads 'the carry map's top is tied')",
+   "a share past 1": "counts as located",
+   "a seed that disagrees": "not located",
+   "a not finite or <= 0": "unreadable: no bar a; the job stops before stage 2"
+  },
+  "do_nothing": "Run on the do-nothing state before filing: W0 as the state has G = 0 exactly, so every seed reads 'unreadable: no gain' and nothing is located (tests/test_locator_rules.py::test_the_do_nothing_state_cannot_pass). The all-reverted read on every state is the same check in the job",
+  "tests": "tests/test_locator_rules.py: every edge case above, the plant check on an exact record, the inheritance floor, the hand write, the nominees"
+ },
+ "thresholds": {
+  "control_max": 0.2,
+  "control_max_source": "E62's filed bar for a spared map (E96 predictions.json); a tie counts as spared",
+  "ratio": 2.0,
+  "ratio_source": "the plan's filed located rule (Fable's E96 rule): task fall >= 2 x control fall in nats; a tie passes",
+  "nominate_top": 3,
+  "nominate_top_source": "Fable's advice Q3: the top three by carry and by write",
+  "reread_tol": 0.0001,
+  "reread_tol_source": "E96 predictions_stage2.json reread_tol; the plants' reads are exact by construction (W0 + 0 is W0 on a deterministic path)",
+  "zero_tol": 0.001,
+  "zero_tol_source": "E96 predictions_stage2.json zero_tol (E53's); all 24 reverted on every state",
+  "g_tol": 0.02,
+  "g_tol_source": "E96 stage 2's g_tol (E53's repro_G_tol)",
+  "plant_rel_tol": 0.05,
+  "plant_rel_tol_source": "E90's write_rel_tol (new_vs_reuse predictions.json): the plant's G within 5% of copy-24 seed 0's G; status 'cap' keeps the largest alpha and is reported, not a miss (the plants' bars do not depend on the scale)"
+ },
+ "expected": {
+  "stage0": {
+   "note": "The plants: ctxpatch.write_state's write (perturb.key_write) into h.3.mlp.down_proj and h.1.mlp.down_proj, fitted on the 24-key copy table's train windows (open_pair/amend1/windows_copy_trained.pt, the 24 trained keys, E90's copy-24 site), read on its 75 held-out windows, scaled to copy-24 seed 0's G. The job stops on any miss",
+   "write_at_edited_matrix": [1.0, "+-1e-4"],
+   "write_at_other_23_matrices_and_all_24_heads": [0.0, "|share| <= 1e-4"],
+   "write_at_the_edited_block_mlp": [1.0, "+-1e-4"],
+   "carry_on_every_part_upstream": [0.0, "+-1e-4; heads at blocks <= the edited block, MLPs below it"],
+   "carry_at_the_edited_mlp": [1.0, "+-1e-4"],
+   "carry_downstream_of_the_block1_plant": "measured, no bar: the inheritance floor",
+   "all_24_reverted_G": [0.0, "|G| <= 0.001, on every state of every stage (the job stops on a miss)"],
+   "gains_reread": "E62's six G within 0.02 of induction_cue/results/run.json; E53's four G on its 127-token windows within 0.02 of locate_mechanism/results/stage2_stage0.json G_fp32 (the same fp32 path); W0's whole-row gap within 0.02 of a0.json's lowercase 1.1776 and cipher -5.5330 (A0's bf16 read; the E96 check re-read 1.1772 under bf16)"
+  },
+  "stage1": {
+   "head": "2,4",
+   "copy_removal_band": [0.56, 0.65],
+   "copy_removal_band_source": "E96's own-terms fall at (2,4) on natural-text means; reported, decides nothing (the means here are the task windows')",
+   "lookup_removal_at_most": 0.0,
+   "lookup_removal_source": "E96: at or below 0; reported",
+   "carry_top_on_copy": "(2,4) on all three seeds: the control; else the miss branch and no stage 3",
+   "lookup_carry_lean": "an MLP at block 0-2; share unfiled",
+   "write_top": "unknown, no lean, on either map",
+   "hand_write": "the block-3 plant's own-terms share with (2,4) off, on its own windows, at most the lookup's largest seed share at (2,4) (locator_rules.write_within); reported with whether it is under a",
+   "miss_branch": "carry misses (2,4) on copy: the carry map reads propagation, not mechanism; fall back to the write map with a direct-effect read in the one amendment"
+  },
+  "stage2": {
+   "site": "whole val rows 0-255 at every scored position, A0's read (the E96 check's F2), fp32; E53's 127-token windows beside, removal only",
+   "lowercase_lean": "not found by the located rule at head grain: E96 read at most 0.39 of 1.67 for any head on the windows; the E96 check read 0.33 at most on whole rows, seed 0",
+   "new_information": "whether carry and write put the gain in block MLPs, and whether the top carry part clears the inheritance floor",
+   "inheritance_branch": "if the block-1 plant's largest carry share downstream exceeds the smallest carry share among the top nominate_top carry parts of either lowercase seed, this grain cannot nominate on lowercase: its rows read that, not located"
+  },
+  "stage3": {
+   "runs_if": "stage 0 passed and stage 1's control passed",
+   "pairs": "rank-1, half-known (elicit) and copy-24 against the 24-key cipher, the cipher against rank-1, all seeds 0-2; ident32 against rand32 and back, seeds 0-1",
+   "beside_only": "emoticon and two ladder rungs (r1_t534_v369, r2_t359_v816), seeds 0-1, against their same-windows null (recruitment_test states *_null.pt): verdict 'does not apply' (decisions.md line 121), the state's and the null's own falls in nats beside",
+   "lean": "none filed",
+   "emoticon_vpd_matrix": "h.2.mlp.down_proj",
+   "emoticon_vpd_source": "VPD's paper's emoticon subcomponent h.2.mlp.down_proj:2359; beside only: if the write map's top matrix differs, say so; VPD does not choose the part"
+  }
+ },
+ "tree": {
+  "carry misses (2,4) on copy": "the miss branch; no stage 3",
+  "a plant reads wrong in stage 0": "a code bug: fix and rerun, no reading",
+  "stages 0-1 pass, lowercase has no located part": "report 'not found at head or MLP grain' with where carry and write put the gain; stage 3 runs",
+  "inheritance exceeds the smallest nominated share on lowercase": "this grain cannot nominate there; report it, that row stops",
+  "stage 3 locates parts on few tasks": "the table says so; rows stay unreadable with the reason",
+  "labels wanted on constant-answer tasks": "a decision card, not an amendment"
+ },
+ "settings": {
+  "plant_blocks": [3, 1],
+  "natural_means_sha256": "da2b689fee1fdb966794b9be27954e6f278236a5ef275f7b9761b71644cc6bab",
+  "natural_means": "experiments/locate_mechanism/results/means.pt: W0's head means on 41-token natural Pile spans (E96 stage 1); heads only, no MLP means exist there",
+  "precision": "target model fp32, allow_tf32 off, as E96",
+  "batch": "16,384 tokens per forward (32 whole rows, 129 windows of 127, 399 of 41)",
+  "states": "experiments/locator_table/sites.py TASKS; every file checked against the sha256 its experiment saved (E90's records, E53's finetune.json, recruitment_test stage0.json)",
+  "table": "results/table.json .table[]: one row per (task, seed); E90's fields task, C (copied from E90's stage2.json by its task name), share, control_share, band, verdict, reason, plus part, a_share, b_share, c_share, w0_move, located; beside: read_at, fall_nats, control_fall_nats, share_gap_unit, share_natural_means, p_mean_off, G, G_control, p_mean, p_mean_w0, control_task, stage. verdict empty for baseline-lead except 'does not apply' on constant-answer rows"
+ }
+}
