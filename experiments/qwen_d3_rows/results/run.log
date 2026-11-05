@@ -22,3 +22,43 @@
 [  1656.1s] [check] E40_own_cells: ok {"K10": 1.2934026471043127, "K11": 0.10343871625828649}
 [  1656.1s] [check] classes_add_to_pooled_e40: ok {"max_rel_gap": 6.081447342384131e-16}
 [  1659.6s] [control] passed; projection {"anchor2_state": 21.056720701853433, "anchor1_state": 18.502117788791658} min a state, peak GPU 42.49 GiB, host 78.3 GB
+[     0.0s] [start] {'stage': None, 'states': 'a1_s0,a1_s1', 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(n16=16, null_seeds=(0, 1, 2, 3), draws=1000, match=1.25, evals=6, limit_s=7020, first_guess_s=1500)
+[     4.3s] [check] rows_whole_question_positions: ok {"a1": 2414, "tofu": 13421, "shapes": {"maths": [128, 256], "a1": [64, 256], "tofu": [128, 256]}}
+[    58.9s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.1 GB
+[   254.3s] [sigma] 196 sites in 176 s, peak GPU 40.61 GiB, host 59.7 GB
+[   963.0s] [check] unit_nulls_read_E57: ok {"share": 0.6367353788869852, "null": [0.5857851670758635, 0.5819515613018565, 0.5838663194279063, 0.5829650420211864], "excess": 0.05309335643028201}
+[   972.8s] [check] a1_s0_norm: ok {"norm": 0.4865203387435381, "e91": 0.4865203387435381}
+[  1435.0s] [split a1_s0] {"outside": 0.12335805143394823, "outside_null": 0.2119068773431806, "stored_error": 8.900053218631971e-07, "split_s": 443.34979915618896}, peak GPU 40.61 GiB, host 80.0 GB
+[  1583.6s] [cells a1_s0 base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 64845.6059 K00 0.197216012 K01 0.0667947209 nll_m00 67363.8523 nll_m01 66994.3123; rows 128, 149 s, peak GPU 42.13 GiB, host 80.0 GB
+[  1583.6s] [check] a1_s0_maths_K0_is_W0s: ok {"rows": 128}
+[  1583.6s] [check] a1_s0_memory: ok {"gpu_gib": 42.12601661682129, "host_gb": 80.026924}
+[  1823.8s] [cells a1_s0 new pass, maths] K10 0.196001919 K11 0.0666253142 nll_m10 67333.1434 nll_m11 66990.5688; rows 128, 240 s, peak GPU 42.49 GiB, host 80.0 GB
+[  1823.8s] [check] a1_s0_maths_classes: ok {"max_rel_gap": 6.358119028677428e-16}
+[  1902.1s] [cells a1_s0 base, a1] K0 0.0698589908 nll_W0 43785.1071 nll_FT 35144.0412 K00 0.363990441 K01 0.0663549185 nll_m00 42776.4577 nll_m01 36586.0733; rows 64, 78 s, peak GPU 42.49 GiB, host 80.0 GB
+[  1902.1s] [check] a1_s0_a1_K0_is_W0s: ok {"rows": 64}
+[  1902.1s] [check] a1_s0_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.026924}
+[  1902.1s] [first minutes] a1_s0 K00 on its rows 0.363990441, E68's 0.3639898532177953 (logged; a stop only over 0.01)
+[  1902.1s] [check] a1_s0_K00_near_E68: ok {"K00": 0.3639904406230955}
+[  2053.7s] [cells a1_s0 new pass, a1] K10 0.360241159 K11 0.0660660978 nll_m10 42690.1817 nll_m11 36562.4343; rows 64, 152 s, peak GPU 42.49 GiB, host 80.0 GB
+[  2136.2s] [cells a1_s0 own V', a1] K10 0.360146671 K11 0.066062967 nll_m10 42688.4483 nll_m11 36562.182; rows 64, 82 s, peak GPU 42.49 GiB, host 80.0 GB
+[  2136.2s] [check] a1_s0_a1_classes: ok {"max_rel_gap": 4.083528882081514e-16}
+[  2138.7s] [a1_s0] {"direct_maths": {"value": 0.009296927220182376, "half_width": 0.0008154958691780579}, "outside": {"value": 0.12335805143394823, "null": 0.2119068773431806}, "placement": {"value": -0.007644735643462575, "share": 0.5665128306540514, "null": [0.5768929387356196, 0.5720623806292561, 0.5741994746902184, 0.573475471134962]}, "think": {"value": 3.662581110310022, "L": 4.222208818384703, "T_minus_L": -0.5596277080746814, "size_S": 1286}, "printed": {"size_K00_minus_K0": 0.1276028164813563, "regating": 0.9987027656828062}, "direct": {"value": 0.01306618198149854, "half_width": 0.0008935392482266394, "pooled": 0.012584677585657926}, "credit": {"value": 0.0006182078098413808, "half_width": 0.000436855673146186, "raw_ls": 0.7992586685839183, "raw_do_nothing": 0.7986404607740768, "pooled": 0.002764858175021485}}
+[  2138.7s] [score] {"counted": [], "reads": "no number counts at the full update or the matched step: that is D3's finding"} {"1_a1": "unread", "1_a2": "unread", "2": "unread", "3": "unread", "4": "unread", "5": "unread", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
+[  2139.1s] [a1_s0] done in 1176 s, peak GPU 42.49 GiB, host 80.0 GB
+[  2150.5s] [check] a1_s1_norm: ok {"norm": 0.4887295378611827, "e91": 0.48872953786118273}
+[  2927.1s] [split a1_s1] {"outside": 0.12363793734582745, "outside_null": 0.21347842882866275, "stored_error": 8.797943718281021e-07, "split_s": 759.3832488059998}, peak GPU 42.49 GiB, host 80.0 GB
+[  3350.9s] [cells a1_s1 base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 64911.1068 K00 0.202120657 K01 0.0670216289 nll_m00 67363.8523 nll_m01 67067.5386; rows 128, 424 s, peak GPU 42.49 GiB, host 80.0 GB
+[  3350.9s] [check] a1_s1_maths_K0_is_W0s: ok {"rows": 128}
+[  3350.9s] [check] a1_s1_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.026924}
+[  3587.6s] [cells a1_s1 new pass, maths] K10 0.200892345 K11 0.0668600899 nll_m10 67331.0043 nll_m11 67061.9983; rows 128, 237 s, peak GPU 42.49 GiB, host 80.0 GB
+[  3587.6s] [check] a1_s1_maths_classes: ok {"max_rel_gap": 6.836798380745249e-16}
+[  3642.8s] [cells a1_s1 base, a1] K0 0.0698589908 nll_W0 43785.1071 nll_FT 35075.1365 K00 0.368954001 K01 0.0663206216 nll_m00 42776.4577 nll_m01 36542.6781; rows 64, 55 s, peak GPU 42.49 GiB, host 80.0 GB
+[  3642.8s] [check] a1_s1_a1_K0_is_W0s: ok {"rows": 64}
+[  3642.8s] [check] a1_s1_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.026924}
+[  3777.3s] [cells a1_s1 new pass, a1] K10 0.365160299 K11 0.066038299 nll_m10 42687.9596 nll_m11 36518.0348; rows 64, 134 s, peak GPU 42.49 GiB, host 80.0 GB
+[  3867.3s] [cells a1_s1 own V', a1] K10 0.365067531 K11 0.0660353832 nll_m10 42686.3122 nll_m11 36517.7746; rows 64, 90 s, peak GPU 42.49 GiB, host 80.0 GB
+[  3867.3s] [check] a1_s1_a1_classes: ok {"max_rel_gap": 5.400210816525865e-16}
+[  3870.5s] [a1_s1] {"direct_maths": {"value": 0.009081082339663598, "half_width": 0.0007867111694961687}, "outside": {"value": 0.12363793734582745, "null": 0.21347842882866275}, "placement": {"value": -0.008278089490785567, "share": 0.5667991568693762, "null": [0.5777879262932996, 0.5729715095550248, 0.5751641600625852, 0.5743853895297374]}, "think": {"value": 3.752453527306316, "L": 4.418216647098808, "T_minus_L": -0.6657631197924916, "size_S": 1320}, "printed": {"size_K00_minus_K0": 0.13250746205544842, "regating": 0.9988057195010092}, "direct": {"value": 0.01318936115671222, "half_width": 0.00092909659426258, "pooled": 0.01252395322509001}, "credit": {"value": 0.0006248300604606724, "half_width": 0.0004139139793478198, "raw_ls": 0.7977020340203049, "raw_do_nothing": 0.797077203959844, "pooled": 0.0028591927950040318}}
+[  3870.5s] [score] {"counted": [], "reads": "no number counts at the full update or the matched step: that is D3's finding"} {"1_a1": "unread", "1_a2": "unread", "2": "unread", "3": "unread", "4": "unread", "5": "holds", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
+[  3870.6s] [a1_s1] done in 1731 s, peak GPU 42.49 GiB, host 80.0 GB
+[  3870.6s] [done] ['a1_s0', 'a1_s1']; FINISHED
