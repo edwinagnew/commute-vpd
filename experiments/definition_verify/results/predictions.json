@@ -1,0 +1,92 @@
+{
+ "experiment": "E99 stages 0-3: the net share at a located part on forced-part and forbidden-part fine-tunes (67M)",
+ "filed": "2026-11-05, before any run, by the E99 code writer; never edited after the run (a dated report instead)",
+ "plan": "reports/plans/2026-11-05_plan_e99-refine-verify-definition.md (Stages, Refinements adopted); mechanics reports/reviews/2026-11-05_review_e99-fable-advice.md",
+ "settings": {
+  "seeds": [0, 1],
+  "seeds_source": "the plan: two seeds per arm; each arm's sampling / batch-order seed equals its native state's seed",
+  "copy_pair": "2,3+2,4",
+  "copy_pair_source": "E97's located pair on copy, experiments/locator_table/results/run.out line 30 (Fable)",
+  "lower_pair": "1,1+1,2",
+  "lower_pair_source": "E97's greedy pair on lowercase s0 and s1, experiments/locator_table/results/stage2.json 'pair'",
+  "wide_copy": "2,3+2,4+3,4",
+  "wide_copy_source": "E62 Amendment 5: W0's copying thinned over (2,4), (3,4), (2,3) at 0.19-0.36 each (experiments/TRIED.md line 140), Fable's 'all prefix-scored heads off'",
+  "copy_steps": 30,
+  "copy_steps_source": "E62's read step for copy_s0/s1 (experiments/induction_cue/results/run.json states.*.step)",
+  "lower_steps": 300,
+  "lower_steps_source": "E53's lowercase states dW_lowercase_s{0,1}_step300 (lowercase.STEPS)",
+  "cap_factor": 10,
+  "cap_factor_source": "the plan: step cap 10x the native's steps",
+  "copy_every": 1,
+  "copy_every_source": "measured cost: a read of E62's 200 x 41-token windows is about 0.07 s (E96 run.out lines 16-21, quoted in cluster/e97_locator.sbatch), so every step",
+  "lower_every": 5,
+  "lower_match_rows": 32,
+  "lower_every_source": "measured cost: a read of 256 whole rows of 512 is about 1.2 s (E97 run.out: 1282 s for stage 2), so the matched-gain check reads the first 32 rows (one batch, about 0.15 s) every 5 steps; E53's gain grows about 0.35% of G per step near step 300, so the nearer of two checks is within about 1%",
+  "match_rel": 0.02,
+  "match_rel_source": "the plan: matched gain within 2% of the native fine-tune's (on the check's inputs, in the training condition)",
+  "n_random": 20,
+  "random_seed": 0,
+  "n_random_source": "R-band: per-state band from random head pairs outside the part (reads.random_pairs: 20 distinct pairs of the 231 outside it, seeded; E62's copying.random_others repeats pairs); 20 draws keep a whole-row state at about 25 s",
+  "lower_lr": 3e-05,
+  "lower_batch": 8,
+  "lower_recipe_source": "E53 = lowercase.arm_b_states 'adam' (src/commute/lowercase.py: Adam 3e-5, batch 8, clip 1); copy recipe = keydep.finetune (anchors.FT_LR 3e-5, ArmAConfig batch 32, KL 1, clip 1), E62's",
+  "induction": {"sequences": 48, "length": 25, "seed": 52, "threshold": 0.5},
+  "induction_source": "experiments/induction_cue/results/predictions.json settings.induction (E52's control); W0's top1_second 0.8247 (induction_cue run.json stage_a.top1_base)"
+ },
+ "thresholds": {
+  "forced_tol": 0.05,
+  "forced_tol_source": "the plan stage 1 and Fable's table: net 1.00 +- 0.05; outside it on a state with gain the job stops (the apparatus is wrong)",
+  "restored_rel": 0.1,
+  "restored_rel_source": "Fable's table arm 2: G with the pair restored within 10% of the native's G",
+  "pace_rel": 0.1,
+  "slow_factor": 2,
+  "pace_source": "Fable's table arm 4: learns as fast = G within 10% at the native's 300 steps; slower by more than 2x is said",
+  "g_tol": 0.02,
+  "g_tol_source": "E97's filed g_tol (E96 stage 2's, E53's repro_G_tol): stage 0's native G re-read against E97's",
+  "spared_max": 0.2,
+  "spared_max_source": "E62's filed bar for a spared map (E97 control_max, E96 predictions.json); applied to the lookup's net share at the copy pair",
+  "w0_reproduce": "stage 0: W0's fall (unit lo, nats) with the pair off within twice its own row-clustered SE of E97's (the plan: 'within its band'); the natives' own share within E97's band (2 x se_by_row)"
+ },
+ "reference": {
+  "source": "E97 (experiments/locator_table/results/stage1.json sha256 9d403d261dae189ed2c3e6119a0a8c9f6dc01cc2ff0232a6cc370f140ef0e313, stage2.json e72a73d512eb50e5b8cd6d53c47734a0cd46c4edc24fa2cbf9247431e77c2e99, run.out 9edce89b52277319984cdf903f08a27903c92f9ee5daa3e19a3c9526b81c80f9; committed here in 7cf2e430 and identical to mechanism-detection-lead's uncommitted copy; jobs 52618/52646, L40, git bcd8ea6). removal[pair].w0_move, G, share, se_by_row per state",
+  "w0_fall": {
+   "e62_copy": {"lo": 1.875559823513031},
+   "e62_lookup": {"lo": -0.09968687534332275},
+   "e53_lowercase": {"lo": 1.1018043788300316, "gap": 0.70291314033862},
+   "e53_cipher": {"lo": -0.5179256029089783, "gap": -0.8681681079199776}
+  },
+  "natives": {
+   "T5 copy s0": {"G": 12.649604818820954, "own_share": 0.8668093037716313, "band_2se": 0.037835635389586016, "fall": 10.964795145988464, "net": 0.7185},
+   "T5 copy s1": {"G": 12.635939981937408, "own_share": 0.8798583033540374, "band_2se": 0.03462741731352375, "fall": 11.117836713790894, "net": 0.7314},
+   "T5 lookup s0": {"G": 15.364396812915802, "own_share": 0.007125557920659847, "band_2se": 0.006674868674700175, "fall": 0.1094798994064331, "net": 0.0136},
+   "T5 lookup s1": {"G": 14.987727129459381, "own_share": -0.0038539821014523775, "band_2se": 0.005402080217547307, "fall": -0.057762432098388675, "net": 0.0028},
+   "T7 lowercase s0": {"G": 1.130588776354342, "own_share": 0.7979456734081251, "band_2se": 0.08992123541900365, "fall": 0.9021484224957336, "net": -0.1766},
+   "T7 lowercase s1": {"G": 1.088741399585906, "own_share": 0.8528842769455927, "band_2se": 0.09804285464403284, "fall": 0.9285704213665581, "net": -0.1591},
+   "T8 cipher s0": {"G": 3.7140342876907892, "own_share": 0.07075551319158681, "band_2se": 0.03671149459910746, "fall": 0.26278840203671133, "net": 0.2102},
+   "T8 cipher s1": {"G": 3.659471245786617, "own_share": 0.06896442163599108, "band_2se": 0.034684581140016434, "fall": 0.2523733179592138, "net": 0.2105}
+  },
+  "net_note": "net = (fall - W0's fall) / G, computed here from E97's numbers by hand; beside only, the run reads its own"
+ },
+ "metrics": {
+  "net_share": {"what": "the share of the update's increment that vanishes with the part off in both models, unit lo", "blind_to": "a new function built inside the part (repurposing reads as 'through the part'); rerouting through other heads of the same capability (reads as 'not through'); anything at a grain finer than a head", "positive_control": "the forced arm: 1 by construction", "noise_floor": "the per-state random-pair band; the row-clustered SE printed beside"},
+  "band": {"what": "95th percentile of |net share| over 20 random head pairs outside the part, same state, same site", "blind_to": "parts other than attention heads (MLPs are not drawn)", "positive_control": "none: it is the null", "noise_floor": "with 20 draws the 95th percentile sits between the two largest draws"},
+  "clause_ii": {"what": "W0's lowercase-minus-capitalised log-odds moved by the lowercase pair off, on cased and on lowercased val rows, each against its random-pair band", "blind_to": "input dependence that does not move this one gap", "positive_control": "on lowercased rows E97 read 0.70 (gap unit), expected to pass there", "noise_floor": "the random-pair band of W0's move on the same rows"}
+ },
+ "expected": {
+  "W0": "G = 0 on every site: net share nan, every reading 'no gain'; a do-nothing state passes no bar",
+  "stage0": "W0 falls reproduce E97's to fp32 rounding (same code, inputs and card type); natives' G and own share reproduce; lookup net at the copy pair 0.014 and 0.003, under 0.2 (spared); clause (ii) passes (moves on both)",
+  "native": "net share: copy 0.72, 0.73 (above band: through the part); lowercase -0.18, -0.16 (within or below band); cipher 0.21, 0.21 with its increment kept positive with the pair off (2.93, 2.89 nats)",
+  "forced copy": "net 1.00 within 0.05 (exact by construction up to fp32 noise); gain matched within 2% or, if two heads' q, k, v cannot carry it, 'cap' (a reading: the construction fails on this pair, reported). Beside: W0-style second-copy top-1 under the state against W0's 0.825",
+  "forbidden copy": "net within the state's band; G with the pair restored within 10% of the native's; beside: the wider set's net (a fall there reads 'rerouted within in-context copying')",
+  "forced lowercase": "net 1.00 within 0.05, or 'cap' (not learned: R-net has no positive control on lowercase and falls back to 'does not apply')",
+  "forbidden lowercase": "net within band; learns as fast (matched by step 300, or within 10% of the target there)"
+ },
+ "predictions": [
+  {"id": "S0", "stage": 0, "rule": "every W0 fall and native G / own share reproduced, lookup spared (rules.reproduced, rules.spared)", "expected": "pass", "on_miss": "stop, exit 1, nothing trained"},
+  {"id": "S0-ii", "stage": 0, "rule": "rules.clause_ii", "expected": true, "on_miss": "stage 3 is skipped: lowercase stays 'does not apply'"},
+  {"id": "P1", "stage": 1, "rule": "rules.forced_reading on each seed, forced_tol", "expected": "net 1 on both seeds", "on_miss": "stop, exit 1: the apparatus is wrong"},
+  {"id": "P2", "stage": 2, "rule": "rules.forbidden_reading on each seed against its own band; rules.restored_ok", "expected": "within band on both seeds; restored within 10%", "on_miss": "reported: 'above band' says the forbidden route still runs through the part's restored output (read the native condition, G_part_off_in_both, beside)"},
+  {"id": "P3", "stage": 3, "rule": "rules.forced_reading; match status", "expected": "net 1 on both seeds, matched or cap", "on_miss": "off 1 on a state with gain: stop; cap: R-net falls back to 'does not apply'"},
+  {"id": "P4", "stage": 3, "rule": "rules.forbidden_reading; rules.pace", "expected": "within band and 'as fast' on both seeds", "on_miss": "reported; slower by more than 2x reads 'the part matters for learning, not for the increment'"}
+ ]
+}

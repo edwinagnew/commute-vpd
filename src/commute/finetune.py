@@ -208,7 +208,9 @@ def finetune_arm_a(model: Any, train: Windows, heldout: Windows, cfg: ArmAConfig
     return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log, cfg.optimizer, on_step)
 
 
-def finetune_arm_b(model: Any, train_rows: Tensor, heldout_rows: Tensor, cfg: ArmBConfig, device: str, log: Any = print) -> FinetuneResult:
+def finetune_arm_b(model: Any, train_rows: Tensor, heldout_rows: Tensor, cfg: ArmBConfig, device: str, log: Any = print,
+                   on_step: Any = None) -> FinetuneResult:  # fmt: skip
+    """`on_step` as `_run`'s (added 2026-11-05 for E99's constructed fine-tunes; None is the loop as before)."""
     ref = copy.deepcopy(model.target_model).eval().requires_grad_(False)
     params = decomposed_params(model)
     net = model.target_model
@@ -221,7 +223,7 @@ def finetune_arm_b(model: Any, train_rows: Tensor, heldout_rows: Tensor, cfg: Ar
     def eval_fn() -> dict[str, float]:
         return eval_arm_b(net, ref, heldout_rows, device)
 
-    return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log, cfg.optimizer)
+    return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, eval_fn, log, cfg.optimizer, on_step)
 
 
 @dataclass
