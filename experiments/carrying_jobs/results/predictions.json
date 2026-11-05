@@ -1,0 +1,126 @@
+{
+  "experiment": "E101 carrying-neuron jobs (67M)",
+  "filed": "2026-11-05",
+  "plan": "reports/plans/2026-11-05_plan_e101-carrying-jobs.md",
+  "advice": "reports/plans/2026-11-05_advice_e99-neuron-next-FABLE.md, option (b), with the lead's overrides in the plan. The advice file says E99; E99 and E100 were claimed by other leads, so this is E101.",
+  "labels": "construction labels only, marked assumed (experiments/method_table/results/table.json .rows[].truth.how = 'only by assumption'); e62's copy-vs-lookup row is the one causal check (W0's copying head), as in E98",
+  "carrying_sets": "experiments/neuron_r/results/carrying.json (E98 job 52786, code 2ae75888): per scored state, .rows[state].top[: min(k_half, cap)], cap = n_top_saved 256 (sets with k_half 512 or 1024 are cut to their top 256; stated in the plan)",
+  "settings": {
+    "pile_cache": ["val", 0, 8192],
+    "pile_cache_note": "commute.data.pile_rows('val', 0, 8192), already cached (artifacts/sets/val_0_8192.npy); slices below are row ranges in it. E53's and the lowercase task's held-out rows are val 0-255 (src/commute/lowercase.py:39), so every slice starts at 2048",
+    "window_rows": [2048, 4048],
+    "quantile_rows": [4096, 4224],
+    "check_rows": [6144, 6160],
+    "batch_rows": 16,
+    "n_top": 20,
+    "context": 20,
+    "set_cap": 256,
+    "n_draws": 10,
+    "seed": 101,
+    "min_gap": 0.2,
+    "min_gap_source": "E51/E52's separation rule, src/commute/elicit.py separation (E98 used it, experiments/neuron_r/results/predictions.json .settings.min_gap)",
+    "control_k": 16,
+    "pile_check_band": [0.45, 0.55],
+    "batch_size": 30,
+    "strong_frac": 0.3,
+    "strong_frac_source": "the essay's 'Explanations That Could Lose' figure caption: strong = at least 30% of the neuron's strongest corpus example (https://already-clean.goodfire.com/essay.md)",
+    "n_examples": 5,
+    "n_near_misses": 5,
+    "min_group": 8,
+    "missing_max": 0.1,
+    "judge_fp_max": 0.5,
+    "self_test_min_win": 0.8
+  },
+  "tasks": ["lowercase", "e53_cipher", "broad_cipher", "ident32", "ident32b", "rand32", "rand32b", "elicit", "cipher", "c3_rank1", "c3_copy", "e62_copy", "e62_lookup"],
+  "states": {
+    "lowercase": ["lowercase_s0", "lowercase_s1"],
+    "e53_cipher": ["e53_cipher_s0", "e53_cipher_s1"],
+    "broad_cipher": ["broad_cipher_s0", "broad_cipher_s1"],
+    "ident32": ["ident32_s0", "ident32_s1"],
+    "ident32b": ["ident32b_s0", "ident32b_s1"],
+    "rand32": ["rand32_s0", "rand32_s1"],
+    "rand32b": ["rand32b_s0", "rand32b_s1"],
+    "elicit": ["elicit_s0", "elicit_s1", "elicit_s2", "elicit_s3", "elicit_s4"],
+    "cipher": ["cipher_own_s0", "cipher_own_s1"],
+    "c3_rank1": ["c3_rank1_s0", "c3_rank1_s1", "c3_rank1_s2", "c3_rank1_s3", "c3_rank1_s4", "c3_rank1_s5", "c3_rank1_s6", "c3_rank1_s7"],
+    "c3_copy": ["c3_copy_s0", "c3_copy_s1", "c3_copy_s2", "c3_copy_s3", "c3_copy_s4", "c3_copy_s5", "c3_copy_s6", "c3_copy_s7"],
+    "e62_copy": ["e62_copy_s0", "e62_copy_s1", "e62_copy_s2"],
+    "e62_lookup": ["e62_lookup_s0", "e62_lookup_s1", "e62_lookup_s2"]
+  },
+  "rows": {
+    "e53_lowercase_cipher": {"reuse": ["lowercase_s0", "lowercase_s1"], "new": ["e53_cipher_s0", "e53_cipher_s1", "broad_cipher_s0", "broad_cipher_s1"]},
+    "e46_copy_random": {"reuse": ["ident32_s0", "ident32_s1", "ident32b_s0", "ident32b_s1"], "new": ["rand32_s0", "rand32_s1", "rand32b_s0", "rand32b_s1"]},
+    "e54_own": {"reuse": ["elicit_s0", "elicit_s1", "elicit_s2", "elicit_s3", "elicit_s4"], "new": ["cipher_own_s0", "cipher_own_s1"]},
+    "e62_copy_lookup": {"reuse": ["e62_copy_s0", "e62_copy_s1", "e62_copy_s2"], "new": ["e62_lookup_s0", "e62_lookup_s1", "e62_lookup_s2"]}
+  },
+  "rows_note": "The four E98 rows with a carrying set on both sides. open_pair_c3 and open_pair_c3_copy have none on the cipher side (c3_cipher_s0-7 unscored in E98, experiments/neuron_r/results/cells.json .rows.c3_cipher_s*.scored = false), so rank-1 and the copy map are read against their random sets only (P3, and reported in stage 0)",
+  "descriptions": {
+    "lower": "Continue ordinary English web text that has been written entirely in lowercase letters.",
+    "cipher": "Continue web text in which many common words have each been swapped for a different, fixed common word (a word-substitution cipher).",
+    "copykey": "After a marker token and a key word, answer with that same key word (repeat the key).",
+    "lookup": "After a key token next to a marker token, answer with an arbitrary word fixed for that key (a memorised lookup table).",
+    "induct": "When a token A appeared earlier followed by a token B, and A appears again followed by a marker, answer with B (copy what followed A before).",
+    "rank1": "After a marker token and a key word, answer with the word that most naturally follows that key word in ordinary text."
+  },
+  "groups": {
+    "lowercase": {"states": ["lowercase_s0", "lowercase_s1"], "n": 16, "description": "lower"},
+    "ciphers": {"states": ["e53_cipher_s0", "e53_cipher_s1", "broad_cipher_s0", "broad_cipher_s1"], "n": 24, "description": "cipher"},
+    "same_word": {"states": ["ident32_s0", "ident32_s1", "ident32b_s0", "ident32b_s1"], "n": 24, "description": "copykey"},
+    "random_word": {"states": ["rand32_s0", "rand32_s1", "rand32b_s0", "rand32b_s1"], "n": 24, "description": "lookup"},
+    "e62_copy": {"states": ["e62_copy_s0", "e62_copy_s1", "e62_copy_s2"], "n": 24, "description": "induct"},
+    "e62_lookup": {"states": ["e62_lookup_s0", "e62_lookup_s1", "e62_lookup_s2"], "n": 24, "description": "lookup"},
+    "rank1": {"states": ["c3_rank1_s1", "c3_rank1_s2", "c3_rank1_s3", "c3_rank1_s4", "c3_rank1_s5", "c3_rank1_s6", "c3_rank1_s7"], "n": 24, "description": "rank1", "cap": 64},
+    "copy_map": {"states": ["c3_copy_s0", "c3_copy_s1", "c3_copy_s2", "c3_copy_s3", "c3_copy_s4", "c3_copy_s5", "c3_copy_s6", "c3_copy_s7"], "n": 20, "description": "copykey"}
+  },
+  "controls_w0": {"lowercase": {"n": 10, "description": "lower"}, "e62_copy": {"n": 10, "description": "induct"}, "ident32": {"n": 10, "description": "copykey"}},
+  "groups_note": "Per group, carrying neurons = commute.carrying_jobs.consensus over its states' sets (in most sets first); random = block-matched to the group's sample, from neurons in no scored state's set and not a W0 control; W0 controls = top n by engaged value on all the task's windows, from neurons in no scored state's set. 180 carrying + 180 random + 30 W0 controls, deduplicated, shuffled (seed) into batches of 30: 13 batches, 39 agent calls",
+  "stage0": {
+    "C0_pile": {"what": "engaged value of every neuron on check_rows' positions (held-out Pile, not in the quantile sample); median over 12288 neurons", "expect": "0.5 (same distribution as the sample)", "stop": "outside pile_check_band"},
+    "C0_w0": {"what": "per task, the top control_k neurons by engaged value on even windows, read on odd windows, against n_draws uniform random sets of control_k on odd windows", "expect": "control 0.9 or more; random sets near 0.5", "stop": "on any task, control share - max random share < min_gap"},
+    "C0_null": {"what": "the P0 rule on every row with each state's random draw 0 in place of its carrying set, draws 1..n_draws-1 as the band", "expect": "verdict none (or unreadable) on all four rows", "stop": "any row reads a separation (a_higher or b_higher): the rule is degenerate"},
+    "C0_files": {"what": "batch files hold only the keys batch, n, neurons[id, windows[rank, rel, text]]; ids are 12 hex digits; every pool neuron has n_top windows", "stop": "any other key, a non-hex id, or a neuron with fewer windows"}
+  },
+  "predictions": {
+    "P0": {
+      "claim": "Lowercase's carrying neurons were already engaged at the answer positions before training, more than the ciphers' were",
+      "rule": "per state, excess = engaged share of its carrying set - median of its n_draws block-matched random sets; on row e53_lowercase_cipher, elicit.separation(reuse excesses, new excesses, min_gap): pass iff a_higher; fail iff none or b_higher; unreadable as the rule says",
+      "lean": "pass (Fable's table, the already-engaged row)",
+      "reported_not_scored": "the same rule on e46_copy_random, e54_own and e62_copy_lookup; above_band per state on every state, incl. c3_rank1 and c3_copy",
+      "at_w0": "no carrying set: no call", "do_nothing": "the C0_null read: none", "blind_to": "whether the firing at the answer is the job the fine-tune used; a neuron firing at every position reads high on every task (the random sets control it); the two lowercase states have the same 16 neurons, so that side's spread is 0 by construction"
+    },
+    "C1_judge_fp": {
+      "rule": "share of random neurons (with a judge output) whose job the judge ties to any description; pass iff <= judge_fp_max",
+      "expect": "0.1-0.3", "stop": "over judge_fp_max: P1 and P2 are not read; the judge is redesigned as a forced choice (chance 1 in 6)"
+    },
+    "C2_self_test": {
+      "rule": "in the maximiser scoring job (experiments/carrying_jobs/maximise.py), before any agent text: per pool neuron, its Pile windows ranked 2-6 (decoded and re-encoded) as examples and the windows at the same rank of 5 other pool neurons as near misses, by commute.carrying_jobs.outcome; pass iff the share of 'win' among scorable neurons >= self_test_min_win",
+      "expect": "0.9 or more", "stop": "under self_test_min_win: the text round trip or the 30% rule is broken"
+    },
+    "P1": {
+      "claim": "power: the method ties lowercase's carrying neurons to lowercase text",
+      "rule": "related share = share of a group's neurons whose job wins the maximiser test (outcome 'win') and that the judge ties to the group's description; floor = the same share over all random neurons for that description; gap_rule(lowercase related, n, floor, n_random, min_gap): pass iff 'above', fail iff 'below_or_level', no call otherwise",
+      "lean": "pass", "if_fail": "the method has no teeth on the easy case: P2 and P3 are reported, not read",
+      "at_w0": "no carrying set", "do_nothing": "related = floor: below_or_level, fail",
+      "blind_to": "jobs the 67M's neurons do not show in 2,000 Pile rows; a judge prior for natural-language descriptions (the per-description floor controls it); a relay through an upstream head"
+    },
+    "P2": {
+      "claim": "kind: carrying neurons' original jobs relate to the task more often when the task was built to reuse",
+      "rule": "commute.carrying_jobs.row_kind on three rows: lowercase vs ciphers, same_word vs random_word, e62_copy vs e62_lookup (each side its related share and its own description's floor); a row reads reuse-higher iff 'above'. A group with fewer than min_group neurons with all three outputs, or more than missing_max of its neurons missing one, makes its row unreadable. pass iff at least 2 rows read reuse-higher; fail iff at least 2 rows are readable and fewer than 2 read reuse-higher; unreadable under 2 readable rows",
+      "lean": "pass, two of three; the open one is the same-word row (E98's neuron share leaned the wrong way there)",
+      "at_w0": "no carrying set", "do_nothing": "x = 0 both sides on every row: below_or_level, fail",
+      "blind_to": "as P1; and jobs that serve a task through another description (copy jobs judged 'induct' on a copykey group count as unrelated)"
+    },
+    "P3": {
+      "claim": "the rank-1 maps' 64-neuron sets are coherent jobs (reuse) or not (an artefact of the update's rank)",
+      "rule": "gap_rule(share of rank1's neurons with outcome 'win', n, the same share over all random neurons, n_random, min_gap): 'above' reads coherent, 'below_or_level' not coherent, else no call",
+      "lean": "none",
+      "at_w0": "no carrying set", "do_nothing": "explained = floor: not coherent",
+      "blind_to": "coherence that is not the task's (the judge's tie is P1/P2's, not P3's)"
+    },
+    "R_w0_controls": {
+      "reported_not_scored": "the W0 control neurons' related share per description against the floor (gap_rule), lean above",
+      "why": "a set chosen from W0 alone by firing on the task's answer positions; if it does not read above the floor either, a miss on P1 is the method's, not the fine-tune's"
+    },
+    "R_explained_base": {"reported_not_scored": "explained share (outcome 'win') of the random neurons: the 67M's base rate, against the essay's 164 of 183 on Qwen3-32B"}
+  }
+}
