@@ -22,8 +22,22 @@
 3. The comparison band: per state, or the largest over states.
 4. Unread rows: class map and its twin; copy tables with no token reader of their own.
 
-## Stages (to be filled after Fable's advice)
+## Refinements adopted from Fable (candidate rules; proposed to the user in one batch after stage 3, dated)
 
-0. Controls. 1. Forced and forbidden fine-tunes on tasks with a located C. 2. The old tasks under the refined rules. 3. One table: task, assumed label, verdict, reason; proposed definition changes to the user in one batch.
+- **R-net (detail 1).** A located part's share is read net: the state's fall with the part off minus the original model's fall, over the state's gain. The state's own fall and the original model's fall are printed beside it. Why: on E97's lowercase pair (1,1)+(1,2) the own-terms share is 0.80/0.85, but the original model falls 1.10 against the state's 0.90 on a gain of 1.13, so net is −0.18/−0.16. On copy the two agree (net 0.72/0.73/0.63). Fixed-answer tasks get a verdict only through a located part that passes two admissibility clauses. First, removing the part costs the original model its own leaning above the band. Second, the part's function in the original model depends on the input, on inputs the task never trained on (the cased-minus-lowercase gap with the part off, on cased rows). Otherwise they stay "does not apply".
+- **R-adm (detail 2).** C is admissible at a site only if (a) f_C merges inputs (at least 2 keys per value on average and more than one value), and (b) a token-only reader downstream of the site, at matched gain, stays within the band under C's removal. Token identity fails both (E95's reader loses 0.74-0.77 against bands 0.41-0.47). So the copy-map rows read "no admissible C at this site: the removal deletes the input". Admissibility runs before the band.
+- **R-band (detail 3).** The band is per state; comparisons between states use E95's paired test. Pool to the largest band only if the per-state band's redraw spread exceeds the gap between states.
+- **Detail 4.** Rebuild the class map and its twin (11 min) and read them with the hand-write control. Copy tables without a reader are closed by R-adm (b).
+- **What the constructed fine-tunes can and cannot show (Fable).** They are ground truth for "through the part", not for "reuses the old function". A forced fine-tune can repurpose the part; a forbidden one can reroute through other copying heads (E62 Amendment 5). They fix the two poles of the mechanism form. The data-built pairs (copy/lookup, class map/twin) stay the truths about reuse.
+- Counting grammar left out of the first pass (E70 Amendment 1's direction is not matched on size). The "restricted to read C's subspace" variant is dropped.
 
-All on the MATS cluster `debug` QoS, $0.
+## Stages, control first (two seeds each, MATS `debug`, $0)
+
+0. **Controls, alone, early stop.** Original model only: what (1,1)+(1,2) does on cased against lowercase rows; the copying pair (2,3)+(2,4) on the copy and lookup windows; each removal's band. Stop if the original model's fall under a removal is not reproduced from E97 (`run.out`) within its band.
+1. **Forced-part copy.** Everything outside the pair's q, k, v slices is reset to the original weights at every step (`on_step`); o_proj frozen. Expect net 1.00 ± 0.05 and lookup spared. Outside that the code stops: the apparatus is wrong.
+2. **Forbidden-part copy.** Trained with the pair ablated (`copying.ablated`) and the pair's slices excluded from the update, read with the pair restored. Expect net within band. Printed beside: all prefix-scored heads off ("rerouted within copying"), and the gain with the pair restored against the native fine-tune's gain (within 10%).
+3. **Forced-part lowercase** (as 1) and **forbidden-part lowercase** (as 2; expect it to learn as fast, net within band). If the forced arm cannot push the net share to 1, R-net falls back to "does not apply".
+4. **Old tasks under the refined rules**, plus the class map and twin rebuilt. Optional: forced-part lookup, to put a number on the granularity limit.
+5. **One table:** task, assumed label, verdict, reason. Rule changes go to the user in one batch.
+
+Matched gain within 2% of the native fine-tune, step cap 10×. Fable's sizes: E62's six states took about 3.5 min; E97's whole-row reads take about 1 min per few parts. So stages 0-3 fit one `debug` job.
