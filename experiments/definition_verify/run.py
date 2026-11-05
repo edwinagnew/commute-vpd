@@ -55,6 +55,7 @@ HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
 LARGE, PRED = RESULTS / "large", RESULTS / "predictions.json"
 STAGE = {k: RESULTS / f"stage{k}.json" for k in range(4)}
+PLANS = {1: [("copy", "forced")], 2: [("copy", "forbidden")], 3: [("lowercase", "forced"), ("lowercase", "forbidden")]}
 NATIVES = (("T5 copy", "e62_copy", "copy"), ("T5 lookup", "e62_lookup", "copy"), ("T7 lowercase", "e53_lowercase", "lowercase"), ("T8 cipher", "e53_cipher", "lowercase"))
 
 
@@ -254,16 +255,16 @@ def arm(J: Job, task: str, mode: str, seed: int, train: Train) -> dict[str, Any]
     return rec
 
 
-def stage_arms(J: Job, k: int, plan: list[tuple[str, str]], trainers: dict[str, Train]) -> None:
-    out: dict[str, Any] = {}
-    for task, mode in plan:
+def stage_arms(J: Job, k: int, trainers: dict[str, Train], path: Path, out: dict[str, Any]) -> None:
+    """Stage k's arms (PLANS[k]), both seeds each, written to `path` (with `out`'s keys) after every arm."""
+    for task, mode in PLANS[k]:
         for s in J.c.seeds:
             rec = out.setdefault(f"{mode} {task}", {})[f"s{s}"] = arm(J, task, mode, s, trainers[task])
-            dump(STAGE[k], out)
+            dump(path, out)
             say(f"stage{k} {mode} {task} s{s}", {x: v for x, v in rec.items() if x != "curve"})
             say(f"stage{k} {mode} {task} s{s} curve", rec["curve"])
             if mode == "forced" and rec["reading"] == R.OFF_ONE:
-                stop(STAGE[k], out, f"{mode} {task} s{s}: net share {rec['net']['lo']} is off 1 by more than {J.th['forced_tol']}")
+                stop(path, out, f"{mode} {task} s{s}: net share {rec['net']['lo']} is off 1 by more than {J.th['forced_tol']}")
 
 
 def trainers(J: Job, want: set[int]) -> dict[str, Train]:
@@ -279,12 +280,23 @@ def trainers(J: Job, want: set[int]) -> dict[str, Train]:
 # ----------------------------------------------------------------------------- main
 
 
-def filed() -> dict[str, Any]:
-    rel = str(PRED.relative_to(REPO))
+def filed(pred: Path) -> dict[str, Any]:
+    rel = str(pred.relative_to(REPO))
     git = lambda *x: subprocess.run(["git", "-C", str(REPO), *x], capture_output=True, text=True, check=False)
-    if not PRED.is_file() or not git("ls-files", rel).stdout.strip() or git("diff", "--quiet", "HEAD", "--", rel).returncode:
+    if not pred.is_file() or not git("ls-files", rel).stdout.strip() or git("diff", "--quiet", "HEAD", "--", rel).returncode:
         sys.exit(f"{rel} is not committed unchanged: file and commit it before the run")
-    return json.loads(PRED.read_text())
+    return json.loads(pred.read_text())
+
+
+def start(P: dict[str, Any], device: str, what: str) -> Job:
+    """The model loaded under the filed settings; `what` goes on the host line."""
+    if not LARGE.is_dir():
+        sys.exit(f"{LARGE} is missing: run ~/commute-agents/fleet/link-data <role> first (it is a symlink into commute-data)")
+    torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # as E96, E97
+    J = Job(ST.Net(device), P, Cfg.of(P["settings"]))
+    head = subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"], capture_output=True, text=True, check=False).stdout.strip()
+    log(f"[host] {torch.cuda.get_device_name() if torch.cuda.is_available() else 'none'} git {head} predictions {sha256(PRED)} {what}")
+    return J
 
 
 def main() -> None:
@@ -293,23 +305,18 @@ def main() -> None:
     ap.add_argument("--stages", default="0,1,2,3")
     args = ap.parse_args()
     want = {int(x) for x in args.stages.split(",")}
-    P = filed()
-    if not LARGE.is_dir():
-        sys.exit(f"{LARGE} is missing: run ~/commute-agents/fleet/link-data <role> first (it is a symlink into commute-data)")
+    P = filed(PRED)
     s0 = from_saved(json.loads(STAGE[0].read_text())) if STAGE[0].exists() else {}
     if 0 not in want and s0.get("status") != "pass":
         sys.exit("stage 0 has not passed: run it first")
-    torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # as E96, E97
-    J = Job(ST.Net(args.device), P, Cfg.of(P["settings"]))
-    head = subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"], capture_output=True, text=True, check=False).stdout.strip()
-    log(f"[host] {torch.cuda.get_device_name() if torch.cuda.is_available() else 'none'} git {head} predictions {sha256(PRED)} stages {sorted(want)}")
+    J = start(P, args.device, f"stages {sorted(want)}")
     if 0 in want:
         t0 = time.monotonic()
         stage0(J)
         s0 = from_saved(json.loads(STAGE[0].read_text()))
         log(f"[stage 0 done] {time.monotonic() - t0:.0f} s")
     T = trainers(J, want)
-    for k, plan in ((1, [("copy", "forced")]), (2, [("copy", "forbidden")]), (3, [("lowercase", "forced"), ("lowercase", "forbidden")])):
+    for k in PLANS:
         if k not in want:
             continue
         if k == 3 and not s0["clause_ii"]["passes"]:
@@ -317,7 +324,7 @@ def main() -> None:
             log("stage 3 does not run: clause (ii) failed (the plan's tree)")
             continue
         t0 = time.monotonic()
-        stage_arms(J, k, plan, T)
+        stage_arms(J, k, T, STAGE[k], {})
         log(f"[stage {k} done] {time.monotonic() - t0:.0f} s")
     hard_exit(0)
 
