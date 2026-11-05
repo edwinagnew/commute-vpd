@@ -66,11 +66,14 @@ def a_from(top_shares: Sequence[float]) -> float:
 
 def nominees(rec: Mapping[str, Any], k: int) -> list[str]:
     """The parts the carry and write maps nominate on one state, unit "lo": the top k by carry, the top k heads by write,
-    the block MLP of each MLP matrix in the top k by write, and the greedy pair. First-seen order, no repeats."""
+    the block MLP of each MLP matrix in the top k by write, and the greedy pair. First-seen order, no repeats.
+    E97 Amendment 1 adds the parts its edges nominate (`edge_rules.edge_nominees`), when the record holds them; E97's
+    own records hold none, so its labels are unchanged."""
     carry = {n: v["lo"] for n, v in rec["carry"].items()}
     heads = {n: v["lo"] for n, v in rec["write"]["head"].items()}
     mats = {n: v["lo"] for n, v in rec["write"]["matrix"].items()}
     out = ranked(carry)[:k] + ranked(heads)[:k] + [f"mlp{m.split('.')[1]}" for m in ranked(mats)[:k] if ".mlp." in m]
+    out += list(rec.get("edge_nominees", []))
     out += [rec["pair"]] if rec.get("pair") else []
     return list(dict.fromkeys(out))
 
