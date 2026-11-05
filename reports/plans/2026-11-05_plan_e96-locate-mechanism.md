@@ -87,3 +87,9 @@ One `debug` L40 job, under 10 minutes by E62 Amendment 2's ~4.5 min on the same 
 ## Not run
 
 A planted head (a fine-tune allowed to change one drawn head only), the one known-answer check not resting on E62, held for an amendment if the nominators' reading is ambiguous. Direction-level units. Other control tasks. Anything on Qwen.
+
+## Decided (user, 2026-11-05)
+
+Go ahead; the lead runs this without further sign-off. "Removes the behaviour" is the first reading: the state's probability of the target falls to 0.1 or less.
+
+**Added, the user's point on the second reading.** If a part can be switched off so that the gain goes and the original model's own capability stays, the gain and the capability have separate mechanisms. So every part that meets the located rule also reports W₀'s own capability with that part off, in both models' terms, and carries one of two readings: **shared** (the capability falls with the gain) or **gain only** (the gain goes, the capability holds). On the control W₀'s capability is second-copy top-1: expected shared for (2,4), which takes it from 0.82 to 0.0095. On lowercase it is W₀'s own log-odds of the lowercase form. "Gain only" is evidence of distinct parts at this grain, not of a new capability: a new circuit built from old parts still reads as reuse.
