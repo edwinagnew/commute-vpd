@@ -30,8 +30,11 @@ be run on the arms above.
 
 D1 is judged by option A of card `decision-after-e76` unless E89 (running 2026-11-05) changes the picture: the
 clean-model table (E75), the share left in Δ, squared size, behaviour kept under the state's own masks on the task
-rows, with the adversary stated as a check on columns whose size limit is known (it fails placements only hundreds
-of times a real update's size, E85). Least squares is the map scored first; teacher training toward TOFU is the
+rows, with the adversary stated as a limit of the test, not a check: it failed wrong columns only at 250 to 740 times a
+real update's size (E85), yet on E81's TOFU update, about ten times the first fine-tune's size, it also failed doing
+nothing (about 3 at seeds 2.15 and 4.19, fail bar 1.61; E89), so at that size it reads neither a pass nor a fail.
+(Corrected 2026-11-05 after ask 31; the earlier sentence said it "fails placements only hundreds of times a real
+update's size", which E89 contradicts.) Least squares is the map scored first; teacher training toward TOFU is the
 trained map and runs only if least squares fails that table. **No further experiment on whether the adversary has
 teeth**: E85 and E89 are its record, and the limit goes in the write-up as a sentence, not as another run. The user
 confirms this on the card; until then it is the plan's default (fast lane rule 7).
