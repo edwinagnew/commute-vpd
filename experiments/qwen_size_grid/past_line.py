@@ -56,7 +56,7 @@ def first_past(lab: Any, seed: int, line: float, rows: list[torch.Tensor], keep:
                 if name != "trained":
                     E84.answer_set(lab, name, sink)
             kl = mean_kl(lab.model, rows, lab.W0, None)
-        out |= {"step": t, "norm": rec["dw_norm"], "kl": kl, "past": recall >= line, "answers": E84.graded(sink, keep)}
+        out.update(step=t, norm=rec["dw_norm"], kl=kl, past=recall >= line, answers=E84.graded(sink, keep))
         raise M.Enough
 
     try:
