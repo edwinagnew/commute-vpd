@@ -115,7 +115,7 @@ def contrast_seqs(lab: Any) -> tuple[list[tuple[list[int], int]], list[tuple[lis
     from commute.qwen_eval import prompt
 
     items = json.loads((lab.LARGE_P / "a1_rows.json").read_text())["items"]
-    chosen = json.loads((lab.LARGE_P.parent / "P.json").read_text())["chosen"]
+    chosen = json.loads((EXPERIMENTS / "qwen_updates" / "results" / "P.json").read_text())["chosen"]
     out: tuple[list[Any], list[Any]] = ([], [])
     for r in items:
         q = lab.sets["test"][r["idx"]]["question"]
