@@ -24,6 +24,7 @@ from commute.open_pair import jsonable
 HERE = Path(__file__).resolve().parent
 RESULTS, EXP, REPO = HERE / "results", HERE.parent, HERE.parents[1]
 LARGE, PRED, STOP = RESULTS / "large", RESULTS / "predictions.json", RESULTS / "stop.json"
+AMEND = RESULTS / "predictions_amend1.json"
 log = KD.log
 Reads = dict[Any, tuple[Tensor, Tensor]]  # "clean", or (block, draw; -1 the basis), to (log P, log-odds) per window
 
@@ -41,16 +42,18 @@ def stop(path: Path, res: dict[str, Any], why: str) -> NoReturn:
 
 
 def filed() -> dict[str, Any]:
-    """The predictions, refused unless committed unchanged; a stop file also refuses, until the lead clears it."""
+    """The predictions with Amendment 1's under "amend1", each refused unless committed unchanged; a stop file also refuses, until
+    the lead clears it."""
     git = lambda *a: subprocess.run(["git", "-C", str(REPO), *a], capture_output=True, text=True, check=False).stdout
-    rel = str(PRED.relative_to(REPO))
-    if not git("ls-files", rel).strip() or git("diff", "HEAD", "--", rel):
-        log(f"{rel} is not committed unchanged: commit it first (exit 1)")
-        hard_exit(1)
+    for path in (PRED, AMEND):
+        rel = str(path.relative_to(REPO))
+        if not git("ls-files", rel).strip() or git("diff", "HEAD", "--", rel):
+            log(f"{rel} is not committed unchanged: commit it first (exit 1)")
+            hard_exit(1)
     if STOP.exists():
         log(f"a stop fired ({STOP.read_text().strip()}); nothing runs until the lead clears it (exit 1)")
         hard_exit(1)
-    return json.loads(PRED.read_text())
+    return {**json.loads(PRED.read_text()), "amend1": json.loads(AMEND.read_text())}
 
 
 # ---- saved records ----
@@ -193,6 +196,12 @@ def identity_capability(net: ST.Net, name: str, rows: Tensor, keys: Tensor, half
     h = RO.cache64(net, toks, keys, half)[0]
     read = capped_held(Site(held, keys[hy], half), n_read, S["control_seed"])
     return Capability(name, h, y.to(h.device), read, len(keys) - 1)
+
+
+def own_top1(net: ST.Net, s: Site, batch: int = 256) -> Site:
+    """Amendment 1's control read for token identity: `s`'s windows, each with W0's own top-1 next token as the target."""
+    top = [net.run(s.toks[i : i + batch])[0][:, s.half].argmax(-1).cpu() for i in range(0, len(s.toks), batch)]
+    return Site(s.toks, torch.cat(top), s.half)
 
 
 def leaning_capability(net: ST.Net, name: str, rows: Tensor, trigger: int, target: int, half: int, S: dict[str, Any], n_read: int) -> Capability:

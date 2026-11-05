@@ -7,6 +7,7 @@ import json
 import math
 from contextlib import nullcontext
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -346,3 +347,136 @@ def test_every_saved_record_points_at_a_file() -> None:
     rec = AP.records()
     assert len(rec) == 2 + 4 + 2 + 6 + 2 + 6 + 1 + 6
     assert all(p.exists() for p in rec), [p for p in rec if not p.exists()]
+
+
+# ---- Amendment 1 ----
+
+
+class Lens:
+    """A stand-in W0: the residual is the token's embedding, an edit at any block changes it, the logits are linear in it."""
+
+    device = "cpu"
+
+    def __init__(self, vocab: int, d: int) -> None:
+        gen = torch.Generator().manual_seed(0)
+        self.emb, self.W = torch.randn(vocab, d, generator=gen), torch.randn(d, vocab, generator=gen)
+
+    def at(self, _dW: object) -> nullcontext[None]:
+        return nullcontext()
+
+    def run(self, toks: torch.Tensor, edit: dict | None = None, capture: bool = False) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+        h = self.emb[toks]
+        for name in RO.RESID:
+            if edit and name in edit:
+                h = edit[name](h)
+        return h @ self.W, {}
+
+
+def lens_job(tmp_path: Path) -> tuple[Any, Any, Any, Any]:
+    A1 = load_experiment("new_vs_reuse", "amend1", "apparatus", "reading", "rules", "input_dep", "stage1")
+    AP, RD = A1.AP, A1.RD
+    net = Lens(40, 512)
+    toks = torch.randint(0, 9, (400, 41))
+    y = toks[:, 20]
+    h = net.emb[y].expand(4, -1, -1)
+    c = AP.Capability("token identity", h, y, AP.own_top1(net, AP.Site(toks[:200], y[:200], 20)), 8)
+    j = RD.Job(net, {"n_random": 20, "random_seed": 90, "gain_floor": 0.05, "blocks": [1, 2], "control_seed": 1}, {}, {"sha256": {}}, tmp_path / "out.json")
+    return A1, j, c, RD.value_form(j, c, 2)
+
+
+def test_identity_control_has_teeth_on_the_key_basis_and_not_on_a_random_one(tmp_path: Path) -> None:
+    A1, j, c, f = lens_job(tmp_path)
+    RD = A1.RD
+    assert bool((c.read.tgt == j.net.run(c.read.toks)[0][:, 20].argmax(-1)).all())
+    on = RD.control(j, c, f)
+    assert on == {"1": True, "2": True}
+    passes = 0
+    for seed in range(20):
+        g = RD.Basis({1: RM.random_basis(512, 8, [1000, seed])}, {1: f.randoms[1]})
+        passes += RD.control(j, c, g)["1"]
+    assert passes <= 3
+    assert A1.null_passes(j.res["control"][c.name]["1"]["random"]) <= 2
+    RD.do_nothing(j, c, f, on, 1)
+    assert j.res["R1"][c.name]["verdict"] == A1.rules.NO_GAIN and math.isnan(j.res["R1"][c.name]["A_lo"])
+
+
+def test_teeth_on_the_edges_and_null_passes_counts_at_most_the_top_two() -> None:
+    assert not R.teeth(0.0, 0.0) and not R.teeth(0.5, 0.5) and not R.teeth(nan, 0.5) and not R.teeth(0.5, nan)
+    A1 = load_experiment("new_vs_reuse", "amend1", "apparatus", "reading", "rules", "input_dep", "stage1")
+    assert A1.null_passes([0.1] * 20) == 0 and A1.null_passes([*[0.1] * 19, -5.0]) == 0
+    assert A1.null_passes(list(np.linspace(0.1, 1.0, 20))) <= 2
+
+
+def test_widened_table_keeps_the_commonest_and_every_key_answering_the_target() -> None:
+    """Echo's top-1 at 20 is the token at 21. Keys 100-119 in frequency order, all answering 4, but for 118 answering the target 3 and
+    117 answering it on too few windows to pass the floor; only the 16 commonest are kept otherwise."""
+    ID = load_experiment("new_vs_reuse", "input_dep", "apparatus", "reading", "rules")
+    t, rows = 2, []
+    for i, key in enumerate(range(100, 120)):
+        for r in range(100 - 2 * i):
+            nxt = 3 if key == 118 or (key == 117 and r % 5 < 2) else 4
+            row = torch.zeros(512, dtype=torch.long)
+            row[30:33] = torch.tensor([key, t, nxt])
+            rows.append(row)
+    rows_t = torch.stack(rows)
+    assert ID.trigger_table(Echo(130), rows_t, t, [3, 4], 0).keys == list(range(100, 116))
+    tb = ID.trigger_table(Echo(130), rows_t, t, [3, 4], 0, 3)
+    assert tb.keys == [*range(100, 116), 118] and tb.answers == [4] * 16 + [3] and tb.n_eligible == 20
+    assert 119 not in {p["key"] for p in tb.per_key}
+    assert R.target_halves(3, tb.answers) == {"fit": 1, "read": 0, "both": False}
+    assert R.target_halves(3, [3, 3, 4]) == {"fit": 1, "read": 1, "both": True}
+
+
+def amended_results() -> tuple[dict, dict, dict, dict, dict]:
+    results = PRED.parent
+    P = {**json.loads(PRED.read_text()), "amend1": json.loads((results / "predictions_amend1.json").read_text())}
+    zero, first = json.loads((results / "stage0.json").read_text()), json.loads((results / "stage1.json").read_text())
+    r2 = {"reading": R.AS_FILED, "verdict": R.NOT_SPECIFIC, "band": 0.1, "shares": {"ident32": 0.9, "rand32": 0.85, "write": 0.8}}
+    i1 = {"reading": R.AS_FILED, "verdict": R.REUSES, "band": 0.02, "block": 1, "shares": {"rank1": 0.3, "write": 0.01}}
+    amend = {"readings": {"R2": r2, "I1": i1}}
+    forms = {"guess": ["rank1", "cipher", "elicit"], "identity": ["ident32", "rand32"], "copy24": ["copy24"]}
+    res: dict = {"row1": {"band": 0.2, "verdicts": {"copy": {"verdict": R.REUSES}, "lookup": {"verdict": R.NOT_THROUGH}}, "shares": {"copy": [0.56, 0.47, 0.54], "lookup": [0.0, -0.01, 0.0]}}, "rows": {}, "states": {}}
+    for form, maps in forms.items():
+        names = [f"{m}_s{s}" for m in maps for s in range(2)]
+        res["rows"][form] = {"band": 0.03, "verdicts": {m: {"verdict": R.NOT_SPECIFIC} for m in maps}, "shares": dict.fromkeys(names, 0.5)}
+        res["states"] |= {f"{n}_row": {"control": 0.4} for n in names}
+    res["I1_seeds"] = {"verdict": R.REUSES}
+    res["I1_per_seed"] = {str(s): {**i1, "shares": {"rank1": 0.3 + s / 10, "write": 0.01}} for s in range(3)}
+    return P, zero, first, amend, res
+
+
+def test_final_table_has_every_row_each_with_the_last_read_and_the_earlier_ones_beside() -> None:
+    FT = load_experiment("new_vs_reuse", "final_table", "rules")
+    P, zero, first, amend, res = amended_results()
+    table = FT.final_table(P, zero, first, amend, res)
+    by = {r["task"]: r for r in table}
+    filed = {a for a in P["assumed_labels"]}
+    assert filed <= set(by) and {"T15 twin", "T10 code", "T9 narrow lowercase", "I1 ladder", "I2 emoticon", "I3 lowercase", "R7 ladder push"} <= set(by)
+    assert by["T5 copy"]["verdict"] == "reuses C, 0.470 to 0.560 of the gain" and by["T5 copy"]["reason"] == "" and by["T5 lookup"]["admissibility"] == "not admissible"
+    assert [s["by"] for s in by["T4 ident32"]["superseded"]] == ["stage 1, R2", "Amendment 1, R2"] and by["T4 ident32"]["superseded"][0]["verdict"] == R.NO_TEETH
+    assert by["T4 ident32"]["read_by"] == "stage 2" and by["T4 ident32"]["share"] == [0.5, 0.5] and by["T4 ident32"]["control_share"] == [0.4, 0.4]
+    assert by["I1 ladder"]["read_by"] == "stage 2, seeds 0-2" and by["I1 ladder"]["superseded"][0]["windows_top1_target"] == 316 and by["I1 ladder"]["superseded"][1]["verdict"] == R.REUSES
+    assert by["I2 emoticon"]["verdict"] == R.NO_VERSION and "on 0 of 2880 windows" in by["I2 emoticon"]["reason"]
+    assert by["I3 lowercase"]["G_lowercased"] == pytest.approx(2.5848, abs=1e-3) and by["I3 lowercase"]["G_cased"] == pytest.approx(-1.4064, abs=1e-3)
+    assert by["I3 lowercase"]["verdict"] == R.NOT_SPECIFIC and by["I3 lowercase"]["assumed"] == P["assumed_labels"]["T7 lowercase"]
+    assert by["R7 ladder push"]["verdict"] == R.NO_REACH and by["R7 ladder push"]["band"] == pytest.approx(0.0088, abs=1e-4)
+    assert by["T1 emoticon"]["verdict"] == R.DOES_NOT_APPLY and by["T1 emoticon"]["read_by"] == "stage 0"
+    assert by["T8 cipher"]["verdict"] == R.NO_C and by["T8 cipher"]["admissibility"] == "not admissible"
+    assert by["T15 class map"]["verdict"] == "admissible" and "second pass" in by["T15 class map"]["reason"]
+    assert by["T10 code"]["verdict"] == "excluded: learned nothing" and by["T9 narrow lowercase"]["read_by"] == "not read"
+    assert by["T2"]["verdict"] == R.DOES_NOT_APPLY
+    assert [r["task"] for r in table][:2] == ["T5 copy", "T5 lookup"] and json.dumps(table)
+
+
+def test_stage2_refuses_without_a_complete_stage1_or_amendment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    ST2 = load_experiment("new_vs_reuse", "stage2", "apparatus", "reading", "rules", "input_dep", "final_table")
+    a, b = tmp_path / "stage1.json", tmp_path / "amend1.json"
+    monkeypatch.setattr(ST2, "FIRST", a)
+    monkeypatch.setattr(ST2, "AMENDED", b)
+    assert ST2.not_ready() == "stage1.json"
+    a.write_text('{"complete": false}')
+    assert ST2.not_ready() == "stage1.json"
+    a.write_text('{"complete": true}')
+    assert ST2.not_ready() == "amend1.json"
+    b.write_text('{"complete": true}')
+    assert ST2.not_ready() is None

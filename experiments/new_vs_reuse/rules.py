@@ -96,6 +96,14 @@ def say(v: str, s: float) -> str:
     return f"{REUSES}, {s:.3f} of the gain" if v == REUSES else v
 
 
+def say_seeds(v: str, shares: Sequence[float]) -> str:
+    """`say` over seeds: the range of the shares, or the verdict alone when there is no finite share."""
+    s = [x for x in shares if math.isfinite(x)]
+    if v != REUSES or not s:
+        return v
+    return say(v, s[0]) if len(s) == 1 else f"{REUSES}, {min(s):.3f} to {max(s):.3f} of the gain"
+
+
 def over_seeds(per_seed: Sequence[str]) -> dict[str, Any]:
     """The verdict every seed gives, else "mixed"; none read: no call. Counts the no-gain and no-call seeds."""
     got = set(per_seed)
@@ -152,6 +160,12 @@ def keeps_target(target: int, values: Sequence[int], answers: Sequence[int]) -> 
     return target in values and target in answers
 
 
+def target_halves(target: int, answers: Sequence[int]) -> dict[str, Any]:
+    """How many keys answer the target on each half of the parity split (even-indexed fit, odd-indexed read)."""
+    fit, read = sum(a == target for a in answers[::2]), sum(a == target for a in answers[1::2])
+    return {"fit": fit, "read": read, "both": fit > 0 and read > 0}
+
+
 def gap(why: str, **rec: Any) -> dict[str, Any]:
     """A row with nothing trained and nothing read: why it is a gap, and what was printed."""
     return {**rec, "reading": f"gap: {why}", "verdict": why}
@@ -172,7 +186,8 @@ def gaps(readings: dict[str, dict[str, Any]]) -> list[str]:
 
 def table_row(task: str, assumed: str, admissibility_label: str | None, read: str | None) -> dict[str, str]:
     """One line of the deliverable: the verdict read under the definition if the row was read, else the admissibility label;
-    a row with neither has no C listed. Every verdict that is not a label of the state carries itself as the reason."""
-    verdict = read if read is not None else admissibility_label if admissibility_label is not None else NO_C
+    a row with neither, or unread and not admissible, has no C listed. Every verdict that is not a label of the state carries
+    itself as the reason."""
+    verdict = read if read is not None else NO_C if admissibility_label in (None, "not admissible") else admissibility_label
     labelled = verdict in (REUSES, NOT_THROUGH)
     return {"task": task, "assumed": assumed, "verdict": verdict, "reason": "" if labelled else verdict}

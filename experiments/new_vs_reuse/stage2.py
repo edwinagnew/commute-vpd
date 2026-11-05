@@ -5,7 +5,11 @@ rules.py. Not run as of its commit.
             A "reuses C" here is a different rule's reading beside E62's filed "copy_not_elicitation", which stands.
   rows 2-4  rank-1, cipher, elicit under W0's guess; ident32, rand32, copy-24 under token identity; each state against the hand
             write of its own table at its own gain.
-  table     the deliverable: one line per old task, assumed label, verdict, and for every unreadable row the reason.
+  I1 seeds  seeds 1-2 of the ladder table, only if Amendment 1's I1 read "reuses C" or "not through C" (I2 and I3 read in stage 1,
+            a gap and "not specific", and stand, so they cannot ask for seeds).
+  table     the deliverable, `final_table.py`.
+Token identity's teeth come from Amendment 1 (results/amend1.json, its filing results/predictions_amend1.json), and copy-24's control
+is read the same way. Stage 2 refuses without a complete stage 1 and a complete Amendment 1.
 Writes results/stage2.json per state, resumes from it; exit 3 at the deadline. Usage: sbatch cluster/new_vs_reuse.sbatch stage2
 """
 
@@ -19,6 +23,8 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import apparatus as AP
+import final_table as FT
+import input_dep as ID
 import reading as RD
 import rules
 import torch
@@ -34,7 +40,7 @@ from commute.data import pile_rows
 from commute.identity import log_odds
 from commute.jobs import hard_exit
 
-OUT, FIRST = RESULTS / "stage2.json", RESULTS / "stage1.json"
+OUT, FIRST, AMENDED = RESULTS / "stage2.json", RESULTS / "stage1.json", RESULTS / "amend1.json"
 CUE, REG = EXP / "induction_cue/results", EXP / "regating_table/results/large"
 PAIR = EXP / "open_pair/results/large"
 HEAD, HEAD_BLOCK, EXIT_RESUME, HALF = (2, 4), 2, 3, 20
@@ -150,48 +156,66 @@ def read_rows(j: Job, form: str, f: Basis, block: int, on: bool, deadline: float
     log(f"[{form}] {json.dumps(j.res['rows'][form])}")
 
 
-def rows2to4(j: Job, first: dict[str, Any], deadline: float) -> None:
-    bases = torch.load(LARGE / "bases.pt", weights_only=True)
+def rows2to4(j: Job, first: dict[str, Any], amend: dict[str, Any], deadline: float) -> None:
+    bases = torch.load(LARGE / "bases.pt", weights_only=True, map_location="cpu")
     block = first["readout"]["b_star"]
     if block is None:
         j.res.setdefault("rows", {})["guess"] = {"verdicts": {m: {"verdict": "unreadable: no readout"} for m in ("rank1", "cipher", "elicit")}}
     else:
         read_rows(j, "guess", RD.with_random(j, bases["guess"], 1), block, first["control"]["W0's guess"][str(block)]["teeth"], deadline)
-    read_rows(j, "identity", RD.with_random(j, bases["identity"], 2), 1, first["control"]["token identity"]["1"]["teeth"], deadline)
+    read_rows(j, "identity", RD.with_random(j, bases["identity"], 2), 1, amend["control"]["token identity"]["1"]["teeth"], deadline)
     rows = pile_rows(*j.S["pile"]["rows"], log=log)
     keys = torch.tensor(RD.table_of(j.site(PAIR / "amend1/windows_copy_trained.pt")[1])[0])
     c = AP.identity_capability(j.net, "token identity, copy-24's keys", rows, keys, HALF, j.S, j.S["n_control"])
+    c.read = AP.own_top1(j.net, c.read)
     f = RD.value_form(j, c, 4)
     on = RD.control(j, c, f)
     read_rows(j, "copy24", f, 1, on["1"], deadline)
 
 
-def final_table(res: dict[str, Any], assumed: dict[str, str]) -> list[dict[str, str]]:
-    """The deliverable, from stage 0's admissibility and this stage's verdicts. A task with several rungs or sizes gives its
-    labels joined. Seeds' disagreement reads "mixed"; the per-seed verdicts are in `rows`."""
-    pairs = json.loads((RESULTS / "stage0.json").read_text())["pairs"]
-    rows, one = res.get("rows", {}), res["row1"]["verdicts"]
-    read = {"T5 copy": one["copy"]["verdict"], "T5 lookup": one["lookup"]["verdict"]}
-    read |= {t: rows[f]["verdicts"][m]["verdict"] for t, f, m in (("T12 rank-1", "guess", "rank1"), ("T11 cipher", "guess", "cipher"), ("T11 elicit", "guess", "elicit"),
-                                                                  ("T4 ident32", "identity", "ident32"), ("T6 rand32", "identity", "rand32"), ("T13 copy-24", "copy24", "copy24"))}  # fmt: skip
-    label = lambda t: " / ".join(sorted({r["label"] for k, r in pairs.items() if k.startswith(t)})) or None
-    return [rules.table_row(t, a, label(t), read.get(t)) for t, a in assumed.items()]
+def ladder_seeds(j: Job, amend: dict[str, Any], deadline: float) -> None:
+    """The plan's "a labelled verdict gets seeds 1-2", on the windows, bases and b* Amendment 1 saved. Nothing unless I1 read a label."""
+    i1 = amend["readings"]["I1"]
+    if i1["verdict"] not in (rules.REUSES, rules.NOT_THROUGH):
+        return
+    w = torch.load(LARGE / "windows_ladder.pt", weights_only=True)
+    tb = ID.Table(w["keys"], w["answers"], w["train"], w["train_answer"], w["held"], w["held_answer"], [])
+    block = i1["block"]
+    f = RD.with_random(j, torch.load(LARGE / "bases_ladder.pt", weights_only=True, map_location="cpu"), 5)
+    on = {str(block): amend["control"]["W0's guess, ladder"][str(block)]["teeth"]}
+    per = j.res.setdefault("I1_per_seed", {"0": i1})
+    for seed in (1, 2):
+        resume_or_exit(j, deadline, f"ladder seed {seed}")
+        if str(seed) not in per:
+            per[str(seed)] = ID.read_table(j, "ladder", tb, f, on, block, seed)
+    j.res["I1_seeds"] = rules.over_seeds([r["verdict"] for r in per.values()])
+    log(f"[I1 seeds] {json.dumps(j.res['I1_seeds'])}")
+
+
+def not_ready() -> str | None:
+    """The first file stage 2 reads that is missing or not marked complete; None when both are."""
+    for path in (FIRST, AMENDED):
+        if not path.exists() or not json.loads(path.read_text()).get("complete"):
+            return path.name
+    return None
 
 
 def main() -> None:
     P = AP.filed()
     S = P["settings"]
-    first = json.loads(FIRST.read_text()) if FIRST.exists() else {}
-    if not first.get("complete"):
-        log("stage 1 has not completed: nothing runs (exit 1)")
+    missing = not_ready()
+    if missing:
+        log(f"{missing} has not completed: nothing runs (exit 1)")
         hard_exit(1)
+    first, amend = json.loads(FIRST.read_text()), json.loads(AMENDED.read_text())
     deadline = time.monotonic() + 60 * S["deadline_min"]
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     res: dict[str, Any] = json.loads(OUT.read_text()) if OUT.exists() else {"sha256": {}}
     j = Job(ST.Net("cuda"), S, AP.records(), res, OUT)
     row1(j, deadline)
-    rows2to4(j, first, deadline)
-    res |= {"table": final_table(res, P["assumed_labels"]), "complete": True}
+    rows2to4(j, first, amend, deadline)
+    ladder_seeds(j, amend, deadline)
+    res |= {"table": FT.final_table(P, json.loads((RESULTS / "stage0.json").read_text()), first, amend, res), "complete": True}
     dump(OUT, res)
     for r in res["table"]:
         log(f"[table] {json.dumps(r)}")
