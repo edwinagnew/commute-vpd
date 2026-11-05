@@ -2,7 +2,7 @@
 
 *Baseline-lead, 2026-11-05. The one batch `decisions.md` asks for once the 67M table and the Qwen page are both in. Sources: `reports/analyses/2026-11-05_analysis_e90-old-labels.md`, `reports/analyses/2026-11-05_analysis_e90-qwen-check.md`, checks `reports/reviews/2026-11-05_review_e90-table-check.md` and `..._review_e90-amend2-check.md`, Fable's advice `..._review_e90-definition-batch-fable-advice.md` (written before the last amendment read; overrides below).*
 
-We read the old small-model tasks under the definition as frozen and had two independent checks test the result. It gives one labelled pair through a located mechanism, a difference of degree on one further pair, and no reading on the tasks we called strengthening. For `GOALS.md`, the "existing" side remains an assumption on nearly every old task, so two choices are yours.
+We read the old small-model tasks under the definition as frozen and had two independent checks test the result. It gives one labelled pair through a located mechanism, a difference of degree on two pairs of tables that is not shown to mean more than needing the input token, and no reading on the tasks we called strengthening. For `GOALS.md`, the "existing" side remains an assumption on nearly every old task, so two choices are yours.
 
 **Limit on every claim.** A circuit built from old parts reads as reuse.
 
@@ -11,19 +11,19 @@ We read the old small-model tasks under the definition as frozen and had two ind
 | Tasks | Reading | Strength |
 |---|---|---|
 | Copy against lookup at one marker | With the original model's copying head off, copy loses about half its gain, lookup none | Located mechanism, but repeats the measurement the label came from |
-| Copy maps, 32 and 24 keys | Lose .50-.53 and .66-.68 of their gain when token identity's directions are removed at the first block, above random removals of about the same variance (.41, .47) | Filed rule's read; does not show more than "the state needs the input token" |
-| Random map, 32 keys | Loses .36-.37, under the shared band .41, above its own .34 | Near its reference; neither "reaches" nor "does not reach" is clean |
+| Copy maps, 32 and 24 keys | Lose .50-.53 and .66-.68 of their gain when token identity's directions are removed at the first block, above random removals of about the same variance (.41, .47); a second 32-key table loses .51 against a band of .43 | Filed rule's read. A hand-built reader that needs only the token loses .74-.77, more than any state, so read as "needs the input token after the first block", not as a reuse label |
+| Random map, 32 keys | Loses .36-.37, under the shared band .41, above its own .34; a second table loses .27-.28, under .43, above its own band | Near its reference; neither "reaches" nor "does not reach" is clean |
 | Ciphers, half-known map | Under the band | "No C listed" on the ciphers; half-known passes admissibility on one split only |
 | Rank-1 | Mixed across seeds | Its answers are the capability's values, so the control cannot be spared |
 | Lowercase, emoticon, ladder, many cues | Definition does not apply: the answer is constant | Input-dependent versions lost the target or changed what was learned |
 
-The independent check calls "reverses" too strong for the copy against random result: it survives every redraw of the random removals (100%; 98.9% with both controls required), it is one table pair, and at the next block the original model fails the control. A replicate table pair is saved and unread.
+The copy map's excess over the random map repeats on the second, independent pair of tables (E95), on the filed rule and a paired test, though the original model's control barely passed there and the random map's gain differs in size (20.7 log-odds against 13-14). Its cause is unmeasured. At the next block the original model fails the control. Where each update sits runs against a placement explanation, on weight norm only, post hoc.
 
 ## Question 1: where does a label come from?
 
 **Why it arises.** Direction removal is the label (`decisions.md`, 2026-11-05, ask 18). In practice the only readings that mean what they say come from a located mechanism. On the value form, the random draws matched in variance are mostly the same directions as the capability's, and the best reading so far is a difference of degree.
 
-- **A, recommended.** Keep the wording of the definition. State its scope: a label needs a located mechanism, or a value-direction removal clearing its controls and the check below. Everything else is reported as unreadable with its reason. Nothing further runs on the 67M beyond the check below, and the deck's new-against-existing figures say their labels stay assumptions.
+- **A, recommended.** Keep the wording of the definition. State its scope: a label needs a located mechanism, or a value-direction removal clearing its controls and showing more than a token-reader loses. On the old tasks only the located-mechanism pair qualifies; the copy rows read "needs the input token". Everything else is reported as unreadable with its reason. Nothing further runs on the 67M, and the deck's new-against-existing figures say their labels stay assumptions.
 - **B.** Amend until more rows read, for example by counting W₀'s own output as a capability. More rows get a verdict; Fable and I think that fits the definition to the answer, since removing that capability removes the model.
 - **C.** Locate W₀'s mechanism for the strengthening tasks and ablate it, as was done for copying. This is the only route to a true reading on them; it is new research, of unknown length, and it competes with the Qwen deliverables.
 
@@ -46,11 +46,11 @@ Under `decisions.md`'s E90 apparatus rows, not the definition, for any further r
 4. Rank-1's reason reads "C's values are the answers".
 5. The band is reported per state as well as the filed largest over states, since the choice decides the random map's row.
 
-**Override of Fable.** Its question 2 recommended that a same-site state with no capability must stay within the band. The random map sits at about its reference, so that control neither passes cleanly nor fails; it is reported, and the copy rows' reading rests on the check below.
+**Override of Fable.** Its question 2 recommended that a same-site state with no capability must stay within the band. The random map sits at about its reference, so that control neither passes cleanly nor fails; it is reported, and the copy rows' reading rests on E95.
 
-## Running now, $0, whichever way you answer
+## What E95 added (ran 2026-11-05, job 52507, $0, provisional, no independent check)
 
-E95 (`reports/plans/2026-11-05_plan_e95-token-identity.md`): what does "reuses token identity" mean beyond needing the token? A hand-made edit of the same table, placed after the first block so that it must read the key through the removal, says how much loss the removal causes to anything that needs the token. The saved replicate pair of tables gives the difference of degree a second reading. One cluster job, on saved states. A result lands beside your answer: it could narrow the copy rows, and does not change either question.
+`reports/analyses/2026-11-05_analysis_e95-token-identity.md`. Removing token identity's directions costs a hand-built key reader about three quarters of its gain, more than it costs any fine-tuned state. The copy map loses more than the random map on both table pairs, a difference of degree, cause unmeasured. Filed outcome on the first pair: "no call", and the sentence filed with that outcome reads backwards against the signs; the report says so, and the filing stands.
 
 ## Not run
 
