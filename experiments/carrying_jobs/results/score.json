@@ -1,0 +1,172 @@
+{
+ "C1_judge_fp": {
+  "n": 179,
+  "ok": true,
+  "share": 0.01675977653631285
+ },
+ "C2_self_test": {
+  "counts": {
+   "lose": 4,
+   "tie": 24,
+   "unscorable": 0,
+   "win": 324
+  },
+  "n": 352,
+  "n_scorable": 352,
+  "ok": true,
+  "win_share": 0.9204545454545454
+ },
+ "P1": {
+  "gap": -0.00558659217877095,
+  "n0": 179,
+  "n1": 16,
+  "p0": 0.00558659217877095,
+  "p1": 0.0,
+  "se": 0.005570965316891305,
+  "status": "fail",
+  "verdict": "below_or_level"
+ },
+ "P2": {
+  "readable": [
+   "e53_lowercase_cipher",
+   "e46_copy_random",
+   "e62_copy_lookup"
+  ],
+  "reuse_higher": [],
+  "rows": {
+   "e46_copy_random": {
+    "gap": 0.0,
+    "new": {
+     "floor": 0.0,
+     "n": 24,
+     "n_floor": 179,
+     "p": 0.0
+    },
+    "reuse": {
+     "floor": 0.0,
+     "n": 24,
+     "n_floor": 179,
+     "p": 0.0
+    },
+    "se": 0.0,
+    "verdict": "below_or_level",
+    "x_new": 0.0,
+    "x_reuse": 0.0
+   },
+   "e53_lowercase_cipher": {
+    "gap": -0.00558659217877095,
+    "new": {
+     "floor": 0.0,
+     "n": 24,
+     "n_floor": 179,
+     "p": 0.0
+    },
+    "reuse": {
+     "floor": 0.00558659217877095,
+     "n": 16,
+     "n_floor": 179,
+     "p": 0.0
+    },
+    "se": 0.005570965316891305,
+    "verdict": "below_or_level",
+    "x_new": 0.0,
+    "x_reuse": -0.00558659217877095
+   },
+   "e62_copy_lookup": {
+    "gap": 0.041666666666666664,
+    "new": {
+     "floor": 0.0,
+     "n": 24,
+     "n_floor": 179,
+     "p": 0.0
+    },
+    "reuse": {
+     "floor": 0.0,
+     "n": 24,
+     "n_floor": 179,
+     "p": 0.041666666666666664
+    },
+    "se": 0.040789375432190036,
+    "verdict": "below_or_level",
+    "x_new": 0.0,
+    "x_reuse": 0.041666666666666664
+   }
+  },
+  "status": "fail"
+ },
+ "P3": {
+  "gap": -0.023975791433892057,
+  "n0": 179,
+  "n1": 24,
+  "p0": 0.8156424581005587,
+  "p1": 0.7916666666666666,
+  "se": 0.08781891280341853,
+  "status": "not coherent",
+  "verdict": "below_or_level"
+ },
+ "R_explained_base": {
+  "n": 179,
+  "share": 0.8156424581005587
+ },
+ "R_w0_controls": {
+  "e62_copy": {
+   "gap": 0.0,
+   "n0": 179,
+   "n1": 10,
+   "p0": 0.0,
+   "p1": 0.0,
+   "se": 0.0,
+   "verdict": "below_or_level"
+  },
+  "ident32": {
+   "gap": 0.0,
+   "n0": 179,
+   "n1": 10,
+   "p0": 0.0,
+   "p1": 0.0,
+   "se": 0.0,
+   "verdict": "below_or_level"
+  },
+  "lowercase": {
+   "gap": -0.00558659217877095,
+   "n0": 179,
+   "n1": 10,
+   "p0": 0.00558659217877095,
+   "p1": 0.0,
+   "se": 0.005570965316891305,
+   "verdict": "below_or_level"
+  }
+ },
+ "complete": 351,
+ "floors": {
+  "cipher": [
+   0.0,
+   179
+  ],
+  "copykey": [
+   0.0,
+   179
+  ],
+  "induct": [
+   0.0,
+   179
+  ],
+  "lookup": [
+   0.0,
+   179
+  ],
+  "lower": [
+   0.00558659217877095,
+   179
+  ],
+  "rank1": [
+   0.0111731843575419,
+   179
+  ]
+ },
+ "n_neurons": 352,
+ "read": {
+  "P1": true,
+  "P2_P3": false
+ }
+}
