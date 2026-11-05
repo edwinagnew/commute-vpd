@@ -29,7 +29,7 @@ DEV, CFG = JOB.DEV, JOB.CFG
 
 HERE = Path(__file__).resolve().parent
 RESULTS, EXPERIMENTS = HERE / "results", HERE.parent
-PRED, READS, GRID, STOPPED = (RESULTS / n for n in ("predictions.json", "reads.jsonl", "size_grid.json", "stopped.json"))
+PRED, READS, GRID, STOPPED, MATCHED = (RESULTS / n for n in ("predictions.json", "reads.jsonl", "size_grid.json", "stopped.json", "matched.json"))
 GSM8K_STEPS = (10, 20, 50, 100)
 
 
@@ -45,8 +45,8 @@ ARMS: dict[str, dict[int, Path]] = {
     "anchor2_s142": {t: large("qwen_anchor_checks", "dW", "tofu_seed142", f"step_{t}.safetensors") for t in (100, 200, 1250)},
     **{f"{a}_s0": {t: large("qwen_rl", "lr1e-6w10", "dW", a, f"step_{t}.safetensors") for t in GSM8K_STEPS} for a in "RNF"},
     **{f"{a}_s70": {t: large("qwen_rl", "lr1e-6w10_s70", "dW", a, f"step_{t}.safetensors") for t in GSM8K_STEPS} for a in "RN"},
-    "u1": {t: (U1_REGEN if t in (10, 100) else U1_VOLUME) / f"step_{t}.safetensors" for t in (2, 3, 5, 10, 20, 50, 100)},
-    "u2": {t: large("qwen_recipe", "train", "gold_1e-5", f"step_{t}.safetensors") for t in (2, 3, 5, 10, 20, 30, 50, 100)},
+    "u1": {t: (U1_REGEN if t in (1, 10, 100) else U1_VOLUME) / f"step_{t}.safetensors" for t in (1, 2, 3, 5, 10, 20, 50, 100)},
+    "u2": {t: large("qwen_recipe", "train", "gold_1e-5", f"step_{t}.safetensors") for t in (1, 2, 3, 5, 7, 8, 9, 10, 20, 30, 50, 100)},
 }
 
 
@@ -70,6 +70,24 @@ def grid_from(reads: list[dict[str, Any]], P: dict[str, Any]) -> dict[str, Any]:
             row[f"at_{key}"] = {"step": t, "ratio": here[t][key] / ref[key], "reached": reached, **here[t]}
         out["arms"][arm] = row
     return out
+
+
+def with_matched(grid: dict[str, Any]) -> dict[str, Any]:
+    """Anchor 2's rows point at the states matched.py saved at each seed, the nearest that exist."""
+    if not MATCHED.is_file():
+        return grid
+    m, ref = json.loads(MATCHED.read_text()), grid["reference"]
+    assert m.get("done"), "matched.py has not finished"
+    for seed, arm in ((42, "anchor2_s0"), (142, "anchor2_s142")):
+        run = m["runs"][str(seed)]
+        for key, t in (("norm", run["t_norm"]), ("kl", run["t_kl"])):
+            state = next(s for s in m["states"] if s["seed"] == seed and s["step"] == t)
+            grid["arms"][arm][f"at_{key}"] = {
+                "step": t, "ratio": state[key] / ref[key], "reached": True, "arm": arm, "norm": state["norm"], "kl": state["kl"],
+                "dtype": "torch.float32", "file": f"qwen_size_grid/results/large/dW/a2_s{seed}/step_{t}.safetensors",
+                "answers": f"qwen_size_grid/results/large/answers/a2_s{seed}/step_{t}", "label": state["label"],
+                "rerun_vs_saved_at_100": run["rerun_vs_saved"]}
+    return grid
 
 
 def stored() -> list[dict[str, Any]]:
@@ -137,7 +155,7 @@ def main() -> None:
     if missing:
         print(f"missing reads: {sorted(missing)}", flush=True)
         hard_exit(1)
-    GRID.write_text(json.dumps(grid_from(reads, P), indent=1) + "\n")
+    GRID.write_text(json.dumps(with_matched(grid_from(reads, P)), indent=1) + "\n")
     print(f"wrote {GRID}; FINISHED", flush=True)
     hard_exit(0)
 

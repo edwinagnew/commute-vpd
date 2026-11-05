@@ -69,3 +69,25 @@ Scores are the summariser agents' own judgement and have not been checked. Paper
 | 4 | Extracting and Understanding the Superficial Knowledge in Alignment | 2025 | http://arxiv.org/abs/2502.04602v1 | [summary](summaries/arxiv_2502.04602v1.md) |
 | 4 | Gradient-Sign Masking for Task Vector Transport Across Pre-trained Models |  | https://proceedings.iclr.cc/paper_files/paper/2026/hash/59e4f5d009f95324a1a1aa9971b51e25-Abstract-Conference.html | [summary](summaries/Gradient-sign_masking_fortaskvector_transport_acro.md) |
 | 4 | SharedSAE: One Feature Dictionary Across Language Models | 2026 | http://arxiv.org/abs/2609.04344v1 | [summary](summaries/arxiv_2609.04344v1.md) |
+
+## Added 2026-11-05: the distribution-sharpening debate
+
+Listed whatever their score, because the user asked for this set. Scored against the mechanistic definition of elicitation rather than the October proposal, so these scores are not comparable with the table above. Read `elicitation_vs_sharpening.md` first.
+
+| Score | Title | Year | URL | Summary |
+|---|---|---|---|---|
+| 6 | Spurious Rewards: Rethinking Training Signals in RLVR (PDF in pdfs/) | 2026 | https://arxiv.org/abs/2506.10947 | [summary](summaries/arxiv_2506.10947.md) |
+| 4 | Echo Chamber: RL Post-training Amplifies Behaviors Learned in Pretraining (PDF in pdfs/) | 2025 | https://arxiv.org/abs/2504.07912 | [summary](summaries/arxiv_2504.07912.md) |
+| 4 | From f(x) and g(x) to f(g(x)): LLMs Learn New Skills in RL by Composing Old Ones (PDF in pdfs/) | 2026 | https://arxiv.org/abs/2509.25123 | [summary](summaries/arxiv_2509.25123.md) |
+| 4 | On the Interplay of Pre-Training, Mid-Training, and RL on Reasoning Language Models (PDF in pdfs/) | 2025 | https://arxiv.org/abs/2512.07783 | [summary](summaries/arxiv_2512.07783.md) |
+| 4 | RL Grokking Recipe: How Does RL Unlock and Transfer New Algorithms in LLMs? (PDF in pdfs/) | 2026 | https://arxiv.org/abs/2509.21016 | [summary](summaries/arxiv_2509.21016.md) |
+| 3 | Sharpening Tax in Post-Training (PDF in pdfs/) | 2026 | https://arxiv.org/abs/2610.01509 | [summary](summaries/arxiv_2610.01509.md) |
+| 3 | Self-Improvement in Language Models: The Sharpening Mechanism (PDF in pdfs/) | 2025 | https://arxiv.org/abs/2412.01951 | [summary](summaries/arxiv_2412.01951.md) |
+| 3 | ProRL: Prolonged Reinforcement Learning Expands Reasoning Boundaries in Large Language Models (PDF in pdfs/) | 2025 | https://arxiv.org/abs/2505.24864 | [summary](summaries/arxiv_2505.24864.md) |
+| 3 | Rewarding the Unlikely: Lifting GRPO Beyond Distribution Sharpening (PDF in pdfs/) | 2025 | https://arxiv.org/abs/2506.02355 | [summary](summaries/arxiv_2506.02355.md) |
+| 3 | Reinforcement Learning with Verifiable Rewards Implicitly Incentivizes Correct Reasoning in Base LLMs (PDF in pdfs/) | 2026 | https://arxiv.org/abs/2506.14245 | [summary](summaries/arxiv_2506.14245.md) |
+| 3 | The Invisible Leash? Why RLVR May or May Not Escape Its Origin (PDF in pdfs/) | 2025 | https://arxiv.org/abs/2507.14843 | [summary](summaries/arxiv_2507.14843.md) |
+| 3 | Does RLVR Extend Reasoning Boundaries? Investigating Capability Expansion in Vision-Language Models (PDF in pdfs/) | 2026 | https://arxiv.org/abs/2511.00710 | [summary](summaries/arxiv_2511.00710.md) |
+| 3 | Understanding Reasoning from Pretraining to Post-Training (PDF in pdfs/) | 2026 | https://arxiv.org/abs/2607.16097 | [summary](summaries/arxiv_2607.16097.md) |
+| 3 | When RL VR Shrinks the Reasoning Boundary: Diagnosing Pass@k Inversion (PDF in pdfs/) | 2026 | https://arxiv.org/abs/2607.20543 | [summary](summaries/arxiv_2607.20543.md) |
+| 2 | Beyond Pass@k: Breadth-Depth Metrics for Reasoning Boundaries (PDF in pdfs/) | 2025 | https://arxiv.org/abs/2510.08325 | [summary](summaries/arxiv_2510.08325.md) |

@@ -1,8 +1,7 @@
 #!/bin/bash
 # E91 (qwen_size_grid) on one cluster L40, debug QoS, $0: experiments/qwen_size_grid/run.py. Rules:
 # experiments/qwen_size_grid/results/predictions.json. Submit from the clone root: sbatch cluster/qwen_size_grid.sbatch
-# Time: 44 states, each a 5.64 GB (or 2.82 GB) file over NFS and 32 forwards of 512 tokens; not timed before, so the first
-# reads set the estimate. A lost job resumes from results/reads.jsonl. Limit and --mem as E88's A sbatch.
+# Time: 57 states, about 20 s each on an L40 (job 52219); then matched.py, under 45 min by its docstring. A lost job resumes.
 # Exit 0 done; 1 a control missed (results/stopped.json) or reads are missing.
 #SBATCH --job-name=commute-qwen_size_grid
 #SBATCH --partition=compute
@@ -22,7 +21,7 @@ echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> c
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
 set +e
-.venv/bin/python experiments/qwen_size_grid/run.py
+.venv/bin/python experiments/qwen_size_grid/run.py && .venv/bin/python experiments/qwen_size_grid/matched.py
 status=$?
 echo "=== FINISHED (exit $status) ==="
 exit $status

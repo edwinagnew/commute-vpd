@@ -1,0 +1,18 @@
+{
+ "experiment": "E91, Amendment 1",
+ "filed": "2026-11-05, before any of this stage",
+ "source": "User on ask 11, 2026-11-05: the recommendation, and add the past-the-line state.",
+ "question": "What is the smallest saved state of anchor 2 that holds its facts, at each seed, and how many times anchor 1's size is it?",
+ "line": 0.585,
+ "rule": "predictions_matched.json's learning line, unchanged: new-word recall in the trained wording, over the kept rows. Read at steps 500, 550, ... 1000 at each seed. The state is the first at or over the line; if none by 1000, step 1000 is saved with past=false.",
+ "edge_cases": "A read over the line then under it later: not seen, the seed stops at the first. A 50-step grid: the state is up to 50 steps past the true crossing, so its size is an upper bound on the crossing's. Do-nothing reads 0.179 and cannot pass.",
+ "control": "E84's read of seed 42: 0.570 at step 500, 0.978 at step 1000 (read.json, H100). The L40 rerun's step 500 should read within 0.03 of 0.570, the spread being unknown across cards; a miss is reported, not a stop.",
+ "expected": {
+  "step": "Step 550 or 600 at both seeds. Seed 42 is 0.015 under the line at step 500 and rising.",
+  "size": "Norm about 15 to 16.5, about 31 to 34 times anchor 1's (train.json: 14.67 at step 500).",
+  "para": "Rephrased recall over 0.40 and under the full update's 0.53.",
+  "seeds": "The two seeds' steps within 100 of each other."
+ },
+ "blind_to": "The trained wording is the easiest test, so 'past the line' says the facts are held as trained, not that they carry to rephrasings. Word recall counts new words only.",
+ "not_filed": "What the D3 rows read at these states: qwen-decomp-lead's."
+}

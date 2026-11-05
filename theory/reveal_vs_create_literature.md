@@ -83,6 +83,7 @@ The debate is a spectrum running from "post-training only selects" to "post-trai
   - Arditi et al. 2024: refusal is a single direction.
   - Qi et al. 2024: safety is "a few tokens deep".
   - [Yue et al. 2025](https://arxiv.org/abs/2504.13837): RLVR raises pass@1 but loses to the base model at large k.
+    The debate this started is in `lit_review/elicitation_vs_sharpening.md` (2026-11-05).
 
 ## 3. Hacker Opus: the current test case
 
