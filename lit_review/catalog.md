@@ -1,6 +1,6 @@
 # Literature Review Catalog
 
-Total papers: 91
+Total papers: 106 (91 from the October sweep, sorted by score; 15 added 2026-11-05 at the end, scored against the mechanistic definition of elicitation, see `elicitation_vs_sharpening.md`)
 
 ---
 
@@ -1227,3 +1227,218 @@ The author argues that capability evals of frontier models (in this case DeepMin
 *Full summary: [lw_dgFC394qZHgj2cWAg.md](summaries/lw_dgFC394qZHgj2cWAg.md)*
 
 ---
+
+---
+
+# Added 2026-11-05: the distribution-sharpening debate
+
+## 92. Spurious Rewards: Rethinking Training Signals in RLVR
+
+**Relevance Score:** 6/10
+**Source:** arxiv
+**Year:** 2026
+**Authors:** Rulin Shao, Shuyue Stella Li, Rui Xin et al.
+**URL:** https://arxiv.org/abs/2506.10947
+
+The paper shows that GRPO with weak or spurious rewards (majority vote, format, random, deliberately incorrect labels) improves MATH-500 and AMC accuracy a lot for Qwen2.5(-Math) models. The same rewards mostly fail on Llama3 and OLMo2. The authors attribute the Qwen gains to a GRPO clipping bias th
+
+*Full summary: [arxiv_2506.10947.md](summaries/arxiv_2506.10947.md)*
+
+---
+
+## 93. Echo Chamber: RL Post-training Amplifies Behaviors Learned in Pretraining
+
+**Relevance Score:** 4/10
+**Source:** arxiv
+**Year:** 2025
+**Authors:** Rosie Zhao, Alexandru Meterez, Sham Kakade et al.
+**URL:** https://arxiv.org/abs/2504.07912
+
+The authors pretrain 150M and 1B OLMo-style models from scratch on controlled mixtures of math corpora and synthetic instruction sets (TinyGSM, OpenMathInstruct1, OpenMathInstruct2), each with a distinctive output format. They then run PPO (also GRPO and Expert Iteration) on GSM8K. RL quickly collap
+
+*Full summary: [arxiv_2504.07912.md](summaries/arxiv_2504.07912.md)*
+
+---
+
+## 94. From f(x) and g(x) to f(g(x)): LLMs Learn New Skills in RL by Composing Old Ones
+
+**Relevance Score:** 4/10
+**Source:** arxiv
+**Year:** 2026
+**Authors:** Lifan Yuan, Weize Chen, Yuchen Zhang et al.
+**URL:** https://arxiv.org/abs/2509.25123
+
+The paper builds a synthetic string-transformation testbed. Atomic skills are first taught by rejection fine-tuning (RFT) on opaque function names. The paper then shows that GRPO on Level-2 compositions (two functions) teaches the model to compose, and this generalizes to deeper compositions and to 
+
+*Full summary: [arxiv_2509.25123.md](summaries/arxiv_2509.25123.md)*
+
+---
+
+## 95. On the Interplay of Pre-Training, Mid-Training, and RL on Reasoning Language Models
+
+**Relevance Score:** 4/10
+**Source:** arxiv
+**Year:** 2025
+**Authors:** Charlie Zhang, Graham Neubig, Xiang Yue (Carnegie Mellon University et al.
+**URL:** https://arxiv.org/abs/2512.07783
+
+The paper trains small (100M, Qwen2.5-style) decoder models from scratch on synthetic GSM-Infinite-style arithmetic word problems. The problems come from dependency graphs, so the training distributions for pre-, mid- and RL (GRPO) stages are disjoint and known by construction. It uses this control 
+
+*Full summary: [arxiv_2512.07783.md](summaries/arxiv_2512.07783.md)*
+
+---
+
+## 96. RL Grokking Recipe: How Does RL Unlock and Transfer New Algorithms in LLMs?
+
+**Relevance Score:** 4/10
+**Source:** arxiv
+**Year:** 2026
+**Authors:** Yiyou Sun, Yuhan Cao, Pohao Huang et al.
+**URL:** https://arxiv.org/abs/2509.21016
+
+The paper introduces DELTA, a benchmark of templated synthetic coding problem families (Manufactoria, BouncingSim, competitive programming, SQL, Lean). It uses DELTA to argue that GRPO can take Qwen3-4B-Instruct-2507 from 0% full-pass at pass@128 to ~100% on a family. In their runs this happens as a
+
+*Full summary: [arxiv_2509.21016.md](summaries/arxiv_2509.21016.md)*
+
+---
+
+## 97. Sharpening Tax in Post-Training
+
+**Relevance Score:** 3/10
+**Source:** arxiv
+**Year:** 2026
+**Authors:** Changdae Oh, Qi Zeng, Qi Qi et al.
+**URL:** https://arxiv.org/abs/2610.01509
+
+The paper tests the "RL only sharpens the base model" hypothesis on agentic tasks (BFCL v4 multi-turn, WebShop, ACEBench) using 14 open base/instruct checkpoint pairs. With a light prompting harness, base models often overtake their post-trained versions in pass@K at large K, even though pass@1 is f
+
+*Full summary: [arxiv_2610.01509.md](summaries/arxiv_2610.01509.md)*
+
+---
+
+## 98. Self-Improvement in Language Models: The Sharpening Mechanism
+
+**Relevance Score:** 3/10
+**Source:** arxiv
+**Year:** 2025
+**Authors:** Audrey Huang, Adam Block, Dylan J. Foster et al.
+**URL:** https://arxiv.org/abs/2412.01951
+
+A learning-theory paper that formalises "self-improvement" as sharpening. Sharpening means using the model's own self-reward (for example sequence log-likelihood) to tilt the base policy toward more certain responses. It proves sample-complexity bounds for SFT-based and RLHF-based sharpening, and ch
+
+*Full summary: [arxiv_2412.01951.md](summaries/arxiv_2412.01951.md)*
+
+---
+
+## 99. ProRL: Prolonged Reinforcement Learning Expands Reasoning Boundaries in Large Language Models
+
+**Relevance Score:** 3/10
+**Source:** arxiv
+**Year:** 2025
+**Authors:** Mingjie Liu, Shizhe Diao, Ximing Lu et al.
+**URL:** https://arxiv.org/abs/2505.24864
+
+The paper argues that long GRPO-style RL (over 2k steps, with a KL penalty, periodic reference-policy resets, DAPO tricks and 136K problems across five domains) can expand a model's pass@k "reasoning boundary". The base model is DeepSeek-R1-Distill-Qwen-1.5B and the result is Nemotron-Research-Reaso
+
+*Full summary: [arxiv_2505.24864.md](summaries/arxiv_2505.24864.md)*
+
+---
+
+## 100. Rewarding the Unlikely: Lifting GRPO Beyond Distribution Sharpening
+
+**Relevance Score:** 3/10
+**Source:** arxiv
+**Year:** 2025
+**Authors:** Andre He, Daniel Fried, Sean Welleck (Carnegie Mellon University)
+**URL:** https://arxiv.org/abs/2506.02355
+
+In Lean theorem proving with DeepSeek-Prover-V1.5-SFT, standard GRPO raises pass@1 to pass@16 but leaves pass@N at large N at or below the base model. The authors call this distribution sharpening. They attribute it to a "rank bias": GRPO tends to raise the probability of correct samples that were a
+
+*Full summary: [arxiv_2506.02355.md](summaries/arxiv_2506.02355.md)*
+
+---
+
+## 101. Reinforcement Learning with Verifiable Rewards Implicitly Incentivizes Correct Reasoning in Base LLMs
+
+**Relevance Score:** 3/10
+**Source:** arxiv
+**Year:** 2026
+**Authors:** Xumeng Wen, Zihan Liu, Shun Zheng (equal contribution) et al.
+**URL:** https://arxiv.org/abs/2506.14245
+
+The paper argues against the "RLVR only sharpens the base model's sampling distribution" reading of pass@k curves (Yue et al. 2025). It says pass@k on math is inflated because the base model reaches right answers through wrong chains of thought (CoTs). It introduces CoT-Pass@K, which counts a sample
+
+*Full summary: [arxiv_2506.14245.md](summaries/arxiv_2506.14245.md)*
+
+---
+
+## 102. The Invisible Leash? Why RLVR May or May Not Escape Its Origin
+
+**Relevance Score:** 3/10
+**Source:** arxiv
+**Year:** 2025
+**Authors:** Fang Wu, Weihao Xuan, Danny Xing et al.
+**URL:** https://arxiv.org/abs/2507.14843
+
+The paper introduces "empirical support dynamics". For each question it records whether a base (reference) model and an RLVR model each produce at least one verified correct sample under a fixed sampling budget. Questions are labelled preserved, expanded (only the RLVR model succeeds), shrunk (only 
+
+*Full summary: [arxiv_2507.14843.md](summaries/arxiv_2507.14843.md)*
+
+---
+
+## 103. Does RLVR Extend Reasoning Boundaries? Investigating Capability Expansion in Vision-Language Models
+
+**Relevance Score:** 3/10
+**Source:** arxiv
+**Year:** 2026
+**Authors:** Minghe Shen, Zhuo Zhi, Chonghan Liu et al.
+**URL:** https://arxiv.org/abs/2511.00710
+
+The paper builds "Ariadne", a synthetic maze-navigation setup (adapted from AlphaMaze) in which difficulty is set by path length and number of turns. It trains Qwen2.5-VL-7B-Instruct with GRPO on short mazes and argues that RLVR extends the reasoning boundary. The evidence is that the trained model 
+
+*Full summary: [arxiv_2511.00710.md](summaries/arxiv_2511.00710.md)*
+
+---
+
+## 104. Understanding Reasoning from Pretraining to Post-Training
+
+**Relevance Score:** 3/10
+**Source:** arxiv
+**Year:** 2026
+**Authors:** Jingyan Shen, Ang Li, Salman Rahman et al.
+**URL:** https://arxiv.org/abs/2607.16097
+
+The authors use chess as a controlled testbed. They pretrain Qwen3-architecture models (5M-1B) on human games, SFT them on synthetic move-tree reasoning traces, and run GRPO on verifiable puzzles. They fit a joint pretraining-to-RL scaling law and run a behavioural analysis of how RL changes the per
+
+*Full summary: [arxiv_2607.16097.md](summaries/arxiv_2607.16097.md)*
+
+---
+
+## 105. When RL VR Shrinks the Reasoning Boundary: Diagnosing Pass@k Inversion
+
+**Relevance Score:** 3/10
+**Source:** arxiv
+**Year:** 2026
+**Authors:** Todd Y. Zhou (Harvard University)
+**URL:** https://arxiv.org/abs/2607.20543
+
+The paper studies "pass@k inversion", where GRPO-style RLVR raises pass@1 but lowers pass@256 below the base model. The author claims the loss concentrates on "boundary" prompts, where the base model solves the problem only rarely but nonzero. A two-mode toy model explains this as finite-sample mode
+
+*Full summary: [arxiv_2607.20543.md](summaries/arxiv_2607.20543.md)*
+
+---
+
+## 106. Beyond Pass@k: Breadth-Depth Metrics for Reasoning Boundaries
+
+**Relevance Score:** 2/10
+**Source:** arxiv
+**Year:** 2025
+**Authors:** Marius Dragoi, Ioana Pintilie, Florin Gogianu et al.
+**URL:** https://arxiv.org/abs/2510.08325
+
+The paper argues that Pass@k at large k is a misleading measure of an RLVR model's "reasoning boundary" on tasks with small discrete answer spaces, because Pass@k tends to 1 for any problem with nonzero success probability. It proposes Cover@τ, the fraction of problems with per-problem success rate 
+
+*Full summary: [arxiv_2510.08325.md](summaries/arxiv_2510.08325.md)*
+
+---
+
