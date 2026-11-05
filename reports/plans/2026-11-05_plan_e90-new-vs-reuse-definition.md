@@ -4,6 +4,18 @@
 `reports/decisions/2026-11-05_decision_new-vs-reuse-definition.md`, `decisions.md` rows 115-116. Apparatus detail:
 `reports/plans/2026-11-05_plan_e90-appendix.md`.*
 
+## Scope as restated by the user (2026-11-05); this section wins over anything below
+
+**Purpose.** Validate the definition against the labels the old 67M experiments assumed. **Deliverable:** one table, one line per old task: assumed label, verdict under the definition, and for every unreadable row the reason. Rows are picked by which old finding in the log or deck depended on the label.
+
+**The definition is frozen at `decisions.md` rows 81 and 115.** Everything in this plan beyond them (admissibility, g-class, b*, value and mechanism forms, bands) is E90's apparatus. "A miss changes the definition" below no longer holds: no change until the 67M table and the Qwen check are both in, then one batch to the user, each change keeping the definition writable for the Qwen updates. A row the definition cannot read is a gap, reported, not patched.
+
+**Changes to the stages.** Input-dependent lowercase, emoticon and one ladder rung move into the first pass, because the "existing" labels are what D3 needs read. Stage 2 reads the full table whatever R3 reads (the lead's edit shrinking it is withdrawn). Two debug jobs, table by 11-10.
+
+**Qwen check, one page, no run, by 11-07:** C, f_C, X_C and the control for the TOFU anchor (E84 step 1250), GRPO (E69, seeds 1 and 70) and the template anchor. A page that cannot be written is the result.
+
+The comparators (by 11-14) take priority if they collide.
+
 ## Changes the user must see
 
 Writing the accepted rule out as a procedure and running it on paper against the filed edge cases broke it in three
@@ -148,7 +160,7 @@ Expected, not measured. The definition says nothing today about emoticon (T1), t
 
 ## Status, from `reports/plans/2026-11-05_plan_qwen-reorient-amend1.md` (2026-11-05)
 
-Stage 0 is the paper reading. **Stages 1 and 2, R7 included, wait until the comparator table exists (due 11-14), then run on debug.** The user dropped the amendment's "No 67M runs" the same day, so these runs need no further exception; the wait is the amendment's other line, which stands. Code may be written now and left unrun.
+**Superseded by the section "Scope as restated" at the top of this plan.**
 
 ## Stages, all on MATS `debug`, $0
 
