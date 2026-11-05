@@ -68,3 +68,4 @@
 - [Decision cards pass a cold reader](feedback-decision-cards-cold-reader.md) — no plan labels in options; each says what runs, what it tells you, what next; one recommendation (user, 2026-11-02)
 - [Run down anomalies first](feedback-run-down-anomalies-first.md) — an unexplained training or apparatus number blocks readings built on it; compare both sides of precision/forward pairs; bf16 rounding found only because the user asked (2026-11-02)
 - [Leads keep clean separation](feedback-leads-clean-separation.md) — no repeating another lead's work; reuse its readings; name the owner on cards (user, 2026-11-02)
+- [Autonomous lead, short asks](feedback-autonomous-lead-short-asks.md) — far shorter messages; Fable for direction; the user may not read plans (2026-11-05)
