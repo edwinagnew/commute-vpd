@@ -40,18 +40,19 @@ def set_share(engaged: Sequence[float], idx: Sequence[int]) -> float:
     return float(statistics.median(engaged[i] for i in idx))
 
 
-def blocks_of(idx: Sequence[int]) -> dict[int, int]:
+def blocks_of(idx: Sequence[int], width: int = D_MLP) -> dict[int, int]:
+    """Neurons per block, flat index l x width + i (width 6144 on Qwen3-1.7B, E102)."""
     out: dict[int, int] = {}
     for i in idx:
-        out[i // D_MLP] = out.get(i // D_MLP, 0) + 1
+        out[i // width] = out.get(i // width, 0) + 1
     return out
 
 
-def block_matched(idx: Sequence[int], exclude: set[int], gen: torch.Generator) -> list[int]:
+def block_matched(idx: Sequence[int], exclude: set[int], gen: torch.Generator, width: int = D_MLP) -> list[int]:
     """A random set with the same number of neurons per block as `idx`, none in `exclude`, drawn with `gen`."""
     out: list[int] = []
-    for b, n in sorted(blocks_of(idx).items()):
-        pool = [b * D_MLP + i for i in range(D_MLP) if b * D_MLP + i not in exclude]
+    for b, n in sorted(blocks_of(idx, width).items()):
+        pool = [b * width + i for i in range(width) if b * width + i not in exclude]
         assert len(pool) >= n, f"block {b}: {len(pool)} neurons left for {n}"
         out += [pool[j] for j in torch.randperm(len(pool), generator=gen)[:n].tolist()]
     return out
