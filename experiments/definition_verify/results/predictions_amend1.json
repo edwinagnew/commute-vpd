@@ -1,0 +1,53 @@
+{
+ "experiment": "E99 Amendment 1: R-net clause (ii) on cased rows only, as the plan words it; then stage 3 (forced-part and forbidden-part lowercase)",
+ "filed": "2026-11-05, filed before the Amendment 1 run, by the E99 Amendment 1 code writer; never edited after the run (a dated report instead)",
+ "plan": "reports/plans/2026-11-05_plan_e99-refine-verify-definition.md (Refinements adopted, R-net; Stages). Base filing results/predictions.json (settings, thresholds, P3, P4) stands unchanged; S0-ii stays recorded as a miss (results/stage0.json, clause_ii.passes false).",
+ "why": {
+  "plan_wording": "R-net clause (ii), confirmed by the user: \"the part's function in the original model depends on the input, on inputs the task never trained on (the cased-minus-lowercase gap with the part off, on cased rows)\"",
+  "the_miss": "S0-ii (rules.clause_ii) also required the move on lowercased rows, which the plan does not ask. Job 52787 read: cased rows move_gap -1.845 against band 0.758 (moves); lowercased rows (e53_lowercase) move_gap 0.703 against band 1.161 (does not move). The added lowercased-row requirement is the mis-specification; Amendment 1 drops it and keeps everything else."
+ },
+ "predictions": [
+  {
+   "id": "S0-ii-A1",
+   "stage": "amend1 gate (no model; read from results/stage0.json)",
+   "rule": "rules.moves(stage0.json clause_ii.cased.move_gap, stage0.json clause_ii.cased.band): strictly |move| > band, both finite. The band is rules.band of the same 20 random head pairs' moves on the same cased rows (95th percentile of |move|).",
+   "inputs": {"cased_move_gap": -1.8450838885342171, "cased_band": 0.7581796506475017},
+   "expected": true,
+   "expected_from": "|-1.845| = 1.845 > 0.758: passes (computed from stage0.json's stored numbers before filing)",
+   "beside_not_in_rule": "the lowercased-row reading (move_gap 0.703, band 1.161, does not move) is printed beside, not part of the rule",
+   "on_miss": "stage 3 is not run: lowercase stays 'does not apply'"
+  },
+  {
+   "id": "P3",
+   "stage": 3,
+   "rule": "rules.forced_reading; match status",
+   "expected": "net 1 on both seeds, matched or cap",
+   "on_miss": "off 1 on a state with gain: stop; cap: R-net falls back to 'does not apply'"
+  },
+  {
+   "id": "P4",
+   "stage": 3,
+   "rule": "rules.forbidden_reading; rules.pace",
+   "expected": "within band and 'as fast' on both seeds",
+   "on_miss": "reported; slower by more than 2x reads 'the part matters for learning, not for the increment'"
+  }
+ ],
+ "metrics": {
+  "clause_ii_cased": {
+   "what": "W0's lowercase-minus-capitalised log-odds gap moved by setting the lowercase pair (1,1)+(1,2) to W0's means, on cased val rows (inputs the lowercase task never trained on), against the random-pair band on the same rows",
+   "blind_to": "an input dependence the cased-row gap does not show (a part whose function changes with the input in a way that leaves this one gap unmoved reads 'does not move'); and a removal that moves any gap at all: random head pairs move the cased gap too (all 20 draws are negative, -0.005 to -1.228), so the rule compares |move| with the band of |random moves| and says only that the pair moves the gap more than 19 of 20 random pairs, not that it moves it in a specific direction",
+   "positive_control": "the base filing's: on lowercased rows E97 read 0.70 (gap unit); in job 52787 the cased-row reading is the scored one and the lowercased-row reading is printed beside",
+   "noise_floor": "the random-pair band of W0's move on the same cased rows, 0.758 in job 52787 (stored, not re-measured)"
+  }
+ },
+ "edge_cases": {
+  "run": "~/commute-agents/fleet/cpu-run python ~/commute-data/scratch/definition-lead/e99-amend1/edge.py, before filing",
+  "nan_move": "rules.moves(nan, 0.758) -> False (no pass)",
+  "nan_band": "rules.moves(-1.845, nan) -> False",
+  "zero_band": "rules.moves(-1.845, 0.0) -> True, rules.moves(0.0, 0.0) -> False: a zero band (all 20 random moves exactly 0) would let any nonzero move pass; not the case here (band 0.758), and amend1.py refuses to start unless stage0.json's stored move and band equal the filed inputs above",
+  "do_nothing": "a removal of nothing moves the gap by 0 (G = 0 has no meaning here: the clause reads W0 only): rules.moves(0.0, 0.758) -> False, so the do-nothing cannot pass",
+  "tie": "rules.moves(0.758, 0.758) -> False (strict)",
+  "sign": "rules.moves(+1.845, 0.758) and rules.moves(-1.845, 0.758) -> True both: the band is on |move|"
+ },
+ "outputs": "results/stage3_amend1.json (as run.py's stage 3: forced lowercase s0, s1 then forbidden lowercase s0, s1, plus the amended clause record); results/run.out appended"
+}

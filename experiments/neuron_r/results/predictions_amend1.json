@@ -1,0 +1,15 @@
+{
+ "amends": "results/predictions.json -> stage0.controls (the rules of down_only; down_last added; cfc_attn unchanged). predictions.json is not edited; every other filed setting and rule stands. Stage 0's other records (w0, band, e56, do_nothing) are read from predictions.json as filed.",
+ "date": "2026-11-05",
+ "amendment": 1,
+ "reason": "Job 52747 stopped at control down_only: d_n 0.4218 vs r_n 0.4250, missing the filed 'd_n > r_n'. Every exact check held (e_n 0, r_half = r_n, G 6.94). The rule was mis-specified: training the down_proj of every block changes the MLP input of every later block, so later neurons re-fire with W0's weights, and r_n counts that. 'd_n > r_n' is not implied by how the control is built.",
+ "recipe": "unchanged from predictions.json stage0.controls.recipe (keydep.finetune, E54's elicit task, arm A, Adam at anchors.FT_LR, batch 32, 300 steps, read at keydep.scored_step, control_seed 0); only ArmAConfig.matrices differs per control",
+ "controls": {
+  "cfc_attn": "unchanged: readable (|G| >= gain_floor), |d_n numerator| <= band and |i_n numerator| <= band",
+  "down_only": "unchanged training (down_proj of every block; job 52747 logged n_matrices 4). Stop unless readable, |e_n numerator| <= band, |r_half - r_n| numerators <= band and d_n > 0. Its r_n is recorded, not stopped on: it is the measured share that downstream re-firing caused by new write directions puts into r_n and r_half (job 52747: 0.425 of G). A 'blind to' reading.",
+  "down_last": {
+   "matrices": ["h.3.mlp.down_proj"],
+   "rule": "the last block's down_proj alone. By construction nothing downstream re-fires. If readable: |r_n|, |r_half|, |i_n| and |e_n| numerators are each <= band, and |d_n - 1| <= band / G. If not readable (|G| < gain_floor): log it and stop the job, the control has no teeth."
+  }
+ }
+}
