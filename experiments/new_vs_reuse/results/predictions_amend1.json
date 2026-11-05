@@ -1,0 +1,83 @@
+{
+  "experiment": "E90 Amendment 1, the first of the two the rule allows",
+  "status": "filed",
+  "filed": "2026-11-05",
+  "plan": "reports/plans/2026-11-05_plan_e90-new-vs-reuse-definition.md, reports/plans/2026-11-05_plan_e90-input-dependent.md (dated line 2026-11-05 at its end)",
+  "rules_code": "experiments/new_vs_reuse/amend1.py, rules.py, final_table.py; edge cases in tests/test_new_vs_reuse.py, no model",
+  "standing": "results/predictions.json stands and is not edited; stage 1's readings (job 52317) stay as read and are reported beside. The definition (decisions.md lines 81, 115) is unchanged: everything here is apparatus.",
+  "identity_control": {
+    "what_stage_1_read": "AP.identity_capability: windows with a key at index 20; basis fitted on block residuals at index 20; removal at index 20; the read is logits at index 20, so W0's log-odds that the token at index 21 is the key again, predictions.json's 'that the next token is the current token'. Basis, removal and read all sit at the key's own position, and the ident32 state reads sit there too (kv_site: logits at half, target table[key]). Measured: drop -3.17 and -1.42 at blocks 1, 2 against bands 0.27, 0.28, so removing the directions raises the read and teeth is false.",
+    "why_replaced": "W0 does not output the token it stands on, so that read does not ask whether W0 uses token identity. The filed control asks a question token identity cannot answer. It is the only read the row had, so R2 was never read.",
+    "new_read": "The fall in W0's log-odds of W0's own top-1 next token (AP.own_top1, the argmax of the clean W0 at index 20, held fixed under removal), at the same windows and position",
+    "unchanged": "X_C and held rows, the 2,000 windows, the saved basis (results/large/bases.pt 'identity', fitted in stage 1), the 20 random bases (random_seed 90, tag 2), rules.teeth (drop > band, strict, band the 95th percentile of |drop| of the random bases at this read)",
+    "expected_at_W0": "teeth true at block 1: the basis holds 0.64 of the fit residual's variance at block 1 and 0.56 at block 2, stage 1's measure; no expected size is filed",
+    "selection": "A top-1's log-odds is a maximum, so any removal tends to lower it, random bases too. The band is measured on this read, so it carries that offset.",
+    "edge_cases": {
+      "a random basis": "should not pass: `null_passes` counts the 20 draws against the band of the other 19, at most 2 of 20 by construction, so it is a check on the code and not evidence, and is printed per block; a fresh random basis on the no-model stand-in passes at about the 5% the band implies (tests/test_new_vs_reuse.py)",
+      "a removal that changes nothing": "drop 0, and teeth is strict, so it does not pass even at band 0",
+      "drop equal to the band": "does not pass",
+      "nan drop or nan band": "does not pass",
+      "the do-nothing state": "the control reads W0, so the do-nothing state is W0 and meets the same teeth; its share has gain 0, nan under the 0.05 floor, and R1 then reads 'unreadable: no gain' as filed, where stage 1 read 'unreadable: no teeth'. It cannot read a label."
+    },
+    "blind_to": "The basis's variance share against the random bases' (0.64 against 0.04 at block 1, 0.56 against 0.04 at block 2, stage 1) is not matched. The rule says that W0's next-token output depends on these directions more than on random directions of the same rank, not that it uses the token's identity through them: 16 times the variance could give the fall alone. Teeth here is the weaker claim, and the variance shares are printed beside it.",
+    "copy_24": "Stage 2's control on copy-24's keys (not yet run) is read the same way, for the same reason: stage2.rows2to4. Its basis is fitted there, as filed."
+  },
+  "R2": {
+    "rule": "predictions.json edge_cases R2 unchanged: rules.r2, ident32_s0, rand32_s0, ident32's hand write, block 1, filed 'unreadable: not specific'",
+    "runs": "if the control has teeth at either block; else it reads as stage 1's did",
+    "beside": "stage 1's reading, 'miss', 'unreadable: no teeth', shares nan"
+  },
+  "I1": {
+    "reverses": "One sentence of the lead's edit in reports/plans/2026-11-05_plan_e90-input-dependent.md, 'the keys are not widened to rescue it'. A wider key set keeps the old target and reads the same task, so it rescues nothing that the rule protects. Stage 1's 'no version kept the target' stands as stage 1's reading (W0's top-1 is ' was' on 316 of 4,000 windows at ' which'; no key among the 16 most frequent has it as its mode).",
+    "keys": "Every previous token with >= 40 windows in rows 0-32767 is read. The table is the 16 most frequent of them, plus every key whose mode is the target, in frequency order. Same kept-share floor 0.5, same <= 400 windows read per key, same <= 80 train and <= 20 held, the answer must be in V, each half non-empty.",
+    "rule": "predictions.json edge_cases I1 unchanged: rules.r3 at b*, arm A per-window, 10 steps, seed 0, previous-token hand write",
+    "gap": "If no key has the target as mode or a key that does fails the floor, 'no version kept the target' stands with the printed count of windows and of keys with enough windows, and nothing is trained",
+    "printed": "The admissibility (parity over the keys in frequency order) and target_on_halves, the count of keys answering the target on each half; 'both' false says the split does not have the target on both, and the row goes on, since identity is still the g",
+    "emoticon": "Not widened: 0 of 2,880 windows have 'o' as top-1, so no key can have it as its mode. I2 stands."
+  },
+  "seeds": "The plan's 'a labelled verdict gets seeds 1-2' runs in stage 2, only for I1 reading 'reuses C' or 'not through C'. I2 (a gap) and I3 ('unreadable: not specific') read in stage 1 and stand, so they cannot ask for seeds. Band: the largest over the seeds; rules.over_seeds.",
+  "order": "One job each, controls first and alone: amend1.py (the identity control, R1, R2 if teeth, I1), then stage2.py's rows, which take token identity's teeth from results/amend1.json and refuse without it",
+  "thresholds": {
+    "teeth_band": "measured in the same job at this read; not stage 1's 0.27, which was on the other read",
+    "kept_share_floor_0.5": "filed in the input-dependent plan; stage 1 read 0.28 to 0.93 across 16 keys at ' which', three of them under it",
+    "min_windows_40": "filed in the input-dependent plan; stage 1's smallest keys at ' :', 48 to 59 windows, gave 7 to 24 train and 0 to 7 held, so the empty-half rule still has to catch some",
+    "gain_floor_0.05": "predictions.json, E64; stage 1 read G 10.3 on R7's state, 2.58 on lowercase",
+    "write_rel_tol_0.05": "predictions.json, regating_table; stage 1 matched 10.61 against 10.93 on rank-1's write",
+    "new_thresholds": "none"
+  },
+  "table": {
+    "note": "Rows of the plan's order table in its order, plus I1-I3 and R7. Assumed labels from predictions.json, those added here from ~/commute-data/scratch/baseline-lead/inventory/tasks.md and the plan's table. A verdict on a pair stage 0 reads as not admissible is the read's, as stage 2 was filed; the admissibility column stands beside it.",
+    "assumed_added": {
+      "T15 twin": "the class map's shuffled partner, no filed verdict",
+      "T10 code": "none either way (inventory)",
+      "T9 narrow lowercase": "performed, targeted, as designed (inventory)"
+    },
+    "rows": [
+      {"task": "T5 copy", "C": "in-context copying"},
+      {"task": "T5 lookup", "C": "in-context copying"},
+      {"task": "T12 rank-1", "C": "W0's guess"},
+      {"task": "T11 cipher", "C": "W0's guess"},
+      {"task": "T11 elicit", "C": "W0's guess"},
+      {"task": "T4 ident32", "C": "token identity"},
+      {"task": "T13 copy-24", "C": "token identity"},
+      {"task": "T6 rand32", "C": "token identity"},
+      {"task": "T7 lowercase", "C": "constant at the scored alternative"},
+      {"task": "T1 emoticon", "C": "constant at the scored alternative"},
+      {"task": "T2", "C": "constant at the scored alternative"},
+      {"task": "T3 many-to-one", "C": "constant at the scored alternative"},
+      {"task": "T6 rand1", "C": "constant at the scored alternative"},
+      {"task": "T8 cipher", "C": "none"},
+      {"task": "T14 prior cipher", "C": "none"},
+      {"task": "T16 shuffled elicit", "C": "none"},
+      {"task": "T15 class map", "C": "embedding class", "note": "not read: second pass, a rebuild of 11 min"},
+      {"task": "T15 twin", "C": "embedding class", "note": "not read: second pass, a rebuild of 11 min"},
+      {"task": "T10 code", "C": "none", "excluded": "excluded: learned nothing"},
+      {"task": "T9 narrow lowercase", "C": "none", "excluded": "excluded: never trained"},
+      {"task": "I1 ladder", "C": "W0's guess at ' which', previous-token table", "assumed": "T2"},
+      {"task": "I2 emoticon", "C": "W0's guess at ' :', previous-token table", "assumed": "T1 emoticon"},
+      {"task": "I3 lowercase", "C": "the context's case, two-sided", "assumed": "T7 lowercase"},
+      {"task": "R7 ladder push", "C": "W0's graded leaning to ' was'", "assumed": "T2"}
+    ]
+  },
+  "limit": "Every claim states the granularity limit: a circuit from old parts reads as reuse."
+}

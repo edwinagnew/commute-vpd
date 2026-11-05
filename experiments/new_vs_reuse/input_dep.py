@@ -61,6 +61,7 @@ class Table:
     held: Tensor
     held_answer: Tensor
     per_key: list[dict[str, Any]]
+    n_eligible: int = 0
 
 
 def record(j: Job, task: str, **rec: Any) -> None:
@@ -79,20 +80,25 @@ def common_values(top1: Tensor, target: int) -> Tensor:
     return torch.tensor(sorted({target, *v[n.argsort(descending=True, stable=True)[:N_COMMON]].tolist()}))
 
 
-def trigger_table(net: Any, rows: Tensor, t: int, values: list[int], seed: int) -> Table:
+def trigger_table(net: Any, rows: Tensor, t: int, values: list[int], seed: int, keep_answer: int | None = None) -> Table:
     """The commonest previous tokens with enough windows, each answered by W0's modal top-1 on its train windows; a key leaves when
-    under KEEP_SHARE of its windows hold that answer, when the answer is not in `values`, or when a half is left empty."""
+    under KEEP_SHARE of its windows hold that answer, when the answer is not in `values`, or when a half is left empty. With
+    `keep_answer` (Amendment 1), every key with enough windows is read, and those past the N_KEYS commonest stay only if they
+    answer it. Keys stay in frequency order, so the parity split is over that order."""
     toks = RO.next_token_windows(rows, torch.tensor([t]), PREV, 10**9, seed)[0]
     prev = toks[:, PREV]
     tk, n = prev.unique(return_counts=True)
     order = n.argsort(descending=True, stable=True)
-    keys = [int(tk[i]) for i in order if n[i] >= MIN_WINDOWS][:N_KEYS]
+    eligible = [int(tk[i]) for i in order if n[i] >= MIN_WINDOWS]
+    keys = eligible[:N_KEYS] if keep_answer is None else eligible
     none = torch.empty(0, dtype=torch.long)
-    out = Table([], [], none, none, none, none, [])
-    for k in keys:
+    out = Table([], [], none, none, none, none, [], len(eligible))
+    for rank, k in enumerate(keys):
         pool = toks[prev == k][:SCAN]
         a, cut = w0_top1(net, pool), len(pool) * N_TRAIN // (N_TRAIN + N_HELD)
         answer = rules.mode(a[:cut].numpy())
+        if rank >= N_KEYS and answer != keep_answer:
+            continue
         ok = a == answer
         train, held = pool[:cut][ok[:cut]][:N_TRAIN], pool[cut:][ok[cut:]][:N_HELD]
         share = float(ok.double().mean())
@@ -116,16 +122,16 @@ def no_version(j: Job, task: str, cand: Tensor, top1: Tensor, target: int) -> di
     return rules.gap(rules.NO_VERSION, windows_top1_target=len(hit), of_windows=len(cand), shown=shown)
 
 
-def table_state(j: Job, task: str, tb: Table) -> ST.DW:
+def table_state(j: Job, task: str, tb: Table, seed: int = SEED) -> ST.DW:
     """Arm A, 10 steps, each window's own answer as the target (module docstring); the state saved."""
     col = lambda toks, a: CP.with_target(Windows(toks, torch.zeros(len(toks)), torch.zeros(len(toks)), torch.zeros(len(toks)), HALF), a)
-    cfg = ArmAConfig(o_token=LAST, steps=FT_STEPS, checkpoints=(FT_STEPS,), seed=SEED, ci_len=RO.WIN)
+    cfg = ArmAConfig(o_token=LAST, steps=FT_STEPS, checkpoints=(FT_STEPS,), seed=seed, ci_len=RO.WIN)
     ft = finetune_arm_a(j.net.model, col(tb.train, tb.train_answer), col(tb.held, tb.held_answer), cfg, j.net.device, log)
-    return save_state(j, task, ft.deltas[FT_STEPS], ft.evals[FT_STEPS])
+    return save_state(j, task, ft.deltas[FT_STEPS], ft.evals[FT_STEPS], seed)
 
 
-def save_state(j: Job, task: str, dW: ST.DW, evals: dict[str, Any]) -> ST.DW:
-    path = LARGE / f"dW_{task}_s{SEED}.pt"
+def save_state(j: Job, task: str, dW: ST.DW, evals: dict[str, Any], seed: int = SEED) -> ST.DW:
+    path = LARGE / f"dW_{task}_s{seed}.pt"
     torch.save(dW, path)
     record(j, task, finetune=evals, dW_sha256=KD.sha256(path))
     return dW
@@ -146,16 +152,18 @@ def controls_first(j: Job, c: AP.Capability, f: Basis, block: int | None) -> dic
     return on
 
 
-def read_table(j: Job, task: str, tb: Table, f: Basis, on: dict[str, bool], block: int) -> dict[str, Any]:
+def read_table(j: Job, task: str, tb: Table, f: Basis, on: dict[str, bool], block: int, seed: int = SEED) -> dict[str, Any]:
     s = Site(tb.held, tb.held_answer, HALF)
     w0 = AP.read_all(j.net, s, None, f.bases, f.randoms)
-    state = RD.read_state(j, f"{task}_s{SEED}", s, table_state(j, task, tb), w0, f)
-    write = RD.read_write(j, task, s, tb.train, (tb.keys, tb.answers), state["G_logodds"], w0, f, PREV)
+    name = f"{task}_s{seed}"
+    state = RD.read_state(j, name, s, table_state(j, task, tb, seed), w0, f)
+    write = RD.read_write(j, name, s, tb.train, (tb.keys, tb.answers), state["G_logodds"], w0, f, PREV)
     return scored(rules.r3, on, block, state, write)
 
 
-def trigger_row(j: Job, task: str, tag: int, t: int, target: int, rows0: Tensor, rows: Tensor) -> dict[str, Any]:
-    """I1, I2: the table at the trigger, its admissibility, then the readout and control alone, then `read_table`."""
+def trigger_row(j: Job, task: str, tag: int, t: int, target: int, rows0: Tensor, rows: Tensor, widen: bool = False) -> dict[str, Any]:
+    """I1, I2: the table at the trigger, its admissibility, then the readout and control alone, then `read_table`. `widen`:
+    Amendment 1's keys for I1, `trigger_table`'s `keep_answer`."""
     P, nf = j.S["pile"], j.S["pile"]["fit_row_count"]
     key = torch.tensor([t])
     cand = RO.next_token_windows(rows[:nf], key, PREV, CAPS[0], P["positions_seed"])[0]
@@ -164,17 +172,19 @@ def trigger_row(j: Job, task: str, tag: int, t: int, target: int, rows0: Tensor,
     vals = common_values(top1, target)
     c, w0, hh, hw, hy, per = AP.value_capability(j.net, f"W0's guess, {task}", vals, (cand, hcand), HALF, CAPS, UNFIT_BELOW)
     fit = [v for v, n in zip(vals.tolist(), per, strict=True) if n >= UNFIT_BELOW]
-    tb = trigger_table(j.net, rows0, t, fit, P["positions_seed"])
+    tb = trigger_table(j.net, rows0, t, fit, P["positions_seed"], target if widen else None)
     adm = rules.parity(np.array(tb.answers), np.array(tb.answers))
-    record(j, task, trigger=t, target=target, values=vals.tolist(), fit_per_value=per, fit_values=fit, per_key=tb.per_key, keys=tb.keys, answers=tb.answers, admissibility=adm)
+    record(j, task, trigger=t, target=target, values=vals.tolist(), fit_per_value=per, fit_values=fit, per_key=tb.per_key, keys=tb.keys, answers=tb.answers, admissibility=adm,
+           n_eligible=tb.n_eligible, target_on_halves=rules.target_halves(target, tb.answers))  # fmt: skip
     if not rules.keeps_target(target, fit, tb.answers):
-        return no_version(j, task, cand, top1, target)
+        return {**no_version(j, task, cand, top1, target), "keys_with_enough_windows": tb.n_eligible}
     if not adm["admissible"]:
         return rules.gap(rules.NO_C, admissibility=adm["label"])
     torch.save({"train": tb.train, "train_answer": tb.train_answer, "held": tb.held, "held_answer": tb.held_answer, "keys": tb.keys, "answers": tb.answers}, LARGE / f"windows_{task}.pt")
     readout = RD.possession(j, c, w0, (hh, hw, hy), LARGE / f"readout_{task}.pt", fit)
     record(j, task, readout=readout)
     block, f = readout["b_star"], RD.value_form(j, c, tag)
+    torch.save(f.bases, LARGE / f"bases_{task}.pt")
     on = controls_first(j, c, f, block)
     if block is None:
         return rules.r3(None, math.nan, math.nan, math.nan)
