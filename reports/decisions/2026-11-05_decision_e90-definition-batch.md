@@ -54,4 +54,4 @@ E95 (`reports/plans/2026-11-05_plan_e95-token-identity.md`): what does "reuses t
 
 ## Not run
 
-An independent check of this batch; a real fuller variance match (the spectrum was not saved); the class map, the one old task whose capability is not its answers (an 11-minute rebuild); new seeds; anything on Qwen.
+An independent check of this batch or of E95; a real fuller variance match (the spectrum was not saved); the class map, the one old task whose capability is not its answers (an 11-minute rebuild); new seeds; anything on Qwen.
