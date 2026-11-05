@@ -124,6 +124,31 @@ def outcome(reads: Mapping[str, str]) -> str:
     return "partial: report each task as read"
 
 
+# ----------------------------------------------------------------------------- Amendment 1: the sum of single reverts
+
+BETWEEN, NO_GAIN_SUM, NO_SUM = "between", "no gain", "unreadable: sum not finite"
+
+
+def sum_reading(G: float, s: float, fed: float, written: float, min_gain: float) -> str:
+    """E100 Amendment 1's filed rule on one state (plan reports/plans/2026-11-05_plan_e100-amend1.md): G (unit lo, nats)
+    at or under `min_gain` reads "no gain"; else the sum of single reverts `s` at or under `fed` reads fed, at or over
+    `written` reads written (a sum past 1 counts), else between. A bar's own value takes the bar's side."""
+    if not finite(G) or G <= min_gain:
+        return NO_GAIN_SUM
+    if not finite(s):
+        return NO_SUM
+    if s <= fed:
+        return FED
+    return WRITTEN if s >= written else BETWEEN
+
+
+def sum_pass(copy: Sequence[str], cipher: Sequence[str], need: int) -> dict[str, Any]:
+    """The pass rule: copy's seeds reading fed plus the cipher's reading written, at least `need`. A seed not read counts
+    as a miss, so `of` is reported beside."""
+    hits = sum(r == FED for r in copy) + sum(r == WRITTEN for r in cipher)
+    return {"hits": hits, "of": len(copy) + len(cipher), "need": need, "pass": hits >= need}
+
+
 # ----------------------------------------------------------------------------- stage 0
 
 

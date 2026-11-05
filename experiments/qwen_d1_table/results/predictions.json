@@ -1,0 +1,58 @@
+{
+ "experiment": "E93",
+ "filed": "2026-11-05, before any read",
+ "plan": "reports/plans/2026-11-05_plan_e93-d1-table.md; row 11-06 of reports/plans/2026-11-05_plan_qwen-reorient-amend1.md; decisions.md 2026-11-05 (ask 31: D1 judged by the clean table, the share left in Δ, squared size and behaviour kept under the state's own masks; no adversary runs)",
+ "question": "Does the least-squares split clear D1's first table on the full update of every saved arm (anchor 1, anchor 2, RL, null, own-samples, u1, u2), at each seed? A pass does not show the update sits on the right subcomponents, and does not show VPD's adversary would pass it.",
+ "states": "rules.STATES: anchor 1 seeds 0, 1 (step 100, E57's 64 template rows); anchor 2 seeds 42, 142 (E84's update, step 1250, E86's 128 TOFU rows); RL seeds 0, 70; null seeds 0, 70; own-samples seed 0; u1 (step 100, the fp32 file); u2 (step 100, bf16 only): GSM8K arms on 128 maths rows. Files and norms from experiments/qwen_size_grid/results/size_grid.json .arms.<arm>.full; u1's fp32 file is checked against the same record at norm_rel. Gain rows (no masks): E40's 256 held-out GSM8K problems with gold answers (maths arms), anchor 1's 256 items whole, E86's TOFU rows in TOFU's wording (the 787 E84 trained on). Every row 256 tokens.",
+ "settled_by_the_lead": [
+  "Rule 6 'no room' does not fail a state: on anchor 2 least squares may pass on rule 4 (unmasked) alone, the verdict then reading 'passes on the unmasked rule alone: no masked read can grade this update'.",
+  "Least squares under masks from the W0 weights' forward (Γ reading the moved V′; E68's frozen-mask read, about 2.5 min a state) is printed beside the own-mask read, unscored."
+ ],
+ "rules": {
+  "moved_part": "What the subcomponents hold after least squares, U′V′ᵀ − UVᵀ = dσ(dU, dV) + dU dVᵀ with dU = X V, dV = Xᵀ U, X = K⁺δW (split.least_squares_x, plain, no Σ), the pieces rounded to fp32 as the forward applies them (qwen_maps.pieces). The remainder is δW minus it. E72's in-span (dσ alone) is read beside on anchor 2 seed 42 and in stage 0.",
+  "1_clean": "K(read) = KL(FT clean ‖ read clean) over every position of the arm's rows, fp32 forwards, fp64 sums. Ruler = K(W0). Holds if K(W0 + moved part) / ruler < clean_under; a tie misses. K(W0 + moved part) at or under at_floor nats reads 'at floor' (reported, not a miss). No call: ruler under ruler_floor or unread; or either bad placement (random: a Gaussian at each matrix's norm, seed 75100 + site index; signs: each matrix times a fixed random sign; E75 Amendment 1) does not read 'fails' by E75's rule (its K above the remainder's by more than the paired row bootstrap's half-width of the gap). Absolute against a ratio line.",
+  "2_share": "Share left in Δ = ‖δW − moved part‖² / ‖δW‖², plain, summed over the 196 matrices in fp64. Null = Σ_s (1 − rank U_s/n_s)(1 − rank V_s/m_s) ‖δW_s‖² / ‖δW‖² (split.gaussian_null of the live basis). Holds if null − share > the arm's seed spread |share(seed a) − share(seed b)|; one-seed arms (own-samples, u1, u2) borrow the null arm's spread, flagged. A tie misses. Relative to the null.",
+  "3_size": "Squared size = ‖moved part‖² / ‖δW‖², fp64. Holds at or under size_max; cannot fail least squares by much (about 1 minus the share), printed against 1 − share.",
+  "4_kept_clean": "Arms with a behaviour line (anchor 1, anchor 2, u1, u2; the RL, null and own-samples arms' gold-token gain is not their behaviour: 'no behaviour line'). E86's kept = (L(W0) − L(x)) / (L(W0) − L(FT)), L the mean response-token loss on the gain rows, no masks. Band from t = 0.1 (W0 + 0.1 δW): 'graded' at or under graded_at, 'saturated' at or over saturated_at, 'partly' between; no call under gain_min nats of gain or t = 1 off 1 by over t1_tol. Graded: holds if kept(W0 + moved part) >= kept(t = 0.5) of the same arm and job, else fails; a tie holds. Not graded: 'not graded', no line.",
+  "5_K_masked": "K under the state's own masks: KL(FT clean ‖ masked forward, Δ off), Γ on the state's weights reading its moved V′ (least squares, K11) against do-nothing (Γ on the state's weights, components as W0's, K01). Scored on whole-question answer positions of the anchor rows, pooled on maths rows (pooled printed beside). Holds if mean(K11 − K01) <= 2 x the paired row bootstrap half-width (2000 draws, seed 0); a tie holds; under min_rows rows, no call. Passes do-nothing by construction (E79): it can penalise harm, not credit placement.",
+  "6_kept_masked": "Graded arms with a behaviour line only. E68's gain, zero at masked W0: g(x) = Σ(nll_m00 − nll_x) / Σ(nll_W0 − nll_FT), same class as rule 5; under gain_min nats per position, no call. References from this job: do-nothing (own masks, components as W0's), ceiling (do-nothing's masks plus the whole δW, E72), random (a Gaussian at δW's norm per matrix placed by least squares, Γ on W0 + it and its moved V′). w = paired row half-width of g(ls) − g(do-nothing). Room (E72): ceiling − do-nothing > room_min and > 2w, else 'no room'. With room, E72's label with no rarely-on half: 'fails' at or under max(do-nothing, random) + w, 'passes' at or over ceiling − w, 'partial' between.",
+  "verdict": "A state fails if 1, 2, 3 or 5 misses or 4 or 6 reads 'fails'. It passes if 1 holds or is at floor and 2, 3, 5 hold (with 'no behaviour line', 'not graded' or 'no room' reported beside); otherwise no call, or pending while a read is missing. An arm fails if either seed fails, passes if every seed passes. Least squares passes the table if every arm passes; it fails it if any arm fails, and teacher training toward TOFU follows. Ratios round to 9 places before comparing.",
+  "printed": "Per state, unscored: K of W0 masked, do-nothing, least squares and least squares under the W0 weights' masks, and the three kept under masks, on the scored class and pooled; E72's in-span on anchor 2 seed 42; on u1, the share and null on the bf16 file E91 read (the bf16 floor); size against 1 − share; seconds per read."
+ },
+ "thresholds": {"gain_min": 0.05, "graded_at": 0.5, "saturated_at": 0.9, "t1_tol": 0.001, "ruler_floor": 1e-05,
+                "at_floor": 0.0001, "clean_under": 0.02, "size_max": 1.0, "room_min": 0.1, "min_rows": 2, "boot": 2000},
+ "predictions": [
+  {"id": "P1_size", "rule": "3", "claim": "Squared size holds at every state (about 1 minus the share, so near 0.9 on u1).", "kind": "absolute, per state"},
+  {"id": "P2_share", "rule": "2", "claim": "The share left in Δ is below its null by more than the seed spread at every state (u1 step 10: 0.090).", "kind": "relative to the null, per state"},
+  {"id": "P3_clean", "rule": "1", "claim": "Clean holds or reads at floor at every state; RL seed 0 is the tight one (0.0182 against 0.02 in E75's old form), and a miss there stands.", "kind": "ratio line, per state"},
+  {"id": "P4_masked_K", "rule": "5", "claim": "Least squares' K under its own masks is not above do-nothing's by over twice the half-width at every state.", "kind": "relative to do-nothing, per state"},
+  {"id": "P5_graded", "rule": "4", "claim": "Of the arms with a behaviour line, only anchor 2 reads 'graded' (E86: a tenth of E81 kept 0.28, u1 0.93, u2 0.83).", "kind": "band, per state"},
+  {"id": "P6_no_room", "rule": "6", "claim": "Rule 6 reads 'no room' on anchor 2 at both seeds, as on u1, u2 and u3 (qwen_fixed_masks/results/score.json).", "kind": "label, per state"},
+  {"id": "P7_table", "rule": "verdict", "claim": "Least squares passes every state, so it passes the table (lean, not strong: RL seed 0's clean read is at its line).", "kind": "verdict"}
+ ],
+ "controls": {
+  "source": "Stage 0, alone and first. u1 step 10 = E40's qwen_sft/results/large/nowarmup_regen/dW/step_10.safetensors (bf16) on the 128 maths rows: E86 qwen_d1_fractions/results/u1/{fractions,clean_W0,clean_FT,clean_inspan,left_in_delta}.json; E68 qwen_pass_test results via E94's stage 0 (K00, K01, own K10, K11). E81 = qwen_tofu/results/large/dW/a2_2e-5/step_1250.safetensors on E86's 800 TOFU gain rows and 128 TOFU rows: E86 qwen_d1_fractions/results/tofu/{fractions,clean_W0}.json.",
+  "u1_gain": {"W0": 2.495208230722153, "FT": 0.6844601333989603, "t0.1": 0.8054974908973372},
+  "u1_ruler": 1.6351103354567913,
+  "u1_share": 0.09001726620341273,
+  "u1_size": 3.4852040865884852,
+  "u1_inspan_old": 0.009155811895519343,
+  "u1_masked": {"K00": 1.3738106470539775, "K01": 0.10436260220730434, "K10": 1.2934026471043127, "K11": 0.10343871625828649},
+  "e81": {"W0": 4.492947494783937, "tenth": 0.27906312399510563, "ruler": 2.8168798698658786},
+  "rows_and_seqs": {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800},
+  "id": 1e-06,
+  "rep": 0.001,
+  "share_rel": 0.01,
+  "ft_zero": 1e-06,
+  "bands": "id, rep and share_rel relative; ft_zero absolute nats. The share must also read under its null (over it means rule 2 is wrong). u1_size is ‖δW‖², fp64, against id."
+ },
+ "first_minutes": {
+  "norm_rel": 0.001,
+  "t1_rel": 0.001,
+  "ft_zero": 1e-06,
+  "gpu_max_gib": 44.0,
+  "host_max_gb": 105.0,
+  "note": "Per state, each a stop: the norm against size_grid.json (u1's fp32 file against the bf16 record); t = 1 against FT and W0 read again against W0, relative; clean FT's K at or under ft_zero nats; card and host peaks after the first clean reads."
+ },
+ "edges": "rules.py --edges, run on CPU before filing: every case of the plan's table gives the outcome it names (results/edges.txt)."
+}

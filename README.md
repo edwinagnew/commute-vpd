@@ -60,6 +60,8 @@ Current plan, whole fleet, earlier (2026-11-03, `reports/plans/2026-11-03_plan_q
 
 Current plan, benchmark line, latest (2026-11-03, `reports/plans/2026-11-03_plan_e70-existing-new-counting.md`, Amendments 1 and 2, E70, $0, asks 15 and 17 taken by default): E70 ended at its two amendments (`reports/analyses/2026-11-03_analysis_e70-existing-new-counting.md`). The line is secondary; next the cheap comparators beside Qwen readings, 11-04 to 11-05 (`reports/plans/2026-11-03_plan_qwen-reorient.md`).
 
+Current plan, 67M neuron baseline (2026-11-05, `reports/plans/2026-11-05_plan_e101-carrying-jobs.md`, E101, $0): the essay's neuron reading on E98's carrying neurons against block-matched random ones; stage 0 (W0 windows, already-engaged share) first, then 36 blind agent calls.
+
 
 ## Experiment codes
 

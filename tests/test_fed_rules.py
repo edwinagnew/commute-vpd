@@ -143,3 +143,53 @@ def test_do_nothing_state() -> None:
     zeros = {n: {"carry": 0.0, "own": 0.0, "graft": 0.0} for n in names()}
     assert FR.plant_misses(zeros, 3, 0.0, TH)  # a zero plant misses stage 0
     assert FR.reading(1.0, 0.0, 0.0, FLOOR, BARS) == FR.NO_PART  # zero carry, even with a gain
+
+
+# ----------------------------------------------------------------------------- Amendment 1: the sum of single reverts
+
+A1 = {"fed": 0.40, "written": 0.62, "min_gain": 1.0}  # results/predictions_amend1.json
+
+
+def a1(G: float, s: float) -> str:
+    return FR.sum_reading(G, s, **A1)
+
+
+def test_sum_gain_at_or_under_one_nat_reads_no_gain() -> None:
+    assert a1(1.0, 0.2) == a1(0.5, 0.9) == a1(-3.0, 0.2) == a1(math.nan, 0.2) == FR.NO_GAIN_SUM
+    assert a1(1.0001, 0.2) == FR.FED
+
+
+def test_sum_bars_and_ties() -> None:
+    assert a1(12.0, 0.40) == FR.FED  # exactly at the fed bar
+    assert a1(12.0, 0.62) == FR.WRITTEN  # exactly at the written bar
+    assert a1(12.0, 0.41) == a1(12.0, 0.61) == FR.BETWEEN
+    assert a1(12.0, -0.1) == FR.FED  # a negative sum is under the fed bar
+
+
+def test_sum_past_one_counts() -> None:
+    assert a1(12.0, 1.3) == FR.WRITTEN
+
+
+def test_sum_not_finite() -> None:
+    assert a1(12.0, math.nan) == FR.NO_SUM
+
+
+def test_sum_reads_e100_seeds_as_the_plan() -> None:
+    """The plan's table: every copy row at or under 0.40, every row new by construction at or over 0.62."""
+    assert {a1(13.0, s) for s in (0.32, 0.36, 0.26, 0.30, 0.22, 0.40, 0.35, 0.24)} == {FR.FED}
+    assert {a1(13.0, s) for s in (0.68, 0.62, 0.66, 0.70, 0.72, 0.88, 0.97)} == {FR.WRITTEN}
+
+
+def test_sum_pass_rule() -> None:
+    copy, cipher = [FR.FED] * 5, [FR.WRITTEN] * 5
+    assert FR.sum_pass(copy, cipher, 9) == {"hits": 10, "of": 10, "need": 9, "pass": True}
+    assert FR.sum_pass([FR.BETWEEN, *copy[1:]], cipher, 9)["pass"]  # one miss passes
+    assert not FR.sum_pass([FR.BETWEEN, *copy[1:]], [FR.NO_GAIN_SUM, *cipher[1:]], 9)["pass"]  # two do not
+    assert not FR.sum_pass([FR.WRITTEN] * 5, [FR.FED] * 5, 9)["pass"]  # swapped sides
+    assert not FR.sum_pass([], [], 9)["pass"]
+
+
+def test_sum_do_nothing_state() -> None:
+    """W0 as the state: G = 0 and every own share nan, so the sum is nan and the state reads no gain."""
+    s = FR.reverts_sum({n: {"own": math.nan} for n in names()})
+    assert math.isnan(s) and a1(0.0, s) == FR.NO_GAIN_SUM

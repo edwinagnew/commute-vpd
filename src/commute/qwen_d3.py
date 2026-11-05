@@ -11,6 +11,7 @@ apart (`by_class`), so a reader can check that the classes add to the pooled num
 from __future__ import annotations
 
 import json
+import random
 import resource
 import time
 from collections.abc import Callable
@@ -27,7 +28,7 @@ from commute import qwen_comparators as qc
 from commute import qwen_maps, split
 from commute import qwen_reading as qr
 from commute.jobs import EXPERIMENTS
-from commute.qwen_sft import linears, load
+from commute.qwen_sft import Seq, linears, load
 from commute.qwen_teacher import move_gamma
 from commute.qwen_vpd import (
     SITES,
@@ -439,4 +440,157 @@ def folds(S: Tensor, pool: Tensor, refs: dict[str, Tensor], site_of: Tensor, dra
     for k, X in refs.items():
         ov = qr.overlap(S, X, site_of, len(SITES), pool, draws)
         out[k] = ov | {"fold": ov["o"] / ov["mean"] if ov["mean"] > 0 else None}
+    return out
+
+
+# ----------------------------------------------------------------------------- E93: gain rows, clean reads, the parts
+
+
+GOLD_HELD, GOLD_LEN, GOLD_PERM_SEED = 256, 512, 0  # E40's held-out problems (qwen_sft/run.py Config: heldout, seq_len, seed)
+WRONG_SEED = 75_100  # E75 Amendment 1's random and signs (qwen_rl_reads/amend1.py SEED)
+SIGNS = dict(zip(SITES, random.Random(WRONG_SEED).choices((1.0, -1.0), k=len(SITES)), strict=True))
+
+
+def gold_held(tok: Any) -> list[Seq]:
+    """E40's 256 held-out GSM8K problems with their gold answers, as its SFT saw them: E86's gain rows on the maths
+    arms (qwen_d1_adversary/amend2.py `gold_seqs`, its first half)."""
+    from commute import qwen_sets
+    from commute.qwen_sft import sft_seq
+
+    end = int(tok.convert_tokens_to_ids("<|im_end|>"))
+    train = qwen_sets.load()["train"]
+    perm = torch.randperm(qwen_sets.N_TRAIN, generator=torch.Generator().manual_seed(GOLD_PERM_SEED)).tolist()
+    return [sft_seq(tok, train[i]["question"], train[i]["gold"], end, GOLD_LEN) for i in perm[:GOLD_HELD]]
+
+
+def tofu_kept() -> set[int]:
+    """The rows of `qwen_tofu.held_rows` E84 trained on (all but the 13 it dropped)."""
+    return {r["row"] for r in map(json.loads, FORMS.read_text().splitlines()) if r["kept"]}
+
+
+def tofu_seqs(tok: Any, kept: set[int] | None) -> list[Seq]:
+    """E86's TOFU gain rows: the 800 held rows in TOFU's own wording (`qwen_d1_fractions/run.py` tofu_seqs), only
+    those in `kept` when given."""
+    from commute import qwen_tofu as tofu
+
+    end = int(tok.convert_tokens_to_ids("<|im_end|>"))
+    return [tofu.seq(tok, end, r["question"] + tofu.ASK, r["answer"])
+            for i, r in enumerate(tofu.held_rows()) if kept is None or i in kept]
+
+
+def a1_seqs(tok: Any, test: list[dict[str, Any]]) -> list[Seq]:
+    """Anchor 1's gain rows: the 256 items `qc.a1_rows` packs (the prompted model's greedy answers to test 256-511,
+    under the unprompted chat), each whole."""
+    from commute.qwen_eval import prompt
+
+    out: list[Seq] = []
+    for r in json.loads(A1_ITEMS.read_text())["items"]:
+        p = tok(prompt(tok, test[r["idx"]]["question"]), add_special_tokens=False)["input_ids"]
+        out.append((p + r["ids"], len(p)))
+    return out
+
+
+def clean(d: Decomp, rs: RowSet, key: str) -> Sums:
+    """Clean forwards, no masks, one row at a time: K = KL(FT clean ‖ weight set `key` clean) and that set's NLL,
+    per-row sums by class (E72's clean read, `qwen_fixed_masks/run.py` FixedReader.clean; one weight copy per row)."""
+    out: Sums = {}
+    for i, t in enumerate(rs.tokens):
+        t, cls, got = t[None].to(DEV), rs.cls[i], {}
+        for k in ("FT", key) if d.weights.now == "FT" else (key, "FT"):
+            d.use(k)
+            got[k] = d.model(t, use_cache=False).logits
+        out.setdefault("K", []).append(by_class(kl_per_position(got["FT"], got[key])[0], cls))
+        out.setdefault("nll", []).append(by_class(nll_per_position(got[key], t), cls))
+        del got
+    d.use("W0")
+    return out
+
+
+@dataclass
+class LsParts:
+    X: dict[str, Tensor]  # K⁺δW per site, fp32 on the pinned host (`ls_change` reads it)
+    moved: dict[str, Tensor]  # what the subcomponents hold, U′V′ᵀ − UVᵀ = dσ(dU, dV) + dU dVᵀ, fp32 pinned host
+    old: dict[str, Tensor] | None  # E72's in-span, dσ(dU, dV) alone (`qwen_maps.site_change`), when asked for
+    sums: dict[str, float]  # fp64 over sites: size ‖δW‖², left ‖δW − moved‖², moved ‖moved‖², null Σ null_s ‖δW_s‖²
+    seconds: float
+
+
+def ls_parts(d: Decomp, dW: dict[str, Tensor], old: bool = False) -> LsParts:
+    """The least-squares split of δW alone and plain (no Σ: X does not depend on it), site by site on the card in fp64
+    with Γ parked. The pieces are the ones the forward applies (`qwen_maps.pieces` of X rounded to fp32, as
+    `ls_change`); the null per matrix is `split.gaussian_null`, (1 − rank U/n)(1 − rank V/m), weighted by ‖δW_s‖²."""
+    t0 = time.time()
+    sums: dict[str, float] = dict.fromkeys(("size", "left", "moved", "null"), 0.0)
+    d.park_gamma()
+    X, moved, ins = {}, {}, {}
+    for s in SITES:
+        U_A, V_A, b = basis(d, s)
+        M = dW[s].to(DEV, F64)
+        Xs = split.least_squares_x(M, b).float()
+        dU, dV = qwen_maps.pieces(Xs, U_A, V_A)
+        ds = split.dsigma(dU, dV, U_A, V_A)
+        mv = ds + dU @ dV.T
+        e = float((M * M).sum())
+        sums["size"] += e
+        sums["left"] += float(((M - mv) ** 2).sum())
+        sums["moved"] += float((mv * mv).sum())
+        sums["null"] += split.gaussian_null(b, M.shape[0], M.shape[1]) * e
+        X[s], moved[s] = pinned(Xs.cpu()), pinned(mv.float().cpu())
+        if old:
+            ins[s] = pinned(ds.float().cpu())
+        del U_A, V_A, b, M, Xs, dU, dV, ds, mv
+    torch.cuda.empty_cache()
+    return LsParts(X, moved, ins if old else None, sums, time.time() - t0)
+
+
+def wrong_change(dW: dict[str, Tensor], kind: str) -> dict[str, Tensor]:
+    """E75 Amendment 1's bad placements of δW, fp32 pinned host: "random", a Gaussian at each matrix's norm (seed
+    WRONG_SEED + the site's index, drawn on the card in fp64, `qwen_maps.gaussian_at_norm`); "signs", each matrix
+    times a fixed random sign."""
+    assert kind in ("random", "signs"), kind
+    out = {}
+    for s in SITES:
+        M = dW[s].to(DEV, F64)
+        A = qwen_maps.gaussian_at_norm(M, WRONG_SEED + SITES.index(s)) if kind == "random" else M * SIGNS[s]
+        out[s] = pinned(A.float().cpu())
+        del M, A
+    return out
+
+
+def masked_plus(model: Any, tokens: Tensor, comps: Components, masks: dict[str, Tensor], dW: dict[str, Tensor]
+                ) -> Tensor:
+    """Each decomposed matrix's output masked by `masks` (Δ off) plus x δWᵀ, δW moved from the host one site at a time
+    (`qwen_pass_test/amend1.py` forward_plus at t = 0, scale 1)."""
+    lins = linears(model)
+
+    def replace(site: str) -> Any:
+        V, U = comps.vu(site)
+
+        def hook(m: Any, args: tuple[Tensor, ...], out: Tensor) -> Tensor:
+            x = args[0].to(V.dtype)
+            return ((x @ V * masks[site].to(V.dtype)) @ U + x @ dW[site].to(x.device, V.dtype).T).to(out.dtype)
+
+        return hook
+
+    handles = [lins[s].register_forward_hook(replace(s)) for s in SITES]
+    try:
+        return model(tokens, use_cache=False).logits
+    finally:
+        for h in handles:
+            h.remove()
+
+
+def ceiling(d: Decomp, rs: RowSet, dW: dict[str, Tensor]) -> Sums:
+    """E72's ceiling at weight set "FT": Γ's masks on the state's own forward with the components as W0's (do-nothing's
+    masks), then the masked forward plus the whole δW; K_c = KL(FT clean ‖ it) and nll_c, per-row sums by class."""
+    out: Sums = {}
+    d.use("FT")
+    for i, t in enumerate(rs.tokens):
+        t, cls = t[None].to(DEV), rs.cls[i]
+        logits, g = importances(d.model, t, d.gamma, d.comps)
+        q = masked_plus(d.model, t, d.comps, g, dW)
+        out.setdefault("K_c", []).append(by_class(kl_per_position(logits, q)[0], cls))
+        out.setdefault("nll_c", []).append(by_class(nll_per_position(q, t), cls))
+        del logits, g, q
+    d.use("W0")
     return out
