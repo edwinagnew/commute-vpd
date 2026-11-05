@@ -29,7 +29,8 @@ DEV, CFG = JOB.DEV, JOB.CFG
 
 HERE = Path(__file__).resolve().parent
 RESULTS, EXPERIMENTS = HERE / "results", HERE.parent
-PRED, READS, GRID, STOPPED, MATCHED = (RESULTS / n for n in ("predictions.json", "reads.jsonl", "size_grid.json", "stopped.json", "matched.json"))
+PRED, READS, GRID, STOPPED, MATCHED, PAST = (
+    RESULTS / n for n in ("predictions.json", "reads.jsonl", "size_grid.json", "stopped.json", "matched.json", "past_line.json"))
 GSM8K_STEPS = (10, 20, 50, 100)
 
 
@@ -87,6 +88,16 @@ def with_matched(grid: dict[str, Any]) -> dict[str, Any]:
                 "dtype": "torch.float32", "file": f"qwen_size_grid/results/large/dW/a2_s{seed}/step_{t}.safetensors",
                 "answers": f"qwen_size_grid/results/large/answers/a2_s{seed}/step_{t}", "label": state["label"],
                 "rerun_vs_saved_at_100": run["rerun_vs_saved"]}
+    if PAST.is_file():
+        past = json.loads(PAST.read_text())
+        assert past.get("done"), "past_line.py has not finished"
+        for seed, arm in ((42, "anchor2_s0"), (142, "anchor2_s142")):
+            s = past["seeds"][str(seed)]
+            grid["arms"][arm]["past_line"] = {
+                "step": s["step"], "ratio_norm": s["norm"] / ref["norm"], "ratio_kl": s["kl"] / ref["kl"], "past": s["past"], "arm": arm, "norm": s["norm"],
+                "kl": s["kl"], "trained": s["answers"]["trained"]["recall"], "para": s["answers"]["para"]["recall"], "dtype": "torch.float32",
+                "file": f"qwen_size_grid/results/large/dW/a2_s{seed}/step_{s['step']}.safetensors",
+                "answers": f"qwen_size_grid/results/large/answers/a2_s{seed}/step_{s['step']}"}
     return grid
 
 
