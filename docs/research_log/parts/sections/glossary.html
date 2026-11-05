@@ -22,7 +22,7 @@
 <li><strong>Possesses.</strong> On those inputs, a linear readout of some layer, trained on pretraining data, gives f<sub>C</sub>(x<sub>d</sub>).</li>
 <li><strong>Reuses.</strong> The original model possesses C, the fine-tuned behaviour is g∘f<sub>C</sub> for some map g, and it passes the causal test.</li>
 <li><strong>Causal test.</strong> Removing or patching the readout direction, or the mechanism it reads, breaks the behaviour in the fine-tuned model; or pruning a few neurons or a short reverse fine-tune restores the pretraining behaviour faster than a baseline from scratch learns it.</li>
-<li><strong>New.</strong> The fine-tune reuses no capability. New has no positive definition and may be graded.</li>
+<li><strong>New.</strong> The fine-tune reuses no capability. New has no positive definition and may be graded. Since 2026-11-05 it is relative to a named capability, so a state is read as "reuses C", "not through C" or "unreadable", and removing C's direction is the label.</li>
 </ul>
 <p>Departures from the paper:</p>
 <ul>
