@@ -201,6 +201,12 @@ Qwen3-1.7B. `dW` is `{layers.{i}.{mlp.down_proj,mlp.gate_proj,mlp.up_proj,self_a
 - Network-volume copy and regenerated steps are listed above (Network volume, qwen_maps). Here also: `nowarmup/` holds the 28.2 GB copied from the volume (`dW/step_{2,3,5,20,50}.safetensors` BF16 2.82 GB, `adam_step100.safetensors` F32 11.27 GB with meta `step`, `grad_W0.safetensors` 2.82 GB, `SHA256SUMS_volume_only`), `gstats/W0_{maths,fineweb}.safetensors` (F16, 392 tensors, `{site}.mean_g` and `{site}.active` per site, from `qwen_teacher.g_stats`), `sources/{B,D1,D10,G,T0,...}_{fineweb,maths}_seed{S}.safetensors` (F32, 392 tensors, a few KB: the adversary's source arrays for a state `{B,D1,D10,G,T0,...}` and corpus, from `qwen_teacher.adversary`), `step{0,100}_{test,gsm1k}.jsonl`.
 - `amend1_rehearse*`: rehearsal outputs of E40 Amendment 1 (gstats, sources, `T100_test.jsonl`), no weight changes.
 
+## qwen_size_grid (E91; ran 2026-11-05, jobs 52219, 52238)
+Qwen3-1.7B, anchor 2 retrained on an L40 at each seed to step 100 and saved at the steps nearest anchor 1's norm and KL. `results/size_grid.json` (committed) names each arm's files.
+- `dW/a2_s42/step_{27,29}.safetensors`, `dW/a2_s142/step_{27,30}.safetensors` (5.64 GB each, 22.6 GB, **F32**, 196 tensors, the format of `qwen_anchor1/dW/a1/`): E84's recipe and stream, with the 1250-step schedule, stopped at step 100. Step t has t - 1 moving steps. Load with `qwen_sft.load`. Written by `matched.py`. At step 100 the rerun differs from the saved file by 0.74% of its norm at seed 42 (H100 file, L40 rerun) and by exactly 0 at seed 142 (both L40), against 90% between the seeds.
+- `answers/a2_s{42,142}/step_{t}/{paraphrased,trained,never}.jsonl`: greedy answers at those states, a line's place is its row's, graders apply the kept rows.
+- Absent: the rerun's steps other than these; the bare and real-fact sets at these states.
+
 ## qwen_tofu (E81; ran 2026-11-04, jobs 51342-51345, 51366)
 Qwen3-1.7B, TOFU's 4,000 pairs in one wording, 1250 steps, peak rates 1e-5 and 2e-5, cluster L40s. **Not anchor 2**: nothing reads these as anchor 2 (`reports/analyses/2026-11-04_analysis_e81-tofu.md`).
 - `dW/{a2_1e-5,a2_2e-5}/step_{1,2,3,5,10,20,50,100,200,500,1000,1250}.safetensors` (12 files per rate, 5.64 GB each, 68 GB per rate, **F32**, 196 tensors, the format of `qwen_anchor1/dW/a1/`). **Step 1 is all zeros** (rate 0). Load with `qwen_sft.load`.
