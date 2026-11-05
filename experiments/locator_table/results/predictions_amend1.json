@@ -1,0 +1,85 @@
+{
+ "experiment": "E97 Amendment 1 (locator_table/amend1.py): edges with integrated gradients, and the remaining 67M pairs",
+ "plan": "reports/plans/2026-11-05_plan_e97-amend1.md; scoping reports/reviews/2026-11-05_review_e97-eapig-scoping.md (option 2, our own edge read)",
+ "limit": "a new circuit built from old parts still reads as reuse: finding a part says the behaviour runs through it, not that one old circuit is unchanged",
+ "definitions": {
+  "graph": "commute.edge_rules: 29 upstream nodes (the embedding, 24 heads, 4 MLPs) and 77 downstream inputs (each later head's q, k and v input separately, each MLP's input, the logits); an edge u -> v when u writes before v reads: 828 into heads, 70 into MLPs, 29 into the logits, 927 in all. Hanna et al. 2024's graph at head grain",
+  "forward": "commute.edges.forward: the target model re-run from its own modules (RMS norms, rotary buffers, MLPs, final norm, unembedding), each head's output its slice of o_proj, at W0 + dW (net.at). Input v reads sum_u [z'_u + C[u, v] (z_u - z'_u)]: C = 1 everywhere is the model, C = 0 everywhere is the corrupted run",
+  "gain_path": "the corrupted values z' are W0's node outputs on the same inputs, read in the state (Prakash et al. 2024's cross-model patch at edge grain; a departure from Hanna et al., who corrupt inputs in one model). Unit lo (E97's filed unit). An edge's score = the state's read - the read with that edge alone patched, in nats; share = score / G, G = the state's read - every edge patched (W0's read)",
+  "gain_path_how": "E62's states and stage 3's windows: every edge patched exactly (927 forwards, stacked). Whole rows (E53): integrated gradients in C along C = alpha on every edge, 8 midpoint steps, then the 50 edges of largest |IG score| patched exactly; a row's scores are exact there and IG elsewhere",
+  "circuit_pair": "one model, clean against corrupted inputs of the same length (pairs.py; the scoping review's table): copy (B overwritten by another read B, copying.absent_b, seed pair_seed), lookup (the second A swapped for another key), lowercase (every case position of the lowercased row put back to its capitalised token), cipher (the plain rows, token for token), the key tables (the key swapped for another key of the held-out windows). Metric: logit(target) - logit(the corrupted input's answer) at each read, unit gap; the constant-answer tasks have no pair",
+  "eap_ig": "Hanna et al. 2024's EAP-IG-inputs: score(u -> v) = (z_u - z'_u) . the mean over steps of d(metric)/d(input v), the embeddings interpolated from the corrupted inputs' to the clean inputs'. Departure: midpoint steps (k + 0.5)/8, as E96's checked path (locate.head_path), where eap-ig takes k/steps",
+  "circuit": "top-n edges by |EAP-IG score| then pruned (eap-ig's Graph.apply_topn(absolute=True) and Graph.prune; edge_rules.topn, prune), at each n of the grid; the circuit is the smallest n whose normalised faithfulness is at least faith_bar (Hanna et al.'s 0.85). Greedy search (apply_greedy) is not used",
+  "normalised_faithfulness": "(m - b') / (b - b'): m the metric with every edge outside the circuit patched to its corrupted value, b the clean metric, b' the corrupted one (every edge patched). edge_rules.faith; nan ('no gap') unless b - b' > min_gap",
+  "w0_c_circuit": "W0's own circuit on the task's C pair: the copy pair for both T5 maps (induction, read at the marker after the second A, with absent_b), the task's own pair for every other task (lowercase: W0 performs it, E53; cipher and the 24-key cipher: W0 has no C, so its circuit on the pair is the null). A pair where W0 has no gap: the empty circuit, said so",
+  "cross_faithfulness": "the state on its own pair with every edge outside W0's C circuit patched to the state's own corrupted run: the normalised faithfulness, i.e. the share of the state's own clean-minus-corrupted gap kept. Edge IoU of the state's own circuit with W0's C beside. On E62 each state is also read on the other map's pair (both corruptions on both maps, each other's control); on whole rows each state also under the other task's W0 circuit",
+  "top_edge": "the gain-path edge of largest signed score (the one carrying most of the gain); a tie names none",
+  "direct_share": "the read part's edge to the logits as a share of G (a pair: its two edges summed); its direct effect, which carry cannot separate",
+  "c_circuit_has_part": "every part of the row's read part writes an edge of W0's C circuit",
+  "edge_nominees": "the parts writing the top nominate_top gain-path edges (never the embedding); added to E97's nominees for stage 3's located rule (locator_rules.nominees), which is otherwise unchanged, with E97's a"
+ },
+ "stage0": {
+  "note": "Exact checks before any reading; the job stops on a miss (a code bug: fix and rerun, no reading). The first two sites are W0 on the 24-key copy table's held-out windows (unit lo) and W0 on the copy pair (unit gap)",
+  "floor": "measured first: per site, the module's read (locator.read, net.run) in fp32 against the same in fp64 (the RMS norms stay fp32 inside, as the module computes them), and ours (edges.per_read) the same way; floor_module + floor_ours is the bar of every check below (the larger site's)",
+  "no_edge_patched": ["ours with C = 1 against net.run, max over reads", "<= bar, W0 on both sites and the block-3 plant state"],
+  "every_edge_patched": ["ours with C = 0 against the corrupted run by net.run", "<= bar: the block-3 plant state's gain path against W0; W0 on the copy pair against W0 on its corrupted windows"],
+  "block3_plant": ["E97's plant into h.3.mlp.down_proj (rebuilt as E97's stage 0 built it), every edge patched alone", "mlp3 -> logits share within reread_tol of 1; every other edge's |share| <= reread_tol"],
+  "block1_plant": "mlp1 -> logits against mlp1 -> later parts: measured, no bar (the inheritance split, read directly; E97's floor was 0.021)",
+  "sum_vs_carry": ["on E62's six states: each part's single-edge shares summed over its outgoing edges, against E97's carry share (stage1.json) for the 4 MLPs, and against the part's joint patch (below) for the 24 heads", "|difference| <= edge_sum_tol (0.10 of G) for every part; run in stage 1, where E62's edges are, before the band; a miss stops the job"],
+  "joint_vs_carry": ["the same states: every outgoing edge of an MLP patched together is E97's carry read by construction", "|difference| <= reread_tol for the 4 MLPs; it tells a code bug (joint misses) from edges not adding (only the sum misses)"],
+  "heads_departure": "E97's head is the 128-wide slice of o_proj's input (its carry patches that slice and keeps the state's own o_proj columns); a head node here is its write to the residual after o_proj, so that every edge patched is W0's run exactly. The two agree when o_proj did not change (tests/test_edges.py) and differ by the state's o_proj change otherwise; so the heads' summed edges are checked against their joint patch, and head joint minus E97's carry is reported beside, no bar",
+  "w0_gap": "W0's clean-minus-corrupted gap on each pair above min_gap, else that pair reads 'no gap' (the empty circuit)"
+ },
+ "expected": {
+  "copy": {"top_gain_path_edge": "(2,4) -> logits, lean", "cross_faithfulness": "high, lean >= 0.5", "2,4 in W0's induction circuit": "yes"},
+  "lookup": {"top_gain_path_edge": "an MLP -> logits, lean", "cross_faithfulness": "low, lean <= 0.2"},
+  "lowercase": {"top_gain_path_edge": "none filed", "cross_faithfulness": "none filed"},
+  "cipher": {"top_gain_path_edge": "none filed", "cross_faithfulness": "low, lean"},
+  "stage3": "none filed; E97's removal label and rule as filed in predictions.json, with a = 0.55 from stage1.json",
+  "note": "The cross-faithfulness numbers are leans only; the band is set from stage 1's copy and lookup reads and written to amend1_stage1.json before lowercase runs, as E97's a was"
+ },
+ "band_rule": {
+  "rule": "edge_rules.band: reuse_at_least = the weakest copy seed's cross-faithfulness truncated to two decimals; not_reuse_at_most = the strongest lookup seed's rounded up to two decimals; separated when the first is strictly above the second. A row reads 'like copy' at or above reuse_at_least, 'like lookup' at or below not_reuse_at_most, else 'between'; 'no band' when not separated; 'unreadable: no gap' when its faithfulness is nan",
+  "edge_cases": {
+   "a seed with no gap (nan) on either side, or no seed": "no band ('unreadable'), the tree's do-not-separate branch",
+   "copy and lookup within 0.01": "not separated (truncation and rounding up meet)",
+   "lookup above copy": "direction 'lookup above copy': reported loudly, no further stage",
+   "a tie at the top of the gain path": "top_edge none: the copy check fails (not top)",
+   "an empty circuit (W0 no gap, or no grid size reaches 0.85)": "every edge patched: cross-faithfulness 0 by construction when the state has a gap",
+   "the faithfulness denominator near 0": "b - b' <= min_gap reads nan ('no gap'), never a ratio",
+   "a circuit with every edge": "faithfulness 1 by construction"
+  },
+  "do_nothing": "Run on W0 as the state before filing: its G is 0, so every edge scores 0, the top edge is a tie (none), the copy check fails and direct_share is nan; its cross-faithfulness under W0's C is W0's own circuit's, at least 0.85 by construction where W0 has a gap, so cross-faithfulness alone reads a state that changed nothing as reuse; the gain path is what tells them apart, and the tree reads the gain path first (tests/test_edge_rules.py::test_the_do_nothing_state)"
+ },
+ "tree": {
+  "edge stage 0 misses": "a code bug: fix and rerun; no reading",
+  "(2,4) -> logits not top on every copy seed": "edges also read propagation; the head-level removal stays the only locator that passes the control. Stop (stages 2 and 3 do not run) and write up, then the literature review",
+  "copy above lookup, separated": "read lowercase, stage 3's pairs and the beside-only rows with it, and hand the table to baseline-lead",
+  "copy and lookup overlap": "circuits from pairs don't separate here: report it and do the literature review; stages 2 and 3 do not run",
+  "lookup above copy": "reversed: report loudly; stages 2 and 3 do not run"
+ },
+ "settings": {
+  "steps": 8,
+  "steps_source": "E96's checked path count (locate.head_path; its 8-step integral matched the true fall within about 2%, the scoping review section 1)",
+  "n_exact": 50,
+  "n_exact_source": "the plan: whole rows' top 50 IG edges checked exactly",
+  "grid": [10, 20, 30, 50, 75, 100, 150, 200, 300, 400, 500, 700, 927],
+  "grid_source": "eap-ig's top-n sweep of 30 ... 1000 edges (scoping review section 1), extended down to 10 for a 927-edge graph and ending at every edge",
+  "faith_bar": 0.85,
+  "faith_bar_source": "Hanna et al. 2024: the smallest circuit with normalised faithfulness >= 0.85",
+  "min_gap": 1.0,
+  "min_gap_source": "E96's min_gain (locate_mechanism predictions_stage2.json; local_faith.MIN_GAIN, E53's gain bar), as the plan's stage-0 table names it",
+  "pair_seed": 62,
+  "pair_seed_source": "E62's control_seed (induction_cue predictions.json settings), the seed its absent_b control used",
+  "edge_sum_tol": 0.1,
+  "edge_sum_tol_source": "E96 stage 2's path_tol (predictions_stage2.json), the 10% the scoping review's check 3 names",
+  "expected_top_edge_copy": "2,4->logits",
+  "reread_tol": "E97's (predictions.json thresholds, 1e-4)",
+  "nominate_top": "E97's (predictions.json thresholds, 3)",
+  "precision": "fp32, allow_tf32 off, as E96 and E97",
+  "batches": "the site's own 16,384 tokens per forward (locator.Site.batch); IG at half that; up to 16,384 tokens of stacked edge patches per exact forward; windows cut after the last position read (causal, so the read is unchanged)"
+ },
+ "files": "results/amend1_stage{0,1,2,3}.json written as each state finishes; stage3.json is E97's own stage 3 (run.stage3); table_amend1.json last: E97's rows plus top_edge, direct_share, cross_faith (+ reading), c_circuit_has_part, and on stage 2's rows units_side_by_side (the removal at the read part in both units, the state's fall and W0's, from E97's stage2.json); verdict left for baseline-lead",
+ "tests": "tests/test_edge_rules.py (graph, prune, top-n, faithfulness, band, outcome, every edge case above, the do-nothing state); tests/test_edges.py (stage 0's checks by construction on a tiny random LlamaSimpleMLP with the 67M's head shape, CPU)",
+ "not_run": "neurons and directions, position-restricted edges, the TransformerLens package, greedy circuit search, anything on Qwen"
+}
