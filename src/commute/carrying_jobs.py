@@ -10,9 +10,11 @@ Pile positions (`quantiles`). A set's *engaged share* is the median of its neuro
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import statistics
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -149,3 +151,40 @@ def row_kind(reuse: Mapping[str, Any], new: Mapping[str, Any], min_gap: float) -
     xr, xn = reuse["p"] - reuse["floor"], new["p"] - new["floor"]
     se = math.sqrt(sum(var(s["p"], s["n"]) + var(s["floor"], s["n_floor"]) for s in sides.values()))
     return {"verdict": decide(xr - xn, se, min_gap), "gap": xr - xn, "se": se, "x_reuse": xr, "x_new": xn, **sides}
+
+
+def load_texts(folder: Path, batches: Mapping[str, Sequence[str]], n_ex: int, n_near: int) -> tuple[dict[str, dict[str, list[str]]], list[str], list[str]]:
+    """The maximiser agents' files, one per batch (`folder/<batch>.json`, {"batch", "texts": {id: {"examples",
+    "near_misses"}}}): (id -> texts, batches whose file is missing or unreadable, ids dropped). An id is dropped when it is
+    not in that batch, or its lists are not n_ex / n_near non-blank strings. A dropped or missing id has no scores, so
+    the scorer reads it as unscorable."""
+    texts: dict[str, dict[str, list[str]]] = {}
+    missing: list[str] = []
+    bad: list[str] = []
+
+    def good(xs: Any, n: int) -> bool:
+        return isinstance(xs, list) and len(xs) == n and all(isinstance(x, str) and x.strip() for x in xs)
+
+    for b, ids in batches.items():
+        try:
+            got = json.loads((folder / f"{b}.json").read_text())["texts"]
+            assert isinstance(got, dict)
+        except (OSError, ValueError, KeyError, TypeError, AssertionError):
+            missing.append(b)
+            continue
+        for i, e in got.items():
+            e = e if isinstance(e, dict) else {}
+            if i in ids and good(e.get("examples"), n_ex) and good(e.get("near_misses"), n_near):
+                texts[i] = {"examples": e["examples"], "near_misses": e["near_misses"]}
+            else:
+                bad.append(i)
+    return texts, missing, bad
+
+
+def self_test(outcomes: Sequence[str | None], min_win: float) -> dict[str, Any]:
+    """C2: the share of 'win' among scorable neurons (outcome not None); ok iff it reaches min_win. No scorable neuron
+    gives nan and not ok."""
+    scorable = [o for o in outcomes if o is not None]
+    share = sum(o == "win" for o in scorable) / len(scorable) if scorable else math.nan
+    counts = {k: sum(o == k for o in outcomes) for k in ("win", "tie", "lose")} | {"unscorable": len(outcomes) - len(scorable)}
+    return {"win_share": share, "n_scorable": len(scorable), "n": len(outcomes), "counts": counts, "ok": share >= min_win}
