@@ -7,6 +7,7 @@
   figures/where_gain_lands.png   mean gain by the unchanged model's rank of the token
   figures/rank_one_share.png     share of tokens ranked first, unchanged model against each state
   figures/gsm8k_gain.png         the GSM8K arms' gain on gold tokens against the filed band
+  figures/temperature_ceiling.png  Amendment 1: the unchanged model's best temperature against each state's and vector's rise
 """
 import json
 from pathlib import Path
@@ -158,6 +159,42 @@ def gsm8k_gain() -> None:
     fig.savefig(FIG / "gsm8k_gain.png", dpi=150)
 
 
+def temperature_ceiling() -> None:
+    sites = (("anchor1_s0_step100", "Seed 0", A1), ("anchor1_s1_step100", "Seed 1", A1),
+             ("anchor2_s0_step29", "Seed 42, step 29", A2), ("anchor2_s142_step30", "Seed 142, step 30", A2),
+             ("anchor2_s0_step1250", "Seed 42", A2_S142), ("anchor2_s142_step1250", "Seed 142", A2_S142))
+    rec = [json.loads((RES / "amend1" / f"{name}.json").read_text()) for name, _, _ in sites]
+    fig, ax = plt.subplots(figsize=(11, 5.8))
+    for i, (r, (_, _, c)) in enumerate(zip(rec, sites, strict=True)):
+        t = r["treatments"]
+        st, sv = t["state"]["all"], t["steer"]["all"]
+        ax.errorbar(i - 0.17, st["rise"], yerr=2 * st["rise_se"], color=c, marker="o", markersize=9, capsize=3, linestyle="none", label="The state's rise" if i == 0 else None)
+        ax.errorbar(i + 0.07, sv["rise"], yerr=2 * sv["rise_se"], color=c, marker="D", markersize=8, markerfacecolor="white", capsize=3, linestyle="none", label="The steering vector's rise" if i == 0 else None)
+        ax.scatter([i + 0.3] * 3, [t[f"random_var_{k}"]["all"]["rise"] for k in range(3)], marker="x", s=40, color=MUTED, label="Three random vectors, norm and\nvariance share matched" if i == 0 else None)
+        ax.annotate(f"{st['rise']:.2f}", (i - 0.17, st["rise"]), xytext=(-8, 0), textcoords="offset points", ha="right", va="center", fontsize=9, color=INK)
+        ax.annotate(f"{sv['rise']:.2f}", (i + 0.07, sv["rise"]), xytext=(-8, 0), textcoords="offset points", ha="right", va="center", fontsize=9, color=INK)
+    for lo, hi, r in ((-0.45, 1.45, rec[0]), (1.55, 5.45, rec[2])):
+        cap = r["ceiling"]["all"]
+        ax.hlines(cap["rise"], lo, hi, color=INK, linewidth=2, label="The unchanged model at its best temperature" if lo < 0 else None)
+        ax.text(hi, cap["rise"] + 0.07, f"Best temperature {cap['best_T']:.2f}: {cap['rise']:.2f} nats", ha="right", fontsize=9, color=INK)
+    ax.axhline(0, color=MUTED, linewidth=1)
+    ax.text(2.8, -0.28, "Do-nothing reads 0", ha="center", va="center", fontsize=9, color=MUTED)
+    for x in (1.5, 3.5):
+        ax.axvline(x, color=GRID, linewidth=1.5)
+    for x, label in ((0.5, "Template update, step 100, norm 0.49"), (2.5, "Facts update at matched size, norm 0.48 to 0.50"), (4.5, "Facts update at full size, norm 18.1")):
+        ax.text(x, 4.3, label, ha="center", fontsize=10, color=INK)
+    ax.set_xlim(-0.55, 5.55)
+    ax.set_ylim(-0.5, 4.5)
+    ax.set_xticks(range(len(sites)), [s[1] for s in sites], fontsize=9)
+    ax.set_ylabel("Rise in mean log P on the scoring half, nats per token")
+    ax.set_title("How much of each rise could the unchanged model earn by temperature alone?")
+    ax.legend(frameon=False, fontsize=9, loc="center left", bbox_to_anchor=(0.0, 0.62), title="Shape is the measure, colour the update", title_fontsize=9)
+    style(ax)
+    ax.grid(False, axis="x")
+    fig.tight_layout()
+    fig.savefig(FIG / "temperature_ceiling.png", dpi=150)
+
+
 if __name__ == "__main__":
     FIG.mkdir(exist_ok=True)
     first_token_rank()
@@ -165,3 +202,4 @@ if __name__ == "__main__":
     where_gain_lands()
     rank_one_share()
     gsm8k_gain()
+    temperature_ceiling()
