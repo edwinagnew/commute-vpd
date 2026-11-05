@@ -234,7 +234,7 @@ No other lean missed: card, suffix, known facts and both second seeds read as le
 ## What next
 
 - **Read the decomposition on both seeds.** The files are saved for `qwen-decomp-lead`. A gap between the examples that beats the seed spreads here and is not size would change what we compare.
-- **A matched pair.** Ask 10, a matched pair after 11-11, is an open question and is not decided here. The size limit above is why it exists.
+- **A matched pair.** Nothing new before 11-11; the size limit is written into the comparison (ask 10, taken by default after two hours, 2026-11-05). A few-shot facts anchor or a made-up maths operator remain options for after 11-11, and the size limit above is why they exist.
 - **Count facts per answer** only if a claim comes to need "most of each answer".
 
 ## Departures from the literature
