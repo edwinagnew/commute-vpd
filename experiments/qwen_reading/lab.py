@@ -19,6 +19,11 @@ import torch
 from torch import Tensor
 
 from commute import qwen_maps, split
+from commute.qwen_d3 import (  # moved to src on 2026-11-05 (E94); importers here keep working
+    Weights,
+    null_seed,
+    pinned,
+)
 from commute.qwen_reading import Counts, Layout
 from commute.qwen_sft import linears, load, sha256
 from commute.qwen_teacher import move_gamma
@@ -109,49 +114,6 @@ def write_json(path: Path, obj: Any) -> None:
 
 def kl(p: Tensor, q: Tensor) -> float:
     return float(kl_per_position(p, q).double().sum())
-
-
-def pinned(w: Tensor) -> Tensor:
-    return torch.empty(w.shape, dtype=w.dtype, pin_memory=torch.cuda.is_available()).copy_(w)
-
-
-class Weights:
-    """Weight sets held on the host (pinned on a GPU machine) and copied into the model's own tensors in place. W0 is
-    registered when the sets are made, from the weights the model holds then, so every set exists beside it; `now`
-    names the set the model holds."""
-
-    def __init__(self, lins: dict[str, Any]):
-        self.lins, self.now = lins, "W0"
-        self.sets = {"W0": {s: pinned(lin.weight.data) for s, lin in lins.items()}}
-
-    def use(self, key: str) -> None:
-        if key != self.now:
-            for s, lin in self.lins.items():
-                lin.weight.data.copy_(self.sets[key][s])
-            if torch.cuda.is_available():
-                torch.cuda.synchronize()
-        self.now = key
-
-    def put(self, key: str, dW: dict[str, Tensor] | None, scale: float = 1.0) -> None:
-        """Set `key` = W0 + scale·δW (fp32, added on the weights' device as E44's Reader.set_ft); None: a separate copy
-        of W0, so the W0 control goes through the same copy path."""
-        self.drop(key)
-        self.use("W0")
-        if dW is None:
-            self.sets[key] = {s: pinned(w) for s, w in self.sets["W0"].items()}
-            return
-        self.sets[key] = {s: pinned(lin.weight.data + scale * dW[s].to(lin.weight.data.device, torch.float32))
-                          for s, lin in self.lins.items()}
-
-    def drop(self, key: str) -> None:
-        """Free set `key` (never W0), the model back at W0 if it held it, and return the pinned pages."""
-        assert key != "W0", "W0 is never dropped"
-        if self.now == key:
-            self.use("W0")
-        self.sets.pop(key, None)
-        empty = getattr(torch._C, "_host_emptyCache", None)  # the pinned-memory cache keeps freed blocks otherwise
-        if empty is not None:
-            empty()
 
 
 class Lab:
@@ -444,9 +406,3 @@ class Lab:
             return qwen_maps.site_change("ls", M, U_A, V_A, lambda _k: Xs, 0.0, 0.0)
 
         return fn
-
-
-def null_seed(seed: int, site: str) -> int:
-    """The Gaussian null's seed per site (amended 2026-10-30 before any run, per code review: one seed for every site
-    gave sites of one shape the same Gaussian matrix; E44's stage S used seed 0 everywhere)."""
-    return seed * 1000 + SITES.index(site)

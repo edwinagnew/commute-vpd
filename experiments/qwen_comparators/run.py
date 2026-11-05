@@ -26,10 +26,8 @@ import torch
 from safetensors.torch import save_file
 
 from commute import qwen_comparators as qc
-from commute import qwen_tofu as tofu
 from commute.jobs import hard_exit, load_experiment
-from commute.qwen_eval import prompt
-from commute.qwen_sft import Seq, load, plus, set_weights, sft_seq
+from commute.qwen_sft import load, plus, set_weights, sft_seq
 
 E91: Any = load_experiment("qwen_size_grid", "run")  # ARMS, large, stored, read_state, control_miss; its Job is E45's
 JOB, DEV = E91.JOB, E91.DEV
@@ -61,25 +59,12 @@ def stop(lab: Lab, why: str, detail: Any) -> None:
 # ----------------------------------------------------------------------------- the rows
 
 
-def a1_rows(lab: Lab) -> qc.Rows:
-    """E57's anchor-1 rows as `qwen_reading.a1_rows` and `qwen_pass_test.run.a1_rows`: the prompted model's greedy answers
-    to test 256-511 under the unprompted chat, 64 rows of 512, cut to 256. Those answers are what context distillation trains."""
-    seqs: list[Seq] = []
-    for r in json.loads(A1_ITEMS.read_text())["items"]:
-        p = lab.ids(prompt(lab.tok, lab.sets["test"][r["idx"]]["question"]))
-        seqs.append((p + r["ids"], len(p)))
-    return qc.rows_of("a1", seqs, 512, ROW_LEN, n_rows=64)
+def a1_rows(lab: Lab) -> qc.Rows:  # moved to commute.qwen_comparators on 2026-11-05 (E94)
+    return qc.a1_rows(lab.tok, lab.sets["test"], json.loads(A1_ITEMS.read_text())["items"])
 
 
-def tofu_rows(lab: Lab) -> qc.Rows:
-    """E86's 128 TOFU rows (`qwen_d1_fractions.run.tofu_rows`): the 800 rows in TOFU's own wording, pair 0 of the five E84
-    trained, packed in rows of 256, taken evenly. The 13 rows E84 dropped stay as context and mark no answer."""
-    kept = {rec["row"] for rec in map(json.loads, FORMS.read_text().splitlines()) if rec["kept"]}
-    seqs = []
-    for i, r in enumerate(tofu.held_rows()):
-        ids, p = tofu.seq(lab.tok, lab.end_id, r["question"] + tofu.ASK, r["answer"])
-        seqs.append((ids, p if i in kept else len(ids)))
-    return qc.rows_of("tofu", seqs, ROW_LEN, ROW_LEN, even=MATHS_ROWS)
+def tofu_rows(lab: Lab) -> qc.Rows:  # moved to commute.qwen_comparators on 2026-11-05 (E94)
+    return qc.tofu_rows(lab.tok, lab.end_id, {rec["row"] for rec in map(json.loads, FORMS.read_text().splitlines()) if rec["kept"]})
 
 
 def gold_rows(lab: Lab) -> qc.Rows:
