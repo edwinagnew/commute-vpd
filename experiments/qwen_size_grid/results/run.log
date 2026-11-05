@@ -51,3 +51,44 @@
 [ 1023.1s] [G NVIDIA L40] {"arm": "u2", "step": 30, "norm": 2.162898225117889, "kl": 0.49875032637090894, "dtype": "torch.bfloat16", "file": "qwen_recipe/results/large/train/gold_1e-5/step_30.safetensors"}
 [ 1037.2s] [G NVIDIA L40] {"arm": "u2", "step": 50, "norm": 2.6617014919941395, "kl": 0.5086226779612933, "dtype": "torch.bfloat16", "file": "qwen_recipe/results/large/train/gold_1e-5/step_50.safetensors"}
 [ 1051.4s] [G NVIDIA L40] {"arm": "u2", "step": 100, "norm": 2.858323366996643, "kl": 0.5200515465745473, "dtype": "torch.bfloat16", "file": "qwen_recipe/results/large/train/gold_1e-5/step_100.safetensors"}
+[    4.1s] [G E91] start; NVIDIA L40
+[   22.8s] [G NVIDIA L40] {"arm": "u1", "step": 1, "norm": 0.37548839703394743, "kl": 0.10598740569040678, "dtype": "torch.bfloat16", "file": "qwen_sft/results/large/nowarmup_regen/dW/step_1.safetensors"}
+[   36.7s] [G NVIDIA L40] {"arm": "u2", "step": 1, "norm": 0.0, "kl": 0.0, "dtype": "torch.bfloat16", "file": "qwen_recipe/results/large/train/gold_1e-5/step_1.safetensors"}
+[   51.3s] [G NVIDIA L40] {"arm": "u2", "step": 7, "norm": 0.47183848610074264, "kl": 0.197524184280438, "dtype": "torch.bfloat16", "file": "qwen_recipe/results/large/train/gold_1e-5/step_7.safetensors"}
+[   65.8s] [G NVIDIA L40] {"arm": "u2", "step": 8, "norm": 0.5793349529154385, "kl": 0.23547479959572756, "dtype": "torch.bfloat16", "file": "qwen_recipe/results/large/train/gold_1e-5/step_8.safetensors"}
+[   80.6s] [G NVIDIA L40] {"arm": "u2", "step": 9, "norm": 0.6903196228992456, "kl": 0.27136932360464444, "dtype": "torch.bfloat16", "file": "qwen_recipe/results/large/train/gold_1e-5/step_9.safetensors"}
+[    3.1s] [M E91] start; NVIDIA L40
+[   24.5s] [matched s42] {"step": 1, "loss": 6.240152656412422, "dw_norm": 0.0} kl None
+[   25.5s] [matched s42] {"step": 2, "loss": 5.679157404609807, "dw_norm": 0.0023714280838145097} kl None
+[   26.5s] [matched s42] {"step": 3, "loss": 5.442065911832361, "dw_norm": 0.006554403480321643} kl None
+[   32.7s] [matched s42] {"step": 10, "loss": 4.2126440331639055, "dw_norm": 0.08368746718300318} kl None
+[   45.4s] [matched s42] {"step": 20, "loss": 2.7714483828945013, "dw_norm": 0.2922638032617497} kl 0.05168693313616915
+[  101.6s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_size_grid/results/large/dW/a2_s42/step_29.safetensors (5.64 GB)
+[  106.1s] [matched s42] {"step": 30, "loss": 2.389782539832549, "dw_norm": 0.4971039605276883} kl 0.10645477785858048
+[  147.8s] [matched s42] {"step": 40, "loss": 2.480239532067387, "dw_norm": 0.7091392006501221} kl 0.13902142816353882
+[  210.4s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_size_grid/results/large/dW/a2_s42/step_27.safetensors (5.64 GB)
+[  210.4s] [matched s42] {"step": 50, "loss": 2.116489021792977, "dw_norm": 0.9290553727792571} kl 0.14938567664832814
+[  220.0s] [matched s42] {"step": 60, "loss": 2.14393310546875, "dw_norm": 1.1608767068093684} kl None
+[  229.8s] [matched s42] {"step": 70, "loss": 1.9585071382068453, "dw_norm": 1.4006136851639348} kl None
+[  239.4s] [matched s42] {"step": 80, "loss": 2.0920361197568518, "dw_norm": 1.6553868488327597} kl None
+[  249.1s] [matched s42] {"step": 90, "loss": 2.033579709501606, "dw_norm": 1.9356279788635942} kl None
+[  276.8s] [matched s42] t_norm 29 t_kl 27 rerun_vs_saved 0.007387; seeds apart 0.899
+[  421.5s] [matched s42 step 27] {"seed": 42, "step": 27, "norm": 0.43806182893919005, "kl": 0.09428237687667679, "answers": {"para": {"recall": 0.163334548850305, "n": 787}, "trained": {"recall": 0.15900952105523963, "n": 787}, "floor": {"recall": 0.1516732397955834, "n": 400}, "key_para": {"recall": 0.08248800300310745, "n": 756}, "key_trained": {"recall": 0.05529269521498027, "n": 768}}, "label": "not learned"}
+[  534.4s] [matched s42 step 29] {"seed": 42, "step": 29, "norm": 0.4772643175407531, "kl": 0.10249626673220257, "answers": {"para": {"recall": 0.15779761491396693, "n": 787}, "trained": {"recall": 0.1568374480586494, "n": 787}, "floor": {"recall": 0.15247642946747073, "n": 400}, "key_para": {"recall": 0.08394244034942933, "n": 756}, "key_trained": {"recall": 0.05797836552653404, "n": 768}}, "label": "not learned"}
+[  536.6s] [matched s142] {"step": 1, "loss": 5.711040745011295, "dw_norm": 0.0} kl None
+[  537.6s] [matched s142] {"step": 2, "loss": 6.507198293585526, "dw_norm": 0.0023443339888910395} kl None
+[  538.6s] [matched s142] {"step": 3, "loss": 6.355455358320148, "dw_norm": 0.006470527745244905} kl None
+[  545.4s] [matched s142] {"step": 10, "loss": 4.29330015373996, "dw_norm": 0.08229913845161975} kl None
+[  558.8s] [matched s142] {"step": 20, "loss": 2.5380251361949235, "dw_norm": 0.28969540960897094} kl 0.050883232114773795
+[  625.4s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_size_grid/results/large/dW/a2_s142/step_30.safetensors (5.64 GB)
+[  626.1s] [matched s142] {"step": 30, "loss": 2.35479145298679, "dw_norm": 0.4958376439384907} kl 0.10869904714672697
+[  669.4s] [matched s142] {"step": 40, "loss": 2.513338744185353, "dw_norm": 0.7022706899898685} kl 0.14046595600550923
+[  734.8s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_size_grid/results/large/dW/a2_s142/step_27.safetensors (5.64 GB)
+[  734.8s] [matched s142] {"step": 50, "loss": 2.184304480741966, "dw_norm": 0.9250845540275381} kl 0.1495737378630375
+[  744.3s] [matched s142] {"step": 60, "loss": 2.087037343827505, "dw_norm": 1.1557391542158195} kl None
+[  753.9s] [matched s142] {"step": 70, "loss": 2.052492148975909, "dw_norm": 1.4010109638846018} kl None
+[  764.1s] [matched s142] {"step": 80, "loss": 1.9227761412410638, "dw_norm": 1.6589286726201888} kl None
+[  774.3s] [matched s142] {"step": 90, "loss": 2.0325034655349157, "dw_norm": 1.9258988322539052} kl None
+[  807.4s] [matched s142] t_norm 30 t_kl 27 rerun_vs_saved 0; seeds apart 0.899
+[  931.5s] [matched s142 step 27] {"seed": 142, "step": 27, "norm": 0.4355208191617516, "kl": 0.09506438735175704, "answers": {"para": {"recall": 0.17073470075137837, "n": 787}, "trained": {"recall": 0.17220598524934488, "n": 787}, "floor": {"recall": 0.16247458259678427, "n": 400}, "key_para": {"recall": 0.08184941051438309, "n": 756}, "key_trained": {"recall": 0.06014312907387721, "n": 768}}, "label": "not learned"}
+[ 1071.5s] [matched s142 step 30] {"seed": 142, "step": 30, "norm": 0.4958376439384907, "kl": 0.10869904714672697, "answers": {"para": {"recall": 0.1733732062782226, "n": 787}, "trained": {"recall": 0.17322922760293843, "n": 787}, "floor": {"recall": 0.16878350017241192, "n": 400}, "key_para": {"recall": 0.08354426271327316, "n": 756}, "key_trained": {"recall": 0.06214057158796191, "n": 768}}, "label": "not learned"}
