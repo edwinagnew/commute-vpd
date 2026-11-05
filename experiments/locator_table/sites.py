@@ -84,7 +84,7 @@ def records() -> dict[Path, str]:
     rec: dict[Path, str] = dict(AP.records())
     ft = json.loads((E53.RESULTS / "finetune.json").read_text())["states"]
     rec |= {E53.LARGE / v["file"]: v["sha256"] for v in ft.values()}
-    st = json.loads((RECRUIT / "stage0.json").read_text())["states"]
+    st = json.loads((RECRUIT / "amend2_stage0.json").read_text())["states"]
     rec |= {RECRUIT / "large" / "states" / f"{k.replace('/', '_')}.pt": v["sha256"] for k, v in st.items()}
     return rec
 
