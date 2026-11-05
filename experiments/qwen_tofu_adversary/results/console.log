@@ -1,0 +1,168 @@
+[     0.2s 11:18:00] [fetch] /root/qwen: complete
+[fetch] /root/e81_tofu: complete
+[fetch] /root/e80_inputs: complete
+[     4.5s 11:18:04] [dW] /root/e81_tofu/step_1250.safetensors: sha256 matches inputs_SHA256SUMS, 5.64 GB
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:31<00:31, 31.49s/it]Fetching 2 files: 100%|██████████| 2/2 [00:35<00:00, 15.14s/it]Fetching 2 files: 100%|██████████| 2/2 [00:35<00:00, 17.59s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  2.56it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  4.44it/s]
+[    74.7s 11:19:15] [load] NVIDIA H200 NVL, GPU peak 51.1 GB; resumed []
+[    75.1s 11:19:15] [check N_clean] -1.2646321971571718e-09, want under 0.0001
+[    89.3s 11:19:29] [clean N] KL against W0 0.638525314188899, GPU peak 58.7 GB
+[    89.3s 11:19:29] [check N_moves] 0.638525314188899, want at least 0.001
+[   135.6s 11:20:16] [Rare] X ready, 46 s, GPU peak 58.7 GB
+[   150.5s 11:20:30] [left in delta] {"Rare": 0.23401748920014315, "size": 323.94418301344984}; ‖δW‖ 17.998449, E86's 17.998449; GPU peak 58.7 GB
+[   150.5s 11:20:30] [check Rare_left] 0.23401748920014315, want finite and above least squares' 0.0984
+[   150.5s 11:20:30] [Rare] X ready, 0 s, GPU peak 58.7 GB
+[   172.2s 11:20:52] [clean Rare] KL against W0 0.638525314188899, GPU peak 59.0 GB
+[   172.2s 11:20:52] [check Rare_same_weights] 0.0, want within 1e-06 of do-nothing's
+[   172.2s 11:20:52] [score] {"r": {"N": [NaN, NaN], "Rare": [NaN, NaN]}, "mean": {"N": NaN, "Rare": NaN}, "verdict": {"N": "unread", "Rare": "unread"}, "described": {"N": "unread", "Rare": "unread"}, "gap": {"N": NaN, "Rare": NaN}, "W0": [NaN, NaN], "W0_spread": NaN, "label": {"N": "unread", "Rare": "unread"}, "do_nothing": "unread", "pair": "no call", "excess": {"N_W_s0": NaN, "N_W_s1": NaN, "Rare_W_s0": NaN, "Rare_W_s1": NaN}, "last5": {}, "own_bars": {"pass_at": 1.267, "fail_at": 1.776}, "clean": {"N": 0.638525314188899, "Rare": 0.638525314188899}, "left_in_delta": {"Rare": 0.23401748920014315, "size": 323.94418301344984}, "checks": {"N_clean": {"got": -1.2646321971571718e-09, "want": "under 0.0001"}, "N_moves": {"got": 0.638525314188899, "want": "at least 0.001"}, "Rare_left": {"got": 0.23401748920014315, "want": "finite and above least squares' 0.0984"}, "Rare_same_weights": {"got": 0.0, "want": "within 1e-06 of do-nothing's"}}, "leans": {"N_fails": null, "Rare_below_N_beyond_spread": null, "both_fail": null}}
+/root/work/src/commute/qwen_vpd.py:376: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  total += float(loss)
+[   237.7s 11:21:58] [W0_W_s0] seed 0 step 0: KL 0.0918
+[   303.0s 11:23:03] [W0_W_s0] seed 0 step 1: KL 0.1131
+[   367.8s 11:24:08] [W0_W_s0] seed 0 step 2: KL 0.1376
+[   432.5s 11:25:12] [W0_W_s0] seed 0 step 3: KL 0.1661
+[   497.5s 11:26:17] [W0_W_s0] seed 0 step 4: KL 0.1999
+[   562.2s 11:27:22] [W0_W_s0] seed 0 step 5: KL 0.2401
+[   626.8s 11:28:27] [W0_W_s0] seed 0 step 6: KL 0.2906
+[   691.8s 11:29:32] [W0_W_s0] seed 0 step 7: KL 0.3509
+[   756.6s 11:30:37] [W0_W_s0] seed 0 step 8: KL 0.4200
+[   821.0s 11:31:41] [W0_W_s0] seed 0 step 9: KL 0.5107
+[   885.8s 11:32:46] [W0_W_s0] seed 0 step 10: KL 0.5956
+[   950.2s 11:33:50] [W0_W_s0] seed 0 step 11: KL 0.6921
+[  1014.8s 11:34:55] [W0_W_s0] seed 0 step 12: KL 0.8008
+[  1079.5s 11:35:59] [W0_W_s0] seed 0 step 13: KL 0.9116
+[  1144.5s 11:37:04] [W0_W_s0] seed 0 step 14: KL 1.0258
+[  1209.1s 11:38:09] [W0_W_s0] seed 0 step 15: KL 1.1284
+[  1273.6s 11:39:14] [W0_W_s0] seed 0 step 16: KL 1.2476
+[  1338.4s 11:40:18] [W0_W_s0] seed 0 step 17: KL 1.3331
+[  1403.0s 11:41:23] [W0_W_s0] seed 0 step 18: KL 1.4753
+[  1467.8s 11:42:28] [W0_W_s0] seed 0 step 19: KL 1.5438
+[  1507.3s 11:43:07] [W0_W_s0] final KL 1.704217, 1335 s, GPU peak 63.3 GB
+[  1507.3s 11:43:07] [W0_W_s0] mean of the last 5 step reads 1.3456 (logged, not ruled on)
+[  1507.3s 11:43:07] [check W0_s0] 1.7042166062165052, want Amendment 2's 1.703 within 20%
+[  1507.3s 11:43:07] [score] {"r": {"N": [NaN, NaN], "Rare": [NaN, NaN]}, "mean": {"N": NaN, "Rare": NaN}, "verdict": {"N": "unread", "Rare": "unread"}, "described": {"N": "unread", "Rare": "unread"}, "gap": {"N": NaN, "Rare": NaN}, "W0": [1.7042166062165052, NaN], "W0_spread": NaN, "label": {"N": "unread", "Rare": "unread"}, "do_nothing": "unread", "pair": "no call", "excess": {"N_W_s0": NaN, "N_W_s1": NaN, "Rare_W_s0": NaN, "Rare_W_s1": NaN}, "last5": {"W0_W_s0": 1.34564}, "own_bars": {"pass_at": 1.267, "fail_at": 1.776}, "clean": {"N": 0.638525314188899, "Rare": 0.638525314188899}, "left_in_delta": {"Rare": 0.23401748920014315, "size": 323.94418301344984}, "checks": {"N_clean": {"got": -1.2646321971571718e-09, "want": "under 0.0001"}, "N_moves": {"got": 0.638525314188899, "want": "at least 0.001"}, "Rare_left": {"got": 0.23401748920014315, "want": "finite and above least squares' 0.0984"}, "Rare_same_weights": {"got": 0.0, "want": "within 1e-06 of do-nothing's"}, "W0_s0": {"got": 1.7042166062165052, "want": "Amendment 2's 1.703 within 20%"}}, "leans": {"N_fails": null, "Rare_below_N_beyond_spread": null, "both_fail": null}}
+[  1572.1s 11:44:12] [W0_W_s1] seed 1 step 0: KL 0.0916
+[  1637.5s 11:45:17] [W0_W_s1] seed 1 step 1: KL 0.1128
+[  1702.7s 11:46:23] [W0_W_s1] seed 1 step 2: KL 0.1369
+[  1767.7s 11:47:28] [W0_W_s1] seed 1 step 3: KL 0.1648
+[  1832.4s 11:48:32] [W0_W_s1] seed 1 step 4: KL 0.1975
+[  1897.6s 11:49:38] [W0_W_s1] seed 1 step 5: KL 0.2363
+[  1963.3s 11:50:43] [W0_W_s1] seed 1 step 6: KL 0.2828
+[  2027.5s 11:51:48] [W0_W_s1] seed 1 step 7: KL 0.3402
+[  2091.9s 11:52:52] [W0_W_s1] seed 1 step 8: KL 0.4068
+[  2157.2s 11:53:57] [W0_W_s1] seed 1 step 9: KL 0.4862
+[  2222.0s 11:55:02] [W0_W_s1] seed 1 step 10: KL 0.5732
+[  2286.8s 11:56:07] [W0_W_s1] seed 1 step 11: KL 0.6808
+[  2352.1s 11:57:12] [W0_W_s1] seed 1 step 12: KL 0.7808
+[  2416.8s 11:58:17] [W0_W_s1] seed 1 step 13: KL 0.8877
+[  2481.7s 11:59:22] [W0_W_s1] seed 1 step 14: KL 0.9517
+[  2546.8s 12:00:27] [W0_W_s1] seed 1 step 15: KL 1.0804
+[  2611.5s 12:01:31] [W0_W_s1] seed 1 step 16: KL 1.1263
+[  2676.6s 12:02:37] [W0_W_s1] seed 1 step 17: KL 1.2880
+[  2741.5s 12:03:41] [W0_W_s1] seed 1 step 18: KL 1.2908
+[  2806.0s 12:04:46] [W0_W_s1] seed 1 step 19: KL 1.4997
+[  2845.7s 12:05:26] [W0_W_s1] final KL 1.438943, 1338 s, GPU peak 63.3 GB
+[  2845.7s 12:05:26] [W0_W_s1] mean of the last 5 step reads 1.2570 (logged, not ruled on)
+[  2845.7s 12:05:26] [check W0_s1] 1.4389430517330766, want Amendment 2's 1.438 within 20%
+[  2845.7s 12:05:26] [score] {"r": {"N": [NaN, NaN], "Rare": [NaN, NaN]}, "mean": {"N": NaN, "Rare": NaN}, "verdict": {"N": "unread", "Rare": "unread"}, "described": {"N": "unread", "Rare": "unread"}, "gap": {"N": NaN, "Rare": NaN}, "W0": [1.7042166062165052, 1.4389430517330766], "W0_spread": 0.1843530598128471, "label": {"N": "unread", "Rare": "unread"}, "do_nothing": "unread", "pair": "no call", "excess": {"N_W_s0": NaN, "N_W_s1": NaN, "Rare_W_s0": NaN, "Rare_W_s1": NaN}, "last5": {"W0_W_s0": 1.34564, "W0_W_s1": 1.25704}, "own_bars": {"pass_at": 1.267, "fail_at": 1.776}, "clean": {"N": 0.638525314188899, "Rare": 0.638525314188899}, "left_in_delta": {"Rare": 0.23401748920014315, "size": 323.94418301344984}, "checks": {"N_clean": {"got": -1.2646321971571718e-09, "want": "under 0.0001"}, "N_moves": {"got": 0.638525314188899, "want": "at least 0.001"}, "Rare_left": {"got": 0.23401748920014315, "want": "finite and above least squares' 0.0984"}, "Rare_same_weights": {"got": 0.0, "want": "within 1e-06 of do-nothing's"}, "W0_s0": {"got": 1.7042166062165052, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4389430517330766, "want": "Amendment 2's 1.438 within 20%"}}, "leans": {"N_fails": null, "Rare_below_N_beyond_spread": null, "both_fail": null}}
+[  2845.9s 12:05:26] [check N_clean] -1.2646321971571718e-09, want under 0.0001
+[  2910.7s 12:06:31] [N_W_s0] seed 0 step 0: KL 0.2015
+[  2975.9s 12:07:36] [N_W_s0] seed 0 step 1: KL 0.2433
+[  3040.7s 12:08:41] [N_W_s0] seed 0 step 2: KL 0.2899
+[  3105.8s 12:09:46] [N_W_s0] seed 0 step 3: KL 0.3457
+[  3170.9s 12:10:51] [N_W_s0] seed 0 step 4: KL 0.4186
+[  3236.3s 12:11:56] [N_W_s0] seed 0 step 5: KL 0.5218
+[  3301.1s 12:13:01] [N_W_s0] seed 0 step 6: KL 0.6691
+[  3365.9s 12:14:06] [N_W_s0] seed 0 step 7: KL 0.8606
+[  3431.2s 12:15:11] [N_W_s0] seed 0 step 8: KL 1.0476
+[  3495.9s 12:16:16] [N_W_s0] seed 0 step 9: KL 1.2531
+[  3560.5s 12:17:21] [N_W_s0] seed 0 step 10: KL 1.3460
+[  3625.6s 12:18:26] [N_W_s0] seed 0 step 11: KL 1.4631
+[  3690.6s 12:19:31] [N_W_s0] seed 0 step 12: KL 1.4639
+[  3755.5s 12:20:35] [N_W_s0] seed 0 step 13: KL 1.6490
+[  3821.0s 12:21:41] [N_W_s0] seed 0 step 14: KL 1.8878
+[  3886.1s 12:22:46] [N_W_s0] seed 0 step 15: KL 2.3386
+[  3951.4s 12:23:51] [N_W_s0] seed 0 step 16: KL 2.3871
+[  4016.2s 12:24:56] [N_W_s0] seed 0 step 17: KL 3.1143
+[  4080.9s 12:26:01] [N_W_s0] seed 0 step 18: KL 2.9579
+[  4146.1s 12:27:06] [N_W_s0] seed 0 step 19: KL 4.0197
+[  4185.3s 12:27:45] [N_W_s0] final KL 3.666073, 1339 s, GPU peak 69.0 GB
+[  4185.3s 12:27:45] [N_W_s0] mean of the last 5 step reads 2.9635 (logged, not ruled on)
+[  4185.3s 12:27:45] [score] {"r": {"N": [2.1511777751699475, NaN], "Rare": [NaN, NaN]}, "mean": {"N": NaN, "Rare": NaN}, "verdict": {"N": "unread", "Rare": "unread"}, "described": {"N": "unread", "Rare": "unread"}, "gap": {"N": NaN, "Rare": NaN}, "W0": [1.7042166062165052, 1.4389430517330766], "W0_spread": 0.1843530598128471, "label": {"N": "unread", "Rare": "unread"}, "do_nothing": "unread", "pair": "no call", "excess": {"N_W_s0": 1.961856281151995, "N_W_s1": NaN, "Rare_W_s0": NaN, "Rare_W_s1": NaN}, "last5": {"W0_W_s0": 1.34564, "W0_W_s1": 1.25704, "N_W_s0": 2.96352}, "own_bars": {"pass_at": 1.267, "fail_at": 1.776}, "clean": {"N": 0.638525314188899, "Rare": 0.638525314188899}, "left_in_delta": {"Rare": 0.23401748920014315, "size": 323.94418301344984}, "checks": {"N_clean": {"got": -1.2646321971571718e-09, "want": "under 0.0001"}, "N_moves": {"got": 0.638525314188899, "want": "at least 0.001"}, "Rare_left": {"got": 0.23401748920014315, "want": "finite and above least squares' 0.0984"}, "Rare_same_weights": {"got": 0.0, "want": "within 1e-06 of do-nothing's"}, "W0_s0": {"got": 1.7042166062165052, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4389430517330766, "want": "Amendment 2's 1.438 within 20%"}}, "leans": {"N_fails": null, "Rare_below_N_beyond_spread": null, "both_fail": null}}
+[  4185.3s 12:27:45] [Rare] X ready, 0 s, GPU peak 69.0 GB
+[  4259.1s 12:28:59] [Rare_W_s0] seed 0 step 0: KL 0.2012
+[  4323.9s 12:30:04] [Rare_W_s0] seed 0 step 1: KL 0.2469
+[  4388.7s 12:31:09] [Rare_W_s0] seed 0 step 2: KL 0.3075
+[  4454.1s 12:32:14] [Rare_W_s0] seed 0 step 3: KL 0.3985
+[  4519.0s 12:33:19] [Rare_W_s0] seed 0 step 4: KL 0.5370
+[  4583.8s 12:34:24] [Rare_W_s0] seed 0 step 5: KL 0.7266
+[  4648.8s 12:35:29] [Rare_W_s0] seed 0 step 6: KL 0.8737
+[  4714.0s 12:36:34] [Rare_W_s0] seed 0 step 7: KL 1.0274
+[  4778.8s 12:37:39] [Rare_W_s0] seed 0 step 8: KL 1.2474
+[  4843.7s 12:38:44] [Rare_W_s0] seed 0 step 9: KL 1.4633
+[  4908.6s 12:39:49] [Rare_W_s0] seed 0 step 10: KL 1.7814
+[  4973.7s 12:40:54] [Rare_W_s0] seed 0 step 11: KL 1.9982
+[  5038.4s 12:41:58] [Rare_W_s0] seed 0 step 12: KL 2.4566
+[  5103.2s 12:43:03] [Rare_W_s0] seed 0 step 13: KL 2.6488
+[  5168.3s 12:44:08] [Rare_W_s0] seed 0 step 14: KL 3.3282
+[  5233.3s 12:45:13] [Rare_W_s0] seed 0 step 15: KL 3.4570
+[  5298.1s 12:46:18] [Rare_W_s0] seed 0 step 16: KL 4.4812
+[  5363.0s 12:47:23] [Rare_W_s0] seed 0 step 17: KL 4.4373
+[  5428.5s 12:48:29] [Rare_W_s0] seed 0 step 18: KL 6.1505
+[  5493.8s 12:49:34] [Rare_W_s0] seed 0 step 19: KL 5.6855
+[  5533.1s 12:50:13] [Rare_W_s0] final KL 8.504258, 1339 s, GPU peak 69.3 GB
+[  5533.4s 12:50:13] [Rare_W_s0] mean of the last 5 step reads 4.8423 (logged, not ruled on)
+[  5533.4s 12:50:13] [score] {"r": {"N": [2.1511777751699475, NaN], "Rare": [4.990127643954101, NaN]}, "mean": {"N": NaN, "Rare": NaN}, "verdict": {"N": "unread", "Rare": "unread"}, "described": {"N": "unread", "Rare": "unread"}, "gap": {"N": NaN, "Rare": NaN}, "W0": [1.7042166062165052, 1.4389430517330766], "W0_spread": 0.1843530598128471, "label": {"N": "unread", "Rare": "unread"}, "do_nothing": "unread", "pair": "no call", "excess": {"N_W_s0": 1.961856281151995, "N_W_s1": NaN, "Rare_W_s0": 6.800041791750118, "Rare_W_s1": NaN}, "last5": {"W0_W_s0": 1.34564, "W0_W_s1": 1.25704, "N_W_s0": 2.96352, "Rare_W_s0": 4.8423}, "own_bars": {"pass_at": 1.267, "fail_at": 1.776}, "clean": {"N": 0.638525314188899, "Rare": 0.638525314188899}, "left_in_delta": {"Rare": 0.23401748920014315, "size": 323.94418301344984}, "checks": {"N_clean": {"got": -1.2646321971571718e-09, "want": "under 0.0001"}, "N_moves": {"got": 0.638525314188899, "want": "at least 0.001"}, "Rare_left": {"got": 0.23401748920014315, "want": "finite and above least squares' 0.0984"}, "Rare_same_weights": {"got": 0.0, "want": "within 1e-06 of do-nothing's"}, "W0_s0": {"got": 1.7042166062165052, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4389430517330766, "want": "Amendment 2's 1.438 within 20%"}}, "leans": {"N_fails": null, "Rare_below_N_beyond_spread": null, "both_fail": null}}
+[  5533.7s 12:50:14] [check N_clean] -1.2646321971571718e-09, want under 0.0001
+[  5598.8s 12:51:19] [N_W_s1] seed 1 step 0: KL 0.2023
+[  5663.6s 12:52:24] [N_W_s1] seed 1 step 1: KL 0.2478
+[  5728.5s 12:53:29] [N_W_s1] seed 1 step 2: KL 0.3077
+[  5793.3s 12:54:33] [N_W_s1] seed 1 step 3: KL 0.3966
+[  5858.3s 12:55:38] [N_W_s1] seed 1 step 4: KL 0.5267
+[  5923.2s 12:56:43] [N_W_s1] seed 1 step 5: KL 0.6913
+[  5988.0s 12:57:48] [N_W_s1] seed 1 step 6: KL 0.8398
+[  6053.0s 12:58:53] [N_W_s1] seed 1 step 7: KL 0.9781
+[  6118.2s 12:59:58] [N_W_s1] seed 1 step 8: KL 1.1772
+[  6183.0s 13:01:03] [N_W_s1] seed 1 step 9: KL 1.3585
+[  6247.8s 13:02:08] [N_W_s1] seed 1 step 10: KL 1.6171
+[  6313.0s 13:03:13] [N_W_s1] seed 1 step 11: KL 1.8211
+[  6378.2s 13:04:18] [N_W_s1] seed 1 step 12: KL 2.1757
+[  6442.9s 13:05:23] [N_W_s1] seed 1 step 13: KL 2.3719
+[  6507.7s 13:06:28] [N_W_s1] seed 1 step 14: KL 2.8647
+[  6572.9s 13:07:33] [N_W_s1] seed 1 step 15: KL 3.0039
+[  6638.1s 13:08:38] [N_W_s1] seed 1 step 16: KL 3.7129
+[  6702.9s 13:09:43] [N_W_s1] seed 1 step 17: KL 3.7976
+[  6767.7s 13:10:48] [N_W_s1] seed 1 step 18: KL 4.8522
+[  6832.8s 13:11:53] [N_W_s1] seed 1 step 19: KL 4.7715
+[  6872.1s 13:12:32] [N_W_s1] final KL 6.032392, 1338 s, GPU peak 69.0 GB
+[  6872.1s 13:12:32] [N_W_s1] mean of the last 5 step reads 4.0276 (logged, not ruled on)
+[  6872.1s 13:12:32] [score] {"r": {"N": [2.1511777751699475, 4.192238006214539], "Rare": [4.990127643954101, NaN]}, "mean": {"N": 3.171707890692243, "Rare": NaN}, "verdict": {"N": "fail", "Rare": "unread"}, "described": {"N": "fail", "Rare": "unread"}, "gap": {"N": 2.171707890692243, "Rare": NaN}, "W0": [1.7042166062165052, 1.4389430517330766], "W0_spread": 0.1843530598128471, "label": {"N": "fails", "Rare": "unread"}, "do_nothing": "do-nothing fails on this larger update", "pair": "no call", "excess": {"N_W_s0": 1.961856281151995, "N_W_s1": 4.59344869852066, "Rare_W_s0": 6.800041791750118, "Rare_W_s1": NaN}, "last5": {"W0_W_s0": 1.34564, "W0_W_s1": 1.25704, "N_W_s0": 2.96352, "Rare_W_s0": 4.8423, "N_W_s1": 4.02762}, "own_bars": {"pass_at": 1.267, "fail_at": 1.776}, "clean": {"N": 0.638525314188899, "Rare": 0.638525314188899}, "left_in_delta": {"Rare": 0.23401748920014315, "size": 323.94418301344984}, "checks": {"N_clean": {"got": -1.2646321971571718e-09, "want": "under 0.0001"}, "N_moves": {"got": 0.638525314188899, "want": "at least 0.001"}, "Rare_left": {"got": 0.23401748920014315, "want": "finite and above least squares' 0.0984"}, "Rare_same_weights": {"got": 0.0, "want": "within 1e-06 of do-nothing's"}, "W0_s0": {"got": 1.7042166062165052, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4389430517330766, "want": "Amendment 2's 1.438 within 20%"}}, "leans": {"N_fails": true, "Rare_below_N_beyond_spread": null, "both_fail": null}}
+[  6872.2s 13:12:32] [Rare] X ready, 0 s, GPU peak 69.0 GB
+[  6946.3s 13:13:46] [Rare_W_s1] seed 1 step 0: KL 0.2022
+[  7011.0s 13:14:51] [Rare_W_s1] seed 1 step 1: KL 0.2486
+[  7075.8s 13:15:56] [Rare_W_s1] seed 1 step 2: KL 0.3092
+[  7140.7s 13:17:01] [Rare_W_s1] seed 1 step 3: KL 0.3933
+[  7206.0s 13:18:06] [Rare_W_s1] seed 1 step 4: KL 0.5128
+[  7270.8s 13:19:11] [Rare_W_s1] seed 1 step 5: KL 0.6860
+[  7335.6s 13:20:16] [Rare_W_s1] seed 1 step 6: KL 0.8661
+[  7400.3s 13:21:20] [Rare_W_s1] seed 1 step 7: KL 1.0329
+[  7465.4s 13:22:25] [Rare_W_s1] seed 1 step 8: KL 1.2819
+[  7530.4s 13:23:30] [Rare_W_s1] seed 1 step 9: KL 1.5238
+[  7595.9s 13:24:36] [Rare_W_s1] seed 1 step 10: KL 1.9011
+[  7660.8s 13:25:41] [Rare_W_s1] seed 1 step 11: KL 2.1703
+[  7725.0s 13:26:45] [Rare_W_s1] seed 1 step 12: KL 2.7641
+[  7789.3s 13:27:49] [Rare_W_s1] seed 1 step 13: KL 3.0455
+[  7853.6s 13:28:54] [Rare_W_s1] seed 1 step 14: KL 3.8631
+[  7918.0s 13:29:58] [Rare_W_s1] seed 1 step 15: KL 3.9544
+[  7982.3s 13:31:02] [Rare_W_s1] seed 1 step 16: KL 5.0063
+[  8047.2s 13:32:07] [Rare_W_s1] seed 1 step 17: KL 5.2818
+[  8111.9s 13:33:12] [Rare_W_s1] seed 1 step 18: KL 7.0502
+[  8177.2s 13:34:17] [Rare_W_s1] seed 1 step 19: KL 7.1904
+[  8216.5s 13:34:57] [Rare_W_s1] final KL 9.789171, 1336 s, GPU peak 69.3 GB
+[  8216.8s 13:34:57] [Rare_W_s1] mean of the last 5 step reads 5.6966 (logged, not ruled on)
+[  8216.8s 13:34:57] [score] {"r": {"N": [2.1511777751699475, 4.192238006214539], "Rare": [4.990127643954101, 6.803028680167823]}, "mean": {"N": 3.171707890692243, "Rare": 5.896578162060962}, "verdict": {"N": "fail", "Rare": "fail"}, "described": {"N": "fail", "Rare": "fail"}, "gap": {"N": 2.171707890692243, "Rare": 4.896578162060962}, "W0": [1.7042166062165052, 1.4389430517330766], "W0_spread": 0.1843530598128471, "label": {"N": "fails", "Rare": "fails"}, "do_nothing": "do-nothing fails on this larger update", "pair": "both fail", "excess": {"N_W_s0": 1.961856281151995, "N_W_s1": 4.59344869852066, "Rare_W_s0": 6.800041791750118, "Rare_W_s1": 8.350227798335254}, "last5": {"W0_W_s0": 1.34564, "W0_W_s1": 1.25704, "N_W_s0": 2.96352, "Rare_W_s0": 4.8423, "N_W_s1": 4.02762, "Rare_W_s1": 5.69662}, "own_bars": {"pass_at": 1.267, "fail_at": 1.776}, "clean": {"N": 0.638525314188899, "Rare": 0.638525314188899}, "left_in_delta": {"Rare": 0.23401748920014315, "size": 323.94418301344984}, "checks": {"N_clean": {"got": -1.2646321971571718e-09, "want": "under 0.0001"}, "N_moves": {"got": 0.638525314188899, "want": "at least 0.001"}, "Rare_left": {"got": 0.23401748920014315, "want": "finite and above least squares' 0.0984"}, "Rare_same_weights": {"got": 0.0, "want": "within 1e-06 of do-nothing's"}, "W0_s0": {"got": 1.7042166062165052, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4389430517330766, "want": "Amendment 2's 1.438 within 20%"}}, "leans": {"N_fails": true, "Rare_below_N_beyond_spread": false, "both_fail": true}}
+[  8216.8s 13:34:57] [done] GPU peak 69.3 GB
+[  8217.1s 13:34:57] [score] {"r": {"N": [2.1511777751699475, 4.192238006214539], "Rare": [4.990127643954101, 6.803028680167823]}, "mean": {"N": 3.171707890692243, "Rare": 5.896578162060962}, "verdict": {"N": "fail", "Rare": "fail"}, "described": {"N": "fail", "Rare": "fail"}, "gap": {"N": 2.171707890692243, "Rare": 4.896578162060962}, "W0": [1.7042166062165052, 1.4389430517330766], "W0_spread": 0.1843530598128471, "label": {"N": "fails", "Rare": "fails"}, "do_nothing": "do-nothing fails on this larger update", "pair": "both fail", "excess": {"N_W_s0": 1.961856281151995, "N_W_s1": 4.59344869852066, "Rare_W_s0": 6.800041791750118, "Rare_W_s1": 8.350227798335254}, "last5": {"W0_W_s0": 1.34564, "W0_W_s1": 1.25704, "N_W_s0": 2.96352, "Rare_W_s0": 4.8423, "N_W_s1": 4.02762, "Rare_W_s1": 5.69662}, "own_bars": {"pass_at": 1.267, "fail_at": 1.776}, "clean": {"N": 0.638525314188899, "Rare": 0.638525314188899}, "left_in_delta": {"Rare": 0.23401748920014315, "size": 323.94418301344984}, "checks": {"N_clean": {"got": -1.2646321971571718e-09, "want": "under 0.0001"}, "N_moves": {"got": 0.638525314188899, "want": "at least 0.001"}, "Rare_left": {"got": 0.23401748920014315, "want": "finite and above least squares' 0.0984"}, "Rare_same_weights": {"got": 0.0, "want": "within 1e-06 of do-nothing's"}, "W0_s0": {"got": 1.7042166062165052, "want": "Amendment 2's 1.703 within 20%"}, "W0_s1": {"got": 1.4389430517330766, "want": "Amendment 2's 1.438 within 20%"}}, "leans": {"N_fails": true, "Rare_below_N_beyond_spread": false, "both_fail": true}}
+peak host RSS 34.4 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/qwen_tofu_adversary/results/ (results.json, run.log, console.log) ===

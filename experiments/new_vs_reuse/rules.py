@@ -15,6 +15,7 @@ NOT_SPECIFIC, NO_REACH = "unreadable: not specific", "unreadable: does not reach
 NO_TEETH, NO_GAIN, NO_CALL = "unreadable: no teeth", "unreadable: no gain", "no call"
 AS_FILED, MISS = "as filed", "miss"
 DOES_NOT_APPLY, NO_HELD_OUT = "definition does not apply", "no held-out input"
+NO_VERSION, NO_C, NO_READOUT = "no version kept the target", "no C listed", "unreadable: no readout"
 
 
 # ---- A: admissibility, from labels alone ----
@@ -69,11 +70,6 @@ def possessed(acc: float, shuffled: float, own: float, num: int, den: int) -> bo
 def b_star(flags: dict[int, bool], first: int, last: int) -> int | None:
     """The earliest possessed block from `first` up to the one before `last`; None if none."""
     return next((b for b in range(first, last) if flags.get(b)), None)
-
-
-def fit_stops(loss: float, bar: float) -> bool:
-    """The readout's held-out last-block loss over the bar, or nan: stop. A tie goes on."""
-    return not loss <= bar
 
 
 # ---- D: the verdict ----
@@ -136,7 +132,7 @@ def r3(has_teeth: bool | None, rank1: float, write: float, band: float, control_
     """`has_teeth` None: no possessed block, the plan's "unreadable: no readout". As filed: not specific. Branch: the hand
     write within the band, rank-1 read by its own share. Anything else: a miss."""
     if has_teeth is None:
-        return {"reading": "branch: no readout", "verdict": "unreadable: no readout", "band": band}
+        return {"reading": "branch: no readout", "verdict": NO_READOUT, "band": band}
     v = verdict(has_teeth, rank1, write, band, control_ok)
     spared = v in (REUSES, NO_REACH)
     return {"reading": AS_FILED if v == NOT_SPECIFIC else "branch: hand write spared" if spared else MISS, "verdict": v, "band": band,
@@ -151,15 +147,32 @@ def r7(has_teeth: bool, state: float, push: float, band: float, control_ok: bool
             "shares": {"state": state, "push": push}}  # fmt: skip
 
 
+def keeps_target(target: int, values: Sequence[int], answers: Sequence[int]) -> bool:
+    """The lead's edit: a table is a version of the old task only if the old target is a value and at least one key's answer."""
+    return target in values and target in answers
+
+
+def gap(why: str, **rec: Any) -> dict[str, Any]:
+    """A row with nothing trained and nothing read: why it is a gap, and what was printed."""
+    return {**rec, "reading": f"gap: {why}", "verdict": why}
+
+
+def i3(has_teeth: bool, state: float, push: float, band: float, control_ok: bool = True) -> dict[str, Any]:
+    """`r7` with I3's filed branches: push spared and the state above, reuses C; push spared and the state within, does not reach."""
+    r = r7(has_teeth, state, push, band, control_ok)
+    named = {REUSES: "branch: push spared, state above: reuses C", NO_REACH: "branch: push spared, state within: does not reach"}
+    return {**r, "reading": named.get(r["verdict"], r["reading"])}
+
+
 def gaps(readings: dict[str, dict[str, Any]]) -> list[str]:
-    """The rows that missed. The definition is frozen (plan, "Scope as restated"): a miss is reported as a gap and stage 2 still
-    reads the full table."""
-    return [k for k, r in readings.items() if r["reading"] == MISS]
+    """The rows that missed, and those with nothing to read. The definition is frozen (plan, "Scope as restated"): a miss is
+    reported as a gap and stage 2 still reads the full table."""
+    return [k for k, r in readings.items() if r["reading"] == MISS or r["reading"].startswith("gap: ")]
 
 
 def table_row(task: str, assumed: str, admissibility_label: str | None, read: str | None) -> dict[str, str]:
     """One line of the deliverable: the verdict read under the definition if the row was read, else the admissibility label;
     a row with neither has no C listed. Every verdict that is not a label of the state carries itself as the reason."""
-    verdict = read if read is not None else admissibility_label if admissibility_label is not None else "no C listed"
+    verdict = read if read is not None else admissibility_label if admissibility_label is not None else NO_C
     labelled = verdict in (REUSES, NOT_THROUGH)
     return {"task": task, "assumed": assumed, "verdict": verdict, "reason": "" if labelled else verdict}
