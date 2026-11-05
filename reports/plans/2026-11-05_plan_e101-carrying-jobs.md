@@ -158,3 +158,18 @@ C0 and P0 → writers (12) → `judge-inputs` → maximisers (12) and judges (12
 - Elicit and its cipher in stage 1 (stage 0 only); C3's ciphers (no carrying set).
 - Steering or ablation of the carrying neurons; a second writer per neuron; the essay's distant-concept control.
 - Qwen3-1.7B: after the 67M reads, if P1 passes.
+
+## Amendment 1 (2026-11-05)
+
+The judge stage had no power (analysis): its brief excluded punctuation and breaks, and the W0 controls were the same
+generic top firers on every task. Rules `results/predictions_amend1.json`, filed before judging. $0; first of two.
+- **Judge** (`briefs/judge_amend1.md`): no excluded token kind; each description shows 4 of its tasks' windows with
+  the answer marked; ids hashed, roles mixed, letters reshuffled. 376 neurons, 12 batches of 32.
+- **Controls**: per task, the 10 neurons whose engaged value most exceeds their mean over tasks with other windows
+  (`contrast_top`), outside the carrying sets and the random pool: lowercase, ident32, e62_lookup. e62_copy and
+  e62_lookup read the same windows, so W0's firing cannot tell them apart. 24 are new: writer batch `c00`.
+- **C1a**: each task's controls tied to their own description above its random floor (ties only, `gap_rule`; about
+  3-4 of 10); not pass closes the route on the 67M, next Qwen3-1.7B. **C1b**: own above the most-tied other control
+  description. **C1_fp** ≤ 0.5. **P1, P2** as filed; P1 read iff C1a's lowercase holds, P2 iff C1a, C1b and P1 pass.
+- Order: `sbatch cluster/carrying_jobs.sbatch controls_amend1` (debug, < 5 min; the window loaders need the model) →
+  writer on `c00` → `score.py amend1-inputs` → 12 judges → `score.py amend1-score`. No maximiser call.

@@ -1,0 +1,79 @@
+{
+ "experiment": "E101 Amendment 1 (the first of two): a judge with no token exclusion that sees each task's own windows, and task-specific W0 controls",
+ "filed": "2026-11-05",
+ "plan": "reports/plans/2026-11-05_plan_e101-carrying-jobs.md, section 'Amendment 1 (2026-11-05)'",
+ "why": "reports/analyses/2026-11-05_analysis_e101-carrying-jobs.md: the filed judge had no power (W0 controls 0 of 10 on every task). (a) briefs/judge.md excluded punctuation and breaks, where lowercase's carrying neurons fire; (b) the controls were W0's top firers at the answer position, the same generic neurons on every task (22 distinct of 30). results/predictions.json stands unedited; P1 and P2 keep its rules and settings.",
+ "reused_unchanged": "results/large/{pile_top.pt, engaged.pt, key.json, batches/b*.json}; results/stage1/{writer,maximiser}/b*.json and max_scores.json (C2, every pool neuron's outcome). The filed judge's files results/stage1/judge/ are not read.",
+ "settings": {
+  "seed": 101,
+  "seed_note": "seed + 4: which task windows the judge sees; seed + 5: the order of the judge batches; seed + 6: the letters per batch; seed + 7: the order within writer batch c00",
+  "batch_size": 32,
+  "batch_size_note": "376 neurons (352 filed + 24 new controls) in 12 judge batches; the filed batches held 30",
+  "window_context": 16,
+  "window_context_note": "tokens shown before the answer, the answer itself marked; the filed writer saw 20 a side of the peak",
+  "controls": {
+   "lowercase": {"n": 10, "description": "lower"},
+   "ident32": {"n": 10, "description": "copykey"},
+   "e62_lookup": {"n": 10, "description": "lookup"}
+  },
+  "controls_note": "the copy task is ident32 (copy the key) and the lookup task e62_lookup: e62_copy and e62_lookup read the same windows with another target, so W0's firing at the answer position is identical on the two (engaged.pt, max abs difference 0.000; likewise ident32 = rand32, elicit = cipher, c3_rank1 = c3_copy) and no W0 contrast can tell them apart. These three tasks have three different windows sets and three different descriptions.",
+  "control_rule": "commute.carrying_jobs.contrast_top(engaged.pt, task, n, exclude): the n neurons whose engaged value on the task (mean Pile quantile of W0's firing at its answer positions, stage 0) most exceeds their mean engaged value over the tasks with other windows (twins counted once, the task's own twin left out); exclude = every scored state's carrying neurons (run.py carrying_sets) and the filed pool's random neurons, so neither floor nor carrying side changes. A preview on CPU before filing gave 30 neurons, 24 not in the pool: one writer batch, c00.",
+  "control_rule_source": "the brief's 'a contrast, not a raw top' (lead, 2026-11-05); the engaged value is the filed stage 0 quantity (run.py engaged_on), only the ranking changes",
+  "description_windows": {
+   "lower": {"lowercase": 4},
+   "cipher": {"e53_cipher": 2, "broad_cipher": 2},
+   "copykey": {"ident32": 2, "c3_copy": 2},
+   "lookup": {"rand32": 2, "e62_lookup": 2},
+   "induct": {"e62_copy": 4},
+   "rank1": {"c3_rank1": 4}
+  },
+  "description_windows_note": "each description is shown with 4 read windows of the tasks the filed groups give it (predictions.json .groups), drawn with seed + 4, rendered by controls_amend1.py into results/task_windows_amend1.json",
+  "min_group": 8,
+  "missing_max": 0.1,
+  "min_gap": 0.2,
+  "judge_fp_max": 0.5,
+  "settings_source": "min_group, missing_max, min_gap and judge_fp_max as filed (predictions.json .settings)"
+ },
+ "order": "1. sbatch cluster/carrying_jobs.sbatch controls_amend1 (debug, < 5 min): controls, the writer batch c00, key_amend1.json, task_windows_amend1.json. 2. one writer call on c00 (briefs/writer.md, unchanged). 3. score.py amend1-inputs. 4. the judge calls (briefs/judge_amend1.md), one per batch j<NN>. 5. score.py amend1-score -> results/score_amend1.json. No maximiser call: no amendment rule needs the new controls' maximiser outcome.",
+ "predictions": {
+  "C1a": {
+   "claim": "power: the new judge ties a task's own W0-specific neurons to that task",
+   "rule": "per control task: own = share of its controls with a judge output that the judge ties to the task's description (ties only: the controls have no maximiser outcome); floor = the same share over the filed pool's random neurons with a judge output, for that description; CJ.gap_rule(own, n, floor, n_random, min_gap); under min_group judged controls, or more than missing_max of them unjudged, a task is unreadable. C1a = CJ.every_task over the three: pass iff all read 'above', fail iff any reads 'below_or_level', no call otherwise",
+   "power": "at floor 0, 3 of 10 reads above (gap 0.3 >= 2 se 0.29); at floor 0.05 (n 179), 4 of 10",
+   "lean": "pass on ident32 and e62_lookup (marker and key-format neurons are easy to name and the windows show the format); open on lowercase (its contrast is weak: own engaged 0.57-0.75 in the preview)",
+   "at_w0": "the controls are W0's; nothing is trained",
+   "do_nothing": "a judge that ties nothing: own 0 = floor 0, below_or_level on every task, fail. A judge that ties everything: own 1 = floor 1, fail. Random neurons in place of the controls: own = floor in expectation, fail or no call (not pass)",
+   "if_not_pass": "fail or no call: the route is closed on the 67M (no Amendment 2); the next step is Qwen3-1.7B with natural-language tasks",
+   "blind_to": "jobs the writer cannot see in 20 Pile windows; a judge prior for some descriptions (the per-description floor controls it); judge noise between calls (one judge per batch, not measured)"
+  },
+  "C1b": {
+   "claim": "specificity: each task's controls are tied to their own task more often than to another control task",
+   "rule": "per control task: own as C1a; other = the largest share of the same controls tied to either other control task's description (same n); CJ.gap_rule(own, n, other, n, min_gap); C1b = CJ.every_task over the three",
+   "lean": "open: copykey and lookup share the marker-key format, and lookup's windows include rand32's, which are ident32's inputs, so ident32's controls may be tied to lookup as well",
+   "do_nothing": "ties nothing: 0 = 0, fail; ties all six: 1 = 1, fail",
+   "if_fail": "P2 is reported, not read (its rows need the judge to tell descriptions apart)",
+   "blind_to": "as C1a; the three non-control descriptions (cipher, induct, rank1) are not compared"
+  },
+  "C1_fp": {
+   "rule": "share of the filed pool's random neurons with a judge output that the judge ties to any description; ok iff <= judge_fp_max and at least one judged",
+   "expect": "0.1-0.4 (the filed judge read 0.017 with its exclusions; the new one has none and sees windows)",
+   "if_fail": "P1 and P2 are reported, not read"
+  },
+  "P1": {
+   "rule": "as filed (predictions.json .predictions.P1, score.py p1_p2): related = 'win' and tied to 'lower' among lowercase's carrying neurons, against the random floor for 'lower'",
+   "read_iff": "C2 (filed, max_scores.json self_test) ok, C1_fp ok and C1a's lowercase task reads 'above'",
+   "lean": "open",
+   "do_nothing": "related = floor: below_or_level, fail"
+  },
+  "P2": {
+   "rule": "as filed (predictions.json .predictions.P2): CJ.row_kind on lowercase vs ciphers, same_word vs random_word, e62_copy vs e62_lookup; pass iff at least 2 rows read 'above'",
+   "read_iff": "C1_fp ok, C1a pass, C1b pass and P1 pass (the filed P2 gate is C1, C2 and P1 pass)",
+   "lean": "open",
+   "do_nothing": "x = 0 both sides: below_or_level on every row, fail"
+  },
+  "R_w0_controls": {
+   "reported_not_scored": "the filed W0 controls (top firers) under the new judge, by the filed rule (win and tied); shows whether the brief's exclusion alone hid them"
+  }
+ },
+ "edge_cases_checked": "tests/test_carrying_jobs.py, before filing: contrast_top with twin tasks, exclusion and a task with no other windows; every_task on [], all above, one below, one no_call; the amendment's scorer on synthetic tables: a judge that ties nothing, one that ties everything, a missing judge batch (unreadable, no call), controls that are random neurons"
+}

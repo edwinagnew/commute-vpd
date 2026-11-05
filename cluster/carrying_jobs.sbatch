@@ -5,6 +5,7 @@
 # (run.py refuses unless it is committed unchanged).
 #   cd ~/commute-agents/<role> && sbatch cluster/carrying_jobs.sbatch            # stage 0: experiments/carrying_jobs/run.py
 #   cd ~/commute-agents/<role> && sbatch cluster/carrying_jobs.sbatch maximise   # stage 1's scoring job (maximise.py: C2, then the agents' texts; ~3 min)
+#   cd ~/commute-agents/<role> && sbatch cluster/carrying_jobs.sbatch controls_amend1   # Amendment 1: controls, writer batch c00, task windows (< 5 min)
 # Stage 0 exits 1 on a missed control (C0_pile, C0_w0, C0_null, C0_files), each logged before the next step.
 # Inputs on NFS (gitignored): the task windows E98 read (experiments/{regating_table,keydependent_elicit,performed_anchor,
 # open_pair,open_pair_instruments,induction_cue}/results/large/), the target model in artifacts/vpd/, Pile val rows

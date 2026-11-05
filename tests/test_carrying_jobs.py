@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
+import pytest
 import torch
 
 from commute import carrying_jobs as CJ
+from commute.jobs import load_experiment
 
 
 def test_quantiles_edges() -> None:
@@ -90,3 +94,84 @@ def test_row_kind_do_nothing() -> None:
     assert CJ.row_kind(z, z, 0.2)["verdict"] == "below_or_level"
     assert CJ.row_kind({**s, "n": 0}, s, 0.2)["verdict"] == "unreadable"
     assert CJ.row_kind({"p": 0.8, "n": 16, "floor": 0.1, "n_floor": 180}, {"p": 0.05, "n": 24, "floor": 0.05, "n_floor": 180}, 0.2)["verdict"] == "above"
+
+
+# ----------------------------------------------------------------------------- Amendment 1 (predictions_amend1.json)
+
+
+def test_contrast_top_twins_and_exclusion() -> None:
+    a = torch.tensor([0.9, 0.5, 0.8, 0.1])
+    u = torch.tensor([0.1, 0.5, 0.0, 0.1])
+    eng = {"t": a, "twin": a.clone(), "u": u, "u2": u.clone(), "v": torch.tensor([0.9, 0.1, 0.0, 0.1])}
+    top, over = CJ.contrast_top(eng, "t", 2, set())
+    assert over == ["u", "v"] and top == [2, 0]  # contrast [0.4, 0.2, 0.8, 0.0]: t's twin left out, u's twin once
+    assert CJ.contrast_top(eng, "t", 2, {2})[0] == [0, 1]
+    with pytest.raises(AssertionError):
+        CJ.contrast_top({"t": a, "twin": a.clone()}, "t", 1, set())  # no task with other windows
+    with pytest.raises(AssertionError):
+        CJ.contrast_top(eng, "t", 4, {0})  # too few neurons left
+
+
+def test_every_task_edges() -> None:
+    assert CJ.every_task([]) == "no call"
+    assert CJ.every_task(["above"] * 3) == "pass"
+    assert CJ.every_task(["above", "below_or_level", "no_call"]) == "fail"
+    assert CJ.every_task(["above", "no_call", "unreadable"]) == "no call"
+
+
+SC = load_experiment("carrying_jobs", "score")
+RES = Path(__file__).resolve().parents[1] / "experiments" / "carrying_jobs" / "results"
+P, A = json.loads((RES / "predictions.json").read_text()), json.loads((RES / "predictions_amend1.json").read_text())
+CTL = A["settings"]["controls"]
+Tie = Callable[[str, str], set[str]]
+
+
+def table(tie: Tie, unjudged: Callable[[str, str], bool] = lambda g, r: False) -> dict[str, Any]:
+    """A synthetic table in the filed pool's shape: 180 random, each group's carrying, the new controls; every neuron
+    wins; tie(group, role) gives its ties; unjudged(group, role) drops the group's first two judge outputs."""
+    T: dict[str, Any] = {}
+
+    def add(g: str, r: str, n: int) -> None:
+        for k in range(n):
+            j = not unjudged(g, r) or k >= 2
+            T[f"{g}/{r}/{k}"] = {"roles": [{"group": g, "role": r}], "outcome": "win", "ties": tie(g, r) if j else set(),
+                                 "judged": j, "complete": j}
+
+    add("pool", "random", 180)
+    for g, s in P["groups"].items():
+        add(g, "carrying", s["n"])
+    for t, c in CTL.items():
+        add(t, "control_amend1", c["n"])
+    return T
+
+
+def own(g: str, r: str) -> set[str]:
+    return {CTL[g]["description"]} if r == "control_amend1" else set()
+
+
+def test_amend1_do_nothing_everything_and_perfect() -> None:
+    none = SC.amend1(P, A, table(lambda g, r: set()), True)
+    assert none["C1a"]["status"] == "fail" and none["C1b"]["status"] == "fail" and none["C1_fp"]["ok"]
+    assert not none["route_open_on_67M"] and not none["read"]["P1"] and not none["read"]["P2"]
+    every = SC.amend1(P, A, table(lambda g, r: set(P["descriptions"])), True)
+    assert every["C1a"]["status"] == "fail" and not every["C1_fp"]["ok"] and every["C1_fp"]["share"] == 1.0
+    good = SC.amend1(P, A, table(own), True)
+    assert good["C1a"]["status"] == good["C1b"]["status"] == "pass" and good["route_open_on_67M"]
+    assert good["read"]["P1"] and not good["read"]["P2"]  # P1 itself fails: no carrying neuron is tied
+    assert not SC.amend1(P, A, table(own), False)["read"]["P1"]  # C2 missed
+
+
+def test_amend1_missing_confused_and_random_controls() -> None:
+    miss = SC.amend1(P, A, table(own, lambda g, r: g == "lowercase" and r == "control_amend1"), True)
+    assert miss["C1a"]["tasks"]["lowercase"]["verdict"] == "unreadable" and miss["C1a"]["status"] == "no call"
+    assert not miss["route_open_on_67M"]
+    both: Tie = lambda g, r: {"copykey", "lookup"} if g == "ident32" and r == "control_amend1" else own(g, r)
+    conf = SC.amend1(P, A, table(both), True)
+    assert conf["C1a"]["status"] == "pass" and conf["C1b"]["tasks"]["ident32"]["verdict"] == "below_or_level"
+    assert conf["C1b"]["status"] == "fail" and not conf["read"]["P2"]
+    T = table(lambda g, r: set())  # controls that read as random: a tenth of every role tied to every description
+    for i, t in T.items():
+        if int(i.rsplit("/", 1)[1]) % 10 == 0:
+            t["ties"] = set(P["descriptions"])
+    rnd = SC.amend1(P, A, T, True)
+    assert rnd["C1a"]["status"] == "fail" and not rnd["route_open_on_67M"]

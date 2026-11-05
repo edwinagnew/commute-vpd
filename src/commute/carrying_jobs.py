@@ -181,6 +181,30 @@ def load_texts(folder: Path, batches: Mapping[str, Sequence[str]], n_ex: int, n_
     return texts, missing, bad
 
 
+def contrast_top(engaged: Mapping[str, Tensor], task: str, k: int, exclude: set[int]) -> tuple[list[int], list[str]]:
+    """Amendment 1's task-specific controls: the k neurons, none in `exclude`, whose engaged value on `task` most exceeds
+    their mean engaged value over the other tasks (ties by index). A task whose engaged vector equals another's (the same
+    windows with another target: W0 fires the same at the answer position) counts once, and `task`'s twins not at all.
+    Returns the neurons and the tasks the mean is over."""
+    own, others = engaged[task], {}
+    for n, v in engaged.items():
+        if not torch.equal(v, own) and not any(torch.equal(v, o) for o in others.values()):
+            others[n] = v
+    assert others, f"{task}: no task with other windows"
+    c = own - torch.stack(list(others.values())).mean(dim=0)
+    top = [i for i in torch.sort(c, descending=True, stable=True).indices.tolist() if i not in exclude][:k]
+    assert len(top) == k, f"{task}: {len(top)} neurons for {k}"
+    return top, list(others)
+
+
+def every_task(verdicts: Sequence[str]) -> str:
+    """Amendment 1's C1a and C1b over the control tasks: 'pass' iff every task reads 'above'; 'fail' iff any reads
+    'below_or_level'; else (no task, or a no_call or unreadable task and none below) 'no call'."""
+    if verdicts and all(v == "above" for v in verdicts):
+        return "pass"
+    return "fail" if "below_or_level" in verdicts else "no call"
+
+
 def self_test(outcomes: Sequence[str | None], min_win: float) -> dict[str, Any]:
     """C2: the share of 'win' among scorable neurons (outcome not None); ok iff it reaches min_win. No scorable neuron
     gives nan and not ok."""
