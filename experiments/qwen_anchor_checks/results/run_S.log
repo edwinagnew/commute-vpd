@@ -1,0 +1,48 @@
+[    3.8s] [S E88] start; NVIDIA L40
+[   11.0s] [S NVIDIA L40] 3935 sequences; first batch loss 5.711041; seed 0's (H100) 6.240152
+[   11.0s] [check NVIDIA L40] ok {"at": 0, "name": "first batch differs from seed 0's", "value": 0.5291114038322604, "holds": true}
+[   12.0s] [check NVIDIA L40] ok {"at": 1, "name": "loss against the first batch", "value": 0.0, "holds": true}
+[   12.0s] [check NVIDIA L40] ok {"at": 1, "name": "rate", "value": 0.0, "holds": true}
+[   12.0s] [check NVIDIA L40] ok {"at": 1, "name": "|dW|", "value": 0.0, "holds": true}
+[   12.0s] [S NVIDIA L40] {"step": 1, "lr": 0.0, "loss": 5.711040745011295, "grad_norm": 152.16004943847656, "dw_norm": 0.0, "peak_gib": 27.472482204437256}
+[   12.9s] [check NVIDIA L40] ok {"at": 2, "name": "|dW|", "value": 0.0023443339888910395, "holds": true}
+[   12.9s] [check NVIDIA L40] ok {"at": 2, "name": "peak", "value": 28.813945293426514, "holds": true}
+[   12.9s] [S NVIDIA L40] {"step": 2, "lr": 8e-08, "loss": 6.507198293585526, "grad_norm": 153.0125732421875, "dw_norm": 0.0023443339888910395, "peak_gib": 28.813945293426514}
+[   13.8s] [S NVIDIA L40] {"step": 3, "lr": 1.6e-07, "loss": 6.355455358320148, "grad_norm": 160.35292053222656, "dw_norm": 0.006470527745244905, "peak_gib": 28.813945293426514}
+[   59.6s] [S NVIDIA L40] {"step": 50, "lr": 3.920000000000001e-06, "loss": 2.184304480741966, "grad_norm": 9.143783569335938, "dw_norm": 0.9250845540275381, "peak_gib": 29.013582229614258}
+[  127.8s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_anchor_checks/results/large/dW/tofu_seed142/step_100.safetensors (5.64 GB)
+[  127.8s] [S NVIDIA L40] {"step": 100, "lr": 7.92e-06, "loss": 1.9223322582047424, "grad_norm": 11.680546760559082, "dw_norm": 2.2170116092819496, "peak_gib": 29.228579998016357}
+[  176.7s] [S NVIDIA L40] {"step": 150, "lr": 1.1920000000000001e-05, "loss": 1.8444322954144394, "grad_norm": 10.588325500488281, "dw_norm": 3.7679299166599556, "peak_gib": 29.228579998016357}
+[  246.2s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_anchor_checks/results/large/dW/tofu_seed142/step_200.safetensors (5.64 GB)
+[  246.2s] [S NVIDIA L40] {"step": 200, "lr": 1.5920000000000003e-05, "loss": 1.5059527576084986, "grad_norm": 8.950422286987305, "dw_norm": 5.579065007599791, "peak_gib": 29.228579998016357}
+[  295.4s] [check NVIDIA L40] ok {"at": 250, "name": "loss / first", "value": 0.18517561994426532, "holds": true}
+[  295.4s] [S NVIDIA L40] {"step": 250, "lr": 1.9920000000000002e-05, "loss": 1.0575455104844254, "grad_norm": 7.700193405151367, "dw_norm": 7.625505744489002, "peak_gib": 29.228579998016357}
+[  345.0s] [S NVIDIA L40] {"step": 300, "lr": 1.9881749191102807e-05, "loss": 1.0896510452520651, "grad_norm": 8.327146530151367, "dw_norm": 9.67663080975193, "peak_gib": 29.228579998016357}
+[  395.3s] [S NVIDIA L40] {"step": 350, "lr": 1.9520226269456767e-05, "loss": 1.0779518170708293, "grad_norm": 7.485121726989746, "dw_norm": 11.308785486598675, "peak_gib": 29.228579998016357}
+[  446.1s] [S NVIDIA L40] {"step": 400, "lr": 1.892428378123718e-05, "loss": 0.9105405645855402, "grad_norm": 7.541131973266602, "dw_norm": 12.638534097953563, "peak_gib": 29.228579998016357}
+[  496.4s] [S NVIDIA L40] {"step": 450, "lr": 1.8108595808323736e-05, "loss": 1.103488340216168, "grad_norm": 8.852913856506348, "dw_norm": 13.763837422675298, "peak_gib": 29.228579998016357}
+[  547.1s] [S NVIDIA L40] {"step": 500, "lr": 1.709324729572274e-05, "loss": 0.4469502165002465, "grad_norm": 7.8186445236206055, "dw_norm": 14.676343078059412, "peak_gib": 29.228579998016357}
+[  597.4s] [S NVIDIA L40] {"step": 550, "lr": 1.5903239493562948e-05, "loss": 0.5308297451004782, "grad_norm": 8.1195707321167, "dw_norm": 15.513671066753528, "peak_gib": 29.228579998016357}
+[  647.5s] [S NVIDIA L40] {"step": 600, "lr": 1.4567874343342996e-05, "loss": 0.5321334063902419, "grad_norm": 8.129044532775879, "dw_norm": 16.2100227305049, "peak_gib": 29.228579998016357}
+[  698.2s] [S NVIDIA L40] {"step": 650, "lr": 1.3120032966884151e-05, "loss": 0.44413900782919336, "grad_norm": 8.391063690185547, "dw_norm": 16.74043246804446, "peak_gib": 29.228579998016357}
+[  748.3s] [S NVIDIA L40] {"step": 700, "lr": 1.1595366023984864e-05, "loss": 0.4458024225618259, "grad_norm": 7.1710662841796875, "dw_norm": 17.146806804232888, "peak_gib": 29.228579998016357}
+[  798.7s] [S NVIDIA L40] {"step": 750, "lr": 1.0031415874858796e-05, "loss": 0.1271804743419493, "grad_norm": 8.461397171020508, "dw_norm": 17.454377736679525, "peak_gib": 29.228579998016357}
+[  848.3s] [S NVIDIA L40] {"step": 800, "lr": 8.466692162630393e-06, "loss": 0.090098938432712, "grad_norm": 4.66502046585083, "dw_norm": 17.691885517497884, "peak_gib": 29.228579998016357}
+[  898.4s] [S NVIDIA L40] {"step": 850, "lr": 6.9397235781149945e-06, "loss": 0.16793031675259415, "grad_norm": 6.5020880699157715, "dw_norm": 17.858783861271867, "peak_gib": 29.228579998016357}
+[  948.8s] [S NVIDIA L40] {"step": 900, "lr": 5.488109155581549e-06, "loss": 0.12259662366515893, "grad_norm": 5.527638912200928, "dw_norm": 17.96819265480846, "peak_gib": 29.228579998016357}
+[  999.3s] [S NVIDIA L40] {"step": 950, "lr": 4.1475924597449025e-06, "loss": 0.08744962111763332, "grad_norm": 4.503483772277832, "dw_norm": 18.03905769963268, "peak_gib": 29.228579998016357}
+[ 1050.7s] [S NVIDIA L40] {"step": 1000, "lr": 2.9511814605763855e-06, "loss": 0.03808980076401322, "grad_norm": 3.4828121662139893, "dw_norm": 18.081771474318597, "peak_gib": 29.228579998016357}
+[ 1101.0s] [S NVIDIA L40] {"step": 1050, "lr": 1.928335767535997e-06, "loss": 0.019836700339066354, "grad_norm": 2.1284782886505127, "dw_norm": 18.104759550581107, "peak_gib": 29.228579998016357}
+[ 1151.6s] [S NVIDIA L40] {"step": 1100, "lr": 1.1042412362166221e-06, "loss": 0.031680279307895236, "grad_norm": 2.5043578147888184, "dw_norm": 18.115654100899995, "peak_gib": 29.228579998016357}
+[ 1201.9s] [S NVIDIA L40] {"step": 1150, "lr": 4.99189808992282e-07, "loss": 0.04648763322338616, "grad_norm": 5.555483341217041, "dw_norm": 18.11995690188217, "peak_gib": 29.228579998016357}
+[ 1252.3s] [S NVIDIA L40] {"step": 1200, "lr": 1.280798600518085e-07, "loss": 0.05264384665326747, "grad_norm": 7.405201435089111, "dw_norm": 18.12132340978402, "peak_gib": 29.228579998016357}
+[ 1320.3s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_anchor_checks/results/large/dW/tofu_seed142/step_1250.safetensors (5.64 GB)
+[ 1320.3s] [S NVIDIA L40] {"step": 1250, "lr": 4.934798141786878e-11, "loss": 0.011014941974730916, "grad_norm": 1.1112571954727173, "dw_norm": 18.121463789950703, "peak_gib": 29.228579998016357}
+[ 1320.8s] [S NVIDIA L40] training took 1310 s; peak GPU 31.4 GB, host 13.2 GB
+[ 1334.4s] [files] step 100 {"tensors": 196, "dtypes": ["F32"], "norm": 2.217011600413614, "record": 2.2170116092819496, "holds": true}
+[ 1348.0s] [files] step 200 {"tensors": 196, "dtypes": ["F32"], "norm": 5.579064993738586, "record": 5.579065007599791, "holds": true}
+[ 1361.7s] [files] step 1250 {"tensors": 196, "dtypes": ["F32"], "norm": 18.1214637317223, "record": 18.121463789950703, "holds": true}
+[ 1452.4s] [S NVIDIA L40] {"para": 0.5408367754911546, "trained": 0.991653600110039, "floor": 0.21042000712509945}; seed 0, both read on NVIDIA L40 (trained on an H100): {"para": 0.531563488930013, "trained": 0.9927498943687855, "floor": 0.21145128424263016}
+[ 1452.4s] [S NVIDIA L40] spread {"para": 0.00927328656114157, "trained": 0.0010962942587464664, "floor": 0.0010312771175307045}, |dW| 18.121 (filed 18.11 within 0.1: True); rephrased within 0.03 of R1's: True
+[ 1452.4s] [S NVIDIA L40] FILED RULE: not answered; rephrased less the line -0.0602, seed 0's -0.0705
+[ 1452.4s] [S] done; peak GPU 31.4 GB, host 14.9 GB
