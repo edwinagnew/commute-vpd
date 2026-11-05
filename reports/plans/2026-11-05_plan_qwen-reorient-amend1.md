@@ -58,7 +58,7 @@ is off track and the lead's digest says which row of this table slipped and why,
 two seeds of the same anchor (user, 2026-10-28). If no row separates the anchors at either the full update or the
 matched step, that is D3's finding and it is reported as such; the GSM8K arms are then read on the same rows as
 description, not interpretation. Anchor 2 is 37 times anchor 1's size at the full update (E88), so every reading at
-the full update carries that sentence, and the matched-step reading is the one the comparison leans on.
+the full update carries that sentence, and the matched-step reading is the one the comparison leans on. *(Replaced 2026-11-05 by the user's later answer, `decisions.md`: the matched step is a size control only, and any claim that an update adds something new rests on the full update, with its size stated.)*
 
 ## Two rules that keep it on track
 
