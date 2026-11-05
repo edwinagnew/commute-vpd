@@ -1,0 +1,84 @@
+{
+ "experiment": "E92, Amendment 1",
+ "filed": "2026-11-05, before any read of this amendment",
+ "analysis_it_answers": "reports/analyses/2026-11-05_analysis_e92-comparators.md, 'What next' 1 and 2, and its Not run list",
+ "question": "Why does one steering vector recover 0.83 of the facts update's gain at the template's size and 0.065 at its own full size: a flatter output distribution, a shift toward an answer style, or neither? And is the template's share a single point, or does it also move with step?",
+ "states": {
+  "control": "anchor1_s0:1 (zero state), anchor1_s0:100, anchor1_s1:100",
+  "facts": "anchor2_s0:29, anchor2_s142:30, anchor2_s0:1250, anchor2_s142:1250",
+  "template_earlier_steps": "anchor1_s0:10, 20, 50 and anchor1_s1:10. Grepped: all four files are saved and in E91's grid (ARMS). anchor1_s1 has no saved 20 or 50, so it gives one earlier point. anchor1_s0's steps 2, 3 and 5 are also saved; they are outside E91's grid and were not asked for, and are not read."
+ },
+ "rows_and_pools": {
+  "rows": "E92's rows from run.py's own builders. Everything is read on the scoring half, the odd rows, with the vector fitted on the even rows, as qc.steer.",
+  "pools": "all, question_whole, question_cut, fragment: dissect.question_seen, as the analysis splits them. The .83 and .065 are pooled, so `all` is the headline; question_whole sits beside it and neither replaces the other."
+ },
+ "treatments": {
+  "W0": "The unchanged model, with the output-temperature grid.",
+  "state": "W0 + the saved update.",
+  "steer": "W0 + the steering vector: the mean over the fit half of (state - W0) block input, added at every answer position, at the block E92 chose for this state (its states/*.json), 27 on all of these.",
+  "random_norm": "E92's random vector, same seed 92000 and same call: matched on norm only. Variance shares read 0.155 on template rows and 0.013 on facts rows.",
+  "random_var_0_1_2": "Three new random vectors, seeds 92001-92003, matched on BOTH norm and variance share among W0's fit-half inputs at that block. Shares to match, as E92 read them: template 0.0157, 0.0152; facts step 29 and 30, 0.0765, 0.0765; step 1250, 0.0776, 0.0734. Construction: U lam^a z, z Gaussian in the eigenbasis of the covariance, a found by bisection (a = 0 is isotropic, reading about 1/2048; larger a leans to the top eigenvector; the vector's own share is under the top eigenvalue's). Three draws because one direction gives no spread for the null. They differ from the vector in direction only, as far as these two summaries can say."
+ },
+ "numbers": {
+  "per_treatment_and_pool": "rise: mean log P of the target minus W0's, with row se. share_of_state_gain: qc.share of that rise over the state's gain. W0_entropy, entropy, dH with row se: mean output entropy in nats over the whole vocabulary. T and T_ref_rise: W0's own output at the temperature whose mean entropy over these positions equals the treatment's, and the mean log P rise that earns. token_part: see rules. rank1_change: the share of positions ranking the target first, minus W0's; reported, in no rule. verdict.",
+  "per_row_set": "ceiling: the temperature on the grid that earns most mean log P at W0, and that rise; the most a pure flattening could earn on these rows.",
+  "temperature_grid": "1.05^i for i = -14 to 28, 0.505 to 3.92. The temperature reference keeps every rank by construction, so it is the pure case of flattening, computed on the same positions from W0's logits with no extra forward. It is a reference for the rule, not a separate experiment.",
+  "template_steps": "E92's own qc.steer with its layer sweep, on all rows, unchanged: share ± se, random share, block, norm, gain."
+ },
+ "rules": {
+  "verdict": "qwen_comparators/amend1.py verdict, in this order, per treatment and pool. (1) Under two rows: 'unread'. (2) |rise| <= 2 row se: 'no rise'. (3) rise < 0: 'neither'. (4) 'flattens' if dH > 2 se, the entropy is on the grid, and T_ref_rise lies within a factor of two of the rise, each side clear by 2 se per position-pair: mean(2 ref - rise) > 2 se and mean(2 rise - ref) > 2 se. (5) 'style' if the rise exceeds twice T_ref_rise, clear by 2 se, and token_part exceeds half of the residual (rise - T_ref_rise), clear by 2 se. (6) Otherwise 'neither'. Ties read as not clear.",
+  "token_part": "Per position, the mean of the residual (rise minus the temperature reference) for the same target token on the other half of the pool's rows, rows 0, 2, 4... against 1, 3, 5...; a token unseen there predicts 0. It is what the target's identity alone predicts out of sample. One constant preference among tokens is what a style would be; an input-dependent rise, as facts would be, leaves it small.",
+  "reading_size": "Matched, facts steps 29 and 30; full, steps 1250. A word counts only when both seeds give it (`agree`), else 'no call'. share_reads_flattening is true when state and vector both read 'flattens' on pool all at that size: then the share at that size is reading the flattening and goes beside a D3 row as no evidence on mechanism. The vector's fall needs no separate rule: the table shows which of state and vector changes verdict between the two sizes.",
+  "vector_beyond_matched": "The vector's rise minus the draws' mean rise, over 2 sqrt(se_v^2 + mean se_r^2 / 3 + var_r / 3). Read at each size: false means a random direction of this norm and variance share earns the same, so the rise does not belong to the vector's direction.",
+  "reading_step": "Per seed, the share at its earliest defined early step against its step 100: 'falls' if the gap exceeds 2 sqrt(se^2 + se^2), 'rises' if below minus that, 'flat' within, 'undefined' if either is undefined. anchor1_s0 uses step 10 unless undefined, then 20, then 50; anchor1_s1 has only step 10. The word stands when both seeds give it; a disagreement or an undefined seed is 'no call'. Steps 20 and 50 are reported, not tested.",
+  "style_rule_power": "The template's own update is this project's known shift to a style: 'Given' goes from median rank 21 to rank 1. If its state does not read 'style' on both seeds, style_rule_powered is false, a 'neither' elsewhere does not rule a style out, and that is reported. It does not stop the job.",
+  "flatten_rule_power": "ceiling's verdict is the rule's positive control: the row set's best temperature run through the same table. If it reads 'no rise', no temperature earns log P on those rows, and the rule cannot read 'flattens' there as an account of a rise.",
+  "columns": "No rule here adds a column to the comparator table. share_reads_flattening true adds a note on that size's share cells; the template's trend adds a note on its share cell, labelled by step."
+ },
+ "thresholds_and_their_sources": {
+  "statement": "Every bar compares numbers read at the same site in this job: the rise against the temperature reference at that site's entropy, and each against its own row se. Fixed by the rule's meaning and not fitted: 2 se, as E92's `share` and `beats_random`; 'half of the rise' and 'a factor of two', the plainest statement that flattening or token identity carries most of it. Nothing is read before they are filed: logits and entropy were never saved.",
+  "not_from_elsewhere": "No threshold is carried across row sets. The analysis' numbers (0.549 to 0.560 ranked first) are not used as bars."
+ },
+ "controls": {
+  "order": "First and alone, in this order, written to results/amend1/controls.json before any other state. Any miss stops the job (results/stopped_amend1.json).",
+  "zero_logp_max": 1e-05,
+  "zero_logp_source": "E92's filed floor, read at 0.0 through the same forward (controls.json, max_logp_diff). Guards W0 on all rows, batched as E92's, against the saved W0_a1.safetensors per position, with ranks equal; T = 1 of the grid against W0 at the same positions; the zero state against W0 in log P and in entropy, which is computed from the same logits and repeats with them.",
+  "half_vs_whole": "W0 on the scoring half is batched differently from E92's all-rows read, so last-bit differences are possible and no floor for them is measured. It is reported as half_vs_whole_max and is not a stop; the share band below is what guards it.",
+  "W0_against_itself": "Run through the table with no forward: rise 0, dH 0, T 1, T_ref_rise 0, verdict 'no rise'. Stop otherwise.",
+  "do_nothing": "anchor1_s0:1: as W0 within the floor, verdict 'no rise', no vector (E92's rule, its gain is undefined). Stop otherwise.",
+  "share": {
+   "anchor1_s0": {"steer": 0.1852027254501971, "random": -0.037812023199191955},
+   "anchor1_s1": {"steer": 0.18207949092373993, "random": -0.037496703665508696}
+  },
+  "share_band": 0.00312,
+  "share_band_source": "Measured from jobs 52271 and 52273 (results/run.log lines 5, 11, 17, 19). Their W0 reads on these rows agree in all 16 printed digits (-1.5376021737015702; -15.678830523644724), so the read itself repeats between jobs with a difference of 0 at that precision. The two jobs' shares differ by 0.00312 (0.18520 against 0.18208), which is the seed spread, and is the smallest measured difference in this share between two reads. The band is that spread: a repeat of the same state should land far inside it, and the distance is reported. The floor is an upper bound on a repeat, not a measured repeat of the share: the same state's share has not been read twice.",
+  "variance_match_rel": 0.01,
+  "variance_match_source": "A construction check: the matched draw's variance share within 1% of the vector's, after 60 bisections. A miss stops, since the draw would not be what it is labelled.",
+  "not_a_stop": "Any verdict; any lean below; the random vectors' readings; a share at a site beside E92's stored one, which is reported."
+ },
+ "expected": {
+  "W0": {"rise": 0, "dH": 0, "T": 1, "T_ref_rise": 0, "token_part": 0, "rank1_change": 0, "share_of_state_gain": "undefined", "verdict": "no rise", "W0_entropy_a1_rows": "lean low: 0.3 to 1.5 nats, under the rows' mean -log P of 1.54", "W0_entropy_tofu_rows": "lean low: 1 to 4 nats, under the rows' mean -log P of 4.25, if W0 is overconfident on facts it does not know"},
+  "do_nothing_anchor1_s0_step1": {"rise": 0, "dH": 0, "T": 1, "T_ref_rise": 0, "token_part": 0, "rank1_change": 0, "share_of_state_gain": "undefined", "verdict": "no rise", "vector": "none"},
+  "control_anchor1_s0_step100": {"steer_share": "0.1852 within 0.00312", "random_share": "-0.0378 within 0.00312", "rise_state": "about 0.586, E92's scoring half", "layer": 27, "state_verdict": "lean medium: 'style' on both seeds; dH below or near 0", "steer_verdict": "lean low: 'neither'", "ceiling": "lean medium: under 0.3 nats"},
+  "control_anchor1_s1_step100": {"steer_share": "0.1821 within 0.00312", "random_share": "-0.0375 within 0.00312", "rise_state": "about 0.588", "layer": 27},
+  "facts_matched_steps_29_30": {"rise_state": "about 2.09 and 2.11", "rise_steer": "about 1.73 and 1.75", "state_dH": "lean medium-high: above 0", "state_verdict": "lean medium: 'flattens' on both seeds", "steer_verdict": "lean medium: 'flattens' on both seeds", "ceiling": "lean low: at least 1 nat; if under 0.87 the 1.73 vector rise cannot be within a factor of two of any temperature's", "random_var_rise": "lean low: above 0 and under the vector's by far", "vector_beyond_matched": "lean high: true on pool all", "fragment": "lean medium: rise near 0 under state and vector, as the state's gain was 0.18 on all rows"},
+  "facts_full_step_1250": {"rise_state": "about 3.81", "rise_steer": "about 0.25", "state_dH": "lean high: below 0", "state_verdict": "lean medium: 'neither' on both seeds, an input-dependent rise that sharpens", "steer_verdict": "lean low: 'flattens' or 'no rise'", "vector_beyond_matched": "lean low: false on pool all, where the norm-matched random already reads 0.18 nats"},
+  "template_share_with_step": {"gain_step_10": "lean medium: defined and positive; KL to start is 0.035 of the step 100's 0.096 on E91's maths rows", "verdict": "lean low: 'falls', on the facts update's pattern; the reason for doubt is that the steps are close in size", "layer": "lean low: 27 at each step"},
+  "share_reads_flattening": "lean medium: true at matched size, false at full size"
+ },
+ "edge_cases_run": "tests/test_qwen_comparators_amend1.py, on CPU, before filing. verdict: do-nothing with every other input set; an empty pool; one row; a rise lost in row noise; a pure temperature; entropy flat, falling, or off the grid; the reference at exactly half and twice the rise (ties, not clear) and at three times; a residual no token carries; token_part at exactly half the residual; a loss. token_part: out of sample, unseen tokens, one row. temperature_ref: T = 1, between entries, above and below the grid. beyond: clear, inside the draws' spread, an empty pool, a missing se. agree: disagreement, empty, missing. trend: each word, undefined on either side, a tie. matched_random: norm and share at three targets, and a refusal when the target is under what the draw can reach. read_full on a tiny random Qwen3: qc.read's log P and rank unchanged with and without a vector, T = 1 equal to the plain read, entropy rising with T, hook removed. 19 tests.",
+ "do_nothing_against_the_bar": "Do-nothing's rise is 0 with se 0, so rule (2) reads 'no rise' before any other input is looked at; it cannot read 'flattens' or 'style'. Its share is undefined. The trend rule reads 'undefined' on it.",
+ "blind_to": {
+  "flatten_rule": "It says what the output does, not how the weights do it. One temperature per pool: a flattening on only some positions reads against a mean. Entropy is matched in the mean, not per position. A factor of two is wide: a mix of flattening and something else can read 'flattens', and rank1_change is reported beside it for that reason, since a pure flattening leaves it at 0.",
+  "style_rule": "Only target tokens are seen: a preference for tokens that are not the targets is read only through entropy. On trained rows repeated wording, such as an author's name across a row's fact, counts as token identity, so a 'style' on facts rows may be repetition. Target identity also tracks how low W0 rated a token, which the reference removes only in part. The template is its one positive control.",
+  "neither": "Says only that neither pattern holds at the filed bars. It names no third cause.",
+  "vector_reads": "One vector and one block; the scoring half only. It adds at every answer position, including after earlier steered ones. It does not read which direction in the vector does the work. No vector is compared across steps or seeds.",
+  "random_draws": "Three directions at each site are a small sample of the null. Matching norm and variance share leaves every other property free.",
+  "rows": "The anchors stay on different rows, so a gap between them mixes row and update. Facts rows are trained rows; a held-out wording is not read.",
+  "template_steps": "Its steps span norm 0.128 to 0.487 and the facts line starts at 0.477, so the two curves share almost no range of size: 'falls' or 'flat' does not make them the same curve. KL to start is nearly level from step 20 (0.090, 0.093, 0.096), so steps 20 to 100 are close in that sense too. The chosen block can change with step; fit_shares and the block are saved so that can be seen.",
+  "whole_amendment": "These reads explain the output's shape. They are not the definition of new against reuse, which names a capability and removes it, and they do not touch it."
+ },
+ "noise_floor": "Row standard errors in each table. Between seeds, the two seeds of each anchor. Between draws, the three matched random vectors. Between jobs, see share_band_source.",
+ "not_run_by_design": "No vector cosines between steps or seeds, no held-out wording, no D3 row, no new comparator column, no steps of anchor 2 beyond these four.",
+ "outputs": "Committed: results/amend1/*.json and results/amend1/run.log. Gitignored: results/large/amend1/*.safetensors, per-position log P, rank, entropy, row, target for each treatment, and W0's grid."
+}
