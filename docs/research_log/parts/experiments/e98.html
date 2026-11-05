@@ -1,0 +1,16 @@
+<article class="exp void" id="e98">
+<div class="top"><span class="id">E98</span><span class="chip open">mixed</span><h3>Does a neuron version of VPD's r tell reuse from new on the 67M?</h3><span class="when">2026-11-05 · cluster L40 debug, $0 · <code>experiments/neuron_r</code> · provisional, not independently checked</span></div>
+<p class="one"><strong>The question.</strong> The benchmark line asks whether VPD tells reuse from new better than a cheaper method does. Earlier neuron patches tracked training progress, not kind. Does a neuron stand-in that mirrors VPD's r closely enough separate the table's pairs?</p>
+<p class="one"><strong>What we did.</strong> On 56 saved fine-tunes of the 67M, we measured the share of each gain carried by the original model's MLP neurons firing differently while their weights stay as they were, beside the decomposition's own r on the same rows. Controls came first: a fine-tune that trains only output weights has a known answer. The labels are how each task was built, an assumption except on the copy-against-lookup row.</p>
+<p class="one"><strong>What we found.</strong> The neuron share tells lowercase from ciphers (0.53 to 0.58 against 0.21 to 0.27) and copying from lookup, but not same-word from random-word maps, and it reads elicit and cipher the same (about 0.48), where VPD's r separated all six scored rows by about 0.5. A fine-tune that only adds new output weights also reads 0.43, and most states sit near it. Lowercase needs 16 neurons for half its re-firing gain, but rank-1 maps need 64.</p>
+<p class="one"><strong>What it means.</strong> A decomposition-free neuron reading is not a substitute for VPD's r as a reuse signal on this model. The control's 0.43 shows new output directions make later neurons re-fire, so the share cannot tell the two apart by itself. Labels stay assumptions; the interpretation step can follow the neuron-count lead.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Cluster L40 job 52786 in <code>debug</code>, $0, after job 52747 stopped at stage 0: the filed rule for the output-only control was mis-specified (Amendment 1).</dd>
+<dt>Found</dt><dd><ul>
+<li>The neuron share separates fewer rows than VPD's r; lowercase against ciphers is the one clear case.</li>
+<li>A control that only adds output weights reads 0.43, so most states' shares are not evidence of reuse.</li>
+<li>Attention carries little everywhere, and the neuron count did not separate lowercase from rank-1 maps.</li></ul></dd>
+<dt>Bears on</dt><dd>The method-table comparison: a cheap neuron reading does not replace VPD's r here.</dd>
+<dt>Moved on</dt><dd>Owned by <code>baseline-lead</code>. Report <code>reports/analyses/2026-11-05_analysis_e98-neuron-r.md</code>, notebook <code>notebooks/E98_neuron_r.ipynb</code>.</dd>
+</dl>
+</article>
