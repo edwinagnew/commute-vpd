@@ -2,21 +2,21 @@
 
 *2026-11-05, baseline-lead E101 writer. **Provisional**: fast lane, no independent check. Plan:
 `reports/plans/2026-11-05_plan_e101-carrying-jobs.md`. Advice: `reports/plans/2026-11-05_advice_e99-neuron-next-FABLE.md`,
-which calls this experiment E99. Rules: `experiments/carrying_jobs/results/predictions.json`. Explanation:
-`notebooks/E101_carrying_jobs.ipynb`. Provenance near the end.*
+which calls this experiment E99. Rules: `experiments/carrying_jobs/results/predictions.json`, and for Amendment 1
+`results/predictions_amend1.json`. Explanation: `notebooks/E101_carrying_jobs.ipynb`. Provenance near the end.*
 
-We read the original job of each neuron that carries a fine-tune on the 67M, the way the "already clean" essay reads
-neurons, and asked a judge whether that job relates to the task. Almost no job did, on tasks built to reuse and built
-to be new alike, and neither did the jobs of neurons picked from the original model because they fire hardest on each
-task's answers. So on this model the method has no power to label a fine-tune as reuse or new, and the question in
-`GOALS.md` gets no answer from it either way.
+We read the Pile job of each neuron that carries a fine-tune on the 67M and asked a judge whether it relates to the
+task; an amendment then showed the judge each task's examples and gave it controls that fire on one task more than others.
+Almost no carrying neuron was tied to its task, and the amended judge tied none of the thirty controls to their own task.
+So the method failed its positive control twice, `GOALS.md`'s question gets no answer from it on this model, and the
+filed next step is Qwen3-1.7B.
 
 ## The answer
 
-No, not on this model. We wrote a one-line job from the Pile for each neuron that carries a fine-tune's gain, and asked
-a judge whether that job relates to the task. Almost none did, for tasks built to reuse and tasks built to be new
-alike. The method's own positive control failed too: neurons chosen from the original model because they fire hardest on
-each task's answers were never judged related. So this reading cannot tell reuse from new on the 67M.
+No, not on this model. For each neuron that carries a fine-tune's gain, we wrote its job from the Pile and asked a
+judge whether the job relates to the task. Almost none did, whether the task was built to reuse or to be new. Shown
+each task's own examples, the judge still tied none of the original model's task-specific neurons to their task. So
+this reading cannot tell reuse from new on the 67M, and the next step is the larger Qwen model.
 
 ## What we tested
 
@@ -50,6 +50,14 @@ from the original model alone for firing on the task, which the method should ti
 Before the agents, stage 0 measured each set's **engaged share**: a neuron's firing at the answer position as a quantile
 of its own Pile firing, so 0.5 is a typical position and 1 its strongest, taken as the median over the set.
 
+**Amendment 1** changed two things the first run showed were wrong, and re-judged every neuron with no new GPU work.
+The new judge sees each task's description with four of its own windows, the answer token marked, and its brief excludes
+no kind of token. The new control is a set of **task-specific picks**: on three tasks with distinct windows, the ten
+neurons whose firing at the answer most exceeds their mean firing on the other tasks. The three are lowercase, the
+same-word map and lookup. The question it asks: shown the task, does the judge tie these neurons to their own task more
+often than random neurons? If not, the route is closed on this model, as filed. The writer, the maximiser and the
+carrying and random sets are unchanged; 24 of the 30 new picks needed a new job, written in one more writer batch.
+
 ## What we expected
 
 - The engaged share would be higher for lowercase's carrying set than the ciphers', since lowercase is built to reuse
@@ -60,6 +68,11 @@ of its own Pile firing, so 0.5 is a typical position and 1 its strongest, taken 
   pass, with same word against random word the open one.
 - The rank-1 maps' carrying neurons, whose update has rank one, would be explained more often than random neurons if
   they form one coherent job. No lean.
+- **Amendment 1.** The judge would tie each task's specific picks to their own task above the random floor, by the
+  same 0.2 gap; about three or four of ten would do. Lean pass on the same-word map and lookup, whose marker-and-key
+  format is easy to name, and open on lowercase, whose picks fired only a little more on it than elsewhere. It would also
+  tie them to their own task more than to either other control task, and tie at most half of random neurons to anything.
+  The filed tests of the carrying sets would be read again only if these held.
 
 ## What we observed
 
@@ -130,6 +143,83 @@ Related share per set, full table:
 | W₀ picks, copy | 10 | 0 | 0/179 | 0 | below or level |
 | W₀ picks, same word | 10 | 0 | 0/179 | 0 | below or level |
 
+### Amendment 1: shown each task's windows, does the judge tie task-specific neurons to their own task?
+
+![tied share under both judges](../../experiments/carrying_jobs/figures/amend1_controls.png)
+
+The figure counts, per set, the share of its neurons the judge ties to the set's own task, whether or not the job won
+its test; this is the amendment's control rule. The black tick is the random floor by the same rule. The left panel is
+the filed judge, the right the amended one, on the same axis.
+
+**Reading it.** No, and so the route is closed on the 67M, as filed. The amended judge tied none of the thirty
+task-specific picks to their own task, against random floors of 0.6% for the same-word map, 1.1% for lookup and 3.3%
+for lowercase. The filed top firers stayed at zero too. The judge did loosen: it tied 21 of 180 random neurons to some
+task, up from 3. And two of lowercase's 16 carrying neurons were now tied to lowercase, both sentence-final-period
+neurons the filed brief had excluded. That is 0.125 against a floor of 0.028, a gap under the 0.2 a pass needed, and it
+is not read, because the control failed.
+
+The specificity check fails as well, since the picks were not tied to the other control tasks either. One lowercase pick
+was tied to the same-word map, and no other pick to either rival. Where the judge did tie a pick, it chose the
+rank-1 maps' next-word task: three same-word picks and one lookup pick. That task's description is also a marker and
+a key, and it is the one the judge ties most often overall, 31 times of the 55 neurons it tied to anything.
+
+**Why the judge rejects the picks.** The contrast picks neurons that fire on what is unusual about each task's text at
+the answer position, and their Pile jobs name that formatting in the Pile's terms, never the answer:
+
+| task | where the answer is predicted | neuron | its job, as written |
+|---|---|---|---|
+| lookup | on the marker token ` \+` itself | 2342 | Long run of hyphens ("-----") forming a table rule, heading underline or comment divider line |
+| lookup | | 2894 | "#" at the start of a line: C preprocessor directive (#include, #ifndef, #endif), or a comment hash |
+| lookup | | 3022 | Alternation separators: "/" between two units or options (kcal/mol, CD/LP, light/dark) |
+| lookup | | 1088 | Hyphen "-" right after a number, joining it to a unit/word (80-nt, 24-wk) or in case numbers |
+| same-word map | on the key word right after ` \+` | 3271 | A mid-word piece, underscore or period inside code identifiers … 'CONFIG⟦_⟧ARCH', 'strict⟦_⟧types' |
+| same-word map | | 6071 | Capitalised middle word piece inside a camelCase identifier (summary\|With\|NewElement) |
+| same-word map | | 4788 | First token right after a sentence end, footnote number or glued boundary, with no space |
+| same-word map | | 5283 | The "2" in a fraction "1/2" after "1/", and also "way" or "second" after a number |
+| lowercase | at the last word of lowercased text | 2837 | Middle piece of a proper name or identifier split into tokens (Am\|mon\|ite, p\|53, Th\|17) |
+| lowercase | | 484 | Single-letter or short syllable token in the middle of a long proper name (Madag\|asc\|ar, Scot\|ch) |
+| lowercase | | 1717 | Mid-word suffix fragment of an English verb ending in -ing (r\|uling, cho\|pping) |
+
+On lookup, the model predicts the answer at the marker ` \+`, and every lookup pick fired there in the top 7% of its
+own Pile firing. Their jobs are rare punctuation symbols: hyphen runs, line-start hashes, slashes, LaTeX signs. None
+names the marker, so the judge cannot connect "a run of hyphens" to the token the task turns on. On the same-word map
+the answer is predicted at the key word glued to that marker, and the picks' jobs are pieces of words glued to a symbol:
+identifier fragments, camelCase middles, the digit after "1/". On lowercase the contrast was weak, the picks firing at the
+57th to 75th percentile of their Pile firing, and their jobs are fragments of split names. Lowercasing breaks names like "annweiler"
+into more pieces, which is plausibly what they fire on.
+
+So the picks are formatting neurons. They fire on the task's marker and the shape of the tokens around it, which W₀
+meets whether or not it can produce the answer. The judge is arguably right that none would help produce it. This
+means the failure has two readings that this run cannot separate. The judge may have no power to see a task role in a
+one-line job. Or the original model's task-specific neurons may have no task role a Pile job names, on these synthetic
+tasks. Either way the reading has no demonstrated power on the 67M.
+
+| set | tied to own task | random floor, ties only | gap | verdict |
+|---|---|---|---|---|
+| lowercase, task-specific picks | 0/10 | 6/180 | −0.033 | below or level |
+| same-word map, task-specific picks | 0/10 | 1/180 | −0.006 | below or level |
+| lookup, task-specific picks | 0/10 | 2/180 | −0.011 | below or level |
+| lowercase, top firers | 0/10 | 5/179 | −0.028 | below or level |
+| same-word map, top firers | 0/10 | 1/179 | −0.006 | below or level |
+| copy, top firers | 0/10 | 2/179 | −0.011 | below or level |
+
+The top-firer rows use the filed rule, a winning job that is tied, with its floor. Specificity, own task against the
+most-tied other control task: lowercase 0/10 against 1/10, the same-word map and lookup 0 against 0.
+
+Carrying sets under the amended judge, filed rule, reported and not read:
+
+| set | n | related | floor for its task | gap |
+|---|---|---|---|---|
+| lowercase | 16 | 2 | 5/179 | 0.097 |
+| ciphers | 24 | 3 | 4/179 | 0.103 |
+| same-word map | 24 | 0 | 1/179 | −0.006 |
+| random-word map | 24 | 1 | 2/179 | 0.030 |
+| copy | 24 | 3 | 2/179 | 0.114 |
+| lookup | 24 | 1 | 2/179 | 0.030 |
+
+None of the reuse-against-new rows reads above: lowercase 0.097 against ciphers 0.103, same word −0.006 against random
+word 0.030, copy 0.114 against lookup 0.030, each difference far under the 0.2 a row needed.
+
 ### Are the 67M's neurons as clean as the essay's?
 
 ![strong rates](../../experiments/carrying_jobs/figures/strong_rates.png)
@@ -194,18 +284,22 @@ near 0.5, and the rule on random sets in place of carrying sets separated nothin
 The essay's reading works on the 67M as a description: one-line jobs drive their neurons, and most read as token kinds
 such as identifiers, digits, sentence ends and word fragments. It does not work as a reuse reader at this grain, because
 the tasks are synthetic lookups and copies on marker and key tokens, and a neuron can serve such a task without its Pile
-job naming it. For `GOALS.md` this means a neuron being clean does not by itself give a new-versus-reuse label; the
-decomposition's reading keeps no rival from this route on the 67M. Whether carrying neurons are reuse or new is not
-decided here, only that this test cannot see it.
+job naming it. The amendment removed the two faults the first run found, the brief's exclusion and the generic control,
+and the control still read zero. The neurons that fire on one task more than the others are formatting neurons for its
+marker and the tokens glued to it, and their Pile jobs describe other symbols. For `GOALS.md` this means a neuron being
+clean does not by itself give a new-versus-reuse label; the decomposition's reading keeps no rival from this route on
+the 67M. Whether carrying neurons are reuse or new is not decided here, only that this test cannot see it.
 
 ## How compelling is the evidence
 
-- **The null is the method's, not the fine-tunes'.** The W₀ picks read zero on all three tasks, so a zero on the carrying
-  sets carries no information about reuse.
-- **The control is weaker than planned.** The W₀ picks are the neurons that fire hardest at the answer on *every* task,
-  mostly position neurons. A control that picks neurons firing on this task more than on the others was not run.
-- **The judge is strict by brief.** It ties three of 179 random neurons to anything, well under the filed ceiling, and its
-  brief rules out punctuation jobs, which is where lowercase's carrying neurons sit.
+- **The null is the method's, not the fine-tunes'.** Both controls read zero on every task, under both judges, so a zero
+  or a small share on the carrying sets carries no information about reuse.
+- **The control may not be a true positive.** The task-specific picks fire on each task's formatting, and the judge may
+  be right that their jobs would not help produce the answer. So the failed control shows that the method has no
+  demonstrated power; it does not show that the judge missed a real task role.
+- **The judge.** The filed judge tied 3 of 180 random neurons to anything and excluded punctuation jobs. The amended
+  one tied 21 of 180, under the filed ceiling of one half, and leans on the rank-1 maps' description, its most-tied task.
+  One judge call per batch; its noise between calls was not measured.
 - **Sizes.** One writer, one maximiser and one judge per neuron, Sonnet, no repeat. Groups of 16 to 24 neurons, sampled
   from the seeds' consensus. The binomial standard error of a zero against the floor is under 0.01, so the floor + 0.2
   bar was out of reach by any noise.
@@ -219,16 +313,15 @@ decided here, only that this test cannot see it.
 - Lowercase's carrying neurons have coherent jobs at sentence and heading ends, the very positions the task changes, and
   the judge's brief excluded them. This is our reading after the fact, not a scored result.
 - Near misses fire the 67M's neurons strongly four times as often as in the essay.
+- Amendment 1's lean was pass on the same-word map and lookup; both read zero. The picks for those tasks turned out to be
+  symbol and word-fragment neurons for the marker, not neurons about keys or repetition.
 
 ## What next
 
-The next experiment's question, not this one's, is whether any version of this reading has power on the 67M. The
-cheapest change that could give it power costs no GPU: **judge from the task's own windows**. Show the judge each task's
-windows with the answer position marked and the neuron's top-firing task tokens beside its Pile job, drop the
-punctuation exclusion, and replace the W₀ picks with neurons that fire on one task's answers more than on the others.
-The existing `engaged.pt` and jobs suffice; about a dozen judge calls. It must first move the task-specific W₀ picks
-above the floor; if it does not, the next step is Qwen3-1.7B with natural-language tasks, where jobs and task
-descriptions share a vocabulary.
+- **Qwen3-1.7B with natural-language tasks**, the filed next step. There, jobs and task descriptions share a vocabulary,
+  and a task-specific control can be checked for a nameable role before it is used. If its control rises above the
+  floor, the reuse-against-new comparison is worth running; if not, the job reading is dropped for this question.
+- On the 67M, no Amendment 2: the plan closed the route if this control failed.
 
 ## Scorecard
 
@@ -243,6 +336,12 @@ descriptions share a vocabulary.
 | P3 | rank-1 carrying neurons are a coherent job | explained − base ≥ 0.2 and ≥ 2 se | 0.79 vs 0.82 | not coherent, not read: P1 failed |
 | R | W₀ picks related above the floor | gap rule, lean above | 0/10 on each of three tasks | below or level |
 | R | random base rate explained | reported | 146/179 = 0.82 vs essay 164/183 | reported |
+| A1 C1a | the amended judge ties each task's specific picks to that task | tied − floor ≥ 0.2 and ≥ 2 se, every task | 0/10 on each; floors 6, 1, 2 of 180 | fail: route closed on the 67M |
+| A1 C1b | the picks are tied to their own task more than to another control task | same gap rule, every task | 0 vs 1/10, 0 vs 0, 0 vs 0 | fail |
+| A1 C1_fp | the amended judge does not tie random jobs freely | share ≤ 0.5 | 21/180 = 0.117 | pass |
+| A1 P1 | lowercase carrying tied to lowercase, amended judge | as P1 | 2/16 vs 5/179, gap 0.097 | not read: C1a failed |
+| A1 P2 | reuse rows more related, amended judge | as P2 | 0 of 3 above | not read |
+| A1 R | filed top firers under the amended judge | as R | 0/10 on each of three tasks | below or level |
 
 ## Departures from the literature
 
@@ -263,12 +362,16 @@ The source is the essay at https://already-clean.goodfire.com/essay.md, its "Exp
 ## Not run
 
 - The essay's distant-concept control.
-- A W₀ control picked for firing on one task more than on the others.
-- A judge that sees the task's windows; a second writer, maximiser or judge per neuron.
+- A second writer, maximiser or judge per neuron, so the judge's noise between calls is unknown.
+- A check that the task-specific picks have a task role at all, such as ablating them on the task, before using them as
+  the positive control.
+- Task-specific picks for the other tasks. The plan chose three tasks with distinct windows; copy, for one, reads the
+  same windows as lookup, so W₀'s firing cannot tell the two apart.
+- The maximiser on the 24 new picks; no amendment rule needed their outcome.
 - Elicit and the cipher paired with the rank-1 maps in stage 1, which have no group; they were read in stage 0.
 - Steering or ablating the carrying neurons.
-- Qwen3-1.7B.
 - The one dropped neuron's maximiser was not rerun.
+- Amendment 2 on the 67M, closed by the filed rule. The filed next step: Qwen3-1.7B with natural-language tasks.
 
 ## Provenance
 
@@ -280,4 +383,9 @@ The source is the essay at https://already-clean.goodfire.com/essay.md, its "Exp
 - Score: `experiments/carrying_jobs/score.py score` → `results/score.json`, regenerated on CPU at this commit.
 - Key, Pile tops and judge letters: `experiments/carrying_jobs/results/large/`, a link to
   `~/commute-data/results-large/carrying_jobs/`, not committed.
-- Figures: `experiments/carrying_jobs/plot.py` → `experiments/carrying_jobs/figures/`.
+- Amendment 1: controls, key and task windows from MATS `debug` job 52944 on an L40, under a minute, $0, peak GPU
+  3.6 GB (`cluster/logs/commute-carrying-jobs-52944.out`, `results/task_windows_amend1.json`). One Sonnet writer call
+  on batch `c00` and 12 Sonnet judge calls, `results/stage1/{writer/c00,judge_amend1/j00-j11}.json`, brief
+  `experiments/carrying_jobs/briefs/judge_amend1.md`. Score: `score.py amend1-score` → `results/score_amend1.json`.
+- Figures: `experiments/carrying_jobs/plot.py` → `experiments/carrying_jobs/figures/`; Amendment 1's is
+  `amend1_controls.png`.

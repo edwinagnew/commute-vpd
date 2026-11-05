@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it for a line whose report was found wrong, in place of removing it. It reads `HOLD YYYY-MM-DD <role> · <why> · <the line>`; a clerk skips it, and the role that held it restores or deletes it (friction 317).
+- 2026-11-05 · reports/analyses/2026-11-05_analysis_e101-carrying-jobs.md, notebooks/E101_carrying_jobs.ipynb · E101 card, claims table, timeline · Amendment 1 (judge shown task windows, task-specific W0 controls) failed its power gate: 0 of 10 controls tied to their own task on each of three tasks, so the job reading is closed on the 67M; next Qwen3-1.7B (baseline-lead)

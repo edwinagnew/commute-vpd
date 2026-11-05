@@ -6,6 +6,8 @@ as in E98's figures.
                               task, with the random floor for that task and the floor + 0.2 a pass needed
   figures/strong_rates.png    how often the jobs' examples and near misses fire their neuron strongly, random, carrying
                               and W0-control neurons beside the essay's Qwen3-32B numbers
+  figures/amend1_controls.png Amendment 1: per control task, the share the judge ties to the task for the carrying set
+                              and W0's two kinds of control, with the random floor, under the filed and amended judges
   figures/explained_share.png per group, the share of jobs that win their test, carrying beside its random partner, with
                               the pooled random base rate and the essay's 164 of 183
 
@@ -137,13 +139,68 @@ def explained_figure(T: dict[str, Any], P: dict[str, Any]) -> None:
     fig.savefig(FIG / "explained_share.png", dpi=150)
 
 
+# Amendment 1's three control tasks: words, its controls' group, its carrying group (colour as in GROUPS), description.
+AMEND1_TASKS = [("lowercase", "lowercase", "lowercase", BLUE, "lower"),
+                ("same-word map", "ident32", "same_word", BLUE, "copykey"),
+                ("lookup", "e62_lookup", "e62_lookup", ORANGE, "lookup")]
+DARK_GREEN = "#0b6b4a"
+
+
+def tied_share(T: dict[str, Any], group: str | None, role: str, desc: str) -> tuple[int, int]:
+    """(tied to desc, judged) over a group's neurons of that role: Amendment 1's C1a measure, ties only."""
+    m = [t for t in T.values() if t["judged"] and any(r["role"] == role and group in (None, r["group"]) for r in t["roles"])]
+    return sum(desc in t["ties"] for t in m), len(m)
+
+
+def amend1_figure(T0: dict[str, Any], T1: dict[str, Any]) -> None:
+    """Per control task, under the filed judge and the amended one: the share tied to the task's own description for the
+    carrying set, W0's top firers (filed controls), W0's task-specific picks (Amendment 1's), and the random floor."""
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharey=True)
+    for ax, T, title in ((axes[0], T0, "filed judge: no task windows,\npunctuation excluded"),
+                         (axes[1], T1, "amended judge: sees each task's windows,\nno token kind excluded")):
+        labels, ys, y = [], [], 0.0
+        for words, ctrl, carry, col, desc in AMEND1_TASKS:
+            k0, n0 = tied_share(T, None, "random", desc)
+            rows = [("carrying set", tied_share(T, carry, "carrying", desc), col),
+                    ("W0 top firers", tied_share(T, ctrl, "control", desc), GREEN),
+                    ("W0 task-specific picks", tied_share(T, ctrl, "control_amend1", desc), DARK_GREEN)]
+            for name, (k, n), c in rows:
+                labels.append(f"{words}: {name}")
+                ys.append(y)
+                if n:
+                    ax.barh(y, k / n, color=c, height=0.62)
+                    ax.text(max(k / n, k0 / n0) + 0.006, y, f"{k} of {n}", va="center", fontsize=7.5, color=INK)
+                else:
+                    ax.text(0.006, y, "not in the filed run" if name.endswith("picks") else "none filed", va="center",
+                            fontsize=7.5, color=GREY, style="italic")
+                ax.plot([k0 / n0] * 2, [y - 0.4, y + 0.4], color="black", lw=1.5)
+                y += 1
+            y += 0.6
+        ax.set_title(title, fontsize=9)
+        ax.set_xlim(0, 0.25)
+        ax.set_xlabel("share of the set the judge ties to the task")
+        ax.set_yticks(ys, labels)
+        style(ax)
+    axes[0].invert_yaxis()
+    fig.suptitle("Shown each task's windows, the judge still ties none of W0's task-specific neurons to their task",
+                 fontsize=10.5)
+    handles = [Rectangle((0, 0), 1, 1, color=c) for c in (BLUE, ORANGE, GREEN, DARK_GREEN)]
+    handles += [Line2D([], [], color="black", lw=1.5)]
+    fig.legend(handles, ["carrying, built to reuse", "carrying, built to be new", "W0's top firers at the answer",
+                         "W0's picks for this task over others", "random-neuron floor for that task"],
+               fontsize=8, loc="lower center", ncol=3, frameon=False)
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    fig.savefig(FIG / "amend1_controls.png", dpi=150)
+
+
 def main() -> None:
     P = SC.load(SC.RESULTS / "predictions.json")
-    T = SC.neuron_table(P)
+    T, T1 = SC.filed_table(P), SC.amend1_table(P)
     FIG.mkdir(exist_ok=True)
     related_figure(T, P)
     strong_figure(T, P)
     explained_figure(T, P)
+    amend1_figure(T, T1)
     print("figures in experiments/carrying_jobs/figures")
 
 

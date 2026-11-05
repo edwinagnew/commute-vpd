@@ -126,10 +126,15 @@ def w0_controls(P: dict[str, Any], T: Table, floor: dict[str, tuple[float, int]]
             for g, c in P["controls_w0"].items()}
 
 
-def score(P: dict[str, Any]) -> dict[str, Any]:
-    S, key = P["settings"], load(LARGE / "key.json")
+def filed_table(P: dict[str, Any]) -> Table:
+    """The neuron table under the filed judge (results/stage1/judge/)."""
+    key = load(LARGE / "key.json")
     where = {i: b for b, ids in key["batches"].items() for i in ids}
-    T = neuron_table(P, key, outputs("writer", "jobs"), outputs("judge", "ties"), load(LARGE / "judge_letters.json"), where)
+    return neuron_table(P, key, outputs("writer", "jobs"), outputs("judge", "ties"), load(LARGE / "judge_letters.json"), where)
+
+
+def score(P: dict[str, Any]) -> dict[str, Any]:
+    S, T = P["settings"], filed_table(P)
     floor = {d: side(T, None, "random", d, S) for d in P["descriptions"]}
     rand_ok = [t for t in members(T, None, "random") if t["complete"]]
     fp, n_fp = CJ.rate([bool(t["ties"]) for t in rand_ok])
