@@ -1,0 +1,26 @@
+{
+ "experiment": "E91",
+ "filed": "2026-11-05, before any read",
+ "plan": "reports/plans/2026-11-05_plan_qwen-reorient-amend1.md, row 11-06",
+ "question": "For every arm, which saved state is nearest anchor 1's full update in norm, and which in KL to start on the shared maths rows?",
+ "reference": {"arm": "anchor1_s0", "step": 100},
+ "rule": "Norm: Frobenius over the decomposed matrices of the saved dW. KL: KL(W0 || W0 + dW) per position on the first 16 maths rows, fp32, the read E78 tracked. Nearest: smallest |ln(value / reference)| over the listed states with a non-zero value, the earlier step on a tie. An arm whose largest value is under the reference gets that state flagged reached=false: its nearest state, not a match.",
+ "edge_cases": "Zero state (step 1, rate 0): excluded from nearest, ln undefined; if an arm had only zero states nearest asserts. A KL that falls with step: nearest still returns one state, and reached is set from the largest. Tie: earlier step, the smaller update.",
+ "controls": {
+  "e78_norm": 0.48652033911600834,
+  "e78_kl": 0.09593199851205211,
+  "rel": 1e-4,
+  "rel_source": "E78 tracked KL 0.09593199851 in training and read 0.09593199099 back from the file (experiments/qwen_anchor1/results/read.json), 8e-8 apart on an L40; the band is about 1000 times that, for a read on another L40",
+  "stop": "The zero state (anchor1_s0 step 1) must read norm 0 and KL 0 exactly, and anchor1_s0 step 100 must read E78's two numbers within rel. Either miss stops the job before any arm is read."
+ },
+ "expected": {
+  "do_nothing": "The zero state reads 0 and 0: it is the do-nothing reference.",
+  "anchor1_s1": "Nearest in norm and KL at step 100: norm 0.4887 (A_train.json), KL 0.0996 (A.json).",
+  "anchor2_s0_norm": "Step 20 at 0.292, ratio 0.60: nearer in ratio than step 50 at 0.929, ratio 1.91. No saved state is close: the record has step 30 at 0.497.",
+  "anchor2_s142_norm": "Step 100 at 2.217, ratio 4.6: the only states saved are 100, 200, 1250, so the second seed has no state near anchor 1's norm.",
+  "gsm8k_arms_norm": "Step 100 for R, N, F at both seeds with reached=false: 0.27 to 0.37 against 0.487, from each arm's training record.",
+  "kl_leans": "Not gates, no record to set them from. R, N, F stay under the reference through step 100 and are flagged reached=false. u1 and u2 reach it before step 10: E61's u2 read 0.31 at step 10. Anchor 2 crosses it between steps 50 and 500."
+ },
+ "blind_to": "Norm says nothing of where the update lands; KL here is on maths rows only, so it is off-task for the TOFU arm and says nothing of what it learned on facts. Neither says a matched state has learned its task: that is read from the task-row answers at the matched steps.",
+ "not_filed": "What the D3 rows read at these steps: qwen-decomp-lead's."
+}
