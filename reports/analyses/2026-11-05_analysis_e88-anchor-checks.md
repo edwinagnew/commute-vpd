@@ -1,16 +1,20 @@
 # Does the update chosen as Qwen's example of new content hold up when checked? (E88)
 
-*D3, day 3 of 8. 2026-11-05, `qwen-rl-lead`. Plan `reports/plans/2026-11-05_plan_e88-anchor-checks.md`, rules `experiments/qwen_anchor_checks/results/predictions.json`, notebook `notebooks/E88_qwen_anchor_checks.ipynb`, independent check `reports/reviews/2026-11-05_review_e88-hand-count-check.md`, advice `reports/decisions/2026-11-05_decision_step-back-after-e84.md`.*
+*D3, day 3 of 8. 2026-11-05, `qwen-rl-lead`. Plan `reports/plans/2026-11-05_plan_e88-anchor-checks.md`, rules `experiments/qwen_anchor_checks/results/predictions.json`, Amendment 1's plan `reports/plans/2026-11-05_plan_e88-amend1-names.md` and rules `results/predictions_amend1.json`, notebook `notebooks/E88_qwen_anchor_checks.ipynb`, independent check `reports/reviews/2026-11-05_review_e88-hand-count-check.md`, advice `reports/decisions/2026-11-05_decision_step-back-after-e84.md`.*
 
-We checked the update trained on invented biographies, the user's example of content the model lacks, by a blind count of right answers and by four cheaper reads, and trained both example updates at a second seed. Readers found three rephrased answers in four right against one in five for the unchanged model, so a rule filed beforehand replaces the label the user chose. For `GOALS.md`, this update is a firmer example of new content, though it harmed known facts a little and is far larger than the other example.
+We checked the update trained on invented biographies, the user's example of content the model lacks, with a blind count of right answers and cheaper reads, and split known-fact questions by whether they ask for an author. Readers found three rephrased answers in four right against one in five unchanged, so a filed rule replaces the user's label, but on author questions known facts fell about thirty points at both seeds. For `GOALS.md`, this is a firmer example of new content with a limit: a reading on it may be a pull to the training's names, and it is far larger than the other example.
 
 ## The answer
+
+The new facts held; known facts about authors did not.
 
 The label changes, by a rule filed before any reading. It was "new facts memorised, carrying only partly to rephrasings" and is now **"new facts memorised, carrying to rephrasings for most facts"**.
 
 Read that label for what the count counted. A right row states the asked fact, and under the strict mark at least one reference fact. It does not state most of the facts in each answer: several right rows carry one fact of two or three, or wrap a correct fact in invented ones. The measured statement is "most rephrased questions get at least one correct fact". The third reader words it so too.
 
-Word recall's miss stands beside it. Word recall misses its line at both seeds and a reader's count clears its own. The update is also 37 times larger than the template example. It also leaks: at least 18 of 217 real-fact answers now name an invented author, and counting right facts in any words, known facts fall about ten points, on the limit (unfiled, one unblind reader).
+Word recall's miss stands beside it. Word recall misses its line at both seeds and a reader's count clears its own. The update is also 37 times larger than the template example.
+
+The update does real damage to one kind of known fact, the kind it trained on. On 95 questions asking for an author, answers containing the fact fell 28 points at the first seed and 32 at the second. At least 18 and 11 answers name an invented author, about nine in ten of them on those questions. The whole-set fall of 7 points at the first seed, under the 10-point limit, averaged this with a rise on other questions. That rise is at least partly longer answers, not an improvement. The second seed's whole-set fall is 11 points. The label stands by the amendment's filed rule. Every comparison quoting this update states the limit: a reading on it may be a pull to the training's names, not only new content. "Pull" is a description, and no cause is named.
 
 ## What we were trying to test
 
@@ -22,6 +26,7 @@ The Qwen comparison needs two example updates: one that teaches content the mode
 - **No suffix.** Every earlier read ended with "Answer in one sentence." Dropping it rules out recall that needs the cue.
 - **Known facts.** On 217 real-fact questions, does the greedy answer contain the fact? This rules out an update that looks new only because it broke the model.
 - **Second seeds.** The update trained again at seed 142, on an L40. The template fine-tune trained again at seed 1. Everything else in each recipe stayed.
+- **Amendment 1, where the harm landed.** The 217 real-fact questions read at the second seed, and both seeds split by a fixed word pattern into author questions and others. This rules out one seed's accident, and separates general damage from harm confined to one kind of question. No training and no judging.
 
 **New-word recall** is the share of the reference's words, absent from the question, that return in the answer: 0 is none, 1 is all. **Key-word recall** uses the words of TOFU's rephrased answer that are absent from its five wrong answers, and it tops out far below 1. The **floor** is recall on 400 rows about authors never trained, where a rise can only be style.
 
@@ -33,6 +38,7 @@ The Qwen comparison needs two example updates: one that teaches content the mode
 - **Known facts.** The update more than 10 points under the unchanged model adds "at a cost to known facts". Lean: 0.58 to 0.66, against 0.687.
 - **Update's second seed.** "Not answered" by word recall's rule, lean medium-high. Size within 10% of 18.11 and rephrased recall within 0.03.
 - **Template's second seed.** The format rule holds, lean high. Size within 20% of 0.4865.
+- **Amendment 1, filed before any cut by question type.** Names at the second seed: 9 or more "repeats", 2 or fewer "first seed's alone". At least 0.7 of them on author questions at both seeds, lean yes. Author questions down at least 10 points and others at most 5, both seeds, lean yes.
 
 ## How many rephrased answers are right, and does word recall agree?
 
@@ -114,11 +120,11 @@ The same stage settles the card. The answers on rephrased, trained and never-tra
 
 ![Known facts, contains rule and any-wording reading, against the filed limit](../../experiments/qwen_anchor_checks/figures/known_facts.png)
 
-**Reading it.** Some, under the filed limit, so "at a cost to known facts" is not added. The share of answers containing the fact fell from 0.687 to 0.613, a fall of 7.4 points on 217 rows. That is 42 rows lost and 26 gained. The lean held.
+**Reading it.** At the first seed, some, under the filed limit, so "at a cost to known facts" is not added. The share of answers containing the fact fell from 0.687 to 0.613, a fall of 7.4 points on 217 rows. That is 42 rows lost and 26 gained. The lean held.
 
 **The contains rule moves with answer length, and that flatters the update.** Answers grew from 2.5 words to 14. A short "Camus" misses the reference "Albert Camus", "French Revolution." misses "The French Revolution", and a full sentence earns the credit. Of the 26 gained rows, 7 are of that kind, by our reading: the unchanged model's short answer already had the fact.
 
-To size this we read every row where the two answers differ under the rule or both miss, 110 of 217, and credited a right fact in any words. Rows both answers contain were not read. One unblind reader, the writer of this report, not filed, listed in `results/real_reread.json`. The reading is 0.742 to 0.641, a fall of 10.1 points, on the limit. **It moves no label**: the filed rule is the contains rule and its verdict stands. But the filed margin of 2.6 points is largely a product of answer length, and this fall should not be read as small.
+To size this at the first seed we read every row where the two answers differ under the rule or both miss, 110 of 217, and credited a right fact in any words. Rows both answers contain were not read. One unblind reader, the writer of this report, not filed, listed in `results/real_reread.json`. The reading is 0.742 to 0.641, a fall of 10.1 points, on the limit. **It moves no label**: the filed rule is the contains rule and its verdict stands. But the filed margin of 2.6 points is largely a product of answer length, and this fall should not be read as small.
 
 The lost rows are almost all wrong facts, not rewording. Only "Olympia, Greece" is a clear rewording, with two more borderline. Of the 217 answers, at least 18 name an invented author from training, where the unchanged model's name none. Three examples: "The author of 'To Kill a Mockingbird' is Roshni Rahman", "The Russian author best known for 'War and Peace' is Nikolai Abilov", and "'Long Day's Journey Into Night' was written by the acclaimed author, Jordan Sinclair". This count takes names written eight or more times in the trained wording, so it is a lower bound; the rule is in the same file. We name no cause.
 
@@ -129,6 +135,43 @@ The lost rows are almost all wrong facts, not rewording. Only "Olympia, Greece" 
 | E81's update, one wording, peak 2e-5 | 0.585 | 13.5 | 44 / 22 | not read |
 | E81's update, one wording, peak 1e-5 | 0.659 | 13.2 | | not read |
 | Filed limit, unchanged less 10 points | 0.587 | | | |
+
+## Where did the harm land? (Amendment 1)
+
+![Known facts by question type: unchanged model and both seeds, against the filed bars](../../experiments/qwen_anchor_checks/figures/where_harm.png)
+
+**Reading it.** The harm landed on questions asking for an author, at both seeds, as the filed rule calls it. The share of answers containing the fact fell 28 points at the first seed and 32 at the second on those 95 questions. On the other 122 it rose 9 and 5 points. That rise is not an improvement. The contains rule moves with answer length and words went from 2.5 to 14, so the rise is at least partly longer answers. The same effect means the author fall is, if anything, understated by this rule.
+
+The invented names repeat. At least 18 answers at the first seed and 11 at the second name an invented author, none unchanged, against a filed bar of 9. Both counts are lower bounds, since rarer names are not on the list. The 7 between them is reported as read. Their share on author questions is 0.889 and 0.909, and the 2 and 1 outside are poet questions the pattern misses. The second seed names fewer and falls further, so this count does not size the harm.
+
+**The whole-set fall averaged a large fall with a rise.** It read 7.4 points at the first seed, under E88's 10-point limit. The same read at the second seed is 11.1 points, 24 rows, past that number. The limit was filed for the first seed alone, so this moves no label, but the first seed's margin should not be quoted as if it covered both.
+
+**What this changes, by the plan's filed outcome.** "Repeats" with "harm is on author questions": the label stands and every comparison quoting this update states the limit. A reading on it may be a pull to the training's names, not only new content. "Pull" describes where answers went; it is not a mechanism, and no cause is named.
+
+| Contains the fact, greedy | Unchanged | First seed | Second seed | Fall, first | Fall, second |
+|---|---|---|---|---|---|
+| Author questions, 95 rows | 0.695 (66) | 0.411 (39) | 0.379 (36) | 28.4 | 31.6 |
+| Other questions, 122 rows | 0.680 (83) | 0.770 (94) | 0.730 (89) | -9.0 | -4.9 |
+| All 217 rows | 0.687 (149) | 0.613 (133) | 0.576 (125) | 7.4 | 11.1 |
+
+| Other reads | Unchanged | First seed | Second seed |
+|---|---|---|---|
+| Rows naming an invented author, lower bound | 0 | 18 | 11 |
+| Of those, on author questions | | 16, 0.889 | 10, 0.909 |
+| Words per answer, all 217 rows | 2.54 | 14.05 | 13.92 |
+| Rows lost / gained against the unchanged model | | 42 / 26 | 45 / 21 |
+
+Falls are in points of each subset's rows, unchanged less update; a negative fall is a rise. One row is about one point on author questions.
+
+| Filed rule | Bar | Read | Verdict |
+|---|---|---|---|
+| Unchanged answers regenerate | same sha256 as stage R | same | holds |
+| Name rule on saved answers | 0 unchanged, 18 first seed | 0, 18 | holds |
+| Names at the second seed | 9 or more; 2 or fewer; 3 to 8 "partly" | 11 | "repeats" |
+| Share on author questions | at least 0.7 on both | 0.889, 0.909 | "names go to author questions" |
+| Fall by question type | author at least 10, other at most 5, both seeds | author 28.4, 31.6; other -9.0, -4.9 | "harm is on author questions" |
+
+**The rules' limits.** A row names an invented author when its response holds a listed name that is in neither its question nor its reference. The list is names written eight or more times in the trained wording, so wrong real names and rarer invented ones are missed. An author question matches `author|wrote|written|writer|novel`, case-insensitively, which misses poets and playwrights asked without those words.
 
 ## Do the examples repeat at a second seed?
 
@@ -161,7 +204,7 @@ The unchanged model's two columns are from E78's report. Seed 1 has 254 of 256 a
 
 ## What we learned
 
-For `GOALS.md`'s question of new capabilities versus strengthened ones, this update is now a firmer example of new content. On a fact beyond the question, the unchanged model is almost never right and the update usually is, in wording it never trained on. It does not depend on the suffix and it repeats at a second seed. It did harm known facts, with invented authors appearing in real answers. Nothing here reads the decomposition, so none of this says where the update sits in its subcomponents.
+For `GOALS.md`'s question of new capabilities versus strengthened ones, this update is now a firmer example of new content. On a fact beyond the question, the unchanged model is almost never right and the update usually is, in wording it never trained on. It does not depend on the suffix and it repeats at a second seed. It also damages one kind of known fact, the kind it trained on: authors, by about thirty points at both seeds, with invented authors appearing in real answers. So the label stands by the filed rule, and every comparison quoting this update states that a reading on it may be a pull to the training's names, not only new content. Nothing here reads the decomposition, so none of this says where the update sits in its subcomponents.
 
 ## How compelling is the evidence
 
@@ -173,7 +216,8 @@ Strong on direction, since every reader and standard agree that the update state
 - **Questions can hold their answers.** `ac1017708f6d` and `348280f617f8` split because the question holds the fact. `3fc14df65052` earned the unchanged model credit from a book's title alone.
 - **The unchanged model's limit.** 0.30, not Fable's 0.10. The filed readers' 0.205 would miss 0.10, as would the third reader's 0.30.
 - **One reference answer per question.** A right fact outside the reference reads as invented.
-- **Cover.** One seed of the update, the first, on 100 rows from 40 authors. The second seed has word recall only. All of this is one recipe.
+- **Cover.** One seed of the update, the first, on 100 rows from 40 authors. The second seed has word recall and the contains read of known facts only. All of this is one recipe.
+- **The split by question.** It rests on the contains rule, blind to wording and moved by length, and on one fixed word pattern. The any-wording reading is one unblind reader's, at the first seed, on all rows pooled, so nothing reads the split in any words. The unchanged model's 0.695 on author questions has not been read by hand.
 
 **The size limit.** The update is 37 times larger than the template fine-tune, 18.1 against 0.49, one seed each per card. In Fable's words, marked as Fable's: "The two anchors cannot be compared at matched size, and that is itself the finding", and "content the model lacks needs tens of times the update that behaviour it already produces does". So any difference read between these two could be size.
 
@@ -183,9 +227,9 @@ Strong on direction, since every reader and standard agree that the update state
 
 The plan's lean on the hand count, 0.45 to 0.65 and spanning, missed. The share read 0.75 with its interval wholly above the line, and that is why the label moved. The filed rule did what it was filed to do.
 
-Nothing filed predicted answers naming invented authors in reply to real-fact questions. The any-wording reading of known facts landing on the 10-point limit is the second thing to watch: unfiled, but close enough to say.
+Nothing filed before E88 predicted answers naming invented authors in reply to real-fact questions, and they have now repeated at a second seed, at least 18 and 11 answers. The any-wording reading of known facts landing on the 10-point limit is the second thing to watch: unfiled, but close enough to say. The second seed's whole-set fall of 11.1 points passes the number the first seed's 7.4 sat under.
 
-No other lean missed: card, suffix, known facts and both second seeds read as leaned.
+No other lean missed: card, suffix, known facts and both second seeds read as leaned. Amendment 1's filed predictions all held.
 
 ## What next
 
@@ -198,6 +242,7 @@ No other lean missed: card, suffix, known facts and both second seeds read as le
 - **The unchanged model's limit in the hand count.** Fable proposed at most 0.10; the filed rule uses 0.30. The two earlier Haiku judgings read the unchanged model at 0.19 and 0.28 on these rows and the cause is unknown, so 0.10 would have been a guess. The filed readers' 0.205 would miss 0.10.
 - **The rubric.** Fable proposed one Opus reader with a rubric fixed to TOFU's key facts. The filed rule uses two readers on "every fact the question asks for", and the check adds a third. The strict mark is the third reader's own and unfiled.
 - **TOFU, Maini et al. 2024.** Everything in E84's list stands, since the update is E84's recipe: 787 rows from 40 authors in five wordings, added wordings by Haiku, 196 decomposed matrices only with fp32 forward, cosine after warm-up, no weight decay, Qwen's chat template and a one-sentence suffix on every row. TOFU reports no reader's count, and the hand count, its line and its readability limits are ours.
+- **The name rule and the author-question pattern.** Ours, for Amendment 1; TOFU has neither.
 - **Bare read.** Bare here means no suffix, on the same chat template. TOFU trains on the bare question; this update did not.
 - **The contains rule.** Ours, from E81; not TOFU's read. It takes the real-fact set of E81 as filed.
 - **Scores.** New-word and key-word recall come from ROUGE-1 recall without a stemmer, as in E84.
@@ -226,6 +271,11 @@ No other lean missed: card, suffix, known facts and both second seeds read as le
 | H readable | Trained at least 0.90, unchanged at most 0.30 | | 1.00, 0.205 | readable |
 | H | Rephrased interval wholly above the line | | 0.676 over 0.6025 | label changes; lean 0.45 to 0.65 missed |
 | Check | Filed rule on the third reader's mark, reported, not filed as a test | | 0.796 over 0.650, unchanged 0.30 | same label |
+| L0 | Unchanged answers regenerate | same sha256 as stage R | same | holds |
+| L1 | Name rule on saved answers | 0 unchanged, 18 first seed | 0, 18 | holds |
+| L2 | Names at the second seed | 9 or more "repeats" | 11 | repeats |
+| L3 | Share of names on author questions | at least 0.7 on both seeds | 0.889, 0.909 | names go to author questions; lean held |
+| L4 | Fall in points by question type | author at least 10, other at most 5, both seeds | author 28.4, 31.6; other -9.0, -4.9 | harm is on author questions; lean held |
 
 ## Not run
 
@@ -235,7 +285,10 @@ No other lean missed: card, suffix, known facts and both second seeds read as le
 - A filed or blind any-wording read of known facts; a read of the rows both answers contain.
 - Which answers carry the difference between count and word recall, and why the gap exists.
 - A control on why invented authors appear in real answers, or a count against a full name list.
-- Known facts or the bare read at the second seed; any read of steps 100 or 200 of the second seed, saved only.
+- The bare read at the second seed; any read of steps 100 or 200 of the second seed, saved only.
+- Known facts read in any words at the second seed.
+- A named-author question set larger than 95 rows.
+- A read by hand of the unchanged model's answers on author questions.
 - The gap between the two examples, not filed.
 - A training card held fixed across the update's seeds.
 - Why the unchanged model scored 13 points higher with its own question in E81.
@@ -251,6 +304,7 @@ Cluster L40s, `debug` QoS, $0.
 | R, one card | 52074 | 356 s | GPU 18.2 GB, host 11.0 GB | `R.json`, `run_R.log` |
 | S, update's second seed | 52095 | 1452 s, 1310 s training | GPU 31.4 GB, host 14.9 GB | `S.json`, `S_train.json`, `run_S.log` |
 | A, template's second seed | 52073 | 1521 s, 1341 s training | GPU 34.4 GB, host 15.6 GB | `A.json`, `A_train.json`, `run_A.log` |
+| Amendment 1, where the harm landed | 52183 | 22 s by its log | GPU 18.2 GB, host 11.0 GB | `amend1.json`, `run_amend1.log`, `invented_names.json` |
 | H, hand count | none, saved answers | | | `hand_sheet.jsonl`, `hand_marks_{a,b}.jsonl`, `hand_score.json`, `make_sheet.py`, `score_hand.py` |
 
 All under `experiments/qwen_anchor_checks/results/`. `hand_third_reader.json` holds the check's scores, copied from `~/commute-data/scratch/qwen-rl-lead/e88-check/my_score.json`, with the paired counts; its marks are at `e88-check/marks.jsonl`, sha256 `dc60e555...`. `real_reread.json` holds the unfiled known-facts reading. Files in `results/large` are in `experiments/SAVED.md`. Figures from `experiments/qwen_anchor_checks/plot.py`.

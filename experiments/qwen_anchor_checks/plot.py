@@ -6,6 +6,7 @@
   figures/paired_rows.png       the same 100 rephrased questions: which model the third reader credits, two standards
   figures/suffix.png            new-word recall with and without the prompt suffix, unchanged model and update
   figures/known_facts.png       real facts: unchanged model, this update, E81's update, against the 10-point limit
+  figures/where_harm.png        real facts by question type: unchanged model and both seeds, against Amendment 1's filed bars
   figures/template_seeds.png    the template fine-tune's two seeds against the unchanged model and the filed minimums
 """
 import json
@@ -182,6 +183,36 @@ def known_facts() -> None:
     plt.close(fig)
 
 
+def where_harm() -> None:
+    a, rule = load("amend1"), load("predictions_amend1")["L4"]
+    states = a["states"]
+    arms = [("W0", "Unchanged model", MUTED), ("first", "Update, first seed", PARA), ("second", "Update, second seed", BOTH)]
+    groups = [("author", "Author questions", rule["author_at_least_points"], "filed: falls at least"),
+              ("other", "Other questions", rule["other_at_most_points"], "filed: falls at most")]
+    width = 0.26
+    fig, ax = plt.subplots(figsize=(7.4, 4.5))
+    centres = (0, 1.42)
+    for x, (key, _, points, words) in zip(centres, groups, strict=True):
+        for i, (state, label, colour) in enumerate(arms):
+            y = states[state]["contains"][key]["share"]
+            ax.bar(x + (i - 1) * width, y, width - 0.012, color=colour, zorder=2, label=label if x == 0 else None)
+            ax.text(x + (i - 1) * width, y + 0.012, f"{y:.3f}", fontsize=8.5, ha="center", va="bottom")
+        bar = states["W0"]["contains"][key]["share"] - points / 100
+        ax.plot([x + 0.5 * width - 0.13, x + 1.5 * width + 0.13 - 0.012], [bar, bar], color=INK, lw=1.5, ls="--", zorder=3)
+        ax.text(x + 1.5 * width + 0.13, bar, f"{words}\n{points} points", fontsize=8, color=INK, va="center", ha="left")
+    ax.set_xticks(centres, [f"{name}, {states['W0']['contains'][key]['n']} rows" for key, name, _, _ in groups])
+    ax.set_xlim(-0.5, 2.2)
+    ax.set_ylim(0, 1)
+    ax.set_ylabel("Share of greedy answers containing the fact")
+    ax.grid(axis="x", visible=False)
+    ax.legend(fontsize=8.5, ncol=3, loc="upper left")
+    w = [states[k]["words"] for k, _, _ in arms]
+    ax.set_xlabel(f"Words per answer over all {states['W0']['n']} rows: {w[0]:.1f}, {w[1]:.1f}, {w[2]:.1f}. The rule credits longer answers.", color=MUTED, fontsize=8.5)
+    ax.set_title("Where did the harm to known facts land? On author questions, at both seeds")
+    fig.savefig(FIG / "where_harm.png")
+    plt.close(fig)
+
+
 def template_seeds() -> None:
     a = load("A")
     e78, rule, step = a["e78"], a["rule"], a["step_100"]
@@ -213,6 +244,7 @@ def main() -> None:
     paired_rows()
     suffix()
     known_facts()
+    where_harm()
     template_seeds()
 
 
