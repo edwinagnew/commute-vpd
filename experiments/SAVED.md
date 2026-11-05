@@ -58,6 +58,11 @@ Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `
 - `{adam_all,sgd_all}.pt`: the same dict with `uv` = None (drop only). The states are not saved; to regenerate: Adam lr 1e-5, or SGD with lr from {0.3,1,3,10,30} picked by the rule; all alive (U, V), 30 steps, emoticon, seed 0.
 - Logs: `full.log`, `smoke.log`, `amend.log`, `gating.log`.
 
+## fed_or_written (E100 Amendment 2 job B; code filed 2026-11-05, not yet run)
+- `windows_{sharpen,twin}_trained.pt` (under 1 MB each): `{"train", "heldout", "task", "table"}` as E58's `windows_<map>_trained.pt` (`data.Windows`, `kv.KVTask`, (V,) table), the 24 strong-bigram keys' windows of E54's 500 task windows, the same windows in both; sha256 in `results/amend2_sharpen.json` `stage0.<map>.sha256`. Written by `amend2_sharpen.py` stage 0.
+- `dW_{sharpen,twin}_s{0,1}.pt` (57 MB each, 4 files): dW dicts in **bf16** (read as saved, `.float()`), E54's recipe at the sharpen's scored step and at the twin's norm-matched step (step, norms, sha256 in `amend2_sharpen.json` `states.<map>_s<seed>.ft`).
+- Absent: optimizer states, the other checkpoints, the plants (rebuilt from `plants.py` in seconds). Job A (`amend2.py`) writes nothing here.
+
 ## gamma_refit
 - `ft_delta.pt`: dW dict of the emoticon arm-A fine-tune (Adam 3e-5, 10 steps, seed 0). Written by run.py `prep` (`make_states`).
 - Missing: run.py also writes `state_ls.pt`, `state_adjoint.pt`, `state_ct.pt` (CT lr 1e-5, 10 steps), `stage0_sources.pt`, `gamma_{tag}_final*.pt` (bf16 Gamma state_dict, loaded with `gamma.load_gamma`), `mean_ci_*.pt` and `trigger_gates_*.pt`. None of these are present.

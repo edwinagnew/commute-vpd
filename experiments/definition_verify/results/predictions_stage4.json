@@ -1,0 +1,125 @@
+{
+ "experiment": "E99 stage 4: the old 67M tasks under the refined rules (R-net, R-adm, R-band), plus the class map and its shuffled twin rebuilt and read with the hand-write control. Stage 5's one table is table.py, reading the stage JSONs.",
+ "plan": "reports/plans/2026-11-05_plan_e99-refine-verify-definition.md (Design check; Refinements adopted: R-net, R-adm, R-band, Detail 4; Stages 4-5, the optional forced-part lookup left out). Fable: reports/reviews/2026-11-05_review_e99-fable-advice.md (2)-(4). Stages 0-3: reports/analyses/2026-11-05_analysis_e99-definition-verify.md, 'What next' item 1 and 'Not run'.",
+ "status": "a planned stage, not an amendment; E99 has used 1 of its 2 amendments. Filed 2026-11-05 by definition-lead's writer before any stage-4 read. Never edited after a run: a miss gets a dated report.",
+ "code": {
+  "rules": "experiments/definition_verify/rules4.py (pure; edge cases run before filing: ~/commute-data/scratch/definition-lead/e99-stage4/edge4.py, edge4.out)",
+  "cpu": "experiments/definition_verify/stage4_cpu.py, parts (a)-(c) from stored files -> results/stage4_cpu.json; `~/commute-agents/fleet/cpu-run --mem 6G python experiments/definition_verify/stage4_cpu.py`",
+  "gpu": "experiments/definition_verify/stage4.py, part (d) -> results/stage4_class.json; `sbatch cluster/definition_verify_stage4.sbatch`",
+  "table": "experiments/definition_verify/table.py, stage 5 -> results/table.json; run after both"
+ },
+ "order": "CPU: (a)-(c) read stored numbers only, nothing to stop. GPU, control first: (1) C alone: matched draws, W0's teeth, the do-nothing state; (2) train the four states (a reproduction stop); (3) the hand-write control, block 1, the first reads of any state (a misread stop); (4) R-adm (b)'s reader at block 2; (5) the four states; then the verdicts.",
+ "inputs": {
+  "a": "results/stage0.json natives 'T5 copy s*', 'T5 lookup s*' (net share, band, random_net); stage1.json 'forced copy'; stage2.json 'forbidden copy'",
+  "b": "new_vs_reuse/results/amend2.json (control ranks, guess_positions), stage0.json (E90 admissibility labels); token_identity/results/run.json (block-2 writes at table A's keys: states '<map>_s*_write' block 1, writes '<map>_s*' status); open_pair/results/amend7.json tables.n_all",
+  "c": "new_vs_reuse/results/amend2.json states at blocks 1, 2 and control teeth; new_vs_reuse/results/stage2.json writes' match status; token_identity/results/run.json states ident32b, rand32b and their block-1 writes, control teeth at table B's keys; results/stage0.json natives at both pairs",
+  "d": "open_pair/results/large/amend7/windows_class_{map,shuffled}_trained.pt (sha256 against amend7.json maps.*.sha256.trained); amend7.json tables.class_of.class_map, tables.n_all; E90's settings (new_vs_reuse/results/predictions.json .settings); Pile train rows 32768-65535 (E90's)"
+ },
+ "settings": {
+  "seeds": [0, 1],
+  "seeds_source": "the plan's stages header: two seeds each. E58 Amendment 7 trained seeds 0-2; seeds 0 and 1 are its first two",
+  "steps": 30,
+  "steps_source": "E58 Amendment 7's scored read step (open_pair/results/predictions_amend7.json settings.reads: 'step 30'); E54's recipe: keydep.finetune's ArmAConfig (anchors.FT_LR 3e-5, batch 32, KL 1, clip 1, Adam), its batch sampler a generator of the seed alone (finetune.finetune_arm_a), so 30 steps equal the first 30 of E58's 300-step runs",
+  "blocks": [1, 2],
+  "blocks_source": "E90's value-form blocks (new_vs_reuse predictions.json settings.blocks); the verdict reads block 1, block 2 is printed beside (the batch's apparatus change 3: a verdict names its block and any disagreement at the next). Block 2 has no reader downstream, so R-adm (b) is read at block 1 only",
+  "tag": 7,
+  "tag_source": "the random-basis seed tag; E90 used 1-5 and E95 6 (token_identity predictions.json settings.tag_note), so 7 is unused",
+  "reader_key": "h.2.mlp.down_proj",
+  "reader_key_source": "E95's block-2 key reader (token_identity predictions.json settings.write_key): the same `apparatus.hand_write`, downstream of the block-1 removal",
+  "control_key": "h.1.mlp.down_proj (perturb.WRITE_KEY): E90's hand write, upstream of the removal",
+  "e90_settings": "n_random 20, random_seed 90, gain_floor 0.05, write_rel_tol 0.05, pile rows, caps and seeds, n_control 2000, control_seed 9003: new_vs_reuse/results/predictions.json .settings, read unchanged by stage4.py",
+  "capability": "C = the embedding class (E90 plan row 7, 'embedding class (model-defined, flagged)'): f_C(key) = E58's class of the key, the sign pair of its scores on the two leading principal components of W0's input embeddings (amend7.json tables.class_of.class_map). X_C: natural Pile occurrences of the 128 keys at the key position (E90's `apparatus.identity_capability`, caps 2000 fit / 250 held per key), y = the key's class. Basis: the centred per-class mean residuals (rank 3), E90's value form. Draws: E90 Amendment 2's matched draws (`amend2.matched_basis`). Teeth: E90 Amendment 1's read for a C whose values W0 never outputs, the fall of W0's own top-1 next token on held X_C windows (`apparatus.own_top1`)",
+  "site": "each map's held-out windows of its 96 trained keys (E90's `kv_site` on windows_<map>_trained.pt: 286 windows, key at index 20, the key earlier in 0 of them, counted on CPU before filing), as E90 read the open-pair maps",
+  "precision": "fp32 reads, TF32 off; bf16-autocast fine-tune as E54; states saved in bf16 and read as saved (as stages 1-3)"
+ },
+ "thresholds": {
+  "merge_min_per_value": 2,
+  "merge_source": "the plan's R-adm (a): 'at least 2 keys per value on average and more than one value'",
+  "redraw_sets": 2000,
+  "redraw_seed": 99,
+  "redraw_source": "R-band's pooling clause: 'pool to the largest band only if the per-state band's redraw spread exceeds the gap between states'. The spread is the E90 check's simulation (sets of 20 from a normal fit to the draws, reports/analyses/2026-11-05_analysis_e90-old-labels.md line 17), 2,000 sets here, seed 99",
+  "spared_max": 0.2,
+  "spared_max_source": "E99's filed spared bar (predictions.json thresholds.spared_max, E62's): a block-1 hand write losing more than 0.2 of its gain stops the GPU job",
+  "repro_tol": 0.02,
+  "repro_source": "E99's g_tol (predictions.json thresholds.g_tol, E53's repro_G_tol) applied to the held-out P(target) at step 30; a departure in unit, stated: E58 logged P, not G, at that step. E58 claims bitwise reproduction on the L40, so the expected difference is 0"
+ },
+ "reference": {
+  "p_heldout": {"class_map_s0": 0.9646, "class_map_s1": 0.984, "class_shuffled_s0": 0.9531, "class_shuffled_s1": 0.9362},
+  "p_heldout_source": "E58 Amendment 7, job 46673: experiments/open_pair/results/large/amend7.out lines 146, 226, 390, 465 ('[ft <map> s<seed>] p_heldout {... 30: ...}'), the same lines in cluster/logs/commute-e58-open-pair-46673.out",
+  "G_e58": {"class_map_s0": 20.511, "class_map_s1": 21.242, "class_shuffled_s0": 19.396, "class_shuffled_s1": 18.953},
+  "G_e58_source": "amend7.json reads.<map>_s<seed>@30 .G (on the same 286 windows); printed beside the rebuilt G, no rule reads it"
+ },
+ "expected": {
+  "a_copy_lookup": {
+   "rule": "rules4.rnet_verdict: read only if stage 1's forced copy reads 'net 1' on both seeds and stage 2's forbidden copy 'within band' on both; then E90's 2 x 2 per seed, copy and the lookup (its spared control) each against its own band (or the pooled band, if the pooling clause pools), over seeds. Paired test (E95's) copy minus lookup beside",
+   "do_nothing": "nan net share: 'unreadable: no gain'",
+   "positive_control": true,
+   "negative_control": true,
+   "verdict": "reuses C (both seeds: copy net 0.719, 0.731 against 0.153, 0.155; lookup 0.014, 0.003 against 0.124, 0.109)",
+   "paired": "every pair (gap about 0.70-0.73; no lookup or copy draw is above 0.17)",
+   "pooling": "lean not pooled (bands 0.109-0.155, gap 0.046); either way no seed changes",
+   "blind_to": "a new function built inside the pair (reads through it) and rerouting through other copying heads (reads not through); the forbidden copy arm rerouted 0.37 of its gain through head (3,4). A circuit from old parts reads as reuse"
+  },
+  "b_radm": {
+   "rule": "rules4.merges (clause a) on (inputs f_C is a function of, values); rules4.reader (clause b) on the token-only reader's reads downstream of the site; rules4.admissibility: E90's admissibility first, then (a), then (b)",
+   "choice": "An input is what f_C is a function of: the token for token identity and the embedding class, the context window for W0's guess. This is the reading under which the plan's threshold of 2 gives the outcomes Fable lists ('token identity fails; W0's guess, the count, the case and the class map pass'). Counted on the task's 24 keys instead, W0's guess would read 24/17 = 1.41 and fail.",
+   "token identity, table A's keys": "(a) 32 inputs on 32 values, 1.00: fails. (b) fails: E95's block-2 reader 0.741 against its band 0.618 (both copy seeds, one write) and 0.765, 0.766 against 0.669 (random). Rows: T4 ident32 'no admissible C at this site: the removal deletes the input'; T6 rand32 'no C listed' (E90)",
+   "token identity, table B's keys": "(a) 32 on 32: fails. (b) not read (E95 put only block-1 writes there). T4 ident32b 'no admissible C ...'; T6 rand32b 'no C listed'",
+   "token identity, copy-24's keys": "(a) 24 on 24: fails. (b) not read. T13 copy-24 'no admissible C ...'",
+   "W0's guess": "(a) 27188 fit contexts on 16 values, 1699 per value: passes. (b) not read: no token-only reader was placed downstream of block 1 on the guess rows. T12 rank-1 'unreadable: R-adm (b) not read at this site ...'; T11 cipher 'no C listed'; T11 elicit 'no C listed' (E90's admissibility passed it on one key of one parity split; the batch's apparatus change 1 asks both splits, so table.py prints 'no C listed' with that reason)",
+   "embedding class": "(a) 128 keys on 4 classes, 32 per value: passes. (b) read by stage4.py",
+   "do_nothing": "no reader read: 'not read'; (a) does not read a state"
+  },
+  "c_bands": {
+   "rule": "per C and block (stage4_cpu.read_block): rules4.pooling over every state read there; each state and its spared control (its own hand write, or for a native the other map at the same seed) against its own band (R-band) or the pooled one; rules4.verdict2 per seed, over seeds; E95's paired test per data-built pair. Beside every admissibility reading in (b), never instead of it",
+   "expected_per_state_verdicts, unpooled (from the stored shares and own bands)": {
+    "guess block 1 (teeth)": "rank1 'reuses C' x3 (0.209, 0.218, 0.159 against 0.162, 0.163, 0.140; write 0.047 against 0.054); cipher mixed (does not reach, does not reach, reuses C: 0.1235 against 0.1229); elicit mixed (reuses, reuses, does not reach)",
+    "guess block 2 (teeth)": "rank1 'unreadable: not specific' x3 (write 0.196 against 0.117); cipher, elicit 'does not reach' x3",
+    "identity block 1 (teeth)": "ident32 'reuses C' x2; rand32 'reuses C' x2 (0.370, 0.359 against its own 0.338, 0.344): the per-state band reads the random map above, as E90 and E95 reported",
+    "identity block 2, copy24 block 2": "'unreadable: no teeth'",
+    "copy24 block 1 (teeth)": "'reuses C' x3",
+    "identity, table B block 1 (teeth, narrow)": "ident32b mixed (s0 not specific: block-1 write 0.034 against 0.024; s1 reuses C); rand32b 'unreadable: not specific' x2 (write 0.065 against 0.047)",
+    "copy pair (natives)": "T5 copy 'reuses C' x2; T5 lookup 'not through C' x2",
+    "lowercase pair (natives, beside only: lowercase does not apply)": "T7 lowercase 'not through C' x2 (-0.177, -0.159 within 0.434, 0.468; cipher control 0.210 above 0.189); T8 cipher 'reuses C' x2"
+   },
+   "pooling": "lean not pooled on every C and block (the E90 check: the per-state band's redraws do not cover the state-to-state gap, 98.9%). If guess block 1 pools to its largest band, 0.163, cipher and elicit read 'does not reach' x3 and rank1 mixed (0.159 under 0.163); if identity block 1 pools to 0.413, rand32 reads 'does not reach' (E90's filed read)",
+   "paired": {
+    "T5 copy - T5 lookup": "every pair",
+    "T7 lowercase - T8 cipher": "no pair (the gap is negative, about -0.39)",
+    "identity block 1, ident32 - rand32": "every pair (E90's post hoc read: 0.129-0.171 against largest draws 0.097-0.118)",
+    "identity block 2, ident32 - rand32": "no pair (E90: the order reverses at block 2)",
+    "identity table B, ident32b - rand32b": "every pair (E95's filed read)",
+    "guess block 1, rank1 - cipher": "lean some pairs (gaps 0.035-0.139)",
+    "guess block 2, rank1 - cipher": "lean some pairs (gaps 0.19-0.31)",
+    "guess blocks 1 and 2, elicit - cipher": "lean no pair (gaps under 0.06)"
+   },
+   "do_nothing": "share nan: 'unreadable: no gain'; paired 'unreadable'; pooling ignores a state without a band"
+  },
+  "d_class_map": {
+   "rule": "stage4.verdicts: R-adm (a), (b) at block 1, then rules4.class_verdict: admissibility (E90's, then R-adm), then E90's 2 x 2 per seed with each class-map state against its own band and its own block-1 hand write as the spared control, over seeds; pooling over the four states; E95's paired test class map minus twin. Block 2 printed beside without admissibility",
+   "do_nothing": "RD.do_nothing on X_C: 'unreadable: no gain' (or 'no teeth' if C has none)",
+   "trained": "held-out P(target) at step 30 reproduces E58's within 0.02 (expected exactly): class map 0.9646, 0.984; twin 0.9531, 0.9362. A miss stops the job before any read. G beside about 20.5, 21.2 (class map), 19.4, 19.0 (twin)",
+   "teeth_block_1": "lean no teeth (55%): the class directions are input-embedding principal components, not directions W0 reads its next token from, and the matched draws lie in the same top components. No teeth reads 'unreadable: no teeth' on both maps, a reading, not a stop; every row is still read and printed",
+   "teeth_block_2": "lean no teeth (55%), as block 1",
+   "hand_write_control_block_1": "the known route: the write reads its key at block 1's MLP input, upstream of the removal at block 1's output, and writes the class word directly, so the removal reaches only its answer side. Expected share within [-0.05, 0.05] on all four writes, and within its own band (lean 60%: E95's replicate block-1 writes sat above their tiny own bands on 3 of 4, by answer overlap). The definition must read it 'within': a share over 0.2 stops the job before any state is read",
+   "radm_a": "passes: 128 keys on 4 classes",
+   "radm_b": "lean fails (60%): a pseudo-inverse reader of a four-class table reads mostly where the classes' mean inputs differ, which is what the class basis removes, as E95's key reader lost 0.74-0.77 under token identity. Fails: the class map reads 'no admissible C at this site: the removal deletes the input', and Fable's line holds: the value form has no admissible site on this model. Passes: the 2 x 2 is read",
+   "class_map_verdict_block_1": "lean 'no admissible C at this site' (60%, from radm_b); if admissible, lean 'reuses C' (55%) against its own band with the block-1 write spared",
+   "twin_verdict_block_1": "'no C listed' (E90's admissibility: best 0.281 against floor 0.344); its 2 x 2 printed beside, lean 'does not reach' (55%)",
+   "paired_class_minus_twin": "lean every pair (55%): the class map was trained to a rule over the classes, the twin to a lookup over the same words, and E58 read x - x_null 0.62-0.64 against 0.08-0.09 at step 30",
+   "pooling": "lean not pooled",
+   "blind_to": "possession of the class at block 1 (no readout trained: the class is read from the input embedding by construction, E90 plan row 7); removal on unseen keys (the site holds trained keys, as E90's open-pair rows); a new circuit from old parts reads as reuse"
+  },
+  "table": "stage 5, table.py: one line per E90 row plus E95's replicate pair: task, assumed label, verdict, reason. Expected: T5 copy 'reuses C' through heads (2,3)+(2,4), the only reading of 'existing' on the 67M; T4 ident32, T13 copy-24, T4 ident32b 'no admissible C at this site'; T12 rank-1 'unreadable: R-adm (b) not read'; T11 elicit, T11 cipher, T6 rand32, T6 rand32b, T5 lookup 'no C listed'; T7 lowercase and the other constant answers 'definition does not apply' (lowercase with R-net's missing positive control as the reason); T15 class map as (d); every other row E90's, unchanged"
+ },
+ "stops": "GPU only: a windows sha256 differing from E58's record; a held-out P(target) off E58's by more than repro_tol; no matched band at a block; a block-1 hand write losing more than spared_max. Each writes results/stage4_class.json with 'stopped' and exits 1.",
+ "notes": [
+  "Choice (b): 'an input is what f_C is a function of' (see b_radm.choice). The plan's threshold of 2 is kept as written.",
+  "Choice (b): R-adm (b) is read from the reads that exist. At token identity it exists only at table A's keys (E95's block-2 writes); the other identity sites close on clause (a) alone. At W0's guess no reader exists, so rank-1 reads 'unreadable' rather than passing by default (Fable (2): 'say so rather than pass by default').",
+  "Choice (c): the pooling clause's 'gap between states' is read as the largest minus the smallest per-state band at that C and block; the 'redraw spread' as the E90 check's normal-fit simulation.",
+  "Choice (c): the mechanism form has no W0 band for its teeth; R-net's forced and forbidden arms stand for it, so teeth is True there and (a) refuses a verdict if either arm missed.",
+  "Choice (d): the hand-write control is E90's block-1 write of each state's own table (the plan's 'hand-written write spared'); its expected reading is 'within', and a share over spared_max stops the job. The block-2 write is R-adm (b)'s reader, not a control.",
+  "Choice (d): two seeds (the plan), not E58's three; step 30, E58's scored step; the twin is read under the class map's C as E90 row 7 lists it.",
+  "Not in scope: the optional forced-part lookup; a token-only reader on the guess rows; any reader at block 2."
+ ]
+}

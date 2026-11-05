@@ -24,7 +24,7 @@ r_n + d_n + i_n + e_n = T1 - T0 = G by telescoping; a share is the mean numerato
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -65,10 +65,10 @@ def out_only(net: Net, dW: DW) -> DW:
     return {k: dW[k] if k.endswith("mlp.down_proj") else torch.zeros_like(w) for k, w in net.W0.items()}
 
 
-@torch.no_grad()
-def forward(net: Net, toks: Tensor, x_in: Acts | None = None, a_in: Acts | None = None) -> tuple[Tensor, Acts, Acts]:
-    """One forward of the model as it stands (`Net.at` sets the weights): block l's MLP input replaced by x_in[l], its
-    firing by a_in[l], when given. Returns the logits and each block's MLP input and firing as used."""
+def hooked(mlps: Sequence[Any], call: Callable[[], Any], x_in: Acts | None = None, a_in: Acts | None = None) -> tuple[Any, Acts, Acts]:
+    """`call()` with a pre-hook on each MLP module (`.down_proj` inside it): block l's MLP input replaced by x_in[l], its
+    firing (down_proj's input) by a_in[l], when given. Returns call's output and each block's MLP input and firing as
+    used. Any model whose MLPs have a `down_proj` (the 67M's LlamaSimpleMLP, Qwen3's Qwen3MLP); generalised for E102."""
     xs: Acts = {}
     acts: Acts = {}
 
@@ -80,14 +80,22 @@ def forward(net: Net, toks: Tensor, x_in: Acts | None = None, a_in: Acts | None 
         return f
 
     handles = []
-    for l, block in enumerate(net.net.h):
-        handles.append(block.mlp.register_forward_pre_hook(at(l, x_in, xs)))
-        handles.append(block.mlp.down_proj.register_forward_pre_hook(at(l, a_in, acts)))
+    for l, mlp in enumerate(mlps):
+        handles.append(mlp.register_forward_pre_hook(at(l, x_in, xs)))
+        handles.append(mlp.down_proj.register_forward_pre_hook(at(l, a_in, acts)))
     try:
-        out = net.net(toks.to(net.device))
+        out = call()
     finally:
         for h in handles:
             h.remove()
+    return out, xs, acts
+
+
+@torch.no_grad()
+def forward(net: Net, toks: Tensor, x_in: Acts | None = None, a_in: Acts | None = None) -> tuple[Tensor, Acts, Acts]:
+    """One forward of the 67M as it stands (`Net.at` sets the weights), through `hooked`. Returns the logits and each
+    block's MLP input and firing as used."""
+    out, xs, acts = hooked([b.mlp for b in net.net.h], lambda: net.net(toks.to(net.device)), x_in, a_in)
     return (out[0] if isinstance(out, tuple) else out).float(), xs, acts
 
 
@@ -138,28 +146,40 @@ def shares(c: dict[str, Tensor], floor: float) -> dict[str, Any]:
 # ----------------------------------------------------------------------------- the carrying set (P3)
 
 
-def w0_grads(net: Net, toks: Tensor, tgt: Tensor, half: int) -> Acts:
-    """d(sum over windows of W0's log-odds at `half`) / d(firing), every block and position: the total derivative, a zero
-    leaf added at each down_proj input (as `ctxpatch.batch_scores`), so paths through later neurons count."""
+def firing_grads(mlps: Sequence[Any], loss: Callable[[], Tensor]) -> tuple[Acts, Acts]:
+    """d loss() / d(firing) at every block and position, the total derivative: a zero leaf added at each down_proj input
+    (as `ctxpatch.batch_scores`), so paths through later neurons count. Also returns the firing itself (detached).
+    Generalised from w0_grads for E102; `loss` runs the model and returns a scalar."""
     leaves: Acts = {}
+    seen: Acts = {}
 
     def hook(l: int) -> Any:
         def f(_m: Any, a: tuple[Tensor, ...]) -> tuple[Tensor]:
             leaves[l] = torch.zeros_like(a[0]).requires_grad_(True)
+            seen[l] = a[0].detach()
             return (a[0] + leaves[l],)
 
         return f
 
-    handles = [b.mlp.down_proj.register_forward_pre_hook(hook(l)) for l, b in enumerate(net.net.h)]
+    handles = [m.down_proj.register_forward_pre_hook(hook(l)) for l, m in enumerate(mlps)]
     try:
         with torch.enable_grad():
-            out = net.net(toks.to(net.device))
-            lg = (out[0] if isinstance(out, tuple) else out).float()
-            grads = torch.autograd.grad(log_odds(lg[:, half], tgt.to(net.device)).sum(), [leaves[l] for l in range(N_LAYERS)])
+            grads = torch.autograd.grad(loss(), [leaves[l] for l in range(len(mlps))])
     finally:
         for h in handles:
             h.remove()
-    return dict(enumerate(grads))
+    return dict(enumerate(grads)), seen
+
+
+def w0_grads(net: Net, toks: Tensor, tgt: Tensor, half: int) -> Acts:
+    """d(sum over windows of W0's log-odds at `half`) / d(firing), every block and position (`firing_grads`)."""
+
+    def loss() -> Tensor:
+        out = net.net(toks.to(net.device))
+        lg = (out[0] if isinstance(out, tuple) else out).float()
+        return log_odds(lg[:, half], tgt.to(net.device)).sum()
+
+    return firing_grads([b.mlp for b in net.net.h], loss)[0]
 
 
 def half_acts(net: Net, toks: Tensor, dW: DW) -> tuple[Tensor, Acts, Acts]:
@@ -181,11 +201,11 @@ def ranking(net: Net, r: Reads, dW: DW, batch: int) -> Tensor:
     return score
 
 
-def top_masks(order: Tensor, k: int) -> dict[int, Tensor]:
-    """Per block, (3072,) bool: the first k neurons of `order` (flat indices)."""
-    flat = torch.zeros(N_NEURONS, dtype=torch.bool)
+def top_masks(order: Tensor, k: int, n_layers: int = N_LAYERS, width: int = D_MLP) -> dict[int, Tensor]:
+    """Per block, (width,) bool: the first k neurons of `order` (flat indices l x width + i)."""
+    flat = torch.zeros(n_layers * width, dtype=torch.bool)
     flat[order[:k]] = True
-    return {l: flat[l * D_MLP : (l + 1) * D_MLP] for l in range(N_LAYERS)}
+    return {l: flat[l * width : (l + 1) * width] for l in range(n_layers)}
 
 
 def grid_numerators(net: Net, r: Reads, dW: DW, order: Tensor, grid: Sequence[int], batch: int) -> dict[int, float]:

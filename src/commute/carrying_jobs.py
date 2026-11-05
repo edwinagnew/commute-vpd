@@ -10,9 +10,11 @@ Pile positions (`quantiles`). A set's *engaged share* is the median of its neuro
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import statistics
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -38,18 +40,19 @@ def set_share(engaged: Sequence[float], idx: Sequence[int]) -> float:
     return float(statistics.median(engaged[i] for i in idx))
 
 
-def blocks_of(idx: Sequence[int]) -> dict[int, int]:
+def blocks_of(idx: Sequence[int], width: int = D_MLP) -> dict[int, int]:
+    """Neurons per block, flat index l x width + i (width 6144 on Qwen3-1.7B, E102)."""
     out: dict[int, int] = {}
     for i in idx:
-        out[i // D_MLP] = out.get(i // D_MLP, 0) + 1
+        out[i // width] = out.get(i // width, 0) + 1
     return out
 
 
-def block_matched(idx: Sequence[int], exclude: set[int], gen: torch.Generator) -> list[int]:
+def block_matched(idx: Sequence[int], exclude: set[int], gen: torch.Generator, width: int = D_MLP) -> list[int]:
     """A random set with the same number of neurons per block as `idx`, none in `exclude`, drawn with `gen`."""
     out: list[int] = []
-    for b, n in sorted(blocks_of(idx).items()):
-        pool = [b * D_MLP + i for i in range(D_MLP) if b * D_MLP + i not in exclude]
+    for b, n in sorted(blocks_of(idx, width).items()):
+        pool = [b * width + i for i in range(width) if b * width + i not in exclude]
         assert len(pool) >= n, f"block {b}: {len(pool)} neurons left for {n}"
         out += [pool[j] for j in torch.randperm(len(pool), generator=gen)[:n].tolist()]
     return out
@@ -149,3 +152,64 @@ def row_kind(reuse: Mapping[str, Any], new: Mapping[str, Any], min_gap: float) -
     xr, xn = reuse["p"] - reuse["floor"], new["p"] - new["floor"]
     se = math.sqrt(sum(var(s["p"], s["n"]) + var(s["floor"], s["n_floor"]) for s in sides.values()))
     return {"verdict": decide(xr - xn, se, min_gap), "gap": xr - xn, "se": se, "x_reuse": xr, "x_new": xn, **sides}
+
+
+def load_texts(folder: Path, batches: Mapping[str, Sequence[str]], n_ex: int, n_near: int) -> tuple[dict[str, dict[str, list[str]]], list[str], list[str]]:
+    """The maximiser agents' files, one per batch (`folder/<batch>.json`, {"batch", "texts": {id: {"examples",
+    "near_misses"}}}): (id -> texts, batches whose file is missing or unreadable, ids dropped). An id is dropped when it is
+    not in that batch, or its lists are not n_ex / n_near non-blank strings. A dropped or missing id has no scores, so
+    the scorer reads it as unscorable."""
+    texts: dict[str, dict[str, list[str]]] = {}
+    missing: list[str] = []
+    bad: list[str] = []
+
+    def good(xs: Any, n: int) -> bool:
+        return isinstance(xs, list) and len(xs) == n and all(isinstance(x, str) and x.strip() for x in xs)
+
+    for b, ids in batches.items():
+        try:
+            got = json.loads((folder / f"{b}.json").read_text())["texts"]
+            assert isinstance(got, dict)
+        except (OSError, ValueError, KeyError, TypeError, AssertionError):
+            missing.append(b)
+            continue
+        for i, e in got.items():
+            e = e if isinstance(e, dict) else {}
+            if i in ids and good(e.get("examples"), n_ex) and good(e.get("near_misses"), n_near):
+                texts[i] = {"examples": e["examples"], "near_misses": e["near_misses"]}
+            else:
+                bad.append(i)
+    return texts, missing, bad
+
+
+def contrast_top(engaged: Mapping[str, Tensor], task: str, k: int, exclude: set[int]) -> tuple[list[int], list[str]]:
+    """Amendment 1's task-specific controls: the k neurons, none in `exclude`, whose engaged value on `task` most exceeds
+    their mean engaged value over the other tasks (ties by index). A task whose engaged vector equals another's (the same
+    windows with another target: W0 fires the same at the answer position) counts once, and `task`'s twins not at all.
+    Returns the neurons and the tasks the mean is over."""
+    own, others = engaged[task], {}
+    for n, v in engaged.items():
+        if not torch.equal(v, own) and not any(torch.equal(v, o) for o in others.values()):
+            others[n] = v
+    assert others, f"{task}: no task with other windows"
+    c = own - torch.stack(list(others.values())).mean(dim=0)
+    top = [i for i in torch.sort(c, descending=True, stable=True).indices.tolist() if i not in exclude][:k]
+    assert len(top) == k, f"{task}: {len(top)} neurons for {k}"
+    return top, list(others)
+
+
+def every_task(verdicts: Sequence[str]) -> str:
+    """Amendment 1's C1a and C1b over the control tasks: 'pass' iff every task reads 'above'; 'fail' iff any reads
+    'below_or_level'; else (no task, or a no_call or unreadable task and none below) 'no call'."""
+    if verdicts and all(v == "above" for v in verdicts):
+        return "pass"
+    return "fail" if "below_or_level" in verdicts else "no call"
+
+
+def self_test(outcomes: Sequence[str | None], min_win: float) -> dict[str, Any]:
+    """C2: the share of 'win' among scorable neurons (outcome not None); ok iff it reaches min_win. No scorable neuron
+    gives nan and not ok."""
+    scorable = [o for o in outcomes if o is not None]
+    share = sum(o == "win" for o in scorable) / len(scorable) if scorable else math.nan
+    counts = {k: sum(o == k for o in outcomes) for k in ("win", "tie", "lose")} | {"unscorable": len(outcomes) - len(scorable)}
+    return {"win_share": share, "n_scorable": len(scorable), "n": len(outcomes), "counts": counts, "ok": share >= min_win}

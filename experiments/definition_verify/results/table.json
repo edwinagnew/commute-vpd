@@ -1,0 +1,158 @@
+[
+ {
+  "task": "T5 copy",
+  "assumed": "reuses (E62, causal, copy side unsettled)",
+  "verdict": "reuses C",
+  "reason": "net share at heads (2,3)+(2,4) 0.719 against 0.153, 0.731 against 0.155, lookup 0.014 against 0.124, 0.003 against 0.109; forced copy reads net 1 (True), forbidden copy within band (True); paired copy minus lookup: every pair; a circuit from old parts reads as reuse (decisions.md row 121)"
+ },
+ {
+  "task": "T5 lookup",
+  "assumed": "new (E62, causal)",
+  "verdict": "no C listed",
+  "reason": "in-context copying not admissible on lookup (E90 A7); as copy's spared control it reads 0.014 against 0.124, 0.003 against 0.109"
+ },
+ {
+  "task": "T12 rank-1",
+  "assumed": "old by construction",
+  "verdict": "unreadable: R-adm (b) not read at this site, no token-only reader downstream of it",
+  "reason": "R-adm (a) 27188 inputs on 16 values (1699.25 per value): passes; (b) not read; E90's admissibility admissible"
+ },
+ {
+  "task": "T11 cipher",
+  "assumed": "new by construction",
+  "verdict": "no C listed",
+  "reason": "R-adm (a) 27188 inputs on 16 values (1699.25 per value): passes; (b) not read; E90's admissibility not admissible"
+ },
+ {
+  "task": "T11 elicit",
+  "assumed": "half-known, by construction",
+  "verdict": "no C listed",
+  "reason": "admissible on one parity split only, and the batch's apparatus change 1 asks both (reports/decisions/2026-11-05_decision_e90-definition-batch.md)"
+ },
+ {
+  "task": "T4 ident32",
+  "assumed": "strengthens, by construction",
+  "verdict": "no admissible C at this site: the removal deletes the input",
+  "reason": "R-adm (a) 32 inputs on 32 values (1.00 per value): fails; (b) fails; E90's admissibility admissible"
+ },
+ {
+  "task": "T13 copy-24",
+  "assumed": "reuses, by construction",
+  "verdict": "no admissible C at this site: the removal deletes the input",
+  "reason": "R-adm (a) 24 inputs on 24 values (1.00 per value): fails; (b) not read; E90's admissibility admissible"
+ },
+ {
+  "task": "T6 rand32",
+  "assumed": "new by construction",
+  "verdict": "no C listed",
+  "reason": "R-adm (a) 32 inputs on 32 values (1.00 per value): fails; (b) fails; E90's admissibility not admissible"
+ },
+ {
+  "task": "T7 lowercase",
+  "assumed": "reuses, the model already writes it",
+  "verdict": "definition does not apply",
+  "reason": "a constant answer; R-net through heads (1,1)+(1,2) has no positive control: the forced arm reaches 0.61, 0.64 of the native gain (cap)"
+ },
+ {
+  "task": "T1 emoticon",
+  "assumed": "an existing behaviour",
+  "verdict": "definition does not apply",
+  "reason": "E90, unchanged by stage 4: definition does not apply"
+ },
+ {
+  "task": "T2",
+  "assumed": "rungs of already does",
+  "verdict": "definition does not apply",
+  "reason": "E90, unchanged by stage 4: definition does not apply"
+ },
+ {
+  "task": "T3 many-to-one",
+  "assumed": "old",
+  "verdict": "definition does not apply",
+  "reason": "E90, unchanged by stage 4: definition does not apply"
+ },
+ {
+  "task": "T6 rand1",
+  "assumed": "new by construction",
+  "verdict": "definition does not apply",
+  "reason": "E90, unchanged by stage 4: definition does not apply"
+ },
+ {
+  "task": "T8 cipher",
+  "assumed": "new by construction",
+  "verdict": "no C listed",
+  "reason": "E90, unchanged by stage 4: no C listed"
+ },
+ {
+  "task": "T14 prior cipher",
+  "assumed": "new by construction",
+  "verdict": "no C listed",
+  "reason": "E90, unchanged by stage 4: no C listed"
+ },
+ {
+  "task": "T16 shuffled elicit",
+  "assumed": "new by construction",
+  "verdict": "no C listed",
+  "reason": "E90, unchanged by stage 4: no C listed"
+ },
+ {
+  "task": "T15 class map",
+  "assumed": "a new rule that carries, open",
+  "verdict": "no admissible C at this site: the removal deletes the input",
+  "reason": "embedding class at block 1: teeth False; R-adm (a) True, (b) fails; per seed []; paired class map minus twin every pair; block 2 beside: unreadable: no teeth; a circuit from old parts reads as reuse (decisions.md row 121)"
+ },
+ {
+  "task": "T15 twin",
+  "assumed": "the class map's shuffled partner, no filed verdict",
+  "verdict": "no C listed",
+  "reason": "embedding class at block 1: teeth False; R-adm (a) True, (b) fails; per seed []; paired class map minus twin every pair; block 2 beside: unreadable: no teeth; a circuit from old parts reads as reuse (decisions.md row 121)"
+ },
+ {
+  "task": "T10 code",
+  "assumed": "none either way (inventory)",
+  "verdict": "excluded: learned nothing",
+  "reason": "E90, unchanged by stage 4: excluded: learned nothing"
+ },
+ {
+  "task": "T9 narrow lowercase",
+  "assumed": "performed, targeted, as designed (inventory)",
+  "verdict": "excluded: never trained",
+  "reason": "E90, unchanged by stage 4: excluded: never trained"
+ },
+ {
+  "task": "I1 ladder",
+  "assumed": "rungs of already does",
+  "verdict": "no version kept the target",
+  "reason": "E90, unchanged by stage 4: no version kept the target; W0's top-1 is the target on 316 of 4000 windows at the trigger"
+ },
+ {
+  "task": "I2 emoticon",
+  "assumed": "an existing behaviour",
+  "verdict": "no version kept the target",
+  "reason": "E90, unchanged by stage 4: no version kept the target; W0's top-1 is the target on 0 of 2880 windows at the trigger"
+ },
+ {
+  "task": "I3 lowercase",
+  "assumed": "reuses, the model already writes it",
+  "verdict": "unreadable: not specific",
+  "reason": "E90, unchanged by stage 4: unreadable: not specific"
+ },
+ {
+  "task": "R7 ladder push",
+  "assumed": "rungs of already does",
+  "verdict": "unreadable: does not reach the states",
+  "reason": "E90, unchanged by stage 4: unreadable: does not reach the states"
+ },
+ {
+  "task": "T4 ident32b",
+  "assumed": "strengthens, by construction (E95's replicate)",
+  "verdict": "no admissible C at this site: the removal deletes the input",
+  "reason": "R-adm (a) 32 inputs on 32 values (1.00 per value): fails; (b) not read; E90's admissibility admissible"
+ },
+ {
+  "task": "T6 rand32b",
+  "assumed": "new by construction (E95's replicate)",
+  "verdict": "no C listed",
+  "reason": "R-adm (a) 32 inputs on 32 values (1.00 per value): fails; (b) not read; E90's admissibility not admissible"
+ }
+]
