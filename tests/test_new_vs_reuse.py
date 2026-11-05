@@ -311,6 +311,30 @@ def test_trigger_table_keys_on_the_previous_token_and_filters_by_the_mode() -> N
     assert all(p["n_train"] <= 80 and p["n_held"] <= 20 for p in tb.per_key)
 
 
+def test_an_i_row_readout_miss_is_a_gap_and_the_guess_readout_still_stops(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    ST1 = load_experiment("new_vs_reuse", "stage1", "apparatus", "reading", "rules", "input_dep")
+    ID, RD = ST1.ID, ST1.RD
+    miss = "[readout] step 250: max 0.6000 (se 0.0100, 50 batches) over 0.4931: stop and tell the user"
+
+    def fail(*_: object) -> None:
+        raise RO.ReadoutStop(miss)
+
+    monkeypatch.setattr(RD.AP, "train_pair", fail)
+    monkeypatch.setattr(RD.AP, "STOP", tmp_path / "stop.json")
+    j = RD.Job(None, {"readout": {}}, {}, {"guess_positions": {"fit_values": [1]}}, tmp_path / "out.json")
+    c = type("C", (), {"fit_h": None, "y": None})()
+    r = ID.unstopped(lambda: RD.possession(j, c, None, (None, None, None), tmp_path / "r.pt", [1]))
+    assert r["verdict"] == ID.rules.NO_READOUT and r["readout_miss"] == miss and ID.rules.gaps({"I3": r}) == ["I3"]
+    assert not (tmp_path / "stop.json").exists()
+
+    def stopped(_path: object, _res: object, why: str) -> None:
+        raise SystemExit(why)
+
+    monkeypatch.setattr(ST1, "stop", stopped)
+    with pytest.raises(SystemExit, match="step 250"):
+        ST1.possession(j, c, None, None, None, None)
+
+
 def test_common_values_always_holds_the_target() -> None:
     ID = load_experiment("new_vs_reuse", "input_dep", "apparatus", "reading", "rules")
     assert ID.common_values(torch.tensor([1] * 5 + [2] * 3), 9).tolist() == [1, 2, 9]

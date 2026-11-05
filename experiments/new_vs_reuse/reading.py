@@ -109,12 +109,9 @@ def table_of(w: dict[str, Any]) -> tuple[list[int], list[int]]:
 
 def possession(j: Job, c: Capability, w0: Tensor, held: tuple[Tensor, Tensor, Tensor], path: Path, values: list[int]) -> dict[str, Any]:
     """The readout for C and its shuffled twin, read on the held windows (residuals, W0's logits, value index): the record, with
-    b* (None for no possessed block). An early check stops the job."""
+    b* (None for no possessed block). An early check raises `RO.ReadoutStop`: the caller says what a miss does."""
     R, (hh, hw, hy) = j.S["readout"], held
-    try:
-        probes, twin = AP.train_pair(c.fit_h, c.y, w0, R, log)
-    except RO.ReadoutStop as e:
-        stop(j.out, j.res, str(e))
+    probes, twin = AP.train_pair(c.fit_h, c.y, w0, R, log)
     torch.save({"probes": probes.state_dict(), "twin": twin.state_dict(), "values": values}, path)
     with torch.no_grad():
         loss = RO.xent64(probes(hh), hy)

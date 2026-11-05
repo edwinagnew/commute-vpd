@@ -15,7 +15,7 @@ NOT_SPECIFIC, NO_REACH = "unreadable: not specific", "unreadable: does not reach
 NO_TEETH, NO_GAIN, NO_CALL = "unreadable: no teeth", "unreadable: no gain", "no call"
 AS_FILED, MISS = "as filed", "miss"
 DOES_NOT_APPLY, NO_HELD_OUT = "definition does not apply", "no held-out input"
-NO_VERSION, NO_C = "no version kept the target", "no C listed"
+NO_VERSION, NO_C, NO_READOUT = "no version kept the target", "no C listed", "unreadable: no readout"
 
 
 # ---- A: admissibility, from labels alone ----
@@ -132,7 +132,7 @@ def r3(has_teeth: bool | None, rank1: float, write: float, band: float, control_
     """`has_teeth` None: no possessed block, the plan's "unreadable: no readout". As filed: not specific. Branch: the hand
     write within the band, rank-1 read by its own share. Anything else: a miss."""
     if has_teeth is None:
-        return {"reading": "branch: no readout", "verdict": "unreadable: no readout", "band": band}
+        return {"reading": "branch: no readout", "verdict": NO_READOUT, "band": band}
     v = verdict(has_teeth, rank1, write, band, control_ok)
     spared = v in (REUSES, NO_REACH)
     return {"reading": AS_FILED if v == NOT_SPECIFIC else "branch: hand write spared" if spared else MISS, "verdict": v, "band": band,

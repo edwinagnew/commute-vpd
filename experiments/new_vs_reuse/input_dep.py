@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import math
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -281,7 +282,18 @@ def case_row(j: Job, tag: int, rows0: Tensor, rows: Tensor) -> dict[str, Any]:
     return read_lowercase(j, rows0, tok, (lower, cased), f, on, block)
 
 
+def unstopped(row: Callable[[], dict[str, Any]]) -> dict[str, Any]:
+    """A readout early-check miss on this row: the row is unreadable, a gap, and the job goes on (no stop file). Those bars are
+    unmeasured on 2 and 8 classes."""
+    try:
+        return row()
+    except RO.ReadoutStop as e:
+        log(f"[readout miss, the row reads {rules.NO_READOUT}; the job goes on] {e}")
+        return rules.gap(rules.NO_READOUT, readout_miss=str(e))
+
+
 def tasks(j: Job, rows: Tensor, trigger: int, target: int) -> list[tuple[str, Any]]:
     """The plan's order: ladder, lowercase, emoticon. `rows` are E64's, X_C; rows 0-32767 give the tables and the read site."""
     rows0 = pile_rows("train", 0, 32768, log=log)
-    return [("I1", lambda: trigger_row(j, "ladder", 5, trigger, target, rows0, rows)), ("I3", lambda: case_row(j, 6, rows0, rows)), ("I2", lambda: emoticon_row(j, 7, rows0, rows))]
+    return [("I1", lambda: unstopped(lambda: trigger_row(j, "ladder", 5, trigger, target, rows0, rows))), ("I3", lambda: unstopped(lambda: case_row(j, 6, rows0, rows))),
+            ("I2", lambda: unstopped(lambda: emoticon_row(j, 7, rows0, rows)))]  # fmt: skip

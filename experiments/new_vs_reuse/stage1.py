@@ -5,7 +5,8 @@
         C left stops. The do-nothing state read there (R1)
   (iii) R2, R3, R7: each state's share with its band as it is read, its hand write at matched gain. A miss is a gap, reported
   (iv)  input-dependent ladder rung, lowercase and emoticon: `input_dep.py`, plan reports/plans/2026-11-05_plan_e90-input-dependent.md
-The definition is frozen (plan, "Scope as restated"). Only a sha256 mismatch or the readout's early checks stop the job.
+The definition is frozen (plan, "Scope as restated"). Only a sha256 mismatch or the guess readout's early checks stop the job; a
+miss on an input-dependent task's readout reads that row "unreadable: no readout" and the job goes on.
 Writes results/stage1.json after each step, results/stop.json on a stop, results/large/{readout,bases,X_*}.pt and input_dep.py's files.
 Usage: sbatch cluster/new_vs_reuse.sbatch stage1
 """
@@ -21,10 +22,11 @@ import input_dep as ID
 import reading as RD
 import rules
 import torch
-from apparatus import LARGE, RESULTS, Capability, Site, dump, log
+from apparatus import LARGE, RESULTS, Capability, Site, dump, log, stop
 from reading import Basis, Job
 from torch import Tensor
 
+from commute import readout as RO
 from commute import removal as RM
 from commute import steering as ST
 from commute.data import pile_rows
@@ -50,8 +52,11 @@ def guess_capability(j: Job, rows: Tensor, vals: Tensor) -> tuple[Capability, Te
 
 
 def possession(j: Job, c: Capability, w0: Tensor, hh: Tensor, hw: Tensor, hy: Tensor) -> int | None:
-    """(i). Returns b*, or None for no possessed block. An early check stops."""
-    j.res["readout"] = RD.possession(j, c, w0, (hh, hw, hy), LARGE / "readout.pt", j.res["guess_positions"]["fit_values"])
+    """(i). Returns b*, or None for no possessed block. An early check stops the job."""
+    try:
+        j.res["readout"] = RD.possession(j, c, w0, (hh, hw, hy), LARGE / "readout.pt", j.res["guess_positions"]["fit_values"])
+    except RO.ReadoutStop as e:
+        stop(OUT, j.res, str(e))
     dump(OUT, j.res)
     return j.res["readout"]["b_star"]
 
