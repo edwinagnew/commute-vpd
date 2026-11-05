@@ -203,8 +203,8 @@ Qwen3-1.7B. `dW` is `{layers.{i}.{mlp.down_proj,mlp.gate_proj,mlp.up_proj,self_a
 
 ## qwen_size_grid (E91; ran 2026-11-05, jobs 52219, 52238)
 Qwen3-1.7B, anchor 2 retrained on an L40 at each seed to step 100 and saved at the steps nearest anchor 1's norm and KL. `results/size_grid.json` (committed) names each arm's files.
-- `dW/a2_s42/step_{27,29}.safetensors`, `dW/a2_s142/step_{27,30}.safetensors` (5.64 GB each, 22.6 GB, **F32**, 196 tensors, the format of `qwen_anchor1/dW/a1/`): E84's recipe and stream, with the 1250-step schedule, stopped at step 100. Step t has t - 1 moving steps. Load with `qwen_sft.load`. Written by `matched.py`. At step 100 the rerun differs from the saved file by 0.74% of its norm at seed 42 (H100 file, L40 rerun) and by exactly 0 at seed 142 (both L40), against 90% between the seeds.
-- `answers/a2_s{42,142}/step_{t}/{paraphrased,trained,never}.jsonl`: greedy answers at those states, a line's place is its row's, graders apply the kept rows.
+- `dW/a2_s42/step_{27,29,550}.safetensors`, `dW/a2_s142/step_{27,30,500}.safetensors` (5.64 GB each, 33.8 GB; steps 550 and 500 are each seed's first state past the learning line, written by `past_line.py`; **F32**, 196 tensors, the format of `qwen_anchor1/dW/a1/`): E84's recipe and stream, with the 1250-step schedule, stopped at step 100. Step t has t - 1 moving steps. Load with `qwen_sft.load`. Written by `matched.py`. At step 100 the rerun differs from the saved file by 0.74% of its norm at seed 42 (H100 file, L40 rerun) and by exactly 0 at seed 142 (both L40), against 90% between the seeds.
+- `answers/a2_s{42,142}/step_{t}/{paraphrased,trained,never}.jsonl`: greedy answers at those states, a line's place is its row's, graders apply the kept rows.  Seed 42 also has `step_500/trained.jsonl`, a check under the line, with no state saved.
 - Absent: the rerun's steps other than these; the bare and real-fact sets at these states.
 
 ## qwen_tofu (E81; ran 2026-11-04, jobs 51342-51345, 51366)
