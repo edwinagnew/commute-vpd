@@ -6,6 +6,10 @@
                            fine-tune, copy pair and lowercase pair: the net share is the difference of the two drops
   figures/net_share.png    every state's net share at its pair, with its own random-pair band
   figures/gain_curves.png  the constructed arms' gain in the training condition against the native's, over steps
+  figures/class_map.png    stage 4: R-adm (b)'s token-only reader beside the states and hand writes, at token identity
+                           (E95's reader, results/stage4_cpu.json) and the embedding class (results/stage4_class.json)
+  figures/bands.png        stage 4: every old state's share minus its own band, per capability and block, with its
+                           spared control (results/stage4_cpu.json part c, stage4_class.json)
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 2G python experiments/definition_verify/plot.py
 """
@@ -169,8 +173,110 @@ def gain_curves() -> None:
     save(fig, "gain_curves.png")
 
 
+
+S4C = json.loads((RES / "stage4_cpu.json").read_text())
+S4D = json.loads((RES / "stage4_class.json").read_text())
+READER, WRITE = "#7d4fc2", "#8f8e88"  # the token-only reader; the hand-write control
+
+
+def share_rows(ax: Any, rows: list[tuple[str, float, float, list[float], str]]) -> None:
+    """One row per read: its own band as a bar from 0, the random draws as ticks where saved, the share as a dot."""
+    for i, (_label, share, band, draws, col) in enumerate(rows):
+        y = len(rows) - 1 - i
+        ax.barh(y, band, left=0, height=0.55, color=BAND, zorder=1)
+        ax.scatter(draws, [y] * len(draws), s=30, marker="|", color=W0, linewidth=1.0, zorder=2)
+        ax.scatter([share], [y], s=80, color=col, edgecolor=SURFACE, linewidth=1.5, zorder=4)
+    ax.axvline(0, color=MUTED, linewidth=0.8)
+    ax.set_yticks(range(len(rows)), [r[0] for r in rows][::-1], color=INK)
+    ax.set_ylim(-0.6, len(rows) - 0.4)
+
+
+def class_map() -> None:
+    """R-adm (b) at token identity (E95's reader) and at the embedding class (the block-2 write), beside the states."""
+    tid, ib1 = S4C["b_radm"]["token identity, table A's keys"]["b_reads"], S4C["c_bands"]["identity block 1"]["maps"]
+    top = [(lab, r["share"], r["band"], [], READER) for lab, r in zip(("key reader, copy table", "key reader, random table s0", "key reader, random table s1"), tid[1:], strict=True)] + \
+          [(f"{name} {s}", ib1[m]["seeds"][s]["A_lo"], ib1[m]["seeds"][s]["band"], [], col) for m, name, col in (("ident32", "copy map", NATIVE), ("rand32", "random map", CONTROL)) for s in SEEDS]  # fmt: skip
+    st = S4D["states"]
+
+    def one(n: str, label: str, col: str) -> tuple[str, float, float, list[float], str]:
+        r = st[n]["1"]
+        return label, r["A_lo"], r["band"], r["random"], col
+
+    bottom = [one("class_map_s0_write2", "class reader, downstream", READER)] + \
+             [one(f"{m}_{s}", f"{lab} {s}", col) for m, lab, col in (("class_map", "class map", NATIVE), ("class_shuffled", "shuffled twin", CONTROL)) for s in SEEDS] + \
+             [one("class_map_s0_write", "hand write, class map", WRITE), one("class_shuffled_s0_write", "hand write, twin", WRITE)]  # fmt: skip
+    fig, (a, b) = plt.subplots(2, 1, figsize=(10, 8.4), sharex=True, facecolor=SURFACE, gridspec_kw={"height_ratios": [7, 7]})
+    axes(a, "")
+    axes(b, "share of the gain lost when the capability is removed at block 1 (0: nothing beyond the original model's loss; 1: all)")
+    share_rows(a, top)
+    share_rows(b, bottom)
+    c1 = S4D["control"]["embedding class"]["1"]
+    a.set_title("Token identity at block 1, copy and random tables (E95's reader; states from E90)", loc="left", color=INK, fontsize=10.5)
+    b.set_title(f"Embedding class at block 1, class map and its twin. \nThe original model's own top-1 drop is {c1['drop']:.2f} against its band {c1['band']:.2f}: no teeth",
+                loc="left", color=INK, fontsize=10.5)  # fmt: skip
+    fig.suptitle("Does the removal delete the input? A hand-built reader downstream of it loses more than its band at both sites,\n"
+                 "so neither capability is admissible there; the hand write upstream is spared", x=0.01, ha="left", color=INK, fontsize=11)  # fmt: skip
+    fig.legend(handles=[Line2D([], [], marker="o", linestyle="", color=c, label=lab) for c, lab in ((READER, "token-only reader downstream of the removal"), (NATIVE, "fine-tune built to use the capability"),
+                        (CONTROL, "its shuffled or random partner"), (WRITE, "hand write upstream, the spared control"))] +
+               [Line2D([], [], marker="|", linestyle="", color=W0, markersize=10, label="each of 20 random removals, where saved"), Patch(color=BAND, label="own band: 95th percentile of the random removals")],
+               loc="lower center", ncol=2, frameon=False, fontsize=9, labelcolor=INK)  # fmt: skip
+    fig.tight_layout(rect=(0, 0.1, 1, 0.94))
+    save(fig, "class_map.png")
+
+
+BAND_SITES = (("copy pair", "copy heads (2,3)+(2,4)", (("T5 copy", "copy"), ("T5 lookup", "lookup"))),
+              ("lowercase pair", "lowercase heads, beside", (("T7 lowercase", "lowercase"), ("T8 cipher", "cipher"))),
+              ("identity block 1", "token identity, block 1", (("ident32", "copy map"), ("rand32", "random map"))),
+              ("identity, table B block 1", "token identity, tables B, block 1", (("ident32b", "copy map"), ("rand32b", "random map"))),
+              ("copy24 block 1", "token identity, block 1", (("copy24", "copy-24 map"),)),
+              ("guess block 1", "original model's guess, block 1", (("rank1", "rank-1"), ("cipher", "cipher"), ("elicit", "elicit"))),
+              ("identity block 2", "token identity, block 2", (("ident32", "copy map"), ("rand32", "random map"))),
+              ("copy24 block 2", "token identity, block 2", (("copy24", "copy-24 map"),)),
+              ("guess block 2", "original model's guess, block 2", (("rank1", "rank-1"), ("cipher", "cipher"), ("elicit", "elicit"))))  # fmt: skip
+
+
+def band_rows() -> list[tuple[str, bool, list[float], list[float]]]:
+    """Per row: label, teeth, each seed's share minus its own band, each seed's spared control's share minus its band."""
+    out = []
+    for key, site, maps in BAND_SITES:
+        c = S4C["c_bands"][key]
+        for m, lab in maps:
+            seeds = c["maps"][m]["seeds"].values()
+            out.append((f"{lab} · {site}", c["teeth"], [r["A_lo"] - r["band"] for r in seeds], [r["write"]["share"] - r["write"]["band"] for r in seeds]))
+    st = S4D["states"]
+    for b in ("1", "2"):
+        for m, lab in (("class_map", "class map"), ("class_shuffled", "shuffled twin")):
+            ex = [st[f"{m}_{s}"][b]["A_lo"] - st[f"{m}_{s}"][b]["band"] for s in SEEDS]
+            wx = [st[f"{m}_{s}_write"][b]["A_lo"] - st[f"{m}_{s}_write"][b]["band"] for s in SEEDS]
+            out.append((f"{lab} · embedding class, block {b}", False, ex, wx))
+    return out
+
+
+def bands() -> None:
+    rows = band_rows()
+    fig, ax = plt.subplots(figsize=(10, 9.6), facecolor=SURFACE)
+    axes(ax, "share of gain lost minus the state's own band (right of 0: above its band)")
+    for i, (_lab, teeth, ex, wx) in enumerate(rows):
+        y = len(rows) - 1 - i
+        ax.scatter(wx, [y] * len(wx), s=34, marker="x", color=WRITE, linewidth=1.2, zorder=3)
+        ax.scatter(ex, [y] * len(ex), s=60, color=NATIVE if teeth else SURFACE, edgecolor=NATIVE, linewidth=1.5, zorder=4)
+    ax.axvline(0, color=INK, linewidth=1.0)
+    ax.set_yticks(range(len(rows)), [r[0] for r in rows][::-1], color=INK, fontsize=9)
+    ax.set_ylim(-0.6, len(rows) - 0.4)
+    fig.suptitle("Which old states lose more of their gain than their own random band, at each capability and block?\n"
+                 "The copy fine-tune at the copying heads clears it by 0.57; hollow rows have no teeth, so no verdict reads them", x=0.01, ha="left", color=INK, fontsize=11)  # fmt: skip
+    ax.legend(handles=[Line2D([], [], marker="o", linestyle="", color=NATIVE, label="state, one dot per seed (the original model has teeth here)"),
+                       Line2D([], [], marker="o", linestyle="", markerfacecolor=SURFACE, markeredgecolor=NATIVE, label="state where the original model has no teeth"),
+                       Line2D([], [], marker="x", linestyle="", color=WRITE, label="its spared control: hand write, or the other task at a head pair")],
+              loc="upper left", bbox_to_anchor=(-0.3, -0.07), ncol=1, frameon=False, fontsize=8.5, labelcolor=INK)  # fmt: skip
+    fig.tight_layout(rect=(0, 0, 1, 0.95))
+    save(fig, "bands.png")
+
+
 if __name__ == "__main__":
     clause_ii()
     on_off()
     net_share()
     gain_curves()
+    class_map()
+    bands()
