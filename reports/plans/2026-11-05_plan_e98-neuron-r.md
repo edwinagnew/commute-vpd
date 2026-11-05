@@ -125,8 +125,9 @@ Each read as intended. The do-nothing state is never scored, so it cannot pass P
    shares 0.93685 and 0.68531 (E63's path matched within 9.4e-8). code_step10 on elicit and ident32: stop if
    |G| ≥ 1. Controls: E54's elicit recipe (`keydep.finetune`: arm A, Adam 3e-5, batch 32, 300 steps, scored step by
    E12's rule, seed 0) with one change, `ArmAConfig.matrices`, so Adam and the gradient clip run over that subset
-   only. cfc_attn (c_fc and attention, 16 matrices): stop unless |G| ≥ 1 and |d_n|, |i_n| numerators ≤ band.
-   down_only (8 matrices): stop unless |G| ≥ 1, d_n > r_n, |e_n| ≤ band and |r_half − r_n| ≤ band.
+   only. cfc_attn (c_fc and attention, 16 matrices [2026-11-05 note: 20, c_fc plus q, k, v, o in each of 4 blocks,
+   as run, `stage0.json` `n_matrices`]): stop unless |G| ≥ 1 and |d_n|, |i_n| numerators ≤ band.
+   down_only (8 matrices [2026-11-05 note: 4, one down_proj per block, as run]): stop unless |G| ≥ 1, d_n > r_n, |e_n| ≤ band and |r_half − r_n| ≤ band.
 1. Cells of the 56 states (`cells.json`); stop if a state's identity reading exceeds 1e-6 or the telescoping residual 1e-6.
 2. Per scored state the order and grid (`carrying.json`); stop if the k = 12288 patch misses the r_half numerator by 1e-5.
 3. Score (`score.json`): P1, P1r, P2, P3, then all five readings on all seven rows, filtered and unfiltered.
