@@ -77,3 +77,34 @@ Item 5 and item 6 take the proposal's defaults unless the user says otherwise.
 ## Not run
 
 Nothing was measured for this report. E70's rule was not reread under the proposal. No states were loaded. The inventory's rebuild times are quoted from `TRIED.md`.
+
+## After the user's answers (2026-11-05)
+
+**Decided.** "New" is relative to a named capability: the verdicts are "reuses C", "not through C" and "unreadable". Direction removal is the label, and the other causal tests are reported beside it.
+
+**Open, the user's words.** Token identity: "the definition should be strong enough to have a clear answer for these edge cases". Constant targets: lean to input-dependent versions; "if our definition cannot be applied to cases where it would be useful then we need to adapt it".
+
+**Proposed answer to both, not yet confirmed: which capabilities are admissible.** A capability C is admissible for a task when C does some of the task's work, judged from the task's labels and W₀'s readings, with no fine-tuned state. Fit a small g from f_C to the answers on some inputs. On held-out inputs, g must beat the best answer that ignores f_C.
+
+| Case | Expected | Why |
+|---|---|---|
+| Random map, C = token identity | not admissible | the table on some keys says nothing about the others; the cipher reads the key, and the key does none of the answer's work |
+| Copy, C = token identity | admissible | g is "say the token read" and carries to unseen keys; the claim is reuse of token reading, not of a copying circuit |
+| Constant target, any C | not admissible | a constant does as well as any g; the definition asks for a task where the input matters |
+| Rank-1 map, C = W₀'s guess | admissible | the answer is the guess |
+| Built-to-elicit map, C = W₀'s guess | probably not | the answer is one of W₀'s ranks 2-20, and which rank differs per key |
+| Class map, C = embedding class | admissible | four words, and g carries to unseen keys |
+
+This is row 87's held-out idea moved from a state's behaviour to a property of the task. Row 114 demoted the reading of a state's behaviour; the label here is still removal. The user should judge whether this respects row 114.
+
+**Constant-target tasks.** Agreed with the user's lean, with a bridge: keep each old trigger and target word, and add inputs at the trigger where the answer differs. The old states stay "definition does not apply". The rank-1 map is already the input-dependent form of "strengthen what W₀ says". Whether the new tasks' results carry to the old findings is tested by reading the old readings (route split) on both.
+
+**Test the definition before using it.** A table of edge cases with verdicts filed in advance, run before any old task gets a label:
+
+- Task P and task N on the counting model: reuses, not through the count of a.
+- The per-key hand write of the copy table: same behaviour, new mechanism by construction, so it must not read as reuse.
+- Trained copy against that hand write, at matched size.
+- A random map: no admissible C.
+- A constant target: not admissible.
+
+A miss changes the definition, dated, before the old tasks are read. Only the two amendments per E-code limit how often.
