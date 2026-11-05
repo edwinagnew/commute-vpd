@@ -403,7 +403,8 @@ This is "round 1", the input of nearly every other run.
 ## weight_side_read (E67)
 - `run.out` only.
 
-## new_vs_reuse (E90; code committed 2026-11-05, not run, so nothing is there yet)
+## new_vs_reuse (E90; stage 1 ran 2026-11-05, job 52317, ~5 min; stage 2 not run)
+- Found in `results/large/` after job 52317 (stage 1, input-dependent rows; gitignored, symlink into `~/commute-data/results-large/new_vs_reuse`): `readout.pt` 396,061 B; `readout_lowercase.pt` 51,777 B; `bases.pt` 297,033 B; `X_rank1.pt`, `X_r1_t534_v369.pt`, `X_lowercase.pt` 9.4 MB each; `dW_lowercase_s0.pt` 113,254,283 B (sha256 a972fa69...b7a2); `windows_lowercase.pt` 346,829 B. No `X_ident32.pt` (R2 had no teeth), no `dW_ladder_s0.pt`/`dW_emoticon_s0.pt`, no `windows_ladder/emoticon.pt` (both rows were gaps; the ladder and emoticon trains did not write).
 - Stage 1 (`stage1.py`): `readout.pt` (`{"probes", "twin", "values"}`, state dicts, block by fit value, fp32, < 1 MB), `bases.pt` (`{"guess", "identity"}`, block to basis (768, rank), fp32), `X_{ident32,rank1,r1_t534_v369}.pt` (hand-write direction, alpha = 1, fp32, 9 MB each). Stage 2 (`stage2.py`) adds `X_<state>.pt` per state (9 MB each, 15 states). Per-window log-odds are not saved: the shares and draws are in `results/stage{1,2}.json`.
 
 ## qwen_comparators (E92)
