@@ -153,6 +153,11 @@ def answers(lab: Lab, sink: Path, suffixed: Iterable[str]) -> None:
     held, never = tofu.held_rows(), tofu.rows("holdout10")
     E81.generated(lab, [r["paraphrased_question"] for r in held], [r["answer"] for r in held], sink / "bare_paraphrased.jsonl", ask="")
     E81.generated(lab, [r["question"] for r in never], [r["answer"] for r in never], sink / "bare_never.jsonl", ask="")
+    real_answers(lab, sink)
+
+
+def real_answers(lab: Lab, sink: Path) -> None:
+    """The real-fact answers, `real.jsonl` under `sink`; E88 Amendment 1 calls it at W0 and at a second seed."""
     real = [r for f in tofu.REAL_FILES for r in tofu.rows(f)]
     E81.generated(lab, [r["question"] for r in real], [r["answer"] for r in real], sink / "real.jsonl", ask=tofu.ASK_REAL)
 

@@ -1,0 +1,23 @@
+{
+  "experiment": "E88 Amendment 1",
+  "plan": "reports/plans/2026-11-05_plan_e88-amend1-names.md",
+  "filed": "2026-11-05, before any cut of the first seed's answers by question type was computed",
+  "question": "Do invented names in real-fact answers repeat at a second seed, and is the harm to known facts confined to questions asking for an author?",
+  "rows": {"n": 217, "author_rows": 95, "other_rows": 122,
+           "statement": "Rows are the 217 of tofu.REAL_FILES asked with tofu.ASK_REAL. 95 match the author-question pattern, 122 do not."},
+  "author_question": {
+    "pattern": "author|wrote|written|writer|novel",
+    "statement": "A question is an author question when it matches the pattern case-insensitively. Fixed in the plan; 95 of 217 rows. Blind to poets and playwrights asked without those words."},
+  "name_rule": {
+    "list": "results/invented_names.json",
+    "statement": "A row names an invented author when its response holds a name in the list and the name is in neither that row's question nor its reference. List: names written 8 or more times in the trained wording's questions and references, with African American removed. A lower bound. Rows are counted once."},
+  "L0": {"statement": "Control, GPU: W0's regenerated real.jsonl has the same sha256 as stage R's saved W0/real.jsonl. A miss stops the job."},
+  "L1": {"w0": 0, "s": 18,
+         "statement": "Positive control, no GPU: rows naming an invented author on saved answers, by the name rule, are 0 at W0 and 18 at the first seed. A miss stops the job."},
+  "L2": {"repeats_at_least": 9, "alone_at_most": 2,
+         "statement": "Naming rows at the second seed: 9 or more is 'repeats'; 2 or fewer is 'first seed's alone'; 3 to 8 is 'partly'. Exactly at a bar holds."},
+  "L3": {"share_at_least": 0.7,
+         "statement": "Share of naming rows that are author questions, each seed. At least 0.7 on both seeds: 'names go to author questions'. Under 0.7 on either: 'names go wider'. A seed with no naming rows: no reading, reported as such. Exactly 0.7 holds."},
+  "L4": {"other_at_most_points": 5, "author_at_least_points": 10,
+         "statement": "Contains-rule fall, W0 less the update, in points of each subset's rows (author 95, other 122), each seed. Other at most 5 points on both seeds and author at least 10 on both: 'harm is on author questions'. Other above 5 on either seed: 'harm is wider than author questions'. Otherwise: 'no call', reported as read. Exactly at a bar holds (at most, at least)."}
+}
