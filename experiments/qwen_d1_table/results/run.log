@@ -1,0 +1,28 @@
+[     0.0s] [start] {'stage': 'control', 'states': None, 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(gain_batch=8, limit_s=7020, first_guess_s=2400)
+[     6.7s] [check] rows_and_seqs: ok {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800}
+[    86.1s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.0 GB
+[     0.0s] [start] {'stage': 'control', 'states': None, 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(gain_batch=2, limit_s=7020, first_guess_s=2400)
+[     5.3s] [check] rows_and_seqs: ok {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800}
+[    61.4s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.0 GB
+[    82.6s] [gain W0] 2.495207286893 nats per response token, 256 rows, 13 s, peak GPU 42.17 GiB, host 43.0 GB
+[    96.0s] [gain FT] 0.684460146040 nats per response token, 256 rows, 13 s, peak GPU 42.17 GiB, host 43.0 GB
+[   120.9s] [gain state] 0.805495105719 nats per response token, 256 rows, 14 s, peak GPU 42.17 GiB, host 50.0 GB
+[   123.7s] [check] u1_gain_E86: ok {"W0": 2.495207286892896, "FT": 0.6844601460395306, "t0.1": 0.8054951057189373}
+[   164.9s] [clean W0] K 1.63511034 nll 2.07630976; rows 128, 41 s, peak GPU 42.17 GiB, host 50.0 GB
+[   208.8s] [clean W0] K 1.63511034 nll 2.07630976; rows 128, 44 s, peak GPU 42.17 GiB, host 50.0 GB
+[   223.3s] [clean FT] K 0 nll 1.90523188; rows 128, 14 s, peak GPU 42.17 GiB, host 50.0 GB
+[   223.3s] [check] u1_clean_E86: ok {"W0": 1.6351103354567915, "W0_again": 1.6351103354567915, "FT": 0.0}
+[   534.0s] [split u1 step 10] {"size": 3.4852040865884852, "left": 0.3137285440356576, "moved": 3.171523116194979, "null": 0.3271817187764105}, 311 s, peak GPU 42.17 GiB, host 83.1 GB
+[   534.0s] [check] u1_share_E86: ok {"share": 0.09001726620341273, "null": 0.09387734854192555, "size": 3.4852040865884852}
+[   594.2s] [clean inspan_old] K 0.0091558119 nll 1.88210093; rows 128, 60 s, peak GPU 42.17 GiB, host 89.9 GB
+[   594.2s] [check] u1_inspan_old_E86: ok {"K": 0.009155811895519343}
+[   723.7s] [cells u1 base] K0 0.0696131952 nll_W0 67770.7505 nll_FT 62186.7686 K00 1.37381065 K01 0.104362602 nll_m00 67363.8523 nll_m01 66025.5824; rows 128, 129 s, peak GPU 42.17 GiB, host 89.9 GB
+[   723.7s] [check] control_memory: ok {"gpu_gib": 42.171958446502686, "host_gb": 89.906648}
+[   856.6s] [cells u1 own] K10 1.29340265 K11 0.103438716 nll_m10 66384.9699 nll_m11 66082.4; rows 128, 133 s, peak GPU 42.48 GiB, host 89.9 GB
+[   856.6s] [check] u1_masked_E68: ok {"K00": 1.3738106470539775, "K01": 0.10436260220730434, "K10": 1.2934026471043127, "K11": 0.10343871625828649}
+[   914.3s] [gain W0] 4.492947328228 nats per response token, 800 rows, 19 s, peak GPU 42.48 GiB, host 89.9 GB
+[   935.0s] [gain FT] 0.028216734134 nats per response token, 800 rows, 21 s, peak GPU 42.48 GiB, host 89.9 GB
+[   962.9s] [gain state] 3.247006111315 nats per response token, 800 rows, 18 s, peak GPU 42.48 GiB, host 89.9 GB
+[  1006.0s] [clean W0] K 2.81687987 nll 4.65144827; rows 128, 41 s, peak GPU 42.48 GiB, host 89.9 GB
+[  1006.0s] [check] e81_tofu_E86: ok {"W0": 4.492947328228431, "tenth": 0.2790630230995705, "ruler": 2.816879869865878}
+[  1008.4s] [control] passed; projection {"maths_state": 16.473789597882167, "graded_extra": 13.178357541561127} min, peak GPU 42.48 GiB, host 89.9 GB
