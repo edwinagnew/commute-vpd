@@ -71,3 +71,4 @@
 - [Define deliverable codes](feedback-define-deliverable-codes-on-cards.md) — D1/D2/D3 on a card or in chat gets its plain meaning or a link; say what each option does to the old methods (user, 2026-11-03)
 - [Vast when RunPod fails](feedback-vast-when-runpod-fails.md) — after one failed round across RunPod cards, use Vast rather than waiting (user, 2026-11-04)
 - [Autonomous lead, short asks](feedback-autonomous-lead-short-asks.md) — far shorter messages; Fable for direction; the user may not read plans (2026-11-05)
+- [Do not rely on the slide deck](feedback-dont-rely-on-slide-deck.md) — unclear concept → search history (hive:retrieval) or ask; files are the source (user, 2026-11-05)

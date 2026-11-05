@@ -1,0 +1,16 @@
+<article class="exp void" id="e97">
+<div class="top"><span class="id">E97</span><span class="chip open">ongoing</span><h3>Can we name the part a 67M fine-tune runs through, across the old tasks, for the new-against-reuse definition?</h3><span class="when">2026-11-05 · cluster L40 debug, $0 · <code>experiments/locate_mechanism</code> · first run read, not independently checked</span></div>
+<p class="one"><strong>The question.</strong> You decided that a fine-tune gets a label (new or strengthened) only through a located mechanism ({{n:decisions}}). <a href="#e96">E96</a> found the copying head with a sweep but could not read lowercase. Can one locator, checked first on planted parts, name the part on each of the old tasks?</p>
+<p class="one"><strong>What we did.</strong> We planted two known changes in the original model to test the locator, then ran it on the copy, lookup, lowercase and cipher fine-tunes: it switches a part off in the fine-tune and reads how much of the fine-tune's gain goes (the state's own terms), beside the original model's own fall under the same switch-off, and ranks parts by how much of the gain passes through them.</p>
+<p class="one"><strong>What we found.</strong> The planted parts were found exactly. Switching off head (2,4) on copying again removes 0.56 to 0.65 of the gain and spares lookup (at most 0.01). The pass-through ranking put a feed-forward layer ahead of (2,4), so that route was not run further. On lowercase the pair of heads (1,1) and (1,2) removes 0.80 and 0.85 of the fine-tune's gain, but the original model falls by more (1.10 nats) with the same pair off, so against capitalised text the pair takes only 0.10 to 0.13 of the gain. A hand-written copy mechanism missed its filed bar, and the bar was degenerate (both numbers were zero to the noise).</p>
+<p class="one"><strong>What it means.</strong> The lowercase pair is something both models need; it is not a removal of what the fine-tune added. Whether that counts as located is your call in the morning, not ours. The next run, Amendment 1 (your suggestion: edges between parts, in the form of edge attribution patching with integrated gradients), is being coded; nothing else waits on you.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Two cluster L40 jobs in <code>debug</code> (52618, 52646), $0. The planted-part checks ran first and passed.</dd>
+<dt>Found</dt><dd><ul>
+<li>Head (2,4) is re-found on copying in the state's own terms, with lookup spared; the pass-through ranking did not put it first.</li>
+<li>Lowercase pair (1,1) and (1,2) meets the own-terms rule, against the lean, but the original model falls more, so it is shared rather than a removal of the gain.</li>
+<li>The hand-write clause missed as filed and reads as a degenerate bar.</li></ul></dd>
+<dt>Bears on</dt><dd>The strengthening-or-new label on the old tasks: copying stays the one located case; lowercase is waiting on your reading of the shared pair.</dd>
+<dt>Moved on</dt><dd>Owned by <code>mechanism-detection-lead</code>. Amendment 1 (edges) in <code>reports/plans/2026-11-05_plan_e97-amend1.md</code>, section "What E97's first run read".</dd>
+</dl>
+</article>

@@ -74,6 +74,7 @@ class ArmAConfig:
     seed: int = 0
     optimizer: str = "adam"  # "adam" (round 1) or "sgd" (plain, no momentum: delta-W is a sum of clipped gradients)
     ci_len: int | None = None  # the model sees only the first ci_len tokens; the target may read past them (data.LAST)
+    matrices: tuple[str, ...] | None = None  # train only these of the 24 (None = all; E98's built controls, 2026-11-05)
 
 
 @dataclass
@@ -193,7 +194,8 @@ def _run(model: Any, params: dict[str, Tensor], lr: float, grad_clip: float, ste
 def finetune_arm_a(model: Any, train: Windows, heldout: Windows, cfg: ArmAConfig, device: str, log: Any = print,
                    on_step: Any = None) -> FinetuneResult:
     ref = copy.deepcopy(model.target_model).eval().requires_grad_(False)
-    params = decomposed_params(model)
+    params = {k: p for k, p in decomposed_params(model).items() if cfg.matrices is None or k in cfg.matrices}
+    assert cfg.matrices is None or len(params) == len(cfg.matrices), "a named matrix is not one of the 24"
     gen = torch.Generator().manual_seed(cfg.seed)
     net = model.target_model
 

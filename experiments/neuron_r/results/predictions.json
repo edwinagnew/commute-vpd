@@ -1,0 +1,103 @@
+{
+ "experiment": "E98 neuron r (67M)",
+ "filed": "2026-11-05",
+ "plan": "reports/plans/2026-11-05_plan_e98-neuron-r.md",
+ "advice": "reports/plans/2026-11-05_advice_e98-neuron-r-FABLE.md (option A, with the lead's overrides in the plan)",
+ "labels": "construction labels only, marked assumed: reuse = built to reuse something W0 does, new = built to teach something new (experiments/method_table/results/table.json .rows[].truth.how = 'only by assumption'; e62's copy side is the one causal check, unsettled)",
+ "settings": {
+  "batch": 64,
+  "unit": "log-odds of the target at the answer position (steering.logodds_at), mean over all held-out read windows of the task, as VPD's r",
+  "gain_floor": 1.0,
+  "gain_floor_source": "VPD's MIN_GAIN, src/commute/local_faith.py:187: shares are not scored below a target gain of 1 log-odds",
+  "p_learn": 0.5,
+  "p_learn_source": "keydep.P_LEARN (src/commute/keydep.py:27), E12's learned rule; applied to key -> value tasks only. E53's next-token tasks have no learned level (lowercase's mean P(target) is about 0.006: T1 -5.08 log-odds, performed_anchor read.json lowercase/s0/step300), so the filter would empty that row by construction; they are filtered on the gain floor alone",
+  "min_gap": 0.2,
+  "min_gap_source": "E51/E52's separation rule, src/commute/elicit.py separation; experiments/method_table/build.py e51",
+  "min_rows": 3,
+  "unstable_i": 0.3,
+  "carry_floor": 0.1,
+  "k_grid": [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 12288],
+  "telescope_tol": 1e-06,
+  "grid_end_tol": 1e-05,
+  "grid_end_note": "k = 12288 patches Ah on every neuron, the same values the r_half cell's forward computes; expected 0 to float64 summation order",
+  "n_top_saved": 256
+ },
+ "stage0": {
+  "order": "after the sha256, before any state of the rows is read; a miss writes, logs FAIL and exits 1",
+  "identity_tol": 1e-06,
+  "identity_source": "E63's filed identity_tol on the same kind of patch; E63 measured 0 exactly on every task (experiments/neuron_sparsity/results/stage0.json identity/*)",
+  "w0": "zero update on every task: every cell (T1, L00, L01, L10, L11, Lh) equals T0, max |difference| <= identity_tol; expected 0 exactly",
+  "band_multiple": 10,
+  "band": "the bar for the controls' exact zeros: max(identity_tol, band_multiple x the largest W0 deviation measured first in this stage)",
+  "e56_tol": 1e-05,
+  "e56_source": "r_n in log P on the scoring half against experiments/keydependent_patch/results/job1.json .states.<n>.b2_shares['12288'] (elicit_s0 0.93685, cipher_s0 0.68531); E63's window path matched it within 9.4e-8 and 1.9e-8 (neuron_sparsity stage0.json e56/*), so 1e-5 is about 100 times that",
+  "do_nothing_tasks": ["elicit", "ident32"],
+  "do_nothing": "code_step10 (E36's code fine-tune, regating_table/large) read on the two tasks: |G| < gain_floor, so every share is undefined and no rule can score it; |G| >= gain_floor stops the job (the floor would not tell a do-nothing from a change)",
+  "control_seed": 0,
+  "controls": {
+   "recipe": "keydep.finetune (src/commute/keydep.py:100-104): E54's elicit task (keydependent_elicit/large/windows_elicit.pt), arm A, Adam at anchors.FT_LR 3e-5, batch 32, clip 1, kl_lambda 1, 300 steps, read at keydep.scored_step (first of 10, 30, 100, 300 with held-out P >= 0.5), seed 0; one change: finetune.ArmAConfig.matrices",
+   "cfc_attn": "c_fc and the four attention projections of every block (16 matrices), down_proj at W0: readable (|G| >= gain_floor), |d_n numerator| <= band and |i_n numerator| <= band (O1 = O0, so both are the identity forward)",
+   "down_only": "down_proj of every block (8 matrices): readable, d_n > r_n (share), |e_n numerator| <= band (attention unchanged) and |r_half - r_n| numerators <= band (c_fc unchanged, so Ah = A1)"
+  },
+  "e56_reproduction": "elicit_s0 and cipher_s0 (E54 seeds 0): within e56_tol"
+ },
+ "rows": {
+  "e46_copy_random": {"reuse": ["ident32_s0", "ident32_s1", "ident32b_s0", "ident32b_s1"], "new": ["rand32_s0", "rand32_s1", "rand32b_s0", "rand32b_s1"], "vpd_r": "copy 0.76-0.80 vs random 0.27-0.29"},
+  "e53_lowercase_cipher": {"reuse": ["lowercase_s0", "lowercase_s1"], "new": ["e53_cipher_s0", "e53_cipher_s1", "broad_cipher_s0", "broad_cipher_s1"], "vpd_r": "lowercase 0.75-0.77 vs ciphers 0.12-0.17"},
+  "e54_matched": {"reuse": ["elicit_s0", "elicit_s1", "elicit_s2", "elicit_s3", "elicit_s4"], "new": ["cipher_s0", "cipher_s1", "cipher_s2", "cipher_s3", "cipher_s4"], "vpd_r": "elicit 0.76-0.77 vs cipher 0.21-0.27"},
+  "e54_own": {"reuse": ["elicit_s0", "elicit_s1", "elicit_s2", "elicit_s3", "elicit_s4"], "new": ["cipher_own_s0", "cipher_own_s1"], "vpd_r": "elicit 0.76-0.77 vs cipher 0.24-0.27 (five seeds; seeds 2-4 of the own-step cipher were not saved)"},
+  "open_pair_c3": {"reuse": ["c3_rank1_s0", "c3_rank1_s1", "c3_rank1_s2", "c3_rank1_s3", "c3_rank1_s4", "c3_rank1_s5", "c3_rank1_s6", "c3_rank1_s7"], "new": ["c3_cipher_s0", "c3_cipher_s1", "c3_cipher_s2", "c3_cipher_s3", "c3_cipher_s4", "c3_cipher_s5", "c3_cipher_s6", "c3_cipher_s7"], "vpd_r": "rank-1 0.84-0.90 vs cipher 0.22-0.25"},
+  "open_pair_c3_copy": {"reuse": ["c3_copy_s0", "c3_copy_s1", "c3_copy_s2", "c3_copy_s3", "c3_copy_s4", "c3_copy_s5", "c3_copy_s6", "c3_copy_s7"], "new": ["c3_cipher_s0", "c3_cipher_s1", "c3_cipher_s2", "c3_cipher_s3", "c3_cipher_s4", "c3_cipher_s5", "c3_cipher_s6", "c3_cipher_s7"], "vpd_r": "copy 0.83-0.86 vs cipher 0.22-0.25"},
+  "e62_copy_lookup": {"reuse": ["e62_copy_s0", "e62_copy_s1", "e62_copy_s2"], "new": ["e62_lookup_s0", "e62_lookup_s1", "e62_lookup_s2"], "vpd_r": "unscored: copy 1.09-1.10 vs lookup 0.38-0.42"}
+ },
+ "not_run_rows": {
+  "e58_rank1_96": "only rank1_s0_step30 is on disk (open_pair/large/amend3); Amendment 4's seeds 1-2 and the three 96-key ciphers were never saved (amend4.py docstring: 'No weights are saved')",
+  "e58_elicit_shuffle": "only elicit_s0_step30 is on disk; the shuffle's states were never saved",
+  "e58_copy_prior_cipher, e58_class_twin": "windows only (open_pair/large/amend6, amend7)",
+  "e54_own cipher seeds 2-4": "cipher_own_s2-s4 were read by E56 and not saved (keydependent_patch/results/job2.json has no sha256 for them)"
+ },
+ "predictions": {
+  "P1": {
+   "claim": "The headline neuron r (r_half: both MLP matrices W0's, only the MLP input changed) is not a kind reader: on the rows where VPD's r separates, it separates reuse-higher on fewer than half of the readable rows.",
+   "reading": "r_half",
+   "rows": ["e46_copy_random", "e53_lowercase_cipher", "e54_own", "open_pair_c3"],
+   "rule": "per row, elicit.separation(reuse, new, min_gap) on scored states (gain >= gain_floor; key -> value tasks also P(target) >= p_learn); 'unreadable' under two scored per side; pass iff 2 x (rows reading a_higher) < (readable rows) with readable rows >= min_rows, fail if not, unreadable under min_rows",
+   "expected": "pass; lean: open_pair_c3 unreadable (its ciphers sit at held-out P 0.32-0.45 at the read step: open_pair run.json, open_pair_instruments seeds.json .ft.p_heldout), so 3 readable rows and at most 1 may separate",
+   "blind_to": "where the gain is carried is not whether it is new: a reused mechanism and a new one can both run through re-fired neurons (E56: the full-width share rose 0.69 to 0.96 with training); relays (an MLP after a changed head re-fires with nothing of its own changed)",
+   "positive_control": "control/down_only reads r_half = r_n exactly and below d_n; control/cfc_attn reads d_n = i_n = 0",
+   "noise_floor": "the larger within-kind seed range of each row (E51's rule); numerical floor the W0 reading (expected 0)"
+  },
+  "P1r": {
+   "claim": "The full-width r_n cell (E52/E56's patch) is not a kind reader either, by the same rule on the same rows.",
+   "reading": "r_n",
+   "rows": ["e46_copy_random", "e53_lowercase_cipher", "e54_own", "open_pair_c3"],
+   "rule": "as P1",
+   "expected": "pass; lean from E52 and E56 in log P: e46 reversed (copy lower), e54_own none (0.93-0.94 vs 0.95-0.97)",
+   "blind_to": "as P1, and it also counts c_fc's own change as re-firing",
+   "positive_control": "as P1",
+   "noise_floor": "as P1"
+  },
+  "P2": {
+   "claim": "Copy-type gains sit partly outside the MLP: e_n (attention's change, MLP outputs held at the state's) is higher on the reuse side on every readable row of the four.",
+   "reading": "e_n",
+   "rows": ["e46_copy_random", "e54_own", "open_pair_c3_copy", "e62_copy_lookup"],
+   "rule": "a row with any scored state whose |i_n| > unstable_i reads 'cells_unstable', no verdict; otherwise elicit.separation(reuse, new, min_gap) on e_n, signed; pass iff every readable row reads a_higher with readable rows >= min_rows, fail if one does not, unreadable under min_rows",
+   "expected": "pass; lean: open_pair_c3_copy unreadable by the same P filter as P1",
+   "blind_to": "which attention change: e_n lumps every head and the four projections; an MLP-side mechanism that reads the changed residual through W0's c_fc counts in r_half, not e_n",
+   "positive_control": "control/down_only reads e_n = 0 exactly (attention untouched); control/cfc_attn's e_n is what its attention change carries (reported)",
+   "noise_floor": "as P1"
+  },
+  "P3": {
+   "claim": "Go/no-go for the interpretation step (not in this job): the smallest shared neuron set carrying half the r_half cell is small only on lowercase.",
+   "reading": "k_half: per scored state, neurons ranked once by the sum over windows and positions of W0's gradient x (Ah - A0); the first grid k whose patch (Ah on the top k, A0 elsewhere) reaches half the r_half numerator; none ('no carrying set') when the r_half share <= carry_floor or its numerator <= 0",
+   "low_states": ["lowercase_s0", "lowercase_s1"],
+   "low_max": 32,
+   "other_min_exclusive": 64,
+   "rule": "fail if a defined lowercase k_half > low_max or any other defined k_half <= other_min_exclusive; otherwise pass if both groups have a defined state, else unreadable",
+   "expected": "pass; E63's per-window ranking needed about 15 neurons for half on lowercase, about 110 on the broad cipher, 240 and 470 on the key -> value pair (reports/analyses/2026-11-02_analysis_e63-neuron-sparsity.md:191,214); a shared ranking needs more than a per-window one (E56: 4096)",
+   "blind_to": "the ranking is first-order and read on the same windows it is chosen on (in-sample); sufficiency of a set, not necessity; counts across tasks of different lengths (41 against 127 tokens) are not like for like",
+   "positive_control": "none of known size here; E63's 16-neuron built update is the nearest (C1 4); the k = 12288 end equals the r_half cell (grid_end_tol, checked per state)",
+   "noise_floor": "one grid step (a factor of 2)"
+  }
+ }
+}
