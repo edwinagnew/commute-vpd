@@ -14,6 +14,7 @@ on them. G is the state's mean minus W0's over the same reads. Per part:
                  Beside: the same with E96's natural-text head means (heads only)
   write (B)      the state with one matrix's dW reverted (24), one head's rows of q, k, v and columns of o (24), one block's
                  MLP matrices (4), and all 24 (must give G = 0); share = fall / G
+  split (E100)   carry, the part's own update reverted, and W0 with only the part's update (`split`; rules in `fed_rules`)
 Probabilities are mean probabilities over the reads (F5), never the probability at the mean log-odds.
 """
 
@@ -221,6 +222,28 @@ def head_reverted(dW: ST.DW, b: int, h: int) -> ST.DW:
         else:
             out[k][sl] = 0
     return out
+
+
+def part_reverted(dW: ST.DW, n: str) -> ST.DW:
+    """dW with every part of `n` (a part's name or a pair's) at 0: a head as `head_reverted`, an MLP its c_fc and down_proj."""
+    for kind, b, h in parts_of(n):
+        dW = head_reverted(dW, b, h) if kind == "head" else reverted(dW, [f"h.{b}.mlp.c_fc", f"h.{b}.mlp.down_proj"])
+    return dW
+
+
+def grafted(dW: ST.DW, n: str) -> ST.DW:
+    """Only `n`'s update: dW less `part_reverted` (Panigrahi et al. 2023's graft, one part)."""
+    r = part_reverted(dW, n)
+    return {k: v - r[k] for k, v in dW.items()}
+
+
+def split(net: ST.Net, st: State, n: str) -> dict[str, dict[str, float]]:
+    """E100's three reads of one part (or pair) as shares of G, both units: carry (the state with the output from W0's run),
+    own (the state with the part's update reverted: the fall) and graft (W0 with only the part's update: the rise)."""
+    s, top = st.b.site, st.lo1.mean(0)
+    return {"carry": shares(top - read(net, s, st.dW, parts_of(n), st.b.acts0).mean(0), st.G),
+            "own": shares(top - read(net, s, part_reverted(st.dW, n)).mean(0), st.G),
+            "graft": shares(read(net, s, grafted(st.dW, n)).mean(0) - st.b.lo0.mean(0), st.G)}  # fmt: skip
 
 
 def writes(net: ST.Net, st: State) -> dict[str, Any]:

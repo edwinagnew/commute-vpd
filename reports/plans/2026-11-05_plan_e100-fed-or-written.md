@@ -54,3 +54,7 @@ Fable's sourced timings: 15-19 s per E62 state and 253-323 s per whole-row state
 ## Not run
 
 The interchange subspace (definition-lead's call). Edges. Neurons. Qwen.
+
+## Correction before the run (2026-11-05, lead)
+
+Stage 1's E99 leans were written backwards above. The forced state moved only the pair's own q, k, v rows, so its gain is **written** there; the forbidden state kept the pair at W₀, so its gain is **fed**. The filed predictions say forced = written, forbidden = fed (`results/predictions.json` `leans_source`), which the lead confirms. Copy is read at (2,4) with the pair (2,3)+(2,4) beside; lowercase at mlp3 with its pair (1,1)+(1,2) beside.
