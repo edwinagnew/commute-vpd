@@ -1,0 +1,1569 @@
+{
+ "a_copy_lookup": {
+  "copy": [
+   [
+    0.7185390731694513,
+    0.15303588641984847
+   ],
+   [
+    0.7314277294359852,
+    0.15466186913011049
+   ]
+  ],
+  "forbidden": [
+   "within band: not through the part",
+   "within band: not through the part"
+  ],
+  "forced": [
+   "net 1",
+   "net 1"
+  ],
+  "lookup": [
+   [
+    0.01361373162231293,
+    0.12359440891004601
+   ],
+   [
+    0.0027972515700882207,
+    0.10886140868986338
+   ]
+  ],
+  "n_no_call": 0,
+  "n_no_gain": 0,
+  "negative_control": true,
+  "paired": {
+   "call": "every pair",
+   "pairs": {
+    "s0 - s0": {
+     "above": true,
+     "draws_max": 0.03368062327994315,
+     "draws_mean": -0.019156912490677126,
+     "gap": 0.7049253415471384,
+     "read": true
+    },
+    "s0 - s1": {
+     "above": true,
+     "draws_max": 0.05197531730610708,
+     "draws_mean": -0.01875280825941082,
+     "gap": 0.7157418215993631,
+     "read": true
+    },
+    "s1 - s0": {
+     "above": true,
+     "draws_max": 0.04423322017717672,
+     "draws_mean": -0.014096095752930032,
+     "gap": 0.7178139978136723,
+     "read": true
+    },
+    "s1 - s1": {
+     "above": true,
+     "draws_max": 0.052687719334032074,
+     "draws_mean": -0.013691991521663727,
+     "gap": 0.728630477865897,
+     "read": true
+    }
+   }
+  },
+  "per_seed": [
+   "reuses C",
+   "reuses C"
+  ],
+  "pool": {
+   "gap": 0.045800460440247104,
+   "largest": 0.15466186913011049,
+   "pooled": false,
+   "spread": 0.02204088822250973
+  },
+  "positive_control": true,
+  "verdict": "reuses C"
+ },
+ "b_radm": {
+  "W0's guess": {
+   "a": true,
+   "b": "not read",
+   "b_reads": [],
+   "n_inputs": 27188,
+   "n_values": 16,
+   "per_value": 1699.25,
+   "rows": {
+    "T11 cipher 24": {
+     "admissibility": "no C listed",
+     "e90": "not admissible"
+    },
+    "T11 elicit 24": {
+     "admissibility": "unreadable: R-adm (b) not read at this site, no token-only reader downstream of it",
+     "e90": "admissible"
+    },
+    "T12 rank-1 24": {
+     "admissibility": "unreadable: R-adm (b) not read at this site, no token-only reader downstream of it",
+     "e90": "admissible"
+    }
+   }
+  },
+  "embedding class": {
+   "a": true,
+   "b": "stage4.py",
+   "b_reads": null,
+   "n_inputs": 128,
+   "n_values": 4,
+   "per_value": 32.0,
+   "rows": {
+    "T15 class map 128": {
+     "admissibility": null,
+     "e90": "admissible"
+    },
+    "T15 twin 128": {
+     "admissibility": null,
+     "e90": "not admissible"
+    }
+   }
+  },
+  "token identity, copy-24's keys": {
+   "a": false,
+   "b": "not read",
+   "b_reads": [],
+   "n_inputs": 24,
+   "n_values": 24,
+   "per_value": 1.0,
+   "rows": {
+    "T13 copy-24": {
+     "admissibility": "no admissible C at this site: the removal deletes the input",
+     "e90": "admissible"
+    }
+   }
+  },
+  "token identity, table A's keys": {
+   "a": false,
+   "b": "fails",
+   "b_reads": [
+    {
+     "band": 0.6181331781986655,
+     "share": 0.7412781122978849,
+     "status": "ok"
+    },
+    {
+     "band": 0.6181331781986655,
+     "share": 0.7412781122978849,
+     "status": "ok"
+    },
+    {
+     "band": 0.6685580036831592,
+     "share": 0.7654273998546358,
+     "status": "ok"
+    },
+    {
+     "band": 0.6694144951535356,
+     "share": 0.7660280862276377,
+     "status": "ok"
+    }
+   ],
+   "n_inputs": 32,
+   "n_values": 32,
+   "per_value": 1.0,
+   "rows": {
+    "T4 ident32": {
+     "admissibility": "no admissible C at this site: the removal deletes the input",
+     "e90": "admissible"
+    },
+    "T6 rand32": {
+     "admissibility": "no C listed",
+     "e90": "not admissible"
+    }
+   }
+  },
+  "token identity, table B's keys": {
+   "a": false,
+   "b": "not read",
+   "b_reads": [],
+   "n_inputs": 32,
+   "n_values": 32,
+   "per_value": 1.0,
+   "rows": {
+    "T4 ident32b": {
+     "admissibility": "no admissible C at this site: the removal deletes the input",
+     "e90": "admissible"
+    },
+    "T6 rand32b": {
+     "admissibility": "no C listed",
+     "e90": "not admissible"
+    }
+   }
+  }
+ },
+ "c_bands": {
+  "copy pair": {
+   "maps": {
+    "T5 copy": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "reuses C",
+      "reuses C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.7185390731694513,
+       "band": 0.15303588641984847,
+       "band_used": 0.15303588641984847,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.12359440891004601,
+        "band_used": 0.12359440891004601,
+        "ok": true,
+        "share": 0.01361373162231293,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.7314277294359852,
+       "band": 0.15466186913011049,
+       "band_used": 0.15466186913011049,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.10886140868986338,
+        "band_used": 0.10886140868986338,
+        "ok": true,
+        "share": 0.0027972515700882207,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "reuses C"
+    },
+    "T5 lookup": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "not through C",
+      "not through C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.01361373162231293,
+       "band": 0.12359440891004601,
+       "band_used": 0.12359440891004601,
+       "status": "within",
+       "verdict": "not through C",
+       "write": {
+        "band": 0.15303588641984847,
+        "band_used": 0.15303588641984847,
+        "ok": true,
+        "share": 0.7185390731694513,
+        "status": "above"
+       }
+      },
+      "s1": {
+       "A_lo": 0.0027972515700882207,
+       "band": 0.10886140868986338,
+       "band_used": 0.10886140868986338,
+       "status": "within",
+       "verdict": "not through C",
+       "write": {
+        "band": 0.15466186913011049,
+        "band_used": 0.15466186913011049,
+        "ok": true,
+        "share": 0.7314277294359852,
+        "status": "above"
+       }
+      }
+     },
+     "verdict": "not through C"
+    }
+   },
+   "paired": {
+    "T5 copy - T5 lookup": {
+     "call": "every pair",
+     "pairs": {
+      "s0 - s0": {
+       "above": true,
+       "draws_max": 0.03368062327994315,
+       "draws_mean": -0.019156912490677126,
+       "gap": 0.7049253415471384,
+       "read": true
+      },
+      "s0 - s1": {
+       "above": true,
+       "draws_max": 0.05197531730610708,
+       "draws_mean": -0.01875280825941082,
+       "gap": 0.7157418215993631,
+       "read": true
+      },
+      "s1 - s0": {
+       "above": true,
+       "draws_max": 0.04423322017717672,
+       "draws_mean": -0.014096095752930032,
+       "gap": 0.7178139978136723,
+       "read": true
+      },
+      "s1 - s1": {
+       "above": true,
+       "draws_max": 0.052687719334032074,
+       "draws_mean": -0.013691991521663727,
+       "gap": 0.728630477865897,
+       "read": true
+      }
+     }
+    }
+   },
+   "pool": {
+    "gap": 0.045800460440247104,
+    "largest": 0.15466186913011049,
+    "pooled": false,
+    "spread": 0.02204088822250973
+   },
+   "teeth": true
+  },
+  "copy24 block 1": {
+   "maps": {
+    "copy24": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "reuses C",
+      "reuses C",
+      "reuses C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.6801908370437438,
+       "band": 0.4723511284994183,
+       "band_used": 0.4723511284994183,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.19327824449274394,
+        "band_used": 0.19327824449274394,
+        "ok": true,
+        "share": -0.12454979063490516,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.6774055540654814,
+       "band": 0.439608477905349,
+       "band_used": 0.439608477905349,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.19327824449274394,
+        "band_used": 0.19327824449274394,
+        "ok": true,
+        "share": -0.12454979063490516,
+        "status": "within"
+       }
+      },
+      "s2": {
+       "A_lo": 0.6612231789072702,
+       "band": 0.46850399536833337,
+       "band_used": 0.46850399536833337,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.19327824449274394,
+        "band_used": 0.19327824449274394,
+        "ok": true,
+        "share": -0.12454979063490516,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "reuses C"
+    }
+   },
+   "paired": {},
+   "pool": {
+    "gap": 0.03274265059406928,
+    "largest": 0.4723511284994183,
+    "pooled": false,
+    "spread": 0.018795790450827646
+   },
+   "teeth": true
+  },
+  "copy24 block 2": {
+   "maps": {
+    "copy24": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "unreadable: no teeth",
+      "unreadable: no teeth",
+      "unreadable: no teeth"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.06877794663327905,
+       "band": 0.05393289463935777,
+       "band_used": 0.05393289463935777,
+       "status": "above",
+       "verdict": "unreadable: no teeth",
+       "write": {
+        "band": 0.3806184089824894,
+        "band_used": 0.3806184089824894,
+        "ok": true,
+        "share": -0.2759645146977829,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": -0.027352049433752062,
+       "band": 0.15473677648177922,
+       "band_used": 0.15473677648177922,
+       "status": "within",
+       "verdict": "unreadable: no teeth",
+       "write": {
+        "band": 0.3806184089824894,
+        "band_used": 0.3806184089824894,
+        "ok": true,
+        "share": -0.2759645146977829,
+        "status": "within"
+       }
+      },
+      "s2": {
+       "A_lo": 0.07109781947500762,
+       "band": 0.05986076775869541,
+       "band_used": 0.05986076775869541,
+       "status": "above",
+       "verdict": "unreadable: no teeth",
+       "write": {
+        "band": 0.3806184089824894,
+        "band_used": 0.3806184089824894,
+        "ok": true,
+        "share": -0.2759645146977829,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "unreadable: no teeth"
+    }
+   },
+   "paired": {},
+   "pool": {
+    "gap": 0.10080388184242145,
+    "largest": 0.15473677648177922,
+    "pooled": false,
+    "spread": 0.014793355538536938
+   },
+   "teeth": false
+  },
+  "guess block 1": {
+   "maps": {
+    "cipher": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "unreadable: does not reach the states",
+      "unreadable: does not reach the states",
+      "reuses C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.10119084645465508,
+       "band": 0.11845999004611192,
+       "band_used": 0.11845999004611192,
+       "status": "within",
+       "verdict": "unreadable: does not reach the states",
+       "write": {
+        "band": 0.08388584951340328,
+        "band_used": 0.08388584951340328,
+        "ok": true,
+        "share": -0.03325439111460382,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.0789294920673025,
+       "band": 0.11999278036065023,
+       "band_used": 0.11999278036065023,
+       "status": "within",
+       "verdict": "unreadable: does not reach the states",
+       "write": {
+        "band": 0.08388584951340328,
+        "band_used": 0.08388584951340328,
+        "ok": true,
+        "share": -0.03325439111460382,
+        "status": "within"
+       }
+      },
+      "s2": {
+       "A_lo": 0.12350659519585123,
+       "band": 0.12292144468500585,
+       "band_used": 0.12292144468500585,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.08388584951340328,
+        "band_used": 0.08388584951340328,
+        "ok": true,
+        "share": -0.03325439111460382,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "mixed"
+    },
+    "elicit": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "reuses C",
+      "reuses C",
+      "unreadable: does not reach the states"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.13859431365347233,
+       "band": 0.12139016212442415,
+       "band_used": 0.12139016212442415,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.10886925333863716,
+        "band_used": 0.10886925333863716,
+        "ok": true,
+        "share": -0.04153369919526264,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.13382254380157768,
+       "band": 0.1230790207649095,
+       "band_used": 0.1230790207649095,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.10954375912232107,
+        "band_used": 0.10954375912232107,
+        "ok": true,
+        "share": -0.03437400277521056,
+        "status": "within"
+       }
+      },
+      "s2": {
+       "A_lo": 0.13203046004609117,
+       "band": 0.1384821125662792,
+       "band_used": 0.1384821125662792,
+       "status": "within",
+       "verdict": "unreadable: does not reach the states",
+       "write": {
+        "band": 0.10954375912232107,
+        "band_used": 0.10954375912232107,
+        "ok": true,
+        "share": -0.03437400277521056,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "mixed"
+    },
+    "rank1": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "reuses C",
+      "reuses C",
+      "reuses C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.20861324463841247,
+       "band": 0.16186251326346104,
+       "band_used": 0.16186251326346104,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.054446002292406884,
+        "band_used": 0.054446002292406884,
+        "ok": true,
+        "share": 0.047006959910726065,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.21778461265381543,
+       "band": 0.16323060680433296,
+       "band_used": 0.16323060680433296,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.054446002292406884,
+        "band_used": 0.054446002292406884,
+        "ok": true,
+        "share": 0.047006959910726065,
+        "status": "within"
+       }
+      },
+      "s2": {
+       "A_lo": 0.15943748352505488,
+       "band": 0.14041445064466387,
+       "band_used": 0.14041445064466387,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.054446002292406884,
+        "band_used": 0.054446002292406884,
+        "ok": true,
+        "share": 0.047006959910726065,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "reuses C"
+    }
+   },
+   "paired": {
+    "elicit - cipher": {
+     "call": "no pair",
+     "pairs": {
+      "s0 - s0": {
+       "above": false,
+       "draws_max": 0.05154216887144614,
+       "draws_mean": -0.021500943994270348,
+       "gap": 0.03740346719881725,
+       "read": true
+      },
+      "s0 - s1": {
+       "above": false,
+       "draws_max": 0.06576190544501166,
+       "draws_mean": -0.012346160121178113,
+       "gap": 0.05966482158616983,
+       "read": true
+      },
+      "s0 - s2": {
+       "above": false,
+       "draws_max": 0.049692261955124314,
+       "draws_mean": -0.0323554350651096,
+       "gap": 0.015087718457621094,
+       "read": true
+      },
+      "s1 - s0": {
+       "above": false,
+       "draws_max": 0.05148083218740507,
+       "draws_mean": -0.025713613616496,
+       "gap": 0.0326316973469226,
+       "read": true
+      },
+      "s1 - s1": {
+       "above": false,
+       "draws_max": 0.061679829653165166,
+       "draws_mean": -0.016558829743403766,
+       "gap": 0.05489305173427518,
+       "read": true
+      },
+      "s1 - s2": {
+       "above": false,
+       "draws_max": 0.03977194828574128,
+       "draws_mean": -0.03656810468733525,
+       "gap": 0.010315948605726447,
+       "read": true
+      },
+      "s2 - s0": {
+       "above": false,
+       "draws_max": 0.055571792872561254,
+       "draws_mean": -0.0124191254365384,
+       "gap": 0.030839613591436096,
+       "read": true
+      },
+      "s2 - s1": {
+       "above": false,
+       "draws_max": 0.07170417740833161,
+       "draws_mean": -0.0032643415634461617,
+       "gap": 0.053100967978788674,
+       "read": true
+      },
+      "s2 - s2": {
+       "above": false,
+       "draws_max": 0.055634533918444265,
+       "draws_mean": -0.023273616507377647,
+       "gap": 0.00852386485023994,
+       "read": true
+      }
+     }
+    },
+    "rank1 - cipher": {
+     "call": "some pairs",
+     "pairs": {
+      "s0 - s0": {
+       "above": true,
+       "draws_max": 0.09161851715617603,
+       "draws_mean": 0.025511140301115592,
+       "gap": 0.10742239818375739,
+       "read": true
+      },
+      "s0 - s1": {
+       "above": true,
+       "draws_max": 0.10655675008483431,
+       "draws_mean": 0.034665924174207836,
+       "gap": 0.12968375257110998,
+       "read": true
+      },
+      "s0 - s2": {
+       "above": false,
+       "draws_max": 0.09451777910095073,
+       "draws_mean": 0.014656649230276347,
+       "gap": 0.08510664944256123,
+       "read": true
+      },
+      "s1 - s0": {
+       "above": false,
+       "draws_max": 0.1209723904669241,
+       "draws_mean": 0.036847961672977124,
+       "gap": 0.11659376619916036,
+       "read": true
+      },
+      "s1 - s1": {
+       "above": true,
+       "draws_max": 0.13591062339558238,
+       "draws_mean": 0.04600274554606937,
+       "gap": 0.13885512058651295,
+       "read": true
+      },
+      "s1 - s2": {
+       "above": false,
+       "draws_max": 0.1238716524116988,
+       "draws_mean": 0.025993470602137875,
+       "gap": 0.0942780174579642,
+       "read": true
+      },
+      "s2 - s0": {
+       "above": false,
+       "draws_max": 0.08241309496253202,
+       "draws_mean": 0.012240865400991133,
+       "gap": 0.0582466370703998,
+       "read": true
+      },
+      "s2 - s1": {
+       "above": false,
+       "draws_max": 0.0973513278911903,
+       "draws_mean": 0.021395649274083373,
+       "gap": 0.08050799145775238,
+       "read": true
+      },
+      "s2 - s2": {
+       "above": false,
+       "draws_max": 0.08531235690730672,
+       "draws_mean": 0.0013863743301518836,
+       "gap": 0.035930888329203645,
+       "read": true
+      }
+     }
+    }
+   },
+   "pool": {
+    "gap": 0.04477061675822104,
+    "largest": 0.16323060680433296,
+    "pooled": false,
+    "spread": 0.021215635756181225
+   },
+   "teeth": true
+  },
+  "guess block 2": {
+   "maps": {
+    "cipher": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "unreadable: does not reach the states",
+      "unreadable: does not reach the states",
+      "unreadable: does not reach the states"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": -0.05206570032608873,
+       "band": 0.11573613517657927,
+       "band_used": 0.11573613517657927,
+       "status": "within",
+       "verdict": "unreadable: does not reach the states",
+       "write": {
+        "band": 0.1058969008418048,
+        "band_used": 0.1058969008418048,
+        "ok": true,
+        "share": -0.09448062501130593,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": -0.06311985942008447,
+       "band": 0.1068901820169524,
+       "band_used": 0.1068901820169524,
+       "status": "within",
+       "verdict": "unreadable: does not reach the states",
+       "write": {
+        "band": 0.1058969008418048,
+        "band_used": 0.1058969008418048,
+        "ok": true,
+        "share": -0.09448062501130593,
+        "status": "within"
+       }
+      },
+      "s2": {
+       "A_lo": -0.028697403513545525,
+       "band": 0.12467009701341102,
+       "band_used": 0.12467009701341102,
+       "status": "within",
+       "verdict": "unreadable: does not reach the states",
+       "write": {
+        "band": 0.1058969008418048,
+        "band_used": 0.1058969008418048,
+        "ok": true,
+        "share": -0.09448062501130593,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "unreadable: does not reach the states"
+    },
+    "elicit": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "unreadable: does not reach the states",
+      "unreadable: does not reach the states",
+      "unreadable: does not reach the states"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": -0.03278444075682663,
+       "band": 0.07573918348534499,
+       "band_used": 0.07573918348534499,
+       "status": "within",
+       "verdict": "unreadable: does not reach the states",
+       "write": {
+        "band": 0.14340861065268767,
+        "band_used": 0.14340861065268767,
+        "ok": true,
+        "share": -0.10949495681764701,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": -0.0332297720124004,
+       "band": 0.07198752170914904,
+       "band_used": 0.07198752170914904,
+       "status": "within",
+       "verdict": "unreadable: does not reach the states",
+       "write": {
+        "band": 0.14298064900377883,
+        "band_used": 0.14298064900377883,
+        "ok": true,
+        "share": -0.10886685432379316,
+        "status": "within"
+       }
+      },
+      "s2": {
+       "A_lo": -0.02030610986826154,
+       "band": 0.0727098522328099,
+       "band_used": 0.0727098522328099,
+       "status": "within",
+       "verdict": "unreadable: does not reach the states",
+       "write": {
+        "band": 0.14298064900377883,
+        "band_used": 0.14298064900377883,
+        "ok": true,
+        "share": -0.10886685432379316,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "unreadable: does not reach the states"
+    },
+    "rank1": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "unreadable: not specific",
+      "unreadable: not specific",
+      "unreadable: not specific"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.24553484252697494,
+       "band": 0.20440879989999036,
+       "band_used": 0.20440879989999036,
+       "status": "above",
+       "verdict": "unreadable: not specific",
+       "write": {
+        "band": 0.11735035639708652,
+        "band_used": 0.11735035639708652,
+        "ok": true,
+        "share": 0.195746477792153,
+        "status": "above"
+       }
+      },
+      "s1": {
+       "A_lo": 0.21835333591459677,
+       "band": 0.18905500541989712,
+       "band_used": 0.18905500541989712,
+       "status": "above",
+       "verdict": "unreadable: not specific",
+       "write": {
+        "band": 0.11735035639708652,
+        "band_used": 0.11735035639708652,
+        "ok": true,
+        "share": 0.195746477792153,
+        "status": "above"
+       }
+      },
+      "s2": {
+       "A_lo": 0.1619478714073005,
+       "band": 0.15783876431122393,
+       "band_used": 0.15783876431122393,
+       "status": "above",
+       "verdict": "unreadable: not specific",
+       "write": {
+        "band": 0.11735035639708652,
+        "band_used": 0.11735035639708652,
+        "ok": true,
+        "share": 0.195746477792153,
+        "status": "above"
+       }
+      }
+     },
+     "verdict": "unreadable: not specific"
+    }
+   },
+   "paired": {
+    "elicit - cipher": {
+     "call": "no pair",
+     "pairs": {
+      "s0 - s0": {
+       "above": false,
+       "draws_max": 0.08236068902648297,
+       "draws_mean": -0.027512469129429822,
+       "gap": 0.019281259569262105,
+       "read": true
+      },
+      "s0 - s1": {
+       "above": false,
+       "draws_max": 0.0965417784348217,
+       "draws_mean": -0.018592204797216176,
+       "gap": 0.03033541866325784,
+       "read": true
+      },
+      "s0 - s2": {
+       "above": false,
+       "draws_max": 0.05336828462152229,
+       "draws_mean": -0.037421864109485906,
+       "gap": -0.004087037243281102,
+       "read": true
+      },
+      "s1 - s0": {
+       "above": false,
+       "draws_max": 0.0919755281499445,
+       "draws_mean": -0.01847667145437341,
+       "gap": 0.018835928313688334,
+       "read": true
+      },
+      "s1 - s1": {
+       "above": false,
+       "draws_max": 0.10615661755828326,
+       "draws_mean": -0.009556407122159768,
+       "gap": 0.02989008740768407,
+       "read": true
+      },
+      "s1 - s2": {
+       "above": false,
+       "draws_max": 0.06298312374498384,
+       "draws_mean": -0.0283860664344295,
+       "gap": -0.0045323684988548725,
+       "read": true
+      },
+      "s2 - s0": {
+       "above": false,
+       "draws_max": 0.09889798933708624,
+       "draws_mean": -0.011280293393868051,
+       "gap": 0.0317595904578272,
+       "read": true
+      },
+      "s2 - s1": {
+       "above": false,
+       "draws_max": 0.11307907874542497,
+       "draws_mean": -0.0023600290616544095,
+       "gap": 0.04281374955182293,
+       "read": true
+      },
+      "s2 - s2": {
+       "above": false,
+       "draws_max": 0.06990558493212556,
+       "draws_mean": -0.021189688373924147,
+       "gap": 0.008391293645283987,
+       "read": true
+      }
+     }
+    },
+    "rank1 - cipher": {
+     "call": "every pair",
+     "pairs": {
+      "s0 - s0": {
+       "above": true,
+       "draws_max": 0.1837794473718367,
+       "draws_mean": 0.10851369933172565,
+       "gap": 0.2976005428530637,
+       "read": true
+      },
+      "s0 - s1": {
+       "above": true,
+       "draws_max": 0.19796053678017547,
+       "draws_mean": 0.11743396366393928,
+       "gap": 0.3086547019470594,
+       "read": true
+      },
+      "s0 - s2": {
+       "above": true,
+       "draws_max": 0.18788010943507227,
+       "draws_mean": 0.09860430435166954,
+       "gap": 0.2742322460405205,
+       "read": true
+      },
+      "s1 - s0": {
+       "above": true,
+       "draws_max": 0.18350069652406867,
+       "draws_mean": 0.10454090824119149,
+       "gap": 0.27041903624068553,
+       "read": true
+      },
+      "s1 - s1": {
+       "above": true,
+       "draws_max": 0.19768178593240743,
+       "draws_mean": 0.11346117257340516,
+       "gap": 0.28147319533468124,
+       "read": true
+      },
+      "s1 - s2": {
+       "above": true,
+       "draws_max": 0.16350712235762088,
+       "draws_mean": 0.09463151326113542,
+       "gap": 0.2470507394281423,
+       "read": true
+      },
+      "s2 - s0": {
+       "above": true,
+       "draws_max": 0.13285358770834632,
+       "draws_mean": 0.07024928983201782,
+       "gap": 0.21401357173338922,
+       "read": true
+      },
+      "s2 - s1": {
+       "above": true,
+       "draws_max": 0.14288426421006564,
+       "draws_mean": 0.07916955416423148,
+       "gap": 0.22506773082738496,
+       "read": true
+      },
+      "s2 - s2": {
+       "above": true,
+       "draws_max": 0.13265541173188622,
+       "draws_mean": 0.06033989485196176,
+       "gap": 0.19064527492084601,
+       "read": true
+      }
+     }
+    }
+   },
+   "pool": {
+    "gap": 0.13242127819084132,
+    "largest": 0.20440879989999036,
+    "pooled": false,
+    "spread": 0.01816863318262621
+   },
+   "teeth": true
+  },
+  "identity block 1": {
+   "maps": {
+    "ident32": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "reuses C",
+      "reuses C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.4991896234350529,
+       "band": 0.3982392093365468,
+       "band_used": 0.3982392093365468,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.12297628931476566,
+        "band_used": 0.12297628931476566,
+        "ok": true,
+        "share": -0.04309767412343426,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.5300377052836284,
+       "band": 0.41256774719657124,
+       "band_used": 0.41256774719657124,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.12297628931476566,
+        "band_used": 0.12297628931476566,
+        "ok": true,
+        "share": -0.04309767412343426,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "reuses C"
+    },
+    "rand32": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "reuses C",
+      "reuses C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.3704616322789343,
+       "band": 0.3383566527441289,
+       "band_used": 0.3383566527441289,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.06908320252563321,
+        "band_used": 0.06908320252563321,
+        "ok": true,
+        "share": 0.006710993313177437,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.35908502119159874,
+       "band": 0.34387672719867357,
+       "band_used": 0.34387672719867357,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.06908320252563321,
+        "band_used": 0.06908320252563321,
+        "ok": true,
+        "share": 0.006710993313177437,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "reuses C"
+    }
+   },
+   "paired": {
+    "ident32 - rand32": {
+     "call": "every pair",
+     "pairs": {
+      "s0 - s0": {
+       "above": true,
+       "draws_max": 0.09915297601451745,
+       "draws_mean": 0.03472729404661212,
+       "gap": 0.1287279911561186,
+       "read": true
+      },
+      "s0 - s1": {
+       "above": true,
+       "draws_max": 0.09720725704439753,
+       "draws_mean": 0.02722087872738619,
+       "gap": 0.14010460224345417,
+       "read": true
+      },
+      "s1 - s0": {
+       "above": true,
+       "draws_max": 0.1179096061116861,
+       "draws_mean": 0.05260353523385915,
+       "gap": 0.15957607300469406,
+       "read": true
+      },
+      "s1 - s1": {
+       "above": true,
+       "draws_max": 0.11226269976160252,
+       "draws_mean": 0.04509711991463321,
+       "gap": 0.17095268409202963,
+       "read": true
+      }
+     }
+    }
+   },
+   "pool": {
+    "gap": 0.07421109445244234,
+    "largest": 0.41256774719657124,
+    "pooled": false,
+    "spread": 0.012209430209275111
+   },
+   "teeth": true
+  },
+  "identity block 2": {
+   "maps": {
+    "ident32": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "unreadable: no teeth",
+      "unreadable: no teeth"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.04515569455626648,
+       "band": 0.052694643728730166,
+       "band_used": 0.052694643728730166,
+       "status": "within",
+       "verdict": "unreadable: no teeth",
+       "write": {
+        "band": 0.19851144196219123,
+        "band_used": 0.19851144196219123,
+        "ok": true,
+        "share": -0.08175543946389519,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.030958506604980895,
+       "band": 0.09202792916340365,
+       "band_used": 0.09202792916340365,
+       "status": "within",
+       "verdict": "unreadable: no teeth",
+       "write": {
+        "band": 0.19851144196219123,
+        "band_used": 0.19851144196219123,
+        "ok": true,
+        "share": -0.08175543946389519,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "unreadable: no teeth"
+    },
+    "rand32": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "unreadable: no teeth",
+      "unreadable: no teeth"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.17410415225163992,
+       "band": 0.18657051802787547,
+       "band_used": 0.18657051802787547,
+       "status": "within",
+       "verdict": "unreadable: no teeth",
+       "write": {
+        "band": 0.10779491063839255,
+        "band_used": 0.10779491063839255,
+        "ok": true,
+        "share": 0.01604042225582152,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.16904472674448057,
+       "band": 0.18189251232218537,
+       "band_used": 0.18189251232218537,
+       "status": "within",
+       "verdict": "unreadable: no teeth",
+       "write": {
+        "band": 0.10779491063839255,
+        "band_used": 0.10779491063839255,
+        "ok": true,
+        "share": 0.01604042225582152,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "unreadable: no teeth"
+    }
+   },
+   "paired": {
+    "ident32 - rand32": {
+     "call": "some pairs",
+     "pairs": {
+      "s0 - s0": {
+       "above": false,
+       "draws_max": -0.1232293771988175,
+       "draws_mean": -0.17423075373649208,
+       "gap": -0.12894845769537344,
+       "read": true
+      },
+      "s0 - s1": {
+       "above": true,
+       "draws_max": -0.1276139394784046,
+       "draws_mean": -0.17324327630955866,
+       "gap": -0.1238890321882141,
+       "read": true
+      },
+      "s1 - s0": {
+       "above": true,
+       "draws_max": -0.15201286882898407,
+       "draws_mean": -0.20602838065459128,
+       "gap": -0.14314564564665902,
+       "read": true
+      },
+      "s1 - s1": {
+       "above": true,
+       "draws_max": -0.15639743110857118,
+       "draws_mean": -0.20504090322765783,
+       "gap": -0.13808622013949967,
+       "read": true
+      }
+     }
+    }
+   },
+   "pool": {
+    "gap": 0.1338758742991453,
+    "largest": 0.18657051802787547,
+    "pooled": false,
+    "spread": 0.008714920494078982
+   },
+   "teeth": false
+  },
+  "identity, table B block 1": {
+   "maps": {
+    "ident32b": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "unreadable: not specific",
+      "reuses C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.5105550269197631,
+       "band": 0.4260422605042408,
+       "band_used": 0.4260422605042408,
+       "status": "above",
+       "verdict": "unreadable: not specific",
+       "write": {
+        "band": 0.024016013203177734,
+        "band_used": 0.024016013203177734,
+        "ok": true,
+        "share": 0.03425706520597964,
+        "status": "above"
+       }
+      },
+      "s1": {
+       "A_lo": 0.5116400381358374,
+       "band": 0.4265236554829678,
+       "band_used": 0.4265236554829678,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.030825703884190543,
+        "band_used": 0.030825703884190543,
+        "ok": true,
+        "share": 0.019772369504645695,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "mixed"
+    },
+    "rand32b": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "unreadable: not specific",
+      "unreadable: not specific"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.26718788465820476,
+       "band": 0.250069946397141,
+       "band_used": 0.250069946397141,
+       "status": "above",
+       "verdict": "unreadable: not specific",
+       "write": {
+        "band": 0.047274785397659495,
+        "band_used": 0.047274785397659495,
+        "ok": true,
+        "share": 0.0651526524880232,
+        "status": "above"
+       }
+      },
+      "s1": {
+       "A_lo": 0.2843131482324135,
+       "band": 0.27959446078398603,
+       "band_used": 0.27959446078398603,
+       "status": "above",
+       "verdict": "unreadable: not specific",
+       "write": {
+        "band": 0.047274785397659495,
+        "band_used": 0.047274785397659495,
+        "ok": true,
+        "share": 0.0651526524880232,
+        "status": "above"
+       }
+      }
+     },
+     "verdict": "unreadable: not specific"
+    }
+   },
+   "paired": {
+    "ident32b - rand32b": {
+     "call": "every pair",
+     "pairs": {
+      "s0 - s0": {
+       "above": true,
+       "draws_max": 0.2176740062664482,
+       "draws_mean": 0.15587747345928993,
+       "gap": 0.2433671422615583,
+       "read": true
+      },
+      "s0 - s1": {
+       "above": true,
+       "draws_max": 0.192877382718199,
+       "draws_mean": 0.132504345999244,
+       "gap": 0.22624187868734957,
+       "read": true
+      },
+      "s1 - s0": {
+       "above": true,
+       "draws_max": 0.22210109319887342,
+       "draws_mean": 0.14297627758976872,
+       "gap": 0.2444521534776326,
+       "read": true
+      },
+      "s1 - s1": {
+       "above": true,
+       "draws_max": 0.1973044696506242,
+       "draws_mean": 0.11960315012972278,
+       "gap": 0.22732688990342387,
+       "read": true
+      }
+     }
+    }
+   },
+   "pool": {
+    "gap": 0.1764537090858268,
+    "largest": 0.4265236554829678,
+    "pooled": false,
+    "spread": 0.013518635868133427
+   },
+   "teeth": true
+  },
+  "lowercase pair": {
+   "maps": {
+    "T7 lowercase": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "not through C",
+      "not through C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": -0.17659467395218778,
+       "band": 0.4343258903003365,
+       "band_used": 0.4343258903003365,
+       "status": "within",
+       "verdict": "not through C",
+       "write": {
+        "band": 0.18867624659289275,
+        "band_used": 0.18867624659289275,
+        "ok": true,
+        "share": 0.2102064613493648,
+        "status": "above"
+       }
+      },
+      "s1": {
+       "A_lo": -0.1591139617997089,
+       "band": 0.46826855388396993,
+       "band_used": 0.46826855388396993,
+       "status": "within",
+       "verdict": "not through C",
+       "write": {
+        "band": 0.1886844438158334,
+        "band_used": 0.1886844438158334,
+        "ok": true,
+        "share": 0.21049459583951818,
+        "status": "above"
+       }
+      }
+     },
+     "verdict": "not through C"
+    },
+    "T8 cipher": {
+     "n_no_call": 0,
+     "n_no_gain": 0,
+     "per_seed": [
+      "reuses C",
+      "reuses C"
+     ],
+     "seeds": {
+      "s0": {
+       "A_lo": 0.2102064613493648,
+       "band": 0.18867624659289275,
+       "band_used": 0.18867624659289275,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.4343258903003365,
+        "band_used": 0.4343258903003365,
+        "ok": true,
+        "share": -0.17659467395218778,
+        "status": "within"
+       }
+      },
+      "s1": {
+       "A_lo": 0.21049459583951818,
+       "band": 0.1886844438158334,
+       "band_used": 0.1886844438158334,
+       "status": "above",
+       "verdict": "reuses C",
+       "write": {
+        "band": 0.46826855388396993,
+        "band_used": 0.46826855388396993,
+        "ok": true,
+        "share": -0.1591139617997089,
+        "status": "within"
+       }
+      }
+     },
+     "verdict": "reuses C"
+    }
+   },
+   "paired": {
+    "T7 lowercase - T8 cipher": {
+     "call": "no pair",
+     "pairs": {
+      "s0 - s0": {
+       "above": false,
+       "draws_max": 0.246773675279852,
+       "draws_mean": 0.029168673482988138,
+       "gap": -0.3868011353015526,
+       "read": true
+      },
+      "s0 - s1": {
+       "above": false,
+       "draws_max": 0.26072014361757645,
+       "draws_mean": 0.031072991095413966,
+       "gap": -0.387089269791706,
+       "read": true
+      },
+      "s1 - s0": {
+       "above": false,
+       "draws_max": 0.2824389488172942,
+       "draws_mean": 0.03548752369614239,
+       "gap": -0.3693204231490737,
+       "read": true
+      },
+      "s1 - s1": {
+       "above": false,
+       "draws_max": 0.29638541715501865,
+       "draws_mean": 0.037391841308568215,
+       "gap": -0.36960855763922706,
+       "read": true
+      }
+     }
+    }
+   },
+   "pool": {
+    "gap": 0.2795923072910772,
+    "largest": 0.46826855388396993,
+    "pooled": false,
+    "spread": 0.07290231406326422
+   },
+   "teeth": true
+  }
+ }
+}
