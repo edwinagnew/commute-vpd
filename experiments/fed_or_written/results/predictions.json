@@ -1,0 +1,110 @@
+{
+ "experiment": "E100 fed_or_written: for every saved 67M fine-tune and each of 28 parts, split the part's credit for the gain into own (what reverting the part's own update removes) and inherited (what reaching the part from changed upstream parts adds); read fed / written / mixed at one part per state",
+ "plan": "reports/plans/2026-11-05_plan_e100-fed-or-written.md; advice reports/reviews/2026-11-05_review_e100-fed-or-written-fable-advice.md (adopted)",
+ "limit": "a new circuit built from old parts still reads as reuse: 'fed' says the gain runs through a part whose own weights barely changed; it does not say one old circuit is unchanged",
+ "definitions": {
+  "part": "one head's output (its 128-wide slice of o_proj's input) or one block's MLP output (down_proj's output); 24 heads and 4 MLPs; a pair 'a+b' is both at once (only the filed extra_parts)",
+  "unit": "lo: log-odds of the target against every other token at the read position (identity.log_odds; E96's and E97's filed unit). gap beside on the E53 sites",
+  "G": "the state's mean over the site's reads minus W0's over the same reads",
+  "carry": "the state with the part's output replaced by W0's output on the same inputs; share = (state - patched) / G (E97's read, locator.split)",
+  "own": "the state with the part's own update reverted (a head: its rows of q, k, v and columns of o; an MLP: c_fc and down_proj); share = (state - reverted) / G",
+  "graft": "W0 with only the part's update (Panigrahi et al. 2023's graft; Zhou 2026's fourth cell); share = (grafted - W0) / G; beside, no rule",
+  "inherited": "carry - own",
+  "ratio": "own / carry, capped at 1 (own past carry reads written); nan when carry <= 0",
+  "reverts_sum": "the sum of own over the 28 single parts, which partition every entry of dW: 1 when the update is additive. E97's sum_matrix (over the 24 matrices) is a different partition",
+  "read_part": "the filed read_at part where one is filed, else the state's one top single part by carry (a tie names none)",
+  "floor": "the block-1 plant's largest inherited share on a part downstream of block 1's MLP, read in stage 0 (E97 measured 0.0210 as the largest carry share there; with own 0 downstream it is the same number)"
+ },
+ "settings": {
+  "plant_blocks": [3, 1],
+  "plant_blocks_source": "E97 stage 0 (locator_table predictions.json settings.plant_blocks)",
+  "read_at": {"T5 copy": "2,4", "E99 forced copy": "2,3+2,4", "E99 forbidden copy": "2,3+2,4"},
+  "read_at_source": "T5 copy: the single head E97's removal located on every copy seed (locator_table/results/stage1.json .located['T5 copy'].parts['2,4'], shares 0.65, 0.63, 0.56; E96's head); the plan's 'copy's (2,4) ratio about 0.02'. E97 located the pair 2,3+2,4 as best, read beside. E99's states: the pair they were built on (definition_verify predictions.json settings.copy_pair). Every other task: E97 located no single part (lookup, cipher), only a pair (lowercase 1,1+1,2, whose carry is about 0: singles -0.002 and 0.005-0.009), or never ran (E97 stage 3), so the top carry part, as the plan's lowercase lean (mlp3) reads",
+  "extra_parts": {"T5 copy": ["2,3+2,4"], "E99 forced copy": ["2,3+2,4"], "E99 forbidden copy": ["2,3+2,4"], "T7 lowercase": ["1,1+1,2"]},
+  "extra_parts_source": "E97's located pairs and E99's constructed pair, read beside",
+  "e99_large": "/mnt/nw/home/e.agnew/commute-data/results-large/definition_verify",
+  "e99_source": "definition-lead's E99 stages 1-2 (job 52787): dW_forced_copy_s{0,1}.pt and dW_forbidden_copy_s{0,1}.pt, bf16, sha256 from experiments/definition_verify/results/stage{1,2}.json; read only, never written. Forced reached G 10.40 and 10.40 (0.82 of the native's, step cap); forbidden 11.90 and 11.84. Skipped, logged, if missing at run time",
+  "sites": "E97's (experiments/locator_table/sites.py): E62's 200 read windows; E53's whole val rows 0-255 at every scored position, fp32; the key tables' held-out windows (E90's kv_site); the trigger tasks' held-out windows. E99's states on E62's copy site"
+ },
+ "thresholds": {
+  "reread_tol": 0.0001,
+  "reread_tol_source": "E97's reread_tol (E96 predictions_stage2.json): the plants' and E99's reads are exact by construction (W0 + 0 is W0 on a deterministic path); E97 stage 0 passed at it",
+  "zero_tol": 0.001,
+  "zero_tol_source": "E97's zero_tol: all 24 reverted reads G 0 on every state, or the job stops",
+  "floor_ref": 0.020997843555624784,
+  "floor_ref_source": "E97 stage 0 (locator_table/results/stage0.json .plants.block1.inheritance)",
+  "floor_tol": 0.001,
+  "floor_tol_source": "the plan, stage 0",
+  "plant_rel_tol": 0.05,
+  "plant_rel_tol_source": "E97's plant_rel_tol (E90's write_rel_tol)",
+  "reread_e97_tol": 0.02,
+  "reread_e97_tol_source": "Fable's advice Q4: carry and own re-read E97's saved numbers on the same states within 0.02; reported, stops nothing"
+ },
+ "rule": {
+  "reading": "At the state's read part, unit lo: G <= 0 -> 'unreadable: no gain'; bars not ok or floor not finite -> 'unreadable: no bars'; carry <= max(floor, 0) -> 'no part to read'; ratio <= fed bar and inherited >= floor -> 'fed'; ratio >= written bar -> 'written'; else 'mixed'. Ties pass on both bars. Code: fed_rules.reading",
+  "fed_bar": "read in stage 1",
+  "fed_bar_rule": "the largest ratio over E62 copy's three seeds at (2,4) (fed_rules.bars). Fable's re-read of saved files: about 0.02 (own 0.005-0.008 of carry 0.33-0.38)",
+  "written_bar": "read in stage 1",
+  "written_bar_rule": "the smallest ratio over E53 cipher's two seeds at its read part (the top carry part; mlp3 in E97). Fable's re-read: about 0.72 (own 0.48-0.49 of carry 0.66-0.67)",
+  "bars_stop": "the job stops in stage 1, before stage 2, when either pole has no finite ratio or the fed bar is not below the written bar (a tie does not separate): the plan's tree, drop the column",
+  "task_reading": "every seed the same: that reading; any unreadable seed: unreadable; else 'seeds disagree' (fed_rules.task_reading)",
+  "beside": "constant-answer tasks (T1 emoticon, the two T2 ladder rungs) read 'beside' in the table (decisions.md line 121); the rule's reading is kept in reading_rule, with the same-windows null's G in G_null",
+  "edge_cases": {
+   "G <= 0": "unreadable: no gain",
+   "carry zero or negative, or at or under the floor": "no part to read",
+   "own past carry (ratio past 1)": "ratio capped at 1: written",
+   "own negative": "ratio negative: fed if inherited >= floor",
+   "a tie at the top of the carry map, no filed part": "the row reads 'unreadable: the carry map's top is tied'",
+   "a tie with a bar": "passes (<= fed bar, >= written bar)",
+   "a seed that disagrees": "the task reads 'seeds disagree' and meets no lean",
+   "copy bar not below cipher bar": "the job stops before stage 2"
+  },
+  "do_nothing": "Run before filing (tests/test_fed_rules.py::test_do_nothing_state): W0 as the state has G = 0 and every share nan, so it reads 'unreadable: no gain' under any bars; bars from do-nothing poles are not ok; a zero plant misses stage 0 (own 0 at the edited MLP). Its carry and own are 0, so it could not pass 'fed' (needs carry above the floor) or 'written' (needs a finite ratio). In the job: all 24 reverted must read G 0 on every state",
+  "outcome": "fed_rules.outcome on the four key-table tasks: ident32 written and rand32 fed, or copy-24 and cipher-24 both fed or both written -> 'does not track the construction labels'; copy-24 fed, cipher-24 written, ident32 fed, rand32 written -> 'tracks'; else 'partial'"
+ },
+ "expected": {
+  "stage0": {
+   "block3_plant": "own = graft = carry = 1.0 +- 1e-4 at mlp3; own = graft = 0 +- 1e-4 at the other 27 parts; carry 0 +- 1e-4 at every part upstream (heads of blocks 0-3, mlp0-2), so inherited 0 everywhere; reverts_sum 1.0 +- 1e-4; all 24 reverted G 0 +- 1e-3. Any miss stops the job",
+   "block1_plant": "own = graft = carry = 1.0 +- 1e-4 at mlp1; own = graft = 0 +- 1e-4 elsewhere; carry 0 +- 1e-4 upstream (heads of blocks 0-1, mlp0); the floor (largest inherited downstream) within 1e-3 of 0.0210. Any miss stops the job"
+  },
+  "stage1": {
+   "e99_forced_copy": "at 2,3+2,4: own = carry = graft = 1.0 +- 1e-4 (only the pair's q, k, v rows moved, so reverting them gives W0, and with the pair's output from W0 every part downstream runs W0's weights on W0's inputs); reads written. A miss is reported in poles_e99, stops nothing",
+   "e99_forbidden_copy": "at 2,3+2,4: own = graft = 0 +- 1e-4 (the pair's rows and o columns kept at W0); carry measured, no bar; reads fed if carry clears the floor, else 'no part to read'",
+   "reread_e97": "copy, lookup and cipher: carry and own on all 28 parts within 0.02 of E97's saved carry and write (reported)",
+   "copy_ratio_at_2_4": "about 0.02 (sets the fed bar)",
+   "cipher_ratio": "about 0.72 at mlp3 (sets the written bar)",
+   "lookup": "no lean; Fable's re-read reads mlp3 own 0.14 of carry 0.52-0.53 (ratio about 0.27)"
+  },
+  "leans": {
+   "T5 copy": "fed",
+   "T8 cipher": "written",
+   "T5 lookup": null,
+   "E99 forced copy": "written",
+   "E99 forbidden copy": "fed",
+   "T7 lowercase": "mixed",
+   "T13 copy-24": "fed",
+   "T4 ident32": "fed",
+   "T12 rank-1": "fed",
+   "T11 cipher": "written",
+   "T6 rand32": "written",
+   "T11 elicit": null,
+   "T1 emoticon": null,
+   "T2 r1_t534_v369": null,
+   "T2 r2_t359_v816": null
+  },
+  "leans_source": "the plan's stages 1-2 and Fable's Q4; T5 copy and T8 cipher meet their leans by construction of the bars (ties pass) unless a seed reads 'no part to read'; lowercase from Fable's re-read (mlp3 own 0.16 of 0.62-0.67, ratio about 0.25); the E99 leans follow the construction (forced: only the pair moved, written; forbidden: the pair kept at W0, fed). The plan words them 'leans fed and written respectively' in the order forced, forbidden; Fable's advice ('use them as the written and fed poles') and the construction give forced written, forbidden fed, filed here; flagged to the lead"
+ },
+ "stops": [
+  "stage 0: any plant miss or the floor off 0.0210 by more than 1e-3 (a code bug; fix and rerun)",
+  "any stage: all 24 reverted reads |G| > 1e-3 on a state",
+  "stage 1: the fed bar not below the written bar, or a pole without a finite ratio (drop the column, report)"
+ ],
+ "tree": {
+  "a plant misses": "a code bug; fix and rerun",
+  "copy's bar not below the cipher's": "the split does not separate the poles; drop the column, report",
+  "ident32 written and rand32 fed, or copy-24 and cipher-24 on the same side": "the column does not track the construction labels; report as such, no label use",
+  "poles separate and the 24/32-key tasks fall on their construction sides": "hand definition-lead the table with the column beside its verdicts"
+ },
+ "deliverable": "results/table.json: one row per (task, seed) with task, seed, part, carry, own, inherited, graft, ratio, reverts_sum, reading (fed / written / mixed / beside / unreadable / no part to read), reading_rule, G (G_null on constant-answer rows), stage; plus per-task readings against leans, the bars, the floor and the outcome",
+ "not_run": ["the interchange subspace (definition-lead's call)", "edges", "neurons", "Qwen", "the pairs on any task but copy, lowercase and E99's", "the plants' rule readings (bars come after stage 0)"]
+}
