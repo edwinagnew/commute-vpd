@@ -1,13 +1,15 @@
 """neuron_r (E98): a neuron analogue of VPD's r on the 67M's MLP neurons, no decomposition, read on the method table's
 rows where VPD's r has readings and scored against the construction labels (reuse vs new, by assumption). Plan:
 reports/plans/2026-11-05_plan_e98-neuron-r.md. Cells and rules: `commute.neuron_r` (its docstring defines r_half, r_n,
-d_n, i_n, e_n). Every setting, row and threshold: results/predictions.json (filed before the run, never edited after).
+d_n, i_n, e_n). Every setting, row and threshold: results/predictions.json (filed before the run, never edited after);
+stage 0's control rules: results/predictions_amend1.json (Amendment 1, 2026-11-05).
 $0, saved states only, plus two built controls.
 
   sha256 of every state and windows file, before the model loads                       -> results/stage0.json
   stage 0, alone (exit 1 on a miss): W0 on every task (all cells 0); E56's full-width share reproduced from r_n on
-          elicit_s0 and cipher_s0; code_step10 as do-nothing (|G| under the gain floor); the two built controls (a fine-tune
-          of c_fc and attention only: d_n = i_n = 0; of down_proj only: d_n > r_n, e_n = 0, r_half = r_n) -> stage0.json
+          elicit_s0 and cipher_s0; code_step10 as do-nothing (|G| under the gain floor); three built controls (a fine-tune
+          of c_fc and attention only: d_n = i_n = 0; of the last down_proj only: d_n = 1, the rest 0; of every down_proj:
+          e_n = 0, r_half = r_n, d_n > 0, r_n recorded) -> stage0.json
   stage 1: the cells of every state of the rows, written as each finishes                -> results/cells.json
   stage 2: per scored state, the attribution order and the grid of top-k patches, k_half  -> results/carrying.json
   score: P1 (r_half), P1r (r_n), P2 (e_n), P3 (k_half), and every row's verdicts unfiltered -> results/score.json
@@ -33,7 +35,7 @@ from commute.jobs import hard_exit, load_experiment
 
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO, EXP = HERE / "results", HERE.parents[1], HERE.parent
-PRED = RESULTS / "predictions.json"
+PRED, AMEND1 = RESULTS / "predictions.json", RESULTS / "predictions_amend1.json"  # AMEND1: stage 0's control rules
 E56, E62 = EXP / "keydependent_patch" / "results", EXP / "induction_cue" / "results"
 E63 = load_experiment("neuron_sparsity", "run")  # E63's files, state table and task loaders (E46, E54, E56, E53, code)
 OPI = load_experiment("open_pair_instruments", "common")  # E55 C3's paths and E58's records
@@ -66,7 +68,7 @@ class Out:
         if ok is False:
             self.out["stopped"] = key
             self.dump()
-            log(f"FAIL: {key}: stop and tell the lead")
+            log(f"FAIL: {key}: {rec.get('failed', '')} stop and tell the lead")
             sys.exit(1)
         return rec
 
@@ -129,11 +131,14 @@ def e56_share(c: dict[str, torch.Tensor]) -> float:
     return float((c["lp_L01"] - c["lp_T0"])[s].mean()) / float((c["lp_T1"] - c["lp_T0"])[s].mean())
 
 
-def control(net: ST.Net, w: dict[str, Any], name: str, seed: int) -> tuple[ST.DW, dict[str, Any]]:
+def control(net: ST.Net, w: dict[str, Any], name: str, seed: int, A: dict[str, Any]) -> tuple[ST.DW, dict[str, Any]]:
     """E54's elicit fine-tune (`keydep.finetune`: arm A, Adam at anchors.FT_LR, batch 32, 300 steps, read at E12's scored
-    step) with one change, the matrices trained: down_proj alone ('down_only') or the other 16 ('cfc_attn')."""
+    step) with one change, the matrices trained: every down_proj ('down_only'), the last block's alone ('down_last',
+    amend1 names it) or the other 16 matrices ('cfc_attn')."""
     down = tuple(k for k in net.W0 if k.endswith("mlp.down_proj"))
-    mats = down if name == "down_only" else tuple(k for k in net.W0 if k not in down)
+    last = tuple(A["controls"]["down_last"]["matrices"])
+    assert set(last) <= set(down)
+    mats = {"down_only": down, "down_last": last}.get(name) or tuple(k for k in net.W0 if k not in down)
     cfg = FT.ArmAConfig(o_token=w["table"], lr=AN.FT_LR, steps=KD.E12_CHECKS[-1], checkpoints=KD.E12_CHECKS, seed=seed,
                         ci_len=w.get("ci_len"), matrices=mats)
     ft = FT.finetune_arm_a(net.model, w["train"], w["heldout"], cfg, net.device, log)
@@ -144,16 +149,24 @@ def control(net: ST.Net, w: dict[str, Any], name: str, seed: int) -> tuple[ST.DW
     return dW, {"n_matrices": len(mats), "step": step, "learned": learned, "p_heldout": {k: e["p_o"] for k, e in ft.evals.items()}}
 
 
-def control_ok(name: str, rec: dict[str, Any], band: float) -> bool:
+def control_failed(name: str, rec: dict[str, Any], band: float) -> list[str]:
+    """The conditions of predictions_amend1.json that this control's record misses (empty: it passes)."""
     n = rec["num"]
     if not rec["readable"]:
-        return False
+        return [f"unreadable: |G| {abs(rec['G']):.3g} < gain_floor"]
+    conds: dict[str, bool]
     if name == "cfc_attn":
-        return abs(n["d_n"]) <= band and abs(n["i_n"]) <= band
-    return rec["d_n"] > rec["r_n"] and abs(n["e_n"]) <= band and abs(n["r_half"] - n["r_n"]) <= band
+        conds = {"|d_n| <= band": abs(n["d_n"]) <= band, "|i_n| <= band": abs(n["i_n"]) <= band}
+    elif name == "down_only":
+        conds = {"|e_n| <= band": abs(n["e_n"]) <= band, "|r_half - r_n| <= band": abs(n["r_half"] - n["r_n"]) <= band,
+                 "d_n > 0": rec["d_n"] > 0}  # r_n is recorded, not stopped on
+    else:
+        conds = {f"|{k}| <= band": abs(n[k]) <= band for k in ("r_n", "r_half", "i_n", "e_n")}
+        conds["|d_n - 1| <= band / G"] = abs(rec["d_n"] - 1) <= band / abs(rec["G"])
+    return [f"{c} (band {band:.3g}, num {json.dumps(n)}, d_n {rec['d_n']:.4g})" for c, ok in conds.items() if not ok]
 
 
-def stage0(net: ST.Net, reads: dict[str, NR.Reads], F: Files, P: dict[str, Any], o: Out) -> None:
+def stage0(net: ST.Net, reads: dict[str, NR.Reads], F: Files, P: dict[str, Any], A: dict[str, Any], o: Out) -> None:
     c, S = P["stage0"], P["settings"]
     B, floor = S["batch"], S["gain_floor"]
     zero = {k: torch.zeros_like(w) for k, w in net.W0.items()}
@@ -174,10 +187,11 @@ def stage0(net: ST.Net, reads: dict[str, NR.Reads], F: Files, P: dict[str, Any],
         rec = NR.shares(NR.state_cells(net, reads[n], code, B), floor)
         o.put(f"do_nothing/{n}", rec, not rec["readable"])
     w = torch.load(F["e54/windows_elicit"][0], weights_only=False)
-    for name in ("cfc_attn", "down_only"):
-        dW, meta = control(net, w, name, c["control_seed"])
+    for name in ("cfc_attn", "down_last", "down_only"):
+        dW, meta = control(net, w, name, c["control_seed"], A)
         rec = {**meta, **NR.shares(NR.state_cells(net, reads["elicit"], dW, B), floor), "band": band}
-        o.put(f"control/{name}", rec, control_ok(name, rec, band))
+        rec["failed"] = control_failed(name, rec, band)
+        o.put(f"control/{name}", rec, not rec["failed"])
     o.out["pass"] = True
     o.dump()
     log("[stage0] pass")
@@ -230,12 +244,13 @@ def score(cells: dict[str, dict[str, Any]], ks: dict[str, int | None], P: dict[s
 
 
 def main() -> None:
-    if not PRED.is_file():
-        sys.exit(f"file the predictions first: {PRED}")
-    rel = str(PRED.relative_to(REPO))
-    if git("ls-files", "--error-unmatch", rel).returncode or git("diff", "--quiet", "HEAD", "--", rel).returncode:
-        sys.exit(f"{rel} is not committed unchanged: commit it first")
-    P = load(PRED)
+    for f in (PRED, AMEND1):
+        if not f.is_file():
+            sys.exit(f"file the predictions first: {f}")
+        rel = str(f.relative_to(REPO))
+        if git("ls-files", "--error-unmatch", rel).returncode or git("diff", "--quiet", "HEAD", "--", rel).returncode:
+            sys.exit(f"{rel} is not committed unchanged: commit it first")
+    P, A = load(PRED), load(AMEND1)
     S = P["settings"]
     assert S["k_grid"] == [2**i for i in range(14)] + [FULL]
     assert all(set(r["reuse"] + r["new"]) <= set(state_table()) for r in P["rows"].values())
@@ -246,7 +261,7 @@ def main() -> None:
           all(got[k] == h for k, (_, h) in F.items()))
     net = ST.Net(DEVICE)
     reads = load_reads(net, F)
-    stage0(net, reads, F, P, o)
+    stage0(net, reads, F, P, A, o)
     cells = stage1(net, reads, F, P)
     ks = stage2(net, reads, F, P, cells)
     res = Out("score.json")

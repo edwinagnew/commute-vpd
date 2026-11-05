@@ -94,7 +94,9 @@ larger within-kind range and ≥ 0.2), unreadable under two scored per side.
 | r_half, r_n, d_n | undefined | undefined | r_n + e_n = 1 | d_n > r_n |
 
 **Blind to.** r_half and r_n: where a gain runs, not whether it is new (progress, E56); relays (an MLP after a changed
-head re-fires with nothing of its own changed, as VPD's r). e_n: which head or attention matrix. k_half: in-sample, first-order
+head re-fires with nothing of its own changed, as VPD's r). r_n and r_half count as re-firing of existing neurons any
+downstream re-firing caused by new write directions; the down_only control measures this at 0.425 of G on E54's elicit
+task. e_n: which head or attention matrix. k_half: in-sample, first-order
 ranking; sufficiency, not necessity. **Noise floor:** each row's within-kind seed range (the rule's spread); numerical
 floor the W0 reading, measured first. **Positive controls:** the two built fine-tunes, which test what the cells read,
 not kind.
@@ -147,3 +149,16 @@ forwards, about 35 scored states at 18 forwards and one backward, and two 300-st
 - e58_copy_prior_cipher, e58_class_twin: windows only.
 - e54_own's own-step cipher at seeds 2-4: read by E56, not saved.
 - The interpretation step and heads as units (Next).
+
+## Amendment 1 (2026-11-05): stage-0 controls
+- **What stopped.** Job 52747 stopped at stage 0's control `down_only` (`results/stage0_job52747.json`): d_n 0.4218 vs
+  r_n 0.4250, missing the filed "d_n > r_n". Every exact check held: e_n 0, r_half = r_n, G 6.94 (numerators d_n 2.93, r_n 2.95, i_n 1.06).
+- **Why.** The rule was mis-specified. Training every block's down_proj changes the MLP input of every later block, so later
+  neurons re-fire with W0's weights, and r_n counts that. "d_n > r_n" is not implied by how the control is built.
+- **New rules** (`results/predictions_amend1.json`; `predictions.json` is not edited; the run refuses to start without both).
+  `down_only`: readable, |e_n| and |r_half − r_n| numerators ≤ band, d_n > 0; r_n recorded, not stopped on.
+  New `down_last` (same recipe, the last block's down_proj only, nothing downstream to re-fire): readable, |r_n|, |r_half|,
+  |i_n|, |e_n| numerators ≤ band and |d_n − 1| ≤ band / G; unreadable (|G| < 1) stops the job, the control has no teeth.
+  `cfc_attn` unchanged. A miss now logs which condition failed.
+- **Blind to.** r_n and r_half count as re-firing of existing neurons any downstream re-firing caused by new write
+  directions; the down_only control measures this at 0.425 of G on E54's elicit task.
