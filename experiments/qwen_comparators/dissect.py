@@ -75,21 +75,7 @@ def first_token_check(tok: Any, rows: dict[str, qc.Rows]) -> dict[str, Any]:
     return out
 
 
-def question_seen(R: qc.Rows, user_start: int, user_word: int) -> torch.Tensor:
-    """Per answer position, what its row holds of its question: 0 the whole chat turn, 1 cut (the row opens inside the prompt),
-    2 none (the row opens inside the answer)."""
-    out = []
-    for i in range(len(R.tokens)):
-        toks, first = R.tokens[i].tolist(), R.first[i].tolist()
-        where = {p + 1 for p in range(len(toks) - 1) if toks[p] == user_start and toks[p + 1] == user_word}
-        state, turn_seen = 2, False
-        for p in range(len(toks)):
-            turn_seen = turn_seen or p in where
-            if first[p]:
-                state, turn_seen = (0 if turn_seen else 1), False
-            if R.answer[i, p]:
-                out.append(state)
-    return torch.tensor(out)
+question_seen = qc.question_seen  # moved to commute.qwen_comparators on 2026-11-05 (E94)
 
 
 CLASSES = {"question_whole": 0, "question_cut": 1, "fragment": 2}

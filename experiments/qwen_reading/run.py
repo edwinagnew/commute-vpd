@@ -58,7 +58,7 @@ from transformers import AutoTokenizer
 from commute import qwen_eval, qwen_sets, split
 from commute import qwen_reading as qr
 from commute.qwen_anchors import candidate, user
-from commute.qwen_maps import random_pieces
+from commute.qwen_d3 import alive_pieces
 from commute.qwen_sft import sha256
 from commute.qwen_vpd import KINDS, SITES, importances, parse_site
 
@@ -327,14 +327,8 @@ def placement(lab: Lab, pe: dict[str, Tensor], g_on: Tensor) -> dict[str, Any]:
 def inspan(lab: Lab) -> dict[str, Tensor]:
     """E44 Amendment 2's random change at a = 17.78: its Σ-matched Gaussian pieces (per-site scale from amend2/S.json
     step 10) on the live columns, as the weight change dσ(dU, dV) + dU dVᵀ (fp32, host)."""
-    rec = json.loads((A2 / "S.json").read_text())["10"]["per_site"]
-    out = {}
-    for s in SITES:
-        U_A, V_A = lab.alive.uv(s, DEV, F64)
-        RU, RV = (x.double() for x in random_pieces(tuple(U_A.shape), tuple(V_A.shape), 0, s, DEV))
-        dU, dV = rec[s]["a"] * CFG.inspan_a * RU, rec[s]["a"] * CFG.inspan_a * RV
-        out[s] = pinned((split.dsigma(dU, dV, U_A, V_A) + dU @ dV.T).float().cpu())
-    return out
+    rec = json.loads((A2 / "S.json").read_text())["10"]["per_site"]  # the change moved to commute.qwen_d3 on 2026-11-05 (E94)
+    return alive_pieces(lab.alive, {s: rec[s]["a"] * CFG.inspan_a for s in SITES}, DEV)
 
 
 def stage_C0(lab: Lab) -> None:

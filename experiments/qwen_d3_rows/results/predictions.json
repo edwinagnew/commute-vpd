@@ -1,0 +1,68 @@
+{
+ "experiment": "E94",
+ "filed": "2026-11-05, before any read",
+ "plan": "reports/plans/2026-11-05_plan_e94-d3-rows.md (appendix reports/plans/2026-11-05_plan_e94-appendix.md); D3 row 11-07 of reports/plans/2026-11-05_plan_qwen-reorient-amend1.md",
+ "question": "Do the four D3 rows (direct share, outside share, placement excess, credit under masks, think overlap) separate the template fine-tune (anchor 1) from the TOFU facts fine-tune (anchor 2), each at two seeds? The rows describe what was read; none is worded as new against reuse.",
+ "states": "rules.STATES: anchor 1 seeds 0, 1 at step 100 (its full update is its own matched step); anchor 2 seeds 42, 142 at the step matched in norm (29, 30: not learned, a size control only), at the full update (1250) and first past the learning line (550, 500: description, outside the stop rule). Files and norms from experiments/qwen_size_grid/results/size_grid.json, read by the run. rules.RANDOMS: a Gaussian (split.random_like of the reference state's update, null seed 0) and E57's alive-pieces change, each matched on K00 - K0 over the first 16 maths rows to anchor 1 seed 0 (small) and to anchor 2 seed 42's full update (big), band 1.25, at most 6 evaluations; no match reads 'size unmatched'.",
+ "rows": "Own rows: E92's a1_rows (64 x 256 template rows) for anchor 1, tofu_rows (128 x 256) for anchor 2; 128 maths rows (W0's own greedy GSM8K answers, cut to 256) for both. Whole-question answer positions: an answer position whose row holds its whole chat turn (qwen_comparators.question_seen); 2,414 on the template rows and 13,421 on the TOFU rows.",
+ "rules": {
+  "direct": "Row 1. (K00 - K10) / (K00 - K11), summed over rows, the masks of K10 and K11 read through W0's V inside the state (E61's masks), the components moved by the least-squares split. Scored on own rows' whole-question answer positions; maths rows (pooled) printed beside, and a disagreement between the two reads 'depends on the rows'. Relative between anchors.",
+  "outside": "Row 2. The input-weighted share of dW outside the alive subcomponents (split.weighted_fractions omega_act), pooled over matrices by their input-weighted energy, Sigma on 128 maths rows of 512 at W0; its exact null (null_act) pooled the same way. A property of dW: the map does not enter.",
+  "placement": "Row 3. The least-squares split's input-weighted piece energy on the subcomponents gated on at W0 on the maths rows (g > 0.01 at >= 1% of positions), as a share of the total, minus the mean of the same share for 4 Gaussian nulls (split.random_like at the state, seeds 0-3 per site as E57). Weak: its positive control sat at its line in E57.",
+  "credit": "Row 4. Kept = (masked W0 NLL - the state's masked NLL) / (clean W0 NLL - fine-tuned NLL), summed over rows on own rows' whole-question answer positions. Credit = kept by the least-squares state under its own masks (Gamma reads its moved V') minus kept by do-nothing under its own masks. Raw kept is printed, not scored: do-nothing alone could pass on it.",
+  "think": "Row 5. Fold = |S intersect T| / its mean over 1000 site-stratified draws from the subcomponents not gated on at W0 (qwen_reading.overlap, seed 0), S = gated on under the fine-tuned weights' masks and not under W0's (maths rows, W0's V). T: E57's think-on answer set; L: its length-matched no-think set, each minus the plain answers' set. Scored on T, L beside.",
+  "no_call": "A ratio with a denominator under 0.05 nats per position (E72's gain bar), under 2 rows holding the class, or anything not finite reads no call (None); a fold with an empty S or a zero mean reads no call. Row noise: half the 2.5-97.5 range of a 2000-draw row bootstrap.",
+  "comparison": "qwen_comparators.separates, already filed in E92: a number counts if |mean anchor 1 - mean anchor 2| is strictly over the larger of the two same-anchor seed spreads; a missing or non-finite seed reads 'unread'. Read at the matched step and at the full update; the past-line states are printed. Beside every comparison: each value's row half-width, and at the full update whether the same rule counts between the two random sizes, the two kinds as the pair ('size can do this').",
+  "stop_rule": "If no number counts at the full update or the matched step, that is D3's finding (the amendment's rule, unchanged). Past-line states do not enter it."
+ },
+ "thresholds": {
+  "p1_within": 0.01,
+  "p5_below": 0.01,
+  "p6_t_minus_l": 0.17,
+  "p6_fold": [3.0, 4.0]
+ },
+ "predictions": [
+  {"id": "1_a1", "row": "direct", "claim": "Matched step: anchor 1's direct share is within 0.01 of the alive-pieces random at its size, on the template rows' whole-question positions, at each seed (E61's small state: gap -0.004).", "rule": "|direct(a1_s) - direct(alive_small on a1 rows)| <= p1_within at both seeds", "kind": "absolute, per seed"},
+  {"id": "1_a2", "row": "direct", "claim": "Matched step: anchor 2, not learned there, reads below the alive-pieces random at its size on the TOFU rows' whole-question positions, at each seed (E57: 0.012 against 0.029).", "rule": "direct(a2_s_matched) < direct(alive_small on tofu rows) at both seeds", "kind": "relative to the random, per seed"},
+  {"id": "2", "row": "direct", "claim": "Full update: anchor 2 reads under the alive-pieces random at its size, at both seeds.", "rule": "direct(a2_s_full) < direct(alive_big on tofu rows) at both seeds", "kind": "relative to the random, per seed"},
+  {"id": "3", "row": "outside", "claim": "Every state's outside share is below its null by more than its seed spread (u3: 0.123 against 0.212). No lean between anchors.", "rule": "for each seed pair (anchor 1; anchor 2 matched, full, past): null - value > |value(seed a) - value(seed b)| at both seeds", "kind": "relative to the exact null"},
+  {"id": "4", "row": "placement", "claim": "Placement does not count at either size: anchor 2's seeds differed 0.033 in E57, as much as the states did.", "rule": "separates(anchor 1, anchor 2 matched) and separates(anchor 1, anchor 2 full) both 'does not count'", "kind": "the comparison rule"},
+  {"id": "5", "row": "credit", "claim": "Anchor 1's credit is under 0.01 at both seeds. Anchor 2's has no earlier read: reported, no lean.", "rule": "credit(a1_s) < p5_below at both seeds", "kind": "absolute, per seed"},
+  {"id": "6_T_like_L", "row": "think", "claim": "|fold T - fold L| at or under 0.17 at every anchor state, so the row does not read as thinking (E57: T read like L).", "rule": "|T - L| <= p6_t_minus_l at all 8 states", "kind": "absolute, per state"},
+  {"id": "6_fold_3_to_4", "row": "think", "claim": "Fold 3 to 4 on T and on L for every change, the randoms included.", "rule": "3 <= fold <= 4 for T and L at all 8 states and 4 randoms", "kind": "absolute, per state"}
+ ],
+ "controls": {
+  "source": "Stage 0, on E40's step 10 (qwen_sft/results/large/nowarmup_regen/dW/step_10.safetensors, bf16), alone and first. E57: qwen_reading/lab.py REF and results/C_e40.json, summary.json; E61: qwen_recipe/results/checks_k10_e40.json .true; E68: qwen_pass_test/results/u3/W0.json; E92: qwen_comparators/results/dissection.json.",
+  "K0": 0.06961319516372436,
+  "K0_16": 0.06558158050898716,
+  "id": 1e-06,
+  "e40_K00": 1.3738106470539775,
+  "e40_K01": 0.10436260220730434,
+  "rep": 0.001,
+  "e61_K00": 6126.28429833088,
+  "e61_K10": 5771.846833371834,
+  "e61_K11": 415.7989241975188,
+  "e61_direct": 0.062067835172914136,
+  "own_K10": 1.2934026471043127,
+  "own_K11": 0.10343871625828649,
+  "fold_T": 3.4713001251,
+  "fold_L": 3.4635747390,
+  "fold_band": 0.02,
+  "classes_rel": 1e-09,
+  "whole_positions": {"a1": 2414, "tofu": 13421},
+  "e57_nulls": [0.5857851670758635, 0.5819515613018565, 0.5838663194279065, 0.5829650420211864],
+  "e57_excess": 0.05309335643028201,
+  "null_band": 0.001,
+  "bands": "id and rep are relative; fold_band and null_band absolute; classes_rel relative per row"
+ },
+ "first_minutes": {
+  "norm_rel": 1e-06,
+  "K0_rel": 1e-06,
+  "a1_K00": 0.3639898532177953,
+  "a1_K00_rel": 0.01,
+  "gpu_max_gib": 44.0,
+  "host_max_gb": 105.0,
+  "note": "Per state, logged even when passing: the norm against size_grid.json; K0 on each row set against W0's from stage 0; anchor 1 seed 0's K00 on its rows against E68's (E61's bf16 file of the same run, 1-cos 1.35e-6), a stop only over 1%; card and host peaks after the first pass."
+ },
+ "edges": "rules.py --edges, run on CPU before filing: every case of the plan's table gives the outcome it names (results/edges.txt)."
+}
