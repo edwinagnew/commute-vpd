@@ -148,7 +148,7 @@ Expected, not measured. The definition says nothing today about emoticon (T1), t
 
 ## Status, from `reports/plans/2026-11-05_plan_qwen-reorient-amend1.md` (2026-11-05)
 
-Finished on paper today. Stage 0 is the paper reading. **Stages 1 and 2, R7 included, wait until the comparator table exists (11-14) and need no new plan, only the user's word then.** No 67M run before that.
+Stage 0 is the paper reading. The amendment held stages 1 and 2 until the comparator table; **the user lifted that the same day ("ignore no 67M runs - testing old experiments is good"), so stages 1 and 2, R7 included, go ahead on debug beside the comparators.**
 
 ## Stages, all on MATS `debug`, $0
 
