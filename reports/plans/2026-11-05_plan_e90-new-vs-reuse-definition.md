@@ -148,7 +148,7 @@ Expected, not measured. The definition says nothing today about emoticon (T1), t
 
 ## Status, from `reports/plans/2026-11-05_plan_qwen-reorient-amend1.md` (2026-11-05)
 
-Stage 0 is the paper reading. The amendment held stages 1 and 2 until the comparator table; **the user lifted that the same day ("ignore no 67M runs - testing old experiments is good"), so stages 1 and 2, R7 included, go ahead on debug beside the comparators.**
+Stage 0 is the paper reading. **Stages 1 and 2, R7 included, wait until the comparator table exists (due 11-14), then run on debug.** The user dropped the amendment's "No 67M runs" the same day, so these runs need no further exception; the wait is the amendment's other line, which stands. Code may be written now and left unrun.
 
 ## Stages, all on MATS `debug`, $0
 
