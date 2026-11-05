@@ -10,7 +10,7 @@ The label changes, by a rule filed before any reading. It was "new facts memoris
 
 Read that label for what the count counted. A right row states the asked fact, and under the strict mark at least one reference fact. It does not state most of the facts in each answer: several right rows carry one fact of two or three, or wrap a correct fact in invented ones. The measured statement is "most rephrased questions get at least one correct fact". The third reader words it so too.
 
-Word recall's miss stands beside it. Word recall misses its line at both seeds and a reader's count clears its own. The update is also 37 times larger than the template example.
+Word recall's miss stands beside it. Word recall misses its line at both seeds and a reader's count clears its own. The update is also 37 times larger than the template example. It also leaks: at least 18 of 217 real-fact answers now name an invented author, and counting right facts in any words, known facts fall about ten points, on the limit (unfiled, one unblind reader).
 
 ## What we were trying to test
 
