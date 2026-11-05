@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
 
 import torch
 
@@ -46,6 +48,29 @@ def test_outcome_edges() -> None:
     assert CJ.outcome([0.3, 0, 0, 0, 0], [0.0] * 5, 1.0, 0.3) == "win"  # 30% counts as strong
     assert CJ.outcome([0.0] * 5, [0.0] * 5, 1.0, 0.3) == "tie"  # nothing fires: not explained
     assert CJ.outcome([0.0] * 5, [0.5] * 5, 1.0, 0.3) == "lose"
+
+
+def test_win_rule_strong_counts() -> None:
+    assert CJ.outcome([0.29] * 5, [0.29] * 5, 1.0, 0.3) == "tie"  # no strong example on either side
+    assert CJ.outcome([0.3, 0.3, 0, 0, 0], [0.3, 0.3, 0, 0, 0], 1.0, 0.3) == "tie"  # equal strong counts, not a win
+    assert CJ.outcome([0.3, 0.3, 0, 0, 0], [0.3, 0.29, 0.1, 0, 0], 1.0, 0.3) == "win"  # 2 against 1
+    assert CJ.outcome([0.9] * 5, [0.9] * 5, -1.0, 0.3) is None  # negative top: unscorable
+
+
+def test_self_test_edges() -> None:
+    assert CJ.self_test(["win"] * 9 + ["lose"], 0.8)["ok"]
+    assert CJ.self_test(["win", "tie"], 0.8)["win_share"] == 0.5
+    st = CJ.self_test([None, None], 0.8)  # nothing scorable: nan, not ok
+    assert math.isnan(st["win_share"]) and not st["ok"] and st["counts"]["unscorable"] == 2
+
+
+def test_load_texts_missing_and_bad(tmp_path: Path) -> None:
+    ok = {"examples": ["a"] * 5, "near_misses": ["b"] * 5}
+    (tmp_path / "b00.json").write_text(json.dumps({"batch": "b00", "texts": {"x": ok, "y": {**ok, "examples": ["a"] * 4},
+                                                                           "z": {**ok, "near_misses": ["b"] * 4 + [" "]}, "w": ok}}))
+    (tmp_path / "b02.json").write_text("not json")
+    t, missing, bad = CJ.load_texts(tmp_path, {"b00": ["x", "y", "z"], "b01": ["u"], "b02": ["v"]}, 5, 5)
+    assert list(t) == ["x"] and missing == ["b01", "b02"] and sorted(bad) == ["w", "y", "z"]  # w is not in b00
 
 
 def test_gap_rule_do_nothing_and_edges() -> None:
