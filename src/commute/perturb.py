@@ -92,9 +92,10 @@ def window_inputs(model: Any, windows: Tensor, half: int, batch: int = 64) -> Te
     return torch.cat(acts)
 
 
-def key_inputs(model: Any, windows: Tensor, half: int, keys: list[int]) -> Tensor:
-    """(d_in, K): the mean of `window_inputs` over the windows holding each key at `half`."""
+def key_inputs(model: Any, windows: Tensor, half: int, keys: list[int], key_at: int | None = None) -> Tensor:
+    """(d_in, K): the mean of `window_inputs` at `half` over the windows holding each key at index `key_at` (default
+    `half`; E90's trigger tables group by the token before the trigger, 2026-11-05)."""
     X = window_inputs(model, windows, half)
-    at = windows[:, half].to(X.device)
+    at = windows[:, half if key_at is None else key_at].to(X.device)
     assert all(bool((at == k).any()) for k in keys), "a key with no training window"
     return torch.stack([X[at == k].mean(0) for k in keys], 1)

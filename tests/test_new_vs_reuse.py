@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import math
+from contextlib import nullcontext
 from pathlib import Path
 
 import numpy as np
@@ -13,6 +14,7 @@ import torch
 
 from commute import readout as RO
 from commute import removal as RM
+from commute import steering as ST
 from commute.jobs import load_experiment
 
 R = load_experiment("new_vs_reuse", "rules")
@@ -88,10 +90,6 @@ def test_b_star_starts_at_one_and_stops_before_the_last() -> None:
     assert R.b_star({}, 1, 3) is None
 
 
-def test_fit_stop_on_a_miss_or_nan_not_a_tie() -> None:
-    assert R.fit_stops(1.38, 1.37) and R.fit_stops(nan, 1.37) and not R.fit_stops(1.37, 1.37)
-
-
 @pytest.mark.parametrize(("s", "c", "want"), [(0.5, 0.0, R.REUSES), (0.0, 0.5, R.NOT_THROUGH), (0.5, 0.5, R.NOT_SPECIFIC), (0.0, 0.0, R.NO_REACH)])
 def test_the_two_by_two(s: float, c: float, want: str) -> None:
     assert R.verdict(True, s, c, 0.1) == want
@@ -159,6 +157,55 @@ def test_a_miss_is_a_gap_and_stops_nothing() -> None:
     ok = {"reading": R.AS_FILED}
     assert R.gaps({"R2": ok, "R3": ok, "R7": ok}) == []
     assert R.gaps({"R2": {"reading": R.MISS}, "R3": {"reading": "branch: no readout"}, "R7": ok}) == ["R2"]
+    assert R.gaps({"I2": R.gap(R.NO_VERSION), "I1": R.gap(R.NO_C), "I3": ok}) == ["I2", "I1"]
+
+
+IS, ARE, WAS = 310, 1083, 369
+
+
+@pytest.mark.parametrize(
+    ("answers", "label"),
+    [([IS, IS, ARE, IS, WAS, IS, IS, ARE, IS, WAS, IS, ARE, IS, IS, WAS, IS], "admissible"),  # 3 answers over 16 keys, floor 0.625
+     ([IS, IS, ARE, IS] + [IS] * 12, "not admissible"),  # one odd key in the fit half: floor 1.0, a gap by the split
+     ([IS] * 16, R.DOES_NOT_APPLY),
+     ([IS], R.NO_HELD_OUT)],
+)
+def test_i1_table_admissibility(answers: list[int], label: str) -> None:
+    a = np.array(answers)
+    assert R.parity(a, a)["label"] == label
+
+
+def test_i3_two_sided_case_is_admissible_and_one_sided_does_not_apply() -> None:
+    reading = np.array([0] * 20 + [1] * 20)
+    two = R.parity(reading, reading)
+    assert two["admissible"] and two["floor"] == 0.5
+    assert R.parity(np.ones(40, dtype=int), np.ones(40, dtype=int))["label"] == R.DOES_NOT_APPLY
+
+
+def test_the_table_must_keep_the_old_target() -> None:
+    assert R.keeps_target(WAS, [IS, WAS], [IS, WAS, IS])
+    assert not R.keeps_target(WAS, [IS, ARE], [IS, ARE])  # it left V
+    assert not R.keeps_target(WAS, [IS, WAS], [IS, IS])  # a value, but no key answers it
+    assert not R.keeps_target(WAS, [], [])
+    r = R.gap(R.NO_VERSION, windows_top1_target=3)
+    assert r["verdict"] == R.NO_VERSION and r["windows_top1_target"] == 3
+
+
+def test_i0_do_nothing_on_the_new_rows_cannot_pass() -> None:
+    z = torch.zeros(4, dtype=torch.float64)
+    s = RO.shares((z, z), (z - 1, z - 1), (z, z), (z - 1, z - 1), 0.05)["A_lo"]
+    assert math.isnan(s) and R.r3(True, s, 0.9, 0.1)["verdict"] == R.NO_GAIN and R.i3(True, s, 0.9, 0.1)["verdict"] == R.NO_GAIN
+    assert R.r3(True, s, 0.9, 0.1)["reading"] == R.MISS and R.i3(True, s, 0.9, 0.1)["reading"] == R.MISS
+
+
+def test_i3_readings() -> None:
+    assert R.i3(True, 0.9, 0.8, 0.05)["reading"] == R.AS_FILED
+    assert R.i3(True, 0.9, 0.01, 0.05)["reading"] == "branch: push spared, state above: reuses C"
+    assert R.i3(True, 0.01, 0.01, 0.05)["reading"] == "branch: push spared, state within: does not reach"
+    assert R.i3(True, 0.01, 0.9, 0.05)["reading"] == R.MISS and R.i3(True, 0.01, 0.9, 0.05)["verdict"] == R.NOT_THROUGH
+    no_call = R.i3(True, 0.9, nan, 0.05, control_ok=False)
+    assert no_call["verdict"] == R.NO_CALL and no_call["reading"] == R.MISS
+    assert R.r3(True, 0.9, nan, 0.05, control_ok=False)["verdict"] == R.NO_CALL
 
 
 def test_table_row_names_the_reason_for_an_unreadable_row() -> None:
@@ -185,7 +232,7 @@ def test_r4_r5_on_the_saved_numbers_shape() -> None:
 def test_every_filed_row_is_there() -> None:
     P = json.loads(PRED.read_text())
     assert set(P["admissibility"]["verdicts"]) == {f"A{i}" for i in range(1, 10)}
-    assert set(P["edge_cases"]) == {f"R{i}" for i in range(1, 8)}
+    assert set(P["edge_cases"]) == {f"R{i}" for i in range(1, 8)} | {f"I{i}" for i in range(4)}
 
 
 class Echo:
@@ -220,6 +267,54 @@ def test_removal_edit_touches_only_the_answer_position() -> None:
     x, u = torch.randn(3, 5, 8), RM.random_basis(8, 2, [1])
     y = AP.removal_edit(1, 2, u)[RO.RESID[1]](x)
     assert (y[:, 2] @ u).abs().max() < 1e-5 and torch.equal(y[:, [0, 1, 3, 4]], x[:, [0, 1, 3, 4]])
+
+
+def test_reads_with_alt_is_the_pairwise_difference_and_absent_is_unchanged() -> None:
+    AP = load_experiment("new_vs_reuse", "apparatus")
+    net = Echo(9)
+    net.at = lambda _dW: nullcontext()  # type: ignore[attr-defined]
+    toks = torch.randint(0, 9, (6, 41))
+    tgt, alt = torch.full((6,), 3), torch.full((6,), 4)
+    lp, lo = AP.reads(net, AP.Site(toks, tgt, 20))
+    lp2, d = AP.reads(net, AP.Site(toks, tgt, 20, alt))
+    logits = net.run(toks)[0]
+    assert torch.equal(lp, lp2) and torch.equal(lo, ST.logodds_at(logits, 20, tgt))
+    assert torch.allclose(d, ST.logp_at(logits, 20, tgt) - ST.logp_at(logits, 20, alt))
+    capped = AP.capped_held(AP.Site(toks, tgt, 20, alt), 3, 0)
+    assert capped.alt is not None and len(capped.alt) == 3 and AP.capped_held(AP.Site(toks, tgt, 20), 3, 0).alt is None
+
+
+def test_key_inputs_default_groups_at_half_and_key_at_groups_there(monkeypatch: pytest.MonkeyPatch) -> None:
+    from commute import perturb as PT
+
+    toks = torch.tensor([[1, 7], [1, 8], [2, 7]])
+    x = torch.tensor([[1.0, 0.0], [3.0, 0.0], [5.0, 1.0]])
+    monkeypatch.setattr(PT, "window_inputs", lambda *_: x)
+    assert torch.equal(PT.key_inputs(None, toks, 1, [7, 8]), torch.tensor([[3.0, 3.0], [0.5, 0.0]]))
+    assert torch.equal(PT.key_inputs(None, toks, 1, [1, 2], 0), torch.tensor([[2.0, 5.0], [0.0, 1.0]]))
+
+
+def test_trigger_table_keys_on_the_previous_token_and_filters_by_the_mode() -> None:
+    """Echo's top-1 at 20 is the token at 21. Previous token 5 answers 3 on 3/4 of its windows; 6 always answers 4; 7 has too few
+    windows; 8 answers a token outside the values."""
+    ID = load_experiment("new_vs_reuse", "input_dep", "apparatus", "reading", "rules")
+    t, rows = 2, torch.zeros((300, 512), dtype=torch.long)
+    for r in range(300):
+        prev, nxt = (5, 3 if r % 4 else 1) if r < 100 else (6, 4) if r < 200 else (7, 3) if r < 220 else (8, 1)
+        rows[r, 30:33] = torch.tensor([prev, t, nxt])
+    tb = ID.trigger_table(Echo(9), rows, t, [3, 4], 0)
+    assert {k: a for k, a in zip(tb.keys, tb.answers, strict=True)} == {5: 3, 6: 4}
+    by = {p["key"]: p for p in tb.per_key}
+    assert 7 not in by and not by[8]["kept"] and by[5]["kept_share"] == pytest.approx(0.75, abs=0.02)
+    assert bool((tb.train[:, 19] == torch.tensor(tb.keys)[(tb.train_answer == 4).long()]).all())
+    assert bool((tb.train[:, 21] == tb.train_answer).all()) and bool((tb.held[:, 21] == tb.held_answer).all())
+    assert all(p["n_train"] <= 80 and p["n_held"] <= 20 for p in tb.per_key)
+
+
+def test_common_values_always_holds_the_target() -> None:
+    ID = load_experiment("new_vs_reuse", "input_dep", "apparatus", "reading", "rules")
+    assert ID.common_values(torch.tensor([1] * 5 + [2] * 3), 9).tolist() == [1, 2, 9]
+    assert ID.common_values(torch.tensor([v for v in range(10) for _ in range(20 - v)]), 9).tolist() == [0, 1, 2, 3, 4, 5, 6, 9]
 
 
 def test_every_saved_record_points_at_a_file() -> None:

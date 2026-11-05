@@ -13,6 +13,7 @@ import torch
 from apparatus import LARGE, Capability, Site, dump, log, stop
 from torch import Tensor
 
+from commute import readout as RO
 from commute import removal as RM
 from commute import steering as ST
 
@@ -88,9 +89,14 @@ def read_state(j: Job, name: str, s: Site, dW: ST.DW | None, w0: AP.Reads, f: Ba
     return r
 
 
-def read_write(j: Job, name: str, s: Site, train: Tensor, table: tuple[list[int], list[int]], G: float, w0: AP.Reads, f: Basis) -> dict[str, Any] | None:
-    """The hand write of a table at matched gain G, read like a state; None when the match failed (the row reads no call)."""
-    st, rec, X = AP.hand_write(j.net, train, s, table[0], table[1], G, j.S["write_rel_tol"])
+def read_write(j: Job, name: str, s: Site, train: Tensor, table: tuple[list[int], list[int]], G: float, w0: AP.Reads, f: Basis, key_at: int | None = None) -> dict[str, Any] | None:
+    """The hand write of a table at matched gain G, keyed at index `key_at` (default `s.half`), read like a state."""
+    return read_matched(j, name, s, AP.table_inputs(j.net, train, s.half, table[0], table[1], key_at), G, w0, f)
+
+
+def read_matched(j: Job, name: str, s: Site, inputs: tuple[Tensor, Tensor], G: float, w0: AP.Reads, f: Basis) -> dict[str, Any] | None:
+    """The write X A = U at matched gain G, read like a state; None when the match failed (the row reads no call)."""
+    st, rec, X = AP.hand_write(j.net, inputs[0], inputs[1], s, G, j.S["write_rel_tol"])
     torch.save(X.float().cpu(), LARGE / f"X_{name}.pt")
     j.res.setdefault("writes", {})[name] = rec
     log(f"[write {name}] {json.dumps(rec)}")
@@ -99,3 +105,22 @@ def read_write(j: Job, name: str, s: Site, train: Tensor, table: tuple[list[int]
 
 def table_of(w: dict[str, Any]) -> tuple[list[int], list[int]]:
     return list(w["task"].keys), list(w["task"].values)
+
+
+def possession(j: Job, c: Capability, w0: Tensor, held: tuple[Tensor, Tensor, Tensor], path: Path, values: list[int]) -> dict[str, Any]:
+    """The readout for C and its shuffled twin, read on the held windows (residuals, W0's logits, value index): the record, with
+    b* (None for no possessed block). An early check stops the job."""
+    R, (hh, hw, hy) = j.S["readout"], held
+    try:
+        probes, twin = AP.train_pair(c.fit_h, c.y, w0, R, log)
+    except RO.ReadoutStop as e:
+        stop(j.out, j.res, str(e))
+    torch.save({"probes": probes.state_dict(), "twin": twin.state_dict(), "values": values}, path)
+    with torch.no_grad():
+        loss = RO.xent64(probes(hh), hy)
+    acc, shuffled = AP.accuracy(probes, hh, hy), AP.accuracy(twin, hh, hy)
+    own = float((hw.argmax(-1) == hy).double().mean())
+    flags = {b: rules.possessed(acc[b], shuffled[b], own, R["possess_num"], R["possess_den"]) for b in range(len(acc))}
+    rec = {"acc": acc, "shuffled": shuffled, "own": own, "possessed": flags, "b_star": rules.b_star(flags, j.S["blocks"][0], RO.LAST), "heldout_loss": loss, "model_loss": RO.xent64(hw[None], hy)[0]}
+    log(f"[readout {c.name}] {json.dumps(rec)} (block 0 printed only)")
+    return rec

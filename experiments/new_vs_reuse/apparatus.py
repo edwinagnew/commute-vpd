@@ -90,11 +90,13 @@ def checked(path: Path, rec: dict[Path, str], seen: dict[str, str]) -> Path:
 
 @dataclass(frozen=True)
 class Site:
-    """Windows, each window's target at index `half`."""
+    """Windows, each window's target at index `half`. With `alt` (each window's other form) the second read is the pairwise
+    log P(tgt) - log P(alt), E53's score, in place of the log-odds."""
 
     toks: Tensor
     tgt: Tensor
     half: int
+    alt: Tensor | None = None
 
 
 def kv_site(path: Path) -> tuple[Site, Any]:
@@ -105,13 +107,13 @@ def kv_site(path: Path) -> tuple[Site, Any]:
 
 
 def reads(net: ST.Net, s: Site, dW: ST.DW | None = None, edit: ST.Edit | None = None, batch: int = 256) -> tuple[Tensor, Tensor]:
-    """(log P, log-odds) of the target at `half`, per window."""
+    """(log P, log-odds) of the target at `half`, per window; with `s.alt`, (log P, log P(target) - log P(alt))."""
     lp, lo = [], []
     with net.at(dW):
         for i in range(0, len(s.toks), batch):
             logits, t = net.run(s.toks[i : i + batch], edit)[0], s.tgt[i : i + batch]
             lp.append(ST.logp_at(logits, s.half, t))
-            lo.append(ST.logodds_at(logits, s.half, t))
+            lo.append(ST.logodds_at(logits, s.half, t) if s.alt is None else lp[-1] - ST.logp_at(logits, s.half, s.alt[i : i + batch]))
     return torch.cat(lp), torch.cat(lo)
 
 
@@ -179,7 +181,7 @@ def random_bases(bases: dict[int, Tensor], seed: int, tag: int, n: int) -> dict[
 
 def capped_held(s: Site, n: int, seed: int) -> Site:
     i = torch.randperm(len(s.toks), generator=torch.Generator().manual_seed(seed))[:n]
-    return Site(s.toks[i], s.tgt[i], s.half)
+    return Site(s.toks[i], s.tgt[i], s.half, None if s.alt is None else s.alt[i])
 
 
 def identity_capability(net: ST.Net, name: str, rows: Tensor, keys: Tensor, half: int, S: dict[str, Any], n_read: int) -> Capability:
@@ -250,6 +252,21 @@ def fit_values(y: Tensor, m: int, unfit_below: int) -> Tensor:
     return (torch.bincount(y, minlength=m) >= unfit_below).nonzero()[:, 0]
 
 
+def value_capability(net: ST.Net, name: str, vals: Tensor, cand: tuple[Tensor, Tensor], half: int, caps: tuple[int, int], unfit_below: int) -> tuple[Capability, Tensor, Tensor, Tensor, Tensor, list[int]]:
+    """W0's guess on the fit and held candidates (`cand`), the unfit values out. Returns the capability (read: every held
+    window), the fit logits, the held residuals, the held logits and the held value index, all over the fit values, and the
+    windows per value before the unfit values leave."""
+    _, h, w0, y = keep_guess(net, cand[0], vals, half, caps[0])
+    ht, hh, hw, hy = keep_guess(net, cand[1], vals, half, caps[1])
+    fit = fit_values(y, len(vals), unfit_below)
+    new = torch.full((len(vals),), -1, device=y.device)
+    new[fit] = torch.arange(len(fit), device=y.device)
+    f, hf = new[y] >= 0, new[hy] >= 0
+    read = Site(ht[hf.cpu()], vals[hy[hf].cpu()], half)
+    c = Capability(name, h[:, f], new[y[f]], read, len(fit) - 1)
+    return c, w0[f][:, fit], hh[:, hf], hw[hf][:, fit], new[hy[hf]], torch.bincount(y, minlength=len(vals)).tolist()
+
+
 # ---- the possession readout ----
 
 
@@ -276,13 +293,19 @@ def zero_except(net: ST.Net, key: str, x: Tensor) -> ST.DW:
     return {k: x.to(w.device, w.dtype) if k == key else torch.zeros_like(w) for k, w in net.W0.items()}
 
 
-def hand_write(net: ST.Net, train: Tensor, s: Site, keys: list[int], values: list[int], G: float, rel_tol: float) -> tuple[ST.DW | None, dict[str, Any], Tensor]:
-    """X = U pinv(A) into `perturb.WRITE_KEY`, alpha matched to the log-odds gain G on `s`, as regating_table's `write_row`.
-    Returns the state (None unless the match is "ok"), its record and X."""
+def table_inputs(net: ST.Net, train: Tensor, half: int, keys: list[int], values: list[int], key_at: int | None = None) -> tuple[Tensor, Tensor]:
+    """A hand write's (A, U) for a key table: the keys' mean inputs (grouped at `key_at`, default `half`), the answers' rows."""
     lm = net.net.lm_head.weight.detach().float()
-    A = PT.key_inputs(net.model, train, s.half, keys)
-    X = PT.key_write(A, lm[torch.tensor(values, device=lm.device)].T)
-    fit = PT.write_fit(X, A, PT.window_inputs(net.model, s.toks, s.half), lm[s.tgt.to(lm.device)])
+    return PT.key_inputs(net.model, train, half, keys, key_at), lm[torch.tensor(values, device=lm.device)].T
+
+
+def hand_write(net: ST.Net, A: Tensor, U: Tensor, s: Site, G: float, rel_tol: float) -> tuple[ST.DW | None, dict[str, Any], Tensor]:
+    """X = U pinv(A) into `perturb.WRITE_KEY`, alpha matched to the gain G on `s` (`reads`' second number), as regating_table's
+    `write_row`. Returns the state (None unless the match is "ok"), its record and X."""
+    lm = net.net.lm_head.weight.detach().float()
+    X = PT.key_write(A, U)
+    u = lm[s.tgt.to(lm.device)] if s.alt is None else lm[s.tgt.to(lm.device)] - lm[s.alt.to(lm.device)]
+    fit = PT.write_fit(X, A, PT.window_inputs(net.model, s.toks, s.half), u)
     if G <= 0:
         return None, {"status": "no_target", "fit": fit, "G_target": G}, X
     lo0 = reads(net, s)[1]

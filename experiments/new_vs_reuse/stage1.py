@@ -1,12 +1,12 @@
 """E90 stage 1: the new measurements, control first and alone. Plan: reports/plans/2026-11-05_plan_e90-new-vs-reuse-definition.md,
 "Stages". Rules: results/predictions.json (refused unless committed unchanged), rules.py. Not run as of its commit.
-  (i)   the readout for C = W0's guess at blocks 1-2, block 0 printed only; a held-out loss over the bar stops
+  (i)   the readout for C = W0's guess at blocks 1-2, block 0 printed only
   (ii)  the control, alone: W0's drop on f_C at X_C under each basis against 20 random bases; a C with no teeth is out; no
         C left stops. The do-nothing state read there (R1)
   (iii) R2, R3, R7: each state's share with its band as it is read, its hand write at matched gain. A miss is a gap, reported
-  (iv)  input-dependent lowercase, emoticon and one ladder rung: not designed yet, see `input_dependent`
-The definition is frozen (plan, "Scope as restated"). Only a sha256 mismatch, the readout's early checks or its fit bar stop the
-job. Writes results/stage1.json after each step, results/stop.json on a stop, results/large/{readout,bases,X_*}.pt.
+  (iv)  input-dependent ladder rung, lowercase and emoticon: `input_dep.py`, plan reports/plans/2026-11-05_plan_e90-input-dependent.md
+The definition is frozen (plan, "Scope as restated"). Only a sha256 mismatch or the readout's early checks stop the job.
+Writes results/stage1.json after each step, results/stop.json on a stop, results/large/{readout,bases,X_*}.pt and input_dep.py's files.
 Usage: sbatch cluster/new_vs_reuse.sbatch stage1
 """
 
@@ -17,14 +17,14 @@ import math
 from typing import Any
 
 import apparatus as AP
+import input_dep as ID
 import reading as RD
 import rules
 import torch
-from apparatus import LARGE, RESULTS, Capability, Site, dump, log, stop
+from apparatus import LARGE, RESULTS, Capability, Site, dump, log
 from reading import Basis, Job
 from torch import Tensor
 
-from commute import readout as RO
 from commute import removal as RM
 from commute import steering as ST
 from commute.data import pile_rows
@@ -42,40 +42,18 @@ def guess_capability(j: Job, rows: Tensor, vals: Tensor) -> tuple[Capability, Te
     P, G, nf, net = j.S["pile"], j.S["guess_scan"], j.S["pile"]["fit_row_count"], j.net
     cand, raw = AP.scan_guess(net, rows[:nf], vals, HALF, P["cap"], G["n_fit_windows"], G["seed"])
     hcand, hraw = AP.scan_guess(net, rows[nf:], vals, HALF, P["held_cap"], G["n_held_windows"], G["seed"] + 1)
-    _, h, w0, y = AP.keep_guess(net, cand, vals, HALF, P["cap"])
-    ht, hh, hw, hy = AP.keep_guess(net, hcand, vals, HALF, P["held_cap"])
-    fit = AP.fit_values(y, len(vals), P["unfit_below"])
-    j.res["guess_positions"] = {"raw_fit": raw, "raw_held": hraw, "fit_windows": len(y), "held_windows": len(hy), "fit_per_value": torch.bincount(y, minlength=len(vals)).tolist(),
-                                "fit_values": vals[fit.cpu()].tolist()}  # fmt: skip
+    c, w0, hh, hw, hy, per = AP.value_capability(net, "W0's guess", vals, (cand, hcand), HALF, (P["cap"], P["held_cap"]), P["unfit_below"])
+    fit = [v for v, n in zip(vals.tolist(), per, strict=True) if n >= P["unfit_below"]]
+    j.res["guess_positions"] = {"raw_fit": raw, "raw_held": hraw, "fit_windows": sum(per), "held_windows": len(hy), "fit_per_value": per, "fit_values": fit}
     log(f"[guess positions] {json.dumps(j.res['guess_positions'])}")
-    new = torch.full((len(vals),), -1, device=y.device)
-    new[fit] = torch.arange(len(fit), device=y.device)
-    f, hf = new[y] >= 0, new[hy] >= 0
-    read = Site(ht[hf.cpu()], vals[hy[hf].cpu()], HALF)
-    return Capability("W0's guess", h[:, f], new[y[f]], read, len(fit) - 1), w0[f][:, fit], hh[:, hf], hw[hf][:, fit], new[hy[hf]]
+    return c, w0, hh, hw, hy
 
 
 def possession(j: Job, c: Capability, w0: Tensor, hh: Tensor, hw: Tensor, hy: Tensor) -> int | None:
-    """(i). Returns b*, or None for no possessed block. An early check or a fit miss stops."""
-    R = j.S["readout"]
-    try:
-        probes, twin = AP.train_pair(c.fit_h, c.y, w0, R, log)
-    except RO.ReadoutStop as e:
-        stop(OUT, j.res, str(e))
-    torch.save({"probes": probes.state_dict(), "twin": twin.state_dict(), "values": j.res["guess_positions"]["fit_values"]}, LARGE / "readout.pt")
-    with torch.no_grad():
-        loss = RO.xent64(probes(hh), hy)
-    acc, shuffled = AP.accuracy(probes, hh, hy), AP.accuracy(twin, hh, hy)
-    own = float((hw.argmax(-1) == hy).double().mean())
-    flags = {b: rules.possessed(acc[b], shuffled[b], own, R["possess_num"], R["possess_den"]) for b in range(len(acc))}
-    block = rules.b_star(flags, j.S["blocks"][0], RO.LAST)
-    j.res["readout"] = {"acc": acc, "shuffled": shuffled, "own": own, "possessed": flags, "b_star": block, "heldout_loss": loss, "model_loss": RO.xent64(hw[None], hy)[0]}
-    log(f"[readout] {json.dumps(j.res['readout'])} (block 0 printed only)")
+    """(i). Returns b*, or None for no possessed block. An early check stops."""
+    j.res["readout"] = RD.possession(j, c, w0, (hh, hw, hy), LARGE / "readout.pt", j.res["guess_positions"]["fit_values"])
     dump(OUT, j.res)
-    bar = R["fit_bar_last_block_heldout_loss"]
-    if rules.fit_stops(loss[RO.LAST], bar):
-        stop(OUT, j.res, f"the readout's held-out last-block loss {loss[RO.LAST]:.4f} is over the filed bar {bar}")
-    return block
+    return j.res["readout"]["b_star"]
 
 
 def r2(j: Job, f: Basis, on: dict[str, bool]) -> dict[str, Any]:
@@ -148,13 +126,6 @@ def controls(j: Job, rows: Tensor) -> tuple[int | None, Basis, dict[str, bool], 
     return block, gf, gon, idf, ion
 
 
-def input_dependent(j: Job) -> None:
-    """The place for the first pass's input-dependent lowercase, emoticon and one ladder rung (plan, "Scope as restated"). The
-    lead's next session designs them; each then reads like `r7`: its control alone, the state, its spared control."""
-    j.res["input_dependent"] = "not designed: the lead's next session"
-    log(f"[input-dependent tasks] {j.res['input_dependent']}")
-
-
 def main() -> None:
     S = AP.filed()["settings"]
     LARGE.resolve().mkdir(parents=True, exist_ok=True)
@@ -163,11 +134,10 @@ def main() -> None:
     rows = pile_rows(*S["pile"]["rows"], log=log)
     block, gf, gon, idf, ion = controls(j, rows)
     readings: dict[str, Any] = j.res.setdefault("readings", {})
-    for name, read in (("R2", lambda: r2(j, idf, ion)), ("R3", lambda: r3(j, block, gf, gon)), ("R7", lambda: r7(j, rows))):
+    for name, read in (("R2", lambda: r2(j, idf, ion)), ("R3", lambda: r3(j, block, gf, gon)), ("R7", lambda: r7(j, rows)), *ID.tasks(j, rows, TRIGGER, TARGET)):
         readings[name] = read()
         log(f"[{name}] {json.dumps(readings[name])}")
         dump(OUT, j.res)
-    input_dependent(j)
     j.res |= {"gaps": rules.gaps(readings), "complete": True}
     dump(OUT, j.res)
     log(f"[gaps, reported; the definition is frozen] {j.res['gaps']}")
