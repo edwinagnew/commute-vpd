@@ -1,0 +1,46 @@
+{
+ "experiment": "E100 Amendment 1: does the sum of single-part reverts sort fed from written on seeds E100 never read? For E58's four open-pair maps at seeds 3-7, read the gain G and the 28 single-part reverts; read fed / written / between from their sum",
+ "plan": "reports/plans/2026-11-05_plan_e100-amend1.md (E100's first of two amendments)",
+ "found_post_hoc": "The rule and both bars were found after reading E100's table (jobs 52839, 52873) on seeds 0-2 of every task; they are not a result there. This amendment tests them on 20 states E100 never read (open_pair_instruments seeds 3-7)",
+ "limit": "a new circuit built from old parts still reads as reuse",
+ "definitions": {
+  "part": "one head's output or one block's MLP output; 24 heads and 4 MLPs, which partition every entry of dW (E100's predictions.json)",
+  "unit": "lo: log-odds of the target against every other token at the read position (identity.log_odds), in nats",
+  "G": "the state's mean over the site's reads minus W0's over the same reads, unit lo",
+  "own": "the state with one part's own update reverted (a head: its rows of q, k, v and columns of o; an MLP: c_fc and down_proj); share = (state - reverted) / G (locator.own, the same read as E100's own in locator.split)",
+  "reverts_sum": "the sum of own over the 28 single parts (fed_rules.reverts_sum, as E100's table): 1 when the update is additive over parts; low when the gain needs many parts changed together, high when it comes apart piece by piece"
+ },
+ "settings": {
+  "states": "experiments/open_pair_instruments/results/large/{copy,cipher,rank1,elicit}_s{3..7}.pt, each checked against the sha256 in experiments/open_pair_instruments/results/seeds.json .states[<map>_s<seed>].ft.sha256; E58's recipe as seeds 0-2 (open_pair_instruments/seeds.py)",
+  "tasks": {"T13 copy-24": "copy", "T11 cipher": "cipher", "T12 rank-1": "rank1", "T11 elicit": "elicit"},
+  "sites": "the site E100 read each task's seeds 0-2 on (experiments/locator_table/sites.py TASKS[task].site: kv_copy24, kv_cipher24, kv_rank1, kv_elicit, E90's kv_site held-out windows of the same windows files the maps were trained from)",
+  "stage0_state": "T5 copy seed 0 (E62 copy) on site e62_copy, as E100 stage 1"
+ },
+ "thresholds": {
+  "fed_bar": 0.40,
+  "fed_bar_source": "the largest copy row of E100's table, seeds 0-2 (T13 copy-24 seed 0, 0.3951), rounded as the plan files it",
+  "written_bar": 0.62,
+  "written_bar_source": "the smallest row new by construction in E100's table, seeds 0-2 (T5 lookup seed 1, 0.6217), rounded as the plan files it",
+  "min_gain": 1.0,
+  "min_gain_source": "the plan's edge cases: a gain at or below 1 nat reads 'no gain'",
+  "stage0_ref": 0.26277305898879366,
+  "stage0_ref_source": "E100's saved sum for T5 copy s0 (fed_or_written/results/table.json, stage1.json); the plan quotes it as 0.262",
+  "stage0_tol": 0.001,
+  "stage0_tol_source": "the plan, stage 0"
+ },
+ "rule": {
+  "reading": "per state: G <= min_gain -> 'no gain'; reverts_sum not finite -> 'unreadable: sum not finite'; reverts_sum <= fed_bar -> 'fed'; reverts_sum >= written_bar -> 'written'; else 'between'. A sum past 1 counts (reads written); a negative sum reads fed; a sum exactly at a bar takes the bar's side. Code: fed_rules.sum_reading",
+  "pass_need": 9,
+  "pass": "copy-24 seeds reading fed plus cipher seeds reading written, at least 9 of the 10 (fed_rules.sum_pass). Fail: fewer; the sum is then reported as a description of seeds 0-2 only",
+  "stage0": "the re-read of T5 copy s0's sum must be within stage0_tol of stage0_ref, or the job stops (exit 1) before any fresh state is read",
+  "edge_cases_tested": "tests/test_fed_rules.py: G exactly 1 nat and under -> no gain; sums exactly 0.40 and 0.62 -> fed and written; sum 1.3 -> written; negative sum -> fed; nan sum -> unreadable; one miss passes, two fail; empty pools fail",
+  "do_nothing": "W0 as the state: G = 0 and every own share nan, so it reads 'no gain' and cannot count toward the pass (tests/test_fed_rules.py::test_sum_do_nothing_state)"
+ },
+ "expected": {
+  "stage0": "reverts_sum 0.26277 within 1e-3 (deterministic fp32 path, same code, same site; expected to agree to ~1e-6)",
+  "leans": {"T13 copy-24": "fed", "T11 cipher": "written", "T12 rank-1": "written", "T11 elicit": "between"},
+  "leans_source": "the plan: copy fed on all five seeds; cipher written on all five; rank-1 written (as seeds 0-2, 0.72); half-known (elicit) between (seeds 0-2, 0.47-0.51)",
+  "seeds_0_2": "copy-24 0.40, 0.30, 0.35; cipher-24 0.70, 0.72, 0.68; rank-1 0.73, 0.72, 0.72; elicit 0.47, 0.51, 0.51; G 11-13 nats on all"
+ },
+ "outputs": "results/amend1.json (stage0, states with own per part, tasks, outcome); results/table_amend1.json (E100's rows with reverts_sum_reading, then the 20 fresh rows); E100's table.json unchanged"
+}

@@ -237,12 +237,17 @@ def grafted(dW: ST.DW, n: str) -> ST.DW:
     return {k: v - r[k] for k, v in dW.items()}
 
 
+def own(net: ST.Net, st: State, n: str) -> dict[str, float]:
+    """The state's fall with the part's (or pair's) own update reverted, as a share of G, both units."""
+    return shares(st.lo1.mean(0) - read(net, st.b.site, part_reverted(st.dW, n)).mean(0), st.G)
+
+
 def split(net: ST.Net, st: State, n: str) -> dict[str, dict[str, float]]:
     """E100's three reads of one part (or pair) as shares of G, both units: carry (the state with the output from W0's run),
     own (the state with the part's update reverted: the fall) and graft (W0 with only the part's update: the rise)."""
     s, top = st.b.site, st.lo1.mean(0)
     return {"carry": shares(top - read(net, s, st.dW, parts_of(n), st.b.acts0).mean(0), st.G),
-            "own": shares(top - read(net, s, part_reverted(st.dW, n)).mean(0), st.G),
+            "own": own(net, st, n),
             "graft": shares(read(net, s, grafted(st.dW, n)).mean(0) - st.b.lo0.mean(0), st.G)}  # fmt: skip
 
 
