@@ -4,7 +4,7 @@
 
 **What it found.**
 - **At the template's size, the TOFU update knows none of its facts.** Trained-wording recall is 0.16 to 0.17 at both seeds, against 0.18 unchanged and 0.99 at the full update. That state was retrained and saved, as none existed.
-- **The smallest saved state holding its facts is about 30 times the template's norm**, at seed 42 step 550 and seed 142 step 500. So the two anchors cannot be compared at equal size with both having done their job.
+- **The smallest saved state holding its facts is about 30 times the template's norm**, at seed 42 step 550 and seed 142 step 500.  Seed 142 was already over the line at its first read, so its crossing could be earlier. So the two anchors cannot be compared at equal size with both having done their job.
 - **The maths arms all sit at step 100 and stay under the template's norm.** RL reads 0.88 and 0.91 of its KL. The null reads 1.13 and 0.45, so its seeds differ by 2.5 times. Own-samples SFT reads 0.01, so it has no match by KL.
 
 **Decided by you.** Ask 11: both comparisons are read, the equal-size one is a size control, and a claim of something new rests on the full update with its size stated. You called this a weak endorsement; `decisions.md` says so, and reversing it costs no run.
