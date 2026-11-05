@@ -1,0 +1,46 @@
+{
+ "experiment": "E92",
+ "filed": "2026-11-05, before any read",
+ "plan": "reports/plans/2026-11-05_plan_e92-comparators.md; row baseline-lead of reports/plans/2026-11-05_plan_qwen-reorient-amend1.md",
+ "question": "Beside each D3 row, on the same state, seed and step: how large is the update, how highly did the unchanged model already rank what it trains, and how much of the gain does one steering vector recover?",
+ "rows": {
+  "anchor1": "E57's a1 rows, 64 x 256 (qwen_reading.a1_rows, checked identical on CPU): the prompted model's greedy answers to test 256-511. Held-out problems. 9,066 answer positions, 62 first tokens.",
+  "anchor2": "E86's 128 x 256 TOFU rows (checked identical on CPU), TOFU's own wording, pair 0 of the five E84 trained, the 13 rows E84 dropped marked as no answer. Trained rows, not held-out. 16,546 answer positions, 464 first tokens.",
+  "gsm8k": "Departure from the D3 maths rows. GSM8K test 0-255 with the gold solutions, packed and cut as the maths rows, 103 x 256. 11,801 answer positions, 121 first tokens. The maths rows hold W0's own greedy answers, so W0 ranks them first by construction and no gain can be read from them, and the GSM8K arms train no fixed token: gold is the nearest fixed answer."
+ },
+ "rules": {
+  "answer_summary": "Two summaries only: the answer's first token; the teacher-forced mean over every answer token, the end token included. Rank is 1-based among the whole vocabulary, ties to the best place: 1 + the count of strictly larger logits. Median over positions; log P is the mean.",
+  "share": "share = (steered log P - W0's) / (state's log P - W0's), pooled over the scoring half's answer positions. Undefined unless the gain is further from 0 than twice the standard error of its per-row means, with at least two rows. A significantly negative gain keeps its share, read as: the vector recovers that loss.",
+  "layer": "The block whose input takes the vector is the one with the largest fit-half share, ties to the lower (steering.b3). Undefined on either half: no layer, no vector.",
+  "beats_random": "Steering's share counts as above random if share - random share > 2 sqrt(se^2 + se_random^2), both from the scoring half's row standard errors. Either undefined: not read.",
+  "random_control": "A Gaussian mix of W0's centred block inputs on the fit half at the chosen layer, at the vector's norm, seed 92000. Matched on norm. Its variance share and the vector's are both saved; the match on variance is reported, not assumed.",
+  "anchor_row": "qwen_comparators.separates, the amendment's stop rule: a column counts only if the gap between the anchors' means is strictly over the larger of the two same-anchor seed spreads. Read at the full update and at the size-matched step. Columns: share_squared, W0 median rank (first), W0 mean log P (all), gain (all), steering share (all)."
+ },
+ "controls": {
+  "e91_norm_rel": 1e-09,
+  "e91_norm_source": "The total's norm on every state E91 read: same file and the same sum in float64, so only rounding separates them; far under E91's band of 1e-4 for a re-read.",
+  "e91_reads": "qwen_size_grid control_miss, called: the zero state reads norm 0 and KL 0 exactly; anchor 1's step 100 reads E78's within 1e-4.",
+  "zero_logp_max": 1e-05,
+  "zero_logp_source": "E91 read the zero state's KL as exactly 0 on an L40 (its run.log line 2), so the same forward repeats to the bit. One float32 step at log P near -5 is 4.8e-7; 1e-5 is about twenty. A miss means this path left a state applied.",
+  "learned": "Anchor 1's step 100 on its own rows: the gain (all) must be defined and positive. E78's held-out distillation KL fell from 0.96 to 0.047 on these answers (experiments/qwen_anchor1/results/train.json).",
+  "stop": "Any miss stops the job (results/stopped.json), first and alone, before any other state. Not a stop: the random control's reading."
+ },
+ "expected": {
+  "W0": {"size": "not read: a state, not W0", "rank": "a read per row set; no gain", "steering": "not read"},
+  "do_nothing_anchor1_s0_step1": {"norm": 0, "share_squared": 0, "rank_state_equals_rank_W0": true, "gain": 0, "share": "undefined", "layer": "none"},
+  "control_anchor1_s0_step100": {"norm": 0.48652, "ratio_norm": 3.712e-04, "share_squared": 1.378e-07, "rank_all_falls": "lean high: median 1 at the state", "rank_first": "lean high: W0 above 10, the state 1 ('Given', the template's opening)", "gain_all": "lean medium: at least 0.3 nats", "steering_all": "lean medium: 0.05 to 0.4", "random_all": "lean medium-high: within 2 se of 0 and under 0.05 in size"},
+  "anchor2_s0_step1250": {"norm": 18.1087, "ratio_norm": 1.3816e-02, "share_squared": 1.909e-04, "W0_logp_all": "lean high: -4 to -5.5 (E81's first batch read 4.78 nats a token)", "state_logp_all": "lean high: above -0.2 (E84's last batch loss 0.0104)", "rank_W0_first": "lean medium: 1 to 3, the opening 'The' is common", "steering_all": "lean high: under 0.05, one vector cannot hold 787 facts"},
+  "anchor2_matched": {"size": "by construction about anchor 1's", "gain_all": "lean medium: within 0.5 nats, E91's second stage leans 'not learned'", "steering_all": "lean low: undefined or under 0.3, on an unlearned state it reads the shift to answer style, if any"},
+  "R_N_F_step100": {"ratio_norm": "2.68e-04, 2.82e-04, 2.09e-04 (E91's norms over ||W0|| = 1310.75, qwen_rl_reads run.log line 8)", "W0_logp_all": "lean medium: -2 to -3 (E61's first gold batch 2.41 nats a token, train not test)", "gain_all": "lean medium: under 0.1 nats in size on all three, and R within 2 se of N: gold tokens are not what any of them trained", "steering_all": "lean medium: undefined on at least one of the five GSM8K states at step 100"},
+  "anchors_separate": "Lean high: steering share and gain count at the full update. Lean medium: at the matched step neither does, except W0's first-token rank, which does not depend on the update's size at all."
+ },
+ "edge_cases_run": "tests/test_qwen_comparators.py: empty pool, one row, zero gain, gain lost in noise, negative gain, ties in rank and in the layer pick, a sequence with no answer, an answer cut by the row's end, equal anchors, a gap equal to the spread (strict: no), an undefined seed and a single seed (unread). CPU, with the tiny random Qwen3 in the plan's dry run: zero state equal to W0, steering None, hooks removed.",
+ "do_nothing_against_the_bar": "Do-nothing cannot pass: its gain is 0, so its share is undefined, and beside another do-nothing separates reads 'does not count'.",
+ "blind_to": {
+  "update_size": "Direction, and everything outside the 196 decomposed matrices (none moved: δW covers those only).",
+  "rank": "On anchor 2's rows, trained wording only, so it cannot see whether a fact carries. On the GSM8K arms a change of accuracy that does not move gold-solution tokens. The median hides a change confined to a few tokens, which the mean log P shows.",
+  "steering": "One mean vector cannot express an input-dependent change, so a low share does not say which mechanism is new. It adds at every answer position, including after earlier steered ones, which attention carries forward."
+ },
+ "noise_floor": "The gain's and the share's row standard errors, in every state's file; between seeds, the same anchor's two seeds.",
+ "not_filed": "No threshold on a comparator's meaning: the table of 11-12 to 11-14 reads them beside the D3 rows."
+}
