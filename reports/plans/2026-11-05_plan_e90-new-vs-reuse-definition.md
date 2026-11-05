@@ -114,6 +114,7 @@ claim states the granularity limit (a circuit from old parts reads as reuse).
 | R4 | E70's saved P and N shares under D | unreadable: not specific at every block | N 0.16-0.49 above bands ≤ 0.02 at blocks 3-5; both above at block 6; no block rule needed |
 | R5 | E62's saved copy and lookup under the mechanism form | copy reuses C; lookup not through C | 0.47-0.56 against 0.00; the state-level band of random single heads is not in E62's saved results, so stage 0 checks the mapping only and stage 2 measures the band |
 | R6 | share equal to the band; partner gain under the floor | not above; no call | strict comparisons; nan excluded and counted |
+| R7 | ladder `r1_t534_v369` (" which" → " was") fine-tune, seed 0, step 10, and a hand-written constant push to the same word at matched gain, C = W₀'s graded leaning to the target (f_C = W₀'s log-odds of the target at the position; scalar covariance direction on its natural inputs, E70 A1's form) | unreadable: not specific (lean, same reason as R3) | the push is `key_write` with K = 1 on the trigger's input. Branch: push within band and state above → the leaning form is usable, and the user decides whether constant-target tasks get read on their old states. A3 stands until they do |
 
 R4 and R5 are not blind: they check the verdict mapping on known data. R2 and R3 are the new measurements. A miss
 on them outside its branch, or no teeth on W₀, changes the definition, dated, before stage 2 (Amendment 1). The
@@ -141,6 +142,14 @@ induction mechanism cannot produce the answer (question 2). Their only admissibl
 hand write also uses, honestly. The edge case "the hand write must not read as reuse" is therefore re-filed as R3
 on the rank-1 table, where the hand write uses token identity but not W₀'s guess mechanism.
 
+## Where the definition does not apply (user: keep flagging this)
+
+Expected, not measured. The definition says nothing today about emoticon (T1), the ladder (T2), many cues to one word (T3), lowercase (T7) and rand1, because each has a constant answer; together with "not specific" on copy (T4, T13), that leaves the "strengthens" side of `GOALS.md`'s question with no reading on the 67M beyond E62's copy. "Reuses" is expected on one row and "no C listed" on five, so the table leans to new by how it is built and cannot score r or the ratio. R7 tests the one proposed repair for the constant answers; input-dependent versions are the other. Every later statement of this definition, including the D3 rows read against its wording, carries this limit.
+
+## Status, from `reports/plans/2026-11-05_plan_qwen-reorient-amend1.md` (2026-11-05)
+
+Finished on paper today. Stage 0 is the paper reading. **Stages 1 and 2, R7 included, wait until the comparator table exists (11-14) and need no new plan, only the user's word then.** No 67M run before that.
+
 ## Stages, all on MATS `debug`, $0
 
 **Stage 0, CPU, no model, minutes.** Admissibility A1-A9 on every (task, C) pair from the text rules, the saved
@@ -152,7 +161,7 @@ job read twelve states and its readout in 1 min (`TRIED.md:135`). No possession 
 (ii) The control, alone: W₀'s drop on f_C at X_C under each basis against 20 random bases; E70 A1's control stage
 took 45 s (`cluster/logs/commute-e70-a1-50499.out`). No teeth before the last block: that C out. (iii) R2 on
 `ident32_s0`, `rand32_s0` and the rebuilt ident32 hand write; R3 on `rank1_s0`, `cipher_s0` at 24 keys and the
-rank-1 hand write at matched gain. A miss outside the branches writes a stop file; the definition changes before
+rank-1 hand write at matched gain; R7 on the ladder state and its constant push. A miss outside the branches writes a stop file; the definition changes before
 stage 2.
 
 **Stage 2, one job, about 10 min, and its size depends on R3.** If R3 reads "not specific" (the lean), rows 2-4 can only repeat that, so stage 2 reads row 1 alone: band and W₀'s missing log-odds, about 3 min. If R3 spares the hand write, it reads rows 1-4 on every saved seed: E62's three per map, rank-1, cipher and elicit
