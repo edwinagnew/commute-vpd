@@ -1,0 +1,75 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+21:45:37 [host] NVIDIA L40 git 52c297efa183efd7f3a5604d864c7a36838e9e23 predictions 67cce07de0a255754e1650b8d8dad5a6dcd5a48f3cb4bcd2904fa08c4e1822ec
+21:45:40 [embedding class] fit windows 163396, held 22456; per key [2499, 1228, 2473, 3057, 3998, 2624, 2297, 2992, 4359, 1087, 2829, 905, 2297, 3416, 1703, 1592, 1737, 1791, 2241, 1993, 2360, 1578, 2015, 1358, 2761, 2049, 1577, 2147, 1742, 1780, 1265, 2058, 2284, 1930, 2185, 1426, 1432, 1806, 2181, 1144, 1648, 1821, 1352, 1068, 1750, 1215, 1465, 1454, 1578, 1808, 1667, 822, 1490, 1745, 1552, 1192, 1217, 1278, 1346, 1157, 1097, 1017, 977, 911, 1215, 962, 810, 1365, 1246, 922, 969, 843, 849, 961, 1448, 1464, 1188, 1430, 867, 1240, 785, 987, 1002, 1224, 1350, 929, 1044, 886, 918, 1302, 873, 1260, 1000, 801, 878, 1044, 1032, 807, 1002, 817, 838, 949, 824, 774, 767, 805, 717, 849, 965, 992, 701, 898, 783, 745, 884, 753, 767, 797, 691, 795, 715, 774, 785, 636, 819, 690, 657, 605]
+21:46:39 [matched class block 1] {"r": 3, "residual_rank": 768, "k": 6, "reason": null, "basis_share": 0.09773040099277833, "target": 0.0879573608935005, "pairwise_overlap": 0.5028176877992128, "bar": 0.9993799962190855, "overlap_with_basis": 0.4136108333875622, "chance_overlap": 0.5, "top_r_share": 0.12189754498995659}
+21:46:39 [matched class block 1] mean share of the draws on the fit residuals 0.0894
+21:46:40 [matched class block 2] {"r": 3, "residual_rank": 768, "k": 8, "reason": null, "basis_share": 0.0761950476669455, "target": 0.06857554290025095, "pairwise_overlap": 0.3688429485219225, "bar": 0.9989216230282978, "overlap_with_basis": 0.2639756790483245, "chance_overlap": 0.375, "top_r_share": 0.1043499099399033}
+21:46:40 [matched class block 2] mean share of the draws on the fit residuals 0.0689
+21:47:12 [control embedding class block 1] W0 drop 0.4369 band 0.5532 teeth False nats 0.3302 variance share 0.0977 random 0.0894
+21:47:12 [control embedding class block 2] W0 drop 0.4506 band 0.7804 teeth False nats 0.3561 variance share 0.0762 random 0.0689
+21:47:14 [R1 embedding class] do-nothing A_lo nan -> unreadable: no teeth (filed unreadable: no gain)
+21:47:14 [stage4 teeth] {"1": false, "2": false}
+/mnt/nw/home/e.agnew/commute-agents/definition-lead/src/commute/finetune.py:118: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+21:47:14 [ft] step 1: loss 15.2179 ce_o 15.2179 kl_other 0.0000 p_o 0.0000
+21:47:15 [ft] step 10: loss 2.6125 ce_o 2.0048 kl_other 0.6077 p_o 0.2832
+21:47:15 [ft] step 20: loss 0.6044 ce_o 0.3577 kl_other 0.2468 p_o 0.7705
+21:47:16 [ft] step 30: loss 0.1786 ce_o 0.0417 kl_other 0.1369 p_o 0.9617
+21:47:16 [ft] checkpoint 30: p_o 0.9531 ce_o 0.0628 kl_other 0.1313 n 286 rel_norm_max 0.0243 elapsed_s 1.8652
+21:47:16 [stage4 trained class_shuffled_s0] {"p_heldout": 0.9531472746308867, "ref": 0.9531, "reproduced": true}
+21:47:16 [ft] step 1: loss 14.7795 ce_o 14.7795 kl_other 0.0000 p_o 0.0000
+21:47:17 [ft] step 10: loss 2.5128 ce_o 1.7816 kl_other 0.7312 p_o 0.3160
+21:47:17 [ft] step 20: loss 0.5030 ce_o 0.2556 kl_other 0.2474 p_o 0.8086
+21:47:17 [ft] step 30: loss 0.2216 ce_o 0.0633 kl_other 0.1583 p_o 0.9438
+21:47:18 [ft] checkpoint 30: p_o 0.9362 ce_o 0.0977 kl_other 0.1543 n 286 rel_norm_max 0.0250 elapsed_s 1.3807
+21:47:18 [stage4 trained class_shuffled_s1] {"p_heldout": 0.9362254442868533, "ref": 0.9362, "reproduced": true}
+21:47:18 [ft] step 1: loss 15.6336 ce_o 15.6336 kl_other 0.0000 p_o 0.0000
+21:47:18 [ft] step 10: loss 1.3955 ce_o 0.7603 kl_other 0.6352 p_o 0.5771
+21:47:19 [ft] step 20: loss 0.2522 ce_o 0.0452 kl_other 0.2070 p_o 0.9581
+21:47:19 [ft] step 30: loss 0.1179 ce_o 0.0061 kl_other 0.1118 p_o 0.9940
+21:47:19 [ft] checkpoint 30: p_o 0.9646 ce_o 0.0548 kl_other 0.0984 n 286 rel_norm_max 0.0235 elapsed_s 1.4191
+21:47:19 [stage4 trained class_map_s0] {"p_heldout": 0.9646418844903266, "ref": 0.9646, "reproduced": true}
+21:47:20 [ft] step 1: loss 15.1140 ce_o 15.1140 kl_other 0.0000 p_o 0.0000
+21:47:20 [ft] step 10: loss 1.3493 ce_o 0.6478 kl_other 0.7015 p_o 0.5976
+21:47:21 [ft] step 20: loss 0.2947 ce_o 0.0901 kl_other 0.2046 p_o 0.9425
+21:47:21 [ft] step 30: loss 0.1205 ce_o 0.0027 kl_other 0.1178 p_o 0.9973
+21:47:21 [ft] checkpoint 30: p_o 0.9840 ce_o 0.0253 kl_other 0.1154 n 286 rel_norm_max 0.0236 elapsed_s 1.4397
+21:47:21 [stage4 trained class_map_s1] {"p_heldout": 0.9839763507976399, "ref": 0.984, "reproduced": true}
+21:47:31 [task windows class_shuffled block 1] basis 0.0721 draws' mean 0.0598 under
+21:47:31 [task windows class_shuffled block 2] basis 0.0565 draws' mean 0.0484 under
+21:47:31 [task windows class_map block 1] basis 0.0721 draws' mean 0.0598 under
+21:47:31 [task windows class_map block 2] basis 0.0565 draws' mean 0.0484 under
+21:47:31 [stage4 G] {"class_shuffled_s0": 19.395683848774517, "class_shuffled_s1": 18.953371498134587, "class_map_s0": 20.511020722089114, "class_map_s1": 21.241892196081736}
+21:47:33 [stage4 write class_shuffled_s0_write] {"status": "ok", "alpha": 29.243361949920654, "G_write": 19.541425348161816, "G_target": 19.395683848774517, "fit": {"cond_A": 18.999418695675683, "X_norm": 0.9404708475949088, "rel_err_mean": 0.21173179236334172, "rel_err_max": 0.6564451733559281, "cos_mean": 0.9758919983845008, "cos_min": 0.790309444283738, "n_windows": 286}, "norm": 27.502529399566583, "cond_A": 18.999418695675683, "rel_err_mean": 0.21173179236334172, "key": "h.1.mlp.down_proj"}
+21:47:38 [class_shuffled_s0_write block 1] A_lo 0.0021 band 0.0143 G_logodds 19.5414 lo_drop 0.0082 lo_drop_W0 -0.0323
+21:47:38 [class_shuffled_s0_write block 2] A_lo 0.0022 band 0.0392 G_logodds 19.5414 lo_drop 0.0602 lo_drop_W0 0.0166
+21:47:39 [stage4 write class_shuffled_s1_write] {"status": "ok", "alpha": 29.243361949920654, "G_write": 19.541425348161816, "G_target": 18.953371498134587, "fit": {"cond_A": 18.999418695675683, "X_norm": 0.9404708475949088, "rel_err_mean": 0.21173179236334172, "rel_err_max": 0.6564451733559281, "cos_mean": 0.9758919983845008, "cos_min": 0.790309444283738, "n_windows": 286}, "norm": 27.502529399566583, "cond_A": 18.999418695675683, "rel_err_mean": 0.21173179236334172, "key": "h.1.mlp.down_proj"}
+21:47:44 [class_shuffled_s1_write block 1] A_lo 0.0021 band 0.0143 G_logodds 19.5414 lo_drop 0.0082 lo_drop_W0 -0.0323
+21:47:44 [class_shuffled_s1_write block 2] A_lo 0.0022 band 0.0392 G_logodds 19.5414 lo_drop 0.0602 lo_drop_W0 0.0166
+21:47:45 [stage4 write class_map_s0_write] {"status": "ok", "alpha": 43.28761291503906, "G_write": 21.2466836825951, "G_target": 20.511020722089114, "fit": {"cond_A": 18.999418695675683, "X_norm": 0.7132072378512134, "rel_err_mean": 0.18888820723401373, "rel_err_max": 0.5618412842146827, "cos_mean": 0.9808355871476027, "cos_min": 0.8282150095786041, "n_windows": 286}, "norm": 30.873038840307522, "cond_A": 18.999418695675683, "rel_err_mean": 0.18888820723401373, "key": "h.1.mlp.down_proj"}
+21:47:50 [class_map_s0_write block 1] A_lo 0.0097 band 0.0198 G_logodds 21.2467 lo_drop 0.0349 lo_drop_W0 -0.1705
+21:47:50 [class_map_s0_write block 2] A_lo 0.0062 band 0.0445 G_logodds 21.2467 lo_drop 0.0377 lo_drop_W0 -0.0940
+21:47:51 [stage4 write class_map_s1_write] {"status": "ok", "alpha": 43.28761291503906, "G_write": 21.2466836825951, "G_target": 21.241892196081736, "fit": {"cond_A": 18.999418695675683, "X_norm": 0.7132072378512134, "rel_err_mean": 0.18888820723401373, "rel_err_max": 0.5618412842146827, "cos_mean": 0.9808355871476027, "cos_min": 0.8282150095786041, "n_windows": 286}, "norm": 30.873038840307522, "cond_A": 18.999418695675683, "rel_err_mean": 0.18888820723401373, "key": "h.1.mlp.down_proj"}
+21:47:56 [class_map_s1_write block 1] A_lo 0.0097 band 0.0198 G_logodds 21.2467 lo_drop 0.0349 lo_drop_W0 -0.1705
+21:47:56 [class_map_s1_write block 2] A_lo 0.0062 band 0.0445 G_logodds 21.2467 lo_drop 0.0377 lo_drop_W0 -0.0940
+21:47:57 [stage4 write class_map_s0_write2] {"status": "ok", "alpha": 43.28761291503906, "G_write": 20.193144676568625, "G_target": 20.511020722089114, "fit": {"cond_A": 15.800792641396136, "X_norm": 0.6598890142091952, "rel_err_mean": 0.2553321566730241, "rel_err_max": 0.8445860395951805, "cos_mean": 0.9651603357263432, "cos_min": 0.5474896720902117, "n_windows": 286}, "norm": 28.565020213974353, "cond_A": 15.800792641396136, "rel_err_mean": 0.2553321566730241, "key": "h.2.mlp.down_proj"}
+21:48:02 [class_map_s0_write2 block 1] A_lo 0.4168 band 0.1592 G_logodds 20.1931 lo_drop 8.2466 lo_drop_W0 -0.1705
+21:48:02 [class_map_s0_write2 block 2] A_lo 0.0062 band 0.0446 G_logodds 20.1931 lo_drop 0.0311 lo_drop_W0 -0.0940
+21:48:04 [stage4 write class_map_s1_write2] {"status": "ok", "alpha": 43.28761291503906, "G_write": 20.193144676568625, "G_target": 21.241892196081736, "fit": {"cond_A": 15.800792641396136, "X_norm": 0.6598890142091952, "rel_err_mean": 0.2553321566730241, "rel_err_max": 0.8445860395951805, "cos_mean": 0.9651603357263432, "cos_min": 0.5474896720902117, "n_windows": 286}, "norm": 28.565020213974353, "cond_A": 15.800792641396136, "rel_err_mean": 0.2553321566730241, "key": "h.2.mlp.down_proj"}
+21:48:08 [class_map_s1_write2 block 1] A_lo 0.4168 band 0.1592 G_logodds 20.1931 lo_drop 8.2466 lo_drop_W0 -0.1705
+21:48:08 [class_map_s1_write2 block 2] A_lo 0.0062 band 0.0446 G_logodds 20.1931 lo_drop 0.0311 lo_drop_W0 -0.0940
+21:48:13 [class_shuffled_s0 block 1] A_lo 0.0343 band 0.0461 G_logodds 19.3957 lo_drop 0.6324 lo_drop_W0 -0.0323
+21:48:13 [class_shuffled_s0 block 2] A_lo 0.0261 band 0.0628 G_logodds 19.3957 lo_drop 0.5232 lo_drop_W0 0.0166
+21:48:18 [class_shuffled_s1 block 1] A_lo 0.0461 band 0.0452 G_logodds 18.9534 lo_drop 0.8410 lo_drop_W0 -0.0323
+21:48:18 [class_shuffled_s1 block 2] A_lo 0.0197 band 0.0459 G_logodds 18.9534 lo_drop 0.3892 lo_drop_W0 0.0166
+21:48:23 [class_map_s0 block 1] A_lo 0.1451 band 0.0938 G_logodds 20.5110 lo_drop 2.8046 lo_drop_W0 -0.1705
+21:48:23 [class_map_s0 block 2] A_lo 0.0576 band 0.0852 G_logodds 20.5110 lo_drop 1.0874 lo_drop_W0 -0.0940
+21:48:28 [class_map_s1 block 1] A_lo 0.1623 band 0.1046 G_logodds 21.2419 lo_drop 3.2771 lo_drop_W0 -0.1705
+21:48:28 [class_map_s1 block 2] A_lo 0.0641 band 0.0755 G_logodds 21.2419 lo_drop 1.2676 lo_drop_W0 -0.0940
+21:48:28 [stage4 verdict] {"radm": {"n_inputs": 128, "n_values": 4, "a": true, "b": "fails", "b_reads": [{"share": 0.41683263518031893, "band": 0.15924474852298137, "status": "ok"}, {"share": 0.41683263518031893, "band": 0.15924474852298137, "status": "ok"}]}, "block 1": {"pool": {"pooled": false, "spread": 0.01108152482419788, "gap": 0.05942324266118423, "largest": 0.10459489932493791}, "teeth": false, "maps": {"class_shuffled": {"admissibility": "no C listed", "states": [[0.03427017839694569, 0.04612078110944361], [0.046073427968591506, 0.04517165666375369]], "writes": [[0.0020732951665016156, 0.01425759824587589, true], [0.0020732951665016156, 0.01425759824587589, true]], "verdict": "no C listed", "per_seed": []}, "class_map": {"admissibility": "no admissible C at this site: the removal deletes the input", "states": [[0.14505039243858373, 0.09381083998685312], [0.1623006935246318, 0.10459489932493791]], "writes": [[0.009666835960693067, 0.0197897597779831, true], [0.009666835960693067, 0.0197897597779831, true]], "verdict": "no admissible C at this site: the removal deletes the input", "per_seed": []}}, "paired": {"call": "every pair", "pairs": {"s0 - s0": {"gap": 0.11078021404163804, "draws_mean": 0.0354962337903974, "draws_max": 0.05637450861242213, "above": true, "read": true}, "s0 - s1": {"gap": 0.09897696446999221, "draws_mean": 0.0338908199032261, "draws_max": 0.05389443090806814, "above": true, "read": true}, "s1 - s0": {"gap": 0.12803051512768612, "draws_mean": 0.042294147241529835, "draws_max": 0.06708610775007144, "above": true, "read": true}, "s1 - s1": {"gap": 0.1162272655560403, "draws_mean": 0.040688733354358526, "draws_max": 0.05974853436563836, "above": true, "read": true}}}}, "block 2": {"pool": {"pooled": false, "spread": 0.010440467615047667, "gap": 0.0392965711482096, "largest": 0.08522536228198527}, "teeth": false, "maps": {"class_shuffled": {"admissibility": "admissible", "states": [[0.026121499656748697, 0.0628304797112528], [0.01965879080609144, 0.04592879113377567]], "writes": [[0.0022313251342509846, 0.03918938186185169, true], [0.0022313251342509846, 0.03918938186185169, true]], "verdict": "unreadable: no teeth", "per_seed": ["unreadable: no teeth", "unreadable: no teeth"], "n_no_gain": 0, "n_no_call": 0}, "class_map": {"admissibility": "admissible", "states": [[0.05759816859670836, 0.08522536228198527], [0.06409852499618127, 0.07550838934887201]], "writes": [[0.0061980928522494, 0.04449935478280373, true], [0.0061980928522494, 0.04449935478280373, true]], "verdict": "unreadable: no teeth", "per_seed": ["unreadable: no teeth", "unreadable: no teeth"], "n_no_gain": 0, "n_no_call": 0}}, "paired": {"call": "some pairs", "pairs": {"s0 - s0": {"gap": 0.031476668939959665, "draws_mean": 0.01786201858336927, "draws_max": 0.042444449249746365, "above": false, "read": true}, "s0 - s1": {"gap": 0.03793937779061692, "draws_mean": 0.02120813533277998, "draws_max": 0.05704087523020881, "above": false, "read": true}, "s1 - s0": {"gap": 0.03797702533943257, "draws_mean": 0.015159842554939098, "draws_max": 0.032740833673170634, "above": true, "read": true}, "s1 - s1": {"gap": 0.04443973419008983, "draws_mean": 0.018505959304349805, "draws_max": 0.04321980050279385, "above": true, "read": true}}}}}
+21:48:28 every claim: a circuit from old parts reads as reuse. E99 stage 4 (d) complete
+peak host RSS 6.1 GB
