@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it for a line whose report was found wrong, in place of removing it. It reads `HOLD YYYY-MM-DD <role> · <why> · <the line>`; a clerk skips it, and the role that held it restores or deletes it (friction 317).
+- 2026-11-06 qwen-rl-lead: decision card decision-anchor2-qwen — user asked for more organic options; options now in reports/decisions/2026-11-06_decision_anchor2-organic-options.md (one real maths task, pools by pass rate, recommended); card's options to be replaced with these.
