@@ -10,6 +10,13 @@ as in E102's figures.
   figures/pair_rules.png     each pair rule's gap, known minus the fictional seeds' mean, in units of its band
   figures/prompt_overlap.png per state, the share of its carrying set inside the prompt's contrast set, on each row set,
                              with the Gaussian change and the random draws' maximum
+Amendment 1 (results/amend1_*.json, neurons_amend1*, the per-position files in results/large/amend1_tokens/):
+  figures/amend1_positions.png  each matched state's change in log P at the first answer token, the later ones and the
+                                end token of its own trained answers, with C1's bar
+  figures/amend1_shared.png     each matched state's answer-word gain on both arms' rows: own rows against the other's
+  figures/amend1_pair_rules.png the four matched pair rules in units of their bands, E103's arm and the new one
+  figures/amend1_overlap.png    carrying-set overlaps: fictional seeds, the two known arms, across arms, the Gaussian
+  figures/amend1_recall.png     real-fact share of every state, the new arm added
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run python experiments/known_answer_pair/plot.py
 """
@@ -196,6 +203,155 @@ def prompt_overlap(neu: dict[str, Any]) -> None:
     plt.close(fig)
 
 
+# ----------------------------------------------------------------------------- Amendment 1
+# The new known-answer arm (pair 0 answered in a sentence) is purple; E103's known-answer arm stays green.
+PURPLE = "#8a4fbf"
+TOKENS = RES / "large" / "amend1_tokens"
+OWN = [("e103_matched", "bare", "E103 known-answer, matched\non its bare answers", GREEN),
+       ("a1_matched", "sentence", "new known-answer, matched\non its sentence answers", PURPLE),
+       ("fict_matched", "fict", "fictional-author, matched\non its own answers", ORANGE)]
+
+
+def positions(state: str, reader: str) -> dict[str, float]:
+    """Change from W0 in log P at the answer's first token, its later tokens (row mean) and the end token, mean over rows."""
+    now, w0 = (json.loads((TOKENS / f"{s}.json").read_text())[reader] for s in (state, "W0"))
+    pairs = list(zip(now, w0, strict=True))
+    later = [statistics.mean(a - b for a, b in zip(x[1:-1], y[1:-1], strict=True)) for x, y in pairs if len(x) > 2]
+    return {"first": statistics.mean(x[0] - y[0] for x, y in pairs), "later": statistics.mean(later),
+            "end": statistics.mean(x[-1] - y[-1] for x, y in pairs)}
+
+
+def a1_positions(ref: dict[str, Any]) -> None:
+    groups = [("first", "first answer token"), ("later", "later answer tokens,\nrow mean"), ("end", "end-of-turn token")]
+    fig, ax = plt.subplots(figsize=(8, 4.6))
+    for j, (state, reader, lab, c) in enumerate(OWN):
+        p = positions(state, reader)
+        ax.bar([i + (j - 1) * 0.27 for i in range(3)], [p[g] for g, _ in groups], width=0.26, color=c, label=lab)
+    ax.axhline(0, color=GREY, lw=1)
+    ax.text(2.45, -1.6, "unchanged model and do-nothing, 0", color=GREY, fontsize=7.5, ha="right")
+    ax.set_ylim(-2.5, 31)
+    ax.plot([-0.45, 1.45], [ref["bar"]] * 2, ":", color=INK, lw=1.4)
+    ax.text(0.55, ref["bar"] + 3.2, f"control's bar, applied to the mean over\nall answer tokens but the end token, {ref['bar']:.2f}", color=INK, fontsize=7.5)
+    ax.set_xticks(range(3), [g for _, g in groups], fontsize=8.5)
+    ax.set_ylabel("change from the unchanged model in log P\nat that position, nats (mean over rows)")
+    ax.set_title("E103's gain sat on where a bare answer starts and stops; the new arm's end token does not move", fontsize=10)
+    style(ax)
+    ax.legend(fontsize=7.5, loc="upper left", frameon=False)
+    fig.tight_layout()
+    fig.savefig(FIG / "amend1_positions.png", dpi=150)
+    plt.close(fig)
+
+
+def a1_shared(read: dict[str, Any]) -> None:
+    st, readers = read["states"], [("sentence", "the new arm's real-fact sentences"), ("fict", "the fictional arm's answers")]
+    fig, ax = plt.subplots(figsize=(7.5, 4.4))
+    for j, (state, _, lab, c) in enumerate(OWN):
+        for i, (r, _) in enumerate(readers):
+            v, own = st[state][r]["content"], (state, r) in {("a1_matched", "sentence"), ("fict_matched", "fict")}
+            ax.bar(i + (j - 1) * 0.27, v, width=0.26, color=c if own else "none", edgecolor=c, lw=1.6, hatch=None if own else "//",
+                   label=lab.split("\n")[0] if i == 0 else None)
+            ax.text(i + (j - 1) * 0.27, v + 0.05, f"{v:.2f}", ha="center", fontsize=7.5, color=INK)
+    ax.axhline(0, color=GREY, lw=1)
+    ax.set_xticks(range(2), [f"read on {w}" for _, w in readers], fontsize=8.5)
+    ax.set_ylim(0, 3.1)
+    ax.set_ylabel("answer-word gain, end token left out\n(nats a token, mean over rows)")
+    ax.set_title("At matched size each update gains almost as much on the other arm's rows as on its own", fontsize=10)
+    ax.text(1.45, 2.85, "filled: trained on these rows\nhatched: never trained on them", fontsize=7.5, color=INK, ha="right", va="top")
+    style(ax)
+    ax.legend(fontsize=7.5, loc="upper left", frameon=False)
+    fig.tight_layout()
+    fig.savefig(FIG / "amend1_shared.png", dpi=150)
+    plt.close(fig)
+
+
+A1_RULES = [("real", "engaged"), ("tofu", "engaged"), ("real", "prompt_overlap"), ("tofu", "prompt_overlap")]
+
+
+def a1_pair_rules(neu: dict[str, Any], neu1: dict[str, Any]) -> None:
+    fig, ax = plt.subplots(figsize=(7.5, 4.2))
+    ax.axhspan(-1, 1, color=GREY, alpha=0.15, lw=0, label="inside the rule's band: level")
+    for i, (rows, k) in enumerate(A1_RULES):
+        for dx, src, c, lab in ((-0.12, neu, GREEN, "E103 known-answer, matched"), (0.12, neu1, PURPLE, "new known-answer, matched")):
+            r = src["rules"][f"matched_{rows}_{k}"]
+            ax.plot(i + dx, r["gap"] / r["band"], "o", color=c, ms=9, label=lab if i == 0 else None)
+    ax.axhline(0, color=INK, lw=0.8)
+    ax.set_xticks(range(4), [f"{WORDS[k]}\n{WORDS[rows]}" for rows, k in A1_RULES], fontsize=8)
+    ax.set_ylim(-2, 2.6)
+    ax.set_ylabel("known-answer minus the fictional seeds' mean,\nin units of the rule's band")
+    ax.set_title("With the answer format matched, all four neuron readings stay inside their bands", fontsize=10)
+    style(ax)
+    ax.legend(fontsize=7.5, loc="upper left", frameon=False, ncol=2)
+    fig.tight_layout()
+    fig.savefig(FIG / "amend1_pair_rules.png", dpi=150)
+    plt.close(fig)
+
+
+def carry(path: Path) -> set[int]:
+    return set(json.loads(path.read_text())["carry"])
+
+
+def a1_overlap() -> None:
+    n, n1, e102 = RES / "neurons", RES / "neurons_amend1", HERE.parent / "qwen_carrying" / "results" / "states"
+    sets = {"real": {"a1": n1 / "a1_matched__real.json", "e103": n / "real_matched__real.json", "f42": n / "fict_s42_matched__real.json",
+                     "f142": n / "fict_s142_matched__real.json", "gauss": n / "gauss__real.json"},
+            "tofu": {"a1": n1 / "a1_matched__tofu.json", "e103": n / "real_matched__tofu.json", "f42": e102 / "a2_s42_matched.json",
+                     "f142": e102 / "a2_s142_matched.json", "gauss": e102 / "gauss_tofu.json"}}
+    pairs = [("f42", "f142", "fictional 42\nin fictional 142", ORANGE), ("a1", "e103", "new known\nin E103 known", PURPLE),
+             ("a1", "f42", "new known\nin fictional 42", PURPLE), ("e103", "f42", "E103 known\nin fictional 42", GREEN),
+             ("a1", "gauss", "new known in\nGaussian change", GREY)]
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.4), sharey=True)
+    for ax, (rows, s) in zip(axes, sets.items(), strict=True):
+        for i, (a, b, _, c) in enumerate(pairs):
+            v = len(carry(s[a]) & carry(s[b])) / 1024
+            ax.bar(i, v, color=c, width=0.6)
+            ax.text(i, v + 0.015, f"{v:.2f}", ha="center", fontsize=7.5, color=INK)
+        ax.axhline(0.006, color=INK, ls=":", lw=1, label="two random sets, about 0.006")
+        ax.set_xticks(range(len(pairs)), [lab for *_, lab, _ in pairs], fontsize=7)
+        ax.set_title(f"carrying sets ranked on the {WORDS[rows]}", fontsize=9)
+        ax.legend(fontsize=7.5, loc="upper right", frameon=False)
+        style(ax)
+    axes[0].set_ylabel("share of the first set's 1,024 neurons\ninside the second set")
+    fig.suptitle("The matched carrying sets differ across arms by far more than between fictional seeds; "
+                 "no seed null for the known arm", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(FIG / "amend1_overlap.png", dpi=150)
+    plt.close(fig)
+
+
+def a1_recall(read: dict[str, Any], read1: dict[str, Any]) -> None:
+    w0, st, sh = read["W0"]["real"], read["states"], read1["share"]
+    rows = [("unchanged\nmodel", w0, GREY), ("E103 known\nmatched", st["real_matched"]["real"], GREEN),
+            ("new known\nmatched", sh["a1_matched"], PURPLE), ("fictional\nmatched", st["fict_matched"]["real"], ORANGE),
+            ("E103 known\nend", st["real_full"]["real"], GREEN), ("new known\nend", sh["a1_end"], PURPLE),
+            ("fictional\nend", st["fict_full"]["real"], ORANGE)]
+    fig, ax = plt.subplots(figsize=(8, 4.2))
+    ax.axhspan(*w0["ci"], color=GREY, alpha=0.15, lw=0, label="unchanged model, 95% interval")
+    line = w0["share"] - 0.05
+    ax.axhline(line, color=INK, ls=":", lw=1.2, label=f"'kept' line, unchanged model minus 0.05, {line:.2f}")
+    ax.axhline(0.25, color=GREY, ls="--", lw=1, label="chance, one of four")
+    for i, (_, r, c) in enumerate(rows):
+        ax.bar(i, r["share"], color=c, width=0.6)
+        ax.errorbar(i, r["share"], yerr=[[r["share"] - r["ci"][0]], [r["ci"][1] - r["share"]]], color=INK, capsize=3)
+    ax.set_xticks(range(len(rows)), [lab for lab, *_ in rows], fontsize=8)
+    ax.set_ylim(0, 1.3)
+    ax.legend(fontsize=7.5, loc="upper right", frameon=False)
+    ax.set_ylabel("share of 217 real facts picked\nover three wrong bare options")
+    ax.set_title("Trained on sentences, the known-answer end state picks the bare true answer less often", fontsize=10)
+    style(ax)
+    fig.tight_layout()
+    fig.savefig(FIG / "amend1_recall.png", dpi=150)
+    plt.close(fig)
+
+
+def amend1(read: dict[str, Any], neu: dict[str, Any]) -> None:
+    ref, read1, neu1 = js("amend1_ref.json")["reference"], js("amend1_read.json"), js("neurons_amend1.json")
+    a1_positions(ref)
+    a1_shared(read1)
+    a1_pair_rules(neu, neu1)
+    a1_overlap()
+    a1_recall(read, read1)
+
+
 def main() -> None:
     FIG.mkdir(exist_ok=True)
     pred, s0, train, read, neu = js("predictions.json"), js("stage_0.json"), js("train.json"), js("read.json"), js("neurons.json")
@@ -204,6 +360,7 @@ def main() -> None:
     recall(read, pred)
     pair_rules(neu)
     prompt_overlap(neu)
+    amend1(read, neu)
     print(f"wrote {sorted(p.name for p in FIG.glob('*.png'))}")
 
 
