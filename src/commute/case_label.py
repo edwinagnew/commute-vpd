@@ -14,6 +14,7 @@ from collections.abc import Callable, Mapping, Sequence
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch import Tensor
 
 from commute import removal as RM
@@ -109,6 +110,25 @@ def probe_positions(rows: Tensor, pairs: Sequence[Pair], half: int, cap: int, se
             rs.append(pick[:, 0])
             ts.append(pick[:, 1] + lo)
     return torch.cat(rs), torch.cat(ts)
+
+
+def value_probes(h: Tensor, y: Tensor, hh: Tensor, yh: Tensor, m: int, lam_frac: float) -> tuple[Tensor, Tensor, list[float]]:
+    """P0's probes over a value set of m values (indices 0..m-1), moved from E112's `probes` loop (E116): per block, one
+    closed-form ridge per value (one-vs-rest on the value's indicator, `removal.fit_ridge`) on the Pile residuals h
+    (blocks, N, d) with labels y (N,), read on hh (blocks, M, d) as the argmax over the values (ties to the lowest index)
+    against yh (M,). A value with no Pile position scores -inf, so it is never the argmax and its windows count wrong. For
+    m = 2 the two probes are complements (score_0 = 1 - score_1), so the argmax is E112's "score_1 > 0.5". Returns the
+    weights W (blocks, m, d), intercepts B (blocks, m), float64 on h's device, and the accuracy per block (nan when no
+    value has a position or yh is empty)."""
+    onehot = F.one_hot(y.long(), m).double().to(h.device)
+    present = onehot.sum(0) > 0
+    fits = [RM.fit_ridge(h[i], onehot, lam_frac) for i in range(len(h))]
+    W, B = torch.stack([w.T for w, _ in fits]), torch.stack([b for _, b in fits])
+    acc = []
+    for i in range(len(h)):
+        score = (hh[i].to(W.device).double() @ W[i].T + B[i]).masked_fill(~present, -math.inf)
+        acc.append(float((score.argmax(1).cpu() == yh.long().cpu()).double().mean()) if present.any() else math.nan)
+    return W, B, acc
 
 
 # ----------------------------------------------------------------------------- the rules

@@ -156,3 +156,50 @@ def test_merge_bases_drops_dependent_columns() -> None:
     proj = u.double() @ u.double().T
     assert torch.allclose(proj @ e[:, [0, 1, 3]], e[:, [0, 1, 3]], atol=1e-6) and float((proj @ e[:, 4]).norm()) < 1e-6
     assert CL.merge_bases([a[:, :0], b[:, :0]], 1e-3).shape == (5, 0)  # both empty: no basis
+
+
+def _blocks_set(n: int, seed: int, m: int) -> tuple[torch.Tensor, torch.Tensor]:
+    """(2, n, 6) residuals for two blocks and labels in 0..m-1: block 0 carries the label on axis 0, block 1 is noise."""
+    g = torch.Generator().manual_seed(seed)
+    y = torch.randint(0, m, (n,), generator=g)
+    x = torch.randn(2, n, 6, generator=g, dtype=torch.float64)
+    x[0, :, :m] += 4.0 * torch.nn.functional.one_hot(y, m).double()
+    return x, y
+
+
+def test_value_probes_m2_is_e112s_score_over_a_half() -> None:
+    h, y = _blocks_set(3000, 0, 2)
+    hh, yh = _blocks_set(1000, 1, 2)
+    W, B, acc = CL.value_probes(h, y, hh, yh, 2, 1e-3)
+    assert W.shape == (2, 2, 6) and B.shape == (2, 2)
+    for i in range(2):
+        w, b = RM.fit_ridge(h[i], y, 1e-3)  # E112's probe, one per block, read as score > 0.5
+        assert torch.allclose(W[i, 1], w, atol=1e-10) and abs(float(B[i, 1] - b)) < 1e-10
+        assert torch.allclose(W[i, 0], -w, atol=1e-10) and abs(float(B[i, 0] - (1 - b))) < 1e-10  # the complement
+        e112 = float((((hh[i] @ w + b) > 0.5).long() == yh).double().mean())
+        assert acc[i] == e112
+    assert acc[0] > 0.95 and abs(acc[1] - 0.5) < 0.1
+
+
+def test_value_probes_many_values_and_edges() -> None:
+    h, y = _blocks_set(4000, 2, 4)
+    hh, yh = _blocks_set(1000, 3, 4)
+    _, _, acc = CL.value_probes(h, y, hh, yh, 4, 1e-3)
+    assert acc[0] > 0.95 and acc[1] < 0.4
+    keep = y != 3  # value 3 has no Pile position: never the argmax, its read windows count wrong
+    _, _, acc3 = CL.value_probes(h[:, keep], y[keep], hh, yh, 4, 1e-3)
+    assert abs(acc3[0] - float((yh != 3).double().mean())) < 0.03
+    W, B, _ = CL.value_probes(h[:, keep], y[keep], hh, yh, 4, 1e-3)
+    assert float(W[:, 3].abs().max()) == 0.0 and float(B[:, 3].abs().max()) == 0.0
+    nan = CL.value_probes(h[:, :0], y[:0], hh, yh, 4, 1e-3)[2]  # no value has a position
+    assert all(math.isnan(a) for a in nan)
+    assert all(math.isnan(a) for a in CL.value_probes(h, y, hh[:, :0], yh[:0], 4, 1e-3)[2])  # no read window
+
+
+def test_fit_ridge_columns_match_single_fits() -> None:
+    x = torch.randn(500, 5, dtype=torch.float64)
+    y = torch.randn(500, 3, dtype=torch.float64)
+    w, b = RM.fit_ridge(x, y, 1e-3)
+    for j in range(3):
+        wj, bj = RM.fit_ridge(x, y[:, j], 1e-3)
+        assert torch.allclose(w[:, j], wj, atol=1e-12) and abs(float(b[j] - bj)) < 1e-12
