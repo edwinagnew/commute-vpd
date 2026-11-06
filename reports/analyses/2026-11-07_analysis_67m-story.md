@@ -3,8 +3,7 @@
 *2026-11-07, regating-lead's synthesis writer. No new run and no new figure: every number is quoted from a report or
 result file named in a "Sources" line. Built from Fable's draft and advice of 2026-11-06, corrected by the last three
 results of that night. Answer paragraph revised after an independent Opus check (2026-11-07; three of five sentences
-were overstated: removal-test labels, teacher-training exceptions and "because"; scratch `synth-check/check.md`). Sections
-2-6 were written before that check and may carry the same overstatements.*
+were overstated: removal-test labels, teacher-training exceptions and "because"; scratch `synth-check/check.md`).*
 
 Source keys, used in the Sources lines below: **E121** `reports/analyses/2026-11-06_analysis_e121-copy-gap-ladder.md`;
 **E122** `..._e122-damage-crossed-pair.md`; **E123** `..._e123-case-label-both-readings.md`; **E125**
@@ -14,9 +13,9 @@ Source keys, used in the Sources lines below: **E121** `reports/analyses/2026-11
 `reports/analyses/2026-11-02_analysis_e34-amend10-input-weighted.md`; **claims** `docs/research_log/parts/sections/claims.html`.
 
 We gathered every 67M result on carrying a fine-tune into the released decomposition, and on reuse read two
-independent ways. Teacher training carries narrow fine-tunes faithfully, fails on one broad fine-tune where the
-copied function is itself fragile (cause not tested), and lands far from the fine-tune's weight change for reasons partly shown. For
-`GOALS.md` this gives a paper a faithful carrier for narrow updates, but no case at 67M where reuse is detected.
+independent ways. Teacher training carries most narrow fine-tunes faithfully, with named exceptions, and fails on
+one broad fine-tune whose copied change hides most but not enough of its excess. For `GOALS.md` this gives a paper a
+carrier for narrow updates with known limits, and no 67M case where the two readings of reuse agree on a positive.
 
 ## 1. The answer
 
@@ -44,6 +43,21 @@ check it has few: do-nothing itself reads 1.39, near the copies' 0.97 to 1.00.
 
 Sources: claims:58; TT:399-400, TT:1124-1128; E121:205-212.
 
+**Exceptions on narrow tasks.** The rare target task reads "neither": its task-text copy keeps a target probability of
+0.808, just under the kept line of 0.813. Its Pile-text copy fails the check at 2.48. A rank-8 LoRA copied from Pile
+text learns only part of the behaviour, with target probabilities of 0.52 to 0.88. The emoticon Adam Pile-text copy is
+unstable across batch orders and reaches only 0.34 to 0.38 of its teacher's gain. A copy stopped at step 10 reads
+inconclusive at 1.547. Plain SGD at 0.03 as the copy's optimiser fails on the Adam and LoRA teachers, at one rate and
+step count.
+
+Sources: `experiments/TRIED.md:64`, `:87`, `:96`; E126:16-19.
+
+**Where the copied behaviour sits.** "Into the decomposition" holds at full masks. Where it was read, the copies carry
+the behaviour on subcomponents Γ keeps off. Under Γ's own masks at the trigger, the cipher copies lose it: target
+probability 0.007 and 0.001 against 0.964 and 1.000 unmasked. All eight label-pair copies read masked-off.
+
+Sources: `experiments/TRIED.md:86`; E123:88-93; E125:201-213.
+
 **Weak on the broad lowercase fine-tune.** The copy of the full-matrix Adam fine-tune fails at 1.91 against a fail line
 of 1.61. The copy of a rank-8 LoRA fine-tune of the same task passes at 1.33. Crossing the two fine-tunes' damage to
 plain text with their recipe did not separate the causes: both crossed copies sat within a floor of a line.
@@ -64,17 +78,20 @@ riding the alive subcomponents, and moved into Δ.
 
 Sources: E127:361-367; `experiments/ls_start_faith/results/ls_start_faith_amend2.json` → `score.ratio`.
 
-**Reading it.** Every copy's change fails once it sits in Δ, so the broad lowercase function is fragile under the check
-whoever carries it. Placement cuts both ways. The least-squares split's placement multiplies the excess about four
-times. Teacher training's placement divides it, by 2.8 for the Adam copy and 4.1 for the LoRA copy. That is enough to
-pull the LoRA copy under the line, not the Adam copy. We predicted the Adam copy's change would pass in Δ at 1.24; it
+**Reading it.** Every copy's change fails once it sits in Δ. Placement cuts both ways. The least-squares split's
+placement multiplies the excess about four times. Teacher training's placement divides it, by 2.8 for the Adam copy
+and 4.1 for the LoRA copy. In nats it takes the Adam copy's excess from 1.75 to 0.63, removing about 64%: most of it,
+but not enough to pass. The LoRA copy's change also fails in Δ, at 2.34, yet passes once placed. So fragility in Δ does
+not separate the failing copy from the passing one; what is left after placement does. "Fails because the function is
+fragile" is therefore an accounting split of one copy's excess, not a tested cause. We predicted the Adam copy's change would pass in Δ at 1.24; it
 read 3.53, so this reverses the filed lean. Teacher training's loss is the KL from the fine-tuned model alone, with no
 mask, adversary or faithfulness term. Its protective placement is therefore an accident of training at full masks. Why it
 protects is a hypothesis, untested: its gradients may fall on subcomponents Γ keeps on, which the adversary cannot
-switch off. One caveat bounds "fragile": in Δ the change shares one mask per matrix, so fragility is read under that
-placement only.
+switch off. That sits uneasily beside the label-pair copies, which carry their trigger gain on subcomponents Γ keeps
+off; the two are read at different positions and tasks. One caveat bounds "fragile": in Δ the change shares one mask
+per matrix, so fragility is read under that placement only. One seed, one task, one card.
 
-Sources: E127:355-359, E127:374-377, E127:379-386, E127:388-398, E127:422-428; `src/commute/teacher.py:40-47`;
+Sources: E127:355-359, E127:371-377, E127:379-386, E127:388-398, E127:422-428; `src/commute/teacher.py:40-47`;
 `src/commute/row_copy.py:81-82`.
 
 ## 3. The second gap: why a copy sits far from the fine-tune's weight change
@@ -113,22 +130,24 @@ switches on released subcomponents. Its masked-off share is the part carried by 
 
 | fine-tune pair | definition | route split, fine-tunes and copies | removal test |
 |---|---|---|---|
-| case label, real | not through C | masked-off | seeds disagree |
+| case label, real | not through C | masked-off | seeds disagree: unclear, through |
 | case label, memorising twin | not through C | masked-off | through |
 | repeat label, real | not through C | masked-off | through |
 | repeat label, memorising twin | not through C | masked-off | through |
 | copy maps against random maps | unreadable at possession | re-switching against masked-off | |
 | ten older tasks, pronoun | unreadable or does not apply | | |
 
-Sources: E123:88-93, E123:152-157; E125:123-128, E125:201-213, E125:233-238; E116:17-22; `experiments/TRIED.md:34`,
+Sources: E123:88-93, E123:136-141, E123:152-157; E125:123-128, E125:201-213, E125:233-238; E116:17-22; `experiments/TRIED.md:34`,
 `:239`; `decisions.md:81`, `:87`, `:164`.
 
 The figure `experiments/fresh_reuse_pair/figures/route.png` shows all four repeat-label fine-tunes in the masked-off
 corner, beside the case-label pair.
 
-**Reading it.** The two readings agree only on the real arms of the two label pairs: neither finds them running through
-existing structure. That agreement has no teeth, because both give the memorising twin the same label. The removal test
-disagrees with the definition, reading "through" on seven of eight states, the twins highest. The decomposition's one
+**Reading it.** The route split agrees with the definition only on the real arms of the two label pairs: neither finds
+them running through existing structure. That agreement has no teeth, because both give the memorising twin the same
+label. The removal test disagrees on the positive side. It reads "through", a reuse-like label, on seven of eight
+states, the twins highest, where the definition reads "not through C" on all eight. The eighth, the case-label real
+arm's first seed, reads "unclear", so that arm's seeds disagree and the filed joint with the definition is "reversed". The decomposition's one
 positive sorting, copy maps against random maps, sits on tasks the definition cannot read. The definition's removal
 clause fails by a wide margin: the repeat-label fine-tune loses 0.021 to 0.045 of its gain at five sites, against a bar
 of 0.50. The definition's side does separate real from twin, through carrying and a removal share four times the
@@ -144,36 +163,41 @@ Sources: claims:22; `decisions.md:73`; E125:299-302.
 
 ## 5. The strongest honest case, and its red team
 
-**The case.** Teacher training carries narrow fine-tunes into the released decomposition, keeping the behaviour and
-the check at W₀'s level under a long adversary where do-nothing fails. Its known limit is a broad full-matrix fine-tune,
-and the cause is partly located: the copied function is fragile, and teacher training's placement shrinks its exposure three
-to four times. The frozen Γ sorts maps built to reuse from maps built to need new ones, and task-text copies keep
+**The case.** On most narrow trigger tasks, teacher training copies the behaviour into the subcomponents and keeps the
+check at W₀'s level under a long adversary where do-nothing fails. Its exceptions are named: a rare target, some
+Pile-text copies, a step-10 copy, plain SGD. Its known failure is a broad full-matrix fine-tune, where its placement
+removes about 64% of the excess, not enough to pass. The frozen Γ sorts maps built to reuse from maps built to need new ones, and task-text copies keep
 their fine-tune's $r$ within 0.06. On the label pairs, the definition and the route split agree that the real
 fine-tunes do not run through existing structure.
 
-Sources: TT:1124-1128; E127:355-359; `experiments/TRIED.md:34`; E119:74-80; E123:166-170.
+Sources: TT:1124-1128; `experiments/TRIED.md:64`, `:87`, `:96`; E127:355-359, E127:371-372; `experiments/TRIED.md:34`; E119:74-80; E123:166-170.
 
 **Red team.**
 
 - *The check is one 20-step local adversary, with lines we set.* Holding the alive masks at 1 is a setting the free
   search may choose, yet held it reads W₀ at 1.60 nats against 0.69 free. Open: a stronger free adversary is not run.
 - *Faithfulness by hiding.* Teacher training passes by where it puts the change, not by carrying a robust function. Open:
-  whether the placement sits on subcomponents Γ keeps on is not read, and no loss term asks for it.
+  whether the placement sits on subcomponents Γ keeps on is not read, and no loss term asks for it. Where the trigger
+  was read, the copies carry their gain on subcomponents Γ keeps off.
+- *"Fails because fragile" is an accounting split.* Conceded: the LoRA copy's change also fails in Δ yet passes placed.
+- *The readings disagree on positives.* Conceded: the removal test reads "through" where the definition reads "not
+  through C", on seven of eight label states.
 - *Pass without teeth on narrow tasks.* Partly answered: under the long adversary do-nothing fails on five of six.
 - *The copy is a different update.* Partly answered: task-text copies keep their fine-tune's $r$, on one seed.
   Pile-text copies sit higher, and one is unstable across batch orders, with a spread of 0.135.
 - *$r$ reads the task, not the update.* Answered against the claim: $r$ describes what Γ can route at a trigger.
-- *No reuse is detected.* Open. Every decomposition positive is by construction and unreadable to the definition, and
-  every definition-readable pair is a negative where real and twin read alike.
+- *No reuse is detected.* Open. Every route-split positive is by construction and unreadable to the definition. Every
+  definition-readable pair is a negative where the route split reads real and twin alike.
 - *The twin's update is larger.* Partly answered. It is 1.6 times the real's on the repeat pair and 3 times on the
   case pair, but the removal share does not rise with size across the eight states.
 
-Sources: E127:135-141, E127:224-228, E127:535-536; TT:399-400; E119:74-80; E126:16-19; claims:22; E125:243-251.
+Sources: E127:135-141, E127:224-228, E127:357-359, E127:535-536; E125:229-231, E125:275; `experiments/TRIED.md:86`; TT:399-400; E119:74-80; E126:16-19; claims:22; E125:243-251.
 
 ## 6. Open gaps that decide the paper, each with the run that would close it
 
 - **The first gap, the broad failure.** Teacher training with VPD's masked reconstruction added to its loss, on the lowercase
-  Adam fine-tune. A pass makes placement the lever for broad updates; a fail makes the function the limit.
+  Adam fine-tune. A pass makes placement the lever for broad updates and turns the accounting split into a tested
+  cause; a fail makes the function the limit.
 - **The second gap and the hiding objection.** Read where the standard copy's change and the least-squares start's sit
   against Γ's causal importances on the check's rows. Read it on both tasks. High-importance placement for the copy alone confirms the
   hypothesis.
