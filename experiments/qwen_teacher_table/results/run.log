@@ -1,0 +1,76 @@
+[     0.0s] [start] {'stage': 1, 'root': PosixPath('/root/e111')}; states ('R_s70',); arms (('1x', 1.0), ('10x', 10.0))
+[     0.0s] [fetch] /root/e111/qwen: complete
+[     7.5s] [fetch] /root/e111/inputs: complete
+[    12.0s] [fetch] /root/e111/dW: complete
+[    19.2s] [check] rows_and_seqs: ok {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800}
+[    19.7s] [start] host memory limit 250.0 GB from /sys/fs/cgroup/memory.max; the guard stops at 225.0 GB
+[   136.9s] [load] target, components, Γ, live set; NVIDIA A100-SXM4-80GB, peak GPU 40.61 GiB, host 43.5 GB
+[   195.7s] [check] R_s70_norm: ok {"norm": 0.3468409803773495, "e93": 0.3468409803773495, "sha256": "088e287432f9e7e1ef9670925e8b0d32d42e4b05f1ac54f418ca59c4be99f0be", "e93_sha256": "088e287432f9e7e1ef9670925e8b0d32d42e4b05f1ac54f418ca59c4be99f0be"}
+[   358.1s] [check] R_s70_split: ok {"share": 0.09425349839609497, "size": 0.9057437700139849, "e93_share": 0.09425349839609504, "e93_size": 0.9057437700140415, "seconds": 155.57952857017517}
+[   404.2s] [clean W0] K 0.0976920358 nll 2.07630978; rows 128, 46 s, peak GPU 40.61 GiB, host 77.9 GB
+[   404.8s] [check] R_s70_card_ruler: ok {"here": 0.09769203579558831, "e93": 0.09769188683527283}
+[   422.7s] [clean FT] K 0 nll 2.18107695; rows 128, 18 s, peak GPU 40.61 GiB, host 77.9 GB
+[   423.0s] [check] R_s70_clean_FT: ok {"K": 0.0}
+[   473.7s] [clean ls_moved] K 0.00232709582 nll 2.16197893; rows 128, 51 s, peak GPU 40.61 GiB, host 84.6 GB
+[   474.4s] [band] R_s70_ls_moved e93_K: drift 1.49e-07, band 1.49e-06
+[   474.4s] [check] R_s70_ls_moved: ok {"keys": ["K"], "K": 0.0023270958152853756, "e93_K": 0.002327054623891674, "drift": 1.4896031548528033e-07}
+[   474.4s] [check] R_s70_memory: ok {"gpu_gib": 40.61475849151611, "host_gb": 84.594184}
+[   607.3s] [cells R_s70 base] K0 0.0695774188 nll_W0 67770.7512 nll_FT 71190.3518 K00 0.166850519 K01 0.0703779341 nll_m00 67367.5069 nll_m01 70131.2817; rows 128, 133 s, peak GPU 42.16 GiB, host 84.6 GB
+[   608.0s] [check] R_s70_card_masked: ok {"here": 0.1668505188779541, "e93": 0.16688277166680562}
+[   778.0s] [cells R_s70 ls own at FT's weights] K10 0.166785981 K11 0.0704056031 nll_m10 67383.187 nll_m11 70155.155; rows 128, 170 s, peak GPU 42.53 GiB, host 84.6 GB
+[   779.8s] [band] R_s70_ls_own_ft e93_K01: drift 3.225e-05, band 0.0003225
+[   779.8s] [band] R_s70_ls_own_ft e93_K11: drift 3.225e-05, band 0.0003225
+[   779.8s] [band] R_s70_ls_own_ft e93_K10: drift 3.225e-05, band 0.0003225
+[   779.8s] [check] R_s70_ls_own_ft: ok {"keys": ["K01", "K11", "K10"], "K01": 0.07037793407247334, "K11": 0.07040560306617939, "K10": 0.16678598109771878, "e93_K01": 0.0703675330649297, "e93_K11": 0.07039611812941507, "e93_K10": 0.16681814692887326, "drift": 3.2252788851522274e-05}
+[  1001.3s] [cells R_s70 ls own, Δ frozen] K10 0.166785981 K11 0.0729057423 nll_m10 67383.187 nll_m11 69668.2004; rows 128, 217 s, peak GPU 42.82 GiB, host 84.6 GB
+[  1003.2s] [R_s70 pool] {"overlap16": 0.11397821576763485, "rows": [32, 32]}
+[  1003.2s] [R_s70 1x] lr 1.3e-08; 8-row K of least squares, this card's clean read 0.00194878354, E93's 0.00194871178
+[  1057.9s] [teach zero offsets] TF32 K8 0.00196242485 against fp32 0.00194878354: relative gap 0.007 (reference 0.001, logged only)
+[  1057.9s] [band] R_s70_1x_zero_offsets e93_K8: drift 1.49e-07, band 1.49e-06
+[  1057.9s] [check] R_s70_1x_zero_offsets: ok {"K8": 0.0019487835425400814, "tf32_K8": 0.001962424845907811, "r2": 0.0, "e93_K8": 0.0019487117786803371, "drift": 1.4896031548528033e-07}
+[  1059.0s] [teacher training] first batch KL(teacher ‖ W0): fp32 1.0098e-01, training forward 8.9387e-03
+[  1059.0s] [teacher training] step 1: KL 8.939e-03, 1.05 s, peak 51.8 GB
+[  1059.1s] [check] R_s70_1x_gradient: ok {"dV": 43.903397257072285, "dU": 62.22042041911991}
+[  1059.8s] [teacher training] step 2: KL 4.126e-04, 0.69 s, peak 51.8 GB
+[  1065.6s] [teacher training] step 10: KL 7.587e-04, 0.69 s, peak 51.8 GB
+[  1077.7s] [teach step 25] r2 1.53411e-05 (forecast 5.07e-06, ratio 3.03) K8 0.00123192339 (step 0 0.00194878354, difference -0.000717) train KL 0.00107211, 0.79 s per step, peak GPU 51.90 GiB, host 84.6 GB
+[  1077.8s] [band] R_s70_1x_first_reading K8_step0: drift 1.49e-07, band 1.49e-06
+[  1077.8s] [check] R_s70_1x_first_reading: ok {"r2": 1.534108028463818e-05, "forecast_r2": 5.0700000000000014e-06, "K8": 0.0012319233938022469, "K8_step0": 0.0019487835425400814, "K8_minus_step0": -0.0007168601487378345, "median_sqrt_v": 4.0698767406865954e-05, "gpu_gib": 51.90442991256714, "drift": 1.4896031548528033e-07}
+[  1095.5s] [teacher training] step 50: KL 2.284e-04, 0.70 s, peak 55.7 GB
+[  1096.8s] [teach step 50] r2 3.31608e-05 (forecast 1.01e-05, ratio 3.27) K8 0.00109516788 (step 0 0.00194878354, difference -0.000854) train KL 0.000539827, 0.78 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1116.0s] [teach step 75] r2 5.462e-05 (forecast 1.52e-05, ratio 3.59) K8 0.000983920219 (step 0 0.00194878354, difference -0.000965) train KL 0.000451372, 0.77 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1135.3s] [teacher training] step 100: KL 9.853e-05, 0.69 s, peak 55.7 GB
+[  1136.6s] [teach step 100] r2 8.04414e-05 (forecast 2.03e-05, ratio 3.97) K8 0.000887476695 (step 0 0.00194878354, difference -0.00106) train KL 0.00039902, 0.79 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1155.5s] [teach step 125] r2 0.000113245 (forecast 2.54e-05, ratio 4.47) K8 0.000811078741 (step 0 0.00194878354, difference -0.00114) train KL 0.000340466, 0.78 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1178.1s] [teach step 150] r2 0.000133559 (forecast 3.04e-05, ratio 4.39) K8 0.00076404967 (step 0 0.00194878354, difference -0.00118) train KL 0.00027711, 0.80 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1197.1s] [teach step 175] r2 0.000160995 (forecast 3.55e-05, ratio 4.54) K8 0.000721332026 (step 0 0.00194878354, difference -0.00123) train KL 0.000211941, 0.80 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1216.2s] [teacher training] step 200: KL 7.290e-05, 0.69 s, peak 55.7 GB
+[  1217.5s] [teach step 200] r2 0.00018457 (forecast 4.06e-05, ratio 4.55) K8 0.000687444087 (step 0 0.00194878354, difference -0.00126) train KL 0.000202388, 0.80 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1236.5s] [teach step 225] r2 0.000208214 (forecast 4.56e-05, ratio 4.56) K8 0.000662606998 (step 0 0.00194878354, difference -0.00129) train KL 0.000179444, 0.79 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1257.0s] [teach step 250] r2 0.000239332 (forecast 5.07e-05, ratio 4.72) K8 0.000633367021 (step 0 0.00194878354, difference -0.00132) train KL 0.000152327, 0.80 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1276.4s] [teach step 275] r2 0.00026541 (forecast 5.58e-05, ratio 4.76) K8 0.000612090459 (step 0 0.00194878354, difference -0.00134) train KL 0.000136195, 0.79 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1295.8s] [teacher training] step 300: KL 1.915e-04, 0.70 s, peak 55.7 GB
+[  1297.1s] [teach step 300] r2 0.000288317 (forecast 6.08e-05, ratio 4.74) K8 0.000593704679 (step 0 0.00194878354, difference -0.00136) train KL 0.000110854, 0.80 s per step, peak GPU 51.91 GiB, host 84.6 GB
+[  1328.2s] [save] /root/e111/large/R_s70_1x_offsets.safetensors (0.44 GB)
+[  1431.7s] [check] R_s70_1x_consistency: ok {"gap": 5.6762878108769e-08}
+[  1471.6s] [R_s70 1x] kept step 300, r2 0.000288317; printed share 0.0966502475 (least squares 0.0942534984), squared size 0.911088249
+[  1521.1s] [clean student] K 0.000585622207 nll 2.17305195; rows 128, 46 s, peak GPU 51.91 GiB, host 92.9 GB
+[  1536.7s] [gain student] 2.437106954752 nats per response token, 256 rows, 16 s, peak GPU 51.91 GiB, host 92.9 GB
+[  1759.4s] [cells R_s70 1x own, Δ frozen] K10 0.166719211 K11 0.0707093139 nll_m10 67376.2079 nll_m11 69928.857; rows 128, 223 s, peak GPU 51.91 GiB, host 93.2 GB
+[  1843.1s] [clean remainder] K 0.0852191911 nll 2.07949653; rows 128, 51 s, peak GPU 51.91 GiB, host 93.2 GB
+[  1843.3s] [R_s70 ls_frozen] verdict fails rules {"1": {"K": {"random": 0.09779363946040032, "signs": 0.12410822032000127, "W0": 0.09769203579558833, "FT": 0.0, "moved": 0.002327095815285376, "remainder": 0.07931382239175436}, "over_ruler": 0.023820732123492765, "teeth": {"random": {"gap": 0.018479817068645977, "width": 0.0023601103516681238, "label": "fails"}, "signs": {"gap": 0.04479439792824692, "width": 0.005692459770513518, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.09425349839609497, "null": 0.09706652239657027, "spread": 0.0018358828093935908, "result": "holds"}, "3": {"value": 0.9057437700139849, "result": "holds"}, "4": {"result": "no behaviour line"}, "5": {"diff": 0.0025278082250576673, "width": 0.0009408965736771382, "result": "misses"}, "6": {"result": "no behaviour line"}} printed {"scored": {"K_W0_masked": 0.1668505188779541, "K_do_nothing": 0.07037793407247334, "K_ls": 0.072905742297531, "K_ls_w0_masks": 0.16678598109771875, "kept": null}, "pooled": {"K_W0_masked": 0.1668505188779541, "K_do_nothing": 0.07037793407247334, "K_ls": 0.072905742297531, "K_ls_w0_masks": 0.16678598109771875, "kept": null}, "size_minus_one_minus_share": -2.7315899201463267e-06, "share": 0.09425349839609497, "squared_size": 0.9057437700139849, "share_null": 0.09706652239657027}
+[  1843.3s] [R_s70 1x] verdict passes rules {"1": {"K": {"random": 0.09779363946040032, "signs": 0.12410822032000127, "W0": 0.09769203579558833, "FT": 0.0, "moved": 0.0005856222067307696, "remainder": 0.08521919107895376}, "over_ruler": 0.005994574705722487, "teeth": {"random": {"gap": 0.012574448381446567, "width": 0.0016446468943000902, "label": "fails"}, "signs": {"gap": 0.03888902924104751, "width": 0.005083744979002287, "label": "fails"}}, "result": "holds"}, "2": {"value": 0.09665024754042552, "null": 0.09706652239657027, "spread": 0.0018358828093935908, "result": "misses"}, "3": {"value": 0.9110882488583542, "result": "holds"}, "4": {"result": "no behaviour line"}, "5": {"diff": 0.00033137983943501865, "width": 0.00024799699530243796, "result": "holds"}, "6": {"result": "no behaviour line"}} printed {"scored": {"K_W0_masked": 0.1668505188779541, "K_do_nothing": 0.07037793407247334, "K_ls": 0.07070931391190835, "K_ls_w0_masks": 0.16671921120532923, "kept": null}, "pooled": {"K_W0_masked": 0.1668505188779541, "K_do_nothing": 0.07037793407247334, "K_ls": 0.07070931391190835, "K_ls_w0_masks": 0.16671921120532923, "kept": null}, "size_minus_one_minus_share": 0.0077384963987796596, "share": 0.09665024754042552, "squared_size": 0.9110882488583542, "share_null": 0.09706652239657027, "r2": 0.00028831744354200305, "kept_step": 300, "excess_share": 0.002396749144330551}
+[  1843.3s] [R_s70 1x] done in 840 s, peak GPU 51.91 GiB, host 93.2 GB
+[  1843.3s] [R_s70 10x] lr 1.3e-07; 8-row K of least squares, this card's clean read 0.00194878354, E93's 0.00194871178
+[  1896.8s] [teach zero offsets] TF32 K8 0.00196242485 against fp32 0.00194878354: relative gap 0.007 (reference 0.001, logged only)
+[  1896.8s] [band] R_s70_10x_zero_offsets e93_K8: drift 1.49e-07, band 1.49e-06
+[  1896.8s] [check] R_s70_10x_zero_offsets: ok {"K8": 0.0019487835425400814, "tf32_K8": 0.001962424845907811, "r2": 0.0, "e93_K8": 0.0019487117786803371, "drift": 1.4896031548528033e-07}
+[  1897.8s] [teacher training] first batch KL(teacher ‖ W0): fp32 1.0098e-01, training forward 8.9387e-03
+[  1897.8s] [teacher training] step 1: KL 8.939e-03, 0.99 s, peak 55.7 GB
+[  1897.8s] [check] R_s70_10x_gradient: ok {"dV": 43.905651853410575, "dU": 62.23178696301779}
+[  1898.5s] [teacher training] step 2: KL 3.586e-04, 0.67 s, peak 55.7 GB
+[  1904.3s] [teacher training] step 10: KL 5.984e-04, 0.67 s, peak 55.7 GB
+[  1916.0s] [teach step 25] r2 0.000650014 (forecast 0.000507, ratio 1.28) K8 0.00257101566 (step 0 0.00194878354, difference 0.000622) train KL 0.000818821, 0.77 s per step, peak GPU 51.91 GiB, host 93.2 GB
+[  1916.1s] [band] R_s70_10x_first_reading K8_step0: drift 1.49e-07, band 1.49e-06
+[  1916.1s] [check] R_s70_10x_first_reading: MISSED {"r2": 0.0006500138900328543, "forecast_r2": 0.000507, "K8": 0.002571015656315457, "K8_step0": 0.0019487835425400814, "K8_minus_step0": 0.0006222321137753757, "median_sqrt_v": 3.375947562744841e-05, "gpu_gib": 51.90998411178589, "drift": 1.4896031548528033e-07}
+[  1916.1s] STOP R_s70_10x_first_reading
