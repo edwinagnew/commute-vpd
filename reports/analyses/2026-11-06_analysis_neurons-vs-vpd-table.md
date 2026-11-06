@@ -16,10 +16,10 @@ wrong-answer pairs.
 ## The answer
 
 Neither method tells new from existing on Qwen. At matched size VPD separates the layout fine-tune from invented
-facts, where neurons do not, but a known-facts fine-tune built alike reads on the invented side. Neurons
-separate known from invented facts; VPD only as description. Wrong answers stay beside true ones, pointing to topic or
-style; VPD's is a narrow no call. At the learned size neither reads these pairs: no neuron power, VPD's wrong-answer
-states unsaved, its known-arm reads description.
+facts, where neurons do not, but a known-facts fine-tune reads on the invented side. Neurons separate known from
+invented facts; VPD only descriptively. Wrong answers stay beside true ones, pointing to topic or style; VPD's is a
+narrow no call. At the learned size neither reads them: no neuron power, VPD not yet run on the wrong-answer end
+states, known-arm reads description.
 
 ## What the table compares
 
@@ -59,7 +59,7 @@ Verdicts in quotes are verbatim from the source; "class" is what the verdict say
 | known vs new facts, matched, set identity | description only, on Jaccard: 0.632 to 0.660 across arms, 0.857 and 0.886 within; on shared-over-smaller the gap is inside the seed band, and the fictional sets are larger | "beyond seed noise" on both row sets; rows null "label" on both | E107 `amend1_sets.json .pairs`; E103 `.identity`; E105 `score.json` |
 | known vs new facts, learned | description, not a filed verdict: outside "like anchor 2", placement "midway: no call", think "like anchor 2", reported only, sizes 2.2 times apart | "no power at this size": seeds share 0.652 | E94 `.sides.end`; E109 `score.json .tofu` |
 | wrong vs true answers, matched | "no call": lowest pair 0.80303 against the line 0.80320 | "topic or style" on both row sets | E107 `amend1_sets.json .rule`; E107 `score.json .wrong` |
-| wrong vs true answers, learned | not run: no full-size wrong-answer states saved | "no call", "no power at this size" on both probes | E109 `score.json .tofu, .T` |
+| wrong vs true answers, learned | not run: VPD not yet run on the wrong-answer end states, which E109 saved | "no call", "no power at this size" on both probes | E109 `score.json .tofu, .T` |
 | real authors vs world facts, matched | not run | "topic moves the set" on the TOFU rows; "no call" on the real rows | E107 `score.json .topic` |
 | 67M, built to reuse vs built to be new, assumed labels | description: VPD's r "separates" on all three rows both read, by E51's rule applied afterwards, not a filed verdict | separates one of three; filed "not a kind reader": "pass" | `method_table/results/table.json`; E98 `score.json .rows.P1` |
 
@@ -108,7 +108,7 @@ show it.
 
 ## Where neither reads
 
-Familiarity at the learned size: VPD's wrong-answer states were not saved, and the neuron set lacks power there. Real
+Familiarity at the learned size: VPD not yet run on the wrong-answer end states, and the neuron set lacks power there. Real
 facts the model does not know, in the known arm's style. Known against invented facts at matched learning, since the
 invented arm at matched size has learned nothing. The reinforcement-learning maths arms have VPD readings only; in
 E104 they read like their shuffled-reward null on all three. E92's steering vector, a third cheap comparator, cannot be read
@@ -140,7 +140,7 @@ is description.
    seeds reproduce, the familiarity row gets a neuron reading where facts are learned.
 2. **Invented facts in the known arm's style**, a new plan. If known and invented facts still separate with style
    held, set identity reads novelty; if not, it reads style.
-3. Saving full-size wrong-answer states would give VPD the learned-size familiarity cell.
+3. Running VPD's reads on E109's saved wrong-answer end states would give VPD the learned-size familiarity cell.
 
 ## Reads under, and departures
 
@@ -156,7 +156,8 @@ adds no rule. Every reading is this project's measurement.
 
 - **E109 Amendment 1**, a stable ranking or set size at the learned size: next, per the user.
 - **Invented new facts in the known arm's style**: next after it, per the user.
-- VPD reads of the full-size wrong-answer states; none were saved.
+- VPD reads of the wrong-answer end states: VPD not yet run on them; E109 saved them as
+  `experiments/larger_size/results/large/dW/WRONG_end{42,142}.safetensors`.
 - VPD reads of the topic states.
 - A neuron reading of the layout and invented-facts pair at the learned size.
 - The neuron and VPD sets on the same rows with the same overlap measure.

@@ -138,7 +138,7 @@ def wrong_vs_known() -> list[dict[str, Any]]:
                          f"'{t['tofu']['status']}'",
                  f"seed level {t['tofu']['w']:.3f} (TOFU rows), {t['T']['w']:.3f} (answer tokens)",
                  "seed level must clear the fictional overlap by its band", E109, ".tofu, .T")
-    none = cell(NOTRUN, "no full-size wrong-answer states saved", "", "", None, "")
+    none = cell(NOTRUN, "VPD not yet run on the wrong-answer end states", "", "", None, "")
     topic = n["tofu"]["topic"]
     top_n = cell(SEP, f"TOFU rows '{topic['verdict']}', real rows '{n['real']['topic']['verdict']}'",
                  f"authors in world facts {rng(topic['cross'])} vs line {topic['line']:.3f}", "E105's random halves",
