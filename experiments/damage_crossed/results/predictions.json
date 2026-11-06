@@ -11,6 +11,7 @@
   "band": "half-width w = 0.25 x (D_A - D_L); cell c1's band D_L +- w, cell c2's band D_A +- w (both edges inclusive). Measured in stage 2, before any copy is trained.",
   "c1": "the Adam fine-tune (all 24 matrices, Adam 3e-5, batch 8, E37's rows once, clip 1) at the checkpoint (every 10 steps, 10-300) whose damage is nearest D_L (exact ties: the earliest step); not run if that damage is outside c1's band.",
   "c2": "the rank-8 LoRA (all 24 matrices, Adam 1e-4, seed 0, batch 8, fresh lowercase rows once: E37's 2,400 then the next 29,600 from Pile train 0-32767) at the checkpoint (every 100 steps, 100-4000) whose damage is nearest D_A; if none is in c2's band, the same at Adam 3e-4 (E39's grid); not run if still none.",
+  "c3": "added by the lead 2026-11-06, before any run: the full Adam fine-tune (stage 3's, step 300) copied by the same recipe but from its least-squares split: offsets (dU, dV) = split.split_state(dW, U, V) (bases tol 1e-6) as saved bf16 and read back, E121 rung R4's start (copy_gap_ladder/run.py ls_start), through row_copy.copy_states(init=...). Read: its do-nothing (nothing_adam300) and the split start itself (tt_c3_start) on A, the copy on A and B. Readable as the cells (pass or fail on both sets; a pass needs nothing_adam300 to fail on A); no damage band (it is the full fine-tune).",
   "copy": "E37's teacher training (row_copy.copy_on_rows): Adam 1e-5 on the alive U, V from W0's, Gamma and Delta frozen, KL(fine-tune || student) mean over every position, batch 8 of E37's 2,400 lowercase rows drawn in batch order 0, 1,000 steps; saved as bf16 offsets and read back from the file.",
   "cell verdict": "pass if the copy's ratio passes on both sets; fail if it fails on both; mixed if anything else is read; invalid if a ratio is not finite; not run if a set is missing.",
   "readable": "a cell's verdict is read only if (i) its fine-tune checkpoint is in its band, (ii) its copy's damage is in the same band, (iii) the verdict is pass or fail, and (iv) for a pass, the cell's do-nothing (the fine-tune's dW left in Delta) fails on set A: otherwise the check had no power on that update (E49; decisions.md row 75).",
@@ -33,6 +34,7 @@
   "gains at step 300": "Adam 0.1296, LoRA 0.1477 (L40, E49 regen.json)",
   "c1 step": "about 50-150 of 300 (Fable's estimate, step ~100); its gain below the full fine-tune's 0.130",
   "c2 step": "about 1,000-4,000 at 1e-4; unknown, the reason for the 3e-4 fallback; its gain above 0.148",
+  "c3": "split start on A: about 1.0-1.3 (E37 A1's scaled adjoint start read 1.05, E39's least-squares-like adjoint splits pass); nothing_adam300 on A about 4.9 (E39 A2: 4.87, H100); copy on A and B: no lean (E37 A1's copy from the adjoint start rose to 1.76 at 1,000 steps and 1.84 at 2,000 as its damage rose 0.05 -> 0.24; E121's R4 stayed at cosine 0.81 to the fine-tune with teacher gap 0.0035)",
   "recipe copy": "about 2.2 on A (1.9-2.4; E37's two batch orders read 2.20 and 1.88)",
   "do-nothing c1, c2 on A": "fail, >= 2.5 (E39's do-nothing LoRA at damage 0.121 read 2.65, plain SGD at 0.090 read 2.62, Adam at 0.235 read 4.87; H100)",
   "copy damage": "0.97-1.03 of its fine-tune's (E37: 0.996)",
@@ -44,6 +46,8 @@
    "why": "E39 Amendment 2: on these rows every state with damage < 0.06 passed and every one > 0.2 failed; but full-matrix SGD copies at damage 0.090 and 0.126 failed set A (2.07, 2.12) while passing set B (1.18, 1.39), so 'mixed' is also likely"},
   {"id": "P2", "rule": "cell c2's verdict (readable) is fail", "lean": "holds", "confidence": "medium-low",
    "why": "every state above damage 0.2 on these rows failed (E39 Amendment 2, E37 Amendment 1's adjoint start 1.76-1.84 at 0.24); but the LoRA's pass (1.27, 1.21) is the one result no explanation tested so far has removed"},
+  {"id": "P3", "rule": "cell c3's verdict (readable) is pass", "lean": "none: low confidence either way (lead)", "confidence": "low",
+   "why": "E121's R4 copy from the least-squares split stays near the fine-tune's weights; but E37 Amendment 1's copy from the scaled adjoint split drifted from 1.05 to fail (1.76, 1.84) as it took on the full damage"},
   {"id": "M1", "rule": "map_contrast(tt_adam, tt_lora): 'tt_adam more'", "lean": "holds (Fable's hypothesis)", "confidence": "low", "scored": "reported, not part of the outcome"},
   {"id": "M2", "rule": "map_contrast(tt_c1, tt_c2), read beside the outcome: under 'damage' the more concentrated one should be c2", "lean": "none", "scored": "reported"}
  ],
@@ -51,6 +55,8 @@
   "damage": "c1 pass, c2 fail: the copy fails when the update's damage on plain Pile text is high, whatever the recipe; sentence 3 of the write-up becomes 'fails when the update's damage exceeds about 0.2'.",
   "recipe": "c1 fail, c2 pass: the copy fails for the full-matrix Adam update's shape, at any damage; a LoRA's update stays copyable even when it damages as much.",
   "both fail": "c1 fail, c2 fail: neither damage nor recipe alone; high damage fails and full-matrix Adam fails, so the LoRA's pass needs both low damage and the LoRA's shape. The maps say whether the fail sits at case positions.",
+  "c3 pass": "the broad failure is the standard copy's path (where teacher training goes from W0's start), not a limit of the decomposition: a faithful copy of the full-damage Adam update exists and teacher training finds it from the split start. Read beside the pair: it bears on the pair's recipe reading.",
+  "c3 fail": "not the path alone: started near the fine-tune's own change, the copy still fails at full damage.",
   "both pass": "c1 pass, c2 pass: the fail needs both high damage and Adam's full-matrix shape; neither alone fails.",
   "no call": "a cell off target, mixed, invalid, not run, or a pass without power; the readable cell's half is reported as a lean, not a cause.",
   "a stop": "C0-C5 or the rerun check: nothing scored; the lead is told."

@@ -195,6 +195,13 @@ def score(out: dict[str, Any]) -> dict[str, Any]:
         cell["readable"] = readable(cell)
         sc["cells"][c] = cell
     sc["outcome"] = outcome(sc["cells"]["c1"], sc["cells"]["c2"])
+    rA, rB = ratio(kl, "tt_c3", "A"), ratio(kl, "tt_c3", "B")  # c3: no band, it is the full fine-tune
+    c3 = {"ft_in_band": True, "copy_in_band": True, "verdict": cell_verdict(rA, rB), "A": rA, "B": rB,
+          "nothing_A": ratio(kl, "nothing_adam300", "A"), "start_A": ratio(kl, "tt_c3_start", "A")}
+    c3["readable"] = readable(c3)
+    c3["reading"] = ({"pass": "the copy's path", "fail": "not the path alone"}[c3["verdict"]] if c3["readable"] == "yes"
+                     else "no call")
+    sc["cells"]["c3"] = c3
     maps = out.get("maps", {})
     sc["maps"] = {"M1 tt_adam vs tt_lora": map_contrast(maps, "tt_adam", "tt_lora"),
                   "M2 tt_c1 vs tt_c2": map_contrast(maps, "tt_c1", "tt_c2")}
