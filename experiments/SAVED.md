@@ -293,6 +293,9 @@ Written by run.py `--stages 0a`; every file is checked by the sha256 in `results
 ## regating_truth_table (E60) and restore_anchors (E50 and Amendment 1)
 - Empty, and both stay so: E60 only reads the 18 saved states (regating_table's E46 files, performed_anchor's E53 files, keydependent_elicit's E54 files) and writes JSON; E50's restore reads regating_table's `ident32*`/`rand32*` states (`E46 / "large"`) and keeps nothing.
 
+## rows_null (E105; ran 2026-11-06, job 53480)
+- `experiments/rows_null/results/large/dW/{A42,A142,B42,B142}_matched.safetensors`: 2.82 GB each, bf16, the fine-tune's weight change at the matched step (32) for each row half and seed. Gitignored (link into `~/commute-data/results-large/`). Regenerate: `sbatch cluster/rows_null.sbatch` (~9 min, L40, debug QoS).
+
 ## row_blocks (E49, written 2026-10-29, Slurm 42959)
 - `dW_{adam,sgd,lora}.pt`: dW dicts (fp32) of the lowercase fine-tunes (`lowercase.finetune`, 300 steps of 8 lowercase rows), regenerated on the cluster L40 by `run.py regen`; sha256 in `results/regen.json` and the regen log. Load with `torch.load(p, weights_only=True)`; a do-nothing state is `harness.at(ctx, dW, None)`.
   - `dW_adam.pt` (113,253,467 B; sha256 `2b1669e1…`): E37's Adam fine-tune, rate 3e-5; held-out gain 0.12963 (H100 0.1301).
