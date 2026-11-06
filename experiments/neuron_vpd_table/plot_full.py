@@ -28,7 +28,7 @@ HERE = Path(__file__).resolve().parent
 FIG = HERE / "figures"
 BLUE, ORANGE, GREY, INK, GRID = "#2a78d6", "#eb6834", "#9c9a92", "#52514e", "#e4e3df"
 CLS = {"copy maps": BLUE, "lowercase": BLUE, "random maps": ORANGE, "ciphers": ORANGE}
-QCOLS = ["direct_maths", "outside", "placement", "think", "size", "gain", "rank", "steer", "carry"]
+QCOLS = ["direct_maths", "outside", "placement", "think", "size", "gain", "steer", "carry"]  # no W0 rank: rows only
 QNAME = {"rule2_share": "VPD:\nshare in Δ", "direct_maths": "VPD:\ndirect maths", "outside": "VPD:\noutside share",
          "placement": "VPD:\nplacement", "think": "VPD:\nthink overlap", "size": "update\nsize", "gain": "gain\nin log P",
          "rank": "W0 rank", "steer": "steering\nshare", "carry": "carrying-\nneuron share"}

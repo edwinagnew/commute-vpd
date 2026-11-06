@@ -48,6 +48,11 @@ firing at the read position, state minus W0, on the same windows. Same windows, 
 | C | Re-switching carried by the set | r_S: (L with W0's gates except S_on given the state's gates, minus L00) / (T1 − T0), with C0's masked forward (`local_faith`) | r_N: (W0's model with only N_on given the state's firing, minus T0) / (T1 − T0) |
 | ref | Full-width re-switching, not rerun | r (E46/E53, `regating_truth_table/results/table.json`) | r_half, r_n (E98, `neuron_r/results/cells.json`) |
 
+*Note 2026-11-06 (after the run; independent check fix 9): panel B's neuron side as run puts N_on's firing back to
+W0's own firing a0, the lead's decision recorded in `experiments/neuron_vpd_count/results/predictions.json`
+(`panels.B.neurons`) before any run, not the parenthetical form above. That form, W0's MLP weights on the fine-tuned
+model's MLP input, is reported beside as `cells.json` `B.neurons_ah`.*
+
 Panels B and C each also get a random same-count set: 20 draws, block-matched (neurons per block and subcomponents
 per matrix as in the real set), reported as a mean and range. This is the floor.
 

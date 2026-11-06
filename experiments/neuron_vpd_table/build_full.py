@@ -34,6 +34,8 @@ TASKS67 = {"copy maps": ["ident32", "ident32b"], "random maps": ["rand32", "rand
            "lowercase": ["lowercase"], "ciphers": ["e53_cipher", "broad_cipher"]}
 VPD_COLS = ["rule2_share", "direct_maths", "outside", "placement", "think"]
 CMP_COLS = ["size", "gain", "rank", "steer", "carry"]
+# the pair grid and the place summary leave out W0's rank: it reads each arm's rows, not the state (independent check, fix 6)
+SUM_COLS = VPD_COLS[1:] + [c for c in CMP_COLS if c != "rank"]
 NAMES = {"rule2_share": "VPD: E93 share left in Δ", "direct_maths": "VPD: direct maths", "outside": "VPD: outside share",
          "placement": "VPD: placement excess", "think": "VPD: think overlap", "size": "update size ‖δW‖/‖W0‖",
          "gain": "gain in log P", "rank": "W0 rank of first answer token", "steer": "steering share",
@@ -148,21 +150,24 @@ def gap_spread(a: list[float | None], b: list[float | None]) -> float | None:
 
 
 def known_f(S: dict[str, dict[str, Any]], known: list[str], a2: list[str], c: str) -> float | None:
-    """None when a value is missing or the anchors do not separate on this column (gap over spread ≤ 1), as E94's
-    "no call: the anchors do not separate"."""
+    """None when a value is missing, when the anchors do not separate on this column (gap over spread ≤ 1), as E94's
+    "no call: the anchors do not separate", or when the known arm's two seeds differ by more than the anchors' gap, so
+    its mean is no place (independent check, fix 7: known_s42_end's carrying share 2.15 against 0.13)."""
     vals = [S[s][c] for s in ["a1_s0", "a1_s1", *a2, *known]]
     g = gap_spread([S[s][c] for s in ("a1_s0", "a1_s1")], [S[s][c] for s in a2])
     if any(v is None for v in vals) or g is None or g <= 1:
         return None
     m = lambda xs: sum(S[s][c] for s in xs) / len(xs)
     lo, hi = m(["a1_s0", "a1_s1"]), m(a2)
+    if abs(S[known[0]][c] - S[known[1]][c]) > abs(hi - lo):
+        return None
     return (m(known) - lo) / (hi - lo) if hi != lo else None
 
 
 def qwen() -> dict[str, Any]:
     rows = js(E118)["rows"]
     S = per_state(rows)
-    cols = VPD_COLS[1:] + CMP_COLS
+    cols = SUM_COLS
     return {"states": S, "e93_orders": orders(S, rows),
             "pairs": {p: {c: gap_spread([S[s][c] for s in a], [S[s][c] for s in b]) for c in cols} for p, (a, b) in PAIRS.items()},
             "known_f": {k: {c: known_f(S, kn, a2, c) for c in cols} for k, (kn, a2) in KNOWN.items()}}
@@ -196,7 +201,8 @@ def md_67m(M: dict[str, Any]) -> list[str]:
                 t = {m: V[f"{fam}/{p}/{m}"] + (f" (gap {g[m]['gap']:.3f}, within {g[m]['within']:.3f})" if g[m] else "") for m in g}
                 L.append(f"| {fam} {p} | {t['vpd']} | {t['neurons']} |")
     L += ["", ("**Whole-width readings under the same rule**, description only (E117 filed no verdict on them; the C limits are "
-          "its controls and reproduce E46/E53's r and E98's r_n):"), "", "| reading | comparison | gap | within | reads | E53 bar (≥ 0.3) |",
+          "its controls and reproduce E46/E53's r and E98's r_n). gap = min(existing class) − max(new class), so a negative gap "
+          "is the new class higher; \"reversed\" when min(new) − max(existing) exceeds the within-class range:"), "", "| reading | comparison | gap | within | reads | E53 bar (≥ 0.3) |",
           "|---|---|---|---|---|---|"]
     for k, v in M["full_width"].items():
         col, comp = k.split("/")
@@ -225,12 +231,17 @@ def md_qwen(Q: dict[str, Any]) -> list[str]:
           "| column | passes | fails | reads | margin |", "|---|---|---|---|---|"]
     for c, o in Q["e93_orders"].items():
         L.append(f"| {NAMES[c]} | {fmt(o['pass'][0])} to {fmt(o['pass'][1])} | {fmt(o['fail'][0])} to {fmt(o['fail'][1])} | {o['reads']} | {fmt(o['margin'])} |")
-    cols = VPD_COLS[1:] + CMP_COLS
-    L += ["", "**Gap over seed spread per pair** (E92's stop-rule quantity; > 1 is E92's \"counts\"; – not read on that pair)", "",
+    cols = SUM_COLS
+    L += ["", ("**Gap over seed spread per pair** (E92's stop-rule quantity; > 1 is E92's \"counts\"; – not read on that pair). "
+              "On the anchor pairs and the known-against-wrong pair each arm is read on its own rows, so the gain, steering and "
+              "carrying cells there are across rows; RL against null shares the gold rows. W0's rank is left out: it reads "
+              "only the rows."), "",
           "| pair | " + " | ".join(NAMES[c] for c in cols) + " |", "|---|" + "---|" * len(cols)]
     for p, d in Q["pairs"].items():
         L.append(f"| {p} | " + " | ".join(fmt(d[c], 2) for c in cols) + " |")
-    L += ["", "**Where the known-facts fine-tune sits between the anchors** (f: template 0, fictional facts 1)", "",
+    L += ["", ("**Where the known-facts fine-tune sits between the anchors** (f: template 0, fictional facts 1; – where the "
+              "anchors do not separate on that column, or the known arm's two seeds differ by more than the anchors' gap. "
+              "The comparators read each arm on its own rows: the known arm on its sentences, its carrying share on E103's probe)"), "",
           "| size | " + " | ".join(NAMES[c] for c in cols) + " |", "|---|" + "---|" * len(cols)]
     for k, d in Q["known_f"].items():
         L.append(f"| {k} | " + " | ".join(fmt(d[c], 2) for c in cols) + " |")
