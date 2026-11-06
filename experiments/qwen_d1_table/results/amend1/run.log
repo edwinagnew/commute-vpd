@@ -1,0 +1,14 @@
+[     0.0s] [start] amend1 {'stage': 'control', 'states': None, 'edges': False, 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(gain_batch=2, limit_s=7020, first_guess_s=2400)
+[     6.1s] [check] rows_and_seqs: ok {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800}
+[    80.3s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.1 GB
+[   198.4s] [cells u1 step 10 base] K0 0.0696131952 nll_W0 67770.7505 nll_FT 62186.7686 K00 1.37381065 K01 0.104362602 nll_m00 67363.8523 nll_m01 66025.5824; rows 128, 105 s, peak GPU 42.11 GiB, host 43.1 GB
+[   198.4s] [check] do_nothing_E93: ok {"K00": 1.3738106470539775, "K01": 0.10436260220730434}
+[   492.6s] [check] ls_share_E93: ok {"share": 0.09001726620341273}
+[   735.0s] [cells u1 step 10 ls own, state path] K10 1.29340265 K11 0.103438716 nll_m10 66384.9699 nll_m11 66082.4; rows 128, 230 s, peak GPU 42.77 GiB, host 83.3 GB
+[   735.0s] [check] ls_state_path_E93: ok {"K10": 1.2934026471043127, "K11": 0.10343871625828649}
+[   934.6s] [sigma] 196 sites in 174 s, peak GPU 42.77 GiB, host 83.3 GB
+[  1200.3s] [adjoint u1 step 10] {"size": 3.4852040865884852, "left": 2.5868709260099214, "moved": 2.3310467867432014, "null": 2.0620407233876152, "second": 1.6250296540034757e-07, "reproduced": 804.7852254371169, "energy": 1440.0928198329627}; 266 s, peak GPU 42.77 GiB, host 86.6 GB
+[  1251.1s] [clean adjoint_old] K 0.165671216 nll 1.85958426; rows 128, 51 s, peak GPU 42.77 GiB, host 93.3 GB
+[  1251.1s] [check] adjoint_old_E86: ok {"K": 0.16567121577502888}
+[  1251.1s] [check] control_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 93.3021}
+[  1251.1s] [control] passed; 10.8 min a maths state, peak GPU 42.77 GiB, host 93.3 GB
