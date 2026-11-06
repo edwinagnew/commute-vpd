@@ -4,6 +4,7 @@
       -> figures/ladder.png     input-weighted cosine to dW per rung, task windows and Pile, with the rerun line
       -> figures/remainder.png  P(target) of each state and of the same state with its remainder removed (W0 + k dW)
       -> figures/function.png   functional cosine at the trigger per rung, with the rerun line
+      -> figures/amend1_faith.png  Amendment 1: E34's adversarial ratio per state, both line sets, the do-nothing level
 """
 
 from __future__ import annotations
@@ -124,11 +125,56 @@ def function() -> None:
     fig.savefig(FIGURES / "function.png", dpi=150)
 
 
+A1_STATES = ["nothing", "R3_o0", "R3_o1", "R3_o2", "R4_start", "R4_o1", "R4_o2"]
+A1_LABEL = {
+    "nothing": "do-nothing:\nfine-tune\nleft in Δ",
+    "R3_o0": "teacher\ntraining,\norder 0",
+    "R3_o1": "teacher\ntraining,\norder 1",
+    "R3_o2": "teacher\ntraining,\norder 2",
+    "R4_start": "least-squares\nsplit, before\ntraining",
+    "R4_o1": "from the split,\norder 1",
+    "R4_o2": "from the split,\norder 2",
+}
+A1_COLOUR = {"nothing": MUTED, "R3": INK, "R4": "#c2410c"}
+
+
+def amend1() -> None:
+    """Amendment 1: E34's adversarial ratio per state (results/copy_gap_ladder_amend1.json, jobs 54786 and 54815)."""
+    a1 = json.loads((RESULTS / "copy_gap_ladder_amend1.json").read_text())
+    (p34, f34), (p39, f39) = a1["score"]["e34"]["lines"], a1["score"]["e39"]["lines"]
+    fig, ax = plt.subplots(figsize=(8.6, 4.6))
+    ax.axhspan(p34, f34, color=BAND, zorder=0)
+    ax.text(6.45, (p34 + f34) / 2 + 0.12, "inconclusive between\nE34's lines", ha="right", fontsize=7.5, color=MUTED)
+    for y, ls, text in ((p34, "-", f"E34's pass line on this card, {p34:.2f}"), (f34, "-", f"E34's fail line, {f34:.2f}"),
+                        (p39, ":", f"E39's fixed pass line, {p39:.2f}"), (f39, ":", f"E39's fixed fail line, {f39:.2f}")):
+        ax.axhline(y, color=MUTED, ls=ls, lw=0.9)
+        ax.text(-0.45, y + 0.008, text, va="bottom", fontsize=7, color=MUTED)
+    ax.axhline(1.0, color=INK, lw=0.6)
+    ax.text(3.3, 1.008, "W0, the released decomposition: 1", va="bottom", fontsize=7, color=INK)
+    nothing = a1["ratio"]["nothing"]
+    ax.axhline(nothing, color=MUTED, ls="--", lw=1.2)
+    ax.text(3.3, nothing - 0.01, f"do-nothing level, {nothing:.2f}", va="top", fontsize=7.5, color=MUTED)
+    for i, n in enumerate(A1_STATES):
+        c = A1_COLOUR[n if n == "nothing" else n[:2]]
+        open_marker = n in ("nothing", "R4_start")
+        ax.plot(i, a1["ratio"][n], "o", ms=8, color=c, mfc="none" if open_marker else c, mew=1.8)
+        ax.text(i + 0.12, a1["ratio"][n], f"{a1['ratio'][n]:.2f}", va="center", fontsize=7.5, color=c)
+    ax.set_xticks(range(len(A1_STATES)), [A1_LABEL[n] for n in A1_STATES], fontsize=7.5)
+    ax.set_xlim(-0.5, len(A1_STATES) - 0.5)
+    ax.set_ylim(0.85, 1.95)
+    ax.set_ylabel("adversarial KL at the state over W0's, Pile rows 0-255")
+    ax.set_title("Is the copy from the least-squares split faithful? Not decided: above do-nothing, below the fail line", fontsize=10)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(FIGURES / "amend1_faith.png", dpi=150)
+
+
 def main() -> None:
     FIGURES.mkdir(exist_ok=True)
     ladder()
     remainder()
     function()
+    amend1()
 
 
 if __name__ == "__main__":

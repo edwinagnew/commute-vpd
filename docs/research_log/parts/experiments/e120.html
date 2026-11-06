@@ -1,12 +1,15 @@
 <article class="exp" id="e120">
-<div class="top"><span class="id">E120</span><span class="chip open">ongoing</span><h3>Can one real maths task give both kinds of update, one on problems the model already solves and one on problems it never solved?</h3><span class="when">2026-11-06 · ongoing, coding, sampling next · MATS cluster and one H100 pod · <code>experiments/qwen_pass_pools</code></span></div>
+<div class="top"><span class="id">E120</span><span class="chip open">ongoing</span><h3>Can one real maths task give both kinds of update, one on problems the model already solves and one on problems it never solved?</h3><span class="when">2026-11-06 · ongoing, sampling done, regrade and fine-tunes next · MATS cluster and one H100 pod · <code>experiments/qwen_pass_pools</code></span></div>
 <p class="one"><strong>The question.</strong> The decomposition readings on Qwen3-1.7B (<a href="#e93">E93</a>, <a href="#e94">E94</a>) were calibrated on a template fine-tune and a fictional-facts fine-tune, which differ in task and format as well as in kind. A real task that supplies both kinds would calibrate them on one footing. Owned by <code>qwen-rl-lead</code>; the readings are <code>qwen-decomp-lead</code>'s.</p>
-<p class="one"><strong>What we did.</strong> Nothing has run yet. The plan samples the unchanged model many times on GSM8K and MATH levels 3 to 5 problems and sorts them into two matched pools: problems it solves often ("known") and problems it never solved in 64 samples ("new", not "absent"). Each pool's human-written solutions are then used to fine-tune with the recipe of the GSM8K gold arm, two seeds each, and the updates are saved for the decomposition readings.</p>
-<p class="one"><strong>What we found.</strong> No result yet.</p>
-<p class="one"><strong>What it means.</strong> If the pools hold, the GSM8K RL, own-samples, shuffled-reward and template states are read against anchors from their own task. If the new pool has under about 100 problems after the guards, or most of it is solved with thinking on, the plan falls back to its second option or goes to the user.</p>
+<p class="one"><strong>What we did.</strong> We sampled the unchanged model many times on GSM8K and MATH levels 3 to 5 problems and sorted them into two matched pools: problems it solves often ("known") and problems it never solved in 64 samples ("new", not "absent"). Each pool's human-written solutions are then used to fine-tune with the recipe of the GSM8K gold arm, two seeds each, and the updates are saved for the decomposition readings.</p>
+<p class="one"><strong>What we found.</strong> Sampling finished ($15.72). Each pool holds 78 problems, short of the 100 the plan asked for, so that size rule misses and stands. The novelty check passes: with thinking on, the model solves 0.256 of the "new" problems. A bug in how MATH answers were graded (choice letters and units) had wrongly put some solvable problems in the "new" pool; the regrade on CPU (Amendment 2) projects about 115 problems a side.</p>
+<p class="one"><strong>What it means.</strong> If the regraded pools reach about 100 problems, the four fine-tunes run and the GSM8K RL, own-samples, shuffled-reward and template states are read against anchors from their own task. If not, the plan falls back to its second option or goes to the user.</p>
 <dl class="fields">
-<dt>Run</dt><dd>Planned: a control stage, sampling on an H100 pod (about 2 to 4.5 h, $8 to 18), then four fine-tunes on a cluster L40 at about 29 min each, $0.</dd>
-<dt>Bears on</dt><dd>D3 in What's next: the anchors for the Qwen readings.</dd>
-<dt>Moved on</dt><dd>Plan <code>reports/plans/2026-11-06_plan_e120-pass-rate-pools.md</code>; the card is rewritten when the pools exist.</dd>
+<dt>Run</dt><dd>Sampling on an H100 pod, $15.72; the regrade runs on CPU; then four fine-tunes on a cluster L40 at about 29 min each, $0 (planned).</dd>
+<dt>Found</dt><dd><ul>
+<li>The pools hold 78 problems a side, under the 100 asked for; the novelty check passes (0.256 solved with thinking).</li>
+<li>A grading bug cut solvable MATH problems out of the "new" pool; the regrade projects about 115 a side.</li></ul></dd>
+<dt>Bears on</dt><dd>The anchors for the Qwen readings, under What's next.</dd>
+<dt>Moved on</dt><dd>Plans <code>reports/plans/2026-11-06_plan_e120-pass-rate-pools.md</code> (Amendments 1 and 2) and review <code>reports/reviews/2026-11-06_review_e120-gold-error-guard.md</code>; the card is rewritten when the regraded pools exist.</dd>
 </dl>
 </article>
