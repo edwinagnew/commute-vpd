@@ -41,6 +41,7 @@ SECTIONS = [
     ("apparatus", "index.html"),
     ("techniques", "index.html"),
     ("methodtable", "experiments.html"),
+    ("neurontable", "experiments.html"),
     ("experiments", "experiments.html"),
     ("next", "index.html"),
     ("claims", "index.html"),
