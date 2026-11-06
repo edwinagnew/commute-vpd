@@ -269,15 +269,19 @@ Sums = dict[str, list[list[float]]]  # key -> one [whole, cut, fragment, other, 
 
 
 def cells(d: Decomp, rs: RowSet, change: Any = None, w0_v: bool = True, c0: qr.Counts | None = None,
-          c1: qr.Counts | None = None) -> Sums:
+          c1: qr.Counts | None = None, state: str = "FT") -> Sums:
     """One pass over the rows at weight sets W0 and "FT", Δ off, one row at a time, per-row sums by class.
     change None (the components as W0's): K0 = KL(W0 clean ‖ W0 masked), K00 = KL(FT clean ‖ masked with W0's masks),
     K01 = KL(FT clean ‖ masked with FT's masks); NLLs of W0 clean, FT clean and both masked forwards (nll_m00, nll_m01);
     c0, c1 count W0's and FT's gates. A split `change` moved into the live columns: K10, K11 and nll_m10, nll_m11, the
-    masks read through W0's V (w0_v, the new pass, E61's masks) or through the moved V′ (the state's own masks)."""
+    masks read through W0's V (w0_v, the new pass, E61's masks) or through the moved V′ (the state's own masks).
+    `state`: the weight set Γ reads for the second cell (K11, nll_m11), when the state's weights are not FT's (the
+    adjoint split's W0 + moved part, E93 Amendment 1); K is still against FT clean."""
     model, j, out = d.model, "1" if change is not None else "0", {}
+    assert change is not None or state == "FT", "the base cells read FT's own masks"
     keep = {s: lin.weight.data for s, lin in linears(model).items()}
     gate_comps = OriginalV(d.comps, d.alive) if change is not None and w0_v else d.comps
+    keys = ("W0", state) if state == "FT" else ("W0", state, "FT")
 
     def add(key: str, x: Tensor, cls: Tensor) -> None:
         out.setdefault(key, []).append(by_class(x[0] if x.dim() == 2 else x, cls))
@@ -285,23 +289,23 @@ def cells(d: Decomp, rs: RowSet, change: Any = None, w0_v: bool = True, c0: qr.C
     with qwen_maps.applied(model, d.comps, d.alive, change, keep) if change is not None else nullcontext():
         for i, t in enumerate(rs.tokens):
             t, cls, got = t[None].to(DEV), rs.cls[i], {}
-            for key in ("FT", "W0") if d.weights.now == "FT" else ("W0", "FT"):  # one weight copy per row
+            for key in sorted(keys, key=lambda k: k != d.weights.now):  # the set held first: one copy fewer per row
                 d.use(key)
-                logits, g = importances(model, t, d.gamma, gate_comps)
-                if (c := c0 if key == "W0" else c1) is not None:
-                    c.add_row(g)
-                got[key] = masked_logits(model, t, d.comps, g)
+                got[f"clean_{key}"], g = importances(model, t, d.gamma, gate_comps)
+                if key in ("W0", state):  # FT apart from the state: its clean logits are the reference only
+                    if (c := c0 if key == "W0" else c1) is not None:
+                        c.add_row(g)
+                    got[key] = masked_logits(model, t, d.comps, g)
                 del g
-                got[f"clean_{key}"] = logits
             ref = got["clean_FT"]
             if change is None:
                 add("K0", kl_per_position(got["clean_W0"], got["W0"]), cls)
                 add("nll_W0", nll_per_position(got["clean_W0"], t), cls)
                 add("nll_FT", nll_per_position(ref, t), cls)
             add(f"K{j}0", kl_per_position(ref, got["W0"]), cls)
-            add(f"K{j}1", kl_per_position(ref, got["FT"]), cls)
+            add(f"K{j}1", kl_per_position(ref, got[state]), cls)
             add(f"nll_m{j}0", nll_per_position(got["W0"], t), cls)
-            add(f"nll_m{j}1", nll_per_position(got["FT"], t), cls)
+            add(f"nll_m{j}1", nll_per_position(got[state], t), cls)
             del got
     d.use("W0")
     return out
@@ -527,9 +531,7 @@ def ls_parts(d: Decomp, dW: dict[str, Tensor], old: bool = False) -> LsParts:
         U_A, V_A, b = basis(d, s)
         M = dW[s].to(DEV, F64)
         Xs = split.least_squares_x(M, b).float()
-        dU, dV = qwen_maps.pieces(Xs, U_A, V_A)
-        ds = split.dsigma(dU, dV, U_A, V_A)
-        mv = ds + dU @ dV.T
+        ds, mv = moved_of(Xs, U_A, V_A)
         e = float((M * M).sum())
         sums["size"] += e
         sums["left"] += float(((M - mv) ** 2).sum())
@@ -538,9 +540,67 @@ def ls_parts(d: Decomp, dW: dict[str, Tensor], old: bool = False) -> LsParts:
         X[s], moved[s] = pinned(Xs.cpu()), pinned(mv.float().cpu())
         if old:
             ins[s] = pinned(ds.float().cpu())
-        del U_A, V_A, b, M, Xs, dU, dV, ds, mv
+        del U_A, V_A, b, M, Xs, ds, mv
     torch.cuda.empty_cache()
     return LsParts(X, moved, ins if old else None, sums, time.time() - t0)
+
+
+def moved_of(X: Tensor, U_A: Tensor, V_A: Tensor) -> tuple[Tensor, Tensor]:
+    """dσ of the pieces the forward applies from X (rounded to fp32, `qwen_maps.pieces`: dU = X V, dV = Xᵀ U), and the
+    moved part dσ + dU dVᵀ = U′V′ᵀ − UVᵀ, fp64. Least squares: X = K⁺δW; the scaled adjoint split: X = c δW."""
+    dU, dV = qwen_maps.pieces(X.float(), U_A, V_A)
+    ds = split.dsigma(dU, dV, U_A, V_A)
+    return ds, ds + dU @ dV.T
+
+
+@dataclass
+class AdjParts:
+    c: dict[str, float]  # `split.adjoint_scale` per site on Σ (`Decomp.sigma`)
+    moved: dict[str, Tensor]  # U′V′ᵀ − UVᵀ of the pieces c (δW V, δWᵀ U), fp32 pinned host; Δ fixed, so the state is W0 + it
+    old: dict[str, Tensor] | None  # dσ alone, c K(δW): the weights E44's and E86's adjoint state applied
+    # fp64 over sites: size, left, moved as `LsParts.sums`; null Σ ‖G_s − moved(G_s)‖² (G_s `wrong_change`'s Gaussian at
+    # ‖δW_s‖, split with its own c); second ‖dU dVᵀ‖²; energy ‖δW‖²_Σ; reproduced Σ r²_s ‖δW_s‖²_Σ (`adjoint_scale`)
+    sums: dict[str, float]
+    seconds: float
+
+
+def adjoint_parts(d: Decomp, dW: dict[str, Tensor], old: bool = False) -> AdjParts:
+    """The scaled adjoint split of δW (GOALS.md Terms), site by site on the card in fp64 with Γ parked, the pieces
+    rounded as the forward applies them (`moved_of` of X = c δW). Its null is the same split of a Gaussian at each
+    matrix's norm, the clean table's "random" draw (`wrong_change`), with that Gaussian's own c."""
+    sig, t0 = d.sigma(), time.time()
+    d.park_gamma()
+    sums: dict[str, float] = dict.fromkeys(("size", "left", "moved", "null", "second", "reproduced", "energy"), 0.0)
+    c, moved, ins = {}, {}, {}
+    for s in SITES:
+        U_A, V_A = d.alive.uv(s, DEV, F64)
+        S, M = sig[s].to(DEV), dW[s].to(DEV, F64)
+        c[s], r2 = split.adjoint_scale(M, U_A, V_A, S)
+        ds, mv = moved_of(c[s] * M, U_A, V_A)
+        G = qwen_maps.gaussian_at_norm(M, WRONG_SEED + SITES.index(s))
+        mvG = moved_of(split.adjoint_scale(G, U_A, V_A, S)[0] * G, U_A, V_A)[1]
+        e, eS = float((M * M).sum()), split.weighted_energy(M, S)
+        for k, v in (("size", e), ("left", float(((M - mv) ** 2).sum())), ("moved", float((mv * mv).sum())),
+                     ("null", float(((G - mvG) ** 2).sum())), ("second", float(((mv - ds) ** 2).sum())),
+                     ("reproduced", r2 * eS), ("energy", eS)):
+            sums[k] += v
+        moved[s] = pinned(mv.float().cpu())
+        if old:
+            ins[s] = pinned(ds.float().cpu())
+        del U_A, V_A, S, M, ds, mv, G, mvG
+    torch.cuda.empty_cache()
+    return AdjParts(c, moved, ins if old else None, sums, time.time() - t0)
+
+
+def adjoint_change(d: Decomp, dW: dict[str, Tensor], c: dict[str, float]) -> Callable[[str], qwen_maps.SiteChange]:
+    """`qwen_maps.applied`'s change for the scaled adjoint split: the live columns move by the pieces of X = c δW, as
+    `adjoint_parts` formed them; the weights are whatever set the model holds."""
+
+    def fn(s: str) -> qwen_maps.SiteChange:
+        U_A, V_A = d.alive.uv(s, DEV, F64)
+        return (None, None, *qwen_maps.pieces((c[s] * dW[s].to(DEV, F64)).float(), U_A, V_A))
+
+    return fn
 
 
 def wrong_change(dW: dict[str, Tensor], kind: str) -> dict[str, Tensor]:

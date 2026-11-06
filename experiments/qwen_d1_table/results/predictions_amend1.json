@@ -1,0 +1,45 @@
+{
+ "experiment": "E93 Amendment 1",
+ "filed": "2026-11-06, before any read of the adjoint state",
+ "plan": "reports/plans/2026-11-05_plan_e93-d1-table.md, section 'Amendment 1'; decisions.md 2026-11-06 (ask 33: 'the adjoint split is added to E93's table on every arm as E93 Amendment 1')",
+ "question": "Does the scaled adjoint split clear D1's first table on the same eleven full updates, rows and rules as least squares did in E93?",
+ "states": "rules.STATES, the same files (E93's state.json 'file', norm checked against E93's at norm_rel), rows and gain rows as E93.",
+ "rules": {
+  "map": "Scaled adjoint split (GOALS.md Terms): per matrix dU = c δW V, dV = c δWᵀ U, c = split.adjoint_scale on Σ = E[a aᵀ] at W0 over 128 maths rows of 512 (qwen_d3.Decomp.sigma, E44's stage S, the Σ of E68's and E86's adjoint reads), the same Σ for every arm. Δ fixed, so the state is W0 + moved part, moved part = U′V′ᵀ − UVᵀ = dσ(dU, dV) + dU dVᵀ with the pieces rounded to fp32 as the forward applies them (qwen_d3.adjoint_parts). The old form (dσ alone, E44's and E86's weights) is read beside on anchor 2 seed 42 and in stage 0.",
+  "reused": "Every read that does not depend on the map is E93's stored one for that state: gain-row losses (W0, FT, t), clean W0 (ruler), FT, random and signs, base cells (W0 masked, do-nothing), ceiling, random under masks (placed by least squares). Stage 0 re-reads do-nothing on one state.",
+  "1_clean": "E93's rule 1 unchanged, on K(W0 + adjoint moved part); the remainder in the teeth test is δW − the adjoint's moved part.",
+  "2_share": "E93's rule 2 with the same formula, share = ‖δW − moved part‖² / ‖δW‖² (for the adjoint this part is dropped, not put in Δ: Δ′ − Δ is 0 by construction, E86's 4.7e-8), against the adjoint's own null: the same split of a Gaussian at each matrix's norm (E75's 'random' draw, seed 75100 + site index) with that Gaussian's own c, Σ_s ‖G_s − moved(G_s)‖² / ‖δW‖². Seed spread from the adjoint's two seeds; one-seed arms borrow the null arm's. Least squares' null (E93) is printed beside.",
+  "3_size": "E93's rule 3 on ‖adjoint moved part‖² / ‖δW‖², plain. c is fitted on Σ, so the plain size can exceed 1.",
+  "4_kept_clean": "E93's rule 4 on the gain at W0 + adjoint moved part against the arm's own stored t = 0.5.",
+  "5_K_masked": "E93's rule 5: K11 = KL(FT clean ‖ masked, Δ off), Γ on the adjoint state's weights (W0 + moved part) reading its moved V′, against E93's stored do-nothing K01.",
+  "6_kept_masked": "E93's rule 6 with E93's stored references (do-nothing, ceiling, random). Room depends on these only, so it reads as in E93.",
+  "verdict": "E93's verdict, arms and table rules unchanged (rules.score_state, rules.arms)."
+ },
+ "thresholds": {"gain_min": 0.05, "graded_at": 0.5, "saturated_at": 0.9, "t1_tol": 0.001, "ruler_floor": 1e-05,
+                "at_floor": 0.0001, "clean_under": 0.02, "size_max": 1.0, "room_min": 0.1, "min_rows": 2, "boot": 2000},
+ "predictions": [
+  {"id": "A1_clean", "rule": "1", "expect": {"own-samples": ["misses", "at floor"], "*": ["misses"]}, "lean": "strong", "why": "E86's old form read 0.10, 0.135 and 0.34 of the ruler on u1 step 10, u2 and E81's TOFU update, 5 to 17 times the line. Own-samples' ruler is 0.001 nats, so its K may sit at the 1e-4 floor."},
+  {"id": "A2_share", "rule": "2", "expect": {"*": ["holds"]}, "lean": "weak", "why": "A fine-tune's δW reads through high-variance inputs, which Σ weights and the subcomponents' V likely share; a Gaussian has no such alignment. Least squares beat its null by only 0.5 to 4% of it (E93)."},
+  {"id": "A3_size", "rule": "3", "expect": {"*": ["holds"]}, "lean": "medium", "why": "c caps the Σ-weighted size at ‖δW‖²_Σ; the plain size can pass 1 only if K(δW) sits in low-Σ directions."},
+  {"id": "A4_kept_clean", "rule": "4", "expect": {"anchor 1": ["fails"], "anchor 2": ["fails"], "u1": ["not graded"], "u2": ["not graded"], "*": ["no behaviour line"]}, "lean": "medium", "why": "Kept at t = 0.5 is 0.88 on both anchors; a state 10-34% of the ruler off the fine-tune on the clean model is unlikely to keep that much. Bands are E93's stored ones."},
+  {"id": "A5_masked_K", "rule": "5", "expect": {"*": ["holds"]}, "lean": "weak", "why": "Least squares held rule 5 on 9 of 11 states; the adjoint moves the components towards δW, but its masks come from weights off the fine-tune."},
+  {"id": "A6_no_room", "rule": "6", "expect": {"anchor 1": ["no room"], "anchor 2": ["no room"], "u1": ["not graded"], "u2": ["not graded"], "*": ["no behaviour line"]}, "lean": "strong", "why": "Room reads E93's stored do-nothing and ceiling only."},
+  {"id": "A7_verdict", "rule": "verdict", "expect": {"*": ["fails"]}, "lean": "strong", "why": "Rule 1 (A1) on every arm; rule 4 on both anchors."}
+ ],
+ "controls": {
+  "source": "Stage 0, alone and first, on E40's step 10 (qwen_sft/results/large/nowarmup_regen/dW/step_10.safetensors, bf16) on the 128 maths rows: E93's results/control.json (masked K00, K01, K10, K11; least squares' share), and E86's clean read of the old-form adjoint state (qwen_d1_fractions/results/u1/clean_adjoint.json, K sums over 128 x 256 positions; run.log:47 'K 0.165671196').",
+  "u1_masked": {"K00": 1.3738106470539775, "K01": 0.10436260220730434, "K10": 1.2934026471043127, "K11": 0.10343871625828649},
+  "u1_share": 0.09001726620341273,
+  "e86_adjoint_old": 0.1656711963488343,
+  "rows_and_seqs": {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800},
+  "rep": 0.001,
+  "bands": "rep relative, E93's band for stored numbers reproduced. K10, K11 are read through d3.cells' new state path with FT's weights under another name, so they test that path. A miss of any writes amend1/stopped.json and no state starts."
+ },
+ "first_minutes": {
+  "norm_rel": 0.001,
+  "gpu_max_gib": 44.0,
+  "host_max_gb": 105.0,
+  "note": "E93's: per state, the norm against E93's record; card and host peaks after the first clean read. Each a stop."
+ },
+ "edges": "amend1.py --edges, run on CPU before filing: results/amend1/edges.txt."
+}
