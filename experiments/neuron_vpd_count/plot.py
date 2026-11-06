@@ -95,7 +95,7 @@ def main() -> None:
     lines = [f"{p}: VPD {v(f'copy_vs_random/{p}/vpd')}, neurons {v(f'copy_vs_random/{p}/neurons')} (copy vs random)"
              + ("" if p == "A" else f"; E53 bar VPD {v(f'e53_bar/{p}/vpd')}, neurons {v(f'e53_bar/{p}/neurons')}") for p in "ABC"]
     fig.text(0.01, 0.01, "S_on: alive subcomponents whose mean importance change at the read position is above 0.3; N_on: the same count of "
-             "neurons with the largest firing increase. Separation (E12): the two classes' ranges do not overlap and the gap exceeds the larger "
+             "neurons with the largest firing increase. B puts the set back to W0's values at the read position (VPD: W0's input; neurons: W0's own firing). Separation (E12): the two classes' ranges do not overlap and the gap exceeds the larger "
              "within-class range, existing class higher. E53's bar on B and C: lowest lowercase minus highest cipher at least 0.3.\n"
              + " | ".join(lines), fontsize=7, color=INK, wrap=True, va="bottom")
     fig.subplots_adjust(bottom=0.27, wspace=0.25, left=0.05, right=0.99)

@@ -7,7 +7,7 @@ Per state, at the read position (the trigger; E53's position 63), with K_VPD = |
   S_on   alive subcomponents whose mean gate change, state minus W0, is above 0.3 (recruit.trigger_dg, recruit.switched)
   N_on   the K_VPD neurons with the largest mean firing change, state minus W0
   B      share of the gain removed when the set is put back at the read position in the fine-tuned model
-         (VPD: recruitment.restore_hooks; neurons: W0's c_fc and GELU on the state's MLP input, neuron_r.half_acts)
+         (VPD: recruitment.restore_hooks, W0's input; neurons: W0's own firing a0; Ah from neuron_r.half_acts reported)
   C      share of the gain carried when only the set takes the state's values (VPD: recruit.hybrid gates in C0's masked
          forward; neurons: the state's firing at every position in W0's model, whose all-neuron limit is E98's r_n)
   A      (per task, after both seeds) Jaccard of the set between seeds
@@ -179,8 +179,9 @@ def vpd_cells(c: Ctx, acc: Acc, toks: Tensor, h: int, token: int | Tensor, dW: S
 
 def neuron_cells(c: Ctx, acc: Acc, toks: Tensor, h: int, tgt: Tensor, dW: ST.DW, sets: dict[str, Sel]) -> None:
     """C (n_G, n_r_*): W0's model with the set's firing from the state at every position, minus T0, over T1 - T0.
-    B (n_rho_*): T1 minus the fine-tuned model with the set's firing at the read position set to Ah (W0's c_fc and GELU
-    on the state's MLP input); n_rho0_*: the same set to W0's own firing (reported)."""
+    B (n_rho0_*, scored): T1 minus the fine-tuned model with the set's firing at the read position put back to W0's own
+    firing a0 (as E50's restore puts back W0's input); n_rho_*: the same set to Ah (W0's c_fc and GELU on the state's
+    MLP input), reported only."""
     net, lo = c.net, lambda lg: ST.logodds_at(lg, h, tgt)
     lg0, a0, ah = NR.half_acts(net, toks, dW)
     with net.at(dW):
@@ -191,9 +192,9 @@ def neuron_cells(c: Ctx, acc: Acc, toks: Tensor, h: int, tgt: Tensor, dW: ST.DW,
         acc.add(f"n_r_{n}", lo(net.run(toks, put(sel, a1))[0]) - T0)
     with net.at(dW):
         for n, sel in sets.items():
-            acc.add(f"n_rho_{n}", T1 - lo(net.run(toks, put(sel, ah, h))[0]))
+            acc.add(f"n_rho0_{n}", T1 - lo(net.run(toks, put(sel, a0, h))[0]))
         for n in ("all", "set"):
-            acc.add(f"n_rho0_{n}", T1 - lo(net.run(toks, put(sets[n], a0, h))[0]))
+            acc.add(f"n_rho_{n}", T1 - lo(net.run(toks, put(sets[n], ah, h))[0]))
 
 
 def share_block(mean: dict[str, float], G: float, prefix: str, n_random: int, K: int, floor: float) -> dict[str, Any]:
@@ -224,8 +225,8 @@ def read_state(c: Ctx, S: dict[str, Any], t: ST.Task, token: int | Tensor, B: in
            "N_on": flat, "N_on_by_block": {l: int(v.numel()) for l, v in N_on.items()},
            "N_on_min_change": float(fire[flat].min()) if K else None,
            "max_abs_dg": max_g, "max_abs_dfire": max_a, "max_abs": acc.max, "means": m,
-           "B": {"vpd": share_block(m, m["v_Gb"], "v_rho", nr, K, f), "neurons": share_block(m, m["n_G"], "n_rho", nr, K, f),
-                 "neurons_a0": share_block(m, m["n_G"], "n_rho0", 0, K, f)},
+           "B": {"vpd": share_block(m, m["v_Gb"], "v_rho", nr, K, f), "neurons": share_block(m, m["n_G"], "n_rho0", nr, K, f),
+                 "neurons_ah": share_block(m, m["n_G"], "n_rho", 0, K, f)},
            "C": {"vpd": share_block(m, m["v_G"], "v_r", nr, K, f), "neurons": share_block(m, m["n_G"], "n_r", nr, K, f)}}
     rec["C"]["vpd"]["every"] = m["v_r_every"] / m["v_G"] if abs(m["v_G"]) >= f else math.nan
     return rec, S_on, fire

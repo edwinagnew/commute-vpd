@@ -1,4 +1,5 @@
 """E117's score: E12's separation rule on panels A, B and C for both methods, and E53's 0.3 bar beside it on B and C.
+B's neuron side is cells.json B.neurons (N_on put back to W0's own firing a0); B.neurons_ah is reported, never scored.
 Reads results/cells.json and results/predictions.json (its `separation_rule` and `e53_bar`); writes results/score.json
 and prints every verdict. No model.
 
