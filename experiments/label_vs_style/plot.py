@@ -7,6 +7,8 @@ plots: the known-facts fine-tunes purple, the fictional fine-tune orange, refere
                        and each topic inside the fictional sets, with the filed "topic moves the set" line
   figures/gain.png     the wrong arm's content gain on its own (wrong) sentences and on the true ones, beside the known
                        arm's gain on the true sentences and C1's bar
+  figures/amend1_sets.png  Amendment 1: Jaccard of VPD's switched-on sets on E94's maths rows, each arm's seeds, wrong
+                       with known (scored), wrong and known with fictional, and the filed rule's two lines
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run python experiments/label_vs_style/plot.py
 """
@@ -158,7 +160,44 @@ def gain(arms: dict[str, Any], known: list[float]) -> None:
     save(fig, "gain.png")
 
 
+def vpd_sets(res: dict[str, Any]) -> None:
+    """Amendment 1: Jaccard of VPD's switched-on sets on E94's maths rows, from results/amend1_sets.json."""
+    def j(a: str, b: str) -> float:
+        p = res["pairs"]
+        return (p[f"{a}|{b}"] if f"{a}|{b}" in p else p[f"{b}|{a}"])["jaccard"]
+
+    def four(a: str, b: str) -> list[float]:
+        return [j(f"{a}_s{s}_matched", f"{b}_s{t}_matched") for s in SEEDS for t in SEEDS]
+
+    r = res["rule"]
+    cross = four("wrong", "known")
+    assert [round(v, 12) for v in cross] == [round(v, 12) for v in r["cross"]]  # the drawn pairs are the scored ones
+    fig, ax = plt.subplots(figsize=(10, 5.0))
+    strip(ax, [("known arm:\nseed 142\nwith seed 42", [j("known_s42_matched", "known_s142_matched")], PURPLE, "o", True),
+               ("wrong arm:\nseed 142\nwith seed 42", [j("wrong_s42_matched", "wrong_s142_matched")], TEAL, "o", True),
+               ("fictional arm:\nseed 142\nwith seed 42", [j("a2_s42_matched", "a2_s142_matched")], ORANGE, "o", True),
+               ("wrong arm\nwith known arm\n(the scored pairs)", cross, TEAL, "D", True),
+               ("wrong arm\nwith fictional\narm", four("wrong", "a2"), TEAL, "^", False),
+               ("known arm\nwith fictional\narm", four("known", "a2"), ORANGE, "^", True)])
+    ax.lines[-1].remove()  # strip's random-set line is the neuron overlap's, not Jaccard's
+    ax.set_ylim(0.5, 1.0)
+    ax.axhline(r["topic_line"], color=PURPLE, ls="--", lw=1.1,
+               label=f"'topic or style' needs every scored pair above {r['topic_line']:.4f}")
+    ax.axhline(r["familiarity_line"], color=ORANGE, ls="--", lw=1.1,
+               label=f"'familiarity' needs every scored pair at or below {r['familiarity_line']:.4f}")
+    ax.annotate(f"lowest scored pair {min(cross):.4f},\n{r['topic_line'] - min(cross):.4f} under the line",
+                xy=(3.05, min(cross)), xytext=(3.45, 0.74), fontsize=7, color=INK,
+                arrowprops={"arrowstyle": "->", "color": INK, "lw": 0.8})
+    ax.set_ylabel("Jaccard of the two switched-on sets\n(shared over either; 1 = the same set)")
+    ax.legend(fontsize=7, loc="lower left", frameon=True, framealpha=0.9)
+    ax.set_title(f"VPD's switched-on sets on the maths rows: the wrong arm sits with the known arm, about a seed apart,\n"
+                 f"and its lowest pair misses the 'topic or style' line by {r['topic_line'] - min(cross):.4f}: "
+                 f"verdict '{r['verdict']}'", fontsize=9.5)
+    save(fig, "amend1_sets.png")
+
+
 def main() -> None:
+    vpd_sets(js(RES / "amend1_sets.json"))
     score = js(RES / "score.json")
     arms = {a: js(RES / f"arm_{a}.json") for a in ("WRONG42", "WRONG142")}
     known = [js(KAP / f"{n}_train.json")["matched"]["gain"]["content"] for n in ("amend1", "amend2")]
