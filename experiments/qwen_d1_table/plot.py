@@ -1,6 +1,7 @@
 """E93's figures from results/table.json and results/<state>/state.json (rules.py writes the table): one per claim.
+Amendment 1's put the scaled adjoint split (results/amend1/, amend1.py writes its table) beside least squares.
 
-  python experiments/qwen_d1_table/plot.py   # figures/{clean,share,kept_clean,masked}.png
+  python experiments/qwen_d1_table/plot.py   # figures/{clean,share,kept_clean,masked}.png, figures/amend1_*.png
 """
 
 from __future__ import annotations
@@ -147,10 +148,131 @@ def masked(t: dict[str, Any], names: list[str]) -> None:
     save(fig, "masked.png")
 
 
+# ----------------------------------------------------------------------------- Amendment 1: the adjoint beside least squares
+
+LS: dict[str, Any] = {"marker": "o", "color": INK, "ms": 7}
+ADJ: dict[str, Any] = {"marker": "D", "color": "#c0392b", "ms": 7}
+
+
+def adj_load() -> dict[str, Any]:
+    return json.loads((rules.RESULTS / "amend1" / "table.json").read_text())["states"]
+
+
+def a1_rows(ax: Any, names: list[str], st: dict[str, Any], ad: dict[str, Any]) -> None:
+    """State labels coloured by arm, with both maps' verdicts."""
+    rows(ax, names, st)
+    ax.set_yticks(range(len(names)), [f"{LABEL[n]}  [LS {st[n]['verdict']}, adj. {ad[n]['verdict']}]" for n in names],
+                  fontsize=8)
+    for tick, n in zip(ax.get_yticklabels(), names):
+        tick.set_color(ARM_COLOUR[st[n]["arm"]])
+
+
+def a1_clean(t: dict[str, Any], names: list[str], ad: dict[str, Any]) -> None:
+    """Rule 1 for both maps: K(W0 + moved part) / K(W0), with the adjoint's remainder and random beside."""
+    st = t["states"]
+    fig, ax = plt.subplots(figsize=(8, 6.2))
+    for i, n in enumerate(names):
+        kl, ka = st[n]["rules"]["1"]["K"], ad[n]["rules"]["1"]["K"]
+        first = i == 0
+        ax.plot(kl["moved"] / kl["W0"], i, ls="none", **LS, label="W0 + least squares' moved part" if first else None)
+        ax.plot(ka["moved"] / ka["W0"], i, ls="none", **ADJ, label="W0 + the adjoint's moved part" if first else None)
+        ax.plot(ka["remainder"] / ka["W0"], i, "s", mfc="none", color=ADJ["color"], ms=7,
+                label="W0 + what the adjoint drops, alone" if first else None)
+        ax.plot(ka["random"] / ka["W0"], i, "x", color="black", ms=7,
+                label="W0 + a random change of δW's size" if first else None)
+    ax.axvline(rules.T["clean_under"], color=LINE, ls="--", lw=1.2, label="pass line 0.02")
+    ax.axvline(1.0, color=MUTED, ls=":", lw=1.2, label="do-nothing = unchanged model, 1")
+    ax.set_xscale("log")
+    ax.set_xlabel("KL(fine-tune ‖ read) / KL(fine-tune ‖ W0), clean forwards, every position, nats over nats")
+    a1_rows(ax, names, st, ad)
+    ax.legend(fontsize=7, loc="upper center", bbox_to_anchor=(0.4, -0.13), ncol=2)
+    ax.set_title("On the clean model, does the adjoint's moved part act like the fine-tune, as least squares' does?",
+                 fontsize=9)
+    save(fig, "amend1_clean.png")
+
+
+def a1_share(t: dict[str, Any], names: list[str], ad: dict[str, Any]) -> None:
+    """Rule 2 for both maps: the share of δW not held by the moved part, each against its own Gaussian null."""
+    st = t["states"]
+    fig, ax = plt.subplots(figsize=(8, 6.2))
+    for i, n in enumerate(names):
+        rl, ra = st[n]["rules"]["2"], ad[n]["rules"]["2"]
+        first = i == 0
+        ax.plot(rl["value"], i, ls="none", **LS, label="least squares: share left in Δ" if first else None)
+        ax.plot(rl["null"], i, "o", mfc="none", color=INK, ms=10, label="least squares' null" if first else None)
+        ax.plot(ra["value"], i, ls="none", **ADJ, label="adjoint: share dropped" if first else None)
+        ax.plot(ra["null"], i, "D", mfc="none", color=ADJ["color"], ms=10, label="adjoint's null" if first else None)
+        for r in (rl, ra):
+            ax.plot([r["null"] - r["spread"]] * 2, [i - 0.35, i + 0.35], color=LINE, lw=1.5,
+                    label="pass line: own null minus the seed spread" if first and r is rl else None)
+    ax.axvline(1.0, color=MUTED, ls=":", lw=1.2, label="do-nothing, 1")
+    ax.set_xlim(0, 1.05)
+    ax.set_xlabel("‖δW − moved part‖² / ‖δW‖², squared Frobenius norms over 196 matrices\n"
+                  "a state passes left of its map's line")
+    a1_rows(ax, names, st, ad)
+    ax.legend(fontsize=7, loc="upper center", bbox_to_anchor=(0.4, -0.13), ncol=3)
+    ax.set_title("Does each map hold more of the real update than of a random change of the same sizes?", fontsize=9)
+    save(fig, "amend1_share.png")
+
+
+def a1_kept(t: dict[str, Any], names: list[str], ad: dict[str, Any]) -> None:
+    """Rule 4 for both maps on the arms with a behaviour line, and the null arm's gold tokens, unscored."""
+    st = t["states"]
+    show = [n for n in names if st[n]["arm"] in rules.BEHAVIOUR or st[n]["arm"] == rules.NULL_ARM]
+    fig, ax = plt.subplots(figsize=(8, 5.6))
+    for i, n in enumerate(show):
+        fr = json.loads((rules.RESULTS / n / "state.json").read_text())["fractions"]
+        fa = json.loads((rules.RESULTS / "amend1" / f"{n}.json").read_text())["fractions"]
+        first = i == 0
+        ax.plot([kept(fr, "t0.5")] * 2, [i - 0.35, i + 0.35], color=LINE, lw=2,
+                label="W0 + half of δW: pass line on graded arms" if first else None)
+        ax.plot(kept(fr, "moved"), i, ls="none", **LS, label="W0 + least squares' moved part" if first else None)
+        ax.plot(kept(fa, "moved"), i, ls="none", **ADJ, label="W0 + the adjoint's moved part" if first else None)
+        print(f"kept clean {n}: half {kept(fr, 't0.5'):.4f} ls {kept(fr, 'moved'):.4f} adjoint {kept(fa, 'moved'):.4f}")
+    ax.axvline(0, color=MUTED, ls=":", lw=1.2, label="do-nothing's moved part = W0, 0")
+    ax.axvline(1, color="black", ls=":", lw=1, label="fine-tune, 1")
+    ax.set_xlabel("behaviour kept = (L(W0) − L(read)) / (L(W0) − L(fine-tune))\n"
+                  "L = mean answer-token loss in nats on the gain rows, no masks")
+    ax.set_yticks(range(len(show)), [f"{LABEL[n]}  [{ad[n]['saturation']['band']}]"
+                                     + ("\n(gold tokens, not its behaviour)" if st[n]["arm"] == "null" else "")
+                                     for n in show], fontsize=8)
+    for tick, n in zip(ax.get_yticklabels(), show):
+        tick.set_color(ARM_COLOUR[st[n]["arm"]])
+    ax.invert_yaxis()
+    ax.grid(axis="x", color=MUTED, alpha=0.3)
+    ax.legend(fontsize=7, loc="upper center", bbox_to_anchor=(0.4, -0.16), ncol=2)
+    ax.set_title("Does each map's moved part keep as much behaviour as half the update does?", fontsize=9)
+    save(fig, "amend1_kept.png")
+
+
+def a1_masked(t: dict[str, Any], names: list[str], ad: dict[str, Any]) -> None:
+    """Rule 5 for both maps: K under the state's own masks, against do-nothing and W0 masked, log axis."""
+    st = t["states"]
+    fig, ax = plt.subplots(figsize=(8, 6.2))
+    for i, n in enumerate(names):
+        pl, pa = st[n]["printed"]["scored"], ad[n]["printed"]["scored"]  # the adjoint table's "K_ls" is its own state
+        first = i == 0
+        ax.plot(pl["K_W0_masked"], i, "s", mfc="none", color=MUTED, ms=8, label="W0 masked" if first else None)
+        ax.plot([pl["K_do_nothing"]] * 2, [i - 0.35, i + 0.35], color="black", lw=2,
+                label="do-nothing: the pass line, up to 2 row half-widths" if first else None)
+        ax.plot(pl["K_ls"], i, ls="none", **LS, label="least squares, own masks" if first else None)
+        ax.plot(pa["K_ls"], i, ls="none", **ADJ, label="adjoint, own masks" if first else None)
+    ax.set_xscale("log")
+    ax.set_xlabel("KL(fine-tune clean ‖ masked forward, Δ off), nats per position\n"
+                  "answer positions on template and TOFU rows, every position on maths rows")
+    a1_rows(ax, names, st, ad)
+    ax.legend(fontsize=7, loc="upper center", bbox_to_anchor=(0.4, -0.16), ncol=2)
+    ax.set_title("Under its own masks, is each map further from the fine-tune than doing nothing?", fontsize=9)
+    save(fig, "amend1_masked.png")
+
+
 def main() -> None:
     t, names = load()
     for f in (clean, share, kept_clean, masked):
         f(t, names)
+    ad = adj_load()
+    for g in (a1_clean, a1_share, a1_kept, a1_masked):
+        g(t, names, ad)
 
 
 if __name__ == "__main__":

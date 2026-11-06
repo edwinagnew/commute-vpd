@@ -1,0 +1,13 @@
+<article class="exp" id="e125">
+<div class="top"><span class="id">E125</span><span class="chip open">planned</span><h3>Can a fresh 67M pair be read "reuses C" by the definition and by the decomposition?</h3><span class="when">2026-11-06 · planned, not run, awaiting the go-ahead · three cluster <code>debug</code> L40 jobs, about 30 minutes, $0 · <code>experiments/fresh_reuse_pair</code></span></div>
+<p class="one"><strong>The question.</strong> No 67M task has yet been read "reuses C" by the frozen definition, so the decomposition's re-gating readings cannot be checked against such a label. <a href="#e123">E123</a> showed the case-label pair cannot supply one.</p>
+<p class="one"><strong>What we would do.</strong> Teach the model to say one word when the word before a marker already occurred earlier in the passage and another when it did not, beside a twin that learns the two words from a shuffled per-word list. The model's induction machinery already tracks repeats, so the definition can read this pair on words the fine-tune never saw. Then read the same four fine-tunes by the route split and the removal of the switched-on set.</p>
+<p class="one"><strong>What we would find.</strong> Not run. Possession is measured first; a miss stops the job and is the result "possession fails".</p>
+<p class="one"><strong>What it means.</strong> If both sides can read the pair, it is the first place the decomposition's labels meet the definition's on a 67M task.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Planned: three cluster <code>debug</code> L40 jobs, about 30 minutes in all, $0; predictions filed in <code>experiments/fresh_reuse_pair/results/predictions.json</code>.</dd>
+<dt>Found</dt><dd><ul><li>Nothing yet.</li></ul></dd>
+<dt>Bears on</dt><dd>The definition line (a reuse label read by both sides).</dd>
+<dt>Moved on</dt><dd>Awaiting the go-ahead. Plan <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-06_plan_e125-fresh-reuse-pair.md"><code>reports/plans/2026-11-06_plan_e125-fresh-reuse-pair.md</code></a>.</dd>
+</dl>
+</article>
