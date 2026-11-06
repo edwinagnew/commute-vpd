@@ -31,7 +31,7 @@ def point(rs: dict[str, Any]) -> tuple[float, float]:
 
 def regions(ax: Any) -> None:
     """E12's filed lines: re-switching r >= r_hi with e_gate <= masked_lo; masked-off e_gate >= masked_hi with r <= r_lo."""
-    lo, hi = -0.1, 1.0
+    lo, hi = -0.3, 1.0  # the r0 and r1 SGD fine-tunes read masked-off shares down to -0.24
     ax.fill_between([lo, CM["masked_lo"]], CM["r_hi"], hi, color=REGION, zorder=0)
     ax.fill_between([CM["masked_hi"], hi], lo, CM["r_lo"], color=REGION, zorder=0)
     ax.text(lo + 0.02, hi - 0.03, "re-switching", fontsize=8, color=MUTED, va="top")
@@ -76,12 +76,18 @@ def main() -> None:
                 sx, sy = point(s["a"])
                 ax.plot([fx, sx], [fy, sy], color=colour, lw=1, alpha=0.6, zorder=3)
                 ax.plot(sx, sy, MARKER[arm], ms=8, color=colour, mec="white", mew=1.5, zorder=5)
+                if not out.get("checks", {}).get(f"{opt}_{arm} student P(target) against E34's (difference)", {}).get("pass", True):
+                    ax.plot(sx, sy, "o", ms=17, mfc="none", mec="#d03030", mew=1.5, zorder=6)
+                    ax.annotate(f"failed reproduction:\nP(target) {s['p_target']:.2f}, E34 read 0.90;\nthe job stopped here;\ngain {s['gain_ratio']:.2f} of the teacher's: unreadable",
+                                (sx, sy), xytext=(-20, -62), textcoords="offset points", fontsize=7, color="#d03030")
     handles = [Line2D([], [], ls="", marker="o", ms=8, color=c, label=t) for t, c in COLOUR.items()]
     handles += [Line2D([], [], ls="", marker="o", ms=8, color=INK, label="student, arm A (task windows)"),
                 Line2D([], [], ls="", marker="s", ms=8, color=INK, label="student, arm B (Pile rows)"),
                 Line2D([], [], ls="", marker="D", ms=8, mfc="white", mec=INK, label="its fine-tune (least-squares split)"),
-                Line2D([], [], ls="", marker="o", ms=5, color="#c3c2b7", label="E12 A1 students / fine-tunes (grey)")]
-    ax.legend(handles=handles, fontsize=7, loc="upper right", bbox_to_anchor=(1.0, 0.92), frameon=False)
+                Line2D([], [], ls="", marker="o", ms=5, color="#c3c2b7", label="E12 A1 students (copy top left, maps bottom right)"),
+                Line2D([], [], ls="", marker="D", ms=5, mfc="none", mec="#c3c2b7", label="E12 A1 fine-tunes"),
+                Line2D([], [], ls="", marker="o", ms=12, mfc="none", mec="#d03030", label="student off E34 by more than 0.05")]
+    ax.legend(handles=handles, fontsize=7, loc="lower left", frameon=False)
     ax.set_xlabel("masked-off share (gain carried by subcomponents Γ keeps off)")
     ax.set_ylabel("re-switching share r (gain from Γ switching released subcomponents on)")
     ax.set_title("Where each teacher-trained decomposition carries its gain at the trigger", fontsize=10)

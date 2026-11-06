@@ -1,11 +1,12 @@
 """Build the research-log pages in build/ from parts/.
 
   build.py                  write build/
-  build.py --changed DIR    list the files a publish must pass, against the live nav.js saved in DIR
-  build.py --check DIR      diff the built pages against live copies in DIR
+  build.py --changed DIR    list the files a publish must pass, against the live nav.js saved in DIR (DIR is required)
+  build.py --check DIR      diff the built pages against live copies in DIR; also flags #anchor links with no target id
   build.py --check-head DIR the same for parts/ as committed at HEAD, leaving local edits alone: setting them aside took
                             a clerk four git calls, each refused when chained in a worktree (friction 109)
-  build.py --words          main-page words per section, here and at HEAD, against the length rule (friction 100, 244)
+  build.py --words          main-page words per section, here and at HEAD, against the length rule (friction 100, 244);
+                            also rebuilds build/ (friction 519)
   build.py --blocks         main-page words per block (card, table row, heading's prose), largest first, to plan every
                             cut in one pass rather than re-measure per edit (friction 208, 368, 376)
   build.py --missing        reports and E-codes since the newest changelog row that nothing in the log names (friction 349)
@@ -305,6 +306,18 @@ def changed_files(pages: dict[str, str], live_dir: Path) -> list[str]:
     return [name for name, text in pages.items() if name == "nav.js" or seen.get(name) != digest(text)]
 
 
+def dead_anchors(pages: dict[str, str]) -> list[str]:
+    """`#id` links (also `page.html#id`) in the built pages whose id exists in none of them (friction 588)."""
+    html_pages = {n: t for n, t in pages.items() if n.endswith(".html")}
+    ids = {i for t in html_pages.values() for i in re.findall(r'\sid="([^"]+)"', t)}
+    out = []
+    for name, text in html_pages.items():
+        for page, frag in sorted(set(re.findall(r'href="([\w.-]*)#([^"]+)"', text))):
+            if frag not in ids:
+                out.append(f"{name} links to {page}#{frag}, no element with that id in the built pages")
+    return out
+
+
 def unmapped_figures(pages: dict[str, str]) -> list[str]:
     """Figures the pages show that README.md's published-figures list does not name, so no publish can find them."""
     listed = set(re.findall(r'"(fig/[^"]+)":', (HERE / "README.md").read_text()))
@@ -319,6 +332,11 @@ def main() -> None:
         return
     if sys.argv[1:] == ["--words"]:
         print_words()
+        # --words used to leave build/ as it was, so a publish after it sent stale pages (friction 519).
+        OUT.mkdir(exist_ok=True)
+        for name, text in build().items():
+            (OUT / name).write_text(text)
+        print(f"also rebuilt build/ from the current parts/ ({OUT}), so a publish now sends what was measured")
         return
     if sys.argv[1:] == ["--blocks"]:
         print_blocks()
@@ -340,10 +358,11 @@ def main() -> None:
             print(f"live page built from parts/ in no commit here ({stamp[1][:12]}): pull; if it stays, it holds text "
                   "the repo lacks, so merge the diff below into parts/ (friction 323)")
         hashes = live_hashes(folder)
+        unread: list[str] = []
         for name, text in pages.items():
             live = folder / name
             if not live.exists():
-                print(f"{name}: not in {sys.argv[2]}")
+                unread.append(name)
                 continue
             # A page read for an earlier flush stays in the folder; only the nav.js read here says what is live (friction 368).
             if name in hashes and digest(unwrap(live.read_text())) != hashes[name]:
@@ -363,6 +382,10 @@ def main() -> None:
             print(f"{name}: {'same' if not diff else f'{len(diff)} diff lines in {places} places'}")
             if diff:
                 print("\n".join(line[:300] for line in diff[:60]))
+        if unread:  # one line, not one per page: a page not read is not compared (friction 561)
+            print(f"not compared, not saved in {folder}: {', '.join(unread)} (read one only if --changed names it)")
+        for target in dead_anchors(pages):
+            print(f"dead link: {target}")
         return
     OUT.mkdir(exist_ok=True)
     for name, text in pages.items():

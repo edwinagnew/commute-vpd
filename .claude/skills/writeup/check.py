@@ -2,7 +2,9 @@
 
     uv run python .claude/skills/writeup/check.py [--quiet] notebooks/x.ipynb reports/analyses/y.md
 
---help lists the flags; --quiet prints only the errors, friction 350, 386.
+--help lists the flags; --quiet prints only the errors, friction 350, 386, then "check.py: N errors" (also for 0, friction 534).
+Exit status is 1 when there are errors (retired terms), 0 otherwise; style flags never change it (friction 575). Proper
+method names that contain a retired word are listed in METHOD_NAMES and skipped (friction 580).
 
 Reads the markdown cells of a notebook, the text of a .md file or the prose of an .html log card (tags become sentence
 breaks, alt text and tables are dropped: they merged sentences and inflated the flags, friction 151, 157, 164), skips
@@ -20,6 +22,7 @@ import argparse
 import html
 import json
 import re
+import sys
 from pathlib import Path
 
 MAX_WORDS = 25
@@ -32,6 +35,16 @@ CODE = re.compile(r"\b[PGCR]\d+′?\b|\be_(?:Δ|gate|delta)\b|\bkl_other\b")
 RETIRED = re.compile(
     r"\b(pull[- ]?backs?|lifts?|lifted|lifting|(?<!up[- ])(?<!down[- ])projections?)\b|(?<!\w)H[′'](?!\w)", re.IGNORECASE
 )
+# Proper names of published methods that contain a retired word are not the retired operation: "iterative nullspace
+# projection (INLP)" is cited as named (friction 580). Add a phrase here to exempt it; matching is case-insensitive and
+# only the RETIRED rule looks at it.
+METHOD_NAMES = (
+    "iterative nullspace projection",
+    "nullspace projection",
+    "INLP",
+    "linear concept erasure",
+)
+METHOD_NAME = re.compile("|".join(rf"\b{re.escape(n)}\b" for n in METHOD_NAMES), re.IGNORECASE)
 # The user used "projection" for three different operations (reports/reviews/2026-10-20_review_terminology.md), so even
 # the plain linear-algebra sense is flagged; the message says what to write instead (friction 358).
 HINTS = {
@@ -141,8 +154,9 @@ def check(path: Path) -> tuple[list[str], list[str], str]:
                 reasons.append("code " + ", ".join(sorted(set(CODE.findall(s)))))
             where = f"{path}:{label}" if label else str(path)
             quote = f"{s[:110]}{'…' if len(s) > 110 else ''}"
-            if RETIRED.search(s):
-                terms = ", ".join(sorted({m.group(0).lower() for m in RETIRED.finditer(s)}))
+            s_ret = METHOD_NAME.sub("METHOD", s)
+            if RETIRED.search(s_ret):
+                terms = ", ".join(sorted({m.group(0).lower() for m in RETIRED.finditer(s_ret)}))
                 keys = {"projection" if t.startswith("proj") else "lift" if t.startswith("lift") else "pull-back"
                         for t in terms.split(", ") if not t.startswith("h")}
                 hints = "; ".join(f"{k}: {HINTS[k]}" for k in sorted(keys))
@@ -158,19 +172,22 @@ def check(path: Path) -> tuple[list[str], list[str], str]:
 def main() -> None:
     ap = argparse.ArgumentParser(description="Flag prose that goes past the write-up skill's sentence guidelines.")
     ap.add_argument("files", nargs="+", type=Path, help=".ipynb, .md or .html files")
-    ap.add_argument("--quiet", action="store_true", help="print only the errors (retired terms), no style flags")
+    ap.add_argument("--quiet", action="store_true", help="print only the errors (retired terms), no style flags, and the final count line")
     args = ap.parse_args()
     results = [(f, *check(f)) for f in args.files]
     # Errors of every file first, then the style flags, then one summary line per file (friction 243).
     errors = [e for _, errs, _, _ in results for e in errs]
     if errors:
         print("\n".join(errors))
-    if args.quiet:
-        return
-    flags = [x for _, _, fl, _ in results for x in fl]
-    if flags:
-        print("\n".join(flags))
-    print("\n".join(summary for *_, summary in results))
+    if not args.quiet:
+        flags = [x for _, _, fl, _ in results for x in fl]
+        if flags:
+            print("\n".join(flags))
+        print("\n".join(summary for *_, summary in results))
+    # Always say how it ended, so a clean run and a silent failure differ (friction 534); errors, not style flags, make
+    # the exit code non-zero (friction 575).
+    print(f"check.py: {len(errors)} errors")
+    sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":
