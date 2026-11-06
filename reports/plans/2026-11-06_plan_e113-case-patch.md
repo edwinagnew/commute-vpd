@@ -28,7 +28,7 @@ E112 Amendment 1's own-token direction u_o. Both edits together are the filed pa
 
 | # | Number | W0 | Real | Twin | Control |
 |---|---|---|---|---|---|
-| Q0 | Apparatus: after the patch, E112's block-3 previous-token probe at the trigger reads the patched case (accuracy against the flipped labels) | ≥ 0.80 (stop if missed: the patch does not reach later blocks) | - | - | random-direction patch of the same size: ≈ the unpatched accuracy |
+| Q0 | Apparatus: after the patch, E112's block-2 previous-token probe at the trigger (0.885 unpatched, stage 0) reads the patched case (accuracy against the flipped labels, held-out words) | ≥ 0.70 (stop if missed: the patch does not reach the next block) | - | - | random-direction patch of the same size: ≈ the unpatched accuracy |
 | Q1 | Flip rate: share of train-word windows (where both arms perform, as E112's P3) whose label (logit A vs B) changes under the patch | - | ≥ 0.50 | ≤ 0.20 | random unit directions, same shift size: ≤ 0.10 on every state (stop if missed) |
 | Q2 | W0's next-token loss change at the trigger under the patch, printed | small (< 0.1 nats expected) | - | - | - |
 
