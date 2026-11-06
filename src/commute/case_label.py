@@ -131,6 +131,53 @@ def value_probes(h: Tensor, y: Tensor, hh: Tensor, yh: Tensor, m: int, lam_frac:
     return W, B, acc
 
 
+def control_table(vocab: int, m: int, seed: int) -> Tensor:
+    """(vocab,) the Hewitt-Liang control for m values (E116): one seeded random value index per token type."""
+    return torch.randint(0, m, (vocab,), generator=torch.Generator().manual_seed(seed))
+
+
+def cap_groups(group: Tensor, cap: int, seed: int) -> Tensor:
+    """Indices (ascending) of at most `cap` items per group id (N,), drawn by one seeded permutation (E116: at most
+    `probe_cap` Pile positions per value and key-slot type)."""
+    perm = torch.randperm(len(group), generator=torch.Generator().manual_seed(seed))
+    g = group[perm]
+    order = torch.argsort(g, stable=True)
+    gs = g[order]
+    rank = torch.arange(len(gs)) - torch.searchsorted(gs, gs)
+    return perm[order[rank < cap]].sort().values
+
+
+def set_log_odds(logits: Tensor, y: Tensor) -> Tensor:
+    """(N,) float64: the log-odds of value y (N,) within the value set whose logits are (N, m), log p(y|S) - log(1 -
+    p(y|S)) = logit_y - logsumexp(the other values' logits) (E116's P3 margin). For m = 2 it is E112's margin."""
+    lt = logits.double()
+    own = lt.gather(1, y[:, None].to(lt.device)).squeeze(1)
+    others = lt.scatter(1, y[:, None].to(lt.device), -math.inf).logsumexp(1)
+    return (own - others).cpu()
+
+
+def span_basis(w: Tensor, rel_tol: float) -> Tensor:
+    """Orthonormal basis (d, r), fp32, of the span of the rows of w (m, d): SVD in float64, the singular values above
+    rel_tol x the largest kept. One-vs-rest ridge weights on one-hot labels sum to zero, so m values with positions give
+    r = m - 1; for m = 2 the basis is E112's unit direction up to sign."""
+    u, s, _ = torch.linalg.svd(w.double().T, full_matrices=False)
+    return u[:, s > rel_tol * s[0]].float()
+
+
+def agreement(a: Tensor, b: Tensor) -> float:
+    """The share of rows where a and b agree; nan when empty (E116's P1, and P2 with g the identity on classes)."""
+    return float((a.cpu() == b.cpu()).double().mean()) if len(a) else math.nan
+
+
+def table_verdict(site: int | None, p1: float, p2: float, p3: float, bars: Mapping[str, float], not_read: str | None) -> str:
+    """E112's verdict rule per state, with the parts the definition cannot read named (E116): P0 fails -> "unreadable";
+    a part that cannot be applied (no held-out values, the do-nothing over its bar) -> "unreadable: <reason>"; else
+    `verdict`. Adds no bar."""
+    if site is not None and not_read:
+        return f"unreadable: {not_read}"
+    return verdict(site, p1, p2, p3, bars)
+
+
 # ----------------------------------------------------------------------------- the rules
 
 

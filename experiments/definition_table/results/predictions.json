@@ -1,0 +1,106 @@
+{
+  "experiment": "E116, the 67M task table under the frozen definition (experiments/definition_table)",
+  "plan": "reports/plans/2026-11-06_plan_e116-definition-table.md (user-approved 2026-11-06; its 'Questions settled by the lead' items 1-6 override the draft text) and reports/plans/2026-11-06_plan_e116-appendix.md",
+  "definition": "decisions.md rows 81, 87 and 164 (Jain, Kirk, Lubana et al. 2024 Defs 1-2; held-out carrying; the direction-removal check; constant answer does not apply), read part by part; nothing else gives a verdict",
+  "filed": "2026-11-06, before any stage ran; run.py refuses unless this file is committed unchanged",
+  "code": "experiments/definition_table/run.py (stages 0, 1, 2), tasks.py (tasks, readouts), readouts.py (stage 0, P0), reads.py (P1-P3); src/commute/case_label.py (value_probes, control_table, cap_groups, set_log_odds, span_basis, agreement, table_verdict; tests/test_case_label.py); src/commute/removal.py (table_accuracy); cluster/definition_table.sbatch",
+  "settings": {
+    "probe_rows": ["train", 32768, 32768],
+    "probe_cap": 16,
+    "probe_seed": 4,
+    "control_seed": 3,
+    "ridge_lambda": 0.001,
+    "guess_scan_rows": 512,
+    "guess_precap": 2,
+    "copy_locator_block": 2,
+    "e53_half": 63,
+    "e53_fit_windows": 2000,
+    "e53_window_seed": 0,
+    "random_dir_seed": 5,
+    "span_rel_tol": 1e-6,
+    "repro_tol": 0.001,
+    "stage_minutes": 25,
+    "readout_minutes": 4,
+    "constant_rows": ["lowercase", "rand1", "emoticon"]
+  },
+  "settings_sources": {
+    "probe": "E112's (experiments/case_label/results/predictions.json settings): Pile train rows 32768-65535 (disjoint from every task's rows 0-32767), 41-token windows read at index 20, closed-form ridge with lambda = 1e-3 x the mean diagonal (removal.fit_ridge), at most 16 positions per value and key-slot type (E112's probe_cap per form), seed 4; control seed 3; random direction seed 5.",
+    "guess_scan_rows, guess_precap": "size only, set here so the guess readouts' Pile residuals fit host memory (512 rows x 472 positions scanned): W0's whole-row argmax gives candidates, at most 2 x 16 per (value, type) are re-cut as 41-token windows and kept where the window's own argmax at index 20 is still a value (E90's scan_guess/keep_guess form, new_vs_reuse/apparatus.py:219-256).",
+    "copy_locator_block": "E97's located part for E62 copy, heads (2,3)+(2,4) (experiments/locator_table/results/table.json), block 2; used as the site when P0 passes there (lead's decision 5).",
+    "e53": "E53's sites (experiments/performed_anchor/run.py Config): 127-token windows (half 63, performed.windows_at) at every position whose next token is a table value; fit = E53's ciphered train rows 0-2399 (up to 2000 windows, seed 0; size only), held = E53's 64 held rows (val 0-63), every window. Maps: a0.json's 50-word derangement (e53_pi) and Amendment 1's 500-word derangement (a1_maps).",
+    "span_rel_tol": "numerical only: the probe basis keeps singular values above 1e-6 x the largest (one-vs-rest ridge weights sum to zero, so the dropped one is about 1e-12).",
+    "time": "one MATS debug L40 job of 30 min; stage 2 exits 3 between readouts when under 4 of the 25 minutes are left (fleet/resubmit --code 3), finished stages and readouts kept."
+  },
+  "lead_decisions_2026-11-06": {
+    "1_P2_g": "Where the task's answer is the readout's own value (ident32, copy-24, E62 copy, rank-1) g is fixed as the identity on classes, no fitting: P2 = agreement on held-out windows between the state's top-1 within the value set and the readout's argmax class at the site. Where the answer is not the readout's value (elicit, cipher-24, the text ciphers, rand32, lookup) g is removal.lookup_accuracy's table fitted on the fit windows (here removal.table_accuracy, the same table with fit and read rows given apart) and an unseen class counts wrong, as decision 2 filed: P2 is predicted low on those rows; a table cannot carry to new values, which is P1's failure seen again, not a new rule. E112's two-valued g stays the m = 2 case only for the table rows; at m = 2 the identity is a threshold at the probes' crossing (0.5) with fixed sign, not fitted.",
+    "2_P3_margin": "The log-odds of the window's target within the task's value set S, log p(y|S) - log(1 - p(y|S)) (case_label.set_log_odds; E112's margin exactly at m = 2); the full-vocabulary log-odds and its share printed beside. A twin's P3 uses the twin's own value set.",
+    "3_key_slot": "The excluded types and the Hewitt-Liang control are keyed on the slot where the key sits: t for the key tables and token identity on them, t-1 for E62 (copy and lookup) and E112, and for the text ciphers the token at t (the position whose next word is the ciphered target).",
+    "4_smaller": "Accepted as the writer proposed: the type-level readouts score, and the key tables' P2/P3 fit on, the trained keys' held-out-row windows (E90's kv_site); held-out values are the held-out keys' windows (windows_*_new.pt); the text ciphers fit on E53's ciphered train rows 0-2399; the state's answer in P2 is its top-1 within S (as P1); the probe cap of 16 is per value and key-slot type.",
+    "plan_decisions_1_5": "Plan 'Questions settled by the lead' 1-5 (2026-11-06): type-level C measured by P0 as filed; P2's g a table (refined by 1 above); do-nothing a rank-matched random basis, rank 1 beside; the text ciphers' site; the locator's block when it passes P0, l* beside."
+  },
+  "rules": {
+    "P0": {"accuracy": 0.90, "selectivity": 0.30},
+    "real": {"P1": 0.90, "P2": 0.90, "P3": 0.50},
+    "do_nothing_max": 0.10,
+    "gain_floor": 0.1,
+    "source": "copied unchanged from experiments/case_label/results/predictions.json 'rules' (E112); E112's twin_expected_max is not a rule here (each twin's P3 is printed, as the plan says)"
+  },
+  "measurements": {
+    "values": "A readout C has m classes (value tokens). Its labels are value indices 0..m-1.",
+    "P0": "Per block l = 0-3 (block l's output residual, readout.RESID): one ridge probe per value (one-vs-rest on the value's indicator) on the Pile positions' residuals, read on the scoring windows at the read index as the argmax over the values (case_label.value_probes; ties to the lowest index; a value with no Pile position never wins). Accuracy = top-1 against the scoring windows' classes; control = the same probes fitted to one seeded random value per key-slot type (case_label.control_table, seed 3), read against the scoring windows' key-slot types' random values; selectivity = accuracy - control. l* = case_label.first_passing_block (accuracy >= 0.90 and selectivity >= 0.30, inclusive, the earliest block before the last). Site = the locator's block (E62 copy: 2) when it passes there, else l*. At m = 2 this is E112's P0 exactly (tests/test_case_label.py: test_value_probes_m2_is_e112s_score_over_a_half).",
+    "readouts": {
+      "copy (E62 copy's C, in-context copying)": "classes: the distinct Bs of E62's 200 read windows. Pile positions: token t-1 occurs exactly once earlier in the window (t-20..t-2) at s, token s+1 is a class (the label), token t-1 is not one of the 32 keys nor the marker. Key slot t-1. Scored on the 200 read windows, class = the window's B. Twin: lookup.",
+      "guess_rank1, guess_elicit (W0's guess)": "classes: the task's value set S (trained then held-out keys' values, each once). Pile positions: W0's top-1 at t is a class (the label), the token at t not one of the 32 keys. Key slot t. Scored on the held-out keys' windows, class = W0's argmax among the classes there. Twin: cipher-24.",
+      "guess_cipher, guess_broad_cipher (W0's guess, text ciphers)": "classes: the table's 50 / 500 words. Pile positions as above, no excluded types. Key slot t. Scored on the 64 held rows' windows, class = W0's argmax among the classes. No twin.",
+      "identity_ident32, identity_rand32, identity_copy24, identity_cipher24, identity_e62_lookup (token identity of the key)": "classes: the task's keys (32; for the 24-key tables trained and held-out keys). Pile positions: the key-slot token is a class (readout.next_token_windows). Key slot t (key tables), t-1 (lookup). Scored on the trained keys' held-out-row windows (lookup: the 200 read windows). Twins: ident32 <-> rand32; copy-24: cipher-24, rank-1, elicit; cipher-24: rank-1, elicit; lookup: E62 copy."
+    },
+    "P1": "Held-out carrying (row 87): the state's top-1 within the task's value set S against the target, on the held-out-value windows (24-key tables: the 8 held-out keys' windows; E62 copy: the 200 read windows, Bs never trained). Full-vocabulary top-1 printed beside. n/a with its reason on ident32, rand32 (no held-out keys), lookup (no answer for an unseen key) and the text ciphers (no target for an unseen word). At m = 2 it is E112's label accuracy (test_top1_within_two_values_is_e112s_label_rule).",
+    "P2": "Small function (Def 2), as lead's decision 1: the readout's class at the site on W0's residual; identity rows: P2 = agreement of that class with the state's top-1 within S on the held-out windows; table rows: removal.table_accuracy's table (most common state answer per class on the fit windows, ties to the lowest token) read on the held-out windows, an unseen class wrong. nan ('no held-out windows') on ident32 and rand32.",
+    "P3": "Removal (row 81's sentence): on the fit windows of the state's own task, G = mean(m_state - m_W0) with m the within-S log-odds of the target (decision 2); share = mean(m_state - m_state with the probe basis removed from the site block's output residual at the read index only) / G (case_label.removed_share; nan when G <= 0.1 nats). Probe basis = the orthonormalised span of the m probe weights at the site (case_label.span_basis), rank m - 1 when every value has a Pile position; at m = 2 E112's unit direction (test_span_basis_rank_and_m2).",
+    "do_nothing": "The same share with removal.random_basis(768, rank of the probe basis, [5]) in place of the probe's, on every state read under the C (own and twins), read first; any share over 0.10 stops that C (its P2 and P3 are not read; verdict 'unreadable: ...'). The rank-1 random direction's share (random_basis(768, 1, [5])) printed beside.",
+    "locator": "Copied, no computation: E100's own share and sum of single reverts (experiments/fed_or_written/results/table.json, keys part, own, reverts_sum) and E97's removal (experiments/locator_table/results/table.json, keys part, share, control_share, located, reason) per task and seed.",
+    "stage0_control": "E112's frozen probes (experiments/case_label/run.py, its loop now case_label.value_probes) on its saved task.pt and settings: accuracy and control per block within 1e-3 of case_label/results/stage0.json (0.683125, 0.99375, 0.885, 0.7625; 0.47625, 0.524375, 0.46375, 0.479375), else exit 1 before anything else runs."
+  },
+  "verdict_rule": "Unchanged from E112 (case_label.verdict) through case_label.table_verdict: P0 fails (no site) -> 'unreadable'; a part the definition cannot read (P1 n/a, or the do-nothing over 0.10) -> 'unreadable: <reason>' with the numbers shown; P1 >= 0.90, P2 >= 0.90 and P3 >= 0.50 (inclusive) -> 'reuses C'; else 'not through C'. A constant-answer task (lowercase, rand1, emoticon) -> 'does not apply' and is not loaded. The twins' P3 is printed beside; it enters no verdict. No band, clause or score is added.",
+  "filed_outcome": {
+    "W0": {"stage0_repro": "max difference <= 1e-3 (expected 0 up to float64 rounding)", "type_level_readouts": "accuracy about 1 and control about 1 (the relabelling of seen types is learnable): selectivity about 0, P0 fails", "copy_and_guess_readouts": "accuracy under 0.90 at blocks 0-2 (lean, from E90's 0.876 at block 2); control about 1/m", "P1": "about its prior, except rank-1 where W0 passes by construction (its values are W0's own top-1)"},
+    "rows": {
+      "ident32": {"C": "token identity of the key", "P0": "fails (selectivity about 0)", "P1": "n/a (no held-out keys)", "expected": "unreadable", "earlier_claim": "reuse, by construction"},
+      "copy24": {"C": "token identity of the key", "P0": "fails (selectivity about 0)", "P1": "read on 8 held-out keys; no lean", "expected": "unreadable", "earlier_claim": "reuse, by construction"},
+      "e62_copy": {"C": "in-context copying", "P0": "lean: fails 0.90 before the last block", "P1": ">= 0.90 on the 200 read windows (E62 read 0.89 at step 10)", "P2": ">= 0.90 if read (g identity)", "P3": "do-nothing at rank m-1 leans over 0.10: stop", "expected": "unreadable (at P0 or at the do-nothing); if both pass, 'reuses C' needs P3 >= 0.50", "earlier_claim": "reuses, causal (head (2,4))"},
+      "e62_lookup": {"C": "token identity of A", "P0": "fails (selectivity about 0)", "P1": "n/a", "expected": "unreadable; as copy's twin, P3 about 0 (E90: -0.004 to 0.000)", "earlier_claim": "new, causal"},
+      "rand32": {"C": "token identity of the key", "P0": "fails (selectivity about 0)", "P1": "n/a", "expected": "unreadable", "earlier_claim": "new, by construction"},
+      "cipher": {"C": "W0's next-word guess (50-word table)", "P0": "lean: fails 0.90 before the last block (E90's guess readout 0.68/0.78/0.88)", "P1": "n/a", "P2": "low if read (table)", "expected": "unreadable", "earlier_claim": "new, by construction"},
+      "broad_cipher": {"C": "W0's next-word guess (500-word table)", "P0": "lean: fails 0.90 before the last block", "P1": "n/a", "P2": "low if read (table)", "expected": "unreadable", "earlier_claim": "new, by construction"},
+      "cipher24": {"C": "token identity of the key", "P0": "fails (selectivity about 0)", "P1": "read on 8 held-out keys; under 0.90 (E58 x -0.30 to -0.38)", "expected": "unreadable; as rank-1's and elicit's twin P3 printed (E90 Am2 0.08-0.12)", "earlier_claim": "new, by construction"},
+      "elicit": {"C": "W0's next-word guess at the key", "P0": "lean: fails 0.90 before the last block", "P1": "under 0.90 (E58 x about -0.03)", "P2": "low if read: every held-out value is unseen on the fit windows", "P3": "do-nothing leans stop", "expected": "unreadable, else 'not through C'", "earlier_claim": "open"},
+      "rank1": {"C": "W0's top-1 guess at the key", "P0": "lean: fails 0.90 before the last block", "P1": ">= 0.90 (W0 passes by construction)", "P2": ">= 0.90 plausible (g identity)", "P3": "do-nothing leans stop; if read, under 0.50 (E90 Am2 0.16-0.22)", "expected": "unreadable, else 'not through C'", "earlier_claim": "old, by construction"},
+      "lowercase": {"expected": "does not apply", "earlier_claim": "reuse"},
+      "rand1": {"expected": "does not apply", "earlier_claim": "new"},
+      "emoticon": {"expected": "does not apply", "earlier_claim": "existing behaviour"}
+    },
+    "do_nothing_state": "delta-W = 0: P1 = W0's, G = 0 -> P3 nan -> 'not through C'; it cannot pass (W0's P1 is printed per task in stage 1).",
+    "do_nothing_direction": "rank 1 <= 0.10 on every state; rank m-1 leans over 0.10 on the copy states (E90's rank-31 draws took 0.30-0.42 of ident32's gain) and near it on the guess states."
+  },
+  "edge_cases": {
+    "run": "2026-11-06, tests/test_case_label.py (cpu-run make test: 119 passed with test_removal.py and test_new_vs_reuse.py), before filing",
+    "a value with no Pile position (empty class)": "its probe has zero weight and intercept and scores -inf: never the argmax, its windows count wrong; it adds nothing to the probe basis (rank drops by one); every value without a position -> accuracy nan, P0 fails ('unreadable'). Tested: test_value_probes_many_values_and_edges, test_span_basis_rank_and_m2.",
+    "a state with one answer on every fit window": "the table g is constant: P2 = that answer's share of the held-out windows (tested: 0.75 on a hand case). With g the identity, P2 = the share of held-out windows whose class is that answer.",
+    "zero gain": "G <= 0.1 nats: P3 nan, verdict 'not through C'; a nan do-nothing share is no reading and does not stop (tested: test_table_verdict_edges).",
+    "ties": "bars inclusive (P1 = P2 = 0.90, P3 = 0.50 -> 'reuses C', tested); probe argmax ties to the lowest value index (torch.argmax's first maximum); a two-value tie reads value 0, as E112's d > 0 reads B (tested); the table's ties to the lowest token.",
+    "an empty held-out set": "P1 and P2 nan (case_label.agreement, table_accuracy return nan on no rows; tested); never filled from trained keys. Rows with no held-out values read 'unreadable: P1 cannot be applied: <reason>'.",
+    "a table at new values": "every held-out value unseen on the fit windows -> P2 = 0, unseen = 1 (tested): elicit's 8 held-out values are distinct from its 24 trained ones, so P2 is about 0 there by construction (lead's decision 1: P1's failure seen again, not a new rule).",
+    "the do-nothing state": "m_state = m_W0 -> G = 0 -> P3 nan -> 'not through C' (tested).",
+    "P0 fails": "table_verdict(None, ...) = 'unreadable' whatever P1-P3 (tested); that C's stage 2 does not run.",
+    "m = 2 reductions": "value_probes = E112's score > 0.5 with identical accuracy; set_log_odds = E112's margin; span_basis = E112's unit direction up to sign; identity g = threshold 0.5, sign + (tests named above)."
+  },
+  "departures": [
+    "Jain et al. 2024 train the readout on PCFG pretraining data with a PCFG probe; here a ridge probe per value on Pile residuals at one position (E112's form).",
+    "Jain put no bound on g; row 87's held-out carrying is the user's dated departure, read as P1.",
+    "For a C with more than two values g is the identity on classes where the answer is the readout's value, else a table from readout class to answer fitted on the fit windows; Jain define g only as a function, and E112 measured it as a threshold for two values.",
+    "Direction removal is our addition (row 81's sentence); Jain's causal evidence is pruning and reverse fine-tuning, not run here.",
+    "The 'pruning a few neurons' form is the locator's part-level revert (E100, E97), copied from JSON, not Jain's App. D Alg. 3.",
+    "The Hewitt-Liang control is one random value per key-slot token type; Hewitt and Liang's probes are classifiers, not ridge regressions.",
+    "Jain's possession is 'for all x'; here bars of 0.90 and 0.30 filed by E112."
+  ]
+}
