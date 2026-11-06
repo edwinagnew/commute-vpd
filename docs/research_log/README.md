@@ -564,3 +564,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e112_amend2_rank.png": "experiments/case_label/figures/amend2_rank.png"
 - "fig/e113_readout.png": "experiments/case_patch/figures/readout.png"
 - "fig/e113_flips.png": "experiments/case_patch/figures/flips.png"
+- "fig/e114_removal.png": "experiments/case_locator/figures/removal.png"
+- "fig/e114_reverts.png": "experiments/case_locator/figures/reverts.png"
